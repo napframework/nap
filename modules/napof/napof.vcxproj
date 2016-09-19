@@ -1,0 +1,338 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{8A4AB467-68EC-4515-9621-7E2409A8EB41}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>napof</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\..\openFrameworks\libs\openFrameworksCompiled\project\vs\openFrameworksDebug.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\..\openFrameworks\libs\openFrameworksCompiled\project\vs\openFrameworksRelease.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\..\openFrameworks\libs\openFrameworksCompiled\project\vs\openFrameworksDebug.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\..\openFrameworks\libs\openFrameworksCompiled\project\vs\openFrameworksRelease.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;NAPOF_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\core\src;..\..\..\openFrameworks\libs\openFrameworks;..\..\..\openFrameworks\libs\openFrameworks\graphics;..\..\..\openFrameworks\libs\openFrameworks\app;..\..\..\openFrameworks\libs\openFrameworks\sound;..\..\..\openFrameworks\libs\openFrameworks\utils;..\..\..\openFrameworks\libs\openFrameworks\communication;..\..\..\openFrameworks\libs\openFrameworks\video;..\..\..\openFrameworks\libs\openFrameworks\types;..\..\..\openFrameworks\libs\openFrameworks\math;..\..\..\openFrameworks\libs\openFrameworks\3d;..\..\..\openFrameworks\libs\openFrameworks\gl;..\..\..\openFrameworks\libs\openFrameworks\events;..\..\..\openFrameworks\libs\glut\include;..\..\..\openFrameworks\libs\rtAudio\include;..\..\..\openFrameworks\libs\quicktime\include;..\..\..\openFrameworks\libs\freetype\include;..\..\..\openFrameworks\libs\freetype\include\freetype2;..\..\..\openFrameworks\libs\freeImage\include;..\..\..\openFrameworks\libs\fmodex\include;..\..\..\openFrameworks\libs\videoInput\include;..\..\..\openFrameworks\libs\glew\include\;..\..\..\openFrameworks\libs\glu\include;..\..\..\openFrameworks\libs\tess2\include;..\..\..\openFrameworks\libs\cairo\include\cairo;..\..\..\openFrameworks\libs\poco\include;..\..\..\openFrameworks\libs\glfw\include;..\..\..\openFrameworks\libs\boost\include;..\..\..\openFrameworks\libs\utf8cpp\include;..\..\..\openFrameworks\libs\gl\include;..\..\..\openFrameworks\libs\openssl\include;..\..\..\openFrameworks\libs\addons;.\src;.\src\Utils;..\..\..\spout2\SpoutSDK\Source;..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs;..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External;..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow;..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses;..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\snappy;..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\src;..\..\modules\napgui\src;..\..\Tommy\src</AdditionalIncludeDirectories>
+      <MinimalRebuild>false</MinimalRebuild>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;NAPOF_EXPORTS;POCO_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\core\src;..\..\..\openFrameworks\libs\openFrameworks;..\..\..\openFrameworks\libs\openFrameworks\graphics;..\..\..\openFrameworks\libs\openFrameworks\app;..\..\..\openFrameworks\libs\openFrameworks\sound;..\..\..\openFrameworks\libs\openFrameworks\utils;..\..\..\openFrameworks\libs\openFrameworks\communication;..\..\..\openFrameworks\libs\openFrameworks\video;..\..\..\openFrameworks\libs\openFrameworks\types;..\..\..\openFrameworks\libs\openFrameworks\math;..\..\..\openFrameworks\libs\openFrameworks\3d;..\..\..\openFrameworks\libs\openFrameworks\gl;..\..\..\openFrameworks\libs\openFrameworks\events;..\..\..\openFrameworks\libs\glut\include;..\..\..\openFrameworks\libs\rtAudio\include;..\..\..\openFrameworks\libs\quicktime\include;..\..\..\openFrameworks\libs\freetype\include;..\..\..\openFrameworks\libs\freetype\include\freetype2;..\..\..\openFrameworks\libs\freeImage\include;..\..\..\openFrameworks\libs\fmodex\include;..\..\..\openFrameworks\libs\videoInput\include;..\..\..\openFrameworks\libs\glew\include\;..\..\..\openFrameworks\libs\glu\include;..\..\..\openFrameworks\libs\tess2\include;..\..\..\openFrameworks\libs\cairo\include\cairo;..\..\..\openFrameworks\libs\poco\include;..\..\..\openFrameworks\libs\glfw\include;..\..\..\openFrameworks\libs\boost\include;..\..\..\openFrameworks\libs\utf8cpp\include;..\..\..\openFrameworks\libs\gl\include;..\..\..\openFrameworks\libs\openssl\include;..\..\..\openFrameworks\libs\addons;.\src;.\src\Utils;..\..\..\spout2\SpoutSDK\Source;..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs;..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External;..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow;..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses;..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\snappy;..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\src;..\..\modules\napgui\src</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4267;4996</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MinimalRebuild>false</MinimalRebuild>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>..\..\..\openFrameworks\libs\boost\lib\vs\x64;..\..\..\openFrameworks\libs\poco\lib\vs\x64</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>PocoFoundationd.lib;PocoXMLd.lib</IgnoreSpecificDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;NAPOF_EXPORTS;_NO_DEBUG_HEAP=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\core\src;..\..\..\openFrameworks\libs\openFrameworks;..\..\..\openFrameworks\libs\openFrameworks\graphics;..\..\..\openFrameworks\libs\openFrameworks\app;..\..\..\openFrameworks\libs\openFrameworks\sound;..\..\..\openFrameworks\libs\openFrameworks\utils;..\..\..\openFrameworks\libs\openFrameworks\communication;..\..\..\openFrameworks\libs\openFrameworks\video;..\..\..\openFrameworks\libs\openFrameworks\types;..\..\..\openFrameworks\libs\openFrameworks\math;..\..\..\openFrameworks\libs\openFrameworks\3d;..\..\..\openFrameworks\libs\openFrameworks\gl;..\..\..\openFrameworks\libs\openFrameworks\events;..\..\..\openFrameworks\libs\glut\include;..\..\..\openFrameworks\libs\rtAudio\include;..\..\..\openFrameworks\libs\quicktime\include;..\..\..\openFrameworks\libs\freetype\include;..\..\..\openFrameworks\libs\freetype\include\freetype2;..\..\..\openFrameworks\libs\freeImage\include;..\..\..\openFrameworks\libs\fmodex\include;..\..\..\openFrameworks\libs\videoInput\include;..\..\..\openFrameworks\libs\glew\include\;..\..\..\openFrameworks\libs\glu\include;..\..\..\openFrameworks\libs\tess2\include;..\..\..\openFrameworks\libs\cairo\include\cairo;..\..\..\openFrameworks\libs\poco\include;..\..\..\openFrameworks\libs\glfw\include;..\..\..\openFrameworks\libs\boost\include;..\..\..\openFrameworks\libs\utf8cpp\include;..\..\..\openFrameworks\libs\gl\include;..\..\..\openFrameworks\libs\openssl\include;..\..\..\openFrameworks\libs\addons;.\src;.\src\Utils;..\..\..\spout2\SpoutSDK\Source;..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs;..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External;..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow;..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses;..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\snappy;..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\src;..\..\modules\napgui\src;..\..\Tommy\src</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MinimalRebuild>false</MinimalRebuild>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;NAPOF_EXPORTS;POCO_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\core\src;..\..\..\openFrameworks\libs\openFrameworks;..\..\..\openFrameworks\libs\openFrameworks\graphics;..\..\..\openFrameworks\libs\openFrameworks\app;..\..\..\openFrameworks\libs\openFrameworks\sound;..\..\..\openFrameworks\libs\openFrameworks\utils;..\..\..\openFrameworks\libs\openFrameworks\communication;..\..\..\openFrameworks\libs\openFrameworks\video;..\..\..\openFrameworks\libs\openFrameworks\types;..\..\..\openFrameworks\libs\openFrameworks\math;..\..\..\openFrameworks\libs\openFrameworks\3d;..\..\..\openFrameworks\libs\openFrameworks\gl;..\..\..\openFrameworks\libs\openFrameworks\events;..\..\..\openFrameworks\libs\glut\include;..\..\..\openFrameworks\libs\rtAudio\include;..\..\..\openFrameworks\libs\quicktime\include;..\..\..\openFrameworks\libs\freetype\include;..\..\..\openFrameworks\libs\freetype\include\freetype2;..\..\..\openFrameworks\libs\freeImage\include;..\..\..\openFrameworks\libs\fmodex\include;..\..\..\openFrameworks\libs\videoInput\include;..\..\..\openFrameworks\libs\glew\include\;..\..\..\openFrameworks\libs\glu\include;..\..\..\openFrameworks\libs\tess2\include;..\..\..\openFrameworks\libs\cairo\include\cairo;..\..\..\openFrameworks\libs\poco\include;..\..\..\openFrameworks\libs\glfw\include;..\..\..\openFrameworks\libs\boost\include;..\..\..\openFrameworks\libs\utf8cpp\include;..\..\..\openFrameworks\libs\gl\include;..\..\..\openFrameworks\libs\openssl\include;..\..\..\openFrameworks\libs\addons;.\src;.\src\Utils;..\..\..\spout2\SpoutSDK\Source;..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs;..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External;..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow;..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses;..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\snappy;..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\src;..\..\modules\napgui\src</AdditionalIncludeDirectories>
+      <PrecompiledHeaderFile />
+      <DisableSpecificWarnings>4267</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\amextra.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\amfilter.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\cache.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\checkbmi.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\combase.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\cprop.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\ctlutil.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\ddmm.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\dllsetup.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\dxmperf.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\fourcc.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\measure.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\msgthrd.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\mtype.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\outputq.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\perflog.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\perfstruct.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\pstream.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\pullpin.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\refclock.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\reftime.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\renbase.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\schedule.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\seekpt.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\source.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\streams.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\strmctl.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\sysclock.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\transfrm.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\transip.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\videoctl.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\vtrans.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\winctrl.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\winutil.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\wxdebug.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\wxlist.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\wxutil.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\snappy\config.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\snappy\snappy-c.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\snappy\snappy-internal.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\snappy\snappy-sinksource.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\snappy\snappy-stubs-internal.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\snappy\snappy-stubs-public.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\snappy\snappy.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\src\DSShared.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\src\DSUncompressedSampleGrabber.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\src\HapShared.h" />
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\src\ofxDSHapVideoPlayer.h" />
+    <ClInclude Include="src\napof.h" />
+    <ClInclude Include="src\napofattributes.h" />
+    <ClInclude Include="src\napofblendtype.h" />
+    <ClInclude Include="src\napofframebuffercomponent.h" />
+    <ClInclude Include="src\napofimagecomponent.h" />
+    <ClInclude Include="src\napoflagcomponent.h" />
+    <ClInclude Include="src\napoflayoutplanecomponent.h" />
+    <ClInclude Include="src\napofmaterial.h" />
+    <ClInclude Include="src\napofrendercomponent.h" />
+    <ClInclude Include="src\napofservice.h" />
+    <ClInclude Include="src\napofshaderbinding.h" />
+    <ClInclude Include="src\napofsimplecamcomponent.h" />
+    <ClInclude Include="src\napofsimpleshapecomponent.h" />
+    <ClInclude Include="src\napofslideshowcomponent.h" />
+    <ClInclude Include="src\napofsoundcomponent.h" />
+    <ClInclude Include="src\napofsplinecomponent.h" />
+    <ClInclude Include="src\napofsplinemodulationcomponent.h" />
+    <ClInclude Include="src\napofspoutsendcomponent.h" />
+    <ClInclude Include="src\napofspritecomponent.h" />
+    <ClInclude Include="src\napoftracecomponent.h" />
+    <ClInclude Include="src\napoftransform.h" />
+    <ClInclude Include="src\napofupdatecomponent.h" />
+    <ClInclude Include="src\napofvideocomponent.h" />
+    <ClInclude Include="src\Spline\nofSpline.h" />
+    <ClInclude Include="src\Spline\nofSplineUtils.h" />
+    <ClInclude Include="src\Spout\nofSpoutSender.h" />
+    <ClInclude Include="src\Utils\nofUtils.h" />
+    <ClInclude Include="src\Utils\ofVec2i.h" />
+    <ClInclude Include="targetver.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\amextra.cpp" />
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\amfilter.cpp" />
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\amvideo.cpp" />
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\arithutil.cpp" />
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\combase.cpp" />
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\cprop.cpp" />
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\ctlutil.cpp" />
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\ddmm.cpp" />
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\dllentry.cpp" />
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\dllsetup.cpp" />
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\mtype.cpp" />
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\outputq.cpp" />
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\perflog.cpp" />
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\pstream.cpp" />
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\pullpin.cpp" />
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\refclock.cpp" />
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\renbase.cpp" />
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\schedule.cpp" />
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\seekpt.cpp" />
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\source.cpp" />
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\strmctl.cpp" />
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\sysclock.cpp" />
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\transfrm.cpp" />
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\transip.cpp" />
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\videoctl.cpp" />
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\vtrans.cpp" />
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\winctrl.cpp" />
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\winutil.cpp" />
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\wxdebug.cpp" />
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\wxlist.cpp" />
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\wxutil.cpp" />
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\snappy\snappy-c.cc" />
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\snappy\snappy-sinksource.cc" />
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\snappy\snappy-stubs-internal.cc" />
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\snappy\snappy.cc" />
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\src\DSUncompressedSampleGrabber.cpp" />
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\src\ofxDSHapVideoPlayer.cpp" />
+    <ClCompile Include="..\..\..\spout2\SpoutSDK\Source\SpoutDirectX.cpp" />
+    <ClCompile Include="..\..\..\spout2\SpoutSDK\Source\SpoutGLDXinterop.cpp" />
+    <ClCompile Include="..\..\..\spout2\SpoutSDK\Source\SpoutGLextensions.cpp" />
+    <ClCompile Include="..\..\..\spout2\SpoutSDK\Source\SpoutMemoryShare.cpp" />
+    <ClCompile Include="..\..\..\spout2\SpoutSDK\Source\SpoutReceiver.cpp" />
+    <ClCompile Include="..\..\..\spout2\SpoutSDK\Source\SpoutSDK.cpp" />
+    <ClCompile Include="..\..\..\spout2\SpoutSDK\Source\SpoutSender.cpp" />
+    <ClCompile Include="..\..\..\spout2\SpoutSDK\Source\SpoutSenderNames.cpp" />
+    <ClCompile Include="..\..\..\spout2\SpoutSDK\Source\SpoutSharedMemory.cpp" />
+    <ClCompile Include="src\module_napof.cpp" />
+    <ClCompile Include="src\napofattributes.cpp" />
+    <ClCompile Include="src\napofblendtype.cpp" />
+    <ClCompile Include="src\napofframebuffercomponent.cpp" />
+    <ClCompile Include="src\napofimagecomponent.cpp" />
+    <ClCompile Include="src\napoflagcomponent.cpp" />
+    <ClCompile Include="src\napoflayoutplanecomponent.cpp" />
+    <ClCompile Include="src\napofmaterial.cpp" />
+    <ClCompile Include="src\napofrendercomponent.cpp" />
+    <ClCompile Include="src\napofservice.cpp" />
+    <ClCompile Include="src\napofshaderbinding.cpp" />
+    <ClCompile Include="src\napofsimplecamcomponent.cpp" />
+    <ClCompile Include="src\napofsimpleshapecomponent.cpp" />
+    <ClCompile Include="src\napofslideshowcomponent.cpp" />
+    <ClCompile Include="src\napofsoundcomponent.cpp" />
+    <ClCompile Include="src\napofsplinecomponent.cpp" />
+    <ClCompile Include="src\napofsplinemodulationcomponent.cpp" />
+    <ClCompile Include="src\napofspoutsendcomponent.cpp" />
+    <ClCompile Include="src\napofspritecomponent.cpp" />
+    <ClCompile Include="src\napoftracecomponent.cpp" />
+    <ClCompile Include="src\napoftransform.cpp" />
+    <ClCompile Include="src\napofupdatecomponent.cpp" />
+    <ClCompile Include="src\napofvideocomponent.cpp" />
+    <ClCompile Include="src\Spline\nofSpline.cpp" />
+    <ClCompile Include="src\Spline\nofSplineUtils.cpp" />
+    <ClCompile Include="src\Spout\nofSpoutSender.cpp" />
+    <ClCompile Include="src\Utils\nofUtils.cpp" />
+    <ClCompile Include="src\Utils\ofVec2i.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\openFrameworks\libs\openFrameworksCompiled\project\vs\openframeworksLib.vcxproj">
+      <Project>{5837595d-aca9-485c-8e76-729040ce4b0b}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\napgui\napgui.vcxproj">
+      <Project>{7f5b2e4c-5ddb-4e56-9685-67972edd8145}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\napinput\napinput.vcxproj">
+      <Project>{548b6023-4e30-40b0-a171-1f98d5dd59b4}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\baseclasses.vcproj" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

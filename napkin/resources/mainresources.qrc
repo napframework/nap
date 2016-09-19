@@ -1,0 +1,17 @@
+<RCC>
+    <qresource prefix="/main">
+        <file>mainIcons/application_view_list.png</file>
+        <file>mainIcons/application_view_tile.png</file>
+        <file>mainIcons/arrow_redo.png</file>
+        <file>mainIcons/arrow_undo.png</file>
+        <file>mainIcons/bug.png</file>
+        <file>mainIcons/cut_red.png</file>
+        <file>mainIcons/delete.png</file>
+        <file>mainIcons/error.png</file>
+        <file>mainIcons/exclamation.png</file>
+        <file>mainIcons/information.png</file>
+        <file>mainIcons/page_copy.png</file>
+        <file>mainIcons/page_paste.png</file>
+        <file>mainIcons/page_white.png</file>
+    </qresource>
+</RCC>

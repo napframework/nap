@@ -1,0 +1,219 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="nap">
+      <UniqueIdentifier>{59025315-1459-4b8e-b9ca-c647ae634249}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="rtti">
+      <UniqueIdentifier>{b90ccd71-62a8-4176-9289-8e15cac7e36e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\nap\attribute.h">
+      <Filter>nap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\nap\attributeobject.h">
+      <Filter>nap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\nap\component.h">
+      <Filter>nap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\nap\configure.h">
+      <Filter>nap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\nap\core.h">
+      <Filter>nap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\nap\direntw32.h">
+      <Filter>nap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\nap\entity.h">
+      <Filter>nap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\nap\fileutils.h">
+      <Filter>nap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\nap\link.h">
+      <Filter>nap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\nap\lockingattribute.h">
+      <Filter>nap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\nap\logger.h">
+      <Filter>nap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\nap\module.h">
+      <Filter>nap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\nap\modulemanager.h">
+      <Filter>nap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\nap\object.h">
+      <Filter>nap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\nap\objectpath.h">
+      <Filter>nap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\nap\operator.h">
+      <Filter>nap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\nap\patch.h">
+      <Filter>nap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\nap\patchcomponent.h">
+      <Filter>nap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\nap\plug.h">
+      <Filter>nap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\nap\serializer.h">
+      <Filter>nap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\nap\service.h">
+      <Filter>nap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\nap\serviceablecomponent.h">
+      <Filter>nap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\nap\signalslot.h">
+      <Filter>nap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\nap\stringutils.h">
+      <Filter>nap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\nap\tinyxml2.h">
+      <Filter>nap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\nap\typeconverter.h">
+      <Filter>nap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\nap\xmlserializer.h">
+      <Filter>nap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\rtti\rtti.h">
+      <Filter>rtti</Filter>
+    </ClInclude>
+    <ClInclude Include="src\rtti\rtticast.h">
+      <Filter>rtti</Filter>
+    </ClInclude>
+    <ClInclude Include="src\rtti\rttienable.h">
+      <Filter>rtti</Filter>
+    </ClInclude>
+    <ClInclude Include="src\rtti\typeinfo.h">
+      <Filter>rtti</Filter>
+    </ClInclude>
+    <ClInclude Include="src\nap.h">
+      <Filter>nap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\nap\coremodule.h">
+      <Filter>nap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\nap\coreoperators.h">
+      <Filter>nap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\nap\coretypeconverters.h">
+      <Filter>nap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\nap\event.h">
+      <Filter>nap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\nap\eventdispatcher.h">
+      <Filter>nap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\nap\componentdependency.h">
+      <Filter>nap</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\nap\attribute.cpp">
+      <Filter>nap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nap\attributeobject.cpp">
+      <Filter>nap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nap\component.cpp">
+      <Filter>nap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nap\configure.cpp">
+      <Filter>nap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nap\core.cpp">
+      <Filter>nap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nap\entity.cpp">
+      <Filter>nap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nap\fileutils.cpp">
+      <Filter>nap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nap\link.cpp">
+      <Filter>nap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nap\logger.cpp">
+      <Filter>nap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nap\module.cpp">
+      <Filter>nap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nap\modulemanager.cpp">
+      <Filter>nap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nap\object.cpp">
+      <Filter>nap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nap\objectpath.cpp">
+      <Filter>nap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nap\operator.cpp">
+      <Filter>nap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nap\patch.cpp">
+      <Filter>nap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nap\patchcomponent.cpp">
+      <Filter>nap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nap\plug.cpp">
+      <Filter>nap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nap\serializer.cpp">
+      <Filter>nap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nap\service.cpp">
+      <Filter>nap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nap\serviceablecomponent.cpp">
+      <Filter>nap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nap\stringutils.cpp">
+      <Filter>nap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nap\tinyxml2.cpp">
+      <Filter>nap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nap\typeconverter.cpp">
+      <Filter>nap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nap\xmlserializer.cpp">
+      <Filter>nap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rtti\typeinfo.cpp">
+      <Filter>rtti</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nap\coretypeconverters.cpp">
+      <Filter>nap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nap\coremodule.cpp">
+      <Filter>nap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nap\event.cpp">
+      <Filter>nap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nap\eventdispatcher.cpp">
+      <Filter>nap</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

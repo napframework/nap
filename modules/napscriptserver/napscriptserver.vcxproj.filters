@@ -1,0 +1,94 @@
+﻿﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="jsonrpc_include">
+      <UniqueIdentifier>{3a7318ed-f60c-4d58-8dd2-ade8ec510514}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\module_napscriptserver.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\scriptinterpreter.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\scriptserver.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\jsonrpcinterpreter.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\scriptinterpreter.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\scriptserver.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\jsonrpcinterpreter.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="jsonrpc_include\jsonrpc-lean\dispatcher.h">
+      <Filter>jsonrpc_include</Filter>
+    </ClInclude>
+    <ClInclude Include="jsonrpc_include\jsonrpc-lean\fault.h">
+      <Filter>jsonrpc_include</Filter>
+    </ClInclude>
+    <ClInclude Include="jsonrpc_include\jsonrpc-lean\formathandler.h">
+      <Filter>jsonrpc_include</Filter>
+    </ClInclude>
+    <ClInclude Include="jsonrpc_include\jsonrpc-lean\formatteddata.h">
+      <Filter>jsonrpc_include</Filter>
+    </ClInclude>
+    <ClInclude Include="jsonrpc_include\jsonrpc-lean\integer_seq.h">
+      <Filter>jsonrpc_include</Filter>
+    </ClInclude>
+    <ClInclude Include="jsonrpc_include\jsonrpc-lean\json.h">
+      <Filter>jsonrpc_include</Filter>
+    </ClInclude>
+    <ClInclude Include="jsonrpc_include\jsonrpc-lean\jsonformathandler.h">
+      <Filter>jsonrpc_include</Filter>
+    </ClInclude>
+    <ClInclude Include="jsonrpc_include\jsonrpc-lean\jsonformatteddata.h">
+      <Filter>jsonrpc_include</Filter>
+    </ClInclude>
+    <ClInclude Include="jsonrpc_include\jsonrpc-lean\jsonreader.h">
+      <Filter>jsonrpc_include</Filter>
+    </ClInclude>
+    <ClInclude Include="jsonrpc_include\jsonrpc-lean\jsonwriter.h">
+      <Filter>jsonrpc_include</Filter>
+    </ClInclude>
+    <ClInclude Include="jsonrpc_include\jsonrpc-lean\reader.h">
+      <Filter>jsonrpc_include</Filter>
+    </ClInclude>
+    <ClInclude Include="jsonrpc_include\jsonrpc-lean\request.h">
+      <Filter>jsonrpc_include</Filter>
+    </ClInclude>
+    <ClInclude Include="jsonrpc_include\jsonrpc-lean\response.h">
+      <Filter>jsonrpc_include</Filter>
+    </ClInclude>
+    <ClInclude Include="jsonrpc_include\jsonrpc-lean\server.h">
+      <Filter>jsonrpc_include</Filter>
+    </ClInclude>
+    <ClInclude Include="jsonrpc_include\jsonrpc-lean\util.h">
+      <Filter>jsonrpc_include</Filter>
+    </ClInclude>
+    <ClInclude Include="jsonrpc_include\jsonrpc-lean\value.h">
+      <Filter>jsonrpc_include</Filter>
+    </ClInclude>
+    <ClInclude Include="jsonrpc_include\jsonrpc-lean\writer.h">
+      <Filter>jsonrpc_include</Filter>
+    </ClInclude>
+    <ClInclude Include="jsonrpc_include\jsonrpc-lean\client.h">
+      <Filter>jsonrpc_include</Filter>
+    </ClInclude>
+    <ClInclude Include="jsonrpc_include\jsonrpc-lean\compat.h">
+      <Filter>jsonrpc_include</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
