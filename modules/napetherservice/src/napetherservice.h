@@ -45,9 +45,7 @@ namespace nap
 		bool mFlipX = true;
 		bool mFlipY = false;
 
-	protected:
-		virtual void onStart() override		{ }
-		virtual void onStop() override;			//< Stops the service
+		void Stop()							{ mEtherdream.Kill(); }
 
 	private:
 		//Laser interface

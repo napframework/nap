@@ -1,6 +1,8 @@
 #include <Spline/nofSplineUtils.h>
 #include <ofPath.h>
 #include <nofUtils.h>
+#include <ofxSvg.h>
+#include <nap/logger.h>
 
 // Spline type names
 static const std::vector<std::string> gSplineTypeNames = { "Circle", "Triangle", "Square", "Line", "Hexagon" };
@@ -240,4 +242,63 @@ void gCreateHexagon(float inDiameter, int inPointCount, const ofPoint& inCenter,
 
 	// Set poly line
 	outSpline.SetPolyLine(out_line);
+}
+
+
+
+// Creates a spline from an svg file
+void gCreateSplineFromFile(const std::string& inFile, int inPointCount, NSpline& outSpline, const ofPoint& inCenter)
+{
+	// Load the file
+	ofxSVG svg_file;
+	svg_file.load(inFile);
+
+	// Ensure we have at least one path
+	if (svg_file.getNumPath() == 0)
+	{
+		nap::Logger::warn("no paths found in file: %s", inFile.c_str());
+		return;
+	}
+
+	// Pick first one
+	ofPath& sampled_path = svg_file.getPathAt(0);
+	if (svg_file.getNumPath() > 1)
+	{
+		nap::Logger::warn("multiple paths found in file: %s, picking first one", inFile.c_str());
+	}
+
+	// Make sure it has an outline
+	if (!sampled_path.hasOutline())
+	{
+		nap::Logger::warn("file has no outline: %s", inFile.c_str());
+		return;
+	}
+
+	// Get the points
+	const std::vector<ofPolyline>& path_lines = sampled_path.getOutline();	
+	if (path_lines.empty())
+	{
+		nap::Logger::warn("unable to extract outline from file: %s", inFile.c_str());
+		return;
+	}
+
+	// Notify based on multiple poly lines (often only 1)
+	if (path_lines.size() > 1)
+	{
+		nap::Logger::warn("multiple polylines extracted from path in file: %s, picking first one", inFile.c_str());
+	}
+
+	// Get the resampled line (based on point count)
+	ofPolyline resampled_line = path_lines[0].getResampledByCount(inPointCount);
+
+	// Center
+	ofPoint bbox_point = resampled_line.getBoundingBox().getCenter();
+	ofPoint center_point = bbox_point - inCenter;
+	for (auto& v : resampled_line.getVertices())
+	{
+		v -= center_point;
+	}
+
+	// Set it
+	outSpline.SetPolyLine(resampled_line);
 }

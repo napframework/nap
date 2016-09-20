@@ -37,6 +37,17 @@ void nofNEtherDream::Init(int inEtherDream, int inPPS)
 }
 
 
+// Start running the threaded service
+void nofNEtherDream::Start()
+{
+	if (isThreadRunning())
+	{
+		ofLogNotice("EtherDream") << "Already running";
+		return;
+	}
+	startThread();
+}
+
 /**
 @brief Init
 
@@ -77,38 +88,53 @@ bool nofNEtherDream::Connect()
 
 /**
 @brief Send
-
-Sends the stored information to the dac
+Stores the data to be send later (in the threaded function)
 **/
-void nofNEtherDream::SendData(const std::vector<EAD_Pnt_s>& inPoints)
+void nofNEtherDream::SendData(const LaserPoints& inPoints)
 {
-	// Don't attempt to write when we're not initialized correctly
-	if(!IsReady())
-	{
-		ofLogWarning("EtherDream") << "not initialized correctly!";
-		return;
-	}
-
-	// Don't write zero length data buffers
-	if(inPoints.empty())
-		return;
-	
-	// Make sure we can write, this is a blocking call -> remove
-	float max_time = ofGetElapsedTimef() + mTimeOut;
-	while (netherdream::GetStatus(mEtherDacNumber) == netherdream::Status::Busy)
-	{
-		if (ofGetElapsedTimef() > max_time)
-		{
-			ofLogWarning("EtherdreamLib") << "laser device still busy, skipping...";
-			return;
-		}
-	}
-
-	// Write
-	int size = inPoints.size() * sizeof(EAD_Pnt_s);
-	netherdream::WriteFrame(mEtherDacNumber, inPoints.data(), size, mPPS, 1);
+	lock();
+	mLaserPoints = inPoints;
+	unlock();
 }
 
+
+// Sends points to the laser
+void nofNEtherDream::threadedFunction()
+{
+	while (isThreadRunning())
+	{
+		// Don't attempt to write when we're not initialized correctly
+		if (!IsReady())
+		{
+			ofLogWarning("EtherDream") << "not initialized correctly!";
+			continue;
+		}
+
+		// Make sure we can write, this is a blocking call -> remove
+		float max_time = ofGetElapsedTimef() + mTimeOut;
+		while (netherdream::GetStatus(mEtherDacNumber) == netherdream::Status::Busy)
+		{
+			if (ofGetElapsedTimef() > max_time)
+			{
+				ofLogWarning("EtherdreamLib") << "laser device still busy, skipping...";
+				continue;
+			}
+		}
+
+		// Copy over points
+		lock();
+		LaserPoints send_points = mLaserPoints;
+		unlock();
+
+		// Don't write zero length data buffers
+		if (send_points.empty())
+			continue;
+
+		// Write
+		int size = send_points.size() * sizeof(EAD_Pnt_s);
+		netherdream::WriteFrame(mEtherDacNumber, send_points.data(), size, mPPS, 1);
+	}
+}
 
 
 /**
@@ -118,6 +144,10 @@ Stops the thread and kills the ether dream communication
 **/
 void nofNEtherDream::Kill()
 {
+	// Stop thread if running
+	if (isThreadRunning())
+		stopThread();
+
 	// If the dac wasn't ready (ie, errors occured), return
 	if(!IsReady())
 		return;
@@ -125,4 +155,7 @@ void nofNEtherDream::Kill()
 	// Stop running and close device
 	netherdream::Stop(mEtherDacNumber);
 	netherdream::CloseDevice(mEtherDacNumber);
+	
+	// Set state to uninitialized
+	mState = State::EtherDreamUninitialized;
 }

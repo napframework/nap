@@ -50,6 +50,7 @@ namespace nap
 			Logger::warn("Unable to load and start ether dream dac");
 			return;
 		}
+		mEtherdream.Start();
 	}
 
 
@@ -139,14 +140,6 @@ namespace nap
 
 		// Send point
 		mEtherdream.SendData(mLaserPoints);
-	}
-
-	/**
-	@brief Stop kills the etherdream
-	**/
-	void EtherDreamService::onStop()
-	{
-		mEtherdream.Kill();
 	}
 
 

@@ -71,14 +71,10 @@ namespace nap
 		Entity* parent = getParent();
 		assert(parent != nullptr);
 
-		// Get all spline components
-		std::vector<OFSplineComponent*> splines;
-		parent->getComponentsOfType<OFSplineComponent>(splines);
-
-		// If no splines were found, return
-		if (splines.empty())
+		nap::OFSplineComponent* spline_comp = mSpline.get();
+		if (spline_comp == nullptr)
 		{
-			ofLogWarning("SplineSelectionComponent") << "No valid spline components found!";
+			nap::Logger::warn(*this, "unable to resolve spline component");
 			return;
 		}
 
@@ -108,10 +104,7 @@ namespace nap
 		}
 
 		// Set it
-		for (auto& spline : splines)
-		{
-			spline->mSpline.setValue(out_spline);
-		}
+		spline_comp->mSpline.setValue(out_spline);
 	}
 
 
@@ -141,11 +134,10 @@ namespace nap
 		mTime += diff_time * mCycleSpeed.getValue();
 
 		// Get spline component
-		Entity* parent = getParent();
-		OFSplineComponent* spline_component = parent->getComponent<OFSplineComponent>();
+		nap::OFSplineComponent* spline_component = mSpline.get();
 		if (spline_component == nullptr)
 		{
-			ofLogWarning("SplineColorComponent") << "No valid spline components found!";
+			nap::Logger::warn(*this, "unable to find spline component on parent");
 			return;
 		}
 
@@ -226,6 +218,60 @@ namespace nap
 		spline.UpdateVBO(NSpline::DataType::COLOR);
 		spline.UpdateVBO(NSpline::DataType::VERTEX);
 	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+
+
+	// Constructor
+	OFSplineFromFileComponent::OFSplineFromFileComponent()
+	{
+		mFile.valueChangedSignal.connect(mFileChangedSlot);
+		mSplineCount.valueChangedSignal.connect(mCountChangedSlot);
+	}
+
+
+	// Creates and updates the spline
+	void OFSplineFromFileComponent::createAndUpdateSpline()
+	{
+		if (mFile.getValue().empty())
+			return;
+
+		// Check if it exists
+		ofFile spline_file(mFile.getValue());
+		if (!spline_file.exists())
+		{
+			nap::Logger::warn("file does not exist: %s", spline_file.getAbsolutePath().c_str());
+			return;
+		}
+
+		// Make sure we can load
+		if (spline_file.getExtension() != "svg")
+		{
+			nap::Logger::warn("unable to load file: %s, not of type .svg", spline_file.getAbsolutePath().c_str());
+			return;
+		}
+
+		// Make sure we can find the spline component to set the new spline on
+		nap::OFSplineComponent* spline = mSpline.get();
+		if (spline == nullptr)
+		{
+			nap::Logger::warn(*this, "unable to find parent spline");
+			return;
+		}
+
+		// Create it
+		NSpline new_spline;
+		gCreateSplineFromFile(spline_file.getAbsolutePath(), mSplineCount.getValue(), new_spline);
+		if (new_spline.GetPointCount() == 0)
+		{
+			nap::Logger::warn("unable to load spline from file, point count is 0: %s", spline_file.getAbsolutePath().c_str());
+			return;
+		}
+
+		// Set the just loaded spline
+		spline->mSpline.setValue(new_spline);
+	}
 }
 
 // Define components
@@ -233,3 +279,4 @@ RTTI_DEFINE(nap::OFSplineComponent)
 RTTI_DEFINE(nap::OFSplineSelectionComponent)
 RTTI_DEFINE(nap::OFSplineColorComponent)
 RTTI_DEFINE(nap::OFSplineUpdateGPUComponent)
+RTTI_DEFINE(nap::OFSplineFromFileComponent)

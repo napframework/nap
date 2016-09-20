@@ -10,6 +10,7 @@
 
 #include <nap/configure.h>
 #include <napofattributes.h>
+#include <nap/componentdependency.h>
 
 // Local Includes
 #include <napofrendercomponent.h>
@@ -88,6 +89,41 @@ namespace nap
 
 		// Creates a new spline and sets it
 		void CreateAndUpdateSpline();
+
+		// Spline dependency
+		ComponentDependency<OFSplineComponent>	mSpline			{ this };
+	};
+
+
+	/**
+	@brief NAP Openframeworks spline from file component
+
+	Creates a spline from a svg file
+	**/
+	class OFSplineFromFileComponent : public Component
+	{
+		RTTI_ENABLE_DERIVED_FROM(Component)
+
+	public:
+		// Default constructor
+		OFSplineFromFileComponent();
+
+		// Attributes
+		Attribute<std::string> mFile						{ this, "File" };
+		Attribute<int> mSplineCount							{ this, "Count", 500 };
+
+		// SLOTS
+		NSLOT(mFileChangedSlot, const std::string&, fileChanged)
+		NSLOT(mCountChangedSlot, const int&, countChanged)
+
+	private:
+		void fileChanged(const std::string& file)			{ createAndUpdateSpline(); }
+		void countChanged(const int& count)					{ createAndUpdateSpline(); }
+
+		// Creates and updates the spline based on file and count
+		void createAndUpdateSpline();
+
+		ComponentDependency<OFSplineComponent> mSpline		{ this };
 	};
 
 
@@ -120,8 +156,9 @@ namespace nap
 
 	private:
 		// Timer
-		float								mPreviousTime;
-		float								mTime = 0.0f;
+		float									mPreviousTime;
+		float									mTime = 0.0f;
+		ComponentDependency<OFSplineComponent>	mSpline			{ this };
 	};
 
 }
@@ -131,3 +168,4 @@ RTTI_DECLARE(nap::OFSplineComponent)
 RTTI_DECLARE(nap::OFSplineSelectionComponent)
 RTTI_DECLARE(nap::OFSplineColorComponent)
 RTTI_DECLARE(nap::OFSplineUpdateGPUComponent)
+RTTI_DECLARE(nap::OFSplineFromFileComponent)

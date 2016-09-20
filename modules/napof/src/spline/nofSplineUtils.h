@@ -40,3 +40,6 @@ void				gCreateLine(float inWidth, int inPointCount, const ofPoint& inCenter, NS
 
 // Creates a hexagon
 void				gCreateHexagon(float inDiameter, int inPointCount, const ofPoint& inCenter, NSpline& outSpline);
+
+// Creates a spline from a file
+void				gCreateSplineFromFile(const std::string& inFile, int inPointCount, NSpline& outSpline, const ofPoint& inCenter = {0,0,0});

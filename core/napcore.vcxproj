@@ -184,6 +184,7 @@
     <ClCompile Include="src\nap\attribute.cpp" />
     <ClCompile Include="src\nap\attributeobject.cpp" />
     <ClCompile Include="src\nap\component.cpp" />
+    <ClCompile Include="src\nap\componentdependency.cpp" />
     <ClCompile Include="src\nap\configure.cpp" />
     <ClCompile Include="src\nap\core.cpp" />
     <ClCompile Include="src\nap\coremodule.cpp" />

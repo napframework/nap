@@ -215,5 +215,8 @@
     <ClCompile Include="src\nap\eventdispatcher.cpp">
       <Filter>nap</Filter>
     </ClCompile>
+    <ClCompile Include="src\nap\componentdependency.cpp">
+      <Filter>nap</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

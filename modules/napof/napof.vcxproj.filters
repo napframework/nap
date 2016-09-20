@@ -58,6 +58,15 @@
     <Filter Include="Header Files\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses">
       <UniqueIdentifier>{a4118d1f-e8a9-4c1a-88b8-d5ae28ec7366}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\svg">
+      <UniqueIdentifier>{d93902c1-2215-4280-af78-ae0b2df0cfca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\addons\ofxSVG">
+      <UniqueIdentifier>{ef11406c-cdff-4321-816b-80185ff54f30}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\addons\ofxSVG\lib">
+      <UniqueIdentifier>{f6b8a661-f5ec-41ef-98ab-e00d2df8cb39}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -294,6 +303,15 @@
     <ClInclude Include="src\napofslideshowcomponent.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxSvg\src\ofxSvg.h">
+      <Filter>Header Files\addons\ofxSVG</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxSvg\libs\svgTiny\src\svgtiny.h">
+      <Filter>Header Files\addons\ofxSVG\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\openFrameworks\addons\ofxSvg\libs\svgTiny\src\svgtiny_internal.h">
+      <Filter>Header Files\addons\ofxSVG\lib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\napofservice.cpp">
@@ -517,6 +535,21 @@
     </ClCompile>
     <ClCompile Include="src\napofslideshowcomponent.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxSvg\src\ofxSvg.cpp">
+      <Filter>Header Files\addons\ofxSVG</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxSvg\libs\svgTiny\src\src_colors.cpp">
+      <Filter>Header Files\addons\ofxSVG\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxSvg\libs\svgTiny\src\svgtiny.cpp">
+      <Filter>Header Files\addons\ofxSVG\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxSvg\libs\svgTiny\src\svgtiny_gradient.cpp">
+      <Filter>Header Files\addons\ofxSVG\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\openFrameworks\addons\ofxSvg\libs\svgTiny\src\svgtiny_list.cpp">
+      <Filter>Header Files\addons\ofxSVG\lib</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
