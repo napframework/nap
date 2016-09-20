@@ -139,7 +139,7 @@ namespace nap
 		populateLaserBuffer(*laser_transform, *laser_cam, *verts, *colors, *obj_transform);
 
 		// Send point
-		mEtherdream.SendData(mLaserPoints);
+		mEtherdream.SendData(std::move(mLaserPoints));
 	}
 
 
@@ -214,9 +214,8 @@ namespace nap
 	{
 		assert(inVerts.size() == inColors.size());
 
-		// Clear and resize laser buffer
-		mLaserPoints.clear();
-		mLaserPoints.resize(inVerts.size());
+		// Create new list
+		mLaserPoints = std::make_unique<std::vector<EAD_Pnt_s>>();
 
 		// Get frustrum dimensions and transform
 		ofVec2f frustrum(0.0f, 0.0f);
@@ -237,11 +236,13 @@ namespace nap
 		ofVec2f max_bounds(frustrum.x + (fr_width / 2.0f), frustrum.y + (fr_height / 2.0f));
 
 		// Reserve all the points
-		mLaserPoints.clear();
-		mLaserPoints.resize(inVerts.size());
+		mLaserPoints->resize(inVerts.size());
 
 		// Sample xform for object movement
 		const ofMatrix4x4& global_xform = inObjectTransform.getGlobalTransform();
+
+		// Get reference to points
+		std::vector<EAD_Pnt_s>& points = *mLaserPoints;
 
 		// Go over the curves and set data
 		for (uint32 i = 0; i < inVerts.size(); i++)
@@ -256,12 +257,12 @@ namespace nap
 			const ofFloatColor& cc = inColors[i];
 
 			// Set
-			mLaserPoints[i].X = sEtherInterpolate(cv.x, min_bounds.x, max_bounds.x, mFlipX);
-			mLaserPoints[i].Y = sEtherInterpolate(cv.y, min_bounds.y, max_bounds.y, mFlipY);
-			mLaserPoints[i].R = sEtherInterpolateColor(cc.r);
-			mLaserPoints[i].G = sEtherInterpolateColor(cc.g);
-			mLaserPoints[i].B = sEtherInterpolateColor(cc.b);
-			mLaserPoints[i].I = sEtherInterpolateColor(cc.a);
+			points[i].X = sEtherInterpolate(cv.x, min_bounds.x, max_bounds.x, mFlipX);
+			points[i].Y = sEtherInterpolate(cv.y, min_bounds.y, max_bounds.y, mFlipY);
+			points[i].R = sEtherInterpolateColor(cc.r);
+			points[i].G = sEtherInterpolateColor(cc.g);
+			points[i].B = sEtherInterpolateColor(cc.b);
+			points[i].I = sEtherInterpolateColor(cc.a);
 		}
 	}
 }

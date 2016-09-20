@@ -90,10 +90,10 @@ bool nofNEtherDream::Connect()
 @brief Send
 Stores the data to be send later (in the threaded function)
 **/
-void nofNEtherDream::SendData(const LaserPoints& inPoints)
+void nofNEtherDream::SendData(LaserPoints inPoints)
 {
 	lock();
-	mLaserPoints = inPoints;
+	mLaserPoints = std::move(inPoints);
 	unlock();
 }
 
@@ -123,16 +123,17 @@ void nofNEtherDream::threadedFunction()
 
 		// Copy over points
 		lock();
-		LaserPoints send_points = mLaserPoints;
+		LaserPoints send_points = std::move(mLaserPoints);
+		mLaserPoints = nullptr;
 		unlock();
 
 		// Don't write zero length data buffers
-		if (send_points.empty())
+		if (send_points == nullptr || send_points->empty())
 			continue;
 
 		// Write
-		int size = send_points.size() * sizeof(EAD_Pnt_s);
-		netherdream::WriteFrame(mEtherDacNumber, send_points.data(), size, mPPS, 1);
+		int size = send_points->size() * sizeof(EAD_Pnt_s);
+		netherdream::WriteFrame(mEtherDacNumber, send_points->data(), size, mPPS, 1);
 	}
 }
 

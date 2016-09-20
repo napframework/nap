@@ -21,7 +21,7 @@ Based on the interface provided here: https://github.com/memo/ofxEtherdream
 // Std Includes
 #include <vector>
 
-using LaserPoints = std::vector<EAD_Pnt_s>;
+using LaserPoints = std::unique_ptr<std::vector<EAD_Pnt_s>>;
 
 class nofNEtherDream : public ofThread
 {
@@ -50,7 +50,7 @@ public:
 	void			Kill();
 	void			Init(int inEtherDream = 0,	int inPPS = 30000);	//< Call this on setup!
 	void			Start();
-	void			SendData(const LaserPoints& inPoints);					//< Send information to the dac
+	void			SendData(LaserPoints inPoints);					//< Send information to the dac
 
 protected:
 	void			threadedFunction() override;
@@ -68,6 +68,6 @@ private:
 	float			mTimeOut = 2.0f;
 
 	// Laserpoints
-	LaserPoints		mLaserPoints;									//< Protected laser points
+	LaserPoints		mLaserPoints = nullptr;							//< Protected laser points
 };
 

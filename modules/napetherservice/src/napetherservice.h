@@ -50,7 +50,7 @@ namespace nap
 	private:
 		//Laser interface
 		nofNEtherDream			mEtherdream;				//< Ether-dream threaded service
-		std::vector<EAD_Pnt_s>	mLaserPoints;	//< Points that will be send to the laser
+		LaserPoints				mLaserPoints = nullptr;		//< Points that will be send to the laser
 		uint					mMinPointCount = 450;
 		uint					mMaxPointCount = 600;
 
