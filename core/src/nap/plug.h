@@ -250,8 +250,7 @@ namespace nap
 		}
 
 		// Connect an external attribute to control the input of this plug.
-		// Value changes of the attribute will be
-		// pushed into this plug.
+		// Value changes of the attribute will be pushed into this plug.
 		void connectAttribute(Attribute<T>& attribute);
 
 		// Disconnect an external attribute controlling the input of this plug
@@ -360,9 +359,16 @@ namespace nap
 			: OutputPlugBase(parent, name, Plug::Type::PULL, RTTI::TypeInfo::get<T>()), pullFunction(pullFunction), mLocking(locking)
 		{
 		}
-
-		// This function is called by connected input pull plugs to poll for output. I calls the user defined pull
-		// funciton.
+        
+        // This constructor takes a memberfunction of the parent that is executed
+        // when new data enters the plug
+        template <typename U, typename F>
+        OutputPullPlug(U* parent, F memberFunction, const std::string& name, bool locking = false)
+            : OutputPlugBase(parent, name, Plug::Type::PULL, RTTI::TypeInfo::get<T>()), pullFunction(std::bind(memberFunction, parent, std::placeholders::_1)), mLocking(locking)
+        {
+        }
+        
+		// This function is called by connected input pull plugs to poll for output. It calls the user defined pull funciton.
         void pull(T& output);
 
 	private:

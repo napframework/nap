@@ -118,7 +118,7 @@ namespace nap
 		// Get raw compare type
 		outObjects.clear();
 		RTTI::TypeInfo search_type = inInfo.getRawType();
-		if (!search_type.isKindOf<nap::Component>())
+		if (!search_type.isKindOf<nap::Object>())
 		{
 			Logger::warn("not of type: " + search_type.getName());
 			return 0;

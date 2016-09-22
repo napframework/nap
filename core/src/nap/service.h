@@ -133,7 +133,7 @@ namespace nap
 
 #define NAP_DECLARE_SERVICE() \
 	\
-friend class Core;            \
+friend class nap::Core;            \
 	\
 protected:                    \
 	static void sRegisterTypes(nap::Core& inCore, const nap::Service& inService);
