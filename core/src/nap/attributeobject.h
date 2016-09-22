@@ -75,8 +75,12 @@ namespace nap
 			return nullptr;
 		}
 
-		// Retrieve all registered attributes as string:attribute map
+		// Retrieve all registered attributes
         std::vector<AttributeBase*> getAttributes() { return getChildrenOfType<AttributeBase>(); }
+        
+        // Retrieve all registered attributes of a certain type
+        template <typename T>
+        std::vector<Attribute<T>*> getAttributesOfType() { return getChildrenOfType<Attribute<T>>(); }
 
 	};
 
@@ -108,10 +112,7 @@ namespace nap
 		if (!valueExisted) attribute->setValue(defaultValue);
 		return attribute;
 	}
-
-
-
-
+    
 }
 
-RTTI_DECLARE_BASE(nap::AttributeObject)
+RTTI_DECLARE(nap::AttributeObject)
