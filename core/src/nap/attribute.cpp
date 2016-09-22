@@ -10,8 +10,7 @@ namespace nap {
     /**
     @brief Attribute Constructor
     **/
-	// TODO: MAKE OWNER REF?
-	AttributeBase::AttributeBase(AttributeObject* parent, const std::string& name, bool atomic) : mAtomic(atomic)
+    AttributeBase::AttributeBase(AttributeObject* parent, const std::string& name, bool atomic) : mAtomic(atomic)
 	{
         mName = name;
         parent->addChild(*this);

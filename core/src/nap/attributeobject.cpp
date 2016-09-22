@@ -5,8 +5,14 @@
 
 RTTI_DEFINE(nap::AttributeObject)
 
-namespace nap
-{
+namespace nap {
+    
+    AttributeObject::AttributeObject(Object* parent, const std::string& name)
+    {
+        mName = name;
+        parent->addChild(*this);
+    }
+    
 
     AttributeBase& AttributeObject::addAttribute(const std::string& name, RTTI::TypeInfo type)
     {

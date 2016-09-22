@@ -29,6 +29,9 @@ namespace nap
 
 	public:
 		AttributeObject() : Object() {}
+        
+        // Constructor to define an AttributeObject as a class member of it's parent
+        AttributeObject(Object* parent, const std::string& name);
 
 		// Add an attribute using RTTI without templates, @type should be the type of the attribute, not the data!
         AttributeBase& addAttribute(const std::string& name, RTTI::TypeInfo type);
