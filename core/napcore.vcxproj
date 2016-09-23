@@ -170,6 +170,7 @@
     <ClInclude Include="src\nap\serializer.h" />
     <ClInclude Include="src\nap\service.h" />
     <ClInclude Include="src\nap\serviceablecomponent.h" />
+    <ClInclude Include="src\nap\serviceableoperator.h" />
     <ClInclude Include="src\nap\signalslot.h" />
     <ClInclude Include="src\nap\stringutils.h" />
     <ClInclude Include="src\nap\tinyxml2.h" />
@@ -206,6 +207,7 @@
     <ClCompile Include="src\nap\serializer.cpp" />
     <ClCompile Include="src\nap\service.cpp" />
     <ClCompile Include="src\nap\serviceablecomponent.cpp" />
+    <ClCompile Include="src\nap\serviceableoperator.cpp" />
     <ClCompile Include="src\nap\stringutils.cpp" />
     <ClCompile Include="src\nap\tinyxml2.cpp" />
     <ClCompile Include="src\nap\typeconverter.cpp" />

@@ -126,6 +126,9 @@
     <ClInclude Include="src\nap\componentdependency.h">
       <Filter>nap</Filter>
     </ClInclude>
+    <ClInclude Include="src\nap\serviceableoperator.h">
+      <Filter>nap</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\nap\attribute.cpp">
@@ -216,6 +219,9 @@
       <Filter>nap</Filter>
     </ClCompile>
     <ClCompile Include="src\nap\componentdependency.cpp">
+      <Filter>nap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nap\serviceableoperator.cpp">
       <Filter>nap</Filter>
     </ClCompile>
   </ItemGroup>
