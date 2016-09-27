@@ -24,6 +24,8 @@ static int16_t sEtherInterpolateColor(float inValue)
 	return (int16_t)ofLerp(0.0f, gEtherMaxValueFloat, inValue);
 }
 
+static const ofFloatColor sBlackLaserPoint(0.0f, 0.0f, 0.0f, 1.0f);
+
 //////////////////////////////////////////////////////////////////////////
 
 namespace nap
@@ -91,8 +93,9 @@ namespace nap
 
 		// Component to draw
 		nap::OFRenderableComponent* component_to_draw(nullptr);
-		const SplineVertexData* verts(nullptr);
-		const SplineColorData* colors(nullptr);
+		const	SplineVertexData* verts(nullptr);
+		const	SplineColorData* colors(nullptr);
+		bool	isClosed(true);
 
 		if (laser_cam->mTraceMode.getValue())
 		{
@@ -103,6 +106,7 @@ namespace nap
 			component_to_draw = trace_component;
 			verts  = &(trace_component->getVerts());
 			colors = &(trace_component->getColors());
+			isClosed = false;
 		}
 		else
 		{
@@ -113,6 +117,7 @@ namespace nap
 			component_to_draw = spline_component;
 			verts  = &(spline_component->mSpline.getValueRef().GetVertexDataRef());
 			colors = &(spline_component->mSpline.getValueRef().GetColorDataRef());
+			isClosed = spline_component->isClosed();
 		}
 
 		// Get object transform
@@ -136,7 +141,7 @@ namespace nap
 		}
 
 		// Populate laser buffer
-		populateLaserBuffer(*laser_transform, *laser_cam, *verts, *colors, *obj_transform);
+		populateLaserBuffer(*laser_transform, *laser_cam, *verts, *colors, *obj_transform, isClosed);
 
 		// Send point
 		mEtherdream.SendData(std::move(mLaserPoints));
@@ -206,11 +211,10 @@ namespace nap
 	}
 
 
-
 	/**
 	@brief Populates the laser buffer (mLaserPoints) that can be send to the laser
 	**/
-	void EtherDreamService::populateLaserBuffer(const nap::OFTransform& inLaserTransform, const nap::EtherDreamCamera& inCamera, const std::vector<ofVec3f>& inVerts, const std::vector<ofFloatColor>& inColors, const nap::OFTransform& inObjectTransform)
+	void EtherDreamService::populateLaserBuffer(const nap::OFTransform& inLaserTransform, const nap::EtherDreamCamera& inCamera, const std::vector<ofVec3f>& inVerts, const std::vector<ofFloatColor>& inColors, const nap::OFTransform& inObjectTransform, bool isClosed)
 	{
 		assert(inVerts.size() == inColors.size());
 
@@ -236,7 +240,7 @@ namespace nap
 		ofVec2f max_bounds(frustrum.x + (fr_width / 2.0f), frustrum.y + (fr_height / 2.0f));
 
 		// Reserve all the points
-		mLaserPoints->resize(inVerts.size());
+		isClosed ? mLaserPoints->resize(inVerts.size()) : mLaserPoints->resize(inVerts.size() + mCloseCount);
 
 		// Sample xform for object movement
 		const ofMatrix4x4& global_xform = inObjectTransform.getGlobalTransform();
@@ -256,13 +260,55 @@ namespace nap
 			// Get color
 			const ofFloatColor& cc = inColors[i];
 
-			// Set
+			// Sets
 			points[i].X = sEtherInterpolate(cv.x, min_bounds.x, max_bounds.x, mFlipX);
 			points[i].Y = sEtherInterpolate(cv.y, min_bounds.y, max_bounds.y, mFlipY);
 			points[i].R = sEtherInterpolateColor(cc.r);
 			points[i].G = sEtherInterpolateColor(cc.g);
 			points[i].B = sEtherInterpolateColor(cc.b);
 			points[i].I = sEtherInterpolateColor(cc.a);
+		}
+
+		if (!isClosed)
+		{
+			closeSpline(inVerts.size(), points);
+		}
+	}
+
+
+	/**
+	@brief Closes a spline by adding additional laser points
+	**/
+	void EtherDreamService::closeSpline(uint originalCount, std::vector<EAD_Pnt_s>& laserPoints)
+	{
+		// Get first and last point
+		EAD_Pnt_s& last_point  = laserPoints[originalCount-1];
+		EAD_Pnt_s& first_point = laserPoints[0];
+
+		// Get values to interpolate
+		ofVec2f start_point(last_point.X, last_point.Y);
+		ofVec2f end_point(first_point.X, first_point.Y);
+
+		// Calculate lookup incremental value
+		float diff = 1.0f / float(gMax<uint>(mCloseCount - 1, 1));
+		
+		// laser point sample index starts at end of previous buffer
+		uint current_idx = originalCount;
+
+		for (uint i = 0; i < mCloseCount; i++)
+		{
+			float lookup = float(i) * diff;
+			ofVec2f out_vec;
+			gMixVector2f(start_point, end_point, lookup, out_vec);
+
+			laserPoints[current_idx].X = (int16_t)out_vec.x;
+			laserPoints[current_idx].Y = (int16_t)out_vec.y;
+			laserPoints[current_idx].R = gEtherMinValue;
+			laserPoints[current_idx].G = gEtherMinValue;
+			laserPoints[current_idx].B = gEtherMinValue;
+			laserPoints[current_idx].I = gEtherMaxValue;
+
+			current_idx++;
 		}
 	}
 }

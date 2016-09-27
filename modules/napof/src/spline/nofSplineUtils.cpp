@@ -234,6 +234,7 @@ void gCreateHexagon(float inDiameter, int inPointCount, const ofPoint& inCenter,
 		vert = vert.rotate(90, ofVec3f(0.0f, 0.0f, 1.0f));
 	}
 
+	// Upsample
 	ofPolyline out_line;
 	gUpsamplePolyLine(line, inPointCount, out_line);
 
@@ -289,7 +290,19 @@ void gCreateSplineFromFile(const std::string& inFile, int inPointCount, NSpline&
 	}
 
 	// Get the resampled line (based on point count)
+	bool is_closed = path_lines[0].isClosed();
+
+	// Create resampled line
 	ofPolyline resampled_line = path_lines[0].getResampledByCount(inPointCount);
+	resampled_line.setClosed(is_closed);
+
+	// Ensure we have points
+	if (resampled_line.getVertices().empty())
+	{
+		nap::Logger::warn("unable to resample polyline from file: %s, spline has no points", inFile.c_str());
+		assert(false);
+		return;
+	}
 
 	// Center
 	ofPoint bbox_point = resampled_line.getBoundingBox().getCenter();

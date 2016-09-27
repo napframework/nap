@@ -73,6 +73,9 @@ ofVec4f					gGetNormalizedColor(const ofColor& inColor);
 // Mixes two point values
 void					gMixPoint(const ofPoint& inPointOne, const ofPoint& inPointTwo, float inMixValue, ofPoint& outMixPoint);
 
+// Mixes a 2d vector
+void					gMixVector2f(const ofVec2f& vec1, const ofVec2f& vec2, float mixValue, ofVec2f& outVec);
+
 // Returns a bell curve value
 float					gGetBellValue(float inCurveValue, float inStrength);
 

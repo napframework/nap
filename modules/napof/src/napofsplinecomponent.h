@@ -31,11 +31,12 @@ namespace nap
 		OFSplineComponent()						{ }
 
 		// Spline attribute
-		Attribute<NSpline>		mSpline			{ this, "Spline" };				//< The spline the component manages
+		Attribute<NSpline>		mSpline				{ this, "Spline" };				//< The spline the component manages
 
 		// Utility
 		void					SetFromPolyLine(const ofPolyline& inPolyline);
-		uint					GetPointCount() { return mSpline.getValueRef().GetPointCount(); }
+		uint					GetPointCount()		{ return mSpline.getValueRef().GetPointCount(); }
+		bool					isClosed() const	{ return mSpline.getValue().IsClosed(); }
 
 		// Draw
 		virtual void			onDraw() override;

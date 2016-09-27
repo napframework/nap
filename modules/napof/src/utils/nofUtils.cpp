@@ -296,3 +296,13 @@ ofVec4f gGetNormalizedColor(const ofColor& inColor)
 	return_vec.w = (float)inColor.a / (float)gByteMax;
 	return return_vec;
 }
+
+
+/**
+@brief Lerps a 2d vector
+**/
+void gMixVector2f(const ofVec2f& vec1, const ofVec2f& vec2, float mixValue, ofVec2f& outVec)
+{
+	outVec.x = ofLerp(vec1.x, vec2.x, mixValue);
+	outVec.y = ofLerp(vec1.y, vec2.y, mixValue);
+}

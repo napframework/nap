@@ -53,7 +53,7 @@ public:
 	inline ofVec3f&					GetVertex(unsigned int inIndex)								{ assert(inIndex < GetPointCount()); return mPolyLine.getVertices()[inIndex]; }
 	inline ofVec3f&					GetNormal(unsigned int inIndex)								{ assert(inIndex < GetPointCount()); return mNormals[inIndex]; }
 	inline ofVec3f					GetSourceVertex(unsigned int inIndex) const					{ assert(inIndex < GetPointCount()); return mOriginalVerts[inIndex]; }
-	bool							IsClosed()													{ return mPolyLine.isClosed(); }
+	bool							IsClosed() const											{ return mPolyLine.isClosed(); }
 
 	//@name Vertex buffer
 	const ofVbo&					GetVertexBuffer() const								{ return mVertexBuffer;  }

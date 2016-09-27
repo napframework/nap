@@ -51,8 +51,9 @@ namespace nap
 		//Laser interface
 		nofNEtherDream			mEtherdream;				//< Ether-dream threaded service
 		LaserPoints				mLaserPoints = nullptr;		//< Points that will be send to the laser
-		uint					mMinPointCount = 450;
-		uint					mMaxPointCount = 600;
+		uint					mMinPointCount = 400;		//< Min number of points send to the laser each frame
+		uint					mMaxPointCount = 600;		//< Max number of points send to the laser each frame
+		uint					mCloseCount = 25;			//< Number of points used for closing the curve
 
 		// Returns a set of valid drawable laser components, @return total amount of points to draw
 		nap::OFSplineComponent* getRenderableSplineComponent();
@@ -60,8 +61,10 @@ namespace nap
 		// Returns a valid trace component
 		nap::OFTraceComponent*  getRenderableTraceComponent();
 
+		void closeSpline(uint originalCount, std::vector<EAD_Pnt_s>& laserPoints);
+
 		// Populate Laser Buffer
-		void populateLaserBuffer(const nap::OFTransform& inLaserTransform, const nap::EtherDreamCamera& inCamera, const std::vector<ofVec3f>& inVerts, const std::vector<ofFloatColor>& inColors, const nap::OFTransform& inObjectTransform);
+		void populateLaserBuffer(const nap::OFTransform& inLaserTransform, const nap::EtherDreamCamera& inCamera, const std::vector<ofVec3f>& inVerts, const std::vector<ofFloatColor>& inColors, const nap::OFTransform& inObjectTransform, bool isClosed);
 	};
 }
 
