@@ -80,7 +80,6 @@ namespace nap
 
 		// Spline to fill
 		NSpline out_spline;
-
 		switch (mSplineType.getValue())
 		{
 		case SplineType::Circle:

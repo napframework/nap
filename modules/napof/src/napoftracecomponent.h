@@ -7,6 +7,7 @@
 #include <napofrendercomponent.h>
 #include <napofupdatecomponent.h>
 #include <napofattributes.h>
+#include <Utils/ofVec2i.h>
 
 #include <nap/signalslot.h>
 
@@ -37,6 +38,7 @@ namespace nap
 		Attribute<int>		mCount		{ this, "Count", 100 };
 		Attribute<bool>		mDrawDot	{ this, "DrawDot", true };
 		Attribute<float>	mOffset		{ this, "Offset", 0.0f };
+		Attribute<ofVec2i>	mEdgeOffset	{ this, "EdgeOffset", { 10, 3 } };
 
 		// Getters
 		const SplineVertexData&	getVerts()	{ return mTraceSpline.GetVertexDataRef(); }

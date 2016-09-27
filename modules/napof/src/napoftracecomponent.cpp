@@ -13,6 +13,8 @@
 // STD Includes
 #include <cmath>
 
+static const ofFloatColor sTraceEdgeColor(0.0f, 0.0f, 0.0f, 0.0f);
+
 namespace nap
 {
 	OFTraceComponent::OFTraceComponent()
@@ -55,9 +57,13 @@ namespace nap
 		// Get update step over spline
 		float step = mLength.getValue() / float(mCount.getValue());
 
-		uint32 trace_count = uint32(mCount.getValue());
+		uint32 trace_count  = uint32(mCount.getValue());
+		uint32 spline_count = uint32(spline.GetPointCount());
+
+		// Update all the trace points
 		for (uint32 i = 0; i < trace_count; i++)
 		{
+			// Set vertex location
 			float lookup = sample_loc + (float(i) * step);
 			lookup = fmod(lookup, 1.0f);
 			mTraceSpline.GetVertex(i) = spline.GetPointAtPercent(lookup);
@@ -66,14 +72,26 @@ namespace nap
 			float f_idx = spline.GetIndexAtPercent(lookup);
 
 			// Get the two colors closest to that point
-			uint32 min_point_if = gMin<int>((uint32)f_idx, spline.GetPointCount()-1);
-			uint32 max_point_if = min_point_if + 1 >= (uint32)spline.GetPointCount() ? 0 : min_point_if + 1;
+			uint32 min_point_if = gMin<int>((uint32)f_idx, spline_count-1);
+			uint32 max_point_if = min_point_if + 1 >= spline_count ? 0 : min_point_if + 1;
 
-			ofFloatColor& min_color = spline.GetColor(min_point_if);
-			ofFloatColor& max_color = spline.GetColor(max_point_if);
+			// Check if the point we're sampling is close to the edge of the spline
+			bool near_start = min_point_if < mEdgeOffset.getValueRef().x;
+			bool near_end	= min_point_if >= spline_count - mEdgeOffset.getValueRef().y;
+			
+			// Discard close to edge points
+			if ((near_start || near_end) && !spline.IsClosed())
+			{
+				mTraceSpline.GetColor(i) = sTraceEdgeColor;
+				continue;
+			}
 
-			// Interpolate
-			float lerp_value = f_idx - floor(f_idx);
+			// Get colors of min / max point
+			const ofFloatColor& min_color = spline.GetColor(min_point_if);
+			const ofFloatColor& max_color = spline.GetColor(max_point_if);
+
+			// Interpolate based on intermediate value
+			float lerp_value = f_idx - float(uint32(f_idx));
 			gMixFloatColor(min_color, max_color, lerp_value, mTraceSpline.GetColor(i));
 		}
 
