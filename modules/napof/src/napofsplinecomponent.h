@@ -154,6 +154,9 @@ namespace nap
 		Attribute<float> mOffset =								{ this, "Offset", 0.0f };
 		Attribute<std::vector<ofFloatColor>> mColors			{ this, "Colors", { 1.0f } };
 		Attribute<float> mIntensity =							{ this, "Intensity", 1.0f };
+		Attribute<float> mFrequency =							{ this, "Frequency", 1.0f };
+		Attribute<float> mFrequencyPower =						{ this, "Power", 1.0f };
+		Attribute<bool>	 mStep =								{ this, "Interpolated", false };
 
 	private:
 		// Timer

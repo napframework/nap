@@ -109,6 +109,7 @@ inline TDataType		gClamp(TDataType inValue, TDataType inMin, TDataType inMax);
 // Fit
 inline float			gFit(float inValue, float inMin, float inMax, float outMin, float outMax);
 
+
 // Random
 void					gSetRandomSeed(unsigned int inValue);
 float					gGetNormRandomValue();
@@ -205,7 +206,10 @@ static T evalCubicBSplineClamped(const std::vector<T>& path, const U& t) {
 template<typename TDataType>
 TDataType gClamp(TDataType inValue, TDataType inMin, TDataType inMax)
 {
-	return inValue > inMax ? inMax : inValue < inMin ? inMin : inValue;
+	if (inMin < inMax)
+		return std::max(inMin, std::min(inValue, inMax));
+	return std::max(inMax, std::min(inValue, inMin));
+
 }
 
 
@@ -240,7 +244,8 @@ T gGetSign(T inValue)
 float gFit(float inValue, float inMin, float inMax, float outMin, float outMax)
 {
 	float v = gClamp<float>(inValue, inMin, inMax);
-	float m = inMax - inMin < gEpsilon ? gEpsilon : inMax - inMin;
+	float m = inMax - inMin;
+	m = (m == 0.0f) ? gEpsilon : m;
 	return (v - inMin) / (m) * (outMax - outMin) + outMin;
 }
 

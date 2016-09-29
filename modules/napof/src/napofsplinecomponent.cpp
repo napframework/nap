@@ -158,44 +158,50 @@ namespace nap
 		float buffer_count = float(color_data.size());
 		float color_count  = float(cur_colors.size());
 
-		// Amount of points to blend color a - b
-		float div_length = buffer_count / gMax<int>(color_count-1,1);
-
 		// Buffer offset
-		float clamped = gClamp<float>(mOffset.getValueRef(), 0.0f, 1.0f);
+		float clamped_offset = gClamp<float>(mOffset.getValueRef(), 0.0f, 1.0f);
 		
-		// Calculate buffer offset -> first add time, after that absolute offset
-		float f_offset = (1.0f - fmod(mTime, 1.0f)) * float(color_data.size());
-		uint offset = uint(f_offset + (mOffset.getValue() * float(color_data.size())));
 
-		// Intensity
-		float intensity = gClamp<float>(mIntensity.getValue(), 0.0f, 1.0f);
+		//////////////////////////////////////////////////////////////////////////
+
+		// Holds the normalized color indent values
+		float color_diff = 1.0f / color_count;
 
 		for (uint i = 0; i < color_data.size(); i++)
 		{
-			// Get current index
-			uint idx = (i + offset) % color_data.size();
+			// Get normalized index
+			float idx = float(i) / buffer_count;
+			idx = pow(idx, mFrequencyPower.getValue());
 
-			// Get floating point representation
-			float i_f = float(idx);
+			// Add offset and multiply with frequency to repeat
+			idx += (clamped_offset + mTime);
+			idx = fmod(idx * mFrequency.getValue(), 1.0f);
 
-			// Get modulated value
-			float mod = fmod(i_f, div_length);
+			// Get color index
+			int color_idx = int(idx * color_count);
 
-			// Map to range
-			float nrange = gFit(mod, 0.0f, div_length, 0.0f, 1.0f);
+			// If we step, set it to the current color
+			if (mStep.getValue())
+			{
+				color_data[i] = cur_colors[color_idx];
+				continue;;
+			}
 
-			// Get min / max in colors
-			float lookup = gFit(i_f, 0.0f, buffer_count, 0.0f, float(color_count - 1));
+			// Otherwise we're interpolating between two different colors
+			// Get the next available color and blend
+			int next_color_idx = color_idx + 1 >= cur_colors.size() ? 0 : color_idx + 1;
 
-			// Get bounds
-			int lookup_min = floor(lookup);
-			int lookup_max = ceil(lookup);
+			// Blend between the two
+			float blend_min = color_diff * float(color_idx);
+			float blend_max = color_diff * float(next_color_idx);
+
+			// Map to 0 - 1
+			float range = gFit(idx, blend_min, blend_max, 0.0f, 1.0f);
 
 			// Set interpolated color data
-			color_data[i].r = ofLerp(cur_colors[lookup_min].r, cur_colors[lookup_max].r, nrange) * intensity;
-			color_data[i].g = ofLerp(cur_colors[lookup_min].g, cur_colors[lookup_max].g, nrange) * intensity;
-			color_data[i].b = ofLerp(cur_colors[lookup_min].b, cur_colors[lookup_max].b, nrange) * intensity;
+			color_data[i].r = ofLerp(cur_colors[color_idx].r, cur_colors[next_color_idx].r, range);
+			color_data[i].g = ofLerp(cur_colors[color_idx].g, cur_colors[next_color_idx].g, range);
+			color_data[i].b = ofLerp(cur_colors[color_idx].b, cur_colors[next_color_idx].b, range);
 		}
 	}
 
