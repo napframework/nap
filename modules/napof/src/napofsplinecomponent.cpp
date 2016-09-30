@@ -40,10 +40,8 @@ namespace nap
 		// Set to white
 		ofSetColor(gDefaultWhiteColor);
 
-		// Get buffer
-		const ofVbo& buffer = mSpline.getValue().GetVertexBuffer();
-
 		// Draw buffer
+		mSpline.getValueRef().SetLineWidth(mLineWidth.getValue());
 		mSpline.getValueRef().Draw();
 	}
 

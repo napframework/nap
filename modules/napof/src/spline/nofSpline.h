@@ -54,6 +54,8 @@ public:
 	inline ofVec3f&					GetNormal(unsigned int inIndex)								{ assert(inIndex < GetPointCount()); return mNormals[inIndex]; }
 	inline ofVec3f					GetSourceVertex(unsigned int inIndex) const					{ assert(inIndex < GetPointCount()); return mOriginalVerts[inIndex]; }
 	bool							IsClosed() const											{ return mPolyLine.isClosed(); }
+	inline void						SetLineWidth(float inValue)									{ mLineWidth = inValue; }
+	inline float					GetLineWidth() const										{ return mLineWidth; }
 
 	//@name Vertex buffer
 	const ofVbo&					GetVertexBuffer() const								{ return mVertexBuffer;  }
@@ -91,4 +93,7 @@ private:
 	void							InitBuffers();
 	void							CalculateNormals();
 	void							CalculateBounds();
+
+	//@name Line Width
+	float							mLineWidth = 1.0f;
 };

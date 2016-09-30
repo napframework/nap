@@ -39,6 +39,7 @@ namespace nap
 		Attribute<bool>		mDrawDot	{ this, "DrawDot", true };
 		Attribute<float>	mOffset		{ this, "Offset", 0.0f };
 		Attribute<ofVec2i>	mEdgeOffset	{ this, "EdgeOffset", { 10, 3 } };
+		Attribute<float>	mLineWidth	{ this, "LineWidth", 1.0f };
 
 		// Getters
 		const SplineVertexData&	getVerts()	{ return mTraceSpline.GetVertexDataRef(); }

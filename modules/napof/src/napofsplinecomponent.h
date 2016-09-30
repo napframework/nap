@@ -32,6 +32,7 @@ namespace nap
 
 		// Spline attribute
 		Attribute<NSpline>		mSpline				{ this, "Spline" };				//< The spline the component manages
+		Attribute<float>		mLineWidth			{ this, "LineWidth", 1.0f };
 
 		// Utility
 		void					SetFromPolyLine(const ofPolyline& inPolyline);

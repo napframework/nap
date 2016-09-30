@@ -100,6 +100,7 @@ namespace nap
 
 		// Draw trace spline
 		ofSetColor(255, 255, 255, 255);
+		mTraceSpline.SetLineWidth(mLineWidth.getValue());
 		mTraceSpline.Draw();
 
 		// Draw a dot over time
