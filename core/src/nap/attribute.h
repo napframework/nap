@@ -171,11 +171,11 @@ namespace nap
 		RTTI_ENABLE_DERIVED_FROM(Attribute<T>)
 	public:
 		// Default constructor
-		NumericAttribute() : Attribute()	{ }
+		NumericAttribute() : Attribute<T>()	{ }
 
 		// Constructor with defult value and min max
 		NumericAttribute(AttributeObject* parent, const std::string& name, const T& value, const T& minValue, const T& maxValue, bool atomic = false, bool clamped = true)
-			: Attribute(parent, name, value , atomic) 
+			: Attribute<T>(parent, name, value , atomic)
 		{
 			setRange(minValue, maxValue);
 			setClamped(clamped);
@@ -184,7 +184,7 @@ namespace nap
 
 		// Constructor with default value and no min / max
 		NumericAttribute(AttributeObject* parent, const std::string& name, const T& value, bool atomic = false)
-			: Attribute(parent, name, value, atomic)
+			: Attribute<T>(parent, name, value, atomic)
 		{
 			setRange(value, value);
 		}
@@ -193,7 +193,7 @@ namespace nap
 		// Constructor to declare an attribute with a member function pointer for the @valueChangedSignal as last argument.
 		template <typename U, typename F>
 		NumericAttribute(U* parent, const std::string& name, const T& inValue, const T& minValue, const T& maxValue, F function, bool atomic = false, bool clamped = true)
-			: Attribute(parent, name, inValue, function, atomic)	
+			: Attribute<T>(parent, name, inValue, function, atomic)
 		{
 			setRange(minValue, maxValue);
 			setClamped(clamped);
@@ -402,7 +402,7 @@ namespace nap
 		// If we're clamping, make sure to update the value
 		mClamped = value;
 		if (mClamped)
-			setValue(mValue);
+            setValue(Attribute<T>::mValue);
 	}
 }
 
