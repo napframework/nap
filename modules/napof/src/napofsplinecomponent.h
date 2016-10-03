@@ -151,12 +151,12 @@ namespace nap
 		uint			GetCount()								{ return mColors.getValue().size();  }
 
 		//@name Attributes
-		Attribute<float> mCycleSpeed =							{ this, "Cycle Speed", 0.0f };
-		Attribute<float> mOffset =								{ this, "Offset", 0.0f };
+		NumericAttribute<float> mCycleSpeed =					{ this, "Cycle Speed", 0.0f, 0.0f, 1.0f };
+		NumericAttribute<float> mOffset =						{ this, "Offset", 0.0f, 0.0f, 1.0f };
 		Attribute<std::vector<ofFloatColor>> mColors			{ this, "Colors", { 1.0f } };
-		Attribute<float> mIntensity =							{ this, "Intensity", 1.0f };
-		Attribute<float> mFrequency =							{ this, "Frequency", 1.0f };
-		Attribute<float> mFrequencyPower =						{ this, "Power", 1.0f };
+		NumericAttribute<float> mIntensity =					{ this, "Intensity", 1.0f, 0.0f, 1.0f };
+		NumericAttribute<float> mFrequency =					{ this, "Frequency", 1.0f, 0.0f, 100.0f };
+		NumericAttribute<float> mFrequencyPower =				{ this, "Power", 1.0f, 0.0f, 5.0f};
 		Attribute<bool>	 mStep =								{ this, "Interpolated", false };
 
 	private:

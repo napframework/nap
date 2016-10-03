@@ -178,8 +178,9 @@ namespace nap
 			: Attribute(parent, name, value , atomic) 
 		{
 			setRange(minValue, maxValue);
-			setClamped(clamped)
+			setClamped(clamped);
 		}
+
 
 		// Constructor with default value and no min / max
 		NumericAttribute(AttributeObject* parent, const std::string& name, const T& value, bool atomic = false)
@@ -188,21 +189,14 @@ namespace nap
 			setRange(value, value);
 		}
 
+
 		// Constructor to declare an attribute with a member function pointer for the @valueChangedSignal as last argument.
 		template <typename U, typename F>
-		NumericAttribute(U* parent, const std::string& name, const T& inValue, F function, const T& minValue, const T& maxValue, bool atomic = false, bool clamped = true)
+		NumericAttribute(U* parent, const std::string& name, const T& inValue, const T& minValue, const T& maxValue, F function, bool atomic = false, bool clamped = true)
 			: Attribute(parent, name, inValue, function, atomic)	
 		{
 			setRange(minValue, maxValue);
 			setClamped(clamped);
-		}
-
-		// Constructor to declare an attribute with a member function pointer for the @valueChangedSignal as last argument.
-		template <typename U, typename F>
-		NumericAttribute(U* parent, const std::string& name, const T& inValue, F function, bool atomic = false)
-			: Attribute(parent, name, inValue, function, atomic)
-		{
-			setRange(inValue, inValue);
 		}
 
 		// Setters
