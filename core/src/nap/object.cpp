@@ -188,7 +188,23 @@ namespace nap
 	}
     
 
-	Object* Object::getChild(const std::string& name)
+    const std::vector<Object*> Object::getChildren(bool recursive) const
+    {
+        std::vector<Object*> result;
+        
+        for (Object* child : mChildren)
+        {
+            result.emplace_back(child);
+            if (recursive)
+                for (auto object : child->getChildren(true))
+                    result.emplace_back(object);
+        }
+        
+        return result;
+    }
+    
+
+    Object* Object::getChild(const std::string& name)
 	{
 		for (auto child : mChildren)
 			if (child->getName() == name)

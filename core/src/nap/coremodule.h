@@ -5,6 +5,7 @@
 #include <nap/link.h>
 #include <nap/module.h>
 #include <nap/patchcomponent.h>
+#include <nap/arrayattribute.h>
 #include <rtti/rtti.h>
 
 namespace nap

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "attribute.h"
+#include "arrayattribute.h"
 #include "object.h"
 #include <assert.h>
 #include <memory>
@@ -48,6 +49,13 @@ namespace nap
             attribute.setValue(defaultValue);
             return attribute;
         }
+        
+        // Add a compound attribute that can hold nested attributes
+        CompoundAttribute& addCompoundAttribute(const std::string& name) { return addChild<CompoundAttribute>(name); }
+       
+        // Add an array attribute holding attributes of type T
+        template <typename T>
+        ArrayAttribute<T>& addArrayAttribute(const std::string& name) { return addChild<ArrayAttribute<T>>(name); }
 
 		// Remove an attribute, must be a child attribute that has been added dynamically
 		bool removeAttribute(AttributeBase& attribute) { return removeChild(attribute); }

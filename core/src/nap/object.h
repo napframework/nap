@@ -63,6 +63,8 @@ namespace nap
 		// Returns all children
 		std::vector<Object*> getChildren(bool recursive = false);
 
+        const std::vector<Object*> getChildren(bool recursive = false) const;
+
 		// Retrieve children of this object filtered by template type
 		template <typename T>
 		std::vector<T*> getChildrenOfType(bool recursive = false)
@@ -73,6 +75,17 @@ namespace nap
             return result;
 		}
 
+        
+        // Retrieve children of this object filtered by template type
+        template <typename T>
+        std::vector<const T*> getChildrenOfType(bool recursive = false) const
+        {
+            std::vector<const T*> result;
+            for (const auto obj : getChildren(recursive))
+                if (obj->getTypeInfo().isKindOf<T>()) result.emplace_back(static_cast<T*>(obj));
+            return result;
+        }
+        
         
         // Retrieve children of this object filtered by RTTI type
         std::vector<Object*> getChildrenOfType(const RTTI::TypeInfo& type, bool recursive = false) {

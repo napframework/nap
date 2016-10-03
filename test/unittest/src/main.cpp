@@ -6,10 +6,10 @@
 
 // Tests
 #include "tests/testcore.h"
-#include "tests/testjson.h"
-#include "tests/testnetwork.h"
+//#include "tests/testjson.h"
+//#include "tests/testnetwork.h"
 //#include "tests/testthreading.h"
-#include "tests/testlink.h"
+//#include "tests/testlink.h"
 //#include "tests/testscriptserver.h"
 
 
@@ -19,10 +19,10 @@ int main(int argc, char** argv)
 
 	TEST_SETUP()
 
-	TEST_ADD(testLink)
+//	TEST_ADD(testLink)
 	TEST_ADD(testCore)
-	TEST_ADD(testXMLSerializer)
-	TEST_ADD(testObjectPath)
+//	TEST_ADD(testXMLSerializer)
+//	TEST_ADD(testObjectPath)
 	//	TEST_ADD(testNetwork)
 	//	TEST_ADD(testJson)
 	//	TEST_ADD(testScriptServer)
