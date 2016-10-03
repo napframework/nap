@@ -71,6 +71,9 @@ public:
 	//@name Draw
 	void							Draw();
 
+	//@name Operator overloads
+	bool operator == (const NSpline& other) const;
+
 private:
 	//@name Spline Data
 	ofPolyline						mPolyLine;

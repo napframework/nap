@@ -19,6 +19,11 @@ namespace nap
 
 	Point Point::operator-(const Point& other) const { return Point(mX - other.getX(), mY - other.getY()); }
 
+	bool Point::operator==(const Point& other) const
+	{
+		return other.getX() == mX && other.getY() == mY;
+	}
+
 	Point& Point::operator+=(const Point& other) { set(mX + other.getX(), mY + other.getY()); return *this; }
 	Point& Point::operator-=(const Point& other) { set(mX - other.getX(), mY - other.getY()); return *this; }
 
@@ -60,8 +65,25 @@ namespace nap
         mWidth = mHeight * ratio;
     }
 
-    Margins::Margins(float left, float top, float right, float bottom)
+	bool Rect::operator==(const Rect& other) const
+	{
+		bool loc = other.getX() == mX && other.getY() == mY;
+		bool siz = other.getWidth() == mWidth && other.getHeight() == mHeight;
+		return loc && siz;
+	}
+
+	Margins::Margins(float left, float top, float right, float bottom)
 		: mLeft(left), mTop(top), mRight(right), mBottom(bottom)
 	{
 	}
+
+	bool Margins::operator==(const Margins& other) const
+	{
+		bool left	= other.getLeft() == mLeft;
+		bool right	= other.getRight() == mRight;
+		bool top	= other.getTop() == mTop;
+		bool bottom = other.getBottom() == mBottom;
+		return left && right && top && bottom;
+	}
+
 }

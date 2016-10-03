@@ -24,6 +24,7 @@ namespace nap
 		Point operator-(const Point& other) const;
         Point& operator+=(const Point& other);
         Point& operator-=(const Point& other);
+		bool operator == (const Point& other) const;
 
 	private:
 		float mX = 0;
@@ -62,6 +63,7 @@ namespace nap
 
 		Point getTopLeft() const { return Point(getX(), getY()); }
 
+		bool operator == (const Rect& other) const;
 
 	private:
 		float mX = 0;
@@ -88,6 +90,8 @@ namespace nap
 		void setTop(const float& top) { mTop = top; }
 		void setRight(const float& right) { mRight = right; }
 		void setBottom(const float& bottom) { mBottom = bottom; }
+
+		bool operator == (const Margins& other) const;
 
 	private:
 		float mLeft;

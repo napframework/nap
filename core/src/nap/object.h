@@ -6,6 +6,7 @@
 #include <nap/signalslot.h>
 #include <rtti/rtti.h>
 #include <unordered_map>
+#include <nap/configure.h>
 
 namespace nap
 {
@@ -142,7 +143,7 @@ namespace nap
 		Object* getChild(const std::string& name);
 
 		// Get child by index
-		Object* getChild(int index);
+		Object* getChild(uint index);
         
         bool hasChild(const std::string& name) const;
 

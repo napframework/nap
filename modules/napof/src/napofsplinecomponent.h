@@ -74,9 +74,9 @@ namespace nap
 		OFSplineSelectionComponent();
 
 		// Attributes
-		Attribute<SplineType>	mSplineType		{ this, "SplineType",	SplineType::Circle };
-		Attribute<float>		mSplineSize		{ this, "SplineSize",	20.0f };
-		Attribute<int>			mSplineCount	{ this, "SplineCount",	100 };
+		Attribute<SplineType>		mSplineType		{ this, "SplineType",	SplineType::Circle };
+		Attribute<float>			mSplineSize		{ this, "SplineSize",	20.0f };
+		NumericAttribute<int>		mSplineCount	{ this, "SplineCount",	100 };
 
 		// Create slot
 		NSLOT(mTypeChangedSlot,  const SplineType&, SplineTypeChanged)

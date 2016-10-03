@@ -1,14 +1,19 @@
 #include <nap/coremodule.h>
 #include <nap/eventdispatcher.h>
+#include <nap/configure.h>
 
 RTTI_DEFINE(ModuleNapCore)
 
-RTTI_DEFINE_DATA(float)
-RTTI_DEFINE_DATA(int)
+// Attribute numeric data types
+RTTI_DEFINE_NUMERIC_DATA(float)
+RTTI_DEFINE_NUMERIC_DATA(int)
+RTTI_DEFINE_NUMERIC_DATA(double)
+
+// Attribute data types
 RTTI_DEFINE_DATA(std::string)
-RTTI_DEFINE_DATA(double)
 RTTI_DEFINE_DATA(bool)
 
+// Attribute Array types
 RTTI_DEFINE_DATA(nap::FloatArray)
 RTTI_DEFINE_DATA(nap::StringArray)
 RTTI_DEFINE_DATA(nap::IntArray)
@@ -61,3 +66,42 @@ ModuleNapCore::ModuleNapCore() : nap::Module("NapCore") {
 	NAP_REGISTER_TYPECONVERTER(nap::convert_dispatchmethod_to_string)
 }
 
+bool nap::operator==(const FloatArray& a, const FloatArray& b)
+{
+	return false;
+}
+
+bool nap::operator==(const StringArray& a, const StringArray& b)
+{
+	return false;
+}
+
+bool nap::operator==(const IntArray& a, const IntArray& b)
+{
+	return false;
+}
+
+bool nap::operator==(const FloatMap& a, const FloatMap& b)
+{
+	return false;
+}
+
+bool nap::operator==(const IntMap& a, const IntMap& b)
+{
+	return false;
+}
+
+bool nap::operator==(const StringMap& a, const StringMap& b)
+{
+	return false;
+}
+
+bool nap::operator==(const RTTIStringMap& a, const RTTIStringMap& b)
+{
+	return false;
+}
+
+bool nap::operator==(const Binary& a, const Binary& b)
+{
+	return false;
+}

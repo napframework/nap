@@ -11,6 +11,14 @@
 // OF Includes
 #include <ofEasyCam.h>
 
+// Wrapper around ofEasyCam so we can use it as an attribute
+class ofCam : public ofEasyCam
+{
+public:
+	bool operator == (const ofCam& other) const { return false; }
+};
+
+
 namespace nap
 {
 	enum class ProjectionMode
@@ -31,7 +39,7 @@ namespace nap
 		OFSimpleCamComponent();
 
 		// Attributes
-		Attribute<ofEasyCam>				mCamera { this, "Camera" };
+		Attribute<ofCam>					mCamera { this, "Camera" };
 		Attribute<bool>						mOrthographic{ this, "Orthographic", false };
 
 		//@name Projection
@@ -56,6 +64,11 @@ namespace nap
 		void								setProjectionMode(ProjectionMode inMode);
 		void orthoModeChanged(const bool& inValue) { setProjectionMode(inValue ? ProjectionMode::Orthographic : ProjectionMode::Perspective); }
 	};
+
+	// Type converters
+	bool convert_string_to_ofEasyCam(const std::string& inValue, ofCam& outValue);
+	bool convert_ofEasyCam_to_string(const ofCam& inValue, std::string& outValue);
 }
 
 RTTI_DECLARE(nap::OFSimpleCamComponent)
+RTTI_DECLARE_DATA(ofCam)

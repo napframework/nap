@@ -198,11 +198,9 @@ namespace nap
 	}
 
 
-	nap::Object* Object::getChild(int index)
+	nap::Object* Object::getChild(uint index)
 	{
-		if (index >= mChildren.size()) return nullptr;
-		if (index < 0) return nullptr;
-		return mChildren[index];
+		return index >= mChildren.size() || index < 0 ? nullptr : mChildren[index];
 	}
     
     

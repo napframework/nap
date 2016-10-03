@@ -27,14 +27,19 @@ namespace nap {
             std::unique_lock<std::mutex> lock(mMutex);
             fromString(value);
         }
-        else
-            fromString(value);
-        
+		else
+		{
+			fromString(value);
+		}
+
 		valueChanged(*this);
         emitValueChanged();
 	}
 
 
+	/**
+	@brief Returns this attribute's parent, always an AttributeObject
+	**/
 	AttributeObject* AttributeBase::getParent() const
 	{
 		return static_cast<AttributeObject*>(getParentObject());
@@ -44,9 +49,15 @@ namespace nap {
 	/**
      @brief Returns a signal that is called when the value of the attribute changes
      **/
-    void nap::AttributeBase::connectToAttribute(nap::Slot<nap::AttributeBase&>& slot) { valueChanged.connect(slot); }
+    void nap::AttributeBase::connectToAttribute(nap::Slot<nap::AttributeBase&>& slot) 
+	{ 
+		valueChanged.connect(slot); 
+	}
 
     
+	/**
+	@brief Converts this attribute to a string using the type converters registered in core 
+	**/
     void AttributeBase::toString(std::string &outStringValue) const
     {
         const Entity* root = dynamic_cast<const Entity*>(getRootObject());
@@ -63,6 +74,9 @@ namespace nap {
     }
     
     
+	/**
+	@brief Sets the value of this attribute using the type convertor registered in core
+	**/
     void AttributeBase::fromString(const std::string &stringValue)
     {
         const Entity* root = dynamic_cast<const Entity*>(getRootObject());
@@ -87,22 +101,38 @@ namespace nap {
     }
 
 
-    void AttributeBase::link(AttributeBase& source) {
+	/**
+	@brief Links @source attribute to this attribute
+	**/
+    void AttributeBase::link(AttributeBase& source) 
+	{
         assert(&source != this);
         assert(getValueType() == source.getValueType());
         getLink().setTarget(source);
     }
 
-    void AttributeBase::linkPath(const std::string& path) {
+
+	/**
+	@brief Links an external attribute by path to this attribute
+	**/
+    void AttributeBase::linkPath(const std::string& path) 
+	{
         getLink().setTarget(path);
     }
 
 
-    void AttributeBase::unLink() {
+	/**
+	@brief Clears any existing link
+	**/
+    void AttributeBase::unLink() 
+	{
         getLink().clear();
     }
 
 
+	/**
+	@brief Returns if the attribute is currently linked to a different attribute
+	**/
     bool AttributeBase::isLinked() { return getLink().isLinked(); }
 
 

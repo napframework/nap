@@ -1,6 +1,7 @@
 #include <napofsimplecamcomponent.h>
 
 RTTI_DEFINE(nap::OFSimpleCamComponent)
+RTTI_DEFINE_DATA(ofCam)
 
 namespace nap
 {
@@ -88,5 +89,30 @@ namespace nap
 	void OFSimpleCamComponent::setNearClip(float inValue)
 	{
 		mCamera.getValueRef().setNearClip(inValue);
+	}
+
+
+	/**
+	@brief Convert a string in to a camera
+	**/
+	bool convert_string_to_ofEasyCam(const std::string& inValue, ofCam& outValue)
+	{
+		std::istringstream stream(inValue.c_str());
+		ofMatrix4x4 matrix;
+		stream >> matrix;
+		outValue.setTransformMatrix(matrix);
+		return true;
+	}
+
+
+	/**
+	@brief Convert a camera in to a string
+	**/
+	bool convert_ofEasyCam_to_string(const ofCam& inValue, std::string& outValue)
+	{
+		std::ostringstream ss;
+		ss << inValue.getGlobalTransformMatrix();
+		outValue = ss.str();
+		return true;
 	}
 }

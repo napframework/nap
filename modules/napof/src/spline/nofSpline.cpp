@@ -173,3 +173,10 @@ void NSpline::Draw()
 	}
 	mVertexBuffer.draw(GL_LINE_STRIP_ADJACENCY, 0, GetPointCount());
 }
+
+
+
+bool NSpline::operator==(const NSpline& other) const
+{
+	return false;
+}

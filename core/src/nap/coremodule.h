@@ -18,13 +18,25 @@ namespace nap
 	using StringMap = std::unordered_map<std::string, std::string>;
 	using RTTIStringMap = std::unordered_map<RTTI::TypeInfo, std::string>;
 	using Binary = std::vector<char>;
+
+	// TODO: CREATE MAP AND ARRAY ATTRIBUTES
+	bool operator==(const FloatArray& a, const FloatArray& b);
+	bool operator==(const StringArray& a, const StringArray& b);
+	bool operator==(const IntArray& a, const IntArray& b);
+	bool operator==(const FloatMap& a, const FloatMap& b);
+	bool operator==(const IntMap& a, const IntMap& b);
+	bool operator==(const StringMap& a, const StringMap& b);
+	bool operator==(const RTTIStringMap& a, const RTTIStringMap& b);
+	bool operator==(const Binary& a, const Binary& b);
 }
 
-// RTTI Implementation default values
-RTTI_DECLARE_DATA(float)
-RTTI_DECLARE_DATA(int)
+// RTTI Implementation numeric values
+RTTI_DECLARE_NUMERIC_DATA(float)
+RTTI_DECLARE_NUMERIC_DATA(int)
+RTTI_DECLARE_NUMERIC_DATA(double)
+
+// RTTI Implementation data values
 RTTI_DECLARE_DATA(std::string)
-RTTI_DECLARE_DATA(double)
 RTTI_DECLARE_DATA(bool)
 
 // TODO: When declaring TypeInfos, automatically enable array types.

@@ -10,7 +10,7 @@ enum class SplineType : int
 	Square,
 	Line,
 	Hexagon,
-	Max,
+	Max = Hexagon,
 	Invalid = -1
 };
 

@@ -15,8 +15,8 @@ public:
 	int x = 0;
 	int y = 0;
 
-	bool operator==(const ofVec2i& v) { return x == v.x && y == v.y; }
-	bool operator!=(const ofVec2i& v) { return !(x == v.x && y == v.y); }
+	bool operator==(const ofVec2i& v) const { return x == v.x && y == v.y; }
+	bool operator!=(const ofVec2i& v) const { return !(x == v.x && y == v.y); }
 };
 
 

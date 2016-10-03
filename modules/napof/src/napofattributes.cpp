@@ -103,27 +103,8 @@ namespace nap
 		return false;
 	}
 
-	// ofEasyCam
 
-	bool convert_string_to_ofEasyCam(const std::string& inValue, ofEasyCam& outValue)
-	{
-		std::istringstream stream(inValue.c_str());
-		ofMatrix4x4 matrix;
-		stream >> matrix;
-		outValue.setTransformMatrix(matrix);
-		return true;
-	}
-
-	bool convert_ofEasyCam_to_string(const ofEasyCam& inValue, std::string& outValue)
-	{
-		std::ostringstream ss;
-		ss << inValue.getGlobalTransformMatrix();
-		outValue = ss.str();
-		return true;
-	}
-
-	// Vectormap
-	
+	// Vectormap	
 	bool convert_OFVectorMap_to_string(const OFVectorMap& inValue, std::string& outValue)
 	{
 		std::ostringstream ss;
@@ -190,7 +171,7 @@ RTTI_DEFINE_DATA(NSpline)
 RTTI_DEFINE_DATA(SplineType)
 RTTI_DEFINE_DATA(ofFloatColor)
 RTTI_DEFINE_DATA(std::vector<ofFloatColor>)
-RTTI_DEFINE_DATA(ofEasyCam)
 RTTI_DEFINE_DATA(nap::LfoType)
-RTTI_DEFINE_DATA(ofTexture)
+RTTI_DEFINE(ofTexture)
+RTTI_DEFINE(nap::Attribute<ofTexture*>)
 RTTI_DEFINE_DATA(OFVectorMap)
