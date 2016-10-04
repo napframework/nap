@@ -181,7 +181,7 @@ namespace nap
 			// If we step, set it to the current color
 			if (mStep.getValue())
 			{
-				color_data[i] = cur_colors[color_idx];
+				color_data[i] = cur_colors[color_idx] * mIntensity.getValue();
 				continue;;
 			}
 
@@ -197,9 +197,7 @@ namespace nap
 			float range = gFit(idx, blend_min, blend_max, 0.0f, 1.0f);
 
 			// Set interpolated color data
-			color_data[i].r = ofLerp(cur_colors[color_idx].r, cur_colors[next_color_idx].r, range) * mIntensity.getValue();
-			color_data[i].g = ofLerp(cur_colors[color_idx].g, cur_colors[next_color_idx].g, range) * mIntensity.getValue();
-			color_data[i].b = ofLerp(cur_colors[color_idx].b, cur_colors[next_color_idx].b, range) * mIntensity.getValue();
+			color_data[i] = gMixFloatColor(cur_colors[color_idx], cur_colors[next_color_idx], range) * mIntensity.getValue();
 		}
 	}
 

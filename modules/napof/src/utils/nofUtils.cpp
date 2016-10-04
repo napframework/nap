@@ -174,6 +174,14 @@ int gCreateMidiValue(float inValue)
  }
 
 
+ // Mixes two float colors
+ ofFloatColor gMixFloatColor(const ofFloatColor& inColorOne, const ofFloatColor& inColorTwo, float inMixValue)
+ {
+	 ofFloatColor color;
+	 gMixFloatColor(inColorOne, inColorTwo, inMixValue, color);
+	 return color;
+ }
+
 
 // Mixes two point values
 void gMixPoint(const ofPoint& inPointOne, const ofPoint& inPointTwo, float inMixValue, ofPoint& outMixPoint)

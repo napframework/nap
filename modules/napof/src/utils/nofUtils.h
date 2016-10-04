@@ -67,6 +67,9 @@ void					gMixColor(const ofVec4f& inColorOne, const ofVec4f& inColorTwo, float i
 // Mixes two color values
 void					gMixFloatColor(const ofFloatColor& inColorOne, const ofFloatColor& inColorTwo, float inMixValue, ofFloatColor& outMixColor);
 
+// Mixes two color values
+ofFloatColor			gMixFloatColor(const ofFloatColor& inColorOne, const ofFloatColor& inColorTwo, float inMixValue);
+
 // Returns a normalized color based on an nofColor
 ofVec4f					gGetNormalizedColor(const ofColor& inColor);
 
