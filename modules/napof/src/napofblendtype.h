@@ -6,6 +6,7 @@
 #include <unordered_map>
 
 // Nap includes
+#include <nap/arrayattribute.h>
 #include <nap/attribute.h>
 
 namespace nap

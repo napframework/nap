@@ -16,9 +16,6 @@ namespace nap
 	class AttributeObject;
 	class Object;
 
-	template <typename T>
-	class ArrayAttribute;
-
 	/**
 	@brief AttributeObject
 

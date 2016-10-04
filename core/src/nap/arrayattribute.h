@@ -94,6 +94,10 @@ namespace nap {
         // Add a value to the array, optionally specify a &name for mapping
         Attribute<T>& addAttribute(const T& value, const std::string& name = "");
         
+        // Value accessors
+        std::vector<T> getValues() const;
+        void setValues(const std::vector<T>& values);
+        
         // subscript operator implementations
         T& operator[](size_t index) { return getAttributes()[index]->getValueRef(); }
         const T& operator[](size_t index) const { return getAttributes()[index]->getValue(); }
@@ -139,6 +143,23 @@ namespace nap {
     const RTTI::TypeInfo ArrayAttribute<T>::getValueType() const
     {
         return RTTI::TypeInfo::get<T>();
+    }
+    
+    
+    template <typename T>
+    std::vector<T> ArrayAttribute<T>::getValues() const
+    {
+        std::vector<T> result;
+        for (auto& attribute : getAttributes())
+            result.emplace_back(attribute->getValue());
+        return result;
+    }
+    
+    
+    template <typename T>
+    void ArrayAttribute<T>::setValues(const std::vector<T>& values)
+    {
+        
     }
     
     

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <rtti/rtti.h>
+#include <nap/arrayattribute.h>
 #include <nap/attribute.h>
 
 /**
