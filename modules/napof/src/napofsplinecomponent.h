@@ -157,7 +157,7 @@ namespace nap
 		NumericAttribute<float> mIntensity =					{ this, "Intensity", 1.0f, 0.0f, 1.0f };
 		NumericAttribute<float> mFrequency =					{ this, "Frequency", 1.0f, 0.0f, 100.0f };
 		NumericAttribute<float> mFrequencyPower =				{ this, "Power", 1.0f, 0.0f, 5.0f};
-		Attribute<bool>	 mStep =								{ this, "Interpolated", false };
+		Attribute<bool>	 mStep =								{ this, "Stepped", false };
 
 	private:
 		// Timer

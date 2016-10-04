@@ -242,6 +242,7 @@
     <ClInclude Include="src\Spline\nofSplineUtils.h" />
     <ClInclude Include="src\Spout\nofSpoutSender.h" />
     <ClInclude Include="src\utils\nofattributewrapper.h" />
+    <ClInclude Include="src\utils\nofparamattrlink.h" />
     <ClInclude Include="src\Utils\nofUtils.h" />
     <ClInclude Include="src\Utils\ofVec2i.h" />
     <ClInclude Include="targetver.h" />
@@ -325,6 +326,7 @@
     <ClCompile Include="src\Spline\nofSplineUtils.cpp" />
     <ClCompile Include="src\Spout\nofSpoutSender.cpp" />
     <ClCompile Include="src\utils\nofattributewrapper.cpp" />
+    <ClCompile Include="src\utils\nofparamattrlink.cpp" />
     <ClCompile Include="src\Utils\nofUtils.cpp" />
     <ClCompile Include="src\Utils\ofVec2i.cpp" />
   </ItemGroup>

@@ -62,10 +62,10 @@ namespace nap
 		// Default constructor
 		OFRotateComponent();
 
-		Attribute<float>	mX		{ this, "SpeedX", 0.0f };
-		Attribute<float>	mY		{ this, "SpeedY", 0.0f };
-		Attribute<float>	mZ		{ this, "SpeedZ", 0.0f };
-		Attribute<float>	mSpeed	{ this, "Speed",  1.0f };
+		NumericAttribute<float>	mX		{ this, "SpeedX", 0.0f, 0.0f, 1.0f };
+		NumericAttribute<float>	mY		{ this, "SpeedY", 0.0f, 0.0f, 1.0f };
+		NumericAttribute<float>	mZ		{ this, "SpeedZ", 0.0f, 0.0f, 1.0f };
+		NumericAttribute<float>	mSpeed	{ this, "Speed",  1.0f, 0.0f, 100.0f };
 
 		// Overrides
 		virtual void onUpdate();

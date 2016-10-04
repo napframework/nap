@@ -202,7 +202,10 @@ namespace nap
 		void			setClamped(bool value);
 
 		// Getters
-		void			isClamped()	const	{ return mClamped; }
+		void			isClamped()	const	{ return mClamped;  }
+		T				getMin() const		{ return mMinValue; }
+		T				getMax() const		{ return mMaxValue; }
+		void			getRange(T& outMin, T& outMax) const;
 
 		// Clamp function
 		virtual T		clampValue(const T& value, const T& min, const T& max);
@@ -400,6 +403,17 @@ namespace nap
 		mClamped = value;
 		if (mClamped)
             setValue(Attribute<T>::mValue);
+	}
+
+
+	/**
+	@brief Returns the min / max range of the attribute
+	**/
+	template <typename T>
+	void NumericAttribute<T>::getRange(T& outMin, T& outMax) const
+	{
+		outMin = mMinValue;
+		outMax = mMaxValue;
 	}
 }
 

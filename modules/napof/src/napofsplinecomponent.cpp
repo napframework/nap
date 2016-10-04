@@ -197,9 +197,9 @@ namespace nap
 			float range = gFit(idx, blend_min, blend_max, 0.0f, 1.0f);
 
 			// Set interpolated color data
-			color_data[i].r = ofLerp(cur_colors[color_idx].r, cur_colors[next_color_idx].r, range);
-			color_data[i].g = ofLerp(cur_colors[color_idx].g, cur_colors[next_color_idx].g, range);
-			color_data[i].b = ofLerp(cur_colors[color_idx].b, cur_colors[next_color_idx].b, range);
+			color_data[i].r = ofLerp(cur_colors[color_idx].r, cur_colors[next_color_idx].r, range) * mIntensity.getValue();
+			color_data[i].g = ofLerp(cur_colors[color_idx].g, cur_colors[next_color_idx].g, range) * mIntensity.getValue();
+			color_data[i].b = ofLerp(cur_colors[color_idx].b, cur_colors[next_color_idx].b, range) * mIntensity.getValue();
 		}
 	}
 
