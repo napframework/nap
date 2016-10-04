@@ -129,6 +129,9 @@
     <ClInclude Include="src\nap\serviceableoperator.h">
       <Filter>nap</Filter>
     </ClInclude>
+    <ClInclude Include="src\nap\arrayattribute.h">
+      <Filter>nap</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\nap\attribute.cpp">
@@ -222,6 +225,9 @@
       <Filter>nap</Filter>
     </ClCompile>
     <ClCompile Include="src\nap\serviceableoperator.cpp">
+      <Filter>nap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nap\arrayattribute.cpp">
       <Filter>nap</Filter>
     </ClCompile>
   </ItemGroup>

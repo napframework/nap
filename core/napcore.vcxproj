@@ -142,6 +142,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\nap.h" />
+    <ClInclude Include="src\nap\arrayattribute.h" />
     <ClInclude Include="src\nap\attribute.h" />
     <ClInclude Include="src\nap\attributeobject.h" />
     <ClInclude Include="src\nap\component.h" />
@@ -182,6 +183,7 @@
     <ClInclude Include="src\rtti\typeinfo.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\nap\arrayattribute.cpp" />
     <ClCompile Include="src\nap\attribute.cpp" />
     <ClCompile Include="src\nap\attributeobject.cpp" />
     <ClCompile Include="src\nap\component.cpp" />

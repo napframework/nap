@@ -312,6 +312,9 @@
     <ClInclude Include="..\..\..\openFrameworks\addons\ofxSvg\libs\svgTiny\src\svgtiny_internal.h">
       <Filter>Header Files\addons\ofxSVG\lib</Filter>
     </ClInclude>
+    <ClInclude Include="src\utils\nofattributewrapper.h">
+      <Filter>Header Files\utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\napofservice.cpp">
@@ -550,6 +553,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\openFrameworks\addons\ofxSvg\libs\svgTiny\src\svgtiny_list.cpp">
       <Filter>Header Files\addons\ofxSVG\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\nofattributewrapper.cpp">
+      <Filter>Header Files\utils</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
