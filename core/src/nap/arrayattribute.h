@@ -159,7 +159,9 @@ namespace nap {
     template <typename T>
     void ArrayAttribute<T>::setValues(const std::vector<T>& values)
     {
-        
+        clear();
+        for (auto& value : values)
+            addAttribute(value);
     }
     
     
