@@ -15,11 +15,14 @@ class OFAbstractParamAttrLink
 public:
 	// Constructor
 	OFAbstractParamAttrLink(ofAbstractParameter& param, nap::AttributeBase& attrib);
+	
+	// Destructor
+	virtual ~OFAbstractParamAttrLink();
 
 	// Getters
 	std::string					getName() const;
-	const ofAbstractParameter*	getParameter() const	{ return mParameter.get(); }
-	const nap::AttributeBase*	getAttribute() const	{ return mAttribute; }
+	ofAbstractParameter*		getParameter() const	{ return mParameter.get(); }
+	nap::AttributeBase*			getAttribute() const	{ return mAttribute; }
 	bool						isLinked() const		{ return mAttribute != nullptr; }
 
 	// Sets a new attribute to connect to a parameter
@@ -30,7 +33,8 @@ protected:
 	shared_ptr<ofAbstractParameter>	mParameter = nullptr;
 	nap::AttributeBase*				mAttribute = nullptr;
 
-	virtual void				attributeDisconnected() = 0;
+	// Overrides for derived members
+	virtual void				stopListening() = 0;
 	virtual void				attributeChanged(nap::AttributeBase& new_attr) = 0;
 
 	// Slots
@@ -49,9 +53,10 @@ class OFParamAttrLink : public OFAbstractParamAttrLink
 {
 public:
 	OFParamAttrLink(ofParameter<T>& param, nap::Attribute<T>& attribute);
+	~OFParamAttrLink();
 
 protected:
-	virtual void		attributeDisconnected() override;
+	virtual void		stopListening() override;
 	virtual void		attributeChanged(nap::AttributeBase& new_attr) override;
 
 private:
@@ -66,7 +71,6 @@ private:
 	// SLOTS
 	NSLOT(mAttributeValueChanged, const T&, attributeValueChanged)
 };
-
 
 //////////////////////////////////////////////////////////////////////////
 // Template Definitions
@@ -83,6 +87,13 @@ OFParamAttrLink<T>::OFParamAttrLink(ofParameter<T>& param, nap::Attribute<T>& at
 {
 	param.addListener(this, &OFParamAttrLink<T>::parameterValueChanged);
 	attribute.valueChangedSignal.connect(mAttributeValueChanged);
+}
+
+
+template<typename T>
+OFParamAttrLink<T>::~OFParamAttrLink()
+{
+	stopListening();
 }
 
 
@@ -120,7 +131,7 @@ void OFParamAttrLink<T>::parameterValueChanged(T& value)
 @brief When an attribute disconnects (ie is removed), stop listening
 **/
 template<typename T>
-void OFParamAttrLink<T>::attributeDisconnected()
+void OFParamAttrLink<T>::stopListening()
 {
 	getParameter()->removeListener(this, &OFParamAttrLink<T>::parameterValueChanged);
 }

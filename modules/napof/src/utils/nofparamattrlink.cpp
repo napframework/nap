@@ -12,6 +12,11 @@ OFAbstractParamAttrLink::OFAbstractParamAttrLink(ofAbstractParameter& param, nap
 }
 
 
+
+OFAbstractParamAttrLink::~OFAbstractParamAttrLink()
+{}
+
+
 /**
 @brief Returns the name of this attribute link, empty if not bound
 **/
@@ -45,6 +50,6 @@ void OFAbstractParamAttrLink::setAttribute(nap::AttributeBase& attribute)
 **/
 void OFAbstractParamAttrLink::attributeRemoved(nap::Object&)
 {
-	attributeDisconnected();
+	stopListening();
 	mAttribute = nullptr;
 }

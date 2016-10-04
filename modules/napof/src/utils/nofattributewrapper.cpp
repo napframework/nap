@@ -20,7 +20,16 @@ void OFAttributeWrapper::addObject(nap::AttributeObject& object)
 **/
 void OFAttributeWrapper::addAttribute(nap::AttributeBase& attribute)
 {
-	sAddParameter(mGroup, attribute);
+	OFAbstractParamAttrLink* link = sCreateLinkedParameter(attribute);
+	if (link == nullptr)
+		return;
+
+	// Add the parameter to the group
+	mGroup.add(*link->getParameter());
+
+	// Add to unique pointers for internal management
+	std::unique_ptr<OFAbstractParamAttrLink> ptr(link);
+	mLinks.emplace_back(std::move(ptr));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -28,7 +37,7 @@ void OFAttributeWrapper::addAttribute(nap::AttributeBase& attribute)
 /**
 @brief Creates and binds a float parameter before adding it to the group
 **/
-static void createFloatParameter(ofParameterGroup& group, nap::AttributeBase& attr)
+static OFAbstractParamAttrLink* createFloatParameter(nap::AttributeBase& attr)
 {
 	float min = 0.0f;
 	float max = 1.0f;
@@ -49,16 +58,14 @@ static void createFloatParameter(ofParameterGroup& group, nap::AttributeBase& at
 
 	// Create new link (TODO: MAKE UNIQUE PTR)
 	OFParamAttrLink<float>* link = new OFParamAttrLink<float>(parameter, c_attr);
-
-	// Add
-	group.add(parameter);
+	return link;
 }
 
 
 /**
 @brief Creates and binds an int parameter
 **/
-static void createIntParameter(ofParameterGroup& group, nap::AttributeBase& attr)
+static OFAbstractParamAttrLink* createIntParameter(nap::AttributeBase& attr)
 {
 	int min = 0;
 	int max = 10;
@@ -79,16 +86,14 @@ static void createIntParameter(ofParameterGroup& group, nap::AttributeBase& attr
 
 	// Create new link between parameter and attribute (TODO: MAKE UNIQUE PTR)
 	OFParamAttrLink<int>* link = new OFParamAttrLink<int>(parameter, c_attr);
-
-	// Add to group
-	group.add(parameter);
+	return link;
 }
 
 
 /**
 @brief Creates and binds an int parameter
 **/
-static void createToggle(ofParameterGroup& group, nap::AttributeBase& attr)
+static OFAbstractParamAttrLink* createToggle(nap::AttributeBase& attr)
 {
 	// Create parameter
 	nap::Attribute<bool>& c_attr = static_cast<nap::Attribute<bool>&>(attr);
@@ -96,7 +101,7 @@ static void createToggle(ofParameterGroup& group, nap::AttributeBase& attr)
 
 	// Create link (TODO: MAKE UNIQUE PTR)
 	OFParamAttrLink<bool>* link = new OFParamAttrLink<bool>(parameter, c_attr);
-	group.add(parameter);
+	return link;
 }
 
 
@@ -115,7 +120,7 @@ void OFAttributeWrapper::sRegisterParamCreateFunctions()
 /**
 @brief Adds a parameter to the group, registers functions if not done before
 **/
-void OFAttributeWrapper::sAddParameter(ofParameterGroup& group, nap::AttributeBase& attribute)
+OFAbstractParamAttrLink* OFAttributeWrapper::sCreateLinkedParameter(nap::AttributeBase& attribute)
 {
 	// TODO, MAKE THREAD SAFE
 	static bool sRegistered = false;
@@ -139,10 +144,10 @@ void OFAttributeWrapper::sAddParameter(ofParameterGroup& group, nap::AttributeBa
 	if (func == nullptr)
 	{
 		nap::Logger::warn("no attribute to OF parameter conversion function found for type: %s", attribute.getTypeInfo().getName().c_str());
-		return;
+		return nullptr;
 	}
 
 	// Add
-	func(group, attribute);
+	return func(attribute);
 }
 
