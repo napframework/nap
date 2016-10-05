@@ -35,7 +35,7 @@ namespace nap
 		// Attributes
 		NumericAttribute<float>		mSpeed		{ this, "Speed", 0.1f, 0.0f, 1.0f };
 		NumericAttribute<float>		mLength		{ this, "Size", 0.1f, 0.0f, 1.0f  };
-		NumericAttribute<int>		mCount		{ this, "Count", 100, 100, 1000   };
+		NumericAttribute<int>		mCount		{ this, "Count", 500, 100, 1000   };
 		Attribute<bool>				mDrawDot	{ this, "DrawDot", true };
 		NumericAttribute<float>		mOffset		{ this, "Offset", 0.0f, 0.0f, 1.0f };
 		Attribute<ofVec2i>			mEdgeOffset	{ this, "EdgeOffset", { 10, 3 } };

@@ -29,25 +29,26 @@ namespace nap
 		// Default constructor
 		OFTransform();
 
-		Attribute<ofVec3f>		mTranslate{ this, "Translation", gOrigin };
-		Attribute<ofVec3f>		mRotate{ this, "Rotation", gOrigin };
-		Attribute<ofVec3f>		mScale{ this, "Scale", {1.0f, 1.0f, 1.0f} };
-		Attribute<ofVec3f>		mPivot{ this, "Pivot", gOrigin };
+		Attribute<ofVec3f>			mTranslate{ this, "Translation", gOrigin };
+		Attribute<ofVec3f>			mRotate{ this, "Rotation", gOrigin };
+		Attribute<ofVec3f>			mScale{ this, "Scale", {1.0f, 1.0f, 1.0f} };
+		Attribute<ofVec3f>			mPivot{ this, "Pivot", gOrigin };
+		NumericAttribute<float>		mUniformScale{ this, "UniformScale", 1.0f, 0.0f, 1.0f };
 
 		// Getters
-		ofMatrix4x4				getLocalTransform() const;
-		const ofMatrix4x4&		getGlobalTransform() const						{ return mGlobalTransform; }
+		ofMatrix4x4					getLocalTransform() const;
+		const ofMatrix4x4&			getGlobalTransform() const						{ return mGlobalTransform; }
 
 	private:		
 		// These are only called by the napofservice
-		void					fetchChildTransforms();		//< Populates the list with child xforms
-		void					update(const ofMatrix4x4& inParentMatrix);	//< Updates all child transforms
+		void						fetchChildTransforms();		//< Populates the list with child xforms
+		void						update(const ofMatrix4x4& inParentMatrix);	//< Updates all child transforms
 
 		// List of all child transform nodes
-		std::vector<OFTransform*> mChildTransforms;
+		std::vector<OFTransform*>	mChildTransforms;
 
 		// Only accessable by the OFService
-		ofMatrix4x4				mGlobalTransform;
+		ofMatrix4x4					mGlobalTransform;
 	};
 
 

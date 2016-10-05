@@ -8,6 +8,7 @@
 #include <rtti/rtti.h>
 #include <sstream>
 #include <string>
+#include <algorithm>
 
 
 namespace nap
@@ -197,7 +198,7 @@ namespace nap
 		}
 
 		// Setters
-		virtual void	setValue(const T& value) override;
+		void			setValue(const T& value) override;
 		void			setRange(const T& min, const T& max);
 		void			setClamped(bool value);
 
@@ -208,7 +209,7 @@ namespace nap
 		void			getRange(T& outMin, T& outMax) const;
 
 		// Clamp function
-		virtual T		clampValue(const T& value, const T& min, const T& max);
+		T				clampValue(const T& value, const T& min, const T& max);
 
 	private:
 		// Range
@@ -354,18 +355,6 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 	// Numeric Attribute Template Definitions
 	//////////////////////////////////////////////////////////////////////////
-
-	/**
-	@brief Maps @value between @min and @max
-
-	Override to specify specific clamp behavior
-	**/
-	template <typename T>
-	T NumericAttribute<T>::clampValue(const T& value, const T& min, const T& max)
-	{
-		return std::max(min, std::min(value, max));
-	}
-
 
 	/**
 	@brief Maps the incoming value before setting it

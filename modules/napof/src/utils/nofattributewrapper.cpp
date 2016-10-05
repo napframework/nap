@@ -1,5 +1,7 @@
 #include <nofattributewrapper.h>
 #include <nap/coremodule.h>
+#include <ofColor.h>
+#include <napofattributes.h>
 
 OFParameterMap OFAttributeWrapper::sCreationMap;
 
@@ -85,8 +87,7 @@ static OFAbstractParamAttrLink* createIntParameter(nap::AttributeBase& attr)
 	ofParameter<int> parameter(c_attr.getName(), c_attr.getValue(), min, max);
 
 	// Create new link between parameter and attribute (TODO: MAKE UNIQUE PTR)
-	OFParamAttrLink<int>* link = new OFParamAttrLink<int>(parameter, c_attr);
-	return link;
+	return new OFParamAttrLink<int>(parameter, c_attr);
 }
 
 
@@ -99,9 +100,65 @@ static OFAbstractParamAttrLink* createToggle(nap::AttributeBase& attr)
 	nap::Attribute<bool>& c_attr = static_cast<nap::Attribute<bool>&>(attr);
 	ofParameter<bool> parameter(c_attr.getName(), c_attr.getValue());
 
-	// Create link (TODO: MAKE UNIQUE PTR)
-	OFParamAttrLink<bool>* link = new OFParamAttrLink<bool>(parameter, c_attr);
-	return link;
+	// Create link
+	return new OFParamAttrLink<bool>(parameter, c_attr);
+}
+
+
+/**
+@brief Create float color
+**/
+static OFAbstractParamAttrLink* createFloatColor(nap::AttributeBase& attr)
+{
+	nap::Attribute<ofFloatColor>& c_attr = static_cast<nap::Attribute<ofFloatColor>&>(attr);
+	ofParameter<ofFloatColor> parameter(c_attr.getName(), c_attr.getValue());
+
+	// Create link
+	return new OFParamAttrLink<ofFloatColor>(parameter, c_attr);
+}
+
+
+/**
+@brief Create ofVec4f
+**/
+static OFAbstractParamAttrLink* createofVec4f(nap::AttributeBase& attr)
+{
+	nap::NumericAttribute<ofVec4f>& c_attr = static_cast<nap::NumericAttribute<ofVec4f>&>(attr);
+	ofParameter<ofVec4f> parameter(c_attr.getName(), c_attr.getValue(), c_attr.getMin(), c_attr.getMax());
+	return new OFParamAttrLink<ofVec4f>(parameter, c_attr);
+}
+
+
+/**
+@brief Create ofVec3f
+**/
+static OFAbstractParamAttrLink* createofVec3f(nap::AttributeBase& attr)
+{
+	nap::NumericAttribute<ofVec3f>& c_attr = static_cast<nap::NumericAttribute<ofVec3f>&>(attr);
+	ofParameter<ofVec3f> parameter(c_attr.getName(), c_attr.getValue(), c_attr.getMin(), c_attr.getMax());
+	return new OFParamAttrLink<ofVec3f>(parameter, c_attr);
+}
+
+
+/**
+@brief Create ofVec2f
+**/
+static OFAbstractParamAttrLink* createofVec2f(nap::AttributeBase& attr)
+{
+	nap::NumericAttribute<ofVec2f>& c_attr = static_cast<nap::NumericAttribute<ofVec2f>&>(attr);
+	ofParameter<ofVec2f> parameter(c_attr.getName(), c_attr.getValue(), c_attr.getMin(), c_attr.getMax());
+	return new OFParamAttrLink<ofVec2f>(parameter, c_attr);
+}
+
+
+/**
+@brief creates a label
+**/
+static OFAbstractParamAttrLink* createLabel(nap::AttributeBase& attr)
+{
+	nap::Attribute<std::string>& c_attr = static_cast<nap::Attribute<std::string>&>(attr);
+	ofParameter<std::string> parameter(c_attr.getName(), c_attr.getValue());
+	return new OFParamAttrLink<std::string>(parameter, c_attr);
 }
 
 
@@ -111,9 +168,14 @@ static OFAbstractParamAttrLink* createToggle(nap::AttributeBase& attr)
 void OFAttributeWrapper::sRegisterParamCreateFunctions()
 {
 	OFAttributeWrapper::sCreationMap.clear();
-	sCreationMap[RTTI_OF(nap::Attribute<float>)] = createFloatParameter;
-	sCreationMap[RTTI_OF(nap::Attribute<int>)]   = createIntParameter;
+	sCreationMap[RTTI_OF(nap::NumericAttribute<float>)] = createFloatParameter;
+	sCreationMap[RTTI_OF(nap::NumericAttribute<int>)]   = createIntParameter;
 	sCreationMap[RTTI_OF(nap::Attribute<bool>)]  = createToggle;
+	sCreationMap[RTTI_OF(nap::Attribute<ofFloatColor>)] = createFloatColor;
+	sCreationMap[RTTI_OF(nap::NumericAttribute<ofVec2f>)] = createofVec2f;
+	sCreationMap[RTTI_OF(nap::NumericAttribute<ofVec3f>)] = createofVec3f;
+	sCreationMap[RTTI_OF(nap::NumericAttribute<ofVec4f>)] = createofVec4f;
+	sCreationMap[RTTI_OF(nap::Attribute<std::string>)] = createLabel;
 }
 
 

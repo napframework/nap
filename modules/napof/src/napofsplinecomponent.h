@@ -74,20 +74,23 @@ namespace nap
 		OFSplineSelectionComponent();
 
 		// Attributes
-		Attribute<SplineType>		mSplineType		{ this, "SplineType",	SplineType::Circle };
-		Attribute<float>			mSplineSize		{ this, "SplineSize",	20.0f };
-		NumericAttribute<int>		mSplineCount	{ this, "SplineCount",	100 };
+		Attribute<SplineType>		mSplineType =  { this, "SplineType",	SplineType::Circle };
+		NumericAttribute<float>		mSplineSize =  { this, "SplineSize",	500.0f, 0.0f, 1000.0f };
+		NumericAttribute<int>		mSplineCount = { this, "SplineCount",	500, 100, 1000 };
+		NumericAttribute<int>		mSplineIndex = { this, "SplineIndex", 0, 0, (int)(SplineType::Max) };
 
 		// Create slot
 		NSLOT(mTypeChangedSlot,  const SplineType&, SplineTypeChanged)
 		NSLOT(mSizeChangedSlot,  const float&,		SplineSizeChanged)
 		NSLOT(mCountChangedSlot, const int&,		SplineCountChanged)
+		NSLOT(mIndexChangedSlot, const int&, 		SplineIndexChanged)
 
 	private:
 		// Slot functions
 		void SplineTypeChanged(const SplineType& inType)		{ CreateAndUpdateSpline(); }
 		void SplineSizeChanged(const float& inSize)				{ CreateAndUpdateSpline(); }
 		void SplineCountChanged(const int& inCount)				{ CreateAndUpdateSpline(); }
+		void SplineIndexChanged(const int& idx)					{ mSplineType.setValue((SplineType)(idx)); }
 
 		// Creates a new spline and sets it
 		void CreateAndUpdateSpline();
@@ -112,7 +115,7 @@ namespace nap
 
 		// Attributes
 		Attribute<std::string> mFile						{ this, "File" };
-		Attribute<int> mSplineCount							{ this, "Count", 500 };
+		NumericAttribute<int> mSplineCount					{ this, "Count", 500, 100, 1000 };
 
 		// SLOTS
 		NSLOT(mFileChangedSlot, const std::string&, fileChanged)
@@ -144,26 +147,24 @@ namespace nap
 		//@name Update function
 		virtual void	onUpdate() override;
 
-		//@name Utility
-		void			AddColor(const ofFloatColor& inColor)	{ mColors.getValueRef().emplace_back(inColor); }
-		void			ClearColors()							{ mColors.getValueRef().clear(); }
-		ofFloatColor&	GetColor(uint inIndex)					{ assert(inIndex < GetCount()); return mColors.getValueRef()[inIndex]; }
-		uint			GetCount()								{ return mColors.getValue().size();  }
-
 		//@name Attributes
+		Attribute<bool>			mStep =							{ this, "Stepped", false };
+		Attribute<bool>			mClose =						{ this, "Looping", false };
 		NumericAttribute<float> mCycleSpeed =					{ this, "Cycle Speed", 0.0f, 0.0f, 1.0f };
 		NumericAttribute<float> mOffset =						{ this, "Offset", 0.0f, 0.0f, 1.0f };
-		Attribute<std::vector<ofFloatColor>> mColors			{ this, "Colors", { 1.0f } };
 		NumericAttribute<float> mIntensity =					{ this, "Intensity", 1.0f, 0.0f, 1.0f };
-		NumericAttribute<float> mFrequency =					{ this, "Frequency", 1.0f, 0.0f, 100.0f };
+		NumericAttribute<float> mFrequency =					{ this, "Frequency", 1.0f, 1.0f, 100.0f };
 		NumericAttribute<float> mFrequencyPower =				{ this, "Power", 1.0f, 0.0f, 5.0f};
-		Attribute<bool>	 mStep =								{ this, "Stepped", false };
+		Attribute<ofFloatColor> mColorOne =						{ this, "ColorOne", { 1.0f } };
+		Attribute<ofFloatColor> mColorTwo =						{ this, "ColorTwo", { 1.0f } };
 
 	private:
 		// Timer
 		float									mPreviousTime;
 		float									mTime = 0.0f;
 		ComponentDependency<OFSplineComponent>	mSpline			{ this };
+
+		ofFloatColor& getColorForIdx(int idx);
 	};
 
 }

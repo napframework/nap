@@ -21,7 +21,7 @@ namespace nap
 		ofMatrix4x4 matrix;
 		matrix.makeIdentityMatrix();
 		matrix.glTranslate(mTranslate.getValue());
-		matrix.glScale(mScale.getValue());
+		matrix.glScale(mScale.getValue() * mUniformScale.getValue());
 		matrix.glRotate(mRotate.getValue().x, 1.0f, 0.0f, 0.0f);
 		matrix.glRotate(mRotate.getValue().y, 0.0f, 1.0f, 0.0f);
 		matrix.glRotate(mRotate.getValue().z, 0.0f, 0.0f, 1.0f);

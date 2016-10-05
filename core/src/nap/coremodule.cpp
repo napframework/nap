@@ -2,6 +2,77 @@
 #include <nap/eventdispatcher.h>
 #include <nap/configure.h>
 
+//////////////////////////////////////////////////////////////////////////
+// Numeric Attribute template specializations
+//////////////////////////////////////////////////////////////////////////
+
+template <>
+float nap::NumericAttribute<float>::clampValue(const float& value, const float& min, const float &max)
+{
+	return std::max(min, std::min(value, max));
+}
+
+template <>
+int nap::NumericAttribute<int>::clampValue(const int& value, const int& min, const int&max)
+{
+	return std::max(min, std::min(value, max));
+}
+
+template <>
+double nap::NumericAttribute<double>::clampValue(const double& value, const double& min, const double &max)
+{
+	return std::max(min, std::min(value, max));
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// Default comparison operators
+//////////////////////////////////////////////////////////////////////////
+
+bool nap::operator==(const FloatArray& a, const FloatArray& b)
+{
+	return false;
+}
+
+bool nap::operator==(const StringArray& a, const StringArray& b)
+{
+	return false;
+}
+
+bool nap::operator==(const IntArray& a, const IntArray& b)
+{
+	return false;
+}
+
+bool nap::operator==(const FloatMap& a, const FloatMap& b)
+{
+	return false;
+}
+
+bool nap::operator==(const IntMap& a, const IntMap& b)
+{
+	return false;
+}
+
+bool nap::operator==(const StringMap& a, const StringMap& b)
+{
+	return false;
+}
+
+bool nap::operator==(const RTTIStringMap& a, const RTTIStringMap& b)
+{
+	return false;
+}
+
+bool nap::operator==(const Binary& a, const Binary& b)
+{
+	return false;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// RTTI
+//////////////////////////////////////////////////////////////////////////
+
 RTTI_DEFINE(ModuleNapCore)
 
 // Attribute numeric data types
@@ -64,44 +135,4 @@ ModuleNapCore::ModuleNapCore() : nap::Module("NapCore") {
     NAP_REGISTER_TYPECONVERTER(nap::convertFloatMapToString)
 	NAP_REGISTER_TYPECONVERTER(nap::convert_string_to_dispatchmethod)
 	NAP_REGISTER_TYPECONVERTER(nap::convert_dispatchmethod_to_string)
-}
-
-bool nap::operator==(const FloatArray& a, const FloatArray& b)
-{
-	return false;
-}
-
-bool nap::operator==(const StringArray& a, const StringArray& b)
-{
-	return false;
-}
-
-bool nap::operator==(const IntArray& a, const IntArray& b)
-{
-	return false;
-}
-
-bool nap::operator==(const FloatMap& a, const FloatMap& b)
-{
-	return false;
-}
-
-bool nap::operator==(const IntMap& a, const IntMap& b)
-{
-	return false;
-}
-
-bool nap::operator==(const StringMap& a, const StringMap& b)
-{
-	return false;
-}
-
-bool nap::operator==(const RTTIStringMap& a, const RTTIStringMap& b)
-{
-	return false;
-}
-
-bool nap::operator==(const Binary& a, const Binary& b)
-{
-	return false;
 }

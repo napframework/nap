@@ -168,10 +168,10 @@ void NSpline::Draw()
 	ofSetLineWidth(mLineWidth);
 	if (mPolyLine.isClosed())
 	{
-		mVertexBuffer.draw(GL_LINES_ADJACENCY, 0, GetPointCount());
+		mVertexBuffer.draw(GL_LINE_LOOP, 0, GetPointCount());
 		return;
 	}
-	mVertexBuffer.draw(GL_LINE_STRIP_ADJACENCY, 0, GetPointCount());
+	mVertexBuffer.draw(GL_LINE_STRIP, 0, GetPointCount());
 }
 
 

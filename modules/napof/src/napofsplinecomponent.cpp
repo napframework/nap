@@ -57,6 +57,7 @@ namespace nap
 		mSplineType.connectToValue(mTypeChangedSlot);
 		mSplineSize.connectToValue(mSizeChangedSlot);
 		mSplineCount.connectToValue(mCountChangedSlot);
+		mSplineIndex.connectToValue(mIndexChangedSlot);
 	}
 
 
@@ -138,23 +139,16 @@ namespace nap
 			return;
 		}
 
-		// Make sure we have some colors
-		if (mColors.getValue().size() == 0)
-		{
-			ofLogWarning("SplineColorComponent") << "No colors specified!";
-			return;
-		}
-
 		// Get spline
 		NSpline& spline = spline_component->mSpline.getValueRef();
 		
 		// Get color data
 		SplineColorData& color_data = spline.GetColorDataRef();
-		std::vector<ofFloatColor>& cur_colors = mColors.getValueRef();
+		//std::vector<ofFloatColor>& cur_colors = mColors.getValueRef();
 
 		// Get count
 		float buffer_count = float(color_data.size());
-		float color_count  = float(cur_colors.size());
+		float color_count = 2.0f;
 
 		// Buffer offset
 		float clamped_offset = gClamp<float>(mOffset.getValueRef(), 0.0f, 1.0f);
@@ -164,7 +158,7 @@ namespace nap
 
 		// Holds the normalized color indent values
 		float color_diff = 1.0f / color_count;
-
+		
 		for (uint i = 0; i < color_data.size(); i++)
 		{
 			// Get normalized index
@@ -175,33 +169,39 @@ namespace nap
 			idx += (clamped_offset + mTime);
 			idx = fmod(idx * mFrequency.getValue(), 1.0f);
 
-			// Get color index
-			int color_idx = int(idx * color_count);
-
 			// If we step, set it to the current color
 			if (mStep.getValue())
 			{
-				color_data[i] = cur_colors[color_idx] * mIntensity.getValue();
-				continue;;
+				// Get color index
+				color_data[i] = getColorForIdx((int)(idx * 2.0f)) * mIntensity.getValue();
+				continue;
 			}
 
-			// Otherwise we're interpolating between two different colors
-			// Get the next available color and blend
-			int next_color_idx = color_idx + 1 >= cur_colors.size() ? 0 : color_idx + 1;
-
-			// Blend between the two
-			float blend_min = color_diff * float(color_idx);
-			float blend_max = color_diff * float(next_color_idx);
-
-			// Map to 0 - 1
-			float range = gFit(idx, blend_min, blend_max, 0.0f, 1.0f);
+			// If we close the curve, apply bell so we can interpolate
+			if (mClose.getValue())
+				idx = gGetBellValue(idx, 1.0f);
 
 			// Set interpolated color data
-			color_data[i] = gMixFloatColor(cur_colors[color_idx], cur_colors[next_color_idx], range) * mIntensity.getValue();
+			color_data[i] = gMixFloatColor(mColorOne.getValue(), mColorTwo.getValue(), idx) * mIntensity.getValue();
 		}
 	}
 
 	
+	/**
+	@brief Returns either color one or color two
+	**/
+	ofFloatColor& OFSplineColorComponent::getColorForIdx(int idx)
+	{
+		int nidx = idx;
+		if (idx < 0 || idx >= 2)
+		{
+			nap::Logger::warn("color index out of range: %d", idx);
+			nidx = gClamp<int>(idx, 0, 1);
+		}
+		return nidx == 0 ? mColorOne.getValueRef() : mColorTwo.getValueRef();
+	}
+
+
 	/**
 	@brief Updates the color and vertex buffers
 	**/

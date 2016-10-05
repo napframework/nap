@@ -36,10 +36,13 @@ namespace nap
 **/
 
 // Vec3 attribute
-RTTI_DECLARE_DATA(ofVec3f);
+RTTI_DECLARE_NUMERIC_DATA(ofVec4f);
+
+// Vec3 attribute
+RTTI_DECLARE_NUMERIC_DATA(ofVec3f);
 
 // Vec 2 attribute
-RTTI_DECLARE_DATA(ofVec2f);
+RTTI_DECLARE_NUMERIC_DATA(ofVec2f);
 
 // Spline Attribute
 RTTI_DECLARE_DATA(NSpline);

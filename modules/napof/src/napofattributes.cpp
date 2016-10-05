@@ -162,11 +162,47 @@ namespace nap
 	}
 }
 
+//////////////////////////////////////////////////////////////////////////
+// Numeric Attribute Clamp Specialization
+//////////////////////////////////////////////////////////////////////////
+
+template <>
+ofVec3f nap::NumericAttribute<ofVec3f>::clampValue(const ofVec3f& value, const ofVec3f& min, const ofVec3f& max)
+{
+	ofVec3f return_v;
+	return_v.x = std::max(min.x, std::min(value.x, max.x));
+	return_v.y = std::max(min.y, std::min(value.y, max.y));
+	return_v.z = std::max(min.z, std::min(value.z, max.z));
+	return return_v;
+}
+
+
+template <>
+ofVec2f nap::NumericAttribute<ofVec2f>::clampValue(const ofVec2f& value, const ofVec2f& min, const ofVec2f&max)
+{
+	ofVec2f return_v;
+	return_v.x = std::max(min.x, std::min(value.x, max.x));
+	return_v.y = std::max(min.y, std::min(value.y, max.y));
+	return return_v;
+}
+
+
+template <>
+ofVec4f nap::NumericAttribute<ofVec4f>::clampValue(const ofVec4f& value, const ofVec4f& min, const ofVec4f& max)
+{
+	ofVec4f return_v;
+	return_v.x = std::max(min.x, std::min(value.x, max.x));
+	return_v.y = std::max(min.y, std::min(value.y, max.y));
+	return_v.z = std::max(min.z, std::min(value.z, max.z));
+	return_v.w = std::max(min.w, std::min(value.w, max.w));
+	return return_v;
+}
 
 //////////////////////////////////////////////////////////////////////////
 
-RTTI_DEFINE_DATA(ofVec3f)
-RTTI_DEFINE_DATA(ofVec2f)
+RTTI_DEFINE_NUMERIC_DATA(ofVec4f)
+RTTI_DEFINE_NUMERIC_DATA(ofVec3f)
+RTTI_DEFINE_NUMERIC_DATA(ofVec2f)
 RTTI_DEFINE_DATA(NSpline)
 RTTI_DEFINE_DATA(SplineType)
 RTTI_DEFINE_DATA(ofFloatColor)
@@ -175,3 +211,5 @@ RTTI_DEFINE_DATA(nap::LfoType)
 RTTI_DEFINE(ofTexture)
 RTTI_DEFINE(nap::Attribute<ofTexture*>)
 RTTI_DEFINE_DATA(OFVectorMap)
+
+//////////////////////////////////////////////////////////////////////////

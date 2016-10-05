@@ -353,7 +353,6 @@ namespace RTTI
 #define RTTI_DECLARE_NUMERIC_DATA(T)	\
 	RTTI_DECLARE_DATA(T)				\
 	RTTI_DECLARE(nap::NumericAttribute<T>)	\
-	RTTI_DECLARE(nap::NumericAttribute<T*>)	\
 
 // Defines an RTTI object with create function
 #define RTTI_DEFINE(T)        \
@@ -373,5 +372,4 @@ namespace RTTI
 #define RTTI_DEFINE_NUMERIC_DATA(T) \
 	RTTI_DEFINE_DATA(T)	\
 	RTTI_DEFINE(nap::NumericAttribute<T>)	\
-	RTTI_DEFINE(nap::NumericAttribute<T*>)	\
 
