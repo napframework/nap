@@ -12,6 +12,56 @@ RTTI_DEFINE(nap::CompoundAttribute)
 
 namespace nap {
     
+    
+    CompoundAttribute::CompoundAttribute()
+    {
+        initialize();
+    }
+    
+    
+    CompoundAttribute::CompoundAttribute(AttributeObject* parent, const std::string& name, bool atomic) : AttributeBase(parent, name, atomic)
+    {
+        initialize();
+    }
+    
+    
+    void CompoundAttribute::initialize()
+    {
+        childAdded.connect([&](Object& object){
+            if (object.getTypeInfo().isKindOf<AttributeBase>())
+            {
+                auto& attribute = static_cast<AttributeBase&>(object);
+                attribute.valueChanged.connect(valueChanged);
+                
+                if (object.getTypeInfo().isKindOf<CompoundAttribute>())
+                {
+                    auto& compound = static_cast<CompoundAttribute&>(object);
+                    compound.sizeChanged.connect(childSizeChangedSlot);
+                }
+                
+                sizeChanged(*this);
+            }
+        });
+        
+        childRemoved.connect([&](Object& object){
+            if (object.getTypeInfo().isKindOf<AttributeBase>())
+            {
+                auto& attribute = static_cast<AttributeBase&>(object);
+                attribute.valueChanged.disconnect(valueChanged);
+                
+                if (object.getTypeInfo().isKindOf<CompoundAttribute>())
+                {
+                    auto& compound = static_cast<CompoundAttribute&>(object);
+                    compound.sizeChanged.disconnect(childSizeChangedSlot);
+                }
+                
+                sizeChanged(*this);
+            }
+        });
+        
+    }
+    
+    
     // Populate @inAttribute with contents of this
     void CompoundAttribute::getValue(AttributeBase& inAttribute) const
     {
@@ -46,13 +96,14 @@ namespace nap {
     
     CompoundAttribute& CompoundAttribute::addCompoundAttribute(const std::string& name)
     {
-        return addChild<CompoundAttribute>(name);        
+        auto& result = addChild<CompoundAttribute>(name);
+        return result;
     }
     
     
     void CompoundAttribute::removeAttribute(const std::string name)
     {
-        removeChild(name);        
+        removeChild(name);
     }
     
     
@@ -77,6 +128,11 @@ namespace nap {
         return getAttributes()[index];
     }
     
+    
+    void CompoundAttribute::childSizeChanged(CompoundAttribute& child)
+    {
+        sizeChanged(child);
+    }
     
     
 }

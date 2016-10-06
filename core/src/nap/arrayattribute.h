@@ -22,9 +22,12 @@ namespace nap {
         
     public:
         // Default constructor
-        CompoundAttribute() = default;
+        CompoundAttribute();
         // Constructor that takes a parent and a name
-        CompoundAttribute(AttributeObject* parent, const std::string& name, bool atomic = false) : AttributeBase(parent, name, atomic) {}
+        CompoundAttribute(AttributeObject* parent, const std::string& name, bool atomic = false);
+        
+        // Inits slots to respond to child value changes
+        void initialize();
         
         // Compound attribute has no value type because it can hold anything
         const RTTI::TypeInfo getValueType() const override { return RTTI::TypeInfo::empty(); }
@@ -64,16 +67,21 @@ namespace nap {
         // Return a sub-attribute by index
         AttributeBase* getAttribute(size_t index);
         
+        Signal<CompoundAttribute&> sizeChanged;
+        
     protected:
         Link& getLink() const override { return mLink; }
         
     private:
+        void childSizeChanged(CompoundAttribute& child);
+        
         // Inherited from BaseAttribute, so that BaseAttribute can trigger the valueChanged() signal to be emitted
         // TODO redundant?
         void emitValueChanged() override final { }
         
         mutable TypedLink<CompoundAttribute> mLink = { *this };
         
+        Slot<CompoundAttribute&> childSizeChangedSlot = { this, &CompoundAttribute::childSizeChanged };
     };
     
     
