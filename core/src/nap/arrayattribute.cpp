@@ -96,8 +96,7 @@ namespace nap {
     
     CompoundAttribute& CompoundAttribute::addCompoundAttribute(const std::string& name)
     {
-        auto& result = addChild<CompoundAttribute>(name);
-        return result;
+        return addChild<CompoundAttribute>(name);
     }
     
     
