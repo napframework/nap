@@ -137,4 +137,5 @@ namespace nap {
 }
 // RTTI Define
 RTTI_DEFINE(nap::AttributeBase)
+RTTI_DEFINE(nap::SignalAttribute)
 

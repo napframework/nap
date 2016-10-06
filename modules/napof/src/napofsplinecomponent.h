@@ -74,10 +74,10 @@ namespace nap
 		OFSplineSelectionComponent();
 
 		// Attributes
-		Attribute<SplineType>		mSplineType =  { this, "SplineType",	SplineType::Circle };
-		NumericAttribute<float>		mSplineSize =  { this, "SplineSize",	500.0f, 0.0f, 1000.0f };
-		NumericAttribute<int>		mSplineCount = { this, "SplineCount",	500, 100, 1000 };
-		NumericAttribute<int>		mSplineIndex = { this, "SplineIndex", 0, 0, (int)(SplineType::Max) };
+		Attribute<SplineType>		mSplineType =	{ this, "SplineType",	SplineType::Circle };
+		NumericAttribute<float>		mSplineSize =	{ this, "SplineSize",	500.0f, 0.0f, 1000.0f };
+		NumericAttribute<int>		mSplineCount =	{ this, "SplineCount",	500, 100, 1000 };
+		NumericAttribute<int>		mSplineIndex =	{ this, "SplineIndex", 0, 0, (int)(SplineType::Max) };
 
 		// Create slot
 		NSLOT(mTypeChangedSlot,  const SplineType&, SplineTypeChanged)
@@ -116,14 +116,17 @@ namespace nap
 		// Attributes
 		Attribute<std::string> mFile						{ this, "File" };
 		NumericAttribute<int> mSplineCount					{ this, "Count", 500, 100, 1000 };
+		SignalAttribute mReload								{ this, "Reload" };
 
 		// SLOTS
 		NSLOT(mFileChangedSlot, const std::string&, fileChanged)
 		NSLOT(mCountChangedSlot, const int&, countChanged)
+		NSLOT(mReloadCalled, const SignalAttribute&, reloadCalled)
 
 	private:
 		void fileChanged(const std::string& file)			{ createAndUpdateSpline(); }
 		void countChanged(const int& count)					{ createAndUpdateSpline(); }
+		void reloadCalled(const SignalAttribute&)			{ createAndUpdateSpline(); }
 
 		// Creates and updates the spline based on file and count
 		void createAndUpdateSpline();

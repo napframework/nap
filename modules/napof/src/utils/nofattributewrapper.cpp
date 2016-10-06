@@ -163,6 +163,17 @@ static OFAbstractParamAttrLink* createLabel(nap::AttributeBase& attr)
 
 
 /**
+@brief Creates a button
+**/
+static OFAbstractParamAttrLink* createButton(nap::AttributeBase& attr)
+{
+	nap::SignalAttribute& c_attr = static_cast<nap::SignalAttribute&>(attr);
+	ofParameter<bool> paramter(c_attr.getName(), false);
+	return new OFParamSignalLink(paramter, c_attr);
+}
+
+
+/**
 @brief Registers all the parameter create functions
 **/
 void OFAttributeWrapper::sRegisterParamCreateFunctions()
@@ -176,6 +187,7 @@ void OFAttributeWrapper::sRegisterParamCreateFunctions()
 	sCreationMap[RTTI_OF(nap::NumericAttribute<ofVec3f>)] = createofVec3f;
 	sCreationMap[RTTI_OF(nap::NumericAttribute<ofVec4f>)] = createofVec4f;
 	sCreationMap[RTTI_OF(nap::Attribute<std::string>)] = createLabel;
+	sCreationMap[RTTI_OF(nap::SignalAttribute)] = createButton;
 }
 
 

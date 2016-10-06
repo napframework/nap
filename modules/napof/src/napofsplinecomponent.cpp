@@ -229,6 +229,7 @@ namespace nap
 	{
 		mFile.valueChangedSignal.connect(mFileChangedSlot);
 		mSplineCount.valueChangedSignal.connect(mCountChangedSlot);
+		mReload.signal.connect(mReloadCalled);
 	}
 
 

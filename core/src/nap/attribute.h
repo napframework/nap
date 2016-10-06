@@ -220,6 +220,36 @@ namespace nap
 	};
 
 
+	/**
+	@brief SignalAttribute
+
+	Acts as a bang, connect to @trigger signal to receive bang
+	**/
+	class SignalAttribute : public AttributeBase
+	{
+		RTTI_ENABLE_DERIVED_FROM(AttributeBase)
+	public:
+		SignalAttribute() = default;
+		SignalAttribute(AttributeObject* parent, const std::string& name) : AttributeBase(parent, name) { }
+
+		// Signal that can be trigerred externally
+		nap::Signal<const nap::SignalAttribute&> signal;
+
+		void							trigger()		{ signal.trigger(*this); }
+
+	protected:
+		virtual Link&					getLink() const override { return mlink; }
+		virtual void					emitValueChanged() override { signal.trigger(*this); }
+
+	private:
+		virtual void					getValue(AttributeBase& attribute) const override {}
+		virtual void					setValue(const AttributeBase& attribute) override {}
+		virtual const RTTI::TypeInfo	getValueType() const override { return getTypeInfo(); }
+
+		mutable nap::Link				mlink;
+	};
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// Attribute Template Definitions
 	//////////////////////////////////////////////////////////////////////////
@@ -413,6 +443,7 @@ namespace nap
 
 
 RTTI_DECLARE_BASE(nap::AttributeBase)
+RTTI_DECLARE(nap::SignalAttribute)
 
 // Create and bind attribute slot with @NAME to @FUNCTION
 #define ATTR_SLOT(NAME, FUNCTION) SLOT(NAME, nap::Attribute&, FUNCTION)

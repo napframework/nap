@@ -72,6 +72,30 @@ private:
 	NSLOT(mAttributeValueChanged, const T&, attributeValueChanged)
 };
 
+
+/**
+@brief Specialization of a SignalAttribute
+
+Creates a bool parameter that triggers the SignalAttribute when on
+Automatically turns the parameter back off
+**/
+class OFParamSignalLink : public OFAbstractParamAttrLink
+{
+public:
+	OFParamSignalLink(ofParameter<bool>& param, nap::SignalAttribute& attribute);
+
+protected:
+	virtual void			stopListening() override;
+	virtual void			attributeChanged(nap::AttributeBase& new_attr) override;
+
+private:
+	void					parameterValueChanged(bool& value);
+	nap::SignalAttribute*	getSignalAttribute();
+	ofParameter<bool>*		getParameter();
+};
+
+
+
 //////////////////////////////////////////////////////////////////////////
 // Template Definitions
 //////////////////////////////////////////////////////////////////////////

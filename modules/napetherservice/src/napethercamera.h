@@ -21,9 +21,9 @@ namespace nap
 		EtherDreamCamera()				{ }
 
 		// Frustrum -> used for finding projection bounds in 2d space
-		Attribute<float> mFrustrumWidth	 { this, "FrustrumWidth", 500.0f };
-		Attribute<float> mFrustrumHeight { this, "FrustrumHeight", 500.0f };
-		Attribute<bool>	 mTraceMode		 { this, "TraceMode", false };
+		NumericAttribute<float> mFrustrumWidth		{ this, "FrustrumWidth", 500.0f, 100.0f, 1000.0f };
+		NumericAttribute<float> mFrustrumHeight		{ this, "FrustrumHeight", 500.0f, 100.0f, 1000.0f };
+		Attribute<bool>			mTraceMode			{ this, "TraceMode", false };
 
 		// Utility
 		void setFrustrumWidth(float inValue)  { mFrustrumWidth.setValue(inValue); }
