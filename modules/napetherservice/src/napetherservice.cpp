@@ -88,7 +88,6 @@ namespace nap
 			return;
 
 		// Make sure it's an entity
-		//assert(laser_cam->mRenderEntity.getTargetType().isKindOf(RTTI_OF(Entity)));
 		Entity* spline_entity = laser_cam->mRenderEntity.getTarget<Entity>();
 
 		// Component to draw
@@ -118,6 +117,13 @@ namespace nap
 			verts  = &(spline_component->mSpline.getValueRef().GetVertexDataRef());
 			colors = &(spline_component->mSpline.getValueRef().GetColorDataRef());
 			isClosed = spline_component->isClosed();
+		}
+
+		// Make sure the size is in range for the laser
+		if (verts->size() < mMinPointCount.getValue() || verts->size() > mMaxPointCount.getValue())
+		{
+			nap::Logger::warn(*this, "invalid point count, exceeds laser range");
+			return;
 		}
 
 		// Get object transform
@@ -170,8 +176,11 @@ namespace nap
 			if(!spline->mEnableDrawing.getValue())
 				continue;
 
-			if(spline->GetPointCount() > mMaxPointCount || spline->GetPointCount() < mMinPointCount)
+			if (spline->GetPointCount() > mMaxPointCount.getValue() || spline->GetPointCount() < mMinPointCount.getValue())
+			{
+				nap::Logger::warn(*this, "spline: %s has an invalid point count", spline->getName().c_str());
 				continue;
+			}
 
 			return spline;
 		}
@@ -201,8 +210,11 @@ namespace nap
 			if (!tracer->mEnableDrawing.getValue())
 				continue;
 
-			if (tracer->mCount.getValue() > mMaxPointCount || tracer->mCount.getValue() < mMinPointCount)
+			if (tracer->mCount.getValue() > mMaxPointCount.getValue() || tracer->mCount.getValue() < mMinPointCount.getValue())
+			{
+				nap::Logger::warn(*this, "tracer: %s has an invalid point count", tracer->getName().c_str());
 				continue;
+			}
 
 			return tracer;
 		}
@@ -240,7 +252,7 @@ namespace nap
 		ofVec2f max_bounds(frustrum.x + (fr_width / 2.0f), frustrum.y + (fr_height / 2.0f));
 
 		// Reserve all the points
-		isClosed ? mLaserPoints->resize(inVerts.size()) : mLaserPoints->resize(inVerts.size() + mCloseCount);
+		isClosed ? mLaserPoints->resize(inVerts.size()) : mLaserPoints->resize(inVerts.size() + mCloseCount.getValue());
 
 		// Sample xform for object movement
 		const ofMatrix4x4& global_xform = inObjectTransform.getGlobalTransform();
@@ -261,8 +273,8 @@ namespace nap
 			const ofFloatColor& cc = inColors[i];
 
 			// Sets
-			points[i].X = sEtherInterpolate(cv.x, min_bounds.x, max_bounds.x, mFlipX);
-			points[i].Y = sEtherInterpolate(cv.y, min_bounds.y, max_bounds.y, mFlipY);
+			points[i].X = sEtherInterpolate(cv.x, min_bounds.x, max_bounds.x, mFlipX.getValue());
+			points[i].Y = sEtherInterpolate(cv.y, min_bounds.y, max_bounds.y, mFlipY.getValue());
 			points[i].R = sEtherInterpolateColor(cc.r);
 			points[i].G = sEtherInterpolateColor(cc.g);
 			points[i].B = sEtherInterpolateColor(cc.b);

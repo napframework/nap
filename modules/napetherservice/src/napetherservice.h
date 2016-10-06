@@ -38,22 +38,19 @@ namespace nap
 		// Draws current scene to laser
 		void draw();
 
-		// Max points to send over every frame
-		uint mMaxLaserPoints = 1000;
+		// Controllable laser attribtues
+		Attribute<bool> mFlipX =				{ this, "FlipX", true  };
+		Attribute<bool> mFlipY =				{ this, "FlipY", false };
+		NumericAttribute<int> mCloseCount =		{ this, "CloseCount", 25, 10,100 };
+		NumericAttribute<int> mMinPointCount =  { this, "MinPoints", 100, 100, 1000 };
+		NumericAttribute<int> mMaxPointCount =  { this, "MaxPoints", 1000,100, 1000 };
 
-		// Flip axis
-		bool mFlipX = true;
-		bool mFlipY = false;
-
-		void Stop()							{ mEtherdream.Kill(); }
+		void Stop()								{ mEtherdream.Kill(); }
 
 	private:
 		//Laser interface
 		nofNEtherDream			mEtherdream;				//< Ether-dream threaded service
 		LaserPoints				mLaserPoints = nullptr;		//< Points that will be send to the laser
-		uint					mMinPointCount = 400;		//< Min number of points send to the laser each frame
-		uint					mMaxPointCount = 600;		//< Max number of points send to the laser each frame
-		uint					mCloseCount = 25;			//< Number of points used for closing the curve
 
 		// Returns a set of valid drawable laser components, @return total amount of points to draw
 		nap::OFSplineComponent* getRenderableSplineComponent();

@@ -6,6 +6,7 @@
 #include <set>
 #include <nap/configure.h>
 #include <nap/signalslot.h>
+#include <nap/attributeobject.h>
 
 namespace nap
 {
@@ -18,9 +19,9 @@ namespace nap
 	 class for all services
 	 **/
 
-	class Service
+	class Service : public AttributeObject
 	{
-		RTTI_ENABLE()
+		RTTI_ENABLE_DERIVED_FROM(AttributeObject)
 		friend class Core;
 		friend class ServiceableComponent;
         friend class ServiceableOperator;
