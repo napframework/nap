@@ -63,6 +63,7 @@ private:
 	// Callbacks
 	void				parameterValueChanged(T& value);
 	void				attributeValueChanged(const T& value);
+    void                attributeRangeChanged(const nap::NumericAttribute<T>&);
 
 	// Utility
 	ofParameter<T>*		getParameter();
@@ -70,6 +71,8 @@ private:
 
 	// SLOTS
 	NSLOT(mAttributeValueChanged, const T&, attributeValueChanged)
+    NSLOT(mAttributeRangeChanged, const nap::NumericAttribute<T>&, attributeRangeChanged)
+    
 };
 
 
@@ -111,6 +114,11 @@ OFParamAttrLink<T>::OFParamAttrLink(ofParameter<T>& param, nap::Attribute<T>& at
 {
 	param.addListener(this, &OFParamAttrLink<T>::parameterValueChanged);
 	attribute.valueChangedSignal.connect(mAttributeValueChanged);
+    
+    // type check has to be done with dynamic cast because RTTI on NumericAttribute<bool> fails compile time
+    auto numericAttribute = dynamic_cast<nap::NumericAttribute<T>*>(&attribute);
+    if (numericAttribute)
+        numericAttribute->rangeChanged.connect(mAttributeRangeChanged);
 }
 
 
@@ -133,6 +141,22 @@ void OFParamAttrLink<T>::attributeValueChanged(const T& value)
 		return;
 	}
 	getParameter()->set(value);
+}
+
+
+/**
+ @brief When the attribute changes, update the parameter
+ **/
+template<typename T>
+void OFParamAttrLink<T>::attributeRangeChanged(const nap::NumericAttribute<T>& attribute)
+{
+    if (mParameter == nullptr)
+    {
+        assert(false);
+        return;
+    }
+    getParameter()->setMin(attribute.getMin());
+    getParameter()->setMax(attribute.getMax());
 }
 
 
@@ -168,6 +192,10 @@ template<typename T>
 void OFParamAttrLink<T>::attributeChanged(nap::AttributeBase& new_attr)
 {
 	getAttribute()->valueChangedSignal.disconnect(mAttributeValueChanged);
+    
+    auto numericAttribute = dynamic_cast<nap::NumericAttribute<T>*>(getAttribute());
+    if (numericAttribute)
+        numericAttribute->rangeChanged.disconnect(mAttributeRangeChanged);
 }
 
 

@@ -208,8 +208,12 @@ namespace nap
 		T				getMax() const		{ return mMaxValue; }
 		void			getRange(T& outMin, T& outMax) const;
 
+        // Signals
+        Signal<const NumericAttribute<T>&> rangeChanged;
+        
 		// Clamp function
 		T				clampValue(const T& value, const T& min, const T& max);
+        
 
 	private:
 		// Range
@@ -405,6 +409,7 @@ namespace nap
 	{
 		mMinValue = min;
 		mMaxValue = max;
+        rangeChanged(*this);
 	}
 
 
