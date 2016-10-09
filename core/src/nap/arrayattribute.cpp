@@ -6,7 +6,7 @@
 //
 //
 
-#include "ArrayAttribute.h"
+#include "arrayattribute.h"
 
 RTTI_DEFINE(nap::CompoundAttribute)
 

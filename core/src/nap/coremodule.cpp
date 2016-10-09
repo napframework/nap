@@ -5,25 +5,22 @@
 //////////////////////////////////////////////////////////////////////////
 // Numeric Attribute template specializations
 //////////////////////////////////////////////////////////////////////////
+namespace nap {
+    template<>
+    float NumericAttribute<float>::clampValue(const float &value, const float &min, const float &max) {
+        return std::max(min, std::min(value, max));
+    }
 
-template <>
-float nap::NumericAttribute<float>::clampValue(const float& value, const float& min, const float &max)
-{
-	return std::max(min, std::min(value, max));
+    template<>
+    int NumericAttribute<int>::clampValue(const int &value, const int &min, const int &max) {
+        return std::max(min, std::min(value, max));
+    }
+
+    template<>
+    double NumericAttribute<double>::clampValue(const double &value, const double &min, const double &max) {
+        return std::max(min, std::min(value, max));
+    }
 }
-
-template <>
-int nap::NumericAttribute<int>::clampValue(const int& value, const int& min, const int&max)
-{
-	return std::max(min, std::min(value, max));
-}
-
-template <>
-double nap::NumericAttribute<double>::clampValue(const double& value, const double& min, const double &max)
-{
-	return std::max(min, std::min(value, max));
-}
-
 
 //////////////////////////////////////////////////////////////////////////
 // Default comparison operators
