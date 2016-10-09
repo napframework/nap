@@ -45,7 +45,26 @@ namespace nap {
         
         // Add an attribute of type T
         template <typename T>
-        Attribute<T>& addAttribute(const T& value, const std::string& name = "");
+        Attribute<T>& addAttribute(const T& value);
+        
+        // Add an attribute of type T
+        template <typename T>
+        Attribute<T>& addAttribute(const std::string& name, const T& value);
+        
+        // Create a compound attribute if it doesn't exist and return it
+        CompoundAttribute* getOrCreateCompoundAttribute(const std::string& name);
+        
+        // Create an array attribute if it doesn't exist and return it
+        template <typename T>
+        ArrayAttribute<T>* getOrCreateArrayAttribute(const std::string& name);
+        
+        // Create an attribute if it doesn't exist, and return it
+        template <typename T>
+        Attribute<T>* getOrCreateAttribute(const std::string& name);
+        
+        // Create an attribute if it doesn't exist, assign a value, and return it
+        template <typename T>
+        Attribute<T>* getOrCreateAttribute(const std::string& name, const T& defaultValue);
         
         // Remove attribute by name from the compound
         void removeAttribute(const std::string name);
@@ -99,8 +118,11 @@ namespace nap {
         // Returns the type of the values within the array
         const RTTI::TypeInfo getValueType() const override;
         
-        // Add a value to the array, optionally specify a &name for mapping
-        Attribute<T>& addAttribute(const T& value, const std::string& name = "");
+        // Add an attribute with @value
+        Attribute<T>& addAttribute(const T& value);
+        
+        // Add an attribute with @name for mapping and @value
+        Attribute<T>& addAttribute(const std::string& name, const T& value);
         
         // Value accessors
         std::vector<T> getValues() const;
@@ -132,17 +154,68 @@ namespace nap {
     template <typename T>
     ArrayAttribute<T>& CompoundAttribute::addArrayAttribute(const std::string& name)
     {
-        auto& attribute = addChild<ArrayAttribute<T>>(name);
+        return addChild<ArrayAttribute<T>>(name);
+    }
+    
+    
+    template <typename T>
+    Attribute<T>& CompoundAttribute::addAttribute(const std::string& name, const T& value)
+    {
+        auto& attribute = addChild<Attribute<T>>(name);
+        attribute.setValue(value);
         return attribute;
     }
     
     
     template <typename T>
-    Attribute<T>& CompoundAttribute::addAttribute(const T& value, const std::string& name)
+    Attribute<T>& CompoundAttribute::addAttribute(const T& value)
     {
-        auto& attribute = addChild<Attribute<T>>(name);
+        auto& attribute = addChild<Attribute<T>>("");
         attribute.setValue(value);
         return attribute;
+    }
+    
+    
+    template <typename T>
+    ArrayAttribute<T>* CompoundAttribute::getOrCreateArrayAttribute(const std::string& name)
+    {
+        auto result = getChild<ArrayAttribute<T>>(name);
+        if (!result)
+        {
+            if (hasChild(name))
+                return nullptr;
+            result = &addArrayAttribute<T>(name);
+        }
+        return result;
+    }
+
+    
+    template <typename T>
+    Attribute<T>* CompoundAttribute::getOrCreateAttribute(const std::string& name)
+    {
+        auto result = getChild<Attribute<T>>(name);
+        if (!result)
+        {
+            if (hasChild(name))
+                return nullptr;
+            result = &addChild<Attribute<T>>(name);
+        }
+        return result;
+    }
+    
+    
+    template <typename T>
+    Attribute<T>* CompoundAttribute::getOrCreateAttribute(const std::string& name, const T& defaultValue)
+    {
+        auto result = getChild<Attribute<T>>(name);
+        if (!result)
+        {
+            if (hasChild(name))
+                return nullptr;
+            result = &addAttribute<T>(name);
+            result->setValue(defaultValue);
+        }
+        return result;
     }
     
     
@@ -174,7 +247,16 @@ namespace nap {
     
     
     template <typename T>
-    Attribute<T>& ArrayAttribute<T>::addAttribute(const T& value, const std::string& name)
+    Attribute<T>& ArrayAttribute<T>::addAttribute(const T& value)
+    {
+        auto& child = addChild<Attribute<T>>("");
+        child.setValue(value);
+        return child;
+    }
+    
+    
+    template <typename T>
+    Attribute<T>& ArrayAttribute<T>::addAttribute(const std::string& name, const T& value)
     {
         auto& child = addChild<Attribute<T>>(name);
         child.setValue(value);

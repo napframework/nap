@@ -100,6 +100,19 @@ namespace nap {
     }
     
     
+    CompoundAttribute* CompoundAttribute::getOrCreateCompoundAttribute(const std::string& name)
+    {
+        auto result = getChild<CompoundAttribute>(name);
+        if (!result)
+        {
+            if (hasChild(name))
+                return nullptr;
+            result = &addCompoundAttribute(name);
+        }
+        return result;
+    }
+    
+    
     void CompoundAttribute::removeAttribute(const std::string name)
     {
         removeChild(name);
