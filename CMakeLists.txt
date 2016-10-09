@@ -34,12 +34,7 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
 
 # library targets
 add_subdirectory(core)
-add_subdirectory(thirdparty)
-add_subdirectory(stijnlibaudio)
-add_subdirectory(stijnlibutility)
-add_subdirectory(4dsound)
-add_subdirectory(napkin)
-add_subdirectory(scriptserver)
+#add_subdirectory(napkin)
 
 # executable targets
 add_subdirectory(test/coretestapp)
@@ -57,5 +52,5 @@ add_subdirectory(modules/network)
 add_subdirectory(modules/napawesomium)
 add_subdirectory(modules/napscriptserver)
 
-add_dependencies(napkin mod_napfsm)
-add_dependencies(scriptserver mod_napscriptserver mod_sfml)
+#add_dependencies(napkin mod_napfsm)
+#add_dependencies(scriptserver mod_napscriptserver mod_sfml)

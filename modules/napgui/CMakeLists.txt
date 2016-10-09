@@ -1,4 +1,4 @@
-Iproject(mod_napgui)
+project(mod_napgui)
 
 file(GLOB sources src/*.cpp)
 
