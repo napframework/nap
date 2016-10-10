@@ -15,8 +15,6 @@ class OFAbstractParamAttrLink
 public:
 	// Constructor
 	OFAbstractParamAttrLink(ofAbstractParameter& param, nap::AttributeBase& attrib);
-	
-	// Destructor
 	virtual ~OFAbstractParamAttrLink();
 
 	// Getters
@@ -53,26 +51,45 @@ class OFParamAttrLink : public OFAbstractParamAttrLink
 {
 public:
 	OFParamAttrLink(ofParameter<T>& param, nap::Attribute<T>& attribute);
-	~OFParamAttrLink();
+	virtual ~OFParamAttrLink() override;
 
 protected:
 	virtual void		stopListening() override;
 	virtual void		attributeChanged(nap::AttributeBase& new_attr) override;
+	
+	// Utility
+	ofParameter<T>*		getParameter();
+	nap::Attribute<T>*	getAttribute();
 
 private:
 	// Callbacks
 	void				parameterValueChanged(T& value);
 	void				attributeValueChanged(const T& value);
-    void                attributeRangeChanged(const nap::NumericAttribute<T>&);
-
-	// Utility
-	ofParameter<T>*		getParameter();
-	nap::Attribute<T>*	getAttribute();
 
 	// SLOTS
-	NSLOT(mAttributeValueChanged, const T&, attributeValueChanged)
-    NSLOT(mAttributeRangeChanged, const nap::NumericAttribute<T>&, attributeRangeChanged)
-    
+	NSLOT(mAttributeValueChanged, const T&, attributeValueChanged)    
+};
+
+
+/**
+@brief Specialization of a numeric attribute link to an of parameter
+**/
+template<typename T>
+class OFParamNumericAttrLink : public OFParamAttrLink<T>
+{
+public:
+	OFParamNumericAttrLink(ofParameter<T>& param, nap::NumericAttribute<T>& attribute);
+
+
+protected:
+	virtual void				attributeChanged(nap::AttributeBase& new_attr) override;
+	void						attributeRangeChanged(const nap::NumericAttribute<T>&);
+
+	// Utility
+	nap::NumericAttribute<T>*	getNumericAttribute();
+
+	// SLOTS
+	NSLOT(mAttributeRangeChanged, const nap::NumericAttribute<T>&, attributeRangeChanged)
 };
 
 
@@ -114,11 +131,6 @@ OFParamAttrLink<T>::OFParamAttrLink(ofParameter<T>& param, nap::Attribute<T>& at
 {
 	param.addListener(this, &OFParamAttrLink<T>::parameterValueChanged);
 	attribute.valueChangedSignal.connect(mAttributeValueChanged);
-    
-    // type check has to be done with dynamic cast because RTTI on NumericAttribute<bool> fails compile time
-    auto numericAttribute = dynamic_cast<nap::NumericAttribute<T>*>(&attribute);
-    if (numericAttribute)
-        numericAttribute->rangeChanged.connect(mAttributeRangeChanged);
 }
 
 
@@ -141,22 +153,6 @@ void OFParamAttrLink<T>::attributeValueChanged(const T& value)
 		return;
 	}
 	getParameter()->set(value);
-}
-
-
-/**
- @brief When the attribute changes, update the parameter
- **/
-template<typename T>
-void OFParamAttrLink<T>::attributeRangeChanged(const nap::NumericAttribute<T>& attribute)
-{
-    if (mParameter == nullptr)
-    {
-        assert(false);
-        return;
-    }
-    getParameter()->setMin(attribute.getMin());
-    getParameter()->setMax(attribute.getMax());
 }
 
 
@@ -192,10 +188,6 @@ template<typename T>
 void OFParamAttrLink<T>::attributeChanged(nap::AttributeBase& new_attr)
 {
 	getAttribute()->valueChangedSignal.disconnect(mAttributeValueChanged);
-    
-    auto numericAttribute = dynamic_cast<nap::NumericAttribute<T>*>(getAttribute());
-    if (numericAttribute)
-        numericAttribute->rangeChanged.disconnect(mAttributeRangeChanged);
 }
 
 
@@ -218,3 +210,54 @@ nap::Attribute<T>* OFParamAttrLink<T>::getAttribute()
 {
 	return mAttribute == nullptr ? nullptr : static_cast<nap::Attribute<T>*>(mAttribute);
 }
+
+
+//////////////////////////////////////////////////////////////////////////
+// Numeric Template Link
+//////////////////////////////////////////////////////////////////////////
+
+template<typename T>
+OFParamNumericAttrLink<T>::OFParamNumericAttrLink(ofParameter<T>& param, nap::NumericAttribute<T>& attribute) : OFParamAttrLink<T>(param, attribute)
+{	
+	getNumericAttribute()->rangeChanged.connect(mAttributeRangeChanged);
+}
+
+
+/**
+@brief Utility function used for returning the contained attribute as a numeric attribute
+**/
+template<typename T>
+nap::NumericAttribute<T>* OFParamNumericAttrLink<T>::getNumericAttribute()
+{
+	return mAttribute == nullptr ? nullptr : static_cast<nap::NumericAttribute<T>*>(mAttribute);
+}
+
+
+/**
+@brief Occurs when the internal attribute changes, disconnect (range and listening)
+**/
+template<typename T>
+void OFParamNumericAttrLink<T>::attributeChanged(nap::AttributeBase& new_attr)
+{
+	OFParamAttrLink<T>::attributeChanged(new_attr);
+	getNumericAttribute()->rangeChanged.disconnect(mAttributeRangeChanged);
+}
+
+
+/**
+@brief Occurs when the attribute range changes, updates the parameter range
+**/
+template<typename T>
+void OFParamNumericAttrLink<T>::attributeRangeChanged(const nap::NumericAttribute<T>&)
+{
+	if (getParameter() == nullptr)
+	{
+		assert(false);
+		return;
+	}
+
+	getParameter()->setMin(getNumericAttribute()->getMin());
+	getParameter()->setMax(getNumericAttribute()->getMax());
+}
+
+
