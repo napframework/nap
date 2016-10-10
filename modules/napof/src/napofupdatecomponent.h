@@ -21,7 +21,7 @@ namespace nap
 		OFUpdatableComponent()		{ }
 
 		// Update Attributes
-		Attribute<bool>		mEnableUpdates	{ this, "Enabled", true };
+		Attribute<bool>		mEnableUpdates	{ this, "Update", true };
 
 		// Update Call
 		void				update();

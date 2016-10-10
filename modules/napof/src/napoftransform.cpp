@@ -115,9 +115,7 @@ namespace nap
 	@brief Resets the entire operator and disables updates
 	**/
 	void OFRotateComponent::onReset(const SignalAttribute& signal)
-	{
-		mEnableUpdates.setValue(false);
-		
+	{		
 		mTimeX = 0.0f;
 		mTimeY = 0.0f;
 		mTimeZ = 0.0f;
