@@ -75,6 +75,9 @@ namespace nap
 	OFRotateComponent::OFRotateComponent()
 	{
 		mPreviousTime = ofGetElapsedTimef();
+		mEnableUpdates.valueChangedSignal.connect(mUpdateCalled);
+		mReset.signal.connect(mResetCalled);
+
 	}
 
 
@@ -96,7 +99,7 @@ namespace nap
 		mTimeZ += (diff_time * mSpeed.getValue() * mZ.getValue());
 
 		// Get component
-		OFTransform* xform = getParent()->getComponent<nap::OFTransform>();
+		OFTransform* xform = mDependency.get();
 		if (xform == nullptr)
 		{
 			Logger::warn("Rotation component can't find transform component");
@@ -109,17 +112,34 @@ namespace nap
 
 
 	/**
-	@brief Resets the rotation speed axis and time
+	@brief Resets the entire operator and disables updates
 	**/
-	void OFRotateComponent::resetAxis()
+	void OFRotateComponent::onReset(const SignalAttribute& signal)
 	{
+		mEnableUpdates.setValue(false);
+		
 		mTimeX = 0.0f;
 		mTimeY = 0.0f;
 		mTimeZ = 0.0f;
-		mX.setValue(0.0f);
-		mY.setValue(0.0f);
-		mZ.setValue(0.0f);
+
+		nap::OFTransform* xform = mDependency.get();
+		if (xform == nullptr)
+		{
+			Logger::warn("Rotation component can't find transform component");
+			return;
+		}
+		xform->mRotate.setValue(ofVec3f(0.0f, 0.0f, 0.0f));
 	}
+
+
+	/**
+	@brief Stores the last time stamp so rotation continues where it left off
+	**/
+	void OFRotateComponent::onUpdateChanged(const bool& value)
+	{
+		mPreviousTime = ofGetElapsedTimef();
+	}
+
 }
 
 RTTI_DEFINE(nap::OFTransform)

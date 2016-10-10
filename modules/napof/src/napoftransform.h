@@ -3,6 +3,7 @@
 // NAP Includes
 #include <nap/component.h>
 #include <nap/attribute.h>
+#include <nap/signalslot.h>
 
 #include <napofattributes.h>
 #include <napofupdatecomponent.h>
@@ -63,16 +64,14 @@ namespace nap
 		// Default constructor
 		OFRotateComponent();
 
-		NumericAttribute<float>	mX		{ this, "SpeedX", 0.0f, 0.0f, 1.0f };
-		NumericAttribute<float>	mY		{ this, "SpeedY", 0.0f, 0.0f, 1.0f };
-		NumericAttribute<float>	mZ		{ this, "SpeedZ", 0.0f, 0.0f, 1.0f };
+		SignalAttribute	mReset			{ this, "Reset" };
+		NumericAttribute<float>	mX		{ this, "SpeedX", 1.0f, 0.0f, 1.0f };
+		NumericAttribute<float>	mY		{ this, "SpeedY", 1.0f, 0.0f, 1.0f };
+		NumericAttribute<float>	mZ		{ this, "SpeedZ", 1.0f, 0.0f, 1.0f };
 		NumericAttribute<float>	mSpeed	{ this, "Speed",  1.0f, 0.0f, 100.0f };
 
 		// Overrides
 		virtual void onUpdate();
-
-		// Reset
-		void resetAxis();
 
 	private:
 		// Timer
@@ -80,6 +79,15 @@ namespace nap
 		float				mTimeX = 0.0f;
 		float				mTimeY = 0.0f;
 		float				mTimeZ = 0.0f;
+
+		// OFTransform dependency
+		ComponentDependency<OFTransform> mDependency = { this };
+
+		// SLOTS
+		void onReset(const SignalAttribute& signal);			//< Resets the rotatation
+		void onUpdateChanged(const bool& value);				//< Stores the last time stamp
+		NSLOT(mResetCalled, const SignalAttribute&, onReset)
+		NSLOT(mUpdateCalled, const bool&, onUpdateChanged)
 	};
 }
 
