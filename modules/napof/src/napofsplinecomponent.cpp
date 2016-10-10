@@ -230,6 +230,36 @@ namespace nap
 		mFile.valueChangedSignal.connect(mFileChangedSlot);
 		mSplineCount.valueChangedSignal.connect(mCountChangedSlot);
 		mReload.signal.connect(mReloadCalled);
+		mBrowse.signal.connect(mBrowseCalled);
+	}
+
+
+	/**
+	@brief Allows the user to browse for a file to load (svg)
+	**/
+	void OFSplineFromFileComponent::browseCalled(const SignalAttribute&)
+	{
+		static std::string sCurrentDir = ofFilePath::getAbsolutePath(ofFilePath::getCurrentExeDir(), false);
+		static std::string sExtension = "svg";
+
+		// Browse, cancel returns false
+		ofFileDialogResult result = ofSystemLoadDialog("Select Resource", false, sCurrentDir);
+		if (!result.bSuccess)
+			return;
+
+		// Check what type it is
+		std::string file_extension = nap::gToLower(ofFile(result.filePath).getExtension());
+		if (file_extension != sExtension)
+		{
+			nap::Logger::warn(*this, "invalid extension: %s, expected: %s", file_extension.c_str(), sExtension.c_str());
+			return;
+		}
+
+		// Set current director
+		sCurrentDir = ofFile(result.filePath).getEnclosingDirectory();
+
+		// Set value
+		mFile.setValue(result.filePath);
 	}
 
 
