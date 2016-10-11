@@ -23,7 +23,7 @@ namespace nap
 		// Frustrum -> used for finding projection bounds in 2d space
 		NumericAttribute<float> mFrustrumWidth		{ this, "FrustrumWidth", 500.0f, 100.0f, 1000.0f };
 		NumericAttribute<float> mFrustrumHeight		{ this, "FrustrumHeight", 500.0f, 100.0f, 1000.0f };
-		Attribute<bool>			mTraceMode			{ this, "TraceMode", false };
+		Attribute<bool>			mTraceMode			{ this, "EnableTracer", false };
 
 		// Utility
 		void setFrustrumWidth(float inValue)  { mFrustrumWidth.setValue(inValue); }

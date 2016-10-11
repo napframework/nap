@@ -304,11 +304,20 @@ void gCreateSplineFromFile(const std::string& inFile, int inPointCount, NSpline&
 		return;
 	}
 
-	// Center
-	ofPoint bbox_point = resampled_line.getBoundingBox().getCenter();
+	// Figure out x and y
+	ofRectangle bounding_box = resampled_line.getBoundingBox();
+	ofPoint bbox_point = bounding_box.getCenter();
+	float min_y = bounding_box.getMinY();
+	float max_y = bounding_box.getMaxY();
+
+	// Get center point
 	ofPoint center_point = bbox_point - inCenter;
+	
+	// Position
 	for (auto& v : resampled_line.getVertices())
 	{
+		// Flip y
+		v.y = max_y - (v.y - min_y);
 		v -= center_point;
 	}
 

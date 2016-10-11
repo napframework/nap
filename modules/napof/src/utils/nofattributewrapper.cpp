@@ -41,26 +41,12 @@ void OFAttributeWrapper::addAttribute(nap::AttributeBase& attribute)
 **/
 static OFAbstractParamAttrLink* createFloatParameter(nap::AttributeBase& attr)
 {
-	float min = 0.0f;
-	float max = 1.0f;
-	if (attr.getTypeInfo().isKindOf(RTTI_OF(nap::NumericAttribute<float>)))
-	{
-		nap::NumericAttribute<float>& c_attr = static_cast<nap::NumericAttribute<float>&>(attr);
-		min = c_attr.getMin();
-		max = c_attr.getMax();
-	}
-	else
-	{
-		nap::Logger::warn("float attribute %s is not of type NumericAttribute, setting adding default range", attr.getName().c_str());
-	}
-
 	// Create parameter
-	nap::Attribute<float>& c_attr = static_cast<nap::Attribute<float>&>(attr);
-	ofParameter<float> parameter(c_attr.getName(), c_attr.getValue(), min, max);
+	nap::NumericAttribute<float>& c_attr = static_cast<nap::NumericAttribute<float>&>(attr);
+	ofParameter<float> parameter(c_attr.getName(), c_attr.getValue(), c_attr.getMin(), c_attr.getMax());
 
 	// Create new link (TODO: MAKE UNIQUE PTR)
-	OFParamAttrLink<float>* link = new OFParamAttrLink<float>(parameter, c_attr);
-	return link;
+	return new OFParamNumericAttrLink<float>(parameter, c_attr);
 }
 
 
@@ -69,25 +55,12 @@ static OFAbstractParamAttrLink* createFloatParameter(nap::AttributeBase& attr)
 **/
 static OFAbstractParamAttrLink* createIntParameter(nap::AttributeBase& attr)
 {
-	int min = 0;
-	int max = 10;
-	if (attr.getTypeInfo().isKindOf(RTTI_OF(nap::NumericAttribute<int>)))
-	{
-		nap::NumericAttribute<int>& c_attr = static_cast<nap::NumericAttribute<int>&>(attr);
-		min = c_attr.getMin();
-		max = c_attr.getMax();
-	}
-	else
-	{
-		nap::Logger::warn("int attribute :%s is not of type NumericAttribute, setting adding default range", attr.getName().c_str());
-	}
-
 	// Create new parameter
-	nap::Attribute<int>& c_attr = static_cast<nap::Attribute<int>&>(attr);
-	ofParameter<int> parameter(c_attr.getName(), c_attr.getValue(), min, max);
+	nap::NumericAttribute<int>& c_attr = static_cast<nap::NumericAttribute<int>&>(attr);
+	ofParameter<int> parameter(c_attr.getName(), c_attr.getValue(), c_attr.getMin(), c_attr.getMax());
 
 	// Create new link between parameter and attribute (TODO: MAKE UNIQUE PTR)
-	return new OFParamAttrLink<int>(parameter, c_attr);
+	return new OFParamNumericAttrLink<int>(parameter, c_attr);
 }
 
 
@@ -125,7 +98,7 @@ static OFAbstractParamAttrLink* createofVec4f(nap::AttributeBase& attr)
 {
 	nap::NumericAttribute<ofVec4f>& c_attr = static_cast<nap::NumericAttribute<ofVec4f>&>(attr);
 	ofParameter<ofVec4f> parameter(c_attr.getName(), c_attr.getValue(), c_attr.getMin(), c_attr.getMax());
-	return new OFParamAttrLink<ofVec4f>(parameter, c_attr);
+	return new OFParamNumericAttrLink<ofVec4f>(parameter, c_attr);
 }
 
 
@@ -136,7 +109,7 @@ static OFAbstractParamAttrLink* createofVec3f(nap::AttributeBase& attr)
 {
 	nap::NumericAttribute<ofVec3f>& c_attr = static_cast<nap::NumericAttribute<ofVec3f>&>(attr);
 	ofParameter<ofVec3f> parameter(c_attr.getName(), c_attr.getValue(), c_attr.getMin(), c_attr.getMax());
-	return new OFParamAttrLink<ofVec3f>(parameter, c_attr);
+	return new OFParamNumericAttrLink<ofVec3f>(parameter, c_attr);
 }
 
 
@@ -147,7 +120,7 @@ static OFAbstractParamAttrLink* createofVec2f(nap::AttributeBase& attr)
 {
 	nap::NumericAttribute<ofVec2f>& c_attr = static_cast<nap::NumericAttribute<ofVec2f>&>(attr);
 	ofParameter<ofVec2f> parameter(c_attr.getName(), c_attr.getValue(), c_attr.getMin(), c_attr.getMax());
-	return new OFParamAttrLink<ofVec2f>(parameter, c_attr);
+	return new OFParamNumericAttrLink<ofVec2f>(parameter, c_attr);
 }
 
 

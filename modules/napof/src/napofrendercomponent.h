@@ -28,8 +28,8 @@ namespace nap
 		OFRenderableComponent()		{ }
 
 		// Render Attributes
-		Attribute<bool>				mEnableDrawing		= { this, "Enabled", true };
-		Attribute<bool>				mAlphaBlending		= { this, "AlphaBlending", true };
+		Attribute<bool>				mEnableDrawing		= { this, "Draw", true };
+		Attribute<bool>				mAlphaBlending		= { this, "BlendAlpha", true };
 		Attribute<OFBlendType>		mFirstBlendMode		= { this, "FirstBlendMode", OFBlendType::SRC_ALPHA };
 		Attribute<OFBlendType>		mSecondBlendMode	= { this, "SecondBlendMode", OFBlendType::ONE_MINUS_SRC_ALPHA };
 

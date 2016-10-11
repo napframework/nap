@@ -12,6 +12,7 @@ namespace nap
 	**/
 	OFSplineLFOModulationComponent::OFSplineLFOModulationComponent()
 	{
+		mIndex.valueChangedSignal.connect(mIndexChanged);
 		mPreviousTime = ofGetElapsedTimef();
 	}
 

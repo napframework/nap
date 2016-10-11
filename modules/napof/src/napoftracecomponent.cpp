@@ -27,6 +27,9 @@ namespace nap
 
 		// Create buffer
 		UpdateTraceBuffer(mCount.getValue());
+
+		// Disable alpha blending
+		mAlphaBlending.setValue(false);
 	}
 
 
