@@ -186,6 +186,11 @@ namespace nap
 			Entity* parentEntity = static_cast<Entity*>(parent);
 			return &parentEntity->addEntity(objectName);
 		}
+
+        // If internal code has already added this child, return it
+        if (parent->hasChild(objectName) && parent->getChild(objectName)->getTypeInfo().isKindOf(objectType))
+            return parent->getChild(objectName);
+
 		return &parent->addChild(objectName, objectType);
 	}
 

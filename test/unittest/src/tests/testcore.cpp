@@ -113,7 +113,7 @@ bool testXMLSerializer()
 			ser2.writeObject(core.getRoot());
 			std::string xmlString2 = oss2.str();
 			//            std::cout << xmlString2 << std::endl;
-			TEST_ASSERT(xmlString == xmlString2, "Second serialization gave different result");
+			TEST_ASSERT(xmlString == xmlString2, "Second serialization gave different result:\nString1:\n" + xmlString + "\nString2:\n" + xmlString2);
 		}
 	}
 	return true;

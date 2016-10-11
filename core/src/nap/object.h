@@ -85,8 +85,7 @@ namespace nap
                 if (obj->getTypeInfo().isKindOf<T>()) result.emplace_back(static_cast<T*>(obj));
             return result;
         }
-        
-        
+
         // Retrieve children of this object filtered by RTTI type
         std::vector<Object*> getChildrenOfType(const RTTI::TypeInfo& type, bool recursive = false) {
             std::vector<Object*> result;
