@@ -12,6 +12,7 @@ using namespace std;
 #define X_LINK "link"
 #define X_VALUE_TYPE "vType"
 #define X_OBJECT "obj"
+#define X_PARENT "parent"
 
 namespace nap
 {
@@ -23,7 +24,11 @@ namespace nap
 	void XMLSerializer::writeObject(Object& object)
 	{
 		XMLDocument doc;
-		doc.NewElement(object.getTypeInfo().getName().c_str());
+		auto root = doc.NewElement(object.getTypeInfo().getName().c_str());
+
+        if (object.getParentObject())
+            root->SetAttribute(X_PARENT, ObjectPath(object.getParentObject()).toString().c_str());
+
 		doc.InsertEndChild(toXML(doc, object));
 		XMLPrinter printer;
 		doc.Print(&printer);
@@ -203,6 +208,13 @@ namespace nap
 			nap::Logger::fatal("XML string had no data");
 			return nullptr;
 		}
+
+        if (parentObject) {
+            std::string parent(elm->Attribute(X_PARENT));
+            if (!parent.empty()) {
+                parentObject = ObjectPath(parent).resolve(*parentObject);
+            }
+        }
 
 		Object* result;
 		while (elm) {
