@@ -125,7 +125,7 @@ namespace nap {
         Attribute<T>& addAttribute(const std::string& name, const T& value);
         
         // Value accessors
-        std::vector<T> getValues() const;
+        std::vector<T> getValues();
         void setValues(const std::vector<T>& values);
         
         // subscript operator implementations
@@ -136,7 +136,7 @@ namespace nap {
         
         // Return the attributes within the array
         std::vector<Attribute<T>*> getAttributes() { return getChildrenOfType<Attribute<T>>(); }
-        const std::vector<Attribute<T>*> getAttributes() const { return getChildrenOfType<Attribute<T>>(); }
+//        const std::vector<Attribute<T>*> getAttributes() const { return getChildrenOfType<Attribute<T>>(); }
 
         // Return an attribute within the array by name
         Attribute<T>* getAttribute(const std::string& name);
@@ -230,7 +230,7 @@ namespace nap {
     
     
     template <typename T>
-    std::vector<T> ArrayAttribute<T>::getValues() const
+    std::vector<T> ArrayAttribute<T>::getValues()
     {
         std::vector<T> result;
         for (auto& attribute : getAttributes())
