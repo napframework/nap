@@ -6,6 +6,7 @@ using namespace tinyxml2;
 using namespace std;
 
 #define X_ATTRIBUTE "attr"
+#define X_COMP_ATTRIB "compattr"
 #define X_VALUE "value"
 #define X_NAME "name"
 #define X_TYPE "type"
@@ -24,25 +25,37 @@ namespace nap
 	void XMLSerializer::writeObject(Object& object)
 	{
 		XMLDocument doc;
-		auto root = doc.NewElement(object.getTypeInfo().getName().c_str());
 
-        if (object.getParentObject())
+
+        XMLElement* root = toXML(doc, object);
+
+        if (object.getParentObject()) {
             root->SetAttribute(X_PARENT, ObjectPath(object.getParentObject()).toString().c_str());
+        }
 
-		doc.InsertEndChild(toXML(doc, object));
+		doc.InsertEndChild(root);
 		XMLPrinter printer;
 		doc.Print(&printer);
 		stream << printer.CStr();
 	}
 
 
-	XMLNode* XMLSerializer::toXML(XMLDocument& doc, Object& object)
+	XMLElement* XMLSerializer::toXML(XMLDocument& doc, Object& object)
 	{
 		XMLElement* elm = nullptr;
 
 		RTTI::TypeInfo type = object.getTypeInfo();
 
-		if (type.isKindOf<AttributeBase>()) {
+        if (type.isKindOf<CompoundAttribute>()) {
+            elm = doc.NewElement(X_COMP_ATTRIB);
+            elm->SetAttribute(X_NAME, object.getName().c_str());
+            CompoundAttribute& attrib = (CompoundAttribute&)object;
+
+            for (auto childAttrib : attrib.getAttributes()) {
+                elm->InsertEndChild(toXML(doc, *childAttrib));
+            }
+
+        } else if (type.isKindOf<AttributeBase>()) {
 			elm = doc.NewElement(X_ATTRIBUTE);
 			elm->SetAttribute(X_NAME, object.getName().c_str());
 
@@ -63,7 +76,6 @@ namespace nap
 		} else {
 			elm = doc.NewElement(X_OBJECT);
 			elm->SetAttribute(X_NAME, object.getName().c_str());
-
 			elm->SetAttribute(X_TYPE, type.getName().c_str());
 		}
 

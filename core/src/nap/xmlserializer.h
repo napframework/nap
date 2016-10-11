@@ -12,7 +12,7 @@ namespace nap
 		void writeObject(Object& object) override;
 
 	private:
-		tinyxml2::XMLNode* toXML(tinyxml2::XMLDocument& doc, Object& object);
+		tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc, Object& object);
 	};
 
     
