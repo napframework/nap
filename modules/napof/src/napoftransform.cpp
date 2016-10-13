@@ -138,7 +138,116 @@ namespace nap
 		mPreviousTime = ofGetElapsedTimef();
 	}
 
+	//////////////////////////////////////////////////////////////////////////
+	// Scale Component
+
+	/**
+	@brief ScaleComponet constructor
+	**/
+	OFScaleComponent::OFScaleComponent()
+	{
+		mPreviousTime = ofGetElapsedTimef();
+
+		// Connect
+		mReset.signal.connect(mResetCalled);
+		mEnableUpdates.valueChangedSignal.connect(mUpdateCalled);
+	}
+
+
+	/**
+	@brief Scales all axis of the transform component
+	**/
+	void OFScaleComponent::onUpdate()
+	{
+
+		// Get time difference and store
+		float current_time = ofGetElapsedTimef();
+		float diff_time = current_time - mPreviousTime;
+		mPreviousTime = current_time;
+
+		// Store time
+		mTime += (diff_time * mSpeed.getValue());
+
+		// Get transform
+		OFTransform* xform = mDependency.get();
+		if (xform == nullptr)
+		{
+			nap::Logger::warn(*this, "unable to find transform component");
+			return;
+		}
+
+		// Get reference scale
+		if (!mRefSet)
+		{
+			mRefSet = true;
+			mScaleRef = xform->mScale.getValue();
+		}
+
+		// Get normalized sine wave
+		float v = mInstant.getValue() ? gGetSquareWave(mTime, 1.0f) : gGetSineWave(mTime, 1.0f);
+		
+		// Get final additive value
+		float range = mInfluence.getValue() * mScale.getValue();
+		float dv = 0.0f;
+
+		// Calculate new scale
+		switch (mBlendMode.getValue())
+		{
+		case 0:								//< Additive
+			dv = range * v;
+			break;
+		case 1:								//< Centered
+			dv = ofLerp(0.0f - (range / 2.0f), range / 2.0f, v);
+			break;
+		case 2:								//< Subtractive
+			dv = 0.0f - (range * v);
+			break;
+		default:
+			break;
+		}
+
+		// Calculate new scale
+		ofVec3f new_scale;
+		new_scale.x = mScaleRef.x + dv;
+		new_scale.y = mScaleRef.y + dv;
+		new_scale.z = mScaleRef.z + dv;
+
+		// Set scale
+		xform->mScale.setValue(new_scale);
+	}
+
+
+	/**
+	@brief Resets the time
+	**/
+	void OFScaleComponent::onReset(const SignalAttribute& signal)
+	{
+		// Reset time
+		mTime = 0.0f;
+
+		// Get xform
+		OFTransform* xform = mDependency.get();
+		if (xform == nullptr)
+		{
+			nap::Logger::warn(*this, "Unable to find transform component");
+			return;
+		}
+
+		// Reset reference scale
+		xform->mScale.setValue(mScaleRef);
+	}
+
+
+	/**
+	@brief Updates the time
+	**/
+	void OFScaleComponent::onUpdateChanged(const bool& value)
+	{
+		mPreviousTime = ofGetElapsedTimef();
+	}
+
 }
 
 RTTI_DEFINE(nap::OFTransform)
 RTTI_DEFINE(nap::OFRotateComponent)
+RTTI_DEFINE(nap::OFScaleComponent)

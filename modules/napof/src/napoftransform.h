@@ -89,7 +89,47 @@ namespace nap
 		NSLOT(mResetCalled, const SignalAttribute&, onReset)
 		NSLOT(mUpdateCalled, const bool&, onUpdateChanged)
 	};
+
+
+
+	/**
+	@brief Scales a transform based on the speed in axis x y z
+	**/
+	class OFScaleComponent : public OFUpdatableComponent
+	{
+		RTTI_ENABLE_DERIVED_FROM(OFUpdatableComponent)
+	public:
+		OFScaleComponent();
+
+		SignalAttribute			mReset		{ this, "Reset" };
+		Attribute<bool>			mInstant	{ this, "Instant", false };
+		NumericAttribute<float> mSpeed		{ this, "Speed", 0.5f, 0.0f, 1.0f };
+		NumericAttribute<float>	mInfluence	{ this, "Influence", 0.0f, 0.0f, 1.0f };
+		NumericAttribute<float> mScale		{ this, "Scale", 1.0f, 0.0f, 10.0f };
+		NumericAttribute<int>	mBlendMode	{ this, "BlendMode", 0, 0, 2 };
+
+		// Overrides
+		virtual void			onUpdate() override;
+
+	private:
+		// Timer
+		float					mPreviousTime = 0.0f;
+		float					mTime = 0.0f;
+
+		bool					mRefSet = false;
+		ofVec3f					mScaleRef = { 1.0f, 1.0f, 1.0f };
+
+		// SLOTS
+		void onReset(const SignalAttribute& signal);			//< Resets the rotatation
+		void onUpdateChanged(const bool& value);				//< Stores the last time stamp
+		NSLOT(mResetCalled, const SignalAttribute&, onReset)
+		NSLOT(mUpdateCalled, const bool&, onUpdateChanged)
+
+		// Component dependency on transform
+		ComponentDependency<OFTransform> mDependency{ this };
+	};
 }
 
 RTTI_DECLARE(nap::OFTransform)
 RTTI_DECLARE(nap::OFRotateComponent)
+RTTI_DECLARE(nap::OFScaleComponent)
