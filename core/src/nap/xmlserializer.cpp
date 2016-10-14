@@ -27,11 +27,11 @@ namespace nap
 		XMLDocument doc;
 
 
-        XMLElement* root = toXML(doc, object);
+		XMLElement* root = toXML(doc, object);
 
-        if (object.getParentObject()) {
-            root->SetAttribute(X_PARENT, ObjectPath(object.getParentObject()).toString().c_str());
-        }
+		if (object.getParentObject()) {
+			root->SetAttribute(X_PARENT, ObjectPath(object.getParentObject()).toString().c_str());
+		}
 
 		doc.InsertEndChild(root);
 		XMLPrinter printer;
@@ -46,22 +46,23 @@ namespace nap
 
 		RTTI::TypeInfo type = object.getTypeInfo();
 
-        if (type.isKindOf<CompoundAttribute>()) {
-            elm = doc.NewElement(X_COMP_ATTRIB);
-            elm->SetAttribute(X_NAME, object.getName().c_str());
-            CompoundAttribute& attrib = (CompoundAttribute&)object;
+		if (type.isKindOf<CompoundAttribute>()) {
+			elm = doc.NewElement(X_COMP_ATTRIB);
+			elm->SetAttribute(X_NAME, object.getName().c_str());
+			CompoundAttribute& attrib = (CompoundAttribute&)object;
 
-            for (auto childAttrib : attrib.getAttributes()) {
-                elm->InsertEndChild(toXML(doc, *childAttrib));
-            }
+			for (auto childAttrib : attrib.getAttributes()) {
+				elm->InsertEndChild(toXML(doc, *childAttrib));
+			}
 
-        } else if (type.isKindOf<AttributeBase>()) {
+		} else if (type.isKindOf<AttributeBase>()) {
 			elm = doc.NewElement(X_ATTRIBUTE);
 			elm->SetAttribute(X_NAME, object.getName().c_str());
 
 			AttributeBase& attrib = (AttributeBase&)object;
 			const auto& valueType = attrib.getValueType();
-			const auto converter = mCore.getModuleManager().getTypeConverter(valueType, RTTI_OF(string));
+			const auto converter =
+				mCore.getModuleManager().getTypeConverter(valueType, RTTI_OF(string));
 			if (converter) {
 				Attribute<string> strAttr;
 				converter->convert(&attrib, &strAttr);
@@ -98,11 +99,14 @@ namespace nap
 			obj = readAttribute(xml, parentObject);
 		} else if (!strcmp(tagName, X_OBJECT)) {
 			obj = readObject(xml, parentObject);
+		} else if (!strcmp(tagName, X_COMP_ATTRIB)) {
+			obj = readCompoundAttribute(xml, parentObject);
 		} else {
 			Logger::fatal("Unknown tag: '%s'", xml->Name());
 		}
 
-		if (!obj) return nullptr;
+		if (!obj)
+			return nullptr;
 
 		// read children
 		XMLElement* xChild = (XMLElement*)xml->FirstChild();
@@ -114,14 +118,27 @@ namespace nap
 		return obj;
 	}
 
+	Object* XMLDeserializer::readCompoundAttribute(XMLElement* xml, Object* parent)
+	{
+		auto& compAttr = parent->addChild<CompoundAttribute>(xml->Attribute(X_NAME));
 
-	Object* XMLDeserializer::readAttribute(tinyxml2::XMLElement* xml, Object* parentObject)
+		//        Object* result;
+		XMLElement* elm = (XMLElement*)xml->FirstChild();
+		while (elm) {
+			readAttribute(elm, &compAttr);
+			elm = (XMLElement*)elm->NextSibling();
+		}
+		return &compAttr;
+	}
+
+	Object* XMLDeserializer::readAttribute(XMLElement* xml, Object* parentObject)
 	{
 		// Resolve type
 		std::string attributeType = xml->Attribute(X_VALUE_TYPE);
 
 		// <HACK>
-		// TODO: This filthy piece of shit is here because we cannot make Attributes of a certain RTTI value type
+		// TODO: This filthy piece of shit is here because we cannot make Attributes of a certain
+		// RTTI value type
 		attributeType = "nap::Attribute<" + attributeType + ">"; // <-- That...... :(
 		const RTTI::TypeInfo& type = RTTI::TypeInfo::getByName(attributeType);
 		// </HACK>
@@ -131,16 +148,27 @@ namespace nap
 			return nullptr;
 		}
 
-		AttributeObject* parentAttrObject = dynamic_cast<AttributeObject*>(parentObject);
-		assert(parentAttrObject);
+		std::string attrName(xml->Attribute(X_NAME));
 
 		// Retrieve or create attribute
-		std::string attrName(xml->Attribute(X_NAME));
 		AttributeBase* attribute = nullptr;
-		if (!parentAttrObject->hasAttribute(attrName)) {
-			attribute = &parentAttrObject->addAttribute(attrName, type);
-		} else {
-			attribute = parentAttrObject->getAttribute(attrName);
+
+		if (parentObject->getTypeInfo().isKindOf<AttributeObject>()) {
+            // Regular attribute
+			AttributeObject* parentAttrObject = static_cast<AttributeObject*>(parentObject);
+			if (!parentAttrObject->hasAttribute(attrName)) {
+				attribute = &parentAttrObject->addAttribute(attrName, type);
+			} else {
+				attribute = parentAttrObject->getAttribute(attrName);
+			}
+		} else if (parentObject->getTypeInfo().isKindOf<CompoundAttribute>()) {
+            // Compound child
+			CompoundAttribute* parentCompound = static_cast<CompoundAttribute*>(parentObject);
+			if (!parentCompound->hasChild(attrName)) {
+				attribute = (AttributeBase*)&parentCompound->addChild(attrName, type);
+			} else {
+				attribute = parentCompound->getAttribute(attrName);
+			}
 		}
 		assert(attribute);
 
@@ -151,8 +179,8 @@ namespace nap
 		}
 
 		// Retrieve and set value
-		const TypeConverterBase* converter =
-			mCore.getModuleManager().getTypeConverter(RTTI_OF(std::string), attribute->getValueType());
+		const TypeConverterBase* converter = mCore.getModuleManager().getTypeConverter(
+			RTTI_OF(std::string), attribute->getValueType());
 		if (!converter) {
 			nap::Logger::fatal("Cannot convert");
 			return attribute;
@@ -162,7 +190,8 @@ namespace nap
 		std::string valueStr = xml->Attribute(X_VALUE);
 		strAttr.setValue(valueStr);
 		if (!converter->convert(&strAttr, attribute)) {
-			nap::Logger::fatal("Conversion failed from '%s' to '%s'", converter->inType().getName().c_str(),
+			nap::Logger::fatal("Conversion failed from '%s' to '%s'",
+							   converter->inType().getName().c_str(),
 							   converter->outType().getName().c_str());
 		}
 
@@ -199,9 +228,10 @@ namespace nap
 			return &parentEntity->addEntity(objectName);
 		}
 
-        // If internal code has already added this child, return it
-        if (parent->hasChild(objectName) && parent->getChild(objectName)->getTypeInfo().isKindOf(objectType))
-            return parent->getChild(objectName);
+		// If internal code has already added this child, return it
+		if (parent->hasChild(objectName) &&
+			parent->getChild(objectName)->getTypeInfo().isKindOf(objectType))
+			return parent->getChild(objectName);
 
 		return &parent->addChild(objectName, objectType);
 	}
@@ -226,12 +256,12 @@ namespace nap
 			return nullptr;
 		}
 
-        if (parentObject) {
-            std::string parent(elm->Attribute(X_PARENT));
-            if (!parent.empty()) {
-                parentObject = ObjectPath(parent).resolve(*parentObject);
-            }
-        }
+		if (parentObject) {
+			std::string parent(elm->Attribute(X_PARENT));
+			if (!parent.empty()) {
+				parentObject = ObjectPath(parent).resolve(*parentObject);
+			}
+		}
 
 		Object* result;
 		while (elm) {

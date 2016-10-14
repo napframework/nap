@@ -34,7 +34,7 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
 
 # library targets
 add_subdirectory(core)
-#add_subdirectory(napkin)
+add_subdirectory(napkin)
 
 # executable targets
 add_subdirectory(test/coretestapp)

@@ -5,7 +5,6 @@
 
 using namespace nap;
 
-
 class DummyComponent : public Component
 {
 	RTTI_ENABLE_DERIVED_FROM(Component)
@@ -20,15 +19,14 @@ public:
 RTTI_DECLARE(DummyComponent)
 RTTI_DEFINE(DummyComponent)
 
-
 bool testCore()
 {
 	Core core;
 	{
 		std::string entityName = "MyEntity";
-		Entity &e = core.getRoot().addEntity(entityName);
+		Entity& e = core.getRoot().addEntity(entityName);
 		core.getRoot().removeEntity(e);
-		Entity *nullEntity = core.getRoot().getEntity(entityName);
+		Entity* nullEntity = core.getRoot().getEntity(entityName);
 		TEST_ASSERT(nullEntity == nullptr, "Entity should have been deleted");
 	}
 
@@ -37,8 +35,6 @@ bool testCore()
 		TEST_ASSERT(!success, "Removal should have failed");
 	}
 
-
-
 	{
 		std::string attrName = "MyFloat";
 
@@ -46,74 +42,89 @@ bool testCore()
 		bool success = core.getRoot().removeChild(attrName);
 		TEST_ASSERT(success, "Removal should have been okay");
 
-		Attribute<float> *nullAttr = core.getRoot().getAttribute<float>(attrName);
+		Attribute<float>* nullAttr = core.getRoot().getAttribute<float>(attrName);
 		TEST_ASSERT(nullAttr == nullptr, "Attribute should have been deleted");
 	}
-
 
 	return true;
 }
 
+std::string serialize(Core& core, Object& obj)
+{
+	std::ostringstream oss;
+	XMLSerializer ser(oss, core);
+	ser.writeObject(obj);
+	return oss.str();
+}
+
+Object* deserialize(const std::string& data, Core& core, Object& obj)
+{
+	std::istringstream iss(data);
+	XMLDeserializer deser(iss, core);
+	return deser.readObject();
+}
+
+std::shared_ptr<Core> createObjectTree()
+{
+	auto core = std::make_shared<Core>();
+	auto& root = core->getRoot();
+	auto& patch = root.addComponent<PatchComponent>("patch");
+	patch.setName("stijn");
+	auto& rootAttr = patch.addAttribute("attrRootOfTwo", RTTI_OF(Attribute<float>));
+	((Attribute<float>&)rootAttr).setValue(1.41421356237f);
+
+	auto& dummy = root.addComponent<DummyComponent>("dummy");
+	dummy.floatAttribute.setValue(1);
+	dummy.intAttribute.setValue(1);
+	dummy.vecFloatAttribute.setValue({1., 2., 3., 4.});
+	dummy.vecIntAttribute.setValue({1, 2, 3, 4});
+
+	CompoundAttribute& compAttr = dummy.addCompoundAttribute("myCompound");
+	compAttr.addAttribute<float>("oneHundred", 100.0f);
+	compAttr.addAttribute<int>("twoHundred", 200);
+
+	auto& a = root.addEntity("A");
+	auto& aComp = a.addComponent<PatchComponent>();
+	auto& aAttr = aComp.addAttribute("attrPI", RTTI_OF(Attribute<float>));
+	((Attribute<float>&)aAttr).setValue(3.14159265359f);
+	auto& b = a.addEntity("B");
+	auto& comp = b.addComponent<PatchComponent>();
+	auto& myAt = comp.addAttribute("attrGoldenRatio", RTTI_OF(Attribute<float>));
+	((Attribute<float>&)myAt).setValue(1.61803398875f);
+
+	return core;
+}
 
 bool testXMLSerializer()
 {
 	std::string xmlString;
 
 	{
-		Core core;
-		// Create an object tree
-		{
-			auto& root = core.getRoot();
-			auto& patch = root.addComponent<PatchComponent>("patch");
-			patch.setName("stijn");
-			auto& rootAttr = patch.addAttribute("attrRootOfTwo", RTTI_OF(Attribute<float>));
-			((Attribute<float>&)rootAttr).setValue(1.41421356237f);
+		auto core = createObjectTree();
 
-			auto& dummy = root.addComponent<DummyComponent>("dummy");
-			dummy.floatAttribute.setValue(1);
-			dummy.intAttribute.setValue(1);
-			dummy.vecFloatAttribute.setValue({1., 2., 3., 4.});
-			dummy.vecIntAttribute.setValue({1, 2, 3, 4});
-
-			auto& a = root.addEntity("A");
-			auto& aComp = a.addComponent<PatchComponent>();
-			auto& aAttr = aComp.addAttribute("attrPI", RTTI_OF(Attribute<float>));
-			((Attribute<float>&)aAttr).setValue(3.14159265359f);
-			auto& b = a.addEntity("B");
-			auto& comp = b.addComponent<PatchComponent>();
-			auto& myAt = comp.addAttribute("attrGoldenRatio", RTTI_OF(Attribute<float>));
-			((Attribute<float>&)myAt).setValue(1.61803398875f);
-		}
-
-		// Serialize root
-		{
-			std::ostringstream oss;
-			XMLSerializer ser(oss, core);
-			ser.writeObject(core.getRoot());
-			xmlString = oss.str();
-		}
-		//		std::cout << xmlString << std::endl;
+		xmlString = serialize(*core, core->getRoot());
+		std::cout << xmlString << std::endl;
 	}
-
 
 	// Deserialize again
 	{
-		Core core;
+		auto core = std::make_shared<Core>();
 		{
 			std::istringstream iss(xmlString);
-			XMLDeserializer deser(iss, core);
+			XMLDeserializer deser(iss, *core);
 			deser.readObject();
 		}
-
 
 		// Serialize again
 		{
 			std::ostringstream oss2;
-			XMLSerializer ser2(oss2, core);
-			ser2.writeObject(core.getRoot());
+			XMLSerializer ser2(oss2, *core.get());
+			ser2.writeObject(core->getRoot());
 			std::string xmlString2 = oss2.str();
 			//            std::cout << xmlString2 << std::endl;
-			TEST_ASSERT(xmlString == xmlString2, "Second serialization gave different result:\nString1:\n" + xmlString + "\nString2:\n" + xmlString2);
+			TEST_ASSERT(xmlString == xmlString2,
+						"Second serialization gave different result:\nString1:\n" + xmlString +
+							"\nString2:\n" + xmlString2);
 		}
 	}
 	return true;
@@ -126,9 +137,9 @@ bool testObjectPath()
 	Logger::debug(ObjectPath(core.getRoot()));
 	TEST_ASSERT(ObjectPath(core.getRoot()) == "/", "Root path didn't resolve to '/'.");
 
-
 	// Create an object tree
-	//	AttributeBase* rootAttr = core.getRoot().addAttribute("Root_Attribute", RTTI_OF(Attribute<float>));
+	//	AttributeBase* rootAttr = core.getRoot().addAttribute("Root_Attribute",
+	// RTTI_OF(Attribute<float>));
 	Entity& a = core.addEntity("A");
 	TEST_ASSERT(ObjectPath(a) == "/A", "Path mismatch");
 
@@ -149,4 +160,3 @@ bool testObjectPath()
 	}
 	return true;
 }
-

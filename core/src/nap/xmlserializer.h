@@ -27,6 +27,7 @@ namespace nap
 
     private:
 		Object* fromXML(tinyxml2::XMLElement*, Object* parent);
+        Object* readCompoundAttribute(tinyxml2::XMLElement*, Object* parent);
 		Object* readAttribute(tinyxml2::XMLElement*, Object* parent);
 		Object* readObject(tinyxml2::XMLElement*, Object* parent);
 	};

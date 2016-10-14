@@ -1,0 +1,21 @@
+# This clang-format file requires clang-format 3.9
+
+BreakBeforeBraces: Linux
+UseTab: Always
+TabWidth: 4
+IndentWidth: 4
+AccessModifierOffset: -4
+PointerAlignment: Left
+Standard: Cpp11
+ColumnLimit: 100
+IndentCaseLabels: false
+MaxEmptyLinesToKeep: 3
+#AllowShortIfStatementsOnASingleLine: true
+Cpp11BracedListStyle: true
+AlignEscapedNewlinesLeft: true
+AlignAfterOpenBracket: Align
+#AlignTrailingComments: true
+#AlignConsecutiveDeclarations: true
+#AlignConsecutiveAssignments: true
+AlwaysBreakTemplateDeclarations: true
+NamespaceIndentation: All
