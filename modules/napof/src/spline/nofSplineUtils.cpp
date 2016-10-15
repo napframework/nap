@@ -248,7 +248,7 @@ void gCreateHexagon(float inDiameter, int inPointCount, const ofPoint& inCenter,
 
 
 // Creates a spline from an svg file
-void gCreateSplineFromFile(const std::string& inFile, int inPointCount, NSpline& outSpline, const ofPoint& inCenter)
+void gCreateSplineFromFile(const std::string& inFile, int inPointCount, NSpline& outSpline, const ofPoint& inCenter, float scale)
 {
 	// Load the file
 	ofxSVG svg_file;
@@ -319,6 +319,7 @@ void gCreateSplineFromFile(const std::string& inFile, int inPointCount, NSpline&
 		// Flip y
 		v.y = max_y - (v.y - min_y);
 		v -= center_point;
+		v *= scale;
 	}
 
 	// Set it

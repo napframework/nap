@@ -117,6 +117,7 @@ namespace nap
 		SignalAttribute mReload								{ this, "Reload" };
 		SignalAttribute mBrowse								{ this, "Browse" };
 		Attribute<std::string> mFile						{ this, "File" };
+		NumericAttribute<float> mSize						{ this, "Size", 1.0f, 0.0f, 2.5f };
 		NumericAttribute<int> mSplineCount					{ this, "PointCount", 500, 100, 1000 };
 
 		// SLOTS
@@ -124,10 +125,12 @@ namespace nap
 		NSLOT(mCountChangedSlot, const int&, countChanged)
 		NSLOT(mReloadCalled, const SignalAttribute&, reloadCalled)
 		NSLOT(mBrowseCalled, const SignalAttribute&, browseCalled)
+		NSLOT(mSizeCalled, const float&, sizeChanged)
 
 	private:
 		void fileChanged(const std::string& file)			{ createAndUpdateSpline(); }
 		void countChanged(const int& count)					{ createAndUpdateSpline(); }
+		void sizeChanged(const float& size)					{ createAndUpdateSpline(); }
 		void reloadCalled(const SignalAttribute&)			{ createAndUpdateSpline(); }
 		void browseCalled(const SignalAttribute&);
 

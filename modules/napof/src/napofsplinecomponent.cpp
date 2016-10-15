@@ -231,6 +231,8 @@ namespace nap
 		mSplineCount.valueChangedSignal.connect(mCountChangedSlot);
 		mReload.signal.connect(mReloadCalled);
 		mBrowse.signal.connect(mBrowseCalled);
+		mSize.valueChangedSignal.connect(mSizeCalled);
+		mSize.setClamped(false);
 	}
 
 
@@ -294,7 +296,7 @@ namespace nap
 
 		// Create it
 		NSpline new_spline;
-		gCreateSplineFromFile(spline_file.getAbsolutePath(), mSplineCount.getValue(), new_spline);
+		gCreateSplineFromFile(spline_file.getAbsolutePath(), mSplineCount.getValue(), new_spline, ofVec3f(0,0,0), mSize.getValue());
 		if (new_spline.GetPointCount() == 0)
 		{
 			nap::Logger::warn("unable to load spline from file, point count is 0: %s", spline_file.getAbsolutePath().c_str());
