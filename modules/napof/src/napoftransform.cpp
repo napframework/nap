@@ -10,6 +10,11 @@ namespace nap
 	OFTransform::OFTransform()
 	{
 		mGlobalTransform.makeIdentityMatrix();
+		mTranslate.setClamped(false);
+		mRotate.setClamped(false);
+		mScale.setClamped(false);
+		mPivot.setClamped(false);
+		mUniformScale.setClamped(false);
 	}
 
 
@@ -77,7 +82,7 @@ namespace nap
 		mPreviousTime = ofGetElapsedTimef();
 		mEnableUpdates.valueChangedSignal.connect(mUpdateCalled);
 		mReset.signal.connect(mResetCalled);
-
+		mSpeed.setClamped(false);
 	}
 
 

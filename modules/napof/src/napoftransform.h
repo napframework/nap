@@ -30,11 +30,11 @@ namespace nap
 		// Default constructor
 		OFTransform();
 
-		Attribute<ofVec3f>			mTranslate{ this, "Translation", gOrigin };
-		Attribute<ofVec3f>			mRotate{ this, "Rotation", gOrigin };
-		Attribute<ofVec3f>			mScale{ this, "Scale", {1.0f, 1.0f, 1.0f} };
-		Attribute<ofVec3f>			mPivot{ this, "Pivot", gOrigin };
-		NumericAttribute<float>		mUniformScale{ this, "UniformScale", 1.0f, 0.0f, 1.0f };
+		NumericAttribute<ofVec3f>		mTranslate{ this, "Translation", gOrigin,{ -100.0f, -100.0f, -100.0f },{ 100.0f, 100.0f, 100.0f }};
+		NumericAttribute<ofVec3f>		mRotate{ this, "Rotation", gOrigin, {0.0f,0.0f,0.0f}, {360.0f, 360.0f, 360.0f} };
+		NumericAttribute<ofVec3f>		mScale{ this, "Scale", {1.0f, 1.0f, 1.0f},	{ 0.0f, 0.0f, 0.0f },	{ 10.0f, 10.0f, 10.0f } };
+		NumericAttribute<ofVec3f>		mPivot{ this, "Pivot", gOrigin, {0.0f, 0.0f, 0.0f}, {100.0f, 100.0f, 100.0f} };
+		NumericAttribute<float>			mUniformScale{ this, "UniformScale", 1.0f, 0.0f, 1.0f };
 
 		// Getters
 		ofMatrix4x4					getLocalTransform() const;
@@ -68,7 +68,7 @@ namespace nap
 		NumericAttribute<float>	mX		{ this, "SpeedX", 1.0f, 0.0f, 1.0f };
 		NumericAttribute<float>	mY		{ this, "SpeedY", 1.0f, 0.0f, 1.0f };
 		NumericAttribute<float>	mZ		{ this, "SpeedZ", 1.0f, 0.0f, 1.0f };
-		NumericAttribute<float>	mSpeed	{ this, "Speed",  1.0f, 0.0f, 100.0f };
+		NumericAttribute<float>	mSpeed	{ this, "Speed",  0.0f, 0.0f, 100.0f };
 
 		// Overrides
 		virtual void onUpdate();
