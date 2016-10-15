@@ -105,7 +105,7 @@ namespace nap
 		Attribute<bool>			mInstant	{ this, "Instant", false };
 		NumericAttribute<float> mSpeed		{ this, "Speed", 0.5f, 0.0f, 1.0f };
 		NumericAttribute<float>	mInfluence	{ this, "Influence", 0.0f, 0.0f, 1.0f };
-		NumericAttribute<float> mScale		{ this, "Scale", 1.0f, 0.0f, 10.0f };
+		NumericAttribute<float> mScale		{ this, "Range", 1.0f, 0.0f, 10.0f };
 		NumericAttribute<int>	mBlendMode	{ this, "BlendMode", 0, 0, 2 };
 
 		// Overrides
