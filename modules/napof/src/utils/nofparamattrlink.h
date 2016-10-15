@@ -229,7 +229,7 @@ OFParamNumericAttrLink<T>::OFParamNumericAttrLink(ofParameter<T>& param, nap::Nu
 template<typename T>
 nap::NumericAttribute<T>* OFParamNumericAttrLink<T>::getNumericAttribute()
 {
-	return mAttribute == nullptr ? nullptr : static_cast<nap::NumericAttribute<T>*>(mAttribute);
+    return OFAbstractParamAttrLink::mAttribute == nullptr ? nullptr : static_cast<nap::NumericAttribute<T>*>(OFAbstractParamAttrLink::mAttribute);
 }
 
 
@@ -250,14 +250,14 @@ void OFParamNumericAttrLink<T>::attributeChanged(nap::AttributeBase& new_attr)
 template<typename T>
 void OFParamNumericAttrLink<T>::attributeRangeChanged(const nap::NumericAttribute<T>&)
 {
-	if (getParameter() == nullptr)
+    if (OFParamAttrLink<T>::getParameter() == nullptr)
 	{
 		assert(false);
 		return;
 	}
 
-	getParameter()->setMin(getNumericAttribute()->getMin());
-	getParameter()->setMax(getNumericAttribute()->getMax());
+    OFParamAttrLink<T>::getParameter()->setMin(getNumericAttribute()->getMin());
+    OFParamAttrLink<T>::getParameter()->setMax(getNumericAttribute()->getMax());
 }
 
 
