@@ -260,8 +260,22 @@ namespace nap
 		// Set current director
 		sCurrentDir = ofFile(result.filePath).getEnclosingDirectory();
 
-		// Set value
-		mFile.setValue(result.filePath);
+		//std::string relative_path = ofFilePath::makeRelative(result.filePath, ofFilePath::getCurrentWorkingDirectory());
+		
+		// Set value (HACK TO MAKE IT RELATIVE, OPENFRAMEWORKS DOESN"T WANT TO DO ITS FUCKING JOB
+		std::string relative_path = result.filePath;
+		std::string exe_dir = ofFilePath::getCurrentExeDir();
+		if (gContains(result.filePath, exe_dir, false) && result.filePath.size() >= exe_dir.size() + 5)
+		{
+			relative_path.erase(0, exe_dir.size() + 5);
+		}
+		else
+		{
+			nap::Logger::warn(*this, "unable to make path relative to exe folder: %s", result.filePath.c_str());
+		}
+
+		//std::string relative_path = ofToDataPath(ofFile(exe_dir).getAbsolutePath());
+		mFile.setValue(relative_path);
 	}
 
 
