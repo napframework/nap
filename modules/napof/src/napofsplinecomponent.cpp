@@ -58,6 +58,7 @@ namespace nap
 		mSplineSize.connectToValue(mSizeChangedSlot);
 		mSplineCount.connectToValue(mCountChangedSlot);
 		mSplineIndex.connectToValue(mIndexChangedSlot);
+		mAutoUpdate.connectToValue(mAutoUpdateCalled);
 	}
 
 
@@ -103,6 +104,7 @@ namespace nap
 
 		// Set it
 		spline_comp->mSpline.setValue(out_spline);
+		mSplineUpdated.trigger(*this);
 	}
 
 
@@ -233,6 +235,7 @@ namespace nap
 		mBrowse.signal.connect(mBrowseCalled);
 		mSize.valueChangedSignal.connect(mSizeCalled);
 		mSize.setClamped(false);
+		mAutoUpdate.valueChangedSignal.connect(mAutoUpdateCalled);
 	}
 
 
@@ -319,6 +322,7 @@ namespace nap
 
 		// Set the just loaded spline
 		spline->mSpline.setValue(new_spline);
+		mSplineUpdated.trigger(*this);
 	}
 }
 
