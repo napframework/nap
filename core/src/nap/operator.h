@@ -12,6 +12,7 @@ namespace nap
 	// Forward declarations
 	class Core;
 	class Patch;
+    class Entity;
 
 
 	// The operator class is a unit within a patch that can be connected to other operators using plugs. The operator
@@ -51,6 +52,9 @@ namespace nap
 
 		// Return the patch this Operator resides in
         Patch* getPatch();
+        
+        // Return the entity this operator's patch resides in
+        Entity* getEntity();
 
 	};
 }
