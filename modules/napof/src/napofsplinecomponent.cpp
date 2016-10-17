@@ -175,7 +175,9 @@ namespace nap
 			if (mStep.getValue())
 			{
 				// Get color index
-				color_data[i] = getColorForIdx((int)(idx * 2.0f)) * mIntensity.getValue();
+				const ofFloatColor& float_color = idx < mPulseWidth.getValue() ? mColorOne.getValue() : mColorTwo.getValue();
+				color_data[i] = float_color * mIntensity.getValue();
+				//color_data[i] = getColorForIdx((int)(idx * 2.0f)) * mIntensity.getValue();
 				continue;
 			}
 

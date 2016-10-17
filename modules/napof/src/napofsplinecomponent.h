@@ -175,6 +175,7 @@ namespace nap
 		NumericAttribute<float> mOffset =						{ this, "Offset", 0.0f, 0.0f, 1.0f };
 		NumericAttribute<float> mIntensity =					{ this, "Intensity", 1.0f, 0.0f, 1.0f };
 		NumericAttribute<float> mFrequency =					{ this, "Frequency", 1.0f, 1.0f, 100.0f };
+		NumericAttribute<float> mPulseWidth =					{ this, "PulseWidth", 0.5f, 0.0f, 1.0f };
 		NumericAttribute<float> mFrequencyPower =				{ this, "Power", 1.0f, 0.0f, 5.0f};
 		Attribute<ofFloatColor> mColorOne =						{ this, "ColorOne", { 1.0f } };
 		Attribute<ofFloatColor> mColorTwo =						{ this, "ColorTwo", { 1.0f } };
