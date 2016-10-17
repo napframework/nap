@@ -168,8 +168,8 @@ namespace nap
 			idx = pow(idx, mFrequencyPower.getValue());
 
 			// Add offset and multiply with frequency to repeat
-			idx += (clamped_offset + mTime);
-			idx = fmod(idx * mFrequency.getValue(), 1.0f);
+			idx += mTime;
+			idx = fmod((idx * mFrequency.getValue()) + clamped_offset, 1.0f);
 
 			// If we step, set it to the current color
 			if (mStep.getValue())
