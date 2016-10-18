@@ -78,7 +78,7 @@ namespace nap
 			ofVec3f vertex  = spline.GetSourceVertex(i);
 
 			// Get floating point index
-			float sample_index = fmod(offset + (float(i) / point_count), 1.0f);
+			float sample_index = fmod((offset / curr_freq) + (float(i) / point_count), 1.0f);
 
 			// Get data based on lfo type
 			float wave_value = gFit(sample_function(sample_index, curr_freq), 0.0f, 1.0f, -1.0f, 1.0f) * curr_ampl;
