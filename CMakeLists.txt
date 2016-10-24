@@ -39,6 +39,7 @@ add_subdirectory(napkin)
 # executable targets
 add_subdirectory(test/coretestapp)
 add_subdirectory(test/unittest)
+add_subdirectory(test/scriptserver)
 
 # modules
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR}/modules)

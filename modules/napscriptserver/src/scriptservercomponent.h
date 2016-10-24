@@ -8,11 +8,11 @@ namespace nap
 {
 
 
-    class ScriptServer : public Component
+    class ScriptServerComponent : public Component
 	{
 		RTTI_ENABLE_DERIVED_FROM(Component)
 	public:
-		ScriptServer();
+		ScriptServerComponent();
 
 		void run();
 		Attribute<int> port = {this, "port", 8888};
@@ -23,4 +23,4 @@ namespace nap
 	};
 }
 
-RTTI_DECLARE(nap::ScriptServer)
+RTTI_DECLARE(nap::ScriptServerComponent)

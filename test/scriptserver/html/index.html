@@ -1,0 +1,36 @@
+<html>
+<head>
+    <script src="js/jquery-3.1.1.js"></script>
+    <script src="js/jquery.jsonrpc.js"></script>
+    <script>
+
+        $(document).ready(function() {
+            $.jsonRPC.setup({
+                endPoint : 'tcp://localhost:8888',
+                namespace : ''
+            });
+            $("input#evaluate").click(function() {
+                $.jsonRPC.request('jsonrpc_echo', {
+                    params : [$("textarea#input").val()],
+                    success : function(data) {
+                        $("<p />").text(data.result).appendTo($("p#result"));
+                    },
+                    error : function(data) {
+                        $("<p />").text(data.error.message).appendTo($("p#result"));
+                    }
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+<p id="result"></p>
+<p>
+    <textarea name="input" id="input"></textarea>
+</p>
+<p>
+    <input name="evaluate" id="evaluate" value="evaluate" type="button" />
+</p>
+</body>
+
+</html>

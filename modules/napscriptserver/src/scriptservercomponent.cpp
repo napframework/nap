@@ -1,7 +1,7 @@
-#include "scriptserver.h"
+#include "scriptservercomponent.h"
 #include <zmq.hpp>
 
-RTTI_DEFINE(nap::ScriptServer)
+RTTI_DEFINE(nap::ScriptServerComponent)
 
 static std::string s_recv(zmq::socket_t& socket)
 {
@@ -25,13 +25,13 @@ s_send (zmq::socket_t & socket, const std::string & string) {
 namespace nap
 {
 
-	ScriptServer::ScriptServer() : Component()
+	ScriptServerComponent::ScriptServerComponent() : Component()
 	{
 		mInterpreter = &addChild<JSONRPCInterpreter>("ScriptInterpreter");
 		run();
 	}
 
-	void ScriptServer::run()
+	void ScriptServerComponent::run()
 	{
 		zmq::context_t context(1);
 		zmq::socket_t socket(context, ZMQ_REP);
