@@ -13,6 +13,10 @@ namespace nap
 
 		std::string evalScript(const std::string& cmd) override
 		{
+            // Redirect stdout
+            std::stringbuf ss;
+            std::streambuf* oldStream = std::cout.rdbuf(&ss);
+
 			PyCompilerFlags* flags = nullptr;
 
 			PyObject* m = PyImport_AddModule("__main__");
