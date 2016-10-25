@@ -2,7 +2,6 @@
 #include <unistd.h>
 #include <thread>
 
-#include <mongoose/Server.h>
 using namespace nap;
 
 
@@ -13,12 +12,10 @@ int main(int argc, char* argv[]) {
     core.initialize();
 
     Entity &root = core.getRoot();
-    auto& server = root.addComponent(RTTI::TypeInfo::getByName("nap::ScriptServerComponent"));
+    RTTI::TypeInfo serverCompType = RTTI::TypeInfo::getByName("nap::PythonServerComponent");
+    auto& server = root.addComponent(serverCompType);
 
-//    server.getAttribute<bool>("running")->setValue(true);
-
-    Mongoose::Server srv(8888);
-    srv.start();
+    server.getAttribute<bool>("running")->setValue(true);
 
     while (true) {
         Logger::debug("Alive");

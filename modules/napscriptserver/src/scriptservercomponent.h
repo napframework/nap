@@ -1,26 +1,65 @@
 #pragma once
 
-#include <nap.h>
-#include "scriptinterpreter.h"
 #include "jsonrpcinterpreter.h"
+#include "pythoninterpreter.h"
+#include "scriptinterpreter.h"
+#include <nap.h>
 
 namespace nap
 {
 
-
-    class ScriptServerComponent : public Component
+	class ScriptServerComponent : public Component
 	{
 		RTTI_ENABLE_DERIVED_FROM(Component)
 	public:
-		ScriptServerComponent();
+		ScriptServerComponent() { running.valueChangedSignal.connect([&](const bool& running) {
+        onRunningChanged(running);
+            }); }
 
-		void run();
+		virtual void run() = 0;
+
 		Attribute<int> port = {this, "port", 8888};
+		Attribute<bool> running = {this, "running", false};
 
-	private:
+	protected:
 		ScriptInterpreter* mInterpreter;
 
+	private:
+//		Slot<const bool&> onRunningChangedSlot = { &onRunningChanged };
+
+		void onRunningChanged(const bool& running)
+		{
+			if (running) {
+				run();
+			}
+		}
 	};
+
+	class JSONRPCServerComponent : public ScriptServerComponent
+	{
+		RTTI_ENABLE_DERIVED_FROM(ScriptServerComponent)
+	public:
+		JSONRPCServerComponent() : ScriptServerComponent()
+		{
+			mInterpreter = &addChild<JSONRPCInterpreter>("ScriptInterpreter");
+		}
+
+        void run() override;
+	};
+
+	class PythonServerComponent : public ScriptServerComponent
+	{
+		RTTI_ENABLE_DERIVED_FROM(ScriptServerComponent)
+	public:
+		PythonServerComponent() : ScriptServerComponent()
+		{
+			mInterpreter = &addChild<PythonInterpreter>("ScriptInterpreter");
+		}
+
+        virtual void run() override;
+    };
 }
 
-RTTI_DECLARE(nap::ScriptServerComponent)
+RTTI_DECLARE_BASE(nap::ScriptServerComponent)
+RTTI_DECLARE(nap::JSONRPCServerComponent)
+RTTI_DECLARE(nap::PythonServerComponent)
