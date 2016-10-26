@@ -3,6 +3,7 @@
 // Core Includes
 #include <nap/component.h>
 #include <nap/attribute.h>
+#include <nap/coremodule.h>
 
 // Std Includes
 #include <iostream>
