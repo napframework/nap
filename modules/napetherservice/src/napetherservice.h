@@ -39,6 +39,7 @@ namespace nap
 		void draw();
 
 		// Controllable laser attribtues
+		Attribute<bool> mSend =					{ this, "SendToLaser", true };
 		Attribute<bool> mFlipX =				{ this, "FlipX", true  };
 		Attribute<bool> mFlipY =				{ this, "FlipY", false };
 		NumericAttribute<int> mCloseCount =		{ this, "CloseCount", 25, 10,100 };
