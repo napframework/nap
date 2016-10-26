@@ -1,12 +1,12 @@
 #pragma once
+
 #include <rtti/rtti.h>
 #include <nap/core.h>
-#include <nap/attribute.h>
+#include <nap/coreattributes.h>
 #include <nap/component.h>
 #include <nap/componentdependency.h>
 #include <nap/patchcomponent.h>
 #include <nap/xmlserializer.h>
 #include <nap/objectpath.h>
-#include <nap/coremodule.h>
 #include <nap/link.h>
 #include <nap/event.h>

@@ -1,8 +1,10 @@
 #pragma once
 
-#include <nap/coremodule.h>
+// Local Includes
 #include "layoutcomponent.h"
 
+// External Includes
+#include <nap/coreattributes.h>
 
 namespace nap
 {

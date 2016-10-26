@@ -1,16 +1,15 @@
 #pragma once
 
-// NAP Includes
+// External Includes
 #include <nap/attribute.h>
 #include <nap/component.h>
 #include <nap/coremodule.h>
 #include <nap/signalslot.h>
-
-#include <napofattributes.h>
-
-// OF Includes
-#include "napofupdatecomponent.h"
 #include <ofImage.h>
+
+// Local Includes
+#include "napofattributes.h"
+#include "napofupdatecomponent.h"
 
 namespace nap
 {

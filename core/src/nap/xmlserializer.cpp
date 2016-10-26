@@ -1,6 +1,6 @@
+// Local Includes
 #include "xmlserializer.h"
-#include "coremodule.h"
-#include "object.h"
+#include "coreattributes.h"
 
 using namespace tinyxml2;
 using namespace std;
@@ -17,8 +17,6 @@ using namespace std;
 
 namespace nap
 {
-
-
 	XMLSerializer::XMLSerializer(std::ostream& os, Core& core) : Serializer(os, core) {}
 
 

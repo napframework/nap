@@ -1,10 +1,10 @@
-#ifndef mathoperators_hpp
-#define mathoperators_hpp
+#pragma once
 
+// External Includes
 #include <rtti/rtti.h>
 #include <nap/operator.h>
 #include <nap/attribute.h>
-#include <nap/coremodule.h>
+#include <nap/coreattributes.h>
 
 namespace nap {
     
@@ -64,5 +64,3 @@ namespace nap {
 
 RTTI_DECLARE(nap::FloatPushOperator)
 RTTI_DECLARE(nap::PlusPushOperator)
-
-#endif /* mathoperators_hpp */

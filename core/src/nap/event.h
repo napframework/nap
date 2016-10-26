@@ -1,9 +1,12 @@
 #pragma once
 
-#include <nap/attributeobject.h>
-#include <nap/coremodule.h>
-#include <rtti/rtti.h>
+// Local Includes
+#include "attributeobject.h"
+#include "coreattributes.h"
 #include "objectutils.h"
+
+// External Includes
+#include <rtti/rtti.h>
 
 namespace nap
 { 
