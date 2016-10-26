@@ -2,12 +2,13 @@
 
 #include "layoutcomponent.h"
 
-
-
 namespace nap
 {
-
-	
+	/**
+	 * BoxLayout
+	 *
+	 * Lays out it's child components in a box, horizontally or vertically
+	 */
 	class BoxLayout : public LayoutComponent
 	{
 		RTTI_ENABLE_DERIVED_FROM(LayoutComponent)

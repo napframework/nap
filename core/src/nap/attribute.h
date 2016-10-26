@@ -1,15 +1,17 @@
 #pragma once
 
+// Local Includes
+#include "object.h"
+#include "signalslot.h"
+#include "link.h"
+
+// External Includes
 #include <assert.h>
 #include <cstring>
-#include <nap/object.h>
-#include <nap/signalslot.h>
-#include <nap/link.h>
 #include <rtti/rtti.h>
 #include <sstream>
 #include <string>
 #include <algorithm>
-
 
 namespace nap
 {
@@ -18,12 +20,12 @@ namespace nap
 	class Object;
 
 	/**
-	@brief AttributeObject
+	AttributeObject
 
 	Attribute is a system wide available parameter that holds a name and contains a value.
 	This value can be queried by other objects, set using script etc.
 	An Attribute often defines a property of a object containing the attribute, such as Width, Transform etc.
-	**/
+	*/
 	class AttributeBase : public Object
 	{
 		friend class AttributeObject;
@@ -85,7 +87,7 @@ namespace nap
 
 
 	/**
-	@brief Attribute
+	Attribute
 
 	Concrete implementation of attribute, invisible to UI and scripting
 	**/
@@ -159,9 +161,7 @@ namespace nap
 
 
 	/**
-	@brief Specialization of the default Attribute
-
-
+	Specialization of the default Attribute
 	**/
 	template<typename T>
 	class NumericAttribute : public Attribute<T>
@@ -225,9 +225,9 @@ namespace nap
 
 
 	/**
-	@brief SignalAttribute
+	SignalAttribute
 
-	Acts as a bang, connect to @trigger signal to receive bang
+	Acts as a bang, connect to @signal signal to receive bang
 	**/
 	class SignalAttribute : public AttributeBase
 	{

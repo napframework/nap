@@ -2,7 +2,7 @@
 
 // NAP Includes
 #include <nap/serviceablecomponent.h>
-#include <nap/attribute.h>
+#include <nap/coreattributes.h>
 #include <nap/link.h>
 
 namespace nap

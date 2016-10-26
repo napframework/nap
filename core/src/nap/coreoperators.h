@@ -1,6 +1,8 @@
 #pragma once
 
 #include "operator.h"
+#include "coreattributes.h"
+
 
 namespace nap {
 

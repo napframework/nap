@@ -1,8 +1,9 @@
 #pragma once
 
+// External Includes
 #include <rtti/rtti.h>
 #include <nap/attributeobject.h>
-#include <nap/coremodule.h>
+#include <nap/coreattributes.h>
 #include <nap/event.h>
 
 namespace nap

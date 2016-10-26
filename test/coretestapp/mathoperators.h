@@ -1,16 +1,17 @@
-#ifndef mathoperators_hpp
-#define mathoperators_hpp
+#pragma once
 
+// External Includes
 #include <rtti/rtti.h>
 #include <nap/operator.h>
 #include <nap/attribute.h>
-#include <nap/coremodule.h>
+#include <nap/coreattributes.h>
+#include <nap/coretypeconverters.h>
 
-namespace nap {
-    
-    
+namespace nap
+{
     //! Operator that stores a float value.
-    class FloatPushOperator : public Operator {
+    class FloatPushOperator : public Operator
+    {
         RTTI_ENABLE_DERIVED_FROM(Operator)
     public:
         //! Constructor
@@ -28,7 +29,8 @@ namespace nap {
     
     
     //! Operator that performs addition (+) arithmetic with a left and a right operand
-    class PlusPushOperator : public Operator {
+    class PlusPushOperator : public Operator
+    {
         RTTI_ENABLE_DERIVED_FROM(Operator)
     public:
         //! Constructor
@@ -64,5 +66,3 @@ namespace nap {
 
 RTTI_DECLARE(nap::FloatPushOperator)
 RTTI_DECLARE(nap::PlusPushOperator)
-
-#endif /* mathoperators_hpp */

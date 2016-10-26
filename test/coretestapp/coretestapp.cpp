@@ -4,14 +4,16 @@
 #if defined(__WIN32__) || defined(_WIN23)
 #include "stdafx.h"
 #endif
+
+// Local Includes
 #include "mathoperators.h"
 #include "testcomponent.h"
 #include "testservice.h"
+
+// External Includes
 #include <fstream>
 #include <nap/entity.h>
 #include <nap/serializer.h>
-#include <nap/coremodule.h>
-
 
 using namespace std;
 using namespace nap;

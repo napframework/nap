@@ -35,10 +35,13 @@ OperatorItem::OperatorItem(QGraphicsItem* parent, nap::Operator& op) : QGraphics
 
 	setTitle(QString::fromStdString(op.getName()));
 
-	mOperator.inputPlugAdded.connect(onInputPlugAddedSlot);
-	mOperator.outputPlugAdded.connect(onOutputPlugAddedSlot);
-	mOperator.inputPlugRemoved.connect(onPlugRemovedSlot);
-	mOperator.outputPlugRemoved.connect(onPlugRemovedSlot);
+    // TODO: THESE SIGNALS HAVE BEEN REMOVED? (COEN)
+    /*
+	mOperator.childAdded.connect(onInputPlugAddedSlot);
+	mOperator.childAdded.connect(onOutputPlugAddedSlot);
+	mOperator.childRemoved.connect(onPlugRemovedSlot);
+	mOperator.childRemoved.connect(onPlugRemovedSlot);
+    */
 
     // Listen for stuff like position changes
     // TODO: This must be made simpler
@@ -52,7 +55,7 @@ OperatorItem::OperatorItem(QGraphicsItem* parent, nap::Operator& op) : QGraphics
             }
         });
 
-        for (nap::AttributeBase* attrib : mOperator.getAttributesList()) {
+        for (nap::AttributeBase* attrib : mOperator.getAttributes()) {
             attrib->valueChanged.connect([&](nap::AttributeBase& at) {
                 setPos(getObjectEditorPosition(mOperator));
             });
