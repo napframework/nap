@@ -5,9 +5,9 @@
 namespace nap
 {
 
-	class ScriptInterpreter : public nap::Object
+	class ScriptInterpreter : public Object
 	{
-		RTTI_ENABLE_DERIVED_FROM(Object)
+        RTTI_ENABLE_DERIVED_FROM(Object)
 	public:
 		virtual std::string evalScript(const std::string& cmd) = 0;
         void exit() {
@@ -18,7 +18,6 @@ namespace nap
 	private:
         bool mIsExiting = false;
 	};
-
 
 }
 
