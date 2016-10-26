@@ -1,6 +1,8 @@
-#include <napofslideshowcomponent.h>
+// Local Includes
+#include "napofslideshowcomponent.h"
+#include "napofattributes.h"
 
-#include <napofattributes.h>
+// External Includes
 #include <utils/nofUtils.h>
 
 RTTI_DEFINE(nap::OFSlideshowComponent)

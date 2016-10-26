@@ -1,21 +1,22 @@
 #pragma once
 
-#include <nap/coremodule.h>
+// External Includes
+#include <nap/coreattributes.h>
 #include <nap/operator.h>
 #include <rtti/rtti.h>
 #include <SFML/Graphics.hpp>
 
 RTTI_DECLARE(sf::RenderWindow)
 
-class CreateRenderWindowOperator : public nap::Operator {
+class CreateRenderWindowOperator : public nap::Operator
+{
     RTTI_ENABLE_DERIVED_FROM(nap::Operator)
 public:
-    CreateRenderWindowOperator() : nap::Operator(), mCreateWindowPlug(this, "Create", [&]() { onCall();}) {
-    }
+    CreateRenderWindowOperator() : nap::Operator(), mCreateWindowPlug(this, "Create", [&]() { onCall();})
+    {}
 
-    void onCall() {
-
-    }
+    void onCall()
+    {}
 
 private:
     nap::InputTriggerPlug mCreateWindowPlug;

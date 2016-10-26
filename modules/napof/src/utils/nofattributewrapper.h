@@ -1,14 +1,10 @@
 #pragma once
 
-// OF Includes
+// External Includes
 #include <ofParameterGroup.h>
 #include <Utils/nofparamattrlink.h>
-
-// Nap Includes
 #include <nap/attributeobject.h>
 #include <rtti/rtti.h>
-
-// Std Includes
 #include <unordered_map>
 
 

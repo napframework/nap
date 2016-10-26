@@ -1,4 +1,5 @@
-#include <napofsimplecamcomponent.h>
+// Local Includes
+#include "napofsimplecamcomponent.h"
 
 RTTI_DEFINE(nap::OFSimpleCamComponent)
 RTTI_DEFINE_DATA(ofCam)

@@ -1,24 +1,26 @@
 #pragma once
 
-// RTTI Includes
+// External Includes
 #include <rtti/rtti.h>
-
-// NAP Includes
 #include <nap/serviceablecomponent.h>
-#include <nap/coremodule.h>
+#include <nap/coreattributes.h>
 #include <nap/attribute.h>
-
-// OF Includes
-#include <napofblendtype.h>
 #include <nap/componentdependency.h>
-#include <napoftransform.h>
-#include <napofmaterial.h>
+
+// Local Includes
+#include "napofblendtype.h"
+#include "napoftransform.h"
+#include "napofmaterial.h"
 
 namespace nap
 {
-	/**
-	@brief Renderable NAP component
-	**/
+    /**
+     * Renderable NAP component
+     *
+     * Any derived component will be able to draw itself using the OF render engine
+     * The render engine will first call onDraw after binding the right shader
+     * The render engine will then call onPostDraw without binding a shader
+     */
 	class OFRenderableComponent : public ServiceableComponent
 	{
 		RTTI_ENABLE_DERIVED_FROM(ServiceableComponent)
