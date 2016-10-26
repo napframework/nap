@@ -12,7 +12,17 @@ int main(int argc, char* argv[]) {
     core.initialize();
 
     Entity &root = core.getRoot();
-    RTTI::TypeInfo serverCompType = RTTI::TypeInfo::getByName("nap::PythonServerComponent");
+
+    for (int i=0; i < 1000; i++) {
+        Entity& e = root.addEntity("TestEntity_" + std::to_string(i));
+
+        for (int j=0; j < 3; j++) {
+            e.addAttribute<float>("TestFloat" + std::to_string(j));
+        }
+    }
+
+
+    RTTI::TypeInfo serverCompType = RTTI::TypeInfo::getByName("nap::JSONRPCServerComponent");
     auto& server = root.addComponent(serverCompType);
 
     server.getAttribute<bool>("running")->setValue(true);
