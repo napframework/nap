@@ -1,4 +1,4 @@
-#include <napofrendercomponent.h>
+#include "napofrendercomponent.h"
 
 namespace nap
 {

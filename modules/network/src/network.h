@@ -1,10 +1,11 @@
 #pragma once
 
+// External Includes
 #include <stdio.h>
 #include <nap/component.h>
 #include <asio.hpp>
 #include <Lib/Utility/Threading/ThreadPool.h>
-#include <nap/coremodule.h>
+#include <nap/coreattributes.h>
 
 namespace nap {
     

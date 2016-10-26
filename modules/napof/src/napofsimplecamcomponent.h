@@ -1,17 +1,18 @@
 #pragma once
 
-// NAP Includes
+// External Includes
 #include <nap/serviceablecomponent.h>
-#include <nap/attribute.h>
-#include <nap/coremodule.h>
-
-#include <napofattributes.h>
+#include <nap/coreattributes.h>
 #include <nap/signalslot.h>
-
-// OF Includes
 #include <ofEasyCam.h>
 
-// Wrapper around ofEasyCam so we can use it as an attribute
+// Local Includes
+#include "napofattributes.h"
+
+
+/**
+ * Wrapper around ofEasyCam so we can use it as an attribute
+ */
 class ofCam : public ofEasyCam
 {
 public:

@@ -1,4 +1,5 @@
-#include <napofupdatecomponent.h>
+// Local Includes
+#include "napofupdatecomponent.h"
 
 namespace nap
 {

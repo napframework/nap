@@ -1,21 +1,20 @@
 #pragma once
 
-// NAP Includes
+// External Includes
 #include <nap/component.h>
-#include <nap/attribute.h>
-#include <nap/coremodule.h>
-#include <napofattributes.h>
-
-// OF Includes
+#include <nap/coreattributes.h>
 #include <ofSoundPlayer.h>
+
+// Local Includes
+#include "napofattributes.h"
 
 namespace nap
 {
 	/**
-	@brief NAP OpenFrameworks sound player
+	NAP OpenFrameworks sound player
 
 	Simple sound interface for sound file play back
-	**/
+	*/
 	class OFPlaySoundComponent : public Component
 	{
 		RTTI_ENABLE_DERIVED_FROM(Component)

@@ -1,7 +1,10 @@
-#include <nofattributewrapper.h>
-#include <nap/coremodule.h>
+// Local Includes
+#include "nofattributewrapper.h"
+#include "napofattributes.h"
+
+// External Includes
+#include <nap/coreattributes.h>
 #include <ofColor.h>
-#include <napofattributes.h>
 
 OFParameterMap OFAttributeWrapper::sCreationMap;
 

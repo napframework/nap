@@ -3,13 +3,14 @@
 // RTTI Includes
 #include <rtti/rtti.h>
 
-// Nap Includes
+// External Includes
 #include <nap/serviceablecomponent.h>
 #include <nap/signalslot.h>
 #include <nap/logger.h>
-#include <nap/coremodule.h>
+#include <nap/coreattributes.h>
 
-#include <napofattributes.h>
+// Local Includes
+#include "napofattributes.h"
 
 // OF Includes
 #include <ofShader.h>

@@ -1,6 +1,9 @@
+// Local Includes
 #include "napkin_utilities.h"
+
+// External Includes
 #include <QtCore/qtextstream.h>
-#include <nap/coremodule.h>
+#include <nap/coreattributes.h>
 
 
 QString ensureExtension(const QString& filename, const QString& extension)

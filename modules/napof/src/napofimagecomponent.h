@@ -3,7 +3,7 @@
 // External Includes
 #include <nap/attribute.h>
 #include <nap/component.h>
-#include <nap/coremodule.h>
+#include <nap/coreattributes.h
 #include <nap/signalslot.h>
 #include <ofImage.h>
 
