@@ -1,5 +1,8 @@
+// External Includes
 #include <nap/logger.h>
-#include <napofspritecomponent.h>
+
+// Local Includes
+#include "napofspritecomponent.h"
 
 namespace nap
 {

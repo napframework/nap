@@ -1,4 +1,4 @@
-#include <napethercamera.h>
-#include <nap/coremodule.h>
+// Local Includes
+#include "napethercamera.h"
 
 RTTI_DEFINE(nap::EtherDreamCamera)

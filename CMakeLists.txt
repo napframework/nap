@@ -39,6 +39,7 @@ add_subdirectory(napkin)
 # executable targets
 add_subdirectory(test/coretestapp)
 add_subdirectory(test/unittest)
+add_subdirectory(test/scriptserver)
 
 # modules
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR}/modules)
@@ -53,4 +54,4 @@ add_subdirectory(modules/napawesomium)
 add_subdirectory(modules/napscriptserver)
 
 #add_dependencies(napkin mod_napfsm)
-#add_dependencies(scriptserver mod_napscriptserver mod_sfml)
+add_dependencies(scriptserver mod_napscriptserver)

@@ -1,7 +1,9 @@
+// External Includes
 #include <nap/logger.h>
-
-#include <napofsoundcomponent.h>
 #include <ofFileUtils.h>
+
+// Local Includes
+#include "napofsoundcomponent.h"
 
 namespace nap
 {

@@ -1,5 +1,6 @@
-#include "modulemanager.h"
-#include "coremodule.h"
+#include <nap/modulemanager.h>
+#include <nap/coremodule.h>
+#include <nap/coreattributes.h>
 
 #ifdef _WIN32
 #include <windows.h> // Windows dll loading

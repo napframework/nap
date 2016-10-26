@@ -6,7 +6,10 @@
 //
 //
 
-#include <network.h>
+// Local Includes
+#include "network.h"
+
+// External Includes
 #include <nap/logger.h>
 #include <iostream>
 #include <thread>

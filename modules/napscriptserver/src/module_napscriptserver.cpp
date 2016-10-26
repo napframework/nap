@@ -1,9 +1,10 @@
 #include <nap/module.h>
-#include "scriptserver.h"
+#include "scriptservercomponent.h"
 
 NAP_MODULE_BEGIN(NapScriptServer)
 {
-    NAP_REGISTER_COMPONENT(nap::ScriptServer)
+    NAP_REGISTER_COMPONENT(nap::JSONRPCServerComponent)
+    NAP_REGISTER_COMPONENT(nap::PythonServerComponent)
 }
 NAP_MODULE_END(NapScriptServer)
 

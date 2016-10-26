@@ -1,7 +1,8 @@
-#include <nap/attribute.h>
+// Local Includes
+#include "attribute.h"
 #include <nap/attributeobject.h>
 #include <nap/entity.h>
-#include <nap/coremodule.h>
+#include <nap/coreattributes.h>
 
 // RTTI Define
 
@@ -18,7 +19,8 @@ namespace nap {
 
 
 	/**
-	 @brief set attribute value using fromString() method
+	 Set attribute value using fromString() method
+	 @param value: The value to set on this attribute
 	 **/
 	void AttributeBase::setValue(const std::string& value)
 	{

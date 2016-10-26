@@ -1,10 +1,9 @@
 #pragma once
-// Nap Includes
-#include <nap/service.h>
-#include <nap/coremodule.h>
-#include <napbrowsercomponent.h>
 
-// RTTI Includes
+// External Includes
+#include <nap/service.h>
+#include <nap/coreattributes.h>
+#include <napbrowsercomponent.h>
 #include <rtti/rtti.h>
 
 // Awesomium Includes

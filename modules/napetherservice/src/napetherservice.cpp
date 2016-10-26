@@ -1,15 +1,13 @@
 // Local includes
-#include <napetherservice.h>
+#include "napetherservice.h"
 
-// Core includes
+//External Includes
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <nap/entity.h>
-
-// Nap OF includes
-#include <napofservice.h>
 #include <assert.h>
-#include <nap/coremodule.h>
+#include <nap/coreattributes.h>
+#include <napofservice.h>
 
 //////////////////////////////////////////////////////////////////////////
 

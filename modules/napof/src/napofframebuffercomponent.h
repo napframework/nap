@@ -1,13 +1,12 @@
 #pragma once
 
-// NAP Includes
-#include <nap/coremodule.h>
+// Local Includes
+#include "napofattributes.h"
+
+// External Includes
+#include <nap/coreattributes.h>
 #include <nap/component.h>
 #include <nap/attribute.h>
-
-#include <napofattributes.h>
-
-// OF Includes
 #include <ofFbo.h>
 #include <Utils/ofVec2i.h>
 

@@ -1,6 +1,6 @@
+// Local Includes
 #include "xmlserializer.h"
-#include "coremodule.h"
-#include "object.h"
+#include "coreattributes.h"
 
 using namespace tinyxml2;
 using namespace std;
@@ -17,8 +17,6 @@ using namespace std;
 
 namespace nap
 {
-
-
 	XMLSerializer::XMLSerializer(std::ostream& os, Core& core) : Serializer(os, core) {}
 
 
@@ -95,6 +93,8 @@ namespace nap
 
 		const char* tagName = xml->Name();
 
+        const char* name = xml->Attribute(X_NAME);
+
 		if (!strcmp(tagName, X_ATTRIBUTE)) {
 			obj = readAttribute(xml, parentObject);
 		} else if (!strcmp(tagName, X_OBJECT)) {
@@ -120,15 +120,23 @@ namespace nap
 
 	Object* XMLDeserializer::readCompoundAttribute(XMLElement* xml, Object* parent)
 	{
-		auto& compAttr = parent->addChild<CompoundAttribute>(xml->Attribute(X_NAME));
+        std::string name = xml->Attribute(X_NAME);
+        CompoundAttribute* compAttr = nullptr;
+        if (!parent->hasChild(name)) {
+            compAttr = &parent->addChild<CompoundAttribute>(name);
+        } else {
+            // Attribute already exists
+            compAttr = parent->getChild<CompoundAttribute>(name);
+            assert(compAttr); // Fires on wrong type
+        }
 
 		//        Object* result;
 		XMLElement* elm = (XMLElement*)xml->FirstChild();
 		while (elm) {
-			readAttribute(elm, &compAttr);
+			readAttribute(elm, compAttr);
 			elm = (XMLElement*)elm->NextSibling();
 		}
-		return &compAttr;
+		return compAttr;
 	}
 
 	Object* XMLDeserializer::readAttribute(XMLElement* xml, Object* parentObject)

@@ -1,9 +1,9 @@
-#include <napbrowsercomponent.h>
-#include <napawesomiumservice.h>
-#include <nap/logger.h>
-#include <nap/coremodule.h>
+// Local Includes
+#include "napbrowsercomponent.h"
+#include "napawesomiumservice.h"
+
+// External Includes
 #include <utils/nofUtils.h>
-#include <array>
 #include <napoftransform.h>
 #include <napofsimpleshapecomponent.h>
 #include <Utils/nofUtils.h>

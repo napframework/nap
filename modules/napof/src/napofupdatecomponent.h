@@ -1,12 +1,9 @@
 #pragma once
 
-// RTTI Includes
+// External Includes
 #include <rtti/rtti.h>
-
-// Nap Includes
-#include <nap/coremodule.h>
 #include <nap/serviceablecomponent.h>
-#include <nap/attribute.h>
+#include <nap/coreattributes.h>
 
 namespace nap
 {

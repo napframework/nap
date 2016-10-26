@@ -23,7 +23,7 @@ void AttributeModel::setObject(nap::AttributeObject* object)
 	clear();
 	if (!mObject) return;
 
-	for (nap::AttributeBase* attrib : mObject->getAttributesList())
+	for (nap::AttributeBase* attrib : mObject->getAttributes())
 		onAttributeAdded(*attrib);
 
 	mObject->childAdded.connect(onAttributeAddedSlot);

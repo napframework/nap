@@ -1,10 +1,8 @@
 #pragma once
 
-// Core Includes
+// External Includes
 #include <nap/component.h>
-#include <nap/attribute.h>
-
-// Std Includes
+#include <nap/coreattributes.h>
 #include <iostream>
 
 namespace nap
