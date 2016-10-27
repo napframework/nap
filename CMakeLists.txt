@@ -40,6 +40,7 @@ add_subdirectory(napkin)
 add_subdirectory(test/coretestapp)
 add_subdirectory(test/unittest)
 add_subdirectory(test/scriptserver)
+add_subdirectory(test/pythoninterpreter)
 
 # modules
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR}/modules)

@@ -149,6 +149,7 @@
     <ClInclude Include="src\nap\componentdependency.h" />
     <ClInclude Include="src\nap\configure.h" />
     <ClInclude Include="src\nap\core.h" />
+    <ClInclude Include="src\nap\coreattributes.h" />
     <ClInclude Include="src\nap\coremodule.h" />
     <ClInclude Include="src\nap\coreoperators.h" />
     <ClInclude Include="src\nap\coretypeconverters.h" />
@@ -190,6 +191,7 @@
     <ClCompile Include="src\nap\componentdependency.cpp" />
     <ClCompile Include="src\nap\configure.cpp" />
     <ClCompile Include="src\nap\core.cpp" />
+    <ClCompile Include="src\nap\coreattributes.cpp" />
     <ClCompile Include="src\nap\coremodule.cpp" />
     <ClCompile Include="src\nap\coretypeconverters.cpp" />
     <ClCompile Include="src\nap\entity.cpp" />

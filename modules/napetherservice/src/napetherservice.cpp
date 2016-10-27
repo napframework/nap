@@ -63,6 +63,9 @@ namespace nap
 		if (mEtherdream.GetState() != nofNEtherDream::State::EtherDreamFound)
 			return;
 
+		if (!mSend.getValue())
+			return;
+
 		// We first need to find our laser camera
 		std::vector<nap::EtherDreamCamera*> cams;
 		getObjects<nap::EtherDreamCamera>(cams);

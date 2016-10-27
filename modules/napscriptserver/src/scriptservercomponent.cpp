@@ -41,9 +41,9 @@ namespace nap
 			zmq::message_t request;
 			//  Wait for next request from client
 			std::string msg = s_recv(socket);
-			std::cout << "Recv: " << msg << std::endl;
+//			std::cout << "Recv: " << msg << std::endl;
 			std::string reply = mInterpreter->evalScript(msg);
-			std::cout << "Send: " << reply << std::endl;
+//			std::cout << "Send: " << reply << std::endl;
 			s_send(socket, reply);
 		}
 	}
