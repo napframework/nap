@@ -19,16 +19,24 @@ namespace nap
 		Object() = default;
         virtual ~Object() = default;
 
-		// Default copy behaviour
-		Object(Object&) = default;
-		Object& operator=(const Object&) = default;
+		// Copy is not allowed
+		Object(Object&) = delete;
+		Object& operator=(const Object&) = delete;
 
+        // Move is not allowed
+        Object(Object&&) = delete;
+        Object& operator=(Object&&) = delete;
+
+        // Returns the object name
 		const std::string& getName() const;
 
+        // Sets the object's name
 		const std::string & setName(const std::string &name);
-        
+
+        // Adds a new object as a child to this object
         void addChild(Object& child);
 
+        // Adds a child of type T with name @name to this object
 		template <typename T>
 		T& addChild(const std::string& name)
 		{

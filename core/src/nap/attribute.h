@@ -31,7 +31,7 @@ namespace nap
 		friend class AttributeObject;
 		RTTI_ENABLE_DERIVED_FROM(Object)
 	public:
-		AttributeBase() {}
+		AttributeBase() = default;
 		AttributeBase(AttributeObject* parent, const std::string& name, bool atomic = false);
 
         // Virtual destructor because of virtual methods!
