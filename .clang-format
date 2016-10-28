@@ -7,7 +7,7 @@ IndentWidth: 4
 AccessModifierOffset: -4
 PointerAlignment: Left
 Standard: Cpp11
-ColumnLimit: 100
+ColumnLimit: 120
 IndentCaseLabels: false
 MaxEmptyLinesToKeep: 3
 #AllowShortIfStatementsOnASingleLine: true
