@@ -50,9 +50,7 @@ endforeach()
 
 find_path(
         RAPIDJSON_INCLUDE_DIRS
-        NAMES rapidjson/rapidjson.h
-        PATHS ${RAPIDJSON_INCLUDEDIR}
-        DOC "Include directory for the rapidjson library."
+        NAMES include/rapidjson/rapidjson.h
 )
 
 mark_as_advanced(RAPIDJSON_INCLUDE_DIRS)
