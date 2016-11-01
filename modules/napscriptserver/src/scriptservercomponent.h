@@ -1,7 +1,6 @@
 #pragma once
 
 #include "jsonrpcinterpreter.h"
-#include "pythoninterpreter.h"
 #include "scriptinterpreter.h"
 #include <nap.h>
 
@@ -47,17 +46,7 @@ namespace nap
         void run() override;
 	};
 
-	class PythonServerComponent : public ScriptServerComponent
-	{
-		RTTI_ENABLE_DERIVED_FROM(ScriptServerComponent)
-	public:
-		PythonServerComponent() : ScriptServerComponent()
-		{
-			mInterpreter = &addChild<PythonInterpreter>("ScriptInterpreter");
-		}
 
-        virtual void run() override;
-    };
 }
 
 RTTI_DECLARE_BASE(nap::ScriptServerComponent)

@@ -48,27 +48,5 @@ namespace nap
 		}
 	}
 
-	void PythonServerComponent::run()
-	{
-		using namespace asio::ip;
-		asio::io_service ioService;
-		tcp::acceptor acceptor(ioService, tcp::endpoint(tcp::v4(), port.getValue()));
-		tcp::socket socket(ioService);
-		nap::Logger::info("Waiting for client on port " + std::to_string(port.getValue()));
-		acceptor.accept(socket);
-		nap::Logger::info("Client connected");
 
-		asio::error_code error;
-		asio::streambuf buffer;
-		bool running = true;
-		while (running) {
-			asio::read_until(socket, buffer, "\n", error);
-			std::istream str(&buffer);
-			std::string s;
-			std::getline(str, s);
-			std::string reply = mInterpreter->evalScript(s) + "\n";
-
-			asio::write(socket, asio::buffer(reply), asio::transfer_all(), error);
-		}
-	}
 }

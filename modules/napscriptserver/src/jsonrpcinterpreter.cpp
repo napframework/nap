@@ -69,17 +69,17 @@ namespace nap
 
         disp.AddMethod("getName", [&](ObjPtr objPtr) { return fromInt(objPtr)->getName(); });
 
-		disp.AddMethod("setName",
-					   [&](ObjPtr objPtr, const std::string& name) { return fromInt(objPtr)->setName(name); });
+        disp.AddMethod("setName",
+                       [&](ObjPtr objPtr, const std::string& name) { return fromInt(objPtr)->setName(name); });
 
-		disp.AddMethod("getTypeName", [&](ObjPtr objPtr) { return fromInt(objPtr)->getTypeInfo().getName(); });
+        disp.AddMethod("getTypeName", [&](ObjPtr objPtr) { return fromInt(objPtr)->getTypeInfo().getName(); });
 
-		disp.AddMethod("getAttributeValue", [&](ObjPtr objPtr) {
-			AttributeBase* attrib = fromInt<AttributeBase>(objPtr);
-			std::string val;
-			attrib->toString(val);
-			return val;
-		});
+        disp.AddMethod("getAttributeValue", [&](ObjPtr objPtr) {
+            AttributeBase* attrib = fromInt<AttributeBase>(objPtr);
+            std::string val;
+            attrib->toString(val);
+            return val;
+        });
 
 		disp.AddMethod("setAttributeValue", [&](ObjPtr objPtr, const std::string& value) {
 			AttributeBase* attrib = fromInt<AttributeBase>(objPtr);

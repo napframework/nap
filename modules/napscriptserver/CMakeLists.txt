@@ -1,14 +1,16 @@
 project(mod_napscriptserver)
 
-find_package(PythonLibs REQUIRED)
-
-#find_package(Boost REQUIRED)
+find_package(rapidjson REQUIRED)
+find_package(jsonrpc-lean REQUIRED)
+find_package(asio REQUIRED)
 
 file(GLOB sources src/*.cpp)
-include_directories(src jsonrpc_include rapidjson_include ${PYTHON_INCLUDE_DIRS} ../../../asio/include)
+include_directories(src ${PYTHON_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME} SHARED ${sources})
+include_directories(${RAPIDJSON_INCLUDE_DIRS} ${JSONRPCLEAN_INCLUDE_DIRS})
+
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 
 
-target_link_libraries(${PROJECT_NAME} napcore zmq pthread ${PYTHON_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} napcore zmq pthread)
