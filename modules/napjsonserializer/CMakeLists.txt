@@ -2,7 +2,6 @@ project(mod_napjsonserializer)
 
 file(GLOB sources src/*.cpp)
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
 find_package(rapidjson REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED ${sources})
