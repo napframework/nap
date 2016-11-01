@@ -50,7 +50,9 @@ endforeach()
 
 find_path(
         RAPIDJSON_INCLUDE_DIRS
-        NAMES include/rapidjson/rapidjson.h
+        NAMES rapidjson/rapidjson.h
+        HINTS
+        ${CMAKE_CURRENT_LIST_DIR}/../../rapidjson/include
 )
 
 mark_as_advanced(RAPIDJSON_INCLUDE_DIRS)
