@@ -18,6 +18,9 @@ cmake_policy(SET CMP0043 NEW)
 
 set(BUILD_CONF /${CMAKE_CXX_COMPILER_ID}/${CMAKE_BUILD_TYPE})
 
+# Allow extra Find{project}.cmake files to be found by projects
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+
 # Drop all binaries in bin
 set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/bin/${BUILD_CONF})
 file(MAKE_DIRECTORY ${BIN_DIR})
