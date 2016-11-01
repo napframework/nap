@@ -1,6 +1,6 @@
 #include "napoflagcomponent.h"
 #include "ofUtils.h"
-#include "Utils/nofUtils.h"
+#include "utils/nofUtils.h"
 
 namespace nap
 {

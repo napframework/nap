@@ -7,7 +7,7 @@
 #include <napofrendercomponent.h>
 #include <napofupdatecomponent.h>
 #include <napofattributes.h>
-#include <Utils/ofVec2i.h>
+#include <utils/ofVec2i.h>
 
 #include <nap/signalslot.h>
 

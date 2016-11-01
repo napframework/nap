@@ -1,7 +1,7 @@
 #pragma once
 
 // Of Includes
-#include <Spline/nofSpline.h>
+#include <spline/nofSpline.h>
 
 // NAP Includes
 #include <nap/component.h>

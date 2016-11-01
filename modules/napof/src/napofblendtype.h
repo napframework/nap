@@ -1,7 +1,7 @@
 #pragma once
 
 // GL includes
-#include <RTTI/rtti.h>
+#include <rtti/rtti.h>
 #include <nap/configure.h>
 #include <unordered_map>
 

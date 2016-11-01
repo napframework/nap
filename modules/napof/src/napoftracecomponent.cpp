@@ -3,8 +3,8 @@
 
 // OF Includes
 #include <napofsplinecomponent.h>
-#include <Utils/ofUtils.h>
-#include <Utils/nofUtils.h>
+#include <utils/ofUtils.h>
+#include <utils/nofUtils.h>
 
 // Core Includes
 #include <nap/entity.h>

@@ -3,7 +3,7 @@
 
 #include <napofsplinemodulationcomponent.h>
 #include <napofsplinecomponent.h>
-#include <Utils/nofUtils.h>
+#include <utils/nofUtils.h>
 
 namespace nap
 {

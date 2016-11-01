@@ -8,7 +8,7 @@
 #include <nap/component.h>
 #include <nap/attribute.h>
 #include <ofFbo.h>
-#include <Utils/ofVec2i.h>
+#include <utils/ofVec2i.h>
 
 namespace nap
 {

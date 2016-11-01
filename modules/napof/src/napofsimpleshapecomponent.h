@@ -11,7 +11,7 @@
 #include "utils/nofUtils.h"
 #include <ofTrueTypeFont.h>
 #include <of3dPrimitives.h>
-#include <Utils/ofVec2i.h>
+#include <utils/ofVec2i.h>
 
 namespace nap
 {

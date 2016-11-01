@@ -7,8 +7,8 @@
 #include <ofMain.h>
 
 // Naivi of includes
-#include <Spline/nofSpline.h>
-#include <Spline/nofSplineUtils.h>
+#include <spline/nofSpline.h>
+#include <spline/nofSplineUtils.h>
 
 // Defines
 using OFVectorMap = std::unordered_map<std::string, ofVec3f>;

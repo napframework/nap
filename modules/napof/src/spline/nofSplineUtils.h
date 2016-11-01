@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Spline/nofSpline.h>
+#include <spline/nofSpline.h>
 
 // All the currently supported splines
 enum class SplineType : int

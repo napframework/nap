@@ -1,5 +1,5 @@
-#include <napofframebuffercomponent.h>
-#include "Utils/nofUtils.h"
+#include "napofframebuffercomponent.h"
+#include "utils/nofUtils.h"
 
 namespace nap
 {
