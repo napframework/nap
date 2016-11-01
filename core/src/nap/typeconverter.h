@@ -57,8 +57,10 @@ namespace nap
 			// FIXME: Should be static casts, but this is a little safer
 			auto inAt = dynamic_cast<const Attribute<I>*>(inAttrib);
 			auto outAt = dynamic_cast<Attribute<O>*>(outAttrib);
-
+            bool wasAtomic = outAt->isAtomic();
+            outAt->setAtomic(false);
 			bool success = convertFunction(inAt->getValue(), outAt->getValueRef());
+            outAt->setAtomic(wasAtomic);
 
 			outAt->valueChanged(*outAt);
 			outAt->valueChangedSignal(outAt->getValue());

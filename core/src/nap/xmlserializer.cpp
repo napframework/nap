@@ -17,10 +17,7 @@ using namespace std;
 
 namespace nap
 {
-	XMLSerializer::XMLSerializer(std::ostream& os, Core& core) : Serializer(os, core) {}
-
-
-	void XMLSerializer::writeObject(Object& object)
+	void XMLSerializer::writeObject(std::ostream& ostream, Object& object) const
 	{
 		XMLDocument doc;
 
@@ -34,11 +31,11 @@ namespace nap
 		doc.InsertEndChild(root);
 		XMLPrinter printer;
 		doc.Print(&printer);
-		stream << printer.CStr();
+		ostream << printer.CStr();
 	}
 
 
-	XMLElement* XMLSerializer::toXML(XMLDocument& doc, Object& object)
+	XMLElement* XMLSerializer::toXML(XMLDocument& doc, Object& object) const
 	{
 		XMLElement* elm = nullptr;
 
@@ -58,9 +55,12 @@ namespace nap
 			elm->SetAttribute(X_NAME, object.getName().c_str());
 
 			AttributeBase& attrib = (AttributeBase&)object;
-			const auto& valueType = attrib.getValueType();
+            Entity* root = (Entity*) object.getRootObject();
+            assert(root);
+
+            const auto& valueType = attrib.getValueType();
 			const auto converter =
-				mCore.getModuleManager().getTypeConverter(valueType, RTTI_OF(string));
+				root->getCore().getModuleManager().getTypeConverter(valueType, RTTI_OF(string));
 			if (converter) {
 				Attribute<string> strAttr;
 				converter->convert(&attrib, &strAttr);
@@ -87,7 +87,7 @@ namespace nap
 	}
 
 
-	Object* XMLDeserializer::fromXML(XMLElement* xml, Object* parentObject)
+	Object* XMLDeserializer::fromXML(tinyxml2::XMLElement* xml, Core& core, Object* parentObject) const
 	{
 		Object* obj = nullptr;
 
@@ -96,11 +96,11 @@ namespace nap
         const char* name = xml->Attribute(X_NAME);
 
 		if (!strcmp(tagName, X_ATTRIBUTE)) {
-			obj = readAttribute(xml, parentObject);
+			obj = readAttribute(xml, core, parentObject);
 		} else if (!strcmp(tagName, X_OBJECT)) {
-			obj = readObject(xml, parentObject);
+			obj = readObject(xml, core, parentObject);
 		} else if (!strcmp(tagName, X_COMP_ATTRIB)) {
-			obj = readCompoundAttribute(xml, parentObject);
+			obj = readCompoundAttribute(xml, core, parentObject);
 		} else {
 			Logger::fatal("Unknown tag: '%s'", xml->Name());
 		}
@@ -111,14 +111,14 @@ namespace nap
 		// read children
 		XMLElement* xChild = (XMLElement*)xml->FirstChild();
 		while (xChild) {
-			fromXML(xChild, obj);
+            fromXML(xChild, core, obj);
 			xChild = (XMLElement*)xChild->NextSibling();
 		}
 
 		return obj;
 	}
 
-	Object* XMLDeserializer::readCompoundAttribute(XMLElement* xml, Object* parent)
+	Object* XMLDeserializer::readCompoundAttribute(tinyxml2::XMLElement* xml, Core& core, Object* parent) const
 	{
         std::string name = xml->Attribute(X_NAME);
         CompoundAttribute* compAttr = nullptr;
@@ -133,23 +133,17 @@ namespace nap
 		//        Object* result;
 		XMLElement* elm = (XMLElement*)xml->FirstChild();
 		while (elm) {
-			readAttribute(elm, compAttr);
+            readAttribute(elm, core, compAttr);
 			elm = (XMLElement*)elm->NextSibling();
 		}
 		return compAttr;
 	}
 
-	Object* XMLDeserializer::readAttribute(XMLElement* xml, Object* parentObject)
+	Object* XMLDeserializer::readAttribute(tinyxml2::XMLElement* xml, Core& core, Object* parentObject) const
 	{
 		// Resolve type
-		std::string attributeType = xml->Attribute(X_VALUE_TYPE);
-
-		// <HACK>
-		// TODO: This filthy piece of shit is here because we cannot make Attributes of a certain
-		// RTTI value type
-		attributeType = "nap::Attribute<" + attributeType + ">"; // <-- That...... :(
+		std::string attributeType = dirtyHack(xml->Attribute(X_VALUE_TYPE));
 		const RTTI::TypeInfo& type = RTTI::TypeInfo::getByName(attributeType);
-		// </HACK>
 
 		if (type == RTTI::TypeInfo::empty()) {
 			nap::Logger::fatal("Failed to retrieve type: %s", attributeType.c_str());
@@ -187,7 +181,7 @@ namespace nap
 		}
 
 		// Retrieve and set value
-		const TypeConverterBase* converter = mCore.getModuleManager().getTypeConverter(
+		const TypeConverterBase* converter = core.getModuleManager().getTypeConverter(
 			RTTI_OF(std::string), attribute->getValueType());
 		if (!converter) {
 			nap::Logger::fatal("Cannot convert");
@@ -206,7 +200,7 @@ namespace nap
 		return attribute;
 	}
 
-	nap::Object* XMLDeserializer::readObject(tinyxml2::XMLElement* xml, Object* parent)
+	Object* XMLDeserializer::readObject(tinyxml2::XMLElement* xml, Core& core, Object* parent) const
 	{
 		const char* objectName = xml->Attribute(X_NAME);
 		if (!objectName) {
@@ -226,8 +220,8 @@ namespace nap
 		}
 
 		if (!parent) {
-			mCore.getRoot().setName(objectName);
-			return &mCore.getRoot();
+			core.getRoot().setName(objectName);
+			return &core.getRoot();
 		}
 
 		if (objectType.isKindOf<Entity>()) {
@@ -246,10 +240,10 @@ namespace nap
 
 
 	// Read the root elements and
-	Object* XMLDeserializer::readObject(Object* parentObject)
+    Object* XMLDeserializer::readObject(std::istream& istream, Core& core, Object* parentObject) const
 	{
 		std::istreambuf_iterator<char> eos;
-		std::string s(std::istreambuf_iterator<char>(stream), eos);
+		std::string s(std::istreambuf_iterator<char>(istream), eos);
 
 		XMLDocument doc;
 		XMLError err = doc.Parse(s.c_str(), s.size());
@@ -271,9 +265,10 @@ namespace nap
 			}
 		}
 
-		Object* result;
+		Object* result = nullptr;
 		while (elm) {
-			result = fromXML(elm, parentObject);
+            assert(!result); // Assume only one root element
+			result = fromXML(elm, core, parentObject);
 			elm = (XMLElement*)elm->NextSibling();
 		}
 		return result;

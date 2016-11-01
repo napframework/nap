@@ -16,16 +16,13 @@
 namespace nap
 {
 
+    static std::string dirtyHack(const std::string& attrib) { return "nap::Attribute<" + attrib + ">"; }
 
 	class Serializer
 	{
 	public:
-		Serializer(std::ostream& stream, Core& core) : stream(stream), mCore(core) {}
-		virtual void writeObject(Object& object) = 0;
-
-	protected:
-		std::ostream& stream;
-        Core& mCore;
+		virtual void writeObject(std::ostream& ostream, Object& object) const = 0;
+		std::string toString(Object& object) const;
 	};
 
 
@@ -33,11 +30,7 @@ namespace nap
 	{
 
 	public:
-		Deserializer(std::istream& stream, Core& core) : stream(stream), mCore(core) {}
-		virtual Object* readObject(Object* parent) = 0;
-
-	protected:
-		std::istream& stream;
-        Core& mCore;
+		virtual Object* readObject(std::istream& istream, Core& core, Object* parent = nullptr) const = 0;
+		Object* fromString(const std::string& str, Core& core, Object* parent = nullptr) const;
 	};
 }
