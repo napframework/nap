@@ -49,21 +49,6 @@ bool testCore()
 	return true;
 }
 
-std::string serialize(Core& core, Object& obj)
-{
-	std::ostringstream oss;
-	XMLSerializer ser(oss, core);
-	ser.writeObject(obj);
-	return oss.str();
-}
-
-Object* deserialize(const std::string& data, Core& core, Object& obj)
-{
-	std::istringstream iss(data);
-	XMLDeserializer deser(iss, core);
-	return deser.readObject();
-}
-
 std::shared_ptr<Core> createObjectTree()
 {
 	auto core = std::make_shared<Core>();
@@ -97,35 +82,21 @@ std::shared_ptr<Core> createObjectTree()
 
 bool testXMLSerializer()
 {
-	std::string xmlString;
+    // Create object tree and serialize
+    auto srcCore = createObjectTree();
+    std::string xmlString1 = XMLSerializer().toString(srcCore->getRoot());
 
-	{
-		auto core = createObjectTree();
+	// Deserialize
+    Core dstCore;
+    XMLDeserializer().fromString(xmlString1, dstCore);
 
-		xmlString = serialize(*core, core->getRoot());
-		std::cout << xmlString << std::endl;
-	}
+    // Serialize again
+    std::string xmlString2 = XMLSerializer().toString(dstCore.getRoot());
 
-	// Deserialize again
-	{
-		auto core = std::make_shared<Core>();
-		{
-			std::istringstream iss(xmlString);
-			XMLDeserializer deser(iss, *core);
-			deser.readObject();
-		}
+    TEST_ASSERT(xmlString1 == xmlString2,
+                "Second serialization gave different result:\nString1:\n" + xmlString1 +
+                    "\nString2:\n" + xmlString2);
 
-		// Serialize again
-		{
-			std::ostringstream oss2;
-			XMLSerializer ser2(oss2, *core.get());
-			ser2.writeObject(core->getRoot());
-			std::string xmlString2 = oss2.str();
-			TEST_ASSERT(xmlString == xmlString2,
-						"Second serialization gave different result:\nString1:\n" + xmlString +
-							"\nString2:\n" + xmlString2);
-		}
-	}
 	return true;
 }
 
