@@ -163,7 +163,7 @@ namespace nap
 		Object* getChild(const std::string& name);
 
 		// Get child by index
-		Object* getChild(uint index);
+		Object* getChild(size_t index);
         
         bool hasChild(const std::string& name) const;
 
