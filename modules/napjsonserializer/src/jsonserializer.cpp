@@ -4,9 +4,7 @@
 #include <nap.h>
 #include <rapidjson/document.h>
 #include <rapidjson/istreamwrapper.h>
-#include <rapidjson/ostreamwrapper.h>
 #include <rapidjson/prettywriter.h>
-#include <rapidjson/reader.h>
 
 using namespace rapidjson;
 
@@ -14,52 +12,114 @@ using namespace rapidjson;
 #define J_VALUE "value"
 #define J_TYPE "type"
 #define J_OBJECT "obj"
+#define J_CHILDREN "children"
 #define J_ATTR "attr"
+#define J_ATTRIBUTES "attributes"
 #define J_VALUE_TYPE "vType"
 
 namespace nap
 {
 
-	template <typename T>
-	void writeAttributeValue(T& writer, AttributeBase& attrib)
+	std::string toString(AttributeBase& attrib)
 	{
 		const Entity* root = dynamic_cast<const Entity*>(attrib.getRootObject());
 		if (!root)
-			return;
+			return "";
 
 		const TypeConverterBase* converter = root->getCore().getModuleManager().getTypeConverter(
 			attrib.getValueType(), RTTI::TypeInfo::get<std::string>());
 		if (!converter)
-			return;
+			return "";
 
 		Attribute<std::string> stringAttr;
-		if (converter->convert(&attrib, &stringAttr)) {
-			writer.String(J_VALUE);
-			writer.String(stringAttr.getValue().c_str());
-		}
+		if (converter->convert(&attrib, &stringAttr))
+			return stringAttr.getValue();
+		return "";
 	}
+
+    template<typename T>
+	std::vector<AttributeBase*> realAttributes(T& attribObj)
+	{
+		std::vector<AttributeBase*> attribs;
+		for (AttributeBase* a : attribObj.getAttributes())
+			if (!a->getTypeInfo().isKindOf<CompoundAttribute>())
+				attribs.emplace_back(a);
+		return attribs;
+	}
+
+	template <typename T>
+	void writeAttribute(T& writer, AttributeBase& attrib)
+	{
+		writer.StartObject();
+		{
+			writer.String(J_NAME);
+			writer.String(attrib.getName().c_str());
+			writer.String(J_VALUE_TYPE);
+			writer.String(attrib.getValueType().getName().c_str());
+
+			std::string value = toString(attrib);
+			if (!value.empty()) {
+				writer.String(J_VALUE);
+				writer.String(value.c_str());
+			}
+		}
+		writer.EndObject();
+	}
+
+	bool isAttribute(Object& obj) { return obj.getTypeInfo().isKindOf<AttributeBase>(); }
 
 	template <typename T>
 	void writeTheObject(T& writer, Object& obj)
 	{
-		bool isAttrib = obj.getTypeInfo().isKindOf<AttributeBase>() && !obj.getTypeInfo().isKindOf<CompoundAttribute>();
-		writer.String(isAttrib ? J_ATTR : J_OBJECT);
 		writer.StartObject();
-		writer.String(J_NAME);
-		writer.String(obj.getName().c_str());
-		if (isAttrib) {
-			AttributeBase& attrib = *static_cast<AttributeBase*>(&obj);
-			writer.String(J_VALUE_TYPE);
-			writer.String(attrib.getValueType().getName().c_str());
-			writeAttributeValue(writer, attrib);
-		} else {
+		{
+			writer.String(J_NAME);
+			writer.String(obj.getName().c_str());
 			writer.String(J_TYPE);
 			writer.String(obj.getTypeInfo().getName().c_str());
+
+			if (obj.getTypeInfo().isKindOf<CompoundAttribute>()) {
+				CompoundAttribute* attribObj = static_cast<CompoundAttribute*>(&obj);
+
+				auto attribs = realAttributes(*attribObj);
+				if (attribs.size() > 0) {
+					writer.String(J_ATTRIBUTES);
+					writer.StartArray();
+					for (AttributeBase* attrib : attribs) {
+						writeAttribute(writer, *attrib);
+					}
+					writer.EndArray();
+				}
+			} else if (obj.getTypeInfo().isKindOf<AttributeObject>()) {
+				AttributeObject* attribObj = static_cast<AttributeObject*>(&obj);
+				auto attribs = realAttributes(*attribObj);
+				if (attribs.size() > 0) {
+					writer.String(J_ATTRIBUTES);
+					writer.StartArray();
+					for (AttributeBase* attrib : attribs) {
+						writeAttribute(writer, *attrib);
+					}
+					writer.EndArray();
+				}
+			}
+
+
+
+			auto children = obj.getChildren();
+			std::vector<Object*> filteredObjects;
+			for (auto child : children) {
+				if (!isAttribute(*child))
+					filteredObjects.emplace_back(child);
+			}
+
+			if (filteredObjects.size() > 0) {
+				writer.String(J_CHILDREN);
+				writer.StartArray();
+				for (Object* child : filteredObjects)
+					writeTheObject(writer, *child);
+				writer.EndArray();
+			}
 		}
-
-		for (Object* child : obj.getChildren())
-			writeTheObject(writer, *child);
-
 		writer.EndObject();
 	}
 
@@ -69,20 +129,18 @@ namespace nap
 		StringBuffer buf;
 		PrettyWriter<StringBuffer> writer(buf);
 
-		writer.StartObject();
 		writeTheObject(writer, object);
-		writer.EndObject();
 
 		ostream << buf.GetString();
 	}
 
-	template <typename T, typename M>
-	AttributeBase* jsonToAttribute(const GenericValue<T, M>& value, Core& core, Object* parent)
+	AttributeBase* jsonToAttribute(Value& value, Core& core, Object* parent)
 	{
 		const char* attrName = value.FindMember(J_NAME)->value.GetString();
 		const char* attrValueTypeName = value.FindMember(J_VALUE_TYPE)->value.GetString();
 
-		assert(parent->getTypeInfo().isKindOf<AttributeObject>() || parent->getTypeInfo().isKindOf<CompoundAttribute>());
+		assert(parent->getTypeInfo().isKindOf<AttributeObject>() ||
+			   parent->getTypeInfo().isKindOf<CompoundAttribute>());
 		AttributeObject* attributeObject = static_cast<AttributeObject*>(parent);
 
 		AttributeBase* attrib = attributeObject->getAttribute(attrName);
@@ -111,8 +169,7 @@ namespace nap
 		return attrib;
 	};
 
-	template <typename T, typename M>
-	Object* jsonToObject(const GenericValue<T, M>& value, Core& core, Object* parent)
+	Object* jsonToObject(Value& value, Core& core, Object* parent)
 	{
 		const char* objectName = value.FindMember(J_NAME)->value.GetString();
 		const char* objectTypename = value.FindMember(J_TYPE)->value.GetString();
@@ -131,6 +188,7 @@ namespace nap
 				assert(parent->getTypeInfo().isKindOf<Entity>());
 				Entity* parentEntity = static_cast<Entity*>(parent);
 				obj = &parentEntity->addEntity(objectName);
+
 			} else {
 				// Handle other types
 				if (parent->hasChild(objectName) && parent->getChild(objectName)->getTypeInfo().isKindOf(objectType)) {
@@ -142,21 +200,23 @@ namespace nap
 			}
 		}
 
-		// Process children
-		for (auto iter = value.MemberBegin(); iter != value.MemberEnd(); ++iter) {
-			const char* jObjectName = iter->name.GetString();
-			if (!strcmp(jObjectName, J_OBJECT)) {
-				jsonToObject(iter->value, core, obj);
-			} else if (!strcmp(jObjectName, J_ATTR)) {
-				jsonToAttribute(iter->value, core, obj);
-			} else {
-				//                assert(false); // Unknown object type
-			}
+		if (value.HasMember(J_ATTRIBUTES)) {
+			Value& attribs = value[J_ATTRIBUTES];
+			assert(attribs.IsArray());
+			for (auto it = attribs.Begin(); it != attribs.End(); ++it)
+				jsonToAttribute(*it, core, obj);
 		}
 
-		if (obj->getTypeInfo().isKindOf<AttributeBase>() && !obj->getTypeInfo().isKindOf<CompoundAttribute>()) {
-			Logger::info("Attribute");
+		if (value.HasMember(J_CHILDREN)) {
+			Value& children = value[J_CHILDREN];
+			assert(children.IsArray());
+			for (auto it = children.Begin(); it != children.End(); ++it)
+				jsonToObject(*it, core, obj);
 		}
+		//
+		//		if (obj->getTypeInfo().isKindOf<AttributeBase>() && !obj->getTypeInfo().isKindOf<CompoundAttribute>()) {
+		//			Logger::info("Attribute");
+		//		}
 
 		return obj;
 	};
@@ -169,16 +229,6 @@ namespace nap
 		doc.ParseStream(is);
 		assert(doc.IsObject()); // JSON may only contain one root object
 
-		Object* result = nullptr;
-		for (auto iter = doc.MemberBegin(); iter != doc.MemberEnd(); ++iter) {
-			assert(!result); // Assume only one root object
-
-			const char* jObjectName = iter->name.GetString();
-			assert(!strcmp(jObjectName, J_OBJECT));
-			result = jsonToObject(iter->value, core, parent);
-		}
-
-
-		return nullptr;
+		return jsonToObject(doc, core, parent);
 	}
 }

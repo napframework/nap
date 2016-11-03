@@ -59,24 +59,22 @@ int main(int argc, char* argv[]) {
 
     JSONSerializer ser;
     std::string string1 = ser.toString(core->getRoot());
-    std::cout << string1 << std::endl;
+//    std::cout << string1 << std::endl;
 
     std::cout << "=====================================" << std::endl;
 
     JSONDeserializer deser;
     Core newCore;
     deser.fromString(string1, newCore);
-
     std::string string2 = ser.toString(newCore.getRoot());
-    std::cout << string2 << std::endl;
+//    std::cout << string2 << std::endl;
 
     using DMP = diff_match_patch<std::string>;
     if (string1 != string2) {
+        std::cout << "Differences:" << std::endl;
         DMP dmp;
         DMP::Diffs diffs = dmp.diff_main(string1, string2);
-        for (DMP::Diff diff : diffs) {
-            std::cout << diff.text << std::endl;
-        }
+        std::cout << dmp.diff_prettyHtml(diffs);
     }
 
     return 0;
