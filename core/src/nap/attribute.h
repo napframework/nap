@@ -203,7 +203,7 @@ namespace nap
 		void			setClamped(bool value);
 
 		// Getters
-		void			isClamped()	const	{ return mClamped;  }
+		bool			isClamped()	const	{ return mClamped;  }
 		T				getMin() const		{ return mMinValue; }
 		T				getMax() const		{ return mMaxValue; }
 		void			getRange(T& outMin, T& outMax) const;
