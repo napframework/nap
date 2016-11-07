@@ -4,7 +4,13 @@
 #include "logger.h"
 
 #define DELIMITER "/"
-
+/**
+ * ObjectPath represents a string based pointer to an object in the Object tree.
+ *
+ * The root node is represented by a delimiter "/"
+ *
+ *
+ */
 namespace nap
 {
 
@@ -52,6 +58,11 @@ namespace nap
 		while (!tokens.empty()) {
 			//			std::string delimToken = tokens.front();
 			tokens.pop_front(); // Pop delimiter
+
+			if (tokens.empty()) {
+				Logger::debug("Path is malformed: %s", mAbsolutePath.c_str());
+				return nullptr;
+			}
 
 			currentNode = currentNode->getChild(tokens.front());
 			if (!currentNode)  {
