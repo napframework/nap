@@ -13,7 +13,7 @@ namespace nap {
 
 		void update(float dt) {
 			std::vector<StateMachineComponent*> statemachines;
-			getComponents<StateMachineComponent>(statemachines);
+			getObjects<StateMachineComponent>(statemachines);
 			for (StateMachineComponent* fsm : statemachines)
 				fsm->update(dt);
 		}

@@ -10,10 +10,10 @@ namespace nap
 		mAnyState = &addChild<State>("__AnyState__");
 		mHistoryStateStub = &addChild<State>("__HistoryState__");
 		added.connect(
-			[&](Object& parent) { getRoot().getCore().getService<StateMachineService>()->registerComponent(*this); });
+			[&](Object& parent) { getRoot()->getCore().getService<StateMachineService>()->registerObject(*this); });
 
 		removed.connect(
-			[&](Object& parent) { getRoot().getCore().getService<StateMachineService>()->removeComponent(*this); });
+			[&](Object& parent) { getRoot()->getCore().getService<StateMachineService>()->removeObject(*this); });
 	}
 
 	void StateMachineComponent::initialize()
