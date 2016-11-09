@@ -1,51 +1,34 @@
 #include "scriptservercomponent.h"
-#include <zmq.hpp>
-
-#include <asio.hpp>
 
 RTTI_DEFINE(nap::ScriptServerComponent)
-RTTI_DEFINE(nap::JSONRPCServerComponent)
-RTTI_DEFINE(nap::PythonServerComponent)
 
-static std::string s_recv(zmq::socket_t& socket)
-{
 
-	zmq::message_t message;
-	socket.recv(&message);
-
-	return std::string(static_cast<char*>(message.data()), message.size());
-}
-
-static bool s_send(zmq::socket_t& socket, const std::string& string)
-{
-
-	zmq::message_t message(string.size());
-	memcpy(message.data(), string.data(), string.size());
-
-	bool rc = socket.send(message);
-	return (rc);
-}
 
 namespace nap
 {
 
-	void JSONRPCServerComponent::run()
+	ScriptServerComponent::ScriptServerComponent()
 	{
-		zmq::context_t context(1);
-		zmq::socket_t socket(context, ZMQ_REP);
-		std::string host = "tcp://*:" + std::to_string(port.getValue());
-		socket.bind(host.c_str());
-		Logger::info("Started server: " + host);
-		bool running = true;
-		while (running) {
-			zmq::message_t request;
-			//  Wait for next request from client
-			std::string msg = s_recv(socket);
-//			std::cout << "Recv: " << msg << std::endl;
-			std::string reply = mInterpreter->evalScript(msg);
-//			std::cout << "Send: " << reply << std::endl;
-			s_send(socket, reply);
+		running.valueChangedSignal.connect([&](const bool& running) {  onRunningChanged(running); });
+	}
+
+
+	void ScriptServerComponent::onRunningChanged(const bool& running)
+	{
+		assert(mServerThread == nullptr);
+		if (running) {
+			mServerThread = new std::thread(&ScriptServerComponent::run, this);
 		}
+	}
+
+	Object* ScriptServerComponent::resolvePath(const std::string& path)
+	{
+		Object* obj = ObjectPath(path).resolve(*getRootObject());
+		if (!obj) {
+			Logger::warn("Failed to resolve path '%s'", path);
+			return nullptr;
+		}
+		return obj;
 	}
 
 
