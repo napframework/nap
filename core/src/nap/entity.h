@@ -79,6 +79,14 @@ namespace nap
             return getChildOfType<T>();
         }
 
+        template<typename T>
+        T& getOrCreateComponent() {
+            T* component = getComponent<T>();
+            if (component)
+                return *component;
+            return addComponent<T>();
+        }
+
 		// Returns all components that are kind of T
 		template <typename T>
         void getComponentsOfType(std::vector<T*>& outComponents) { outComponents = getChildrenOfType<T>(); }
