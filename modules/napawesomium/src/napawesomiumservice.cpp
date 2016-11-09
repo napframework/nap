@@ -24,7 +24,7 @@ namespace nap
 
 		// Update all active browsing components
 		std::vector<nap::BrowserComponent*> mBrowsers;
-		getComponents<nap::BrowserComponent>(mBrowsers);
+		getObjects<nap::BrowserComponent>(mBrowsers);
 		for (auto& browser : mBrowsers)
 		{
 			if(!browser->mUpdate.getValue())

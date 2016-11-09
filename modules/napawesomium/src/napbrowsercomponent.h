@@ -167,7 +167,7 @@ namespace nap
 		void destroyBrowser();
 
 		// Utility
-		bool getBrowserCoordinates(const PointerEvent& inEvent, ofVec2i& outCoordinates);
+		bool getBrowserCoordinates(PointerEvent& inEvent, ofVec2i& outCoordinates);
 	};
 }
 

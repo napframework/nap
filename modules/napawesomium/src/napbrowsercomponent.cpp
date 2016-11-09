@@ -307,7 +307,7 @@ namespace nap
 
 
 	// Returns browser coordinates based on the input event, tries to use world space coordinates
-	bool BrowserComponent::getBrowserCoordinates(const PointerEvent& inEvent, ofVec2i& outCoordinates)
+	bool BrowserComponent::getBrowserCoordinates(PointerEvent& inEvent, ofVec2i& outCoordinates)
 	{
 		// Store 
 		outCoordinates.x = inEvent.mX.getValue();
