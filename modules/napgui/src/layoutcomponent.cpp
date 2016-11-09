@@ -13,8 +13,14 @@ namespace nap
 			return;
         
         // From all child entities, get layoutcomponents
-        for (auto layout : getParentObject()->getChildrenOfType<LayoutComponent>(true))
-            outChildren.emplace_back(layout);
+
+		Entity* parent = getParent();
+
+		for (Entity* child : parent->getChildrenOfType<Entity>()) {
+			for (auto layout : child->getChildrenOfType<LayoutComponent>()) {
+				outChildren.emplace_back(layout);
+			}
+		}
 	}
 
 	std::vector<LayoutComponent*> LayoutComponent::getLayoutChildren()
