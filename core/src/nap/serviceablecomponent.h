@@ -32,9 +32,10 @@ namespace nap
 		// Called when the component has been registered
 		virtual void registered()	{ }
 
+		// Slots that handle service registration / deregistration
+		Slot<const Object&> mAdded = { this, &ServiceableComponent::registerWithService };
+
 	private:
-        // Slots that handle service registration / deregistration
-        Slot<const Object&> mAdded = { this, &ServiceableComponent::registerWithService };
         
 		// Slot Calls
 		void registerWithService(const Object& object);
