@@ -334,12 +334,6 @@
     <ProjectReference Include="..\..\..\openFrameworks\libs\openFrameworksCompiled\project\vs\openframeworksLib.vcxproj">
       <Project>{5837595d-aca9-485c-8e76-729040ce4b0b}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\napgui\napgui.vcxproj">
-      <Project>{7f5b2e4c-5ddb-4e56-9685-67972edd8145}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\napinput\napinput.vcxproj">
-      <Project>{548b6023-4e30-40b0-a171-1f98d5dd59b4}</Project>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\baseclasses.vcproj" />

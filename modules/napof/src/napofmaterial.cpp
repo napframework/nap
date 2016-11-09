@@ -55,7 +55,7 @@ namespace nap
 	{
 		if (!mOFShader.isLoaded())
 		{
-			Logger::warn("Bind: shader is not loaded: " + mShader.getValueRef());
+			//Logger::warn("Bind: shader is not loaded: " + mShader.getValueRef());
 			return;
 		}
 
@@ -79,7 +79,7 @@ namespace nap
 	{
 		if (!mOFShader.isLoaded())
 		{
-			Logger::warn("Unbind: shader is not loaded: " + mShader.getValueRef());
+			//Logger::warn("Unbind: shader is not loaded: " + mShader.getValueRef());
 			return;
 		}
 
