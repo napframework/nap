@@ -2,6 +2,8 @@
 
 #include <nap/attribute.h>
 #include <rtti/rtti.h>
+#include "logger.h"
+
 
 namespace nap
 {
@@ -54,9 +56,22 @@ namespace nap
 
 		bool convert(const AttributeBase* inAttrib, AttributeBase* outAttrib) const override
 		{
-			// FIXME: Should be static casts, but this is a little safer
-			auto inAt = dynamic_cast<const Attribute<I>*>(inAttrib);
-			auto outAt = dynamic_cast<Attribute<O>*>(outAttrib);
+            if (!inAttrib->getTypeInfo().isKindOf<Attribute<I>>()) {
+                Logger::fatal("Input attribute of type '%s' should be of type '%s'",
+                              inAttrib->getValueType().getName().c_str(),
+                              RTTI_OF(I).getName().c_str());
+                return false;
+            }
+            auto inAt = static_cast<const Attribute<I>*>(inAttrib);
+
+            if (!outAttrib->getTypeInfo().isKindOf<Attribute<O>>()) {
+                Logger::fatal("Output attribute of type '%s' should be of type '%s'",
+                              outAttrib->getValueType().getName().c_str(),
+                              RTTI_OF(O).getName().c_str());
+                return false;
+            }
+			auto outAt = static_cast<Attribute<O>*>(outAttrib);
+
             bool wasAtomic = outAt->isAtomic();
             outAt->setAtomic(false);
 			bool success = convertFunction(inAt->getValue(), outAt->getValueRef());
