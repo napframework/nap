@@ -34,6 +34,8 @@ namespace nap
 
 		const std::vector<Module*>& getModules() const { return mModules; }
 
+        Module* getModule(const std::string& name) const;
+
 		Signal<Module&> moduleLoaded;
 
 	private:

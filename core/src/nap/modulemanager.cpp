@@ -1,6 +1,6 @@
-#include <nap/modulemanager.h>
-#include <nap/coremodule.h>
 #include <nap/coreattributes.h>
+#include <nap/coremodule.h>
+#include <nap/modulemanager.h>
 
 #ifdef _WIN32
 #include <windows.h> // Windows dll loading
@@ -21,7 +21,7 @@ namespace nap
 //
 #ifdef _WIN32
 #ifdef _MSC_VER
-		void* libPtr = LoadLibrary((LPCWSTR)filename);
+		void* libPtr = LoadLibrary(filename);
 #else
 		void* libPtr = LoadLibrary((LPCSTR)filename);
 #endif
@@ -74,7 +74,8 @@ namespace nap
 		for (const auto& mod : mModules) {
 			std::string modNameA = module.getName();
 			std::string modNameB = mod->getName();
-			if (modNameB == modNameA) return true;
+			if (modNameB == modNameA)
+				return true;
 		}
 		return false;
 	}
@@ -82,17 +83,18 @@ namespace nap
 	void ModuleManager::loadModules(const std::string directory)
 	{
 		std::string fullPath(getAbsolutePath(directory));
-		//Logger::debug("Loading modules from dir: %s", fullPath.c_str());
+		// Logger::debug("Loading modules from dir: %s", fullPath.c_str());
 		std::vector<std::string> files;
 		nap::listDir(directory.c_str(), files);
 
 
 		for (const auto& filename : files) {
 #ifdef _WIN32
-			if (getFileExtension(filename) != "dll") continue;
+			if (getFileExtension(filename) != "dll")
+				continue;
 #endif
 
-//			Logger::debug("Attempting to load module '%s'", getAbsolutePath(filename).c_str());
+			//			Logger::debug("Attempting to load module '%s'", getAbsolutePath(filename).c_str());
 
 			Module* module = loadModule(filename.c_str());
 			if (!module) {
@@ -111,9 +113,9 @@ namespace nap
 			Logger::warn("Module already exists: %s", module.getName().c_str());
 			return;
 		}
-        mModules.push_back(&module);
-        moduleLoaded.trigger(module);
-        Logger::info("Module registered: %s", module.getName().c_str());
+		mModules.push_back(&module);
+		moduleLoaded.trigger(module);
+		Logger::info("Module registered: %s", module.getName().c_str());
 	}
 
 	ModuleManager::ModuleManager()
@@ -122,27 +124,31 @@ namespace nap
 		registerRTTIModules();
 	}
 
-	const TypeConverterBase* ModuleManager::getTypeConverter(RTTI::TypeInfo fromType,
-															 RTTI::TypeInfo toType) const
+	const TypeConverterBase* ModuleManager::getTypeConverter(RTTI::TypeInfo fromType, RTTI::TypeInfo toType) const
 	{
 		if (fromType == toType)
 			return &mTypeConverterPassThrough;
 
 		for (auto module : mModules) {
 			for (auto conv : module->getTypeConverters()) {
-				if (conv->inType() == fromType && conv->outType() == toType) return conv;
+				if (conv->inType() == fromType && conv->outType() == toType)
+					return conv;
 			}
 		}
-		Logger::warn("Failed to get type converter from '%s' to '%s'.", fromType.getName().c_str(),
-					  toType.getName().c_str());
+		// 		Logger::debug("Failed to get type converter from '%s' to '%s'.", fromType.getName().c_str(),
+		// 					  toType.getName().c_str());
 		return nullptr;
 	}
 
 	const TypeList ModuleManager::getComponentTypes() const
 	{
 		TypeList types;
-		for (const auto& mod : getModules())
-			mod->getComponentTypes(types);
+		for (const auto& type : RTTI::TypeInfo::getRawTypes()) {
+			if (type.isKindOf<Component>())
+				types.push_back(type);
+		}
+//		for (const auto& mod : getModules())
+//			mod->getComponentTypes(types);
 		return types;
 	}
 
@@ -166,13 +172,23 @@ namespace nap
 	{
 		for (RTTI::TypeInfo& typeInfo : RTTI::TypeInfo::getRawTypes()) {
 
-			if (!typeInfo.isKindOf<nap::Module>()) continue;
-			if (!typeInfo.canCreateInstance()) continue;
+			if (!typeInfo.isKindOf<nap::Module>())
+				continue;
+			if (!typeInfo.canCreateInstance())
+				continue;
 
 			nap::Module* module = (nap::Module*)typeInfo.createInstance();
 			assert(module);
 			nap::Logger::info("Module RTTI: %s", module->getName().c_str());
 			registerModule(*module);
 		}
+	}
+
+	Module* ModuleManager::getModule(const std::string& name) const
+	{
+		for (Module* module : mModules)
+			if (module->getName() == name)
+				return module;
+		return nullptr;
 	}
 }
