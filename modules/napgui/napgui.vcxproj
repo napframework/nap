@@ -141,11 +141,6 @@
     <ClInclude Include="src\splitlayout.h" />
     <ClInclude Include="src\typeconverters.h" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\core\napcore.vcxproj">
-      <Project>{e4221d31-6eea-409e-b23c-8ebb10ca3d3b}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

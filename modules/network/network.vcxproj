@@ -74,7 +74,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>.\src;..\..\core\src;..\..\..\asio\include;..\..\thirdparty;..\..\stijnlibutility;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\src;..\..\core\src;..\..\..\asio\include;..\..\..\stijnlib\thirdparty;..\..\..\stijnlib\stijnlibutility;C:\Workspace\stijnlib\stijnlibutility;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WIN32_WINDOWS=0x0501;ASIO_STANDALONE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
@@ -92,7 +92,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>.\src;..\..\core\src;..\..\..\asio\include;..\..\thirdparty;..\..\stijnlibutility;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\src;..\..\core\src;..\..\..\asio\include;..\..\..\stijnlib\thirdparty;..\..\..\stijnlib\stijnlibutility;C:\Workspace\stijnlib\stijnlibutility;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WIN32_WINDOWS=0x0501;ASIO_STANDALONE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>4005</DisableSpecificWarnings>
     </ClCompile>
@@ -119,11 +119,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\network.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\core\napcore.vcxproj">
-      <Project>{e4221d31-6eea-409e-b23c-8ebb10ca3d3b}</Project>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

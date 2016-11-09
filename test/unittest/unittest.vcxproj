@@ -136,15 +136,6 @@
     <ClInclude Include="src\tests\testscriptserver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\core\napcore.vcxproj">
-      <Project>{e4221d31-6eea-409e-b23c-8ebb10ca3d3b}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\modules\napfsm\napfsm.vcxproj">
-      <Project>{de29b6ee-a1c0-4ae4-9fdf-939b49bdf5fe}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\modules\napgui\napgui.vcxproj">
-      <Project>{7f5b2e4c-5ddb-4e56-9685-67972edd8145}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\..\modules\network\network.vcxproj">
       <Project>{0cc16bba-9872-4498-9cbe-a362b8b7a502}</Project>
     </ProjectReference>

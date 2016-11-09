@@ -596,9 +596,6 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\nap\core\napcore.vcxproj">
-      <Project>{e4221d31-6eea-409e-b23c-8ebb10ca3d3b}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\..\ofApps\Tommy\Tommy.vcxproj">
       <Project>{7fd42df7-442e-479a-ba76-d0022f99702a}</Project>
     </ProjectReference>
