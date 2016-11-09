@@ -14,7 +14,7 @@ namespace nap
     {
     public:
         // Constructor
-		ComponentDependency(Component* localComponent);
+		ComponentDependency(Component* localComponent, bool required=false);
         
         // Returns the component that the parent depends on, null if not linked
 		T* get();
@@ -38,9 +38,11 @@ namespace nap
         
         Slot<Object&> mAddedSlot = { this, &ComponentDependency<T>::onAdded };
         Slot<Object&> mRemovedSlot = { this, &ComponentDependency<T>::onRemoved };
-        
+
         T* mTargetComponent = nullptr;
         Component* mParentComponent = nullptr;
+        bool mAutoCreate = false;
+		bool mRequired;
     };
 
 
@@ -49,9 +51,10 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	ComponentDependency<T>::ComponentDependency(Component* localComponent)
+	ComponentDependency<T>::ComponentDependency(Component* localComponent, bool required)
 	{
 		mParentComponent = localComponent;
+		mRequired = required;
 		assert(localComponent);
 		RTTI::TypeInfo type = RTTI_OF(T);
 		assert(type.isKindOf<Component>());
@@ -105,13 +108,19 @@ namespace nap
 		// Resolve if not yet linked
 		if (!mTargetComponent)
 		{
-			mTargetComponent = mParentComponent->getParent()->getComponent<T>();
-			
+            if (mAutoCreate) {
+                mTargetComponent = &mParentComponent->getParent()->getOrCreateComponent<T>();
+            } else {
+                mTargetComponent = mParentComponent->getParent()->getComponent<T>();
+            }
 			// Signal change
-			if (mTargetComponent)
-				added(*mTargetComponent);
-			else
-				nap::Logger::warn("unable to resolve target component");
+			if (mTargetComponent) {
+                added(*mTargetComponent);
+            } else if (mRequired) {
+                nap::Logger::fatal("Component of type '%s' requires sibling component of type '%s': '%s'",
+                                   mParentComponent->getTypeInfo().getName().c_str(), RTTI_OF(T).getName().c_str(),
+					ObjectPath(mParentComponent).toString().c_str());
+            }
 		}
 		return mTargetComponent;
 	}
