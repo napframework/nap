@@ -5,6 +5,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4244 /wd4305 /wd4996 /wd4267 /wd4018 /MP")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
+    set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /DEBUG /OPT:REF /OPT:ICF")
 else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse")
 endif()
@@ -30,10 +32,14 @@ set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/${BUILD_CONF})
 file(MAKE_DIRECTORY ${LIB_DIR})
 
 # Ensure CMAKE understands these directories
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${BIN_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${LIB_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${LIB_DIR})
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
+
+# store project directory
+get_filename_component(PROJECTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/.. ABSOLUTE)
+
 
 # library targets
 add_subdirectory(core)
@@ -43,13 +49,13 @@ add_subdirectory(napkin)
 add_subdirectory(test/coretestapp)
 add_subdirectory(test/unittest)
 add_subdirectory(test/scriptserver)
-add_subdirectory(test/pythoninterpreter)
 add_subdirectory(test/jsonserializer)
 
 # modules
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR}/modules)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${BIN_DIR}/modules)
-add_subdirectory(modules/sfml)
+
+
 add_subdirectory(modules/napfsm)
 add_subdirectory(modules/napgui)
 add_subdirectory(modules/napof)
