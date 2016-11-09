@@ -66,7 +66,7 @@ namespace nap
 	@brief Find the service associated with the RTTI of type
 
 	TODO: This method is only here for serviceable component and can go
-	Every serviceable component should list it's own services of interest
+	Every serviceable component should list its own services of interest
 	**/
 	Service* Core::getServiceForType(const RTTI::TypeInfo& inType)
 	{
