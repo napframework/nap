@@ -5,6 +5,7 @@
 // clang-format off
 #ifdef _MSC_VER
 	#include "direntw32.h"
+	#include <tchar.h>
 #else
 	#include <dirent.h>
 #endif
@@ -14,6 +15,7 @@
 #else
 	#include <stdlib.h>
 #endif
+
 // clang-format on
 
 #define MAX_PATH_SIZE 260
@@ -45,7 +47,8 @@ namespace nap
 		TCHAR path[MAX_PATH_SIZE];
 		TCHAR** filenameComponent = nullptr;
 #ifdef _MSC_VER
-		GetFullPathName((LPCWSTR) relPath.c_str(), MAX_PATH_SIZE, path, filenameComponent);
+		const char* p = relPath.c_str();
+		GetFullPathName(_T(p), MAX_PATH_SIZE, path, filenameComponent);
 #else
 		GetFullPathName((LPCSTR) relPath.c_str(), MAX_PATH_SIZE, path, filenameComponent);
 #endif
