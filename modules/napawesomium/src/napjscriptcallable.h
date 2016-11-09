@@ -35,10 +35,17 @@ namespace nap
 		std::string callback = "";			//< Callback method on object
 		bool returnvalue = false;
 
+		bool operator==(const JavaScriptCallable& other) const {
+			return &other == this;
+		}
+
 	protected:
 		mutable Awesomium::JSObject mObject;
 	};
+
 }
+
+
 
 
 /**
