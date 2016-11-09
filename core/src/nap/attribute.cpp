@@ -85,7 +85,7 @@ namespace nap {
         if (!root)
             return;
         
-        auto converter = root->getCore().getModuleManager().getTypeConverter(getValueType(), RTTI::TypeInfo::get<std::string>());
+        auto converter = root->getCore().getModuleManager().getTypeConverter(RTTI::TypeInfo::get<std::string>(), getValueType());
         if (!converter)
             return;
         
