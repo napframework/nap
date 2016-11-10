@@ -7,13 +7,14 @@
 namespace nap
 {
 	using TypeList = std::vector<RTTI::TypeInfo>;
-
+    class ModuleManager;
 
 	// The internal module keeps track of all necessary types that are to be exposed from within
 	// this library.
 	// Wraps the single internal nap::Core module, NOT to be used by client code directly.
 	class Module
 	{
+        friend ModuleManager;
 		RTTI_ENABLE()
 	public:
 		Module(const std::string& name);
@@ -23,30 +24,17 @@ namespace nap
 		const std::string getName() const { return mName; }
 		void setName(const std::string& name) { mName = name; }
 
-		void getComponentTypes(TypeList& outTypes) const
-		{
-			outTypes.insert(outTypes.end(), mComponentTypes.begin(), mComponentTypes.end());
-		}
+		void getComponentTypes(TypeList& outTypes) const;
+		void getDataTypes(TypeList& outTypes) const;
+		void getOperatorTypes(TypeList& outTypes) const;
+        void getServiceTypes(TypeList& outTypes);
 
-		void getDataTypes(TypeList& outTypes) const
-		{
-			outTypes.insert(outTypes.end(), mDataTypes.begin(), mDataTypes.end());
-		}
-
-		void getOperatorTypes(TypeList& outTypes) const
-		{
-			outTypes.insert(outTypes.end(), mOperatorTypes.begin(), mOperatorTypes.end());
-		}
-
-        void getServiceTypes(TypeList& outTypes) {
-            outTypes.insert(outTypes.end(), mServiceTypes.begin(), mServiceTypes.end());
-        }
+		void setFilename(const std::string& filename) { mFilename = filename; }
+        const std::string& getFilename() const { return mFilename; }
 
 		const std::vector<const nap::TypeConverterBase*> getTypeConverters() const; // TODO: Make unique_ptr
 
 		bool hasTypeConverter(const nap::TypeConverterBase* tc) const;
-
-		//        void registerTypeConverter(const nap::TypeConverterBase* mTypeConverter);
 
 		void registerOperatorType(RTTI::TypeInfo type) { mOperatorTypes.push_back(type); }
 		void registerComponentType(RTTI::TypeInfo type) { mComponentTypes.push_back(type); }
@@ -61,7 +49,10 @@ namespace nap
 			mTypeConverters.push_back(tc);
 		}
 
+
+
 	private:
+        std::string mFilename;
 		std::string mName;
 		TypeList mOperatorTypes;
 		TypeList mComponentTypes;

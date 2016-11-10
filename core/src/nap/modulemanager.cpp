@@ -64,6 +64,8 @@ namespace nap
 			return nullptr;
 		}
 
+        module->setFilename(filename);
+
 		return module;
 	}
 

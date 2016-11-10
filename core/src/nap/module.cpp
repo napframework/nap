@@ -12,15 +12,30 @@ namespace nap
 	bool Module::hasTypeConverter(const nap::TypeConverterBase* tc) const
 	{
 		for (const nap::TypeConverterBase* other : mTypeConverters)
-			if (other->inType() == tc->inType() && other->outType() == tc->outType()) return true;
+			if (other->inType() == tc->inType() && other->outType() == tc->outType())
+				return true;
 		return false;
 	}
 
-//	void Module::registerTypeConverter(const nap::TypeConverterBase* tc)
-//	{
-//		// Do not allow duplicate type converters
-//	}
+	const std::vector<const nap::TypeConverterBase*> Module::getTypeConverters() const { return mTypeConverters; }
 
-    const std::vector<const nap::TypeConverterBase*> Module::getTypeConverters() const { return mTypeConverters; }
+	void Module::getComponentTypes(TypeList& outTypes) const
+	{
+		outTypes.insert(outTypes.end(), mComponentTypes.begin(), mComponentTypes.end());
+	}
 
+	void Module::getDataTypes(TypeList& outTypes) const
+	{
+		outTypes.insert(outTypes.end(), mDataTypes.begin(), mDataTypes.end());
+	}
+
+	void Module::getOperatorTypes(TypeList& outTypes) const
+	{
+		outTypes.insert(outTypes.end(), mOperatorTypes.begin(), mOperatorTypes.end());
+	}
+
+	void Module::getServiceTypes(TypeList& outTypes)
+	{
+		outTypes.insert(outTypes.end(), mServiceTypes.begin(), mServiceTypes.end());
+	}
 }
