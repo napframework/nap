@@ -25,7 +25,7 @@ namespace nap
 	{
 		Object* obj = ObjectPath(path).resolve(*getRootObject());
 		if (!obj) {
-			Logger::warn("Failed to resolve path '%s'", path);
+			Logger::warn("Failed to resolve path '%s'", path.c_str());
 			return nullptr;
 		}
 		return obj;
