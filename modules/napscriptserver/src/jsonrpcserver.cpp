@@ -1,5 +1,6 @@
 #include "jsonrpcserver.h"
 #include <jsonserializer.h>
+#include <fstream>
 
 
 RTTI_DEFINE(nap::JSONRPCServerComponent)
@@ -193,26 +194,46 @@ namespace nap
 		disp.AddMethod("setAttributeValue", [&](const std::string& objPath, const std::string& value) {
 			auto attrib = resolve<AttributeBase>(objPath);
 
-            auto conv = getCore().getModuleManager().getTypeConverter(RTTI_OF(std::string), attrib->getValueType());
-            if (!conv) {
-                Logger::debug("Failed to get type converter from std::strAttr to '%s'.",
-                              attrib->getValueType().getName().c_str());
-                return;
-            }
+			auto conv = getCore().getModuleManager().getTypeConverter(RTTI_OF(std::string), attrib->getValueType());
+			if (!conv) {
+				Logger::debug("Failed to get type converter from std::strAttr to '%s'.",
+							  attrib->getValueType().getName().c_str());
+				return;
+			}
 
-            Attribute<std::string> strAttr;
-            strAttr.setValue(value);
-            conv->convert(&strAttr, attrib);
+			Attribute<std::string> strAttr;
+			strAttr.setValue(value);
+			conv->convert(&strAttr, attrib);
 
 			if (attrib)
 				attrib->fromString(value);
 		});
 
-		disp.AddMethod("connectValueChanged",
-					   [&](const std::string& objPath) { addAttributeChangedCallback(objPath); });
+		disp.AddMethod("connectValueChanged", [&](const std::string& objPath) {
+			Logger::info("Add listener for %s", objPath.c_str());
+			addAttributeChangedCallback(objPath);
+		});
 
 		disp.AddMethod("disconnectValueChanged",
 					   [&](const std::string& objPath) { removeAttributeChangedCallback(objPath); });
+
+		disp.AddMethod("exportObject", [&](const std::string& objPath, const std::string& filename) {
+			auto obj = resolvePath(objPath);
+			if (!obj)
+				return;
+			JSONSerializer ser;
+			std::ofstream os(filename);
+			ser.writeObject(os, *obj);
+		});
+
+		disp.AddMethod("importObject", [&](const std::string& parentPath, const std::string& filename) {
+			auto parentObj = resolvePath(parentPath);
+			if (!parentObj)
+				return;
+			JSONDeserializer ser;
+			std::ifstream is(filename);
+			ser.readObject(is, getCore(), parentObj);
+		});
 	}
 
 	std::string JSONRPCServerComponent::evalScript(const std::string& cmd)
@@ -227,17 +248,19 @@ namespace nap
 		startRPCSocket();
 	}
 
-	void JSONRPCServerComponent::handleAttributeChanged(AttributeBase& attrib) {
-        std::string val;
-        attrib.toString(val);
-        Logger::info("Sending Attribute Change: %s : %s", attrib.getName().c_str(), val.c_str());
-        s_send(*mPubSocket, "attrchange " + val);
-    }
+	void JSONRPCServerComponent::handleAttributeChanged(AttributeBase& attrib)
+	{
+		std::string val;
+		attrib.toString(val);
+		Logger::info("Sending Attribute Change: %s : %s", attrib.getName().c_str(), val.c_str());
+		s_send(*mPubSocket, "attrchange " + val);
+	}
 
 	void JSONRPCServerComponent::startSUBSocket()
 	{
-		mPubSocket = std::make_unique<zmq::socket_t>(mContext, ZMQ_PUB);
+		mPubSocket = std::make_unique<zmq::socket_t>(mContext, ZMQ_PAIR);
 		std::string host = "tcp://*:" + std::to_string(pubPort.getValue());
+		Logger::info("PUB Server: " + host);
 		mPubSocket->bind(host);
 	}
 
@@ -248,7 +271,7 @@ namespace nap
 		std::string host = "tcp://*:" + std::to_string(rpcPort.getValue());
 
 		socket.bind(host.c_str());
-		Logger::info("Started server: " + host);
+		Logger::info("RPC Server: " + host);
 
 		while (running.getValue()) {
 			zmq::message_t request;
