@@ -7,7 +7,7 @@
 #include <string>
 
 #define NAP_DECLARE_LOG_LEVEL(LEVEL, NAME)                                           \
-	static const LogLevel& NAME##Level()                                            \
+	static const LogLevel& NAME##Level()                                             \
 	{                                                                                \
 		\
 static LogLevel lvl(#NAME, LEVEL);                                                   \

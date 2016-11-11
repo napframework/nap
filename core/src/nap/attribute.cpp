@@ -58,8 +58,8 @@ namespace nap {
 
     
 	/**
-	@brief Converts this attribute to a string using the type converters registered in core 
-	**/
+	 * Converts this attribute to a string using the type converters registered in core
+	 */
     void AttributeBase::toString(std::string &outStringValue) const
     {
         const Entity* root = dynamic_cast<const Entity*>(getRootObject());
@@ -77,8 +77,8 @@ namespace nap {
     
     
 	/**
-	@brief Sets the value of this attribute using the type convertor registered in core
-	**/
+	 * Sets the value of this attribute using the type convertor registered in core
+	 */
     void AttributeBase::fromString(const std::string &stringValue)
     {
         const Entity* root = dynamic_cast<const Entity*>(getRootObject());
