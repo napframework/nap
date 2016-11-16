@@ -119,6 +119,9 @@ namespace nap
 
 		// Destructor
 		virtual ~OutputPlugBase();
+        
+        // Disconnects all inputs connected to this plug
+        void disconnectAll();
 
 		std::set<InputPlugBase*> getConnections() { return connections; }
 
@@ -153,6 +156,9 @@ namespace nap
 
 		// Disconnect an output plug from this plug
 		virtual void disconnect(OutputPlugBase& plug);
+        
+        // Disconnects all connections
+        void disconnectAll();
 
 		// Checks wether an output plug is allowed to be connected to this input plug. This will only be the case if the plug types match and the data types emitted or received by the plugs are the same. This method is virtual because some plug types might need to extend it.
 		virtual bool canConnectTo(OutputPlugBase& plug);

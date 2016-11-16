@@ -70,6 +70,12 @@ namespace nap
         disconnectedSignal(plug);
 	}
 
+    
+    void InputPlugBase::disconnectAll()
+    {
+        while (!connections.empty())
+            disconnect(**connections.begin());
+    }
 
 
 	bool InputPlugBase::canConnectTo(OutputPlugBase& plug)
@@ -94,6 +100,13 @@ namespace nap
 		for (auto& connection : connections)
 			connection->connections.erase(this);
 	}
+    
+    
+    void OutputPlugBase::disconnectAll()
+    {
+        while (!connections.empty())
+            (*connections.begin())->disconnect(*this);        
+    }
     
     
     void InputTriggerPlug::trigger()

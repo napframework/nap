@@ -34,6 +34,7 @@ namespace nap
 		// Connection
 		void connect(SignalSlotBase<Args...>& event);
 		void disconnect(SignalSlotBase<Args...>& event);
+        void disconnectAll();
 
 		// connect a raw functionobject. Lifelong connection only, disconnection not possible.
         // TODO: Why is disconnection not possible??
@@ -136,26 +137,45 @@ namespace nap
 			effect->mCauses.erase(this);
 	}
 
+    
 	template <typename... Args>
 	void SignalSlotBase<Args...>::connect(SignalSlotBase<Args...>& event)
 	{
 		mEffects.emplace(&event);
 		event.mCauses.emplace(this);
 	}
-
+    
+    
 	template <typename... Args>
 	void SignalSlotBase<Args...>::connect(Function inFunction)
 	{
 		mFunctionEffects.emplace_back(inFunction);
 	}
 
+    
 	template <typename... Args>
 	void SignalSlotBase<Args...>::disconnect(SignalSlotBase<Args...>& event)
 	{
 		mEffects.erase(&event);
 		event.mCauses.erase(this);
+        
+        mCauses.erase(&event);
+        event.mEffects.erase(this);
 	}
 
+    
+    template <typename... Args>
+    void SignalSlotBase<Args...>::disconnectAll()
+    {
+        for (auto effect : mEffects)
+            effect->mCauses.erase(this);
+        for (auto cause : mCauses)
+            cause->mEffects.erase(this);
+        mEffects.clear();
+        mCauses.clear();
+    }
+    
+    
 	template <typename... Args>
 	void SignalSlotBase<Args...>::trigger(Args... args)
 	{

@@ -16,21 +16,22 @@ namespace nap
      
      A specialization of a operator that a service uses -> ie: client of a service
      This operator automatically registers itself with a service after being attached to an entity -> receives a parent
-     When destructed the component de-registers itself from a service
+     When destructed the operator de-registers itself from a service
      **/
     
     class ServiceableOperator : public Operator
     {
-        RTTI_ENABLE_DERIVED_FROM(Component)
+        RTTI_ENABLE_DERIVED_FROM(Operator)
+        
     public:
         ServiceableOperator();
         
     protected:
+        // Called when the operator has been registered to a service
+        virtual void registered()	{ }
+        
         // Service to which this component is a client
         Service* mService = nullptr;
-        
-        // Called when the component has been registered
-        virtual void registered()	{ }
         
     private:
         // Slots that handle service registration / deregistration

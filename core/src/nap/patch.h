@@ -36,17 +36,25 @@ namespace nap
 		template <typename T>
 		T& addOperator(const std::string& name)
 		{
-			return *dynamic_cast<T*>(&addChild<T>(name));
+            auto type = RTTI::TypeInfo::get<T>();
+            assert(type.template isKindOf<Operator>());
+            return addChild<T>(name);
 		}
 
 		// Factory, create an operator based on typeinfo or
 		Operator& addOperator(RTTI::TypeInfo type)
 		{
-			return *dynamic_cast<Operator*>(&addChild("", type));
+            assert(type.isKindOf<Operator>());
+            return static_cast<Operator&>(addChild(type));
 		}
 
 		// Add an operator to the patch using move semantics to transfer parentship
-		Operator& addOperator(std::unique_ptr<Operator> op) { return *static_cast<Operator*>(&addChild(std::move(op))); }
+		Operator& addOperator(std::unique_ptr<Operator> op)
+        {
+            Operator& result = *op;
+            addChild(std::move(op));
+            return result;
+        }
 
 		// Remove operator from the patch
 		bool removeOperator(Operator& op) { return removeChild(op); }

@@ -65,7 +65,7 @@ namespace nap
 		// Starts the service
 		void start();
 
-		// Stops the servicef
+		// Stops the service
 		void stop();
 
 		// Created components
