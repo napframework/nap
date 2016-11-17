@@ -64,7 +64,7 @@ namespace nap
 			return nullptr;
 		}
 
-        module->setFilename(filename);
+		module->setFilename(filename);
 
 		return module;
 	}
@@ -146,11 +146,11 @@ namespace nap
 	{
 		TypeList types;
 		for (const auto& type : RTTI::TypeInfo::getRawTypes()) {
-			if (type.isKindOf<Component>())
+			if (type.isKindOf<Component>() && type.canCreateInstance())
 				types.push_back(type);
 		}
-//		for (const auto& mod : getModules())
-//			mod->getComponentTypes(types);
+		//		for (const auto& mod : getModules())
+		//			mod->getComponentTypes(types);
 		return types;
 	}
 
