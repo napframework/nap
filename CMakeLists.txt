@@ -23,15 +23,11 @@ set(BUILD_CONF /${CMAKE_CXX_COMPILER_ID}/${CMAKE_BUILD_TYPE})
 # Allow extra Find{project}.cmake files to be found by projects
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
-# Drop all binaries in bin
+# Override binary directories
 set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/bin/${BUILD_CONF})
 file(MAKE_DIRECTORY ${BIN_DIR})
-
-# All libraries go into lib
 set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/${BUILD_CONF})
 file(MAKE_DIRECTORY ${LIB_DIR})
-
-# Ensure CMAKE understands these directories
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${LIB_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${LIB_DIR})
