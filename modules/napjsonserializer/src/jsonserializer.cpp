@@ -11,9 +11,9 @@ using namespace rapidjson;
 #define J_NAME "name"
 #define J_VALUE "value"
 #define J_TYPE "type"
-#define J_OBJECT "obj"
+#define J_EDITABLE "editable"
 #define J_CHILDREN "children"
-#define J_ATTR "attr"
+#define J_PTR "ptr"
 #define J_ATTRIBUTES "attributes"
 #define J_VALUE_TYPE "vType"
 
@@ -37,7 +37,7 @@ namespace nap
 		return "";
 	}
 
-    template<typename T>
+	template <typename T>
 	std::vector<AttributeBase*> realAttributes(T& attribObj)
 	{
 		std::vector<AttributeBase*> attribs;
@@ -48,7 +48,7 @@ namespace nap
 	}
 
 	template <typename T>
-	void writeAttribute(T& writer, AttributeBase& attrib)
+    void writeAttribute(T& writer, AttributeBase& attrib, bool writePointers)
 	{
 		writer.StartObject();
 		{
@@ -56,6 +56,13 @@ namespace nap
 			writer.String(attrib.getName().c_str());
 			writer.String(J_VALUE_TYPE);
 			writer.String(attrib.getValueType().getName().c_str());
+            writer.String(J_EDITABLE);
+            writer.Bool(attrib.isEditable());
+
+            if (writePointers) {
+                writer.String(J_PTR);
+                writer.Int64(toPtr(attrib));
+            }
 
 			std::string value = toString(attrib);
 			if (!value.empty()) {
@@ -69,7 +76,7 @@ namespace nap
 	bool isAttribute(Object& obj) { return obj.getTypeInfo().isKindOf<AttributeBase>(); }
 
 	template <typename T>
-	void writeTheObject(T& writer, Object& obj)
+    void writeTheObject(T& writer, Object& obj, bool writePointers)
 	{
 		writer.StartObject();
 		{
@@ -77,6 +84,13 @@ namespace nap
 			writer.String(obj.getName().c_str());
 			writer.String(J_TYPE);
 			writer.String(obj.getTypeInfo().getName().c_str());
+            writer.String(J_EDITABLE);
+            writer.Bool(obj.isEditable());
+
+            if (writePointers) {
+                writer.String(J_PTR);
+                writer.Int64(toPtr(obj));
+            }
 
 			if (obj.getTypeInfo().isKindOf<CompoundAttribute>()) {
 				CompoundAttribute* attribObj = static_cast<CompoundAttribute*>(&obj);
@@ -86,7 +100,7 @@ namespace nap
 					writer.String(J_ATTRIBUTES);
 					writer.StartArray();
 					for (AttributeBase* attrib : attribs) {
-						writeAttribute(writer, *attrib);
+                        writeAttribute(writer, *attrib, writePointers);
 					}
 					writer.EndArray();
 				}
@@ -97,7 +111,7 @@ namespace nap
 					writer.String(J_ATTRIBUTES);
 					writer.StartArray();
 					for (AttributeBase* attrib : attribs) {
-						writeAttribute(writer, *attrib);
+                        writeAttribute(writer, *attrib, writePointers);
 					}
 					writer.EndArray();
 				}
@@ -116,20 +130,97 @@ namespace nap
 				writer.String(J_CHILDREN);
 				writer.StartArray();
 				for (Object* child : filteredObjects)
-					writeTheObject(writer, *child);
+                    writeTheObject(writer, *child, writePointers);
 				writer.EndArray();
 			}
 		}
 		writer.EndObject();
 	}
 
-	void JSONSerializer::writeObject(std::ostream& ostream, Object& object) const
+    TypeList getInstantiableSubTypes(RTTI::TypeInfo parentType) {
+        TypeList types;
+        for (const auto& type : RTTI::TypeInfo::getRawTypes()) {
+            if (!type.isKindOf(parentType))
+                continue;
+            if (type == parentType)
+                continue;
+            if (!type.canCreateInstance())
+                continue;
+            types.push_back(type);
+        }
+        return types;
+    }
+
+    TypeList getAttributeTypes() {
+        TypeList types;
+        for (const auto& type: RTTI::TypeInfo::getRawTypes()) {
+            if (type.isKindOf<AttributeBase>() && type.canCreateInstance()) {
+                AttributeBase* attrib = static_cast<AttributeBase*>(type.createInstance());
+                types.push_back(attrib->getValueType());
+            }
+        }
+        return types;
+    }
+
+    void writeTypes(PrettyWriter<StringBuffer>& w, TypeList types) {
+        w.StartArray();
+        for (const auto& type : types) {
+            w.String(type.getName().c_str());
+        }
+        w.EndArray();
+    }
+
+	void JSONSerializer::writeModuleInfo(std::ostream& ostream, ModuleManager& moduleManager) const
+	{
+		StringBuffer buf;
+		PrettyWriter<StringBuffer> w(buf);
+
+		w.StartObject();
+		{
+            w.String("modules");
+            w.StartArray();
+            for (const Module* mod : moduleManager.getModules()) {
+                w.String("name");
+                w.String(mod->getName().c_str());
+                w.String("filename");
+
+                TypeList types;
+                w.String("dataTypes");
+                mod->getDataTypes(types);
+                writeTypes(w, types);
+
+                w.String("componentTypes");
+                types.clear();
+                mod->getComponentTypes(types);
+                writeTypes(w, types);
+
+                w.String("operatorTypes");
+                types.clear();
+                mod->getOperatorTypes(types);
+                writeTypes(w, types);
+            }
+            w.EndArray();
+
+            w.String("dataTypes");
+            writeTypes(w, getAttributeTypes());
+            w.String("componentTypes");
+            writeTypes(w, getInstantiableSubTypes(RTTI_OF(Component)));
+            w.String("operatorTypes");
+            writeTypes(w, getInstantiableSubTypes(RTTI_OF(Operator)));
+		}
+		w.EndObject();
+
+		ostream << buf.GetString();
+	}
+
+
+	void JSONSerializer::writeObject(std::ostream& ostream, Object& object, bool writePointers) const
 	{
 
 		StringBuffer buf;
 		PrettyWriter<StringBuffer> writer(buf);
 
-		writeTheObject(writer, object);
+        writeTheObject(writer, object, writePointers);
 
 		ostream << buf.GetString();
 	}
@@ -213,10 +304,6 @@ namespace nap
 			for (auto it = children.Begin(); it != children.End(); ++it)
 				jsonToObject(*it, core, obj);
 		}
-		//
-		//		if (obj->getTypeInfo().isKindOf<AttributeBase>() && !obj->getTypeInfo().isKindOf<CompoundAttribute>()) {
-		//			Logger::info("Attribute");
-		//		}
 
 		return obj;
 	};
