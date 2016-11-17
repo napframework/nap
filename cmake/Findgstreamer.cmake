@@ -45,58 +45,28 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+find_package(PkgConfig)
+
 # Helper macro to find a GStreamer plugin (or GStreamer itself)
 #   _component_prefix is prepended to the _INCLUDE_DIRS and _LIBRARIES variables (eg. "GSTREAMER_AUDIO")
 #   _pkgconfig_name is the component's pkg-config name (eg. "gstreamer-1.0", or "gstreamer-video-1.0").
 #   _header is the component's header, relative to the gstreamer-1.0 directory (eg. "gst/gst.h").
 #   _library is the component's library name (eg. "gstreamer-1.0" or "gstvideo-1.0")
-#macro(FIND_GSTREAMER_COMPONENT _component_prefix _pkgconfig_name _header _library)
-#    pkg_check_modules(PC_${_component_prefix} QUIET ${_pkgconfig_name})
-#
-#    find_path(${_component_prefix}_INCLUDE_DIRS
-#        NAMES ${_header}
-#        HINTS ${PC_${_component_prefix}_INCLUDE_DIRS} ${PC_${_component_prefix}_INCLUDEDIR}
-#        PATH_SUFFIXES gstreamer-1.0
-#    )
-#
-#    find_library(${_component_prefix}_LIBRARIES
-#        NAMES ${_library}
-#        HINTS ${PC_${_component_prefix}_LIBRARY_DIRS} ${PC_${_component_prefix}_LIBDIR}
-#    )
-#endmacro()
+macro(FIND_GSTREAMER_COMPONENT _component_prefix _pkgconfig_name _header _library)
+    # FIXME: The QUIET keyword can be used once we require CMake 2.8.2.
+    pkg_check_modules(PC_${_component_prefix} ${_pkgconfig_name})
 
-if (WIN32)
-    macro(FIND_GSTREAMER_COMPONENT _component_prefix _pkgconfig_name _header _library)
-        find_path(${_component_prefix}_INCLUDE_DIRS
-                NAMES ${_header}
-                PATHS C:/gstreamer/1.0/x86_64/include
-                PATH_SUFFIXES gstreamer-1.0
-                )
+    find_path(${_component_prefix}_INCLUDE_DIRS
+            NAMES ${_header}
+            HINTS ${PC_${_component_prefix}_INCLUDE_DIRS} ${PC_${_component_prefix}_INCLUDEDIR}
+            PATH_SUFFIXES gstreamer-1.0
+            )
 
-        find_library(${_component_prefix}_LIBRARIES
-                NAMES ${_library}
-                PATHS C:/gstreamer/1.0/x86_64/lib
-                )
-    endmacro()
-else ()
-
-    find_package(PkgConfig)
-
-    macro(FIND_GSTREAMER_COMPONENT _component_prefix _pkgconfig_name _header _library)
-        pkg_check_modules(PC_${_component_prefix} QUIET ${_pkgconfig_name})
-
-        find_path(${_component_prefix}_INCLUDE_DIRS
-                NAMES ${_header}
-                HINTS ${PC_${_component_prefix}_INCLUDE_DIRS} ${PC_${_component_prefix}_INCLUDEDIR}
-                PATH_SUFFIXES gstreamer-1.0
-                )
-
-        find_library(${_component_prefix}_LIBRARIES
-                NAMES ${_library}
-                HINTS ${PC_${_component_prefix}_LIBRARY_DIRS} ${PC_${_component_prefix}_LIBDIR}
-                )
-    endmacro()
-endif ()
+    find_library(${_component_prefix}_LIBRARIES
+            NAMES ${_library}
+            HINTS ${PC_${_component_prefix}_LIBRARY_DIRS} ${PC_${_component_prefix}_LIBDIR}
+            )
+endmacro()
 
 # ------------------------
 # 1. Find GStreamer itself
@@ -105,7 +75,6 @@ endif ()
 # 1.1. Find headers and libraries
 FIND_GSTREAMER_COMPONENT(GSTREAMER gstreamer-1.0 gst/gst.h gstreamer-1.0)
 FIND_GSTREAMER_COMPONENT(GSTREAMER_BASE gstreamer-base-1.0 gst/gst.h gstbase-1.0)
-
 
 # 1.2. Check GStreamer version
 if (GSTREAMER_INCLUDE_DIRS)
@@ -125,9 +94,17 @@ if (GSTREAMER_INCLUDE_DIRS)
     endif ()
 endif ()
 
-
-if ("${GStreamer_FIND_VERSION}" VERSION_GREATER "${GSTREAMER_VERSION}")
-    message(FATAL_ERROR "Required version (" ${GStreamer_FIND_VERSION} ") is higher than found version (" ${GSTREAMER_VERSION} ")")
+# FIXME: With CMake 2.8.3 we can just pass GSTREAMER_VERSION to FIND_PACKAGE_HANDLE_STANDARD_ARGS as VERSION_VAR
+#        and remove the version check here (GSTREAMER_FIND_VERSION would be passed to FIND_PACKAGE).
+set(VERSION_OK TRUE)
+if (GSTREAMER_FIND_VERSION_EXACT)
+    if (NOT(("${GSTREAMER_FIND_VERSION}" VERSION_EQUAL "${GSTREAMER_VERSION}")))
+        set(VERSION_OK FALSE)
+    endif ()
+else ()
+    if ("${GSTREAMER_VERSION}" VERSION_LESS "${GSTREAMER_FIND_VERSION}")
+        set(VERSION_OK FALSE)
+    endif ()
 endif ()
 
 # -------------------------
@@ -143,7 +120,7 @@ FIND_GSTREAMER_COMPONENT(GSTREAMER_VIDEO gstreamer-video-1.0 gst/video/video.h g
 # ------------------------------------------------
 # 3. Process the COMPONENTS passed to FIND_PACKAGE
 # ------------------------------------------------
-set(_GSTREAMER_REQUIRED_VARS GSTREAMER_INCLUDE_DIRS GSTREAMER_LIBRARIES GSTREAMER_VERSION GSTREAMER_BASE_INCLUDE_DIRS GSTREAMER_BASE_LIBRARIES)
+set(_GSTREAMER_REQUIRED_VARS GSTREAMER_INCLUDE_DIRS GSTREAMER_LIBRARIES VERSION_OK GSTREAMER_BASE_INCLUDE_DIRS GSTREAMER_BASE_LIBRARIES)
 
 foreach (_component ${GStreamer_FIND_COMPONENTS})
     set(_gst_component "GSTREAMER_${_component}")
@@ -153,22 +130,4 @@ foreach (_component ${GStreamer_FIND_COMPONENTS})
 endforeach ()
 
 include(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(GStreamer REQUIRED_VARS ${_GSTREAMER_REQUIRED_VARS}
-        VERSION_VAR   GSTREAMER_VERSION)
-
-mark_as_advanced(
-        GSTREAMER_APP_INCLUDE_DIRS
-        GSTREAMER_APP_LIBRARIES
-        GSTREAMER_AUDIO_INCLUDE_DIRS
-        GSTREAMER_AUDIO_LIBRARIES
-        GSTREAMER_BASE_INCLUDE_DIRS
-        GSTREAMER_BASE_LIBRARIES
-        GSTREAMER_FFT_INCLUDE_DIRS
-        GSTREAMER_FFT_LIBRARIES
-        GSTREAMER_INCLUDE_DIRS
-        GSTREAMER_LIBRARIES
-        GSTREAMER_PBUTILS_INCLUDE_DIRS
-        GSTREAMER_PBUTILS_LIBRARIES
-        GSTREAMER_VIDEO_INCLUDE_DIRS
-        GSTREAMER_VIDEO_LIBRARIES
-)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(GStreamer DEFAULT_MSG ${_GSTREAMER_REQUIRED_VARS})

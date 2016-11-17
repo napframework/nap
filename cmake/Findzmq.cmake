@@ -13,6 +13,8 @@ else()
     find_library(ZMQ_LIBRARIES NAMES libzmq.dll HINTS ${ZMQ_DIR}/bin/${CMAKE_BUILD_TYPE} ${ZMQ_DIR}/bin/Debug)
 endif()
 
+
+
 set(ZMQ_INCLUDE_DIR ${ZMQ_DIR}/include)
 
 include(FindPackageHandleStandardArgs)
