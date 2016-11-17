@@ -28,8 +28,8 @@ namespace nap
 		// Destruction
 		~SignalSlotBase();
 
-        // TODO: REMOVE What is this? Similar to connect(function) ?
-		void setFunction(Function func) { mFunction = func; }
+        // TODO: What is function doing?
+        void setFunction(Function func) { mFunction = func; }
 
 		// Connection
 		void connect(SignalSlotBase<Args...>& event);
@@ -37,16 +37,18 @@ namespace nap
         void disconnectAll();
 
 		// connect a raw functionobject. Lifelong connection only, disconnection not possible.
-        // TODO: Why is disconnection not possible??
+        // TODO: Fix disconnection
 		void connect(Function inFunction);
 
 		// convenience method for lifelong connection in case of single parameter events
-        // TODO: Why is disconnection not possible??
+        // TODO: Fix disconnection
 		template <typename U, typename F>
 		void connect(U* parent, F memberFunction)
 		{
 			connect(std::bind(memberFunction, parent, std::placeholders::_1));
 		}
+
+
 
 		inline void operator()(Args... args) { trigger(std::forward<Args>(args)...); }
 
