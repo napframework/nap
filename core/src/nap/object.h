@@ -58,6 +58,12 @@ namespace nap
 		// Clears all children
         void clearChildren();
 
+        // Wherether this Object may be changed by the user
+        bool isEditable() const { return mIsEditable; }
+
+        // Lock or unlock this Object; prevent or allow the user from changing this Object
+        void setEditable(bool editable) { mIsEditable = editable; }
+
         // Clears all children of a specific type
 		void clearChildren(const RTTI::TypeInfo& inInfo);
 
@@ -204,6 +210,7 @@ namespace nap
 	private:
 		// This object's parent
 		Object* mParent = nullptr;
+        bool mIsEditable = true;
 	};
 }
 
