@@ -37,7 +37,7 @@ namespace nap
 
 		void update(const float& dt) override;
 
-		void finish();
+        void finish() override;
 
 		bool isFinished() const override;
 
