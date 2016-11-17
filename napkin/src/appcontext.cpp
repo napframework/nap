@@ -135,7 +135,7 @@ QString AppContext::serialize(nap::Object* obj)
 	assert(obj);
 	std::stringstream ss;
 	nap::XMLSerializer ser(ss, core());
-	ser.writeObject(*obj);
+    ser.writeObject(*obj, <#initializer#>, false);
 	return QString::fromStdString(ss.str());
 }
 void AppContext::deserialize(const QString& data, nap::Object* parent)

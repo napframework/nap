@@ -155,7 +155,7 @@ void selectionToClipboard()
 	std::stringstream ss;
 	nap::XMLSerializer ser(ss, AppContext::get().core());
 	for (auto ob : selection)
-		ser.writeObject(*ob);
+        ser.writeObject(*ob, <#initializer#>, false);
 	std::string buffer = ss.str();
 
 	QApplication::clipboard()->setText(QString::fromStdString(buffer));

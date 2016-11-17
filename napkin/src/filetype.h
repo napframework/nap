@@ -42,7 +42,7 @@ public:
                            nap::Object& obj) const override
     {
         nap::XMLSerializer ser(stream, core);
-        ser.writeObject(core.getRoot());
+        ser.writeObject(core.getRoot(), <#initializer#>, false);
     }
 
 
