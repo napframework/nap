@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
     std::shared_ptr<Core> core = createObjectTree();
 
     JSONSerializer ser;
-    std::string string1 = ser.toString(core->getRoot());
+    std::string string1 = ser.toString(core->getRoot(), false);
 //    std::cout << string1 << std::endl;
 
     std::cout << "=====================================" << std::endl;
@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
     JSONDeserializer deser;
     Core newCore;
     deser.fromString(string1, newCore);
-    std::string string2 = ser.toString(newCore.getRoot());
+    std::string string2 = ser.toString(newCore.getRoot(), false);
 //    std::cout << string2 << std::endl;
 
     using DMP = diff_match_patch<std::string>;

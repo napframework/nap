@@ -84,14 +84,14 @@ bool testXMLSerializer()
 {
     // Create object tree and serialize
     auto srcCore = createObjectTree();
-    std::string xmlString1 = XMLSerializer().toString(srcCore->getRoot());
+    std::string xmlString1 = XMLSerializer().toString(srcCore->getRoot(), false);
 
 	// Deserialize
     Core dstCore;
     XMLDeserializer().fromString(xmlString1, dstCore);
 
     // Serialize again
-    std::string xmlString2 = XMLSerializer().toString(dstCore.getRoot());
+    std::string xmlString2 = XMLSerializer().toString(dstCore.getRoot(), false);
 
     TEST_ASSERT(xmlString1 == xmlString2,
                 "Second serialization gave different result:\nString1:\n" + xmlString1 +
