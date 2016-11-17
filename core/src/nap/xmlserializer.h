@@ -9,7 +9,7 @@ namespace nap
 	class XMLSerializer : public Serializer
 	{
 	public:
-		void writeObject(std::ostream& ostream, Object& object) const override;
+		void writeObject(std::ostream& ostream, Object& object, bool writePointers) const override;
 
 	private:
 		tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc, Object& object) const;

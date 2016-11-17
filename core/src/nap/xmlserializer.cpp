@@ -2,6 +2,9 @@
 #include "xmlserializer.h"
 #include "coreattributes.h"
 
+// External includes
+#include <nap/entity.h>
+
 using namespace tinyxml2;
 using namespace std;
 
@@ -17,7 +20,7 @@ using namespace std;
 
 namespace nap
 {
-	void XMLSerializer::writeObject(std::ostream& ostream, Object& object) const
+	void XMLSerializer::writeObject(std::ostream& ostream, Object& object, bool writePointers) const
 	{
 		XMLDocument doc;
 
