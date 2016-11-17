@@ -7,7 +7,8 @@ namespace nap
     
 	Operator* Patch::getOperator(const std::string& name)
 	{
-		for (auto& op : getOperators())
+        auto operators = getOperators();
+		for (auto& op : operators)
 			if (op->getName() == name)
                 return op;
 		return nullptr;
