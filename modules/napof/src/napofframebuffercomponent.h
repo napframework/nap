@@ -31,7 +31,7 @@ namespace nap
 		void setSettings(const ofFbo::Settings& inSettings);
 		ofFbo::Settings getSettings() const		{ return mSettings; }
 		const ofTexture& getTexture() const		{ return mFrameBuffer.getTexture(); }
-		ofTexture& getTextureRef()				{ return mFrameBuffer.getTextureReference(); }
+		ofTexture& getTextureRef()				{ return mFrameBuffer.getTexture(); }
 		bool isAllocated () const				{ return mFrameBuffer.isAllocated(); }
 
 		// Slots

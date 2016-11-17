@@ -1,14 +1,11 @@
 #pragma once
 
-// Nap includes
 #include <nap.h>
-
-// of Includes
-#include <ofMain.h>
-
-// Naivi of includes
 #include <spline/nofSpline.h>
 #include <spline/nofSplineUtils.h>
+#include <ofTexture.h>
+#include <ofGraphics.h>
+
 
 // Defines
 using OFVectorMap = std::unordered_map<std::string, ofVec3f>;

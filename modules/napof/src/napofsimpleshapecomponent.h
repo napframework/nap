@@ -47,8 +47,8 @@ namespace nap
 		float getHeight() const			{ return mHeight.getValue(); }
 
 		// Override
-		virtual void onDraw() override;
-		virtual void getBounds(ofVec3f& OutMin, ofVec3f& OutMax) const;
+		void onDraw() override;
+		void getBounds(ofVec3f& OutMin, ofVec3f& OutMax) const override;
 
 		// Slots
 		NSLOT(mSizeChanged, const float&, SizeChanged)
@@ -74,9 +74,9 @@ namespace nap
 		Attribute<float>		mSize	{ this, "Size", 10.0f };
 
 		// Override
-		virtual void onDraw() override;
-		virtual void onPostDraw() override;
-		virtual void getBounds(ofVec3f& OutMin, ofVec3f& OutMax) const;
+		void onDraw() override;
+		void onPostDraw() override;
+		void getBounds(ofVec3f& OutMin, ofVec3f& OutMax) const override;
 
 		// Draw Color
 		Attribute<ofFloatColor>	mColor{ this, "Color",{ 1.0f } };

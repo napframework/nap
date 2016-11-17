@@ -1,4 +1,5 @@
 // External Includes
+#include <ofMain.h>
 #include <nap/logger.h>
 
 // Local Includes

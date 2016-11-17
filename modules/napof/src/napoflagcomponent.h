@@ -2,10 +2,10 @@
 
 // nap includes
 #include <nap/component.h>
-#include <napofupdatecomponent.h>
+#include "napofupdatecomponent.h"
 
 // nap of includes
-#include <napofattributes.h>
+#include "napofattributes.h"
 
 namespace nap
 {

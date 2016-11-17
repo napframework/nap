@@ -71,7 +71,7 @@ namespace nap
 		NumericAttribute<float>	mSpeed	{ this, "Speed",  0.0f, 0.0f, 100.0f };
 
 		// Overrides
-		virtual void onUpdate();
+		void onUpdate() override;
 
 	private:
 		// Timer

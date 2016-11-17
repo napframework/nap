@@ -1,5 +1,5 @@
 #include <nap/logger.h>
-#include <napofimagecomponent.h>
+#include "napofimagecomponent.h"
 
 namespace nap
 {

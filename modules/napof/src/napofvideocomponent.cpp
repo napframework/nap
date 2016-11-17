@@ -1,9 +1,10 @@
 #include "napofvideocomponent.h"
 #include <nap/logger.h>
-#include <Utils/nofUtils.h>
+#include <utils/nofUtils.h>
 
+#ifdef _WIN32
 #include <ofxDSHapVideoPlayer.h>
-
+#endif
 
 namespace nap
 {
@@ -16,9 +17,9 @@ namespace nap
 		mFile.connectToValue(mFileChanged);
 
 		// Set video player
-		std::shared_ptr<ofxDSHapVideoPlayer> hap_player = std::make_shared<ofxDSHapVideoPlayer>();
-		mPlayer.setPlayer(hap_player);
-
+#ifdef _WIN32
+        mPlayer.setPlayer(std::make_shared<ofxDSHapVideoPlayer>());
+#endif
 		mPaused.valueChangedSignal.connect(this, &OFVideoComponent::onPausedChanged);
 	}
 

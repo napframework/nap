@@ -1,17 +1,6 @@
 #include <nap/entity.h>
-#include <nap/logger.h>
-
-#include <assert.h>
-
 #include <napofsplinecomponent.h>
-#include <napoftransform.h>
-#include <napofattributes.h>
-
-// OF Includes
-#include <ofGraphics.h>
-
-// std Includes
-#include <fmod.h>
+#include <ofMain.h>
 
 namespace nap
 {

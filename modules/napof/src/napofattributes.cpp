@@ -1,8 +1,8 @@
 // NAP includes
 #include <nap/stringutils.h>
 
-#include <napofattributes.h>
-#include <napofsplinemodulationcomponent.h>
+#include "napofattributes.h"
+#include "napofsplinemodulationcomponent.h"
 
 // Core includes
 #include <nap/attribute.h>

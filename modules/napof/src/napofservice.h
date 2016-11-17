@@ -69,8 +69,8 @@ namespace nap
 		void setDisplayMode(DisplayMode inMode);
 
 	protected:
-		virtual void objectRegistered(Object& inObject) override;
-		virtual void objectRemoved(Object& inObject);
+		void objectRegistered(Object& inObject) override;
+		void objectRemoved(Object& inObject) override;
 
 	private:
 		// Defines

@@ -1,4 +1,4 @@
-#include <napofblendtype.h>
+#include "napofblendtype.h"
 #include <nap/logger.h>
 #include <algorithm>
 #include <GL/glew.h>
