@@ -1,11 +1,19 @@
 #pragma once
 
+#include "asynctcpserver.h"
 #include <nap.h>
 #include <thread>
 
 
 namespace nap
 {
+	template <typename T>
+	static T* fromPtr(ObjPtr ptr)
+	{
+		T* obj = (T*)ptr;
+		assert(obj);
+		return obj;
+	}
 
 	/**
 	 *  This component will run a listening server receiving script calls and dispatch notifications to any remote
@@ -13,53 +21,62 @@ namespace nap
 	 */
 	class ScriptServerComponent : public Component
 	{
-    protected:
+	protected:
 		/**
 		* Holds a slot that may receive signals and forward them to the script server
 		*/
-		class RPCCallBack
+		class RPCObjectCallback
 		{
 		public:
-			RPCCallBack(ScriptServerComponent& server) : mServer(server) {}
-			Slot<AttributeBase&> slot;
+			RPCObjectCallback(ScriptServerComponent& server, AsyncTCPClient& client, Object& obj);
+			~RPCObjectCallback();
+			ScriptServerComponent& mServer;
+
+			Slot<const std::string&> onNameChangedSlot = {this, &RPCObjectCallback::onNameChanged};
+			void onNameChanged(const std::string& name);
+			Slot<Object&> onChildAddedSlot = {this, &RPCObjectCallback::onChildAdded};
+			void onChildAdded(Object& obj);
+			Slot<Object&> onChildRemovedSlot = {this, &RPCObjectCallback::onChildRemoved};
+			void onChildRemoved(Object& obj);
+			Slot<AttributeBase&> onAttributeValueChangedSlot = {this, &RPCObjectCallback::onAttributeValueChanged};
+			void onAttributeValueChanged(AttributeBase& attrib);
 
 		private:
-			void trigger(AttributeBase& attrib) { mServer.handleAttributeChanged(attrib); }
-			ScriptServerComponent& mServer;
+			Object& mObject;
+			AsyncTCPClient& mClient;
 		};
 
 
 		RTTI_ENABLE_DERIVED_FROM(Component)
 	public:
+		using CallbackMap = std::map<Object*, std::unique_ptr<RPCObjectCallback>>;
+		using ClientCallbackMap = std::map<AsyncTCPClient*, CallbackMap>;
+
 		ScriptServerComponent();
 
 		virtual void run() = 0;
 
 		Attribute<int> rpcPort = {this, "rpcPort", 8888};
-        Attribute<int> pubPort = {this, "pubPort", 8889};
 		Attribute<bool> running = {this, "running", false};
-
-		void addAttributeChangedCallback(const std::string& objPath) {
-            auto attrib = resolve<AttributeBase>(objPath);
-            if (!attrib)
-                return;
-
-            auto callback = std::make_unique<RPCCallBack>(*this);
-            attrib->valueChanged.connect(callback->slot);
-            mAttributeCallbacks.emplace(objPath, std::move(callback));
-        }
-
-        void removeAttributeChangedCallback(const std::string& path) {
-            auto callbackIt = mAttributeCallbacks.find(path);
-            if (callbackIt == mAttributeCallbacks.end())
-                return;
-            mAttributeCallbacks.erase(callbackIt);
-        }
-
 
 	protected:
 		virtual std::string evalScript(const std::string& cmd) = 0;
-		virtual void handleAttributeChanged(AttributeBase& attrib) = 0;
+		virtual void handleNameChanged(AsyncTCPClient& client, Object& obj) = 0;
+		virtual void handleObjectAdded(AsyncTCPClient& client, Object& obj, Object& child) = 0;
+		virtual void handleObjectRemoved(AsyncTCPClient& client, Object& child) = 0;
+		virtual void handleAttributeValueChanged(AsyncTCPClient& client, AttributeBase& attrib) = 0;
+		AsyncTCPServer& getServer() { return *mServer.get(); }
+
+		void stopServer();
+		void startServer();
+
+		void addCallbacks(AsyncTCPClient& client, ObjPtr path);
+
+		void removeCallbacks(AsyncTCPClient& client);
+
+		void removeCallbacks(AsyncTCPClient& client, const std::string& path);
+
+		CallbackMap& getCallbackMap(AsyncTCPClient& client);
 
 		Core& getCore() { return static_cast<Entity*>(getRootObject())->getCore(); }
 
@@ -79,14 +96,16 @@ namespace nap
 			return static_cast<T*>(obj);
 		}
 
-	protected:
-		std::thread* mServerThread = nullptr;
-
 	private:
 		void onRunningChanged(const bool& running);
 
+		void onClientConnected(AsyncTCPClient& client);
+		void onClientDisconnected(AsyncTCPClient& client);
+		void onRequestReceived(AsyncTCPClient& client, const std::string& msg);
+
 	private:
-		std::map<std::string, std::unique_ptr<RPCCallBack>> mAttributeCallbacks;
+		ClientCallbackMap mCallbacks;
+		std::unique_ptr<AsyncTCPServer> mServer = nullptr;
 	};
 }
 RTTI_DECLARE_BASE(nap::ScriptServerComponent)

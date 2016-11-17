@@ -1,5 +1,5 @@
 #include <nap/module.h>
-#include "jsonrpcserver.h"
+#include "jsonrpcservercomponent.h"
 
 NAP_MODULE_BEGIN(NapScriptServer)
 {

@@ -25,16 +25,17 @@ namespace nap
     protected:
         std::string evalScript(const std::string& cmd) override;
 
-        virtual void handleAttributeChanged(AttributeBase &attrib) override;
-
+        void handleNameChanged(AsyncTCPClient& client, Object& obj) override;
+        void handleObjectAdded(AsyncTCPClient& client, Object& obj, Object& child) override;
+        void handleObjectRemoved(AsyncTCPClient& client, Object& child) override;
+        virtual void handleAttributeValueChanged(AsyncTCPClient& client, AttributeBase& attrib) override;
     private:
         void startRPCSocket();
-        void startSUBSocket();
     private:
         jsonrpc::Server mServer;
         jsonrpc::JsonFormatHandler mFormatHandler;
         zmq::context_t mContext;
-        std::unique_ptr<zmq::socket_t> mPubSocket;
+        std::mutex mMutex;
     };
 }
 
