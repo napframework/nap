@@ -143,7 +143,7 @@ namespace nap
 		// If yes, return that one
 		if (it != mInputFilters.end())
 		{
-			nap::Logger::warn("filter with type: %s already loaded", type.getName());
+			nap::Logger::warn("filter with type: %s already loaded", type.getName().c_str());
 			return *(static_cast<T*>((*it).get()));
 		}
 
