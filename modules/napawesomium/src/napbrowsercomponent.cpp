@@ -3,11 +3,11 @@
 #include "napawesomiumservice.h"
 
 // External Includes
-#include <utils/nofUtils.h>
-#include <napoftransform.h>
-#include <napofsimpleshapecomponent.h>
-#include <Utils/nofUtils.h>
 #include <Awesomium/JSValue.h>
+#include <napofsimpleshapecomponent.h>
+#include <napoftransform.h>
+#include <utils/nofUtils.h>
+#include <utils/nofUtils.h>
 
 namespace nap
 {
@@ -22,10 +22,7 @@ namespace nap
 	}
 
 	// Destructor
-	BrowserComponent::~BrowserComponent()
-	{
-		destroyBrowser();
-	}
+	BrowserComponent::~BrowserComponent() { destroyBrowser(); }
 
 
 	// Creates a new webview (browser) in Awesomium. Also allocates the frame buffer image and texture
@@ -49,7 +46,7 @@ namespace nap
 		mWebView->SetTransparent(mTransparent.getValue());
 
 		// Allocate frame buffer
-		int width  = mResolution.getValue().x;
+		int width = mResolution.getValue().x;
 		int height = mResolution.getValue().y;
 		mFrame.allocate(width, height, OF_IMAGE_COLOR_ALPHA);
 
@@ -70,12 +67,11 @@ namespace nap
 	void BrowserComponent::loadUrl(const std::string& inValue)
 	{
 		// Default web page prefixes
-		const static std::array<std::string, 2> sWebPaths = { "www", "http" };
-		
+		const static std::array<std::string, 2> sWebPaths = {"www", "http"};
+
 		// Make sure we have a web view
-		if (mWebView == nullptr)
-		{
-			Logger::warn("can't load url: " + inValue + " ,no webview");
+		if (mWebView == nullptr) {
+			Logger::warn("can't load url: '%s', no webview", inValue.c_str());
 			return;
 		}
 
@@ -88,12 +84,11 @@ namespace nap
 
 		// Convert to local address
 		Awesomium::WebURL web_url = Awesomium::WebURL(Awesomium::WSLit(c_url.c_str()));
-		if (!web_url.IsValid())
-		{
-			Logger::fatal("invalid url: " + inValue);
+		if (!web_url.IsValid()) {
+			Logger::fatal("invalid url: '%s'", inValue.c_str());
 			return;
 		}
-	
+
 		// Load and give focus
 		mWebView->LoadURL(web_url);
 		mWebView->Focus();
@@ -103,10 +98,11 @@ namespace nap
 	// Executes some javascript
 	Awesomium::JSValue BrowserComponent::doJavaScript(std::string inJavaScript)
 	{
-        Logger::debug("Sending js: " + inJavaScript);
-		auto result = mWebView->ExecuteJavascriptWithResult(Awesomium::WSLit(inJavaScript.c_str()), Awesomium::WSLit(""));
+		Logger::debug("Sending js: " + inJavaScript);
+		auto result =
+			mWebView->ExecuteJavascriptWithResult(Awesomium::WSLit(inJavaScript.c_str()), Awesomium::WSLit(""));
 		if (mWebView->last_error())
-            Logger::warn("Javascript call failed: %s", inJavaScript.c_str());
+			Logger::warn("Javascript call failed: %s", inJavaScript.c_str());
 		return result;
 	}
 
@@ -115,9 +111,8 @@ namespace nap
 	void BrowserComponent::Update()
 	{
 		// Make sure webview is available
-		if (mWebView == nullptr)
-		{
-			Logger::warn("Invalid web view: " + this->getName());
+		if (mWebView == nullptr) {
+			Logger::warn("Invalid web view: %s", this->getName().c_str());
 			return;
 		}
 
@@ -127,16 +122,16 @@ namespace nap
 			return;
 
 		// Copy buffer
-		if (mWebSurface->buffer() != nullptr && mWebSurface->is_dirty())
-		{
-			mWebSurface->CopyTo(mFrame.getPixels(), mFrame.getWidth() * 4, 4, true, false);
+		if (mWebSurface->buffer() != nullptr && mWebSurface->is_dirty()) {
+			mWebSurface->CopyTo(mFrame.getPixels().getData(), (int)(mFrame.getWidth() * 4), 4, true, false);
 			mFrame.update();
 		}
 	}
 
 
 	// Called when the frame starts to load, only take in to account main frame
-	void BrowserComponent::OnBeginLoadingFrame(Awesomium::WebView* caller, int64 frame_id, bool is_main_frame, const Awesomium::WebURL& url, bool is_error_page)
+	void BrowserComponent::OnBeginLoadingFrame(Awesomium::WebView* caller, int64 frame_id, bool is_main_frame,
+											   const Awesomium::WebURL& url, bool is_error_page)
 	{
 		if (!is_main_frame)
 			return;
@@ -149,10 +144,11 @@ namespace nap
 	}
 
 
-	void BrowserComponent::OnFailLoadingFrame(Awesomium::WebView* caller, int64 frame_id, bool is_main_frame, const Awesomium::WebURL& url, int error_code, const Awesomium::WebString& error_desc)
+	void BrowserComponent::OnFailLoadingFrame(Awesomium::WebView* caller, int64 frame_id, bool is_main_frame,
+											  const Awesomium::WebURL& url, int error_code,
+											  const Awesomium::WebString& error_desc)
 	{
-		if (!is_main_frame)
-		{
+		if (!is_main_frame) {
 			Logger::warn(getName() + "Failed loading element from web page: " + mURL.getValue());
 			return;
 		}
@@ -166,7 +162,8 @@ namespace nap
 	}
 
 
-	void BrowserComponent::OnFinishLoadingFrame(Awesomium::WebView* caller, int64 frame_id, bool is_main_frame, const Awesomium::WebURL& url)
+	void BrowserComponent::OnFinishLoadingFrame(Awesomium::WebView* caller, int64 frame_id, bool is_main_frame,
+												const Awesomium::WebURL& url)
 	{
 		if (!is_main_frame)
 			return;
@@ -193,8 +190,7 @@ namespace nap
 	// Destroys the currently bound web browser and resets the state
 	void BrowserComponent::destroyBrowser()
 	{
-		if (mWebView)
-		{
+		if (mWebView) {
 			mWebView->Destroy();
 			mWebView = nullptr;
 		}
@@ -205,14 +201,12 @@ namespace nap
 	// Reloads the web page
 	void BrowserComponent::reload(bool ignoreCache)
 	{
-		if (mWebView == nullptr)
-		{
+		if (mWebView == nullptr) {
 			Logger::warn("no active web-view loaded");
 			return;
 		}
 
-		if (mURL.getValue() == "")
-		{
+		if (mURL.getValue() == "") {
 			Logger::warn("no url specified");
 			return;
 		}
@@ -235,21 +229,24 @@ namespace nap
 		using namespace Awesomium;
 
 		JSValue retVal = mWebView->ExecuteJavascriptWithResult(WSLit("getAppSize();"), WSLit(""));
-		if (!retVal.IsArray()) return;
+		if (!retVal.IsArray())
+			return;
 		auto arr = retVal.ToArray();
-		
+
 		JSValue width = arr[0];
-		if (!width.IsNumber()) return;
+		if (!width.IsNumber())
+			return;
 		int w = width.ToInteger();
 
 		JSValue height = arr[1];
-		if (!height.IsNumber()) return;
+		if (!height.IsNumber())
+			return;
 
 		int h = height.ToInteger();
 
-		mResolution.setValue({ w, h });
+		mResolution.setValue({w, h});
 
-		//mWebView->Reload(true);
+		// mWebView->Reload(true);
 	}
 
 
@@ -284,7 +281,7 @@ namespace nap
 		mWebView->InjectMouseMove(coords.x, coords.y);
 	}
 
-	
+
 	// Occurs when the browser received a mouse released signal
 	void BrowserComponent::pointerReleased(PointerReleaseEvent& inEvent)
 	{
@@ -309,7 +306,7 @@ namespace nap
 	// Returns browser coordinates based on the input event, tries to use world space coordinates
 	bool BrowserComponent::getBrowserCoordinates(PointerEvent& inEvent, ofVec2i& outCoordinates)
 	{
-		// Store 
+		// Store
 		outCoordinates.x = inEvent.mX.getValue();
 		outCoordinates.y = inEvent.mY.getValue();
 
@@ -318,17 +315,16 @@ namespace nap
 			return false;
 
 		// Cast with safety check
-		if (!world_base_attr->getTypeInfo().isKindOf(RTTI_OF(Attribute<ofVec3f>)))
-		{
+		if (!world_base_attr->getTypeInfo().isKindOf(RTTI_OF(Attribute<ofVec3f>))) {
 			nap::Logger::warn("world space attribute is not of kind: ofVec3f");
 			return false;
 		}
 		Attribute<ofVec3f>* world_pos_attr = static_cast<Attribute<ofVec3f>*>(world_base_attr);
-		
+
 		// Fetch additional components for computing relative input bounds
 		nap::OFTransform* xform = this->getParent()->getComponent<nap::OFTransform>();
 		nap::OFPlaneComponent* plane = this->getParent()->getComponent<nap::OFPlaneComponent>();
-		
+
 		if (xform == nullptr || plane == nullptr)
 			return false;
 
@@ -346,8 +342,10 @@ namespace nap
 			return false;
 
 		// Set new coordinates
-		outCoordinates.x = (int)gFit(world_pos_attr->getValue().x, min_bounds.x, max_bounds.x, 0, mResolution.getValue().x);
-		outCoordinates.y = (int)gFit(world_pos_attr->getValue().y, min_bounds.y, max_bounds.y, mResolution.getValue().y, 0);
+		outCoordinates.x =
+			(int)gFit(world_pos_attr->getValue().x, min_bounds.x, max_bounds.x, 0, mResolution.getValue().x);
+		outCoordinates.y =
+			(int)gFit(world_pos_attr->getValue().y, min_bounds.y, max_bounds.y, mResolution.getValue().y, 0);
 
 		return true;
 	}
@@ -357,33 +355,28 @@ namespace nap
 	// This makes sure that any callback defined in @JavaScriptCallable is bound
 	void BrowserComponent::bindJSObject(const JavaScriptCallable& inValue)
 	{
-		if (mWebView == nullptr)
-		{
-			Logger::warn("can't bind javascript object, browser not yet available: %s", this->getName());
+		if (mWebView == nullptr) {
+			Logger::warn("can't bind javascript object, browser not yet available: %s", this->getName().c_str());
 			return;
 		}
 
-		if (!inValue.isValid())
-		{
+		if (!inValue.isValid()) {
 			Logger::warn("%s: can't bind un-named callable javascript object!", inValue.object.c_str());
 		}
 
 		// Ensure the variable doesn't exist already (is bound)
-		Awesomium::JSValue js_value = mWebView->ExecuteJavascriptWithResult(Awesomium::WSLit(inValue.object.c_str()), Awesomium::WSLit(""));
-		if (!js_value.IsUndefined())
-		{
-			if (!js_value.IsObject())
-			{
+		Awesomium::JSValue js_value =
+			mWebView->ExecuteJavascriptWithResult(Awesomium::WSLit(inValue.object.c_str()), Awesomium::WSLit(""));
+		if (!js_value.IsUndefined()) {
+			if (!js_value.IsObject()) {
 				Logger::warn("item with name: %s is not a javascript object but is defined");
 				return;
 			}
-		}
-		else
-		{
+		} else {
 			js_value = mWebView->CreateGlobalJavascriptObject(Awesomium::WSLit(inValue.object.c_str()));
-			if (js_value.IsUndefined())
-			{
-				Logger::warn("%s: Unable to create javascript object with name: %s", this->getName().c_str(), inValue.object.c_str());
+			if (js_value.IsUndefined()) {
+				Logger::warn("%s: Unable to create javascript object with name: %s", this->getName().c_str(),
+							 inValue.object.c_str());
 				return;
 			}
 		}
@@ -401,27 +394,30 @@ namespace nap
 
 
 	// When the browser invokes a method this component listens to
-	void BrowserComponent::OnMethodCall(Awesomium::WebView* caller, unsigned int remote_object_id, const Awesomium::WebString& method_name, const Awesomium::JSArray& args)
+	void BrowserComponent::OnMethodCall(Awesomium::WebView* caller, unsigned int remote_object_id,
+										const Awesomium::WebString& method_name, const Awesomium::JSArray& args)
 	{
-		if (caller != this->mWebView)
-		{
+		if (caller != this->mWebView) {
 			nap::Logger::warn("unbound webview: %s received javascript callback", this->getName().c_str());
 			return;
 		}
-		
+
 		// Let derived classes handle the call
 		onCalled(Awesomium::ToString(method_name), args);
 	}
 
 
 	// When the browser invokes a method with return value this browser listens to
-	Awesomium::JSValue BrowserComponent::OnMethodCallWithReturnValue(Awesomium::WebView* caller, unsigned int remote_object_id, const Awesomium::WebString& method_name, const Awesomium::JSArray& args)
+	Awesomium::JSValue BrowserComponent::OnMethodCallWithReturnValue(Awesomium::WebView* caller,
+																	 unsigned int remote_object_id,
+																	 const Awesomium::WebString& method_name,
+																	 const Awesomium::JSArray& args)
 	{
 		Awesomium::JSValue v;
 
-		if (caller != this->mWebView)
-		{
-			nap::Logger::warn("unbound webview: %s received javascript callback with return value", this->getName().c_str());
+		if (caller != this->mWebView) {
+			nap::Logger::warn("unbound webview: %s received javascript callback with return value",
+							  this->getName().c_str());
 			return v;
 		}
 

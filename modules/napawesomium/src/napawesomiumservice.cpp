@@ -59,7 +59,7 @@ namespace nap
 	// Converts an OF Web Address to a local address ("data/index.html" -> file:///c:/data/index.html"
 	std::string AwesomiumService::sOFAddressToLocalAddress(const std::string& inValue)
 	{
-		ofFile local_file = (inValue);
+		ofFile local_file(inValue);
 		if (!local_file.exists())
 		{
 			Logger::fatal("file does not exist: " + inValue);

@@ -10,7 +10,7 @@ bool nap::convert_jscriptcallable_to_string(const nap::JavaScriptCallable& inVal
 	ss << ",";
 	ss << inValue.callback;
 	ss << ",";
-	ss << inValue.returnvalue ? "true" : "false";
+	ss << (inValue.returnvalue ? "true" : "false");
 
 	outValue = ss.str();
 	return true;

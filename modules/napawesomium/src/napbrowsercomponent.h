@@ -17,7 +17,7 @@
 // OF Includes
 #include <ofImage.h>
 #include <napofattributes.h>
-#include <Utils/ofVec2i.h>
+#include <utils/ofVec2i.h>
 
 // Input includes
 #include <napinputcomponent.h>
@@ -37,7 +37,7 @@ namespace nap
 		public Awesomium::JSMethodHandler
 	{
 		RTTI_ENABLE_DERIVED_FROM(ServiceableComponent)
-
+#undef Success
 		// Browse Component State
 		enum class State
 		{
@@ -62,11 +62,7 @@ namespace nap
 		Attribute<bool>					mUpdate				{ this, "Update", true };
 		Attribute<bool>					mReload				{ this, "Reload", false };
 
-		// Getters
-		bool isLoading() const								{ return mWebView->IsLoading(); }
-		State getState() const								{ mState; }
-
-		// Reload
+        // Reload
 		void reload(bool ignoreCache = false);
 
 		// Javascript
@@ -122,7 +118,7 @@ namespace nap
 		virtual void OnMethodCall(Awesomium::WebView* caller, unsigned int remote_object_id, const Awesomium::WebString& method_name, const Awesomium::JSArray& args) override;
 
 		// Called from javascript with return value
-		virtual Awesomium::JSValue OnMethodCallWithReturnValue(Awesomium::WebView* caller, unsigned int remote_object_id, const Awesomium::WebString& method_name, const Awesomium::JSArray& args);
+        Awesomium::JSValue OnMethodCallWithReturnValue(Awesomium::WebView* caller, unsigned int remote_object_id, const Awesomium::WebString& method_name, const Awesomium::JSArray& args) override;
 
 		//////////////////////////////////////////////////////////////////////////
 
