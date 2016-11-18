@@ -179,25 +179,40 @@ namespace nap
 		{
             w.String("modules");
             w.StartArray();
-            for (const Module* mod : moduleManager.getModules()) {
+            for (const Module* mod : moduleManager.getModules())
+            {
+                w.StartObject();
+
                 w.String("name");
                 w.String(mod->getName().c_str());
                 w.String("filename");
+                w.String(mod->getFilename().c_str());
 
                 TypeList types;
-                w.String("dataTypes");
+
                 mod->getDataTypes(types);
-                writeTypes(w, types);
+                if (!types.empty()) {
+                    w.String("dataTypes");
+                    writeTypes(w, types);
+                }
 
-                w.String("componentTypes");
                 types.clear();
+
                 mod->getComponentTypes(types);
-                writeTypes(w, types);
+                if (!types.empty()) {
+                    w.String("componentTypes");
+                    writeTypes(w, types);
+                }
 
-                w.String("operatorTypes");
                 types.clear();
+
                 mod->getOperatorTypes(types);
-                writeTypes(w, types);
+                if (!types.empty()) {
+                    w.String("operatorTypes");
+                    writeTypes(w, types);
+                }
+
+                w.EndObject();
             }
             w.EndArray();
 
