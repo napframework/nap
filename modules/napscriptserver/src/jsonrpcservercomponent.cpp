@@ -67,6 +67,21 @@ namespace nap
 
 		disp.AddMethod("getObjectTree", [&]() -> std::string { return JSONSerializer().toString(*getRootObject(), true); });
 
+        disp.AddMethod("copyObjectTree", [&](ObjPtr objPtr) -> std::string {
+            Object* obj = fromPtr<Object>(objPtr);
+            if (!obj)
+                return 0;
+            return JSONSerializer().toString(*obj, true);
+        });
+
+        disp.AddMethod("pasteObjectTree", [&](ObjPtr parentPtr, std::string jsonData) {
+            Object* obj = fromPtr<Object>(parentPtr);
+            if (!obj)
+                return 0;
+            Logger::info(jsonData);
+            JSONDeserializer().fromString(jsonData, getCore(), obj);
+        });
+
 		disp.AddMethod("getRoot", [&]() -> ObjPtr { return toPtr(getRootObject()); });
 
 		disp.AddMethod("getParent", [&](ObjPtr objPtr) -> ObjPtr {

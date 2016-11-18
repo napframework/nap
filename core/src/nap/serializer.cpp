@@ -22,6 +22,16 @@ namespace nap
 
     Object* Deserializer::fromString(const std::string& str, Core& core, Object* parent) const
 	{
+
+        std::string allowed = "abcdefghijklmnopqrstuvwxyz0123456789.,{}[]:\"";
+        for(unsigned long int i = 0; i < str.length(); ++i) {
+            if (allowed.find(str[i]) == std::string::npos) {
+                Logger::warn("Illegal characters found while deserializing.");
+                Logger::debug(str);
+                return nullptr;
+            }
+        }
+
 		std::istringstream ss(str);
 		return readObject(ss, core, parent);
 	}
