@@ -54,10 +54,10 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${BIN_DIR}/modules)
 
 add_subdirectory(modules/napfsm)
 add_subdirectory(modules/napgui)
-add_subdirectory(modules/napof)
+#add_subdirectory(modules/napof)
 add_subdirectory(modules/napinput)
 add_subdirectory(modules/network)
-add_subdirectory(modules/napawesomium)
+#add_subdirectory(modules/napawesomium)
 add_subdirectory(modules/napscriptserver)
 add_subdirectory(modules/napjsonserializer)
 
