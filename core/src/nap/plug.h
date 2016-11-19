@@ -439,11 +439,6 @@ namespace nap
 		{
 		}
 
-		// When somehow the data source associated with this plug changed and
-		// the connection has to be re-established,
-		// call this function
-		virtual void refresh();
-
 	private:
 		// Pointer to the data source that the plug passes on to connected input
 		// plugs
@@ -580,24 +575,6 @@ namespace nap
 
 
 
-	// --- OutputStreamPlug ---- //
-
-
-	// refreshing is achieved by disconnecting and re-connecting all connections
-	template <typename T>
-	void OutputStreamPlug<T>::refresh()
-	{
-		std::set<InputPlugBase*> tempConnections;
-
-		for (auto& connection : connections)
-			tempConnections.emplace(connection);
-
-		while (!connections.empty())
-			(*connections.begin())->disconnect(*this);
-
-		for (auto& connection : tempConnections)
-			connection->connect(*this);
-	}
 }
 
 RTTI_DECLARE_BASE(nap::Plug)
