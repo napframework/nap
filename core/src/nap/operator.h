@@ -1,8 +1,10 @@
 #pragma once
 
-#include <nap/attribute.h>
-#include <nap/attributeobject.h>
-#include <nap/plug.h>
+#include "attribute.h"
+#include "attributeobject.h"
+#include "plug.h"
+#include "coreattributes.h"
+
 #include <rtti/rtti.h>
 #include <set>
 
@@ -56,6 +58,8 @@ namespace nap
         // Return the entity this operator's patch resides in
         Entity* getEntity();
 
+		Attribute<float> patchXPos = { this, "__patch_x_pos__", 0 };
+		Attribute<float> patchYPos = { this, "__patch_y_pos__", 0 };
 	};
 }
 
