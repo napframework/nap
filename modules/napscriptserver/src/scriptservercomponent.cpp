@@ -136,6 +136,15 @@ namespace nap
 		map.emplace(obj, std::move(callback));
 	}
 
+	void ScriptServerComponent::addCallbacks(const std::string &clientIdent, ObjPtr ptr) {
+		AsyncTCPClient* client = getServer().getClient(clientIdent);
+		if (!client)
+			return;
+
+		addCallbacks(*client, ptr);
+	}
+
+
 
 	void ScriptServerComponent::removeCallbacks(AsyncTCPClient& client)
 	{
@@ -171,4 +180,5 @@ namespace nap
 		mCallbacks.emplace(&client, CallbackMap());
 		return mCallbacks.find(&client)->second;
 	}
+
 }

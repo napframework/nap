@@ -171,31 +171,34 @@ namespace nap
 
 		disp.AddMethod("setAttributeValue", [&](ObjPtr ptr, const std::string& value) {
 			auto attrib = fromPtr<AttributeBase>(ptr);
+			if (attrib)
+				attrib->fromString(value);
+		});
 
-			auto conv = getCore().getModuleManager().getTypeConverter(RTTI_OF(std::string), attrib->getValueType());
-			if (!conv) {
-				Logger::debug("Failed to get type converter from std::strAttr to '%s'.",
-							  attrib->getValueType().getName().c_str());
+		disp.AddMethod("forceSetAttributeValue", [&](const std::string& ident, ObjPtr ptr, const std::string& attrName, const std::string& value, const std::string& dataType) {
+			AttributeObject* obj = fromPtr<AttributeObject>(ptr);
+			if (!obj)
+				return;
+			RTTI::TypeInfo valueType = RTTI::TypeInfo::getByName(dirtyHack(dataType));
+			if (!valueType.isValid())
+				return;
+			AttributeBase* attrib = obj->getAttribute(attrName);
+			if (!attrib) {
+				attrib = &obj->addAttribute(attrName, valueType);
+				addCallbacks(ident, toPtr(attrib));
+			}
+			if (!attrib->getValueType().isKindOf(valueType)) {
 				return;
 			}
 
-			Attribute<std::string> strAttr;
-			strAttr.setValue(value);
-			conv->convert(&strAttr, attrib);
-
-			if (attrib)
-				attrib->fromString(value);
+			attrib->fromString(value);
 		});
 
 		disp.AddMethod("addObjectCallbacks", [&](const std::string& ident, ObjPtr ptr) {
             Object* obj = fromPtr<Object>(ptr);
 			Logger::debug("Client '%s' requesting callbacks for '%s'", ident.c_str(), obj->getName().c_str());
 
-			AsyncTCPClient* client = getServer().getClient(ident);
-			if (!client)
-				return;
-
-			addCallbacks(*client, ptr);
+			addCallbacks(ident, ptr);
 		});
 
 

@@ -71,6 +71,7 @@ namespace nap
 		void startServer();
 
 		void addCallbacks(AsyncTCPClient& client, ObjPtr path);
+		void addCallbacks(const std::string& clientIdent, ObjPtr ptr);
 
 		void removeCallbacks(AsyncTCPClient& client);
 
