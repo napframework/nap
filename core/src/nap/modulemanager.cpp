@@ -2,12 +2,34 @@
 #include <nap/coremodule.h>
 #include <nap/modulemanager.h>
 
+// clang-format off
+
 #ifdef _WIN32
-#include <windows.h> // Windows dll loading
+	#include <windows.h> // Windows dll loading
 #else
-#include <dlfcn.h> // Posix shared object loading
+	#include <dlfcn.h> // Posix shared object loading
 #endif
 
+#ifdef _WIN32
+	std::string GetLastErrorAsString()
+	{
+		//Get the error message, if any.
+		DWORD errorMessageID = ::GetLastError();
+		if(errorMessageID == 0)
+			return std::string(); //No error message has been recorded
+
+		LPSTR messageBuffer = nullptr;
+		size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+									 NULL, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
+
+		std::string message(messageBuffer, size);
+
+		//Free the buffer.
+		LocalFree(messageBuffer);
+
+		return message;
+	}
+#endif
 
 
 namespace nap
@@ -16,47 +38,51 @@ namespace nap
 	Module* loadModule(const char* filename)
 	{
 		std::stringstream errorString;
-//
-// First load library and get a pointer
-//
-#ifdef _WIN32
-#ifdef _MSC_VER
-		void* libPtr = LoadLibrary(filename);
-#else
-		void* libPtr = LoadLibrary((LPCSTR)filename);
-#endif
-		if (!libPtr) {
-			Logger::warn("Shared library load failed: %s", filename);
-			return nullptr;
-		}
-#else
-		void* libPtr = dlopen(filename, RTLD_LAZY);
 
-		if (!libPtr) {
-			Logger::warn("Shared library load failed: %s, %s", filename, dlerror());
-			return nullptr;
-		}
-#endif
+		// First load library and get a pointer
 
-		//
+		#ifdef _WIN32
+			#ifdef _MSC_VER
+				void* libPtr = LoadLibrary(filename);
+			#else
+				void* libPtr = LoadLibrary((LPCSTR)filename);
+			#endif
+
+			if (!libPtr) {
+				Logger::warn("Shared library load failed: %s, reason: %s", filename, GetLastErrorAsString().c_str());
+				return nullptr;
+			}
+
+		#else
+			void* libPtr = dlopen(filename, RTLD_LAZY);
+
+			if (!libPtr) {
+				Logger::warn("Shared library load failed: %s, %s", filename, dlerror());
+				return nullptr;
+			}
+		#endif
+
+
+
 		// Load the initialization function
-		//
+
 		const char* fn_name = "nap_init_module";
 
-#ifdef _WIN32
-		init_module_fn init_module = (init_module_fn)GetProcAddress((HINSTANCE)libPtr, fn_name);
-#else
-		init_module_fn init_module = (init_module_fn)dlsym(libPtr, fn_name);
-//		char* error = dlerror();
-#endif
+		#ifdef _WIN32
+			init_module_fn init_module = (init_module_fn)GetProcAddress((HINSTANCE)libPtr, fn_name);
+		#else
+				init_module_fn init_module = (init_module_fn)dlsym(libPtr, fn_name);
+		//		char* error = dlerror();
+		#endif
+
 		if (!init_module) {
 			Logger::debug("Failed to load init function: %s", fn_name);
 			return nullptr;
 		}
 
-		//
+
+
 		// Initialize the plugin
-		//
 
 		Module* module = init_module();
 		if (nullptr == module) {
@@ -85,22 +111,23 @@ namespace nap
 	void ModuleManager::loadModules(const std::string directory)
 	{
 		std::string fullPath(getAbsolutePath(directory));
-		// Logger::debug("Loading modules from dir: %s", fullPath.c_str());
+		Logger::debug("Looking for modules in directory: '%s'", fullPath.c_str());
 		std::vector<std::string> files;
 		nap::listDir(directory.c_str(), files);
 
 
 		for (const auto& filename : files) {
+			std::string absFilename = getAbsolutePath(filename);
 #ifdef _WIN32
-			if (getFileExtension(filename) != "dll")
+			if (getFileExtension(absFilename) != "dll")
 				continue;
 #endif
 
 			//			Logger::debug("Attempting to load module '%s'", getAbsolutePath(filename).c_str());
 
-			Module* module = loadModule(filename.c_str());
+			Module* module = loadModule(absFilename.c_str());
 			if (!module) {
-				Logger::warn("Failed to load module '%s'", getAbsolutePath(filename).c_str());
+				Logger::warn("Failed to load module '%s'", absFilename.c_str());
 				continue;
 			}
 
@@ -137,8 +164,6 @@ namespace nap
 					return conv;
 			}
 		}
-		// 		Logger::debug("Failed to get type converter from '%s' to '%s'.", fromType.getName().c_str(),
-		// 					  toType.getName().c_str());
 		return nullptr;
 	}
 
@@ -149,6 +174,7 @@ namespace nap
 			if (type.isKindOf<Component>() && type.canCreateInstance())
 				types.push_back(type);
 		}
+		// TODO: Bring this version back to life (needs proper module/type registration)
 		//		for (const auto& mod : getModules())
 		//			mod->getComponentTypes(types);
 		return types;
@@ -194,3 +220,6 @@ namespace nap
 		return nullptr;
 	}
 }
+
+
+// clang-format on
