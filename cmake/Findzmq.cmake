@@ -10,11 +10,13 @@ find_path(ZMQ_DIR include/zmq.h
         ${CMAKE_CURRENT_LIST_DIR}/../../libzmq
         ${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/libzmq
         )
-
-if(MSVC)
-    find_library(ZMQ_LIBRARIES NAMES libzmq.lib HINTS ${ZMQ_DIR}/bin/Win32/Release/v140/dynamic)
+if (UNIX)
 else()
-    find_library(ZMQ_LIBRARIES NAMES libzmq.dll HINTS ${ZMQ_DIR}/bin/${CMAKE_BUILD_TYPE} ${ZMQ_DIR}/bin/Debug)
+    if(MSVC)
+        find_library(ZMQ_LIBRARIES NAMES libzmq.lib HINTS ${ZMQ_DIR}/bin/Win32/Release/v140/dynamic)
+    else()
+        find_library(ZMQ_LIBRARIES NAMES libzmq.dll HINTS ${ZMQ_DIR}/bin/${CMAKE_BUILD_TYPE} ${ZMQ_DIR}/bin/Debug)
+    endif()
 endif()
 
 
