@@ -35,3 +35,4 @@ vs/**
 *.rar
 *DS_Store*
 modules/napetherservice/ReadMe.txt
+build/
