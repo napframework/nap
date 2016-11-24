@@ -5,7 +5,11 @@
 # ZMQ_LIBRARIES - The libraries needed to use ZMQ
 # ZMQ_DEFINITIONS - Compiler switches required for using ZMQ
 
-find_path(ZMQ_DIR include/zmq.h HINTS ${CMAKE_CURRENT_LIST_DIR}/../../libzmq)
+find_path(ZMQ_DIR include/zmq.h
+        HINTS
+        ${CMAKE_CURRENT_LIST_DIR}/../../libzmq
+        ${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/libzmq
+        )
 
 if(MSVC)
     find_library(ZMQ_LIBRARIES NAMES libzmq.lib HINTS ${ZMQ_DIR}/bin/Win32/Release/v140/dynamic)

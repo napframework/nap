@@ -3,6 +3,7 @@
         NAMES jsonrpc-lean/json.h
         HINTS
         ${CMAKE_CURRENT_LIST_DIR}/../../jsonrpc-lean/include
+         ${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/jsonrpc-lean/include
 )
 
 mark_as_advanced(JSONRPCLEAN_INCLUDE_DIRS)
