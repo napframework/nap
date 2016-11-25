@@ -14,12 +14,18 @@ namespace nap
 	/**
 	 * Flags to denote meta properties of an object, mainly used for the editor
 	 */
-	enum ObjectFlag {
+	enum ObjectFlag : int {
 		Visible = 1 << 0,   // Whether the user can see this object
 		Editable = 1 << 1,  // Whether the user may change this object
 		Removable = 1 << 2, // Whether the user may remove this object
 	};
 
+	/**
+	 * The topmost base class for most NAP classes, providing hierarchical structure and inspectability which is useful
+	 * for data serialization amongst other things.
+	 * Instantiation should never be done "manually" but through the addChild methods. An object should always have a
+	 * parent (except for the "world's" root Object, which belongs to Core)
+	 */
 	class Object
 	{
 		RTTI_ENABLE()
@@ -28,59 +34,114 @@ namespace nap
 		Object() = default;
 		virtual ~Object() = default;
 
-		// Copy is not allowed
+		/**
+		 * Copy is not allowed
+		 */
 		Object(Object&) = delete;
 		Object& operator=(const Object&) = delete;
 
-		// Move is not allowed
+		/**
+		 * Move is not allowed
+		 */
 		Object(Object&&) = delete;
 		Object& operator=(Object&&) = delete;
 
-		// Returns the object name
+		/**
+		 * @return This object's name (which is unique amongst sibling Objects)
+		 */
 		const std::string& getName() const;
 
-		// Sets the object's name
+		/**
+		 * Set this Object's name, the resulting name may be different when the given name was not unique amongst its
+		 * siblings or when invalid characters were provided.
+		 * A signal will be dispatched, notifying observers of the change.
+		 *
+		 *
+		 * @param name The suggested name of the object
+		 * @return The Object's actual name after sanitizing it
+		 */
 		const std::string& setName(const std::string& name);
 
-		// Adds a new object as a child to this object
+		/**
+		 * Add a child object to this object. TODO: Needs more better documentation
+         * A signal will be dispatched, notifying observers of the change.
+		 * @param child The child to be added
+		 */
 		void addChild(Object& child);
 
-		// Adds a child of type T with name @name to this object
+		/**
+		 * Create and add a child of type T to this object, also provide a suggested name for the new Object.
+         * A signal will be dispatched, notifying observers of the change.
+		 * @param name The name of the newly created Object
+		 * @return The newly created Object
+		 */
 		template <typename T>
 		T& addChild(const std::string& name)
 		{
 			return static_cast<T&>(addChild(name, RTTI::TypeInfo::get<T>()));
 		}
 
+        /**
+         * Create and add a child of the provided type and give it the suggested name.
+         * A signal will be dispatched, notifying observers of the change.
+         * @param name The name of the newly created Object
+         * @param type The type of the newly created Object
+         * @return The newly created Object
+         */
 		Object& addChild(const std::string& name, const RTTI::TypeInfo& type);
 
 		/**
-		 * Given the provided type, create and add a child Object or subclass
-		 * @param type
-		 * @return
+		 * Given the provided type, create and add a child Object of the provided type. A default name will be given to the object.
+         * A signal will be dispatched, notifying observers of the change.
+		 * @param type The type of the newly created Object
+		 * @return The newly created Object
 		 */
 		Object& addChild(const RTTI::TypeInfo& type);
 
 		/**
 		 * Add the provided child and require ownership transfer.
+         * A signal will be dispatched, notifying observers of the change.
 		 * @param child
-		 * @return The added object.
+		 * @return The added object
 		 */
 		Object& addChild(std::unique_ptr<Object> child);
 
-		// Remove a child, return true if child was found and removed, false otherwise
+		/**
+		 * Remove a child
+         * A signal will be dispatched, notifying observers of the change.
+		 * @param child The child to remove
+		 * @return true if the child was successfully removed, false otherwise
+		 */
+
 		bool removeChild(Object& child);
 
-		// Remove a child by name, return true if child was found and removed, false otherwise
+		/**
+		 * Look up a child by name and remove it.
+         * A signal will be dispatched, notifying observers of the change.
+		 * @param name The name of the child that must be removed
+		 * @return true if the child was successfully removed, false otherwise
+		 */
 		bool removeChild(const std::string& name);
 
-		// Clears all children
+		/**
+		 * Remove all children and notify observers
+		 */
 		void clearChildren();
 
-		// Return true if the specified flag is set, false otherwise
-		bool checkFlag(const ObjectFlag& flag) const { return (bool)mFlags & flag; }
+		/**
+		 * Check if a flag has been set on this object
+		 * @param flag The flag to be tested
+		 * @return True if the flag was set, false otherwise
+		 */
+		bool checkFlag(const ObjectFlag& flag) const {
+            return mFlags & flag;
+        }
 
-		// Set or unset one object flag
+		/**
+		 * Set or unset a flag on this object.
+		 * @param flag The flag to be set or unset
+		 * @param b True if it must be set, false if it must be unset
+		 */
 		void setFlag(const ObjectFlag& flag, bool b)
 		{
 			if (b)
@@ -89,22 +150,42 @@ namespace nap
 				mFlags &= ~flag;
 		}
 
-		// Clears all children of a specific type
-		void clearChildren(const RTTI::TypeInfo& inInfo);
+		/**
+		 * Remove all children of a specific type.
+		 * @param type The type of children to be removed
+		 */
+		void clearChildren(const RTTI::TypeInfo& type);
 
-		// Clears all children of a specific type T
+		/**
+		 * Remove all children of a specific type T
+		 */
 		template <typename T>
 		void clearChildren()
 		{
 			clearChildren(RTTI_OF(T));
 		}
 
-		// Returns all children
+		/**
+		 * Retrieve all children of this Object. Optionally recurse the full tree below.
+		 * @param recursive If true, include all children of the children etc as well
+		 * @return A new vector containing the retrieved children
+		 * @deprecated Use the const version of this method instead
+		 */
 		std::vector<Object*> getChildren(bool recursive = false);
 
+        /**
+         * Retrieve all children of this Object. Optionally recurse the full tree below.
+         * @param recursive If true, include all children of the children etc as well
+         * @return A new vector containing the retrieved children
+         */
 		const std::vector<Object*> getChildren(bool recursive = false) const;
 
-		// Retrieve children of this object filtered by template type
+		/**
+		 * Retrieve all children of a specific type T. Optionally recurse the full tree below.
+		 * @param recursive If true, include all children of the children etc as well.
+		 * @return A new vector containing the retrieved children
+		 * @deprecated Use the const version of this method instead
+		 */
 		template <typename T>
 		std::vector<T*> getChildrenOfType(bool recursive = false)
 		{
@@ -116,7 +197,11 @@ namespace nap
 		}
 
 
-		// Retrieve children of this object filtered by template type
+        /**
+         * Retrieve all children of a specific type. Optionally recurse the full tree below.
+         * @param recursive If true, include all children of the children etc as well.
+         * @return A new vector containing the retrieved children
+         */
 		template <typename T>
 		std::vector<const T*> getChildrenOfType(bool recursive = false) const
 		{
@@ -127,7 +212,11 @@ namespace nap
 			return result;
 		}
 
-		// Retrieve children of this object filtered by RTTI type
+        /**
+         * Retrieve all children of a specific type T. Optionally recurse the full tree below.
+         * @param recursive If true, include all children of the children etc as well.
+         * @return A new vector containing the retrieved children
+         */
 		std::vector<Object*> getChildrenOfType(const RTTI::TypeInfo& type, bool recursive = false)
 		{
 			std::vector<Object*> result;
@@ -137,7 +226,10 @@ namespace nap
 			return result;
 		}
 
-		// Get the first child of type T, returns nullptr if none found
+		/**
+		 * Get the first child of type T
+		 * @return The child if found, nullptr otherwise
+		 */
 		template <typename T>
 		T* getChildOfType()
 		{
@@ -242,7 +334,7 @@ namespace nap
 	private:
 		// This object's parent
 		Object* mParent = nullptr;
-		int mFlags = true;
+		int mFlags = Visible | Editable | Removable;
 	};
 }
 

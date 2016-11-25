@@ -151,11 +151,11 @@ namespace nap
     
 
 	// Clears all children of a specific type
-	void Object::clearChildren(const RTTI::TypeInfo& inType)
+	void Object::clearChildren(const RTTI::TypeInfo& type)
 	{
-        // look for the children of type inType in the children vector and erase
+        // look for the children of type type in the children vector and erase
         for (auto it = mChildren.begin(); it != mChildren.end();)
-            if ((*it)->getTypeInfo().isKindOf(inType))
+            if ((*it)->getTypeInfo().isKindOf(type))
             {
                 signalChildRemoval(**it, *this);
                 mChildren.erase(it);
@@ -163,9 +163,9 @@ namespace nap
             else
                 it++;
         
-        // erase the children of inType from the owned object list, in case the Object base class handles ownership of the child
+        // erase the children of type from the owned object list, in case the Object base class handles ownership of the child
         for (auto it = mOwnedObjects.begin(); it != mOwnedObjects.end();)
-            if ((*it)->getTypeInfo().isKindOf(inType))
+            if ((*it)->getTypeInfo().isKindOf(type))
                 mOwnedObjects.erase(it);
             else
                 it++;
