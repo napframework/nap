@@ -3,40 +3,49 @@
 #include <assert.h>
 #include <memory>
 #include <mutex>
+#include <nap/configure.h>
 #include <nap/signalslot.h>
 #include <rtti/rtti.h>
 #include <unordered_map>
-#include <nap/configure.h>
 
 namespace nap
 {
-    
+
+	/**
+	 * Flags to denote meta properties of an object, mainly used for the editor
+	 */
+	enum ObjectFlag {
+		Visible = 1 << 0,   // Whether the user can see this object
+		Editable = 1 << 1,  // Whether the user may change this object
+		Removable = 1 << 2, // Whether the user may remove this object
+	};
+
 	class Object
 	{
 		RTTI_ENABLE()
 	public:
 		// Construction / Destruction
 		Object() = default;
-        virtual ~Object() = default;
+		virtual ~Object() = default;
 
 		// Copy is not allowed
 		Object(Object&) = delete;
 		Object& operator=(const Object&) = delete;
 
-        // Move is not allowed
-        Object(Object&&) = delete;
-        Object& operator=(Object&&) = delete;
+		// Move is not allowed
+		Object(Object&&) = delete;
+		Object& operator=(Object&&) = delete;
 
-        // Returns the object name
+		// Returns the object name
 		const std::string& getName() const;
 
-        // Sets the object's name
-		const std::string & setName(const std::string &name);
+		// Sets the object's name
+		const std::string& setName(const std::string& name);
 
-        // Adds a new object as a child to this object
-        void addChild(Object& child);
+		// Adds a new object as a child to this object
+		void addChild(Object& child);
 
-        // Adds a child of type T with name @name to this object
+		// Adds a child of type T with name @name to this object
 		template <typename T>
 		T& addChild(const std::string& name)
 		{
@@ -45,8 +54,18 @@ namespace nap
 
 		Object& addChild(const std::string& name, const RTTI::TypeInfo& type);
 
+		/**
+		 * Given the provided type, create and add a child Object or subclass
+		 * @param type
+		 * @return
+		 */
 		Object& addChild(const RTTI::TypeInfo& type);
 
+		/**
+		 * Add the provided child and require ownership transfer.
+		 * @param child
+		 * @return The added object.
+		 */
 		Object& addChild(std::unique_ptr<Object> child);
 
 		// Remove a child, return true if child was found and removed, false otherwise
@@ -56,18 +75,24 @@ namespace nap
 		bool removeChild(const std::string& name);
 
 		// Clears all children
-        void clearChildren();
+		void clearChildren();
 
-        // Wherether this Object may be changed by the user
-        bool isEditable() const { return mIsEditable; }
+		// Return true if the specified flag is set, false otherwise
+		bool checkFlag(const ObjectFlag& flag) const { return (bool)mFlags & flag; }
 
-        // Lock or unlock this Object; prevent or allow the user from changing this Object
-        void setEditable(bool editable) { mIsEditable = editable; }
+		// Set or unset one object flag
+		void setFlag(const ObjectFlag& flag, bool b)
+		{
+			if (b)
+				mFlags |= flag;
+			else
+				mFlags &= ~flag;
+		}
 
-        // Clears all children of a specific type
+		// Clears all children of a specific type
 		void clearChildren(const RTTI::TypeInfo& inInfo);
 
-        // Clears all children of a specific type T
+		// Clears all children of a specific type T
 		template <typename T>
 		void clearChildren()
 		{
@@ -77,45 +102,49 @@ namespace nap
 		// Returns all children
 		std::vector<Object*> getChildren(bool recursive = false);
 
-        const std::vector<Object*> getChildren(bool recursive = false) const;
+		const std::vector<Object*> getChildren(bool recursive = false) const;
 
 		// Retrieve children of this object filtered by template type
 		template <typename T>
 		std::vector<T*> getChildrenOfType(bool recursive = false)
 		{
-            std::vector<T*> result;
+			std::vector<T*> result;
 			for (const auto obj : getChildren(recursive))
-				if (obj->getTypeInfo().isKindOf<T>()) result.emplace_back(static_cast<T*>(obj));
-            return result;
+				if (obj->getTypeInfo().isKindOf<T>())
+					result.emplace_back(static_cast<T*>(obj));
+			return result;
 		}
 
-        
-        // Retrieve children of this object filtered by template type
-        template <typename T>
-        std::vector<const T*> getChildrenOfType(bool recursive = false) const
-        {
-            std::vector<const T*> result;
-            for (const auto obj : getChildren(recursive))
-                if (obj->getTypeInfo().isKindOf<T>()) result.emplace_back(static_cast<T*>(obj));
-            return result;
-        }
 
-        // Retrieve children of this object filtered by RTTI type
-        std::vector<Object*> getChildrenOfType(const RTTI::TypeInfo& type, bool recursive = false) {
-            std::vector<Object*> result;
-            for (const auto obj : getChildren(recursive))
-                if (obj->getTypeInfo().isKindOf(type)) result.emplace_back(obj);
-            return result;
+		// Retrieve children of this object filtered by template type
+		template <typename T>
+		std::vector<const T*> getChildrenOfType(bool recursive = false) const
+		{
+			std::vector<const T*> result;
+			for (const auto obj : getChildren(recursive))
+				if (obj->getTypeInfo().isKindOf<T>())
+					result.emplace_back(static_cast<T*>(obj));
+			return result;
+		}
 
-        }
+		// Retrieve children of this object filtered by RTTI type
+		std::vector<Object*> getChildrenOfType(const RTTI::TypeInfo& type, bool recursive = false)
+		{
+			std::vector<Object*> result;
+			for (const auto obj : getChildren(recursive))
+				if (obj->getTypeInfo().isKindOf(type))
+					result.emplace_back(obj);
+			return result;
+		}
 
-        // Get the first child of type T, returns nullptr if none found
+		// Get the first child of type T, returns nullptr if none found
 		template <typename T>
 		T* getChildOfType()
 		{
-            for (auto& object : mChildren)
-                if (object->getTypeInfo().isKindOf<T>()) return static_cast<T*>(object);
-            return nullptr;
+			for (auto& object : mChildren)
+				if (object->getTypeInfo().isKindOf<T>())
+					return static_cast<T*>(object);
+			return nullptr;
 		}
 
 		// Get the first child with type @type
@@ -126,7 +155,8 @@ namespace nap
 		T* getChild(const std::string& name)
 		{
 			for (auto& child : getChildrenOfType<T>())
-				if (child->getName() == name) return child;
+				if (child->getName() == name)
+					return child;
 
 			return nullptr;
 		}
@@ -135,20 +165,22 @@ namespace nap
 		bool hasChildOfType() const
 		{
 			for (auto& child : mChildren)
-				if (child->getTypeInfo().isKindOf<T>()) return true;
+				if (child->getTypeInfo().isKindOf<T>())
+					return true;
 			return false;
 		}
 
-        template <typename T>
-        bool hasChildOfType(const std::string& name) const
-        {
-            for (auto& child : mChildren)
-                if (child->getTypeInfo().isKindOf<T>() && child->getName() == name) return true;
-            return false;
-        }
-        
-        // See if this object is a child of the provided parent, recursive will walk more than one level up
-        bool isChildOf(const Object& parent, bool recursive = true) const;
+		template <typename T>
+		bool hasChildOfType(const std::string& name) const
+		{
+			for (auto& child : mChildren)
+				if (child->getTypeInfo().isKindOf<T>() && child->getName() == name)
+					return true;
+			return false;
+		}
+
+		// See if this object is a child of the provided parent, recursive will walk more than one level up
+		bool isChildOf(const Object& parent, bool recursive = true) const;
 
 		// Signal emitted when the name has been changed, passes its new name as argument
 		Signal<const std::string&> nameChanged;
@@ -170,8 +202,8 @@ namespace nap
 
 		// Get child by index
 		Object* getChild(size_t index);
-        
-        bool hasChild(const std::string& name) const;
+
+		bool hasChild(const std::string& name) const;
 
 		// Return the index of the provided child or -1 if the child wasn't found
 		int getChildIndex(Object& child);
@@ -203,14 +235,14 @@ namespace nap
 
 		// List of children owned by this object, meaning of which the base class takes ownership
 		std::vector<std::unique_ptr<Object>> mOwnedObjects;
-        
-        // List of children of this object
-        std::vector<Object*> mChildren;
+
+		// List of children of this object
+		std::vector<Object*> mChildren;
 
 	private:
 		// This object's parent
 		Object* mParent = nullptr;
-        bool mIsEditable = true;
+		int mFlags = true;
 	};
 }
 
