@@ -56,7 +56,7 @@ namespace nap
 
     ScriptServerComponent::ScriptServerComponent()
 	{
-        setEditable(false);
+        setFlag(Editable, false);
         running.valueChangedSignal.connect([&](const bool& running) { onRunningChanged(running); });
 	}
 

@@ -57,7 +57,7 @@ namespace nap
 			writer.String(J_VALUE_TYPE);
 			writer.String(attrib.getValueType().getName().c_str());
             writer.String(J_EDITABLE);
-            writer.Bool(attrib.isEditable());
+            writer.Bool(attrib.checkFlag(Editable));
 
             if (writePointers) {
                 writer.String(J_PTR);
@@ -85,7 +85,7 @@ namespace nap
 			writer.String(J_TYPE);
 			writer.String(obj.getTypeInfo().getName().c_str());
             writer.String(J_EDITABLE);
-            writer.Bool(obj.isEditable());
+            writer.Bool(obj.checkFlag(Editable));
 
             if (writePointers) {
                 writer.String(J_PTR);
