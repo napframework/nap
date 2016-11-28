@@ -1,9 +1,7 @@
 #include "jsonrpcservercomponent.h"
-#include <chrono>
 #include <fstream>
 #include <jsonserializer.h>
 #include <rapidjson/prettywriter.h>
-#include <zmq.h>
 
 
 RTTI_DEFINE(nap::JSONRPCServerComponent)
@@ -32,9 +30,11 @@ namespace nap
 	JSONRPCServerComponent::JSONRPCServerComponent() : mContext(1), ScriptServerComponent()
 	{
 
-		mServer.RegisterFormatHandler(mFormatHandler);
+        Logger::instance().log.connect(onLogSlot);
 
-		auto& disp = mServer.GetDispatcher();
+		mJsonServer.RegisterFormatHandler(mFormatHandler);
+
+		auto& disp = mJsonServer.GetDispatcher();
 
 		disp.AddMethod("getModules", [&]() -> std::vector<std::string> {
 			std::vector<std::string> modulenames;
@@ -62,25 +62,25 @@ namespace nap
 		});
 
 
-
 		disp.AddMethod("getModuleInfo", [&]() { return JSONSerializer().toString(getCore().getModuleManager()); });
 
-		disp.AddMethod("getObjectTree", [&]() -> std::string { return JSONSerializer().toString(*getRootObject(), true); });
+		disp.AddMethod("getObjectTree",
+					   [&]() -> std::string { return JSONSerializer().toString(*getRootObject(), true); });
 
-        disp.AddMethod("copyObjectTree", [&](ObjPtr objPtr) -> std::string {
-            Object* obj = fromPtr<Object>(objPtr);
-            if (!obj)
-                return 0;
-            return JSONSerializer().toString(*obj, true);
-        });
+		disp.AddMethod("copyObjectTree", [&](ObjPtr objPtr) -> std::string {
+			Object* obj = fromPtr<Object>(objPtr);
+			if (!obj)
+				return 0;
+			return JSONSerializer().toString(*obj, true);
+		});
 
-        disp.AddMethod("pasteObjectTree", [&](ObjPtr parentPtr, std::string jsonData) {
-            Object* obj = fromPtr<Object>(parentPtr);
-            if (!obj)
-                return 0;
-            Logger::info(jsonData);
-            JSONDeserializer().fromString(jsonData, getCore(), obj);
-        });
+		disp.AddMethod("pasteObjectTree", [&](ObjPtr parentPtr, std::string jsonData) {
+			Object* obj = fromPtr<Object>(parentPtr);
+			if (!obj)
+				return;
+			Logger::info(jsonData);
+			JSONDeserializer().fromString(jsonData, getCore(), obj);
+		});
 
 		disp.AddMethod("getRoot", [&]() -> ObjPtr { return toPtr(getRootObject()); });
 
@@ -133,7 +133,7 @@ namespace nap
 		disp.AddMethod("addEntity", [&](ObjPtr parentEntity) {
 			std::lock_guard<std::mutex> lock(mMutex);
 			Entity* parent = fromPtr<Entity>(parentEntity);
-            Logger::info("Adding entity to: %s", parent->getName().c_str());
+			Logger::info("Adding entity to: %s", parent->getName().c_str());
 			if (!parent)
 				return;
 			parent->addEntity("NewEntity");
@@ -175,7 +175,8 @@ namespace nap
 				attrib->fromString(value);
 		});
 
-		disp.AddMethod("forceSetAttributeValue", [&](const std::string& ident, ObjPtr ptr, const std::string& attrName, const std::string& value, const std::string& dataType) {
+		disp.AddMethod("forceSetAttributeValue", [&](const std::string& ident, ObjPtr ptr, const std::string& attrName,
+													 const std::string& value, const std::string& dataType) {
 			AttributeObject* obj = fromPtr<AttributeObject>(ptr);
 			if (!obj)
 				return;
@@ -195,7 +196,7 @@ namespace nap
 		});
 
 		disp.AddMethod("addObjectCallbacks", [&](const std::string& ident, ObjPtr ptr) {
-            Object* obj = fromPtr<Object>(ptr);
+			Object* obj = fromPtr<Object>(ptr);
 			Logger::debug("Client '%s' requesting callbacks for '%s'", ident.c_str(), obj->getName().c_str());
 
 			addCallbacks(ident, ptr);
@@ -208,7 +209,7 @@ namespace nap
 				return;
 			JSONSerializer ser;
 			std::ofstream os(filename);
-            ser.writeObject(os, *obj, false);
+			ser.writeObject(os, *obj, false);
 		});
 
 		disp.AddMethod("importObject", [&](ObjPtr parentPtr, const std::string& filename) {
@@ -220,16 +221,16 @@ namespace nap
 			ser.readObject(is, getCore(), parentObj);
 		});
 
-        disp.AddMethod("removeObject", [&](ObjPtr ptr) {
-            Object* obj = fromPtr<Object>(ptr);
-            Logger::info("Removing object: %s", obj->getName().c_str());
-            obj->getParentObject()->removeChild(*obj);
-        });
+		disp.AddMethod("removeObject", [&](ObjPtr ptr) {
+			Object* obj = fromPtr<Object>(ptr);
+			Logger::info("Removing object: %s", obj->getName().c_str());
+			obj->getParentObject()->removeChild(*obj);
+		});
 	}
 
 	std::string JSONRPCServerComponent::evalScript(const std::string& cmd)
 	{
-		return mServer.HandleRequest(cmd)->GetData();
+		return mJsonServer.HandleRequest(cmd)->GetData();
 	}
 
 
@@ -260,6 +261,23 @@ namespace nap
 		return buf.GetString();
 	}
 
+    void JSONRPCServerComponent::handleLogMessage(AsyncTCPClient& client, LogMessage& msg)
+    {
+        using namespace rapidjson;
+        StringBuffer buf;
+        PrettyWriter<StringBuffer> w(buf);
+        w.StartObject();
+        {
+            w.String("level");
+            w.Int(msg.level().level());
+            w.String("levelName");
+            w.String(msg.level().name().c_str());
+            w.String("text");
+            w.String(msg.text().c_str());
+        }
+        w.EndObject();
+        client.enqueueEvent(callbackJSON("log", buf.GetString()));
+    }
 
 	void JSONRPCServerComponent::handleNameChanged(AsyncTCPClient& client, Object& obj)
 	{
@@ -280,59 +298,65 @@ namespace nap
 		Logger::info("Sending Attribute Change: %s : %s", obj.getName().c_str(), obj.getName().c_str());
 	}
 
-    void JSONRPCServerComponent::handleAttributeValueChanged(AsyncTCPClient& client, AttributeBase& attrib) {
-        std::string value;
-        attrib.toString(value);
+	void JSONRPCServerComponent::handleAttributeValueChanged(AsyncTCPClient& client, AttributeBase& attrib)
+	{
+		std::string value;
+		attrib.toString(value);
 
-        using namespace rapidjson;
-        StringBuffer buf;
-        PrettyWriter<StringBuffer> w(buf);
+		using namespace rapidjson;
+		StringBuffer buf;
+		PrettyWriter<StringBuffer> w(buf);
 
-        w.StartObject();
-        {
-            w.String("ptr");
-            w.Int64(toPtr(attrib));
-            w.String("name");
-            w.String(attrib.getName().c_str());
-            w.String("value");
-            w.String(value.c_str());
-        }
-        w.EndObject();
+		w.StartObject();
+		{
+			w.String("ptr");
+			w.Int64(toPtr(attrib));
+			w.String("name");
+			w.String(attrib.getName().c_str());
+			w.String("value");
+			w.String(value.c_str());
+		}
+		w.EndObject();
 
-        client.enqueueEvent(callbackJSON("attributeValueChanged", buf.GetString()));
+		client.enqueueEvent(callbackJSON("attributeValueChanged", buf.GetString()));
 
-        Logger::info("Sending Attribute Change: %s : %s", attrib.getName().c_str(), attrib.getName().c_str());
-    }
+		Logger::info("Sending Attribute Change: %s : %s", attrib.getName().c_str(), attrib.getName().c_str());
+	}
 
 
-    void JSONRPCServerComponent::handleObjectAdded(AsyncTCPClient& client, Object& obj, Object& child) {
-        using namespace rapidjson;
-        StringBuffer buf;
-        PrettyWriter<StringBuffer> w(buf);
-        w.StartObject();
-        {
-            w.String("ptr");
-            w.Int64(toPtr(obj));
-            w.String("child");
-            w.String(JSONSerializer().toString(child, true).c_str());
-        }
-        w.EndObject();
-        client.enqueueEvent(callbackJSON("objectAdded", buf.GetString()));
-    }
-    void JSONRPCServerComponent::handleObjectRemoved(AsyncTCPClient& client, Object& child) {
-        using namespace rapidjson;
-        StringBuffer buf;
-        PrettyWriter<StringBuffer> w(buf);
-        w.StartObject();
-        {
-            w.String("ptr");
-            w.Int64(toPtr(child));
-        }
-        w.EndObject();
-        client.enqueueEvent(callbackJSON("objectRemoved", buf.GetString()));
-    }
+	void JSONRPCServerComponent::handleObjectAdded(AsyncTCPClient& client, Object& obj, Object& child)
+	{
+		using namespace rapidjson;
+		StringBuffer buf;
+		PrettyWriter<StringBuffer> w(buf);
+		w.StartObject();
+		{
+			w.String("ptr");
+			w.Int64(toPtr(obj));
+			w.String("child");
+			w.String(JSONSerializer().toString(child, true).c_str());
+		}
+		w.EndObject();
+		client.enqueueEvent(callbackJSON("objectAdded", buf.GetString()));
+	}
 
-    void JSONRPCServerComponent::startRPCSocket()
+
+	void JSONRPCServerComponent::handleObjectRemoved(AsyncTCPClient& client, Object& child)
+	{
+		using namespace rapidjson;
+		StringBuffer buf;
+		PrettyWriter<StringBuffer> w(buf);
+		w.StartObject();
+		{
+			w.String("ptr");
+			w.Int64(toPtr(child));
+		}
+		w.EndObject();
+		client.enqueueEvent(callbackJSON("objectRemoved", buf.GetString()));
+	}
+
+
+	void JSONRPCServerComponent::startRPCSocket()
 	{ // RPC Socket
 		zmq::socket_t socket(mContext, ZMQ_ROUTER);
 
@@ -358,6 +382,8 @@ namespace nap
 			std::this_thread::sleep_for(std::chrono::milliseconds(10));
 		}
 	}
-
-
+    void JSONRPCServerComponent::onLog(LogMessage msg) {
+        for (AsyncTCPClient* client : getServer().getClients())
+            handleLogMessage(*client, msg);
+    }
 }

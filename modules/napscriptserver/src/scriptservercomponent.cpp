@@ -75,11 +75,11 @@ namespace nap
 	void ScriptServerComponent::stopServer()
 	{
 		assert(false);
-		//		mServer->clientConnected.disconnect(onClientConnectedSlot);
-		//		mServer->clientDisconnected.disconnect(onClientDisconnectedSlot);
-		//		mServer->requestReceived.disconnect(onRequestReceivedSlot);
+		//		mJsonServer->clientConnected.disconnect(onClientConnectedSlot);
+		//		mJsonServer->clientDisconnected.disconnect(onClientDisconnectedSlot);
+		//		mJsonServer->requestReceived.disconnect(onRequestReceivedSlot);
 		//
-		//		mServer = nullptr;
+		//		mJsonServer = nullptr;
 	}
 
 

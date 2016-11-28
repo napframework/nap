@@ -68,7 +68,14 @@ namespace nap
         return nullptr;
     }
 
-	AsyncTCPClient* AsyncTCPServer::getOrAddClient(const std::string& ident)
+    std::vector<AsyncTCPClient*> AsyncTCPServer::getClients() const {
+        std::vector<AsyncTCPClient*> clients;
+        for (const auto& it : mClients)
+            clients.push_back(it.second.get());
+        return clients;
+    }
+
+    AsyncTCPClient* AsyncTCPServer::getOrAddClient(const std::string& ident)
 	{
         AsyncTCPClient* clientPtr = getClient(ident);
         if (clientPtr) return clientPtr;

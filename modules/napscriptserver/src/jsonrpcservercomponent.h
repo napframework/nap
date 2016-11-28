@@ -25,14 +25,19 @@ namespace nap
     protected:
         std::string evalScript(const std::string& cmd) override;
 
+        virtual void handleLogMessage(AsyncTCPClient& client, LogMessage& msg) override;
         void handleNameChanged(AsyncTCPClient& client, Object& obj) override;
         void handleObjectAdded(AsyncTCPClient& client, Object& obj, Object& child) override;
         void handleObjectRemoved(AsyncTCPClient& client, Object& child) override;
         virtual void handleAttributeValueChanged(AsyncTCPClient& client, AttributeBase& attrib) override;
     private:
         void startRPCSocket();
+
+        Slot<LogMessage> onLogSlot = { this, &JSONRPCServerComponent::onLog };
+        void onLog(LogMessage msg);
+
     private:
-        jsonrpc::Server mServer;
+        jsonrpc::Server mJsonServer;
         jsonrpc::JsonFormatHandler mFormatHandler;
         zmq::context_t mContext;
         std::mutex mMutex;
