@@ -1,0 +1,88 @@
+{
+    "name": "Root_6",
+    "type": "nap::Entity",
+    "editable": true,
+    "children": [
+        {
+            "name": "FirstChild",
+            "type": "nap::Entity",
+            "editable": true,
+            "children": [
+                {
+                    "name": "NewEntity",
+                    "type": "nap::Entity",
+                    "editable": true
+                }
+            ]
+        },
+        {
+            "name": "SecondChild",
+            "type": "nap::Entity",
+            "editable": true,
+            "children": [
+                {
+                    "name": "SecondChildChild",
+                    "type": "nap::Entity",
+                    "editable": true,
+                    "children": [
+                        {
+                            "name": "NewEntity",
+                            "type": "nap::Entity",
+                            "editable": true,
+                            "children": [
+                                {
+                                    "name": "NewEntity",
+                                    "type": "nap::Entity",
+                                    "editable": true,
+                                    "children": [
+                                        {
+                                            "name": "NewEntity",
+                                            "type": "nap::Entity",
+                                            "editable": true
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "NewEntity0",
+                                    "type": "nap::Entity",
+                                    "editable": true
+                                }
+                            ]
+                        },
+                        {
+                            "name": "nap__PatchComponent0",
+                            "type": "nap::PatchComponent",
+                            "editable": true,
+                            "children": [
+                                {
+                                    "name": "patch",
+                                    "type": "nap::Patch",
+                                    "editable": true
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "nap__JSONRPCServerComponent",
+            "type": "nap::JSONRPCServerComponent",
+            "editable": false,
+            "attributes": [
+                {
+                    "name": "rpcPort",
+                    "vType": "int",
+                    "editable": true,
+                    "value": "8888"
+                },
+                {
+                    "name": "running",
+                    "vType": "bool",
+                    "editable": true,
+                    "value": "true"
+                }
+            ]
+        }
+    ]
+}
