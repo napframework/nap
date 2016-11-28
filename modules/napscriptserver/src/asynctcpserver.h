@@ -12,18 +12,23 @@
 namespace nap
 {
 
-    class AsyncTCPServer;
+	class AsyncTCPServer;
+
+
 
 	/**
 	 * Keeps track of a client connected to a AsyncTCPServer and holds a bunch of data relevant to that client.
 	 */
 	class AsyncTCPClient
 	{
-        friend class AsyncTCPServer;
-    private:
-        // Creates a client with the specified identity, may only be constructed by the AsyncTCPServer
+		friend class AsyncTCPServer;
+
+
+
+	private:
+		// Creates a client with the specified identity, may only be constructed by the AsyncTCPServer
 		AsyncTCPClient(const std::string& ident) : mIdent(ident) {}
-    public:
+	public:
 		// Return the last time this client was seen alive
 		time_t getLastHeartbeat() const { return mLastHeartBeat; }
 
@@ -68,7 +73,10 @@ namespace nap
 	class AsyncTCPServer
 	{
 	public:
-		// Create a threaded server that will immediately start listening on the specified port
+		/**
+		 * Create a threaded server that will immediately start listening on the specified port
+		 * @param port The port to listen on.
+		 */
 		AsyncTCPServer(int port);
 
 		// Triggered when a client has connected
@@ -80,10 +88,13 @@ namespace nap
 		// Triggered when a client has sent a message to this server
 		Signal<AsyncTCPClient&, const std::string&> requestReceived;
 
-        // Get the client with specified ident
-        AsyncTCPClient* getClient(const std::string& ident);
+		// Get the client with specified ident
+		AsyncTCPClient* getClient(const std::string& ident);
 
-        // Break the server loop and attempt to exit cleanly
+        // Return all active clients
+        std::vector<AsyncTCPClient*> getClients() const;
+
+		// Break the server loop and attempt to exit cleanly
 		void exit() { mRunning = false; }
 
 	private:

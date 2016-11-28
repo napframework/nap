@@ -61,6 +61,7 @@ namespace nap
 
 	protected:
 		virtual std::string evalScript(const std::string& cmd) = 0;
+        virtual void handleLogMessage(AsyncTCPClient& client, LogMessage& msg) = 0;
 		virtual void handleNameChanged(AsyncTCPClient& client, Object& obj) = 0;
 		virtual void handleObjectAdded(AsyncTCPClient& client, Object& obj, Object& child) = 0;
 		virtual void handleObjectRemoved(AsyncTCPClient& client, Object& child) = 0;
