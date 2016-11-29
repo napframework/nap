@@ -30,11 +30,11 @@ class ObjectItem(QStandardItem):
     """ This item wraps an Object.
     """
 
-    ObjectType = napclient.NObject
+    ObjectType = napclient.Object
 
     def __init__(self, obj):
         """
-        @type obj: napclient.NObject
+        @type obj: napclient.Object
         """
         assert(isinstance(obj, self.ObjectType))
         super(ObjectItem, self).__init__()

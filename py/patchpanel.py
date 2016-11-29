@@ -27,7 +27,7 @@ def _getObjectEditorPos(obj):
 
 def _setObjectEditorPos(obj, pos):
     """
-    @type obj: napclient.AttributeNObject
+    @type obj: napclient.AttributeObject
     """
     obj.attr(PATCH_XPOS).setValue(pos.x())
     obj.attr(PATCH_XPOS).setValue(pos.y())
@@ -373,8 +373,7 @@ class PatchScene(QGraphicsScene):
         self.__patch.childRemoved.connect(self.__onOperatorRemoved)
 
         for op in self.__patch.children():
-            if op.typename() == 'nap::Operator':
-                self.__onOperatorAdded(op)
+            self.__onOperatorAdded(op)
 
     def startDragConnection(self, pinItem):
         self.hideIncompaticlePlugs(pinItem.plugItem())
@@ -710,7 +709,7 @@ class PatchView(QGraphicsView):
         self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
 
         scaleFactor = 1.15
-        if evt.delta() > 0:
+        if evt.angleDelta().y() > 0:
             self.scale(scaleFactor, scaleFactor)
         else:
             self.scale(1 / scaleFactor, 1 / scaleFactor)

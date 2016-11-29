@@ -5,21 +5,38 @@ from PyQt5.QtWidgets import *
 import iconstore
 import napclient
 
+class AddChildAction(QAction):
+    def __init__(self, ctx, parentObj, typename):
+        """
+        @type ctx: napclient.Core
+        """
+        super(AddChildAction, self).__init__(iconstore.icon('brick_add'), typename, None)
+        self.__parentObj = parentObj
+        self.__ctx = ctx
+        self.__typename = typename
+        self.triggered.connect(self.perform)
+
+    def perform(self, b):
+        self.__ctx.core().addChild(self.__parentObj, self.__typename)
+
+
 
 class AppContext(QObject):
     connectionChanged = pyqtSignal(bool, str, str)
     selectionChanged = pyqtSignal(object)
     applicationClosing = pyqtSignal()
+    logMessageReceived = pyqtSignal(int, str, str)
 
     editorRequested = pyqtSignal(object)
 
     def __init__(self):
         super(AppContext, self).__init__()
         self.__core = napclient.Core()
-        self.__selectedObject = None
+        self.__selectedObjects = None
         self.__editorTypes = {}
         self.__editors = {}
         self.connectionChanged.connect(self.__onConnectionChanged)
+        self.__core.logMessageReceived.connect(self.logMessageReceived)
 
     def registerEditor(self, objType, editorType):
         self.__editorTypes[objType] = editorType
@@ -48,16 +65,19 @@ class AppContext(QObject):
         self.__core.getModuleInfo()
         # self.__core.objectTree()
 
-    def setSelection(self, obj):
-        self.__selectedObject = obj
-        self.selectionChanged.emit(obj)
+    def selection(self, types=None):
+        return self.__selectedObjects
+
+    def setSelection(self, objects):
+        self.__selectedObjects = objects
+        self.selectionChanged.emit(objects)
 
     def iconStore(self):
         return self.__iconStore
 
     def createObjectActions(self, parentObj, typeList, menu):
         for objType in typeList:
-            action = QAction(iconstore.icon('brick_add'), objType, menu)
-            action.triggered[(bool)].connect(lambda objType=objType: self.core().addChild(parentObj, objType))
-            menu.addAction(action)
+            a = AddChildAction(self, parentObj, objType)
+            a.setParent(menu)
+            menu.addAction(a)
             # yield action

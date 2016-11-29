@@ -14,7 +14,7 @@ _ICON_NAMES = {
     napclient.Entity: 'entity',
     napclient.Attribute: 'attribute',
     napclient.Component: 'component',
-    napclient.NObject: 'undefined',
+    napclient.Object: 'undefined',
 }
 
 
@@ -29,7 +29,7 @@ def iconFor(obj):
     if isinstance(obj, type):
         objType = obj
     else:
-        assert(isinstance(obj, napclient.NObject))
+        assert(isinstance(obj, napclient.Object))
         global _ICONS
         objType = type(obj)
 
@@ -37,7 +37,7 @@ def iconFor(obj):
         return _ICONS[objType]
 
     if not objType in _ICON_NAMES.keys():
-        objType = napclient.NObject
+        objType = napclient.Object
 
     _ICONS[objType] = icon(_ICON_NAMES[objType])
     return _ICONS[objType]
