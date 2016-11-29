@@ -329,6 +329,8 @@ namespace RTTI
 
 		static std::vector<TypeInfo> getRawTypes();
 
+        std::vector<TypeInfo> getBaseTypes() const;
+
 	private:
 		/*!
 		 * Constructs an empty and invalid TypeInfo object.
