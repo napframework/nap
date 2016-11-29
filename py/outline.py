@@ -29,7 +29,7 @@ class OutlineModel(QStandardItemModel):
 
     def setRoot(self, obj):
         """ Replace the data in this model with the specified object as root
-        @type obj: napclient.NObject
+        @type obj: napclient.Object
         """
         # self.__object = obj
         self.removeRows(0, self.rowCount())
@@ -44,8 +44,8 @@ class OutlineModel(QStandardItemModel):
     def setRootVisible(self, b):
         self.__isRootVisible = b
 
-class TypeFilterWidget(QWidget):
 
+class TypeFilterWidget(QWidget):
     filterChanged = pyqtSignal(object)
 
     def __init__(self):
@@ -86,13 +86,16 @@ class TypeFilterWidget(QWidget):
             else:
                 btn.setChecked(False)
 
+
 class OutlineWidget(QWidget):
-    def __init__(self, ctx):
+    def __init__(self, ctx, objectName):
         """
-        @type ctx: AppContext
+        @type ctx: appcontext.AppContext
         """
         self.ctx = ctx
         super(OutlineWidget, self).__init__()
+
+        self.setObjectName(objectName)
 
         self.setEnabled(False)
 
@@ -133,11 +136,19 @@ class OutlineWidget(QWidget):
         self.ctx.applicationClosing.connect(self.onCloseApp)
         self.ctx.connectionChanged.connect(self.onConnectionChanged)
         QTimer.singleShot(0, self.onDataChanged)
+        self.__restoreHeaderState()
 
+    def __restoreHeaderState(self):
         s = QSettings()
-        headerState = s.value('HeaderState')
+        headerStateName = 'HeaderState' + self.objectName()
+        headerState = s.value(headerStateName)
         if headerState:
             self.__treeView.header().restoreState(headerState)
+
+    def __saveHeaderState(self):
+        s = QSettings()
+        headerStateName = 'HeaderState' + self.objectName()
+        s.setValue(headerStateName, self.__treeView.header().saveState())
 
     def __onTypeFilterUpdated(self, types):
         self.__filterModel.invalidate()
@@ -150,12 +161,11 @@ class OutlineWidget(QWidget):
 
     def setRoot(self, obj):
         """
-        @type obj: napclient.NObject
+        @type obj: napclient.Object
         """
         self.setEnabled(bool(obj))
         if obj:
-            assert(isinstance(obj, napclient.NObject))
-
+            assert (isinstance(obj, napclient.Object))
 
         self.__outlineModel.setRoot(obj)
         # Hide root if necessary
@@ -185,8 +195,7 @@ class OutlineWidget(QWidget):
         pass
 
     def onCloseApp(self):
-        s = QSettings()
-        s.setValue('HeaderState', self.__treeView.header().saveState())
+        self.__saveHeaderState()
 
     def onConnectionChanged(self, *args):
         # qtutils.restoreExpanded(self.__treeView, 'OutlineExpandedState')
@@ -213,7 +222,7 @@ class OutlineWidget(QWidget):
 
     def __selectedObject(self):
         """
-        @rtype: napclient.NObject
+        @rtype: napclient.Object
         """
         for item in self.__selectedItems():
             return item.object()
@@ -226,11 +235,12 @@ class OutlineWidget(QWidget):
         if self.__propagateSelection:
             self.ctx.setSelection(self.__selectedObject())
 
-    def __createComponentActions(self, parentObj, menu):
-        for compType in self.ctx.core().componentTypes():
-            action = QAction(iconstore.icon('brick_add'), compType, menu)
-            action.triggered[()].connect(lambda compType=compType: self.ctx.core().addChild(parentObj, compType))
-            yield action
+    # def __createComponentActions(self, parentObj, menu):
+    #     for compType in self.ctx.core().componentTypes():
+    #         print(compType)
+    #         action = QAction(iconstore.icon('brick_add'), compType, menu)
+    #         action.triggered[()].connect(lambda compType=compType: self.ctx.core().addChild(parentObj, compType))
+    #         yield action
 
     @staticmethod
     def __iconAction(menu, text, icon, callback):
@@ -269,11 +279,9 @@ class OutlineWidget(QWidget):
 
         menu.addSeparator()
 
-
         self.__iconAction(menu, 'Export...', 'disk', self.__onExportSelected)
         self.__iconAction(menu, 'Import...', 'folder_page', self.__onImportObject)
         self.__iconAction(menu, 'Reference...', 'page_link', self.__onReferenceObject)
-
 
         menu.exec_(self.__treeView.viewport().mapToGlobal(pos))
 
@@ -291,7 +299,7 @@ class OutlineWidget(QWidget):
 
     def __onAddChild(self):
         parentObj = self.__selectedObject()
-        assert (parentObj)
+        assert parentObj
         if parentObj:
             self.ctx.core().addEntity(parentObj)
 

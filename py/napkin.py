@@ -1,7 +1,8 @@
 import sys
 
 from appcontext import AppContext
-from connectionwidget import ConnectionWidget
+from corewidget import ConnectionWidget
+from logpanel import LogPanel
 from model import *
 from napclient import *
 from outline import OutlineWidget
@@ -34,6 +35,7 @@ class MainWindow(QMainWindow):
         self.__setupUi()
         self.__restore()
 
+        # connect to host saved in settings
         s = QSettings()
         host = str(s.value(LAST_HOST, "tcp://localhost:8888"))
         self.ctx.connect(host)
@@ -49,14 +51,14 @@ class MainWindow(QMainWindow):
         self.__getOrCreateEditor(obj)
 
     def __getEditor(self, obj):
-        if not isinstance(obj, basestring):
+        if not isinstance(obj, str):
             obj = obj.pathString()
         if not obj in self.__editors.keys():
             return None
         return self.__editors[obj]
 
     def __getOrCreateEditor(self, obj):
-        if not isinstance(obj, basestring):
+        if not isinstance(obj, str):
             objPath = obj.pathString()
         editorType = self.ctx.editorTypeFor(obj)
         title = '%s (%s)' % (editorType.__name__, objPath)
@@ -90,7 +92,7 @@ class MainWindow(QMainWindow):
 
     def __onRootChanged(self):
         """
-        @type obj: napclient.NObject
+        @type obj: napclient.Object
         """
         self.outline.setRoot(self.ctx.core().root())
         self.__restoreEditors()
@@ -102,18 +104,21 @@ class MainWindow(QMainWindow):
         self.inspector.expandAll()
 
     def __setupUi(self):
-        self.outline = OutlineWidget(self.ctx)
+        self.outline = OutlineWidget(self.ctx, 'outline')
         self.outline.setPropagateSelection(True)
         self.outline.setFilterTypes([napclient.Entity])
         self.addDock(self.outline, Qt.LeftDockWidgetArea, 'Outline')
 
         self.connector = ConnectionWidget(self.ctx)
-        self.addDock(self.connector, Qt.TopDockWidgetArea, 'Connection')
+        self.addDock(self.connector, Qt.TopDockWidgetArea, 'Core')
 
-        self.inspector = OutlineWidget(self.ctx)
+        self.inspector = OutlineWidget(self.ctx, 'inspector')
         self.inspector.setFilterTypes([napclient.Component, napclient.Attribute])
         self.inspector.setRootVisible(False)
         self.addDock(self.inspector, Qt.RightDockWidgetArea, 'Attributes')
+
+        self.logger = LogPanel(self.ctx)
+        self.addDock(self.logger, Qt.BottomDockWidgetArea, 'Log')
 
     def __restore(self):
         s = QSettings()
@@ -124,8 +129,17 @@ class MainWindow(QMainWindow):
         if state:
             self.restoreState(state)
 
+    def __saveState(self):
+        s = QSettings()
+        s.setValue(WIN_GEO, self.saveGeometry())
+        s.setValue(WIN_STATE, self.saveState())
+
+        editedObjects = self.editedObjects()
+        print('Storing edited: %s' % editedObjects)
+        s.setValue(EDITED_OBJECTS, editedObjects)
+
     def onConnected(self):
-        self.__root = NObject.root()
+        self.__root = Object.root()
 
     def addDock(self, w, area, name):
         dock = QDockWidget(self)
@@ -146,14 +160,7 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, evt):
         self.ctx.applicationClosing.emit()
-        s = QSettings()
-        s.setValue(WIN_GEO, self.saveGeometry())
-        s.setValue(WIN_STATE, self.saveState())
-
-        editedObjects = self.editedObjects()
-        print('Storing edited: %s' % editedObjects)
-
-        s.setValue(EDITED_OBJECTS, editedObjects)
+        self.__saveState()
         QWidget.closeEvent(self, evt)
 
 

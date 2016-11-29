@@ -41,6 +41,7 @@ class Core(QObject):
     moduleInfoChanged = pyqtSignal(dict)
     typeHierarchyChanged = pyqtSignal()
     objectRemoved = pyqtSignal(object)
+    logMessageReceived = pyqtSignal(int, str, str)
     messageReceived = pyqtSignal()
 
     def __init__(self, host='tcp://localhost:8888'):
@@ -61,14 +62,19 @@ class Core(QObject):
 
     def findObject(self, ptr):
         """
-        @type ptr: long
-        @rtype: NObject
+        @type ptr: int
+        @rtype: Object
         """
+        if not isinstance(ptr, int):
+            ptr = int(ptr)
         return self.__objects[ptr]
 
+    def onLog(self, jsonDict):
+        self.logMessageReceived.emit(jsonDict['level'], jsonDict['levelName'], jsonDict['text'])
+
     def onNameChanged(self, jsonDict):
-        obj = self.findObject(int(jsonDict[_J_PTR]))
-        obj.onNameChanged(jsonDict['name'])
+        obj = self.findObject(jsonDict[_J_PTR])
+        obj.onNameChanged(jsonDict[_J_NAME])
 
     def onMessageReceived(self, jsonMessage):
         """ Handle message coming back from RPC server
@@ -83,6 +89,11 @@ class Core(QObject):
             else:
                 raise Exception('No handler for callback: %s' % handler)
         self.messageReceived.emit()
+
+    def onAttributeValueChanged(self, jsonDict):
+        attrib = self.findObject(jsonDict[_J_PTR])
+        attrib._value = jsonDict[_J_VALUE]
+        attrib.valueChanged.emit(attrib)
 
     def onObjectAdded(self, jsonDict):
         parent = self.findObject(jsonDict[_J_PTR])
@@ -99,7 +110,16 @@ class Core(QObject):
         self.__componentTypes = info['componentTypes']
         self.__operatorTypes = info['operatorTypes']
         self.__dataTypes = info['dataTypes']
+        self.__types = info['types']
         self.moduleInfoChanged.emit(info)
+
+    def isSubClass(self, typename, baseTypename):
+        for type in self.__types:
+            if type == typename:
+                if baseTypename in self.__types[type]:
+                    return True
+                return False
+        return False
 
     def onGetObjectTree(self, jsonDict):
         self.__root = self.toObjectTree(jsonDict)
@@ -219,22 +239,24 @@ class Core(QObject):
         elif typename in self.operatorTypes():
             ObjType = Operator
         else:
-            ObjType = AttributeNObject
+            ObjType = AttributeObject
         return ObjType(self, parent, name, ptr, typename)
 
     def isConnected(self):
         return True
 
 
-class NObject(QObject):
+class Object(QObject):
+    NAP_TYPE = 'nap::Object'
+
     nameChanged = pyqtSignal(str)
     childAdded = pyqtSignal(object)
     childRemoved = pyqtSignal(object)
 
     def __init__(self, core, parent, name, ptr, typename=None):
-        super(NObject, self).__init__()
+        super(Object, self).__init__()
         if not parent is None:
-            assert (isinstance(parent, NObject))
+            assert (isinstance(parent, Object))
         self.__parent = parent
         self.__core = core
         self._editable = True
@@ -267,7 +289,7 @@ class NObject(QObject):
         return '/%s' % '/'.join(self.path())
 
     def resolvePath(self, path):
-        if isinstance(path, basestring):
+        if isinstance(path, str):
             return self.resolvePath(path.split('/'))
 
         if not path[0]:
@@ -338,14 +360,14 @@ class NObject(QObject):
         return self.__rpc.addEntity(self.__ptr, typename, name);
 
     def addEntity(self, name):
-        return NObject(self.__core, self.__rpc.addEntity(self.__ptr, name))
+        return Object(self.__core, self.__rpc.addEntity(self.__ptr, name))
 
     def children(self, objType=None):
         if not objType:
             return self._children
         res = []
         for child in self._children:
-            if isinstance(child, objType):
+            if self.core().isSubClass(child.typename(), objType):
                 res.append(child)
         return res
 
@@ -353,9 +375,11 @@ class NObject(QObject):
         return '<%s> %s' % (self.typename(), self.name())
 
 
-class AttributeNObject(NObject):
+class AttributeObject(Object):
+    NAP_TYPE = 'nap::AttributeObject'
+
     def __init__(self, *args):
-        super(AttributeNObject, self).__init__(*args)
+        super(AttributeObject, self).__init__(*args)
 
     def attributes(self):
         return self.children(Attribute)
@@ -371,12 +395,18 @@ class AttributeNObject(NObject):
                                                  'int')
 
 
-class Entity(AttributeNObject):
+class Entity(AttributeObject):
+    NAP_TYPE = 'nap::Entity'
+
     def __init__(self, *args):
         super(Entity, self).__init__(*args)
 
 
-class Attribute(NObject):
+class Attribute(Object):
+    NAP_TYPE = 'nap::Attribute'
+
+    valueChanged = pyqtSignal(object)
+
     def __init__(self, *args):
         super(Attribute, self).__init__(*args)
         self._value = None
@@ -392,31 +422,37 @@ class Attribute(NObject):
         return self._valueType
 
 
-class Component(AttributeNObject):
+class Component(AttributeObject):
+    NAP_TYPE = 'nap::Component'
+
     def __init__(self, *args):
         super(Component, self).__init__(*args)
 
 
-class Operator(AttributeNObject):
+class Operator(AttributeObject):
+    NAP_TYPE = 'nap::Operator'
+
     def __init__(self, *args):
         super(Operator, self).__init__(*args)
 
     def inputPlugs(self):
-        for child in self.children():
+        for child in self.children('nap::InputPlugBase'):
             yield child
 
     def outputPlugs(self):
-        for child in self.children():
+        for child in self.children('nap::OutputPlugBase'):
             yield child
 
 
-class Patch(AttributeNObject):
+class Patch(AttributeObject):
+    NAP_TYPE = 'nap::Patch'
+
     def __init__(self, *args):
         super(Patch, self).__init__(*args)
 
 
 def run():
-    root = NObject.root()
+    root = Object.root()
     root.setName('root')
 
     for c in root.children():
