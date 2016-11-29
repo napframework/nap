@@ -64,15 +64,16 @@ class ModuleModel(QStandardItemModel):
         _addTypesItem(globalItem, dic, 'componentTypes')
         _addTypesItem(globalItem, dic, 'operatorTypes')
 
+        typeIcon = iconstore.icon('type')
 
-        typeHierarchyItem = QStandardItem(iconstore.icon('brick'), 'baseTypes')
+        typeHierarchyItem = QStandardItem(typeIcon, 'baseTypes')
         types = dic['types']
         for tp in types:
-            typeItem = QStandardItem(iconstore.icon('brick'), tp['name'])
+            typeItem = QStandardItem(typeIcon, tp['name'])
             typeHierarchyItem.appendRow(typeItem)
             parentItem = typeItem
             for baseType in tp['baseTypes']:
-                baseTypeItem = QStandardItem(iconstore.icon('brick'), baseType)
+                baseTypeItem = QStandardItem(typeIcon, baseType)
                 parentItem.appendRow(baseTypeItem)
                 parentItem = baseTypeItem
         self.appendRow(typeHierarchyItem)

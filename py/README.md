@@ -1,3 +1,0 @@
-# napkinpy
-
-Hi!

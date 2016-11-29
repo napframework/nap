@@ -94,6 +94,7 @@ class OperatorItem(QGraphicsObject):
 
     def __init__(self, parent, op):
         super(OperatorItem, self).__init__()
+        assert(isinstance(op, nap.Operator))
         self.__inputPlugs = []
         self.__outputPlugs = []
         self.__operator = op

@@ -4,7 +4,7 @@ from appcontext import AppContext
 from corewidget import ConnectionWidget
 from logpanel import LogPanel
 from model import *
-from nap import *
+import nap
 from outline import OutlineWidget
 from patchpanel import PatchEditor
 

@@ -36,7 +36,8 @@ class ObjectItem(QStandardItem):
         """
         @type obj: nap.Object
         """
-        assert(isinstance(obj, self.ObjectType))
+        if not isinstance(obj, self.ObjectType):
+            raise TypeError('%s should be %s' % (type(obj), self.ObjectType))
         super(ObjectItem, self).__init__()
         self.__obj = obj
         self.__obj.nameChanged.connect(self.__onNameChanged)

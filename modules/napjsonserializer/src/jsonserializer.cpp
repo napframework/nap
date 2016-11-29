@@ -11,7 +11,7 @@ using namespace rapidjson;
 #define J_NAME "name"
 #define J_VALUE "value"
 #define J_TYPE "type"
-#define J_EDITABLE "editable"
+#define J_FLAGS "flags"
 #define J_CHILDREN "children"
 #define J_PTR "ptr"
 #define J_ATTRIBUTES "attributes"
@@ -56,7 +56,7 @@ namespace nap
 			writer.String(attrib.getName().c_str());
 			writer.String(J_VALUE_TYPE);
 			writer.String(attrib.getValueType().getName().c_str());
-			writer.String(J_EDITABLE);
+			writer.String(J_FLAGS);
 			writer.Bool(attrib.checkFlag(Editable));
 
 			if (writePointers) {
@@ -84,8 +84,8 @@ namespace nap
 			writer.String(obj.getName().c_str());
 			writer.String(J_TYPE);
 			writer.String(obj.getTypeInfo().getName().c_str());
-			writer.String(J_EDITABLE);
-			writer.Bool(obj.checkFlag(Editable));
+			writer.String(J_FLAGS);
+			writer.Int(obj.getFlags());
 
 			if (writePointers) {
 				writer.String(J_PTR);
