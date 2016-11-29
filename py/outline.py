@@ -1,6 +1,6 @@
 import os
 
-from napclient import *
+from nap import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from model import *
@@ -29,7 +29,7 @@ class OutlineModel(QStandardItemModel):
 
     def setRoot(self, obj):
         """ Replace the data in this model with the specified object as root
-        @type obj: napclient.Object
+        @type obj: nap.Object
         """
         # self.__object = obj
         self.removeRows(0, self.rowCount())
@@ -112,7 +112,7 @@ class OutlineWidget(QWidget):
 
         self.__typeFilter = TypeFilterWidget()
         self.__typeFilter.filterChanged.connect(self.__onTypeFilterUpdated)
-        self.__typeFilter.setTypes([napclient.Entity, napclient.Component, napclient.Attribute])
+        self.__typeFilter.setTypes([nap.Entity, nap.Component, nap.Attribute])
         headerLayout.addWidget(self.__typeFilter)
 
         self.layout().addLayout(headerLayout)
@@ -161,11 +161,11 @@ class OutlineWidget(QWidget):
 
     def setRoot(self, obj):
         """
-        @type obj: napclient.Object
+        @type obj: nap.Object
         """
         self.setEnabled(bool(obj))
         if obj:
-            assert (isinstance(obj, napclient.Object))
+            assert (isinstance(obj, nap.Object))
 
         self.__outlineModel.setRoot(obj)
         # Hide root if necessary
@@ -222,7 +222,7 @@ class OutlineWidget(QWidget):
 
     def __selectedObject(self):
         """
-        @rtype: napclient.Object
+        @rtype: nap.Object
         """
         for item in self.__selectedItems():
             return item.object()
@@ -264,7 +264,7 @@ class OutlineWidget(QWidget):
         if editor:
             self.__iconAction(menu, 'Edit', 'brick', self.__onShowEditor)
 
-        if isinstance(selectedObject, napclient.Entity):
+        if isinstance(selectedObject, nap.Entity):
             self.__iconAction(menu, 'Add Child', 'add', self.__onAddChild)
 
             addCompMenu = menu.addMenu(iconstore.icon('brick_add'), 'Add Component...')

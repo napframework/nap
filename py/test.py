@@ -31,20 +31,17 @@ class TrelloData(object):
 
 
 if __name__ == '__main__':
+    g = Github('5278d52cadd45681753529a55fc2ad37f920bc07')
+    for repo in g.get_user().get_repos():
+        if repo.name == 'nap':
+            break
 
     trello = TrelloData('trello.json')
     lbid = trello.labelID('Napkin')
-    print(lbid)
     for card in trello.cards('Tasks'):
         if lbid in card['idLabels']:
-            print(card['name'])
-            # print(card['desc'])
-
-    # g = Github('5278d52cadd45681753529a55fc2ad37f920bc07')
-    #
-    # for repo in g.get_user().get_repos():
-    #     if repo.name == 'napkinpy':
-    #         break
-    #
-    # # repo.create_issue('Added from python', 'And some more in the body')
-    # print(repo.name)
+            name = card['name']
+            desc = card['desc'].strip()
+            print(name)
+            # repo.create_issue(name, desc)
+    print(repo.name)

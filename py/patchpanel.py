@@ -5,7 +5,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
 import iconstore
-import napclient
+import nap
 from appcontext import AppContext
 
 COL_NODE_CONNECTION = QColor(0x70, 0x70, 0x70)
@@ -27,7 +27,7 @@ def _getObjectEditorPos(obj):
 
 def _setObjectEditorPos(obj, pos):
     """
-    @type obj: napclient.AttributeObject
+    @type obj: nap.AttributeObject
     """
     obj.attr(PATCH_XPOS).setValue(pos.x())
     obj.attr(PATCH_XPOS).setValue(pos.y())
@@ -757,6 +757,6 @@ class PatchEditor(QWidget):
         # self.__patchView.setScene(self.__scene)
 
     def setModel(self, patch):
-        if isinstance(patch, napclient.Component):
+        if isinstance(patch, nap.Component):
             patch = patch.childOftype('nap::Patch')
         self.__patchView.setScene(PatchScene(self.ctx, patch))

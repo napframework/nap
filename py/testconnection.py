@@ -1,8 +1,8 @@
-import napclient
+import nap
 
 
 def printTypes():
-    core = napclient.Core()
+    core = nap.Core()
     print('Modules')
     for mod in core.modules():
         print(mod)
@@ -18,5 +18,5 @@ def printTypes():
 
 if __name__ == '__main__':
     # printTypes()
-    core = napclient.Core()
+    core = nap.Core()
     core.objectTree()

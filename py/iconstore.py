@@ -5,16 +5,16 @@ This module provides unified access to this projects icons.
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 
-import napclient
+import nap
 
 # Store icons as type:QIcon
 _ICONS = {}
 
 _ICON_NAMES = {
-    napclient.Entity: 'entity',
-    napclient.Attribute: 'attribute',
-    napclient.Component: 'component',
-    napclient.Object: 'undefined',
+    nap.Entity: 'entity',
+    nap.Attribute: 'attribute',
+    nap.Component: 'component',
+    nap.Object: 'undefined',
 }
 
 
@@ -29,7 +29,7 @@ def iconFor(obj):
     if isinstance(obj, type):
         objType = obj
     else:
-        assert(isinstance(obj, napclient.Object))
+        assert(isinstance(obj, nap.Object))
         global _ICONS
         objType = type(obj)
 
@@ -37,7 +37,7 @@ def iconFor(obj):
         return _ICONS[objType]
 
     if not objType in _ICON_NAMES.keys():
-        objType = napclient.Object
+        objType = nap.Object
 
     _ICONS[objType] = icon(_ICON_NAMES[objType])
     return _ICONS[objType]

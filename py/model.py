@@ -2,17 +2,17 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 import iconstore
-import napclient
+import nap
 
 def inspectorAttributeRow(attrib):
-    assert(isinstance(attrib, napclient.Attribute))
+    assert(isinstance(attrib, nap.Attribute))
     return [
         ObjectItem(attrib),
         AttributeValueItem(attrib),
     ]
 
 def inspectorComponentRow(comp):
-    assert(isinstance(comp, napclient.Component))
+    assert(isinstance(comp, nap.Component))
     componentItem = ComponentItem(comp)
     componentTypeItem = QStandardItem(comp.typename())
     componentTypeItem.setEnabled(False)
@@ -30,11 +30,11 @@ class ObjectItem(QStandardItem):
     """ This item wraps an Object.
     """
 
-    ObjectType = napclient.Object
+    ObjectType = nap.Object
 
     def __init__(self, obj):
         """
-        @type obj: napclient.Object
+        @type obj: nap.Object
         """
         assert(isinstance(obj, self.ObjectType))
         super(ObjectItem, self).__init__()
@@ -79,11 +79,11 @@ class ObjectItem(QStandardItem):
 
 class ComponentItem(ObjectItem):
 
-    ObjectType = napclient.Component
+    ObjectType = nap.Component
 
     def __init__(self, comp):
         """
-        @type attr: napclient.Component
+        @type attr: nap.Component
         """
         super(ComponentItem, self).__init__(comp)
 
@@ -91,11 +91,11 @@ class ComponentItem(ObjectItem):
 
 class EntityItem(ObjectItem):
 
-    ObjectType = napclient.Entity
+    ObjectType = nap.Entity
 
     def __init__(self, obj):
         """
-        @type obj: napclient.Entity
+        @type obj: nap.Entity
         """
         super(EntityItem, self).__init__(obj)
 
@@ -125,7 +125,7 @@ class ObjectTypeItem(QStandardItem):
     def __init__(self, obj):
         super(ObjectTypeItem, self).__init__()
         self.setEditable(False)
-        if isinstance(obj, napclient.Attribute):
+        if isinstance(obj, nap.Attribute):
             self.setText(obj.valueType())
         else:
             self.setText(obj.typename())
@@ -141,7 +141,7 @@ def createItemRow(obj):
     objectItem = createItem(obj)
     typeItem = ObjectTypeItem(obj)
     valueItem = None
-    if isinstance(obj, napclient.Attribute):
+    if isinstance(obj, nap.Attribute):
         valueItem = AttributeValueItem(obj)
 
     return [
