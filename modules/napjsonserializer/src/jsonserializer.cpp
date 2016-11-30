@@ -1,9 +1,7 @@
 #include "jsonserializer.h"
 #include "rapidjson/error/en.h"
-
+#include <rtti/rtti.h>
 RTTI_DEFINE(nap::JSONSerializer)
-RTTI_DEFINE(nap::JSONDeserializer)
-
 
 #include <nap.h>
 #include <rapidjson/document.h>
@@ -21,9 +19,12 @@ using namespace rapidjson;
 #define J_ATTRIBUTES "attributes"
 #define J_VALUE_TYPE "vType"
 #define J_DATA_TYPE "dataType"
+#define J_CONNECTIONS "connections"
 
 namespace nap
 {
+
+    using Writer = rapidjson::PrettyWriter<StringBuffer>;
 
 	std::string toString(AttributeBase& attrib)
 	{
@@ -52,8 +53,7 @@ namespace nap
 		return attribs;
 	}
 
-	template <typename T>
-	void writeAttribute(T& writer, AttributeBase& attrib, bool writePointers)
+	void writeAttribute(Writer& writer, AttributeBase& attrib, bool writePointers)
 	{
 		writer.StartObject();
 		{
@@ -66,7 +66,7 @@ namespace nap
 
 			if (writePointers) {
 				writer.String(J_PTR);
-				writer.Int64(toPtr(attrib));
+				writer.Int64(Serializer::toPtr(attrib));
 			}
 
 			std::string value = toString(attrib);
@@ -80,8 +80,7 @@ namespace nap
 
 	bool isAttribute(Object& obj) { return obj.getTypeInfo().isKindOf<AttributeBase>(); }
 
-	template <typename T>
-	void writeTheObject(T& writer, Object& obj, bool writePointers)
+	void writeTheObject(Writer& writer, Object& obj, bool writePointers)
 	{
 		writer.StartObject();
 		{
@@ -92,21 +91,32 @@ namespace nap
 			writer.String(J_FLAGS);
 			writer.Int(obj.getFlags());
 
-            if (obj.getTypeInfo().isKindOf<Plug>()) {
-                Plug* plug = static_cast<Plug*>(&obj);
-                writer.String(J_DATA_TYPE);
-                writer.String(plug->getDataType().getName().c_str());
-            }
+
+			if (auto plug = rtti_cast<Plug*>(&obj))
+            {
+				writer.String(J_DATA_TYPE);
+				writer.String(plug->getDataType().getName().c_str());
+
+				if (auto outPlug = rtti_cast<nap::OutputPlugBase*>(plug))
+                {
+                    writer.String(J_CONNECTIONS);
+                    writer.StartArray();
+                    for (auto con : outPlug->getConnections()) {
+                        std::string destPath = ObjectPath(con);
+                        writer.String(destPath.c_str());
+                    }
+                    writer.EndArray();
+				}
+			}
 
 			if (writePointers) {
 				writer.String(J_PTR);
-				writer.Int64(toPtr(obj));
+				writer.Int64(Serializer::toPtr(obj));
 			}
 
-			if (obj.getTypeInfo().isKindOf<CompoundAttribute>()) {
-				CompoundAttribute* attribObj = static_cast<CompoundAttribute*>(&obj);
-
-				auto attribs = realAttributes(*attribObj);
+			if (auto compAttrib = rtti_cast<CompoundAttribute*>(&obj))
+            {
+				auto attribs = realAttributes(*compAttrib);
 				if (attribs.size() > 0) {
 					writer.String(J_ATTRIBUTES);
 					writer.StartArray();
@@ -115,8 +125,9 @@ namespace nap
 					}
 					writer.EndArray();
 				}
-			} else if (obj.getTypeInfo().isKindOf<AttributeObject>()) {
-				AttributeObject* attribObj = static_cast<AttributeObject*>(&obj);
+			}
+            else if (auto attribObj = rtti_cast<AttributeObject*>(&obj))
+            {
 				auto attribs = realAttributes(*attribObj);
 				if (attribs.size() > 0) {
 					writer.String(J_ATTRIBUTES);
@@ -175,7 +186,7 @@ namespace nap
 		return types;
 	}
 
-	void writeTypes(PrettyWriter<StringBuffer>& w, TypeList types)
+	void writeTypes(Writer& w, TypeList types)
 	{
 		w.StartArray();
 		for (const auto& type : types) {
@@ -240,17 +251,17 @@ namespace nap
 			w.String("types");
 			w.StartArray();
 			for (const auto& type : RTTI::TypeInfo::getRawTypes()) {
-                w.StartObject();
-                {
-                    w.String("name");
-                    w.String(type.getName().c_str());
-                    w.String("baseTypes");
-                    w.StartArray();
-                    for (const auto& baseType : type.getBaseTypes())
-                        w.String(baseType.getName().c_str());
-                    w.EndArray();
-                }
-                w.EndObject();
+				w.StartObject();
+				{
+					w.String("name");
+					w.String(type.getName().c_str());
+					w.String("baseTypes");
+					w.StartArray();
+					for (const auto& baseType : type.getBaseTypes())
+						w.String(baseType.getName().c_str());
+					w.EndArray();
+				}
+				w.EndObject();
 			}
 			w.EndArray();
 		}
@@ -282,7 +293,7 @@ namespace nap
 
 		AttributeBase* attrib = attributeObject->getAttribute(attrName);
 		if (!attrib) {
-			RTTI::TypeInfo attrType = RTTI::TypeInfo::getByName(dirtyHack(attrValueTypeName));
+			RTTI::TypeInfo attrType = RTTI::TypeInfo::getByName(Serializer::dirtyHack(attrValueTypeName));
 			attrib = &attributeObject->addAttribute(attrName, attrType);
 		}
 		assert(!strcmp(attrValueTypeName, attrib->getValueType().getName().c_str()));
@@ -322,10 +333,9 @@ namespace nap
 
 			// Handle Entity
 			if (objectType.isKindOf<Entity>()) {
-				assert(parent->getTypeInfo().isKindOf<Entity>());
-				Entity* parentEntity = static_cast<Entity*>(parent);
-				obj = &parentEntity->addEntity(objectName);
-
+                assert(parent->getTypeInfo().isKindOf<Entity>());
+                Entity* parentEntity = static_cast<Entity*>(parent);
+                obj = &parentEntity->addEntity(objectName);
 			} else {
 				// Handle other types
 				if (parent->hasChild(objectName) && parent->getChild(objectName)->getTypeInfo().isKindOf(objectType)) {
@@ -336,6 +346,18 @@ namespace nap
 				}
 			}
 		}
+
+        if (auto outPlug = rtti_cast<OutputPlugBase*>(obj)) {
+            if (value.HasMember(J_CONNECTIONS)) {
+                auto& connections = value[J_CONNECTIONS];
+
+                for (auto it = connections.Begin(); it != connections.End(); ++it)
+                {
+                    auto inPlug = ObjectPath(it->GetString()).resolve<InputPlugBase>(core.getRoot());
+                    inPlug->connect(*outPlug);
+                }
+            }
+        }
 
 		if (value.HasMember(J_ATTRIBUTES)) {
 			Value& attribs = value[J_ATTRIBUTES];
@@ -354,16 +376,16 @@ namespace nap
 		return obj;
 	};
 
-	Object* JSONDeserializer::readObject(std::istream& istream, Core& core, Object* parent) const
+	Object* JSONSerializer::readObject(std::istream& istream, Core& core, Object* parent) const
 	{
 		IStreamWrapper is(istream);
 
 		Document doc;
 		doc.ParseStream(is);
-        if (doc.HasParseError()) {
-            Logger::warn("JSON parse error: %s (%u)", GetParseError_En(doc.GetParseError()), doc.GetErrorOffset());
-            return nullptr;
-        }
+		if (doc.HasParseError()) {
+			Logger::warn("JSON parse error: %s (%u)", GetParseError_En(doc.GetParseError()), doc.GetErrorOffset());
+			return nullptr;
+		}
 
 		return jsonToObject(doc, core, parent);
 	}

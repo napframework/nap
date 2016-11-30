@@ -7,19 +7,21 @@
 #include "tests/testcore.h"
 #include "tests/testlink.h"
 
-int main(int argc, char **argv) {
-  nap::Logger::setLevel(nap::Logger::infoLevel());
+int main(int argc, char** argv)
+{
+	nap::Logger::setLevel(nap::Logger::infoLevel());
 
-  TEST_SETUP()
+	TEST_SETUP()
 
-  TEST_ADD(testXMLSerializer)
-  //    TEST_ADD(testLink)
-    TEST_ADD(testCore)
-  //  TEST_ADD(testObjectPath)
+//	TEST_ADD(testXMLSerializer)
+	TEST_ADD(testLink)
+	TEST_ADD(testCore)
+	TEST_ADD(testObjectPath)
+    TEST_ADD(testJSONSerializer)
 
-  TEST_RUN()
+	TEST_RUN()
 
-  char msg;
-  std::cin >> msg;
-  return 0;
+	char msg;
+	std::cin >> msg;
+	return 0;
 }

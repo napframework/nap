@@ -167,7 +167,10 @@ namespace nap
         // Disconnects all connections
         void disconnectAll();
 
-		// Checks wether an output plug is allowed to be connected to this input plug. This will only be the case if the plug types match and the data types emitted or received by the plugs are the same. This method is virtual because some plug types might need to extend it.
+		// Checks wether an output plug is allowed to be connected to this input plug.
+        // This will only be the case if the plug types match and the data types emitted
+        // or received by the plugs are the same.
+        // This method is virtual because some plug types might need to extend it.
 		virtual bool canConnectTo(OutputPlugBase& plug);
 
 		std::set<OutputPlugBase*> getConnections() { return connections; }

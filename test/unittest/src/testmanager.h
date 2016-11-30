@@ -37,63 +37,22 @@ class TestManager
 public:
 	TestManager() {}
 
-	void runTests()
-	{
-		std::cout << "Running " << mTests.size() << " tests" << std::endl << std::endl;
+    /**
+     * Run all registered tests
+     */
+	void runTests();
 
-		int padLen = findPadLength() + 3;
-
-		std::vector<Test*> failedTests;
-
-        int rowlength = 80;
-
-		for (const auto& test : mTests) {
-			std::string name = "__ " + test->getName() + " ";
-			padRight(name, rowlength, '_');
-			std::cout << name << std::endl;
-
-			std::ostringstream result;
-            result << " ";
-			if (test->run()) {
-				result << "OK";
-			} else {
-				result << "FAILED";
-				failedTests.push_back(test.get());
-			}
-            result << " ==";
-            std::string footer = result.str();
-            padLeft(footer, rowlength, '=');
-
-            std::cout << footer << std::endl << std::endl << std::endl;
-		}
-
-		std::cout << std::endl;
-
-		if (failedTests.empty()) {
-			std::cout << "All dandy!" << std::endl;
-		} else {
-			std::cout << "Tests failed: " << failedTests.size() << std::endl;
-		}
-	}
-
-	void addTest(const std::string& name, TestFunction function)
-	{
-		mTests.push_back(std::make_unique<Test>(name, function));
-	}
+    /**
+     * Add a test, the provided function should return false if the test failed.
+     * @param name The name of the test to be printed
+     * @param function The function containing the test, should return false if the test failed
+     */
+	void addTest(const std::string& name, TestFunction function);
 
 private:
-	size_t findPadLength()
-	{
-		size_t len = 0;
-		for (const auto& test : mTests)
-			len = std::max<int>(test->getName().size(), len);
-		return len;
-	}
-
-
+	size_t findPadLength();
 	std::vector<std::unique_ptr<Test>> mTests;
 };
-
 
 #define TEST_SETUP() TestManager testMan;
 
@@ -109,4 +68,3 @@ private:
 		return false;                  \
 	}
 
-#define TEST_ASSERT(CONDITION) TEST_ASSERT(CONDITION, "")
