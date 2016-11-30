@@ -322,8 +322,9 @@ namespace nap
 		const char* objectName = value.FindMember(J_NAME)->value.GetString();
 		const char* objectTypename = value.FindMember(J_TYPE)->value.GetString();
 
-		Object* obj = nullptr;
+        // Resolve current object
 
+		Object* obj = nullptr;
 		if (!parent) {
 			// Reading root object
 			core.getRoot().setName(objectName);
@@ -347,6 +348,8 @@ namespace nap
 			}
 		}
 
+        // Deserialize type specifics
+
         if (auto outPlug = rtti_cast<OutputPlugBase*>(obj)) {
             if (value.HasMember(J_CONNECTIONS)) {
                 auto& connections = value[J_CONNECTIONS];
@@ -358,6 +361,8 @@ namespace nap
                 }
             }
         }
+
+        // Deserialize children
 
 		if (value.HasMember(J_ATTRIBUTES)) {
 			Value& attribs = value[J_ATTRIBUTES];
