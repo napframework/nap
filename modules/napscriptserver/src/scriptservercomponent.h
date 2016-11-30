@@ -32,14 +32,23 @@ namespace nap
 			~RPCObjectCallback();
 			ScriptServerComponent& mServer;
 
-			Slot<const std::string&> onNameChangedSlot = {this, &RPCObjectCallback::onNameChanged};
 			void onNameChanged(const std::string& name);
-			Slot<Object&> onChildAddedSlot = {this, &RPCObjectCallback::onChildAdded};
+            Slot<const std::string&> onNameChangedSlot = {this, &RPCObjectCallback::onNameChanged};
+
 			void onChildAdded(Object& obj);
-			Slot<Object&> onChildRemovedSlot = {this, &RPCObjectCallback::onChildRemoved};
+            Slot<Object&> onChildAddedSlot = {this, &RPCObjectCallback::onChildAdded};
+
 			void onChildRemoved(Object& obj);
-			Slot<AttributeBase&> onAttributeValueChangedSlot = {this, &RPCObjectCallback::onAttributeValueChanged};
+            Slot<Object&> onChildRemovedSlot = {this, &RPCObjectCallback::onChildRemoved};
+
 			void onAttributeValueChanged(AttributeBase& attrib);
+            Slot<AttributeBase&> onAttributeValueChangedSlot = {this, &RPCObjectCallback::onAttributeValueChanged};
+
+            void onPlugConnected(Plug::Connection connection);
+            Slot<Plug::Connection> onPlugConnectedSlot = {this, &RPCObjectCallback::onPlugConnected};
+
+            void onPlugDisconnected(Plug::Connection connection);
+            Slot<Plug::Connection> onPlugDisconnectedSlot = {this, &RPCObjectCallback::onPlugDisconnected};
 
 		private:
 			Object& mObject;
@@ -66,6 +75,8 @@ namespace nap
 		virtual void handleObjectAdded(AsyncTCPClient& client, Object& obj, Object& child) = 0;
 		virtual void handleObjectRemoved(AsyncTCPClient& client, Object& child) = 0;
 		virtual void handleAttributeValueChanged(AsyncTCPClient& client, AttributeBase& attrib) = 0;
+        virtual void handlePlugConnected(AsyncTCPClient& client, Plug::Connection connection) = 0;
+        virtual void handlePlugDisconnected(AsyncTCPClient& client, Plug::Connection connection) = 0;
 		AsyncTCPServer& getServer() { return *mServer.get(); }
 
 		void stopServer();

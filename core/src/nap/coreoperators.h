@@ -20,8 +20,8 @@ namespace nap {
     private:
         void addPlug() {
             auto plug = new nap::InputPullPlug<float>(&mParent, mBaseName);
-            plug->connectedSignal.connect([&](const nap::OutputPlugBase &plug) { addPlug(); });
-            plug->disconnectedSignal.connect([&](const nap::OutputPlugBase &plug) { condensePlugs(); });
+            plug->connected.connect([&](Plug::Connection connection) { addPlug(); });
+            plug->disconnected.connect([&](Plug::Connection connection) { condensePlugs(); });
             mPlugs.push_back(plug);
         }
 

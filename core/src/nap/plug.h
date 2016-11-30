@@ -71,6 +71,13 @@ namespace nap
 		// for example for audio or video streaming)
 		enum class Type { PUSH, PULL, TRIGGER, STREAM };
 
+        class Connection {
+        public:
+            Connection(OutputPlugBase& src, InputPlugBase& dst) : srcPlug(src), dstPlug(dst) {}
+            const OutputPlugBase& srcPlug;
+            const InputPlugBase& dstPlug;
+        };
+
 	public:
 		// Constructor
 		Plug(Operator* parent, const std::string& name, Type plugType, const RTTI::TypeInfo dataType);
@@ -166,10 +173,12 @@ namespace nap
 		std::set<OutputPlugBase*> getConnections() { return connections; }
 
 		// emitted when connected to a plug
-		nap::Signal<OutputPlugBase&> connectedSignal;
+        // TODO: Change this into multiple arguments signal
+		nap::Signal<Plug::Connection> connected;
 
 		// emitted when disconnected from a plug
-		nap::Signal<OutputPlugBase&> disconnectedSignal;
+        // TODO: Change this into multiple arguments signal
+		nap::Signal<Plug::Connection> disconnected;
 
 	protected:
 		// Keeps track of the connected plugs, so it can push or pull and can
