@@ -38,6 +38,7 @@ namespace nap
      */
 	class Serializer
 	{
+        RTTI_ENABLE()
 	public:
         /**
          * Write a complete module information
@@ -72,14 +73,29 @@ namespace nap
          * @return A string representing the complete serialized Object tree
          */
 		std::string toString(ModuleManager& moduleManager) const;
+
+
 	};
 
 
 	class Deserializer
 	{
-
+        RTTI_ENABLE()
 	public:
+        /**
+         * Read an object from an input stream. Optionally provide a parent to load the data into. Return nullptr on faillure.
+         * @param istream The stream to read from
+         * @param core The core to load the data into
+         * @param parent The parent object to put the loaded data under
+         * @return The loaded Object or nullptr when loading fails
+         */
 		virtual Object* readObject(std::istream& istream, Core& core, Object* parent = nullptr) const = 0;
 		Object* fromString(const std::string& str, Core& core, Object* parent = nullptr) const;
+        Object* load(const std::string& filename, Core& core, Object* parent = nullptr) const;
 	};
 }
+
+RTTI_DECLARE_BASE(nap::Serializer)
+RTTI_DECLARE_BASE(nap::Deserializer)
+
+

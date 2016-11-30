@@ -62,7 +62,7 @@ class AppContext(QObject):
         self.core().onGetObjectTree()
 
     def connect(self, host):
-        self.__core.getModuleInfo()
+        self.__core.loadModuleInfo()
         # self.__core.objectTree()
 
     def selection(self, types=None):

@@ -290,8 +290,10 @@ class OutlineWidget(QWidget):
 
     def __lastFileDir(self):
         settings = QSettings()
-        lastFile = str(settings.value(_LAST_OPENED_EXPORT).toString())
-        return os.path.dirname(lastFile)
+        lastOpened = settings.value(_LAST_OPENED_EXPORT)[0]
+        if lastOpened:
+            return os.path.dirname(str(lastOpened))
+        return None
 
     def __setLastFile(self, filename):
         s = QSettings()

@@ -101,8 +101,12 @@ private:
 
 #define TEST_RUN() testMan.runTests();
 
+
+
 #define TEST_ASSERT(CONDITION, REASON) \
 	if (!(CONDITION)) {                \
 		nap::Logger::fatal(REASON);    \
 		return false;                  \
 	}
+
+#define TEST_ASSERT(CONDITION) TEST_ASSERT(CONDITION, "")

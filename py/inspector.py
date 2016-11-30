@@ -22,8 +22,6 @@ def inspectorItemRow(child):
     return items
 
 
-
-
 class InspectorModel(QStandardItemModel):
     modelChanged = pyqtSignal()
 
@@ -41,7 +39,7 @@ class InspectorModel(QStandardItemModel):
         if not obj:
             return
 
-        assert(isinstance(obj, nap.Entity))
+        assert (isinstance(obj, nap.Entity))
 
         for attrib in obj.attributes():
             self.appendRow(inspectorAttributeRow(attrib))
@@ -50,9 +48,8 @@ class InspectorModel(QStandardItemModel):
             if isinstance(child, nap.Component):
                 self.appendRow(inspectorComponentRow(child))
 
-
-
         self.modelChanged.emit()
+
 
 class BoolEditorCreator(QItemEditorCreatorBase):
     def __init__(self):
@@ -72,7 +69,6 @@ class InspectorWidget(QWidget):
 
         self.__filter = QLineEdit()
         self.layout().addWidget(self.__filter)
-
 
         self.__treeView = QTreeView()
         self.__treeView.header().setStretchLastSection(False)

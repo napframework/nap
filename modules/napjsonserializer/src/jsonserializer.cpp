@@ -1,4 +1,8 @@
 #include "jsonserializer.h"
+#include "rapidjson/error/en.h"
+
+RTTI_DEFINE(nap::JSONSerializer)
+RTTI_DEFINE(nap::JSONDeserializer)
 
 
 #include <nap.h>
@@ -16,6 +20,7 @@ using namespace rapidjson;
 #define J_PTR "ptr"
 #define J_ATTRIBUTES "attributes"
 #define J_VALUE_TYPE "vType"
+#define J_DATA_TYPE "dataType"
 
 namespace nap
 {
@@ -86,6 +91,12 @@ namespace nap
 			writer.String(obj.getTypeInfo().getName().c_str());
 			writer.String(J_FLAGS);
 			writer.Int(obj.getFlags());
+
+            if (obj.getTypeInfo().isKindOf<Plug>()) {
+                Plug* plug = static_cast<Plug*>(&obj);
+                writer.String(J_DATA_TYPE);
+                writer.String(plug->getDataType().getName().c_str());
+            }
 
 			if (writePointers) {
 				writer.String(J_PTR);
@@ -349,7 +360,10 @@ namespace nap
 
 		Document doc;
 		doc.ParseStream(is);
-		assert(doc.IsObject()); // JSON may only contain one root object
+        if (doc.HasParseError()) {
+            Logger::warn("JSON parse error: %s (%u)", GetParseError_En(doc.GetParseError()), doc.GetErrorOffset());
+            return nullptr;
+        }
 
 		return jsonToObject(doc, core, parent);
 	}

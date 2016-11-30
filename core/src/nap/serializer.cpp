@@ -1,5 +1,8 @@
+#include <fstream>
 #include "serializer.h"
 
+RTTI_DEFINE(nap::Serializer)
+RTTI_DEFINE(nap::Deserializer)
 
 using namespace std;
 
@@ -13,6 +16,8 @@ namespace nap
         writeObject(ss, object, writePointers);
 		return ss.str();
 	}
+
+
     std::string Serializer::toString(ModuleManager& moduleManager) const {
         std::ostringstream ss;
         writeModuleInfo(ss, moduleManager);
@@ -35,4 +40,14 @@ namespace nap
 		std::istringstream ss(str);
 		return readObject(ss, core, parent);
 	}
+
+
+    Object* Deserializer::load(const std::string& filename, Core& core, Object* parent) const {
+        if (!fileExists(filename)) {
+            Logger::warn("File does not exist: %s", getAbsolutePath(filename).c_str());
+            return nullptr;
+        }
+        std::ifstream is(filename);
+        return readObject(is, core, parent);
+    }
 }

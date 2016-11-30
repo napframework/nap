@@ -4,15 +4,17 @@ from PyQt5.QtWidgets import *
 import iconstore
 import nap
 
+
 def inspectorAttributeRow(attrib):
-    assert(isinstance(attrib, nap.Attribute))
+    assert (isinstance(attrib, nap.Attribute))
     return [
         ObjectItem(attrib),
         AttributeValueItem(attrib),
     ]
 
+
 def inspectorComponentRow(comp):
-    assert(isinstance(comp, nap.Component))
+    assert (isinstance(comp, nap.Component))
     componentItem = ComponentItem(comp)
     componentTypeItem = QStandardItem(comp.typename())
     componentTypeItem.setEnabled(False)
@@ -25,10 +27,8 @@ def inspectorComponentRow(comp):
     return items
 
 
-
 class ObjectItem(QStandardItem):
-    """ This item wraps an Object.
-    """
+    """ This item wraps an nap.Object. """
 
     ObjectType = nap.Object
 
@@ -79,7 +79,6 @@ class ObjectItem(QStandardItem):
 
 
 class ComponentItem(ObjectItem):
-
     ObjectType = nap.Component
 
     def __init__(self, comp):
@@ -89,9 +88,7 @@ class ComponentItem(ObjectItem):
         super(ComponentItem, self).__init__(comp)
 
 
-
 class EntityItem(ObjectItem):
-
     ObjectType = nap.Entity
 
     def __init__(self, obj):
@@ -99,8 +96,6 @@ class EntityItem(ObjectItem):
         @type obj: nap.Entity
         """
         super(EntityItem, self).__init__(obj)
-
-
 
 
 class AttributeValueItem(QStandardItem):
@@ -122,6 +117,7 @@ class AttributeValueItem(QStandardItem):
         else:
             QStandardItem.setData(self, variant, role)
 
+
 class ObjectTypeItem(QStandardItem):
     def __init__(self, obj):
         super(ObjectTypeItem, self).__init__()
@@ -130,6 +126,7 @@ class ObjectTypeItem(QStandardItem):
             self.setText(obj.valueType())
         else:
             self.setText(obj.typename())
+
 
 def createItem(obj):
     for itemType in (EntityItem, ComponentItem):

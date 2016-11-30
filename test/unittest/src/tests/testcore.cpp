@@ -130,3 +130,10 @@ bool testObjectPath()
 	}
 	return true;
 }
+
+bool testFileUtils()
+{
+    TEST_ASSERT(getFileExtension("my.dir/myfile.tar.gz") == "gz");
+
+    return true;
+}

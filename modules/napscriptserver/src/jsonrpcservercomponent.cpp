@@ -30,7 +30,7 @@ namespace nap
 	JSONRPCServerComponent::JSONRPCServerComponent() : mContext(1), ScriptServerComponent()
 	{
 
-        Logger::instance().log.connect(onLogSlot);
+		Logger::instance().log.connect(onLogSlot);
 
 		mJsonServer.RegisterFormatHandler(mFormatHandler);
 
@@ -202,6 +202,19 @@ namespace nap
 			addCallbacks(ident, ptr);
 		});
 
+		disp.AddMethod("connectPlugs", [&](ObjPtr srcPlugPtr, ObjPtr dstPlugPtr) {
+			OutputPlugBase* srcPlug = fromPtr<OutputPlugBase>(srcPlugPtr);
+			InputPlugBase* dstPlug = fromPtr<InputPlugBase>(dstPlugPtr);
+			if (!srcPlug) {
+				Logger::fatal("Failed to retrieve source plug while connecting");
+				return;
+			}
+			if (!dstPlug) {
+				Logger::fatal("Failed to retrieve destination plug while connecting");
+				return;
+			}
+			dstPlug->connect(*srcPlug);
+		});
 
 		disp.AddMethod("exportObject", [&](ObjPtr ptr, const std::string& filename) {
 			auto obj = fromPtr<Object>(ptr);
@@ -210,6 +223,7 @@ namespace nap
 			JSONSerializer ser;
 			std::ofstream os(filename);
 			ser.writeObject(os, *obj, false);
+			os.close();
 		});
 
 		disp.AddMethod("importObject", [&](ObjPtr parentPtr, const std::string& filename) {
@@ -230,6 +244,7 @@ namespace nap
 
 	std::string JSONRPCServerComponent::evalScript(const std::string& cmd)
 	{
+		std::lock_guard<std::mutex> lock(mMutex);
 		return mJsonServer.HandleRequest(cmd)->GetData();
 	}
 
@@ -261,23 +276,23 @@ namespace nap
 		return buf.GetString();
 	}
 
-    void JSONRPCServerComponent::handleLogMessage(AsyncTCPClient& client, LogMessage& msg)
-    {
-        using namespace rapidjson;
-        StringBuffer buf;
-        PrettyWriter<StringBuffer> w(buf);
-        w.StartObject();
-        {
-            w.String("level");
-            w.Int(msg.level().level());
-            w.String("levelName");
-            w.String(msg.level().name().c_str());
-            w.String("text");
-            w.String(msg.text().c_str());
-        }
-        w.EndObject();
-        client.enqueueEvent(callbackJSON("log", buf.GetString()));
-    }
+	void JSONRPCServerComponent::handleLogMessage(AsyncTCPClient& client, LogMessage& msg)
+	{
+		using namespace rapidjson;
+		StringBuffer buf;
+		PrettyWriter<StringBuffer> w(buf);
+		w.StartObject();
+		{
+			w.String("level");
+			w.Int(msg.level().level());
+			w.String("levelName");
+			w.String(msg.level().name().c_str());
+			w.String("text");
+			w.String(msg.text().c_str());
+		}
+		w.EndObject();
+		client.enqueueEvent(callbackJSON("log", buf.GetString()));
+	}
 
 	void JSONRPCServerComponent::handleNameChanged(AsyncTCPClient& client, Object& obj)
 	{
@@ -356,6 +371,40 @@ namespace nap
 	}
 
 
+	void JSONRPCServerComponent::handlePlugConnected(AsyncTCPClient& client, Plug::Connection connection)
+	{
+		using namespace rapidjson;
+		StringBuffer buf;
+		PrettyWriter<StringBuffer> w(buf);
+		w.StartObject();
+		{
+			w.String("srcPtr");
+			w.Int64(toPtr(connection.srcPlug));
+			w.String("dstPtr");
+			w.Int64(toPtr(connection.dstPlug));
+		}
+		w.EndObject();
+		client.enqueueEvent(callbackJSON("plugConnected", buf.GetString()));
+	}
+
+
+	void JSONRPCServerComponent::handlePlugDisconnected(AsyncTCPClient& client, Plug::Connection connection)
+	{
+		using namespace rapidjson;
+		StringBuffer buf;
+		PrettyWriter<StringBuffer> w(buf);
+		w.StartObject();
+		{
+			w.String("srcPtr");
+			w.Int64(toPtr(connection.srcPlug));
+			w.String("dstPtr");
+			w.Int64(toPtr(connection.dstPlug));
+		}
+		w.EndObject();
+		client.enqueueEvent(callbackJSON("plugDisconnected", buf.GetString()));
+	}
+
+
 	void JSONRPCServerComponent::startRPCSocket()
 	{ // RPC Socket
 		zmq::socket_t socket(mContext, ZMQ_ROUTER);
@@ -382,8 +431,11 @@ namespace nap
 			std::this_thread::sleep_for(std::chrono::milliseconds(10));
 		}
 	}
-    void JSONRPCServerComponent::onLog(LogMessage msg) {
-        for (AsyncTCPClient* client : getServer().getClients())
-            handleLogMessage(*client, msg);
-    }
+
+
+	void JSONRPCServerComponent::onLog(LogMessage msg)
+	{
+		for (AsyncTCPClient* client : getServer().getClients())
+			handleLogMessage(*client, msg);
+	}
 }

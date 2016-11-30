@@ -6,20 +6,25 @@ namespace nap {
     /**
      * Serializer that will write to JSON format
      */
-    class JSONSerializer : public Serializer {
+    class JSONSerializer : public Serializer
+    {
+        RTTI_ENABLE_DERIVED_FROM(Serializer)
     public:
         void writeObject(std::ostream& ostream, Object& object, bool writePointers = false) const override;
-        virtual void writeModuleInfo(std::ostream& ostream, ModuleManager& moduleManager) const override;
+        void writeModuleInfo(std::ostream& ostream, ModuleManager& moduleManager) const override;
     };
 
     /**
      * Deserializer that will read from JSON format
      */
-    class JSONDeserializer : public Deserializer {
+    class JSONDeserializer : public Deserializer
+    {
+        RTTI_ENABLE_DERIVED_FROM(Deserializer)
     public:
-        virtual Object*
-        readObject(std::istream& istream, Core& core, Object* parent = nullptr) const override;
-
+        Object* readObject(std::istream& istream, Core& core, Object* parent = nullptr) const override;
     };
 
 }
+
+RTTI_DECLARE(nap::JSONSerializer)
+RTTI_DECLARE(nap::JSONDeserializer)

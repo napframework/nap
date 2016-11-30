@@ -131,6 +131,16 @@ class Core(QObject):
         self.__types = info['types']
         self.moduleInfoChanged.emit(info)
 
+    def onPlugConnected(self, jsonDict):
+        srcPlug = self.findObject(jsonDict['srcPtr'])
+        assert isinstance(srcPlug, OutputPlugBase)
+        dstPlug = self.findObject(jsonDict['dstPtr'])
+        assert isinstance(dstPlug, InputPlugBase)
+
+        dstPlug.connected.emit(srcPlug)
+
+
+
     def types(self):
         return self.__types
 
@@ -203,7 +213,7 @@ class Core(QObject):
     def removeObjectCallbacks(self, obj):
         self.__rpc.removeObjectCallbacks(self.rpc().identity, obj.ptr())
 
-    def getModuleInfo(self):
+    def loadModuleInfo(self):
         self.__rpc.getModuleInfo()
         self.loadObjectTree()
 
@@ -215,6 +225,12 @@ class Core(QObject):
 
     def pasteObjectTree(self, parentObj, jsonString):
         self.__rpc.pasteObjectTree(parentObj.ptr(), jsonString)
+
+    def connectPlugs(self, srcPlug, dstPlug):
+        assert isinstance(srcPlug, OutputPlugBase)
+        assert isinstance(dstPlug, InputPlugBase)
+        self.__rpc.connectPlugs(srcPlug.ptr(), dstPlug.ptr())
+
 
     def __metaType(self, cppTypename, clazz=None):
         if not clazz:
@@ -249,17 +265,21 @@ class Core(QObject):
         else:
             clazz = self.findCorrespondingType(dic[_J_TYPE])
 
-        print(inspect.getmro(clazz))
         return clazz(self, dic)
 
 
+###############################################################################################
+# The classes below wrap nap:: classes
+###############################################################################################
+
 class Object(QObject):
+    NAP_TYPE = 'nap::Object'
+
     class Flags(object):
         Visible = 1 << 0
         Editable = 1 << 1
         Removable = 1 << 2
 
-    NAP_TYPE = 'nap::Object'
 
     nameChanged = pyqtSignal(str)
     childAdded = pyqtSignal(object)
@@ -460,12 +480,22 @@ class Operator(AttributeObject):
         super(Operator, self).__init__(*args)
 
     def inputPlugs(self):
+        """
+        @rtype: collections.Iterable[nap.InputPlugBase]
+        """
         for child in self.children(InputPlugBase):
             yield child
 
     def outputPlugs(self):
+        """
+        @rtype: collections.Iterable[nap.OutputPlugBase]
+        """
         for child in self.children(OutputPlugBase):
             yield child
+
+    def connections(self):
+        for outPlug in self.outputPlugs():
+            pass
 
 
 class Patch(AttributeObject):
@@ -480,29 +510,29 @@ class Plug(Object):
 
     def __init__(self, *args):
         super(Plug, self).__init__(*args)
+        self.__dataType = self._dic['dataType']
+
+    def dataType(self):
+        return self.__dataType
 
 
 class InputPlugBase(Plug):
     NAP_TYPE = 'nap::InputPlugBase'
 
+    connected = pyqtSignal(object)
+
     def __init__(self, *args):
         super(InputPlugBase, self).__init__(*args)
+
 
 
 class OutputPlugBase(Plug):
     NAP_TYPE = 'nap::OutputPlugBase'
 
+    disconnected = pyqtSignal(object)
+
     def __init__(self, *args):
         super(OutputPlugBase, self).__init__(*args)
 
-
-def run():
-    root = Object.root()
-    root.setName('root')
-
-    for c in root.children():
-        print(c)
-
-
-if __name__ == '__main__':
-    run()
+    def connectTo(self, dstPlug):
+        self.core().connectPlugs(self, dstPlug)
