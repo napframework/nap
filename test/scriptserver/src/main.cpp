@@ -1,4 +1,5 @@
 #include <nap.h>
+#include <nap/signalslot.h>
 #include <stdlib.h>
 #include <thread>
 //#include <unistd.h>
@@ -19,6 +20,7 @@ void runScriptServerComponent()
 	Entity& firstChild = root.addEntity("FirstChild");
 	Entity& secondChild = root.addEntity("SecondChild");
     Entity& secondChildChild = secondChild.addEntity("SecondChildChild");
+    root.addComponent<PatchComponent>();
 
 	std::string serverTypename = "nap::JSONRPCServerComponent";
 	RTTI::TypeInfo serverCompType = RTTI::TypeInfo::getByName(serverTypename);
@@ -33,11 +35,12 @@ void runScriptServerComponent()
 
     std::mutex mutex;
 
+
 	while (true) {
-		std::string newName = "Root_" + std::to_string(rand() % 100);
-//		Logger::debug("Changing name of root to %s", newName.c_str());
-        std::lock_guard<std::mutex> lock(mutex);
-        root.setName(newName);
+//		std::string newName = "Root_" + std::to_string(rand() % 100);
+////		Logger::debug("Changing name of root to %s", newName.c_str());
+//        std::lock_guard<std::mutex> lock(mutex);
+//        root.setName(newName);
 		std::this_thread::sleep_for(std::chrono::seconds(4));
 	}
 }

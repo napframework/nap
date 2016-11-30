@@ -1,7 +1,10 @@
 #include "testcore.h"
+#include "../diff_match_patch.h"
 #include "../testmanager.h"
 
+#include <jsonserializer.h>
 #include <nap.h>
+#include <nap/coreoperators.h>
 
 using namespace nap;
 
@@ -73,31 +76,70 @@ std::shared_ptr<Core> createObjectTree()
 	auto& aAttr = aComp.addAttribute("attrPI", RTTI_OF(Attribute<float>));
 	((Attribute<float>&)aAttr).setValue(3.14159265359f);
 	auto& b = a.addEntity("B");
-	auto& comp = b.addComponent<PatchComponent>();
-	auto& myAt = comp.addAttribute("attrGoldenRatio", RTTI_OF(Attribute<float>));
+	auto& patch2 = b.addComponent<PatchComponent>();
+	auto& myAt = patch2.addAttribute("attrGoldenRatio", RTTI_OF(Attribute<float>));
 	((Attribute<float>&)myAt).setValue(1.61803398875f);
+
+
+	auto& opMult = patch2.addChild<MultFloatOperator>("Mult");
+	auto& opAdd = patch2.addChild<AddFloatOperator>("Add");
+
+	opMult.mFactorA.connect(opAdd.sum);
 
 	return core;
 }
 
-bool testXMLSerializer()
+
+std::string diffString(const std::string& str1, const std::string& str2)
 {
-    // Create object tree and serialize
-    auto srcCore = createObjectTree();
-    std::string xmlString1 = XMLSerializer().toString(srcCore->getRoot(), false);
+	diff_match_patch<std::string> dmp;
+	diff_match_patch<std::string>::Diffs diff = dmp.diff_main(str1, str2);
+	dmp.diff_cleanupSemantic(diff);
+	std::ostringstream stream;
+	for (diff_match_patch<std::string>::Diff d : diff) {
+		if (d.operation == diff_match_patch<std::string>::Operation::EQUAL)
+			continue;
+		if (d.operation == diff_match_patch<std::string>::Operation::DELETE)
+			stream << "MISSING:" << std::endl;
+		if (d.operation == diff_match_patch<std::string>::Operation::INSERT)
+			stream << "ADDED:" << std::endl;
+		stream << d.text << std::endl;
+	}
+	return stream.str();
+}
+
+bool testSerializer(const Serializer& ser)
+{
+	// Create object tree and serialize
+	auto srcCore = createObjectTree();
+	std::string xmlString1 = ser.toString(srcCore->getRoot(), false);
+    std::cout << xmlString1 << std::endl;
 
 	// Deserialize
-    Core dstCore;
-    XMLDeserializer().fromString(xmlString1, dstCore);
+	Core dstCore;
+	ser.fromString(xmlString1, dstCore);
 
-    // Serialize again
-    std::string xmlString2 = XMLSerializer().toString(dstCore.getRoot(), false);
+	// Serialize again
+	std::string xmlString2 = ser.toString(dstCore.getRoot(), false);
 
-    TEST_ASSERT(xmlString1 == xmlString2,
-                "Second serialization gave different result:\nString1:\n" + xmlString1 +
-                    "\nString2:\n" + xmlString2);
+	TEST_ASSERT(xmlString1 == xmlString2,
+				"Second serialization gave different result:\n" + diffString(xmlString1, xmlString2));
 
 	return true;
+}
+
+
+bool testXMLSerializer()
+{
+	XMLSerializer ser;
+	return testSerializer(ser);
+}
+
+
+bool testJSONSerializer()
+{
+	JSONSerializer ser;
+	return testSerializer(ser);
 }
 
 bool testObjectPath()
@@ -128,5 +170,12 @@ bool testObjectPath()
 		Object* resolvedNode = path.resolve(core.getRoot());
 		Logger::debug("Resolved: %s", path.toString().c_str());
 	}
+	return true;
+}
+
+bool testFileUtils()
+{
+	TEST_ASSERT(getFileExtension("my.dir/myfile.tar.gz") == "gz", "Extension didn't match");
+
 	return true;
 }

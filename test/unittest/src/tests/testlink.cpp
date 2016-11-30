@@ -1,7 +1,7 @@
 #include "testlink.h"
 
 #include <nap.h>
-#include "../testmanager.h"
+#include <testmanager.h>
 
 using namespace nap;
 using namespace std;

@@ -4,7 +4,7 @@ from appcontext import AppContext
 from corewidget import ConnectionWidget
 from logpanel import LogPanel
 from model import *
-from napclient import *
+import nap
 from outline import OutlineWidget
 from patchpanel import PatchEditor
 
@@ -92,7 +92,7 @@ class MainWindow(QMainWindow):
 
     def __onRootChanged(self):
         """
-        @type obj: napclient.Object
+        @type obj: nap.Object
         """
         self.outline.setRoot(self.ctx.core().root())
         self.__restoreEditors()
@@ -106,14 +106,14 @@ class MainWindow(QMainWindow):
     def __setupUi(self):
         self.outline = OutlineWidget(self.ctx, 'outline')
         self.outline.setPropagateSelection(True)
-        self.outline.setFilterTypes([napclient.Entity])
+        self.outline.setFilterTypes([nap.Entity])
         self.addDock(self.outline, Qt.LeftDockWidgetArea, 'Outline')
 
         self.connector = ConnectionWidget(self.ctx)
         self.addDock(self.connector, Qt.TopDockWidgetArea, 'Core')
 
         self.inspector = OutlineWidget(self.ctx, 'inspector')
-        self.inspector.setFilterTypes([napclient.Component, napclient.Attribute])
+        self.inspector.setFilterTypes([nap.Component, nap.Attribute])
         self.inspector.setRootVisible(False)
         self.addDock(self.inspector, Qt.RightDockWidgetArea, 'Attributes')
 

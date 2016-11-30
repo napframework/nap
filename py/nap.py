@@ -1,3 +1,4 @@
+import inspect
 import json
 
 from PyQt5.QtCore import *
@@ -14,7 +15,22 @@ _J_VALUE = 'value'
 _J_ATTRIBUTE_TYPE = 'nap::AttributeBase'
 _J_ENTITY_TYPE = 'nap::Entity'
 _J_PTR = 'ptr'
+_J_FLAGS = 'flags'
 _J_EDITABLE = 'editable'
+
+
+def _allSubClasses(cls):
+    all_subclasses = []
+
+    for subclass in cls.__subclasses__():
+        all_subclasses.append(subclass)
+        all_subclasses.extend(_allSubClasses(subclass))
+
+    return reversed(all_subclasses)
+
+
+def _stripCPPNamespace(name):
+    return name[name.rfind(':') + 1:]
 
 
 def toPythonValue(value, valueType):
@@ -53,6 +69,8 @@ class Core(QObject):
         self.__operatorTypes = None
         self.__root = None
         self.__objects = {}
+        self.__types = []
+        self.__metatypes = {}
 
     def resolvePath(self, path):
         return self.root().resolvePath(path)
@@ -97,7 +115,7 @@ class Core(QObject):
 
     def onObjectAdded(self, jsonDict):
         parent = self.findObject(jsonDict[_J_PTR])
-        child = self.toObjectTree(json.loads(jsonDict['child']))
+        child = self.newObject(json.loads(jsonDict['child']))
         parent.onChildAdded(child)
 
     def onObjectRemoved(self, jsonDict):
@@ -113,58 +131,39 @@ class Core(QObject):
         self.__types = info['types']
         self.moduleInfoChanged.emit(info)
 
+    def onPlugConnected(self, jsonDict):
+        srcPlug = self.findObject(jsonDict['srcPtr'])
+        assert isinstance(srcPlug, OutputPlugBase)
+        dstPlug = self.findObject(jsonDict['dstPtr'])
+        assert isinstance(dstPlug, InputPlugBase)
+
+        dstPlug.connected.emit(srcPlug)
+
+
+
+    def types(self):
+        return self.__types
+
+    def baseTypes(self, typename):
+        for t in self.__types:
+            if t['name'] == typename:
+                return t['baseTypes']
+
     def isSubClass(self, typename, baseTypename):
-        for type in self.__types:
-            if type == typename:
-                if baseTypename in self.__types[type]:
+        for t in self.__types:
+            if t == typename:
+                if baseTypename in self.__types[t]:
                     return True
                 return False
         return False
 
     def onGetObjectTree(self, jsonDict):
-        self.__root = self.toObjectTree(jsonDict)
+        # self.__root = self.toObjectTree(jsonDict)
+        self.__root = self.newObject(jsonDict)
         self.rootChanged.emit()
 
     def onCopyObjectTree(self, jsonDict):
         QApplication.clipboard().setText(json.dumps(jsonDict, indent=4))
-
-    def toObjectTree(self, jsonDict):
-        """ Recurse into json provided dictionary and construct NAP Object tree """
-        stack = [(jsonDict, None)]
-        root = None
-        while stack:
-            node, parent = stack.pop()
-
-            ptr = int(node[_J_PTR])
-            if _J_TYPE in node:
-                # Regular Object
-                obj = self.toObject(parent, node[_J_NAME], ptr, node[_J_TYPE])
-            else:
-                # Attribute
-                obj = self.toObject(parent, node[_J_NAME], ptr, _J_ATTRIBUTE_TYPE)
-                obj._valueType = node[_J_VALUE_TYPE]
-                if _J_VALUE in node:
-                    obj._value = toPythonValue(node[_J_VALUE], obj.valueType())
-
-            obj._editable = node[_J_EDITABLE]
-
-            if parent is None:
-                root = obj
-            else:
-                parent._children.append(obj)
-
-            # Fetch children
-            children = []
-            if _J_CHILDREN in node.keys():
-                children += node[_J_CHILDREN]
-            if _J_ATTRIBUTES in node.keys():
-                children += node[_J_ATTRIBUTES]
-
-            # Recurse children
-            for child in children:
-                stack.append((child, obj))
-
-        return root
 
     def rpc(self):
         return self.__rpc
@@ -214,70 +213,118 @@ class Core(QObject):
     def removeObjectCallbacks(self, obj):
         self.__rpc.removeObjectCallbacks(self.rpc().identity, obj.ptr())
 
-    def getModuleInfo(self):
+    def loadModuleInfo(self):
         self.__rpc.getModuleInfo()
-        self.objectTree()
+        self.loadObjectTree()
 
-    def objectTree(self):
+    def loadObjectTree(self):
         self.__rpc.getObjectTree()
 
-    def copyObjectTree(self, object):
-        self.__rpc.copyObjectTree(object.ptr())
+    def copyObjectTree(self, obj):
+        self.__rpc.copyObjectTree(obj.ptr())
 
     def pasteObjectTree(self, parentObj, jsonString):
         self.__rpc.pasteObjectTree(parentObj.ptr(), jsonString)
 
-    def toObject(self, parent, name, ptr, typename, value=None):
-        assert (isinstance(ptr, int))
+    def connectPlugs(self, srcPlug, dstPlug):
+        assert isinstance(srcPlug, OutputPlugBase)
+        assert isinstance(dstPlug, InputPlugBase)
+        self.__rpc.connectPlugs(srcPlug.ptr(), dstPlug.ptr())
 
-        if typename == _J_ATTRIBUTE_TYPE:
-            ObjType = Attribute
-        elif typename == _J_ENTITY_TYPE:
-            ObjType = Entity
-        elif typename in self.componentTypes():
-            ObjType = Component
-        elif typename in self.operatorTypes():
-            ObjType = Operator
+
+    def __metaType(self, cppTypename, clazz=None):
+        if not clazz:
+            clazz = Object
+        pythonTypename = _stripCPPNamespace(cppTypename)
+        if not pythonTypename in self.__metatypes:
+            t = type(pythonTypename, (clazz,), dict())
+            print('Created metatype: %s' % t)
+            return t
+
+    def findCorrespondingType(self, typename):
+        subClasses = list(_allSubClasses(Object))
+        baseTypes = self.baseTypes(typename)
+
+        # Find exact python type
+        for clazz in subClasses:
+            if clazz.NAP_TYPE == typename:
+                return clazz
+
+        # Find closest base type and generate metatype
+        for clazz in subClasses:
+            napType = clazz.NAP_TYPE
+            if napType in baseTypes:
+                return self.__metaType(typename, clazz)
+
+        # No corresponding type found
+        return self.__metatype(typename)
+
+    def newObject(self, dic):
+        if _J_VALUE_TYPE in dic:
+            clazz = Attribute
         else:
-            ObjType = AttributeObject
-        return ObjType(self, parent, name, ptr, typename)
+            clazz = self.findCorrespondingType(dic[_J_TYPE])
 
-    def isConnected(self):
-        return True
+        return clazz(self, dic)
 
+
+###############################################################################################
+# The classes below wrap nap:: classes
+###############################################################################################
 
 class Object(QObject):
     NAP_TYPE = 'nap::Object'
+
+    class Flags(object):
+        Visible = 1 << 0
+        Editable = 1 << 1
+        Removable = 1 << 2
+
 
     nameChanged = pyqtSignal(str)
     childAdded = pyqtSignal(object)
     childRemoved = pyqtSignal(object)
 
-    def __init__(self, core, parent, name, ptr, typename=None):
+    def __init__(self, core, dic):
         super(Object, self).__init__()
-        if not parent is None:
-            assert (isinstance(parent, Object))
-        self.__parent = parent
+        self._dic = dic
+        self.__parent = None
         self.__core = core
-        self._editable = True
-        assert (isinstance(ptr, int))
-        self.__core.setObject(ptr, self)
-        self.__ptr = ptr
-        self.__name = name
-        self.__typename = typename
+        self.__flags = dic[_J_FLAGS]
+        self.__ptr = dic[_J_PTR]
+        self.__core.setObject(self.__ptr, self)
+        self.__name = dic[_J_NAME]
+        if _J_TYPE in dic:
+            self.__typename = dic[_J_TYPE]
+        else:
+            self.__typename = dic[_J_VALUE_TYPE]
         self.__rpc = core.rpc()
         self.core().addObjectCallbacks(self)
-        self._children = []
+
+        self.__children = []
+        if _J_CHILDREN in dic:
+            for childDic in dic[_J_CHILDREN]:
+                child = core.newObject(childDic)
+                child.__parent = self
+                self.__children.append(child)
+        if _J_ATTRIBUTES in dic:
+            for childDic in dic[_J_ATTRIBUTES]:
+                child = core.newObject(childDic)
+                child.__parent = self
+                self.__children.append(child)
 
     def __del__(self):
         self.core().removeObjectCallbacks(self)
+
+    def checkFlag(self, flag):
+        return self.__flags & flag
 
     def isEditable(self):
         if self.parent():
             if not self.parent().isEditable():
                 return False
-            return self._editable
-        return self._editable
+            return self.checkFlag(Object.Flags.Editable)
+        return self.checkFlag(Object.Flags.Editable)
 
     def path(self):
         if not self.parent():
@@ -315,12 +362,12 @@ class Object(QObject):
         return self.__core
 
     def child(self, name):
-        for c in self._children:
+        for c in self.__children:
             if c.name() == name:
                 return c
 
     def childOftype(self, typename):
-        for c in self._children:
+        for c in self.__children:
             if c.typename() == typename:
                 return c
 
@@ -330,12 +377,12 @@ class Object(QObject):
 
     def onChildAdded(self, child):
         child.__parent = self
-        self._children.append(child)
+        self.__children.append(child)
         self.childAdded.emit(child)
 
     def onChildRemoved(self, child):
         self.childRemoved.emit(child)
-        self._children.remove(child)
+        self.__children.remove(child)
 
     def setName(self, name):
         self.__rpc.setName(self.__ptr, name)
@@ -343,9 +390,6 @@ class Object(QObject):
     def name(self):
         if self.__name:
             return self.__name
-
-    def isAttribute(self):
-        return not 'type' in self._dict
 
     def typename(self):
         if self.__typename:
@@ -364,10 +408,10 @@ class Object(QObject):
 
     def children(self, objType=None):
         if not objType:
-            return self._children
+            return self.__children
         res = []
-        for child in self._children:
-            if self.core().isSubClass(child.typename(), objType):
+        for child in self.__children:
+            if isinstance(child, objType):
                 res.append(child)
         return res
 
@@ -409,7 +453,7 @@ class Attribute(Object):
 
     def __init__(self, *args):
         super(Attribute, self).__init__(*args)
-        self._value = None
+        self._value = self._dic[_J_VALUE]
         self._valueType = None
 
     def setValue(self, value):
@@ -436,12 +480,22 @@ class Operator(AttributeObject):
         super(Operator, self).__init__(*args)
 
     def inputPlugs(self):
-        for child in self.children('nap::InputPlugBase'):
+        """
+        @rtype: collections.Iterable[nap.InputPlugBase]
+        """
+        for child in self.children(InputPlugBase):
             yield child
 
     def outputPlugs(self):
-        for child in self.children('nap::OutputPlugBase'):
+        """
+        @rtype: collections.Iterable[nap.OutputPlugBase]
+        """
+        for child in self.children(OutputPlugBase):
             yield child
+
+    def connections(self):
+        for outPlug in self.outputPlugs():
+            pass
 
 
 class Patch(AttributeObject):
@@ -451,13 +505,34 @@ class Patch(AttributeObject):
         super(Patch, self).__init__(*args)
 
 
-def run():
-    root = Object.root()
-    root.setName('root')
+class Plug(Object):
+    NAP_TYPE = 'nap::Plug'
 
-    for c in root.children():
-        print(c)
+    def __init__(self, *args):
+        super(Plug, self).__init__(*args)
+        self.__dataType = self._dic['dataType']
+
+    def dataType(self):
+        return self.__dataType
 
 
-if __name__ == '__main__':
-    run()
+class InputPlugBase(Plug):
+    NAP_TYPE = 'nap::InputPlugBase'
+
+    connected = pyqtSignal(object)
+
+    def __init__(self, *args):
+        super(InputPlugBase, self).__init__(*args)
+
+
+
+class OutputPlugBase(Plug):
+    NAP_TYPE = 'nap::OutputPlugBase'
+
+    disconnected = pyqtSignal(object)
+
+    def __init__(self, *args):
+        super(OutputPlugBase, self).__init__(*args)
+
+    def connectTo(self, dstPlug):
+        self.core().connectPlugs(self, dstPlug)

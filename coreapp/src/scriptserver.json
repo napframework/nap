@@ -1,0 +1,26 @@
+{
+  "name": "root",
+  "flags": 7,
+  "type": "nap::Entity",
+  "children": [
+    {
+      "name": "nap__JSONRPCServerComponent",
+      "flags": 5,
+      "type": "nap::JSONRPCServerComponent",
+      "attributes": [
+        {
+          "value": "8888",
+          "vType": "int",
+          "name": "rpcPort",
+          "flags": true
+        },
+        {
+          "value": "true",
+          "vType": "bool",
+          "name": "running",
+          "flags": true
+        }
+      ]
+    }
+  ]
+}

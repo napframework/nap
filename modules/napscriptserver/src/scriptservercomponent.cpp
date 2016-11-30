@@ -18,6 +18,12 @@ namespace nap
             auto& attrib = *static_cast<AttributeBase*>(&obj);
             attrib.valueChanged.connect(onAttributeValueChangedSlot);
         }
+
+        if (obj.getTypeInfo().isKindOf<InputPlugBase>()) {
+            auto& plug = *static_cast<InputPlugBase*>(&obj);
+            plug.connected.connect(onPlugConnectedSlot);
+            plug.disconnected.connect(onPlugDisconnectedSlot);
+        }
 	}
 
     ScriptServerComponent::RPCObjectCallback::~RPCObjectCallback() {
@@ -51,6 +57,16 @@ namespace nap
 
     void ScriptServerComponent::RPCObjectCallback::onAttributeValueChanged(AttributeBase& attrib) {
         mServer.handleAttributeValueChanged(mClient, attrib);
+    }
+
+
+    void ScriptServerComponent::RPCObjectCallback::onPlugConnected(Plug::Connection connection) {
+        mServer.handlePlugConnected(mClient, connection);
+    }
+
+
+    void ScriptServerComponent::RPCObjectCallback::onPlugDisconnected(Plug::Connection connection) {
+        mServer.handlePlugDisconnected(mClient, connection);
     }
 
 

@@ -10,3 +10,4 @@
 #include <nap/objectpath.h>
 #include <nap/link.h>
 #include <nap/event.h>
+#include <nap/plug.h>

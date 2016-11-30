@@ -4,7 +4,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
-import napclient
+import nap
 
 
 def expandChildren(view, index, expanded=True):
@@ -212,7 +212,7 @@ class LeafFilterProxyModel(QSortFilterProxyModel):
 
     def __init__(self):
         super(LeafFilterProxyModel, self).__init__()
-        self.__types = [napclient.Entity]
+        self.__types = [nap.Entity]
         self.__itemFilter = None
 
     def setItemFilter(self, filter):

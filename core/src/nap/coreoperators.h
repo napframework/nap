@@ -20,8 +20,8 @@ namespace nap {
     private:
         void addPlug() {
             auto plug = new nap::InputPullPlug<float>(&mParent, mBaseName);
-            plug->connectedSignal.connect([&](const nap::OutputPlugBase &plug) { addPlug(); });
-            plug->disconnectedSignal.connect([&](const nap::OutputPlugBase &plug) { condensePlugs(); });
+            plug->connected.connect([&](Plug::Connection connection) { addPlug(); });
+            plug->disconnected.connect([&](Plug::Connection connection) { condensePlugs(); });
             mPlugs.push_back(plug);
         }
 
@@ -43,46 +43,56 @@ namespace nap {
     };
 
 
-    class AddFloatOperator : nap::Operator {
+    class AddFloatOperator : public nap::Operator {
     RTTI_ENABLE_DERIVED_FROM(nap::Operator)
     public:
         AddFloatOperator() : nap::Operator() {
             // Add initial term
         }
 
+        InputPullPlug<float> mTermA = {this, "termA"};
+        InputPullPlug<float> mTermB = {this, "termb"};
+
+//        MultiInputPlug<float> mTerms = {*this, "term"};
+        nap::OutputPullPlug<float> sum = {this, "Sum", [&](float &sum) { calcSum(sum); }};
+
     private:
         // Calculate sum of all the inlets
         void calcSum(float &outSum) {
             float n;
-            outSum = 0;
-            for (const auto &term : mTerms.plugs()) {
-                term->pull(n);
-                outSum += n;
-            }
+            float a;
+            float b;
+            mTermA.pull(a);
+            mTermB.pull(b);
+
+            outSum = a + b;
         }
 
-        MultiInputPlug<float> mTerms = {*this, "term"};
-        nap::OutputPullPlug<float> sum = {this, "Sum", [&](float &sum) { calcSum(sum); }};
     };
 
 
-    class MultFloatOperator : nap::Operator {
+    class MultFloatOperator : public nap::Operator {
     RTTI_ENABLE_DERIVED_FROM(nap::Operator)
     public:
         MultFloatOperator() : nap::Operator() { }
 
+//        MultiInputPlug<float> mFactors = {*this, "factor"};
+        nap::InputPullPlug<float> mFactorA = {this, "factorA"};
+        nap::InputPullPlug<float> mFactorB = {this, "factorB"};
+        nap::OutputPullPlug<float> product = {this, "product", [&](float &product) { calcProduct(product); }};
     private:
         void calcProduct(float &outProduct) {
             float n;
             outProduct = 0;
-            for (const auto &factor : mFactors.plugs()) {
-                factor->pull(n);
-                outProduct *= n;
-            }
+
+            float a;
+            mFactorA.pull(a);
+            float b;
+            mFactorB.pull(b);
+
+            outProduct = a * b;
         }
 
-        MultiInputPlug<float> mFactors = {*this, "factor"};
-        nap::OutputPullPlug<float> product = {this, "product", [&](float &product) { calcProduct(product); }};
     };
 
 

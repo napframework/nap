@@ -1,10 +1,25 @@
+#include <fstream>
 #include "serializer.h"
 
+RTTI_DEFINE(nap::Serializer)
 
 using namespace std;
 
 namespace nap
 {
+
+    bool sanitizeJSONString(const std::string& str)
+    {
+        std::string allowed = "abcdefghijklmnopqrstuvwxyz0123456789.,{}[]:_/\"\n ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        for(unsigned long int i = 0; i < str.length(); ++i) {
+            char c = str[i];
+            if (allowed.find(c) == std::string::npos) {
+                Logger::warn("Illegal character '%c' found while deserializing at %u", c, i);
+                return false;
+            }
+        }
+        return true;
+    }
 
 
 	std::string Serializer::toString(Object& object, bool writePointers) const
@@ -13,6 +28,8 @@ namespace nap
         writeObject(ss, object, writePointers);
 		return ss.str();
 	}
+
+
     std::string Serializer::toString(ModuleManager& moduleManager) const {
         std::ostringstream ss;
         writeModuleInfo(ss, moduleManager);
@@ -20,19 +37,21 @@ namespace nap
     }
 
 
-    Object* Deserializer::fromString(const std::string& str, Core& core, Object* parent) const
+    Object* Serializer::fromString(const std::string& str, Core& core, Object* parent) const
 	{
-
-        std::string allowed = "abcdefghijklmnopqrstuvwxyz0123456789.,{}[]:\"";
-        for(unsigned long int i = 0; i < str.length(); ++i) {
-            if (allowed.find(str[i]) == std::string::npos) {
-                Logger::warn("Illegal characters found while deserializing.");
-                Logger::debug(str);
-                return nullptr;
-            }
-        }
-
+//        if (!sanitizeJSONString(str))
+//            return nullptr;
 		std::istringstream ss(str);
 		return readObject(ss, core, parent);
 	}
+
+
+    Object* Serializer::load(const std::string& filename, Core& core, Object* parent) const {
+        if (!fileExists(filename)) {
+            Logger::warn("File does not exist: %s", getAbsolutePath(filename).c_str());
+            return nullptr;
+        }
+        std::ifstream is(filename);
+        return readObject(is, core, parent);
+    }
 }

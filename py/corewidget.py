@@ -1,3 +1,5 @@
+import json
+
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
@@ -61,6 +63,20 @@ class ModuleModel(QStandardItemModel):
         _addTypesItem(globalItem, dic, 'dataTypes')
         _addTypesItem(globalItem, dic, 'componentTypes')
         _addTypesItem(globalItem, dic, 'operatorTypes')
+
+        typeIcon = iconstore.icon('type')
+
+        typeHierarchyItem = QStandardItem(typeIcon, 'baseTypes')
+        types = dic['types']
+        for tp in types:
+            typeItem = QStandardItem(typeIcon, tp['name'])
+            typeHierarchyItem.appendRow(typeItem)
+            parentItem = typeItem
+            for baseType in tp['baseTypes']:
+                baseTypeItem = QStandardItem(typeIcon, baseType)
+                parentItem.appendRow(baseTypeItem)
+                parentItem = baseTypeItem
+        self.appendRow(typeHierarchyItem)
 
 
         self.appendRow(globalItem)

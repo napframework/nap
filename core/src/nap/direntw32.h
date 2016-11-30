@@ -40,7 +40,7 @@
 #   define FILE_ATTRIBUTE_DEVICE 0x40
 #endif
 
-/* File type and permission flags for stat(), general mask */
+/* File type and permission getFlags for stat(), general mask */
 #if !defined(S_IFMT)
 #   define S_IFMT _S_IFMT
 #endif
@@ -156,7 +156,7 @@
 #   define NAME_MAX FILENAME_MAX
 #endif
 
-/* File type flags for d_type */
+/* File type getFlags for d_type */
 #define DT_UNKNOWN 0
 #define DT_REG S_IFREG
 #define DT_DIR S_IFDIR

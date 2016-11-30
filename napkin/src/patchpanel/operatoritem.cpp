@@ -193,10 +193,10 @@ QVariant OperatorItem::itemChange(GraphicsItemChange change, const QVariant& val
 void OperatorItem::onInputPlugAdded(nap::InputPlugBase& plug)
 {
 	// Listen for plug connections
-	plug.connectedSignal.connect([&](nap::OutputPlugBase& outPlug) {
+	plug.connected.connect([&](nap::OutputPlugBase& outPlug) {
 		plugConnected(outPlug, plug);
 	});
-	plug.disconnectedSignal.connect([&](nap::OutputPlugBase& outPlug) {
+	plug.disconnected.connect([&](nap::OutputPlugBase& outPlug) {
 		plugDisconnected(outPlug, plug);
 	});
 

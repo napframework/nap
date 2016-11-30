@@ -3,12 +3,12 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
 import iconstore
-import napclient
+import nap
 
 class AddChildAction(QAction):
     def __init__(self, ctx, parentObj, typename):
         """
-        @type ctx: napclient.Core
+        @type ctx: nap.Core
         """
         super(AddChildAction, self).__init__(iconstore.icon('brick_add'), typename, None)
         self.__parentObj = parentObj
@@ -31,7 +31,7 @@ class AppContext(QObject):
 
     def __init__(self):
         super(AppContext, self).__init__()
-        self.__core = napclient.Core()
+        self.__core = nap.Core()
         self.__selectedObjects = None
         self.__editorTypes = {}
         self.__editors = {}
@@ -43,7 +43,7 @@ class AppContext(QObject):
 
     def core(self):
         """
-        @rtype: napclient.Core
+        @rtype: nap.Core
         """
         return self.__core
 
@@ -62,7 +62,7 @@ class AppContext(QObject):
         self.core().onGetObjectTree()
 
     def connect(self, host):
-        self.__core.getModuleInfo()
+        self.__core.loadModuleInfo()
         # self.__core.objectTree()
 
     def selection(self, types=None):

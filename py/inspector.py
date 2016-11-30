@@ -1,9 +1,9 @@
 from model import *
-import napclient
+import nap
 
 
 def inspectorItemRow(child):
-    if isinstance(child, napclient.Attribute):
+    if isinstance(child, nap.Attribute):
         item = ObjectItem(child)
         return [
             item,
@@ -22,8 +22,6 @@ def inspectorItemRow(child):
     return items
 
 
-
-
 class InspectorModel(QStandardItemModel):
     modelChanged = pyqtSignal()
 
@@ -35,24 +33,23 @@ class InspectorModel(QStandardItemModel):
 
     def setEntity(self, obj):
         self.clear()
-        if not isinstance(obj, napclient.Entity):
+        if not isinstance(obj, nap.Entity):
             return
 
         if not obj:
             return
 
-        assert(isinstance(obj, napclient.Entity))
+        assert (isinstance(obj, nap.Entity))
 
         for attrib in obj.attributes():
             self.appendRow(inspectorAttributeRow(attrib))
 
         for child in obj.children():
-            if isinstance(child, napclient.Component):
+            if isinstance(child, nap.Component):
                 self.appendRow(inspectorComponentRow(child))
 
-
-
         self.modelChanged.emit()
+
 
 class BoolEditorCreator(QItemEditorCreatorBase):
     def __init__(self):
@@ -72,7 +69,6 @@ class InspectorWidget(QWidget):
 
         self.__filter = QLineEdit()
         self.layout().addWidget(self.__filter)
-
 
         self.__treeView = QTreeView()
         self.__treeView.header().setStretchLastSection(False)

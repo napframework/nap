@@ -129,7 +129,24 @@ namespace RTTI
 		return false;
 	}
 
-	std::vector<TypeInfo> TypeInfo::getRawTypes(const TypeInfo &kind)
+    std::vector<TypeInfo> TypeInfo::getBaseTypes() const {
+        std::vector<TypeInfo> baseTypes;
+
+        const TypeInfo::TypeId thisRawId = g_rawTypeList[m_id];
+
+        const int row = RTTI_MAX_INHERIT_TYPES_COUNT * thisRawId;
+        for (int i = 0; i < RTTI_MAX_INHERIT_TYPES_COUNT; ++i) {
+            const TypeInfo::TypeId currId = g_inheritList[row + i];
+            if (currId == 0) // last id, break
+                break;
+            baseTypes.push_back(currId);
+        }
+
+        return baseTypes;
+    }
+
+
+    std::vector<TypeInfo> TypeInfo::getRawTypes(const TypeInfo &kind)
 	{
 		std::vector<TypeInfo> typeInfos;
 		TypeInfoData& data = TypeInfoData::instance();

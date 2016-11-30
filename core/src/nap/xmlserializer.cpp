@@ -5,6 +5,8 @@
 // External includes
 #include <nap/entity.h>
 
+RTTI_DEFINE(nap::XMLSerializer)
+
 using namespace tinyxml2;
 using namespace std;
 
@@ -89,8 +91,12 @@ namespace nap
 		return elm;
 	}
 
+    void XMLSerializer::writeModuleInfo(std::ostream& ostream, ModuleManager& moduleManager) const {
+        assert(false); // TODO: implement
+    }
 
-	Object* XMLDeserializer::fromXML(tinyxml2::XMLElement* xml, Core& core, Object* parentObject) const
+
+    Object* XMLSerializer::fromXML(tinyxml2::XMLElement* xml, Core& core, Object* parentObject) const
 	{
 		Object* obj = nullptr;
 
@@ -121,7 +127,7 @@ namespace nap
 		return obj;
 	}
 
-	Object* XMLDeserializer::readCompoundAttribute(tinyxml2::XMLElement* xml, Core& core, Object* parent) const
+	Object* XMLSerializer::readCompoundAttribute(tinyxml2::XMLElement* xml, Core& core, Object* parent) const
 	{
         std::string name = xml->Attribute(X_NAME);
         CompoundAttribute* compAttr = nullptr;
@@ -142,7 +148,7 @@ namespace nap
 		return compAttr;
 	}
 
-	Object* XMLDeserializer::readAttribute(tinyxml2::XMLElement* xml, Core& core, Object* parentObject) const
+	Object* XMLSerializer::readAttribute(tinyxml2::XMLElement* xml, Core& core, Object* parentObject) const
 	{
 		// Resolve type
 		std::string attributeType = dirtyHack(xml->Attribute(X_VALUE_TYPE));
@@ -203,7 +209,7 @@ namespace nap
 		return attribute;
 	}
 
-	Object* XMLDeserializer::readObject(tinyxml2::XMLElement* xml, Core& core, Object* parent) const
+	Object* XMLSerializer::readObject(tinyxml2::XMLElement* xml, Core& core, Object* parent) const
 	{
 		const char* objectName = xml->Attribute(X_NAME);
 		if (!objectName) {
@@ -243,7 +249,7 @@ namespace nap
 
 
 	// Read the root elements and
-    Object* XMLDeserializer::readObject(std::istream& istream, Core& core, Object* parentObject) const
+    Object* XMLSerializer::readObject(std::istream& istream, Core& core, Object* parentObject) const
 	{
 		std::istreambuf_iterator<char> eos;
 		std::string s(std::istreambuf_iterator<char>(istream), eos);

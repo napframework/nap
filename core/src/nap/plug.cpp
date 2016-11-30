@@ -58,7 +58,7 @@ namespace nap
 		connections.emplace(&plug);
 		plug.connections.emplace(this);
         
-        connectedSignal(plug);
+        connected({plug, *this});
 	}
 
 
@@ -67,7 +67,7 @@ namespace nap
 		connections.erase(&plug);
 		plug.connections.erase(this);
         
-        disconnectedSignal(plug);
+        disconnected({plug, *this});
 	}
 
     

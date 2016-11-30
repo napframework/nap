@@ -128,6 +128,14 @@ namespace nap
 		 */
 		void clearChildren();
 
+
+        /**
+         * @return This object's flags. Mainly used for the editor
+         */
+        int getFlags() const {
+            return mFlags;
+        }
+
 		/**
 		 * Check if a flag has been set on this object
 		 * @param flag The flag to be tested

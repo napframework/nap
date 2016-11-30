@@ -71,6 +71,13 @@ namespace nap
 		// for example for audio or video streaming)
 		enum class Type { PUSH, PULL, TRIGGER, STREAM };
 
+        class Connection {
+        public:
+            Connection(OutputPlugBase& src, InputPlugBase& dst) : srcPlug(src), dstPlug(dst) {}
+            const OutputPlugBase& srcPlug;
+            const InputPlugBase& dstPlug;
+        };
+
 	public:
 		// Constructor
 		Plug(Operator* parent, const std::string& name, Type plugType, const RTTI::TypeInfo dataType);
@@ -160,16 +167,21 @@ namespace nap
         // Disconnects all connections
         void disconnectAll();
 
-		// Checks wether an output plug is allowed to be connected to this input plug. This will only be the case if the plug types match and the data types emitted or received by the plugs are the same. This method is virtual because some plug types might need to extend it.
+		// Checks wether an output plug is allowed to be connected to this input plug.
+        // This will only be the case if the plug types match and the data types emitted
+        // or received by the plugs are the same.
+        // This method is virtual because some plug types might need to extend it.
 		virtual bool canConnectTo(OutputPlugBase& plug);
 
 		std::set<OutputPlugBase*> getConnections() { return connections; }
 
 		// emitted when connected to a plug
-		nap::Signal<OutputPlugBase&> connectedSignal;
+        // TODO: Change this into multiple arguments signal
+		nap::Signal<Plug::Connection> connected;
 
 		// emitted when disconnected from a plug
-		nap::Signal<OutputPlugBase&> disconnectedSignal;
+        // TODO: Change this into multiple arguments signal
+		nap::Signal<Plug::Connection> disconnected;
 
 	protected:
 		// Keeps track of the connected plugs, so it can push or pull and can

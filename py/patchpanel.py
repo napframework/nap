@@ -1,11 +1,10 @@
-
 import math
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
 import iconstore
-import napclient
+import nap
 from appcontext import AppContext
 
 COL_NODE_CONNECTION = QColor(0x70, 0x70, 0x70)
@@ -16,7 +15,7 @@ PATCH_YPOS = '__patch_y_pos__'
 
 
 def _dataTypeColor(typeName):
-    return QColor.yellow()
+    return Qt.yellow
 
 
 def _getObjectEditorPos(obj):
@@ -27,7 +26,7 @@ def _getObjectEditorPos(obj):
 
 def _setObjectEditorPos(obj, pos):
     """
-    @type obj: napclient.AttributeObject
+    @type obj: nap.AttributeObject
     """
     obj.attr(PATCH_XPOS).setValue(pos.x())
     obj.attr(PATCH_XPOS).setValue(pos.y())
@@ -48,7 +47,7 @@ def _filter(items, itemType):
 
 
 def _canConnect(outPlug, inPlug):
-    raise NotImplementedError()
+    return inPlug.dataType() == outPlug.dataType()
 
 
 def calculateWirePath(srcPos, dstPos, p):
@@ -65,7 +64,9 @@ def calculateWirePath(srcPos, dstPos, p):
         p.cubicTo(c1, c2, dstPos)
     else:
         maxDist = 50
+
         dist = _clamp(srcPos.x() - dstPos.x(), -maxDist, maxDist)
+
         ca1 = QPointF(srcPos.x() + dist, srcPos.y())
         c = QPointF((srcPos.x() + srcPos.x()) / 2.0, (dstPos.y() + srcPos.y()) / 2.0)
         ca2 = QPointF(srcPos.x() + dist, (srcPos.y() + c.y()) / 2.0)
@@ -94,6 +95,7 @@ class OperatorItem(QGraphicsObject):
 
     def __init__(self, parent, op):
         super(OperatorItem, self).__init__()
+        assert (isinstance(op, nap.Operator))
         self.__inputPlugs = []
         self.__outputPlugs = []
         self.__operator = op
@@ -198,7 +200,10 @@ class OperatorItem(QGraphicsObject):
         return super(OperatorItem, self).itemChange(change, value)
 
     def __onInputPlugAdded(self, plug):
-        # TODO: Add listeners (see C++ implementation)
+        """
+        @type plug: nap.InputPlugBase
+        """
+        plug.connected.connect(self.__onPlugConnected)
         plugItem = PlugItem(self, plug)
         self.__inputPlugs.append(plugItem)
         self.layout()
@@ -216,10 +221,16 @@ class OperatorItem(QGraphicsObject):
         # TODO: Review
         self.setPos(_getObjectEditorPos(self.__operator))
 
+    def __onPlugConnected(self, outPlug):
+        print("Plug was connected!")
+        raise NotImplementedError()
+
+
 
 class PlugItem(QGraphicsItem):
     def __init__(self, opItem, plug):
         super(PlugItem, self).__init__()
+        self.__plug = plug
         self.__opItem = opItem
         self.__label = QGraphicsTextItem(self)
         self.__pin = PinItem(self)
@@ -239,7 +250,7 @@ class PlugItem(QGraphicsItem):
         return self.__plug
 
     def isInput(self):
-        raise NotImplementedError()
+        return isinstance(self.__plug, nap.InputPlugBase)
 
     def setUsable(self, b):
         self.setVisible(b)
@@ -251,7 +262,7 @@ class PlugItem(QGraphicsItem):
             self.__label.setPos(self.pin().boundingRect().width(), textOffset)
         else:
             self.__label.setPos(0, textOffset)
-            self.setPos(self.__label.boundingRect().width(), 0)
+            self.__pin.setPos(self.__label.boundingRect().width(), 0)
 
         self.__opItem.layout()
 
@@ -263,13 +274,13 @@ class PinItem(QGraphicsItem):
         """
         @type plugItem: PlugItem
         """
-        super(PinItem, self).__init__()
+        super(PinItem, self).__init__(plugItem)
         self.__rect = QRectF(0, 0, 10, 10)
         self.__plugItem = plugItem
         self.__color = Qt.red
 
     def boundingRect(self):
-        return self.childrenBoundingRect()
+        return self.__rect
 
     def attachPos(self):
         if self.__plugItem.isInput():
@@ -285,9 +296,10 @@ class PinItem(QGraphicsItem):
         return self.__color
 
     def paint(self, painter, option, widget=None):
-        option.palette.setColor(QPalette.windowText(),
-                                _dataTypeColor(self.__plugItem.plug().dataType()))
-        QApplication.style().drawPrimitive(QStyle.PE_IndicatorArrowRight, op, painter, widget)
+        painter.drawRect(self.__rect)
+        # option.palette.setColor(QPalette.Window,
+        #                         _dataTypeColor(self.__plugItem.plug().dataType()))
+        # QApplication.style().drawPrimitive(QStyle.PE_IndicatorArrowRight, option, painter, widget)
 
 
 class LayerItem(QGraphicsItem):
@@ -299,6 +311,7 @@ class LayerItem(QGraphicsItem):
 
     def paint(self, painter, option, widget=None):
         pass
+
 
 class WirePreview(QGraphicsPathItem):
     def __init__(self, parent):
@@ -326,14 +339,14 @@ class WirePreview(QGraphicsPathItem):
             self.dstPos = self.dstPin.attachPos()
 
         p = QPainterPath()
-        calculateWirePath(self.srcPin, self.dstPos, p)
+        calculateWirePath(self.srcPos, self.dstPos, p)
         self.setPath(p)
 
         pen = QPen()
         pen.setColor(COL_NODE_CONNECTION)
         pen.setWidth(1)
         pen.setStyle(Qt.DashLine)
-        self.setPen(p)
+        self.setPen(pen)
 
 
 class PatchScene(QGraphicsScene):
@@ -383,7 +396,9 @@ class PatchScene(QGraphicsScene):
             self.__previewWire.dstPos = pinItem.attachPos()
         else:
             self.__previewWire.dstPin = pinItem
-            self.__previewWire.srcPin = pinItem.attachPos()
+            self.__previewWire.srcPos = pinItem.attachPos()
+        self.__previewWire.setVisible(True)
+        self.__isWiring = True
 
     def updateDragConnection(self, pt):
         if self.__wireIsOutput:
@@ -397,19 +412,21 @@ class PatchScene(QGraphicsScene):
             return
         if plugItem:
             if self.__wireIsOutput:
-                srcPlug = self.__previewWire.srcPin.plugItem()
-                dstPlug = plugItem
+                srcPlugItem = self.__previewWire.srcPin.plugItem()
+                dstPlugItem = plugItem
             else:
-                srcPLug = plugItem
-                dstPlug = self.__previewWire.dstPin.plugItem()
+                srcPlugItem = plugItem
+                dstPlugItem = self.__previewWire.dstPin.plugItem()
 
-            if srcPlug != dstPlug:
-                raise NotImplementedError('Connected')
+            if srcPlugItem != dstPlugItem:
+                srcPlug = srcPlugItem.plug()
+                dstPlug = dstPlugItem.plug()
+                srcPlug.connectTo(dstPlug)
+
         self.__previewWire.srcPin = None
         self.__previewWire.dstPin = None
         self.__previewWire.setVisible(False)
         self.__isWiring = False
-
         self.showAllPlugs()
 
     def drawBackground(self, painter, rect):
@@ -498,6 +515,14 @@ class InteractMode(object):
     def __init__(self):
         pass
 
+    def mousePressed(self, view, evt):
+        raise NotImplementedError()
+
+    def mouseMoved(self, view, evt):
+        raise NotImplementedError()
+
+    def mouseReleased(self, view, evt):
+        raise NotImplementedError()
 
 
 class DefaultInteractMode(InteractMode):
@@ -546,7 +571,7 @@ class DefaultInteractMode(InteractMode):
         pin = view.pinAt(evt.pos())
         if pin:
             view.scene().startDragConnection(pin)
-            view.setInteractMode(InteractMode.ConnectMode)
+            view.setInteractMode(ConnectInteractMode)
             return True
         return False
 
@@ -625,19 +650,22 @@ class ConnectInteractMode(InteractMode):
 
     def mousePressed(self, view, evt):
         plug = view.plugAt(evt.pos())
+        print("stopDrag")
         view.scene().stopDragConnection(plug)
         return False
 
     def mouseMoved(self, view, evt):
         pin = view.pinAt(evt.pos())
-
         srcPlug = view.scene().dragConnectionSource()
+        pt = view.mapToScene(evt.pos())
         if pin:
             plug = pin.plugItem()
             if plug and plug.plug() and _canConnect(srcPlug, plug.plug()):
+                pt = plug.pin().attachPos()
                 view.viewport().setCursor(Qt.PointingHandCursor)
             else:
                 view.viewport().unsetCursor()
+        view.scene().updateDragConnection(pt)
 
         self.__oldMousePos = evt.pos()
         return False
@@ -757,6 +785,6 @@ class PatchEditor(QWidget):
         # self.__patchView.setScene(self.__scene)
 
     def setModel(self, patch):
-        if isinstance(patch, napclient.Component):
+        if isinstance(patch, nap.Component):
             patch = patch.childOftype('nap::Patch')
         self.__patchView.setScene(PatchScene(self.ctx, patch))

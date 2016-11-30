@@ -85,7 +85,7 @@ namespace nap
 		void setIsDirty(const Object& inObject);
 		void sortBasedOnDistance(const ofVec3f& inPos, DisplayList& inItems);
 		
-		// Dirty flags for optimized updating of transforms and display lists
+		// Dirty getFlags for optimized updating of transforms and display lists
 		bool isDirtyDrawing = true;
 		bool isDirtyXform = true;
 
