@@ -15,11 +15,13 @@ else()
     if(MSVC)
         find_library(ZMQ_LIBRARIES NAMES libzmq.lib HINTS ${ZMQ_DIR}/bin/Win32/Release/v140/dynamic)
     else()
-        find_library(ZMQ_LIBRARIES NAMES libzmq.dll HINTS ${ZMQ_DIR}/bin/${CMAKE_BUILD_TYPE} ${ZMQ_DIR}/bin/Debug)
+        find_library(ZMQ_LIBRARIES NAMES libzmq.dll HINTS
+                ${ZMQ_DIR}/bin/${CMAKE_BUILD_TYPE}
+                ${ZMQ_DIR}/bin/Debug
+                ${ZMQ_DIR}/cmake-build-debug/lib
+                )
     endif()
 endif()
-
-
 
 set(ZMQ_INCLUDE_DIR ${ZMQ_DIR}/include)
 
