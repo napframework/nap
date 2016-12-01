@@ -7,11 +7,18 @@ namespace nap {
 
 	void bindTextureShader(AttributeBase& inAttr, ofShader& shader, int& texLocation) {
 		auto attr = static_cast<Attribute<ofTexture*>*>(&inAttr);
-		if (!attr->getValue() || !attr->getValue()->isAllocated()) {
-			Logger::fatal("Failed to bind texture on %s", ObjectPath(inAttr).toString().c_str());
+		ofTexture* tex = attr->getValue();
+		if (!tex) {
+			std::string objPath = ObjectPath(inAttr).toString();
+			attr->getValue();
+			//Logger::fatal("Texture not set: %s", objPath.c_str());
 			return;
 		}
-		shader.setUniformTexture(attr->getName(), *attr->getValue(), texLocation++);
+		if (!tex->isAllocated()) {
+			Logger::fatal("Texture not allocated: %s", ObjectPath(inAttr).toString().c_str());
+			return;
+		}
+		shader.setUniformTexture(attr->getName(), *tex, texLocation++);
 	}
 
 	void bindFloatShader(AttributeBase& inAttr, ofShader& shader, int& texLocation) {

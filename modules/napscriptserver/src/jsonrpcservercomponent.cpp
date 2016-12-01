@@ -79,16 +79,16 @@ namespace nap
 			if (!obj)
 				return;
 			Logger::info(jsonData);
-			JSONDeserializer().fromString(jsonData, getCore(), obj);
+			JSONSerializer().fromString(jsonData, getCore(), obj);
 		});
 
-		disp.AddMethod("getRoot", [&]() -> ObjPtr { return toPtr(getRootObject()); });
+		disp.AddMethod("getRoot", [&]() -> ObjPtr { return Serializer::toPtr(getRootObject()); });
 
 		disp.AddMethod("getParent", [&](ObjPtr objPtr) -> ObjPtr {
 			Object* obj = fromPtr<Object>(objPtr);
 			if (!obj)
 				return 0;
-			return toPtr(*obj->getParentObject());
+			return Serializer::toPtr(*obj->getParentObject());
 		});
 
 		disp.AddMethod("getAllChildren", [&](ObjPtr ptr) -> std::vector<ObjPtr> {
@@ -99,7 +99,7 @@ namespace nap
 				return children;
 
 			for (auto child : parent->getChildren())
-				children.push_back(toPtr(child));
+				children.push_back(Serializer::toPtr(child));
 			return children;
 		});
 
@@ -180,13 +180,13 @@ namespace nap
 			AttributeObject* obj = fromPtr<AttributeObject>(ptr);
 			if (!obj)
 				return;
-			RTTI::TypeInfo valueType = RTTI::TypeInfo::getByName(dirtyHack(dataType));
+			RTTI::TypeInfo valueType = RTTI::TypeInfo::getByName(Serializer::dirtyHack(dataType));
 			if (!valueType.isValid())
 				return;
 			AttributeBase* attrib = obj->getAttribute(attrName);
 			if (!attrib) {
 				attrib = &obj->addAttribute(attrName, valueType);
-				addCallbacks(ident, toPtr(attrib));
+				addCallbacks(ident, Serializer::toPtr(attrib));
 			}
 			if (!attrib->getValueType().isKindOf(valueType)) {
 				return;
@@ -230,7 +230,7 @@ namespace nap
 			auto parentObj = fromPtr<Object>(parentPtr);
 			if (!parentObj)
 				return;
-			JSONDeserializer ser;
+			JSONSerializer ser;
 			std::ifstream is(filename);
 			ser.readObject(is, getCore(), parentObj);
 		});
@@ -302,7 +302,7 @@ namespace nap
 		w.StartObject();
 		{
 			w.String("ptr");
-			w.Int64(toPtr(obj));
+			w.Int64(Serializer::toPtr(obj));
 			w.String("name");
 			w.String(obj.getName().c_str());
 		}
@@ -325,7 +325,7 @@ namespace nap
 		w.StartObject();
 		{
 			w.String("ptr");
-			w.Int64(toPtr(attrib));
+			w.Int64(Serializer::toPtr(attrib));
 			w.String("name");
 			w.String(attrib.getName().c_str());
 			w.String("value");
@@ -347,7 +347,7 @@ namespace nap
 		w.StartObject();
 		{
 			w.String("ptr");
-			w.Int64(toPtr(obj));
+			w.Int64(Serializer::toPtr(obj));
 			w.String("child");
 			w.String(JSONSerializer().toString(child, true).c_str());
 		}
@@ -364,7 +364,7 @@ namespace nap
 		w.StartObject();
 		{
 			w.String("ptr");
-			w.Int64(toPtr(child));
+			w.Int64(Serializer::toPtr(child));
 		}
 		w.EndObject();
 		client.enqueueEvent(callbackJSON("objectRemoved", buf.GetString()));
@@ -379,9 +379,9 @@ namespace nap
 		w.StartObject();
 		{
 			w.String("srcPtr");
-			w.Int64(toPtr(connection.srcPlug));
+			w.Int64(Serializer::toPtr(connection.srcPlug));
 			w.String("dstPtr");
-			w.Int64(toPtr(connection.dstPlug));
+			w.Int64(Serializer::toPtr(connection.dstPlug));
 		}
 		w.EndObject();
 		client.enqueueEvent(callbackJSON("plugConnected", buf.GetString()));
@@ -396,9 +396,9 @@ namespace nap
 		w.StartObject();
 		{
 			w.String("srcPtr");
-			w.Int64(toPtr(connection.srcPlug));
+			w.Int64(Serializer::toPtr(connection.srcPlug));
 			w.String("dstPtr");
-			w.Int64(toPtr(connection.dstPlug));
+			w.Int64(Serializer::toPtr(connection.dstPlug));
 		}
 		w.EndObject();
 		client.enqueueEvent(callbackJSON("plugDisconnected", buf.GetString()));

@@ -108,8 +108,7 @@ namespace nap
 					return;
 				}
 
-				Logger::info("Loading file: %s", filename.c_str());
-
+				Logger::debug("Loading: %s", filename.c_str());
 				// Load in memory
 				std::shared_ptr<ofImage> image = std::make_unique<ofImage>();
 

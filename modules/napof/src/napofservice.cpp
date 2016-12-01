@@ -332,7 +332,7 @@ namespace nap
 	void OFService::drawComponents(DisplayList& inComponentsToDraw)
 	{
 		// Draw every single one of the drawable components
-		for (auto& component : inComponentsToDraw)
+		for (OFRenderableComponent* component : inComponentsToDraw)
 		{
 			// Only draw when enabled
 			if (!component->mEnableDrawing.getValue())

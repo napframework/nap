@@ -59,7 +59,6 @@ namespace nap {
     private:
         // Calculate sum of all the inlets
         void calcSum(float &outSum) {
-            float n;
             float a;
             float b;
             mTermA.pull(a);
@@ -82,14 +81,10 @@ namespace nap {
         nap::OutputPullPlug<float> product = {this, "product", [&](float &product) { calcProduct(product); }};
     private:
         void calcProduct(float &outProduct) {
-            float n;
-            outProduct = 0;
-
             float a;
             mFactorA.pull(a);
             float b;
             mFactorB.pull(b);
-
             outProduct = a * b;
         }
 

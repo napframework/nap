@@ -19,10 +19,16 @@ namespace nap
 	{
 		zmq::context_t ctx;
 		zmq::socket_t sock(ctx, ZMQ_ROUTER);
-		const char* hostname = ("tcp://*:" + std::to_string(mPort)).c_str();
-		sock.bind(hostname);
+		std::string hostname = "tcp://*:" + std::to_string(mPort);
+		try {
+			sock.bind(hostname.c_str());
+		}
+		catch (zmq::error_t err) {
+			Logger::fatal("Server failed to bind to host '%s': %s", hostname.c_str(), err.what());
+			return;
+		}
 
-		Logger::debug("AsyncTCPServer running on '%s'", hostname);
+		Logger::debug("AsyncTCPServer running on '%s'", hostname.c_str());
 
 		while (mRunning) {
 			validateClients();

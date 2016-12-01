@@ -42,6 +42,8 @@ namespace nap
 			return;
 		}
 
+		Logger::debug("Loading: %s", mFile.getValue().c_str());
+
 		// If loaded, clear
 		if (mPlayer.isLoaded())
 		{

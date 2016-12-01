@@ -142,7 +142,7 @@ namespace nap
 		 * @return True if the flag was set, false otherwise
 		 */
 		bool checkFlag(const ObjectFlag& flag) const {
-            return mFlags & flag;
+            return (mFlags & flag) != 0;
         }
 
 		/**

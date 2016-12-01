@@ -50,6 +50,7 @@ namespace nap
 
 		// Ensure the new video file exists
 		ofFile video_file(mFile.getValue());
+		Logger::debug("Loading: %s", mFile.getValue().c_str());
 		if (!video_file.exists())
 		{
 			Logger::fatal(this->getName() + ": Video file does not exist: " + video_file.getAbsolutePath());

@@ -32,6 +32,7 @@ namespace nap
 			Logger::warn(this->getName() + ": file does not exist: " + mFile.getValue());
 			return;
 		}
+		Logger::debug("Loading: %s", mFile.getValue().c_str());
 
 		if (useImageCache.getValueRef()) { // Use caching
 
@@ -66,7 +67,7 @@ namespace nap
 
 			// Load in memory
 			if (!image.load(mFile.getValue())) {
-				Logger::warn(this->getName() + ": unable to load image: " + mFile.getValue());
+				Logger::fatal(this->getName() + ": unable to load image: " + mFile.getValue());
 				return;
 			}
 

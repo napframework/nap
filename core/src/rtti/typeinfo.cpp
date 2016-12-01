@@ -189,6 +189,7 @@ namespace RTTI
 		TypeInfo registerOrGetType(const char* name, const TypeInfo& rawTypeInfo,
 								   const std::vector<TypeInfo>& baseClassList, CreateFunction createFunction)
 		{
+
 			TypeInfoData& data = TypeInfoData::instance();
 			{
 				NameToTag::const_iterator itr = data.nameToTagMap.find(name);
