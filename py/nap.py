@@ -495,7 +495,7 @@ class Operator(AttributeObject):
 
     def connections(self):
         for outPlug in self.outputPlugs():
-            pass
+            raise Exception()
 
 
 class Patch(AttributeObject):

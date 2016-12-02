@@ -29,7 +29,7 @@ def _setObjectEditorPos(obj, pos):
     @type obj: nap.AttributeObject
     """
     obj.attr(PATCH_XPOS).setValue(pos.x())
-    obj.attr(PATCH_XPOS).setValue(pos.y())
+    obj.attr(PATCH_YPOS).setValue(pos.y())
 
 
 def _clamp(n, minVal, maxVal):
@@ -90,6 +90,7 @@ def moveToFront(item):
 ############################################################################################
 
 class OperatorItem(QGraphicsObject):
+    moved = pyqtSignal()
     plugConnected = pyqtSignal(object, object)
     plugDisconnected = pyqtSignal(object, object)
 
@@ -197,6 +198,8 @@ class OperatorItem(QGraphicsObject):
     def itemChange(self, change, value):
         if change == QGraphicsItem.ItemSelectedHasChanged:
             moveToFront(self)
+        if change == QGraphicsItem.ItemPositionHasChanged:
+            self.moved.emit()
         return super(OperatorItem, self).itemChange(change, value)
 
     def __onInputPlugAdded(self, plug):
@@ -388,6 +391,8 @@ class PatchScene(QGraphicsScene):
         for op in self.__patch.children():
             self.__onOperatorAdded(op)
 
+
+
     def startDragConnection(self, pinItem):
         self.hideIncompaticlePlugs(pinItem.plugItem())
         self.__wireIsOutput = not pinItem.plugItem().isInput()
@@ -498,8 +503,11 @@ class PatchScene(QGraphicsScene):
 
     def __onOperatorAdded(self, op):
         item = OperatorItem(self.__operatorLayer, op)
+        item.moved.connect(self.__updateSceneRect)
         item.setParentItem(self.__operatorLayer)
         item.plugConnected.connect(self.__addWire)
+        self.__updateSceneRect()
+
 
     def __onOperatorRemoved(self, op):
         self.__removeOperatorItem(self.findOperatorItem(op))
@@ -510,6 +518,8 @@ class PatchScene(QGraphicsScene):
     def __removeOperatorItem(self, item):
         del item
 
+    def __updateSceneRect(self):
+        self.setSceneRect(self.itemsBoundingRect().adjusted(-1000, -1000, 1000, 1000))
 
 class InteractMode(object):
     def __init__(self):
