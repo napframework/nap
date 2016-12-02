@@ -88,7 +88,7 @@ class MainWindow(QMainWindow):
         return list(self.__editors.keys())
 
     def __onConnectionChanged(self, *args):
-        self.ctx.core().onGetObjectTree()
+        self.ctx.core()._handle_getObjectTree()
 
     def __onRootChanged(self):
         """

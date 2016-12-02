@@ -20,7 +20,7 @@ def _dataTypeColor(typeName):
 
 def _getObjectEditorPos(obj):
     x = obj.attr(PATCH_XPOS).value()
-    y = obj.attr(PATCH_XPOS).value()
+    y = obj.attr(PATCH_YPOS).value()
     return QPointF(x, y)
 
 
@@ -503,6 +503,7 @@ class PatchScene(QGraphicsScene):
         item.moved.connect(self.__updateSceneRect)
         item.setParentItem(self.__operatorLayer)
         item.plugConnected.connect(self.__addWire)
+        item.setPos(_getObjectEditorPos(op))
         self.__updateSceneRect()
 
     def __onOperatorRemoved(self, op):
@@ -515,7 +516,6 @@ class PatchScene(QGraphicsScene):
         del item
 
     def __updateSceneRect(self):
-        print(self.itemsBoundingRect())
         self.setSceneRect(self.itemsBoundingRect().adjusted(-1000, -1000, 1000, 1000))
 
 
@@ -854,6 +854,7 @@ class PatchView(QGraphicsView):
 
 
 class PatchEditor(QWidget):
+    """ The main widget holding a patch view amongst others """
     def __init__(self, ctx):
         """
         @type ctx: AppContext

@@ -59,7 +59,7 @@ class AppContext(QObject):
         self.editorRequested.emit(obj)
 
     def __onConnectionChanged(self):
-        self.core().onGetObjectTree()
+        self.core()._handle_getObjectTree()
 
     def connect(self, host):
         self.__core.loadModuleInfo()

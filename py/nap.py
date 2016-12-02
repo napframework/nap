@@ -33,22 +33,6 @@ def _stripCPPNamespace(name):
     return name[name.rfind(':') + 1:]
 
 
-def toPythonValue(value, valueType):
-    if valueType == 'bool':
-        return True if 'true' else False
-    if valueType == 'int':
-        return int(value)
-    if valueType == 'float':
-        return float(value)
-    return value
-
-
-def fromPythonValue(value):
-    if isinstance(value, bool):
-        return 'true' if value else 'false'
-    return str(value)
-
-
 class Core(QObject):
     """ Core represents a NAP Application structure.
     """
@@ -63,7 +47,7 @@ class Core(QObject):
     def __init__(self, host='tcp://localhost:8888'):
         super(Core, self).__init__()
         self.__rpc = AsyncJSONClient(host)
-        self.__rpc.messageReceived.connect(self.onMessageReceived)
+        self.__rpc.messageReceived.connect(self.handleMessageReceived)
         self.__componentTypes = None
         self.__dataTypes = None
         self.__operatorTypes = None
@@ -87,60 +71,6 @@ class Core(QObject):
             ptr = int(ptr)
         return self.__objects[ptr]
 
-    def onLog(self, jsonDict):
-        self.logMessageReceived.emit(jsonDict['level'], jsonDict['levelName'], jsonDict['text'])
-
-    def onNameChanged(self, jsonDict):
-        obj = self.findObject(jsonDict[_J_PTR])
-        obj.onNameChanged(jsonDict[_J_NAME])
-
-    def onMessageReceived(self, jsonMessage):
-        """ Handle message coming back from RPC server
-        @type jsonMessage: dict
-        """
-        id = jsonMessage['id']
-        handler = 'on%s%s' % (id[0].upper(), id[1:])
-        result = jsonMessage['result']
-        if result:
-            if hasattr(self, handler):
-                getattr(self, handler)(json.loads(result))
-            else:
-                raise Exception('No handler for callback: %s' % handler)
-        self.messageReceived.emit()
-
-    def onAttributeValueChanged(self, jsonDict):
-        attrib = self.findObject(jsonDict[_J_PTR])
-        attrib._value = jsonDict[_J_VALUE]
-        attrib.valueChanged.emit(attrib)
-
-    def onObjectAdded(self, jsonDict):
-        parent = self.findObject(jsonDict[_J_PTR])
-        child = self.newObject(json.loads(jsonDict['child']))
-        parent.onChildAdded(child)
-
-    def onObjectRemoved(self, jsonDict):
-        child = self.findObject(jsonDict[_J_PTR])
-        self.objectRemoved.emit(child)
-        parent = child.parent()
-        parent.onChildRemoved(child)
-
-    def onGetModuleInfo(self, info):
-        self.__componentTypes = info['componentTypes']
-        self.__operatorTypes = info['operatorTypes']
-        self.__dataTypes = info['dataTypes']
-        self.__types = info['types']
-        self.moduleInfoChanged.emit(info)
-
-    def onPlugConnected(self, jsonDict):
-        srcPlug = self.findObject(jsonDict['srcPtr'])
-        assert isinstance(srcPlug, OutputPlugBase)
-        dstPlug = self.findObject(jsonDict['dstPtr'])
-        assert isinstance(dstPlug, InputPlugBase)
-
-        dstPlug.connected.emit(srcPlug)
-
-
-
     def types(self):
         return self.__types
 
@@ -149,45 +79,160 @@ class Core(QObject):
             if t['name'] == typename:
                 return t['baseTypes']
 
-    def isSubClass(self, typename, baseTypename):
-        for t in self.__types:
-            if t == typename:
-                if baseTypename in self.__types[t]:
-                    return True
-                return False
-        return False
+    def __metaType(self, cppTypename, clazz=None):
+        if not clazz:
+            clazz = Object
+        pythonTypename = _stripCPPNamespace(cppTypename)
+        if not pythonTypename in self.__metatypes:
+            t = type(pythonTypename, (clazz,), dict())
+            print('Created metatype: %s' % t)
+            return t
 
-    def onGetObjectTree(self, jsonDict):
-        # self.__root = self.toObjectTree(jsonDict)
-        self.__root = self.newObject(jsonDict)
-        self.rootChanged.emit()
+    def __findCorrespondingType(self, typename):
+        """ Based on the provided typename,
+        find the closest matching type or base type.
+        If no matching type was found
+        a dynamically constructed metatype will be used
 
-    def onCopyObjectTree(self, jsonDict):
-        QApplication.clipboard().setText(json.dumps(jsonDict, indent=4))
+        @param typename: The type name
+        @return: A type that matches the provided type name
+        """
+        subClasses = list(_allSubClasses(Object))
+        baseTypes = self.baseTypes(typename)
+
+        # Find exact python type
+        for clazz in subClasses:
+            if clazz.NAP_TYPE == typename:
+                return clazz
+
+        # Find closest base type and generate metatype
+        for clazz in subClasses:
+            napType = clazz.NAP_TYPE
+            if napType in baseTypes:
+                return self.__metaType(typename, clazz)
+
+        # No corresponding type found
+        return self.__metatype(typename)
+
+    def newObject(self, dic):
+        """ Construct a new object based on a dict containing its data.
+        If no corresponding implementation is found in this file,
+        use a dynamically constructed meta type.
+
+        @param dic: The Object data, according to the RPC format
+        @return: An instance of the
+        """
+        if _J_VALUE_TYPE in dic:
+            clazz = Attribute
+        else:
+            clazz = self.__findCorrespondingType(dic[_J_TYPE])
+
+        return clazz(self, dic)
+
+    @staticmethod
+    def toPythonValue(value, valueType):
+        if valueType == 'bool':
+            return True if 'true' else False
+        if valueType == 'int':
+            return int(value)
+        if valueType == 'float':
+            return float(value)
+        return value
+
+    @staticmethod
+    def fromPythonValue(value):
+        if isinstance(value, bool):
+            return 'true' if value else 'false'
+        return str(value)
+
+    def handleMessageReceived(self, jsonMessage):
+        """ Handle message coming back from RPC server
+        Dynamically look up the method to call based on RPC method name.
+        eg. A method 'nameChanged' will call method '_handle_nameChanged'
+
+        @type jsonMessage: dict
+        """
+        # Construct method name
+        handlerMethodName = '_handle_%s' % jsonMessage['id']
+        result = jsonMessage['result']
+        if result:
+            if hasattr(self, handlerMethodName):
+                # Call the method, pass unpacked dict entries
+                getattr(self, handlerMethodName)(**json.loads(result))
+            else:
+                raise Exception(
+                    'No handler for callback: %s' % handlerMethodName)
+        self.messageReceived.emit()
+
+    ############################################################################
+    ### Accessors
+    ############################################################################
 
     def rpc(self):
         return self.__rpc
 
-    def root(self):
-        return self.__root
-
-    def exportObject(self, obj, filename):
-        self.__rpc.exportObject(obj.ptr(), filename)
-
-    def importObject(self, parentObj, filename):
-        self.__rpc.importObject(parentObj.ptr(), filename)
-
-    def modules(self):
-        return self.__rpc.getModules()
-
     def componentTypes(self, modulename=None):
         return self.__componentTypes
 
-    def addEntity(self, parentEntity):
-        self.__rpc.addEntity(parentEntity.ptr())
+    def root(self):
+        return self.__root
 
-    def addChild(self, entity, componentType):
-        self.__rpc.addChild(entity.ptr(), str(componentType))
+    ############################################################################
+    ### RPC Callback Handlers, signature must match server initiated calls
+    ############################################################################
+
+    def _handle_log(self, level, levelName, text):
+        self.logMessageReceived.emit(level, levelName, text)
+
+    def _handle_nameChanged(self, ptr, name):
+        obj = self.findObject(ptr)
+        obj.onNameChanged(name)
+
+    def _handle_attributeValueChanged(self, ptr, name, value):
+        attrib = self.findObject(ptr)
+        attrib._value = value
+        attrib.valueChanged.emit(attrib)
+
+    def _handle_objectAdded(self, ptr, child):
+        parent = self.findObject(ptr)
+        child = self.newObject(json.loads(child))
+        parent.onChildAdded(child)
+
+    def _handle_objectRemoved(self, jsonDict):
+        child = self.findObject(jsonDict[_J_PTR])
+        self.objectRemoved.emit(child)
+        parent = child.parent()
+        parent.onChildRemoved(child)
+
+    def _handle_getModuleInfo(self, **info):
+        self.__componentTypes = info['componentTypes']
+        self.__operatorTypes = info['operatorTypes']
+        self.__dataTypes = info['dataTypes']
+        self.__types = info['types']
+        self.moduleInfoChanged.emit(info)
+
+    def _handle_getObjectTree(self, **jsonDict):
+        # self.__root = self.toObjectTree(jsonDict)
+        self.__root = self.newObject(jsonDict)
+        self.rootChanged.emit()
+
+    def _handle_plugConnected(self, srcPtr, dstPtr):
+        srcPlug = self.findObject(srcPtr)
+        assert isinstance(srcPlug, OutputPlugBase)
+        dstPlug = self.findObject(dstPtr)
+        assert isinstance(dstPlug, InputPlugBase)
+
+        dstPlug.connected.emit(srcPlug)
+
+
+
+    def _handle_copyObjectTree(self, jsonDict):
+        QApplication.clipboard().setText(json.dumps(jsonDict, indent=4))
+
+    ############################################################################
+    ### RPC Calls
+    ############################################################################
+
 
     def removeObjects(self, objects):
         for o in objects:
@@ -217,6 +262,9 @@ class Core(QObject):
         self.__rpc.getModuleInfo()
         self.loadObjectTree()
 
+    def setAttributeValue(self, attrib, value):
+        self.__rpc.setAttributeValue(attrib.ptr(), self.fromPythonValue(value))
+
     def loadObjectTree(self):
         self.__rpc.getObjectTree()
 
@@ -231,46 +279,28 @@ class Core(QObject):
         assert isinstance(dstPlug, InputPlugBase)
         self.__rpc.connectPlugs(srcPlug.ptr(), dstPlug.ptr())
 
+    def setName(self, obj, name):
+        self.__rpc.setName(obj.ptr(), name)
 
-    def __metaType(self, cppTypename, clazz=None):
-        if not clazz:
-            clazz = Object
-        pythonTypename = _stripCPPNamespace(cppTypename)
-        if not pythonTypename in self.__metatypes:
-            t = type(pythonTypename, (clazz,), dict())
-            print('Created metatype: %s' % t)
-            return t
+    def exportObject(self, obj, filename):
+        self.__rpc.exportObject(obj.ptr(), filename)
 
-    def findCorrespondingType(self, typename):
-        subClasses = list(_allSubClasses(Object))
-        baseTypes = self.baseTypes(typename)
+    def importObject(self, parentObj, filename):
+        self.__rpc.importObject(parentObj.ptr(), filename)
 
-        # Find exact python type
-        for clazz in subClasses:
-            if clazz.NAP_TYPE == typename:
-                return clazz
+    def modules(self):
+        return self.__rpc.getModules()
 
-        # Find closest base type and generate metatype
-        for clazz in subClasses:
-            napType = clazz.NAP_TYPE
-            if napType in baseTypes:
-                return self.__metaType(typename, clazz)
+    def addEntity(self, parentEntity):
+        self.__rpc.addEntity(parentEntity.ptr())
 
-        # No corresponding type found
-        return self.__metatype(typename)
-
-    def newObject(self, dic):
-        if _J_VALUE_TYPE in dic:
-            clazz = Attribute
-        else:
-            clazz = self.findCorrespondingType(dic[_J_TYPE])
-
-        return clazz(self, dic)
+    def addChild(self, entity, componentType):
+        self.__rpc.addChild(entity.ptr(), str(componentType))
 
 
-###############################################################################################
-# The classes below wrap nap:: classes
-###############################################################################################
+################################################################################
+### NAP Type Wrappers
+################################################################################
 
 class Object(QObject):
     NAP_TYPE = 'nap::Object'
@@ -279,7 +309,6 @@ class Object(QObject):
         Visible = 1 << 0
         Editable = 1 << 1
         Removable = 1 << 2
-
 
     nameChanged = pyqtSignal(str)
     childAdded = pyqtSignal(object)
@@ -298,7 +327,7 @@ class Object(QObject):
             self.__typename = dic[_J_TYPE]
         else:
             self.__typename = dic[_J_VALUE_TYPE]
-        self.__rpc = core.rpc()
+
         self.core().addObjectCallbacks(self)
 
         self.__children = []
@@ -385,7 +414,7 @@ class Object(QObject):
         self.__children.remove(child)
 
     def setName(self, name):
-        self.__rpc.setName(self.__ptr, name)
+        self.core().setName(self, name)
 
     def name(self):
         if self.__name:
@@ -394,8 +423,6 @@ class Object(QObject):
     def typename(self):
         if self.__typename:
             return self.__typename
-        if self.__ptr:
-            return self.__rpc.getTypeName(self.__ptr)
 
     def parent(self):
         return self.__parent
@@ -432,11 +459,7 @@ class AttributeObject(Object):
         for at in self.attributes():
             if at.name() == name:
                 return at
-        print('No attribute with name %s' % name)
-
-    def forceSetAttributeValue(self, attrib, value):
-        self.core().rpc().forceSetAttributeValue(self.core().rpc().identity, self.ptr(), attrib, fromPythonValue(value),
-                                                 'int')
+        raise AttributeError('No attribute with name %s' % name)
 
 
 class Entity(AttributeObject):
@@ -453,11 +476,11 @@ class Attribute(Object):
 
     def __init__(self, *args):
         super(Attribute, self).__init__(*args)
-        self._value = self._dic[_J_VALUE]
-        self._valueType = None
+        self._valueType = self._dic[_J_VALUE_TYPE]
+        self._value = self.core().toPythonValue(self._dic[_J_VALUE], self.valueType())
 
     def setValue(self, value):
-        self.core().rpc().setAttributeValue(self.ptr(), str(fromPythonValue(value)))
+        self.core().setAttributeValue(self, value)
 
     def value(self):
         return self._value
@@ -523,7 +546,6 @@ class InputPlugBase(Plug):
 
     def __init__(self, *args):
         super(InputPlugBase, self).__init__(*args)
-
 
 
 class OutputPlugBase(Plug):
