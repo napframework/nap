@@ -39,7 +39,7 @@ get_filename_component(PROJECTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/.. ABSOLUTE)
 
 # library targets
 add_subdirectory(core)
-add_subdirectory(napkin)
+# add_subdirectory(napkin)
 
 # executable targets
 add_subdirectory(test/coretestapp)
@@ -61,6 +61,7 @@ add_subdirectory(modules/network)
 #add_subdirectory(modules/napawesomium)
 add_subdirectory(modules/napscriptserver)
 add_subdirectory(modules/napjsonserializer)
+add_subdirectory(modules/naprender)
 
 #add_dependencies(napkin mod_napfsm)
 add_dependencies(scriptserver mod_napscriptserver)
