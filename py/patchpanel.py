@@ -71,6 +71,7 @@ def calculateWirePath(srcPos, dstPos, p):
         c2 = QPointF(dstPos.x() - dist, dstPos.y())
         p.cubicTo(c1, c2, dstPos)
 
+
 def moveToFront(item):
     highest = -10000000000
     for item in item.scene().items():
@@ -132,7 +133,8 @@ class OperatorItem(QGraphicsObject):
             painter.setPen(QPen(QApplication.palette().dark(), 0))
         painter.drawRect(self.boundingRect())
 
-        headerRect = QRectF(0, 0, self.boundingRect().width(), self.__titleRect.height())
+        headerRect = QRectF(0, 0, self.boundingRect().width(),
+                            self.__titleRect.height())
         painter.setBrush(QApplication.palette().window().color().darker(110))
         painter.setPen(QPen(Qt.NoPen))
         painter.drawRect(headerRect.adjusted(0, 0, -2, -1))
@@ -175,11 +177,14 @@ class OperatorItem(QGraphicsObject):
             currentX = max(currentX, item.boundingRect().width())
         maxX = currentX
         for i in range(len(self.__outputPlugs)):
-            maxX = max(maxX, currentX + self.__outputPlugs[i].boundingRect().width())
+            maxX = max(maxX,
+                       currentX + self.__outputPlugs[i].boundingRect().width())
 
         self.__titleRect = self.__titleLabel.boundingRect()
         self.__titleRect.setWidth(self.childrenBoundingRect().width())
-        self.__titleLabel.setPos(self.__titleRect.right() - self.__titleLabel.boundingRect().width(), 0)
+        self.__titleLabel.setPos(
+            self.__titleRect.right() - self.__titleLabel.boundingRect().width(),
+            0)
 
         maxX = max(maxX, self.__titleRect.width())
 
@@ -217,9 +222,8 @@ class OperatorItem(QGraphicsObject):
         # TODO: Review
         self.setPos(_getObjectEditorPos(self.__operator))
 
-    def __onPlugConnected(self, outPlug):
-        print("Plug was connected!")
-        raise NotImplementedError()
+    def __onPlugConnected(self, outPlug, inPlug):
+        self.plugConnected.emit(outPlug, inPlug)
 
 
 class PlugItem(QGraphicsItem):
@@ -286,7 +290,6 @@ class PinItem(QGraphicsPathItem):
         p.addRect(0, 0, 10, 10)
         self.setPath(p)
 
-
     def attachPos(self):
         r = self.boundingRect()
         if self.__plugItem.isInput():
@@ -302,7 +305,6 @@ class PinItem(QGraphicsPathItem):
         return self.__color
 
 
-
 class LayerItem(QGraphicsItem):
     def __init__(self):
         super(LayerItem, self).__init__()
@@ -312,6 +314,39 @@ class LayerItem(QGraphicsItem):
 
     def paint(self, painter, option, widget=None):
         pass
+
+
+class WireItem(QGraphicsPathItem):
+    def __init__(self, srcPinItem, dstPinItem):
+        super(WireItem, self).__init__()
+        self.srcPin = srcPinItem
+        self.dstPin = dstPinItem
+        self.srcPos = QPointF()
+        self.dstPos = QPointF()
+        self.setFlag(QGraphicsItem.ItemIsFocusable, True)
+        self.setFlag(QGraphicsItem.ItemIsSelectable, True)
+
+
+    def paint(self, painter, option, widget=None):
+        if self.isVisible():
+            self.updatePath()
+        super(WireItem, self).paint(painter, option, widget)
+
+    def updatePath(self):
+        if self.srcPin:
+            self.srcPos = self.srcPin.attachPos()
+        if self.dstPin:
+            self.dstPos = self.dstPin.attachPos()
+
+        p = QPainterPath()
+        calculateWirePath(self.srcPos, self.dstPos, p)
+        self.setPath(p)
+
+        pen = QPen()
+        pen.setColor(COL_NODE_CONNECTION)
+        pen.setWidth(1)
+        pen.setStyle(Qt.DashLine)
+        self.setPen(pen)
 
 
 class WirePreview(QGraphicsPathItem):
@@ -389,6 +424,11 @@ class PatchScene(QGraphicsScene):
         for op in self.__patch.children():
             self.__onOperatorAdded(op)
 
+        for opItem in self.operatorItems():
+            for outPlug in opItem.operator().outputPlugs():
+                for inPlug in outPlug.connections():
+                    self.__addWire(outPlug, inPlug)
+
     def startDragConnection(self, pinItem):
         self.hideIncompaticlePlugs(pinItem.plugItem())
         self.__wireIsOutput = not pinItem.plugItem().isInput()
@@ -431,7 +471,7 @@ class PatchScene(QGraphicsScene):
         self.showAllPlugs()
 
     def drawBackground(self, painter, rect):
-        spacing = 10
+        spacing = 50
         xmin = int(math.floor(rect.left() / spacing))
         xmax = int(math.ceil(rect.right() / spacing))
         ymin = int(math.floor(rect.top() / spacing))
@@ -449,7 +489,7 @@ class PatchScene(QGraphicsScene):
             painter.drawLine(QPointF(xmin, y) * spacing,
                              QPointF(xmax, y) * spacing)
 
-    def operators(self):
+    def operatorItems(self):
         for item in self.__operatorLayer.childItems():
             if isinstance(item, OperatorItem):
                 yield item
@@ -458,27 +498,32 @@ class PatchScene(QGraphicsScene):
         return self.__patch
 
     def hideIncompaticlePlugs(self, src):
-        for opItem in self.operators():
+        for opItem in self.operatorItems():
             opItem.hideIncompatiblePlugs(src)
 
     def showAllPlugs(self):
-        for opItem in self.operators():
+        for opItem in self.operatorItems():
             opItem.showAllPlugs()
 
     def selectedOperatorItems(self):
-        return (item for item in self.selectedItems() if isinstance(item, OperatorItem))
+        return (item for item in self.selectedItems() if
+                isinstance(item, OperatorItem))
 
     def selectedOperators(self):
         for opItem in self.selectedOperatorItems():
             yield opItem.operator()
 
     def selectedWires(self):
-        return (item for item in self.selectedItems() if isinstance(item, WireItem))
+        return (item for item in self.selectedItems() if
+                isinstance(item, WireItem))
 
-    def findOperatorItem(self, name):
-        for item in self.operators():
-            if item.operator().name() == name:
+    def findOperatorItem(self, op):
+        for item in self.operatorItems():
+            if item.operator() == op:
                 return item
+
+        print('Could not find operator: %s' % op)
+
 
     def dragConnectionSource(self):
         if self.__previewWire.srcPin:
@@ -491,19 +536,29 @@ class PatchScene(QGraphicsScene):
         self.operatorSelectionChanged.emit(operators)
 
     def __addWire(self, srcPlug, dstPlug):
-        srcPlugItem = self.findOperatorItem(srcPlug.parent()).findPlugItem(srcPlug)
-        dstPlugItem = self.findOperatorItem(dstPlug.parent()).findPlugItem(dstPlug)
+        """
+        @type srcPlug: nap.OutputPlugBase
+        @type dstPlug: nap.InputPlugBase
+        """
+        srcPlugItem = self.findOperatorItem(srcPlug.parent()).findPlugItem(
+            srcPlug)
+        dstPlugItem = self.findOperatorItem(dstPlug.parent()).findPlugItem(
+            dstPlug)
 
         wire = WireItem(srcPlugItem.pin(), dstPlugItem.pin())
         wire.setParentItem(self.__wireLayer)
 
     def __onOperatorAdded(self, op):
+        """
+        @type op: nap.Operator
+        """
         item = OperatorItem(self.__operatorLayer, op)
         item.moved.connect(self.__updateSceneRect)
         item.setParentItem(self.__operatorLayer)
         item.plugConnected.connect(self.__addWire)
         item.setPos(_getObjectEditorPos(op))
         self.__updateSceneRect()
+
 
     def __onOperatorRemoved(self, op):
         self.__removeOperatorItem(self.findOperatorItem(op))
@@ -515,7 +570,8 @@ class PatchScene(QGraphicsScene):
         del item
 
     def __updateSceneRect(self):
-        self.setSceneRect(self.itemsBoundingRect().adjusted(-1000, -1000, 1000, 1000))
+        self.setSceneRect(
+            self.itemsBoundingRect().adjusted(-1000, -1000, 1000, 1000))
 
 
 class InteractMode(object):
@@ -690,8 +746,10 @@ class PanInteractMode(InteractMode):
         @type evt: QMouseEvent
         """
         delta = evt.pos() - self.__oldMousePos
-        view.horizontalScrollBar().setValue(view.horizontalScrollBar().value() - delta.x())
-        view.verticalScrollBar().setValue(view.verticalScrollBar().value() - delta.y())
+        view.horizontalScrollBar().setValue(
+            view.horizontalScrollBar().value() - delta.x())
+        view.verticalScrollBar().setValue(
+            view.verticalScrollBar().value() - delta.y())
         self.__oldMousePos = evt.pos()
         return False
 
@@ -779,7 +837,8 @@ class PatchView(QGraphicsView):
         self.__mouseClickPos = QPointF()
         self.setInteractMode(DefaultInteractMode)
         self.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.customContextMenuRequested.connect(self.__onCustomContextMenuRequested)
+        self.customContextMenuRequested.connect(
+            self.__onCustomContextMenuRequested)
 
     def focusNextChild(self, next):
         return False
@@ -797,8 +856,10 @@ class PatchView(QGraphicsView):
 
         if not clickedItems:
             patch = self.scene().patch()
-            addCompMenu = menu.addMenu(iconstore.icon('brick_add'), 'Add Operator...')
-            self.ctx.createObjectActions(patch, self.ctx.core().operatorTypes(), addCompMenu)
+            addCompMenu = menu.addMenu(iconstore.icon('brick_add'),
+                                       'Add Operator...')
+            self.ctx.createObjectActions(patch, self.ctx.core().operatorTypes(),
+                                         addCompMenu)
 
         menu.exec_(QCursor.pos())
 
@@ -854,6 +915,7 @@ class PatchView(QGraphicsView):
 
 class PatchEditor(QWidget):
     """ The main widget holding a patch view amongst others """
+
     def __init__(self, ctx):
         """
         @type ctx: AppContext

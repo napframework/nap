@@ -23,6 +23,8 @@ class MainWindow(QMainWindow):
         self.ctx = ctx
         self.setWindowTitle(QCoreApplication.applicationName())
         self.setDockNestingEnabled(True)
+        # self.setAnimated(False)
+        self.setStatusBar(QStatusBar())
         self.__root = None
         self.__editors = {}  # path:qwidget
 
@@ -31,6 +33,7 @@ class MainWindow(QMainWindow):
         self.ctx.connectionChanged.connect(self.__onConnectionChanged)
         self.ctx.selectionChanged.connect(self.__onSelectionChanged)
         self.ctx.editorRequested.connect(self.__onEditorRequested)
+        self.ctx.logMessageReceived.connect(self.__onLogMessage)
 
         self.__setupUi()
         self.__restore()
@@ -39,6 +42,9 @@ class MainWindow(QMainWindow):
         s = QSettings()
         host = str(s.value(LAST_HOST, "tcp://localhost:8888"))
         self.ctx.connect(host)
+
+    def __onLogMessage(self, level, levelName, text):
+        self.statusBar().showMessage(text)
 
     def __onObjectRemoved(self, obj):
         editor = self.__getEditor(obj)

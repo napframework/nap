@@ -198,8 +198,8 @@ class Core(QObject):
         child = self.newObject(json.loads(child))
         parent.onChildAdded(child)
 
-    def _handle_objectRemoved(self, jsonDict):
-        child = self.findObject(jsonDict[_J_PTR])
+    def _handle_objectRemoved(self, ptr):
+        child = self.findObject(ptr)
         self.objectRemoved.emit(child)
         parent = child.parent()
         parent.onChildRemoved(child)
@@ -222,7 +222,7 @@ class Core(QObject):
         dstPlug = self.findObject(dstPtr)
         assert isinstance(dstPlug, InputPlugBase)
 
-        dstPlug.connected.emit(srcPlug)
+        dstPlug.connected.emit(srcPlug, dstPlug)
 
     def _handle_copyObjectTree(self, jsonDict):
         QApplication.clipboard().setText(json.dumps(jsonDict, indent=4))
@@ -541,7 +541,7 @@ class Plug(Object):
 class InputPlugBase(Plug):
     NAP_TYPE = 'nap::InputPlugBase'
 
-    connected = pyqtSignal(object)
+    connected = pyqtSignal(object, object)
 
     def __init__(self, *args):
         super(InputPlugBase, self).__init__(*args)
@@ -555,5 +555,12 @@ class OutputPlugBase(Plug):
     def __init__(self, *args):
         super(OutputPlugBase, self).__init__(*args)
 
+        self.__connections = self._dic['connections']
+
     def connectTo(self, dstPlug):
         self.core().connectPlugs(self, dstPlug)
+
+    def connections(self):
+        for path in self.__connections:
+            yield self.core().resolvePath(path)
+
