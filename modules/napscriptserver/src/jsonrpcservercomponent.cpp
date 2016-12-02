@@ -174,26 +174,26 @@ namespace nap
 			if (attrib)
 				attrib->fromString(value);
 		});
-
-		disp.AddMethod("forceSetAttributeValue", [&](const std::string& ident, ObjPtr ptr, const std::string& attrName,
-													 const std::string& value, const std::string& dataType) {
-			AttributeObject* obj = fromPtr<AttributeObject>(ptr);
-			if (!obj)
-				return;
-			RTTI::TypeInfo valueType = RTTI::TypeInfo::getByName(Serializer::dirtyHack(dataType));
-			if (!valueType.isValid())
-				return;
-			AttributeBase* attrib = obj->getAttribute(attrName);
-			if (!attrib) {
-				attrib = &obj->addAttribute(attrName, valueType);
-				addCallbacks(ident, Serializer::toPtr(attrib));
-			}
-			if (!attrib->getValueType().isKindOf(valueType)) {
-				return;
-			}
-
-			attrib->fromString(value);
-		});
+//
+//		disp.AddMethod("forceSetAttributeValue", [&](const std::string& ident, ObjPtr ptr, const std::string& attrName,
+//													 const std::string& value, const std::string& dataType) {
+//			AttributeObject* obj = fromPtr<AttributeObject>(ptr);
+//			if (!obj)
+//				return;
+//			RTTI::TypeInfo valueType = RTTI::TypeInfo::getByName(Serializer::dirtyHack(dataType));
+//			if (!valueType.isValid())
+//				return;
+//			AttributeBase* attrib = obj->getAttribute(attrName);
+//			if (!attrib) {
+//				attrib = &obj->addAttribute(attrName, valueType);
+//				addCallbacks(ident, Serializer::toPtr(attrib));
+//			}
+//			if (!attrib->getValueType().isKindOf(valueType)) {
+//				return;
+//			}
+//
+//			attrib->fromString(value);
+//		});
 
 		disp.AddMethod("addObjectCallbacks", [&](const std::string& ident, ObjPtr ptr) {
 			Object* obj = fromPtr<Object>(ptr);
