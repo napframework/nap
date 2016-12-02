@@ -191,7 +191,7 @@ class Core(QObject):
     def _handle_attributeValueChanged(self, ptr, name, value):
         attrib = self.findObject(ptr)
         attrib._value = value
-        attrib.valueChanged.emit(attrib)
+        attrib.valueChanged.emit(value)
 
     def _handle_objectAdded(self, ptr, child):
         parent = self.findObject(ptr)
@@ -223,8 +223,6 @@ class Core(QObject):
         assert isinstance(dstPlug, InputPlugBase)
 
         dstPlug.connected.emit(srcPlug)
-
-
 
     def _handle_copyObjectTree(self, jsonDict):
         QApplication.clipboard().setText(json.dumps(jsonDict, indent=4))
@@ -477,7 +475,8 @@ class Attribute(Object):
     def __init__(self, *args):
         super(Attribute, self).__init__(*args)
         self._valueType = self._dic[_J_VALUE_TYPE]
-        self._value = self.core().toPythonValue(self._dic[_J_VALUE], self.valueType())
+        self._value = self.core().toPythonValue(self._dic[_J_VALUE],
+                                                self.valueType())
 
     def setValue(self, value):
         self.core().setAttributeValue(self, value)

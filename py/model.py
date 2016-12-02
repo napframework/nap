@@ -100,16 +100,21 @@ class EntityItem(ObjectItem):
 
 class AttributeValueItem(QStandardItem):
     def __init__(self, attrib):
+        """
+        @type attrib: nap.Attribute
+        """
         super(AttributeValueItem, self).__init__()
         self.__attrib = attrib
-        self.setText("BLAAT")
-        if isinstance(attrib.value(), bool):
-            self.setData(QVariant(bool(attrib.value())), Qt.DisplayRole)
-        else:
-            self.setText(str(attrib.value() or ''))
-
+        self.__onValueChanged(self.__attrib.value())
         self.setEditable(self.__attrib.isEditable())
-        # self.setBackground(Qt.Dis)
+        self.__attrib.valueChanged.connect(self.__onValueChanged)
+
+    def __onValueChanged(self, value):
+        self._value = value
+        if isinstance(value, bool):
+            self.setData(QVariant(bool(value)), Qt.DisplayRole)
+        else:
+            self.setText(str(value or ''))
 
     def setData(self, variant, role=None):
         if role == Qt.EditRole:

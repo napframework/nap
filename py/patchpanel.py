@@ -63,20 +63,13 @@ def calculateWirePath(srcPos, dstPos, p):
         c2 = QPointF(hx, dstPos.y())
         p.cubicTo(c1, c2, dstPos)
     else:
-        maxDist = 50
+        maxDist = 150
 
         dist = _clamp(srcPos.x() - dstPos.x(), -maxDist, maxDist)
 
-        ca1 = QPointF(srcPos.x() + dist, srcPos.y())
-        c = QPointF((srcPos.x() + srcPos.x()) / 2.0, (dstPos.y() + srcPos.y()) / 2.0)
-        ca2 = QPointF(srcPos.x() + dist, (srcPos.y() + c.y()) / 2.0)
-
-        cb1 = QPointF(dstPos.x() - dist, (dstPos.y() + c.y()) / 2.0)
-        cb2 = QPointF(dstPos.x() - dist, dstPos.y())
-
-        p.cubicTo(ca1, ca2, c)
-        p.cubicTo(cb1, cb2, dstPos)
-
+        c1 = QPointF(srcPos.x() + dist, srcPos.y())
+        c2 = QPointF(dstPos.x() - dist, dstPos.y())
+        p.cubicTo(c1, c2, dstPos)
 
 def moveToFront(item):
     highest = -10000000000
@@ -237,7 +230,11 @@ class PlugItem(QGraphicsItem):
         self.__label = QGraphicsTextItem(self)
         self.__pin = PinItem(self)
         self.setParentItem(self.__opItem)
-        self.__label.setPlainText(plug.name())
+        self.setName(plug.name())
+
+    def setName(self, name):
+        self.__label.setPlainText(name)
+        self.layout()
 
     def boundingRect(self):
         return self.childrenBoundingRect()
@@ -258,18 +255,21 @@ class PlugItem(QGraphicsItem):
         self.setVisible(b)
 
     def layout(self):
-        textOffset = -6
+        # textOffset = 6
+
+        pinY = self.__label.boundingRect().height() / 2 - self.__pin.boundingRect().height() / 2
+
         if self.isInput():
-            self.__pin.setPos(0, 0)
-            self.__label.setPos(self.pin().boundingRect().width(), textOffset)
+            self.__label.setPos(self.pin().boundingRect().width(), 0)
+            self.__pin.setPos(0, pinY)
         else:
-            self.__label.setPos(0, textOffset)
-            self.__pin.setPos(self.__label.boundingRect().width(), 0)
+            self.__label.setPos(0, 0)
+            self.__pin.setPos(self.__label.boundingRect().width(), pinY)
 
         self.__opItem.layout()
 
 
-class PinItem(QGraphicsItem):
+class PinItem(QGraphicsPathItem):
     """ A Pinitem is a connector without the label """
 
     def __init__(self, plugItem):
@@ -277,19 +277,23 @@ class PinItem(QGraphicsItem):
         @type plugItem: PlugItem
         """
         super(PinItem, self).__init__(plugItem)
-        self.__rect = QRectF(0, 0, 10, 10)
         self.__plugItem = plugItem
-        self.__color = Qt.red
 
-    def boundingRect(self):
-        return self.__rect
+        self.setPen(QPen(Qt.NoPen))
+        self.setBrush(Qt.red)
+
+        p = QPainterPath()
+        p.addRect(0, 0, 10, 10)
+        self.setPath(p)
+
 
     def attachPos(self):
+        r = self.boundingRect()
         if self.__plugItem.isInput():
-            return QPointF(self.scenePos().x() - self.__rect.left(),
-                           self.scenePos().y() - self.__rect.height() / 2)
-        return QPointF(self.scenePos().x() + self.__rect.right(),
-                       self.scenePos().y() + self.__rect.height() / 2)
+            return QPointF(self.scenePos().x() - r.left(),
+                           self.scenePos().y() + r.height() / 2)
+        return QPointF(self.scenePos().x() + r.right(),
+                       self.scenePos().y() + r.height() / 2)
 
     def plugItem(self):
         return self.__plugItem
@@ -297,11 +301,6 @@ class PinItem(QGraphicsItem):
     def color(self):
         return self.__color
 
-    def paint(self, painter, option, widget=None):
-        painter.drawRect(self.__rect)
-        # option.palette.setColor(QPalette.Window,
-        #                         _dataTypeColor(self.__plugItem.plug().dataType()))
-        # QApplication.style().drawPrimitive(QStyle.PE_IndicatorArrowRight, option, painter, widget)
 
 
 class LayerItem(QGraphicsItem):
