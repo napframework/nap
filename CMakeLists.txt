@@ -11,8 +11,6 @@ find_package(GLEW REQUIRED)
 # add all cpp files to SOURCES
 file(GLOB SOURCES src/*.cpp)
 
-#set(SOURCES src/nimage.cpp src/nbitmap.cpp)
-
 # compile shared lib as target
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
