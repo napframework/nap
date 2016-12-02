@@ -35,7 +35,7 @@ namespace nap
 
 			// Poll for requests / connections
 			zmq::pollitem_t pollitem = {sock, 0, ZMQ_POLLIN, 0};
-			zmq_poll(&pollitem, 1, 100);
+			zmq_poll(&pollitem, 1, 10);
             if (pollitem.revents & ZMQ_POLLIN) {
 				// Receive multipart message
 				zmq::message_t message;
