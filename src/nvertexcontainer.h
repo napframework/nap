@@ -293,7 +293,7 @@ namespace opengl
 	{
 		// Make sure new settings are valid
 		if (!updateSettingsIfValid(components, verts))
-			return;
+			return false;
 
 		// Allocate
 		return VertexContainer::allocateMemory();
