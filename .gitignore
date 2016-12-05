@@ -5,3 +5,16 @@ py/.idea/
 lib/Clang/
 build.sh
 xcode/
+core/Debug/
+vs/
+modules/napof/Debug/
+modules/napof/Release/
+modules/napgui/Debug/
+modules/napgui/Release/napgui.tlog/Lib-link.read.1.tlog
+modules/napgui/Release/
+modules/napetherservice/Release/
+modules/napinput/Debug/
+modules/napetherservice/Debug/
+core/Release/
+modules/napinput/Release/
+lib/
