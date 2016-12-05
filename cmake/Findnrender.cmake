@@ -2,8 +2,18 @@
         NRENDER_INCLUDE_DIRS
         NAMES nopengl.h
         HINTS
-        ${CMAKE_CURRENT_LIST_DIR}/../../nrender/src
+        ${CMAKE_CURRENT_LIST_DIR}/../../nrender/src 
 )
+
+list(APPEND NRENDER_INCLUDE_DIRS 
+    ${CMAKE_CURRENT_LIST_DIR}/../../glm 
+    ${CMAKE_CURRENT_LIST_DIR}/../../sdl2/include 
+    ${CMAKE_CURRENT_LIST_DIR}/../../assimp/include 
+    ${CMAKE_CURRENT_LIST_DIR}/../../glew/include 
+    ${CMAKE_CURRENT_LIST_DIR}/../../freeimage/Source 
+    )
+
+message(WARNING ${NRENDER_INCLUDE_DIRS})
 
 mark_as_advanced(NRENDER_INCLUDE_DIRS)
 

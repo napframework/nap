@@ -46,6 +46,7 @@ add_subdirectory(test/coretestapp)
 add_subdirectory(test/unittest)
 add_subdirectory(test/scriptserver)
 add_subdirectory(test/jsonserializer)
+add_subdirectory(test/render)
 
 # modules
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR}/modules)
@@ -65,3 +66,4 @@ add_subdirectory(modules/naprender)
 
 #add_dependencies(napkin mod_napfsm)
 add_dependencies(scriptserver mod_napscriptserver)
+add_dependencies(rendertest mod_naprender)
