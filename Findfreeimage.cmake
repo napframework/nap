@@ -1,6 +1,6 @@
 find_path(
         FREEIMAGE_DIR
-        NAMES Dist/x32/FreeImage.h
+        NAMES Dist/x64/FreeImage.h
         HINTS
         ${CMAKE_CURRENT_LIST_DIR}/../FreeImage
 )
