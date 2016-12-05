@@ -18,3 +18,8 @@ modules/napetherservice/Debug/
 core/Release/
 modules/napinput/Release/
 lib/
+test/unittest/Release/unittest.vcxprojResolveAssemblyReference.cache
+*.user
+modules/napawesomium/Release/napawesomium.vcxprojResolveAssemblyReference.cache
+modules/network/Release/
+napkin/Release/

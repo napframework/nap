@@ -33,8 +33,8 @@ set(FILES_TO_COPY
         )
 
 # copy nrender (hack)
-file(COPY ${FILES_TO_COPY} ../../../nrender/bin/MSVC/Debug/nrender.dll DESTINATION ${BIN_DIR}/Debug)
-file(COPY ${FILES_TO_COPY} ../../../nrender/bin/MSVC/Release/nrender.dll DESTINATION ${BIN_DIR}/Release)
+file(COPY ${FILES_TO_COPY} DESTINATION ${BIN_DIR}/Debug)
+file(COPY ${FILES_TO_COPY} DESTINATION ${BIN_DIR}/Release)
 
 # create post build event
 set(DATA_DIR ${CMAKE_CURRENT_LIST_DIR}/data)
