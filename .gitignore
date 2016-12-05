@@ -4,16 +4,4 @@ build/
 py/.idea/
 lib/Clang/
 build.sh
-build.sh
-vs/
-modules/napgui/Debug/
-modules/napgui/Release/
-modules/napetherservice/Debug/
-core/Release/
-modules/napof/Debug/
-modules/napinput/Debug/
-modules/napetherservice/Release/
-modules/napinput/Release/
-modules/napof/Release/
-core/Debug/
-lib/
+xcode/
