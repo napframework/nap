@@ -15,6 +15,10 @@ if(UNIX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 endif()
 
+if(APPLE)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9)
+endif()
+
 cmake_policy(SET CMP0020 NEW)
 cmake_policy(SET CMP0043 NEW)
 
