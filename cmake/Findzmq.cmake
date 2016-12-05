@@ -23,11 +23,12 @@ else()
     endif()
 endif()
 
-if (OSX)
+if (APPLE)
     find_library(ZMQ_LIBRARIES NAMES libzmq.dylib
             HINTS
             /usr/local/opt/zeromq/lib
             )
+    message(WARNING ${ZMQ_LIBRARIES})
 endif()
 
 set(ZMQ_INCLUDE_DIR ${ZMQ_DIR}/include)

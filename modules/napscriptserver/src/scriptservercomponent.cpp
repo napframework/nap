@@ -60,13 +60,13 @@ namespace nap
     }
 
 
-    void ScriptServerComponent::RPCObjectCallback::onPlugConnected(Plug::Connection connection) {
-        mServer.handlePlugConnected(mClient, connection);
+    void ScriptServerComponent::RPCObjectCallback::onPlugConnected(InputPlugBase& plug) {
+        mServer.handlePlugConnected(mClient, plug);
     }
 
 
-    void ScriptServerComponent::RPCObjectCallback::onPlugDisconnected(Plug::Connection connection) {
-        mServer.handlePlugDisconnected(mClient, connection);
+    void ScriptServerComponent::RPCObjectCallback::onPlugDisconnected(InputPlugBase& plug) {
+        mServer.handlePlugDisconnected(mClient, plug);
     }
 
 

@@ -30,8 +30,8 @@ namespace nap
         void handleObjectAdded(AsyncTCPClient& client, Object& obj, Object& child) override;
         void handleObjectRemoved(AsyncTCPClient& client, Object& child) override;
         void handleAttributeValueChanged(AsyncTCPClient& client, AttributeBase& attrib) override;
-        void handlePlugConnected(AsyncTCPClient& client, Plug::Connection connection) override;
-        void handlePlugDisconnected(AsyncTCPClient& client, Plug::Connection connection) override;
+        void handlePlugConnected(AsyncTCPClient& client, InputPlugBase& plug) override;
+        void handlePlugDisconnected(AsyncTCPClient& client, InputPlugBase& plug) override;
     private:
         void startRPCSocket();
 

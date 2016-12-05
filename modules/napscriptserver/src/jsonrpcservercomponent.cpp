@@ -371,34 +371,38 @@ namespace nap
 	}
 
 
-	void JSONRPCServerComponent::handlePlugConnected(AsyncTCPClient& client, Plug::Connection connection)
+	void JSONRPCServerComponent::handlePlugConnected(AsyncTCPClient& client, InputPlugBase& plug)
 	{
+        assert(plug.isConnected());
+        
 		using namespace rapidjson;
 		StringBuffer buf;
 		PrettyWriter<StringBuffer> w(buf);
 		w.StartObject();
 		{
 			w.String("srcPtr");
-			w.Int64(Serializer::toPtr(connection.srcPlug));
+			w.Int64(Serializer::toPtr(plug.getConnection()));
 			w.String("dstPtr");
-			w.Int64(Serializer::toPtr(connection.dstPlug));
+			w.Int64(Serializer::toPtr(plug));
 		}
 		w.EndObject();
 		client.enqueueEvent(callbackJSON("plugConnected", buf.GetString()));
 	}
 
 
-	void JSONRPCServerComponent::handlePlugDisconnected(AsyncTCPClient& client, Plug::Connection connection)
+	void JSONRPCServerComponent::handlePlugDisconnected(AsyncTCPClient& client, InputPlugBase& plug)
 	{
+        assert(plug.isConnected());
+        
 		using namespace rapidjson;
 		StringBuffer buf;
 		PrettyWriter<StringBuffer> w(buf);
 		w.StartObject();
 		{
 			w.String("srcPtr");
-			w.Int64(Serializer::toPtr(connection.srcPlug));
+			w.Int64(Serializer::toPtr(plug.getConnection()));
 			w.String("dstPtr");
-			w.Int64(Serializer::toPtr(connection.dstPlug));
+			w.Int64(Serializer::toPtr(plug));
 		}
 		w.EndObject();
 		client.enqueueEvent(callbackJSON("plugDisconnected", buf.GetString()));
