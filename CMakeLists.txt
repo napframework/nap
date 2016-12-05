@@ -18,7 +18,7 @@ endif()
 cmake_policy(SET CMP0020 NEW)
 cmake_policy(SET CMP0043 NEW)
 
-set(BUILD_CONF /${CMAKE_CXX_COMPILER_ID}/${CMAKE_BUILD_TYPE})
+set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}/${CMAKE_BUILD_TYPE})
 
 # Allow extra Find{project}.cmake files to be found by projects
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
@@ -52,17 +52,16 @@ add_subdirectory(test/render)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR}/modules)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${BIN_DIR}/modules)
 
-
 add_subdirectory(modules/napfsm)
 add_subdirectory(modules/napgui)
 #add_subdirectory(modules/napmath)
 #add_subdirectory(modules/napof)
+#add_subdirectory(modules/napawesomium)
+add_subdirectory(modules/naprender)
 add_subdirectory(modules/napinput)
 add_subdirectory(modules/network)
-#add_subdirectory(modules/napawesomium)
 add_subdirectory(modules/napscriptserver)
 add_subdirectory(modules/napjsonserializer)
-add_subdirectory(modules/naprender)
 
 #add_dependencies(napkin mod_napfsm)
 add_dependencies(scriptserver mod_napscriptserver)
