@@ -20,8 +20,8 @@ namespace nap {
     private:
         void addPlug() {
             auto plug = new nap::InputPullPlug<float>(&mParent, mBaseName);
-            plug->connected.connect([&](Plug::Connection connection) { addPlug(); });
-            plug->disconnected.connect([&](Plug::Connection connection) { condensePlugs(); });
+            plug->connected.connect([&](Plug&) { addPlug(); });
+            plug->disconnected.connect([&](Plug&) { condensePlugs(); });
             mPlugs.push_back(plug);
         }
 
@@ -41,10 +41,32 @@ namespace nap {
 
 
     };
+    
+    
+    class FloatOperator : public nap::Operator {
+        RTTI_ENABLE_DERIVED_FROM(nap::Operator)
+    public:
+        Attribute<float> mValue = { this, "valueAttr", 0. };
+        nap::OutputPullPlug<float> output = { this, &FloatOperator::pullValue, "value" };
+        nap::InputPullPlug<float> input = { this, "input" };
+        
+    private:
+        void pullValue(float& outValue)
+        {
+            if (input.isConnected())
+            {
+                float result;
+                input.pull(result);
+                mValue.setValue(result);
+            }
+            outValue = mValue.getValue();
+        }
+        
+    };
 
 
     class AddFloatOperator : public nap::Operator {
-    RTTI_ENABLE_DERIVED_FROM(nap::Operator)
+        RTTI_ENABLE_DERIVED_FROM(nap::Operator)
     public:
         AddFloatOperator() : nap::Operator() {
             // Add initial term
@@ -71,7 +93,7 @@ namespace nap {
 
 
     class MultFloatOperator : public nap::Operator {
-    RTTI_ENABLE_DERIVED_FROM(nap::Operator)
+        RTTI_ENABLE_DERIVED_FROM(nap::Operator)
     public:
         MultFloatOperator() : nap::Operator() { }
 
@@ -92,7 +114,7 @@ namespace nap {
 
 
     class SimpleTriggerOperator : nap::Operator {
-    RTTI_ENABLE_DERIVED_FROM(nap::Operator)
+        RTTI_ENABLE_DERIVED_FROM(nap::Operator)
     public:
         SimpleTriggerOperator() : nap::Operator() { }
 
@@ -103,6 +125,10 @@ namespace nap {
     };
 
 }
+
+
 RTTI_DECLARE(nap::AddFloatOperator)
 RTTI_DECLARE(nap::SimpleTriggerOperator)
 RTTI_DECLARE(nap::MultFloatOperator)
+RTTI_DECLARE(nap::FloatOperator)
+

@@ -56,8 +56,8 @@ std::shared_ptr<Core> createObjectTree()
 {
 	auto core = std::make_shared<Core>();
 	auto& root = core->getRoot();
-	auto& patch = root.addComponent<PatchComponent>("patch");
-	patch.setName("stijn");
+	auto& patch = root.addComponent<PatchComponent>("patchComponent");
+	patch.setName("patch");
 	auto& rootAttr = patch.addAttribute("attrRootOfTwo", RTTI_OF(Attribute<float>));
 	((Attribute<float>&)rootAttr).setValue(1.41421356237f);
 
@@ -81,12 +81,35 @@ std::shared_ptr<Core> createObjectTree()
 	((Attribute<float>&)myAt).setValue(1.61803398875f);
 
 
-	auto& opMult = patch2.addChild<MultFloatOperator>("Mult");
-	auto& opAdd = patch2.addChild<AddFloatOperator>("Add");
-
+    auto& opTermA = patch2.getPatch().addOperator<FloatOperator>("TermA");
+    auto& opTermB = patch2.getPatch().addOperator<FloatOperator>("TermA");
+    auto& opFactorB = patch2.getPatch().addOperator<FloatOperator>("FactorB");
+    auto& opResult = patch2.getPatch().addOperator<FloatOperator>("Result");
+    opTermA.mValue.setValue(1);
+    opTermB.mValue.setValue(2);
+    opFactorB.mValue.setValue(3);
+    
+	auto& opMult = patch2.getPatch().addOperator<MultFloatOperator>("Mult");
+	auto& opAdd = patch2.getPatch().addOperator<AddFloatOperator>("Add");
+    
+    opAdd.mTermA.connect(opTermA.output);
+    opAdd.mTermB.connect(opTermB.output);
 	opMult.mFactorA.connect(opAdd.sum);
-
+    opMult.mFactorB.connect(opFactorB.output);
+    opResult.input.connect(opMult.product);
+    
 	return core;
+}
+
+
+nap::FloatOperator* getFloatOperator(nap::Object& root, const std::string& name)
+{
+    std::vector<nap::FloatOperator*> results;
+    results = root.getChildrenOfType<nap::FloatOperator>(true);
+    for (auto& result : results)
+        if (result->getName() == name)
+            return result;
+    return nullptr;
 }
 
 
@@ -108,12 +131,18 @@ std::string diffString(const std::string& str1, const std::string& str2)
 	return stream.str();
 }
 
+
 bool testSerializer(const Serializer& ser)
 {
 	// Create object tree and serialize
 	auto srcCore = createObjectTree();
+    auto resultOp = getFloatOperator(srcCore->getRoot(), "Result");
+    TEST_ASSERT(resultOp, "Result operator not found in original object tree");
+    float result = 0;
+    resultOp->output.pull(result);
+    TEST_ASSERT(result == 9, "Patch did not return proper value: 9");
+    
 	std::string xmlString1 = ser.toString(srcCore->getRoot(), false);
-    std::cout << xmlString1 << std::endl;
 
 	// Deserialize
 	Core dstCore;
@@ -124,9 +153,15 @@ bool testSerializer(const Serializer& ser)
 
 	TEST_ASSERT(xmlString1 == xmlString2,
 				"Second serialization gave different result:\n" + diffString(xmlString1, xmlString2));
+    resultOp = getFloatOperator(dstCore.getRoot(), "Result");
+    TEST_ASSERT(resultOp, "Result operator not found in original object tree");
+    float desResult = 0;
+    resultOp->output.pull(desResult);
+    TEST_ASSERT(desResult == 9, "Deserialized patch did not return proper value: 9");
 
 	return true;
 }
+
 
 
 bool testXMLSerializer()

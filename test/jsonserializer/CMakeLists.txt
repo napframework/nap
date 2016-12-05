@@ -1,6 +1,6 @@
 project(jsonserializer)
 
-file(GLOB sources src/*.cpp)
+file(GLOB sources src/*.cpp src/*.h)
 include_directories(src)
 
 add_executable(${PROJECT_NAME} ${sources})

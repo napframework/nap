@@ -7,12 +7,14 @@ namespace nap
 
 	Link::Link(Object& parent) : Object() { setParent(parent); }
 
+    
 	const ObjectPath& Link::getPath()
 	{
 		if (mTarget) mObjectPath = mTarget;
 		return mObjectPath;
 	}
 
+    
 	void Link::setTarget(Object& target)
 	{
 		if (mTarget) {
@@ -21,8 +23,6 @@ namespace nap
 		mTarget = &target;
 		mTarget->removed.connect(mTargetRemoved);
 	}
-
-
 
 
 	void Link::setTargetType(RTTI::TypeInfo info) { mTargetType = info; }
@@ -60,6 +60,7 @@ namespace nap
 		mObjectPath.clear();
 	}
 
+    
     void Link::setTarget(const std::string& path) {
         mObjectPath = path;
     }

@@ -1,6 +1,6 @@
 project(mod_napjsonserializer)
 
-file(GLOB sources src/*.cpp)
+file(GLOB sources src/*.cpp src/*.h)
 
 find_package(rapidjson REQUIRED)
 

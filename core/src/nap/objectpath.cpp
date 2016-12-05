@@ -34,6 +34,7 @@ namespace nap
 			mAbsolutePath = pathToString(path);
 	}
 
+    
 	const std::string ObjectPath::pathToString(const std::vector<std::string>& path) const
 	{
 		std::ostringstream ss;
@@ -46,6 +47,7 @@ namespace nap
 		return ss.str();
 	}
 
+    
 	Object* ObjectPath::resolve(Object& root) const
 	{
 		if (mAbsolutePath == DELIMITER) return root.getRootObject();
@@ -73,17 +75,31 @@ namespace nap
 		}
 		return currentNode;
 	}
+    
+    
     void ObjectPath::clear() { mAbsolutePath.clear(); }
+    
+    
     bool ObjectPath::isEmpty() const { return mAbsolutePath.empty(); }
+    
+    
     ObjectPath& ObjectPath::operator=(const nap::ObjectPath& path) {
         mAbsolutePath = ObjectPath(path.mAbsolutePath);
         return *this;
     }
+    
+    
     ObjectPath::ObjectPath(const Object* object) {
         assert(object);
         constructPath(*object);
     }
+    
+    
     ObjectPath::ObjectPath(const ObjectPath& p) { mAbsolutePath = p.mAbsolutePath; }
+    
+    
     ObjectPath::ObjectPath(const std::string& path) : mAbsolutePath(path) {}
+    
+    
     ObjectPath::ObjectPath(const Object& object) { constructPath(object); }
 }

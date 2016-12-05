@@ -58,7 +58,7 @@ namespace nap
 	}
 
 
-	Patch::Connection::~Connection() { mDestination.disconnect(mSource); }
+	Patch::Connection::~Connection() { mDestination.disconnect(); }
 
     
     Component* Patch::getComponent()

@@ -9,7 +9,7 @@ else ()
     find_package(zmq REQUIRED)
 endif ()
 
-file(GLOB sources src/*.cpp)
+file(GLOB sources src/*.cpp src/*.h)
 
 add_library(${PROJECT_NAME} SHARED ${sources})
 if (UNIX)
