@@ -33,6 +33,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${LIB_DIR})
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
 
+
 # store project directory
 get_filename_component(PROJECTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/.. ABSOLUTE)
 
@@ -48,10 +49,7 @@ add_subdirectory(test/scriptserver)
 add_subdirectory(test/jsonserializer)
 add_subdirectory(test/render)
 
-# modules
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR}/modules)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${BIN_DIR}/modules)
-
+# Modules
 add_subdirectory(modules/napfsm)
 add_subdirectory(modules/napgui)
 #add_subdirectory(modules/napmath)
@@ -59,7 +57,7 @@ add_subdirectory(modules/napgui)
 #add_subdirectory(modules/napawesomium)
 add_subdirectory(modules/naprender)
 add_subdirectory(modules/napinput)
-add_subdirectory(modules/network)
+#add_subdirectory(modules/network)
 add_subdirectory(modules/napscriptserver)
 add_subdirectory(modules/napjsonserializer)
 
