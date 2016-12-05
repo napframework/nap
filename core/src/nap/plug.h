@@ -8,6 +8,7 @@
 
 #include <nap/attribute.h>
 #include <nap/signalslot.h>
+#include <nap/link.h>
 #include <rtti/rtti.h>
 
 namespace nap
@@ -48,6 +49,8 @@ namespace nap
 	class Plug : public Object
 	{
 		RTTI_ENABLE_DERIVED_FROM(Object)
+        friend class InputPlugBase;
+        
 	public:
 		// There can be four different kinds of plugs and connections:
 		//
@@ -71,13 +74,6 @@ namespace nap
 		// for example for audio or video streaming)
 		enum class Type { PUSH, PULL, TRIGGER, STREAM };
 
-        class Connection {
-        public:
-            Connection(OutputPlugBase& src, InputPlugBase& dst) : srcPlug(src), dstPlug(dst) {}
-            const OutputPlugBase& srcPlug;
-            const InputPlugBase& dstPlug;
-        };
-
 	public:
 		// Constructor
 		Plug(Operator* parent, const std::string& name, Type plugType, const RTTI::TypeInfo dataType);
@@ -99,11 +95,23 @@ namespace nap
 		// Returns operator owning this plug
 		Operator* getParent() const;
         
+        // Returns the plug to which this plug is connected, nullptr if not connected
+        Plug* getConnection();
+        
+        // Returns wether the plug is connected to another plug
+        bool isConnected() const;
+        
 	protected:
         // locks the component the plug's operator resides in
+        // TODO deprecate
         void lockComponent();
         // unlocks the component the plug's operator resides in
+        // TODO deprecate
         void unlockComponent();
+        
+        // The plug to which this plug is connected
+        // TODO make PointerAttribute
+        TypedLink<Plug> mConnection = { *this };
         
     private:
 		Type mPlugType = Type::PUSH;
@@ -123,19 +131,10 @@ namespace nap
 		// type
 		OutputPlugBase(Operator* parent, const std::string& name, Type plugType,
 					   const RTTI::TypeInfo dataType);
-
+        
 		// Destructor
 		virtual ~OutputPlugBase();
         
-        // Disconnects all inputs connected to this plug
-        void disconnectAll();
-
-		std::set<InputPlugBase*> getConnections() { return connections; }
-
-	protected:
-		// Keeps track of the connected plugs, so it push or pull and can
-		// unregister the connection at dectruction time
-		std::set<InputPlugBase*> connections;
 	};
 
 
@@ -160,34 +159,24 @@ namespace nap
 		// Connect an output plug to this input plug. Checks wether the
 		// connection is allowed first.
 		virtual void connect(OutputPlugBase& plug);
-
-		// Disconnect an output plug from this plug
-		virtual void disconnect(OutputPlugBase& plug);
         
-        // Disconnects all connections
-        void disconnectAll();
+        virtual void connect(const std::string& objectPath);
 
+		// Disconnect this plug from its output
+		virtual void disconnect();
+        
 		// Checks wether an output plug is allowed to be connected to this input plug.
         // This will only be the case if the plug types match and the data types emitted
         // or received by the plugs are the same.
         // This method is virtual because some plug types might need to extend it.
 		virtual bool canConnectTo(OutputPlugBase& plug);
 
-		std::set<OutputPlugBase*> getConnections() { return connections; }
-
 		// emitted when connected to a plug
-        // TODO: Change this into multiple arguments signal
-		nap::Signal<Plug::Connection> connected;
+		nap::Signal<InputPlugBase&> connected;
 
 		// emitted when disconnected from a plug
-        // TODO: Change this into multiple arguments signal
-		nap::Signal<Plug::Connection> disconnected;
+		nap::Signal<InputPlugBase&> disconnected;
 
-	protected:
-		// Keeps track of the connected plugs, so it can push or pull and can
-		// unregister the connection at dectruction
-		// time
-		std::set<OutputPlugBase*> connections;
 	};
 
 
@@ -308,12 +297,9 @@ namespace nap
 		// This constructor takes the name of the plug and an attribute of which
 		// value changes will be sent through this
 		// plug
-		OutputPushPlug(Operator* parent, const std::string& name,
-					   Attribute<T>& attribute)
-			: OutputPlugBase(parent, name, Plug::Type::PUSH,
-							 RTTI::TypeInfo::get<T>()),
-			  attributeSlot(std::make_unique<Slot<const T&>>(
-				  [&](const T& value) { push(value); }))
+		OutputPushPlug(Operator* parent, const std::string& name, Attribute<T>& attribute)
+			: OutputPlugBase(parent, name, Plug::Type::PUSH, RTTI::TypeInfo::get<T>()),
+			  attributeSlot(std::make_unique<Slot<const T&>>([&](const T& value) { push(value); }))
 		{
 			attribute.connectToValue(*attributeSlot);
 		}
@@ -417,7 +403,7 @@ namespace nap
 		void connect(OutputPlugBase& plug) override final;
 
 		// Disconnect an output plug from this plug
-		void disconnect(OutputPlugBase& plug) override final;
+		void disconnect() override final;
 
 		// Function to be invoked on connection to this plug, to be overriden by
 		// descendants
@@ -509,11 +495,8 @@ namespace nap
 	template <typename T>
 	void OutputPushPlug<T>::push(const T& output)
 	{
-		// an reinterpret_cast is used here because it's fast and we already
-		// checked the input plug's type at connection
-		// time in canConnectTo()
-		for (auto& connection : connections)
-			reinterpret_cast<InputPushPlug<T>*>(connection)->push(output);
+		if (isConnected())
+			static_cast<InputPushPlug<T>*>(getConnection())->push(output);
 	}
 
 
@@ -526,12 +509,8 @@ namespace nap
 	template <typename T>
 	void InputPullPlug<T>::pull(T& input)
 	{
-		// an reinterpret_cast is used here because it's fast and we already
-		// checked the input plug's type at connection
-		// time in canConnectTo()
-		if (connections.size() > 0)
-			reinterpret_cast<OutputPullPlug<T>*>(*connections.begin())
-				->pull(input);
+		if (isConnected())
+			static_cast<OutputPullPlug<T>*>(getConnection())->pull(input);
 	}
 
 
@@ -578,11 +557,11 @@ namespace nap
 	// disconnect function with the output plug's data source pointer as
 	// argument
 	template <typename T>
-	void InputStreamPlug<T>::disconnect(OutputPlugBase& plug)
+	void InputStreamPlug<T>::disconnect()
 	{
-		InputPlugBase::disconnect(plug);
-		auto outputPlug = dynamic_cast<OutputStreamPlug<T>*>(&plug);
-		onDisconnect(outputPlug->source);
+        auto outputPlug = dynamic_cast<OutputStreamPlug<T>*>(mConnection);
+        onDisconnect(outputPlug->source);
+		InputPlugBase::disconnect();
 	}
 
 

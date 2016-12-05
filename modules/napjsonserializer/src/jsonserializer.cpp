@@ -19,13 +19,14 @@ using namespace rapidjson;
 #define J_ATTRIBUTES "attributes"
 #define J_VALUE_TYPE "vType"
 #define J_DATA_TYPE "dataType"
-#define J_CONNECTIONS "connections"
+#define J_CONNECTION "connections"
 
 namespace nap
 {
 
     using Writer = rapidjson::PrettyWriter<StringBuffer>;
 
+    
 	std::string toString(AttributeBase& attrib)
 	{
 		const Entity* root = dynamic_cast<const Entity*>(attrib.getRootObject());
@@ -43,6 +44,7 @@ namespace nap
 		return "";
 	}
 
+    
 	template <typename T>
 	std::vector<AttributeBase*> realAttributes(T& attribObj)
 	{
@@ -53,6 +55,7 @@ namespace nap
 		return attribs;
 	}
 
+    
 	void writeAttribute(Writer& writer, AttributeBase& attrib, bool writePointers)
 	{
 		writer.StartObject();
@@ -78,8 +81,10 @@ namespace nap
 		writer.EndObject();
 	}
 
+    
 	bool isAttribute(Object& obj) { return obj.getTypeInfo().isKindOf<AttributeBase>(); }
 
+    
 	void writeTheObject(Writer& writer, Object& obj, bool writePointers)
 	{
 		writer.StartObject();
@@ -97,16 +102,13 @@ namespace nap
 				writer.String(J_DATA_TYPE);
 				writer.String(plug->getDataType().getName().c_str());
 
-				if (auto outPlug = rtti_cast<nap::OutputPlugBase*>(plug))
-                {
-                    writer.String(J_CONNECTIONS);
-                    writer.StartArray();
-                    for (auto con : outPlug->getConnections()) {
-                        std::string destPath = ObjectPath(con);
+				if (auto inputPlug = rtti_cast<nap::InputPlugBase*>(plug))
+                    if (inputPlug->isConnected())
+                    {
+                        writer.String(J_CONNECTION);
+                        std::string destPath = ObjectPath(inputPlug->getConnection());
                         writer.String(destPath.c_str());
                     }
-                    writer.EndArray();
-				}
 			}
 
 			if (writePointers) {
@@ -139,8 +141,6 @@ namespace nap
 				}
 			}
 
-
-
 			auto children = obj.getChildren();
 			std::vector<Object*> filteredObjects;
 			for (auto child : children) {
@@ -159,6 +159,7 @@ namespace nap
 		writer.EndObject();
 	}
 
+    
 	TypeList getInstantiableSubTypes(RTTI::TypeInfo parentType)
 	{
 		TypeList types;
@@ -174,6 +175,7 @@ namespace nap
 		return types;
 	}
 
+    
 	TypeList getAttributeTypes()
 	{
 		TypeList types;
@@ -186,6 +188,7 @@ namespace nap
 		return types;
 	}
 
+    
 	void writeTypes(Writer& w, TypeList types)
 	{
 		w.StartArray();
@@ -195,6 +198,7 @@ namespace nap
 		w.EndArray();
 	}
 
+    
 	void JSONSerializer::writeModuleInfo(std::ostream& ostream, ModuleManager& moduleManager) const
 	{
 		StringBuffer buf;
@@ -282,6 +286,7 @@ namespace nap
 		ostream << buf.GetString();
 	}
 
+    
 	AttributeBase* jsonToAttribute(Value& value, Core& core, Object* parent)
 	{
 		const char* attrName = value.FindMember(J_NAME)->value.GetString();
@@ -317,6 +322,7 @@ namespace nap
 		return attrib;
 	};
 
+    
 	Object* jsonToObject(Value& value, Core& core, Object* parent)
 	{
 		const char* objectName = value.FindMember(J_NAME)->value.GetString();
@@ -350,17 +356,12 @@ namespace nap
 
         // Deserialize type specifics
 
-        if (auto outPlug = rtti_cast<OutputPlugBase*>(obj)) {
-            if (value.HasMember(J_CONNECTIONS)) {
-                auto& connections = value[J_CONNECTIONS];
-
-                for (auto it = connections.Begin(); it != connections.End(); ++it)
-                {
-                    auto inPlug = ObjectPath(it->GetString()).resolve<InputPlugBase>(core.getRoot());
-                    inPlug->connect(*outPlug);
-                }
+        if (auto inputPlug = rtti_cast<InputPlugBase*>(obj))
+            if (value.HasMember(J_CONNECTION)) {
+                auto& connection = value[J_CONNECTION];
+                std::string outputPlugPath = connection.GetString();
+                inputPlug->connect(outputPlugPath);
             }
-        }
 
         // Deserialize children
 
@@ -381,6 +382,7 @@ namespace nap
 		return obj;
 	};
 
+    
 	Object* JSONSerializer::readObject(std::istream& istream, Core& core, Object* parent) const
 	{
 		IStreamWrapper is(istream);

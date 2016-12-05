@@ -20,8 +20,4 @@ int main(int argc, char** argv)
     TEST_ADD(testJSONSerializer)
 
 	TEST_RUN()
-
-	char msg;
-	std::cin >> msg;
-	return 0;
 }
