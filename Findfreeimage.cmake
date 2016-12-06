@@ -1,6 +1,6 @@
 find_path(
         FREEIMAGE_DIR
-        NAMES Dist/x32/FreeImage.h
+        NAMES Dist/x64/FreeImage.h
         HINTS
         ${CMAKE_CURRENT_LIST_DIR}/../FreeImage
 )
@@ -8,4 +8,6 @@ find_path(
 set(FREEIMAGE_INCLUDE_DIRS ${FREEIMAGE_DIR}/Dist/x64)
 set(FREEIMAGE_LIBRARIES ${FREEIMAGE_DIR}/Dist/x64/FreeImage.lib)
 
-mark_as_advanced(GLM_INCLUDE_DIRS)
+
+
+mark_as_advanced(FREEIMAGE_INCLUDE_DIRS)

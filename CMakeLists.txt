@@ -56,7 +56,7 @@ source_group("headers" FILES ${HEADERS})
 source_group("sources" FILES ${SOURCES})
 
 # compile shared lib as target
-add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
+add_library(${PROJECT_NAME} STATIC ${SOURCES} ${HEADERS})
 
 # add to include path and expose to depending projects
 target_include_directories(${PROJECT_NAME} PUBLIC src
@@ -78,4 +78,5 @@ target_link_libraries(${PROJECT_NAME}
 
 include(GenerateExportheader)
 GENERATE_EXPORT_HEADER(${PROJECT_NAME})
+
 
