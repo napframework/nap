@@ -8,12 +8,12 @@
 #include <rtti/rtti.h>
 
 // Core Includes
-#include <nap/component.h>
-#include <nap/entity.h>
-#include <nap/modulemanager.h>
-#include <nap/operator.h>
-#include <nap/service.h>
-#include <unordered_set>
+#include "component.h"
+#include "entity.h"
+#include "modulemanager.h"
+#include "operator.h"
+#include "service.h"
+#include "unordered_set"
 
 namespace nap
 {

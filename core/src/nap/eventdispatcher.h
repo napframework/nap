@@ -4,11 +4,11 @@
 #include <rtti/rtti.h>
 
 // Nap Includes
-#include <nap/event.h>
-#include <nap/attributeobject.h>
-#include <nap/configure.h>
-#include <nap/component.h>
-#include <nap/eventdispatcher.h>
+#include "event.h"
+#include "attributeobject.h"
+#include "configure.h"
+#include "component.h"
+#include "eventdispatcher.h"
 
 
 namespace nap

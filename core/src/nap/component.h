@@ -9,7 +9,6 @@
 
 namespace nap
 {
-
 	// Forward Declares
 	class Entity;
 	class Core;

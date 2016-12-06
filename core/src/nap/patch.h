@@ -1,13 +1,14 @@
 #pragma once
 
-#include <vector>
+// Local Includes
+#include "operator.h"
+#include "plug.h"
 
-#include <nap/operator.h>
-#include <nap/plug.h>
+// External Includes
+#include <vector>
 
 namespace nap
 {
-
 	//! This is a patch of operators that can be connected to one another through their plugs
 	class Patch : public AttributeObject
 	{

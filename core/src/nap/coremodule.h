@@ -1,10 +1,13 @@
 #pragma once
 
-#include <nap/coreoperators.h>
-#include <nap/coretypeconverters.h>
-#include <nap/link.h>
-#include <nap/module.h>
-#include <nap/patchcomponent.h>
+// Nap
+#include "coreoperators.h"
+#include "coretypeconverters.h"
+#include "link.h"
+#include "module.h"
+#include "patchcomponent.h"
+
+// External
 #include <rtti/rtti.h>
 
 /**

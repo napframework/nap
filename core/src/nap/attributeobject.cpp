@@ -1,6 +1,9 @@
+// Local includes
 #include "attributeobject.h"
+#include "component.h"
+
+// External includes
 #include <algorithm>
-#include <nap/component.h>
 
 
 RTTI_DEFINE(nap::AttributeObject)

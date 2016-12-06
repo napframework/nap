@@ -1,4 +1,7 @@
+// Local Includes
 #include "core.h"
+
+// External Includes
 #include <algorithm>
 
 using namespace std;

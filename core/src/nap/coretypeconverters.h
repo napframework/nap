@@ -1,10 +1,15 @@
 #pragma once
+
+// External Includes
 #include <string>
 #include <vector>
 #include <unordered_map>
 
-namespace nap {
-    
+/**
+ * Declares all default type converters
+ */
+namespace nap 
+{    
     bool convertStringToFloat(const std::string& inValue, float& outValue);
     bool convertFloatToString(const float& inValue, std::string& outString);
     

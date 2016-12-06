@@ -1,6 +1,6 @@
-#include <nap/coreattributes.h>
-#include <nap/coremodule.h>
-#include <nap/modulemanager.h>
+#include "coreattributes.h"
+#include "coremodule.h"
+#include "modulemanager.h"
 
 // clang-format off
 

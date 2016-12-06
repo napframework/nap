@@ -1,5 +1,6 @@
-#include <nap/coremodule.h>
-#include <nap/eventdispatcher.h>
+// Local Includes
+#include "coremodule.h"
+#include "eventdispatcher.h"
 
 /**
  * Nap Core module constructor

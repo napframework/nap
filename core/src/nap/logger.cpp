@@ -1,7 +1,8 @@
 #include "logger.h"
-#include <iostream>
 #include "object.h"
 #include "objectpath.h"
+
+#include <iostream>
 
 using namespace std;
 

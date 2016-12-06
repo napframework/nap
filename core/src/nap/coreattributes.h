@@ -1,11 +1,11 @@
 #pragma once
 
 // Local Includes
-#include "attribute.h"
-#include "arrayattribute.h"
+#include "rttinap.h"
 
 // External Includes
-#include <rtti/rtti.h>
+#include <unordered_map>
+#include <vector>
 
 /**
  * coreattributes

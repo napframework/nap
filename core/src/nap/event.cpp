@@ -1,5 +1,5 @@
-#include <nap/event.h>
-#include <nap/eventdispatcher.h>
+#include "event.h"
+#include "eventdispatcher.h"
 
 RTTI_DEFINE(nap::Event)
 RTTI_DEFINE(nap::Message)

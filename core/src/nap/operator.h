@@ -1,16 +1,17 @@
 #pragma once
 
+// Local Includes
 #include "attribute.h"
 #include "attributeobject.h"
 #include "plug.h"
 #include "coreattributes.h"
 
+// External Includes
 #include <rtti/rtti.h>
 #include <set>
 
 namespace nap
 {
-
 	// Forward declarations
 	class Core;
 	class Patch;

@@ -1,10 +1,13 @@
 #pragma once
 
+// Local Includes
+#include "configure.h"
+#include "signalslot.h"
+
+// External Includes
 #include <assert.h>
 #include <memory>
 #include <mutex>
-#include <nap/configure.h>
-#include <nap/signalslot.h>
 #include <rtti/rtti.h>
 #include <unordered_map>
 

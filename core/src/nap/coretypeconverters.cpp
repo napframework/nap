@@ -1,10 +1,12 @@
-
+// Local
 #include "coretypeconverters.h"
-#include <nap/stringutils.h>
+#include "stringutils.h"
+#include "logger.h"
+
+// External
 #include <cstring>
 #include <sstream>
 #include <cassert>
-#include <nap/logger.h>
 
 using namespace std;
 

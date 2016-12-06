@@ -1,14 +1,17 @@
 #pragma once
 
+// Local Includes
 #include "attribute.h"
 #include "arrayattribute.h"
 #include "object.h"
+#include "signalslot.h"
+
+// External Includes
 #include <assert.h>
 #include <memory>
 #include <mutex>
-#include <nap/signalslot.h>
-#include <rtti/rtti.h>
 #include <unordered_map>
+#include <rtti/rtti.h>
 
 namespace nap
 {

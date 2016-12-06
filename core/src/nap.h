@@ -1,6 +1,5 @@
 #pragma once
 
-#include <rtti/rtti.h>
 #include <nap/core.h>
 #include <nap/coreattributes.h>
 #include <nap/component.h>
@@ -11,3 +10,4 @@
 #include <nap/link.h>
 #include <nap/event.h>
 #include <nap/plug.h>
+#include <nap/coretypeconverters.h>

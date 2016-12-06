@@ -1,9 +1,11 @@
 #pragma once
 
-#include <nap/attribute.h>
-#include <rtti/rtti.h>
+// Local Includes
+#include "attribute.h"
 #include "logger.h"
 
+// External Includes
+#include <rtti/rtti.h>
 
 namespace nap
 {

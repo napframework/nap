@@ -1,12 +1,14 @@
 #pragma once
 
-#include <nap/component.h>
-#include <nap/patch.h>
+// Local Includes
+#include "component.h"
+#include "patch.h"
+
+// External Includes
 #include <rtti/rtti.h>
 
 namespace nap
 {
-
 	//! A component containing a patch of operators with connections
 	class PatchComponent : public Component
 	{

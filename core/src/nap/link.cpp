@@ -1,7 +1,5 @@
 #include "link.h"
 
-RTTI_DEFINE(nap::Link)
-
 namespace nap
 {
 
@@ -64,6 +62,6 @@ namespace nap
     void Link::setTarget(const std::string& path) {
         mObjectPath = path;
     }
-
-
 }
+
+RTTI_DEFINE(nap::Link)

@@ -1,8 +1,8 @@
 #include "object.h"
 #include "stringutils.h"
+#include "component.h"
 
 #include <algorithm>
-#include <nap/component.h>
 
 RTTI_DEFINE(nap::Object)
 

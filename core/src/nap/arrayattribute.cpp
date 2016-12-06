@@ -6,13 +6,11 @@
 //
 //
 
+// Local Includes
 #include "arrayattribute.h"
 
-RTTI_DEFINE(nap::CompoundAttribute)
-
-namespace nap {
-    
-    
+namespace nap 
+{    
     CompoundAttribute::CompoundAttribute()
     {
         initialize();
@@ -145,6 +143,6 @@ namespace nap {
     {
         sizeChanged(child);
     }
-    
-    
 }
+
+RTTI_DEFINE(nap::CompoundAttribute)

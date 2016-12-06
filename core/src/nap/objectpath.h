@@ -1,12 +1,19 @@
 #pragma once
 
+// Local Includes
 #include "object.h"
+
+// External Includes
 #include <iostream>
 #include <list>
 
-
 namespace nap
 {
+	/**
+	* ObjectPath represents a string based pointer to an object in the Object tree.
+	*
+	* The root node is represented by a delimiter "/"
+	*/
 	class ObjectPath
 	{
 
