@@ -74,9 +74,15 @@ SET(SDL2_SEARCH_PATHS
         /opt/local # DarwinPorts
         /opt/csw # Blastwave
         /opt
-        ${CMAKE_CURRENT_LIST_DIR}/../thirdparty/SDL2-2.0.5-win32-x64
-        ${CMAKE_CURRENT_LIST_DIR}/../thirdparty/SDL2-2.0.5-win32-x32
+
+        ${CMAKE_CURRENT_LIST_DIR}/../thirdparty/SDL2/dev/msvc/SDL2-2.0.5
         )
+
+if (MSVC)
+    list(APPEND SDL2_SEARCH_PATHS ${CMAKE_CURRENT_LIST_DIR}/../thirdparty/msvc/SDL2-2.0.5)
+endif()
+
+message(WARNING ${SDL2_SEARCH_PATHS})
 
 FIND_PATH(SDL2_INCLUDE_DIR SDL.h
         HINTS
