@@ -32,9 +32,9 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
 set(BUILD_SHARED_LIBS TRUE)
 
 # Find libraries
-set(CMAKE_LIBRARY_PATH "../sdl2/lib/x64")
+set(CMAKE_LIBRARY_PATH ../thirdparty/msvc/SDL2-2.0.5/lib/x64)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
-set(CMAKE_PREFIX_PATH ../sdl2)
+set(CMAKE_PREFIX_PATH ../thirdparty/msvc/SDL2-2.0.5)
 find_package(SDL2 REQUIRED)
 
 set(CMAKE_PREFIX_PATH ../glew)
