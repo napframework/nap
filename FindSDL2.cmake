@@ -74,8 +74,6 @@ SET(SDL2_SEARCH_PATHS
         /opt/local # DarwinPorts
         /opt/csw # Blastwave
         /opt
-
-        ${CMAKE_CURRENT_LIST_DIR}/../thirdparty/SDL2/dev/msvc/SDL2-2.0.5
         )
 
 if (MSVC)
