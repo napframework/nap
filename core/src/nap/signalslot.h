@@ -6,7 +6,6 @@
 
 namespace nap
 {
-
 	/**
 	Manages a function object.
 	Every event needs to be initialized with a function that can be called by other events

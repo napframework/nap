@@ -1,13 +1,12 @@
 #pragma once
 
+// Local Includes
 #include "object.h"
 #include "objectpath.h"
 #include "signalslot.h"
-#include <rtti/rtti.h>
 
 namespace nap
 {
-
 	//! A link to a object. Contains a pointer and can be converted to a path.
 	class Link : public Object
 	{

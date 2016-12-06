@@ -1,9 +1,12 @@
 #pragma once
 
+// Local Includes
 #include "stringutils.h"
+#include "signalslot.h"
+
+// External Includes
 #include <memory>
 #include <mutex>
-#include <nap/signalslot.h>
 #include <string>
 
 #define NAP_DECLARE_LOG_LEVEL(LEVEL, NAME)                                           \

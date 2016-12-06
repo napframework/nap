@@ -1,4 +1,6 @@
-#include <nap/eventdispatcher.h>
+// Local Includes
+#include "eventdispatcher.h"
+
 #include <algorithm>
 
 namespace nap

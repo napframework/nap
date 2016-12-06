@@ -1,11 +1,12 @@
 #pragma once
 
+// External Includes
 #include <rtti/rtti.h>
 
 // NAP Includes
-#include <nap/attribute.h>
-#include <nap/operator.h>
-#include <nap/signalslot.h>
+#include "attribute.h"
+#include "operator.h"
+#include "signalslot.h"
 
 namespace nap
 {

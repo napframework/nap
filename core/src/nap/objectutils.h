@@ -1,8 +1,6 @@
 #pragma once
-#include <nap.h>
+#include "nap.h"
 #include "event.h"
-#include <nap/coreattributes.h>
-#include <nap/coretypeconverters.h>
 
 namespace nap {
 

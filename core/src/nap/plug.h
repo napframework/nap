@@ -1,14 +1,16 @@
 #pragma once
 
+// Local Includes
+#include "attribute.h"
+#include "signalslot.h"
+#include "link.h"
+
+// External Includes
 #include <functional>
 #include <memory>
 #include <set>
 #include <string>
 #include <type_traits>
-
-#include <nap/attribute.h>
-#include <nap/signalslot.h>
-#include <nap/link.h>
 #include <rtti/rtti.h>
 
 namespace nap

@@ -1,12 +1,15 @@
 #pragma once
 
-#include <nap/component.h>
-#include <nap/operator.h>
+// Local Includes
+#include "component.h"
+#include "operator.h"
+#include "configure.h"
+#include "signalslot.h"
+#include "attributeobject.h"
+
+// External Includes
 #include <rtti/rtti.h>
 #include <set>
-#include <nap/configure.h>
-#include <nap/signalslot.h>
-#include <nap/attributeobject.h>
 
 namespace nap
 {

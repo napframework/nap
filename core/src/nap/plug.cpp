@@ -1,8 +1,8 @@
-
-#include <nap/patch.h>
-#include <nap/component.h>
-#include <nap/operator.h>
-#include <nap/plug.h>
+// Local Includes
+#include "patch.h"
+#include "component.h"
+#include "operator.h"
+#include "plug.h"
 
 RTTI_DEFINE(nap::Plug)
 RTTI_DEFINE(nap::InputPlugBase)

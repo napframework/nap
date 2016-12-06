@@ -4,13 +4,6 @@
 #include "logger.h"
 
 #define DELIMITER "/"
-/**
- * ObjectPath represents a string based pointer to an object in the Object tree.
- *
- * The root node is represented by a delimiter "/"
- *
- *
- */
 namespace nap
 {
 

@@ -1,12 +1,15 @@
 #pragma once
 
+// Local
 #include "module.h"
-#include "nap/component.h"
-#include "nap/fileutils.h"
-#include "nap/logger.h"
+#include "component.h"
+#include "fileutils.h"
+#include "logger.h"
+#include "attribute.h"
+#include "signalslot.h"
+
+// External
 #include <functional>
-#include <nap/attribute.h>
-#include <nap/signalslot.h>
 
 namespace nap
 {

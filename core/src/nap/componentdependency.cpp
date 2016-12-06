@@ -1,6 +1,1 @@
-#include <nap/componentdependency.h>
-
-namespace nap
-{
-
-}
+#include "componentdependency.h"

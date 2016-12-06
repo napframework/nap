@@ -1,3 +1,5 @@
+#pragma once
+
 //
 //  ArrayAttribute.hpp
 //  Soundlab
@@ -6,9 +8,11 @@
 //
 //
 
-#pragma once
+// External includes
 #include <stdio.h>
-#include <nap/attribute.h>
+
+// Local includes
+#include "attribute.h"
 
 namespace nap {
     

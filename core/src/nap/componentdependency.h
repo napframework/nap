@@ -1,7 +1,8 @@
 #pragma once
 
-#include <nap/entity.h>
-#include <nap/logger.h>
+// Local Includes
+#include "entity.h"
+#include "logger.h"
 
 namespace nap
 {

@@ -1,6 +1,7 @@
-#include <nap/serviceablecomponent.h>
-#include <nap/entity.h>
-#include <nap/service.h>
+// Local Includes
+#include "serviceablecomponent.h"
+#include "entity.h"
+#include "service.h"
 
 namespace nap
 {

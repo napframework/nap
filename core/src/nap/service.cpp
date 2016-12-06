@@ -1,8 +1,8 @@
-//#include <algorithm>
-#include <nap/logger.h>
-#include <nap/service.h>
-#include <nap/configure.h>
-#include <nap/serviceablecomponent.h>
+// Local Includes
+#include "logger.h"
+#include "service.h"
+#include "configure.h"
+#include "serviceablecomponent.h"
 
 RTTI_DEFINE(nap::Service)
 
