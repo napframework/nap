@@ -37,8 +37,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
 set(CMAKE_PREFIX_PATH ../thirdparty/SDL2)
 find_package(SDL2 REQUIRED)
 
-set(CMAKE_PREFIX_PATH ../glew)
-set(CMAKE_LIBRARY_PATH "../glew/lib/Release/x64")
+set(CMAKE_PREFIX_PATH ../thirdparty/glew)
+set(CMAKE_LIBRARY_PATH "../thirdparty/glew/lib/Release/x64")
 find_library(GLEW_LIBRARY NAMES GLEW glew32 glew glew32s PATH_SUFFIXES lib64)
 find_package(glew REQUIRED)
 
