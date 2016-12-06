@@ -3,6 +3,7 @@ find_path(
         NAMES Dist/x64/FreeImage.h
         HINTS
         ${CMAKE_CURRENT_LIST_DIR}/../FreeImage
+        ${CMAKE_CURRENT_LIST_DIR}/../thirdparty/FreeImage
 )
 
 set(FREEIMAGE_INCLUDE_DIRS ${FREEIMAGE_DIR}/Dist/x64)
