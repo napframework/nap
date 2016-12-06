@@ -31,50 +31,98 @@ namespace nap
 		friend class AttributeObject;
 		RTTI_ENABLE_DERIVED_FROM(Object)
 	public:
+		// Constructor
 		AttributeBase() = default;
 		AttributeBase(AttributeObject* parent, const std::string& name, bool atomic = false);
+
+		// Enable default copy behavior
+		AttributeBase(AttributeBase&) = default;
+		AttributeBase& operator=(const AttributeBase&) = default;
 
         // Virtual destructor because of virtual methods!
         virtual ~AttributeBase() = default;
         
-		virtual void		getValue(AttributeBase& attribute) const = 0;
-		virtual void		setValue(const AttributeBase& attribute) = 0;
+		/**
+		 * Copies the value of this attribute in to @attribute
+		 @param attribute the attribute to populate
+		 */
+		virtual void getValue(AttributeBase& attribute) const = 0;
 
-		AttributeObject*	getParent() const;
+		/**
+		 * Copies the value of @attribute in to this attribute
+		 @param attribute container to copy the value from
+		 */
+		virtual void setValue(const AttributeBase& attribute) = 0;
 
-        void				link(AttributeBase& source);
-        void				linkPath(const std::string& path);
-        void				unLink();
-        bool				isLinked();
+		/**
+		 * @return the parent associated with this attribute
+		 */
+		AttributeObject* getParent() const;
 
-        const ObjectPath&	getLinkSource() const { return getLink().getPath(); }
+		/**
+		 * TODO: REMOVE LINK FROM ATTRIBUTE
+		 * DEPRECATED -> use ObjectLinkAttribute
+		 */
+        void link(AttributeBase& source);
+        void linkPath(const std::string& path);
+        void unLink();
+        bool isLinked();
 
-		// Conversion
-        void				fromString(const std::string& stringValue);
-        void				toString(std::string& outStringValue) const;
+		/**
+		 * @return the path to the object this attribute links to
+		 */
+        const ObjectPath& getLinkSource() const								{ return getLink().getPath(); }
 
-		// Uses fromString() method to set the value
-		void				setValue(const std::string& value);
+		/**
+		 * Converts and sets the value from @strinValue
+		 @param stringValue the value to convert
+		 */
+        void fromString(const std::string& stringValue);
 
+		/**
+		 * Converts the value associated with the attribute in to a string
+		 @param outStringValue string that will hold the value after conversion
+		 */
+        void toString(std::string& outStringValue) const;
+
+		/**
+		 * Converts and sets the value from @value
+		 */
+		void setValue(const std::string& value);
+
+		/**
+		 * @return the type associated with the value managed by this attribute
+		 */
 		virtual const RTTI::TypeInfo getValueType() const = 0;
 
-		// Copy (Declared but needs thinking, moving not supported for now)
-		AttributeBase(AttributeBase&) = default;
-		AttributeBase& operator=(const AttributeBase&) = default;
+		/**
+		 * Sets this attribute value based on changes from an other attribute
+		 @param slot the attribute to listen to
+		 */
+		void connectToAttribute(Slot<AttributeBase&>& slot);
 
-		void				connectToAttribute(Slot<AttributeBase&>& slot);
+		/**
+		 * sets the attribute to internally lock a mutex when accessing it's value
+		 * @param atomic if the attribute will be locked or not on access
+		 */
+		void setAtomic(bool atomic)											{ mAtomic = atomic; }
+		
+		/**
+		 * @return if the attribute lock is enabled
+		 */
+		bool isAtomic() const												{ return mAtomic; }
 
-		// sets the attribute to internally lock a mutex when accessing it's value
-		void				setAtomic(bool atomic) { mAtomic = atomic; }
-		bool				isAtomic() const { return mAtomic; }
-
+		/**
+		 * Connect to this slot to listen to attribute changes
+		 */
 		Signal<AttributeBase&> valueChanged;
-
 
 	protected:
         virtual Link&		getLink() const = 0;
 
         // Emitted in derived (templated) classes (?)
+		// TODO: DEPRICATE THIS PLEASE, IT'S RATHER UNREADABLE
+		// AND CREATES CONFUSION ON DERIVED CLASSES
 		virtual void		emitValueChanged() = 0;
 
 		// Indicates wether the attribute should internally lock o mutex for thread safety when accessing it's value
@@ -172,23 +220,13 @@ namespace nap
 		NumericAttribute() : Attribute<T>()	{ }
 
 		// Constructor with defult value and min max
-		NumericAttribute(AttributeObject* parent, const std::string& name, const T& value, const T& minValue, const T& maxValue, bool atomic = false, bool clamped = true)
-			: Attribute<T>(parent, name, value , atomic)
-		{
-			setRange(minValue, maxValue);
-			setClamped(clamped);
-		}
-
+		NumericAttribute(AttributeObject* parent, const std::string& name, const T& value, const T& minValue, const T& maxValue, bool atomic = false, bool clamped = true);
 
 		// Constructor with default value and no min / max
-		NumericAttribute(AttributeObject* parent, const std::string& name, const T& value, bool atomic = false)
-			: Attribute<T>(parent, name, value, atomic)
-		{
-			setRange(value, value);
-		}
-
+		NumericAttribute(AttributeObject* parent, const std::string& name, const T& value, bool atomic = false);
 
 		// Constructor to declare an attribute with a member function pointer for the @valueChangedSignal as last argument.
+		// TODO: REMOVE THIS UGLY OVER TEMPLATED CONSTRUCTOR
 		template <typename U, typename F>
 		NumericAttribute(U* parent, const std::string& name, const T& inValue, const T& minValue, const T& maxValue, F function, bool atomic = false, bool clamped = true)
 			: Attribute<T>(parent, name, inValue, function, atomic)
@@ -213,7 +251,6 @@ namespace nap
         
 		// Clamp function
 		T				clampValue(const T& value, const T& min, const T& max);
-        
 
 	private:
 		// Range
@@ -254,193 +291,73 @@ namespace nap
 	};
 
 
-	//////////////////////////////////////////////////////////////////////////
-	// Attribute Template Definitions
-	//////////////////////////////////////////////////////////////////////////
-
-
 	/**
-	@brief Returns the containing type of Attribute<T>
-	**/
-	template <typename T>
-	const RTTI::TypeInfo Attribute<T>::getValueType() const
+	 * ObjectLinkAttribute
+	 *
+	 * Attribute that acts as a link to an other object
+	 */
+	class ObjectLinkAttribute : public AttributeBase
 	{
-		return RTTI::TypeInfo::get<T>();
-	}
+		RTTI_ENABLE_DERIVED_FROM(AttributeBase)
+	public:
+		// Default constructor
+		ObjectLinkAttribute() = default;
+		ObjectLinkAttribute(AttributeObject* parent, const std::string& name, const RTTI::TypeInfo& type);
 
+		// Conversion
+		virtual void getValue(AttributeBase& attribute) const override;
+		virtual void setValue(const AttributeBase& attribute) override;
 
-	/**
-	@brief Sets the value of @inAttribute to this attribute's value
-	**/
-	template <typename T>
-	void Attribute<T>::getValue(AttributeBase& inAttribute) const
-	{
-		static_cast<Attribute<T>&>(inAttribute).setValue(getValue());
-	}
+		/**
+		 * @return the link's target, nullptr if not linked
+		 */
+		Object* getTarget()									{ return mLink.getTarget(); }
 
+		/**
+		 * @return the link's target object path, empty string if not valid
+		 */
+		const ObjectPath& getPath()	const					{ return mLink.getPath(); }
 
-	/**
-	@brief Attribute<T>::getValue()
+		/**
+		 * sets the link's target, emits valueChanged when set
+		 * @param target object that is the links new target
+		 */
+		void setTarget(Object& target);
+		
+		/**
+		 * sets the link's target by resolving the target path
+		 * @param targetPath path to target
+		 */
+		void setTarget(const std::string& targetPath);
+		
+		/**
+		 * clears the link
+		 */
+		void clear()										{ mLink.clear(); }
 
-	Returns the attribute value, as a link or member 
-	Links are automatically resolved, otherwise return default vlaue
-	**/
-	template <typename T>
-	const T& Attribute<T>::getValue() const
-	{
-		assert(getTypeInfo().isKindOf(mLink.getTargetType()));
+		/**
+		 * returns type of attribute
+		 */
+		virtual const RTTI::TypeInfo getValueType() const override;
 
-        // No link, just return the value
-        if (!mLink.isLinked())
-            return mValue;
+	protected:
+		/**
+		* @return link associated with this attribute (TODO: DEPRECATE)
+		*/
+		virtual Link& getLink() const override				{ return mLink; }
 
-        // Target might not be valid, attempt to resovle
-        const Attribute<T>* targetAttr = mLink.getTypedTarget();
+		/**
+		 * TODO: DEPRECATE
+		 */
+		virtual void										emitValueChanged() override		{  }
 
-        if (!targetAttr)
-            return mValue;// Failed to resolve
-
-        // Return linked value
-        return targetAttr->getValue();
-	}
-
-
-	/**
-	@brief Returns the this attribute's value as a reference
-	**/
-	template <typename T>
-	T& Attribute<T>::getValueRef()
-	{
-		// When an attribute is atomic calling getValueRef() potentially breaks thread safety
-		assert(!mAtomic);
-
-		return mValue;
-	}
-
-
-	/**
-	@brief Sets this attributes value to @inValue
-	**/
-	template <typename T>
-	void Attribute<T>::setValue(const T& inValue)
-	{
-		// Don't change if it's the same
-		if (inValue == mValue)
-			return;
-
-		// Otherwise lock if blocking
-		if (mAtomic) 
-		{
-			std::unique_lock<std::mutex> lock(mMutex);
-			mValue = inValue;
-		} 
-		else
-		{
-			mValue = inValue;
-		}
-
-		valueChanged(*this);
-		valueChangedSignal(mValue);
-	}
-
-
-	// Sets mValue to @inAttribute.mValue
-	template <typename T>
-	void Attribute<T>::setValue(const AttributeBase &inAttribute)
-	{
-		const Attribute<T>& in_attr = static_cast<const Attribute<T>&>(inAttribute);
-		if (in_attr.mValue == mValue)
-			return;
-
-		if (mAtomic) 
-		{
-			std::unique_lock<std::mutex> lock(mMutex);
-			mValue = in_attr.mValue;
-		} 
-		else
-		{
-			mValue = in_attr.mValue;
-		}
-
-		valueChanged(*this);
-		valueChangedSignal(mValue);
-	}
-
-
-	/**
-	@brief Connect an attribute's value changed signal to a slot
-	**/
-	template <typename T>
-	void Attribute<T>::connectToValue(Slot<const T&>& inSlot)
-	{
-		valueChangedSignal.connect(inSlot);
-	}
-
-
-	/**
-	@brief Disconnect an attribute's value changed signal from a slot
-	**/
-	template <typename T>
-	void Attribute<T>::disconnectFromValue(Slot<const T&>& inSlot)
-	{
-		valueChangedSignal.disconnect(inSlot);
-	}
-
-	//////////////////////////////////////////////////////////////////////////
-	// Numeric Attribute Template Definitions
-	//////////////////////////////////////////////////////////////////////////
-
-	/**
-	@brief Maps the incoming value before setting it
-	**/
-	template <typename T>
-	void NumericAttribute<T>::setValue(const T& value)
-	{
-		T new_v = mClamped ? clampValue(value, mMinValue, mMaxValue) : value;
-		Attribute<T>::setValue(new_v);
-	}
-
-
-	/**
-	@brief set the min / max range of the attribute
-	**/
-	template <typename T>
-	void NumericAttribute<T>::setRange(const T& min, const T& max)
-	{
-		mMinValue = min;
-		mMaxValue = max;
-        rangeChanged(*this);
-	}
-
-
-	/**
-	@brief Sets if the range is clamped or not
-	**/
-	template <typename T>
-	void NumericAttribute<T>::setClamped(bool value)
-	{
-		// Skip if the same
-		if (value == mClamped)
-			return;
-
-		// If we're clamping, make sure to update the value
-		mClamped = value;
-		if (mClamped)
-            setValue(Attribute<T>::mValue);
-	}
-
-
-	/**
-	@brief Returns the min / max range of the attribute
-	**/
-	template <typename T>
-	void NumericAttribute<T>::getRange(T& outMin, T& outMax) const
-	{
-		outMin = mMinValue;
-		outMax = mMaxValue;
-	}
+	private:
+		// Link to object
+		mutable Link mLink;
+	};
 }
 
+#include "attribute.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // RTTI
@@ -449,6 +366,7 @@ namespace nap
 
 RTTI_DECLARE_BASE(nap::AttributeBase)
 RTTI_DECLARE(nap::SignalAttribute)
+RTTI_DECLARE(nap::ObjectLinkAttribute)
 
 // Create and bind attribute slot with @NAME to @FUNCTION
 #define ATTR_SLOT(NAME, FUNCTION) SLOT(NAME, nap::Attribute&, FUNCTION)

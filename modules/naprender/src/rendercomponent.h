@@ -28,25 +28,45 @@ namespace nap
 		/**
 		 * If the object should be drawn or not
 		 */
-		Attribute<bool>			draw = { this, "Draw", true };
+		Attribute<bool> enabled =					{ this, "Enabled", true };
 
 		/**
 		 * If alpha blending is enabled or not
 		 * disabling alpha blending will invalidate the blend mode
 		 */
-		Attribute<bool>			blend = { this, "Blend", true };
+		Attribute<bool>	blend =						{ this, "Blend", true };
 
 		/**
 		 * specifies first blend mode
 		 */
-		Attribute<BlendType>	firstBlendMode = { this, "FirstBlendMode", BlendType::SRC_ALPHA };
+		Attribute<BlendType> firstBlendMode =		{ this, "FirstBlendMode", BlendType::SRC_ALPHA };
 
 		/**
 		 * specifies second blend mode
 		 */
-		Attribute<BlendType>	secondBlendMode = { this, "SecondBlendMode", BlendType::ONE_MINUS_SRC_ALPHA };
+		Attribute<BlendType> secondBlendMode =		{ this, "SecondBlendMode", BlendType::ONE_MINUS_SRC_ALPHA };
 
-	protected:
+		/**
+		 * Draws the data to the currently active render target
+		 * Binds the material and calls onDraw afterwards.
+		 * Override if you want to customize material and binding behavior
+		 */
+		virtual void draw();
 
+		/**
+		 * Always called after draw and needs to be implemented
+		 * Handles drawing of object knowing the right materials have been assigned
+		 */
+		virtual void onDraw() = 0;
+
+		/**
+		 * Called after draw
+		 * useful for performing late drawing operations based
+		 * on the data represented by the render component
+		 * default implementation does nothing
+		 */
+		virtual void onPostDraw()	{ }
 	};
 }
+
+RTTI_DECLARE_BASE(nap::RenderableComponent)

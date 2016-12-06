@@ -6,7 +6,8 @@
 
 // RTTI Define
 
-namespace nap {
+namespace nap 
+{
 
     /**
     @brief Attribute Constructor
@@ -35,7 +36,12 @@ namespace nap {
 		}
 
 		valueChanged(*this);
-        emitValueChanged();
+        
+		// TODO: WHY IS THIS ONLY HERE AND NOT IN THE OTHER SET FUNCTIONS?
+		// HONESTLY, DOCUMENT THIS BEHAVIOUR BECAUSE I'M IMPLEMENTING
+		// THIS OVERRIDE EVERYWHERE WITHOUT KNOWING WHAT THE PURPOSE IS
+		// OF THIS DAMN VIRTUAL
+		emitValueChanged();
 	}
 
 
@@ -136,8 +142,79 @@ namespace nap {
 	@brief Returns if the attribute is currently linked to a different attribute
 	**/
     bool AttributeBase::isLinked() { return getLink().isLinked(); }
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// ObjectLinkAttribute
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * constructor using a type as link type
+	 */
+	ObjectLinkAttribute::ObjectLinkAttribute(AttributeObject* parent, const std::string& name, const RTTI::TypeInfo& type)
+	{
+		mLink.setTargetType(type);
+	}
+
+	/**
+	 * Sets the path based on the current link target
+	 */
+	void ObjectLinkAttribute::getValue(AttributeBase& attribute) const
+	{
+		const ObjectPath& path = getPath();
+		static_cast<ObjectLinkAttribute&>(attribute).setTarget(path);
+	}
+
+
+	/**
+	 * Sets the path based on the incoming attribute
+	 */
+	void ObjectLinkAttribute::setValue(const AttributeBase& attribute)
+	{
+		const ObjectLinkAttribute& attr = static_cast<const ObjectLinkAttribute&>(attribute);
+		if (mAtomic)
+		{
+			std::unique_lock<std::mutex> lock(mMutex);
+			this->setTarget(attr.getPath());
+		}
+		else
+		{
+			this->setTarget(attr.getPath());
+		}
+		valueChanged(*this);
+	}
+
+
+	/**
+	 * Set new link target, trigger change
+	 */
+	void ObjectLinkAttribute::setTarget(Object& target)
+	{
+		mLink.setTarget(target);
+		valueChanged(*this);
+	}
+
+
+	/**
+	 * Set new target and forward change
+	 */
+	void ObjectLinkAttribute::setTarget(const std::string& targetPath)
+	{
+		mLink.setTarget(targetPath);
+		valueChanged(*this);
+	}
+
+	/**
+	 * Always returns type of link
+	 */
+	const RTTI::TypeInfo ObjectLinkAttribute::getValueType() const
+	{
+		return RTTI_OF(nap::Link);
+	}
+
 }
 // RTTI Define
 RTTI_DEFINE(nap::AttributeBase)
 RTTI_DEFINE(nap::SignalAttribute)
+RTTI_DEFINE(nap::ObjectLinkAttribute)
 

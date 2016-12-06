@@ -13,6 +13,7 @@ namespace nap
 		RTTI_ENABLE_DERIVED_FROM(Object)
 	public:
 		Link(Object& parent);
+		Link(Object& parent, const RTTI::TypeInfo&  type);
 		Link() : Object() {}
 
 		void clear();
@@ -22,7 +23,7 @@ namespace nap
 		template <typename T>
 		T* getTarget() const
 		{
-			return dynamic_cast<T*>(getTarget());
+			return rtti_cast<T*>(getTarget());
 		}
 
 		void setTarget(Object& target);
@@ -58,6 +59,7 @@ namespace nap
 		}};
 	};
 
+	// TODO: DEPRICATE
 	template <typename T>
 	class TypedLink : public Link
 	{

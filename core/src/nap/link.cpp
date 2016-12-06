@@ -6,6 +6,11 @@ namespace nap
 	Link::Link(Object& parent) : Object() { setParent(parent); }
 
     
+	Link::Link(Object& parent, const RTTI::TypeInfo& type) : mTargetType(type)
+	{
+		setParent(parent);
+	}
+
 	const ObjectPath& Link::getPath()
 	{
 		if (mTarget) mObjectPath = mTarget;
