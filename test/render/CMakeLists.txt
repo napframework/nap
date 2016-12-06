@@ -26,8 +26,8 @@ if (MSVC)
     set(FILES_TO_COPY
             ${ASSIMP_DIR}/bin64/assimp.dll
             ${FREEIMAGE_DIR}/Dist/x64/FreeImage.dll
-            ../../../sdl2/lib/x64/SDL2.dll
-            ../../../glew/bin/Release/x64/glew32.dll
+            ../../../thirdparty/sdl2/lib/x64/SDL2.dll
+            ../../../thirdparty/glew/bin/Release/x64/glew32.dll
             )
 
     # copy nrender (hack)
