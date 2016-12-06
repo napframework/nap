@@ -3,6 +3,7 @@ find_path(
         NAMES glm/glm.hpp
         HINTS
         ${CMAKE_CURRENT_LIST_DIR}/../glm
+        ${CMAKE_CURRENT_LIST_DIR}/../thirdparty/glm
 )
 
 mark_as_advanced(GLM_INCLUDE_DIRS)
