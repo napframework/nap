@@ -3,6 +3,7 @@ find_path(
         NAMES include/assimp/scene.h
         HINTS
         ${CMAKE_CURRENT_LIST_DIR}/../assimp
+        ${CMAKE_CURRENT_LIST_DIR}/../thirdparty/assimp
 )
 
 set(ASSIMP_INCLUDE_DIRS ${ASSIMP_DIR}/include)
