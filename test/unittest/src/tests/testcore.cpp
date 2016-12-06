@@ -214,3 +214,28 @@ bool testFileUtils()
 
 	return true;
 }
+
+
+bool testResourceManager() {
+    Core core;
+    auto& resourceMan = core.getOrCreateService<ResourceManagerService>();
+    resourceMan.setAssetRoot("resources");
+
+    std::string resource = "test.napj";
+
+    ResourceLoader* factory = resourceMan.getFactoryFor(resource);
+    TEST_ASSERT(factory != nullptr, "Unable to find factory for: " + resource);
+
+    TEST_ASSERT(resourceMan.canLoad(resource), "Cannot load resource: " + resource);
+
+    auto res = resourceMan.getResource<JSONResource>(resource);
+    TEST_ASSERT(res, "Resource failed to load: " + resource);
+
+    Object* obj = res->createInstance(core, core.getRoot());
+    TEST_ASSERT(obj, "Couldn't create instance of resource: " + resource);
+
+    TEST_ASSERT(obj->getTypeInfo().isKindOf<Entity>(), "Instantiated resource should have been an Entity");
+    TEST_ASSERT(obj->getName() == "MyEntity", "Instantiated resource should have been named MyEntity");
+
+    return true;
+}

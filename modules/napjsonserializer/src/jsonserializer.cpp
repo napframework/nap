@@ -1,12 +1,17 @@
 #include "jsonserializer.h"
 #include "rapidjson/error/en.h"
 #include <rtti/rtti.h>
-RTTI_DEFINE(nap::JSONSerializer)
-
 #include <nap.h>
 #include <rapidjson/document.h>
 #include <rapidjson/istreamwrapper.h>
 #include <rapidjson/prettywriter.h>
+#include <fstream>
+
+RTTI_DEFINE(nap::JSONSerializer)
+RTTI_DEFINE(nap::JSONResource)
+RTTI_DEFINE(nap::JSONFileFactory)
+
+
 
 using namespace rapidjson;
 
@@ -396,4 +401,13 @@ namespace nap
 
 		return jsonToObject(doc, core, parent);
 	}
+
+
+    bool JSONFileFactory::loadResource(const std::string& resourcePath, std::unique_ptr<Resource>& outResource) const {
+        std::ifstream is(resourcePath);
+        std::string str((std::istreambuf_iterator<char>(is)),
+                        std::istreambuf_iterator<char>());
+        outResource.reset(new JSONResource(resourcePath, str));
+        return true;
+    }
 }

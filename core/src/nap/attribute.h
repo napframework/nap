@@ -227,7 +227,7 @@ namespace nap
 	/**
 	SignalAttribute
 
-	Acts as a bang, connect to @signal signal to receive bang
+	Acts as a bang, connect to @signal signal to receive !bang!
 	**/
 	class SignalAttribute : public AttributeBase
 	{

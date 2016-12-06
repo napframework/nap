@@ -18,6 +18,7 @@ int main(int argc, char** argv)
 	TEST_ADD(testCore)
 	TEST_ADD(testObjectPath)
     TEST_ADD(testJSONSerializer)
+    TEST_ADD(testResourceManager)
 
 	TEST_RUN()
 }
