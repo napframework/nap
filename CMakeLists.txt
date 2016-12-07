@@ -35,9 +35,8 @@ set(BUILD_SHARED_LIBS TRUE)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
 # Find libraries
 if (MSVC)
-    set(CMAKE_LIBRARY_PATH "../thirdparty/SDL2/lib/x64")
-    set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
-    set(CMAKE_PREFIX_PATH ../thirdparty/SDL2)
+    set(CMAKE_LIBRARY_PATH "../thirdparty/SDL2/msvc/lib/x64")
+    set(CMAKE_PREFIX_PATH ../thirdparty/SDL2/msvc)
 endif()
 find_package(SDL2 REQUIRED)
 
@@ -63,8 +62,7 @@ file(GLOB_RECURSE SOURCES src *.cpp *.h)
 # compile shared lib as target
 add_library(${PROJECT_NAME} STATIC ${SOURCES})
 
-# add to include path and expose to depending projects
-target_include_directories(${PROJECT_NAME} PUBLIC src
+set(INCLUDES
         ${SDL2_INCLUDE_DIR}
         ${GLM_INCLUDE_DIRS}
         ${GLEW_INCLUDE_DIRS}
@@ -72,14 +70,28 @@ target_include_directories(${PROJECT_NAME} PUBLIC src
         ${ASSIMP_INCLUDE_DIRS}
         )
 
-# Link with SDL and GLEW
-target_link_libraries(${PROJECT_NAME}
+set(LIBRARIES
         ${SDL2_LIBRARY}
-        ${GLEW_LIBRARIES}
-        ${FREEIMAGE_LIBRARIES}
-        ${ASSIMP_LIBRARIES}
         ${OPENGL_gl_LIBRARY}
         )
+
+if (MSVC)
+    list(APPEND LIBRARIES
+            ${GLEW_LIBRARIES}
+            ${FREEIMAGE_LIBRARIES}
+            ${ASSIMP_LIBRARIES}
+            )
+elseif(UNIX)
+    list(APPEND LIBRARIES
+            freeimage
+            GLEW
+            assimp
+            )
+endif()
+
+# add to include path and expose to depending projects
+target_include_directories(${PROJECT_NAME} PUBLIC src ${INCLUDES})
+target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
 
 if (MSVC)
     include(GenerateExportheader)
