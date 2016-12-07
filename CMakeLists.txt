@@ -45,7 +45,7 @@ if (MSVC)
 endif()
 
 find_library(GLEW_LIBRARY NAMES GLEW glew32 glew glew32s PATH_SUFFIXES lib64)
-find_package(glew REQUIRED)
+find_package(GLEW REQUIRED)
 find_package(OpenGL)
 find_package(glm REQUIRED)
 find_package(freeimage REQUIRED)
