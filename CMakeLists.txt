@@ -31,6 +31,8 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
 set(BUILD_SHARED_LIBS TRUE)
 
+# Let cmake find FindMODULE.cmake
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
 # Find libraries
 if (MSVC)
     set(CMAKE_LIBRARY_PATH "../thirdparty/SDL2/lib/x64")
@@ -79,7 +81,8 @@ target_link_libraries(${PROJECT_NAME}
         ${OPENGL_gl_LIBRARY}
         )
 
-include(GenerateExportheader)
-GENERATE_EXPORT_HEADER(${PROJECT_NAME})
-
+if (MSVC)
+    include(GenerateExportheader)
+    GENERATE_EXPORT_HEADER(${PROJECT_NAME})
+endif()
 
