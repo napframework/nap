@@ -11,7 +11,9 @@
 #include <rtti/rtti.h>
 #include <unordered_map>
 
-#define NAP_EXPORT __declspec(dllexport)
+#ifndef NAP_EXPORT
+    #define NAP_EXPORT __declspec(dllexport)
+#endif
 
 namespace nap
 {
