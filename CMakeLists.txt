@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.4)
+cmake_minimum_required(VERSION 3.2)
 project(nrender)
 
 
@@ -32,16 +32,20 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
 set(BUILD_SHARED_LIBS TRUE)
 
 # Find libraries
-set(CMAKE_LIBRARY_PATH "../thirdparty/SDL2/lib/x64")
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
-set(CMAKE_PREFIX_PATH ../thirdparty/SDL2)
+if (MSVC)
+    set(CMAKE_LIBRARY_PATH "../thirdparty/SDL2/lib/x64")
+    set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
+    set(CMAKE_PREFIX_PATH ../thirdparty/SDL2)
+endif()
 find_package(SDL2 REQUIRED)
 
-set(CMAKE_PREFIX_PATH ../thirdparty/glew)
-set(CMAKE_LIBRARY_PATH "../thirdparty/glew/lib/Release/x64")
+if (MSVC)
+    set(CMAKE_PREFIX_PATH ../thirdparty/glew)
+    set(CMAKE_LIBRARY_PATH "../thirdparty/glew/lib/Release/x64")
+endif()
+
 find_library(GLEW_LIBRARY NAMES GLEW glew32 glew glew32s PATH_SUFFIXES lib64)
 find_package(glew REQUIRED)
-
 find_package(OpenGL)
 find_package(glm REQUIRED)
 find_package(freeimage REQUIRED)
@@ -50,13 +54,12 @@ find_package(assimp REQUIRED)
 
 
 # add all cpp files to SOURCES
-file(GLOB SOURCES src/*.cpp)
-file(GLOB HEADERS src/*.h)
-source_group("headers" FILES ${HEADERS})
-source_group("sources" FILES ${SOURCES})
+file(GLOB_RECURSE SOURCES src *.cpp *.h)
+#source_group("headers" FILES ${HEADERS})
+#source_group("sources" FILES ${SOURCES})
 
 # compile shared lib as target
-add_library(${PROJECT_NAME} STATIC ${SOURCES} ${HEADERS})
+add_library(${PROJECT_NAME} STATIC ${SOURCES})
 
 # add to include path and expose to depending projects
 target_include_directories(${PROJECT_NAME} PUBLIC src
