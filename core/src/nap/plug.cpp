@@ -57,7 +57,7 @@ namespace nap
 
 	InputPlugBase::~InputPlugBase()
 	{
-        if (mConnection.getTypedTarget())
+        if (isConnected())
             disconnect();
 	}
 
