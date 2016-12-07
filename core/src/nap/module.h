@@ -74,8 +74,8 @@ RTTI_DECLARE_BASE(nap::Module)
 #define NAP_EXPORT extern "C" __declspec(dllexport)
     #define NAP_IMPORT __declspec(dllimport)
 #elif __GNUC__
-#define NAP_EXPORT extern "C" __attribute__((visibility("default")))
-#define NAP_IMPORT
+#define NAP_CEXPORT extern "C" __attribute__((visibility("default")))
+#define NAP_CIMPORT
 #else //  do nothing and hope for the best?
 #define NAP_EXPORT extern "C"
     #define NAP_IMPORT
