@@ -1,4 +1,5 @@
 #include "fileutils.h"
+#include "stringutils.h"
 
 #include <cstring>
 
@@ -22,7 +23,7 @@
 
 namespace nap
 {
-
+	// List all files in a directory
 	bool listDir(const char* directory, std::vector<std::string>& outFilenames)
 	{
 		DIR* dir;
@@ -60,19 +61,70 @@ namespace nap
 #endif
 	}
 
-	// Lelijk
-	std::string getFileExtension(const std::string &filename) {
-		return filename.substr(filename.find_last_of(".") + 1);
+	// Return file extension, empty string if file has no extension
+	std::string getFileExtension(const std::string &filename) 
+	{
+		const size_t idx = filename.find_last_of(".");
+		if (idx == std::string::npos)
+			return "";
+		return filename.substr(idx + 1);
 	}
 
 
-    bool fileExists(const std::string& filename) {
+	// Return file name with extension for @file
+	std::string getFileName(const std::string& file)
+	{
+		std::string name = file;
+		const size_t last_slash_idx = name.find_last_of("\\/");
+		if (last_slash_idx != std::string::npos)
+			name = name.erase(0, last_slash_idx + 1);
+		return name;
+	}
+
+
+	// Returns name of file without extension
+	std::string getFileNameWithoutExtension(const std::string& file)
+	{
+		std::string rfile = getFileName(file);
+		stripFileExtension(rfile);
+		return rfile;
+	}
+
+
+	// Get file name without extension
+	void stripFileExtension(std::string& file)
+	{
+		const size_t idx = file.find_last_of(".");
+		if (idx != std::string::npos)
+		{
+			size_t length = file.size() - idx;
+			file.erase(idx, length);
+		}
+	}
+
+
+	// Strip file extension
+	std::string stripFileExtension(const std::string& file)
+	{
+		std::string stripped = file;
+		stripFileExtension(stripped);
+		return stripped;
+	}
+
+
+	// Check if the file has an extension of type extension
+	bool hasExtension(const std::string& file, const std::string& extension)
+	{
+		return gToLower(getFileExtension(file)) == gToLower(extension);
+	}
+
+
+	// Checks if the file exists on disk
+	bool fileExists(const std::string& filename) {
         if (FILE *file = fopen(filename.c_str(), "r")) {
             fclose(file);
             return true;
         }
         return false;
     }
-
-
 }

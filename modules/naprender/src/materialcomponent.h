@@ -2,7 +2,7 @@
 
 // External includes
 #include <nap/serviceablecomponent.h>
-#include <nap/link.h>
+#include <nap/attribute.h>
 
 namespace nap
 {

@@ -4,38 +4,11 @@
 #include "logger.h"
 #include "object.h"
 #include "service.h"
+#include "resource.h"
 
 namespace nap
 {
-
 	class ResourceManagerService;
-
-	/**
-	 * Abstract base class for any Asset. Could be a TextureAsset, ModelAsset or AudioAsset for example.
-	 */
-	class Resource
-	{
-		RTTI_ENABLE()
-	public:
-		Resource(const std::string& path) {}
-		/**
-		 * @return Human readable string representation of this path
-		 */
-		const std::string& getDisplayName() const { return mPath; }
-
-		/**
-		 * Provided a core to work with, create an instance of this resource as a child of the provided parent.
-		 * @param core The core, necessary for some client operations
-		 * @param parent The parent of which the newly created Object will be a child
-		 * @return The newly created Object
-		 */
-		virtual Object* createInstance(Core& core, Object& parent) = 0;
-
-	private:
-		std::string mPath;
-	};
-
-
 
 	/**
 	 * Abstract base class for any AssetFactories,
@@ -43,7 +16,7 @@ namespace nap
 	class ResourceLoader
 	{
 		RTTI_ENABLE()
-		friend class ResourceManagerService;
+			friend class ResourceManagerService;
 
 	public:
 		/**
@@ -103,7 +76,7 @@ namespace nap
 		RTTI_ENABLE_DERIVED_FROM(Service)
 	public:
 
-        /**
+		/**
 		 * @param rootDir The root directory from which all assets will be loaded
 		 */
 		ResourceManagerService() = default;
@@ -132,10 +105,10 @@ namespace nap
 		 */
 		Resource* getResource(const std::string& path);
 
-        template<typename T>
-        T* getResource(const std::string& path) {
-            return rtti_cast<T*>(getResource(path));
-        }
+		template<typename T>
+		T* getResource(const std::string& path) {
+			return rtti_cast<T*>(getResource(path));
+		}
 
 		/**
 		 * Purge cache and ensure all assets will be reloaded the next time they are accessed
@@ -149,13 +122,13 @@ namespace nap
 		 */
 		ResourceLoader* getFactoryFor(const std::string& path);
 
-        /**
-         * @return all registered factories
-         */
-        std::vector<ResourceLoader*> getFactories();
+		/**
+		 * @return all registered factories
+		 */
+		std::vector<ResourceLoader*> getFactories();
 
 	private:
-        /**
+		/**
 		 * Find an appropriate AssetFactory and let it load the asset
 		 */
 		Resource* loadResource(const std::string& path);
@@ -188,6 +161,6 @@ namespace nap
 		std::map<std::string, std::unique_ptr<Resource>> mResources;
 	};
 }
-RTTI_DECLARE_BASE(nap::Resource)
+
 RTTI_DECLARE_BASE(nap::ResourceLoader)
 RTTI_DECLARE(nap::ResourceManagerService)
