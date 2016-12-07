@@ -34,9 +34,10 @@ set(BUILD_SHARED_LIBS TRUE)
 # Let cmake find FindMODULE.cmake
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
 # Find libraries
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
+
 if (MSVC)
     set(CMAKE_LIBRARY_PATH "../thirdparty/SDL2/lib/x64")
-    set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
     set(CMAKE_PREFIX_PATH ../thirdparty/SDL2)
 endif()
 find_package(SDL2 REQUIRED)
