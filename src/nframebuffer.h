@@ -46,13 +46,13 @@ namespace opengl
 
 		/**
 		* Binds the framebuffer so it can be used by subsequent render calls
-		@return if the FBO was successfully bound or not
+		* @return if the FBO was successfully bound or not
 		*/
 		bool bind();
 
 		/**
 		* Unbinds the framebuffer, future framebuffer calls won't have any effect on this framebuffer
-		@ return if the FBO was successfully unbound
+		* @return if the FBO was successfully unbound
 		*/
 		bool unbind();
 

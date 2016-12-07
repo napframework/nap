@@ -110,7 +110,7 @@ namespace opengl
 		 * Generates for that bitmap an OpenGL Texture2D
 		 * This function will always clear the bitmap data, also when failing to load the image
 		 * @param path: the absolute path to the image on disk to load
-		 * @param compress: if the texture needs to be compressed on the GPU
+		 * @return if load was successful or not
 		 */
 		bool					load(const std::string& path);
 		
@@ -121,7 +121,6 @@ namespace opengl
 		 * Initializes the 2DTexture
 		 * Uploads the bitmap to the 2DTexture on the GPU
 		 * This function will always clear the bitmap data, also when failing to load the image
-		 @param compress: if the texture needs to be compressed on the GPU
 		 */
 		bool					load();
 
