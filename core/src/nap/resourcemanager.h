@@ -120,12 +120,13 @@ namespace nap
 		 */
 		bool canLoad(const std::string& path);
 
-
 		/**
 		 * Get or load an asset based on the path (file path relative to the asset directory)
 		 *
 		 * Internally, this will forward the call to the most appropriate asset factory if the file needs to be loaded
 		 * from disk.
+		 *
+		 * The resulting resource is managed by the ResourceManager (who thought?)
 		 * @param path
 		 * @return
 		 */

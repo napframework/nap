@@ -4,8 +4,10 @@ file(GLOB_RECURSE SOURCES src/ *.cpp *.h)
 
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
-include(GenerateExportheader)
-GENERATE_EXPORT_HEADER(${PROJECT_NAME})
+if (MSVC)
+    include(GenerateExportheader)
+    GENERATE_EXPORT_HEADER(${PROJECT_NAME})
+endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC src)
 
