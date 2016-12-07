@@ -11,10 +11,6 @@
 #include <rtti/rtti.h>
 #include <unordered_map>
 
-#ifndef NAP_EXPORT
-    #define NAP_EXPORT __declspec(dllexport)
-#endif
-
 namespace nap
 {
 
@@ -33,7 +29,7 @@ namespace nap
 	 * Instantiation should never be done "manually" but through the addChild methods. An object should always have a
 	 * parent (except for the "world's" root Object, which belongs to Core)
 	 */
-	class NAP_EXPORT Object
+	class Object
 	{
 		RTTI_ENABLE()
 	public:
