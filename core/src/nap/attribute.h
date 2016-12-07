@@ -123,6 +123,7 @@ namespace nap
         // Emitted in derived (templated) classes (?)
 		// TODO: DEPRICATE THIS PLEASE, IT'S RATHER UNREADABLE
 		// AND CREATES CONFUSION ON DERIVED CLASSES
+        [[deprecated]]
 		virtual void		emitValueChanged() = 0;
 
 		// Indicates wether the attribute should internally lock o mutex for thread safety when accessing it's value
