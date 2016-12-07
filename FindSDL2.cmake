@@ -80,8 +80,6 @@ if (MSVC)
     list(APPEND SDL2_SEARCH_PATHS ${CMAKE_CURRENT_LIST_DIR}/../thirdparty/msvc/SDL2-2.0.5)
 endif()
 
-message(WARNING ${SDL2_SEARCH_PATHS})
-
 FIND_PATH(SDL2_INCLUDE_DIR SDL.h
         HINTS
         $ENV{SDL2DIR}
