@@ -43,8 +43,16 @@ endif()
 find_package(SDL2 REQUIRED)
 
 if (MSVC)
-    set(CMAKE_PREFIX_PATH ../thirdparty/glew)
-    set(CMAKE_LIBRARY_PATH "../thirdparty/glew/lib/Release/x64")
+    set(CMAKE_PREFIX_PATH ../thirdparty/glew/msvc)
+    set(CMAKE_LIBRARY_PATH "../thirdparty/glew/msvc/lib/Release/x64")
+elseif (APPLE)
+    set(CMAKE_PREFIX_PATH ../thirdparty/glew/osx)
+    set(CMAKE_LIBRARY_PATH "../thirdparty/glew/osx/lib")
+endif()
+
+if (APPLE)
+    set(CMAKE_PREFIX_PATH ../thirdparty/assimp/osx)
+    set(CMAKE_LIBRARY_PATH "../thirdparty/assimp/osx/lib")
 endif()
 
 find_library(GLEW_LIBRARY NAMES GLEW glew32 glew glew32s PATH_SUFFIXES lib64)
@@ -83,12 +91,20 @@ if (MSVC)
             ${FREEIMAGE_LIBRARIES}
             ${ASSIMP_LIBRARIES}
             )
+elseif(APPLE)
+    list(APPEND LIBRARIES
+            ${GLEW_LIBRARIES}
+            ${FREEIMAGE_LIBRARIES}
+            ${ASSIMP_LIBRARIES}
+)
+
 elseif(UNIX)
     list(APPEND LIBRARIES
             freeimage
             GLEW
             assimp
             )
+
 endif()
 
 # add to include path and expose to depending projects
