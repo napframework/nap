@@ -10,11 +10,11 @@ if(MSVC)
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
     set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /DEBUG /OPT:REF /OPT:ICF")
 else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse -Wno-format-security")
 endif()
 
 if(UNIX)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -Wno-format-security")
 endif()
 
 # Override binary directories
