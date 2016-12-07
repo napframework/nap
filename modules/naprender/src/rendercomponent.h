@@ -37,12 +37,12 @@ namespace nap
 		Attribute<bool>	blend =						{ this, "Blend", true };
 
 		/**
-		 * specifies first blend mode
+		 * Specifies the first OpenGL blend mode to use when rendering
 		 */
 		Attribute<BlendType> firstBlendMode =		{ this, "FirstBlendMode", BlendType::SRC_ALPHA };
 
 		/**
-		 * specifies second blend mode
+		 * Specifies the second OpenGL blend mode to use when rendering
 		 */
 		Attribute<BlendType> secondBlendMode =		{ this, "SecondBlendMode", BlendType::ONE_MINUS_SRC_ALPHA };
 

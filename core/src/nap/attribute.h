@@ -151,13 +151,13 @@ namespace nap
 		Attribute(AttributeObject* parent, const std::string& name, const T& inValue, bool atomic = false)
 			: AttributeBase(parent, name, atomic), mValue(inValue)
 		{
-			setValueSlot.setFunction({[this](const T& value) { this->setValue(value); }});
+			setValueSlot.setFunction({[this](const T& value)			{ this->setValue(value); }});
 		}
 
 		// Constructor without default value
 		Attribute(AttributeObject* parent, const std::string& name) : AttributeBase(parent, name, false)
 		{
-			setValueSlot.setFunction({[this](const T& value) { this->setValue(value); }});
+			setValueSlot.setFunction({[this](const T& value)			{ this->setValue(value); }});
 		}
 
 		// Constructor to declare an attribute with a member function pointer for the @valueChangedSignal as last argument.
@@ -165,27 +165,27 @@ namespace nap
 		Attribute(U* parent, const std::string& name, const T& inValue, F function, bool atomic = false)
 			: AttributeBase(parent, name, atomic), mValue(inValue)
 		{
-			setValueSlot.setFunction({[this](const T& value) { this->setValue(value); }});
+			setValueSlot.setFunction({[this](const T& value)			{ this->setValue(value); }});
 			valueChangedSignal.connect(parent, function);
 		}
 
 		virtual const RTTI::TypeInfo getValueType() const override;
 
 		// Getters
-		virtual void		getValue(AttributeBase& inAttribute) const override;
-		const T&			getValue() const;
-		T&					getValueRef();
+		virtual void getValue(AttributeBase& inAttribute) const override;
+		const T& getValue() const;
+		T& getValueRef();
 
 		// Setters
-		virtual void		setValue(const AttributeBase &inAttribute) override;
-		virtual void		setValue(const T& inValue);
+		virtual void setValue(const AttributeBase &inAttribute) override;
+		virtual void setValue(const T& inValue);
 
 		// Connect to
-		virtual void		connectToValue(Slot<const T&>& inSlot);
-		virtual void		disconnectFromValue(Slot<const T&>& inSlot);
+		virtual void connectToValue(Slot<const T&>& inSlot);
+		virtual void disconnectFromValue(Slot<const T&>& inSlot);
 
 		// Inherited from BaseAttribute, so that BaseAttribute can trigger the valueChanged() signal to be emitted
-		void				emitValueChanged() override final { valueChangedSignal(mValue); }
+		void emitValueChanged() override final { valueChangedSignal(mValue); }
 
 		// Signal emited when the value changes
 		Signal<const T&>	valueChangedSignal;
@@ -193,18 +193,19 @@ namespace nap
 		Slot<const T&>		setValueSlot;
 
 		// Operator overloads
-		operator const T&() const { return getValue(); }
+		operator const T&() const										{ return getValue(); }
 
 	protected:
 		// Members
 		T				mValue;
-		Link&			getLink() const override { return mLink; }
+		Link& getLink() const override									{ return mLink; }
 
 	private:
         // Keep constructor hidden, use factory methods to instantiate
 		Attribute(const T& inValue) : mValue(inValue) {}
 
-        mutable TypedLink<Attribute<T>> mLink = { *this };
+		// Link of type T
+        mutable TypedLink<Attribute<T>> mLink =							{ *this };
 	};
 
 
@@ -236,21 +237,21 @@ namespace nap
 		}
 
 		// Setters
-		void			setValue(const T& value) override;
-		void			setRange(const T& min, const T& max);
-		void			setClamped(bool value);
+		void setValue(const T& value) override;
+		void setRange(const T& min, const T& max);
+		void setClamped(bool value);
 
 		// Getters
-		bool			isClamped()	const	{ return mClamped;  }
-		T				getMin() const		{ return mMinValue; }
-		T				getMax() const		{ return mMaxValue; }
-		void			getRange(T& outMin, T& outMax) const;
+		bool isClamped()	const										{ return mClamped;  }
+		T getMin() const												{ return mMinValue; }
+		T getMax() const												{ return mMaxValue; }
+		void getRange(T& outMin, T& outMax) const;
 
         // Signals
         Signal<const NumericAttribute<T>&> rangeChanged;
         
 		// Clamp function
-		T				clampValue(const T& value, const T& min, const T& max);
+		T clampValue(const T& value, const T& min, const T& max);
 
 	private:
 		// Range
@@ -273,19 +274,25 @@ namespace nap
 		SignalAttribute() = default;
 		SignalAttribute(AttributeObject* parent, const std::string& name) : AttributeBase(parent, name) { }
 
-		// Signal that can be trigerred externally
+		/**
+		 * signal emitted on trigger
+		 */
 		nap::Signal<const nap::SignalAttribute&> signal;
 
-		void							trigger()		{ signal.trigger(*this); }
+		/**
+		 * triggers the signal to be emitted, convenience method
+		 * similar to signal.trigger
+		 */
+		void trigger()													{ signal.trigger(*this); }
 
 	protected:
-		virtual Link&					getLink() const override { return mlink; }
-		virtual void					emitValueChanged() override { signal.trigger(*this); }
+		virtual Link& getLink() const override							{ return mlink; }
+		virtual void emitValueChanged() override						{ signal.trigger(*this); }
 
 	private:
-		virtual void					getValue(AttributeBase& attribute) const override {}
-		virtual void					setValue(const AttributeBase& attribute) override {}
-		virtual const RTTI::TypeInfo	getValueType() const override { return getTypeInfo(); }
+		virtual void getValue(AttributeBase& attribute) const override	{}
+		virtual void setValue(const AttributeBase& attribute) override	{}
+		virtual const RTTI::TypeInfo getValueType() const override		{ return getTypeInfo(); }
 
 		mutable nap::Link				mlink;
 	};
@@ -301,7 +308,7 @@ namespace nap
 		RTTI_ENABLE_DERIVED_FROM(AttributeBase)
 	public:
 		// Default constructor
-		ObjectLinkAttribute() = default;
+		ObjectLinkAttribute();
 		ObjectLinkAttribute(AttributeObject* parent, const std::string& name, const RTTI::TypeInfo& type);
 
 		// Conversion
@@ -349,11 +356,14 @@ namespace nap
 		/**
 		 * TODO: DEPRECATE
 		 */
-		virtual void										emitValueChanged() override		{  }
+		virtual void emitValueChanged() override			{  }
 
 	private:
 		// Link to object
 		mutable Link mLink;
+
+		void onLinkTargetChanged(const Link& link);
+		Slot<const Link&> onLinkTargetChangedSlot =			{ this, &ObjectLinkAttribute::onLinkTargetChanged };
 	};
 }
 

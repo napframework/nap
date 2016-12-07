@@ -7,49 +7,103 @@
 
 namespace nap
 {
-	//! A link to a object. Contains a pointer and can be converted to a path.
+	/**
+	 * Link to an external object that can be resolved from an object path
+	 * Use this object to connect two objects in the system tree
+	 * When constructing a link using a path the object is automatically resolved on query
+	 * If the object isn't available a nullptr will be returned
+	 */
 	class Link : public Object
 	{
 		RTTI_ENABLE_DERIVED_FROM(Object)
 	public:
+		// Constructor
 		Link(Object& parent);
 		Link(Object& parent, const RTTI::TypeInfo&  type);
 		Link() : Object() {}
 
+		/**
+		 * Clears the link, breaking the connection to the target object if one exists
+		 */
 		void clear();
 
+		/**
+		 * Returns the object this link points to, nullptr if link is invalid or not set
+		 */
 		Object* getTarget() const;
 
+		/**
+		 * Returns the object this link points to as object of type T
+		 * Note that this performs an RTTI cast, if the requested type does not
+		 * is not derived from the target type the result will be a null ptr
+		 */
 		template <typename T>
-		T* getTarget() const
-		{
-			return rtti_cast<T*>(getTarget());
-		}
+		T* getTarget() const									{ return rtti_cast<T*>(getTarget()); }
 
+		/**
+		 * Set the link to point @target
+		 * @param target the object to link to
+		 */
 		void setTarget(Object& target);
+
+		/**
+		 * Set the link to point at the object described by path
+		 * @param path the path to the object to link to
+		 */
 		void setTarget(const std::string& path);
 
+		/**
+		 * @return the path of the linked object
+		 */
 		const ObjectPath& getPath();
 
-		RTTI::TypeInfo getType() { return mTargetType; }
+		/**
+		 * @return object type of the link
+		 * only objects derived from the target type are eligible as link targets
+		 */
+		RTTI::TypeInfo getType()								{ return mTargetType; }
 
+		/**
+		 * @return true if the link points to an object or a link path is specified
+		 */
 		bool isLinked() const;
 
-		//! Returns whether the link is still valid
-		bool isValid() const { return mTarget != nullptr; }
+		/**
+		 * @return if the link points to an object
+		 */
+		bool isValid() const									{ return mTarget != nullptr; }
 
-		void setTargetType(RTTI::TypeInfo info);
-		RTTI::TypeInfo getTargetType() const { return mTargetType; }
+		/**
+		 * specifies the object target type to link to
+		 * @param info the type information of the object this link points to
+		 */
+		void setTargetType(RTTI::TypeInfo info)					{ mTargetType = info; }
 
+		/**
+		 * @return the type of the object this link is allowed to point to
+		 */
+		RTTI::TypeInfo getTargetType() const					{ return mTargetType; }
+
+		/**
+		 * emitted when the target object of the link changes
+		 */
+		mutable Signal<const Link&> targetChanged;
 
 	protected:
+		// the link target type
 		RTTI::TypeInfo mTargetType = RTTI::TypeInfo::empty();
 
 	private:
+		/**
+		 * Tries to resolve the link based on the current object path
+		 * On success the target will be set, otherwise the target will be nullptr
+		 */
 		void resolve() const;
 
-		//! Pointer managed by the link object
+		// Pointer to the object this link points to
 		mutable Object* mTarget = nullptr;
+
+		// Path to the object this link points to
 		ObjectPath mObjectPath;
 
 		//! Slot called by the object on removal. Sets the link to invalid, store a path
@@ -57,7 +111,14 @@ namespace nap
 			mObjectPath = obj; // Store a path
 			mTarget = nullptr;
 		}};
+
+		/**
+		 * utility that emits the target changed signal if target
+		 * is actually different
+		 */
+		//void updateTarget(Object* object);
 	};
+
 
 	// TODO: DEPRICATE
 	template <typename T>

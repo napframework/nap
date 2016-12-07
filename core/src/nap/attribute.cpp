@@ -8,7 +8,6 @@
 
 namespace nap 
 {
-
     /**
     @brief Attribute Constructor
     **/
@@ -154,6 +153,13 @@ namespace nap
 	ObjectLinkAttribute::ObjectLinkAttribute(AttributeObject* parent, const std::string& name, const RTTI::TypeInfo& type)
 	{
 		mLink.setTargetType(type);
+		mLink.targetChanged.connect(onLinkTargetChangedSlot);
+	}
+
+	
+	ObjectLinkAttribute::ObjectLinkAttribute()
+	{
+		mLink.targetChanged.connect(onLinkTargetChangedSlot);
 	}
 
 	/**
@@ -181,7 +187,6 @@ namespace nap
 		{
 			this->setTarget(attr.getPath());
 		}
-		valueChanged(*this);
 	}
 
 
@@ -191,7 +196,6 @@ namespace nap
 	void ObjectLinkAttribute::setTarget(Object& target)
 	{
 		mLink.setTarget(target);
-		valueChanged(*this);
 	}
 
 
@@ -201,7 +205,6 @@ namespace nap
 	void ObjectLinkAttribute::setTarget(const std::string& targetPath)
 	{
 		mLink.setTarget(targetPath);
-		valueChanged(*this);
 	}
 
 	/**
@@ -210,6 +213,14 @@ namespace nap
 	const RTTI::TypeInfo ObjectLinkAttribute::getValueType() const
 	{
 		return RTTI_OF(nap::Link);
+	}
+
+	/**
+	 * Trigger update when link target changes
+	 */
+	void ObjectLinkAttribute::onLinkTargetChanged(const Link& link)
+	{
+		valueChanged.trigger(*this);
 	}
 
 }
