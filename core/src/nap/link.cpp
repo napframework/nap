@@ -41,7 +41,6 @@ namespace nap
 			mTarget->removed.disconnect(mTargetRemoved);
 		}
 
-		Object* current_target = mTarget;
 		mTarget = &target;
 		mTarget->removed.connect(mTargetRemoved);
 		

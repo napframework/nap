@@ -36,18 +36,6 @@ namespace nap
     }
     
     
-    Plug* Plug::getConnection()
-    {
-        return mConnection.getTypedTarget();
-    }
-    
-    
-    bool Plug::isConnected() const
-    {
-        return mConnection.isLinked();
-    }
-    
-    
 	InputPlugBase::InputPlugBase(Operator* parent, const std::string& name, Type plugType,
 								 const RTTI::TypeInfo dataType)
 		: Plug(parent, name, plugType, dataType)
@@ -68,7 +56,7 @@ namespace nap
 		assert(canConnectTo(plug));
         assert(!plug.isConnected());
 
-        plug.mConnection.setTarget(*this);
+        plug.mConnections.emplace(this);
         mConnection.setTarget(plug);
         
         connected(*this);
@@ -77,16 +65,18 @@ namespace nap
     
     void InputPlugBase::connect(const std::string &objectPath)
     {
+        if (isConnected())
+            disconnect();
         mConnection.setTarget(objectPath);
     }
 
 
 	void InputPlugBase::disconnect()
 	{
-        assert(mConnection.isLinked());
+        assert(isConnected());
         
         disconnected(*this);
-        getConnection()->mConnection.clear();
+        getConnection()->mConnections.erase(this);
         mConnection.clear();
 	}
 
@@ -110,8 +100,8 @@ namespace nap
 
 	OutputPlugBase::~OutputPlugBase()
 	{
-        if (isConnected())
-            static_cast<InputPlugBase*>(getConnection())->disconnect();
+        while (!mConnections.empty())
+            (*mConnections.begin())->disconnect();
 	}
     
     
@@ -133,8 +123,8 @@ namespace nap
     
     void OutputTriggerPlug::trigger()
     {
-        if (isConnected())
-            static_cast<InputTriggerPlug*>(getConnection())->trigger();
+        for (auto& connection : getConnections())
+            static_cast<InputTriggerPlug*>(connection)->trigger();
     }
  
 }

@@ -125,7 +125,7 @@ namespace nap
 	class TypedLink : public Link
 	{
 	public:
-		TypedLink(T& target) : Link(target) { mTargetType = RTTI_OF(T); }
+		TypedLink(Object& parent) : Link(parent) { mTargetType = RTTI_OF(T); }
 
 		T* getTypedTarget() { return static_cast<T*>(getTarget()); }
 	};

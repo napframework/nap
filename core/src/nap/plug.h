@@ -51,7 +51,6 @@ namespace nap
 	class Plug : public Object
 	{
 		RTTI_ENABLE_DERIVED_FROM(Object)
-        friend class InputPlugBase;
         
 	public:
 		// There can be four different kinds of plugs and connections:
@@ -97,11 +96,8 @@ namespace nap
 		// Returns operator owning this plug
 		Operator* getParent() const;
         
-        // Returns the plug to which this plug is connected, nullptr if not connected
-        Plug* getConnection();
-        
         // Returns wether the plug is connected to another plug
-        bool isConnected() const;
+        virtual bool isConnected() const = 0;
         
 	protected:
         // locks the component the plug's operator resides in
@@ -110,10 +106,6 @@ namespace nap
         // unlocks the component the plug's operator resides in
         // TODO deprecate
         void unlockComponent();
-        
-        // The plug to which this plug is connected
-        // TODO make PointerAttribute
-        TypedLink<Plug> mConnection = { *this };
         
     private:
 		Type mPlugType = Type::PUSH;
@@ -137,6 +129,14 @@ namespace nap
 		// Destructor
 		virtual ~OutputPlugBase();
         
+        // Returns the plugs to which this plug is connected
+        std::set<InputPlugBase*> getConnections() { return mConnections; }
+        
+        bool isConnected() const override { return !mConnections.empty(); }
+        
+    private:
+        std::set<InputPlugBase*> mConnections;
+        
 	};
 
 
@@ -157,6 +157,8 @@ namespace nap
 
 		// Destructor
 		virtual ~InputPlugBase();
+        
+        bool isConnected() const override { return mConnection.isLinked(); }
 
 		// Connect an output plug to this input plug. Checks wether the
 		// connection is allowed first.
@@ -172,12 +174,18 @@ namespace nap
         // or received by the plugs are the same.
         // This method is virtual because some plug types might need to extend it.
 		virtual bool canConnectTo(OutputPlugBase& plug);
+        
+        OutputPlugBase* getConnection() { return mConnection.getTypedTarget(); }
 
 		// emitted when connected to a plug
 		nap::Signal<InputPlugBase&> connected;
 
 		// emitted when disconnected from a plug
 		nap::Signal<InputPlugBase&> disconnected;
+        
+    private:
+        // The plug to which this plug is connected
+        TypedLink<OutputPlugBase> mConnection = { *this };
 
 	};
 
@@ -497,8 +505,8 @@ namespace nap
 	template <typename T>
 	void OutputPushPlug<T>::push(const T& output)
 	{
-		if (isConnected())
-			static_cast<InputPushPlug<T>*>(getConnection())->push(output);
+        for (auto connection : getConnections())
+			static_cast<InputPushPlug<T>*>(connection)->push(output);
 	}
 
 
