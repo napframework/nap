@@ -40,6 +40,11 @@ namespace nap
 								 const RTTI::TypeInfo dataType)
 		: Plug(parent, name, plugType, dataType)
 	{
+		mConnection.targetChanged.connect([&](const Link& link) {
+			auto target = mConnection.getTypedTarget();
+			if (target)
+				target->mConnections.emplace(this);
+		});
 	}
 
 
@@ -56,7 +61,6 @@ namespace nap
 		assert(canConnectTo(plug));
         assert(!plug.isConnected());
 
-        plug.mConnections.emplace(this);
         mConnection.setTarget(plug);
         
         connected(*this);
@@ -76,7 +80,8 @@ namespace nap
         assert(isConnected());
         
         disconnected(*this);
-        getConnection()->mConnections.erase(this);
+		if (mConnection.isResolved())
+			getConnection()->mConnections.erase(this);
         mConnection.clear();
 	}
 
