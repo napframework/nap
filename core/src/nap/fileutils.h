@@ -28,6 +28,36 @@ namespace nap
      */
 	std::string getFileExtension(const std::string& filename);
 
+	/**
+	 * @Return the name of the given file with extension, empty string if file has no extension
+	 * @param file the file to extract the name frame
+	 */
+	std::string getFileName(const std::string& file);
+
+	/**
+	* @return file name without extension
+	* @param file path that is stripped
+	*/
+	std::string getFileNameWithoutExtension(const std::string& file);
+
+	/**
+	 * @param file the file to strip the extension from
+	 */
+	void stripFileExtension(std::string& file);
+
+	/**
+	 * @return file without extension
+	 * @param file the file to string the extension from
+	 */
+	std::string stripFileExtension(const std::string& file);
+
+	/**
+	 * @return if the file has the associated file extension
+	 * @param file the file to check extension for
+	 * @param extension the file extension without preceding '.'
+	 */
+	bool hasExtension(const std::string& file, const std::string& extension);
+
     /**
      * Check whether a file exists or not.
      * @param filename The absolute or relative file path to check for

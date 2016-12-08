@@ -23,6 +23,9 @@
 #include <GL/glew.h>
 #include <glm/matrix.hpp>
 
+// Mod nap render includes
+#include <shaderresource.h>
+
 #include <ctime>
 
 // Window Name
@@ -310,7 +313,6 @@ bool loadModelFromFile(const std::string& file)
 	opengl::printMessage(opengl::MessageType::INFO, "number of loaded meshes in model: %d", model->getMeshCount());
 	const opengl::Mesh* mesh = model->getMesh(0);
 
-
 	// Get buffer indices for mesh
 	vertex_index = mesh->getVertexBufferIndex();
 	color_index = mesh->getColorBufferIndex(0);
@@ -407,6 +409,8 @@ bool init()
 
 	// Create shader
 	shader = new opengl::Shader(vertShaderName.c_str(), fragShaderName.c_str()); // Create our shader by loading our vertex and fragment shader
+
+	nap::ShaderResource resource(vertShaderName, fragShaderName);
 
 																				 // View matrix
 	viewMatrix = glm::lookAt

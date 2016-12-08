@@ -21,13 +21,18 @@ namespace nap
 	{
         RTTI_ENABLE_DERIVED_FROM(Resource)
 	public:
-		JSONResource(const std::string& path, const std::string& contents) : Resource(path), mContents(contents) {}
+		JSONResource(const std::string& path, const std::string& contents) : mContents(contents), mPath(path) {}
 
-        Object* createInstance(Core& core, Object& parent) override {
+        virtual Object* createInstance(Core& core, Object& parent) override 
+		{
             return JSONSerializer().fromString(mContents, core, &parent);
         }
+
+		virtual const std::string& getDisplayName() const override { return mPath; }
+
     private:
 		const std::string mContents;
+		std::string mPath;
 	};
 
 
