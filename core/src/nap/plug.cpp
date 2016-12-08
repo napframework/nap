@@ -80,7 +80,7 @@ namespace nap
         assert(isConnected());
         
         disconnected(*this);
-		if (mConnection.isValid())
+		if (mConnection.isResolved())
 			getConnection()->mConnections.erase(this);
         mConnection.clear();
 	}
