@@ -59,7 +59,9 @@ namespace nap
 	{
 		// if this assertion fails you are trying to connect incompatible plugs
 		assert(canConnectTo(plug));
-        assert(!plug.isConnected());
+        
+        // if this assertion fails the plug is already connected, disconnect first!
+        assert(!isConnected());
 
         mConnection.setTarget(plug);
         
@@ -69,8 +71,9 @@ namespace nap
     
     void InputPlugBase::connect(const std::string &objectPath)
     {
-        if (isConnected())
-            disconnect();
+        // if this assertion fails the plug is already connected, disconnect first!
+        assert(!isConnected());
+        
         mConnection.setTarget(objectPath);
     }
 

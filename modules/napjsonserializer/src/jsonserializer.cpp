@@ -409,6 +409,6 @@ namespace nap
         std::string str((std::istreambuf_iterator<char>(is)),
                         std::istreambuf_iterator<char>());
         
-		return std::make_unique<JSONResource>(resourcePath);
+		return std::make_unique<JSONResource>(resourcePath, str);
     }
 }
