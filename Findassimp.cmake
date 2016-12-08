@@ -3,7 +3,7 @@ find_path(
         NAMES include/assimp/scene.h
         HINTS
         ${CMAKE_CURRENT_LIST_DIR}/../assimp
-        ${CMAKE_CURRENT_LIST_DIR}/../thirdparty/assimp
+        ${CMAKE_CURRENT_LIST_DIR}/../thirdparty/assimp/msvc
 )
 
 if (MSVC)
