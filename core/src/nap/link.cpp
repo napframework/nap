@@ -77,7 +77,7 @@ namespace nap
 			return nullptr;
 
 		// if there's an object associated with this link return that one
-		if (isValid()) 
+		if (isResolved())
 			return mTarget;
 
 		resolve();
@@ -100,7 +100,7 @@ namespace nap
 	// notify possible listeners of change
 	void Link::clear()
 	{
-		bool had_link = isValid();
+		bool had_link = isResolved();
 		mTarget = nullptr;
 		if (had_link)
 		{

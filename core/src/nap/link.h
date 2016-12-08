@@ -71,7 +71,7 @@ namespace nap
 		/**
 		 * @return if the link points to an object
 		 */
-		bool isValid() const									{ return mTarget != nullptr; }
+		bool isResolved() const									{ return mTarget != nullptr; }
 
 		/**
 		 * specifies the object target type to link to

@@ -19,10 +19,16 @@ namespace nap
 
         outputMutex.lock();
         const Object* obj = message.object();
+
+        ostream* os = &cout;
+        if (message.level().level() >= Logger::fatalLevel().level()) {
+            os = &cerr;
+        }
+
         if (obj) {
-            cout << "LOG[" << message.level().name() << "] in " << ObjectPath(obj).toString() << ": " << message.text() << endl;
+            *os << "LOG[" << message.level().name() << "] in " << ObjectPath(obj).toString() << ": " << message.text() << endl;
         } else {
-            cout << "LOG[" << message.level().name() << "] " << message.text() << endl;
+            *os << "LOG[" << message.level().name() << "] " << message.text() << endl;
         }
         outputMutex.unlock();
 	}
