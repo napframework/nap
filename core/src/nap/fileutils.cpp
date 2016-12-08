@@ -112,6 +112,12 @@ namespace nap
 	}
 
 
+	// Simply appends file extension
+	std::string appendFileExtension(const std::string& file, const std::string& ext)
+	{
+		return file + "." + ext;
+	}
+
 	// Check if the file has an extension of type extension
 	bool hasExtension(const std::string& file, const std::string& extension)
 	{

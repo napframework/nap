@@ -52,6 +52,13 @@ namespace nap
 	std::string stripFileExtension(const std::string& file);
 
 	/**
+	 * @return file with appended extension
+	 * @param file the file to add extension to
+	 * @param ext extension without preceding '.'
+	 */
+	std::string appendFileExtension(const std::string& file, const std::string& ext);
+
+	/**
 	 * @return if the file has the associated file extension
 	 * @param file the file to check extension for
 	 * @param extension the file extension without preceding '.'

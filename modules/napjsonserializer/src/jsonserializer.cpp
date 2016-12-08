@@ -403,11 +403,12 @@ namespace nap
 	}
 
 
-    bool JSONFileFactory::loadResource(const std::string& resourcePath, std::unique_ptr<Resource>& outResource) const {
+	std::unique_ptr<Resource> JSONFileFactory::loadResource(const std::string& resourcePath) const 
+	{
         std::ifstream is(resourcePath);
         std::string str((std::istreambuf_iterator<char>(is)),
                         std::istreambuf_iterator<char>());
-        outResource.reset(new JSONResource(resourcePath, str));
-        return true;
+        
+		return std::make_unique<JSONResource>(resourcePath);
     }
 }

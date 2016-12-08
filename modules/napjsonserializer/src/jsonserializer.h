@@ -43,7 +43,7 @@ namespace nap
 	public:
 		JSONFileFactory() : ResourceLoader() { addFileExtension("napj"); }
 
-		bool loadResource(const std::string& resourcePath, std::unique_ptr<Resource>& outResource) const override;
+		std::unique_ptr<Resource> loadResource(const std::string& resourcePath) const override;
 
 	private:
 		JSONSerializer mSerializer;

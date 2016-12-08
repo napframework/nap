@@ -2,32 +2,6 @@
 
 namespace nap
 {
-	void ResourceLoader::addFileExtension(const std::string& ext)
-	{
-		if (hasExtension(ext)) {
-			Logger::warn("File extension was already added: %s", ext.c_str());
-			return;
-		}
-        mFileExtensions.push_back(ext);
-	}
-
-
-	bool ResourceLoader::hasExtension(const std::string& extension) const
-	{
-		for (const std::string& ext : mFileExtensions)
-			if (ext == extension)
-				return true;
-		return false;
-	}
-
-
-
-	bool ResourceLoader::canHandle(const std::string& assetPath) const
-	{
-		return hasExtension(getFileExtension(assetPath));
-	}
-
-
 	void ResourceManagerService::setAssetRoot(const std::string& dirname)
 	{
 		mAssetRootDir = dirname;
@@ -76,10 +50,10 @@ namespace nap
 			return nullptr;
 		}
 
-		std::unique_ptr<Resource> asset;
-		if (!factory->loadResource(filename, asset)) {
+		std::unique_ptr<Resource> asset = std::move(factory->loadResource(filename));
+		if (asset == nullptr)
 			return nullptr;
-		}
+		
         Resource* ptr = asset.get();
 		mResources.emplace(path, std::move(asset));
 		return ptr;
@@ -129,3 +103,5 @@ namespace nap
 		return ptr;
 	}
 }
+
+RTTI_DEFINE(nap::ResourceManagerService)

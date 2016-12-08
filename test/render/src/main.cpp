@@ -410,9 +410,10 @@ bool init()
 	// Create shader
 	shader = new opengl::Shader(vertShaderName.c_str(), fragShaderName.c_str()); // Create our shader by loading our vertex and fragment shader
 
-	nap::ShaderResource resource(vertShaderName, fragShaderName);
-
-																				 // View matrix
+	//nap::ShaderResourceLoader loader;
+	//std::unique_ptr<nap::Resource> resource = loader.loadResource(vertShaderName);
+	//nap::ShaderResource* shader_source = static_cast<nap::ShaderResource*>(resource.get());
+																			 // View matrix
 	viewMatrix = glm::lookAt
 	(
 		glm::vec3(0.0f, 0.0f, 4.0f),
