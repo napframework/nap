@@ -98,6 +98,10 @@ std::shared_ptr<Core> createObjectTree()
     opMult.mFactorB.connect(opFactorB.output);
     opResult.input.connect(opMult.product);
     
+    opMult.mFactorA.disconnect();
+    opResult.input.disconnect();
+    opResult.input.connect(opAdd.sum);
+    
 	return core;
 }
 
@@ -134,15 +138,18 @@ std::string diffString(const std::string& str1, const std::string& str2)
 
 bool testSerializer(const Serializer& ser)
 {
-	// Create object tree and serialize
-	auto srcCore = createObjectTree();
-    auto resultOp = getFloatOperator(srcCore->getRoot(), "Result");
-    TEST_ASSERT(resultOp, "Result operator not found in original object tree");
-    float result = 0;
-    resultOp->output.pull(result);
-    TEST_ASSERT(result == 9, "Patch did not return proper value: 9");
-    
-	std::string xmlString1 = ser.toString(srcCore->getRoot(), false);
+    std::string xmlString1;
+    {
+        // Create object tree and serialize
+        auto srcCore = createObjectTree();
+        auto resultOp = getFloatOperator(srcCore->getRoot(), "Result");
+        TEST_ASSERT(resultOp, "Result operator not found in original object tree");
+        float result = 0;
+        resultOp->output.pull(result);
+        TEST_ASSERT(result == 3, "Patch did not return proper value: 9");
+        
+        xmlString1 = ser.toString(srcCore->getRoot(), false);
+    }
 
 	// Deserialize
 	Core dstCore;
@@ -153,11 +160,13 @@ bool testSerializer(const Serializer& ser)
 
 	TEST_ASSERT(xmlString1 == xmlString2,
 				"Second serialization gave different result:\n" + diffString(xmlString1, xmlString2));
-    resultOp = getFloatOperator(dstCore.getRoot(), "Result");
+    auto resultOp = getFloatOperator(dstCore.getRoot(), "Result");
     TEST_ASSERT(resultOp, "Result operator not found in original object tree");
     float desResult = 0;
     resultOp->output.pull(desResult);
-    TEST_ASSERT(desResult == 9, "Deserialized patch did not return proper value: 9");
+    TEST_ASSERT(desResult == 3, "Deserialized patch did not return proper value: 9");
+    
+    
 
 	return true;
 }

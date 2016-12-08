@@ -56,10 +56,6 @@ namespace nap
 		Object* current_target = mTarget;
 		
 		mTarget = mObjectPath.resolve(*getParentObject()->getRootObject());
-		if (mTarget == nullptr)
-		{
-			nap::Logger::warn("unable to resolve target object from object path: %s", mObjectPath.toString().c_str());
-		}
 
 		// Trigger change
 		if (mTarget != current_target)
