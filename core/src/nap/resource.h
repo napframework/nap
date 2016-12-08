@@ -2,6 +2,7 @@
 
 // Local Includes
 #include "core.h"
+#include "object.h"
 
 // External Includes
 #include <string>
@@ -14,23 +15,16 @@ namespace nap
 	/**
 	* Abstract base class for any Asset. Could be a TextureAsset, ModelAsset or AudioAsset for example.
 	*/
-	class Resource
+	class Resource : public Object
 	{
-		RTTI_ENABLE()
+		RTTI_ENABLE_DERIVED_FROM(Object)
 	public:
 		Resource() = default;
+
 		/**
 		* @return Human readable string representation of this path
 		*/
 		virtual const std::string& getDisplayName() const = 0;
-
-		/**
-		* Provided a core to work with, create an instance of this resource as a child of the provided parent.
-		* @param core The core, necessary for some client operations
-		* @param parent The parent of which the newly created Object will be a child
-		* @return The newly created Object
-		*/
-		virtual Object* createInstance(Core& core, Object& parent) = 0;
 	};
 
 

@@ -140,7 +140,7 @@ namespace nap
 	/**
 	@brief Returns if the attribute is currently linked to a different attribute
 	**/
-    bool AttributeBase::isLinked() { return getLink().isLinked(); }
+    bool AttributeBase::isLinked() const { return getLink().isLinked(); }
 
 
 	//////////////////////////////////////////////////////////////////////////

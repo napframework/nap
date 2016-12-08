@@ -11,11 +11,13 @@ namespace nap
 
 	/**
 	 * Wraps a shader that can be used as a resource for a material instance
+	 * Note that the shader is not initialized (created) when the resource is created
+	 * this is deferred to actual rendering because of gl initialization
 	 */
 	class ShaderResource : public Resource
 	{
 		friend class ShaderResourceLoader;
-		RTTI_ENABLE()
+		RTTI_ENABLE_DERIVED_FROM(Resource)
 	public:
 		// Construct a shader resource using a vertex and fragment path
 		ShaderResource(const std::string& vertPath, const std::string& fragPath);
@@ -26,14 +28,12 @@ namespace nap
 		virtual const std::string& getDisplayName() const override;
 
 		/**
-		 * @return a material that references the shader resource
-		 */
-		virtual Object* createInstance(Core& core, Object& parent) override;
-
-		/**
 		 * @return the opengl shader that can be used for drawing
+		 * Note that this will also initialize the shader on the GPU
+		 * if the shader can't be created a warning will be raised
+		 * in that case future binding calls won't work
 		 */
-		opengl::Shader& getShader()								{ return mShader; }
+		opengl::Shader& getShader();
 
 	private:
 		// Path to shader on disk
@@ -43,6 +43,9 @@ namespace nap
 
 		// Shader that is managed by this resource
 		opengl::Shader	mShader;
+
+		// If the shader has been loaded
+		bool			mLoaded = false;
 	};
 
 

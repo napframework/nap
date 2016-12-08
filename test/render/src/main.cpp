@@ -24,7 +24,7 @@
 #include <glm/matrix.hpp>
 
 // Mod nap render includes
-#include <shaderresource.h>
+#include <material.h>
 
 #include <ctime>
 
@@ -82,7 +82,8 @@ unsigned int windowWidth(512);
 unsigned int windowHeight(512);
 
 // Shader
-opengl::Shader *shader; // Our GLSL shader
+nap::Material material;
+std::unique_ptr<nap::ShaderResource> shader_resource;
 
 						// GLM
 glm::mat4 viewMatrix;			// Store the view matrix
@@ -320,9 +321,9 @@ bool loadModelFromFile(const std::string& file)
 	uv_index = mesh->getUvBufferIndex(0);
 
 	// Bind indices explicit to shader
-	shader->bindVertexAttribute(vertex_index, "in_Position");
-	shader->bindVertexAttribute(color_index, "in_Color");
-	shader->bindVertexAttribute(uv_index, "in_Uvs");
+	shader_resource->getShader().bindVertexAttribute(vertex_index, "in_Position");
+	shader_resource->getShader().bindVertexAttribute(color_index, "in_Color");
+	shader_resource->getShader().bindVertexAttribute(uv_index, "in_Uvs");
 
 	return true;
 }
@@ -407,12 +408,9 @@ bool init()
 	// Load bitmap
 	loadImages();
 
-	// Create shader
-	shader = new opengl::Shader(vertShaderName.c_str(), fragShaderName.c_str()); // Create our shader by loading our vertex and fragment shader
-
-	//nap::ShaderResourceLoader loader;
-	//std::unique_ptr<nap::Resource> resource = loader.loadResource(vertShaderName);
-	//nap::ShaderResource* shader_source = static_cast<nap::ShaderResource*>(resource.get());
+	// Create shader resource and material
+	shader_resource = std::move(std::make_unique<nap::ShaderResource>(vertShaderName, fragShaderName));
+	material.shaderResource.setTarget(*shader_resource);
 																			 // View matrix
 	viewMatrix = glm::lookAt
 	(
@@ -477,12 +475,12 @@ void runGame()
 	std::clock_t begin = std::clock();
 
 	// Get uniform bindings for vertex shader
-	shader->bind();
-	int projectionMatrixLocation = glGetUniformLocation(shader->getId(), "projectionMatrix"); // Get the location of our projection matrix in the shader
-	int viewMatrixLocation = glGetUniformLocation(shader->getId(), "viewMatrix"); // Get the location of our view matrix in the shader
-	int modelMatrixLocation = glGetUniformLocation(shader->getId(), "modelMatrix"); // Get the location of our model matrix in the shader
-	int noiseLocation = glGetUniformLocation(shader->getId(), "noiseValue");
-	shader->unbind();
+	material.bind();
+	int projectionMatrixLocation = glGetUniformLocation(shader_resource->getShader().getId(), "projectionMatrix"); // Get the location of our projection matrix in the shader
+	int viewMatrixLocation = glGetUniformLocation(shader_resource->getShader().getId(), "viewMatrix"); // Get the location of our view matrix in the shader
+	int modelMatrixLocation = glGetUniformLocation(shader_resource->getShader().getId(), "modelMatrix"); // Get the location of our model matrix in the shader
+	int noiseLocation = glGetUniformLocation(shader_resource->getShader().getId(), "noiseValue");
+	material.unbind();
 
 	// Loop
 	while (loop)
@@ -560,7 +558,7 @@ void runGame()
 		opengl::enableDepthTest(depth);
 
 		// Bind Shader
-		shader->bind();
+		material.bind();
 
 		// Parent matrix
 		glm::mat4 parent_matrix;
@@ -578,7 +576,7 @@ void runGame()
 
 		// Get uniform bindings for fragment shader
 		int loc_one = -1;
-		loc_one = glGetUniformLocation(shader->getId(), "myTextureSampler");
+		loc_one = glGetUniformLocation(shader_resource->getShader().getId(), "myTextureSampler");
 
 		// Send values
 		glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &camera.getProjectionMatrix()[0][0]); // Send our projection matrix to the shader
@@ -613,7 +611,7 @@ void runGame()
 		}
 
 		// Unbind shader
-		shader->unbind(); // Unbind our shader
+		material.unbind(); // Unbind our shader
 
 						  // Swap front / back buffer
 		opengl::swap(*mainWindow);

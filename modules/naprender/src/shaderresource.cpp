@@ -1,5 +1,6 @@
 // Local Includes
 #include "shaderresource.h"
+#include "material.h"
 
 // External Includes
 #include <nap/stringutils.h>
@@ -16,28 +17,35 @@ namespace nap
 	}
 
 
-	// Create material instance 
-	Object* nap::ShaderResource::createInstance(Core& core, Object& parent)
-	{
-		assert(false);
-		return nullptr;
-	}
-
-
 	// Store path and create display names
 	ShaderResource::ShaderResource(const std::string& vertPath, const std::string& fragPath) : mFragPath(fragPath), mVertPath(vertPath)
 	{
-		if (!hasExtension(vertPath, ShaderResourceLoader::vertExtension))
+		if (!hasExtension(mVertPath, ShaderResourceLoader::vertExtension))
 			nap::Logger::warn("invalid vertex shader file, incorrect file extension, needs to be of type .vert");
 
-		if (!hasExtension(fragPath, ShaderResourceLoader::fragExtension))
+		if (!hasExtension(mFragPath, ShaderResourceLoader::fragExtension))
 			nap::Logger::warn("invalid frag shader file, incorrect file extension, needs to be of type .frag");
 
 		// Set display name
 		mDisplayName = getFileNameWithoutExtension(vertPath);
+	}
 
-		// try to initialize the shader
-		mShader.init(mVertPath, mFragPath);
+
+	// Returns the associated opengl shader
+	// Calling this will lazily load the shader if not done previously
+	opengl::Shader& ShaderResource::getShader()
+	{
+		// Check if we tried to load the shader
+		if (!mLoaded)
+		{
+			mShader.init(mVertPath, mFragPath);
+			if (!mShader.isAllocated())
+			{
+				nap::Logger::warn("unable to create shader program: %s", mVertPath.c_str(), mFragPath.c_str());
+			}
+			mLoaded = true;
+		}
+		return mShader;
 	}
 
 	//////////////////////////////////////////////////////////////////////////

@@ -66,7 +66,7 @@ namespace nap
         void link(AttributeBase& source);
         void linkPath(const std::string& path);
         void unLink();
-        bool isLinked();
+        bool isLinked() const;
 
 		/**
 		 * @return the path to the object this attribute links to
@@ -320,6 +320,12 @@ namespace nap
 		 * @return the link's target, nullptr if not linked
 		 */
 		Object* getTarget()									{ return mLink.getTarget(); }
+
+		/**
+		 * @return the link's target as type T, nullptr if not linked or type is invalid
+		 */
+		template <typename T>
+		T* getTarget()										{ return mLink.getTarget<T>(); }
 
 		/**
 		 * @return the link's target object path, empty string if not valid

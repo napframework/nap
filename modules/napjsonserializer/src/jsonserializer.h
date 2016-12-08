@@ -23,7 +23,7 @@ namespace nap
 	public:
 		JSONResource(const std::string& path, const std::string& contents) : mContents(contents), mPath(path) {}
 
-        virtual Object* createInstance(Core& core, Object& parent) override 
+        Object* createInstance(Core& core, Object& parent)
 		{
             return JSONSerializer().fromString(mContents, core, &parent);
         }

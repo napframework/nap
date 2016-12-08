@@ -3,13 +3,15 @@
 
 namespace nap
 {
-
+	// Initialize link with basic target type of type object
 	Link::Link(Object& parent) : Object() 
 	{ 
 		setParent(parent); 
+		mTargetType = RTTI_OF(nap::Object);
 	}
 
-    
+
+    // Initialize link with specific target type
 	Link::Link(Object& parent, const RTTI::TypeInfo& type) : mTargetType(type)
 	{
 		setParent(parent);
@@ -21,7 +23,7 @@ namespace nap
 	// Otherwise thep path that is currently set but not resolved
 	const ObjectPath& Link::getPath()
 	{
-		if (mTarget) 
+		if (mTarget)
 			mObjectPath = mTarget;
 		return mObjectPath;
 	}
@@ -34,6 +36,13 @@ namespace nap
 		if (&target == mTarget)
 			return;
 
+		// Make sure new target matches type
+		if (!target.getTypeInfo().isKindOf(mTargetType))
+		{
+			nap::Logger::warn("invalid link, object: %s not of type: %s", target.getName().c_str(), mTargetType.getName().c_str());
+			return;
+		}
+
 		// Disconnect from current target if target 
 		// is associated with link
 		if (mTarget)
@@ -41,6 +50,7 @@ namespace nap
 			mTarget->removed.disconnect(mTargetRemoved);
 		}
 
+		// Set and connect to new target
 		mTarget = &target;
 		mTarget->removed.connect(mTargetRemoved);
 		
@@ -51,25 +61,29 @@ namespace nap
 
 	// Resolved the link and set the new target based on it's result
 	// If the actual target changed emit a signal
-	void Link::resolve() const
+	void Link::resolve()
 	{
-		Object* current_target = mTarget;
-		
-		mTarget = mObjectPath.resolve(*getParentObject()->getRootObject());
-		if (mTarget == nullptr)
+		// Get new target
+		nap::Object* link_target = mObjectPath.resolve(*getParentObject()->getRootObject());
+		if (link_target == nullptr)
 		{
 			nap::Logger::warn("unable to resolve target object from object path: %s", mObjectPath.toString().c_str());
+			return;
 		}
 
-		// Trigger change
-		if (mTarget != current_target)
+		// Make sure types match
+		if(!(link_target->getTypeInfo().isKindOf(mTargetType)))
 		{
-			targetChanged.trigger(*this);
+			nap::Logger::warn("invalid link, object not of type: %s", mTargetType.getName().c_str());
+			return;
 		}
+
+		setTarget(*link_target);
 	}
 
 
-	Object* Link::getTarget() const
+	// Returns link target, nullptr if not linked or path can't be resolved
+	Object* Link::getTarget()
 	{
 		// return if it's not linked currently (ie, no path and object)
 		if (!isLinked()) 
@@ -79,6 +93,7 @@ namespace nap
 		if (isResolved())
 			return mTarget;
 
+		// Otherwise resolve linnk
 		resolve();
 
 		return mTarget;
@@ -89,9 +104,7 @@ namespace nap
 	// An object is linked when either a target is specicified or a path is given
 	bool Link::isLinked() const
 	{
-		if (mTarget != nullptr || !mObjectPath.isEmpty())
-			return true;
-		return false;
+		return (mTarget != nullptr || !mObjectPath.isEmpty());
 	}
 
 

@@ -30,7 +30,7 @@ namespace nap
 		/**
 		 * Returns the object this link points to, nullptr if link is invalid or not set
 		 */
-		Object* getTarget() const;
+		Object* getTarget();
 
 		/**
 		 * Returns the object this link points to as object of type T
@@ -38,7 +38,7 @@ namespace nap
 		 * is not derived from the target type the result will be a null ptr
 		 */
 		template <typename T>
-		T* getTarget() const									{ return rtti_cast<T*>(getTarget()); }
+		T* getTarget() 										{ return rtti_cast<T*>(getTarget()); }
 
 		/**
 		 * Set the link to point @target
@@ -98,7 +98,7 @@ namespace nap
 		 * Tries to resolve the link based on the current object path
 		 * On success the target will be set, otherwise the target will be nullptr
 		 */
-		void resolve() const;
+		void resolve();
 
 		// Pointer to the object this link points to
 		mutable Object* mTarget = nullptr;
@@ -111,12 +111,6 @@ namespace nap
 			mObjectPath = obj; // Store a path
 			mTarget = nullptr;
 		}};
-
-		/**
-		 * utility that emits the target changed signal if target
-		 * is actually different
-		 */
-		//void updateTarget(Object* object);
 	};
 
 
