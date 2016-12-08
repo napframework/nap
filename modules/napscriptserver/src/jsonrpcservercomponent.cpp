@@ -131,7 +131,6 @@ namespace nap
 		});
 
 		disp.AddMethod("addEntity", [&](ObjPtr parentEntity) {
-			std::lock_guard<std::mutex> lock(mMutex);
 			Entity* parent = fromPtr<Entity>(parentEntity);
 			Logger::info("Adding entity to: %s", parent->getName().c_str());
 			if (!parent)
