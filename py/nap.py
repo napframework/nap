@@ -5,6 +5,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
 from asyncjsonclient import AsyncJSONClient
+from utils import qtutils
 
 _J_CHILDREN = 'children'
 _J_ATTRIBUTES = 'attributes'
@@ -17,7 +18,7 @@ _J_ENTITY_TYPE = 'nap::Entity'
 _J_PTR = 'ptr'
 _J_FLAGS = 'flags'
 _J_EDITABLE = 'editable'
-
+_J_CONNECTION = 'connection'
 
 def _allSubClasses(cls):
     all_subclasses = []
@@ -44,7 +45,7 @@ class Core(QObject):
     logMessageReceived = pyqtSignal(int, str, str)
     messageReceived = pyqtSignal()
 
-    def __init__(self, host='tcp://localhost:8888'):
+    def __init__(self, host:str='tcp://localhost:8888'):
         super(Core, self).__init__()
         self.__rpc = AsyncJSONClient(host)
         self.__rpc.messageReceived.connect(self.handleMessageReceived)
@@ -55,6 +56,7 @@ class Core(QObject):
         self.__objects = {}
         self.__types = []
         self.__metatypes = {}
+        self.__typeColors = {}
 
     def resolvePath(self, path):
         return self.root().resolvePath(path)
@@ -62,11 +64,7 @@ class Core(QObject):
     def setObject(self, ptr, obj):
         self.__objects[ptr] = obj
 
-    def findObject(self, ptr):
-        """
-        @type ptr: int
-        @rtype: Object
-        """
+    def findObject(self, ptr:int):
         if not isinstance(ptr, int):
             ptr = int(ptr)
         return self.__objects[ptr]
@@ -79,19 +77,27 @@ class Core(QObject):
             if t['name'] == typename:
                 return t['baseTypes']
 
+    def typeColor(self, typename):
+        if typename in self.__typeColors:
+            return self.__typeColors[typename]
+
+        index = self.__dataTypes.index(typename)
+        col = qtutils.randomColor(index)
+        self.__typeColors[typename] = col
+        return col
+
     def __getOrCreateMetaType(self, cppTypename, clazz=None):
         if not clazz:
             clazz = Object
         pythonTypename = _stripCPPNamespace(cppTypename)
 
-        if  pythonTypename in self.__metatypes.keys():
+        if pythonTypename in self.__metatypes.keys():
             return self.__metatypes[pythonTypename]
 
         t = type(pythonTypename, (clazz,), dict())
         print('Created metatype: %s' % t)
         self.__metatypes[pythonTypename] = t
         return t
-
 
     def __findOrCreateCorrespondingType(self, typename):
         """ Based on the provided typename,
@@ -551,8 +557,17 @@ class InputPlugBase(Plug):
 
     def __init__(self, *args):
         super(InputPlugBase, self).__init__(*args)
+        self.__connection = ''
+        if _J_CONNECTION in self._dic.keys():
+            self.__connection = self._dic[_J_CONNECTION]
 
     def connection(self):
+        if not self.__connection:
+            return None
+        return self.core().resolvePath(self.__connection)
+
+    def connectTo(self, outPlug):
+        self.core().connectPlugs(outPlug, self)
 
 
 class OutputPlugBase(Plug):
@@ -562,13 +577,3 @@ class OutputPlugBase(Plug):
 
     def __init__(self, *args):
         super(OutputPlugBase, self).__init__(*args)
-
-        self.__connections = self._dic['connections']
-
-    def connectTo(self, dstPlug):
-        self.core().connectPlugs(self, dstPlug)
-
-    def connections(self):
-        for path in self.__connections:
-            yield self.core().resolvePath(path)
-

@@ -152,6 +152,9 @@ class OperatorItem(QGraphicsObject):
         return str(self.__titleLabel.toPlainText())
 
     def operator(self):
+        """
+        @rtype: nap.Operator
+        """
         return self.__operator
 
     def hideIncompatiblePlugs(self, src):
@@ -250,6 +253,9 @@ class PlugItem(QGraphicsItem):
         return self.__pin
 
     def plug(self):
+        """
+        @rtype: nap.Plug
+        """
         return self.__plug
 
     def isInput(self):
@@ -283,8 +289,10 @@ class PinItem(QGraphicsPathItem):
         super(PinItem, self).__init__(plugItem)
         self.__plugItem = plugItem
 
+        self.__color = self.plugItem().plug().core().typeColor(self.plugItem().plug().dataType())
+
         self.setPen(QPen(Qt.NoPen))
-        self.setBrush(Qt.red)
+        self.setBrush(self.__color)
 
         p = QPainterPath()
         p.addRect(0, 0, 10, 10)
@@ -318,6 +326,10 @@ class LayerItem(QGraphicsItem):
 
 class WireItem(QGraphicsPathItem):
     def __init__(self, srcPinItem, dstPinItem):
+        """
+        @type srcPinItem: PinItem
+        @type dstPinItem: PinItem
+        """
         super(WireItem, self).__init__()
         self.srcPin = srcPinItem
         self.dstPin = dstPinItem
@@ -343,9 +355,8 @@ class WireItem(QGraphicsPathItem):
         self.setPath(p)
 
         pen = QPen()
-        pen.setColor(COL_NODE_CONNECTION)
+        pen.setColor(self.srcPin.color())
         pen.setWidth(1)
-        pen.setStyle(Qt.DashLine)
         self.setPen(pen)
 
 
@@ -425,9 +436,10 @@ class PatchScene(QGraphicsScene):
             self.__onOperatorAdded(op)
 
         for opItem in self.operatorItems():
-            for outPlug in opItem.operator().outputPlugs():
-                for inPlug in outPlug.connections():
-                    self.__addWire(outPlug, inPlug)
+            for inPlug in opItem.operator().inputPlugs():
+                con = inPlug.connection()
+                if con:
+                    self.__addWire(con, inPlug)
 
     def startDragConnection(self, pinItem):
         self.hideIncompaticlePlugs(pinItem.plugItem())
@@ -462,7 +474,7 @@ class PatchScene(QGraphicsScene):
             if srcPlugItem != dstPlugItem:
                 srcPlug = srcPlugItem.plug()
                 dstPlug = dstPlugItem.plug()
-                srcPlug.connectTo(dstPlug)
+                dstPlug.connectTo(srcPlug)
 
         self.__previewWire.srcPin = None
         self.__previewWire.dstPin = None
@@ -667,6 +679,137 @@ class DefaultInteractMode(InteractMode):
         return False
 
 
+
+
+class PatchView(QGraphicsView):
+    """ The view the user will interact with when editing patches.
+
+     Most likely this will be the only view for a patch,
+     so it will contain one PatchScene and provide a set of InteractionModes to facilitate dragging items,
+     panning and zooming the view and connecting Operators.
+     """
+
+    def __init__(self, ctx):
+        """
+        @param ctx: The application context
+        @type ctx: AppContext
+        """
+        self.ctx = ctx
+        super(PatchView, self).__init__()
+        self.setRenderHint(QPainter.Antialiasing, True)
+        self.__interactMode = None
+        self.__oldMousePos = QPointF()
+        self.__mouseClickPos = QPointF()
+        self.setInteractMode(DefaultInteractMode)
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(
+            self.__onCustomContextMenuRequested)
+
+        deleteAction = QAction('Delete Selected', self)
+        deleteAction.setShortcut(QKeySequence.Delete)
+        deleteAction.triggered.connect(self.__onDeleteSelected)
+        self.addAction(deleteAction)
+
+    def __onDeleteSelected(self):
+        assert False
+        for item in self.scene().selectedItems():
+            print(item)
+
+    def focusNextChild(self, next):
+        return False
+
+    def setInteractMode(self, mode):
+        self.__interactMode = mode()
+        self.__interactMode.init(self)
+
+    def __onCustomContextMenuRequested(self, pos):
+        if not self.scene():
+            return
+        clickedItems = self.items(pos)
+
+        menu = QMenu(self)
+
+        if not clickedItems:
+            patch = self.scene().patch()
+            addCompMenu = menu.addMenu(iconstore.icon('brick_add'),
+                                       'Add Operator...')
+            self.ctx.createObjectActions(patch, self.ctx.core().operatorTypes(),
+                                         addCompMenu)
+
+        menu.exec_(QCursor.pos())
+
+
+    def mousePressEvent(self, evt):
+        if not self.__interactMode.mousePressed(self, evt):
+            super(PatchView, self).mousePressEvent(evt)
+
+    def mouseMoveEvent(self, evt):
+        if not self.__interactMode.mouseMoved(self, evt):
+            super(PatchView, self).mouseMoveEvent(evt)
+
+    def mouseReleaseEvent(self, evt):
+        if not self.__interactMode.mouseReleased(self, evt):
+            super(PatchView, self).mouseReleaseEvent(evt)
+
+    def wheelEvent(self, evt):
+        self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
+
+        scaleFactor = 1.15
+        if evt.angleDelta().y() > 0:
+            self.scale(scaleFactor, scaleFactor)
+        else:
+            self.scale(1 / scaleFactor, 1 / scaleFactor)
+
+    def resetZoom(self):
+        dx = self.transform().dx()
+        dy = self.transform().dy()
+        self.setTransform(QTransform.fromTranslate(dx, dy))
+
+    def _itemAt(self, scenePos, itemType):
+        for item in self.items(scenePos):
+            if isinstance(item, itemType):
+                return item
+
+    def pinAt(self, scenePos):
+        """
+        @rtype: PinItem
+        """
+        return self._itemAt(scenePos, PinItem)
+
+    def plugAt(self, scenePos):
+        """
+        @rtype: PlugItem
+        """
+        return self._itemAt(scenePos, PlugItem)
+
+    def operatorAt(self, scenePos):
+        """
+        @rtype: OperatorItem
+        """
+        return self._itemAt(scenePos, OperatorItem)
+
+
+class PatchEditor(QWidget):
+    """ The main widget holding a patch view amongst others """
+
+    def __init__(self, ctx):
+        """
+        @type ctx: AppContext
+        """
+        self.ctx = ctx
+        super(PatchEditor, self).__init__()
+        self.setLayout(QHBoxLayout())
+        self.__patchView = PatchView(ctx)
+        self.layout().addWidget(self.__patchView)
+        # self.__scene = PatchScene()
+        # self.__patchView.setScene(self.__scene)
+
+    def setModel(self, patch):
+        if isinstance(patch, nap.Component):
+            patch = patch.childOftype('nap::Patch')
+        self.__patchView.setScene(PatchScene(self.ctx, patch))
+
+
 class DragInteractMode(InteractMode):
     """ When the user drags items around (not the rubberband) """
 
@@ -785,11 +928,7 @@ class ConnectInteractMode(InteractMode):
         view.scene().stopDragConnection(plug)
         return False
 
-    def mouseMoved(self, view, evt):
-        """
-        @type view: PatchView
-        @type evt: QMouseEvent
-        """
+    def mouseMoved(self, view:PatchView, evt:QMouseEvent):
         pin = view.pinAt(evt.pos())
         srcPlug = view.scene().dragConnectionSource()
         pt = view.mapToScene(evt.pos())
@@ -814,121 +953,3 @@ class ConnectInteractMode(InteractMode):
             return True
         view.setInteractMode(DefaultInteractMode)
         return False
-
-
-class PatchView(QGraphicsView):
-    """ The view the user will interact with when editing patches.
-
-     Most likely this will be the only view for a patch,
-     so it will contain one PatchScene and provide a set of InteractionModes to facilitate dragging items,
-     panning and zooming the view and connecting Operators.
-     """
-
-    def __init__(self, ctx):
-        """
-        @param ctx: The application context
-        @type ctx: AppContext
-        """
-        self.ctx = ctx
-        super(PatchView, self).__init__()
-        self.setRenderHint(QPainter.Antialiasing, True)
-        self.__interactMode = None
-        self.__oldMousePos = QPointF()
-        self.__mouseClickPos = QPointF()
-        self.setInteractMode(DefaultInteractMode)
-        self.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.customContextMenuRequested.connect(
-            self.__onCustomContextMenuRequested)
-
-    def focusNextChild(self, next):
-        return False
-
-    def setInteractMode(self, mode):
-        self.__interactMode = mode()
-        self.__interactMode.init(self)
-
-    def __onCustomContextMenuRequested(self, pos):
-        if not self.scene():
-            return
-        clickedItems = self.items(pos)
-
-        menu = QMenu(self)
-
-        if not clickedItems:
-            patch = self.scene().patch()
-            addCompMenu = menu.addMenu(iconstore.icon('brick_add'),
-                                       'Add Operator...')
-            self.ctx.createObjectActions(patch, self.ctx.core().operatorTypes(),
-                                         addCompMenu)
-
-        menu.exec_(QCursor.pos())
-
-    def mousePressEvent(self, evt):
-        if not self.__interactMode.mousePressed(self, evt):
-            super(PatchView, self).mousePressEvent(evt)
-
-    def mouseMoveEvent(self, evt):
-        if not self.__interactMode.mouseMoved(self, evt):
-            super(PatchView, self).mouseMoveEvent(evt)
-
-    def mouseReleaseEvent(self, evt):
-        if not self.__interactMode.mouseReleased(self, evt):
-            super(PatchView, self).mouseReleaseEvent(evt)
-
-    def wheelEvent(self, evt):
-        self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
-
-        scaleFactor = 1.15
-        if evt.angleDelta().y() > 0:
-            self.scale(scaleFactor, scaleFactor)
-        else:
-            self.scale(1 / scaleFactor, 1 / scaleFactor)
-
-    def resetZoom(self):
-        dx = self.transform().dx()
-        dy = self.transform().dy()
-        self.setTransform(QTransform.fromTranslate(dx, dy))
-
-    def _itemAt(self, scenePos, itemType):
-        for item in self.items(scenePos):
-            if isinstance(item, itemType):
-                return item
-
-    def pinAt(self, scenePos):
-        """
-        @rtype: PinItem
-        """
-        return self._itemAt(scenePos, PinItem)
-
-    def plugAt(self, scenePos):
-        """
-        @rtype: PlugItem
-        """
-        return self._itemAt(scenePos, PlugItem)
-
-    def operatorAt(self, scenePos):
-        """
-        @rtype: OperatorItem
-        """
-        return self._itemAt(scenePos, OperatorItem)
-
-
-class PatchEditor(QWidget):
-    """ The main widget holding a patch view amongst others """
-
-    def __init__(self, ctx):
-        """
-        @type ctx: AppContext
-        """
-        self.ctx = ctx
-        super(PatchEditor, self).__init__()
-        self.setLayout(QHBoxLayout())
-        self.__patchView = PatchView(ctx)
-        self.layout().addWidget(self.__patchView)
-        # self.__scene = PatchScene()
-        # self.__patchView.setScene(self.__scene)
-
-    def setModel(self, patch):
-        if isinstance(patch, nap.Component):
-            patch = patch.childOftype('nap::Patch')
-        self.__patchView.setScene(PatchScene(self.ctx, patch))
