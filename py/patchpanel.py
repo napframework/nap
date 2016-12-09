@@ -546,7 +546,9 @@ class PatchScene(QGraphicsScene):
     def dragConnectionSource(self):
         if self.__previewWire.srcPin:
             return self.__previewWire.srcPin.plugItem().plug()
-        return self.__previewWire.dstPin.plugItem().plug()
+        if self.__previewWire.dstPin:
+            return self.__previewWire.dstPin.plugItem().plug()
+        return None
 
     def __onSelectionChanged(self):
         operators = list(self.selectedOperators())
@@ -939,7 +941,7 @@ class ConnectInteractMode(InteractMode):
         pin = view.pinAt(evt.pos())
         srcPlug = view.scene().dragConnectionSource()
         pt = view.mapToScene(evt.pos())
-        if pin:
+        if pin and srcPlug:
             plug = pin.plugItem()
             if plug and plug.plug() and _canConnect(srcPlug, plug.plug()):
                 pt = plug.pin().attachPos()

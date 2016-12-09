@@ -197,6 +197,29 @@ namespace nap {
             mOutTrigger.trigger();
         }};
     };
+    
+    
+    class IntOperator : public nap::Operator {
+        RTTI_ENABLE_DERIVED_FROM(nap::Operator)
+    public:
+        Attribute<int> mValue = { this, "valueAttr", 0. };
+        nap::OutputPullPlug<int> output = { this, &IntOperator::pullValue, "value" };
+        nap::InputPullPlug<int> input = { this, "input" };
+        
+    private:
+        void pullValue(int& outValue)
+        {
+            if (input.isConnected())
+            {
+                int result;
+                input.pull(result);
+                mValue.setValue(result);
+            }
+            outValue = mValue.getValue();
+        }
+        
+    };
+    
 
 }
 
@@ -205,4 +228,5 @@ RTTI_DECLARE(nap::AddFloatOperator)
 RTTI_DECLARE(nap::SimpleTriggerOperator)
 RTTI_DECLARE(nap::MultFloatOperator)
 RTTI_DECLARE(nap::FloatOperator)
+RTTI_DECLARE(nap::IntOperator)
 RTTI_DECLARE_BASE(nap::GetAttributesOperator)
