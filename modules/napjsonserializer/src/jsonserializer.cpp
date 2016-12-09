@@ -107,13 +107,13 @@ namespace nap
 				writer.String(J_DATA_TYPE);
 				writer.String(plug->getDataType().getName().c_str());
 
-				if (auto inputPlug = rtti_cast<nap::InputPlugBase*>(plug))
-                    if (inputPlug->isConnected())
-                    {
+				if (auto inputPlug = rtti_cast<nap::InputPlugBase*>(plug)) {
+                    if (inputPlug->isConnected()) {
                         writer.String(J_CONNECTION);
                         std::string destPath = ObjectPath(inputPlug->getConnection());
                         writer.String(destPath.c_str());
                     }
+                }
 			}
 
 			if (writePointers) {
