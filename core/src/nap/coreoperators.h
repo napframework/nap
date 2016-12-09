@@ -217,7 +217,6 @@ namespace nap {
             }
             outValue = mValue.getValue();
         }
-        
     };
     
 

@@ -587,6 +587,7 @@ class PatchScene(QGraphicsScene):
         self.findOperatorItem(op).setPos(_getObjectEditorPos(op))
 
     def __removeOperatorItem(self, item):
+        self.removeItem(item)
         del item
 
     def __updateSceneRect(self):
