@@ -1,5 +1,6 @@
 #include "resource.h"
 #include "resourcemanager.h"
+#include "core.h"
 
 namespace nap
 {
@@ -12,10 +13,18 @@ namespace nap
 		mFileExtensions.push_back(ext);
 	}
 
-    std::string Resource::getResourcePath() const {
+
+
+	void ResourceLoader::setCore(Core& core)
+	{
+		mCore = &core;
+	}
+
+
+
+	std::string Resource::getResourcePath() const {
         return mResourceManger->getResourcePath(*this);
     }
-
 
 
     bool ResourceLoader::supportsExtension(const std::string& extension) const
@@ -25,7 +34,6 @@ namespace nap
 				return true;
 		return false;
 	}
-
 
 
 	bool ResourceLoader::canHandle(const std::string& assetPath) const

@@ -3,7 +3,8 @@
 #include "material.h"
 
 // External Includes
-#include <nap/stringutils.h>
+#include <nap/fileutils.h>
+#include <nap/logger.h>
 
 const std::string nap::ShaderResourceLoader::fragExtension = "frag";
 const std::string nap::ShaderResourceLoader::vertExtension = "vert";
@@ -82,3 +83,4 @@ namespace nap
 }
 
 RTTI_DEFINE(nap::ShaderResource)
+RTTI_DEFINE(nap::ShaderResourceLoader)

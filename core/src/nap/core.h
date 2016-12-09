@@ -42,8 +42,10 @@ namespace nap
 		T& addService(Args&&... args);
 
         template<typename T>
-        T& getOrCreateService() {
-            return *static_cast<T*>(&getOrCreateService(RTTI_OF(T)));
+        T& getOrCreateService() 
+		{
+			nap::Service& service = getOrCreateService(RTTI_OF(T));
+			return static_cast<T&>(service);
         }
 
         Service& getOrCreateService(const RTTI::TypeInfo& type);

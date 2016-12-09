@@ -26,6 +26,11 @@
 // Mod nap render includes
 #include <material.h>
 
+// Nap includes
+#include <nap/core.h>
+#include <nap/resourcemanager.h>
+
+// STD includes
 #include <ctime>
 
 // Window Name
@@ -441,6 +446,12 @@ bool init()
 // Main loop
 int main(int argc, char *argv[])
 {
+	nap::Core core;
+	nap::ResourceManagerService& service = core.getOrCreateService<nap::ResourceManagerService>();
+	service.setAssetRoot(".");
+	
+	nap::Resource* resource = service.getResource(fragShaderName);
+
 	if (!init())
 		return -1;
 

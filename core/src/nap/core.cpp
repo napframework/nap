@@ -131,7 +131,6 @@ namespace nap
 	void Core::clear() { mRoot->clearChildren(); }
 
 
-
 	Service& Core::addService(const RTTI::TypeInfo& type)
 	{
         assert(type.isValid());
@@ -143,11 +142,19 @@ namespace nap
 		return *service;
 	}
 
+
 	Service& Core::getOrCreateService(const RTTI::TypeInfo& type)
 	{
 		Service* srv = getServiceForType(type);
         if (srv)
-            return *srv;
+		{
+			return *srv;
+		}
+
+		if (!type.isKindOf(RTTI_OF(nap::Service)))
+		{
+			nap::Logger::fatal("can't add service, service not of type: %s", RTTI_OF(Service).getName().c_str());
+		}
 
         return addService(type);
 	}

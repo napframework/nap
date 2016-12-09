@@ -10,7 +10,6 @@ namespace nap
 	}
 
 
-
 	Resource* ResourceManagerService::getResource(const std::string& path)
 	{
 		const auto& it = mResources.find(path);
@@ -21,20 +20,21 @@ namespace nap
 	}
 
 
-
-	std::vector<ResourceLoader*> ResourceManagerService::getFactories()
+	std::vector<ResourceLoader*> ResourceManagerService::getLoaders()
 	{
 		std::vector<ResourceLoader*> factories;
-		for (const RTTI::TypeInfo& factoryType : RTTI::TypeInfo::getRawTypes(RTTI::TypeInfo::get<ResourceLoader>())) {
+		for (const RTTI::TypeInfo& factoryType : RTTI::TypeInfo::getRawTypes(RTTI::TypeInfo::get<ResourceLoader>())) 
+		{
 			factories.push_back(getOrCreateFactory(factoryType));
 		}
 		return factories;
 	}
 
-    bool ResourceManagerService::canLoad(const std::string& path) {
-        return getFactoryFor(path) != nullptr;
-    }
 
+    bool ResourceManagerService::canLoad(const std::string& path) 
+	{
+        return getLoaderFor(path) != nullptr;
+    }
 
 
     Resource* ResourceManagerService::loadResource(const std::string& path)
@@ -46,7 +46,7 @@ namespace nap
 
         std::string assetRoot = getAbsolutePath(mResourcePath);
 
-        if (!fileExists(assetRoot)) {
+        if (!dirExists(assetRoot)) {
             Logger::fatal("Asset root does not exist: '%s'", assetRoot.c_str());
             return nullptr;
         }
@@ -57,7 +57,7 @@ namespace nap
 			return nullptr;
 		}
 
-		ResourceLoader* factory = getFactoryFor(filename);
+		ResourceLoader* factory = getLoaderFor(filename);
 		if (!factory) {
 			Logger::fatal("Failed to find a factory for: %s", path.c_str());
 			return nullptr;
@@ -77,9 +77,9 @@ namespace nap
 	void ResourceManagerService::invalidate() { mResources.clear(); }
 
 
-	ResourceLoader* ResourceManagerService::getFactoryFor(const std::string& path)
+	ResourceLoader* ResourceManagerService::getLoaderFor(const std::string& path)
 	{
-		for (const auto factory : getFactories()) {
+		for (const auto factory : getLoaders()) {
 			if (factory->canHandle(path))
 				return factory;
 		}
@@ -97,7 +97,6 @@ namespace nap
 	}
 
 
-
 	ResourceLoader* ResourceManagerService::getFactory(const RTTI::TypeInfo& factoryType)
 	{
 		for (auto& factory : mFactories) {
@@ -108,7 +107,6 @@ namespace nap
 	}
 
 
-
 	ResourceLoader* ResourceManagerService::createFactory(const RTTI::TypeInfo& factoryType)
 	{
 		auto factory = std::unique_ptr<ResourceLoader>(static_cast<ResourceLoader*>(factoryType.createInstance()));
@@ -117,6 +115,7 @@ namespace nap
 		mFactories.emplace_back(std::move(factory));
 		return ptr;
 	}
+
 
     std::string ResourceManagerService::getResourcePath(const Resource& res) const {
         for (const auto& it : mResources) {

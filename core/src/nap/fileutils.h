@@ -71,4 +71,9 @@ namespace nap
      * @return true if the file exists, false otherwise
      */
     bool fileExists(const std::string& filename);
+
+	/**
+	 * Check wheter a folder exists or not
+	 */
+	bool dirExists(const std::string& dirName);
 }

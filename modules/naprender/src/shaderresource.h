@@ -56,7 +56,7 @@ namespace nap
 	 */
 	class ShaderResourceLoader : public ResourceLoader
 	{
-		RTTI_ENABLE()
+		RTTI_ENABLE_DERIVED_FROM(ResourceLoader)
 	public:
 		// Constructor
 		ShaderResourceLoader();

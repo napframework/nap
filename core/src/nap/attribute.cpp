@@ -1,8 +1,9 @@
 // Local Includes
 #include "attribute.h"
-#include <nap/attributeobject.h>
-#include <nap/entity.h>
-#include <nap/coreattributes.h>
+#include "resourcemanager.h"
+#include "attributeobject.h"
+#include "entity.h"
+#include "coreattributes.h"
 
 // RTTI Define
 
@@ -150,7 +151,8 @@ namespace nap
 	/**
 	 * constructor using a type as link type
 	 */
-	ObjectLinkAttribute::ObjectLinkAttribute(AttributeObject* parent, const std::string& name, const RTTI::TypeInfo& type)
+	ObjectLinkAttribute::ObjectLinkAttribute(AttributeObject* parent, const std::string& name, const RTTI::TypeInfo& type) :
+		AttributeBase(parent, name)
 	{
 		mLink.setTargetType(type);
 		mLink.targetChanged.connect(onLinkTargetChangedSlot);
@@ -222,8 +224,8 @@ namespace nap
 	{
 		valueChanged.trigger(*this);
 	}
-
 }
+
 // RTTI Define
 RTTI_DEFINE(nap::AttributeBase)
 RTTI_DEFINE(nap::SignalAttribute)

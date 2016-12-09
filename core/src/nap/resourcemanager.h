@@ -8,11 +8,6 @@
 
 namespace nap
 {
-	class ResourceManagerService;
-
-
-
-
 	/**
 	 * An AssetManager deals with loading and caching resources.
 	 * It provides a thin and easy to use interface to all AssetFactories.
@@ -73,12 +68,12 @@ namespace nap
 		 * @param path The relative (or absolute) path or URI
 		 * @return A suitable ResourceFactory or nullptr if none was found
 		 */
-		ResourceLoader* getFactoryFor(const std::string& path);
+		ResourceLoader* getLoaderFor(const std::string& path);
 
 		/**
 		 * @return all registered factories
 		 */
-		std::vector<ResourceLoader*> getFactories();
+		std::vector<ResourceLoader*> getLoaders();
 
 	private:
 		/**

@@ -1,6 +1,9 @@
 // Include materialcomponent
 #include "material.h"
 
+// External includes
+#include <nap/logger.h>
+
 namespace nap
 {
 	// Unbind shader associated with resource

@@ -2,6 +2,7 @@
 
 #include <nap/core.h>
 #include <nap/coreattributes.h>
+#include <nap/resourcelinkattribute.h>
 #include <nap/component.h>
 #include <nap/componentdependency.h>
 #include <nap/patchcomponent.h>

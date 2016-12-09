@@ -93,7 +93,7 @@ namespace nap
 		if (isResolved())
 			return mTarget;
 
-		// Otherwise resolve linnk
+		// Otherwise resolve link
 		resolve();
 
 		return mTarget;

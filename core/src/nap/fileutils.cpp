@@ -2,6 +2,7 @@
 #include "stringutils.h"
 
 #include <cstring>
+#include <io.h>  
 
 // clang-format off
 #ifdef _MSC_VER
@@ -133,4 +134,21 @@ namespace nap
         }
         return false;
     }
+
+	bool dirExists(const std::string& dirName)
+	{
+		if (!dirName.empty())
+		{
+			if (access(dirName.c_str(), 0) == 0)
+			{
+				struct stat status;
+				stat(dirName.c_str(), &status);
+				if (status.st_mode & S_IFDIR)
+					return true;
+			}
+		}
+		// if any condition fails
+		return false;
+	}
+
 }

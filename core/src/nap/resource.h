@@ -1,7 +1,6 @@
 #pragma once
 
 // Local Includes
-#include "core.h"
 #include "object.h"
 
 // External Includes
@@ -11,6 +10,7 @@ namespace nap
 {
 	// Forward Declares
 	class ResourceManagerService;
+	class Core;
 
 	/**
 	* Abstract base class for any Asset. Could be a TextureAsset, ModelAsset or AudioAsset for example.
@@ -90,7 +90,7 @@ namespace nap
 		* Make sure this factory has access to nap::Core
 		* @param core
 		*/
-		void setCore(Core& core) { mCore = &core; }
+		void setCore(Core& core);
 
 	private:
 		std::vector<std::string> mFileExtensions;
