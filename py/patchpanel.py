@@ -46,8 +46,14 @@ def _filter(items, itemType):
             yield item
 
 
-def _canConnect(outPlug, inPlug):
-    return inPlug.dataType() == outPlug.dataType()
+def _canConnect(srcPlug, destPlug):
+    srcIsInput = isinstance(srcPlug, nap.InputPlugBase)
+    destIsInput = isinstance(destPlug, nap.InputPlugBase)
+    if srcIsInput == destIsInput:
+        return False
+    if srcPlug.parent() == destPlug.parent():
+        return False
+    return srcPlug.dataType() == destPlug.dataType()
 
 
 def calculateWirePath(srcPos, dstPos, p):
@@ -752,6 +758,7 @@ class PatchView(QGraphicsView):
             super(PatchView, self).mouseReleaseEvent(evt)
 
     def wheelEvent(self, evt):
+        return
         self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
 
         scaleFactor = 1.15
