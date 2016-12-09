@@ -2,7 +2,7 @@
 #include "stringutils.h"
 
 #include <cstring>
-#include <io.h>  
+#include <sys/io.h>
 
 // clang-format off
 #ifdef _MSC_VER
@@ -16,6 +16,9 @@
 	#include <fileapi.h>
 #else
 	#include <stdlib.h>
+    #include <zconf.h>
+    #include <sys/stat.h>
+
 #endif
 
 // clang-format on

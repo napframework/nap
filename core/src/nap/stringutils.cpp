@@ -138,4 +138,9 @@ namespace nap
 		return s.substr(first, (last - first + 1));
 	}
 
+    std::string replaceTemplateType(const std::string& typeName, const std::string& templateTypeName) {
+        size_t bracketIndex = typeName.find('<');
+        return typeName.substr(0, bracketIndex) + "<" + templateTypeName + ">";
+    }
+
 }

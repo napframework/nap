@@ -11,7 +11,7 @@ RTTI_DEFINE(nap::OutputPlugBase)
 namespace nap
 {
 
-	Plug::Plug(Operator* parent, const std::string& name, Type plugType, const RTTI::TypeInfo dataType) : Object(), mPlugType(plugType), mDataType(dataType)
+	Plug::Plug(Operator* parent, const std::string& name, const RTTI::TypeInfo dataType) : Object()
 	{
         mName = name;
         parent->addChild(*this);
@@ -36,9 +36,8 @@ namespace nap
     }
     
     
-	InputPlugBase::InputPlugBase(Operator* parent, const std::string& name, Type plugType,
-								 const RTTI::TypeInfo dataType)
-		: Plug(parent, name, plugType, dataType)
+	InputPlugBase::InputPlugBase(Operator* parent, const std::string& name, const RTTI::TypeInfo dataType)
+		: Plug(parent, name, dataType)
 	{
 		mConnection.targetChanged.connect([&](const Link& link) {
 			auto target = mConnection.getTypedTarget();
@@ -91,17 +90,14 @@ namespace nap
     
 	bool InputPlugBase::canConnectTo(OutputPlugBase& plug)
 	{
-		if (getPlugType() != plug.getPlugType()) return false;
-
 		if (getDataType().getName() != plug.getDataType().getName()) return false;
 
 		return true;
 	}
 
 
-	OutputPlugBase::OutputPlugBase(Operator* parent, const std::string& name, Type plugType,
-								   const RTTI::TypeInfo dataType)
-		: Plug(parent, name, plugType, dataType)
+	OutputPlugBase::OutputPlugBase(Operator* parent, const std::string& name, const RTTI::TypeInfo dataType)
+		: Plug(parent, name, dataType)
 	{
 	}
 
@@ -128,11 +124,12 @@ namespace nap
         }
     }
 
-    
+
     void OutputTriggerPlug::trigger()
     {
         for (auto& connection : getConnections())
             static_cast<InputTriggerPlug*>(connection)->trigger();
     }
- 
+
+
 }

@@ -1,7 +1,10 @@
 #include <fstream>
 #include "serializer.h"
+#include "plug.h"
+#include "coreattributes.h"
 
 RTTI_DEFINE(nap::Serializer)
+
 
 using namespace std;
 
@@ -56,4 +59,5 @@ namespace nap
 
         return readObject(is, core, parent);
     }
+
 }

@@ -1,6 +1,6 @@
 #include "jsonserializer.h"
 #include "rapidjson/error/en.h"
-#include <rtti/rtti.h>
+#include <nap/rttinap.h>
 #include <nap.h>
 #include <rapidjson/document.h>
 #include <rapidjson/istreamwrapper.h>
@@ -303,7 +303,9 @@ namespace nap
 
 		AttributeBase* attrib = attributeObject->getAttribute(attrName);
 		if (!attrib) {
-			RTTI::TypeInfo attrType = RTTI::TypeInfo::getByName(Serializer::dirtyHack(attrValueTypeName));
+            const RTTI::TypeInfo& attrValueType = RTTI::TypeInfo::getByName(attrValueTypeName);
+
+			const RTTI::TypeInfo& attrType = getAttributeTypeFromValueType(attrValueType);
 			attrib = &attributeObject->addAttribute(attrName, attrType);
 		}
 		assert(!strcmp(attrValueTypeName, attrib->getValueType().getName().c_str()));

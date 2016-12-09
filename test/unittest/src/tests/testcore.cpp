@@ -98,11 +98,11 @@ std::shared_ptr<Core> createObjectTree()
 	opMult.mFactorA.connect(opAdd.sum);
     opMult.mFactorB.connect(opFactorB.output);
     opResult.input.connect(opMult.product);
-    
+
     opMult.mFactorA.disconnect();
     opResult.input.disconnect();
     opResult.input.connect(opAdd.sum);
-    
+
 	return core;
 }
 
@@ -233,13 +233,15 @@ bool testResourceManager() {
 
     std::string resource = "test.napj";
 
-    ResourceLoader* factory = resourceMan.getFactoryFor(resource);
+    ResourceLoader* factory = resourceMan.getLoaderFor(resource);
     TEST_ASSERT(factory != nullptr, "Unable to find factory for: " + resource);
 
     TEST_ASSERT(resourceMan.canLoad(resource), "Cannot load resource: " + resource);
 
     auto res = resourceMan.getResource(resource);
     TEST_ASSERT(res, "Resource failed to load: " + resource);
+
+    TEST_ASSERT(res->getResourcePath() == resource, "Resulting resource path differs from original path");
 
     return true;
 }
