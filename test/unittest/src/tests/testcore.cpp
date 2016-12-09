@@ -241,11 +241,5 @@ bool testResourceManager() {
     auto res = resourceMan.getResource(resource);
     TEST_ASSERT(res, "Resource failed to load: " + resource);
 
-    Object* obj = res->createInstance(core, core.getRoot());
-    TEST_ASSERT(obj, "Couldn't create instance of resource: " + resource);
-
-    TEST_ASSERT(obj->getTypeInfo().isKindOf<Entity>(), "Instantiated resource should have been an Entity");
-    TEST_ASSERT(obj->getName() == "MyEntity", "Instantiated resource should have been named MyEntity");
-
     return true;
 }

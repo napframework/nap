@@ -53,7 +53,7 @@ namespace nap
 		virtual bool canHandle(const std::string& assetPath) const;
 
 		/**
-		* @return The currently registered
+		* @return The currently registered file extensions
 		*/
 		std::vector<std::string> getFileExtensions() const { return mFileExtensions; }
 

@@ -2,9 +2,23 @@
 
 #include "operator.h"
 #include "coreattributes.h"
+#include "signalslot.h"
 
 
 namespace nap {
+
+    class AttributeOutplug : public OutputPlugBase {
+        RTTI_ENABLE_DERIVED_FROM(OutputPlugBase)
+    public:
+        AttributeOutplug(Operator* parent, AttributeBase& attrib) : OutputPlugBase(parent, attrib.getName() + "_outPlug", Plug::Type::PULL, attrib.getValueType()), mAttrib(attrib) {
+
+        }
+
+        AttributeBase& getAttribute() { return mAttrib; }
+
+    private:
+        AttributeBase& mAttrib;
+    };
 
     // TODO: OWNERSHIP BROKEN
     template<typename T>
@@ -35,11 +49,71 @@ namespace nap {
     };
 
 
-    class AttributeObjectOperator : public Operator {
+
+    class GetAttributesOperator : public Operator
+    {
+    RTTI_ENABLE_DERIVED_FROM(Operator)
     public:
-        AttributeObjectOperator() : Operator() {}
+        GetAttributesOperator() : Operator()
+        {
+            objectLink.valueChanged.connect([&](AttributeBase& attrib) { objectChanged(); });
+        }
 
+    private:
+        void objectChanged()
+        {
+            // Clean up previously set target
+            if (mCurrentObject) {
+                clearOutplugs();
+                mCurrentObject->childAdded.disconnect(onChildAddedSlot);
+                mCurrentObject->childRemoved.disconnect(onChildRemovedSlot);
+            }
 
+            mCurrentObject = objectLink.getTarget<AttributeObject>();
+            if (!mCurrentObject)
+                return; // Target was cleared
+
+            // Keep plugs in sync with attributes
+            mCurrentObject->childAdded.connect(onChildAddedSlot);
+            mCurrentObject->childRemoved.connect(onChildRemovedSlot);
+
+            // Initialize plugs with target's attributes
+            for (auto attrib : mCurrentObject->getAttributes())
+                childAdded(*attrib);
+        }
+
+        void onChildAdded(Object& obj)
+        {
+            if (auto attrib = rtti_cast<AttributeBase*>(&obj))
+                addChild(std::make_unique<AttributeOutplug>(this, *attrib));
+        }
+        Slot<Object&> onChildAddedSlot = {this, &GetAttributesOperator::onChildAdded};
+
+        void onChildRemoved(Object& obj)
+        {
+            if (auto attrib = rtti_cast<AttributeBase*>(&obj))
+                removeChild(*findPlug(attrib));
+        }
+        Slot<Object&> onChildRemovedSlot = {this, &GetAttributesOperator::onChildRemoved};
+
+        AttributeOutplug* findPlug(AttributeBase* attrib)
+        {
+            for (auto& plug : getChildrenOfType<AttributeOutplug>())
+                if (&plug->getAttribute() == attrib)
+                    return plug;
+            assert(false); // Local bookkeeping failed
+            return nullptr;
+        }
+
+        void clearOutplugs()
+        {
+            for (auto plug : getChildrenOfType<AttributeOutplug>())
+                removeChild(*plug);
+        }
+
+        ObjectLinkAttribute objectLink = {this, "sourceObject", RTTI::TypeInfo::get<AttributeObject>()};
+
+        AttributeObject* mCurrentObject = nullptr;
     };
     
     
@@ -126,9 +200,9 @@ namespace nap {
 
 }
 
-
+RTTI_DECLARE_BASE(nap::AttributeOutplug)
 RTTI_DECLARE(nap::AddFloatOperator)
 RTTI_DECLARE(nap::SimpleTriggerOperator)
 RTTI_DECLARE(nap::MultFloatOperator)
 RTTI_DECLARE(nap::FloatOperator)
-
+RTTI_DECLARE_BASE(nap::GetAttributesOperator)
