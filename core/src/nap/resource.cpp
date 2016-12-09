@@ -12,8 +12,13 @@ namespace nap
 		mFileExtensions.push_back(ext);
 	}
 
+    std::string Resource::getResourcePath() const {
+        return mResourceManger->getResourcePath(*this);
+    }
 
-	bool ResourceLoader::supportsExtension(const std::string& extension) const
+
+
+    bool ResourceLoader::supportsExtension(const std::string& extension) const
 	{
 		for (const std::string& ext : mFileExtensions)
 			if (ext == extension)

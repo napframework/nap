@@ -24,7 +24,7 @@ using namespace rapidjson;
 #define J_ATTRIBUTES "attributes"
 #define J_VALUE_TYPE "vType"
 #define J_DATA_TYPE "dataType"
-#define J_CONNECTION "connections"
+#define J_CONNECTION "connection"
 
 namespace nap
 {

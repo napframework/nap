@@ -68,6 +68,7 @@ namespace nap
 			return nullptr;
 
         Resource* ptr = asset.get();
+        ptr->mResourceManger = this;
 		mResources.emplace(path, std::move(asset));
 		return ptr;
 	}
@@ -116,4 +117,15 @@ namespace nap
 		mFactories.emplace_back(std::move(factory));
 		return ptr;
 	}
+
+    std::string ResourceManagerService::getResourcePath(const Resource& res) const {
+        for (const auto& it : mResources) {
+            if (it.second.get() == &res)
+                return it.first;
+        }
+        Logger::fatal("Cannot resolve path for provided Resource");
+        assert(false);
+        return "";
+    }
+
 }

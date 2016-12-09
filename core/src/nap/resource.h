@@ -14,10 +14,12 @@ namespace nap
 
 	/**
 	* Abstract base class for any Asset. Could be a TextureAsset, ModelAsset or AudioAsset for example.
+	* WARNING: A resource may only be created through the ResourceManagerService providing a valid resource path
 	*/
 	class Resource : public Object
 	{
 		RTTI_ENABLE_DERIVED_FROM(Object)
+        friend class ResourceManagerService;
 	public:
 		Resource() = default;
 
@@ -25,6 +27,13 @@ namespace nap
 		* @return Human readable string representation of this path
 		*/
 		virtual const std::string& getDisplayName() const = 0;
+
+        /**
+         * @return The resource path to this resource
+         */
+        std::string getResourcePath() const;
+    private:
+        ResourceManagerService* mResourceManger = nullptr;
 	};
 
 

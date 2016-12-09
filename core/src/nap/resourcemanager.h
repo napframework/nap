@@ -56,6 +56,13 @@ namespace nap
 			return rtti_cast<T*>(getResource(path));
 		}
 
+        /**
+         * Find the path of the specified resource
+         * @param res
+         * @return The resource path or an empty string if the resource wasn't found
+         */
+        std::string getResourcePath(const Resource& res) const;
+
 		/**
 		 * Purge cache and ensure all assets will be reloaded the next time they are accessed
 		 */
@@ -106,6 +113,7 @@ namespace nap
 		std::string mResourcePath = "resources";
 		std::map<std::string, std::unique_ptr<Resource>> mResources;
 	};
+
 }
 
 RTTI_DECLARE(nap::ResourceManagerService)
