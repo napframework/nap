@@ -9,13 +9,26 @@ target_link_libraries(${PROJECT_NAME} napcore mod_napjsonserializer)
 
 set(RESOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/resources)
 
-file(GLOB_RECURSE RESOURCES ${CMAKE_CURRENT_LIST_DIR}/resources)
-foreach(RES_FILE ${RESOURCES})
-    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E
-            ARGS copy "${RES_FILE}" "${BIN_DIR}/resources"
-            COMMENT "Copy '${RES_FILE}' to '${BIN_DIR}/resources'"
-            MAIN_DEPENDENCY ${RES_FILE}
-            VERBATIM
-            )
-endforeach()
+
+
+function(copy_files SRCDIR DSTDIR)
+    file(GLOB_RECURSE RESOURCES ${SRCDIR}/*.*)
+    foreach(RES_FILE ${RESOURCES})
+        get_filename_component(NAME ${RES_FILE} NAME)
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E
+                ARGS copy "${RES_FILE}" "${DSTDIR}/${NAME}"
+                COMMENT "Copy '${RES_FILE}' to '${DSTDIR}/${NAME}'"
+                DEPENDS ${RES_FILE}
+                VERBATIM
+                )
+        string(REPLACE "/" "_" TARGET_NAME "CopyFile_${RES_FILE}")
+        add_custom_target(${TARGET_NAME} ALL
+                DEPENDS ${RES_FILE})
+        add_dependencies(${PROJECT_NAME} ${TARGET_NAME})
+    endforeach()
+endfunction(copy_files)
+
+copy_files("${CMAKE_CURRENT_LIST_DIR}/resources" "${BIN_DIR}/resources")
+
+

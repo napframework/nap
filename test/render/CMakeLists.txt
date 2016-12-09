@@ -29,32 +29,31 @@ if (MSVC)
             ../../../thirdparty/sdl2/msvc/lib/x64/SDL2.dll
             ../../../thirdparty/glew/msvc/bin/Release/x64/glew32.dll
             )
-
     # copy nrender (hack)
     file(COPY ${FILES_TO_COPY} DESTINATION ${BIN_DIR}/Debug)
     file(COPY ${FILES_TO_COPY} DESTINATION ${BIN_DIR}/Release)
-
-    # create post build event
-    set(DATA_DIR ${CMAKE_CURRENT_LIST_DIR}/data)
-    set(SHADER_DIR ${CMAKE_CURRENT_LIST_DIR}/shaders)
-
-    add_custom_command(TARGET ${PROJECT_NAME}
-                       POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} -E copy_directory "${DATA_DIR}" "${BIN_DIR}/Debug/data"
-                       COMMENT "Copy Data")
-
-    add_custom_command(TARGET ${PROJECT_NAME}
-                       POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} -E copy_directory "${DATA_DIR}" "${BIN_DIR}/Release/data"
-                       COMMENT "Copy Data")
-
-    add_custom_command(TARGET ${PROJECT_NAME}
-                       POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} -E copy_directory "${SHADER_DIR}" "${BIN_DIR}/Debug/shaders"
-                       COMMENT "Copy Shaders")
-
-    add_custom_command(TARGET ${PROJECT_NAME}
-                       POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} -E copy_directory "${SHADER_DIR}" "${BIN_DIR}/Release/shaders"
-                       COMMENT "Copy Shaders")
 endif()
+
+# create post build event
+set(DATA_DIR ${CMAKE_CURRENT_LIST_DIR}/data)
+set(SHADER_DIR ${CMAKE_CURRENT_LIST_DIR}/shaders)
+
+add_custom_command(TARGET ${PROJECT_NAME}
+                   POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy_directory "${DATA_DIR}" "${BIN_DIR}/data"
+                   COMMENT "Copy Data")
+
+add_custom_command(TARGET ${PROJECT_NAME}
+                   POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy_directory "${DATA_DIR}" "${BIN_DIR}/data"
+                   COMMENT "Copy Data")
+
+add_custom_command(TARGET ${PROJECT_NAME}
+                   POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy_directory "${SHADER_DIR}" "${BIN_DIR}/shaders"
+                   COMMENT "Copy Shaders")
+
+add_custom_command(TARGET ${PROJECT_NAME}
+                   POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy_directory "${SHADER_DIR}" "${BIN_DIR}/shaders"
+                   COMMENT "Copy Shaders")

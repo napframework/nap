@@ -18,6 +18,7 @@ void TestManager::runTests()
 		std::ostringstream result;
 		result << " ";
 		if (test->run()) {
+
 			result << "OK";
 		} else {
 			result << "FAILED";

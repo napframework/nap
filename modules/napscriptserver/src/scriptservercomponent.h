@@ -89,6 +89,7 @@ namespace nap
 
 		void removeCallbacks(AsyncTCPClient& client, const std::string& path);
 
+        // TODO: Move this map to the AsyncTCPClient
 		CallbackMap& getCallbackMap(AsyncTCPClient& client);
 
 		Core& getCore() { return static_cast<Entity*>(getRootObject())->getCore(); }

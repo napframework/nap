@@ -79,16 +79,21 @@ class Core(QObject):
             if t['name'] == typename:
                 return t['baseTypes']
 
-    def __metaType(self, cppTypename, clazz=None):
+    def __getOrCreateMetaType(self, cppTypename, clazz=None):
         if not clazz:
             clazz = Object
         pythonTypename = _stripCPPNamespace(cppTypename)
-        if not pythonTypename in self.__metatypes:
-            t = type(pythonTypename, (clazz,), dict())
-            print('Created metatype: %s' % t)
-            return t
 
-    def __findCorrespondingType(self, typename):
+        if  pythonTypename in self.__metatypes.keys():
+            return self.__metatypes[pythonTypename]
+
+        t = type(pythonTypename, (clazz,), dict())
+        print('Created metatype: %s' % t)
+        self.__metatypes[pythonTypename] = t
+        return t
+
+
+    def __findOrCreateCorrespondingType(self, typename):
         """ Based on the provided typename,
         find the closest matching type or base type.
         If no matching type was found
@@ -109,7 +114,7 @@ class Core(QObject):
         for clazz in subClasses:
             napType = clazz.NAP_TYPE
             if napType in baseTypes:
-                return self.__metaType(typename, clazz)
+                return self.__getOrCreateMetaType(typename, clazz)
 
         # No corresponding type found
         return self.__metatype(typename)
@@ -120,14 +125,14 @@ class Core(QObject):
         use a dynamically constructed meta type.
 
         @param dic: The Object data, according to the RPC format
-        @return: An instance of the
+        @return: An instance of thee
         """
         if _J_VALUE_TYPE in dic:
-            clazz = Attribute
+            Clazz = Attribute
         else:
-            clazz = self.__findCorrespondingType(dic[_J_TYPE])
+            Clazz = self.__findOrCreateCorrespondingType(dic[_J_TYPE])
 
-        return clazz(self, dic)
+        return Clazz(self, dic)
 
     @staticmethod
     def toPythonValue(value, valueType):
@@ -326,6 +331,7 @@ class Object(QObject):
         else:
             self.__typename = dic[_J_VALUE_TYPE]
 
+        # Do this on each tree get
         self.core().addObjectCallbacks(self)
 
         self.__children = []
@@ -545,6 +551,8 @@ class InputPlugBase(Plug):
 
     def __init__(self, *args):
         super(InputPlugBase, self).__init__(*args)
+
+    def connection(self):
 
 
 class OutputPlugBase(Plug):

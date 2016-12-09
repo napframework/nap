@@ -2,9 +2,35 @@
 
 namespace nap
 {
+	void ResourceLoader::addFileExtension(const std::string& ext)
+	{
+		if (hasExtension(ext)) {
+			Logger::warn("File extension was already added: %s", ext.c_str());
+			return;
+		}
+		mFileExtensions.push_back(ext);
+	}
+
+
+	bool ResourceLoader::hasExtension(const std::string& extension) const
+	{
+		for (const std::string& ext : mFileExtensions)
+			if (ext == extension)
+				return true;
+		return false;
+	}
+
+
+
+	bool ResourceLoader::canHandle(const std::string& assetPath) const
+	{
+		return hasExtension(getFileExtension(assetPath));
+	}
+
+
 	void ResourceManagerService::setAssetRoot(const std::string& dirname)
 	{
-		mAssetRootDir = dirname;
+		mResourcePath = dirname;
 		invalidate();
 	}
 
@@ -30,19 +56,29 @@ namespace nap
 		return factories;
 	}
 
-    bool ResourceManagerService::canLoad(const std::string& path) {
-        return getFactoryFor(path) != nullptr;
-    }
+	bool ResourceManagerService::canLoad(const std::string& path) { return getFactoryFor(path) != nullptr; }
 
 
 
-    Resource* ResourceManagerService::loadResource(const std::string& path)
+	Resource* ResourceManagerService::loadResource(const std::string& path)
 	{
-        std::string filename = mAssetRootDir + "/" + path;
-        if (!fileExists(filename)) {
-            Logger::fatal("File does not exist: '%s'", filename.c_str());
+		if (mResourcePath.empty()) {
+            Logger::fatal("No asset root set");
+            return nullptr;
+		}
+
+        std::string assetRoot = getAbsolutePath(mResourcePath);
+
+        if (!fileExists(assetRoot)) {
+            Logger::fatal("Asset root does not exist: '%s'", assetRoot.c_str());
             return nullptr;
         }
+
+		std::string filename = assetRoot + "/" + path;
+		if (!fileExists(filename)) {
+			Logger::fatal("File does not exist: '%s'", filename.c_str());
+			return nullptr;
+		}
 
 		ResourceLoader* factory = getFactoryFor(filename);
 		if (!factory) {
@@ -50,14 +86,16 @@ namespace nap
 			return nullptr;
 		}
 
-		std::unique_ptr<Resource> asset = std::move(factory->loadResource(filename));
-		if (asset == nullptr)
+		std::unique_ptr<Resource> asset;
+		if (!factory->loadResource(filename, asset)) {
 			return nullptr;
-		
-        Resource* ptr = asset.get();
+		}
+
+		Resource* ptr = asset.get();
 		mResources.emplace(path, std::move(asset));
 		return ptr;
 	}
+
 
 	void ResourceManagerService::invalidate() { mResources.clear(); }
 
@@ -103,5 +141,3 @@ namespace nap
 		return ptr;
 	}
 }
-
-RTTI_DEFINE(nap::ResourceManagerService)

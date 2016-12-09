@@ -62,7 +62,8 @@ namespace nap
 		});
 
 
-		disp.AddMethod("getModuleInfo", [&]() { return JSONSerializer().toString(getCore().getModuleManager()); });
+		disp.AddMethod("getModuleInfo", [&]() {
+            return JSONSerializer().toString(getCore().getModuleManager()); });
 
 		disp.AddMethod("getObjectTree",
 					   [&]() -> std::string { return JSONSerializer().toString(*getRootObject(), true); });
@@ -91,6 +92,7 @@ namespace nap
 			return Serializer::toPtr(*obj->getParentObject());
 		});
 
+        // TODO: Deprecate
 		disp.AddMethod("getAllChildren", [&](ObjPtr ptr) -> std::vector<ObjPtr> {
 			std::vector<ObjPtr> children;
 
@@ -103,6 +105,7 @@ namespace nap
 			return children;
 		});
 
+        // TODO: Deprecate
 		disp.AddMethod("getChildren", [&](ObjPtr objPtr, const std::string& typeName) {
 			std::vector<std::string> children;
 
