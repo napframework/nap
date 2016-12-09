@@ -7,6 +7,7 @@
 #ifdef _MSC_VER
 	#include "direntw32.h"
 	#include <tchar.h>
+	#include <io.h>
 #else
 	#include <dirent.h>
 #endif
