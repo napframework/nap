@@ -14,6 +14,10 @@
 
 #ifdef _WIN32
 	#include <fileapi.h>
+#elif __APPLE__
+    #include <stdlib.h>
+    #include <zconf.h>
+    #include <sys/stat.h>
 #else
 	#include <stdlib.h>
     #include <zconf.h>
