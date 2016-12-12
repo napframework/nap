@@ -118,7 +118,8 @@ namespace nap
 
 
     std::string ResourceManagerService::getResourcePath(const Resource& res) const {
-        for (const auto& it : mResources) {
+        for (const auto& it : mResources) 
+		{
             if (it.second.get() == &res)
                 return it.first;
         }

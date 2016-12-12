@@ -35,10 +35,7 @@ namespace nap
 	// Return link as shader resource, nullptr if not linked
 	ShaderResource* Material::getResource()
 	{
-		nap::Object* obj = shaderResource.getTarget();
-		if (obj == nullptr)
-			return nullptr;
-		return static_cast<ShaderResource*>(obj);
+		return shaderResource.getResource<ShaderResource>();
 	}
 
 }

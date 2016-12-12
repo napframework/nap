@@ -88,9 +88,8 @@ unsigned int windowHeight(512);
 
 // Shader
 nap::Material material;
-std::unique_ptr<nap::ShaderResource> shader_resource;
 
-						// GLM
+// GLM
 glm::mat4 viewMatrix;			// Store the view matrix
 glm::mat4 modelMatrix;			// Store the model matrix
 
@@ -326,9 +325,11 @@ bool loadModelFromFile(const std::string& file)
 	uv_index = mesh->getUvBufferIndex(0);
 
 	// Bind indices explicit to shader
-	shader_resource->getShader().bindVertexAttribute(vertex_index, "in_Position");
-	shader_resource->getShader().bindVertexAttribute(color_index, "in_Color");
-	shader_resource->getShader().bindVertexAttribute(uv_index, "in_Uvs");
+	opengl::Shader& shader = material.getResource()->getShader();
+
+	shader.bindVertexAttribute(vertex_index, "in_Position");
+	shader.bindVertexAttribute(color_index, "in_Color");
+	shader.bindVertexAttribute(uv_index, "in_Uvs");
 
 	return true;
 }
@@ -369,7 +370,7 @@ void updateViewport(int width, int height)
 }
 
 // Init render context + window
-bool init()
+bool init(nap::Core& core)
 {
 	// Initialize OpenGL
 	if (!opengl::initVideo())
@@ -414,8 +415,12 @@ bool init()
 	loadImages();
 
 	// Create shader resource and material
-	shader_resource = std::move(std::make_unique<nap::ShaderResource>(vertShaderName, fragShaderName));
-	material.shaderResource.setTarget(*shader_resource);
+	nap::ResourceManagerService& service = core.getOrCreateService<nap::ResourceManagerService>();
+	service.setAssetRoot(".");
+	nap::Resource* shader_resource = service.getResource(fragShaderName);
+
+	// Set resource on material
+	material.shaderResource.setResource(*shader_resource);
 																			 // View matrix
 	viewMatrix = glm::lookAt
 	(
@@ -446,13 +451,11 @@ bool init()
 // Main loop
 int main(int argc, char *argv[])
 {
+	// Create core
 	nap::Core core;
-	nap::ResourceManagerService& service = core.getOrCreateService<nap::ResourceManagerService>();
-	service.setAssetRoot(".");
-	
-	nap::Resource* resource = service.getResource(fragShaderName);
 
-	if (!init())
+	// Initialize render stuff
+	if (!init(core))
 		return -1;
 
 	// Clear and swap
@@ -487,10 +490,11 @@ void runGame()
 
 	// Get uniform bindings for vertex shader
 	material.bind();
-	int projectionMatrixLocation = glGetUniformLocation(shader_resource->getShader().getId(), "projectionMatrix"); // Get the location of our projection matrix in the shader
-	int viewMatrixLocation = glGetUniformLocation(shader_resource->getShader().getId(), "viewMatrix"); // Get the location of our view matrix in the shader
-	int modelMatrixLocation = glGetUniformLocation(shader_resource->getShader().getId(), "modelMatrix"); // Get the location of our model matrix in the shader
-	int noiseLocation = glGetUniformLocation(shader_resource->getShader().getId(), "noiseValue");
+	opengl::Shader& shader = material.getResource()->getShader();
+	int projectionMatrixLocation = glGetUniformLocation(shader.getId(), "projectionMatrix"); // Get the location of our projection matrix in the shader
+	int viewMatrixLocation = glGetUniformLocation(shader.getId(), "viewMatrix"); // Get the location of our view matrix in the shader
+	int modelMatrixLocation = glGetUniformLocation(shader.getId(), "modelMatrix"); // Get the location of our model matrix in the shader
+	int noiseLocation = glGetUniformLocation(shader.getId(), "noiseValue");
 	material.unbind();
 
 	// Loop
@@ -587,7 +591,8 @@ void runGame()
 
 		// Get uniform bindings for fragment shader
 		int loc_one = -1;
-		loc_one = glGetUniformLocation(shader_resource->getShader().getId(), "myTextureSampler");
+		opengl::Shader& shader = material.getResource()->getShader();
+		loc_one = glGetUniformLocation(shader.getId(), "myTextureSampler");
 
 		// Send values
 		glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &camera.getProjectionMatrix()[0][0]); // Send our projection matrix to the shader
@@ -624,7 +629,7 @@ void runGame()
 		// Unbind shader
 		material.unbind(); // Unbind our shader
 
-						  // Swap front / back buffer
+		// Swap front / back buffer
 		opengl::swap(*mainWindow);
 	}
 }

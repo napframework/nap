@@ -66,7 +66,11 @@ namespace nap
 		void link(AttributeBase& source);
 		void linkPath(const std::string& path);
 		void unLink();
-		bool isLinked() const;
+
+		/**
+		 * @return if the attribute is currently linked
+		 */
+		virtual bool isLinked() const;
 
 		/**
 		 * @return the path to the object this attribute links to

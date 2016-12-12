@@ -44,11 +44,24 @@ namespace nap
 			return;
 		}
 
+		if (!resource.getTypeInfo().isKindOf(mType))
+		{
+			nap::Logger::warn("unable to link resource, invalid resource type: %s", resource.getTypeInfo().getName().c_str());
+			return;
+		}
+
 		// Update resource
 		mResource = &resource;
 
 		// Set new path (forcing resolve update on get)
 		setValue(resource.getResourcePath());
+	}
+
+
+	// If there's currently an active link associated with the resource
+	bool ResourceLinkAttribute::isLinked() const
+	{
+		return !(getValue().empty()) || mResource != nullptr;
 	}
 
 

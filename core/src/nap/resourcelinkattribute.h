@@ -51,6 +51,12 @@ namespace nap
 		void setResource(Resource& resource);
 
 		/**
+		 * @return if the the resource is currently linked
+		 * A resource is linked when a path is to a resource is given or the resource is resolved
+		 */
+		virtual bool isLinked() const override;
+
+		/**
 		 * Clears the link path
 		 */
 		void clear();

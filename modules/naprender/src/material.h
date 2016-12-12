@@ -3,6 +3,7 @@
 // External includes
 #include <nap/serviceablecomponent.h>
 #include <nap/attribute.h>
+#include <nap/resourcelinkattribute.h>
 
 // Local includes
 #include "shaderresource.h"
@@ -45,7 +46,7 @@ namespace nap
 		* By default this link is empty, needs to be set
 		* when using this material for drawing
 		*/
-		ObjectLinkAttribute shaderResource = { this, "shader", RTTI_OF(ShaderResource) };
+		ResourceLinkAttribute shaderResource = { this, "shader", RTTI_OF(ShaderResource) };
 
 		/**
 		 * Utility for getting the shader resource

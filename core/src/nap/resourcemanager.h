@@ -106,6 +106,8 @@ namespace nap
 	private:
 		std::vector<std::unique_ptr<ResourceLoader>> mFactories;
 		std::string mResourcePath = "resources";
+
+		// Holds all currently loaded resources
 		std::map<std::string, std::unique_ptr<Resource>> mResources;
 	};
 
