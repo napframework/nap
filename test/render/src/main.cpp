@@ -668,7 +668,7 @@ void runGame(nap::Core& core)
 		case 0:
 		{
 			render_service->render();
-			mesh_comp->draw();
+			//mesh_comp->draw();
 			break;
 		case 1:
 			cubeObject.bind();
