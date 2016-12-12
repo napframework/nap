@@ -27,6 +27,7 @@
 #include <material.h>
 #include <modelresource.h>
 #include <modelmeshcomponent.h>
+#include <renderservice.h>
 
 // Nap includes
 #include <nap/core.h>
@@ -93,7 +94,7 @@ glm::mat4 viewMatrix;			// Store the view matrix
 glm::mat4 modelMatrix;			// Store the model matrix
 
 // Some utilities
-void runGame();
+void runGame(nap::Core& core);
 void cleanup();
 void createSquare();		
 void createTriangle();		
@@ -513,12 +514,15 @@ int main(int argc, char *argv[])
 	// Create core
 	nap::Core core;
 
+	nap::RenderService* render_service = core.getOrCreateService<nap::RenderService>();
+	nap::Logger::info("initialized render service: %s", render_service->getName().c_str());
+
 	// Initialize render stuff
 	if (!init(core))
 		return -1;
 
 	// Run Gam
-	runGame();
+	runGame(core);
 
 	// Cleanup when done
 	cleanup();
@@ -527,7 +531,7 @@ int main(int argc, char *argv[])
 }
 
 
-void runGame()
+void runGame(nap::Core& core)
 {
 	// Run function
 	bool loop = true;
@@ -549,6 +553,10 @@ void runGame()
 	nap::ModelMeshComponent* mesh_comp = model->getComponent<nap::ModelMeshComponent>();
 	nap::Material* material = mesh_comp->getMaterial();
 	assert(material != nullptr);
+
+	// Get render service
+	nap::RenderService* render_service = core.getOrCreateService<nap::RenderService>();
+	assert(render_service != nullptr);
 
 	// Loop
 	while (loop)
@@ -659,6 +667,7 @@ void runGame()
 		{
 		case 0:
 		{
+			render_service->render();
 			mesh_comp->draw();
 			break;
 		case 1:

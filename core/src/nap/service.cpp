@@ -46,6 +46,18 @@ namespace nap
 		onStop();
 	}
 
+	
+	/**
+	 * This function is called when the service is created
+	 * Override to register all types that are important to the service
+	 * to function properly.
+	 */
+	void Service::registerTypes(nap::Core& core)
+	{
+		nap::Logger::info("type registration not implemented by service: %s", this->getTypeName().c_str());
+		return;
+	}
+
 
 	/**
 	@brief Registers a new component associated with the service

@@ -128,6 +128,7 @@ namespace nap
 
 		/**
 		 * Register a type to be associated with a specific service
+		 * This call is performed by services that need to be registered with core
 		 * @param inService the service to associated the type with
 		 * @param typeInfo the type to associate with the service
 		 */
@@ -153,8 +154,7 @@ namespace nap
 		using ServiceList = std::vector<std::unique_ptr<Service>>;
 
 		// Typedef for types associated with a service
-		using ServiceTypeMap =
-			std::unordered_map<std::string, std::vector<RTTI::TypeInfo>>;
+		using ServiceTypeMap = std::unordered_map<std::string, std::unordered_set<RTTI::TypeInfo>>;
 
 		// Type store with all registered components for every service
 		ServiceTypeMap mTypes;
@@ -180,16 +180,27 @@ namespace nap
 	template <typename T, typename... Args>
 	T& Core::addService(Args&&... inArguments)
 	{
+		// Check for existing service
+		T* existing_service = getService<T>();
+		if (existing_service != nullptr)
+		{
+			nap::Logger::warn("cant add service of type: %s, service already exists", RTTI_OF(T).getName().c_str());
+			return *existing_service;
+		}
+
 		// Create new service
-		auto unique_ptr =
-			std::make_unique<T>(std::forward<Args>(inArguments)...);
+		auto unique_ptr = std::make_unique<T>(std::forward<Args>(inArguments)...);
 
 		// set the core pointer of the service
 		unique_ptr->mCore = this;
 
-		// Register service types if added for first time
-		if (!getService<T>()) T::sRegisterTypes(*this, *unique_ptr);
+		// This is deprecated, use registerTypes instead!
+		[[deprecated]]
+		T::sRegisterTypes(*this, *unique_ptr);
 
+		// Correct way of doing it
+		unique_ptr->registerTypes(*this);
+		
 		// Get member
 		T& return_v = *unique_ptr;
 

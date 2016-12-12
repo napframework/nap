@@ -104,8 +104,7 @@ namespace nap
 		if (found_service.empty()) return nullptr;
 
 		// Return the service if found
-		const auto& v = std::find_if(mServices.begin(), mServices.end(),
-									 [&](const auto& service) 
+		const auto& v = std::find_if(mServices.begin(), mServices.end(), [&](const auto& service) 
 		{ 
 			return service->getTypeName() == found_service; 
 		});
@@ -122,7 +121,11 @@ namespace nap
 		auto it = mTypes.find(inService.getTypeName());
 		if (it != mTypes.end()) 
 		{
-			it->second.emplace_back(inTypeInfo);
+			if (it->second.find(inTypeInfo) != it->second.end())
+			{
+				nap::Logger::warn("type: %s already registered with service: %s", inTypeInfo.getName().c_str(), inService.getTypeInfo().getName().c_str());
+			}
+			it->second.emplace(inTypeInfo);
 			return;
 		}
 
@@ -175,8 +178,21 @@ namespace nap
         assert(type.isValid());
 		assert(type.canCreateInstance());
 		assert(type.isKindOf<Service>());
+
+		// Check if service doesn't already exist
+		nap::Service* existing_service = getService(type);
+		if (existing_service != nullptr)
+		{
+			nap::Logger::warn("can't add service of type: %s, service already exists", type.getName().c_str());
+			return *existing_service;
+		}
+
+		// Add service
 		Service* service = static_cast<Service*>(type.createInstance());
 		service->mCore = this;
+		service->registerTypes(*this);
+
+		// Add service
 		mServices.emplace_back(std::unique_ptr<Service>(service));
 		return *service;
 	}
