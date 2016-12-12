@@ -25,6 +25,7 @@
 
 // Mod nap render includes
 #include <material.h>
+#include <modelresource.h>
 
 // Nap includes
 #include <nap/core.h>
@@ -58,11 +59,8 @@ opengl::VertexContainer		triangleUvs;
 // Camera
 opengl::Camera				camera;
 
-// Vertex buffer that holds the loaded model
-//std::vector<std::unique_ptr<opengl::Mesh>>						meshes;
-std::unique_ptr<opengl::Model>	model;
-
 // vertex Shader indices
+nap::ModelResource* model = nullptr;
 int vertex_index(0), color_index(0), normal_index(0), uv_index(0);
 
 // Our SDL_Window ( just like with SDL2 wihout OpenGL)
@@ -81,7 +79,7 @@ void createSquare();		// Method for creating our squares Vertex Array Object
 void createTriangle();		// Method used for creating a triangle
 bool loadImages();			// Load bitmap from disk
 void updateViewport(int width, int height);
-bool loadModelFromFile(const std::string& file);
+bool loadModelFromFile(const std::string& file, nap::Core& core);
 
 unsigned int windowWidth(512);
 unsigned int windowHeight(512);
@@ -308,11 +306,14 @@ void createSquare(void)
 /**
 * loads a model from file using assimp
 */
-bool loadModelFromFile(const std::string& file)
+bool loadModelFromFile(const std::string& file, nap::Core& core)
 {
-	model = std::move(std::unique_ptr<opengl::Model>(opengl::loadModel(file)));
-	if (model == nullptr)
+	nap::ResourceManagerService* service = core.getOrCreateService<nap::ResourceManagerService>();
+
+	nap::Resource* model_resource = service->getResource(file);
+	if (model_resource == nullptr)
 		return false;
+	model = static_cast<nap::ModelResource*>(model_resource);
 
 	// Set model
 	opengl::printMessage(opengl::MessageType::INFO, "number of loaded meshes in model: %d", model->getMeshCount());
@@ -369,6 +370,7 @@ void updateViewport(int width, int height)
 	camera.setAspectRatio((float)width, (float)height);
 }
 
+
 // Init render context + window
 bool init(nap::Core& core)
 {
@@ -415,9 +417,9 @@ bool init(nap::Core& core)
 	loadImages();
 
 	// Create shader resource and material
-	nap::ResourceManagerService& service = core.getOrCreateService<nap::ResourceManagerService>();
-	service.setAssetRoot(".");
-	nap::Resource* shader_resource = service.getResource(fragShaderName);
+	nap::ResourceManagerService* service = core.getOrCreateService<nap::ResourceManagerService>();
+	service->setAssetRoot(".");
+	nap::Resource* shader_resource = service->getResource(fragShaderName);
 
 	// Set resource on material
 	material.shaderResource.setResource(*shader_resource);
@@ -436,7 +438,7 @@ bool init(nap::Core& core)
 	updateViewport(window_settings.width, window_settings.height);
 
 	// Load our mesh
-	loadModelFromFile("data/pig_head_alpha_rotated.fbx");
+	loadModelFromFile("data/pig_head_alpha_rotated.fbx", core);
 
 	// Create Square Vertex Buffer Object
 	createSquare();
@@ -611,7 +613,7 @@ void runGame()
 		{
 		case 0:
 		{
-			model->draw();
+			model->getModel().draw();
 			break;
 		case 1:
 			cubeObject.bind();

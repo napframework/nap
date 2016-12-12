@@ -36,7 +36,6 @@ namespace nap
 	}
 
 
-
 	/**
 	@brief Start core
 	**/
@@ -44,7 +43,9 @@ namespace nap
 	{
 		mIsRunning = true;
 		for (auto& service : mServices)
+		{
 			service->start();
+		}
 	}
 
 
@@ -75,21 +76,25 @@ namespace nap
 	{
 		// Get raw type to search for
 		RTTI::TypeInfo raw_search_type = inType.getRawType();
-		if (!raw_search_type.isValid()) {
+		if (!raw_search_type.isValid()) 
+		{
 			Logger::warn("Unable to determine object type, can't retrieve service");
 			return nullptr;
 		}
 
 		// Service name
 		std::string found_service;
-		for (auto& v : mTypes) {
+		for (auto& v : mTypes) 
+		{
 			// Find type in service
-			const auto& match_type = std::find_if(v.second.begin(), v.second.end(), [&](const RTTI::TypeInfo& info) {
+			const auto& match_type = std::find_if(v.second.begin(), v.second.end(), [&](const RTTI::TypeInfo& info) 
+			{
 				return raw_search_type.isKindOf(info.getRawType());
 			});
 
 			// Check if the type was found in the service list
-			if (match_type != v.second.end()) {
+			if (match_type != v.second.end()) 
+			{
 				found_service = v.first;
 				break;
 			}
@@ -100,10 +105,12 @@ namespace nap
 
 		// Return the service if found
 		const auto& v = std::find_if(mServices.begin(), mServices.end(),
-									 [&](const auto& service) { return service->getTypeName() == found_service; });
+									 [&](const auto& service) 
+		{ 
+			return service->getTypeName() == found_service; 
+		});
 		return v == mServices.end() ? nullptr : (*v).get();
 	}
-
 
 
 	/**
@@ -113,7 +120,8 @@ namespace nap
 	{
 		// Find and add
 		auto it = mTypes.find(inService.getTypeName());
-		if (it != mTypes.end()) {
+		if (it != mTypes.end()) 
+		{
 			it->second.emplace_back(inTypeInfo);
 			return;
 		}
@@ -122,15 +130,46 @@ namespace nap
 		mTypes[inService.getTypeName()] = {inTypeInfo};
 	}
 
-	Entity& Core::addEntity(const std::string& name) { return mRoot->addEntity(name); }
 
-	Entity* Core::getEntity(const std::string& name) { return mRoot->getEntity(name); }
-
-	void Core::setRoot(Entity& entity) { mRoot = std::unique_ptr<Entity>(&entity); }
-
-	void Core::clear() { mRoot->clearChildren(); }
+	Entity& Core::addEntity(const std::string& name) 
+	{ 
+		return mRoot->addEntity(name); 
+	}
 
 
+	Entity* Core::getEntity(const std::string& name) 
+	{ 
+		return mRoot->getEntity(name); 
+	}
+
+	
+	void Core::setRoot(Entity& entity) 
+	{ 
+		mRoot = std::unique_ptr<Entity>(&entity); 
+	}
+
+
+	void Core::clear() 
+	{ 
+		mRoot->clearChildren(); 
+	}
+
+
+	// Returns service that matches @type
+	Service* Core::getService(const RTTI::TypeInfo& type)
+	{
+		// Find service of type 
+		const auto& found_service = std::find_if(mServices.begin(), mServices.end(), [&type](const auto& service)
+		{
+			return service->getTypeInfo().isKindOf(type.getRawType());
+		});
+
+		// Check if found
+		return found_service == mServices.end() ? nullptr : (*found_service).get();
+	}
+
+
+	// Add a new service
 	Service& Core::addService(const RTTI::TypeInfo& type)
 	{
         assert(type.isValid());
@@ -143,19 +182,24 @@ namespace nap
 	}
 
 
-	Service& Core::getOrCreateService(const RTTI::TypeInfo& type)
+	// Creates a new service of type @type if doesn't exist yet
+	Service* Core::getOrCreateService(const RTTI::TypeInfo& type)
 	{
-		Service* srv = getServiceForType(type);
-        if (srv)
-		{
-			return *srv;
-		}
-
+		// Otherwise add
 		if (!type.isKindOf(RTTI_OF(nap::Service)))
 		{
 			nap::Logger::fatal("can't add service, service not of type: %s", RTTI_OF(Service).getName().c_str());
+			return nullptr;
 		}
 
-        return addService(type);
+		// Find registered service
+		Service* found_service = getService(type);
+		if (found_service != nullptr)
+		{
+			return found_service;
+		}
+
+		// Add new service of type
+        return &addService(type);
 	}
 }

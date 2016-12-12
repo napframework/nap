@@ -63,9 +63,8 @@ namespace nap
 
 		/**
 		 * Creates a shader resource
-		 * @return if the shader resource was created successfully or not
+		 * @return the newly created shader resource
 		 * @param resourcePath path to the resource to load
-		 * @param outAsset the created resource
 		 */
 		virtual std::unique_ptr<Resource> loadResource(const std::string& resourcePath) const override;
 
