@@ -329,7 +329,7 @@ namespace nap
 		 * @return the link's target as type T, nullptr if not linked or type is invalid
 		 */
 		template <typename T>
-		T* getTarget() { return mLink.getTarget<T>(); }
+		T* getTarget();
 
 		/**
 		 * @return the link's target object path, empty string if not valid

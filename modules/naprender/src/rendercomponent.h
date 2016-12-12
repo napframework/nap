@@ -68,9 +68,15 @@ namespace nap
 		 */
 		virtual void onPostDraw()		{ }
 
-	private:
-		// Instance of material used for drawing
-		Material* mMaterial = nullptr;
+		/**
+		 * Link to material used for drawing
+		 */
+		ObjectLinkAttribute material = { this, "material", RTTI_OF(Material) };
+
+		/**
+		 * @return link as material, nullptr if not found
+		 */
+		Material* getMaterial();
 	};
 }
 

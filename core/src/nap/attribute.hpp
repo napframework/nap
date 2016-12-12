@@ -183,10 +183,6 @@ namespace nap
 		outMax = mMaxValue;
 	}
 
-	//////////////////////////////////////////////////////////////////////////
-	// Numeric Attribute
-	//////////////////////////////////////////////////////////////////////////
-
 	template <typename T>
 	NumericAttribute<T>::NumericAttribute(AttributeObject* parent, const std::string& name, const T& value, const T& minValue, const T& maxValue, bool atomic, bool clamped)
 		: Attribute<T>(parent, name, value, atomic)
@@ -202,5 +198,17 @@ namespace nap
 		: Attribute<T>(parent, name, value, atomic)
 	{
 		setRange(value, value);
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// Object attribute link definitions
+	//////////////////////////////////////////////////////////////////////////
+	template <typename T>
+	T* ObjectLinkAttribute::getTarget()
+	{
+		Object* target = getTarget();
+		if (target == nullptr)
+			return nullptr;
+		return static_cast<T*>(target);
 	}
 }
