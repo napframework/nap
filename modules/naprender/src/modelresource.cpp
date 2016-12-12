@@ -48,9 +48,9 @@ namespace nap
 
 
 	// Returns the mesh @index
-	const opengl::Mesh* ModelResource::getMesh(unsigned int index) const
+	opengl::Mesh* ModelResource::getMesh(unsigned int index) const
 	{
-		const opengl::Mesh* mesh = getModel().getMesh(index);
+		opengl::Mesh* mesh = getModel().getMesh(index);
 		if (mesh == nullptr)
 		{
 			nap::Logger::warn("unable to fetch mesh at index: %d from model: %s", index, mModelPath.c_str());

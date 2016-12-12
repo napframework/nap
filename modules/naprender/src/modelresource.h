@@ -51,7 +51,7 @@ namespace nap
 		 * @return the mesh @index of the model, nullptr if out of range or invalid
 		 * @param index the index of the mesh managed by this model
 		 */
-		const opengl::Mesh* getMesh(unsigned int index) const;
+		opengl::Mesh* getMesh(unsigned int index) const;
 
 	private:
 		// Path to mesh on disk
