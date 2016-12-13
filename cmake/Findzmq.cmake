@@ -7,20 +7,19 @@
 
 find_path(ZMQ_DIR include/zmq.h
         HINTS
-        ${CMAKE_CURRENT_LIST_DIR}/../../libzmq
         ${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/libzmq
+        ${CMAKE_CURRENT_LIST_DIR}/../../libzmq
         )
 if (UNIX)
-else()
-    if(MSVC)
-        find_library(ZMQ_LIBRARIES NAMES libzmq.lib HINTS ${ZMQ_DIR}/bin/Win32/Release/v140/dynamic)
-    else()
-        find_library(ZMQ_LIBRARIES NAMES libzmq.dll HINTS
-                ${ZMQ_DIR}/bin/${CMAKE_BUILD_TYPE}
-                ${ZMQ_DIR}/bin/Debug
-                ${ZMQ_DIR}/cmake-build-debug/lib
-                )
-    endif()
+elseif(WIN32)
+    find_library(ZMQ_LIBRARIES NAMES libzmq.lib HINTS ${ZMQ_DIR}/bin/Win32/Release/v140/dynamic)
+#    else()
+#        find_library(ZMQ_LIBRARIES NAMES libzmq.dll HINTS
+#                ${ZMQ_DIR}/bin/${CMAKE_BUILD_TYPE}
+#                ${ZMQ_DIR}/bin/Debug
+#                ${ZMQ_DIR}/cmake-build-debug/lib
+#                )
+#    endif()
 endif()
 
 if (APPLE)
