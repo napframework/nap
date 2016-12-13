@@ -9,7 +9,7 @@
 
 RTTI_DEFINE(nap::JSONSerializer)
 RTTI_DEFINE(nap::JSONResource)
-RTTI_DEFINE(nap::JSONFileFactory)
+RTTI_DEFINE(nap::JSONFileLoader)
 
 
 
@@ -405,7 +405,7 @@ namespace nap
 	}
 
 
-	std::unique_ptr<Resource> JSONFileFactory::loadResource(const std::string& resourcePath) const 
+	std::unique_ptr<Resource> JSONFileLoader::loadResource(const std::string& resourcePath) const
 	{
         std::ifstream is(resourcePath);
         std::string str((std::istreambuf_iterator<char>(is)),

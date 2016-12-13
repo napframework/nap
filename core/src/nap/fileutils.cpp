@@ -4,16 +4,17 @@
 #include <cstring>
 
 // clang-format off
-#ifdef _MSC_VER
-	#include "direntw32.h"
-	#include <tchar.h>
-	#include <io.h>
-#else
-	#include <dirent.h>
-#endif
 
 #ifdef _WIN32
-	#include <fileapi.h>
+	//#include <fileapi.h>
+	#ifdef _MSC_VER
+		#include "direntw32.h"
+		#include <tchar.h>
+		#include <io.h>
+	#else
+		#include <dirent.h>
+		#include <sys/stat.h>
+	#endif
 #elif __APPLE__
     #include <stdlib.h>
     #include <zconf.h>

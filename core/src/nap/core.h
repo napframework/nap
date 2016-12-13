@@ -195,7 +195,6 @@ namespace nap
 		unique_ptr->mCore = this;
 
 		// This is deprecated, use registerTypes instead!
-		[[deprecated]]
 		T::sRegisterTypes(*this, *unique_ptr);
 
 		// Correct way of doing it

@@ -1,8 +1,6 @@
 #pragma once
 
-#include <rtti/rtti.h>
-#include <nap/arrayattribute.h>
-#include <nap/attribute.h>
+#include <nap.h>
 
 /**
 @brief 2d integer vector that can be used as an attribute

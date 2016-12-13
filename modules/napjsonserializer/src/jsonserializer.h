@@ -37,11 +37,11 @@ namespace nap
 
 
 
-	class JSONFileFactory : public ResourceLoader
+	class JSONFileLoader : public ResourceLoader
 	{
         RTTI_ENABLE_DERIVED_FROM(ResourceLoader)
 	public:
-		JSONFileFactory() : ResourceLoader() { addFileExtension("napj"); }
+		JSONFileLoader() : ResourceLoader() { addFileExtension("napj"); }
 
 		std::unique_ptr<Resource> loadResource(const std::string& resourcePath) const override;
 
@@ -52,4 +52,4 @@ namespace nap
 
 RTTI_DECLARE(nap::JSONSerializer)
 RTTI_DECLARE_BASE(nap::JSONResource)
-RTTI_DECLARE(nap::JSONFileFactory)
+RTTI_DECLARE(nap::JSONFileLoader)

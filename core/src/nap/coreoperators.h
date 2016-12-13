@@ -215,7 +215,7 @@ namespace nap
     {
     RTTI_ENABLE_DERIVED_FROM(Operator)
     public:
-        Attribute<int> mValue = { this, "valueAttr", 0. };
+        Attribute<int> mValue = { this, "valueAttr", 0 };
         OutputPullPlug<int> output = { this, &IntOperator::pullValue, "value" };
         InputPullPlug<int> input = { this, "input" };
 

@@ -101,7 +101,7 @@ namespace nap
 		 * Create and register an AssetFactory based on the given type
 		 * @param factoryType The type to be instantiated
 		 */
-		ResourceLoader* createFactory(const RTTI::TypeInfo& factoryType);
+		ResourceLoader* createLoader(const RTTI::TypeInfo &factoryType);
 
 	private:
 		std::vector<std::unique_ptr<ResourceLoader>> mFactories;

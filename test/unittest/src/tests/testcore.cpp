@@ -183,7 +183,6 @@ bool testXMLSerializer()
 
 bool testJSONSerializer()
 {
-    return true;
 	JSONSerializer ser;
 	return testSerializer(ser);
 }
@@ -228,17 +227,18 @@ bool testFileUtils()
 
 
 bool testResourceManager() {
+	RTTI::TypeInfo::get<nap::JSONFileLoader>();
     Core core;
-    auto& resourceMan = core.getOrCreateService<ResourceManagerService>();
+    auto resourceMan = core.getOrCreateService<ResourceManagerService>();
 
     std::string resource = "test.napj";
 
-    ResourceLoader* factory = resourceMan.getLoaderFor(resource);
+    ResourceLoader* factory = resourceMan->getLoaderFor(resource);
     TEST_ASSERT(factory != nullptr, "Unable to find factory for: " + resource);
 
-    TEST_ASSERT(resourceMan.canLoad(resource), "Cannot load resource: " + resource);
+    TEST_ASSERT(resourceMan->canLoad(resource), "Cannot load resource: " + resource);
 
-    auto res = resourceMan.getResource(resource);
+    auto res = resourceMan->getResource(resource);
     TEST_ASSERT(res, "Resource failed to load: " + resource);
 
     TEST_ASSERT(res->getResourcePath() == resource, "Resulting resource path differs from original path");

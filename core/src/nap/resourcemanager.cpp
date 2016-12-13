@@ -92,7 +92,7 @@ namespace nap
 		assert(factoryType.isKindOf<ResourceLoader>());
 		ResourceLoader* factory = getFactory(factoryType);
 		if (!factory)
-			factory = createFactory(factoryType);
+			factory = createLoader(factoryType);
 		return factory;
 	}
 
@@ -107,7 +107,7 @@ namespace nap
 	}
 
 
-	ResourceLoader* ResourceManagerService::createFactory(const RTTI::TypeInfo& factoryType)
+	ResourceLoader* ResourceManagerService::createLoader(const RTTI::TypeInfo &factoryType)
 	{
 		auto factory = std::unique_ptr<ResourceLoader>(static_cast<ResourceLoader*>(factoryType.createInstance()));
 		ResourceLoader* ptr = factory.get();

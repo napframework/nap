@@ -1,9 +1,6 @@
 // Local includes
 #include <ofVec2i.h>
 
-// NAP includes
-#include <nap/stringutils.h>
-
 namespace nap
 {
 	// string to ofVec2i

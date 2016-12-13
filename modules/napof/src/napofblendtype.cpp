@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <GL/glew.h>
 
-RTTI_DEFINE_DATA(nap::OFBlendType)
+RTTI_DEFINE_DATA(nap::OFBlendType);
 
 namespace nap
 {

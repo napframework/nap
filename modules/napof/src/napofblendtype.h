@@ -1,18 +1,13 @@
 #pragma once
 
 // GL includes
-#include <rtti/rtti.h>
-#include <nap/configure.h>
+#include <nap.h>
 #include <unordered_map>
-
-// Nap includes
-#include <nap/arrayattribute.h>
-#include <nap/attribute.h>
 
 namespace nap
 {
 	// OF derived GL Blend Modes
-	enum class OFBlendType : nap::uint
+	enum class OFBlendType
 	{
 		SRC_ALPHA ,
 		ONE_MINUS_SRC_ALPHA,
@@ -51,8 +46,11 @@ namespace std
 	template<>
 	struct hash<nap::OFBlendType> {
 		size_t operator()(const nap::OFBlendType &k) const {
-			return hash<int>()((int) k);
+			return hash<int>()((int)k);
 		}
 	};
 }
+
+
+
 

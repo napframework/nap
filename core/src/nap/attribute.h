@@ -43,13 +43,13 @@ namespace nap
 		virtual ~AttributeBase() = default;
 
 		/**
-		 * Copies the value of this attribute in to @attribute
+		 * Copies the value of this attribute into @attribute
 		 @param attribute the attribute to populate
 		 */
 		virtual void getValue(AttributeBase& attribute) const = 0;
 
 		/**
-		 * Copies the value of @attribute in to this attribute
+		 * Copies the value of @attribute into this attribute
 		 @param attribute container to copy the value from
 		 */
 		virtual void setValue(const AttributeBase& attribute) = 0;
@@ -95,7 +95,7 @@ namespace nap
 		void setValue(const std::string& value);
 
 		/**
-		 * @return the type associated with the value managed by this attribute
+		 * @return the type of the value this attribute holds
 		 */
 		virtual const RTTI::TypeInfo getValueType() const = 0;
 
@@ -117,7 +117,7 @@ namespace nap
 		bool isAtomic() const { return mAtomic; }
 
 		/**
-		 * Connect to this slot to listen to attribute changes
+		 * Emits when the value of this attribute changes
 		 */
 		Signal<AttributeBase&> valueChanged;
 

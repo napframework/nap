@@ -26,8 +26,8 @@ namespace nap {
 		Attribute<ofTexture*> rightTexture = { this, "rightTexture", nullptr };
 
 		// indices of the currently displayed images
-		Attribute<int> leftImageIndex = { this, "leftImageIndex", 0, &OFSlideshowComponent::leftImageIndexChanged };
-		Attribute<int> rightImageIndex = { this, "rightImageIndex", 0, &OFSlideshowComponent::rightImageIndexChanged };
+		Attribute<int> leftImageIndex = { this, "leftImageIndex", -1, &OFSlideshowComponent::leftImageIndexChanged };
+		Attribute<int> rightImageIndex = { this, "rightImageIndex", -1, &OFSlideshowComponent::rightImageIndexChanged };
 
 		// the intersection indicates the fractional x value where the left hand side and the right hand side images meet
 		Attribute<float> intersection = { this, "intersection", 0.f };
@@ -60,8 +60,8 @@ namespace nap {
 
 	private:
 		void imageFilenamesChanged(const StringArray& filenames);
-		void leftImageIndexChanged(const int& index);
-		void rightImageIndexChanged(const int& index);
+		void leftImageIndexChanged(size_t index);
+		void rightImageIndexChanged(size_t index);
 
         Attribute<int> currentSlide = { this, "currentSlide", 0 };
 

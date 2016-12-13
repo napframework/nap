@@ -20,6 +20,7 @@ _J_FLAGS = 'flags'
 _J_EDITABLE = 'editable'
 _J_CONNECTION = 'connection'
 
+
 def _allSubClasses(cls):
     all_subclasses = []
 
@@ -45,7 +46,7 @@ class Core(QObject):
     logMessageReceived = pyqtSignal(int, str, str)
     messageReceived = pyqtSignal()
 
-    def __init__(self, host:str='tcp://localhost:8888'):
+    def __init__(self, host: str = 'tcp://localhost:8888'):
         super(Core, self).__init__()
         self.__rpc = AsyncJSONClient(host)
         self.__rpc.messageReceived.connect(self.handleMessageReceived)
@@ -64,7 +65,7 @@ class Core(QObject):
     def setObject(self, ptr, obj):
         self.__objects[ptr] = obj
 
-    def findObject(self, ptr:int):
+    def findObject(self, ptr: int):
         if not isinstance(ptr, int):
             ptr = int(ptr)
         return self.__objects[ptr]
@@ -337,9 +338,6 @@ class Object(QObject):
         else:
             self.__typename = dic[_J_VALUE_TYPE]
 
-        # Do this on each tree get
-        self.core().addObjectCallbacks(self)
-
         self.__children = []
         if _J_CHILDREN in dic:
             for childDic in dic[_J_CHILDREN]:
@@ -351,9 +349,6 @@ class Object(QObject):
                 child = core.newObject(childDic)
                 child.__parent = self
                 self.__children.append(child)
-
-    def __del__(self):
-        self.core().removeObjectCallbacks(self)
 
     def checkFlag(self, flag):
         return self.__flags & flag
@@ -456,6 +451,13 @@ class Object(QObject):
         return '<%s> %s' % (self.typename(), self.name())
 
 
+class Link(Object):
+    NAP_TYPE = 'nap::Link'
+
+    def __init__(self, *args):
+        super(Link, self).__init__(*args)
+
+
 class AttributeObject(Object):
     NAP_TYPE = 'nap::AttributeObject'
 
@@ -487,8 +489,11 @@ class Attribute(Object):
     def __init__(self, *args):
         super(Attribute, self).__init__(*args)
         self._valueType = self._dic[_J_VALUE_TYPE]
-        self._value = self.core().toPythonValue(self._dic[_J_VALUE],
-                                                self.valueType())
+        self._value = None
+        if _J_VALUE in self._dic:
+            self._value = self.core().toPythonValue(self._dic[_J_VALUE],
+                                                    self.valueType())
+
 
     def setValue(self, value):
         self.core().setAttributeValue(self, value)
