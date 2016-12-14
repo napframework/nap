@@ -2,6 +2,8 @@
 
 cmake_minimum_required(VERSION 2.8)
 
+include(cmake/targetarch.cmake)
+
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -24,10 +26,14 @@ endif()
 cmake_policy(SET CMP0020 NEW)
 cmake_policy(SET CMP0043 NEW)
 
-set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}/${CMAKE_BUILD_TYPE})
+include(cmake/targetarch.cmake)
+target_architecture(ARCH)
+
+set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}_${CMAKE_BUILD_TYPE}_${ARCH})
 
 # Allow extra Find{project}.cmake files to be found by projects
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+
 
 # Override binary directories
 set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/bin/${BUILD_CONF})
@@ -46,7 +52,7 @@ get_filename_component(PROJECTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/.. ABSOLUTE)
 
 # library targets
 add_subdirectory(core)
-# add_subdirectory(napkin)
+add_subdirectory(coreapp)
 
 # executable targets
 add_subdirectory(test/unittest)
