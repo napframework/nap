@@ -12,8 +12,6 @@ elseif("${ARCH}" STREQUAL "x86_64")
     set(ARCHITECTURE Win64)
 endif()
 
-message(WARNING ${ZMQ_DIR}/bin/${ARCHITECTURE}/Release/v140/dynamic)
-
 find_path(ZMQ_DIR include/zmq.h
         HINTS
         ${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/libzmq
