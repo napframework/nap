@@ -5,12 +5,14 @@
 # ZMQ_LIBRARIES - The libraries needed to use ZMQ
 # ZMQ_DEFINITIONS - Compiler switches required for using ZMQ
 
+
 if ("${ARCH}" STREQUAL "i386")
     set(ARCHITECTURE Win32)
 elseif("${ARCH}" STREQUAL "x86_64")
     set(ARCHITECTURE Win64)
 endif()
 
+message(WARNING ${ZMQ_DIR}/bin/${ARCHITECTURE}/Release/v140/dynamic)
 
 find_path(ZMQ_DIR include/zmq.h
         HINTS
@@ -19,7 +21,10 @@ find_path(ZMQ_DIR include/zmq.h
         )
 if (UNIX)
 elseif(WIN32)
-    find_library(ZMQ_LIBRARIES NAMES libzmq.lib HINTS ${ZMQ_DIR}/bin/${ARCHITECTURE}/Release/v140/dynamic)
+    find_library(ZMQ_LIBRARIES NAMES libzmq.lib
+            HINTS
+            ${ZMQ_DIR}/bin/${ARCHITECTURE}/Release/v140/dynamic
+            )
 #    else()
 #        find_library(ZMQ_LIBRARIES NAMES libzmq.dll HINTS
 #                ${ZMQ_DIR}/bin/${CMAKE_BUILD_TYPE}
