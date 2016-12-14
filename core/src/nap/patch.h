@@ -9,6 +9,7 @@
 
 namespace nap
 {
+
 	//! This is a patch of operators that can be connected to one another through their plugs
 	class Patch : public AttributeObject
 	{

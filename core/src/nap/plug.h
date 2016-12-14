@@ -104,12 +104,9 @@ namespace nap
 		virtual ~OutputPlugBase();
         
         // Returns the plugs to which this plug is connected
-        const std::set<InputPlugBase*> getConnections() const { return mConnections; }
+        const std::set<InputPlugBase*> getConnections() const;
         
-        bool isConnected() const override { return !mConnections.empty(); }
-        
-    private:
-        std::set<InputPlugBase*> mConnections;
+        bool isConnected() const override { return !getConnections().empty(); }
         
 	};
 
