@@ -25,13 +25,22 @@ namespace nap
     protected:
         std::string evalScript(const std::string& cmd) override;
 
-        virtual void handleLogMessage(AsyncTCPClient& client, LogMessage& msg) override;
+		virtual void handleLogMessage(AsyncTCPClient& client, LogMessage& msg) override;
         void handleNameChanged(AsyncTCPClient& client, Object& obj) override;
         void handleObjectAdded(AsyncTCPClient& client, Object& obj, Object& child) override;
         void handleObjectRemoved(AsyncTCPClient& client, Object& child) override;
         void handleAttributeValueChanged(AsyncTCPClient& client, AttributeBase& attrib) override;
         void handlePlugConnected(AsyncTCPClient& client, InputPlugBase& plug) override;
         void handlePlugDisconnected(AsyncTCPClient& client, InputPlugBase& plug) override;
+
+	private:
+		void removeObjects() {
+
+		}
+
+
+
+
     private:
         void startRPCSocket();
 

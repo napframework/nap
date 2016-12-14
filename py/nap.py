@@ -176,6 +176,11 @@ class Core(QObject):
                     'No handler for callback: %s' % handlerMethodName)
         self.messageReceived.emit()
 
+    def __typenames(self, baseType=None):
+        if not baseType:
+            return self.__types
+        return (t[0] for t in self.__types if baseType in t)
+
     ############################################################################
     ### Accessors
     ############################################################################
@@ -248,19 +253,11 @@ class Core(QObject):
         for o in objects:
             self.__rpc.removeObject(o.ptr())
 
-    def operatorTypes(self, modulename=None):
-        if modulename:
-            return self.__rpc.getOperatorTypes(modulename)
-        if self.__operatorTypes is None:
-            self.__operatorTypes = self.__rpc.getOperatorTypes('')
-        return self.__operatorTypes
+    def operatorTypes(self):
+        return self.__typenames('nap::Operator')
 
-    def dataTypes(self, modulename=None):
-        if modulename:
-            return self.__rpc.getDataTypes(modulename)
-        if self.__dataTypes is None:
-            self.__dataTypes = self.__rpc.getDataTypes('')
-        return self.__dataTypespath
+    def dataTypes(self):
+        return self.__typenames('nap::AttributeBase')
 
     def addObjectCallbacks(self, obj):
         self.__rpc.addObjectCallbacks(self.rpc().identity, obj.ptr())
@@ -493,7 +490,6 @@ class Attribute(Object):
         if _J_VALUE in self._dic:
             self._value = self.core().toPythonValue(self._dic[_J_VALUE],
                                                     self.valueType())
-
 
     def setValue(self, value):
         self.core().setAttributeValue(self, value)

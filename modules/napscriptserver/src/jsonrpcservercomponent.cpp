@@ -92,32 +92,6 @@ namespace nap
 			return Serializer::toPtr(*obj->getParentObject());
 		});
 
-        // TODO: Deprecate
-		disp.AddMethod("getAllChildren", [&](ObjPtr ptr) -> std::vector<ObjPtr> {
-			std::vector<ObjPtr> children;
-
-			auto parent = fromPtr<Object>(ptr);
-			if (!parent)
-				return children;
-
-			for (auto child : parent->getChildren())
-				children.push_back(Serializer::toPtr(child));
-			return children;
-		});
-
-        // TODO: Deprecate
-		disp.AddMethod("getChildren", [&](ObjPtr objPtr, const std::string& typeName) {
-			std::vector<std::string> children;
-
-			auto parent = fromPtr<Object>(objPtr);
-			if (!parent)
-				return children;
-
-			RTTI::TypeInfo type = RTTI::TypeInfo::getByName(typeName);
-			for (auto child : parent->getChildrenOfType(type))
-				children.push_back(ObjectPath(child));
-			return children;
-		});
 
 		disp.AddMethod("addChild", [&](ObjPtr parentPtr, const std::string& typeName) {
 			auto parent = fromPtr<Object>(parentPtr);

@@ -6,12 +6,12 @@
 // clang-format off
 
 #ifdef _WIN32
-	//#include <fileapi.h>
 	#ifdef _MSC_VER
 		#include "direntw32.h"
 		#include <tchar.h>
 		#include <io.h>
 	#else
+		#include <fileapi.h>
 		#include <dirent.h>
 		#include <sys/stat.h>
 	#endif

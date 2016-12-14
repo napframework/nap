@@ -7,6 +7,7 @@ from model import *
 import nap
 from outline import OutlineWidget
 from patchpanel import PatchEditor
+from statemachineeditor import StatemachineEditor
 
 WIN_GEO = 'WindowGeometry'
 WIN_STATE = 'WindowState'
@@ -126,6 +127,7 @@ class MainWindow(QMainWindow):
         self.logger = LogPanel(self.ctx)
         self.addDock(self.logger, Qt.BottomDockWidgetArea, 'Log')
 
+
     def __restore(self):
         s = QSettings()
         geo = s.value(WIN_GEO)
@@ -179,6 +181,7 @@ if __name__ == '__main__':
 
     ctx = AppContext()
     ctx.registerEditor('nap::PatchComponent', PatchEditor)
+    ctx.registerEditor('nap::StateMachineComponent', StatemachineEditor)
 
     win = MainWindow(ctx)
     win.show()

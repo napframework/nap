@@ -221,56 +221,24 @@ namespace nap
 				w.String("filename");
 				w.String(mod->getFilename().c_str());
 
-				TypeList types;
-
-				mod->getDataTypes(types);
-				if (!types.empty()) {
-					w.String("dataTypes");
-					writeTypes(w, types);
-				}
-
-				types.clear();
-
-				mod->getComponentTypes(types);
-				if (!types.empty()) {
-					w.String("componentTypes");
-					writeTypes(w, types);
-				}
-
-				types.clear();
-
-				mod->getOperatorTypes(types);
-				if (!types.empty()) {
-					w.String("operatorTypes");
-					writeTypes(w, types);
-				}
-
 				w.EndObject();
 			}
 			w.EndArray();
-
-			w.String("dataTypes");
-			writeTypes(w, getAttributeTypes());
-			w.String("componentTypes");
-			writeTypes(w, getInstantiableSubTypes(RTTI_OF(Component)));
-			w.String("operatorTypes");
-			writeTypes(w, getInstantiableSubTypes(RTTI_OF(Operator)));
 
 			// Write Type inheritance
 			w.String("types");
 			w.StartArray();
 			for (const auto& type : RTTI::TypeInfo::getRawTypes()) {
-				w.StartObject();
+				w.StartArray();
 				{
-					w.String("name");
+					// Write array of base types including the actual type
+					// eg. for Attribute<float>, write
+					// ['Attribute<float>', 'AttributeBase', 'Object']
 					w.String(type.getName().c_str());
-					w.String("baseTypes");
-					w.StartArray();
-					for (const auto& baseType : type.getBaseTypes())
+					for (const auto &baseType : type.getBaseTypes())
 						w.String(baseType.getName().c_str());
-					w.EndArray();
 				}
-				w.EndObject();
+				w.EndArray();
 			}
 			w.EndArray();
 		}
