@@ -2,7 +2,6 @@ project(mod_napscriptserver)
 
 find_package(rapidjson REQUIRED)
 find_package(jsonrpc-lean REQUIRED)
-find_package(zmq REQUIRED)
 
 if (UNIX)
 else ()
