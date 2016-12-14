@@ -23,3 +23,5 @@ test/unittest/Release/unittest.vcxprojResolveAssemblyReference.cache
 modules/napawesomium/Release/napawesomium.vcxprojResolveAssemblyReference.cache
 modules/network/Release/
 napkin/Release/
+/msvc32
+/msvc64
