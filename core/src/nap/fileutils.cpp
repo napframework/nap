@@ -20,10 +20,9 @@
     #include <zconf.h>
     #include <sys/stat.h>
 #else
-	#include <stdlib.h>
     #include <zconf.h>
     #include <sys/stat.h>
-    #include <sys/io.h>
+    #include <dirent.h>
 #endif
 
 // clang-format on
