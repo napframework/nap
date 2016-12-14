@@ -39,11 +39,6 @@ namespace nap
 	InputPlugBase::InputPlugBase(Operator* parent, const std::string& name, const RTTI::TypeInfo dataType)
 		: Plug(parent, name, dataType)
 	{
-		mConnection.targetChanged.connect([&](const Link& link) {
-			auto target = mConnection.getTypedTarget();
-			if (target)
-				target->mConnections.emplace(this);
-		});
 	}
 
 
@@ -82,8 +77,6 @@ namespace nap
         assert(isConnected());
         
         disconnected(*this);
-		if (mConnection.isResolved())
-			getConnection()->mConnections.erase(this);
         mConnection.clear();
 	}
 
@@ -104,11 +97,29 @@ namespace nap
 
 	OutputPlugBase::~OutputPlugBase()
 	{
-        while (!mConnections.empty())
-            (*mConnections.begin())->disconnect();
 	}
-    
-    
+
+    const std::set<InputPlugBase*> OutputPlugBase::getConnections() const
+    {
+        std::set<InputPlugBase*> connections;
+        Operator* thisOp = getParent();
+        Patch* patch = (Patch*) thisOp->getParentObject();
+
+        for (Operator* op : patch->getOperators())
+        {
+            if (op == thisOp)
+                continue;
+
+            for (InputPlugBase* inPlug : op->getInputPlugs()) {
+                if (inPlug->isConnected() && inPlug->getConnection() == this)
+                    connections.emplace(inPlug);
+            }
+        }
+
+        return connections;
+    }
+
+
     void InputTriggerPlug::trigger()
     {
         if (mTriggerFunction)
