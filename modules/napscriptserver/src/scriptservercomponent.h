@@ -19,8 +19,9 @@ namespace nap
 	 *  This component will run a listening server receiving script calls and dispatch notifications to any remote
 	 * listeners.
 	 */
-	class ScriptServerComponent : public Component
+	class RpcService : public Service
 	{
+	RTTI_ENABLE_DERIVED_FROM(Service)
 	protected:
 		/**
 		* Holds a slot that may receive signals and forward them to the script server
@@ -28,9 +29,9 @@ namespace nap
 		class RPCObjectCallback
 		{
 		public:
-			RPCObjectCallback(ScriptServerComponent& server, AsyncTCPClient& client, Object& obj);
+			RPCObjectCallback(RpcService& server, AsyncTCPClient& client, Object& obj);
 			~RPCObjectCallback();
-			ScriptServerComponent& mServer;
+			RpcService& mServer;
 
 			void onNameChanged(const std::string& name);
             Slot<const std::string&> onNameChangedSlot = {this, &RPCObjectCallback::onNameChanged};
@@ -56,12 +57,11 @@ namespace nap
 		};
 
 
-		RTTI_ENABLE_DERIVED_FROM(Component)
 	public:
 		using CallbackMap = std::map<Object*, std::unique_ptr<RPCObjectCallback>>;
 		using ClientCallbackMap = std::map<AsyncTCPClient*, CallbackMap>;
 
-		ScriptServerComponent();
+		RpcService();
 
 		virtual void run() = 0;
 
@@ -77,7 +77,7 @@ namespace nap
 		virtual void handleAttributeValueChanged(AsyncTCPClient& client, AttributeBase& attrib) = 0;
         virtual void handlePlugConnected(AsyncTCPClient& client, InputPlugBase& plug) = 0;
         virtual void handlePlugDisconnected(AsyncTCPClient& client, InputPlugBase& plug) = 0;
-		AsyncTCPServer& getServer() { return *mServer.get(); }
+		AsyncTCPServer& getServer() { return mServer; }
 
 		void stopServer();
 		void startServer();
@@ -91,8 +91,6 @@ namespace nap
 
         // TODO: Move this map to the AsyncTCPClient
 		CallbackMap& getCallbackMap(AsyncTCPClient& client);
-
-		Core& getCore() { return static_cast<Entity*>(getRootObject())->getCore(); }
 
 		Object* resolvePath(const std::string& path);
 
@@ -119,7 +117,7 @@ namespace nap
 
 	private:
 		ClientCallbackMap mCallbacks;
-		std::unique_ptr<AsyncTCPServer> mServer = nullptr;
+		AsyncTCPServer mServer;
 	};
 }
-RTTI_DECLARE_BASE(nap::ScriptServerComponent)
+RTTI_DECLARE_BASE(nap::RpcService)

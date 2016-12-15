@@ -3,7 +3,7 @@
 
 NAP_MODULE_BEGIN(NapScriptServer)
 {
-    NAP_REGISTER_COMPONENT(nap::JSONRPCServerComponent)
+//    nap::JsonRpcService;
 }
 NAP_MODULE_END(NapScriptServer)
 

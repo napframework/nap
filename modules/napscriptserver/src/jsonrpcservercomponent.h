@@ -16,11 +16,11 @@ namespace nap
 	/**
 	 * JSON-RPC based server
 	 */
-	class JSONRPCServerComponent : public ScriptServerComponent
+	class JsonRpcService : public RpcService
 	{
-		RTTI_ENABLE_DERIVED_FROM(ScriptServerComponent)
+		RTTI_ENABLE_DERIVED_FROM(RpcService)
 	public:
-		JSONRPCServerComponent();
+		JsonRpcService();
 
 		void run() override;
 
@@ -65,7 +65,7 @@ namespace nap
 	private:
 		void startRPCSocket();
 
-		Slot<LogMessage> onLogSlot = {this, &JSONRPCServerComponent::onLog};
+		Slot<LogMessage> onLogSlot = {this, &JsonRpcService::onLog};
 		void onLog(LogMessage msg);
 
 	private:
@@ -76,4 +76,4 @@ namespace nap
 	};
 }
 
-RTTI_DECLARE(nap::JSONRPCServerComponent)
+RTTI_DECLARE(nap::JsonRpcService)

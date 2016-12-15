@@ -64,7 +64,20 @@ else()
     set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
 endif()
 
+if(WIN32)
+    if(MINGW)
+        # Copy required MinGW dll's to bin dir
+        get_filename_component(COMPILER_DIR ${CMAKE_CXX_COMPILER} PATH)
+        set(MODULES gcc_s_dw2-1 stdc++-6 winpthread-1)
+        foreach (MOD ${MODULES})
+            find_library(_LIB NAMES ${MOD} HINTS ${COMPILER_DIR})
+            message(STATUS "Copy ${_LIB} to ${BIN_DIR}")
+            file(COPY ${_LIB} DESTINATION ${BIN_DIR})
+            unset(_LIB CACHE)
+        endforeach ()
 
+    endif()
+endif()
 
 # store project directory
 get_filename_component(PROJECTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/.. ABSOLUTE)

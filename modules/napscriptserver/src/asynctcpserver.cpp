@@ -10,13 +10,20 @@ namespace nap
 		return evt;
 	}
 
-	AsyncTCPServer::AsyncTCPServer(int port) : mPort(port)
+	AsyncTCPServer::AsyncTCPServer()
 	{
-		mThread = std::make_unique<std::thread>(std::bind(&AsyncTCPServer::runServer, this));
+
 	}
 
-	void AsyncTCPServer::runServer()
+	void AsyncTCPServer::runServer(int port) {
+		mPort = port;
+		mThread = std::make_unique<std::thread>(std::bind(&AsyncTCPServer::runServerLoop, this));
+	}
+
+
+	void AsyncTCPServer::runServerLoop()
 	{
+
 		zmq::context_t ctx;
 		zmq::socket_t sock(ctx, ZMQ_ROUTER);
 		std::string hostname = "tcp://*:" + std::to_string(mPort);
@@ -119,4 +126,5 @@ namespace nap
 			}
 		}
 	}
+
 }

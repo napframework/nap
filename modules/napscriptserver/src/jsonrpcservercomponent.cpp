@@ -4,7 +4,7 @@
 #include <rapidjson/prettywriter.h>
 
 
-RTTI_DEFINE(nap::JSONRPCServerComponent)
+RTTI_DEFINE(nap::JsonRpcService)
 
 
 
@@ -31,7 +31,7 @@ namespace nap
 	}
 
 
-	JSONRPCServerComponent::JSONRPCServerComponent() : mContext(1), ScriptServerComponent()
+	JsonRpcService::JsonRpcService() : mContext(1), RpcService()
 	{
 
 		Logger::instance().log.connect(onLogSlot);
@@ -40,38 +40,38 @@ namespace nap
 
 		auto& disp = mJsonServer.GetDispatcher();
 
-		disp.AddMethod("getModuleInfo", &JSONRPCServerComponent::rpc_getModuleInfo, *this);
-		disp.AddMethod("getObjectTree", &JSONRPCServerComponent::rpc_getObjectTree, *this);
-		disp.AddMethod("copyObjectTree", &JSONRPCServerComponent::rpc_copyObjectTree, *this);
-		disp.AddMethod("pasteObjectTree", &JSONRPCServerComponent::rpc_pasteObjectTree, *this);
-		disp.AddMethod("addChild", &JSONRPCServerComponent::rpc_addChild, *this);
-		disp.AddMethod("addEntity", &JSONRPCServerComponent::rpc_addEntity, *this);
-		disp.AddMethod("setName", &JSONRPCServerComponent::rpc_setName, *this);
-		disp.AddMethod("setAttributeValue", &JSONRPCServerComponent::rpc_setAttributeValue, *this);
-		disp.AddMethod("forceSetAttributeValue", &JSONRPCServerComponent::rpc_forceSetAttributeValue, *this);
-		disp.AddMethod("connectPlugs", &JSONRPCServerComponent::rpc_connectPlugs, *this);
-		disp.AddMethod("exportObject", &JSONRPCServerComponent::rpc_exportObject, *this);
-		disp.AddMethod("importObject", &JSONRPCServerComponent::rpc_importObject, *this);
-		disp.AddMethod("removeObject", &JSONRPCServerComponent::rpc_removeObject, *this);
+		disp.AddMethod("getModuleInfo", &JsonRpcService::rpc_getModuleInfo, *this);
+		disp.AddMethod("getObjectTree", &JsonRpcService::rpc_getObjectTree, *this);
+		disp.AddMethod("copyObjectTree", &JsonRpcService::rpc_copyObjectTree, *this);
+		disp.AddMethod("pasteObjectTree", &JsonRpcService::rpc_pasteObjectTree, *this);
+		disp.AddMethod("addChild", &JsonRpcService::rpc_addChild, *this);
+		disp.AddMethod("addEntity", &JsonRpcService::rpc_addEntity, *this);
+		disp.AddMethod("setName", &JsonRpcService::rpc_setName, *this);
+		disp.AddMethod("setAttributeValue", &JsonRpcService::rpc_setAttributeValue, *this);
+		disp.AddMethod("forceSetAttributeValue", &JsonRpcService::rpc_forceSetAttributeValue, *this);
+		disp.AddMethod("connectPlugs", &JsonRpcService::rpc_connectPlugs, *this);
+		disp.AddMethod("exportObject", &JsonRpcService::rpc_exportObject, *this);
+		disp.AddMethod("importObject", &JsonRpcService::rpc_importObject, *this);
+		disp.AddMethod("removeObject", &JsonRpcService::rpc_removeObject, *this);
 
-		//		disp.AddMethod("getModules", &JSONRPCServerComponent::rpc_getModules, *this);
-		//		disp.AddMethod("getDataTypes", &JSONRPCServerComponent::rpc_getDataTypes, *this);
-		//		disp.AddMethod("getRoot", &JSONRPCServerComponent::rpc_getRoot, *this);
-		//		disp.AddMethod("getParent", &JSONRPCServerComponent::rpc_getParent, *this);
-		//		disp.AddMethod("getName", &JSONRPCServerComponent::rpc_getName, *this);
-		//		disp.AddMethod("getTypeName", &JSONRPCServerComponent::rpc_getTypeName, *this);
-		//		disp.AddMethod("getAttributeValue", &JSONRPCServerComponent::rpc_getAttributeValue, *this);
-		//		disp.AddMethod("addObjectCallbacks", &JSONRPCServerComponent::rpc_addObjectCallbacks, *this);
+		//		disp.AddMethod("getModules", &JsonRpcService::rpc_getModules, *this);
+		//		disp.AddMethod("getDataTypes", &JsonRpcService::rpc_getDataTypes, *this);
+		//		disp.AddMethod("getRoot", &JsonRpcService::rpc_getRoot, *this);
+		//		disp.AddMethod("getParent", &JsonRpcService::rpc_getParent, *this);
+		//		disp.AddMethod("getName", &JsonRpcService::rpc_getName, *this);
+		//		disp.AddMethod("getTypeName", &JsonRpcService::rpc_getTypeName, *this);
+		//		disp.AddMethod("getAttributeValue", &JsonRpcService::rpc_getAttributeValue, *this);
+		//		disp.AddMethod("addObjectCallbacks", &JsonRpcService::rpc_addObjectCallbacks, *this);
 	}
 
-	std::string JSONRPCServerComponent::evalScript(const std::string& cmd)
+	std::string JsonRpcService::evalScript(const std::string& cmd)
 	{
 		std::lock_guard<std::mutex> lock(mMutex);
 		return mJsonServer.HandleRequest(cmd)->GetData();
 	}
 
 
-	void JSONRPCServerComponent::run()
+	void JsonRpcService::run()
 	{
 		startRPCSocket();
 	}
@@ -97,7 +97,7 @@ namespace nap
 		return buf.GetString();
 	}
 
-	void JSONRPCServerComponent::handleLogMessage(AsyncTCPClient& client, LogMessage& msg)
+	void JsonRpcService::handleLogMessage(AsyncTCPClient& client, LogMessage& msg)
 	{
 		using namespace rapidjson;
 		StringBuffer buf;
@@ -115,7 +115,7 @@ namespace nap
 		client.enqueueEvent(callbackJSON("log", buf.GetString()));
 	}
 
-	void JSONRPCServerComponent::handleNameChanged(AsyncTCPClient& client, Object& obj)
+	void JsonRpcService::handleNameChanged(AsyncTCPClient& client, Object& obj)
 	{
 		using namespace rapidjson;
 		StringBuffer buf;
@@ -134,7 +134,7 @@ namespace nap
 		Logger::info("Sending Attribute Change: %s : %s", obj.getName().c_str(), obj.getName().c_str());
 	}
 
-	void JSONRPCServerComponent::handleAttributeValueChanged(AsyncTCPClient& client, AttributeBase& attrib)
+	void JsonRpcService::handleAttributeValueChanged(AsyncTCPClient& client, AttributeBase& attrib)
 	{
 		std::string value;
 		attrib.toString(value);
@@ -160,7 +160,7 @@ namespace nap
 	}
 
 
-	void JSONRPCServerComponent::handleObjectAdded(AsyncTCPClient& client, Object& obj, Object& child)
+	void JsonRpcService::handleObjectAdded(AsyncTCPClient& client, Object& obj, Object& child)
 	{
 		using namespace rapidjson;
 		StringBuffer buf;
@@ -177,7 +177,7 @@ namespace nap
 	}
 
 
-	void JSONRPCServerComponent::handleObjectRemoved(AsyncTCPClient& client, Object& child)
+	void JsonRpcService::handleObjectRemoved(AsyncTCPClient& client, Object& child)
 	{
 		using namespace rapidjson;
 		StringBuffer buf;
@@ -192,7 +192,7 @@ namespace nap
 	}
 
 
-	void JSONRPCServerComponent::handlePlugConnected(AsyncTCPClient& client, InputPlugBase& plug)
+	void JsonRpcService::handlePlugConnected(AsyncTCPClient& client, InputPlugBase& plug)
 	{
 		assert(plug.isConnected());
 
@@ -211,7 +211,7 @@ namespace nap
 	}
 
 
-	void JSONRPCServerComponent::handlePlugDisconnected(AsyncTCPClient& client, InputPlugBase& plug)
+	void JsonRpcService::handlePlugDisconnected(AsyncTCPClient& client, InputPlugBase& plug)
 	{
 		assert(plug.isConnected());
 
@@ -230,7 +230,7 @@ namespace nap
 	}
 
 
-	void JSONRPCServerComponent::startRPCSocket()
+	void JsonRpcService::startRPCSocket()
 	{ // RPC Socket
 		zmq::socket_t socket(mContext, ZMQ_ROUTER);
 
@@ -258,7 +258,7 @@ namespace nap
 	}
 
 
-	void JSONRPCServerComponent::onLog(LogMessage msg)
+	void JsonRpcService::onLog(LogMessage msg)
 	{
 		for (AsyncTCPClient* client : getServer().getClients())
 			handleLogMessage(*client, msg);
@@ -267,7 +267,7 @@ namespace nap
 	/////////////////// RPC METHODS /////////////////////
 	/////////////////////////////////////////////////////
 
-	std::vector<std::string> JSONRPCServerComponent::rpc_getModules()
+	std::vector<std::string> JsonRpcService::rpc_getModules()
 	{
 		std::vector<std::string> modulenames;
 		for (auto mod : getCore().getModuleManager().getModules())
@@ -275,7 +275,7 @@ namespace nap
 		return modulenames;
 	}
 
-	std::vector<std::string> JSONRPCServerComponent::rpc_getDataTypes(const std::string& modname)
+	std::vector<std::string> JsonRpcService::rpc_getDataTypes(const std::string& modname)
 	{
 		if (modname.empty())
 			return toStringList(getCore().getModuleManager().getDataTypes());
@@ -294,17 +294,17 @@ namespace nap
 		return typenames;
 	}
 
-	std::string JSONRPCServerComponent::rpc_getModuleInfo()
+	std::string JsonRpcService::rpc_getModuleInfo()
 	{
 		return JSONSerializer().toString(getCore().getModuleManager());
 	}
 
-	std::string JSONRPCServerComponent::rpc_getObjectTree()
+	std::string JsonRpcService::rpc_getObjectTree()
 	{
 		return JSONSerializer().toString(*getRootObject(), true);
 	}
 
-	std::string JSONRPCServerComponent::rpc_copyObjectTree(ObjPtr objPtr)
+	std::string JsonRpcService::rpc_copyObjectTree(ObjPtr objPtr)
 	{
 		Object* obj = fromPtr<Object>(objPtr);
 		if (!obj)
@@ -312,7 +312,7 @@ namespace nap
 		return JSONSerializer().toString(*obj, true);
 	}
 
-	void JSONRPCServerComponent::rpc_pasteObjectTree(ObjPtr parentPtr, const std::string& jsonData)
+	void JsonRpcService::rpc_pasteObjectTree(ObjPtr parentPtr, const std::string& jsonData)
 	{
 		Object* obj = fromPtr<Object>(parentPtr);
 		if (!obj)
@@ -321,9 +321,9 @@ namespace nap
 		JSONSerializer().fromString(jsonData, getCore(), obj);
 	}
 
-	ObjPtr JSONRPCServerComponent::rpc_getRoot() { return Serializer::toPtr(getRootObject()); }
+	ObjPtr JsonRpcService::rpc_getRoot() { return Serializer::toPtr(getRootObject()); }
 
-	ObjPtr JSONRPCServerComponent::rpc_getParent(ObjPtr objPtr)
+	ObjPtr JsonRpcService::rpc_getParent(ObjPtr objPtr)
 	{
 		Object* obj = fromPtr<Object>(objPtr);
 		if (!obj)
@@ -331,7 +331,7 @@ namespace nap
 		return Serializer::toPtr(*obj->getParentObject());
 	}
 
-	void JSONRPCServerComponent::rpc_addChild(ObjPtr parentPtr, const std::string& typeName)
+	void JsonRpcService::rpc_addChild(ObjPtr parentPtr, const std::string& typeName)
 	{
 		auto parent = fromPtr<Object>(parentPtr);
 		if (!parent)
@@ -346,7 +346,7 @@ namespace nap
 		parent->addChild(type.getName(), type);
 	}
 
-	void JSONRPCServerComponent::rpc_addEntity(ObjPtr parentEntity)
+	void JsonRpcService::rpc_addEntity(ObjPtr parentEntity)
 	{
 		Entity* parent = fromPtr<Entity>(parentEntity);
 		Logger::info("Adding entity to: %s", parent->getName().c_str());
@@ -355,7 +355,7 @@ namespace nap
 		parent->addEntity("NewEntity");
 	}
 
-	std::string JSONRPCServerComponent::rpc_getName(ObjPtr ptr)
+	std::string JsonRpcService::rpc_getName(ObjPtr ptr)
 	{
 		auto obj = fromPtr<Object>(ptr);
 		if (!obj)
@@ -363,14 +363,14 @@ namespace nap
 		return obj->getName();
 	}
 
-	void JSONRPCServerComponent::rpc_setName(ObjPtr ptr, const std::string& name)
+	void JsonRpcService::rpc_setName(ObjPtr ptr, const std::string& name)
 	{
 		auto obj = fromPtr<Object>(ptr);
 		if (obj)
 			obj->setName(name);
 	}
 
-	std::string JSONRPCServerComponent::rpc_getTypeName(ObjPtr ptr)
+	std::string JsonRpcService::rpc_getTypeName(ObjPtr ptr)
 	{
 		auto obj = fromPtr<Object>(ptr);
 		if (!obj)
@@ -378,7 +378,7 @@ namespace nap
 		return obj->getTypeInfo().getName();
 	}
 
-	std::string JSONRPCServerComponent::rpc_getAttributeValue(ObjPtr attribPtr)
+	std::string JsonRpcService::rpc_getAttributeValue(ObjPtr attribPtr)
 	{
 		auto attrib = fromPtr<AttributeBase>(attribPtr);
 		if (!attrib)
@@ -389,14 +389,14 @@ namespace nap
 		return val;
 	}
 
-	void JSONRPCServerComponent::rpc_setAttributeValue(ObjPtr attribPtr, const std::string& value)
+	void JsonRpcService::rpc_setAttributeValue(ObjPtr attribPtr, const std::string& value)
 	{
 		auto attrib = fromPtr<AttributeBase>(attribPtr);
 		if (attrib)
 			attrib->fromString(value);
 	}
 
-	void JSONRPCServerComponent::rpc_forceSetAttributeValue(ObjPtr ptr, const std::string& attribName,
+	void JsonRpcService::rpc_forceSetAttributeValue(ObjPtr ptr, const std::string& attribName,
 															const std::string& attribValue,
 															const std::string& attribType)
 	{
@@ -415,7 +415,7 @@ namespace nap
 		attrib->setValue(attribValue);
 	}
 
-	void JSONRPCServerComponent::rpc_addObjectCallbacks(const std::string& ident, ObjPtr ptr)
+	void JsonRpcService::rpc_addObjectCallbacks(const std::string& ident, ObjPtr ptr)
 	{
 		Object* obj = fromPtr<Object>(ptr);
 		Logger::debug("Client '%s' requesting callbacks for '%s'", ident.c_str(), obj->getName().c_str());
@@ -423,7 +423,7 @@ namespace nap
 		addCallbacks(ident, ptr);
 	}
 
-	void JSONRPCServerComponent::rpc_connectPlugs(ObjPtr srcPlugPtr, ObjPtr dstPlugPtr)
+	void JsonRpcService::rpc_connectPlugs(ObjPtr srcPlugPtr, ObjPtr dstPlugPtr)
 	{
 		OutputPlugBase* srcPlug = fromPtr<OutputPlugBase>(srcPlugPtr);
 		InputPlugBase* dstPlug = fromPtr<InputPlugBase>(dstPlugPtr);
@@ -438,7 +438,7 @@ namespace nap
 		dstPlug->connect(*srcPlug);
 	}
 
-	void JSONRPCServerComponent::rpc_exportObject(ObjPtr ptr, const std::string& filename)
+	void JsonRpcService::rpc_exportObject(ObjPtr ptr, const std::string& filename)
 	{
 		auto obj = fromPtr<Object>(ptr);
 		if (!obj)
@@ -449,7 +449,7 @@ namespace nap
 		os.close();
 	}
 
-	void JSONRPCServerComponent::rpc_importObject(ObjPtr parentPtr, const std::string& filename)
+	void JsonRpcService::rpc_importObject(ObjPtr parentPtr, const std::string& filename)
 	{
 		auto parentObj = fromPtr<Object>(parentPtr);
 		if (!parentObj)
@@ -459,7 +459,7 @@ namespace nap
 		ser.readObject(is, getCore(), parentObj);
 	}
 
-	void JSONRPCServerComponent::rpc_removeObject(ObjPtr ptr)
+	void JsonRpcService::rpc_removeObject(ObjPtr ptr)
 	{
 		Object* obj = fromPtr<Object>(ptr);
 		Logger::info("Removing object: %s", obj->getName().c_str());
