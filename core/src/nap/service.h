@@ -74,7 +74,7 @@ namespace nap
 		// Registers all available types of interest to the service with core
 		// Override if you want to have types auto register / deregister
 		// with your service
-		virtual void registerTypes(nap::Core& core);
+		virtual void registerTypes(nap::Core& core) {}
 
 		// Created components
 		using ObjectList = std::vector<Object*>;
