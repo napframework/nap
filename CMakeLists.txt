@@ -29,7 +29,7 @@ cmake_policy(SET CMP0043 NEW)
 # Allow extra Find{project}.cmake files to be found by projects
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
-include(cmake/targetarch.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/targetarch.cmake)
 target_architecture(ARCH)
 
 

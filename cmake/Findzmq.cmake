@@ -5,34 +5,31 @@
 # ZMQ_LIBRARIES - The libraries needed to use ZMQ
 # ZMQ_DEFINITIONS - Compiler switches required for using ZMQ
 
+include(${CMAKE_CURRENT_LIST_DIR}/targetarch.cmake)
+target_architecture(ARCH)
 
-if ("${ARCH}" STREQUAL "i386")
-    set(ARCHITECTURE Win32)
-elseif("${ARCH}" STREQUAL "x86_64")
-    set(ARCHITECTURE Win64)
-endif()
 
 find_path(ZMQ_DIR include/zmq.h
         HINTS
         ${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/libzmq
         ${CMAKE_CURRENT_LIST_DIR}/../../libzmq
         )
-if (UNIX)
-elseif(WIN32)
+
+if(WIN32)
+    set(ZMQ_LIB_DIR ${ZMQ_DIR}/bin/${ARCH}/${CMAKE_BUILD_TYPE}/v140/dynamic)
     find_library(ZMQ_LIBRARIES NAMES libzmq.lib
             HINTS
-            ${ZMQ_DIR}/bin/${ARCHITECTURE}/Release/v140/dynamic
+            ${ZMQ_LIB_DIR}/v140/dynamic
             )
-#    else()
-#        find_library(ZMQ_LIBRARIES NAMES libzmq.dll HINTS
-#                ${ZMQ_DIR}/bin/${CMAKE_BUILD_TYPE}
-#                ${ZMQ_DIR}/bin/Debug
-#                ${ZMQ_DIR}/cmake-build-debug/lib
-#                )
-#    endif()
-endif()
 
-if (APPLE)
+    find_library(LIB NAMES libzmq.dll
+            HINTS
+            ${ZMQ_LIB_DIR}/v140/dynamic
+            )
+
+    list(APPEND ZMQ_LIBRARIES ${LIB})
+
+elseif(APPLE)
     find_library(ZMQ_LIBRARIES NAMES libzmq.dylib
             HINTS
             /usr/local/opt/zeromq/lib

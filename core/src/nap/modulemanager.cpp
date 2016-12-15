@@ -76,7 +76,7 @@ namespace nap
 		#endif
 
 		if (!init_module) {
-			Logger::debug("Failed to load init function: %s", fn_name);
+//			Logger::debug("Failed to load init function: %s", fn_name);
 			return nullptr;
 		}
 
@@ -123,11 +123,11 @@ namespace nap
 				continue;
 #endif
 
-			//			Logger::debug("Attempting to load module '%s'", getAbsolutePath(filename).c_str());
+//			Logger::debug("Attempting to load module '%s'", getAbsolutePath(filename).c_str());
 
 			Module* module = loadModule(absFilename.c_str());
 			if (!module) {
-				Logger::warn("Failed to load module '%s'", absFilename.c_str());
+//				Logger::warn("Failed to load module '%s'", absFilename.c_str());
 				continue;
 			}
 
@@ -174,9 +174,6 @@ namespace nap
 			if (type.isKindOf<Component>() && type.canCreateInstance())
 				types.push_back(type);
 		}
-		// TODO: Bring this version back to life (needs proper module/type registration)
-		//		for (const auto& mod : getModules())
-		//			mod->getComponentTypes(types);
 		return types;
 	}
 
