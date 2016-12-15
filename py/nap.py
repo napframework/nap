@@ -1,3 +1,4 @@
+import hashlib
 import inspect
 import json
 
@@ -19,7 +20,9 @@ _J_PTR = 'ptr'
 _J_FLAGS = 'flags'
 _J_EDITABLE = 'editable'
 _J_CONNECTION = 'connection'
-
+_J_SUBTYPES = 'subtypes'
+_J_BASETYPES = 'basetypes'
+_J_INSTANTIABLE = 'instantiable'
 
 def _allSubClasses(cls):
     all_subclasses = []
@@ -73,17 +76,36 @@ class Core(QObject):
     def types(self):
         return self.__types
 
+    def typeIndex(self, typename):
+        """ Return the index of the type
+        TODO: Retrieve from server
+        """
+        if not typename:
+            return 0
+        i = 0
+        for t in self.types():
+            if t['name'] == typename:
+                return i
+            i += 1
+
     def baseTypes(self, typename):
         for t in self.__types:
-            if t['name'] == typename:
-                return t['baseTypes']
+            if t[_J_NAME] == typename:
+                return t[_J_BASETYPES]
+
+    def subTypes(self, baseTypename, instantiable=False):
+        for t in self.__types:
+            if not baseTypename in t[_J_BASETYPES]:
+                continue
+            if instantiable and not t[_J_INSTANTIABLE]:
+                continue
+            yield t[_J_NAME]
 
     def typeColor(self, typename):
         if typename in self.__typeColors:
             return self.__typeColors[typename]
 
-        index = self.__dataTypes.index(typename)
-        col = qtutils.randomColor(index)
+        col = qtutils.randomColor(self.typeIndex(typename))
         self.__typeColors[typename] = col
         return col
 
@@ -188,11 +210,18 @@ class Core(QObject):
     def rpc(self):
         return self.__rpc
 
-    def componentTypes(self, modulename=None):
-        return self.__componentTypes
 
     def root(self):
         return self.__root
+
+    def operatorTypes(self):
+        return self.subTypes(Operator.NAP_TYPE, True)
+
+    def dataTypes(self):
+        return self.subTypes(Attribute.NAP_TYPE, True)
+
+    def componentTypes(self):
+        return self.subTypes(Component.NAP_TYPE, True)
 
     ############################################################################
     ### RPC Callback Handlers, signature must match server initiated calls
@@ -222,9 +251,6 @@ class Core(QObject):
         parent.onChildRemoved(child)
 
     def _handle_getModuleInfo(self, **info):
-        self.__componentTypes = info['componentTypes']
-        self.__operatorTypes = info['operatorTypes']
-        self.__dataTypes = info['dataTypes']
         self.__types = info['types']
         self.moduleInfoChanged.emit(info)
 
@@ -253,11 +279,7 @@ class Core(QObject):
         for o in objects:
             self.__rpc.removeObject(o.ptr())
 
-    def operatorTypes(self):
-        return self.__typenames('nap::Operator')
 
-    def dataTypes(self):
-        return self.__typenames('nap::AttributeBase')
 
     def addObjectCallbacks(self, obj):
         self.__rpc.addObjectCallbacks(self.rpc().identity, obj.ptr())
@@ -479,7 +501,7 @@ class Entity(AttributeObject):
 
 
 class Attribute(Object):
-    NAP_TYPE = 'nap::Attribute'
+    NAP_TYPE = 'nap::AttributeBase'
 
     valueChanged = pyqtSignal(object)
 

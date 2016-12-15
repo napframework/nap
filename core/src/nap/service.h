@@ -58,6 +58,9 @@ namespace nap
 		// De-register an added object
 		virtual void removeObject(Object& object);
 
+		// Invoked when the service has been constructed and Core is available.
+		virtual void initialized() {}
+
 	protected:
 		// This method is being called when the service is started by the core.
 		virtual void onStart(){};

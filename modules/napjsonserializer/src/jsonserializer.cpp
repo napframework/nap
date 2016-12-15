@@ -229,16 +229,24 @@ namespace nap
 			w.String("types");
 			w.StartArray();
 			for (const auto& type : RTTI::TypeInfo::getRawTypes()) {
-				w.StartArray();
+
+
+
+				w.StartObject();
 				{
-					// Write array of base types including the actual type
-					// eg. for Attribute<float>, write
-					// ['Attribute<float>', 'AttributeBase', 'Object']
+					w.String("name");
 					w.String(type.getName().c_str());
+
+					w.String("instantiable");
+					w.Bool(type.canCreateInstance());
+
+					w.String("basetypes");
+					w.StartArray();
 					for (const auto &baseType : type.getBaseTypes())
 						w.String(baseType.getName().c_str());
+					w.EndArray();
 				}
-				w.EndArray();
+				w.EndObject();
 			}
 			w.EndArray();
 		}

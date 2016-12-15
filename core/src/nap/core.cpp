@@ -194,6 +194,7 @@ namespace nap
 
 		// Add service
 		mServices.emplace_back(std::unique_ptr<Service>(service));
+		service->initialized();
 		return *service;
 	}
 

@@ -62,7 +62,14 @@ namespace nap
 		//		disp.AddMethod("getTypeName", &JsonRpcService::rpc_getTypeName, *this);
 		//		disp.AddMethod("getAttributeValue", &JsonRpcService::rpc_getAttributeValue, *this);
 		//		disp.AddMethod("addObjectCallbacks", &JsonRpcService::rpc_addObjectCallbacks, *this);
+
+
 	}
+
+	void JsonRpcService::initialized() {
+		addCallbacks(&getCore().getRoot());
+	}
+
 
 	std::string JsonRpcService::evalScript(const std::string& cmd)
 	{
@@ -97,7 +104,7 @@ namespace nap
 		return buf.GetString();
 	}
 
-	void JsonRpcService::handleLogMessage(AsyncTCPClient& client, LogMessage& msg)
+	void JsonRpcService::handleLogMessage(LogMessage& msg)
 	{
 		using namespace rapidjson;
 		StringBuffer buf;
@@ -112,10 +119,10 @@ namespace nap
 			w.String(msg.text().c_str());
 		}
 		w.EndObject();
-		client.enqueueEvent(callbackJSON("log", buf.GetString()));
+		enqueueEvent(callbackJSON("log", buf.GetString()));
 	}
 
-	void JsonRpcService::handleNameChanged(AsyncTCPClient& client, Object& obj)
+	void JsonRpcService::handleNameChanged(Object& obj)
 	{
 		using namespace rapidjson;
 		StringBuffer buf;
@@ -129,12 +136,10 @@ namespace nap
 		}
 		w.EndObject();
 
-		client.enqueueEvent(callbackJSON("nameChanged", buf.GetString()));
-
-		Logger::info("Sending Attribute Change: %s : %s", obj.getName().c_str(), obj.getName().c_str());
+		enqueueEvent(callbackJSON("nameChanged", buf.GetString()));
 	}
 
-	void JsonRpcService::handleAttributeValueChanged(AsyncTCPClient& client, AttributeBase& attrib)
+	void JsonRpcService::handleAttributeValueChanged(AttributeBase& attrib)
 	{
 		std::string value;
 		attrib.toString(value);
@@ -154,13 +159,11 @@ namespace nap
 		}
 		w.EndObject();
 
-		client.enqueueEvent(callbackJSON("attributeValueChanged", buf.GetString()));
-
-		Logger::info("Sending Attribute Change: %s : %s", attrib.getName().c_str(), attrib.getName().c_str());
+		enqueueEvent(callbackJSON("attributeValueChanged", buf.GetString()));
 	}
 
 
-	void JsonRpcService::handleObjectAdded(AsyncTCPClient& client, Object& obj, Object& child)
+	void JsonRpcService::handleObjectAdded(Object& obj, Object& child)
 	{
 		using namespace rapidjson;
 		StringBuffer buf;
@@ -173,11 +176,11 @@ namespace nap
 			w.String(JSONSerializer().toString(child, true).c_str());
 		}
 		w.EndObject();
-		client.enqueueEvent(callbackJSON("objectAdded", buf.GetString()));
+		enqueueEvent(callbackJSON("objectAdded", buf.GetString()));
 	}
 
 
-	void JsonRpcService::handleObjectRemoved(AsyncTCPClient& client, Object& child)
+	void JsonRpcService::handleObjectRemoved(Object& child)
 	{
 		using namespace rapidjson;
 		StringBuffer buf;
@@ -188,11 +191,11 @@ namespace nap
 			w.Int64(Serializer::toPtr(child));
 		}
 		w.EndObject();
-		client.enqueueEvent(callbackJSON("objectRemoved", buf.GetString()));
+		enqueueEvent(callbackJSON("objectRemoved", buf.GetString()));
 	}
 
 
-	void JsonRpcService::handlePlugConnected(AsyncTCPClient& client, InputPlugBase& plug)
+	void JsonRpcService::handlePlugConnected(InputPlugBase& plug)
 	{
 		assert(plug.isConnected());
 
@@ -207,11 +210,11 @@ namespace nap
 			w.Int64(Serializer::toPtr(plug));
 		}
 		w.EndObject();
-		client.enqueueEvent(callbackJSON("plugConnected", buf.GetString()));
+		enqueueEvent(callbackJSON("plugConnected", buf.GetString()));
 	}
 
 
-	void JsonRpcService::handlePlugDisconnected(AsyncTCPClient& client, InputPlugBase& plug)
+	void JsonRpcService::handlePlugDisconnected(InputPlugBase& plug)
 	{
 		assert(plug.isConnected());
 
@@ -226,7 +229,9 @@ namespace nap
 			w.Int64(Serializer::toPtr(plug));
 		}
 		w.EndObject();
-		client.enqueueEvent(callbackJSON("plugDisconnected", buf.GetString()));
+
+
+		enqueueEvent(callbackJSON("plugDisconnected", buf.GetString()));
 	}
 
 
@@ -261,7 +266,7 @@ namespace nap
 	void JsonRpcService::onLog(LogMessage msg)
 	{
 		for (AsyncTCPClient* client : getServer().getClients())
-			handleLogMessage(*client, msg);
+			handleLogMessage(msg);
 	}
 
 	/////////////////// RPC METHODS /////////////////////
@@ -301,7 +306,7 @@ namespace nap
 
 	std::string JsonRpcService::rpc_getObjectTree()
 	{
-		return JSONSerializer().toString(*getRootObject(), true);
+		return JSONSerializer().toString(getCore().getRoot(), true);
 	}
 
 	std::string JsonRpcService::rpc_copyObjectTree(ObjPtr objPtr)
@@ -349,9 +354,9 @@ namespace nap
 	void JsonRpcService::rpc_addEntity(ObjPtr parentEntity)
 	{
 		Entity* parent = fromPtr<Entity>(parentEntity);
-		Logger::info("Adding entity to: %s", parent->getName().c_str());
 		if (!parent)
 			return;
+
 		parent->addEntity("NewEntity");
 	}
 
@@ -420,7 +425,7 @@ namespace nap
 		Object* obj = fromPtr<Object>(ptr);
 		Logger::debug("Client '%s' requesting callbacks for '%s'", ident.c_str(), obj->getName().c_str());
 
-		addCallbacks(ident, ptr);
+//		addCallbacks(ident, ptr);
 	}
 
 	void JsonRpcService::rpc_connectPlugs(ObjPtr srcPlugPtr, ObjPtr dstPlugPtr)
@@ -465,4 +470,46 @@ namespace nap
 		Logger::info("Removing object: %s", obj->getName().c_str());
 		obj->getParentObject()->removeChild(*obj);
 	}
+
+	void JsonRpcService::addCallbacks(Object *obj)
+	{
+		obj->nameChanged.connect([=](const std::string& name) {
+			handleNameChanged(*obj);
+		});
+
+		obj->childAdded.connect([=](Object& child) {
+			handleObjectAdded(*child.getParentObject(), child);
+			addCallbacks(&child);
+		});
+
+		obj->childRemoved.connect([=](Object& child) {
+			handleObjectRemoved(child);
+		});
+
+		if (auto attrib = rtti_cast<AttributeBase*>(obj)) {
+			attrib->valueChanged.connect([=](AttributeBase& a) {
+				handleAttributeValueChanged(a);
+			});
+		}
+
+		if (auto plug = rtti_cast<InputPlugBase*>(obj)) {
+			plug->connected.connect([=](InputPlugBase& p) {
+				handlePlugConnected(p);
+			});
+			plug->disconnected.connect([=](InputPlugBase& p) {
+				handlePlugDisconnected(p);
+			});
+		}
+
+		for (auto c : obj->getChildren())
+			addCallbacks(c);
+	}
+
+	void JsonRpcService::enqueueEvent(const std::string &msg) {
+//		Logger::info("Sending to clients: '%s'", msg.c_str());
+		for (AsyncTCPClient* client : getServer().getClients()) {
+			client->enqueueEvent(msg);
+		}
+	}
+
 }

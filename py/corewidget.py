@@ -4,6 +4,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
 import iconstore
+import nap
 from utils import qtutils
 
 def _nameForDict(dic):
@@ -13,7 +14,7 @@ def _nameForDict(dic):
     if 'name' in dic:
         return dic['name']
     for val in dic.values():
-        if isinstance(val, basestring):
+        if isinstance(val, str):
             return val
     return '<dict>'
 
@@ -27,17 +28,6 @@ def _item(text, icon=None):
         item.setIcon(iconstore.icon(icon))
     return item
 
-def toHuman(s):
-    return s
-
-def _addTypesItem(parent, dic, key):
-    if not key in dic:
-        return
-    item = _item(toHuman(key), 'folder_brick')
-    for t in dic[key]:
-        item.appendRow(_item(t, 'brick'))
-    parent.appendRow(item)
-
 def _addKeyValRow(parent, key, val):
     keyItem = _item(key, 'ui-text-field-format')
     valItem = _item(val)
@@ -45,8 +35,9 @@ def _addKeyValRow(parent, key, val):
 
 
 class ModuleModel(QStandardItemModel):
-    def __init__(self, dic):
+    def __init__(self, ctx, dic):
         super(ModuleModel, self).__init__()
+        self.ctx = ctx
 
         globalItem = _item('Global', 'world')
 
@@ -55,14 +46,10 @@ class ModuleModel(QStandardItemModel):
         for mod in dic['modules']:
             modItem = _item(mod['name'], 'box')
             modItem.appendRow(_item(mod['filename'], 'document'))
-            _addTypesItem(modItem, mod, 'dataTypes')
-            _addTypesItem(modItem, mod, 'componentTypes')
-            _addTypesItem(modItem, mod, 'operatorTypes')
-            modulesItem.appendRow(modItem)
 
-        _addTypesItem(globalItem, dic, 'dataTypes')
-        _addTypesItem(globalItem, dic, 'componentTypes')
-        _addTypesItem(globalItem, dic, 'operatorTypes')
+        self.__addTypesItem(globalItem, ctx.core().componentTypes)
+        self.__addTypesItem(globalItem, ctx.core().operatorTypes)
+        self.__addTypesItem(globalItem, ctx.core().dataTypes)
 
         typeIcon = iconstore.icon('type')
 
@@ -72,7 +59,7 @@ class ModuleModel(QStandardItemModel):
             typeItem = QStandardItem(typeIcon, tp['name'])
             typeHierarchyItem.appendRow(typeItem)
             parentItem = typeItem
-            for baseType in tp['baseTypes']:
+            for baseType in tp['basetypes']:
                 baseTypeItem = QStandardItem(typeIcon, baseType)
                 parentItem.appendRow(baseTypeItem)
                 parentItem = baseTypeItem
@@ -82,8 +69,11 @@ class ModuleModel(QStandardItemModel):
         self.appendRow(globalItem)
 
 
-
-
+    def __addTypesItem(self, parent, getter):
+        item = _item(getter.__name__, 'folder_brick')
+        for t in getter():
+            item.appendRow(_item(t, 'brick'))
+        parent.appendRow(item)
 
 class ConnectionWidget(QWidget):
     def __init__(self, ctx):
@@ -115,7 +105,7 @@ class ConnectionWidget(QWidget):
         ctx.core().moduleInfoChanged.connect(self.__onModuleInfoChanged)
 
     def __onModuleInfoChanged(self, info):
-        self.__treeView.setModel(ModuleModel(info))
+        self.__treeView.setModel(ModuleModel(self.ctx, info))
         # self.__treeView.expandAll()
 
 

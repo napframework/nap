@@ -15,48 +15,44 @@ namespace nap
 		return obj;
 	}
 
+	class RpcService;
+
+	class RPCObjectCallback
+	{
+	public:
+		RPCObjectCallback(RpcService& server, Object& obj);
+		~RPCObjectCallback();
+		RpcService& mServer;
+
+		void onNameChanged(const std::string& name);
+		Slot<const std::string&> onNameChangedSlot = {this, &RPCObjectCallback::onNameChanged};
+
+		void onChildAdded(Object& obj);
+		Slot<Object&> onChildAddedSlot = {this, &RPCObjectCallback::onChildAdded};
+
+		void onChildRemoved(Object& obj);
+		Slot<Object&> onChildRemovedSlot = {this, &RPCObjectCallback::onChildRemoved};
+
+		void onAttributeValueChanged(AttributeBase& attrib);
+		Slot<AttributeBase&> onAttributeValueChangedSlot = {this, &RPCObjectCallback::onAttributeValueChanged};
+
+		void onPlugConnected(InputPlugBase&);
+		Slot<InputPlugBase&> onPlugConnectedSlot = {this, &RPCObjectCallback::onPlugConnected};
+
+		void onPlugDisconnected(InputPlugBase&);
+		Slot<InputPlugBase&> onPlugDisconnectedSlot = {this, &RPCObjectCallback::onPlugDisconnected};
+
+	private:
+		Object& mObject;
+	};
+
 	/**
 	 *  This component will run a listening server receiving script calls and dispatch notifications to any remote
 	 * listeners.
 	 */
 	class RpcService : public Service
 	{
-	RTTI_ENABLE_DERIVED_FROM(Service)
-	protected:
-		/**
-		* Holds a slot that may receive signals and forward them to the script server
-		*/
-		class RPCObjectCallback
-		{
-		public:
-			RPCObjectCallback(RpcService& server, AsyncTCPClient& client, Object& obj);
-			~RPCObjectCallback();
-			RpcService& mServer;
-
-			void onNameChanged(const std::string& name);
-            Slot<const std::string&> onNameChangedSlot = {this, &RPCObjectCallback::onNameChanged};
-
-			void onChildAdded(Object& obj);
-            Slot<Object&> onChildAddedSlot = {this, &RPCObjectCallback::onChildAdded};
-
-			void onChildRemoved(Object& obj);
-            Slot<Object&> onChildRemovedSlot = {this, &RPCObjectCallback::onChildRemoved};
-
-			void onAttributeValueChanged(AttributeBase& attrib);
-            Slot<AttributeBase&> onAttributeValueChangedSlot = {this, &RPCObjectCallback::onAttributeValueChanged};
-
-            void onPlugConnected(InputPlugBase&);
-            Slot<InputPlugBase&> onPlugConnectedSlot = {this, &RPCObjectCallback::onPlugConnected};
-
-            void onPlugDisconnected(InputPlugBase&);
-            Slot<InputPlugBase&> onPlugDisconnectedSlot = {this, &RPCObjectCallback::onPlugDisconnected};
-
-		private:
-			Object& mObject;
-			AsyncTCPClient& mClient;
-		};
-
-
+		RTTI_ENABLE_DERIVED_FROM(Service)
 	public:
 		using CallbackMap = std::map<Object*, std::unique_ptr<RPCObjectCallback>>;
 		using ClientCallbackMap = std::map<AsyncTCPClient*, CallbackMap>;
@@ -68,29 +64,20 @@ namespace nap
 		Attribute<int> rpcPort = {this, "rpcPort", 8888};
 		Attribute<bool> running = {this, "running", false};
 
-	protected:
 		virtual std::string evalScript(const std::string& cmd) = 0;
-        virtual void handleLogMessage(AsyncTCPClient& client, LogMessage& msg) = 0;
-		virtual void handleNameChanged(AsyncTCPClient& client, Object& obj) = 0;
-		virtual void handleObjectAdded(AsyncTCPClient& client, Object& obj, Object& child) = 0;
-		virtual void handleObjectRemoved(AsyncTCPClient& client, Object& child) = 0;
-		virtual void handleAttributeValueChanged(AsyncTCPClient& client, AttributeBase& attrib) = 0;
-        virtual void handlePlugConnected(AsyncTCPClient& client, InputPlugBase& plug) = 0;
-        virtual void handlePlugDisconnected(AsyncTCPClient& client, InputPlugBase& plug) = 0;
+		virtual void handleLogMessage(LogMessage& msg) = 0;
+		virtual void handleNameChanged(Object& obj) = 0;
+		virtual void handleObjectAdded(Object& obj, Object& child) = 0;
+		virtual void handleObjectRemoved(Object& child) = 0;
+		virtual void handleAttributeValueChanged(AttributeBase& attrib) = 0;
+		virtual void handlePlugConnected(InputPlugBase& plug) = 0;
+		virtual void handlePlugDisconnected(InputPlugBase& plug) = 0;
+
+	protected:
 		AsyncTCPServer& getServer() { return mServer; }
 
 		void stopServer();
 		void startServer();
-
-		void addCallbacks(AsyncTCPClient& client, ObjPtr path);
-		void addCallbacks(const std::string& clientIdent, ObjPtr ptr);
-
-		void removeCallbacks(AsyncTCPClient& client);
-
-		void removeCallbacks(AsyncTCPClient& client, const std::string& path);
-
-        // TODO: Move this map to the AsyncTCPClient
-		CallbackMap& getCallbackMap(AsyncTCPClient& client);
 
 		Object* resolvePath(const std::string& path);
 
@@ -116,7 +103,7 @@ namespace nap
 		void onRequestReceived(AsyncTCPClient& client, const std::string& msg);
 
 	private:
-		ClientCallbackMap mCallbacks;
+		std::vector<std::unique_ptr<RPCObjectCallback>> mCallbacks;
 		AsyncTCPServer mServer;
 	};
 }
