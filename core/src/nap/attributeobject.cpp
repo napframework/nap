@@ -28,5 +28,19 @@ namespace nap {
     {
         return hasChildOfType<AttributeBase>(name);
     }
-    
+
+	AttributeBase *AttributeObject::getOrCreateAttribute(const std::string &name, const RTTI::TypeInfo &valueType) {
+		auto attribute = getAttribute(name);
+
+		if (attribute) {
+			if (attribute->getValueType() != valueType) {
+				Logger::warn("Attribute of type '%s' existed, but had different type: %s", attribute->getValueType().getName().c_str(), valueType.getName().c_str());
+				return nullptr;
+			}
+		}else{
+			attribute = &addAttribute(name, valueType);
+		}
+		return attribute;
+	}
+
 }
