@@ -35,7 +35,7 @@ namespace opengl
 		 * @param index The index of the mesh to return
 		 * @return the associated Mesh, nullptr mesh at index does not exist
 		 */
-		const Mesh* getMesh(unsigned int index) const;
+		Mesh* getMesh(unsigned int index) const;
 
 		/**
 		 * @return the number of associated meshes

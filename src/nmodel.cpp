@@ -3,7 +3,7 @@
 namespace opengl
 {
 	// returns the associated Mesh, nullptr if mesh at index does not exist
-	const Mesh* Model::getMesh(unsigned int index) const
+	Mesh* Model::getMesh(unsigned int index) const
 	{
 		if (index >= mMeshes.size())
 		{

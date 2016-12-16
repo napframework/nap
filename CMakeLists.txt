@@ -62,8 +62,6 @@ find_package(glm REQUIRED)
 find_package(freeimage REQUIRED)
 find_package(assimp REQUIRED)
 
-
-
 # add all cpp files to SOURCES
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 #source_group("headers" FILES ${HEADERS})
