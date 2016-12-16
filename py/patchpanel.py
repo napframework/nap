@@ -345,6 +345,7 @@ class WireItem(QGraphicsPathItem):
         self.setFlag(QGraphicsItem.ItemIsSelectable, True)
 
 
+
     def paint(self, painter, option, widget=None):
         if self.isVisible():
             self.updatePath()
@@ -356,14 +357,17 @@ class WireItem(QGraphicsPathItem):
         if self.dstPin:
             self.dstPos = self.dstPin.attachPos()
 
-        p = QPainterPath()
-        calculateWirePath(self.srcPos, self.dstPos, p)
-        self.setPath(p)
-
         pen = QPen()
         pen.setColor(self.srcPin.color())
         pen.setWidth(1)
         self.setPen(pen)
+
+        p = QPainterPath()
+        calculateWirePath(self.srcPos, self.dstPos, p)
+        self.setPath(p)
+
+        print('Updating')
+
 
 
 class WirePreview(QGraphicsPathItem):

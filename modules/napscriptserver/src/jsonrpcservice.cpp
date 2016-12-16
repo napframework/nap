@@ -1,4 +1,4 @@
-#include "jsonrpcservercomponent.h"
+#include "jsonrpcservice.h"
 #include <fstream>
 #include <jsonserializer.h>
 #include <rapidjson/prettywriter.h>
@@ -506,6 +506,8 @@ namespace nap
 	}
 
 	void JsonRpcService::enqueueEvent(const std::string &msg) {
+		if (!broadcastChanges.getValue())
+			return;
 //		Logger::info("Sending to clients: '%s'", msg.c_str());
 		for (AsyncTCPClient* client : getServer().getClients()) {
 			client->enqueueEvent(msg);

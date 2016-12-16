@@ -1,4 +1,4 @@
-#include "scriptservercomponent.h"
+#include "rpcservice.h"
 
 RTTI_DEFINE(nap::RpcService)
 

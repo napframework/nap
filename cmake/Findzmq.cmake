@@ -16,19 +16,14 @@ find_path(ZMQ_DIR include/zmq.h
         )
 
 if(WIN32)
+    if (MSVC)
+        set(CMAKE_BUILD_TYPE Release)
+    endif()
+
+
     set(ZMQ_LIB_DIR ${ZMQ_DIR}/bin/${ARCH}/${CMAKE_BUILD_TYPE}/v140/dynamic)
-    find_library(ZMQ_LIBRARIES NAMES libzmq.lib
-            HINTS
-            ${ZMQ_LIB_DIR}/v140/dynamic
-            )
-
-    find_library(LIB NAMES libzmq.dll
-            HINTS
-            ${ZMQ_LIB_DIR}/v140/dynamic
-            )
-
-    list(APPEND ZMQ_LIBRARIES ${LIB})
-
+    set(ZMQ_LIBRARIES ${ZMQ_LIB_DIR}/libzmq.lib)
+    set(ZMQ_DLL ${ZMQ_LIB_DIR}/libzmq.dll)
 elseif(APPLE)
     find_library(ZMQ_LIBRARIES NAMES libzmq.dylib
             HINTS

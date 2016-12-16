@@ -1,6 +1,6 @@
 #pragma once
 
-#include "scriptservercomponent.h"
+#include "rpcservice.h"
 #include <jsonserializer.h>
 #include <rtti/rtti.h>
 #include <vector>

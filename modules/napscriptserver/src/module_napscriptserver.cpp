@@ -1,9 +1,9 @@
 #include <nap/module.h>
-#include "jsonrpcservercomponent.h"
+#include "jsonrpcservice.h"
 
 NAP_MODULE_BEGIN(NapScriptServer)
 {
-//    nap::JsonRpcService;
+    NAP_REGISTER_DATATYPE(nap::JsonRpcService)
 }
 NAP_MODULE_END(NapScriptServer)
 

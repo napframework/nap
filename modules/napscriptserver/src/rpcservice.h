@@ -63,6 +63,7 @@ namespace nap
 
 		Attribute<int> rpcPort = {this, "rpcPort", 8888};
 		Attribute<bool> running = {this, "running", false};
+		Attribute<bool> broadcastChanges = { this, "broadcastChanges", true };
 
 		virtual std::string evalScript(const std::string& cmd) = 0;
 		virtual void handleLogMessage(LogMessage& msg) = 0;

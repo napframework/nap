@@ -55,8 +55,6 @@ namespace nap
             return nullptr;
         }
         std::ifstream is(filename);
-
-
         return readObject(is, core, parent);
     }
 

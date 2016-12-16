@@ -35,9 +35,13 @@ target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 
 
+
 if (UNIX)
 else()
-    foreach (RES ${ZMQ_LIBRARIES})
-        file(COPY ${RES} DESTINATION ${BIN_DIR})
+    foreach (RES ${ZMQ_DLL})
+        get_filename_component(F ${RES} NAME)
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD VERBATIM
+            COMMAND ${CMAKE_COMMAND} -E copy "${RES}" "${BIN_DIR}"
+            COMMENT "Copy dlls" )
     endforeach()
 endif()
