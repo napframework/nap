@@ -12,3 +12,4 @@
 #include <nap/event.h>
 #include <nap/plug.h>
 #include <nap/coretypeconverters.h>
+#include <nap/coreoperators.h>
