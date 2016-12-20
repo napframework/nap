@@ -31,6 +31,8 @@ elseif(UNIX)
     list(APPEND LIBRARIES zmq pthread)
 endif()
 
+add_definitions(-DRAPIDJSON_HAS_STDSTRING=1)
+
 target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDES})
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
 

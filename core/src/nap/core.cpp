@@ -114,6 +114,7 @@ namespace nap
 
 	/**
 	@brief Register a type associated with a service
+	 TODO: Move registration into actual service
 	**/
 	void Core::registerType(const Service& inService, RTTI::TypeInfo inTypeInfo)
 	{
