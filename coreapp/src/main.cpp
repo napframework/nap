@@ -24,7 +24,7 @@ int main(int argc, char** argv)
 	core.initialize();
 	core.getOrCreateService<nap::JsonRpcService>()->running.setValue(true);
 
-	if (argc == 1) {
+	if (argc == 2) {
 		std::string filename(argv[1]);
 		if (!nap::JSONSerializer().load(filename, core)) {
 			nap::Logger::fatal("Failed to load data file, exiting.");
