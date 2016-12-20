@@ -267,6 +267,14 @@ class Core(QObject):
 
         dstPlug.connected.emit(srcPlug, dstPlug)
 
+    def _handle_plugDisconnected(self, srcPtr, dstPtr):
+        srcPlug = self.findObject(srcPtr)
+        assert isinstance(srcPlug, OutputPlugBase)
+        dstPlug = self.findObject(dstPtr)
+        assert isinstance(dstPlug, InputPlugBase)
+
+        dstPlug.disconnected.emit(srcPlug, dstPlug)
+
     def _handle_copyObjectTree(self, **jsonDict):
         QApplication.clipboard().setText(json.dumps(jsonDict, indent=4))
 
@@ -577,6 +585,7 @@ class InputPlugBase(Plug):
     NAP_TYPE = 'nap::InputPlugBase'
 
     connected = pyqtSignal(object, object)
+    disconnected = pyqtSignal(object, object)
 
     def __init__(self, *args):
         super(InputPlugBase, self).__init__(*args)
@@ -595,8 +604,6 @@ class InputPlugBase(Plug):
 
 class OutputPlugBase(Plug):
     NAP_TYPE = 'nap::OutputPlugBase'
-
-    disconnected = pyqtSignal(object)
 
     def __init__(self, *args):
         super(OutputPlugBase, self).__init__(*args)

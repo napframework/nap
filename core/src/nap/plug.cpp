@@ -97,8 +97,13 @@ namespace nap
 
 	OutputPlugBase::~OutputPlugBase()
 	{
+        Logger::info("OutputPlugBase destruct");
+        auto connections = getConnections();
+        for (auto connection : connections)
+            connection->disconnect();
 	}
 
+    
     const std::set<InputPlugBase*> OutputPlugBase::getConnections() const
     {
         std::set<InputPlugBase*> connections;

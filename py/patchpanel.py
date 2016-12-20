@@ -224,6 +224,7 @@ class OperatorItem(QGraphicsObject):
         @type plug: nap.InputPlugBase
         """
         plug.connected.connect(self.__onPlugConnected)
+        plug.disconnected.connect(self.__onPlugDisconnected)
         plugItem = PlugItem(self, plug)
         self.__inputPlugs.append(plugItem)
         self.layout()
@@ -241,8 +242,11 @@ class OperatorItem(QGraphicsObject):
         # TODO: Review
         self.setPos(_getObjectEditorPos(self.__operator))
 
-    def __onPlugConnected(self, outPlug, inPlug):
-        self.plugConnected.emit(outPlug, inPlug)
+    def __onPlugConnected(self, srcPlug, dstPlug):
+        self.plugConnected.emit(srcPlug, dstPlug)
+
+    def __onPlugDisconnected(self, srcPlug, dstPlug):
+        self.plugDisconnected.emit(srcPlug, dstPlug)
 
 
 class PlugItem(QGraphicsItem):
@@ -523,6 +527,11 @@ class PatchScene(QGraphicsScene):
             if isinstance(item, OperatorItem):
                 yield item
 
+    def wireItems(self):
+        for item in self.__wireLayer.childItems():
+            if isinstance(item, WireItem):
+                yield item
+
     def patch(self):
         return self.__patch
 
@@ -553,6 +562,11 @@ class PatchScene(QGraphicsScene):
 
         print('Could not find operator: %s' % op)
 
+    def findWireItem(self, srcPlugItem, dstPlugItem):
+        for item in self.wireItems():
+            if item.srcPin.plugItem().plug() == srcPlugItem and item.dstPin.plugItem().plug() == dstPlugItem:
+                return item
+
     def dragConnectionSource(self):
         if self.__previewWire.srcPin:
             return self.__previewWire.srcPin.plugItem().plug()
@@ -578,6 +592,11 @@ class PatchScene(QGraphicsScene):
         wire = WireItem(srcPlugItem.pin(), dstPlugItem.pin())
         wire.setParentItem(self.__wireLayer)
 
+    def __removeWire(self, srcPlug, dstPlug):
+        wire = self.findWireItem(srcPlug, dstPlug)
+        assert(wire)
+        self.__removeItem(wire)
+
     def __onOperatorAdded(self, op):
         """
         @type op: nap.Operator
@@ -586,16 +605,17 @@ class PatchScene(QGraphicsScene):
         item.moved.connect(self.__updateSceneRect)
         item.setParentItem(self.__operatorLayer)
         item.plugConnected.connect(self.__addWire)
+        item.plugDisconnected.connect(self.__removeWire)
         item.setPos(_getObjectEditorPos(op))
         self.__updateSceneRect()
 
     def __onOperatorRemoved(self, op):
-        self.__removeOperatorItem(self.findOperatorItem(op))
+        self.__removeItem(self.findOperatorItem(op))
 
     def __onOperatorChanged(self, op):
         self.findOperatorItem(op).setPos(_getObjectEditorPos(op))
 
-    def __removeOperatorItem(self, item):
+    def __removeItem(self, item):
         self.removeItem(item)
         del item
 
