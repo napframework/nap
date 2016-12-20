@@ -19,6 +19,7 @@
     #include <stdlib.h>
     #include <zconf.h>
     #include <sys/stat.h>
+    #include <dirent.h>
 #else
     #include <zconf.h>
     #include <sys/stat.h>

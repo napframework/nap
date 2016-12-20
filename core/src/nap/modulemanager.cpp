@@ -117,6 +117,8 @@ namespace nap
 
 
 		for (const auto& filename : files) {
+            if (dirExists(filename))
+                continue;
 			std::string absFilename = getAbsolutePath(filename);
 #ifdef _WIN32
 			if (getFileExtension(absFilename) != "dll")
@@ -204,7 +206,6 @@ namespace nap
 
 			nap::Module* module = (nap::Module*)typeInfo.createInstance();
 			assert(module);
-			nap::Logger::info("Module RTTI: %s", module->getName().c_str());
 			registerModule(*module);
 		}
 	}

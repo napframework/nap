@@ -267,7 +267,7 @@ class Core(QObject):
 
         dstPlug.connected.emit(srcPlug, dstPlug)
 
-    def _handle_copyObjectTree(self, jsonDict):
+    def _handle_copyObjectTree(self, **jsonDict):
         QApplication.clipboard().setText(json.dumps(jsonDict, indent=4))
 
     ############################################################################
