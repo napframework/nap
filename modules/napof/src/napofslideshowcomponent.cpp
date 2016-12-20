@@ -104,7 +104,7 @@ namespace nap
 				// Load image and place in cache
 				if (!ofFile(filename).exists())
 				{
-					Logger::fatal(this->getName() + ": file does not exist: " + filename);
+					Logger::fatal(*this, "File does not exist: " + filename);
 					return;
 				}
 

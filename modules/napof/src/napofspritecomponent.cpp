@@ -100,7 +100,8 @@ namespace nap
 	void OFSpriteComponent::indexChanged(const int& newIndex)
 	{
 		if (index.getValue() >= mSpriteCount) {
-			Logger::warn(*this, "Sprite index exceeds sprite sheet count: %d / %d", index.getValue(), mSpriteCount);
+			Logger::warn(*this, "Sprite index (%d) exceeds sprite count (%d)", 
+				index.getValue(), mSpriteCount);
 			index.getValueRef() = mSpriteCount - 1;
 		}
 
