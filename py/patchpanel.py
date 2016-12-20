@@ -470,15 +470,15 @@ class PatchScene(QGraphicsScene):
             self.__previewWire.srcPos = pt
         self.__previewWire.updatePath()
 
-    def stopDragConnection(self, plugItem):
+    def stopDragConnection(self, pinItem):
         if not self.__isWiring:
             return
-        if plugItem:
+        if pinItem:
             if self.__wireIsOutput:
                 srcPlugItem = self.__previewWire.srcPin.plugItem()
-                dstPlugItem = plugItem
+                dstPlugItem = pinItem.plugItem()
             else:
-                srcPlugItem = plugItem
+                srcPlugItem = pinItem.plugItem()
                 dstPlugItem = self.__previewWire.dstPin.plugItem()
 
             if srcPlugItem != dstPlugItem:
@@ -784,6 +784,7 @@ class PatchView(QGraphicsView):
             if isinstance(item, itemType):
                 return item
 
+
     def pinAt(self, scenePos):
         """
         @rtype: PinItem
@@ -937,9 +938,9 @@ class ConnectInteractMode(InteractMode):
         @type view: PatchView
         @type evt: QMouseEvent
         """
-        plug = view.plugAt(evt.pos())
+        pin = view.pinAt(evt.pos())
         print("stopDrag")
-        view.scene().stopDragConnection(plug)
+        view.scene().stopDragConnection(pin)
         return False
 
     def mouseMoved(self, view:PatchView, evt:QMouseEvent):
