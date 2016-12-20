@@ -70,7 +70,7 @@ namespace nap
 			writer.String(J_VALUE_TYPE);
 			writer.String(attrib.getValueType().getName().c_str());
 			writer.String(J_FLAGS);
-			writer.Bool(attrib.checkFlag(Editable));
+			writer.Int(attrib.getFlags());
 
 			if (writePointers) {
 				writer.String(J_PTR);
@@ -368,14 +368,20 @@ namespace nap
     
 	Object* JSONSerializer::readObject(std::istream& istream, Core& core, Object* parent) const
 	{
-		IStreamWrapper is(istream);
+        Document doc;         // Document is GenericDocument<UTF8<> >
 
-		Document doc;
-		doc.ParseStream(is);
+        auto stream = &istream;
+        IStreamWrapper* bis = new IStreamWrapper(istream);
+        auto eis = new AutoUTFInputStream<unsigned, IStreamWrapper>(*bis);  // wraps bis into eis
+        doc.ParseStream<0, AutoUTF<unsigned> >(*eis); // This parses any UTF file into UTF-8 in memory
+        // 		doc.ParseStream(is);
 		if (doc.HasParseError()) {
 			Logger::warn("JSON parse error: %s (%u)", GetParseError_En(doc.GetParseError()), doc.GetErrorOffset());
 			return nullptr;
 		}
+
+        delete bis;
+        delete eis;
 
 		return jsonToObject(doc, core, parent);
 	}
