@@ -136,6 +136,7 @@ namespace nap
 		// The mutex that will be locked when accessing the attribute's value to make it threadsafe
 		std::mutex			mMutex;
 
+
 	};
 
 

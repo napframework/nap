@@ -17,58 +17,95 @@
 namespace nap
 {
 
-	template <typename T>
-	class Attribute;
-	class Component;
-
-	// AttributeObject is a base class, to be implemented by classes such as Component and Entity
-	//
-	// Both an entity and Component are getOperators within the system. As such they carry a
-	// unique identifier for easy access throughout the system. Every object can hold any
-	// number of attributes.
+	/**
+	 * An attribute object can hold one or more attributes. Each attribute is an Object as well and as such will be identified by a unique name.
+	 */
 	class AttributeObject : public Object
 	{
-		// AttributeBase is a friend of object, and can therefore add itself as an attribute
 		RTTI_ENABLE_DERIVED_FROM(Object)
-		// string:attribute map
 
 	public:
 		AttributeObject() : Object() {}
         
-        // Constructor to define an AttributeObject as a class member of it's parent
+        /**
+         * WARNING: Do not use this in client code.
+         * Constructing using this method may put Object indexing using unique names in an inconsistent state1
+         * Use Object::addChild instead
+         *
+         * Create an attribute under the specified parent.
+         * @param parent The parent of this AttributeObject
+         * @param name The name of
+         */
         AttributeObject(Object* parent, const std::string& name);
 
-		// Add an attribute using RTTI without templates, @type should be the type of the attribute, not the data!
-        AttributeBase& addAttribute(const std::string& name, RTTI::TypeInfo type);
+		/**
+		 * Add an attribute with the specified value type
+		 * @param name The proposed name of this attribute,
+		 * the system may decide to use another name ir order to avoid collision
+		 * @param valueType The value type of the newly created Attribute
+		 * @return The newly created Attribute
+		 */
+        AttributeBase& addAttribute(const std::string &name, RTTI::TypeInfo valueType);
 
-		// Add an attribute templated, T is the type of the atribute's data
+		/**
+		 * Add an attribute with the specified name
+		 * @tparam T The value type of the newly created Attribute
+		 * @param name The proposed name of this attribute,
+		 * the system may decide to use another name ir order to avoid collision
+		 * @return The newly created Attribute
+		 */
 		template <typename T>
         Attribute<T>& addAttribute(const std::string& name) { return addChild<Attribute<T>>(name); }
 
-		// Add an attribute templated with a default value
+		/**
+		 * Add an Attribute with the specified value type and name
+		 * @tparam T The value type of the Attribute to be created
+		 * @param name The name of the attribute to be created
+		 * @param defaultValue This will be the value of the Attribute
+		 * @return The newly created Attribute
+		 */
 		template <typename T>
-		Attribute<T>& addAttribute(const std::string& name, const T& defaultValue)
-        {
-            Attribute<T>& attribute = addAttribute<T>(name);
-            attribute.setValue(defaultValue);
-            return attribute;
-        }
+		Attribute<T>& addAttribute(const std::string& name, const T& defaultValue);
         
-        // Add a compound attribute that can hold nested attributes
+        /**
+		 * Add an attribute that will itself hold more attributes.
+		 * @param name The name of the CompoundAttribute to be created
+		 * @return The newly created CompoundAttribute.
+		 */
         CompoundAttribute& addCompoundAttribute(const std::string& name) { return addChild<CompoundAttribute>(name); }
-       
-        // Add an array attribute holding attributes of type T
+
+		/**
+		 * Add an array attribute holding attributes of type T
+		 * @tparam T The element value type of the attribute
+		 * @param name The name of the array attribute to be created
+		 * @return The newly created array attribute
+		 */
         template <typename T>
         ArrayAttribute<T>& addArrayAttribute(const std::string& name) { return addChild<ArrayAttribute<T>>(name); }
 
-		// Remove an attribute, must be a child attribute that has been added dynamically
+		/**
+		 * Remove and destroy the provided Attribute.
+		 * @param attribute The attribute to be removed.
+		 * @return True if removal was successful, false otherwise.
+		 */
 		bool removeAttribute(AttributeBase& attribute) { return removeChild(attribute); }
 
-		// sets the default value if the attribute is to be created, return null if attribute of different value type exists
+		/**
+		 * Retrieve an Attribute, or create it if no Attribute with the specified name was found.
+		 * @tparam T The value type of the Attribute
+		 * @param name The name of the Attribute to be created or retrieved
+		 * @param defaultValue On creation, set this value on the new Attribute
+		 * @return An Attribute or nullptr when creation failed
+		 */
 		template <typename T>
         Attribute<T> * getOrCreateAttribute(const std::string &name, const T &defaultValue);
 
-		// If the attribute exists, return it, otherwise create and return it. Return null if attribute of different value type exists
+		/**
+		 * Retrieve an Attribute, or create it if no Attribute with the specified name was found.
+		 * @tparam T The value type of the Attribute
+		 * @param name The name of the Attribute to be created or retrieved
+		 * @return An Attribute or nullptr when creation failed
+		 */
 		template <typename T>
 		Attribute<T>* getOrCreateAttribute(const std::string& name);
 
@@ -94,53 +131,31 @@ namespace nap
 		 */
         AttributeBase* getAttribute(const std::string& name) { return getChild<AttributeBase>(name); }
 
-		// Retrieve attribute by type and name
+		/**
+		 * Retrieve an attribute by name and type T
+		 * @tparam T The expected value type of the attribute
+		 * @param name The exact name of the attribute
+		 * @return The attribute if it was found, nullptr otherwise
+		 */
 		template <typename T>
-		Attribute<T>* getAttribute(const std::string& name)
-		{
-			Attribute<T>* attribute = dynamic_cast<Attribute<T>*>(getAttribute(name));
-			if (attribute) return attribute;
-			return nullptr;
-		}
+		Attribute<T>* getAttribute(const std::string& name);
 
-		// Retrieve all registered attributes
+		/**
+		 * @return All of this Object's Attribute instances
+		 */
         std::vector<AttributeBase*> getAttributes() { return getChildrenOfType<AttributeBase>(); }
-        
-        // Retrieve all registered attributes of a certain type
+
+		/**
+		 * @return All of this Object's Attribute instances that have value type T
+		 */
         template <typename T>
         std::vector<Attribute<T>*> getAttributesOfType() { return getChildrenOfType<Attribute<T>>(); }
 
 	};
 
 
-	// --- template definitions ---- //
-
-    template <typename T>
-    Attribute<T>* AttributeObject::getOrCreateAttribute(const std::string& name)
-    {
-        auto attribute = getAttribute<T>(name);
-        
-        if (!attribute) {
-            if (hasAttribute(name)) // Attribute of wrong type?
-                return nullptr;
-            
-            auto type = RTTI_OF(Attribute<T>);
-            
-            attribute = static_cast<Attribute<T>*>(&addChild(name, type));
-        }
-        return attribute;
-    }
-    
-
-	template <typename T>
-    Attribute<T> * AttributeObject::getOrCreateAttribute(const std::string &name, const T &defaultValue)
-	{
-		bool valueExisted = hasAttribute(name);
-		auto attribute = getOrCreateAttribute<T>(name);
-		if (!valueExisted) attribute->setValue(defaultValue);
-		return attribute;
-	}
-    
 }
 
 RTTI_DECLARE(nap::AttributeObject)
+
+#include "attributeobject.hpp"

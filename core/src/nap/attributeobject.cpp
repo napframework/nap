@@ -17,10 +17,10 @@ namespace nap {
     }
     
 
-    AttributeBase& AttributeObject::addAttribute(const std::string& name, RTTI::TypeInfo type)
+    AttributeBase& AttributeObject::addAttribute(const std::string &name, RTTI::TypeInfo valueType)
     {
-        assert(type.isKindOf<AttributeBase>());
-        return *static_cast<AttributeBase*>(&addChild(name, type));
+        assert(valueType.isKindOf<AttributeBase>());
+        return *static_cast<AttributeBase*>(&addChild(name, valueType));
     }
 
     
@@ -42,5 +42,7 @@ namespace nap {
 		}
 		return attribute;
 	}
+
+
 
 }

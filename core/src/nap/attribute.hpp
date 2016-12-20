@@ -1,10 +1,7 @@
-#pragma once
+// attribute.h template definitions
 
 namespace nap
 {
-	/**
-	@brief Returns the containing type of Attribute<T>
-	**/
 	template <typename T>
 	const RTTI::TypeInfo Attribute<T>::getValueType() const
 	{
@@ -12,22 +9,12 @@ namespace nap
 	}
 
 
-	/**
-	@brief Sets the value of @inAttribute to this attribute's value
-	**/
 	template <typename T>
 	void Attribute<T>::getValue(AttributeBase& inAttribute) const
 	{
 		static_cast<Attribute<T>&>(inAttribute).setValue(getValue());
 	}
 
-
-	/**
-	@brief Attribute<T>::getValue()
-
-	Returns the attribute value, as a link or member
-	Links are automatically resolved, otherwise return default vlaue
-	**/
 	template <typename T>
 	const T& Attribute<T>::getValue() const
 	{
@@ -47,10 +34,6 @@ namespace nap
 		return targetAttr->getValue();
 	}
 
-
-	/**
-	@brief Returns the this attribute's value as a reference
-	**/
 	template <typename T>
 	T& Attribute<T>::getValueRef()
 	{
@@ -60,10 +43,6 @@ namespace nap
 		return mValue;
 	}
 
-
-	/**
-	@brief Sets this attributes value to @inValue
-	**/
 	template <typename T>
 	void Attribute<T>::setValue(const T& inValue)
 	{
@@ -109,10 +88,6 @@ namespace nap
 		valueChangedSignal(mValue);
 	}
 
-
-	/**
-	@brief Connect an attribute's value changed signal to a slot
-	**/
 	template <typename T>
 	void Attribute<T>::connectToValue(Slot<const T&>& inSlot)
 	{
@@ -120,9 +95,6 @@ namespace nap
 	}
 
 
-	/**
-	@brief Disconnect an attribute's value changed signal from a slot
-	**/
 	template <typename T>
 	void Attribute<T>::disconnectFromValue(Slot<const T&>& inSlot)
 	{
@@ -133,9 +105,6 @@ namespace nap
 	// Numeric Attribute Template Definitions
 	//////////////////////////////////////////////////////////////////////////
 
-	/**
-	@brief Maps the incoming value before setting it
-	**/
 	template <typename T>
 	void NumericAttribute<T>::setValue(const T& value)
 	{
@@ -144,9 +113,6 @@ namespace nap
 	}
 
 
-	/**
-	@brief set the min / max range of the attribute
-	**/
 	template <typename T>
 	void NumericAttribute<T>::setRange(const T& min, const T& max)
 	{
@@ -156,9 +122,6 @@ namespace nap
 	}
 
 
-	/**
-	@brief Sets if the range is clamped or not
-	**/
 	template <typename T>
 	void NumericAttribute<T>::setClamped(bool value)
 	{
@@ -172,10 +135,6 @@ namespace nap
 			setValue(Attribute<T>::mValue);
 	}
 
-
-	/**
-	@brief Returns the min / max range of the attribute
-	**/
 	template <typename T>
 	void NumericAttribute<T>::getRange(T& outMin, T& outMax) const
 	{
