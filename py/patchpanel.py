@@ -45,6 +45,16 @@ def _filter(items, itemType):
         if isinstance(item, itemType):
             yield item
 
+def _excludeTypes(items, itemTypes):
+    filteredItems = []
+    for item in items:
+        exclude = False;
+        for itemType in itemTypes:
+            if isinstance(item, itemType):
+                exclude = True
+        if not exclude:
+            filteredItems.append(item)
+    return filteredItems
 
 def _canConnect(srcPlug, destPlug):
     srcIsInput = isinstance(srcPlug, nap.InputPlugBase)
@@ -344,8 +354,6 @@ class WireItem(QGraphicsPathItem):
         self.setFlag(QGraphicsItem.ItemIsFocusable, True)
         self.setFlag(QGraphicsItem.ItemIsSelectable, True)
 
-
-
     def paint(self, painter, option, widget=None):
         if self.isVisible():
             self.updatePath()
@@ -367,7 +375,6 @@ class WireItem(QGraphicsPathItem):
         self.setPath(p)
 
         print('Updating')
-
 
 
 class WirePreview(QGraphicsPathItem):
@@ -546,7 +553,6 @@ class PatchScene(QGraphicsScene):
 
         print('Could not find operator: %s' % op)
 
-
     def dragConnectionSource(self):
         if self.__previewWire.srcPin:
             return self.__previewWire.srcPin.plugItem().plug()
@@ -582,7 +588,6 @@ class PatchScene(QGraphicsScene):
         item.plugConnected.connect(self.__addWire)
         item.setPos(_getObjectEditorPos(op))
         self.__updateSceneRect()
-
 
     def __onOperatorRemoved(self, op):
         self.__removeOperatorItem(self.findOperatorItem(op))
@@ -692,8 +697,6 @@ class DefaultInteractMode(InteractMode):
         return False
 
 
-
-
 class PatchView(QGraphicsView):
     """ The view the user will interact with when editing patches.
 
@@ -739,10 +742,11 @@ class PatchView(QGraphicsView):
         if not self.scene():
             return
         clickedItems = self.items(pos)
+        filteredClickedItems = _excludeTypes(clickedItems, [LayerItem])
 
         menu = QMenu(self)
 
-        if not clickedItems:
+        if not filteredClickedItems:
             patch = self.scene().patch()
             addCompMenu = menu.addMenu(iconstore.icon('brick_add'),
                                        'Add Operator...')
@@ -750,7 +754,6 @@ class PatchView(QGraphicsView):
                                          addCompMenu)
 
         menu.exec_(QCursor.pos())
-
 
     def mousePressEvent(self, evt):
         if not self.__interactMode.mousePressed(self, evt):
@@ -783,7 +786,6 @@ class PatchView(QGraphicsView):
         for item in self.items(scenePos):
             if isinstance(item, itemType):
                 return item
-
 
     def pinAt(self, scenePos):
         """
@@ -943,7 +945,7 @@ class ConnectInteractMode(InteractMode):
         view.scene().stopDragConnection(pin)
         return False
 
-    def mouseMoved(self, view:PatchView, evt:QMouseEvent):
+    def mouseMoved(self, view: PatchView, evt: QMouseEvent):
         pin = view.pinAt(evt.pos())
         srcPlug = view.scene().dragConnectionSource()
         pt = view.mapToScene(evt.pos())
