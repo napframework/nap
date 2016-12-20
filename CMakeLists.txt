@@ -19,7 +19,9 @@ if (WIN32)
     endif()
 elseif(UNIX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-elseif(APPLE)
+endif()
+
+if(APPLE)
     set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9)
 endif()
 
