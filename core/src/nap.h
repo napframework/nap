@@ -1,5 +1,6 @@
 #pragma once
 
+#include <nap/rttinap.h>
 #include <nap/core.h>
 #include <nap/coreattributes.h>
 #include <nap/resourcelinkattribute.h>
