@@ -370,18 +370,14 @@ namespace nap
 	{
         Document doc;         // Document is GenericDocument<UTF8<> >
 
-        auto stream = &istream;
-        IStreamWrapper* bis = new IStreamWrapper(istream);
-        auto eis = new AutoUTFInputStream<unsigned, IStreamWrapper>(*bis);  // wraps bis into eis
-        doc.ParseStream<0, AutoUTF<unsigned> >(*eis); // This parses any UTF file into UTF-8 in memory
+        IStreamWrapper bis(istream);
+//        auto eis = new AutoUTFInputStream<unsigned, IStreamWrapper>(*bis);  // wraps bis into eis
+        doc.ParseStream(bis); // This parses any UTF file into UTF-8 in memory
         // 		doc.ParseStream(is);
 		if (doc.HasParseError()) {
 			Logger::warn("JSON parse error: %s (%u)", GetParseError_En(doc.GetParseError()), doc.GetErrorOffset());
 			return nullptr;
 		}
-
-        delete bis;
-        delete eis;
 
 		return jsonToObject(doc, core, parent);
 	}
