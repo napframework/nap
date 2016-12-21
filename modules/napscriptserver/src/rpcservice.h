@@ -74,6 +74,8 @@ namespace nap
 		virtual void handlePlugConnected(InputPlugBase& plug) = 0;
 		virtual void handlePlugDisconnected(InputPlugBase& plug) = 0;
 
+        const std::string& getSessionID() const { return mSessionID; }
+
 	protected:
 		AsyncTCPServer& getServer() { return mServer; }
 
@@ -106,6 +108,7 @@ namespace nap
 	private:
 		std::vector<std::unique_ptr<RPCObjectCallback>> mCallbacks;
 		AsyncTCPServer mServer;
+        std::string mSessionID;
 	};
 }
 RTTI_DECLARE_BASE(nap::RpcService)
