@@ -53,7 +53,7 @@ namespace nap
 		disp.AddMethod("exportObject", &JsonRpcService::rpc_exportObject, *this);
 		disp.AddMethod("importObject", &JsonRpcService::rpc_importObject, *this);
 		disp.AddMethod("removeObject", &JsonRpcService::rpc_removeObject, *this);
-
+        disp.AddMethod("loadFile", &JsonRpcService::rpc_loadFile, *this);
 		//		disp.AddMethod("getModules", &JsonRpcService::rpc_getModules, *this);
 		//		disp.AddMethod("getDataTypes", &JsonRpcService::rpc_getDataTypes, *this);
 		//		disp.AddMethod("getRoot", &JsonRpcService::rpc_getRoot, *this);
@@ -460,11 +460,22 @@ namespace nap
 		if (!parentObj)
 			return;
 		JSONSerializer ser;
-		std::ifstream is(filename);
-		ser.readObject(is, getCore(), parentObj);
+		ser.load(filename, getCore(), parentObj);
 	}
 
-	void JsonRpcService::rpc_removeObject(ObjPtr ptr)
+    void JsonRpcService::rpc_loadFile(const std::string& filename) {
+        if (!fileExists(filename)) {
+            Logger::fatal("File does not exist: %s", filename.c_str());
+            return;
+        }
+
+        std::string fname = filename;
+        JSONSerializer ser;
+        ser.load(filename, getCore());
+    }
+
+
+    void JsonRpcService::rpc_removeObject(ObjPtr ptr)
 	{
 		Object* obj = fromPtr<Object>(ptr);
 		Logger::info("Removing object: %s", obj->getName().c_str());

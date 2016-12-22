@@ -1,5 +1,6 @@
 // Local Includes
 #include "core.h"
+#include "coreutils.h"
 
 // External Includes
 #include <algorithm>
@@ -30,6 +31,7 @@ namespace nap
 	**/
 	Core::Core()
 	{
+        setThreadName("NAPCoreThread");
 		// the root entity has no parent: nullptr
 		mRoot = std::unique_ptr<Entity>(new Entity(*this));
 		mRoot->mName = "root";
@@ -114,6 +116,7 @@ namespace nap
 
 	/**
 	@brief Register a type associated with a service
+	 TODO: Move registration into actual service
 	**/
 	void Core::registerType(const Service& inService, RTTI::TypeInfo inTypeInfo)
 	{
