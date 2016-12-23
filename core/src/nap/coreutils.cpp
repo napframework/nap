@@ -1,9 +1,12 @@
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 #include "coreutils.h"
 namespace nap {
 
 #ifdef _WIN32
-#include <windows.h>
     const DWORD MS_VC_EXCEPTION=0x406D1388;
 
 #pragma pack(push,8)
