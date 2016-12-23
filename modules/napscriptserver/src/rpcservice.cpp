@@ -103,11 +103,6 @@ namespace nap
 	void RpcService::stopServer()
 	{
 		assert(false);
-		//		mJsonServer->clientConnected.disconnect(onClientConnectedSlot);
-		//		mJsonServer->clientDisconnected.disconnect(onClientDisconnectedSlot);
-		//		mJsonServer->requestReceived.disconnect(onRequestReceivedSlot);
-		//
-		//		mJsonServer = nullptr;
 	}
 
 
