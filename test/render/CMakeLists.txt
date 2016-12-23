@@ -21,7 +21,7 @@ add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS})
 target_link_libraries(${PROJECT_NAME} napcore mod_naprender nrender)
 
 
-if (MSVC)
+if (WIN32)
     # Copy over some crap window dlls
     set(FILES_TO_COPY
             ${ASSIMP_DIR}/bin64/assimp.dll
@@ -30,8 +30,8 @@ if (MSVC)
             ../../../thirdparty/glew/msvc/bin/Release/x64/glew32.dll
             )
     # copy nrender (hack)
-    file(COPY ${FILES_TO_COPY} DESTINATION ${BIN_DIR}/Debug)
-    file(COPY ${FILES_TO_COPY} DESTINATION ${BIN_DIR}/Release)
+
+    copy_files_to_bin(${PROJECT_NAME} ${FILES_TO_COPY})
 endif()
 
 # create post build event
