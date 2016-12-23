@@ -197,17 +197,17 @@ namespace nap
 
 	void ModuleManager::registerRTTIModules()
 	{
-		for (RTTI::TypeInfo& typeInfo : RTTI::TypeInfo::getRawTypes()) {
-
-			if (!typeInfo.isKindOf<nap::Module>())
-				continue;
-			if (!typeInfo.canCreateInstance())
-				continue;
-
-			nap::Module* module = (nap::Module*)typeInfo.createInstance();
-			assert(module);
-			registerModule(*module);
-		}
+// 		for (RTTI::TypeInfo& typeInfo : RTTI::TypeInfo::getRawTypes()) {
+// 
+// 			if (!typeInfo.isKindOf<nap::Module>())
+// 				continue;
+// 			if (!typeInfo.canCreateInstance())
+// 				continue;
+// 
+// 			nap::Module* module = (nap::Module*)typeInfo.createInstance();
+// 			assert(module);
+// 			registerModule(*module);
+// 		}
 	}
 
 	Module* ModuleManager::getModule(const std::string& name) const
