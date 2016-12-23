@@ -71,12 +71,12 @@ function(copy_dir_to_bin PROJECT DIR)
         add_custom_command(TARGET ${PROJECT_NAME}
                 POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy_directory "${DIR}" "$(OutDir)/${DIRNAME}"
-                COMMENT "Copy ${F} -> $(OutDir)/${DIRNAME}")
+                COMMENT "Copy ${DIR} -> $(OutDir)/${DIRNAME}")
     else()
         add_custom_command(TARGET ${PROJECT_NAME}
                 POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy "${F}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${DIRNAME}"
-                COMMENT "Copy ${F} -> ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${DIRNAME}")
+                COMMAND ${CMAKE_COMMAND} -E copy "${DIR}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${DIRNAME}"
+                COMMENT "Copy ${DIR} -> ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${DIRNAME}")
     endif()
 endfunction()
 
