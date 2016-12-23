@@ -98,9 +98,9 @@ namespace nap
 	OutputPlugBase::~OutputPlugBase()
 	{
         Logger::info("OutputPlugBase destruct");
-        auto connections = getConnections();
-        for (auto connection : connections)
-            connection->disconnect();
+//        auto connections = getConnections();
+//        for (auto connection : connections)
+//            connection->disconnect();
 	}
 
     
