@@ -123,7 +123,7 @@ namespace nap
     {
         auto connections = getConnections();
         for (auto connection : connections)
-        connection->disconnect();
+            connection->disconnect();
     }
 
 

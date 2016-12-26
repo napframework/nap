@@ -12,9 +12,5 @@ target_link_libraries(${PROJECT_NAME} napcore mod_napjsonserializer)
 
 set(RESOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/resources)
 
+copy_dir_to_bin(${PROJECT_NAME} ${CMAKE_CURRENT_LIST_DIR}/resources)
 
-
-add_custom_command(TARGET ${PROJECT_NAME}
-        POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_LIST_DIR}/resources" "${BIN_DIR}/resources"
-        COMMENT "Copy Data")

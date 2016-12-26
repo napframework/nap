@@ -64,6 +64,39 @@ else()
     set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
 endif()
 
+function(copy_dir_to_bin PROJECT DIR)
+    get_filename_component(DIRNAME ${DIR} NAME)
+    if (MSVC)
+
+        add_custom_command(TARGET ${PROJECT_NAME}
+                POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_directory "${DIR}" "$(OutDir)/${DIRNAME}"
+                COMMENT "Copy ${DIR} -> $(OutDir)/${DIRNAME}")
+    else()
+        add_custom_command(TARGET ${PROJECT_NAME}
+                POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy "${DIR}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${DIRNAME}"
+                COMMENT "Copy ${DIR} -> ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${DIRNAME}")
+    endif()
+endfunction()
+
+function(copy_files_to_bin PROJECT)
+    foreach(F ${ARGN})
+        if (MSVC)
+            add_custom_command(TARGET ${PROJECT_NAME}
+                    POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy "${F}" "$(OutDir)"
+                    COMMENT "Copy ${F} -> $(OutDir)")
+        else()
+            add_custom_command(TARGET ${PROJECT_NAME}
+                    POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy "${F}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
+                    COMMENT "Copy ${F} -> ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+        endif()
+    endforeach()
+endfunction()
+
+
 if(WIN32)
     if(MINGW)
         # Copy required MinGW dll's to bin dir
@@ -102,5 +135,6 @@ add_subdirectory(modules/napgui)
 
 #add_dependencies(napkin mod_napfsm)
 add_dependencies(scriptserver mod_napscriptserver)
-add_dependencies(CoreApp mod_naprender)
+add_dependencies(CoreApp mod_naprender mod_napscriptserver)
 add_dependencies(rendertest mod_naprender)
+add_dependencies(unittest mod_naprender mod_napscriptserver)

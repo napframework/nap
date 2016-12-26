@@ -368,18 +368,20 @@ namespace nap
     
 	Object* JSONSerializer::readObject(std::istream& istream, Core& core, Object* parent) const
 	{
-        Document doc;         // Document is GenericDocument<UTF8<> >
+        Document doc;
 
-        IStreamWrapper bis(istream);
-//        auto eis = new AutoUTFInputStream<unsigned, IStreamWrapper>(*bis);  // wraps bis into eis
-        doc.ParseStream(bis); // This parses any UTF file into UTF-8 in memory
-        // 		doc.ParseStream(is);
+        std::string str((std::istreambuf_iterator<char>(istream)),
+                        std::istreambuf_iterator<char>());
+
+
+        doc.Parse(str.c_str());
 		if (doc.HasParseError()) {
 			Logger::warn("JSON parse error: %s (%u)", GetParseError_En(doc.GetParseError()), doc.GetErrorOffset());
 			return nullptr;
 		}
 
-		return jsonToObject(doc, core, parent);
+        Object* o = jsonToObject(doc, core, parent);
+        return o;
 	}
 
 
