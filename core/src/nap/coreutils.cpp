@@ -1,9 +1,12 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#else
+#include <pthread.h>
 #endif
 
 #include "coreutils.h"
+
 namespace nap {
 
 #ifdef _WIN32
@@ -49,7 +52,16 @@ namespace nap {
         DWORD threadId = ::GetThreadId( static_cast<HANDLE>( thread->native_handle() ) );
         setThreadName(threadId,threadName);
     }
+    
+#elif __APPLE__
 
+    void setThreadName(std::thread* thread, const char* threadName) {
+    }
+    
+    void setThreadName(const char* threadName) {
+    }
+    
+    
 #else
     void setThreadName(std::thread* thread, const char* threadName) {
         auto handle = thread->native_handle();
