@@ -316,6 +316,10 @@ class Core(QObject):
         assert isinstance(dstPlug, InputPlugBase)
         self.__rpc.connectPlugs(srcPlug.ptr(), dstPlug.ptr())
 
+    def disconnectPlug(self, dstPlug):
+        assert isinstance(dstPlug, InputPlugBase)
+        self.__rpc.disconnectPlug(dstPlug.ptr())
+
     def setName(self, obj, name):
         self.__rpc.setName(obj.ptr(), name)
 
@@ -600,6 +604,9 @@ class InputPlugBase(Plug):
 
     def connectTo(self, outPlug):
         self.core().connectPlugs(outPlug, self)
+
+    def disconnect(self):
+        self.core().disconnectPlug(self)
 
 
 class OutputPlugBase(Plug):

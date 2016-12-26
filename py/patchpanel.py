@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import *
 
 import iconstore
 import nap
-from appcontext import AppContext
+from appcontext import AppContext, DisconnectPlugsAction, RemoveObjectsAction
 
 COL_NODE_CONNECTION = QColor(0x70, 0x70, 0x70)
 COL_NODE_TITLE = QColor(0xD0, 0xD0, 0xD0)
@@ -772,6 +772,24 @@ class PatchView(QGraphicsView):
                                        'Add Operator...')
             self.ctx.createObjectActions(patch, self.ctx.core().operatorTypes(),
                                          addCompMenu)
+        else:
+            wires = list(_filter(clickedItems, WireItem))
+            if len(wires) > 0:
+                plugs = []
+                for wire in wires:
+                    plugs.append(wire.dstPin.plugItem().plug())
+                a = DisconnectPlugsAction(self.ctx, plugs)
+                a.setParent(menu)
+                menu.addAction(a)
+
+            operatorItems = list(_filter(clickedItems, OperatorItem))
+            if len(operatorItems) > 0:
+                operators = []
+                for item in operatorItems:
+                    operators.append(item.operator())
+                a = RemoveObjectsAction(self.ctx, operators)
+                a.setParent(menu)
+                menu.addAction(a)
 
         menu.exec_(QCursor.pos())
 
