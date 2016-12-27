@@ -130,7 +130,7 @@ namespace nap
     }
 
 
-	void OFSlideshowComponent::leftImageIndexChanged(const int& index)
+	void OFSlideshowComponent::leftImageIndexChanged(size_t index)
 	{
 		if (index < 0 || index >= mImages.size())
 		{
@@ -147,7 +147,7 @@ namespace nap
 	}
 
 
-	void OFSlideshowComponent::rightImageIndexChanged(const int& index)
+	void OFSlideshowComponent::rightImageIndexChanged(size_t index)
 	{
 		if (index < 0 || index >= mImages.size())
 		{

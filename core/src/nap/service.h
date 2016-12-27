@@ -58,6 +58,9 @@ namespace nap
 		// De-register an added object
 		virtual void removeObject(Object& object);
 
+		// Invoked when the service has been constructed and Core is available.
+		virtual void initialized() {}
+
 	protected:
 		// This method is being called when the service is started by the core.
 		virtual void onStart(){};
@@ -70,6 +73,11 @@ namespace nap
 
 		// Stops the service
 		void stop();
+
+		// Registers all available types of interest to the service with core
+		// Override if you want to have types auto register / deregister
+		// with your service
+		virtual void registerTypes(nap::Core& core) {}
 
 		// Created components
 		using ObjectList = std::vector<Object*>;
@@ -140,6 +148,7 @@ namespace nap
 friend class nap::Core;            \
 	\
 protected:                    \
+	[[deprecated]] \
 	static void sRegisterTypes(nap::Core& inCore, const nap::Service& inService);
 
 //////////////////////////////////////////////////////////////////////////

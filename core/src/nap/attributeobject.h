@@ -5,6 +5,7 @@
 #include "arrayattribute.h"
 #include "object.h"
 #include "signalslot.h"
+#include "logger.h"
 
 // External Includes
 #include <assert.h>
@@ -71,10 +72,26 @@ namespace nap
 		template <typename T>
 		Attribute<T>* getOrCreateAttribute(const std::string& name);
 
-		// Check if this AttributeObject owns an attribute
+		/**
+		 * Retrieve an attribute with the specified name and type, if it doesn't exist, create one and return that.
+		 * @param name The name of the attribute to be found or given to the newly created one
+		 * @param valueType The value type of the attribute to be found or created
+		 * @return The retrieved or created attribute, nullptr if the provided type was different from the existing attribute.
+		 */
+		AttributeBase* getOrCreateAttribute(const std::string& name, const RTTI::TypeInfo& valueType);
+
+		/**
+		 * Check if this object has an attribute with the provided name
+		 * @param name The name of the attribute to look for
+		 * @return True if an attribute with the provided name exists, false otherwise
+		 */
 		bool hasAttribute(const std::string& name) const;
 
-		// Find and return an attribute by its unique name. Returns nullptr when not found.
+		/**
+		 * Retrieve an attribute with the specified name
+		 * @param name The name of the attribute to get
+		 * @return The attribute with the specified name or nullptr when no such attribute has been found
+		 */
         AttributeBase* getAttribute(const std::string& name) { return getChild<AttributeBase>(name); }
 
 		// Retrieve attribute by type and name

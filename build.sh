@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
-rm -R build
+cd nap
+cmake -H. -Bbuild -DCMAKE_BUILD_TYPE=Debug
+cd ..
 
-cmake -H. -Bbuild -DCMAKE_PREFIX_PATH="~/Qt/5.7/gcc_64"

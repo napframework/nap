@@ -2,9 +2,10 @@
 #include "../diff_match_patch.h"
 #include "../testmanager.h"
 
-#include <jsonserializer.h>
 #include <nap.h>
 #include <nap/coreoperators.h>
+#include <nap/resourcemanager.h>
+#include <jsonserializer.h>
 
 using namespace nap;
 
@@ -97,7 +98,11 @@ std::shared_ptr<Core> createObjectTree()
 	opMult.mFactorA.connect(opAdd.sum);
     opMult.mFactorB.connect(opFactorB.output);
     opResult.input.connect(opMult.product);
-    
+
+    opMult.mFactorA.disconnect();
+    opResult.input.disconnect();
+    opResult.input.connect(opAdd.sum);
+
 	return core;
 }
 
@@ -134,15 +139,18 @@ std::string diffString(const std::string& str1, const std::string& str2)
 
 bool testSerializer(const Serializer& ser)
 {
-	// Create object tree and serialize
-	auto srcCore = createObjectTree();
-    auto resultOp = getFloatOperator(srcCore->getRoot(), "Result");
-    TEST_ASSERT(resultOp, "Result operator not found in original object tree");
-    float result = 0;
-    resultOp->output.pull(result);
-    TEST_ASSERT(result == 9, "Patch did not return proper value: 9");
-    
-	std::string xmlString1 = ser.toString(srcCore->getRoot(), false);
+    std::string xmlString1;
+    {
+        // Create object tree and serialize
+        auto srcCore = createObjectTree();
+        auto resultOp = getFloatOperator(srcCore->getRoot(), "Result");
+        TEST_ASSERT(resultOp, "Result operator not found in original object tree");
+        float result = 0;
+        resultOp->output.pull(result);
+        TEST_ASSERT(result == 3, "Patch did not return proper value: 9");
+        
+        xmlString1 = ser.toString(srcCore->getRoot(), false);
+    }
 
 	// Deserialize
 	Core dstCore;
@@ -153,11 +161,13 @@ bool testSerializer(const Serializer& ser)
 
 	TEST_ASSERT(xmlString1 == xmlString2,
 				"Second serialization gave different result:\n" + diffString(xmlString1, xmlString2));
-    resultOp = getFloatOperator(dstCore.getRoot(), "Result");
+    auto resultOp = getFloatOperator(dstCore.getRoot(), "Result");
     TEST_ASSERT(resultOp, "Result operator not found in original object tree");
     float desResult = 0;
     resultOp->output.pull(desResult);
-    TEST_ASSERT(desResult == 9, "Deserialized patch did not return proper value: 9");
+    TEST_ASSERT(desResult == 3, "Deserialized patch did not return proper value: 9");
+    
+    
 
 	return true;
 }
@@ -217,25 +227,21 @@ bool testFileUtils()
 
 
 bool testResourceManager() {
+	RTTI::TypeInfo::get<nap::JSONFileLoader>();
     Core core;
-    auto& resourceMan = core.getOrCreateService<ResourceManagerService>();
-    resourceMan.setAssetRoot("resources");
+    auto resourceMan = core.getOrCreateService<ResourceManagerService>();
 
     std::string resource = "test.napj";
 
-    ResourceLoader* factory = resourceMan.getFactoryFor(resource);
+    ResourceLoader* factory = resourceMan->getLoaderFor(resource);
     TEST_ASSERT(factory != nullptr, "Unable to find factory for: " + resource);
 
-    TEST_ASSERT(resourceMan.canLoad(resource), "Cannot load resource: " + resource);
+    TEST_ASSERT(resourceMan->canLoad(resource), "Cannot load resource: " + resource);
 
-    auto res = resourceMan.getResource<JSONResource>(resource);
+    auto res = resourceMan->getResource(resource);
     TEST_ASSERT(res, "Resource failed to load: " + resource);
 
-    Object* obj = res->createInstance(core, core.getRoot());
-    TEST_ASSERT(obj, "Couldn't create instance of resource: " + resource);
-
-    TEST_ASSERT(obj->getTypeInfo().isKindOf<Entity>(), "Instantiated resource should have been an Entity");
-    TEST_ASSERT(obj->getName() == "MyEntity", "Instantiated resource should have been named MyEntity");
+    TEST_ASSERT(res->getResourcePath() == resource, "Resulting resource path differs from original path");
 
     return true;
 }

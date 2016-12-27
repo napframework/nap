@@ -77,7 +77,7 @@ namespace nap
 		 * Create a threaded server that will immediately start listening on the specified port
 		 * @param port The port to listen on.
 		 */
-		AsyncTCPServer(int port);
+		AsyncTCPServer();
 
 		// Triggered when a client has connected
 		Signal<AsyncTCPClient&> clientConnected;
@@ -97,6 +97,9 @@ namespace nap
 		// Break the server loop and attempt to exit cleanly
 		void exit() { mRunning = false; }
 
+		// Will be run on separate thread
+		void runServer(int port);
+
 	private:
 		// Check each client's last heartbeat and discard when timed out
 		void validateClients();
@@ -104,13 +107,14 @@ namespace nap
 		// Retrieve client with specified identity and update heartbeat
 		AsyncTCPClient* getOrAddClient(const std::string& ident);
 
-		// Will be run on separate thread
-		void runServer();
 
 		// Send a multipart message to the client with specified identity
 		void sendMultipart(zmq::socket_t& sock, const std::string& ident, const std::string& data);
 
 	private:
+
+		void runServerLoop();
+
 		time_t mClientTimeout = 3;
 		bool mRunning = true;
 		int mPort;

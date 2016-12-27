@@ -1,4 +1,4 @@
-#include <nap/coreattributes.h>
+#include "coreattributes.h"
 
 namespace nap
 {

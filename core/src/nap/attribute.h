@@ -39,17 +39,17 @@ namespace nap
 		AttributeBase(AttributeBase&) = default;
 		AttributeBase& operator=(const AttributeBase&) = default;
 
-        // Virtual destructor because of virtual methods!
-        virtual ~AttributeBase() = default;
-        
+		// Virtual destructor because of virtual methods!
+		virtual ~AttributeBase() = default;
+
 		/**
-		 * Copies the value of this attribute in to @attribute
+		 * Copies the value of this attribute into @attribute
 		 @param attribute the attribute to populate
 		 */
 		virtual void getValue(AttributeBase& attribute) const = 0;
 
 		/**
-		 * Copies the value of @attribute in to this attribute
+		 * Copies the value of @attribute into this attribute
 		 @param attribute container to copy the value from
 		 */
 		virtual void setValue(const AttributeBase& attribute) = 0;
@@ -63,27 +63,31 @@ namespace nap
 		 * TODO: REMOVE LINK FROM ATTRIBUTE
 		 * DEPRECATED -> use ObjectLinkAttribute
 		 */
-        void link(AttributeBase& source);
-        void linkPath(const std::string& path);
-        void unLink();
-        bool isLinked();
+		void link(AttributeBase& source);
+		void linkPath(const std::string& path);
+		void unLink();
+
+		/**
+		 * @return if the attribute is currently linked
+		 */
+		virtual bool isLinked() const;
 
 		/**
 		 * @return the path to the object this attribute links to
 		 */
-        const ObjectPath& getLinkSource() const								{ return getLink().getPath(); }
+		const ObjectPath& getLinkSource() const { return getLink().getPath(); }
 
 		/**
 		 * Converts and sets the value from @strinValue
 		 @param stringValue the value to convert
 		 */
-        void fromString(const std::string& stringValue);
+		void fromString(const std::string& stringValue);
 
 		/**
 		 * Converts the value associated with the attribute in to a string
 		 @param outStringValue string that will hold the value after conversion
 		 */
-        void toString(std::string& outStringValue) const;
+		void toString(std::string& outStringValue) const;
 
 		/**
 		 * Converts and sets the value from @value
@@ -91,7 +95,7 @@ namespace nap
 		void setValue(const std::string& value);
 
 		/**
-		 * @return the type associated with the value managed by this attribute
+		 * @return the type of the value this attribute holds
 		 */
 		virtual const RTTI::TypeInfo getValueType() const = 0;
 
@@ -105,24 +109,25 @@ namespace nap
 		 * sets the attribute to internally lock a mutex when accessing it's value
 		 * @param atomic if the attribute will be locked or not on access
 		 */
-		void setAtomic(bool atomic)											{ mAtomic = atomic; }
-		
+		void setAtomic(bool atomic) { mAtomic = atomic; }
+
 		/**
 		 * @return if the attribute lock is enabled
 		 */
-		bool isAtomic() const												{ return mAtomic; }
+		bool isAtomic() const { return mAtomic; }
 
 		/**
-		 * Connect to this slot to listen to attribute changes
+		 * Emits when the value of this attribute changes
 		 */
 		Signal<AttributeBase&> valueChanged;
 
 	protected:
-        virtual Link&		getLink() const = 0;
+		virtual Link&		getLink() const = 0;
 
-        // Emitted in derived (templated) classes (?)
+		// Emitted in derived (templated) classes (?)
 		// TODO: DEPRICATE THIS PLEASE, IT'S RATHER UNREADABLE
 		// AND CREATES CONFUSION ON DERIVED CLASSES
+		[[deprecated]]
 		virtual void		emitValueChanged() = 0;
 
 		// Indicates wether the attribute should internally lock o mutex for thread safety when accessing it's value
@@ -151,13 +156,13 @@ namespace nap
 		Attribute(AttributeObject* parent, const std::string& name, const T& inValue, bool atomic = false)
 			: AttributeBase(parent, name, atomic), mValue(inValue)
 		{
-			setValueSlot.setFunction({[this](const T& value) { this->setValue(value); }});
+			setValueSlot.setFunction({ [this](const T& value) { this->setValue(value); } });
 		}
 
 		// Constructor without default value
 		Attribute(AttributeObject* parent, const std::string& name) : AttributeBase(parent, name, false)
 		{
-			setValueSlot.setFunction({[this](const T& value) { this->setValue(value); }});
+			setValueSlot.setFunction({ [this](const T& value) { this->setValue(value); } });
 		}
 
 		// Constructor to declare an attribute with a member function pointer for the @valueChangedSignal as last argument.
@@ -165,27 +170,27 @@ namespace nap
 		Attribute(U* parent, const std::string& name, const T& inValue, F function, bool atomic = false)
 			: AttributeBase(parent, name, atomic), mValue(inValue)
 		{
-			setValueSlot.setFunction({[this](const T& value) { this->setValue(value); }});
+			setValueSlot.setFunction({ [this](const T& value) { this->setValue(value); } });
 			valueChangedSignal.connect(parent, function);
 		}
 
 		virtual const RTTI::TypeInfo getValueType() const override;
 
 		// Getters
-		virtual void		getValue(AttributeBase& inAttribute) const override;
-		const T&			getValue() const;
-		T&					getValueRef();
+		virtual void getValue(AttributeBase& inAttribute) const override;
+		const T& getValue() const;
+		T& getValueRef();
 
 		// Setters
-		virtual void		setValue(const AttributeBase &inAttribute) override;
-		virtual void		setValue(const T& inValue);
+		virtual void setValue(const AttributeBase &inAttribute) override;
+		virtual void setValue(const T& inValue);
 
 		// Connect to
-		virtual void		connectToValue(Slot<const T&>& inSlot);
-		virtual void		disconnectFromValue(Slot<const T&>& inSlot);
+		virtual void connectToValue(Slot<const T&>& inSlot);
+		virtual void disconnectFromValue(Slot<const T&>& inSlot);
 
 		// Inherited from BaseAttribute, so that BaseAttribute can trigger the valueChanged() signal to be emitted
-		void				emitValueChanged() override final { valueChangedSignal(mValue); }
+		void emitValueChanged() override final { valueChangedSignal(mValue); }
 
 		// Signal emited when the value changes
 		Signal<const T&>	valueChangedSignal;
@@ -198,13 +203,14 @@ namespace nap
 	protected:
 		// Members
 		T				mValue;
-		Link&			getLink() const override { return mLink; }
+		Link& getLink() const override { return mLink; }
 
 	private:
-        // Keep constructor hidden, use factory methods to instantiate
+		// Keep constructor hidden, use factory methods to instantiate
 		Attribute(const T& inValue) : mValue(inValue) {}
 
-        mutable TypedLink<Attribute<T>> mLink = { *this };
+		// Link of type T
+		mutable TypedLink<Attribute<T>> mLink = { *this };
 	};
 
 
@@ -217,7 +223,7 @@ namespace nap
 		RTTI_ENABLE_DERIVED_FROM(Attribute<T>)
 	public:
 		// Default constructor
-		NumericAttribute() : Attribute<T>()	{ }
+		NumericAttribute() : Attribute<T>() { }
 
 		// Constructor with defult value and min max
 		NumericAttribute(AttributeObject* parent, const std::string& name, const T& value, const T& minValue, const T& maxValue, bool atomic = false, bool clamped = true);
@@ -236,21 +242,21 @@ namespace nap
 		}
 
 		// Setters
-		void			setValue(const T& value) override;
-		void			setRange(const T& min, const T& max);
-		void			setClamped(bool value);
+		void setValue(const T& value) override;
+		void setRange(const T& min, const T& max);
+		void setClamped(bool value);
 
 		// Getters
-		bool			isClamped()	const	{ return mClamped;  }
-		T				getMin() const		{ return mMinValue; }
-		T				getMax() const		{ return mMaxValue; }
-		void			getRange(T& outMin, T& outMax) const;
+		bool isClamped()	const { return mClamped; }
+		T getMin() const { return mMinValue; }
+		T getMax() const { return mMaxValue; }
+		void getRange(T& outMin, T& outMax) const;
 
-        // Signals
-        Signal<const NumericAttribute<T>&> rangeChanged;
-        
+		// Signals
+		Signal<const NumericAttribute<T>&> rangeChanged;
+
 		// Clamp function
-		T				clampValue(const T& value, const T& min, const T& max);
+		T clampValue(const T& value, const T& min, const T& max);
 
 	private:
 		// Range
@@ -273,19 +279,25 @@ namespace nap
 		SignalAttribute() = default;
 		SignalAttribute(AttributeObject* parent, const std::string& name) : AttributeBase(parent, name) { }
 
-		// Signal that can be trigerred externally
+		/**
+		 * signal emitted on trigger
+		 */
 		nap::Signal<const nap::SignalAttribute&> signal;
 
-		void							trigger()		{ signal.trigger(*this); }
+		/**
+		 * triggers the signal to be emitted, convenience method
+		 * similar to signal.trigger
+		 */
+		void trigger() { signal.trigger(*this); }
 
 	protected:
-		virtual Link&					getLink() const override { return mlink; }
-		virtual void					emitValueChanged() override { signal.trigger(*this); }
+		virtual Link& getLink() const override { return mlink; }
+		virtual void emitValueChanged() override { signal.trigger(*this); }
 
 	private:
-		virtual void					getValue(AttributeBase& attribute) const override {}
-		virtual void					setValue(const AttributeBase& attribute) override {}
-		virtual const RTTI::TypeInfo	getValueType() const override { return getTypeInfo(); }
+		virtual void getValue(AttributeBase& attribute) const override {}
+		virtual void setValue(const AttributeBase& attribute) override {}
+		virtual const RTTI::TypeInfo getValueType() const override { return getTypeInfo(); }
 
 		mutable nap::Link				mlink;
 	};
@@ -301,7 +313,7 @@ namespace nap
 		RTTI_ENABLE_DERIVED_FROM(AttributeBase)
 	public:
 		// Default constructor
-		ObjectLinkAttribute() = default;
+		ObjectLinkAttribute();
 		ObjectLinkAttribute(AttributeObject* parent, const std::string& name, const RTTI::TypeInfo& type);
 
 		// Conversion
@@ -311,29 +323,35 @@ namespace nap
 		/**
 		 * @return the link's target, nullptr if not linked
 		 */
-		Object* getTarget()									{ return mLink.getTarget(); }
+		Object* getTarget() { return mLink.getTarget(); }
+
+		/**
+		 * @return the link's target as type T, nullptr if not linked or type is invalid
+		 */
+		template <typename T>
+		T* getTarget();
 
 		/**
 		 * @return the link's target object path, empty string if not valid
 		 */
-		const ObjectPath& getPath()	const					{ return mLink.getPath(); }
+		const ObjectPath& getPath()	const { return mLink.getPath(); }
 
 		/**
 		 * sets the link's target, emits valueChanged when set
 		 * @param target object that is the links new target
 		 */
 		void setTarget(Object& target);
-		
+
 		/**
 		 * sets the link's target by resolving the target path
 		 * @param targetPath path to target
 		 */
 		void setTarget(const std::string& targetPath);
-		
+
 		/**
 		 * clears the link
 		 */
-		void clear()										{ mLink.clear(); }
+		void clear() { mLink.clear(); }
 
 		/**
 		 * returns type of attribute
@@ -344,19 +362,23 @@ namespace nap
 		/**
 		* @return link associated with this attribute (TODO: DEPRECATE)
 		*/
-		virtual Link& getLink() const override				{ return mLink; }
+		virtual Link& getLink() const override { return mLink; }
 
 		/**
 		 * TODO: DEPRECATE
 		 */
-		virtual void										emitValueChanged() override		{  }
+		virtual void emitValueChanged() override {  }
 
 	private:
 		// Link to object
 		mutable Link mLink;
+
+		void onLinkTargetChanged(const Link& link);
+		Slot<const Link&> onLinkTargetChangedSlot = { this, &ObjectLinkAttribute::onLinkTargetChanged };
 	};
 }
 
+// Include template specialization
 #include "attribute.hpp"
 
 //////////////////////////////////////////////////////////////////////////

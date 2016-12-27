@@ -1,11 +1,25 @@
 import json
 
+import math
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
 import nap
 
+_GOLDEN_RATIO_CONJUGATE = 0.618033988749895
+
+def randomColor(h):
+    """
+    Generate a 'nice' contrasting color based on an integer
+    @type seed: int
+    """
+    saturation = 0.8
+    value = 0.55
+    hh = math.fmod(_GOLDEN_RATIO_CONJUGATE * h, 1)
+    col = QColor()
+    col.setHslF(hh, saturation, value)
+    return col
 
 def expandChildren(view, index, expanded=True):
     if not index.isValid():

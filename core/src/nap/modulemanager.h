@@ -21,7 +21,7 @@ namespace nap
 		ModuleManager();
 
 
-		void loadModules(const std::string directory = "modules");
+		void loadModules(const std::string directory = ".");
 		bool hasModule(const Module& module);
 
 		const TypeConverterBase* getTypeConverter(RTTI::TypeInfo fromType,

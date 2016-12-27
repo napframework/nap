@@ -23,12 +23,27 @@
 #include <GL/glew.h>
 #include <glm/matrix.hpp>
 
+// Mod nap render includes
+#include <material.h>
+#include <modelresource.h>
+#include <modelmeshcomponent.h>
+#include <renderservice.h>
+
+// Nap includes
+#include <nap/core.h>
+#include <nap/resourcemanager.h>
+
+// STD includes
 #include <ctime>
 
+//////////////////////////////////////////////////////////////////////////
+// Globals
+//////////////////////////////////////////////////////////////////////////
+
 // Window Name
-std::string		programName = "Model Loading Test";
-std::string		vertShaderName = "shaders/shader.vert";
-std::string		fragShaderName = "shaders/shader.frag";
+std::string		programName		= "Model Loading Test";
+std::string		vertShaderName	= "shaders/shader.vert";
+std::string		fragShaderName	= "shaders/shader.frag";
 
 static const std::string testTextureName = "data/test.jpg";
 static std::unique_ptr<opengl::Image> testTexture;
@@ -47,14 +62,18 @@ opengl::VertexContainer		trianglePositions;
 opengl::VertexContainer		triangleColors;
 opengl::VertexContainer		triangleUvs;
 
-// Camera
-opengl::Camera				camera;
+// Shader uniform bind locations
+int	projectionMatrixLocation(-1);
+int	viewMatrixLocation(-1);
+int	modelMatrixLocation(-1);
+int	noiseLocation(-1);
+int textureLocation(-1);
 
-// Vertex buffer that holds the loaded model
-//std::vector<std::unique_ptr<opengl::Mesh>>						meshes;
-std::unique_ptr<opengl::Model>	model;
+// Camera
+opengl::Camera camera;
 
 // vertex Shader indices
+nap::Entity* model = nullptr;
 int vertex_index(0), color_index(0), normal_index(0), uv_index(0);
 
 // Our SDL_Window ( just like with SDL2 wihout OpenGL)
@@ -66,25 +85,25 @@ SDL_GLContext				mainContext;
 // Current texture to draw
 unsigned int				currentIndex = 0;
 
-// Some utilities
-void runGame();
-void cleanup();
-void createSquare();		// Method for creating our squares Vertex Array Object
-void createTriangle();		// Method used for creating a triangle
-bool loadImages();			// Load bitmap from disk
-void updateViewport(int width, int height);
-bool loadModelFromFile(const std::string& file);
-
+// Window width / height on startup
 unsigned int windowWidth(512);
 unsigned int windowHeight(512);
 
-// Shader
-opengl::Shader *shader; // Our GLSL shader
-
-						// GLM
+// GLM
 glm::mat4 viewMatrix;			// Store the view matrix
 glm::mat4 modelMatrix;			// Store the model matrix
 
+// Some utilities
+void runGame(nap::Core& core);
+void cleanup();
+void createSquare();		
+void createTriangle();		
+bool loadImages();
+void updateViewport(int width, int height);
+
+/**
+ * Creates a low level opengl triangle object
+ */
 void createTriangle(void)
 {
 	int face_point_count = 3;
@@ -298,35 +317,6 @@ void createSquare(void)
 
 
 /**
-* loads a model from file using assimp
-*/
-bool loadModelFromFile(const std::string& file)
-{
-	model = std::move(std::unique_ptr<opengl::Model>(opengl::loadModel(file)));
-	if (model == nullptr)
-		return false;
-
-	// Set model
-	opengl::printMessage(opengl::MessageType::INFO, "number of loaded meshes in model: %d", model->getMeshCount());
-	const opengl::Mesh* mesh = model->getMesh(0);
-
-
-	// Get buffer indices for mesh
-	vertex_index = mesh->getVertexBufferIndex();
-	color_index = mesh->getColorBufferIndex(0);
-	normal_index = mesh->getNormalBufferIndex();
-	uv_index = mesh->getUvBufferIndex(0);
-
-	// Bind indices explicit to shader
-	shader->bindVertexAttribute(vertex_index, "in_Position");
-	shader->bindVertexAttribute(color_index, "in_Color");
-	shader->bindVertexAttribute(uv_index, "in_Uvs");
-
-	return true;
-}
-
-
-/**
 * Loads a bitmap from disk
 */
 bool loadImages()
@@ -360,8 +350,11 @@ void updateViewport(int width, int height)
 	camera.setAspectRatio((float)width, (float)height);
 }
 
-// Init render context + window
-bool init()
+
+/**
+ * Initialize opengl context and create windows etc.
+ */
+bool initOpenGL()
 {
 	// Initialize OpenGL
 	if (!opengl::initVideo())
@@ -376,8 +369,8 @@ bool init()
 
 	// Create Window
 	opengl::WindowSettings window_settings;
-	window_settings.width = 512;
-	window_settings.height = 512;
+	window_settings.width = windowWidth;
+	window_settings.height = windowHeight;
 	window_settings.borderless = false;
 	window_settings.resizable = true;
 	window_settings.title = programName;
@@ -402,13 +395,95 @@ bool init()
 	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &Buffers);
 	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &Samples);
 
+	return true;
+}
+
+
+/**
+ * Initialize all the resources and instances used for drawing
+ * slowly migrating all functionality to nap
+ */
+bool init(nap::Core& core)
+{
+	if (!initOpenGL())
+	{
+		nap::Logger::warn("unable to initialize opengl");
+		return false;
+	}
+
 	// Load bitmap
-	loadImages();
+	if (!loadImages())
+	{
+		nap::Logger::fatal("unable to load images");
+		return false;
+	}
 
-	// Create shader
-	shader = new opengl::Shader(vertShaderName.c_str(), fragShaderName.c_str()); // Create our shader by loading our vertex and fragment shader
+	//////////////////////////////////////////////////////////////////////////
 
-																				 // View matrix
+	// Create shader resource
+	nap::ResourceManagerService* service = core.getOrCreateService<nap::ResourceManagerService>();
+	service->setAssetRoot(".");
+	nap::Resource* shader_resource = service->getResource(fragShaderName);
+
+	// Load model resource
+	nap::Resource* model_resource = service->getResource("data/pig_head_alpha_rotated.fbx");
+	if (model_resource == nullptr)
+	{
+		nap::Logger::warn("unable to load pig head model resource");
+		return false;
+	}
+	nap::ModelResource* pig_model = static_cast<nap::ModelResource*>(model_resource);
+
+	// Create model entity
+	model = &(core.getRoot().addEntity("model"));
+	nap::ModelMeshComponent& mesh_component = model->addComponent<nap::ModelMeshComponent>("pig_head_mesh");
+	
+	//////////////////////////////////////////////////////////////////////////
+	
+	// Set shader resource on material
+	nap::Material* material = mesh_component.getMaterial();
+	assert(material != nullptr);
+	material->shaderResource.setResource(*shader_resource);
+
+	// Link model resource
+	mesh_component.modelResource.setResource(*pig_model);
+
+	//////////////////////////////////////////////////////////////////////////
+
+	// Extract mesh
+	const opengl::Mesh* mesh = pig_model->getMesh(0);
+	if (mesh == nullptr)
+	{
+		nap::Logger::warn("unable to extract model mesh at index 0");
+		return false;
+	}
+
+	// Get buffer indices for mesh (TODO: RESOLVE DYNAMICALLY)
+	vertex_index = mesh->getVertexBufferIndex();
+	color_index = mesh->getColorBufferIndex(0);
+	normal_index = mesh->getNormalBufferIndex();
+	uv_index = mesh->getUvBufferIndex(0);
+
+	// Bind indices explicit to shader (TODO: RESOLVE DYNAMICALLY)
+	// This tells what vertex buffer index belongs to what vertex shader input binding name
+	opengl::Shader& shader = material->getResource()->getShader();
+	shader.bindVertexAttribute(vertex_index, "in_Position");
+	shader.bindVertexAttribute(color_index, "in_Color");
+	shader.bindVertexAttribute(uv_index, "in_Uvs");
+
+	// Get uniform bindings for vertex shader
+	material->bind();
+	projectionMatrixLocation =	glGetUniformLocation(shader.getId(), "projectionMatrix");	// Get the location of our projection matrix in the shader
+	viewMatrixLocation =		glGetUniformLocation(shader.getId(), "viewMatrix");			// Get the location of our view matrix in the shader
+	modelMatrixLocation =		glGetUniformLocation(shader.getId(), "modelMatrix");		// Get the location of our model matrix in the shader
+	noiseLocation =				glGetUniformLocation(shader.getId(), "noiseValue");
+	textureLocation =			glGetUniformLocation(shader.getId(), "myTextureSampler");
+	
+	material->unbind();
+
+	//////////////////////////////////////////////////////////////////////////
+
+	// View matrix
 	viewMatrix = glm::lookAt
 	(
 		glm::vec3(0.0f, 0.0f, 4.0f),
@@ -418,12 +493,10 @@ bool init()
 
 	// Set camera
 	camera.setFieldOfView(45.0f);
-	camera.setAspectRatio((float)window_settings.width, (float)window_settings.height);
+	camera.setAspectRatio((float)windowWidth, (float)windowHeight);
 
-	updateViewport(window_settings.width, window_settings.height);
-
-	// Load our mesh
-	loadModelFromFile("data/pig_head_alpha_rotated.fbx");
+	// Update gl viewport
+	updateViewport(windowWidth, windowHeight);
 
 	// Create Square Vertex Buffer Object
 	createSquare();
@@ -438,15 +511,18 @@ bool init()
 // Main loop
 int main(int argc, char *argv[])
 {
-	if (!init())
+	// Create core
+	nap::Core core;
+
+	nap::RenderService* render_service = core.getOrCreateService<nap::RenderService>();
+	nap::Logger::info("initialized render service: %s", render_service->getName().c_str());
+
+	// Initialize render stuff
+	if (!init(core))
 		return -1;
 
-	// Clear and swap
-	opengl::clearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	opengl::swap(*mainWindow);
-
 	// Run Gam
-	runGame();
+	runGame(core);
 
 	// Cleanup when done
 	cleanup();
@@ -455,7 +531,7 @@ int main(int argc, char *argv[])
 }
 
 
-void runGame()
+void runGame(nap::Core& core)
 {
 	// Run function
 	bool loop = true;
@@ -464,20 +540,23 @@ void runGame()
 	// Get start
 	auto t_start = std::chrono::high_resolution_clock::now();
 
+	// Enable some gl specific stuff
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_MULTISAMPLE_ARB);
 
+	// Timer
 	std::clock_t begin = std::clock();
 
-	// Get uniform bindings for vertex shader
-	shader->bind();
-	int projectionMatrixLocation = glGetUniformLocation(shader->getId(), "projectionMatrix"); // Get the location of our projection matrix in the shader
-	int viewMatrixLocation = glGetUniformLocation(shader->getId(), "viewMatrix"); // Get the location of our view matrix in the shader
-	int modelMatrixLocation = glGetUniformLocation(shader->getId(), "modelMatrix"); // Get the location of our model matrix in the shader
-	int noiseLocation = glGetUniformLocation(shader->getId(), "noiseValue");
-	shader->unbind();
+	// Get mesh component
+	nap::ModelMeshComponent* mesh_comp = model->getComponent<nap::ModelMeshComponent>();
+	nap::Material* material = mesh_comp->getMaterial();
+	assert(material != nullptr);
+
+	// Get render service
+	nap::RenderService* render_service = core.getOrCreateService<nap::RenderService>();
+	assert(render_service != nullptr);
 
 	// Loop
 	while (loop)
@@ -555,7 +634,7 @@ void runGame()
 		opengl::enableDepthTest(depth);
 
 		// Bind Shader
-		shader->bind();
+		material->bind();
 
 		// Parent matrix
 		glm::mat4 parent_matrix;
@@ -563,17 +642,10 @@ void runGame()
 
 		// Model matrix
 		glm::mat4 model_matrix;
-		model_matrix = glm::translate(model_matrix, glm::vec3((float)pivot_offset, 0.0f, 0.0f));							//< Transform
-		model_matrix = glm::rotate(model_matrix, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));						//< Rotate
-																											//model_matrix = glm::translate(model_matrix, glm::vec3((float)pivot_offset, 0.0f, 0.0f));			//< Pivot Point
-		model_matrix = glm::scale(model_matrix, glm::vec3(0.5, 0.5, 0.5));									//< Scale
-
-																											// Calculate parent_child relationship matrix
+		model_matrix = glm::translate(model_matrix, glm::vec3((float)pivot_offset, 0.0f, 0.0f));
+		model_matrix = glm::rotate(model_matrix, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+		model_matrix = glm::scale(model_matrix, glm::vec3(0.5, 0.5, 0.5));
 		glm::mat4 final_model_matrix = parent_matrix * model_matrix;
-
-		// Get uniform bindings for fragment shader
-		int loc_one = -1;
-		loc_one = glGetUniformLocation(shader->getId(), "myTextureSampler");
 
 		// Send values
 		glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &camera.getProjectionMatrix()[0][0]); // Send our projection matrix to the shader
@@ -586,31 +658,36 @@ void runGame()
 		// Bind correct texture and send to shader
 		opengl::Image* img = currentIndex == 0 ? pigTexture.get() : testTexture.get();
 		img->bind();
-		glUniform1i(loc_one, 0);
+		glUniform1i(textureLocation, 0);
+
+		// Unbind shader
+		material->unbind();
 
 		switch (currentIndex)
 		{
 		case 0:
 		{
-			model->draw();
+			render_service->render();
+			//mesh_comp->draw();
 			break;
 		case 1:
 			cubeObject.bind();
+			material->bind();
 			cubeObject.draw(GL_TRIANGLES);
+			material->unbind();
 			cubeObject.unbind();
 			break;
 		}
 		case 2:
 			triangleObject.bind();
+			material->bind();
 			triangleObject.draw(GL_TRIANGLES);
+			material->unbind();
 			triangleObject.unbind();
 			break;
 		}
 
-		// Unbind shader
-		shader->unbind(); // Unbind our shader
-
-						  // Swap front / back buffer
+		// Swap front / back buffer
 		opengl::swap(*mainWindow);
 	}
 }

@@ -55,4 +55,14 @@ namespace nap
 		snprintf(buf.get(), size, format.c_str(), args...);
 		return std::string(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
 	}
+
+    /**
+     * Given a templated type name, replace its template parameter with the provided template type
+     * @param typeName The original templated type name, eg. "nap::MyType<SomeClass<float>>"
+     * @param templateTypeName A replacement type name, eg. "float"
+     * @return A modified type name such as "nap::MyType<float>"
+     */
+    std::string replaceTemplateType(const std::string& typeName, const std::string& templateTypeName);
+
+
 }

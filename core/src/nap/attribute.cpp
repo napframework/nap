@@ -1,14 +1,14 @@
 // Local Includes
 #include "attribute.h"
-#include <nap/attributeobject.h>
-#include <nap/entity.h>
-#include <nap/coreattributes.h>
+#include "resourcemanager.h"
+#include "attributeobject.h"
+#include "entity.h"
+#include "coreattributes.h"
 
 // RTTI Define
 
 namespace nap 
 {
-
     /**
     @brief Attribute Constructor
     **/
@@ -141,7 +141,7 @@ namespace nap
 	/**
 	@brief Returns if the attribute is currently linked to a different attribute
 	**/
-    bool AttributeBase::isLinked() { return getLink().isLinked(); }
+    bool AttributeBase::isLinked() const { return getLink().isLinked(); }
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -151,9 +151,17 @@ namespace nap
 	/**
 	 * constructor using a type as link type
 	 */
-	ObjectLinkAttribute::ObjectLinkAttribute(AttributeObject* parent, const std::string& name, const RTTI::TypeInfo& type)
+	ObjectLinkAttribute::ObjectLinkAttribute(AttributeObject* parent, const std::string& name, const RTTI::TypeInfo& type) :
+		AttributeBase(parent, name)
 	{
 		mLink.setTargetType(type);
+		mLink.targetChanged.connect(onLinkTargetChangedSlot);
+	}
+
+	
+	ObjectLinkAttribute::ObjectLinkAttribute()
+	{
+		mLink.targetChanged.connect(onLinkTargetChangedSlot);
 	}
 
 	/**
@@ -181,7 +189,6 @@ namespace nap
 		{
 			this->setTarget(attr.getPath());
 		}
-		valueChanged(*this);
 	}
 
 
@@ -191,7 +198,6 @@ namespace nap
 	void ObjectLinkAttribute::setTarget(Object& target)
 	{
 		mLink.setTarget(target);
-		valueChanged(*this);
 	}
 
 
@@ -201,7 +207,6 @@ namespace nap
 	void ObjectLinkAttribute::setTarget(const std::string& targetPath)
 	{
 		mLink.setTarget(targetPath);
-		valueChanged(*this);
 	}
 
 	/**
@@ -212,7 +217,15 @@ namespace nap
 		return RTTI_OF(nap::Link);
 	}
 
+	/**
+	 * Trigger update when link target changes
+	 */
+	void ObjectLinkAttribute::onLinkTargetChanged(const Link& link)
+	{
+		valueChanged.trigger(*this);
+	}
 }
+
 // RTTI Define
 RTTI_DEFINE(nap::AttributeBase)
 RTTI_DEFINE(nap::SignalAttribute)

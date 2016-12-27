@@ -20,6 +20,32 @@ class AddChildAction(QAction):
         self.__ctx.core().addChild(self.__parentObj, self.__typename)
 
 
+class RemoveObjectsAction(QAction):
+    def __init__(self, ctx, objects):
+        super(RemoveObjectsAction, self).__init__(iconstore.icon('delete'), 'Remove', None)
+        self.__ctx = ctx
+        self.__objects = objects
+        self.triggered.connect(self.perform)
+
+    def perform(self, b):
+        self.__ctx.core().removeObjects(self.__objects)
+
+
+class DisconnectPlugsAction(QAction):
+    def __init__(self, ctx, plugs):
+        """
+        @type ctx: nap.Core
+        """
+        super(DisconnectPlugsAction, self).__init__(iconstore.icon('delete'), 'Disconnect', None)
+        self.__ctx = ctx
+        self.__plugs = plugs
+        self.triggered.connect(self.perform)
+
+    def perform(self, b):
+        for plug in self.__plugs:
+            self.__ctx.core().disconnectPlug(plug)
+
+
 
 class AppContext(QObject):
     connectionChanged = pyqtSignal(bool, str, str)

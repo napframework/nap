@@ -151,11 +151,12 @@ namespace nap
 	Object* XMLSerializer::readAttribute(tinyxml2::XMLElement* xml, Core& core, Object* parentObject) const
 	{
 		// Resolve type
-		std::string attributeType = dirtyHack(xml->Attribute(X_VALUE_TYPE));
-		const RTTI::TypeInfo& type = RTTI::TypeInfo::getByName(attributeType);
+
+        const RTTI::TypeInfo& valueType = RTTI::TypeInfo::getByName(xml->Attribute(X_VALUE_TYPE));
+		const RTTI::TypeInfo& type = getAttributeTypeFromValueType(valueType);
 
 		if (type == RTTI::TypeInfo::empty()) {
-			nap::Logger::fatal("Failed to retrieve type: %s", attributeType.c_str());
+			nap::Logger::fatal("Failed to retrieve type: %s", type.getName().c_str());
 			return nullptr;
 		}
 

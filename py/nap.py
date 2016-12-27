@@ -1,3 +1,4 @@
+import hashlib
 import inspect
 import json
 
@@ -5,6 +6,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
 from asyncjsonclient import AsyncJSONClient
+from utils import qtutils
 
 _J_CHILDREN = 'children'
 _J_ATTRIBUTES = 'attributes'
@@ -17,7 +19,10 @@ _J_ENTITY_TYPE = 'nap::Entity'
 _J_PTR = 'ptr'
 _J_FLAGS = 'flags'
 _J_EDITABLE = 'editable'
-
+_J_CONNECTION = 'connection'
+_J_SUBTYPES = 'subtypes'
+_J_BASETYPES = 'basetypes'
+_J_INSTANTIABLE = 'instantiable'
 
 def _allSubClasses(cls):
     all_subclasses = []
@@ -44,7 +49,7 @@ class Core(QObject):
     logMessageReceived = pyqtSignal(int, str, str)
     messageReceived = pyqtSignal()
 
-    def __init__(self, host='tcp://localhost:8888'):
+    def __init__(self, host: str = 'tcp://localhost:8888'):
         super(Core, self).__init__()
         self.__rpc = AsyncJSONClient(host)
         self.__rpc.messageReceived.connect(self.handleMessageReceived)
@@ -55,6 +60,7 @@ class Core(QObject):
         self.__objects = {}
         self.__types = []
         self.__metatypes = {}
+        self.__typeColors = {}
 
     def resolvePath(self, path):
         return self.root().resolvePath(path)
@@ -62,11 +68,7 @@ class Core(QObject):
     def setObject(self, ptr, obj):
         self.__objects[ptr] = obj
 
-    def findObject(self, ptr):
-        """
-        @type ptr: int
-        @rtype: Object
-        """
+    def findObject(self, ptr: int):
         if not isinstance(ptr, int):
             ptr = int(ptr)
         return self.__objects[ptr]
@@ -74,21 +76,53 @@ class Core(QObject):
     def types(self):
         return self.__types
 
+    def typeIndex(self, typename):
+        """ Return the index of the type
+        TODO: Retrieve from server
+        """
+        if not typename:
+            return 0
+        i = 0
+        for t in self.types():
+            if t['name'] == typename:
+                return i
+            i += 1
+
     def baseTypes(self, typename):
         for t in self.__types:
-            if t['name'] == typename:
-                return t['baseTypes']
+            if t[_J_NAME] == typename:
+                return t[_J_BASETYPES]
 
-    def __metaType(self, cppTypename, clazz=None):
+    def subTypes(self, baseTypename, instantiable=False):
+        for t in self.__types:
+            if not baseTypename in t[_J_BASETYPES]:
+                continue
+            if instantiable and not t[_J_INSTANTIABLE]:
+                continue
+            yield t[_J_NAME]
+
+    def typeColor(self, typename):
+        if typename in self.__typeColors:
+            return self.__typeColors[typename]
+
+        col = qtutils.randomColor(self.typeIndex(typename))
+        self.__typeColors[typename] = col
+        return col
+
+    def __getOrCreateMetaType(self, cppTypename, clazz=None):
         if not clazz:
             clazz = Object
         pythonTypename = _stripCPPNamespace(cppTypename)
-        if not pythonTypename in self.__metatypes:
-            t = type(pythonTypename, (clazz,), dict())
-            print('Created metatype: %s' % t)
-            return t
 
-    def __findCorrespondingType(self, typename):
+        if pythonTypename in self.__metatypes.keys():
+            return self.__metatypes[pythonTypename]
+
+        t = type(pythonTypename, (clazz,), dict())
+        print('Created metatype: %s' % t)
+        self.__metatypes[pythonTypename] = t
+        return t
+
+    def __findOrCreateCorrespondingType(self, typename):
         """ Based on the provided typename,
         find the closest matching type or base type.
         If no matching type was found
@@ -109,7 +143,7 @@ class Core(QObject):
         for clazz in subClasses:
             napType = clazz.NAP_TYPE
             if napType in baseTypes:
-                return self.__metaType(typename, clazz)
+                return self.__getOrCreateMetaType(typename, clazz)
 
         # No corresponding type found
         return self.__metatype(typename)
@@ -120,14 +154,14 @@ class Core(QObject):
         use a dynamically constructed meta type.
 
         @param dic: The Object data, according to the RPC format
-        @return: An instance of the
+        @return: An instance of thee
         """
         if _J_VALUE_TYPE in dic:
-            clazz = Attribute
+            Clazz = Attribute
         else:
-            clazz = self.__findCorrespondingType(dic[_J_TYPE])
+            Clazz = self.__findOrCreateCorrespondingType(dic[_J_TYPE])
 
-        return clazz(self, dic)
+        return Clazz(self, dic)
 
     @staticmethod
     def toPythonValue(value, valueType):
@@ -164,6 +198,11 @@ class Core(QObject):
                     'No handler for callback: %s' % handlerMethodName)
         self.messageReceived.emit()
 
+    def __typenames(self, baseType=None):
+        if not baseType:
+            return self.__types
+        return (t[0] for t in self.__types if baseType in t)
+
     ############################################################################
     ### Accessors
     ############################################################################
@@ -171,11 +210,18 @@ class Core(QObject):
     def rpc(self):
         return self.__rpc
 
-    def componentTypes(self, modulename=None):
-        return self.__componentTypes
 
     def root(self):
         return self.__root
+
+    def operatorTypes(self):
+        return self.subTypes(Operator.NAP_TYPE, True)
+
+    def dataTypes(self):
+        return self.subTypes(Attribute.NAP_TYPE, True)
+
+    def componentTypes(self):
+        return self.subTypes(Component.NAP_TYPE, True)
 
     ############################################################################
     ### RPC Callback Handlers, signature must match server initiated calls
@@ -205,9 +251,6 @@ class Core(QObject):
         parent.onChildRemoved(child)
 
     def _handle_getModuleInfo(self, **info):
-        self.__componentTypes = info['componentTypes']
-        self.__operatorTypes = info['operatorTypes']
-        self.__dataTypes = info['dataTypes']
         self.__types = info['types']
         self.moduleInfoChanged.emit(info)
 
@@ -224,7 +267,15 @@ class Core(QObject):
 
         dstPlug.connected.emit(srcPlug, dstPlug)
 
-    def _handle_copyObjectTree(self, jsonDict):
+    def _handle_plugDisconnected(self, srcPtr, dstPtr):
+        srcPlug = self.findObject(srcPtr)
+        assert isinstance(srcPlug, OutputPlugBase)
+        dstPlug = self.findObject(dstPtr)
+        assert isinstance(dstPlug, InputPlugBase)
+
+        dstPlug.disconnected.emit(srcPlug, dstPlug)
+
+    def _handle_copyObjectTree(self, **jsonDict):
         QApplication.clipboard().setText(json.dumps(jsonDict, indent=4))
 
     ############################################################################
@@ -236,19 +287,7 @@ class Core(QObject):
         for o in objects:
             self.__rpc.removeObject(o.ptr())
 
-    def operatorTypes(self, modulename=None):
-        if modulename:
-            return self.__rpc.getOperatorTypes(modulename)
-        if self.__operatorTypes is None:
-            self.__operatorTypes = self.__rpc.getOperatorTypes('')
-        return self.__operatorTypes
 
-    def dataTypes(self, modulename=None):
-        if modulename:
-            return self.__rpc.getDataTypes(modulename)
-        if self.__dataTypes is None:
-            self.__dataTypes = self.__rpc.getDataTypes('')
-        return self.__dataTypespath
 
     def addObjectCallbacks(self, obj):
         self.__rpc.addObjectCallbacks(self.rpc().identity, obj.ptr())
@@ -276,6 +315,10 @@ class Core(QObject):
         assert isinstance(srcPlug, OutputPlugBase)
         assert isinstance(dstPlug, InputPlugBase)
         self.__rpc.connectPlugs(srcPlug.ptr(), dstPlug.ptr())
+
+    def disconnectPlug(self, dstPlug):
+        assert isinstance(dstPlug, InputPlugBase)
+        self.__rpc.disconnectPlug(dstPlug.ptr())
 
     def setName(self, obj, name):
         self.__rpc.setName(obj.ptr(), name)
@@ -326,8 +369,6 @@ class Object(QObject):
         else:
             self.__typename = dic[_J_VALUE_TYPE]
 
-        self.core().addObjectCallbacks(self)
-
         self.__children = []
         if _J_CHILDREN in dic:
             for childDic in dic[_J_CHILDREN]:
@@ -339,9 +380,6 @@ class Object(QObject):
                 child = core.newObject(childDic)
                 child.__parent = self
                 self.__children.append(child)
-
-    def __del__(self):
-        self.core().removeObjectCallbacks(self)
 
     def checkFlag(self, flag):
         return self.__flags & flag
@@ -444,6 +482,13 @@ class Object(QObject):
         return '<%s> %s' % (self.typename(), self.name())
 
 
+class Link(Object):
+    NAP_TYPE = 'nap::Link'
+
+    def __init__(self, *args):
+        super(Link, self).__init__(*args)
+
+
 class AttributeObject(Object):
     NAP_TYPE = 'nap::AttributeObject'
 
@@ -468,15 +513,17 @@ class Entity(AttributeObject):
 
 
 class Attribute(Object):
-    NAP_TYPE = 'nap::Attribute'
+    NAP_TYPE = 'nap::AttributeBase'
 
     valueChanged = pyqtSignal(object)
 
     def __init__(self, *args):
         super(Attribute, self).__init__(*args)
         self._valueType = self._dic[_J_VALUE_TYPE]
-        self._value = self.core().toPythonValue(self._dic[_J_VALUE],
-                                                self.valueType())
+        self._value = None
+        if _J_VALUE in self._dic:
+            self._value = self.core().toPythonValue(self._dic[_J_VALUE],
+                                                    self.valueType())
 
     def setValue(self, value):
         self.core().setAttributeValue(self, value)
@@ -542,25 +589,28 @@ class InputPlugBase(Plug):
     NAP_TYPE = 'nap::InputPlugBase'
 
     connected = pyqtSignal(object, object)
+    disconnected = pyqtSignal(object, object)
 
     def __init__(self, *args):
         super(InputPlugBase, self).__init__(*args)
+        self.__connection = ''
+        if _J_CONNECTION in self._dic.keys():
+            self.__connection = self._dic[_J_CONNECTION]
+
+    def connection(self):
+        if not self.__connection:
+            return None
+        return self.core().resolvePath(self.__connection)
+
+    def connectTo(self, outPlug):
+        self.core().connectPlugs(outPlug, self)
+
+    def disconnect(self):
+        self.core().disconnectPlug(self)
 
 
 class OutputPlugBase(Plug):
     NAP_TYPE = 'nap::OutputPlugBase'
 
-    disconnected = pyqtSignal(object)
-
     def __init__(self, *args):
         super(OutputPlugBase, self).__init__(*args)
-
-        self.__connections = self._dic['connections']
-
-    def connectTo(self, dstPlug):
-        self.core().connectPlugs(self, dstPlug)
-
-    def connections(self):
-        for path in self.__connections:
-            yield self.core().resolvePath(path)
-

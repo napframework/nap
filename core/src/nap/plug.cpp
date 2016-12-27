@@ -11,7 +11,7 @@ RTTI_DEFINE(nap::OutputPlugBase)
 namespace nap
 {
 
-	Plug::Plug(Operator* parent, const std::string& name, Type plugType, const RTTI::TypeInfo dataType) : Object(), mPlugType(plugType), mDataType(dataType)
+	Plug::Plug(Operator* parent, const std::string& name, const RTTI::TypeInfo dataType) : Object()
 	{
         mName = name;
         parent->addChild(*this);
@@ -36,28 +36,15 @@ namespace nap
     }
     
     
-    Plug* Plug::getConnection()
-    {
-        return mConnection.getTypedTarget();
-    }
-    
-    
-    bool Plug::isConnected() const
-    {
-        return mConnection.isLinked();
-    }
-    
-    
-	InputPlugBase::InputPlugBase(Operator* parent, const std::string& name, Type plugType,
-								 const RTTI::TypeInfo dataType)
-		: Plug(parent, name, plugType, dataType)
+	InputPlugBase::InputPlugBase(Operator* parent, const std::string& name, const RTTI::TypeInfo dataType)
+		: Plug(parent, name, dataType)
 	{
 	}
 
 
 	InputPlugBase::~InputPlugBase()
 	{
-        if (mConnection.getTypedTarget())
+        if (isConnected())
             disconnect();
 	}
 
@@ -66,9 +53,10 @@ namespace nap
 	{
 		// if this assertion fails you are trying to connect incompatible plugs
 		assert(canConnectTo(plug));
-        assert(!plug.isConnected());
+        
+        // if this assertion fails the plug is already connected, disconnect first!
+        assert(!isConnected());
 
-        plug.mConnection.setTarget(*this);
         mConnection.setTarget(plug);
         
         connected(*this);
@@ -77,44 +65,68 @@ namespace nap
     
     void InputPlugBase::connect(const std::string &objectPath)
     {
+        // if this assertion fails the plug is already connected, disconnect first!
+        assert(!isConnected());
+        
         mConnection.setTarget(objectPath);
     }
 
 
 	void InputPlugBase::disconnect()
 	{
-        assert(mConnection.isLinked());
+        assert(isConnected());
         
         disconnected(*this);
-        getConnection()->mConnection.clear();
         mConnection.clear();
 	}
 
     
 	bool InputPlugBase::canConnectTo(OutputPlugBase& plug)
 	{
-		if (getPlugType() != plug.getPlugType()) return false;
-
 		if (getDataType().getName() != plug.getDataType().getName()) return false;
 
 		return true;
 	}
 
 
-	OutputPlugBase::OutputPlugBase(Operator* parent, const std::string& name, Type plugType,
-								   const RTTI::TypeInfo dataType)
-		: Plug(parent, name, plugType, dataType)
+	OutputPlugBase::OutputPlugBase(Operator* parent, const std::string& name, const RTTI::TypeInfo dataType)
+		: Plug(parent, name, dataType)
 	{
+        removed.connect([&](Object&){
+            disconnectAll();
+        });
 	}
 
 
-	OutputPlugBase::~OutputPlugBase()
-	{
-        if (isConnected())
-            static_cast<InputPlugBase*>(getConnection())->disconnect();
-	}
+    const std::set<InputPlugBase*> OutputPlugBase::getConnections() const
+    {
+        std::set<InputPlugBase*> connections;
+        Operator* thisOp = getParent();
+        Patch* patch = (Patch*) thisOp->getParentObject();
+
+        for (Operator* op : patch->getOperators())
+        {
+            if (op == thisOp)
+                continue;
+
+            for (InputPlugBase* inPlug : op->getInputPlugs()) {
+                if (inPlug->isConnected() && inPlug->getConnection() == this)
+                    connections.emplace(inPlug);
+            }
+        }
+
+        return connections;
+    }
     
     
+    void OutputPlugBase::disconnectAll()
+    {
+        auto connections = getConnections();
+        for (auto connection : connections)
+            connection->disconnect();
+    }
+
+
     void InputTriggerPlug::trigger()
     {
         if (mTriggerFunction)
@@ -130,11 +142,12 @@ namespace nap
         }
     }
 
-    
+
     void OutputTriggerPlug::trigger()
     {
-        if (isConnected())
-            static_cast<InputTriggerPlug*>(getConnection())->trigger();
+        for (auto& connection : getConnections())
+            static_cast<InputTriggerPlug*>(connection)->trigger();
     }
- 
+
+
 }

@@ -1,7 +1,10 @@
 #include <fstream>
 #include "serializer.h"
+#include "plug.h"
+#include "coreattributes.h"
 
 RTTI_DEFINE(nap::Serializer)
+
 
 using namespace std;
 
@@ -51,9 +54,10 @@ namespace nap
             Logger::warn("File does not exist: %s", getAbsolutePath(filename).c_str());
             return nullptr;
         }
-        std::ifstream is(filename);
-
-
-        return readObject(is, core, parent);
+        std::ifstream is(filename.c_str());
+        Object* obj = readObject(is, core, parent);
+        is.close();
+        return obj;
     }
+
 }

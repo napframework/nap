@@ -6,10 +6,6 @@
 #include <utils/ofUtils.h>
 #include <utils/nofUtils.h>
 
-// Core Includes
-#include <nap/entity.h>
-#include <nap/logger.h>
-
 // STD Includes
 #include <cmath>
 

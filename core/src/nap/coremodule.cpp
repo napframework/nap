@@ -27,6 +27,7 @@ ModuleNapCore::ModuleNapCore() : nap::Module("NapCore")
     NAP_REGISTER_OPERATOR(nap::AddFloatOperator)
     NAP_REGISTER_OPERATOR(nap::MultFloatOperator)
     NAP_REGISTER_OPERATOR(nap::SimpleTriggerOperator)
+    NAP_REGISTER_OPERATOR(nap::IntOperator)
 
     // TypeConverters
     NAP_REGISTER_TYPECONVERTER(nap::convertStringToFloat)

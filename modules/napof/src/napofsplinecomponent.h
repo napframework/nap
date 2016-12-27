@@ -4,13 +4,7 @@
 #include <spline/nofSpline.h>
 
 // NAP Includes
-#include <nap/component.h>
-#include <nap/attribute.h>
-#include <nap/signalslot.h>
-
-#include <nap/configure.h>
-#include <napofattributes.h>
-#include <nap/componentdependency.h>
+#include <nap.h>
 
 // Local Includes
 #include <napofrendercomponent.h>

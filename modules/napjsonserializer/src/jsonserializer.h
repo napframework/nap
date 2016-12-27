@@ -21,24 +21,29 @@ namespace nap
 	{
         RTTI_ENABLE_DERIVED_FROM(Resource)
 	public:
-		JSONResource(const std::string& path, const std::string& contents) : Resource(path), mContents(contents) {}
+		JSONResource(const std::string& path, const std::string& contents) : mContents(contents), mPath(path) {}
 
-        Object* createInstance(Core& core, Object& parent) override {
+        Object* createInstance(Core& core, Object& parent)
+		{
             return JSONSerializer().fromString(mContents, core, &parent);
         }
+
+		virtual const std::string& getDisplayName() const override { return mPath; }
+
     private:
 		const std::string mContents;
+		std::string mPath;
 	};
 
 
 
-	class JSONFileFactory : public ResourceLoader
+	class JSONFileLoader : public ResourceLoader
 	{
         RTTI_ENABLE_DERIVED_FROM(ResourceLoader)
 	public:
-		JSONFileFactory() : ResourceLoader() { addFileExtension("napj"); }
+		JSONFileLoader() : ResourceLoader() { addFileExtension("napj"); }
 
-		bool loadResource(const std::string& resourcePath, std::unique_ptr<Resource>& outResource) const override;
+		std::unique_ptr<Resource> loadResource(const std::string& resourcePath) const override;
 
 	private:
 		JSONSerializer mSerializer;
@@ -47,4 +52,4 @@ namespace nap
 
 RTTI_DECLARE(nap::JSONSerializer)
 RTTI_DECLARE_BASE(nap::JSONResource)
-RTTI_DECLARE(nap::JSONFileFactory)
+RTTI_DECLARE(nap::JSONFileLoader)

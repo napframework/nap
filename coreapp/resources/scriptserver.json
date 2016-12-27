@@ -1,0 +1,10 @@
+{
+  "name": "root",
+  "flags": 7,
+  "type": "nap::Entity",
+  "children": [
+
+      ]
+    }
+  ]
+}

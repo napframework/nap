@@ -22,16 +22,16 @@ void runScriptServerComponent()
     Entity& secondChildChild = secondChild.addEntity("SecondChildChild");
     root.addComponent<PatchComponent>();
 
-	std::string serverTypename = "nap::JSONRPCServerComponent";
+	std::string serverTypename = "nap::JsonRpcService";
 	RTTI::TypeInfo serverCompType = RTTI::TypeInfo::getByName(serverTypename);
 	if (!serverCompType.isValid())
 	{
 		Logger::fatal("Type not found: %s", serverTypename.c_str());
 		return;
 	}
-	auto& server = root.addComponent(serverCompType);
+	auto server = core.getOrCreateService(serverCompType);
 
-	server.getAttribute<bool>("running")->setValue(true);
+	server->getAttribute<bool>("running")->setValue(true);
 
     std::mutex mutex;
 

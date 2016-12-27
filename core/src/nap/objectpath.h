@@ -53,6 +53,6 @@ namespace nap
 		void constructPath(const Object& node);
 		const std::string pathToString(const std::vector<std::string>& path) const;
 
-		std::string mAbsolutePath;
+		std::string mAbsolutePath = "";
 	};
 }

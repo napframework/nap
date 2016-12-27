@@ -14,7 +14,7 @@ source_group("sources" FILES ${SOURCES})
 add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
 
 # add include dirs
-target_include_directories(${PROJECT_NAME} PUBLIC ${NRENDER_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PUBLIC ${NRENDER_INCLUDE_DIRS} src)
 
 # link with external libs
 #target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)

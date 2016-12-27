@@ -18,7 +18,7 @@ namespace nap
 
 
 	/**
-	@brief Returns the core associated with this service
+	@brief Returns the core in which service lives
 	**/
 	Core& Service::getCore()
 	{

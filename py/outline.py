@@ -279,9 +279,9 @@ class OutlineWidget(QWidget):
 
         menu.addSeparator()
 
-        self.__iconAction(menu, 'Export...', 'disk', self.__onExportSelected)
         self.__iconAction(menu, 'Import...', 'folder_page', self.__onImportObject)
         self.__iconAction(menu, 'Reference...', 'page_link', self.__onReferenceObject)
+        self.__iconAction(menu, 'Export...', 'disk', self.__onExportSelected)
 
         menu.exec_(self.__treeView.viewport().mapToGlobal(pos))
 
@@ -290,9 +290,9 @@ class OutlineWidget(QWidget):
 
     def __lastFileDir(self):
         settings = QSettings()
-        lastOpened = settings.value(_LAST_OPENED_EXPORT)[0]
+        lastOpened = settings.value(_LAST_OPENED_EXPORT)
         if lastOpened:
-            return os.path.dirname(str(lastOpened))
+            return os.path.dirname(str(lastOpened[0]))
         return None
 
     def __setLastFile(self, filename):
@@ -327,6 +327,7 @@ class OutlineWidget(QWidget):
         parentObj = self.__selectedObject()
         filename = QFileDialog.getOpenFileName(self, 'Select object file to import', self.__lastFileDir(),
                                                _NAP_FILE_FILTER)
+        filename = filename[0] # First was filename, second is filter
         if not filename:
             return
 

@@ -1,6 +1,6 @@
 #include "jsonserializer.h"
 #include "rapidjson/error/en.h"
-#include <rtti/rtti.h>
+#include <nap/rttinap.h>
 #include <nap.h>
 #include <rapidjson/document.h>
 #include <rapidjson/istreamwrapper.h>
@@ -9,7 +9,7 @@
 
 RTTI_DEFINE(nap::JSONSerializer)
 RTTI_DEFINE(nap::JSONResource)
-RTTI_DEFINE(nap::JSONFileFactory)
+RTTI_DEFINE(nap::JSONFileLoader)
 
 
 
@@ -24,7 +24,7 @@ using namespace rapidjson;
 #define J_ATTRIBUTES "attributes"
 #define J_VALUE_TYPE "vType"
 #define J_DATA_TYPE "dataType"
-#define J_CONNECTION "connections"
+#define J_CONNECTION "connection"
 
 namespace nap
 {
@@ -70,7 +70,7 @@ namespace nap
 			writer.String(J_VALUE_TYPE);
 			writer.String(attrib.getValueType().getName().c_str());
 			writer.String(J_FLAGS);
-			writer.Bool(attrib.checkFlag(Editable));
+			writer.Int(attrib.getFlags());
 
 			if (writePointers) {
 				writer.String(J_PTR);
@@ -107,13 +107,13 @@ namespace nap
 				writer.String(J_DATA_TYPE);
 				writer.String(plug->getDataType().getName().c_str());
 
-				if (auto inputPlug = rtti_cast<nap::InputPlugBase*>(plug))
-                    if (inputPlug->isConnected())
-                    {
+				if (auto inputPlug = rtti_cast<nap::InputPlugBase*>(plug)) {
+                    if (inputPlug->isConnected()) {
                         writer.String(J_CONNECTION);
                         std::string destPath = ObjectPath(inputPlug->getConnection());
                         writer.String(destPath.c_str());
                     }
+                }
 			}
 
 			if (writePointers) {
@@ -221,52 +221,28 @@ namespace nap
 				w.String("filename");
 				w.String(mod->getFilename().c_str());
 
-				TypeList types;
-
-				mod->getDataTypes(types);
-				if (!types.empty()) {
-					w.String("dataTypes");
-					writeTypes(w, types);
-				}
-
-				types.clear();
-
-				mod->getComponentTypes(types);
-				if (!types.empty()) {
-					w.String("componentTypes");
-					writeTypes(w, types);
-				}
-
-				types.clear();
-
-				mod->getOperatorTypes(types);
-				if (!types.empty()) {
-					w.String("operatorTypes");
-					writeTypes(w, types);
-				}
-
 				w.EndObject();
 			}
 			w.EndArray();
-
-			w.String("dataTypes");
-			writeTypes(w, getAttributeTypes());
-			w.String("componentTypes");
-			writeTypes(w, getInstantiableSubTypes(RTTI_OF(Component)));
-			w.String("operatorTypes");
-			writeTypes(w, getInstantiableSubTypes(RTTI_OF(Operator)));
 
 			// Write Type inheritance
 			w.String("types");
 			w.StartArray();
 			for (const auto& type : RTTI::TypeInfo::getRawTypes()) {
+
+
+
 				w.StartObject();
 				{
 					w.String("name");
 					w.String(type.getName().c_str());
-					w.String("baseTypes");
+
+					w.String("instantiable");
+					w.Bool(type.canCreateInstance());
+
+					w.String("basetypes");
 					w.StartArray();
-					for (const auto& baseType : type.getBaseTypes())
+					for (const auto &baseType : type.getBaseTypes())
 						w.String(baseType.getName().c_str());
 					w.EndArray();
 				}
@@ -303,7 +279,9 @@ namespace nap
 
 		AttributeBase* attrib = attributeObject->getAttribute(attrName);
 		if (!attrib) {
-			RTTI::TypeInfo attrType = RTTI::TypeInfo::getByName(Serializer::dirtyHack(attrValueTypeName));
+            const RTTI::TypeInfo& attrValueType = RTTI::TypeInfo::getByName(attrValueTypeName);
+
+			const RTTI::TypeInfo& attrType = getAttributeTypeFromValueType(attrValueType);
 			attrib = &attributeObject->addAttribute(attrName, attrType);
 		}
 		assert(!strcmp(attrValueTypeName, attrib->getValueType().getName().c_str()));
@@ -390,24 +368,29 @@ namespace nap
     
 	Object* JSONSerializer::readObject(std::istream& istream, Core& core, Object* parent) const
 	{
-		IStreamWrapper is(istream);
+        Document doc;
 
-		Document doc;
-		doc.ParseStream(is);
+        std::string str((std::istreambuf_iterator<char>(istream)),
+                        std::istreambuf_iterator<char>());
+
+
+        doc.Parse(str.c_str());
 		if (doc.HasParseError()) {
 			Logger::warn("JSON parse error: %s (%u)", GetParseError_En(doc.GetParseError()), doc.GetErrorOffset());
 			return nullptr;
 		}
 
-		return jsonToObject(doc, core, parent);
+        Object* o = jsonToObject(doc, core, parent);
+        return o;
 	}
 
 
-    bool JSONFileFactory::loadResource(const std::string& resourcePath, std::unique_ptr<Resource>& outResource) const {
+	std::unique_ptr<Resource> JSONFileLoader::loadResource(const std::string& resourcePath) const
+	{
         std::ifstream is(resourcePath);
         std::string str((std::istreambuf_iterator<char>(is)),
                         std::istreambuf_iterator<char>());
-        outResource.reset(new JSONResource(resourcePath, str));
-        return true;
+        
+		return std::make_unique<JSONResource>(resourcePath, str);
     }
 }

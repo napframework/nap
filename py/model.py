@@ -1,3 +1,5 @@
+from typing import List
+
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
@@ -5,16 +7,14 @@ import iconstore
 import nap
 
 
-def inspectorAttributeRow(attrib):
-    assert (isinstance(attrib, nap.Attribute))
+def inspectorAttributeRow(attrib:nap.Attribute):
     return [
         ObjectItem(attrib),
         AttributeValueItem(attrib),
     ]
 
 
-def inspectorComponentRow(comp):
-    assert (isinstance(comp, nap.Component))
+def inspectorComponentRow(comp:nap.Component) -> List[QStandardItem]:
     componentItem = ComponentItem(comp)
     componentTypeItem = QStandardItem(comp.typename())
     componentTypeItem.setEnabled(False)
@@ -32,10 +32,7 @@ class ObjectItem(QStandardItem):
 
     ObjectType = nap.Object
 
-    def __init__(self, obj):
-        """
-        @type obj: nap.Object
-        """
+    def __init__(self, obj:nap.Object):
         if not isinstance(obj, self.ObjectType):
             raise TypeError('%s should be %s' % (type(obj), self.ObjectType))
         super(ObjectItem, self).__init__()
@@ -52,16 +49,16 @@ class ObjectItem(QStandardItem):
         for obj in obj.children():
             self.onChildAdded(obj)
 
-    def __onNameChanged(self, name):
+    def __onNameChanged(self, name:str):
         self.setText(name)
 
-    def setData(self, variant, role=None):
+    def setData(self, variant:QVariant, role=None):
         if role == Qt.EditRole:
             self.__obj.setName(str(variant))
         else:
             super(ObjectItem, self).setData(variant, role)
 
-    def object(self):
+    def object(self) -> nap.Object:
         return self.__obj
 
     def findRow(self, obj):
@@ -71,38 +68,29 @@ class ObjectItem(QStandardItem):
                 return row
         return -1
 
-    def onChildAdded(self, obj):
+    def onChildAdded(self, obj:nap.Object):
         self.appendRow(createItemRow(obj))
 
-    def onChildRemoved(self, obj):
+    def onChildRemoved(self, obj:nap.Object):
         self.removeRow(self.findRow(obj))
 
 
 class ComponentItem(ObjectItem):
     ObjectType = nap.Component
 
-    def __init__(self, comp):
-        """
-        @type attr: nap.Component
-        """
+    def __init__(self, comp:nap.Component):
         super(ComponentItem, self).__init__(comp)
 
 
 class EntityItem(ObjectItem):
     ObjectType = nap.Entity
 
-    def __init__(self, obj):
-        """
-        @type obj: nap.Entity
-        """
+    def __init__(self, obj:nap.Entity):
         super(EntityItem, self).__init__(obj)
 
 
 class AttributeValueItem(QStandardItem):
-    def __init__(self, attrib):
-        """
-        @type attrib: nap.Attribute
-        """
+    def __init__(self, attrib:nap.Attribute):
         super(AttributeValueItem, self).__init__()
         self.__attrib = attrib
         self.__onValueChanged(self.__attrib.value())
@@ -124,7 +112,7 @@ class AttributeValueItem(QStandardItem):
 
 
 class ObjectTypeItem(QStandardItem):
-    def __init__(self, obj):
+    def __init__(self, obj:nap.Object):
         super(ObjectTypeItem, self).__init__()
         self.setEditable(False)
         if isinstance(obj, nap.Attribute):
@@ -133,14 +121,14 @@ class ObjectTypeItem(QStandardItem):
             self.setText(obj.typename())
 
 
-def createItem(obj):
+def createItem(obj:nap.Object):
     for itemType in (EntityItem, ComponentItem):
         if isinstance(obj, itemType.ObjectType):
             return itemType(obj)
     return ObjectItem(obj)
 
 
-def createItemRow(obj):
+def createItemRow(obj:nap.Object) -> List[QStandardItem]:
     objectItem = createItem(obj)
     typeItem = ObjectTypeItem(obj)
     valueItem = None

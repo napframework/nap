@@ -183,12 +183,8 @@ namespace nap
 		outMax = mMaxValue;
 	}
 
-	//////////////////////////////////////////////////////////////////////////
-	// Numeric Attribute
-	//////////////////////////////////////////////////////////////////////////
-
 	template <typename T>
-	NumericAttribute<T>::NumericAttribute(AttributeObject* parent, const std::string& name, const T& value, const T& minValue, const T& maxValue, bool atomic = false, bool clamped = true)
+	NumericAttribute<T>::NumericAttribute(AttributeObject* parent, const std::string& name, const T& value, const T& minValue, const T& maxValue, bool atomic, bool clamped)
 		: Attribute<T>(parent, name, value, atomic)
 	{
 		setRange(minValue, maxValue);
@@ -198,9 +194,21 @@ namespace nap
 
 	// Constructor with default value and no min / max
 	template <typename T>
-	NumericAttribute<T>::NumericAttribute(AttributeObject* parent, const std::string& name, const T& value, bool atomic = false)
+	NumericAttribute<T>::NumericAttribute(AttributeObject* parent, const std::string& name, const T& value, bool atomic)
 		: Attribute<T>(parent, name, value, atomic)
 	{
 		setRange(value, value);
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// Object attribute link definitions
+	//////////////////////////////////////////////////////////////////////////
+	template <typename T>
+	T* ObjectLinkAttribute::getTarget()
+	{
+		Object* target = getTarget();
+		if (target == nullptr)
+			return nullptr;
+		return static_cast<T*>(target);
 	}
 }

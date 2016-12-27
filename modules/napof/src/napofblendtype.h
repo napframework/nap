@@ -7,7 +7,7 @@
 namespace nap
 {
 	// OF derived GL Blend Modes
-	enum class OFBlendType : nap::uint
+	enum class OFBlendType
 	{
 		SRC_ALPHA ,
 		ONE_MINUS_SRC_ALPHA,

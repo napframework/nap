@@ -1,15 +1,13 @@
 #pragma once
 
 // RTTI Includes
-#include <rtti/rtti.h>
+#include <nap.h>
 
 // NAP OF Includes
 #include <napofrendercomponent.h>
 #include <napofupdatecomponent.h>
 #include <napofattributes.h>
 #include <utils/ofVec2i.h>
-
-#include <nap/signalslot.h>
 
 // OF Includes
 #include <ofLog.h>
