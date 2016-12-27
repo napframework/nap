@@ -48,9 +48,9 @@ namespace nap
 		void rpc_addEntity(ObjPtr parentEntity);
 		void rpc_setName(ObjPtr ptr, const std::string& name);
 		void rpc_setAttributeValue(ObjPtr attribPtr, const std::string& value);
-		void rpc_forceSetAttributeValue(ObjPtr ptr, const std::string& attribName, const std::string& attribValue,
-										const std::string& attribType);
+		void rpc_forceSetAttributeValue(ObjPtr ptr, const std::string& attribName, const std::string& attribValue, const std::string& attribType);
 		void rpc_connectPlugs(ObjPtr srcPlugPtr, ObjPtr dstPlugPtr);
+        void rpc_disconnectPlug(ObjPtr srcPlugPtr);
 		void rpc_exportObject(ObjPtr ptr, const std::string& filename);
 		void rpc_importObject(ObjPtr parentPtr, const std::string& filename);
 		void rpc_removeObject(ObjPtr ptr);

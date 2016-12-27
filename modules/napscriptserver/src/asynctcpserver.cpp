@@ -1,3 +1,4 @@
+#include <nap/coreutils.h>
 #include "asynctcpserver.h"
 
 namespace nap
@@ -23,6 +24,7 @@ namespace nap
 
 	void AsyncTCPServer::runServerLoop()
 	{
+        setThreadName("AsyncTCPServer");
 
 		zmq::context_t ctx;
 		zmq::socket_t sock(ctx, ZMQ_ROUTER);

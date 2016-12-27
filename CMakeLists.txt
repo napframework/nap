@@ -17,10 +17,12 @@ if (WIN32)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse -Wa,-mbig-obj")
 #        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse")
     endif()
-elseif(APPLE)
-    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9)
 elseif(UNIX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+endif()
+
+if(APPLE)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9)
 endif()
 
 cmake_policy(SET CMP0020 NEW)
@@ -62,24 +64,37 @@ else()
     set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
 endif()
 
-function(copy_directory_to_bin TARGET SRCDIR DSTDIR)
+function(copy_dir_to_bin PROJECT DIR)
+    get_filename_component(DIRNAME ${DIR} NAME)
+    if (MSVC)
+
+        add_custom_command(TARGET ${PROJECT_NAME}
+                POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_directory "${DIR}" "$(OutDir)/${DIRNAME}"
+                COMMENT "Copy ${DIR} -> $(OutDir)/${DIRNAME}")
+    else()
+        add_custom_command(TARGET ${PROJECT_NAME}
+                POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy "${DIR}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${DIRNAME}"
+                COMMENT "Copy ${DIR} -> ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${DIRNAME}")
+    endif()
 endfunction()
 
-function(copy_files_to_bin TARGET)
-    foreach (F ${ARGN})
+function(copy_files_to_bin PROJECT)
+    foreach(F ${ARGN})
         if (MSVC)
-            add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD VERBATIM
+            add_custom_command(TARGET ${PROJECT_NAME}
+                    POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy "${F}" "$(OutDir)"
                     COMMENT "Copy ${F} -> $(OutDir)")
         else()
-            add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD VERBATIM
-                    COMMAND ${CMAKE_COMMAND} -E copy "${F}" "$(CMAKE_RUNTIME_OUTPUT_DIRECTORY)"
+            add_custom_command(TARGET ${PROJECT_NAME}
+                    POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy "${F}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
                     COMMENT "Copy ${F} -> ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
         endif()
     endforeach()
 endfunction()
-
-
 
 
 if(WIN32)
@@ -89,10 +104,8 @@ if(WIN32)
         set(MODULES gcc_s_dw2-1 stdc++-6 winpthread-1)
         foreach (MOD ${MODULES})
             find_library(_LIB NAMES ${MOD} HINTS ${COMPILER_DIR})
-            if (${_LIB})
-                message(STATUS "Copy ${_LIB} to ${BIN_DIR}")
-                file(COPY ${_LIB} DESTINATION \$(OutDir))
-            endif()
+            message(STATUS "Copy ${_LIB} to ${BIN_DIR}")
+            file(COPY ${_LIB} DESTINATION ${BIN_DIR})
             unset(_LIB CACHE)
         endforeach ()
 
@@ -122,5 +135,6 @@ add_subdirectory(modules/napgui)
 
 #add_dependencies(napkin mod_napfsm)
 add_dependencies(scriptserver mod_napscriptserver)
-add_dependencies(CoreApp mod_napscriptserver mod_naprender)
+add_dependencies(CoreApp mod_naprender mod_napscriptserver)
 add_dependencies(rendertest mod_naprender)
+add_dependencies(unittest mod_naprender mod_napscriptserver)

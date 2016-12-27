@@ -3,8 +3,17 @@
 RTTI_DEFINE(nap::RpcService)
 
 
+
+
 namespace nap
 {
+    std::string createSessionID() {
+        using namespace std::chrono;
+        auto now = duration_cast<milliseconds>(steady_clock::now().time_since_epoch());
+        return std::to_string(now.count());
+    }
+
+
 	RPCObjectCallback::RPCObjectCallback(RpcService &server, Object &obj)
 		: mServer(server), mObject(obj)
 	{
@@ -70,7 +79,7 @@ namespace nap
     }
 
 
-    RpcService::RpcService()
+    RpcService::RpcService() : mSessionID(createSessionID())
 	{
         setFlag(Editable, false);
         running.valueChangedSignal.connect([&](const bool& running) { onRunningChanged(running); });
@@ -94,11 +103,6 @@ namespace nap
 	void RpcService::stopServer()
 	{
 		assert(false);
-		//		mJsonServer->clientConnected.disconnect(onClientConnectedSlot);
-		//		mJsonServer->clientDisconnected.disconnect(onClientDisconnectedSlot);
-		//		mJsonServer->requestReceived.disconnect(onRequestReceivedSlot);
-		//
-		//		mJsonServer = nullptr;
 	}
 
 

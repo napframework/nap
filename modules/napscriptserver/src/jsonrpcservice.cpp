@@ -50,6 +50,7 @@ namespace nap
 		disp.AddMethod("setAttributeValue", &JsonRpcService::rpc_setAttributeValue, *this);
 		disp.AddMethod("forceSetAttributeValue", &JsonRpcService::rpc_forceSetAttributeValue, *this);
 		disp.AddMethod("connectPlugs", &JsonRpcService::rpc_connectPlugs, *this);
+        disp.AddMethod("disconnectPlug", &JsonRpcService::rpc_disconnectPlug, *this);
 		disp.AddMethod("exportObject", &JsonRpcService::rpc_exportObject, *this);
 		disp.AddMethod("importObject", &JsonRpcService::rpc_importObject, *this);
 		disp.AddMethod("removeObject", &JsonRpcService::rpc_removeObject, *this);
@@ -442,6 +443,18 @@ namespace nap
 		}
 		dstPlug->connect(*srcPlug);
 	}
+    
+    
+    void JsonRpcService::rpc_disconnectPlug(ObjPtr dstPlugPtr)
+    {
+        InputPlugBase* dstPlug = fromPtr<InputPlugBase>(dstPlugPtr);
+        if (!dstPlug) {
+            Logger::fatal("Failed to retrieve destination plug while disconnecting");
+            return;
+        }
+        dstPlug->disconnect();
+    }
+    
 
 	void JsonRpcService::rpc_exportObject(ObjPtr ptr, const std::string& filename)
 	{
