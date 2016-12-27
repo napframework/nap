@@ -1,13 +1,8 @@
 #pragma once
 
 // GL includes
-#include <rtti/rtti.h>
-#include <nap/configure.h>
 #include <unordered_map>
-
-// Nap includes
-#include <nap/arrayattribute.h>
-#include <nap/attribute.h>
+#include <nap.h>
 
 namespace nap
 {

@@ -1,8 +1,6 @@
 #pragma once
 
-#include <nap/attribute.h>
-#include <nap/arrayattribute.h>
-#include <nap/objectpath.h>
+#include <nap.h>
 
 namespace nap
 {
