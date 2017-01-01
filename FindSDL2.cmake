@@ -76,9 +76,7 @@ SET(SDL2_SEARCH_PATHS
         /opt
         )
 
-if (MSVC)
-    list(APPEND SDL2_SEARCH_PATHS ${CMAKE_CURRENT_LIST_DIR}/../thirdparty/msvc/SDL2-2.0.5)
-endif()
+
 
 FIND_PATH(SDL2_INCLUDE_DIR SDL.h
         HINTS

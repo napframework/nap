@@ -5,7 +5,7 @@ find_path(
         ${CMAKE_CURRENT_LIST_DIR}/../thirdparty/FreeImage
 )
 
-if (MSVC)
+if (WIN32)
     set(FREEIMAGE_INCLUDE_DIRS ${FREEIMAGE_DIR}/msvc/Dist/x64)
     set(FREEIMAGE_LIBRARIES ${FREEIMAGE_DIR}/msvc/Dist/x64/FreeImage.lib)
 elseif (APPLE)
@@ -16,3 +16,6 @@ endif()
 
 
 mark_as_advanced(FREEIMAGE_INCLUDE_DIRS)
+
+INCLUDE(FindPackageHandleStandardArgs)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(freeimage REQUIRED_VARS FREEIMAGE_INCLUDE_DIRS FREEIMAGE_LIBRARIES)

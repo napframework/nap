@@ -1,7 +1,7 @@
 
 
 
-if (MSVC)
+if (WIN32)
 	find_path(
 	        ASSIMP_DIR
 	        NAMES include/assimp/scene.h
@@ -22,3 +22,5 @@ elseif (APPLE)
 endif()
 
 mark_as_advanced(GLM_INCLUDE_DIRS)
+INCLUDE(FindPackageHandleStandardArgs)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(freeimage REQUIRED_VARS FREEIMAGE_INCLUDE_DIRS FREEIMAGE_LIBRARIES)
