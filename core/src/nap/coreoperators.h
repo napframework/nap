@@ -3,6 +3,7 @@
 #include "coreattributes.h"
 #include "operator.h"
 #include "signalslot.h"
+#include "logger.h"
 
 
 namespace nap
@@ -232,11 +233,22 @@ namespace nap
         }
 
     };
+    
+    
+    class LogOperator : public Operator {
+    RTTI_ENABLE_DERIVED_FROM(Operator)
+    public:
+        InputPullPlug<std::string> input  = { this, "message" };
+        nap::InputTriggerPlug mInTrigger = {this, "InTrigger", [&]() {
+            std::string message;
+            input.pull(message);
+            Logger::info(message);
+        }};
+        
+    private:
+        
+    };
 }
-
-
-
-
 
 // RTTI_DECLARE_BASE(nap::AttributeOutplug)
 RTTI_DECLARE(nap::AddFloatOperator)
@@ -244,4 +256,5 @@ RTTI_DECLARE(nap::SimpleTriggerOperator)
 RTTI_DECLARE(nap::MultFloatOperator)
 RTTI_DECLARE(nap::FloatOperator)
 RTTI_DECLARE(nap::IntOperator)
+RTTI_DECLARE(nap::LogOperator)
 RTTI_DECLARE_BASE(nap::GetAttributesOperator)
