@@ -127,10 +127,10 @@ add_subdirectory(test/render)
 
 # Modules
 add_subdirectory(modules/napfsm)
-add_subdirectory(modules/naprender)
 add_subdirectory(modules/napinput)
 add_subdirectory(modules/napscriptserver)
 add_subdirectory(modules/napjsonserializer)
+add_subdirectory(modules/naprender)
 add_subdirectory(modules/napgui)
 
 #add_dependencies(napkin mod_napfsm)

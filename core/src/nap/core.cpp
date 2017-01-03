@@ -1,6 +1,5 @@
 // Local Includes
 #include "core.h"
-#include "coreutils.h"
 
 // External Includes
 #include <algorithm>
@@ -31,7 +30,6 @@ namespace nap
 	**/
 	Core::Core()
 	{
-        setThreadName("NAPCoreThread");
 		// the root entity has no parent: nullptr
 		mRoot = std::unique_ptr<Entity>(new Entity(*this));
 		mRoot->mName = "root";

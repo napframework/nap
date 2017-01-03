@@ -17,6 +17,7 @@ namespace nap
 		bool layout() override;
 		Attribute<bool> autoStretch = { this, "AutoStretch", true };
 		Attribute<bool> horizontal = { this, "Horizontal" , true };
+		Attribute<bool> scaleToFit = { this, "ScaleToFit", false };
 		Attribute<float> alignmentX = { this, "AlignmentX", 0.5f };
 		Attribute<float> alignmentY = { this, "AlignmentY", 0.5f };
 		Attribute<float> spacingX = { this, "SpacingX", 0.0f };
