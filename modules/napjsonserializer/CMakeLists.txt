@@ -4,7 +4,9 @@ file(GLOB sources src/*.cpp src/*.h)
 
 find_package(rapidjson REQUIRED)
 
-add_library(${PROJECT_NAME} SHARED ${sources})
+add_definitions(-DRAPIDJSON_HAS_STDSTRING=1)
+
+add_library(${PROJECT_NAME} STATIC ${sources})
 include_directories(${RAPIDJSON_INCLUDE_DIRS})
 target_include_directories(${PROJECT_NAME} PUBLIC src)
 

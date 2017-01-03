@@ -6,8 +6,85 @@ from PyQt5.QtCore import *
 from model import *
 from utils import qtutils
 
-_LAST_OPENED_EXPORT = 'lastOpenedFile'
-_NAP_FILE_FILTER = 'NAP File (*.json)'
+
+class AttributeValueDelegate(QStyledItemDelegate):
+    def __init__(self, *args):
+        super(AttributeValueDelegate, self).__init__(*args)
+
+    def createEditor(self, widget, option, index):
+        # if isinstance(index.data(), bool):
+        self.createEditorBool(widget, option, index)
+        # else:
+        #     return super(AttributeValueDelegate, self).createEditor(widget,
+        #                                                             option,
+        #                                                             index)
+
+    def paint(self, painter, option, index):
+        self.paintBool(painter, option, index)
+        # if isinstance(index.data(), bool):
+        #
+        # else:
+        #     return super(AttributeValueDelegate, self).paint(painter, option,
+        #                                                      index)
+
+    def createEditorBool(self, widget, option, index):
+        return None
+
+    def paintBool(self, painter, option, index):
+        styleOption = QStyleOptionButton()
+        value = index.data()
+        if index.flags() & Qt.ItemIsEditable:
+            styleOption.state |= QStyle.State_Enabled
+        else:
+            styleOption.state |= QStyle.State_ReadOnly
+
+        if index.data():
+            styleOption.state |= QStyle.State_On
+        else:
+            styleOption.state |= QStyle.State_Off
+
+        styleOption.rect = self.__checkBoxRect(option)
+        QApplication.style().drawControl(QStyle.CE_CheckBox, styleOption,
+                                         painter)
+
+    def editorEvent(self, event, model, option, index):
+        if not index.flags() & Qt.ItemIsEditable:
+            return False
+
+        # Do not change the checkbox-state
+        if event.type() == QEvent.MouseButtonPress:
+            return False
+        if event.type() == QEvent.MouseButtonRelease or event.type() == QEvent.MouseButtonDblClick:
+            if event.button() != Qt.LeftButton or not self.__checkBoxRect(
+                    option).contains(event.pos()):
+                return False
+            if event.type() == QEvent.MouseButtonDblClick:
+                return True
+        elif event.type() == QEvent.KeyPress:
+            if event.key() != Qt.Key_Space and event.key() != Qt.Key_Select:
+                return False
+            else:
+                return False
+
+        # Change the checkbox-state
+        self.setModelData(None, model, index)
+        return True
+
+    def setModelData(self, editor, model, index):
+        newValue = not index.data()
+        model.setData(index, newValue, Qt.EditRole)
+
+    def __checkBoxRect(self, option):
+        check_box_style_option = QStyleOptionButton()
+        check_box_rect = QApplication.style().subElementRect(
+            QStyle.SE_CheckBoxIndicator, check_box_style_option, None)
+        check_box_point = QPoint(option.rect.x() +
+                                 option.rect.width() / 2 -
+                                 check_box_rect.width() / 2,
+                                 option.rect.y() +
+                                 option.rect.height() / 2 -
+                                 check_box_rect.height() / 2)
+        return QRect(check_box_point, check_box_rect.size())
 
 
 class OutlineModel(QStandardItemModel):
@@ -120,6 +197,7 @@ class OutlineWidget(QWidget):
         self.__treeView = QTreeView()
         self.__treeView.setSortingEnabled(True)
         self.__treeView.setSelectionMode(QTreeView.ExtendedSelection)
+        self.__treeView.setItemDelegateForColumn(2, AttributeValueDelegate())
 
         self.__outlineModel = OutlineModel(ctx)
         self.__outlineModel.dataChanged.connect(self.onDataChanged)
@@ -128,9 +206,11 @@ class OutlineWidget(QWidget):
         self.__filterModel.setSourceModel(self.__outlineModel)
         self.__filterModel.setFilterCaseSensitivity(Qt.CaseInsensitive)
         self.__treeView.setModel(self.__filterModel)
-        self.__treeView.selectionModel().selectionChanged.connect(self.__onSelectionChanged)
+        self.__treeView.selectionModel().selectionChanged.connect(
+            self.__onSelectionChanged)
         self.__treeView.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.__treeView.customContextMenuRequested.connect(self.__onCustomContextMenuRequested)
+        self.__treeView.customContextMenuRequested.connect(
+            self.__onCustomContextMenuRequested)
         self.layout().addWidget(self.__treeView)
 
         self.ctx.applicationClosing.connect(self.onCloseApp)
@@ -255,8 +335,10 @@ class OutlineWidget(QWidget):
 
         menu = QMenu()
 
-        self.__iconAction(menu, 'Expand All', 'toggle-expand', self.__onExpandSelection)
-        self.__iconAction(menu, 'Collapse All', 'toggle', self.__onCollapseSelection)
+        self.__iconAction(menu, 'Expand All', 'toggle-expand',
+                          self.__onExpandSelection)
+        self.__iconAction(menu, 'Collapse All', 'toggle',
+                          self.__onCollapseSelection)
 
         menu.addSeparator()
 
@@ -267,8 +349,11 @@ class OutlineWidget(QWidget):
         if isinstance(selectedObject, nap.Entity):
             self.__iconAction(menu, 'Add Child', 'add', self.__onAddChild)
 
-            addCompMenu = menu.addMenu(iconstore.icon('brick_add'), 'Add Component...')
-            self.ctx.createObjectActions(selectedObject, self.ctx.core().componentTypes(), addCompMenu)
+            addCompMenu = menu.addMenu(iconstore.icon('brick_add'),
+                                       'Add Component...')
+            self.ctx.createObjectActions(selectedObject,
+                                         self.ctx.core().componentTypes(),
+                                         addCompMenu)
 
         menu.addSeparator()
 
@@ -279,25 +364,16 @@ class OutlineWidget(QWidget):
 
         menu.addSeparator()
 
-        self.__iconAction(menu, 'Import...', 'folder_page', self.__onImportObject)
-        self.__iconAction(menu, 'Reference...', 'page_link', self.__onReferenceObject)
+        self.__iconAction(menu, 'Import...', 'folder_page',
+                          self.__onImportObject)
+        self.__iconAction(menu, 'Reference...', 'page_link',
+                          self.__onReferenceObject)
         self.__iconAction(menu, 'Export...', 'disk', self.__onExportSelected)
 
         menu.exec_(self.__treeView.viewport().mapToGlobal(pos))
 
     def __onShowEditor(self):
         self.ctx.requestEditorFor(self.__selectedObject())
-
-    def __lastFileDir(self):
-        settings = QSettings()
-        lastOpened = settings.value(_LAST_OPENED_EXPORT)
-        if lastOpened:
-            return os.path.dirname(str(lastOpened[0]))
-        return None
-
-    def __setLastFile(self, filename):
-        s = QSettings()
-        s.setValue(_LAST_OPENED_EXPORT, filename)
 
     def __onAddChild(self):
         parentObj = self.__selectedObject()
@@ -325,34 +401,38 @@ class OutlineWidget(QWidget):
 
     def __onImportObject(self):
         parentObj = self.__selectedObject()
-        filename = QFileDialog.getOpenFileName(self, 'Select object file to import', self.__lastFileDir(),
-                                               _NAP_FILE_FILTER)
-        filename = filename[0] # First was filename, second is filter
+        filename = QFileDialog.getOpenFileName(self,
+                                               'Select object file to import',
+                                               self.ctx.lastFileDir(),
+                                               self.ctx.napFileFilter())
+        filename = filename[0]  # First was filename, second is filter
         if not filename:
             return
 
-        self.ctx.core().importObject(parentObj, str(filename))
-
-        self.__setLastFile(filename)
+        self.ctx.importObject(parentObj, filename)
 
     def __onExportSelected(self):
         obj = self.__selectedObject()
-        filename = QFileDialog.getSaveFileName(self, 'Select destination file', self.__lastFileDir(),
-                                               _NAP_FILE_FILTER)
+        filename = QFileDialog.getSaveFileName(self, 'Select destination file',
+                                               self.ctx.lastFileDir(),
+                                               self.ctx.napFileFilter())
+        filename = filename[0]  # First was filename, second is filter
+
         if not filename:
             return
-
-        self.__setLastFile(filename)
-        self.ctx.core().exportObject(obj, str(filename))
+        self.ctx.exportObject(obj, filename)
 
     def __onExpandSelection(self):
         item = self.__selectedItem()
         if not item:
             return
-        qtutils.expandChildren(self.__treeView, self.__filterModel.mapFromSource(item.index()))
+        qtutils.expandChildren(self.__treeView,
+                               self.__filterModel.mapFromSource(item.index()))
 
     def __onCollapseSelection(self):
         item = self.__selectedItem()
         if not item:
             return
-        qtutils.expandChildren(self.__treeView, self.__filterModel.mapFromSource(item.index()), False)
+        qtutils.expandChildren(self.__treeView,
+                               self.__filterModel.mapFromSource(item.index()),
+                               False)

@@ -46,6 +46,7 @@ class ModuleModel(QStandardItemModel):
         for mod in dic['modules']:
             modItem = _item(mod['name'], 'box')
             modItem.appendRow(_item(mod['filename'], 'document'))
+            modulesItem.appendRow(modItem)
 
         self.__addTypesItem(globalItem, ctx.core().componentTypes)
         self.__addTypesItem(globalItem, ctx.core().operatorTypes)

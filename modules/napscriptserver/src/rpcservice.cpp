@@ -108,7 +108,7 @@ namespace nap
 
 	void RpcService::startServer()
 	{
-		mServer.runServer(rpcPort.getValue());
+        mServer.runServer(rpcPort.getValue(), threaded.getValue());
 	}
 
 

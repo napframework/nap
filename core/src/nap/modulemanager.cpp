@@ -133,7 +133,7 @@ namespace nap
 				continue;
 			}
 
-			registerModule(*module);
+//			registerModule(*module);
 		}
 	}
 

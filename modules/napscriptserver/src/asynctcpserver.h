@@ -98,7 +98,7 @@ namespace nap
 		void exit() { mRunning = false; }
 
 		// Will be run on separate thread
-		void runServer(int port);
+        void runServer(int port, bool threaded);
 
 	private:
 		// Check each client's last heartbeat and discard when timed out

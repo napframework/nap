@@ -1,7 +1,6 @@
 #pragma once
 
 #include "rpcservice.h"
-#include <jsonserializer.h>
 #include <rtti/rtti.h>
 #include <vector>
 #include <zmq.hpp>
