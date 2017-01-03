@@ -386,7 +386,7 @@ namespace nap
 
         Document* myDoc = &doc;
 
-        doc.Parse(str);
+        doc.Parse(str.c_str());
 		if (doc.HasParseError()) {
 			Logger::warn("JSON parse error: %s (%u)", GetParseError_En(doc.GetParseError()), doc.GetErrorOffset());
 			return nullptr;
