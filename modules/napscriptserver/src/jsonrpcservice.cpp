@@ -55,6 +55,7 @@ namespace nap
 		disp.AddMethod("importObject", &JsonRpcService::rpc_importObject, *this);
 		disp.AddMethod("removeObject", &JsonRpcService::rpc_removeObject, *this);
         disp.AddMethod("loadFile", &JsonRpcService::rpc_loadFile, *this);
+        disp.AddMethod("triggerSignalAttribute", &JsonRpcService::rpc_triggerSignalAttribute, *this);
 		//		disp.AddMethod("getModules", &JsonRpcService::rpc_getModules, *this);
 		//		disp.AddMethod("getDataTypes", &JsonRpcService::rpc_getDataTypes, *this);
 		//		disp.AddMethod("getRoot", &JsonRpcService::rpc_getRoot, *this);
@@ -537,5 +538,9 @@ namespace nap
 			client->enqueueEvent(msg);
 		}
 	}
+    void JsonRpcService::rpc_triggerSignalAttribute(ObjPtr ptr) {
+        auto attrib = fromPtr<SignalAttribute>(ptr);
+        attrib->trigger();
+    }
 
 }

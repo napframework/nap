@@ -12,20 +12,20 @@ class AttributeValueDelegate(QStyledItemDelegate):
         super(AttributeValueDelegate, self).__init__(*args)
 
     def createEditor(self, widget, option, index):
-        # if isinstance(index.data(), bool):
-        self.createEditorBool(widget, option, index)
-        # else:
-        #     return super(AttributeValueDelegate, self).createEditor(widget,
-        #                                                             option,
-        #                                                             index)
+        newValue = index.data()
+        if isinstance(index.data(), bool):
+            self.createEditorBool(widget, option, index)
+        else:
+            return super(AttributeValueDelegate, self).createEditor(widget,
+                                                                    option,
+                                                                    index)
 
     def paint(self, painter, option, index):
-        self.paintBool(painter, option, index)
-        # if isinstance(index.data(), bool):
-        #
-        # else:
-        #     return super(AttributeValueDelegate, self).paint(painter, option,
-        #                                                      index)
+        if isinstance(index.data(), bool):
+            self.paintBool(painter, option, index)
+        else:
+            return super(AttributeValueDelegate, self).paint(painter, option,
+                                                             index)
 
     def createEditorBool(self, widget, option, index):
         return None
@@ -48,6 +48,10 @@ class AttributeValueDelegate(QStyledItemDelegate):
                                          painter)
 
     def editorEvent(self, event, model, option, index):
+        value = index.data()
+        if not isinstance(value, bool):
+            return super(AttributeValueDelegate, self).editorEvent(event, model, option, index)
+
         if not index.flags() & Qt.ItemIsEditable:
             return False
 
@@ -71,8 +75,11 @@ class AttributeValueDelegate(QStyledItemDelegate):
         return True
 
     def setModelData(self, editor, model, index):
-        newValue = not index.data()
-        model.setData(index, newValue, Qt.EditRole)
+        newValue = index.data()
+        if isinstance(newValue, bool):
+            model.setData(index, newValue, Qt.EditRole)
+        else:
+            super(AttributeValueDelegate, self).setModelData(editor, model, index)
 
     def __checkBoxRect(self, option):
         check_box_style_option = QStyleOptionButton()

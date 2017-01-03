@@ -25,6 +25,10 @@ _J_BASETYPES = 'basetypes'
 _J_INSTANTIABLE = 'instantiable'
 
 
+class TRIGGER(object):
+    def __init__(self):
+        pass
+
 def _allSubClasses(cls):
     all_subclasses = []
 
@@ -291,6 +295,8 @@ class Core(QObject):
     ### RPC Calls
     ############################################################################
 
+    def triggerSignalAttribute(self, attrib):
+        self.__rpc.triggerSignalAttribute(attrib.ptr())
 
     def removeObjects(self, objects):
         for o in objects:
@@ -542,9 +548,14 @@ class Attribute(Object):
         if _J_VALUE in self._dic:
             self._value = self.core().toPythonValue(self._dic[_J_VALUE],
                                                     self.valueType())
+        if self._valueType == 'nap::SignalAttribute':
+            self._value = TRIGGER
 
     def setValue(self, value):
-        self.core().setAttributeValue(self, value)
+        if self._value == TRIGGER:
+            self.core().triggerSignalAttribute(self)
+        else:
+            self.core().setAttributeValue(self, value)
 
     def value(self):
         return self._value

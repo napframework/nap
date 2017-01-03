@@ -277,7 +277,11 @@ namespace nap
 		RTTI_ENABLE_DERIVED_FROM(AttributeBase)
 	public:
 		SignalAttribute() = default;
-		SignalAttribute(AttributeObject* parent, const std::string& name) : AttributeBase(parent, name) { }
+		SignalAttribute(AttributeObject* parent, const std::string& name) : AttributeBase(parent, name) {
+            valueChanged.connect([&](AttributeBase& attr) {
+               trigger();
+            });
+        }
 
 		/**
 		 * signal emitted on trigger
