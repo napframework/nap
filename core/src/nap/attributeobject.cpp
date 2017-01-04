@@ -1,6 +1,7 @@
 // Local includes
 #include "attributeobject.h"
 #include "component.h"
+#include "rttinap.h"
 
 // External includes
 #include <algorithm>
@@ -38,7 +39,7 @@ namespace nap {
 				return nullptr;
 			}
 		}else{
-			attribute = &addAttribute(name, valueType);
+			attribute = &addAttribute(name, getAttributeTypeFromValueType(valueType));
 		}
 		return attribute;
 	}
