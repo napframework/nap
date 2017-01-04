@@ -1,8 +1,8 @@
 #pragma once
 
 // GL includes
-#include <nap.h>
 #include <unordered_map>
+#include <nap.h>
 
 namespace nap
 {
@@ -46,11 +46,8 @@ namespace std
 	template<>
 	struct hash<nap::OFBlendType> {
 		size_t operator()(const nap::OFBlendType &k) const {
-			return hash<int>()((int)k);
+			return hash<int>()((int) k);
 		}
 	};
 }
-
-
-
 

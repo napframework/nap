@@ -1,7 +1,6 @@
 #pragma once
 
 #include "rpcservice.h"
-#include <jsonserializer.h>
 #include <rtti/rtti.h>
 #include <vector>
 #include <zmq.hpp>
@@ -44,22 +43,24 @@ namespace nap
 		std::string rpc_getObjectTree();
 		std::string rpc_copyObjectTree(ObjPtr ptr);
 		void rpc_pasteObjectTree(ObjPtr parentPtr, const std::string& jsonData);
-		void rpc_addChild(ObjPtr parent, const std::string &typeName);
+		void rpc_addChild(ObjPtr parent, const std::string& typeName);
 		void rpc_addEntity(ObjPtr parentEntity);
-		void rpc_setName(ObjPtr ptr, const std::string &name);
+		void rpc_setName(ObjPtr ptr, const std::string& name);
 		void rpc_setAttributeValue(ObjPtr attribPtr, const std::string& value);
-		void rpc_forceSetAttributeValue(ObjPtr ptr, const std::string &attribName, const std::string &attribValue,
-										const std::string &attribType);
+		void rpc_forceSetAttributeValue(ObjPtr ptr, const std::string& attribName, const std::string& attribValue, const std::string& attribType);
 		void rpc_connectPlugs(ObjPtr srcPlugPtr, ObjPtr dstPlugPtr);
-		void rpc_exportObject(ObjPtr ptr, const std::string &filename);
-		void rpc_importObject(ObjPtr parentPtr, const std::string &filename);
+        void rpc_disconnectPlug(ObjPtr srcPlugPtr);
+		void rpc_exportObject(ObjPtr ptr, const std::string& filename);
+		void rpc_importObject(ObjPtr parentPtr, const std::string& filename);
 		void rpc_removeObject(ObjPtr ptr);
+		void rpc_loadFile(const std::string& filename);
+        void rpc_triggerSignalAttribute(ObjPtr ptr);
 
-		void rpc_addObjectCallbacks(const std::string &ident, ObjPtr ptr);
+		void rpc_addObjectCallbacks(const std::string& ident, ObjPtr ptr);
 		std::vector<std::string> rpc_getModules();
-		std::vector<std::string> rpc_getDataTypes(const std::string &modname);
+		std::vector<std::string> rpc_getDataTypes(const std::string& modname);
 		ObjPtr rpc_getRoot();
-		ObjPtr  rpc_getParent(ObjPtr objPtr);
+		ObjPtr rpc_getParent(ObjPtr objPtr);
 		std::string rpc_getName(ObjPtr ptr);
 		std::string rpc_getTypeName(ObjPtr ptr);
 		std::string rpc_getAttributeValue(ObjPtr attribPtr);

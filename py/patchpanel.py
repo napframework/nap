@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import *
 
 import iconstore
 import nap
-from appcontext import AppContext
+from appcontext import AppContext, DisconnectPlugsAction, RemoveObjectsAction
 
 COL_NODE_CONNECTION = QColor(0x70, 0x70, 0x70)
 COL_NODE_TITLE = QColor(0xD0, 0xD0, 0xD0)
@@ -45,6 +45,16 @@ def _filter(items, itemType):
         if isinstance(item, itemType):
             yield item
 
+def _excludeTypes(items, itemTypes):
+    filteredItems = []
+    for item in items:
+        exclude = False;
+        for itemType in itemTypes:
+            if isinstance(item, itemType):
+                exclude = True
+        if not exclude:
+            filteredItems.append(item)
+    return filteredItems
 
 def _canConnect(srcPlug, destPlug):
     srcIsInput = isinstance(srcPlug, nap.InputPlugBase)
@@ -214,6 +224,7 @@ class OperatorItem(QGraphicsObject):
         @type plug: nap.InputPlugBase
         """
         plug.connected.connect(self.__onPlugConnected)
+        plug.disconnected.connect(self.__onPlugDisconnected)
         plugItem = PlugItem(self, plug)
         self.__inputPlugs.append(plugItem)
         self.layout()
@@ -231,8 +242,11 @@ class OperatorItem(QGraphicsObject):
         # TODO: Review
         self.setPos(_getObjectEditorPos(self.__operator))
 
-    def __onPlugConnected(self, outPlug, inPlug):
-        self.plugConnected.emit(outPlug, inPlug)
+    def __onPlugConnected(self, srcPlug, dstPlug):
+        self.plugConnected.emit(srcPlug, dstPlug)
+
+    def __onPlugDisconnected(self, srcPlug, dstPlug):
+        self.plugDisconnected.emit(srcPlug, dstPlug)
 
 
 class PlugItem(QGraphicsItem):
@@ -344,8 +358,6 @@ class WireItem(QGraphicsPathItem):
         self.setFlag(QGraphicsItem.ItemIsFocusable, True)
         self.setFlag(QGraphicsItem.ItemIsSelectable, True)
 
-
-
     def paint(self, painter, option, widget=None):
         if self.isVisible():
             self.updatePath()
@@ -367,7 +379,6 @@ class WireItem(QGraphicsPathItem):
         self.setPath(p)
 
         print('Updating')
-
 
 
 class WirePreview(QGraphicsPathItem):
@@ -470,15 +481,15 @@ class PatchScene(QGraphicsScene):
             self.__previewWire.srcPos = pt
         self.__previewWire.updatePath()
 
-    def stopDragConnection(self, plugItem):
+    def stopDragConnection(self, pinItem):
         if not self.__isWiring:
             return
-        if plugItem:
+        if pinItem:
             if self.__wireIsOutput:
                 srcPlugItem = self.__previewWire.srcPin.plugItem()
-                dstPlugItem = plugItem
+                dstPlugItem = pinItem.plugItem()
             else:
-                srcPlugItem = plugItem
+                srcPlugItem = pinItem.plugItem()
                 dstPlugItem = self.__previewWire.dstPin.plugItem()
 
             if srcPlugItem != dstPlugItem:
@@ -516,6 +527,11 @@ class PatchScene(QGraphicsScene):
             if isinstance(item, OperatorItem):
                 yield item
 
+    def wireItems(self):
+        for item in self.__wireLayer.childItems():
+            if isinstance(item, WireItem):
+                yield item
+
     def patch(self):
         return self.__patch
 
@@ -546,6 +562,10 @@ class PatchScene(QGraphicsScene):
 
         print('Could not find operator: %s' % op)
 
+    def findWireItem(self, srcPlugItem, dstPlugItem):
+        for item in self.wireItems():
+            if item.srcPin.plugItem().plug() == srcPlugItem and item.dstPin.plugItem().plug() == dstPlugItem:
+                return item
 
     def dragConnectionSource(self):
         if self.__previewWire.srcPin:
@@ -572,6 +592,11 @@ class PatchScene(QGraphicsScene):
         wire = WireItem(srcPlugItem.pin(), dstPlugItem.pin())
         wire.setParentItem(self.__wireLayer)
 
+    def __removeWire(self, srcPlug, dstPlug):
+        wire = self.findWireItem(srcPlug, dstPlug)
+        assert(wire)
+        self.__removeItem(wire)
+
     def __onOperatorAdded(self, op):
         """
         @type op: nap.Operator
@@ -580,17 +605,17 @@ class PatchScene(QGraphicsScene):
         item.moved.connect(self.__updateSceneRect)
         item.setParentItem(self.__operatorLayer)
         item.plugConnected.connect(self.__addWire)
+        item.plugDisconnected.connect(self.__removeWire)
         item.setPos(_getObjectEditorPos(op))
         self.__updateSceneRect()
 
-
     def __onOperatorRemoved(self, op):
-        self.__removeOperatorItem(self.findOperatorItem(op))
+        self.__removeItem(self.findOperatorItem(op))
 
     def __onOperatorChanged(self, op):
         self.findOperatorItem(op).setPos(_getObjectEditorPos(op))
 
-    def __removeOperatorItem(self, item):
+    def __removeItem(self, item):
         self.removeItem(item)
         del item
 
@@ -692,8 +717,6 @@ class DefaultInteractMode(InteractMode):
         return False
 
 
-
-
 class PatchView(QGraphicsView):
     """ The view the user will interact with when editing patches.
 
@@ -739,18 +762,36 @@ class PatchView(QGraphicsView):
         if not self.scene():
             return
         clickedItems = self.items(pos)
+        filteredClickedItems = _excludeTypes(clickedItems, [LayerItem])
 
         menu = QMenu(self)
 
-        if not clickedItems:
+        if not filteredClickedItems:
             patch = self.scene().patch()
             addCompMenu = menu.addMenu(iconstore.icon('brick_add'),
                                        'Add Operator...')
             self.ctx.createObjectActions(patch, self.ctx.core().operatorTypes(),
                                          addCompMenu)
+        else:
+            wires = list(_filter(clickedItems, WireItem))
+            if len(wires) > 0:
+                plugs = []
+                for wire in wires:
+                    plugs.append(wire.dstPin.plugItem().plug())
+                a = DisconnectPlugsAction(self.ctx, plugs)
+                a.setParent(menu)
+                menu.addAction(a)
+
+            operatorItems = list(_filter(clickedItems, OperatorItem))
+            if len(operatorItems) > 0:
+                operators = []
+                for item in operatorItems:
+                    operators.append(item.operator())
+                a = RemoveObjectsAction(self.ctx, operators)
+                a.setParent(menu)
+                menu.addAction(a)
 
         menu.exec_(QCursor.pos())
-
 
     def mousePressEvent(self, evt):
         if not self.__interactMode.mousePressed(self, evt):
@@ -937,12 +978,12 @@ class ConnectInteractMode(InteractMode):
         @type view: PatchView
         @type evt: QMouseEvent
         """
-        plug = view.plugAt(evt.pos())
+        pin = view.pinAt(evt.pos())
         print("stopDrag")
-        view.scene().stopDragConnection(plug)
+        view.scene().stopDragConnection(pin)
         return False
 
-    def mouseMoved(self, view:PatchView, evt:QMouseEvent):
+    def mouseMoved(self, view: PatchView, evt: QMouseEvent):
         pin = view.pinAt(evt.pos())
         srcPlug = view.scene().dragConnectionSource()
         pt = view.mapToScene(evt.pos())

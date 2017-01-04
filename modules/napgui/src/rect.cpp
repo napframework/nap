@@ -65,6 +65,11 @@ namespace nap
         mWidth = mHeight * ratio;
     }
 
+	Rect Rect::operator*(const float& scale) const
+	{
+		return{ mX*scale, mY*scale, mWidth*scale, mHeight*scale };
+	}
+
 	bool Rect::operator==(const Rect& other) const
 	{
 		bool loc = other.getX() == mX && other.getY() == mY;

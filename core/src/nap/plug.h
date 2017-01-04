@@ -100,13 +100,12 @@ namespace nap
 		// type
 		OutputPlugBase(Operator* parent, const std::string& name, const RTTI::TypeInfo dataType);
         
-		// Destructor
-		virtual ~OutputPlugBase();
-        
         // Returns the plugs to which this plug is connected
         const std::set<InputPlugBase*> getConnections() const;
         
         bool isConnected() const override { return !getConnections().empty(); }
+        
+        void disconnectAll();
         
 	};
 

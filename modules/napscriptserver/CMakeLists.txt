@@ -3,7 +3,9 @@ project(mod_napscriptserver)
 find_package(rapidjson REQUIRED)
 find_package(jsonrpc-lean REQUIRED)
 
-if (UNIX)
+if (APPLE)
+    find_package(zmq REQUIRED)
+elseif (UNIX)
 else ()
     find_package(zmq REQUIRED)
 endif ()
@@ -29,6 +31,8 @@ elseif(UNIX)
     list(APPEND LIBRARIES zmq pthread)
 endif()
 
+add_definitions(-DRAPIDJSON_HAS_STDSTRING=1)
+
 target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDES})
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
 
@@ -38,10 +42,5 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 
 if (UNIX)
 else()
-    foreach (RES ${ZMQ_DLL})
-        get_filename_component(F ${RES} NAME)
-        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD VERBATIM
-            COMMAND ${CMAKE_COMMAND} -E copy "${RES}" "${BIN_DIR}"
-            COMMENT "Copy dlls" )
-    endforeach()
+    copy_files_to_bin(${PROJECT_NAME} ${ZMQ_DLL})
 endif()

@@ -100,13 +100,13 @@ class AttributeValueItem(QStandardItem):
     def __onValueChanged(self, value):
         self._value = value
         if isinstance(value, bool):
-            self.setData(QVariant(bool(value)), Qt.DisplayRole)
+            self.setData(value, Qt.DisplayRole)
         else:
             self.setText(str(value or ''))
 
     def setData(self, variant, role=None):
         if role == Qt.EditRole:
-            self.__attrib.setValue(variant.toPyObject())
+            self.__attrib.setValue(variant)
         else:
             QStandardItem.setData(self, variant, role)
 

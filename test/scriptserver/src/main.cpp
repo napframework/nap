@@ -33,7 +33,7 @@ void runScriptServerComponent()
 
 	server->getAttribute<bool>("running")->setValue(true);
 
-    std::mutex mutex;
+
 
 
 	while (true) {

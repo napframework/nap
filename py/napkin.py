@@ -35,14 +35,38 @@ class MainWindow(QMainWindow):
         self.ctx.selectionChanged.connect(self.__onSelectionChanged)
         self.ctx.editorRequested.connect(self.__onEditorRequested)
         self.ctx.logMessageReceived.connect(self.__onLogMessage)
+        self.ctx.appSuspended.connect(self.__onSuspended)
+        self.ctx.appResumed.connect(self.__onResumed)
 
         self.__setupUi()
         self.__restore()
+
+        fileMenu = self.menuBar().addMenu('File')
+        openFileAction = QAction('Open...', fileMenu)
+        openFileAction.setShortcut(QKeySequence.Open)
+        openFileAction.triggered.connect(self.__onLoadFile)
+        fileMenu.addAction(openFileAction)
 
         # connect to host saved in settings
         s = QSettings()
         host = str(s.value(LAST_HOST, "tcp://localhost:8888"))
         self.ctx.connect(host)
+
+    def __onSuspended(self):
+        self.setEnabled(False)
+
+    def __onResumed(self):
+        self.setEnabled(True)
+
+    def __onLoadFile(self, enabled):
+        filename = QFileDialog.getOpenFileName(self, 'Select file to load',
+                                               self.ctx.lastFileDir(),
+                                               self.ctx.napFileFilter())
+        filename = filename[0]  # First was filename, second is filter
+        if not filename:
+            return
+
+        self.ctx.loadFile(filename)
 
     def __onLogMessage(self, level, levelName, text):
         self.statusBar().showMessage(text)
@@ -74,7 +98,8 @@ class MainWindow(QMainWindow):
         if not editor:
             editor = editorType(self.ctx)
             editor.setModel(obj)
-            self.__editors[objPath] = self.addDock(editor, Qt.TopDockWidgetArea, title)
+            self.__editors[objPath] = self.addDock(editor, Qt.TopDockWidgetArea,
+                                                   title)
 
         else:
             editor.show()
@@ -126,7 +151,6 @@ class MainWindow(QMainWindow):
 
         self.logger = LogPanel(self.ctx)
         self.addDock(self.logger, Qt.BottomDockWidgetArea, 'Log')
-
 
     def __restore(self):
         s = QSettings()

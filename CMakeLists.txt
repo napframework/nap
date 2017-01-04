@@ -19,7 +19,9 @@ if (WIN32)
     endif()
 elseif(UNIX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-elseif(APPLE)
+endif()
+
+if(APPLE)
     set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9)
 endif()
 
@@ -56,11 +58,44 @@ else()
     file(MAKE_DIRECTORY ${BIN_DIR})
     set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/${BUILD_CONF})
     file(MAKE_DIRECTORY ${LIB_DIR})
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${LIB_DIR})
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${BIN_DIR})
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR})
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${LIB_DIR})
     set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
 endif()
+
+function(copy_dir_to_bin PROJECT DIR)
+    get_filename_component(DIRNAME ${DIR} NAME)
+    if (MSVC)
+
+        add_custom_command(TARGET ${PROJECT_NAME}
+                POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_directory "${DIR}" "$(OutDir)/${DIRNAME}"
+                COMMENT "Copy ${DIR} -> $(OutDir)/${DIRNAME}")
+    else()
+        add_custom_command(TARGET ${PROJECT_NAME}
+                POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy "${DIR}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${DIRNAME}"
+                COMMENT "Copy ${DIR} -> ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${DIRNAME}")
+    endif()
+endfunction()
+
+function(copy_files_to_bin PROJECT)
+    foreach(F ${ARGN})
+        if (MSVC)
+            add_custom_command(TARGET ${PROJECT_NAME}
+                    POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy "${F}" "$(OutDir)"
+                    COMMENT "Copy ${F} -> $(OutDir)")
+        else()
+            add_custom_command(TARGET ${PROJECT_NAME}
+                    POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy "${F}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
+                    COMMENT "Copy ${F} -> ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+        endif()
+    endforeach()
+endfunction()
+
 
 if(WIN32)
     if(MINGW)
@@ -92,12 +127,14 @@ add_subdirectory(test/render)
 
 # Modules
 add_subdirectory(modules/napfsm)
-add_subdirectory(modules/naprender)
 add_subdirectory(modules/napinput)
 add_subdirectory(modules/napscriptserver)
 add_subdirectory(modules/napjsonserializer)
+add_subdirectory(modules/naprender)
 add_subdirectory(modules/napgui)
 
 #add_dependencies(napkin mod_napfsm)
 add_dependencies(scriptserver mod_napscriptserver)
+add_dependencies(CoreApp mod_naprender mod_napscriptserver)
 add_dependencies(rendertest mod_naprender)
+add_dependencies(unittest mod_naprender mod_napscriptserver)

@@ -70,7 +70,7 @@ namespace nap
 			writer.String(J_VALUE_TYPE);
 			writer.String(attrib.getValueType().getName().c_str());
 			writer.String(J_FLAGS);
-			writer.Bool(attrib.checkFlag(Editable));
+			writer.Int(attrib.getFlags());
 
 			if (writePointers) {
 				writer.String(J_PTR);
@@ -308,7 +308,8 @@ namespace nap
     
 	Object* jsonToObject(Value& value, Core& core, Object* parent)
 	{
-		const char* objectName = value.FindMember(J_NAME)->value.GetString();
+        auto member = value.FindMember(J_NAME);
+		const char* objectName = member->value.GetString();
 		const char* objectTypename = value.FindMember(J_TYPE)->value.GetString();
 
         // Resolve current object
@@ -320,6 +321,15 @@ namespace nap
 			obj = &core.getRoot();
 		} else {
 			RTTI::TypeInfo objectType = RTTI::TypeInfo::getByName(objectTypename);
+            if (!objectType.isValid()) {
+                Logger::fatal("Failed to retrieve type: '%s'", objectTypename);
+                return nullptr;
+            }
+
+            if (!objectType.canCreateInstance()) {
+                Logger::fatal("Cannot create instance of type: '%s'", objectTypename);
+                return nullptr;
+            }
 
 			// Handle Entity
 			if (objectType.isKindOf<Entity>()) {
@@ -368,16 +378,21 @@ namespace nap
     
 	Object* JSONSerializer::readObject(std::istream& istream, Core& core, Object* parent) const
 	{
-		IStreamWrapper is(istream);
+        Document doc;
 
-		Document doc;
-		doc.ParseStream(is);
+        std::string str((std::istreambuf_iterator<char>(istream)),
+                        std::istreambuf_iterator<char>());
+
+
+        doc.Parse(str.c_str());
 		if (doc.HasParseError()) {
 			Logger::warn("JSON parse error: %s (%u)", GetParseError_En(doc.GetParseError()), doc.GetErrorOffset());
 			return nullptr;
 		}
 
-		return jsonToObject(doc, core, parent);
+
+        Object* o = jsonToObject(doc, core, parent);
+        return o;
 	}
 
 

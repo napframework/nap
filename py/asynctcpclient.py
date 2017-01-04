@@ -62,7 +62,11 @@ class AsyncTCPClient(object):
                     sock.send_string(msg, zmq.NOBLOCK)
 
             else:
-                sock.send_string("", zmq.NOBLOCK) # Send heartbeat
+                try:
+                    sock.send_string("", zmq.NOBLOCK) # Send heartbeat
+                except zmq.error.Again:
+                    print('Connection to server lost.')
+                    self.running = False
 
     def onMessageReceived(self, msg):
         raise NotImplementedError()

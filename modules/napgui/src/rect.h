@@ -64,6 +64,8 @@ namespace nap
 
 		bool operator == (const Rect& other) const;
 
+		Rect operator*(const float& scale) const;
+
 	private:
 		float mX = 0;
 		float mY = 0;

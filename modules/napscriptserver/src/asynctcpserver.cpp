@@ -1,3 +1,4 @@
+//#include <nap/coreutils.h>
 #include "asynctcpserver.h"
 
 namespace nap
@@ -15,15 +16,20 @@ namespace nap
 
 	}
 
-	void AsyncTCPServer::runServer(int port) {
+	void AsyncTCPServer::runServer(int port, bool threaded) {
 		mPort = port;
-		mThread = std::make_unique<std::thread>(std::bind(&AsyncTCPServer::runServerLoop, this));
+        if (threaded) {
+            mThread = std::make_unique<std::thread>(std::bind(&AsyncTCPServer::runServerLoop, this));
+        } else {
+            runServerLoop();
+        }
+
 	}
 
 
 	void AsyncTCPServer::runServerLoop()
 	{
-
+//        setThreadName("AsyncTCPServer");
 		zmq::context_t ctx;
 		zmq::socket_t sock(ctx, ZMQ_ROUTER);
 		std::string hostname = "tcp://*:" + std::to_string(mPort);

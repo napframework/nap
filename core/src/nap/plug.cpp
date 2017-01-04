@@ -92,12 +92,11 @@ namespace nap
 	OutputPlugBase::OutputPlugBase(Operator* parent, const std::string& name, const RTTI::TypeInfo dataType)
 		: Plug(parent, name, dataType)
 	{
+        removed.connect([&](Object&){
+            disconnectAll();
+        });
 	}
 
-
-	OutputPlugBase::~OutputPlugBase()
-	{
-	}
 
     const std::set<InputPlugBase*> OutputPlugBase::getConnections() const
     {
@@ -117,6 +116,14 @@ namespace nap
         }
 
         return connections;
+    }
+    
+    
+    void OutputPlugBase::disconnectAll()
+    {
+        auto connections = getConnections();
+        for (auto connection : connections)
+            connection->disconnect();
     }
 
 

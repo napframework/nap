@@ -1,13 +1,13 @@
 project(CoreApp)
 
 file(GLOB sources src/*.cpp)
-include_directories(src)
-
+include_directories(src ${RAPIDJSON_INCLUDE_DIRS})
 add_definitions(-DAPP_NAME="${PROJECT_NAME}")
+add_definitions(-DRAPIDJSON_HAS_STDSTRING=1)
 
 add_executable(${PROJECT_NAME} ${sources})
 
-set(_LIBS napcore mod_napscriptserver)
+set(_LIBS napcore)
 
 if(MSVC)
 else()

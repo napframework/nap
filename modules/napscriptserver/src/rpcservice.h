@@ -64,6 +64,7 @@ namespace nap
 		Attribute<int> rpcPort = {this, "rpcPort", 8888};
 		Attribute<bool> running = {this, "running", false};
 		Attribute<bool> broadcastChanges = { this, "broadcastChanges", true };
+        Attribute<bool> threaded = { this, "threaded", true };
 
 		virtual std::string evalScript(const std::string& cmd) = 0;
 		virtual void handleLogMessage(LogMessage& msg) = 0;
@@ -73,6 +74,8 @@ namespace nap
 		virtual void handleAttributeValueChanged(AttributeBase& attrib) = 0;
 		virtual void handlePlugConnected(InputPlugBase& plug) = 0;
 		virtual void handlePlugDisconnected(InputPlugBase& plug) = 0;
+
+        const std::string& getSessionID() const { return mSessionID; }
 
 	protected:
 		AsyncTCPServer& getServer() { return mServer; }
@@ -106,6 +109,7 @@ namespace nap
 	private:
 		std::vector<std::unique_ptr<RPCObjectCallback>> mCallbacks;
 		AsyncTCPServer mServer;
+        std::string mSessionID;
 	};
 }
 RTTI_DECLARE_BASE(nap::RpcService)
