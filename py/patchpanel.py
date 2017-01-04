@@ -357,6 +357,7 @@ class WireItem(QGraphicsPathItem):
         self.dstPos = QPointF()
         self.setFlag(QGraphicsItem.ItemIsFocusable, True)
         self.setFlag(QGraphicsItem.ItemIsSelectable, True)
+        self.updatePath()
 
     def paint(self, painter, option, widget=None):
         if self.isVisible():
