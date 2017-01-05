@@ -128,9 +128,8 @@ namespace nap
 	{
 		RTTI_ENABLE_DERIVED_FROM(nap::Operator)
 	public:
-		InputPullPlug<float> input = { this, "input" };
+		InputPullPlug<float> input = { this, "input", 0 };
 		OutputPullPlug<float> output = { this, &FloatOperator::pullValue, "output" };
-        Attribute<float> test = { this, "test" };
 
 	private:
 		void pullValue(float& outValue)
@@ -147,7 +146,7 @@ namespace nap
 	public:
 		FloatToStringOperator() : Operator() {}
 
-		InputPullPlug<float> floatInput = {this, "input"};
+		InputPullPlug<float> floatInput = {this, "input", 0};
 		OutputPullPlug<std::string> stringOutput = {this, &FloatToStringOperator::pullValue, "output"};
 
 	private:
@@ -170,8 +169,8 @@ namespace nap
 			// Add initial term
 		}
 
-		InputPullPlug<float> mTermA = {this, "termA"};
-		InputPullPlug<float> mTermB = {this, "termb"};
+		InputPullPlug<float> mTermA = {this, "termA", 0};
+		InputPullPlug<float> mTermB = {this, "termb", 0};
 
 		//        MultiInputPlug<float> mTerms = {*this, "term"};
 		nap::OutputPullPlug<float> sum = {this, "Sum", [&](float& sum) { calcSum(sum); }};
@@ -198,8 +197,8 @@ namespace nap
 		MultFloatOperator() : nap::Operator() {}
 
 		//        MultiInputPlug<float> mFactors = {*this, "factor"};
-		nap::InputPullPlug<float> mFactorA = {this, "factorA"};
-		nap::InputPullPlug<float> mFactorB = {this, "factorB"};
+		nap::InputPullPlug<float> mFactorA = {this, "factorA", 0};
+		nap::InputPullPlug<float> mFactorB = {this, "factorB", 0};
 		nap::OutputPullPlug<float> product = {this, "product", [&](float& product) { calcProduct(product); }};
 
 	private:
@@ -243,8 +242,8 @@ namespace nap
 		RTTI_ENABLE_DERIVED_FROM(nap::Operator)
 	public:
 		nap::OutputPullPlug<bool> condition = {this, "equals"};
-		nap::InputPullPlug<std::string> mFactorA = {this, "stringA"};
-		nap::InputPullPlug<std::string> mFactorB = {this, "stringB"};
+		nap::InputPullPlug<std::string> mFactorA = {this, "stringA", ""};
+		nap::InputPullPlug<std::string> mFactorB = {this, "stringB", ""};
 	};
 
 	class SwitchOperator : public nap::Operator
@@ -260,7 +259,7 @@ namespace nap
 													triggerFalse.trigger();
 												}
 											}};
-		nap::InputPullPlug<bool> condition = {this, "condition"};
+		nap::InputPullPlug<bool> condition = {this, "condition", false};
 		nap::OutputTriggerPlug triggerTrue = {this, "true"};
 		nap::OutputTriggerPlug triggerFalse = {this, "false"};
 	};
@@ -272,7 +271,7 @@ namespace nap
 	public:
 		Attribute<int> mValue = {this, "valueAttr", 0};
 		OutputPullPlug<int> output = {this, &IntOperator::pullValue, "value"};
-		InputPullPlug<int> input = {this, "input"};
+		InputPullPlug<int> input = {this, "input", 0};
 
 	private:
 		void pullValue(int& outValue)
@@ -290,14 +289,16 @@ namespace nap
 	{
 		RTTI_ENABLE_DERIVED_FROM(Operator)
 	public:
-		InputPullPlug<std::string> input = {this, "message"};
-		nap::InputTriggerPlug mInTrigger = {this, "InTrigger", [&]() {
-												std::string message;
-												input.pull(message);
-												Logger::info(message);
-											}};
+		InputPullPlug<std::string> input = {this, "message", ""};
+        nap::InputTriggerPlug mInTrigger = {this, &LogOperator::trigger, "InTrigger"};
 
 	private:
+        void trigger()
+        {
+            std::string message;
+			input.pull(message);
+			Logger::info(message);
+        }
 	};
 }
 

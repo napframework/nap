@@ -49,18 +49,19 @@ namespace nap
 			// Poll for requests / connections
 			zmq::pollitem_t pollitem = {sock, 0, ZMQ_POLLIN, 0};
 			zmq_poll(&pollitem, 1, 10);
+            
             if (pollitem.revents & ZMQ_POLLIN) {
 				// Receive multipart message
 				zmq::message_t message;
 				sock.recv(&message);
-				std::string ident = std::string(static_cast<char*>(message.data()), message.size());
+				std::string clientIdentifier = std::string(static_cast<char*>(message.data()), message.size());
 				sock.recv(&message);
 				std::string msg = std::string(static_cast<char*>(message.data()), message.size());
 
-				AsyncTCPClient* client = getOrAddClient(ident);
+				AsyncTCPClient* client = getOrAddClient(clientIdentifier);
 				client->updateHeartbeat();
 
-				// Emit to listeners
+				// if message is not heartbeat, emit to listeners
 				if (!msg.empty()) {
 					client->messageReceived.trigger(msg);
 					requestReceived.trigger(*client, msg);
