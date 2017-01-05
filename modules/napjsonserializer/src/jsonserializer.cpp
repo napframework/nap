@@ -326,10 +326,6 @@ namespace nap
                 return nullptr;
             }
 
-            if (!objectType.canCreateInstance()) {
-                Logger::fatal("Cannot create instance of type: '%s'", objectTypename);
-                return nullptr;
-            }
 
 			// Handle Entity
 			if (objectType.isKindOf<Entity>()) {
@@ -337,6 +333,10 @@ namespace nap
                 Entity* parentEntity = static_cast<Entity*>(parent);
                 obj = &parentEntity->addEntity(objectName);
 			} else {
+                if (!objectType.canCreateInstance()) {
+                    Logger::fatal("Cannot create instance of type: '%s'", objectTypename);
+                    return nullptr;
+                }
 				// Handle other types
 				if (parent->hasChild(objectName) && parent->getChild(objectName)->getTypeInfo().isKindOf(objectType)) {
 					// Child alread exists
