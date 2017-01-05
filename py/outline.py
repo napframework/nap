@@ -14,7 +14,7 @@ class AttributeValueDelegate(QStyledItemDelegate):
     def createEditor(self, widget, option, index):
         newValue = index.data()
         if isinstance(index.data(), bool):
-            self.createEditorBool(widget, option, index)
+            pass
         else:
             return super(AttributeValueDelegate, self).createEditor(widget,
                                                                     option,
@@ -26,9 +26,6 @@ class AttributeValueDelegate(QStyledItemDelegate):
         else:
             return super(AttributeValueDelegate, self).paint(painter, option,
                                                              index)
-
-    def createEditorBool(self, widget, option, index):
-        return None
 
     def paintBool(self, painter, option, index):
         styleOption = QStyleOptionButton()
@@ -43,8 +40,20 @@ class AttributeValueDelegate(QStyledItemDelegate):
         else:
             styleOption.state |= QStyle.State_Off
 
-        styleOption.rect = self.__checkBoxRect(option)
+        styleOption.rect = self.__buttonRect(option)
         QApplication.style().drawControl(QStyle.CE_CheckBox, styleOption,
+                                         painter)
+
+    def paintButton(self, painter, option, index):
+        styleOption = QStyleOptionButton()
+        value = index.data()
+        if index.flags() & Qt.ItemIsEditable:
+            styleOption.state |= QStyle.State_Enabled
+        else:
+            styleOption.state |= QStyle.State_ReadOnly
+
+        styleOption.rect = self.__buttonRect(option)
+        QApplication.style().drawControl(QStyle.CE_PushButton, styleOption,
                                          painter)
 
     def editorEvent(self, event, model, option, index):
@@ -81,17 +90,17 @@ class AttributeValueDelegate(QStyledItemDelegate):
         else:
             super(AttributeValueDelegate, self).setModelData(editor, model, index)
 
-    def __checkBoxRect(self, option):
-        check_box_style_option = QStyleOptionButton()
-        check_box_rect = QApplication.style().subElementRect(
-            QStyle.SE_CheckBoxIndicator, check_box_style_option, None)
-        check_box_point = QPoint(option.rect.x() +
+    def __buttonRect(self, option):
+        styleOption = QStyleOptionButton()
+        buttonRect = QApplication.style().subElementRect(
+            QStyle.SE_CheckBoxIndicator, styleOption, None)
+        buttonPoint = QPoint(option.rect.x() +
                                  option.rect.width() / 2 -
-                                 check_box_rect.width() / 2,
+                                 buttonRect.width() / 2,
                                  option.rect.y() +
                                  option.rect.height() / 2 -
-                                 check_box_rect.height() / 2)
-        return QRect(check_box_point, check_box_rect.size())
+                                 buttonRect.height() / 2)
+        return QRect(buttonPoint, buttonRect.size())
 
 
 class OutlineModel(QStandardItemModel):

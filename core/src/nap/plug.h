@@ -171,7 +171,7 @@ namespace nap
 			: InputPlugBase(parent, name, RTTI::TypeInfo::empty()), mTriggerFunction(func), mLocking(locking)
 		{
             getParentObject()->addChild(mAttribute);
-            mAttribute.setName(name + "Value");
+            mAttribute.setName(name + "Execute");
             mAttribute.signal.connect([&](const SignalAttribute& attr){ trigger(); });
             initSignals();
 		}
@@ -184,7 +184,7 @@ namespace nap
                 mTriggerFunction(std::bind(memberFunction, parent)), mLocking(locking)
         {
             getParentObject()->addChild(mAttribute);
-            mAttribute.setName(name + "Value");
+            mAttribute.setName(name + "Execute");
             mAttribute.signal.connect([&](const SignalAttribute& attr){ trigger(); });
             initSignals();
         }
