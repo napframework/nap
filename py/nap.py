@@ -471,7 +471,8 @@ class Object(QObject):
 
     def onChildRemoved(self, child):
         self.childRemoved.emit(child)
-        self.__children.remove(child)
+        if child in self.__children:
+            self.__children.remove(child)
 
     def setName(self, name):
         self.core().setName(self, name)
