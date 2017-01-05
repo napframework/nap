@@ -138,7 +138,8 @@ namespace nap
 	void RpcService::onRequestReceived(AsyncTCPClient& client, const std::string& msg)
 	{
 		Logger::debug("Client '%s' requested: %s", client.getIdent().c_str(), msg.c_str());
-		client.enqueueEvent(evalScript(msg));
+        std::string result = evalScript(msg);
+		client.enqueueEvent(result);
 	}
 
 

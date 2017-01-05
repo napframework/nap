@@ -76,7 +76,8 @@ namespace nap
 	std::string JsonRpcService::evalScript(const std::string& cmd)
 	{
 		std::lock_guard<std::mutex> lock(mMutex);
-		return mJsonServer.HandleRequest(cmd)->GetData();
+        auto reply = mJsonServer.HandleRequest(cmd);
+		return reply->GetData();
 	}
 
 
@@ -399,8 +400,12 @@ namespace nap
 	void JsonRpcService::rpc_setAttributeValue(ObjPtr attribPtr, const std::string& value)
 	{
 		auto attrib = fromPtr<AttributeBase>(attribPtr);
+        std::cout << "setAttributeValue()" << std::endl;
 		if (attrib)
+        {
+            std::cout << "setAttributeValue() " << attrib->getName() << " " << value << std::endl;
 			attrib->fromString(value);
+        }
 	}
 
 	void JsonRpcService::rpc_forceSetAttributeValue(ObjPtr ptr, const std::string& attribName,

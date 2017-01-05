@@ -170,16 +170,42 @@ namespace nap
 		InputTriggerPlug(Operator* parent, const std::string& name, TriggerFunction func, bool locking = false)
 			: InputPlugBase(parent, name, RTTI::TypeInfo::empty()), mTriggerFunction(func), mLocking(locking)
 		{
+            getParentObject()->addChild(mAttribute);
+            mAttribute.setName(name + "Execute");
+            mAttribute.signal.connect([&](const SignalAttribute& attr){ trigger(); });
+            initSignals();
 		}
 
+        // This constructor takes a memberfunction of the parent that is executed
+        // when new data enters the plug
+        template <typename U, typename F>
+        InputTriggerPlug(U* parent, F memberFunction, const std::string& name, bool locking = false)
+            : InputPlugBase(parent, name, RTTI::TypeInfo::empty()),
+                mTriggerFunction(std::bind(memberFunction, parent)), mLocking(locking)
+        {
+            getParentObject()->addChild(mAttribute);
+            mAttribute.setName(name + "Execute");
+            mAttribute.signal.connect([&](const SignalAttribute& attr){ trigger(); });
+            initSignals();
+        }
+        
         // Triggers the action associated with this plug
         void trigger();
 
         const RTTI::TypeInfo getDataType() const override { return RTTI::TypeInfo::empty(); }
 
+        SignalAttribute& getAttribute() { return mAttribute; }
+        
     private:
+        void onNameChanged(const std::string& newName) { mAttribute.setName(newName + "Input"); }
+        void onAdded(Object&) { getParentObject()->addChild(mAttribute); };
+        void onRemoved(Object&) { getParentObject()->removeChild(mAttribute); };
+        
+        void initSignals();
+        
         TriggerFunction mTriggerFunction;
         bool mLocking = false;
+        SignalAttribute mAttribute;
 	};
 
 
@@ -324,9 +350,19 @@ namespace nap
 			: InputPlugBase(parent, name, RTTI::TypeInfo::get<T>())
 		{
             getParentObject()->addChild(mAttribute);
-            mAttribute.setName(name + "Input");
+            mAttribute.setName(name + "Value");
             initSignals();
 		}
+        
+        // The constructor takes the name of the plug and a default value for it's attribute
+        InputPullPlug(Operator* parent, const std::string& name, const T& defaultValue)
+        : InputPlugBase(parent, name, RTTI::TypeInfo::get<T>())
+        {
+            mAttribute.setValue(defaultValue);
+            getParentObject()->addChild(mAttribute);
+            mAttribute.setName(name + "Value");
+            initSignals();
+        }
         
 		// This function can be used by the owning operator to poll for data
 		// from the connected plugs. The new polled
