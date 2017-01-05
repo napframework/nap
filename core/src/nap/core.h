@@ -148,7 +148,6 @@ namespace nap
 		 * Loads all modules in to the core environment 
 		 */
         void initialize()											{
-            mModuleManager.loadCoreModule();
             mModuleManager.loadModules();
         }
 

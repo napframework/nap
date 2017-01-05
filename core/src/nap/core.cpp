@@ -30,6 +30,7 @@ namespace nap
 	**/
 	Core::Core()
 	{
+        getModuleManager().loadCoreModule();
 		// the root entity has no parent: nullptr
 		mRoot = std::unique_ptr<Entity>(new Entity(*this));
 		mRoot->mName = "root";
