@@ -99,16 +99,10 @@ namespace nap
 		 */
 		virtual const RTTI::TypeInfo getValueType() const = 0;
 
-		/**
-		 * Sets this attribute value based on changes from an other attribute
-		 @param slot the attribute to listen to
-		 */
-		void connectToAttribute(Slot<AttributeBase&>& slot);
-
-		/**
-		 * sets the attribute to internally lock a mutex when accessing it's value
-		 * @param atomic if the attribute will be locked or not on access
-		 */
+        /**
+         * sets the attribute to internally lock a mutex when accessing it's value
+         * @param atomic if the attribute will be locked or not on access
+         */
 		void setAtomic(bool atomic) { mAtomic = atomic; }
 
 		/**
