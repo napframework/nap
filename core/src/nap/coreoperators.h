@@ -217,15 +217,8 @@ namespace nap
 	{
 		RTTI_ENABLE_DERIVED_FROM(nap::Operator)
 	public:
-		SimpleTriggerOperator() : nap::Operator()
-		{
-			signal.signal.connect([&](const SignalAttribute& attr) { mOutTrigger.trigger(); });
-		}
-
 		nap::OutputTriggerPlug mOutTrigger = {this, "OutTrigger"};
 		nap::InputTriggerPlug mInTrigger = {this, "InTrigger", [&]() { mOutTrigger.trigger(); }};
-
-		SignalAttribute signal = {this, "Trigger"};
 	};
 
 	class OSCOperator : public nap::Operator

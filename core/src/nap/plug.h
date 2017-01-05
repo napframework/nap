@@ -170,6 +170,10 @@ namespace nap
 		InputTriggerPlug(Operator* parent, const std::string& name, TriggerFunction func, bool locking = false)
 			: InputPlugBase(parent, name, RTTI::TypeInfo::empty()), mTriggerFunction(func), mLocking(locking)
 		{
+            getParentObject()->addChild(mAttribute);
+            mAttribute.setName(name + "Value");
+            mAttribute.signal.connect([&](const SignalAttribute& attr){ trigger(); });
+            initSignals();
 		}
 
         // This constructor takes a memberfunction of the parent that is executed
@@ -179,6 +183,10 @@ namespace nap
             : InputPlugBase(parent, name, RTTI::TypeInfo::empty()),
                 mTriggerFunction(std::bind(memberFunction, parent)), mLocking(locking)
         {
+            getParentObject()->addChild(mAttribute);
+            mAttribute.setName(name + "Value");
+            mAttribute.signal.connect([&](const SignalAttribute& attr){ trigger(); });
+            initSignals();
         }
         
         // Triggers the action associated with this plug
@@ -186,9 +194,18 @@ namespace nap
 
         const RTTI::TypeInfo getDataType() const override { return RTTI::TypeInfo::empty(); }
 
+        SignalAttribute& getAttribute() { return mAttribute; }
+        
     private:
+        void onNameChanged(const std::string& newName) { mAttribute.setName(newName + "Input"); }
+        void onAdded(Object&) { getParentObject()->addChild(mAttribute); };
+        void onRemoved(Object&) { getParentObject()->removeChild(mAttribute); };
+        
+        void initSignals();
+        
         TriggerFunction mTriggerFunction;
         bool mLocking = false;
+        SignalAttribute mAttribute;
 	};
 
 
