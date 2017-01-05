@@ -58,9 +58,10 @@ namespace nap
         
         // Return the entity this operator's patch resides in
         Entity* getEntity();
-
+        
 		Attribute<float> patchXPos = { this, "__patch_x_pos__", 0 };
 		Attribute<float> patchYPos = { this, "__patch_y_pos__", 0 };
+        
 	};
 }
 

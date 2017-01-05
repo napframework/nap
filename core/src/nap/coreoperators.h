@@ -45,6 +45,7 @@ namespace nap
 
 
 
+    /*
 	class GetAttributesOperator : public Operator
 	{
 		RTTI_ENABLE_DERIVED_FROM(Operator)
@@ -121,25 +122,20 @@ namespace nap
 
 		AttributeObject* mCurrentObject = nullptr;
 	};
-
+    */
 
 	class FloatOperator : public nap::Operator
 	{
 		RTTI_ENABLE_DERIVED_FROM(nap::Operator)
 	public:
-		Attribute<float> mValue = {this, "valueAttr", 0.};
-		nap::OutputPullPlug<float> output = {this, &FloatOperator::pullValue, "value"};
-		nap::InputPullPlug<float> input = {this, "input"};
+		InputPullPlug<float> input = { this, "input" };
+		OutputPullPlug<float> output = { this, &FloatOperator::pullValue, "output" };
+        Attribute<float> test = { this, "test" };
 
 	private:
 		void pullValue(float& outValue)
 		{
-			if (input.isConnected()) {
-				float result;
-				input.pull(result);
-				mValue.setValue(result);
-			}
-			outValue = mValue.getValue();
+            input.pull(outValue);
 		}
 	};
 
@@ -315,7 +311,7 @@ RTTI_DECLARE(nap::FloatOperator)
 RTTI_DECLARE(nap::IntOperator)
 RTTI_DECLARE(nap::LogOperator)
 RTTI_DECLARE(nap::FloatToStringOperator)
-RTTI_DECLARE_BASE(nap::GetAttributesOperator)
+//RTTI_DECLARE_BASE(nap::GetAttributesOperator)
 
 RTTI_DECLARE(nap::OSCOperator)
 RTTI_DECLARE(nap::CompareStringOperator)

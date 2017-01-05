@@ -5,6 +5,7 @@
 #include <nap/operator.h>
 #include <nap/patch.h>
 #include <nap/entity.h>
+#include <nap/rttinap.h>
 
 using namespace std;
 
@@ -12,10 +13,10 @@ RTTI_DEFINE(nap::Operator)
 
 namespace nap
 {
-
+    
 	nap::Patch* Operator::getPatch()
 	{
-		return static_cast<Patch*>(getParentObject());
+		return static_cast<Patch*>(getParentObject());        
 	}
 
     
@@ -31,5 +32,6 @@ namespace nap
         }
         return nullptr;            
     }
+    
     
 }

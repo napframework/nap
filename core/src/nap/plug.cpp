@@ -87,8 +87,8 @@ namespace nap
 
 		return true;
 	}
-
-
+    
+    
 	OutputPlugBase::OutputPlugBase(Operator* parent, const std::string& name, const RTTI::TypeInfo dataType)
 		: Plug(parent, name, dataType)
 	{
