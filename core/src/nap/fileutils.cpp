@@ -24,6 +24,8 @@
     #include <zconf.h>
     #include <sys/stat.h>
     #include <dirent.h>
+#include <fstream>
+
 #endif
 
 // clang-format on
@@ -158,5 +160,11 @@ namespace nap
 		// if any condition fails
 		return false;
 	}
+
+    void writeStringToFile(const std::string& filename, const std::string& contents) {
+        std::ofstream out(filename);
+        out << contents;
+        out.close();
+    }
 
 }
