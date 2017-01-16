@@ -10,6 +10,7 @@
 
 #include "nsdlgl.h"
 #include "nglutils.h"
+#include "ndrawutils.h"
 #include "nshader.h"
 #include "ntexture.h"
 #include "nbitmap.h"
@@ -25,3 +26,4 @@
 #include "nmodelutils.h"
 #include "nframebuffer.h"
 #include "ncamera.h"
+#include "npolyline.h"

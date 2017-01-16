@@ -50,7 +50,7 @@ namespace opengl
 		/**
 		 * draws the model to currently active context
 		 */
-		void draw(GLenum mode = GL_TRIANGLES);
+		void draw();
 
 		/**
 		* Clears all associated mesh data

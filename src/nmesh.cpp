@@ -2,6 +2,13 @@
 
 namespace opengl
 {
+	// Constructor initializes object draw mode
+	Mesh::Mesh()
+	{
+		mObject.setDrawMode(DrawMode::TRIANGLES);
+	}
+
+
 	// Creates the containing vertex array object that will hold all the vertex buffers
 	void Mesh::init()
 	{
@@ -42,9 +49,9 @@ namespace opengl
 
 
 	// Draw mesh object
-	void Mesh::draw(GLenum mode /*= GL_TRIANGLES*/)
+	void Mesh::draw()
 	{
-		mObject.draw(mode);
+		mObject.draw();
 	}
 
 	

@@ -58,7 +58,7 @@ namespace opengl
 
 
 	//  Draws all the vertex data associated with this buffer object
-	void VertexArrayObject::draw(GLenum mode /*= GL_TRIANGLES*/, int count /*= -1*/)
+	void VertexArrayObject::draw(int count /*= -1*/)
 	{
 		if (!bind())
 		{
@@ -66,11 +66,14 @@ namespace opengl
 			return;
 		}
 
+		// Get gl draw mode
+		GLenum draw_mode = getGLMode(mDrawMode);
+
 		// Get number of verts to draw
 		GLsizei draw_count = count < 0 ? static_cast<GLsizei>(mVertCount) : static_cast<GLsizei>(count);
 
 		// Draw all arrays managed by this vertex array object
-		glDrawArrays(mode, 0, draw_count);
+		glDrawArrays(draw_mode, 0, draw_count);
 
 		// Unbind object
 		unbind();
@@ -175,6 +178,18 @@ namespace opengl
 		}
 		printMessage(MessageType::WARNING, "unable to find vertex buffer index that is bound with vertex array object");
 		return -1;
+	}
+
+
+	// Sets the draw mode
+	void VertexArrayObject::setDrawMode(DrawMode mode)
+	{
+		if (mode == DrawMode::UNKNOWN)
+		{
+			opengl::printMessage(MessageType::ERROR, "unable to set draw mode, mode unknown");
+			return;
+		}
+		mDrawMode = mode;
 	}
 
 }

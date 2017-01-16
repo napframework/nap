@@ -34,7 +34,7 @@ namespace opengl
 	{
 	public:
 		// Default Constructor
-		Mesh() = default;
+		Mesh();
 
 		// Default destructor
 		virtual ~Mesh() = default;
@@ -87,10 +87,8 @@ namespace opengl
 		/**
 		* Draws the vertex data associated with this mesh object to the currently active context
 		* Calls bind before drawing.
-		*
-		* @param mode:  The vertex connection mode (GL_TRIANGLES, GL_LINE_STRIP etc)
 		*/
-		void draw(GLenum mode = GL_TRIANGLES);
+		virtual void draw();
 		
 		/**
 		* @return the number of vertices associated with the data in the vertex buffers
@@ -161,10 +159,24 @@ namespace opengl
 		 */
 		int getUvBufferIndex(unsigned int uvChannel = 0) const;
 
+		/**
+		* Sets the mode used when drawing this object to a render target
+		* @param mode the new draw mode
+		*/
+		void setDrawMode(DrawMode mode)								{ mObject.setDrawMode(mode); }
+
+		/**
+		* Returns the current draw mode
+		* @param the current draw mode
+		*/
+		DrawMode getDrawMode() const								{ return mObject.getDrawMode(); }
+
+	protected:
+		VertexArrayObject						mObject;				// Contains all the vertex buffers
+
 	private:
 		using VertexContainerArray = std::vector<std::unique_ptr<FloatVertexContainer>>;
 
-		VertexArrayObject						mObject;				// Contains all the vertex buffers
 		std::unique_ptr<FloatVertexContainer>	mVertices = nullptr;	//< Mesh Positions
 		std::unique_ptr<FloatVertexContainer>	mNormals  = nullptr;	//< Mesh Normals
 		VertexContainerArray					mUvs;					//< Mesh Uv's

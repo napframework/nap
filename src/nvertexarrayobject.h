@@ -2,6 +2,7 @@
 
 // Local Includes
 #include "nvertexbuffer.h"
+#include "ndrawutils.h"
 
 // External Includes
 #include <GL/glew.h>
@@ -68,7 +69,7 @@ namespace opengl
 		 * @param mode:  The vertex connection mode (GL_TRIANGLES, GL_LINE_STRIP etc)
 		 * @param count: Number of vertices to draw, -1 draws all associated vertices
 		 */
-		void			draw(GLenum mode = GL_TRIANGLES, int count = -1);
+		void			draw(int count = -1);
 
 		/**
 		 * Adds a vertex buffer to this vertex array object
@@ -100,11 +101,24 @@ namespace opengl
 		*/
 		unsigned int	getVertCount() const			{ return mVertCount; }
 
+		/**
+		 * Sets the mode used when drawing this object to a render target
+		 * @param mode the new draw mode
+		 */
+		void			setDrawMode(DrawMode mode);
+
+		/**
+		 * Returns the current draw mode
+		 * @param the current draw mode
+		 */
+		DrawMode		getDrawMode() const				{ return mDrawMode; }
+
 	private:
 		using VertexBufferBindings = std::unordered_map<unsigned int, VertexBuffer*>;
 
-		GLuint					mId = 0;				// The generated vertex array id
-		
+		GLuint					mId = 0;							// The generated vertex array id
+		DrawMode				mDrawMode = DrawMode::TRIANGLES;	// Mode currently used for drawing
+
 		/**
 		 * Maps a buffer to a specific pointer index in the vertex array object
 		 * This index is important when enabling the VAO for drawing with a shader
@@ -112,6 +126,6 @@ namespace opengl
 		 * For that reason it's important to associate an id with every added buffer
 		 */
 		VertexBufferBindings	mBindings;				
-		unsigned int			mVertCount = 0;			// Total number of vertices
+		unsigned int			mVertCount = 0;						// Total number of vertices
 	};
 }

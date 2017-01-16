@@ -32,11 +32,11 @@ namespace opengl
 
 
 	// Draws all meshes to currently active context
-	void Model::draw(GLenum mode)
+	void Model::draw()
 	{
 		for (auto& mesh : mMeshes)
 		{
-			mesh->draw(mode);
+			mesh->draw();
 		}
 	}
 

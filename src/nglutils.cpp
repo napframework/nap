@@ -6,6 +6,18 @@
 
 namespace opengl
 {
+	// Simple opengl gl disable / enable function
+	static void enableGLParam(GLenum param, bool enable)
+	{
+		if (enable)
+		{
+			glEnable(param);
+			return;
+		}
+		glDisable(param);
+	}
+
+
 	// Clears the back buffer bit of the currently active context
 	void clear(GLuint bit)
 	{
@@ -45,12 +57,7 @@ namespace opengl
 	// Disable / Enable depth test
 	void enableDepthTest(bool value)
 	{
-		if (value)
-		{
-			glEnable(GL_DEPTH_TEST);
-			return;
-		}
-		glDisable(GL_DEPTH_TEST);
+		enableGLParam(GL_DEPTH_TEST, value);
 	}
 
 
@@ -68,4 +75,17 @@ namespace opengl
 		return mipMapMinFilterTypes.find(filterType) != mipMapMinFilterTypes.end();
 	}
 
+
+	// Turns alpha blending on / off
+	void enableBlending(bool value)
+	{
+		enableGLParam(GL_BLEND, value);
+	}
+
+
+	// Turns multi sampling on / off
+	void enableMultiSampling(bool value)
+	{
+		enableGLParam(GL_MULTISAMPLE_ARB, value);
+	}
 }

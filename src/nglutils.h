@@ -54,6 +54,20 @@ namespace opengl
 
 
 	/**
+	 * Enables / Disables opengl alpha blending
+	 * @param value if blending is enabled or disabled
+	 */
+	void enableBlending(bool value);
+
+
+	/**
+	 * Enables / Disables opengl multi sampling
+	 * @param value if multi sampling is disabled / enabled
+	 */
+	void enableMultiSampling(bool value);
+
+
+	/**
 	 * Simple string formatter
 	 */
 	template <typename... Args>	
