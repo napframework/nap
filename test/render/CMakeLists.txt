@@ -38,22 +38,26 @@ endif()
 set(DATA_DIR ${CMAKE_CURRENT_LIST_DIR}/data)
 set(SHADER_DIR ${CMAKE_CURRENT_LIST_DIR}/shaders)
 
-add_custom_command(TARGET ${PROJECT_NAME}
-                   POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E copy_directory "${DATA_DIR}" "${BIN_DIR}/data"
-                   COMMENT "Copy Data")
 
-add_custom_command(TARGET ${PROJECT_NAME}
-                   POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E copy_directory "${DATA_DIR}" "${BIN_DIR}/data"
-                   COMMENT "Copy Data")
+if (MSVC)
+    add_custom_command(TARGET ${PROJECT_NAME}
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory "${DATA_DIR}" "$(OutDir)/data"
+            COMMENT "Copy Data")
 
-add_custom_command(TARGET ${PROJECT_NAME}
-                   POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E copy_directory "${SHADER_DIR}" "${BIN_DIR}/shaders"
-                   COMMENT "Copy Shaders")
+    add_custom_command(TARGET ${PROJECT_NAME}
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory "${SHADER_DIR}" "$(OutDir)/shaders"
+            COMMENT "Copy Shaders")
 
-add_custom_command(TARGET ${PROJECT_NAME}
-                   POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E copy_directory "${SHADER_DIR}" "${BIN_DIR}/shaders"
-                   COMMENT "Copy Shaders")
+else()
+    add_custom_command(TARGET ${PROJECT_NAME}
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory "${DATA_DIR}" "${BIN_DIR}/data"
+            COMMENT "Copy Data")
+
+    add_custom_command(TARGET ${PROJECT_NAME}
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory "${SHADER_DIR}" "${BIN_DIR}/shaders"
+            COMMENT "Copy Shaders")
+endif()
