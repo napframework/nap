@@ -10,10 +10,12 @@
 		#include "direntw32.h"
 		#include <tchar.h>
 		#include <io.h>
+		#include <fstream>
 	#else
 		#include <fileapi.h>
 		#include <dirent.h>
 		#include <sys/stat.h>
+		#include <fstream>
 	#endif
 #elif __APPLE__
     #include <stdlib.h>
