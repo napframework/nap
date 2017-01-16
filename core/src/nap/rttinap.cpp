@@ -20,4 +20,13 @@ namespace nap
 		return RTTI::TypeInfo::getByName(resulingTypename);
 	}
 
+    
+    RTTI::TypeInfo getInputPullPlugFromValueType(const RTTI::TypeInfo& valueType)
+    {
+        std::string baseTypename = RTTI::TypeInfo::get<InputPullPlug<int>>().getName();
+        std::string resulingTypename = replaceTemplateType(baseTypename, valueType.getName());
+        return RTTI::TypeInfo::getByName(resulingTypename);
+        
+    }
+    
 }

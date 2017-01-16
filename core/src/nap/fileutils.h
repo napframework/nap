@@ -76,4 +76,12 @@ namespace nap
 	 * Check wheter a folder exists or not
 	 */
 	bool dirExists(const std::string& dirName);
+
+    /**
+     * Dump a string to a file.
+     * @param filename The name of the file to write to.
+     * @param contents The string to write
+     */
+    void writeStringToFile(const std::string& filename, const std::string& contents);
+
 }

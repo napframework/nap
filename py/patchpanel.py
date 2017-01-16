@@ -357,6 +357,7 @@ class WireItem(QGraphicsPathItem):
         self.dstPos = QPointF()
         self.setFlag(QGraphicsItem.ItemIsFocusable, True)
         self.setFlag(QGraphicsItem.ItemIsSelectable, True)
+        self.updatePath()
 
     def paint(self, painter, option, widget=None):
         if self.isVisible():
@@ -378,7 +379,6 @@ class WireItem(QGraphicsPathItem):
         calculateWirePath(self.srcPos, self.dstPos, p)
         self.setPath(p)
 
-        print('Updating')
 
 
 class WirePreview(QGraphicsPathItem):
@@ -430,10 +430,10 @@ class PatchScene(QGraphicsScene):
         self.__wireIsOutput = False
         self.__patch = patch
 
-        self.__wireLayer = LayerItem()
-        self.addItem(self.__wireLayer)
         self.__operatorLayer = LayerItem()
         self.addItem(self.__operatorLayer)
+        self.__wireLayer = LayerItem()
+        self.addItem(self.__wireLayer)
         self.__interactionLayer = LayerItem()
         self.__interactionLayer.setAcceptedMouseButtons(Qt.NoButton)
         self.__interactionLayer.setAcceptHoverEvents(False)

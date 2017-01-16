@@ -1,7 +1,6 @@
 #pragma once
 
 #include "rpcservice.h"
-#include <jsonserializer.h>
 #include <rtti/rtti.h>
 #include <vector>
 #include <zmq.hpp>
@@ -55,6 +54,7 @@ namespace nap
 		void rpc_importObject(ObjPtr parentPtr, const std::string& filename);
 		void rpc_removeObject(ObjPtr ptr);
 		void rpc_loadFile(const std::string& filename);
+        void rpc_triggerSignalAttribute(ObjPtr ptr);
 
 		void rpc_addObjectCallbacks(const std::string& ident, ObjPtr ptr);
 		std::vector<std::string> rpc_getModules();

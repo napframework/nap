@@ -147,7 +147,7 @@ namespace nap
 		virtual bool canConnectTo(OutputPlugBase& plug);
         
         OutputPlugBase* getConnection() { return mConnection.getTypedTarget(); }
-
+        
 		// emitted when connected to a plug
 		nap::Signal<InputPlugBase&> connected;
 
@@ -170,16 +170,42 @@ namespace nap
 		InputTriggerPlug(Operator* parent, const std::string& name, TriggerFunction func, bool locking = false)
 			: InputPlugBase(parent, name, RTTI::TypeInfo::empty()), mTriggerFunction(func), mLocking(locking)
 		{
+            getParentObject()->addChild(mAttribute);
+            mAttribute.setName(name + "Execute");
+            mAttribute.signal.connect([&](const SignalAttribute& attr){ trigger(); });
+            initSignals();
 		}
 
+        // This constructor takes a memberfunction of the parent that is executed
+        // when new data enters the plug
+        template <typename U, typename F>
+        InputTriggerPlug(U* parent, F memberFunction, const std::string& name, bool locking = false)
+            : InputPlugBase(parent, name, RTTI::TypeInfo::empty()),
+                mTriggerFunction(std::bind(memberFunction, parent)), mLocking(locking)
+        {
+            getParentObject()->addChild(mAttribute);
+            mAttribute.setName(name + "Execute");
+            mAttribute.signal.connect([&](const SignalAttribute& attr){ trigger(); });
+            initSignals();
+        }
+        
         // Triggers the action associated with this plug
         void trigger();
 
         const RTTI::TypeInfo getDataType() const override { return RTTI::TypeInfo::empty(); }
 
+        SignalAttribute& getAttribute() { return mAttribute; }
+        
     private:
+        void onNameChanged(const std::string& newName) { mAttribute.setName(newName + "Input"); }
+        void onAdded(Object&) { getParentObject()->addChild(mAttribute); };
+        void onRemoved(Object&) { getParentObject()->removeChild(mAttribute); };
+        
+        void initSignals();
+        
         TriggerFunction mTriggerFunction;
         bool mLocking = false;
+        SignalAttribute mAttribute;
 	};
 
 
@@ -314,52 +340,57 @@ namespace nap
 		friend class OutputPullPlug<T>;
 
 	public:
-        InputPullPlug() : InputPlugBase() {}
+        InputPullPlug() : InputPlugBase()
+        {
+            initSignals();
+        }
 
 		// The constructor takes the name of the plug
 		InputPullPlug(Operator* parent, const std::string& name)
 			: InputPlugBase(parent, name, RTTI::TypeInfo::get<T>())
 		{
+            getParentObject()->addChild(mAttribute);
+            mAttribute.setName(name + "Value");
+            initSignals();
 		}
-
+        
+        // The constructor takes the name of the plug and a default value for it's attribute
+        InputPullPlug(Operator* parent, const std::string& name, const T& defaultValue)
+        : InputPlugBase(parent, name, RTTI::TypeInfo::get<T>())
+        {
+            mAttribute.setValue(defaultValue);
+            getParentObject()->addChild(mAttribute);
+            mAttribute.setName(name + "Value");
+            initSignals();
+        }
+        
 		// This function can be used by the owning operator to poll for data
 		// from the connected plugs. The new polled
 		// data will be stored in the input parameter.
 		void pull(T& input);
 
         const RTTI::TypeInfo getDataType() const override { return RTTI::TypeInfo::get<T>(); }
-
+        
+        Attribute<T>& getAttribute() { return mAttribute; }
+        
+    private:
+        void onNameChanged(const std::string& newName) { mAttribute.setName(newName + "Input"); }
+        void onAdded(Object&) { getParentObject()->addChild(mAttribute); };
+        void onRemoved(Object&) { getParentObject()->removeChild(mAttribute); };
+        
+        void initSignals();
+        
+        Attribute<T> mAttribute;
     };
-
-    /**
-     * Opaque base type for all Output pull plugs
-     */
-    class OutputPullPlugBase : public OutputPlugBase
-    {
-        RTTI_ENABLE_DERIVED_FROM(OutputPlugBase)
-    public:
-        OutputPullPlugBase() : OutputPlugBase() {}
-
-        OutputPullPlugBase(Operator* parent, const std::string& name, const RTTI::TypeInfo dataType) :
-                OutputPlugBase(parent, name, dataType) {
-        }
-
-        /**
-         * Allow this plug to get an attribute value on evaluation.
-         * If the attribute is set to nullptr, the pullfunction will be used instead
-         * @param attrib The attribute to be used as data source for this plug
-         */
-        virtual void setAttribute(AttributeBase* attrib) = 0;
-        virtual AttributeBase* getAttribute() const = 0;
-    };
-
+    
+    
 	// This plug can be polled for output by an InputPullPlug to which it is
 	// connected.
 	// When polled a pull-function is triggered that is provided to the
 	// constructor of this plug.
 	// The templated type is the data type that the plug emits
 	template <typename T>
-	class OutputPullPlug : public OutputPullPlugBase
+	class OutputPullPlug : public OutputPlugBase
 	{
         RTTI_ENABLE_DERIVED_FROM(OutputPlugBase)
 		friend class InputPullPlug<T>;
@@ -370,17 +401,17 @@ namespace nap
 		// modify the parameter to contain the polled output
 		using PullFunction = std::function<void(T&)>;
 
-        OutputPullPlug() : OutputPullPlugBase() {}
+        OutputPullPlug() : OutputPlugBase() {}
 
         // Constructor takes the name of the plug and the pull function that is executed when the plug is polled.
         OutputPullPlug(Operator* parent, const std::string& name)
-                : OutputPullPlugBase(parent, name, RTTI::TypeInfo::get<T>())
+                : OutputPlugBase(parent, name, RTTI::TypeInfo::get<T>())
         {
         }
 
         // Constructor takes the name of the plug and the pull function that is executed when the plug is polled.
 		OutputPullPlug(Operator* parent, const std::string& name, PullFunction pullFunction, bool locking = false)
-			: OutputPullPlugBase(parent, name, RTTI::TypeInfo::get<T>()), pullFunction(pullFunction), mLocking(locking)
+			: OutputPlugBase(parent, name, RTTI::TypeInfo::get<T>()), pullFunction(pullFunction), mLocking(locking)
 		{
 		}
         
@@ -388,7 +419,7 @@ namespace nap
         // when new data enters the plug
         template <typename U, typename F>
         OutputPullPlug(U* parent, F memberFunction, const std::string& name, bool locking = false)
-            : OutputPullPlugBase(parent, name, RTTI::TypeInfo::get<T>()),
+            : OutputPlugBase(parent, name, RTTI::TypeInfo::get<T>()),
               pullFunction(std::bind(memberFunction, parent, std::placeholders::_1)), mLocking(locking)
         {
         }
@@ -398,13 +429,8 @@ namespace nap
 
         const RTTI::TypeInfo getDataType() const override { return RTTI::TypeInfo::get<T>(); }
 
-        void setAttribute(AttributeBase* attrib) override { mAttribute = rtti_cast<Attribute<T>*>(attrib); }
-        AttributeBase* getAttribute() const override {
-            return mAttribute;
-        }
     private:
 		PullFunction pullFunction;
-        Attribute<T>* mAttribute = nullptr;
         // Indicates wether the plug locks the containing component on access
         bool mLocking = false;
 	};
@@ -536,8 +562,22 @@ namespace nap
 	void InputPullPlug<T>::pull(T& input)
 	{
 		if (isConnected())
+        {
 			static_cast<OutputPullPlug<T>*>(getConnection())->pull(input);
+            mAttribute.setValue(input);
+        }
+        else
+            input = mAttribute.getValue();
 	}
+    
+    
+    template <typename T>
+    void InputPullPlug<T>::initSignals()
+    {
+        added.connect(this, &InputPullPlug<T>::onAdded);
+        removed.connect(this, &InputPullPlug<T>::onRemoved);
+        nameChanged.connect(this, &InputPullPlug<T>::onNameChanged);
+    }
 
 
 
@@ -549,11 +589,7 @@ namespace nap
 	template <typename T>
 	void OutputPullPlug<T>::pull(T& output)
 	{
-        if (mAttribute)
-        {
-            output = mAttribute->getValue();
-        }
-        else if (pullFunction)
+        if (pullFunction)
         {
             if (mLocking)
             {
@@ -601,4 +637,3 @@ namespace nap
 RTTI_DECLARE_BASE(nap::Plug)
 RTTI_DECLARE_BASE(nap::InputPlugBase)
 RTTI_DECLARE_BASE(nap::OutputPlugBase)
-RTTI_DECLARE_BASE(nap::OutputPullPlugBase)

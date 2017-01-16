@@ -21,6 +21,8 @@ namespace nap
 		ModuleManager();
 
 
+        void loadCoreModule();
+
 		void loadModules(const std::string directory = ".");
 		bool hasModule(const Module& module);
 
@@ -40,9 +42,9 @@ namespace nap
         Module* getModule(const std::string& name) const;
 
 		Signal<Module&> moduleLoaded;
+        void registerRTTIModules();
 
 	private:
-		void registerRTTIModules();
 
 		void registerModule(Module& mod);
 		std::vector<Module*> mModules;

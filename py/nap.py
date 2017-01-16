@@ -24,6 +24,11 @@ _J_SUBTYPES = 'subtypes'
 _J_BASETYPES = 'basetypes'
 _J_INSTANTIABLE = 'instantiable'
 
+
+class TRIGGER(object):
+    def __init__(self):
+        pass
+
 def _allSubClasses(cls):
     all_subclasses = []
 
@@ -48,6 +53,7 @@ class Core(QObject):
     objectRemoved = pyqtSignal(object)
     logMessageReceived = pyqtSignal(int, str, str)
     messageReceived = pyqtSignal()
+    waitingForMessage = pyqtSignal()
 
     def __init__(self, host: str = 'tcp://localhost:8888'):
         super(Core, self).__init__()
@@ -61,6 +67,9 @@ class Core(QObject):
         self.__types = []
         self.__metatypes = {}
         self.__typeColors = {}
+
+    def __waitForMessage(self):
+        self.waitingForMessage.emit()
 
     def resolvePath(self, path):
         return self.root().resolvePath(path)
@@ -166,7 +175,11 @@ class Core(QObject):
     @staticmethod
     def toPythonValue(value, valueType):
         if valueType == 'bool':
-            return True if 'true' else False
+            if value == 'true':
+                return True
+            if value == 'false':
+                return False
+            assert False
         if valueType == 'int':
             return int(value)
         if valueType == 'float':
@@ -210,7 +223,6 @@ class Core(QObject):
     def rpc(self):
         return self.__rpc
 
-
     def root(self):
         return self.__root
 
@@ -236,6 +248,7 @@ class Core(QObject):
 
     def _handle_attributeValueChanged(self, ptr, name, value):
         attrib = self.findObject(ptr)
+        value = self.toPythonValue(value, attrib.valueType())
         attrib._value = value
         attrib.valueChanged.emit(value)
 
@@ -282,12 +295,13 @@ class Core(QObject):
     ### RPC Calls
     ############################################################################
 
+    def triggerSignalAttribute(self, attrib):
+        self.__rpc.triggerSignalAttribute(attrib.ptr())
 
     def removeObjects(self, objects):
         for o in objects:
             self.__rpc.removeObject(o.ptr())
-
-
+        self.__waitForMessage()
 
     def addObjectCallbacks(self, obj):
         self.__rpc.addObjectCallbacks(self.rpc().identity, obj.ptr())
@@ -298,23 +312,29 @@ class Core(QObject):
     def loadModuleInfo(self):
         self.__rpc.getModuleInfo()
         self.loadObjectTree()
+        self.__waitForMessage()
 
     def setAttributeValue(self, attrib, value):
         self.__rpc.setAttributeValue(attrib.ptr(), self.fromPythonValue(value))
+        self.__waitForMessage()
 
     def loadObjectTree(self):
         self.__rpc.getObjectTree()
+        self.__waitForMessage()
 
     def copyObjectTree(self, obj):
         self.__rpc.copyObjectTree(obj.ptr())
+        self.__waitForMessage()
 
     def pasteObjectTree(self, parentObj, jsonString):
         self.__rpc.pasteObjectTree(parentObj.ptr(), jsonString)
+        self.__waitForMessage()
 
     def connectPlugs(self, srcPlug, dstPlug):
         assert isinstance(srcPlug, OutputPlugBase)
         assert isinstance(dstPlug, InputPlugBase)
         self.__rpc.connectPlugs(srcPlug.ptr(), dstPlug.ptr())
+        self.__waitForMessage()
 
     def disconnectPlug(self, dstPlug):
         assert isinstance(dstPlug, InputPlugBase)
@@ -322,6 +342,7 @@ class Core(QObject):
 
     def setName(self, obj, name):
         self.__rpc.setName(obj.ptr(), name)
+        self.__waitForMessage()
 
     def exportObject(self, obj, filename):
         self.__rpc.exportObject(obj.ptr(), filename)
@@ -329,14 +350,19 @@ class Core(QObject):
     def importObject(self, parentObj, filename):
         self.__rpc.importObject(parentObj.ptr(), filename)
 
+    def loadFile(self, filename):
+        self.__rpc.loadFile(filename)
+
     def modules(self):
         return self.__rpc.getModules()
 
     def addEntity(self, parentEntity):
         self.__rpc.addEntity(parentEntity.ptr())
+        self.__waitForMessage()
 
     def addChild(self, entity, componentType):
         self.__rpc.addChild(entity.ptr(), str(componentType))
+        self.__waitForMessage()
 
 
 ################################################################################
@@ -382,13 +408,11 @@ class Object(QObject):
                 self.__children.append(child)
 
     def checkFlag(self, flag):
-        return self.__flags & flag
+        return bool(self.__flags & flag)
 
     def isEditable(self):
-        if self.parent():
-            if not self.parent().isEditable():
-                return False
-            return self.checkFlag(Object.Flags.Editable)
+        if self.parent() and not self.parent().isEditable():
+            return False
         return self.checkFlag(Object.Flags.Editable)
 
     def path(self):
@@ -447,7 +471,8 @@ class Object(QObject):
 
     def onChildRemoved(self, child):
         self.childRemoved.emit(child)
-        self.__children.remove(child)
+        if child in self.__children:
+            self.__children.remove(child)
 
     def setName(self, name):
         self.core().setName(self, name)
@@ -524,9 +549,14 @@ class Attribute(Object):
         if _J_VALUE in self._dic:
             self._value = self.core().toPythonValue(self._dic[_J_VALUE],
                                                     self.valueType())
+        if self._valueType == 'nap::SignalAttribute':
+            self._value = TRIGGER
 
     def setValue(self, value):
-        self.core().setAttributeValue(self, value)
+        if self._value == TRIGGER:
+            self.core().triggerSignalAttribute(self)
+        else:
+            self.core().setAttributeValue(self, value)
 
     def value(self):
         return self._value

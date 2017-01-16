@@ -54,18 +54,9 @@ namespace nap
 	}
 
 
-	/**
-     @brief Returns a signal that is called when the value of the attribute changes
-     **/
-    void nap::AttributeBase::connectToAttribute(nap::Slot<nap::AttributeBase&>& slot) 
-	{ 
-		valueChanged.connect(slot); 
-	}
-
-    
-	/**
-	 * Converts this attribute to a string using the type converters registered in core
-	 */
+    /**
+     * Converts this attribute to a string using the type converters registered in core
+     */
     void AttributeBase::toString(std::string &outStringValue) const
     {
         const Entity* root = dynamic_cast<const Entity*>(getRootObject());

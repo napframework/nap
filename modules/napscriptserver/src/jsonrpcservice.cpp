@@ -55,6 +55,7 @@ namespace nap
 		disp.AddMethod("importObject", &JsonRpcService::rpc_importObject, *this);
 		disp.AddMethod("removeObject", &JsonRpcService::rpc_removeObject, *this);
         disp.AddMethod("loadFile", &JsonRpcService::rpc_loadFile, *this);
+        disp.AddMethod("triggerSignalAttribute", &JsonRpcService::rpc_triggerSignalAttribute, *this);
 		//		disp.AddMethod("getModules", &JsonRpcService::rpc_getModules, *this);
 		//		disp.AddMethod("getDataTypes", &JsonRpcService::rpc_getDataTypes, *this);
 		//		disp.AddMethod("getRoot", &JsonRpcService::rpc_getRoot, *this);
@@ -75,7 +76,8 @@ namespace nap
 	std::string JsonRpcService::evalScript(const std::string& cmd)
 	{
 		std::lock_guard<std::mutex> lock(mMutex);
-		return mJsonServer.HandleRequest(cmd)->GetData();
+        auto reply = mJsonServer.HandleRequest(cmd);
+		return reply->GetData();
 	}
 
 
@@ -398,8 +400,12 @@ namespace nap
 	void JsonRpcService::rpc_setAttributeValue(ObjPtr attribPtr, const std::string& value)
 	{
 		auto attrib = fromPtr<AttributeBase>(attribPtr);
+        std::cout << "setAttributeValue()" << std::endl;
 		if (attrib)
+        {
+            std::cout << "setAttributeValue() " << attrib->getName() << " " << value << std::endl;
 			attrib->fromString(value);
+        }
 	}
 
 	void JsonRpcService::rpc_forceSetAttributeValue(ObjPtr ptr, const std::string& attribName,
@@ -537,5 +543,9 @@ namespace nap
 			client->enqueueEvent(msg);
 		}
 	}
+    void JsonRpcService::rpc_triggerSignalAttribute(ObjPtr ptr) {
+        auto attrib = fromPtr<SignalAttribute>(ptr);
+        attrib->trigger();
+    }
 
 }

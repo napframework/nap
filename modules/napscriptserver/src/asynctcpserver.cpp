@@ -1,4 +1,4 @@
-#include <nap/coreutils.h>
+//#include <nap/coreutils.h>
 #include "asynctcpserver.h"
 
 namespace nap
@@ -16,16 +16,20 @@ namespace nap
 
 	}
 
-	void AsyncTCPServer::runServer(int port) {
+	void AsyncTCPServer::runServer(int port, bool threaded) {
 		mPort = port;
-		mThread = std::make_unique<std::thread>(std::bind(&AsyncTCPServer::runServerLoop, this));
+        if (threaded) {
+            mThread = std::make_unique<std::thread>(std::bind(&AsyncTCPServer::runServerLoop, this));
+        } else {
+            runServerLoop();
+        }
+
 	}
 
 
 	void AsyncTCPServer::runServerLoop()
 	{
-        setThreadName("AsyncTCPServer");
-
+//        setThreadName("AsyncTCPServer");
 		zmq::context_t ctx;
 		zmq::socket_t sock(ctx, ZMQ_ROUTER);
 		std::string hostname = "tcp://*:" + std::to_string(mPort);
@@ -45,18 +49,19 @@ namespace nap
 			// Poll for requests / connections
 			zmq::pollitem_t pollitem = {sock, 0, ZMQ_POLLIN, 0};
 			zmq_poll(&pollitem, 1, 10);
+            
             if (pollitem.revents & ZMQ_POLLIN) {
 				// Receive multipart message
 				zmq::message_t message;
 				sock.recv(&message);
-				std::string ident = std::string(static_cast<char*>(message.data()), message.size());
+				std::string clientIdentifier = std::string(static_cast<char*>(message.data()), message.size());
 				sock.recv(&message);
 				std::string msg = std::string(static_cast<char*>(message.data()), message.size());
 
-				AsyncTCPClient* client = getOrAddClient(ident);
+				AsyncTCPClient* client = getOrAddClient(clientIdentifier);
 				client->updateHeartbeat();
 
-				// Emit to listeners
+				// if message is not heartbeat, emit to listeners
 				if (!msg.empty()) {
 					client->messageReceived.trigger(msg);
 					requestReceived.trigger(*client, msg);

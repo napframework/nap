@@ -54,6 +54,7 @@ namespace nap
             Logger::warn("File does not exist: %s", getAbsolutePath(filename).c_str());
             return nullptr;
         }
+        std::string fname = filename;
         std::ifstream is(filename.c_str());
         Object* obj = readObject(is, core, parent);
         is.close();

@@ -15,7 +15,7 @@
 #include <functional>
 #include <atomic>
 #include <vector>
-#include <MoodyCamel/blockingconcurrentqueue.h>
+#include <blockingconcurrentqueue.h>
 
 namespace lib {
     

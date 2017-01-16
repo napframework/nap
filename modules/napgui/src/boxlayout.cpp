@@ -55,8 +55,12 @@ namespace nap
 				float totalSpacingX = childCount - 1 * spacingX.getValue();
 				float childrenWidth = 0;
 				for (int i = 0; i < childCount; i++)
-					childrenWidth += children[i]->bounds.getValueRef().getHeight();
+					childrenWidth += children[i]->bounds.getValueRef().getWidth();
 
+				float scale = 1;
+				if (scaleToFit.getValue()) {
+					scale = bounds.getWidth() / childrenWidth;
+				}
 
 				// Start at offset (leftover space * alignment)
 				float x = (bounds.getWidth() - childrenWidth) * alignmentX.getValue();
@@ -69,8 +73,8 @@ namespace nap
 
 					float y = (bounds.getHeight() - child->bounds.getValueRef().getHeight()) * alignmentY.getValue();
 
-					child->bounds.setValue({ x, y, childBounds.getWidth(), childBounds.getHeight() });
-					x += childBounds.getWidth() + spacingX.getValue();
+					child->bounds.setValue(Rect( x, y, childBounds.getWidth(), childBounds.getHeight() ) * scale);
+					x += (childBounds.getWidth() + spacingX.getValue());
 				}
 			}
 			else // Vertical

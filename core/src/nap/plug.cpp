@@ -87,8 +87,8 @@ namespace nap
 
 		return true;
 	}
-
-
+    
+    
 	OutputPlugBase::OutputPlugBase(Operator* parent, const std::string& name, const RTTI::TypeInfo dataType)
 		: Plug(parent, name, dataType)
 	{
@@ -142,12 +142,21 @@ namespace nap
         }
     }
 
-
+    
+    void InputTriggerPlug::initSignals()
+    {
+        added.connect(this, &InputTriggerPlug::onAdded);
+        removed.connect(this, &InputTriggerPlug::onRemoved);
+        nameChanged.connect(this, &InputTriggerPlug::onNameChanged);
+    }
+    
+    
     void OutputTriggerPlug::trigger()
     {
         for (auto& connection : getConnections())
             static_cast<InputTriggerPlug*>(connection)->trigger();
     }
 
+    
 
 }

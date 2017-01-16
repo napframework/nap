@@ -53,7 +53,7 @@ namespace nap
 				return nullptr;
 			}
 
-		#else
+        #else
 			void* libPtr = dlopen(filename, RTLD_LAZY);
 
 			if (!libPtr) {
@@ -123,6 +123,9 @@ namespace nap
 #ifdef _WIN32
 			if (getFileExtension(absFilename) != "dll")
 				continue;
+#else
+            if (getFileExtension(absFilename) != "so")
+                continue;
 #endif
 
 //			Logger::debug("Attempting to load module '%s'", getAbsolutePath(filename).c_str());
@@ -151,8 +154,8 @@ namespace nap
 
 	ModuleManager::ModuleManager()
 	{
-		registerModule(*new ModuleNapCore());
-		registerRTTIModules();
+//		registerModule(*new ModuleNapCore());
+//		registerRTTIModules();
 	}
 
 	const TypeConverterBase* ModuleManager::getTypeConverter(RTTI::TypeInfo fromType, RTTI::TypeInfo toType) const
@@ -217,6 +220,9 @@ namespace nap
 				return module;
 		return nullptr;
 	}
+    void ModuleManager::loadCoreModule() {
+        registerModule(*new ModuleNapCore());
+    }
 }
 
 
