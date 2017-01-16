@@ -17,7 +17,7 @@ add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
 target_include_directories(${PROJECT_NAME} PUBLIC ${NRENDER_INCLUDE_DIRS} src)
 
 # link with external libs
-#target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
-
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 target_link_libraries(${PROJECT_NAME} napcore nrender)
+
+copy_files_to_bin(${NRENDER_DLLS})

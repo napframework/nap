@@ -31,33 +31,10 @@ if (WIN32)
             )
     # copy nrender (hack)
 
-    copy_files_to_bin(${PROJECT_NAME} ${FILES_TO_COPY})
+    copy_files_to_bin(${FILES_TO_COPY})
 endif()
 
 # create post build event
-set(DATA_DIR ${CMAKE_CURRENT_LIST_DIR}/data)
-set(SHADER_DIR ${CMAKE_CURRENT_LIST_DIR}/shaders)
+copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/data data)
+copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/shaders shaders)
 
-
-if (MSVC)
-    add_custom_command(TARGET ${PROJECT_NAME}
-            POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_directory "${DATA_DIR}" "$(OutDir)/data"
-            COMMENT "Copy Data")
-
-    add_custom_command(TARGET ${PROJECT_NAME}
-            POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_directory "${SHADER_DIR}" "$(OutDir)/shaders"
-            COMMENT "Copy Shaders")
-
-else()
-    add_custom_command(TARGET ${PROJECT_NAME}
-            POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_directory "${DATA_DIR}" "${BIN_DIR}/data"
-            COMMENT "Copy Data")
-
-    add_custom_command(TARGET ${PROJECT_NAME}
-            POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_directory "${SHADER_DIR}" "${BIN_DIR}/shaders"
-            COMMENT "Copy Shaders")
-endif()

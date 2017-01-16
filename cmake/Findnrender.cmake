@@ -13,6 +13,8 @@
          ${CMAKE_CURRENT_LIST_DIR}/../../freeimage/Source
          )
 
+
+
 # message(WARNING ${NRENDER_INCLUDE_DIRS})
 
  mark_as_advanced(NRENDER_INCLUDE_DIRS)

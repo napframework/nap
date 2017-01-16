@@ -31,70 +31,7 @@ cmake_policy(SET CMP0043 NEW)
 # Allow extra Find{project}.cmake files to be found by projects
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
-include(${CMAKE_CURRENT_LIST_DIR}/cmake/targetarch.cmake)
-target_architecture(ARCH)
-
-
-
-if (MSVC)
-    foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
-        set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}-${ARCH}-${OUTPUTCONFIG})
-
-        set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/bin/${BUILD_CONF})
-        set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/${BUILD_CONF})
-
-        string(TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG)
-        set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${BIN_DIR})
-        set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${LIB_DIR})
-        set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${LIB_DIR})
-
-    endforeach(OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES)
-
-else()
-    set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}-${CMAKE_BUILD_TYPE}-${ARCH})
-
-    # Override binary directories
-    set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/bin/${BUILD_CONF})
-    file(MAKE_DIRECTORY ${BIN_DIR})
-    set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/${BUILD_CONF})
-    file(MAKE_DIRECTORY ${LIB_DIR})
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${BIN_DIR})
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR})
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${LIB_DIR})
-    set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
-endif()
-
-function(copy_dir_to_bin PROJECT DIR)
-    get_filename_component(DIRNAME ${DIR} NAME)
-    if (MSVC)
-
-        add_custom_command(TARGET ${PROJECT_NAME}
-                POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy_directory "${DIR}" "$(OutDir)/${DIRNAME}"
-                COMMENT "Copy ${DIR} -> $(OutDir)/${DIRNAME}")
-    else()
-        add_custom_command(TARGET ${PROJECT_NAME}
-                POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy "${DIR}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${DIRNAME}"
-                COMMENT "Copy ${DIR} -> ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${DIRNAME}")
-    endif()
-endfunction()
-
-function(copy_files_to_bin PROJECT)
-    foreach(F ${ARGN})
-        if (MSVC)
-            add_custom_command(TARGET ${PROJECT_NAME}
-                    POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy "${F}" "$(OutDir)"
-                    COMMENT "Copy ${F} -> $(OutDir)")
-        else()
-            add_custom_command(TARGET ${PROJECT_NAME}
-                    POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy "${F}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
-                    COMMENT "Copy ${F} -> ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
-        endif()
-    endforeach()
-endfunction()
+include(configure.cmake)
 
 
 if(WIN32)
