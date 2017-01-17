@@ -1,6 +1,6 @@
 project(mod_napmath)
 
-file(GLOB sources src/*.cpp)
+file(GLOB sources src/*.cpp src/*.h)
 
 find_package(glm REQUIRED)
 

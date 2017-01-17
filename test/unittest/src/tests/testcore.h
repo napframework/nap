@@ -7,3 +7,4 @@ bool testObjectIterator();
 bool testFileUtils();
 bool testJSONSerializer();
 bool testResourceManager();
+bool testPatch();

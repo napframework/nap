@@ -6,6 +6,7 @@
 #include <nap/coreoperators.h>
 #include <nap/resourcemanager.h>
 #include <jsonserializer.h>
+#include <thread>
 
 using namespace nap;
 
@@ -53,6 +54,14 @@ bool testCore()
 	return true;
 }
 
+
+std::shared_ptr<Core> createSimpleObjectTree() {
+    auto core = std::make_shared<Core>();
+    auto& root = core->getRoot();
+    auto& a = root.addEntity("A");
+//    auto& patch = root.addComponent<PatchComponent>("patchComponent");
+    return core;
+}
 std::shared_ptr<Core> createObjectTree()
 {
 	auto core = std::make_shared<Core>();
@@ -86,10 +95,10 @@ std::shared_ptr<Core> createObjectTree()
     auto& opTermB = patch2.getPatch().addOperator<FloatOperator>("TermA");
     auto& opFactorB = patch2.getPatch().addOperator<FloatOperator>("FactorB");
     auto& opResult = patch2.getPatch().addOperator<FloatOperator>("Result");
-    opTermA.mValue.setValue(1);
-    opTermB.mValue.setValue(2);
-    opFactorB.mValue.setValue(3);
-    
+    opTermA.value.setValue(1);
+    opTermB.value.setValue(2);
+    opFactorB.value.setValue(3);
+
 	auto& opMult = patch2.getPatch().addOperator<MultFloatOperator>("Mult");
 	auto& opAdd = patch2.getPatch().addOperator<AddFloatOperator>("Add");
     
@@ -143,17 +152,22 @@ bool testSerializer(const Serializer& ser)
     {
         // Create object tree and serialize
         auto srcCore = createObjectTree();
-        auto resultOp = getFloatOperator(srcCore->getRoot(), "Result");
-        TEST_ASSERT(resultOp, "Result operator not found in original object tree");
-        float result = 0;
-        resultOp->output.pull(result);
-        TEST_ASSERT(result == 3, "Patch did not return proper value: 9");
-        
         xmlString1 = ser.toString(srcCore->getRoot(), false);
+        writeStringToFile("test.json", xmlString1);
     }
+
+
 
 	// Deserialize
 	Core dstCore;
+    dstCore.initialize();
+//    RTTI::TypeInfo serverType = RTTI::TypeInfo::getByName("nap::JsonRpcService");
+//    TEST_ASSERT(serverType.isValid(), "Could not find server type");
+//    auto service = dstCore.getOrCreateService(serverType);
+//    TEST_ASSERT(service != nullptr, "Could not get server service");
+//    service->getAttribute<bool>("threaded")->setValue(true);
+//    service->getAttribute<bool>("running")->setValue(true);
+
 	ser.fromString(xmlString1, dstCore);
 
 	// Serialize again
@@ -161,18 +175,20 @@ bool testSerializer(const Serializer& ser)
 
 	TEST_ASSERT(xmlString1 == xmlString2,
 				"Second serialization gave different result:\n" + diffString(xmlString1, xmlString2));
-    auto resultOp = getFloatOperator(dstCore.getRoot(), "Result");
-    TEST_ASSERT(resultOp, "Result operator not found in original object tree");
-    float desResult = 0;
-    resultOp->output.pull(desResult);
-    TEST_ASSERT(desResult == 3, "Deserialized patch did not return proper value: 9");
-    
-    
+
 
 	return true;
 }
 
-
+bool testPatch() {
+    auto srcCore = createObjectTree();
+    auto resultOp = getFloatOperator(srcCore->getRoot(), "Result");
+    TEST_ASSERT(resultOp, "Result operator not found in original object tree");
+    float result = 0;
+    resultOp->output.pull(result);
+    TEST_ASSERT(result == 3, "Patch did not return proper value: 9");
+    return true;
+}
 
 bool testXMLSerializer()
 {

@@ -23,7 +23,7 @@ namespace nap
 		 * @return The result
 		 */
 		template <typename T>
-		inline T darken(T target, T blend)
+		T darken(T target, T blend)
 		{
 			return std::min(target, blend);
 		}
@@ -38,7 +38,7 @@ namespace nap
 		 * @return The result
 		 */
 		template <typename T>
-		inline T multiply(T target, T blend)
+		T multiply(T target, T blend)
 		{
 			return target * blend;
 		}
@@ -53,7 +53,7 @@ namespace nap
 		 * @return The result
 		 */
 		template <typename T>
-		inline T colorBurn(T target, T blend)
+		T colorBurn(T target, T blend)
 		{
 			return 1 - (1 - target) / blend;
 		}
@@ -68,7 +68,7 @@ namespace nap
 		 * @return The result
 		 */
 		template <typename T>
-		inline T linearBurn(T target, T blend)
+		T linearBurn(T target, T blend)
 		{
 			return target + blend - 1;
 		}
@@ -83,7 +83,7 @@ namespace nap
 		 * @return The result
 		 */
 		template <typename T>
-		inline T lighten(T target, T blend)
+		T lighten(T target, T blend)
 		{
 			return std::max(target, blend);
 		}
@@ -98,7 +98,7 @@ namespace nap
 		 * @return The result
 		 */
 		template <typename T>
-		inline T screen(T target, T blend)
+		T screen(T target, T blend)
 		{
 			return 1 - (1 - target) * (1 - blend);
 		}
@@ -113,7 +113,7 @@ namespace nap
 		 * @return The result
 		 */
 		template <typename T>
-		inline T colorDodge(T target, T blend)
+		T colorDodge(T target, T blend)
 		{
 			return target / (1 - blend);
 		}
@@ -128,7 +128,7 @@ namespace nap
 		 * @return The result
 		 */
 		template <typename T>
-		inline T linearDodge(T target, T blend)
+		T linearDodge(T target, T blend)
 		{
 			return target + blend;
 		}
@@ -143,7 +143,7 @@ namespace nap
 		 * @return The result
 		 */
 		template <typename T>
-		inline T overlay(T target, T blend)
+		T overlay(T target, T blend)
 		{
 			if (target > 0.5)
 				return (1 - (1 - 2 * (target - 0.5)) * (1 - blend));
@@ -160,7 +160,7 @@ namespace nap
 		 * @return The result
 		 */
 		template <typename T>
-		inline T softLight(T target, T blend)
+		T softLight(T target, T blend)
 		{
 			if (blend > 0.5)
 				return (1 - (1 - target) * (1 - (blend - 0.5)));
@@ -177,7 +177,7 @@ namespace nap
 		 * @return The result
 		 */
 		template <typename T>
-		inline T hardLight(T target, T blend)
+		T hardLight(T target, T blend)
 		{
 			if (blend > 0.5)
 				return (1 - (1 - target) * (1 - 2 * (blend - 0.5)));
@@ -194,7 +194,7 @@ namespace nap
 		 * @return The result
 		 */
 		template <typename T>
-		inline T vividLight(T target, T blend)
+		T vividLight(T target, T blend)
 		{
 			if (blend > 0.5)
 				return (1 - (1 - target) / (2 * (blend - 0.5)));
@@ -211,7 +211,7 @@ namespace nap
 		 * @return The result
 		 */
 		template <typename T>
-		inline T linearLight(T target, T blend)
+		T linearLight(T target, T blend)
 		{
 			if (blend > 0.5)
 				return (target + 2 * (blend - 0.5));
@@ -227,7 +227,7 @@ namespace nap
 		 * @return The result
 		 */
 		template <typename T>
-		inline T pinLight(T target, T blend)
+		T pinLight(T target, T blend)
 		{
 			if (blend > 0.5)
 				return (max(target, 2 * (blend - 0.5)));
@@ -244,7 +244,7 @@ namespace nap
 		 * @return The result
 		 */
 		template <typename T>
-		inline T difference(T target, T blend)
+		T difference(T target, T blend)
 		{
 			return target - blend;
 		}
@@ -259,7 +259,7 @@ namespace nap
 		 * @return The result
 		 */
 		template <typename T>
-		inline T exclusion(T target, T blend)
+		T exclusion(T target, T blend)
 		{
 			return 0.5 - 2 * (target - 0.5) * (blend - 0.5);
 		}
