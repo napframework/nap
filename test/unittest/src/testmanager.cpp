@@ -1,8 +1,9 @@
+#include <nap/logger.h>
 #include "testmanager.h"
 
 void TestManager::runTests()
 {
-	std::cout << "Running " << mTests.size() << " tests" << std::endl << std::endl;
+    nap::Logger::info("Running %d tests\n", mTests.size());
 
 	int padLen = findPadLength() + 3;
 
@@ -13,12 +14,11 @@ void TestManager::runTests()
 	for (const auto& test : mTests) {
 		std::string name = "__ " + test->getName() + " ";
 		padRight(name, rowlength, '_');
-		std::cout << name << std::endl;
+        nap::Logger::info(name);
 
 		std::ostringstream result;
 		result << " ";
 		if (test->run()) {
-
 			result << "OK";
 		} else {
 			result << "FAILED";
@@ -28,15 +28,14 @@ void TestManager::runTests()
 		std::string footer = result.str();
 		padLeft(footer, rowlength, '=');
 
-		std::cout << footer << std::endl << std::endl << std::endl;
+        nap::Logger::info(footer + "\n\n");
 	}
 
-	std::cout << std::endl;
 
 	if (failedTests.empty()) {
-		std::cout << "All dandy!" << std::endl;
+        nap::Logger::info("All dandy!");
 	} else {
-		std::cout << "Tests failed: " << failedTests.size() << std::endl;
+        nap::Logger::info("Tests failed: %d", failedTests.size());
 	}
 }
 
