@@ -1,6 +1,9 @@
 // firstSDLapp.cpp : Defines the entry point for the console application.
 //
 
+// Local Includes
+#include "objects.h"
+
 // SDL
 #include <SDL.h>
 
@@ -52,15 +55,9 @@ static std::unique_ptr<opengl::Image> pigTexture;
 
 // Vertex buffer that holds all the fbo's
 opengl::VertexArrayObject	cubeObject;
-opengl::FloatVertexBuffer	squarePositionBuffer;
-opengl::FloatVertexBuffer	squareColorBuffer;
-opengl::FloatVertexBuffer	squareUVBuffer;
 
 // Vertex buffer that holds a triangle
 opengl::VertexArrayObject	triangleObject;
-opengl::VertexContainer		trianglePositions;
-opengl::VertexContainer		triangleColors;
-opengl::VertexContainer		triangleUvs;
 
 // Shader uniform bind locations
 int	projectionMatrixLocation(-1);
@@ -95,225 +92,9 @@ glm::mat4 modelMatrix;			// Store the model matrix
 
 // Some utilities
 void runGame(nap::Core& core);
-void cleanup();
-void createSquare();		
-void createTriangle();		
+void cleanup();	
 bool loadImages();
 void updateViewport(int width, int height);
-
-/**
- * Creates a low level opengl triangle object
- */
-void createTriangle(void)
-{
-	int face_point_count = 3;
-	int face_count = 1;
-	int point_count = face_point_count * face_count;
-
-	int vert_size = 3;
-	float vertices[] =
-	{
-		-1.0f,	-1.0f,	0.0f,
-		0.0f,	1.0f,	0.0f,
-		1.0f,	-1.0f,	0.0f
-	};
-
-	int color_size = 4;
-	float colors[] =
-	{
-		1.0f,	0.0f,	0.0f,  1.0f,
-		0.0f,	1.0f,	0.0f,  1.0f,
-		0.0f,	0.0f,	1.0f , 1.0f
-	};
-
-	int uv_size = 3;
-	float uvs[] =
-	{
-		1.0f,	1.0f, 1.0f,
-		1.0f,	0.0f, 0.0f,
-		0.0f,	0.0f, 0.0f
-	};
-
-	// Initialize and bind triangle array object
-	triangleObject.init();
-
-	trianglePositions.copyData(GL_FLOAT, vert_size, point_count, vertices);
-	triangleObject.addVertexBuffer(vertex_index, *trianglePositions.getVertexBuffer());
-
-	triangleColors.copyData(GL_FLOAT, color_size, point_count, colors);
-	triangleObject.addVertexBuffer(color_index, *triangleColors.getVertexBuffer());
-
-	triangleUvs.copyData(GL_FLOAT, uv_size, point_count, uvs);
-	triangleObject.addVertexBuffer(uv_index, *triangleUvs.getVertexBuffer());
-}
-
-
-/**
-createSquare is used to create the Vertex Array Object which will hold our square. We will
-be hard coding in the vertices for the square, which will be done in this method.
-*/
-void createSquare(void)
-{
-	int face_point_count(6);
-	int face_count(6);
-	int point_count = face_point_count * face_count;
-
-	int vert_size = 3;
-	int vert_count = vert_size * point_count;
-	float vertices[] =
-	{
-		-1.0f, -1.0f, -1.0f,
-		1.0f, -1.0f, -1.0f,
-		1.0f,  1.0f, -1.0f,
-		1.0f,  1.0f, -1.0f,
-		-1.0f,  1.0f, -1.0f,
-		-1.0f, -1.0f, -1.0f,
-
-		-1.0f, -1.0f,  1.0f,
-		1.0f, -1.0f,  1.0f,
-		1.0f,  1.0f,  1.0f,
-		1.0f,  1.0f,  1.0f,
-		-1.0f,  1.0f,  1.0f,
-		-1.0f, -1.0f,  1.0f,
-
-		-1.0f,  1.0f,  1.0f,
-		-1.0f,  1.0f, -1.0f,
-		-1.0f, -1.0f, -1.0f,
-		-1.0f, -1.0f, -1.0f,
-		-1.0f, -1.0f,  1.0f,
-		-1.0f,  1.0f,  1.0f,
-
-		1.0f,  1.0f,  1.0f,
-		1.0f,  1.0f, -1.0f,
-		1.0f, -1.0f, -1.0f,
-		1.0f, -1.0f, -1.0f,
-		1.0f, -1.0f,  1.0f,
-		1.0f,  1.0f,  1.0f,
-
-		-1.0f, -1.0f, -1.0f,
-		1.0f, -1.0f, -1.0f,
-		1.0f, -1.0f,  1.0f,
-		1.0f, -1.0f,  1.0f,
-		-1.0f, -1.0f,  1.0f,
-		-1.0f, -1.0f, -1.0f,
-
-		-1.0f,  1.0f, -1.0f,
-		1.0f,  1.0f, -1.0f,
-		1.0f,  1.0f,  1.0f,
-		1.0f,  1.0f,  1.0f,
-		-1.0f,  1.0f,  1.0f,
-		-1.0f,  1.0f, -1.0f,
-	};
-
-	int color_size = 4;
-	int color_count = color_size * point_count;
-	float colors[]
-	{
-		1.0f, 0.0f, 0.0f, 1.0f,
-		1.0f, 0.0f, 0.0f, 1.0f,
-		1.0f, 0.0f, 0.0f, 1.0f,
-		1.0f, 0.0f, 0.0f, 1.0f,
-		1.0f, 0.0f, 0.0f, 1.0f,
-		1.0f, 0.0f, 0.0f, 1.0f,
-
-		0.0f, 1.0f, 0.0f, 1.0f,
-		0.0f, 1.0f, 0.0f, 1.0f,
-		0.0f, 1.0f, 0.0f, 1.0f,
-		0.0f, 1.0f, 0.0f, 1.0f,
-		0.0f, 1.0f, 0.0f, 1.0f,
-		0.0f, 1.0f, 0.0f, 1.0f,
-
-		0.0f, 0.0f, 1.0f, 1.0f,
-		0.0f, 0.0f, 1.0f, 1.0f,
-		0.0f, 0.0f, 1.0f, 1.0f,
-		0.0f, 0.0f, 1.0f, 1.0f,
-		0.0f, 0.0f, 1.0f, 1.0f,
-		0.0f, 0.0f, 1.0f, 1.0f,
-
-		0.0f, 1.0f, 1.0f, 1.0f,
-		0.0f, 1.0f, 1.0f, 1.0f,
-		0.0f, 1.0f, 1.0f, 1.0f,
-		0.0f, 1.0f, 1.0f, 1.0f,
-		0.0f, 1.0f, 1.0f, 1.0f,
-		0.0f, 1.0f, 1.0f, 1.0f,
-
-		1.0f, 1.0f, 1.0f, 1.0f,
-		1.0f, 1.0f, 1.0f, 1.0f,
-		1.0f, 1.0f, 1.0f, 1.0f,
-		1.0f, 1.0f, 1.0f, 1.0f,
-		1.0f, 1.0f, 1.0f, 1.0f,
-		1.0f, 1.0f, 1.0f, 1.0f,
-
-		1.0f, 0.0f, 0.0f, 1.0f,
-		1.0f, 0.0f, 0.0f, 1.0f,
-		1.0f, 0.0f, 0.0f, 1.0f,
-		1.0f, 0.0f, 0.0f, 1.0f,
-		1.0f, 0.0f, 0.0f, 1.0f,
-		1.0f, 0.0f, 0.0f, 1.0f
-	};
-
-	int uv_size = 3;
-	int uv_count = uv_size * point_count;
-	float uvs[] =
-	{
-		0.0f, 0.0f, 0.0f,
-		1.0f, 0.0f,	0.0f,
-		1.0f, 1.0f,	1.0f,
-		1.0f, 1.0f,	1.0f,
-		0.0f, 1.0f,	1.0f,
-		0.0f, 0.0f,	0.0f,
-
-		0.0f, 0.0f,	0.0f,
-		1.0f, 0.0f,	0.0f,
-		1.0f, 1.0f,	1.0f,
-		1.0f, 1.0f,	1.0f,
-		0.0f, 1.0f,	1.0f,
-		0.0f, 0.0f,	0.0f,
-
-		1.0f, 0.0f,	0.0f,
-		1.0f, 1.0f,	1.0f,
-		0.0f, 1.0f,	1.0f,
-		0.0f, 1.0f,	1.0f,
-		0.0f, 0.0f,	0.0f,
-		1.0f, 0.0f,	0.0f,
-
-		1.0f, 0.0f,	0.0f,
-		1.0f, 1.0f,	1.0f,
-		0.0f, 1.0f,	1.0f,
-		0.0f, 1.0f,	1.0f,
-		0.0f, 0.0f,	0.0f,
-		1.0f, 0.0f,	0.0f,
-
-		0.0f, 1.0f,	1.0f,
-		1.0f, 1.0f,	1.0f,
-		1.0f, 0.0f,	0.0f,
-		1.0f, 0.0f,	0.0f,
-		0.0f, 0.0f,	0.0f,
-		0.0f, 1.0f,	1.0f,
-
-		0.0f, 1.0f,	1.0f,
-		1.0f, 1.0f,	1.0f,
-		1.0f, 0.0f,	0.0f,
-		1.0f, 0.0f,	0.0f,
-		0.0f, 0.0f,	0.0f,
-		0.0f, 1.0f,	1.0f,
-	};
-
-	// Init vertex buffer (allocate)
-	cubeObject.init();
-
-	squarePositionBuffer.init();
-	squarePositionBuffer.setData(vert_size, point_count, GL_STATIC_DRAW, vertices);
-	cubeObject.addVertexBuffer(vertex_index, squarePositionBuffer);
-
-	squareColorBuffer.init();
-	squareColorBuffer.setData(color_size, point_count, GL_STATIC_DRAW, colors);
-	cubeObject.addVertexBuffer(color_index, squareColorBuffer);
-
-	squareUVBuffer.init();
-	squareUVBuffer.setData(uv_size, point_count, GL_STATIC_DRAW, uvs);
-	cubeObject.addVertexBuffer(uv_index, squareUVBuffer);
-}
 
 
 /**
@@ -390,10 +171,6 @@ bool initOpenGL()
 
 	// Enable multi sampling
 	glEnable(GL_MULTISAMPLE);
-
-	int Buffers(1), Samples(4);
-	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &Buffers);
-	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &Samples);
 
 	return true;
 }
@@ -499,10 +276,10 @@ bool init(nap::Core& core)
 	updateViewport(windowWidth, windowHeight);
 
 	// Create Square Vertex Buffer Object
-	createSquare();
+	createCube(cubeObject, vertex_index, color_index, uv_index);
 
 	// Create triangle Vertex Buffer Object
-	createTriangle();
+	createTriangle(triangleObject, vertex_index, color_index, uv_index);
 
 	return true;
 }
@@ -542,9 +319,9 @@ void runGame(nap::Core& core)
 
 	// Enable some gl specific stuff
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glEnable(GL_BLEND);
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_MULTISAMPLE_ARB);
+	opengl::enableDepthTest(true);
+	opengl::enableBlending(true);
+	opengl::enableMultiSampling(true);
 
 	// Timer
 	std::clock_t begin = std::clock();
@@ -673,7 +450,7 @@ void runGame(nap::Core& core)
 		case 1:
 			cubeObject.bind();
 			material->bind();
-			cubeObject.draw(GL_TRIANGLES);
+			cubeObject.draw();
 			material->unbind();
 			cubeObject.unbind();
 			break;
@@ -681,7 +458,7 @@ void runGame(nap::Core& core)
 		case 2:
 			triangleObject.bind();
 			material->bind();
-			triangleObject.draw(GL_TRIANGLES);
+			triangleObject.draw();
 			material->unbind();
 			triangleObject.unbind();
 			break;
