@@ -14,7 +14,11 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>  
 #include <glm/ext.hpp>
+#include <glm/gtx/euler_angles.hpp>
 #include <chrono>
+#include <glm/matrix.hpp>
+#include <glm/gtx/quaternion.hpp>
+#include <glm/gtx/transform.hpp>
 
 // C++ Headers
 #include <string>
@@ -24,7 +28,6 @@
 // OpenGL / glew Headers
 #define GL3_PROTOTYPES 1
 #include <GL/glew.h>
-#include <glm/matrix.hpp>
 
 // Mod nap render includes
 #include <material.h>
@@ -420,7 +423,21 @@ void runGame(nap::Core& core)
 		// Model matrix
 		glm::mat4 model_matrix;
 		model_matrix = glm::translate(model_matrix, glm::vec3((float)pivot_offset, 0.0f, 0.0f));
-		model_matrix = glm::rotate(model_matrix, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+
+		// Model Rotation
+		glm::vec4 rot_vector(0.0, 0.0, 0.0, 1.0);
+		glm::quat rot_quat(rot_vector);
+		rot_quat = glm::rotate(rot_quat, (float)rotate_angle, glm::vec3(0.0, 1.0, 0.0));
+		glm::mat4x4 rot_matr = glm::toMat4(rot_quat);
+
+
+		// Euler to quaternion
+		//glm::quat rot_quat(glm::vec3(0.0f, (float)rotate_angle, 0.0f));
+		//glm::mat4 rot_matr = glm::toMat4(rot_quat);
+
+		//glm::mat4 rot_matrix = glm::orientate4(glm::vec3(0.0f, 1.0f * rotate_angle, 0.0f));
+		model_matrix = model_matrix * rot_matr;
+
 		model_matrix = glm::scale(model_matrix, glm::vec3(0.5, 0.5, 0.5));
 		glm::mat4 final_model_matrix = parent_matrix * model_matrix;
 

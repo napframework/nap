@@ -3,6 +3,7 @@
 // External Includes
 #include <nap.h>
 #include <glm/glm.hpp>
+#include <glm/fwd.hpp>
 
 namespace nap
 {

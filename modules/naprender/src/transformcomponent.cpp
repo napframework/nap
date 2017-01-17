@@ -3,19 +3,17 @@
 
 // External includes
 #include <glm/gtx/transform.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 namespace nap
 {
 	// Constructs and returns this components local transform
 	glm::mat4x4 TransformComponent::getLocalTransform() const
 	{
-		glm::mat4x4 model_matrix;
-		model_matrix = glm::translate(model_matrix, translate.getValue());
-		model_matrix = glm::rotate(model_matrix, glm::radians(rotate.getValue().x), glm::vec3(1.0, 0.0, 0.0));
-		model_matrix = glm::rotate(model_matrix, glm::radians(rotate.getValue().y), glm::vec3(0.0, 1.0, 0.0));
-		model_matrix = glm::rotate(model_matrix, glm::radians(rotate.getValue().z), glm::vec3(0.0, 0.0, 1.0));
-		model_matrix = glm::scale(model_matrix, scale.getValue() * uniformScale.getValue());
-		return model_matrix;
+		glm::mat4x4 xform_matrix = glm::translate(glm::mat4x4(), translate.getValue());
+		glm::mat4x4 rotat_matrix = glm::toMat4(glm::quat(rotate.getValue()));
+		glm::mat4x4 scale_matrix = glm::scale(scale.getValue() * uniformScale.getValue());
+		return xform_matrix * rotat_matrix * scale_matrix;
 	}
 }
 RTTI_DEFINE(nap::TransformComponent)
