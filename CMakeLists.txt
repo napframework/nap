@@ -69,9 +69,12 @@ add_subdirectory(modules/napscriptserver)
 add_subdirectory(modules/napjsonserializer)
 add_subdirectory(modules/naprender)
 add_subdirectory(modules/napgui)
+add_subdirectory(modules/napmath)
+add_subdirectory(modules/napsdlinput)
 
 #add_dependencies(napkin mod_napfsm)
 add_dependencies(scriptserver mod_napscriptserver)
 add_dependencies(CoreApp mod_naprender mod_napscriptserver)
 add_dependencies(rendertest mod_naprender)
 add_dependencies(unittest mod_naprender mod_napscriptserver)
+
