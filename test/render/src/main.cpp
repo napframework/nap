@@ -77,10 +77,7 @@ nap::Entity* model = nullptr;
 int vertex_index(0), color_index(0), normal_index(0), uv_index(0);
 
 // Our SDL_Window ( just like with SDL2 wihout OpenGL)
-SDL_Window*					mainWindow;
-
-// Our opengl context handle
-SDL_GLContext				mainContext;
+opengl::Window*				mainWindow;
 
 // Current texture to draw
 unsigned int				currentIndex = 0;
@@ -162,11 +159,6 @@ bool initOpenGL()
 	// Print error if window could not be created
 	mainWindow = opengl::createWindow(window_settings);
 	if (mainWindow == nullptr)
-		return false;
-
-	// Create context
-	mainContext = opengl::createContext(*mainWindow, true);
-	if (mainContext == nullptr)
 		return false;
 
 	// Initialize glew
@@ -362,7 +354,7 @@ void runGame(nap::Core& core)
 					break;
 				case SDLK_f:
 				{
-					SDL_SetWindowFullscreen(mainWindow, SDL_WINDOW_FULLSCREEN_DESKTOP);
+					SDL_SetWindowFullscreen(mainWindow->getWindow(), SDL_WINDOW_FULLSCREEN_DESKTOP);
 					break;
 				}
 				case SDLK_PERIOD:
@@ -491,11 +483,7 @@ void cleanup()
 {
 	model = nullptr;
 
-	// Delete our OpengL context
-	opengl::deleteContext(mainContext);
-
-	// Destroy our window
-	opengl::destroyWindow(*mainWindow);
+	delete mainWindow;
 
 	// Shutdown SDL 2
 	opengl::shutdown();

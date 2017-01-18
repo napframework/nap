@@ -5,6 +5,7 @@
 #include <nap/service.h>
 #include <nopengl.h>
 #include <thread>
+#include <nwindow.h>
 
 namespace nap
 {
@@ -30,8 +31,8 @@ namespace nap
 		 */
 		SignalAttribute draw = {this, "draw"};
 
-        SDL_Window* getWindow();
-        void destroyWindow(SDL_Window* window);
+        opengl::Window* getWindow();
+        void destroyWindow(opengl::Window* window);
 
 	protected:
 		/**
@@ -51,8 +52,7 @@ namespace nap
 
         bool mIsRunning = false;
 
-        SDL_Window* mWindow = nullptr;
-        SDL_GLContext mContext = nullptr;
+        opengl::Window* mWindow = nullptr;
 
         opengl::Camera camera;
         unsigned int windowWidth = 512;

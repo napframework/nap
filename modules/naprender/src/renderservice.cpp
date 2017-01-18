@@ -39,7 +39,7 @@ namespace nap
 	}
 
 
-	SDL_Window* RenderService::getWindow()
+	opengl::Window* RenderService::getWindow()
 	{
 		if (mWindow)
 			return mWindow;
@@ -78,11 +78,6 @@ namespace nap
 		if (mWindow == nullptr)
 			return false;
 
-		// Create context
-		mContext = opengl::createContext(*mWindow, true);
-		if (mContext == nullptr)
-			return false;
-
 		// Initialize glew
 		opengl::init();
 
@@ -92,7 +87,6 @@ namespace nap
 		int Buffers(1), Samples(4);
 		SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &Buffers);
 		SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &Samples);
-
 
 		Logger::debug("OpenGL initialized");
 
@@ -143,16 +137,10 @@ namespace nap
 			SDL_Delay(1000);
 		}
 
-
-		if (mContext) {
-			opengl::deleteContext(mContext);
-            Logger::info("Releasing context");
-			mContext = nullptr;
-		}
-
-		if (mWindow) {
+		if (mWindow) 
+		{
             Logger::info("Destroying window");
-			opengl::destroyWindow(*mWindow);
+			delete mWindow;
 			mWindow = nullptr;
 		}
 
@@ -160,10 +148,9 @@ namespace nap
 	}
 
 
-	void RenderService::destroyWindow(SDL_Window* window)
+	void RenderService::destroyWindow(opengl::Window* window)
 	{
 		assert(window == mWindow);
-
 		mIsRunning = false;
 		mThread->join();
 	}

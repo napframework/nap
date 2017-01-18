@@ -47,7 +47,7 @@ namespace nap
 
 
 	private:
-		SDL_Window* mWindow = nullptr;
+		opengl::Window* mWindow = nullptr;
 	};
 }
 
