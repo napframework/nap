@@ -54,8 +54,13 @@ namespace opengl
 	}
 
 
-	// Creates an OpenGL window
-	SDL_Window* createWindow(const WindowSettings& settings)
+	/**
+	* createWindow
+	*
+	* Creates a new opengl window using the parameters specified
+	* @return: the create window, nullptr if not successful
+	*/
+	static SDL_Window* createSDLWindow(const WindowSettings& settings)
 	{
 		// Construct options
 		Uint32 options = SDL_WINDOW_OPENGL;
@@ -79,14 +84,21 @@ namespace opengl
 	}
 
 
-	// Creates an OpenGL context
-	SDL_GLContext createContext(SDL_Window& window, bool vSync)
-	{	
+	/**
+	* createContext
+	*
+	* Creates a new opengl context that is associated with the incoming window
+	* Also makes the current context current
+	* @return: the created context, nullptr if not successful
+	*/
+	static SDL_GLContext createContext(SDL_Window& window, bool vSync)
+	{
 		SDL_GLContext context = SDL_GL_CreateContext(&window);
 		if (context == nullptr)
 		{
 			printMessage(MessageType::ERROR, "unable to create context for window: %s", SDL_GetWindowTitle(&window));
 			printSDLError();
+			return nullptr;
 		}
 
 		// Enable / Disable v-sync
@@ -106,26 +118,49 @@ namespace opengl
 	}
 
 
+	// Creates a window with an associated OpenGL context
+	Window* createWindow(const WindowSettings& settings)
+	{
+		// create the window
+		SDL_Window* new_window = createSDLWindow(settings);
+		if (new_window == nullptr)
+			return nullptr;
+
+		// check if settings contains a shared context
+		if (settings.share != nullptr)
+		{
+			assert(settings.share->getWindow()  != nullptr);
+			assert(settings.share->getContext() != nullptr);
+			
+			// Activate context if necessary
+			if (SDL_GL_GetCurrentContext() != settings.share->getContext())
+			{
+				SDL_GL_MakeCurrent(settings.share->getWindow(), settings.share->getContext());
+			}
+
+			// Enable sharing
+			SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
+		}
+		else
+		{
+			SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 0);
+		}
+
+		// Create context
+		SDL_GLContext context = createContext(*new_window, true);
+		if (context == nullptr)
+			return nullptr;
+
+		// Create window container
+		return new Window(settings, new_window, context);
+	}
+
+
 	// Swaps buffer for the window
 	// This action is relative to currently active drawing context
-	void swap(SDL_Window& window)
+	void swap(Window& window)
 	{
-		SDL_GL_SwapWindow(&window);
-	}
-
-
-	// Deletes an opengl context, making it unavailable for OpenGl operations
-	void deleteContext(SDL_GLContext context)
-	{
-		assert(context != nullptr);
-		SDL_GL_DeleteContext(context);
-	}
-
-
-	// Destroys an OpenGL window
-	void destroyWindow(SDL_Window& window)
-	{
-		SDL_DestroyWindow(&window);
+		SDL_GL_SwapWindow(window.getWindow());
 	}
 
 

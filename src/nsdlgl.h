@@ -5,6 +5,9 @@
 #include <string>
 #include <stdint.h>
 
+// Local Includes
+#include "nwindow.h"
+
 namespace opengl
 {
 	/**
@@ -28,26 +31,6 @@ namespace opengl
 
 
 	/**
-	 * WindowAttributes
-	 *
-	 * Set of window attributes used when creating a new opengl window
-	 */
-	struct WindowSettings
-	{
-		WindowSettings()  = default;
-		~WindowSettings() = default;
-
-		std::string title;						// Name of the window
-		int x = SDL_WINDOWPOS_CENTERED;			// Horizontal position of the window
-		int y = SDL_WINDOWPOS_CENTERED;			// Vertical position of the window
-		int width  = 512;						// Width of the window
-		int height = 512;						// Height of the window
-		bool borderless = false;				// If the window has no borders
-		bool resizable = false;					// If the window is resizable
-	};
-
-
-	/**
 	 * setAttributes
 	 * 
 	 * sets the opengl attributes for the OpenGL context to create
@@ -58,22 +41,13 @@ namespace opengl
 
 
 	/**
-	 * createContext
-	 * 
-	 * Creates a new opengl context that is associated with the incoming window
-	 * Also makes the current context current
-	 * @return: the created context, nullptr if not successful
-	 */
-	SDL_GLContext createContext(SDL_Window& window, bool vSync = true);
-
-
-	/**
-	 * createWindow
-	 *
-	 * Creates a new opengl window using the parameters specified
-	 * @return: the create window, nullptr if not successful
-	 */
-	SDL_Window* createWindow(const WindowSettings& settings);
+	* createWindow
+	*
+	* Creates a window with an associated OpenGL context
+	* Note that it's possible to have one window share multiple contexts
+	* But every context needs to be associated with at least 1 window
+	*/
+	Window* createWindow(const WindowSettings& settings);
 
 
 	/**
@@ -83,23 +57,7 @@ namespace opengl
 	* Only possible when double buffering is enabled
 	* @param window: the window to swap buffers for
 	*/
-	void swap(SDL_Window& window);
-
-
-	/**
-	 * deleteContext
-	 *
-	 * Deletes an opengl context, making it unavailable for OpenGl operations
-	 */
-	void deleteContext(SDL_GLContext context);
-
-
-	/**
-	 * destroyWindow
-	 * 
-	 * Destroys an OpenGL window
-	 */
-	void destroyWindow(SDL_Window& window);
+	void swap(Window& window);
 
 
 	/**
@@ -126,6 +84,7 @@ namespace opengl
 	 * quit
 	 *
 	 * Shutdown SDL
+	 * TODO: Should go in to a separate sdl header in a different project
 	 */
 	void shutdown();
 
