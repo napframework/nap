@@ -101,10 +101,6 @@ namespace opengl
 			return nullptr;
 		}
 
-		// Enable / Disable v-sync
-		// This makes our buffer swap syncronized with the monitor's vertical refresh
-		SDL_GL_SetSwapInterval(static_cast<int>(vSync));
-
 		// Print Context Info
 		const char* window_title = SDL_GetWindowTitle(&window);
 		printMessage(MessageType::INFO, "created context for window: %s", window_title);
@@ -193,6 +189,13 @@ namespace opengl
 	{
 		assert(window.getWindow() != nullptr);
 		SDL_SetWindowSize(window.getWindow(), width, height);
+	}
+
+
+	// Turn v-sync on / off
+	void setVSync(Window& window, bool value)
+	{
+		SDL_GL_SetSwapInterval(static_cast<int>(value));
 	}
 
 	// Swaps buffer for the window

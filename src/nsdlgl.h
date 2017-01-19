@@ -86,6 +86,12 @@ namespace opengl
 
 
 	/**
+	 * Turn window v-sync on / off
+	 */
+	void setVSync(Window& window, bool value);
+
+
+	/**
 	* swap
 	*
 	* Swaps buffer for the window with what was drawn in the currently active context
