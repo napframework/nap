@@ -65,6 +65,27 @@ namespace opengl
 
 
 	/**
+	 * sets the window position
+	 * @param posx, posy: pixel coordinates on screen
+	 */
+	void setWindowPosition(Window& window, int x, int y);
+
+
+	/**
+	 * updates the window title
+	 * @param title: the new window title
+	 */
+	void setWindowTitle(Window& window, const std::string& title);
+
+
+	/**
+	 * updates the window size
+	 * @param size: the new window size
+	 */
+	void setWindowSize(Window& window, int width, int height);
+
+
+	/**
 	* swap
 	*
 	* Swaps buffer for the window with what was drawn in the currently active context

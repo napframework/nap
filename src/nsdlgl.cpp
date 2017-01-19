@@ -172,6 +172,29 @@ namespace opengl
 	}
 
 
+	// Updates window position
+	void setWindowPosition(Window& window, int x, int y)
+	{
+		assert(window.getWindow() != nullptr);
+		SDL_SetWindowPosition(window.getWindow(), x, y);
+	}
+
+
+	// Updates the window title
+	void setWindowTitle(Window& window, const std::string& title)
+	{
+		assert(window.getWindow() != nullptr);
+		SDL_SetWindowTitle(window.getWindow(), title.c_str());
+	}
+
+
+	// Sets the window size
+	void setWindowSize(Window& window, int width, int height)
+	{
+		assert(window.getWindow() != nullptr);
+		SDL_SetWindowSize(window.getWindow(), width, height);
+	}
+
 	// Swaps buffer for the window
 	// This action is relative to currently active drawing context
 	void swap(Window& window)
