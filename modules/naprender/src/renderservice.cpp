@@ -62,8 +62,23 @@ namespace nap
 			return;
 		}
 
+		// Convert settings to gl settings
+		opengl::WindowSettings gl_window_settings;
+		gl_window_settings.borderless = window_settings->borderless.getValue();
+		gl_window_settings.resizable = window_settings->resizable.getValue();
+		
+		// If we need to share this context with another context
+		// Resolve the link and get the window pointer
+		if (window_settings->sharedWindow.isLinked())
+		{
+			RenderWindowComponent* share_window = window_settings->sharedWindow.getTarget<RenderWindowComponent>();
+			assert(share_window != nullptr);
+			assert(share_window->mWindow != nullptr);
+			gl_window_settings.share = share_window->mWindow.get();
+		}
+
 		// Construct window using settings
-		opengl::Window* new_window = opengl::createWindow(window_settings->toGLSettings());
+		opengl::Window* new_window = opengl::createWindow(gl_window_settings);
 		if (new_window == nullptr)
 		{
 			nap::Logger::fatal(window, "unable to create opengl window and context");

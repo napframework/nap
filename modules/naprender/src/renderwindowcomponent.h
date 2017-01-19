@@ -15,6 +15,8 @@ namespace nap
 	/**
 	 * Holds all window launch settings
 	 * Note that this object is only used when constructing the window
+	 * Use the size, position and title attributes on the component
+	 * to position the window
 	 */
 	class RenderWindowSettings : public AttributeObject
 	{
@@ -27,12 +29,7 @@ namespace nap
 
 		Attribute<bool> borderless =		{ this, "Borderless", false };
 		Attribute<bool> resizable =			{ this, "Resizable", true };
-
-		/**
-		 * Converts the current settings to GL compatible settings
-		 * @return an opengl window settings container based on this object
-		 */
-		opengl::WindowSettings toGLSettings();
+		ObjectLinkAttribute sharedWindow =  { this, "SharedWindow", RTTI_OF(RenderWindowComponent)};
 	};
 
 
@@ -58,25 +55,25 @@ namespace nap
 		 * By making the window visible for the first time the window
 		 * is constructed
 		 */
-		SignalAttribute show { this, "show" };
+		SignalAttribute show { this, "Show" };
 
 		/**
 		 * Hides the window
 		 */
-		SignalAttribute hide { this, "hide" };
+		SignalAttribute hide { this, "Hide" };
 
 		/**
 		 * Render signal, emitted every render iteration
 		 * Connect to this signal to render objects to the context
 		 * associated with this window. 
 		 */
-		SignalAttribute render { this, "render" };
+		SignalAttribute render { this, "Render" };
 
 		/**
 		 * Link to settings associated with this window
 		 * These settings are only used on construction of the window
 		 */
-		ObjectLinkAttribute constructionSettings =		{ this, "settings", RTTI_OF(RenderWindowSettings) };
+		ObjectLinkAttribute constructionSettings =		{ this, "Settings", RTTI_OF(RenderWindowSettings) };
 
 		/**
 		 * @return if the component manages a window. 
@@ -96,6 +93,7 @@ namespace nap
 		Attribute<glm::ivec2> position					{ this, "Position", { 256, 256 } };
 		Attribute<glm::ivec2> size						{ this, "Size", {512, 512 } };
 		Attribute<std::string> title					{ this, "Title", "RenderWindow" };
+		Attribute<bool> sync							{ this, "VSync", false };
 
 	protected:
 		/**
@@ -115,6 +113,7 @@ namespace nap
 		void onTitleChanged(const std::string& title);
 		void onPositionChanged(const glm::ivec2& position);
 		void onSizeChanged(const glm::ivec2& size);
+		void onSyncChanged(const bool& value);
 
 		/**
 		 * Occurs when the window is registered with the render service
@@ -132,6 +131,7 @@ namespace nap
 		NSLOT(titleChanged, const std::string&, onTitleChanged)
 		NSLOT(positionChanged, const glm::ivec2&, onPositionChanged)
 		NSLOT(sizeChanged, const glm::ivec2&, onSizeChanged)
+		NSLOT(syncChanged, const bool&, onSyncChanged)
 
 
 	private:

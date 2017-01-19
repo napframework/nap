@@ -2,21 +2,6 @@
 
 namespace nap
 {
-	// Convert this object to an opengl settings container
-	opengl::WindowSettings RenderWindowSettings::toGLSettings()
-	{
-		opengl::WindowSettings settings;
-		settings.borderless = this->borderless.getValue();
-		settings.height = 512;
-		settings.width = 512;
-		settings.resizable = this->resizable.getValue();
-		settings.x = 256;
-		settings.y = 256;
-		settings.title = "RenderWindow";
-		return settings;
-	}
-
-
 	// Constructor
 	RenderWindowComponent::RenderWindowComponent()
 	{
@@ -70,8 +55,13 @@ namespace nap
 		glViewport(0, 0, size.x, size.y);
 	}
 
+	// Turn v-sync on - off
+	void RenderWindowComponent::onSyncChanged(const bool& value)
+	{
+		opengl::setVSync(*mWindow, value);
+	}
 
-	// Pushes attributes to window
+	// Registers attributes and pushes current state to window
 	void RenderWindowComponent::registered()
 	{
 		if (!hasWindow())
@@ -84,15 +74,17 @@ namespace nap
 		position.valueChangedSignal.connect(positionChanged);
 		size.valueChangedSignal.connect(sizeChanged);
 		title.valueChangedSignal.connect(titleChanged);
+		sync.valueChangedSignal.connect(syncChanged);
 
 		// When visibility changes, hide / show
 		show.signal.connect(showWindow);
 		hide.signal.connect(hideWindow);
 
-		// Update values that might have been set previously
+		// Push possible values
 		onPositionChanged(position.getValue());
 		onSizeChanged(size.getValue());
 		onTitleChanged(title.getValue());
+		onSyncChanged(sync.getValue());
 	}
 
 }

@@ -145,9 +145,10 @@ bool init(nap::Core& core)
 	// Add window component
 	nap::Entity& window_entity = core.addEntity("window");
 	nap::RenderWindowComponent& window_comp = window_entity.addComponent<nap::RenderWindowComponent>("main_window");
-	window_comp.size.setValue({ 1024, 1024 });
-	window_comp.position.setValue({ (1920 / 2) - 512, 1080 / 2 - 512 });
+	window_comp.size.setValue({ windowWidth, windowHeight });
+	window_comp.position.setValue({ (1920 / 2) - 256, 1080 / 2 - 256 });
 	window_comp.title.setValue("Wolla");
+	window_comp.sync.setValue(true);
 
 	//////////////////////////////////////////////////////////////////////////
 
