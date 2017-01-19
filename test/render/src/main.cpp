@@ -141,9 +141,6 @@ bool init(nap::Core& core)
 	// Create render service
 	nap::RenderService* render_service = core.getOrCreateService<nap::RenderService>();
 	nap::Logger::info("initialized render service: %s", render_service->getName().c_str());
-	
-	// Initialize render service
-	render_service->init();
 
 	// Add window component
 	nap::Entity& window_entity = core.addEntity("window");

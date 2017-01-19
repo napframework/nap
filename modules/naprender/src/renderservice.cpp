@@ -23,20 +23,77 @@ namespace nap
 	{
 		// If we have a render window component and glew hasn't been initialized
 		// Initialize glew. Otherwise subsequent render calls will fail
-		if (inObject.getTypeInfo().isKindOf(RTTI_OF(RenderWindowComponent)) && !glewInitialized)
+		if (inObject.getTypeInfo().isKindOf(RTTI_OF(RenderWindowComponent)))
 		{
-			opengl::init();
-			glewInitialized = true;
+			RenderWindowComponent& new_window = static_cast<RenderWindowComponent&>(inObject);
+			createWindow(new_window);
 		}
 	}
 
 
+	// Creates a new opengl window and assigns it to the component
+	// TODO: Add Mutex
+	void RenderService::createWindow(RenderWindowComponent& window)
+	{
+		// Make sure we don't procedeed when errors have been raised before
+		if (state > State::Initialized)
+		{
+			nap::Logger::fatal("unable to create new window, previous error occurred");
+			return;
+		}
+
+		// Initialize video render 
+		if (state == State::Uninitialized)
+		{
+			if (!init())
+			{
+				nap::Logger::fatal(*this, "unable to initialize video sub system");
+				state = State::SystemError;
+				return;
+			}
+		}
+
+		// Get settings
+		nap::RenderWindowSettings* window_settings = window.settings.getTarget<RenderWindowSettings>();
+		if (window_settings == nullptr)
+		{
+			nap::Logger::fatal(window, "unable to query window settings");
+			state = State::WindowError;
+			return;
+		}
+
+		// Construct window using settings
+		opengl::Window* new_window = opengl::createWindow(window_settings->toGLSettings());
+		if (new_window == nullptr)
+		{
+			nap::Logger::fatal(window, "unable to create opengl window and context");
+			state = State::WindowError;
+			return;
+		}
+		
+		// Set window
+		window.mWindow.reset(new_window);
+
+		// Initialize Glew
+		if (state == State::Uninitialized)
+		{
+			if (!opengl::init())
+			{
+				nap::Logger::fatal(*this, "unable to initialize glew subsystem");
+				state = State::GLError;
+				return;
+			}
+		}
+		state = State::Initialized;
+	}
+
+
 	// Initializes opengl related functionality
-	void RenderService::init()
+	bool RenderService::init()
 	{
 		// Initialize video
-		opengl::initVideo();
-		opengl::Attributes attributes;
+		if (!opengl::initVideo())
+			return false;
 
 		// Set GL Attributes
 		opengl::Attributes attrs;
@@ -44,6 +101,8 @@ namespace nap
 		attrs.versionMinor = 2;
 		attrs.versionMajor = 3;
 		opengl::setAttributes(attrs);
+
+		return true;
 	}
 
 

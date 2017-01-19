@@ -38,7 +38,6 @@ namespace nap
 	void RenderWindowComponent::onAdded(Object& parent)
 	{
 		nap::Logger::info("Adding window: %s", settings.getTarget<RenderWindowSettings>()->title.getValue().c_str());
-		createWindow();
 	}
 
 
@@ -54,25 +53,6 @@ namespace nap
 	{
 		opengl::hideWindow(*mWindow);
 	}
-
-
-	// Creates the window and associated context
-	bool RenderWindowComponent::createWindow()
-	{
-		// Get settings
-		nap::RenderWindowSettings* window_settings = settings.getTarget<RenderWindowSettings>();
-		if (window_settings == nullptr)
-		{
-			nap::Logger::fatal(*this, "unable to query window settings");
-			return false;
-		}
-
-		// Construct window using settings
-		std::unique_ptr<opengl::Window> new_window(opengl::createWindow(window_settings->toGLSettings()));
-		mWindow = std::move(new_window);
-		return true;
-	}
-
 }
 
 RTTI_DEFINE(nap::RenderWindowComponent)

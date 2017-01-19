@@ -112,7 +112,6 @@ namespace nap
 	private:
 		// Window used for rendering
 		std::unique_ptr<opengl::Window> mWindow = nullptr;		// Window used for rendering
-		bool createWindow();									// creates the window with associated context
 	};
 }
 
