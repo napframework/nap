@@ -156,6 +156,22 @@ namespace opengl
 	}
 
 
+	// Hide selected window
+	void hideWindow(Window& window)
+	{
+		assert(window.getWindow() != nullptr);
+		SDL_HideWindow(window.getWindow());
+	}
+
+
+	// Show selected window
+	void showWindow(Window& window)
+	{
+		assert(window.getWindow() != nullptr);
+		SDL_ShowWindow(window.getWindow());
+	}
+
+
 	// Swaps buffer for the window
 	// This action is relative to currently active drawing context
 	void swap(Window& window)

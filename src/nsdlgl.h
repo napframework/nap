@@ -51,6 +51,20 @@ namespace opengl
 
 
 	/**
+	 * hides the window
+	 * @param window the window to hide
+	 */
+	void hideWindow(Window& window);
+
+
+	/**
+	 * shows the window
+	 * @param window the window to show
+	 */
+	void showWindow(Window& window);
+
+
+	/**
 	* swap
 	*
 	* Swaps buffer for the window with what was drawn in the currently active context
