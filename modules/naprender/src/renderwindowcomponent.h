@@ -34,11 +34,15 @@ namespace nap
 
 
 	/**
-	 * 3D render window. Creating a window requests a new 3d window
-	 * with context from the Render Service. Every window is associated
-	 * with it's own drawing context. Note that this window does not own
-	 * the OpenGL render window, it acts as an interface to the window managed 
-	 * by the service
+	 * 3D render window. 
+	 * When adding this object to an entity a new render window is created
+	 * If you want to change the window settings on construction don't add
+	 * it immediately, create this component without adding it, change the
+	 * window settings and attach to it's parent. The render service
+	 * will handle all opengl related initialization calls and creates
+	 * the actual window. The window is managed by this component and 
+	 * destroyed upon removal Every window is associated
+	 * with it's own drawing context. 
 	 */
 	class RenderWindowComponent : public ServiceableComponent
 	{
