@@ -145,16 +145,9 @@ bool init(nap::Core& core)
 	// Add window component
 	nap::Entity& window_entity = core.addEntity("window");
 	nap::RenderWindowComponent& window_comp = window_entity.addComponent<nap::RenderWindowComponent>("main_window");
-
-	// Get window settings
-	/*
-	nap::RenderWindowSettings* settings = window_comp.settings.getTarget<nap::RenderWindowSettings>();
-	settings->borderless.setValue(false);
-	settings->resizable.setValue(true);
-	settings->size.setValue(glm::ivec2(512, 512));
-	settings->position.setValue(glm::ivec2(256, 256));
-	settings->title.setValue("MainWindow");
-	*/
+	window_comp.size.setValue({ 1024, 1024 });
+	window_comp.position.setValue({ (1920 / 2) - 512, 1080 / 2 - 512 });
+	window_comp.title.setValue("Wolla");
 
 	//////////////////////////////////////////////////////////////////////////
 
@@ -241,9 +234,6 @@ bool init(nap::Core& core)
 	// Set camera
 	camera.setFieldOfView(45.0f);
 	camera.setAspectRatio((float)windowWidth, (float)windowHeight);
-
-	// Update gl viewport
-	updateViewport(windowWidth, windowHeight);
 
 	// Create Square Vertex Buffer Object
 	createCube(cubeObject, vertex_index, color_index, uv_index);

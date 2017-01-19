@@ -54,7 +54,7 @@ namespace nap
 		}
 
 		// Get settings
-		nap::RenderWindowSettings* window_settings = window.settings.getTarget<RenderWindowSettings>();
+		nap::RenderWindowSettings* window_settings = window.constructionSettings.getTarget<RenderWindowSettings>();
 		if (window_settings == nullptr)
 		{
 			nap::Logger::fatal(window, "unable to query window settings");

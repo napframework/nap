@@ -18,15 +18,13 @@ namespace nap
 	 */
 	class RenderWindowSettings : public AttributeObject
 	{
+		friend class RenderWindowComponent;
 		RTTI_ENABLE_DERIVED_FROM(AttributeObject)
 
 	public:
 		RenderWindowSettings()  = default;
 		~RenderWindowSettings() = default;
 
-		Attribute<std::string> title =		{ this, "Title", "RenderWindow", };
-		Attribute<glm::ivec2> position =	{ this, "Position", {256, 256} };
-		Attribute<glm::ivec2> size =		{ this, "Size", {512, 512} };
 		Attribute<bool> borderless =		{ this, "Borderless", false };
 		Attribute<bool> resizable =			{ this, "Resizable", true };
 
@@ -78,18 +76,26 @@ namespace nap
 		 * Link to settings associated with this window
 		 * These settings are only used on construction of the window
 		 */
-		ObjectLinkAttribute settings =		{ this, "settings", RTTI_OF(RenderWindowSettings) };
+		ObjectLinkAttribute constructionSettings =		{ this, "settings", RTTI_OF(RenderWindowSettings) };
 
 		/**
 		 * @return if the component manages a window. 
 		 * If show hasn't been called this call will resolve to false
 		 */
-		bool hasWindow() const				{ return mWindow != nullptr; }
+		bool hasWindow() const							{ return mWindow != nullptr; }
 
 		/**
 		 * Swaps window buffers
 		 */
-		void swap() const					{ opengl::swap(*mWindow); }
+		void swap() const								{ opengl::swap(*mWindow); }
+
+		/**
+		 * These attributes only work when the window has 
+		 * been registered with the render service
+		 */
+		Attribute<glm::ivec2> position					{ this, "Position", { 256, 256 } };
+		Attribute<glm::ivec2> size						{ this, "Size", {512, 512 } };
+		Attribute<std::string> title					{ this, "Title", "RenderWindow" };
 
 	protected:
 		/**
@@ -103,10 +109,29 @@ namespace nap
 		void onShowWindow(const SignalAttribute& signal);
 		void onHideWindow(const SignalAttribute& signal);
 
+		/**
+		 * Attribute changes
+		 */
+		void onTitleChanged(const std::string& title);
+		void onPositionChanged(const glm::ivec2& position);
+		void onSizeChanged(const glm::ivec2& size);
+
+		/**
+		 * Occurs when the window is registered with the render service
+		 * This call is necessary because of opengl initialization order
+		 * the service will provide this component with a window and valid opengl context
+		 * when on construction attributes are changed the window might not be available
+		 * this call makes sure that the attributes are pushed and all signals are connected
+		 */
+		virtual void registered() override;
+
 		// Slot declarations
 		NSLOT(componentAdded, Object&, onAdded)
 		NSLOT(showWindow, const SignalAttribute&, onShowWindow)
 		NSLOT(hideWindow, const SignalAttribute&, onHideWindow)
+		NSLOT(titleChanged, const std::string&, onTitleChanged)
+		NSLOT(positionChanged, const glm::ivec2&, onPositionChanged)
+		NSLOT(sizeChanged, const glm::ivec2&, onSizeChanged)
 
 
 	private:

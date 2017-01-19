@@ -7,12 +7,12 @@ namespace nap
 	{
 		opengl::WindowSettings settings;
 		settings.borderless = this->borderless.getValue();
-		settings.height = this->size.getValue().y;
-		settings.width = this->size.getValue().x;
+		settings.height = 512;
+		settings.width = 512;
 		settings.resizable = this->resizable.getValue();
-		settings.x = this->position.getValue().x;
-		settings.y = this->position.getValue().y;
-		settings.title = this->title.getValue();
+		settings.x = 256;
+		settings.y = 256;
+		settings.title = "RenderWindow";
 		return settings;
 	}
 
@@ -23,22 +23,17 @@ namespace nap
 		// When added request a window
 		added.connect(componentAdded);
 
-		// When visibility changes, hide / show
-		show.signal.connect(showWindow);
-		hide.signal.connect(hideWindow);
-
-		// Add settings
+		// Add initialization settings
 		RenderWindowSettings& window_settings = addChild<RenderWindowSettings>("settings");
+
 		window_settings.setFlag(nap::ObjectFlag::Removable, false);
-		settings.setTarget(window_settings);
+		constructionSettings.setTarget(window_settings);
 	}
 
 
 	// Creates the window and spawns it
 	void RenderWindowComponent::onAdded(Object& parent)
-	{
-		nap::Logger::info("Adding window: %s", settings.getTarget<RenderWindowSettings>()->title.getValue().c_str());
-	}
+	{}
 
 
 	// Shows the window, constructs one if necessary
@@ -53,6 +48,53 @@ namespace nap
 	{
 		opengl::hideWindow(*mWindow);
 	}
+
+
+	// Occurs when the window title changes
+	void RenderWindowComponent::onTitleChanged(const std::string& title)
+	{
+		opengl::setWindowTitle(*mWindow, title.c_str());
+	}
+
+
+	// Set Position
+	void RenderWindowComponent::onPositionChanged(const glm::ivec2& position)
+	{
+		opengl::setWindowPosition(*mWindow, position.x, position.y);
+	}
+
+	// Set Size
+	void RenderWindowComponent::onSizeChanged(const glm::ivec2& size)
+	{
+		opengl::setWindowSize(*mWindow, size.x, size.y);
+		glViewport(0, 0, size.x, size.y);
+	}
+
+
+	// Pushes attributes to window
+	void RenderWindowComponent::registered()
+	{
+		if (!hasWindow())
+		{
+			nap::Logger::warn(*this, "unable to connect window parameters, no GL Window");
+			return;
+		}
+
+		// Install listeners on attribute signals
+		position.valueChangedSignal.connect(positionChanged);
+		size.valueChangedSignal.connect(sizeChanged);
+		title.valueChangedSignal.connect(titleChanged);
+
+		// When visibility changes, hide / show
+		show.signal.connect(showWindow);
+		hide.signal.connect(hideWindow);
+
+		// Update values that might have been set previously
+		onPositionChanged(position.getValue());
+		onSizeChanged(size.getValue());
+		onTitleChanged(title.getValue());
+	}
+
 }
 
 RTTI_DEFINE(nap::RenderWindowComponent)
