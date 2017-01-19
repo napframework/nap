@@ -9,6 +9,10 @@
 
 namespace nap
 {
+	// Forward Declares
+	class RenderWindowComponent;
+
+
 	/**
 	 * Holds a reference to all drawable objects
 	 */
@@ -18,6 +22,13 @@ namespace nap
 
 	public:
 		RenderService() = default;
+
+		/**
+		 * Init needs to be called on the render service to initialize opengl
+		 * related calls and functionality. Failure to do so will result in undefined behavior 
+		 * when dealing with opengl state based objects
+		 */
+		void init();
 
 		/**
 		 * Call this in your app loop to emit a render call
@@ -31,35 +42,23 @@ namespace nap
 		 */
 		SignalAttribute draw = {this, "draw"};
 
-        opengl::Window* getWindow();
-        void destroyWindow(opengl::Window* window);
-
 	protected:
 		/**
 		 * Type registration
 		 */
 		virtual void registerTypes(nap::Core& core) override;
 
+		/**
+		 * Occurs when an object registers itself with the service
+		 */
+		virtual void objectRegistered(Object& inObject) override;
+
     private:
 
-        void renderLoop();
-
-        void renderCall();
-
-        void updateViewport(int width, int height);
-
-        bool initOpenGL();
-
-        bool mIsRunning = false;
-
-        opengl::Window* mWindow = nullptr;
-
-        opengl::Camera camera;
-        unsigned int windowWidth = 512;
-        unsigned int windowHeight = 512;
-        std::unique_ptr<std::thread> mThread;
-
-
+		// Keeps track of glew initialization
+		// If there is no active context we can't initialize glew
+		// This 
+		bool glewInitialized = false;
 	};
 } // nap
 

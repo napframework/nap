@@ -34,6 +34,7 @@
 #include <modelresource.h>
 #include <modelmeshcomponent.h>
 #include <renderservice.h>
+#include <renderwindowcomponent.h>
 
 // Nap includes
 #include <nap/core.h>
@@ -75,9 +76,6 @@ opengl::Camera camera;
 // vertex Shader indices
 nap::Entity* model = nullptr;
 int vertex_index(0), color_index(0), normal_index(0), uv_index(0);
-
-// Our SDL_Window ( just like with SDL2 wihout OpenGL)
-opengl::Window*				mainWindow;
 
 // Current texture to draw
 unsigned int				currentIndex = 0;
@@ -133,55 +131,35 @@ void updateViewport(int width, int height)
 
 
 /**
- * Initialize opengl context and create windows etc.
- */
-bool initOpenGL()
-{
-	// Initialize OpenGL
-	if (!opengl::initVideo())
-		return false;
-
-	// Set GL Attributes
-	opengl::Attributes attrs;
-	attrs.dubbleBuffer = true;
-	attrs.versionMinor = 2;
-	attrs.versionMajor = 3;
-	opengl::setAttributes(attrs);
-
-	// Create Window
-	opengl::WindowSettings window_settings;
-	window_settings.width = windowWidth;
-	window_settings.height = windowHeight;
-	window_settings.borderless = false;
-	window_settings.resizable = true;
-	window_settings.title = programName;
-
-	// Print error if window could not be created
-	mainWindow = opengl::createWindow(window_settings);
-	if (mainWindow == nullptr)
-		return false;
-
-	// Initialize glew
-	opengl::init();
-
-	// Enable multi sampling
-	glEnable(GL_MULTISAMPLE);
-
-	return true;
-}
-
-
-/**
  * Initialize all the resources and instances used for drawing
  * slowly migrating all functionality to nap
  */
 bool init(nap::Core& core)
 {
-	if (!initOpenGL())
-	{
-		nap::Logger::warn("unable to initialize opengl");
-		return false;
-	}
+	//////////////////////////////////////////////////////////////////////////
+
+	// Create render service
+	nap::RenderService* render_service = core.getOrCreateService<nap::RenderService>();
+	nap::Logger::info("initialized render service: %s", render_service->getName().c_str());
+	
+	// Initialize render service
+	render_service->init();
+
+	// Add window component
+	nap::Entity& window_entity = core.addEntity("window");
+	nap::RenderWindowComponent& window_comp = window_entity.addComponent<nap::RenderWindowComponent>("main_window");
+
+	// Get window settings
+	/*
+	nap::RenderWindowSettings* settings = window_comp.settings.getTarget<nap::RenderWindowSettings>();
+	settings->borderless.setValue(false);
+	settings->resizable.setValue(true);
+	settings->size.setValue(glm::ivec2(512, 512));
+	settings->position.setValue(glm::ivec2(256, 256));
+	settings->title.setValue("MainWindow");
+	*/
+
+	//////////////////////////////////////////////////////////////////////////
 
 	// Load bitmap
 	if (!loadImages())
@@ -286,9 +264,6 @@ int main(int argc, char *argv[])
 	// Create core
 	nap::Core core;
 
-	nap::RenderService* render_service = core.getOrCreateService<nap::RenderService>();
-	nap::Logger::info("initialized render service: %s", render_service->getName().c_str());
-
 	// Initialize render stuff
 	if (!init(core))
 		return -1;
@@ -354,7 +329,7 @@ void runGame(nap::Core& core)
 					break;
 				case SDLK_f:
 				{
-					SDL_SetWindowFullscreen(mainWindow->getWindow(), SDL_WINDOW_FULLSCREEN_DESKTOP);
+					//SDL_SetWindowFullscreen(mainWindow->getWindow(), SDL_WINDOW_FULLSCREEN_DESKTOP);
 					break;
 				}
 				case SDLK_PERIOD:
@@ -474,7 +449,7 @@ void runGame(nap::Core& core)
 		}
 
 		// Swap front / back buffer
-		opengl::swap(*mainWindow);
+		core.getEntity("window")->getComponent<nap::RenderWindowComponent>()->swap();
 	}
 }
 
@@ -482,8 +457,6 @@ void runGame(nap::Core& core)
 void cleanup()
 {
 	model = nullptr;
-
-	delete mainWindow;
 
 	// Shutdown SDL 2
 	opengl::shutdown();

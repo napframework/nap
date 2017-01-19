@@ -2,6 +2,7 @@
 #include "renderservice.h"
 #include "meshcomponent.h"
 #include "rendercomponent.h"
+#include "renderwindowcomponent.h"
 
 // External Includes
 #include <nap/core.h>
@@ -13,6 +14,36 @@ namespace nap
 	{
 		core.registerType(*this, RTTI_OF(RenderableComponent));
 		core.registerType(*this, RTTI_OF(MeshComponent));
+		core.registerType(*this, RTTI_OF(RenderWindowComponent));
+	}
+
+
+	// Occurs when an object registers itself with the service
+	void RenderService::objectRegistered(Object& inObject)
+	{
+		// If we have a render window component and glew hasn't been initialized
+		// Initialize glew. Otherwise subsequent render calls will fail
+		if (inObject.getTypeInfo().isKindOf(RTTI_OF(RenderWindowComponent)) && !glewInitialized)
+		{
+			opengl::init();
+			glewInitialized = true;
+		}
+	}
+
+
+	// Initializes opengl related functionality
+	void RenderService::init()
+	{
+		// Initialize video
+		opengl::initVideo();
+		opengl::Attributes attributes;
+
+		// Set GL Attributes
+		opengl::Attributes attrs;
+		attrs.dubbleBuffer = true;
+		attrs.versionMinor = 2;
+		attrs.versionMajor = 3;
+		opengl::setAttributes(attrs);
 	}
 
 
@@ -32,68 +63,17 @@ namespace nap
 	}
 
 
+
+	/*
 	void RenderService::renderCall()
 	{
 		render();
 		opengl::swap(*mWindow);
 	}
+	*/
 
 
-	opengl::Window* RenderService::getWindow()
-	{
-		if (mWindow)
-			return mWindow;
-
-		initOpenGL();
-		// Not initialized, create
-		mThread = std::make_unique<std::thread>(std::bind(&RenderService::renderLoop, this));
-		return mWindow;
-	}
-
-
-	bool RenderService::initOpenGL()
-	{
-		Logger::debug("Initializing OpenGL");
-		// Initialize OpenGL
-		if (!opengl::initVideo())
-			return false;
-
-		// Set GL Attributes
-		opengl::Attributes attrs;
-		attrs.dubbleBuffer = true;
-		attrs.versionMinor = 2;
-		attrs.versionMajor = 3;
-		opengl::setAttributes(attrs);
-
-		// Create Window
-		opengl::WindowSettings window_settings;
-		window_settings.width = windowWidth;
-		window_settings.height = windowHeight;
-		window_settings.borderless = false;
-		window_settings.resizable = true;
-		window_settings.title = "RenderWindow";
-
-		// Print error if window could not be created
-		mWindow = opengl::createWindow(window_settings);
-		if (mWindow == nullptr)
-			return false;
-
-		// Initialize glew
-		opengl::init();
-
-		// Enable multi sampling
-		glEnable(GL_MULTISAMPLE);
-
-		int Buffers(1), Samples(4);
-		SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &Buffers);
-		SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &Samples);
-
-		Logger::debug("OpenGL initialized");
-
-		return true;
-	}
-
-
+	/*
 	void RenderService::renderLoop()
 	{
 		camera.setFieldOfView(45.0f);
@@ -146,21 +126,7 @@ namespace nap
 
 		opengl::shutdown();
 	}
-
-
-	void RenderService::destroyWindow(opengl::Window* window)
-	{
-		assert(window == mWindow);
-		mIsRunning = false;
-		mThread->join();
-	}
-
-
-	void RenderService::updateViewport(int width, int height)
-	{
-		glViewport(0, 0, width, height);
-		camera.setAspectRatio((float)width, (float)height);
-	}
+	*/
 
 } // Renderservice
 
