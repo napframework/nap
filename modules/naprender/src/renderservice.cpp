@@ -72,8 +72,8 @@ namespace nap
 			return;
 		}
 		
-		// Set window
-		window.mWindow.reset(static_cast<OpenGLRenderWindow*>(new_window)->getContainer());
+		// Set window on window component
+		window.mWindow.reset(new_window);
 
 		// Initialize Glew
 		if (state == State::Uninitialized)

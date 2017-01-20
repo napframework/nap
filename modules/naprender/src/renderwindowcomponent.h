@@ -10,7 +10,7 @@
 namespace nap
 {
 	/**
-	 * 3D render window. 
+	 * Render window. 
 	 * When adding this object to an entity a new render window is created
 	 * If you want to change the window settings on construction don't add
 	 * it immediately, create this component without adding it, change the
@@ -18,7 +18,8 @@ namespace nap
 	 * will handle all opengl related initialization calls and creates
 	 * the actual window. The window is managed by this component and 
 	 * destroyed upon removal Every window is associated
-	 * with it's own drawing context. 
+	 * with it's own drawing context. Note that the window this object
+	 * manages can be of any type, ie: opengl, direct3d etc.
 	 */
 	class RenderWindowComponent : public ServiceableComponent
 	{
@@ -67,7 +68,7 @@ namespace nap
 		/**
 		 * Swaps window buffers
 		 */
-		void swap() const														{ opengl::swap(*mWindow); }
+		void swap() const														{ mWindow->swap(); }
 
 		/**
 		 * Sets window construction settings
@@ -120,8 +121,12 @@ namespace nap
 
 
 	private:
-		// Window used for rendering
-		std::unique_ptr<opengl::Window> mWindow = nullptr;		// Window used for rendering
+		/**
+		 * Pointer to the window that this component manages
+		 * This object is set when the component is registered with the
+		 * render service
+		 */
+		std::unique_ptr<RenderWindow> mWindow = nullptr;
 
 		// Settings used when constructing the window
 		RenderWindowSettings mSettings;
@@ -129,4 +134,3 @@ namespace nap
 }
 
 RTTI_DECLARE(nap::RenderWindowComponent)
-RTTI_DECLARE(nap::RenderWindowSettings)

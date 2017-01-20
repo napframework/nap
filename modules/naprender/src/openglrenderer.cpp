@@ -1,6 +1,9 @@
 // Local Includes
 #include "openglrenderer.h"
 
+// External Includes
+#include <nopengl.h>
+
 namespace nap
 {
 	// GL Render window constructor
@@ -29,6 +32,56 @@ namespace nap
 	opengl::Window* OpenGLRenderWindow::getContainer() const
 	{
 		return mWindow.get();
+	}
+
+
+	// Set window title
+	void OpenGLRenderWindow::setTitle(const std::string& title)
+	{
+		opengl::setWindowTitle(*mWindow, title.c_str());
+	}
+
+
+	// Set opengl window position
+	void OpenGLRenderWindow::setPosition(const glm::ivec2& position)
+	{
+		opengl::setWindowPosition(*mWindow, position.x, position.y);
+	}
+
+
+	// Set opengl window size 
+	void OpenGLRenderWindow::setSize(const glm::ivec2& size)
+	{
+		opengl::setWindowSize(*mWindow, size.x, size.y);
+		glViewport(0, 0, size.x, size.y);
+	}
+
+
+	// Set opengl sync
+	void OpenGLRenderWindow::setSync(bool value)
+	{
+		opengl::setVSync(*mWindow, value);
+	}
+
+
+	// Show opengl window
+	void OpenGLRenderWindow::showWindow()
+	{
+		opengl::showWindow(*mWindow);
+	}
+
+
+	// Hide opengl window
+	void OpenGLRenderWindow::hideWindow()
+	{
+		opengl::hideWindow(*mWindow);
+	}
+
+
+	// Swap OpenGL buffers
+	void OpenGLRenderWindow::swap()
+	{
+		opengl::swap(*mWindow);
 	}
 
 

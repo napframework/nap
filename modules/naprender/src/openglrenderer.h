@@ -26,18 +26,57 @@ namespace nap
 		/**
 		 * @return SDL_Window*
 		 */
-		virtual void*	getWindow() const override;
+		virtual void* getWindow() const override;
 
 		/**
 		 * @return SDL_GLContext (=void*)
 		 */
-		virtual void*	getContext() const override;
+		virtual void* getContext() const override;
 
 		/**
 		 * @return the OpenGL window container
 		 * Holds both the window and context
 		 */
 		opengl::Window* getContainer() const;
+
+		/**
+		* Set the window title
+		* @param title the new window title
+		*/
+		virtual void setTitle(const std::string& title) override;
+
+		/**
+		* Set the window position
+		* @param position the window position coordinates in pixels
+		*/
+		virtual void setPosition(const glm::ivec2& position) override;
+
+		/**
+		* Set the window size
+		* @param size the new window size in pixels
+		*/
+		virtual void setSize(const glm::ivec2& size) override;
+
+		/**
+		* Turns v-sync on / off
+		* @param value if v-sync should be turned on or off
+		*/
+		virtual void setSync(bool value) override;
+
+		/**
+		* Show window
+		*/
+		virtual void showWindow() override;
+
+		/**
+		* Hide window
+		*/
+		virtual void hideWindow() override;
+
+		/**
+		 * Swap buffers
+		 */
+		virtual void swap() override;
 
 	private:
 		std::unique_ptr<opengl::Window> mWindow = nullptr;

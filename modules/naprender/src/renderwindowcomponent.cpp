@@ -25,42 +25,44 @@ namespace nap
 	// Shows the window, constructs one if necessary
 	void RenderWindowComponent::onShowWindow(const SignalAttribute& signal)
 	{
-		opengl::showWindow(*mWindow);
+		mWindow->showWindow();
 	}
 
 
 	// Hides the window
 	void RenderWindowComponent::onHideWindow(const SignalAttribute& signal)
 	{
-		opengl::hideWindow(*mWindow);
+		mWindow->hideWindow();
 	}
 
 
 	// Occurs when the window title changes
 	void RenderWindowComponent::onTitleChanged(const std::string& title)
 	{
-		opengl::setWindowTitle(*mWindow, title.c_str());
+		mWindow->setTitle(title);
 	}
 
 
 	// Set Position
 	void RenderWindowComponent::onPositionChanged(const glm::ivec2& position)
 	{
-		opengl::setWindowPosition(*mWindow, position.x, position.y);
+		mWindow->setPosition(position);
 	}
+
 
 	// Set Size
 	void RenderWindowComponent::onSizeChanged(const glm::ivec2& size)
 	{
-		opengl::setWindowSize(*mWindow, size.x, size.y);
-		glViewport(0, 0, size.x, size.y);
+		mWindow->setSize(size);
 	}
+
 
 	// Turn v-sync on - off
 	void RenderWindowComponent::onSyncChanged(const bool& value)
 	{
-		opengl::setVSync(*mWindow, value);
+		mWindow->setSync(value);
 	}
+
 
 	// Registers attributes and pushes current state to window
 	void RenderWindowComponent::registered()
@@ -91,6 +93,5 @@ namespace nap
 }
 
 RTTI_DEFINE(nap::RenderWindowComponent)
-RTTI_DEFINE(nap::RenderWindowSettings)
 
 
