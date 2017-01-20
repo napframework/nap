@@ -9,30 +9,6 @@
 
 namespace nap
 {
-	// Forward Declares
-	class RenderWindowComponent;
-
-	/**
-	 * Holds all window launch settings
-	 * Note that this object is only used when constructing the window
-	 * Use the size, position and title attributes on the component
-	 * to position the window
-	 */
-	class RenderWindowSettings : public AttributeObject
-	{
-		friend class RenderWindowComponent;
-		RTTI_ENABLE_DERIVED_FROM(AttributeObject)
-
-	public:
-		RenderWindowSettings()  = default;
-		~RenderWindowSettings() = default;
-
-		Attribute<bool> borderless =		{ this, "Borderless", false };
-		Attribute<bool> resizable =			{ this, "Resizable", true };
-		ObjectLinkAttribute sharedWindow =  { this, "SharedWindow", RTTI_OF(RenderWindowComponent)};
-	};
-
-
 	/**
 	 * 3D render window. 
 	 * When adding this object to an entity a new render window is created
@@ -74,30 +50,35 @@ namespace nap
 		SignalAttribute render { this, "Render" };
 
 		/**
-		 * Link to settings associated with this window
-		 * These settings are only used on construction of the window
-		 */
-		ObjectLinkAttribute constructionSettings =		{ this, "Settings", RTTI_OF(RenderWindowSettings) };
+		* These attributes only work when the window has
+		* been registered with the render service
+		*/
+		Attribute<glm::ivec2> position{ this, "Position",{ 256, 256 } };
+		Attribute<glm::ivec2> size{ this, "Size",{ 512, 512 } };
+		Attribute<std::string> title{ this, "Title", "RenderWindow" };
+		Attribute<bool> sync{ this, "VSync", false };
 
 		/**
 		 * @return if the component manages a window. 
 		 * If show hasn't been called this call will resolve to false
 		 */
-		bool hasWindow() const							{ return mWindow != nullptr; }
+		bool hasWindow() const													{ return mWindow != nullptr; }
 
 		/**
 		 * Swaps window buffers
 		 */
-		void swap() const								{ opengl::swap(*mWindow); }
+		void swap() const														{ opengl::swap(*mWindow); }
 
 		/**
-		 * These attributes only work when the window has 
-		 * been registered with the render service
+		 * Sets window construction settings
+		 * These settings are used when the window is constructed
 		 */
-		Attribute<glm::ivec2> position					{ this, "Position", { 256, 256 } };
-		Attribute<glm::ivec2> size						{ this, "Size", {512, 512 } };
-		Attribute<std::string> title					{ this, "Title", "RenderWindow" };
-		Attribute<bool> sync							{ this, "VSync", false };
+		void setConstructionSettings(const RenderWindowSettings& settings);
+
+		/**
+		 * Returns window construction settings
+		 */
+		const RenderWindowSettings& getConstructionSettings() const				{ return mSettings; }
 
 	protected:
 		/**
@@ -141,6 +122,9 @@ namespace nap
 	private:
 		// Window used for rendering
 		std::unique_ptr<opengl::Window> mWindow = nullptr;		// Window used for rendering
+
+		// Settings used when constructing the window
+		RenderWindowSettings mSettings;
 	};
 }
 

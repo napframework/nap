@@ -7,12 +7,13 @@ namespace nap
 	{
 		// When added request a window
 		added.connect(componentAdded);
+	}
 
-		// Add initialization settings
-		RenderWindowSettings& window_settings = addChild<RenderWindowSettings>("settings");
 
-		window_settings.setFlag(nap::ObjectFlag::Removable, false);
-		constructionSettings.setTarget(window_settings);
+	// Set settings
+	void RenderWindowComponent::setConstructionSettings(const RenderWindowSettings& settings)
+	{
+		mSettings = settings;
 	}
 
 

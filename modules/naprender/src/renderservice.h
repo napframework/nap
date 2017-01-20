@@ -7,11 +7,13 @@
 #include <thread>
 #include <nwindow.h>
 
+// Local Includes
+#include "renderer.h"
+
 namespace nap
 {
 	// Forward Declares
 	class RenderWindowComponent;
-
 
 	/**
 	 * Holds a reference to all drawable objects
@@ -30,10 +32,13 @@ namespace nap
 			Initialized			= 0,
 			WindowError			= 1,
 			SystemError			= 2,
-			GLError				= 3,
 		};
 
+		// Default constructor
 		RenderService() = default;
+
+		// Default destructor
+		virtual ~RenderService();
 
 		/**
 		 * Call this in your app loop to emit a render call
@@ -47,10 +52,21 @@ namespace nap
 		bool isInitialized() const									{ return state == State::Initialized; }
 
 		/**
+		 * Sets the renderer, the service will own the renderer
+		 * @param renderer the type of renderer to use
+		 */
+		void setRenderer(const RTTI::TypeInfo& renderer);
+
+		/**
 		 * The draw signal that is emitted every render call
 		 * Register to this event to receive draw calls
 		 */
 		SignalAttribute draw = {this, "draw"};
+
+		/**
+		 * Shuts down the managed renderer
+		 */
+		void shutdown();
 
 	protected:
 		/**
@@ -77,11 +93,9 @@ namespace nap
 		void createWindow(RenderWindowComponent& window);
 
 		/**
-		* Init is called on the render service to initialize opengl
-		* related calls and functionality. Failure to do so will result in undefined behavior
-		* when dealing with opengl state based objects
-		*/
-		bool init();
+		 * Holds the currently active renderer
+		 */
+		std::unique_ptr<nap::Renderer> mRenderer = nullptr;
 	};
 } // nap
 

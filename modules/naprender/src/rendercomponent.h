@@ -48,6 +48,12 @@ namespace nap
 		Attribute<BlendType> secondBlendMode =		{ this, "SecondBlendMode", BlendType::ONE_MINUS_SRC_ALPHA };
 
 		/**
+		 * Layer Tag
+		 * Used by the render service to form layers
+		 */
+		Attribute<std::string> tag =				{ this, "Tag" };
+
+		/**
 		 * Draws the data to the currently active render target
 		 * Binds the material and calls onDraw afterwards.
 		 * Override if you want to customize material and binding behavior

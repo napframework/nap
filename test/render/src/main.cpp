@@ -35,6 +35,7 @@
 #include <modelmeshcomponent.h>
 #include <renderservice.h>
 #include <renderwindowcomponent.h>
+#include <openglrenderer.h>
 
 // Nap includes
 #include <nap/core.h>
@@ -140,6 +141,7 @@ bool init(nap::Core& core)
 
 	// Create render service
 	nap::RenderService* render_service = core.getOrCreateService<nap::RenderService>();
+	render_service->setRenderer(RTTI_OF(nap::OpenGLRenderer));
 	nap::Logger::info("initialized render service: %s", render_service->getName().c_str());
 
 	// Add window component
@@ -445,8 +447,5 @@ void runGame(nap::Core& core)
 void cleanup()
 {
 	model = nullptr;
-
-	// Shutdown SDL 2
-	opengl::shutdown();
 }
 

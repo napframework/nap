@@ -3,6 +3,7 @@
 #include "meshcomponent.h"
 #include "rendercomponent.h"
 #include "renderwindowcomponent.h"
+#include "openglrenderer.h"
 
 // External Includes
 #include <nap/core.h>
@@ -38,64 +39,49 @@ namespace nap
 		// Make sure we don't procedeed when errors have been raised before
 		if (state > State::Initialized)
 		{
-			nap::Logger::fatal("unable to create new window, previous error occurred");
+			nap::Logger::fatal(*this, "unable to create new window, previous error occurred");
+			return;
+		}
+
+		// Make sure we have a renderer
+		if (mRenderer == nullptr)
+		{
+			nap::Logger::fatal(*this, "unable to create new window, no associated renderer");
+			state = State::SystemError;
 			return;
 		}
 
 		// Initialize video render 
 		if (state == State::Uninitialized)
 		{
-			if (!init())
+			if (!mRenderer->preInit())
 			{
-				nap::Logger::fatal(*this, "unable to initialize video sub system");
+				nap::Logger::fatal(*this, "unable to initialize renderer");
 				state = State::SystemError;
 				return;
 			}
 		}
 
 		// Get settings
-		nap::RenderWindowSettings* window_settings = window.constructionSettings.getTarget<RenderWindowSettings>();
-		if (window_settings == nullptr)
-		{
-			nap::Logger::fatal(window, "unable to query window settings");
-			state = State::WindowError;
-			return;
-		}
-
-		// Convert settings to gl settings
-		opengl::WindowSettings gl_window_settings;
-		gl_window_settings.borderless = window_settings->borderless.getValue();
-		gl_window_settings.resizable = window_settings->resizable.getValue();
-		
-		// If we need to share this context with another context
-		// Resolve the link and get the window pointer
-		if (window_settings->sharedWindow.isLinked())
-		{
-			RenderWindowComponent* share_window = window_settings->sharedWindow.getTarget<RenderWindowComponent>();
-			assert(share_window != nullptr);
-			assert(share_window->mWindow != nullptr);
-			gl_window_settings.share = share_window->mWindow.get();
-		}
-
-		// Construct window using settings
-		opengl::Window* new_window = opengl::createWindow(gl_window_settings);
+		const nap::RenderWindowSettings& window_settings = window.getConstructionSettings();
+		nap::RenderWindow* new_window = mRenderer->createRenderWindow(window_settings);
 		if (new_window == nullptr)
 		{
-			nap::Logger::fatal(window, "unable to create opengl window and context");
+			nap::Logger::fatal(*this, "unable to create render window and context");
 			state = State::WindowError;
 			return;
 		}
 		
 		// Set window
-		window.mWindow.reset(new_window);
+		window.mWindow.reset(static_cast<OpenGLRenderWindow*>(new_window)->getContainer());
 
 		// Initialize Glew
 		if (state == State::Uninitialized)
 		{
-			if (!opengl::init())
+			if (!mRenderer->postInit())
 			{
-				nap::Logger::fatal(*this, "unable to initialize glew subsystem");
-				state = State::GLError;
+				state = State::SystemError;
+				nap::Logger::fatal(*this, "unable to finalize render initialzation process");
 				return;
 			}
 		}
@@ -103,21 +89,10 @@ namespace nap
 	}
 
 
-	// Initializes opengl related functionality
-	bool RenderService::init()
+	// Shut down render service
+	RenderService::~RenderService()
 	{
-		// Initialize video
-		if (!opengl::initVideo())
-			return false;
-
-		// Set GL Attributes
-		opengl::Attributes attrs;
-		attrs.dubbleBuffer = true;
-		attrs.versionMinor = 2;
-		attrs.versionMajor = 3;
-		opengl::setAttributes(attrs);
-
-		return true;
+		shutdown();
 	}
 
 
@@ -137,6 +112,37 @@ namespace nap
 	}
 
 
+	// Set the currently active renderer
+	void RenderService::setRenderer(const RTTI::TypeInfo& renderer)
+	{
+		if (!renderer.isKindOf(RTTI_OF(nap::Renderer)))
+		{
+			nap::Logger::warn(*this, "unable to add: %s as renderer, object not of type: %s", renderer.getName().c_str(), RTTI_OF(nap::Renderer).getName().c_str());
+			return;
+		}
+
+		// Shut down existing renderer
+		shutdown();
+
+		// Set state
+		state = State::Uninitialized;
+
+		// Create new renderer
+		nap::Renderer* new_renderer = static_cast<nap::Renderer*>(renderer.createInstance());
+		mRenderer.reset(new_renderer);
+	}
+
+
+	// Shut down renderer
+	void RenderService::shutdown()
+	{
+		if (state == State::Initialized)
+		{
+			assert(mRenderer != nullptr);
+			mRenderer->shutdown();
+		}
+		state = State::Uninitialized;
+	}
 
 	/*
 	void RenderService::renderCall()
