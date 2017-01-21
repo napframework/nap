@@ -4,6 +4,7 @@
 #include "rendercomponent.h"
 #include "renderwindowcomponent.h"
 #include "openglrenderer.h"
+#include "transformcomponent.h"
 
 // External Includes
 #include <nap/core.h>
@@ -16,6 +17,7 @@ namespace nap
 		core.registerType(*this, RTTI_OF(RenderableComponent));
 		core.registerType(*this, RTTI_OF(MeshComponent));
 		core.registerType(*this, RTTI_OF(RenderWindowComponent));
+		core.registerType(*this, RTTI_OF(TransformComponent));
 	}
 
 
@@ -89,6 +91,27 @@ namespace nap
 	}
 
 
+	// Finds all top level transforms
+	void RenderService::getTopLevelTransforms(Entity* entity, std::vector<TransformComponent*>& xforms)
+	{
+		// Get xform on current entity
+		nap::TransformComponent* xform_comp = entity->getComponent<TransformComponent>();
+
+		// If we found one, add it
+		if (xform_comp != nullptr)
+		{
+			xforms.emplace_back(xform_comp);
+			return;
+		}
+
+		// If not try it's children
+		for (auto& child : entity->getEntities())
+		{
+			getTopLevelTransforms(child, xforms);
+		}
+	}
+
+
 	// Shut down render service
 	RenderService::~RenderService()
 	{
@@ -111,6 +134,14 @@ namespace nap
 		draw.trigger();
 	}
 
+	// Updates all transform components
+	void RenderService::update()
+	{
+		std::vector<TransformComponent*> top_xforms;
+		getTopLevelTransforms(&(getCore().getRoot()), top_xforms);
+		for (auto& xform : top_xforms)
+			xform->update();
+	}
 
 	// Set the currently active renderer
 	void RenderService::setRenderer(const RTTI::TypeInfo& renderer)

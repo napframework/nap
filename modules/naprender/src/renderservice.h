@@ -14,6 +14,7 @@ namespace nap
 {
 	// Forward Declares
 	class RenderWindowComponent;
+	class TransformComponent;
 
 	/**
 	 * Holds a reference to all drawable objects
@@ -39,6 +40,11 @@ namespace nap
 
 		// Default destructor
 		virtual ~RenderService();
+
+		/**
+		* Call this to update all transform components
+		*/
+		void update();
 
 		/**
 		 * Call this in your app loop to emit a render call
@@ -96,6 +102,16 @@ namespace nap
 		 * Holds the currently active renderer
 		 */
 		std::unique_ptr<nap::Renderer> mRenderer = nullptr;
+
+		/**
+		 * Finds all top level transforms, this is a recursive function
+		 * If an entity has a transform it will be considered to be at the top of the chain
+		 * if not, all subsequent children will be checked, until the top most level xforms have 
+		 * been found
+		 * @param entity, entity to check for transform component
+		 * @param xforms the total amount of top level transforms
+		 */
+		void getTopLevelTransforms(Entity* entity, std::vector<TransformComponent*>& xforms);
 	};
 } // nap
 

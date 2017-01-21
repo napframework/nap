@@ -36,6 +36,7 @@
 #include <renderservice.h>
 #include <renderwindowcomponent.h>
 #include <openglrenderer.h>
+#include <transformcomponent.h>
 
 // Nap includes
 #include <nap/core.h>
@@ -179,8 +180,11 @@ bool init(nap::Core& core)
 
 	// Create model entity
 	model = &(core.getRoot().addEntity("model"));
+	nap::TransformComponent& tran_component = model->addComponent<nap::TransformComponent>();
 	nap::ModelMeshComponent& mesh_component = model->addComponent<nap::ModelMeshComponent>("pig_head_mesh");
 	
+	tran_component.translate.setValue({ 2.0f, 0.0f, 0.0f });
+
 	//////////////////////////////////////////////////////////////////////////
 	
 	// Set shader resource on material
@@ -345,6 +349,8 @@ void runGame(nap::Core& core)
 				}
 			}
 		}
+
+		render_service->update();
 
 		//////////////////////////////////////////////////////////////////////////
 
