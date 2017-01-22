@@ -130,10 +130,122 @@ void updateViewport(int width, int height)
 }
 
 
+// Called when the window is going to render
+void onRender(const nap::SignalAttribute& signal)
+{
+	// Clear window
+	opengl::clearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	opengl::clearDepth();
+	opengl::clearStencil();
+
+	// Enable some gl specific stuff
+	opengl::enableDepthTest(true);
+	opengl::enableBlending(true);
+	opengl::enableMultiSampling(true);
+
+	// Get render service
+	nap::Component* signal_comp = static_cast<nap::Component*>(signal.getParent());
+	nap::Core& core = signal_comp->getParent()->getCore();
+	nap::RenderService* render_service = core.getService<nap::RenderService>();
+
+	// Get mesh component
+	nap::ModelMeshComponent* mesh_comp = model->getComponent<nap::ModelMeshComponent>();
+	nap::Material* material = mesh_comp->getMaterial();
+	assert(material != nullptr);
+
+	// Get window component
+	nap::Entity* window_entity = core.getEntity("window");
+	assert(window_entity != nullptr);
+	nap::RenderWindowComponent* render_window = window_entity->getComponent<nap::RenderWindowComponent>();
+
+	// Get rotation angle
+	double time_angle = glm::radians(render_service->getElapsedTime() * 360.0);
+
+	// Calculate model rotate angle
+	double rotate_speed = 0.5f;
+	double rotate_angle = time_angle * rotate_speed;
+
+	nap::TransformComponent* xform_v = core.getEntity("model")->getComponent<nap::TransformComponent>();
+	xform_v->translate.setValue({ time_angle,0.0,0.0 });
+
+	// Calculate model pivot offset
+	double pivot_distance = 2.0f;
+	double pivot_speed = 0.25f;
+	double pivot_offset = ((sin(time_angle * pivot_speed) + 1.0) / 2.0) * pivot_distance;
+
+	// Bind Shader
+	material->bind();
+
+	// Parent matrix
+	glm::mat4 parent_matrix;
+	parent_matrix = glm::rotate(parent_matrix, (float)rotate_angle, glm::vec3(0.0f, 1.0f, 0.0f));
+
+	// Model matrix
+	glm::mat4 model_matrix;
+	model_matrix = glm::translate(model_matrix, glm::vec3((float)pivot_offset, 0.0f, 0.0f));
+
+	// Model Rotation
+	glm::vec4 rot_vector(0.0, 0.0, 0.0, 1.0);
+	glm::quat rot_quat(rot_vector);
+	rot_quat = glm::rotate(rot_quat, (float)rotate_angle, glm::vec3(0.0, 1.0, 0.0));
+	glm::mat4x4 rot_matr = glm::toMat4(rot_quat);
+	model_matrix = model_matrix * rot_matr;
+
+	model_matrix = glm::scale(model_matrix, glm::vec3(0.5, 0.5, 0.5));
+	glm::mat4 final_model_matrix = parent_matrix * model_matrix;
+
+	// Send values
+	glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &camera.getProjectionMatrix()[0][0]); // Send our projection matrix to the shader
+	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]); // Send our view matrix to the shader
+	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &(final_model_matrix[0][0]));
+
+	// Set texture 1 for shader
+	glActiveTexture(GL_TEXTURE0);
+
+	// Bind correct texture and send to shader
+	opengl::Image* img = currentIndex == 0 ? pigTexture.get() : testTexture.get();
+	img->bind();
+	glUniform1i(textureLocation, 0);
+
+	// Unbind shader
+	material->unbind();
+
+	switch (currentIndex)
+	{
+	case 0:
+		render_service->renderObjects();
+		break;
+	case 1:
+		cubeObject.bind();
+		material->bind();
+		cubeObject.draw();
+		material->unbind();
+		cubeObject.unbind();
+		break;
+	case 2:
+		triangleObject.bind();
+		material->bind();
+		triangleObject.draw();
+		material->unbind();
+		triangleObject.unbind();
+		break;
+	}
+}
+NSLOT(renderSlot, const nap::SignalAttribute&, onRender)
+
+
+// Called when the window is updating
+void onUpdate(const nap::SignalAttribute& signal)
+{
+
+}
+NSLOT(updateSlot, const nap::SignalAttribute&, onUpdate)
+
+
 /**
- * Initialize all the resources and instances used for drawing
- * slowly migrating all functionality to nap
- */
+* Initialize all the resources and instances used for drawing
+* slowly migrating all functionality to nap
+*/
 bool init(nap::Core& core)
 {
 	//////////////////////////////////////////////////////////////////////////
@@ -150,6 +262,10 @@ bool init(nap::Core& core)
 	window_comp.position.setValue({ (1920 / 2) - 256, 1080 / 2 - 256 });
 	window_comp.title.setValue("Wolla");
 	window_comp.sync.setValue(true);
+
+	// Connect draw and update signals
+	window_comp.draw.signal.connect(renderSlot);
+	window_comp.update.signal.connect(updateSlot);
 
 	//////////////////////////////////////////////////////////////////////////
 
@@ -180,11 +296,11 @@ bool init(nap::Core& core)
 	model = &(core.getRoot().addEntity("model"));
 	nap::TransformComponent& tran_component = model->addComponent<nap::TransformComponent>();
 	nap::ModelMeshComponent& mesh_component = model->addComponent<nap::ModelMeshComponent>("pig_head_mesh");
-	
+
 	tran_component.translate.setValue({ 2.0f, 0.0f, 0.0f });
 
 	//////////////////////////////////////////////////////////////////////////
-	
+
 	// Set shader resource on material
 	nap::Material* material = mesh_component.getMaterial();
 	assert(material != nullptr);
@@ -218,12 +334,12 @@ bool init(nap::Core& core)
 
 	// Get uniform bindings for vertex shader
 	material->bind();
-	projectionMatrixLocation =	glGetUniformLocation(shader.getId(), "projectionMatrix");	// Get the location of our projection matrix in the shader
-	viewMatrixLocation =		glGetUniformLocation(shader.getId(), "viewMatrix");			// Get the location of our view matrix in the shader
-	modelMatrixLocation =		glGetUniformLocation(shader.getId(), "modelMatrix");		// Get the location of our model matrix in the shader
-	noiseLocation =				glGetUniformLocation(shader.getId(), "noiseValue");
-	textureLocation =			glGetUniformLocation(shader.getId(), "myTextureSampler");
-	
+	projectionMatrixLocation = glGetUniformLocation(shader.getId(), "projectionMatrix");	// Get the location of our projection matrix in the shader
+	viewMatrixLocation = glGetUniformLocation(shader.getId(), "viewMatrix");			// Get the location of our view matrix in the shader
+	modelMatrixLocation = glGetUniformLocation(shader.getId(), "modelMatrix");		// Get the location of our model matrix in the shader
+	noiseLocation = glGetUniformLocation(shader.getId(), "noiseValue");
+	textureLocation = glGetUniformLocation(shader.getId(), "myTextureSampler");
+
 	material->unbind();
 
 	//////////////////////////////////////////////////////////////////////////
@@ -250,28 +366,6 @@ bool init(nap::Core& core)
 }
 
 
-// Called when the window is going to render
-void onRender(const nap::SignalAttribute& signal)
-{
-	nap::Component* comp = static_cast<nap::Component*>(signal.getParent());
-	nap::Core& core = comp->getParent()->getCore();
-	nap::RenderService* render_service = core.getService<nap::RenderService>();
-	render_service->renderObjects();
-
-	//std::cout << "elapsed time: " << (float)render_service->getElapsedTime() << "\n";
-	//std::cout << "elapsed ticks: " << render_service->getTicks() << "\n";
-}
-NSLOT(renderSlot, const nap::SignalAttribute&, onRender)
-
-
-// Called when the window is updating
-void onUpdate(const nap::SignalAttribute& signal)
-{
-
-}
-NSLOT(updateSlot, const nap::SignalAttribute&, onUpdate)
-
-
 // Main loop
 int main(int argc, char *argv[])
 {
@@ -293,29 +387,6 @@ void runGame(nap::Core& core)
 {
 	// Run function
 	bool loop = true;
-	bool depth = true;
-
-	// Get start
-	auto t_start = std::chrono::high_resolution_clock::now();
-
-	// Enable some gl specific stuff
-	opengl::enableDepthTest(true);
-	opengl::enableBlending(true);
-	opengl::enableMultiSampling(true);
-
-	// Get mesh component
-	nap::ModelMeshComponent* mesh_comp = model->getComponent<nap::ModelMeshComponent>();
-	nap::Material* material = mesh_comp->getMaterial();
-	assert(material != nullptr);
-
-	// Get window component
-	nap::Entity* window_entity = core.getEntity("window");
-	assert(window_entity != nullptr);
-	nap::RenderWindowComponent* render_window = window_entity->getComponent<nap::RenderWindowComponent>();
-	
-	// Connect draw and update signals
-	render_window->draw.signal.connect(renderSlot);
-	render_window->update.signal.connect(updateSlot);
 
 	// Get render service
 	nap::RenderService* render_service = core.getOrCreateService<nap::RenderService>();
@@ -336,9 +407,6 @@ void runGame(nap::Core& core)
 			{
 				switch (event.key.keysym.sym)
 				{
-				case SDLK_d:
-					depth = !depth;
-					break;
 				case SDLK_ESCAPE:
 					loop = false;
 					break;
@@ -373,99 +441,9 @@ void runGame(nap::Core& core)
 
 		//////////////////////////////////////////////////////////////////////////
 
-		// get time passed
-		auto t_now = std::chrono::high_resolution_clock::now();
-		double time = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
-		double time_angle = glm::radians(time * 360.0f);
-
-		// Calculate model rotate angle
-		double rotate_speed = 0.5f;
-		double rotate_angle = time_angle * rotate_speed;
-
-		nap::TransformComponent* xform_v = core.getEntity("model")->getComponent<nap::TransformComponent>();
-		xform_v->translate.setValue({ time_angle,0.0,0.0 });
-
-		// Calculate model pivot offset
-		double pivot_distance = 2.0f;
-		double pivot_speed = 0.25f;
-		double pivot_offset = ((sin(time_angle * pivot_speed) + 1.0) / 2.0) * pivot_distance;
-
-		// Clear window
-		opengl::clearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		opengl::clearDepth();
-		opengl::clearStencil();
-
-		// Disable / Enable depth tests
-		opengl::enableDepthTest(depth);
-
-		// Bind Shader
-		material->bind();
-
-		// Parent matrix
-		glm::mat4 parent_matrix;
-		parent_matrix = glm::rotate(parent_matrix, (float)rotate_angle, glm::vec3(0.0f, 1.0f, 0.0f));
-
-		// Model matrix
-		glm::mat4 model_matrix;
-		model_matrix = glm::translate(model_matrix, glm::vec3((float)pivot_offset, 0.0f, 0.0f));
-
-		// Model Rotation
-		glm::vec4 rot_vector(0.0, 0.0, 0.0, 1.0);
-		glm::quat rot_quat(rot_vector);
-		rot_quat = glm::rotate(rot_quat, (float)rotate_angle, glm::vec3(0.0, 1.0, 0.0));
-		glm::mat4x4 rot_matr = glm::toMat4(rot_quat);
-
-
-		// Euler to quaternion
-		//glm::quat rot_quat(glm::vec3(0.0f, (float)rotate_angle, 0.0f));
-		//glm::mat4 rot_matr = glm::toMat4(rot_quat);
-
-		//glm::mat4 rot_matrix = glm::orientate4(glm::vec3(0.0f, 1.0f * rotate_angle, 0.0f));
-		model_matrix = model_matrix * rot_matr;
-
-		model_matrix = glm::scale(model_matrix, glm::vec3(0.5, 0.5, 0.5));
-		glm::mat4 final_model_matrix = parent_matrix * model_matrix;
-
-		// Send values
-		glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &camera.getProjectionMatrix()[0][0]); // Send our projection matrix to the shader
-		glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]); // Send our view matrix to the shader
-		glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &(final_model_matrix[0][0]));
-
-		// Set texture 1 for shader
-		glActiveTexture(GL_TEXTURE0);
-
-		// Bind correct texture and send to shader
-		opengl::Image* img = currentIndex == 0 ? pigTexture.get() : testTexture.get();
-		img->bind();
-		glUniform1i(textureLocation, 0);
-
-		// Unbind shader
-		material->unbind();
-
-		switch (currentIndex)
-		{
-		case 0:
-		{
-			render_service->render();
-			break;
-		case 1:
-			cubeObject.bind();
-			material->bind();
-			cubeObject.draw();
-			material->unbind();
-			cubeObject.unbind();
-			render_window->swap();
-			break;
-		}
-		case 2:
-			triangleObject.bind();
-			material->bind();
-			triangleObject.draw();
-			material->unbind();
-			triangleObject.unbind();
-			render_window->swap();
-			break;
-		}
+		// run render call
+		render_service->render();
 	}
+
 	render_service->shutdown();
 }
