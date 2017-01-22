@@ -36,6 +36,12 @@ namespace nap
 	}
 
 
+	void RenderWindowComponent::onSetActive(const SignalAttribute& signal)
+	{
+		mWindow->makeCurrent();
+	}
+
+
 	// Occurs when the window title changes
 	void RenderWindowComponent::onTitleChanged(const std::string& title)
 	{
@@ -82,6 +88,7 @@ namespace nap
 		// When visibility changes, hide / show
 		show.signal.connect(showWindow);
 		hide.signal.connect(hideWindow);
+		activate.signal.connect(setActive);
 
 		// Push possible values
 		onPositionChanged(position.getValue());

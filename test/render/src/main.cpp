@@ -91,11 +91,9 @@ glm::mat4 viewMatrix;			// Store the view matrix
 glm::mat4 modelMatrix;			// Store the model matrix
 
 // Some utilities
-void runGame(nap::Core& core);
-void cleanup();	
+void runGame(nap::Core& core);	
 bool loadImages();
 void updateViewport(int width, int height);
-
 
 /**
 * Loads a bitmap from disk
@@ -252,6 +250,25 @@ bool init(nap::Core& core)
 }
 
 
+// Called when the window is going to render
+void onRender(const nap::SignalAttribute& signal)
+{
+	nap::Component* comp = static_cast<nap::Component*>(signal.getParent());
+	nap::Core& core = comp->getParent()->getCore();
+	nap::RenderService* render_service = core.getService<nap::RenderService>();
+	render_service->renderObjects();
+}
+NSLOT(renderSlot, const nap::SignalAttribute&, onRender)
+
+
+// Called when the window is updating
+void onUpdate(const nap::SignalAttribute& signal)
+{
+
+}
+NSLOT(updateSlot, const nap::SignalAttribute&, onUpdate)
+
+
 // Main loop
 int main(int argc, char *argv[])
 {
@@ -264,9 +281,6 @@ int main(int argc, char *argv[])
 
 	// Run Gam
 	runGame(core);
-
-	// Cleanup when done
-	cleanup();
 
 	return 0;
 }
@@ -282,7 +296,6 @@ void runGame(nap::Core& core)
 	auto t_start = std::chrono::high_resolution_clock::now();
 
 	// Enable some gl specific stuff
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	opengl::enableDepthTest(true);
 	opengl::enableBlending(true);
 	opengl::enableMultiSampling(true);
@@ -294,6 +307,15 @@ void runGame(nap::Core& core)
 	nap::ModelMeshComponent* mesh_comp = model->getComponent<nap::ModelMeshComponent>();
 	nap::Material* material = mesh_comp->getMaterial();
 	assert(material != nullptr);
+
+	// Get window component
+	nap::Entity* window_entity = core.getEntity("window");
+	assert(window_entity != nullptr);
+	nap::RenderWindowComponent* render_window = window_entity->getComponent<nap::RenderWindowComponent>();
+	
+	// Connect draw and update signals
+	render_window->draw.signal.connect(renderSlot);
+	render_window->update.signal.connect(updateSlot);
 
 	// Get render service
 	nap::RenderService* render_service = core.getOrCreateService<nap::RenderService>();
@@ -308,7 +330,6 @@ void runGame(nap::Core& core)
 			// Check if we need to quit
 			if (event.type == SDL_QUIT)
 				loop = false;
-
 
 			// Check if escape was pressed
 			if (event.type == SDL_KEYDOWN)
@@ -350,8 +371,6 @@ void runGame(nap::Core& core)
 			}
 		}
 
-		render_service->update();
-
 		//////////////////////////////////////////////////////////////////////////
 
 		// get time passed
@@ -362,6 +381,9 @@ void runGame(nap::Core& core)
 		// Calculate model rotate angle
 		double rotate_speed = 0.5f;
 		double rotate_angle = time_angle * rotate_speed;
+
+		nap::TransformComponent* xform_v = core.getEntity("model")->getComponent<nap::TransformComponent>();
+		xform_v->translate.setValue({ time_angle,0.0,0.0 });
 
 		// Calculate model pivot offset
 		double pivot_distance = 2.0f;
@@ -425,7 +447,6 @@ void runGame(nap::Core& core)
 		case 0:
 		{
 			render_service->render();
-			//mesh_comp->draw();
 			break;
 		case 1:
 			cubeObject.bind();
@@ -433,6 +454,7 @@ void runGame(nap::Core& core)
 			cubeObject.draw();
 			material->unbind();
 			cubeObject.unbind();
+			render_window->swap();
 			break;
 		}
 		case 2:
@@ -441,17 +463,9 @@ void runGame(nap::Core& core)
 			triangleObject.draw();
 			material->unbind();
 			triangleObject.unbind();
+			render_window->swap();
 			break;
 		}
-
-		// Swap front / back buffer
-		core.getEntity("window")->getComponent<nap::RenderWindowComponent>()->swap();
 	}
+	render_service->shutdown();
 }
-
-
-void cleanup()
-{
-	model = nullptr;
-}
-

@@ -78,6 +78,11 @@ namespace nap
 		 */
 		virtual void swap() override;
 
+		/**
+		 * Make this window's context active
+		 */
+		virtual void makeCurrent() override;
+
 	private:
 		std::unique_ptr<opengl::Window> mWindow = nullptr;
 	};

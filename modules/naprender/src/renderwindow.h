@@ -108,6 +108,11 @@ namespace nap
 		 */
 		virtual void swap() = 0;
 
+		/**
+		 * Make this window active
+		 */
+		virtual void makeCurrent() = 0;
+
 	protected:
 		RenderWindowSettings mSettings;
 	};

@@ -36,19 +36,34 @@ namespace nap
 		 * By making the window visible for the first time the window
 		 * is constructed
 		 */
-		SignalAttribute show { this, "Show" };
+		SignalAttribute show		{ this, "Show" };
 
 		/**
 		 * Hides the window
 		 */
-		SignalAttribute hide { this, "Hide" };
+		SignalAttribute hide		{ this, "Hide" };
 
 		/**
 		 * Render signal, emitted every render iteration
 		 * Connect to this signal to render objects to the context
 		 * associated with this window. 
 		 */
-		SignalAttribute render { this, "Render" };
+		SignalAttribute draw		{ this, "Draw" };
+
+		/**
+		 * Update signal, emitted before a render operation
+		 * Connect to this signal to update your scene
+		 * graph before the render call is emitted
+		 */
+		SignalAttribute update		{ this, "Update" };
+
+		/**
+		 * Activates the window's render context
+		 * Connect to this signal if you want to know when this window
+		 * is made active. Subsequent render calls will be associated
+		 * with this window after triggering activate
+		 */
+		SignalAttribute activate	{ this, "SetActive" };
 
 		/**
 		* These attributes only work when the window has
@@ -92,6 +107,7 @@ namespace nap
 		*/
 		void onShowWindow(const SignalAttribute& signal);
 		void onHideWindow(const SignalAttribute& signal);
+		void onSetActive(const SignalAttribute& signal);
 
 		/**
 		 * Attribute changes
@@ -118,6 +134,7 @@ namespace nap
 		NSLOT(positionChanged, const glm::ivec2&, onPositionChanged)
 		NSLOT(sizeChanged, const glm::ivec2&, onSizeChanged)
 		NSLOT(syncChanged, const bool&, onSyncChanged)
+		NSLOT(setActive, const SignalAttribute&, onSetActive)
 
 
 	private:

@@ -122,6 +122,55 @@ namespace nap
 	// Emits the draw call
 	void RenderService::render()
 	{
+		if (state == State::Uninitialized)
+		{
+			nap::Logger::fatal(*this, "unable to execute render call, service is not initialized");
+			return;
+		}
+
+		if (state > State::Initialized)
+		{
+			nap::Logger::fatal(*this, "unable to execute render call, internal error occurred: %d", static_cast<int>(state));
+			return;
+		}
+
+		// Get all window components
+		std::vector<RenderWindowComponent*> windows;
+		getObjects<RenderWindowComponent>(windows);
+		
+		// Trigger update
+		for (auto& window : windows)
+		{
+			window->activate.trigger();
+			window->update.trigger();
+		}
+
+		// Collect all transform changes and push
+		updateTransforms();
+
+		// Trigger render call
+		for (auto& window : windows)
+		{
+			window->activate.trigger();
+			window->draw.trigger();
+			window->swap();
+		}
+	}
+
+
+	// Updates all transform components
+	void RenderService::updateTransforms()
+	{
+		std::vector<TransformComponent*> top_xforms;
+		getTopLevelTransforms(&(getCore().getRoot()), top_xforms);
+		for (auto& xform : top_xforms)
+			xform->update();
+	}
+
+
+	// Renders all available objects
+	void RenderService::renderObjects()
+	{
 		// Get all render components
 		std::vector<nap::RenderableComponent*> render_comps;
 		getObjects<nap::RenderableComponent>(render_comps);
@@ -129,18 +178,6 @@ namespace nap
 		// Draw
 		for (auto& comp : render_comps)
 			comp->draw();
-
-		// Trigger
-		draw.trigger();
-	}
-
-	// Updates all transform components
-	void RenderService::update()
-	{
-		std::vector<TransformComponent*> top_xforms;
-		getTopLevelTransforms(&(getCore().getRoot()), top_xforms);
-		for (auto& xform : top_xforms)
-			xform->update();
 	}
 
 	// Set the currently active renderer

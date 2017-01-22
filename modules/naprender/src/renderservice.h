@@ -42,15 +42,25 @@ namespace nap
 		virtual ~RenderService();
 
 		/**
-		* Call this to update all transform components
-		*/
-		void update();
-
-		/**
 		 * Call this in your app loop to emit a render call
-		 * When called the draw bang is emitted
+		 * Note that this call will gather all available windows
+		 * and for every window call it's update and render signals
+		 * Subscribe to those signals to update app members and
+		 * render objects to a specific target
 		 */
 		void render();
+
+		/**
+		* Call this to update all transform components
+		* This call is also called when rendering
+		*/
+		void updateTransforms();
+
+		/**
+		 * Renders all available objects to currently active buffer
+		 * TODO: deprecate
+		 */
+		void renderObjects();
 
 		/**
 		 * @return if OpenGL has been initialized
@@ -62,12 +72,6 @@ namespace nap
 		 * @param renderer the type of renderer to use
 		 */
 		void setRenderer(const RTTI::TypeInfo& renderer);
-
-		/**
-		 * The draw signal that is emitted every render call
-		 * Register to this event to receive draw calls
-		 */
-		SignalAttribute draw = {this, "draw"};
 
 		/**
 		 * Shuts down the managed renderer

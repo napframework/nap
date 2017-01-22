@@ -85,6 +85,13 @@ namespace nap
 	}
 
 
+	// Make this window's context current 
+	void OpenGLRenderWindow::makeCurrent()
+	{
+		opengl::makeCurrent(*mWindow);
+	}
+
+
 	// Initializes the opengl subsystem
 	bool OpenGLRenderer::preInit()
 	{
