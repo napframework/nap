@@ -8,6 +8,16 @@
 
 namespace nap
 {
+	// Typedefs
+	using ChronoClock = std::chrono::high_resolution_clock;
+	using Milliseconds = std::chrono::milliseconds;
+	using NanoSeconds = std::chrono::nanoseconds;
+	using Seconds = std::chrono::seconds;
+	using TimePoint = std::chrono::time_point<ChronoClock>;
+
+	// Global get current time function
+	extern TimePoint getCurrentTime();
+
 	/**
 	 * Holds track of time based on a start point
 	 * This timer is not threaded and doesn't work with callbacks
@@ -16,12 +26,6 @@ namespace nap
 	class SimpleTimer
 	{
 	public:
-
-		using ChronoClock = std::chrono::high_resolution_clock;
-		using Milliseconds = std::chrono::milliseconds;
-		using Seconds = std::chrono::seconds;
-		using TimePoint = std::chrono::time_point<ChronoClock>;
-
 		// Construction / Destruction
 		SimpleTimer() = default;
 		virtual ~SimpleTimer() = default;
@@ -32,6 +36,11 @@ namespace nap
 		void start();
 
 		/**
+		 * @return start time as point in time
+		 */
+		TimePoint getStartTime() const;
+
+		/**
 		 * Stop the timer, resets state
 		 */
 		void stop();
@@ -39,12 +48,17 @@ namespace nap
 		/**
 		 * @return amount of processed ticks
 		 */
-		uint32 getTicks();
+		uint32 getTicks() const;
 
 		/**
 		 * @return the elapsed time in seconds as double
 		 */
-		double getElapsedTime();
+		double getElapsedTime() const;
+
+		/**
+		 * @return the elapsed time in seconds as a float
+		 */
+		float getElapsedTimeFloat() const;
 
 	private:
 

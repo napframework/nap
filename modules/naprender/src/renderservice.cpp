@@ -83,15 +83,36 @@ namespace nap
 			if (!mRenderer->postInit())
 			{
 				state = State::SystemError;
-				nap::Logger::fatal(*this, "unable to finalize render initialzation process");
+				nap::Logger::fatal(*this, "unable to finalize render initialization process");
 				return;
 			}
 
 			// Start timer
 			mTimer.start();
+
+			// Store previous frame time
+			mFrameTimeStamp = mTimer.getStartTime();
+
+			// Set start time for fps counter
+			mFpsTime   = mTimer.getElapsedTime();
 		}
 
 		state = State::Initialized;
+	}
+
+
+	// Updates internal fps counter
+	void RenderService::updateFpsCounter(double deltaTime)
+	{
+		mFpsTime += deltaTime;
+		if (mFpsTime < 0.1)
+		{
+			return;
+		}
+
+		mFps = (float)((double)mFrames / (mFpsTime));
+		mFpsTime = 0.0;
+		mFrames = 0;
 	}
 
 
@@ -159,6 +180,19 @@ namespace nap
 			window->draw.trigger();
 			window->swap();
 		}
+
+		// Increment number of rendered frames
+		mFrames++;
+
+		// Store amount of time in nanoseconds it took to compute frame
+		TimePoint current_time = getCurrentTime();
+		mDeltaTime = current_time - mFrameTimeStamp;
+
+		// Update timestamp to be current time
+		mFrameTimeStamp = current_time;
+
+		// Update fps
+		updateFpsCounter(getDeltaTime());
 	}
 
 
@@ -218,16 +252,36 @@ namespace nap
 
 
 	// return number of elapsed ticks
-	uint32 RenderService::getTicks()
+	uint32 RenderService::getTicks() const
 	{
 		return mTimer.getTicks();
 	}
 
 
 	// Return elapsed time
-	double RenderService::getElapsedTime()
+	double RenderService::getElapsedTime() const
 	{
 		return mTimer.getElapsedTime();
+	}
+
+
+	// Return compute last frame compute time
+	double RenderService::getDeltaTime() const
+	{
+		return std::chrono::duration<double>(mDeltaTime).count();
+	}
+
+
+	// Frame compute time in float
+	float RenderService::getDeltaTimeFloat() const
+	{
+		return std::chrono::duration<float>(mDeltaTime).count();
+	}
+
+
+	float RenderService::getFps() const
+	{
+		return mFps;
 	}
 
 	/*
