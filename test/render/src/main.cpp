@@ -257,6 +257,9 @@ void onRender(const nap::SignalAttribute& signal)
 	nap::Core& core = comp->getParent()->getCore();
 	nap::RenderService* render_service = core.getService<nap::RenderService>();
 	render_service->renderObjects();
+
+	//std::cout << "elapsed time: " << (float)render_service->getElapsedTime() << "\n";
+	//std::cout << "elapsed ticks: " << render_service->getTicks() << "\n";
 }
 NSLOT(renderSlot, const nap::SignalAttribute&, onRender)
 
@@ -299,9 +302,6 @@ void runGame(nap::Core& core)
 	opengl::enableDepthTest(true);
 	opengl::enableBlending(true);
 	opengl::enableMultiSampling(true);
-
-	// Timer
-	std::clock_t begin = std::clock();
 
 	// Get mesh component
 	nap::ModelMeshComponent* mesh_comp = model->getComponent<nap::ModelMeshComponent>();

@@ -86,7 +86,11 @@ namespace nap
 				nap::Logger::fatal(*this, "unable to finalize render initialzation process");
 				return;
 			}
+
+			// Start timer
+			mTimer.start();
 		}
+
 		state = State::Initialized;
 	}
 
@@ -210,6 +214,20 @@ namespace nap
 			mRenderer->shutdown();
 		}
 		state = State::Uninitialized;
+	}
+
+
+	// return number of elapsed ticks
+	uint32 RenderService::getTicks()
+	{
+		return mTimer.getTicks();
+	}
+
+
+	// Return elapsed time
+	double RenderService::getElapsedTime()
+	{
+		return mTimer.getElapsedTime();
 	}
 
 	/*

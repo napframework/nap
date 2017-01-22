@@ -3,6 +3,7 @@
 // External Includes
 #include <nap/attribute.h>
 #include <nap/service.h>
+#include <nap/timer.h>
 #include <nopengl.h>
 #include <thread>
 #include <nwindow.h>
@@ -78,6 +79,18 @@ namespace nap
 		 */
 		void shutdown();
 
+		/**
+		 * @return number of elapsed time in milliseconds after
+		 * creation of render window and context
+		 */
+		uint32 getTicks();
+
+		/**
+		 * @return number of elapsed seconds after creation of 
+		 * render window and context
+		 */
+		double getElapsedTime();
+
 	protected:
 		/**
 		 * Type registration
@@ -106,6 +119,11 @@ namespace nap
 		 * Holds the currently active renderer
 		 */
 		std::unique_ptr<nap::Renderer> mRenderer = nullptr;
+
+		/**
+		 * Timer that keeps track of elapsed render time
+		 */
+		SimpleTimer mTimer;
 
 		/**
 		 * Finds all top level transforms, this is a recursive function
