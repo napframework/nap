@@ -102,6 +102,13 @@ namespace opengl
 
 
 	/**
+	 * Makes this opengl window's context current
+	 * @param window the window's context to make current
+	 */
+	void makeCurrent(Window& window);
+
+
+	/**
 	 * initVideo
 	 *
 	 * Initializes SDL video system

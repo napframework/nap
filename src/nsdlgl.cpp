@@ -198,11 +198,24 @@ namespace opengl
 		SDL_GL_SetSwapInterval(static_cast<int>(value));
 	}
 
+
 	// Swaps buffer for the window
 	// This action is relative to currently active drawing context
 	void swap(Window& window)
 	{
 		SDL_GL_SwapWindow(window.getWindow());
+	}
+
+
+	// Make this window's context current
+	void makeCurrent(Window& window)
+	{
+		// Don't trigger change if context is currently active
+		if (SDL_GL_GetCurrentContext() == window.getContext())
+			return;
+
+		// Make context current
+		SDL_GL_MakeCurrent(window.getWindow(), window.getContext());
 	}
 
 
