@@ -5,11 +5,12 @@ namespace nap
 	// Constructor
 	RenderWindowComponent::RenderWindowComponent()
 	{
-		// When added request a window
-		added.connect(componentAdded);
-
 		// Initialize delta time
 		mDeltaTime = NanoSeconds(0);
+
+		draw.setFlag(nap::ObjectFlag::Editable, false);
+		update.setFlag(nap::ObjectFlag::Editable, false);
+		activate.setFlag(nap::ObjectFlag::Editable, false);
 	}
 
 
@@ -26,11 +27,6 @@ namespace nap
 	{
 		mSettings = settings;
 	}
-
-
-	// Creates the window and spawns it
-	void RenderWindowComponent::onAdded(Object& parent)
-	{}
 
 
 	// Shows the window, constructs one if necessary
@@ -166,9 +162,6 @@ namespace nap
 		mFps = (float)((double)mFrames / (mFpsTime));
 		mFpsTime = 0.0;
 		mFrames = 0;
-
-		// Print fps
-		std::cout << "fps: " << mFps << "\n";
 	}
 }
 

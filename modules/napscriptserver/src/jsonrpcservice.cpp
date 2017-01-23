@@ -65,7 +65,6 @@ namespace nap
 		//		disp.AddMethod("getAttributeValue", &JsonRpcService::rpc_getAttributeValue, *this);
 		//		disp.AddMethod("addObjectCallbacks", &JsonRpcService::rpc_addObjectCallbacks, *this);
 
-
 	}
 
 	void JsonRpcService::initialized() {

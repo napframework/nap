@@ -22,8 +22,8 @@ namespace nap
 		JsonRpcService();
 
 		void run() override;
-
 		void initialized() override;
+
 
 	protected:
 		std::string evalScript(const std::string& cmd) override;

@@ -117,10 +117,6 @@ namespace nap
 		float getFps() const;
 
 	protected:
-		/**
-		 * Creates the window
-		 */
-		void onAdded(Object& parent);
 
 		/*
 		* Hides / shows the window
@@ -146,7 +142,6 @@ namespace nap
 		virtual void registered() override;
 
 		// Slot declarations
-		NSLOT(componentAdded, Object&, onAdded)
 		NSLOT(showWindow, const SignalAttribute&, onShowWindow)
 		NSLOT(hideWindow, const SignalAttribute&, onHideWindow)
 		NSLOT(titleChanged, const std::string&, onTitleChanged)

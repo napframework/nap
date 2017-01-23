@@ -164,9 +164,7 @@ namespace nap
 		/**
 		 * Loads all modules in to the core environment 
 		 */
-        void initialize()											{
-            mModuleManager.loadModules();
-        }
+        void initialize()											{ mModuleManager.loadModules(); }
 
 	private:
 		// Typedef for a list of services

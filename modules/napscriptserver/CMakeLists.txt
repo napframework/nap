@@ -42,5 +42,5 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 
 if (UNIX)
 else()
-    copy_files_to_bin(${PROJECT_NAME} ${ZMQ_DLL})
+    copy_files_to_bin(${ZMQ_DLL})
 endif()

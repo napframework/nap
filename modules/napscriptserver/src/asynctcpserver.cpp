@@ -16,72 +16,104 @@ namespace nap
 
 	}
 
-	void AsyncTCPServer::runServer(int port, bool threaded) {
+	void AsyncTCPServer::runServer(int port, bool threaded, bool manual) 
+	{
 		mPort = port;
-        if (threaded) {
+		if (manual)
+		{
+			startServer();
+			return;
+		}
+
+        if (threaded) 
+		{
             mThread = std::make_unique<std::thread>(std::bind(&AsyncTCPServer::runServerLoop, this));
-        } else {
+        } else 
+		{
             runServerLoop();
         }
 
 	}
 
 
+	void AsyncTCPServer::update()
+	{
+		validateClients();
+
+		// Poll for requests / connections
+		zmq::pollitem_t pollitem = { *mSocket, 0, ZMQ_POLLIN, 0 };
+		zmq_poll(&pollitem, 1, 10);
+
+		if (pollitem.revents & ZMQ_POLLIN) 
+		{
+			// Receive multipart message
+			zmq::message_t message;
+			mSocket->recv(&message);
+			std::string clientIdentifier = std::string(static_cast<char*>(message.data()), message.size());
+			mSocket->recv(&message);
+			std::string msg = std::string(static_cast<char*>(message.data()), message.size());
+
+			AsyncTCPClient* client = getOrAddClient(clientIdentifier);
+			client->updateHeartbeat();
+
+			// if message is not heartbeat, emit to listeners
+			if (!msg.empty()) 
+			{
+				client->messageReceived.trigger(msg);
+				requestReceived.trigger(*client, msg);
+			}
+		}
+
+		// For each client, process event queue
+		for (auto it = mClients.begin(); it != mClients.end(); ++it)
+		{
+			AsyncTCPClient& client = *it->second.get();
+			while (client.hasEvents())
+			{
+				sendMultipart(*mSocket, client.getIdent(), client.popEvent());
+			}
+		}
+	}
+
+
 	void AsyncTCPServer::runServerLoop()
 	{
-//        setThreadName("AsyncTCPServer");
-		zmq::context_t ctx;
-		zmq::socket_t sock(ctx, ZMQ_ROUTER);
-		std::string hostname = "tcp://*:" + std::to_string(mPort);
-		try {
-			sock.bind(hostname.c_str());
+		startServer();
+		while (mRunning) 
+		{
+			update();
 		}
-		catch (zmq::error_t err) {
+		cleanupServer();
+	}
+
+
+	void AsyncTCPServer::cleanupServer()
+	{
+		mClients.clear();
+		mContext.close();
+		mSocket.reset(nullptr);
+	}
+
+
+	void AsyncTCPServer::startServer()
+	{
+		mSocket = std::make_unique<zmq::socket_t>(mContext, ZMQ_ROUTER);
+		std::string hostname = "tcp://*:" + std::to_string(mPort);
+		try
+		{
+			mSocket->bind(hostname.c_str());
+		}
+		catch (zmq::error_t err)
+		{
 			Logger::fatal("Server failed to bind to host '%s': %s", hostname.c_str(), err.what());
 			return;
 		}
 
 		Logger::debug("AsyncTCPServer running on '%s'", hostname.c_str());
-
-		while (mRunning) {
-			validateClients();
-
-			// Poll for requests / connections
-			zmq::pollitem_t pollitem = {sock, 0, ZMQ_POLLIN, 0};
-			zmq_poll(&pollitem, 1, 10);
-            
-            if (pollitem.revents & ZMQ_POLLIN) {
-				// Receive multipart message
-				zmq::message_t message;
-				sock.recv(&message);
-				std::string clientIdentifier = std::string(static_cast<char*>(message.data()), message.size());
-				sock.recv(&message);
-				std::string msg = std::string(static_cast<char*>(message.data()), message.size());
-
-				AsyncTCPClient* client = getOrAddClient(clientIdentifier);
-				client->updateHeartbeat();
-
-				// if message is not heartbeat, emit to listeners
-				if (!msg.empty()) {
-					client->messageReceived.trigger(msg);
-					requestReceived.trigger(*client, msg);
-				}
-			}
-
-			// For each client, process event queue
-			for (auto it = mClients.begin(); it != mClients.end(); ++it) {
-				AsyncTCPClient& client = *it->second.get();
-				while (client.hasEvents()) {
-					sendMultipart(sock, client.getIdent(), client.popEvent());
-				}
-			}
-		}
-
-        mClients.clear();
-		ctx.close();
 	}
 
-    AsyncTCPClient* AsyncTCPServer::getClient(const std::string& ident) {
+
+	AsyncTCPClient* AsyncTCPServer::getClient(const std::string& ident) {
         auto it = mClients.find(ident);
         if (it != mClients.end())
             return it->second.get();

@@ -70,7 +70,7 @@ namespace nap
 
 		/**
 		 * Sets the renderer, the service will own the renderer
-		 * @param renderer the type of renderer to use
+		 * @param renderer the type of renderer to useo
 		 */
 		void setRenderer(const RTTI::TypeInfo& renderer);
 

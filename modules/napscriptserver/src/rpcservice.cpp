@@ -2,9 +2,6 @@
 
 RTTI_DEFINE(nap::RpcService)
 
-
-
-
 namespace nap
 {
     std::string createSessionID() {
@@ -82,19 +79,21 @@ namespace nap
     RpcService::RpcService() : mSessionID(createSessionID())
 	{
         setFlag(Editable, false);
-        running.valueChangedSignal.connect([&](const bool& running) { onRunningChanged(running); });
+        running.valueChangedSignal.connect([&](const bool& running)		{ onRunningChanged(running); });
 
-		mServer.clientConnected.connect([&](AsyncTCPClient& client) { onClientConnected(client); });
-		mServer.clientDisconnected.connect([&](AsyncTCPClient& client) { onClientDisconnected(client); });
+		mServer.clientConnected.connect([&](AsyncTCPClient& client)		{ onClientConnected(client); });
+		mServer.clientDisconnected.connect([&](AsyncTCPClient& client)	{ onClientDisconnected(client); });
 		mServer.requestReceived.connect(
-				[&](AsyncTCPClient& client, const std::string& msg) { onRequestReceived(client, msg); });
+				[&](AsyncTCPClient& client, const std::string& msg)		{ onRequestReceived(client, msg); });
+
+		update.signal.connect([&](const SignalAttribute& attr)			{ mServer.update(); });
+
 	}
+
 
 
 	void RpcService::onRunningChanged(const bool& running)
 	{
-		//stopServer();
-
 		if (running)
 			startServer();
 	}
@@ -108,7 +107,7 @@ namespace nap
 
 	void RpcService::startServer()
 	{
-        mServer.runServer(rpcPort.getValue(), threaded.getValue());
+        mServer.runServer(rpcPort.getValue(), threaded.getValue(), manual.getValue());
 	}
 
 

@@ -61,10 +61,11 @@ namespace nap
 
 		virtual void run() = 0;
 
-		Attribute<int> rpcPort = {this, "rpcPort", 8888};
+		Attribute<int>  rpcPort = {this, "rpcPort", 8888};
 		Attribute<bool> running = {this, "running", false};
 		Attribute<bool> broadcastChanges = { this, "broadcastChanges", true };
         Attribute<bool> threaded = { this, "threaded", true };
+		Attribute<bool> manual = { this, "manual", false };		// TODO: Deprecate, make this automatic or based on enum
 
 		virtual std::string evalScript(const std::string& cmd) = 0;
 		virtual void handleLogMessage(LogMessage& msg) = 0;
@@ -76,6 +77,13 @@ namespace nap
 		virtual void handlePlugDisconnected(InputPlugBase& plug) = 0;
 
         const std::string& getSessionID() const { return mSessionID; }
+
+		/**
+		* Trigger this to process server messages
+		*/
+		SignalAttribute update = { this, "update" };
+
+		AsyncTCPServer mServer;
 
 	protected:
 		AsyncTCPServer& getServer() { return mServer; }
@@ -108,7 +116,6 @@ namespace nap
 
 	private:
 		std::vector<std::unique_ptr<RPCObjectCallback>> mCallbacks;
-		AsyncTCPServer mServer;
         std::string mSessionID;
 	};
 }

@@ -34,7 +34,10 @@
 
 namespace nap
 {
-
+	/**
+	 * Loads a shared object / dll as a module and register if found
+	 * @return the loaded module at @fileName, nullptr if module could not be loaded
+	 */
 	Module* loadModule(const char* filename)
 	{
 		std::stringstream errorString;
@@ -63,9 +66,7 @@ namespace nap
 		#endif
 
 
-
 		// Load the initialization function
-
 		const char* fn_name = "nap_init_module";
 
 		#ifdef _WIN32
@@ -75,23 +76,21 @@ namespace nap
 		//		char* error = dlerror();
 		#endif
 
-		if (!init_module) {
-//			Logger::debug("Failed to load init function: %s", fn_name);
+		if (!init_module) 
+		{
+			Logger::debug("Failed to load init function: %s", fn_name);
 			return nullptr;
 		}
 
-
-
 		// Initialize the plugin
-
 		Module* module = init_module();
-		if (nullptr == module) {
+		if (nullptr == module) 
+		{
 			Logger::warn("Failed to initialize the plugin");
 			return nullptr;
 		}
 
 		module->setFilename(filename);
-
 		return module;
 	}
 
@@ -99,7 +98,8 @@ namespace nap
 
 	bool ModuleManager::hasModule(const Module& module)
 	{
-		for (const auto& mod : mModules) {
+		for (const auto& mod : mModules) 
+		{
 			std::string modNameA = module.getName();
 			std::string modNameB = mod->getName();
 			if (modNameB == modNameA)
@@ -107,6 +107,7 @@ namespace nap
 		}
 		return false;
 	}
+
 
 	void ModuleManager::loadModules(const std::string directory)
 	{
@@ -116,7 +117,8 @@ namespace nap
 		nap::listDir(directory.c_str(), files);
 
 
-		for (const auto& filename : files) {
+		for (const auto& filename : files) 
+		{
             if (dirExists(filename))
                 continue;
 			std::string absFilename = getAbsolutePath(filename);
@@ -127,12 +129,11 @@ namespace nap
             if (getFileExtension(absFilename) != "so")
                 continue;
 #endif
-
-//			Logger::debug("Attempting to load module '%s'", getAbsolutePath(filename).c_str());
-
+			Logger::debug("Attempting to load module '%s'", getAbsolutePath(filename).c_str());
 			Module* module = loadModule(absFilename.c_str());
-			if (!module) {
-//				Logger::warn("Failed to load module '%s'", absFilename.c_str());
+			if (!module) 
+			{
+				Logger::warn("Failed to load module '%s'", absFilename.c_str());
 				continue;
 			}
 
@@ -143,7 +144,8 @@ namespace nap
 
 	void ModuleManager::registerModule(Module& module)
 	{
-		if (hasModule(module)) {
+		if (hasModule(module)) 
+		{
 			Logger::warn("Module already exists: %s", module.getName().c_str());
 			return;
 		}
@@ -161,10 +163,14 @@ namespace nap
 	const TypeConverterBase* ModuleManager::getTypeConverter(RTTI::TypeInfo fromType, RTTI::TypeInfo toType) const
 	{
 		if (fromType == toType)
+		{
 			return &mTypeConverterPassThrough;
+		}
 
-		for (auto module : mModules) {
-			for (auto conv : module->getTypeConverters()) {
+		for (auto module : mModules) 
+		{
+			for (auto conv : module->getTypeConverters()) 
+			{
 				if (conv->inType() == fromType && conv->outType() == toType)
 					return conv;
 			}
@@ -220,7 +226,11 @@ namespace nap
 				return module;
 		return nullptr;
 	}
-    void ModuleManager::loadCoreModule() {
+
+
+	// TODO: Make this a unique ptr
+    void ModuleManager::loadCoreModule() 
+	{
         registerModule(*new ModuleNapCore());
     }
 }

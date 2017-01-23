@@ -65,6 +65,8 @@ opengl::VertexArrayObject	cubeObject;
 // Vertex buffer that holds a triangle
 opengl::VertexArrayObject	triangleObject;
 
+nap::Service*				rpcService = nullptr;
+
 // Shader uniform bind locations
 int	projectionMatrixLocation(-1);
 int	viewMatrixLocation(-1);
@@ -166,7 +168,7 @@ void onRender(const nap::SignalAttribute& signal)
 	double rotate_angle = time_angle * rotate_speed;
 
 	nap::TransformComponent* xform_v = core.getEntity("model")->getComponent<nap::TransformComponent>();
-	xform_v->translate.setValue({ time_angle,0.0,0.0 });
+	//xform_v->translate.setValue({ time_angle,0.0,0.0 });
 
 	// Calculate model pivot offset
 	double pivot_distance = 2.0f;
@@ -237,7 +239,8 @@ NSLOT(renderSlot, const nap::SignalAttribute&, onRender)
 // Called when the window is updating
 void onUpdate(const nap::SignalAttribute& signal)
 {
-
+	//auto signal_attr = static_cast<nap::SignalAttribute*>(rpcService->getAttribute("update"));
+	//signal_attr->trigger();
 }
 NSLOT(updateSlot, const nap::SignalAttribute&, onUpdate)
 
@@ -248,6 +251,23 @@ NSLOT(updateSlot, const nap::SignalAttribute&, onUpdate)
 */
 bool init(nap::Core& core)
 {
+	core.initialize();
+
+	//////////////////////////////////////////////////////////////////////////
+
+	std::string rpcServiceTypename = "nap::JsonRpcService";
+	RTTI::TypeInfo rpcServiceType = RTTI::TypeInfo::getByName(rpcServiceTypename);
+	if (!rpcServiceType.isValid()) 
+	{
+		nap::Logger::fatal("Failed to retrieve type: '%s'", rpcServiceTypename.c_str());
+		return -1;
+	}
+	
+	rpcService = core.getOrCreateService(rpcServiceType);
+	//rpcService->getAttribute<bool>("manual")->setValue(true);
+	rpcService->getAttribute<bool>("running")->setValue(true);
+
+
 	//////////////////////////////////////////////////////////////////////////
 
 	// Create render service

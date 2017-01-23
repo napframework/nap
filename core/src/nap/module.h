@@ -9,9 +9,11 @@ namespace nap
 	using TypeList = std::vector<RTTI::TypeInfo>;
     class ModuleManager;
 
-	// The internal module keeps track of all necessary types that are to be exposed from within
-	// this library.
-	// Wraps the single internal nap::Core module, NOT to be used by client code directly.
+	/**
+	 * The internal module keeps track of all necessary types that are to be exposed from within
+	 * this library. Wraps the single internal nap::Core module, NOT to be used by client code directly.
+	 * Each module MUST have a unique name
+	 */
 	class Module
 	{
         friend ModuleManager;
@@ -41,8 +43,11 @@ namespace nap
 		void registerDataType(RTTI::TypeInfo type) { mDataTypes.push_back(type); }
         void registerServiceType(RTTI::TypeInfo type) { mServiceTypes.push_back(type); }
 
+		/**
+		 * @param func: the conversion function from @I to @O
+		 */
 		template <typename I, typename O>
-		void registerTypeConverter(bool (*func)(const I&, O&))
+		void registerTypeConverter(bool(*func)(const I&, O&))
 		{
 			TypeConverter<I, O>* tc = new TypeConverter<I, O>(func);
 			assert(!hasTypeConverter(tc));

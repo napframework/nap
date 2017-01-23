@@ -7,7 +7,7 @@
 
 namespace nap
 {
-	// TODO: Type Converters
+	
 }
 
 // GLM attribute declarations

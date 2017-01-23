@@ -23,8 +23,6 @@ namespace nap
 	{
 		friend class AsyncTCPServer;
 
-
-
 	private:
 		// Creates a client with the specified identity, may only be constructed by the AsyncTCPServer
 		AsyncTCPClient(const std::string& ident) : mIdent(ident) {}
@@ -98,7 +96,10 @@ namespace nap
 		void exit() { mRunning = false; }
 
 		// Will be run on separate thread
-        void runServer(int port, bool threaded);
+        void runServer(int port, bool threaded, bool manual);
+
+		// Polls for messages and sends queued messages
+		void update();
 
 	private:
 		// Check each client's last heartbeat and discard when timed out
@@ -114,6 +115,14 @@ namespace nap
 	private:
 
 		void runServerLoop();
+		void startServer();
+		void cleanupServer();
+
+		/**
+		 * The socket is temporary and related to the currently running server
+		 */
+		std::unique_ptr<zmq::socket_t> mSocket = nullptr;
+		zmq::context_t mContext;
 
 		time_t mClientTimeout = 3;
 		bool mRunning = true;

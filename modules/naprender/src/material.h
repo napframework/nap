@@ -18,7 +18,7 @@ namespace nap
 	*/
 	class Material : public AttributeObject
 	{
-		RTTI_ENABLE_DERIVED_FROM(Object)
+		RTTI_ENABLE_DERIVED_FROM(AttributeObject)
 	public:
 		// Default constructor
 		Material() = default;
