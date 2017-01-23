@@ -102,7 +102,10 @@ class AttributeValueItem(QStandardItem):
         if isinstance(value, bool):
             self.setData(value, Qt.DisplayRole)
         else:
-            self.setText(str(value or ''))
+            if value == None:
+                self.setText('')
+            else:
+                self.setText(str(value))
 
     def setData(self, variant, role=None):
         if role == Qt.EditRole:

@@ -124,7 +124,7 @@ namespace nap
 			if (!settings.sharedWindow->getTypeInfo().isKindOf(RTTI_OF(OpenGLRenderWindow)))
 			{
 				nap::Logger::fatal("trying to share a context with non OpenGL type window");
-				return false;
+				return nullptr;
 			}
 			else
 			{
@@ -139,7 +139,7 @@ namespace nap
 		if (new_window == nullptr)
 		{
 			nap::Logger::fatal("unable to create new OpenGL render window");
-			return false;
+			return nullptr;
 		}
 
 		// Construct and return new window

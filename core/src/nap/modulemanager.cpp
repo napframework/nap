@@ -125,6 +125,10 @@ namespace nap
 #ifdef _WIN32
 			if (getFileExtension(absFilename) != "dll")
 				continue;
+#elif __APPLE__
+            if (getFileExtension(absFilename) != "dylib")
+                continue;
+            
 #else
             if (getFileExtension(absFilename) != "so")
                 continue;

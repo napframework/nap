@@ -10,10 +10,14 @@ from utils import qtutils
 class AttributeValueDelegate(QStyledItemDelegate):
     def __init__(self, *args):
         super(AttributeValueDelegate, self).__init__(*args)
+        self.__triggerValue = '<class \'nap.TRIGGER\'>'
+        self.__isTrigger = False
 
     def createEditor(self, widget, option, index):
         newValue = index.data()
-        if isinstance(index.data(), bool):
+        self.__isTrigger = (newValue == self.__triggerValue)
+
+        if isinstance(index.data(), bool) or self.__isTrigger:
             pass
         else:
             return super(AttributeValueDelegate, self).createEditor(widget,
@@ -21,7 +25,10 @@ class AttributeValueDelegate(QStyledItemDelegate):
                                                                     index)
 
     def paint(self, painter, option, index):
-        if isinstance(index.data(), bool):
+        self.__isTrigger = (index.data() == self.__triggerValue)
+        if self.__isTrigger:
+            self.paintTrigger(painter, option, index)
+        elif isinstance(index.data(), bool):
             self.paintBool(painter, option, index)
         else:
             return super(AttributeValueDelegate, self).paint(painter, option,
@@ -44,27 +51,33 @@ class AttributeValueDelegate(QStyledItemDelegate):
         QApplication.style().drawControl(QStyle.CE_CheckBox, styleOption,
                                          painter)
 
-    def paintButton(self, painter, option, index):
+    def paintTrigger(self, painter, option, index):
         styleOption = QStyleOptionButton()
-        value = index.data()
-        if index.flags() & Qt.ItemIsEditable:
-            styleOption.state |= QStyle.State_Enabled
-        else:
-            styleOption.state |= QStyle.State_ReadOnly
-
-        styleOption.rect = self.__buttonRect(option)
+        styleOption.rect = option.rect
+        styleOption.state |= QStyle.State_Enabled
+        styleOption.state |= QStyle.State_On
         QApplication.style().drawControl(QStyle.CE_PushButton, styleOption,
                                          painter)
 
     def editorEvent(self, event, model, option, index):
         value = index.data()
-        if not isinstance(value, bool):
-            return super(AttributeValueDelegate, self).editorEvent(event, model, option, index)
+        if isinstance(value, bool):
+            return self.__checkBoxEvent(event, model, option, index)
 
+        if value == self.__triggerValue:
+            return self.__triggerEvent(event, model, option, index)
+
+        return super(AttributeValueDelegate, self).editorEvent(event, model, option, index)
+
+    def __triggerEvent(self, event, model, option, index):
+        if event.type() == QEvent.MouseButtonPress or event.type() == QEvent.KeyPress:
+            self.setModelData(None, model, index)
+        return True
+
+    def __checkBoxEvent(self, event, model, option, index):
         if not index.flags() & Qt.ItemIsEditable:
             return False
 
-        # Do not change the checkbox-state
         if event.type() == QEvent.MouseButtonPress:
             return False
         if event.type() == QEvent.MouseButtonRelease or event.type() == QEvent.MouseButtonDblClick:
@@ -86,6 +99,8 @@ class AttributeValueDelegate(QStyledItemDelegate):
     def setModelData(self, editor, model, index):
         newValue = index.data()
         if isinstance(newValue, bool):
+            model.setData(index, newValue, Qt.EditRole)
+        elif newValue == self.__triggerValue:
             model.setData(index, newValue, Qt.EditRole)
         else:
             super(AttributeValueDelegate, self).setModelData(editor, model, index)
@@ -178,7 +193,6 @@ class TypeFilterWidget(QWidget):
                 btn.setChecked(True)
             else:
                 btn.setChecked(False)
-
 
 class OutlineWidget(QWidget):
     def __init__(self, ctx, objectName):
