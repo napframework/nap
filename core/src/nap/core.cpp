@@ -31,9 +31,13 @@ namespace nap
 	Core::Core()
 	{
         getModuleManager().loadCoreModule();
+
 		// the root entity has no parent: nullptr
 		mRoot = std::unique_ptr<Entity>(new Entity(*this));
 		mRoot->mName = "root";
+
+		// Initialize timer
+		mTimer.start();
 	}
 
 
@@ -221,4 +225,26 @@ namespace nap
 		// Add new service of type
         return &addService(type);
 	}
+
+
+	// return number of elapsed ticks
+	uint32 Core::getTicks() const
+	{
+		return mTimer.getTicks();
+	}
+
+
+	// Return elapsed time
+	double Core::getElapsedTime() const
+	{
+		return mTimer.getElapsedTime();
+	}
+
+
+	// Returns start time of core module as point in time
+	TimePoint Core::getStartTime() const
+	{
+		return mTimer.getStartTime();
+	}
+
 }

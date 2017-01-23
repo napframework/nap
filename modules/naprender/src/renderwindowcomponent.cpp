@@ -7,6 +7,17 @@ namespace nap
 	{
 		// When added request a window
 		added.connect(componentAdded);
+
+		// Initialize delta time
+		mDeltaTime = NanoSeconds(0);
+	}
+
+
+	// Makes current window active
+	void RenderWindowComponent::makeActive()
+	{
+		mWindow->makeCurrent();
+		activate.trigger();
 	}
 
 
@@ -33,12 +44,6 @@ namespace nap
 	void RenderWindowComponent::onHideWindow(const SignalAttribute& signal)
 	{
 		mWindow->hideWindow();
-	}
-
-
-	void RenderWindowComponent::onSetActive(const SignalAttribute& signal)
-	{
-		mWindow->makeCurrent();
 	}
 
 
@@ -88,15 +93,83 @@ namespace nap
 		// When visibility changes, hide / show
 		show.signal.connect(showWindow);
 		hide.signal.connect(hideWindow);
-		activate.signal.connect(setActive);
 
 		// Push possible values
 		onPositionChanged(position.getValue());
 		onSizeChanged(size.getValue());
 		onTitleChanged(title.getValue());
 		onSyncChanged(sync.getValue());
+
+		// Initialize current frame time stamp
+		mFrameTimeStamp = mService->getCore().getStartTime();
+
+		// Set start time for fps counter
+		mFpsTime = mService->getCore().getElapsedTime();
 	}
 
+
+	// Updates time related values and triggers draw
+	void RenderWindowComponent::doDraw()
+	{
+		// Trigger draw
+		draw.trigger();
+
+		// Increment number of rendered frames
+		mFrames++;
+
+		// Store amount of time in nanoseconds it took to compute frame
+		TimePoint current_time = getCurrentTime();
+		mDeltaTime = current_time - mFrameTimeStamp;
+
+		// Update timestamp to be current time
+		mFrameTimeStamp = current_time;
+
+		// Update fps
+		updateFpsCounter(getDeltaTime());
+	}
+
+
+	// Triggers window update
+	void RenderWindowComponent::doUpdate()
+	{
+		update.trigger();
+	}
+
+
+	// Return compute last frame compute time
+	double RenderWindowComponent::getDeltaTime() const
+	{
+		return std::chrono::duration<double>(mDeltaTime).count();
+	}
+
+
+	// Frame compute time in float
+	float RenderWindowComponent::getDeltaTimeFloat() const
+	{
+		return std::chrono::duration<float>(mDeltaTime).count();
+	}
+
+
+	float RenderWindowComponent::getFps() const
+	{
+		return mFps;
+	}
+
+
+	// Updates internal fps counter
+	void RenderWindowComponent::updateFpsCounter(double deltaTime)
+	{
+		mFpsTime += deltaTime;
+		if (mFpsTime < 0.1)
+			return;
+
+		mFps = (float)((double)mFrames / (mFpsTime));
+		mFpsTime = 0.0;
+		mFrames = 0;
+
+		// Print fps
+		std::cout << "fps: " << mFps << "\n";
+	}
 }
 
 RTTI_DEFINE(nap::RenderWindowComponent)

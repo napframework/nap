@@ -159,7 +159,7 @@ void onRender(const nap::SignalAttribute& signal)
 	nap::RenderWindowComponent* render_window = window_entity->getComponent<nap::RenderWindowComponent>();
 
 	// Get rotation angle
-	double time_angle = glm::radians(render_service->getElapsedTime() * 360.0);
+	double time_angle = glm::radians(core.getElapsedTime() * 360.0);
 
 	// Calculate model rotate angle
 	double rotate_speed = 0.5f;

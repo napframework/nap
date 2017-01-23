@@ -14,6 +14,7 @@
 #include "operator.h"
 #include "service.h"
 #include "unordered_set"
+#include "timer.h"
 
 namespace nap
 {
@@ -47,6 +48,22 @@ namespace nap
 		 * @param name: name of the entity under root to get
 		 */
 		Entity* getEntity(const std::string& name);
+
+		/**
+		* @return number of elapsed time in milliseconds after
+		* creation of core
+		*/
+		uint32 getTicks() const;
+
+		/**
+		* @return number of elapsed seconds after creation of core
+		*/
+		double getElapsedTime() const;
+
+		/**
+		 * @return start time point
+		 */
+		TimePoint getStartTime() const;
 
 		/**
 		 * Add a custom service to the nap core, this has to be called by
@@ -171,6 +188,9 @@ namespace nap
 		std::unique_ptr<Entity> mRoot = nullptr;
 
 		ModuleManager mModuleManager;
+
+		// Timer
+		SimpleTimer mTimer;
 	};
 
 

@@ -58,10 +58,9 @@ namespace nap
 		SignalAttribute update		{ this, "Update" };
 
 		/**
-		 * Activates the window's render context
 		 * Connect to this signal if you want to know when this window
 		 * is made active. Subsequent render calls will be associated
-		 * with this window after triggering activate
+		 * with this window after activate has been triggered
 		 */
 		SignalAttribute activate	{ this, "SetActive" };
 
@@ -86,6 +85,12 @@ namespace nap
 		void swap() const														{ mWindow->swap(); }
 
 		/**
+		 * Makes this window active
+		 * calls activate afterwards
+		 */
+		void makeActive();
+
+		/**
 		 * Sets window construction settings
 		 * These settings are used when the window is constructed
 		 */
@@ -95,6 +100,21 @@ namespace nap
 		 * Returns window construction settings
 		 */
 		const RenderWindowSettings& getConstructionSettings() const				{ return mSettings; }
+
+		/**
+		* @return time it took in seconds to compute last frame
+		*/
+		double getDeltaTime() const;
+
+		/**
+		* @return time it took in seconds to compute last frame
+		*/
+		float getDeltaTimeFloat() const;
+
+		/**
+		* @return frames per seconds
+		*/
+		float getFps() const;
 
 	protected:
 		/**
@@ -107,7 +127,6 @@ namespace nap
 		*/
 		void onShowWindow(const SignalAttribute& signal);
 		void onHideWindow(const SignalAttribute& signal);
-		void onSetActive(const SignalAttribute& signal);
 
 		/**
 		 * Attribute changes
@@ -134,7 +153,6 @@ namespace nap
 		NSLOT(positionChanged, const glm::ivec2&, onPositionChanged)
 		NSLOT(sizeChanged, const glm::ivec2&, onSizeChanged)
 		NSLOT(syncChanged, const bool&, onSyncChanged)
-		NSLOT(setActive, const SignalAttribute&, onSetActive)
 
 
 	private:
@@ -147,6 +165,39 @@ namespace nap
 
 		// Settings used when constructing the window
 		RenderWindowSettings mSettings;
+
+		/**
+		* Holds the current frame time
+		*/
+		NanoSeconds	mDeltaTime;				//< Frame render time in nanoseconds
+		TimePoint	mFrameTimeStamp;		//< Last recorded frame time
+
+		/**
+		 * Holds fps related values
+		 */									// Fps specific members
+		double 		mFpsTime = 0.0;			//< Fps specific counter
+		float		mFps = 0.0f;			//< Current number of frames per second
+		uint32		mFrames = 0;			//< Frame counter
+
+		/**
+		 * Window draw call, only accessible by RenderService
+		 * Updates time related values and calls the draw signal
+		 */
+		virtual void doDraw();
+
+
+		/**
+		 * Window update call, only accesible by RenderService
+		 * Triggers update signal
+		 */
+		virtual void doUpdate();
+
+		/**
+		* Updates the fps counter
+		* @param deltaTime the time between the two frames
+		*/
+		void updateFpsCounter(double deltaTime);
+
 	};
 }
 

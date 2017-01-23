@@ -79,33 +79,6 @@ namespace nap
 		 */
 		void shutdown();
 
-		/**
-		 * @return number of elapsed time in milliseconds after
-		 * creation of render window and context
-		 */
-		uint32 getTicks() const;
-
-		/**
-		 * @return number of elapsed seconds after creation of 
-		 * render window and context
-		 */
-		double getElapsedTime() const;
-
-		/**
-		 * @return time it took in seconds to compute last frame
-		 */
-		double getDeltaTime() const;
-
-		/**
-		 * @return time it took in seconds to compute last frame
-		 */
-		float getDeltaTimeFloat() const;
-
-		/**
-		 * @return frames per seconds
-		 */ 
-		float getFps() const;
-
 	protected:
 		/**
 		 * Type registration
@@ -131,32 +104,9 @@ namespace nap
 		void createWindow(RenderWindowComponent& window);
 
 		/**
-		 * Updates the fps counter
-		 * @param deltaTime the time between the two frames
-		 */
-		void updateFpsCounter(double deltaTime);
-
-		/**
 		 * Holds the currently active renderer
 		 */
 		std::unique_ptr<nap::Renderer> mRenderer = nullptr;
-
-		/**
-		 * Timer that keeps track of elapsed render time
-		 */
-		SimpleTimer	mTimer;
-
-		/**
-		 * Holds the current frame time
-		 */
-		NanoSeconds	mDeltaTime;				//< Frame render time in nanoseconds
-		TimePoint	mFrameTimeStamp;		//< Last recorded frame time
-		
-		// Fps specific members
-		double 		mFpsTime = 0.0;			//< Fps specific counter
-		float		mFps = 0.0f;			//< Current number of frames per second
-		uint32		mFrames = 0;			//< Frame counter
-
 
 		/**
 		 * Finds all top level transforms, this is a recursive function
