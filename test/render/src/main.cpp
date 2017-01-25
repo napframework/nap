@@ -37,6 +37,7 @@
 #include <renderwindowcomponent.h>
 #include <openglrenderer.h>
 #include <transformcomponent.h>
+#include <cameracomponent.h>
 
 // Nap includes
 #include <nap/core.h>
@@ -74,12 +75,10 @@ int	modelMatrixLocation(-1);
 int	noiseLocation(-1);
 int textureLocation(-1);
 
-// Camera
-opengl::Camera camera;
-
 // Render service and window
 nap::RenderService* renderService = nullptr;
 nap::RenderWindowComponent* renderWindow = nullptr;
+nap::CameraComponent* cameraComponent = nullptr;
 
 // vertex Shader indices
 nap::Entity* model = nullptr;
@@ -93,7 +92,6 @@ unsigned int windowWidth(512);
 unsigned int windowHeight(512);
 
 // GLM
-glm::mat4 viewMatrix;			// Store the view matrix
 glm::mat4 modelMatrix;			// Store the model matrix
 
 // Some utilities
@@ -132,7 +130,7 @@ bool loadImages()
 void updateViewport(int width, int height)
 {
 	glViewport(0, 0, width, height);
-	camera.setAspectRatio((float)width, (float)height);
+	cameraComponent->setAspectRatio((float)width, (float)height);
 }
 
 
@@ -190,10 +188,14 @@ void onRender(const nap::SignalAttribute& signal)
 	model_matrix = glm::scale(model_matrix, glm::vec3(0.5, 0.5, 0.5));
 	glm::mat4 final_model_matrix = parent_matrix * model_matrix;
 
+	// Get view matrix from camera
+	nap::TransformComponent* cam_xform = cameraComponent->getParent()->getComponent<nap::TransformComponent>();
+	assert(cam_xform != nullptr);
+
 	// Send values
-	glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &camera.getProjectionMatrix()[0][0]); // Send our projection matrix to the shader
-	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]); // Send our view matrix to the shader
-	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &(final_model_matrix[0][0]));
+	glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &cameraComponent->getProjectionMatrix()[0][0]);	// Send our projection matrix to the shader
+	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &cam_xform->getGlobalTransform()[0][0]);				// Send our view matrix to the shader
+	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &(final_model_matrix[0][0]));							// Send our model matrix to the shader
 
 	// Set texture 1 for shader
 	glActiveTexture(GL_TEXTURE0);
@@ -292,6 +294,8 @@ bool init(nap::Core& core)
 	}
 
 	//////////////////////////////////////////////////////////////////////////
+	// Create Model
+	//////////////////////////////////////////////////////////////////////////
 
 	// Create shader resource
 	nap::ResourceManagerService* service = core.getOrCreateService<nap::ResourceManagerService>();
@@ -312,8 +316,6 @@ bool init(nap::Core& core)
 	nap::TransformComponent& tran_component = model->addComponent<nap::TransformComponent>();
 	nap::ModelMeshComponent& mesh_component = model->addComponent<nap::ModelMeshComponent>("pig_head_mesh");
 
-	tran_component.translate.setValue({ 2.0f, 0.0f, 0.0f });
-
 	//////////////////////////////////////////////////////////////////////////
 
 	// Set shader resource on material
@@ -324,6 +326,8 @@ bool init(nap::Core& core)
 	// Link model resource
 	mesh_component.modelResource.setResource(*pig_model);
 
+	//////////////////////////////////////////////////////////////////////////
+	// Extract Material Information
 	//////////////////////////////////////////////////////////////////////////
 
 	// Extract mesh
@@ -358,18 +362,16 @@ bool init(nap::Core& core)
 	material->unbind();
 
 	//////////////////////////////////////////////////////////////////////////
-
-	// View matrix
-	viewMatrix = glm::lookAt
-	(
-		glm::vec3(0.0f, 0.0f, 4.0f),
-		glm::vec3(0.0f, 0.0f, 0.0f),
-		glm::vec3(0.0f, 1.0f, 0.0f)
-	);
+	// Add Camera
+	//////////////////////////////////////////////////////////////////////////
+	nap::Entity& camera_entity = core.addEntity("camera");
+	cameraComponent = &camera_entity.addComponent<nap::CameraComponent>();
+	nap::TransformComponent& camera_transform = camera_entity.addComponent<nap::TransformComponent>();
+	camera_transform.translate.setValue({ 0.0f, 0.0f, -4.0f });
 
 	// Set camera
-	camera.setFieldOfView(45.0f);
-	camera.setAspectRatio((float)windowWidth, (float)windowHeight);
+	cameraComponent->fieldOfView.setValue(45.0f);
+	cameraComponent->setAspectRatio((float)windowWidth, (float)windowHeight);
 
 	// Create Square Vertex Buffer Object
 	createCube(cubeObject, vertex_index, color_index, uv_index);
