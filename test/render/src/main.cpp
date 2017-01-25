@@ -67,8 +67,6 @@ opengl::VertexArrayObject	cubeObject;
 // Vertex buffer that holds a triangle
 opengl::VertexArrayObject	triangleObject;
 
-nap::Service*				rpcService = nullptr;
-
 // Shader uniform bind locations
 int	projectionMatrixLocation(-1);
 int	viewMatrixLocation(-1);
@@ -76,8 +74,9 @@ int	modelMatrixLocation(-1);
 int	noiseLocation(-1);
 int textureLocation(-1);
 
-// Render service and window
+// Nap Objects
 nap::RenderService* renderService = nullptr;
+nap::Service* rpcService = nullptr;
 nap::RenderWindowComponent* renderWindow = nullptr;
 nap::CameraComponent* cameraComponent = nullptr;
 nap::ModelMeshComponent* modelComponent = nullptr;
@@ -87,7 +86,7 @@ nap::Entity* model = nullptr;
 int vertex_index(0), color_index(0), normal_index(0), uv_index(0);
 
 // Current texture to draw
-unsigned int				currentIndex = 0;
+unsigned int currentIndex = 0;
 
 // Window width / height on startup
 unsigned int windowWidth(512);
@@ -275,7 +274,7 @@ bool init(nap::Core& core)
 	renderWindow->size.setValue({ windowWidth, windowHeight });
 	renderWindow->position.setValue({ (1920 / 2) - 256, 1080 / 2 - 256 });
 	renderWindow->title.setValue("Wolla");
-	renderWindow->sync.setValue(true);
+	renderWindow->sync.setValue(false);
 
 	// Connect draw and update signals
 	renderWindow->draw.signal.connect(renderSlot);

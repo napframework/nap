@@ -5,6 +5,7 @@
 #include "renderwindowcomponent.h"
 #include "openglrenderer.h"
 #include "transformcomponent.h"
+#include "cameracomponent.h"
 
 // External Includes
 #include <nap/core.h>
@@ -18,6 +19,7 @@ namespace nap
 		core.registerType(*this, RTTI_OF(MeshComponent));
 		core.registerType(*this, RTTI_OF(RenderWindowComponent));
 		core.registerType(*this, RTTI_OF(TransformComponent));
+		core.registerType(*this, RTTI_OF(CameraComponent));
 	}
 
 
