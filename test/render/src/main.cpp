@@ -77,6 +77,10 @@ int textureLocation(-1);
 // Camera
 opengl::Camera camera;
 
+// Render service and window
+nap::RenderService* renderService = nullptr;
+nap::RenderWindowComponent* renderWindow = nullptr;
+
 // vertex Shader indices
 nap::Entity* model = nullptr;
 int vertex_index(0), color_index(0), normal_index(0), uv_index(0);
@@ -145,29 +149,19 @@ void onRender(const nap::SignalAttribute& signal)
 	opengl::enableBlending(true);
 	opengl::enableMultiSampling(true);
 
-	// Get render service
-	nap::Component* signal_comp = static_cast<nap::Component*>(signal.getParent());
-	nap::Core& core = signal_comp->getParent()->getCore();
-	nap::RenderService* render_service = core.getService<nap::RenderService>();
-
 	// Get mesh component
 	nap::ModelMeshComponent* mesh_comp = model->getComponent<nap::ModelMeshComponent>();
 	nap::Material* material = mesh_comp->getMaterial();
 	assert(material != nullptr);
 
-	// Get window component
-	nap::Entity* window_entity = core.getEntity("window");
-	assert(window_entity != nullptr);
-	nap::RenderWindowComponent* render_window = window_entity->getComponent<nap::RenderWindowComponent>();
-
 	// Get rotation angle
-	double time_angle = glm::radians(core.getElapsedTime() * 360.0);
+	double time_angle = glm::radians(renderService->getCore().getElapsedTime() * 360.0);
 
 	// Calculate model rotate angle
 	double rotate_speed = 0.5f;
 	double rotate_angle = time_angle * rotate_speed;
 
-	nap::TransformComponent* xform_v = core.getEntity("model")->getComponent<nap::TransformComponent>();
+	nap::TransformComponent* xform_v = renderService->getCore().getEntity("model")->getComponent<nap::TransformComponent>();
 	//xform_v->translate.setValue({ time_angle,0.0,0.0 });
 
 	// Calculate model pivot offset
@@ -215,7 +209,7 @@ void onRender(const nap::SignalAttribute& signal)
 	switch (currentIndex)
 	{
 	case 0:
-		render_service->renderObjects();
+		renderService->renderObjects();
 		break;
 	case 1:
 		cubeObject.bind();
@@ -255,6 +249,7 @@ bool init(nap::Core& core)
 
 	//////////////////////////////////////////////////////////////////////////
 
+	/*
 	std::string rpcServiceTypename = "nap::JsonRpcService";
 	RTTI::TypeInfo rpcServiceType = RTTI::TypeInfo::getByName(rpcServiceTypename);
 	if (!rpcServiceType.isValid()) 
@@ -266,26 +261,26 @@ bool init(nap::Core& core)
 	rpcService = core.getOrCreateService(rpcServiceType);
 	//rpcService->getAttribute<bool>("manual")->setValue(true);
 	rpcService->getAttribute<bool>("running")->setValue(true);
-
+	*/
 
 	//////////////////////////////////////////////////////////////////////////
 
 	// Create render service
-	nap::RenderService* render_service = core.getOrCreateService<nap::RenderService>();
-	render_service->setRenderer(RTTI_OF(nap::OpenGLRenderer));
-	nap::Logger::info("initialized render service: %s", render_service->getName().c_str());
+	renderService = core.getOrCreateService<nap::RenderService>();
+	renderService->setRenderer(RTTI_OF(nap::OpenGLRenderer));
+	nap::Logger::info("initialized render service: %s", renderService->getName().c_str());
 
 	// Add window component
 	nap::Entity& window_entity = core.addEntity("window");
-	nap::RenderWindowComponent& window_comp = window_entity.addComponent<nap::RenderWindowComponent>("main_window");
-	window_comp.size.setValue({ windowWidth, windowHeight });
-	window_comp.position.setValue({ (1920 / 2) - 256, 1080 / 2 - 256 });
-	window_comp.title.setValue("Wolla");
-	window_comp.sync.setValue(true);
+	renderWindow = &window_entity.addComponent<nap::RenderWindowComponent>("main_window");
+	renderWindow->size.setValue({ windowWidth, windowHeight });
+	renderWindow->position.setValue({ (1920 / 2) - 256, 1080 / 2 - 256 });
+	renderWindow->title.setValue("Wolla");
+	renderWindow->sync.setValue(true);
 
 	// Connect draw and update signals
-	window_comp.draw.signal.connect(renderSlot);
-	window_comp.update.signal.connect(updateSlot);
+	renderWindow->draw.signal.connect(renderSlot);
+	renderWindow->update.signal.connect(updateSlot);
 
 	//////////////////////////////////////////////////////////////////////////
 
@@ -408,10 +403,6 @@ void runGame(nap::Core& core)
 	// Run function
 	bool loop = true;
 
-	// Get render service
-	nap::RenderService* render_service = core.getOrCreateService<nap::RenderService>();
-	assert(render_service != nullptr);
-
 	// Loop
 	while (loop)
 	{
@@ -462,8 +453,8 @@ void runGame(nap::Core& core)
 		//////////////////////////////////////////////////////////////////////////
 
 		// run render call
-		render_service->render();
+		renderService->render();
 	}
 
-	render_service->shutdown();
+	renderService->shutdown();
 }
