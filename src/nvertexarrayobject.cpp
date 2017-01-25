@@ -191,5 +191,4 @@ namespace opengl
 		}
 		mDrawMode = mode;
 	}
-
 }

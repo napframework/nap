@@ -135,7 +135,17 @@ namespace opengl
 		glAttachShader(mShaderId, mShaderFp);				// Attach the fragment shader to the program
 
 		glLinkProgram(mShaderId);							// Link the vertex and fragment shaders in the program
-		validateProgram(mShaderId);							// Validate the shader program
+		if (!validateProgram(mShaderId))
+		{
+			printMessage(MessageType::ERROR, "unable to validate shader program: %s, %s", vsFile.c_str(), fsFile.c_str());
+			return;
+		}
+
+		// Sample all program attributes
+		printMessage(MessageType::INFO, "sampling shader program attributes: %s", vsFile.c_str());
+		sampleAttributes();
+		printMessage(MessageType::INFO, "sampling shader program uniforms: %s", vsFile.c_str());
+		sampleUniforms();
 	}
 
 
@@ -178,7 +188,52 @@ namespace opengl
 		glLinkProgram(mShaderId);
 	}
 
-	
+
+	// Gather all shader attributes
+	void Shader::sampleAttributes()
+	{
+		GLint attribute_count;			// total number of attributes;
+		GLint size;						// size of the variable
+		GLenum type;					// type of the variable (float, vec3 or mat4, etc)
+		const GLsizei bufSize = 256;	// maximum name length
+		GLchar name[bufSize];			// variable name in GLSL
+		GLsizei length;					// name length
+
+		// Get number of active attributes
+		glGetProgramiv(getId(), GL_ACTIVE_ATTRIBUTES, &attribute_count);
+		
+		// Sample info shader program info
+		for (auto i = 0; i < attribute_count; i++)
+		{
+			glGetActiveAttrib(getId(), static_cast<GLint>(i), bufSize, &length, &size, &type, name);
+			int location = glGetAttribLocation(getId(), name);
+			printMessage(MessageType::INFO, "Attribute: %d, type: %d, name: %s, location: %d", i, (unsigned int)type, name, location);
+		}
+	}
+
+
+	// Sampling uniforms
+	void Shader::sampleUniforms()
+	{
+		GLint uniform_count;			// total number of attributes;
+		GLint size;						// size of the variable
+		GLenum type;					// type of the variable (float, vec3 or mat4, etc)
+		const GLsizei bufSize = 256;	// maximum name length
+		GLchar name[bufSize];			// variable name in GLSL
+		GLsizei length;					// name length
+
+		glGetProgramiv(getId(), GL_ACTIVE_UNIFORMS, &uniform_count);
+
+		// Sample info shader program info
+		for (auto i = 0; i < uniform_count; i++)
+		{
+			glGetActiveUniform(getId(), static_cast<GLint>(i), bufSize, &length, &size, &type, name);
+			int location = glGetUniformLocation(getId(), name);
+			printMessage(MessageType::INFO, "Uniform: %d, type: %d, name: %s, location: %d", i, (unsigned int)type, name, location);
+		}
+	}
+
+
 	// bind attaches the shader program for successive OpenGL calls
 	bool Shader::bind()
 	{

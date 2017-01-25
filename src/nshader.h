@@ -65,5 +65,15 @@ namespace opengl
 		unsigned int mShaderId = 0;		// The shader program identifier
 		unsigned int mShaderVp = 0;		// The vertex shader identifier
 		unsigned int mShaderFp = 0;		// The fragment shader identifier
+
+		/**
+		 * Collects all shader program attributes
+		 */
+		void sampleAttributes();
+
+		/**
+		 * Collects all shader program uniforms
+		 */
+		void sampleUniforms();
 	};
 }	// opengl
