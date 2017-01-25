@@ -38,6 +38,7 @@
 #include <openglrenderer.h>
 #include <transformcomponent.h>
 #include <cameracomponent.h>
+#include <mathutils.h>
 
 // Nap includes
 #include <nap/core.h>
@@ -79,6 +80,7 @@ int textureLocation(-1);
 nap::RenderService* renderService = nullptr;
 nap::RenderWindowComponent* renderWindow = nullptr;
 nap::CameraComponent* cameraComponent = nullptr;
+nap::ModelMeshComponent* modelComponent = nullptr;
 
 // vertex Shader indices
 nap::Entity* model = nullptr;
@@ -134,6 +136,43 @@ void updateViewport(int width, int height)
 }
 
 
+// Called when the window is updating
+void onUpdate(const nap::SignalAttribute& signal)
+{
+	//auto signal_attr = static_cast<nap::SignalAttribute*>(rpcService->getAttribute("update"));
+	//signal_attr->trigger();
+
+	// Update model transform
+	float elapsed_time = renderService->getCore().getElapsedTime();
+
+	// Get rotation angle
+	float rot_speed = 0.5f;
+	float rot_angle = elapsed_time * 360.0f * rot_speed;
+	float rot_angle_radians = glm::radians(rot_angle);
+
+	// Calculate rotation quaternion
+	glm::quat rot_quat = glm::rotate(glm::quat(), (float)rot_angle_radians, glm::vec3(0.0, 1.0, 0.0));
+
+	// Set rotation on component
+	nap::TransformComponent* xform_v = modelComponent->getParent()->getComponent<nap::TransformComponent>();
+	assert(xform_v);
+	xform_v->rotate.setValue(nap::quatToVector(rot_quat));
+
+	// Set transform
+	float xform_distance = 2.0f;
+	float xform_speed = 1.0f;
+	float xform_offset = sin(elapsed_time * xform_speed) * xform_distance;
+	xform_v->translate.setValue({ xform_offset, 0.0f, 0.0f });
+
+	// Set scale
+	float scale_speed = 4.0f;
+	float nscale = (sin(elapsed_time  * scale_speed) + 1) / 2.0f;
+	nscale = nap::fit<float>(nscale, 0.0f, 1.0f, 0.25f, 1.0f);
+	xform_v->uniformScale.setValue(nscale);
+}
+NSLOT(updateSlot, const nap::SignalAttribute&, onUpdate)
+
+
 // Called when the window is going to render
 void onRender(const nap::SignalAttribute& signal)
 {
@@ -148,54 +187,23 @@ void onRender(const nap::SignalAttribute& signal)
 	opengl::enableMultiSampling(true);
 
 	// Get mesh component
-	nap::ModelMeshComponent* mesh_comp = model->getComponent<nap::ModelMeshComponent>();
-	nap::Material* material = mesh_comp->getMaterial();
+	nap::Material* material = modelComponent->getMaterial();
 	assert(material != nullptr);
-
-	// Get rotation angle
-	double time_angle = glm::radians(renderService->getCore().getElapsedTime() * 360.0);
-
-	// Calculate model rotate angle
-	double rotate_speed = 0.5f;
-	double rotate_angle = time_angle * rotate_speed;
-
-	nap::TransformComponent* xform_v = renderService->getCore().getEntity("model")->getComponent<nap::TransformComponent>();
-	//xform_v->translate.setValue({ time_angle,0.0,0.0 });
-
-	// Calculate model pivot offset
-	double pivot_distance = 2.0f;
-	double pivot_speed = 0.25f;
-	double pivot_offset = ((sin(time_angle * pivot_speed) + 1.0) / 2.0) * pivot_distance;
 
 	// Bind Shader
 	material->bind();
-
-	// Parent matrix
-	glm::mat4 parent_matrix;
-	parent_matrix = glm::rotate(parent_matrix, (float)rotate_angle, glm::vec3(0.0f, 1.0f, 0.0f));
-
-	// Model matrix
-	glm::mat4 model_matrix;
-	model_matrix = glm::translate(model_matrix, glm::vec3((float)pivot_offset, 0.0f, 0.0f));
-
-	// Model Rotation
-	glm::vec4 rot_vector(0.0, 0.0, 0.0, 1.0);
-	glm::quat rot_quat(rot_vector);
-	rot_quat = glm::rotate(rot_quat, (float)rotate_angle, glm::vec3(0.0, 1.0, 0.0));
-	glm::mat4x4 rot_matr = glm::toMat4(rot_quat);
-	model_matrix = model_matrix * rot_matr;
-
-	model_matrix = glm::scale(model_matrix, glm::vec3(0.5, 0.5, 0.5));
-	glm::mat4 final_model_matrix = parent_matrix * model_matrix;
 
 	// Get view matrix from camera
 	nap::TransformComponent* cam_xform = cameraComponent->getParent()->getComponent<nap::TransformComponent>();
 	assert(cam_xform != nullptr);
 
+	// Get model matrix from model
+	nap::TransformComponent* model_xform = modelComponent->getParent()->getComponent<nap::TransformComponent>();
+
 	// Send values
 	glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &cameraComponent->getProjectionMatrix()[0][0]);	// Send our projection matrix to the shader
 	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &cam_xform->getGlobalTransform()[0][0]);				// Send our view matrix to the shader
-	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &(final_model_matrix[0][0]));							// Send our model matrix to the shader
+	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &model_xform->getGlobalTransform()[0][0]);			// Send our model matrix to the shader
 
 	// Set texture 1 for shader
 	glActiveTexture(GL_TEXTURE0);
@@ -232,15 +240,6 @@ void onRender(const nap::SignalAttribute& signal)
 NSLOT(renderSlot, const nap::SignalAttribute&, onRender)
 
 
-// Called when the window is updating
-void onUpdate(const nap::SignalAttribute& signal)
-{
-	//auto signal_attr = static_cast<nap::SignalAttribute*>(rpcService->getAttribute("update"));
-	//signal_attr->trigger();
-}
-NSLOT(updateSlot, const nap::SignalAttribute&, onUpdate)
-
-
 /**
 * Initialize all the resources and instances used for drawing
 * slowly migrating all functionality to nap
@@ -251,7 +250,6 @@ bool init(nap::Core& core)
 
 	//////////////////////////////////////////////////////////////////////////
 
-	/*
 	std::string rpcServiceTypename = "nap::JsonRpcService";
 	RTTI::TypeInfo rpcServiceType = RTTI::TypeInfo::getByName(rpcServiceTypename);
 	if (!rpcServiceType.isValid()) 
@@ -263,7 +261,6 @@ bool init(nap::Core& core)
 	rpcService = core.getOrCreateService(rpcServiceType);
 	//rpcService->getAttribute<bool>("manual")->setValue(true);
 	rpcService->getAttribute<bool>("running")->setValue(true);
-	*/
 
 	//////////////////////////////////////////////////////////////////////////
 
@@ -314,17 +311,17 @@ bool init(nap::Core& core)
 	// Create model entity
 	model = &(core.getRoot().addEntity("model"));
 	nap::TransformComponent& tran_component = model->addComponent<nap::TransformComponent>();
-	nap::ModelMeshComponent& mesh_component = model->addComponent<nap::ModelMeshComponent>("pig_head_mesh");
+	modelComponent = &model->addComponent<nap::ModelMeshComponent>("pig_head_mesh");
 
 	//////////////////////////////////////////////////////////////////////////
 
 	// Set shader resource on material
-	nap::Material* material = mesh_component.getMaterial();
+	nap::Material* material = modelComponent->getMaterial();
 	assert(material != nullptr);
 	material->shaderResource.setResource(*shader_resource);
 
 	// Link model resource
-	mesh_component.modelResource.setResource(*pig_model);
+	modelComponent->modelResource.setResource(*pig_model);
 
 	//////////////////////////////////////////////////////////////////////////
 	// Extract Material Information

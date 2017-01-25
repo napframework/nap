@@ -18,7 +18,7 @@ source_group("shaders" FILES ${SHADERS})
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS})
 
-target_link_libraries(${PROJECT_NAME} napcore mod_naprender nrender)
+target_link_libraries(${PROJECT_NAME} napcore mod_naprender nrender mod_napmath)
 
 
 if (WIN32)
