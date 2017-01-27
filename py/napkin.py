@@ -1,13 +1,11 @@
 import sys
 
 from appcontext import AppContext
-from corewidget import ConnectionWidget
-from logpanel import LogPanel
-from model import *
-import nap
-from outline import OutlineWidget
-from patchpanel import PatchEditor
-from statemachineeditor import StatemachineEditor
+from coresettings.corewidget import ConnectionWidget
+from log.logpanel import LogPanel
+from outline.model import *
+from outline.outlinewidget import OutlineWidget
+from patch.patcheditor import PatchEditor
 
 WIN_GEO = 'WindowGeometry'
 WIN_STATE = 'WindowState'
@@ -205,7 +203,6 @@ if __name__ == '__main__':
 
     ctx = AppContext()
     ctx.registerEditor('nap::PatchComponent', PatchEditor)
-    ctx.registerEditor('nap::StateMachineComponent', StatemachineEditor)
 
     win = MainWindow(ctx)
     win.show()

@@ -4,7 +4,6 @@ This module provides unified access to this projects icons.
 from collections import OrderedDict
 
 from PyQt5.QtGui import *
-from PyQt5.QtCore import *
 
 import nap
 

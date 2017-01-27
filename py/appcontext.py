@@ -1,9 +1,9 @@
 import os
 
 from PyQt5.QtCore import *
-from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
+import core
 import iconstore
 import nap
 
@@ -11,7 +11,7 @@ import nap
 class AddChildAction(QAction):
     def __init__(self, ctx, parentObj, typename):
         """
-        @type ctx: nap.Core
+        @type ctx: core.Core
         """
         super(AddChildAction, self).__init__(iconstore.icon('brick_add'), typename, None)
         self.__parentObj = parentObj
@@ -37,7 +37,7 @@ class RemoveObjectsAction(QAction):
 class DisconnectPlugsAction(QAction):
     def __init__(self, ctx, plugs):
         """
-        @type ctx: nap.Core
+        @type ctx: core.Core
         """
         super(DisconnectPlugsAction, self).__init__(iconstore.icon('delete'), 'Disconnect', None)
         self.__ctx = ctx
@@ -65,7 +65,7 @@ class AppContext(QObject):
 
     def __init__(self):
         super(AppContext, self).__init__()
-        self.__core = nap.Core()
+        self.__core = core.Core()
         self.__selectedObjects = None
         self.__editorTypes = {}
         self.__editors = {}
@@ -87,7 +87,7 @@ class AppContext(QObject):
 
     def core(self):
         """
-        @rtype: nap.Core
+        @rtype: core.Core
         """
         return self.__core
 

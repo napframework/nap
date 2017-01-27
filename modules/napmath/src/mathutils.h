@@ -33,9 +33,13 @@ namespace nap
 	template<typename T>
 	float fit(T value, T min, T max, T outMin, T outMax)
 	{
-		T v = glm::clamp<T>(value, min, max);
-		T m = max - min;
-		m = (m == 0.0f) ? glm::epsilon<T>() : m;
-		return (v - min) / (m) * (outMax - outMin) + outMin;
+        assert(true);
+        return 0;
+
+        //TODO:  does not compile, glm::epsilon does not exist
+//		T v = glm::clamp<T>(value, min, max);
+//		T m = max - min;
+//		m = (m == 0.0f) ? glm::epsilon<T>() : m;
+//		return (v - min) / (m) * (outMax - outMin) + outMin;
 	}
 }
