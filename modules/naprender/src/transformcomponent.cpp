@@ -32,7 +32,7 @@ namespace nap
 		{
 			glm::mat4x4 xform_matrix = glm::translate(glm::mat4x4(), translate.getValue());
 			glm::mat4x4 rotat_matrix = glm::toMat4(vectorToQuat(rotate.getValue()));
-			glm::mat4x4 scale_matrix = glm::scale(scale.getValue() * uniformScale.getValue());
+			glm::mat4x4 scale_matrix = glm::scale(glm::mat4x4(), scale.getValue() * uniformScale.getValue());
 			mLocalMatrix = (xform_matrix * rotat_matrix * scale_matrix);
 			mLocalDirty  = false;
 		}

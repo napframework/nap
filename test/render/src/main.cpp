@@ -144,6 +144,8 @@ void onUpdate(const nap::SignalAttribute& signal)
 	// Update model transform
 	float elapsed_time = renderService->getCore().getElapsedTime();
 
+	nap::TransformComponent* xform_v = modelComponent->getParent()->getComponent<nap::TransformComponent>();
+
 	// Get rotation angle
 	float rot_speed = 0.5f;
 	float rot_angle = elapsed_time * 360.0f * rot_speed;
@@ -153,7 +155,6 @@ void onUpdate(const nap::SignalAttribute& signal)
 	glm::quat rot_quat = glm::rotate(glm::quat(), (float)rot_angle_radians, glm::vec3(0.0, 1.0, 0.0));
 
 	// Set rotation on component
-	nap::TransformComponent* xform_v = modelComponent->getParent()->getComponent<nap::TransformComponent>();
 	assert(xform_v);
 	xform_v->rotate.setValue(nap::quatToVector(rot_quat));
 
@@ -187,7 +188,7 @@ void onRender(const nap::SignalAttribute& signal)
 
 	// Get mesh component
 	nap::Material* material = modelComponent->getMaterial();
-	assert(material != nullptr);
+	assert(material != nullptr);	
 
 	// Bind Shader
 	material->bind();
@@ -202,7 +203,7 @@ void onRender(const nap::SignalAttribute& signal)
 	// Send values
 	glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &cameraComponent->getProjectionMatrix()[0][0]);	// Send our projection matrix to the shader
 	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &cam_xform->getGlobalTransform()[0][0]);				// Send our view matrix to the shader
-	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &model_xform->getGlobalTransform()[0][0]);			// Send our model matrix to the shader
+	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &model_xform->getGlobalTransform()[0][0]);				// Send our model matrix to the shader
 
 	// Set texture 1 for shader
 	glActiveTexture(GL_TEXTURE0);
