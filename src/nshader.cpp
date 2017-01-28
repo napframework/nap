@@ -37,55 +37,6 @@ static string textFileRead(const std::string& fileName)
 namespace opengl
 {
 	/**
-	Given a shader and the filename associated with it, validateShader will
-	then get information from OpenGl on whether or not the shader was compiled successfully
-	and if it wasn't, it will output the file with the problem, as well as the problem.
-	*/
-	static void validateShader(GLuint shader, const std::string& file = 0)
-	{
-		const unsigned int BUFFER_SIZE = 512;
-		char buffer[BUFFER_SIZE];
-		memset(buffer, 0, BUFFER_SIZE);
-		GLsizei length = 0;
-
-		// If there's info to display do so
-		glGetShaderInfoLog(shader, BUFFER_SIZE, &length, buffer); // Ask OpenGL to give us the log associated with the shader
-		if (length > 0) 
-			printMessage(MessageType::ERROR, "shader: %s compile error: %s", file.c_str(), buffer);
-	}
-
-
-	/**
-	 Given a shader program, validateProgram will request from OpenGL, any information
-	 related to the validation or linking of the program with it's attached shaders. It will
-	 then output any issues that have occurred.
-	 */
-	static bool validateProgram(GLuint program)
-	{
-		const unsigned int BUFFER_SIZE = 512;
-		char buffer[BUFFER_SIZE];
-		memset(buffer, 0, BUFFER_SIZE);
-		GLsizei length = 0;
-
-		glGetProgramInfoLog(program, BUFFER_SIZE, &length, buffer); // Ask OpenGL to give us the log associated with the program
-		if (length > 0) // If we have any information to display
-		{
-			printMessage(MessageType::ERROR, "shader program: %d link error: %s", program, buffer);
-			return false;
-		}
-
-		glValidateProgram(program); // Get OpenGL to try validating the program
-		GLint status;
-		glGetProgramiv(program, GL_VALIDATE_STATUS, &status); // Find out if the shader program validated correctly
-		if (status == GL_FALSE) // If there was a problem validating
-		{
-			printMessage(MessageType::ERROR, "can't validate shader: %d", program);
-			return false;
-		}
-		return true;
-	}
-
-	/**
 	 Constructor for a Shader object which creates a GLSL shader based on a given
 	 vertex and fragment shader file.
 	 */
@@ -117,35 +68,45 @@ namespace opengl
 			return;
 		}
 
-		const char *vertexText = vsText.c_str();
+		const char *vertexText   = vsText.c_str();
 		const char *fragmentText = fsText.c_str();
 
 		mShaderVp = glCreateShader(GL_VERTEX_SHADER);		// Create a vertex shader
 		glShaderSource(mShaderVp, 1, &vertexText, 0);		// Set the source for the vertex shader to the loaded text
 		glCompileShader(mShaderVp);							// Compile the vertex shader
-		validateShader(mShaderVp, vsFile.c_str());			// Validate the vertex shader
+		if (!validateShader(mShaderVp))						// Validate the vertex shader
+		{
+			printMessage(MessageType::ERROR, "unable to validate vertex shader: %s", vertexText);
+			return;
+		}
 
 		mShaderFp = glCreateShader(GL_FRAGMENT_SHADER);		// Create a fragment shader
 		glShaderSource(mShaderFp, 1, &fragmentText, 0);		// Set the source for the fragment shader to the loaded text
 		glCompileShader(mShaderFp);							// Compile the fragment shader
-		validateShader(mShaderFp, fsFile.c_str());			// Validate the fragment shader
+		if (!validateShader(mShaderFp))
+		{
+			printMessage(MessageType::ERROR, "unable to validate fragment shader: %s", fragmentText);
+			return;
+		}													// Validate the fragment shader
 
 		mShaderId = glCreateProgram();						// Create a GLSL program
 		glAttachShader(mShaderId, mShaderVp);				// Attach a vertex shader to the program
 		glAttachShader(mShaderId, mShaderFp);				// Attach the fragment shader to the program
 
 		glLinkProgram(mShaderId);							// Link the vertex and fragment shaders in the program
-		if (!validateProgram(mShaderId))
+		if (!validateShaderProgram(mShaderId))
 		{
 			printMessage(MessageType::ERROR, "unable to validate shader program: %s, %s", vsFile.c_str(), fsFile.c_str());
 			return;
 		}
 
-		// Sample all program attributes
+		// Extract all program vertex attributes
 		printMessage(MessageType::INFO, "sampling shader program attributes: %s", vsFile.c_str());
-		sampleAttributes();
+		extractShaderAttributes(mShaderId, mShaderAttribtues);
+
+		// Extract all program uniform attributes
 		printMessage(MessageType::INFO, "sampling shader program uniforms: %s", vsFile.c_str());
-		sampleUniforms();
+		extractShaderUniforms(mShaderId, mShaderUniforms);
 	}
 
 
@@ -186,51 +147,6 @@ namespace opengl
 
 		// Re-link program
 		glLinkProgram(mShaderId);
-	}
-
-
-	// Gather all shader attributes
-	void Shader::sampleAttributes()
-	{
-		GLint attribute_count;			// total number of attributes;
-		GLint size;						// size of the variable
-		GLenum type;					// type of the variable (float, vec3 or mat4, etc)
-		const GLsizei bufSize = 256;	// maximum name length
-		GLchar name[bufSize];			// variable name in GLSL
-		GLsizei length;					// name length
-
-		// Get number of active attributes
-		glGetProgramiv(getId(), GL_ACTIVE_ATTRIBUTES, &attribute_count);
-		
-		// Sample info shader program info
-		for (auto i = 0; i < attribute_count; i++)
-		{
-			glGetActiveAttrib(getId(), static_cast<GLint>(i), bufSize, &length, &size, &type, name);
-			int location = glGetAttribLocation(getId(), name);
-			printMessage(MessageType::INFO, "Attribute: %d, type: %d, name: %s, location: %d", i, (unsigned int)type, name, location);
-		}
-	}
-
-
-	// Sampling uniforms
-	void Shader::sampleUniforms()
-	{
-		GLint uniform_count;			// total number of attributes;
-		GLint size;						// size of the variable
-		GLenum type;					// type of the variable (float, vec3 or mat4, etc)
-		const GLsizei bufSize = 256;	// maximum name length
-		GLchar name[bufSize];			// variable name in GLSL
-		GLsizei length;					// name length
-
-		glGetProgramiv(getId(), GL_ACTIVE_UNIFORMS, &uniform_count);
-
-		// Sample info shader program info
-		for (auto i = 0; i < uniform_count; i++)
-		{
-			glGetActiveUniform(getId(), static_cast<GLint>(i), bufSize, &length, &size, &type, name);
-			int location = glGetUniformLocation(getId(), name);
-			printMessage(MessageType::INFO, "Uniform: %d, type: %d, name: %s, location: %d", i, (unsigned int)type, name, location);
-		}
 	}
 
 

@@ -1,5 +1,8 @@
 #pragma once
 
+// Local Includes
+#include "nshaderutils.h"
+
 // External Includes
 #include <string>
 
@@ -62,18 +65,11 @@ namespace opengl
 		void bindVertexAttribute(unsigned int index, const std::string& name);
 
 	private:
-		unsigned int mShaderId = 0;		// The shader program identifier
-		unsigned int mShaderVp = 0;		// The vertex shader identifier
-		unsigned int mShaderFp = 0;		// The fragment shader identifier
+		unsigned int mShaderId = 0;				// The shader program identifier
+		unsigned int mShaderVp = 0;				// The vertex shader identifier
+		unsigned int mShaderFp = 0;				// The fragment shader identifier
 
-		/**
-		 * Collects all shader program attributes
-		 */
-		void sampleAttributes();
-
-		/**
-		 * Collects all shader program uniforms
-		 */
-		void sampleUniforms();
+		ShaderUniforms mShaderUniforms;			// Shader program uniform attributes
+		ShaderAttributes mShaderAttribtues;		// Shader program vertex attribute inputs
 	};
 }	// opengl
