@@ -68,9 +68,6 @@ opengl::VertexArrayObject	cubeObject;
 opengl::VertexArrayObject	triangleObject;
 
 // Shader uniform bind locations
-int	projectionMatrixLocation(-1);
-int	viewMatrixLocation(-1);
-int	modelMatrixLocation(-1);
 int	noiseLocation(-1);
 int textureLocation(-1);
 
@@ -80,6 +77,7 @@ nap::Service* rpcService = nullptr;
 nap::RenderWindowComponent* renderWindow = nullptr;
 nap::CameraComponent* cameraComponent = nullptr;
 nap::ModelMeshComponent* modelComponent = nullptr;
+nap::ShaderResource* shaderResource = nullptr;
 
 // vertex Shader indices
 nap::Entity* model = nullptr;
@@ -201,9 +199,9 @@ void onRender(const nap::SignalAttribute& signal)
 	nap::TransformComponent* model_xform = modelComponent->getParent()->getComponent<nap::TransformComponent>();
 
 	// Send values
-	glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &cameraComponent->getProjectionMatrix()[0][0]);	// Send our projection matrix to the shader
-	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &cam_xform->getGlobalTransform()[0][0]);				// Send our view matrix to the shader
-	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &model_xform->getGlobalTransform()[0][0]);				// Send our model matrix to the shader
+	shaderResource->getShader().setUniform(opengl::UniformType::Mat4, "projectionMatrix", &(cameraComponent->getProjectionMatrix()[0][0]), 1);
+	shaderResource->getShader().setUniform(opengl::UniformType::Mat4, "viewMatrix", &(cam_xform->getGlobalTransform()[0][0]), 1);
+	shaderResource->getShader().setUniform(opengl::UniformType::Mat4, "modelMatrix", &(model_xform->getGlobalTransform()[0][0]), 1);
 
 	// Set texture 1 for shader
 	glActiveTexture(GL_TEXTURE0);
@@ -250,6 +248,7 @@ bool init(nap::Core& core)
 
 	//////////////////////////////////////////////////////////////////////////
 
+	/*
 	std::string rpcServiceTypename = "nap::JsonRpcService";
 	RTTI::TypeInfo rpcServiceType = RTTI::TypeInfo::getByName(rpcServiceTypename);
 	if (!rpcServiceType.isValid()) 
@@ -261,6 +260,7 @@ bool init(nap::Core& core)
 	rpcService = core.getOrCreateService(rpcServiceType);
 	//rpcService->getAttribute<bool>("manual")->setValue(true);
 	rpcService->getAttribute<bool>("running")->setValue(true);
+	*/
 
 	//////////////////////////////////////////////////////////////////////////
 
@@ -298,6 +298,7 @@ bool init(nap::Core& core)
 	nap::ResourceManagerService* service = core.getOrCreateService<nap::ResourceManagerService>();
 	service->setAssetRoot(".");
 	nap::Resource* shader_resource = service->getResource(fragShaderName);
+	shaderResource = static_cast<nap::ShaderResource*>(shader_resource);
 
 	// Load model resource
 	nap::Resource* model_resource = service->getResource("data/pig_head_alpha_rotated.fbx");
@@ -343,16 +344,13 @@ bool init(nap::Core& core)
 
 	// Bind indices explicit to shader (TODO: RESOLVE DYNAMICALLY)
 	// This tells what vertex buffer index belongs to what vertex shader input binding name
-	opengl::Shader& shader = material->getResource()->getShader();
+	opengl::Shader& shader = shaderResource->getShader();
 	shader.bindVertexAttribute(vertex_index, "in_Position");
 	shader.bindVertexAttribute(color_index, "in_Color");
 	shader.bindVertexAttribute(uv_index, "in_Uvs");
 
 	// Get uniform bindings for vertex shader
 	material->bind();
-	projectionMatrixLocation = glGetUniformLocation(shader.getId(), "projectionMatrix");	// Get the location of our projection matrix in the shader
-	viewMatrixLocation = glGetUniformLocation(shader.getId(), "viewMatrix");			// Get the location of our view matrix in the shader
-	modelMatrixLocation = glGetUniformLocation(shader.getId(), "modelMatrix");		// Get the location of our model matrix in the shader
 	noiseLocation = glGetUniformLocation(shader.getId(), "noiseValue");
 	textureLocation = glGetUniformLocation(shader.getId(), "myTextureSampler");
 
