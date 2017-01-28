@@ -4,6 +4,7 @@
 #include <string>
 #include <GL/glew.h>
 #include <vector>
+#include <unordered_map>
 
 namespace opengl
 {
@@ -25,8 +26,8 @@ namespace opengl
 	// Typedefs
 	using ShaderUniform		= ShaderInput;
 	using ShaderAttribute	= ShaderInput;
-	using ShaderUniforms	= std::vector<ShaderUniform>;
-	using ShaderAttributes	= std::vector<ShaderAttribute>;
+	using ShaderUniforms	= std::unordered_map<std::string, ShaderUniform>;
+	using ShaderAttributes	= std::unordered_map<std::string, ShaderAttribute>;
 
 	/**
 	 * Given part of a shader (say vertex shader), validateShader will get information from OpenGl 
@@ -52,7 +53,7 @@ namespace opengl
 	 * @param program: The shader program to extract uniform inputs from
 	 * @param uniforms: The populated list of uniforms
 	 */
-	void extractShaderUniforms(GLuint program, std::vector<ShaderUniform>& outUniforms);
+	void extractShaderUniforms(GLuint program, ShaderUniforms& outUniforms);
 
 
 	/**
@@ -60,5 +61,20 @@ namespace opengl
 	 * @param program: The shader program to extract attribute inputs from
 	 * @param attributes: The populated list of shader attributes
 	 */
-	void extractShaderAttributes(GLuint program, std::vector<ShaderAttribute>& outAttributes);
+	void extractShaderAttributes(GLuint program, ShaderAttributes& outAttributes);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Hash
+//////////////////////////////////////////////////////////////////////////
+namespace std
+{
+	template<>
+	struct hash<opengl::ShaderInput> 
+	{
+		size_t operator()(const opengl::ShaderInput &k) const 
+		{
+			return hash<std::string>()(k.mName);
+		}
+	};
 }

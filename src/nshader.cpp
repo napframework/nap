@@ -52,10 +52,21 @@ namespace opengl
 	 */
 	void Shader::init(const std::string& vsFile, const std::string& fsFile) 
 	{
-		if (isAllocated())
+		// Set state
+		mState = State::NotLoaded;
+
+		// Clear attributes
+		mShaderAttributes.clear();
+		mShaderUniforms.clear();
+
+		// Create GPU side shader resources
+		if (!isAllocated())
 		{
-			printMessage(MessageType::WARNING, "shader already allocated: %s, %s", vsFile.c_str(), fsFile.c_str());
-			return;
+			mShaderVp = glCreateShader(GL_VERTEX_SHADER);		// Create vertex shader
+			mShaderFp = glCreateShader(GL_FRAGMENT_SHADER);		// Create fragment shader
+			mShaderId = glCreateProgram();						// Create shader program
+			glAttachShader(mShaderId, mShaderVp);				// Attach a vertex shader to the program
+			glAttachShader(mShaderId, mShaderFp);				// Attach the fragment shader to the program
 		}
 
 		std::string vsText = textFileRead(vsFile); // Read in the vertex shader
@@ -65,48 +76,52 @@ namespace opengl
 		if (vsText.empty() || fsText.empty())
 		{
 			printMessage(MessageType::ERROR, "either vertex shader or fragment shader file not found");
+			mState = State::FileError;
 			return;
 		}
 
 		const char *vertexText   = vsText.c_str();
 		const char *fragmentText = fsText.c_str();
 
-		mShaderVp = glCreateShader(GL_VERTEX_SHADER);		// Create a vertex shader
+		// Load vertex shader
 		glShaderSource(mShaderVp, 1, &vertexText, 0);		// Set the source for the vertex shader to the loaded text
 		glCompileShader(mShaderVp);							// Compile the vertex shader
 		if (!validateShader(mShaderVp))						// Validate the vertex shader
 		{
 			printMessage(MessageType::ERROR, "unable to validate vertex shader: %s", vertexText);
+			mState = State::VertexError;
 			return;
 		}
 
-		mShaderFp = glCreateShader(GL_FRAGMENT_SHADER);		// Create a fragment shader
+		// Load fragment shader
 		glShaderSource(mShaderFp, 1, &fragmentText, 0);		// Set the source for the fragment shader to the loaded text
 		glCompileShader(mShaderFp);							// Compile the fragment shader
 		if (!validateShader(mShaderFp))
 		{
 			printMessage(MessageType::ERROR, "unable to validate fragment shader: %s", fragmentText);
+			mState = State::FragmentError;
 			return;
 		}													// Validate the fragment shader
 
-		mShaderId = glCreateProgram();						// Create a GLSL program
-		glAttachShader(mShaderId, mShaderVp);				// Attach a vertex shader to the program
-		glAttachShader(mShaderId, mShaderFp);				// Attach the fragment shader to the program
-
+		// Link program
 		glLinkProgram(mShaderId);							// Link the vertex and fragment shaders in the program
 		if (!validateShaderProgram(mShaderId))
 		{
 			printMessage(MessageType::ERROR, "unable to validate shader program: %s, %s", vsFile.c_str(), fsFile.c_str());
+			mState = State::LinkError;
 			return;
 		}
 
 		// Extract all program vertex attributes
 		printMessage(MessageType::INFO, "sampling shader program attributes: %s", vsFile.c_str());
-		extractShaderAttributes(mShaderId, mShaderAttribtues);
+		extractShaderAttributes(mShaderId, mShaderAttributes);
 
 		// Extract all program uniform attributes
 		printMessage(MessageType::INFO, "sampling shader program uniforms: %s", vsFile.c_str());
 		extractShaderUniforms(mShaderId, mShaderUniforms);
+		
+		// Successfully loaded shader
+		mState = State::Linked;
 	}
 
 
@@ -139,6 +154,14 @@ namespace opengl
 		if (!isAllocated())
 		{
 			printMessage(MessageType::ERROR, "unable to bind vertex attribute to shader, shader not allocated");
+			return;
+		}
+
+		// Make sure the attribute is represented by this shader
+		auto it = mShaderAttributes.find(name);
+		if (it == mShaderAttributes.end())
+		{
+			printMessage(MessageType::WARNING, "unable to bind vertex attribute, attribute not in shader");
 			return;
 		}
 

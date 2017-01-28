@@ -59,7 +59,7 @@ namespace opengl
 
 
 	// Extracts all shader uniforms
-	void extractShaderUniforms(GLuint program, std::vector<ShaderUniform>& outUniforms)
+	void extractShaderUniforms(GLuint program, ShaderUniforms& outUniforms)
 	{
 		outUniforms.clear();
 
@@ -85,13 +85,13 @@ namespace opengl
 
 			// Add
 			printMessage(MessageType::INFO, "Uniform: %d, type: %d, name: %s, location: %d", i, (unsigned int)type, name, location);
-			outUniforms.emplace_back(ShaderUniform(program, std::string(name), type, location));
+			outUniforms.emplace(std::make_pair(name, ShaderUniform(program, std::string(name), type, location)));
 		}
 	}
 
 
 	// Extract all shader program attributes
-	void extractShaderAttributes(GLuint program, std::vector<ShaderAttribute>& outAttributes)
+	void extractShaderAttributes(GLuint program, ShaderAttributes& outAttributes)
 	{
 		outAttributes.clear();
 
@@ -118,7 +118,7 @@ namespace opengl
 
 			// Add
 			printMessage(MessageType::INFO, "Attribute: %d, type: %d, name: %s, location: %d", i, (unsigned int)type, name, location);
-			outAttributes.emplace_back(ShaderAttribute(program, std::string(name), type, location));
+			outAttributes.emplace(name, ShaderAttribute(program, std::string(name), type, location));
 		}
 	}
 

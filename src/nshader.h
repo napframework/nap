@@ -17,6 +17,20 @@ namespace opengl
 	class Shader
 	{
 	public:
+		/**
+		 * Shader state, everything above 0 is an error
+		 * By default the shader is not loaded
+		 */
+		enum class State : int8_t
+		{
+			NotLoaded		= -1,
+			Linked			= 0,
+			FileError		= 1,
+			VertexError		= 2,
+			FragmentError	= 3,
+			LinkError		= 4
+		};
+
 		// Default constructor / destructor
 		Shader() = default;
 
@@ -53,7 +67,14 @@ namespace opengl
 		/**
 		 * @return if the shader program has been allocated
 		 */
-		bool isAllocated() const		{ return mShaderId != 0; }
+		bool isAllocated() const							{ return mShaderId != 0; }
+
+		/**
+		 * @return if the shader program is successfully linked
+		 * When the program is linked the shaders got loaded successfully
+		 * and linked correctly in to the shader program this object manages
+		 */
+		bool isLinked() const								{ return mState == State::Linked; }
 
 		/**
 		 * Associate a generic vertex attribute index with a named attribute variable
@@ -64,12 +85,23 @@ namespace opengl
 		 */
 		void bindVertexAttribute(unsigned int index, const std::string& name);
 
+		/**
+		 * @return all vertex shader attributes
+		 */
+		const ShaderAttributes& getAttributes() const		{ return mShaderAttributes; }
+
+		/**
+		 * @return all uniform shader attributes
+		 */
+		const ShaderUniforms& getUniforms() const			{ return mShaderUniforms; }
+
 	private:
 		unsigned int mShaderId = 0;				// The shader program identifier
 		unsigned int mShaderVp = 0;				// The vertex shader identifier
 		unsigned int mShaderFp = 0;				// The fragment shader identifier
 
 		ShaderUniforms mShaderUniforms;			// Shader program uniform attributes
-		ShaderAttributes mShaderAttribtues;		// Shader program vertex attribute inputs
+		ShaderAttributes mShaderAttributes;		// Shader program vertex attribute inputs
+		State mState = State::NotLoaded;		// Holds current state of shader program
 	};
 }	// opengl
