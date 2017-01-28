@@ -4,24 +4,41 @@ from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import QApplication
 
 from asyncjsonclient import AsyncJSONClient
-from nap import _J_NAME, _J_BASETYPES, _J_INSTANTIABLE, Object, _stripCPPNamespace, _allSubClasses, _J_VALUE_TYPE, \
-    Attribute, _J_TYPE, Operator, Component, OutputPlugBase, InputPlugBase
+from nap import *
 from utils import qtutils
 
 
 class Core(QObject):
     """ Core represents a NAP Application structure.
+    Use an instance of this class to 'speak' to a NAP application over RPC
+    Connects to a NAP Core RPC Server over the network or locally in order to inspect and modify its data.
     """
 
-    rootChanged = pyqtSignal()
-    moduleInfoChanged = pyqtSignal(dict)
-    typeHierarchyChanged = pyqtSignal()
-    objectRemoved = pyqtSignal(object)
-    logMessageReceived = pyqtSignal(int, str, str)
+    # Emits when the NAP rpc server has sent any message
     messageReceived = pyqtSignal()
+
+    # Emit when the root object has been replaced on server side
+    rootChanged = pyqtSignal()
+
+    # Emits when module data has been changed, usually when a new connections has been made
+    moduleInfoChanged = pyqtSignal(dict)
+
+    # Emits when the NAP type hierarchy has changed on the server side
+    typeHierarchyChanged = pyqtSignal()
+
+    # Emits whan a NAP object has been removed
+    objectRemoved = pyqtSignal(object)
+
+    # Emits when a NAP log message has been committed
+    logMessageReceived = pyqtSignal(int, str, str)
+
+    # Emits when the client has sent a message and is waiting for a result
     waitingForMessage = pyqtSignal()
 
     def __init__(self, host: str = 'tcp://localhost:8888'):
+        """ Construct a NAP Core "mirror" so it can be inspected and modified
+        @param host: The host URL on which the NAP application is listening
+        """
         super(Core, self).__init__()
         self.__rpc = AsyncJSONClient(host)
         self.__rpc.messageReceived.connect(self.handleMessageReceived)
@@ -35,20 +52,37 @@ class Core(QObject):
         self.__typeColors = {}
 
     def __waitForMessage(self):
+        """ Tell any registered listeners that the application is waiting server data it needs in order to continue """
         self.waitingForMessage.emit()
 
-    def resolvePath(self, path):
+    def resolvePath(self, path: str):
+        """ Find a nap.Object using its object path
+        @param path: The object path pointing to the nap.Object (eg. '/myEntity/myComponent/myAttribute')
+        @return: A nap.Object if found, None otherwise
+        """
         return self.root().resolvePath(path)
 
     def setObject(self, ptr, obj):
+        """ Store a nap.Object so it can be found by its pointer address later.
+        @param ptr:
+        @param obj: A nap.Object to keep track of.
+        @return:
+        """
         self.__objects[ptr] = obj
 
     def findObject(self, ptr: int):
+        """ Find a NAP object using a pointer address
+        @return A nap.Object python object representing the NAP Object or None if the object doesn't exist
+        """
         if not isinstance(ptr, int):
             ptr = int(ptr)
         return self.__objects[ptr]
 
     def types(self):
+        """ Retrieve all the NAP types available
+
+        @return: List of full C++ type names (eg. ['nap::Object', 'nap::Attribute<float>', ...])
+        """
         return self.__types
 
     def typeIndex(self, typename):
@@ -329,5 +363,3 @@ class Core(QObject):
     def addChild(self, entity, componentType):
         self.__rpc.addChild(entity.ptr(), str(componentType))
         self.__waitForMessage()
-
-

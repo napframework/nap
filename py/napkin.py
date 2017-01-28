@@ -1,3 +1,7 @@
+"""
+MAIN
+"""
+
 import sys
 
 from appcontext import AppContext
@@ -7,13 +11,19 @@ from outline.model import *
 from outline.outlinewidget import OutlineWidget
 from patch.patcheditor import PatchEditor
 
-WIN_GEO = 'WindowGeometry'
-WIN_STATE = 'WindowState'
-EDITED_OBJECTS = 'EditorList'
-LAST_HOST = 'tcp://localhost:8888'
+# Some constants
+_WIN_GEO = 'WindowGeometry'
+_WIN_STATE = 'WindowState'
+_EDITED_OBJECTS = 'EditorList'
+_LAST_HOST = 'tcp://localhost:8888'
 
 
 class MainWindow(QMainWindow):
+    """ The main application window.
+    This class should be kept as lean as possible, it should not contain any application logic.
+    Upon creation, it will receive an instance of AppContext which will manage the application's logic.
+    """
+
     def __init__(self, ctx):
         """
         @type ctx: AppContext
@@ -47,7 +57,7 @@ class MainWindow(QMainWindow):
 
         # connect to host saved in settings
         s = QSettings()
-        host = str(s.value(LAST_HOST, "tcp://localhost:8888"))
+        host = str(s.value(_LAST_HOST, "tcp://localhost:8888"))
         self.ctx.connect(host)
 
     def __onSuspended(self):
@@ -104,7 +114,7 @@ class MainWindow(QMainWindow):
 
     def __restoreEditors(self):
         s = QSettings()
-        editedObjects = s.value(EDITED_OBJECTS)
+        editedObjects = s.value(_EDITED_OBJECTS)
         if editedObjects:
             for objPath in editedObjects:
                 obj = self.ctx.core().resolvePath(str(objPath))
@@ -152,21 +162,21 @@ class MainWindow(QMainWindow):
 
     def __restore(self):
         s = QSettings()
-        geo = s.value(WIN_GEO)
+        geo = s.value(_WIN_GEO)
         if geo:
             self.restoreGeometry(geo)
-        state = s.value(WIN_STATE)
+        state = s.value(_WIN_STATE)
         if state:
             self.restoreState(state)
 
     def __saveState(self):
         s = QSettings()
-        s.setValue(WIN_GEO, self.saveGeometry())
-        s.setValue(WIN_STATE, self.saveState())
+        s.setValue(_WIN_GEO, self.saveGeometry())
+        s.setValue(_WIN_STATE, self.saveState())
 
         editedObjects = self.editedObjects()
         print('Storing edited: %s' % editedObjects)
-        s.setValue(EDITED_OBJECTS, editedObjects)
+        s.setValue(_EDITED_OBJECTS, editedObjects)
 
     def onConnected(self):
         self.__root = Object.root()

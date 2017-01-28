@@ -18,10 +18,12 @@ _J_INSTANTIABLE = 'instantiable'
 
 
 class TRIGGER(object):
+    """ Used to identify the type of a SignalAttribute """
     def __init__(self):
         pass
 
 def _allSubClasses(cls):
+    """ Retrieve all subclasses of the specified type. Results may vary depending on what is imported. """
     all_subclasses = []
 
     for subclass in cls.__subclasses__():
@@ -32,6 +34,7 @@ def _allSubClasses(cls):
 
 
 def _stripCPPNamespace(name):
+    """ Remove the C++ namespace from the specified (class)name """
     return name[name.rfind(':') + 1:]
 
 
@@ -40,6 +43,11 @@ def _stripCPPNamespace(name):
 ################################################################################
 
 class Object(QObject):
+    """ Root type wrapper for all nap::Object instances.
+    Each type and subtype wrapper should provide the static NAP_TYPE indicating the outermost (base) type it wraps.
+    Wrappers should NOT be created directly, use the factory in Core to retrieve object instances.
+    """
+
     NAP_TYPE = 'nap::Object'
 
     class Flags(object):

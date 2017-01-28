@@ -1,5 +1,5 @@
 """
-This module provides unified access to this projects icons.
+This module provides unified access to this project's icons.
 """
 from collections import OrderedDict
 
@@ -19,15 +19,18 @@ _ICON_NAMES = OrderedDict([
 
 
 def icon(name):
-    """ Retrieve an icon by name as such: iconDir/NAME.png,
-    where NAME is the provided string. """
+    """ Retrieve an icon filename by name as such: iconDir/NAME.png,
+    where NAME is the provided string.
+
+    icon('computer/disk') # returns 'path/to/computer/disk.png'
+    """
     if not name in _ICONS:
         _ICONS[name] = QIcon('icons/%s.png' % name)
     return _ICONS[name]
 
 
 def iconFor(obj):
-    """ Based on the type of @obj, return an icon.
+    """ Based on the type of @obj, return an icon filename.
     """
     if isinstance(obj, type):
         objType = obj
