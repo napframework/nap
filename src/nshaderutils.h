@@ -5,9 +5,40 @@
 #include <GL/glew.h>
 #include <vector>
 #include <unordered_map>
+#include <functional>
 
 namespace opengl
 {
+	/**
+	 * All available OpenGL shader uniform types
+	 * All uniform types need to have a set factory
+	 * function associated with it
+	 */
+	enum class UniformType : uint8_t
+	{
+		Float   = 0,
+		Int     = 1,
+		UInt    = 2,
+		Vec2F   = 3,
+		Vec3F   = 4,
+		Vec4F   = 5,
+		Mat2    = 6,
+		Mat3    = 7,
+		Mat4    = 8,
+	};
+
+	/**
+	 * Uniform set function, where void* is the data, GLint the location and
+	 * GLSizei the number of elements
+	 */
+	using UniformSetterFunction = std::function<void(const void*, const GLint&, const GLsizei&)>;
+
+	/**
+	 * @return the uniform set function for the associated type
+	 * returns nullptr if there's no setter found
+	 */
+	UniformSetterFunction* getUniformSetter(UniformType type);
+
 	/**
 	* Represents an opengl shader attribute
 	*/

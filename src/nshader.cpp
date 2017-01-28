@@ -173,6 +173,40 @@ namespace opengl
 	}
 
 
+	// Sets the uniform value in shader based on type
+	void Shader::setUniform(UniformType type, const std::string& name, const void* data, int count)
+	{
+		// Make sure shader is linked
+		if (!isLinked())
+		{
+			printMessage(MessageType::ERROR, "unable to set shader uniform: %s, shader not linked", name.c_str());
+			return;
+		}
+
+		// Find uniform with name
+		auto it = mShaderUniforms.find(name);
+		if (it == mShaderUniforms.end())
+		{
+			printMessage(MessageType::WARNING, "shader has no active uniform with name: %s", name.c_str());
+			return;
+		}
+
+		// Store
+		ShaderUniform& uniform_binding = it->second;
+
+		// Get set function
+		UniformSetterFunction* setter = getUniformSetter(type);
+		if (setter == nullptr)
+		{
+			printMessage(MessageType::WARNING, "unable to set uniform: %s, unsupported type: %d", name.c_str(), type);
+			return;
+		}
+
+		// Call function
+		(*setter)(data, uniform_binding.mLocation, count);
+	}
+
+
 	// bind attaches the shader program for successive OpenGL calls
 	bool Shader::bind()
 	{

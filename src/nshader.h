@@ -86,6 +86,16 @@ namespace opengl
 		void bindVertexAttribute(unsigned int index, const std::string& name);
 
 		/**
+		 * Sets a uniform variable based on the given type, note that
+		 * you need to bind the shader before calling this function
+		 * @param type:  the uniform type
+		 * @param name:  name of the uniform variable
+		 * @param data:  pointer to data in memory
+		 * @param count: number of elements to set
+		 */
+		void setUniform(UniformType type, const std::string& name, const void* data, int count);
+
+		/**
 		 * @return all vertex shader attributes
 		 */
 		const ShaderAttributes& getAttributes() const		{ return mShaderAttributes; }

@@ -2,6 +2,9 @@
 #include "nshaderutils.h"
 #include "nglutils.h"
 
+// External Includes
+#include <unordered_map>
+
 namespace opengl
 {
 	// Constructor
@@ -10,6 +13,55 @@ namespace opengl
 		mType(type),
 		mLocation(location),
 		mShaderProgram(shaderProgram)			{}
+
+
+	// Uniform set functions
+	void setFloatData(const void* data, const GLint& location, const GLsizei& count)		{ }
+	void setIntData(const void* data, const GLint& location, const GLsizei& count)			{ }
+	void setUIntData(const void* data, const GLint& location, const GLsizei& count)			{ }
+	void setVec2FData(const void* data, const GLint& location, const GLsizei& count)		{ }
+	void setVec3FData(const void* data, const GLint& location, const GLsizei& count)		{ }
+	void setVec4FData(const void* data, const GLint& location, const GLsizei& count)		{ }
+	void setMat2Data(const void* data, const GLint& location, const GLsizei& count)			{ }
+	void setMat3Data(const void* data, const GLint& location, const GLsizei& count)			{ }
+
+	// Setter for 4D matrix data
+	void setMat4Data(const void* data, const GLint& location, const GLsizei& count)			
+	{ 
+		glUniformMatrix4fv(location, count, GL_FALSE, static_cast<const GLfloat*>(data));
+	}
+
+
+	// Returns the uniform set function for the opengl 
+	// TODO: Protect population with Mutex!
+	UniformSetterFunction* getUniformSetter(UniformType type)
+	{
+		// Holds all uniform setters
+		static std::unordered_map<UniformType, UniformSetterFunction> uniformSetters;
+		if (uniformSetters.size() == 0)
+		{
+			uniformSetters[UniformType::Float]	= setFloatData;
+			uniformSetters[UniformType::Int]	= setIntData;
+			uniformSetters[UniformType::UInt]	= setUIntData;
+			uniformSetters[UniformType::Vec2F]	= setVec2FData;
+			uniformSetters[UniformType::Vec3F]	= setVec3FData;
+			uniformSetters[UniformType::Vec4F]	= setVec4FData;
+			uniformSetters[UniformType::Mat2]	= setMat2Data;
+			uniformSetters[UniformType::Mat3]	= setMat3Data;
+			uniformSetters[UniformType::Mat4]	= setMat4Data;
+		}
+
+		// Find setter for type
+		auto it = uniformSetters.find(type);
+		if (it == uniformSetters.end())
+		{
+			printMessage(MessageType::WARNING, "unable to find uniform set function for uniform type: %d", type);
+			return nullptr;
+		}
+
+		// Return set function
+		return &(it->second);
+	}
 
 
 	// Validates part of the shader
