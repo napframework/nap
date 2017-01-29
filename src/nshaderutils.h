@@ -16,15 +16,16 @@ namespace opengl
 	 */
 	enum class UniformType : uint8_t
 	{
-		Float   = 0,
-		Int     = 1,
-		UInt    = 2,
-		Vec2F   = 3,
-		Vec3F   = 4,
-		Vec4F   = 5,
-		Mat2    = 6,
-		Mat3    = 7,
-		Mat4    = 8,
+		Unknown = 0,
+		Float   = 1,
+		Int     = 2,
+		UInt    = 3,
+		Vec2	= 4,
+		Vec3	= 5,
+		Vec4	= 6,
+		Mat2    = 7,
+		Mat3    = 8,
+		Mat4    = 9,
 	};
 
 	/**

@@ -161,7 +161,7 @@ namespace opengl
 		auto it = mShaderAttributes.find(name);
 		if (it == mShaderAttributes.end())
 		{
-			printMessage(MessageType::WARNING, "unable to bind vertex attribute, attribute not in shader");
+			printMessage(MessageType::WARNING, "unable to bind vertex attribute, attribute: %s not in shader", name.c_str());
 			return;
 		}
 

@@ -16,16 +16,54 @@ namespace opengl
 
 
 	// Uniform set functions
-	void setFloatData(const void* data, const GLint& location, const GLsizei& count)		{ }
-	void setIntData(const void* data, const GLint& location, const GLsizei& count)			{ }
-	void setUIntData(const void* data, const GLint& location, const GLsizei& count)			{ }
-	void setVec2FData(const void* data, const GLint& location, const GLsizei& count)		{ }
-	void setVec3FData(const void* data, const GLint& location, const GLsizei& count)		{ }
-	void setVec4FData(const void* data, const GLint& location, const GLsizei& count)		{ }
-	void setMat2Data(const void* data, const GLint& location, const GLsizei& count)			{ }
-	void setMat3Data(const void* data, const GLint& location, const GLsizei& count)			{ }
+	void setFloatData(const void* data, const GLint& location, const GLsizei& count)		
+	{
+		glUniform1fv(location, count, static_cast<const float*>(data));
+	}
 
-	// Setter for 4D matrix data
+	// Set int value
+	void setIntData(const void* data, const GLint& location, const GLsizei& count)			
+	{
+		glUniform1iv(location, count, static_cast<const GLint*>(data));
+	}
+
+	// Set unsigned int value
+	void setUIntData(const void* data, const GLint& location, const GLsizei& count)			
+	{
+		glUniform1uiv(location, count, static_cast<const GLuint*>(data));
+	}
+
+	// Set vector 2 data, 2 floats
+	void setVec2FData(const void* data, const GLint& location, const GLsizei& count)		
+	{
+		glUniform2fv(location, count, static_cast<const float*>(data));
+	}
+
+	// Set vector 3 data, 3 floats
+	void setVec3FData(const void* data, const GLint& location, const GLsizei& count)		
+	{
+		glUniform3fv(location, count, static_cast<const float*>(data));
+	}
+
+	// Set vector 4 data, 4 floats
+	void setVec4FData(const void* data, const GLint& location, const GLsizei& count)		
+	{
+		glUniform4fv(location, count, static_cast<const float*>(data));
+	}
+
+	// Set matrix 2 data, 2x2 floats
+	void setMat2Data(const void* data, const GLint& location, const GLsizei& count)			
+	{
+		glUniformMatrix2fv(location, count, false, static_cast<const float*>(data));
+	}
+
+	// Set matrix 3 data, 3x3 floats
+	void setMat3Data(const void* data, const GLint& location, const GLsizei& count)			
+	{
+		glUniform3fv(location, count, static_cast<const float*>(data));
+	}
+
+	// Setter for 4D matrix data, 4x4 floats
 	void setMat4Data(const void* data, const GLint& location, const GLsizei& count)			
 	{ 
 		glUniformMatrix4fv(location, count, GL_FALSE, static_cast<const GLfloat*>(data));
@@ -43,9 +81,9 @@ namespace opengl
 			uniformSetters[UniformType::Float]	= setFloatData;
 			uniformSetters[UniformType::Int]	= setIntData;
 			uniformSetters[UniformType::UInt]	= setUIntData;
-			uniformSetters[UniformType::Vec2F]	= setVec2FData;
-			uniformSetters[UniformType::Vec3F]	= setVec3FData;
-			uniformSetters[UniformType::Vec4F]	= setVec4FData;
+			uniformSetters[UniformType::Vec2]	= setVec2FData;
+			uniformSetters[UniformType::Vec3]	= setVec3FData;
+			uniformSetters[UniformType::Vec4]	= setVec4FData;
 			uniformSetters[UniformType::Mat2]	= setMat2Data;
 			uniformSetters[UniformType::Mat3]	= setMat3Data;
 			uniformSetters[UniformType::Mat4]	= setMat4Data;
