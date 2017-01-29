@@ -174,7 +174,7 @@ namespace opengl
 
 
 	// Sets the uniform value in shader based on type
-	void Shader::setUniform(UniformType type, const std::string& name, const void* data, int count)
+	void Shader::setUniform(GLSLType type, const std::string& name, const void* data, int count)
 	{
 		// Make sure shader is linked
 		if (!isLinked())
@@ -183,27 +183,54 @@ namespace opengl
 			return;
 		}
 
+		// Get uniform
+		const UniformVariable* uniform_binding = getUniform(name);
+		if (uniform_binding == nullptr)
+			return;
+
+		// Make sure uniform types match
+		if (uniform_binding->mGLSLType != type)
+		{
+			printMessage(MessageType::WARNING, "shader uniform: %s types don't match", name.c_str());
+			return;
+		}
+
+		uniform_binding->set(data, count);
+	}
+
+
+	// Set uniform using auto type resolving
+	void Shader::setUniform(const std::string& name, const void* data, int count)
+	{
+		// Make sure shader is linked
+		if (!isLinked())
+		{
+			printMessage(MessageType::ERROR, "unable to set shader uniform: %s, shader not linked", name.c_str());
+			return;
+		}
+
+		// Get uniform
+		const UniformVariable* uniform_binding = getUniform(name);
+		if (uniform_binding == nullptr)
+			return;
+
+		uniform_binding->set(data, count);
+	}
+
+
+	// Returns a uniform shader input with name
+	const UniformVariable* Shader::getUniform(const std::string& name) const
+	{
 		// Find uniform with name
 		auto it = mShaderUniforms.find(name);
 		if (it == mShaderUniforms.end())
 		{
 			printMessage(MessageType::WARNING, "shader has no active uniform with name: %s", name.c_str());
-			return;
+			return nullptr;
 		}
 
 		// Store
-		ShaderUniform& uniform_binding = it->second;
-
-		// Get set function
-		UniformSetterFunction* setter = getUniformSetter(type);
-		if (setter == nullptr)
-		{
-			printMessage(MessageType::WARNING, "unable to set uniform: %s, unsupported type: %d", name.c_str(), type);
-			return;
-		}
-
-		// Call function
-		(*setter)(data, uniform_binding.mLocation, count);
+		return it->second.get();
 	}
 
 

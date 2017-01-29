@@ -7,13 +7,21 @@
 
 namespace opengl
 {
-	// Constructor
-	ShaderInput::ShaderInput(GLuint shaderProgram, std::string& name, GLenum type, GLint location) :
-		mName(name),
-		mType(type),
-		mLocation(location),
-		mShaderProgram(shaderProgram)			{}
-
+	// Holds all the opengl uniform to GL renderer uniform types
+	using GLUniformMap = std::unordered_map<GLenum, GLSLType>;
+	const static GLUniformMap glToUniformMap = 
+	{
+		{ GL_FLOAT,			GLSLType::Float	},
+		{ GL_INT,			GLSLType::Int	},
+		{ GL_UNSIGNED_INT,	GLSLType::UInt	},
+		{ GL_FLOAT_VEC2,	GLSLType::Vec2	},
+		{ GL_FLOAT_VEC3,	GLSLType::Vec3	},
+		{ GL_FLOAT_VEC4,	GLSLType::Vec4	},
+		{ GL_FLOAT_MAT2,	GLSLType::Mat2	},
+		{ GL_FLOAT_MAT3,	GLSLType::Mat3	},
+		{ GL_FLOAT_MAT4,	GLSLType::Mat4	},
+		{ GL_SAMPLER_2D,	GLSLType::Tex2D	}
+	};
 
 	// Uniform set functions
 	void setFloatData(const void* data, const GLint& location, const GLsizei& count)		
@@ -69,24 +77,30 @@ namespace opengl
 		glUniformMatrix4fv(location, count, GL_FALSE, static_cast<const GLfloat*>(data));
 	}
 
+	// Setter for 2D texture data, count isn't used here
+	void setTex2dData(const void* data, const GLint& location, const GLsizei& count)
+	{
+		glUniform1i(location, *(static_cast<const GLint*>(data)));
+	}
 
 	// Returns the uniform set function for the opengl 
 	// TODO: Protect population with Mutex!
-	UniformSetterFunction* getUniformSetter(UniformType type)
+	UniformSetterFunction* getUniformSetter(GLSLType type)
 	{
 		// Holds all uniform setters
-		static std::unordered_map<UniformType, UniformSetterFunction> uniformSetters;
+		static std::unordered_map<GLSLType, UniformSetterFunction> uniformSetters;
 		if (uniformSetters.size() == 0)
 		{
-			uniformSetters[UniformType::Float]	= setFloatData;
-			uniformSetters[UniformType::Int]	= setIntData;
-			uniformSetters[UniformType::UInt]	= setUIntData;
-			uniformSetters[UniformType::Vec2]	= setVec2FData;
-			uniformSetters[UniformType::Vec3]	= setVec3FData;
-			uniformSetters[UniformType::Vec4]	= setVec4FData;
-			uniformSetters[UniformType::Mat2]	= setMat2Data;
-			uniformSetters[UniformType::Mat3]	= setMat3Data;
-			uniformSetters[UniformType::Mat4]	= setMat4Data;
+			uniformSetters[GLSLType::Float]	= setFloatData;
+			uniformSetters[GLSLType::Int]	= setIntData;
+			uniformSetters[GLSLType::UInt]	= setUIntData;
+			uniformSetters[GLSLType::Vec2]	= setVec2FData;
+			uniformSetters[GLSLType::Vec3]	= setVec3FData;
+			uniformSetters[GLSLType::Vec4]	= setVec4FData;
+			uniformSetters[GLSLType::Mat2]	= setMat2Data;
+			uniformSetters[GLSLType::Mat3]	= setMat3Data;
+			uniformSetters[GLSLType::Mat4]	= setMat4Data;
+			uniformSetters[GLSLType::Tex2D]  = setTex2dData;
 		}
 
 		// Find setter for type
@@ -99,6 +113,30 @@ namespace opengl
 
 		// Return set function
 		return &(it->second);
+	}
+
+
+	// Returns supported uniform type for associated gl type
+	opengl::GLSLType getGLSLType(GLenum glType)
+	{
+		auto it = glToUniformMap.find(glType);
+		if (it == glToUniformMap.end())
+		{
+			printMessage(MessageType::ERROR, "unable to find supported uniform for gl type: %d", glType);
+			return GLSLType::Unknown;
+		}
+		return it->second;
+	}
+
+
+	// Constructor
+	ShaderInput::ShaderInput(GLuint shaderProgram, std::string& name, GLenum type, GLint location) :
+		mName(name),
+		mType(type),
+		mLocation(location),
+		mShaderProgram(shaderProgram) 
+	{
+		mGLSLType = getGLSLType(mType);
 	}
 
 
@@ -149,7 +187,7 @@ namespace opengl
 
 
 	// Extracts all shader uniforms
-	void extractShaderUniforms(GLuint program, ShaderUniforms& outUniforms)
+	void extractShaderUniforms(GLuint program, UniformVariables& outUniforms)
 	{
 		outUniforms.clear();
 
@@ -173,15 +211,21 @@ namespace opengl
 				continue;
 			}
 
+			// Check if the uniform is supported, ie: has a setter associated with it
+			if (getGLSLType(type) == GLSLType::Unknown)
+			{
+				printMessage(MessageType::WARNING, "unsupported uniform of type: %d", type);
+			}
+
 			// Add
 			printMessage(MessageType::INFO, "Uniform: %d, type: %d, name: %s, location: %d", i, (unsigned int)type, name, location);
-			outUniforms.emplace(std::make_pair(name, ShaderUniform(program, std::string(name), type, location)));
+			outUniforms.emplace(std::make_pair(name, std::make_unique<UniformVariable>(program, std::string(name), type, location)));
 		}
 	}
 
 
 	// Extract all shader program attributes
-	void extractShaderAttributes(GLuint program, ShaderAttributes& outAttributes)
+	void extractShaderAttributes(GLuint program, VertexAttributes& outAttributes)
 	{
 		outAttributes.clear();
 
@@ -208,8 +252,41 @@ namespace opengl
 
 			// Add
 			printMessage(MessageType::INFO, "Attribute: %d, type: %d, name: %s, location: %d", i, (unsigned int)type, name, location);
-			outAttributes.emplace(name, ShaderAttribute(program, std::string(name), type, location));
+			outAttributes.emplace(name, std::make_unique<VertexAttribute>(program, std::string(name), type, location));
 		}
 	}
+
+
+	// Uniform variable constructor
+	UniformVariable::UniformVariable(GLuint shaderProgram, std::string& name, GLenum type, GLint location) :
+		ShaderInput(shaderProgram, name, type, location)	{ }
+
+
+	// Set uniform
+	void UniformVariable::set(const void* data, int count) const
+	{
+		// Get type
+		if (mGLSLType == GLSLType::Unknown)
+		{
+			printMessage(MessageType::WARNING, "can't set shader uniform: %s, unsupported type: %d", mName.c_str(), mType);
+			return;
+		}
+
+		// Get set function
+		UniformSetterFunction* setter = getUniformSetter(mGLSLType);
+		if (setter == nullptr)
+		{
+			printMessage(MessageType::WARNING, "unable to set uniform: %s, no setter found for type: %d", mName.c_str(), mGLSLType);
+			return;
+		}
+
+		// Call function
+		(*setter)(data, mLocation, count);
+	}
+
+	
+	// Vertex attribute constructor
+	VertexAttribute::VertexAttribute(GLuint shaderProgram, std::string& name, GLenum type, GLint location) :
+		ShaderInput(shaderProgram, name, type, location) { }
 
 }

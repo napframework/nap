@@ -93,25 +93,40 @@ namespace opengl
 		 * @param data:  pointer to data in memory
 		 * @param count: number of elements to set
 		 */
-		void setUniform(UniformType type, const std::string& name, const void* data, int count);
+		void setUniform(GLSLType type, const std::string& name, const void* data, int count);
+
+		/**
+		 * Sets a uniform variable based on it's name, note that you need
+		 * to bind the shader before calling this function. The type
+		 * is automatically retrieved from the associated uniform
+		 * 
+		 */
+		void setUniform(const std::string& name, const void* data, int count);
+
+		/**
+		 * @return shader uniform input attribute with associated name, 
+		 * nullptr if the uniform is not found
+		 * @param name: Name of the uniform attribute to get
+		 */
+		const UniformVariable* getUniform(const std::string& name) const;
 
 		/**
 		 * @return all vertex shader attributes
 		 */
-		const ShaderAttributes& getAttributes() const		{ return mShaderAttributes; }
+		const VertexAttributes& getAttributes() const		{ return mShaderAttributes; }
 
 		/**
 		 * @return all uniform shader attributes
 		 */
-		const ShaderUniforms& getUniforms() const			{ return mShaderUniforms; }
+		const UniformVariables& getUniforms() const			{ return mShaderUniforms; }
 
 	private:
 		unsigned int mShaderId = 0;				// The shader program identifier
 		unsigned int mShaderVp = 0;				// The vertex shader identifier
 		unsigned int mShaderFp = 0;				// The fragment shader identifier
 
-		ShaderUniforms mShaderUniforms;			// Shader program uniform attributes
-		ShaderAttributes mShaderAttributes;		// Shader program vertex attribute inputs
+		UniformVariables mShaderUniforms;		// Shader program uniform attributes
+		VertexAttributes mShaderAttributes;		// Shader program vertex attribute inputs
 		State mState = State::NotLoaded;		// Holds current state of shader program
 	};
 }	// opengl
