@@ -67,10 +67,6 @@ opengl::VertexArrayObject	cubeObject;
 // Vertex buffer that holds a triangle
 opengl::VertexArrayObject	triangleObject;
 
-// Shader uniform bind locations
-int	noiseLocation(-1);
-int textureLocation(-1);
-
 // Nap Objects
 nap::RenderService* renderService = nullptr;
 nap::Service* rpcService = nullptr;
@@ -199,23 +195,22 @@ void onRender(const nap::SignalAttribute& signal)
 	nap::TransformComponent* model_xform = modelComponent->getParent()->getComponent<nap::TransformComponent>();
 
 	// Send values
-	shaderResource->getShader().setUniform(opengl::UniformType::Mat4, "projectionMatrix", &(cameraComponent->getProjectionMatrix()[0][0]), 1);
-	shaderResource->getShader().setUniform(opengl::UniformType::Mat4, "viewMatrix", &(cam_xform->getGlobalTransform()[0][0]), 1);
-	shaderResource->getShader().setUniform(opengl::UniformType::Mat4, "modelMatrix", &(model_xform->getGlobalTransform()[0][0]), 1);
-	shaderResource->getShader().setUniform(opengl::UniformType::Vec4, "mColor", &glm::vec4(1.0f, 0.0f, 0.0f, 1.0f)[0], 1);
+	shaderResource->getShader().setUniform("projectionMatrix", &(cameraComponent->getProjectionMatrix()[0][0]), 1);
+	shaderResource->getShader().setUniform("viewMatrix", &(cam_xform->getGlobalTransform()[0][0]), 1);
+	shaderResource->getShader().setUniform("modelMatrix", &(model_xform->getGlobalTransform()[0][0]), 1);
+	shaderResource->getShader().setUniform("mColor", &glm::vec4(0.0f, 1.0f, 1.0f, 1.0f)[0], 1);
 
-	//
 	// Set texture 1 for shader
 	glActiveTexture(GL_TEXTURE0);
 
 	// Bind correct texture and send to shader
 	opengl::Image* img = currentIndex == 0 ? pigTexture.get() : testTexture.get();
-	img->bind();
-	glUniform1i(textureLocation, 0);
-
-	// Unbind shader
+	img->bind();	
+	int index = 0;
+	shaderResource->getShader().setUniform("myTextureSampler", &index, 1);
 	material->unbind();
 
+	// Render all objects
 	switch (currentIndex)
 	{
 	case 0:
@@ -277,7 +272,7 @@ bool init(nap::Core& core)
 	renderWindow->size.setValue({ windowWidth, windowHeight });
 	renderWindow->position.setValue({ (1920 / 2) - 256, 1080 / 2 - 256 });
 	renderWindow->title.setValue("Wolla");
-	renderWindow->sync.setValue(false);
+	renderWindow->sync.setValue(true);
 
 	// Connect draw and update signals
 	renderWindow->draw.signal.connect(renderSlot);
@@ -350,13 +345,6 @@ bool init(nap::Core& core)
 	shader.bindVertexAttribute(vertex_index, "in_Position");
 	shader.bindVertexAttribute(color_index, "in_Color");
 	shader.bindVertexAttribute(uv_index, "in_Uvs");
-
-	// Get uniform bindings for vertex shader
-	material->bind();
-	noiseLocation = glGetUniformLocation(shader.getId(), "noiseValue");
-	textureLocation = glGetUniformLocation(shader.getId(), "myTextureSampler");
-
-	material->unbind();
 
 	//////////////////////////////////////////////////////////////////////////
 	// Add Camera
