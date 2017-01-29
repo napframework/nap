@@ -6,6 +6,7 @@ in vec3 pass_Uvs;
 out vec4 out_Color;
 
 uniform sampler2D	myTextureSampler;
+uniform vec4		mColor;
 
 void main(void)
 {
@@ -15,5 +16,5 @@ void main(void)
 	vec3  color_one = texture(myTextureSampler, uvs).rgb;
 
 	// Set output color
-	out_Color = vec4(color_one, 1.0);
+	out_Color = vec4(color_one, 1.0) * mColor;
 }

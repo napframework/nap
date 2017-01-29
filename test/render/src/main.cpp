@@ -202,7 +202,9 @@ void onRender(const nap::SignalAttribute& signal)
 	shaderResource->getShader().setUniform(opengl::UniformType::Mat4, "projectionMatrix", &(cameraComponent->getProjectionMatrix()[0][0]), 1);
 	shaderResource->getShader().setUniform(opengl::UniformType::Mat4, "viewMatrix", &(cam_xform->getGlobalTransform()[0][0]), 1);
 	shaderResource->getShader().setUniform(opengl::UniformType::Mat4, "modelMatrix", &(model_xform->getGlobalTransform()[0][0]), 1);
+	shaderResource->getShader().setUniform(opengl::UniformType::Vec4, "mColor", &glm::vec4(1.0f, 0.0f, 0.0f, 1.0f)[0], 1);
 
+	//
 	// Set texture 1 for shader
 	glActiveTexture(GL_TEXTURE0);
 
