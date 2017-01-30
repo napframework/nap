@@ -176,6 +176,14 @@ namespace opengl
 	}
 
 
+	// Returns the window position
+	void getWindowPosition(Window& window, int &x, int &y)
+	{
+		assert(window.getWindow() != nullptr);
+		SDL_GetWindowPosition(window.getWindow(), &x, &y);
+	}
+
+
 	// Updates the window title
 	void setWindowTitle(Window& window, const std::string& title)
 	{
@@ -191,6 +199,12 @@ namespace opengl
 		SDL_SetWindowSize(window.getWindow(), width, height);
 	}
 
+
+	void getWindowSize(Window& window, int& width, int& height)
+	{
+		assert(window.getWindow() != nullptr);
+		SDL_GetWindowSize(window.getWindow(), &width, &height);
+	}
 
 	// Turn v-sync on / off
 	void setVSync(Window& window, bool value)

@@ -95,4 +95,11 @@ namespace opengl
 	{
 		enableGLParam(GL_MULTISAMPLE_ARB, value);
 	}
+
+
+	// Set the render viewport
+	void setViewport(int width, int height)
+	{
+		glViewport(0, 0, width, height);
+	}
 }

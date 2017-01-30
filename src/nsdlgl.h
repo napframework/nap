@@ -72,6 +72,13 @@ namespace opengl
 
 
 	/**
+	 * returns the window position 
+	 * @param posx, posy: new position coordinates
+	 */
+	void getWindowPosition(Window& window, int &x, int &y);
+
+
+	/**
 	 * updates the window title
 	 * @param title: the new window title
 	 */
@@ -83,6 +90,15 @@ namespace opengl
 	 * @param size: the new window size
 	 */
 	void setWindowSize(Window& window, int width, int height);
+
+
+	/**
+	 * returns current window size
+	 * @param window: the window to get current size for
+	 * @param width: width of window
+	 * @param height: height of window
+	 */
+	void getWindowSize(Window& window, int& width, int& height);
 
 
 	/**

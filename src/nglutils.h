@@ -74,6 +74,12 @@ namespace opengl
 
 
 	/**
+	* updates the render viewport
+	*/
+	void setViewport(int width, int height);
+
+
+	/**
 	 * Simple string formatter
 	 */
 	template <typename... Args>	
