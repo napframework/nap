@@ -39,25 +39,25 @@ namespace nap
 		/**
 		* @return if there's a shader resource linked to this instance
 		*/
-		bool hasShader() const						{ return shaderResource.isLinked(); }
+		bool hasShader() const							{ return shaderResourceLink.isLinked(); }
 
 		/**
 		 * Utility for getting the shader resource
 		 * @return the link as a shader resource, nullptr if not linked
 		 */
-		ShaderResource* getResource() const			{ return mResource; }
+		ShaderResource* getResource() const				{ return mShader; }
 
 		/**
 		* Link to the shader this material uses
 		* By default this link is empty, needs to be set
 		* when using this material for drawing
 		*/
-		ResourceLinkAttribute shaderResource =		{ this, "shader", RTTI_OF(ShaderResource) };
+		ResourceLinkAttribute shaderResourceLink =		{ this, "shader", RTTI_OF(ShaderResource) };
 
 		/**
 		 * Holds all uniform shader variables
 		 */
-		ObjectLinkAttribute uniforms =				{ this, "uniforms", RTTI_OF(AttributeObject) };
+		ObjectLinkAttribute uniforms =					{ this, "uniforms", RTTI_OF(AttributeObject) };
 
 	private:
 		
@@ -78,7 +78,7 @@ namespace nap
 		 * object is linked in. In that case we want to listen to when the 
 		 * shader is loaded or reloaded
 		 */
-		void onResourceChanged(AttributeBase& value);
+		void onResourceLinkChanged(AttributeBase& value);
 
 		/**
 		 * Occurs when the shader this material points to
@@ -90,9 +90,9 @@ namespace nap
 		/**
 		 * Internal resource cache
 		 */
-		ShaderResource* mResource = nullptr;
+		ShaderResource* mShader = nullptr;
 
-		NSLOT(shaderResourceChanged, AttributeBase&, onResourceChanged)
+		NSLOT(shaderResourceChanged, AttributeBase&, onResourceLinkChanged)
 		NSLOT(shaderLoaded, bool, onShaderLoaded)
 	};
 }

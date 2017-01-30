@@ -10,7 +10,7 @@ namespace nap
 	{
 		// Listen to when the shader changes, if so we want to
 		// make sure we listen to when it is compiled
-		shaderResource.valueChanged.connect(shaderResourceChanged);
+		shaderResourceLink.valueChanged.connect(shaderResourceChanged);
 
 		// Add uniform values
 		AttributeObject* uniforms_obj = &this->addChild<AttributeObject>("uniforms");
@@ -35,12 +35,12 @@ namespace nap
 	// Unbind shader associated with resource
 	bool Material::unbind()
 	{
-		if (mResource == nullptr)
+		if (mShader == nullptr)
 		{
 			nap::Logger::warn("unable to unbind shader instance, no resource linked");
 			return false;
 		}
-		return mResource->getShader().unbind();
+		return mShader->getShader().unbind();
 	}
 
 
@@ -48,7 +48,7 @@ namespace nap
 	void Material::resolveUniforms()
 	{
 		// Make sure the resource is valid
-		if (mResource == nullptr)
+		if (mShader == nullptr)
 		{
 			assert(false);
 			nap::Logger::warn(*this, "unable to resolve shader uniforms, no shader found");
@@ -56,17 +56,17 @@ namespace nap
 		}
 
 		// Make sure it's loaded
-		if (!mResource->isLoaded())
+		if (!mShader->isLoaded())
 		{
 			assert(false);
-			nap::Logger::warn(*this, "attempting to resolve shader uniforms for incomplete shader: %s", mResource->getName().c_str());
+			nap::Logger::warn(*this, "attempting to resolve shader uniforms for incomplete shader: %s", mShader->getName().c_str());
 			return;
 		}
 
 		// Resolve
 		nap::Logger::info(*this, "resolving all shader uniform variables");
 		AttributeObject* uniform_attrs = uniforms.getTarget<AttributeObject>();
-		for (const auto& v : mResource->getShader().getUniforms())
+		for (const auto& v : mShader->getShader().getUniforms())
 		{
 			uniform_attrs->addAttribute<float>(v.second->mName, 1.0f);
 		}
@@ -81,24 +81,24 @@ namespace nap
 
 
 	// Occurs when the link is set or cleared
-	void Material::onResourceChanged(AttributeBase& value)
+	void Material::onResourceLinkChanged(AttributeBase& value)
 	{		
 		// If we currently link to a resource we want to stop 
 		// Listening to that one, it also means that the resource
 		// is different and we can safely destroy all uniform bindings
 		// so that if we resolve we resolve against a fresh set
-		if (mResource != nullptr)
+		if (mShader != nullptr)
 		{
 			clearUniforms();
-			mResource->loaded.disconnect(shaderLoaded);
+			mShader->loaded.disconnect(shaderLoaded);
 		}
 
 		// Store the new resource
-		mResource = shaderResource.getResource<ShaderResource>();
+		mShader = shaderResourceLink.getResource<ShaderResource>();
 
 		// If the resource points to nothing we simply clear
 		// all available uniform shader attributes
-		if (mResource == nullptr)
+		if (mShader == nullptr)
 		{
 			clearUniforms();
 			return;
@@ -106,11 +106,11 @@ namespace nap
 
 		// If there is a new resource, connect to it's loaded signal
 		// When the shader is loaded we want to update our uniform bindings
-		mResource->loaded.connect(shaderLoaded);
+		mShader->loaded.connect(shaderLoaded);
 
 		// If the resource is already loaded and loaded correctly
 		// we can immediately update all the uniforms
-		if (mResource->isLoaded())
+		if (mShader->isLoaded())
 		{
 			resolveUniforms();
 		}
@@ -123,7 +123,7 @@ namespace nap
 		// If the shader failed to load, clear bindings
 		if (!success)
 		{
-			nap::Logger::warn(*this, "failed to load shader: %s, clearing uniform bindings", mResource->getResourcePath().c_str());
+			nap::Logger::warn(*this, "failed to load shader: %s, clearing uniform bindings", mShader->getResourcePath().c_str());
 			clearUniforms();
 			return;
 		}

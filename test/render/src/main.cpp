@@ -320,7 +320,7 @@ bool init(nap::Core& core)
 	// Set shader resource on material
 	nap::Material* material = modelComponent->getMaterial();
 	assert(material != nullptr);
-	material->shaderResource.setResource(*shaderResource);
+	material->shaderResourceLink.setResource(*shaderResource);
 
 	// Link model resource
 	modelComponent->modelResource.setResource(*pig_model);
@@ -417,13 +417,13 @@ void runGame(nap::Core& core)
 				case SDLK_1:
 				{
 					shaderResource = shaderResourceOne;
-					modelComponent->getMaterial()->shaderResource.setResource(*shaderResource);
+					modelComponent->getMaterial()->shaderResourceLink.setResource(*shaderResource);
 					break;
 				}
 				case SDLK_2:
 				{
 					shaderResource = shaderResourceTwo;
-					modelComponent->getMaterial()->shaderResource.setResource(*shaderResource);
+					modelComponent->getMaterial()->shaderResourceLink.setResource(*shaderResource);
 					break;
 				}
 				case SDLK_ESCAPE:
