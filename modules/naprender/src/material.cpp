@@ -22,20 +22,19 @@ namespace nap
 	// Unbind shader associated with resource
 	bool Material::bind()
 	{	
-		ShaderResource* resource = getResource();
-		if(resource == nullptr)
+		if(!hasShader())
 		{
 			nap::Logger::warn("unable to bind shader instance, no resource linked");
 			return false;
 		}
-		return resource->getShader().bind();
+		return mShader->getShader().bind();
 	}
 
 
 	// Unbind shader associated with resource
 	bool Material::unbind()
 	{
-		if (mShader == nullptr)
+		if (!hasShader())
 		{
 			nap::Logger::warn("unable to unbind shader instance, no resource linked");
 			return false;
@@ -48,7 +47,7 @@ namespace nap
 	void Material::resolveUniforms()
 	{
 		// Make sure the resource is valid
-		if (mShader == nullptr)
+		if (!hasShader())
 		{
 			assert(false);
 			nap::Logger::warn(*this, "unable to resolve shader uniforms, no shader found");
@@ -87,7 +86,7 @@ namespace nap
 		// Listening to that one, it also means that the resource
 		// is different and we can safely destroy all uniform bindings
 		// so that if we resolve we resolve against a fresh set
-		if (mShader != nullptr)
+		if (hasShader())
 		{
 			clearUniforms();
 			mShader->loaded.disconnect(shaderLoaded);
@@ -100,6 +99,10 @@ namespace nap
 		// all available uniform shader attributes
 		if (mShader == nullptr)
 		{
+			if (shaderResourceLink.isLinked())
+			{
+				nap::Logger::fatal(*this, "unable to resolve shader link: %s", shaderResourceLink.getPath().c_str());
+			}
 			clearUniforms();
 			return;
 		}

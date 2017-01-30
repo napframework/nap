@@ -18,9 +18,19 @@ namespace nap
 	void RenderableComponent::draw()
 	{
 		Material* mat = getMaterial();
+
+		// Fetch material, should always be present
 		if (mat == nullptr)
 		{
 			nap::Logger::warn("unable to resolve material for render-able component: %s", this->getName().c_str());
+			return;
+		}
+
+		// If we're not dealing with a material that has a resource linked, continue
+		// TODO: Apply Default Material
+		if (!mat->hasShader())
+		{
+			nap::Logger::warn(*this, "unable to draw object, no linked material");
 			return;
 		}
 		

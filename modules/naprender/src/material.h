@@ -37,15 +37,16 @@ namespace nap
 		bool unbind();
 
 		/**
-		* @return if there's a shader resource linked to this instance
-		*/
-		bool hasShader() const							{ return shaderResourceLink.isLinked(); }
-
-		/**
 		 * Utility for getting the shader resource
 		 * @return the link as a shader resource, nullptr if not linked
 		 */
-		ShaderResource* getResource() const				{ return mShader; }
+		ShaderResource* getShader() const				{ return mShader; }
+
+		/**
+		 * Utility for checking if this material has a resolved resource
+		 * @return if the shader link has been resolved and a shader resource is set
+		 */
+		bool  hasShader() const							{ return mShader != nullptr; }
 
 		/**
 		* Link to the shader this material uses
