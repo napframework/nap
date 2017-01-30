@@ -102,6 +102,12 @@ namespace opengl
 
 
 	/**
+	 * force execution of GL commands in finite time
+	 */
+	void flush();
+
+
+	/**
 	 * Makes this opengl window's context current
 	 * @param window the window's context to make current
 	 */
