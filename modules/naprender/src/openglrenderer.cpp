@@ -64,6 +64,23 @@ namespace nap
 	}
 
 
+	// Makes the window go full screen
+	void OpenGLRenderWindow::setFullScreen(bool value)
+	{
+		/*
+		// Don't do anything if the mode is the same
+		nap::uint32 full_screen_flag = SDL_WINDOW_FULLSCREEN;
+		nap::uint32 window_flags = SDL_GetWindowFlags(mWindow->getWindow());
+		if ((window_flags & full_screen_flag) == static_cast<uint32>(value))
+			return;
+		*/
+
+		// Otherwise set
+		nap::uint32 flag = value ? full_screen_flag : 0;
+		SDL_SetWindowFullscreen(mWindow->getWindow(), flag);
+	}
+
+
 	// Show opengl window
 	void OpenGLRenderWindow::showWindow()
 	{
@@ -81,6 +98,7 @@ namespace nap
 	// Swap OpenGL buffers
 	void OpenGLRenderWindow::swap()
 	{
+		opengl::flush();
 		opengl::swap(*mWindow);
 	}
 

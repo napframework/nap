@@ -94,6 +94,12 @@ namespace nap
 		virtual void setSync(bool value) = 0;
 
 		/**
+		 * Makes the window full screen
+		 * @param value if the window should be full screen or not
+		 */
+		virtual void setFullScreen(bool value) = 0;
+
+		/**
 		 * Show window
 		 */
 		virtual void showWindow() = 0;

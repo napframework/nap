@@ -71,6 +71,13 @@ namespace nap
 	}
 
 
+	// Make window full screen
+	void RenderWindowComponent::onFullscreenChanged(const bool& value)
+	{
+		mWindow->setFullScreen(value);
+	}
+
+
 	// Registers attributes and pushes current state to window
 	void RenderWindowComponent::registered()
 	{
@@ -85,6 +92,7 @@ namespace nap
 		size.valueChangedSignal.connect(sizeChanged);
 		title.valueChangedSignal.connect(titleChanged);
 		sync.valueChangedSignal.connect(syncChanged);
+		fullScreen.valueChangedSignal.connect(fullScreenChanged);
 
 		// When visibility changes, hide / show
 		show.signal.connect(showWindow);
@@ -95,6 +103,7 @@ namespace nap
 		onSizeChanged(size.getValue());
 		onTitleChanged(title.getValue());
 		onSyncChanged(sync.getValue());
+		onFullscreenChanged(fullScreen.getValue());
 
 		// Initialize current frame time stamp
 		mFrameTimeStamp = mService->getCore().getStartTime();

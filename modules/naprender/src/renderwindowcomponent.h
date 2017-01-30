@@ -62,16 +62,17 @@ namespace nap
 		 * is made active. Subsequent render calls will be associated
 		 * with this window after activate has been triggered
 		 */
-		SignalAttribute activate	{ this, "SetActive" };
+		SignalAttribute activate		{ this, "setActive" };
 
 		/**
 		* These attributes only work when the window has
 		* been registered with the render service
 		*/
-		Attribute<glm::ivec2> position{ this, "Position",{ 256, 256 } };
-		Attribute<glm::ivec2> size{ this, "Size",{ 512, 512 } };
-		Attribute<std::string> title{ this, "Title", "RenderWindow" };
-		Attribute<bool> sync{ this, "VSync", false };
+		Attribute<glm::ivec2> position	{ this, "position",{ 256, 256 } };
+		Attribute<glm::ivec2> size		{ this, "size",{ 512, 512 } };
+		Attribute<std::string> title	{ this, "title", "RenderWindow" };
+		Attribute<bool> sync			{ this, "sync", false };
+		Attribute<bool> fullScreen		{ this, "fullScreen", false };
 
 		/**
 		 * @return if the component manages a window. 
@@ -131,6 +132,7 @@ namespace nap
 		void onPositionChanged(const glm::ivec2& position);
 		void onSizeChanged(const glm::ivec2& size);
 		void onSyncChanged(const bool& value);
+		void onFullscreenChanged(const bool& value);
 
 		/**
 		 * Occurs when the window is registered with the render service
@@ -148,7 +150,7 @@ namespace nap
 		NSLOT(positionChanged, const glm::ivec2&, onPositionChanged)
 		NSLOT(sizeChanged, const glm::ivec2&, onSizeChanged)
 		NSLOT(syncChanged, const bool&, onSyncChanged)
-
+		NSLOT(fullScreenChanged, const bool&, onFullscreenChanged)
 
 	private:
 		/**

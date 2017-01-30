@@ -134,6 +134,8 @@ void onUpdate(const nap::SignalAttribute& signal)
 {
 	//auto signal_attr = static_cast<nap::SignalAttribute*>(rpcService->getAttribute("update"));
 	//signal_attr->trigger();
+	//static float elapsed_time = 0.0f;
+	//elapsed_time += renderWindow->getDeltaTimeFloat();
 
 	// Update model transform
 	float elapsed_time = renderService->getCore().getElapsedTime();
@@ -410,7 +412,9 @@ void runGame(nap::Core& core)
 					break;
 				case SDLK_f:
 				{
-					//SDL_SetWindowFullscreen(mainWindow->getWindow(), SDL_WINDOW_FULLSCREEN_DESKTOP);
+					static bool fullScreen = false;
+					fullScreen = !fullScreen;
+					renderWindow->fullScreen.setValue(fullScreen);
 					break;
 				}
 				case SDLK_PERIOD:

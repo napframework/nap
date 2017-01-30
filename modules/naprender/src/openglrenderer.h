@@ -64,6 +64,11 @@ namespace nap
 		virtual void setSync(bool value) override;
 
 		/**
+		 * Makes the window full screen
+		 */
+		virtual void setFullScreen(bool value) override;
+
+		/**
 		* Show window
 		*/
 		virtual void showWindow() override;
