@@ -76,6 +76,7 @@ namespace nap
 		*/
 
 		// Otherwise set
+		nap::uint32 full_screen_flag = SDL_WINDOW_FULLSCREEN;
 		nap::uint32 flag = value ? full_screen_flag : 0;
 		SDL_SetWindowFullscreen(mWindow->getWindow(), flag);
 	}
