@@ -183,6 +183,7 @@ namespace nap
 			comp->draw();
 	}
 
+
 	// Set the currently active renderer
 	void RenderService::setRenderer(const RTTI::TypeInfo& renderer)
 	{

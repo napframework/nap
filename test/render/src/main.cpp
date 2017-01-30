@@ -52,9 +52,11 @@
 //////////////////////////////////////////////////////////////////////////
 
 // Window Name
-std::string		programName		= "Model Loading Test";
-std::string		vertShaderName	= "shaders/shader.vert";
-std::string		fragShaderName	= "shaders/shader.frag";
+std::string		programName			= "Model Loading Test";
+std::string		vertShaderName		= "shaders/shader.vert";
+std::string		fragShaderName		= "shaders/shader.frag";
+std::string		vertShaderNameTwo	= "shaders/shader_two.vert";
+std::string		fragShaderNameTwo	= "shaders/shader_two.frag";
 
 static const std::string testTextureName = "data/test.jpg";
 static std::unique_ptr<opengl::Image> testTexture;
@@ -74,6 +76,8 @@ nap::RenderWindowComponent* renderWindow = nullptr;
 nap::CameraComponent* cameraComponent = nullptr;
 nap::ModelMeshComponent* modelComponent = nullptr;
 nap::ShaderResource* shaderResource = nullptr;
+nap::ShaderResource* shaderResourceOne = nullptr;
+nap::ShaderResource* shaderResourceTwo = nullptr;
 
 // vertex Shader indices
 nap::Entity* model = nullptr;
@@ -92,7 +96,6 @@ glm::mat4 modelMatrix;			// Store the model matrix
 // Some utilities
 void runGame(nap::Core& core);	
 bool loadImages();
-void updateViewport(int width, int height);
 
 /**
 * Loads a bitmap from disk
@@ -117,15 +120,6 @@ bool loadImages()
 	}
 
 	return true;
-}
-
-/**
-* Updates gl viewport and projection matrix used for rendering
-*/
-void updateViewport(int width, int height)
-{
-	glViewport(0, 0, width, height);
-	cameraComponent->setAspectRatio((float)width, (float)height);
 }
 
 
@@ -247,7 +241,6 @@ bool init(nap::Core& core)
 
 	//////////////////////////////////////////////////////////////////////////
 
-	/*
 	std::string rpcServiceTypename = "nap::JsonRpcService";
 	RTTI::TypeInfo rpcServiceType = RTTI::TypeInfo::getByName(rpcServiceTypename);
 	if (!rpcServiceType.isValid()) 
@@ -259,7 +252,7 @@ bool init(nap::Core& core)
 	rpcService = core.getOrCreateService(rpcServiceType);
 	//rpcService->getAttribute<bool>("manual")->setValue(true);
 	rpcService->getAttribute<bool>("running")->setValue(true);
-	*/
+
 
 	//////////////////////////////////////////////////////////////////////////
 
@@ -274,7 +267,7 @@ bool init(nap::Core& core)
 	renderWindow->size.setValue({ windowWidth, windowHeight });
 	renderWindow->position.setValue({ (1920 / 2) - 256, 1080 / 2 - 256 });
 	renderWindow->title.setValue("Wolla");
-	renderWindow->sync.setValue(true);
+	renderWindow->sync.setValue(false);
 
 	// Connect draw and update signals
 	renderWindow->draw.signal.connect(renderSlot);
@@ -296,8 +289,17 @@ bool init(nap::Core& core)
 	// Create shader resource
 	nap::ResourceManagerService* service = core.getOrCreateService<nap::ResourceManagerService>();
 	service->setAssetRoot(".");
+
+	// Load first shader
 	nap::Resource* shader_resource = service->getResource(fragShaderName);
-	shaderResource = static_cast<nap::ShaderResource*>(shader_resource);
+	shaderResourceOne = static_cast<nap::ShaderResource*>(shader_resource);
+	
+	// Load second shader
+	nap::Resource* shader_resource_two = service->getResource(fragShaderNameTwo);
+	shaderResourceTwo = static_cast<nap::ShaderResource*>(shader_resource_two);
+	
+	// Set resource
+	shaderResource = shaderResourceOne;
 
 	// Load model resource
 	nap::Resource* model_resource = service->getResource("data/pig_head_alpha_rotated.fbx");
@@ -318,7 +320,7 @@ bool init(nap::Core& core)
 	// Set shader resource on material
 	nap::Material* material = modelComponent->getMaterial();
 	assert(material != nullptr);
-	material->shaderResource.setResource(*shader_resource);
+	material->shaderResource.setResource(*shaderResource);
 
 	// Link model resource
 	modelComponent->modelResource.setResource(*pig_model);
@@ -343,10 +345,15 @@ bool init(nap::Core& core)
 
 	// Bind indices explicit to shader (TODO: RESOLVE DYNAMICALLY)
 	// This tells what vertex buffer index belongs to what vertex shader input binding name
-	opengl::Shader& shader = shaderResource->getShader();
-	shader.bindVertexAttribute(vertex_index, "in_Position");
-	shader.bindVertexAttribute(color_index, "in_Color");
-	shader.bindVertexAttribute(uv_index, "in_Uvs");
+	opengl::Shader& shader_one = shaderResourceOne->getShader();
+	shader_one.bindVertexAttribute(vertex_index, "in_Position");
+	shader_one.bindVertexAttribute(color_index, "in_Color");
+	shader_one.bindVertexAttribute(uv_index, "in_Uvs");
+
+	opengl::Shader& shader_two = shaderResourceTwo->getShader();
+	shader_two.bindVertexAttribute(vertex_index, "in_Position");
+	shader_two.bindVertexAttribute(color_index, "in_Color");
+	shader_two.bindVertexAttribute(uv_index, "in_Uvs");
 
 	//////////////////////////////////////////////////////////////////////////
 	// Add Camera
@@ -407,6 +414,18 @@ void runGame(nap::Core& core)
 			{
 				switch (event.key.keysym.sym)
 				{
+				case SDLK_1:
+				{
+					shaderResource = shaderResourceOne;
+					modelComponent->getMaterial()->shaderResource.setResource(*shaderResource);
+					break;
+				}
+				case SDLK_2:
+				{
+					shaderResource = shaderResourceTwo;
+					modelComponent->getMaterial()->shaderResource.setResource(*shaderResource);
+					break;
+				}
 				case SDLK_ESCAPE:
 					loop = false;
 					break;
@@ -433,8 +452,20 @@ void runGame(nap::Core& core)
 				switch (event.window.event)
 				{
 				case SDL_WINDOWEVENT_RESIZED:
-					// Update gl viewport
-					updateViewport(event.window.data1, event.window.data2);
+				{
+					int width = event.window.data1;
+					int height = event.window.data2;
+					renderWindow->size.setValue({ width, height });
+					cameraComponent->setAspectRatio((float)width, (float)height);
+					break;
+				}
+				case SDL_WINDOWEVENT_MOVED:
+				{
+					int x = event.window.data1;
+					int y = event.window.data2;
+					renderWindow->position.setValue({ x,y });
+					break;
+				}
 				default:
 					break;
 				}

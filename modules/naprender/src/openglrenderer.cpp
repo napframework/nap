@@ -45,6 +45,13 @@ namespace nap
 	// Set opengl window position
 	void OpenGLRenderWindow::setPosition(const glm::ivec2& position)
 	{
+		// Ensure position is not the same
+		int x, y;
+		opengl::getWindowPosition(*mWindow, x, y);
+		if (x == position.x && y == position.y)
+			return;
+
+		// Update position
 		opengl::setWindowPosition(*mWindow, position.x, position.y);
 	}
 
@@ -52,8 +59,21 @@ namespace nap
 	// Set opengl window size 
 	void OpenGLRenderWindow::setSize(const glm::ivec2& size)
 	{
+		// Ensure sizes are not the same
+		int width, height;
+		opengl::getWindowSize(*mWindow, width, height);
+		if (width == size.x && height == size.y)
+			return;
+
+		// Otherwise set
 		opengl::setWindowSize(*mWindow, size.x, size.y);
-		glViewport(0, 0, size.x, size.y);
+	}
+
+
+	// Update render viewport
+	void OpenGLRenderWindow::setViewport(const glm::ivec2& viewport)
+	{
+		opengl::setViewport(viewport.x, viewport.y);
 	}
 
 
@@ -67,16 +87,8 @@ namespace nap
 	// Makes the window go full screen
 	void OpenGLRenderWindow::setFullScreen(bool value)
 	{
-		/*
-		// Don't do anything if the mode is the same
-		nap::uint32 full_screen_flag = SDL_WINDOW_FULLSCREEN;
-		nap::uint32 window_flags = SDL_GetWindowFlags(mWindow->getWindow());
-		if ((window_flags & full_screen_flag) == static_cast<uint32>(value))
-			return;
-		*/
-
 		// Otherwise set
-		nap::uint32 full_screen_flag = SDL_WINDOW_FULLSCREEN;
+		nap::uint32 full_screen_flag = SDL_WINDOW_FULLSCREEN_DESKTOP;
 		nap::uint32 flag = value ? full_screen_flag : 0;
 		SDL_SetWindowFullscreen(mWindow->getWindow(), flag);
 	}

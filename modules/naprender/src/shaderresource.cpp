@@ -40,13 +40,22 @@ namespace nap
 		if (!mLoaded)
 		{
 			mShader.init(mVertPath, mFragPath);
-			if (!mShader.isAllocated())
+			if (!mShader.isLinked())
 			{
 				nap::Logger::warn("unable to create shader program: %s", mVertPath.c_str(), mFragPath.c_str());
 			}
 			mLoaded = true;
+			
+			// Notify listeners of load
+			loaded.trigger(mShader.isLinked());
 		}
 		return mShader;
+	}
+
+
+	bool ShaderResource::isLoaded() const
+	{
+		return mLoaded && mShader.isLinked();
 	}
 
 	//////////////////////////////////////////////////////////////////////////

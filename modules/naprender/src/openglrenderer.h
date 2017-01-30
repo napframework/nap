@@ -58,6 +58,11 @@ namespace nap
 		virtual void setSize(const glm::ivec2& size) override;
 
 		/**
+		 * Set the render viewport
+		 */
+		virtual void setViewport(const glm::ivec2& viewport) override;
+
+		/**
 		* Turns v-sync on / off
 		* @param value if v-sync should be turned on or off
 		*/

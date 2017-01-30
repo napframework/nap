@@ -61,6 +61,7 @@ namespace nap
 	void RenderWindowComponent::onSizeChanged(const glm::ivec2& size)
 	{
 		mWindow->setSize(size);
+		mWindow->setViewport(size);
 	}
 
 

@@ -35,6 +35,17 @@ namespace nap
 		 */
 		opengl::Shader& getShader();
 
+		/**
+		 * @return if the shader is loaded and linked correctly
+		 */
+		bool isLoaded() const;
+
+		/**
+		 * Signal is emitted when the shader is loaded or reloaded
+		 * The bool represents if issues occurred when loading
+		 */
+		Signal<bool> loaded;
+
 	private:
 		// Path to shader on disk
 		std::string		mVertPath;
