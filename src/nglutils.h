@@ -68,6 +68,12 @@ namespace opengl
 
 
 	/**
+	* force execution of GL commands in finite time
+	*/
+	void flush();
+
+
+	/**
 	 * Simple string formatter
 	 */
 	template <typename... Args>	

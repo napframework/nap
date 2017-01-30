@@ -61,6 +61,13 @@ namespace opengl
 	}
 
 
+	//force execution of GL commands in finite time
+	void flush()
+	{
+		glFlush();
+	}
+
+
 	// Checks if the specified filter supports mip mapping
 	bool isMipMap(GLint filterType)
 	{

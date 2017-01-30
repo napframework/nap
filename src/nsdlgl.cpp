@@ -207,13 +207,6 @@ namespace opengl
 	}
 
 
-	//force execution of GL commands in finite time
-	void flush()
-	{
-		glFlush();
-	}
-
-
 	// Make this window's context current
 	void makeCurrent(Window& window)
 	{
