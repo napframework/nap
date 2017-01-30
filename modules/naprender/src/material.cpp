@@ -82,6 +82,29 @@ namespace nap
 	// Occurs when the link is set or cleared
 	void Material::onResourceLinkChanged(AttributeBase& value)
 	{		
+		resolveShaderLink();
+	}
+
+
+	// Update uniform variables
+	void Material::onShaderLoaded(bool success)
+	{
+		// If the shader failed to load, clear bindings
+		if (!success)
+		{
+			nap::Logger::warn(*this, "failed to load shader: %s, clearing uniform bindings", mShader->getResourcePath().c_str());
+			clearUniforms();
+			return;
+		}
+
+		// Otherwise we resolve bindings
+		resolveUniforms();
+	}
+
+
+	// Tries to resolve the link to the shader
+	void Material::resolveShaderLink()
+	{
 		// If we currently link to a resource we want to stop 
 		// Listening to that one, it also means that the resource
 		// is different and we can safely destroy all uniform bindings
@@ -118,23 +141,6 @@ namespace nap
 			resolveUniforms();
 		}
 	}
-
-
-	// Update uniform variables
-	void Material::onShaderLoaded(bool success)
-	{
-		// If the shader failed to load, clear bindings
-		if (!success)
-		{
-			nap::Logger::warn(*this, "failed to load shader: %s, clearing uniform bindings", mShader->getResourcePath().c_str());
-			clearUniforms();
-			return;
-		}
-
-		// Otherwise we resolve bindings
-		resolveUniforms();
-	}
-
 }
 
 RTTI_DEFINE(nap::Material)

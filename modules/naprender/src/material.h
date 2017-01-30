@@ -93,6 +93,11 @@ namespace nap
 		 */
 		ShaderResource* mShader = nullptr;
 
+		/**
+		 * Tries to resolve the link and cache the shader
+		 */
+		void resolveShaderLink();
+
 		NSLOT(shaderResourceChanged, AttributeBase&, onResourceLinkChanged)
 		NSLOT(shaderLoaded, bool, onShaderLoaded)
 	};
