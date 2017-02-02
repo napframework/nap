@@ -1,20 +1,20 @@
 from PyQt5.QtCore import *
 
-_J_CHILDREN = 'children'
-_J_ATTRIBUTES = 'attributes'
-_J_NAME = 'name'
-_J_TYPE = 'type'
-_J_VALUE_TYPE = 'vType'
-_J_VALUE = 'value'
-_J_ATTRIBUTE_TYPE = 'nap::AttributeBase'
-_J_ENTITY_TYPE = 'nap::Entity'
-_J_PTR = 'ptr'
-_J_FLAGS = 'flags'
-_J_EDITABLE = 'editable'
-_J_CONNECTION = 'connection'
-_J_SUBTYPES = 'subtypes'
-_J_BASETYPES = 'basetypes'
-_J_INSTANTIABLE = 'instantiable'
+J_CHILDREN = 'children'
+J_ATTRIBUTES = 'attributes'
+J_NAME = 'name'
+J_TYPE = 'type'
+J_VALUE_TYPE = 'vType'
+J_VALUE = 'value'
+J_ATTRIBUTE_TYPE = 'nap::AttributeBase'
+J_ENTITY_TYPE = 'nap::Entity'
+J_PTR = 'ptr'
+J_FLAGS = 'flags'
+J_EDITABLE = 'editable'
+J_CONNECTION = 'connection'
+J_SUBTYPES = 'subtypes'
+J_BASETYPES = 'basetypes'
+J_INSTANTIABLE = 'instantiable'
 
 
 class TRIGGER(object):
@@ -22,18 +22,18 @@ class TRIGGER(object):
     def __init__(self):
         pass
 
-def _allSubClasses(cls):
+def allSubClasses(cls):
     """ Retrieve all subclasses of the specified type. Results may vary depending on what is imported. """
     all_subclasses = []
 
     for subclass in cls.__subclasses__():
         all_subclasses.append(subclass)
-        all_subclasses.extend(_allSubClasses(subclass))
+        all_subclasses.extend(allSubClasses(subclass))
 
     return reversed(all_subclasses)
 
 
-def _stripCPPNamespace(name):
+def stripCPPNamespace(name):
     """ Remove the C++ namespace from the specified (class)name """
     return name[name.rfind(':') + 1:]
 
@@ -64,23 +64,23 @@ class Object(QObject):
         self._dic = dic
         self.__parent = None
         self.__core = core
-        self.__flags = dic[_J_FLAGS]
-        self.__ptr = dic[_J_PTR]
+        self.__flags = dic[J_FLAGS]
+        self.__ptr = dic[J_PTR]
         self.__core.setObject(self.__ptr, self)
-        self.__name = dic[_J_NAME]
-        if _J_TYPE in dic:
-            self.__typename = dic[_J_TYPE]
+        self.__name = dic[J_NAME]
+        if J_TYPE in dic:
+            self.__typename = dic[J_TYPE]
         else:
-            self.__typename = dic[_J_VALUE_TYPE]
+            self.__typename = dic[J_VALUE_TYPE]
 
         self.__children = []
-        if _J_CHILDREN in dic:
-            for childDic in dic[_J_CHILDREN]:
+        if J_CHILDREN in dic:
+            for childDic in dic[J_CHILDREN]:
                 child = core.newObject(childDic)
                 child.__parent = self
                 self.__children.append(child)
-        if _J_ATTRIBUTES in dic:
-            for childDic in dic[_J_ATTRIBUTES]:
+        if J_ATTRIBUTES in dic:
+            for childDic in dic[J_ATTRIBUTES]:
                 child = core.newObject(childDic)
                 child.__parent = self
                 self.__children.append(child)
@@ -222,10 +222,10 @@ class Attribute(Object):
 
     def __init__(self, *args):
         super(Attribute, self).__init__(*args)
-        self._valueType = self._dic[_J_VALUE_TYPE]
+        self._valueType = self._dic[J_VALUE_TYPE]
         self._value = None
-        if _J_VALUE in self._dic:
-            self._value = self.core().toPythonValue(self._dic[_J_VALUE],
+        if J_VALUE in self._dic:
+            self._value = self.core().toPythonValue(self._dic[J_VALUE],
                                                     self.valueType())
         if self._valueType == 'nap::SignalAttribute':
             self._value = TRIGGER
@@ -302,8 +302,8 @@ class InputPlugBase(Plug):
     def __init__(self, *args):
         super(InputPlugBase, self).__init__(*args)
         self.__connection = ''
-        if _J_CONNECTION in self._dic.keys():
-            self.__connection = self._dic[_J_CONNECTION]
+        if J_CONNECTION in self._dic.keys():
+            self.__connection = self._dic[J_CONNECTION]
 
     def connection(self):
         if not self.__connection:

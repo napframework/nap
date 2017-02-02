@@ -191,10 +191,14 @@ void onRender(const nap::SignalAttribute& signal)
 	nap::TransformComponent* model_xform = modelComponent->getParent()->getComponent<nap::TransformComponent>();
 
 	// Send values
-	shaderResource->getShader().setUniform("projectionMatrix", &(cameraComponent->getProjectionMatrix()[0][0]), 1);
-	shaderResource->getShader().setUniform("viewMatrix", &(cam_xform->getGlobalTransform()[0][0]), 1);
-	shaderResource->getShader().setUniform("modelMatrix", &(model_xform->getGlobalTransform()[0][0]), 1);
-	shaderResource->getShader().setUniform("mColor", &glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)[0], 1);
+	shaderResource->getShader().setUniform("projectionMatrix", &(cameraComponent->getProjectionMatrix()[0][0]));
+	shaderResource->getShader().setUniform("viewMatrix", &(cam_xform->getGlobalTransform()[0][0]));
+	shaderResource->getShader().setUniform("modelMatrix", &(model_xform->getGlobalTransform()[0][0]));
+
+	glm::vec4 colors[2];
+	colors[0] = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	colors[1] = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	shaderResource->getShader().setUniform("mColor", &(colors[0][0]));
 
 	// Set texture 1 for shader
 	glActiveTexture(GL_TEXTURE0);
@@ -203,7 +207,7 @@ void onRender(const nap::SignalAttribute& signal)
 	opengl::Image* img = currentIndex == 0 ? pigTexture.get() : testTexture.get();
 	img->bind();	
 	int index = 0;
-	shaderResource->getShader().setUniform("myTextureSampler", &index, 1);
+	shaderResource->getShader().setUniform("myTextureSampler", &index);
 	material->unbind();
 
 	// Render all objects
@@ -267,7 +271,7 @@ bool init(nap::Core& core)
 	renderWindow->size.setValue({ windowWidth, windowHeight });
 	renderWindow->position.setValue({ (1920 / 2) - 256, 1080 / 2 - 256 });
 	renderWindow->title.setValue("Wolla");
-	renderWindow->sync.setValue(false);
+	renderWindow->sync.setValue(true);
 
 	// Connect draw and update signals
 	renderWindow->draw.signal.connect(renderSlot);
@@ -283,7 +287,7 @@ bool init(nap::Core& core)
 	}
 
 	//////////////////////////////////////////////////////////////////////////
-	// Create Model
+	// Create Modle
 	//////////////////////////////////////////////////////////////////////////
 
 	// Create shader resource

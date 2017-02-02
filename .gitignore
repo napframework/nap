@@ -25,3 +25,4 @@ modules/network/Release/
 napkin/Release/
 /msvc32
 /msvc64
+*.pyc

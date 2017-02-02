@@ -10,6 +10,7 @@ from log.logpanel import LogPanel
 from outline.model import *
 from outline.outlinewidget import OutlineWidget
 from patch.patcheditor import PatchEditor
+from PyQt5 import QtCore
 
 # Some constants
 _WIN_GEO = 'WindowGeometry'
@@ -216,5 +217,4 @@ if __name__ == '__main__':
 
     win = MainWindow(ctx)
     win.show()
-
     app.exec_()

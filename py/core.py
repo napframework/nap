@@ -76,7 +76,10 @@ class Core(QObject):
         """
         if not isinstance(ptr, int):
             ptr = int(ptr)
-        return self.__objects[ptr]
+
+        if ptr in self.__objects:
+            return self.__objects[ptr]
+        return None
 
     def types(self):
         """ Retrieve all the NAP types available
@@ -99,16 +102,16 @@ class Core(QObject):
 
     def baseTypes(self, typename):
         for t in self.__types:
-            if t[_J_NAME] == typename:
-                return t[_J_BASETYPES]
+            if t[J_NAME] == typename:
+                return t[J_BASETYPES]
 
     def subTypes(self, baseTypename, instantiable=False):
         for t in self.__types:
-            if not baseTypename in t[_J_BASETYPES]:
+            if not baseTypename in t[J_BASETYPES]:
                 continue
-            if instantiable and not t[_J_INSTANTIABLE]:
+            if instantiable and not t[J_INSTANTIABLE]:
                 continue
-            yield t[_J_NAME]
+            yield t[J_NAME]
 
     def typeColor(self, typename):
         if typename in self.__typeColors:
@@ -121,7 +124,7 @@ class Core(QObject):
     def __getOrCreateMetaType(self, cppTypename, clazz=None):
         if not clazz:
             clazz = Object
-        pythonTypename = _stripCPPNamespace(cppTypename)
+        pythonTypename = stripCPPNamespace(cppTypename)
 
         if pythonTypename in self.__metatypes.keys():
             return self.__metatypes[pythonTypename]
@@ -140,7 +143,7 @@ class Core(QObject):
         @param typename: The type name
         @return: A type that matches the provided type name
         """
-        subClasses = list(_allSubClasses(Object))
+        subClasses = list(allSubClasses(Object))
         baseTypes = self.baseTypes(typename)
 
         # Find exact python type
@@ -165,10 +168,10 @@ class Core(QObject):
         @param dic: The Object data, according to the RPC format
         @return: An instance of thee
         """
-        if _J_VALUE_TYPE in dic:
+        if J_VALUE_TYPE in dic:
             Clazz = Attribute
         else:
-            Clazz = self.__findOrCreateCorrespondingType(dic[_J_TYPE])
+            Clazz = self.__findOrCreateCorrespondingType(dic[J_TYPE])
 
         return Clazz(self, dic)
 
@@ -248,6 +251,9 @@ class Core(QObject):
 
     def _handle_attributeValueChanged(self, ptr, name, value):
         attrib = self.findObject(ptr)
+        if attrib is None:
+            print("unable to find attribute with name: %s" % name)
+            return
         value = self.toPythonValue(value, attrib.valueType())
         attrib._value = value
         attrib.valueChanged.emit(value)
