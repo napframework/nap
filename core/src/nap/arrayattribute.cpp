@@ -8,6 +8,7 @@
 
 // Local Includes
 #include "arrayattribute.h"
+#include "logger.h"
 
 namespace nap 
 {    
@@ -98,7 +99,17 @@ namespace nap
     }
     
     
-    CompoundAttribute* CompoundAttribute::getOrCreateCompoundAttribute(const std::string& name)
+	AttributeBase* CompoundAttribute::addAttribute(const std::string& name, const RTTI::TypeInfo& attributeType)
+	{
+		if (!attributeType.isKindOf(RTTI_OF(nap::AttributeBase)))
+		{
+			nap::Logger::warn(*this, "can't add object: %s, not an attribute", attributeType.getName().c_str());
+			return nullptr;
+		}
+		return &static_cast<AttributeBase&>(addChild(name, attributeType));
+	}
+
+	CompoundAttribute* CompoundAttribute::getOrCreateCompoundAttribute(const std::string& name)
     {
         auto result = getChild<CompoundAttribute>(name);
         if (!result)

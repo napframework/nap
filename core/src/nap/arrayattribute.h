@@ -55,6 +55,9 @@ namespace nap {
         template <typename T>
         Attribute<T>& addAttribute(const std::string& name, const T& value);
         
+		// Adds an attribute of type @type, with name: @name
+		AttributeBase* addAttribute(const std::string& name, const RTTI::TypeInfo& attributeType);
+
         // Create a compound attribute if it doesn't exist and return it
         CompoundAttribute* getOrCreateCompoundAttribute(const std::string& name);
         

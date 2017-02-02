@@ -9,7 +9,8 @@
 
 RTTI_DEFINE(nap::AttributeObject)
 
-namespace nap {
+namespace nap 
+{
     
     AttributeObject::AttributeObject(Object* parent, const std::string& name)
     {
@@ -18,10 +19,10 @@ namespace nap {
     }
     
 
-    AttributeBase& AttributeObject::addAttribute(const std::string &name, RTTI::TypeInfo valueType)
+    AttributeBase& AttributeObject::addAttribute(const std::string &name, RTTI::TypeInfo attributeType)
     {
-        assert(valueType.isKindOf<AttributeBase>());
-        return *static_cast<AttributeBase*>(&addChild(name, valueType));
+        assert(attributeType.isKindOf<AttributeBase>());
+        return *static_cast<AttributeBase*>(&addChild(name, attributeType));
     }
 
     
@@ -30,15 +31,21 @@ namespace nap {
         return hasChildOfType<AttributeBase>(name);
     }
 
-	AttributeBase *AttributeObject::getOrCreateAttribute(const std::string &name, const RTTI::TypeInfo &valueType) {
+
+	AttributeBase *AttributeObject::getOrCreateAttribute(const std::string &name, const RTTI::TypeInfo &valueType) 
+	{
 		auto attribute = getAttribute(name);
 
-		if (attribute) {
-			if (attribute->getValueType() != valueType) {
+		if (attribute) 
+		{
+			if (attribute->getValueType() != valueType) 
+			{
 				Logger::warn("Attribute of type '%s' existed, but had different type: %s", attribute->getValueType().getName().c_str(), valueType.getName().c_str());
 				return nullptr;
 			}
-		}else{
+		}
+		else
+		{
 			attribute = &addAttribute(name, getAttributeTypeFromValueType(valueType));
 		}
 		return attribute;

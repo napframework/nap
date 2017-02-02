@@ -42,10 +42,10 @@ namespace nap
 		 * Add an attribute with the specified value type
 		 * @param name The proposed name of this attribute,
 		 * the system may decide to use another name ir order to avoid collision
-		 * @param valueType The value type of the newly created Attribute
+		 * @param attributeType The type of the attribute, not it's value
 		 * @return The newly created Attribute
 		 */
-        AttributeBase& addAttribute(const std::string &name, RTTI::TypeInfo valueType);
+        AttributeBase& addAttribute(const std::string &name, RTTI::TypeInfo attributeType);
 
 		/**
 		 * Add an attribute with the specified name

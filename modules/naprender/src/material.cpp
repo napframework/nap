@@ -1,5 +1,6 @@
-// Include materialcomponent
+// Local Includes
 #include "material.h"
+#include "shaderutils.h"
 
 // External includes
 #include <nap/logger.h>
@@ -46,13 +47,14 @@ namespace nap
 	// Resolve uniforms
 	void Material::resolveUniforms()
 	{
-		// Make sure the resource is valid
-		if (!hasShader())
-		{
-			assert(false);
-			nap::Logger::warn(*this, "unable to resolve shader uniforms, no shader found");
-			return;
-		}
+		AttributeObject* uniform_attrs = uniforms.getTarget<AttributeObject>();
+		assert(uniform_attrs != nullptr);
+
+		// Clear, TODO: ACTUALLY RESOLVE
+		uniform_attrs->clearChildren();
+
+		// Resolve can only occur when a shader is present
+		assert(mShader != nullptr);
 
 		// Make sure it's loaded
 		if (!mShader->isLoaded())
@@ -62,12 +64,34 @@ namespace nap
 			return;
 		}
 
-		// Resolve
-		nap::Logger::info(*this, "resolving all shader uniform variables");
-		AttributeObject* uniform_attrs = uniforms.getTarget<AttributeObject>();
+		// Add
 		for (const auto& v : mShader->getShader().getUniforms())
 		{
-			uniform_attrs->addAttribute<float>(v.second->mName, 1.0f);
+			// Make sure we have a valid type for the attribute
+			RTTI::TypeInfo attr_value_type = getAttributeType(v.second->mGLSLType);
+			if (attr_value_type == RTTI::TypeInfo::empty())
+			{
+				nap::Logger::warn(*this, "unable to map GLSL uniform: %s, unsupported type");
+				continue;
+			}
+
+			RTTI::TypeInfo attr_type = getAttributeTypeFromValueType(attr_value_type);
+			assert(attr_type != RTTI::TypeInfo::empty());
+
+			// Add if not array
+			if (!v.second->isArray())
+			{
+				uniform_attrs->addAttribute(v.second->mName, attr_type);
+				continue;
+			}
+
+			// Add compound as array, TODO: should be array attribute
+			nap::CompoundAttribute& comp_attr = uniform_attrs->addCompoundAttribute(v.second->mName);
+			for (int i = 0; i < v.second->mSize; i++)
+			{
+				std::string name = stringFormat("%s_[%d]", v.second->mName.c_str(), i);
+				comp_attr.addAttribute(name, attr_type);
+			}
 		}
 	}
 

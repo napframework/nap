@@ -2,6 +2,7 @@
 
 // Local Includes
 #include "rttinap.h"
+#include "configure.h"
 
 // External Includes
 #include <unordered_map>
@@ -57,3 +58,4 @@ RTTI_DECLARE_DATA(nap::RTTIStringMap)
 RTTI_DECLARE_NUMERIC_DATA(float)
 RTTI_DECLARE_NUMERIC_DATA(int)
 RTTI_DECLARE_NUMERIC_DATA(double)
+RTTI_DECLARE_NUMERIC_DATA(nap::uint)

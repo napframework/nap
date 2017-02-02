@@ -22,6 +22,12 @@ namespace nap
         return std::max(min, std::min(value, max));
     }
 
+	// Clamp implementation for uint attribute
+	template<>
+	uint NumericAttribute<uint>::clampValue(const uint& value, const uint& min, const uint& max) {
+		return std::max(min, std::min(value, max));
+	}
+
 
     // All the comparison operators for array types
     bool operator==(const FloatArray& a, const FloatArray& b)
@@ -76,6 +82,7 @@ namespace nap
 RTTI_DEFINE_NUMERIC_DATA(float)
 RTTI_DEFINE_NUMERIC_DATA(int)
 RTTI_DEFINE_NUMERIC_DATA(double)
+RTTI_DEFINE_NUMERIC_DATA(nap::uint)
 
 // Attribute data types
 RTTI_DEFINE_DATA(std::string)
