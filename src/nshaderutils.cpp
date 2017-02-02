@@ -8,8 +8,8 @@
 namespace opengl
 {
 	// Holds all the opengl uniform to GL renderer uniform types
-	using GLUniformMap = std::unordered_map<GLenum, GLSLType>;
-	const static GLUniformMap glToUniformMap = 
+	using GLToGLSLMap = std::unordered_map<GLenum, GLSLType>;
+	const static GLToGLSLMap glToGLSLMap =
 	{
 		{ GL_FLOAT,			GLSLType::Float	},
 		{ GL_INT,			GLSLType::Int	},
@@ -119,8 +119,8 @@ namespace opengl
 	// Returns supported uniform type for associated gl type
 	opengl::GLSLType getGLSLType(GLenum glType)
 	{
-		auto it = glToUniformMap.find(glType);
-		if (it == glToUniformMap.end())
+		auto it = glToGLSLMap.find(glType);
+		if (it == glToGLSLMap.end())
 		{
 			printMessage(MessageType::ERROR, "unable to find supported uniform for gl type: %d", glType);
 			return GLSLType::Unknown;

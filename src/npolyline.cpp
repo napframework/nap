@@ -9,5 +9,4 @@ namespace opengl
 		mObject.setDrawMode(mode);
 		mObject.draw();
 	}
-
 } // opengl
