@@ -130,11 +130,12 @@ namespace opengl
 
 
 	// Constructor
-	ShaderInput::ShaderInput(GLuint shaderProgram, std::string& name, GLenum type, GLint location) :
+	ShaderInput::ShaderInput(GLuint shaderProgram, std::string& name, GLenum type, GLint location, GLint size) :
 		mName(name),
 		mType(type),
 		mLocation(location),
-		mShaderProgram(shaderProgram) 
+		mShaderProgram(shaderProgram),
+		mSize(size)
 	{
 		mGLSLType = getGLSLType(mType);
 	}
@@ -219,7 +220,7 @@ namespace opengl
 
 			// Add
 			printMessage(MessageType::INFO, "Uniform: %d, type: %d, name: %s, location: %d", i, (unsigned int)type, name, location);
-			outUniforms.emplace(std::make_pair(name, std::make_unique<UniformVariable>(program, std::string(name), type, location)));
+			outUniforms.emplace(std::make_pair(name, std::make_unique<UniformVariable>(program, std::string(name), type, location, size)));
 		}
 	}
 
@@ -252,18 +253,18 @@ namespace opengl
 
 			// Add
 			printMessage(MessageType::INFO, "Attribute: %d, type: %d, name: %s, location: %d", i, (unsigned int)type, name, location);
-			outAttributes.emplace(name, std::make_unique<VertexAttribute>(program, std::string(name), type, location));
+			outAttributes.emplace(name, std::make_unique<VertexAttribute>(program, std::string(name), type, location, size));
 		}
 	}
 
 
 	// Uniform variable constructor
-	UniformVariable::UniformVariable(GLuint shaderProgram, std::string& name, GLenum type, GLint location) :
-		ShaderInput(shaderProgram, name, type, location)	{ }
+	UniformVariable::UniformVariable(GLuint shaderProgram, std::string& name, GLenum type, GLint location, GLint size) :
+		ShaderInput(shaderProgram, name, type, location, size)	{ }
 
 
 	// Set uniform
-	void UniformVariable::set(const void* data, int count) const
+	void UniformVariable::set(const void* data) const
 	{
 		// Get type
 		if (mGLSLType == GLSLType::Unknown)
@@ -281,12 +282,12 @@ namespace opengl
 		}
 
 		// Call function
-		(*setter)(data, mLocation, count);
+		(*setter)(data, mLocation, mSize);
 	}
 
 	
 	// Vertex attribute constructor
-	VertexAttribute::VertexAttribute(GLuint shaderProgram, std::string& name, GLenum type, GLint location) :
-		ShaderInput(shaderProgram, name, type, location) { }
+	VertexAttribute::VertexAttribute(GLuint shaderProgram, std::string& name, GLenum type, GLint location, GLint size) :
+		ShaderInput(shaderProgram, name, type, location, size) { }
 
 }

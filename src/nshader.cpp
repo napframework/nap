@@ -174,7 +174,7 @@ namespace opengl
 
 
 	// Sets the uniform value in shader based on type
-	void Shader::setUniform(GLSLType type, const std::string& name, const void* data, int count)
+	void Shader::setUniform(GLSLType type, const std::string& name, const void* data)
 	{
 		// Make sure shader is linked
 		if (!isLinked())
@@ -195,12 +195,12 @@ namespace opengl
 			return;
 		}
 
-		uniform_binding->set(data, count);
+		uniform_binding->set(data);
 	}
 
 
 	// Set uniform using auto type resolving
-	void Shader::setUniform(const std::string& name, const void* data, int count)
+	void Shader::setUniform(const std::string& name, const void* data)
 	{
 		// Make sure shader is linked
 		if (!isLinked())
@@ -214,7 +214,7 @@ namespace opengl
 		if (uniform_binding == nullptr)
 			return;
 
-		uniform_binding->set(data, count);
+		uniform_binding->set(data);
 	}
 
 

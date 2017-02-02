@@ -55,14 +55,20 @@ namespace opengl
 	{
 	public:
 		// Constructor
-		ShaderInput(GLuint shaderProgram, std::string& name, GLenum type, GLint location);
+		ShaderInput(GLuint shaderProgram, std::string& name, GLenum type, GLint location, GLint size);
 		ShaderInput() = delete;
 
-		std::string		mName;				// Name of the shader attribute
-		GLenum			mType;				// OpenGL Type of the shader attribute
-		GLSLType		mGLSLType;			// System GLSL type
-		GLint			mLocation;			// Location of the shader attribute
-		GLuint			mShaderProgram;		// Shader this uniform is associated with
+		std::string		mName;							// Name of the shader attribute
+		GLenum			mType =	GL_INVALID_ENUM;		// OpenGL Type of the shader attribute
+		GLSLType		mGLSLType = GLSLType::Unknown;	// System GLSL type
+		GLint			mLocation = -1;					// Location of the shader attribute
+		GLuint			mShaderProgram = 0;				// Shader this uniform is associated with
+		GLint			mSize = 0;						// Number of elements in array
+
+		/**
+		 * @return if this shader input is an array or single value
+		 */
+		bool isArray() const							{ return mSize > 1; }
 	};
 
 
@@ -73,7 +79,7 @@ namespace opengl
 	{
 	public:
 		// Constructor
-		UniformVariable(GLuint shaderProgram, std::string& name, GLenum type, GLint location);
+		UniformVariable(GLuint shaderProgram, std::string& name, GLenum type, GLint location, GLint size);
 
 		/**
 		 * Sets the uniform variable, note that the shader this uniform belongs
@@ -82,7 +88,7 @@ namespace opengl
 		 * with the GLSL type associated with this uniform
 		 * @param count: the length of the array
 		 */
-		void set(const void* data, int count) const;
+		void set(const void* data) const;
 	};
 
 
@@ -93,7 +99,7 @@ namespace opengl
 	{
 	public:
 		// Constructor
-		VertexAttribute(GLuint shaderProgram, std::string& name, GLenum type, GLint location);
+		VertexAttribute(GLuint shaderProgram, std::string& name, GLenum type, GLint location, GLint size);
 	};
 
 

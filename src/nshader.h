@@ -93,7 +93,7 @@ namespace opengl
 		 * @param data:  pointer to data in memory
 		 * @param count: number of elements to set
 		 */
-		void setUniform(GLSLType type, const std::string& name, const void* data, int count);
+		void setUniform(GLSLType type, const std::string& name, const void* data);
 
 		/**
 		 * Sets a uniform variable based on it's name, note that you need
@@ -101,7 +101,7 @@ namespace opengl
 		 * is automatically retrieved from the associated uniform
 		 * 
 		 */
-		void setUniform(const std::string& name, const void* data, int count);
+		void setUniform(const std::string& name, const void* data);
 
 		/**
 		 * @return shader uniform input attribute with associated name, 
