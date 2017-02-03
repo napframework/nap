@@ -155,4 +155,13 @@ namespace std
 			return hash<std::string>()(k.mName);
 		}
 	};
+
+	template <>
+	struct hash<opengl::GLSLType>
+	{
+		size_t operator()(const opengl::GLSLType& v) const
+		{
+			return hash<uint8_t>()(static_cast<uint8_t>(v));
+		}
+	};
 }
