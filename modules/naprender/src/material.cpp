@@ -12,11 +12,6 @@ namespace nap
 		// Listen to when the shader changes, if so we want to
 		// make sure we listen to when it is compiled
 		shaderResourceLink.valueChanged.connect(shaderResourceChanged);
-
-		// Add uniform values
-		AttributeObject* uniforms_obj = &this->addChild<AttributeObject>("uniforms");
-		uniforms_obj->setFlag(nap::ObjectFlag::Removable, false);
-		uniforms.setTarget(*uniforms_obj);
 	}
 
 
@@ -47,11 +42,8 @@ namespace nap
 	// Resolve uniforms
 	void Material::resolveUniforms()
 	{
-		AttributeObject* uniform_attrs = uniforms.getTarget<AttributeObject>();
-		assert(uniform_attrs != nullptr);
-
 		// Clear, TODO: ACTUALLY RESOLVE
-		uniform_attrs->clearChildren();
+		uniformAttribute.clear();
 
 		// Resolve can only occur when a shader is present
 		assert(mShader != nullptr);
@@ -75,27 +67,16 @@ namespace nap
 				continue;
 			}
 
-			RTTI::TypeInfo attr_type = getAttributeTypeFromValueType(attr_value_type);
-			assert(attr_type != RTTI::TypeInfo::empty());
-
-			//GLSLAttributeCreateFunction* p = getAttributeCreateFunction(v.second->mGLSLType);
-			//CompoundAttribute attr;
-			//AttributeBase& a = (*p)(*(v.second), attr);
-
-			// Add if not array
-			if (!v.second->isArray())
+			// Get attribute create function
+			GLSLAttributeCreateFunction* attr_create_function = getAttributeCreateFunction(v.second->mGLSLType);
+			if (attr_create_function == nullptr)
 			{
-				uniform_attrs->addAttribute(v.second->mName, attr_type);
+				nap::Logger::warn(*this, "unable to create attribute for GLSL uniform of type: %d, no matching create function found", v.second->mGLSLType);
 				continue;
 			}
-
-			// Add compound as array, TODO: should be array attribute
-			nap::CompoundAttribute& comp_attr = uniform_attrs->addCompoundAttribute(v.second->mName);
-			for (int i = 0; i < v.second->mSize; i++)
-			{
-				std::string name = stringFormat("%s_[%d]", v.second->mName.c_str(), i);
-				comp_attr.addAttribute(name, attr_type);
-			}
+			
+			// Create attribute
+			AttributeBase& a = (*attr_create_function)(*(v.second), uniformAttribute);
 		}
 	}
 
@@ -103,7 +84,7 @@ namespace nap
 	// Clears all uniforms
 	void Material::clearUniforms()
 	{
-		uniforms.getTarget<AttributeObject>()->clearChildren();
+		uniformAttribute.clearChildren();
 	}
 
 

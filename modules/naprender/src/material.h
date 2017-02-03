@@ -58,7 +58,7 @@ namespace nap
 		/**
 		 * Holds all uniform shader variables
 		 */
-		ObjectLinkAttribute uniforms =					{ this, "uniforms", RTTI_OF(AttributeObject) };
+		CompoundAttribute uniformAttribute =			{ this, "uniforms" };
 
 	private:
 		
