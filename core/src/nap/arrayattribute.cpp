@@ -109,6 +109,13 @@ namespace nap
 		return &static_cast<AttributeBase&>(addChild(name, attributeType));
 	}
 
+
+	void CompoundAttribute::addAttribute(AttributeBase& attr)
+	{
+		addChild(attr);
+	}
+
+
 	CompoundAttribute* CompoundAttribute::getOrCreateCompoundAttribute(const std::string& name)
     {
         auto result = getChild<CompoundAttribute>(name);

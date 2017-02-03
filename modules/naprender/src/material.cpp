@@ -78,6 +78,10 @@ namespace nap
 			RTTI::TypeInfo attr_type = getAttributeTypeFromValueType(attr_value_type);
 			assert(attr_type != RTTI::TypeInfo::empty());
 
+			//GLSLAttributeCreateFunction* p = getAttributeCreateFunction(v.second->mGLSLType);
+			//CompoundAttribute attr;
+			//AttributeBase& a = (*p)(*(v.second), attr);
+
 			// Add if not array
 			if (!v.second->isArray())
 			{

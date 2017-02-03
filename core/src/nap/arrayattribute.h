@@ -58,6 +58,9 @@ namespace nap {
 		// Adds an attribute of type @type, with name: @name
 		AttributeBase* addAttribute(const std::string& name, const RTTI::TypeInfo& attributeType);
 
+		// Add a floating attribute, this object takes ownership of the attribute
+		void addAttribute(AttributeBase& attr);
+
         // Create a compound attribute if it doesn't exist and return it
         CompoundAttribute* getOrCreateCompoundAttribute(const std::string& name);
         
