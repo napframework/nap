@@ -32,5 +32,11 @@ namespace nap
 	* @return an attribute create function based on a certain GLSL type
 	* nullptr if GLSL type is not supported
 	*/
-	GLSLAttributeCreateFunction* getAttributeCreateFunction(opengl::GLSLType type);
+	const GLSLAttributeCreateFunction* getAttributeCreateFunction(opengl::GLSLType type);
+
+	/**
+	 * @return an attribute set function based on a certain rtti type
+	 * nullptr if RTTI type is not supported
+	 */
+	const GLSLSetterFunction* getGLSLSetFunction(const RTTI::TypeInfo& type);
 }

@@ -39,6 +39,45 @@ namespace nap
 	}
 
 
+	// Upload all uniform variables to GPU
+	// TODO, This can be optimized by attaching the uniform directly to the attribute
+	void Material::setUniformAttributes()
+	{
+		// Ensure shader exists
+		if (!hasShader())
+		{
+			nap::Logger::warn(*this, "unable to set uniform attribute, no resource linked");
+			return;
+		}
+
+		// Set all uniforms
+		for (auto i = 0; i < uniformAttribute.size(); i++)
+		{
+			// Get attribute to set
+			AttributeBase* attr = uniformAttribute.getAttribute(i);
+			assert(attr != nullptr);
+			
+			// Get matching uniform
+			const opengl::UniformVariable* uniform = mShader->getShader().getUniform(attr->getName());
+			if (uniform == nullptr)
+			{
+				nap::Logger::warn(*this, "unable set uniform GLSL attribute: %s, no attribute found", attr->getName().c_str());
+				continue;
+			}
+			
+			// Get GLSL set function
+			const GLSLSetterFunction* func = getGLSLSetFunction(attr->getValueType());
+			if (func == nullptr)
+			{
+				continue;
+			}
+
+			// Set value
+			(*func)(*uniform, *attr);
+		}
+	}
+
+
 	// Resolve uniforms
 	void Material::resolveUniforms()
 	{
@@ -68,7 +107,7 @@ namespace nap
 			}
 
 			// Get attribute create function
-			GLSLAttributeCreateFunction* attr_create_function = getAttributeCreateFunction(v.second->mGLSLType);
+			const GLSLAttributeCreateFunction* attr_create_function = getAttributeCreateFunction(v.second->mGLSLType);
 			if (attr_create_function == nullptr)
 			{
 				nap::Logger::warn(*this, "unable to create attribute for GLSL uniform of type: %d, no matching create function found", v.second->mGLSLType);

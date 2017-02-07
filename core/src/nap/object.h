@@ -188,6 +188,7 @@ namespace nap
          * Retrieve all children of this Object. Optionally recurse the full tree below.
          * @param recursive If true, include all children of the children etc as well
          * @return A new vector containing the retrieved children
+		 * TODO: THIS CALL CAN BE HEAVILY OPTIMIZED USING RESERVED MEMORY
          */
 		const std::vector<Object*> getChildren(bool recursive = false) const;
 
@@ -207,6 +208,10 @@ namespace nap
 			return result;
 		}
 
+		/**
+		 * @Return direct number of children
+		 */
+		size_t getNumberOfChildren() const;
 
         /**
          * Retrieve all children of a specific type. Optionally recurse the full tree below.

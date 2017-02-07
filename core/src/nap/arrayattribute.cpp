@@ -137,23 +137,44 @@ namespace nap
     
     void CompoundAttribute::removeAttribute(size_t index)
     {
+		// Make sure index is in bounds
+		if (index >= size())
+		{
+			nap::Logger::warn("unable to remove child at index: %d, index out of bounds");
+			return;
+		}
+
+		// Fetch attr
         auto child = getAttribute(index);
-        if (child)
-            removeChild(*child);
+		if (child == nullptr)
+		{
+			nap::Logger::warn("unable to query child at index: %d");
+			return;
+		}
+		removeChild(*child);
     }
     
-    
-    AttributeBase* CompoundAttribute::getAttribute(const std::string& name)
+
+	size_t CompoundAttribute::size() const
+	{
+		return getNumberOfChildren();
+	}
+
+
+	AttributeBase* CompoundAttribute::getAttribute(const std::string& name)
     {
         return getChild<AttributeBase>(name);
     }
     
     
+	// Return attribute based on index, does implicit type conversion
     AttributeBase* CompoundAttribute::getAttribute(size_t index)
     {
-        if (index >= size())
-            return nullptr;
-        return getAttributes()[index];
+		nap::Object* obj = getChild(index);
+		if (obj == nullptr)
+			return nullptr;
+		assert(obj->getTypeInfo().isKindOf(RTTI_OF(AttributeBase)));
+		return static_cast<AttributeBase*>(obj);
     }
     
     

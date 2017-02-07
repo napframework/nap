@@ -190,15 +190,13 @@ void onRender(const nap::SignalAttribute& signal)
 	// Get model matrix from model
 	nap::TransformComponent* model_xform = modelComponent->getParent()->getComponent<nap::TransformComponent>();
 
-	// Send values
-	shaderResource->getShader().setUniform("projectionMatrix", &(cameraComponent->getProjectionMatrix()[0][0]));
-	shaderResource->getShader().setUniform("viewMatrix", &(cam_xform->getGlobalTransform()[0][0]));
-	shaderResource->getShader().setUniform("modelMatrix", &(model_xform->getGlobalTransform()[0][0]));
-
-	glm::vec4 colors[2];
-	colors[0] = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-	colors[1] = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-	shaderResource->getShader().setUniform("mColor", &(colors[0][0]));
+	// Set uniforms
+	material->uniformAttribute.getAttribute<glm::mat4x4>("projectionMatrix")->setValue(cameraComponent->getProjectionMatrix());
+	material->uniformAttribute.getAttribute<glm::mat4x4>("viewMatrix")->setValue(cam_xform->getGlobalTransform());
+	material->uniformAttribute.getAttribute<glm::mat4x4>("modelMatrix")->setValue(model_xform->getGlobalTransform());
+	
+	glm::vec4 color(1.0f, 1.0f, 1.0f, 1.0f);
+	material->uniformAttribute.getAttribute<glm::vec4>("mColor")->setValue(color);
 
 	// Set texture 1 for shader
 	glActiveTexture(GL_TEXTURE0);
@@ -206,8 +204,12 @@ void onRender(const nap::SignalAttribute& signal)
 	// Bind correct texture and send to shader
 	opengl::Image* img = currentIndex == 0 ? pigTexture.get() : testTexture.get();
 	img->bind();	
-	int index = 0;
-	shaderResource->getShader().setUniform("myTextureSampler", &index);
+	material->uniformAttribute.getAttribute<int>("myTextureSampler")->setValue(0);
+
+	// Force shader update
+	material->setUniformAttributes();
+
+	// Unbind material
 	material->unbind();
 
 	// Render all objects

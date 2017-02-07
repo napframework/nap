@@ -14,14 +14,14 @@
 // Local includes
 #include "attribute.h"
 
-namespace nap {
-    
+namespace nap 
+{    
     template <typename T>
     class ArrayAttribute;
-    
-    
+       
     // An attribute that can hold collections of anything that is derived from @AttributeBase
-    class CompoundAttribute : public AttributeBase {
+    class CompoundAttribute : public AttributeBase 
+	{
         RTTI_ENABLE_DERIVED_FROM(AttributeBase)
         
     public:
@@ -38,7 +38,9 @@ namespace nap {
         
         // Value accessors
         void getValue(AttributeBase& inAttribute) const override;
-        void setValue(const AttributeBase &inAttribute) override;
+        
+		// Set attribute to value
+		void setValue(const AttributeBase &inAttribute) override;
         
         // Add another nested compound attribute
         CompoundAttribute& addCompoundAttribute(const std::string& name = "");
@@ -76,24 +78,34 @@ namespace nap {
         template <typename T>
         Attribute<T>* getOrCreateAttribute(const std::string& name, const T& defaultValue);
         
+		// Get the attribute based on name if it exists
+		template <typename T>
+		Attribute<T>* getAttribute(const std::string& name);
+
         // Remove attribute by name from the compound
         void removeAttribute(const std::string name);
-        // Remove an attribute by it's index
+        
+		// Remove an attribute by it's index
         void removeAttribute(size_t index);
         
         // Clear the compound of all of it's contents
-        void clear() { clearChildren(); }
+        void clear()																		{ clearChildren(); }
         
         // Return number of attributes within the compound
-        size_t size() { return getAttributes().size(); }
+		size_t size() const;
         
         // Return all attributes within the compound
-        std::vector<AttributeBase*> getAttributes() { return getChildrenOfType<AttributeBase>(); }
-        // Return all attributes within the compound const
-        std::vector<const AttributeBase*> getAttributes() const { return getChildrenOfType<AttributeBase>(); }
-        // Return a sub-attribute by name
+		// TODO: This call is in essence slow because of the multi bound checks and RTTI
+		// Can't we make sure all children are of type AttributeBase?
+        std::vector<AttributeBase*> getAttributes()											{ return getChildrenOfType<AttributeBase>(); }
+        
+		// Return all attributes within the compound const
+        std::vector<const AttributeBase*> getAttributes() const								{ return getChildrenOfType<AttributeBase>(); }
+        
+		// Return a sub-attribute by name
         AttributeBase* getAttribute(const std::string& name);
-        // Return a sub-attribute by index
+        
+		// Return a sub-attribute by index
         AttributeBase* getAttribute(size_t index);
         
         Signal<CompoundAttribute&> sizeChanged;
@@ -108,20 +120,23 @@ namespace nap {
         // TODO redundant?
         void emitValueChanged() override final { }
         
+		// Link
         mutable TypedLink<CompoundAttribute> mLink = { *this };
         
+		// Called when number of attributes changes
         Slot<CompoundAttribute&> childSizeChangedSlot = { this, &CompoundAttribute::childSizeChanged };
     };
     
     
     // An attribute that holds a collection of attributes of one specific datatype T
     template <typename T>
-    class ArrayAttribute : public CompoundAttribute {
+    class ArrayAttribute : public CompoundAttribute 
+	{
         RTTI_ENABLE_DERIVED_FROM(CompoundAttribute)
-        
     public:
         // Default constructor
         ArrayAttribute() = default;
+
         // Constructor that takes the attribute's parent and name
         ArrayAttribute(AttributeObject* parent, const std::string& name, bool atomic = false) : CompoundAttribute(parent, name, atomic) {}
         
@@ -135,18 +150,22 @@ namespace nap {
         Attribute<T>& addAttribute(const std::string& name, const T& value);
         
         // Value accessors
-        std::vector<T> getValues();
+        std::vector<T> getValues() const;
+
+		// Set values
         void setValues(const std::vector<T>& values);
         
         // subscript operator implementations
-        T& operator[](size_t index) { return getAttributes()[index]->getValueRef(); }
-        const T& operator[](size_t index) const { return getAttributes()[index]->getValue(); }
-        T& operator[](const std::string& name) { return getChild<Attribute<T>>(name)->getValueRef(); }
-        const T& operator[](const std::string& name) const { return getChild<Attribute<T>>(name)->getValue(); }
+        T& operator[](size_t index)							{ return getAttributes()[index]->getValueRef(); }
+        
+		const T& operator[](size_t index) const				{ return getAttributes()[index]->getValue(); }
+        
+		T& operator[](const std::string& name)				{ return getChild<Attribute<T>>(name)->getValueRef(); }
+        
+		const T& operator[](const std::string& name) const	{ return getChild<Attribute<T>>(name)->getValue(); }
         
         // Return the attributes within the array
-        std::vector<Attribute<T>*> getAttributes() { return getChildrenOfType<Attribute<T>>(); }
-//        const std::vector<Attribute<T>*> getAttributes() const { return getChildrenOfType<Attribute<T>>(); }
+        std::vector<Attribute<T>*> getAttributes()			{ return getChildrenOfType<Attribute<T>>(); }
 
         // Return an attribute within the array by name
         Attribute<T>* getAttribute(const std::string& name);
@@ -155,12 +174,16 @@ namespace nap {
         Attribute<T>* getAttribute(size_t index);
         
     protected:
-        Link& getLink() const override { return mLink; }
+        Link& getLink() const override						{ return mLink; }
         
     private:
-        mutable TypedLink<ArrayAttribute<T>> mLink = { *this };
+        mutable TypedLink<ArrayAttribute<T>> mLink =		{ *this };
         
     };
+
+	//////////////////////////////////////////////////////////////////////////
+	// Template Definitions
+	//////////////////////////////////////////////////////////////////////////
     
     
     template <typename T>
@@ -219,16 +242,25 @@ namespace nap {
     template <typename T>
     Attribute<T>* CompoundAttribute::getOrCreateAttribute(const std::string& name, const T& defaultValue)
     {
-        auto result = getChild<Attribute<T>>(name);
+        auto result = getAttribute<T>(name);
         if (!result)
         {
-            if (hasChild(name))
-                return nullptr;
+			if (hasChild(name))
+			{
+				return nullptr;
+			}
             result = &addAttribute<T>(name);
             result->setValue(defaultValue);
         }
         return result;
     }
+
+
+	template <typename T>
+	Attribute<T>* CompoundAttribute::getAttribute(const std::string& name)
+	{
+		return getChild<Attribute<T>>(name);
+	}
     
     
     // Templated definition of getValueType
@@ -240,11 +272,21 @@ namespace nap {
     
     
     template <typename T>
-    std::vector<T> ArrayAttribute<T>::getValues()
+    std::vector<T> ArrayAttribute<T>::getValues() const
     {
-        std::vector<T> result;
-        for (auto& attribute : getAttributes())
-            result.emplace_back(attribute->getValue());
+		std::vector<Attribute<T>*> attrs = getAttributes();
+		std::vector<T> result;
+
+		// If there's no attributes, return
+		if (attrs.size() == 0)
+			return result;
+
+		// Otherwise reserve space for fast copy
+		result.reserve(attrs.size());
+		for (auto& attribute : attrs)
+		{
+			result.emplace_back(attribute->getValue());
+		}
         return result;
     }
     

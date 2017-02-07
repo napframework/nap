@@ -60,6 +60,12 @@ namespace nap
 		 */
 		CompoundAttribute uniformAttribute =			{ this, "uniforms" };
 
+		/**
+		 * Uploads all uniform variables to the GPU
+		 * Note that this call will only work when the shader is bound!
+		 */
+		void setUniformAttributes();
+
 	private:
 		
 		/**

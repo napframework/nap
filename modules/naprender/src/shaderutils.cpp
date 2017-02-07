@@ -5,76 +5,208 @@
 // External Includes
 #include <unordered_map>
 #include <shaderresource.h>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace nap
 {
+	// Set uniform float based attr
+	void setUniformFloat(const opengl::UniformVariable& var, const AttributeBase& attr)			
+	{
+		assert(attr.getValueType() == RTTI_OF(float));
+		if (var.isArray())
+		{
+			assert(false);
+			return;
+		}
+		const Attribute<float>& attribute = static_cast<const Attribute<float>&>(attr);
+		var.set((&attribute.getValue()));
+	}
+
+	// Set uniform int based on attr
+	void setUniformInt(const opengl::UniformVariable& var, const AttributeBase& attr)				
+	{
+		assert(attr.getValueType() == RTTI_OF(int));
+		if (var.isArray())
+		{
+			assert(false);
+			return;
+		}
+		const Attribute<int>& attribute = static_cast<const Attribute<int>&>(attr);
+		var.set((&attribute.getValue()));
+	}
+
+	// Set uniform unsigned int based on var
+	void setUniformUInt(const opengl::UniformVariable& var, const AttributeBase& attr)			
+	{
+		assert(attr.getValueType() == RTTI_OF(nap::uint));
+		if (var.isArray())
+		{
+			assert(false);
+			return;
+		}
+		const Attribute<nap::uint>& attribute = static_cast<const Attribute<nap::uint>&>(attr);
+		var.set((&attribute.getValue()));
+	}
+	
+	// Set vec2 based on var
+	void setUniformVec2(const opengl::UniformVariable& var, const AttributeBase& attr)			
+	{
+		assert(attr.getValueType() == RTTI_OF(glm::vec2));
+		if (var.isArray())
+		{
+			assert(false);
+			return;
+		}
+
+		const Attribute<glm::vec2>& attribute = static_cast<const Attribute<glm::vec2>&>(attr);
+		var.set(glm::value_ptr(attribute.getValue()));
+	}
+	
+	// set vec3 based on var
+	void setUniformVec3(const opengl::UniformVariable& var, const AttributeBase& attr)			
+	{
+		assert(attr.getValueType() == RTTI_OF(glm::vec3));
+		if (var.isArray())
+		{
+			assert(false);
+			return;
+		}
+
+		const Attribute<glm::vec3>& attribute = static_cast<const Attribute<glm::vec3>&>(attr);
+		var.set(glm::value_ptr(attribute.getValue()));
+	}
+	
+	// Set vec4 based on var
+	void setUniformVec4(const opengl::UniformVariable& var, const AttributeBase& attr)			
+	{
+		assert(attr.getValueType() == RTTI_OF(glm::vec4));
+		if (var.isArray())
+		{
+			assert(false);
+			return;
+		}
+
+		const Attribute<glm::vec4>& attribute = static_cast<const Attribute<glm::vec4>&>(attr);
+		var.set(glm::value_ptr(attribute.getValue()));
+	}
+
+	// Set mat2 based on var
+	void setUniformMat2(const opengl::UniformVariable& var, const AttributeBase& attr)			
+	{
+		assert(attr.getValueType() == RTTI_OF(glm::mat2x2));
+		if (var.isArray())
+		{
+			assert(false);
+			return;
+		}
+
+		const Attribute<glm::mat2x2>& attribute = static_cast<const Attribute<glm::mat2x2>&>(attr);
+		var.set(glm::value_ptr(attribute.getValue()));
+	}
+
+	// Set uniform 3 based on var
+	void setUniformMat3(const opengl::UniformVariable& var, const AttributeBase& attr)			
+	{
+		assert(attr.getValueType() == RTTI_OF(glm::mat3x3));
+		if (var.isArray())
+		{
+			assert(false);
+			return;
+		}
+
+		const Attribute<glm::mat3x3>& attribute = static_cast<const Attribute<glm::mat3x3>&>(attr);
+		var.set(glm::value_ptr(attribute.getValue()));
+	}
+
+	// set mat4 based on var
+	void setUniformMat4(const opengl::UniformVariable& var, const AttributeBase& attr)			
+	{
+		assert(attr.getValueType() == RTTI_OF(glm::mat4x4));
+		if (var.isArray())
+		{
+			assert(false);
+			return;
+		}
+
+		const Attribute<glm::mat4x4>& attribute = static_cast<const Attribute<glm::mat4x4>&>(attr);
+		var.set(glm::value_ptr(attribute.getValue()));
+	}
+
 	/**
-	 * All convert functions
+	 * Static iterative uniform attribute create function
 	 */
-	void setUniformFloat(const opengl::UniformVariable& var, const AttributeBase& attr)			{ }
-	void setUniformInt(const opengl::UniformVariable& var, const AttributeBase& attr)				{ }
-	void setUniformUInt(const opengl::UniformVariable& var, const AttributeBase& attr)			{ }
-	void setUniformVec2(const opengl::UniformVariable& var, const AttributeBase& attr)			{ }
-	void setUniformVec3(const opengl::UniformVariable& var, const AttributeBase& attr)			{ }
-	void setUniformVec4(const opengl::UniformVariable& var, const AttributeBase& attr)			{ }
-	void setUniformMat2(const opengl::UniformVariable& var, const AttributeBase& attr)			{ }
-	void setUniformMat3(const opengl::UniformVariable& var, const AttributeBase& attr)			{ }
-	void setUniformMat4(const opengl::UniformVariable& var, const AttributeBase& attr)			{ }
+	template<typename T>
+	static AttributeBase& createGLSLAttribute(const opengl::UniformVariable& uvar, CompoundAttribute& compound, const T& defaultValue)
+	{
+		if (!uvar.isArray())
+		{
+			return compound.addAttribute<T>(uvar.mName.c_str(), defaultValue);
+		}
+
+		ArrayAttribute<T>& array_attr = compound.addArrayAttribute<T>(uvar.mName.c_str());
+		for (int i = 0; i < uvar.mSize; i++)
+		{
+			std::string attr_name = stringFormat("%s_%d", uvar.mName.c_str(), i);
+			array_attr.addAttribute(attr_name, defaultValue);
+		}
+		return array_attr;
+	}
+
 
 	/**
 	 * All attribute create functions
 	 */
 	AttributeBase& createGLSLFloatAttribute(const opengl::UniformVariable& uvar, CompoundAttribute& compound)
 	{
-		return compound.addAttribute<float>(uvar.mName.c_str(), 1.0f);
+		return createGLSLAttribute<float>(uvar, compound, 1.0f);
 	}
 
 	// Create int attribute
 	AttributeBase& createGLSLIntAttribute(const opengl::UniformVariable& uvar, CompoundAttribute& compound)
 	{
-		return compound.addAttribute<int>(uvar.mName.c_str(), 0);
+		return createGLSLAttribute<int>(uvar, compound, 0);
 	}
 
 	// Create uint attribute
 	AttributeBase& createGLSLUIntAttribute(const opengl::UniformVariable& uvar, CompoundAttribute& compound)
 	{
-		return compound.addAttribute<nap::uint>(uvar.mName.c_str(), 0);
+		return createGLSLAttribute<nap::uint>(uvar, compound, 0);
 	}
 
 	// Create vec2 attribute
 	AttributeBase& createGLSLVec2Attribute(const opengl::UniformVariable& uvar, CompoundAttribute& compound)
 	{
-		return compound.addAttribute<glm::vec2>(uvar.mName.c_str(), glm::vec2());
+		return createGLSLAttribute<glm::vec2>(uvar, compound, glm::vec2());
 	}
 
 	// Create vec3 attribute
 	AttributeBase& createGLSLVec3Attribute(const opengl::UniformVariable& uvar, CompoundAttribute& compound)
 	{
-		return compound.addAttribute<glm::vec3>(uvar.mName.c_str(), glm::vec3());
+		return createGLSLAttribute<glm::vec3>(uvar, compound, glm::vec3());
 	}
 
 	// Create vec4 attribute
 	AttributeBase& createGLSLVec4Attribute(const opengl::UniformVariable& uvar, CompoundAttribute& compound)
 	{
-		return compound.addAttribute<glm::vec4>(uvar.mName.c_str(), glm::vec4());
+		return createGLSLAttribute<glm::vec4>(uvar, compound, glm::vec4());
 	}
 
 	// Create matrix 2x2 attribute
 	AttributeBase& createGLSLMat2Attribute(const opengl::UniformVariable& uvar, CompoundAttribute& compound)
 	{
-		return compound.addAttribute<glm::mat2x2>(uvar.mName.c_str(), glm::mat2x2());
+		return createGLSLAttribute<glm::mat2x2>(uvar, compound, glm::mat2x2());
 	}
 
 	// Create matrix 3x3 attribute
 	AttributeBase& createGLSLMat3Attribute(const opengl::UniformVariable& uvar, CompoundAttribute& compound)
 	{
-		return compound.addAttribute<glm::mat3x3>(uvar.mName.c_str(), glm::mat3x3());
+		return createGLSLAttribute<glm::mat3x3>(uvar, compound, glm::mat3x3());
 	}
 
 	// Create matrix 4x4 attribute
 	AttributeBase& createGLSLMat4Attribute(const opengl::UniformVariable& uvar, CompoundAttribute& compound)
 	{
-		return compound.addAttribute<glm::mat4x4>(uvar.mName.c_str(), glm::mat4x4());
+		return createGLSLAttribute<glm::mat4x4>(uvar, compound, glm::mat4x4());
 	}
 
 
@@ -136,7 +268,7 @@ namespace nap
 	/**
 	 * @return a map that contains the attribute create function for the specified GLSL type
 	 */
-	GLSLAttributeCreateMap& getGLSLAttributeCreateMap()
+	const GLSLAttributeCreateMap& getGLSLAttributeCreateMap()
 	{
 		static GLSLAttributeCreateMap map;
 		if (map.empty())
@@ -159,8 +291,9 @@ namespace nap
 	// The attribute type associated with a certain GLSL shader input type
 	RTTI::TypeInfo getAttributeType(opengl::GLSLType type)
 	{
-		auto it = getGLSLAttributeMap().find(type);
-		if (it == getGLSLAttributeMap().end())
+		const nap::GLSLAttributeMap& map = getGLSLAttributeMap();
+		auto it = map.find(type);
+		if (it == map.end())
 		{
 			nap::Logger::warn("unable to find attribute associated with GLSL type: %d", type);
 			return RTTI::TypeInfo::empty();
@@ -170,12 +303,27 @@ namespace nap
 
 
 	// Return the attribute create function
-	GLSLAttributeCreateFunction* getAttributeCreateFunction(opengl::GLSLType type)
+	const GLSLAttributeCreateFunction* getAttributeCreateFunction(opengl::GLSLType type)
 	{
-		auto it = getGLSLAttributeCreateMap().find(type);
-		if (it == getGLSLAttributeCreateMap().end())
+		const GLSLAttributeCreateMap& map = getGLSLAttributeCreateMap();
+		auto it = map.find(type);
+		if (it == map.end())
 		{
 			nap::Logger::warn("unable to find associated GLSL attribute create function for GLSL type: %d", type);
+			return nullptr;
+		}
+		return &(it->second);
+	}
+
+
+	// Get glsl set function based on rtti attribute type
+	const GLSLSetterFunction* getGLSLSetFunction(const RTTI::TypeInfo& type)
+	{
+		const nap::GLSLSetterMap& map = getGLSLSetterMap();
+		auto it = map.find(type);
+		if (it == map.end())
+		{
+			nap::Logger::warn("unable to find associated GLSL uniform set function for type: %s", type.getName().c_str());
 			return nullptr;
 		}
 		return &(it->second);
