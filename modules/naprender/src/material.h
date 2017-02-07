@@ -64,7 +64,15 @@ namespace nap
 		 * Uploads all uniform variables to the GPU
 		 * Note that this call will only work when the shader is bound!
 		 */
-		void setUniformAttributes();
+		void pushUniforms();
+
+		/**
+		 * Template uniform set function
+		 * @param name: name of the uniform variable
+		 * @param value: value to set
+		 */
+		template<typename T>
+		void setUniform(const std::string& name, const T& value);
 
 	private:
 		
@@ -107,6 +115,23 @@ namespace nap
 		NSLOT(shaderResourceChanged, AttributeBase&, onResourceLinkChanged)
 		NSLOT(shaderLoaded, bool, onShaderLoaded)
 	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Template Definitions
+	//////////////////////////////////////////////////////////////////////////
+	template<typename T>
+	void nap::Material::setUniform(const std::string& name, const T& value)
+	{
+		Attribute<T>* attr = uniformAttribute.getAttribute<T>(name);
+		if (attr == nullptr)
+		{
+			nap::Logger::warn(*this, "uniform variable: %s does not exist", name.c_str());
+			return;
+		}
+		attr->setValue(value);
+	}
+
 }
 
 RTTI_DECLARE(nap::Material)

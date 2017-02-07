@@ -41,7 +41,7 @@ namespace nap
 
 	// Upload all uniform variables to GPU
 	// TODO, This can be optimized by attaching the uniform directly to the attribute
-	void Material::setUniformAttributes()
+	void Material::pushUniforms()
 	{
 		// Ensure shader exists
 		if (!hasShader())

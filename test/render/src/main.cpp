@@ -180,9 +180,6 @@ void onRender(const nap::SignalAttribute& signal)
 	nap::Material* material = modelComponent->getMaterial();
 	assert(material != nullptr);	
 
-	// Bind Shader
-	material->bind();
-
 	// Get view matrix from camera
 	nap::TransformComponent* cam_xform = cameraComponent->getParent()->getComponent<nap::TransformComponent>();
 	assert(cam_xform != nullptr);
@@ -191,23 +188,26 @@ void onRender(const nap::SignalAttribute& signal)
 	nap::TransformComponent* model_xform = modelComponent->getParent()->getComponent<nap::TransformComponent>();
 
 	// Set uniforms
-	material->uniformAttribute.getAttribute<glm::mat4x4>("projectionMatrix")->setValue(cameraComponent->getProjectionMatrix());
-	material->uniformAttribute.getAttribute<glm::mat4x4>("viewMatrix")->setValue(cam_xform->getGlobalTransform());
-	material->uniformAttribute.getAttribute<glm::mat4x4>("modelMatrix")->setValue(model_xform->getGlobalTransform());
+	material->setUniform<glm::mat4x4>("projectionMatrix", cameraComponent->getProjectionMatrix());
+	material->setUniform<glm::mat4x4>("viewMatrix", cam_xform->getGlobalTransform());
+	material->setUniform<glm::mat4x4>("modelMatrix", model_xform->getGlobalTransform());
 	
 	glm::vec4 color(1.0f, 1.0f, 1.0f, 1.0f);
-	material->uniformAttribute.getAttribute<glm::vec4>("mColor")->setValue(color);
+	material->setUniform<glm::vec4>("mColor", color);
 
 	// Set texture 1 for shader
 	glActiveTexture(GL_TEXTURE0);
 
+	// Bind Shader
+	material->bind();
+
 	// Bind correct texture and send to shader
 	opengl::Image* img = currentIndex == 0 ? pigTexture.get() : testTexture.get();
 	img->bind();	
-	material->uniformAttribute.getAttribute<int>("myTextureSampler")->setValue(0);
+	material->setUniform("myTextureSampler", 0);
 
 	// Force shader update
-	material->setUniformAttributes();
+	material->pushUniforms();
 
 	// Unbind material
 	material->unbind();
@@ -247,6 +247,7 @@ bool init(nap::Core& core)
 
 	//////////////////////////////////////////////////////////////////////////
 
+	/*
 	std::string rpcServiceTypename = "nap::JsonRpcService";
 	RTTI::TypeInfo rpcServiceType = RTTI::TypeInfo::getByName(rpcServiceTypename);
 	if (!rpcServiceType.isValid()) 
@@ -258,7 +259,7 @@ bool init(nap::Core& core)
 	rpcService = core.getOrCreateService(rpcServiceType);
 	//rpcService->getAttribute<bool>("manual")->setValue(true);
 	rpcService->getAttribute<bool>("running")->setValue(true);
-
+	*/
 
 	//////////////////////////////////////////////////////////////////////////
 
@@ -273,7 +274,7 @@ bool init(nap::Core& core)
 	renderWindow->size.setValue({ windowWidth, windowHeight });
 	renderWindow->position.setValue({ (1920 / 2) - 256, 1080 / 2 - 256 });
 	renderWindow->title.setValue("Wolla");
-	renderWindow->sync.setValue(true);
+	renderWindow->sync.setValue(false);
 
 	// Connect draw and update signals
 	renderWindow->draw.signal.connect(renderSlot);
