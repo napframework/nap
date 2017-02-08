@@ -43,8 +43,8 @@ namespace opengl
 		Image& operator=(const Image&) = delete;
 
 		// Getters
-		const Texture2D&		getTexture() const 		{ return mTexture; }
-		const Bitmap&			getBitmap()	 const		{ return mBitmap; }
+		const Texture2D&		getTexture() const 				{ return mTexture; }
+		const Bitmap&			getBitmap()	 const				{ return mBitmap; }
 		
 		// Width / Height
 		unsigned int			getWidth()   const;
@@ -76,7 +76,7 @@ namespace opengl
 		 * binds the image on the GPU
 		 * note that this call will fail if no image is loaded
 		 */
-		void					bind();
+		void					bind() const;
 		
 		/**
 		 * unbind
@@ -84,7 +84,7 @@ namespace opengl
 		 * unbind the image on the GPU
 		 * note that this call will fail if no image is loaded
 		 */
-		void					unbind();
+		void					unbind() const;
 
 		/**
 		 * getData
@@ -134,7 +134,7 @@ namespace opengl
 
 	private:
 		Bitmap					mBitmap;				// Bitmap loaded from disk
-		Texture2D				mTexture;				//	OpenGL Texture
+		Texture2D				mTexture;				// OpenGL Texture
 		std::string				mPath;					// Image Path
 		bool					mLoaded		= false;	// If the bitmap and texture are loaded
 		bool					mCompress	= false;	// If the image needs to be compressed or not

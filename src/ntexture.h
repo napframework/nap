@@ -58,13 +58,17 @@ namespace opengl
 		 * All future texture functions will modify this texture
 		 * Derived classes need to implement this for 2d or 3d textures
 		 */
-		bool bind();
-		bool unbind();
+		bool bind() const;
+		
+		/**
+		 * Unbind texture
+		 */
+		bool unbind() const;
 
 		/**
 		 * @return texture target type (2D, 3D, 2D array etc.)
 		 */
-		virtual GLenum getTargetType() = 0;
+		virtual GLenum getTargetType() const = 0;
 
 		/**
 		 * @Return current GPU texture location
@@ -206,7 +210,7 @@ namespace opengl
 		 * 
 		 * This texture's OpenGL target type is a GL_TEXTURE_2D
 		 */
-		GLenum getTargetType() override		{ return GL_TEXTURE_2D; }
+		GLenum getTargetType() const override		{ return GL_TEXTURE_2D; }
 
 		/**
 		 * setData

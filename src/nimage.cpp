@@ -85,14 +85,14 @@ namespace opengl
 
 
 	// Binds the texture on the GPU
-	void Image::bind()
+	void Image::bind() const
 	{
 		mTexture.bind();
 	}
 
 	
 	// Unbinds the texture on the GPU
-	void Image::unbind()
+	void Image::unbind() const
 	{
 		mTexture.unbind();
 	}

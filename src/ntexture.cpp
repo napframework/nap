@@ -40,7 +40,7 @@ namespace opengl
 
 
 	// Binds the texture
-	bool BaseTexture::bind()
+	bool BaseTexture::bind() const
 	{
 		if (!isAllocated())
 		{
@@ -53,7 +53,7 @@ namespace opengl
 
 
 	// Detach the texture from the current Texture Unit
-	bool BaseTexture::unbind()
+	bool BaseTexture::unbind() const
 	{
 		if (!isAllocated())
 		{
