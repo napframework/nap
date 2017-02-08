@@ -6,6 +6,7 @@
 #include "openglrenderer.h"
 #include "transformcomponent.h"
 #include "cameracomponent.h"
+#include "renderglobals.h"
 
 // External Includes
 #include <nap/core.h>
@@ -167,20 +168,61 @@ namespace nap
 		std::vector<TransformComponent*> top_xforms;
 		getTopLevelTransforms(&(getCore().getRoot()), top_xforms);
 		for (auto& xform : top_xforms)
+		{
 			xform->update();
+		}
 	}
 
 
-	// Renders all available objects
-	void RenderService::renderObjects()
+	// Render all objects in scene graph using specifief camera
+	void RenderService::renderObjects(const CameraComponent& camera)
 	{
+		// Extract camera projection matrix
+		const glm::mat4x4 projection_matrix = camera.getProjectionMatrix();
+		
+		// Extract camera transform
+		nap::TransformComponent* cam_xform = camera.getParent()->getComponent<nap::TransformComponent>();
+		if (cam_xform == nullptr)
+		{
+			assert(false);
+			nap::Logger::warn("unable to extract view matrix, camera has no transform component: %s", camera.getName().c_str());
+		}
+		const glm::mat4x4& view_matrix = cam_xform == nullptr ? identityMatrix : cam_xform->getGlobalTransform();
+		
 		// Get all render components
 		std::vector<nap::RenderableComponent*> render_comps;
 		getObjects<nap::RenderableComponent>(render_comps);
 
 		// Draw
 		for (auto& comp : render_comps)
+		{
+			Material* comp_mat = comp->getMaterial();
+			if (comp_mat == nullptr)
+			{
+				nap::Logger::warn("render able object has no material: %s", comp->getName().c_str());
+				continue;
+			}
+
+			// Get xform component
+			nap::Entity* parent_entity = comp->getParent();
+			assert(parent_entity != nullptr);
+			TransformComponent* xform_comp = parent_entity->getComponent<TransformComponent>();
+			
+			// Make sure it exists and extract global matrix
+			if (xform_comp == nullptr)
+			{
+				nap::Logger::warn("render able object has no transform: %s", comp->getName().c_str());
+			}
+			const glm::mat4x4& global_matrix = xform_comp == nullptr ? identityMatrix : xform_comp->getGlobalTransform();
+
+			// Set uniform variables
+			comp_mat->setUniformValue<glm::mat4x4>(projectionMatrixUniform, projection_matrix);
+			comp_mat->setUniformValue<glm::mat4x4>(viewMatrixUniform, view_matrix);
+			comp_mat->setUniformValue<glm::mat4x4>(modelMatrixUniform, global_matrix);
+
+			// Draw
 			comp->draw();
+		}
 	}
 
 

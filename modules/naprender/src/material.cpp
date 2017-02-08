@@ -78,6 +78,28 @@ namespace nap
 	}
 
 
+	// Set link to resource as uniform binding
+	void Material::setUniformTexture(const std::string& name, TextureResource& resource)
+	{
+		AttributeBase* texture_link_attr = uniformAttribute.getAttribute(name);
+		if (texture_link_attr == nullptr)
+		{
+			nap::Logger::warn(*this, "uniform variable: %s does not exist", texture_link_attr->getName().c_str());
+			return;
+		}
+
+		if (!texture_link_attr->getTypeInfo().isKindOf(RTTI_OF(ResourceLinkAttribute)))
+		{
+			nap::Logger::warn(*this, "uniform variable: %s is not a resource link");
+			return;
+		}
+
+		// Set resource
+		ResourceLinkAttribute* resource_link = static_cast<ResourceLinkAttribute*>(texture_link_attr);
+		resource_link->setResource(resource);
+	}
+
+
 	// Resolve uniforms
 	void Material::resolveUniforms()
 	{

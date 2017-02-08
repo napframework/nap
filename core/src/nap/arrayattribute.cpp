@@ -8,6 +8,7 @@
 
 // Local Includes
 #include "arrayattribute.h"
+#include "resourcelinkattribute.h"
 #include "logger.h"
 
 namespace nap 
@@ -99,6 +100,14 @@ namespace nap
     }
     
     
+	ResourceLinkAttribute& CompoundAttribute::addResourceLinkAttribute(const std::string& name, const RTTI::TypeInfo& type)
+	{
+		ResourceLinkAttribute& link_attr = addChild<ResourceLinkAttribute>(name);
+		link_attr.setResourceType(type);
+		return link_attr;
+	}
+
+
 	AttributeBase* CompoundAttribute::addAttribute(const std::string& name, const RTTI::TypeInfo& attributeType)
 	{
 		if (!attributeType.isKindOf(RTTI_OF(nap::AttributeBase)))

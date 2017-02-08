@@ -14,10 +14,15 @@
 // Local includes
 #include "attribute.h"
 
+
 namespace nap 
-{    
+{
+	// Forward declare array attribute
     template <typename T>
     class ArrayAttribute;
+
+	// Forward declare resource link attribute
+	class ResourceLinkAttribute;
        
     // An attribute that can hold collections of anything that is derived from @AttributeBase
     class CompoundAttribute : public AttributeBase 
@@ -49,6 +54,9 @@ namespace nap
         template <typename T>
         ArrayAttribute<T>& addArrayAttribute(const std::string& name = "");
         
+		// Add resource link attribute of resource type
+		ResourceLinkAttribute& addResourceLinkAttribute(const std::string& name, const RTTI::TypeInfo& type);
+
         // Add an attribute of type T
         template <typename T>
         Attribute<T>& addAttribute(const T& value);

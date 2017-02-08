@@ -5,7 +5,9 @@
 // External Includes
 #include <unordered_map>
 #include <shaderresource.h>
+#include <imageresource.h>
 #include <glm/gtc/type_ptr.hpp>
+#include <nap/arrayattribute.h>
 
 namespace nap
 {
@@ -209,6 +211,16 @@ namespace nap
 		return createGLSLAttribute<glm::mat4x4>(uvar, compound, glm::mat4x4());
 	}
 
+	// Create texture 2d attribute
+	AttributeBase& createTexture2DAttribute(const opengl::UniformVariable& uvar, CompoundAttribute& compound)
+	{
+		if (uvar.isArray())
+		{
+			nap::Logger::warn("GLSL texture arrays are not supported");
+		}
+		return compound.addResourceLinkAttribute(uvar.mName, RTTI_OF(TextureResource));
+	}
+
 
 	// Maps GLSL shader types to nap attribute types
 	using GLSLAttributeMap = std::unordered_map<opengl::GLSLType, RTTI::TypeInfo>;
@@ -231,7 +243,7 @@ namespace nap
 			map.emplace(std::make_pair(opengl::GLSLType::Mat2,	RTTI_OF(glm::mat2x2)));
 			map.emplace(std::make_pair(opengl::GLSLType::Mat3,	RTTI_OF(glm::mat3x3)));
 			map.emplace(std::make_pair(opengl::GLSLType::Mat4,	RTTI_OF(glm::mat4x4)));
-			map.emplace(std::make_pair(opengl::GLSLType::Tex2D, RTTI_OF(int)));		// TODO: THIS NEEDS TO BECOME A LINK!
+			map.emplace(std::make_pair(opengl::GLSLType::Tex2D, RTTI_OF(TextureResource)));		// TODO: THIS NEEDS TO BECOME A LINK!
 		}
 		return map;
 	}
@@ -282,7 +294,7 @@ namespace nap
 			map.emplace(std::make_pair(opengl::GLSLType::Mat2,	createGLSLMat2Attribute));
 			map.emplace(std::make_pair(opengl::GLSLType::Mat3,	createGLSLMat3Attribute));
 			map.emplace(std::make_pair(opengl::GLSLType::Mat4,	createGLSLMat4Attribute));
-			map.emplace(std::make_pair(opengl::GLSLType::Tex2D, createGLSLIntAttribute));		// TODO: THIS NEEDS TO AN ATTRIBUTE OBJECT LINK!
+			map.emplace(std::make_pair(opengl::GLSLType::Tex2D, createTexture2DAttribute));		// TODO: THIS NEEDS TO AN ATTRIBUTE OBJECT LINK!
 		}
 		return map;
 	}

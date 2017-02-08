@@ -37,6 +37,9 @@ namespace nap
 		// Bind material
 		mat->bind();
 
+		// Upload uniforms
+		mat->pushUniforms();
+
 		// Draw
 		onDraw();
 

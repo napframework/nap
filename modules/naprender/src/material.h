@@ -7,6 +7,7 @@
 
 // Local includes
 #include "shaderresource.h"
+#include "imageresource.h"
 
 namespace nap
 {
@@ -72,8 +73,15 @@ namespace nap
 		 * @param value: value to set
 		 */
 		template<typename T>
-		void setUniform(const std::string& name, const T& value);
+		void setUniformValue(const std::string& name, const T& value);
 
+		/**
+		 * Uniform texture set function
+		 * @param name: name of the texture binding
+		 * @param resource: resource to link the uniform binding to, TODO: Should be const (Coen)!
+		 */
+		void setUniformTexture(const std::string& name, TextureResource& resource);
+		
 	private:
 		
 		/**
@@ -121,7 +129,7 @@ namespace nap
 	// Template Definitions
 	//////////////////////////////////////////////////////////////////////////
 	template<typename T>
-	void nap::Material::setUniform(const std::string& name, const T& value)
+	void nap::Material::setUniformValue(const std::string& name, const T& value)
 	{
 		Attribute<T>* attr = uniformAttribute.getAttribute<T>(name);
 		if (attr == nullptr)

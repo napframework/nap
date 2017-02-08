@@ -98,9 +98,6 @@ namespace nap
 		mutable glm::mat4x4 mLocalMatrix;							//< Local  Matrix
 		mutable glm::mat4x4 mGlobalMatrix;							//< Global Matrix
 		
-		// Identity Matrix
-		const static glm::mat4x4 sIdenityMatrix;
-		
 		// SLots
 		NSLOT(xformChanged, AttributeBase&, onSetDirty)
 

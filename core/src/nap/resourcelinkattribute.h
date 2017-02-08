@@ -18,6 +18,7 @@ namespace nap
 	public:
 		ResourceLinkAttribute();
 		ResourceLinkAttribute(AttributeObject* parent, const std::string& name, const RTTI::TypeInfo& type);
+		ResourceLinkAttribute(AttributeObject* parent, const std::string& name);
 
 		/**
 		* @return the resource this link points to, nullptr if link is not set or invalid
@@ -32,6 +33,11 @@ namespace nap
 		 */
 		template<typename T>
 		T* getResource();
+
+		/**
+		 * @return type of the resource this object links to
+		 */
+		RTTI::TypeInfo getResourceType() const						{ return mType; }
 
 		/**
 		 * @return the path to the resource this link points to
@@ -49,6 +55,12 @@ namespace nap
 		* @param resource the resource to link to
 		*/
 		void setResource(Resource& resource);
+
+		/**
+		 * Set the resource link type
+		 * @param type, type of resource this link is allowed to point to
+		 */
+		void setResourceType(const RTTI::TypeInfo& type);
 
 		/**
 		 * @return if the the resource is currently linked
@@ -81,7 +93,7 @@ namespace nap
 		*/
 		void onLinkPathChanged(nap::AttributeBase& attr);
 		NSLOT(linkPathChanged, AttributeBase&, onLinkPathChanged)
-		bool isDirty = false;
+		bool isDirty = true;
 	};
 
 	//////////////////////////////////////////////////////////////////////////

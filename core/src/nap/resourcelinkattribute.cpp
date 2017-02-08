@@ -11,8 +11,9 @@ namespace nap
 
 	// Constructs the resource link using a name and type
 	ResourceLinkAttribute::ResourceLinkAttribute(AttributeObject* parent, const std::string& name, const RTTI::TypeInfo& type) :
-		Attribute<std::string>(parent, name), mType(type)
+		Attribute<std::string>(parent, name)
 	{
+		setResourceType(type);
 		valueChanged.connect(linkPathChanged);
 	}
 
@@ -22,6 +23,12 @@ namespace nap
 		valueChanged.connect(linkPathChanged);
 	}
 
+
+	ResourceLinkAttribute::ResourceLinkAttribute(AttributeObject* parent, const std::string& name) : 
+		Attribute<std::string>(parent, name)
+	{
+		valueChanged.connect(linkPathChanged);
+	}
 
 	// Returns the resource this link points to
 	Resource* ResourceLinkAttribute::getResource()
@@ -55,6 +62,18 @@ namespace nap
 
 		// Set new path (forcing resolve update on get)
 		setValue(resource.getResourcePath());
+	}
+
+
+	// Set allowed resource link type
+	void ResourceLinkAttribute::setResourceType(const RTTI::TypeInfo& type)
+	{
+		if (!type.isKindOf(RTTI_OF(nap::Resource)))
+		{
+			Logger::warn("object: %s not of type resource", type.getName().c_str());
+			return;
+		}
+		mType = type;
 	}
 
 

@@ -32,6 +32,7 @@
 // Mod nap render includes
 #include <material.h>
 #include <modelresource.h>
+#include <imageresource.h>
 #include <modelmeshcomponent.h>
 #include <renderservice.h>
 #include <renderwindowcomponent.h>
@@ -59,9 +60,9 @@ std::string		vertShaderNameTwo	= "shaders/shader_two.vert";
 std::string		fragShaderNameTwo	= "shaders/shader_two.frag";
 
 static const std::string testTextureName = "data/test.jpg";
-static std::unique_ptr<opengl::Image> testTexture;
+static nap::ImageResource* testTexture = nullptr;
 static const std::string pigTextureName = "data/pig_head.jpg";
-static std::unique_ptr<opengl::Image> pigTexture;
+static nap::ImageResource* pigTexture = nullptr;
 
 // Vertex buffer that holds all the fbo's
 opengl::VertexArrayObject	cubeObject;
@@ -95,32 +96,6 @@ glm::mat4 modelMatrix;			// Store the model matrix
 
 // Some utilities
 void runGame(nap::Core& core);	
-bool loadImages();
-
-/**
-* Loads a bitmap from disk
-*/
-bool loadImages()
-{
-	// Load blend image
-	testTexture = std::make_unique<opengl::Image>(testTextureName);
-	testTexture->setCompressed(true);
-	if (!testTexture->load())
-	{
-		opengl::printMessage(opengl::MessageType::ERROR, "unable to load blend image: %s", testTextureName.c_str());
-		return false;
-	}
-
-	pigTexture = std::make_unique<opengl::Image>(pigTextureName);
-	pigTexture->setCompressed(true);
-	if (!pigTexture->load())
-	{
-		opengl::printMessage(opengl::MessageType::ERROR, "unable to load pig texture: %s", pigTextureName.c_str());
-		return false;
-	}
-
-	return true;
-}
 
 
 // Called when the window is updating
@@ -180,20 +155,9 @@ void onRender(const nap::SignalAttribute& signal)
 	nap::Material* material = modelComponent->getMaterial();
 	assert(material != nullptr);	
 
-	// Get view matrix from camera
-	nap::TransformComponent* cam_xform = cameraComponent->getParent()->getComponent<nap::TransformComponent>();
-	assert(cam_xform != nullptr);
-
-	// Get model matrix from model
-	nap::TransformComponent* model_xform = modelComponent->getParent()->getComponent<nap::TransformComponent>();
-
 	// Set uniforms
-	material->setUniform<glm::mat4x4>("projectionMatrix", cameraComponent->getProjectionMatrix());
-	material->setUniform<glm::mat4x4>("viewMatrix", cam_xform->getGlobalTransform());
-	material->setUniform<glm::mat4x4>("modelMatrix", model_xform->getGlobalTransform());
-	
 	glm::vec4 color(1.0f, 1.0f, 1.0f, 1.0f);
-	material->setUniform<glm::vec4>("mColor", color);
+	material->setUniformValue<glm::vec4>("mColor", color);
 
 	// Set texture 1 for shader
 	glActiveTexture(GL_TEXTURE0);
@@ -202,9 +166,9 @@ void onRender(const nap::SignalAttribute& signal)
 	material->bind();
 
 	// Bind correct texture and send to shader
-	opengl::Image* img = currentIndex == 0 ? pigTexture.get() : testTexture.get();
-	img->bind();	
-	material->setUniform("myTextureSampler", 0);
+	nap::ImageResource* img = currentIndex == 0 ? pigTexture : testTexture;
+	material->setUniformTexture("myTextureSampler", *img);
+	img->bind();
 
 	// Force shader update
 	material->pushUniforms();
@@ -216,7 +180,7 @@ void onRender(const nap::SignalAttribute& signal)
 	switch (currentIndex)
 	{
 	case 0:
-		renderService->renderObjects();
+		renderService->renderObjects(*cameraComponent);
 		break;
 	case 1:
 		cubeObject.bind();
@@ -282,13 +246,6 @@ bool init(nap::Core& core)
 
 	//////////////////////////////////////////////////////////////////////////
 
-	// Load bitmap
-	if (!loadImages())
-	{
-		nap::Logger::fatal("unable to load images");
-		return false;
-	}
-
 	//////////////////////////////////////////////////////////////////////////
 	// Create Modle
 	//////////////////////////////////////////////////////////////////////////
@@ -296,6 +253,12 @@ bool init(nap::Core& core)
 	// Create shader resource
 	nap::ResourceManagerService* service = core.getOrCreateService<nap::ResourceManagerService>();
 	service->setAssetRoot(".");
+
+	// Load textures
+	nap::Resource* pig_texture = service->getResource(pigTextureName);
+	pigTexture = static_cast<nap::ImageResource*>(pig_texture);
+	nap::Resource* tes_texture = service->getResource(testTextureName);
+	testTexture = static_cast<nap::ImageResource*>(tes_texture);
 
 	// Load first shader
 	nap::Resource* shader_resource = service->getResource(fragShaderName);

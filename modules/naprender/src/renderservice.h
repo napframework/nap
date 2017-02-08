@@ -16,6 +16,7 @@ namespace nap
 	// Forward Declares
 	class RenderWindowComponent;
 	class TransformComponent;
+	class CameraComponent;
 
 	/**
 	 * Holds a reference to all drawable objects
@@ -61,7 +62,7 @@ namespace nap
 		 * Renders all available objects to currently active buffer
 		 * TODO: deprecate
 		 */
-		void renderObjects();
+		void renderObjects(const CameraComponent& camera);
 
 		/**
 		 * @return if OpenGL has been initialized

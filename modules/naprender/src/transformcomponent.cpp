@@ -1,5 +1,6 @@
 // local includes
 #include "transformcomponent.h"
+#include "renderglobals.h"
 
 // External includes
 #include <glm/gtx/transform.hpp>
@@ -8,9 +9,6 @@
 
 namespace nap
 {
-	// Initialize identity
-	const glm::mat4x4 sIdentyMatrix = glm::mat4x4();
-
 	// Constructor
 	TransformComponent::TransformComponent()
 	{
@@ -95,7 +93,7 @@ namespace nap
 		// Update global matrix if parent is dirty or we're dirty
 		if (mNodeDirty | parent_dirty)
 		{
-			const glm::mat4x4& parent_mat = parent == nullptr ? sIdentyMatrix : parent->getGlobalTransform();
+			const glm::mat4x4& parent_mat = parent == nullptr ? identityMatrix : parent->getGlobalTransform();
 			mGlobalMatrix = parent_mat * getLocalTransform();
 		}
 
