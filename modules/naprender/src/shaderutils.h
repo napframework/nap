@@ -38,5 +38,5 @@ namespace nap
 	 * @return an attribute set function based on a certain rtti type
 	 * nullptr if RTTI type is not supported
 	 */
-	const GLSLSetterFunction* getGLSLSetFunction(const RTTI::TypeInfo& type);
+	const GLSLSetterFunction* getGLSLSetFunction(const opengl::GLSLType& type);
 }

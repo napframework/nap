@@ -66,7 +66,7 @@ namespace nap
 			}
 			
 			// Get GLSL set function
-			const GLSLSetterFunction* func = getGLSLSetFunction(attr->getValueType());
+			const GLSLSetterFunction* func = getGLSLSetFunction(uniform->mGLSLType);
 			if (func == nullptr)
 			{
 				continue;
@@ -84,7 +84,7 @@ namespace nap
 		AttributeBase* texture_link_attr = uniformAttribute.getAttribute(name);
 		if (texture_link_attr == nullptr)
 		{
-			nap::Logger::warn(*this, "uniform variable: %s does not exist", texture_link_attr->getName().c_str());
+			nap::Logger::warn(*this, "uniform variable: %s does not exist", name.c_str());
 			return;
 		}
 

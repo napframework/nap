@@ -11,8 +11,29 @@
 
 namespace nap
 {
+	/**
+	 * Represents a uniform action that is associated with a specific opengl GLSL type
+	 * This is a simple container used to bind a create and set function
+	 */
+	class GLSLUniformAction
+	{
+	public:
+		GLSLUniformAction(const opengl::GLSLType type, GLSLAttributeCreateFunction createFunc, GLSLSetterFunction setterFunc) : mType(type),
+			mCreateFunc(createFunc), mSetFunc(setterFunc) { }
+		virtual ~GLSLUniformAction() = default;
+
+		const GLSLAttributeCreateFunction* const	getAttributeCreateFunction()	{ return &mCreateFunc; }
+		const GLSLSetterFunction* const				getSetFunction()				{ return &mSetFunc; }
+
+	private:
+		opengl::GLSLType							mType = opengl::GLSLType::Unknown;
+		GLSLAttributeCreateFunction					mCreateFunc = nullptr;
+		GLSLSetterFunction							mSetFunc = nullptr;
+	};
+
+
 	// Set uniform float based attr
-	void setUniformFloat(const opengl::UniformVariable& var, const AttributeBase& attr)			
+	void setUniformFloat(const opengl::UniformVariable& var, const AttributeBase& attr)
 	{
 		assert(attr.getValueType() == RTTI_OF(float));
 		if (var.isArray())
@@ -25,7 +46,7 @@ namespace nap
 	}
 
 	// Set uniform int based on attr
-	void setUniformInt(const opengl::UniformVariable& var, const AttributeBase& attr)				
+	void setUniformInt(const opengl::UniformVariable& var, const AttributeBase& attr)
 	{
 		assert(attr.getValueType() == RTTI_OF(int));
 		if (var.isArray())
@@ -38,7 +59,7 @@ namespace nap
 	}
 
 	// Set uniform unsigned int based on var
-	void setUniformUInt(const opengl::UniformVariable& var, const AttributeBase& attr)			
+	void setUniformUInt(const opengl::UniformVariable& var, const AttributeBase& attr)
 	{
 		assert(attr.getValueType() == RTTI_OF(nap::uint));
 		if (var.isArray())
@@ -49,9 +70,9 @@ namespace nap
 		const Attribute<nap::uint>& attribute = static_cast<const Attribute<nap::uint>&>(attr);
 		var.set((&attribute.getValue()));
 	}
-	
+
 	// Set vec2 based on var
-	void setUniformVec2(const opengl::UniformVariable& var, const AttributeBase& attr)			
+	void setUniformVec2(const opengl::UniformVariable& var, const AttributeBase& attr)
 	{
 		assert(attr.getValueType() == RTTI_OF(glm::vec2));
 		if (var.isArray())
@@ -63,9 +84,9 @@ namespace nap
 		const Attribute<glm::vec2>& attribute = static_cast<const Attribute<glm::vec2>&>(attr);
 		var.set(glm::value_ptr(attribute.getValue()));
 	}
-	
+
 	// set vec3 based on var
-	void setUniformVec3(const opengl::UniformVariable& var, const AttributeBase& attr)			
+	void setUniformVec3(const opengl::UniformVariable& var, const AttributeBase& attr)
 	{
 		assert(attr.getValueType() == RTTI_OF(glm::vec3));
 		if (var.isArray())
@@ -77,9 +98,9 @@ namespace nap
 		const Attribute<glm::vec3>& attribute = static_cast<const Attribute<glm::vec3>&>(attr);
 		var.set(glm::value_ptr(attribute.getValue()));
 	}
-	
+
 	// Set vec4 based on var
-	void setUniformVec4(const opengl::UniformVariable& var, const AttributeBase& attr)			
+	void setUniformVec4(const opengl::UniformVariable& var, const AttributeBase& attr)
 	{
 		assert(attr.getValueType() == RTTI_OF(glm::vec4));
 		if (var.isArray())
@@ -93,7 +114,7 @@ namespace nap
 	}
 
 	// Set mat2 based on var
-	void setUniformMat2(const opengl::UniformVariable& var, const AttributeBase& attr)			
+	void setUniformMat2(const opengl::UniformVariable& var, const AttributeBase& attr)
 	{
 		assert(attr.getValueType() == RTTI_OF(glm::mat2x2));
 		if (var.isArray())
@@ -107,7 +128,7 @@ namespace nap
 	}
 
 	// Set uniform 3 based on var
-	void setUniformMat3(const opengl::UniformVariable& var, const AttributeBase& attr)			
+	void setUniformMat3(const opengl::UniformVariable& var, const AttributeBase& attr)
 	{
 		assert(attr.getValueType() == RTTI_OF(glm::mat3x3));
 		if (var.isArray())
@@ -121,7 +142,7 @@ namespace nap
 	}
 
 	// set mat4 based on var
-	void setUniformMat4(const opengl::UniformVariable& var, const AttributeBase& attr)			
+	void setUniformMat4(const opengl::UniformVariable& var, const AttributeBase& attr)
 	{
 		assert(attr.getValueType() == RTTI_OF(glm::mat4x4));
 		if (var.isArray())
@@ -222,6 +243,29 @@ namespace nap
 	}
 
 
+	using GLSLUniformActionMap = std::unordered_map<opengl::GLSLType, std::unique_ptr<GLSLUniformAction>>;
+	/**
+	 * @return a map that contains all uniform actions for all supported glsl types
+	 */
+	const GLSLUniformActionMap& getGLSLUniformActionMap()
+	{
+		static GLSLUniformActionMap map;
+		if (map.empty())
+		{
+			map.emplace(std::make_pair(opengl::GLSLType::Float, std::make_unique<GLSLUniformAction>(opengl::GLSLType::Float, createGLSLFloatAttribute, setUniformFloat)));
+			map.emplace(std::make_pair(opengl::GLSLType::Int,	std::make_unique<GLSLUniformAction>(opengl::GLSLType::Int,	createGLSLIntAttribute, setUniformInt)));
+			map.emplace(std::make_pair(opengl::GLSLType::UInt,	std::make_unique<GLSLUniformAction>(opengl::GLSLType::UInt, createGLSLUIntAttribute, setUniformUInt)));
+			map.emplace(std::make_pair(opengl::GLSLType::Vec2,	std::make_unique<GLSLUniformAction>(opengl::GLSLType::Vec2, createGLSLVec2Attribute, setUniformVec2)));
+			map.emplace(std::make_pair(opengl::GLSLType::Vec3,	std::make_unique<GLSLUniformAction>(opengl::GLSLType::Vec3, createGLSLVec3Attribute, setUniformVec3)));
+			map.emplace(std::make_pair(opengl::GLSLType::Vec4,	std::make_unique<GLSLUniformAction>(opengl::GLSLType::Vec4, createGLSLVec4Attribute, setUniformVec4)));
+			map.emplace(std::make_pair(opengl::GLSLType::Mat2,	std::make_unique<GLSLUniformAction>(opengl::GLSLType::Mat2, createGLSLMat2Attribute, setUniformMat2)));
+			map.emplace(std::make_pair(opengl::GLSLType::Mat3,	std::make_unique<GLSLUniformAction>(opengl::GLSLType::Mat3, createGLSLMat3Attribute, setUniformMat3)));
+			map.emplace(std::make_pair(opengl::GLSLType::Mat4,	std::make_unique<GLSLUniformAction>(opengl::GLSLType::Mat4, createGLSLMat4Attribute, setUniformMat4)));
+		}
+		return map;
+	}
+
+
 	// Maps GLSL shader types to nap attribute types
 	using GLSLAttributeMap = std::unordered_map<opengl::GLSLType, RTTI::TypeInfo>;
 	
@@ -249,57 +293,6 @@ namespace nap
 	}
 
 
-	// Maps a nap attribute type to a glsl setter function
-	using GLSLSetterMap = std::unordered_map<RTTI::TypeInfo, GLSLSetterFunction>;
-
-	/**
-	 * @return a map that links an attribute type to a GLSL set function
-	 */
-	const GLSLSetterMap& getGLSLSetterMap()
-	{
-		static GLSLSetterMap map;
-		if (map.empty())
-		{
-			map.emplace(RTTI_OF(float),			setUniformFloat);
-			map.emplace(RTTI_OF(int),			setUniformInt);
-			map.emplace(RTTI_OF(nap::uint),		setUniformUInt);
-			map.emplace(RTTI_OF(glm::vec2),		setUniformVec2);
-			map.emplace(RTTI_OF(glm::vec3),		setUniformVec3);
-			map.emplace(RTTI_OF(glm::vec4),		setUniformVec4);
-			map.emplace(RTTI_OF(glm::mat2x2),	setUniformMat2);
-			map.emplace(RTTI_OF(glm::mat3x3),	setUniformMat3);
-			map.emplace(RTTI_OF(glm::mat4x4),	setUniformMat4);
-		}
-		return map;
-	}
-
-
-	// Maps an Attribute type to an attribute create function
-	using GLSLAttributeCreateMap = std::unordered_map<opengl::GLSLType, GLSLAttributeCreateFunction>;
-
-	/**
-	 * @return a map that contains the attribute create function for the specified GLSL type
-	 */
-	const GLSLAttributeCreateMap& getGLSLAttributeCreateMap()
-	{
-		static GLSLAttributeCreateMap map;
-		if (map.empty())
-		{
-			map.emplace(std::make_pair(opengl::GLSLType::Float, createGLSLFloatAttribute));
-			map.emplace(std::make_pair(opengl::GLSLType::Int,	createGLSLIntAttribute));
-			map.emplace(std::make_pair(opengl::GLSLType::UInt,	createGLSLUIntAttribute));
-			map.emplace(std::make_pair(opengl::GLSLType::Vec2,	createGLSLVec2Attribute));
-			map.emplace(std::make_pair(opengl::GLSLType::Vec3,	createGLSLVec3Attribute));
-			map.emplace(std::make_pair(opengl::GLSLType::Vec4,	createGLSLVec4Attribute));
-			map.emplace(std::make_pair(opengl::GLSLType::Mat2,	createGLSLMat2Attribute));
-			map.emplace(std::make_pair(opengl::GLSLType::Mat3,	createGLSLMat3Attribute));
-			map.emplace(std::make_pair(opengl::GLSLType::Mat4,	createGLSLMat4Attribute));
-			map.emplace(std::make_pair(opengl::GLSLType::Tex2D, createTexture2DAttribute));		// TODO: THIS NEEDS TO AN ATTRIBUTE OBJECT LINK!
-		}
-		return map;
-	}
-
-
 	// The attribute type associated with a certain GLSL shader input type
 	RTTI::TypeInfo getAttributeType(opengl::GLSLType type)
 	{
@@ -317,28 +310,28 @@ namespace nap
 	// Return the attribute create function
 	const GLSLAttributeCreateFunction* getAttributeCreateFunction(opengl::GLSLType type)
 	{
-		const GLSLAttributeCreateMap& map = getGLSLAttributeCreateMap();
+		const GLSLUniformActionMap& map = getGLSLUniformActionMap();
 		auto it = map.find(type);
 		if (it == map.end())
 		{
 			nap::Logger::warn("unable to find associated GLSL attribute create function for GLSL type: %d", type);
 			return nullptr;
 		}
-		return &(it->second);
+		return it->second->getAttributeCreateFunction();
 	}
 
 
 	// Get glsl set function based on rtti attribute type
-	const GLSLSetterFunction* getGLSLSetFunction(const RTTI::TypeInfo& type)
+	const GLSLSetterFunction* getGLSLSetFunction(const opengl::GLSLType& type)
 	{
-		const nap::GLSLSetterMap& map = getGLSLSetterMap();
+		const nap::GLSLUniformActionMap& map = getGLSLUniformActionMap();
 		auto it = map.find(type);
 		if (it == map.end())
 		{
-			nap::Logger::warn("unable to find associated GLSL uniform set function for type: %s", type.getName().c_str());
+			nap::Logger::warn("unable to find associated GLSL uniform set function for type: %d", type);
 			return nullptr;
 		}
-		return &(it->second);
+		return it->second->getSetFunction();
 	}
 
 } // End Namespace NAP
