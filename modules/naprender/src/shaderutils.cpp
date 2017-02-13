@@ -178,7 +178,7 @@ namespace nap
 		nap::TextureResource* texture_resource = texture_resource_link.getResource<TextureResource>();
 		if (texture_resource == nullptr)
 		{
-			nap::Logger::info("no texture resource linked to uniform: %s", var.mName.c_str());
+			nap::Logger::debug("no texture resource linked to uniform: %s", var.mName.c_str());
 			return;
 		}
 
