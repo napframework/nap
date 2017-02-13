@@ -25,14 +25,14 @@ namespace nap
 		* This call will resolve the path if a resource is not associated with this attribute
 		* @return pointer to the resource, nullptr if not found
 		*/
-		Resource* getResource();
+		Resource* getResource() const;
 
 		/**
 		 * @return the resource this link points to, nullptr if empty or not valid
 		 * This call will resolve the path if a resource is not associated with this attribute
 		 */
 		template<typename T>
-		T* getResource();
+		T* getResource() const;
 
 		/**
 		 * @return type of the resource this object links to
@@ -78,13 +78,13 @@ namespace nap
 		RTTI::TypeInfo mType = RTTI_OF(nap::Resource);
 
 		// Internally managed resource
-		Resource* mResource = nullptr;
+		mutable Resource* mResource = nullptr;
 
 		/**
 		* Resolves the link using the asset manager service
 		* @return if the path has been resolved correctly (in to nullptr when path is empty or resource)
 		*/
-		bool resolve();
+		bool resolve() const;
 
 		/**
 		* Listener for path changes
@@ -93,7 +93,7 @@ namespace nap
 		*/
 		void onLinkPathChanged(nap::AttributeBase& attr);
 		NSLOT(linkPathChanged, AttributeBase&, onLinkPathChanged)
-		bool isDirty = true;
+		mutable bool isDirty = true;
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -101,7 +101,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	T* ResourceLinkAttribute::getResource()
+	T* ResourceLinkAttribute::getResource() const
 	{
 		Resource* resource = getResource();
 		if (resource == nullptr)

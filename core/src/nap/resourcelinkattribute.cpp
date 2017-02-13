@@ -31,7 +31,7 @@ namespace nap
 	}
 
 	// Returns the resource this link points to
-	Resource* ResourceLinkAttribute::getResource()
+	Resource* ResourceLinkAttribute::getResource() const
 	{
 		if (isDirty)
 			isDirty = resolve();
@@ -92,7 +92,7 @@ namespace nap
 
 
 	// Resolve path and store resource
-	bool ResourceLinkAttribute::resolve()
+	bool ResourceLinkAttribute::resolve() const
 	{
 		if (getValue().empty())
 		{
@@ -108,7 +108,7 @@ namespace nap
 		}
 
 		// Find root
-		nap::Object* root = getRootObject();
+		const nap::Object* root = getRootObject();
 		if (!root->getTypeInfo().isKindOf(RTTI_OF(nap::Entity)))
 		{
 			nap::Logger::warn("unable to resolve resource path, root object is not of type: %s", RTTI_OF(nap::Entity).getName().c_str());
@@ -116,7 +116,7 @@ namespace nap
 		}
 
 		// Cast to entity
-		nap::Entity* root_entity = static_cast<nap::Entity*>(root);
+		const nap::Entity* root_entity = static_cast<const nap::Entity*>(root);
 		nap::Core& core = root_entity->getCore();
 
 		// Get service

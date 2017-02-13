@@ -155,6 +155,43 @@ namespace nap
 		var.set(glm::value_ptr(attribute.getValue()));
 	}
 
+	// set texture 2D
+	void setTexture2D(const opengl::UniformVariable& var, const AttributeBase& attr)
+	{
+		// Don't support arrays
+		assert(attr.getValueType() == RTTI_OF(std::string));
+		if (var.isArray())
+		{
+			assert(false);
+			return;
+		}
+
+		// Make sure it's a resource link we're resolving
+		if (!attr.getTypeInfo().isKindOf(RTTI_OF(ResourceLinkAttribute)))
+		{
+			nap::Logger::warn("attribute is not of type: ResourceLinkAttribute");
+			return;
+		}
+
+		// Check if the texture resource is linked
+		const ResourceLinkAttribute& texture_resource_link = static_cast<const ResourceLinkAttribute&>(attr);
+		nap::TextureResource* texture_resource = texture_resource_link.getResource<TextureResource>();
+		if (texture_resource == nullptr)
+		{
+			nap::Logger::info("no texture resource linked to uniform: %s", var.mName.c_str());
+			return;
+		}
+
+		// Make sure we're setting a texture 2D
+		if (texture_resource->getTexture().getTargetType() != GL_TEXTURE_2D)
+		{
+			nap::Logger::warn("linked texture: %s to uniform: %s is not of type texture 2D", texture_resource->getDisplayName().c_str(), var.mName.c_str());
+			return;
+		}
+
+		// TODO: Bind
+	}
+
 	/**
 	 * Static iterative uniform attribute create function
 	 */
@@ -261,6 +298,7 @@ namespace nap
 			map.emplace(std::make_pair(opengl::GLSLType::Mat2,	std::make_unique<GLSLUniformAction>(opengl::GLSLType::Mat2, createGLSLMat2Attribute, setUniformMat2)));
 			map.emplace(std::make_pair(opengl::GLSLType::Mat3,	std::make_unique<GLSLUniformAction>(opengl::GLSLType::Mat3, createGLSLMat3Attribute, setUniformMat3)));
 			map.emplace(std::make_pair(opengl::GLSLType::Mat4,	std::make_unique<GLSLUniformAction>(opengl::GLSLType::Mat4, createGLSLMat4Attribute, setUniformMat4)));
+			map.emplace(std::make_pair(opengl::GLSLType::Tex2D, std::make_unique<GLSLUniformAction>(opengl::GLSLType::Tex2D, createTexture2DAttribute, setTexture2D)));
 		}
 		return map;
 	}
