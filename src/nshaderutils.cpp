@@ -4,6 +4,7 @@
 
 // External Includes
 #include <unordered_map>
+#include <regex>
 
 namespace opengl
 {
@@ -218,9 +219,12 @@ namespace opengl
 				printMessage(MessageType::WARNING, "unsupported uniform of type: %d", type);
 			}
 
+			// Remove possible brackets
+			std::string unique_name = std::regex_replace(std::string(name), std::regex("\\[.*\\]"), "");
+
 			// Add
 			printMessage(MessageType::INFO, "Uniform: %d, type: %d, name: %s, location: %d", i, (unsigned int)type, name, location);
-			outUniforms.emplace(std::make_pair(name, std::make_unique<UniformVariable>(program, std::string(name), type, location, size)));
+			outUniforms.emplace(std::make_pair(unique_name, std::make_unique<UniformVariable>(program, std::string(name), type, location, size)));
 		}
 	}
 
