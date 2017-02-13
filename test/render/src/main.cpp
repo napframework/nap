@@ -134,6 +134,20 @@ void onUpdate(const nap::SignalAttribute& signal)
 	float nscale = (sin(elapsed_time  * scale_speed) + 1) / 2.0f;
 	nscale = nap::fit<float>(nscale, 0.0f, 1.0f, 0.25f, 1.0f);
 	xform_v->uniformScale.setValue(nscale);
+
+	// Set some material values
+	nap::Material* material = modelComponent->getMaterial();
+
+	float v = (sin(elapsed_time) + 1.0f) / 2.0f;
+
+	// Set uniforms
+	glm::vec4 color(v, 1.0f-v, 1.0f, 1.0f);
+	material->setUniformValue<glm::vec4>("mColor", color);
+	material->setUniformValue<int>("mTextureIndex", static_cast<int>(currentIndex));
+
+	// Bind correct texture and send to shader
+	material->setUniformTexture("pigTexture", *pigTexture);
+	material->setUniformTexture("testTexture", *testTexture);
 }
 NSLOT(updateSlot, const nap::SignalAttribute&, onUpdate)
 
@@ -154,15 +168,6 @@ void onRender(const nap::SignalAttribute& signal)
 	// Get mesh component
 	nap::Material* material = modelComponent->getMaterial();
 	assert(material != nullptr);	
-
-	// Set uniforms
-	glm::vec4 color(1.0f, 1.0f, 1.0f, 1.0f);
-	material->setUniformValue<glm::vec4>("mColor", color);
-	material->setUniformValue<int>("mTextureIndex", static_cast<int>(currentIndex));
-
-	// Bind correct texture and send to shader
-	material->setUniformTexture("pigTexture", *pigTexture);
-	material->setUniformTexture("testTexture", *testTexture);
 
 	// Render all objects
 	switch (currentIndex)
