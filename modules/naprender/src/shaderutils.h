@@ -13,9 +13,9 @@ namespace nap
 
 	/**
 	* GLSL set function, where is the data, GLint the location and
-	* GLSizei the number of elements
+	* GLSizei the number of elements, int the current texture unit
 	*/
-	using GLSLSetterFunction = std::function<void(const opengl::UniformVariable&, const AttributeBase&)>;
+	using GLSLSetterFunction = std::function<void(const opengl::UniformVariable&, const AttributeBase&, int&)>;
 
 	/**
 	 * GLSL attribute create function, where compound attribute is the attribute parent

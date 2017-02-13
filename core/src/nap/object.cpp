@@ -37,13 +37,26 @@ namespace nap
 
 	std::string Object::getUniqueName(const std::string& suggestedName)
 	{
-		if (!getParentObject()) return suggestedName;
+		if (!getParentObject())
+		{
+			return suggestedName;
+		}
 
-		int i = 0;
 		std::string newName = suggestedName;
+		
+		// Fetch possible child from parent
 		Object* child = getParentObject()->getChild(newName);
-		while (child) {
-			if (child != this) newName = suggestedName + std::to_string(i++);
+
+		// If a child was found, try to find a child
+		// that doesn't have this name
+		int i = 0;
+		while (child) 
+		{
+			if (child == this)
+			{
+				break;
+			}
+			newName = stringFormat("%s_%d", suggestedName.c_str(), i++);
 			child = getParentObject()->getChild(newName);
 		}
 		return newName;

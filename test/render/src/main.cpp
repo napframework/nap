@@ -158,23 +158,11 @@ void onRender(const nap::SignalAttribute& signal)
 	// Set uniforms
 	glm::vec4 color(1.0f, 1.0f, 1.0f, 1.0f);
 	material->setUniformValue<glm::vec4>("mColor", color);
-
-	// Set texture 1 for shader
-	glActiveTexture(GL_TEXTURE0);
-
-	// Bind Shader
-	material->bind();
+	material->setUniformValue<int>("mTextureIndex", static_cast<int>(currentIndex));
 
 	// Bind correct texture and send to shader
-	nap::ImageResource* img = currentIndex == 0 ? pigTexture : testTexture;
-	material->setUniformTexture("myTextureSampler", *img);
-	img->bind();
-
-	// Force shader update
-	material->pushUniforms();
-
-	// Unbind material
-	material->unbind();
+	material->setUniformTexture("pigTexture", *pigTexture);
+	material->setUniformTexture("testTexture", *testTexture);
 
 	// Render all objects
 	switch (currentIndex)
@@ -185,6 +173,7 @@ void onRender(const nap::SignalAttribute& signal)
 	case 1:
 		cubeObject.bind();
 		material->bind();
+		material->pushUniforms();
 		cubeObject.draw();
 		material->unbind();
 		cubeObject.unbind();
@@ -192,6 +181,7 @@ void onRender(const nap::SignalAttribute& signal)
 	case 2:
 		triangleObject.bind();
 		material->bind();
+		material->pushUniforms();
 		triangleObject.draw();
 		material->unbind();
 		triangleObject.unbind();

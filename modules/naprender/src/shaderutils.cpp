@@ -33,7 +33,7 @@ namespace nap
 
 
 	// Set uniform float based attr
-	void setUniformFloat(const opengl::UniformVariable& var, const AttributeBase& attr)
+	void setUniformFloat(const opengl::UniformVariable& var, const AttributeBase& attr, int& currentTexture)
 	{
 		assert(attr.getValueType() == RTTI_OF(float));
 		if (var.isArray())
@@ -46,7 +46,7 @@ namespace nap
 	}
 
 	// Set uniform int based on attr
-	void setUniformInt(const opengl::UniformVariable& var, const AttributeBase& attr)
+	void setUniformInt(const opengl::UniformVariable& var, const AttributeBase& attr, int& currentTexture)
 	{
 		assert(attr.getValueType() == RTTI_OF(int));
 		if (var.isArray())
@@ -59,7 +59,7 @@ namespace nap
 	}
 
 	// Set uniform unsigned int based on var
-	void setUniformUInt(const opengl::UniformVariable& var, const AttributeBase& attr)
+	void setUniformUInt(const opengl::UniformVariable& var, const AttributeBase& attr, int& currentTexture)
 	{
 		assert(attr.getValueType() == RTTI_OF(nap::uint));
 		if (var.isArray())
@@ -72,7 +72,7 @@ namespace nap
 	}
 
 	// Set vec2 based on var
-	void setUniformVec2(const opengl::UniformVariable& var, const AttributeBase& attr)
+	void setUniformVec2(const opengl::UniformVariable& var, const AttributeBase& attr, int& currentTexture)
 	{
 		assert(attr.getValueType() == RTTI_OF(glm::vec2));
 		if (var.isArray())
@@ -86,7 +86,7 @@ namespace nap
 	}
 
 	// set vec3 based on var
-	void setUniformVec3(const opengl::UniformVariable& var, const AttributeBase& attr)
+	void setUniformVec3(const opengl::UniformVariable& var, const AttributeBase& attr, int& currentTexture)
 	{
 		assert(attr.getValueType() == RTTI_OF(glm::vec3));
 		if (var.isArray())
@@ -100,7 +100,7 @@ namespace nap
 	}
 
 	// Set vec4 based on var
-	void setUniformVec4(const opengl::UniformVariable& var, const AttributeBase& attr)
+	void setUniformVec4(const opengl::UniformVariable& var, const AttributeBase& attr, int& currentTexture)
 	{
 		assert(attr.getValueType() == RTTI_OF(glm::vec4));
 		if (var.isArray())
@@ -114,7 +114,7 @@ namespace nap
 	}
 
 	// Set mat2 based on var
-	void setUniformMat2(const opengl::UniformVariable& var, const AttributeBase& attr)
+	void setUniformMat2(const opengl::UniformVariable& var, const AttributeBase& attr, int& currentTexture)
 	{
 		assert(attr.getValueType() == RTTI_OF(glm::mat2x2));
 		if (var.isArray())
@@ -128,7 +128,7 @@ namespace nap
 	}
 
 	// Set uniform 3 based on var
-	void setUniformMat3(const opengl::UniformVariable& var, const AttributeBase& attr)
+	void setUniformMat3(const opengl::UniformVariable& var, const AttributeBase& attr, int& currentTexture)
 	{
 		assert(attr.getValueType() == RTTI_OF(glm::mat3x3));
 		if (var.isArray())
@@ -142,7 +142,7 @@ namespace nap
 	}
 
 	// set mat4 based on var
-	void setUniformMat4(const opengl::UniformVariable& var, const AttributeBase& attr)
+	void setUniformMat4(const opengl::UniformVariable& var, const AttributeBase& attr, int& currentTexture)
 	{
 		assert(attr.getValueType() == RTTI_OF(glm::mat4x4));
 		if (var.isArray())
@@ -156,7 +156,7 @@ namespace nap
 	}
 
 	// set texture 2D
-	void setTexture2D(const opengl::UniformVariable& var, const AttributeBase& attr)
+	void setTexture2D(const opengl::UniformVariable& var, const AttributeBase& attr, int& currentTexture)
 	{
 		// Don't support arrays
 		assert(attr.getValueType() == RTTI_OF(std::string));
@@ -189,7 +189,17 @@ namespace nap
 			return;
 		}
 
-		// TODO: Bind
+		// Set current active texture unit
+		glActiveTexture(GL_TEXTURE0 + currentTexture);
+		
+		// Bind texture resource to texture unit
+		texture_resource->bind();
+
+		// Set shader binding to reflect current texture unit
+		var.set(&currentTexture);
+
+		// Increment texture for subsequent texture allocations
+		currentTexture++;
 	}
 
 	/**
@@ -200,13 +210,13 @@ namespace nap
 	{
 		if (!uvar.isArray())
 		{
-			return compound.addAttribute<T>(uvar.mName.c_str(), defaultValue);
+			return compound.addAttribute<T>(defaultValue);
 		}
 
 		ArrayAttribute<T>& array_attr = compound.addArrayAttribute<T>(uvar.mName.c_str());
 		for (int i = 0; i < uvar.mSize; i++)
 		{
-			std::string attr_name = stringFormat("%s_%d", uvar.mName.c_str(), i);
+			std::string attr_name = stringFormat("number_%d", i);
 			array_attr.addAttribute(attr_name, defaultValue);
 		}
 		return array_attr;

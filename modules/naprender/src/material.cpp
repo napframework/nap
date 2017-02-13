@@ -51,12 +51,13 @@ namespace nap
 		}
 
 		// Set all uniforms
+		int tex_unit(0);
 		for (auto i = 0; i < uniformAttribute.size(); i++)
 		{
 			// Get attribute to set
 			AttributeBase* attr = uniformAttribute.getAttribute(i);
 			assert(attr != nullptr);
-			
+
 			// Get matching uniform
 			const opengl::UniformVariable* uniform = mShader->getShader().getUniform(attr->getName());
 			if (uniform == nullptr)
@@ -73,7 +74,7 @@ namespace nap
 			}
 
 			// Set value
-			(*func)(*uniform, *attr);
+			(*func)(*uniform, *attr, tex_unit);
 		}
 	}
 
@@ -138,6 +139,10 @@ namespace nap
 			
 			// Create attribute
 			AttributeBase& a = (*attr_create_function)(*(v.second), uniformAttribute);
+			
+			// Set attribute name
+			a.setName(v.first);
+			assert(a.getName() == v.first);
 		}
 	}
 
