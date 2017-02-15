@@ -94,7 +94,7 @@ namespace opengl
 	// Turns multi sampling on / off
 	void enableMultiSampling(bool value)
 	{
-		enableGLParam(GL_MULTISAMPLE, value);
+		enableGLParam(GL_MULTISAMPLE_ARB, value);
 	}
 
 
@@ -108,7 +108,13 @@ namespace opengl
 	// If line smoothing should be turned on or off
 	void enableLineSmoothing(bool value)
 	{
-		enableGLParam(GL_LINE_SMOOTH, value);
+		if (value)
+		{
+			glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+			glEnable(GL_LINE_SMOOTH);
+			return;
+		}
+		glDisable(GL_LINE_SMOOTH);
 	}
 
 
@@ -149,7 +155,13 @@ namespace opengl
 	// Turn smoothing of points on or off
 	void enablePointSmoothing(bool value)
 	{
-		enableGLParam(GL_POINT_SMOOTH, value);
+		if (value)
+		{
+			glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
+			glEnable(GL_POINT_SMOOTH);
+			return;
+		}
+		glDisable(GL_POINT_SMOOTH);
 	}
 
 }

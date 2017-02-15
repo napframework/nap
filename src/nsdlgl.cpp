@@ -110,6 +110,20 @@ namespace opengl
 		SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor_version);
 		printMessage(MessageType::INFO, "version: %d.%d", major_version, minor_version);
 
+		int rs, gs, bs, ds, as, mb, ms, ss;
+		SDL_GL_GetAttribute(SDL_GL_RED_SIZE, &rs);
+		SDL_GL_GetAttribute(SDL_GL_GREEN_SIZE, &gs);
+		SDL_GL_GetAttribute(SDL_GL_BLUE_SIZE, &bs);
+		SDL_GL_GetAttribute(SDL_GL_DEPTH_SIZE, &ds);
+		SDL_GL_GetAttribute(SDL_GL_ALPHA_SIZE, &as);
+		SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &mb);
+		SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &ms);
+		SDL_GL_GetAttribute(SDL_GL_STENCIL_SIZE, &ss);
+		printMessage(MessageType::INFO, "color buffer size (rgba): %d, %d, %d, %d", rs, gs, bs, as);
+		printMessage(MessageType::INFO, "depth buffer size: %d", ds);
+		printMessage(MessageType::INFO, "stencil size: %d", ss);
+		printMessage(MessageType::INFO, "multi-sampling: %d, samples: %d", mb, ms);
+
 		return context;
 	}
 
