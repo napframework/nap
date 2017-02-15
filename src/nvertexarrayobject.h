@@ -2,6 +2,7 @@
 
 // Local Includes
 #include "nvertexbuffer.h"
+#include "nindexbuffer.h"
 #include "ndrawutils.h"
 
 // External Includes
@@ -72,6 +73,13 @@ namespace opengl
 		void			draw(int count = -1);
 
 		/**
+		 * Specify which index buffer to use with this vertex array object
+		 * Not specifying one will leave indexing out of the programmable pipe
+		 * @param buffer: the index buffer that describes attribute connectivity
+		 */
+		bool			setIndexBuffer(IndexBuffer& buffer);
+
+		/**
 		 * Adds a vertex buffer to this vertex array object
 		 * Note that this call will find a currently available index and use that one
 		 * If calling multiple times in a row, the assigned id will be increment by one each time
@@ -127,5 +135,12 @@ namespace opengl
 		 */
 		VertexBufferBindings	mBindings;				
 		unsigned int			mVertCount = 0;						// Total number of vertices
+
+		/**
+		 * Defines the currently used index buffer that defines vertex connectivity
+		 * Not having an index buffer associated with this vertex array object will
+		 * use the default array draw method
+		 */
+		IndexBuffer*			mIndexBuffer = nullptr;				
 	};
 }

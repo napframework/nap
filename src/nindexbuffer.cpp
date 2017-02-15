@@ -36,7 +36,7 @@ namespace opengl
 		}
 		else
 		{
-			glBufferData(getBufferType(), mSettings.getSize(), data, mSettings.mUsage);
+			glBufferData(getBufferType(), mSettings.getSize(), indices, mSettings.mUsage);
 		}
 		unbind();
 	}

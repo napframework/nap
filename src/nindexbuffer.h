@@ -45,6 +45,11 @@ namespace opengl
 		virtual GLenum getBufferType() const override			{ return GL_ELEMENT_ARRAY_BUFFER; }
 
 		/**
+		 * @return GL_UNSIGNED_INT
+		 */
+		virtual GLenum getType() const							{ return GL_UNSIGNED_INT; }
+
+		/**
 		 * @return Index settings associated with this buffer
 		 */
 		const IndexBufferSettings& getSettings() const			{ return mSettings; }

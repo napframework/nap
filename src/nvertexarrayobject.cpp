@@ -69,16 +69,45 @@ namespace opengl
 		// Get gl draw mode
 		GLenum draw_mode = getGLMode(mDrawMode);
 
-		// Get number of verts to draw
-		GLsizei draw_count = count < 0 ? static_cast<GLsizei>(mVertCount) : static_cast<GLsizei>(count);
+		// Draw with or without using indices
+		if (mIndexBuffer != nullptr)
+		{
+			if (!mIndexBuffer->bind())
+			{
+				printMessage(MessageType::ERROR, "can't draw vertex array object, unable to bind index buffer");
+				return;
+			}
 
-		// Draw all arrays managed by this vertex array object
-		glDrawArrays(draw_mode, 0, draw_count);
+			// Get number of indices to draw
+			GLsizei draw_count = count < 0 ? static_cast<GLsizei>(mIndexBuffer->getCount()) : static_cast<GLsizei>(count);
+			
+			// Draw vertices using connectivity list
+			glDrawElements(draw_mode, draw_count, mIndexBuffer->getType(), 0);
+		}
+		else
+		{
+			// Get number of verts to draw
+			GLsizei draw_count = count < 0 ? static_cast<GLsizei>(mVertCount) : static_cast<GLsizei>(count);
+
+			// Draw all arrays managed by this vertex array object
+			glDrawArrays(draw_mode, 0, draw_count);
+		}
 
 		// Unbind object
 		unbind();
 	}
 
+	// Specify which index buffer to use with this vertex array object
+	bool VertexArrayObject::setIndexBuffer(IndexBuffer& buffer)
+	{
+		if (!buffer.isAllocated())
+		{
+			printMessage(MessageType::ERROR, "can't add index buffer to vertex array object, index buffer is not allocated");
+			return false;
+		}
+		mIndexBuffer = &buffer;
+		return true;
+	}
 
 	//Adds and binds a vertex buffer to this vertex array object
 	bool VertexArrayObject::addVertexBuffer(unsigned int index, VertexBuffer& buffer)
