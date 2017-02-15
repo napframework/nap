@@ -8,3 +8,6 @@ void createCube(opengl::VertexArrayObject& cube, int vertex_idx, int color_idx, 
 
 // Creates a triangle
 void createTriangle(opengl::VertexArrayObject& triangle, int vertex_idx, int color_idx, int uv_idx);
+
+// Creates a plane
+void createPlane(opengl::VertexArrayObject& plane, int vertex_idx, int color_idx, int uv_idx);

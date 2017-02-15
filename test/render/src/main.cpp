@@ -70,6 +70,9 @@ opengl::VertexArrayObject	cubeObject;
 // Vertex buffer that holds a triangle
 opengl::VertexArrayObject	triangleObject;
 
+// Vertex buffer that holds the plane
+opengl::VertexArrayObject	planeObject;
+
 // Nap Objects
 nap::RenderService* renderService = nullptr;
 nap::Service* rpcService = nullptr;
@@ -112,7 +115,7 @@ void onUpdate(const nap::SignalAttribute& signal)
 	nap::TransformComponent* xform_v = modelComponent->getParent()->getComponent<nap::TransformComponent>();
 
 	// Get rotation angle
-	float rot_speed = 0.5f;
+	float rot_speed = 0.1f;
 	float rot_angle = elapsed_time * 360.0f * rot_speed;
 	float rot_angle_radians = glm::radians(rot_angle);
 
@@ -127,13 +130,13 @@ void onUpdate(const nap::SignalAttribute& signal)
 	float xform_distance = 2.0f;
 	float xform_speed = 1.0f;
 	float xform_offset = sin(elapsed_time * xform_speed) * xform_distance;
-	xform_v->translate.setValue({ xform_offset, 0.0f, 0.0f });
+	//xform_v->translate.setValue({ xform_offset, 0.0f, 0.0f });
 
 	// Set scale
 	float scale_speed = 4.0f;
 	float nscale = (sin(elapsed_time  * scale_speed) + 1) / 2.0f;
 	nscale = nap::fit<float>(nscale, 0.0f, 1.0f, 0.25f, 1.0f);
-	xform_v->uniformScale.setValue(nscale);
+	//xform_v->uniformScale.setValue(nscale);
 
 	// Set some material values
 	nap::Material* material = modelComponent->getMaterial();
@@ -190,6 +193,14 @@ void onRender(const nap::SignalAttribute& signal)
 		triangleObject.draw();
 		material->unbind();
 		triangleObject.unbind();
+		break;
+	case 3:
+		planeObject.bind();
+		material->bind();
+		material->pushUniforms();
+		planeObject.draw();
+		material->unbind();
+		planeObject.unbind();
 		break;
 	}
 }
@@ -338,6 +349,9 @@ bool init(nap::Core& core)
 	// Create triangle Vertex Buffer Object
 	createTriangle(triangleObject, vertex_index, color_index, uv_index);
 
+	// Create plane vertex buffer object
+	createPlane(planeObject, vertex_index, color_index, uv_index);
+
 	return true;
 }
 
@@ -363,6 +377,9 @@ void runGame(nap::Core& core)
 {
 	// Run function
 	bool loop = true;
+
+	glEnable(GL_LINE_SMOOTH);
+	glLineWidth(1);
 
 	// Loop
 	while (loop)
@@ -404,7 +421,7 @@ void runGame(nap::Core& core)
 				case SDLK_PERIOD:
 				{
 					currentIndex++;
-					currentIndex = currentIndex < 3 ? currentIndex : 0;
+					currentIndex = currentIndex < 4 ? currentIndex : 0;
 					break;
 				}
 				default:
