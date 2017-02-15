@@ -28,52 +28,6 @@ namespace opengl
 
 	//////////////////////////////////////////////////////////////////////////
 
-	// Destructor deletes GPU bound buffer id
-	VertexBuffer::~VertexBuffer()
-	{
-		if (isAllocated())
-			glDeleteBuffers(1, &mId);
-	}
-
-
-	//Allocates the buffer on the GPU
-	void VertexBuffer::init()
-	{
-		if (isAllocated())
-		{
-			printMessage(MessageType::WARNING, "vertex buffer already allocated, generating new one");
-			printMessage(MessageType::WARNING, "the previous vertex buffer id will be invalidated");
-			glDeleteBuffers(1, &mId);
-		}
-		glGenBuffers(1, &mId);
-	}
-
-
-	// binds this vertex buffer on the GPU for subsequent GPU calls
-	bool VertexBuffer::bind()
-	{
-		if (!isAllocated())
-		{
-			printMessage(MessageType::ERROR, "unable to bind vertex buffer: buffer is not allocated");
-			return false;
-		}
-		glBindBuffer(GL_ARRAY_BUFFER, mId);
-		return true;
-	}
-
-
-	// unbinds this vertex buffer on the GPU for subsequent GPU calls
-	bool VertexBuffer::unbind()
-	{
-		if (!isAllocated())
-		{
-			printMessage(MessageType::ERROR, "unable to unbind vertex buffer: buffer is not allocated");
-			return false;
-		}
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		return true;
-	}
-
 
 	// Apply settings and store data pointer
 	void VertexBuffer::setData(const VertexBufferSettings& settings, void* data)
@@ -106,7 +60,7 @@ namespace opengl
 		}
 		else
 		{
-			glBufferData(GL_ARRAY_BUFFER, mSettings.getSize(), data, mSettings.mUsage);
+			glBufferData(getBufferType(), mSettings.getSize(), data, mSettings.mUsage);
 		}
 
 		// Unbind buffer after setting data

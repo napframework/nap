@@ -7,6 +7,7 @@
 #include <fstream>
 #include <GL/glew.h>
 #include <iostream>
+#include <assert.h>
 
 using namespace std; // Include the standard namespace
 
@@ -157,19 +158,25 @@ namespace opengl
 			return;
 		}
 
-		// Make sure the attribute is represented by this shader
-		auto it = mShaderAttributes.find(name);
-		if (it == mShaderAttributes.end())
+		// Get current location
+		GLint current_attr_location = glGetAttribLocation(getId(), name.c_str());
+		if (current_attr_location == -1)
 		{
 			printMessage(MessageType::WARNING, "unable to bind vertex attribute, attribute: %s not in shader", name.c_str());
+			return;
+		}
+
+		// Check if location is different, if not don't update
+		if (current_attr_location == index)
+		{
 			return;
 		}
 
 		// Bind attribute location
 		glBindAttribLocation(getId(), index, name.c_str());
 
-		// Re-link program
-		glLinkProgram(mShaderId);
+		// Cache change
+		mAttributeLocationChanged = true;
 	}
 
 
@@ -237,10 +244,17 @@ namespace opengl
 	// bind attaches the shader program for successive OpenGL calls
 	bool Shader::bind()
 	{
-		if (!isAllocated())
+		if (!isLinked())
 		{
-			printMessage(MessageType::ERROR, "unable to bind shader, shader not allocated");
+			printMessage(MessageType::ERROR, "attempting to bind unresolved shader");
 			return false;
+		}
+
+		// Re-link if attribute location changed
+		if (mAttributeLocationChanged)
+		{
+			glLinkProgram(mShaderId);
+			mAttributeLocationChanged = false;
 		}
 
 		glUseProgram(mShaderId);

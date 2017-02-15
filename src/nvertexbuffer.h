@@ -3,6 +3,7 @@
 // Local Includes
 #include "ngltypes.h"
 #include "nglutils.h"
+#include "nbuffer.h"
 
 // External Includes
 #include <GL/glew.h>
@@ -52,38 +53,11 @@ namespace opengl
 	 * Vertex data is arbitrary vertex data such as position, uv, color etc.
 	 * This object does not manage or owns any data
 	 */
-	class VertexBuffer
+	class VertexBuffer : public Buffer
 	{
 	public:
 		VertexBuffer() = default;
-		VertexBuffer(const VertexBufferSettings& settings) : mSettings(settings) { };
-		virtual ~VertexBuffer();
-
-		/**
-		 * Allocates the buffer on the GPU
-		 * Always call init after creation otherwise subsequent calls will fail
-		 */
-		void init();
-
-		/**
-		 * @return if the buffer is allocated on the GPU
-		 */
-		bool isAllocated() const								{ return mId != 0; }
-
-		/**
-		 * @return the id associated with this buffer on the GPU
-		 */
-		GLuint getId() const									{ return mId; }
-
-		/**
-		 * binds this vertex buffer on the GPU for subsequent GPU calls
-		 */
-		bool bind();
-
-		/**
-		 * unbinds this vertex buffer on the GPU for subsequent GPU calls
-		 */
-		bool unbind();
+		VertexBuffer(const VertexBufferSettings& settings) : mSettings(settings) { }
 
 		/**
 		 * @return the settings associated with this buffer
@@ -94,6 +68,11 @@ namespace opengl
 		 * @return the buffer OpenGL type, INVALID_ENUM if not specified
 		 */
 		 virtual GLenum getType() const							{ return mSettings.mType; }
+
+		 /**
+		  * @return the buffer opengl type
+		  */
+		 virtual GLenum getBufferType() const override			{ return GL_ARRAY_BUFFER; }
 
 		/**
 		 * @return the number of components associated with the buffer

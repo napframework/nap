@@ -128,5 +128,6 @@ namespace opengl
 		UniformVariables mShaderUniforms;		// Shader program uniform attributes
 		VertexAttributes mShaderAttributes;		// Shader program vertex attribute inputs
 		State mState = State::NotLoaded;		// Holds current state of shader program
+		bool mAttributeLocationChanged = false;	// Holds if the attribute location changed, if so, re-link program
 	};
 }	// opengl
