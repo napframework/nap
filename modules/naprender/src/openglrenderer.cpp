@@ -134,6 +134,8 @@ namespace nap
 		attrs.dubbleBuffer = true;
 		attrs.versionMinor = 2;
 		attrs.versionMajor = 3;
+		attrs.enableMultiSampling = true;
+		attrs.multiSampleSamples = 8;
 		opengl::setAttributes(attrs);
 
 		// Success

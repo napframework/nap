@@ -376,12 +376,9 @@ void runGame(nap::Core& core)
 	opengl::enableDepthTest(true);
 	opengl::enableBlending(true);
 	opengl::enableMultiSampling(true);
-
-	opengl::enableLineSmoothing(true);
-	opengl::enablePointSmoothing(true);
-	opengl::setLineWidth(1.0f);
-	opengl::setPointSize(5.0f);
-	opengl::setPolygonMode(opengl::PolygonMode::FILL);
+	opengl::setLineWidth(1.3f);
+	opengl::setPointSize(2.0f);
+	opengl::setPolygonMode(opengl::PolygonMode::LINE);
 
 	// Loop
 	while (loop)
