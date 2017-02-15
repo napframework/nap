@@ -163,11 +163,6 @@ void onRender(const nap::SignalAttribute& signal)
 	opengl::clearDepth();
 	opengl::clearStencil();
 
-	// Enable some gl specific stuff
-	opengl::enableDepthTest(true);
-	opengl::enableBlending(true);
-	opengl::enableMultiSampling(true);
-
 	// Get mesh component
 	nap::Material* material = modelComponent->getMaterial();
 	assert(material != nullptr);	
@@ -378,8 +373,15 @@ void runGame(nap::Core& core)
 	// Run function
 	bool loop = true;
 
-	glEnable(GL_LINE_SMOOTH);
-	glLineWidth(1);
+	opengl::enableDepthTest(true);
+	opengl::enableBlending(true);
+	opengl::enableMultiSampling(true);
+
+	opengl::enableLineSmoothing(true);
+	opengl::enablePointSmoothing(true);
+	opengl::setLineWidth(1.0f);
+	opengl::setPointSize(5.0f);
+	opengl::setPolygonMode(opengl::PolygonMode::FILL);
 
 	// Loop
 	while (loop)
