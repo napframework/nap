@@ -80,6 +80,48 @@ namespace opengl
 
 
 	/**
+	 * Enables / disables line smoothing
+	 * @param value: if line smoothing should be turned on or off
+	 */
+	void enableLineSmoothing(bool value);
+
+
+	/**
+	 * Sets the line width
+	 * @param value: the line width of rasterized lines
+	 */
+	void setLineWidth(float value);
+
+
+	/**
+	 * Enum used for specifying polygon mode
+	 */
+	enum class PolygonMode : std::uint8_t
+	{
+		POINT	= 0,
+		LINE	= 1,
+		FILL	= 2
+	};
+
+	/**
+	 * Select the polygon rasterization mode
+	 * @param mode: the rasterization mode to use
+	 */
+	void setPolygonMode(PolygonMode mode);
+
+	/**
+	 * Set rasterization point size
+	 * @param size: new point size used when rendering
+	 */
+	void setPointSize(float size);
+
+	/**
+	 * Turns point smoothing on / off
+	 * @param value: if point smoothing should be turned on or off
+	 */
+	void enablePointSmoothing(bool value);
+
+	/**
 	 * Simple string formatter
 	 */
 	template <typename... Args>	

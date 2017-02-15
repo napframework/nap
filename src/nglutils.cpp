@@ -3,6 +3,7 @@
 
 // External Includes
 #include <unordered_set>
+#include <assert.h>
 
 namespace opengl
 {
@@ -93,7 +94,7 @@ namespace opengl
 	// Turns multi sampling on / off
 	void enableMultiSampling(bool value)
 	{
-		enableGLParam(GL_MULTISAMPLE_ARB, value);
+		enableGLParam(GL_MULTISAMPLE, value);
 	}
 
 
@@ -102,4 +103,53 @@ namespace opengl
 	{
 		glViewport(0, 0, width, height);
 	}
+
+
+	// If line smoothing should be turned on or off
+	void enableLineSmoothing(bool value)
+	{
+		enableGLParam(GL_LINE_SMOOTH, value);
+	}
+
+
+	// Set line width of rasterized lines
+	void setLineWidth(float value)
+	{
+		glLineWidth(value);
+	}
+
+
+	// Mode to use when drawing polygons
+	void setPolygonMode(PolygonMode mode)
+	{
+		switch (mode)
+		{
+		case PolygonMode::FILL:
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			break;
+		case PolygonMode::LINE:
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			break;
+		case PolygonMode::POINT:
+			glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+			break;
+		default:
+			assert(false);
+		}
+	}
+
+
+	// Set render point size
+	void setPointSize(float size)
+	{
+		glPointSize(size);
+	}
+
+
+	// Turn smoothing of points on or off
+	void enablePointSmoothing(bool value)
+	{
+		enableGLParam(GL_POINT_SMOOTH, value);
+	}
+
 }
