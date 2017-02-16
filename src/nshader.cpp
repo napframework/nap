@@ -241,6 +241,19 @@ namespace opengl
 	}
 
 
+	// Returns a vertex attribute with name
+	const VertexAttribute* Shader::getAttribute(const std::string& name) const
+	{
+		auto it = mShaderAttributes.find(name);
+		if (it == mShaderAttributes.end())
+		{
+			printMessage(MessageType::WARNING, "shader has no active vertex attribute with name: %s", name.c_str());
+			return nullptr;
+		}
+		return it->second.get();
+	}
+
+
 	// bind attaches the shader program for successive OpenGL calls
 	bool Shader::bind()
 	{

@@ -1,4 +1,5 @@
 #include "nmesh.h"
+#include <assert.h>
 
 namespace opengl
 {
@@ -48,13 +49,38 @@ namespace opengl
 	}
 
 
+	void Mesh::copyIndexData(unsigned int count, unsigned int* data)
+	{
+		assert(count > 0);
+		updateIndexContainer(mIndices, count, data);
+	}
+
+
 	// Draw mesh object
 	void Mesh::draw()
 	{
 		mObject.draw();
 	}
 
-	
+
+	// Update mesh indices
+	void Mesh::updateIndexContainer(std::unique_ptr<IndexContainer>& location, unsigned int count, unsigned int* data)
+	{
+		// Check if exists, if not create, move and add
+		if (location == nullptr)
+		{
+			location = std::make_unique<IndexContainer>();
+			mObject.setIndexBuffer(*(location->getIndexBuffer()));
+		}
+
+		// Copy our data
+		location->copyData(count, data);
+
+		// Synchronize on success (data in CPU memory will be uploaded to GPU)
+		location->sync();
+	}
+
+
 	// Utility that is used for retrieving the binding for @container
 	int Mesh::getContainerBindingIndex(VertexContainer* container) const
 	{

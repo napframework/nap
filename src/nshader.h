@@ -116,6 +116,13 @@ namespace opengl
 		const VertexAttributes& getAttributes() const		{ return mShaderAttributes; }
 
 		/**
+		 * @return shader vertex attribute with given name
+		 * nullptr if the attribute is not found
+		 * @param name: Name of the vertex attribute
+		 */
+		const VertexAttribute* getAttribute(const std::string& name) const;
+
+		/**
 		 * @return all uniform shader attributes
 		 */
 		const UniformVariables& getUniforms() const			{ return mShaderUniforms; }
