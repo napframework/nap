@@ -85,7 +85,7 @@ namespace nap
 		}
 
 		// If we don't have an entity to render, do nothing
-		if (!laser_cam->mRenderEntity.isValid())
+		if (!laser_cam->mRenderEntity.isLinked())
 			return;
 
 		// Make sure it's an entity

@@ -39,4 +39,9 @@ namespace nap
 	 * nullptr if RTTI type is not supported
 	 */
 	const GLSLSetterFunction* getGLSLSetFunction(const opengl::GLSLType& type);
+
+	/**
+	 * Reset active texture unit to 0
+	 */
+	void resetActiveTexture();
 }

@@ -33,6 +33,9 @@ namespace nap
 			nap::Logger::warn(*this, "unable to draw object, no linked material");
 			return;
 		}
+
+		// Update vertex attributes
+		mat->pushAttributes();
 		
 		// Bind material
 		mat->bind();

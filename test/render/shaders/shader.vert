@@ -4,9 +4,10 @@ uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 modelMatrix;
 
-in vec3		in_Position;
-in vec4		in_Color;
-in vec3		in_Uvs;
+in vec3	in_Position;
+in vec4	in_Color;
+in vec3 in_Normals;
+in vec3	in_Uvs;
 
 out vec4 pass_Color;
 out vec3 pass_Uvs;

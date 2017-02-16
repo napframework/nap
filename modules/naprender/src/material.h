@@ -62,10 +62,31 @@ namespace nap
 		CompoundAttribute uniformAttribute =			{ this, "uniforms" };
 
 		/**
+		 * Holds all vertex attribute variables
+		 */
+		CompoundAttribute vertexAttribute =				{ this, "attributes" };
+
+		/**
 		 * Uploads all uniform variables to the GPU
 		 * Note that this call will only work when the shader is bound!
 		 */
 		void pushUniforms();
+
+		/**
+		 * Updates the variable attribute bindings on the GPU
+		 * Note that this call needs to be called before binding the material
+		 * Shader index operations are only pushed on a new bind because of linking impact
+		 */
+		void pushAttributes();
+
+		/**
+		 * Updates the vertex attribute binding location
+		 * The binding location is associated with a specific buffer when drawing
+		 * Every buffer has it's own location withing the array object that is used
+		 * @param name: Name of the vertex attribute in the shader
+		 * @param location: New buffer location to use when drawing
+		 */
+		void setVertexAttributeLocation(const std::string& name, int location);
 
 		/**
 		 * Template uniform set function
@@ -85,16 +106,16 @@ namespace nap
 	private:
 		
 		/**
-		 * Update uniform values associated with this material
+		 * Update shader uniforms and attribute values associated with this material
 		 * Note that this function can only be called when the shader
 		 * has been loaded correctly
 		 */
-		void resolveUniforms();
+		void resolve();
 
 		/**
-		 * Clear uniform shader bindings
+		 * Clear shader bindings
 		 */
-		void clearUniforms();
+		void clear();
 
 		/**
 		 * Occurs when the resource changes, ie: link is removed or new

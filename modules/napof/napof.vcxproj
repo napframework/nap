@@ -334,6 +334,9 @@
     <ProjectReference Include="..\..\..\openFrameworks\libs\openFrameworksCompiled\project\vs\openframeworksLib.vcxproj">
       <Project>{5837595d-aca9-485c-8e76-729040ce4b0b}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\..\msvc32\core\napcore.vcxproj">
+      <Project>{b795fb91-d5ac-32d8-95a3-ca8bc3b8d9a7}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\openFrameworks\addons\ofxDSHapVideoPlayer\libs\External\DirectShow\BaseClasses\baseclasses.vcproj" />

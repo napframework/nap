@@ -39,15 +39,7 @@ namespace nap
 		// Check if we tried to load the shader
 		if (!mLoaded)
 		{
-			mShader.init(mVertPath, mFragPath);
-			if (!mShader.isLinked())
-			{
-				nap::Logger::warn("unable to create shader program: %s", mVertPath.c_str(), mFragPath.c_str());
-			}
-			mLoaded = true;
-			
-			// Notify listeners of load
-			loaded.trigger(mShader.isLinked());
+			load();
 		}
 		return mShader;
 	}
@@ -56,6 +48,21 @@ namespace nap
 	bool ShaderResource::isLoaded() const
 	{
 		return mLoaded && mShader.isLinked();
+	}
+
+	
+	void ShaderResource::load()
+	{
+		// Initialize the shader
+		mShader.init(mVertPath, mFragPath);
+		if (!mShader.isLinked())
+		{
+			nap::Logger::warn("unable to create shader program: %s", mVertPath.c_str(), mFragPath.c_str());
+		}
+		mLoaded = true;
+
+		// Notify listeners of load
+		loaded.trigger(mShader.isLinked());
 	}
 
 	//////////////////////////////////////////////////////////////////////////

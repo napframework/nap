@@ -3,6 +3,7 @@
 // Internal Includes
 #include "rendercomponent.h"
 #include "modelresource.h"
+#include "meshcomponent.h"
 
 // External Includes
 #include <nap/resourcelinkattribute.h>
@@ -15,9 +16,9 @@ namespace nap
 	 * Use the meshIndex attribute to change what part of the 3d model this component references (works with)
 	 * Every 3d model consists out of various ModelMeshComponents
 	 */
-	class ModelMeshComponent : public RenderableComponent
+	class ModelMeshComponent : public MeshComponent
 	{
-		RTTI_ENABLE_DERIVED_FROM(RenderableComponent)
+		RTTI_ENABLE_DERIVED_FROM(MeshComponent)
 	public:
 		// Constructor
 		ModelMeshComponent() = default;
@@ -30,9 +31,9 @@ namespace nap
 		Attribute<int> meshIndex = { this, "meshIndex", 0 };
 
 		/**
-		 * Binds the selected mesh and draws it using currently associated material
+		 * @return the mesh this object currently manages
 		 */
-		virtual void onDraw() override;
+		virtual opengl::Mesh* getMesh() const override;
 
 		/**
 		 * Link to the model this mesh references

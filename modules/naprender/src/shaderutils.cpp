@@ -382,4 +382,10 @@ namespace nap
 		return it->second->getSetFunction();
 	}
 
+	// Reset active texture unit
+	void resetActiveTexture()
+	{
+		glActiveTexture(GL_TEXTURE0);
+	}
+
 } // End Namespace NAP

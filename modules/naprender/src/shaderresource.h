@@ -41,6 +41,11 @@ namespace nap
 		bool isLoaded() const;
 
 		/**
+		 * Explicitly load the shader, reloads if necessary
+		 */
+		void load();
+
+		/**
 		 * Signal is emitted when the shader is loaded or reloaded
 		 * The bool represents if issues occurred when loading
 		 */

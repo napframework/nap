@@ -40,6 +40,7 @@
 #include <transformcomponent.h>
 #include <cameracomponent.h>
 #include <mathutils.h>
+#include <planecomponent.h>
 
 // Nap includes
 #include <nap/core.h>
@@ -64,31 +65,20 @@ static nap::ImageResource* testTexture = nullptr;
 static const std::string pigTextureName = "data/pig_head.jpg";
 static nap::ImageResource* pigTexture = nullptr;
 
-// Vertex buffer that holds all the fbo's
-opengl::VertexArrayObject	cubeObject;
-
-// Vertex buffer that holds a triangle
-opengl::VertexArrayObject	triangleObject;
-
-// Vertex buffer that holds the plane
-opengl::VertexArrayObject	planeObject;
-
 // Nap Objects
 nap::RenderService* renderService = nullptr;
 nap::Service* rpcService = nullptr;
 nap::RenderWindowComponent* renderWindow = nullptr;
 nap::CameraComponent* cameraComponent = nullptr;
 nap::ModelMeshComponent* modelComponent = nullptr;
+nap::PlaneComponent* planeComponent = nullptr;
 nap::ShaderResource* shaderResource = nullptr;
 nap::ShaderResource* shaderResourceOne = nullptr;
 nap::ShaderResource* shaderResourceTwo = nullptr;
 
 // vertex Shader indices
 nap::Entity* model = nullptr;
-int vertex_index(0), color_index(0), normal_index(0), uv_index(0);
-
-// Current texture to draw
-unsigned int currentIndex = 0;
+nap::Entity* plane = nullptr;
 
 // Window width / height on startup
 unsigned int windowWidth(512);
@@ -100,19 +90,14 @@ glm::mat4 modelMatrix;			// Store the model matrix
 // Some utilities
 void runGame(nap::Core& core);	
 
-
 // Called when the window is updating
 void onUpdate(const nap::SignalAttribute& signal)
 {
-	//auto signal_attr = static_cast<nap::SignalAttribute*>(rpcService->getAttribute("update"));
-	//signal_attr->trigger();
-	//static float elapsed_time = 0.0f;
-	//elapsed_time += renderWindow->getDeltaTimeFloat();
-
 	// Update model transform
 	float elapsed_time = renderService->getCore().getElapsedTime();
 
 	nap::TransformComponent* xform_v = modelComponent->getParent()->getComponent<nap::TransformComponent>();
+	nap::TransformComponent* xform_p = planeComponent->getParent()->getComponent<nap::TransformComponent>();
 
 	// Get rotation angle
 	float rot_speed = 0.1f;
@@ -122,15 +107,19 @@ void onUpdate(const nap::SignalAttribute& signal)
 	// Calculate rotation quaternion
 	glm::quat rot_quat = glm::rotate(glm::quat(), (float)rot_angle_radians, glm::vec3(0.0, 1.0, 0.0));
 
-	// Set rotation on component
-	assert(xform_v);
+	// Set rotation on model component
 	xform_v->rotate.setValue(nap::quatToVector(rot_quat));
+
+	// Set rotation on plane component
+	xform_p->rotate.setValue(nap::quatToVector(rot_quat));
+	xform_p->translate.setValue({ 1.0f, 0.0, 0.0f });
+	xform_p->uniformScale.setValue(1.5f);
 
 	// Set transform
 	float xform_distance = 2.0f;
 	float xform_speed = 1.0f;
 	float xform_offset = sin(elapsed_time * xform_speed) * xform_distance;
-	//xform_v->translate.setValue({ xform_offset, 0.0f, 0.0f });
+	xform_v->translate.setValue({ -1.0f, 0.0f, 0.0f });
 
 	// Set scale
 	float scale_speed = 4.0f;
@@ -146,11 +135,16 @@ void onUpdate(const nap::SignalAttribute& signal)
 	// Set uniforms
 	glm::vec4 color(v, 1.0f-v, 1.0f, 1.0f);
 	material->setUniformValue<glm::vec4>("mColor", color);
-	material->setUniformValue<int>("mTextureIndex", static_cast<int>(currentIndex));
+	material->setUniformValue<int>("mTextureIndex", static_cast<int>(0));
 
 	// Bind correct texture and send to shader
 	material->setUniformTexture("pigTexture", *pigTexture);
 	material->setUniformTexture("testTexture", *testTexture);
+
+	planeComponent->getMaterial()->setUniformTexture("pigTexture", *testTexture);
+	planeComponent->getMaterial()->setUniformTexture("testTexture", *testTexture);
+	planeComponent->getMaterial()->setUniformValue<int>("mTextureIndex", 0);
+	planeComponent->getMaterial()->setUniformValue<glm::vec4>("mColor", {1.0f, 1.0f, 1.0f, 1.0f});
 }
 NSLOT(updateSlot, const nap::SignalAttribute&, onUpdate)
 
@@ -163,41 +157,8 @@ void onRender(const nap::SignalAttribute& signal)
 	opengl::clearDepth();
 	opengl::clearStencil();
 
-	// Get mesh component
-	nap::Material* material = modelComponent->getMaterial();
-	assert(material != nullptr);	
-
 	// Render all objects
-	switch (currentIndex)
-	{
-	case 0:
-		renderService->renderObjects(*cameraComponent);
-		break;
-	case 1:
-		cubeObject.bind();
-		material->bind();
-		material->pushUniforms();
-		cubeObject.draw();
-		material->unbind();
-		cubeObject.unbind();
-		break;
-	case 2:
-		triangleObject.bind();
-		material->bind();
-		material->pushUniforms();
-		triangleObject.draw();
-		material->unbind();
-		triangleObject.unbind();
-		break;
-	case 3:
-		planeObject.bind();
-		material->bind();
-		material->pushUniforms();
-		planeObject.draw();
-		material->unbind();
-		planeObject.unbind();
-		break;
-	}
+	renderService->renderObjects(*cameraComponent);
 }
 NSLOT(renderSlot, const nap::SignalAttribute&, onRender)
 
@@ -227,6 +188,8 @@ bool init(nap::Core& core)
 	*/
 
 	//////////////////////////////////////////////////////////////////////////
+	// GL Service + Window
+	//////////////////////////////////////////////////////////////////////////
 
 	// Create render service
 	renderService = core.getOrCreateService<nap::RenderService>();
@@ -246,9 +209,7 @@ bool init(nap::Core& core)
 	renderWindow->update.signal.connect(updateSlot);
 
 	//////////////////////////////////////////////////////////////////////////
-
-	//////////////////////////////////////////////////////////////////////////
-	// Create Modle
+	// Resources
 	//////////////////////////////////////////////////////////////////////////
 
 	// Create shader resource
@@ -264,10 +225,12 @@ bool init(nap::Core& core)
 	// Load first shader
 	nap::Resource* shader_resource = service->getResource(fragShaderName);
 	shaderResourceOne = static_cast<nap::ShaderResource*>(shader_resource);
+	shaderResourceOne->load();
 	
 	// Load second shader
 	nap::Resource* shader_resource_two = service->getResource(fragShaderNameTwo);
 	shaderResourceTwo = static_cast<nap::ShaderResource*>(shader_resource_two);
+	shaderResourceTwo->load();
 	
 	// Set resource
 	shaderResource = shaderResourceOne;
@@ -281,17 +244,28 @@ bool init(nap::Core& core)
 	}
 	nap::ModelResource* pig_model = static_cast<nap::ModelResource*>(model_resource);
 
+	//////////////////////////////////////////////////////////////////////////
+	// Entities
+	//////////////////////////////////////////////////////////////////////////
+
 	// Create model entity
 	model = &(core.getRoot().addEntity("model"));
 	nap::TransformComponent& tran_component = model->addComponent<nap::TransformComponent>();
 	modelComponent = &model->addComponent<nap::ModelMeshComponent>("pig_head_mesh");
 
-	//////////////////////////////////////////////////////////////////////////
+	// Create plane entity
+	plane = &(core.getRoot().addEntity("plane"));
+	nap::TransformComponent& plane_tran_component = plane->addComponent<nap::TransformComponent>();
+	planeComponent = &plane->addComponent<nap::PlaneComponent>("draw_plane");
 
 	// Set shader resource on material
 	nap::Material* material = modelComponent->getMaterial();
 	assert(material != nullptr);
 	material->shaderResourceLink.setResource(*shaderResource);
+
+	nap::Material* plane_material = planeComponent->getMaterial();
+	assert(plane_material != nullptr);
+	plane_material->shaderResourceLink.setResource(*shaderResource);
 
 	// Link model resource
 	modelComponent->modelResource.setResource(*pig_model);
@@ -308,23 +282,15 @@ bool init(nap::Core& core)
 		return false;
 	}
 
-	// Get buffer indices for mesh (TODO: RESOLVE DYNAMICALLY)
-	vertex_index = mesh->getVertexBufferIndex();
-	color_index = mesh->getColorBufferIndex(0);
-	normal_index = mesh->getNormalBufferIndex();
-	uv_index = mesh->getUvBufferIndex(0);
-
-	// Bind indices explicit to shader (TODO: RESOLVE DYNAMICALLY)
 	// This tells what vertex buffer index belongs to what vertex shader input binding name
-	opengl::Shader& shader_one = shaderResourceOne->getShader();
-	shader_one.bindVertexAttribute(vertex_index, "in_Position");
-	shader_one.bindVertexAttribute(color_index, "in_Color");
-	shader_one.bindVertexAttribute(uv_index, "in_Uvs");
+	material->setVertexAttributeLocation("in_Position", modelComponent->getMesh()->getVertexBufferIndex());
+	material->setVertexAttributeLocation("in_Color", modelComponent->getMesh()->getColorBufferIndex());
+	material->setVertexAttributeLocation("in_Uvs", modelComponent->getMesh()->getUvBufferIndex());
 
-	opengl::Shader& shader_two = shaderResourceTwo->getShader();
-	shader_two.bindVertexAttribute(vertex_index, "in_Position");
-	shader_two.bindVertexAttribute(color_index, "in_Color");
-	shader_two.bindVertexAttribute(uv_index, "in_Uvs");
+	// Do the same for the plane
+	plane_material->setVertexAttributeLocation("in_Position", planeComponent->getMesh()->getVertexBufferIndex());
+	plane_material->setVertexAttributeLocation("in_Color", planeComponent->getMesh()->getColorBufferIndex());
+	plane_material->setVertexAttributeLocation("in_Uvs", planeComponent->getMesh()->getUvBufferIndex());
 
 	//////////////////////////////////////////////////////////////////////////
 	// Add Camera
@@ -337,15 +303,6 @@ bool init(nap::Core& core)
 	// Set camera
 	cameraComponent->fieldOfView.setValue(45.0f);
 	cameraComponent->setAspectRatio((float)windowWidth, (float)windowHeight);
-
-	// Create Square Vertex Buffer Object
-	createCube(cubeObject, vertex_index, color_index, uv_index);
-
-	// Create triangle Vertex Buffer Object
-	createTriangle(triangleObject, vertex_index, color_index, uv_index);
-
-	// Create plane vertex buffer object
-	createPlane(planeObject, vertex_index, color_index, uv_index);
 
 	return true;
 }
@@ -378,7 +335,7 @@ void runGame(nap::Core& core)
 	opengl::enableMultiSampling(true);
 	opengl::setLineWidth(1.3f);
 	opengl::setPointSize(2.0f);
-	opengl::setPolygonMode(opengl::PolygonMode::LINE);
+	opengl::setPolygonMode(opengl::PolygonMode::FILL);
 
 	// Loop
 	while (loop)
@@ -399,12 +356,14 @@ void runGame(nap::Core& core)
 				{
 					shaderResource = shaderResourceOne;
 					modelComponent->getMaterial()->shaderResourceLink.setResource(*shaderResource);
+					planeComponent->getMaterial()->shaderResourceLink.setResource(*shaderResource);
 					break;
 				}
 				case SDLK_2:
 				{
 					shaderResource = shaderResourceTwo;
 					modelComponent->getMaterial()->shaderResourceLink.setResource(*shaderResource);
+					planeComponent->getMaterial()->shaderResourceLink.setResource(*shaderResource);
 					break;
 				}
 				case SDLK_ESCAPE:
@@ -415,12 +374,6 @@ void runGame(nap::Core& core)
 					static bool fullScreen = false;
 					fullScreen = !fullScreen;
 					renderWindow->fullScreen.setValue(fullScreen);
-					break;
-				}
-				case SDLK_PERIOD:
-				{
-					currentIndex++;
-					currentIndex = currentIndex < 4 ? currentIndex : 0;
 					break;
 				}
 				default:

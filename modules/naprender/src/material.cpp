@@ -76,6 +76,41 @@ namespace nap
 			// Set value
 			(*func)(*uniform, *attr, tex_unit);
 		}
+		resetActiveTexture();
+	}
+
+
+	// Push shader attributes
+	void Material::pushAttributes()
+	{
+		// Ensure shader exists
+		if (!hasShader())
+		{
+			nap::Logger::warn(*this, "unable to set vertex attributes, no resource linked");
+			return;
+		}
+
+		// Set index
+		for (auto i = 0; i < vertexAttribute.size(); i++)
+		{
+			// Get attribute to set
+			Attribute<int>* attr = static_cast<Attribute<int>*>(vertexAttribute.getAttribute(i));
+			assert(attr != nullptr);
+			mShader->getShader().bindVertexAttribute(attr->getValue(), attr->getName());
+		}
+	}
+
+	// Set vertex attribute location used when drawing next time
+	// The location is associated with a vertex buffer bound to a vertex array object
+	void Material::setVertexAttributeLocation(const std::string& name, int location)
+	{
+		Attribute<int>* vertex_attr = vertexAttribute.getAttribute<int>(name);
+		if (vertex_attr == nullptr)
+		{
+			nap::Logger::warn(*this, "vertex attribute: %s does not exist", name.c_str());
+			return;
+		}
+		vertex_attr->setValue(location);
 	}
 
 
@@ -102,10 +137,10 @@ namespace nap
 
 
 	// Resolve uniforms
-	void Material::resolveUniforms()
+	void Material::resolve()
 	{
 		// Clear, TODO: ACTUALLY RESOLVE
-		uniformAttribute.clear();
+		clear();
 
 		// Resolve can only occur when a shader is present
 		assert(mShader != nullptr);
@@ -144,13 +179,21 @@ namespace nap
 			a.setName(v.first);
 			assert(a.getName() == v.first);
 		}
+
+		// Add vertex attributes
+		for (const auto& v : mShader->getShader().getAttributes())
+		{
+			const std::string& name = v.first;
+			vertexAttribute.addAttribute<int>(name, v.second->mLocation);
+		}
 	}
 
 
 	// Clears all uniforms
-	void Material::clearUniforms()
+	void Material::clear()
 	{
 		uniformAttribute.clearChildren();
+		vertexAttribute.clearChildren();
 	}
 
 
@@ -168,12 +211,12 @@ namespace nap
 		if (!success)
 		{
 			nap::Logger::warn(*this, "failed to load shader: %s, clearing uniform bindings", mShader->getResourcePath().c_str());
-			clearUniforms();
+			clear();
 			return;
 		}
 
 		// Otherwise we resolve bindings
-		resolveUniforms();
+		resolve();
 	}
 
 
@@ -186,7 +229,7 @@ namespace nap
 		// so that if we resolve we resolve against a fresh set
 		if (hasShader())
 		{
-			clearUniforms();
+			clear();
 			mShader->loaded.disconnect(shaderLoaded);
 		}
 
@@ -201,7 +244,7 @@ namespace nap
 			{
 				nap::Logger::fatal(*this, "unable to resolve shader link: %s", shaderResourceLink.getPath().c_str());
 			}
-			clearUniforms();
+			clear();
 			return;
 		}
 
@@ -213,7 +256,7 @@ namespace nap
 		// we can immediately update all the uniforms
 		if (mShader->isLoaded())
 		{
-			resolveUniforms();
+			resolve();
 		}
 	}
 }

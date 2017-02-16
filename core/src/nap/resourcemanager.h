@@ -46,8 +46,14 @@ namespace nap
 		 */
 		Resource* getResource(const std::string& path);
 
+		/**
+		 * Get or load an asset based on the path
+		 * @param path: path to resource on disk
+		 * @return safely converted resource, nullptr if not valid
+		 */
 		template<typename T>
-		T* getResource(const std::string& path) {
+		T* getResource(const std::string& path) 
+		{
 			return rtti_cast<T*>(getResource(path));
 		}
 
@@ -80,8 +86,6 @@ namespace nap
 		 * Find an appropriate AssetFactory and let it load the asset
 		 */
 		Resource* loadResource(const std::string& path);
-
-
 
 		/**
 		 * Retrieve an existing factory or create a new one and return that one.

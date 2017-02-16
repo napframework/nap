@@ -3,6 +3,9 @@
 // Local Includes
 #include "rendercomponent.h"
 
+// External Includes
+#include <nmesh.h>
+
 namespace nap
 {
 	/**
@@ -18,10 +21,22 @@ namespace nap
 		MeshComponent() = default;
 
 		/**
-		 * Draws the mesh to screen
+		 * Draws the mesh associated with this object
+		 * Doesn't draw anything if getMesh returns nullptr
 		 */
-		virtual void onDraw() override		{ assert(false); }
+		virtual void onDraw() override;
+
+		/**
+		 * If this object currently holds a mesh
+		 */
+		bool hasMesh() const							{ return getMesh() != nullptr; }
+
+		/**
+		 * @return the mesh this component manages
+		 * nullptr if mesh is invalid
+		 */
+		virtual opengl::Mesh* getMesh() const = 0;
 	};
 }
 
-RTTI_DECLARE(nap::MeshComponent)
+RTTI_DECLARE_BASE(nap::MeshComponent)
