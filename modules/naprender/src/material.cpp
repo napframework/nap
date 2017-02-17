@@ -102,7 +102,7 @@ namespace nap
 
 	// Set vertex attribute location used when drawing next time
 	// The location is associated with a vertex buffer bound to a vertex array object
-	void Material::setVertexAttributeLocation(const std::string& name, int location)
+	void Material::linkVertexBuffer(const std::string& name, int location)
 	{
 		Attribute<int>* vertex_attr = vertexAttribute.getAttribute<int>(name);
 		if (vertex_attr == nullptr)

@@ -210,6 +210,7 @@ RTTI_DEFINE_DATA(std::vector<ofFloatColor>)
 RTTI_DEFINE_DATA(nap::LfoType)
 RTTI_DEFINE(ofTexture)
 RTTI_DEFINE(nap::Attribute<ofTexture*>)
+RTTI_DEFINE(ofTexture*)
 RTTI_DEFINE_DATA(OFVectorMap)
 
 //////////////////////////////////////////////////////////////////////////

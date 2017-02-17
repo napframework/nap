@@ -86,7 +86,7 @@ namespace nap
 		 * @param name: Name of the vertex attribute in the shader
 		 * @param location: New buffer location to use when drawing
 		 */
-		void setVertexAttributeLocation(const std::string& name, int location);
+		void linkVertexBuffer(const std::string& name, int location);
 
 		/**
 		 * Template uniform set function

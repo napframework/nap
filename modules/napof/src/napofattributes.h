@@ -59,6 +59,7 @@ RTTI_DECLARE_DATA(nap::LfoType)
 // Texture
 RTTI_DECLARE(ofTexture)
 RTTI_DECLARE(nap::Attribute<ofTexture*>)
+RTTI_DECLARE(ofTexture*)
 
 // Vector map
 RTTI_DECLARE_DATA(OFVectorMap)

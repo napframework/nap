@@ -283,14 +283,14 @@ bool init(nap::Core& core)
 	}
 
 	// This tells what vertex buffer index belongs to what vertex shader input binding name
-	material->setVertexAttributeLocation("in_Position", modelComponent->getMesh()->getVertexBufferIndex());
-	material->setVertexAttributeLocation("in_Color", modelComponent->getMesh()->getColorBufferIndex());
-	material->setVertexAttributeLocation("in_Uvs", modelComponent->getMesh()->getUvBufferIndex());
+	material->linkVertexBuffer("in_Position", modelComponent->getMesh()->getVertexBufferIndex());
+	material->linkVertexBuffer("in_Color", modelComponent->getMesh()->getColorBufferIndex());
+	material->linkVertexBuffer("in_Uvs", modelComponent->getMesh()->getUvBufferIndex());
 
 	// Do the same for the plane
-	plane_material->setVertexAttributeLocation("in_Position", planeComponent->getMesh()->getVertexBufferIndex());
-	plane_material->setVertexAttributeLocation("in_Color", planeComponent->getMesh()->getColorBufferIndex());
-	plane_material->setVertexAttributeLocation("in_Uvs", planeComponent->getMesh()->getUvBufferIndex());
+	plane_material->linkVertexBuffer("in_Position", planeComponent->getMesh()->getVertexBufferIndex());
+	plane_material->linkVertexBuffer("in_Color", planeComponent->getMesh()->getColorBufferIndex());
+	plane_material->linkVertexBuffer("in_Uvs", planeComponent->getMesh()->getUvBufferIndex());
 
 	//////////////////////////////////////////////////////////////////////////
 	// Add Camera
