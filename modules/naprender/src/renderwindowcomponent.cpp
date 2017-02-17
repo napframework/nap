@@ -44,38 +44,39 @@ namespace nap
 
 
 	// Occurs when the window title changes
-	void RenderWindowComponent::onTitleChanged(const std::string& title)
+	void RenderWindowComponent::onTitleChanged(const AttributeBase& attr)
 	{
-		mWindow->setTitle(title);
+        mWindow->setTitle(attr.getValue<std::string>());
 	}
 
 
 	// Set Position
-	void RenderWindowComponent::onPositionChanged(const glm::ivec2& position)
+	void RenderWindowComponent::onPositionChanged(const AttributeBase& attr)
 	{
-		mWindow->setPosition(position);
+        mWindow->setPosition(attr.getValue<glm::ivec2>());
 	}
 
 
 	// Set Size
-	void RenderWindowComponent::onSizeChanged(const glm::ivec2& size)
+	void RenderWindowComponent::onSizeChanged(const AttributeBase& attr)
 	{
-		mWindow->setSize(size);
-		mWindow->setViewport(size);
+        glm::ivec2 value = attr.getValue<glm::ivec2>();
+		mWindow->setSize(value);
+		mWindow->setViewport(value);
 	}
 
 
 	// Turn v-sync on - off
-	void RenderWindowComponent::onSyncChanged(const bool& value)
+	void RenderWindowComponent::onSyncChanged(const AttributeBase& attr)
 	{
-		mWindow->setSync(value);
+		mWindow->setSync(attr.getValue<bool>());
 	}
 
 
 	// Make window full screen
-	void RenderWindowComponent::onFullscreenChanged(const bool& value)
+	void RenderWindowComponent::onFullscreenChanged(const AttributeBase& attr)
 	{
-		mWindow->setFullScreen(value);
+		mWindow->setFullScreen(attr.getValue<bool>());
 	}
 
 
@@ -89,22 +90,22 @@ namespace nap
 		}
 
 		// Install listeners on attribute signals
-		position.valueChangedSignal.connect(positionChanged);
-		size.valueChangedSignal.connect(sizeChanged);
-		title.valueChangedSignal.connect(titleChanged);
-		sync.valueChangedSignal.connect(syncChanged);
-		fullScreen.valueChangedSignal.connect(fullScreenChanged);
+		position.valueChanged.connect(positionChanged);
+		size.valueChanged.connect(sizeChanged);
+		title.valueChanged.connect(titleChanged);
+		sync.valueChanged.connect(syncChanged);
+		fullScreen.valueChanged.connect(fullScreenChanged);
 
 		// When visibility changes, hide / show
 		show.signal.connect(showWindow);
 		hide.signal.connect(hideWindow);
 
 		// Push possible values
-		onPositionChanged(position.getValue());
-		onSizeChanged(size.getValue());
-		onTitleChanged(title.getValue());
-		onSyncChanged(sync.getValue());
-		onFullscreenChanged(fullScreen.getValue());
+		onPositionChanged(position);
+		onSizeChanged(size);
+		onTitleChanged(title);
+		onSyncChanged(sync);
+		onFullscreenChanged(fullScreen);
 
 		// Initialize current frame time stamp
 		mFrameTimeStamp = mService->getCore().getStartTime();

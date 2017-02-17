@@ -102,18 +102,8 @@ namespace nap {
         
         Signal<CompoundAttribute&> sizeChanged;
         
-    protected:
-        Link& getLink() const override { return mLink; }
-        
     private:
         void childSizeChanged(CompoundAttribute& child);
-        
-        // Inherited from BaseAttribute, so that BaseAttribute can trigger the valueChanged() signal to be emitted
-        // TODO redundant?
-        void emitValueChanged() override final { }
-        
-        // Link
-        mutable TypedLink<CompoundAttribute> mLink = { *this };
         
         // Called when number of attributes changes
         Slot<CompoundAttribute&> childSizeChangedSlot = { this, &CompoundAttribute::childSizeChanged };

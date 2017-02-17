@@ -12,39 +12,13 @@ namespace nap
     /**
     @brief Attribute Constructor
     **/
-    AttributeBase::AttributeBase(AttributeObject* parent, const std::string& name, bool atomic) : mAtomic(atomic)
+    AttributeBase::AttributeBase(AttributeObject* parent, const std::string& name, bool atomic)
 	{
         mName = name;
         parent->addChild(*this);
 	}
 
-
-	/**
-	 Set attribute value using fromString() method
-	 @param value: The value to set on this attribute
-	 **/
-	void AttributeBase::setValue(const std::string& value)
-	{
-        if (mAtomic)
-        {
-            std::unique_lock<std::mutex> lock(mMutex);
-            fromString(value);
-        }
-		else
-		{
-			fromString(value);
-		}
-
-		valueChanged(*this);
-        
-		// TODO: WHY IS THIS ONLY HERE AND NOT IN THE OTHER SET FUNCTIONS?
-		// HONESTLY, DOCUMENT THIS BEHAVIOUR BECAUSE I'M IMPLEMENTING
-		// THIS OVERRIDE EVERYWHERE WITHOUT KNOWING WHAT THE PURPOSE IS
-		// OF THIS DAMN VIRTUAL
-		emitValueChanged();
-	}
-
-
+    
 	/**
 	@brief Returns this attribute's parent, always an AttributeObject
 	**/
@@ -54,6 +28,17 @@ namespace nap
 	}
 
 
+    /**
+     Set attribute value using fromString() method
+     @param value: The value to set on this attribute
+     **/
+    void AttributeBase::setValue(const std::string& value)
+    {
+        fromString(value);
+        valueChanged(*this);
+    }
+    
+    
     /**
      * Converts this attribute to a string using the type converters registered in core
      */
@@ -73,9 +58,9 @@ namespace nap
     }
     
     
-	/**
-	 * Sets the value of this attribute using the type convertor registered in core
-	 */
+    /**
+     * Sets the value of this attribute using the type convertor registered in core
+     */
     void AttributeBase::fromString(const std::string &stringValue)
     {
         const Entity* root = dynamic_cast<const Entity*>(getRootObject());
@@ -89,51 +74,9 @@ namespace nap
         Attribute<std::string> stringAttr;
         stringAttr.setValue(stringValue);
         
-        if (mAtomic)
-        {
-            std::unique_lock<std::mutex> lock(mMutex);
-            converter->convert(&stringAttr, this);
-        }
-        else {
-            converter->convert(&stringAttr, this);
-        }
+        converter->convert(&stringAttr, this);
     }
-
-
-	/**
-	@brief Links @source attribute to this attribute
-	**/
-    void AttributeBase::link(AttributeBase& source) 
-	{
-        assert(&source != this);
-        assert(getValueType() == source.getValueType());
-        getLink().setTarget(source);
-    }
-
-
-	/**
-	@brief Links an external attribute by path to this attribute
-	**/
-    void AttributeBase::linkPath(const std::string& path) 
-	{
-        getLink().setTarget(path);
-    }
-
-
-	/**
-	@brief Clears any existing link
-	**/
-    void AttributeBase::unLink() 
-	{
-        getLink().clear();
-    }
-
-
-	/**
-	@brief Returns if the attribute is currently linked to a different attribute
-	**/
-    bool AttributeBase::isLinked() const { return getLink().isLinked(); }
-
+    
 
 	//////////////////////////////////////////////////////////////////////////
 	// ObjectLinkAttribute
@@ -170,16 +113,9 @@ namespace nap
 	 */
 	void ObjectLinkAttribute::setValue(const AttributeBase& attribute)
 	{
+        assert(attribute.getTypeInfo() == getTypeInfo());
 		const ObjectLinkAttribute& attr = static_cast<const ObjectLinkAttribute&>(attribute);
-		if (mAtomic)
-		{
-			std::unique_lock<std::mutex> lock(mMutex);
-			this->setTarget(attr.getPath());
-		}
-		else
-		{
-			this->setTarget(attr.getPath());
-		}
+        this->setTarget(attr.getPath());
 	}
 
 

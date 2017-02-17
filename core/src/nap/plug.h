@@ -304,16 +304,18 @@ namespace nap
 			: OutputPlugBase(parent, name, RTTI::TypeInfo::get<T>())
 		{
 		}
-
-		// This constructor takes the name of the plug and an attribute of which
-		// value changes will be sent through this
-		// plug
-		OutputPushPlug(Operator* parent, const std::string& name, Attribute<T>& attribute)
-			: OutputPlugBase(parent, name, RTTI::TypeInfo::get<T>()),
-			  attributeSlot(std::make_unique<Slot<const T&>>([&](const T& value) { push(value); }))
-		{
-			attribute.connectToValue(*attributeSlot);
-		}
+        
+        
+        // This constructor takes the name of the plug and an attribute of which
+        // value changes will be sent through this
+        // plug
+        OutputPushPlug(Operator* parent, const std::string& name, Attribute<T>& attribute)
+        : OutputPlugBase(parent, name, RTTI::TypeInfo::get<T>()),
+        attributeSlot(std::make_unique<Slot<const AttributeBase&>>([&](const AttributeBase& attr) { push(attr.getValue<T>()); }))
+        {
+            attribute.valueChanged.connect(*attributeSlot);
+        }
+        
 
 		// The operator owning this plug can push output through it using the
 		// push() method.
@@ -325,7 +327,7 @@ namespace nap
 		// This slot is used to listen to changes in an attached attribute so
 		// they can be emitted through this output
 		// plug
-		std::unique_ptr<Slot<const T&>> attributeSlot = nullptr;
+		std::unique_ptr<Slot<const AttributeBase&>> attributeSlot = nullptr;
 	};
 
 

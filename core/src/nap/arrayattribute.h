@@ -92,13 +92,6 @@ namespace nap
         virtual void setValue(const std::vector<T>& inValue);
         void setValue(int index, const T& inValue);
         
-        // Connect to
-        virtual void connectToValue(Slot<const std::vector<T>&>& inSlot);
-        virtual void disconnectFromValue(Slot<const std::vector<T>&>& inSlot);
-        
-        // Inherited from BaseAttribute, so that BaseAttribute can trigger the valueChanged() signal to be emitted
-        void emitValueChanged() override final { valueChangedSignal(mValue); }
-        
         int getSize() override final { return mValue.size(); }
         
         // Adds a new @element to the end of the array
@@ -126,14 +119,10 @@ namespace nap
     protected:
         // Members
         std::vector<T> mValue;
-        Link& getLink() const override { return mLink; }
         
     private:
         // Keep constructor hidden, use factory methods to instantiate
         ArrayAttribute(const std::vector<T>& inValue) : mValue(inValue) {}
-        
-        // Link of type T
-        mutable TypedLink<ArrayAttribute<T>> mLink = { *this };
     };
     
     
@@ -159,29 +148,13 @@ namespace nap
     template <typename T>
     const std::vector<T>& ArrayAttribute<T>::getValue() const
     {
-        assert(getTypeInfo().isKindOf(mLink.getTargetType()));
-        
-        // No link, just return the value
-        if (!mLink.isLinked())
-            return mValue;
-        
-        // Target might not be valid, attempt to resovle
-        const ArrayAttribute<T>* targetAttr = mLink.getTypedTarget();
-        
-        if (!targetAttr)
-            return mValue;// Failed to resolve
-        
-						  // Return linked value
-        return targetAttr->getValue();
+        return mValue;
     }
     
     
     template <typename T>
     std::vector<T>& ArrayAttribute<T>::getValueRef()
     {
-        // When an attribute is atomic calling getValueRef() potentially breaks thread safety
-        assert(!mAtomic);
-        
         return mValue;
     }
     
@@ -196,20 +169,7 @@ namespace nap
     template <typename T>
     void ArrayAttribute<T>::setValue(const std::vector<T>& inValue)
     {
-        // Don't change if it's the same
-        if (inValue == mValue)
-            return;
-        
-        // Otherwise lock if blocking
-        if (mAtomic)
-        {
-            std::unique_lock<std::mutex> lock(mMutex);
-            mValue = inValue;
-        }
-        else
-        {
-            mValue = inValue;
-        }
+        mValue = inValue;
         
         valueChanged(*this);
         valueChangedSignal(mValue);
@@ -220,19 +180,10 @@ namespace nap
     template <typename T>
     void ArrayAttribute<T>::setValue(const AttributeBase &inAttribute)
     {
+        assert(inAttribute.getTypeInfo() == getTypeInfo());
         const ArrayAttribute<T>& in_attr = static_cast<const ArrayAttribute<T>&>(inAttribute);
-        if (in_attr.mValue == mValue)
-            return;
-        
-        if (mAtomic)
-        {
-            std::unique_lock<std::mutex> lock(mMutex);
-            mValue = in_attr.mValue;
-        }
-        else
-        {
-            mValue = in_attr.mValue;
-        }
+
+        mValue = in_attr.mValue;
         
         valueChanged(*this);
         valueChangedSignal(mValue);
@@ -246,20 +197,6 @@ namespace nap
         
         valueChanged(*this);
         valueChangedSignal(mValue);
-    }
-    
-    
-    template <typename T>
-    void ArrayAttribute<T>::connectToValue(Slot<const std::vector<T>&>& inSlot)
-    {
-        valueChangedSignal.connect(inSlot);
-    }
-    
-    
-    template <typename T>
-    void ArrayAttribute<T>::disconnectFromValue(Slot<const std::vector<T>&>& inSlot)
-    {
-        valueChangedSignal.disconnect(inSlot);
     }
     
     
