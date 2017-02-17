@@ -12,266 +12,134 @@
 #include <stdio.h>
 
 // Local includes
+#include <rtti/rtti.h>
 #include "attribute.h"
 
-
-namespace nap 
+namespace nap
 {
-	// Forward declare array attribute
-    template <typename T>
-    class ArrayAttribute;
 
-	// Forward declare resource link attribute
-	class ResourceLinkAttribute;
-       
-    // An attribute that can hold collections of anything that is derived from @AttributeBase
-    class CompoundAttribute : public AttributeBase 
-	{
-        RTTI_ENABLE_DERIVED_FROM(AttributeBase)
+    // Forward Declares
+    class AttributeObject;
+    
+    /**
+     ArrayAttributeBase
+     
+     */
+    class ArrayAttributeBase : public AttributeBase
+    {
+        RTTI_ENABLE_DERIVED_FROM(nap::AttributeBase)
+    public:
+        // Constructor
+        ArrayAttributeBase() = default;
+        ArrayAttributeBase(AttributeObject* parent, const std::string& name, bool atomic = false) : AttributeBase(parent, name, atomic) {}
         
+        // Enable default copy behavior
+        ArrayAttributeBase(ArrayAttributeBase&) = default;
+        ArrayAttributeBase& operator=(const ArrayAttributeBase&) = default;
+        
+        // Virtual destructor because of virtual methods!
+        virtual ~ArrayAttributeBase() = default;
+        
+        virtual int getSize() = 0;
+    };
+    
+    
+    /**
+     ArrayAttribute
+     
+     Concrete implementation of array attribute, invisible to UI and scripting
+     **/
+    template <typename T>
+    class ArrayAttribute : public ArrayAttributeBase
+    {
+        RTTI_ENABLE_DERIVED_FROM(ArrayAttributeBase)
     public:
         // Default constructor
-        CompoundAttribute();
-        // Constructor that takes a parent and a name
-        CompoundAttribute(AttributeObject* parent, const std::string& name, bool atomic = false);
+        ArrayAttribute() : ArrayAttributeBase() {  }
         
-        // Inits slots to respond to child value changes
-        void initialize();
+        // Constructor with defult value
+        ArrayAttribute(AttributeObject* parent, const std::string& name, const std::vector<T>& inValue, bool atomic = false)
+        : ArrayAttributeBase(parent, name, atomic), mValue(inValue)
+        {
+            setValueSlot.setFunction({ [this](const T& value) { this->setValue(value); } });
+        }
         
-        // Compound attribute has no value type because it can hold anything
-        const RTTI::TypeInfo getValueType() const override { return RTTI::TypeInfo::empty(); }
+        // Constructor without default value
+        ArrayAttribute(AttributeObject* parent, const std::string& name) : ArrayAttributeBase(parent, name, false)
+        {
+            setValueSlot.setFunction({ [this](const std::vector<T>& value) { this->setValue(value); } });
+        }
         
-        // Value accessors
-        void getValue(AttributeBase& inAttribute) const override;
+        // Constructor to declare an attribute with a member function pointer for the @valueChangedSignal as last argument.
+        template <typename U, typename F>
+        ArrayAttribute(U* parent, const std::string& name, const std::vector<T>& inValue, F function, bool atomic = false)
+        : ArrayAttributeBase(parent, name, atomic), mValue(inValue)
+        {
+            setValueSlot.setFunction({ [this](const std::vector<T>& value) { this->setValue(value); } });
+            valueChangedSignal.connect(parent, function);
+        }
         
-		// Set attribute to value
-		void setValue(const AttributeBase &inAttribute) override;
+        virtual const RTTI::TypeInfo getValueType() const override;
         
-        // Add another nested compound attribute
-        CompoundAttribute& addCompoundAttribute(const std::string& name = "");
+        // Getters
+        virtual void getValue(AttributeBase& inAttribute) const override;
+        const std::vector<T>& getValue() const;
+        std::vector<T>& getValueRef();
+        const T& getValue(int index) const;
         
-        // Add an array attribute holding values of type T
-        template <typename T>
-        ArrayAttribute<T>& addArrayAttribute(const std::string& name = "");
+        // Setters
+        virtual void setValue(const AttributeBase &inAttribute) override;
+        virtual void setValue(const std::vector<T>& inValue);
+        void setValue(int index, const T& inValue);
         
-		// Add resource link attribute of resource type
-		ResourceLinkAttribute& addResourceLinkAttribute(const std::string& name, const RTTI::TypeInfo& type);
+        // Connect to
+        virtual void connectToValue(Slot<const std::vector<T>&>& inSlot);
+        virtual void disconnectFromValue(Slot<const std::vector<T>&>& inSlot);
+        
+        // Inherited from BaseAttribute, so that BaseAttribute can trigger the valueChanged() signal to be emitted
+        void emitValueChanged() override final { valueChangedSignal(mValue); }
+        
+        int getSize() override final { return mValue.size(); }
+        
+        // Adds a new @element to the end of the array
+        void add(const T& element);
+        // Insert a new element at @index
+        void insert(int index, const T& element);
+        // Remove element at @index
+        void remove(int index);
+        // Clear the array
+        void clear();
+        
+        const typename std::vector<T>::iterator begin() { return mValue.begin(); }
+        const typename std::vector<T>::iterator end() { return mValue.end(); }
+        
+        // Signal emited when the value changes
+        Signal<const std::vector<T>&>	valueChangedSignal;
+        // This slot will be invoked when the value is set
+        Slot<const std::vector<T>&>		setValueSlot;
+        
+        // Operator overloads
+        operator const std::vector<T>&() const { return getValue(); }
 
-        // Add an attribute of type T
-        template <typename T>
-        Attribute<T>& addAttribute(const T& value);
-        
-        // Add an attribute of type T
-        template <typename T>
-        Attribute<T>& addAttribute(const std::string& name, const T& value);
-        
-		// Adds an attribute of type @type, with name: @name
-		AttributeBase* addAttribute(const std::string& name, const RTTI::TypeInfo& attributeType);
-
-		// Add a floating attribute, this object takes ownership of the attribute
-		void addAttribute(AttributeBase& attr);
-
-        // Create a compound attribute if it doesn't exist and return it
-        CompoundAttribute* getOrCreateCompoundAttribute(const std::string& name);
-        
-        // Create an array attribute if it doesn't exist and return it
-        template <typename T>
-        ArrayAttribute<T>* getOrCreateArrayAttribute(const std::string& name);
-        
-        // Create an attribute if it doesn't exist, and return it
-        template <typename T>
-        Attribute<T>* getOrCreateAttribute(const std::string& name);
-        
-        // Create an attribute if it doesn't exist, assign a value, and return it
-        template <typename T>
-        Attribute<T>* getOrCreateAttribute(const std::string& name, const T& defaultValue);
-        
-		// Get the attribute based on name if it exists
-		template <typename T>
-		Attribute<T>* getAttribute(const std::string& name);
-
-        // Remove attribute by name from the compound
-        void removeAttribute(const std::string name);
-        
-		// Remove an attribute by it's index
-        void removeAttribute(size_t index);
-        
-        // Clear the compound of all of it's contents
-        void clear()																		{ clearChildren(); }
-        
-        // Return number of attributes within the compound
-		size_t size() const;
-        
-        // Return all attributes within the compound
-		// TODO: This call is in essence slow because of the multi bound checks and RTTI
-		// Can't we make sure all children are of type AttributeBase?
-        std::vector<AttributeBase*> getAttributes()											{ return getChildrenOfType<AttributeBase>(); }
-        
-		// Return all attributes within the compound const
-        std::vector<const AttributeBase*> getAttributes() const								{ return getChildrenOfType<AttributeBase>(); }
-        
-		// Return a sub-attribute by name
-        AttributeBase* getAttribute(const std::string& name);
-        
-		// Return a sub-attribute by index
-        AttributeBase* getAttribute(size_t index);
-        
-        Signal<CompoundAttribute&> sizeChanged;
+        const T& operator [] (int index) const { return mValue[index]; }
         
     protected:
+        // Members
+        std::vector<T> mValue;
         Link& getLink() const override { return mLink; }
         
     private:
-        void childSizeChanged(CompoundAttribute& child);
+        // Keep constructor hidden, use factory methods to instantiate
+        ArrayAttribute(const std::vector<T>& inValue) : mValue(inValue) {}
         
-        // Inherited from BaseAttribute, so that BaseAttribute can trigger the valueChanged() signal to be emitted
-        // TODO redundant?
-        void emitValueChanged() override final { }
-        
-		// Link
-        mutable TypedLink<CompoundAttribute> mLink = { *this };
-        
-		// Called when number of attributes changes
-        Slot<CompoundAttribute&> childSizeChangedSlot = { this, &CompoundAttribute::childSizeChanged };
+        // Link of type T
+        mutable TypedLink<ArrayAttribute<T>> mLink = { *this };
     };
     
     
-    // An attribute that holds a collection of attributes of one specific datatype T
-    template <typename T>
-    class ArrayAttribute : public CompoundAttribute 
-	{
-        RTTI_ENABLE_DERIVED_FROM(CompoundAttribute)
-    public:
-        // Default constructor
-        ArrayAttribute() = default;
-
-        // Constructor that takes the attribute's parent and name
-        ArrayAttribute(AttributeObject* parent, const std::string& name, bool atomic = false) : CompoundAttribute(parent, name, atomic) {}
-        
-        // Returns the type of the values within the array
-        const RTTI::TypeInfo getValueType() const override;
-        
-        // Add an attribute with @value
-        Attribute<T>& addAttribute(const T& value);
-        
-        // Add an attribute with @name for mapping and @value
-        Attribute<T>& addAttribute(const std::string& name, const T& value);
-        
-        // Value accessors
-        std::vector<T> getValues() const;
-
-		// Set values
-        void setValues(const std::vector<T>& values);
-        
-        // subscript operator implementations
-        T& operator[](size_t index)							{ return getAttributes()[index]->getValueRef(); }
-        
-		const T& operator[](size_t index) const				{ return getAttributes()[index]->getValue(); }
-        
-		T& operator[](const std::string& name)				{ return getChild<Attribute<T>>(name)->getValueRef(); }
-        
-		const T& operator[](const std::string& name) const	{ return getChild<Attribute<T>>(name)->getValue(); }
-        
-        // Return the attributes within the array
-        std::vector<Attribute<T>*> getAttributes()			{ return getChildrenOfType<Attribute<T>>(); }
-
-        // Return an attribute within the array by name
-        Attribute<T>* getAttribute(const std::string& name);
-
-        // Return an attribute within the array by index
-        Attribute<T>* getAttribute(size_t index);
-        
-    protected:
-        Link& getLink() const override						{ return mLink; }
-        
-    private:
-        mutable TypedLink<ArrayAttribute<T>> mLink =		{ *this };
-        
-    };
-
-	//////////////////////////////////////////////////////////////////////////
-	// Template Definitions
-	//////////////////////////////////////////////////////////////////////////
     
+    // TEMPLATE DEFINITIONS
     
-    template <typename T>
-    ArrayAttribute<T>& CompoundAttribute::addArrayAttribute(const std::string& name)
-    {
-        return addChild<ArrayAttribute<T>>(name);
-    }
-    
-    
-    template <typename T>
-    Attribute<T>& CompoundAttribute::addAttribute(const std::string& name, const T& value)
-    {
-        auto& attribute = addChild<Attribute<T>>(name);
-        attribute.setValue(value);
-        return attribute;
-    }
-    
-    
-    template <typename T>
-    Attribute<T>& CompoundAttribute::addAttribute(const T& value)
-    {
-        auto& attribute = addChild<Attribute<T>>("");
-        attribute.setValue(value);
-        return attribute;
-    }
-    
-    
-    template <typename T>
-    ArrayAttribute<T>* CompoundAttribute::getOrCreateArrayAttribute(const std::string& name)
-    {
-        auto result = getChild<ArrayAttribute<T>>(name);
-        if (!result)
-        {
-            if (hasChild(name))
-                return nullptr;
-            result = &addArrayAttribute<T>(name);
-        }
-        return result;
-    }
-
-    
-    template <typename T>
-    Attribute<T>* CompoundAttribute::getOrCreateAttribute(const std::string& name)
-    {
-        auto result = getChild<Attribute<T>>(name);
-        if (!result)
-        {
-            if (hasChild(name))
-                return nullptr;
-            result = &addChild<Attribute<T>>(name);
-        }
-        return result;
-    }
-    
-    
-    template <typename T>
-    Attribute<T>* CompoundAttribute::getOrCreateAttribute(const std::string& name, const T& defaultValue)
-    {
-        auto result = getAttribute<T>(name);
-        if (!result)
-        {
-			if (hasChild(name))
-			{
-				return nullptr;
-			}
-            result = &addAttribute<T>(name);
-            result->setValue(defaultValue);
-        }
-        return result;
-    }
-
-
-	template <typename T>
-	Attribute<T>* CompoundAttribute::getAttribute(const std::string& name)
-	{
-		return getChild<Attribute<T>>(name);
-	}
-    
-    
-    // Templated definition of getValueType
     template <typename T>
     const RTTI::TypeInfo ArrayAttribute<T>::getValueType() const
     {
@@ -280,68 +148,166 @@ namespace nap
     
     
     template <typename T>
-    std::vector<T> ArrayAttribute<T>::getValues() const
+    void ArrayAttribute<T>::getValue(AttributeBase& inAttribute) const
     {
-		std::vector<Attribute<T>*> attrs = getAttributes();
-		std::vector<T> result;
-
-		// If there's no attributes, return
-		if (attrs.size() == 0)
-			return result;
-
-		// Otherwise reserve space for fast copy
-		result.reserve(attrs.size());
-		for (auto& attribute : attrs)
-		{
-			result.emplace_back(attribute->getValue());
-		}
-        return result;
+        assert(getTypeInfo().isKindOf(inAttribute.getTypeInfo()));
+        
+        static_cast<ArrayAttribute<T>&>(inAttribute).setValue(getValue());
     }
     
     
     template <typename T>
-    void ArrayAttribute<T>::setValues(const std::vector<T>& values)
+    const std::vector<T>& ArrayAttribute<T>::getValue() const
     {
-        clear();
-        for (auto& value : values)
-            addAttribute(value);
+        assert(getTypeInfo().isKindOf(mLink.getTargetType()));
+        
+        // No link, just return the value
+        if (!mLink.isLinked())
+            return mValue;
+        
+        // Target might not be valid, attempt to resovle
+        const ArrayAttribute<T>* targetAttr = mLink.getTypedTarget();
+        
+        if (!targetAttr)
+            return mValue;// Failed to resolve
+        
+						  // Return linked value
+        return targetAttr->getValue();
     }
     
     
     template <typename T>
-    Attribute<T>& ArrayAttribute<T>::addAttribute(const T& value)
+    std::vector<T>& ArrayAttribute<T>::getValueRef()
     {
-        auto& child = addChild<Attribute<T>>("");
-        child.setValue(value);
-        return child;
+        // When an attribute is atomic calling getValueRef() potentially breaks thread safety
+        assert(!mAtomic);
+        
+        return mValue;
     }
     
     
     template <typename T>
-    Attribute<T>& ArrayAttribute<T>::addAttribute(const std::string& name, const T& value)
+    const T& ArrayAttribute<T>::getValue(int index) const
     {
-        auto& child = addChild<Attribute<T>>(name);
-        child.setValue(value);
-        return child;
-    }
-    
-    
-    template <typename T>
-    Attribute<T>* ArrayAttribute<T>::getAttribute(const std::string& name)
-    {
-        return getChild<Attribute<T>>(name);
+        return mValue.at(index);
     }
 
     
     template <typename T>
-    Attribute<T>* ArrayAttribute<T>::getAttribute(size_t index)
+    void ArrayAttribute<T>::setValue(const std::vector<T>& inValue)
     {
-        if (index >= size())
-            return nullptr;
-        return getAttributes()[index];
+        // Don't change if it's the same
+        if (inValue == mValue)
+            return;
+        
+        // Otherwise lock if blocking
+        if (mAtomic)
+        {
+            std::unique_lock<std::mutex> lock(mMutex);
+            mValue = inValue;
+        }
+        else
+        {
+            mValue = inValue;
+        }
+        
+        valueChanged(*this);
+        valueChangedSignal(mValue);
     }
     
-
+    
+    // Sets mValue to @inAttribute.mValue
+    template <typename T>
+    void ArrayAttribute<T>::setValue(const AttributeBase &inAttribute)
+    {
+        const ArrayAttribute<T>& in_attr = static_cast<const ArrayAttribute<T>&>(inAttribute);
+        if (in_attr.mValue == mValue)
+            return;
+        
+        if (mAtomic)
+        {
+            std::unique_lock<std::mutex> lock(mMutex);
+            mValue = in_attr.mValue;
+        }
+        else
+        {
+            mValue = in_attr.mValue;
+        }
+        
+        valueChanged(*this);
+        valueChangedSignal(mValue);
+    }
+    
+    
+    template <typename T>
+    void ArrayAttribute<T>::setValue(int index, const T& inValue)
+    {
+        mValue[index] = inValue;
+        
+        valueChanged(*this);
+        valueChangedSignal(mValue);
+    }
+    
+    
+    template <typename T>
+    void ArrayAttribute<T>::connectToValue(Slot<const std::vector<T>&>& inSlot)
+    {
+        valueChangedSignal.connect(inSlot);
+    }
+    
+    
+    template <typename T>
+    void ArrayAttribute<T>::disconnectFromValue(Slot<const std::vector<T>&>& inSlot)
+    {
+        valueChangedSignal.disconnect(inSlot);
+    }
+    
+    
+    template <typename T>
+    void ArrayAttribute<T>::add(const T& element)
+    {
+        mValue.emplace_back(element);
+        
+        valueChanged(*this);
+        valueChangedSignal(mValue);        
+    }
+    
+    
+    template <typename T>
+    void ArrayAttribute<T>::insert(int index, const T& element)
+    {
+        auto it = mValue.begin();
+        std::advance(it, index);
+        mValue.insert(it, element);
+        
+        valueChanged(*this);
+        valueChangedSignal(mValue);
+    }
+    
+    
+    template <typename T>
+    void ArrayAttribute<T>::remove(int index)
+    {
+        auto it = mValue.begin();
+        std::advance(it, index);
+        mValue.erase(it);
+        
+        valueChanged(*this);
+        valueChangedSignal(mValue);
+    }
+    
+    
+    template <typename T>
+    void ArrayAttribute<T>::clear()
+    {
+        mValue.clear();
+        
+        valueChanged(*this);
+        valueChangedSignal(mValue);
+    }
+    
+    
 }
 
-RTTI_DECLARE(nap::CompoundAttribute)
+RTTI_DECLARE_BASE(nap::ArrayAttributeBase)
+

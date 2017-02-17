@@ -146,7 +146,7 @@ void onUpdate(const nap::SignalAttribute& signal)
 	planeComponent->getMaterial()->setUniformValue<int>("mTextureIndex", 0);
 	planeComponent->getMaterial()->setUniformValue<glm::vec4>("mColor", {1.0f, 1.0f, 1.0f, 1.0f});
 }
-NSLOT(updateSlot, const nap::SignalAttribute&, onUpdate)
+nap::Slot<const nap::SignalAttribute&> updateSlot = { [](const nap::SignalAttribute& attr){ onUpdate(attr); } };
 
 
 // Called when the window is going to render
@@ -160,7 +160,7 @@ void onRender(const nap::SignalAttribute& signal)
 	// Render all objects
 	renderService->renderObjects(*cameraComponent);
 }
-NSLOT(renderSlot, const nap::SignalAttribute&, onRender)
+nap::Slot<const nap::SignalAttribute&> renderSlot = { [](const nap::SignalAttribute& attr){ onRender(attr); } };
 
 
 /**

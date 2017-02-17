@@ -5,6 +5,7 @@
 #include <nap.h>
 #include <nap/coreoperators.h>
 #include <nap/resourcemanager.h>
+#include <nap/arrayattribute.h>
 #include <jsonserializer.h>
 #include <thread>
 
@@ -95,9 +96,9 @@ std::shared_ptr<Core> createObjectTree()
     auto& opTermB = patch2.getPatch().addOperator<FloatOperator>("TermA");
     auto& opFactorB = patch2.getPatch().addOperator<FloatOperator>("FactorB");
     auto& opResult = patch2.getPatch().addOperator<FloatOperator>("Result");
-    opTermA.value.setValue(1);
-    opTermB.value.setValue(2);
-    opFactorB.value.setValue(3);
+    opTermA.input.getAttribute().setValue(1);
+    opTermB.input.getAttribute().setValue(2);
+    opFactorB.input.getAttribute().setValue(3);
 
 	auto& opMult = patch2.getPatch().addOperator<MultFloatOperator>("Mult");
 	auto& opAdd = patch2.getPatch().addOperator<AddFloatOperator>("Add");
@@ -189,6 +190,40 @@ bool testPatch() {
     TEST_ASSERT(result == 3, "Patch did not return proper value: 9");
     return true;
 }
+
+
+bool testArrayAttribute()
+{
+    Core core;
+    auto& e = core.getRoot().addEntity("entity");
+    auto& arrayA = e.addArrayAttribute<float>("floatArrayA");
+    auto& arrayB = e.addArrayAttribute<float>("floatArrayB");
+    arrayA.add(1);
+    arrayA.add(3);
+    arrayA.insert(1, 0);
+    arrayA.setValue(1, 2);
+    arrayA.setValue({ 1, 2, 3 });
+    arrayB.setValue(arrayA);
+    TEST_ASSERT(arrayB.getSize() == 3, "Copied array must have same size as original");
+    
+    auto i = 0;
+    for (auto value : arrayB)
+    {
+        TEST_ASSERT(value == arrayA[i], "Elements in copied array must be the same as original");
+        i++;
+    }
+    
+    while (arrayB.getSize() != 0)
+        arrayB.remove(0);
+    TEST_ASSERT(arrayB.getSize() == 0, "Array must be empty after removing all elements");
+    
+    arrayA.clear();
+    TEST_ASSERT(arrayA.getSize() == 0, "Array must be empty after clearing");
+    
+        
+    return true;
+}
+
 
 bool testXMLSerializer()
 {

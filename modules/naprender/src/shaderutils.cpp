@@ -217,7 +217,7 @@ namespace nap
 		for (int i = 0; i < uvar.mSize; i++)
 		{
 			std::string attr_name = stringFormat("number_%d", i);
-			array_attr.addAttribute(attr_name, defaultValue);
+			array_attr.add(defaultValue);
 		}
 		return array_attr;
 	}
