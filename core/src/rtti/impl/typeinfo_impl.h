@@ -331,20 +331,14 @@ namespace RTTI
 // Declares an object to have RTTI (RUN TIME TYPE INFO) with create function
 // This declare assumes a default constructor used for initialization
 #define RTTI_DECLARE(T)        \
-	RTTI_DECLARE_META_TYPE(T)  \
-	RTTI_DECLARE_META_TYPE(T*) \
-	RTTI_DECLARE_META_TYPE(const T*)
-	
+	RTTI_DECLARE_META_TYPE(T)
+
 // Declares an object to have RTTI (RUN TIME TYPE INFO) WITHOUT create function
 // This works for objects without a default construction.
 #define RTTI_DECLARE_BASE(T)        \
-	RTTI_DECLARE_META_BASE_TYPE(T*) \
-	RTTI_DECLARE_META_BASE_TYPE(T)  \
-	RTTI_DECLARE_META_BASE_TYPE(const T*)
+	RTTI_DECLARE_META_BASE_TYPE(T)
 
 // Defines an RTTI object with create function
 #define RTTI_DEFINE(T)        \
-	RTTI_DEFINE_META_TYPE(T)  \
-	RTTI_DEFINE_META_TYPE(T*) \
-	RTTI_DEFINE_META_TYPE(const T*)
+	RTTI_DEFINE_META_TYPE(T)
 
