@@ -3,6 +3,7 @@
 // Local Includes
 #include "attribute.h"
 #include "arrayattribute.h"
+#include "compoundattribute.h"
 #include "object.h"
 #include "signalslot.h"
 #include "logger.h"

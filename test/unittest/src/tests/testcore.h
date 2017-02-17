@@ -8,3 +8,4 @@ bool testFileUtils();
 bool testJSONSerializer();
 bool testResourceManager();
 bool testPatch();
+bool testArrayAttribute();

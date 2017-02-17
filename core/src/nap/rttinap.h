@@ -17,8 +17,8 @@
 #define RTTI_DECLARE_DATA(T)                  \
 	RTTI_DECLARE(T)                           \
 	RTTI_DECLARE(nap::Attribute<T>)           \
-	RTTI_DECLARE(nap::ArrayAttribute<T>)      \
-	RTTI_DECLARE(nap::OutputPullPlug<T>) \
+    RTTI_DECLARE(nap::ArrayAttribute<T>)      \
+	RTTI_DECLARE(nap::OutputPullPlug<T>)      \
 	RTTI_DECLARE(nap::InputPullPlug<T>)
 
 // Declares an object to be a numeric attribute, together with the associated run time type information
@@ -30,7 +30,7 @@
 #define RTTI_DEFINE_DATA(T)             \
 	RTTI_DEFINE(T)                      \
 	RTTI_DEFINE(nap::Attribute<T>)      \
-	RTTI_DEFINE(nap::ArrayAttribute<T>) \
+    RTTI_DEFINE(nap::ArrayAttribute<T>) \
 	RTTI_DEFINE(nap::OutputPullPlug<T>) \
 	RTTI_DEFINE(nap::InputPullPlug<T>)
 

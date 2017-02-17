@@ -187,7 +187,7 @@ void onUpdate(const nap::SignalAttribute& signal)
 	//rot_quat = glm::rotate(glm::quat(), rot_angle_radians, glm::vec3(0.0, 1.0, 0.0));
 	//cam_xform->rotate.setValue(nap::quatToVector(rot_quat));
 }
-NSLOT(updateSlot, const nap::SignalAttribute&, onUpdate)
+nap::Slot<const nap::SignalAttribute&> updateSlot = { [](const nap::SignalAttribute& attr){ onUpdate(attr); } };
 
 
 void updateCamera()
@@ -228,7 +228,7 @@ void onRender(const nap::SignalAttribute& signal)
 	//renderService->renderObjects(comps, *cameraComponent);
 	renderService->renderObjects(*cameraComponent);
 }
-NSLOT(renderSlot, const nap::SignalAttribute&, onRender)
+nap::Slot<const nap::SignalAttribute&> renderSlot = { [](const nap::SignalAttribute& attr){ onRender(attr); } };
 
 
 /**
