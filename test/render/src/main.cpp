@@ -227,6 +227,14 @@ void onRender(const nap::SignalAttribute& signal)
 	std::vector<nap::RenderableComponent*> comps	{ modelComponent };
 	//renderService->renderObjects(comps, *cameraComponent);
 	renderService->renderObjects(*cameraComponent);
+
+	static float fps_time = 0.0f;
+	fps_time += renderWindow->getDeltaTimeFloat();
+	if (fps_time > 0.99f)
+	{
+		nap::Logger::info("fps: %f", renderWindow->getFps());
+		fps_time = 0.0f;
+	}
 }
 nap::Slot<const nap::SignalAttribute&> renderSlot = { [](const nap::SignalAttribute& attr){ onRender(attr); } };
 
