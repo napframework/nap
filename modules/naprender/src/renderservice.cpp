@@ -177,9 +177,19 @@ namespace nap
 	// Render all objects in scene graph using specifief camera
 	void RenderService::renderObjects(const CameraComponent& camera)
 	{
+		// Get all render components
+		std::vector<nap::RenderableComponent*> render_comps;
+		getObjects<nap::RenderableComponent>(render_comps);
+
+		renderObjects(render_comps, camera);
+	}
+
+
+	void RenderService::renderObjects(const std::vector<RenderableComponent*>& comps, const CameraComponent& camera)
+	{
 		// Extract camera projection matrix
 		const glm::mat4x4 projection_matrix = camera.getProjectionMatrix();
-		
+
 		// Extract camera transform
 		nap::TransformComponent* cam_xform = camera.getParent()->getComponent<nap::TransformComponent>();
 		if (cam_xform == nullptr)
@@ -188,13 +198,9 @@ namespace nap
 			nap::Logger::warn("unable to extract view matrix, camera has no transform component: %s", camera.getName().c_str());
 		}
 		const glm::mat4x4& view_matrix = cam_xform == nullptr ? identityMatrix : cam_xform->getGlobalTransform();
-		
-		// Get all render components
-		std::vector<nap::RenderableComponent*> render_comps;
-		getObjects<nap::RenderableComponent>(render_comps);
 
 		// Draw
-		for (auto& comp : render_comps)
+		for (auto& comp : comps)
 		{
 			Material* comp_mat = comp->getMaterial();
 			if (comp_mat == nullptr)
@@ -207,7 +213,7 @@ namespace nap
 			nap::Entity* parent_entity = comp->getParent();
 			assert(parent_entity != nullptr);
 			TransformComponent* xform_comp = parent_entity->getComponent<TransformComponent>();
-			
+
 			// Make sure it exists and extract global matrix
 			if (xform_comp == nullptr)
 			{

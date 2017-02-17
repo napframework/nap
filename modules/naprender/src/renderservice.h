@@ -17,6 +17,7 @@ namespace nap
 	class RenderWindowComponent;
 	class TransformComponent;
 	class CameraComponent;
+	class RenderableComponent;
 
 	/**
 	 * Holds a reference to all drawable objects
@@ -63,6 +64,12 @@ namespace nap
 		 * TODO: deprecate
 		 */
 		void renderObjects(const CameraComponent& camera);
+
+		/**
+		 * Renders a specific set of objects
+		 * Mainly for debugging purposes
+		 */
+		void renderObjects(const std::vector<RenderableComponent*>& comps, const CameraComponent& camera);
 
 		/**
 		 * @return if OpenGL has been initialized

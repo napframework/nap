@@ -22,7 +22,7 @@ int main(int argc, char** argv)
 //	}
 
 	// Setup core
-	nap::Core core;
+	nap::Core core; 
 
 //    testJSON();
 //    return 0;

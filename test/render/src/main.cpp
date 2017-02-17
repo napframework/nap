@@ -41,6 +41,7 @@
 #include <cameracomponent.h>
 #include <mathutils.h>
 #include <planecomponent.h>
+#include <spherecomponent.h>
 
 // Nap includes
 #include <nap/core.h>
@@ -64,6 +65,9 @@ static const std::string testTextureName = "data/test.jpg";
 static nap::ImageResource* testTexture = nullptr;
 static const std::string pigTextureName = "data/pig_head.jpg";
 static nap::ImageResource* pigTexture = nullptr;
+static const std::string worldTextureName = "data/world_texture.jpg";
+static nap::ImageResource* worldTexture = nullptr;
+static float movementScale = 3.0f;
 
 // Nap Objects
 nap::RenderService* renderService = nullptr;
@@ -72,13 +76,21 @@ nap::RenderWindowComponent* renderWindow = nullptr;
 nap::CameraComponent* cameraComponent = nullptr;
 nap::ModelMeshComponent* modelComponent = nullptr;
 nap::PlaneComponent* planeComponent = nullptr;
+nap::SphereComponent* sphereComponent = nullptr;
 nap::ShaderResource* shaderResource = nullptr;
 nap::ShaderResource* shaderResourceOne = nullptr;
 nap::ShaderResource* shaderResourceTwo = nullptr;
 
+// movement
+bool moveForward = false;
+bool moveBackward = false;
+bool moveLeft = false;
+bool moveRight = false;
+
 // vertex Shader indices
-nap::Entity* model = nullptr;
-nap::Entity* plane = nullptr;
+nap::Entity* model  = nullptr;
+nap::Entity* plane  = nullptr;
+nap::Entity* sphere = nullptr;
 
 // Window width / height on startup
 unsigned int windowWidth(512);
@@ -89,6 +101,7 @@ glm::mat4 modelMatrix;			// Store the model matrix
 
 // Some utilities
 void runGame(nap::Core& core);	
+void updateCamera();
 
 // Called when the window is updating
 void onUpdate(const nap::SignalAttribute& signal)
@@ -98,11 +111,16 @@ void onUpdate(const nap::SignalAttribute& signal)
 
 	nap::TransformComponent* xform_v = modelComponent->getParent()->getComponent<nap::TransformComponent>();
 	nap::TransformComponent* xform_p = planeComponent->getParent()->getComponent<nap::TransformComponent>();
+	nap::TransformComponent* xform_s = sphereComponent->getParent()->getComponent<nap::TransformComponent>();
 
 	// Get rotation angle
 	float rot_speed = 0.1f;
 	float rot_angle = elapsed_time * 360.0f * rot_speed;
 	float rot_angle_radians = glm::radians(rot_angle);
+
+	float rot_speed_sphere = 0.01f;
+	float rot_angle_sphere = elapsed_time * 360.0f * rot_speed_sphere;
+	float rot_angle_radians_sphere = glm::radians(rot_angle_sphere);
 
 	// Calculate rotation quaternion
 	glm::quat rot_quat = glm::rotate(glm::quat(), (float)rot_angle_radians, glm::vec3(0.0, 1.0, 0.0));
@@ -112,14 +130,20 @@ void onUpdate(const nap::SignalAttribute& signal)
 
 	// Set rotation on plane component
 	xform_p->rotate.setValue(nap::quatToVector(rot_quat));
-	xform_p->translate.setValue({ 1.0f, 0.0, 0.0f });
+	xform_p->translate.setValue({ 1.5f, 0.0, 0.0f });
 	xform_p->uniformScale.setValue(1.5f);
+
+	// Set rotatation on sphere
+	glm::quat rot_quat_sphere = glm::rotate(glm::quat(), (float)rot_angle_radians_sphere, glm::vec3(0.0, 1.0, 0.0));
+	xform_s->rotate.setValue(nap::quatToVector(rot_quat_sphere));
+	xform_s->translate.setValue({ 0.0f, 0.0f, -3.0f });
+	xform_s->uniformScale.setValue(1.0f);
 
 	// Set transform
 	float xform_distance = 2.0f;
 	float xform_speed = 1.0f;
 	float xform_offset = sin(elapsed_time * xform_speed) * xform_distance;
-	xform_v->translate.setValue({ -1.0f, 0.0f, 0.0f });
+	xform_v->translate.setValue({ -1.5f, 0.0f, 0.0f });
 
 	// Set scale
 	float scale_speed = 4.0f;
@@ -141,12 +165,54 @@ void onUpdate(const nap::SignalAttribute& signal)
 	material->setUniformTexture("pigTexture", *pigTexture);
 	material->setUniformTexture("testTexture", *testTexture);
 
+	// Set plane uniforms
 	planeComponent->getMaterial()->setUniformTexture("pigTexture", *testTexture);
 	planeComponent->getMaterial()->setUniformTexture("testTexture", *testTexture);
 	planeComponent->getMaterial()->setUniformValue<int>("mTextureIndex", 0);
 	planeComponent->getMaterial()->setUniformValue<glm::vec4>("mColor", {1.0f, 1.0f, 1.0f, 1.0f});
+
+	// Set sphere uniforms
+	sphereComponent->getMaterial()->setUniformTexture("pigTexture", *worldTexture);
+	sphereComponent->getMaterial()->setUniformTexture("testTexture", *worldTexture);
+	sphereComponent->getMaterial()->setUniformValue<int>("mTextureIndex", 0);
+	sphereComponent->getMaterial()->setUniformValue<glm::vec4>("mColor", { 1.0f, 1.0f, 1.0f, 1.0f });
+
+	//////////////////////////////////////////////////////////////////////////
+	// Camera Update
+	//////////////////////////////////////////////////////////////////////////
+
+	updateCamera();
+
+	//nap::TransformComponent* cam_xform = cameraComponent->getParent()->getComponent<nap::TransformComponent>();
+	//rot_quat = glm::rotate(glm::quat(), rot_angle_radians, glm::vec3(0.0, 1.0, 0.0));
+	//cam_xform->rotate.setValue(nap::quatToVector(rot_quat));
 }
 NSLOT(updateSlot, const nap::SignalAttribute&, onUpdate)
+
+
+void updateCamera()
+{
+	float elapsed_time = renderWindow->getDeltaTimeFloat();
+	float movement = movementScale * elapsed_time;
+
+	nap::TransformComponent* cam_xform = cameraComponent->getParent()->getComponent<nap::TransformComponent>();
+	if (moveForward)
+	{
+		cam_xform->translate.setValue(cam_xform->translate.getValue() + glm::vec3(0.0f, 0.0f, movement));
+	}
+	if (moveBackward)
+	{
+		cam_xform->translate.setValue(cam_xform->translate.getValue() - glm::vec3(0.0f, 0.0f, movement));
+	}
+	if (moveLeft)
+	{
+		cam_xform->translate.setValue(cam_xform->translate.getValue() - glm::vec3(movement, 0.0f, 0.0f));
+	}
+	if (moveRight)
+	{
+		cam_xform->translate.setValue(cam_xform->translate.getValue() + glm::vec3(movement, 0.0f, 0.0f));
+	}
+}
 
 
 // Called when the window is going to render
@@ -158,6 +224,8 @@ void onRender(const nap::SignalAttribute& signal)
 	opengl::clearStencil();
 
 	// Render all objects
+	std::vector<nap::RenderableComponent*> comps	{ modelComponent };
+	//renderService->renderObjects(comps, *cameraComponent);
 	renderService->renderObjects(*cameraComponent);
 }
 NSLOT(renderSlot, const nap::SignalAttribute&, onRender)
@@ -221,6 +289,8 @@ bool init(nap::Core& core)
 	pigTexture = static_cast<nap::ImageResource*>(pig_texture);
 	nap::Resource* tes_texture = service->getResource(testTextureName);
 	testTexture = static_cast<nap::ImageResource*>(tes_texture);
+	nap::Resource* world_texture = service->getResource(worldTextureName);
+	worldTexture = static_cast<nap::ImageResource*>(world_texture);
 
 	// Load first shader
 	nap::Resource* shader_resource = service->getResource(fragShaderName);
@@ -258,7 +328,12 @@ bool init(nap::Core& core)
 	nap::TransformComponent& plane_tran_component = plane->addComponent<nap::TransformComponent>();
 	planeComponent = &plane->addComponent<nap::PlaneComponent>("draw_plane");
 
-	// Set shader resource on material
+	// Create sphere entity
+	sphere = &(core.getRoot().addEntity("sphere"));
+	nap::TransformComponent& sphere_tran_component = sphere->addComponent<nap::TransformComponent>();
+	sphereComponent = &sphere->addComponent<nap::SphereComponent>("draw_sphere");
+
+	// Set same shader to be used by all mesh components
 	nap::Material* material = modelComponent->getMaterial();
 	assert(material != nullptr);
 	material->shaderResourceLink.setResource(*shaderResource);
@@ -266,6 +341,10 @@ bool init(nap::Core& core)
 	nap::Material* plane_material = planeComponent->getMaterial();
 	assert(plane_material != nullptr);
 	plane_material->shaderResourceLink.setResource(*shaderResource);
+
+	nap::Material* sphere_material = sphereComponent->getMaterial();
+	assert(sphere_material != nullptr);
+	sphere_material->shaderResourceLink.setResource(*shader_resource);
 
 	// Link model resource
 	modelComponent->modelResource.setResource(*pig_model);
@@ -292,13 +371,19 @@ bool init(nap::Core& core)
 	plane_material->linkVertexBuffer("in_Color", planeComponent->getMesh()->getColorBufferIndex());
 	plane_material->linkVertexBuffer("in_Uvs", planeComponent->getMesh()->getUvBufferIndex());
 
+	// And sphere
+	sphere_material->linkVertexBuffer("in_Position", sphereComponent->getMesh()->getVertexBufferIndex());
+	sphere_material->linkVertexBuffer("in_Color", sphereComponent->getMesh()->getColorBufferIndex());
+	sphere_material->linkVertexBuffer("in_Uvs", sphereComponent->getMesh()->getUvBufferIndex());
+
 	//////////////////////////////////////////////////////////////////////////
 	// Add Camera
 	//////////////////////////////////////////////////////////////////////////
 	nap::Entity& camera_entity = core.addEntity("camera");
 	cameraComponent = &camera_entity.addComponent<nap::CameraComponent>();
 	nap::TransformComponent& camera_transform = camera_entity.addComponent<nap::TransformComponent>();
-	camera_transform.translate.setValue({ 0.0f, 0.0f, -4.0f });
+	camera_transform.translate.setValue({ 0.0f, 0.0f, -5.0f });
+	cameraComponent->clippingPlanes.setValue(glm::vec2(0.01, 1000.0f));
 
 	// Set camera
 	cameraComponent->fieldOfView.setValue(45.0f);
@@ -374,6 +459,55 @@ void runGame(nap::Core& core)
 					static bool fullScreen = false;
 					fullScreen = !fullScreen;
 					renderWindow->fullScreen.setValue(fullScreen);
+					break;
+				}
+				case SDLK_w:
+				{
+					moveForward = true;
+					break;
+				}
+				case SDLK_s:
+				{
+					moveBackward = true;
+					break;
+				}
+				case SDLK_a:
+				{
+					moveLeft = true;
+					break;
+				}
+				case SDLK_d:
+				{
+					moveRight = true;
+					break;
+				}
+				default:
+					break;
+				}
+			}
+
+			if (event.type == SDL_KEYUP)
+			{
+				switch (event.key.keysym.sym)
+				{
+				case SDLK_w:
+				{
+					moveForward = false;
+					break;
+				}
+				case SDLK_s:
+				{
+					moveBackward = false;
+					break;
+				}
+				case SDLK_a:
+				{
+					moveLeft = false;
+					break;
+				}
+				case SDLK_d:
+				{
+					moveRight = false;
 					break;
 				}
 				default:
