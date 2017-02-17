@@ -101,6 +101,24 @@ namespace opengl
 				new_mesh->copyNormalData(mesh->mNumVertices, &normal_data.front());
 			}
 
+			// Copy all uv data channels
+			for (unsigned int uv_channel = 0; uv_channel < mesh->GetNumUVChannels(); uv_channel++)
+			{
+				aiVector3D* uv_channel_data = mesh->mTextureCoords[uv_channel];
+				std::vector<float> uv_data;
+				uv_data.reserve(mesh->mNumVertices * 3);
+
+				// Copy uv data channel
+				for (unsigned int vertex = 0; vertex < mesh->mNumVertices; vertex++)
+				{
+					aiVector3D* current_id = &(uv_channel_data[vertex]);
+					uv_data.emplace_back(static_cast<float>(current_id->x));
+					uv_data.emplace_back(static_cast<float>(current_id->y));
+					uv_data.emplace_back(static_cast<float>(current_id->z));
+				}
+				new_mesh->copyUVData(3, mesh->mNumVertices, &uv_data.front());
+			}
+
 
 			// Copy all color data channels
 			for (unsigned int color_channel = 0; color_channel < mesh->GetNumColorChannels(); color_channel++)
@@ -121,25 +139,6 @@ namespace opengl
 
 				// Copy color data
 				new_mesh->copyColorData(4, mesh->mNumVertices, &color_data.front());
-			}
-
-
-			// Copy all uv data channels
-			for (unsigned int uv_channel = 0; uv_channel < mesh->GetNumUVChannels(); uv_channel++)
-			{
-				aiVector3D* uv_channel_data = mesh->mTextureCoords[uv_channel];
-				std::vector<float> uv_data;
-				uv_data.reserve(mesh->mNumVertices * 3);
-
-				// Copy uv data channel
-				for (unsigned int vertex = 0; vertex < mesh->mNumVertices; vertex++)
-				{
-					aiVector3D* current_id = &(uv_channel_data[vertex]);
-					uv_data.emplace_back(static_cast<float>(current_id->x));
-					uv_data.emplace_back(static_cast<float>(current_id->y));
-					uv_data.emplace_back(static_cast<float>(current_id->z));
-				}
-				new_mesh->copyUVData(3, mesh->mNumVertices, &uv_data.front());
 			}
 
 			// Add mesh
