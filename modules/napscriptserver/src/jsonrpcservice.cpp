@@ -515,13 +515,13 @@ namespace nap
 			handleObjectRemoved(child);
 		});
 
-		if (auto attrib = rtti_cast<AttributeBase*>(obj)) {
+		if (auto attrib = rtti_cast<AttributeBase>(obj)) {
 			attrib->valueChanged.connect([=](AttributeBase& a) {
 				handleAttributeValueChanged(a);
 			});
 		}
 
-		if (auto plug = rtti_cast<InputPlugBase*>(obj)) {
+		if (auto plug = rtti_cast<InputPlugBase>(obj)) {
 			plug->connected.connect([=](InputPlugBase& p) {
 				handlePlugConnected(p);
 			});

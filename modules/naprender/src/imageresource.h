@@ -53,7 +53,7 @@ namespace nap
 		 * Note that this implicitly loads the image
 		 * Make sure that the image is loaded successfully
 		 */
-		const opengl::Image& ImageResource::getImage() const;
+		const opengl::Image& getImage() const;
 
 		/**
 		 * @return opengl texture object

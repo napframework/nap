@@ -102,12 +102,12 @@ namespace nap
 			writer.Int(obj.getFlags());
 
 
-			if (auto plug = rtti_cast<Plug*>(&obj))
+			if (auto plug = rtti_cast<Plug>(&obj))
             {
 				writer.String(J_DATA_TYPE);
 				writer.String(plug->getDataType().getName().c_str());
 
-				if (auto inputPlug = rtti_cast<nap::InputPlugBase*>(plug)) {
+				if (auto inputPlug = rtti_cast<nap::InputPlugBase>(plug)) {
                     if (inputPlug->isConnected()) {
                         writer.String(J_CONNECTION);
                         std::string destPath = ObjectPath(inputPlug->getConnection());
@@ -121,7 +121,7 @@ namespace nap
 				writer.Int64(Serializer::toPtr(obj));
 			}
 
-			if (auto compAttrib = rtti_cast<CompoundAttribute*>(&obj))
+			if (auto compAttrib = rtti_cast<CompoundAttribute>(&obj))
             {
 				auto attribs = realAttributes(*compAttrib);
 				if (attribs.size() > 0) {
@@ -133,7 +133,7 @@ namespace nap
 					writer.EndArray();
 				}
 			}
-            else if (auto attribObj = rtti_cast<AttributeObject*>(&obj))
+            else if (auto attribObj = rtti_cast<AttributeObject >(&obj))
             {
 				auto attribs = realAttributes(*attribObj);
 				if (attribs.size() > 0) {
@@ -349,7 +349,7 @@ namespace nap
 
         // Deserialize type specifics
 
-        if (auto inputPlug = rtti_cast<InputPlugBase*>(obj))
+        if (auto inputPlug = rtti_cast<InputPlugBase>(obj))
             if (value.HasMember(J_CONNECTION)) {
                 auto& connection = value[J_CONNECTION];
                 std::string outputPlugPath = connection.GetString();
