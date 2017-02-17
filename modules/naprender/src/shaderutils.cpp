@@ -216,7 +216,6 @@ namespace nap
 		ArrayAttribute<T>& array_attr = compound.addArrayAttribute<T>(uvar.mName.c_str());
 		for (int i = 0; i < uvar.mSize; i++)
 		{
-			std::string attr_name = stringFormat("number_%d", i);
 			array_attr.add(defaultValue);
 		}
 		return array_attr;
