@@ -55,7 +55,7 @@ namespace opengl
 	{
 	public:
 		// Constructor
-		ShaderInput(GLuint shaderProgram, std::string& name, GLenum type, GLint location, GLint size);
+		ShaderInput(GLuint shaderProgram, const std::string& name, GLenum type, GLint location, GLint size);
 		ShaderInput() = delete;
 
 		std::string		mName;							// Name of the shader attribute
@@ -79,7 +79,7 @@ namespace opengl
 	{
 	public:
 		// Constructor
-		UniformVariable(GLuint shaderProgram, std::string& name, GLenum type, GLint location, GLint size);
+		UniformVariable(GLuint shaderProgram, const std::string& name, GLenum type, GLint location, GLint size);
 
 		/**
 		 * Sets the uniform variable, note that the shader this uniform belongs
@@ -99,7 +99,7 @@ namespace opengl
 	{
 	public:
 		// Constructor
-		VertexAttribute(GLuint shaderProgram, std::string& name, GLenum type, GLint location, GLint size);
+		VertexAttribute(GLuint shaderProgram, const std::string& name, GLenum type, GLint location, GLint size);
 	};
 
 

@@ -131,7 +131,7 @@ namespace opengl
 
 
 	// Constructor
-	ShaderInput::ShaderInput(GLuint shaderProgram, std::string& name, GLenum type, GLint location, GLint size) :
+	ShaderInput::ShaderInput(GLuint shaderProgram, const std::string& name, GLenum type, GLint location, GLint size) :
 		mName(name),
 		mType(type),
 		mLocation(location),
@@ -263,7 +263,7 @@ namespace opengl
 
 
 	// Uniform variable constructor
-	UniformVariable::UniformVariable(GLuint shaderProgram, std::string& name, GLenum type, GLint location, GLint size) :
+	UniformVariable::UniformVariable(GLuint shaderProgram, const std::string& name, GLenum type, GLint location, GLint size) :
 		ShaderInput(shaderProgram, name, type, location, size)	{ }
 
 
@@ -291,7 +291,7 @@ namespace opengl
 
 	
 	// Vertex attribute constructor
-	VertexAttribute::VertexAttribute(GLuint shaderProgram, std::string& name, GLenum type, GLint location, GLint size) :
+	VertexAttribute::VertexAttribute(GLuint shaderProgram, const std::string& name, GLenum type, GLint location, GLint size) :
 		ShaderInput(shaderProgram, name, type, location, size) { }
 
 }
