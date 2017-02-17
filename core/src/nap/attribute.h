@@ -53,6 +53,30 @@ namespace nap
 		 @param attribute container to copy the value from
 		 */
 		virtual void setValue(const AttributeBase& attribute) = 0;
+        
+        
+        /**
+         * @return the value of the attribute in case it is of type T
+         */
+        template <typename T>
+        const T& getValue() const;
+        
+        /**
+         * Converts and sets the value from @strinValue
+         @param stringValue the value to convert
+         */
+        void fromString(const std::string& stringValue);
+        
+        /**
+         * Converts the value associated with the attribute in to a string
+         @param outStringValue string that will hold the value after conversion
+         */
+        void toString(std::string& outStringValue) const;
+        
+        /**
+         * Converts and sets the value from @value
+         */
+        void setValue(const std::string& value);
 
 		/**
 		 * @return the parent associated with this attribute
@@ -60,55 +84,9 @@ namespace nap
 		AttributeObject* getParent() const;
 
 		/**
-		 * TODO: REMOVE LINK FROM ATTRIBUTE
-		 * DEPRECATED -> use ObjectLinkAttribute
-		 */
-		void link(AttributeBase& source);
-		void linkPath(const std::string& path);
-		void unLink();
-
-		/**
-		 * @return if the attribute is currently linked
-		 */
-		virtual bool isLinked() const;
-
-		/**
-		 * @return the path to the object this attribute links to
-		 */
-		const ObjectPath& getLinkSource() const { return getLink().getPath(); }
-
-		/**
-		 * Converts and sets the value from @strinValue
-		 @param stringValue the value to convert
-		 */
-		void fromString(const std::string& stringValue);
-
-		/**
-		 * Converts the value associated with the attribute in to a string
-		 @param outStringValue string that will hold the value after conversion
-		 */
-		void toString(std::string& outStringValue) const;
-
-		/**
-		 * Converts and sets the value from @value
-		 */
-		void setValue(const std::string& value);
-
-		/**
 		 * @return the type of the value this attribute holds
 		 */
 		virtual const RTTI::TypeInfo getValueType() const = 0;
-
-        /**
-         * sets the attribute to internally lock a mutex when accessing it's value
-         * @param atomic if the attribute will be locked or not on access
-         */
-		void setAtomic(bool atomic) { mAtomic = atomic; }
-
-		/**
-		 * @return if the attribute lock is enabled
-		 */
-		bool isAtomic() const { return mAtomic; }
 
 		/**
 		 * Emits when the value of this attribute changes
@@ -116,20 +94,9 @@ namespace nap
 		Signal<AttributeBase&> valueChanged;
 
 	protected:
-		virtual Link&		getLink() const = 0;
-
-		// Emitted in derived (templated) classes (?)
-		// TODO: DEPRICATE THIS PLEASE, IT'S RATHER UNREADABLE
-		// AND CREATES CONFUSION ON DERIVED CLASSES
-		[[deprecated]]
-		virtual void		emitValueChanged() = 0;
-
-		// Indicates wether the attribute should internally lock o mutex for thread safety when accessing it's value
-		bool				mAtomic = false;
-
+        
 		// The mutex that will be locked when accessing the attribute's value to make it threadsafe
 		std::mutex			mMutex;
-
 
 	};
 
@@ -160,13 +127,13 @@ namespace nap
 			setValueSlot.setFunction({ [this](const T& value) { this->setValue(value); } });
 		}
 
-		// Constructor to declare an attribute with a member function pointer for the @valueChangedSignal as last argument.
+		// Constructor to declare an attribute with a member function pointer for the @valueChanged signal as last argument.
 		template <typename U, typename F>
 		Attribute(U* parent, const std::string& name, const T& inValue, F function, bool atomic = false)
 			: AttributeBase(parent, name, atomic), mValue(inValue)
 		{
 			setValueSlot.setFunction({ [this](const T& value) { this->setValue(value); } });
-			valueChangedSignal.connect(parent, function);
+			valueChanged.connect(parent, function);
 		}
 
 		virtual const RTTI::TypeInfo getValueType() const override;
@@ -175,20 +142,11 @@ namespace nap
 		virtual void getValue(AttributeBase& inAttribute) const override;
 		const T& getValue() const;
 		T& getValueRef();
-
+        
 		// Setters
 		virtual void setValue(const AttributeBase &inAttribute) override;
 		virtual void setValue(const T& inValue);
 
-		// Connect to
-		virtual void connectToValue(Slot<const T&>& inSlot);
-		virtual void disconnectFromValue(Slot<const T&>& inSlot);
-
-		// Inherited from BaseAttribute, so that BaseAttribute can trigger the valueChanged() signal to be emitted
-		void emitValueChanged() override final { valueChangedSignal(mValue); }
-
-		// Signal emited when the value changes
-		Signal<const T&>	valueChangedSignal;
 		// This slot will be invoked when the value is set
 		Slot<const T&>		setValueSlot;
 
@@ -198,14 +156,11 @@ namespace nap
 	protected:
 		// Members
 		T				mValue;
-		Link& getLink() const override { return mLink; }
 
 	private:
 		// Keep constructor hidden, use factory methods to instantiate
 		Attribute(const T& inValue) : mValue(inValue) {}
 
-		// Link of type T
-		mutable TypedLink<Attribute<T>> mLink = { *this };
 	};
 
 
@@ -289,92 +244,86 @@ namespace nap
 		 */
 		void trigger() { signal.trigger(*this); }
 
-	protected:
-		virtual Link& getLink() const override { return mlink; }
-		virtual void emitValueChanged() override { signal.trigger(*this); }
-
 	private:
 		virtual void getValue(AttributeBase& attribute) const override {}
 		virtual void setValue(const AttributeBase& attribute) override {}
 		virtual const RTTI::TypeInfo getValueType() const override { return getTypeInfo(); }
 
-		mutable nap::Link				mlink;
 	};
 
 
-	/**
-	 * ObjectLinkAttribute
-	 *
-	 * Attribute that acts as a link to an other object
-	 */
-	class ObjectLinkAttribute : public AttributeBase
-	{
-		RTTI_ENABLE_DERIVED_FROM(AttributeBase)
-	public:
-		// Default constructor
-		ObjectLinkAttribute();
-		ObjectLinkAttribute(AttributeObject* parent, const std::string& name, const RTTI::TypeInfo& type);
+    /**
+     * ObjectLinkAttribute
+     *
+     * Attribute that acts as a link to an other object
+     */
+    class ObjectLinkAttribute : public AttributeBase
+    {
+        RTTI_ENABLE_DERIVED_FROM(AttributeBase)
+    public:
+        // Default constructor
+        ObjectLinkAttribute();
+        ObjectLinkAttribute(AttributeObject* parent, const std::string& name, const RTTI::TypeInfo& type);
+        
+        // Conversion
+        virtual void getValue(AttributeBase& attribute) const override;
+        virtual void setValue(const AttributeBase& attribute) override;
+        
+        /**
+         * @return the link's target, nullptr if not linked
+         */
+        Object* getTarget() { return mLink.getTarget(); }
+        
+        /**
+         * @return the link's target as type T, nullptr if not linked or type is invalid
+         */
+        template <typename T>
+        T* getTarget();
+        
+        /**
+         * @return the link's target object path, empty string if not valid
+         */
+        const ObjectPath& getPath()	const { return mLink.getPath(); }
+        
+        /**
+         * sets the link's target, emits valueChanged when set
+         * @param target object that is the links new target
+         */
+        void setTarget(Object& target);
+        
+        /**
+         * sets the link's target by resolving the target path
+         * @param targetPath path to target
+         */
+        void setTarget(const std::string& targetPath);
+        
+        /**
+         * clears the link
+         */
+        void clear() { mLink.clear(); }
+        
+        /**
+         * returns type of attribute
+         */
+        virtual const RTTI::TypeInfo getValueType() const override;
+        
+    private:
+        // Link to object
+        mutable Link mLink;
+        
+        void onLinkTargetChanged(const Link& link);
+        Slot<const Link&> onLinkTargetChangedSlot = { this, &ObjectLinkAttribute::onLinkTargetChanged };
+    };
 
-		// Conversion
-		virtual void getValue(AttributeBase& attribute) const override;
-		virtual void setValue(const AttributeBase& attribute) override;
-
-		/**
-		 * @return the link's target, nullptr if not linked
-		 */
-		Object* getTarget() { return mLink.getTarget(); }
-
-		/**
-		 * @return the link's target as type T, nullptr if not linked or type is invalid
-		 */
-		template <typename T>
-		T* getTarget();
-
-		/**
-		 * @return the link's target object path, empty string if not valid
-		 */
-		const ObjectPath& getPath()	const { return mLink.getPath(); }
-
-		/**
-		 * sets the link's target, emits valueChanged when set
-		 * @param target object that is the links new target
-		 */
-		void setTarget(Object& target);
-
-		/**
-		 * sets the link's target by resolving the target path
-		 * @param targetPath path to target
-		 */
-		void setTarget(const std::string& targetPath);
-
-		/**
-		 * clears the link
-		 */
-		void clear() { mLink.clear(); }
-
-		/**
-		 * returns type of attribute
-		 */
-		virtual const RTTI::TypeInfo getValueType() const override;
-
-	protected:
-		/**
-		* @return link associated with this attribute (TODO: DEPRECATE)
-		*/
-		virtual Link& getLink() const override { return mLink; }
-
-		/**
-		 * TODO: DEPRECATE
-		 */
-		virtual void emitValueChanged() override {  }
-
-	private:
-		// Link to object
-		mutable Link mLink;
-
-		void onLinkTargetChanged(const Link& link);
-		Slot<const Link&> onLinkTargetChangedSlot = { this, &ObjectLinkAttribute::onLinkTargetChanged };
-	};
+    
+    template <typename T>
+    const T& AttributeBase::getValue() const
+    {
+        assert(getTypeInfo().isKindOf<Attribute<T>>());
+        auto thisAttribute = static_cast<const Attribute<T>*>(this);
+        return thisAttribute->getValue();
+    }
+    
 }
 
 // Include template specialization

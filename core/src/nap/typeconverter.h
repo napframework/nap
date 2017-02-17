@@ -18,13 +18,13 @@ namespace nap
 		TypeConverterBase(RTTI::TypeInfo inType, RTTI::TypeInfo outType);
         virtual ~TypeConverterBase() = default;
 
-		//! The type to convert from
+		// The type to convert from
 		const RTTI::TypeInfo inType() const { return mInType; }
 
-		//! The type to convert into
+		// The type to convert into
 		const RTTI::TypeInfo outType() const { return mOutType; }
 
-		//! Here we can only convert values in an opaque container,
+		// Here we can only convert values in an opaque container,
 		// derived types will expose specialized behavior
 		virtual bool convert(const AttributeBase* inAttrib, AttributeBase* outAttrib) const = 0;
 
@@ -33,6 +33,7 @@ namespace nap
 		const RTTI::TypeInfo mOutType;
 	};
 
+    
 	/**
 	This class should not be derived from.
 	Only instantiate it (statically) and provide the conversion function.
@@ -74,18 +75,15 @@ namespace nap
             }
 			auto outAt = static_cast<Attribute<O>*>(outAttrib);
 
-            bool wasAtomic = outAt->isAtomic();
-            outAt->setAtomic(false);
 			bool success = convertFunction(inAt->getValue(), outAt->getValueRef());
-            outAt->setAtomic(wasAtomic);
 
 			outAt->valueChanged(*outAt);
-			outAt->valueChangedSignal(outAt->getValue());
 
 			return success;
 		}
 	};
 
+    
 	class TypeConverterPassThrough : public TypeConverterBase {
 	public:
 		TypeConverterPassThrough() : TypeConverterBase(RTTI::TypeInfo::empty(), RTTI::TypeInfo::empty()) {}
@@ -94,7 +92,6 @@ namespace nap
 			outAttrib->setValue(*inAttrib);
 			return true;
 		}
-
-
 	};
+    
 }

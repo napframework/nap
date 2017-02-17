@@ -66,7 +66,7 @@ namespace nap
 		 * @return if the the resource is currently linked
 		 * A resource is linked when a path is to a resource is given or the resource is resolved
 		 */
-		virtual bool isLinked() const override;
+        bool isLinked() const;
 
 		/**
 		 * Clears the link path

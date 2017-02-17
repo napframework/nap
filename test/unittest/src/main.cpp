@@ -5,7 +5,6 @@
 
 // Tests
 #include "tests/testcore.h"
-#include "tests/testlink.h"
 
 int main(int argc, char** argv)
 {
@@ -14,7 +13,6 @@ int main(int argc, char** argv)
 	TEST_SETUP()
 
 ////	TEST_ADD(testXMLSerializer)
-	TEST_ADD(testLink)
 	TEST_ADD(testCore)
 	TEST_ADD(testObjectPath)
     TEST_ADD(testJSONSerializer)

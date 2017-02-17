@@ -128,11 +128,11 @@ namespace nap
 		/**
 		 * Attribute changes
 		 */
-		void onTitleChanged(const std::string& title);
-		void onPositionChanged(const glm::ivec2& position);
-		void onSizeChanged(const glm::ivec2& size);
-		void onSyncChanged(const bool& value);
-		void onFullscreenChanged(const bool& value);
+		void onTitleChanged(const AttributeBase& title);
+		void onPositionChanged(const AttributeBase& position);
+		void onSizeChanged(const AttributeBase& size);
+		void onSyncChanged(const AttributeBase& value);
+		void onFullscreenChanged(const AttributeBase& value);
 
 		/**
 		 * Occurs when the window is registered with the render service
@@ -146,11 +146,11 @@ namespace nap
 		// Slot declarations
 		NSLOT(showWindow, const SignalAttribute&, onShowWindow)
 		NSLOT(hideWindow, const SignalAttribute&, onHideWindow)
-		NSLOT(titleChanged, const std::string&, onTitleChanged)
-		NSLOT(positionChanged, const glm::ivec2&, onPositionChanged)
-		NSLOT(sizeChanged, const glm::ivec2&, onSizeChanged)
-		NSLOT(syncChanged, const bool&, onSyncChanged)
-		NSLOT(fullScreenChanged, const bool&, onFullscreenChanged)
+		NSLOT(titleChanged, const AttributeBase&, onTitleChanged)
+		NSLOT(positionChanged, const AttributeBase&, onPositionChanged)
+		NSLOT(sizeChanged, const AttributeBase&, onSizeChanged)
+		NSLOT(syncChanged, const AttributeBase&, onSyncChanged)
+		NSLOT(fullScreenChanged, const AttributeBase&, onFullscreenChanged)
 
 	private:
 		/**

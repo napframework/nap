@@ -72,12 +72,9 @@ namespace nap
 				elm->SetAttribute(X_VALUE, strAttr.getValue().c_str());
 			}
 			elm->SetAttribute(X_VALUE_TYPE, attrib.getValueType().getName().c_str());
-
-			if (attrib.isLinked()) {
-				elm->SetAttribute(X_LINK, attrib.getLinkSource().toString().c_str());
-			}
-
-		} else {
+		}
+        
+        else {
 			elm = doc.NewElement(X_OBJECT);
 			elm->SetAttribute(X_NAME, object.getName().c_str());
 			elm->SetAttribute(X_TYPE, type.getName().c_str());
@@ -183,12 +180,6 @@ namespace nap
 			}
 		}
 		assert(attribute);
-
-		// Deserialize link
-		const char* link = xml->Attribute(X_LINK);
-		if (link) {
-			attribute->linkPath(std::string(link));
-		}
 
 		// Retrieve and set value
 		const TypeConverterBase* converter = core.getModuleManager().getTypeConverter(

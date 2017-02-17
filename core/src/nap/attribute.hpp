@@ -15,34 +15,21 @@ namespace nap
 		static_cast<Attribute<T>&>(inAttribute).setValue(getValue());
 	}
 
+    
 	template <typename T>
 	const T& Attribute<T>::getValue() const
 	{
-		assert(getTypeInfo().isKindOf(mLink.getTargetType()));
-
-		// No link, just return the value
-		if (!mLink.isLinked())
-			return mValue;
-
-		// Target might not be valid, attempt to resovle
-		const Attribute<T>* targetAttr = mLink.getTypedTarget();
-
-		if (!targetAttr)
-			return mValue;// Failed to resolve
-
-						  // Return linked value
-		return targetAttr->getValue();
+        return mValue;
 	}
 
+    
 	template <typename T>
 	T& Attribute<T>::getValueRef()
 	{
-		// When an attribute is atomic calling getValueRef() potentially breaks thread safety
-		assert(!mAtomic);
-
 		return mValue;
 	}
 
+    
 	template <typename T>
 	void Attribute<T>::setValue(const T& inValue)
 	{
@@ -50,19 +37,9 @@ namespace nap
 		if (inValue == mValue)
 			return;
 
-		// Otherwise lock if blocking
-		if (mAtomic)
-		{
-			std::unique_lock<std::mutex> lock(mMutex);
-			mValue = inValue;
-		}
-		else
-		{
-			mValue = inValue;
-		}
+        mValue = inValue;
 
 		valueChanged(*this);
-		valueChangedSignal(mValue);
 	}
 
 
@@ -70,41 +47,23 @@ namespace nap
 	template <typename T>
 	void Attribute<T>::setValue(const AttributeBase &inAttribute)
 	{
+        assert(inAttribute.getTypeInfo() == getTypeInfo());
+        
 		const Attribute<T>& in_attr = static_cast<const Attribute<T>&>(inAttribute);
 		if (in_attr.mValue == mValue)
 			return;
 
-		if (mAtomic)
-		{
-			std::unique_lock<std::mutex> lock(mMutex);
-			mValue = in_attr.mValue;
-		}
-		else
-		{
-			mValue = in_attr.mValue;
-		}
+        mValue = in_attr.mValue;
 
 		valueChanged(*this);
-		valueChangedSignal(mValue);
 	}
 
-	template <typename T>
-	void Attribute<T>::connectToValue(Slot<const T&>& inSlot)
-	{
-		valueChangedSignal.connect(inSlot);
-	}
-
-
-	template <typename T>
-	void Attribute<T>::disconnectFromValue(Slot<const T&>& inSlot)
-	{
-		valueChangedSignal.disconnect(inSlot);
-	}
-
+    
 	//////////////////////////////////////////////////////////////////////////
 	// Numeric Attribute Template Definitions
 	//////////////////////////////////////////////////////////////////////////
 
+    
 	template <typename T>
 	void NumericAttribute<T>::setValue(const T& value)
 	{
@@ -135,6 +94,7 @@ namespace nap
 			setValue(Attribute<T>::mValue);
 	}
 
+    
 	template <typename T>
 	void NumericAttribute<T>::getRange(T& outMin, T& outMax) const
 	{
@@ -142,6 +102,7 @@ namespace nap
 		outMax = mMaxValue;
 	}
 
+    
 	template <typename T>
 	NumericAttribute<T>::NumericAttribute(AttributeObject* parent, const std::string& name, const T& value, const T& minValue, const T& maxValue, bool atomic, bool clamped)
 		: Attribute<T>(parent, name, value, atomic)
@@ -159,9 +120,12 @@ namespace nap
 		setRange(value, value);
 	}
 
+    
 	//////////////////////////////////////////////////////////////////////////
 	// Object attribute link definitions
 	//////////////////////////////////////////////////////////////////////////
+    
+    
 	template <typename T>
 	T* ObjectLinkAttribute::getTarget()
 	{

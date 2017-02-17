@@ -79,7 +79,10 @@ namespace nap
     RpcService::RpcService() : mSessionID(createSessionID())
 	{
         setFlag(Editable, false);
-        running.valueChangedSignal.connect([&](const bool& running)		{ onRunningChanged(running); });
+        running.valueChanged.connect([&](const AttributeBase& attr)
+        {
+            onRunningChanged(attr.getValue<bool>());
+        });
 
 		mServer.clientConnected.connect([&](AsyncTCPClient& client)		{ onClientConnected(client); });
 		mServer.clientDisconnected.connect([&](AsyncTCPClient& client)	{ onClientDisconnected(client); });
