@@ -85,6 +85,14 @@ namespace nap
         ArrayAttribute<T>& addArrayAttribute(const std::string& name) { return addChild<ArrayAttribute<T>>(name); }
 
 		/**
+		 * Add an object link attribute, this attribute holds a link in the form of an object or path to an object
+		 * The target (ie, object the link points to) is resolved on query
+		 * @param name: Name of the attribute to add
+		 * @param type: Type the object link should point to
+		 */
+		ObjectLinkAttribute& addObjectLinkAttribute(const std::string& name, const RTTI::TypeInfo& type);
+
+		/**
 		 * Remove and destroy the provided Attribute.
 		 * @param attribute The attribute to be removed.
 		 * @return True if removal was successful, false otherwise.

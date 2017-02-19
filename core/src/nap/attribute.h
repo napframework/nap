@@ -54,9 +54,12 @@ namespace nap
 		 */
 		virtual void setValue(const AttributeBase& attribute) = 0;
         
-        
         /**
-         * @return the value of the attribute in case it is of type T
+         * @return the value this attribute holds
+		 * Note that this function is a utility that tries to cast the 
+		 * BaseAttribute to a type of Attribute<T>, calling this on
+		 * an array or compound attribute will fail and lead to unexpected
+		 * results, be warned!
          */
         template <typename T>
         const T& getValue() const;
@@ -279,11 +282,27 @@ namespace nap
          */
         template <typename T>
         T* getTarget();
+
+		/**
+		 * @return the link target type
+		 */
+		RTTI::TypeInfo getTargetType() const				{ return mLink.getTargetType(); }
+
+		/**
+		 * Set the type of object this link is allowed to point to
+		 */
+		void setTargetType(const RTTI::TypeInfo& type)		{ mLink.setTargetType(type); }
         
         /**
          * @return the link's target object path, empty string if not valid
          */
         const ObjectPath& getPath()	const { return mLink.getPath(); }
+
+		/**
+		 * If the attribute points to an object
+		 * This is also valid when the object isn't resolved yet, ie: has a path
+		 */
+		bool isLinked() const								{ return mLink.isLinked(); }
         
         /**
          * sets the link's target, emits valueChanged when set
@@ -322,8 +341,8 @@ namespace nap
         assert(getTypeInfo().isKindOf<Attribute<T>>());
         auto thisAttribute = static_cast<const Attribute<T>*>(this);
         return thisAttribute->getValue();
-    }
-    
+	}
+
 }
 
 // Include template specialization

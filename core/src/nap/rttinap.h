@@ -1,8 +1,9 @@
 #pragma once
 
 // Local Includes
-#include "arrayattribute.h"
 #include "attribute.h"
+#include "arrayattribute.h"
+#include "compoundattribute.h"
 #include "plug.h"
 
 /**

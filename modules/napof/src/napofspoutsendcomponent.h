@@ -31,7 +31,7 @@ namespace nap
 		virtual void onUpdate()	override;
 		
 		// Slots
-		NSLOT(mNameChanged, const std::string&, nameChanged)
+		NSLOT(mNameChanged, AttributeBase&, nameChanged)
 
 	private:
 		// Spout send object
@@ -39,7 +39,7 @@ namespace nap
 		const ofTexture* mSendTexture = nullptr;
 
 		// Initializes the spout sender with the new name
-		void nameChanged(const std::string& inName);
+		void nameChanged(AttributeBase& inName);
 	};
 }
 

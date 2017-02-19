@@ -13,14 +13,14 @@ namespace nap
 	**/
 	OFVideoComponent::OFVideoComponent()
 	{
-		mASync.connectToValue(mSyncChanged);
-		mFile.connectToValue(mFileChanged);
+		mASync.valueChanged.connect(mSyncChanged);
+		mFile.valueChanged.connect(mFileChanged);
 
 		// Set video player
 #ifdef _WIN32
         mPlayer.setPlayer(std::make_shared<ofxDSHapVideoPlayer>());
 #endif
-		mPaused.valueChangedSignal.connect(this, &OFVideoComponent::onPausedChanged);
+		mPaused.valueChanged.connect(this, &OFVideoComponent::onPausedChanged);
 	}
 
 

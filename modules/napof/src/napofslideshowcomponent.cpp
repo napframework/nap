@@ -13,6 +13,11 @@ namespace nap
 {
     std::unordered_map<std::string, std::shared_ptr<ofImage>> OFSlideshowComponent::mImageCache;
 
+	OFSlideshowComponent::OFSlideshowComponent()
+	{
+		//imageFilenames.valueChanged.connect(onFileNamesChanged);
+	}
+
 	OFSlideshowComponent::~OFSlideshowComponent()
 	{
 		for (auto& image : mImages)
@@ -80,14 +85,15 @@ namespace nap
 	}
 
 
-	void OFSlideshowComponent::imageFilenamesChanged(const StringArray& filenames)
+	void OFSlideshowComponent::imageFilenamesChanged(AttributeBase& attr)
 	{
 		// clear all images and empty the array
 		for (auto& image : mImages)
 			image->clear();
 		mImages.clear();
 
-		for (auto& filename : filenames)
+		const std::vector<std::string>& names = imageFilenames.getValue();
+		for (const auto& filename : names)
 		{
 			// Make sure the file exists and isn't empty
 			if (filename.empty())
@@ -130,8 +136,9 @@ namespace nap
     }
 
 
-	void OFSlideshowComponent::leftImageIndexChanged(size_t index)
+	void OFSlideshowComponent::leftImageIndexChanged(AttributeBase& attr)
 	{
+		int index = attr.getValue<int>();
 		if (index < 0 || index >= mImages.size())
 		{
 			Logger::warn(getName() + " image index out of bounds");
@@ -147,8 +154,9 @@ namespace nap
 	}
 
 
-	void OFSlideshowComponent::rightImageIndexChanged(size_t index)
+	void OFSlideshowComponent::rightImageIndexChanged(AttributeBase& attr)
 	{
+		int index = attr.getValue<int>();
 		if (index < 0 || index >= mImages.size())
 		{
 			Logger::warn(getName() + " image index out of bounds");

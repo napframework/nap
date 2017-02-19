@@ -37,8 +37,8 @@ namespace nap
 		OFPlaneComponent();
 
 		// Attributes
-		Attribute<float>	mWidth{ this, "Width",  {1.0f} };
-		Attribute<float>	mHeight{ this, "Height", {1.0f} };
+		Attribute<float>	mWidth		{ this, "Width",  {1.0f} };
+		Attribute<float>	mHeight		{ this, "Height", {1.0f} };
 
 		// Utility
 		void  setWidth(float inWidth)	{ mWidth.setValue(inWidth); }
@@ -51,13 +51,13 @@ namespace nap
 		void getBounds(ofVec3f& OutMin, ofVec3f& OutMax) const override;
 
 		// Slots
-		NSLOT(mSizeChanged, const float&, SizeChanged)
+		NSLOT(mSizeChanged, AttributeBase&, SizeChanged)
 
 	private:
 		ofPlanePrimitive	mPlane;
 
 		void InitPlane();
-		void SizeChanged(const float& inValue) { InitPlane(); }
+		void SizeChanged(AttributeBase& inValue) { InitPlane(); }
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -85,11 +85,11 @@ namespace nap
 		void setColor(const ofFloatColor& inColor) { mColor.setValue(inColor); }
 
 		// Slots
-		NSLOT(mSizeChanged, const float&, loadFont)
+		NSLOT(mSizeChanged, AttributeBase&, loadFont)
 
 	private:
 		ofTrueTypeFont			mFont;
-		void loadFont(const float& inSize);
+		void loadFont(AttributeBase& attr);
 	};
 }
 

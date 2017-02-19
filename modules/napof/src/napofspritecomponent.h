@@ -95,8 +95,8 @@ namespace nap
 		int mColumnCount = 0;
 
 		// attribute slots
-		void spriteSizeChanged(const ofVec2i& size);
-		void indexChanged(const int& index);
+		void spriteSizeChanged(AttributeBase& size);
+		void indexChanged(AttributeBase& index);
 
 		void spriteSheetChanged();
 	};

@@ -1,4 +1,5 @@
 #include "layoutcomponent.h"
+#include <assert.h>
 
 RTTI_DEFINE(nap::LayoutComponent)
 
@@ -55,10 +56,21 @@ namespace nap
 	}
 
 
-	float LayoutComponent::pixelsToCmX(float inPixel) { return inPixel / ppcmX.getValue(); }
+	float LayoutComponent::pixelsToCmX(float inPixel) 
+	{ 
+		Attribute<float>* target_attr = ppcmX.getTarget<Attribute<float>>();
+		assert(target_attr != nullptr);
+		return inPixel / target_attr->getValue(); 
+	}
 
 
-	float LayoutComponent::pixelsToCmY(float inPixel) { return inPixel / ppcmY.getValue(); }
+	float LayoutComponent::pixelsToCmY(float inPixel) 
+	{ 
+		Attribute<float>* target_attr = ppcmY.getTarget<Attribute<float>>();
+		assert(target_attr != nullptr);
+		return inPixel / target_attr->getValue();
+	}
+
 
 	// Recursive function that allows children to perform a layout operation
 	// Before propagating it through

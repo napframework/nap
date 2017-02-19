@@ -4,6 +4,7 @@
 #include <nap/signalslot.h>
 #include <nap/component.h>
 #include <nap/coreattributes.h>
+#include <nap/arrayattribute.h>
 
 // Local Includes
 #include "napofupdatecomponent.h"
@@ -11,23 +12,25 @@
 // OF Includes
 #include <ofImage.h>
 
-namespace nap {
-
-	class OFSlideshowComponent : public OFUpdatableComponent {
+namespace nap 
+{
+	class OFSlideshowComponent : public OFUpdatableComponent 
+	{
 		RTTI_ENABLE_DERIVED_FROM(nap::OFUpdatableComponent)
 	public:
+		OFSlideshowComponent();
 		virtual ~OFSlideshowComponent();
 
 		// paths to all the images in the slide show
-		Attribute<StringArray> imageFilenames = { this, "imageFilenames", { }, &OFSlideshowComponent::imageFilenamesChanged };
+		ArrayAttribute<std::string> imageFilenames =				{ this, "imageFilenames", {} };
 
 		// pointers to textures of the currently displayed slides
-		Attribute<ofTexture*> leftTexture = { this, "leftTexture", nullptr };
-		Attribute<ofTexture*> rightTexture = { this, "rightTexture", nullptr };
+		Attribute<ofTexture*> leftTexture =							{ this, "leftTexture", nullptr };
+		Attribute<ofTexture*> rightTexture =						{ this, "rightTexture", nullptr };
 
 		// indices of the currently displayed images
-		Attribute<int> leftImageIndex = { this, "leftImageIndex", -1, &OFSlideshowComponent::leftImageIndexChanged };
-		Attribute<int> rightImageIndex = { this, "rightImageIndex", -1, &OFSlideshowComponent::rightImageIndexChanged };
+		Attribute<int> leftImageIndex =								{ this, "leftImageIndex", -1  };
+		Attribute<int> rightImageIndex =							{ this, "rightImageIndex", -1 };
 
 		// the intersection indicates the fractional x value where the left hand side and the right hand side images meet
 		Attribute<float> intersection = { this, "intersection", 0.f };
@@ -58,10 +61,14 @@ namespace nap {
 		// signal emitted when a different slide has been selected
 		Signal<int> slideChanged;
 
+		NSLOT(onFileNamesChanged, AttributeBase&, imageFilenamesChanged)
+		NSLOT(onLeftIndexChanged, AttributeBase&, leftImageIndexChanged)
+		NSLOT(onRightIndexChanged, AttributeBase&, rightImageIndexChanged)
+
 	private:
-		void imageFilenamesChanged(const StringArray& filenames);
-		void leftImageIndexChanged(size_t index);
-		void rightImageIndexChanged(size_t index);
+		void imageFilenamesChanged(AttributeBase&  filenames);
+		void leftImageIndexChanged(AttributeBase&  index);
+		void rightImageIndexChanged(AttributeBase& index);
 
         Attribute<int> currentSlide = { this, "currentSlide", 0 };
 
@@ -82,7 +89,6 @@ namespace nap {
 
 		State mState = State::IDLE;
 	};
-
 }
 
 RTTI_DECLARE(nap::OFSlideshowComponent)

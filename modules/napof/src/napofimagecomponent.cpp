@@ -10,7 +10,7 @@ namespace nap
 	**/
 	OFImageComponent::OFImageComponent() 
 	{ 
-		mFile.connectToValue(mFileChanged); 
+		mFile.valueChanged.connect(mFileChanged); 
 	}
 
 

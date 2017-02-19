@@ -43,7 +43,7 @@ namespace nap
 		void onUpdate() override {}
 
 		// Slots
-		NSLOT(mFileChanged, const std::string&, fileChanged)
+		NSLOT(mFileChanged, AttributeBase&, fileChanged)
 
 		Signal<ofImage&> imageChanged;
 
@@ -55,7 +55,7 @@ namespace nap
 		static std::unordered_map<std::string, std::shared_ptr<ofImage>> mImageCache;
 
 		// Occurs when the file changes
-		void fileChanged(const std::string& inName) { loadImage(); }
+		void fileChanged(AttributeBase& inName)		{ loadImage(); }
 
 		// Load
 		void loadImage();

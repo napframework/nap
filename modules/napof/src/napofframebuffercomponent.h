@@ -35,7 +35,7 @@ namespace nap
 		bool isAllocated () const				{ return mFrameBuffer.isAllocated(); }
 
 		// Slots
-		NSLOT(mResolutionChanged, const ofVec2i&, resolutionChanged)
+		NSLOT(mResolutionChanged, AttributeBase&, resolutionChanged)
 
 	protected:
 		// Only accessible by the OFService or derived classes
@@ -48,7 +48,7 @@ namespace nap
 		ofFbo::Settings	mSettings;
 
 		// Init of buffers
-		void resolutionChanged(const ofVec2i& inValue);
+		void resolutionChanged(AttributeBase& inValue);
 
 		// Allocates the buffer
 		void allocateBuffer();

@@ -6,7 +6,7 @@ namespace nap
 	OFFrameBufferComponent::OFFrameBufferComponent()
 	{
 		// Connect
-		Resolution.connectToValue(mResolutionChanged);
+		Resolution.valueChanged.connect(mResolutionChanged);
 		initBuffer();
 	}
 
@@ -33,10 +33,10 @@ namespace nap
 
 
 	// Sets the new width and height
-	void OFFrameBufferComponent::resolutionChanged(const ofVec2i& inValue)
+	void OFFrameBufferComponent::resolutionChanged(AttributeBase& inAttr)
 	{
-		mSettings.width  = inValue.x;
-		mSettings.height = inValue.y;
+		mSettings.width  = inAttr.getValue<ofVec2i>().x;
+		mSettings.height = inAttr.getValue<ofVec2i>().y;
 		allocateBuffer();
 	}
 

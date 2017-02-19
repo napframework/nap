@@ -11,9 +11,10 @@ namespace nap
 		RTTI_ENABLE_DERIVED_FROM(Component)
 	public:
 		LayoutComponent() : Component(), bounds(this, "Bounds", Rect()) {
-			added.connect([&](Object& owner) {
-				ppcmX.link(*getRoot()->getOrCreateAttribute<float>("ppcmX", 36));
-				ppcmY.link(*getRoot()->getOrCreateAttribute<float>("ppcmY", 36));
+			added.connect([&](Object& owner) 
+			{
+				ppcmX.setValue(*(getRoot()->getOrCreateAttribute<float>("ppcmX", 36)));
+				ppcmY.setValue(*(getRoot()->getOrCreateAttribute<float>("ppcmY", 36)));
 			});
 		}
 		LayoutComponent(const LayoutComponent& other) = delete;
@@ -52,8 +53,8 @@ namespace nap
 		Attribute<float> ratio = { this, "Ratio", 1.0f };
 
 		// Pixels per centimeter
-		Attribute<float> ppcmX = { this, "ppcmX" };
-		Attribute<float> ppcmY = { this, "ppcmY" };
+		ObjectLinkAttribute ppcmX = { this, "ppcmX", RTTI_OF(Attribute<float>) };
+		ObjectLinkAttribute ppcmY = { this, "ppcmY", RTTI_OF(Attribute<float>) };
 
 		// Relative depth offset this item should get relative to it's parent
 		Attribute<float> mDepthOffset = { this, "depthOffset", 0 };

@@ -53,7 +53,7 @@ namespace nap
 		bool isLoaded() const																{ return mOFShader.isLoaded();  }
 
 		//@name Slots
-		NSLOT(mShaderChanged, const std::string&, shaderChanged)
+		NSLOT(mShaderChanged, AttributeBase&, shaderChanged)
 
 		//@Name Binding
 		void bind();
@@ -72,7 +72,7 @@ namespace nap
 		///@name Shader
 		ofShader			mOFShader;
 
-		void shaderChanged(const std::string&);
+		void shaderChanged(AttributeBase& attr);
 
 		// called when a new attribute is created to register it as a shader binding
 		void onChildAdded(nap::Object& object)

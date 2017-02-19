@@ -94,12 +94,16 @@ namespace nap
 	}
 
 
-	void OFSpriteComponent::spriteSizeChanged(const ofVec2i& size) { spriteSheetChanged(); }
+	void OFSpriteComponent::spriteSizeChanged(AttributeBase& size) 
+	{ 
+		spriteSheetChanged(); 
+	}
 
 
-	void OFSpriteComponent::indexChanged(const int& newIndex)
+	void OFSpriteComponent::indexChanged(AttributeBase& attr)
 	{
-		if (index.getValue() >= mSpriteCount) {
+		if (index.getValue() >= mSpriteCount) 
+		{
 			Logger::warn(*this, "Sprite index (%d) exceeds sprite count (%d)", 
 				index.getValue(), mSpriteCount);
 			index.getValueRef() = mSpriteCount - 1;

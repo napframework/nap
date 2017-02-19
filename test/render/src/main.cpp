@@ -68,6 +68,7 @@ static nap::ImageResource* pigTexture = nullptr;
 static const std::string worldTextureName = "data/world_texture.jpg";
 static nap::ImageResource* worldTexture = nullptr;
 static float movementScale = 3.0f;
+static float rotateScale = 3.0f;
 
 // Nap Objects
 nap::RenderService* renderService = nullptr;
@@ -86,6 +87,10 @@ bool moveForward = false;
 bool moveBackward = false;
 bool moveLeft = false;
 bool moveRight = false;
+bool lookUp = false;
+bool lookDown = false;
+bool lookLeft = false;
+bool lookRight = false;
 
 // vertex Shader indices
 nap::Entity* model  = nullptr;
@@ -114,7 +119,7 @@ void onUpdate(const nap::SignalAttribute& signal)
 	nap::TransformComponent* xform_s = sphereComponent->getParent()->getComponent<nap::TransformComponent>();
 
 	// Get rotation angle
-	float rot_speed = 0.1f;
+	float rot_speed = 1.0f;
 	float rot_angle = elapsed_time * 360.0f * rot_speed;
 	float rot_angle_radians = glm::radians(rot_angle);
 
@@ -194,6 +199,9 @@ void updateCamera()
 {
 	float elapsed_time = renderWindow->getDeltaTimeFloat();
 	float movement = movementScale * elapsed_time;
+	float rotate = rotateScale * elapsed_time;
+	float rotate_rad = rotate;
+
 
 	nap::TransformComponent* cam_xform = cameraComponent->getParent()->getComponent<nap::TransformComponent>();
 	if (moveForward)
@@ -211,6 +219,30 @@ void updateCamera()
 	if (moveRight)
 	{
 		cam_xform->translate.setValue(cam_xform->translate.getValue() + glm::vec3(movement, 0.0f, 0.0f));
+	}
+	if (lookUp)
+	{
+		glm::quat r = nap::vectorToQuat(cam_xform->rotate.getValue());
+		glm::quat nr = glm::rotate(r, rotate_rad, glm::vec3(1.0, 0.0, 0.0));
+		cam_xform->rotate.setValue(nap::quatToVector(nr));
+	}
+	if (lookDown)
+	{
+		glm::quat r = nap::vectorToQuat(cam_xform->rotate.getValue());
+		glm::quat nr = glm::rotate(r, -1.0f * rotate_rad, glm::vec3(1.0, 0.0, 0.0));
+		cam_xform->rotate.setValue(nap::quatToVector(nr));
+	}
+	if (lookRight)
+	{
+		glm::quat r = nap::vectorToQuat(cam_xform->rotate.getValue());
+		glm::quat nr = glm::rotate(r, rotate_rad, glm::vec3(0.0, 0.0, 1.0));
+		cam_xform->rotate.setValue(nap::quatToVector(nr));
+	}
+	if (lookRight)
+	{
+		glm::quat r = nap::vectorToQuat(cam_xform->rotate.getValue());
+		glm::quat nr = glm::rotate(r, -1.0f*rotate_rad, glm::vec3(0.0, 0.0, 1.0));
+		cam_xform->rotate.setValue(nap::quatToVector(nr));
 	}
 }
 
@@ -428,7 +460,7 @@ void runGame(nap::Core& core)
 	opengl::enableMultiSampling(true);
 	opengl::setLineWidth(1.3f);
 	opengl::setPointSize(2.0f);
-	opengl::setPolygonMode(opengl::PolygonMode::FILL);
+	opengl::setPolygonMode(opengl::PolygonMode::LINE);
 
 	// Loop
 	while (loop)
@@ -489,6 +521,26 @@ void runGame(nap::Core& core)
 					moveRight = true;
 					break;
 				}
+				case SDLK_UP:
+				{
+					lookUp = true;
+					break;
+				}
+				case SDLK_DOWN:
+				{
+					lookDown = true;
+					break;
+				}
+				case SDLK_LEFT:
+				{
+					lookLeft = true;
+					break;
+				}
+				case SDLK_RIGHT:
+				{
+					lookRight = true;
+					break;
+				}
 				default:
 					break;
 				}
@@ -516,6 +568,26 @@ void runGame(nap::Core& core)
 				case SDLK_d:
 				{
 					moveRight = false;
+					break;
+				}
+				case SDLK_UP:
+				{
+					lookUp = false;
+					break;
+				}
+				case SDLK_DOWN:
+				{
+					lookDown = false;
+					break;
+				}
+				case SDLK_LEFT:
+				{
+					lookLeft = false;
+					break;
+				}
+				case SDLK_RIGHT:
+				{
+					lookRight = false;
 					break;
 				}
 				default:

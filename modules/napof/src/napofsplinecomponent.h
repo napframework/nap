@@ -77,17 +77,17 @@ namespace nap
 		Signal<const Object&>		mSplineUpdated;
 
 		// Create slot
-		NSLOT(mTypeChangedSlot,  const SplineType&, SplineTypeChanged)
-		NSLOT(mSizeChangedSlot,  const float&,		SplineSizeChanged)
-		NSLOT(mCountChangedSlot, const int&,		SplineCountChanged)
-		NSLOT(mIndexChangedSlot, const int&, 		SplineIndexChanged)
+		NSLOT(mTypeChangedSlot,  AttributeBase&, SplineTypeChanged)
+		NSLOT(mSizeChangedSlot,  AttributeBase&, SplineSizeChanged)
+		NSLOT(mCountChangedSlot, AttributeBase&, SplineCountChanged)
+		NSLOT(mIndexChangedSlot, AttributeBase&, SplineIndexChanged)
 
 	private:
 		// Slot functions
-		void SplineTypeChanged(const SplineType& inType)		{ if (mAutoUpdate.getValue()) { CreateAndUpdateSpline(); } }
-		void SplineSizeChanged(const float& inSize)				{ if (mAutoUpdate.getValue()) { CreateAndUpdateSpline(); } }
-		void SplineCountChanged(const int& inCount)				{ if (mAutoUpdate.getValue()) { CreateAndUpdateSpline(); } }
-		void SplineIndexChanged(const int& idx)					{ mSplineType.setValue((SplineType)(idx)); }
+		void SplineTypeChanged(AttributeBase& attr)		{ if (mAutoUpdate.getValue()) { CreateAndUpdateSpline(); } }
+		void SplineSizeChanged(AttributeBase& attr)		{ if (mAutoUpdate.getValue()) { CreateAndUpdateSpline(); } }
+		void SplineCountChanged(AttributeBase& attr)	{ if (mAutoUpdate.getValue()) { CreateAndUpdateSpline(); } }
+		void SplineIndexChanged(AttributeBase& attr)	{ mSplineType.setValue((SplineType)(attr.getValue<int>())); }
 
 		// Creates a new spline and sets it
 		void CreateAndUpdateSpline();
@@ -95,8 +95,8 @@ namespace nap
 		// Spline dependency
 		ComponentDependency<OFSplineComponent>	mSpline			{ this };
 
-		NSLOT(mAutoUpdateCalled, const bool&, autoUpdateChaged)
-		void autoUpdateChaged(const bool& value)				{ if (value) { CreateAndUpdateSpline(); } }
+		NSLOT(mAutoUpdateCalled, AttributeBase&, autoUpdateChaged)
+		void autoUpdateChaged(AttributeBase& attr)				{ if (attr.getValue<bool>()) { CreateAndUpdateSpline(); } }
 	};
 
 
@@ -122,23 +122,23 @@ namespace nap
 		NumericAttribute<int> mSplineCount					{ this, "PointCount", 500, 100, 1000 };
 
 		// SLOTS
-		NSLOT(mFileChangedSlot, const std::string&, fileChanged)
-		NSLOT(mCountChangedSlot, const int&, countChanged)
+		NSLOT(mFileChangedSlot, AttributeBase&, fileChanged)
+		NSLOT(mCountChangedSlot, AttributeBase&, countChanged)
 		NSLOT(mReloadCalled, const SignalAttribute&, reloadCalled)
 		NSLOT(mBrowseCalled, const SignalAttribute&, browseCalled)
-		NSLOT(mSizeCalled, const float&, sizeChanged)
-		NSLOT(mAutoUpdateCalled, const bool&, autoUpdateChaged)
+		NSLOT(mSizeCalled, AttributeBase&, sizeChanged)
+		NSLOT(mAutoUpdateCalled, AttributeBase&, autoUpdateChaged)
 
 		// Signals
 		Signal<const Object&>		mSplineUpdated;
 
 	private:
-		void fileChanged(const std::string& file)			{ if (mAutoUpdate.getValue()) { createAndUpdateSpline(); } }
-		void countChanged(const int& count)					{ if (mAutoUpdate.getValue()) { createAndUpdateSpline(); } }
-		void sizeChanged(const float& size)					{ if (mAutoUpdate.getValue()) { createAndUpdateSpline(); } }
-		void reloadCalled(const SignalAttribute&)			{ createAndUpdateSpline(); }
+		void fileChanged(AttributeBase& file)			{ if (mAutoUpdate.getValue())	{ createAndUpdateSpline(); } }
+		void countChanged(AttributeBase& count)			{ if (mAutoUpdate.getValue())	{ createAndUpdateSpline(); } }
+		void sizeChanged(AttributeBase& size)			{ if (mAutoUpdate.getValue())	{ createAndUpdateSpline(); } }
+		void reloadCalled(const SignalAttribute&)		{ createAndUpdateSpline(); }
 		void browseCalled(const SignalAttribute&);
-		void autoUpdateChaged(const bool& value)			{ if (value) { createAndUpdateSpline(); } }
+		void autoUpdateChaged(AttributeBase& attr)		{ if (attr.getValue<bool>())	{ createAndUpdateSpline(); } }
 
 		// Creates and updates the spline based on file and count
 		void createAndUpdateSpline();

@@ -44,14 +44,14 @@ namespace nap
 		const SplineColorData&	getColors() { return mTraceSpline.GetColorDataRef(); }
 
 		// Create slot
-		NSLOT(mCountChanged, const int&, UpdateTraceBuffer)
+		NSLOT(mCountChanged, AttributeBase&, UpdateTraceBuffer)
 
 	private:
 		// Spline to populate and draw
 		NSpline						mTraceSpline;
 
 		// Updates the trace spline buffer
-		void						UpdateTraceBuffer(const int& inCount);
+		void						UpdateTraceBuffer(AttributeBase& attr);
 
 		// Time variables
 		float						mTime = 0.0f;

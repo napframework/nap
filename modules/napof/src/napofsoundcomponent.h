@@ -41,15 +41,15 @@ namespace nap
 		void setVolume(float inValue)		{ mPlayer.setVolume(inValue); }
 
 		// Slots
-		NSLOT(mFileChanged, const std::string&, fileChanged)
-		NSLOT(mStreamChanged, const bool&, streamChanged)
+		NSLOT(mFileChanged,	AttributeBase&, fileChanged)
+		NSLOT(mStreamChanged, AttributeBase&, streamChanged)
 
 	private:
 		ofSoundPlayer	mPlayer;
 
 		// Callbacks
-		void fileChanged(const std::string& inFile)	{ loadFile(); }
-		void streamChanged(const bool& inValue)		{ loadFile(); }
+		void fileChanged(AttributeBase& inFile)			{ loadFile(); }
+		void streamChanged(AttributeBase& inValue)		{ loadFile(); }
 
 		// Load
 		void loadFile();

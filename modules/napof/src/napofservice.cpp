@@ -69,7 +69,7 @@ namespace nap
 		if (inObject.getTypeInfo().isKindOf(RTTI_OF(OFRenderableComponent)))
 		{
 			OFRenderableComponent& render_comp = static_cast<OFRenderableComponent&>(inObject);
-			render_comp.mEnableDrawing.connectToValue(mDisplayChanged);
+			render_comp.mEnableDrawing.valueChanged.connect(mDisplayChanged);
 		}
 	}
 
@@ -215,7 +215,7 @@ namespace nap
 
 
 	// When the drawing mode of a component changes, update the display list
-	void OFService::visibilityChanged(const bool& inValue)
+	void OFService::visibilityChanged(AttributeBase& inValue)
 	{
 		isDirtyDrawing = true;
 	}

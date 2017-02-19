@@ -80,7 +80,7 @@ namespace nap
 	OFRotateComponent::OFRotateComponent()
 	{
 		mPreviousTime = ofGetElapsedTimef();
-		mEnableUpdates.valueChangedSignal.connect(mUpdateCalled);
+		mEnableUpdates.valueChanged.connect(mUpdateCalled);
 		mReset.signal.connect(mResetCalled);
 		mSpeed.setClamped(false);
 	}
@@ -138,7 +138,7 @@ namespace nap
 	/**
 	@brief Stores the last time stamp so rotation continues where it left off
 	**/
-	void OFRotateComponent::onUpdateChanged(const bool& value)
+	void OFRotateComponent::onUpdateChanged(AttributeBase& value)
 	{
 		mPreviousTime = ofGetElapsedTimef();
 	}
@@ -155,7 +155,7 @@ namespace nap
 
 		// Connect
 		mReset.signal.connect(mResetCalled);
-		mEnableUpdates.valueChangedSignal.connect(mUpdateCalled);
+		mEnableUpdates.valueChanged.connect(mUpdateCalled);
 	}
 
 
@@ -246,7 +246,7 @@ namespace nap
 	/**
 	@brief Updates the time
 	**/
-	void OFScaleComponent::onUpdateChanged(const bool& value)
+	void OFScaleComponent::onUpdateChanged(AttributeBase& value)
 	{
 		mPreviousTime = ofGetElapsedTimef();
 	}

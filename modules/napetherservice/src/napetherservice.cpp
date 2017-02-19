@@ -89,6 +89,7 @@ namespace nap
 			return;
 
 		// Make sure it's an entity
+		// laser_cam->mRenderEntity.getTarget<Entity>();
 		Entity* spline_entity = laser_cam->mRenderEntity.getTarget<Entity>();
 
 		// Component to draw

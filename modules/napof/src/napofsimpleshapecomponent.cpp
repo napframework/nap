@@ -22,8 +22,8 @@ namespace nap
 	OFPlaneComponent::OFPlaneComponent()
 	{
 		// Connect attributes
-		mWidth.connectToValue(mSizeChanged);
-		mHeight.connectToValue(mSizeChanged);
+		mWidth.valueChanged.connect(mSizeChanged);
+		mHeight.valueChanged.connect(mSizeChanged);
 
 		// Init plane
 		InitPlane();
@@ -66,16 +66,16 @@ namespace nap
 	**/
 	OFTextComponent::OFTextComponent()
 	{
-		loadFont(mSize.getValue());
-		mSize.connectToValue(mSizeChanged);
+		loadFont(mSize);
+		mSize.valueChanged.connect(mSizeChanged);
 	}
 
 	/**
 	@brief Loads the font
 	**/
-	void OFTextComponent::loadFont(const float& inSize)
+	void OFTextComponent::loadFont(AttributeBase& attr)
 	{
-		mFont.loadFont("Arial", inSize);
+		mFont.loadFont("Arial", attr.getValue<float>());
 		assert(mFont.isLoaded());
 	}
 

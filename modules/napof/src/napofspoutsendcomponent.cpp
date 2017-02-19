@@ -5,14 +5,14 @@ namespace nap
 	// Default constructor
 	OFSpoutSenderComponent::OFSpoutSenderComponent() : mSender("SpoutSender")
 	{
-		mSenderName.connectToValue(mNameChanged);
+		mSenderName.valueChanged.connect(mNameChanged);
 	}
 
 
 	// Occurs when the name changes
-	void OFSpoutSenderComponent::nameChanged(const std::string& inName)
+	void OFSpoutSenderComponent::nameChanged(AttributeBase& attr)
 	{
-		mSender.SetName(inName);
+		mSender.SetName(attr.getValue<std::string>());
 	}
 
 

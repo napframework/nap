@@ -11,8 +11,8 @@ namespace nap
 	OFPlaySoundComponent::OFPlaySoundComponent()
 	{
 		// Connect signals / slots
-		mFile.connectToValue(mFileChanged);
-		mStream.connectToValue(mStreamChanged);
+		mFile.valueChanged.connect(mFileChanged);
+		mStream.valueChanged.connect(mStreamChanged);
 	}
 
 

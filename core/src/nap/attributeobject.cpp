@@ -32,7 +32,15 @@ namespace nap
     }
 
 
-	AttributeBase *AttributeObject::getOrCreateAttribute(const std::string &name, const RTTI::TypeInfo &valueType) 
+	ObjectLinkAttribute& AttributeObject::addObjectLinkAttribute(const std::string& name, const RTTI::TypeInfo& type)
+	{
+		ObjectLinkAttribute& object_link = addChild<ObjectLinkAttribute>(name);
+		object_link.setTargetType(type);
+		return object_link;
+	}
+
+
+	AttributeBase *AttributeObject::getOrCreateAttribute(const std::string &name, const RTTI::TypeInfo &valueType)
 	{
 		auto attribute = getAttribute(name);
 

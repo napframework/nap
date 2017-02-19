@@ -19,10 +19,10 @@ namespace nap
 		mPreviousTime = ofGetElapsedTimef();
 
 		// Connect signals / slots
-		mCount.connectToValue(mCountChanged);
+		mCount.valueChanged.connect(mCountChanged);
 
 		// Create buffer
-		UpdateTraceBuffer(mCount.getValue());
+		UpdateTraceBuffer(mCount);
 
 		// Disable alpha blending
 		mAlphaBlending.setValue(false);
@@ -115,14 +115,14 @@ namespace nap
 	/**
 	@brief Updates the trace buffer (NSpline) based on the points in the 
 	**/
-	void OFTraceComponent::UpdateTraceBuffer(const int& inCount)
+	void OFTraceComponent::UpdateTraceBuffer(AttributeBase& attr)
 	{
 		// Create poly line
 		ofPolyline line;
 
 		// Create vertices
 		std::vector<ofPoint> vertices;
-		vertices.resize(inCount);
+		vertices.resize(attr.getValue<int>());
 		line.addVertices(vertices);
 
 		// Set line as buffer, created additional buffers on the fly

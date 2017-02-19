@@ -38,7 +38,7 @@ namespace nap
 		 * is not derived from the target type the result will be a null ptr
 		 */
 		template <typename T>
-		T* getTarget() 										{ return rtti_cast<T*>(getTarget()); }
+		T* getTarget() 										{ return rtti_cast<T>(getTarget()); }
 
 		/**
 		 * Set the link to point @target

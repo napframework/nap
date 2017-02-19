@@ -16,7 +16,7 @@ namespace nap
 		mSpline.getValueRef().SetPolyLine(inPolyline);
 
 		// Trigger update
-		mSpline.emitValueChanged();
+		mSpline.valueChanged.trigger(mSpline);
 	}
 
 
@@ -43,11 +43,11 @@ namespace nap
 	**/
 	OFSplineSelectionComponent::OFSplineSelectionComponent()
 	{
-		mSplineType.connectToValue(mTypeChangedSlot);
-		mSplineSize.connectToValue(mSizeChangedSlot);
-		mSplineCount.connectToValue(mCountChangedSlot);
-		mSplineIndex.connectToValue(mIndexChangedSlot);
-		mAutoUpdate.connectToValue(mAutoUpdateCalled);
+		mSplineType.valueChanged.connect(mTypeChangedSlot);
+		mSplineSize.valueChanged.connect(mSizeChangedSlot);
+		mSplineCount.valueChanged.connect(mCountChangedSlot);
+		mSplineIndex.valueChanged.connect(mIndexChangedSlot);
+		mAutoUpdate.valueChanged.connect(mAutoUpdateCalled);
 	}
 
 
@@ -220,13 +220,13 @@ namespace nap
 	// Constructor
 	OFSplineFromFileComponent::OFSplineFromFileComponent()
 	{
-		mFile.valueChangedSignal.connect(mFileChangedSlot);
-		mSplineCount.valueChangedSignal.connect(mCountChangedSlot);
+		mFile.valueChanged.connect(mFileChangedSlot);
+		mSplineCount.valueChanged.connect(mCountChangedSlot);
 		mReload.signal.connect(mReloadCalled);
 		mBrowse.signal.connect(mBrowseCalled);
-		mSize.valueChangedSignal.connect(mSizeCalled);
+		mSize.valueChanged.connect(mSizeCalled);
 		mSize.setClamped(false);
-		mAutoUpdate.valueChangedSignal.connect(mAutoUpdateCalled);
+		mAutoUpdate.valueChanged.connect(mAutoUpdateCalled);
 	}
 
 

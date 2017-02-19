@@ -25,8 +25,8 @@ namespace nap
 
 
 		// Slots
-		NSLOT(mFileChanged, const std::string&, fileChanged)
-		NSLOT(mSyncChanged, const bool&, loadStateChanged)
+		NSLOT(mFileChanged, AttributeBase&, fileChanged)
+		NSLOT(mSyncChanged, AttributeBase&, loadStateChanged)
 
 		// Player
 		const ofVideoPlayer& getPlayer() const	{ return mPlayer; }
@@ -56,8 +56,9 @@ namespace nap
 		float getWidth()						{ return mPlayer.getWidth(); }
 		float getHeight()						{ return mPlayer.getHeight(); }
 
-		void onPausedChanged(const bool& b) {
-			pause(b);
+		void onPausedChanged(AttributeBase& attr) 
+		{
+			pause(attr.getValue<bool>());
 		}
 
 		// Override
@@ -79,8 +80,8 @@ namespace nap
         bool mHadHitLoopStart = false;
 
 		// Occurs when the file changes
-		void fileChanged(const std::string& inName)		{ loadVideo(); }
-		void loadStateChanged(const bool& inState)		{ loadVideo(); }
+		void fileChanged(AttributeBase& inName)		{ loadVideo(); }
+		void loadStateChanged(AttributeBase& inState)		{ loadVideo(); }
 
 		// Load the video
 		void loadVideo();

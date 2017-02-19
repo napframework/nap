@@ -101,8 +101,8 @@ namespace nap
 		XFormList	mTopXforms;
 
 		// When the drawing mode changes update display list
-		void visibilityChanged(const bool& inValue);
-		NSLOT(mDisplayChanged, const bool&, visibilityChanged)
+		void visibilityChanged(AttributeBase& inValue);
+		NSLOT(mDisplayChanged, AttributeBase&, visibilityChanged)
 	};
 }
 

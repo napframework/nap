@@ -32,16 +32,16 @@ namespace nap
 		virtual void onUpdate() override;
 
 		// Attributes
-		NumericAttribute<float>	mFrequency =	{ this, "Frequency", 1.0f, 1.0f, 100.0f };
-		NumericAttribute<float>	mSpeed =		{ this, "Speed", 0.0f, 0.0f, 1.0f };
-		NumericAttribute<float>	mOffset =		{ this, "Offset", 0.0f, 0.0f, 1.0f };
-		NumericAttribute<float>	mAmplitude =	{ this, "Amplitude", 0.0f, 0.0f, 10.0f };
-		Attribute<LfoType> mType =				{ this, "Type", LfoType::Sine };
-		NumericAttribute<int> mIndex =			{ this, "LfoIndex", 0, 0, (int)LfoType::Max };
+		NumericAttribute<float>	mFrequency =		{ this, "Frequency", 1.0f, 1.0f, 100.0f };
+		NumericAttribute<float>	mSpeed =			{ this, "Speed", 0.0f, 0.0f, 1.0f };
+		NumericAttribute<float>	mOffset =			{ this, "Offset", 0.0f, 0.0f, 1.0f };
+		NumericAttribute<float>	mAmplitude =		{ this, "Amplitude", 0.0f, 0.0f, 10.0f };
+		Attribute<LfoType> mType =					{ this, "Type", LfoType::Sine };
+		NumericAttribute<int> mIndex =				{ this, "LfoIndex", 0, 0, (int)LfoType::Max };
 
 		// Slots
-		void indexChanged(const int& idx)		{ mType.setValue(static_cast<LfoType>(idx)); }
-		NSLOT(mIndexChanged, const int&, indexChanged)
+		void indexChanged(AttributeBase& attr)		{ mType.setValue(static_cast<LfoType>(attr.getValue<int>())); }
+		NSLOT(mIndexChanged, AttributeBase&, indexChanged)
 
 	private:
 		float mTime = 0.0f;

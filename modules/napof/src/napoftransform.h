@@ -85,9 +85,9 @@ namespace nap
 
 		// SLOTS
 		void onReset(const SignalAttribute& signal);			//< Resets the rotatation
-		void onUpdateChanged(const bool& value);				//< Stores the last time stamp
+		void onUpdateChanged(AttributeBase& value);				//< Stores the last time stamp
 		NSLOT(mResetCalled, const SignalAttribute&, onReset)
-		NSLOT(mUpdateCalled, const bool&, onUpdateChanged)
+		NSLOT(mUpdateCalled, AttributeBase&, onUpdateChanged)
 	};
 
 
@@ -121,9 +121,9 @@ namespace nap
 
 		// SLOTS
 		void onReset(const SignalAttribute& signal);			//< Resets the rotatation
-		void onUpdateChanged(const bool& value);				//< Stores the last time stamp
+		void onUpdateChanged(AttributeBase& value);				//< Stores the last time stamp
 		NSLOT(mResetCalled, const SignalAttribute&, onReset)
-		NSLOT(mUpdateCalled, const bool&, onUpdateChanged)
+		NSLOT(mUpdateCalled, AttributeBase&, onUpdateChanged)
 
 		// Component dependency on transform
 		ComponentDependency<OFTransform> mDependency{ this };

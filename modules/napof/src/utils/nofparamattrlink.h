@@ -64,10 +64,10 @@ protected:
 private:
 	// Callbacks
 	void				parameterValueChanged(T& value);
-	void				attributeValueChanged(const T& value);
+	void				attributeValueChanged(nap::AttributeBase& value);
 
 	// SLOTS
-	NSLOT(mAttributeValueChanged, const T&, attributeValueChanged)    
+	NSLOT(mAttributeValueChanged, nap::AttributeBase&, attributeValueChanged)    
 };
 
 
@@ -130,7 +130,7 @@ OFParamAttrLink<T>::OFParamAttrLink(ofParameter<T>& param, nap::Attribute<T>& at
 	OFAbstractParamAttrLink(param, attribute)
 {
 	param.addListener(this, &OFParamAttrLink<T>::parameterValueChanged);
-	attribute.valueChangedSignal.connect(mAttributeValueChanged);
+	attribute.valueChanged.connect(mAttributeValueChanged);
 }
 
 
@@ -145,14 +145,14 @@ OFParamAttrLink<T>::~OFParamAttrLink()
 @brief When the attribute changes, update the parameter
 **/
 template<typename T>
-void OFParamAttrLink<T>::attributeValueChanged(const T& value)
+void OFParamAttrLink<T>::attributeValueChanged(nap::AttributeBase& attr)
 {
 	if (mParameter == nullptr)
 	{
 		assert(false);
 		return;
 	}
-	getParameter()->set(value);
+	getParameter()->set(attr.getValue<T>());
 }
 
 
@@ -187,7 +187,7 @@ void OFParamAttrLink<T>::stopListening()
 template<typename T>
 void OFParamAttrLink<T>::attributeChanged(nap::AttributeBase& new_attr)
 {
-	getAttribute()->valueChangedSignal.disconnect(mAttributeValueChanged);
+	getAttribute()->valueChanged.disconnect(mAttributeValueChanged);
 }
 
 

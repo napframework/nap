@@ -11,7 +11,7 @@ namespace nap
 	**/
 	OFSimpleCamComponent::OFSimpleCamComponent()
 	{
-		mOrthographic.connectToValue(mOrthoModeChanged);
+		mOrthographic.valueChanged.connect(mOrthoModeChanged);
 	}
 
 

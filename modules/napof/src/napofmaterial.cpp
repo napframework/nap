@@ -16,7 +16,7 @@ namespace nap
 	**/
 	OFMaterial::OFMaterial()
 	{
-		mShader.connectToValue(mShaderChanged);
+		mShader.valueChanged.connect(mShaderChanged);
 		childAdded.connect(this, &OFMaterial::onChildAdded);
 		childRemoved.connect(this, &OFMaterial::onChildRemoved);
 	}
@@ -36,15 +36,17 @@ namespace nap
 	/**
 	@brief Loads in the new shader
 	**/
-	void OFMaterial::shaderChanged(const std::string& inString)
+	void OFMaterial::shaderChanged(AttributeBase& attr)
 	{
 		if (mOFShader.isLoaded())
 		{
 			mOFShader.unload();
 		}
 
-		if (!mOFShader.load(inString))
+		if (!mOFShader.load(attr.getValue<std::string>()))
+		{
 			Logger::warn("Unable to load shader" + mShader.getValue());
+		}
 	}
 
 

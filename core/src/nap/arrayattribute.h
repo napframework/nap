@@ -61,7 +61,7 @@ namespace nap
         ArrayAttribute(AttributeObject* parent, const std::string& name, const std::vector<T>& inValue, bool atomic = false)
         : ArrayAttributeBase(parent, name, atomic), mValue(inValue)
         {
-            setValueSlot.setFunction({ [this](const T& value) { this->setValue(value); } });
+            setValueSlot.setFunction({ [this](const std::vector<T>& value) { this->setValue(value); } });
         }
         
         // Constructor without default value
@@ -76,7 +76,7 @@ namespace nap
         : ArrayAttributeBase(parent, name, atomic), mValue(inValue)
         {
             setValueSlot.setFunction({ [this](const std::vector<T>& value) { this->setValue(value); } });
-            valueChangedSignal.connect(parent, function);
+            valueChanged.connect(parent, function);
         }
         
         virtual const RTTI::TypeInfo getValueType() const override;
@@ -106,8 +106,6 @@ namespace nap
         const typename std::vector<T>::iterator begin() { return mValue.begin(); }
         const typename std::vector<T>::iterator end() { return mValue.end(); }
         
-        // Signal emited when the value changes
-        Signal<const std::vector<T>&>	valueChangedSignal;
         // This slot will be invoked when the value is set
         Slot<const std::vector<T>&>		setValueSlot;
         
@@ -170,9 +168,7 @@ namespace nap
     void ArrayAttribute<T>::setValue(const std::vector<T>& inValue)
     {
         mValue = inValue;
-        
         valueChanged(*this);
-        valueChangedSignal(mValue);
     }
     
     
@@ -186,7 +182,6 @@ namespace nap
         mValue = in_attr.mValue;
         
         valueChanged(*this);
-        valueChangedSignal(mValue);
     }
     
     
@@ -196,7 +191,6 @@ namespace nap
         mValue[index] = inValue;
         
         valueChanged(*this);
-        valueChangedSignal(mValue);
     }
     
     
@@ -205,8 +199,7 @@ namespace nap
     {
         mValue.emplace_back(element);
         
-        valueChanged(*this);
-        valueChangedSignal(mValue);        
+        valueChanged(*this); 
     }
     
     
@@ -218,7 +211,6 @@ namespace nap
         mValue.insert(it, element);
         
         valueChanged(*this);
-        valueChangedSignal(mValue);
     }
     
     
@@ -230,7 +222,6 @@ namespace nap
         mValue.erase(it);
         
         valueChanged(*this);
-        valueChangedSignal(mValue);
     }
     
     
@@ -238,9 +229,7 @@ namespace nap
     void ArrayAttribute<T>::clear()
     {
         mValue.clear();
-        
         valueChanged(*this);
-        valueChangedSignal(mValue);
     }
     
     

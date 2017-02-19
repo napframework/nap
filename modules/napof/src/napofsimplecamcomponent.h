@@ -53,17 +53,17 @@ namespace nap
 		void								setDistance(float inValue);
 		void								setFarClip(float inValue);
 		void								setNearClip(float inValue);
-		ofVec3f								getGlobalPosition() const { return mCamera.getValue().getGlobalPosition(); }
+		ofVec3f								getGlobalPosition() const						{ return mCamera.getValue().getGlobalPosition(); }
 
 		//@name Control
-		void								enableMouseInput(bool inValue) { inValue ? mCamera.getValueRef().enableMouseInput() : mCamera.getValueRef().disableMouseInput(); }
+		void								enableMouseInput(bool inValue)					{ inValue ? mCamera.getValueRef().enableMouseInput() : mCamera.getValueRef().disableMouseInput(); }
 
 		// Slots
-		NSLOT(mOrthoModeChanged, const bool&, orthoModeChanged)
+		NSLOT(mOrthoModeChanged, AttributeBase&, orthoModeChanged)
 
 	private:
 		void								setProjectionMode(ProjectionMode inMode);
-		void orthoModeChanged(const bool& inValue) { setProjectionMode(inValue ? ProjectionMode::Orthographic : ProjectionMode::Perspective); }
+		void orthoModeChanged(AttributeBase& attr)											{ setProjectionMode(attr.getValue<bool>() ? ProjectionMode::Orthographic : ProjectionMode::Perspective); }
 	};
 
 	// Type converters

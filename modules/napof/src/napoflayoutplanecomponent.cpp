@@ -38,11 +38,17 @@ namespace nap {
 			{
 				Margins margins = mLayoutComponent->margins.getValue();
 
+				Attribute<float>* ppcmx_attr = mLayoutComponent->ppcmX.getTarget<Attribute<float>>();
+				Attribute<float>* ppcmy_attr = mLayoutComponent->ppcmY.getTarget<Attribute<float>>();
+				
+				assert(ppcmx_attr != nullptr);
+				assert(ppcmy_attr != nullptr);
+
 				// Convert margins from cm to pixels
-				margins.setLeft(margins.getLeft() * mLayoutComponent->ppcmX.getValue());
-				margins.setTop(margins.getTop() * mLayoutComponent->ppcmY.getValue());
-				margins.setRight(margins.getRight() * mLayoutComponent->ppcmX.getValue());
-				margins.setBottom(margins.getBottom() * mLayoutComponent->ppcmY.getValue());
+				margins.setLeft(margins.getLeft() * ppcmx_attr->getValue());
+				margins.setTop(margins.getTop() * ppcmy_attr->getValue());
+				margins.setRight(margins.getRight() * ppcmx_attr->getValue());
+				margins.setBottom(margins.getBottom() * ppcmy_attr->getValue());
 
 				ofSetColor(0xFF, 0x00, 0xFF, 0x88);
 				ofDrawRectangle(
@@ -78,8 +84,14 @@ namespace nap {
 		
 		Rect rect = mLayoutComponent->getBounds();
 
+		Attribute<float>* ppcmx_attr = mLayoutComponent->ppcmX.getTarget<Attribute<float>>();
+		Attribute<float>* ppcmy_attr = mLayoutComponent->ppcmY.getTarget<Attribute<float>>();
+
+		assert(ppcmx_attr != nullptr);
+		assert(ppcmy_attr != nullptr);
+
 		// Pixels per centimeter
-		ofVec3f ppcm(mLayoutComponent->ppcmX.getValue(), mLayoutComponent->ppcmY.getValue(), 0);
+		ofVec3f ppcm(ppcmx_attr->getValue(), ppcmy_attr->getValue(), 0);
 		ppcm.z = (ppcm.x + ppcm.y) / 2.0f;
 
 		// Set plane size
@@ -122,10 +134,16 @@ namespace nap {
 			layout->debugDraw.setValue(enabled);
 	}
 
-    Point OFLayoutPlaneComponent::layoutToWorld(const Point &p) {
-        ofVec3f ppcm(mLayoutComponent->ppcmX.getValue(), mLayoutComponent->ppcmY.getValue(), 0);
-        ppcm.z = (ppcm.x + ppcm.y) / 2.0f;
+    Point OFLayoutPlaneComponent::layoutToWorld(const Point &p) 
+	{
+		Attribute<float>* ppcmx_attr = mLayoutComponent->ppcmX.getTarget<Attribute<float>>();
+		Attribute<float>* ppcmy_attr = mLayoutComponent->ppcmY.getTarget<Attribute<float>>();
 
+		assert(ppcmx_attr != nullptr);
+		assert(ppcmy_attr != nullptr);
+
+        ofVec3f ppcm(ppcmx_attr->getValue(), ppcmy_attr->getValue(), 0);
+        ppcm.z = (ppcm.x + ppcm.y) / 2.0f;
 
         Point out;
         out.setX(p.getX() * ppcm.x);
