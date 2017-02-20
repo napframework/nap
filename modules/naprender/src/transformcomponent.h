@@ -26,7 +26,7 @@ namespace nap
 		
 		// Attributes
 		Attribute<glm::vec3>		translate		{ this,	"Translation",	{ 0.0, 0.0, 0.0 } };		// vector 3 - x, y z
-		Attribute<glm::vec4>		rotate			{ this, "Rotation",		{ 0.0, 0.0, 0.0, 1.0 } };	// quaternion - x, y, z, w
+		Attribute<glm::quat>		rotate			{ this, "Rotation" };								// quaternion - x, y, z, w
 		Attribute<glm::vec3>		scale			{ this, "Scale",		{ 1.0, 1.0, 1.0 } };		// vector 3 - x, y, z
 		
 		// Uniform Scale

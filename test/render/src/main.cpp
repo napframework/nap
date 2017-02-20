@@ -68,7 +68,7 @@ static nap::ImageResource* pigTexture = nullptr;
 static const std::string worldTextureName = "data/world_texture.jpg";
 static nap::ImageResource* worldTexture = nullptr;
 static float movementScale = 3.0f;
-static float rotateScale = 3.0f;
+static float rotateScale = 1.0f;
 
 // Nap Objects
 nap::RenderService* renderService = nullptr;
@@ -107,6 +107,7 @@ glm::mat4 modelMatrix;			// Store the model matrix
 // Some utilities
 void runGame(nap::Core& core);	
 void updateCamera();
+void createSpheres(nap::Core& core, nap::Resource& shader);
 
 // Called when the window is updating
 void onUpdate(const nap::SignalAttribute& signal)
@@ -119,7 +120,7 @@ void onUpdate(const nap::SignalAttribute& signal)
 	nap::TransformComponent* xform_s = sphereComponent->getParent()->getComponent<nap::TransformComponent>();
 
 	// Get rotation angle
-	float rot_speed = 1.0f;
+	float rot_speed = 0.1f;
 	float rot_angle = elapsed_time * 360.0f * rot_speed;
 	float rot_angle_radians = glm::radians(rot_angle);
 
@@ -131,16 +132,19 @@ void onUpdate(const nap::SignalAttribute& signal)
 	glm::quat rot_quat = glm::rotate(glm::quat(), (float)rot_angle_radians, glm::vec3(0.0, 1.0, 0.0));
 
 	// Set rotation on model component
-	xform_v->rotate.setValue(nap::quatToVector(rot_quat));
+	xform_v->rotate.setValue(rot_quat);
 
 	// Set rotation on plane component
-	xform_p->rotate.setValue(nap::quatToVector(rot_quat));
+	xform_p->rotate.setValue(rot_quat);
 	xform_p->translate.setValue({ 1.5f, 0.0, 0.0f });
 	xform_p->uniformScale.setValue(1.5f);
 
+	glm::quat quaternion;
+	quaternion.w = 1.0f;
+
 	// Set rotatation on sphere
-	glm::quat rot_quat_sphere = glm::rotate(glm::quat(), (float)rot_angle_radians_sphere, glm::vec3(0.0, 1.0, 0.0));
-	xform_s->rotate.setValue(nap::quatToVector(rot_quat_sphere));
+	glm::quat rot_quat_sphere = glm::rotate(glm::quat(), -1.0f*(float)rot_angle_radians_sphere, glm::vec3(0.0, 1.0, 0.0));
+	xform_s->rotate.setValue(rot_quat_sphere);
 	xform_s->translate.setValue({ 0.0f, 0.0f, -3.0f });
 	xform_s->uniformScale.setValue(1.0f);
 
@@ -206,11 +210,11 @@ void updateCamera()
 	nap::TransformComponent* cam_xform = cameraComponent->getParent()->getComponent<nap::TransformComponent>();
 	if (moveForward)
 	{
-		cam_xform->translate.setValue(cam_xform->translate.getValue() + glm::vec3(0.0f, 0.0f, movement));
+		cam_xform->translate.setValue(cam_xform->translate.getValue() - glm::vec3(0.0f, 0.0f, movement));
 	}
 	if (moveBackward)
 	{
-		cam_xform->translate.setValue(cam_xform->translate.getValue() - glm::vec3(0.0f, 0.0f, movement));
+		cam_xform->translate.setValue(cam_xform->translate.getValue() + glm::vec3(0.0f, 0.0f, movement));
 	}
 	if (moveLeft)
 	{
@@ -222,27 +226,27 @@ void updateCamera()
 	}
 	if (lookUp)
 	{
-		glm::quat r = nap::vectorToQuat(cam_xform->rotate.getValue());
+		glm::quat r = cam_xform->rotate.getValue();
 		glm::quat nr = glm::rotate(r, rotate_rad, glm::vec3(1.0, 0.0, 0.0));
-		cam_xform->rotate.setValue(nap::quatToVector(nr));
+		cam_xform->rotate.setValue(nr);
 	}
 	if (lookDown)
 	{
-		glm::quat r = nap::vectorToQuat(cam_xform->rotate.getValue());
+		glm::quat r = cam_xform->rotate.getValue();
 		glm::quat nr = glm::rotate(r, -1.0f * rotate_rad, glm::vec3(1.0, 0.0, 0.0));
-		cam_xform->rotate.setValue(nap::quatToVector(nr));
+		cam_xform->rotate.setValue(nr);
 	}
 	if (lookRight)
 	{
-		glm::quat r = nap::vectorToQuat(cam_xform->rotate.getValue());
-		glm::quat nr = glm::rotate(r, rotate_rad, glm::vec3(0.0, 0.0, 1.0));
-		cam_xform->rotate.setValue(nap::quatToVector(nr));
+		glm::quat r = cam_xform->rotate.getValue();
+		glm::quat nr = glm::rotate(r, -1.0f*rotate_rad, glm::vec3(0.0, 1.0, 0.0));
+		cam_xform->rotate.setValue(nr);
 	}
-	if (lookRight)
+	if (lookLeft)
 	{
-		glm::quat r = nap::vectorToQuat(cam_xform->rotate.getValue());
-		glm::quat nr = glm::rotate(r, -1.0f*rotate_rad, glm::vec3(0.0, 0.0, 1.0));
-		cam_xform->rotate.setValue(nap::quatToVector(nr));
+		glm::quat r = cam_xform->rotate.getValue();
+		glm::quat nr = glm::rotate(r, rotate_rad, glm::vec3(0.0, 1.0, 0.0));
+		cam_xform->rotate.setValue(nr);
 	}
 }
 
@@ -422,14 +426,58 @@ bool init(nap::Core& core)
 	nap::Entity& camera_entity = core.addEntity("camera");
 	cameraComponent = &camera_entity.addComponent<nap::CameraComponent>();
 	nap::TransformComponent& camera_transform = camera_entity.addComponent<nap::TransformComponent>();
-	camera_transform.translate.setValue({ 0.0f, 0.0f, -5.0f });
+	camera_transform.translate.setValue({ 0.0f, 0.0f, 5.0f });
 	cameraComponent->clippingPlanes.setValue(glm::vec2(0.01, 1000.0f));
 
 	// Set camera
 	cameraComponent->fieldOfView.setValue(45.0f);
 	cameraComponent->setAspectRatio((float)windowWidth, (float)windowHeight);
 
+	//createSpheres(core, *shader_resource);
+
 	return true;
+}
+
+
+void createSpheres(nap::Core& core, nap::Resource& shader)
+{
+	/*
+	// Create sphere entity
+	sphere = &(core.getRoot().addEntity("sphere"));
+
+	float range = 20.0f;
+	for (int i = 0; i < 100; i++)
+	{
+		nap::Entity& sphere_e = sphere->addEntity("sphere_child");
+
+		nap::TransformComponent& sphere_tran_component = sphere_e.addComponent<nap::TransformComponent>();
+		sphereComponent = &sphere_e.addComponent<nap::SphereComponent>("draw_sphere");
+
+		float x = ((float)rand() / (float)RAND_MAX) * range;
+		float y = ((float)rand() / (float)RAND_MAX) * range;
+		float z = ((float)rand() / (float)RAND_MAX) * range;
+
+		sphere_tran_component.translate.setValue(glm::vec3(x, y, z));
+
+		nap::Material* sphere_material = sphereComponent->getMaterial();
+		assert(sphere_material != nullptr);
+		sphere_material->shaderResourceLink.setResource(shader);
+
+		sphere_material->linkVertexBuffer("in_Position", sphereComponent->getMesh()->getVertexBufferIndex());
+		sphere_material->linkVertexBuffer("in_Color", sphereComponent->getMesh()->getColorBufferIndex());
+		sphere_material->linkVertexBuffer("in_Uvs", sphereComponent->getMesh()->getUvBufferIndex());
+	}
+
+	/*
+	// Create sphere entity
+	sphere = &(core.getRoot().addEntity("sphere"));
+	nap::TransformComponent& sphere_tran_component = sphere->addComponent<nap::TransformComponent>();
+	sphereComponent = &sphere->addComponent<nap::SphereComponent>("draw_sphere");
+
+	nap::Material* sphere_material = sphereComponent->getMaterial();
+	assert(sphere_material != nullptr);
+	sphere_material->shaderResourceLink.setResource(*shader_resource);
+	*/
 }
 
 
@@ -460,7 +508,7 @@ void runGame(nap::Core& core)
 	opengl::enableMultiSampling(true);
 	opengl::setLineWidth(1.3f);
 	opengl::setPointSize(2.0f);
-	opengl::setPolygonMode(opengl::PolygonMode::LINE);
+	opengl::setPolygonMode(opengl::PolygonMode::FILL);
 
 	// Loop
 	while (loop)

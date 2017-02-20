@@ -198,6 +198,7 @@ namespace nap
 			nap::Logger::warn("unable to extract view matrix, camera has no transform component: %s", camera.getName().c_str());
 		}
 		const glm::mat4x4& view_matrix = cam_xform == nullptr ? identityMatrix : cam_xform->getGlobalTransform();
+		glm::mat4x4 new_view_matrix = glm::inverse(view_matrix);
 
 		// Draw
 		for (auto& comp : comps)
@@ -223,7 +224,7 @@ namespace nap
 
 			// Set uniform variables
 			comp_mat->setUniformValue<glm::mat4x4>(projectionMatrixUniform, projection_matrix);
-			comp_mat->setUniformValue<glm::mat4x4>(viewMatrixUniform, view_matrix);
+			comp_mat->setUniformValue<glm::mat4x4>(viewMatrixUniform, new_view_matrix);
 			comp_mat->setUniformValue<glm::mat4x4>(modelMatrixUniform, global_matrix);
 
 			// Draw

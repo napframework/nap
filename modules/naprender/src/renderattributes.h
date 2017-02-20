@@ -4,6 +4,7 @@
 #include <nap.h>
 #include <glm/glm.hpp>
 #include <glm/fwd.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 namespace nap
 {
@@ -19,3 +20,4 @@ RTTI_DECLARE_DATA(glm::vec4)
 RTTI_DECLARE_DATA(glm::vec3)
 RTTI_DECLARE_DATA(glm::ivec2)
 RTTI_DECLARE_DATA(glm::ivec3)
+RTTI_DECLARE_DATA(glm::quat)
