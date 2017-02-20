@@ -209,23 +209,40 @@ void updateCamera()
 	float rotate = rotateScale * elapsed_time;
 	float rotate_rad = rotate;
 
-
 	nap::TransformComponent* cam_xform = cameraComponent->getParent()->getComponent<nap::TransformComponent>();
+	//glm::vec3 lookat_pos = cam_xform->getGlobalTransform()[0];
+	//glm::vec3 dir = glm::cross(glm::normalize(lookat_pos), glm::vec3(cam_xform->getGlobalTransform()[1]));
+	//glm::vec3 dir_f = glm::cross(glm::normalize(lookat_pos), glm::vec3(0.0,1.0,0.0));
+	//glm::vec3 dir_s = glm::cross(glm::normalize(lookat_pos), glm::vec3(0.0, 0.0, 1.0));
+	//dir_f *= movement;
+	//dir_s *= movement;
+
+	glm::vec3 side(1.0, 0.0, 0.0);
+	glm::vec3 forward(0.0, 0.0, 1.0);
+
+	glm::vec3 dir_forward = glm::rotate(cam_xform->rotate.getValue(),forward);
+	glm::vec3 movement_forward = dir_forward * movement;
+
+	glm::vec3 dir_sideways = glm::rotate(cam_xform->rotate.getValue(), side);
+	glm::vec3 movement_sideways = dir_sideways * movement;
+		
+	//nap::Logger::info("direction: %f, %f,%f", dir_f.x, dir_f.y, dir_f.z);
+
 	if (moveForward)
 	{
-		cam_xform->translate.setValue(cam_xform->translate.getValue() - glm::vec3(0.0f, 0.0f, movement));
+		cam_xform->translate.setValue(cam_xform->translate.getValue() - movement_forward);
 	}
 	if (moveBackward)
 	{
-		cam_xform->translate.setValue(cam_xform->translate.getValue() + glm::vec3(0.0f, 0.0f, movement));
+		cam_xform->translate.setValue(cam_xform->translate.getValue() + movement_forward);
 	}
 	if (moveLeft)
 	{
-		cam_xform->translate.setValue(cam_xform->translate.getValue() - glm::vec3(movement, 0.0f, 0.0f));
+		cam_xform->translate.setValue(cam_xform->translate.getValue() - movement_sideways);
 	}
 	if (moveRight)
 	{
-		cam_xform->translate.setValue(cam_xform->translate.getValue() + glm::vec3(movement, 0.0f, 0.0f));
+		cam_xform->translate.setValue(cam_xform->translate.getValue() + movement_sideways);
 	}
 	if (lookUp)
 	{
@@ -263,8 +280,6 @@ void onRender(const nap::SignalAttribute& signal)
 	opengl::clearStencil();
 
 	// Render all objects
-	std::vector<nap::RenderableComponent*> comps	{ modelComponent };
-	//renderService->renderObjects(comps, *cameraComponent);
 	renderService->renderObjects(*cameraComponent);
 
 	static float fps_time = 0.0f;
