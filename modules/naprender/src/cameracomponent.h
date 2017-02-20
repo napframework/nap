@@ -5,6 +5,7 @@
 
 // Local Includes
 #include "renderattributes.h"
+#include "rendercomponent.h"
 
 namespace nap
 {
@@ -57,6 +58,11 @@ namespace nap
 		 * next time the matrix is queried it is recomputed
 		 */
 		void setDirty()							{ mDirty = true; }
+
+		/**
+		 * Sets the object to look at
+		 */
+		ObjectLinkAttribute lookAt				{ this, "lookAt", RTTI_OF(RenderableComponent) };
 
 	private:
 		// The composed projection matrix

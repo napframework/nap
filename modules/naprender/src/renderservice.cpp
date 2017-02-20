@@ -10,6 +10,7 @@
 
 // External Includes
 #include <nap/core.h>
+#include <glm/gtx/matrix_decompose.hpp>
 
 namespace nap
 {
@@ -116,6 +117,56 @@ namespace nap
 	}
 
 
+	// Extract view matrix
+	void RenderService::getViewMatrix(const nap::CameraComponent& camera, glm::mat4x4& viewMatrix)
+	{
+		// Set to be identity
+		viewMatrix = identityMatrix;
+
+		// Extract camera transform
+		nap::TransformComponent* cam_xform = camera.getParent()->getComponent<nap::TransformComponent>();
+		if (cam_xform == nullptr)
+		{
+			assert(false);
+			nap::Logger::warn("unable to extract view matrix, camera has no transform component: %s", camera.getName().c_str());
+			return;
+		}
+
+		// Update
+		viewMatrix = cam_xform->getGlobalTransform();
+
+		// Get look at object
+		if (!camera.lookAt.isLinked())
+		{
+			viewMatrix = glm::inverse(viewMatrix);
+			return;
+		}
+
+		// Extract lookat component
+		RenderableComponent* lookat_comp = const_cast<CameraComponent&>(camera).lookAt.getTarget<RenderableComponent>();
+		if (lookat_comp == nullptr)
+		{
+			nap::Logger::warn(camera, "unable to resolve look at target: %s", camera.lookAt.getPath().toString().c_str());
+			viewMatrix = glm::inverse(viewMatrix);
+			return;
+		}
+
+		// Extract xform to look at
+		TransformComponent* lookat_xform = lookat_comp->getParent()->getComponent<TransformComponent>();
+		if (lookat_xform == nullptr)
+		{
+			nap::Logger::warn(camera, "unable to resolve object transform for look at object: %s", camera.lookAt.getPath().toString().c_str());
+			viewMatrix = glm::inverse(viewMatrix);
+			return;
+		}
+
+		// Create lookat matrix
+		glm::vec3 lookat_pos = lookat_xform->getGlobalTransform()[3];
+		glm::vec3 eye_pos = glm::vec3(viewMatrix[3]);
+		viewMatrix = glm::lookAt(eye_pos, lookat_pos, glm::vec3(0, 1, 0));
+	}
+
+
 	// Shut down render service
 	RenderService::~RenderService()
 	{
@@ -190,15 +241,9 @@ namespace nap
 		// Extract camera projection matrix
 		const glm::mat4x4 projection_matrix = camera.getProjectionMatrix();
 
-		// Extract camera transform
-		nap::TransformComponent* cam_xform = camera.getParent()->getComponent<nap::TransformComponent>();
-		if (cam_xform == nullptr)
-		{
-			assert(false);
-			nap::Logger::warn("unable to extract view matrix, camera has no transform component: %s", camera.getName().c_str());
-		}
-		const glm::mat4x4& view_matrix = cam_xform == nullptr ? identityMatrix : cam_xform->getGlobalTransform();
-		glm::mat4x4 new_view_matrix = glm::inverse(view_matrix);
+		// Extract view matrix
+		glm::mat4x4 view_matrix;
+		getViewMatrix(camera, view_matrix);
 
 		// Draw
 		for (auto& comp : comps)
@@ -224,7 +269,7 @@ namespace nap
 
 			// Set uniform variables
 			comp_mat->setUniformValue<glm::mat4x4>(projectionMatrixUniform, projection_matrix);
-			comp_mat->setUniformValue<glm::mat4x4>(viewMatrixUniform, new_view_matrix);
+			comp_mat->setUniformValue<glm::mat4x4>(viewMatrixUniform, view_matrix);
 			comp_mat->setUniformValue<glm::mat4x4>(modelMatrixUniform, global_matrix);
 
 			// Draw

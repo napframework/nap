@@ -41,7 +41,7 @@ static opengl::Mesh* createSphere(float radius, unsigned int rings, unsigned int
 			float const z = sin(2 * M_PI * s * S) * sin(M_PI * r * R);
 
 			// Set texture coordinates
-			*t++ = s*S;
+			*t++ = 1.0f-(s*S);
 			*t++ = r*R;
 			*t++ = 0.5f;
 

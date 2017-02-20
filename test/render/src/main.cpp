@@ -19,6 +19,7 @@
 #include <glm/matrix.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/transform.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 
 // C++ Headers
 #include <string>
@@ -60,6 +61,7 @@ std::string		vertShaderName		= "shaders/shader.vert";
 std::string		fragShaderName		= "shaders/shader.frag";
 std::string		vertShaderNameTwo	= "shaders/shader_two.vert";
 std::string		fragShaderNameTwo	= "shaders/shader_two.frag";
+std::string		orientationShaderName = "shaders/orientation.frag";
 
 static const std::string testTextureName = "data/test.jpg";
 static nap::ImageResource* testTexture = nullptr;
@@ -79,8 +81,8 @@ nap::ModelMeshComponent* modelComponent = nullptr;
 nap::PlaneComponent* planeComponent = nullptr;
 nap::SphereComponent* sphereComponent = nullptr;
 nap::ShaderResource* shaderResource = nullptr;
-nap::ShaderResource* shaderResourceOne = nullptr;
-nap::ShaderResource* shaderResourceTwo = nullptr;
+nap::ShaderResource* orientationShaderResource = nullptr;
+nap::ModelMeshComponent* orientationComponent = nullptr;
 
 // movement
 bool moveForward = false;
@@ -96,6 +98,7 @@ bool lookRight = false;
 nap::Entity* model  = nullptr;
 nap::Entity* plane  = nullptr;
 nap::Entity* sphere = nullptr;
+nap::Entity* orientation = nullptr;
 
 // Window width / height on startup
 unsigned int windowWidth(512);
@@ -336,18 +339,15 @@ bool init(nap::Core& core)
 	nap::Resource* world_texture = service->getResource(worldTextureName);
 	worldTexture = static_cast<nap::ImageResource*>(world_texture);
 
-	// Load first shader
+	// Load general shader
 	nap::Resource* shader_resource = service->getResource(fragShaderName);
-	shaderResourceOne = static_cast<nap::ShaderResource*>(shader_resource);
-	shaderResourceOne->load();
-	
-	// Load second shader
-	nap::Resource* shader_resource_two = service->getResource(fragShaderNameTwo);
-	shaderResourceTwo = static_cast<nap::ShaderResource*>(shader_resource_two);
-	shaderResourceTwo->load();
-	
-	// Set resource
-	shaderResource = shaderResourceOne;
+	shaderResource = static_cast<nap::ShaderResource*>(shader_resource);
+	shaderResource->load();
+
+	// Load orientation shader
+	nap::Resource* orientation_shader = service->getResource(orientationShaderName);
+	orientationShaderResource = static_cast<nap::ShaderResource*>(orientation_shader);
+	orientationShaderResource->load();
 
 	// Load model resource
 	nap::Resource* model_resource = service->getResource("data/pig_head_alpha_rotated.fbx");
@@ -358,6 +358,15 @@ bool init(nap::Core& core)
 	}
 	nap::ModelResource* pig_model = static_cast<nap::ModelResource*>(model_resource);
 
+	// Load orientation resource
+	nap::Resource* orientation_resource = service->getResource("data/orientation.fbx");
+	if (orientation_resource == nullptr)
+	{
+		nap::Logger::warn("unable to load orientation gizmo resource");
+	}
+	nap::ModelResource* orientation_model = static_cast<nap::ModelResource*>(orientation_resource);
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// Entities
 	//////////////////////////////////////////////////////////////////////////
@@ -366,6 +375,12 @@ bool init(nap::Core& core)
 	model = &(core.getRoot().addEntity("model"));
 	nap::TransformComponent& tran_component = model->addComponent<nap::TransformComponent>();
 	modelComponent = &model->addComponent<nap::ModelMeshComponent>("pig_head_mesh");
+
+	// Create orientation entity
+	orientation = &(core.getRoot().addEntity("orientation"));
+	nap::TransformComponent& or_tran_component = orientation->addComponent<nap::TransformComponent>();
+	or_tran_component.uniformScale.setValue(0.33f);
+	orientationComponent = &orientation->addComponent<nap::ModelMeshComponent>("orientation gizmo");
 
 	// Create plane entity
 	plane = &(core.getRoot().addEntity("plane"));
@@ -382,16 +397,25 @@ bool init(nap::Core& core)
 	assert(material != nullptr);
 	material->shaderResourceLink.setResource(*shaderResource);
 
+	// Plane material
 	nap::Material* plane_material = planeComponent->getMaterial();
 	assert(plane_material != nullptr);
 	plane_material->shaderResourceLink.setResource(*shaderResource);
 
+	// Sphere material
 	nap::Material* sphere_material = sphereComponent->getMaterial();
 	assert(sphere_material != nullptr);
 	sphere_material->shaderResourceLink.setResource(*shader_resource);
 
+	// Orientation material
+	nap::Material* orientation_material = orientationComponent->getMaterial();
+	orientation_material->shaderResourceLink.setResource(*orientationShaderResource);
+
 	// Link model resource
 	modelComponent->modelResource.setResource(*pig_model);
+
+	// Link orientation resource
+	orientationComponent->modelResource.setResource(*orientation_model);
 
 	//////////////////////////////////////////////////////////////////////////
 	// Extract Material Information
@@ -402,6 +426,14 @@ bool init(nap::Core& core)
 	if (mesh == nullptr)
 	{
 		nap::Logger::warn("unable to extract model mesh at index 0");
+		return false;
+	}
+
+	// Extract orientation mesh
+	const opengl::Mesh* orientation_mesh = orientation_model->getMesh(0);
+	if (orientation_mesh == nullptr)
+	{
+		nap::Logger::warn("unable to extract orientation mesh at index 0");
 		return false;
 	}
 
@@ -420,6 +452,10 @@ bool init(nap::Core& core)
 	sphere_material->linkVertexBuffer("in_Color", sphereComponent->getMesh()->getColorBufferIndex());
 	sphere_material->linkVertexBuffer("in_Uvs", sphereComponent->getMesh()->getUvBufferIndex());
 
+	// Orientation gizmo
+	orientation_material->linkVertexBuffer("in_Position", orientationComponent->getMesh()->getVertexBufferIndex());
+	orientation_material->linkVertexBuffer("in_Color", orientationComponent->getMesh()->getColorBufferIndex());
+
 	//////////////////////////////////////////////////////////////////////////
 	// Add Camera
 	//////////////////////////////////////////////////////////////////////////
@@ -432,8 +468,6 @@ bool init(nap::Core& core)
 	// Set camera
 	cameraComponent->fieldOfView.setValue(45.0f);
 	cameraComponent->setAspectRatio((float)windowWidth, (float)windowHeight);
-
-	//createSpheres(core, *shader_resource);
 
 	return true;
 }
@@ -525,18 +559,24 @@ void runGame(nap::Core& core)
 			{
 				switch (event.key.keysym.sym)
 				{
+				case SDLK_0:
+				{
+					cameraComponent->lookAt.clear();
+					break;
+				}
 				case SDLK_1:
 				{
-					shaderResource = shaderResourceOne;
-					modelComponent->getMaterial()->shaderResourceLink.setResource(*shaderResource);
-					planeComponent->getMaterial()->shaderResourceLink.setResource(*shaderResource);
+					cameraComponent->lookAt.setTarget(*modelComponent);
 					break;
 				}
 				case SDLK_2:
 				{
-					shaderResource = shaderResourceTwo;
-					modelComponent->getMaterial()->shaderResourceLink.setResource(*shaderResource);
-					planeComponent->getMaterial()->shaderResourceLink.setResource(*shaderResource);
+					cameraComponent->lookAt.setTarget(*planeComponent);
+					break;
+				}
+				case SDLK_3:
+				{
+					cameraComponent->lookAt.setTarget(*sphereComponent);
 					break;
 				}
 				case SDLK_ESCAPE:
