@@ -31,11 +31,11 @@ namespace opengl
 		}
 
 		// Create importer
-		Assimp::Importer importer;
+		std::unique_ptr<Assimp::Importer> importer = std::make_unique<Assimp::Importer>();
 
 		// Load file
 		printMessage(MessageType::INFO, "loading file: %s", modelPath.c_str());
-		const aiScene* scene = importer.ReadFile(modelPath,
+		const aiScene* scene = importer->ReadFile(modelPath,
 			aiProcess_CalcTangentSpace |
 			aiProcess_Triangulate |
 			aiProcess_SortByPType);
@@ -44,6 +44,7 @@ namespace opengl
 		if (scene == nullptr)
 		{
 			opengl::printMessage(opengl::MessageType::ERROR, "unable to load scene from file: %s", modelPath.c_str());
+			opengl::printMessage(opengl::MessageType::ERROR, importer->GetErrorString());
 			return false;
 		}
 
@@ -144,9 +145,6 @@ namespace opengl
 			// Add mesh
 			model.addMesh(new_mesh);
 		}
-
-		// Explicetly free scene
-		importer.FreeScene();
 
 		return true;
 	}
