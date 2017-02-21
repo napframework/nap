@@ -346,6 +346,25 @@ bool init(nap::Core& core)
 	nap::ResourceManagerService* service = core.getOrCreateService<nap::ResourceManagerService>();
 	service->setAssetRoot(".");
 
+	// Load orientation resource
+	nap::Resource* orientation_resource = service->getResource("data/orientation.fbx");
+	if (orientation_resource == nullptr)
+	{
+		nap::Logger::warn("unable to load orientation gizmo resource");
+	}
+	nap::ModelResource* orientation_model = static_cast<nap::ModelResource*>(orientation_resource);
+	orientation_model->load();
+
+	// Load model resource
+	nap::Resource* model_resource = service->getResource("data/pig_head_alpha_rotated.fbx");
+	if (model_resource == nullptr)
+	{
+		nap::Logger::warn("unable to load pig head model resource");
+		return false;
+	}
+	nap::ModelResource* pig_model = static_cast<nap::ModelResource*>(model_resource);
+	pig_model->load();
+
 	// Load textures
 	nap::Resource* pig_texture = service->getResource(pigTextureName);
 	pigTexture = static_cast<nap::ImageResource*>(pig_texture);
@@ -363,23 +382,6 @@ bool init(nap::Core& core)
 	nap::Resource* orientation_shader = service->getResource(orientationShaderName);
 	orientationShaderResource = static_cast<nap::ShaderResource*>(orientation_shader);
 	orientationShaderResource->load();
-
-	// Load model resource
-	nap::Resource* model_resource = service->getResource("data/pig_head_alpha_rotated.fbx");
-	if (model_resource == nullptr)
-	{
-		nap::Logger::warn("unable to load pig head model resource");
-		return false;
-	}
-	nap::ModelResource* pig_model = static_cast<nap::ModelResource*>(model_resource);
-
-	// Load orientation resource
-	nap::Resource* orientation_resource = service->getResource("data/orientation.fbx");
-	if (orientation_resource == nullptr)
-	{
-		nap::Logger::warn("unable to load orientation gizmo resource");
-	}
-	nap::ModelResource* orientation_model = static_cast<nap::ModelResource*>(orientation_resource);
 
 
 	//////////////////////////////////////////////////////////////////////////

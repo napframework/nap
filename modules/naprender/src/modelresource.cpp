@@ -23,11 +23,7 @@ namespace nap
 	{
 		if (!mLoaded)
 		{
-			if (!opengl::loadModel(mModel, getResourcePath()))
-			{
-				nap::Logger::warn("unable to load model: %s", mModelPath.c_str());
-			}
-			mLoaded = true;
+			load();
 		}
 		return mModel;
 	}
@@ -44,6 +40,17 @@ namespace nap
 	bool ModelResource::isEmpty() const
 	{
 		return getModel().isEmpty();
+	}
+
+
+	// Loads the model resource
+	void ModelResource::load() const
+	{
+		if (!opengl::loadModel(mModel, getResourcePath()))
+		{
+			nap::Logger::warn("unable to load model: %s", mModelPath.c_str());
+		}
+		mLoaded = true;
 	}
 
 

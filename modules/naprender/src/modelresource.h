@@ -48,6 +48,12 @@ namespace nap
 		bool isEmpty() const;
 
 		/**
+		 * Explicitly load the model, reloads if necessary
+		 * Note that this call needs an active opengl context
+		 */
+		void load() const;
+
+		/**
 		 * @return the mesh @index of the model, nullptr if out of range or invalid
 		 * @param index the index of the mesh managed by this model
 		 */
