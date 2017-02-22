@@ -20,6 +20,44 @@ namespace nap
 	}
 
 
+	Resource* ResourceManagerService::createResource(const RTTI::TypeInfo& type)
+	{
+		if (!type.isKindOf(RTTI_OF(Resource)))
+		{
+			nap::Logger::warn("unable to create resource of type: %s", type.getName().c_str());
+			return nullptr;
+		}
+
+		if (!type.canCreateInstance())
+		{
+			nap::Logger::warn("can't create resource instance of type: %s", type.getName().c_str());
+			return nullptr;
+		}
+
+		// Create instance of resource
+		Resource* resource = type.createInstance<Resource>();
+		assert(resource != nullptr);
+		resource->mResourceManger = this;
+
+		// Construct path
+		std::string type_name = type.getName().c_str();
+		std::string reso_path = stringFormat("resource::%s", type_name.c_str());
+		std::string reso_unique_path = reso_path;
+		int idx = 0;
+		while (mResources.find(reso_unique_path) != mResources.end())
+		{
+			++idx;
+			reso_unique_path = stringFormat("%s_%d", reso_path.c_str(), idx);
+		}
+
+		// Add resource
+		mResources.emplace(reso_unique_path, std::move(std::unique_ptr<Resource>(resource)));
+
+		// Return
+		return resource;
+	}
+
+
 	std::vector<ResourceLoader*> ResourceManagerService::getLoaders()
 	{
 		std::vector<ResourceLoader*> factories;

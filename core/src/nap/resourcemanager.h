@@ -41,7 +41,7 @@ namespace nap
 		 * from disk.
 		 *
 		 * The resulting resource is managed by the ResourceManager (who thought?)
-		 * @param path
+		 * @param path path to resource on disk
 		 * @return
 		 */
 		Resource* getResource(const std::string& path);
@@ -52,10 +52,23 @@ namespace nap
 		 * @return safely converted resource, nullptr if not valid
 		 */
 		template<typename T>
-		T* getResource(const std::string& path) 
-		{
-			return rtti_cast<T*>(getResource(path));
-		}
+		T* getResource(const std::string& path);
+
+		/**
+		 * Creates a new resource of a specific type
+		 * An internal path is created to represent the resource in the system
+		 * TODO: Find a way to serialize resources from and to disk
+		 * @param type: Type of resource to create
+		 */
+		Resource* createResource(const RTTI::TypeInfo& type);
+
+		/**
+		 * Creates a new resource of type T
+		 * An internal path is created to represent the resource in the system
+		 * TODO: Find a way to serialize these resources
+		 */
+		template<typename T>
+		T* createResource();
 
         /**
          * Find the path of the specified resource
@@ -114,6 +127,22 @@ namespace nap
 		// Holds all currently loaded resources
 		std::map<std::string, std::unique_ptr<Resource>> mResources;
 	};
+
+	//////////////////////////////////////////////////////////////////////////
+	// Template Definitions
+	//////////////////////////////////////////////////////////////////////////
+
+	template<typename T>
+	T* ResourceManagerService::getResource(const std::string& path)
+	{
+		return rtti_cast<T>(getResource(path));
+	}
+
+	template<typename T>
+	T* ResourceManagerService::createResource()
+	{
+		return rtti_cast<T>(createResource(RTTI_OF(T)));
+	}
 
 }
 

@@ -43,6 +43,7 @@
 #include <mathutils.h>
 #include <planecomponent.h>
 #include <spherecomponent.h>
+#include <rendertargetresource.h>
 
 // Nap includes
 #include <nap/core.h>
@@ -347,41 +348,31 @@ bool init(nap::Core& core)
 	service->setAssetRoot(".");
 
 	// Load orientation resource
-	nap::Resource* orientation_resource = service->getResource("data/orientation.fbx");
-	if (orientation_resource == nullptr)
-	{
-		nap::Logger::warn("unable to load orientation gizmo resource");
-	}
-	nap::ModelResource* orientation_model = static_cast<nap::ModelResource*>(orientation_resource);
+	nap::ModelResource* orientation_model = service->getResource<nap::ModelResource>("data/orientation.fbx");
+	assert(orientation_model != nullptr);
 	orientation_model->load();
 
 	// Load model resource
-	nap::Resource* model_resource = service->getResource("data/pig_head_alpha_rotated.fbx");
-	if (model_resource == nullptr)
-	{
-		nap::Logger::warn("unable to load pig head model resource");
-		return false;
-	}
-	nap::ModelResource* pig_model = static_cast<nap::ModelResource*>(model_resource);
+	nap::ModelResource* pig_model = service->getResource<nap::ModelResource>("data/pig_head_alpha_rotated.fbx");
+	assert(orientation_model != nullptr);
 	pig_model->load();
 
 	// Load textures
-	nap::Resource* pig_texture = service->getResource(pigTextureName);
-	pigTexture = static_cast<nap::ImageResource*>(pig_texture);
-	nap::Resource* tes_texture = service->getResource(testTextureName);
-	testTexture = static_cast<nap::ImageResource*>(tes_texture);
-	nap::Resource* world_texture = service->getResource(worldTextureName);
-	worldTexture = static_cast<nap::ImageResource*>(world_texture);
+	pigTexture   = service->getResource<nap::ImageResource>(pigTextureName);
+	testTexture  = service->getResource<nap::ImageResource>(testTextureName);
+	worldTexture = service->getResource<nap::ImageResource>(worldTextureName);
 
 	// Load general shader
-	nap::Resource* shader_resource = service->getResource(fragShaderName);
-	shaderResource = static_cast<nap::ShaderResource*>(shader_resource);
+	shaderResource = service->getResource<nap::ShaderResource>(fragShaderName);
 	shaderResource->load();
 
 	// Load orientation shader
-	nap::Resource* orientation_shader = service->getResource(orientationShaderName);
-	orientationShaderResource = static_cast<nap::ShaderResource*>(orientation_shader);
+	orientationShaderResource = service->getResource<nap::ShaderResource>(orientationShaderName);
 	orientationShaderResource->load();
+
+	// Create frame buffer
+	nap::FrameBufferResource* frame_buffer = service->createResource<nap::FrameBufferResource>();
+	frame_buffer->size.setValue(glm::ivec2(1024, 1024));
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -422,7 +413,7 @@ bool init(nap::Core& core)
 	// Sphere material
 	nap::Material* sphere_material = sphereComponent->getMaterial();
 	assert(sphere_material != nullptr);
-	sphere_material->shaderResourceLink.setResource(*shader_resource);
+	sphere_material->shaderResourceLink.setResource(*shaderResource);
 
 	// Orientation material
 	nap::Material* orientation_material = orientationComponent->getMaterial();

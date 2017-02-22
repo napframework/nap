@@ -21,14 +21,19 @@ namespace nap
 		virtual const opengl::BaseTexture& getTexture() const = 0;
 
 		/**
+		 * Non const accessors
+		 */
+		opengl::BaseTexture& getTexture();
+
+		/**
 		 * Binds the texture
 		 */
-		virtual bool bind() const			{ return getTexture().bind(); }
+		virtual bool bind()					{ return getTexture().bind(); }
 
 		/**
 		 * Unbinds the texture
 		 */
-		virtual bool unbind() const			{ return getTexture().unbind(); }
+		virtual bool unbind() 				{ return getTexture().unbind(); }
 	};
 
 
@@ -64,7 +69,7 @@ namespace nap
 		/**
 		 * @return human readable display name
 		 */
-		virtual const std::string& getDisplayName() const override;
+		virtual std::string getDisplayName() const override;
 
 
 	private:

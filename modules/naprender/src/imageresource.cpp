@@ -23,7 +23,7 @@ namespace nap
 	}
 
 
-	const std::string& ImageResource::getDisplayName() const
+	std::string ImageResource::getDisplayName() const
 	{
 		return mDisplayName;
 	}
@@ -85,6 +85,13 @@ namespace nap
 		return std::make_unique<ImageResource>(resourcePath);
 	}
 
+
+	// Non const getter, following:
+	opengl::BaseTexture& TextureResource::getTexture()
+	{
+		return const_cast<opengl::BaseTexture&>(static_cast<const TextureResource&>(*this).getTexture());
+	}
+	
 }
 
 RTTI_DEFINE(nap::TextureResource)

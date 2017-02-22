@@ -1,7 +1,7 @@
 #pragma once
 
 // Local Includes
-#include "object.h"
+#include "attributeobject.h"
 
 // External Includes
 #include <string>
@@ -16,9 +16,9 @@ namespace nap
 	* Abstract base class for any Asset. Could be a TextureAsset, ModelAsset or AudioAsset for example.
 	* WARNING: A resource may only be created through the ResourceManagerService providing a valid resource path
 	*/
-	class Resource : public Object
+	class Resource : public AttributeObject
 	{
-		RTTI_ENABLE_DERIVED_FROM(Object)
+		RTTI_ENABLE_DERIVED_FROM(AttributeObject)
         friend class ResourceManagerService;
 	public:
 		Resource() = default;
@@ -26,7 +26,7 @@ namespace nap
 		/**
 		* @return Human readable string representation of this path
 		*/
-		virtual const std::string& getDisplayName() const = 0;
+		virtual std::string getDisplayName() const = 0;
 
         /**
          * @return The resource path to this resource
