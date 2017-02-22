@@ -1,6 +1,9 @@
 #include "nframebuffer.h"
 #include "nglutils.h"
 
+// External Includes
+#include <assert.h>
+
 // Delete framebuffer
 opengl::FramebufferBase::~FramebufferBase()
 {
@@ -20,6 +23,9 @@ void opengl::FramebufferBase::init()
 
 	// Generate framebuffer
 	glGenFramebuffers(1, &mFbo);
+
+	// Check for errors
+	glAssert();
 
 	// Call derived implementation
 	onInit();
@@ -116,7 +122,7 @@ void opengl::FrameBuffer::allocate(unsigned int width, unsigned int height)
 {
 	if (!isAllocated())
 	{
-		printMessage(MessageType::WARNING, "unable to allocate frame buffer texture resources, framebuffer not initialized");
+		printMessage(MessageType::WARNING, "unable to allocate frame buffer texture resources, frame-buffer not initialized");
 		return;
 	}
 
@@ -128,6 +134,7 @@ void opengl::FrameBuffer::allocate(unsigned int width, unsigned int height)
 	color_settings.format = GL_RGBA;
 	color_settings.type = GL_UNSIGNED_BYTE;
 
+	assert(mColorTexture.isAllocated());
 	mColorTexture.allocate(color_settings);
 
 	// Allocate memory
@@ -138,6 +145,7 @@ void opengl::FrameBuffer::allocate(unsigned int width, unsigned int height)
 	depth_settings.format = GL_DEPTH_COMPONENT;
 	depth_settings.type = GL_FLOAT;
 
+	assert(mDepthTexture.isAllocated());
 	mDepthTexture.allocate(depth_settings);
 }
 
@@ -146,10 +154,16 @@ void opengl::FrameBuffer::onInit()
 {
 	// Create color texture
 	mColorTexture.init();
+	glAssert();
 
 	// Create depth texture
 	mDepthTexture.init();
+	glAssert();
 
+	// After initializing color and depth texture
+	// Allocate them before binding to frame buffer
+	allocate(512, 512);
+	
 	// Bind
 	FramebufferBase::bind();
 

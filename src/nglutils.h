@@ -143,6 +143,10 @@ namespace opengl
 		WARNING = 1,
 		ERROR = 2
 	};
+
+	/**
+	 * Print opengl related message with x amount of arguments
+	 */
 	template <typename... Args>
 	void printMessage(MessageType type, const std::string& msg, Args&&... args)
 	{
@@ -164,4 +168,16 @@ namespace opengl
 		std::cout << output_msg.c_str() << std::endl;
 	}
 
+
+	/**
+	 * Assert when something went wrong with an opengl call
+	 */
+	#define glAssert() assert(!printErrorMessage(__FILE__, __LINE__))
+
+
+	 /**
+	 * Checks for opengl errors and print error as message
+	 * @return: true if something went wrong
+	 */
+	bool printErrorMessage(char *file, int line);
 }	// opengl

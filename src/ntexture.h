@@ -58,12 +58,12 @@ namespace opengl
 		 * All future texture functions will modify this texture
 		 * Derived classes need to implement this for 2d or 3d textures
 		 */
-		bool bind() const;
+		bool bind();
 		
 		/**
 		 * Unbind texture
 		 */
-		bool unbind() const;
+		bool unbind();
 
 		/**
 		 * @return texture target type (2D, 3D, 2D array etc.)

@@ -64,10 +64,19 @@ namespace opengl
 		if (!isAllocated())
 		{
 			mShaderVp = glCreateShader(GL_VERTEX_SHADER);		// Create vertex shader
+			glAssert();
+			
 			mShaderFp = glCreateShader(GL_FRAGMENT_SHADER);		// Create fragment shader
+			glAssert();
+			
 			mShaderId = glCreateProgram();						// Create shader program
+			glAssert();
+
 			glAttachShader(mShaderId, mShaderVp);				// Attach a vertex shader to the program
+			glAssert();
+			
 			glAttachShader(mShaderId, mShaderFp);				// Attach the fragment shader to the program
+			glAssert();
 		}
 
 		std::string vsText = textFileRead(vsFile); // Read in the vertex shader
@@ -86,6 +95,8 @@ namespace opengl
 
 		// Load vertex shader
 		glShaderSource(mShaderVp, 1, &vertexText, 0);		// Set the source for the vertex shader to the loaded text
+		glAssert();
+		
 		glCompileShader(mShaderVp);							// Compile the vertex shader
 		if (!validateShader(mShaderVp))						// Validate the vertex shader
 		{
@@ -96,6 +107,8 @@ namespace opengl
 
 		// Load fragment shader
 		glShaderSource(mShaderFp, 1, &fragmentText, 0);		// Set the source for the fragment shader to the loaded text
+		glAssert();
+		
 		glCompileShader(mShaderFp);							// Compile the fragment shader
 		if (!validateShader(mShaderFp))
 		{

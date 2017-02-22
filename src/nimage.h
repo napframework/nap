@@ -76,7 +76,7 @@ namespace opengl
 		 * binds the image on the GPU
 		 * note that this call will fail if no image is loaded
 		 */
-		void					bind() const;
+		void					bind();
 		
 		/**
 		 * unbind
@@ -84,7 +84,7 @@ namespace opengl
 		 * unbind the image on the GPU
 		 * note that this call will fail if no image is loaded
 		 */
-		void					unbind() const;
+		void					unbind();
 
 		/**
 		 * getData

@@ -4,6 +4,7 @@
 
 // External Includes
 #include <GL/glew.h>
+#include <assert.h>
 
 namespace opengl
 {
@@ -61,6 +62,7 @@ namespace opengl
 		else
 		{
 			glBufferData(getBufferType(), mSettings.getSize(), data, mSettings.mUsage);
+			glAssert();
 		}
 
 		// Unbind buffer after setting data

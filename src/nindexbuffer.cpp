@@ -2,6 +2,9 @@
 #include "nindexbuffer.h"
 #include "ngltypes.h"
 
+// External Includes
+#include <assert.h>
+
 namespace opengl
 {
 	// Total size in bytes of index buffer
@@ -37,6 +40,7 @@ namespace opengl
 		else
 		{
 			glBufferData(getBufferType(), mSettings.getSize(), indices, mSettings.mUsage);
+			glAssert();
 		}
 		unbind();
 	}

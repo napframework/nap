@@ -5,6 +5,7 @@
 // External Includes
 #include <unordered_map>
 #include <regex>
+#include <assert.h>
 
 namespace opengl
 {
@@ -28,60 +29,70 @@ namespace opengl
 	void setFloatData(const void* data, const GLint& location, const GLsizei& count)		
 	{
 		glUniform1fv(location, count, static_cast<const float*>(data));
+		glAssert();
 	}
 
 	// Set int value
 	void setIntData(const void* data, const GLint& location, const GLsizei& count)			
 	{
 		glUniform1iv(location, count, static_cast<const GLint*>(data));
+		glAssert();
 	}
 
 	// Set unsigned int value
 	void setUIntData(const void* data, const GLint& location, const GLsizei& count)			
 	{
 		glUniform1uiv(location, count, static_cast<const GLuint*>(data));
+		glAssert();
 	}
 
 	// Set vector 2 data, 2 floats
 	void setVec2FData(const void* data, const GLint& location, const GLsizei& count)		
 	{
 		glUniform2fv(location, count, static_cast<const float*>(data));
+		glAssert();
 	}
 
 	// Set vector 3 data, 3 floats
 	void setVec3FData(const void* data, const GLint& location, const GLsizei& count)		
 	{
 		glUniform3fv(location, count, static_cast<const float*>(data));
+		glAssert();
 	}
 
 	// Set vector 4 data, 4 floats
 	void setVec4FData(const void* data, const GLint& location, const GLsizei& count)		
 	{
 		glUniform4fv(location, count, static_cast<const float*>(data));
+		glAssert();
 	}
 
 	// Set matrix 2 data, 2x2 floats
 	void setMat2Data(const void* data, const GLint& location, const GLsizei& count)			
 	{
 		glUniformMatrix2fv(location, count, false, static_cast<const float*>(data));
+		glAssert();
 	}
 
 	// Set matrix 3 data, 3x3 floats
 	void setMat3Data(const void* data, const GLint& location, const GLsizei& count)			
 	{
 		glUniform3fv(location, count, static_cast<const float*>(data));
+		glAssert();
 	}
 
 	// Setter for 4D matrix data, 4x4 floats
 	void setMat4Data(const void* data, const GLint& location, const GLsizei& count)			
 	{ 
 		glUniformMatrix4fv(location, count, GL_FALSE, static_cast<const GLfloat*>(data));
+		glAssert();
 	}
 
 	// Setter for 2D texture data, count isn't used here
 	void setTex2dData(const void* data, const GLint& location, const GLsizei& count)
 	{
 		glUniform1i(location, *(static_cast<const GLint*>(data)));
+		glAssert();
 	}
 
 	// Returns the uniform set function for the opengl 

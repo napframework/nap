@@ -5,6 +5,7 @@
 // External Includes
 #include <iostream>
 #include <unordered_set>
+#include <assert.h>
 
 namespace opengl
 {
@@ -33,6 +34,7 @@ namespace opengl
 
 		// Generate textures
 		glGenTextures(1, &mTextureId);
+		glAssert();
 
 		// Upload texture parameters
 		updateParameters(mParameters);
@@ -40,7 +42,7 @@ namespace opengl
 
 
 	// Binds the texture
-	bool BaseTexture::bind() const
+	bool BaseTexture::bind()
 	{
 		if (!isAllocated())
 		{
@@ -53,7 +55,7 @@ namespace opengl
 
 
 	// Detach the texture from the current Texture Unit
-	bool BaseTexture::unbind() const
+	bool BaseTexture::unbind()
 	{
 		if (!isAllocated())
 		{
@@ -115,8 +117,8 @@ namespace opengl
 
 		// Generate and check for errors
 		glGenerateMipmap(getTargetType());
-		
-		// Check if successful
+
+		// Check if 
 		GLenum error_code = glGetError();
 		if (error_code != GL_NO_ERROR)
 			printMessage(MessageType::ERROR, "unable to generate mip-map for texture, unknown error");
@@ -141,5 +143,6 @@ namespace opengl
 			mSettings.format,
 			mSettings.type ,
 			data);
+		glAssert();
 	}
 } // opengl

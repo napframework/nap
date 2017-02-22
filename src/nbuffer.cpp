@@ -1,11 +1,14 @@
 #include "nbuffer.h"
+#include <assert.h>
 
 namespace opengl
 {
 	Buffer::~Buffer()
 	{
 		if (isAllocated())
+		{
 			glDeleteBuffers(1, &mId);
+		}
 	}
 
 	// Initialize buffer
@@ -18,6 +21,7 @@ namespace opengl
 			glDeleteBuffers(1, &mId);
 		}
 		glGenBuffers(1, &mId);
+		glAssert();
 	}
 
 

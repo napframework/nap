@@ -164,4 +164,19 @@ namespace opengl
 		glDisable(GL_POINT_SMOOTH);
 	}
 
+
+	bool printErrorMessage(char *file, int line)
+	{
+		GLenum error_code;
+		int retCode = 0;
+
+		// Get error
+		error_code = glGetError();
+		if (error_code != GL_NO_ERROR)
+		{
+			printMessage(MessageType::ERROR, "file: %s, line: %d, %s", glewGetErrorString(error_code));
+			return true;
+		}
+		return false;
+	}
 }
