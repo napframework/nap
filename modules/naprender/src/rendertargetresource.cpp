@@ -18,6 +18,7 @@ namespace nap
 	// Return the frame buffer, initialize if necessary
 	const opengl::FramebufferBase& FrameBufferResource::getTarget() const
 	{
+		// If the framebuffer hasn't been loaded, do so
 		if (!mLoaded)
 		{
 			mFrameBuffer.init();
@@ -25,12 +26,16 @@ namespace nap
 			{
 				nap::Logger::warn("unable to validate frame buffer: %s", getResourcePath().c_str());
 			}
-			else
-			{
-				mFrameBuffer.allocate(size.getValue().x, size.getValue().y);
-			}
 			mLoaded = true;
 		}
+
+		// Check if the size has changed, if so re-allocate textures for buffer
+		if (mDirty)
+		{
+			mFrameBuffer.allocate(size.getValue().x, size.getValue().y);
+			mDirty = false;
+		}
+
 		return mFrameBuffer;
 	}
 
@@ -39,14 +44,6 @@ namespace nap
 	std::string FrameBufferResource::getDisplayName() const
 	{
 		return getResourcePath();
-	}
-
-
-	// Allocated framebuffer based on new settings
-	void FrameBufferResource::update()
-	{
-		opengl::FramebufferBase& target = RenderTargetResource::getTarget();
-		static_cast<opengl::FrameBuffer&>(target).allocate(size.getValue().x, size.getValue().y);
 	}
 
 } // nap

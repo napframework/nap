@@ -77,17 +77,15 @@ namespace nap
 		mutable bool mLoaded = false;
 
 		/**
-		 * allocates frame buffer resources based on size
-		 */
-		void update();
-
-		/**
 		 * Called when the frame buffer size changed, re-allocates resources
 		 */
-		void onDimensionsChanged(AttributeBase& attr)		{ update(); }
+		void onDimensionsChanged(AttributeBase& attr)		{ mDirty = true; }
 		
 		// Slot
 		nap::Slot<AttributeBase&> dimensionsChanged =		{this, &FrameBufferResource::onDimensionsChanged };
+
+		// Dirty flag, used to change framebuffer dimensions
+		mutable bool mDirty = true;
 	};
 }
 
