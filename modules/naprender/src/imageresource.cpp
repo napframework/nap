@@ -23,7 +23,7 @@ namespace nap
 	}
 
 
-	std::string ImageResource::getDisplayName() const
+	const std::string& ImageResource::getDisplayName() const
 	{
 		return mDisplayName;
 	}

@@ -26,12 +26,12 @@ namespace nap
 		/**
 		* @return Human readable string representation of this path
 		*/
-		virtual std::string getDisplayName() const = 0;
+		virtual const std::string& getDisplayName() const = 0;
 
         /**
          * @return The resource path to this resource
          */
-        std::string getResourcePath() const;
+        const std::string& getResourcePath() const;
     private:
         ResourceManagerService* mResourceManger = nullptr;
 	};

@@ -41,7 +41,7 @@ namespace nap
 
 
 	// Resource path is display name for frame buffer
-	std::string FrameBufferResource::getDisplayName() const
+	const std::string& FrameBufferResource::getDisplayName() const
 	{
 		return getResourcePath();
 	}

@@ -27,7 +27,7 @@ namespace nap
 		/**
 		 * @return the mesh display name
 		 */
-		virtual std::string getDisplayName() const override						{ return mDisplayName; }
+		virtual const std::string& getDisplayName() const override						{ return mDisplayName; }
 
 		/**
 		 * @return the opengl mesh that can be drawn to screen or buffer

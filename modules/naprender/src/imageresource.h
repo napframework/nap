@@ -69,7 +69,7 @@ namespace nap
 		/**
 		 * @return human readable display name
 		 */
-		virtual std::string getDisplayName() const override;
+		virtual const std::string& getDisplayName() const override;
 
 
 	private:
