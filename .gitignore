@@ -26,3 +26,9 @@ napkin/Release/
 /msvc32
 /msvc64
 *.pyc
+*.tlog
+*.obj
+*.cache
+*.pdb
+*.log
+*.idb

@@ -27,7 +27,7 @@ namespace nap
 	class EtherDreamService : public Service
 	{
 		// Enable RTTI
-		RTTI_ENABLE_DERIVED_FROM(Service);
+		RTTI_ENABLE_DERIVED_FROM(Service)
 
 		// Declare itself as service
 		NAP_DECLARE_SERVICE()

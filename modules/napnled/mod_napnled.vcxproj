@@ -19,38 +19,36 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{86F522D8-AE08-4020-9CB4-E15DBCE73221}</ProjectGuid>
-    <Keyword>Win32Proj</Keyword>
-    <RootNamespace>napetherservice</RootNamespace>
+    <ProjectGuid>{7DAF875E-D898-4A7A-BE68-9A2D86D4585E}</ProjectGuid>
+    <RootNamespace>mod_napnled</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
-    <ProjectName>mod_napetherservice</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -70,47 +68,35 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(IncludePath)</IncludePath>
-  </PropertyGroup>
+  <PropertyGroup />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\core\src;..\..\..\openFrameworks\libs\openFrameworks;..\..\..\openFrameworks\libs\openFrameworks\graphics;..\..\..\openFrameworks\libs\openFrameworks\app;..\..\..\openFrameworks\libs\openFrameworks\sound;..\..\..\openFrameworks\libs\openFrameworks\utils;..\..\..\openFrameworks\libs\openFrameworks\communication;..\..\..\openFrameworks\libs\openFrameworks\video;..\..\..\openFrameworks\libs\openFrameworks\types;..\..\..\openFrameworks\libs\openFrameworks\math;..\..\..\openFrameworks\libs\openFrameworks\3d;..\..\..\openFrameworks\libs\openFrameworks\gl;..\..\..\openFrameworks\libs\openFrameworks\events;..\..\..\openFrameworks\libs\glut\include;..\..\..\openFrameworks\libs\rtAudio\include;..\..\..\openFrameworks\libs\quicktime\include;..\..\..\openFrameworks\libs\freetype\include;..\..\..\openFrameworks\libs\freetype\include\freetype2;..\..\..\openFrameworks\libs\freeImage\include;..\..\..\openFrameworks\libs\fmodex\include;..\..\..\openFrameworks\libs\videoInput\include;..\..\..\openFrameworks\libs\glew\include\;..\..\..\openFrameworks\libs\glu\include;..\..\..\openFrameworks\libs\tess2\include;..\..\..\openFrameworks\libs\cairo\include\cairo;..\..\..\openFrameworks\libs\poco\include;..\..\..\openFrameworks\libs\glfw\include;..\..\..\openFrameworks\libs\boost\include;..\..\..\openFrameworks\libs\utf8cpp\include;..\..\..\openFrameworks\libs\gl\include;..\..\..\openFrameworks\libs\openssl\include;..\..\..\openFrameworks\libs\addons;.\src;..\napof\src;..\..\..\netherdream\netherdream</AdditionalIncludeDirectories>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>..\..\core\src;..\..\..\openFrameworks\libs\openFrameworks;..\..\..\openFrameworks\libs\openFrameworks\graphics;..\..\..\openFrameworks\libs\openFrameworks\app;..\..\..\openFrameworks\libs\openFrameworks\sound;..\..\..\openFrameworks\libs\openFrameworks\utils;..\..\..\openFrameworks\libs\openFrameworks\communication;..\..\..\openFrameworks\libs\openFrameworks\video;..\..\..\openFrameworks\libs\openFrameworks\types;..\..\..\openFrameworks\libs\openFrameworks\math;..\..\..\openFrameworks\libs\openFrameworks\3d;..\..\..\openFrameworks\libs\openFrameworks\gl;..\..\..\openFrameworks\libs\openFrameworks\events;..\..\..\openFrameworks\libs\glut\include;..\..\..\openFrameworks\libs\rtAudio\include;..\..\..\openFrameworks\libs\quicktime\include;..\..\..\openFrameworks\libs\freetype\include;..\..\..\openFrameworks\libs\freetype\include\freetype2;..\..\..\openFrameworks\libs\freeImage\include;..\..\..\openFrameworks\libs\fmodex\include;..\..\..\openFrameworks\libs\videoInput\include;..\..\..\openFrameworks\libs\glew\include\;..\..\..\openFrameworks\libs\glu\include;..\..\..\openFrameworks\libs\tess2\include;..\..\..\openFrameworks\libs\cairo\include\cairo;..\..\..\openFrameworks\libs\poco\include;..\..\..\openFrameworks\libs\glfw\include;..\..\..\openFrameworks\libs\boost\include;..\..\..\openFrameworks\libs\utf8cpp\include;..\..\..\openFrameworks\libs\gl\include;..\..\..\openFrameworks\libs\openssl\include;..\..\..\openFrameworks\libs\addons;.\src;..\napof\src;..\..\..\nled\nled\src;..\..\..\asio\include;..\..\..\nled\nledserver\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>ASIO_STANDALONE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <Link>
-      <SubSystem>Windows</SubSystem>
-    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
     </ClCompile>
-    <Link>
-      <SubSystem>Windows</SubSystem>
-    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\core\src;..\..\..\openFrameworks\libs\openFrameworks;..\..\..\openFrameworks\libs\openFrameworks\graphics;..\..\..\openFrameworks\libs\openFrameworks\app;..\..\..\openFrameworks\libs\openFrameworks\sound;..\..\..\openFrameworks\libs\openFrameworks\utils;..\..\..\openFrameworks\libs\openFrameworks\communication;..\..\..\openFrameworks\libs\openFrameworks\video;..\..\..\openFrameworks\libs\openFrameworks\types;..\..\..\openFrameworks\libs\openFrameworks\math;..\..\..\openFrameworks\libs\openFrameworks\3d;..\..\..\openFrameworks\libs\openFrameworks\gl;..\..\..\openFrameworks\libs\openFrameworks\events;..\..\..\openFrameworks\libs\glut\include;..\..\..\openFrameworks\libs\rtAudio\include;..\..\..\openFrameworks\libs\quicktime\include;..\..\..\openFrameworks\libs\freetype\include;..\..\..\openFrameworks\libs\freetype\include\freetype2;..\..\..\openFrameworks\libs\freeImage\include;..\..\..\openFrameworks\libs\fmodex\include;..\..\..\openFrameworks\libs\videoInput\include;..\..\..\openFrameworks\libs\glew\include\;..\..\..\openFrameworks\libs\glu\include;..\..\..\openFrameworks\libs\tess2\include;..\..\..\openFrameworks\libs\cairo\include\cairo;..\..\..\openFrameworks\libs\poco\include;..\..\..\openFrameworks\libs\glfw\include;..\..\..\openFrameworks\libs\boost\include;..\..\..\openFrameworks\libs\utf8cpp\include;..\..\..\openFrameworks\libs\gl\include;..\..\..\openFrameworks\libs\openssl\include;..\..\..\openFrameworks\libs\addons;.\src;..\napof\src;..\..\..\netherdream\netherdream</AdditionalIncludeDirectories>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>..\..\core\src;..\..\..\openFrameworks\libs\openFrameworks;..\..\..\openFrameworks\libs\openFrameworks\graphics;..\..\..\openFrameworks\libs\openFrameworks\app;..\..\..\openFrameworks\libs\openFrameworks\sound;..\..\..\openFrameworks\libs\openFrameworks\utils;..\..\..\openFrameworks\libs\openFrameworks\communication;..\..\..\openFrameworks\libs\openFrameworks\video;..\..\..\openFrameworks\libs\openFrameworks\types;..\..\..\openFrameworks\libs\openFrameworks\math;..\..\..\openFrameworks\libs\openFrameworks\3d;..\..\..\openFrameworks\libs\openFrameworks\gl;..\..\..\openFrameworks\libs\openFrameworks\events;..\..\..\openFrameworks\libs\glut\include;..\..\..\openFrameworks\libs\rtAudio\include;..\..\..\openFrameworks\libs\quicktime\include;..\..\..\openFrameworks\libs\freetype\include;..\..\..\openFrameworks\libs\freetype\include\freetype2;..\..\..\openFrameworks\libs\freeImage\include;..\..\..\openFrameworks\libs\fmodex\include;..\..\..\openFrameworks\libs\videoInput\include;..\..\..\openFrameworks\libs\glew\include\;..\..\..\openFrameworks\libs\glu\include;..\..\..\openFrameworks\libs\tess2\include;..\..\..\openFrameworks\libs\cairo\include\cairo;..\..\..\openFrameworks\libs\poco\include;..\..\..\openFrameworks\libs\glfw\include;..\..\..\openFrameworks\libs\boost\include;..\..\..\openFrameworks\libs\utf8cpp\include;..\..\..\openFrameworks\libs\gl\include;..\..\..\openFrameworks\libs\openssl\include;..\..\..\openFrameworks\libs\addons;.\src;..\napof\src;..\..\..\nled\nled\src;..\..\..\asio\include;..\..\..\nled\nledserver\include</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4503</DisableSpecificWarnings>
+      <PreprocessorDefinitions>ASIO_STANDALONE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
@@ -118,39 +104,29 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\netherdream\netherdream\netherdream.vcxproj">
-      <Project>{9942e787-34e1-4597-9fa7-c2f195c03ca7}</Project>
+    <ProjectReference Include="..\..\..\nled\nled\nled.vcxproj">
+      <Project>{5f86a842-8752-4b48-b359-2371d79752cb}</Project>
     </ProjectReference>
     <ProjectReference Include="..\napof\napof.vcxproj">
-      <Project>{090d26de-a143-403e-8089-284e0999f9a0}</Project>
+      <Project>{8a4ab467-68ec-4515-9621-7e2409a8eb41}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\napethercamera.h" />
-    <ClInclude Include="src\napetherservice.h" />
-    <ClInclude Include="src\ofetherdream.h" />
+    <ClInclude Include="src\napnledservice.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\napethercamera.cpp" />
-    <ClCompile Include="src\napetherservice.cpp" />
-    <ClCompile Include="src\ofetherdream.cpp" />
+    <ClCompile Include="src\napnledservice.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

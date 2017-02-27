@@ -71,5 +71,5 @@ namespace nap
 	bool convert_ofEasyCam_to_string(const ofCam& inValue, std::string& outValue);
 }
 
-RTTI_DECLARE(nap::OFSimpleCamComponent)
 RTTI_DECLARE_DATA(ofCam)
+RTTI_DECLARE(nap::OFSimpleCamComponent)

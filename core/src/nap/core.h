@@ -219,7 +219,7 @@ namespace nap
 
 		// Correct way of doing it
 		unique_ptr->registerTypes(*this);
-		
+
 		// Get member
 		T& return_v = *unique_ptr;
 
