@@ -3,31 +3,10 @@
 #include <nap/service.h>
 #include <nap/coreattributes.h>
 #include <nap/configure.h>
-#include <asio.hpp>
-
-// Namespace
-using asio::ip::tcp;
+#include "ofnledclient.h"
 
 namespace nap
 {
-	/**
-	 * @brief represents a struct that holds specific led information
-	 */
-	class NLedPanelInfo : public AttributeObject
-	{
-		RTTI_ENABLE_DERIVED_FROM(AttributeObject)
-	public:
-		NLedPanelInfo() = default;
-
-		// Panel Attributes
-		Attribute<int> id =			{ this, "id", -1 };
-		Attribute<int> count =		{ this, "ledCount", 0 };
-		Attribute<int> height =		{ this, "height", 0 };
-		Attribute<int> width =		{ this, "width", 0 };
-		Attribute<int> bufferSize = { this, "bufferSize", 0};
-	};
-
-
 	/**
 	 * @brief client interface to nled server
 	 */
@@ -35,18 +14,6 @@ namespace nap
 	{
 		RTTI_ENABLE_DERIVED_FROM(Service)
 	public:
-		/**
-		 * Holds server status
-		 */
-		enum class Status : int8_t
-		{
-			Disconnected	= -1,
-			Connected		= 0,
-			ConnectionError	= 1,
-			ClientError		= 2,
-			ReadError		= 3,
-		};
-
 		/**
 		 * Constructor
 		 */
@@ -58,14 +25,16 @@ namespace nap
 		virtual ~NLedService();
 
 		/**
-		 * Connect to server
+		 * Start running service
+		 * This will force the service to connect
 		 */
-		Status connect();
+		void start();
 
 		/**
-		 * Disconnect from server
+		 * Stop running service
+		 * This will force the service to disconnect
 		 */
-		void disconnect();
+		void stop();
 
 		/**
 		 * Name of the nled server
@@ -78,25 +47,9 @@ namespace nap
 		Attribute<int> portNumber	{ this, "portNumber",  7845 };
 
 	private:
-		/**
-		 * Reads led configuration and populates led panel information
-		 */
-		bool readLedConfig();
-
-		/**
-		 * Current server status
-		 */
-		Status mStatus = Status::Disconnected;
-
-		//@name Network
-		std::unique_ptr<tcp::socket>	mSocket = nullptr;
-		asio::io_service				mNetworkService;
-		asio::error_code				mError;
-
 		//@name Panels
-
+		nofNLedClient mClient;
 	};
 }
 
 RTTI_DECLARE(nap::NLedService)
-RTTI_DECLARE(nap::NLedPanelInfo)

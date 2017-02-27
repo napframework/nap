@@ -75,7 +75,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>..\..\core\src;..\..\..\openFrameworks\libs\openFrameworks;..\..\..\openFrameworks\libs\openFrameworks\graphics;..\..\..\openFrameworks\libs\openFrameworks\app;..\..\..\openFrameworks\libs\openFrameworks\sound;..\..\..\openFrameworks\libs\openFrameworks\utils;..\..\..\openFrameworks\libs\openFrameworks\communication;..\..\..\openFrameworks\libs\openFrameworks\video;..\..\..\openFrameworks\libs\openFrameworks\types;..\..\..\openFrameworks\libs\openFrameworks\math;..\..\..\openFrameworks\libs\openFrameworks\3d;..\..\..\openFrameworks\libs\openFrameworks\gl;..\..\..\openFrameworks\libs\openFrameworks\events;..\..\..\openFrameworks\libs\glut\include;..\..\..\openFrameworks\libs\rtAudio\include;..\..\..\openFrameworks\libs\quicktime\include;..\..\..\openFrameworks\libs\freetype\include;..\..\..\openFrameworks\libs\freetype\include\freetype2;..\..\..\openFrameworks\libs\freeImage\include;..\..\..\openFrameworks\libs\fmodex\include;..\..\..\openFrameworks\libs\videoInput\include;..\..\..\openFrameworks\libs\glew\include\;..\..\..\openFrameworks\libs\glu\include;..\..\..\openFrameworks\libs\tess2\include;..\..\..\openFrameworks\libs\cairo\include\cairo;..\..\..\openFrameworks\libs\poco\include;..\..\..\openFrameworks\libs\glfw\include;..\..\..\openFrameworks\libs\boost\include;..\..\..\openFrameworks\libs\utf8cpp\include;..\..\..\openFrameworks\libs\gl\include;..\..\..\openFrameworks\libs\openssl\include;..\..\..\openFrameworks\libs\addons;.\src;..\napof\src;..\..\..\nled\nled\src;..\..\..\asio\include;..\..\..\nled\nledserver\include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>ASIO_STANDALONE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ASIO_STANDALONE;POCO_NO_UNWINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -94,7 +94,7 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>..\..\core\src;..\..\..\openFrameworks\libs\openFrameworks;..\..\..\openFrameworks\libs\openFrameworks\graphics;..\..\..\openFrameworks\libs\openFrameworks\app;..\..\..\openFrameworks\libs\openFrameworks\sound;..\..\..\openFrameworks\libs\openFrameworks\utils;..\..\..\openFrameworks\libs\openFrameworks\communication;..\..\..\openFrameworks\libs\openFrameworks\video;..\..\..\openFrameworks\libs\openFrameworks\types;..\..\..\openFrameworks\libs\openFrameworks\math;..\..\..\openFrameworks\libs\openFrameworks\3d;..\..\..\openFrameworks\libs\openFrameworks\gl;..\..\..\openFrameworks\libs\openFrameworks\events;..\..\..\openFrameworks\libs\glut\include;..\..\..\openFrameworks\libs\rtAudio\include;..\..\..\openFrameworks\libs\quicktime\include;..\..\..\openFrameworks\libs\freetype\include;..\..\..\openFrameworks\libs\freetype\include\freetype2;..\..\..\openFrameworks\libs\freeImage\include;..\..\..\openFrameworks\libs\fmodex\include;..\..\..\openFrameworks\libs\videoInput\include;..\..\..\openFrameworks\libs\glew\include\;..\..\..\openFrameworks\libs\glu\include;..\..\..\openFrameworks\libs\tess2\include;..\..\..\openFrameworks\libs\cairo\include\cairo;..\..\..\openFrameworks\libs\poco\include;..\..\..\openFrameworks\libs\glfw\include;..\..\..\openFrameworks\libs\boost\include;..\..\..\openFrameworks\libs\utf8cpp\include;..\..\..\openFrameworks\libs\gl\include;..\..\..\openFrameworks\libs\openssl\include;..\..\..\openFrameworks\libs\addons;.\src;..\napof\src;..\..\..\nled\nled\src;..\..\..\asio\include;..\..\..\nled\nledserver\include</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4503</DisableSpecificWarnings>
-      <PreprocessorDefinitions>ASIO_STANDALONE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ASIO_STANDALONE;POCO_NO_UNWINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -123,10 +123,14 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\napnledpanel.h" />
     <ClInclude Include="src\napnledservice.h" />
+    <ClInclude Include="src\ofnledclient.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\napnledpanel.cpp" />
     <ClCompile Include="src\napnledservice.cpp" />
+    <ClCompile Include="src\ofnledclient.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

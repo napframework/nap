@@ -18,9 +18,21 @@
     <ClInclude Include="src\napnledservice.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\ofnledclient.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\napnledpanel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\napnledservice.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ofnledclient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\napnledpanel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
