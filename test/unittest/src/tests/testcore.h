@@ -9,3 +9,4 @@ bool testJSONSerializer();
 bool testResourceManager();
 bool testPatch();
 bool testArrayAttribute();
+bool testThreading();

@@ -6,6 +6,7 @@
 #include <nap/coreoperators.h>
 #include <nap/resourcemanager.h>
 #include <nap/arrayattribute.h>
+#include <nap/threading.h>
 #include <jsonserializer.h>
 #include <thread>
 
@@ -221,6 +222,18 @@ bool testArrayAttribute()
     TEST_ASSERT(arrayA.getSize() == 0, "Array must be empty after clearing");
     
         
+    return true;
+}
+
+
+bool testThreading()
+{
+    nap::WorkerThread myThread;
+    myThread.enqueue([](){
+        std::cout << "this runs on myThread" << std::endl;
+    });
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
     return true;
 }
 

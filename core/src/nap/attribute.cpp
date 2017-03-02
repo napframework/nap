@@ -12,7 +12,7 @@ namespace nap
     /**
     @brief Attribute Constructor
     **/
-    AttributeBase::AttributeBase(AttributeObject* parent, const std::string& name, bool atomic)
+    AttributeBase::AttributeBase(AttributeObject* parent, const std::string& name)
 	{
         mName = name;
         parent->addChild(*this);

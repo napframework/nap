@@ -12,7 +12,7 @@ namespace nap {
     }
     
     
-    CompoundAttribute::CompoundAttribute(AttributeObject* parent, const std::string& name, bool atomic) : AttributeBase(parent, name, atomic)
+    CompoundAttribute::CompoundAttribute(AttributeObject* parent, const std::string& name) : AttributeBase(parent, name)
     {
         initialize();
     }

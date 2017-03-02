@@ -33,7 +33,7 @@ namespace nap
 	public:
 		// Constructor
 		AttributeBase() = default;
-		AttributeBase(AttributeObject* parent, const std::string& name, bool atomic = false);
+		AttributeBase(AttributeObject* parent, const std::string& name);
 
 		// Enable default copy behavior
 		AttributeBase(AttributeBase&) = default;
@@ -118,14 +118,14 @@ namespace nap
 		Attribute() : AttributeBase() {  }
 
 		// Constructor with defult value
-		Attribute(AttributeObject* parent, const std::string& name, const T& inValue, bool atomic = false)
-			: AttributeBase(parent, name, atomic), mValue(inValue)
+		Attribute(AttributeObject* parent, const std::string& name, const T& inValue)
+			: AttributeBase(parent, name), mValue(inValue)
 		{
 			setValueSlot.setFunction({ [this](const T& value) { this->setValue(value); } });
 		}
 
 		// Constructor without default value
-		Attribute(AttributeObject* parent, const std::string& name) : AttributeBase(parent, name, false)
+		Attribute(AttributeObject* parent, const std::string& name) : AttributeBase(parent, name)
 		{
 			setValueSlot.setFunction({ [this](const T& value) { this->setValue(value); } });
 		}
@@ -158,7 +158,7 @@ namespace nap
 
 	protected:
 		// Members
-		T				mValue;
+        T		mValue;
 
 	private:
 		// Keep constructor hidden, use factory methods to instantiate
@@ -179,10 +179,10 @@ namespace nap
 		NumericAttribute() : Attribute<T>() { }
 
 		// Constructor with defult value and min max
-		NumericAttribute(AttributeObject* parent, const std::string& name, const T& value, const T& minValue, const T& maxValue, bool atomic = false, bool clamped = true);
+		NumericAttribute(AttributeObject* parent, const std::string& name, const T& value, const T& minValue, const T& maxValue, bool clamped = true);
 
 		// Constructor with default value and no min / max
-		NumericAttribute(AttributeObject* parent, const std::string& name, const T& value, bool atomic = false);
+		NumericAttribute(AttributeObject* parent, const std::string& name, const T& value);
 
 		// Constructor to declare an attribute with a member function pointer for the @valueChangedSignal as last argument.
 		// TODO: REMOVE THIS UGLY OVER TEMPLATED CONSTRUCTOR

@@ -17,7 +17,7 @@ namespace nap {
         // Default constructor
         CompoundAttribute();
         // Constructor that takes a parent and a name
-        CompoundAttribute(AttributeObject* parent, const std::string& name, bool atomic = false);
+        CompoundAttribute(AttributeObject* parent, const std::string& name);
         
         // Inits slots to respond to child value changes
         void initialize();

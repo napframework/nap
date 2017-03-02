@@ -18,6 +18,7 @@ int main(int argc, char** argv)
     TEST_ADD(testJSONSerializer)
     TEST_ADD(testResourceManager)
     TEST_ADD(testArrayAttribute)
+    TEST_ADD(testThreading);
 
 	TEST_RUN()
 }

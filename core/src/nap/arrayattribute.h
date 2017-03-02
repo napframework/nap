@@ -31,7 +31,7 @@ namespace nap
     public:
         // Constructor
         ArrayAttributeBase() = default;
-        ArrayAttributeBase(AttributeObject* parent, const std::string& name, bool atomic = false) : AttributeBase(parent, name, atomic) {}
+        ArrayAttributeBase(AttributeObject* parent, const std::string& name) : AttributeBase(parent, name) {}
         
         // Enable default copy behavior
         ArrayAttributeBase(ArrayAttributeBase&) = default;
@@ -58,22 +58,22 @@ namespace nap
         ArrayAttribute() : ArrayAttributeBase() {  }
         
         // Constructor with defult value
-        ArrayAttribute(AttributeObject* parent, const std::string& name, const std::vector<T>& inValue, bool atomic = false)
-        : ArrayAttributeBase(parent, name, atomic), mValue(inValue)
+        ArrayAttribute(AttributeObject* parent, const std::string& name, const std::vector<T>& inValue)
+        : ArrayAttributeBase(parent, name), mValue(inValue)
         {
             setValueSlot.setFunction({ [this](const std::vector<T>& value) { this->setValue(value); } });
         }
         
         // Constructor without default value
-        ArrayAttribute(AttributeObject* parent, const std::string& name) : ArrayAttributeBase(parent, name, false)
+        ArrayAttribute(AttributeObject* parent, const std::string& name) : ArrayAttributeBase(parent, name)
         {
             setValueSlot.setFunction({ [this](const std::vector<T>& value) { this->setValue(value); } });
         }
         
         // Constructor to declare an attribute with a member function pointer for the @valueChangedSignal as last argument.
         template <typename U, typename F>
-        ArrayAttribute(U* parent, const std::string& name, const std::vector<T>& inValue, F function, bool atomic = false)
-        : ArrayAttributeBase(parent, name, atomic), mValue(inValue)
+        ArrayAttribute(U* parent, const std::string& name, const std::vector<T>& inValue, F function)
+        : ArrayAttributeBase(parent, name), mValue(inValue)
         {
             setValueSlot.setFunction({ [this](const std::vector<T>& value) { this->setValue(value); } });
             valueChanged.connect(parent, function);

@@ -104,8 +104,8 @@ namespace nap
 
     
 	template <typename T>
-	NumericAttribute<T>::NumericAttribute(AttributeObject* parent, const std::string& name, const T& value, const T& minValue, const T& maxValue, bool atomic, bool clamped)
-		: Attribute<T>(parent, name, value, atomic)
+	NumericAttribute<T>::NumericAttribute(AttributeObject* parent, const std::string& name, const T& value, const T& minValue, const T& maxValue, bool clamped)
+		: Attribute<T>(parent, name, value)
 	{
 		setRange(minValue, maxValue);
 		setClamped(clamped);
@@ -114,8 +114,8 @@ namespace nap
 
 	// Constructor with default value and no min / max
 	template <typename T>
-	NumericAttribute<T>::NumericAttribute(AttributeObject* parent, const std::string& name, const T& value, bool atomic)
-		: Attribute<T>(parent, name, value, atomic)
+	NumericAttribute<T>::NumericAttribute(AttributeObject* parent, const std::string& name, const T& value)
+		: Attribute<T>(parent, name, value)
 	{
 		setRange(value, value);
 	}
