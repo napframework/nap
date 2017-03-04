@@ -1,7 +1,16 @@
 // attribute.h template definitions
 
-namespace nap
-{
+namespace nap {
+    
+    template <typename T>
+    const T& AttributeBase::getValue() const
+    {
+        assert(getTypeInfo().isKindOf<Attribute<T>>());
+        auto thisAttribute = static_cast<const Attribute<T>*>(this);
+        return thisAttribute->getValue();
+    }
+    
+    
 	template <typename T>
 	const RTTI::TypeInfo Attribute<T>::getValueType() const
 	{
@@ -19,6 +28,7 @@ namespace nap
 	template <typename T>
 	const T& Attribute<T>::getValue() const
 	{
+        std::lock_guard<std::mutex> lock(mMutex);
         return mValue;
 	}
 
@@ -33,11 +43,15 @@ namespace nap
 	template <typename T>
 	void Attribute<T>::setValue(const T& inValue)
 	{
-		// Don't change if it's the same
-		if (inValue == mValue)
-			return;
+        {
+            std::lock_guard<std::mutex> lock(mMutex);
+            
+            // Don't change if it's the same
+            if (inValue == mValue)
+                return;
 
-        mValue = inValue;
+            mValue = inValue;
+        }
 
 		valueChanged(*this);
 	}
@@ -50,10 +64,16 @@ namespace nap
         assert(inAttribute.getTypeInfo() == getTypeInfo());
         
 		const Attribute<T>& in_attr = static_cast<const Attribute<T>&>(inAttribute);
-		if (in_attr.mValue == mValue)
-			return;
+        
+        {
+            std::lock_guard<std::mutex> lock(mMutex);
+            std::lock_guard<std::mutex> inAttrLock(in_attr.mMutex);
+            
+            if (in_attr.mValue == mValue)
+                return;
 
-        mValue = in_attr.mValue;
+            mValue = in_attr.mValue;
+        }
 
 		valueChanged(*this);
 	}

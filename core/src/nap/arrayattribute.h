@@ -1,13 +1,5 @@
 #pragma once
 
-//
-//  ArrayAttribute.hpp
-//  Soundlab
-//
-//  Created by Stijn van Beek on 10/3/16.
-//
-//
-
 // External includes
 #include <stdio.h>
 
@@ -84,7 +76,7 @@ namespace nap
         // Getters
         virtual void getValue(AttributeBase& inAttribute) const override;
         const std::vector<T>& getValue() const;
-        std::vector<T>& getValueRef();
+        std::vector<T>& getValueRef(); // warning: this function is not thread-safe
         const T& getValue(int index) const;
         
         // Setters
@@ -146,6 +138,7 @@ namespace nap
     template <typename T>
     const std::vector<T>& ArrayAttribute<T>::getValue() const
     {
+        std::lock_guard<std::mutex> lock(mMutex);
         return mValue;
     }
     
@@ -160,6 +153,7 @@ namespace nap
     template <typename T>
     const T& ArrayAttribute<T>::getValue(int index) const
     {
+        std::lock_guard<std::mutex> lock(mMutex);
         return mValue.at(index);
     }
 
@@ -167,7 +161,11 @@ namespace nap
     template <typename T>
     void ArrayAttribute<T>::setValue(const std::vector<T>& inValue)
     {
-        mValue = inValue;
+        {
+            std::lock_guard<std::mutex> lock(mMutex);
+            mValue = inValue;
+        }
+        
         valueChanged(*this);
     }
     
@@ -178,8 +176,12 @@ namespace nap
     {
         assert(inAttribute.getTypeInfo() == getTypeInfo());
         const ArrayAttribute<T>& in_attr = static_cast<const ArrayAttribute<T>&>(inAttribute);
-
-        mValue = in_attr.mValue;
+        
+        {
+            std::lock_guard<std::mutex> lock(mMutex);
+            std::lock_guard<std::mutex> inAttrLock(in_attr.mMutex);
+            mValue = in_attr.mValue;
+        }
         
         valueChanged(*this);
     }
@@ -188,7 +190,10 @@ namespace nap
     template <typename T>
     void ArrayAttribute<T>::setValue(int index, const T& inValue)
     {
-        mValue[index] = inValue;
+        {
+            std::lock_guard<std::mutex> lock(mMutex);
+            mValue[index] = inValue;
+        }
         
         valueChanged(*this);
     }
@@ -197,7 +202,10 @@ namespace nap
     template <typename T>
     void ArrayAttribute<T>::add(const T& element)
     {
-        mValue.emplace_back(element);
+        {
+            std::lock_guard<std::mutex> lock(mMutex);
+            mValue.emplace_back(element);
+        }
         
         valueChanged(*this); 
     }
@@ -206,9 +214,12 @@ namespace nap
     template <typename T>
     void ArrayAttribute<T>::insert(int index, const T& element)
     {
-        auto it = mValue.begin();
-        std::advance(it, index);
-        mValue.insert(it, element);
+        {
+            std::lock_guard<std::mutex> lock(mMutex);
+            auto it = mValue.begin();
+            std::advance(it, index);
+            mValue.insert(it, element);
+        }
         
         valueChanged(*this);
     }
@@ -217,9 +228,12 @@ namespace nap
     template <typename T>
     void ArrayAttribute<T>::remove(int index)
     {
-        auto it = mValue.begin();
-        std::advance(it, index);
-        mValue.erase(it);
+        {
+            std::lock_guard<std::mutex> lock(mMutex);
+            auto it = mValue.begin();
+            std::advance(it, index);
+            mValue.erase(it);
+        }
         
         valueChanged(*this);
     }
@@ -228,7 +242,11 @@ namespace nap
     template <typename T>
     void ArrayAttribute<T>::clear()
     {
-        mValue.clear();
+        {
+            std::lock_guard<std::mutex> lock(mMutex);
+            mValue.clear();
+        }
+        
         valueChanged(*this);
     }
     

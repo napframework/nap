@@ -1,6 +1,7 @@
 __pycache__
 bin/
 build/
+.idea/
 py/.idea/
 lib/Clang/
 build.sh

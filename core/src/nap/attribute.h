@@ -99,7 +99,7 @@ namespace nap
 	protected:
         
 		// The mutex that will be locked when accessing the attribute's value to make it threadsafe
-		std::mutex			mMutex;
+		mutable std::mutex mMutex;
 
 	};
 
@@ -335,14 +335,6 @@ namespace nap
     };
 
     
-    template <typename T>
-    const T& AttributeBase::getValue() const
-    {
-        assert(getTypeInfo().isKindOf<Attribute<T>>());
-        auto thisAttribute = static_cast<const Attribute<T>*>(this);
-        return thisAttribute->getValue();
-	}
-
 }
 
 // Include template specialization
