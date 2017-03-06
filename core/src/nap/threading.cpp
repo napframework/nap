@@ -13,18 +13,28 @@ namespace nap {
     }
     
     
+    TaskQueue::TaskQueue(unsigned int maxQueueItems) : queue(maxQueueItems)
+    {
+        dequeuedTasks.resize(maxQueueItems);
+    }
+    
+    
+    
     void TaskQueue::processBlocking()
     {
-        queue.wait_dequeue(nextTask);
-        nextTask();
+        auto it = dequeuedTasks.begin();
+        auto count = queue.wait_dequeue_bulk(it, dequeuedTasks.size());
+        for (auto i = 0; i < count; ++i)
+            (*it++)();
     }
     
     
     void TaskQueue::process()
     {
-        queue.try_dequeue(nextTask);
-        if (nextTask)
-            nextTask();
+        auto it = dequeuedTasks.begin();
+        auto count = queue.try_dequeue_bulk(it, dequeuedTasks.size());
+        for (auto i = 0; i < count; ++i)
+            (*it++)();
     }
     
     

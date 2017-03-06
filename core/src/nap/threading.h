@@ -19,7 +19,7 @@ namespace nap {
         
     public:
         // constructor takes maximum number of items that can be in the queue at a time
-        TaskQueue(unsigned int maxQueueItems = 20) : queue(maxQueueItems) { }
+        TaskQueue(unsigned int maxQueueItems = 20);
         // add a task to the end of the queue
         void enqueue(Task task) { queue.enqueue(task); }
         
@@ -33,7 +33,7 @@ namespace nap {
         
     private:
         moodycamel::BlockingConcurrentQueue<Task> queue;
-        Task nextTask = nullptr;
+        std::vector<Task> dequeuedTasks;
     };
     
     
