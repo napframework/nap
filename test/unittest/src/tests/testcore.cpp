@@ -228,8 +228,12 @@ bool testArrayAttribute()
 
 bool testThreading()
 {
-    nap::WorkerThread myThread;
-    myThread.execute([](){
+    nap::WorkerThread myThread(false);
+    
+    myThread.loop.connect([](nap::WorkerThread&){
+        std::cout << "this runs on myThread" << std::endl;
+    });
+    myThread.enqueue([](){
         std::cout << "this runs on myThread" << std::endl;
     });
 

@@ -5,6 +5,7 @@
 #include <thread>
 #include <vector>
 #include <nap/blockingconcurrentqueue.h>
+#include <nap/signalslot.h>
 
 namespace nap {
     
@@ -42,11 +43,23 @@ namespace nap {
      */
     class WorkerThread {
     public:
-        WorkerThread(unsigned int maxQueueItems = 20);
+        /**
+         * @blocking: 
+         *   true: the threads blocks and waits for enqueued tasks to perform
+         *   false: the threads runs through the loop as fast as possible and emits @execute every iteration
+         * @maxQueueItems: the maximum number of items in the task queue
+         */
+        WorkerThread(bool blocking = true, unsigned int maxQueueItems = 20);
         ~WorkerThread();
         
         // enqueues a task to be performed on this thread
-        void execute(TaskQueue::Task task) { taskQueue.enqueue(task); }
+        void enqueue(TaskQueue::Task task) { taskQueue.enqueue(task); }
+        
+        /** 
+         * Signal emitted every time the thread loop is executed
+         * Only in case of a non-blocking thread.
+         */
+        nap::Signal<WorkerThread&> loop;
         
     private:
         std::unique_ptr<std::thread> thread = nullptr;

@@ -38,13 +38,26 @@ namespace nap {
     }
     
     
-    WorkerThread::WorkerThread(unsigned int maxQueueItems) : taskQueue(maxQueueItems)
+    WorkerThread::WorkerThread(bool blocking, unsigned int maxQueueItems) : taskQueue(maxQueueItems)
     {
         stop = false;
-        thread = std::make_unique<std::thread>([&](){
-            while (!stop)
-                taskQueue.processBlocking();
-        });
+        
+        
+        if (blocking)
+        {
+            thread = std::make_unique<std::thread>([&](){
+                while (!stop)
+                    taskQueue.processBlocking();
+            });
+        }
+        else {
+            thread = std::make_unique<std::thread>([&](){
+                while (!stop) {
+                    taskQueue.process();
+                    loop(*this);
+                }
+            });
+        }
         
         setThreadScheduling(*thread);
     }
