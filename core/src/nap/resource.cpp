@@ -22,7 +22,8 @@ namespace nap
 
 
 
-	const std::string& Resource::getResourcePath() const {
+	std::string Resource::getResourcePath() const 
+	{
         return mResourceManger->getResourcePath(*this);
     }
 

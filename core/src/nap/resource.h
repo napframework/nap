@@ -31,7 +31,8 @@ namespace nap
         /**
          * @return The resource path to this resource
          */
-        const std::string& getResourcePath() const;
+        std::string getResourcePath() const;
+
     private:
         ResourceManagerService* mResourceManger = nullptr;
 	};
