@@ -2,6 +2,16 @@
 
 namespace nap {
     
+    // utility to adjust thread scheduling to round-robin with highest priority, unix pthread only
+    void setThreadScheduling(std::thread& th)
+    {
+#ifdef UNIX
+        sched_param schedParams;
+        schedParams.sched_priority = 99;
+        pthread_setschedparam(th.native_handle(), SCHED_RR, &schedParams);
+#endif
+    }
+    
     
     void TaskQueue::processBlocking()
     {
@@ -18,19 +28,15 @@ namespace nap {
     }
     
     
-    WorkerThread::WorkerThread(unsigned int maxQueueItems) : TaskQueue(maxQueueItems)
+    WorkerThread::WorkerThread(unsigned int maxQueueItems) : taskQueue(maxQueueItems)
     {
         stop = false;
         thread = std::make_unique<std::thread>([&](){
             while (!stop)
-                processBlocking();
+                taskQueue.processBlocking();
         });
         
-#ifdef UNIX
-        sched_param schedParams;
-        schedParams.sched_priority = 99;
-        pthread_setschedparam(thread->native_handle(), SCHED_RR, &schedParams);
-#endif
+        setThreadScheduling(*thread);
     }
     
     
@@ -39,13 +45,13 @@ namespace nap {
         stop = true;
         
         // enqueue empty function for thread to make it stop blocking
-        enqueue([](){});
+        taskQueue.enqueue([](){});
         
         thread->join();
     }
     
     
-    ThreadPool::ThreadPool(unsigned int numberOfThreads, unsigned int maxQueueItems) : TaskQueue(maxQueueItems)
+    ThreadPool::ThreadPool(unsigned int numberOfThreads, unsigned int maxQueueItems) : taskQueue(maxQueueItems)
     {
         stop = false;
         for (unsigned int i = 0; i < numberOfThreads; ++i)
@@ -65,7 +71,7 @@ namespace nap {
         
         // enqueue empty function for each thread to make it stop blocking
         for (unsigned int i = 0; i < threads.size(); ++i)
-            enqueue([](){});
+            taskQueue.enqueue([](){});
         
         for (auto& thread : threads)
             thread.join();
@@ -84,35 +90,15 @@ namespace nap {
     }
     
     
-    void ThreadPool::setScheduling(int aPolicy, int aPriority)
-    {
-        for (auto& th : threads)
-            setThreadScheduling(th);
-    }
-    
-    
     void ThreadPool::addThread()
     {
         threads.emplace_back([&](){
             while (!stop)
-                processBlocking();
+                taskQueue.processBlocking();
         });
         
         setThreadScheduling(threads.back());
     }
-    
-    
-    void ThreadPool::setThreadScheduling(std::thread& th)
-    {
-#ifdef UNIX
-        sched_param schedParams;
-        schedParams.sched_priority = 99;
-        pthread_setschedparam(th.native_handle(), SCHED_RR, &schedParams);
-#endif
-    }
-    
-    
-    
     
     
 }

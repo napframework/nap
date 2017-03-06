@@ -229,7 +229,7 @@ bool testArrayAttribute()
 bool testThreading()
 {
     nap::WorkerThread myThread;
-    myThread.enqueue([](){
+    myThread.execute([](){
         std::cout << "this runs on myThread" << std::endl;
     });
 
