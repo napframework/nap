@@ -57,12 +57,8 @@ namespace nap
         
 		// Return true if this entity has a component of type T
 		template <typename T>
-        bool hasComponent() const {
-			RTTI::TypeInfo type = RTTI::TypeInfo::get<T>();
-            assert(type.isKindOf<Component>());
-            return hasChildOfType<T>();
-        }
-
+        bool hasComponent() const;
+        
 		// Returns a component with the given name, null if not found
 		Component* getComponent(const std::string& name) { return getChild<Component>(name); }
 
@@ -73,31 +69,20 @@ namespace nap
 
 		// Returns the first component of type T
 		template <typename T>
-        T* getComponent() {
-			RTTI::TypeInfo type = RTTI::TypeInfo::get<T>();
-            assert(type.isKindOf<Component>());
-            return getChildOfType<T>();
-        }
-
+        T* getComponent();
+        
+        // Returns the first component of type T, if none exists, create one and return it
         template<typename T>
-        T& getOrCreateComponent() {
-            T* component = getComponent<T>();
-            if (component)
-                return *component;
-            return addComponent<T>();
-        }
-
-		// Returns all components that are kind of T
+        T& getOrCreateComponent();
+        
+        // Returns all components that are kind of T
 		template <typename T>
         void getComponentsOfType(std::vector<T*>& outComponents) { outComponents = getChildrenOfType<T>(); }
 
+        // Returns all components that are kind of T
 		template<typename T>
-		std::vector<T*> getComponentsOfType() {
-			std::vector<T*> comps;
-			getComponentsOfType<T>(comps);
-			return comps;
-		}
-
+        std::vector<T*> getComponentsOfType();
+        
 		// Returns the root entity by traversing the tree up
 		Entity* getRoot();
 
@@ -125,8 +110,42 @@ namespace nap
 		Entity(Core& core) : mCore(core) {}
 		Core& mCore;
 	};
+    
+    
+    // template definitions
 
+    template <typename T>
+    bool Entity::hasComponent() const {
+        RTTI::TypeInfo type = RTTI::TypeInfo::get<T>();
+        assert(type.isKindOf<Component>());
+        return hasChildOfType<T>();
+    }
+    
+    
+    template <typename T>
+    T* Entity::getComponent() {
+        RTTI::TypeInfo type = RTTI::TypeInfo::get<T>();
+        assert(type.isKindOf<Component>());
+        return getChildOfType<T>();
+    }
+    
+    
+    template<typename T>
+    T& Entity::getOrCreateComponent() {
+        T* component = getComponent<T>();
+        if (component)
+            return *component;
+        return addComponent<T>();
+    }
 
+    
+    template<typename T>
+    std::vector<T*> Entity::getComponentsOfType() {
+        std::vector<T*> comps;
+        getComponentsOfType<T>(comps);
+        return comps;
+    }
+    
 }
 
 RTTI_DECLARE_BASE(nap::Entity)

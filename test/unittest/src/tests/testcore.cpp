@@ -233,9 +233,12 @@ bool testThreading()
     myThread.loop.connect([](nap::WorkerThread&){
         std::cout << "this runs on myThread" << std::endl;
     });
+    
     myThread.enqueue([](){
         std::cout << "this runs on myThread" << std::endl;
     });
+    
+    myThread.start();
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
     return true;

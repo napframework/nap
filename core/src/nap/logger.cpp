@@ -6,12 +6,7 @@
 
 using namespace std;
 
-namespace nap
-{
-
-
-
-
+namespace nap {
 	void Logger::onLog(LogMessage message)
 	{
         if (message.level().level() < mLevel.level())

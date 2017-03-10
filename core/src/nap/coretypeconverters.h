@@ -39,8 +39,6 @@ namespace nap
     bool convertStringToIntMap(const std::string& inString, std::unordered_map<std::string, int>& outValue);
     bool convertIntMapToString(const std::unordered_map<std::string, int>& inValue, std::string& ioString);
 
-//    bool convertFloatToInt(const float& inValue, int& outValue) { outValue = inValue; return true; }
-//    bool convertIntToFloat(const int& inValue, float& outValue) { outValue = inValue; return true; }
 }
 
 

@@ -55,6 +55,14 @@ namespace nap {
         // enqueues a task to be performed on this thread
         void enqueue(TaskQueue::Task task) { taskQueue.enqueue(task); }
         
+        // start the thread and the thread loop
+        void start();
+        
+        // stop the thread loop and join the thread
+        void stop();
+        
+        bool isRunning() { return running; }
+        
         /** 
          * Signal emitted every time the thread loop is executed
          * Only in case of a non-blocking thread.
@@ -63,7 +71,8 @@ namespace nap {
         
     private:
         std::unique_ptr<std::thread> thread = nullptr;
-        std::atomic<bool> stop;
+        std::atomic<bool> running;
+        bool blocking = true;
         TaskQueue taskQueue;
     };
     
