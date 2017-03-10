@@ -1,6 +1,5 @@
 #pragma once
 #include "nap.h"
-#include "event.h"
 
 namespace nap {
 

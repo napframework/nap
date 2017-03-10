@@ -1,6 +1,5 @@
 // Local Includes
 #include "coremodule.h"
-#include "eventdispatcher.h"
 
 /**
  * Nap Core module constructor
@@ -17,7 +16,6 @@ ModuleNapCore::ModuleNapCore() : nap::Module("NapCore")
 	NAP_REGISTER_DATATYPE(nap::FloatMap)
 	NAP_REGISTER_DATATYPE(nap::IntMap)
 	NAP_REGISTER_DATATYPE(nap::StringMap)
-	NAP_REGISTER_DATATYPE(nap::DispatchMethod)
 
 	// Components
 	NAP_REGISTER_COMPONENT(nap::PatchComponent)
@@ -52,6 +50,4 @@ ModuleNapCore::ModuleNapCore() : nap::Module("NapCore")
 	NAP_REGISTER_TYPECONVERTER(nap::convertIntMapToString)
 	NAP_REGISTER_TYPECONVERTER(nap::convertStringToFloatMap)
 	NAP_REGISTER_TYPECONVERTER(nap::convertFloatMapToString)
-	NAP_REGISTER_TYPECONVERTER(nap::convert_string_to_dispatchmethod)
-	NAP_REGISTER_TYPECONVERTER(nap::convert_dispatchmethod_to_string)
 }
