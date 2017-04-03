@@ -1,9 +1,9 @@
 #include <nap/core.h>
+#include <nap/fileutils.h>
+
 #include <thread>
-//#include <jsonrpcservice.h>
-//#include <rapidjson/error/en.h>
-//#include <rapidjson/filereadstream.h>
-//#include <rapidjson/document.h>
+#include <fstream>
+#include <rapidjson/document.h>
 
 #ifndef APP_NAME
 #define APP_NAME "unknown"
@@ -15,25 +15,45 @@ int main(int argc, char** argv)
 	printf("NAP Skeleton\n");
 
 	bool keepAlive = true;
-//	if (argc > 2) {
-//		std::string arg(argv[2]);
-//		if (arg == "--keepalive")
-//			keepAlive = true;
-//	}
 
 	// Setup core
-	nap::Core core; 
+	nap::Core core;
+    
+    std::string modulesDirectory = ".";
 
-//    testJSON();
-//    return 0;
-
-	core.initialize();
-
-//    nap::JSONSerializer ser;
-//    ser.load("/home/bmod/Documents/nap/coreapp/resources/test.json", core);
-//    printf(ser.toString(core.getRoot()).c_str());
-
-//    return 0;
+    // Try to read the config file
+    std::string configFileName = nap::getAbsolutePath("config.json");
+    if (nap::fileExists(configFileName))
+    {
+        std::ifstream stream(configFileName);
+        std::string configStr((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
+        rapidjson::Document document;
+        document.Parse(configStr.c_str());
+        
+        if (document.HasParseError())
+        {
+            nap::Logger::fatal("Failed to parse config file");
+            return -1;
+        }
+        
+        // Try to read modules directory
+        if (document.HasMember("modulesDirectory"))
+        {
+            rapidjson::Value& modulesDirectoryJson = document["modulesDirectory"];
+            if (!modulesDirectoryJson.IsString())
+                nap::Logger::warn("Failed to read modules directory from config file: not a string");
+            else {
+                modulesDirectory = nap::getAbsolutePath(modulesDirectoryJson.GetString());
+                if (!nap::dirExists(modulesDirectory))
+                {
+                    nap::Logger::warn("Modules directory not found: " + modulesDirectory);
+                    modulesDirectory = ".";
+                }
+            }
+        }
+    }
+    
+	core.initialize(modulesDirectory);
 
     std::string rpcServiceTypename = "nap::JsonRpcService";
     RTTI::TypeInfo rpcServiceType = RTTI::TypeInfo::getByName(rpcServiceTypename);
@@ -44,15 +64,6 @@ int main(int argc, char** argv)
     auto rpcService = core.getOrCreateService(rpcServiceType);
     rpcService->getAttribute<bool>("threaded")->setValue(false);
     rpcService->getAttribute<bool>("running")->setValue(true);
-
-
-//	if (argc == 2) {
-//		std::string filename(argv[1]);
-//		if (!nap::JSONSerializer().load(filename, core)) {
-//			nap::Logger::fatal("Failed to load data file, exiting.");
-//			return 1;
-//		}
-//	}
 
 	if (keepAlive) {
 		while (true) {

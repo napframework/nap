@@ -54,7 +54,7 @@ namespace nap
 		closedir(dir);
 		return true;
 	}
-
+    
 	std::string getAbsolutePath(const std::string& relPath)
 	{
 #ifdef _WIN32
@@ -74,6 +74,7 @@ namespace nap
 #endif
 	}
 
+    
 	// Return file extension, empty string if file has no extension
 	std::string getFileExtension(const std::string &filename) 
 	{
@@ -147,6 +148,7 @@ namespace nap
         return false;
     }
 
+    
 	bool dirExists(const std::string& dirName)
 	{
 		if (!dirName.empty())
@@ -163,6 +165,7 @@ namespace nap
 		return false;
 	}
 
+    
     void writeStringToFile(const std::string& filename, const std::string& contents) {
         std::ofstream out(filename);
         out << contents;

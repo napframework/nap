@@ -163,8 +163,9 @@ namespace nap
 
 		/**
 		 * Loads all modules in to the core environment 
+         * @modulesDir is a path relative to the working directory containing the modules
 		 */
-        void initialize()											{ mModuleManager.loadModules(); }
+        void initialize(const std::string& modulesDir = ".")        { mModuleManager.loadModules(modulesDir); }
 
 	private:
 		// Typedef for a list of services
