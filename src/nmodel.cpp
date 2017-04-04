@@ -51,10 +51,6 @@ namespace opengl
 	// Adds a mesh, taking ownership
 	void Model::addMesh(Mesh* mesh)
 	{
-		// Initialize mesh if not done yet
-		if (!mesh->isAllocated())
-			mesh->init();
-
 		// Create unique ptr and add
 		mMeshes.emplace_back(std::move(std::unique_ptr<Mesh>(mesh)));
 	}

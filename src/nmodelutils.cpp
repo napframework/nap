@@ -71,8 +71,6 @@ namespace opengl
 
 			// Create new mesh
 			Mesh* new_mesh = new Mesh();
-			new_mesh->init();
-
 
 			// Copy vertex data
 			std::vector<float> vertex_data;

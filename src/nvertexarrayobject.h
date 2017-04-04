@@ -37,33 +37,6 @@ namespace opengl
 		VertexArrayObject& operator=(const VertexArrayObject& other) = delete;
 
 		/**
-		 * Creates the vertex buffer
-		 *
-		 * This needs be called after creation to ensure the associated data can be rendered
-		 */
-		void			init();
-
-		/**
-		 * Binds the Vertex Buffer to be used by subsequent vertex buffer calls
-		 */
-		bool			bind();
-
-		/**
-		 * Unbinds the Vertex Buffer
-		 */
-		bool			unbind();
-
-		/**
-		 * Returns if the buffer is generated and can be used for rendering
-		 */
-		bool			isAllocated() const;
-
-		/**
-		 * Returns the vertex buffer GPU identifier
-		 */
-		GLuint			getId() const					{ return mId; }
-
-		/**
 		 * Draws the vertex data associated with this buffer object to the currently active context
 		 * Calls bind before drawing
 		 *
@@ -120,11 +93,57 @@ namespace opengl
 		 * @param the current draw mode
 		 */
 		DrawMode		getDrawMode() const				{ return mDrawMode; }
+	
+	private:
+		/**
+		 * Creates the vertex buffer for the specified GL context
+		 *
+		 * This needs be called after creation to ensure the associated data can be rendered
+		 */
+		void			allocate(GLContext glContext);
+		
+		/**
+		 * Destroys the vertex buffer for the specified GL context
+		 *
+		 * This needs be called after creation to ensure the associated data can be rendered
+		 */
+		void			deallocate(GLContext glContext);
+
+		/**
+		 * Binds the Vertex Buffer to be used by subsequent vertex buffer calls for the specified GL context
+		 */
+		bool			bind(GLContext glContext);
+
+		/**
+		 * Unbinds the Vertex Buffer for the specified GL context
+		 */
+		bool			unbind(GLContext glContext);
+
+		/**
+		 * Returns if the buffer is generated and can be used for rendering by the specified GL context
+		 */
+		bool			isAllocated(GLContext glContext) const;
+
+		/**
+		 * Recreate the vertex array object and and its associated resources for the specified context
+		 * Note: it is assumed that the specified context is also the *currently active* context
+		 */
+		bool			recreate(GLContext context);
 
 	private:
-		using VertexBufferBindings = std::unordered_map<unsigned int, VertexBuffer*>;
+		/**
+		 * VertexArrayState represents the state of a VAO for a specific OpenGL Context.
+		 * It is used to be able to share a single CPU VAO over multiple contexts
+		 */
+		struct VertexArrayState
+		{
+			GLuint 	mId = 0;			// The ID of the VAO
+			bool	mIsDirty = false;	// Whether the VAO is dirty
+		};
 
-		GLuint					mId = 0;							// The generated vertex array id
+		using VertexBufferBindings = std::unordered_map<unsigned int, VertexBuffer*>;
+		using ContextSpecificStateMap = std::unordered_map<GLContext, VertexArrayState>;
+		ContextSpecificStateMap	mContextSpecificState;				// The per-context vertex array state
 		DrawMode				mDrawMode = DrawMode::TRIANGLES;	// Mode currently used for drawing
 
 		/**
