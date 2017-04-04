@@ -131,11 +131,14 @@ namespace nap
 
 		// Set GL Attributes
 		opengl::Attributes attrs;
-		attrs.dubbleBuffer = true;
+		attrs.doubleBuffer = true;
 		attrs.versionMinor = 3;
 		attrs.versionMajor = 3;
 		attrs.enableMultiSampling = true;
 		attrs.multiSampleSamples = 8;
+#if _DEBUG
+		attrs.debug = true;
+#endif
 		opengl::setAttributes(attrs);
 
 		// Success
