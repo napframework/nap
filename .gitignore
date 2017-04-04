@@ -33,3 +33,4 @@ napkin/Release/
 *.pdb
 *.log
 *.idb
+.idea
