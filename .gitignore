@@ -34,3 +34,4 @@ napkin/Release/
 *.log
 *.idb
 .idea
+log.csv
