@@ -81,6 +81,11 @@ namespace nap
 		bool hasWindow() const													{ return mWindow != nullptr; }
 
 		/**
+		 * @return the window managed by this component
+		 */
+		RenderWindow* getWindow()												{ return mWindow.get(); }
+
+		/**
 		 * Swaps window buffers
 		 */
 		void swap() const														{ mWindow->swap(); }

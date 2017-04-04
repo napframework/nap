@@ -86,7 +86,6 @@ static opengl::Mesh* createSphere(float radius, unsigned int rings, unsigned int
 	}
 
 	opengl::Mesh* sphere_mesh = new opengl::Mesh();
-	sphere_mesh->init();
 	sphere_mesh->copyVertexData(vertex_count, &vertices.front());
 	sphere_mesh->copyNormalData(vertex_count, &normals.front());
 	sphere_mesh->copyUVData(3, vertex_count, &texcoords.front());

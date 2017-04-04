@@ -246,7 +246,6 @@ void createCube(opengl::VertexArrayObject& cube, int vertex_idx, int color_idx, 
 	}
 
 	// Init container and set draw mode
-	cube.init();
 	cube.setDrawMode(opengl::DrawMode::TRIANGLES);
 
 	// Add buffers to cube
@@ -286,7 +285,6 @@ void createTriangle(opengl::VertexArrayObject& triangle, int vertex_idx, int col
 		buffersAllocated = true;
 	}
 
-	triangle.init();
 	triangle.setDrawMode(opengl::DrawMode::TRIANGLES);
 
 	triangle.addVertexBuffer(vertex_idx, *trianglePositions.getVertexBuffer());
@@ -323,7 +321,6 @@ void createPlane(opengl::VertexArrayObject& plane, int vertex_idx, int color_idx
 	}
 
 
-	plane.init();
 	plane.setDrawMode(opengl::DrawMode::TRIANGLES);
 
 	plane.addVertexBuffer(vertex_idx, *planePositions.getVertexBuffer());
