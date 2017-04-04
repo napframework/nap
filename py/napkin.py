@@ -98,8 +98,8 @@ class MainWindow(QMainWindow):
         return self.__editors[obj]
 
     def __getOrCreateEditor(self, obj):
-        if not isinstance(obj, str):
-            objPath = obj.pathString()
+        assert isinstance(obj, nap.Object)
+        objPath = obj.pathString()
         editorType = self.ctx.editorTypeFor(obj)
         title = '%s (%s)' % (editorType.__name__, objPath)
 
