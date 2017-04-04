@@ -340,7 +340,7 @@ bool init(nap::Core& core)
 	nap::Logger::info("initialized render service: %s", renderService->getName().c_str());
 
 	// Create windows
-	int num_windows = 2; 
+	int num_windows = 1; 
 	for (int index = 0; index < num_windows; ++index)
 	{
 		char name[100];
