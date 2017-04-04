@@ -10,6 +10,8 @@
 
 namespace opengl
 {
+	using GLContext = void*;
+
 	/**
 	* Clears the back-buffer bit of the currently active context
 	*/
@@ -91,6 +93,12 @@ namespace opengl
 	 * @param value: the line width of rasterized lines
 	 */
 	void setLineWidth(float value);
+
+
+	/**
+	 * Get the currently active OpenGL Context
+	 */
+	GLContext getCurrentContext();
 
 
 	/**

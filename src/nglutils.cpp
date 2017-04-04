@@ -125,6 +125,13 @@ namespace opengl
 	}
 
 
+	// Get the currently active OpenGL Context
+	GLContext getCurrentContext()
+	{
+		return SDL_GL_GetCurrentContext();
+	}
+
+
 	// Mode to use when drawing polygons
 	void setPolygonMode(PolygonMode mode)
 	{

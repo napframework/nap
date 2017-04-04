@@ -100,46 +100,50 @@ namespace opengl
 		 *
 		 * This needs be called after creation to ensure the associated data can be rendered
 		 */
-		void			allocate(void* glContext);
+		void			allocate(GLContext glContext);
 		
 		/**
 		 * Destroys the vertex buffer for the specified GL context
 		 *
 		 * This needs be called after creation to ensure the associated data can be rendered
 		 */
-		void			deallocate(void* glContext);
+		void			deallocate(GLContext glContext);
 
 		/**
 		 * Binds the Vertex Buffer to be used by subsequent vertex buffer calls for the specified GL context
 		 */
-		bool			bind(void* glContext);
+		bool			bind(GLContext glContext);
 
 		/**
 		 * Unbinds the Vertex Buffer for the specified GL context
 		 */
-		bool			unbind(void* glContext);
+		bool			unbind(GLContext glContext);
 
 		/**
 		 * Returns if the buffer is generated and can be used for rendering by the specified GL context
 		 */
-		bool			isAllocated(void* glContext) const;
+		bool			isAllocated(GLContext glContext) const;
 
 		/**
 		 * Recreate the vertex array object and and its associated resources for the specified context
 		 * Note: it is assumed that the specified context is also the *currently active* context
 		 */
-		bool			recreate(void* context);
+		bool			recreate(GLContext context);
 
 	private:
+		/**
+		 * VertexArrayState represents the state of a VAO for a specific OpenGL Context.
+		 * It is used to be able to share a single CPU VAO over multiple contexts
+		 */
 		struct VertexArrayState
 		{
-			GLuint 	mId;		// The ID of the VAO
-			bool	mIsDirty;	// Whether the VAO is dirty
+			GLuint 	mId = 0;			// The ID of the VAO
+			bool	mIsDirty = false;	// Whether the VAO is dirty
 		};
 
 		using VertexBufferBindings = std::unordered_map<unsigned int, VertexBuffer*>;
-		using ContextSpecificStateMap = std::unordered_map<void*, VertexArrayState>;
-		ContextSpecificStateMap	mContextSpecificState;				// The per-context generated vertex array state
+		using ContextSpecificStateMap = std::unordered_map<GLContext, VertexArrayState>;
+		ContextSpecificStateMap	mContextSpecificState;				// The per-context vertex array state
 		DrawMode				mDrawMode = DrawMode::TRIANGLES;	// Mode currently used for drawing
 
 		/**

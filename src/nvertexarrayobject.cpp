@@ -24,10 +24,11 @@ namespace opengl
 			deallocate(glContext);
 		}
 
-		GLuint id = 0;
-		glGenVertexArrays(1, &id);
+		VertexArrayState state;
+		glGenVertexArrays(1, &state.mId);
+		state.mIsDirty = false;
 
-		mContextSpecificState.insert({ glContext, { id, false} });
+		mContextSpecificState.emplace(std::make_pair(glContext, state));
 	}
 
 
@@ -79,11 +80,17 @@ namespace opengl
 	//  Draws all the vertex data associated with this buffer object
 	void VertexArrayObject::draw(int count /*= -1*/)
 	{
-		void* context = SDL_GL_GetCurrentContext();
+		void* context = opengl::getCurrentContext();
 
 		ContextSpecificStateMap::iterator state = mContextSpecificState.find(context);
 		if (state == mContextSpecificState.end() || state->second.mIsDirty)
-			recreate(context);
+		{
+			if (!recreate(context))
+			{
+				printMessage(MessageType::ERROR, "unable to create the vertex array object");
+				return;
+			}
+		}
 
 		if (!bind(context))
 		{
@@ -232,12 +239,9 @@ namespace opengl
 	// Recreate the vertex array object and and its associated resources for the specified context
 	bool VertexArrayObject::recreate(void* context)
 	{
-		// Destroy the buffer if it's already created
-		if (isAllocated(context))	
-			deallocate(context);
-
-		// Reallocate it
-		allocate(context);
+		// Allocate the VAO if it doesn't exist yet
+		if (!isAllocated(context))
+			allocate(context);
 
 		// Make sure we can bind our object
 		if (!bind(context))
