@@ -92,7 +92,7 @@ bool opengl::FramebufferBase::bind()
 		return false;
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, mFbo);
-	return false;
+	return true;
 }
 
 
