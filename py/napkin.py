@@ -47,14 +47,16 @@ class MainWindow(QMainWindow):
         self.ctx.appSuspended.connect(self.__onSuspended)
         self.ctx.appResumed.connect(self.__onResumed)
 
-        self.__setupUi()
-        self.__restore()
-
         fileMenu = self.menuBar().addMenu('File')
         openFileAction = QAction('Open...', fileMenu)
         openFileAction.setShortcut(QKeySequence.Open)
         openFileAction.triggered.connect(self.__onLoadFile)
         fileMenu.addAction(openFileAction)
+
+        self.__windowMenu = self.menuBar().addMenu('Window')
+
+        self.__setupUi()
+        self.__restore()
 
         # connect to host saved in settings
         s = QSettings()
@@ -62,10 +64,12 @@ class MainWindow(QMainWindow):
         self.ctx.connect(host)
 
     def __onSuspended(self):
-        self.setEnabled(False)
+        pass
+        # self.setEnabled(False)
 
     def __onResumed(self):
-        self.setEnabled(True)
+        pass
+        # self.setEnabled(True)
 
     def __onLoadFile(self, enabled):
         filename = QFileDialog.getOpenFileName(self, 'Select file to load',
@@ -128,7 +132,7 @@ class MainWindow(QMainWindow):
     def editedObjects(self):
         return list(self.__editors.keys())
 
-    def __onConnectionChanged(self, *args):
+    def __onConnectionChanged(self):
         self.ctx.core()._handle_getObjectTree()
 
     def __onRootChanged(self):
@@ -179,14 +183,21 @@ class MainWindow(QMainWindow):
         print('Storing edited: %s' % editedObjects)
         s.setValue(_EDITED_OBJECTS, editedObjects)
 
-    def onConnected(self):
-        self.__root = Object.root()
-
     def addDock(self, w, area, name):
         dock = QDockWidget(self)
         dock.setObjectName(name)
         dock.setWindowTitle(name)
         dock.setWidget(w)
+
+        showDockAction = QAction(name, self.__windowMenu)
+
+        def showDock(_):
+            d = dock  # Store a copy to our actual dock
+            d.show()
+
+        showDockAction.triggered.connect(showDock)
+        self.__windowMenu.addAction(showDockAction)
+
         w.layout().setContentsMargins(2, 2, 2, 2)
         self.addDockWidget(area, dock)
         return dock
