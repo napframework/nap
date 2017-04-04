@@ -56,7 +56,6 @@ namespace nap
 		if (sPlane == nullptr)
 		{
 			sPlane = std::make_unique<opengl::Mesh>();
-			sPlane->init();
 			sPlane->copyVertexData(4, plane_vertices);
 			sPlane->copyNormalData(4, plane_normals);
 			sPlane->copyUVData(3, 4, plane_uvs);

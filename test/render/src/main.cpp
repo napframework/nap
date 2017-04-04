@@ -76,7 +76,7 @@ static float rotateScale = 1.0f;
 // Nap Objects
 nap::RenderService* renderService = nullptr;
 nap::Service* rpcService = nullptr;
-nap::RenderWindowComponent* renderWindow = nullptr;
+std::vector<nap::RenderWindowComponent*> renderWindows;
 nap::CameraComponent* cameraComponent = nullptr;
 nap::ModelMeshComponent* modelComponent = nullptr;
 nap::PlaneComponent* planeComponent = nullptr;
@@ -205,7 +205,7 @@ nap::Slot<const nap::SignalAttribute&> updateSlot = { [](const nap::SignalAttrib
 
 void updateCamera()
 {
-	float elapsed_time = renderWindow->getDeltaTimeFloat();
+	float elapsed_time = renderWindows[0]->getDeltaTimeFloat();
 	float movement = movementScale * elapsed_time;
 	float rotate = rotateScale * elapsed_time;
 	float rotate_rad = rotate;
@@ -275,6 +275,13 @@ void updateCamera()
 // Called when the window is going to render
 void onRender(const nap::SignalAttribute& signal)
 {
+	opengl::enableDepthTest(true);
+	opengl::enableBlending(true);
+	opengl::enableMultiSampling(true);
+	opengl::setLineWidth(1.3f);
+	opengl::setPointSize(2.0f);
+	opengl::setPolygonMode(opengl::PolygonMode::FILL);
+
 	// Clear window
 	opengl::clearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	opengl::clearDepth();
@@ -283,11 +290,16 @@ void onRender(const nap::SignalAttribute& signal)
 	// Render all objects
 	renderService->renderObjects(*cameraComponent);
 
+	// Render a specific object	
+	// std::vector<nap::RenderableComponent*> components_to_render;
+	// components_to_render.push_back(planeComponent);		
+	// renderService->renderObjects(components_to_render, *cameraComponent);
+
 	static float fps_time = 0.0f;
-	fps_time += renderWindow->getDeltaTimeFloat();
+	fps_time += renderWindows[0]->getDeltaTimeFloat();
 	if (fps_time > 0.99f)
 	{
-		nap::Logger::info("fps: %f", renderWindow->getFps());
+		nap::Logger::info("fps: %f", renderWindows[0]->getFps());
 		fps_time = 0.0f;
 	}
 }
@@ -327,21 +339,46 @@ bool init(nap::Core& core)
 	renderService->setRenderer(RTTI_OF(nap::OpenGLRenderer));
 	nap::Logger::info("initialized render service: %s", renderService->getName().c_str());
 
-	// Add window component
-	nap::Entity& window_entity = core.addEntity("window");
-	renderWindow = &window_entity.addComponent<nap::RenderWindowComponent>("main_window");
-	renderWindow->size.setValue({ windowWidth, windowHeight });
-	renderWindow->position.setValue({ (1920 / 2) - 256, 1080 / 2 - 256 });
-	renderWindow->title.setValue("Wolla");
-	renderWindow->sync.setValue(false);
+	// Create windows
+	int num_windows = 2; 
+	for (int index = 0; index < num_windows; ++index)
+	{
+		char name[100];
+		sprintf(name, "Window %d", index);
 
-	// Connect draw and update signals
-	renderWindow->draw.signal.connect(renderSlot);
-	renderWindow->update.signal.connect(updateSlot);
+		nap::Entity& window_entity = core.addEntity(name);
+		
+		// Create the window component (but don't add it to the entity yet), so that we can set the construction settings
+		nap::RenderWindowComponent* renderWindow = RTTI_OF(nap::RenderWindowComponent).createInstance<nap::RenderWindowComponent>();
+
+		// If this is not the first window, make it share its OpenGL context with the first window
+		nap::RenderWindowSettings settings;
+		if (index != 0)
+			settings.sharedWindow = renderWindows[0]->getWindow();
+
+		// Set the construction settings and add it to the entity
+		renderWindow->setConstructionSettings(settings);
+		renderWindow->setName(name);
+		window_entity.addComponent(std::move(std::unique_ptr<nap::RenderWindowComponent>(renderWindow)));
+
+		renderWindow->size.setValue({ windowWidth, windowHeight });
+		renderWindow->position.setValue({ (1920 / 2) - 256, 1080 / 2 - 256 });
+		renderWindow->title.setValue(name);
+		renderWindow->sync.setValue(false);		
+
+		// Connect draw and update signals
+		renderWindow->draw.signal.connect(renderSlot);
+		renderWindow->update.signal.connect(updateSlot);
+
+		renderWindows.push_back(renderWindow);
+	}
 
 	//////////////////////////////////////////////////////////////////////////
 	// Resources
 	//////////////////////////////////////////////////////////////////////////
+
+	// Make the first ("root") window active so that the resources are created for the right context
+	renderWindows[0]->makeActive();
 
 	// Create shader resource
 	nap::ResourceManagerService* service = core.getOrCreateService<nap::ResourceManagerService>();
@@ -545,13 +582,6 @@ void runGame(nap::Core& core)
 	// Run function
 	bool loop = true;
 
-	opengl::enableDepthTest(true);
-	opengl::enableBlending(true);
-	opengl::enableMultiSampling(true);
-	opengl::setLineWidth(1.3f);
-	opengl::setPointSize(2.0f);
-	opengl::setPolygonMode(opengl::PolygonMode::FILL);
-
 	// Loop
 	while (loop)
 	{
@@ -594,7 +624,9 @@ void runGame(nap::Core& core)
 				{
 					static bool fullScreen = false;
 					fullScreen = !fullScreen;
-					renderWindow->fullScreen.setValue(fullScreen);
+
+					for (nap::RenderWindowComponent* renderWindow : renderWindows)
+						renderWindow->fullScreen.setValue(fullScreen);
 					break;
 				}
 				case SDLK_w:
@@ -699,7 +731,15 @@ void runGame(nap::Core& core)
 				{
 					int width = event.window.data1;
 					int height = event.window.data2;
-					renderWindow->size.setValue({ width, height });
+
+					SDL_Window* window = SDL_GetWindowFromID(event.window.windowID);
+
+					for (nap::RenderWindowComponent* renderWindow : renderWindows)
+					{
+						if (renderWindow->getWindow()->getWindow() == window)
+							renderWindow->size.setValue({ width, height });
+					}
+
 					cameraComponent->setAspectRatio((float)width, (float)height);
 					break;
 				}
@@ -707,7 +747,15 @@ void runGame(nap::Core& core)
 				{
 					int x = event.window.data1;
 					int y = event.window.data2;
-					renderWindow->position.setValue({ x,y });
+
+					SDL_Window* window = SDL_GetWindowFromID(event.window.windowID);
+
+					for (nap::RenderWindowComponent* renderWindow : renderWindows)
+					{
+						if (renderWindow->getWindow()->getWindow() == window)
+							renderWindow->position.setValue({ x,y });
+					}
+						
 					break;
 				}
 				default:
