@@ -46,12 +46,6 @@ namespace opengl
 		Mesh& operator=(const Mesh& other) = delete;
 
 		/**
-		 * Needs to be called before adding any vertex buffers
-		 * Creates the containing vertex array object that will hold all the vertex buffers
-		 */
-		void init();
-
-		/**
 		 * Adds the vertices
 		 * Needs to consist out of 3 float components (x, y, z)
 		 * Performs an actual copy operation
@@ -107,12 +101,6 @@ namespace opengl
 		* If the vertex count differs from buffer to buffer the lowest common denominator is picked
 		*/
 		unsigned int getVertCount() const { return mObject.getVertCount(); }
-
-		/**
-		* Returns if the managed vertex array object is generated and can be used for rendering
-		* This is true when init() has been called
-		*/
-		bool isAllocated() const { return mObject.isAllocated(); }
 
 		/**
 		 * @return the number of color channels

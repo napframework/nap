@@ -10,13 +10,6 @@ namespace opengl
 	}
 
 
-	// Creates the containing vertex array object that will hold all the vertex buffers
-	void Mesh::init()
-	{
-		mObject.init();
-	}
-
-
 	// Adds vertex data
 	void Mesh::copyVertexData(unsigned int vertices, float* data)
 	{

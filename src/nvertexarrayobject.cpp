@@ -1,46 +1,65 @@
 #include "nvertexarrayobject.h"
 #include "nglutils.h"
+#include <assert.h>
 
 namespace opengl
 {
 	// Destructor
 	VertexArrayObject::~VertexArrayObject()
 	{
-		if (isAllocated())
-			glDeleteVertexArrays(1, &mId);
+		for (auto state : mContextSpecificState)
+			glDeleteVertexArrays(1, &state.second.mId);
+
+		mContextSpecificState.clear();
 	}
 
 
 	// Creates the vertex buffer
-	void VertexArrayObject::init()
+	void VertexArrayObject::allocate(void* glContext)
 	{
-		if (isAllocated())
+		if (isAllocated(glContext))
 		{
 			printMessage(MessageType::WARNING, "vertex array object already allocated, generating new one");
 			printMessage(MessageType::WARNING, "the previous vertex array object id will be invalidated");
-			glDeleteVertexArrays(1, &mId);
+			deallocate(glContext);
 		}
-		glGenVertexArrays(1, &mId);
+
+		GLuint id = 0;
+		glGenVertexArrays(1, &id);
+
+		mContextSpecificState.insert({ glContext, { id, false} });
 	}
 
 
-	// Binds the vertex buffer
-	bool VertexArrayObject::bind()
+	// Destroys the vertex buffer for the specified GL context
+	void VertexArrayObject::deallocate(void* glContext)
 	{
-		if (!isAllocated())
+		ContextSpecificStateMap::iterator existing = mContextSpecificState.find(glContext);
+		assert(existing != mContextSpecificState.end());
+
+		glDeleteVertexArrays(1, &existing->second.mId);
+		mContextSpecificState.erase(existing);
+	}
+
+
+	// Binds the vertex buffer for the specified GL context
+	bool VertexArrayObject::bind(void* glContext)
+	{
+		if (!isAllocated(glContext))
 		{
 			printMessage(MessageType::ERROR, "unable to bind vertex array object: object is not allocated");
 			return false;
 		}
-		glBindVertexArray(mId);
+		
+		glBindVertexArray(mContextSpecificState.find(glContext)->second.mId);
 		return true;
 	}
 
 
 	// Unbinds the vertex buffer
-	bool VertexArrayObject::unbind()
+	bool VertexArrayObject::unbind(void* glContext)
 	{
-		if (!isAllocated())
+		if (!isAllocated(glContext))
 		{
 			printMessage(MessageType::ERROR, "unable to unbind vertex array object: object is not allocated");
 			return false;
@@ -51,16 +70,22 @@ namespace opengl
 
 
 	// Checks if the buffer is allocated on the GPU
-	bool VertexArrayObject::isAllocated() const
+	bool VertexArrayObject::isAllocated(void* glContext) const
 	{
-		return mId != 0;
+		return mContextSpecificState.find(glContext) != mContextSpecificState.end();
 	}
 
 
 	//  Draws all the vertex data associated with this buffer object
 	void VertexArrayObject::draw(int count /*= -1*/)
 	{
-		if (!bind())
+		void* context = SDL_GL_GetCurrentContext();
+
+		ContextSpecificStateMap::iterator state = mContextSpecificState.find(context);
+		if (state == mContextSpecificState.end() || state->second.mIsDirty)
+			recreate(context);
+
+		if (!bind(context))
 		{
 			printMessage(MessageType::ERROR, "can't draw vertex array object");
 			return;
@@ -94,7 +119,7 @@ namespace opengl
 		}
 
 		// Unbind object
-		unbind();
+		unbind(context);
 	}
 
 	// Specify which index buffer to use with this vertex array object
@@ -117,13 +142,6 @@ namespace opengl
 		{
 			printMessage(MessageType::ERROR, "vertex array object already has a vertex buffer bound with index: %d", index);
 			printMessage(MessageType::WARNING, "skipping vertex buffer assignment for index: %d", index);
-			return false;
-		}
-
-		// Make sure we can bind our object
-		if (!bind())
-		{
-			printMessage(MessageType::ERROR, "can't add vertex buffer, unable to bind vertex array object");
 			return false;
 		}
 		
@@ -151,23 +169,12 @@ namespace opengl
 			new_vert_count = new_vert_count < mVertCount ? new_vert_count : mVertCount;
 		}
 
-		// Update vert count
+		// Update vertex count
 		mVertCount = new_vert_count;
 
-		// Bind buffer
-		buffer.bind();
-
-		// Enable vertex attribute array relative to this vertex array object
-		glEnableVertexAttribArray(index);
-
-		// Set data pointer so GL knows how to assign to shader later on
-		glVertexAttribPointer(index, buffer.getComponentCount(), buffer.getType(), GL_FALSE, 0, 0);
-
-		// Unbind buffer
-		buffer.unbind();
-
-		// Unbind this object
-		unbind();
+		// Mark all VAOs as dirty
+		for (auto state : mContextSpecificState)
+			state.second.mIsDirty = true;
 
 		// Add index
 		mBindings.emplace(std::make_pair(index, &buffer));
@@ -219,5 +226,46 @@ namespace opengl
 			return;
 		}
 		mDrawMode = mode;
+	}
+
+
+	// Recreate the vertex array object and and its associated resources for the specified context
+	bool VertexArrayObject::recreate(void* context)
+	{
+		// Destroy the buffer if it's already created
+		if (isAllocated(context))	
+			deallocate(context);
+
+		// Reallocate it
+		allocate(context);
+
+		// Make sure we can bind our object
+		if (!bind(context))
+		{
+			printMessage(MessageType::ERROR, "can't add recreate vertex array object, unable to bind");
+			return false;
+		}
+
+		for (const auto& binding : mBindings)
+		{
+			VertexBuffer& buffer = *binding.second;
+
+			// Bind buffer
+			buffer.bind();
+
+			// Enable vertex attribute array relative to this vertex array object
+			glEnableVertexAttribArray(binding.first);
+
+			// Set data pointer so GL knows how to assign to shader later on
+			glVertexAttribPointer(binding.first, buffer.getComponentCount(), buffer.getType(), GL_FALSE, 0, 0);
+
+			// Unbind buffer
+			buffer.unbind();
+		}
+
+		// Unbind this object
+		unbind(context);
+
+		return true;
 	}
 }
