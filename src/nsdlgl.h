@@ -22,8 +22,9 @@ namespace opengl
 
 		int  versionMajor = 3;			// Major GL Version
 		int  versionMinor = 2;			// Minor GL Version
-		bool dubbleBuffer = true;		// Enables / Disabled double buffering
-		
+		bool doubleBuffer = true;		// Enables / Disabled double buffering
+		bool debug = false;				// Whether to use the debug version of the OpenGL driver. Provides more debugging output.
+
 		// TODO: FIGURE OUT WHY THERE DON'T SEEM TO HAVE AN EFFECT ON WINDOWS
 		bool enableMultiSampling = 1;	// Enables / Disables multi sampling.
 		int  multiSampleSamples = 4;	// Number of samples per pixel when multi sampling is enabled

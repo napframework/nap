@@ -42,7 +42,7 @@ namespace opengl
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, cur_minor);
 
 		// Set double buffering
-		int double_buffer = static_cast<int>(attributes.dubbleBuffer);
+		int double_buffer = static_cast<int>(attributes.doubleBuffer);
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, double_buffer);
 
 		// Set multi sample parameters
@@ -51,6 +51,12 @@ namespace opengl
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, attributes.multiSampleSamples);
 		}
+
+		// Enable debug
+		if (attributes.debug)
+		{
+			SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+		}		
 	}
 
 
@@ -139,9 +145,9 @@ namespace opengl
 		// check if settings contains a shared context
 		if (settings.share != nullptr)
 		{
-			assert(settings.share->getWindow()  != nullptr);
+			assert(settings.share->getWindow() != nullptr);
 			assert(settings.share->getContext() != nullptr);
-			
+
 			// Activate context if necessary
 			if (SDL_GL_GetCurrentContext() != settings.share->getContext())
 			{
@@ -246,6 +252,64 @@ namespace opengl
 		SDL_GL_MakeCurrent(window.getWindow(), window.getContext());
 	}
 
+	// OpenGL message callback; invoked when debug is enabled on the OpenGL context
+	void __stdcall openGLMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
+	{
+		std::string readable_type;
+		MessageType message_type = MessageType::INFO;
+
+		switch (type) {
+		case GL_DEBUG_TYPE_ERROR:
+			readable_type = "Error";
+			message_type = MessageType::ERROR;
+			break;
+		case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+			readable_type = "Deprecated Behaviour";
+			message_type = MessageType::WARNING;
+			break;
+		case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+			readable_type = "Undefined Behaviour";
+			message_type = MessageType::WARNING;
+			break;
+		case GL_DEBUG_TYPE_PORTABILITY:
+			readable_type = "Portability";
+			message_type = MessageType::WARNING;
+			break;
+		case GL_DEBUG_TYPE_PERFORMANCE:
+			readable_type ="Performance";
+			message_type = MessageType::WARNING;
+			break;
+		case GL_DEBUG_TYPE_OTHER:
+			readable_type = "Other";
+			message_type = MessageType::INFO;
+			break;
+		default:
+			readable_type = "Unknown";
+			message_type = MessageType::INFO;
+			break;
+		}
+
+		std::string readable_severity;
+		switch (severity) {
+		case GL_DEBUG_SEVERITY_LOW:
+			readable_severity = "Low";
+			break;
+		case GL_DEBUG_SEVERITY_MEDIUM:
+			readable_severity = "Medium";
+			break;
+		case GL_DEBUG_SEVERITY_HIGH:
+			readable_severity = "High";
+			break;
+		case GL_DEBUG_SEVERITY_NOTIFICATION:
+			readable_severity = "Notification";
+			break;
+		default:
+			readable_severity = "Unknown";
+			break;
+		}
+
+		printMessage(message_type, "[OpenGL Debug][%s][%s] %s", readable_severity.c_str(), readable_type.c_str(), message);
+	}
 
 	// Initializes SDL's video subsystem
 	bool initVideo()
@@ -278,6 +342,29 @@ namespace opengl
 		printMessage(MessageType::INFO, "initialized glew successfully");
 		printMessage(MessageType::INFO, "vendor: %s", glGetString(GL_VENDOR));
 		printMessage(MessageType::INFO, "shading language: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
+
+		// Check whether debug flag is set
+		int context_flags;
+		SDL_GL_GetAttribute(SDL_GL_CONTEXT_FLAGS, &context_flags);
+		bool debug = (context_flags & SDL_GL_CONTEXT_DEBUG_FLAG) != 0;
+
+		// If we're using a debug context, install the message callback
+		if (debug)
+		{
+			// Set output to synchronous so that setting a breakpoint in the message callback will show the potentially invalid call on the callstack
+			glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+
+			// Set callback
+			glDebugMessageCallback(openGLMessageCallback, nullptr);
+
+			// First enable all messages
+			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, true);
+
+			// Then disable low severity messages to prevent useless spam of 'informational' messages
+			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_LOW, 0, 0, false);
+			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, 0, false);
+		}
+			
 		return true;
 	}
 
