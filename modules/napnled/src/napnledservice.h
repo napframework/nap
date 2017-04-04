@@ -46,6 +46,9 @@ namespace nap
 		 */
 		Attribute<int> portNumber	{ this, "portNumber",  7845 };
 
+	protected:
+		virtual void registerTypes(nap::Core& core);
+
 	private:
 		//@name Panels
 		nofNLedClient mClient;

@@ -2,6 +2,7 @@
 #include <nap/logger.h>
 #include <nledservercommands.h>
 #include <assert.h>
+#include "napnledpanel.h"
 
 // using directives
 using namespace asio::detail::socket_ops;
@@ -28,6 +29,13 @@ namespace nap
 	void NLedService::stop()
 	{
 		mClient.stop();
+	}
+
+
+	// All types that should be registered with this service
+	void NLedService::registerTypes(nap::Core& core)
+	{
+		core.registerType(*this, RTTI_OF(NledPanelComponent));
 	}
 
 }

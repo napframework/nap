@@ -53,7 +53,7 @@ nofNLedClient::Status nofNLedClient::connect()
 		mStatus = Status::ClientError;
 		return mStatus;
 	}
-	nap::Logger::info("Connecting to: %s on Port: %d", mServerName, mPortNumber);
+	nap::Logger::info("Connecting to: %s on Port: %d", mServerName.c_str(), mPortNumber);
 
 	// A resolver takes a query object and turns it into a list of endpoints. We construct a query using the name of the server, specified in argv[1], and the name of the service, in this case "daytime".
 	tcp::resolver::query query(mServerName, std::to_string(mPortNumber));
@@ -62,7 +62,7 @@ nofNLedClient::Status nofNLedClient::connect()
 	tcp::resolver::iterator endpoint_iterator = resolver.resolve(query, mError);
 	if (mError)
 	{
-		nap::Logger::warn("Unable to resolve host: %s on port: %d", mServerName, mPortNumber);
+		nap::Logger::warn("Unable to resolve host: %s on port: %d", mServerName.c_str(), mPortNumber);
 		mStatus = Status::ConnectionError;
 		return mStatus;
 	}
@@ -72,7 +72,7 @@ nofNLedClient::Status nofNLedClient::connect()
 	asio::connect(*mSocket, endpoint_iterator, mError);
 	if (mError)
 	{
-		nap::Logger::warn("ERROR: Unable to connect to host: %s on port: %d", mServerName, mPortNumber);
+		nap::Logger::warn("ERROR: Unable to connect to host: %s on port: %d", mServerName.c_str(), mPortNumber);
 		mStatus = Status::ConnectionError;
 		return mStatus;
 	}
