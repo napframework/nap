@@ -11,6 +11,11 @@
 // Local Includes
 #include "renderer.h"
 
+namespace opengl
+{
+	class RenderTarget;
+}
+
 namespace nap
 {
 	// Forward Declares
@@ -19,8 +24,45 @@ namespace nap
 	class CameraComponent;
 	class RenderableComponent;
 
+
 	/**
-	 * Holds a reference to all drawable objects
+	* Global render state object. Users can freely change values in this object.
+	*
+	* Purpose of this object is to:
+	* 1) Provide an OpenGL independent way of setting render state
+	* 2) Provide a state object that can be duplicated for multiple GL contexts
+	* 3) Minimize openGL state changes
+	* 
+	* RenderService will maintain a global render state, as well as render states per GL context.
+	* Whenever objects are rendered, the RenderService will diff the global state against the
+	* context's state and update only the GL states that are necessary. 
+	*/
+	struct RenderState
+	{
+		bool mEnableDepthTest = true;
+		bool mEnableBlending = true;
+		bool mEnableMultiSampling = true;
+		float mLineWidth = 1.0f;
+		float mPointSize = 1.0;
+		opengl::PolygonMode mPolygonMode = opengl::PolygonMode::FILL;
+
+	private:
+		friend class RenderService;
+
+		/**
+		* Forces the setting of all render states as currently set.
+		*/
+		void Force();
+
+		/**
+		* Switches all render states as set in @targetRenderState. Only the renderStates that are different
+		will actually cause openGL calls.
+		*/
+		void Update(const RenderState& targetRenderState);
+	};
+
+	/**
+	 * Main interface for rendering operations. 
 	 */
 	class RenderService : public Service
 	{
@@ -39,7 +81,7 @@ namespace nap
 		};
 
 		// Default constructor
-		RenderService() = default;
+		RenderService();
 
 		// Default destructor
 		virtual ~RenderService();
@@ -60,16 +102,19 @@ namespace nap
 		void updateTransforms();
 
 		/**
-		 * Renders all available objects to currently active buffer
-		 * TODO: deprecate
+		 * Renders all available objects to a specific renderTarget.
 		 */
-		void renderObjects(const CameraComponent& camera);
+		void renderObjects(opengl::RenderTarget& renderTarget, const CameraComponent& camera);
 
 		/**
-		 * Renders a specific set of objects
-		 * Mainly for debugging purposes
+		 * Renders a specific set of objects to a specific renderTarget.
 		 */
-		void renderObjects(const std::vector<RenderableComponent*>& comps, const CameraComponent& camera);
+		void renderObjects(opengl::RenderTarget& renderTarget, const std::vector<RenderableComponent*>& comps, const CameraComponent& camera);
+
+		/**
+		* Clears the renderTarget.
+		*/
+		void clearRenderTarget(opengl::RenderTarget& renderTarget, opengl::EClearFlags flags);
 
 		/**
 		 * @return if OpenGL has been initialized
@@ -86,6 +131,25 @@ namespace nap
 		 * Shuts down the managed renderer
 		 */
 		void shutdown();
+
+		/**
+		* Render signal, emitted every render iteration
+		* Connect to this signal to render objects to the context
+		* associated with this window.
+		*/
+		SignalAttribute draw{ this, "Draw" };
+
+		/**
+		* Update signal, emitted before a render operation
+		* Connect to this signal to update your scene
+		* graph before the render call is emitted
+		*/
+		SignalAttribute update{ this, "Update" };
+
+		/**
+		* Returns global render state. Use the fields in this objects to modify the renderstate.
+		*/
+		RenderState& GetRenderState() { return mRenderState; }
 
 	protected:
 		/**
@@ -134,6 +198,16 @@ namespace nap
 		 * @param viewMatrix: The populated view matrix
 		 */
 		void getViewMatrix(const nap::CameraComponent& camera, glm::mat4x4& viewMatrix);
+
+		/**
+		* Updates the current context's render state by using the latest render state as set by the user.
+		*/
+		void UpdateRenderState();
+
+		using ContextSpecificStateMap = std::unordered_map<opengl::GLContext, RenderState>;
+
+		RenderState mRenderState;									//< The latest render state as set by the user
+		ContextSpecificStateMap	mContextSpecificState;				//< The per-context render state
 	};
 } // nap
 

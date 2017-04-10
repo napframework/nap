@@ -77,7 +77,9 @@ static float rotateScale = 1.0f;
 nap::RenderService* renderService = nullptr;
 nap::Service* rpcService = nullptr;
 std::vector<nap::RenderWindowComponent*> renderWindows;
+nap::TextureRenderTargetResource* textureRenderTarget;
 nap::CameraComponent* cameraComponent = nullptr;
+nap::CameraComponent* splitCameraComponent = nullptr;
 nap::ModelMeshComponent* modelComponent = nullptr;
 nap::PlaneComponent* planeComponent = nullptr;
 nap::SphereComponent* sphereComponent = nullptr;
@@ -110,7 +112,7 @@ glm::mat4 modelMatrix;			// Store the model matrix
 
 // Some utilities
 void runGame(nap::Core& core);	
-void updateCamera();
+void updateCamera(float elapsedTime);
 void createSpheres(nap::Core& core, nap::Resource& shader);
 
 // Called when the window is updating
@@ -118,6 +120,12 @@ void onUpdate(const nap::SignalAttribute& signal)
 {
 	// Update model transform
 	float elapsed_time = renderService->getCore().getElapsedTime();
+	static float prev_elapsed_time = elapsed_time;
+	float delta_time = prev_elapsed_time - elapsed_time;
+	if (delta_time < 0.01f)
+	{
+		delta_time = 0.01f;
+	}
 
 	nap::TransformComponent* xform_v = modelComponent->getParent()->getComponent<nap::TransformComponent>();
 	nap::TransformComponent* xform_p = planeComponent->getParent()->getComponent<nap::TransformComponent>();
@@ -149,7 +157,8 @@ void onUpdate(const nap::SignalAttribute& signal)
 	// Set rotatation on sphere
 	glm::quat rot_quat_sphere = glm::rotate(glm::quat(), -1.0f*(float)rot_angle_radians_sphere, glm::vec3(0.0, 1.0, 0.0));
 	xform_s->rotate.setValue(rot_quat_sphere);
-	xform_s->translate.setValue({ 0.0f, 0.0f, -3.0f });
+
+	xform_s->translate.setValue({ glm::sin(elapsed_time) * 5.0f, 0.0f, -3.0f });
 	xform_s->uniformScale.setValue(1.0f);
 
 	// Set transform
@@ -194,7 +203,7 @@ void onUpdate(const nap::SignalAttribute& signal)
 	// Camera Update
 	//////////////////////////////////////////////////////////////////////////
 
-	updateCamera();
+	updateCamera(delta_time);
 
 	//nap::TransformComponent* cam_xform = cameraComponent->getParent()->getComponent<nap::TransformComponent>();
 	//rot_quat = glm::rotate(glm::quat(), rot_angle_radians, glm::vec3(0.0, 1.0, 0.0));
@@ -203,11 +212,10 @@ void onUpdate(const nap::SignalAttribute& signal)
 nap::Slot<const nap::SignalAttribute&> updateSlot = { [](const nap::SignalAttribute& attr){ onUpdate(attr); } };
 
 
-void updateCamera()
+void updateCamera(float deltaTime)
 {
-	float elapsed_time = renderWindows[0]->getDeltaTimeFloat();
-	float movement = movementScale * elapsed_time;
-	float rotate = rotateScale * elapsed_time;
+	float movement = movementScale * deltaTime;
+	float rotate = rotateScale * deltaTime;
 	float rotate_rad = rotate;
 
 	nap::TransformComponent* cam_xform = cameraComponent->getParent()->getComponent<nap::TransformComponent>();
@@ -275,25 +283,61 @@ void updateCamera()
 // Called when the window is going to render
 void onRender(const nap::SignalAttribute& signal)
 {
-	opengl::enableDepthTest(true);
-	opengl::enableBlending(true);
-	opengl::enableMultiSampling(true);
-	opengl::setLineWidth(1.3f);
-	opengl::setPointSize(2.0f);
-	opengl::setPolygonMode(opengl::PolygonMode::FILL);
+	// Render window 0
+	{
+		nap::RenderWindowComponent* render_window = renderWindows[0];
 
-	// Clear window
-	opengl::clearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	opengl::clearDepth();
-	opengl::clearStencil();
+		render_window->makeActive();
 
-	// Render all objects
-	renderService->renderObjects(*cameraComponent);
+		// Render entire scene to texture
+		renderService->clearRenderTarget(textureRenderTarget->getTarget(), opengl::EClearFlags::Color|opengl::EClearFlags::Depth|opengl::EClearFlags::Stencil);
+		renderService->renderObjects(textureRenderTarget->getTarget(), *cameraComponent);
 
-	// Render a specific object	
-	// std::vector<nap::RenderableComponent*> components_to_render;
-	// components_to_render.push_back(planeComponent);		
-	// renderService->renderObjects(components_to_render, *cameraComponent);
+		// Render output texture to plane
+		std::vector<nap::RenderableComponent*> components_to_render;
+		components_to_render.push_back(planeComponent);
+
+		planeComponent->getMaterial()->setUniformTexture("testTexture", textureRenderTarget->GetColorTexture());
+		planeComponent->getMaterial()->setUniformTexture("pigTexture", textureRenderTarget->GetColorTexture());
+		planeComponent->getMaterial()->setUniformValue<int>("mTextureIndex", 0);
+		planeComponent->getMaterial()->setUniformValue<glm::vec4>("mColor", { 1.0f, 1.0f, 1.0f, 1.0f });
+
+		opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(render_window->getWindow()->getBackbuffer());
+		renderService->clearRenderTarget(backbuffer, opengl::EClearFlags::Color|opengl::EClearFlags::Depth|opengl::EClearFlags::Stencil);
+		renderService->renderObjects(backbuffer, components_to_render, *cameraComponent);
+
+		// Render sphere using split camera with custom projection matrix
+		splitCameraComponent->setSplitLocation(glm::ivec2(0, 0));
+		components_to_render.clear();
+		components_to_render.push_back(sphereComponent);
+		renderService->renderObjects(backbuffer, components_to_render, *splitCameraComponent);
+
+		render_window->swap();
+	}
+	 
+	// render window 1
+	{
+		nap::RenderWindowComponent* render_window = renderWindows[1];
+
+		render_window->makeActive();
+
+		// Render specific object directly to backbuffer
+		std::vector<nap::RenderableComponent*> components_to_render;
+		components_to_render.push_back(modelComponent);
+
+		opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(render_window->getWindow()->getBackbuffer());
+		renderService->clearRenderTarget(backbuffer, opengl::EClearFlags::Color | opengl::EClearFlags::Depth | opengl::EClearFlags::Stencil);
+		renderService->renderObjects(backbuffer, components_to_render, *cameraComponent);
+
+		// Render sphere using split camera with custom projection matrix
+		splitCameraComponent->setSplitLocation(glm::ivec2(1, 0));
+		components_to_render.clear();
+		components_to_render.push_back(sphereComponent);
+		renderService->renderObjects(backbuffer, components_to_render, *splitCameraComponent);
+
+		render_window->swap();
+
+	}
 
 	static float fps_time = 0.0f;
 	fps_time += renderWindows[0]->getDeltaTimeFloat();
@@ -340,7 +384,7 @@ bool init(nap::Core& core)
 	nap::Logger::info("initialized render service: %s", renderService->getName().c_str());
 
 	// Create windows
-	int num_windows = 1; 
+	int num_windows = 2;
 	for (int index = 0; index < num_windows; ++index)
 	{
 		char name[100];
@@ -366,12 +410,11 @@ bool init(nap::Core& core)
 		renderWindow->title.setValue(name);
 		renderWindow->sync.setValue(false);		
 
-		// Connect draw and update signals
-		renderWindow->draw.signal.connect(renderSlot);
-		renderWindow->update.signal.connect(updateSlot);
-
 		renderWindows.push_back(renderWindow);
 	}
+
+	renderService->draw.signal.connect(renderSlot);
+	renderService->update.signal.connect(updateSlot);
 
 	//////////////////////////////////////////////////////////////////////////
 	// Resources
@@ -407,10 +450,38 @@ bool init(nap::Core& core)
 	orientationShaderResource = service->getResource<nap::ShaderResource>(orientationShaderName);
 	orientationShaderResource->load();
 
-	// Create frame buffer
-	nap::FrameBufferResource* frame_buffer = service->createResource<nap::FrameBufferResource>();
-	frame_buffer->size.setValue(glm::ivec2(1024, 1024));
+	nap::MemoryTextureResource2D* color_texture = service->createResource<nap::MemoryTextureResource2D>();
+	opengl::Texture2DSettings color_settings;
+	color_settings.width = 640;
+	color_settings.height = 480;
+	color_settings.internalFormat = GL_RGBA;
+	color_settings.format = GL_RGBA;
+	color_settings.type = GL_UNSIGNED_BYTE;
+	color_texture->init(color_settings);
 
+	nap::MemoryTextureResource2D* depth_texture = service->createResource<nap::MemoryTextureResource2D>();
+	opengl::Texture2DSettings depth_settings;
+	depth_settings.width = static_cast<GLsizei>(640);
+	depth_settings.height = static_cast<GLsizei>(480);
+	depth_settings.internalFormat = GL_DEPTH_COMPONENT;
+	depth_settings.format = GL_DEPTH_COMPONENT;
+	depth_settings.type = GL_FLOAT;
+	depth_texture->init(depth_settings);
+
+	// Create frame buffer
+	textureRenderTarget = service->createResource<nap::TextureRenderTargetResource>();
+	textureRenderTarget->setColorTexture(*color_texture);
+	textureRenderTarget->setDepthTexture(*depth_texture);
+	textureRenderTarget->getTarget().setClearColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+
+	// Set render states
+	nap::RenderState& render_state = renderService->GetRenderState();
+	render_state.mEnableDepthTest = true;
+	render_state.mEnableBlending = true;
+	render_state.mEnableMultiSampling = true;
+	render_state.mLineWidth = 1.3f;
+	render_state.mPointSize = 2.0f;
+	render_state.mPolygonMode = opengl::PolygonMode::FILL;
 
 	//////////////////////////////////////////////////////////////////////////
 	// Entities
@@ -504,15 +575,25 @@ bool init(nap::Core& core)
 	//////////////////////////////////////////////////////////////////////////
 	// Add Camera
 	//////////////////////////////////////////////////////////////////////////
+
+	// Normal camera
 	nap::Entity& camera_entity = core.addEntity("camera");
 	cameraComponent = &camera_entity.addComponent<nap::CameraComponent>();
 	nap::TransformComponent& camera_transform = camera_entity.addComponent<nap::TransformComponent>();
 	camera_transform.translate.setValue({ 0.0f, 0.0f, 5.0f });
-	cameraComponent->clippingPlanes.setValue(glm::vec2(0.01, 1000.0f));
-
-	// Set camera
+	cameraComponent->clippingPlanes.setValue(glm::vec2(0.01f, 1000.0f));
 	cameraComponent->fieldOfView.setValue(45.0f);
 	cameraComponent->setAspectRatio((float)windowWidth, (float)windowHeight);
+
+	// Camera used to split one view into multiple windows
+	nap::Entity& split_camera_entity = core.addEntity("split_camera");
+	splitCameraComponent = &split_camera_entity.addComponent<nap::CameraComponent>();
+	nap::TransformComponent& split_camera_transform = split_camera_entity.addComponent<nap::TransformComponent>();
+	split_camera_transform.translate.setValue({ 0.0f, 0.0f, 5.0f });
+	splitCameraComponent->clippingPlanes.setValue(glm::vec2(0.01, 1000.0f));
+	splitCameraComponent->fieldOfView.setValue(45.0f);
+	splitCameraComponent->setAspectRatio((float)windowWidth * 2.0f, (float)windowHeight);
+	splitCameraComponent->setSplitDimensions(glm::ivec2(2, 1));
 
 	return true;
 }

@@ -2,6 +2,7 @@
 
 // Local Includes
 #include "renderattributes.h"
+#include "imageresource.h"
 
 // External Includes
 #include <nap/resource.h>
@@ -10,84 +11,57 @@
 namespace nap
 {
 	/**
-	 * Represents a render target
-	 * Render target can be any type of frame-buffer and are used
-	 * to render objects off screen in to their own buffer
+	 * Frame buffer specialization of the render target resource
+	 * Wraps an opengl frame buffer (RGBA + DEPTH)
 	 */
-	class RenderTargetResource : public Resource
+	class TextureRenderTargetResource : public Resource
 	{
 		RTTI_ENABLE_DERIVED_FROM(Resource)
 	public:
 		/**
-		 * Virtual override to be implemented by derived classes
-		 */
-		virtual const opengl::FramebufferBase& getTarget() const = 0;
+		* Sets color texture resource.
+		*/
+		void setColorTexture(MemoryTextureResource2D& colorTexture)			{ mColorTexture = &colorTexture; }
 
 		/**
-		 * Non const framebuffer accessor
-		 */
-		opengl::FramebufferBase& getTarget();
+		* Sets depth texture resource
+		*/
+		void setDepthTexture(MemoryTextureResource2D& depthTexture)			{ mDepthTexture = &depthTexture; }
 
 		/**
-		 * Binds the framebuffer
-		 */
-		virtual bool bind()				{ return getTarget().bind(); };
+		* Returns color texture resource
+		*/
+		MemoryTextureResource2D& GetColorTexture()							{ return *mColorTexture;  }
 
 		/**
-		 * Unbinds the framebuffer
-		 */
-		virtual bool unbind()			{ return getTarget().unbind(); }
-	};
-
-
-	/**
-	 * Frame buffer specialization of the render target resource
-	 * Wraps an opengl frame buffer (RGBA + DEPTH)
-	 */
-	class FrameBufferResource : public RenderTargetResource
-	{
-		RTTI_ENABLE_DERIVED_FROM(RenderTargetResource)
-	public:
-		/**
-		 * Default constructor
-		 */
-		FrameBufferResource();
+		* Returns depth texture resource
+		*/
+		MemoryTextureResource2D& GetDepthTexture()							{ return *mDepthTexture; }
 
 		/**
 		* @return opengl base frame buffer object
 		* Note that this implicitly initializes the frame buffer
 		*/
-		virtual const opengl::FramebufferBase& getTarget() const override;
+		opengl::TextureRenderTarget& getTarget();
 
 		/**
 		* @return human readable display name
 		*/
 		virtual const std::string& getDisplayName() const override;
 
-		/**
-		 * Holds the buffer size
-		 */
-		Attribute<glm::ivec2> size =	{ this, "width", {512, 512} };
-
 	private:
 		// Framebuffer to draw to
-		mutable opengl::FrameBuffer mFrameBuffer;
+		opengl::TextureRenderTarget mTextureRenderTarget;
 
 		// If the framebuffer has been loaded
-		mutable bool mLoaded = false;
+		bool mLoaded = false;
 
-		/**
-		 * Called when the frame buffer size changed, re-allocates resources
-		 */
-		void onDimensionsChanged(AttributeBase& attr)		{ mDirty = true; }
-		
-		// Slot
-		nap::Slot<AttributeBase&> dimensionsChanged =		{this, &FrameBufferResource::onDimensionsChanged };
+		// Color texture to be used by the render target
+		MemoryTextureResource2D*		mColorTexture = nullptr;
 
-		// Dirty flag, used to change framebuffer dimensions
-		mutable bool mDirty = true;
+		// Depth texture to be used by the render target
+		MemoryTextureResource2D*		mDepthTexture = nullptr;
 	};
 }
 
-RTTI_DECLARE_BASE(nap::RenderTargetResource)
-RTTI_DECLARE(nap::FrameBufferResource)
+RTTI_DECLARE(nap::TextureRenderTargetResource)
