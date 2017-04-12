@@ -16,8 +16,7 @@ endif()
 
 target_link_libraries(${PROJECT_NAME} ${_LIBS})
 
+set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
+
 # Copy the binary resources to the bin dir so the executable can load them.
-add_custom_command(TARGET ${PROJECT_NAME}
-        POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_LIST_DIR}/resources" "${BIN_DIR}/resources"
-        COMMENT "Copy ${CMAKE_CURRENT_LIST_DIR}/resources to ${BIN_DIR}/resources")
+copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/resources resources)
