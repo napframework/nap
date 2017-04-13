@@ -4,7 +4,7 @@
 namespace nap
 {
 	// Return the frame buffer, initialize if necessary
-	opengl::TextureRenderTarget& TextureRenderTargetResource::getTarget()
+	opengl::TextureRenderTarget2D& TextureRenderTargetResource2D::getTarget()
 	{
 		// If the render target hasn't been loaded, do so
 		if (!mLoaded)
@@ -28,11 +28,11 @@ namespace nap
 
 
 	// Resource path is display name for frame buffer
-	const std::string& TextureRenderTargetResource::getDisplayName() const
+	const std::string& TextureRenderTargetResource2D::getDisplayName() const
 	{
 		return getResourcePath();
 	}
 
 } // nap
 
-RTTI_DEFINE(nap::TextureRenderTargetResource)
+RTTI_DEFINE(nap::TextureRenderTargetResource2D)

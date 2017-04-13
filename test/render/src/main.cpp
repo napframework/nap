@@ -77,7 +77,7 @@ static float rotateScale = 1.0f;
 nap::RenderService* renderService = nullptr;
 nap::Service* rpcService = nullptr;
 std::vector<nap::RenderWindowComponent*> renderWindows;
-nap::TextureRenderTargetResource* textureRenderTarget;
+nap::TextureRenderTargetResource2D* textureRenderTarget;
 nap::CameraComponent* cameraComponent = nullptr;
 nap::CameraComponent* splitCameraComponent = nullptr;
 nap::ModelMeshComponent* modelComponent = nullptr;
@@ -290,7 +290,7 @@ void onRender(const nap::SignalAttribute& signal)
 		render_window->makeActive();
 
 		// Render entire scene to texture
-		renderService->clearRenderTarget(textureRenderTarget->getTarget(), opengl::EClearFlags::Color|opengl::EClearFlags::Depth|opengl::EClearFlags::Stencil);
+		renderService->clearRenderTarget(textureRenderTarget->getTarget(), opengl::EClearFlags::COLOR|opengl::EClearFlags::DEPTH|opengl::EClearFlags::STENCIL);
 		renderService->renderObjects(textureRenderTarget->getTarget(), *cameraComponent);
 
 		// Render output texture to plane
@@ -303,7 +303,7 @@ void onRender(const nap::SignalAttribute& signal)
 		planeComponent->getMaterial()->setUniformValue<glm::vec4>("mColor", { 1.0f, 1.0f, 1.0f, 1.0f });
 
 		opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(render_window->getWindow()->getBackbuffer());
-		renderService->clearRenderTarget(backbuffer, opengl::EClearFlags::Color|opengl::EClearFlags::Depth|opengl::EClearFlags::Stencil);
+		renderService->clearRenderTarget(backbuffer, opengl::EClearFlags::COLOR|opengl::EClearFlags::DEPTH|opengl::EClearFlags::STENCIL);
 		renderService->renderObjects(backbuffer, components_to_render, *cameraComponent);
 
 		// Render sphere using split camera with custom projection matrix
@@ -326,7 +326,7 @@ void onRender(const nap::SignalAttribute& signal)
 		components_to_render.push_back(modelComponent);
 
 		opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(render_window->getWindow()->getBackbuffer());
-		renderService->clearRenderTarget(backbuffer, opengl::EClearFlags::Color | opengl::EClearFlags::Depth | opengl::EClearFlags::Stencil);
+		renderService->clearRenderTarget(backbuffer, opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH | opengl::EClearFlags::STENCIL);
 		renderService->renderObjects(backbuffer, components_to_render, *cameraComponent);
 
 		// Render sphere using split camera with custom projection matrix
@@ -469,7 +469,7 @@ bool init(nap::Core& core)
 	depth_texture->init(depth_settings);
 
 	// Create frame buffer
-	textureRenderTarget = service->createResource<nap::TextureRenderTargetResource>();
+	textureRenderTarget = service->createResource<nap::TextureRenderTargetResource2D>();
 	textureRenderTarget->setColorTexture(*color_texture);
 	textureRenderTarget->setDepthTexture(*depth_texture);
 	textureRenderTarget->getTarget().setClearColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));

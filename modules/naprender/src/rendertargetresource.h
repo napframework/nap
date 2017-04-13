@@ -14,7 +14,7 @@ namespace nap
 	 * Frame buffer specialization of the render target resource
 	 * Wraps an opengl frame buffer (RGBA + DEPTH)
 	 */
-	class TextureRenderTargetResource : public Resource
+	class TextureRenderTargetResource2D : public Resource
 	{
 		RTTI_ENABLE_DERIVED_FROM(Resource)
 	public:
@@ -42,7 +42,7 @@ namespace nap
 		* @return opengl base frame buffer object
 		* Note that this implicitly initializes the frame buffer
 		*/
-		opengl::TextureRenderTarget& getTarget();
+		opengl::TextureRenderTarget2D& getTarget();
 
 		/**
 		* @return human readable display name
@@ -51,7 +51,7 @@ namespace nap
 
 	private:
 		// Framebuffer to draw to
-		opengl::TextureRenderTarget mTextureRenderTarget;
+		opengl::TextureRenderTarget2D mTextureRenderTarget;
 
 		// If the framebuffer has been loaded
 		bool mLoaded = false;
@@ -64,4 +64,4 @@ namespace nap
 	};
 }
 
-RTTI_DECLARE(nap::TextureRenderTargetResource)
+RTTI_DECLARE(nap::TextureRenderTargetResource2D)
