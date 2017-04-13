@@ -15,7 +15,7 @@
 namespace nap
 {
 	// Forces the setting of all render states as currently set.
-	void RenderState::Force()
+	void RenderState::force()
 	{
 		opengl::enableDepthTest(mEnableDepthTest);
 		opengl::enableBlending(mEnableBlending);
@@ -27,7 +27,7 @@ namespace nap
 
 	// Switches all render states as set in @targetRenderState. Only the renderStates that are different
 	// will actually cause openGL calls.
-	void RenderState::Update(const RenderState& targetRenderState)
+	void RenderState::update(const RenderState& targetRenderState)
 	{
 		if (targetRenderState.mEnableDepthTest != mEnableDepthTest)
 		{
@@ -209,13 +209,6 @@ namespace nap
 		viewMatrix = glm::lookAt(eye_pos, lookat_pos, glm::vec3(0, 1, 0));
 	}
 
-	// Initializes signals
-	RenderService::RenderService()
-	{
-		draw.setFlag(nap::ObjectFlag::Editable, false);
-		update.setFlag(nap::ObjectFlag::Editable, false);
-	}
-
 
 	// Shut down render service
 	RenderService::~RenderService()
@@ -271,18 +264,18 @@ namespace nap
 	}
 
 	// Updates the current context's render state by using the latest render state as set by the user.
-	void RenderService::UpdateRenderState()
+	void RenderService::updateRenderState()
 	{
 		opengl::GLContext context = opengl::getCurrentContext();
 		ContextSpecificStateMap::iterator context_state = mContextSpecificState.find(context);
 		if (context_state == mContextSpecificState.end())
 		{
 			mContextSpecificState.emplace(std::make_pair(context, mRenderState));
-			mContextSpecificState[context].Force();
+			mContextSpecificState[context].force();
 		}
 		else
 		{
-			context_state->second.Update(mRenderState);
+			context_state->second.update(mRenderState);
 		}
 	}
 
@@ -291,7 +284,7 @@ namespace nap
 	{
 		renderTarget.bind();
 
-		UpdateRenderState();
+		updateRenderState();
 
 		// Extract camera projection matrix
 		const glm::mat4x4 projection_matrix = camera.getProjectionMatrix();

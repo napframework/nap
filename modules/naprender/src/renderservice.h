@@ -39,12 +39,12 @@ namespace nap
 	*/
 	struct RenderState
 	{
-		bool mEnableDepthTest = true;
-		bool mEnableBlending = true;
-		bool mEnableMultiSampling = true;
-		float mLineWidth = 1.0f;
-		float mPointSize = 1.0;
-		opengl::PolygonMode mPolygonMode = opengl::PolygonMode::FILL;
+		bool				mEnableDepthTest		= true;
+		bool				mEnableBlending			= true;
+		bool				mEnableMultiSampling	= true;
+		float				mLineWidth				= 1.0f;
+		float				mPointSize				= 1.0;
+		opengl::PolygonMode mPolygonMode			= opengl::PolygonMode::FILL;
 
 	private:
 		friend class RenderService;
@@ -52,13 +52,13 @@ namespace nap
 		/**
 		* Forces the setting of all render states as currently set.
 		*/
-		void Force();
+		void force();
 
 		/**
 		* Switches all render states as set in @targetRenderState. Only the renderStates that are different
 		will actually cause openGL calls.
 		*/
-		void Update(const RenderState& targetRenderState);
+		void update(const RenderState& targetRenderState);
 	};
 
 	/**
@@ -81,7 +81,7 @@ namespace nap
 		};
 
 		// Default constructor
-		RenderService();
+		RenderService() = default;
 
 		// Default destructor
 		virtual ~RenderService();
@@ -149,7 +149,7 @@ namespace nap
 		/**
 		* Returns global render state. Use the fields in this objects to modify the renderstate.
 		*/
-		RenderState& GetRenderState() { return mRenderState; }
+		RenderState& getRenderState() { return mRenderState; }
 
 	protected:
 		/**
@@ -202,7 +202,7 @@ namespace nap
 		/**
 		* Updates the current context's render state by using the latest render state as set by the user.
 		*/
-		void UpdateRenderState();
+		void updateRenderState();
 
 		using ContextSpecificStateMap = std::unordered_map<opengl::GLContext, RenderState>;
 
