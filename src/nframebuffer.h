@@ -21,11 +21,11 @@ namespace opengl
 
 	inline EClearFlags operator&(EClearFlags a, EClearFlags b)
 	{
-		return static_cast<EClearFlags>(static_cast<int>(a) & static_cast<int>(b));
+		return static_cast<EClearFlags>(static_cast<uint8_t>(a) & static_cast<uint8_t>(b));
 	}
 	inline EClearFlags operator|(EClearFlags a, EClearFlags b)
 	{
-		return static_cast<EClearFlags>(static_cast<int>(a) | static_cast<int>(b));
+		return static_cast<EClearFlags>(static_cast<uint8_t>(a) | static_cast<uint8_t>(b));
 	}
 
 
