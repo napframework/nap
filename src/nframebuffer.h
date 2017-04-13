@@ -14,9 +14,9 @@ namespace opengl
 	*/
 	enum class EClearFlags : uint8_t
 	{
-		Color = 1,
-		Depth = 2,
-		Stencil = 4
+		COLOR = 1,
+		DEPTH = 2,
+		STENCIL = 4
 	};
 
 	inline EClearFlags operator&(EClearFlags a, EClearFlags b)
@@ -84,12 +84,12 @@ namespace opengl
 	 * 
 	 * For now only 1 color attachment is supported 
 	 */
-	class TextureRenderTarget : public RenderTarget
+	class TextureRenderTarget2D : public RenderTarget
 	{
 	public:
 		// Constructor
-		TextureRenderTarget() = default;
-		~TextureRenderTarget();
+		TextureRenderTarget2D() = default;
+		~TextureRenderTarget2D();
 
 		/**
 		* Creates the render target on the GPU and initializes
@@ -101,11 +101,6 @@ namespace opengl
 		* @return if the render target is allocated (created) on the GPU
 		*/
 		bool isAllocated() const { return mFbo != 0; }
-
-		/**
-		 * Generates the OpenGL fbo object, attaches color and depth textures.
-		 */
-		void allocate(opengl::Texture2D& colorTexture, opengl::Texture2D& depthTexture);
 
 		/**
 		* @return if the render target is allocated and valid for use
@@ -133,6 +128,12 @@ namespace opengl
 		 * @return the texture associated with the depth channel of this render target
 		 */
 		opengl::Texture2D& getDepthTexture() 					{ assert(mDepthTexture != nullptr);  return *mDepthTexture; }
+
+	private:
+		/**
+		 * Generates the OpenGL FBO object, attaches color and depth textures.
+		 */
+		void allocate(opengl::Texture2D& colorTexture, opengl::Texture2D& depthTexture);
 
 	private:
 		GLuint						mFbo = 0;					// FBO GPU id

@@ -9,24 +9,24 @@ namespace opengl
 	// Clears render target. If color is cleared, it is done using the clear color as set.
 	void RenderTarget::clear(EClearFlags flags)
 	{
-		if ((flags & EClearFlags::Color) == EClearFlags::Color)
+		if ((flags & EClearFlags::COLOR) == EClearFlags::COLOR)
 		{
 			opengl::clearColor(mClearColor.r, mClearColor.g, mClearColor.b, mClearColor.a);
 		}
 
-		if ((flags & EClearFlags::Depth) == EClearFlags::Depth)
+		if ((flags & EClearFlags::DEPTH) == EClearFlags::DEPTH)
 		{
 			opengl::clearDepth();
 		}
 
-		if ((flags & EClearFlags::Stencil) == EClearFlags::Stencil)
+		if ((flags & EClearFlags::STENCIL) == EClearFlags::STENCIL)
 		{
 			opengl::clearStencil();
 		}
 	}
 
 	// Delete render target
-	TextureRenderTarget::~TextureRenderTarget()
+	TextureRenderTarget2D::~TextureRenderTarget2D()
 	{
 		if (isAllocated())
 			glDeleteFramebuffers(1, &mFbo);
@@ -34,7 +34,7 @@ namespace opengl
 
 
 	// Creates the render target on the GPU 
-	void TextureRenderTarget::init(opengl::Texture2D& colorTexture, opengl::Texture2D& depthTexture)
+	void TextureRenderTarget2D::init(opengl::Texture2D& colorTexture, opengl::Texture2D& depthTexture)
 	{
 		if (isAllocated())
 		{
@@ -47,7 +47,7 @@ namespace opengl
 
 
 	// Checks if the render target is allocated and valid for use
-	bool TextureRenderTarget::isValid()
+	bool TextureRenderTarget2D::isValid()
 	{
 		if (!isAllocated())
 		{
@@ -99,7 +99,7 @@ namespace opengl
 
 
 	// Binds the render target so it can be used by subsequent render calls
-	bool TextureRenderTarget::bind()
+	bool TextureRenderTarget2D::bind()
 	{
 		if (!isAllocated())
 		{
@@ -112,7 +112,7 @@ namespace opengl
 
 
 	// Unbinds the render target from subsequent render calls
-	bool TextureRenderTarget::unbind()
+	bool TextureRenderTarget2D::unbind()
 	{
 		if (!isAllocated())
 		{
@@ -139,7 +139,7 @@ namespace opengl
 
 
 	// Generates FBO, attaches color and depth.
- 	void TextureRenderTarget::allocate(opengl::Texture2D& colorTexture, opengl::Texture2D& depthTexture)
+ 	void TextureRenderTarget2D::allocate(opengl::Texture2D& colorTexture, opengl::Texture2D& depthTexture)
  	{
  		if (isAllocated())
  		{
