@@ -133,23 +133,25 @@ namespace nap
 	}
 
 	// Use this function to split the projection into a grid of same-sized rectangles.
-	void CameraComponent::setSplitDimensions(glm::ivec2 splitDimensions)
+	void CameraComponent::setGridDimensions(int numRows, int numColumns)
 	{
-		if (splitDimensions.x != mSplitDimensions.x || splitDimensions.y != mSplitDimensions.y)
+		if (numColumns != mGridDimensions.x || numRows != mGridDimensions.y)
 		{
-			assert(mSplitLocation.x < splitDimensions.x && mSplitLocation.y < splitDimensions.y);
-			mSplitDimensions = splitDimensions;
+			assert(mGridLocation.x < numColumns && mGridLocation.y < numRows);
+			mGridDimensions.x = numColumns;
+			mGridDimensions.y = numRows;
 			mDirty = true;
 		}
 	}
 
 	// Sets the horizontal and vertical index into the projection grid as set by setSplitDimensions.
-	void CameraComponent::setSplitLocation(glm::ivec2 splitLocation)
+	void CameraComponent::setGridLocation(int row, int column)
 	{
-		if (splitLocation.x != mSplitLocation.x || splitLocation.y != mSplitLocation.y)
+		if (column != mGridLocation.x || row != mGridLocation.y)
 		{
-			assert(splitLocation.x >= 0 && splitLocation.x < mSplitDimensions.x && splitLocation.y >= 0 && splitLocation.y < mSplitDimensions.y);
-			mSplitLocation = splitLocation;
+			assert(column >= 0 && column < mGridDimensions.x && row >= 0 && row < mGridDimensions.y);
+			mGridLocation.x = column;
+			mGridLocation.y = row;
 			mDirty = true;
 		}
 	}
@@ -166,8 +168,8 @@ namespace nap
 			const float aspect_ratio = aspectRatio.getValue();
 
 			float left, right, top, bottom;
-			calculateCameraPlanes(fov, aspect_ratio, near_plane, mSplitDimensions.x, mSplitLocation.x, left, right);
-			calculateCameraPlanes(fov, 1.0f, near_plane, mSplitDimensions.y, mSplitLocation.y, bottom, top);
+			calculateCameraPlanes(fov, aspect_ratio, near_plane, mGridDimensions.x, mGridLocation.x, left, right);
+			calculateCameraPlanes(fov, 1.0f, near_plane, mGridDimensions.y, mGridLocation.y, bottom, top);
 
 			mProjectionMatrix = createASymmetricProjection(near_plane, far_plane, left, right, top, bottom);
 

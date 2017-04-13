@@ -54,16 +54,16 @@ namespace nap
 		const glm::mat4& getProjectionMatrix() const;
 
 		/**
-		* Use this function to split the projection into a grid of same-sized rectangles. This can be used to render to multiple screens 
-		* with a single camera. Use set SplitLocation to set the horizontal and vertical index into this grid.
+		* Use this function to split the projection into a grid of squares. This can be used to render to multiple screens 
+		* with a single camera. Use setGridLocation to set the horizontal and vertical index into this grid.
 		* @param splitDimensions: the number of cells in the horizontal and vertical direction.
 		*/
-		void setSplitDimensions(glm::ivec2 splitDimensions);
+		void setGridDimensions(int numRows, int numColumns);
 
 		/**
 		* Sets the horizontal and vertical index into the projection grid as set by setSplitDimensions.
 		*/
-		void setSplitLocation(glm::ivec2 windowLocation);
+		void setGridLocation(int row, int column);
 
 		/**
 		 * Sets this camera to be dirty, ie: 
@@ -87,8 +87,8 @@ namespace nap
 		void onAttribValueChanged(nap::AttributeBase& v)		{ setDirty(); }
 		NSLOT(cameraValueChanged, nap::AttributeBase&, onAttribValueChanged)
 
-		glm::ivec2 mSplitDimensions = glm::ivec2(1, 1);					// Dimensions of 'split projection' grid. Default is single dimension, meaning a single screen, which is a regular symmetric perspective projection
-		glm::ivec2 mSplitLocation = glm::ivec2(0, 0);					// Location means the 2 dimensional index in the split projection dimensions
+		glm::ivec2 mGridDimensions = glm::ivec2(1, 1);					// Dimensions of 'split projection' grid. Default is single dimension, meaning a single screen, which is a regular symmetric perspective projection
+		glm::ivec2 mGridLocation = glm::ivec2(0, 0);					// Location means the 2 dimensional index in the split projection dimensions
 	};
 }
 

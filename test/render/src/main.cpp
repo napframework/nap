@@ -307,7 +307,7 @@ void onRender(const nap::SignalAttribute& signal)
 		renderService->renderObjects(backbuffer, components_to_render, *cameraComponent);
 
 		// Render sphere using split camera with custom projection matrix
-		splitCameraComponent->setSplitLocation(glm::ivec2(0, 0));
+		splitCameraComponent->setGridLocation(0, 0);
 		components_to_render.clear();
 		components_to_render.push_back(sphereComponent);
 		renderService->renderObjects(backbuffer, components_to_render, *splitCameraComponent);
@@ -330,7 +330,7 @@ void onRender(const nap::SignalAttribute& signal)
 		renderService->renderObjects(backbuffer, components_to_render, *cameraComponent);
 
 		// Render sphere using split camera with custom projection matrix
-		splitCameraComponent->setSplitLocation(glm::ivec2(1, 0));
+		splitCameraComponent->setGridLocation(0, 1);
 		components_to_render.clear();
 		components_to_render.push_back(sphereComponent);
 		renderService->renderObjects(backbuffer, components_to_render, *splitCameraComponent);
@@ -593,7 +593,7 @@ bool init(nap::Core& core)
 	splitCameraComponent->clippingPlanes.setValue(glm::vec2(0.01, 1000.0f));
 	splitCameraComponent->fieldOfView.setValue(45.0f);
 	splitCameraComponent->setAspectRatio((float)windowWidth * 2.0f, (float)windowHeight);
-	splitCameraComponent->setSplitDimensions(glm::ivec2(2, 1));
+	splitCameraComponent->setGridDimensions(1, 2);
 
 	return true;
 }
