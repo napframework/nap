@@ -5,6 +5,7 @@
 
 // External Includes
 #include <nsdlgl.h>
+#include "nframebuffer.h"
 
 namespace nap
 {
@@ -32,6 +33,11 @@ namespace nap
 		 * @return SDL_GLContext (=void*)
 		 */
 		virtual void* getContext() const override;
+
+		/**
+		*@return the backbuffer
+		*/
+		virtual void* getBackbuffer() const override;
 
 		/**
 		 * @return the OpenGL window container
@@ -95,6 +101,7 @@ namespace nap
 
 	private:
 		std::unique_ptr<opengl::Window> mWindow = nullptr;
+		std::unique_ptr<opengl::BackbufferRenderTarget> mBackbuffer = nullptr;
 	};
 
 

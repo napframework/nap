@@ -44,20 +44,6 @@ namespace nap
 		SignalAttribute hide		{ this, "Hide" };
 
 		/**
-		 * Render signal, emitted every render iteration
-		 * Connect to this signal to render objects to the context
-		 * associated with this window. 
-		 */
-		SignalAttribute draw		{ this, "Draw" };
-
-		/**
-		 * Update signal, emitted before a render operation
-		 * Connect to this signal to update your scene
-		 * graph before the render call is emitted
-		 */
-		SignalAttribute update		{ this, "Update" };
-
-		/**
 		 * Connect to this signal if you want to know when this window
 		 * is made active. Subsequent render calls will be associated
 		 * with this window after activate has been triggered

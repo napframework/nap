@@ -189,27 +189,12 @@ namespace nap
 			return;
 		}
 
-		// Get all window components
-		std::vector<RenderWindowComponent*> windows;
-		getObjects<RenderWindowComponent>(windows);
-		
-		// Trigger update
-		for (auto& window : windows)
-		{
-			window->makeActive();
-			window->doUpdate();
-		}
+		update.trigger();
 
 		// Collect all transform changes and push
 		updateTransforms();
 
-		// Trigger render call
-		for (auto& window : windows)
-		{
-			window->makeActive();
-			window->doDraw();
-			window->swap();
-		}
+		draw.trigger();
 	}
 
 
@@ -226,18 +211,38 @@ namespace nap
 
 
 	// Render all objects in scene graph using specifief camera
-	void RenderService::renderObjects(const CameraComponent& camera)
+	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, const CameraComponent& camera)
 	{
 		// Get all render components
 		std::vector<nap::RenderableComponent*> render_comps;
 		getObjects<nap::RenderableComponent>(render_comps);
 
-		renderObjects(render_comps, camera);
+		renderObjects(renderTarget, render_comps, camera);
 	}
 
-
-	void RenderService::renderObjects(const std::vector<RenderableComponent*>& comps, const CameraComponent& camera)
+	// Updates the current context's render state by using the latest render state as set by the user.
+	void RenderService::updateRenderState()
 	{
+		opengl::GLContext context = opengl::getCurrentContext();
+		ContextSpecificStateMap::iterator context_state = mContextSpecificState.find(context);
+		if (context_state == mContextSpecificState.end())
+		{
+			mContextSpecificState.emplace(std::make_pair(context, mRenderState));
+			mContextSpecificState[context].force();
+		}
+		else
+		{
+			context_state->second.update(mRenderState);
+		}
+	}
+
+	// Renders all available objects to a specific renderTarget.
+	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, const std::vector<RenderableComponent*>& comps, const CameraComponent& camera)
+	{
+		renderTarget.bind();
+
+		updateRenderState();
+
 		// Extract camera projection matrix
 		const glm::mat4x4 projection_matrix = camera.getProjectionMatrix();
 
@@ -275,8 +280,17 @@ namespace nap
 			// Draw
 			comp->draw();
 		}
+
+		renderTarget.unbind();
 	}
 
+	// Clears the render target.
+	void RenderService::clearRenderTarget(opengl::RenderTarget& renderTarget, opengl::EClearFlags flags)
+	{
+		renderTarget.bind();
+		renderTarget.clear(flags);
+		renderTarget.unbind();
+	}
 
 	// Set the currently active renderer
 	void RenderService::setRenderer(const RTTI::TypeInfo& renderer)

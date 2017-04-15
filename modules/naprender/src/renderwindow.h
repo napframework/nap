@@ -70,6 +70,11 @@ namespace nap
 		virtual void* getContext() const = 0;
 
 		/**
+		 *@return the backbuffer
+		 */
+		virtual void* getBackbuffer() const = 0;
+
+		/**
 		 * Set the window title
 		 * @param title the new window title
 		 */
