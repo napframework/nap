@@ -350,6 +350,52 @@ void onRender(const nap::SignalAttribute& signal)
 nap::Slot<const nap::SignalAttribute&> renderSlot = { [](const nap::SignalAttribute& attr){ onRender(attr); } };
 
 
+bool initResources(nap::ResourceManagerService* resourceManagerService, nap::InitResult& initResult)
+{
+	pigTexture = resourceManagerService->createResource<nap::ImageResource>();
+	pigTexture->mImagePath = pigTextureName;
+	if (!pigTexture->init(initResult))
+		return false;
+
+	testTexture = resourceManagerService->createResource<nap::ImageResource>();
+	testTexture->mImagePath = testTextureName;
+	if (!testTexture->init(initResult))
+		return false;
+
+	worldTexture = resourceManagerService->createResource<nap::ImageResource>();
+	worldTexture->mImagePath = worldTextureName;
+	if (!worldTexture->init(initResult))
+		return false;
+
+	nap::MemoryTextureResource2D* color_texture = resourceManagerService->createResource<nap::MemoryTextureResource2D>();
+	color_texture->mSettings.width = 640;
+	color_texture->mSettings.height = 480;
+	color_texture->mSettings.internalFormat = GL_RGBA;
+	color_texture->mSettings.format = GL_RGBA;
+	color_texture->mSettings.type = GL_UNSIGNED_BYTE;
+	if (!color_texture->init(initResult))
+		return false;
+
+	nap::MemoryTextureResource2D* depth_texture = resourceManagerService->createResource<nap::MemoryTextureResource2D>();
+	depth_texture->mSettings.width = static_cast<GLsizei>(640);
+	depth_texture->mSettings.height = static_cast<GLsizei>(480);
+	depth_texture->mSettings.internalFormat = GL_DEPTH_COMPONENT;
+	depth_texture->mSettings.format = GL_DEPTH_COMPONENT;
+	depth_texture->mSettings.type = GL_FLOAT;
+	if (!depth_texture->init(initResult))
+		return false;
+	
+	// Create frame buffer
+	textureRenderTarget = resourceManagerService->createResource<nap::TextureRenderTargetResource2D>();
+	textureRenderTarget->setColorTexture(*color_texture);
+	textureRenderTarget->setDepthTexture(*depth_texture);
+	if (!textureRenderTarget->init(initResult))
+		return false;
+	textureRenderTarget->getTarget().setClearColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+
+	return true;
+}
+
 /**
 * Initialize all the resources and instances used for drawing
 * slowly migrating all functionality to nap
@@ -424,55 +470,33 @@ bool init(nap::Core& core)
 	renderWindows[0]->makeActive();
 
 	// Create shader resource
-	nap::ResourceManagerService* service = core.getOrCreateService<nap::ResourceManagerService>();
-	service->setAssetRoot(".");
+	nap::ResourceManagerService* resourceManagerService = core.getOrCreateService<nap::ResourceManagerService>();
+	resourceManagerService->setAssetRoot(".");
 
 	// Load orientation resource
-	nap::ModelResource* orientation_model = service->getResource<nap::ModelResource>("data/orientation.fbx");
+	nap::ModelResource* orientation_model = resourceManagerService->getResource<nap::ModelResource>("data/orientation.fbx");
 	assert(orientation_model != nullptr);
 	orientation_model->load();
 
 	// Load model resource
-	nap::ModelResource* pig_model = service->getResource<nap::ModelResource>("data/pig_head_alpha_rotated.fbx");
+	nap::ModelResource* pig_model = resourceManagerService->getResource<nap::ModelResource>("data/pig_head_alpha_rotated.fbx");
 	assert(orientation_model != nullptr);
 	pig_model->load();
 
-	// Load textures
-	pigTexture   = service->getResource<nap::ImageResource>(pigTextureName);
-	testTexture  = service->getResource<nap::ImageResource>(testTextureName);
-	worldTexture = service->getResource<nap::ImageResource>(worldTextureName);
+	nap::InitResult initResult;
+	if (!initResources(resourceManagerService, initResult))
+	{
+		nap::Logger::fatal("Unable to initialize resources: %s", initResult.mErrorString.c_str());
+		return false;
+	}
 
 	// Load general shader
-	shaderResource = service->getResource<nap::ShaderResource>(fragShaderName);
+	shaderResource = resourceManagerService->getResource<nap::ShaderResource>(fragShaderName);
 	shaderResource->load();
 
 	// Load orientation shader
-	orientationShaderResource = service->getResource<nap::ShaderResource>(orientationShaderName);
+	orientationShaderResource = resourceManagerService->getResource<nap::ShaderResource>(orientationShaderName);
 	orientationShaderResource->load();
-
-	nap::MemoryTextureResource2D* color_texture = service->createResource<nap::MemoryTextureResource2D>();
-	opengl::Texture2DSettings color_settings;
-	color_settings.width = 640;
-	color_settings.height = 480;
-	color_settings.internalFormat = GL_RGBA;
-	color_settings.format = GL_RGBA;
-	color_settings.type = GL_UNSIGNED_BYTE;
-	color_texture->init(color_settings);
-
-	nap::MemoryTextureResource2D* depth_texture = service->createResource<nap::MemoryTextureResource2D>();
-	opengl::Texture2DSettings depth_settings;
-	depth_settings.width = static_cast<GLsizei>(640);
-	depth_settings.height = static_cast<GLsizei>(480);
-	depth_settings.internalFormat = GL_DEPTH_COMPONENT;
-	depth_settings.format = GL_DEPTH_COMPONENT;
-	depth_settings.type = GL_FLOAT;
-	depth_texture->init(depth_settings);
-
-	// Create frame buffer
-	textureRenderTarget = service->createResource<nap::TextureRenderTargetResource2D>();
-	textureRenderTarget->setColorTexture(*color_texture);
-	textureRenderTarget->setDepthTexture(*depth_texture);
-	textureRenderTarget->getTarget().setClearColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 
 	// Set render states
 	nap::RenderState& render_state = renderService->getRenderState();

@@ -28,7 +28,7 @@ namespace nap
             return JSONSerializer().fromString(mContents, core, &parent);
         }
 
-		virtual const std::string& getDisplayName() const override { return mPath; }
+		virtual const std::string getDisplayName() const override { return mPath; }
 
     private:
 		const std::string mContents;

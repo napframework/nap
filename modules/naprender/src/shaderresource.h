@@ -25,7 +25,7 @@ namespace nap
 		/**
 		 * @return the shader resource display name
 		 */
-		virtual const std::string& getDisplayName() const override;
+		virtual const std::string getDisplayName() const override;
 
 		/**
 		 * @return the opengl shader that can be used for drawing

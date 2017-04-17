@@ -12,7 +12,7 @@ const std::string nap::ShaderResourceLoader::vertExtension = "vert";
 namespace nap
 {
 	// Display name derived from path
-	const std::string& nap::ShaderResource::getDisplayName() const
+	const std::string nap::ShaderResource::getDisplayName() const
 	{
 		return mDisplayName;
 	}

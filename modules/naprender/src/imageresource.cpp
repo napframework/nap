@@ -8,11 +8,12 @@
 namespace nap
 {
 	// Initializes 2D texture. Additionally a custom display name can be provided.
-	void MemoryTextureResource2D::init(const opengl::Texture2DSettings& settings, const std::string& displayName)
+	bool MemoryTextureResource2D::init(InitResult& initResult)
 	{
-		mDisplayName = displayName;
 		mTexture.init();
-		mTexture.allocate(settings);
+		mTexture.allocate(mSettings);
+
+		return true;
 	}
 
 	// Returns 2D texture object
@@ -37,22 +38,25 @@ namespace nap
 	}
 
 
-	const std::string& ImageResource::getDisplayName() const
+	const std::string ImageResource::getDisplayName() const
 	{
 		return mDisplayName;
+	}
+
+	bool ImageResource::init(InitResult& initResult)
+	{
+		if (!initResult.check(!mImagePath.empty(), "Imagepath not set"))
+			return false;
+
+		if (!initResult.check(mImage.load(mImagePath), "Unable to load image from file"))
+			return false;
+
+		return true;
 	}
 
 
 	const opengl::Image& ImageResource::getImage() const
 	{
-		if (!mLoaded)
-		{
-			if (!mImage.load(mImagePath))
-			{
-				nap::Logger::warn("unable to load image: %s", mImagePath.c_str());
-			}
-			mLoaded = true;
-		}
 		return mImage;
 	}
 	

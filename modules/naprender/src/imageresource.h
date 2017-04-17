@@ -47,7 +47,7 @@ namespace nap
 		/**
 		* Initializes 2D texture. Additionally a custom display name can be provided.
 		*/
-		void init(const opengl::Texture2DSettings& settings, const std::string& displayName = "MemoryTexture2D");
+		virtual bool init(InitResult& initResult) override;
 
 		/**
 		* Returns 2D texture object
@@ -57,11 +57,14 @@ namespace nap
 		/**
 		* Returns custom display name
 		*/
-		virtual const std::string& getDisplayName() const override				{ return mDisplayName;  }
+		virtual const std::string getDisplayName() const override				{ return mDisplayName;  }
+
+	public:
+		opengl::Texture2DSettings mSettings;
 
 	private:
-		opengl::Texture2D mTexture;		// Texture as created during init
-		std::string mDisplayName;		// Custom display name
+		opengl::Texture2D mTexture;						// Texture as created during init
+		std::string mDisplayName = "MemoryTexture2D";	// Custom display name
 	};
 
 
@@ -81,6 +84,8 @@ namespace nap
 		// Default Constructor
 		ImageResource() = default;
 
+		virtual bool init(InitResult& initResult) override;
+
 		/**
 		 * @return opengl image + bitmap data
 		 * Note that this implicitly loads the image
@@ -97,18 +102,15 @@ namespace nap
 		/**
 		 * @return human readable display name
 		 */
-		virtual const std::string& getDisplayName() const override;
+		virtual const std::string getDisplayName() const override;
 
-
-	private:
+	public:
 		// Path to img on disk
 		std::string				mImagePath;
 
+	private:
 		// Display name of img
 		std::string				mDisplayName;
-
-		// If the img has been loaded
-		mutable bool			mLoaded = false;
 
 		// Opengl Image Object
 		mutable opengl::Image	mImage;

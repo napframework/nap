@@ -18,6 +18,9 @@ namespace nap
 	{
 		RTTI_ENABLE_DERIVED_FROM(Resource)
 	public:
+
+		virtual bool init(InitResult& initResult) override;
+
 		/**
 		* Sets color texture resource.
 		*/
@@ -47,14 +50,11 @@ namespace nap
 		/**
 		* @return human readable display name
 		*/
-		virtual const std::string& getDisplayName() const override;
+		virtual const std::string getDisplayName() const override;
 
 	private:
 		// Framebuffer to draw to
 		opengl::TextureRenderTarget2D mTextureRenderTarget;
-
-		// If the framebuffer has been loaded
-		bool mLoaded = false;
 
 		// Color texture to be used by the render target
 		MemoryTextureResource2D*		mColorTexture = nullptr;

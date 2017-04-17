@@ -3,32 +3,30 @@
 
 namespace nap
 {
-	// Return the frame buffer, initialize if necessary
+
+	bool TextureRenderTargetResource2D::init(InitResult& initResult)
+	{
+		if (!initResult.check(mColorTexture != nullptr, "Unable to create render target %s. Color textures not set.", getResourcePath().c_str()))
+			return false;
+
+		if (!initResult.check(mDepthTexture != nullptr, "Unable to create render target %s. Depth texture not set.", getResourcePath().c_str()))
+			return false;
+
+		mTextureRenderTarget.init((opengl::Texture2D&)mColorTexture->getTexture(), (opengl::Texture2D&)mDepthTexture->getTexture());
+		if (!initResult.check(mTextureRenderTarget.isValid(), "unable to validate frame buffer: %s", getResourcePath().c_str()))
+			return false;
+
+		return true;
+	}
+
 	opengl::TextureRenderTarget2D& TextureRenderTargetResource2D::getTarget()
 	{
-		// If the render target hasn't been loaded, do so
-		if (!mLoaded)
-		{
-			if (mColorTexture == nullptr || mDepthTexture == nullptr)
-			{
-				nap::Logger::warn("Unable to create render target %s. Color and/or depth textures missing.", getResourcePath().c_str());
-				return mTextureRenderTarget;
-			}
-
-			mTextureRenderTarget.init((opengl::Texture2D&)mColorTexture->getTexture(), (opengl::Texture2D&)mDepthTexture->getTexture());
-			if (!mTextureRenderTarget.isValid())
-			{
-				nap::Logger::warn("unable to validate frame buffer: %s", getResourcePath().c_str());
-			}
-			mLoaded = true;
-		}
-
 		return mTextureRenderTarget;
 	}
 
 
 	// Resource path is display name for frame buffer
-	const std::string& TextureRenderTargetResource2D::getDisplayName() const
+	const std::string TextureRenderTargetResource2D::getDisplayName() const
 	{
 		return getResourcePath();
 	}
