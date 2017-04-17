@@ -4,190 +4,173 @@
 // External Includes
 #include <assert.h>
 
-// Delete framebuffer
-opengl::FramebufferBase::~FramebufferBase()
+namespace opengl
 {
-	if (isAllocated())
-		glDeleteFramebuffers(1, &mFbo);
-}
-
-
-// Creates the framebuffer on the GPU 
-void opengl::FramebufferBase::init()
-{
-	if (isAllocated())
+	// Clears render target. If color is cleared, it is done using the clear color as set.
+	void RenderTarget::clear(EClearFlags flags)
 	{
-		printMessage(MessageType::ERROR, "framebuffer already initialized");
-		return;
+		if ((flags & EClearFlags::COLOR) == EClearFlags::COLOR)
+		{
+			opengl::clearColor(mClearColor.r, mClearColor.g, mClearColor.b, mClearColor.a);
+		}
+
+		if ((flags & EClearFlags::DEPTH) == EClearFlags::DEPTH)
+		{
+			opengl::clearDepth();
+		}
+
+		if ((flags & EClearFlags::STENCIL) == EClearFlags::STENCIL)
+		{
+			opengl::clearStencil();
+		}
 	}
 
-	// Generate framebuffer
-	glGenFramebuffers(1, &mFbo);
-
-	// Check for errors
-	glAssert();
-
-	// Call derived implementation
-	onInit();
-}
-
-
-// Checks if the framebuffer is allocated and valid for use
-bool opengl::FramebufferBase::isValid()
-{
-	if (!isAllocated())
+	// Delete render target
+	TextureRenderTarget2D::~TextureRenderTarget2D()
 	{
-		printMessage(MessageType::ERROR, "framebuffer is not allocated");
-		return false;
+		if (isAllocated())
+			glDeleteFramebuffers(1, &mFbo);
 	}
 
-	bind();
-	bool valid(false);
-	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-	switch (status)
-	{	
-	case GL_FRAMEBUFFER_COMPLETE:
-		valid = true;
-		break;
-	case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-		printMessage(MessageType::ERROR, "framebuffer incomplete : attachment is NOT complete");
-		break;
 
-	case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-		printMessage(MessageType::ERROR, "framebuffer incomplete: no image is attached to FBO");
-		break;
+	// Creates the render target on the GPU 
+	void TextureRenderTarget2D::init(opengl::Texture2D& colorTexture, opengl::Texture2D& depthTexture)
+	{
+		if (isAllocated())
+		{
+			printMessage(MessageType::ERROR, "render target already initialized");
+			return;
+		}
 
-	case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
-		printMessage(MessageType::ERROR, "framebuffer incomplete: draw buffer missing");
-		break;
-
-	case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
-		printMessage(MessageType::ERROR, "framebuffer incomplete: read buffer missing");
-		break;
-
-	case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
-		printMessage(MessageType::ERROR, "framebuffer incomplete: multi-sample missing");
-		break;
-
-	case GL_FRAMEBUFFER_UNSUPPORTED:
-		printMessage(MessageType::ERROR, "framebuffer incomplete : unsupported by FBO implementation");
-		break;
-
-	default:
-		printMessage(MessageType::ERROR, "framebuffer incomplete : unknown error");
-		break;
+		allocate(colorTexture, depthTexture);
 	}
 
-	unbind();
-	return valid;
-}
 
-
-// Binds the framebuffer so it can be used by subsequent render calls
-bool opengl::FramebufferBase::bind()
-{
-	if (!isAllocated())
+	// Checks if the render target is allocated and valid for use
+	bool TextureRenderTarget2D::isValid()
 	{
-		printMessage(MessageType::ERROR, "unable to bind framebuffer, buffer is not allocated");
-		return false;
-	}
-	glBindFramebuffer(GL_FRAMEBUFFER, mFbo);
-	return true;
-}
+		if (!isAllocated())
+		{
+			printMessage(MessageType::ERROR, "render target is not allocated");
+			return false;
+		}
 
+		bind();
+		bool valid(false);
+		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+		switch (status)
+		{
+		case GL_FRAMEBUFFER_COMPLETE:
+			valid = true;
+			break;
+		case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+			printMessage(MessageType::ERROR, "render target incomplete : attachment is NOT complete");
+			break;
 
-// Unbinds the framebuffer from subsequent render calls
-bool opengl::FramebufferBase::unbind()
-{
-	if (!isAllocated())
-	{
-		printMessage(MessageType::ERROR, "unable to unbind framebuffer, buffer is not allocated");
-		return false;
-	}
+		case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+			printMessage(MessageType::ERROR, "render target incomplete: no image is attached to FBO");
+			break;
 
-	// release and forward
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	onRelease();
-	return true;
-}
+		case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+			printMessage(MessageType::ERROR, "render target incomplete: draw buffer missing");
+			break;
 
+		case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+			printMessage(MessageType::ERROR, "render target incomplete: read buffer missing");
+			break;
 
-//////////////////////////////////////////////////////////////////////////
-// Frame-buffer
-//////////////////////////////////////////////////////////////////////////
+		case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
+			printMessage(MessageType::ERROR, "render target incomplete: multi-sample missing");
+			break;
 
+		case GL_FRAMEBUFFER_UNSUPPORTED:
+			printMessage(MessageType::ERROR, "render target incomplete : unsupported by FBO implementation");
+			break;
 
-// Updates settings associated with color and depth buffer
-void opengl::FrameBuffer::allocate(unsigned int width, unsigned int height)
-{
-	if (!isAllocated())
-	{
-		printMessage(MessageType::WARNING, "unable to allocate frame buffer texture resources, frame-buffer not initialized");
-		return;
-	}
+		default:
+			printMessage(MessageType::ERROR, "render target incomplete : unknown error");
+			break;
+		}
 
-	// Allocate memory
-	Texture2DSettings color_settings;
-	color_settings.width = static_cast<GLsizei>(width);
-	color_settings.height = static_cast<GLsizei>(height);
-	color_settings.internalFormat = GL_RGBA;
-	color_settings.format = GL_RGBA;
-	color_settings.type = GL_UNSIGNED_BYTE;
+		unbind();
 
-	assert(mColorTexture.isAllocated());
-	mColorTexture.allocate(color_settings);
-
-	// Allocate memory
-	Texture2DSettings depth_settings;
-	depth_settings.width = static_cast<GLsizei>(width);
-	depth_settings.height = static_cast<GLsizei>(height);
-	depth_settings.internalFormat = GL_DEPTH_COMPONENT;
-	depth_settings.format = GL_DEPTH_COMPONENT;
-	depth_settings.type = GL_FLOAT;
-
-	assert(mDepthTexture.isAllocated());
-	mDepthTexture.allocate(depth_settings);
-}
-
-
-void opengl::FrameBuffer::onInit()
-{
-	// Create color texture
-	mColorTexture.init();
-	glAssert();
-
-	// Create depth texture
-	mDepthTexture.init();
-	glAssert();
-
-	// After initializing color and depth texture
-	// Allocate them before binding to frame buffer
-	allocate(512, 512);
-	
-	// Bind
-	FramebufferBase::bind();
-
-	// Attach color texture
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, mColorTexture.getTargetType(), mColorTexture.getTextureId(), 0);
-
-	// Attach depth texture
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, mDepthTexture.getTargetType(), mDepthTexture.getTextureId(), 0);
-
-	// Unbind
-	FramebufferBase::unbind();
-}
-
-
-// Generate mipmaps if the texture filter is set up that way
-void opengl::FrameBuffer::onRelease()
-{
-	if (isMipMap(mColorTexture.getParameters().minFilter))
-	{
-		mColorTexture.generateMipMaps();
+		return valid;
 	}
 
-	if (isMipMap(mDepthTexture.getParameters().minFilter))
+
+	// Binds the render target so it can be used by subsequent render calls
+	bool TextureRenderTarget2D::bind()
 	{
-		mDepthTexture.generateMipMaps();
+		if (!isAllocated())
+		{
+			printMessage(MessageType::ERROR, "unable to bind render target, buffer is not allocated");
+			return false;
+		}
+		glBindFramebuffer(GL_FRAMEBUFFER, mFbo);
+		return true;
+	}
+
+
+	// Unbinds the render target from subsequent render calls
+	bool TextureRenderTarget2D::unbind()
+	{
+		if (!isAllocated())
+		{
+			printMessage(MessageType::ERROR, "unable to unbind render target, buffer is not allocated");
+			return false;
+		}
+
+		// release and forward
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		
+		// Generate mipmaps if the texture filter is set up that way
+		if (isMipMap(mColorTexture->getParameters().minFilter))
+		{
+			mColorTexture->generateMipMaps();
+		}
+
+		if (isMipMap(mDepthTexture->getParameters().minFilter))
+		{
+			mDepthTexture->generateMipMaps();
+		}
+
+		return true;
+	}
+
+
+	// Generates FBO, attaches color and depth.
+ 	void TextureRenderTarget2D::allocate(opengl::Texture2D& colorTexture, opengl::Texture2D& depthTexture)
+ 	{
+ 		if (isAllocated())
+ 		{
+ 			printMessage(MessageType::WARNING, "render target already allocated");
+ 			return;
+ 		}
+
+		mColorTexture = &colorTexture;
+		mDepthTexture = &depthTexture;
+
+		// Generate render target
+		glGenFramebuffers(1, &mFbo);
+
+		// Check for errors
+		glAssert();
+
+		bind();
+
+		// Attach color texture
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, mColorTexture->getTargetType(), mColorTexture->getTextureId(), 0);
+
+		// Attach depth texture
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, mDepthTexture->getTargetType(), mDepthTexture->getTextureId(), 0);
+
+		unbind();
+	}
+
+	// Binds the backbuffer (resets OpenGL framebuffer)
+	bool BackbufferRenderTarget::bind()
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		return true;
 	}
 }
