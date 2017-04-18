@@ -11,7 +11,15 @@ namespace nap
 	bool MemoryTextureResource2D::init(InitResult& initResult)
 	{
 		mTexture.init();
-		mTexture.allocate(mSettings);
+
+		opengl::Texture2DSettings settings;
+		settings.level = mLevel.getValue();
+		settings.internalFormat = mInternalFormat.getValue();
+		settings.width = mWidth.getValue();
+		settings.height = mHeight.getValue();
+		settings.format = mFormat.getValue();
+		settings.type = mType.getValue();
+		mTexture.allocate(settings);
 
 		return true;
 	}
@@ -25,7 +33,7 @@ namespace nap
 	// Constructor
 	ImageResource::ImageResource(const std::string& imgPath)
 	{
-		mImagePath = imgPath;
+		//mImagePath = imgPath;
 		mDisplayName = getFileNameWithoutExtension(imgPath);
 		assert(mDisplayName != "");
 	}
@@ -45,7 +53,7 @@ namespace nap
 
 	bool ImageResource::init(InitResult& initResult)
 	{
-		if (!initResult.check(!mImagePath.empty(), "Imagepath not set"))
+		if (!initResult.check(!mImagePath.getValue().empty(), "Imagepath not set"))
 			return false;
 
 		if (!initResult.check(mImage.load(mImagePath), "Unable to load image from file"))

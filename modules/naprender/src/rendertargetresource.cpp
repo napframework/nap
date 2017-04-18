@@ -6,13 +6,13 @@ namespace nap
 
 	bool TextureRenderTargetResource2D::init(InitResult& initResult)
 	{
-		if (!initResult.check(mColorTexture != nullptr, "Unable to create render target %s. Color textures not set.", getResourcePath().c_str()))
+		if (!initResult.check(mColorTexture.getTarget()!= nullptr, "Unable to create render target %s. Color textures not set.", getResourcePath().c_str()))
 			return false;
 
-		if (!initResult.check(mDepthTexture != nullptr, "Unable to create render target %s. Depth texture not set.", getResourcePath().c_str()))
+		if (!initResult.check(mDepthTexture.getTarget() != nullptr, "Unable to create render target %s. Depth texture not set.", getResourcePath().c_str()))
 			return false;
 
-		mTextureRenderTarget.init((opengl::Texture2D&)mColorTexture->getTexture(), (opengl::Texture2D&)mDepthTexture->getTexture());
+		mTextureRenderTarget.init((opengl::Texture2D&)mColorTexture.getTarget<MemoryTextureResource2D>()->getTexture(), (opengl::Texture2D&)mDepthTexture.getTarget<MemoryTextureResource2D>()->getTexture());
 		if (!initResult.check(mTextureRenderTarget.isValid(), "unable to validate frame buffer: %s", getResourcePath().c_str()))
 			return false;
 

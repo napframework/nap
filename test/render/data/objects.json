@@ -1,0 +1,40 @@
+{
+    "nap::ImageResource": {
+		"mID" : "PigTexture",
+		"mImagePath" : "data/pig_head.jpg"
+	},
+	
+    "nap::ImageResource": {
+		"mID" : "WorldTexture",
+		"mImagePath" : "data/world_texture.jpg"
+	},
+
+	"nap::ImageResource": {
+		"mID" : "TestTexture",
+		"mImagePath" : "data/test.jpg"
+	},
+
+	"nap::MemoryTextureResource2D": {
+		"mID" : "ColorTexture",
+		"mWidth" : 640,
+		"mHeight" : 480,
+		"mInternalFormat" : 6408,
+		"mFormat" : 6408,
+		"mType" : 5121
+	},
+	
+	"nap::MemoryTextureResource2D": {
+		"mID" : "DepthTexture",
+		"mWidth" : 640,
+		"mHeight" : 480,
+		"mInternalFormat" : 6402,
+		"mFormat" : 6402,
+		"mType" : 5126
+	},
+	
+	"nap::TextureRenderTargetResource2D": {
+		"mID": "PlaneRenderTarget",
+		"mColorTexture": "ColorTexture",
+		"mDepthTexture": "DepthTexture"
+	}
+} 

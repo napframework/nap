@@ -10,6 +10,12 @@ file(GLOB HEADERS src/*.h)
 file(GLOB SHADERS shaders/*.frag shaders/*.vert)
 file(GLOB DATA data/*)
 
+find_package(rapidjson REQUIRED)
+
+add_definitions(-DRAPIDJSON_HAS_STDSTRING=1)
+
+include_directories(${RAPIDJSON_INCLUDE_DIRS})
+
 # Create IDE groups
 source_group("headers" FILES ${HEADERS})
 source_group("sources" FILES ${SOURCES})
@@ -37,4 +43,3 @@ endif()
 # create post build event
 copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/data data)
 copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/shaders shaders)
-

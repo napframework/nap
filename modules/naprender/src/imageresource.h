@@ -1,6 +1,8 @@
 #pragma once
 
+#include <nap.h>
 #include <nap/resource.h>
+#include <nap/coreattributes.h>
 #include <nimage.h>
 
 namespace nap
@@ -60,7 +62,13 @@ namespace nap
 		virtual const std::string getDisplayName() const override				{ return mDisplayName;  }
 
 	public:
-		opengl::Texture2DSettings mSettings;
+		//opengl::Texture2DSettings mSettings;
+		NumericAttribute<int>	mLevel			= { this, "mLevel", 0 };
+		NumericAttribute<int>	mInternalFormat	= { this, "mInternalFormat", GL_RGB };
+		NumericAttribute<int>	mWidth			= { this, "mWidth", 0 };
+		NumericAttribute<int>	mHeight			= { this, "mHeight", 0 };
+		NumericAttribute<int>	mFormat			= { this, "mFormat", GL_BGR };
+		NumericAttribute<int>	mType			= { this, "mType", GL_UNSIGNED_BYTE };
 
 	private:
 		opengl::Texture2D mTexture;						// Texture as created during init
@@ -106,7 +114,7 @@ namespace nap
 
 	public:
 		// Path to img on disk
-		std::string				mImagePath;
+		Attribute<std::string>	mImagePath = { this, "mImagePath", "" };
 
 	private:
 		// Display name of img

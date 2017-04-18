@@ -24,22 +24,22 @@ namespace nap
 		/**
 		* Sets color texture resource.
 		*/
-		void setColorTexture(MemoryTextureResource2D& colorTexture)			{ mColorTexture = &colorTexture; }
+		void setColorTexture(MemoryTextureResource2D& colorTexture)			{ mColorTexture.setTarget(colorTexture); }
 
 		/**
 		* Sets depth texture resource
 		*/
-		void setDepthTexture(MemoryTextureResource2D& depthTexture)			{ mDepthTexture = &depthTexture; }
+		void setDepthTexture(MemoryTextureResource2D& depthTexture)			{ mDepthTexture.setTarget(depthTexture); }
 
 		/**
 		* Returns color texture resource
 		*/
-		MemoryTextureResource2D& GetColorTexture()							{ return *mColorTexture;  }
+		MemoryTextureResource2D& GetColorTexture()							{ return *mColorTexture.getTarget<MemoryTextureResource2D>();  }
 
 		/**
 		* Returns depth texture resource
 		*/
-		MemoryTextureResource2D& GetDepthTexture()							{ return *mDepthTexture; }
+		MemoryTextureResource2D& GetDepthTexture()							{ return *mDepthTexture.getTarget<MemoryTextureResource2D>();	}
 
 		/**
 		* @return opengl base frame buffer object
@@ -57,10 +57,10 @@ namespace nap
 		opengl::TextureRenderTarget2D mTextureRenderTarget;
 
 		// Color texture to be used by the render target
-		MemoryTextureResource2D*		mColorTexture = nullptr;
-
+		ObjectLinkAttribute mColorTexture = { this, "mColorTexture", RTTI_OF(MemoryTextureResource2D) };
+		
 		// Depth texture to be used by the render target
-		MemoryTextureResource2D*		mDepthTexture = nullptr;
+		ObjectLinkAttribute mDepthTexture = { this, "mDepthTexture", RTTI_OF(MemoryTextureResource2D) };
 	};
 }
 

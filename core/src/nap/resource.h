@@ -1,6 +1,7 @@
 #pragma once
 
 // Local Includes
+#include <nap/coreattributes.h>
 #include "attributeobject.h"
 
 // External Includes
@@ -11,7 +12,6 @@ namespace nap
 	// Forward Declares
 	class ResourceManagerService;
 	class Core;
-
 
 	struct InitResult
 	{
@@ -54,6 +54,8 @@ namespace nap
          * @return The resource path to this resource
          */
         std::string getResourcePath() const;
+
+		Attribute<std::string> mID = { this, "mID", "" };
 
     private:
         ResourceManagerService* mResourceManger = nullptr;
