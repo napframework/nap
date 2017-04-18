@@ -54,14 +54,6 @@
 #include <ctime>
 
 
-#include <rapidjson/document.h>
-#include <rapidjson/istreamwrapper.h>
-#include <rapidjson/prettywriter.h>
-#include <rapidjson/error/en.h>
-#include <fstream>
-
-
-
 //////////////////////////////////////////////////////////////////////////
 // Globals
 //////////////////////////////////////////////////////////////////////////
@@ -359,136 +351,25 @@ void onRender(const nap::SignalAttribute& signal)
 }
 nap::Slot<const nap::SignalAttribute&> renderSlot = { [](const nap::SignalAttribute& attr){ onRender(attr); } };
 
-using ObjectMap = std::unordered_map<std::string, nap::Object*>;
-
-bool readObjects(rapidjson::Document& inDocument, nap::ResourceManagerService* resourceManagerService, ObjectMap& objects, nap::InitResult& initResult)
-{
-	std::unordered_map<nap::ObjectLinkAttribute*, std::string> links_to_resolve;
-
-	for (auto& object_pos = inDocument.MemberBegin(); object_pos < inDocument.MemberEnd(); ++object_pos)
-	{
-		const char* typeName = object_pos->name.GetString();
-		RTTI::TypeInfo type_info = RTTI::TypeInfo::getByName(typeName);
-		if (!initResult.check(type_info.isValid(), "Unknown object type %s encountered.", typeName))
-			return false;
-
-		if (!initResult.check(type_info.canCreateInstance(), "Unable to instantiate object of type %s.", typeName))
-			return false;
-
-		if (!initResult.check(type_info.isKindOf(RTTI_OF(nap::Resource)), "Unable to instantiate object %s. Class is not derived from Resource.", typeName))
-			return false;
-
-		nap::Resource* resource = resourceManagerService->createResource(type_info);
-
-		for (auto& member_pos = object_pos->value.MemberBegin(); member_pos < object_pos->value.MemberEnd(); ++member_pos)
-		{
-			const char* attrName = member_pos->name.GetString();
-			nap::Object* child = resource->getChild(attrName);
-			nap::AttributeBase* attribute = rtti_cast<nap::AttributeBase>(child);
-
-			if (attribute == nullptr)
-				continue;
-
-			if (attribute->getTypeInfo().isKindOf(RTTI_OF(nap::Attribute<std::string>)))
-			{
-				((nap::Attribute<std::string>*)attribute)->setValue(member_pos->value.GetString());
-			}
-			else if (attribute->getTypeInfo().isKindOf(RTTI_OF(nap::NumericAttribute<int>)))
-			{
-				((nap::NumericAttribute<int>*)attribute)->setValue(member_pos->value.GetInt());
-			}
-			else if (attribute->getTypeInfo().isKindOf(RTTI_OF(nap::ObjectLinkAttribute)))
-			{
-				links_to_resolve.insert({ (nap::ObjectLinkAttribute*)attribute, std::string(member_pos->value.GetString()) });
-			}
-		}
-		
-		std::string id = resource->mID.getValue();
-		objects.insert(std::make_pair(id, resource));
-	}
-
-	for (auto kvp : links_to_resolve)
-	{
-		ObjectMap::iterator target = objects.find(kvp.second);
-
-		if (!initResult.check(target != objects.end(), "Unable to resolve link to object %s from attribute %s", kvp.second.c_str(), kvp.first->getName().c_str()))
-			return false;
-
-		kvp.first->setTarget(*target->second);
-	}
-
-	for (auto kvp : objects)
-	{
-		nap::Resource* resource = rtti_cast<nap::Resource>(kvp.second);
-		if (!resource->init(initResult))
-			return false;
-	}
-		
-	return true;
-}
-
-bool initFromFile(const std::string& filename, nap::ResourceManagerService* resourceManagerService, std::unordered_map<std::string, nap::Object*>& objects, nap::InitResult& initResult)
-{
-	std::ifstream in(filename, std::ios::in | std::ios::binary);
-	if (!initResult.check(in.good(), "Unable to open file %s", filename.c_str()))
-		return false;
-
-	// Create buffer of appropriate size
-	in.seekg(0, std::ios::end);
-	size_t len = in.tellg();
-	std::string buffer;
-	buffer.resize(len);
-
-	// Read all data
-	in.seekg(0, std::ios::beg);
-	in.read(&buffer[0], len);
-	in.close();
-
-	// Parse document
-	rapidjson::Document doc;
-	rapidjson::ParseResult parse_result = doc.ParseInsitu((char*)buffer.c_str());
-
-	if (!parse_result)
-	{
-		size_t start = buffer.rfind('\n', parse_result.Offset());
-		size_t end = buffer.find('\n', parse_result.Offset());
-
-		if (start == std::string::npos)
-			start = 0;
-		if (end == std::string::npos)
-			end = buffer.size();
-		
-		std::string error_line = buffer.substr(start, end - start);
-
-		initResult.mErrorString = nap::stringFormat("Error parsing %s: %s (line: %s)", filename.c_str(), rapidjson::GetParseError_En(parse_result.Code()), error_line.c_str());
-		return false;
-	} 
-
-	// Read data
-	if (!readObjects(doc, resourceManagerService, objects, initResult))
-		return false;	
-
-	return true;
-}
 
 bool initResources(nap::ResourceManagerService* resourceManagerService, nap::InitResult& initResult)
 {
-	pigTexture = resourceManagerService->createResource<nap::ImageResource>();
+	pigTexture = resourceManagerService->addResource<nap::ImageResource>();
 	pigTexture->mImagePath.setValue(pigTextureName);
 	if (!pigTexture->init(initResult))
 		return false;
 
-	testTexture = resourceManagerService->createResource<nap::ImageResource>();
+	testTexture = resourceManagerService->addResource<nap::ImageResource>();
 	testTexture->mImagePath.setValue(testTextureName);
 	if (!testTexture->init(initResult))
 		return false;
 
-	worldTexture = resourceManagerService->createResource<nap::ImageResource>();
+	worldTexture = resourceManagerService->addResource<nap::ImageResource>();
 	worldTexture->mImagePath.setValue(worldTextureName);
 	if (!worldTexture->init(initResult))
 		return false;
 
-	nap::MemoryTextureResource2D* color_texture = resourceManagerService->createResource<nap::MemoryTextureResource2D>();
+	nap::MemoryTextureResource2D* color_texture = resourceManagerService->addResource<nap::MemoryTextureResource2D>();
 	color_texture->mWidth.setValue(640);
 	color_texture->mHeight.setValue(480);
 	color_texture->mInternalFormat.setValue(GL_RGBA);
@@ -497,7 +378,7 @@ bool initResources(nap::ResourceManagerService* resourceManagerService, nap::Ini
 	if (!color_texture->init(initResult))
 		return false;
 
-	nap::MemoryTextureResource2D* depth_texture = resourceManagerService->createResource<nap::MemoryTextureResource2D>();
+	nap::MemoryTextureResource2D* depth_texture = resourceManagerService->addResource<nap::MemoryTextureResource2D>();
 	depth_texture->mWidth.setValue(640);
 	depth_texture->mHeight.setValue(480);
 	depth_texture->mInternalFormat.setValue(GL_DEPTH_COMPONENT);
@@ -507,7 +388,7 @@ bool initResources(nap::ResourceManagerService* resourceManagerService, nap::Ini
 		return false;
 	
 	// Create frame buffer
-	textureRenderTarget = resourceManagerService->createResource<nap::TextureRenderTargetResource2D>();
+	textureRenderTarget = resourceManagerService->addResource<nap::TextureRenderTargetResource2D>();
 	textureRenderTarget->setColorTexture(*color_texture);
 	textureRenderTarget->setDepthTexture(*depth_texture);
 	if (!textureRenderTarget->init(initResult))
@@ -604,18 +485,17 @@ bool init(nap::Core& core)
 	pig_model->load();
 
 #if 1
-	std::unordered_map<std::string, nap::Object*> objects;
 	nap::InitResult initResult;
-	if (!initFromFile("data/objects.json", resourceManagerService, objects, initResult))
+	if (!resourceManagerService->loadFile("data/objects.json", initResult))
 	{
 		nap::Logger::fatal("Unable to deserialize resources: %s", initResult.mErrorString.c_str());
 		return false;
 	}
 
-	pigTexture = rtti_cast<nap::ImageResource>(objects.find("PigTexture")->second);
-	testTexture = rtti_cast<nap::ImageResource>(objects.find("TestTexture")->second);
-	worldTexture = rtti_cast<nap::ImageResource>(objects.find("WorldTexture")->second);
-	textureRenderTarget = rtti_cast<nap::TextureRenderTargetResource2D>(objects.find("PlaneRenderTarget")->second);
+	pigTexture = resourceManagerService->findResource<nap::ImageResource>("PigTexture");
+	testTexture = resourceManagerService->findResource<nap::ImageResource>("TestTexture");
+	worldTexture = resourceManagerService->findResource<nap::ImageResource>("WorldTexture");
+	textureRenderTarget = resourceManagerService->findResource<nap::TextureRenderTargetResource2D>("PlaneRenderTarget");
 #else	
 	nap::InitResult initResult;
 	if (!initResources(resourceManagerService, initResult))

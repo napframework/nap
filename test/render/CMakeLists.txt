@@ -10,12 +10,6 @@ file(GLOB HEADERS src/*.h)
 file(GLOB SHADERS shaders/*.frag shaders/*.vert)
 file(GLOB DATA data/*)
 
-find_package(rapidjson REQUIRED)
-
-add_definitions(-DRAPIDJSON_HAS_STDSTRING=1)
-
-include_directories(${RAPIDJSON_INCLUDE_DIRS})
-
 # Create IDE groups
 source_group("headers" FILES ${HEADERS})
 source_group("sources" FILES ${SOURCES})

@@ -17,6 +17,8 @@ namespace nap
 		RTTI_ENABLE_DERIVED_FROM(Service)
 	public:
 
+		bool loadFile(const std::string& filename, nap::InitResult& initResult);
+
 		/**
 		 * @param rootDir The root directory from which all assets will be loaded
 		 */
@@ -55,9 +57,14 @@ namespace nap
 		T* getResource(const std::string& path);
 
 		/**
+		*/
+		Resource* findResource(const std::string& id);
+
+		template<class T>
+		T* findResource(const std::string& id) { return rtti_cast<T>(findResource(id)); }
+
+		/**
 		 * Creates a new resource of a specific type
-		 * An internal path is created to represent the resource in the system
-		 * TODO: Find a way to serialize resources from and to disk
 		 * @param type: Type of resource to create
 		 */
 		Resource* createResource(const RTTI::TypeInfo& type);
@@ -69,6 +76,17 @@ namespace nap
 		 */
 		template<typename T>
 		T* createResource();
+
+		/**
+		*/
+		void addResource(const std::string& id, Resource* resource);
+
+		/**
+		*/
+		Resource* addResource(const RTTI::TypeInfo& type);
+
+		template<typename T>
+		T* addResource() { return rtti_cast<T>(addResource(RTTI_OF(T))); }
 
         /**
          * Find the path of the specified resource
@@ -95,6 +113,7 @@ namespace nap
 		std::vector<ResourceLoader*> getLoaders();
 
 	private:
+
 		/**
 		 * Find an appropriate AssetFactory and let it load the asset
 		 */

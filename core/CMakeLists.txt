@@ -2,6 +2,10 @@ project(napcore)
 
 file(GLOB_RECURSE SOURCES src/ *.cpp *.h)
 
+find_package(rapidjson REQUIRED)
+add_definitions(-DRAPIDJSON_HAS_STDSTRING=1)
+include_directories(${RAPIDJSON_INCLUDE_DIRS})
+
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
 if (MSVC)

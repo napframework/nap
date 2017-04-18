@@ -58,7 +58,7 @@ namespace nap
 		Attribute<std::string> mID = { this, "mID", "" };
 
     private:
-        ResourceManagerService* mResourceManger = nullptr;
+        ResourceManagerService* mResourceManager = nullptr;
 	};
 
 
