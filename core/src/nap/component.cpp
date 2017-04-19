@@ -5,7 +5,7 @@
 #include <nap/entity.h>
 
 // RTTI Define
-RTTI_DEFINE(nap::Component)
+RTTI_DEFINE_BASE(nap::Component)
 
 namespace nap
 {

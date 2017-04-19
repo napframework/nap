@@ -3,6 +3,8 @@
 #include "logger.h"
 #include "resourcemanager.h"
 
+RTTI_DEFINE(nap::ResourceLinkAttribute)
+
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////

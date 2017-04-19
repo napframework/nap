@@ -58,5 +58,6 @@ namespace nap
 	{
 		return material.getTarget<Material>();
 	}
-
 }
+
+RTTI_DEFINE_BASE(nap::RenderableComponent)

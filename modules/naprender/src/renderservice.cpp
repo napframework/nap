@@ -308,7 +308,7 @@ namespace nap
 		state = State::Uninitialized;
 
 		// Create new renderer
-		nap::Renderer* new_renderer = static_cast<nap::Renderer*>(renderer.createInstance());
+		nap::Renderer* new_renderer = renderer.createInstance<nap::Renderer>();
 		mRenderer.reset(new_renderer);
 	}
 

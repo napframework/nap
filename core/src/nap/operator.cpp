@@ -9,7 +9,7 @@
 
 using namespace std;
 
-RTTI_DEFINE(nap::Operator)
+RTTI_DEFINE_BASE(nap::Operator)
 
 namespace nap
 {

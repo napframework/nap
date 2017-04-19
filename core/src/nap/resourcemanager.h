@@ -5,6 +5,7 @@
 #include "object.h"
 #include "service.h"
 #include "resource.h"
+#include <map>
 
 namespace nap
 {

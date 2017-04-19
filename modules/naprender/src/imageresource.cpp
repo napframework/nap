@@ -120,7 +120,7 @@ namespace nap
 	
 }
 
-RTTI_DEFINE(nap::TextureResource)
+RTTI_DEFINE_BASE(nap::TextureResource)
 RTTI_DEFINE(nap::MemoryTextureResource2D)
 RTTI_DEFINE(nap::ImageResource)
 RTTI_DEFINE(nap::ImageResourceLoader)

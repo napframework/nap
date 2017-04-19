@@ -6,6 +6,7 @@
 #include <rapidjson/error/en.h>
 #include <fstream>
 
+RTTI_DEFINE(nap::ResourceManagerService)
 
 namespace nap
 {
@@ -204,8 +205,9 @@ namespace nap
 
 	std::vector<ResourceLoader*> ResourceManagerService::getLoaders()
 	{
+		RTTI::TypeInfo resourceLoaderType = RTTI::TypeInfo::get<ResourceLoader>();
 		std::vector<ResourceLoader*> factories;
-		for (const RTTI::TypeInfo& factoryType : RTTI::TypeInfo::getRawTypes(RTTI::TypeInfo::get<ResourceLoader>())) 
+		for (const RTTI::TypeInfo& factoryType : resourceLoaderType.getRawDerivedTypes())
 		{
 			factories.push_back(getOrCreateFactory(factoryType));
 		}
@@ -291,7 +293,7 @@ namespace nap
 
 	ResourceLoader* ResourceManagerService::createLoader(const RTTI::TypeInfo &factoryType)
 	{
-		auto factory = std::unique_ptr<ResourceLoader>(static_cast<ResourceLoader*>(factoryType.createInstance()));
+		auto factory = std::unique_ptr<ResourceLoader>(factoryType.createInstance<ResourceLoader>());
 		ResourceLoader* ptr = factory.get();
 		ptr->setCore(getCore());
 		mFactories.emplace_back(std::move(factory));

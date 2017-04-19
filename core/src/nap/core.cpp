@@ -67,7 +67,8 @@ namespace nap
 
 	std::vector<RTTI::TypeInfo> Core::getComponentTypes() const
 	{
-		return RTTI::TypeInfo::getRawTypes(RTTI::TypeInfo::get<Component>());
+		RTTI::TypeInfo componentType = RTTI::TypeInfo::get<Component>();
+		return componentType.getRawDerivedTypes();
 	}
 
 
@@ -194,7 +195,7 @@ namespace nap
 		}
 
 		// Add service
-		Service* service = static_cast<Service*>(type.createInstance());
+		Service* service = type.createInstance<Service>();
 		service->mCore = this;
 		service->registerTypes(*this);
 

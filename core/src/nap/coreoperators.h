@@ -213,7 +213,7 @@ namespace nap
 	};
 
 
-	class SimpleTriggerOperator : nap::Operator
+	class SimpleTriggerOperator : public nap::Operator
 	{
 		RTTI_ENABLE_DERIVED_FROM(nap::Operator)
 	public:

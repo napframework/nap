@@ -344,7 +344,7 @@ namespace nap
 		if (!parent)
 			return;
 
-		RTTI::TypeInfo type = RTTI::TypeInfo::getByName(typeName);
+		RTTI::TypeInfo type = RTTI::TypeInfo::getByName(typeName.c_str());
 		if (!type.isValid()) {
 			Logger::fatal("Failed to resolve type: %s", typeName.c_str());
 			return;
@@ -411,7 +411,7 @@ namespace nap
 															const std::string& attribValue,
 															const std::string& attribType)
 	{
-		RTTI::TypeInfo valueType = RTTI::TypeInfo::getByName(attribType);
+		RTTI::TypeInfo valueType = RTTI::TypeInfo::getByName(attribType.c_str());
 		if (!valueType.isValid()) {
 			Logger::fatal("Invalid valueType: %s", attribType.c_str());
 			return;

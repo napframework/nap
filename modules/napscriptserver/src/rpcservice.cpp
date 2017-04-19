@@ -1,6 +1,6 @@
 #include "rpcservice.h"
 
-RTTI_DEFINE(nap::RpcService)
+RTTI_DEFINE_BASE(nap::RpcService)
 
 namespace nap
 {
@@ -143,7 +143,4 @@ namespace nap
         std::string result = evalScript(msg);
 		client.enqueueEvent(result);
 	}
-
-
-
 }

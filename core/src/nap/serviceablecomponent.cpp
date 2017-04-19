@@ -37,4 +37,4 @@ namespace nap
 	}
 }
 
-RTTI_DEFINE(nap::ServiceableComponent)
+RTTI_DEFINE_BASE(nap::ServiceableComponent)

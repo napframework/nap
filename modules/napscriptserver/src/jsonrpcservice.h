@@ -3,7 +3,12 @@
 #include "rpcservice.h"
 #include <rtti/rtti.h>
 #include <vector>
+
+#ifndef NOMINMAX
+	#define NOMINMAX
+#endif
 #include <zmq.hpp>
+#undef NOMINMAX
 
 #include "jsonrpc-lean/server.h"
 

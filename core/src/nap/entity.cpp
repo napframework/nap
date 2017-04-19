@@ -6,7 +6,7 @@
 using namespace std;
 
 // Define Entity in Type Registry
-RTTI_DEFINE(nap::Entity)
+RTTI_DEFINE_BASE(nap::Entity)
 
 namespace nap
 {

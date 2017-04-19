@@ -4,7 +4,7 @@
 
 #include <algorithm>
 
-RTTI_DEFINE(nap::Object)
+RTTI_DEFINE_BASE(nap::Object)
 
 namespace nap
 {
@@ -96,7 +96,7 @@ namespace nap
     {
         assert(type.canCreateInstance());
         assert(type.isKindOf<Object>());
-        auto child = static_cast<Object*>(type.createInstance());
+        auto child = type.createInstance<Object>();
         assert(child);
         child->mName = name;
         addChild(std::move(std::unique_ptr<Object>(child)));

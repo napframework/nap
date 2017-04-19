@@ -39,3 +39,5 @@ namespace nap
 		outTypes.insert(outTypes.end(), mServiceTypes.begin(), mServiceTypes.end());
 	}
 }
+
+RTTI_DEFINE_BASE(nap::Module)

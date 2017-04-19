@@ -7,7 +7,13 @@
 #include <queue>
 #include <thread>
 #include <time.h>
+
+#ifndef NOMINMAX
+	#define NOMINMAX
+#endif
 #include <zmq.hpp>
+#undef NOMINMAX
+
 
 namespace nap
 {

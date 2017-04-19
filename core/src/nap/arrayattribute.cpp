@@ -11,7 +11,7 @@
 #include "resourcelinkattribute.h"
 #include "logger.h"
 
-RTTI_DEFINE(nap::ArrayAttributeBase)
+RTTI_DEFINE_BASE(nap::ArrayAttributeBase)
 
 namespace nap 
 {    

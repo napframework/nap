@@ -43,5 +43,5 @@ namespace nap
 	}
 }
 
-RTTI_DEFINE(nap::Resource)
-RTTI_DEFINE(nap::ResourceLoader)
+RTTI_DEFINE_BASE(nap::Resource)
+RTTI_DEFINE_BASE(nap::ResourceLoader)

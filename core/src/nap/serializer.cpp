@@ -3,7 +3,7 @@
 #include "plug.h"
 #include "coreattributes.h"
 
-RTTI_DEFINE(nap::Serializer)
+RTTI_DEFINE_BASE(nap::Serializer)
 
 
 using namespace std;

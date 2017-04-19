@@ -98,5 +98,5 @@ namespace nap
 
 }
 
-RTTI_DEFINE(nap::ShaderResource)
+RTTI_DEFINE_BASE(nap::ShaderResource)
 RTTI_DEFINE(nap::ShaderResourceLoader)

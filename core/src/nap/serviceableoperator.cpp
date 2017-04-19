@@ -37,4 +37,4 @@ namespace nap
     }
 }
 
-RTTI_DEFINE(nap::ServiceableOperator)
+RTTI_DEFINE_BASE(nap::ServiceableOperator)

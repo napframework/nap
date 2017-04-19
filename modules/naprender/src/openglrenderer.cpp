@@ -213,4 +213,4 @@ namespace nap
 }
 
 RTTI_DEFINE(nap::OpenGLRenderer)
-RTTI_DEFINE(nap::OpenGLRenderWindow)
+RTTI_DEFINE_BASE(nap::OpenGLRenderWindow)

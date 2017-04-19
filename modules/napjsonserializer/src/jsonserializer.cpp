@@ -8,7 +8,7 @@
 #include <fstream>
 
 RTTI_DEFINE(nap::JSONSerializer)
-RTTI_DEFINE(nap::JSONResource)
+RTTI_DEFINE_BASE(nap::JSONResource)
 RTTI_DEFINE(nap::JSONFileLoader)
 
 
@@ -186,7 +186,7 @@ namespace nap
 		TypeList types;
 		for (const auto& type : RTTI::TypeInfo::getRawTypes()) {
 			if (type.isKindOf<AttributeBase>() && type.canCreateInstance()) {
-				AttributeBase* attrib = static_cast<AttributeBase*>(type.createInstance());
+				AttributeBase* attrib = type.createInstance<AttributeBase>();
 				types.push_back(attrib->getValueType());
 			}
 		}

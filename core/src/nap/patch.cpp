@@ -1,6 +1,8 @@
 #include "patch.h"
 #include <nap/component.h>
 
+RTTI_DEFINE(nap::Patch)
+
 namespace nap
 {
 
