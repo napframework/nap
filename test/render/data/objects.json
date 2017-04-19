@@ -1,4 +1,7 @@
 {
+	
+
+
     "nap::ImageResource": {
 		"mID" : "PigTexture",
 		"mImagePath" : "data/pig_head.jpg"
@@ -36,5 +39,28 @@
 		"mID": "PlaneRenderTarget",
 		"mColorTexture": "ColorTexture",
 		"mDepthTexture": "DepthTexture"
+	},
+
+	"nap::ShaderResource": {
+		"mID": "GeneralShader",
+		"mVertShader": "shaders/shader.vert",
+		"mFragShader": "shaders/shader.frag"
+	},
+
+	"nap::ShaderResource": {
+		"mID": "OrientationShader",
+		"mVertShader": "shaders/orientation.vert",
+		"mFragShader": "shaders/orientation.frag"
+	},
+
+	"nap::ModelResource": {
+		"mID": "OrientationModel",
+		"mModelPath": "data/orientation.fbx"
+	},
+
+	"nap::ModelResource": {
+		"mID": "PigModel",
+		"mModelPath": "data/pig_head_alpha_rotated.fbx"
 	}
+	
 } 

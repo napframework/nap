@@ -68,50 +68,6 @@ namespace nap
 		return mImage;
 	}
 	
-	// Resource loader constructor
-	ImageResourceLoader::ImageResourceLoader()
-	{
-		for (const auto& ext : getSupportedImgExtensions())
-		{
-			addFileExtension(ext);
-		}
-	}
-
-
-	// Returns all supported image extensions
-	const std::vector<std::string>& ImageResourceLoader::getSupportedImgExtensions()
-	{
-		static std::vector<std::string> extensions;
-		if (extensions.empty())
-		{
-			extensions = std::vector<std::string>
-			{
-				"bmp",
-				"dds",
-				"raw",
-				"ico",
-				"jpg",
-				"jpeg",
-				"png",
-				"tga",
-				"tiff",
-				"psd",
-				"hdr",
-				"exr",
-				"gif",
-			};
-		}
-		return extensions;
-	}
-
-
-	// Loads a resource
-	std::unique_ptr<Resource> ImageResourceLoader::loadResource(const std::string& resourcePath) const
-	{
-		return std::make_unique<ImageResource>(resourcePath);
-	}
-
-
 	// Non const getter, following:
 	opengl::BaseTexture& TextureResource::getTexture()
 	{
@@ -123,4 +79,3 @@ namespace nap
 RTTI_DEFINE(nap::TextureResource)
 RTTI_DEFINE(nap::MemoryTextureResource2D)
 RTTI_DEFINE(nap::ImageResource)
-RTTI_DEFINE(nap::ImageResourceLoader)
