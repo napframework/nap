@@ -6,9 +6,6 @@
 
 namespace nap
 {
-	// Forward Declares
-	class ShaderResourceLoader;
-
 	/**
 	 * Wraps a shader that can be used as a resource for a material instance
 	 * Note that the shader is not initialized (created) when the resource is created
@@ -19,8 +16,8 @@ namespace nap
 		friend class ShaderResourceLoader;
 		RTTI_ENABLE_DERIVED_FROM(Resource)
 	public:
-		// Construct a shader resource using a vertex and fragment path
-		ShaderResource(const std::string& vertPath, const std::string& fragPath);
+
+		virtual bool init(InitResult& initResult);
 
 		/**
 		 * @return the shader resource display name
@@ -35,65 +32,19 @@ namespace nap
 		 */
 		opengl::Shader& getShader();
 
-		/**
-		 * @return if the shader is loaded and linked correctly
-		 */
-		bool isLoaded() const;
-
-		/**
-		 * Explicitly load the shader, reloads if necessary
-		 */
-		void load();
-
-		/**
-		 * Signal is emitted when the shader is loaded or reloaded
-		 * The bool represents if issues occurred when loading
-		 */
-		Signal<bool> loaded;
+		Attribute<std::string>		mVertPath		= { this, "mVertShader", "" };
+		Attribute<std::string>		mFragPath		= { this, "mFragShader", "" };
 
 	private:
 		// Path to shader on disk
-		std::string		mVertPath;
-		std::string		mFragPath;
-		std::string		mDisplayName;
+		std::string					mDisplayName;
 
 		// Shader that is managed by this resource
-		opengl::Shader	mShader;
-
-		// If the shader has been loaded
-		bool			mLoaded = false;
-	};
-
-
-	/**
-	 * Creates a shader resource, used by resourcemanager
-	 * to check if based on the .frag and .vert extension of a file
-	 * the resource can be loaded
-	 */
-	class ShaderResourceLoader : public ResourceLoader
-	{
-		RTTI_ENABLE_DERIVED_FROM(ResourceLoader)
-	public:
-		// Constructor
-		ShaderResourceLoader();
-
-		/**
-		 * Creates a shader resource
-		 * @return the newly created shader resource
-		 * @param resourcePath path to the resource to load
-		 */
-		virtual std::unique_ptr<Resource> loadResource(const std::string& resourcePath) const override;
-
-		// Vert extension name ("vert")
-		const static std::string vertExtension;
-
-		// Frag extension name ("frag")
-		const static std::string fragExtension;
+		opengl::Shader				mShader;
 	};
 
 }
 
-RTTI_DECLARE_BASE(nap::ShaderResource)
-RTTI_DECLARE(nap::ShaderResourceLoader)
+RTTI_DECLARE(nap::ShaderResource)
 
 

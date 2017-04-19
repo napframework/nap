@@ -124,30 +124,8 @@ namespace nap
 		mutable opengl::Image	mImage;
 	};
 
-
-	/**
-	 * Creates the image resource
-	 * for a list of supported formats check: http://freeimage.sourceforge.net/features.html
-	 */
-	class ImageResourceLoader : public ResourceLoader
-	{
-		RTTI_ENABLE_DERIVED_FROM(ResourceLoader)
-	public:
-		ImageResourceLoader();
-
-		/**
-		 * @return all supported image extensions
-		 */
-		static const std::vector<std::string>& getSupportedImgExtensions();
-
-		/**
-		 * Creates an image resource
-		 */
-		virtual std::unique_ptr<Resource> loadResource(const std::string& resourcePath) const override;
-	};
 }
 
 RTTI_DECLARE_BASE(nap::TextureResource)
 RTTI_DECLARE(nap::MemoryTextureResource2D)
 RTTI_DECLARE(nap::ImageResource)
-RTTI_DECLARE(nap::ImageResourceLoader)

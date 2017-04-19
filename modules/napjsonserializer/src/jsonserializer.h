@@ -35,21 +35,7 @@ namespace nap
 		std::string mPath;
 	};
 
-
-
-	class JSONFileLoader : public ResourceLoader
-	{
-        RTTI_ENABLE_DERIVED_FROM(ResourceLoader)
-	public:
-		JSONFileLoader() : ResourceLoader() { addFileExtension("napj"); }
-
-		std::unique_ptr<Resource> loadResource(const std::string& resourcePath) const override;
-
-	private:
-		JSONSerializer mSerializer;
-	};
 }
 
 RTTI_DECLARE(nap::JSONSerializer)
 RTTI_DECLARE_BASE(nap::JSONResource)
-RTTI_DECLARE(nap::JSONFileLoader)

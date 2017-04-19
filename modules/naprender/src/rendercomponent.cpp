@@ -26,14 +26,6 @@ namespace nap
 			return;
 		}
 
-		// If we're not dealing with a material that has a resource linked, continue
-		// TODO: Apply Default Material
-		if (!mat->hasShader())
-		{
-			nap::Logger::warn(*this, "unable to draw object, no linked material");
-			return;
-		}
-
 		// Update vertex attributes
 		mat->pushAttributes();
 		

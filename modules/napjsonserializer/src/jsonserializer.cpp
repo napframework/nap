@@ -8,8 +8,7 @@
 #include <fstream>
 
 RTTI_DEFINE(nap::JSONSerializer)
-RTTI_DEFINE_BASE(nap::JSONResource)
-RTTI_DEFINE(nap::JSONFileLoader)
+RTTI_DEFINE(nap::JSONResource)
 
 
 
@@ -394,14 +393,4 @@ namespace nap
         Object* o = jsonToObject(doc, core, parent);
         return o;
 	}
-
-
-	std::unique_ptr<Resource> JSONFileLoader::loadResource(const std::string& resourcePath) const
-	{
-        std::ifstream is(resourcePath);
-        std::string str((std::istreambuf_iterator<char>(is)),
-                        std::istreambuf_iterator<char>());
-        
-		return std::make_unique<JSONResource>(resourcePath, str);
-    }
 }

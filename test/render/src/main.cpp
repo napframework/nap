@@ -64,7 +64,8 @@ std::string		vertShaderName		= "shaders/shader.vert";
 std::string		fragShaderName		= "shaders/shader.frag";
 std::string		vertShaderNameTwo	= "shaders/shader_two.vert";
 std::string		fragShaderNameTwo	= "shaders/shader_two.frag";
-std::string		orientationShaderName = "shaders/orientation.frag";
+std::string		orientationVertShaderName = "shaders/orientation.vert";
+std::string		orientationFragShaderName = "shaders/orientation.frag";
 
 static const std::string testTextureName = "data/test.jpg";
 static nap::ImageResource* testTexture = nullptr;
@@ -87,6 +88,8 @@ nap::PlaneComponent* planeComponent = nullptr;
 nap::SphereComponent* sphereComponent = nullptr;
 nap::ShaderResource* shaderResource = nullptr;
 nap::ShaderResource* orientationShaderResource = nullptr;
+nap::ModelResource* orientationModel = nullptr;
+nap::ModelResource* pigModel = nullptr;
 nap::ModelMeshComponent* orientationComponent = nullptr;
 
 // movement
@@ -354,22 +357,22 @@ nap::Slot<const nap::SignalAttribute&> renderSlot = { [](const nap::SignalAttrib
 
 bool initResources(nap::ResourceManagerService* resourceManagerService, nap::InitResult& initResult)
 {
-	pigTexture = resourceManagerService->addResource<nap::ImageResource>();
+	pigTexture = resourceManagerService->createResource<nap::ImageResource>();
 	pigTexture->mImagePath.setValue(pigTextureName);
 	if (!pigTexture->init(initResult))
 		return false;
 
-	testTexture = resourceManagerService->addResource<nap::ImageResource>();
+	testTexture = resourceManagerService->createResource<nap::ImageResource>();
 	testTexture->mImagePath.setValue(testTextureName);
 	if (!testTexture->init(initResult))
 		return false;
 
-	worldTexture = resourceManagerService->addResource<nap::ImageResource>();
+	worldTexture = resourceManagerService->createResource<nap::ImageResource>();
 	worldTexture->mImagePath.setValue(worldTextureName);
 	if (!worldTexture->init(initResult))
 		return false;
 
-	nap::MemoryTextureResource2D* color_texture = resourceManagerService->addResource<nap::MemoryTextureResource2D>();
+	nap::MemoryTextureResource2D* color_texture = resourceManagerService->createResource<nap::MemoryTextureResource2D>();
 	color_texture->mWidth.setValue(640);
 	color_texture->mHeight.setValue(480);
 	color_texture->mInternalFormat.setValue(GL_RGBA);
@@ -378,7 +381,7 @@ bool initResources(nap::ResourceManagerService* resourceManagerService, nap::Ini
 	if (!color_texture->init(initResult))
 		return false;
 
-	nap::MemoryTextureResource2D* depth_texture = resourceManagerService->addResource<nap::MemoryTextureResource2D>();
+	nap::MemoryTextureResource2D* depth_texture = resourceManagerService->createResource<nap::MemoryTextureResource2D>();
 	depth_texture->mWidth.setValue(640);
 	depth_texture->mHeight.setValue(480);
 	depth_texture->mInternalFormat.setValue(GL_DEPTH_COMPONENT);
@@ -388,10 +391,36 @@ bool initResources(nap::ResourceManagerService* resourceManagerService, nap::Ini
 		return false;
 	
 	// Create frame buffer
-	textureRenderTarget = resourceManagerService->addResource<nap::TextureRenderTargetResource2D>();
+	textureRenderTarget = resourceManagerService->createResource<nap::TextureRenderTargetResource2D>();
 	textureRenderTarget->setColorTexture(*color_texture);
 	textureRenderTarget->setDepthTexture(*depth_texture);
 	if (!textureRenderTarget->init(initResult))
+		return false;
+
+	// Load general shader
+	shaderResource = resourceManagerService->createResource<nap::ShaderResource>();
+	shaderResource->mVertPath.setValue(vertShaderName);
+	shaderResource->mFragPath.setValue(fragShaderName);
+	if (!shaderResource->init(initResult))
+		return false;
+
+	// Load orientation shader
+	orientationShaderResource = resourceManagerService->createResource<nap::ShaderResource>();
+	orientationShaderResource->mVertPath.setValue(orientationVertShaderName);
+	orientationShaderResource->mFragPath.setValue(orientationFragShaderName);
+	if (!orientationShaderResource->init(initResult))
+		return false;
+
+	// Load orientation resource
+	orientationModel = resourceManagerService->createResource<nap::ModelResource>();
+	orientationModel->mModelPath.setValue("data/orientation.fbx");
+	if (!orientationModel->init(initResult))
+		return false;
+
+	// Load model resource
+	pigModel = resourceManagerService->createResource<nap::ModelResource>();
+	pigModel->mModelPath.setValue("data/pig_head_alpha_rotated.fbx");
+	if (!pigModel->init(initResult))
 		return false;
 
 	return true;
@@ -470,19 +499,7 @@ bool init(nap::Core& core)
 	// Make the first ("root") window active so that the resources are created for the right context
 	renderWindows[0]->makeActive();
 
-	// Create shader resource
 	nap::ResourceManagerService* resourceManagerService = core.getOrCreateService<nap::ResourceManagerService>();
-	resourceManagerService->setAssetRoot(".");
-
-	// Load orientation resource
-	nap::ModelResource* orientation_model = resourceManagerService->getResource<nap::ModelResource>("data/orientation.fbx");
-	assert(orientation_model != nullptr);
-	orientation_model->load();
-
-	// Load model resource
-	nap::ModelResource* pig_model = resourceManagerService->getResource<nap::ModelResource>("data/pig_head_alpha_rotated.fbx");
-	assert(orientation_model != nullptr);
-	pig_model->load();
 
 #if 1
 	nap::InitResult initResult;
@@ -496,6 +513,11 @@ bool init(nap::Core& core)
 	testTexture = resourceManagerService->findResource<nap::ImageResource>("TestTexture");
 	worldTexture = resourceManagerService->findResource<nap::ImageResource>("WorldTexture");
 	textureRenderTarget = resourceManagerService->findResource<nap::TextureRenderTargetResource2D>("PlaneRenderTarget");
+	shaderResource = resourceManagerService->findResource<nap::ShaderResource>("GeneralShader");
+	orientationShaderResource = resourceManagerService->findResource<nap::ShaderResource>("OrientationShader");
+	orientationModel = resourceManagerService->findResource<nap::ModelResource>("OrientationModel");
+	pigModel = resourceManagerService->findResource<nap::ModelResource>("PigModel");
+
 #else	
 	nap::InitResult initResult;
 	if (!initResources(resourceManagerService, initResult))
@@ -506,14 +528,6 @@ bool init(nap::Core& core)
 #endif
 
 	textureRenderTarget->getTarget().setClearColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-
-	// Load general shader
-	shaderResource = resourceManagerService->getResource<nap::ShaderResource>(fragShaderName);
-	shaderResource->load();
-
-	// Load orientation shader
-	orientationShaderResource = resourceManagerService->getResource<nap::ShaderResource>(orientationShaderName);
-	orientationShaderResource->load();
 
 	// Set render states
 	nap::RenderState& render_state = renderService->getRenderState();
@@ -553,33 +567,49 @@ bool init(nap::Core& core)
 	nap::Material* material = modelComponent->getMaterial();
 	assert(material != nullptr);
 	material->shaderResourceLink.setResource(*shaderResource);
+	if (!material->init(initResult))
+	{
+		nap::Logger::fatal("Unable to initialize material: %s", initResult.mErrorString.c_str());
+	}
 
 	// Plane material
 	nap::Material* plane_material = planeComponent->getMaterial();
 	assert(plane_material != nullptr);
 	plane_material->shaderResourceLink.setResource(*shaderResource);
+	if (!plane_material->init(initResult))
+	{
+		nap::Logger::fatal("Unable to initialize material: %s", initResult.mErrorString.c_str());
+	}
 
 	// Sphere material
 	nap::Material* sphere_material = sphereComponent->getMaterial();
 	assert(sphere_material != nullptr);
 	sphere_material->shaderResourceLink.setResource(*shaderResource);
+	if (!sphere_material->init(initResult))
+	{
+		nap::Logger::fatal("Unable to initialize material: %s", initResult.mErrorString.c_str());
+	}
 
 	// Orientation material
 	nap::Material* orientation_material = orientationComponent->getMaterial();
 	orientation_material->shaderResourceLink.setResource(*orientationShaderResource);
+	if (!orientation_material->init(initResult))
+	{
+		nap::Logger::fatal("Unable to initialize material: %s", initResult.mErrorString.c_str());
+	}
 
 	// Link model resource
-	modelComponent->modelResource.setResource(*pig_model);
+	modelComponent->modelResource.setResource(*pigModel);
 
 	// Link orientation resource
-	orientationComponent->modelResource.setResource(*orientation_model);
+	orientationComponent->modelResource.setResource(*orientationModel);
 
 	//////////////////////////////////////////////////////////////////////////
 	// Extract Material Information
 	//////////////////////////////////////////////////////////////////////////
 
 	// Extract mesh
-	const opengl::Mesh* mesh = pig_model->getMesh(0);
+	const opengl::Mesh* mesh = pigModel->getMesh(0);
 	if (mesh == nullptr)
 	{
 		nap::Logger::warn("unable to extract model mesh at index 0");
@@ -587,7 +617,7 @@ bool init(nap::Core& core)
 	}
 
 	// Extract orientation mesh
-	const opengl::Mesh* orientation_mesh = orientation_model->getMesh(0);
+	const opengl::Mesh* orientation_mesh = orientationModel->getMesh(0);
 	if (orientation_mesh == nullptr)
 	{
 		nap::Logger::warn("unable to extract orientation mesh at index 0");
