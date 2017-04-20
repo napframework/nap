@@ -19,20 +19,24 @@
 
 	"nap::MemoryTextureResource2D": {
 		"mID" : "ColorTexture",
-		"mWidth" : 640,
-		"mHeight" : 480,
-		"mInternalFormat" : 6408,
-		"mFormat" : 6408,
-		"mType" : 5121
+		"mSettings" : {
+			"mWidth" : 640,
+			"mHeight" : 480,
+			"mInternalFormat" : 6408,
+			"mFormat" : 6408,
+			"mType" : 5121
+		}
 	},
 	
 	"nap::MemoryTextureResource2D": {
 		"mID" : "DepthTexture",
-		"mWidth" : 640,
-		"mHeight" : 480,
-		"mInternalFormat" : 6402,
-		"mFormat" : 6402,
-		"mType" : 5126
+		"mSettings" : {
+			"mWidth" : 640,
+			"mHeight" : 480,
+			"mInternalFormat" : 6402,
+			"mFormat" : 6402,
+			"mType" : 5126
+		}
 	},
 	
 	"nap::TextureRenderTargetResource2D": {

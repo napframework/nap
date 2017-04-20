@@ -47,7 +47,7 @@ namespace nap
 	void ResourceLinkAttribute::setResource(Resource& resource)
 	{
 		// Make sure path to resource is valid
-		if (resource.mID.getValue().empty())
+		if (resource.mID.empty())
 		{
 			nap::Logger::warn("unable to link resource, invalid resource path");
 			return;
@@ -63,7 +63,7 @@ namespace nap
 		mResource = &resource;
 
 		// Set new path (forcing resolve update on get)
-		setValue(resource.mID.getValue());
+		setValue(resource.mID);
 	}
 
 
@@ -154,7 +154,7 @@ namespace nap
 	void ResourceLinkAttribute::onLinkPathChanged(nap::AttributeBase& attr)
 	{
 		// Always resolve path on get when current resource is empty
-		if (mResource == nullptr || getValue() != mResource->mID.getValue())
+		if (mResource == nullptr || getValue() != mResource->mID)
 		{
 			isDirty = true;
 		}

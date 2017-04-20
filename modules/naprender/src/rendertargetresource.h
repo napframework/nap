@@ -24,22 +24,22 @@ namespace nap
 		/**
 		* Sets color texture resource.
 		*/
-		void setColorTexture(MemoryTextureResource2D& colorTexture)			{ mColorTexture.setTarget(colorTexture); }
+		void setColorTexture(MemoryTextureResource2D& colorTexture)			{ mColorTexture = &colorTexture; }
 
 		/**
 		* Sets depth texture resource
 		*/
-		void setDepthTexture(MemoryTextureResource2D& depthTexture)			{ mDepthTexture.setTarget(depthTexture); }
+		void setDepthTexture(MemoryTextureResource2D& depthTexture)			{ mDepthTexture = &depthTexture; }
 
 		/**
 		* Returns color texture resource
 		*/
-		MemoryTextureResource2D& GetColorTexture()							{ return *mColorTexture.getTarget<MemoryTextureResource2D>();  }
+		MemoryTextureResource2D& GetColorTexture()							{ return *mColorTexture; }
 
 		/**
 		* Returns depth texture resource
 		*/
-		MemoryTextureResource2D& GetDepthTexture()							{ return *mDepthTexture.getTarget<MemoryTextureResource2D>();	}
+		MemoryTextureResource2D& GetDepthTexture()							{ return *mDepthTexture; }
 
 		/**
 		* @return opengl base frame buffer object
@@ -53,14 +53,16 @@ namespace nap
 		virtual const std::string getDisplayName() const override;
 
 	private:
+
 		// Framebuffer to draw to
 		opengl::TextureRenderTarget2D mTextureRenderTarget;
 
+	public:
 		// Color texture to be used by the render target
-		ObjectLinkAttribute mColorTexture = { this, "mColorTexture", RTTI_OF(MemoryTextureResource2D) };
+		MemoryTextureResource2D* mColorTexture = nullptr;
 		
 		// Depth texture to be used by the render target
-		ObjectLinkAttribute mDepthTexture = { this, "mDepthTexture", RTTI_OF(MemoryTextureResource2D) };
+		MemoryTextureResource2D* mDepthTexture = nullptr;
 	};
 }
 

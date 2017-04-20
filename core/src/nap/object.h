@@ -351,6 +351,9 @@ namespace nap
 		// This object's parent
 		Object* mParent = nullptr;
 		int mFlags = Visible | Editable | Removable;
+
+	public:
+		std::string mID;
 	};
 }
 

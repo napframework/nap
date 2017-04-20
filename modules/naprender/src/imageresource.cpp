@@ -5,6 +5,27 @@
 #include <nap/logger.h>
 #include <nap/fileutils.h>
 
+RTTI_DEFINE_BASE(nap::TextureResource)
+
+RTTI_BEGIN_CLASS(nap::ImageResource)
+	RTTI_PROPERTY("mImagePath", &nap::ImageResource::mImagePath)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS(opengl::Texture2DSettings)
+	RTTI_PROPERTY("mLevel",				&opengl::Texture2DSettings::level)
+	RTTI_PROPERTY("mInternalFormat",	&opengl::Texture2DSettings::internalFormat)
+	RTTI_PROPERTY("mWidth",				&opengl::Texture2DSettings::width)
+	RTTI_PROPERTY("mHeight",			&opengl::Texture2DSettings::height)
+	RTTI_PROPERTY("mFormat",			&opengl::Texture2DSettings::format)
+	RTTI_PROPERTY("mType",				&opengl::Texture2DSettings::type)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS(nap::MemoryTextureResource2D)
+	RTTI_PROPERTY("mSettings",			&nap::MemoryTextureResource2D::mSettings)
+RTTI_END_CLASS
+
+RTTI_DEFINE(nap::ImageResource)
+
 namespace nap
 {
 	// Initializes 2D texture. Additionally a custom display name can be provided.
@@ -12,14 +33,7 @@ namespace nap
 	{
 		mTexture.init();
 
-		opengl::Texture2DSettings settings;
-		settings.level = mLevel.getValue();
-		settings.internalFormat = mInternalFormat.getValue();
-		settings.width = mWidth.getValue();
-		settings.height = mHeight.getValue();
-		settings.format = mFormat.getValue();
-		settings.type = mType.getValue();
-		mTexture.allocate(settings);
+		mTexture.allocate(mSettings);
 
 		return true;
 	}
@@ -53,7 +67,7 @@ namespace nap
 
 	bool ImageResource::init(InitResult& initResult)
 	{
-		if (!initResult.check(!mImagePath.getValue().empty(), "Imagepath not set"))
+		if (!initResult.check(!mImagePath.empty(), "Imagepath not set"))
 			return false;
 
 		if (!initResult.check(mImage.load(mImagePath), "Unable to load image from file"))
@@ -75,7 +89,3 @@ namespace nap
 	}
 	
 }
-
-RTTI_DEFINE_BASE(nap::TextureResource)
-RTTI_DEFINE(nap::MemoryTextureResource2D)
-RTTI_DEFINE(nap::ImageResource)

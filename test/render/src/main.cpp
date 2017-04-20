@@ -53,7 +53,6 @@
 // STD includes
 #include <ctime>
 
-
 //////////////////////////////////////////////////////////////////////////
 // Globals
 //////////////////////////////////////////////////////////////////////////
@@ -358,35 +357,35 @@ nap::Slot<const nap::SignalAttribute&> renderSlot = { [](const nap::SignalAttrib
 bool initResources(nap::ResourceManagerService* resourceManagerService, nap::InitResult& initResult)
 {
 	pigTexture = resourceManagerService->createResource<nap::ImageResource>();
-	pigTexture->mImagePath.setValue(pigTextureName);
+	pigTexture->mImagePath = pigTextureName;
 	if (!pigTexture->init(initResult))
 		return false;
 
 	testTexture = resourceManagerService->createResource<nap::ImageResource>();
-	testTexture->mImagePath.setValue(testTextureName);
+	testTexture->mImagePath = testTextureName;
 	if (!testTexture->init(initResult))
 		return false;
 
 	worldTexture = resourceManagerService->createResource<nap::ImageResource>();
-	worldTexture->mImagePath.setValue(worldTextureName);
+	worldTexture->mImagePath = worldTextureName;
 	if (!worldTexture->init(initResult))
 		return false;
 
 	nap::MemoryTextureResource2D* color_texture = resourceManagerService->createResource<nap::MemoryTextureResource2D>();
-	color_texture->mWidth.setValue(640);
-	color_texture->mHeight.setValue(480);
-	color_texture->mInternalFormat.setValue(GL_RGBA);
-	color_texture->mFormat.setValue(GL_RGBA);
-	color_texture->mType.setValue(GL_UNSIGNED_BYTE);
+	color_texture->mSettings.width = 640;
+	color_texture->mSettings.height = 480;
+	color_texture->mSettings.internalFormat = GL_RGBA;
+	color_texture->mSettings.format = GL_RGBA;
+	color_texture->mSettings.type = GL_UNSIGNED_BYTE;
 	if (!color_texture->init(initResult))
 		return false;
 
 	nap::MemoryTextureResource2D* depth_texture = resourceManagerService->createResource<nap::MemoryTextureResource2D>();
-	depth_texture->mWidth.setValue(640);
-	depth_texture->mHeight.setValue(480);
-	depth_texture->mInternalFormat.setValue(GL_DEPTH_COMPONENT);
-	depth_texture->mFormat.setValue(GL_DEPTH_COMPONENT);
-	depth_texture->mType.setValue(GL_FLOAT);
+	depth_texture->mSettings.width = 640;
+	depth_texture->mSettings.height = 480;
+	depth_texture->mSettings.internalFormat = GL_DEPTH_COMPONENT;
+	depth_texture->mSettings.format = GL_DEPTH_COMPONENT;
+	depth_texture->mSettings.type = GL_FLOAT;
 	if (!depth_texture->init(initResult))
 		return false;
 	
@@ -399,27 +398,27 @@ bool initResources(nap::ResourceManagerService* resourceManagerService, nap::Ini
 
 	// Load general shader
 	shaderResource = resourceManagerService->createResource<nap::ShaderResource>();
-	shaderResource->mVertPath.setValue(vertShaderName);
-	shaderResource->mFragPath.setValue(fragShaderName);
+	shaderResource->mVertPath = vertShaderName;
+	shaderResource->mFragPath = fragShaderName;
 	if (!shaderResource->init(initResult))
 		return false;
 
 	// Load orientation shader
 	orientationShaderResource = resourceManagerService->createResource<nap::ShaderResource>();
-	orientationShaderResource->mVertPath.setValue(orientationVertShaderName);
-	orientationShaderResource->mFragPath.setValue(orientationFragShaderName);
+	orientationShaderResource->mVertPath = orientationVertShaderName;
+	orientationShaderResource->mFragPath = orientationFragShaderName;
 	if (!orientationShaderResource->init(initResult))
 		return false;
 
 	// Load orientation resource
 	orientationModel = resourceManagerService->createResource<nap::ModelResource>();
-	orientationModel->mModelPath.setValue("data/orientation.fbx");
+	orientationModel->mModelPath = "data/orientation.fbx";
 	if (!orientationModel->init(initResult))
 		return false;
 
 	// Load model resource
 	pigModel = resourceManagerService->createResource<nap::ModelResource>();
-	pigModel->mModelPath.setValue("data/pig_head_alpha_rotated.fbx");
+	pigModel->mModelPath = "data/pig_head_alpha_rotated.fbx";
 	if (!pigModel->init(initResult))
 		return false;
 
@@ -711,10 +710,59 @@ void createSpheres(nap::Core& core, nap::Resource& shader)
 	*/
 }
 
+struct Pointee
+{
+public:
+	// If you uncomment this line the code will no longer compile. If you leave it commented, the code will compile but crash
+	//Pointee& operator=(const Pointee&) = delete;
+};
+
+struct ClassWithPointer
+{
+public:
+	Pointee* mPointee = nullptr;
+};
+
+RTTR_REGISTRATION
+{
+	using namespace rttr;
+
+	registration::class_<Pointee>("Pointee")
+					.constructor<>();
+
+	registration::class_<ClassWithPointer>("ClassWithPointer")
+					.constructor<>()(policy::ctor::as_raw_ptr)
+					.property("mPointee", &ClassWithPointer::mPointee);
+}
+
 
 // Main loop
 int main(int argc, char *argv[])
 {
+	rttr::type obj_type = rttr::type::get<ClassWithPointer>();
+	ClassWithPointer* obj = obj_type.create().get_value<ClassWithPointer*>();
+
+	// This line will either crash, or if it doesn't crash, the mPointee member will still be null
+	Pointee* new_pointee = new Pointee();
+	obj_type.get_property("mPointee").set_value(*obj, new_pointee);
+
+	rttr::variant v = obj_type.get_property("mPointee").get_value(*obj);
+	Pointee* test = v.get_value<Pointee*>(); 
+// 	RTTI::TypeInfo renderService = rttr::type::get<nap::RenderService>();
+// 	RTTI::TypeInfo service = rttr::type::get<nap::Service>();
+// 	RTTI::TypeInfo service2 = RTTI_OF(nap::Service);
+// 
+// 	bool is_kind_of = renderService.isKindOf(service);
+// 
+// 	rttr::type test_class_type = rttr::type::get<test_class>();
+// 	rttr::type test_class_type2 = rttr::type::get<test_class2>();
+// 
+// 	test_class* obj1 = test_class_type.createInstance<test_class>();
+// 	test_class2* obj2 = test_class_type2.createInstance<test_class2>();
+// 
+// 	rttr::property prop = test_class_type.get_property("value");
+// 	prop.set_value(*obj1, 42);
+
 	// Create core
 	nap::Core core;
 

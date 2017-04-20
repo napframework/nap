@@ -4,7 +4,9 @@
 
 #include <algorithm>
 
-RTTI_DEFINE_BASE(nap::Object)
+RTTI_BEGIN_BASE_CLASS(nap::Object)
+	RTTI_PROPERTY("mID", &nap::Object::mID)
+RTTI_END_CLASS
 
 namespace nap
 {

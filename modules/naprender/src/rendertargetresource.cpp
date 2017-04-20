@@ -1,19 +1,24 @@
 // Local Includes
 #include "rendertargetresource.h"
 
+RTTI_BEGIN_CLASS(nap::TextureRenderTargetResource2D)
+	RTTI_PROPERTY("mColorTexture", &nap::TextureRenderTargetResource2D::mColorTexture)
+	RTTI_PROPERTY("mDepthTexture", &nap::TextureRenderTargetResource2D::mDepthTexture)
+RTTI_END_CLASS
+
 namespace nap
 {
 
 	bool TextureRenderTargetResource2D::init(InitResult& initResult)
 	{
-		if (!initResult.check(mColorTexture.getTarget()!= nullptr, "Unable to create render target %s. Color textures not set.", mID.getValue().c_str()))
+		if (!initResult.check(mColorTexture != nullptr, "Unable to create render target %s. Color textures not set.", mID.c_str()))
 			return false;
 
-		if (!initResult.check(mDepthTexture.getTarget() != nullptr, "Unable to create render target %s. Depth texture not set.", mID.getValue().c_str()))
+		if (!initResult.check(mDepthTexture != nullptr, "Unable to create render target %s. Depth texture not set.", mID.c_str()))
 			return false;
 
-		mTextureRenderTarget.init((opengl::Texture2D&)mColorTexture.getTarget<MemoryTextureResource2D>()->getTexture(), (opengl::Texture2D&)mDepthTexture.getTarget<MemoryTextureResource2D>()->getTexture());
-		if (!initResult.check(mTextureRenderTarget.isValid(), "unable to validate frame buffer: %s", mID.getValue().c_str()))
+		mTextureRenderTarget.init((opengl::Texture2D&)mColorTexture->getTexture(), (opengl::Texture2D&)mDepthTexture->getTexture());
+		if (!initResult.check(mTextureRenderTarget.isValid(), "unable to validate frame buffer: %s", mID.c_str()))
 			return false;
 
 		return true;
@@ -28,9 +33,7 @@ namespace nap
 	// Resource path is display name for frame buffer
 	const std::string TextureRenderTargetResource2D::getDisplayName() const
 	{
-		return mID.getValue();
+		return mID;
 	}
 
 } // nap
-
-RTTI_DEFINE(nap::TextureRenderTargetResource2D)

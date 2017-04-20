@@ -6,6 +6,10 @@
 #include <nap/fileutils.h>
 #include <nmodelutils.h>
 
+RTTI_BEGIN_CLASS(nap::ModelResource)
+	RTTI_PROPERTY("mModelPath", &nap::ModelResource::mModelPath)
+RTTI_END_CLASS
+
 namespace nap
 {
 	// Returns associated mesh
@@ -16,7 +20,7 @@ namespace nap
 
 	bool ModelResource::init(InitResult& initResult)
 	{
-		if (!initResult.check(opengl::loadModel(mModel, mModelPath.getValue()), "Unable to load model %s", mModelPath.getValue().c_str()))
+		if (!initResult.check(opengl::loadModel(mModel, mModelPath), "Unable to load model %s", mModelPath.c_str()))
 			return false;
 
 		return true;
@@ -24,7 +28,7 @@ namespace nap
 
 	const std::string ModelResource::getDisplayName() const
 	{
-		return getFileNameWithoutExtension(mModelPath.getValue());
+		return getFileNameWithoutExtension(mModelPath);
 	}
 
 	// Returns number of meshes in the model
@@ -46,7 +50,7 @@ namespace nap
 		opengl::Mesh* mesh = getModel().getMesh(index);
 		if (mesh == nullptr)
 		{
-			nap::Logger::warn("unable to fetch mesh at index: %d from model: %s", index, mModelPath.getValue().c_str());
+			nap::Logger::warn("unable to fetch mesh at index: %d from model: %s", index, mModelPath.c_str());
 		}
 		return mesh;
 	}

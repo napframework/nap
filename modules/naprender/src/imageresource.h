@@ -62,13 +62,7 @@ namespace nap
 		virtual const std::string getDisplayName() const override				{ return mDisplayName;  }
 
 	public:
-		//opengl::Texture2DSettings mSettings;
-		NumericAttribute<int>	mLevel			= { this, "mLevel", 0 };
-		NumericAttribute<int>	mInternalFormat	= { this, "mInternalFormat", GL_RGB };
-		NumericAttribute<int>	mWidth			= { this, "mWidth", 0 };
-		NumericAttribute<int>	mHeight			= { this, "mHeight", 0 };
-		NumericAttribute<int>	mFormat			= { this, "mFormat", GL_BGR };
-		NumericAttribute<int>	mType			= { this, "mType", GL_UNSIGNED_BYTE };
+		opengl::Texture2DSettings mSettings;
 
 	private:
 		opengl::Texture2D mTexture;						// Texture as created during init
@@ -114,7 +108,7 @@ namespace nap
 
 	public:
 		// Path to img on disk
-		Attribute<std::string>	mImagePath = { this, "mImagePath", "" };
+		std::string				mImagePath;
 
 	private:
 		// Display name of img

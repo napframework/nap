@@ -50,7 +50,7 @@ namespace nap
 		 */
 		opengl::Mesh* getMesh(unsigned int index) const;
 
-		Attribute<std::string> mModelPath = { this, "mModelPath", "" };
+		std::string				mModelPath;
 
 	private:
 		// Name of mesh

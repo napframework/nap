@@ -48,8 +48,6 @@ namespace nap
 		* @return Human readable string representation of this path
 		*/
 		virtual const std::string getDisplayName() const = 0;
-
-		Attribute<std::string> mID = { this, "mID", "" };
 	};
 
 

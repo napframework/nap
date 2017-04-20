@@ -32,8 +32,8 @@ namespace nap
 		 */
 		opengl::Shader& getShader();
 
-		Attribute<std::string>		mVertPath		= { this, "mVertShader", "" };
-		Attribute<std::string>		mFragPath		= { this, "mFragShader", "" };
+		std::string					mVertPath;
+		std::string					mFragPath;
 
 	private:
 		// Path to shader on disk

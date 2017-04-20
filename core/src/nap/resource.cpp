@@ -2,8 +2,8 @@
 #include "resourcemanager.h"
 #include "core.h"
 
+RTTI_DEFINE_BASE(nap::Resource)
+
 namespace nap
 {
-    }
-
-RTTI_DEFINE_BASE(nap::Resource)
+}
