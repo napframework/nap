@@ -21,6 +21,8 @@ namespace nap
 
 		virtual bool init(InitResult& initResult) override;
 
+		virtual void finish(Resource::EFinishMode mode) override;
+
 		/**
 		* Sets color texture resource.
 		*/
@@ -55,7 +57,8 @@ namespace nap
 	private:
 
 		// Framebuffer to draw to
-		opengl::TextureRenderTarget2D mTextureRenderTarget;
+		opengl::TextureRenderTarget2D* mTextureRenderTarget = nullptr;
+		opengl::TextureRenderTarget2D* mPrevTextureRenderTarget = nullptr;
 
 	public:
 		// Color texture to be used by the render target

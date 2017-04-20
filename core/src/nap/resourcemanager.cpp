@@ -6,31 +6,82 @@
 #include <rapidjson/error/en.h>
 #include <fstream>
 
+#define WIN32_LEAN_AND_MEAN
+#include "windows.h"
+#undef min
+#undef max
+
 RTTI_DEFINE(nap::ResourceManagerService)
 
 namespace nap
 {
+	struct DirectoryWatcher
+	{
+	public:
+		DirectoryWatcher()
+		{
+			char current_directory[MAX_PATH];
+			GetCurrentDirectory(MAX_PATH, current_directory);
+
+			mDirectoryToMonitor = CreateFileA(current_directory, FILE_LIST_DIRECTORY, FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, NULL);
+			assert(mDirectoryToMonitor != INVALID_HANDLE_VALUE);
+
+			mOverlappedEvent = CreateEvent(NULL, true, false, NULL);
+			
+			std::memset(&mNotifications, 0, sizeof(mNotifications));
+			std::memset(&mOverlapped, 0, sizeof(mOverlapped));
+			mOverlapped.hEvent = mOverlappedEvent;
+
+			DWORD result = ReadDirectoryChangesW(mDirectoryToMonitor, (LPVOID)&mNotifications, sizeof(mNotifications), TRUE, FILE_NOTIFY_CHANGE_LAST_WRITE, NULL, &mOverlapped, NULL);
+			assert(result != 0 || GetLastError() == ERROR_IO_PENDING);
+		}
+
+		~DirectoryWatcher()
+		{
+			CloseHandle(mDirectoryToMonitor);
+			CloseHandle(mOverlappedEvent);
+		}
+
+		bool update(std::string& modifiedFile)
+		{
+			bool did_update = false;
+
+			DWORD result = WaitForSingleObject(mOverlappedEvent, 0);
+			if (result == WAIT_OBJECT_0)
+			{
+				DWORD dwBytesReturned = 0;
+				result = GetOverlappedResult(mDirectoryToMonitor, &mOverlapped, &dwBytesReturned, FALSE);
+				if (result != 0)
+				{
+					modifiedFile.resize(mNotifications[0].FileNameLength / 2);
+					
+					wcstombs(&modifiedFile[0], mNotifications->FileName, mNotifications[0].FileNameLength / 2);
+					did_update = true;
+
+					ResetEvent(mOverlappedEvent);
+					std::memset(&mNotifications, 0, sizeof(mNotifications));
+
+					std::memset(&mOverlapped, 0, sizeof(mOverlapped));
+					mOverlapped.hEvent = mOverlappedEvent;
+
+					result = ReadDirectoryChangesW(mDirectoryToMonitor, (LPVOID)&mNotifications, sizeof(mNotifications), TRUE, FILE_NOTIFY_CHANGE_LAST_WRITE, NULL, &mOverlapped, NULL);
+					assert(result != 0 || GetLastError() == ERROR_IO_PENDING);
+				}
+			}
+
+			return did_update;
+		}
+
+		HANDLE mDirectoryToMonitor;
+		HANDLE mOverlappedEvent;
+		OVERLAPPED mOverlapped;	
+		FILE_NOTIFY_INFORMATION mNotifications[1024];
+	};
+
 	class JSONReader
 	{
 	public:
-		struct UnresolvedPointer
-		{
-			UnresolvedPointer(RTTI::Instance& object, const RTTI::Property& property, const std::string& targetID) :
-				mObject(object),
-				mProperty(property),
-				mTargetID(targetID)
-			{
-			}
-
-			RTTI::Instance mObject;
-			RTTI::Property mProperty;
-			std::string mTargetID;
-		};
-
-		using ObjectList = std::vector<nap::Object*>;
-		using UnresolvedPointerList = std::vector<UnresolvedPointer>;
-
-		bool Read(const std::string& filename, ObjectList& readObjects, nap::InitResult& initResult)
+		bool Read(const std::string& filename, ObjectList& readObjects, UnresolvedPointerList& unresolvedPointers, nap::InitResult& initResult)
 		{
 			std::ifstream in(filename, std::ios::in | std::ios::binary);
 			if (!initResult.check(in.good(), "Unable to open file %s", filename.c_str()))
@@ -65,56 +116,51 @@ namespace nap
 				return false;
 			}
 
-			std::vector<RTTI::Variant> read_objects;
-
-			UnresolvedPointerList unresolved_pointers;
+			bool success = true;
 			for (auto& object_pos = document.MemberBegin(); object_pos < document.MemberEnd(); ++object_pos)
 			{
 				const char* typeName = object_pos->name.GetString();
 				RTTI::TypeInfo type_info = RTTI::TypeInfo::get_by_name(typeName);
 				if (!initResult.check(type_info.is_valid(), "Unknown object type %s encountered.", typeName))
-					return false;
+				{
+					success = false;
+					break;
+				}
 
 				if (!initResult.check(type_info.can_create_instance(), "Unable to instantiate object of type %s.", typeName))
-					return false;
+				{
+					success = false;
+					break;
+				}
 
 				if (!initResult.check(type_info.is_derived_from(RTTI_OF(nap::Object)), "Unable to instantiate object %s. Class is not derived from Object.", typeName))
-					return false;
+				{
+					success = false;
+					break;
+				}
 
-				RTTI::Variant object = type_info.create();
-				read_objects.push_back(object);
+				Object* object = type_info.create<Object>();
+				readObjects.push_back(object);
 
-				if (!ReadObjectRecursive(object, object_pos->value, unresolved_pointers, initResult))
-					return false;
+				if (!ReadObjectRecursive(*object, object_pos->value, unresolvedPointers, initResult))
+				{
+					success = false;
+					break;
+				}
 			}
 
-			using ObjectMap = std::unordered_map<std::string, RTTI::Variant>;
-			ObjectMap objects_by_id;
-			for (RTTI::Variant object : read_objects)
+			if (!success)
 			{
-				Object* actual_object = object.get_value<Object*>();
-				if (!initResult.check(!actual_object->mID.empty(), "Encountered an object without an ID"))
-					return false;
+				for (Object* object : readObjects)
+				{
+					delete object;
+				}
 
-				if (!initResult.check(objects_by_id.find(actual_object->mID) == objects_by_id.end(), "Encountered an object with a duplicate ID %s", actual_object->mID))
-					return false;
-
-				objects_by_id.insert({ actual_object->mID, object });
-				readObjects.push_back(actual_object);
+				readObjects.clear();
+				unresolvedPointers.clear();
 			}
 
-			for (const UnresolvedPointer& unresolved_pointer : unresolved_pointers)
-			{
-				ObjectMap::iterator target = objects_by_id.find(unresolved_pointer.mTargetID);
-				if (!initResult.check(target != objects_by_id.end(), "Unable to resolve link to object %s from attribute %s", unresolved_pointer.mTargetID.c_str(), unresolved_pointer.mProperty.get_name().data()))
-					return false;
-
-				bool succeeded = unresolved_pointer.mProperty.set_value(unresolved_pointer.mObject, target->second);
-				if (!initResult.check(succeeded, "Failed to resolve pointer"))
-					return false;
-			}
-			 
-			return true;
+			return success;
 		}
 
 		bool ReadObjectRecursive(RTTI::Instance object, const rapidjson::Value& jsonObject, UnresolvedPointerList& unresolvedPointers, InitResult& initResult)
@@ -130,7 +176,7 @@ namespace nap
 						return false;
 					continue;
 				}
-				
+
 				const RTTI::TypeInfo value_type = property.get_type();
 				const rapidjson::Value& json_value = json_property->value;
 
@@ -138,7 +184,7 @@ namespace nap
 				{
 					if (!initResult.check(value_type.get_raw_type().is_derived_from<nap::Object>(), "Encountered pointer to non-Object. This is not supported"))
 						return false;
-					
+
 					if (!initResult.check(json_value.GetType() == rapidjson::kStringType, "Encountered pointer property of unknown type"))
 						return false;
 
@@ -147,11 +193,11 @@ namespace nap
 					if (!initResult.check((is_required && !target.empty()) || (!is_required), "Required property %s not found in object of type %s", property.get_name().data(), object.get_derived_type().get_name().data()))
 						return false;
 
-					unresolvedPointers.push_back(UnresolvedPointer(object, property, target));
+					unresolvedPointers.push_back(UnresolvedPointer(object.try_convert<Object>(), property, target));
 				}
 				else
 				{
-					switch(json_value.GetType())
+					switch (json_value.GetType())
 					{
 						case rapidjson::kArrayType:
 						{
@@ -187,7 +233,7 @@ namespace nap
 								property.set_value(object, extracted_value);
 						}
 					}
-				}				
+				}
 			}
 
 			return true;
@@ -202,7 +248,7 @@ namespace nap
 					return std::string(json_value.GetString());
 					break;
 				}
-				case rapidjson::kNullType:     
+				case rapidjson::kNullType:
 					break;
 				case rapidjson::kFalseType:
 				case rapidjson::kTrueType:
@@ -232,7 +278,7 @@ namespace nap
 		bool ReadArrayRecursively(RTTI::VariantArray& array, const rapidjson::Value& jsonArray, UnresolvedPointerList& unresolvedPointers, InitResult& initResult)
 		{
 			array.set_size(jsonArray.Size());
-			
+
 			const RTTI::TypeInfo array_type = array.get_rank_type(array.get_rank());
 
 			if (!initResult.check(!array_type.is_pointer(), "Arrays of pointers are not supported yet"))
@@ -263,37 +309,192 @@ namespace nap
 				}
 			}
 
-			return true;					
+			return true;
 		}
 	};
 
-	bool ResourceManagerService::loadFile(const std::string& filename, nap::InitResult& initResult)
+	ResourceManagerService::ResourceManagerService() :
+		mDirectoryWatcher(new DirectoryWatcher())
 	{
-		std::vector<Object*> objects;
-		JSONReader reader;
-		if (!reader.Read(filename, objects, initResult))
-			return false;
+	}
 
-		for (Object* object : objects)
+	void ResourceManagerService::splitObjects(const ObjectList& sourceObjectList, ObjectList& targetObjectList, ObjectList& existingObjectList, ObjectList& newObjectList)
+	{
+		for (Object* source_object : sourceObjectList)
 		{
-			nap::Resource* resource = rtti_cast<nap::Resource>(object);
+			Resource* resource = rtti_cast<Resource>(source_object);
 			if (resource == nullptr)
 				continue;
 
-			if (!resource->init(initResult))
-				return false;
+			std::string id = resource->mID;
+
+			Resource* existing_resource = findResource(id);
+			if (existing_resource == nullptr)
+			{
+				newObjectList.push_back(source_object);
+				targetObjectList.push_back(source_object);
+			}
+			else
+			{
+				existingObjectList.push_back(source_object);
+				targetObjectList.push_back(existing_resource);
+			}
+		}
+	}
+
+	static int findUnresolvedPointer(UnresolvedPointerList& unresolvedPointers, Object* object, const RTTI::Property& property)
+	{
+		for (int index = 0; index < unresolvedPointers.size(); ++index)
+		{
+			UnresolvedPointer& unresolved_pointer = unresolvedPointers[index];
+			if (unresolved_pointer.mObject == object &&
+				unresolved_pointer.mProperty == property)
+			{
+				return index;
+			}
 		}
 
-		for (Object* object : objects)
+		return -1;
+	}
+
+	bool ResourceManagerService::updateExistingObjects(const ObjectList& existingObjectList, UnresolvedPointerList& unresolvedPointers, InitResult& initResult)
+	{
+		for (Object* existing_object : existingObjectList)
 		{
-			nap::Resource* resource = rtti_cast<nap::Resource>(object);
+			Resource* resource = rtti_cast<Resource>(existing_object);
+			if (resource == nullptr)
+				continue;
+
+			std::string id = resource->mID;
+
+			Resource* existing_resource = findResource(id);
+			if (existing_resource != nullptr)
+			{
+				if (!initResult.check(existing_resource->get_type() == resource->get_type(), "Unable to update object, different types"))		// todo: actually support this properly
+					return false;
+
+				for (const RTTI::Property& property : resource->get_type().get_properties())
+				{
+					if (property.get_type().is_pointer())
+					{
+						int unresolved_pointer_index = findUnresolvedPointer(unresolvedPointers, resource, property);
+						assert(unresolved_pointer_index != -1);
+
+						unresolvedPointers[unresolved_pointer_index].mObject = existing_resource;
+					}
+					else
+					{
+						RTTI::Variant new_value = property.get_value(*resource);
+						property.set_value(existing_resource, new_value);
+					}
+				}
+			}
+		}
+
+		return true;
+	}
+
+	bool ResourceManagerService::loadFile(const std::string& filename, nap::InitResult& initResult)
+	{
+		ObjectList read_objects;
+		UnresolvedPointerList unresolved_pointers;
+		JSONReader reader;
+		if (!reader.Read(filename, read_objects, unresolved_pointers, initResult))
+			return false;
+
+
+		ObjectList targetObjects;
+		ObjectList existingObjects;
+		ObjectList newObjects;
+		splitObjects(read_objects, targetObjects, existingObjects, newObjects);
+
+		if (!updateExistingObjects(existingObjects, unresolved_pointers, initResult))
+		{
+			for (Object* object : read_objects)
+				delete object;
+
+			// TODO: on failure, attributes of objects are in half updated state. fix
+
+			return false;
+		}
+
+		for (Object* object : newObjects)
+		{
+			nap::Resource* resource = rtti_cast<Resource>(object);
 			if (resource == nullptr)
 				continue;
 
 			addResource(resource->mID, resource);
 		}
 
+		for (const UnresolvedPointer& unresolved_pointer : unresolved_pointers)
+		{
+			nap::Resource* source_resource = rtti_cast<Resource>(unresolved_pointer.mObject);
+			if (source_resource == nullptr)
+				continue;
+
+			Resource* target_resource = findResource(unresolved_pointer.mTargetID);
+			if (!initResult.check(target_resource != nullptr, "Unable to resolve link to object %s from attribute %s", unresolved_pointer.mTargetID.c_str(), unresolved_pointer.mProperty.get_name().data()))
+				return false;
+
+ 			bool succeeded = unresolved_pointer.mProperty.set_value(unresolved_pointer.mObject, target_resource);
+ 			if (!initResult.check(succeeded, "Failed to resolve pointer"))
+ 				return false;
+
+			// TODO: on failure, attributes of objects are in half updated state + new object must be removed. fix
+		}
+
+		std::vector<Resource*> initted_objects;
+		bool init_success = true;
+		for (Object* object : targetObjects)
+		{
+			nap::Resource* resource = rtti_cast<Resource>(object);
+			if (resource == nullptr)
+				continue;
+
+			if (!resource->init(initResult))
+			{
+				init_success = false;
+				break;
+			}
+
+			initted_objects.push_back(resource);
+		}
+
+		if (!init_success)
+		{
+			for (Resource* initted_object : initted_objects)
+				initted_object->finish(Resource::EFinishMode::ROLLBACK);
+
+			// TODO: on failure, attributes of objects are in half updated state + new object must be removed. fix
+			return false;
+		}
+
+		for (Object* object : targetObjects)
+		{
+			nap::Resource* resource = rtti_cast<Resource>(object);
+			if (resource == nullptr)
+				continue;
+
+			resource->finish(Resource::EFinishMode::COMMIT);
+		}
+
+		mFilesToWatch.insert(toComparableFilename(filename));
+
 		return true;
+	}
+
+	void ResourceManagerService::checkForFileChanges()
+	{
+		std::string modified_file;
+		if (mDirectoryWatcher->update(modified_file))
+		{
+			if (mFilesToWatch.find(toComparableFilename(modified_file)) != mFilesToWatch.end())
+			{
+				nap::InitResult initResult;
+				loadFile(modified_file, initResult);
+			}
+		}
 	}
 
 	Resource* ResourceManagerService::findResource(const std::string& id)
@@ -339,7 +540,7 @@ namespace nap
 			++idx;
 			reso_unique_path = stringFormat("%s_%d", reso_path.c_str(), idx);
 		}
-		
+
 		resource->mID = reso_unique_path;
 		addResource(reso_unique_path, resource);
 		

@@ -51,6 +51,8 @@ namespace nap
 		*/
 		virtual bool init(InitResult& initResult) override;
 
+		virtual void finish(Resource::EFinishMode mode) override;
+
 		/**
 		* Returns 2D texture object
 		*/
@@ -65,8 +67,9 @@ namespace nap
 		opengl::Texture2DSettings mSettings;
 
 	private:
-		opengl::Texture2D mTexture;						// Texture as created during init
-		std::string mDisplayName = "MemoryTexture2D";	// Custom display name
+		opengl::Texture2D* mTexture				= nullptr;				// Texture as created during init
+		opengl::Texture2D* mPrevTexture			= nullptr;				// 
+		std::string mDisplayName				= "MemoryTexture2D";	// Custom display name
 	};
 
 
@@ -87,6 +90,8 @@ namespace nap
 		ImageResource() = default;
 
 		virtual bool init(InitResult& initResult) override;
+
+		void finish(Resource::EFinishMode mode);
 
 		/**
 		 * @return opengl image + bitmap data
@@ -115,7 +120,8 @@ namespace nap
 		std::string				mDisplayName;
 
 		// Opengl Image Object
-		mutable opengl::Image	mImage;
+		opengl::Image*	mImage = nullptr;
+		opengl::Image*	mPrevImage = nullptr;
 	};
 
 }

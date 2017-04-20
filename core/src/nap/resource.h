@@ -40,9 +40,17 @@ namespace nap
 	{
 		RTTI_ENABLE_DERIVED_FROM(AttributeObject)
 	public:
+		enum class EFinishMode : uint8
+		{
+			COMMIT,
+			ROLLBACK
+		};
+
 		Resource() = default;
 
 		virtual bool init(InitResult& initResult) { return true; }	// TODO: pure
+
+		virtual void finish(EFinishMode mode) {} // TODO: pure
 
 		/**
 		* @return Human readable string representation of this path

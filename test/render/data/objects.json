@@ -65,6 +65,22 @@
 	"nap::ModelResource": {
 		"mID": "PigModel",
 		"mModelPath": "data/pig_head_alpha_rotated.fbx"
+	},	
+	"nap::Material": {
+		"mID": "GeneralMaterial",
+		"mShader": "GeneralShader"
+	},
+	"nap::Material": {
+		"mID": "PlaneMaterial",
+		"mShader": "GeneralShader"
+	},
+	"nap::Material": {
+		"mID": "SphereMaterial",
+		"mShader": "GeneralShader"
+	},
+	"nap::Material": {
+		"mID": "OrientationMaterial",
+		"mShader": "OrientationShader"
 	}
 	
 } 

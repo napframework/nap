@@ -31,17 +31,39 @@ namespace nap
 	// Initializes 2D texture. Additionally a custom display name can be provided.
 	bool MemoryTextureResource2D::init(InitResult& initResult)
 	{
-		mTexture.init();
+		mPrevTexture = mTexture;
+		mTexture = new opengl::Texture2D;
+		mTexture->init();
 
-		mTexture.allocate(mSettings);
+		mTexture->allocate(mSettings);
 
 		return true;
+	}
+
+	void MemoryTextureResource2D::finish(Resource::EFinishMode mode)
+	{
+		if (mode == Resource::EFinishMode::COMMIT)
+		{
+			if (mPrevTexture != nullptr)
+			{
+				delete mPrevTexture;
+				mPrevTexture = nullptr;
+			}
+		}
+		else
+		{
+			assert(mode == Resource::EFinishMode::ROLLBACK);
+			delete mTexture;
+			mTexture = mPrevTexture;
+			mPrevTexture = nullptr;
+		}
 	}
 
 	// Returns 2D texture object
 	const opengl::BaseTexture& MemoryTextureResource2D::getTexture() const
 	{
-		return mTexture;
+		assert(mTexture != nullptr);
+		return *mTexture;
 	}
 
 	// Constructor
@@ -70,16 +92,38 @@ namespace nap
 		if (!initResult.check(!mImagePath.empty(), "Imagepath not set"))
 			return false;
 
-		if (!initResult.check(mImage.load(mImagePath), "Unable to load image from file"))
+		mPrevImage = mImage;
+		mImage = new opengl::Image;
+
+		if (!initResult.check(mImage->load(mImagePath), "Unable to load image from file"))
 			return false;
 
 		return true;
 	}
 
+	void ImageResource::finish(Resource::EFinishMode mode)
+	{
+		if (mode == Resource::EFinishMode::COMMIT)
+		{
+			if (mPrevImage != nullptr)
+			{
+				delete mPrevImage;
+				mPrevImage = nullptr;
+			}
+		}
+		else
+		{
+			assert(mode == Resource::EFinishMode::ROLLBACK);
+			delete mImage;
+			mImage = mPrevImage;
+			mPrevImage = nullptr;
+		}
+	}
 
 	const opengl::Image& ImageResource::getImage() const
 	{
-		return mImage;
+		assert(mImage != nullptr);
+		return *mImage;
 	}
 	
 	// Non const getter, following:
