@@ -69,7 +69,6 @@ namespace opengl
 		* Sets the clear color to be used by clear.
 		*/
 		void setClearColor(const glm::vec4 color)		{ mClearColor = color; }
-		const glm::vec4 getClearColor() const { return mClearColor; }
 
 	private:
 		glm::vec4 mClearColor;			// Clear color, used for clearing the color buffer
