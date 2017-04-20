@@ -113,7 +113,7 @@ namespace nap
 	 */
 	void ObjectLinkAttribute::setValue(const AttributeBase& attribute)
 	{
-        assert(attribute.getTypeInfo() == getTypeInfo());
+        assert(attribute.get_type() == get_type());
 		const ObjectLinkAttribute& attr = static_cast<const ObjectLinkAttribute&>(attribute);
         this->setTarget(attr.getPath());
 	}

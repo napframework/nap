@@ -66,7 +66,7 @@ namespace nap
     Component* Patch::getComponent()
     {
         Object* object = getParentObject();
-        while (object && !object->getTypeInfo().isKindOf<Component>())
+        while (object && !object->get_type().is_derived_from<Component>())
             object = object->getParentObject();
         
         if (object)

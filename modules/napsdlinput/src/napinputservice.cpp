@@ -14,13 +14,13 @@ namespace nap
 	// Filters key input components
 	static bool KeyFilter(Object& inComponent, Core& inCore)
 	{
-		return inComponent.getTypeInfo().isKindOf(RTTI_OF(KeyInputComponent));
+		return inComponent.get_type().is_derived_from(RTTI_OF(KeyInputComponent));
 	}
 
 	// Filters pointer input components
 	static bool PointerFilter(Object& inComponent, Core& inCore)
 	{
-		return inComponent.getTypeInfo().isKindOf(RTTI_OF(PointerInputComponent));
+		return inComponent.get_type().is_derived_from(RTTI_OF(PointerInputComponent));
 	}
 
 
@@ -45,7 +45,7 @@ namespace nap
 	void InputService::trigger(UniqueEvent inEvent)
 	{
 		mDispatchMutex.lock();
-		//std::cout << "trigger: " << inEvent->getTypeInfo().getName().c_str() << "\n";
+		//std::cout << "trigger: " << inEvent->get_type().getName().c_str() << "\n";
 		mInputEvents.emplace_back(std::move(inEvent));
 		mDispatchMutex.unlock();
 	}
@@ -108,7 +108,7 @@ namespace nap
 
 		for (auto& event : mDispatchEvents)
 		{
-			//std::cout << "process: " << event->getTypeInfo().getName().c_str() << "\n";
+			//std::cout << "process: " << event->get_type().getName().c_str() << "\n";
 
 			// Add additional event information
 			for (auto& filter : mInputFilters)
@@ -117,18 +117,18 @@ namespace nap
 			}
 
 			// Do key lookup if a key event occured
-			RTTI::TypeInfo event_info = event->getTypeInfo().getRawType();
-			if (event_info.isKindOf(RTTI_OF(KeyEvent)))
+			RTTI::TypeInfo event_info = event->get_type().getRawType();
+			if (event_info.is_derived_from(RTTI_OF(KeyEvent)))
 			{
 				doLookup(*event, KeyFilter);
 				continue;
 			}
 
 			// Make sure it's a pointer event
-			assert(event_info.isKindOf(RTTI_OF(PointerEvent)));
+			assert(event_info.is_derived_from(RTTI_OF(PointerEvent)));
 
 			// If it's a press, handle press lookup (caching component)
-			if (event_info.isKindOf(RTTI_OF(PointerPressEvent)))
+			if (event_info.is_derived_from(RTTI_OF(PointerPressEvent)))
 			{
 				PointerPressEvent* press_event = static_cast<PointerPressEvent*>(event.get());
 				doPointerPressLookup(*press_event);
@@ -138,7 +138,7 @@ namespace nap
 
 			// Don't handle mouse moves
 			PointerEvent* pointer_event = static_cast<PointerEvent*>(event.get());
-			if (event_info.isKindOf(RTTI_OF(PointerMoveEvent)))
+			if (event_info.is_derived_from(RTTI_OF(PointerMoveEvent)))
 			{
 				PointerMoveEvent* move_event = static_cast<PointerMoveEvent*>(event.get());
 				doPointerMoveLookup(*move_event);
@@ -157,7 +157,7 @@ namespace nap
 			}
 			else
 			{
-				nap::Logger::warn("Unable to find item for pointer event: %s", pointer_event->getTypeInfo().getName().c_str());
+				nap::Logger::warn("Unable to find item for pointer event: %s", pointer_event->get_type().getName().c_str());
 				continue;
 			}
 
@@ -204,7 +204,7 @@ namespace nap
 			return;
 		
 		// Cache object
-		assert(input_comp->getTypeInfo().getRawType().isKindOf(RTTI_OF(PointerInputComponent)));
+		assert(input_comp->get_type().getRawType().is_derived_from(RTTI_OF(PointerInputComponent)));
 
 		// Connect for when removed
 		input_comp->removed.connect(mComponentRemoved);

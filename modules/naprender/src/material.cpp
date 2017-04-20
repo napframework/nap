@@ -135,7 +135,7 @@ namespace nap
 			return;
 		}
 
-		if (!texture_link_attr->getTypeInfo().isKindOf(RTTI_OF(ResourceLinkAttribute)))
+		if (!texture_link_attr->get_type().is_derived_from(RTTI_OF(ResourceLinkAttribute)))
 		{
 			nap::Logger::warn(*this, "uniform variable: %s is not a resource link");
 			return;

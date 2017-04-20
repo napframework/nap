@@ -100,7 +100,7 @@ namespace nap
 			if (!obj)
 				return nullptr;
 
-			if (!obj->getTypeInfo().isKindOf<T>()) {
+			if (!obj->get_type().is_derived_from<T>()) {
 				Logger::warn("Object is not of expected type '%s': '%s'", RTTI_OF(T).getName().c_str(), path.c_str());
 				return nullptr;
 			}

@@ -10,7 +10,7 @@ namespace nap
 {
 	StateCtrl& CompoundCtrl::addController(const std::string& name, const RTTI::TypeInfo& type)
 	{
-		assert(type.isKindOf<StateCtrl>());
+		assert(type.is_derived_from<StateCtrl>());
 		return *static_cast<StateCtrl*>(&addChild(name, type));
 	}
 

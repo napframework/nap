@@ -53,9 +53,9 @@ namespace nap
 			return;
 		}
 
-		if (!resource.getTypeInfo().isKindOf(mType))
+		if (!resource.get_type().is_derived_from(mType))
 		{
-			nap::Logger::warn("unable to link resource, invalid resource type: %s", resource.getTypeInfo().getName().c_str());
+			nap::Logger::warn("unable to link resource, invalid resource type: %s", resource.get_type().get_name().data());
 			return;
 		}
 
@@ -70,9 +70,9 @@ namespace nap
 	// Set allowed resource link type
 	void ResourceLinkAttribute::setResourceType(const RTTI::TypeInfo& type)
 	{
-		if (!type.isKindOf(RTTI_OF(nap::Resource)))
+		if (!type.is_derived_from(RTTI_OF(nap::Resource)))
 		{
-			Logger::warn("object: %s not of type resource", type.getName().c_str());
+			Logger::warn("object: %s not of type resource", type.get_name().data());
 			return;
 		}
 		mType = type;
@@ -111,9 +111,9 @@ namespace nap
 
 		// Find root
 		const nap::Object* root = getRootObject();
-		if (!root->getTypeInfo().isKindOf(RTTI_OF(nap::Entity)))
+		if (!root->get_type().is_derived_from(RTTI_OF(nap::Entity)))
 		{
-			nap::Logger::warn("unable to resolve resource path, root object is not of type: %s", RTTI_OF(nap::Entity).getName().c_str());
+			nap::Logger::warn("unable to resolve resource path, root object is not of type: %s", RTTI_OF(nap::Entity).get_name().data());
 			return false;
 		}
 
@@ -138,9 +138,9 @@ namespace nap
 		}
 
 		// Make sure the type matches the type specified by the link
-		if (!resource->getTypeInfo().isKindOf(mType))
+		if (!resource->get_type().is_derived_from(mType))
 		{
-			nap::Logger::warn("unable to resolve resource path, resource is not of type: %s", mType.getName().c_str());
+			nap::Logger::warn("unable to resolve resource path, resource is not of type: %s", mType.get_name().data());
 			return false;
 		}
 

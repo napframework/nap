@@ -469,7 +469,7 @@ bool init(nap::Core& core)
 		nap::Entity& window_entity = core.addEntity(name);
 		
 		// Create the window component (but don't add it to the entity yet), so that we can set the construction settings
-		nap::RenderWindowComponent* renderWindow = RTTI_OF(nap::RenderWindowComponent).createInstance<nap::RenderWindowComponent>();
+		nap::RenderWindowComponent* renderWindow = RTTI_OF(nap::RenderWindowComponent).create<nap::RenderWindowComponent>();
 
 		// If this is not the first window, make it share its OpenGL context with the first window
 		nap::RenderWindowSettings settings;

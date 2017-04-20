@@ -40,7 +40,7 @@ namespace nap
 		Core& getCore();
 
 		// Service type name
-		const std::string getTypeName() const { return RTTI::TypeInfo::get(*this).getName(); };
+		const std::string getTypeName() const { return RTTI::TypeInfo::get(*this).get_name().data(); };
 
 		// Component search filter function
         using ObjectFilterFunction = std::function<bool(Object&, Core&)>;

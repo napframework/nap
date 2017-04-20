@@ -25,7 +25,7 @@ namespace nap
 		}
 
 		if (mControlAttribute) nap::AttributeObject::removeAttribute(*mControlAttribute);
-		mControlAttribute = &nap::AttributeObject::addAttribute("ControlValue", attr.getTypeInfo());
+		mControlAttribute = &nap::AttributeObject::addAttribute("ControlValue", attr.get_type());
 	}
 
 	AttrCtrl::AttrCtrl(AttributeBase &targetAttribute, const StateMode &trigger) : StateCtrl() {

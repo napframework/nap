@@ -36,7 +36,7 @@ namespace nap
         T& addComponent(const std::string& name)
         {
             auto type = RTTI::TypeInfo::get<T>();
-            assert(type.template isKindOf<Component>());
+            assert(type.template is_derived_from<Component>());
             return addChild<T>(name);
         }
 
@@ -44,8 +44,8 @@ namespace nap
         T& addComponent()
         {
 			RTTI::TypeInfo type = RTTI::TypeInfo::get<T>();
-            assert(type.isKindOf<Component>());
-            return addChild<T>(type.getName());
+            assert(type.is_derived_from<Component>());
+            return addChild<T>(type.get_name().data());
         }
 
 		// Add a new component of @componentType
@@ -117,7 +117,7 @@ namespace nap
     template <typename T>
     bool Entity::hasComponent() const {
         RTTI::TypeInfo type = RTTI::TypeInfo::get<T>();
-        assert(type.isKindOf<Component>());
+        assert(type.is_derived_from<Component>());
         return hasChildOfType<T>();
     }
     
@@ -125,7 +125,7 @@ namespace nap
     template <typename T>
     T* Entity::getComponent() {
         RTTI::TypeInfo type = RTTI::TypeInfo::get<T>();
-        assert(type.isKindOf<Component>());
+        assert(type.is_derived_from<Component>());
         return getChildOfType<T>();
     }
     

@@ -37,9 +37,9 @@ namespace nap
 			return;
 
 		// Make sure new target matches type
-		if (!target.getTypeInfo().isKindOf(mTargetType))
+		if (!target.get_type().is_derived_from(mTargetType))
 		{
-			nap::Logger::warn("invalid link, object: %s not of type: %s", target.getName().c_str(), mTargetType.getName().c_str());
+			nap::Logger::warn("invalid link, object: %s not of type: %s", target.getName().c_str(), mTargetType.get_name().data());
 			return;
 		}
 
@@ -72,9 +72,9 @@ namespace nap
 		}
 
 		// Make sure types match
-		if(!(link_target->getTypeInfo().isKindOf(mTargetType)))
+		if(!(link_target->get_type().is_derived_from(mTargetType)))
 		{
-			nap::Logger::warn("invalid link, object not of type: %s", mTargetType.getName().c_str());
+			nap::Logger::warn("invalid link, object not of type: %s", mTargetType.get_name().data());
 			return;
 		}
 

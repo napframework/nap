@@ -27,7 +27,7 @@ namespace nap
 	{
 		std::string objName = name;
 		objName = trim(objName);
-		if (objName.empty()) objName = getTypeInfo().getName();
+		if (objName.empty()) objName = get_type().get_name().data();
 		std::string sanitizedName = sanitizeName(objName);
 		mName = getUniqueName(sanitizedName);
 		nameChanged(mName);
@@ -94,9 +94,9 @@ namespace nap
     
     nap::Object& Object::addChild(const std::string& name, const RTTI::TypeInfo& type)
     {
-        assert(type.canCreateInstance());
-        assert(type.isKindOf<Object>());
-        auto child = type.createInstance<Object>();
+        assert(type.can_create_instance());
+        assert(type.is_derived_from<Object>());
+        auto child = type.create<Object>();
         assert(child);
         child->mName = name;
         addChild(std::move(std::unique_ptr<Object>(child)));
@@ -168,7 +168,7 @@ namespace nap
 	{
         // look for the children of type type in the children vector and erase
         for (auto it = mChildren.begin(); it != mChildren.end();)
-            if ((*it)->getTypeInfo().isKindOf(type))
+            if ((*it)->get_type().is_derived_from(type))
             {
                 signalChildRemoval(**it, *this);
                 mChildren.erase(it);
@@ -178,7 +178,7 @@ namespace nap
         
         // erase the children of type from the owned object list, in case the Object base class handles ownership of the child
         for (auto it = mOwnedObjects.begin(); it != mOwnedObjects.end();)
-            if ((*it)->getTypeInfo().isKindOf(type))
+            if ((*it)->get_type().is_derived_from(type))
                 mOwnedObjects.erase(it);
             else
                 it++;
@@ -265,7 +265,7 @@ namespace nap
 	Object* Object::getChildOfType(const RTTI::TypeInfo& type)
 	{
 		for (auto& object : mChildren)
-			if (object->getTypeInfo() == type) return object;
+			if (object->get_type() == type) return object;
 		return nullptr;
 	}
 

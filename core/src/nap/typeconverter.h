@@ -59,18 +59,18 @@ namespace nap
 
 		bool convert(const AttributeBase* inAttrib, AttributeBase* outAttrib) const override
 		{
-            if (!inAttrib->getTypeInfo().isKindOf<Attribute<I>>()) {
+            if (!inAttrib->get_type().is_derived_from<Attribute<I>>()) {
                 Logger::fatal("Input attribute of type '%s' should be of type '%s'",
-                              inAttrib->getValueType().getName().c_str(),
-                              RTTI_OF(I).getName().c_str());
+                              inAttrib->getValueType().get_name().data(),
+                              RTTI_OF(I).get_name().data());
                 return false;
             }
             auto inAt = static_cast<const Attribute<I>*>(inAttrib);
 
-            if (!outAttrib->getTypeInfo().isKindOf<Attribute<O>>()) {
+            if (!outAttrib->get_type().is_derived_from<Attribute<O>>()) {
                 Logger::fatal("Output attribute of type '%s' should be of type '%s'",
-                              outAttrib->getValueType().getName().c_str(),
-                              RTTI_OF(O).getName().c_str());
+                              outAttrib->getValueType().get_name().data(),
+                              RTTI_OF(O).get_name().data());
                 return false;
             }
 			auto outAt = static_cast<Attribute<O>*>(outAttrib);

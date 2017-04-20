@@ -32,7 +32,7 @@ namespace RTTI
 			registration::class_<Type>(#Type)			\
 
 #define RTTI_CONSTRUCTOR								\
-					  .constructor<>()
+					  .constructor<>()(policy::ctor::as_raw_ptr)
 
 #define RTTI_END_CLASS									\
 		;												\

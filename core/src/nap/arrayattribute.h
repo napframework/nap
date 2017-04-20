@@ -129,7 +129,7 @@ namespace nap
     template <typename T>
     void ArrayAttribute<T>::getValue(AttributeBase& inAttribute) const
     {
-        assert(getTypeInfo().isKindOf(inAttribute.getTypeInfo()));
+        assert(get_type().is_derived_from(inAttribute.get_type()));
         
         static_cast<ArrayAttribute<T>&>(inAttribute).setValue(getValue());
     }
@@ -174,7 +174,7 @@ namespace nap
     template <typename T>
     void ArrayAttribute<T>::setValue(const AttributeBase &inAttribute)
     {
-        assert(inAttribute.getTypeInfo() == getTypeInfo());
+        assert(inAttribute.get_type() == get_type());
         const ArrayAttribute<T>& in_attr = static_cast<const ArrayAttribute<T>&>(inAttribute);
         
         {

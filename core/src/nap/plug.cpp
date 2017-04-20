@@ -83,7 +83,8 @@ namespace nap
     
 	bool InputPlugBase::canConnectTo(OutputPlugBase& plug)
 	{
-		if (getDataType().getName() != plug.getDataType().getName()) return false;
+		if (getDataType().get_name().compare(plug.getDataType().get_name()) != 0) 
+			return false;
 
 		return true;
 	}

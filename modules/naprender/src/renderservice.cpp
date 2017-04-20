@@ -30,7 +30,7 @@ namespace nap
 	{
 		// If we have a render window component and glew hasn't been initialized
 		// Initialize glew. Otherwise subsequent render calls will fail
-		if (inObject.getTypeInfo().isKindOf(RTTI_OF(RenderWindowComponent)))
+		if (inObject.get_type().is_derived_from(RTTI_OF(RenderWindowComponent)))
 		{
 			RenderWindowComponent& new_window = static_cast<RenderWindowComponent&>(inObject);
 			createWindow(new_window);
@@ -295,9 +295,9 @@ namespace nap
 	// Set the currently active renderer
 	void RenderService::setRenderer(const RTTI::TypeInfo& renderer)
 	{
-		if (!renderer.isKindOf(RTTI_OF(nap::Renderer)))
+		if (!renderer.is_derived_from(RTTI_OF(nap::Renderer)))
 		{
-			nap::Logger::warn(*this, "unable to add: %s as renderer, object not of type: %s", renderer.getName().c_str(), RTTI_OF(nap::Renderer).getName().c_str());
+			nap::Logger::warn(*this, "unable to add: %s as renderer, object not of type: %s", renderer.get_name().data(), RTTI_OF(nap::Renderer).get_name().data());
 			return;
 		}
 
@@ -308,7 +308,7 @@ namespace nap
 		state = State::Uninitialized;
 
 		// Create new renderer
-		nap::Renderer* new_renderer = renderer.createInstance<nap::Renderer>();
+		nap::Renderer* new_renderer = renderer.create<nap::Renderer>();
 		mRenderer.reset(new_renderer);
 	}
 

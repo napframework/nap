@@ -58,7 +58,7 @@ namespace nap
 		mRequired = required;
 		assert(localComponent);
 		RTTI::TypeInfo type = RTTI_OF(T);
-		assert(type.isKindOf<Component>());
+		assert(type.is_derived_from<Component>());
 
 		localComponent->added.connect([=](Object& parent)
 		{
@@ -83,7 +83,7 @@ namespace nap
 	template<typename T>
 	void ComponentDependency<T>::onAdded(Object& comp)
 	{
-		if (comp.getTypeInfo().isKindOf<T>())
+		if (comp.get_type().is_derived_from<T>())
 		{
 			assert(!mTargetComponent); // Component added a second time, allow only one
 			mTargetComponent = static_cast<T*>(&comp);
@@ -95,7 +95,7 @@ namespace nap
 	template<typename T>
 	void ComponentDependency<T>::onRemoved(Object& comp)
 	{
-		if (comp.getTypeInfo().isKindOf<T>())
+		if (comp.get_type().is_derived_from<T>())
 		{
 			removed(*mTargetComponent);
 			mTargetComponent = nullptr;
@@ -119,7 +119,7 @@ namespace nap
                 added(*mTargetComponent);
             } else if (mRequired) {
                 nap::Logger::fatal("Component of type '%s' requires sibling component of type '%s': '%s'",
-                                   mParentComponent->getTypeInfo().getName().c_str(), RTTI_OF(T).getName().c_str(),
+                                   mParentComponent->get_type().getName().c_str(), RTTI_OF(T).getName().c_str(),
 					ObjectPath(mParentComponent).toString().c_str());
             }
 		}

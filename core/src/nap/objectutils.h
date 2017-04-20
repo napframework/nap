@@ -24,7 +24,7 @@ namespace nap {
         std::vector<Object*> allObjects = initialObject.getChildren(true);
 		allObjects.emplace_back(&initialObject);
 		for (Object* ob : allObjects) {
-			if (!ob->getTypeInfo().isKindOf<ObjectType>())
+			if (!ob->get_type().is_derived_from<ObjectType>())
 				continue;
 			Attribute<AttributeType>* attrib = static_cast<ObjectType*>(ob)->template getAttribute<AttributeType>(attName);
 			if (!attrib)
@@ -38,7 +38,7 @@ namespace nap {
 		std::vector<Object*> allObjects = initialObject.getChildren(true);
 		allObjects.emplace_back(&initialObject);
 		for (Object* ob : allObjects) {
-			if (ob->getTypeInfo().isKindOf<T>())
+			if (ob->get_type().is_derived_from<T>())
 				return static_cast<T*>(ob);
 		}
 		return nullptr;

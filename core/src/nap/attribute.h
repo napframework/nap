@@ -250,7 +250,7 @@ namespace nap
 	private:
 		virtual void getValue(AttributeBase& attribute) const override {}
 		virtual void setValue(const AttributeBase& attribute) override {}
-		virtual const RTTI::TypeInfo getValueType() const override { return getTypeInfo(); }
+		virtual const RTTI::TypeInfo getValueType() const override { return get_type(); }
 
 	};
 

@@ -19,17 +19,17 @@ namespace nap
 		for (auto& object_pos = inDocument.MemberBegin(); object_pos < inDocument.MemberEnd(); ++object_pos)
 		{
 			const char* typeName = object_pos->name.GetString();
-			RTTI::TypeInfo type_info = RTTI::TypeInfo::getByName(typeName);
-			if (!initResult.check(type_info.isValid(), "Unknown object type %s encountered.", typeName))
+			RTTI::TypeInfo type_info = RTTI::TypeInfo::get_by_name(typeName);
+			if (!initResult.check(type_info.is_valid(), "Unknown object type %s encountered.", typeName))
 				return false;
 
-			if (!initResult.check(type_info.canCreateInstance(), "Unable to instantiate object of type %s.", typeName))
+			if (!initResult.check(type_info.can_create_instance(), "Unable to instantiate object of type %s.", typeName))
 				return false;
 
-			if (!initResult.check(type_info.isKindOf(RTTI_OF(nap::Resource)), "Unable to instantiate object %s. Class is not derived from Resource.", typeName))
+			if (!initResult.check(type_info.is_derived_from(RTTI_OF(nap::Resource)), "Unable to instantiate object %s. Class is not derived from Resource.", typeName))
 				return false;
 
-			nap::Resource* resource = type_info.createInstance<Resource>();
+			nap::Resource* resource = type_info.create<Resource>();
 
 			for (auto& member_pos = object_pos->value.MemberBegin(); member_pos < object_pos->value.MemberEnd(); ++member_pos)
 			{
@@ -40,15 +40,15 @@ namespace nap
 				if (attribute == nullptr)
 					continue;
 
-				if (attribute->getTypeInfo().isKindOf(RTTI_OF(nap::Attribute<std::string>)))
+				if (attribute->get_type().is_derived_from(RTTI_OF(nap::Attribute<std::string>)))
 				{
 					((nap::Attribute<std::string>*)attribute)->setValue(member_pos->value.GetString());
 				}
-				else if (attribute->getTypeInfo().isKindOf(RTTI_OF(nap::NumericAttribute<int>)))
+				else if (attribute->get_type().is_derived_from(RTTI_OF(nap::NumericAttribute<int>)))
 				{
 					((nap::NumericAttribute<int>*)attribute)->setValue(member_pos->value.GetInt());
 				}
-				else if (attribute->getTypeInfo().isKindOf(RTTI_OF(nap::ObjectLinkAttribute)))
+				else if (attribute->get_type().is_derived_from(RTTI_OF(nap::ObjectLinkAttribute)))
 				{
 					links_to_resolve.insert({ (nap::ObjectLinkAttribute*)attribute, std::string(member_pos->value.GetString()) });
 				}
@@ -144,23 +144,23 @@ namespace nap
 
 	Resource* ResourceManagerService::createResource(const RTTI::TypeInfo& type)
 	{
-		if (!type.isKindOf(RTTI_OF(Resource)))
+		if (!type.is_derived_from(RTTI_OF(Resource)))
 		{
-			nap::Logger::warn("unable to create resource of type: %s", type.getName().c_str());
+			nap::Logger::warn("unable to create resource of type: %s", type.get_name().data());
 			return nullptr;
 		}
 
-		if (!type.canCreateInstance())
+		if (!type.can_create_instance())
 		{
-			nap::Logger::warn("can't create resource instance of type: %s", type.getName().c_str());
+			nap::Logger::warn("can't create resource instance of type: %s", type.get_name().data());
 			return nullptr;
 		}
 
 		// Create instance of resource
-		Resource* resource = type.createInstance<Resource>();
+		Resource* resource = type.create<Resource>();
 
 		// Construct path
-		std::string type_name = type.getName().c_str();
+		std::string type_name = type.get_name().data();
 		std::string reso_path = stringFormat("resource::%s", type_name.c_str());
 		std::string reso_unique_path = reso_path;
 		int idx = 0;
@@ -170,6 +170,7 @@ namespace nap
 			reso_unique_path = stringFormat("%s_%d", reso_path.c_str(), idx);
 		}
 		
+		resource->mID.setValue(reso_unique_path);
 		addResource(reso_unique_path, resource);
 		
 		return resource;

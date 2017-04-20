@@ -23,7 +23,7 @@ namespace nap
     // Add a new component of @componentType
     Component& Entity::addComponent(const RTTI::TypeInfo& componentType)
     {
-        assert(componentType.isKindOf<Component>());
+        assert(componentType.is_derived_from<Component>());
         return *static_cast<Component*>(&addChild("", componentType));
     }
     
