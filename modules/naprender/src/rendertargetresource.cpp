@@ -12,16 +12,43 @@ namespace nap
 		if (!initResult.check(mDepthTexture.getTarget() != nullptr, "Unable to create render target %s. Depth texture not set.", mID.getValue().c_str()))
 			return false;
 
-		mTextureRenderTarget.init((opengl::Texture2D&)mColorTexture.getTarget<MemoryTextureResource2D>()->getTexture(), (opengl::Texture2D&)mDepthTexture.getTarget<MemoryTextureResource2D>()->getTexture());
-		if (!initResult.check(mTextureRenderTarget.isValid(), "unable to validate frame buffer: %s", mID.getValue().c_str()))
+		mPrevTextureRenderTarget = mTextureRenderTarget;
+		mTextureRenderTarget = new opengl::TextureRenderTarget2D;
+
+		mTextureRenderTarget->init((opengl::Texture2D&)mColorTexture.getTarget<MemoryTextureResource2D>()->getTexture(), (opengl::Texture2D&)mDepthTexture.getTarget<MemoryTextureResource2D>()->getTexture());
+		if (!initResult.check(mTextureRenderTarget->isValid(), "unable to validate frame buffer: %s", mID.getValue().c_str()))
 			return false;
+
+		if (mPrevTextureRenderTarget)
+			mTextureRenderTarget->setClearColor(mPrevTextureRenderTarget->getClearColor()); // HACK
 
 		return true;
 	}
 
+	void TextureRenderTargetResource2D::finish(Resource::EFinishMode mode)
+	{
+		if (mode == Resource::EFinishMode::COMMIT)
+		{
+			if (mPrevTextureRenderTarget != nullptr)
+			{
+				delete mPrevTextureRenderTarget;
+				mPrevTextureRenderTarget = nullptr;
+			}
+		}
+		else
+		{
+			assert(mode == Resource::EFinishMode::ROLLBACK);
+			delete mTextureRenderTarget;
+			mTextureRenderTarget = mPrevTextureRenderTarget;
+			mPrevTextureRenderTarget = nullptr;
+		}
+	}
+
+
 	opengl::TextureRenderTarget2D& TextureRenderTargetResource2D::getTarget()
 	{
-		return mTextureRenderTarget;
+		assert(mTextureRenderTarget != nullptr);
+		return *mTextureRenderTarget;
 	}
 
 

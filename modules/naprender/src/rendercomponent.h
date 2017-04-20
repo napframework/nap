@@ -83,6 +83,8 @@ namespace nap
 		 * @return link as material, nullptr if not found
 		 */
 		Material* getMaterial();
+
+		void setMaterial(Material* newMaterial);
 	};
 }
 

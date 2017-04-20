@@ -84,4 +84,8 @@ namespace nap
      */
     void writeStringToFile(const std::string& filename, const std::string& contents);
 
+	const std::string toComparableFilename(const std::string& filename);
+
+	bool isFilenameEqual(const std::string& filenameA, const std::string& filenameB);
+
 }

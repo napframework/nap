@@ -8,9 +8,9 @@ namespace nap
 	RenderableComponent::RenderableComponent()
 	{
 		// Create and link
-		Material* new_material = &addChild<Material>("material");
-		new_material->setFlag(nap::ObjectFlag::Removable, false);
-		material.setTarget(*new_material);
+// 		Material* new_material = &addChild<Material>("material");
+// 		new_material->setFlag(nap::ObjectFlag::Removable, false);
+// 		material.setTarget(*new_material);
 	}
 
 
@@ -51,4 +51,8 @@ namespace nap
 		return material.getTarget<Material>();
 	}
 
+	void RenderableComponent::setMaterial(Material* newMaterial)
+	{
+		material.setTarget(*newMaterial);
+	}
 }

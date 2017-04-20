@@ -16,7 +16,12 @@ namespace nap
 		if (!initResult.check(shaderResourceLink.isLinked(), "Shader not set in material"))
 			return false;
 
-		mShader = shaderResourceLink.getResource<ShaderResource>();
+		mShader = shaderResourceLink.getTarget<ShaderResource>();
+
+		// TODO: store vertex attribute / uniforms for rollback
+
+		vertexAttribute.clear();
+		uniformAttribute.clear();
 
 		// Add
 		for (const auto& v : mShader->getShader().getUniforms())
@@ -49,6 +54,18 @@ namespace nap
 		return true;
 	}
 
+	void Material::finish(Resource::EFinishMode mode)
+	{
+		if (mode == Resource::EFinishMode::COMMIT)
+		{
+			// TODO: implement rollback of uniforms/attrs
+		}
+		else
+		{
+			assert(mode == Resource::EFinishMode::ROLLBACK);
+			// TODO: implement rollback of uniforms/attrs
+		}
+	}
 
 	// Unbind shader associated with resource
 	void Material::bind()

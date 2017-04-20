@@ -27,19 +27,41 @@ namespace nap
 		// Set display name
 		mDisplayName = getFileNameWithoutExtension(mVertPath.getValue());
 
+		mPrevShader = mShader;
+		mShader = new opengl::Shader;
+
 		// Initialize the shader
-		mShader.init(mVertPath, mFragPath);
-		if (!initResult.check(mShader.isLinked(), "unable to create shader program: %s", mVertPath.getValue().c_str(), mFragPath.getValue().c_str()))
+		mShader->init(mVertPath, mFragPath);
+		if (!initResult.check(mShader->isLinked(), "unable to create shader program: %s", mVertPath.getValue().c_str(), mFragPath.getValue().c_str()))
 			return false;
 
 		return true;
 	}
 
+	void ShaderResource::finish(Resource::EFinishMode mode)
+	{
+		if (mode == Resource::EFinishMode::COMMIT)
+		{
+			if (mPrevShader != nullptr)
+			{
+				delete mPrevShader;
+				mPrevShader = nullptr;
+			}
+		}
+		else
+		{
+			assert(mode == Resource::EFinishMode::ROLLBACK);
+			delete mShader;
+			mShader = mPrevShader;
+			mPrevShader = nullptr;
+		}
+	}
 
 	// Returns the associated opengl shader
 	opengl::Shader& ShaderResource::getShader()
 	{
-		return mShader;
+		assert(mShader != nullptr);
+		return *mShader;
 	}
 
 }

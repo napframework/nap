@@ -19,9 +19,9 @@
 
 	"nap::MemoryTextureResource2D": {
 		"mID" : "ColorTexture",
-		"mWidth" : 640,
-		"mHeight" : 480,
-		"mInternalFormat" : 6408,
+		"mWidth" : 320,
+		"mHeight" : 200,
+		"mInternalFormat" : 6408, 
 		"mFormat" : 6408,
 		"mType" : 5121
 	},
@@ -61,6 +61,22 @@
 	"nap::ModelResource": {
 		"mID": "PigModel",
 		"mModelPath": "data/pig_head_alpha_rotated.fbx"
+	},	
+	"nap::Material": {
+		"mID": "GeneralMaterial",
+		"shader": "GeneralShader"
+	},
+	"nap::Material": {
+		"mID": "PlaneMaterial",
+		"shader": "GeneralShader"
+	},
+	"nap::Material": {
+		"mID": "SphereMaterial",
+		"shader": "GeneralShader"
+	},
+	"nap::Material": {
+		"mID": "OrientationMaterial",
+		"shader": "OrientationShader"
 	}
-	
+
 } 

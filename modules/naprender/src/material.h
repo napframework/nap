@@ -26,6 +26,8 @@ namespace nap
 
 		virtual bool init(InitResult& initResult) override;
 
+		virtual void finish(Resource::EFinishMode mode) override;
+
 		virtual const std::string getDisplayName() const { return "Material"; }		// TODO
 
 		/**
@@ -49,7 +51,7 @@ namespace nap
 		* By default this link is empty, needs to be set
 		* when using this material for drawing
 		*/
-		ResourceLinkAttribute shaderResourceLink =		{ this, "shader", RTTI_OF(ShaderResource) };
+		ObjectLinkAttribute shaderResourceLink =		{ this, "shader", RTTI_OF(ShaderResource) };
 
 		/**
 		 * Holds all uniform shader variables
@@ -104,6 +106,8 @@ namespace nap
 		 * Internal resource cache
 		 */
 		ShaderResource* mShader = nullptr;
+		CompoundAttribute mPrevUniformAttributes;
+		CompoundAttribute mPrevVertexAttributes;
 	};
 
 

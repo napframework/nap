@@ -11,15 +11,38 @@ namespace nap
 	// Returns associated mesh
 	opengl::Model& ModelResource::getModel() const
 	{
-		return mModel;
+		assert(mModel != nullptr);
+		return *mModel;
 	}
 
 	bool ModelResource::init(InitResult& initResult)
 	{
-		if (!initResult.check(opengl::loadModel(mModel, mModelPath.getValue()), "Unable to load model %s", mModelPath.getValue().c_str()))
+		mPrevModel = mModel;
+		mModel = new opengl::Model;
+
+		if (!initResult.check(opengl::loadModel(*mModel, mModelPath.getValue()), "Unable to load model %s", mModelPath.getValue().c_str()))
 			return false;
 
 		return true;
+	}
+
+	void ModelResource::finish(Resource::EFinishMode mode)
+	{
+		if (mode == Resource::EFinishMode::COMMIT)
+		{
+			if (mPrevModel != nullptr)
+			{
+				delete mPrevModel;
+				mPrevModel = nullptr;
+			}
+		}
+		else
+		{
+			assert(mode == Resource::EFinishMode::ROLLBACK);
+			delete mModel;
+			mModel = mPrevModel;
+			mPrevModel = nullptr;
+		}
 	}
 
 	const std::string ModelResource::getDisplayName() const

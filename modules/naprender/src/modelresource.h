@@ -21,6 +21,8 @@ namespace nap
 
 		virtual bool init(InitResult& initResult) override;
 
+		virtual void finish(Resource::EFinishMode mode) override;
+
 		/**
 		 * @return the mesh display name
 		 */
@@ -57,7 +59,8 @@ namespace nap
 		std::string				mDisplayName;
 
 		// opengl mesh object
-		mutable opengl::Model	mModel;
+		opengl::Model*	mModel		= nullptr;
+		opengl::Model*	mPrevModel	= nullptr;
 	};
 
 

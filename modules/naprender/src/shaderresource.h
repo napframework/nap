@@ -19,6 +19,8 @@ namespace nap
 
 		virtual bool init(InitResult& initResult);
 
+		virtual void finish(Resource::EFinishMode mode) override;
+
 		/**
 		 * @return the shader resource display name
 		 */
@@ -40,7 +42,8 @@ namespace nap
 		std::string					mDisplayName;
 
 		// Shader that is managed by this resource
-		opengl::Shader				mShader;
+		opengl::Shader*				mShader = nullptr;
+		opengl::Shader*				mPrevShader = nullptr;
 	};
 
 }
