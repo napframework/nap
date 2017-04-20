@@ -59,12 +59,19 @@ namespace nap
 		void checkForFileChanges();
 
 	private:
-		void splitObjects(const ObjectList& sourceObjectList, ObjectList& targetObjectList, ObjectList& existingObjectList, ObjectList& newObjectList);
-		bool updateExistingObjects(const ObjectList& existingObjectList, UnresolvedPointerList& unresolvedPointers, InitResult& initResult);
+		using ExistingObjectMap = std::map<Object*, Object*>;
+		void splitObjects(const ObjectList& sourceObjectList, ObjectList& targetObjectList, ExistingObjectMap& existingObjectMap, ObjectList& newObjectList);
+		bool updateExistingObjects(const ExistingObjectMap& existingObjectMap, UnresolvedPointerList& unresolvedPointers, InitResult& initResult);
+		void backupObjects(const ExistingObjectMap& objects, ExistingObjectMap& backups);
+		void restoreObjects(ExistingObjectMap& objects, const ExistingObjectMap& backups);
+		void rollback(ExistingObjectMap& existingObjects, const ExistingObjectMap& backupObjects, const ObjectList& newObjects);
 
 		/**
 		*/
 		void addResource(const std::string& id, Resource* resource);
+
+		void removeResource(const std::string& id);
+
 	private:
 		// Holds all currently loaded resources
 		std::map<std::string, std::unique_ptr<Resource>> mResources;

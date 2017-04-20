@@ -54,16 +54,6 @@ namespace nap
 		ShaderResource* mShader = nullptr;
 
 		/**
-		 * Holds all uniform shader variables
-		 */
-		CompoundAttribute uniformAttribute =			{ this, "uniforms" };
-
-		/**
-		 * Holds all vertex attribute variables
-		 */
-		CompoundAttribute vertexAttribute =				{ this, "attributes" };
-
-		/**
 		 * Uploads all uniform variables to the GPU
 		 * Note that this call will only work when the shader is bound!
 		 */
@@ -101,6 +91,16 @@ namespace nap
 		void setUniformTexture(const std::string& name, TextureResource& resource);
 		
 	private:
+
+		/**
+		* Holds all uniform shader variables
+		*/
+		CompoundAttribute uniformAttribute = { this, "uniforms" };
+
+		/**
+		* Holds all vertex attribute variables
+		*/
+		CompoundAttribute vertexAttribute = { this, "attributes" };
 
 		/**
 		 * Internal resource cache

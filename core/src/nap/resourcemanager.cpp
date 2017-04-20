@@ -15,6 +15,28 @@ RTTI_DEFINE(nap::ResourceManagerService)
 
 namespace nap
 {
+	static void copyObject(const Object& srcObject, Object& dstObject)
+	{
+		// TODO: assert types compatible
+		RTTI::TypeInfo type = srcObject.get_type();
+
+		for (const RTTI::Property& property : type.get_properties())
+		{
+			RTTI::Variant new_value = property.get_value(srcObject);
+			property.set_value(dstObject, new_value);
+		}
+	}
+
+	template<typename T>
+	static T* cloneObject(T& object)
+	{
+		RTTI::TypeInfo type = object.get_type();
+		T* copy = type.create<T>();
+		copyObject(object, *copy);
+
+		return copy;
+	}
+
 	struct DirectoryWatcher
 	{
 	public:
@@ -318,7 +340,7 @@ namespace nap
 	{
 	}
 
-	void ResourceManagerService::splitObjects(const ObjectList& sourceObjectList, ObjectList& targetObjectList, ObjectList& existingObjectList, ObjectList& newObjectList)
+	void ResourceManagerService::splitObjects(const ObjectList& sourceObjectList, ObjectList& targetObjectList, ExistingObjectMap& existingObjectMap, ObjectList& newObjectList)
 	{
 		for (Object* source_object : sourceObjectList)
 		{
@@ -336,7 +358,7 @@ namespace nap
 			}
 			else
 			{
-				existingObjectList.push_back(source_object);
+				existingObjectMap.insert({ source_object, existing_resource });
 				targetObjectList.push_back(existing_resource);
 			}
 		}
@@ -357,36 +379,33 @@ namespace nap
 		return -1;
 	}
 
-	bool ResourceManagerService::updateExistingObjects(const ObjectList& existingObjectList, UnresolvedPointerList& unresolvedPointers, InitResult& initResult)
+	bool ResourceManagerService::updateExistingObjects(const ExistingObjectMap& existingObjectMap, UnresolvedPointerList& unresolvedPointers, InitResult& initResult)
 	{
-		for (Object* existing_object : existingObjectList)
+		for (auto kvp : existingObjectMap)
 		{
-			Resource* resource = rtti_cast<Resource>(existing_object);
+			Resource* resource = rtti_cast<Resource>(kvp.first);
 			if (resource == nullptr)
 				continue;
 
-			std::string id = resource->mID;
+			Resource* existing_resource = rtti_cast<Resource>(kvp.second);
+			assert(existing_resource != nullptr);
 
-			Resource* existing_resource = findResource(id);
-			if (existing_resource != nullptr)
+			if (!initResult.check(existing_resource->get_type() == resource->get_type(), "Unable to update object, different types"))		// todo: actually support this properly
+				return false;
+
+			for (const RTTI::Property& property : resource->get_type().get_properties())
 			{
-				if (!initResult.check(existing_resource->get_type() == resource->get_type(), "Unable to update object, different types"))		// todo: actually support this properly
-					return false;
-
-				for (const RTTI::Property& property : resource->get_type().get_properties())
+				if (property.get_type().is_pointer())
 				{
-					if (property.get_type().is_pointer())
-					{
-						int unresolved_pointer_index = findUnresolvedPointer(unresolvedPointers, resource, property);
-						assert(unresolved_pointer_index != -1);
+					int unresolved_pointer_index = findUnresolvedPointer(unresolvedPointers, resource, property);
+					assert(unresolved_pointer_index != -1);
 
-						unresolvedPointers[unresolved_pointer_index].mObject = existing_resource;
-					}
-					else
-					{
-						RTTI::Variant new_value = property.get_value(*resource);
-						property.set_value(existing_resource, new_value);
-					}
+					unresolvedPointers[unresolved_pointer_index].mObject = existing_resource;
+				}
+				else
+				{
+					RTTI::Variant new_value = property.get_value(*resource);
+					property.set_value(existing_resource, new_value);
 				}
 			}
 		}
@@ -394,31 +413,84 @@ namespace nap
 		return true;
 	}
 
+	void ResourceManagerService::backupObjects(const ExistingObjectMap& objects, ExistingObjectMap& backups)
+	{
+		for (auto kvp : objects)
+		{
+			Object* source = kvp.first;				// read object
+			Object* target = kvp.second;			// object in ResourceMgr
+			Object* copy = cloneObject(*target);
+			backups.insert({ source, copy });		// Mapping from 'read object' to backup of file in ResourceMgr
+		}
+	}
+
+	void ResourceManagerService::restoreObjects(ExistingObjectMap& objects, const ExistingObjectMap& backups)
+	{
+		for (auto kvp : objects)
+		{
+			Object* source = kvp.first;
+			Object* target = kvp.second;
+
+			ExistingObjectMap::const_iterator backup = backups.find(source);
+			assert(backup != backups.end());
+
+			copyObject(*(backup->second), *target);
+		}
+	}
+
+
+	void ResourceManagerService::rollback(ExistingObjectMap& existingObjects, const ExistingObjectMap& backupObjects, const ObjectList& newObjects)
+	{
+		restoreObjects(existingObjects, backupObjects);
+		
+		for (auto kvp : backupObjects)
+		{
+			delete kvp.first;		// This is the existing object as read from disk
+			delete kvp.second;		// This is the backup
+		}
+
+		for (Object* object : newObjects)
+		{
+			nap::Resource* resource = rtti_cast<Resource>(object);
+			if (resource != nullptr)
+			{
+				if (findResource(resource->mID) != nullptr)
+					removeResource(resource->mID);
+			}
+
+			delete object;
+		}
+	}
+
 	bool ResourceManagerService::loadFile(const std::string& filename, nap::InitResult& initResult)
 	{
 		ObjectList read_objects;
 		UnresolvedPointerList unresolved_pointers;
 		JSONReader reader;
+
+		// Read objects from disk into 'read_objects'. If this call fails, any objects that were 
+		// successfully read are destructed, so no further action is required.
 		if (!reader.Read(filename, read_objects, unresolved_pointers, initResult))
 			return false;
 
+		ExistingObjectMap existing_objects;		// Mapping from 'read object' to 'existing object in ResourceMgr'
+		ObjectList new_objects;					// Objects not (yet) present in ResourceMgr
+		ObjectList target_objects;				// List of all objects as they eventually will be in ResourceMgr
+		splitObjects(read_objects, target_objects, existing_objects, new_objects);
 
-		ObjectList targetObjects;
-		ObjectList existingObjects;
-		ObjectList newObjects;
-		splitObjects(read_objects, targetObjects, existingObjects, newObjects);
+		// First make clones of objects so that we can restore them if errors occurs
+		ExistingObjectMap backup_objects;
+		backupObjects(existing_objects, backup_objects);
 
-		if (!updateExistingObjects(existingObjects, unresolved_pointers, initResult))
+		// Update attributes of objects already existing in ResourceMgr
+		if (!updateExistingObjects(existing_objects, unresolved_pointers, initResult))
 		{
-			for (Object* object : read_objects)
-				delete object;
-
-			// TODO: on failure, attributes of objects are in half updated state. fix
-
+			rollback(existing_objects, backup_objects, new_objects);
 			return false;
 		}
 
-		for (Object* object : newObjects)
+		// Add objects that were not yet present in ResourceMgr
+		for (Object* object : new_objects)
 		{
 			nap::Resource* resource = rtti_cast<Resource>(object);
 			if (resource == nullptr)
@@ -427,6 +499,7 @@ namespace nap
 			addResource(resource->mID, resource);
 		}
 
+		// Resolve all unresolved pointers against the ResourceMgr
 		for (const UnresolvedPointer& unresolved_pointer : unresolved_pointers)
 		{
 			nap::Resource* source_resource = rtti_cast<Resource>(unresolved_pointer.mObject);
@@ -435,42 +508,49 @@ namespace nap
 
 			Resource* target_resource = findResource(unresolved_pointer.mTargetID);
 			if (!initResult.check(target_resource != nullptr, "Unable to resolve link to object %s from attribute %s", unresolved_pointer.mTargetID.c_str(), unresolved_pointer.mProperty.get_name().data()))
+			{
+				rollback(existing_objects, backup_objects, new_objects);
 				return false;
+			}
 
  			bool succeeded = unresolved_pointer.mProperty.set_value(unresolved_pointer.mObject, target_resource);
  			if (!initResult.check(succeeded, "Failed to resolve pointer"))
- 				return false;
-
-			// TODO: on failure, attributes of objects are in half updated state + new object must be removed. fix
+			{
+				rollback(existing_objects, backup_objects, new_objects);
+				return false;
+			}
 		}
-
+		
+		// Init all objects
 		std::vector<Resource*> initted_objects;
 		bool init_success = true;
-		for (Object* object : targetObjects)
+		for (Object* object : target_objects)
 		{
 			nap::Resource* resource = rtti_cast<Resource>(object);
 			if (resource == nullptr)
 				continue;
+
+			initted_objects.push_back(resource);
 
 			if (!resource->init(initResult))
 			{
 				init_success = false;
 				break;
 			}
-
-			initted_objects.push_back(resource);
 		}
 
+		// In case of error, rollback all modifications done by attempted init calls
 		if (!init_success)
 		{
 			for (Resource* initted_object : initted_objects)
 				initted_object->finish(Resource::EFinishMode::ROLLBACK);
 
-			// TODO: on failure, attributes of objects are in half updated state + new object must be removed. fix
+			rollback(existing_objects, backup_objects, new_objects);
 			return false;
 		}
 
-		for (Object* object : targetObjects)
+		// Everything successful, commit changes
+		for (Object* object : target_objects)
 		{
 			nap::Resource* resource = rtti_cast<Resource>(object);
 			if (resource == nullptr)
@@ -511,6 +591,12 @@ namespace nap
 	{
 		assert(mResources.find(id) == mResources.end());
 		mResources.emplace(id, std::move(std::unique_ptr<Resource>(resource)));
+	}
+
+	void ResourceManagerService::removeResource(const std::string& id)
+	{
+		assert(mResources.find(id) != mResources.end());
+		mResources.erase(mResources.find(id));
 	}
 
 	Resource* ResourceManagerService::createResource(const RTTI::TypeInfo& type)
