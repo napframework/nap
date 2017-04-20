@@ -69,14 +69,18 @@ namespace nap
 		/**
 		*/
 		void addResource(const std::string& id, Resource* resource);
-
 		void removeResource(const std::string& id);
+
+		void addFileLink(const std::string& sourceFile, const std::string& targetFile);
 
 	private:
 		// Holds all currently loaded resources
-		std::map<std::string, std::unique_ptr<Resource>> mResources;
-		
+		std::map<std::string, std::unique_ptr<Resource>> mResources;		
 		std::set<std::string> mFilesToWatch;
+		
+		using FileLinkMap = std::map<std::string, std::set<std::string>>;
+		FileLinkMap mFileLinkMap;
+
 		DirectoryWatcher* mDirectoryWatcher;
 	};
 

@@ -103,7 +103,7 @@ namespace nap
 	class JSONReader
 	{
 	public:
-		bool Read(const std::string& filename, ObjectList& readObjects, UnresolvedPointerList& unresolvedPointers, nap::InitResult& initResult)
+		bool Read(const std::string& filename, ObjectList& readObjects, std::set<std::string>& linkedFiles, UnresolvedPointerList& unresolvedPointers, nap::InitResult& initResult)
 		{
 			std::ifstream in(filename, std::ios::in | std::ios::binary);
 			if (!initResult.check(in.good(), "Unable to open file %s", filename.c_str()))
@@ -129,8 +129,13 @@ namespace nap
 
 				if (start == std::string::npos)
 					start = 0;
+				else
+					start += 1;
+				
 				if (end == std::string::npos)
 					end = buffer.size();
+				else
+					end -= 1;
 
 				std::string error_line = buffer.substr(start, end - start);
 
@@ -164,7 +169,7 @@ namespace nap
 				Object* object = type_info.create<Object>();
 				readObjects.push_back(object);
 
-				if (!ReadObjectRecursive(*object, object_pos->value, unresolvedPointers, initResult))
+				if (!ReadObjectRecursive(*object, object_pos->value, unresolvedPointers, linkedFiles, initResult))
 				{
 					success = false;
 					break;
@@ -185,11 +190,12 @@ namespace nap
 			return success;
 		}
 
-		bool ReadObjectRecursive(RTTI::Instance object, const rapidjson::Value& jsonObject, UnresolvedPointerList& unresolvedPointers, InitResult& initResult)
+		bool ReadObjectRecursive(RTTI::Instance object, const rapidjson::Value& jsonObject, UnresolvedPointerList& unresolvedPointers, std::set<std::string>& linkedFiles, InitResult& initResult)
 		{
 			for (const RTTI::Property& property : object.get_derived_type().get_properties())
 			{
 				bool is_required = property.get_metadata(RTTI::EPropertyMetaData::Required).is_valid();
+				bool is_file_link = property.get_metadata(RTTI::EPropertyMetaData::FileLink).is_valid();
 
 				rapidjson::Value::ConstMemberIterator json_property = jsonObject.FindMember(property.get_name().data());
 				if (json_property == jsonObject.MemberEnd())
@@ -201,6 +207,9 @@ namespace nap
 
 				const RTTI::TypeInfo value_type = property.get_type();
 				const rapidjson::Value& json_value = json_property->value;
+
+				if (!initResult.check((is_file_link && value_type.get_raw_type().is_derived_from<std::string>()) || !is_file_link, "Encountered a non-string file link. This is not supported"))
+					return false;
 
 				if (value_type.is_pointer())
 				{
@@ -228,7 +237,7 @@ namespace nap
 							{
 								value = property.get_value(object);
 								auto array_view = value.create_array_view();
-								if (!ReadArrayRecursively(array_view, json_value, unresolvedPointers, initResult))
+								if (!ReadArrayRecursively(array_view, json_value, unresolvedPointers, linkedFiles, initResult))
 									return false;
 							}
 							else if (value_type.is_associative_container())
@@ -243,7 +252,7 @@ namespace nap
 						case rapidjson::kObjectType:
 						{
 							RTTI::Variant var = property.get_value(object);
-							if (!ReadObjectRecursive(var, json_value, unresolvedPointers, initResult))
+							if (!ReadObjectRecursive(var, json_value, unresolvedPointers, linkedFiles, initResult))
 								return false;
 							property.set_value(object, var);
 							break;
@@ -255,6 +264,12 @@ namespace nap
 								property.set_value(object, extracted_value);
 						}
 					}
+				}
+
+				if (is_file_link)
+				{
+					std::string target_file = property.get_value(object).get_value<std::string>();
+					linkedFiles.insert(toComparableFilename(target_file));
 				}
 			}
 
@@ -297,7 +312,7 @@ namespace nap
 			return RTTI::Variant();
 		}
 
-		bool ReadArrayRecursively(RTTI::VariantArray& array, const rapidjson::Value& jsonArray, UnresolvedPointerList& unresolvedPointers, InitResult& initResult)
+		bool ReadArrayRecursively(RTTI::VariantArray& array, const rapidjson::Value& jsonArray, UnresolvedPointerList& unresolvedPointers, std::set<std::string>& linkedFiles, InitResult& initResult)
 		{
 			array.set_size(jsonArray.Size());
 
@@ -312,14 +327,14 @@ namespace nap
 				if (json_element.IsArray())
 				{
 					RTTI::VariantArray sub_array = array.get_value_as_ref(i).create_array_view();
-					if (!ReadArrayRecursively(sub_array, json_element, unresolvedPointers, initResult))
+					if (!ReadArrayRecursively(sub_array, json_element, unresolvedPointers, linkedFiles, initResult))
 						return false;
 				}
 				else if (json_element.IsObject())
 				{
 					RTTI::Variant var_tmp = array.get_value_as_ref(i);
 					RTTI::Variant wrapped_var = var_tmp.extract_wrapped_value();
-					if (!ReadObjectRecursive(wrapped_var, json_element, unresolvedPointers, initResult))
+					if (!ReadObjectRecursive(wrapped_var, json_element, unresolvedPointers, linkedFiles, initResult))
 						return false;
 					array.set_value(i, wrapped_var);
 				}
@@ -466,11 +481,13 @@ namespace nap
 	{
 		ObjectList read_objects;
 		UnresolvedPointerList unresolved_pointers;
+		std::set<std::string> linkedFiles;
+		
 		JSONReader reader;
 
 		// Read objects from disk into 'read_objects'. If this call fails, any objects that were 
 		// successfully read are destructed, so no further action is required.
-		if (!reader.Read(filename, read_objects, unresolved_pointers, initResult))
+		if (!reader.Read(filename, read_objects, linkedFiles, unresolved_pointers, initResult))
 			return false;
 
 		ExistingObjectMap existing_objects;		// Mapping from 'read object' to 'existing object in ResourceMgr'
@@ -559,6 +576,9 @@ namespace nap
 			resource->finish(Resource::EFinishMode::COMMIT);
 		}
 
+		for (const std::string& linked_file : linkedFiles)
+			addFileLink(filename, linked_file);
+
 		mFilesToWatch.insert(toComparableFilename(filename));
 
 		return true;
@@ -569,10 +589,38 @@ namespace nap
 		std::string modified_file;
 		if (mDirectoryWatcher->update(modified_file))
 		{
-			if (mFilesToWatch.find(toComparableFilename(modified_file)) != mFilesToWatch.end())
+			modified_file = toComparableFilename(modified_file);
+
+			std::set<std::string> files_to_reload;
+			if (mFilesToWatch.find(modified_file) != mFilesToWatch.end())
 			{
-				nap::InitResult initResult;
-				loadFile(modified_file, initResult);
+				files_to_reload.insert(modified_file);
+			}
+			else
+			{
+				FileLinkMap::iterator existing = mFileLinkMap.find(modified_file);
+				if (existing != mFileLinkMap.end())
+				{
+					files_to_reload.insert(existing->second.begin(), existing->second.end());
+					
+				}
+			}
+
+			if (!files_to_reload.empty())
+			{
+				nap::Logger::info("Detected change to %s. Files needing reload:", modified_file.c_str());
+				for (const std::string& source_file : files_to_reload)
+					nap::Logger::info("\t-> %s", source_file.c_str());
+
+				for (const std::string& source_file : files_to_reload)
+				{
+					nap::InitResult initResult;
+					if (!loadFile(source_file, initResult))
+					{
+						nap::Logger::warn("Failed to reload %s: %s. See log for more information.", source_file.c_str(), initResult.mErrorString.c_str());
+						break;
+					}
+				}
 			}
 		}
 	}
@@ -597,6 +645,25 @@ namespace nap
 	{
 		assert(mResources.find(id) != mResources.end());
 		mResources.erase(mResources.find(id));
+	}
+
+	void ResourceManagerService::addFileLink(const std::string& sourceFile, const std::string& targetFile)
+	{
+		std::string source_file = toComparableFilename(sourceFile);
+		std::string target_file = toComparableFilename(targetFile);
+		
+		FileLinkMap::iterator existing = mFileLinkMap.find(targetFile);
+		if (existing == mFileLinkMap.end())
+		{
+			std::set<std::string> source_files;
+			source_files.insert(source_file);
+
+			mFileLinkMap.insert({ target_file, source_files });
+		}
+		else
+		{
+			existing->second.insert(source_file);
+		}
 	}
 
 	Resource* ResourceManagerService::createResource(const RTTI::TypeInfo& type)
