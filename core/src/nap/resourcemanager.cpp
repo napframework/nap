@@ -121,9 +121,15 @@ namespace nap
 		{
 			for (const RTTI::Property& property : object.get_derived_type().get_properties())
 			{
+				bool is_required = property.get_metadata(RTTI::EPropertyMetaData::Required).is_valid();
+
 				rapidjson::Value::ConstMemberIterator json_property = jsonObject.FindMember(property.get_name().data());
 				if (json_property == jsonObject.MemberEnd())
+				{
+					if (!initResult.check(!is_required, "Required property %s not found in object of type %s", property.get_name().data(), object.get_derived_type().get_name().data()))
+						return false;
 					continue;
+				}
 				
 				const RTTI::TypeInfo value_type = property.get_type();
 				const rapidjson::Value& json_value = json_property->value;
@@ -137,6 +143,10 @@ namespace nap
 						return false;
 
 					std::string target = std::string(json_value.GetString());
+
+					if (!initResult.check((is_required && !target.empty()) || (!is_required), "Required property %s not found in object of type %s", property.get_name().data(), object.get_derived_type().get_name().data()))
+						return false;
+
 					unresolvedPointers.push_back(UnresolvedPointer(object, property, target));
 				}
 				else

@@ -8,7 +8,7 @@
 RTTI_DEFINE_BASE(nap::TextureResource)
 
 RTTI_BEGIN_CLASS(nap::ImageResource)
-	RTTI_PROPERTY("mImagePath", &nap::ImageResource::mImagePath)
+	RTTI_PROPERTY_FILE_LINK("mImagePath", &nap::ImageResource::mImagePath)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(opengl::Texture2DSettings)
@@ -21,7 +21,7 @@ RTTI_BEGIN_CLASS(opengl::Texture2DSettings)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::MemoryTextureResource2D)
-	RTTI_PROPERTY("mSettings",			&nap::MemoryTextureResource2D::mSettings)
+	RTTI_PROPERTY_REQUIRED("mSettings",			&nap::MemoryTextureResource2D::mSettings)
 RTTI_END_CLASS
 
 RTTI_DEFINE(nap::ImageResource)

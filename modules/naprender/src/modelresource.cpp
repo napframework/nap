@@ -7,7 +7,7 @@
 #include <nmodelutils.h>
 
 RTTI_BEGIN_CLASS(nap::ModelResource)
-	RTTI_PROPERTY("mModelPath", &nap::ModelResource::mModelPath)
+	RTTI_PROPERTY_FILE_LINK("mModelPath", &nap::ModelResource::mModelPath)
 RTTI_END_CLASS
 
 namespace nap

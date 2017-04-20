@@ -11,6 +11,12 @@ namespace RTTI
 	using Instance = rttr::instance;
 	using VariantArray = rttr::variant_array_view;
 	using VariantMap = rttr::variant_associative_view;
+
+	enum class EPropertyMetaData
+	{
+		Required,
+		FileLink
+	};
 }
 
 // Macros
@@ -39,6 +45,12 @@ namespace RTTI
 
 #define RTTI_PROPERTY(Name, Member)						\
 						  .property(Name, Member)
+
+#define RTTI_PROPERTY_REQUIRED(Name, Member)			\
+						  .property(Name, Member)(metadata(RTTI::EPropertyMetaData::Required, true))
+
+#define RTTI_PROPERTY_FILE_LINK(Name, Member)			\
+						  .property(Name, Member)(metadata(RTTI::EPropertyMetaData::Required, true), metadata(RTTI::EPropertyMetaData::FileLink, true))
 
 #define RTTI_END_CLASS									\
 		;												\

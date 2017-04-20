@@ -2,8 +2,8 @@
 #include "rendertargetresource.h"
 
 RTTI_BEGIN_CLASS(nap::TextureRenderTargetResource2D)
-	RTTI_PROPERTY("mColorTexture", &nap::TextureRenderTargetResource2D::mColorTexture)
-	RTTI_PROPERTY("mDepthTexture", &nap::TextureRenderTargetResource2D::mDepthTexture)
+	RTTI_PROPERTY_REQUIRED("mColorTexture", &nap::TextureRenderTargetResource2D::mColorTexture)
+	RTTI_PROPERTY_REQUIRED("mDepthTexture", &nap::TextureRenderTargetResource2D::mDepthTexture)
 RTTI_END_CLASS
 
 namespace nap
