@@ -37,6 +37,71 @@ namespace nap
 		return copy;
 	}
 
+	template<typename T>
+	static bool areObjectsEqual(const T& objectA, const T& objectB)
+	{
+		RTTI::TypeInfo typeA = objectA.get_type();
+		assert(typeA == objectB.get_type());
+
+		for (const RTTI::Property& property : typeA.get_properties())
+		{
+			RTTI::Variant valueA = property.get_value(objectA);
+			RTTI::Variant valueB = property.get_value(objectB);
+			if (valueA != valueB)
+				return false;
+		}
+
+		return true;
+	}
+
+	struct FileLink
+	{
+		std::string mFilename;
+	};
+
+	struct ObjectLink
+	{
+		Object* mObject;
+	};
+
+	template<typename T>
+	void findFileLinks(const T& object, std::vector<FileLink>& fileLinks)
+	{
+		RTTI::TypeInfo type = object.get_type();
+
+		fileLinks.clear();
+
+		for (const RTTI::Property& property : type.get_properties())
+		{
+			if (property.get_metadata(RTTI::EPropertyMetaData::FileLink).is_valid())
+			{
+				FileLink link;
+				link.mFilename = property.get_value(object).convert<std::string>();
+				fileLinks.push_back(link);
+			}
+		}
+	}
+
+	template<typename T>
+	void findObjectLinks(const T& object, std::vector<ObjectLink>& objectLinks)
+	{
+		RTTI::TypeInfo type = object.get_type();
+
+		objectLinks.clear();
+
+		for (const RTTI::Property& property : type.get_properties())
+		{
+			if (property.get_type().is_pointer())
+			{
+				ObjectLink link;
+				link.mObject = property.get_value(object).convert<Object*>();
+				objectLinks.push_back(link);
+			}
+		}
+	}
+
+
+
 	struct DirectoryWatcher
 	{
 	public:
@@ -103,7 +168,7 @@ namespace nap
 	class JSONReader
 	{
 	public:
-		bool Read(const std::string& filename, ObjectList& readObjects, std::set<std::string>& linkedFiles, UnresolvedPointerList& unresolvedPointers, nap::InitResult& initResult)
+		bool Read(const std::string& filename, ObjectList& readObjects, std::vector<FileLink2>& linkedFiles, UnresolvedPointerList& unresolvedPointers, nap::InitResult& initResult)
 		{
 			std::ifstream in(filename, std::ios::in | std::ios::binary);
 			if (!initResult.check(in.good(), "Unable to open file %s", filename.c_str()))
@@ -190,7 +255,7 @@ namespace nap
 			return success;
 		}
 
-		bool ReadObjectRecursive(RTTI::Instance object, const rapidjson::Value& jsonObject, UnresolvedPointerList& unresolvedPointers, std::set<std::string>& linkedFiles, InitResult& initResult)
+		bool ReadObjectRecursive(RTTI::Instance object, const rapidjson::Value& jsonObject, UnresolvedPointerList& unresolvedPointers, std::vector<FileLink2>& linkedFiles, InitResult& initResult)
 		{
 			for (const RTTI::Property& property : object.get_derived_type().get_properties())
 			{
@@ -268,8 +333,10 @@ namespace nap
 
 				if (is_file_link)
 				{
-					std::string target_file = property.get_value(object).get_value<std::string>();
-					linkedFiles.insert(toComparableFilename(target_file));
+					FileLink2 file_link;
+					file_link.mSourceObjectID = object.try_convert<Object>()->mID;
+					file_link.mTargetFile = property.get_value(object).get_value<std::string>();;
+					linkedFiles.push_back(file_link);
 				}
 			}
 
@@ -312,7 +379,7 @@ namespace nap
 			return RTTI::Variant();
 		}
 
-		bool ReadArrayRecursively(RTTI::VariantArray& array, const rapidjson::Value& jsonArray, UnresolvedPointerList& unresolvedPointers, std::set<std::string>& linkedFiles, InitResult& initResult)
+		bool ReadArrayRecursively(RTTI::VariantArray& array, const rapidjson::Value& jsonArray, UnresolvedPointerList& unresolvedPointers, std::vector<FileLink2>& linkedFiles, InitResult& initResult)
 		{
 			array.set_size(jsonArray.Size());
 
@@ -477,11 +544,240 @@ namespace nap
 		}
 	}
 
+	struct ObjectGraphNode;
+
+	enum class EObjectLinkType : uint8
+	{
+		Object,
+		File
+	};
+
+	struct ObjectGraphEdge
+	{
+		EObjectLinkType mType;
+		ObjectGraphNode* mSource = nullptr;
+		ObjectGraphNode* mDest = nullptr;
+	};
+
+	struct ObjectGraphNode
+	{
+		int mDepth = -1;
+		Object* mObject = nullptr;
+		std::string mFile;
+		std::vector<ObjectGraphEdge*> mIncomingEdges;
+		std::vector<ObjectGraphEdge*> mOutgoingEdges;
+	};
+
+	class ObjectGraph
+	{
+	public:
+
+		~ObjectGraph()
+		{
+			// TODO: destruct
+		}
+
+		bool Build(const ObjectList& objectList, InitResult& initResult)
+		{
+			using ObjectMap = std::map<std::string, Object*>;
+			ObjectMap object_map;
+
+			// Build map from ID => object
+			for (Object* object : objectList)
+			{
+				object_map.insert({ object->mID, object });
+			}
+
+			for (Object* object : objectList)
+			{
+				ObjectGraphNode* source_node = GetOrCreateObjectNode(*object);
+
+				std::vector<ObjectLink> object_links;
+				findObjectLinks(*object, object_links);
+
+				for (ObjectLink& link : object_links)
+				{
+					ObjectMap::iterator dest_object = object_map.find(link.mObject->mID);
+					if (!initResult.check(dest_object != object_map.end(), "Object %s is pointing to an object that is not in the file!", object->mID.c_str()))
+						return false;
+
+					ObjectGraphEdge* edge = new ObjectGraphEdge();
+					edge->mType		= EObjectLinkType::Object;
+					edge->mSource	= source_node;
+					edge->mDest		= GetOrCreateObjectNode(*(dest_object->second));
+					edge->mDest->mIncomingEdges.push_back(edge);
+					edge->mSource->mOutgoingEdges.push_back(edge);
+					mEdges.push_back(edge);
+				}
+
+				std::vector<FileLink> file_links;
+				findFileLinks(*object, file_links);
+
+				for (FileLink& link : file_links)
+				{
+					ObjectGraphEdge* edge = new ObjectGraphEdge();
+					edge->mType		= EObjectLinkType::File;
+					edge->mSource	= source_node;
+					edge->mDest		= GetOrCreateFileNode(link.mFilename);
+					edge->mDest->mIncomingEdges.push_back(edge);
+					edge->mSource->mOutgoingEdges.push_back(edge);
+					mEdges.push_back(edge);
+				}
+			}
+			
+			// Assign graph depth
+			std::vector<ObjectGraphNode*> root_nodes;
+			for (auto kvp : mNodes)
+			{
+				ObjectGraphNode* node = kvp.second;
+				if (node->mIncomingEdges.empty())
+					root_nodes.push_back(node);
+			}
+
+			for (ObjectGraphNode* root_node : root_nodes)
+			{
+				assignDepthRecursive(root_node, 0);
+			}
+
+			return true;
+		}
+
+		ObjectGraphNode* GetNode(const std::string& ID)
+		{
+			NodeMap::iterator iter = mNodes.find(ID);
+			assert(iter != mNodes.end());
+			return iter->second;
+		}
+
+	private:
+
+		void assignDepthRecursive(ObjectGraphNode* node, int depth)
+		{
+			if (node->mDepth >= depth)
+				return;
+
+			for (ObjectGraphEdge* outgoing_edge : node->mOutgoingEdges)
+				assignDepthRecursive(outgoing_edge->mDest, depth + 1);
+
+			node->mDepth = depth;
+		}
+
+		ObjectGraphNode* GetOrCreateObjectNode(Object& object)
+		{
+			ObjectGraphNode* node;
+			NodeMap::iterator iter = mNodes.find(object.mID);
+			if (iter == mNodes.end())
+			{
+				node = new ObjectGraphNode();
+				node->mObject = &object;
+				mNodes.insert({ object.mID, node });
+			}
+			else
+			{
+				node = iter->second;
+			}
+
+			return node;
+		}
+
+		ObjectGraphNode* GetOrCreateFileNode(const std::string& filename)
+		{
+			ObjectGraphNode* node;
+			NodeMap::iterator iter = mNodes.find(filename);
+			if (iter == mNodes.end())
+			{
+				node = new ObjectGraphNode();
+				node->mObject = nullptr;
+				node->mFile = filename;
+				mNodes.insert({ filename, node });
+			}
+			else
+			{
+				node = iter->second;
+			}
+
+			return node;
+		}
+
+
+	private:
+		using NodeMap = std::map<std::string, ObjectGraphNode*>;
+		NodeMap mNodes;
+		std::vector<ObjectGraphEdge*> mEdges;
+	};
+
+	static void addIncomingObjectsRecursive(ObjectGraphNode* node, std::set<ObjectGraphNode*>& objectsToInit)
+	{
+		if (objectsToInit.find(node) != objectsToInit.end())
+			return;
+
+		objectsToInit.insert(node);
+
+		for (ObjectGraphEdge* incoming_edge : node->mIncomingEdges)
+			addIncomingObjectsRecursive(incoming_edge->mSource, objectsToInit);
+	}
+
+	bool ResourceManagerService::determineObjectsToInit(const ExistingObjectMap& existingObjects, const ExistingObjectMap& backupObjects, const ObjectList& newObjects, const std::vector<std::string>& modifiedObjectIDs, ObjectList& objectsToInit, InitResult& initResult)
+	{
+		// Build an object graph of all objects in the ResourceMgr
+		ObjectList all_objects;
+		for (auto& kvp : mResources)
+			all_objects.push_back(kvp.second.get());
+
+		ObjectGraph object_graph;
+		if (!object_graph.Build(all_objects, initResult))
+			return false;
+
+		// Build set of changed IDs. These are objects that have different attributes, and objects that are added.
+		// Note: we need to use the backup objects because the original have been copied over already.
+		std::set<std::string> dirty_objects;
+		for (auto kvp : backupObjects)
+		{
+			ExistingObjectMap::const_iterator existing_object = existingObjects.find(kvp.first);
+			assert(existing_object != existingObjects.end());
+
+			if (!areObjectsEqual(*existing_object->second, *kvp.second))
+				dirty_objects.insert(kvp.first->mID);
+		}
+
+		for (Object* new_object : newObjects)
+			dirty_objects.insert(new_object->mID);
+
+		for (const std::string& modified_object : modifiedObjectIDs)
+			dirty_objects.insert(modified_object);
+
+		std::set<ObjectGraphNode*> objects_to_init;
+		for (const std::string dirty_object : dirty_objects)
+		{
+			ObjectGraphNode* node = object_graph.GetNode(dirty_object);
+			addIncomingObjectsRecursive(node, objects_to_init);
+		}
+
+		std::vector<ObjectGraphNode*> sorted_objects_to_init;
+		for (ObjectGraphNode* object_to_init : objects_to_init)
+			sorted_objects_to_init.push_back(object_to_init);
+
+		std::sort(sorted_objects_to_init.begin(), sorted_objects_to_init.end(),
+				[](ObjectGraphNode* nodeA, ObjectGraphNode* nodeB) { return nodeA->mDepth > nodeB->mDepth; });
+
+		for (ObjectGraphNode* sorted_object_to_init : sorted_objects_to_init)
+			if (sorted_object_to_init->mObject != nullptr)
+				objectsToInit.push_back(sorted_object_to_init->mObject);
+
+		return true;
+	}
+
 	bool ResourceManagerService::loadFile(const std::string& filename, nap::InitResult& initResult)
+	{
+		std::vector<std::string> modified_object_ids;
+		return loadFile(filename, modified_object_ids, initResult);
+	}
+
+	bool ResourceManagerService::loadFile(const std::string& filename, const std::vector<std::string>& modifiedObjectIDs, nap::InitResult& initResult)
 	{
 		ObjectList read_objects;
 		UnresolvedPointerList unresolved_pointers;
-		std::set<std::string> linkedFiles;
+		std::vector<FileLink2> linkedFiles;
 		
 		JSONReader reader;
 
@@ -537,11 +833,18 @@ namespace nap
 				return false;
 			}
 		}
+
+		ObjectList objects_to_init;
+		if (!determineObjectsToInit(existing_objects, backup_objects, new_objects, modifiedObjectIDs, objects_to_init, initResult))
+		{
+			rollback(existing_objects, backup_objects, new_objects);
+			return false;
+		}
 		
 		// Init all objects
 		std::vector<Resource*> initted_objects;
 		bool init_success = true;
-		for (Object* object : target_objects)
+		for (Object* object : objects_to_init)
 		{
 			nap::Resource* resource = rtti_cast<Resource>(object);
 			if (resource == nullptr)
@@ -576,8 +879,10 @@ namespace nap
 			resource->finish(Resource::EFinishMode::COMMIT);
 		}
 
-		for (const std::string& linked_file : linkedFiles)
-			addFileLink(filename, linked_file);
+		for (const FileLink2& file_link : linkedFiles)
+		{
+			addFileLink(FileLinkSource(filename, file_link.mSourceObjectID), file_link.mTargetFile);
+		}
 
 		mFilesToWatch.insert(toComparableFilename(filename));
 
@@ -591,6 +896,7 @@ namespace nap
 		{
 			modified_file = toComparableFilename(modified_file);
 
+			std::vector<std::string> modified_objects;	// List of object marked as 'modified' because they are linking to a modified file
 			std::set<std::string> files_to_reload;
 			if (mFilesToWatch.find(modified_file) != mFilesToWatch.end())
 			{
@@ -601,8 +907,11 @@ namespace nap
 				FileLinkMap::iterator existing = mFileLinkMap.find(modified_file);
 				if (existing != mFileLinkMap.end())
 				{
-					files_to_reload.insert(existing->second.begin(), existing->second.end());
-					
+					for (FileLinkSource& file_link_source : existing->second)
+					{
+						modified_objects.push_back(file_link_source.mSourceObjectID);
+						files_to_reload.insert(file_link_source.mSourceFile);
+					}
 				}
 			}
 
@@ -615,7 +924,7 @@ namespace nap
 				for (const std::string& source_file : files_to_reload)
 				{
 					nap::InitResult initResult;
-					if (!loadFile(source_file, initResult))
+					if (!loadFile(source_file, modified_objects, initResult))
 					{
 						nap::Logger::warn("Failed to reload %s: %s. See log for more information.", source_file.c_str(), initResult.mErrorString.c_str());
 						break;
@@ -647,22 +956,22 @@ namespace nap
 		mResources.erase(mResources.find(id));
 	}
 
-	void ResourceManagerService::addFileLink(const std::string& sourceFile, const std::string& targetFile)
+	void ResourceManagerService::addFileLink(FileLinkSource source, const std::string& targetFile)
 	{
-		std::string source_file = toComparableFilename(sourceFile);
+		source.mSourceFile = toComparableFilename(source.mSourceFile);
 		std::string target_file = toComparableFilename(targetFile);
 		
 		FileLinkMap::iterator existing = mFileLinkMap.find(targetFile);
 		if (existing == mFileLinkMap.end())
 		{
-			std::set<std::string> source_files;
-			source_files.insert(source_file);
+			std::vector<FileLinkSource> source_files;
+			source_files.push_back(source);
 
 			mFileLinkMap.insert({ target_file, source_files });
 		}
 		else
 		{
-			existing->second.insert(source_file);
+			existing->second.push_back(source);
 		}
 	}
 
