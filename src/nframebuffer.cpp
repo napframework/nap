@@ -34,7 +34,7 @@ namespace opengl
 
 
 	// Creates the render target on the GPU 
-	void TextureRenderTarget2D::init(opengl::Texture2D& colorTexture, opengl::Texture2D& depthTexture)
+	void TextureRenderTarget2D::init(opengl::Texture2D& colorTexture, opengl::Texture2D& depthTexture, const glm::vec4& clearColor)
 	{
 		if (isAllocated())
 		{
@@ -43,6 +43,8 @@ namespace opengl
 		}
 
 		allocate(colorTexture, depthTexture);
+
+		setClearColor(clearColor);
 	}
 
 
