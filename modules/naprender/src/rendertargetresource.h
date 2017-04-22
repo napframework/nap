@@ -66,6 +66,8 @@ namespace nap
 		
 		// Depth texture to be used by the render target
 		MemoryTextureResource2D* mDepthTexture = nullptr;
+
+		glm::vec4 mClearColor;
 	};
 }
 

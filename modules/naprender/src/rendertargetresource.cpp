@@ -4,6 +4,15 @@
 RTTI_BEGIN_CLASS(nap::TextureRenderTargetResource2D)
 	RTTI_PROPERTY_REQUIRED("mColorTexture", &nap::TextureRenderTargetResource2D::mColorTexture)
 	RTTI_PROPERTY_REQUIRED("mDepthTexture", &nap::TextureRenderTargetResource2D::mDepthTexture)
+	RTTI_PROPERTY("mClearColor", &nap::TextureRenderTargetResource2D::mClearColor)
+RTTI_END_CLASS
+
+// TODO: move glm rtti definitions to some central place
+RTTI_BEGIN_CLASS(glm::vec4)
+	RTTI_PROPERTY("x", &glm::vec4::x)
+	RTTI_PROPERTY("y", &glm::vec4::y)
+	RTTI_PROPERTY("z", &glm::vec4::z)
+	RTTI_PROPERTY("w", &glm::vec4::w)
 RTTI_END_CLASS
 
 namespace nap
@@ -20,13 +29,10 @@ namespace nap
 		mPrevTextureRenderTarget = mTextureRenderTarget;
 		mTextureRenderTarget = new opengl::TextureRenderTarget2D;
 
-		mTextureRenderTarget->init((opengl::Texture2D&)mColorTexture->getTexture(), (opengl::Texture2D&)mDepthTexture->getTexture());
+		mTextureRenderTarget->init((opengl::Texture2D&)mColorTexture->getTexture(), (opengl::Texture2D&)mDepthTexture->getTexture(), mClearColor);
 		if (!initResult.check(mTextureRenderTarget->isValid(), "unable to validate frame buffer: %s", mID.c_str()))
 			return false;
-
-		if (mPrevTextureRenderTarget)
-			mTextureRenderTarget->setClearColor(mPrevTextureRenderTarget->getClearColor()); // HACK
-
+		
 		return true;
 	}
 

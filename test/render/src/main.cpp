@@ -556,8 +556,6 @@ bool init(nap::Core& core)
 	}
 #endif
 
-	textureRenderTarget->getTarget().setClearColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-
 	// Set render states
 	nap::RenderState& render_state = renderService->getRenderState();
 	render_state.mEnableDepthTest = true;

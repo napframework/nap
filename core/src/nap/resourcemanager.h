@@ -5,34 +5,12 @@
 #include "object.h"
 #include "service.h"
 #include "resource.h"
+#include "jsonreader.h"
 #include <map>
 
 namespace nap
 {
-	struct DirectoryWatcher;
-
-	struct UnresolvedPointer
-	{
-		UnresolvedPointer(Object* object, const RTTI::Property& property, const std::string& targetID) :
-			mObject(object),
-			mProperty(property),
-			mTargetID(targetID)
-		{
-		}
-
-		Object* mObject;
-		RTTI::Property mProperty;
-		std::string mTargetID;
-	};
-
-	struct FileLink2
-	{
-		std::string mSourceObjectID;
-		std::string mTargetFile;
-	};
-
-	using ObjectList = std::vector<nap::Object*>;
-	using UnresolvedPointerList = std::vector<UnresolvedPointer>;
+	class DirectoryWatcher;
 
 	/**
 	 * An AssetManager deals with loading and caching resources.
@@ -76,8 +54,9 @@ namespace nap
 			std::string mSourceFile;
 			std::string mSourceObjectID;
 		};
-
+		
 		using ExistingObjectMap = std::map<Object*, Object*>;
+
 		void splitObjects(const ObjectList& sourceObjectList, ObjectList& targetObjectList, ExistingObjectMap& existingObjectMap, ObjectList& newObjectList);
 		bool determineObjectsToInit(const ExistingObjectMap& existingObjects, const ExistingObjectMap& backupObjects, const ObjectList& newObjects, const std::vector<std::string>& modifiedObjectIDs, ObjectList& objectsToInit, InitResult& initResult);
 		bool updateExistingObjects(const ExistingObjectMap& existingObjectMap, UnresolvedPointerList& unresolvedPointers, InitResult& initResult);
