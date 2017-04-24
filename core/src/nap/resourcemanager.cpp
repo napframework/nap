@@ -267,99 +267,182 @@ namespace nap
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// ResourceManagerService::ObjectRestorer
+	// ObjectRestorer
 	//////////////////////////////////////////////////////////////////////////
 
-
-	ResourceManagerService::ObjectRestorer::ObjectRestorer(ResourceManagerService& resourceManagerService) :
-		mResourceManagerService(resourceManagerService)
+	/*
+	* This is a helper object for the loading of objects that has two purposes:
+	* 1) To capture state and perform a rollback of state on destruction.
+	* 2) To perform memory management of state.
+	*
+	* On init(), objects are separated into lists that determine whether objects already existed in the manager.
+	* for objects that already existed, a clone is created.
+	* On destruction, the following things take place:
+	*	- If 'restore' is enabled, objects from mExistingObjectMap are restored by copying rtti attributes from the clone back into the source object.
+	*	- If 'restore' is enabled, Objects from the mNewObjects array will be removed from the manager (if they exist).
+	*	- File objects are destructed
+	*	- Cloned objects are destructed
+	* To disable restoring of the objects, use enableRestore(false).
+	*/
+	class ObjectRestorer final
 	{
-	}
+	public:
 
-
-	void ResourceManagerService::ObjectRestorer::processFileObjects()
-	{
-		// Split file objects into new/existing/target lists
-		for (Object* source_object : mFileObjects)
+		ObjectRestorer(ResourceManagerService& resourceManagerService) :
+			mResourceManagerService(resourceManagerService)
 		{
-			Resource* resource = rtti_cast<Resource>(source_object);
-			if (resource == nullptr)
-				continue;
+		}
 
-			std::string id = resource->mID;
 
-			Resource* existing_resource = mResourceManagerService.findResource(id);
-			if (existing_resource == nullptr)
+		ObjectRestorer::~ObjectRestorer()
+		{
+			if (mRestore)
 			{
-				mNewObjects.push_back(source_object);
-				mTargetObjects.push_back(source_object);
+				// Copy attributes from clones back to the original objects
+				for (auto kvp : mExistingObjects)
+				{
+					Object* source = kvp.first;
+					Object* target = kvp.second;
+
+					ExistingObjectMap::const_iterator backup = mClonedObjects.find(source);
+					assert(backup != mClonedObjects.end());
+
+					rttiCopyObject(*(backup->second), *target);
+				}
+
+				// Remove objects from resource manager if they were added
+				for (Object* object : mNewObjects)
+				{
+					nap::Resource* resource = rtti_cast<Resource>(object);
+					if (resource != nullptr)
+					{
+						if (mResourceManagerService.findResource(resource->mID) != nullptr)
+							mResourceManagerService.removeResource(resource->mID);
+					}
+				}
+
+				// Delete all file objects
+				for (Object* file_object : mFileObjects)
+					delete file_object;
+
+				// Delete clones
+				for (auto kvp : mClonedObjects)
+					delete kvp.second;
+
 			}
 			else
 			{
-				mExistingObjects.insert({ source_object, existing_resource });
-				mTargetObjects.push_back(existing_resource);
-			}
-		}
-
-		// Make backups of all existing objects by cloning them
-		for (auto kvp : mExistingObjects)
-		{
-			Object* source = kvp.first;					// read object
-			Object* target = kvp.second;				// object in ResourceMgr
-			Object* copy = rttiCloneObject(*target);
-			mClonedObjects.insert({ source, copy });	// Mapping from 'read object' to backup of file in ResourceMgr
-		}
-	}
-
-
-	ResourceManagerService::ObjectRestorer::~ObjectRestorer()
-	{
-		if (mRestore)
-		{
-			// Copy attributes from clones back to the original objects
-			for (auto kvp : mExistingObjects)
-			{
-				Object* source = kvp.first;
-				Object* target = kvp.second;
-
-				ExistingObjectMap::const_iterator backup = mClonedObjects.find(source);
-				assert(backup != mClonedObjects.end());
-
-				rttiCopyObject(*(backup->second), *target);
-			}
-
-			// Remove objects from resource manager if they were added
-			for (Object* object : mNewObjects)
-			{
-				nap::Resource* resource = rtti_cast<Resource>(object);
-				if (resource != nullptr)
+				// Destroy all clones and the file objects of the existing objects.
+				// Notice that we do not touch the file objects of the new objects, as they 
+				// are added to the resource manager!
+				for (auto kvp : mClonedObjects)
 				{
-					if (mResourceManagerService.findResource(resource->mID) != nullptr)
-						mResourceManagerService.removeResource(resource->mID);
+					delete kvp.first;		// This is the file object of the existing object
+					delete kvp.second;		// This is the backup
+				}
+			}
+		}
+
+
+		/**
+		* Splits file objects into existing/new/target lists. Clones existing objects.
+		*/
+		void processFileObjects()
+		{
+			// Split file objects into new/existing/target lists
+			for (Object* source_object : mFileObjects)
+			{
+				Resource* resource = rtti_cast<Resource>(source_object);
+				if (resource == nullptr)
+					continue;
+
+				std::string id = resource->mID;
+
+				Resource* existing_resource = mResourceManagerService.findResource(id);
+				if (existing_resource == nullptr)
+				{
+					mNewObjects.push_back(source_object);
+					mTargetObjects.push_back(source_object);
+				}
+				else
+				{
+					mExistingObjects.insert({ source_object, existing_resource });
+					mTargetObjects.push_back(existing_resource);
 				}
 			}
 
-			// Delete all file objects
-			for (Object* file_object : mFileObjects)
-				delete file_object;
-
-			// Delete clones
-			for (auto kvp : mClonedObjects)
-				delete kvp.second;
-
-		}
-		else
-		{
-			// Destroy all clones and the file objects of the existing objects.
-			// Notice that we do not touch the file objects of the new objects, as they 
-			// are added to the resource manager!
-			for (auto kvp : mClonedObjects)
+			// Make backups of all existing objects by cloning them
+			for (auto kvp : mExistingObjects)
 			{
-				delete kvp.first;		// This is the file object of the existing object
-				delete kvp.second;		// This is the backup
+				Object* source = kvp.first;					// read object
+				Object* target = kvp.second;				// object in ResourceMgr
+				Object* copy = rttiCloneObject(*target);
+				mClonedObjects.insert({ source, copy });	// Mapping from 'read object' to backup of file in ResourceMgr
 			}
 		}
-	}
+
+
+		/**
+		* Enables or disables restoring of attributes on destruction. Default is set to true.
+		*/
+		void enableRestore(bool inRestore) 
+		{ 
+			mRestore = inRestore; 
+		}
+
+
+		/**
+		* Returns objects cloned from existing objects during init().
+		*/
+		const ExistingObjectMap& getClonedObjects() const 
+		{ 
+			return mClonedObjects; 
+		}
+
+
+		/**
+		* Returns objects existing in the resource manager, as determined during init().
+		*/
+		ExistingObjectMap& getExistingObjects() 
+		{ 
+			return mExistingObjects; 
+		}
+
+
+		/**
+		* Returns objects as read from file.
+		*/
+		ObjectList& getFileObjects() 
+		{ 
+			return mFileObjects; 
+		}
+
+
+		/**
+		* Returns objects not present in the resource manager, as determined during init().
+		*/
+		ObjectList& getNewObjects() 
+		{ 
+			return mNewObjects; 
+		}
+
+
+		/**
+		* Returns target of the object as it will eventually be in the manager: for existing objects,
+		* this is not the file object, but the file already existing in the manager. For new objects,
+		* it is the same object as read from the file.
+		*/
+		ObjectList& getTargetObjects() { return mTargetObjects; }
+
+	private:
+		ResourceManagerService&		mResourceManagerService;
+		ObjectList					mFileObjects;				// Objects as read from file
+		ExistingObjectMap			mExistingObjects;			// Mapping from 'file object' to 'existing object in ResourceMgr'
+		ObjectList					mNewObjects;				// Objects not (yet) present in ResourceMgr
+		ObjectList					mTargetObjects;				// List of all objects as they eventually will be in ResourceMgr
+		ExistingObjectMap			mClonedObjects;				// Objects as cloned from existing objects during init()
+		bool						mRestore = true;			// Flag indicating whether to enable or disable restoring during destruction
+	};
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -367,15 +450,15 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 
-	/**
-	* ctor
-	*/
 	ResourceManagerService::ResourceManagerService() :
 		mDirectoryWatcher(new DirectoryWatcher())
 	{
 	}
 
 
+	/**
+	* Copies rtti attributes from File object to object existing in the manager. Patches the unresolved pointer list so the it contains the correct object.
+	*/
 	bool ResourceManagerService::updateExistingObjects(const ExistingObjectMap& existingObjectMap, UnresolvedPointerList& unresolvedPointers, InitResult& initResult)
 	{
 		for (auto kvp : existingObjectMap)
@@ -394,9 +477,9 @@ namespace nap
 			{
 				if (property.get_type().is_pointer())
 				{
+					// Patch the mObject member: it should not use the File object anymore, but the object from the manager
 					int unresolved_pointer_index = findUnresolvedPointer(unresolvedPointers, resource, property);
 					assert(unresolved_pointer_index != -1);
-
 					unresolvedPointers[unresolved_pointer_index].mObject = existing_resource;
 				}
 				else
@@ -410,7 +493,13 @@ namespace nap
 		return true;
 	}
 
-	bool ResourceManagerService::determineObjectsToInit(const ExistingObjectMap& existingObjects, const ExistingObjectMap& backupObjects, const ObjectList& newObjects, const std::vector<std::string>& modifiedObjectIDs, ObjectList& objectsToInit, InitResult& initResult)
+
+	/**
+	* Builds an object graph of all objects currently in the manager. Then, from all objects that are effectively changed (determined by an RTTI diff), it traverses 
+	* the object graph to find the minimum set of objects that requires an init. Finally, the list of objects is sorted on object graph depth so that the init() order
+	* is correct.
+	*/
+	bool ResourceManagerService::determineObjectsToInit(const ExistingObjectMap& existingObjects, const ExistingObjectMap& clonedObjects, const ObjectList& newObjects, const std::vector<std::string>& modifiedObjectIDs, ObjectList& objectsToInit, InitResult& initResult)
 	{
 		// Build an object graph of all objects in the ResourceMgr
 		ObjectList all_objects;
@@ -422,9 +511,9 @@ namespace nap
 			return false;
 
 		// Build set of changed IDs. These are objects that have different attributes, and objects that are added.
-		// Note: we need to use the backup objects because the original have been copied over already.
+		// Note: we need to use the cloned objects because the original have been copied over already.
 		std::set<std::string> dirty_objects;
-		for (auto kvp : backupObjects)
+		for (auto kvp : clonedObjects)
 		{
 			ExistingObjectMap::const_iterator existing_object = existingObjects.find(kvp.first);
 			assert(existing_object != existingObjects.end());
@@ -433,12 +522,16 @@ namespace nap
 				dirty_objects.insert(kvp.first->mID);
 		}
 
+		// All new objects need an init
 		for (Object* new_object : newObjects)
 			dirty_objects.insert(new_object->mID);
 
+		// Any objects that are passed in as 'dirty' from the outside need to have their init as well
+		// These are currently objects that point to a file that is changed
 		for (const std::string& modified_object : modifiedObjectIDs)
 			dirty_objects.insert(modified_object);
 
+		// Traverse graph for incoming links and add all of them
 		std::set<ObjectGraph::Node*> objects_to_init;
 		for (const std::string dirty_object : dirty_objects)
 		{
@@ -446,6 +539,7 @@ namespace nap
 			addIncomingObjectsRecursive(node, objects_to_init);
 		}
 
+		// Sort on graph depth for the correct init() order
 		std::vector<ObjectGraph::Node*> sorted_objects_to_init;
 		for (ObjectGraph::Node* object_to_init : objects_to_init)
 			sorted_objects_to_init.push_back(object_to_init);
@@ -513,11 +607,12 @@ namespace nap
 				return false;
 		}
 
+		// Find out what objects to init and in what order to init them
 		ObjectList objects_to_init;
 		if (!determineObjectsToInit(object_restorer.getExistingObjects(), object_restorer.getClonedObjects(), object_restorer.getNewObjects(), modifiedObjectIDs, objects_to_init, initResult))
 			return false;
 		
-		// Init all objects
+		// Init all objects in the correct order
 		std::vector<Resource*> initted_objects;
 		bool init_success = true;
 		for (Object* object : objects_to_init)
@@ -567,6 +662,7 @@ namespace nap
 		return true;
 	}
 
+
 	void ResourceManagerService::checkForFileChanges()
 	{
 		std::string modified_file;
@@ -612,6 +708,7 @@ namespace nap
 		}
 	}
 
+
 	Resource* ResourceManagerService::findResource(const std::string& id)
 	{
 		const auto& it = mResources.find(id);
@@ -622,17 +719,20 @@ namespace nap
 		return nullptr;
 	}
 
+
 	void ResourceManagerService::addResource(const std::string& id, Resource* resource)
 	{
 		assert(mResources.find(id) == mResources.end());
 		mResources.emplace(id, std::move(std::unique_ptr<Resource>(resource)));
 	}
 
+
 	void ResourceManagerService::removeResource(const std::string& id)
 	{
 		assert(mResources.find(id) != mResources.end());
 		mResources.erase(mResources.find(id));
 	}
+
 
 	void ResourceManagerService::addFileLink(FileLinkSource source, const std::string& targetFile)
 	{
@@ -652,6 +752,7 @@ namespace nap
 			existing->second.push_back(source);
 		}
 	}
+
 
 	Resource* ResourceManagerService::createResource(const RTTI::TypeInfo& type)
 	{
