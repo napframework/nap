@@ -224,51 +224,27 @@ namespace nap
 			return false;
 		}
 
-		bool success = true;
 		for (auto& object_pos = document.MemberBegin(); object_pos < document.MemberEnd(); ++object_pos)
 		{
 			const char* typeName = object_pos->name.GetString();
 			RTTI::TypeInfo type_info = RTTI::TypeInfo::get_by_name(typeName);
 			if (!initResult.check(type_info.is_valid(), "Unknown object type %s encountered.", typeName))
-			{
-				success = false;
-				break;
-			}
+				return false;
 
 			if (!initResult.check(type_info.can_create_instance(), "Unable to instantiate object of type %s.", typeName))
-			{
-				success = false;
-				break;
-			}
+				return false;
 
 			if (!initResult.check(type_info.is_derived_from(RTTI_OF(nap::Object)), "Unable to instantiate object %s. Class is not derived from Object.", typeName))
-			{
-				success = false;
-				break;
-			}
+				return false;
 
 			Object* object = type_info.create<Object>();
 			readObjects.push_back(object);
 
 			if (!readObjectRecursive(*object, object_pos->value, unresolvedPointers, linkedFiles, initResult))
-			{
-				success = false;
-				break;
-			}
+				return false;
 		}
 
-		if (!success)
-		{
-			for (Object* object : readObjects)
-			{
-				delete object;
-			}
-
-			readObjects.clear();
-			unresolvedPointers.clear();
-		}
-
-		return success;
+		return true;
 	}
 
 }

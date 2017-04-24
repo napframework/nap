@@ -267,18 +267,20 @@ namespace nap
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// ResourceManagerService
+	// ResourceManagerService::ObjectRestorer
 	//////////////////////////////////////////////////////////////////////////
 
-	ResourceManagerService::ResourceManagerService() :
-		mDirectoryWatcher(new DirectoryWatcher())
+
+	ResourceManagerService::ObjectRestorer::ObjectRestorer(ResourceManagerService& resourceManagerService) :
+		mResourceManagerService(resourceManagerService)
 	{
 	}
 
 
-	void ResourceManagerService::splitObjects(const ObjectList& sourceObjectList, ObjectList& targetObjectList, ExistingObjectMap& existingObjectMap, ObjectList& newObjectList)
+	void ResourceManagerService::ObjectRestorer::processFileObjects()
 	{
-		for (Object* source_object : sourceObjectList)
+		// Split file objects into new/existing/target lists
+		for (Object* source_object : mFileObjects)
 		{
 			Resource* resource = rtti_cast<Resource>(source_object);
 			if (resource == nullptr)
@@ -286,18 +288,91 @@ namespace nap
 
 			std::string id = resource->mID;
 
-			Resource* existing_resource = findResource(id);
+			Resource* existing_resource = mResourceManagerService.findResource(id);
 			if (existing_resource == nullptr)
 			{
-				newObjectList.push_back(source_object);
-				targetObjectList.push_back(source_object);
+				mNewObjects.push_back(source_object);
+				mTargetObjects.push_back(source_object);
 			}
 			else
 			{
-				existingObjectMap.insert({ source_object, existing_resource });
-				targetObjectList.push_back(existing_resource);
+				mExistingObjects.insert({ source_object, existing_resource });
+				mTargetObjects.push_back(existing_resource);
 			}
 		}
+
+		// Make backups of all existing objects by cloning them
+		for (auto kvp : mExistingObjects)
+		{
+			Object* source = kvp.first;					// read object
+			Object* target = kvp.second;				// object in ResourceMgr
+			Object* copy = rttiCloneObject(*target);
+			mClonedObjects.insert({ source, copy });	// Mapping from 'read object' to backup of file in ResourceMgr
+		}
+	}
+
+
+	ResourceManagerService::ObjectRestorer::~ObjectRestorer()
+	{
+		if (mRestore)
+		{
+			// Copy attributes from clones back to the original objects
+			for (auto kvp : mExistingObjects)
+			{
+				Object* source = kvp.first;
+				Object* target = kvp.second;
+
+				ExistingObjectMap::const_iterator backup = mClonedObjects.find(source);
+				assert(backup != mClonedObjects.end());
+
+				rttiCopyObject(*(backup->second), *target);
+			}
+
+			// Remove objects from resource manager if they were added
+			for (Object* object : mNewObjects)
+			{
+				nap::Resource* resource = rtti_cast<Resource>(object);
+				if (resource != nullptr)
+				{
+					if (mResourceManagerService.findResource(resource->mID) != nullptr)
+						mResourceManagerService.removeResource(resource->mID);
+				}
+			}
+
+			// Delete all file objects
+			for (Object* file_object : mFileObjects)
+				delete file_object;
+
+			// Delete clones
+			for (auto kvp : mClonedObjects)
+				delete kvp.second;
+
+		}
+		else
+		{
+			// Destroy all clones and the file objects of the existing objects.
+			// Notice that we do not touch the file objects of the new objects, as they 
+			// are added to the resource manager!
+			for (auto kvp : mClonedObjects)
+			{
+				delete kvp.first;		// This is the file object of the existing object
+				delete kvp.second;		// This is the backup
+			}
+		}
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// ResourceManagerService
+	//////////////////////////////////////////////////////////////////////////
+
+
+	/**
+	* ctor
+	*/
+	ResourceManagerService::ResourceManagerService() :
+		mDirectoryWatcher(new DirectoryWatcher())
+	{
 	}
 
 
@@ -334,58 +409,6 @@ namespace nap
 
 		return true;
 	}
-
-
-	void ResourceManagerService::backupObjects(const ExistingObjectMap& objects, ExistingObjectMap& backups)
-	{
-		for (auto kvp : objects)
-		{
-			Object* source = kvp.first;				// read object
-			Object* target = kvp.second;			// object in ResourceMgr
-			Object* copy = rttiCloneObject(*target);
-			backups.insert({ source, copy });		// Mapping from 'read object' to backup of file in ResourceMgr
-		}
-	}
-
-
-	void ResourceManagerService::restoreObjects(ExistingObjectMap& objects, const ExistingObjectMap& backups)
-	{
-		for (auto kvp : objects)
-		{
-			Object* source = kvp.first;
-			Object* target = kvp.second;
-
-			ExistingObjectMap::const_iterator backup = backups.find(source);
-			assert(backup != backups.end());
-
-			rttiCopyObject(*(backup->second), *target);
-		}
-	}
-
-
-	void ResourceManagerService::rollback(ExistingObjectMap& existingObjects, const ExistingObjectMap& backupObjects, const ObjectList& newObjects)
-	{
-		restoreObjects(existingObjects, backupObjects);
-		
-		for (auto kvp : backupObjects)
-		{
-			delete kvp.first;		// This is the existing object as read from disk
-			delete kvp.second;		// This is the backup
-		}
-
-		for (Object* object : newObjects)
-		{
-			nap::Resource* resource = rtti_cast<Resource>(object);
-			if (resource != nullptr)
-			{
-				if (findResource(resource->mID) != nullptr)
-					removeResource(resource->mID);
-			}
-
-			delete object;
-		}
-	}
-
 
 	bool ResourceManagerService::determineObjectsToInit(const ExistingObjectMap& existingObjects, const ExistingObjectMap& backupObjects, const ObjectList& newObjects, const std::vector<std::string>& modifiedObjectIDs, ObjectList& objectsToInit, InitResult& initResult)
 	{
@@ -437,41 +460,35 @@ namespace nap
 		return true;
 	}
 
+
 	bool ResourceManagerService::loadFile(const std::string& filename, nap::InitResult& initResult)
 	{
 		std::vector<std::string> modified_object_ids;
 		return loadFile(filename, modified_object_ids, initResult);
 	}
 
+
 	bool ResourceManagerService::loadFile(const std::string& filename, const std::vector<std::string>& modifiedObjectIDs, nap::InitResult& initResult)
 	{
-		ObjectList read_objects;
 		UnresolvedPointerList unresolved_pointers;
 		std::vector<FileLink> linkedFiles;
-		
+
+		ObjectRestorer object_restorer(*this);
+
 		// Read objects from disk into 'read_objects'. If this call fails, any objects that were 
 		// successfully read are destructed, so no further action is required.
-		if (!readJSonFile(filename, read_objects, linkedFiles, unresolved_pointers, initResult))
+		if (!readJSonFile(filename, object_restorer.getFileObjects(), linkedFiles, unresolved_pointers, initResult))
 			return false;
 
-		ExistingObjectMap existing_objects;		// Mapping from 'read object' to 'existing object in ResourceMgr'
-		ObjectList new_objects;					// Objects not (yet) present in ResourceMgr
-		ObjectList target_objects;				// List of all objects as they eventually will be in ResourceMgr
-		splitObjects(read_objects, target_objects, existing_objects, new_objects);
-
-		// First make clones of objects so that we can restore them if errors occurs
-		ExistingObjectMap backup_objects;
-		backupObjects(existing_objects, backup_objects);
+		// Split the read objects into separate lists and clone the existing objects
+		object_restorer.processFileObjects();
 
 		// Update attributes of objects already existing in ResourceMgr
-		if (!updateExistingObjects(existing_objects, unresolved_pointers, initResult))
-		{
-			rollback(existing_objects, backup_objects, new_objects);
+		if (!updateExistingObjects(object_restorer.getExistingObjects(), unresolved_pointers, initResult))
 			return false;
-		}
 
 		// Add objects that were not yet present in ResourceMgr
-		for (Object* object : new_objects)
+		for (Object* object : object_restorer.getNewObjects())
 		{
 			nap::Resource* resource = rtti_cast<Resource>(object);
 			if (resource == nullptr)
@@ -489,25 +506,16 @@ namespace nap
 
 			Resource* target_resource = findResource(unresolved_pointer.mTargetID);
 			if (!initResult.check(target_resource != nullptr, "Unable to resolve link to object %s from attribute %s", unresolved_pointer.mTargetID.c_str(), unresolved_pointer.mProperty.get_name().data()))
-			{
-				rollback(existing_objects, backup_objects, new_objects);
 				return false;
-			}
 
  			bool succeeded = unresolved_pointer.mProperty.set_value(unresolved_pointer.mObject, target_resource);
  			if (!initResult.check(succeeded, "Failed to resolve pointer"))
-			{
-				rollback(existing_objects, backup_objects, new_objects);
 				return false;
-			}
 		}
 
 		ObjectList objects_to_init;
-		if (!determineObjectsToInit(existing_objects, backup_objects, new_objects, modifiedObjectIDs, objects_to_init, initResult))
-		{
-			rollback(existing_objects, backup_objects, new_objects);
+		if (!determineObjectsToInit(object_restorer.getExistingObjects(), object_restorer.getClonedObjects(), object_restorer.getNewObjects(), modifiedObjectIDs, objects_to_init, initResult))
 			return false;
-		}
 		
 		// Init all objects
 		std::vector<Resource*> initted_objects;
@@ -533,12 +541,14 @@ namespace nap
 			for (Resource* initted_object : initted_objects)
 				initted_object->finish(Resource::EFinishMode::ROLLBACK);
 
-			rollback(existing_objects, backup_objects, new_objects);
 			return false;
 		}
 
+		// Everything was successful. Tell the restorer not to perform a rollback of the state.
+		object_restorer.enableRestore(false);
+
 		// Everything successful, commit changes
-		for (Object* object : target_objects)
+		for (Object* object : object_restorer.getTargetObjects())
 		{
 			nap::Resource* resource = rtti_cast<Resource>(object);
 			if (resource == nullptr)
