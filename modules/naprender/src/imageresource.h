@@ -36,6 +36,34 @@ namespace nap
 		virtual bool unbind() 				{ return getTexture().unbind(); }
 	};
 
+	/**
+	* 2D Texture resource that only has an in-memory representation.
+	*/
+	class MemoryTextureResource2D : public TextureResource
+	{
+		RTTI_ENABLE_DERIVED_FROM(TextureResource)
+	public:
+
+		/**
+		* Initializes 2D texture. Additionally a custom display name can be provided.
+		*/
+		void init(const opengl::Texture2DSettings& settings, const std::string& displayName = "MemoryTexture2D");
+
+		/**
+		* Returns 2D texture object
+		*/
+		virtual const opengl::BaseTexture& getTexture() const override;
+
+		/**
+		* Returns custom display name
+		*/
+		virtual const std::string& getDisplayName() const override				{ return mDisplayName;  }
+
+	private:
+		opengl::Texture2D mTexture;		// Texture as created during init
+		std::string mDisplayName;		// Custom display name
+	};
+
 
 	/**
 	 * Wraps an opengl image 
@@ -110,5 +138,6 @@ namespace nap
 }
 
 RTTI_DECLARE_BASE(nap::TextureResource)
+RTTI_DECLARE(nap::MemoryTextureResource2D)
 RTTI_DECLARE(nap::ImageResource)
 RTTI_DECLARE(nap::ImageResourceLoader)

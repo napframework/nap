@@ -10,6 +10,12 @@
 
 // Local Includes
 #include "renderer.h"
+#include "renderstate.h"
+
+namespace opengl
+{
+	class RenderTarget;
+}
 
 namespace nap
 {
@@ -20,7 +26,7 @@ namespace nap
 	class RenderableComponent;
 
 	/**
-	 * Holds a reference to all drawable objects
+	 * Main interface for rendering operations. 
 	 */
 	class RenderService : public Service
 	{
@@ -60,16 +66,19 @@ namespace nap
 		void updateTransforms();
 
 		/**
-		 * Renders all available objects to currently active buffer
-		 * TODO: deprecate
+		 * Renders all available objects to a specific renderTarget.
 		 */
-		void renderObjects(const CameraComponent& camera);
+		void renderObjects(opengl::RenderTarget& renderTarget, const CameraComponent& camera);
 
 		/**
-		 * Renders a specific set of objects
-		 * Mainly for debugging purposes
+		 * Renders a specific set of objects to a specific renderTarget.
 		 */
-		void renderObjects(const std::vector<RenderableComponent*>& comps, const CameraComponent& camera);
+		void renderObjects(opengl::RenderTarget& renderTarget, const std::vector<RenderableComponent*>& comps, const CameraComponent& camera);
+
+		/**
+		* Clears the renderTarget.
+		*/
+		void clearRenderTarget(opengl::RenderTarget& renderTarget, opengl::EClearFlags flags);
 
 		/**
 		 * @return if OpenGL has been initialized
@@ -86,6 +95,25 @@ namespace nap
 		 * Shuts down the managed renderer
 		 */
 		void shutdown();
+
+		/**
+		* Render signal, emitted every render iteration
+		* Connect to this signal to render objects to the context
+		* associated with this window.
+		*/
+		SignalAttribute draw{ this, "Draw" };
+
+		/**
+		* Update signal, emitted before a render operation
+		* Connect to this signal to update your scene
+		* graph before the render call is emitted
+		*/
+		SignalAttribute update{ this, "Update" };
+
+		/**
+		* Returns global render state. Use the fields in this objects to modify the renderstate.
+		*/
+		RenderState& getRenderState() { return mRenderState; }
 
 	protected:
 		/**
@@ -134,6 +162,16 @@ namespace nap
 		 * @param viewMatrix: The populated view matrix
 		 */
 		void getViewMatrix(const nap::CameraComponent& camera, glm::mat4x4& viewMatrix);
+
+		/**
+		* Updates the current context's render state by using the latest render state as set by the user.
+		*/
+		void updateRenderState();
+
+		using ContextSpecificStateMap = std::unordered_map<opengl::GLContext, RenderState>;
+
+		RenderState mRenderState;									//< The latest render state as set by the user
+		ContextSpecificStateMap	mContextSpecificState;				//< The per-context render state
 	};
 } // nap
 

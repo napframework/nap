@@ -8,8 +8,6 @@ namespace nap
 		// Initialize delta time
 		mDeltaTime = NanoSeconds(0);
 
-		draw.setFlag(nap::ObjectFlag::Editable, false);
-		update.setFlag(nap::ObjectFlag::Editable, false);
 		activate.setFlag(nap::ObjectFlag::Editable, false);
 	}
 
@@ -118,9 +116,6 @@ namespace nap
 	// Updates time related values and triggers draw
 	void RenderWindowComponent::doDraw()
 	{
-		// Trigger draw
-		draw.trigger();
-
 		// Increment number of rendered frames
 		mFrames++;
 
@@ -139,7 +134,6 @@ namespace nap
 	// Triggers window update
 	void RenderWindowComponent::doUpdate()
 	{
-		update.trigger();
 	}
 
 

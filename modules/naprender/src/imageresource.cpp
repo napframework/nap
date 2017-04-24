@@ -7,6 +7,20 @@
 
 namespace nap
 {
+	// Initializes 2D texture. Additionally a custom display name can be provided.
+	void MemoryTextureResource2D::init(const opengl::Texture2DSettings& settings, const std::string& displayName)
+	{
+		mDisplayName = displayName;
+		mTexture.init();
+		mTexture.allocate(settings);
+	}
+
+	// Returns 2D texture object
+	const opengl::BaseTexture& MemoryTextureResource2D::getTexture() const
+	{
+		return mTexture;
+	}
+
 	// Constructor
 	ImageResource::ImageResource(const std::string& imgPath)
 	{
@@ -95,5 +109,6 @@ namespace nap
 }
 
 RTTI_DEFINE(nap::TextureResource)
+RTTI_DEFINE(nap::MemoryTextureResource2D)
 RTTI_DEFINE(nap::ImageResource)
 RTTI_DEFINE(nap::ImageResourceLoader)

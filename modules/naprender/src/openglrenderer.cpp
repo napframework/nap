@@ -7,7 +7,9 @@
 namespace nap
 {
 	// GL Render window constructor
-	OpenGLRenderWindow::OpenGLRenderWindow(const RenderWindowSettings& settings, opengl::Window* window) : RenderWindow(settings)
+	OpenGLRenderWindow::OpenGLRenderWindow(const RenderWindowSettings& settings, opengl::Window* window) : 
+		RenderWindow(settings),
+		mBackbuffer(new opengl::BackbufferRenderTarget())
 	{
 		// Set window
 		mWindow.reset(window);
@@ -18,6 +20,13 @@ namespace nap
 	void* OpenGLRenderWindow::getWindow() const
 	{
 		return mWindow->getWindow();
+	}
+
+
+	// Returns the backbuffer
+	void* OpenGLRenderWindow::getBackbuffer() const
+	{
+		return mBackbuffer.get();
 	}
 
 

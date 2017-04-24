@@ -18,7 +18,6 @@ namespace nap
 		OutputTriggerPlug drawOutputPlug  = { this, "draw" };
 
 	private:
-		RenderWindowComponent* mWindow = nullptr;
 		void init();
 	};
 }
