@@ -9,10 +9,272 @@ RTTI_DEFINE(nap::ResourceManagerService)
 namespace nap
 {
 
+	/**
+	* Helper to find index into unresolved pointer array.
+	*/
+	static int findUnresolvedPointer(UnresolvedPointerList& unresolvedPointers, Object* object, const RTTI::Property& property)
+	{
+		for (int index = 0; index < unresolvedPointers.size(); ++index)
+		{
+			UnresolvedPointer& unresolved_pointer = unresolvedPointers[index];
+			if (unresolved_pointer.mObject == object &&
+				unresolved_pointer.mProperty == property)
+			{
+				return index;
+			}
+		}
+
+		return -1;
+	}
+
+
+	/** 
+	* Scans objects for links to other objects and other files. This is done through RTTI scanning, where
+	* link properties are examined. The end result is a list of Nodes and Edges that can be used to traverse
+	* the graph.
+	*/
+	class ObjectGraph final
+	{
+	public:
+		enum class EEdgeType : uint8
+		{
+			Object,
+			File
+		};
+
+		struct Node;
+
+		/**
+		* Represent an 'edge' in the ObjectGraph. This is a link from an object to either a file or another object.
+		*/
+		struct Edge
+		{
+			EEdgeType	mType;					// File/Object target
+			Node*		mSource = nullptr;		// Link source
+			Node*		mDest = nullptr;		// Link target
+		};
+
+
+		/*
+		* Represents a node in the ObjectGraph, which can be an object or a file.
+		*/
+		struct Node
+		{
+			int					mDepth = -1;			// Depth of the node is calculated during build, it represents at what level from the root this node is.
+			Object*				mObject = nullptr;		// If this is an Object node, set to the Object, otherwise null.
+			std::string			mFile;					// If this is a file node, set to the filename, otherwise empty.
+			std::vector<Edge*>	mIncomingEdges;			// List of incoming edges
+			std::vector<Edge*>	mOutgoingEdges;			// List of outgoing edges
+		};
+
+
+		/*
+		* Frees all memory allocated by Build.
+		*/
+		~ObjectGraph()
+		{
+			for (auto kvp : mNodes)
+				delete kvp.second;
+
+			for (Edge* edge : mEdges)
+				delete edge;
+		}
+
+
+		/*
+		* Builds the object graph. If building fails, return false. 
+		* @param objectList : list of objects to build the graph from.
+		* @param initResult: if false is returned, contains error information.
+		*/
+		bool Build(const ObjectList& objectList, InitResult& initResult)
+		{
+			using ObjectMap = std::map<std::string, Object*>;
+			ObjectMap object_map;
+
+			// Build map from ID => object
+			for (Object* object : objectList)
+			{
+				object_map.insert({ object->mID, object });
+			}
+
+			// Scan all objects for rtti links and build data structure
+			for (Object* object : objectList)
+			{
+				Node* source_node = GetOrCreateObjectNode(*object);
+
+				// Process pointers to other objects
+				std::vector<Object*> object_links;
+				rttiFindObjectLinks(*object, object_links);
+
+				for (Object* object : object_links)
+				{
+					ObjectMap::iterator dest_object = object_map.find(object->mID);
+					if (!initResult.check(dest_object != object_map.end(), "Object %s is pointing to an object that is not in the objectlist!", object->mID.c_str()))
+						return false;
+
+					Edge* edge = new Edge();
+					edge->mType = EEdgeType::Object;
+					edge->mSource = source_node;
+					edge->mDest = GetOrCreateObjectNode(*(dest_object->second));
+					edge->mDest->mIncomingEdges.push_back(edge);
+					edge->mSource->mOutgoingEdges.push_back(edge);
+					mEdges.push_back(edge);
+				}
+			
+				// Process pointers to files
+				std::vector<std::string> file_links;
+				rttiFindFileLinks(*object, file_links);
+
+				for (std::string& filename : file_links)
+				{
+					Edge* edge = new Edge();
+					edge->mType = EEdgeType::File;
+					edge->mSource = source_node;
+					edge->mDest = GetOrCreateFileNode(filename);
+					edge->mDest->mIncomingEdges.push_back(edge);
+					edge->mSource->mOutgoingEdges.push_back(edge);
+					mEdges.push_back(edge);
+				}
+			}
+
+			// Assign graph depth
+			std::vector<Node*> root_nodes;
+			for (auto kvp : mNodes)
+			{
+				Node* node = kvp.second;
+				if (node->mIncomingEdges.empty())
+					root_nodes.push_back(node);
+			}
+
+			for (Node* root_node : root_nodes)
+			{
+				assignDepthRecursive(root_node, 0);
+			}
+
+			return true;
+		}
+
+
+		/*
+		* Returns object graph node.
+		*/
+		Node* GetNode(const std::string& ID)
+		{
+			NodeMap::iterator iter = mNodes.find(ID);
+			assert(iter != mNodes.end());
+			return iter->second;
+		}
+
+	private:
+
+		/**
+		* Recursively scans outgoing edges of nodes and increments the depth for each level deeper.
+		* We try to avoid rescanning parts of a graph that have already been processed, but sometimes
+		* we must revisit a part of the graph to make sure that the depth is accurate. For example:
+		*
+		*	A ---> B ----------> C
+		*    \                /
+		*     \---> D ---> E -
+		*
+		* In this situation, if the A-B-C branch is visited first, C will have depth 3, but it will
+		* be corrected when processing branch A-D-E-C: object E will have depth 3, which is >= object C's depth.
+		* So, the final depth will become:
+		* 
+		*	A(1) ---> B(2) ----------> C(4)
+		*    \                      /
+		*     \---> D(2) ---> E(3) -
+		*
+		*/
+		void assignDepthRecursive(Node* node, int depth)
+		{
+			// The following is both a test for 'is visited' and 'should we revisit':
+			if (node->mDepth >= depth)
+				return;
+
+			for (Edge* outgoing_edge : node->mOutgoingEdges)
+				assignDepthRecursive(outgoing_edge->mDest, depth + 1);
+
+			node->mDepth = depth;
+		}
+
+
+		/**
+		* Creates a node of the 'object node' type.
+		*/
+		Node* GetOrCreateObjectNode(Object& object)
+		{
+			Node* node;
+			NodeMap::iterator iter = mNodes.find(object.mID);
+			if (iter == mNodes.end())
+			{
+				node = new Node();
+				node->mObject = &object;
+				mNodes.insert({ object.mID, node });
+			}
+			else
+			{
+				node = iter->second;
+			}
+
+			return node;
+		}
+
+
+		/**
+		* Creates a node of the 'file node' type.
+		*/
+		Node* GetOrCreateFileNode(const std::string& filename)
+		{
+			Node* node;
+			NodeMap::iterator iter = mNodes.find(filename);
+			if (iter == mNodes.end())
+			{
+				node = new Node();
+				node->mObject = nullptr;
+				node->mFile = filename;
+				mNodes.insert({ filename, node });
+			}
+			else
+			{
+				node = iter->second;
+			}
+
+			return node;
+		}
+
+	private:
+		using NodeMap = std::map<std::string, Node*>;
+		NodeMap				mNodes;		// All nodes in the graph, mapped from ID to node
+		std::vector<Edge*>	mEdges;		// All edges in the graph
+	};
+
+
+	/**
+	* Walks object graph by traversing incoming edges and pushing the results in an array.
+	* @param node: start node to traverse incoming edges from.
+	* @param incomingObjects: output of the function.
+	*/
+	void addIncomingObjectsRecursive(ObjectGraph::Node* node, std::set<ObjectGraph::Node*>& incomingObjects)
+	{
+		if (incomingObjects.find(node) != incomingObjects.end())
+			return;
+
+		incomingObjects.insert(node);
+
+		for (ObjectGraph::Edge* incoming_edge : node->mIncomingEdges)
+			addIncomingObjectsRecursive(incoming_edge->mSource, incomingObjects);
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// ResourceManagerService
+	//////////////////////////////////////////////////////////////////////////
+
 	ResourceManagerService::ResourceManagerService() :
 		mDirectoryWatcher(new DirectoryWatcher())
 	{
 	}
+
 
 	void ResourceManagerService::splitObjects(const ObjectList& sourceObjectList, ObjectList& targetObjectList, ExistingObjectMap& existingObjectMap, ObjectList& newObjectList)
 	{
@@ -38,20 +300,6 @@ namespace nap
 		}
 	}
 
-	static int findUnresolvedPointer(UnresolvedPointerList& unresolvedPointers, Object* object, const RTTI::Property& property)
-	{
-		for (int index = 0; index < unresolvedPointers.size(); ++index)
-		{
-			UnresolvedPointer& unresolved_pointer = unresolvedPointers[index];
-			if (unresolved_pointer.mObject == object &&
-				unresolved_pointer.mProperty == property)
-			{
-				return index;
-			}
-		}
-
-		return -1;
-	}
 
 	bool ResourceManagerService::updateExistingObjects(const ExistingObjectMap& existingObjectMap, UnresolvedPointerList& unresolvedPointers, InitResult& initResult)
 	{
@@ -87,6 +335,7 @@ namespace nap
 		return true;
 	}
 
+
 	void ResourceManagerService::backupObjects(const ExistingObjectMap& objects, ExistingObjectMap& backups)
 	{
 		for (auto kvp : objects)
@@ -97,6 +346,7 @@ namespace nap
 			backups.insert({ source, copy });		// Mapping from 'read object' to backup of file in ResourceMgr
 		}
 	}
+
 
 	void ResourceManagerService::restoreObjects(ExistingObjectMap& objects, const ExistingObjectMap& backups)
 	{
@@ -136,178 +386,6 @@ namespace nap
 		}
 	}
 
-	struct ObjectGraphNode;
-
-	enum class EObjectLinkType : uint8
-	{
-		Object,
-		File
-	};
-
-	struct ObjectGraphEdge
-	{
-		EObjectLinkType mType;
-		ObjectGraphNode* mSource = nullptr;
-		ObjectGraphNode* mDest = nullptr;
-	};
-
-	struct ObjectGraphNode
-	{
-		int mDepth = -1;
-		Object* mObject = nullptr;
-		std::string mFile;
-		std::vector<ObjectGraphEdge*> mIncomingEdges;
-		std::vector<ObjectGraphEdge*> mOutgoingEdges;
-	};
-
-	class ObjectGraph
-	{
-	public:
-
-		~ObjectGraph()
-		{
-			// TODO: destruct
-		}
-
-		bool Build(const ObjectList& objectList, InitResult& initResult)
-		{
-			using ObjectMap = std::map<std::string, Object*>;
-			ObjectMap object_map;
-
-			// Build map from ID => object
-			for (Object* object : objectList)
-			{
-				object_map.insert({ object->mID, object });
-			}
-
-			for (Object* object : objectList)
-			{
-				ObjectGraphNode* source_node = GetOrCreateObjectNode(*object);
-
-				std::vector<Object*> object_links;
-				rttiFindObjectLinks(*object, object_links);
-
-				for (Object* object : object_links)
-				{
-					ObjectMap::iterator dest_object = object_map.find(object->mID);
-					if (!initResult.check(dest_object != object_map.end(), "Object %s is pointing to an object that is not in the file!", object->mID.c_str()))
-						return false;
-
-					ObjectGraphEdge* edge = new ObjectGraphEdge();
-					edge->mType		= EObjectLinkType::Object;
-					edge->mSource	= source_node;
-					edge->mDest		= GetOrCreateObjectNode(*(dest_object->second));
-					edge->mDest->mIncomingEdges.push_back(edge);
-					edge->mSource->mOutgoingEdges.push_back(edge);
-					mEdges.push_back(edge);
-				}
-
-				std::vector<std::string> file_links;
-				rttiFindFileLinks(*object, file_links);
-
-				for (std::string& filename : file_links)
-				{
-					ObjectGraphEdge* edge = new ObjectGraphEdge();
-					edge->mType		= EObjectLinkType::File;
-					edge->mSource	= source_node;
-					edge->mDest		= GetOrCreateFileNode(filename);
-					edge->mDest->mIncomingEdges.push_back(edge);
-					edge->mSource->mOutgoingEdges.push_back(edge);
-					mEdges.push_back(edge);
-				}
-			}
-			
-			// Assign graph depth
-			std::vector<ObjectGraphNode*> root_nodes;
-			for (auto kvp : mNodes)
-			{
-				ObjectGraphNode* node = kvp.second;
-				if (node->mIncomingEdges.empty())
-					root_nodes.push_back(node);
-			}
-
-			for (ObjectGraphNode* root_node : root_nodes)
-			{
-				assignDepthRecursive(root_node, 0);
-			}
-
-			return true;
-		}
-
-		ObjectGraphNode* GetNode(const std::string& ID)
-		{
-			NodeMap::iterator iter = mNodes.find(ID);
-			assert(iter != mNodes.end());
-			return iter->second;
-		}
-
-	private:
-
-		void assignDepthRecursive(ObjectGraphNode* node, int depth)
-		{
-			if (node->mDepth >= depth)
-				return;
-
-			for (ObjectGraphEdge* outgoing_edge : node->mOutgoingEdges)
-				assignDepthRecursive(outgoing_edge->mDest, depth + 1);
-
-			node->mDepth = depth;
-		}
-
-		ObjectGraphNode* GetOrCreateObjectNode(Object& object)
-		{
-			ObjectGraphNode* node;
-			NodeMap::iterator iter = mNodes.find(object.mID);
-			if (iter == mNodes.end())
-			{
-				node = new ObjectGraphNode();
-				node->mObject = &object;
-				mNodes.insert({ object.mID, node });
-			}
-			else
-			{
-				node = iter->second;
-			}
-
-			return node;
-		}
-
-		ObjectGraphNode* GetOrCreateFileNode(const std::string& filename)
-		{
-			ObjectGraphNode* node;
-			NodeMap::iterator iter = mNodes.find(filename);
-			if (iter == mNodes.end())
-			{
-				node = new ObjectGraphNode();
-				node->mObject = nullptr;
-				node->mFile = filename;
-				mNodes.insert({ filename, node });
-			}
-			else
-			{
-				node = iter->second;
-			}
-
-			return node;
-		}
-
-
-	private:
-		using NodeMap = std::map<std::string, ObjectGraphNode*>;
-		NodeMap mNodes;
-		std::vector<ObjectGraphEdge*> mEdges;
-	};
-
-	static void addIncomingObjectsRecursive(ObjectGraphNode* node, std::set<ObjectGraphNode*>& objectsToInit)
-	{
-		if (objectsToInit.find(node) != objectsToInit.end())
-			return;
-
-		objectsToInit.insert(node);
-
-		for (ObjectGraphEdge* incoming_edge : node->mIncomingEdges)
-			addIncomingObjectsRecursive(incoming_edge->mSource, objectsToInit);
-	}
 
 	bool ResourceManagerService::determineObjectsToInit(const ExistingObjectMap& existingObjects, const ExistingObjectMap& backupObjects, const ObjectList& newObjects, const std::vector<std::string>& modifiedObjectIDs, ObjectList& objectsToInit, InitResult& initResult)
 	{
@@ -338,21 +416,21 @@ namespace nap
 		for (const std::string& modified_object : modifiedObjectIDs)
 			dirty_objects.insert(modified_object);
 
-		std::set<ObjectGraphNode*> objects_to_init;
+		std::set<ObjectGraph::Node*> objects_to_init;
 		for (const std::string dirty_object : dirty_objects)
 		{
-			ObjectGraphNode* node = object_graph.GetNode(dirty_object);
+			ObjectGraph::Node* node = object_graph.GetNode(dirty_object);
 			addIncomingObjectsRecursive(node, objects_to_init);
 		}
 
-		std::vector<ObjectGraphNode*> sorted_objects_to_init;
-		for (ObjectGraphNode* object_to_init : objects_to_init)
+		std::vector<ObjectGraph::Node*> sorted_objects_to_init;
+		for (ObjectGraph::Node* object_to_init : objects_to_init)
 			sorted_objects_to_init.push_back(object_to_init);
 
 		std::sort(sorted_objects_to_init.begin(), sorted_objects_to_init.end(),
-				[](ObjectGraphNode* nodeA, ObjectGraphNode* nodeB) { return nodeA->mDepth > nodeB->mDepth; });
+				[](ObjectGraph::Node* nodeA, ObjectGraph::Node* nodeB) { return nodeA->mDepth > nodeB->mDepth; });
 
-		for (ObjectGraphNode* sorted_object_to_init : sorted_objects_to_init)
+		for (ObjectGraph::Node* sorted_object_to_init : sorted_objects_to_init)
 			if (sorted_object_to_init->mObject != nullptr)
 				objectsToInit.push_back(sorted_object_to_init->mObject);
 
