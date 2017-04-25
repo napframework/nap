@@ -221,7 +221,7 @@ namespace nap
                 node->mObject = nullptr;
                 node->mFile = filename;
                 result = node.get();
-                mNodes[filename] = std::move(node);
+                mNodes.insert(std::make_pair(filename, std::move(node)));
 			}
 			else
 			{
