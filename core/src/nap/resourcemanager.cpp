@@ -145,7 +145,7 @@ namespace nap
 		/*
 		* Returns object graph node.
 		*/
-		Node* GetNode(const std::string& ID)
+		Node* FindNode(const std::string& ID)
 		{
 			NodeMap::iterator iter = mNodes.find(ID);
 			assert(iter != mNodes.end());
@@ -395,7 +395,7 @@ namespace nap
 	* the object graph to find the minimum set of objects that requires an init. Finally, the list of objects is sorted on object graph depth so that the init() order
 	* is correct.
 	*/
-	bool ResourceManagerService::determineObjectsToInit(const ExistingObjectMap& existingObjects, const ClonedObjectMap& clonedObjects, const ObservedObjectList& newObjects, const std::vector<std::string>& modifiedObjectIDs, ObservedObjectList& objectsToInit, InitResult& initResult)
+	bool ResourceManagerService::determineObjectsToInit(const ExistingObjectMap& existingObjects, const ClonedObjectMap& clonedObjects, const ObservedObjectList& newObjects, const std::string& externalChangedFile, ObservedObjectList& objectsToInit, InitResult& initResult)
 	{
 		// Build an object graph of all objects in the ResourceMgr
 		ObservedObjectList all_objects;
@@ -408,30 +408,30 @@ namespace nap
 
 		// Build set of changed IDs. These are objects that have different attributes, and objects that are added.
 		// Note: we need to use the cloned objects because the original have been copied over already.
-		std::set<std::string> dirty_objects;
+		std::set<std::string> dirty_nodes;
 		for (auto& kvp : clonedObjects)
 		{
 			ExistingObjectMap::const_iterator existing_object = existingObjects.find(kvp.first);
 			assert(existing_object != existingObjects.end());
 
 			if (!rttiAreObjectsEqual(*existing_object->second, *kvp.second.get()))
-				dirty_objects.insert(kvp.first->mID);
+				dirty_nodes.insert(kvp.first->mID);
 		}
 
 		// All new objects need an init
 		for (Object* new_object : newObjects)
-			dirty_objects.insert(new_object->mID);
+			dirty_nodes.insert(new_object->mID);
 
-		// Any objects that are passed in as 'dirty' from the outside need to have their init as well
-		// These are currently objects that point to a file that is changed
-		for (const std::string& modified_object : modifiedObjectIDs)
-			dirty_objects.insert(modified_object);
+		// Add externally changed file that caused load of this json file
+		if (!externalChangedFile.empty())
+			dirty_nodes.insert(externalChangedFile);
 
 		// Traverse graph for incoming links and add all of them
 		std::set<ObjectGraph::Node*> objects_to_init;
-		for (const std::string dirty_object : dirty_objects)
+		for (const std::string& dirty_node : dirty_nodes)
 		{
-			ObjectGraph::Node* node = object_graph.GetNode(dirty_object);
+			ObjectGraph::Node* node = object_graph.FindNode(dirty_node);
+			assert(node != nullptr);
 			addIncomingObjectsRecursive(node, objects_to_init);
 		}
 
@@ -479,8 +479,7 @@ namespace nap
 
 	bool ResourceManagerService::loadFile(const std::string& filename, nap::InitResult& initResult)
 	{
-		std::vector<std::string> modified_object_ids;
-		return loadFile(filename, modified_object_ids, initResult);
+		return loadFile(filename, std::string(), initResult);
 	}
 
 
@@ -495,7 +494,7 @@ namespace nap
 	* When a rollback occurs, any newly added objects are removed from the manager, effectively deleting them.
 	* Other maps/list like existing/new are merely observers into the file objects and manager objects.
 	*/
-	bool ResourceManagerService::loadFile(const std::string& filename, const std::vector<std::string>& modifiedObjectIDs, nap::InitResult& initResult)
+	bool ResourceManagerService::loadFile(const std::string& filename, const std::string& externalChangedFile, nap::InitResult& initResult)
 	{
 		UnresolvedPointerList unresolved_pointers;
 		std::vector<FileLink> linkedFiles;
@@ -557,7 +556,7 @@ namespace nap
 
 		// Find out what objects to init and in what order to init them
 		ObservedObjectList objects_to_init;
-		if (!determineObjectsToInit(existing_objects, object_restorer.getClonedObjects(), new_objects, modifiedObjectIDs, objects_to_init, initResult))
+		if (!determineObjectsToInit(existing_objects, object_restorer.getClonedObjects(), new_objects, externalChangedFile, objects_to_init, initResult))
 			return false;
 		
 		// Init all objects in the correct order
@@ -595,7 +594,7 @@ namespace nap
 			resource->finish(Resource::EFinishMode::COMMIT);
 
 		for (const FileLink& file_link : linkedFiles)
-			addFileLink(FileLinkSource(filename, file_link.mSourceObjectID), file_link.mTargetFile);
+			addFileLink(filename, file_link.mTargetFile);
 
 		mFilesToWatch.insert(toComparableFilename(filename));
 
@@ -612,21 +611,19 @@ namespace nap
 
 			std::vector<std::string> modified_objects;	// List of object marked as 'modified' because they are linking to a modified file
 			std::set<std::string> files_to_reload;
+
+			// Is our modified file a file that was loaded by the manager?
 			if (mFilesToWatch.find(modified_file) != mFilesToWatch.end())
 			{
 				files_to_reload.insert(modified_file);
 			}
 			else
 			{
-				FileLinkMap::iterator existing = mFileLinkMap.find(modified_file);
-				if (existing != mFileLinkMap.end())
-				{
-					for (FileLinkSource& file_link_source : existing->second)
-					{
-						modified_objects.push_back(file_link_source.mSourceObjectID);
-						files_to_reload.insert(file_link_source.mSourceFile);
-					}
-				}
+				// Find all the sources of this file
+				FileLinkMap::iterator file_link = mFileLinkMap.find(modified_file);
+				if (file_link != mFileLinkMap.end())
+					for (const std::string& source_file : file_link->second)
+						files_to_reload.insert(source_file);
 			}
 
 			if (!files_to_reload.empty())
@@ -638,7 +635,7 @@ namespace nap
 				for (const std::string& source_file : files_to_reload)
 				{
 					nap::InitResult initResult;
-					if (!loadFile(source_file, modified_objects, initResult))
+					if (!loadFile(source_file, modified_file, initResult))
 					{
 						nap::Logger::warn("Failed to reload %s: %s. See log for more information.", source_file.c_str(), initResult.mErrorString.c_str());
 						break;
@@ -674,22 +671,22 @@ namespace nap
 	}
 
 
-	void ResourceManagerService::addFileLink(FileLinkSource source, const std::string& targetFile)
+	void ResourceManagerService::addFileLink(const std::string& sourceFile, const std::string& targetFile)
 	{
-		source.mSourceFile = toComparableFilename(source.mSourceFile);
+		std::string source_file = toComparableFilename(sourceFile);
 		std::string target_file = toComparableFilename(targetFile);
 		
 		FileLinkMap::iterator existing = mFileLinkMap.find(targetFile);
 		if (existing == mFileLinkMap.end())
 		{
-			std::vector<FileLinkSource> source_files;
-			source_files.push_back(source);
+			std::vector<std::string> source_files;
+			source_files.push_back(source_file);
 
 			mFileLinkMap.insert({ target_file, source_files });
 		}
 		else
 		{
-			existing->second.push_back(source);
+			existing->second.push_back(source_file);
 		}
 	}
 

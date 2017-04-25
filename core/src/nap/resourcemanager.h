@@ -41,10 +41,10 @@ namespace nap
 		* was called. NOTE though, that loadFile will rollback any RTTI attribute values for you already, so this is only about rolling back internal non-rtti state.
 		*
 		* @param filename: json file containing objects.
-		* @param modifiedObjectIDs: list of additional object IDs that are considered to be 'changed'
+		* @param externalChangedFile: externally changed file that caused load of this file (like texture, shader etc)
 		* @param initResult: if the function returns false, contains error information.
 		*/
-		bool loadFile(const std::string& filename, const std::vector<std::string>& modifiedObjectIDs, nap::InitResult& initResult);
+		bool loadFile(const std::string& filename, const std::string& externalChangedFile, nap::InitResult& initResult);
 
 		/**
 		* Find a resource by object ID. Returns null if not found.
@@ -79,35 +79,21 @@ namespace nap
 
 		using ClonedObjectMap = std::map<Object*, std::unique_ptr<Object>>;
 		using ExistingObjectMap = std::map<Object*, Object*>;
-
-		/**
-		* Link from an object to a file.
-		*/
-		struct FileLinkSource
-		{
-			FileLinkSource(const std::string& sourceFile, const std::string& objectID) :
-				mSourceFile(sourceFile),
-				mSourceObjectID(objectID)
-			{}
-
-			std::string mSourceFile;
-			std::string mSourceObjectID;
-		};
 		
 		void splitFileObjects(OwnedObjectList& fileObjects, ExistingObjectMap& existingObjects, ObservedObjectList& newObjects);
-		bool determineObjectsToInit(const ExistingObjectMap& existingObjects, const ClonedObjectMap& clonedObjects, const ObservedObjectList& newObjects, const std::vector<std::string>& modifiedObjectIDs, ObservedObjectList& objectsToInit, InitResult& initResult);
+		bool determineObjectsToInit(const ExistingObjectMap& existingObjects, const ClonedObjectMap& clonedObjects, const ObservedObjectList& newObjects, const std::string& externalChangedFile, ObservedObjectList& objectsToInit, InitResult& initResult);
 		bool updateExistingObjects(const ExistingObjectMap& existingObjectMap, UnresolvedPointerList& unresolvedPointers, InitResult& initResult);
 		void addResource(const std::string& id, std::unique_ptr<Resource> resource);
 		void removeResource(const std::string& id);
-		void addFileLink(FileLinkSource source, const std::string& targetFile);
+		void addFileLink(const std::string& sourceFile, const std::string& targetFile);
 
 	private:
 		using ResourceMap = std::map<std::string, std::unique_ptr<Resource>>;
-		using FileLinkMap = std::map<std::string, std::vector<FileLinkSource>>;
+		using FileLinkMap = std::map<std::string, std::vector<std::string>>; // Map from target file to multiple source files
 
 		ResourceMap					mResources;				// Holds all resources
 		std::set<std::string>		mFilesToWatch;			// Files currently loaded, used for watching changes on the files
-		FileLinkMap					mFileLinkMap;			// Map containing links between files, for updating them if the file monitor sees changes
+		FileLinkMap					mFileLinkMap;			// Map containing links from target to source file, for updating source files if the file monitor sees changes
 		DirectoryWatcher*			mDirectoryWatcher;		// File monitor, detects changes on files
 	};
 
