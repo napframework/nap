@@ -197,7 +197,7 @@ namespace nap
                 auto node = std::make_unique<Node>();
                 node->mObject = &object;
                 result = node.get();
-                mNodes[object.mID] = std::move(node);
+                mNodes.insert(std::make_pair(object.mID, std::move(node)));
 			}
 			else
 			{
