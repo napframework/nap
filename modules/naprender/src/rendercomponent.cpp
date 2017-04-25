@@ -3,17 +3,6 @@
 
 namespace nap
 {
-	// On construction adds a material instance
-	// Material can't be removed
-	RenderableComponent::RenderableComponent()
-	{
-		// Create and link
-// 		Material* new_material = &addChild<Material>("material");
-// 		new_material->setFlag(nap::ObjectFlag::Removable, false);
-// 		material.setTarget(*new_material);
-	}
-
-
 	// Bind and draw
 	void RenderableComponent::draw()
 	{

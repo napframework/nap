@@ -19,8 +19,14 @@ namespace nap
 		// Default constructor
 		ModelResource() = default;
 
+		/**
+ 		 * Loads model from file.
+ 		 */
 		virtual bool init(InitResult& initResult) override;
 
+		/**
+ 		 * Performs commit or rollback of changes made in init.
+ 		 */
 		virtual void finish(Resource::EFinishMode mode) override;
 
 		/**

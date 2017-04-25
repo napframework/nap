@@ -5,6 +5,7 @@
 #include <nap/coreattributes.h>
 #include <nimage.h>
 
+
 namespace nap
 {
 	class ImageResourceLoader;
@@ -47,10 +48,13 @@ namespace nap
 	public:
 
 		/**
-		* Initializes 2D texture. Additionally a custom display name can be provided.
+		* Creates internal texture resource.
 		*/
 		virtual bool init(InitResult& initResult) override;
 
+		/**
+		* Commits changes made by init, or rolls them back.
+		*/
 		virtual void finish(Resource::EFinishMode mode) override;
 
 		/**
@@ -68,7 +72,7 @@ namespace nap
 
 	private:
 		opengl::Texture2D* mTexture				= nullptr;				// Texture as created during init
-		opengl::Texture2D* mPrevTexture			= nullptr;				// 
+		opengl::Texture2D* mPrevTexture			= nullptr;				// Stored texture content before for rolling back
 		std::string mDisplayName				= "MemoryTexture2D";	// Custom display name
 	};
 
@@ -120,8 +124,8 @@ namespace nap
 		std::string				mDisplayName;
 
 		// Opengl Image Object
-		opengl::Image*	mImage = nullptr;
-		opengl::Image*	mPrevImage = nullptr;
+		opengl::Image*			mImage = nullptr;
+		opengl::Image*			mPrevImage = nullptr;
 	};
 
 }

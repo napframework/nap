@@ -24,8 +24,6 @@ namespace nap
 	{
 		RTTI_ENABLE_DERIVED_FROM(ServiceableComponent)
 	public:
-		RenderableComponent();
-
 		/**
 		 * If the object should be drawn or not
 		 */
@@ -84,6 +82,10 @@ namespace nap
 		 */
 		Material* getMaterial();
 
+
+		/**
+		 * Sets material.
+		 */		
 		void setMaterial(Material* newMaterial);
 	};
 }
