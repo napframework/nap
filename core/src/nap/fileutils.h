@@ -84,8 +84,17 @@ namespace nap
      */
     void writeStringToFile(const std::string& filename, const std::string& contents);
 
+	/**
+	* @return returns a string that can be used to compare against other filenames. Is also suitable for use as key in map or set.
+	* @param filename: the source filename.
+	*/
 	const std::string toComparableFilename(const std::string& filename);
 
+	/**
+	* @return return true when file are logically equal (uses toComparableFilename).
+	* @param fileNameA: filename to compare against filenameB.
+	* @param filenameB: filename to comapre against filenameA.
+	*/
 	bool isFilenameEqual(const std::string& filenameA, const std::string& filenameB);
 
 }

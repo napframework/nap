@@ -172,6 +172,7 @@ namespace nap
         out.close();
     }
 
+
 	const std::string toComparableFilename(const std::string& filename)
 	{
 		std::string comparable = filename;
@@ -179,6 +180,7 @@ namespace nap
 		std::replace(comparable.begin(), comparable.end(), '\\', '/');
 		return comparable;
 	}
+
 
 	bool isFilenameEqual(const std::string& filenameA, const std::string& filenameB)
 	{
