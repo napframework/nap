@@ -224,7 +224,8 @@ namespace nap
 			return false;
 		}
 
-		for (auto& object_pos = document.MemberBegin(); object_pos < document.MemberEnd(); ++object_pos)
+        rapidjson::Document::ConstMemberIterator object_pos;
+		for (object_pos = document.MemberBegin(); object_pos < document.MemberEnd(); ++object_pos)
 		{
 			const char* typeName = object_pos->name.GetString();
 			RTTI::TypeInfo type_info = RTTI::TypeInfo::get_by_name(typeName);

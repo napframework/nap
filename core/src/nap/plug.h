@@ -154,7 +154,7 @@ namespace nap
 		// emitted when disconnected from a plug
 		nap::Signal<InputPlugBase&> disconnected;
         
-    private:
+    protected:
         // The plug to which this plug is connected
         TypedLink<OutputPlugBase> mConnection = { *this };
 
@@ -627,7 +627,7 @@ namespace nap
 	template <typename T>
 	void InputStreamPlug<T>::disconnect()
 	{
-        auto outputPlug = dynamic_cast<OutputStreamPlug<T>*>(mConnection);
+        auto outputPlug = dynamic_cast<OutputStreamPlug<T>*>(mConnection.getTarget());
         onDisconnect(outputPlug->source);
 		InputPlugBase::disconnect();
 	}

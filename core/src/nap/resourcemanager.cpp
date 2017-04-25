@@ -190,20 +190,21 @@ namespace nap
 		*/
 		Node* GetOrCreateObjectNode(Object& object)
 		{
-			Node* node;
+			Node* result = nullptr;
 			NodeMap::iterator iter = mNodes.find(object.mID);
 			if (iter == mNodes.end())
 			{
-				node = new Node();
-				node->mObject = &object;
-				mNodes.insert({ object.mID, std::unique_ptr<Node>(node) });
+                auto node = std::make_unique<Node>();
+                node->mObject = &object;
+                result = node.get();
+                mNodes[object.mID] = std::move(node);
 			}
 			else
 			{
-				node = iter->second.get();
+				result = iter->second.get();
 			}
 
-			return node;
+            return result;
 		}
 
 
@@ -212,21 +213,22 @@ namespace nap
 		*/
 		Node* GetOrCreateFileNode(const std::string& filename)
 		{
-			Node* node;
+            Node* result = nullptr;
 			NodeMap::iterator iter = mNodes.find(filename);
 			if (iter == mNodes.end())
 			{
-				node = new Node();
-				node->mObject = nullptr;
-				node->mFile = filename;
-				mNodes.insert({ filename, std::unique_ptr<Node>(node) });
+                auto node = std::make_unique<Node>();
+                node->mObject = nullptr;
+                node->mFile = filename;
+                result = node.get();
+                mNodes[filename] = std::move(node);
 			}
 			else
 			{
-				node = iter->second.get();
+				result = iter->second.get();
 			}
 
-			return node;
+			return result;
 		}
 
 	private:
@@ -280,12 +282,12 @@ namespace nap
 				Object* source = kvp.first;			// file object
 				Object* target = kvp.second;		// object in ResourceMgr
 				std::unique_ptr<Object> copy = std::move(rttiCloneObject(*target));
-				mClonedObjects.insert({ source, std::move(copy) });	// Mapping from 'read object' to backup of file in ResourceMgr
+                mClonedObjects[source] = std::move(copy); // Mapping from 'read object' to backup of file in ResourceMgr
 			}
 		}
 
 
-		ObjectRestorer::~ObjectRestorer()
+		~ObjectRestorer()
 		{
 			if (mRestore)
 			{

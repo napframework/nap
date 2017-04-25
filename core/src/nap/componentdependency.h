@@ -119,7 +119,7 @@ namespace nap
                 added(*mTargetComponent);
             } else if (mRequired) {
                 nap::Logger::fatal("Component of type '%s' requires sibling component of type '%s': '%s'",
-                                   mParentComponent->get_type().getName().c_str(), RTTI_OF(T).getName().c_str(),
+                                   mParentComponent->get_type().get_name().data(), RTTI_OF(T).get_name().data(),
 					ObjectPath(mParentComponent).toString().c_str());
             }
 		}

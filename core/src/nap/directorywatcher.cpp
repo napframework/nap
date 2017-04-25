@@ -1,14 +1,17 @@
 #include "directorywatcher.h"
 #include "assert.h"
 
-#define WIN32_LEAN_AND_MEAN
-#include "windows.h"
-#undef min
-#undef max
+#ifdef _WIN32
+    #define WIN32_LEAN_AND_MEAN
+    #include "windows.h"
+    #undef min
+    #undef max
+#endif
 
 namespace nap
 {
 
+#ifdef _WIN32
 	/**
 	* Internal data container to hide windows internals from the header.
 	*/
@@ -19,14 +22,15 @@ namespace nap
 		OVERLAPPED				mOverlapped;				// Overlapped struct so that I/O calls are non-blocking
 		FILE_NOTIFY_INFORMATION mNotifications[1024];		// Output struct with file notification info
 	};
-
+#endif
 
 	/**
 	* Installs monitor: opens directory, creates event, starts directory scan.
 	*/
-	DirectoryWatcher::DirectoryWatcher() :
-		mPImpl(std::make_unique<DirectoryWatcher::PImpl>())
+	DirectoryWatcher::DirectoryWatcher()
 	{
+#ifdef _WIN32
+        mPimpl = std::make_unique<DirectoryWatcher::PImpl>();
 		char current_directory[MAX_PATH];
 		GetCurrentDirectory(MAX_PATH, current_directory);
 
@@ -44,6 +48,7 @@ namespace nap
 
 		DWORD result = ReadDirectoryChangesW(mPImpl->mDirectoryToMonitor, (LPVOID)&mPImpl->mNotifications, sizeof(mPImpl->mNotifications), TRUE, FILE_NOTIFY_CHANGE_LAST_WRITE, NULL, &mPImpl->mOverlapped, NULL);
 		assert(result != 0 || GetLastError() == ERROR_IO_PENDING);
+#endif
 	}
 
 
@@ -52,8 +57,10 @@ namespace nap
 	*/
 	DirectoryWatcher::~DirectoryWatcher()
 	{
+#ifdef _WIN32
 		CloseHandle(mPImpl->mDirectoryToMonitor);
 		CloseHandle(mPImpl->mOverlappedEvent);
+#endif
 	}
 
 
@@ -66,6 +73,7 @@ namespace nap
 	{
 		bool did_update = false;
 
+#ifdef _WIN32
 		// Overlapped event is signaled when data is available. By passing 0 we never block but return immediately (so this is how we poll non-blocking)
 		DWORD result = WaitForSingleObject(mPImpl->mOverlappedEvent, 0);
 		if (result == WAIT_OBJECT_0)
@@ -92,7 +100,7 @@ namespace nap
 				assert(result != 0 || GetLastError() == ERROR_IO_PENDING);
 			}
 		}
-
+#endif
 		return did_update;
 	}
 
