@@ -184,7 +184,7 @@ namespace nap
 	}
 
 	
-	bool readJSonFile(const std::string& filename, ObjectList& readObjects, std::vector<FileLink>& linkedFiles, UnresolvedPointerList& unresolvedPointers, nap::InitResult& initResult)
+	bool readJSonFile(const std::string& filename, OwnedObjectList& readObjects, std::vector<FileLink>& linkedFiles, UnresolvedPointerList& unresolvedPointers, nap::InitResult& initResult)
 	{
 		std::ifstream in(filename, std::ios::in | std::ios::binary);
 		if (!initResult.check(in.good(), "Unable to open file %s", filename.c_str()))
@@ -238,7 +238,7 @@ namespace nap
 				return false;
 
 			Object* object = type_info.create<Object>();
-			readObjects.push_back(object);
+			readObjects.push_back(std::unique_ptr<Object>(object));
 
 			if (!readObjectRecursive(*object, object_pos->value, unresolvedPointers, linkedFiles, initResult))
 				return false;

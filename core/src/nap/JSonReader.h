@@ -23,10 +23,11 @@ namespace nap
 		std::string mTargetFile;
 	};
 
-	using ObjectList = std::vector<nap::Object*>;
+	using OwnedObjectList = std::vector<std::unique_ptr<nap::Object>>;
+	using ObservedObjectList = std::vector<nap::Object*>;
 	using UnresolvedPointerList = std::vector<UnresolvedPointer>;
 
-	bool readJSonFile(const std::string& filename, ObjectList& readObjects, std::vector<FileLink>& linkedFiles, UnresolvedPointerList& unresolvedPointers, nap::InitResult& initResult);
+	bool readJSonFile(const std::string& filename, OwnedObjectList& readObjects, std::vector<FileLink>& linkedFiles, UnresolvedPointerList& unresolvedPointers, nap::InitResult& initResult);
 
 } //< End Namespace nap
 

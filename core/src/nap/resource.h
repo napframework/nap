@@ -48,9 +48,15 @@ namespace nap
 
 		Resource() = default;
 
-		virtual bool init(InitResult& initResult) { return true; }	// TODO: pure
+		/**
+		* 
+		*/
+		virtual bool init(InitResult& initResult) = 0;
 
-		virtual void finish(EFinishMode mode) {} // TODO: pure
+		/**
+		* 
+		*/
+		virtual void finish(EFinishMode mode) = 0;
 
 		/**
 		* @return Human readable string representation of this path

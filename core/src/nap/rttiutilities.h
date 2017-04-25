@@ -19,13 +19,13 @@ namespace nap
 	* @param object: the object to copy rtti attributes from.
 	*/
 	template<typename T>
-	T* rttiCloneObject(T& object)
+	std::unique_ptr<T> rttiCloneObject(T& object)
 	{
 		RTTI::TypeInfo type = object.get_type();
 		T* copy = type.create<T>();
 		rttiCopyObject(object, *copy);
 
-		return copy;
+		return std::unique_ptr<T>(copy);
 	}
 
 	/**

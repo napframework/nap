@@ -12,8 +12,6 @@ namespace nap
 {
 	class DirectoryWatcher;
 
-	using ExistingObjectMap = std::map<Object*, Object*>;
-
 	/**
 	 * Manager, holding resource data, capable of loading and real-time updating of content.
 	 */
@@ -79,6 +77,9 @@ namespace nap
 	private:
 		friend class ObjectRestorer;
 
+		using ClonedObjectMap = std::map<Object*, std::unique_ptr<Object>>;
+		using ExistingObjectMap = std::map<Object*, Object*>;
+
 		/**
 		* Link from an object to a file.
 		*/
@@ -93,9 +94,10 @@ namespace nap
 			std::string mSourceObjectID;
 		};
 		
-		bool determineObjectsToInit(const ExistingObjectMap& existingObjects, const ExistingObjectMap& backupObjects, const ObjectList& newObjects, const std::vector<std::string>& modifiedObjectIDs, ObjectList& objectsToInit, InitResult& initResult);
+		void splitFileObjects(OwnedObjectList& fileObjects, ExistingObjectMap& existingObjects, ObservedObjectList& newObjects);
+		bool determineObjectsToInit(const ExistingObjectMap& existingObjects, const ClonedObjectMap& clonedObjects, const ObservedObjectList& newObjects, const std::vector<std::string>& modifiedObjectIDs, ObservedObjectList& objectsToInit, InitResult& initResult);
 		bool updateExistingObjects(const ExistingObjectMap& existingObjectMap, UnresolvedPointerList& unresolvedPointers, InitResult& initResult);
-		void addResource(const std::string& id, Resource* resource);
+		void addResource(const std::string& id, std::unique_ptr<Resource> resource);
 		void removeResource(const std::string& id);
 		void addFileLink(FileLinkSource source, const std::string& targetFile);
 
