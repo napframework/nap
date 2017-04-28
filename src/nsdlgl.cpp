@@ -329,7 +329,7 @@ namespace opengl
 	// This call will only succeed when OpenGL has a valid current context
 	bool init()
 	{
-#ifndef __APPLE__
+//#ifndef __APPLE__
 		glewExperimental = GL_TRUE;
 		GLenum error = glewInit();
 		if (error != GLEW_OK)
@@ -337,7 +337,7 @@ namespace opengl
 			printMessage(MessageType::ERROR, "glew init failed with error code %d:", error);
 			return false;
 		}
-#endif // !__APPLE__
+//#endif // !__APPLE__
 
 		printMessage(MessageType::INFO, "initialized glew successfully");
 		printMessage(MessageType::INFO, "vendor: %s", glGetString(GL_VENDOR));

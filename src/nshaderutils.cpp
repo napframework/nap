@@ -166,7 +166,7 @@ namespace opengl
 		if (length > 0)
 		{
 			printMessage(MessageType::ERROR, "shader compile error: %s", buffer);
-			return false;
+			return true;
 		}
 		return true;
 	}
@@ -184,7 +184,7 @@ namespace opengl
 		if (length > 0) // If we have any information to display
 		{
 			printMessage(MessageType::ERROR, "shader program: %d link error: %s", program, buffer);
-			return false;
+			return true;
 		}
 
 		glValidateProgram(program); // Get OpenGL to try validating the program
