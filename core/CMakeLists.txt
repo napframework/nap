@@ -1,6 +1,7 @@
 project(napcore)
 
 file(GLOB_RECURSE SOURCES src/ *.cpp *.h)
+filter_platform_specific_files(SOURCES)
 
 if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
     set(RTTR_DIR "${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/rttr/msvc64/install/cmake")
@@ -14,6 +15,7 @@ find_package(rapidjson REQUIRED)
 add_definitions(-DRAPIDJSON_HAS_STDSTRING=1)
 include_directories(${RAPIDJSON_INCLUDE_DIRS})
 
+add_platform_specific_files("${WIN32_SOURCES}" "${OSX_SOURCES}" "${LINUX_SOURCES}")
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
 if (MSVC)
