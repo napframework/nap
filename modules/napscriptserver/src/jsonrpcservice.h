@@ -22,7 +22,7 @@ namespace nap
 	 */
 	class JsonRpcService : public RpcService
 	{
-		RTTI_ENABLE_DERIVED_FROM(RpcService)
+		RTTI_ENABLE(RpcService)
 	public:
 		JsonRpcService();
 

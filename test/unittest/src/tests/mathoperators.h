@@ -11,7 +11,7 @@ namespace nap {
     
     //! Operator that stores a float value.
     class FloatPushOperator : public Operator {
-        RTTI_ENABLE_DERIVED_FROM(Operator)
+        RTTI_ENABLE(Operator)
     public:
         //! Constructor
         FloatPushOperator() = default;
@@ -29,7 +29,7 @@ namespace nap {
     
     //! Operator that performs addition (+) arithmetic with a left and a right operand
     class PlusPushOperator : public Operator {
-        RTTI_ENABLE_DERIVED_FROM(Operator)
+        RTTI_ENABLE(Operator)
     public:
         //! Constructor
         PlusPushOperator() = default;

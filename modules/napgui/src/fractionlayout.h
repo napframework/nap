@@ -11,7 +11,7 @@ namespace nap
 	// A value of 0.5 will align it in the middle
 	class FractionLayout : public LayoutComponent
 	{
-		RTTI_ENABLE_DERIVED_FROM(LayoutComponent)
+		RTTI_ENABLE(LayoutComponent)
 	public:
 		FractionLayout() : LayoutComponent() {}
 

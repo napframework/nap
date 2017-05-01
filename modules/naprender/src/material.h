@@ -19,7 +19,7 @@ namespace nap
 	*/
 	class Material : public Resource
 	{
-		RTTI_ENABLE_DERIVED_FROM(Resource)
+		RTTI_ENABLE(Resource)
 	public:
 		// Default constructor
 		Material();

@@ -15,7 +15,7 @@ namespace nap
 	class TextureResource : public Resource
 	{
 		friend class ImageResourceLoader;
-		RTTI_ENABLE_DERIVED_FROM(Resource)
+		RTTI_ENABLE(Resource)
 	public:
 		/**
 		 * Virtual override to be implemented by derived classes
@@ -43,7 +43,7 @@ namespace nap
 	*/
 	class MemoryTextureResource2D : public TextureResource
 	{
-		RTTI_ENABLE_DERIVED_FROM(TextureResource)
+		RTTI_ENABLE(TextureResource)
 	public:
 
 		/**
@@ -81,7 +81,7 @@ namespace nap
 	class ImageResource : public TextureResource
 	{
 		friend class ImageResourceLoader;
-		RTTI_ENABLE_DERIVED_FROM(TextureResource)
+		RTTI_ENABLE(TextureResource)
 	public:
 		// Constructor
 		ImageResource(const std::string& imgPath);

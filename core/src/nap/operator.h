@@ -24,7 +24,7 @@ namespace nap
 	class Operator : public AttributeObject
 	{
 
-		RTTI_ENABLE_DERIVED_FROM(AttributeObject)
+		RTTI_ENABLE(AttributeObject)
 
 		friend class InputPlugBase;
 		friend class OutputPlugBase;

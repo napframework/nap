@@ -24,7 +24,7 @@ namespace nap
 	class RenderWindowComponent : public ServiceableComponent
 	{
 		friend class RenderService;
-		RTTI_ENABLE_DERIVED_FROM(ServiceableComponent)
+		RTTI_ENABLE(ServiceableComponent)
 	public:
 		/**
 		 * Constructor

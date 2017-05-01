@@ -14,7 +14,7 @@ namespace nap
 	class ModelResource : public Resource
 	{
 		friend class MeshResourceLoader;
-		RTTI_ENABLE_DERIVED_FROM(Resource)
+		RTTI_ENABLE(Resource)
 	public:
 		// Default constructor
 		ModelResource() = default;

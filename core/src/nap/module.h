@@ -115,7 +115,7 @@ typedef nap::Module* (*init_module_fn)(void);
 #define NAP_MODULE_BEGIN(NAME)                \
 	class Module##NAME : public nap::Module   \
 	{                                         \
-		RTTI_ENABLE_DERIVED_FROM(nap::Module) \
+		RTTI_ENABLE(nap::Module) \
 	public:                                   \
 	Module##NAME() : nap::Module(#NAME)
 

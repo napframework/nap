@@ -19,7 +19,7 @@ namespace nap
      */
     class ArrayAttributeBase : public AttributeBase
     {
-        RTTI_ENABLE_DERIVED_FROM(nap::AttributeBase)
+        RTTI_ENABLE(nap::AttributeBase)
     public:
         // Constructor
         ArrayAttributeBase() = default;
@@ -44,7 +44,7 @@ namespace nap
     template <typename T>
     class ArrayAttribute : public ArrayAttributeBase
     {
-        RTTI_ENABLE_DERIVED_FROM(ArrayAttributeBase)
+        RTTI_ENABLE(ArrayAttributeBase)
     public:
         // Default constructor
         ArrayAttribute() : ArrayAttributeBase() {  }

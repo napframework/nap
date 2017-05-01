@@ -11,7 +11,7 @@ namespace nap {
     // An attribute that can hold collections of anything that is derived from @AttributeBase
     class CompoundAttribute : public AttributeBase
     {
-        RTTI_ENABLE_DERIVED_FROM(AttributeBase)
+        RTTI_ENABLE(AttributeBase)
         
     public:
         // Default constructor

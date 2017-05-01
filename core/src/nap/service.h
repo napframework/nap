@@ -24,7 +24,7 @@ namespace nap
 
 	class Service : public AttributeObject
 	{
-		RTTI_ENABLE_DERIVED_FROM(AttributeObject)
+		RTTI_ENABLE(AttributeObject)
 		friend class Core;
 		friend class ServiceableComponent;
         friend class ServiceableOperator;

@@ -38,7 +38,7 @@ namespace nap
 	*/
 	class Resource : public AttributeObject
 	{
-		RTTI_ENABLE_DERIVED_FROM(AttributeObject)
+		RTTI_ENABLE(AttributeObject)
 	public:
 		enum class EFinishMode : uint8
 		{

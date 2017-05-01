@@ -48,7 +48,7 @@ namespace nap
     /*
 	class GetAttributesOperator : public Operator
 	{
-		RTTI_ENABLE_DERIVED_FROM(Operator)
+		RTTI_ENABLE(Operator)
 	public:
 		GetAttributesOperator() : Operator()
 		{
@@ -126,7 +126,7 @@ namespace nap
 
 	class FloatOperator : public nap::Operator
 	{
-		RTTI_ENABLE_DERIVED_FROM(nap::Operator)
+		RTTI_ENABLE(nap::Operator)
 	public:
 		InputPullPlug<float> input = { this, "input", 0 };
 		OutputPullPlug<float> output = { this, &FloatOperator::pullValue, "output" };
@@ -142,7 +142,7 @@ namespace nap
 
 	class FloatToStringOperator : public Operator
 	{
-		RTTI_ENABLE_DERIVED_FROM(Operator)
+		RTTI_ENABLE(Operator)
 	public:
 		FloatToStringOperator() : Operator() {}
 
@@ -162,7 +162,7 @@ namespace nap
 
 	class AddFloatOperator : public nap::Operator
 	{
-		RTTI_ENABLE_DERIVED_FROM(nap::Operator)
+		RTTI_ENABLE(nap::Operator)
 	public:
 		AddFloatOperator() : nap::Operator()
 		{
@@ -192,7 +192,7 @@ namespace nap
 
 	class MultFloatOperator : public nap::Operator
 	{
-		RTTI_ENABLE_DERIVED_FROM(nap::Operator)
+		RTTI_ENABLE(nap::Operator)
 	public:
 		MultFloatOperator() : nap::Operator() {}
 
@@ -215,7 +215,7 @@ namespace nap
 
 	class SimpleTriggerOperator : public nap::Operator
 	{
-		RTTI_ENABLE_DERIVED_FROM(nap::Operator)
+		RTTI_ENABLE(nap::Operator)
 	public:
 		nap::OutputTriggerPlug mOutTrigger = {this, "OutTrigger"};
 		nap::InputTriggerPlug mInTrigger = {this, "InTrigger", [&]() { mOutTrigger.trigger(); }};
@@ -223,7 +223,7 @@ namespace nap
 
 	class OSCOperator : public nap::Operator
 	{
-		RTTI_ENABLE_DERIVED_FROM(nap::Operator)
+		RTTI_ENABLE(nap::Operator)
 	public:
 		nap::OutputTriggerPlug outTrigger = {this, "OSCReceived"};
 		nap::OutputPullPlug<float> oscValue = {this, "OSCValue"};
@@ -232,7 +232,7 @@ namespace nap
 
 	class CompareStringOperator : public nap::Operator
 	{
-		RTTI_ENABLE_DERIVED_FROM(nap::Operator)
+		RTTI_ENABLE(nap::Operator)
 	public:
 		nap::OutputPullPlug<bool> condition = {this, "equals"};
 		nap::InputPullPlug<std::string> mFactorA = {this, "stringA", ""};
@@ -241,7 +241,7 @@ namespace nap
 
 	class SwitchOperator : public nap::Operator
 	{
-		RTTI_ENABLE_DERIVED_FROM(nap::Operator)
+		RTTI_ENABLE(nap::Operator)
 	public:
 		nap::InputTriggerPlug mInTrigger = {this, "InTrigger", [&]() {
 												bool value;
@@ -260,7 +260,7 @@ namespace nap
 
 	class IntOperator : public Operator
 	{
-		RTTI_ENABLE_DERIVED_FROM(Operator)
+		RTTI_ENABLE(Operator)
 	public:
 		Attribute<int> mValue = {this, "valueAttr", 0};
 		OutputPullPlug<int> output = {this, &IntOperator::pullValue, "value"};
@@ -280,7 +280,7 @@ namespace nap
 
 	class LogOperator : public Operator
 	{
-		RTTI_ENABLE_DERIVED_FROM(Operator)
+		RTTI_ENABLE(Operator)
 	public:
 		InputPullPlug<std::string> input = {this, "message", ""};
         nap::InputTriggerPlug mInTrigger = {this, &LogOperator::trigger, "InTrigger"};

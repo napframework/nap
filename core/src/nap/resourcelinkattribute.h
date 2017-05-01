@@ -13,7 +13,7 @@ namespace nap
 	*/
 	class ResourceLinkAttribute : public Attribute<std::string>
 	{
-		RTTI_ENABLE_DERIVED_FROM(nap::Attribute<std::string>)
+		RTTI_ENABLE(nap::Attribute<std::string>)
 
 	public:
 		ResourceLinkAttribute();

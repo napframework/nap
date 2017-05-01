@@ -14,7 +14,7 @@ using namespace nap;
 
 class DummyComponent : public Component
 {
-	RTTI_ENABLE_DERIVED_FROM(Component)
+	RTTI_ENABLE(Component)
 public:
 	virtual ~DummyComponent() = default;
 

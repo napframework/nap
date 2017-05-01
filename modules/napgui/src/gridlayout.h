@@ -11,7 +11,7 @@ namespace nap
 
 	class GridLayout : public LayoutComponent
 	{
-		RTTI_ENABLE_DERIVED_FROM(LayoutComponent)
+		RTTI_ENABLE(LayoutComponent)
 	public:
 		GridLayout() : LayoutComponent() {}
 

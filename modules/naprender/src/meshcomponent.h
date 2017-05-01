@@ -16,7 +16,7 @@ namespace nap
 	 */
 	class MeshComponent : public RenderableComponent
 	{
-		RTTI_ENABLE_DERIVED_FROM(RenderableComponent)
+		RTTI_ENABLE(RenderableComponent)
 	public:
 		MeshComponent() = default;
 

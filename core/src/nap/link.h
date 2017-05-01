@@ -15,7 +15,7 @@ namespace nap
 	 */
 	class Link : public Object
 	{
-		RTTI_ENABLE_DERIVED_FROM(Object)
+		RTTI_ENABLE(Object)
 	public:
 		// Constructor
 		Link(Object& parent);

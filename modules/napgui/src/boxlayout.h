@@ -11,7 +11,7 @@ namespace nap
 	 */
 	class BoxLayout : public LayoutComponent
 	{
-		RTTI_ENABLE_DERIVED_FROM(LayoutComponent)
+		RTTI_ENABLE(LayoutComponent)
 	public:
 		BoxLayout() : LayoutComponent() {}
 		bool layout() override;

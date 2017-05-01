@@ -12,7 +12,7 @@ namespace nap
 	 */
 	class SphereComponent : public MeshComponent
 	{
-		RTTI_ENABLE_DERIVED_FROM(MeshComponent)
+		RTTI_ENABLE(MeshComponent)
 	public:
 		// Default constructor
 		SphereComponent() = default;

@@ -14,7 +14,7 @@ namespace nap
 	class ShaderResource : public Resource
 	{
 		friend class ShaderResourceLoader;
-		RTTI_ENABLE_DERIVED_FROM(Resource)
+		RTTI_ENABLE(Resource)
 	public:
 
 		virtual bool init(InitResult& initResult);

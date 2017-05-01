@@ -16,7 +16,7 @@ namespace nap
 	 */
 	class TextureRenderTargetResource2D : public Resource
 	{
-		RTTI_ENABLE_DERIVED_FROM(Resource)
+		RTTI_ENABLE(Resource)
 	public:
 
 		virtual bool init(InitResult& initResult) override;

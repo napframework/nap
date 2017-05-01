@@ -17,7 +17,7 @@
  */
 class ModuleNapCore : public nap::Module
 {
-	RTTI_ENABLE_DERIVED_FROM(nap::Module)
+	RTTI_ENABLE(nap::Module)
 public:
 	ModuleNapCore();
 };

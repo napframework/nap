@@ -12,7 +12,7 @@ namespace nap
 	//! A component containing a patch of operators with connections
 	class PatchComponent : public Component
 	{
-		RTTI_ENABLE_DERIVED_FROM(nap::Component)
+		RTTI_ENABLE(nap::Component)
 	public:
 		//! Default constructor
 		PatchComponent() 
