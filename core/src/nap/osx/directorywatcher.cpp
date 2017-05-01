@@ -6,9 +6,9 @@ namespace nap
 	/**
 	* Internal data container to hide internals from the header.
 	*/
-//	struct DirectoryWatcher::PImpl
-//	{
-//	};
+	struct DirectoryWatcher::PImpl
+	{
+	};
 
 	/**
 	* Installs monitor: opens directory, creates event, starts directory scan.

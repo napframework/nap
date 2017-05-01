@@ -6,9 +6,6 @@
 
 namespace nap
 {
-    
-    class PImpl;
-    
 	/**
 	* Monitors file changes in a directory (currently hardcoded to active directory, and hardcoded to respond to file 'writes').
 	* This class works polling-based, so continue to call update to retrieve what files are modified on disk.
@@ -27,8 +24,8 @@ namespace nap
 		bool update(std::vector<std::string>& modifiedFiles);
 
 	private:
-//		struct PImpl;
-//		std::unique_ptr<PImpl> mPImpl = nullptr;
+		struct PImpl;
+		std::unique_ptr<PImpl> mPImpl = nullptr;
 	};
 
 } //< End Namespace nap
