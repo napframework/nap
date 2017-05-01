@@ -6,11 +6,11 @@ namespace nap
 	/**
 	* Internal data container to hide internals from the header.
 	*/
-#ifdef _WIN32
-	struct DirectoryWatcher::PImpl
+    struct DirectoryWatcher::PImpl
 	{
 	};
-#endif
+    
+    void DirectoryWatcher::PImpl_deleter::operator()(DirectoryWatcher::PImpl*ptr) const { delete ptr; }
 
 	/**
 	* Installs monitor: opens directory, creates event, starts directory scan.
