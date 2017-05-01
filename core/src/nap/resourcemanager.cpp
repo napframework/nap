@@ -498,34 +498,29 @@ namespace nap
 	*/
 	bool ResourceManagerService::loadFile(const std::string& filename, const std::string& externalChangedFile, nap::InitResult& initResult)
 	{
-		UnresolvedPointerList unresolved_pointers;
-		std::vector<FileLink> linkedFiles;
-
-		// Objects as read from file. Objects are owned by this list.
-		OwnedObjectList file_objects;
-
-		// Read objects from disk into 'file_objects'. 
-		if (!readJSonFile(filename, file_objects, linkedFiles, unresolved_pointers, initResult))
+		// Read objects from disk
+		ReadJSONFileResult read_result;
+		if (!readJSONFile(filename, read_result, initResult))
 			return false;
 
 		ExistingObjectMap existing_objects;			// Mapping from 'file object' to 'existing object in ResourceMgr'. This is an observer relationship.
 		ObservedObjectList new_objects;				// Objects not (yet) present in ResourceMgr.
 
 		// Split file objects into observer lists for new/existing objects. 
-		splitFileObjects(file_objects, existing_objects, new_objects);
+		splitFileObjects(read_result.mReadObjects, existing_objects, new_objects);
 
 		// The ObjectRestorer is capable of undoing changes that we are going to make in the loading process
 		// (adding objects, updating objects).
 		ObjectRestorer object_restorer(*this, existing_objects, new_objects);
 
 		// Update attributes of objects already existing in ResourceMgr
-		if (!updateExistingObjects(existing_objects, unresolved_pointers, initResult))
+		if (!updateExistingObjects(existing_objects, read_result.mUnresolvedPointers, initResult))
 			return false;
 
 		// Add objects that were not yet present in ResourceMgr
 		// Note that we cannot iterate over new_objects as we need to transfer ownership
 		// of the file object to the resource manager.
-		for (auto& object : file_objects)
+		for (auto& object : read_result.mReadObjects)
 		{
 			nap::Resource* resource = rtti_cast<Resource>(object.get());
 			if (resource == nullptr)
@@ -541,7 +536,7 @@ namespace nap
 		}
 
 		// Resolve all unresolved pointers against the ResourceMgr
-		for (const UnresolvedPointer& unresolved_pointer : unresolved_pointers)
+		for (const UnresolvedPointer& unresolved_pointer : read_result.mUnresolvedPointers)
 		{
 			nap::Resource* source_resource = rtti_cast<Resource>(unresolved_pointer.mObject);
 			if (source_resource == nullptr)
@@ -595,7 +590,7 @@ namespace nap
 		for (Resource* resource : initted_objects)
 			resource->finish(Resource::EFinishMode::COMMIT);
 
-		for (const FileLink& file_link : linkedFiles)
+		for (const FileLink& file_link : read_result.mFileLinks)
 			addFileLink(filename, file_link.mTargetFile);
 
 		mFilesToWatch.insert(toComparableFilename(filename));
