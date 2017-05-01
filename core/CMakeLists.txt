@@ -28,11 +28,15 @@ if (MSVC)
 endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC src)
-target_link_libraries(${PROJECT_NAME} RTTR::Core)
 
-if (UNIX)
-    target_link_libraries(${PROJECT_NAME} dl pthread)
+if (MSVC)
+    target_link_libraries(${PROJECT_NAME} RTTR::Core)
+elseif(APPLE)
+    target_link_libraries(${PROJECT_NAME} RTTR::Core "-framework CoreServices")
+elseif(UNIX)
+    target_link_libraries(${PROJECT_NAME} RTTR::Core dl pthread)
 endif ()
+
 
 
 if (WIN32)
