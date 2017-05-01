@@ -139,7 +139,7 @@ endfunction()
 target_architecture(ARCH)
 
 
-if (MSVC)
+if (MSVC OR APPLE)
     foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
         set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}-${ARCH}-${OUTPUTCONFIG})
 
