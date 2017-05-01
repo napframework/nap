@@ -24,8 +24,10 @@ namespace nap
 		bool update(std::vector<std::string>& modifiedFiles);
 
 	private:
-		struct PImpl;
-		std::unique_ptr<PImpl> mPImpl = nullptr;
+#ifdef _WIN32
+        struct PImpl;
+        std::unique_ptr<PImpl> mPImpl = nullptr;
+#endif
 	};
 
 } //< End Namespace nap
