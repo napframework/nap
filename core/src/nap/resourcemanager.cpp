@@ -606,41 +606,43 @@ namespace nap
 
 	void ResourceManagerService::checkForFileChanges()
 	{
-		std::string modified_file;
-		if (mDirectoryWatcher->update(modified_file))
+		std::vector<std::string> modified_files;
+		if (mDirectoryWatcher->update(modified_files))
 		{
-			modified_file = toComparableFilename(modified_file);
-
-			std::vector<std::string> modified_objects;	// List of object marked as 'modified' because they are linking to a modified file
-			std::set<std::string> files_to_reload;
-
-			// Is our modified file a file that was loaded by the manager?
-			if (mFilesToWatch.find(modified_file) != mFilesToWatch.end())
+			for (std::string& modified_file : modified_files)
 			{
-				files_to_reload.insert(modified_file);
-			}
-			else
-			{
-				// Find all the sources of this file
-				FileLinkMap::iterator file_link = mFileLinkMap.find(modified_file);
-				if (file_link != mFileLinkMap.end())
-					for (const std::string& source_file : file_link->second)
-						files_to_reload.insert(source_file);
-			}
+				modified_file = toComparableFilename(modified_file);
 
-			if (!files_to_reload.empty())
-			{
-				nap::Logger::info("Detected change to %s. Files needing reload:", modified_file.c_str());
-				for (const std::string& source_file : files_to_reload)
-					nap::Logger::info("\t-> %s", source_file.c_str());
+				std::set<std::string> files_to_reload;
 
-				for (const std::string& source_file : files_to_reload)
+				// Is our modified file a file that was loaded by the manager?
+				if (mFilesToWatch.find(modified_file) != mFilesToWatch.end())
 				{
-					nap::InitResult initResult;
-					if (!loadFile(source_file, modified_file, initResult))
+					files_to_reload.insert(modified_file);
+				}
+				else
+				{
+					// Find all the sources of this file
+					FileLinkMap::iterator file_link = mFileLinkMap.find(modified_file);
+					if (file_link != mFileLinkMap.end())
+						for (const std::string& source_file : file_link->second)
+							files_to_reload.insert(source_file);
+				}
+
+				if (!files_to_reload.empty())
+				{
+					nap::Logger::info("Detected change to %s. Files needing reload:", modified_file.c_str());
+					for (const std::string& source_file : files_to_reload)
+						nap::Logger::info("\t-> %s", source_file.c_str());
+
+					for (const std::string& source_file : files_to_reload)
 					{
-						nap::Logger::warn("Failed to reload %s: %s. See log for more information.", source_file.c_str(), initResult.mErrorString.c_str());
-						break;
+						nap::InitResult initResult;
+						if (!loadFile(source_file, modified_file, initResult))
+						{
+							nap::Logger::warn("Failed to reload %s: %s. See log for more information.", source_file.c_str(), initResult.mErrorString.c_str());
+							break;
+						}
 					}
 				}
 			}

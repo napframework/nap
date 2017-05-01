@@ -2,6 +2,7 @@
 
 #include <string>
 #include <memory>
+#include <vector>
 
 namespace nap
 {
@@ -13,21 +14,18 @@ namespace nap
 	{
 	public:
 		DirectoryWatcher();
-
 		~DirectoryWatcher();
 
 		/**
 		* Checks if any changes to files were made, returns true if so. Continue to call this function to retrieve 
 		* multiple updates.
-		* @param modifiedFile: if the function returns true, contains the filename of the file that was modified. 
+		* @param modifiedFiles: if the function returns true, contains the filenames of the files that were modified. 
 		*/
-		bool update(std::string& modifiedFile);
+		bool update(std::vector<std::string>& modifiedFiles);
 
 	private:
-#ifdef _WIN32
 		struct PImpl;
 		std::unique_ptr<PImpl> mPImpl = nullptr;
-#endif
 	};
 
 } //< End Namespace nap
