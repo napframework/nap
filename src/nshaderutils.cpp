@@ -154,48 +154,55 @@ namespace opengl
 
 
 	// Validates part of the shader
-	bool validateShader(GLuint shader)
+	EShaderValidationResult validateShader(GLuint shader, std::string& validationMessage)
 	{
-		const unsigned int BUFFER_SIZE = 512;
-		char buffer[BUFFER_SIZE];
-		memset(buffer, 0, BUFFER_SIZE);
-		GLsizei length = 0;
+		const unsigned int BUFFER_SIZE = 1024;
+		char message[BUFFER_SIZE];
+		memset(message, 0, BUFFER_SIZE);
+		GLsizei message_length = 0;
 
-		// If there's info to display do so
-		glGetShaderInfoLog(shader, BUFFER_SIZE, &length, buffer); // Ask OpenGL to give us the log associated with the shader
-		if (length > 0)
-		{
-			printMessage(MessageType::ERROR, "shader compile error: %s", buffer);
-			return true;
-		}
-		return true;
+		// Get the shader compilation log
+		glGetShaderInfoLog(shader, BUFFER_SIZE, &message_length, message);
+		validationMessage = message;
+
+		// Get the compilation status
+		GLint compile_status;
+		glGetShaderiv(shader, GL_COMPILE_STATUS, &compile_status);
+
+		if (compile_status == GL_FALSE)
+			return EShaderValidationResult::ERROR;			// Compilation failed
+		else if (message_length > 0)
+			return EShaderValidationResult::WARNING;		// Compilation succeeded, but there were messages
+		else
+			return EShaderValidationResult::SUCCESS;		// Compilation succeeded
 	}
 
 
 	// Validates an entire shader program
-	bool validateShaderProgram(GLuint program)
+	EShaderValidationResult validateShaderProgram(GLuint program, std::string& validationMessage)
 	{
-		const unsigned int BUFFER_SIZE = 512;
-		char buffer[BUFFER_SIZE];
-		memset(buffer, 0, BUFFER_SIZE);
-		GLsizei length = 0;
+		const unsigned int BUFFER_SIZE = 1024;
+		char message[BUFFER_SIZE];
+		memset(message, 0, BUFFER_SIZE);
+		GLsizei message_length = 0;
 
-		glGetProgramInfoLog(program, BUFFER_SIZE, &length, buffer); // Ask OpenGL to give us the log associated with the program
-		if (length > 0) // If we have any information to display
-		{
-			printMessage(MessageType::ERROR, "shader program: %d link error: %s", program, buffer);
-			return true;
-		}
+		// Get the shader link log
+		glGetProgramInfoLog(program, BUFFER_SIZE, &message_length, message);
+		validationMessage = message;
 
-		glValidateProgram(program); // Get OpenGL to try validating the program
-		GLint status;
-		glGetProgramiv(program, GL_VALIDATE_STATUS, &status); // Find out if the shader program validated correctly
-		if (status == GL_FALSE) // If there was a problem validating
-		{
-			printMessage(MessageType::ERROR, "can't validate shader: %d", program);
-			return false;
-		}
-		return true;
+		// Validate the program
+		glValidateProgram(program); 
+
+		// Get the validation status
+		GLint validation_status;
+		glGetProgramiv(program, GL_VALIDATE_STATUS, &validation_status);
+		
+		if (validation_status == GL_FALSE)
+			return EShaderValidationResult::ERROR;			// Validation failed
+		else if (message_length > 0)
+			return EShaderValidationResult::WARNING;		// Validation succeeded, but there were messages
+		else
+			return EShaderValidationResult::SUCCESS;		// Validation succeeded
 	}
 
 

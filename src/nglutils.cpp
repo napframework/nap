@@ -183,7 +183,7 @@ namespace opengl
 			printMessage(MessageType::ERROR, "file: %s, line: %d, %s", file, line, glewGetErrorString(error_code));
 #ifdef __APPLE__
             return false;
-#elif
+#else
             return true;
 #endif
 		}
