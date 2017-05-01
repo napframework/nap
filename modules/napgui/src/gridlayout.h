@@ -21,5 +21,3 @@ namespace nap
 		Attribute<int> colCount = {this, "ColCount", 2};
 	};
 }
-
-RTTI_DECLARE(nap::GridLayout)

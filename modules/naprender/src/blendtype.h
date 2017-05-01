@@ -53,6 +53,3 @@ namespace std
 		}
 	};
 }
-
-RTTI_DECLARE_DATA(nap::BlendType)
-

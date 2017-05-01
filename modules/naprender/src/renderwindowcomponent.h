@@ -188,5 +188,3 @@ namespace nap
 
 	};
 }
-
-RTTI_DECLARE(nap::RenderWindowComponent)

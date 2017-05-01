@@ -24,5 +24,3 @@ namespace nap
 		virtual opengl::Mesh* getMesh() const override;
 	};
 }
-
-RTTI_DECLARE(nap::SphereComponent)

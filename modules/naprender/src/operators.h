@@ -21,5 +21,3 @@ namespace nap
 		void init();
 	};
 }
-
-RTTI_DECLARE(nap::ExecuteDrawOperator)

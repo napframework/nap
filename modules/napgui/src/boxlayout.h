@@ -25,5 +25,3 @@ namespace nap
 	private:
 	};
 }
-
-RTTI_DECLARE(nap::BoxLayout)

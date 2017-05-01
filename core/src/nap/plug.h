@@ -635,7 +635,3 @@ namespace nap
 
 
 }
-
-RTTI_DECLARE_BASE(nap::Plug)
-RTTI_DECLARE_BASE(nap::InputPlugBase)
-RTTI_DECLARE_BASE(nap::OutputPlugBase)

@@ -109,5 +109,3 @@ namespace nap
 		return static_cast<T*>(resource);
 	}
 }
-
-RTTI_DECLARE(nap::ResourceLinkAttribute)

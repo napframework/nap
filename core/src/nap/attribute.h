@@ -344,11 +344,6 @@ namespace nap
 // RTTI
 //////////////////////////////////////////////////////////////////////////
 
-
-RTTI_DECLARE_BASE(nap::AttributeBase)
-RTTI_DECLARE(nap::SignalAttribute)
-RTTI_DECLARE(nap::ObjectLinkAttribute)
-
 // Create and bind attribute slot with @NAME to @FUNCTION
 #define ATTR_SLOT(NAME, FUNCTION) SLOT(NAME, nap::Attribute&, FUNCTION)
 

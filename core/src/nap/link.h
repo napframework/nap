@@ -124,5 +124,3 @@ namespace nap
 		T* getTypedTarget() { return static_cast<T*>(getTarget()); }
 	};
 }
-
-RTTI_DECLARE(nap::Link)

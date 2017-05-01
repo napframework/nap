@@ -165,6 +165,4 @@ namespace nap
 
 }
 
-RTTI_DECLARE(nap::AttributeObject)
-
 #include "attributeobject.hpp"

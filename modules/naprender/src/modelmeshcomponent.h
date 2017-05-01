@@ -42,5 +42,3 @@ namespace nap
 		ResourceLinkAttribute modelResource = { this, "model", RTTI_OF(ModelResource) };
 	};
 }
-
-RTTI_DECLARE(nap::ModelMeshComponent)

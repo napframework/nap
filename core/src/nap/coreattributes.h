@@ -35,27 +35,3 @@ namespace nap
     bool operator==(const RTTIStringMap& a, const RTTIStringMap& b);
     bool operator==(const Binary& a, const Binary& b);
 }
-
-
-/**
- * RTTI attribute declarations
- */
-RTTI_DECLARE_DATA(std::string)
-RTTI_DECLARE_DATA(bool)
-RTTI_DECLARE_DATA(nap::FloatArray)
-RTTI_DECLARE_DATA(nap::StringArray)
-RTTI_DECLARE_DATA(nap::IntArray)
-RTTI_DECLARE_DATA(nap::IntMap)
-RTTI_DECLARE_DATA(nap::FloatMap)
-RTTI_DECLARE_DATA(nap::StringMap)
-RTTI_DECLARE_DATA(nap::Binary)
-RTTI_DECLARE_DATA(nap::RTTIStringMap)
-
-
-/**
- * RTTI numeric attribute declarations
- */
-RTTI_DECLARE_NUMERIC_DATA(float)
-RTTI_DECLARE_NUMERIC_DATA(int)
-RTTI_DECLARE_NUMERIC_DATA(double)
-RTTI_DECLARE_NUMERIC_DATA(nap::uint)

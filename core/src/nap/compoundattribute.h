@@ -194,5 +194,3 @@ namespace nap {
     
     
 }
-
-RTTI_DECLARE(nap::CompoundAttribute)

@@ -38,5 +38,3 @@ namespace nap
 		virtual opengl::Mesh* getMesh() const = 0;
 	};
 }
-
-RTTI_DECLARE_BASE(nap::MeshComponent)

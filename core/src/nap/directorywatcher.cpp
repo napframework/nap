@@ -30,7 +30,7 @@ namespace nap
 	DirectoryWatcher::DirectoryWatcher()
 	{
 #ifdef _WIN32
-        mPimpl = std::make_unique<DirectoryWatcher::PImpl>();
+        mPImpl = std::make_unique<DirectoryWatcher::PImpl>();
 		char current_directory[MAX_PATH];
 		GetCurrentDirectory(MAX_PATH, current_directory);
 

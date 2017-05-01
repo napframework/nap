@@ -22,14 +22,6 @@ namespace RTTI
 // Macros
 #define RTTI_OF(Type) rttr::type::get<Type>()
 
-// Declares an object to have RTTI (RUN TIME TYPE INFO) with create function
-// This declare assumes a default constructor used for initialization
-#define RTTI_DECLARE(T)
-
-// Declares an object to have RTTI (RUN TIME TYPE INFO) WITHOUT create function
-// This works for objects without a default construction.
-#define RTTI_DECLARE_BASE(T)
-
 // Defines an RTTI object with create function
 #define CONCAT_UNIQUE_NAMESPACE(x, y)				namespace x##y
 #define UNIQUE_REGISTRATION_NAMESPACE(id)			CONCAT_UNIQUE_NAMESPACE(__rtti_registration_, id)

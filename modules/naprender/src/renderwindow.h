@@ -133,5 +133,3 @@ namespace nap
 		RenderWindowSettings mSettings;
 	};
 }
-
-RTTI_DECLARE_BASE(nap::RenderWindow)

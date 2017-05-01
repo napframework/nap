@@ -36,6 +36,3 @@ namespace nap
 	};
 
 }
-
-RTTI_DECLARE(nap::JSONSerializer)
-RTTI_DECLARE_BASE(nap::JSONResource)

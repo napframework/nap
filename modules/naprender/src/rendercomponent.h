@@ -87,5 +87,3 @@ namespace nap
 		void setMaterial(Material* newMaterial);
 	};
 }
-
-RTTI_DECLARE_BASE(nap::RenderableComponent)

@@ -61,6 +61,3 @@ namespace nap {
     };
     
 }
-
-RTTI_DECLARE(nap::FloatPushOperator)
-RTTI_DECLARE(nap::PlusPushOperator)

@@ -63,8 +63,4 @@ namespace nap
 		*/
 		virtual const std::string getDisplayName() const = 0;
 	};
-
-
 }
-
-RTTI_DECLARE_BASE(nap::Resource)

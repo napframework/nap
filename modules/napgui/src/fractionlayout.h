@@ -46,5 +46,3 @@ namespace nap
 		float getAspectRatio(LayoutComponent* comp) { return aspectRatios.getValueRef()[ObjectPath(comp)]; }
 	};
 }
-
-RTTI_DECLARE(nap::FractionLayout)

@@ -124,8 +124,4 @@ namespace nap
 		OutputPlugBase& mSource;
 		InputPlugBase& mDestination;
 	};
-
-
-
 }
-RTTI_DECLARE(nap::Patch)

@@ -21,4 +21,3 @@ class ModuleNapCore : public nap::Module
 public:
 	ModuleNapCore();
 };
-RTTI_DECLARE(ModuleNapCore)

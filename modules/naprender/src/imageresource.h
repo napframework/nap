@@ -125,7 +125,3 @@ namespace nap
 	};
 
 }
-
-RTTI_DECLARE_BASE(nap::TextureResource)
-RTTI_DECLARE(nap::MemoryTextureResource2D)
-RTTI_DECLARE(nap::ImageResource)

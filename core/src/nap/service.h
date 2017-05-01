@@ -152,6 +152,3 @@ protected:                    \
 	static void sRegisterTypes(nap::Core& inCore, const nap::Service& inService);
 
 //////////////////////////////////////////////////////////////////////////
-
-
-RTTI_DECLARE_BASE(nap::Service)

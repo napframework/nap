@@ -174,5 +174,3 @@ namespace nap
 		ContextSpecificStateMap	mContextSpecificState;				//< The per-context render state
 	};
 } // nap
-
-RTTI_DECLARE(nap::RenderService)

@@ -98,5 +98,3 @@ namespace nap
 	};
 
 }
-
-RTTI_DECLARE(nap::ResourceManagerService)

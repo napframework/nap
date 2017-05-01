@@ -105,5 +105,3 @@ namespace nap
 	};
 
 } // nap
-
-RTTI_DECLARE(nap::TransformComponent)

@@ -138,6 +138,3 @@ namespace nap
 
 	};
 }
-
-RTTI_DECLARE(nap::OpenGLRenderer)
-RTTI_DECLARE_BASE(nap::OpenGLRenderWindow)

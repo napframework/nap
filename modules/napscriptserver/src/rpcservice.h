@@ -119,4 +119,3 @@ namespace nap
         std::string mSessionID;
 	};
 }
-RTTI_DECLARE_BASE(nap::RpcService)

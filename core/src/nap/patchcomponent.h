@@ -39,4 +39,3 @@ namespace nap
 	};
 }
 
-RTTI_DECLARE(nap::PatchComponent)

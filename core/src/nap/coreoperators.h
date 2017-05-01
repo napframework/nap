@@ -294,19 +294,3 @@ namespace nap
         }
 	};
 }
-
-
-
-// RTTI_DECLARE_BASE(nap::AttributeOutplug)
-RTTI_DECLARE(nap::AddFloatOperator)
-RTTI_DECLARE(nap::SimpleTriggerOperator)
-RTTI_DECLARE(nap::MultFloatOperator)
-RTTI_DECLARE(nap::FloatOperator)
-RTTI_DECLARE(nap::IntOperator)
-RTTI_DECLARE(nap::LogOperator)
-RTTI_DECLARE(nap::FloatToStringOperator)
-//RTTI_DECLARE_BASE(nap::GetAttributesOperator)
-
-RTTI_DECLARE(nap::OSCOperator)
-RTTI_DECLARE(nap::CompareStringOperator)
-RTTI_DECLARE(nap::SwitchOperator)

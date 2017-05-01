@@ -42,5 +42,3 @@ namespace nap
         void registerWithService(const Object& object);
     };
 }
-
-RTTI_DECLARE_BASE(nap::ServiceableOperator)

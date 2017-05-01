@@ -52,6 +52,3 @@ namespace nap
 	};
 
 } //< End Namespace nap
-
-// RTTI Declares
-RTTI_DECLARE_BASE(nap::Component)

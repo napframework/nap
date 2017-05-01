@@ -70,5 +70,3 @@ namespace nap
 		glm::vec4 mClearColor;
 	};
 }
-
-RTTI_DECLARE(nap::TextureRenderTargetResource2D)

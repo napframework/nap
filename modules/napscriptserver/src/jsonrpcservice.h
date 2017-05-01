@@ -92,5 +92,3 @@ namespace nap
 		std::mutex mMutex;
 	};
 }
-
-RTTI_DECLARE(nap::JsonRpcService)

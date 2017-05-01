@@ -90,5 +90,3 @@ namespace nap
 	};
 
 }
-
-RTTI_DECLARE(nap::LayoutComponent)
