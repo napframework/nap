@@ -9,8 +9,12 @@ namespace RTTI
 	 */
 	bool areVariantsEqualRecursive(const RTTI::Variant& variantA, const RTTI::Variant& variantB)
 	{
+		// Extract wrapped type
+		auto value_type = variantA.get_type();
+		auto actual_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
+		bool is_wrapper = actual_type != value_type;
+		
 		// Types must match
-		RTTI::TypeInfo value_type = variantA.get_type();
 		assert(value_type == variantB.get_type());
 
 		// If this is an array, compare the array element-wise
@@ -38,9 +42,9 @@ namespace RTTI
 		{
 			// If the type of this variant is a primitive type or non-primitive type with no RTTI properties,
 			// we perform a normal comparison
-			auto child_properties = value_type.get_properties();
+			auto child_properties = actual_type.get_properties();
 			if (value_type.is_arithmetic() || value_type.is_pointer() || child_properties.empty())
-				return variantA == variantB;
+				return is_wrapper ? (variantA.extract_wrapped_value() == variantB.extract_wrapped_value()) : (variantA == variantB);
 
 			// Recursively compare each property of the compound
 			for (const RTTI::Property& property : child_properties)
