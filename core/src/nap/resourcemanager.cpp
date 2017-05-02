@@ -553,8 +553,7 @@ namespace nap
 
 		// Find out what objects to init and in what order to init them
 		ObservedObjectList objects_to_init;
-		std::string external_changed_file = (toComparableFilename(filename) == toComparableFilename(externalChangedFile)) ? std::string() : externalChangedFile;
-		if (!determineObjectsToInit(existing_objects, object_restorer.getClonedObjects(), new_objects, external_changed_file, objects_to_init, initResult))
+		if (!determineObjectsToInit(existing_objects, object_restorer.getClonedObjects(), new_objects, externalChangedFile, objects_to_init, initResult))
 			return false;
 		
 		// Init all objects in the correct order
