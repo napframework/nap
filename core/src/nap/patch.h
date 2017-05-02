@@ -13,7 +13,7 @@ namespace nap
 	//! This is a patch of operators that can be connected to one another through their plugs
 	class Patch : public AttributeObject
 	{
-		RTTI_ENABLE_DERIVED_FROM(AttributeObject)
+		RTTI_ENABLE(AttributeObject)
 	public:
 		class Connection;
 
@@ -124,8 +124,4 @@ namespace nap
 		OutputPlugBase& mSource;
 		InputPlugBase& mDestination;
 	};
-
-
-
 }
-RTTI_DECLARE(nap::Patch)

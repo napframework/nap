@@ -7,14 +7,6 @@ RTTI_BEGIN_CLASS(nap::TextureRenderTargetResource2D)
 	RTTI_PROPERTY("mClearColor", &nap::TextureRenderTargetResource2D::mClearColor)
 RTTI_END_CLASS
 
-// TODO: move glm rtti definitions to some central place
-RTTI_BEGIN_CLASS(glm::vec4)
-	RTTI_PROPERTY("x", &glm::vec4::x)
-	RTTI_PROPERTY("y", &glm::vec4::y)
-	RTTI_PROPERTY("z", &glm::vec4::z)
-	RTTI_PROPERTY("w", &glm::vec4::w)
-RTTI_END_CLASS
-
 namespace nap
 {
 

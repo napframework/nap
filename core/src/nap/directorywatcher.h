@@ -2,9 +2,12 @@
 
 #include <string>
 #include <memory>
+#include <vector>
 
 namespace nap
 {
+    
+    
 	/**
 	* Monitors file changes in a directory (currently hardcoded to active directory, and hardcoded to respond to file 'writes').
 	* This class works polling-based, so continue to call update to retrieve what files are modified on disk.
@@ -13,19 +16,19 @@ namespace nap
 	{
 	public:
 		DirectoryWatcher();
-
 		~DirectoryWatcher();
 
 		/**
 		* Checks if any changes to files were made, returns true if so. Continue to call this function to retrieve 
 		* multiple updates.
-		* @param modifiedFile: if the function returns true, contains the filename of the file that was modified. 
+		* @param modifiedFiles: if the function returns true, contains the filenames of the files that were modified. 
 		*/
-		bool update(std::string& modifiedFile);
+		bool update(std::vector<std::string>& modifiedFiles);
 
 	private:
-		struct PImpl;
-		std::unique_ptr<PImpl> mPImpl = nullptr;
+        struct PImpl;
+        struct PImpl_deleter { void operator()(PImpl*) const; };
+        std::unique_ptr<PImpl, PImpl_deleter> mPImpl = nullptr;
 	};
 
 } //< End Namespace nap

@@ -61,5 +61,3 @@ namespace nap
 		virtual void shutdown() = 0;
 	};
 }
-
-RTTI_DECLARE_BASE(nap::Renderer)

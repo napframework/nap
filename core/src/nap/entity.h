@@ -22,7 +22,7 @@ namespace nap
 	{
 		friend Core;
 		friend Deserializer;
-		RTTI_ENABLE_DERIVED_FROM(AttributeObject)
+		RTTI_ENABLE(AttributeObject)
 
 	public:
         Entity() = default;
@@ -147,5 +147,3 @@ namespace nap
     }
     
 }
-
-RTTI_DECLARE_BASE(nap::Entity)

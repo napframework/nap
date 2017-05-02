@@ -24,7 +24,7 @@ namespace nap
 	class Component : public AttributeObject
 	{
 		friend Entity;
-		RTTI_ENABLE_DERIVED_FROM(AttributeObject)
+		RTTI_ENABLE(AttributeObject)
 	public:
 		// All components need to have a default constructor in order to be able to constructed in a
 		// modular system or a deserialization process by the help of the rtti system.
@@ -52,6 +52,3 @@ namespace nap
 	};
 
 } //< End Namespace nap
-
-// RTTI Declares
-RTTI_DECLARE_BASE(nap::Component)

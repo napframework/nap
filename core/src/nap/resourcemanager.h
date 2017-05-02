@@ -17,7 +17,7 @@ namespace nap
 	 */
 	class ResourceManagerService : public Service
 	{
-		RTTI_ENABLE_DERIVED_FROM(Service)
+		RTTI_ENABLE(Service)
 	public:
 
 		ResourceManagerService();
@@ -98,5 +98,3 @@ namespace nap
 	};
 
 }
-
-RTTI_DECLARE(nap::ResourceManagerService)

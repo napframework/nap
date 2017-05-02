@@ -38,7 +38,7 @@ namespace nap
 	*/
 	class Resource : public AttributeObject
 	{
-		RTTI_ENABLE_DERIVED_FROM(AttributeObject)
+		RTTI_ENABLE(AttributeObject)
 	public:
 		enum class EFinishMode : uint8
 		{
@@ -63,8 +63,4 @@ namespace nap
 		*/
 		virtual const std::string getDisplayName() const = 0;
 	};
-
-
 }
-
-RTTI_DECLARE_BASE(nap::Resource)

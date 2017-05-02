@@ -22,7 +22,7 @@ namespace nap
     
     class ServiceableOperator : public Operator
     {
-        RTTI_ENABLE_DERIVED_FROM(Operator)
+        RTTI_ENABLE(Operator)
         
     public:
         ServiceableOperator();
@@ -42,5 +42,3 @@ namespace nap
         void registerWithService(const Object& object);
     };
 }
-
-RTTI_DECLARE_BASE(nap::ServiceableOperator)

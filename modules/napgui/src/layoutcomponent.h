@@ -8,7 +8,7 @@ namespace nap
 	// All metrics in cm
 	class LayoutComponent : public Component
 	{
-		RTTI_ENABLE_DERIVED_FROM(Component)
+		RTTI_ENABLE(Component)
 	public:
 		LayoutComponent() : Component(), bounds(this, "Bounds", Rect()) {
 			added.connect([&](Object& owner) 
@@ -90,5 +90,3 @@ namespace nap
 	};
 
 }
-
-RTTI_DECLARE(nap::LayoutComponent)

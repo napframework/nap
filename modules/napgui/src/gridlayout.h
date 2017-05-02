@@ -11,7 +11,7 @@ namespace nap
 
 	class GridLayout : public LayoutComponent
 	{
-		RTTI_ENABLE_DERIVED_FROM(LayoutComponent)
+		RTTI_ENABLE(LayoutComponent)
 	public:
 		GridLayout() : LayoutComponent() {}
 
@@ -21,5 +21,3 @@ namespace nap
 		Attribute<int> colCount = {this, "ColCount", 2};
 	};
 }
-
-RTTI_DECLARE(nap::GridLayout)

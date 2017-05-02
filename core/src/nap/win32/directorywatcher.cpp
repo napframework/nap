@@ -1,4 +1,4 @@
-#include "directorywatcher.h"
+#include "../directorywatcher.h"
 #include "assert.h"
 
 #define WIN32_LEAN_AND_MEAN
@@ -8,7 +8,6 @@
 
 namespace nap
 {
-
 	/**
 	* Internal data container to hide windows internals from the header.
 	*/
@@ -20,13 +19,12 @@ namespace nap
 		FILE_NOTIFY_INFORMATION mNotifications[1024];		// Output struct with file notification info
 	};
 
-
 	/**
 	* Installs monitor: opens directory, creates event, starts directory scan.
 	*/
-	DirectoryWatcher::DirectoryWatcher() :
-		mPImpl(std::make_unique<DirectoryWatcher::PImpl>())
+	DirectoryWatcher::DirectoryWatcher()
 	{
+        mPImpl = std::make_unique<DirectoryWatcher::PImpl>();
 		char current_directory[MAX_PATH];
 		GetCurrentDirectory(MAX_PATH, current_directory);
 
@@ -57,12 +55,11 @@ namespace nap
 	}
 
 
-
 	/**
 	* Checks if any changes to files were made, returns true if so. Continue to call this function to retrieve
 	* multiple updates.
 	*/
-	bool DirectoryWatcher::update(std::string& modifiedFile)
+	bool DirectoryWatcher::update(std::vector<std::string>& modifiedFiles)
 	{
 		bool did_update = false;
 
@@ -74,9 +71,23 @@ namespace nap
 			result = GetOverlappedResult(mPImpl->mDirectoryToMonitor, &mPImpl->mOverlapped, &dwBytesReturned, FALSE);
 			if (result != 0)
 			{
-				// Copy from wide string to narrow string
-				modifiedFile.resize(mPImpl->mNotifications[0].FileNameLength / 2);
-				wcstombs(&modifiedFile[0], mPImpl->mNotifications->FileName, mPImpl->mNotifications[0].FileNameLength / 2);
+				FILE_NOTIFY_INFORMATION* current_notification = mPImpl->mNotifications;
+				bool done = false;
+				while (!done)
+				{
+					// Copy from wide string to narrow string
+					std::string modified_file;
+					modified_file.resize(current_notification->FileNameLength / 2);
+					wcstombs(&modified_file[0], current_notification->FileName, current_notification->FileNameLength / 2);
+
+					modifiedFiles.emplace_back(modified_file);
+
+					// We've processed the entire buffer if the next entry is zero
+					done = current_notification->NextEntryOffset == 0;
+
+					// Update current notification we're processing
+					current_notification = (FILE_NOTIFY_INFORMATION*)(((uint8_t*)current_notification) + current_notification->NextEntryOffset);
+				}
 
 				did_update = true;
 
@@ -95,5 +106,4 @@ namespace nap
 
 		return did_update;
 	}
-
 }

@@ -6,7 +6,7 @@ include(cmake/targetarch.cmake)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 if (WIN32)
     if(MSVC)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4244 /wd4305 /wd4996 /wd4267 /wd4018 /MP /bigobj")
@@ -32,7 +32,6 @@ cmake_policy(SET CMP0043 NEW)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 include(configure.cmake)
-
 
 if(WIN32)
     if(MINGW)

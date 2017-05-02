@@ -67,7 +67,6 @@ namespace nap
 	};
 }
 
-RTTI_DECLARE_BASE(nap::Module)
 
 //
 // SHARED LIB EXPORT MACRO
@@ -116,7 +115,7 @@ typedef nap::Module* (*init_module_fn)(void);
 #define NAP_MODULE_BEGIN(NAME)                \
 	class Module##NAME : public nap::Module   \
 	{                                         \
-		RTTI_ENABLE_DERIVED_FROM(nap::Module) \
+		RTTI_ENABLE(nap::Module) \
 	public:                                   \
 	Module##NAME() : nap::Module(#NAME)
 
@@ -124,7 +123,6 @@ typedef nap::Module* (*init_module_fn)(void);
 #define NAP_MODULE_END(NAME)                  \
 	}                                         \
 	;                                         \
-	RTTI_DECLARE(Module##NAME)                \
 	RTTI_DEFINE(Module##NAME)                 \
 	NAP_EXPORT nap::Module* nap_init_module() \
 	{                                         \
@@ -135,7 +133,6 @@ typedef nap::Module* (*init_module_fn)(void);
 #define NAP_MODULE_END(NAME)   \
 	}                          \
 	;                          \
-	RTTI_DECLARE(Module##NAME) \
 	RTTI_DEFINE(Module##NAME)
 #endif
 

@@ -356,5 +356,3 @@ namespace nap
 		std::string mID;
 	};
 }
-
-RTTI_DECLARE_BASE(nap::Object)

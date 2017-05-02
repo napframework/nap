@@ -190,20 +190,21 @@ namespace nap
 		*/
 		Node* GetOrCreateObjectNode(Object& object)
 		{
-			Node* node;
+			Node* result = nullptr;
 			NodeMap::iterator iter = mNodes.find(object.mID);
 			if (iter == mNodes.end())
 			{
-				node = new Node();
-				node->mObject = &object;
-				mNodes.insert({ object.mID, std::unique_ptr<Node>(node) });
+                auto node = std::make_unique<Node>();
+                node->mObject = &object;
+                result = node.get();
+                mNodes.insert(std::make_pair(object.mID, std::move(node)));
 			}
 			else
 			{
-				node = iter->second.get();
+				result = iter->second.get();
 			}
 
-			return node;
+            return result;
 		}
 
 
@@ -212,21 +213,22 @@ namespace nap
 		*/
 		Node* GetOrCreateFileNode(const std::string& filename)
 		{
-			Node* node;
+            Node* result = nullptr;
 			NodeMap::iterator iter = mNodes.find(filename);
 			if (iter == mNodes.end())
 			{
-				node = new Node();
-				node->mObject = nullptr;
-				node->mFile = filename;
-				mNodes.insert({ filename, std::unique_ptr<Node>(node) });
+                auto node = std::make_unique<Node>();
+                node->mObject = nullptr;
+                node->mFile = filename;
+                result = node.get();
+                mNodes.insert(std::make_pair(filename, std::move(node)));
 			}
 			else
 			{
-				node = iter->second.get();
+				result = iter->second.get();
 			}
 
-			return node;
+			return result;
 		}
 
 	private:
@@ -280,12 +282,12 @@ namespace nap
 				Object* source = kvp.first;			// file object
 				Object* target = kvp.second;		// object in ResourceMgr
 				std::unique_ptr<Object> copy = std::move(rttiCloneObject(*target));
-				mClonedObjects.insert({ source, std::move(copy) });	// Mapping from 'read object' to backup of file in ResourceMgr
+                mClonedObjects[source] = std::move(copy); // Mapping from 'read object' to backup of file in ResourceMgr
 			}
 		}
 
 
-		ObjectRestorer::~ObjectRestorer()
+		~ObjectRestorer()
 		{
 			if (mRestore)
 			{
@@ -496,34 +498,29 @@ namespace nap
 	*/
 	bool ResourceManagerService::loadFile(const std::string& filename, const std::string& externalChangedFile, nap::InitResult& initResult)
 	{
-		UnresolvedPointerList unresolved_pointers;
-		std::vector<FileLink> linkedFiles;
-
-		// Objects as read from file. Objects are owned by this list.
-		OwnedObjectList file_objects;
-
-		// Read objects from disk into 'file_objects'. 
-		if (!readJSonFile(filename, file_objects, linkedFiles, unresolved_pointers, initResult))
+		// Read objects from disk
+		ReadJSONFileResult read_result;
+		if (!readJSONFile(filename, read_result, initResult))
 			return false;
 
 		ExistingObjectMap existing_objects;			// Mapping from 'file object' to 'existing object in ResourceMgr'. This is an observer relationship.
 		ObservedObjectList new_objects;				// Objects not (yet) present in ResourceMgr.
 
 		// Split file objects into observer lists for new/existing objects. 
-		splitFileObjects(file_objects, existing_objects, new_objects);
+		splitFileObjects(read_result.mReadObjects, existing_objects, new_objects);
 
 		// The ObjectRestorer is capable of undoing changes that we are going to make in the loading process
 		// (adding objects, updating objects).
 		ObjectRestorer object_restorer(*this, existing_objects, new_objects);
 
 		// Update attributes of objects already existing in ResourceMgr
-		if (!updateExistingObjects(existing_objects, unresolved_pointers, initResult))
+		if (!updateExistingObjects(existing_objects, read_result.mUnresolvedPointers, initResult))
 			return false;
 
 		// Add objects that were not yet present in ResourceMgr
 		// Note that we cannot iterate over new_objects as we need to transfer ownership
 		// of the file object to the resource manager.
-		for (auto& object : file_objects)
+		for (auto& object : read_result.mReadObjects)
 		{
 			nap::Resource* resource = rtti_cast<Resource>(object.get());
 			if (resource == nullptr)
@@ -539,7 +536,7 @@ namespace nap
 		}
 
 		// Resolve all unresolved pointers against the ResourceMgr
-		for (const UnresolvedPointer& unresolved_pointer : unresolved_pointers)
+		for (const UnresolvedPointer& unresolved_pointer : read_result.mUnresolvedPointers)
 		{
 			nap::Resource* source_resource = rtti_cast<Resource>(unresolved_pointer.mObject);
 			if (source_resource == nullptr)
@@ -556,7 +553,8 @@ namespace nap
 
 		// Find out what objects to init and in what order to init them
 		ObservedObjectList objects_to_init;
-		if (!determineObjectsToInit(existing_objects, object_restorer.getClonedObjects(), new_objects, externalChangedFile, objects_to_init, initResult))
+		std::string external_changed_file = (toComparableFilename(filename) == toComparableFilename(externalChangedFile)) ? std::string() : externalChangedFile;
+		if (!determineObjectsToInit(existing_objects, object_restorer.getClonedObjects(), new_objects, external_changed_file, objects_to_init, initResult))
 			return false;
 		
 		// Init all objects in the correct order
@@ -593,7 +591,7 @@ namespace nap
 		for (Resource* resource : initted_objects)
 			resource->finish(Resource::EFinishMode::COMMIT);
 
-		for (const FileLink& file_link : linkedFiles)
+		for (const FileLink& file_link : read_result.mFileLinks)
 			addFileLink(filename, file_link.mTargetFile);
 
 		mFilesToWatch.insert(toComparableFilename(filename));
@@ -604,41 +602,43 @@ namespace nap
 
 	void ResourceManagerService::checkForFileChanges()
 	{
-		std::string modified_file;
-		if (mDirectoryWatcher->update(modified_file))
+		std::vector<std::string> modified_files;
+		if (mDirectoryWatcher->update(modified_files))
 		{
-			modified_file = toComparableFilename(modified_file);
-
-			std::vector<std::string> modified_objects;	// List of object marked as 'modified' because they are linking to a modified file
-			std::set<std::string> files_to_reload;
-
-			// Is our modified file a file that was loaded by the manager?
-			if (mFilesToWatch.find(modified_file) != mFilesToWatch.end())
+			for (std::string& modified_file : modified_files)
 			{
-				files_to_reload.insert(modified_file);
-			}
-			else
-			{
-				// Find all the sources of this file
-				FileLinkMap::iterator file_link = mFileLinkMap.find(modified_file);
-				if (file_link != mFileLinkMap.end())
-					for (const std::string& source_file : file_link->second)
-						files_to_reload.insert(source_file);
-			}
+				modified_file = toComparableFilename(modified_file);
 
-			if (!files_to_reload.empty())
-			{
-				nap::Logger::info("Detected change to %s. Files needing reload:", modified_file.c_str());
-				for (const std::string& source_file : files_to_reload)
-					nap::Logger::info("\t-> %s", source_file.c_str());
+				std::set<std::string> files_to_reload;
 
-				for (const std::string& source_file : files_to_reload)
+				// Is our modified file a file that was loaded by the manager?
+				if (mFilesToWatch.find(modified_file) != mFilesToWatch.end())
 				{
-					nap::InitResult initResult;
-					if (!loadFile(source_file, modified_file, initResult))
+					files_to_reload.insert(modified_file);
+				}
+				else
+				{
+					// Find all the sources of this file
+					FileLinkMap::iterator file_link = mFileLinkMap.find(modified_file);
+					if (file_link != mFileLinkMap.end())
+						for (const std::string& source_file : file_link->second)
+							files_to_reload.insert(source_file);
+				}
+
+				if (!files_to_reload.empty())
+				{
+					nap::Logger::info("Detected change to %s. Files needing reload:", modified_file.c_str());
+					for (const std::string& source_file : files_to_reload)
+						nap::Logger::info("\t-> %s", source_file.c_str());
+
+					for (const std::string& source_file : files_to_reload)
 					{
-						nap::Logger::warn("Failed to reload %s: %s. See log for more information.", source_file.c_str(), initResult.mErrorString.c_str());
-						break;
+						nap::InitResult initResult;
+						if (!loadFile(source_file, modified_file, initResult))
+						{
+							nap::Logger::warn("Failed to reload %s: %s. See log for more information.", source_file.c_str(), initResult.mErrorString.c_str());
+							break;
+						}
 					}
 				}
 			}

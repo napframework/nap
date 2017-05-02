@@ -16,7 +16,7 @@ namespace nap
 	 */
 	class CameraComponent : public ServiceableComponent
 	{
-		RTTI_ENABLE_DERIVED_FROM(ServiceableComponent)
+		RTTI_ENABLE(ServiceableComponent)
 	public:
 		// Default constructor
 		CameraComponent();
@@ -91,5 +91,3 @@ namespace nap
 		glm::ivec2 mGridLocation = glm::ivec2(0, 0);					// Location means the 2 dimensional index in the split projection dimensions
 	};
 }
-
-RTTI_DECLARE(nap::CameraComponent)

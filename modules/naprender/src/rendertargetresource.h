@@ -16,7 +16,7 @@ namespace nap
 	 */
 	class TextureRenderTargetResource2D : public Resource
 	{
-		RTTI_ENABLE_DERIVED_FROM(Resource)
+		RTTI_ENABLE(Resource)
 	public:
 
 		/**
@@ -76,5 +76,3 @@ namespace nap
 		glm::vec4 mClearColor;
 	};
 }
-
-RTTI_DECLARE(nap::TextureRenderTargetResource2D)

@@ -30,7 +30,7 @@ namespace nap
 	 */
 	class RenderService : public Service
 	{
-		RTTI_ENABLE_DERIVED_FROM(Service)
+		RTTI_ENABLE(Service)
 
 	public:
 		/**
@@ -174,5 +174,3 @@ namespace nap
 		ContextSpecificStateMap	mContextSpecificState;				//< The per-context render state
 	};
 } // nap
-
-RTTI_DECLARE(nap::RenderService)

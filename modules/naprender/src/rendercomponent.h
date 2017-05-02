@@ -22,7 +22,7 @@ namespace nap
 	 */
 	class RenderableComponent : public ServiceableComponent
 	{
-		RTTI_ENABLE_DERIVED_FROM(ServiceableComponent)
+		RTTI_ENABLE(ServiceableComponent)
 	public:
 		/**
 		 * If the object should be drawn or not
@@ -89,5 +89,3 @@ namespace nap
 		void setMaterial(Material* newMaterial);
 	};
 }
-
-RTTI_DECLARE_BASE(nap::RenderableComponent)
