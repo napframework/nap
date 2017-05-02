@@ -28,7 +28,7 @@ namespace nap {
         CFArrayRef pathsToWatch;
         FSEventStreamRef stream;
         CFAbsoluteTime latency = 0.01; // Latency in seconds
-        std::string executablePath;
+        std::string executablePath; // path to the current executable
     };
     
     
@@ -72,11 +72,12 @@ namespace nap {
         mPImpl->context.retain = NULL;
         mPImpl->context.release = NULL;
         
+        // retrieve the path to the current executable
         uint32_t size = 256;
         std::vector<char> buffer;
         buffer.resize(size);
         _NSGetExecutablePath(buffer.data(), &size);
-        mPImpl->executablePath = getFileDir(std::string(buffer.data())) + "/";
+        mPImpl->executablePath = getFileDir(std::string(buffer.data()));
         
         // create event stream for file change event
         mPImpl->stream = FSEventStreamCreate(kCFAllocatorDefault,
@@ -117,15 +118,19 @@ namespace nap {
         
         for (auto& modifiedFile : mPImpl->modifiedFiles)
         {
-            auto pos = modifiedFile.find(mPImpl->executablePath);
-            if (pos != std::string::npos)
+            // check if the executable path is found at the start if the modifiel file's path
+            auto pos = modifiedFile.find(mPImpl->executablePath + "/");
+            if (pos != 0)
             {
+                // strip the executable's path from the start
                 modifiedFile.erase(pos, mPImpl->executablePath.size());
                 modifiedFiles.emplace_back(modifiedFile);
             }
         }
         
         mPImpl->modifiedFiles.clear();
-        return true;
+        
+        // if the modified files found by the event stream are not found in the executable's dir we still need to return false
+        return !modifiedFiles.empty();
 	}
 }
