@@ -2,9 +2,35 @@
 
 #include "assert.h"
 #include <CoreServices/CoreServices.h>
+#include <sys/types.h>
+#include <dirent.h>
+#include <sys/stat.h>
+
+#include <iostream>
+#include <mutex>
+#include <thread>
 
 namespace nap {
     
+    /**
+     * Internal data container to hide internals from the header.
+     */
+    struct DirectoryWatcher::PImpl
+    {
+        // the files that have been modified and not yet reported to the user of the system
+        std::vector<std::string> modifiedFiles;
+        
+        FSEventStreamContext context; // could put stream-specific data here.
+        CFStringRef mypath = CFSTR(""); // empty means current working directory
+        CFArrayRef pathsToWatch;
+        FSEventStreamRef stream;
+        CFAbsoluteTime latency = 0.01; // Latency in seconds
+    };
+    
+    
+    /**
+     * Callback called by the event stream to handle file change events
+     */
     
     void scanCallback(ConstFSEventStreamRef streamRef,
                       void *clientCallBackInfo,
@@ -14,26 +40,12 @@ namespace nap {
                       const FSEventStreamEventId eventIds[])
     {
         char **paths = (char**)eventPaths;
+        std::vector<std::string>* modifiedFiles = (std::vector<std::string>*)(clientCallBackInfo);
         
-        // printf("Callback called\n");
         for (auto i = 0; i < numEvents; i++) {
-            /* flags are unsigned long, IDs are uint64_t */
-            printf("Change %llu in %s, flags %u\n", eventIds[i], paths[i], (unsigned int)eventFlags[i]);
+            modifiedFiles->emplace_back(std::string(paths[i]));
         }
     }
-    
-    
-	/**
-	* Internal data container to hide internals from the header.
-	*/
-    struct DirectoryWatcher::PImpl
-	{
-        CFStringRef mypath = CFSTR("");
-        CFArrayRef pathsToWatch = CFArrayCreate(NULL, (const void **)&mypath, 1, NULL);
-        FSEventStreamContext* callbackInfo = nullptr; // could put stream-specific data here.
-        FSEventStreamRef stream;
-        CFAbsoluteTime latency = 3.0; /* Latency in seconds */
-    };
     
     
     /**
@@ -48,16 +60,24 @@ namespace nap {
 	DirectoryWatcher::DirectoryWatcher()
 	{
         mPImpl = std::unique_ptr<PImpl, PImpl_deleter>(new PImpl);
+        mPImpl->pathsToWatch = CFArrayCreate(NULL, (const void **)&mPImpl->mypath, 1, NULL);
+
+        // retain and release have to be set to NULL explicitly otherwise this causes irregular crashes
+        mPImpl->context.version = 0;
+        mPImpl->context.info = (void*)(&mPImpl->modifiedFiles);
+        mPImpl->context.retain = NULL;
+        mPImpl->context.release = NULL;
         
         // create event stream for file change event
-        mPImpl->stream = FSEventStreamCreate(NULL,
+        mPImpl->stream = FSEventStreamCreate(kCFAllocatorDefault,
                                              &scanCallback,
-                                             mPImpl->callbackInfo,
+                                             &mPImpl->context,
                                              mPImpl->pathsToWatch,
                                              kFSEventStreamEventIdSinceNow,
                                              mPImpl->latency,
-                                             kFSEventStreamCreateFlagNone
+                                             kFSEventStreamCreateFlagFileEvents
                                              );
+        
         // schedule the stream on the current run loop
         FSEventStreamScheduleWithRunLoop(mPImpl->stream, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
         // tells the stream to begin sending events
@@ -70,7 +90,7 @@ namespace nap {
 	*/
 	DirectoryWatcher::~DirectoryWatcher()
 	{
-        FSEventStreamUnscheduleFromRunLoop(mPImpl->stream, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
+        FSEventStreamStop(mPImpl->stream);
         FSEventStreamInvalidate(mPImpl->stream);
         FSEventStreamRelease(mPImpl->stream);
 	}
@@ -82,6 +102,13 @@ namespace nap {
 	*/
 	bool DirectoryWatcher::update(std::vector<std::string>& modifiedFiles)
 	{
-		return false;
+        if (mPImpl->modifiedFiles.empty())
+            return false;
+        
+        for (auto& modifiedFile : mPImpl->modifiedFiles)
+            modifiedFiles.emplace_back(modifiedFile);
+        
+        mPImpl->modifiedFiles.clear();
+        return true;
 	}
 }
