@@ -106,10 +106,7 @@ namespace nap {
             return false;
         
         for (auto& modifiedFile : mPImpl->modifiedFiles)
-        {
-            std::cout << modifiedFile << std::endl;
             modifiedFiles.emplace_back(modifiedFile);
-        }
         
         mPImpl->modifiedFiles.clear();
         return true;
