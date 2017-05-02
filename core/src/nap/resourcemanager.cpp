@@ -91,7 +91,7 @@ namespace nap
 
 				// Process pointers to other objects
 				std::vector<Object*> object_links;
-				rttiFindObjectLinks(*object, object_links);
+				RTTI::findObjectLinks(*object, object_links);
 
 				for (Object* object : object_links)
 				{
@@ -110,7 +110,7 @@ namespace nap
 			
 				// Process pointers to files
 				std::vector<std::string> file_links;
-				rttiFindFileLinks(*object, file_links);
+				RTTI::findFileLinks(*object, file_links);
 
 				for (std::string& filename : file_links)
 				{
@@ -281,7 +281,7 @@ namespace nap
 			{
 				Object* source = kvp.first;			// file object
 				Object* target = kvp.second;		// object in ResourceMgr
-				std::unique_ptr<Object> copy = std::move(rttiCloneObject(*target));
+				std::unique_ptr<Object> copy = std::move(RTTI::cloneObject(*target));
                 mClonedObjects[source] = std::move(copy); // Mapping from 'read object' to backup of file in ResourceMgr
 			}
 		}
@@ -300,7 +300,7 @@ namespace nap
 					ResourceManagerService::ClonedObjectMap::const_iterator clone = mClonedObjects.find(source);
 					assert(clone != mClonedObjects.end());
 
-					rttiCopyObject(*(clone->second), *target);
+					RTTI::copyObject(*(clone->second), *target);
 				}
 
 				// Remove objects from resource manager if they were added
@@ -416,7 +416,7 @@ namespace nap
 			ExistingObjectMap::const_iterator existing_object = existingObjects.find(kvp.first);
 			assert(existing_object != existingObjects.end());
 
-			if (!rttiAreObjectsEqual(*existing_object->second, *kvp.second.get()))
+			if (!RTTI::areObjectsEqual(*existing_object->second, *kvp.second.get()))
 				dirty_nodes.insert(kvp.first->mID);
 		}
 
