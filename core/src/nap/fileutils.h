@@ -34,6 +34,12 @@ namespace nap
 	 */
 	std::string getFileName(const std::string& file);
 
+    /**
+     * @Return the directory of the given file
+     * @param file the file to extract the name frame
+     */
+    std::string getFileDir(const std::string& file);
+    
 	/**
 	* @return file name without extension
 	* @param file path that is stripped

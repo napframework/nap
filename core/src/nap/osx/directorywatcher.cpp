@@ -1,10 +1,13 @@
 #include "../directorywatcher.h"
 
+#include <nap/fileutils.h>
+
 #include "assert.h"
 #include <CoreServices/CoreServices.h>
 #include <sys/types.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <mach-o/dyld.h>
 
 #include <iostream>
 #include <mutex>
@@ -25,6 +28,7 @@ namespace nap {
         CFArrayRef pathsToWatch;
         FSEventStreamRef stream;
         CFAbsoluteTime latency = 0.01; // Latency in seconds
+        std::string executablePath;
     };
     
     
@@ -68,6 +72,12 @@ namespace nap {
         mPImpl->context.retain = NULL;
         mPImpl->context.release = NULL;
         
+        uint32_t size = 256;
+        std::vector<char> buffer;
+        buffer.resize(size);
+        _NSGetExecutablePath(buffer.data(), &size);
+        mPImpl->executablePath = getFileDir(std::string(buffer.data())) + "/";
+        
         // create event stream for file change event
         mPImpl->stream = FSEventStreamCreate(kCFAllocatorDefault,
                                              &scanCallback,
@@ -106,7 +116,14 @@ namespace nap {
             return false;
         
         for (auto& modifiedFile : mPImpl->modifiedFiles)
-            modifiedFiles.emplace_back(modifiedFile);
+        {
+            auto pos = modifiedFile.find(mPImpl->executablePath);
+            if (pos != std::string::npos)
+            {
+                modifiedFile.erase(pos, mPImpl->executablePath.size());
+                modifiedFiles.emplace_back(modifiedFile);
+            }
+        }
         
         mPImpl->modifiedFiles.clear();
         return true;
