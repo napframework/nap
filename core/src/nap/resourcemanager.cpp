@@ -148,7 +148,9 @@ namespace nap
 		Node* FindNode(const std::string& ID)
 		{
 			NodeMap::iterator iter = mNodes.find(ID);
-			assert(iter != mNodes.end());
+			if (iter == mNodes.end())
+				return nullptr;
+			
 			return iter->second.get();
 		}
 
@@ -433,8 +435,11 @@ namespace nap
 		for (const std::string& dirty_node : dirty_nodes)
 		{
 			ObjectGraph::Node* node = object_graph.FindNode(dirty_node);
-			assert(node != nullptr);
-			addIncomingObjectsRecursive(node, objects_to_init);
+		
+			// In the case that file links change as part of the file modification(s), it's possible for the dirty node to not be present in the ObjectGraph,
+			// so we can't assert here but need to deal with that case.
+			if (node != nullptr)
+				addIncomingObjectsRecursive(node, objects_to_init);
 		}
 
 		// Sort on graph depth for the correct init() order
@@ -498,6 +503,9 @@ namespace nap
 	*/
 	bool ResourceManagerService::loadFile(const std::string& filename, const std::string& externalChangedFile, nap::InitResult& initResult)
 	{
+		// ExternalChangedFile should only be used if it's different from the file being reloaded
+		assert(toComparableFilename(filename) != toComparableFilename(externalChangedFile));
+
 		// Read objects from disk
 		ReadJSONFileResult read_result;
 		if (!readJSONFile(filename, read_result, initResult))
@@ -621,7 +629,7 @@ namespace nap
 					FileLinkMap::iterator file_link = mFileLinkMap.find(modified_file);
 					if (file_link != mFileLinkMap.end())
 						for (const std::string& source_file : file_link->second)
-							files_to_reload.insert(source_file);
+							files_to_reload.insert(toComparableFilename(source_file));
 				}
 
 				if (!files_to_reload.empty())
@@ -633,7 +641,7 @@ namespace nap
 					for (const std::string& source_file : files_to_reload)
 					{
 						nap::InitResult initResult;
-						if (!loadFile(source_file, modified_file, initResult))
+						if (!loadFile(source_file, source_file == modified_file ? std::string() : modified_file, initResult))
 						{
 							nap::Logger::warn("Failed to reload %s: %s. See log for more information.", source_file.c_str(), initResult.mErrorString.c_str());
 							break;
