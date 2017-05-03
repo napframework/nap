@@ -19,12 +19,19 @@ namespace nap
 		FILE_NOTIFY_INFORMATION mNotifications[1024];		// Output struct with file notification info
 	};
 
+
+	/**
+     * Deleter operator definition
+     */
+    void DirectoryWatcher::PImpl_deleter::operator()(DirectoryWatcher::PImpl*ptr) const { delete ptr; }
+
+
 	/**
 	* Installs monitor: opens directory, creates event, starts directory scan.
 	*/
 	DirectoryWatcher::DirectoryWatcher()
 	{
-        mPImpl = std::make_unique<DirectoryWatcher::PImpl>();
+        mPImpl = std::unique_ptr<PImpl, PImpl_deleter>(new PImpl);
 		char current_directory[MAX_PATH];
 		GetCurrentDirectory(MAX_PATH, current_directory);
 

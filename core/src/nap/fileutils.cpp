@@ -94,6 +94,16 @@ namespace nap
 			name = name.erase(0, last_slash_idx + 1);
 		return name;
 	}
+    
+    
+    std::string getFileDir(const std::string& file)
+    {
+        std::string name = file;
+        const size_t last_slash_idx = name.find_last_of("\\/");
+        if (last_slash_idx != std::string::npos)
+            name = name.erase(last_slash_idx, name.size() - last_slash_idx);
+        return name;        
+    }
 
 
 	// Returns name of file without extension

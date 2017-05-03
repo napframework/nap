@@ -91,7 +91,7 @@ namespace nap
 
 				// Process pointers to other objects
 				std::vector<Object*> object_links;
-				rttiFindObjectLinks(*object, object_links);
+				RTTI::findObjectLinks(*object, object_links);
 
 				for (Object* object : object_links)
 				{
@@ -110,7 +110,7 @@ namespace nap
 			
 				// Process pointers to files
 				std::vector<std::string> file_links;
-				rttiFindFileLinks(*object, file_links);
+				RTTI::findFileLinks(*object, file_links);
 
 				for (std::string& filename : file_links)
 				{
@@ -148,7 +148,9 @@ namespace nap
 		Node* FindNode(const std::string& ID)
 		{
 			NodeMap::iterator iter = mNodes.find(ID);
-			assert(iter != mNodes.end());
+			if (iter == mNodes.end())
+				return nullptr;
+			
 			return iter->second.get();
 		}
 
@@ -281,7 +283,7 @@ namespace nap
 			{
 				Object* source = kvp.first;			// file object
 				Object* target = kvp.second;		// object in ResourceMgr
-				std::unique_ptr<Object> copy = std::move(rttiCloneObject(*target));
+				std::unique_ptr<Object> copy = std::move(RTTI::cloneObject(*target));
                 mClonedObjects[source] = std::move(copy); // Mapping from 'read object' to backup of file in ResourceMgr
 			}
 		}
@@ -300,7 +302,7 @@ namespace nap
 					ResourceManagerService::ClonedObjectMap::const_iterator clone = mClonedObjects.find(source);
 					assert(clone != mClonedObjects.end());
 
-					rttiCopyObject(*(clone->second), *target);
+					RTTI::copyObject(*(clone->second), *target);
 				}
 
 				// Remove objects from resource manager if they were added
@@ -416,7 +418,7 @@ namespace nap
 			ExistingObjectMap::const_iterator existing_object = existingObjects.find(kvp.first);
 			assert(existing_object != existingObjects.end());
 
-			if (!rttiAreObjectsEqual(*existing_object->second, *kvp.second.get()))
+			if (!RTTI::areObjectsEqual(*existing_object->second, *kvp.second.get()))
 				dirty_nodes.insert(kvp.first->mID);
 		}
 
@@ -433,8 +435,11 @@ namespace nap
 		for (const std::string& dirty_node : dirty_nodes)
 		{
 			ObjectGraph::Node* node = object_graph.FindNode(dirty_node);
-			assert(node != nullptr);
-			addIncomingObjectsRecursive(node, objects_to_init);
+		
+			// In the case that file links change as part of the file modification(s), it's possible for the dirty node to not be present in the ObjectGraph,
+			// so we can't assert here but need to deal with that case.
+			if (node != nullptr)
+				addIncomingObjectsRecursive(node, objects_to_init);
 		}
 
 		// Sort on graph depth for the correct init() order
@@ -498,6 +503,9 @@ namespace nap
 	*/
 	bool ResourceManagerService::loadFile(const std::string& filename, const std::string& externalChangedFile, nap::InitResult& initResult)
 	{
+		// ExternalChangedFile should only be used if it's different from the file being reloaded
+		assert(toComparableFilename(filename) != toComparableFilename(externalChangedFile));
+
 		// Read objects from disk
 		ReadJSONFileResult read_result;
 		if (!readJSONFile(filename, read_result, initResult))
@@ -553,8 +561,7 @@ namespace nap
 
 		// Find out what objects to init and in what order to init them
 		ObservedObjectList objects_to_init;
-		std::string external_changed_file = (toComparableFilename(filename) == toComparableFilename(externalChangedFile)) ? std::string() : externalChangedFile;
-		if (!determineObjectsToInit(existing_objects, object_restorer.getClonedObjects(), new_objects, external_changed_file, objects_to_init, initResult))
+		if (!determineObjectsToInit(existing_objects, object_restorer.getClonedObjects(), new_objects, externalChangedFile, objects_to_init, initResult))
 			return false;
 		
 		// Init all objects in the correct order
@@ -622,7 +629,7 @@ namespace nap
 					FileLinkMap::iterator file_link = mFileLinkMap.find(modified_file);
 					if (file_link != mFileLinkMap.end())
 						for (const std::string& source_file : file_link->second)
-							files_to_reload.insert(source_file);
+							files_to_reload.insert(toComparableFilename(source_file));
 				}
 
 				if (!files_to_reload.empty())
@@ -634,7 +641,7 @@ namespace nap
 					for (const std::string& source_file : files_to_reload)
 					{
 						nap::InitResult initResult;
-						if (!loadFile(source_file, modified_file, initResult))
+						if (!loadFile(source_file, source_file == modified_file ? std::string() : modified_file, initResult))
 						{
 							nap::Logger::warn("Failed to reload %s: %s. See log for more information.", source_file.c_str(), initResult.mErrorString.c_str());
 							break;
