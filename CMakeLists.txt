@@ -60,6 +60,7 @@ add_subdirectory(coreapp)
 add_subdirectory(test/unittest)
 add_subdirectory(test/scriptserver)
 add_subdirectory(test/render)
+add_subdirectory(test/serializationtest)
 
 # Modules
 add_subdirectory(modules/napfsm)

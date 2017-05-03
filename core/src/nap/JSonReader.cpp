@@ -9,7 +9,8 @@
 
 namespace nap
 {
-	static bool readArrayRecursively(RTTI::VariantArray& array, const rapidjson::Value& jsonArray, UnresolvedPointerList& unresolvedPointers, std::vector<FileLink>& linkedFiles, InitResult& initResult);
+	static bool readArrayRecursively(nap::Object* rootObject, RTTI::VariantArray& array, const rapidjson::Value& jsonArray, RTTI::RTTIPath& rttiPath,
+		UnresolvedPointerList& unresolvedPointers, std::vector<FileLink>& linkedFiles, InitResult& initResult);
 
 
 	/**
@@ -57,7 +58,8 @@ namespace nap
 	/**
 	 * Helper function to recursively read an object (can be a nap::Object, nested compound or any other type) from JSON
 	 */
-	static bool readObjectRecursive(RTTI::Instance object, const rapidjson::Value& jsonObject, UnresolvedPointerList& unresolvedPointers, std::vector<FileLink>& linkedFiles, InitResult& initResult)
+	static bool readObjectRecursive(nap::Object* rootObject, RTTI::Instance object, const rapidjson::Value& jsonObject, RTTI::RTTIPath& rttiPath, UnresolvedPointerList& unresolvedPointers, 
+		std::vector<FileLink>& linkedFiles, InitResult& initResult)
 	{
 		// Determine the object type. Note that we want to *most derived type* of the object.
 		RTTI::TypeInfo object_type = object.get_derived_type();
@@ -65,6 +67,9 @@ namespace nap
 		// Go through all properties of the object
 		for (const RTTI::Property& property : object_type.get_properties())
 		{
+			// Push attribute on path
+			rttiPath.PushAttribute(property.get_name().data());
+
 			// Determine meta-data for the property
 			bool is_required = property.get_metadata(RTTI::EPropertyMetaData::Required).is_valid();
 			bool is_file_link = property.get_metadata(RTTI::EPropertyMetaData::FileLink).is_valid();
@@ -75,6 +80,8 @@ namespace nap
 			{
 				if (!initResult.check(!is_required, "Required property %s not found in object of type %s", property.get_name().data(), object_type.get_name().data()))
 					return false;
+
+				rttiPath.PopBack();
 				continue;
 			}
 
@@ -104,7 +111,8 @@ namespace nap
 					return false;
 
 				// Add to list of unresolved pointers
-				unresolvedPointers.push_back(UnresolvedPointer(object.try_convert<Object>(), property, target));
+				if (!target.empty())
+					unresolvedPointers.push_back(UnresolvedPointer(rootObject, rttiPath, target));
 			}
 			else
 			{
@@ -122,7 +130,7 @@ namespace nap
 							RTTI::VariantArray array_view = value.create_array_view();
 
 							// Now read the array recursively into array view
-							if (!readArrayRecursively(array_view, json_value, unresolvedPointers, linkedFiles, initResult))
+							if (!readArrayRecursively(rootObject, array_view, json_value, rttiPath, unresolvedPointers, linkedFiles, initResult))
 								return false;
 						}
 						else if (value_type.is_associative_container())
@@ -140,7 +148,7 @@ namespace nap
 					{
 						// If the property is a nested compound, read it recursively
 						RTTI::Variant var = property.get_value(object);
-						if (!readObjectRecursive(var, json_value, unresolvedPointers, linkedFiles, initResult))
+						if (!readObjectRecursive(rootObject, var, json_value, rttiPath, unresolvedPointers, linkedFiles, initResult))
 							return false;
 
 						// Copy read object back into the target object
@@ -165,6 +173,8 @@ namespace nap
 				file_link.mTargetFile		= property.get_value(object).get_value<std::string>();;
 				linkedFiles.push_back(file_link);
 			}
+
+			rttiPath.PopBack();
 		}
 
 		return true;
@@ -174,7 +184,8 @@ namespace nap
 	/**
 	 * Helper function to recursively read an array (can be an array of basic types, nested compound, or any other type) from JSON
 	 */
-	static bool readArrayRecursively(RTTI::VariantArray& array, const rapidjson::Value& jsonArray, UnresolvedPointerList& unresolvedPointers, std::vector<FileLink>& linkedFiles, InitResult& initResult)
+	static bool readArrayRecursively(nap::Object* rootObject, RTTI::VariantArray& array, const rapidjson::Value& jsonArray, RTTI::RTTIPath& rttiPath, 
+		UnresolvedPointerList& unresolvedPointers, std::vector<FileLink>& linkedFiles, InitResult& initResult)
 	{
 		// Pre-size the array to avoid too many dynamic allocs
 		array.set_size(jsonArray.Size());
@@ -182,70 +193,76 @@ namespace nap
 		// Determine the rank of the array (i.e. how many dimensions it has)
 		const RTTI::TypeInfo array_type = array.get_rank_type(array.get_rank());
 
-		// Arrays of pointers are currently not supported
-		if (!initResult.check(!array_type.is_pointer(), "Arrays of pointers are not supported yet"))
-			return false;
-
 		// Read values from JSON array
 		for (std::size_t index = 0; index < jsonArray.Size(); ++index)
 		{
+			// Add array element to rtti path
+			rttiPath.PushArrayElement(index);
+
 			const rapidjson::Value& json_element = jsonArray[index];
-			if (json_element.IsArray())
+
+			if (array_type.is_pointer())
 			{
-				// Array-of-arrays; read array recursively
-				RTTI::VariantArray sub_array = array.get_value_as_ref(index).create_array_view();
-				if (!readArrayRecursively(sub_array, json_element, unresolvedPointers, linkedFiles, initResult))
+				// Pointer types must point to objects derived from nap::Object
+				if (!initResult.check(array_type.get_raw_type().is_derived_from<nap::Object>(), "Encountered pointer to non-Object. This is not supported"))
 					return false;
-			}
-			else if (json_element.IsObject())
-			{
-				// Array-of-compounds; read object recursively
-				RTTI::Variant var_tmp = array.get_value_as_ref(index);
-				RTTI::Variant wrapped_var = var_tmp.extract_wrapped_value();
-				if (!readObjectRecursive(wrapped_var, json_element, unresolvedPointers, linkedFiles, initResult))
+
+				// Pointer types must of string type in JSON
+				if (!initResult.check(json_element.GetType() == rapidjson::kStringType, "Encountered pointer property of unknown type"))
 					return false;
-				array.set_value(index, wrapped_var);
+
+				// Determine the target of the pointer
+				std::string target = std::string(json_element.GetString());
+
+				// Add to list of unresolved pointers
+				if (!target.empty())
+					unresolvedPointers.push_back(UnresolvedPointer(rootObject, rttiPath, target));
 			}
 			else
 			{
-				// Array of basic types; read basic type
-				RTTI::Variant extracted_value = readBasicType(json_element);
-				if (extracted_value.convert(array_type))
-					array.set_value(index, extracted_value);
-			}
+				if (json_element.IsArray())
+				{
+					// Array-of-arrays; read array recursively
+					RTTI::VariantArray sub_array = array.get_value_as_ref(index).create_array_view();
+					if (!readArrayRecursively(rootObject, sub_array, json_element, rttiPath, unresolvedPointers, linkedFiles, initResult))
+						return false;
+				}
+				else if (json_element.IsObject())
+				{
+					// Array-of-compounds; read object recursively
+					RTTI::Variant var_tmp = array.get_value_as_ref(index);
+					RTTI::Variant wrapped_var = var_tmp.extract_wrapped_value();
+					if (!readObjectRecursive(rootObject, wrapped_var, json_element, rttiPath, unresolvedPointers, linkedFiles, initResult))
+						return false;
+					array.set_value(index, wrapped_var);
+				}
+				else
+				{
+					// Array of basic types; read basic type
+					RTTI::Variant extracted_value = readBasicType(json_element);
+					if (extracted_value.convert(array_type))
+						array.set_value(index, extracted_value);
+				}
+			}			
+
+			// Remove array element from rtti path again
+			rttiPath.PopBack();
 		}
 
 		return true;
 	}
-
 	
-	bool readJSONFile(const std::string& filename, ReadJSONFileResult& result, nap::InitResult& initResult)
+	bool readJSON(const std::string& json, ReadJSONFileResult& result, nap::InitResult& initResult)
 	{
-		// Open the file
-		std::ifstream in(filename, std::ios::in | std::ios::binary);
-		if (!initResult.check(in.good(), "Unable to open file %s", filename.c_str()))
-			return false;
-
-		// Create buffer of appropriate size
-		in.seekg(0, std::ios::end);
-		size_t len = in.tellg();
-		std::string buffer;
-		buffer.resize(len);
-
-		// Read all data
-		in.seekg(0, std::ios::beg);
-		in.read(&buffer[0], len);
-		in.close();
-
 		// Try to parse the json file
 		rapidjson::Document document;
-		rapidjson::ParseResult parse_result = document.Parse(buffer.c_str());
+		rapidjson::ParseResult parse_result = document.Parse(json.c_str());
 		if (!parse_result)
 		{
 			// RapidJSON does not offer a way to find out the line that the error was on, so we do some custom work here to be able to print out
 			// the offending line in the case of a parse error
-			size_t error_line_start = buffer.rfind('\n', parse_result.Offset());
-			size_t error_line_end = buffer.find('\n', parse_result.Offset());
+			size_t error_line_start = json.rfind('\n', parse_result.Offset());
+			size_t error_line_end = json.find('\n', parse_result.Offset());
 
 			if (error_line_start == std::string::npos)
 				error_line_start = 0;
@@ -253,13 +270,13 @@ namespace nap
 				error_line_start += 1;
 
 			if (error_line_end == std::string::npos)
-				error_line_end = buffer.size();
+				error_line_end = json.size();
 			else
 				error_line_end -= 1;
 
-			std::string error_line = buffer.substr(error_line_start, error_line_end - error_line_start);
+			std::string error_line = json.substr(error_line_start, error_line_end - error_line_start);
 
-			initResult.mErrorString = nap::stringFormat("Error parsing %s: %s (line: %s)", filename.c_str(), rapidjson::GetParseError_En(parse_result.Code()), error_line.c_str());
+			initResult.mErrorString = nap::stringFormat("Error parsing json: %s (line: %s)", rapidjson::GetParseError_En(parse_result.Code()), error_line.c_str());
 			return false;
 		}
 
@@ -285,9 +302,34 @@ namespace nap
 			result.mReadObjects.push_back(std::unique_ptr<Object>(object));
 
 			// Recursively read properties, nested compounds, etc
-			if (!readObjectRecursive(*object, object_pos->value, result.mUnresolvedPointers, result.mFileLinks, initResult))
+			RTTI::RTTIPath path;
+			if (!readObjectRecursive(object, *object, object_pos->value, path, result.mUnresolvedPointers, result.mFileLinks, initResult))
 				return false;
 		}
+
+		return true;
+	}
+
+	bool readJSONFile(const std::string& filename, ReadJSONFileResult& result, nap::InitResult& initResult)
+	{
+		// Open the file
+		std::ifstream in(filename, std::ios::in | std::ios::binary);
+		if (!initResult.check(in.good(), "Unable to open file %s", filename.c_str()))
+			return false;
+
+		// Create buffer of appropriate size
+		in.seekg(0, std::ios::end);
+		size_t len = in.tellg();
+		std::string buffer;
+		buffer.resize(len);
+
+		// Read all data
+		in.seekg(0, std::ios::beg);
+		in.read(&buffer[0], len);
+		in.close();
+
+		if (!readJSON(buffer, result, initResult))
+			return false;
 
 		return true;
 	}

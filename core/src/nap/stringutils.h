@@ -7,6 +7,7 @@
 #include <vector>
 #include <algorithm>
 #include <locale>
+#include <memory>
 
 /**
 String utilities not offered by std::string

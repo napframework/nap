@@ -2,6 +2,7 @@
 
 // RTTI includes
 #include <rtti/rtti.h>
+#include "rttipath.h"
 
 // STL includes
 #include <string>
@@ -19,15 +20,15 @@ namespace nap
 	 */
 	struct UnresolvedPointer
 	{
-		UnresolvedPointer(Object* object, const RTTI::Property& property, const std::string& targetID) :
+		UnresolvedPointer(Object* object, const RTTI::RTTIPath& path, const std::string& targetID) :
 			mObject(object),
-			mProperty(property),
+			mRTTIPath(path),
 			mTargetID(targetID)
 		{
 		}
 
 		Object*			mObject;		// The object this pointer is on
-		RTTI::Property	mProperty;		// The RTTI property on <mObject> that represents this pointer
+		RTTI::RTTIPath	mRTTIPath;		// RTTIPath to the pointer on <mObject>
 		std::string		mTargetID;		// The ID of the target this pointer should point to
 	};
 
@@ -59,10 +60,11 @@ namespace nap
 
 
 	/**
-	 * Helper function to deserialize a JSON file to nap objects. This function is low level in the sense that it doesn't do any kind of pointer resolving, adding to managers, etc internally.
+	 * Helper functions to deserialize a JSON file or string to nap objects. This function is low level in the sense that it doesn't do any kind of pointer resolving, adding to managers, etc internally.
 	 * Instead, it deserializes the JSON file and outputs the necessary information for clients to be able to do those things themselves.
 	 */
-	bool readJSONFile(const std::string& filename, ReadJSONFileResult& result, nap::InitResult& initResult);
+	bool readJSON(const std::string& json, ReadJSONFileResult& result, nap::InitResult& initResult);
+	bool readJSONFile(const std::string& filename, ReadJSONFileResult& result, nap::InitResult& initResult);	
 
 } //< End Namespace nap
 

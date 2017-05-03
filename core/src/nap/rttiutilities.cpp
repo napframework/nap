@@ -3,11 +3,114 @@
 
 namespace RTTI
 {
+	template<class FUNC>
+	void VisitRTTIPropertiesRecursive(const Variant& variant, RTTIPath& path, FUNC& visitFunc)
+	{
+		// Extract wrapped type
+		auto value_type = variant.get_type();
+		auto actual_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
+
+		// If this is an array, recurse into the array for each element
+		if (actual_type.is_array())
+		{
+			VariantArray array = variant.create_array_view();
+
+			// Recursively visit each array element
+			for (int index = 0; index < array.get_size(); ++index)
+			{
+				path.PushArrayElement(index);
+
+				RTTI::Variant array_value = array.get_value_as_ref(index);
+				VisitRTTIPropertiesRecursive(array_value, path, visitFunc);
+
+				path.PopBack();
+			}
+		}
+		else
+		{
+			// Recursively visit each property of the type
+			for (const RTTI::Property& property : actual_type.get_properties())
+			{
+				path.PushAttribute(property.get_name().data());
+
+				RTTI::Variant value = property.get_value(variant);
+				visitFunc(variant, property, value, path);
+
+				VisitRTTIPropertiesRecursive(value, path, visitFunc);
+
+				path.PopBack();
+			}
+		}
+	}
+
+	template<class FUNC>
+	void VisitRTTIProperties(const Instance& instance, RTTIPath& path, FUNC& visitFunc)
+	{
+		// Recursively visit each property of the type
+		for (const RTTI::Property& property : instance.get_derived_type().get_properties())
+		{
+			path.PushAttribute(property.get_name().data());
+
+			RTTI::Variant value = property.get_value(instance);
+			visitFunc(instance, property, value, path);
+
+			VisitRTTIPropertiesRecursive(value, path, visitFunc);
+
+			path.PopBack();
+		}
+	}
+
+	struct ObjectLinkVisitor
+	{
+	public:
+		ObjectLinkVisitor(const nap::Object& sourceObject, std::vector<ObjectLink>& objectLinks) :
+			mSourceObject(sourceObject),
+			mObjectLinks(objectLinks)
+		{
+		}
+
+		void operator()(const Instance& instance, const Property& property, const Variant& value, const RTTIPath& path)
+		{
+			if (!property.get_type().is_pointer())
+				return;
+
+			assert (value.get_type().is_derived_from<nap::Object>());
+
+			mObjectLinks.push_back({ &mSourceObject, path, value.convert<nap::Object*>() });
+		}
+
+	private:
+		const nap::Object&				mSourceObject;
+		std::vector<ObjectLink>&	mObjectLinks;
+	};
+
+	struct FileLinkVisitor
+	{
+	public:
+		FileLinkVisitor(std::vector<std::string>& fileLinks) :
+			mFileLinks(fileLinks)
+		{
+		}
+
+		void operator()(const Instance& instance, const Property& property, const Variant& value, const RTTIPath& path)
+		{
+			if (!property.get_metadata(RTTI::EPropertyMetaData::FileLink).is_valid())
+				return;
+
+			assert (value.get_type().is_derived_from<std::string>());
+
+			mFileLinks.push_back(value.convert<std::string>());
+		}
+
+	private:
+		std::vector<std::string>&	mFileLinks;
+	};
+
 	/**
 	 * Helper function to recursively check whether two variants (i.e. values) are equal
 	 * Correctly deals with arrays and nested compounds, but note: does not follow pointers
 	 */
-	bool areVariantsEqualRecursive(const RTTI::Variant& variantA, const RTTI::Variant& variantB)
+	bool areVariantsEqualRecursive(const RTTI::Variant& variantA, const RTTI::Variant& variantB, EPointerComparisonMode pointerComparisonMode)
 	{
 		// Extract wrapped type
 		auto value_type = variantA.get_type();
@@ -34,16 +137,54 @@ namespace RTTI
 				RTTI::Variant array_value_a = array_a.get_value_as_ref(index);
 				RTTI::Variant array_value_b = array_a.get_value_as_ref(index);
 
-				if (!areVariantsEqualRecursive(array_value_a, array_value_b))
+				if (!areVariantsEqualRecursive(array_value_a, array_value_b, pointerComparisonMode))
 					return false;
 			}
 		}
 		else
 		{
+			// Special case handling for pointers so we can compare by ID or by actual pointer value
+			if (value_type.is_pointer())
+			{
+				// If we don't want to compare by ID, just check the pointers directly
+				if (pointerComparisonMode == EPointerComparisonMode::BY_POINTER)
+				{
+					return is_wrapper ? (variantA.extract_wrapped_value() == variantB.extract_wrapped_value()) : (variantA == variantB);
+				}
+				else if (pointerComparisonMode == EPointerComparisonMode::BY_ID)
+				{
+					// Extract the pointer
+					RTTI::Variant value_a = is_wrapper ? variantA.extract_wrapped_value() : variantA;
+					RTTI::Variant value_b = is_wrapper ? variantB.extract_wrapped_value() : variantB;
+
+					// Can only compare pointers that are of type Object
+					assert(value_a.get_type().is_derived_from<nap::Object>() && value_b.get_type().is_derived_from<nap::Object>());
+
+					// Extract the objects
+					nap::Object* object_a = value_a.convert<nap::Object*>();
+					nap::Object* object_b = value_b.convert<nap::Object*>();
+
+					// If both are null, they're equal
+					if (object_a == nullptr && object_b == nullptr)
+						return true;
+
+					// If only one is null, they can't be equal
+					if (object_a == nullptr || object_b == nullptr)
+						return false;
+
+					// Check whether the IDs match
+					return object_a->mID == object_b->mID;
+				}
+				else
+				{
+					assert(false);
+				}
+			}
+
 			// If the type of this variant is a primitive type or non-primitive type with no RTTI properties,
 			// we perform a normal comparison
 			auto child_properties = actual_type.get_properties();
-			if (value_type.is_arithmetic() || value_type.is_pointer() || child_properties.empty())
+			if (value_type.is_arithmetic() || child_properties.empty())
 				return is_wrapper ? (variantA.extract_wrapped_value() == variantB.extract_wrapped_value()) : (variantA == variantB);
 
 			// Recursively compare each property of the compound
@@ -51,7 +192,7 @@ namespace RTTI
 			{
 				RTTI::Variant value_a = property.get_value(variantA);
 				RTTI::Variant value_b = property.get_value(variantB);
-				if (!areVariantsEqualRecursive(value_a, value_b))
+				if (!areVariantsEqualRecursive(value_a, value_b, pointerComparisonMode))
 					return false;
 			}
 		}
@@ -81,7 +222,7 @@ namespace RTTI
 	* @param objectA: first object to compare attributes from.
 	* @param objectB: second object to compare attributes from.
 	*/
-	bool areObjectsEqual(const nap::Object& objectA, const nap::Object& objectB)
+	bool areObjectsEqual(const nap::Object& objectA, const nap::Object& objectB, EPointerComparisonMode pointerComparisonMode)
 	{
 		RTTI::TypeInfo typeA = objectA.get_type();
 		assert(typeA == objectB.get_type());
@@ -90,7 +231,7 @@ namespace RTTI
 		{
 			RTTI::Variant valueA = property.get_value(objectA);
 			RTTI::Variant valueB = property.get_value(objectB);
-			if (!areVariantsEqualRecursive(valueA, valueB))
+			if (!areVariantsEqualRecursive(valueA, valueB, pointerComparisonMode))
 				return false;
 		}
 
@@ -103,37 +244,23 @@ namespace RTTI
 	*/
 	void findFileLinks(const nap::Object& object, std::vector<std::string>& fileLinks)
 	{
-		RTTI::TypeInfo type = object.get_type();
-
 		fileLinks.clear();
 
-		for (const RTTI::Property& property : type.get_properties())
-		{
-			if (property.get_metadata(RTTI::EPropertyMetaData::FileLink).is_valid())
-			{
-				std::string filename = property.get_value(object).convert<std::string>();
-				fileLinks.push_back(filename);
-			}
-		}
+		RTTIPath path;
+		FileLinkVisitor visitor(fileLinks);
+		VisitRTTIProperties(object, path, visitor);
 	}
-
-
+	
+	
 	/**
 	* Searches through object's rtti attributes for pointer attributes.
 	*/
-	void findObjectLinks(const nap::Object& object, std::vector<nap::Object*>& objectLinks)
+	void findObjectLinks(const nap::Object& object, std::vector<ObjectLink>& objectLinks)
 	{
-		RTTI::TypeInfo type = object.get_type();
-
 		objectLinks.clear();
 
-		for (const RTTI::Property& property : type.get_properties())
-		{
-			if (property.get_type().is_pointer())
-			{
-				nap::Object* target_object = property.get_value(object).convert<nap::Object*>();
-				objectLinks.push_back(target_object);
-			}
-		}
+		RTTIPath path;
+		ObjectLinkVisitor visitor(object, objectLinks);
+		VisitRTTIProperties(object, path, visitor);
 	}
 }

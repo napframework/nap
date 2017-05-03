@@ -12,13 +12,13 @@ namespace nap
 	/**
 	* Helper to find index into unresolved pointer array.
 	*/
-	static int findUnresolvedPointer(UnresolvedPointerList& unresolvedPointers, Object* object, const RTTI::Property& property)
+	static int findUnresolvedPointer(UnresolvedPointerList& unresolvedPointers, Object* object, const RTTI::RTTIPath& path)
 	{
 		for (int index = 0; index < unresolvedPointers.size(); ++index)
 		{
 			UnresolvedPointer& unresolved_pointer = unresolvedPointers[index];
 			if (unresolved_pointer.mObject == object &&
-				unresolved_pointer.mProperty == property)
+				unresolved_pointer.mRTTIPath == path)
 			{
 				return index;
 			}
@@ -90,13 +90,15 @@ namespace nap
 				Node* source_node = GetOrCreateObjectNode(*object);
 
 				// Process pointers to other objects
-				std::vector<Object*> object_links;
+				std::vector<RTTI::ObjectLink> object_links;
 				RTTI::findObjectLinks(*object, object_links);
 
-				for (Object* object : object_links)
+				for (const RTTI::ObjectLink& link : object_links)
 				{
-					ObjectMap::iterator dest_object = object_map.find(object->mID);
-					if (!initResult.check(dest_object != object_map.end(), "Object %s is pointing to an object that is not in the objectlist!", object->mID.c_str()))
+					Object* linked_object = link.mTarget;
+
+					ObjectMap::iterator dest_object = object_map.find(linked_object->mID);
+					if (!initResult.check(dest_object != object_map.end(), "Object %s is pointing to an object that is not in the objectlist!", linked_object->mID.c_str()))
 						return false;
 
 					Edge* edge = new Edge();
@@ -373,16 +375,23 @@ namespace nap
 			if (!initResult.check(existing_resource->get_type() == resource->get_type(), "Unable to update object, different types"))		// todo: actually support this properly
 				return false;
 
+			// Find all links from the resource
+			std::vector<RTTI::ObjectLink> links;
+			RTTI::findObjectLinks(*resource, links);
+
+			// We need to update the UnresolvedPointers to by unresolved against the object from the manager, instead of the object from the file
+			for (const RTTI::ObjectLink& link : links)
+			{
+				// Patch the mObject member: it should not use the File object anymore, but the object from the manager
+				int unresolved_pointer_index = findUnresolvedPointer(unresolvedPointers, resource, link.mSourcePath);
+				assert(unresolved_pointer_index != -1);
+				unresolvedPointers[unresolved_pointer_index].mObject = existing_resource;
+			}
+
+			// Copy regular properties
 			for (const RTTI::Property& property : resource->get_type().get_properties())
 			{
-				if (property.get_type().is_pointer())
-				{
-					// Patch the mObject member: it should not use the File object anymore, but the object from the manager
-					int unresolved_pointer_index = findUnresolvedPointer(unresolvedPointers, resource, property);
-					assert(unresolved_pointer_index != -1);
-					unresolvedPointers[unresolved_pointer_index].mObject = existing_resource;
-				}
-				else
+				if (!property.get_type().is_pointer())
 				{
 					RTTI::Variant new_value = property.get_value(*resource);
 					property.set_value(existing_resource, new_value);
@@ -551,10 +560,15 @@ namespace nap
 				continue;
 
 			Resource* target_resource = findResource(unresolved_pointer.mTargetID);
-			if (!initResult.check(target_resource != nullptr, "Unable to resolve link to object %s from attribute %s", unresolved_pointer.mTargetID.c_str(), unresolved_pointer.mProperty.get_name().data()))
+			if (!initResult.check(target_resource != nullptr, "Unable to resolve link to object %s from attribute %s", unresolved_pointer.mTargetID.c_str(), unresolved_pointer.mRTTIPath.ToString().c_str()))
 				return false;
 
- 			bool succeeded = unresolved_pointer.mProperty.set_value(unresolved_pointer.mObject, target_resource);
+			RTTI::ResolvedRTTIPath resolved_path = unresolved_pointer.mRTTIPath.Resolve(unresolved_pointer.mObject);
+			if (!initResult.check(resolved_path.IsValid(), "Failed to resolve RTTIPath %s", unresolved_pointer.mRTTIPath.ToString().c_str()))
+				return false;
+
+			assert(resolved_path.GetCurrentType().is_pointer());
+			bool succeeded = resolved_path.SetValue(target_resource);
  			if (!initResult.check(succeeded, "Failed to resolve pointer"))
 				return false;
 		}
