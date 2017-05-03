@@ -24,10 +24,19 @@ namespace nap
 		// Default constructor
 		Material();
 
+		/**
+		* Creates mappings for uniform and vertex attrs.
+		*/
 		virtual bool init(InitResult& initResult) override;
 
+		/**
+		* Performs commit or rollback of changes made in init()
+		*/
 		virtual void finish(Resource::EFinishMode mode) override;
 
+		/**
+		* @return display name.
+		*/
 		virtual const std::string getDisplayName() const { return "Material"; }		// TODO
 
 		/**
@@ -101,12 +110,6 @@ namespace nap
 		* Holds all vertex attribute variables
 		*/
 		CompoundAttribute vertexAttribute = { this, "attributes" };
-
-		/**
-		 * Internal resource cache
-		 */
-		CompoundAttribute mPrevUniformAttributes;
-		CompoundAttribute mPrevVertexAttributes;
 	};
 
 

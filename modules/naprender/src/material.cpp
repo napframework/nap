@@ -1,6 +1,7 @@
 // Local Includes
 #include "material.h"
 #include "shaderutils.h"
+#include "nshader.h"
 
 // External includes
 #include <nap/logger.h>
@@ -25,7 +26,7 @@ namespace nap
 		vertexAttribute.clear();
 		uniformAttribute.clear();
 
-		// Add
+		// Add uniforms
 		for (const auto& v : mShader->getShader().getUniforms())
 		{
 			// Make sure we have a valid type for the attribute

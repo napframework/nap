@@ -19,8 +19,14 @@ namespace nap
 		RTTI_ENABLE(Resource)
 	public:
 
+		/**
+		* Creates internal OpengL render target, bound to color and depth textures.
+		*/
 		virtual bool init(InitResult& initResult) override;
 
+		/**
+		* Performs commit or rollback of changes made in init.
+		*/
 		virtual void finish(Resource::EFinishMode mode) override;
 
 		/**

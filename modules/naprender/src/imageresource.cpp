@@ -69,7 +69,6 @@ namespace nap
 	// Constructor
 	ImageResource::ImageResource(const std::string& imgPath)
 	{
-		//mImagePath = imgPath;
 		mDisplayName = getFileNameWithoutExtension(imgPath);
 		assert(mDisplayName != "");
 	}

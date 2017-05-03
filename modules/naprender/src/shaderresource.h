@@ -17,8 +17,14 @@ namespace nap
 		RTTI_ENABLE(Resource)
 	public:
 
+		/**
+		 * Creates and inits opengl shader.
+		 */
 		virtual bool init(InitResult& initResult);
 
+		/**
+		 * Performs commit or rollback of changes made in init.
+		 */
 		virtual void finish(Resource::EFinishMode mode) override;
 
 		/**
@@ -28,9 +34,6 @@ namespace nap
 
 		/**
 		 * @return the opengl shader that can be used for drawing
-		 * Note that this will also initialize the shader on the GPU
-		 * if the shader can't be created a warning will be raised
-		 * in that case future binding calls won't work
 		 */
 		opengl::Shader& getShader();
 
