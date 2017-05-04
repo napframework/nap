@@ -184,7 +184,7 @@ namespace RTTI
 			// If the type of this variant is a primitive type or non-primitive type with no RTTI properties,
 			// we perform a normal comparison
 			auto child_properties = actual_type.get_properties();
-			if (value_type.is_arithmetic() || child_properties.empty())
+			if (RTTI::isPrimitive(value_type) || child_properties.empty())
 				return is_wrapper ? (variantA.extract_wrapped_value() == variantB.extract_wrapped_value()) : (variantA == variantB);
 
 			// Recursively compare each property of the compound

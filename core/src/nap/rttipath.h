@@ -118,7 +118,7 @@ namespace RTTI
 		ResolvedRTTIPathElement(const RTTI::Instance& instance, const RTTI::Property& property) :
 			mType(Type::ROOT)
 		{
-			InitNonPOD(Root.Variant, instance);
+			InitNonPOD(Root.Instance, instance);
 			InitNonPOD(Root.Property, property);
 		}
 
@@ -163,7 +163,7 @@ namespace RTTI
 		friend class ResolvedRTTIPath;
 		union {
 			struct {
-				RTTI::Instance Variant;
+				RTTI::Instance Instance;
 				RTTI::Property Property;
 			} Root;
 
@@ -188,7 +188,7 @@ namespace RTTI
 		{
 			if (mType == Type::ROOT)
 			{
-				Root.Variant.~instance();
+				Root.Instance.~instance();
 				Root.Property.~property();
 			}
 			else if (mType == Type::ATTRIBUTE)
@@ -207,7 +207,7 @@ namespace RTTI
 			mType = other.mType;
 			if (mType == Type::ROOT)
 			{
-				InitNonPOD(Root.Variant, other.Root.Variant);
+				InitNonPOD(Root.Instance, other.Root.Instance);
 				InitNonPOD(Root.Property, other.Root.Property);
 			}
 			else if (mType == Type::ATTRIBUTE)

@@ -113,7 +113,7 @@ namespace RTTI
 		
 		if (last_element.mType == ResolvedRTTIPathElement::Type::ROOT)
 		{
-			return last_element.Root.Property.get_value(last_element.Root.Variant);
+			return last_element.Root.Property.get_value(last_element.Root.Instance);
 		}
 		else if (last_element.mType == ResolvedRTTIPathElement::Type::ATTRIBUTE)
 		{
@@ -144,7 +144,7 @@ namespace RTTI
 			const ResolvedRTTIPathElement& element = mElements[index];
 			if (element.mType == ResolvedRTTIPathElement::Type::ROOT)
 			{
-				if (!element.Root.Property.set_value(element.Root.Variant, value_to_set))
+				if (!element.Root.Property.set_value(element.Root.Instance, value_to_set))
 					return false;
 			}
 			else if (element.mType == ResolvedRTTIPathElement::Type::ATTRIBUTE)

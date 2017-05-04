@@ -103,6 +103,14 @@ namespace RTTI
 		Required,
 		FileLink
 	};
+
+	/**
+	 * Helper function to determine whether the specified type is a primitive type (i.e. int, float, string, etc)
+	 */
+	inline bool isPrimitive(const RTTI::TypeInfo& type)
+	{
+		return type.is_arithmetic() || type.is_enumeration() || type == RTTI::TypeInfo::get<std::string>();
+	}
 }
 
 
