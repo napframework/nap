@@ -22,8 +22,6 @@
 #include "nvertexbuffer.h"
 #include "nvertexcontainer.h"
 #include "nmesh.h"
-#include "nmodel.h"
-#include "nmodelutils.h"
 #include "nframebuffer.h"
 #include "ncamera.h"
 #include "npolyline.h"

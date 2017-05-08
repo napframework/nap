@@ -4,7 +4,7 @@ namespace opengl
 {
 	// Creates or updates a vertex container associated with this mesh
 	template <typename T>
-	void Mesh::updateVertexContainer(std::unique_ptr<TypedVertexContainer<T>>& location, unsigned int components, unsigned int verts, T* data)
+	void Mesh::updateVertexContainer(std::unique_ptr<TypedVertexContainer<T>>& location, unsigned int components, unsigned int verts, const T* data)
 	{
 		// Check if exists, if not create, move and add
 		if (location == nullptr)

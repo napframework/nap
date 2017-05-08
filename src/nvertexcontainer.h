@@ -67,7 +67,7 @@ namespace opengl
 		 * @param source data to copy
 		 * @return if the copy was successful or not
 		 */
-		virtual bool copyData(void* source);
+		virtual bool copyData(const void* source);
 
 		/**
 		 * Copies data from source in to this vertex container
@@ -82,7 +82,7 @@ namespace opengl
 		 * @param source data to copy
 		 * @return if copy was successful
 		 */
-		virtual bool copyData(GLenum type, unsigned int components, unsigned int verts, void* source);
+		virtual bool copyData(GLenum type, unsigned int components, unsigned int verts, const void* source);
 
 		/**
 		 * Sets data to be associated with this vertex container
@@ -224,7 +224,7 @@ namespace opengl
 		* @param source data to copy
 		* @return if the copy was successful or not
 		*/
-		bool copyData(T* source);
+		bool copyData(const T* source);
 
 		/**
 		* Copies data from source in to this vertex container
@@ -238,7 +238,7 @@ namespace opengl
 		* @param source data to copy
 		* @return if copy was successful
 		*/
-		bool copyData(unsigned int components, unsigned int verts, T* source);
+		bool copyData(unsigned int components, unsigned int verts, const T* source);
 
 		/**
 		* Sets data to be associated with this vertex container
@@ -257,8 +257,8 @@ namespace opengl
 	private:
 		// override and hide base class functionality																
 		virtual bool allocateMemory(GLenum type, unsigned int components, unsigned int verts) override			{ return false; }
-		virtual bool copyData(GLenum type, unsigned int components, unsigned int verts, void* source) override	{ return false; }
-		virtual bool copyData(void* source) override															{ return false; }
+		virtual bool copyData(GLenum type, unsigned int components, unsigned int verts, const void* source) override	{ return false; }
+		virtual bool copyData(const void* source) override															{ return false; }
 		virtual void setData(void* data) override																{ }
 
 		// utilities
@@ -302,19 +302,19 @@ namespace opengl
 
 	// Copies data in to container, note that settings have to be valid for this to work
 	template<typename T>
-	bool opengl::TypedVertexContainer<T>::copyData(T* source)
+	bool opengl::TypedVertexContainer<T>::copyData(const T* source)
 	{
-		return VertexContainer::copyData(static_cast<void*>(source));
+		return VertexContainer::copyData(static_cast<const void*>(source));
 	}
 
 
 	// Copies data in to container, note that components and verts > 0
 	template<typename T>
-	bool opengl::TypedVertexContainer<T>::copyData(unsigned int components, unsigned int verts, T* source)
+	bool opengl::TypedVertexContainer<T>::copyData(unsigned int components, unsigned int verts, const T* source)
 	{
 		if (!updateSettingsIfValid(components, verts))
 			return false;
-		return VertexContainer::copyData(static_cast<void*>(source));
+		return VertexContainer::copyData(static_cast<const void*>(source));
 	}
 
 

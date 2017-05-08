@@ -11,21 +11,21 @@ namespace opengl
 
 
 	// Adds vertex data
-	void Mesh::copyVertexData(unsigned int vertices, float* data)
+	void Mesh::copyVertexData(unsigned int vertices, const float* data)
 	{
 		updateVertexContainer<float>(mVertices, 3, vertices, data);
 	}
 
 
 	// Adds normal data
-	void Mesh::copyNormalData(unsigned int vertices, float* data)
+	void Mesh::copyNormalData(unsigned int vertices, const float* data)
 	{
 		updateVertexContainer<float>(mNormals, 3, vertices, data);
 	}
 
 
 	// Adds color data
-	void Mesh::copyColorData(unsigned int components, unsigned int vertices, float* data)
+	void Mesh::copyColorData(unsigned int components, unsigned int vertices, const float* data)
 	{
 		std::unique_ptr<FloatVertexContainer> container = nullptr;
 		updateVertexContainer(container, components, vertices, data);
@@ -34,7 +34,7 @@ namespace opengl
 
 
 	// Adds uv data
-	void Mesh::copyUVData(unsigned int components, unsigned int vertices, float* data)
+	void Mesh::copyUVData(unsigned int components, unsigned int vertices, const float* data)
 	{
 		std::unique_ptr<FloatVertexContainer> container = nullptr;
 		updateVertexContainer(container, components, vertices, data);
@@ -42,7 +42,7 @@ namespace opengl
 	}
 
 
-	void Mesh::copyIndexData(unsigned int count, unsigned int* data)
+	void Mesh::copyIndexData(unsigned int count, const unsigned int* data)
 	{
 		assert(count > 0);
 		updateIndexContainer(mIndices, count, data);
@@ -57,7 +57,7 @@ namespace opengl
 
 
 	// Update mesh indices
-	void Mesh::updateIndexContainer(std::unique_ptr<IndexContainer>& location, unsigned int count, unsigned int* data)
+	void Mesh::updateIndexContainer(std::unique_ptr<IndexContainer>& location, unsigned int count, const unsigned int* data)
 	{
 		// Check if exists, if not create, move and add
 		if (location == nullptr)

@@ -54,7 +54,7 @@ namespace opengl
 
 
 	// Copies source in to mData
-	bool VertexContainer::copyData(void* source)
+	bool VertexContainer::copyData(const void* source)
 	{
 		if (!mSettings.isValid())
 		{
@@ -75,7 +75,7 @@ namespace opengl
 
 
 	// Applies new settings and performs copy
-	bool VertexContainer::copyData(GLenum type, unsigned int components, unsigned int verts, void* source)
+	bool VertexContainer::copyData(GLenum type, unsigned int components, unsigned int verts, const void* source)
 	{
 		// Check settings
 		VertexBufferSettings new_settings(type, components, verts);

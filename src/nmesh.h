@@ -53,7 +53,7 @@ namespace opengl
 		 * @param vertices total number of vertices held by data
 		 * @param data vertex data to copy
 		 */
-		void copyVertexData(unsigned int vertices, float* data);
+		void copyVertexData(unsigned int vertices, const float* data);
 
 		/**
 		 * Adds the normals
@@ -63,21 +63,21 @@ namespace opengl
 		 * @param vertices total number of vertices held by data
 		 * @param data normal data to copy
 		 */
-		void copyNormalData(unsigned int vertices, float* data);
+		void copyNormalData(unsigned int vertices, const float* data);
 
 		/**
 		 * Adds a set of Colors at the next available slot
 		 * Can consist out of 3 or 4 components, ie: rgb or rgba
 		 * Performs an actual copy operation
 		 */
-		void copyColorData(unsigned int components, unsigned int vertices, float* data);
+		void copyColorData(unsigned int components, unsigned int vertices, const float* data);
 
 		/**
 		 * Adds a set of UVs at the next available slot
 		 * Can consist out of 2 or 3 components, ie: xy, or xyz
 		 * Performs an actual copy operation
 		 */
-		void copyUVData(unsigned int components, unsigned int vertices, float* data);
+		void copyUVData(unsigned int components, unsigned int vertices, const float* data);
 
 		/**
 		 * Adds a set of indices to the mesh. Indices are created
@@ -87,7 +87,7 @@ namespace opengl
 		 * @param count: The number of indices that will be copied
 		 * @param indices: The array of indices that will describe mesh connectivity
 		 */
-		void copyIndexData(unsigned int count, unsigned int* data);
+		void copyIndexData(unsigned int count, const unsigned int* data);
 
 		/**
 		* Draws the vertex data associated with this mesh object to the currently active context
@@ -193,12 +193,12 @@ namespace opengl
 		 * Giving location a nullptr will create a new buffer
 		 */
 		template <typename T>
-		void updateVertexContainer(std::unique_ptr<TypedVertexContainer<T>>& location, unsigned int components, unsigned int verts, T* data);
+		void updateVertexContainer(std::unique_ptr<TypedVertexContainer<T>>& location, unsigned int components, unsigned int verts, const T* data);
 
 		/**
 		 * Creates or updates the index container associated with this mesh
 		 */
-		void updateIndexContainer(std::unique_ptr<IndexContainer>& location, unsigned int count, unsigned int* data);
+		void updateIndexContainer(std::unique_ptr<IndexContainer>& location, unsigned int count, const unsigned int* data);
 
 		/**
 		 * Utility that is used for retrieving the binding for @container
