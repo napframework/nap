@@ -59,12 +59,15 @@ namespace RTTI
 		}
 
 		Type mType = Type::INVALID;
-		union {
-			struct {
+		union 
+		{
+			struct 
+			{
 				std::string Name;
 			} Attribute;
 
-			struct {
+			struct 
+			{
 				int Index;
 			} ArrayElement;
 		};
@@ -161,18 +164,22 @@ namespace RTTI
 
 	private:
 		friend class ResolvedRTTIPath;
-		union {
-			struct {
+		union 
+		{
+			struct 
+			{
 				RTTI::Instance Instance;
 				RTTI::Property Property;
 			} Root;
 
-			struct {
+			struct 
+			{
 				RTTI::Variant Variant;
 				RTTI::Property Property;
 			} Attribute;
 
-			struct {
+			struct 
+			{
 				RTTI::Variant Array;
 				int Index;
 			} ArrayElement;
@@ -274,8 +281,8 @@ namespace RTTI
 	public:
 		ResolvedRTTIPath(nap::Object* object, const RTTIPath& path);
 
-		const RTTI::Variant GetCurrentValue() const;
-		const RTTI::TypeInfo GetCurrentType() const;
+		const RTTI::Variant GetValue() const;
+		const RTTI::TypeInfo GetType() const;
 		bool SetValue(const RTTI::Variant& value);
 
 		inline void	PushRoot(const RTTI::Instance& instance, const RTTI::Property& property)		{ assert(mLength < RTTIPATH_MAX_LENGTH); mElements[mLength++] = ResolvedRTTIPathElement(instance, property); }

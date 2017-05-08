@@ -77,7 +77,7 @@ namespace RTTI
 				}
 				else
 				{
-					RTTI::Variant current_context = GetCurrentValue();
+					RTTI::Variant current_context = GetValue();
 					if (!current_context.is_valid())
 						return;
 
@@ -92,7 +92,7 @@ namespace RTTI
 			}
 			else if (element.mType == RTTIPathElement::Type::ARRAY_ELEMENT)
 			{
-				RTTI::Variant current_context = GetCurrentValue();
+				RTTI::Variant current_context = GetValue();
 				if (!current_context.is_valid())
 					return;
 
@@ -104,7 +104,7 @@ namespace RTTI
 		}
 	}
 
-	const RTTI::Variant ResolvedRTTIPath::GetCurrentValue() const
+	const RTTI::Variant ResolvedRTTIPath::GetValue() const
 	{
 		if (IsEmpty())
 			return RTTI::Variant();
@@ -128,9 +128,9 @@ namespace RTTI
 		return RTTI::Variant();
 	}
 
-	const RTTI::TypeInfo ResolvedRTTIPath::GetCurrentType() const
+	const RTTI::TypeInfo ResolvedRTTIPath::GetType() const
 	{
-		return GetCurrentValue().get_type();
+		return GetValue().get_type();
 	}
 
 	bool ResolvedRTTIPath::SetValue(const RTTI::Variant& value)

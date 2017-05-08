@@ -3,7 +3,7 @@
 
 namespace nap
 {
-	static bool deserializeObjectRecursive(nap::Object* rootObject, RTTI::Instance object, MemoryStream& stream, RTTI::RTTIPath& rttiPath, UnresolvedPointerList& unresolvedPointers,
+	static bool deserializeObjectRecursive(nap::Object* object, RTTI::Instance compound, MemoryStream& stream, RTTI::RTTIPath& rttiPath, UnresolvedPointerList& unresolvedPointers,
 		std::vector<FileLink>& linkedFiles, InitResult& initResult);
 
 
@@ -127,11 +127,11 @@ namespace nap
 	/**
 	 * Helper function to recursively read an object (can be a nap::Object, nested compound or any other type) from JSON
 	 */
-	static bool deserializeObjectRecursive(nap::Object* rootObject, RTTI::Instance object, MemoryStream& stream, RTTI::RTTIPath& rttiPath, UnresolvedPointerList& unresolvedPointers, 
+	static bool deserializeObjectRecursive(nap::Object* object, RTTI::Instance compound, MemoryStream& stream, RTTI::RTTIPath& rttiPath, UnresolvedPointerList& unresolvedPointers, 
 		std::vector<FileLink>& linkedFiles, InitResult& initResult)
 	{
 		// Determine the object type. Note that we want to *most derived type* of the object.
-		RTTI::TypeInfo object_type = object.get_derived_type();
+		RTTI::TypeInfo object_type = compound.get_derived_type();
 
 		// Go through all properties of the object
 		for (const RTTI::Property& property : object_type.get_properties())
@@ -157,11 +157,11 @@ namespace nap
 				if (value_type.is_array())
 				{
 					// Get instance of the current value (this is a copy) and create an array view on it so we can fill it
-					value = property.get_value(object);
+					value = property.get_value(compound);
 					RTTI::VariantArray array_view = value.create_array_view();
 
 					// Now read the array recursively into array view
-					if (!deserializeArrayRecursively(rootObject, array_view, stream, rttiPath, unresolvedPointers, linkedFiles, initResult))
+					if (!deserializeArrayRecursively(object, array_view, stream, rttiPath, unresolvedPointers, linkedFiles, initResult))
 						return false;
 				}
 				else if (value_type.is_associative_container())
@@ -172,7 +172,7 @@ namespace nap
 				}
 
 				// Now copy the read array back into the target object
-				property.set_value(object, value);
+				property.set_value(compound, value);
 			}
 			else if (value_type.is_pointer())
 			{
@@ -190,32 +190,32 @@ namespace nap
 
 				// Add to list of unresolved pointers
 				if (!target.empty())
-					unresolvedPointers.push_back(UnresolvedPointer(rootObject, rttiPath, target));
+					unresolvedPointers.push_back(UnresolvedPointer(object, rttiPath, target));
 			}
 			else if (RTTI::isPrimitive(value_type))
 			{
 				// Basic JSON type, read value and copy to target
 				RTTI::Variant extracted_value = deserializePrimitive(value_type, stream);
 				if (extracted_value.convert(value_type))
-					property.set_value(object, extracted_value);
+					property.set_value(compound, extracted_value);
 			}
 			else
 			{
 				// If the property is a nested compound, read it recursively
-				RTTI::Variant var = property.get_value(object);
-				if (!deserializeObjectRecursive(rootObject, var, stream, rttiPath, unresolvedPointers, linkedFiles, initResult))
+				RTTI::Variant var = property.get_value(compound);
+				if (!deserializeObjectRecursive(object, var, stream, rttiPath, unresolvedPointers, linkedFiles, initResult))
 					return false;
 
 				// Copy read object back into the target object
-				property.set_value(object, var);
+				property.set_value(compound, var);
 			}
 
 			// If this property is a file link, add it to the list of file links
 			if (is_file_link)
 			{
 				FileLink file_link;
-				file_link.mSourceObjectID	= object.try_convert<Object>()->mID;
-				file_link.mTargetFile		= property.get_value(object).get_value<std::string>();;
+				file_link.mSourceObjectID	= compound.try_convert<Object>()->mID;
+				file_link.mTargetFile		= property.get_value(compound).get_value<std::string>();;
 				linkedFiles.push_back(file_link);
 			}
 
@@ -226,7 +226,7 @@ namespace nap
 	}
 
 
-	bool deserializeObjects(MemoryStream& stream, RTTIDeserializeResult& result, InitResult& initResult)
+	bool deserializeBinary(MemoryStream& stream, RTTIDeserializeResult& result, InitResult& initResult)
 	{
 		// Continue reading while there's data in the stream
 		while (!stream.isDone())

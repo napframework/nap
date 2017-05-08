@@ -25,6 +25,6 @@ namespace nap
 	 *
 	 * @return True if deserialization succeeded, false if not. In case of failure, @a initResult contains detailed error info.
 	 */
-	bool deserializeObjects(MemoryStream& stream, RTTIDeserializeResult& result, InitResult& initResult);
+	bool deserializeBinary(MemoryStream& stream, RTTIDeserializeResult& result, InitResult& initResult);
 } //< End Namespace nap
 

@@ -567,7 +567,7 @@ namespace nap
 			if (!initResult.check(resolved_path.IsValid(), "Failed to resolve RTTIPath %s", unresolved_pointer.mRTTIPath.ToString().c_str()))
 				return false;
 
-			assert(resolved_path.GetCurrentType().is_pointer());
+			assert(resolved_path.GetType().is_pointer());
 			bool succeeded = resolved_path.SetValue(target_resource);
  			if (!initResult.check(succeeded, "Failed to resolve pointer"))
 				return false;

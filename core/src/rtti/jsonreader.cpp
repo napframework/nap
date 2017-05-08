@@ -58,11 +58,11 @@ namespace nap
 	/**
 	 * Helper function to recursively read an object (can be a nap::Object, nested compound or any other type) from JSON
 	 */
-	static bool readObjectRecursive(nap::Object* rootObject, RTTI::Instance object, const rapidjson::Value& jsonObject, RTTI::RTTIPath& rttiPath, UnresolvedPointerList& unresolvedPointers, 
+	static bool readObjectRecursive(nap::Object* object, RTTI::Instance compound, const rapidjson::Value& jsonCompound, RTTI::RTTIPath& rttiPath, UnresolvedPointerList& unresolvedPointers, 
 		std::vector<FileLink>& linkedFiles, InitResult& initResult)
 	{
 		// Determine the object type. Note that we want to *most derived type* of the object.
-		RTTI::TypeInfo object_type = object.get_derived_type();
+		RTTI::TypeInfo object_type = compound.get_derived_type();
 
 		// Go through all properties of the object
 		for (const RTTI::Property& property : object_type.get_properties())
@@ -75,8 +75,8 @@ namespace nap
 			bool is_file_link = property.get_metadata(RTTI::EPropertyMetaData::FileLink).is_valid();
 
 			// Check whether the property is present in the JSON. If it's not, but the property is required, throw an error
-			rapidjson::Value::ConstMemberIterator json_property = jsonObject.FindMember(property.get_name().data());
-			if (json_property == jsonObject.MemberEnd())
+			rapidjson::Value::ConstMemberIterator json_property = jsonCompound.FindMember(property.get_name().data());
+			if (json_property == jsonCompound.MemberEnd())
 			{
 				if (!initResult.check(!is_required, "Required property %s not found in object of type %s", property.get_name().data(), object_type.get_name().data()))
 					return false;
@@ -112,7 +112,7 @@ namespace nap
 
 				// Add to list of unresolved pointers
 				if (!target.empty())
-					unresolvedPointers.push_back(UnresolvedPointer(rootObject, rttiPath, target));
+					unresolvedPointers.push_back(UnresolvedPointer(object, rttiPath, target));
 			}
 			else
 			{
@@ -126,11 +126,11 @@ namespace nap
 						if (value_type.is_array())
 						{
 							// Get instance of the current value (this is a copy) and create an array view on it so we can fill it
-							value = property.get_value(object);
+							value = property.get_value(compound);
 							RTTI::VariantArray array_view = value.create_array_view();
 
 							// Now read the array recursively into array view
-							if (!readArrayRecursively(rootObject, array_view, json_value, rttiPath, unresolvedPointers, linkedFiles, initResult))
+							if (!readArrayRecursively(object, array_view, json_value, rttiPath, unresolvedPointers, linkedFiles, initResult))
 								return false;
 						}
 						else if (value_type.is_associative_container())
@@ -141,18 +141,18 @@ namespace nap
 						}
 
 						// Now copy the read array back into the target object
-						property.set_value(object, value);
+						property.set_value(compound, value);
 						break;
 					}
 					case rapidjson::kObjectType:
 					{
 						// If the property is a nested compound, read it recursively
-						RTTI::Variant var = property.get_value(object);
-						if (!readObjectRecursive(rootObject, var, json_value, rttiPath, unresolvedPointers, linkedFiles, initResult))
+						RTTI::Variant var = property.get_value(compound);
+						if (!readObjectRecursive(object, var, json_value, rttiPath, unresolvedPointers, linkedFiles, initResult))
 							return false;
 
 						// Copy read object back into the target object
-						property.set_value(object, var);
+						property.set_value(compound, var);
 						break;
 					}
 					default:
@@ -160,7 +160,7 @@ namespace nap
 						// Basic JSON type, read value and copy to target
 						RTTI::Variant extracted_value = readBasicType(json_value);
 						if (extracted_value.convert(value_type))
-							property.set_value(object, extracted_value);
+							property.set_value(compound, extracted_value);
 					}
 				}
 			}
@@ -169,8 +169,8 @@ namespace nap
 			if (is_file_link)
 			{
 				FileLink file_link;
-				file_link.mSourceObjectID	= object.try_convert<Object>()->mID;
-				file_link.mTargetFile		= property.get_value(object).get_value<std::string>();;
+				file_link.mSourceObjectID	= compound.try_convert<Object>()->mID;
+				file_link.mTargetFile		= property.get_value(compound).get_value<std::string>();;
 				linkedFiles.push_back(file_link);
 			}
 

@@ -96,7 +96,7 @@ int main(int argc, char* argv[])
 		return -1;
 
 	// Verify setting the value works
-	float old_value = resolved_path.GetCurrentValue().convert<float>();
+	float old_value = resolved_path.GetValue().convert<float>();
 	if (!resolved_path.SetValue(8.0f))
 		return -1; 
 
@@ -147,7 +147,7 @@ int main(int argc, char* argv[])
 		MemoryStream stream(binary_writer.getBuffer().data(), binary_writer.getBuffer().size());
 		RTTIDeserializeResult read_result;
 		InitResult init_result;
-		if (!deserializeObjects(stream, read_result, init_result))
+		if (!deserializeBinary(stream, read_result, init_result))
 			return -1;
 
 		// Resolve links
