@@ -221,6 +221,9 @@ namespace nap
 		{
 			Object* object = objects_to_write[index];
 
+			if (object->mID.empty())
+				return false;
+
 			// Write start of object
 			if (!writer.startRootObject(object->get_type()))
 				return false;

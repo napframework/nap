@@ -63,14 +63,14 @@
 		"mFragShader": "shaders/orientation.frag"
 	},
 
-	"nap::ModelResource": {
-		"mID": "OrientationModel",
-		"mModelPath": "data/orientation.fbx"
+	"nap::MeshResource": {
+		"mID": "OrientationMesh",
+		"Path": "data/orientation.mesh"
 	},
 
-	"nap::ModelResource": {
-		"mID": "PigModel",
-		"mModelPath": "data/pig_head_alpha_rotated.fbx"
+	"nap::MeshResource": {
+		"mID": "PigMesh",
+		"Path": "data/pig_head_alpha_rotated.mesh"
 	},	
 	"nap::Material": {
 		"mID": "GeneralMaterial",

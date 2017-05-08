@@ -26,5 +26,16 @@ namespace nap
 	 * @return True if deserialization succeeded, false if not. In case of failure, @a initResult contains detailed error info.
 	 */
 	bool deserializeBinary(MemoryStream& stream, RTTIDeserializeResult& result, InitResult& initResult);
+
+	/**
+	 * Deserialize a set of objects and their data from the specified file
+	 *
+	 * @param file The file to deserialize from
+	 * @param result The result of deserialization
+	 * @param initResult The error state of deserialization
+	 *
+	 * @return True if deserialization succeeded, false if not. In case of failure, @a initResult contains detailed error info.
+	 */
+	bool readBinary(const std::string& path, RTTIDeserializeResult& result, InitResult& initResult);
 } //< End Namespace nap
 

@@ -17,7 +17,6 @@ find_package(RTTR CONFIG REQUIRED Core)
 
 find_package(rapidjson REQUIRED)
 add_definitions(-DRAPIDJSON_HAS_STDSTRING=1)
-include_directories(${RAPIDJSON_INCLUDE_DIRS})
 
 add_platform_specific_files("${WIN32_SOURCES}" "${OSX_SOURCES}" "${LINUX_SOURCES}")
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
@@ -28,6 +27,7 @@ if (MSVC)
 endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC src)
+target_include_directories(${PROJECT_NAME} PUBLIC ${RAPIDJSON_INCLUDE_DIRS})
 
 if (MSVC)
     target_link_libraries(${PROJECT_NAME} RTTR::Core)

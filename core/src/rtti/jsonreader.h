@@ -33,6 +33,6 @@ namespace nap
 	 *
 	 * @return True if deserialization succeeded, false if not. In case of failure, @a initResult contains detailed error info.
 	 */
-	bool readJSONFile(const std::string& filename, RTTIDeserializeResult& result, nap::InitResult& initResult);
+	bool readJSONFile(const std::string& path, RTTIDeserializeResult& result, nap::InitResult& initResult);
 } //< End Namespace nap
 

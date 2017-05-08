@@ -1,5 +1,6 @@
 #include "binaryreader.h"
 #include "nap/resource.h"	// TODO: for initresult, perhaps move to another file
+#include <fstream>
 
 namespace nap
 {
@@ -256,6 +257,31 @@ namespace nap
 			if (!deserializeObjectRecursive(object, *object, stream, path, result.mUnresolvedPointers, result.mFileLinks, initResult))
 				return false;
 		}
+
+		return true;
+	}
+
+	bool readBinary(const std::string& path, RTTIDeserializeResult& result, nap::InitResult& initResult)
+	{
+		// Open the file
+		std::ifstream in(path, std::ios::in | std::ios::binary);
+		if (!initResult.check(in.good(), "Unable to open file %s", path.c_str()))
+			return false;
+
+		// Create buffer of appropriate size
+		in.seekg(0, std::ios::end);
+		size_t len = in.tellg();
+		std::vector<uint8_t> buffer;
+		buffer.resize(len);
+
+		// Read all data
+		in.seekg(0, std::ios::beg);
+		in.read((char*)buffer.data(), len);
+		in.close();
+
+		MemoryStream stream(buffer.data(), buffer.size());
+		if (!deserializeBinary(stream, result, initResult))
+			return false;
 
 		return true;
 	}

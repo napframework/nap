@@ -310,11 +310,11 @@ namespace nap
 		return true;
 	}
 
-	bool readJSONFile(const std::string& filename, RTTIDeserializeResult& result, nap::InitResult& initResult)
+	bool readJSONFile(const std::string& path, RTTIDeserializeResult& result, nap::InitResult& initResult)
 	{
 		// Open the file
-		std::ifstream in(filename, std::ios::in | std::ios::binary);
-		if (!initResult.check(in.good(), "Unable to open file %s", filename.c_str()))
+		std::ifstream in(path, std::ios::in | std::ios::binary);
+		if (!initResult.check(in.good(), "Unable to open file %s", path.c_str()))
 			return false;
 
 		// Create buffer of appropriate size

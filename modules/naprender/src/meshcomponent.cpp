@@ -1,4 +1,5 @@
 #include "meshcomponent.h"
+#include "meshresource.h"
 
 namespace nap
 {
@@ -12,6 +13,11 @@ namespace nap
 		}
 		mesh->draw();
 	}
+
+	opengl::Mesh* MeshComponent::getMesh() const
+	{
+		return &mMesh->getMesh();
+	}
 }
 
-RTTI_DEFINE_BASE(nap::MeshComponent)
+RTTI_DEFINE(nap::MeshComponent)

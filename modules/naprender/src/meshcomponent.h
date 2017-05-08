@@ -8,6 +8,8 @@
 
 namespace nap
 {
+	class MeshResource;
+
 	/**
 	 * Represents a drawable mesh that can be used as a component in an object tree
 	 * Every mesh points to a loaded mesh resource, this mesh owns the actual mesh data
@@ -35,6 +37,9 @@ namespace nap
 		 * @return the mesh this component manages
 		 * nullptr if mesh is invalid
 		 */
-		virtual opengl::Mesh* getMesh() const = 0;
+		virtual opengl::Mesh* getMesh() const;
+
+	public:
+		MeshResource* mMesh = nullptr;
 	};
 }
