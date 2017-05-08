@@ -1,5 +1,5 @@
-#include "rttiwriter.h"
-#include "object.h"
+#include <rtti/rttiwriter.h>
+#include <nap/object.h>
 
 namespace nap
 {

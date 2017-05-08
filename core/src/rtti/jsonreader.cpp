@@ -1,5 +1,5 @@
-#include "JSonReader.h"
-#include "resource.h"	// TODO: for initresult, perhaps move to another file
+#include "jsonreader.h"
+#include "nap/resource.h"	// TODO: for initresult, perhaps move to another file
 
 #include <rapidjson/document.h>
 #include <rapidjson/istreamwrapper.h>
@@ -252,7 +252,7 @@ namespace nap
 		return true;
 	}
 	
-	bool readJSON(const std::string& json, ReadJSONFileResult& result, nap::InitResult& initResult)
+	bool deserializeJSON(const std::string& json, RTTIDeserializeResult& result, nap::InitResult& initResult)
 	{
 		// Try to parse the json file
 		rapidjson::Document document;
@@ -310,7 +310,7 @@ namespace nap
 		return true;
 	}
 
-	bool readJSONFile(const std::string& filename, ReadJSONFileResult& result, nap::InitResult& initResult)
+	bool readJSONFile(const std::string& filename, RTTIDeserializeResult& result, nap::InitResult& initResult)
 	{
 		// Open the file
 		std::ifstream in(filename, std::ios::in | std::ios::binary);
@@ -328,7 +328,7 @@ namespace nap
 		in.read(&buffer[0], len);
 		in.close();
 
-		if (!readJSON(buffer, result, initResult))
+		if (!deserializeJSON(buffer, result, initResult))
 			return false;
 
 		return true;

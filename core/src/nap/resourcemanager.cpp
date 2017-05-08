@@ -1,7 +1,7 @@
 #include "resourcemanager.h"
-#include "rttiutilities.h"
+#include "rtti/rttiutilities.h"
 #include "directorywatcher.h"
-#include "jsonreader.h"
+#include "rtti/jsonreader.h"
 
 
 RTTI_DEFINE(nap::ResourceManagerService)
@@ -516,7 +516,7 @@ namespace nap
 		assert(toComparableFilename(filename) != toComparableFilename(externalChangedFile));
 
 		// Read objects from disk
-		ReadJSONFileResult read_result;
+		RTTIDeserializeResult read_result;
 		if (!readJSONFile(filename, read_result, initResult))
 			return false;
 

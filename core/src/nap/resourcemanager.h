@@ -5,7 +5,7 @@
 #include "object.h"
 #include "service.h"
 #include "resource.h"
-#include "jsonreader.h"
+#include "rtti/jsonreader.h"
 #include <map>
 
 namespace nap

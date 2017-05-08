@@ -1,5 +1,5 @@
-#include "rttiutilities.h"
-#include "Object.h"
+#include <rtti/rttiutilities.h>
+#include <nap/object.h>
 
 namespace RTTI
 {

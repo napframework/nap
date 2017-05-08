@@ -1,15 +1,18 @@
 #include "RTTITestClasses.h"
 #include <rtti/rtti.h>
-#include <nap/rttiutilities.h>
-#include <nap/JSonReader.h>
-#include <nap/jsonwriter.h>
+#include <rtti/rttiutilities.h>
+#include <rtti/jsonreader.h>
+#include <rtti/jsonwriter.h>
+#include <rtti/binarywriter.h>
+#include <rtti/binaryreader.h>
+#include <nap/memorystream.h>
 #include <nap/logger.h>
 #include <nap/core.h>
 
 #include <nap/resource.h>
 #include <nap/stringutils.h>
 
-#include <nap/rttipath.h>
+#include <rtti/rttipath.h>
 
 using namespace nap;
 
@@ -61,7 +64,7 @@ bool ResolveLinks(const OwnedObjectList& objects, const UnresolvedPointerList& u
 
 	return true;
 }
-
+ 
 
 int main(int argc, char* argv[])
 {
@@ -100,37 +103,71 @@ int main(int argc, char* argv[])
 	// Restore value so we can compare later
 	resolved_path.SetValue(old_value);
 
-	// Write to json
-	JSONWriter writer;
-	if (!serializeObjects({ root }, writer))
-		return -1;
+	{
+		// Write to json
+		JSONWriter writer;
+		if (!serializeObjects({ root }, writer))
+			return -1;
 
-	// Print json
-	std::string json = writer.GetJSON();
-	std::cout << json << std::endl;
+		// Print json
+		std::string json = writer.GetJSON();
+		std::cout << json << std::endl;
 
-	// Read json and verify it succeeds
-	ReadJSONFileResult read_result;
-	InitResult init_result;
-	if (!readJSON(json, read_result, init_result))
-		return -1;
+		// Read json and verify it succeeds
+		RTTIDeserializeResult read_result;
+		InitResult init_result;
+		if (!deserializeJSON(json, read_result, init_result))
+			return -1;
 
-	// Resolve links
-	if (!ResolveLinks(read_result.mReadObjects, read_result.mUnresolvedPointers))
-		return -1;
+		// Resolve links
+		if (!ResolveLinks(read_result.mReadObjects, read_result.mUnresolvedPointers))
+			return -1;
 
-	// Sort read objects into id mapping
-	std::map<std::string, Object*> objects_by_id;
-	for (auto& object : read_result.mReadObjects)
-		objects_by_id.insert({ object->mID, object.get() });
+		// Sort read objects into id mapping
+		std::map<std::string, Object*> objects_by_id;
+		for (auto& object : read_result.mReadObjects)
+			objects_by_id.insert({ object->mID, object.get() });
 
-	// Compare root objects
-	if (!RTTI::areObjectsEqual(*objects_by_id["Root"], *root, RTTI::EPointerComparisonMode::BY_ID))
-		return -1;
+		// Compare root objects
+		if (!RTTI::areObjectsEqual(*objects_by_id["Root"], *root, RTTI::EPointerComparisonMode::BY_ID))
+			return -1;
 
-	// Compare pointee-objects
-	if (!RTTI::areObjectsEqual(*objects_by_id["Pointee"], *root->mPointerProperty, RTTI::EPointerComparisonMode::BY_ID))
-		return -1;
+		// Compare pointee-objects
+		if (!RTTI::areObjectsEqual(*objects_by_id["Pointee"], *root->mPointerProperty, RTTI::EPointerComparisonMode::BY_ID))
+			return -1;
+	}
+
+	{
+		// Write to binary
+		BinaryWriter binary_writer;
+		if (!serializeObjects({ root }, binary_writer))
+			return -1;
+
+		// Read binary and verify it succeeds
+		MemoryStream stream(binary_writer.getBuffer().data(), binary_writer.getBuffer().size());
+		RTTIDeserializeResult read_result;
+		InitResult init_result;
+		if (!deserializeObjects(stream, read_result, init_result))
+			return -1;
+
+		// Resolve links
+		if (!ResolveLinks(read_result.mReadObjects, read_result.mUnresolvedPointers))
+			return -1;
+
+		// Sort read objects into id mapping
+		std::map<std::string, Object*> objects_by_id;
+		for (auto& object : read_result.mReadObjects)
+			objects_by_id.insert({ object->mID, object.get() });
+
+		// Compare root objects
+		if (!RTTI::areObjectsEqual(*objects_by_id["Root"], *root, RTTI::EPointerComparisonMode::BY_ID))
+			return -1;
+
+		// Compare pointee-objects
+		if (!RTTI::areObjectsEqual(*objects_by_id["Pointee"], *root->mPointerProperty, RTTI::EPointerComparisonMode::BY_ID))
+			return -1;
+	}
+
 
 	return 0;
 }

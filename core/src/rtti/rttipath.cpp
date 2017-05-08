@@ -1,6 +1,6 @@
-#include "rttipath.h"
-#include "stringutils.h"
-#include "object.h"
+#include <rtti/rttipath.h>
+#include <nap/stringutils.h>
+#include <nap/object.h>
 
 namespace RTTI
 {

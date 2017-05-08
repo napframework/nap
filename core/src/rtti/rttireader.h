@@ -7,6 +7,7 @@
 // STL includes
 #include <string>
 
+
 namespace nap
 {
 	class Object;
@@ -49,22 +50,14 @@ namespace nap
 	using UnresolvedPointerList = std::vector<UnresolvedPointer>;
 
 	/**
-	 * Helper struct to contain the output of readJSONFile
+	 * Output of RTTI deserialization (both binary and json)
 	 */
-	struct ReadJSONFileResult
+	struct RTTIDeserializeResult
 	{
 		OwnedObjectList			mReadObjects;			// The list of objects that was read. Note that this struct owns these objects.
 		std::vector<FileLink>	mFileLinks;				// The list of FileLinks that was read
 		UnresolvedPointerList	mUnresolvedPointers;	// The list of UnresolvedPointers that was read
 	};
-
-
-	/**
-	 * Helper functions to deserialize a JSON file or string to nap objects. This function is low level in the sense that it doesn't do any kind of pointer resolving, adding to managers, etc internally.
-	 * Instead, it deserializes the JSON file and outputs the necessary information for clients to be able to do those things themselves.
-	 */
-	bool readJSON(const std::string& json, ReadJSONFileResult& result, nap::InitResult& initResult);
-	bool readJSONFile(const std::string& filename, ReadJSONFileResult& result, nap::InitResult& initResult);	
 
 } //< End Namespace nap
 
