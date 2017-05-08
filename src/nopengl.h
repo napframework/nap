@@ -24,6 +24,5 @@
 #include "nmesh.h"
 #include "nframebuffer.h"
 #include "ncamera.h"
-#include "npolyline.h"
 #include "nindexbuffer.h"
 #include "nindexcontainer.h"

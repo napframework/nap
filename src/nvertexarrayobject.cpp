@@ -140,7 +140,7 @@ namespace opengl
 	}
 
 	// Specify which index buffer to use with this vertex array object
-	bool VertexArrayObject::setIndexBuffer(IndexBuffer& buffer)
+	bool VertexArrayObject::setIndexBuffer(const IndexBuffer& buffer)
 	{
 		if (!buffer.isAllocated())
 		{
@@ -152,7 +152,7 @@ namespace opengl
 	}
 
 	//Adds and binds a vertex buffer to this vertex array object
-	bool VertexArrayObject::addVertexBuffer(unsigned int index, VertexBuffer& buffer)
+	bool VertexArrayObject::addVertexBuffer(unsigned int index, const VertexBuffer& buffer)
 	{
 		auto it = mBindings.find(index);
 		if (it != mBindings.end())
@@ -175,20 +175,6 @@ namespace opengl
 			return false;
 		}
 
-		// Update internal vertex count
-		unsigned int new_vert_count = buffer.getVertCount();
-		
-		// If the buffer to add has a different vert count, compensate internal count!
-		if (mBindings.size() > 0 && new_vert_count != mVertCount)
-		{
-			printMessage(MessageType::WARNING, "buffer vertex count: %d differs from previously defined vertex count: %d", buffer.getVertCount(), mVertCount);
-			printMessage(MessageType::WARNING, "picking lowest denominator");
-			new_vert_count = new_vert_count < mVertCount ? new_vert_count : mVertCount;
-		}
-
-		// Update vertex count
-		mVertCount = new_vert_count;
-
 		// Mark all VAOs as dirty
 		for (auto state : mContextSpecificState)
 			state.second.mIsDirty = true;
@@ -201,7 +187,7 @@ namespace opengl
 
 
 	// Adds a vertex buffer at next available id
-	unsigned int VertexArrayObject::addVertexBuffer(VertexBuffer& buffer)
+	unsigned int VertexArrayObject::addVertexBuffer(const VertexBuffer& buffer)
 	{
 		// Try to find a free id
 		unsigned int found_id(0);
@@ -262,7 +248,7 @@ namespace opengl
 
 		for (const auto& binding : mBindings)
 		{
-			VertexBuffer& buffer = *binding.second;
+			const VertexBuffer& buffer = *binding.second;
 
 			// Bind buffer
 			buffer.bind();

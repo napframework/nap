@@ -77,15 +77,6 @@ namespace opengl
 		bool isLinked() const								{ return mState == State::Linked; }
 
 		/**
-		 * Associate a generic vertex attribute index with a named attribute variable
-		 * Note that this call links the shader program again
-		 * When not explicetly binding vertex locations the location will be bound automatically
-		 * @param index specifies the index of the generic vertex attribute to be bound
-		 * @param name the name of the vertex shader attribute variable to which index is to be bound.
-		 */
-		void bindVertexAttribute(unsigned int index, const std::string& name);
-
-		/**
 		 * Sets a uniform variable based on the given type, note that
 		 * you need to bind the shader before calling this function
 		 * @param type:  the uniform type
@@ -135,6 +126,5 @@ namespace opengl
 		UniformVariables mShaderUniforms;		// Shader program uniform attributes
 		VertexAttributes mShaderAttributes;		// Shader program vertex attribute inputs
 		State mState = State::NotLoaded;		// Holds current state of shader program
-		bool mAttributeLocationChanged = false;	// Holds if the attribute location changed, if so, re-link program
 	};
 }	// opengl

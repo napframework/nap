@@ -50,7 +50,7 @@ namespace opengl
 		 * Not specifying one will leave indexing out of the programmable pipe
 		 * @param buffer: the index buffer that describes attribute connectivity
 		 */
-		bool			setIndexBuffer(IndexBuffer& buffer);
+		bool			setIndexBuffer(const IndexBuffer& buffer);
 
 		/**
 		 * Adds a vertex buffer to this vertex array object
@@ -58,14 +58,14 @@ namespace opengl
 		 * If calling multiple times in a row, the assigned id will be increment by one each time
 		 * @ return the assigned vertex attribute index, -1 if unsuccessful
 		 */
-		unsigned int	addVertexBuffer(VertexBuffer& buffer);
+		unsigned int	addVertexBuffer(const VertexBuffer& buffer);
 
 		/**
 		 * Adds and binds a vertex buffer to this vertex array object
 		 * Note that this call will bind the buffer at the designated index
 		 * @ return the assigned vertex attribute index, -1 if unsuccessful
 		 */
-		bool			addVertexBuffer(unsigned int index, VertexBuffer& buffer);
+		bool			addVertexBuffer(unsigned int index, const VertexBuffer& buffer);
 
 		/**
 		 * @return the vertex buffer binding index associated with this VAO
@@ -93,7 +93,9 @@ namespace opengl
 		 * @param the current draw mode
 		 */
 		DrawMode		getDrawMode() const				{ return mDrawMode; }
-	
+
+		void			setNumVertices(int numVertices) { mVertCount = numVertices; }
+
 	private:
 		/**
 		 * Creates the vertex buffer for the specified GL context
@@ -101,7 +103,7 @@ namespace opengl
 		 * This needs be called after creation to ensure the associated data can be rendered
 		 */
 		void			allocate(GLContext glContext);
-		
+
 		/**
 		 * Destroys the vertex buffer for the specified GL context
 		 *
@@ -141,7 +143,7 @@ namespace opengl
 			bool	mIsDirty = false;	// Whether the VAO is dirty
 		};
 
-		using VertexBufferBindings = std::unordered_map<unsigned int, VertexBuffer*>;
+		using VertexBufferBindings = std::unordered_map<unsigned int, const VertexBuffer*>;
 		using ContextSpecificStateMap = std::unordered_map<GLContext, VertexArrayState>;
 		ContextSpecificStateMap	mContextSpecificState;				// The per-context vertex array state
 		DrawMode				mDrawMode = DrawMode::TRIANGLES;	// Mode currently used for drawing
@@ -160,6 +162,6 @@ namespace opengl
 		 * Not having an index buffer associated with this vertex array object will
 		 * use the default array draw method
 		 */
-		IndexBuffer*			mIndexBuffer = nullptr;				
+		const IndexBuffer*		mIndexBuffer = nullptr;				
 	};
 }

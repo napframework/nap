@@ -186,37 +186,6 @@ namespace opengl
 	}
 
 
-	// associate a generic vertex attribute index with a named attribute variable
-	void Shader::bindVertexAttribute(unsigned int index, const std::string& name)
-	{
-		if (!isAllocated())
-		{
-			printMessage(MessageType::ERROR, "unable to bind vertex attribute to shader, shader not allocated");
-			return;
-		}
-
-		// Get current location
-		GLint current_attr_location = glGetAttribLocation(getId(), name.c_str());
-		if (current_attr_location == -1)
-		{
-			printMessage(MessageType::WARNING, "unable to bind vertex attribute, attribute: %s not in shader", name.c_str());
-			return;
-		}
-
-		// Check if location is different, if not don't update
-		if (current_attr_location == index)
-		{
-			return;
-		}
-
-		// Bind attribute location
-		glBindAttribLocation(getId(), index, name.c_str());
-
-		// Cache change
-		mAttributeLocationChanged = true;
-	}
-
-
 	// Sets the uniform value in shader based on type
 	void Shader::setUniform(GLSLType type, const std::string& name, const void* data)
 	{
@@ -298,13 +267,6 @@ namespace opengl
 		{
 			printMessage(MessageType::ERROR, "attempting to bind unresolved shader");
 			return false;
-		}
-
-		// Re-link if attribute location changed
-		if (mAttributeLocationChanged)
-		{
-			glLinkProgram(mShaderId);
-			mAttributeLocationChanged = false;
 		}
 
 		glUseProgram(mShaderId);
