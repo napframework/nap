@@ -73,19 +73,10 @@ namespace nap
 		virtual void onPostDraw()		{ }
 
 		/**
-		 * Link to material used for drawing
+		 * Get the material used to draw this object
+		 *
+		 * @return material, nullptr if not found
 		 */
-		ObjectLinkAttribute material = { this, "material", RTTI_OF(Material) };
-
-		/**
-		 * @return link as material, nullptr if not found
-		 */
-		Material* getMaterial();
-
-
-		/**
-		 * Sets material.
-		 */		
-		void setMaterial(Material* newMaterial);
+		virtual Material* getMaterial() = 0;
 	};
 }

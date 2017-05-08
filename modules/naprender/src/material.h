@@ -8,6 +8,7 @@
 // Local includes
 #include "shaderresource.h"
 #include "imageresource.h"
+#include "nmesh.h"
 
 namespace nap
 {
@@ -21,6 +22,12 @@ namespace nap
 	{
 		RTTI_ENABLE(Resource)
 	public:
+		struct VertexAttributeBinding
+		{
+			std::string mMeshAttributeID;
+			std::string mShaderAttributeID;
+		};
+
 		// Default constructor
 		Material();
 
@@ -69,22 +76,6 @@ namespace nap
 		void pushUniforms();
 
 		/**
-		 * Updates the variable attribute bindings on the GPU
-		 * Note that this call needs to be called before binding the material
-		 * Shader index operations are only pushed on a new bind because of linking impact
-		 */
-		void pushAttributes();
-
-		/**
-		 * Updates the vertex attribute binding location
-		 * The binding location is associated with a specific buffer when drawing
-		 * Every buffer has it's own location withing the array object that is used
-		 * @param name: Name of the vertex attribute in the shader
-		 * @param location: New buffer location to use when drawing
-		 */
-		void linkVertexBuffer(const std::string& name, int location);
-
-		/**
 		 * Template uniform set function
 		 * @param name: name of the uniform variable
 		 * @param value: value to set
@@ -99,6 +90,11 @@ namespace nap
 		 */
 		void setUniformTexture(const std::string& name, TextureResource& resource);
 		
+		const VertexAttributeBinding* findVertexAttributeBinding(const opengl::VertexAttributeID& shaderAttributeID) const;
+
+	public:
+		std::vector<VertexAttributeBinding> mVertexAttributeBindings;
+
 	private:
 
 		/**
@@ -106,10 +102,6 @@ namespace nap
 		*/
 		CompoundAttribute uniformAttribute = { this, "uniforms" };
 
-		/**
-		* Holds all vertex attribute variables
-		*/
-		CompoundAttribute vertexAttribute = { this, "attributes" };
 	};
 
 

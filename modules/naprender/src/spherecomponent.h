@@ -16,11 +16,6 @@ namespace nap
 	public:
 		// Default constructor
 		SphereComponent() = default;
-
-		/**
-		 * @return the sphere mesh
-		 * Note that this mesh is shared between every sphere component instance
-		 */
-		virtual opengl::Mesh* getMesh() const override;
+		SphereComponent(Material& material);
 	};
 }

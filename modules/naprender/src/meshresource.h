@@ -38,7 +38,7 @@ namespace nap
 
 		std::string				mPath;
 
-	private:
+	protected:
 		// Name of mesh
 		std::string				mDisplayName;
 
@@ -47,6 +47,14 @@ namespace nap
 		std::unique_ptr<opengl::Mesh>	mPrevMesh;
 	};
 
+	class CustomMeshResource : public MeshResource
+	{
+	public:
+		virtual bool init(InitResult& initResult) override;
+
+	public:
+		std::unique_ptr<opengl::Mesh> mCustomMesh = nullptr;
+	};
 
 } // nap
 

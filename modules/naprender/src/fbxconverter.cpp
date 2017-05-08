@@ -22,10 +22,6 @@
 
 namespace nap
 {
-	static std::string gPositionVertexAttr("Position");
-	static std::string gNormalVertexAttr("Normal");
-	static std::string gUVVertexAttr("UV");	
-	static std::string gColorVertexAttr("Color");
 	static int gMaxNumUVAttributes = 16;
 	static int gMaxNumColorAttributes = 16;
 
@@ -36,8 +32,9 @@ namespace nap
 	public:
 		struct Attribute
 		{
-			std::string mID;
-			std::vector<float> mData;
+			std::string			mID;
+			int					mNumComponents;
+			std::vector<float>	mData;
 		};
 
 		std::vector<Attribute> mAttributes;
@@ -68,8 +65,9 @@ namespace nap
 	};
 
 	RTTI_BEGIN_CLASS(MeshData::Attribute)
-		RTTI_PROPERTY("ID",		&MeshData::Attribute::mID)
-		RTTI_PROPERTY("Data",	&MeshData::Attribute::mData)
+		RTTI_PROPERTY("ID",				&MeshData::Attribute::mID)
+		RTTI_PROPERTY("NumComponents",	&MeshData::Attribute::mNumComponents)
+		RTTI_PROPERTY("Data",			&MeshData::Attribute::mData)
 	RTTI_END_CLASS
 
 	RTTI_BEGIN_CLASS(MeshData)
@@ -115,7 +113,8 @@ namespace nap
 			mesh_data.mNumVertices = mesh->mNumVertices;
 
 			// Copy vertex data			
-			MeshData::Attribute& position_attribute = mesh_data.GetOrCreateAttribute(gPositionVertexAttr);
+			MeshData::Attribute& position_attribute = mesh_data.GetOrCreateAttribute(opengl::VertexAttributeIDs::PositionVertexAttr);
+			position_attribute.mNumComponents = 3;
 			position_attribute.mData.reserve(mesh->mNumVertices * 3);
 			for (unsigned int vertex = 0; vertex < mesh->mNumVertices; vertex++)
 			{
@@ -128,7 +127,8 @@ namespace nap
 			// Copy normals
 			if (mesh->HasNormals())
 			{
-				MeshData::Attribute& normal_attribute = mesh_data.GetOrCreateAttribute(gNormalVertexAttr);
+				MeshData::Attribute& normal_attribute = mesh_data.GetOrCreateAttribute(opengl::VertexAttributeIDs::NormalVertexAttr);
+				normal_attribute.mNumComponents = 3;
 				normal_attribute.mData.reserve(mesh->mNumVertices * 3);
 				for (unsigned int vertex = 0; vertex < mesh->mNumVertices; vertex++)
 				{
@@ -144,7 +144,8 @@ namespace nap
 			{
 				aiVector3D* uv_channel_data = mesh->mTextureCoords[uv_channel];
 
-				MeshData::Attribute& uv_attribute = mesh_data.GetOrCreateAttribute(nap::stringFormat("%s%d", gUVVertexAttr.c_str(), uv_channel));
+				MeshData::Attribute& uv_attribute = mesh_data.GetOrCreateAttribute(nap::stringFormat("%s%d", opengl::VertexAttributeIDs::UVVertexAttr.c_str(), uv_channel));
+				uv_attribute.mNumComponents = 3;
 				uv_attribute.mData.reserve(mesh->mNumVertices * 3);
 
 				// Copy uv data channel
@@ -163,7 +164,8 @@ namespace nap
 			{
 				aiColor4D* color_channel_data = mesh->mColors[color_channel];
 
-				MeshData::Attribute& color_attribute = mesh_data.GetOrCreateAttribute(nap::stringFormat("%s%d", gColorVertexAttr.c_str(), color_channel));
+				MeshData::Attribute& color_attribute = mesh_data.GetOrCreateAttribute(nap::stringFormat("%s%d", opengl::VertexAttributeIDs::ColorVertexAttr.c_str(), color_channel));
+				color_attribute.mNumComponents = 4;
 				color_attribute.mData.reserve(mesh->mNumVertices * 4);
 
 				// Copy color data channel
@@ -223,45 +225,21 @@ namespace nap
 
 		const MeshData* mesh_data = static_cast<MeshData*>(deserialize_result.mReadObjects[0].get());
 
-		std::unique_ptr<opengl::Mesh> mesh = std::make_unique<opengl::Mesh>();
+		std::unique_ptr<opengl::Mesh> mesh = std::make_unique<opengl::Mesh>(mesh_data->mNumVertices);
 
-		// Copy vertex data
-		const MeshData::Attribute* position_attribute = mesh_data->FindAttribute(gPositionVertexAttr);
-		if (!initResult.check(position_attribute != nullptr, "Required attribute 'position' not found in mesh data"))
+		// Copy vertex attribute data to mesh
+		for (const MeshData::Attribute& attribute : mesh_data->mAttributes)
+			mesh->addVertexAttribute(attribute.mID, attribute.mNumComponents, attribute.mData.data());
+
+		// Make sure there's position data
+		if (!initResult.check(mesh->findVertexAttributeBuffer(opengl::VertexAttributeIDs::PositionVertexAttr) != nullptr, "Required attribute 'position' not found in mesh data"))
 			return nullptr;
-
-		mesh->copyVertexData(mesh_data->mNumVertices, position_attribute->mData.data());
-
-		// Copy normal data
-		const MeshData::Attribute* normal_attribute = mesh_data->FindAttribute(gNormalVertexAttr);
-		if (normal_attribute != nullptr)
-			mesh->copyNormalData(mesh_data->mNumVertices, normal_attribute->mData.data());
-
-		// Copy UVs
-		for (int uv = 0; uv < gMaxNumUVAttributes; ++uv)
-		{
-			const MeshData::Attribute* uv_attribute = mesh_data->FindAttribute(stringFormat("%s%d", gUVVertexAttr.c_str(), uv));
-			if (uv_attribute == nullptr)
-				break;
-
-			mesh->copyUVData(3, mesh_data->mNumVertices, uv_attribute->mData.data());
-		}
-
-		// Copy Colors
-		for (int color = 0; color< gMaxNumColorAttributes; ++color)
-		{
-			const MeshData::Attribute* color_attribute = mesh_data->FindAttribute(stringFormat("%s%d", gColorVertexAttr.c_str(), color));
-			if (color_attribute == nullptr)
-				break;
-
-			mesh->copyColorData(4, mesh_data->mNumVertices, color_attribute->mData.data());
-		}
-
+			
 		// Copy indices
 		if (!initResult.check(!mesh_data->mIndices.empty(), "No index data found in mesh"))
 			return nullptr;
 
-		mesh->copyIndexData(mesh_data->mIndices.size(), mesh_data->mIndices.data());
+		mesh->setIndices(mesh_data->mIndices.size(), mesh_data->mIndices.data());
 
 		return mesh;
 	}

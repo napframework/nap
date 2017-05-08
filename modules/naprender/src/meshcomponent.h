@@ -8,7 +8,7 @@
 
 namespace nap
 {
-	class MeshResource;
+	class ModelResource;
 
 	/**
 	 * Represents a drawable mesh that can be used as a component in an object tree
@@ -29,17 +29,13 @@ namespace nap
 		virtual void onDraw() override;
 
 		/**
-		 * If this object currently holds a mesh
+		 * Get the material used to draw this object
+		 *
+		 * @return material, nullptr if not found
 		 */
-		bool hasMesh() const							{ return getMesh() != nullptr; }
-
-		/**
-		 * @return the mesh this component manages
-		 * nullptr if mesh is invalid
-		 */
-		virtual opengl::Mesh* getMesh() const;
+		virtual Material* getMaterial() override;
 
 	public:
-		MeshResource* mMesh = nullptr;
+		ModelResource* mModelResource = nullptr;
 	};
 }

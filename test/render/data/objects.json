@@ -72,21 +72,108 @@
 		"mID": "PigMesh",
 		"Path": "data/pig_head_alpha_rotated.mesh"
 	},	
+	
+	"nap::ModelResource": {
+		"mID": "PigModel",
+		"Mesh" : "PigMesh",
+		"Material" : "PigMaterial"
+	},	
+
+	"nap::ModelResource": {
+		"mID": "OrientationModel",
+		"Mesh" : "OrientationMesh",
+		"Material" : "OrientationMaterial"
+	},
+	
 	"nap::Material": {
 		"mID": "GeneralMaterial",
-		"mShader": "GeneralShader"
+		"Shader": "GeneralShader",
+		"VertexAttributeBindings" : [
+			{
+				"MeshAttributeID": "Position",
+				"ShaderAttributeID": "in_Position"
+			},
+			{
+				"MeshAttributeID": "UV0",
+				"ShaderAttributeID": "in_Uvs"
+			},
+			{
+				"MeshAttributeID": "Color0",
+				"ShaderAttributeID": "in_Color"
+			},
+			{
+				"MeshAttributeID": "Normal",
+				"ShaderAttributeID": "in_Normals"
+			}
+		]
 	},
+	
 	"nap::Material": {
-		"mID": "PlaneMaterial",
-		"mShader": "GeneralShader"
+		"mID": "WorldMaterial",
+		"Shader": "GeneralShader",
+		"VertexAttributeBindings" : [
+			{
+				"MeshAttributeID": "Position",
+				"ShaderAttributeID": "in_Position"
+			},
+			{
+				"MeshAttributeID": "UV0",
+				"ShaderAttributeID": "in_Uvs"
+			},
+			{
+				"MeshAttributeID": "Color0",
+				"ShaderAttributeID": "in_Color"
+			},
+			{
+				"MeshAttributeID": "Normal",
+				"ShaderAttributeID": "in_Normals"
+			}
+		]
 	},
+	
 	"nap::Material": {
-		"mID": "SphereMaterial",
-		"mShader": "GeneralShader"
+		"mID": "PigMaterial",
+		"Shader": "GeneralShader",
+		"VertexAttributeBindings" : [
+			{
+				"MeshAttributeID": "Position",
+				"ShaderAttributeID": "in_Position"
+			},
+			{
+				"MeshAttributeID": "UV0",
+				"ShaderAttributeID": "in_Uvs"
+			},
+			{
+				"MeshAttributeID": "Color0",
+				"ShaderAttributeID": "in_Color"
+			},
+			{
+				"MeshAttributeID": "Normal",
+				"ShaderAttributeID": "in_Normals"
+			}
+		]
 	},
+	
 	"nap::Material": {
 		"mID": "OrientationMaterial",
-		"mShader": "OrientationShader"
-	}
-	
+		"Shader": "OrientationShader",
+		"VertexAttributeBindings" : [
+			{
+				"MeshAttributeID": "Position",
+				"ShaderAttributeID": "in_Position"
+			},
+			{
+				"MeshAttributeID": "UV0",
+				"ShaderAttributeID": "in_Uvs"
+			},
+			{
+				"MeshAttributeID": "Color0",
+				"ShaderAttributeID": "in_Color"
+			},
+			{
+				"MeshAttributeID": "Normal",
+				"ShaderAttributeID": "in_Normals"
+			}
+		]
+	}	
 } 

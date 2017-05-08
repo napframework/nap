@@ -18,12 +18,6 @@ namespace nap
 	public:
 		// Default constructor
 		PlaneComponent() = default;
-
-		/**
-		 * @return the plane mesh
-		 * Note that this mesh is shared between every instance
-		 * of the plane component
-		 */
-		virtual opengl::Mesh* getMesh() const override;  
+		PlaneComponent(Material& material); 
 	};
 }

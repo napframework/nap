@@ -1,7 +1,6 @@
 #include <planecomponent.h>
-
-// The plane
-static std::unique_ptr<opengl::Mesh> sPlane = nullptr;
+#include "meshresource.h"
+#include "modelresource.h"
 
 // All the plane vertices
 static float plane_vertices[] =
@@ -46,23 +45,37 @@ static unsigned int plane_indices[] =
 	0,3,2
 };
 
+static opengl::Mesh* createPlane()
+{
+	opengl::Mesh* plane_mesh = new opengl::Mesh(4);
+	plane_mesh->addVertexAttribute(opengl::VertexAttributeIDs::PositionVertexAttr, 3, plane_vertices);
+	plane_mesh->addVertexAttribute(opengl::VertexAttributeIDs::NormalVertexAttr, 3, plane_normals);
+	plane_mesh->addVertexAttribute(nap::stringFormat("%s%d", opengl::VertexAttributeIDs::UVVertexAttr.c_str(), 0), 3, plane_uvs);
+	plane_mesh->addVertexAttribute(nap::stringFormat("%s%d", opengl::VertexAttributeIDs::ColorVertexAttr.c_str(), 0), 4, plane_colors);
+	plane_mesh->setIndices(6, plane_indices);
+
+	return plane_mesh;
+}
+
 //////////////////////////////////////////////////////////////////////////
 
 namespace nap
 {
-	opengl::Mesh* PlaneComponent::getMesh() const
+	PlaneComponent::PlaneComponent(Material& material)
 	{
-		// TODO: Make Thread Safe
-		if (sPlane == nullptr)
-		{
-			sPlane = std::make_unique<opengl::Mesh>();
-			sPlane->copyVertexData(4, plane_vertices);
-			sPlane->copyNormalData(4, plane_normals);
-			sPlane->copyUVData(3, 4, plane_uvs);
-			sPlane->copyColorData(4, 4, plane_colors);
-			sPlane->copyIndexData(6, plane_indices);
-		}
-		return sPlane.get();
+		InitResult init_result;
+		CustomMeshResource* mesh_resource = new CustomMeshResource();
+		mesh_resource->mCustomMesh.reset(createPlane());
+
+		bool success = mesh_resource->init(init_result);
+		assert(success);
+
+		mModelResource = new ModelResource();
+		mModelResource->mMaterialResource = &material;
+		mModelResource->mMeshResource = mesh_resource;
+
+		success = mModelResource->init(init_result);
+		assert(success);
 	}
 };
 

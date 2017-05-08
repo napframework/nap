@@ -1,5 +1,7 @@
 #include "spherecomponent.h"
 #include "math.h"
+#include "modelresource.h"
+#include "meshresource.h"
 
 
 /**
@@ -85,31 +87,34 @@ static opengl::Mesh* createSphere(float radius, unsigned int rings, unsigned int
 		}
 	}
 
-	opengl::Mesh* sphere_mesh = new opengl::Mesh();
-	sphere_mesh->copyVertexData(vertex_count, &vertices.front());
-	sphere_mesh->copyNormalData(vertex_count, &normals.front());
-	sphere_mesh->copyUVData(3, vertex_count, &texcoords.front());
-	sphere_mesh->copyColorData(4, vertex_count, &colors.front());
-	sphere_mesh->copyIndexData(index_count, &indices.front());
+	opengl::Mesh* sphere_mesh = new opengl::Mesh(vertex_count);
+	sphere_mesh->addVertexAttribute(opengl::VertexAttributeIDs::PositionVertexAttr, 3, &vertices.front());
+	sphere_mesh->addVertexAttribute(opengl::VertexAttributeIDs::NormalVertexAttr, 3, &normals.front());
+	sphere_mesh->addVertexAttribute(nap::stringFormat("%s%d", opengl::VertexAttributeIDs::UVVertexAttr.c_str(), 0), 3, &texcoords.front());
+	sphere_mesh->addVertexAttribute(nap::stringFormat("%s%d", opengl::VertexAttributeIDs::ColorVertexAttr.c_str(), 0), 4, &colors.front());
+	sphere_mesh->setIndices(index_count, &indices.front());
 	
 	return sphere_mesh;
 }
 
-
-// The shared sphere
-static std::unique_ptr<opengl::Mesh> sPhere = nullptr;
-
 namespace nap
 {
-	opengl::Mesh* SphereComponent::getMesh() const
+	SphereComponent::SphereComponent(Material& material)
 	{
-		if (sPhere == nullptr)
-		{
-			sPhere.reset(createSphere(1.0f, 50, 50));
-		}
-		return sPhere.get();
-	}
+		InitResult init_result;
+		CustomMeshResource* mesh_resource = new CustomMeshResource();
+		mesh_resource->mCustomMesh.reset(createSphere(1.0f, 50, 50));
+		
+		bool success = mesh_resource->init(init_result);
+		assert(success);
 
+		mModelResource = new ModelResource();
+		mModelResource->mMaterialResource = &material;
+		mModelResource->mMeshResource = mesh_resource;
+		
+		success = mModelResource->init(init_result);
+		assert(success);
+	}
 }
 
 RTTI_DEFINE(nap::SphereComponent)

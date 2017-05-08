@@ -48,6 +48,17 @@ namespace nap
 	{
 		return getFileNameWithoutExtension(mPath);
 	}
+
+	bool CustomMeshResource::init(InitResult& initResult)
+	{
+		mPrevMesh = std::move(mMesh);
+		
+		mMesh = std::move(mCustomMesh);
+		if (!initResult.check(mMesh != nullptr, "Unable to init custom mesh"))
+			return false;
+
+		return true;
+	}
 }
 
 RTTI_DEFINE(nap::MeshResource)

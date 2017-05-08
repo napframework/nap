@@ -1,22 +1,24 @@
 #include "meshcomponent.h"
 #include "meshresource.h"
+#include "modelresource.h"
 
 namespace nap
 {
 	// Draw Mesh
 	void MeshComponent::onDraw()
 	{
-		opengl::Mesh* mesh = getMesh();
-		if (mesh == nullptr)
-		{
+		if (mModelResource == nullptr)
 			return;
-		}
-		mesh->draw();
+
+		mModelResource->draw();
 	}
 
-	opengl::Mesh* MeshComponent::getMesh() const
+	Material* MeshComponent::getMaterial()
 	{
-		return &mMesh->getMesh();
+		if (mModelResource == nullptr)
+			return nullptr;
+
+		return mModelResource->mMaterialResource;
 	}
 }
 

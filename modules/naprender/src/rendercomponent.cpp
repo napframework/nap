@@ -14,10 +14,7 @@ namespace nap
 			nap::Logger::warn("unable to resolve material for render-able component: %s", this->getName().c_str());
 			return;
 		}
-
-		// Update vertex attributes
-		mat->pushAttributes();
-		
+	
 		// Bind material
 		mat->bind();
 
@@ -32,18 +29,6 @@ namespace nap
 		onPostDraw();
 	}
 
-
-	// Returns the material associated with the render component
-	// nullptr if material can't be found
-	Material* RenderableComponent::getMaterial()
-	{
-		return material.getTarget<Material>();
-	}
-
-	void RenderableComponent::setMaterial(Material* newMaterial)
-	{
-		material.setTarget(*newMaterial);
-	}
 }
 
 RTTI_DEFINE_BASE(nap::RenderableComponent)

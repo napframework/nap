@@ -6,8 +6,14 @@
 // External includes
 #include <nap/logger.h>
 
+RTTI_BEGIN_CLASS(nap::Material::VertexAttributeBinding)
+	RTTI_PROPERTY_REQUIRED("MeshAttributeID",	&nap::Material::VertexAttributeBinding::mMeshAttributeID)
+	RTTI_PROPERTY_REQUIRED("ShaderAttributeID", &nap::Material::VertexAttributeBinding::mShaderAttributeID)
+RTTI_END_CLASS
+
 RTTI_BEGIN_CLASS(nap::Material)
-	RTTI_PROPERTY_REQUIRED("mShader", &nap::Material::mShader)
+	RTTI_PROPERTY_REQUIRED("Shader",			&nap::Material::mShader)
+	RTTI_PROPERTY("VertexAttributeBindings",	&nap::Material::mVertexAttributeBindings)
 RTTI_END_CLASS
 
 namespace nap
@@ -23,7 +29,6 @@ namespace nap
 
 		// TODO: store vertex attribute / uniforms for rollback
 
-		vertexAttribute.clear();
 		uniformAttribute.clear();
 
 		// Add uniforms
@@ -45,13 +50,6 @@ namespace nap
 			// Set attribute name
 			a.setName(v.first);
 			assert(a.getName() == v.first);
-		}
-
-		// Add vertex attributes
-		for (const auto& v : mShader->getShader().getAttributes())
-		{
-			const std::string& name = v.first;
-			vertexAttribute.addAttribute<int>(name, v.second->mLocation);
 		}
 
 		return true;
@@ -118,33 +116,6 @@ namespace nap
 	}
 
 
-	// Push shader attributes
-	void Material::pushAttributes()
-	{
-		// Set index
-		for (auto i = 0; i < vertexAttribute.size(); i++)
-		{
-			// Get attribute to set
-			Attribute<int>* attr = static_cast<Attribute<int>*>(vertexAttribute.getAttribute(i));
-			assert(attr != nullptr);
-			mShader->getShader().bindVertexAttribute(attr->getValue(), attr->getName());
-		}
-	}
-
-	// Set vertex attribute location used when drawing next time
-	// The location is associated with a vertex buffer bound to a vertex array object
-	void Material::linkVertexBuffer(const std::string& name, int location)
-	{
-		Attribute<int>* vertex_attr = vertexAttribute.getAttribute<int>(name);
-		if (vertex_attr == nullptr)
-		{
-			nap::Logger::warn(*this, "vertex attribute: %s does not exist", name.c_str());
-			return;
-		}
-		vertex_attr->setValue(location);
-	}
-
-
 	// Set link to resource as uniform binding
 	void Material::setUniformTexture(const std::string& name, TextureResource& resource)
 	{
@@ -164,5 +135,14 @@ namespace nap
 		// Set resource
 		ResourceLinkAttribute* resource_link = static_cast<ResourceLinkAttribute*>(texture_link_attr);
 		resource_link->setResource(resource);
+	}
+
+	const Material::VertexAttributeBinding* Material::findVertexAttributeBinding(const opengl::VertexAttributeID& shaderAttributeID) const
+	{
+		for (const VertexAttributeBinding& binding : mVertexAttributeBindings)
+			if (binding.mShaderAttributeID == shaderAttributeID)
+				return &binding;
+
+		return nullptr;
 	}
 }

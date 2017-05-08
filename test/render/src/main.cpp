@@ -52,6 +52,7 @@
 
 // STD includes
 #include <ctime>
+#include "modelresource.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
@@ -80,21 +81,19 @@ nap::RenderService* renderService = nullptr;
 nap::ResourceManagerService* resourceManagerService = nullptr;
 nap::Service* rpcService = nullptr;
 std::vector<nap::RenderWindowComponent*> renderWindows;
+
 nap::TextureRenderTargetResource2D* textureRenderTarget;
 nap::CameraComponent* cameraComponent = nullptr;
 nap::CameraComponent* splitCameraComponent = nullptr;
 nap::MeshComponent* pigMeshComponent = nullptr;
+nap::PlaneComponent* rotatingPlaneComponent = nullptr;
 nap::PlaneComponent* planeComponent = nullptr;
 nap::SphereComponent* sphereComponent = nullptr;
-nap::ShaderResource* shaderResource = nullptr;
-nap::ShaderResource* orientationShaderResource = nullptr;
-nap::MeshResource* orientationMesh = nullptr;
-nap::MeshResource* pigMesh = nullptr;
 nap::MeshComponent* orientationMeshComponent = nullptr;
 nap::Material* generalMaterial = nullptr;
-nap::Material* planeMaterial = nullptr;
-nap::Material* sphereMaterial = nullptr;
-nap::Material* orientationMaterial = nullptr;
+nap::Material* worldMaterial = nullptr;
+nap::ModelResource* orientationModel = nullptr;
+nap::ModelResource* pigModel = nullptr;
 
 // movement
 bool moveForward = false;
@@ -108,6 +107,7 @@ bool lookRight = false;
 
 // vertex Shader indices
 nap::Entity* model  = nullptr;
+nap::Entity* rotating_plane  = nullptr;
 nap::Entity* plane  = nullptr;
 nap::Entity* sphere = nullptr;
 nap::Entity* orientation = nullptr;
@@ -140,7 +140,7 @@ void onUpdate(const nap::SignalAttribute& signal)
 	}
 
 	nap::TransformComponent* xform_v = pigMeshComponent->getParent()->getComponent<nap::TransformComponent>();
-	nap::TransformComponent* xform_p = planeComponent->getParent()->getComponent<nap::TransformComponent>();
+	nap::TransformComponent* xform_p = rotatingPlaneComponent->getParent()->getComponent<nap::TransformComponent>();
 	nap::TransformComponent* xform_s = sphereComponent->getParent()->getComponent<nap::TransformComponent>();
 
 	// Get rotation angle
@@ -200,10 +200,10 @@ void onUpdate(const nap::SignalAttribute& signal)
 	material->setUniformTexture("testTexture", *testTexture);
 
 	// Set plane uniforms
-	planeComponent->getMaterial()->setUniformTexture("pigTexture", *testTexture);
-	planeComponent->getMaterial()->setUniformTexture("testTexture", *testTexture);
-	planeComponent->getMaterial()->setUniformValue<int>("mTextureIndex", 0);
-	planeComponent->getMaterial()->setUniformValue<glm::vec4>("mColor", {1.0f, 1.0f, 1.0f, 1.0f});
+	rotatingPlaneComponent->getMaterial()->setUniformTexture("pigTexture", *testTexture);
+	rotatingPlaneComponent->getMaterial()->setUniformTexture("testTexture", *testTexture);
+	rotatingPlaneComponent->getMaterial()->setUniformValue<int>("mTextureIndex", 0);
+	rotatingPlaneComponent->getMaterial()->setUniformValue<glm::vec4>("mColor", {1.0f, 1.0f, 1.0f, 1.0f});
 
 	// Set sphere uniforms
 	sphereComponent->getMaterial()->setUniformTexture("pigTexture", *worldTexture);
@@ -308,11 +308,17 @@ void onRender(const nap::SignalAttribute& signal)
 		// Render output texture to plane
 		std::vector<nap::RenderableComponent*> components_to_render;
 		components_to_render.push_back(planeComponent);
+		components_to_render.push_back(rotatingPlaneComponent);
 
 		planeComponent->getMaterial()->setUniformTexture("testTexture", textureRenderTarget->GetColorTexture());
 		planeComponent->getMaterial()->setUniformTexture("pigTexture", textureRenderTarget->GetColorTexture());
 		planeComponent->getMaterial()->setUniformValue<int>("mTextureIndex", 0);
 		planeComponent->getMaterial()->setUniformValue<glm::vec4>("mColor", { 1.0f, 1.0f, 1.0f, 1.0f });
+
+		rotatingPlaneComponent->getMaterial()->setUniformTexture("testTexture", textureRenderTarget->GetColorTexture());
+		rotatingPlaneComponent->getMaterial()->setUniformTexture("pigTexture", textureRenderTarget->GetColorTexture());
+		rotatingPlaneComponent->getMaterial()->setUniformValue<int>("mTextureIndex", 0);
+		rotatingPlaneComponent->getMaterial()->setUniformValue<glm::vec4>("mColor", { 1.0f, 1.0f, 1.0f, 1.0f });
 
 		opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(render_window->getWindow()->getBackbuffer());
 		renderService->clearRenderTarget(backbuffer, opengl::EClearFlags::COLOR|opengl::EClearFlags::DEPTH|opengl::EClearFlags::STENCIL);
@@ -406,49 +412,61 @@ bool initResources(nap::InitResult& initResult)
 		return false;
 
 	// Load general shader
-	shaderResource = resourceManagerService->createResource<nap::ShaderResource>();
-	shaderResource->mVertPath = vertShaderName;
-	shaderResource->mFragPath = fragShaderName;
-	if (!shaderResource->init(initResult))
+	nap::ShaderResource* generalShaderResource = resourceManagerService->createResource<nap::ShaderResource>();
+	generalShaderResource->mVertPath = vertShaderName;
+	generalShaderResource->mFragPath = fragShaderName;
+	if (!generalShaderResource->init(initResult))
 		return false;
 
 	// Load orientation shader
-	orientationShaderResource = resourceManagerService->createResource<nap::ShaderResource>();
+	nap::ShaderResource* orientationShaderResource = resourceManagerService->createResource<nap::ShaderResource>();
 	orientationShaderResource->mVertPath = orientationVertShaderName;
 	orientationShaderResource->mFragPath = orientationFragShaderName;
 	if (!orientationShaderResource->init(initResult))
 		return false;
 
 	// Load orientation resource
-	orientationMesh = resourceManagerService->createResource<nap::MeshResource>();
+	nap::MeshResource* orientationMesh = resourceManagerService->createResource<nap::MeshResource>();
 	orientationMesh->mPath = "data/orientation.mesh";
 	if (!orientationMesh->init(initResult))
 		return false;
 
-	// Load model resource
-	pigMesh = resourceManagerService->createResource<nap::MeshResource>();
+	// Load mesh resource
+	nap::MeshResource* pigMesh = resourceManagerService->createResource<nap::MeshResource>();
 	pigMesh->mPath = "data/pig_head_alpha_rotated.mesh";
 	if (!pigMesh->init(initResult))
 		return false;
 
+	nap::Material* pigMaterial = resourceManagerService->createResource<nap::Material>();
+	pigMaterial->mShader = generalShaderResource;
+	if (!pigMaterial->init(initResult))
+		return false;
+
 	generalMaterial = resourceManagerService->createResource<nap::Material>();
-	generalMaterial->mShader = shaderResource;
+	generalMaterial->mShader = generalShaderResource;
 	if (!generalMaterial->init(initResult))
 		return false;
 
-	planeMaterial = resourceManagerService->createResource<nap::Material>();
-	planeMaterial->mShader = shaderResource;
-	if (!planeMaterial->init(initResult))
+	worldMaterial = resourceManagerService->createResource<nap::Material>();
+	worldMaterial->mShader = generalShaderResource;
+	if (!worldMaterial->init(initResult))
 		return false;
 
-	sphereMaterial = resourceManagerService->createResource<nap::Material>();
-	sphereMaterial->mShader = shaderResource;
-	if (!sphereMaterial->init(initResult))
-		return false;
-
-	orientationMaterial = resourceManagerService->createResource<nap::Material>();
+	nap::Material* orientationMaterial = resourceManagerService->createResource<nap::Material>();
 	orientationMaterial->mShader = orientationShaderResource;
 	if (!orientationMaterial->init(initResult))
+		return false;
+
+	pigModel = resourceManagerService->createResource<nap::ModelResource>();
+	pigModel->mMaterialResource = pigMaterial;
+	pigModel->mMeshResource = pigMesh;
+	if (!pigModel->init(initResult))
+		return false;
+
+	orientationModel = resourceManagerService->createResource<nap::ModelResource>();
+	orientationModel->mMaterialResource = orientationMaterial;
+	orientationModel->mMeshResource = orientationMesh;
+	if (!orientationModel->init(initResult))
 		return false;
 
 	return true;
@@ -541,14 +559,10 @@ bool init(nap::Core& core)
  	testTexture = resourceManagerService->findResource<nap::ImageResource>("TestTexture");
  	worldTexture = resourceManagerService->findResource<nap::ImageResource>("WorldTexture");
  	textureRenderTarget = resourceManagerService->findResource<nap::TextureRenderTargetResource2D>("PlaneRenderTarget");
-	shaderResource = resourceManagerService->findResource<nap::ShaderResource>("GeneralShader");
-	orientationShaderResource = resourceManagerService->findResource<nap::ShaderResource>("OrientationShader");
-	orientationMesh = resourceManagerService->findResource<nap::MeshResource>("OrientationMesh");
-	pigMesh = resourceManagerService->findResource<nap::MeshResource>("PigMesh");
 	generalMaterial = resourceManagerService->findResource<nap::Material>("GeneralMaterial");
-	planeMaterial = resourceManagerService->findResource<nap::Material>("PlaneMaterial");
-	sphereMaterial = resourceManagerService->findResource<nap::Material>("SphereMaterial");
-	orientationMaterial = resourceManagerService->findResource<nap::Material>("OrientationMaterial");
+	worldMaterial = resourceManagerService->findResource<nap::Material>("WorldMaterial");	
+	orientationModel = resourceManagerService->findResource<nap::ModelResource>("OrientationModel");
+	pigModel = resourceManagerService->findResource<nap::ModelResource>("PigModel");
 #else	
 	if (!initResources(initResult))
 	{
@@ -574,56 +588,32 @@ bool init(nap::Core& core)
 	model = &(core.getRoot().addEntity("model"));
 	nap::TransformComponent& tran_component = model->addComponent<nap::TransformComponent>();
 	pigMeshComponent = &model->addComponent<nap::MeshComponent>("pig_head_mesh");
+	pigMeshComponent->mModelResource = pigModel;
 
 	// Create orientation entity
 	orientation = &(core.getRoot().addEntity("orientation"));
 	nap::TransformComponent& or_tran_component = orientation->addComponent<nap::TransformComponent>();
 	or_tran_component.uniformScale.setValue(0.33f);
 	orientationMeshComponent = &orientation->addComponent<nap::MeshComponent>("orientation gizmo");
+	orientationMeshComponent->mModelResource = orientationModel;
+
+	// Create plane entity
+	rotating_plane = &(core.getRoot().addEntity("rotating_plane"));
+	rotating_plane->addComponent<nap::TransformComponent>();
+	rotatingPlaneComponent = new nap::PlaneComponent(*generalMaterial);
+	rotating_plane->addComponent(std::move(std::unique_ptr<nap::Component>(rotatingPlaneComponent)));
 
 	// Create plane entity
 	plane = &(core.getRoot().addEntity("plane"));
-	nap::TransformComponent& plane_tran_component = plane->addComponent<nap::TransformComponent>();
-	planeComponent = &plane->addComponent<nap::PlaneComponent>("draw_plane");
+	plane->addComponent<nap::TransformComponent>();
+	planeComponent = new nap::PlaneComponent(*generalMaterial);
+	plane->addComponent(std::move(std::unique_ptr<nap::Component>(planeComponent)));
 
 	// Create sphere entity
 	sphere = &(core.getRoot().addEntity("sphere"));
 	nap::TransformComponent& sphere_tran_component = sphere->addComponent<nap::TransformComponent>();
-	sphereComponent = &sphere->addComponent<nap::SphereComponent>("draw_sphere");
-
-	pigMeshComponent->setMaterial(generalMaterial);
-	planeComponent->setMaterial(planeMaterial);
-	sphereComponent->setMaterial(sphereMaterial);
-	orientationMeshComponent->setMaterial(orientationMaterial);
-
-	// Link model resource
-	pigMeshComponent->mMesh = pigMesh;
-
-	// Link orientation resource
-	orientationMeshComponent->mMesh = orientationMesh;
-
-	//////////////////////////////////////////////////////////////////////////
-	// Extract Material Information
-	//////////////////////////////////////////////////////////////////////////
-
-	// This tells what vertex buffer index belongs to what vertex shader input binding name
-	generalMaterial->linkVertexBuffer("in_Position", pigMeshComponent->getMesh()->getVertexBufferIndex());
-	generalMaterial->linkVertexBuffer("in_Color", pigMeshComponent->getMesh()->getColorBufferIndex());
-	generalMaterial->linkVertexBuffer("in_Uvs", pigMeshComponent->getMesh()->getUvBufferIndex());
-
-	// Do the same for the plane
-	planeMaterial->linkVertexBuffer("in_Position", planeComponent->getMesh()->getVertexBufferIndex());
-	planeMaterial->linkVertexBuffer("in_Color", planeComponent->getMesh()->getColorBufferIndex());
-	planeMaterial->linkVertexBuffer("in_Uvs", planeComponent->getMesh()->getUvBufferIndex());
-
-	// And sphere
-	sphereMaterial->linkVertexBuffer("in_Position", sphereComponent->getMesh()->getVertexBufferIndex());
-	sphereMaterial->linkVertexBuffer("in_Color", sphereComponent->getMesh()->getColorBufferIndex());
-	sphereMaterial->linkVertexBuffer("in_Uvs", sphereComponent->getMesh()->getUvBufferIndex());
-
-	// Orientation gizmo
-	orientationMaterial->linkVertexBuffer("in_Position", orientationMeshComponent->getMesh()->getVertexBufferIndex());
-	orientationMaterial->linkVertexBuffer("in_Color", orientationMeshComponent->getMesh()->getColorBufferIndex());
+	sphereComponent = new nap::SphereComponent(*worldMaterial);
+	sphere->addComponent(std::move(std::unique_ptr<nap::Component>(sphereComponent)));
 
 	//////////////////////////////////////////////////////////////////////////
 	// Add Camera
@@ -651,113 +641,9 @@ bool init(nap::Core& core)
 	return true;
 }
 
-
-void createSpheres(nap::Core& core, nap::Resource& shader)
-{
-	/*
-	// Create sphere entity
-	sphere = &(core.getRoot().addEntity("sphere"));
-
-	float range = 20.0f;
-	for (int i = 0; i < 100; i++)
-	{
-		nap::Entity& sphere_e = sphere->addEntity("sphere_child");
-
-		nap::TransformComponent& sphere_tran_component = sphere_e.addComponent<nap::TransformComponent>();
-		sphereComponent = &sphere_e.addComponent<nap::SphereComponent>("draw_sphere");
-
-		float x = ((float)rand() / (float)RAND_MAX) * range;
-		float y = ((float)rand() / (float)RAND_MAX) * range;
-		float z = ((float)rand() / (float)RAND_MAX) * range;
-
-		sphere_tran_component.translate.setValue(glm::vec3(x, y, z));
-
-		nap::Material* sphere_material = sphereComponent->getMaterial();
-		assert(sphere_material != nullptr);
-		sphere_material->shaderResourceLink.setResource(shader);
-
-		sphere_material->linkVertexBuffer("in_Position", sphereComponent->getMesh()->getVertexBufferIndex());
-		sphere_material->linkVertexBuffer("in_Color", sphereComponent->getMesh()->getColorBufferIndex());
-		sphere_material->linkVertexBuffer("in_Uvs", sphereComponent->getMesh()->getUvBufferIndex());
-	}
-
-	/*
-	// Create sphere entity
-	sphere = &(core.getRoot().addEntity("sphere"));
-	nap::TransformComponent& sphere_tran_component = sphere->addComponent<nap::TransformComponent>();
-	sphereComponent = &sphere->addComponent<nap::SphereComponent>("draw_sphere");
-
-	nap::Material* sphere_material = sphereComponent->getMaterial();
-	assert(sphere_material != nullptr);
-	sphere_material->shaderResourceLink.setResource(*shader_resource);
-	*/
-}
-
-struct PointeeBase
-{
-public:
-	RTTI_ENABLE()
-	// If you uncomment this line the code will no longer compile. If you leave it commented, the code will compile but crash
-	//Pointee& operator=(const Pointee&) = delete;
-};
-
-struct PointeeDerived : public PointeeBase
-{
-public:
-	RTTI_ENABLE(PointeeBase)
-};
-
-struct ClassWithPointer
-{
-public:
-	PointeeDerived* mPointee = nullptr;
-};
-
-RTTR_REGISTRATION
-{
-	using namespace rttr;
-
-	registration::class_<PointeeBase>("PointeeBase")
-					.constructor<>()(policy::ctor::as_raw_ptr);
-
-	registration::class_<PointeeDerived>("PointeeDerived")
-		.constructor<>()(policy::ctor::as_raw_ptr);
-
-	registration::class_<ClassWithPointer>("ClassWithPointer")
-					.constructor<>()(policy::ctor::as_raw_ptr)
-					.property("mPointee", &ClassWithPointer::mPointee);
-}
-
-
 // Main loop
 int main(int argc, char *argv[])
 {
-	rttr::type obj_type = rttr::type::get<ClassWithPointer>();
-	ClassWithPointer* obj = obj_type.create().get_value<ClassWithPointer*>();
-
-	// This line will either crash, or if it doesn't crash, the mPointee member will still be null
-	PointeeBase* new_pointee = RTTI_OF(PointeeDerived).create<PointeeBase>();
-	rttr::variant variant = new_pointee;
-	obj_type.get_property("mPointee").set_value(*obj, variant);
-	obj_type.get_property("mPointee").set_value(*obj, nullptr);
-
-	rttr::variant v = obj_type.get_property("mPointee").get_value(*obj);
-	PointeeBase* test = v.get_value<PointeeBase*>(); 
-// 	RTTI::TypeInfo renderService = rttr::type::get<nap::RenderService>();
-// 	RTTI::TypeInfo service = rttr::type::get<nap::Service>();
-// 	RTTI::TypeInfo service2 = RTTI_OF(nap::Service);
-// 
-// 	bool is_kind_of = renderService.isKindOf(service);
-// 
-// 	rttr::type test_class_type = rttr::type::get<test_class>();
-// 	rttr::type test_class_type2 = rttr::type::get<test_class2>();
-// 
-// 	test_class* obj1 = test_class_type.createInstance<test_class>();
-// 	test_class2* obj2 = test_class_type2.createInstance<test_class2>();
-// 
-// 	rttr::property prop = test_class_type.get_property("value");
-// 	prop.set_value(*obj1, 42);
-
 	// Create core
 	nap::Core core;
 
@@ -804,7 +690,7 @@ void runGame(nap::Core& core)
 				}
 				case SDLK_2:
 				{
-					cameraComponent->lookAt.setTarget(*planeComponent);
+					cameraComponent->lookAt.setTarget(*rotatingPlaneComponent);
 					break;
 				}
 				case SDLK_3:
@@ -967,4 +853,4 @@ void runGame(nap::Core& core)
 
 	renderService->shutdown();
 }
- 
+    
