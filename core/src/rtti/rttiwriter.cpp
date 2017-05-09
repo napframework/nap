@@ -1,9 +1,10 @@
 #include <rtti/rttiwriter.h>
 #include <nap/object.h>
+#include "nap/errorstate.h"
 
 namespace nap
 {
-	bool serializeObjectRecursive(const RTTI::Instance object, ObjectList& objectsToSerialize, RTTIWriter& writer);
+	bool serializeObjectRecursive(const RTTI::Instance object, ObjectList& objectsToSerialize, RTTIWriter& writer, ErrorState& errorState);
 
 
 	/**
@@ -22,10 +23,10 @@ namespace nap
 	/**
 	 * Helper function to serialize an array
 	 */
-	bool serializeArray(const RTTI::VariantArray& array, ObjectList& objectsToSerialize, RTTIWriter& writer)
+	bool serializeArray(const RTTI::VariantArray& array, ObjectList& objectsToSerialize, RTTIWriter& writer, ErrorState& errorState)
 	{
 		// Write the start of the array
-		if (!writer.startArray(array.get_size()))
+		if (!errorState.check(writer.startArray(array.get_size()), "Failed write start of array"))
 			return false;
 
 		// Write the elements
@@ -36,7 +37,7 @@ namespace nap
 			// If the value is an array, recurse
 			if (var.is_array())
 			{
-				if (!serializeArray(var.create_array_view(), objectsToSerialize, writer))
+				if (!serializeArray(var.create_array_view(), objectsToSerialize, writer, errorState))
 					return false;
 			}
 			else
@@ -49,7 +50,7 @@ namespace nap
 				if (value_type.is_pointer())
 				{
 					// Pointers must point to Objects
-					if (!value_type.is_derived_from<nap::Object>())
+					if (!errorState.check(value_type.is_derived_from<nap::Object>(), "Encountered pointer to non-Object"))
 						return false;
 
 					// Get the object being pointed to
@@ -61,65 +62,68 @@ namespace nap
 
 						// Check that the ID of the pointer is not empty (we can't point to objects without an ID)
 						const std::string& pointee_id = pointee->mID;
-						if (pointee_id.empty())
+						if (!errorState.check(!pointee_id.empty(), "Encountered pointer to Object with invalid ID"))
 							return false;
 
 						// Write the pointer
-						if (!writer.writePointer(pointee_id))
+						if (!errorState.check(writer.writePointer(pointee_id), "Failed to write pointer"))
 							return false;
 					}
 					else
 					{
 						// Write null pointer
-						if (!writer.writePointer(std::string()))
+						if (!errorState.check(writer.writePointer(std::string()), "Failed to write pointer"))
 							return false;
 					}
 				}
 				else if (RTTI::isPrimitive(value_type))
 				{
 					// Write primitive type (float, int, string, etc)
-					if (!writer.writePrimitive(value_type, wrapped_var))
+					if (!errorState.check(writer.writePrimitive(value_type, wrapped_var), "Failed to write primitive"))
 						return false;
 				}
 				else
 				{
 					// Write compound
-					if (!writer.startCompound(value_type))
+					if (!errorState.check(writer.startCompound(value_type), "Failed to start nested compound"))
 						return false;
 
 					// Recurse into the compound
-					if (!serializeObjectRecursive(wrapped_var, objectsToSerialize, writer))
+					if (!serializeObjectRecursive(wrapped_var, objectsToSerialize, writer, errorState))
 						return false;
 
 					// Finish the compound
-					if (!writer.finishCompound())
+					if (!errorState.check(writer.finishCompound(), "Failed to finish nested compound"))
 						return false;
 				}
 			}
 		}
 
 		// Finish the array
-		return writer.finishArray();
+		if (!errorState.check(writer.finishArray(), "Failed to finish array"))
+			return false;
+
+		return true;
 	}
 
 
 	/**
 	 * Helper function to serialize a property
 	 */
-	bool serializeProperty(const RTTI::Property& property, const RTTI::Variant& value, ObjectList& objectsToSerialize, RTTIWriter& writer)
+	bool serializeProperty(const RTTI::Property& property, const RTTI::Variant& value, ObjectList& objectsToSerialize, RTTIWriter& writer, ErrorState& errorState)
 	{
 		auto value_type = value.get_type();
 		auto wrapped_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
 		bool is_wrapper = wrapped_type != value_type;
 
 		// Write property name
-		if (!writer.writeProperty(property.get_name().data()))
+		if (!errorState.check(writer.writeProperty(property.get_name().data()), "Failed to write property name"))
 			return false;
 
 		// If this is an array, recurse
 		if (value_type.is_array())
 		{
-			if (!serializeArray(value.create_array_view(), objectsToSerialize, writer))
+			if (!serializeArray(value.create_array_view(), objectsToSerialize, writer, errorState))
 				return false;
 
 			return true;
@@ -127,7 +131,7 @@ namespace nap
 		else if (value_type.is_pointer())
 		{
 			// Pointers must be derived from Object
-			if (!wrapped_type.is_derived_from<nap::Object>())
+			if (!errorState.check(wrapped_type.is_derived_from<nap::Object>(), "Encountered pointer to non-Object"))
 				return false;
 
 			Object* pointee = value.convert<Object*>();
@@ -138,22 +142,31 @@ namespace nap
 
 				// Check that the ID of the pointer is not empty (we can't point to objects without an ID)
 				const std::string& pointee_id = pointee->mID;
-				if (pointee_id.empty())
+				if (!errorState.check(!pointee_id.empty(), "Encountered pointer to Object with invalid ID"))
 					return false;
 
-				// Write the pointer
-				return writer.writePointer(pointee_id);
+				// Write the pointer				
+				if (!errorState.check(writer.writePointer(pointee_id), "Failed to write pointer"))
+					return false;
+				
+				return true;
 			}
 			else
 			{
 				// Write null pointer
-				return writer.writePointer(std::string());
+				if (!errorState.check(writer.writePointer(std::string()), "Failed to write null pointer"))
+					return false;
+
+				return true;
 			}
 		}
 		else if (RTTI::isPrimitive(wrapped_type))
 		{
 			// Write primitive type (float, string, etc)
-			return writer.writePrimitive(wrapped_type, is_wrapper ? value.extract_wrapped_value() : value);
+			if (!errorState.check(writer.writePrimitive(wrapped_type, is_wrapper ? value.extract_wrapped_value() : value), "Failed to write primitive"))
+				return false;
+			
+			return true;
 		}
 		else
 		{
@@ -162,15 +175,15 @@ namespace nap
 			if (!child_props.empty())
 			{
 				// Start compound
-				if (!writer.startCompound(wrapped_type))
+				if (!errorState.check(writer.startCompound(wrapped_type), "Failed to start nested compound"))
 					return false;
 
 				// Recurse into compound
-				if (!serializeObjectRecursive(value, objectsToSerialize, writer))
+				if (!serializeObjectRecursive(value, objectsToSerialize, writer, errorState))
 					return false;
 
 				// Finish compound
-				if (!writer.finishCompound())
+				if (!errorState.check(writer.finishCompound(), "Failed to finsih nested compound"))
 					return false;
 
 				return true;
@@ -178,6 +191,7 @@ namespace nap
 		}
 
 		// Unknown type
+		errorState.fail("Encountered unknown property type");
 		return false;
 	}
 
@@ -185,7 +199,7 @@ namespace nap
 	/**
 	 * Helper function to serialize a RTTI object (not just nap::Object)
 	 */
-	bool serializeObjectRecursive(const RTTI::Instance object, ObjectList& objectsToSerialize, RTTIWriter& writer)
+	bool serializeObjectRecursive(const RTTI::Instance object, ObjectList& objectsToSerialize, RTTIWriter& writer, ErrorState& errorState)
 	{
 		// Determine the actual type of the object
 		RTTI::Instance actual_object = object.get_type().get_raw_type().is_wrapper() ? object.get_wrapped_instance() : object;
@@ -195,11 +209,10 @@ namespace nap
 		{
 			// Get the value of the property
 			RTTI::Variant prop_value = prop.get_value(actual_object);
-			if (!prop_value)
-				continue;
+			assert(prop_value.is_valid());
 
 			// Serialize the property
-			if (!serializeProperty(prop, prop_value, objectsToSerialize, writer))
+			if (!serializeProperty(prop, prop_value, objectsToSerialize, writer, errorState))
 				return false;
 		}
 
@@ -207,13 +220,13 @@ namespace nap
 	}
 
 
-	bool serializeObjects(const ObjectList& rootObjects, RTTIWriter& writer)
+	bool serializeObjects(const ObjectList& rootObjects, RTTIWriter& writer, ErrorState& errorState)
 	{
 		// Copy the list of objects to write to an internal list that we can modify
 		ObjectList objects_to_write = rootObjects;
 
 		// Signal writer that we're starting
-		if (!writer.start())
+		if (!errorState.check(writer.start(), "Failed to start writing"))
 			return false;
 
 		// Go through the array of objects to write. Note that we keep querying the length of the array because objects can be added during traversal
@@ -221,24 +234,24 @@ namespace nap
 		{
 			Object* object = objects_to_write[index];
 
-			if (object->mID.empty())
+			if (!errorState.check(!object->mID.empty(), "Encountered object without ID. This is not allowed"))
 				return false;
 
 			// Write start of object
-			if (!writer.startRootObject(object->get_type()))
+			if (!errorState.check(writer.startRootObject(object->get_type()), "Failed to start writing root object"))
 				return false;
 
 			// Recurse into object
-			if (!serializeObjectRecursive(object, objects_to_write, writer))
+			if (!serializeObjectRecursive(object, objects_to_write, writer, errorState))
 				return false;
 
 			// Finish object
-			if (!writer.finishRootObject())
+			if (!errorState.check(writer.finishRootObject(), "Failed to finish writing root object"))
 				return false;
 		}
 
 		// Signal writer that we're done
-		if (!writer.finish())
+		if (!errorState.check(writer.finish(), "Failed to finish writing"))
 			return false;
 
 		return true;

@@ -112,9 +112,11 @@ int main(int argc, char* argv[])
 	resolved_path.SetValue(old_value);
 
 	{
+		ErrorState error_state;
+
 		// Write to json
 		JSONWriter writer;
-		if (!serializeObjects({ root }, writer))
+		if (!serializeObjects({ root }, writer, error_state))
 			return -1;
 
 		// Print json
@@ -123,7 +125,6 @@ int main(int argc, char* argv[])
 
 		// Read json and verify it succeeds
 		RTTIDeserializeResult read_result;
-		ErrorState error_state;
 		if (!deserializeJSON(json, read_result, error_state))
 			return -1;
 
@@ -146,15 +147,16 @@ int main(int argc, char* argv[])
 	}
 
 	{
+		ErrorState error_state;
+
 		// Write to binary
 		BinaryWriter binary_writer;
-		if (!serializeObjects({ root }, binary_writer))
+		if (!serializeObjects({ root }, binary_writer, error_state))
 			return -1;
 
 		// Read binary and verify it succeeds
 		MemoryStream stream(binary_writer.getBuffer().data(), binary_writer.getBuffer().size());
 		RTTIDeserializeResult read_result;
-		ErrorState error_state;
 		if (!deserializeBinary(stream, read_result, error_state))
 			return -1;
 

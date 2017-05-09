@@ -241,10 +241,10 @@ namespace nap
 
 	bool deserializeBinary(MemoryStream& stream, RTTIDeserializeResult& result, ErrorState& errorState)
 	{
-		if (stream.isDone())
+		if (!errorState.check(!stream.isDone(), "Can't deserialize from empty stream"))
 			return false;
 
-		if (!readAndCheckRTTIBinaryVersion(stream))
+		if (!errorState.check(readAndCheckRTTIBinaryVersion(stream), "Can't deserialize binary; RTTIBinaryVersion mismatch"))
 			return false;
 
 		// Continue reading while there's data in the stream

@@ -194,7 +194,7 @@ namespace nap
 			}
 
 			BinaryWriter binaryWriter;
-			if (!errorState.check(serializeObjects({ &mesh_data }, binaryWriter), "Failed to serialize mesh data to binary"))
+			if (!serializeObjects({ &mesh_data }, binaryWriter, errorState))
 				return false;
 
 			std::string output_file = stringFormat("%s/%s.mesh", outputDirectory.c_str(), getFileNameWithoutExtension(fbxPath).c_str());

@@ -6,6 +6,7 @@
 namespace nap
 {
 	class Object;
+	class ErrorState;
 	typedef std::vector<Object*> ObjectList;
 
 	/**
@@ -76,5 +77,5 @@ namespace nap
 	/**
 	 * Serialize a set of objects to the specified writer. This function does all the traversal logic, the actual writing is done by the RTTIWriter passed in.
 	 */
-	bool serializeObjects(const ObjectList& rootObjects, RTTIWriter& writer);
+	bool serializeObjects(const ObjectList& rootObjects, RTTIWriter& writer, ErrorState& errorState);
 }
