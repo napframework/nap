@@ -3,6 +3,19 @@
 
 namespace RTTI
 {
+	/**
+	 * Helper function to recursively visit the properties of an object (without following pointers).
+	 *
+	 * A functor-like parameter can be provided that will be invoked for each property visited. The signature of the parameter should be as follows:
+	 *		void visitFunction(const RTTI::Instance& instance, const RTTI::Property& property, const RTTI::Variant& value, const RTTI::RTTIPath& path)
+	 *
+	 * The parameters of the visit function are as follows:
+	 *  - instance: the instance (object) we're visiting
+	 *  - property: the property on the object we're visiting
+	 *  - value: the value of the property we're visiting
+	 *  - path: full RTTIPath to the property we're visiting
+	 *
+	 */
 	template<class FUNC>
 	void VisitRTTIPropertiesRecursive(const Variant& variant, RTTIPath& path, FUNC& visitFunc)
 	{
@@ -21,12 +34,14 @@ namespace RTTI
 				path.PushArrayElement(index);
 
 				RTTI::Variant array_value = array.get_value_as_ref(index);
+
+				// Recurse
 				VisitRTTIPropertiesRecursive(array_value, path, visitFunc);
 
 				path.PopBack();
 			}
 		}
-		else
+		else if (!actual_type.is_pointer()) // Don't recurse into properties of pointers
 		{
 			// Recursively visit each property of the type
 			for (const RTTI::Property& property : actual_type.get_properties())
@@ -34,8 +49,11 @@ namespace RTTI
 				path.PushAttribute(property.get_name().data());
 
 				RTTI::Variant value = property.get_value(variant);
+				
+				// Invoke visit func
 				visitFunc(variant, property, value, path);
 
+				// Recurse
 				VisitRTTIPropertiesRecursive(value, path, visitFunc);
 
 				path.PopBack();
@@ -43,6 +61,19 @@ namespace RTTI
 		}
 	}
 
+	/**
+	 * Helper function to recursively visit the properties of an object (without following pointers).
+	 *
+	 * A functor-like parameter can be provided that will be invoked for each property visited. The signature of the parameter should be as follows:
+	 *		void visitFunction(const RTTI::Instance& instance, const RTTI::Property& property, const RTTI::Variant& value, const RTTI::RTTIPath& path)
+	 *
+	 * The parameters of the visit function are as follows:
+	 *  - instance: the instance (object) we're visiting
+	 *  - property: the property on the object we're visiting
+	 *  - value: the value of the property we're visiting
+	 *  - path: full RTTIPath to the property we're visiting
+	 *
+	 */
 	template<class FUNC>
 	void VisitRTTIProperties(const Instance& instance, RTTIPath& path, FUNC& visitFunc)
 	{
@@ -52,14 +83,21 @@ namespace RTTI
 			path.PushAttribute(property.get_name().data());
 
 			RTTI::Variant value = property.get_value(instance);
+
+			// Invoke visit func
 			visitFunc(instance, property, value, path);
 
+			// Recurse
 			VisitRTTIPropertiesRecursive(value, path, visitFunc);
 
 			path.PopBack();
 		}
 	}
 
+
+	/**
+	 * ObjectLinkVisitor is a functor-like object that can be used as an argument to VisitRTTIProperties and collects all links to other nap::Objects 
+	 */
 	struct ObjectLinkVisitor
 	{
 	public:
@@ -74,16 +112,19 @@ namespace RTTI
 			if (!property.get_type().is_pointer())
 				return;
 
-			assert (value.get_type().is_derived_from<nap::Object>());
-
+			assert(value.get_type().is_derived_from<nap::Object>());
 			mObjectLinks.push_back({ &mSourceObject, path, value.convert<nap::Object*>() });
 		}
 
 	private:
-		const nap::Object&				mSourceObject;
-		std::vector<ObjectLink>&	mObjectLinks;
+		const nap::Object&			mSourceObject;	// The object we're visiting (i.e. the source of any link found)
+		std::vector<ObjectLink>&	mObjectLinks;	// Array of all links found
 	};
 
+
+	/**
+	 * FileLinkVisitor is a functor-like object that can be used as an argument to VisitRTTIProperties and collects all file links
+	 */
 	struct FileLinkVisitor
 	{
 	public:
@@ -97,14 +138,14 @@ namespace RTTI
 			if (!property.get_metadata(RTTI::EPropertyMetaData::FileLink).is_valid())
 				return;
 
-			assert (value.get_type().is_derived_from<std::string>());
-
+			assert(value.get_type().is_derived_from<std::string>());
 			mFileLinks.push_back(value.convert<std::string>());
 		}
 
 	private:
-		std::vector<std::string>&	mFileLinks;
+		std::vector<std::string>&	mFileLinks;	// Array of file links found
 	};
+
 
 	/**
 	 * Helper function to recursively check whether two variants (i.e. values) are equal
