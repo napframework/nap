@@ -22,7 +22,7 @@ namespace nap
 		/**
 		* Creates internal OpengL render target, bound to color and depth textures.
 		*/
-		virtual bool init(InitResult& initResult) override;
+		virtual bool init(ErrorState& errorState) override;
 
 		/**
 		* Performs commit or rollback of changes made in init.

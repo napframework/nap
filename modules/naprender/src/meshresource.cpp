@@ -20,12 +20,12 @@ namespace nap
 		return *mMesh;
 	}
 
-	bool MeshResource::init(InitResult& initResult)
+	bool MeshResource::init(ErrorState& errorState)
 	{
 		mPrevMesh = std::move(mMesh);
 
-		mMesh = loadMesh(mPath, initResult);
-		if (!initResult.check(mMesh != nullptr, "Unable to load mesh %s", mPath.c_str()))
+		mMesh = loadMesh(mPath, errorState);
+		if (!errorState.check(mMesh != nullptr, "Unable to load mesh %s", mPath.c_str()))
 			return false;
 
 		return true;
@@ -49,12 +49,12 @@ namespace nap
 		return getFileNameWithoutExtension(mPath);
 	}
 
-	bool CustomMeshResource::init(InitResult& initResult)
+	bool CustomMeshResource::init(ErrorState& errorState)
 	{
 		mPrevMesh = std::move(mMesh);
 		
 		mMesh = std::move(mCustomMesh);
-		if (!initResult.check(mMesh != nullptr, "Unable to init custom mesh"))
+		if (!errorState.check(mMesh != nullptr, "Unable to init custom mesh"))
 			return false;
 
 		return true;

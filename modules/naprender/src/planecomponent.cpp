@@ -63,18 +63,18 @@ namespace nap
 {
 	PlaneComponent::PlaneComponent(Material& material)
 	{
-		InitResult init_result;
+		ErrorState error_state;
 		CustomMeshResource* mesh_resource = new CustomMeshResource();
 		mesh_resource->mCustomMesh.reset(createPlane());
 
-		bool success = mesh_resource->init(init_result);
+		bool success = mesh_resource->init(error_state);
 		assert(success);
 
 		mModelResource = new ModelResource();
 		mModelResource->mMaterialResource = &material;
 		mModelResource->mMeshResource = mesh_resource;
 
-		success = mModelResource->init(init_result);
+		success = mModelResource->init(error_state);
 		assert(success);
 	}
 };

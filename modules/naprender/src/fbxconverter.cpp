@@ -16,7 +16,7 @@
 #include "nap/object.h"
 #include "rtti/binarywriter.h"
 #include "nap/fileutils.h"
-#include "nap/resource.h"
+#include "nap/errorstate.h"
 #include "rtti/binaryreader.h"
 #include "nmesh.h"
 
@@ -77,7 +77,7 @@ namespace nap
 	RTTI_END_CLASS
 
 
-	bool convertFBX(const std::string& fbxPath, const std::string& outputDirectory, InitResult& initResult)
+	bool convertFBX(const std::string& fbxPath, const std::string& outputDirectory, ErrorState& errorState)
 	{
 		// Create importer
 		std::unique_ptr<Assimp::Importer> importer = std::make_unique<Assimp::Importer>();
@@ -107,7 +107,7 @@ namespace nap
 			else
 				mesh_data.mID = stringFormat("%s:mesh%d", fbxPath.c_str(), i);
 
-			if (!initResult.check(mesh->mNumVertices != 0, "Encountered mesh with no vertices"))
+			if (!errorState.check(mesh->mNumVertices != 0, "Encountered mesh with no vertices"))
 				return false;
 
 			mesh_data.mNumVertices = mesh->mNumVertices;
@@ -180,7 +180,7 @@ namespace nap
 			}
 
 			// Retrieve index data
-			if (!initResult.check(mesh->HasFaces(), "Mesh has no indices"))
+			if (!errorState.check(mesh->HasFaces(), "Mesh has no indices"))
 				return false;
 
 			mesh_data.mIndices.reserve(mesh->mNumFaces * 3);
@@ -194,12 +194,12 @@ namespace nap
 			}
 
 			BinaryWriter binaryWriter;
-			if (!initResult.check(serializeObjects({ &mesh_data }, binaryWriter), "Failed to serialize mesh data to binary"))
+			if (!errorState.check(serializeObjects({ &mesh_data }, binaryWriter), "Failed to serialize mesh data to binary"))
 				return false;
 
 			std::string output_file = stringFormat("%s/%s.mesh", outputDirectory.c_str(), getFileNameWithoutExtension(fbxPath).c_str());
 			std::ofstream bin_output(output_file, std::ofstream::out | std::ofstream::binary);
-			if (!initResult.check(bin_output.is_open(), "Failed to open %s for writing", output_file.c_str()))
+			if (!errorState.check(bin_output.is_open(), "Failed to open %s for writing", output_file.c_str()))
 				return false;
 
 			bin_output.write((const char*)binaryWriter.getBuffer().data(), binaryWriter.getBuffer().size());
@@ -209,16 +209,16 @@ namespace nap
 		return true;
 	}
 
-	std::unique_ptr<opengl::Mesh> loadMesh(const std::string& meshPath, InitResult& initResult)
+	std::unique_ptr<opengl::Mesh> loadMesh(const std::string& meshPath, ErrorState& errorState)
 	{
 		RTTIDeserializeResult deserialize_result;
-		if (!initResult.check(readBinary(meshPath, deserialize_result, initResult), "Failed to load mesh from %s", meshPath.c_str()))
+		if (!errorState.check(readBinary(meshPath, deserialize_result, errorState), "Failed to load mesh from %s", meshPath.c_str()))
 			return nullptr;
 
-		if (!initResult.check(deserialize_result.mReadObjects.size() == 1, "Trying to load an invalid mesh file. File contains %d objects", deserialize_result.mReadObjects.size()))
+		if (!errorState.check(deserialize_result.mReadObjects.size() == 1, "Trying to load an invalid mesh file. File contains %d objects", deserialize_result.mReadObjects.size()))
 			return nullptr;
 
-		if (!initResult.check(deserialize_result.mReadObjects[0]->get_type() == RTTI_OF(MeshData), "Trying to load an invalid mesh file. File does not contain MeshData"))
+		if (!errorState.check(deserialize_result.mReadObjects[0]->get_type() == RTTI_OF(MeshData), "Trying to load an invalid mesh file. File does not contain MeshData"))
 			return nullptr;
 
 		assert(deserialize_result.mUnresolvedPointers.empty());
@@ -232,11 +232,11 @@ namespace nap
 			mesh->addVertexAttribute(attribute.mID, attribute.mNumComponents, attribute.mData.data());
 
 		// Make sure there's position data
-		if (!initResult.check(mesh->findVertexAttributeBuffer(opengl::VertexAttributeIDs::PositionVertexAttr) != nullptr, "Required attribute 'position' not found in mesh data"))
+		if (!errorState.check(mesh->findVertexAttributeBuffer(opengl::VertexAttributeIDs::PositionVertexAttr) != nullptr, "Required attribute 'position' not found in mesh data"))
 			return nullptr;
 			
 		// Copy indices
-		if (!initResult.check(!mesh_data->mIndices.empty(), "No index data found in mesh"))
+		if (!errorState.check(!mesh_data->mIndices.empty(), "No index data found in mesh"))
 			return nullptr;
 
 		mesh->setIndices(mesh_data->mIndices.size(), mesh_data->mIndices.data());

@@ -11,7 +11,7 @@
 namespace nap
 {
 	class Object;
-	struct InitResult;
+	class ErrorState;
 
 	/**
 	 * An UnresolvedPointer represents a pointer property in a nap object that is currently unresolved (i.e. null)

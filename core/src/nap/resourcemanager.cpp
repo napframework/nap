@@ -71,9 +71,9 @@ namespace nap
 		/*
 		* Builds the object graph. If building fails, return false. 
 		* @param objectList : list of objects to build the graph from.
-		* @param initResult: if false is returned, contains error information.
+		* @param errorState: if false is returned, contains error information.
 		*/
-		bool Build(const ObservedObjectList& objectList, InitResult& initResult)
+		bool Build(const ObservedObjectList& objectList, ErrorState& errorState)
 		{
 			using ObjectMap = std::map<std::string, Object*>;
 			ObjectMap object_map;
@@ -98,7 +98,7 @@ namespace nap
 					Object* linked_object = link.mTarget;
 
 					ObjectMap::iterator dest_object = object_map.find(linked_object->mID);
-					if (!initResult.check(dest_object != object_map.end(), "Object %s is pointing to an object that is not in the objectlist!", linked_object->mID.c_str()))
+					if (!errorState.check(dest_object != object_map.end(), "Object %s is pointing to an object that is not in the objectlist!", linked_object->mID.c_str()))
 						return false;
 
 					Edge* edge = new Edge();
@@ -361,7 +361,7 @@ namespace nap
 	/**
 	* Copies rtti attributes from File object to object existing in the manager. Patches the unresolved pointer list so the it contains the correct object.
 	*/
-	bool ResourceManagerService::updateExistingObjects(const ExistingObjectMap& existingObjectMap, UnresolvedPointerList& unresolvedPointers, InitResult& initResult)
+	bool ResourceManagerService::updateExistingObjects(const ExistingObjectMap& existingObjectMap, UnresolvedPointerList& unresolvedPointers, ErrorState& errorState)
 	{
 		for (auto kvp : existingObjectMap)
 		{
@@ -372,7 +372,7 @@ namespace nap
 			Resource* existing_resource = rtti_cast<Resource>(kvp.second);
 			assert(existing_resource != nullptr);
 
-			if (!initResult.check(existing_resource->get_type() == resource->get_type(), "Unable to update object, different types"))		// todo: actually support this properly
+			if (!errorState.check(existing_resource->get_type() == resource->get_type(), "Unable to update object, different types"))		// todo: actually support this properly
 				return false;
 
 			// Find all links from the resource
@@ -408,7 +408,7 @@ namespace nap
 	* the object graph to find the minimum set of objects that requires an init. Finally, the list of objects is sorted on object graph depth so that the init() order
 	* is correct.
 	*/
-	bool ResourceManagerService::determineObjectsToInit(const ExistingObjectMap& existingObjects, const ClonedObjectMap& clonedObjects, const ObservedObjectList& newObjects, const std::string& externalChangedFile, ObservedObjectList& objectsToInit, InitResult& initResult)
+	bool ResourceManagerService::determineObjectsToInit(const ExistingObjectMap& existingObjects, const ClonedObjectMap& clonedObjects, const ObservedObjectList& newObjects, const std::string& externalChangedFile, ObservedObjectList& objectsToInit, ErrorState& errorState)
 	{
 		// Build an object graph of all objects in the ResourceMgr
 		ObservedObjectList all_objects;
@@ -416,7 +416,7 @@ namespace nap
 			all_objects.push_back(kvp.second.get());
 
 		ObjectGraph object_graph;
-		if (!object_graph.Build(all_objects, initResult))
+		if (!object_graph.Build(all_objects, errorState))
 			return false;
 
 		// Build set of changed IDs. These are objects that have different attributes, and objects that are added.
@@ -493,9 +493,9 @@ namespace nap
 	}
 
 
-	bool ResourceManagerService::loadFile(const std::string& filename, nap::InitResult& initResult)
+	bool ResourceManagerService::loadFile(const std::string& filename, nap::ErrorState& errorState)
 	{
-		return loadFile(filename, std::string(), initResult);
+		return loadFile(filename, std::string(), errorState);
 	}
 
 
@@ -510,14 +510,14 @@ namespace nap
 	* When a rollback occurs, any newly added objects are removed from the manager, effectively deleting them.
 	* Other maps/list like existing/new are merely observers into the file objects and manager objects.
 	*/
-	bool ResourceManagerService::loadFile(const std::string& filename, const std::string& externalChangedFile, nap::InitResult& initResult)
+	bool ResourceManagerService::loadFile(const std::string& filename, const std::string& externalChangedFile, nap::ErrorState& errorState)
 	{
 		// ExternalChangedFile should only be used if it's different from the file being reloaded
 		assert(toComparableFilename(filename) != toComparableFilename(externalChangedFile));
 
 		// Read objects from disk
 		RTTIDeserializeResult read_result;
-		if (!readJSONFile(filename, read_result, initResult))
+		if (!readJSONFile(filename, read_result, errorState))
 			return false;
 
 		ExistingObjectMap existing_objects;			// Mapping from 'file object' to 'existing object in ResourceMgr'. This is an observer relationship.
@@ -531,7 +531,7 @@ namespace nap
 		ObjectRestorer object_restorer(*this, existing_objects, new_objects);
 
 		// Update attributes of objects already existing in ResourceMgr
-		if (!updateExistingObjects(existing_objects, read_result.mUnresolvedPointers, initResult))
+		if (!updateExistingObjects(existing_objects, read_result.mUnresolvedPointers, errorState))
 			return false;
 
 		// Add objects that were not yet present in ResourceMgr
@@ -560,22 +560,22 @@ namespace nap
 				continue;
 
 			Resource* target_resource = findResource(unresolved_pointer.mTargetID);
-			if (!initResult.check(target_resource != nullptr, "Unable to resolve link to object %s from attribute %s", unresolved_pointer.mTargetID.c_str(), unresolved_pointer.mRTTIPath.ToString().c_str()))
+			if (!errorState.check(target_resource != nullptr, "Unable to resolve link to object %s from attribute %s", unresolved_pointer.mTargetID.c_str(), unresolved_pointer.mRTTIPath.ToString().c_str()))
 				return false;
 
 			RTTI::ResolvedRTTIPath resolved_path = unresolved_pointer.mRTTIPath.Resolve(unresolved_pointer.mObject);
-			if (!initResult.check(resolved_path.IsValid(), "Failed to resolve RTTIPath %s", unresolved_pointer.mRTTIPath.ToString().c_str()))
+			if (!errorState.check(resolved_path.IsValid(), "Failed to resolve RTTIPath %s", unresolved_pointer.mRTTIPath.ToString().c_str()))
 				return false;
 
 			assert(resolved_path.GetType().is_pointer());
 			bool succeeded = resolved_path.SetValue(target_resource);
- 			if (!initResult.check(succeeded, "Failed to resolve pointer"))
+ 			if (!errorState.check(succeeded, "Failed to resolve pointer"))
 				return false;
 		}
 
 		// Find out what objects to init and in what order to init them
 		ObservedObjectList objects_to_init;
-		if (!determineObjectsToInit(existing_objects, object_restorer.getClonedObjects(), new_objects, externalChangedFile, objects_to_init, initResult))
+		if (!determineObjectsToInit(existing_objects, object_restorer.getClonedObjects(), new_objects, externalChangedFile, objects_to_init, errorState))
 			return false;
 		
 		// Init all objects in the correct order
@@ -589,7 +589,7 @@ namespace nap
 
 			initted_objects.push_back(resource);
 
-			if (!resource->init(initResult))
+			if (!resource->init(errorState))
 			{
 				init_success = false;
 				break;
@@ -654,10 +654,10 @@ namespace nap
 
 					for (const std::string& source_file : files_to_reload)
 					{
-						nap::InitResult initResult;
-						if (!loadFile(source_file, source_file == modified_file ? std::string() : modified_file, initResult))
+						nap::ErrorState errorState;
+						if (!loadFile(source_file, source_file == modified_file ? std::string() : modified_file, errorState))
 						{
-							nap::Logger::warn("Failed to reload %s: %s. See log for more information.", source_file.c_str(), initResult.mErrorString.c_str());
+							nap::Logger::warn("Failed to reload %s:\n %s. \n\n See log for more information.", source_file.c_str(), errorState.toString().c_str());
 							break;
 						}
 					}

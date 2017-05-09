@@ -11,28 +11,28 @@
 namespace nap
 {
 	class Object;
-	struct InitResult;
+	class ErrorState;
 
 	/**
 	 * Deserialize a set of objects and their data from the specified JSON string
 	 *
 	 * @param json The JSON to deserialize from
 	 * @param result The result of deserialization
-	 * @param initResult The error state of deserialization
+	 * @param errorState The error state of deserialization
 	 *
-	 * @return True if deserialization succeeded, false if not. In case of failure, @a initResult contains detailed error info.
+	 * @return True if deserialization succeeded, false if not. In case of failure, @a errorState contains detailed error info.
 	 */
-	bool deserializeJSON(const std::string& json, RTTIDeserializeResult& result, nap::InitResult& initResult);
+	bool deserializeJSON(const std::string& json, RTTIDeserializeResult& result, nap::ErrorState& errorState);
 
 	/**
 	 * Read and deserialize a set of objects and their data from the specified JSON file
 	 *
 	 * @param json The JSON file to deserialize from
 	 * @param result The result of deserialization
-	 * @param initResult The error state of deserialization
+	 * @param errorState The error state of deserialization
 	 *
-	 * @return True if deserialization succeeded, false if not. In case of failure, @a initResult contains detailed error info.
+	 * @return True if deserialization succeeded, false if not. In case of failure, @a errorState contains detailed error info.
 	 */
-	bool readJSONFile(const std::string& path, RTTIDeserializeResult& result, nap::InitResult& initResult);
+	bool readJSONFile(const std::string& path, RTTIDeserializeResult& result, nap::ErrorState& errorState);
 } //< End Namespace nap
 

@@ -50,7 +50,7 @@ namespace nap
 		/**
 		* Creates internal texture resource.
 		*/
-		virtual bool init(InitResult& initResult) override;
+		virtual bool init(ErrorState& errorState) override;
 
 		/**
 		* Commits changes made by init, or rolls them back.
@@ -93,7 +93,7 @@ namespace nap
 		// Default Constructor
 		ImageResource() = default;
 
-		virtual bool init(InitResult& initResult) override;
+		virtual bool init(ErrorState& errorState) override;
 
 		void finish(Resource::EFinishMode mode);
 

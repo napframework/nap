@@ -1,13 +1,14 @@
 #include "binaryreader.h"
 #include "rttibinaryversion.h"
-#include "nap/resource.h"	// TODO: for initresult, perhaps move to another file
+#include "nap/errorstate.h"
+#include "nap/object.h"
 #include <fstream>
 #include "rttiutilities.h"
 
 namespace nap
 {
 	static bool deserializeObjectRecursive(nap::Object* object, RTTI::Instance compound, MemoryStream& stream, RTTI::RTTIPath& rttiPath, UnresolvedPointerList& unresolvedPointers,
-		std::vector<FileLink>& linkedFiles, InitResult& initResult);
+		std::vector<FileLink>& linkedFiles, ErrorState& errorState);
 
 	/**
 	 * Helper function to check if the specified stream starts with the RTTI binary version header
@@ -78,7 +79,7 @@ namespace nap
 	 * Helper function to recursively read an array (can be an array of basic types, nested compound, or any other type) from JSON
 	 */
 	static bool deserializeArrayRecursively(nap::Object* rootObject, RTTI::VariantArray& array, MemoryStream& stream, RTTI::RTTIPath& rttiPath, 
-		UnresolvedPointerList& unresolvedPointers, std::vector<FileLink>& linkedFiles, InitResult& initResult)
+		UnresolvedPointerList& unresolvedPointers, std::vector<FileLink>& linkedFiles, ErrorState& errorState)
 	{
 		uint32_t length;
 		stream.read(length);
@@ -99,13 +100,13 @@ namespace nap
 			{
 				// Array-of-arrays; read array recursively
 				RTTI::VariantArray sub_array = array.get_value_as_ref(index).create_array_view();
-				if (!deserializeArrayRecursively(rootObject, sub_array, stream, rttiPath, unresolvedPointers, linkedFiles, initResult))
+				if (!deserializeArrayRecursively(rootObject, sub_array, stream, rttiPath, unresolvedPointers, linkedFiles, errorState))
 					return false;
 			}
 			else if (array_type.is_pointer())
 			{
 				// Pointer types must point to objects derived from nap::Object
-				if (!initResult.check(array_type.get_raw_type().is_derived_from<nap::Object>(), "Encountered pointer to non-Object. This is not supported"))
+				if (!errorState.check(array_type.get_raw_type().is_derived_from<nap::Object>(), "Encountered pointer to non-Object. This is not supported"))
 					return false;
 
 				// Determine the target of the pointer
@@ -128,7 +129,7 @@ namespace nap
 				// Array-of-compounds; read object recursively
 				RTTI::Variant var_tmp = array.get_value_as_ref(index);
 				RTTI::Variant wrapped_var = var_tmp.extract_wrapped_value();
-				if (!deserializeObjectRecursive(rootObject, wrapped_var, stream, rttiPath, unresolvedPointers, linkedFiles, initResult))
+				if (!deserializeObjectRecursive(rootObject, wrapped_var, stream, rttiPath, unresolvedPointers, linkedFiles, errorState))
 					return false;
 			
 				array.set_value(index, wrapped_var);
@@ -146,7 +147,7 @@ namespace nap
 	 * Helper function to recursively read an object (can be a nap::Object, nested compound or any other type) from JSON
 	 */
 	static bool deserializeObjectRecursive(nap::Object* object, RTTI::Instance compound, MemoryStream& stream, RTTI::RTTIPath& rttiPath, UnresolvedPointerList& unresolvedPointers, 
-		std::vector<FileLink>& linkedFiles, InitResult& initResult)
+		std::vector<FileLink>& linkedFiles, ErrorState& errorState)
 	{
 		// Determine the object type. Note that we want to *most derived type* of the object.
 		RTTI::TypeInfo object_type = compound.get_derived_type();
@@ -164,38 +165,33 @@ namespace nap
 			const RTTI::TypeInfo value_type = property.get_type();
 
 			// If this is a file link, make sure it's of the expected type (string)
-			if (!initResult.check((is_file_link && value_type.get_raw_type().is_derived_from<std::string>()) || !is_file_link, "Encountered a non-string file link. This is not supported"))
+			if (!errorState.check((is_file_link && value_type.get_raw_type().is_derived_from<std::string>()) || !is_file_link, "Encountered a non-string file link. This is not supported"))
 				return false;
 
-			// If the property is of pointer type, we can't set the property here but need to resolve it later
+			// If this is an array, read its elements recursively again (in case of nested compounds)
 			if (value_type.is_array())
-			{
-				// If this is an array, read its elements recursively again (in case of nested compounds)
-				RTTI::Variant value;
-				if (value_type.is_array())
-				{
-					// Get instance of the current value (this is a copy) and create an array view on it so we can fill it
-					value = property.get_value(compound);
-					RTTI::VariantArray array_view = value.create_array_view();
+			{				
+				// Get instance of the current value (this is a copy) and create an array view on it so we can fill it
+				RTTI::Variant value = property.get_value(compound);
+				RTTI::VariantArray array_view = value.create_array_view();
 
-					// Now read the array recursively into array view
-					if (!deserializeArrayRecursively(object, array_view, stream, rttiPath, unresolvedPointers, linkedFiles, initResult))
-						return false;
-				}
-				else if (value_type.is_associative_container())
-				{
-					// Maps not supported (yet)
-					initResult.mErrorString = "Encountered currently unsupported associative property";
+				// Now read the array recursively into array view
+				if (!deserializeArrayRecursively(object, array_view, stream, rttiPath, unresolvedPointers, linkedFiles, errorState))
 					return false;
-				}
 
 				// Now copy the read array back into the target object
 				property.set_value(compound, value);
 			}
+			else if (value_type.is_associative_container())
+			{
+				// Maps not supported (yet)
+				errorState.fail("Encountered currently unsupported associative property %s", property.get_type().get_name().data());
+				return false;
+			}
 			else if (value_type.is_pointer())
 			{
 				// Pointer types must point to objects derived from nap::Object
-				if (!initResult.check(value_type.get_raw_type().is_derived_from<nap::Object>(), "Encountered pointer to non-Object. This is not supported"))
+				if (!errorState.check(value_type.get_raw_type().is_derived_from<nap::Object>(), "Encountered pointer to non-Object. This is not supported"))
 					return false;
 
 				// Determine the target of the pointer
@@ -203,7 +199,7 @@ namespace nap
 				stream.readString(target);
 
 				// If the target is empty (i.e. null pointer), but the property is required, throw an error
-				if (!initResult.check((is_required && !target.empty()) || (!is_required), "Required property %s not found in object of type %s", property.get_name().data(), object_type.get_name().data()))
+				if (!errorState.check((is_required && !target.empty()) || (!is_required), "Required property %s not found in object of type %s", property.get_name().data(), object_type.get_name().data()))
 					return false;
 
 				// Add to list of unresolved pointers
@@ -221,7 +217,7 @@ namespace nap
 			{
 				// If the property is a nested compound, read it recursively
 				RTTI::Variant var = property.get_value(compound);
-				if (!deserializeObjectRecursive(object, var, stream, rttiPath, unresolvedPointers, linkedFiles, initResult))
+				if (!deserializeObjectRecursive(object, var, stream, rttiPath, unresolvedPointers, linkedFiles, errorState))
 					return false;
 
 				// Copy read object back into the target object
@@ -243,7 +239,7 @@ namespace nap
 		return true;
 	}
 
-	bool deserializeBinary(MemoryStream& stream, RTTIDeserializeResult& result, InitResult& initResult)
+	bool deserializeBinary(MemoryStream& stream, RTTIDeserializeResult& result, ErrorState& errorState)
 	{
 		if (stream.isDone())
 			return false;
@@ -259,20 +255,20 @@ namespace nap
 			stream.readString(object_type);
 
 			RTTI::TypeInfo type_info = RTTI::TypeInfo::get_by_name(object_type);
-			if (!initResult.check(type_info.is_valid(), "Unknown object type %s encountered.", object_type.c_str()))
+			if (!errorState.check(type_info.is_valid(), "Unknown object type %s encountered.", object_type.c_str()))
 				return false;
 
 			// Check whether this is a type that can actually be instantiated
-			if (!initResult.check(type_info.can_create_instance(), "Unable to instantiate object of type %s.", object_type.c_str()))
+			if (!errorState.check(type_info.can_create_instance(), "Unable to instantiate object of type %s.", object_type.c_str()))
 				return false;
 
 			// We only support root-level objects that derive from nap::Object (compounds, etc can be of any type)
-			if (!initResult.check(type_info.is_derived_from(RTTI_OF(nap::Object)), "Unable to instantiate object %s. Class is not derived from Object.", object_type.c_str()))
+			if (!errorState.check(type_info.is_derived_from(RTTI_OF(nap::Object)), "Unable to instantiate object %s. Class is not derived from Object.", object_type.c_str()))
 				return false;
 
 			// Check version
 			std::size_t version = stream.read<std::size_t>();
-			if (!initResult.check(version == RTTI::getRTTIVersion(type_info), "Type %s found that does not match the expected version (perhaps the type has changed?). Re-export the binary to fix this issue.", object_type.c_str()))
+			if (!errorState.check(version == RTTI::getRTTIVersion(type_info), "Type %s found that does not match the expected version (perhaps the type has changed?). Re-export the binary to fix this issue.", object_type.c_str()))
 				return false;
 
 			// Create new instance of the object
@@ -281,18 +277,18 @@ namespace nap
 
 			// Recursively read properties, nested compounds, etc
 			RTTI::RTTIPath path;
-			if (!deserializeObjectRecursive(object, *object, stream, path, result.mUnresolvedPointers, result.mFileLinks, initResult))
+			if (!deserializeObjectRecursive(object, *object, stream, path, result.mUnresolvedPointers, result.mFileLinks, errorState))
 				return false;
 		}
 
 		return true;
 	}
 
-	bool readBinary(const std::string& path, RTTIDeserializeResult& result, nap::InitResult& initResult)
+	bool readBinary(const std::string& path, RTTIDeserializeResult& result, nap::ErrorState& errorState)
 	{
 		// Open the file
 		std::ifstream in(path, std::ios::in | std::ios::binary);
-		if (!initResult.check(in.good(), "Unable to open file %s", path.c_str()))
+		if (!errorState.check(in.good(), "Unable to open file %s", path.c_str()))
 			return false;
 
 		// Create buffer of appropriate size
@@ -307,7 +303,7 @@ namespace nap
 		in.close();
 
 		MemoryStream stream(buffer.data(), buffer.size());
-		if (!deserializeBinary(stream, result, initResult))
+		if (!deserializeBinary(stream, result, errorState))
 			return false;
 
 		return true;

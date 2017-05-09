@@ -29,7 +29,7 @@ RTTI_DEFINE(nap::ImageResource)
 namespace nap
 {
 	// Initializes 2D texture. Additionally a custom display name can be provided.
-	bool MemoryTextureResource2D::init(InitResult& initResult)
+	bool MemoryTextureResource2D::init(ErrorState& errorState)
 	{
 		mPrevTexture = mTexture;
 		mTexture = new opengl::Texture2D;
@@ -86,15 +86,15 @@ namespace nap
 		return mDisplayName;
 	}
 
-	bool ImageResource::init(InitResult& initResult)
+	bool ImageResource::init(ErrorState& errorState)
 	{
-		if (!initResult.check(!mImagePath.empty(), "Imagepath not set"))
+		if (!errorState.check(!mImagePath.empty(), "Imagepath not set"))
 			return false;
 
 		mPrevImage = mImage;
 		mImage = new opengl::Image;
 
-		if (!initResult.check(mImage->load(mImagePath), "Unable to load image from file"))
+		if (!errorState.check(mImage->load(mImagePath), "Unable to load image from file"))
 			return false;
 
 		return true;

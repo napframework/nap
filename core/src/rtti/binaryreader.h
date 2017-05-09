@@ -14,28 +14,28 @@
 namespace nap
 {
 	class Object;
-	struct InitResult;
+	class ErrorState;
 
 	/**
 	 * Deserialize a set of objects and their data from the specified stream
 	 *
 	 * @param stream The stream to deserialize from
 	 * @param result The result of deserialization
-	 * @param initResult The error state of deserialization
+	 * @param errorState The error state of deserialization
 	 *
-	 * @return True if deserialization succeeded, false if not. In case of failure, @a initResult contains detailed error info.
+	 * @return True if deserialization succeeded, false if not. In case of failure, @a errorState contains detailed error info.
 	 */
-	bool deserializeBinary(MemoryStream& stream, RTTIDeserializeResult& result, InitResult& initResult);
+	bool deserializeBinary(MemoryStream& stream, RTTIDeserializeResult& result, ErrorState& errorState);
 
 	/**
 	 * Deserialize a set of objects and their data from the specified file
 	 *
 	 * @param file The file to deserialize from
 	 * @param result The result of deserialization
-	 * @param initResult The error state of deserialization
+	 * @param errorState The error state of deserialization
 	 *
-	 * @return True if deserialization succeeded, false if not. In case of failure, @a initResult contains detailed error info.
+	 * @return True if deserialization succeeded, false if not. In case of failure, @a errorState contains detailed error info.
 	 */
-	bool readBinary(const std::string& path, RTTIDeserializeResult& result, InitResult& initResult);
+	bool readBinary(const std::string& path, RTTIDeserializeResult& result, ErrorState& errorState);
 } //< End Namespace nap
 

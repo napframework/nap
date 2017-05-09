@@ -16,7 +16,7 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	bool ModelResource::init(InitResult& initResult)
+	bool ModelResource::init(ErrorState& errorState)
 	{
 		mVAO.setDrawMode(opengl::DrawMode::TRIANGLES);
 
@@ -25,11 +25,11 @@ namespace nap
 			const opengl::VertexAttribute* shader_vertex_attribute = kvp.second.get();
 
 			const Material::VertexAttributeBinding* material_binding = mMaterialResource->findVertexAttributeBinding(kvp.first);
-			if (!initResult.check(material_binding != nullptr, "Unable to find binding %s for shader %s in material %s", kvp.first.c_str(), mMaterialResource->getShader()->mVertPath.c_str(), mMaterialResource->mID.c_str()))
+			if (!errorState.check(material_binding != nullptr, "Unable to find binding %s for shader %s in material %s", kvp.first.c_str(), mMaterialResource->getShader()->mVertPath.c_str(), mMaterialResource->mID.c_str()))
 				return false;
 			
 			const opengl::VertexBuffer* vertex_buffer = mMeshResource->getMesh().findVertexAttributeBuffer(material_binding->mMeshAttributeID);
-			if (!initResult.check(shader_vertex_attribute != nullptr, "Unable to find vertex attribute %s in mesh %s", material_binding->mMeshAttributeID.c_str(), mMeshResource->mPath.c_str()))
+			if (!errorState.check(shader_vertex_attribute != nullptr, "Unable to find vertex attribute %s in mesh %s", material_binding->mMeshAttributeID.c_str(), mMeshResource->mPath.c_str()))
 				return false;
 
 			mVAO.addVertexBuffer(shader_vertex_attribute->mLocation, *vertex_buffer);

@@ -368,21 +368,21 @@ void onRender(const nap::SignalAttribute& signal)
 nap::Slot<const nap::SignalAttribute&> renderSlot = { [](const nap::SignalAttribute& attr){ onRender(attr); } };
 
 
-bool initResources(nap::InitResult& initResult)
+bool initResources(nap::ErrorState& errorState)
 {
 	pigTexture = resourceManagerService->createResource<nap::ImageResource>();
 	pigTexture->mImagePath = pigTextureName;
-	if (!pigTexture->init(initResult))
+	if (!pigTexture->init(errorState))
 		return false;
 	
 	testTexture = resourceManagerService->createResource<nap::ImageResource>();
 	testTexture->mImagePath = testTextureName;
-	if (!testTexture->init(initResult))
+	if (!testTexture->init(errorState))
 		return false;
 
 	worldTexture = resourceManagerService->createResource<nap::ImageResource>();
 	worldTexture->mImagePath = worldTextureName;
-	if (!worldTexture->init(initResult))
+	if (!worldTexture->init(errorState))
 		return false;
 
 	nap::MemoryTextureResource2D* color_texture = resourceManagerService->createResource<nap::MemoryTextureResource2D>();
@@ -391,7 +391,7 @@ bool initResources(nap::InitResult& initResult)
 	color_texture->mSettings.internalFormat = GL_RGBA;
 	color_texture->mSettings.format = GL_RGBA;
 	color_texture->mSettings.type = GL_UNSIGNED_BYTE;
-	if (!color_texture->init(initResult))
+	if (!color_texture->init(errorState))
 		return false;
 
 	nap::MemoryTextureResource2D* depth_texture = resourceManagerService->createResource<nap::MemoryTextureResource2D>();
@@ -400,7 +400,7 @@ bool initResources(nap::InitResult& initResult)
 	depth_texture->mSettings.internalFormat = GL_DEPTH_COMPONENT;
 	depth_texture->mSettings.format = GL_DEPTH_COMPONENT;
 	depth_texture->mSettings.type = GL_FLOAT;
-	if (!depth_texture->init(initResult))
+	if (!depth_texture->init(errorState))
 		return false;
 	
 	// Create frame buffer
@@ -408,65 +408,65 @@ bool initResources(nap::InitResult& initResult)
 	textureRenderTarget->setColorTexture(*color_texture);
 	textureRenderTarget->setDepthTexture(*depth_texture);
 	textureRenderTarget->mClearColor = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
-	if (!textureRenderTarget->init(initResult))
+	if (!textureRenderTarget->init(errorState))
 		return false;
 
 	// Load general shader
 	nap::ShaderResource* generalShaderResource = resourceManagerService->createResource<nap::ShaderResource>();
 	generalShaderResource->mVertPath = vertShaderName;
 	generalShaderResource->mFragPath = fragShaderName;
-	if (!generalShaderResource->init(initResult))
+	if (!generalShaderResource->init(errorState))
 		return false;
 
 	// Load orientation shader
 	nap::ShaderResource* orientationShaderResource = resourceManagerService->createResource<nap::ShaderResource>();
 	orientationShaderResource->mVertPath = orientationVertShaderName;
 	orientationShaderResource->mFragPath = orientationFragShaderName;
-	if (!orientationShaderResource->init(initResult))
+	if (!orientationShaderResource->init(errorState))
 		return false;
 
 	// Load orientation resource
 	nap::MeshResource* orientationMesh = resourceManagerService->createResource<nap::MeshResource>();
 	orientationMesh->mPath = "data/orientation.mesh";
-	if (!orientationMesh->init(initResult))
+	if (!orientationMesh->init(errorState))
 		return false;
 
 	// Load mesh resource
 	nap::MeshResource* pigMesh = resourceManagerService->createResource<nap::MeshResource>();
 	pigMesh->mPath = "data/pig_head_alpha_rotated.mesh";
-	if (!pigMesh->init(initResult))
+	if (!pigMesh->init(errorState))
 		return false;
 
 	nap::Material* pigMaterial = resourceManagerService->createResource<nap::Material>();
 	pigMaterial->mShader = generalShaderResource;
-	if (!pigMaterial->init(initResult))
+	if (!pigMaterial->init(errorState))
 		return false;
 
 	generalMaterial = resourceManagerService->createResource<nap::Material>();
 	generalMaterial->mShader = generalShaderResource;
-	if (!generalMaterial->init(initResult))
+	if (!generalMaterial->init(errorState))
 		return false;
 
 	worldMaterial = resourceManagerService->createResource<nap::Material>();
 	worldMaterial->mShader = generalShaderResource;
-	if (!worldMaterial->init(initResult))
+	if (!worldMaterial->init(errorState))
 		return false;
 
 	nap::Material* orientationMaterial = resourceManagerService->createResource<nap::Material>();
 	orientationMaterial->mShader = orientationShaderResource;
-	if (!orientationMaterial->init(initResult))
+	if (!orientationMaterial->init(errorState))
 		return false;
 
 	pigModel = resourceManagerService->createResource<nap::ModelResource>();
 	pigModel->mMaterialResource = pigMaterial;
 	pigModel->mMeshResource = pigMesh;
-	if (!pigModel->init(initResult))
+	if (!pigModel->init(errorState))
 		return false;
 
 	orientationModel = resourceManagerService->createResource<nap::ModelResource>();
 	orientationModel->mMaterialResource = orientationMaterial;
 	orientationModel->mMeshResource = orientationMesh;
-	if (!orientationModel->init(initResult))
+	if (!orientationModel->init(errorState))
 		return false;
 
 	return true;
@@ -547,11 +547,11 @@ bool init(nap::Core& core)
 
 	resourceManagerService = core.getOrCreateService<nap::ResourceManagerService>();
 
-	nap::InitResult initResult;
+	nap::ErrorState errorState;
 #if 1
-	if (!resourceManagerService->loadFile("data/objects.json", initResult))
+	if (!resourceManagerService->loadFile("data/objects.json", errorState))
 	{
-		nap::Logger::fatal("Unable to deserialize resources: %s", initResult.mErrorString.c_str());
+		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
 		return false;
 	}
 
@@ -564,9 +564,9 @@ bool init(nap::Core& core)
 	orientationModel = resourceManagerService->findResource<nap::ModelResource>("OrientationModel");
 	pigModel = resourceManagerService->findResource<nap::ModelResource>("PigModel");
 #else	
-	if (!initResources(initResult))
+	if (!initResources(errorState))
 	{
-		nap::Logger::fatal("Unable to initialize resources: %s", initResult.mErrorString.c_str());
+		nap::Logger::fatal("Unable to initialize resources: %s", errorState.mErrorString.c_str());
 		return false;
 	}
 #endif
@@ -853,4 +853,4 @@ void runGame(nap::Core& core)
 
 	renderService->shutdown();
 }
-    
+      

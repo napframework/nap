@@ -19,7 +19,7 @@ namespace nap
 		/**
  		 * Loads model from file.
  		 */
-		virtual bool init(InitResult& initResult) override;
+		virtual bool init(ErrorState& errorState) override;
 
 		/**
  		 * Performs commit or rollback of changes made in init.

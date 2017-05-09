@@ -10,7 +10,7 @@ namespace opengl
 
 namespace nap
 {
-	struct InitResult;
-	bool convertFBX(const std::string& fbxPath, const std::string& outputDirectory, InitResult& initResult);	 
-	std::unique_ptr<opengl::Mesh> loadMesh(const std::string& meshPath, InitResult& initResult);
+	class ErrorState;
+	bool convertFBX(const std::string& fbxPath, const std::string& outputDirectory, ErrorState& errorState);	 
+	std::unique_ptr<opengl::Mesh> loadMesh(const std::string& meshPath, ErrorState& errorState);
 }

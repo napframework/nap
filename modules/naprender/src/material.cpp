@@ -22,9 +22,9 @@ namespace nap
 	{
 	}
 
-	bool Material::init(InitResult& initResult)
+	bool Material::init(ErrorState& errorState)
 	{
-		if (!initResult.check(mShader != nullptr, "Shader not set in material"))
+		if (!errorState.check(mShader != nullptr, "Shader not set in material"))
 			return false;
 
 		// TODO: store vertex attribute / uniforms for rollback
@@ -36,12 +36,12 @@ namespace nap
 		{
 			// Make sure we have a valid type for the attribute
 			RTTI::TypeInfo attr_value_type = getAttributeType(v.second->mGLSLType);
-			if (!initResult.check(attr_value_type != RTTI::TypeInfo::empty(), "unable to map GLSL uniform, unsupported type"))
+			if (!errorState.check(attr_value_type != RTTI::TypeInfo::empty(), "unable to map GLSL uniform, unsupported type"))
 				return false;
 
 			// Get attribute create function
 			const GLSLAttributeCreateFunction* attr_create_function = getAttributeCreateFunction(v.second->mGLSLType);
-			if (!initResult.check(attr_create_function != nullptr, "unable to create attribute for GLSL uniform of type: %d, no matching create function found", v.second->mGLSLType))
+			if (!errorState.check(attr_create_function != nullptr, "unable to create attribute for GLSL uniform of type: %d, no matching create function found", v.second->mGLSLType))
 				return false;
 
 			// Create attribute

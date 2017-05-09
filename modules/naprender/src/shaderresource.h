@@ -20,7 +20,7 @@ namespace nap
 		/**
 		 * Creates and inits opengl shader.
 		 */
-		virtual bool init(InitResult& initResult);
+		virtual bool init(ErrorState& errorState);
 
 		/**
 		 * Performs commit or rollback of changes made in init.

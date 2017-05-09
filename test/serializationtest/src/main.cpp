@@ -14,6 +14,8 @@
 
 #include <rtti/rttipath.h>
 
+#include "fbxconverter.h"
+
 using namespace nap;
 
 BaseClass* createTestHierarchy()
@@ -73,6 +75,12 @@ int main(int argc, char* argv[])
 	Core core;
 	core.initialize();
 
+	RTTI::TypeInfo::get<std::vector<DataStruct>>();
+
+	std::size_t version_datastruct = RTTI::getRTTIVersion(RTTI_OF(DataStruct));
+	std::size_t version_base = RTTI::getRTTIVersion(RTTI_OF(BaseClass));
+	std::size_t version_derived = RTTI::getRTTIVersion(RTTI_OF(DerivedClass));
+
 	// Create test hierarchy
 	BaseClass* root = createTestHierarchy();
 	 
@@ -115,8 +123,8 @@ int main(int argc, char* argv[])
 
 		// Read json and verify it succeeds
 		RTTIDeserializeResult read_result;
-		InitResult init_result;
-		if (!deserializeJSON(json, read_result, init_result))
+		ErrorState error_state;
+		if (!deserializeJSON(json, read_result, error_state))
 			return -1;
 
 		// Resolve links
@@ -146,8 +154,8 @@ int main(int argc, char* argv[])
 		// Read binary and verify it succeeds
 		MemoryStream stream(binary_writer.getBuffer().data(), binary_writer.getBuffer().size());
 		RTTIDeserializeResult read_result;
-		InitResult init_result;
-		if (!deserializeBinary(stream, read_result, init_result))
+		ErrorState error_state;
+		if (!deserializeBinary(stream, read_result, error_state))
 			return -1;
 
 		// Resolve links
@@ -166,6 +174,18 @@ int main(int argc, char* argv[])
 		// Compare pointee-objects
 		if (!RTTI::areObjectsEqual(*objects_by_id["Pointee"], *root->mPointerProperty, RTTI::EPointerComparisonMode::BY_ID))
 			return -1;
+	}
+
+	ErrorState convert_result;
+	if (!convertFBX("C:/dev/Naivi/nap/test/render/data/pig_head_alpha_rotated.fbx", "C:/dev/Naivi/nap/test/render/data", convert_result))
+	{
+		return -1;
+	}
+
+	ErrorState convert_result2;
+	if (!convertFBX("C:/dev/Naivi/nap/test/render/data/orientation.fbx", "C:/dev/Naivi/nap/test/render/data", convert_result2))
+	{
+		return -1;
 	}
 
 

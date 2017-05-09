@@ -21,12 +21,12 @@ namespace nap
 
 
 	// Store path and create display names
-	bool ShaderResource::init(InitResult& initResult)
+	bool ShaderResource::init(ErrorState& errorState)
 	{
-		if (!initResult.check(!mVertPath.empty(), "Vertex shader path not set"))
+		if (!errorState.check(!mVertPath.empty(), "Vertex shader path not set"))
 			return false;
 
-		if (!initResult.check(!mFragPath.empty(), "Fragment shader path not set"))
+		if (!errorState.check(!mFragPath.empty(), "Fragment shader path not set"))
 			return false;
 
 		// Set display name
@@ -37,7 +37,7 @@ namespace nap
 
 		// Initialize the shader
 		mShader->init(mVertPath, mFragPath);
-		if (!initResult.check(mShader->isLinked(), "unable to create shader program: %s", mVertPath.c_str(), mFragPath.c_str()))
+		if (!errorState.check(mShader->isLinked(), "unable to create shader program: %s", mVertPath.c_str(), mFragPath.c_str()))
 			return false;
 
 		return true;
