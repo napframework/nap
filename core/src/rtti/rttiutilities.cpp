@@ -263,4 +263,57 @@ namespace RTTI
 		ObjectLinkVisitor visitor(object, objectLinks);
 		VisitRTTIProperties(object, path, visitor);
 	}
+
+
+	/**
+	 * Helper function to recursively build a type version string for a given RTTI type
+	 */
+	void appendTypeInfoToVersionStringRecursive(const RTTI::TypeInfo& type, std::string& versionString)
+	{
+		// Append name of type
+		versionString.append(type.get_name().data(), type.get_name().size());
+
+		// Append properties
+		for (const RTTI::Property& property : type.get_properties())
+		{
+			// Append property name + type
+			versionString.append(property.get_name().data(), property.get_name().size());
+			versionString.append(property.get_type().get_name().data(), property.get_type().get_name().size());
+			
+			RTTI::TypeInfo type = property.get_type();
+
+			// TODO: array/map support
+// 			if (type.is_array())
+// 			{
+// 				if (type.can_create_instance())
+// 				{
+// 					RTTI::Variant array_inst = type.create();
+// 					RTTI::VariantArray array_view = array_inst.create_array_view();
+// 					type = array_view.get_rank_type(array_view.get_rank());
+// 				}
+// 			}				
+
+			// Don't recurse into primitives, pointers or types without further properties
+			if (RTTI::isPrimitive(type) || type.is_pointer() || type.get_properties().empty())
+				continue;
+
+			// Recurse
+			appendTypeInfoToVersionStringRecursive(type, versionString);
+		}
+	}
+
+
+	/**
+	 * Calculate the version number of the specified type
+	 */
+	std::size_t getRTTIVersion(const RTTI::TypeInfo& type)
+	{
+		// Build the version string first
+		std::string version_string;
+		appendTypeInfoToVersionStringRecursive(type, version_string);
+
+		// Hash
+		std::size_t hash = std::hash<std::string>()(version_string);
+		return hash;
+	}
 }

@@ -73,5 +73,13 @@ namespace RTTI
 	*/
 	void findObjectLinks(const nap::Object& object, std::vector<ObjectLink>& objectLinks);
 
+	/**
+	* Calculate the version number of the specified type
+	*
+	* @param type The type to calculate the version number for
+	* @return The version number
+	*/
+	std::size_t getRTTIVersion(const RTTI::TypeInfo& type);
+
 } //< End Namespace RTTI
 

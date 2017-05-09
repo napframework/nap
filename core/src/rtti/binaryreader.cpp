@@ -1,11 +1,28 @@
 #include "binaryreader.h"
+#include "rttibinaryversion.h"
 #include "nap/resource.h"	// TODO: for initresult, perhaps move to another file
 #include <fstream>
+#include "rttiutilities.h"
 
 namespace nap
 {
 	static bool deserializeObjectRecursive(nap::Object* object, RTTI::Instance compound, MemoryStream& stream, RTTI::RTTIPath& rttiPath, UnresolvedPointerList& unresolvedPointers,
 		std::vector<FileLink>& linkedFiles, InitResult& initResult);
+
+	/**
+	 * Helper function to check if the specified stream starts with the RTTI binary version header
+	 */
+	bool readAndCheckRTTIBinaryVersion(MemoryStream& stream)
+	{
+		// Determine length of header
+		int len = strlen(gRTTIBinaryVersion);
+		
+		// Read header from stream
+		char header[64] = { 0 };
+		stream.read(header, len);
+
+		return strcmp(gRTTIBinaryVersion, header) == 0;
+	}
 
 
 	/**
@@ -226,9 +243,14 @@ namespace nap
 		return true;
 	}
 
-
 	bool deserializeBinary(MemoryStream& stream, RTTIDeserializeResult& result, InitResult& initResult)
 	{
+		if (stream.isDone())
+			return false;
+
+		if (!readAndCheckRTTIBinaryVersion(stream))
+			return false;
+
 		// Continue reading while there's data in the stream
 		while (!stream.isDone())
 		{
@@ -246,6 +268,11 @@ namespace nap
 
 			// We only support root-level objects that derive from nap::Object (compounds, etc can be of any type)
 			if (!initResult.check(type_info.is_derived_from(RTTI_OF(nap::Object)), "Unable to instantiate object %s. Class is not derived from Object.", object_type.c_str()))
+				return false;
+
+			// Check version
+			std::size_t version = stream.read<std::size_t>();
+			if (!initResult.check(version == RTTI::getRTTIVersion(type_info), "Type %s found that does not match the expected version (perhaps the type has changed?). Re-export the binary to fix this issue.", object_type.c_str()))
 				return false;
 
 			// Create new instance of the object

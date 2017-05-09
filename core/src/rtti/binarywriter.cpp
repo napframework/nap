@@ -1,10 +1,19 @@
 #include "binarywriter.h"
+#include "rttibinaryversion.h"
+#include "rttiutilities.h"
 
 namespace nap
 {
+	bool BinaryWriter::start()
+	{
+		write(gRTTIBinaryVersion, strlen(gRTTIBinaryVersion));
+		return true;
+	}
+
 	bool BinaryWriter::startRootObject(const RTTI::TypeInfo& type)
 	{
 		writeString(type.get_name().data(), type.get_name().length());
+		write(RTTI::getRTTIVersion(type));
 		return true;
 	}
 
