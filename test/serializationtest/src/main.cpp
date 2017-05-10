@@ -52,15 +52,15 @@ bool ResolveLinks(const OwnedObjectList& objects, const UnresolvedPointerList& u
 	
 	for (const UnresolvedPointer& unresolvedPointer : unresolvedPointers)
 	{
-		RTTI::ResolvedRTTIPath resolved_path = unresolvedPointer.mRTTIPath.Resolve(unresolvedPointer.mObject);
-		if (!resolved_path.IsValid())
+		RTTI::ResolvedRTTIPath resolved_path;			
+		if (!unresolvedPointer.mRTTIPath.resolve(unresolvedPointer.mObject, resolved_path))
 			return false;
 
 		std::map<std::string, Object*>::iterator pos = objects_by_id.find(unresolvedPointer.mTargetID);
 		if (pos == objects_by_id.end())
 			return false;
 
-		if (!resolved_path.SetValue(pos->second))
+		if (!resolved_path.setValue(pos->second))
 			return false;
 	}
 
@@ -86,30 +86,30 @@ int main(int argc, char* argv[])
 	 
 	// Create path to float property in array of nested compounds
  	RTTI::RTTIPath float_property_path;
- 	float_property_path.PushAttribute("ArrayOfCompounds");
- 	float_property_path.PushArrayElement(0);
- 	float_property_path.PushAttribute("FloatProperty");
+ 	float_property_path.pushAttribute("ArrayOfCompounds");
+ 	float_property_path.pushArrayElement(0);
+ 	float_property_path.pushAttribute("FloatProperty");
  
 	// Convert path to string
- 	std::string path_str = float_property_path.ToString();
+ 	std::string path_str = float_property_path.toString();
 
 	// Convert back and verify the path is the same
- 	RTTI::RTTIPath path_copy = RTTI::RTTIPath::FromString(path_str);
+ 	RTTI::RTTIPath path_copy = RTTI::RTTIPath::fromString(path_str);
 	if (path_copy != float_property_path)
 		return -1;
  
 	// Resolve the path and verify it succeeded
- 	RTTI::ResolvedRTTIPath resolved_path = float_property_path.Resolve(root->mPointerProperty);
-	if (!resolved_path.IsValid())
+ 	RTTI::ResolvedRTTIPath resolved_path;
+	if (!float_property_path.resolve(root->mPointerProperty, resolved_path))
 		return -1;
 
 	// Verify setting the value works
-	float old_value = resolved_path.GetValue().convert<float>();
-	if (!resolved_path.SetValue(8.0f))
+	float old_value = resolved_path.getValue().convert<float>();
+	if (!resolved_path.setValue(8.0f))
 		return -1; 
 
 	// Restore value so we can compare later
-	resolved_path.SetValue(old_value);
+	resolved_path.setValue(old_value);
 
 	{
 		ErrorState error_state;

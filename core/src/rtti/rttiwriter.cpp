@@ -5,6 +5,7 @@
 namespace nap
 {
 	bool serializeObjectRecursive(const RTTI::Instance object, ObjectList& objectsToSerialize, RTTIWriter& writer, ErrorState& errorState);
+	bool serializeValue(const RTTI::Variant& variant, ObjectList& objectsToSerialize, RTTIWriter& writer, ErrorState& errorState);
 
 
 	/**
@@ -19,7 +20,7 @@ namespace nap
 		objectsToSerialize.push_back(object);
 	}
 
-
+	
 	/**
 	 * Helper function to serialize an array
 	 */
@@ -32,71 +33,11 @@ namespace nap
 		// Write the elements
 		for (int i = 0; i < array.get_size(); ++i)
 		{
-			RTTI::Variant var = array.get_value_as_ref(i);
+			RTTI::Variant var = array.get_value(i);
 
-			// If the value is an array, recurse
-			if (var.is_array())
-			{
-				if (!serializeArray(var.create_array_view(), objectsToSerialize, writer, errorState))
-					return false;
-			}
-			else
-			{
-				// Get the actual value of the element
-				RTTI::Variant wrapped_var = var.extract_wrapped_value();
-				RTTI::TypeInfo value_type = wrapped_var.get_type();
-
-				// Write pointer value
-				if (value_type.is_pointer())
-				{
-					// Pointers must point to Objects
-					if (!errorState.check(value_type.is_derived_from<nap::Object>(), "Encountered pointer to non-Object"))
-						return false;
-
-					// Get the object being pointed to
-					Object* pointee = wrapped_var.convert<Object*>();
-					if (pointee != nullptr)
-					{
-						// Objects we point to must also be serialized, so add it to the set of objects to be serialized
-						addObjectToSerialize(objectsToSerialize, pointee);
-
-						// Check that the ID of the pointer is not empty (we can't point to objects without an ID)
-						const std::string& pointee_id = pointee->mID;
-						if (!errorState.check(!pointee_id.empty(), "Encountered pointer to Object with invalid ID"))
-							return false;
-
-						// Write the pointer
-						if (!errorState.check(writer.writePointer(pointee_id), "Failed to write pointer"))
-							return false;
-					}
-					else
-					{
-						// Write null pointer
-						if (!errorState.check(writer.writePointer(std::string()), "Failed to write pointer"))
-							return false;
-					}
-				}
-				else if (RTTI::isPrimitive(value_type))
-				{
-					// Write primitive type (float, int, string, etc)
-					if (!errorState.check(writer.writePrimitive(value_type, wrapped_var), "Failed to write primitive"))
-						return false;
-				}
-				else
-				{
-					// Write compound
-					if (!errorState.check(writer.startCompound(value_type), "Failed to start nested compound"))
-						return false;
-
-					// Recurse into the compound
-					if (!serializeObjectRecursive(wrapped_var, objectsToSerialize, writer, errorState))
-						return false;
-
-					// Finish the compound
-					if (!errorState.check(writer.finishCompound(), "Failed to finish nested compound"))
-						return false;
-				}
-			}
+			// Write each value
+			if (!serializeValue(var, objectsToSerialize, writer, errorState))
+				return false;
 		}
 
 		// Finish the array
@@ -112,13 +53,25 @@ namespace nap
 	 */
 	bool serializeProperty(const RTTI::Property& property, const RTTI::Variant& value, ObjectList& objectsToSerialize, RTTIWriter& writer, ErrorState& errorState)
 	{
-		auto value_type = value.get_type();
-		auto wrapped_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
-		bool is_wrapper = wrapped_type != value_type;
-
 		// Write property name
 		if (!errorState.check(writer.writeProperty(property.get_name().data()), "Failed to write property name"))
 			return false;
+
+		if (!serializeValue(value, objectsToSerialize, writer, errorState))
+			return false;
+
+		return true;
+	}
+
+
+	/**
+	 * Helper function to serialize a value
+	*/
+	bool serializeValue(const RTTI::Variant& value, ObjectList& objectsToSerialize, RTTIWriter& writer, ErrorState& errorState)
+	{
+		auto value_type = value.get_type();
+		auto wrapped_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
+		bool is_wrapper = wrapped_type != value_type;
 
 		// If this is an array, recurse
 		if (value_type.is_array())
@@ -127,6 +80,11 @@ namespace nap
 				return false;
 
 			return true;
+		}
+		else if (value_type.is_associative_container())
+		{
+			errorState.fail("Associative containers are not supported");
+			return false;
 		}
 		else if (value_type.is_pointer())
 		{
@@ -148,7 +106,7 @@ namespace nap
 				// Write the pointer				
 				if (!errorState.check(writer.writePointer(pointee_id), "Failed to write pointer"))
 					return false;
-				
+
 				return true;
 			}
 			else
@@ -165,7 +123,7 @@ namespace nap
 			// Write primitive type (float, string, etc)
 			if (!errorState.check(writer.writePrimitive(wrapped_type, is_wrapper ? value.extract_wrapped_value() : value), "Failed to write primitive"))
 				return false;
-			
+
 			return true;
 		}
 		else

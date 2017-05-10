@@ -94,7 +94,7 @@ namespace nap
 		for (std::size_t index = 0; index < length; ++index)
 		{
 			// Add array element to rtti path
-			rttiPath.PushArrayElement(index);
+			rttiPath.pushArrayElement(index);
 
 			if (array_type.is_array())
 			{
@@ -102,6 +102,12 @@ namespace nap
 				RTTI::VariantArray sub_array = array.get_value_as_ref(index).create_array_view();
 				if (!deserializeArrayRecursively(rootObject, sub_array, stream, rttiPath, unresolvedPointers, linkedFiles, errorState))
 					return false;
+			}
+			else if (array_type.is_associative_container())
+			{
+				// Maps not supported (yet)
+				errorState.fail("Encountered currently unsupported associative property");
+				return false;
 			}
 			else if (array_type.is_pointer())
 			{
@@ -136,7 +142,7 @@ namespace nap
 			}			
 
 			// Remove array element from rtti path again
-			rttiPath.PopBack();
+			rttiPath.popBack();
 		}
 
 		return true;
@@ -156,7 +162,7 @@ namespace nap
 		for (const RTTI::Property& property : object_type.get_properties())
 		{
 			// Push attribute on path
-			rttiPath.PushAttribute(property.get_name().data());
+			rttiPath.pushAttribute(property.get_name().data());
 
 			// Determine meta-data for the property
 			bool is_required = property.get_metadata(RTTI::EPropertyMetaData::Required).is_valid();
@@ -233,7 +239,7 @@ namespace nap
 				linkedFiles.push_back(file_link);
 			}
 
-			rttiPath.PopBack();
+			rttiPath.popBack();
 		}
 
 		return true;
