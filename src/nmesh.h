@@ -13,38 +13,44 @@
 namespace opengl
 {
 	using VertexAttributeID = std::string;
+
+	/**
+	 * Known vertex attribute IDs in the system, used for loading/creating meshes with well-known attributes.
+	 */
 	struct VertexAttributeIDs
 	{
 		static const VertexAttributeID PositionVertexAttr;
 		static const VertexAttributeID NormalVertexAttr;
 		static const VertexAttributeID UVVertexAttr;
 		static const VertexAttributeID ColorVertexAttr;
+
+		static const VertexAttributeID GetUVVertexAttr(int uvChannel)
+		{
+			// TODO: replace this once we can use nap::stringformat in nrender
+			VertexAttributeID result;
+			result.resize(64);
+			snprintf(&result[0], 64, "%s%d", opengl::VertexAttributeIDs::UVVertexAttr.c_str(), uvChannel);
+			return result;
+		}
+
+		static const VertexAttributeID GetColorVertexAttr(int colorChannel)
+		{
+			VertexAttributeID result;
+			result.resize(64);
+			snprintf(&result[0], 64, "%s%d", opengl::VertexAttributeIDs::ColorVertexAttr.c_str(), colorChannel);
+			return result;
+		}
 	};
 
 	/**
 	 * Defines a polygonal mesh
-	 * Every mesh contains multiple sets of vertices in the form of VertexContainers
-	 * The vertex containers are grouped and drawn using a vertex array object
-	 * The mesh owns all of it's vertex data, both on the CPU and GPU side
-	 * The binding order of the vertex buffers depends on the order data is added
-	 * Every mesh consists out of a default set of VertexContainers, including:
-	 *
-	 * Position
-	 * Normals
-	 * UV coordinates	
-	 * Color
-	 * 
-	 * Every mesh can have multiple UV and Color sets 
-	 * and only 1 position and normal set
-	 * When adding data make sure the vertex count is the same for every set of vertices
-	 * This object will happily allocate and create the buffers for you but it does
-	 * not perform any bound checks! It's up to the user to make sure vertex count is similar for every set!
+	 * Every mesh has a number of vertex attributes that are identified through an ID.
 	 */
 	class Mesh
 	{
 	public:
 		// Default Constructor
-		Mesh(int numVertices);
+		Mesh(int numVertices, EDrawMode drawMode);
 
 		// Default destructor
 		virtual ~Mesh() = default;
@@ -54,12 +60,22 @@ namespace opengl
 		Mesh(const Mesh& other) = delete;
 		Mesh& operator=(const Mesh& other) = delete;
 
+		/**
+		* Adds a vertex attribute stream to the mesh
+		* @param id: name of the vertex attribute
+		* @param components: number of component per element (for instance, 3 for vector with 3 floats)
+		* @param data: Pointer to array containing attribute data.
+		*/
 		void addVertexAttribute(const VertexAttributeID& id, unsigned int components, const float* data);
+
+		/**
+		* @return Returns pointer to the attribute buffer if found, otherwise nullptr.
+		* @param id: name of the vertex attribute
+		*/
 		const VertexBuffer* findVertexAttributeBuffer(const VertexAttributeID& id) const;
 
 		/**
-		 * Adds a set of indices to the mesh. Indices are created
-		 * if they haven't been created yet. Without indices the regular
+		 * Adds a set of indices to the mesh. Without indices the regular
 		 * array draw method applies, with indices the mesh will be drawn
 		 * using the connectivity described by the indices
 		 * @param count: The number of indices that will be copied
@@ -67,14 +83,23 @@ namespace opengl
 		 */
 		void setIndices(unsigned int count, const unsigned int* data);
 
-		const IndexBuffer* getIndexBuffer() const { return mIndices->getIndexBuffer();  }
+		/**
+		* @return The indexbuffer if set, otherwise nullptr.
+		*/
+		const IndexBuffer* getIndexBuffer() const 
+		{ 
+			return mIndices->getIndexBuffer();  
+		}
 
 		/**
-		* @return the number of vertices associated with the data in the vertex buffers
-		* Note that for every set the vertex count is checked against currently available vertex count
-		* If the vertex count differs from buffer to buffer the lowest common denominator is picked
+		* @return the number of vertices associated with the data in the vertex buffers.
 		*/
 		unsigned int getVertCount() const { return mNumVertices; }
+
+		/**
+		* @return the drawmode as set in the constructor.
+		*/
+		EDrawMode getDrawMode() const { return mDrawMode;  }
 
 	private:
 		using VertexContainerArray = std::vector<std::unique_ptr<FloatVertexContainer>>;
@@ -90,7 +115,8 @@ namespace opengl
 
 		int										mNumVertices = 0;
 		std::vector<Attribute>					mAttributes;
-		std::unique_ptr<IndexContainer>			mIndices = nullptr;		//< Mesh Indices
+		std::unique_ptr<IndexContainer>			mIndices = nullptr;					//< Mesh connectivity
+		EDrawMode								mDrawMode = EDrawMode::TRIANGLES;	//< Draw mode
 	};
 
 } // opengl

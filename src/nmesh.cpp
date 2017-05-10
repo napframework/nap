@@ -9,10 +9,12 @@ namespace opengl
 	const VertexAttributeID VertexAttributeIDs::ColorVertexAttr("Color");
 
 	// Constructor initializes object draw mode
-	Mesh::Mesh(int numVertices) :
-		mNumVertices(numVertices)
+	Mesh::Mesh(int numVertices, EDrawMode drawMode) :
+		mNumVertices(numVertices),
+		mDrawMode(drawMode)
 	{
 	}
+
 
 	void Mesh::addVertexAttribute(const VertexAttributeID& id, unsigned int components, const float* data)
 	{
@@ -30,6 +32,7 @@ namespace opengl
 		mAttributes.emplace_back(std::move(attribute));
 	}
 
+
 	const VertexBuffer* Mesh::findVertexAttributeBuffer(const VertexAttributeID& id) const
 	{
 		for (const Attribute& attribute : mAttributes)
@@ -38,6 +41,7 @@ namespace opengl
 
 		return nullptr;
 	}
+
 
 	void Mesh::setIndices(unsigned int count, const unsigned int* data)
 	{

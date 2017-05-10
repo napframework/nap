@@ -7,21 +7,21 @@
 
 namespace opengl
 {
-	using OpenGLDrawModeMap = std::unordered_map<DrawMode, GLenum>;
+	using OpenGLDrawModeMap = std::unordered_map<EDrawMode, GLenum>;
 	static const OpenGLDrawModeMap openGLDrawMap =
 	{
-		{ DrawMode::POINTS,			GL_POINTS },
-		{ DrawMode::LINES,			GL_LINES  },
-		{ DrawMode::LINE_STRIP,		GL_LINE_STRIP},
-		{ DrawMode::LINE_LOOP,		GL_LINE_LOOP},
-		{ DrawMode::TRIANGLES,		GL_TRIANGLES},
-		{ DrawMode::TRIANGLE_STRIP,	GL_TRIANGLE_STRIP},
-		{ DrawMode::TRIANGLE_FAN,	GL_TRIANGLE_STRIP}
+		{ EDrawMode::POINTS,			GL_POINTS },
+		{ EDrawMode::LINES,			GL_LINES  },
+		{ EDrawMode::LINE_STRIP,		GL_LINE_STRIP},
+		{ EDrawMode::LINE_LOOP,		GL_LINE_LOOP},
+		{ EDrawMode::TRIANGLES,		GL_TRIANGLES},
+		{ EDrawMode::TRIANGLE_STRIP,	GL_TRIANGLE_STRIP},
+		{ EDrawMode::TRIANGLE_FAN,	GL_TRIANGLE_STRIP}
 	};
 
 
 	// Returns the DrawMode's OpenGL associated mode
-	GLenum getGLMode(DrawMode mode)
+	GLenum getGLMode(EDrawMode mode)
 	{
 		auto it = openGLDrawMap.find(mode);
 		return it == openGLDrawMap.end() ? GL_INVALID_ENUM : it->second;
@@ -29,13 +29,13 @@ namespace opengl
 
 
 	// Returns the DrawMode associated with the OpenGL defined drawmode
-	DrawMode getDrawMode(GLenum mode)
+	EDrawMode getDrawMode(GLenum mode)
 	{
 		auto found_it = std::find_if(openGLDrawMap.begin(), openGLDrawMap.end(), [&](const auto& value)
 		{
 			return value.second == mode;
 		});
 
-		return found_it == openGLDrawMap.end() ? DrawMode::UNKNOWN : (*found_it).first;
+		return found_it == openGLDrawMap.end() ? EDrawMode::UNKNOWN : (*found_it).first;
 	}
 }
