@@ -72,7 +72,7 @@ namespace opengl
 		* @return Returns pointer to the attribute buffer if found, otherwise nullptr.
 		* @param id: name of the vertex attribute
 		*/
-		const VertexBuffer* findVertexAttributeBuffer(const VertexAttributeID& id) const;
+		const VertexAttributeBuffer* findVertexAttributeBuffer(const VertexAttributeID& id) const;
 
 		/**
 		 * Adds a set of indices to the mesh. Without indices the regular
@@ -102,8 +102,6 @@ namespace opengl
 		EDrawMode getDrawMode() const { return mDrawMode;  }
 
 	private:
-		using VertexContainerArray = std::vector<std::unique_ptr<FloatVertexContainer>>;
-
 		struct Attribute
 		{
 			std::string mID;

@@ -33,7 +33,7 @@ namespace opengl
 	}
 
 
-	const VertexBuffer* Mesh::findVertexAttributeBuffer(const VertexAttributeID& id) const
+	const VertexAttributeBuffer* Mesh::findVertexAttributeBuffer(const VertexAttributeID& id) const
 	{
 		for (const Attribute& attribute : mAttributes)
 			if (attribute.mID == id)

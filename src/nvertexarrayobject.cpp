@@ -32,7 +32,7 @@ namespace opengl
 
 			for (const auto& binding : mBindings)
 			{
-				const VertexBuffer& buffer = *binding.second;
+				const VertexAttributeBuffer& buffer = *binding.second;
 
 				buffer.bind();
 				glEnableVertexAttribArray(binding.first);
@@ -52,7 +52,7 @@ namespace opengl
 	}
 
 	//Adds and binds a vertex buffer to this vertex array object
-	void VertexArrayObject::addVertexBuffer(unsigned int index, const VertexBuffer& buffer)
+	void VertexArrayObject::addVertexBuffer(unsigned int index, const VertexAttributeBuffer& buffer)
 	{
 		// Vertex buffer cannot be added if we have already created our internal
 		// structures for VAOs. We first add all vertex buffer, then we render.

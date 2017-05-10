@@ -35,7 +35,7 @@ namespace opengl
 		/**
 		 * Construct the vertex container using vertex buffer settings
 		 */
-		VertexContainer(const VertexBufferSettings& settings) : mSettings(settings)		{ }
+		VertexContainer(const VertexAttributeBufferSettings& settings) : mSettings(settings)		{ }
 
 		/**
 		 * Destroys allocated buffer data
@@ -138,7 +138,7 @@ namespace opengl
 		/**
 		* @return the settings associated with this buffer
 		*/
-		const VertexBufferSettings& getSettings() const			{ return mSettings; }
+		const VertexAttributeBufferSettings& getSettings() const			{ return mSettings; }
 
 		/**
 		 * @return a GPU vertex buffer that holds the data associated with this container, nullptr if buffer can't be created
@@ -149,7 +149,7 @@ namespace opengl
 		 * When the CPU data has changed, call update to upload the changes on to the GPU
 		 * The returned buffer will be owned by this object and is deleted on object destruction
 		 */
-		VertexBuffer* getVertexBuffer();
+		VertexAttributeBuffer* getVertexBuffer();
 
 		/**
 		 * Uploads the data on to the GPU without synchronizing settings
@@ -170,17 +170,17 @@ namespace opengl
 
 	protected:
 		// Buffer Settings
-		VertexBufferSettings mSettings;
+		VertexAttributeBufferSettings mSettings;
 
 		// Buffer Data (CPU)
 		void* mData = nullptr;
 
 		// Vertex Buffer (GPU)
-		std::unique_ptr<VertexBuffer> mGPUBuffer = nullptr;
+		std::unique_ptr<VertexAttributeBuffer> mGPUBuffer = nullptr;
 
 	private:
 		// Helper function top create a new GPU bound vertex buffer
-		std::unique_ptr<VertexBuffer> createVertexBuffer();
+		std::unique_ptr<VertexAttributeBuffer> createVertexBuffer();
 	};
 
 

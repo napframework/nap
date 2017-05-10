@@ -41,7 +41,7 @@ namespace opengl
 		 * Note that this call will bind the buffer at the designated index
 		 * @ return the assigned vertex attribute index, -1 if unsuccessful
 		 */
-		void addVertexBuffer(unsigned int index, const VertexBuffer& buffer);
+		void addVertexBuffer(unsigned int index, const VertexAttributeBuffer& buffer);
 
 		/**
 		* Binds this VAO for rendering.
@@ -55,7 +55,7 @@ namespace opengl
 
 	private:
 
-		using VertexBufferBindings = std::unordered_map<unsigned int, const VertexBuffer*>;
+		using VertexBufferBindings = std::unordered_map<unsigned int, const VertexAttributeBuffer*>;
 		using ContextSpecificStateMap = std::unordered_map<GLContext, GLuint>;
 		ContextSpecificStateMap	mContextSpecificState;				// The per-context vertex array state
 

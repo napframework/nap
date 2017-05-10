@@ -16,10 +16,10 @@ namespace opengl
 	 * 
 	 * Convenience wrapper to be used in conjunction with a vertex buffer
 	 */
-	struct VertexBufferSettings
+	struct VertexAttributeBufferSettings
 	{
-		VertexBufferSettings() = default;
-		VertexBufferSettings(GLenum type, unsigned int components, unsigned int verts, GLenum usage = GL_STATIC_DRAW) :
+		VertexAttributeBufferSettings() = default;
+		VertexAttributeBufferSettings(GLenum type, unsigned int components, unsigned int verts, GLenum usage = GL_STATIC_DRAW) :
 			mType(type),
 			mComponents(components),
 			mVerts(verts)				{ }
@@ -53,16 +53,16 @@ namespace opengl
 	 * Vertex data is arbitrary vertex data such as position, uv, color etc.
 	 * This object does not manage or owns any data
 	 */
-	class VertexBuffer : public Buffer
+	class VertexAttributeBuffer : public Buffer
 	{
 	public:
-		VertexBuffer() = default;
-		VertexBuffer(const VertexBufferSettings& settings) : mSettings(settings) { }
+		VertexAttributeBuffer() = default;
+		VertexAttributeBuffer(const VertexAttributeBufferSettings& settings) : mSettings(settings) { }
 
 		/**
 		 * @return the settings associated with this buffer
 		 */
-		const VertexBufferSettings& getSettings() const			{ return mSettings; }
+		const VertexAttributeBufferSettings& getSettings() const			{ return mSettings; }
 
 		/**
 		 * @return the buffer OpenGL type, INVALID_ENUM if not specified
@@ -107,7 +107,7 @@ namespace opengl
 		 * @param settings the settings that define the size and type of the buffer
 		 * @param data pointer to the block of data that needs to be uploaded
 		 */
-		virtual void setData(const VertexBufferSettings& settings, void* data);
+		virtual void setData(const VertexAttributeBufferSettings& settings, void* data);
 
 		/**
 		 * Uploads data to the GPU based on the settings provided
@@ -137,7 +137,7 @@ namespace opengl
 		GLuint					mId   = 0;
 
 		// Settings associated with this buffer
-		VertexBufferSettings	mSettings;
+		VertexAttributeBufferSettings	mSettings;
 	};
 	
 	//////////////////////////////////////////////////////////////////////////
@@ -149,11 +149,11 @@ namespace opengl
 	 * Acts as a simple wrapper class that defines it's own associated OpenGL buffer type
 	 */
 	template <typename T>
-	class TypedVertexBuffer : public VertexBuffer
+	class TypedVertexAttributeBuffer : public VertexAttributeBuffer
 	{
 	public:
-		TypedVertexBuffer();
-		TypedVertexBuffer(const VertexBufferSettings& settings);
+		TypedVertexAttributeBuffer();
+		TypedVertexAttributeBuffer(const VertexAttributeBufferSettings& settings);
 
 		/**
 		 * Every typed buffer is associated with a certain OpenGL buffer type
@@ -179,7 +179,7 @@ namespace opengl
 		* @param settings the settings that define the size, type is defined by this class
 		* @param data pointer to the block of data that needs to be uploaded
 		*/
-		void setData(const VertexBufferSettings& settings, T* data);
+		void setData(const VertexAttributeBufferSettings& settings, T* data);
 
 
 		/**
@@ -197,7 +197,7 @@ namespace opengl
 		// Disable base class functionality
 		void setData(GLenum type, unsigned int components, unsigned int verts, GLenum usage, void* data) override		{ }
 		void setData(void* data) override																				{ }
-		void setData(const VertexBufferSettings& settings, void* data) override											{ }
+		void setData(const VertexAttributeBufferSettings& settings, void* data) override											{ }
 	};
 
 
@@ -206,7 +206,7 @@ namespace opengl
 	//////////////////////////////////////////////////////////////////////////
 
 	template <typename T>
-	opengl::TypedVertexBuffer<T>::TypedVertexBuffer(const VertexBufferSettings& settings) : VertexBuffer(settings)
+	opengl::TypedVertexAttributeBuffer<T>::TypedVertexAttributeBuffer(const VertexAttributeBufferSettings& settings) : VertexAttributeBuffer(settings)
 	{
 		// Override type
 		mSettings.mType = getType();
@@ -215,7 +215,7 @@ namespace opengl
 
 	// Default constructor
 	template <typename T>
-	opengl::TypedVertexBuffer<T>::TypedVertexBuffer()
+	opengl::TypedVertexAttributeBuffer<T>::TypedVertexAttributeBuffer()
 	{
 		// Override type
 		mSettings.mType = getType();
@@ -224,41 +224,41 @@ namespace opengl
 	
 	// Uploads the data block
 	template <typename T>
-	void opengl::TypedVertexBuffer<T>::setData(T* data)
+	void opengl::TypedVertexAttributeBuffer<T>::setData(T* data)
 	{
-		VertexBuffer::setData(static_cast<void*>(data));
+		VertexAttributeBuffer::setData(static_cast<void*>(data));
 	}
 
 
 	// Updates settings and uploads data block
 	template <typename T>
-	void opengl::TypedVertexBuffer<T>::setData(unsigned int components, unsigned int verts, GLenum usage, T* data)
+	void opengl::TypedVertexAttributeBuffer<T>::setData(unsigned int components, unsigned int verts, GLenum usage, T* data)
 	{
 		mSettings.mComponents = components;
 		mSettings.mVerts = verts;
 		mSettings.mUsage = usage;
-		TypedVertexBuffer<T>::setData(data);
+		TypedVertexAttributeBuffer<T>::setData(data);
 	}
 
 
 	// Updates settings and uploads data
 	template <typename T>
-	void opengl::TypedVertexBuffer<T>::setData(const VertexBufferSettings& settings, T* data)
+	void opengl::TypedVertexAttributeBuffer<T>::setData(const VertexAttributeBufferSettings& settings, T* data)
 	{
 		if (settings.mType != getType())
 		{
 			opengl::printMessage(opengl::MessageType::WARNING, "trying to upload vertex data with an inappropriate data type!");
 			opengl::printMessage(opengl::MessageType::WARNING, "data type does not match vertex buffer data type!");
 		}
-		VertexBuffer::setData(settings, static_cast<void*>(data));
+		VertexAttributeBuffer::setData(settings, static_cast<void*>(data));
 	}
 
 
 	//////////////////////////////////////////////////////////////////////////
 	// Buffer Typedefs
 	//////////////////////////////////////////////////////////////////////////
-	using FloatVertexBuffer  =	TypedVertexBuffer<float>;
-	using IntVertexBuffer	 =	TypedVertexBuffer<int>;
-	using ByteVertexBuffer	 =	TypedVertexBuffer<int8_t>;
-	using DoubleVertexBuffer =	TypedVertexBuffer<double>;
+	using FloatVertexAttributeBuffer  =	TypedVertexAttributeBuffer<float>;
+	using IntVertexAttributeBuffer	 =	TypedVertexAttributeBuffer<int>;
+	using ByteVertexAttributeBuffer	 =	TypedVertexAttributeBuffer<int8_t>;
+	using DoubleVertexAttributeBuffer =	TypedVertexAttributeBuffer<double>;
 }
