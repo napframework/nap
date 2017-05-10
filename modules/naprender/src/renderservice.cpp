@@ -252,34 +252,7 @@ namespace nap
 
 		// Draw
 		for (auto& comp : comps)
-		{
-			Material* comp_mat = comp->getMaterial();
-			if (comp_mat == nullptr)
-			{
-				nap::Logger::warn("render able object has no material: %s", comp->getName().c_str());
-				continue;
-			}
-
-			// Get xform component
-			nap::Entity* parent_entity = comp->getParent();
-			assert(parent_entity != nullptr);
-			TransformComponent* xform_comp = parent_entity->getComponent<TransformComponent>();
-
-			// Make sure it exists and extract global matrix
-			if (xform_comp == nullptr)
-			{
-				nap::Logger::warn("render able object has no transform: %s", comp->getName().c_str());
-			}
-			const glm::mat4x4& global_matrix = xform_comp == nullptr ? identityMatrix : xform_comp->getGlobalTransform();
-
-			// Set uniform variables
-			comp_mat->setUniformValue<glm::mat4x4>(projectionMatrixUniform, projection_matrix);
-			comp_mat->setUniformValue<glm::mat4x4>(viewMatrixUniform, view_matrix);
-			comp_mat->setUniformValue<glm::mat4x4>(modelMatrixUniform, global_matrix);
-
-			// Draw
-			comp->draw();
-		}
+			comp->draw(view_matrix, projection_matrix);
 
 		renderTarget.unbind();
 	}

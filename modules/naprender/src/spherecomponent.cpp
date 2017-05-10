@@ -87,7 +87,7 @@ static opengl::Mesh* createSphere(float radius, unsigned int rings, unsigned int
 		}
 	}
 
-	opengl::Mesh* sphere_mesh = new opengl::Mesh(vertex_count);
+	opengl::Mesh* sphere_mesh = new opengl::Mesh(vertex_count, opengl::EDrawMode::TRIANGLES);
 	sphere_mesh->addVertexAttribute(opengl::VertexAttributeIDs::PositionVertexAttr, 3, &vertices.front());
 	sphere_mesh->addVertexAttribute(opengl::VertexAttributeIDs::NormalVertexAttr, 3, &normals.front());
 	sphere_mesh->addVertexAttribute(nap::stringFormat("%s%d", opengl::VertexAttributeIDs::UVVertexAttr.c_str(), 0), 3, &texcoords.front());

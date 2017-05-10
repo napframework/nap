@@ -1,13 +1,13 @@
 #pragma once
 
 // External Includes
-#include <nvertexarrayobject.h>
+#include <nmesh.h>
 
 // Creates a cube
-void createCube(opengl::VertexArrayObject& cube, int vertex_idx, int color_idx, int uv_idx);
+std::unique_ptr<opengl::Mesh> createCube(int vertex_idx, int color_idx, int uv_idx);
 
 // Creates a triangle
-void createTriangle(opengl::VertexArrayObject& triangle, int vertex_idx, int color_idx, int uv_idx);
+std::unique_ptr<opengl::Mesh> createTriangle(int vertex_idx, int color_idx, int uv_idx);
 
 // Creates a plane
-void createPlane(opengl::VertexArrayObject& plane, int vertex_idx, int color_idx, int uv_idx);
+std::unique_ptr<opengl::Mesh> createPlane(int vertex_idx, int color_idx, int uv_idx);

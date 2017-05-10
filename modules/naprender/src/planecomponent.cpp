@@ -47,7 +47,7 @@ static unsigned int plane_indices[] =
 
 static opengl::Mesh* createPlane()
 {
-	opengl::Mesh* plane_mesh = new opengl::Mesh(4);
+	opengl::Mesh* plane_mesh = new opengl::Mesh(4, opengl::EDrawMode::TRIANGLES);
 	plane_mesh->addVertexAttribute(opengl::VertexAttributeIDs::PositionVertexAttr, 3, plane_vertices);
 	plane_mesh->addVertexAttribute(opengl::VertexAttributeIDs::NormalVertexAttr, 3, plane_normals);
 	plane_mesh->addVertexAttribute(nap::stringFormat("%s%d", opengl::VertexAttributeIDs::UVVertexAttr.c_str(), 0), 3, plane_uvs);

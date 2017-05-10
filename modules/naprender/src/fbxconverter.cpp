@@ -144,7 +144,7 @@ namespace nap
 			{
 				aiVector3D* uv_channel_data = mesh->mTextureCoords[uv_channel];
 
-				MeshData::Attribute& uv_attribute = mesh_data.GetOrCreateAttribute(nap::stringFormat("%s%d", opengl::VertexAttributeIDs::UVVertexAttr.c_str(), uv_channel));
+				MeshData::Attribute& uv_attribute = mesh_data.GetOrCreateAttribute(opengl::VertexAttributeIDs::GetUVVertexAttr(uv_channel));
 				uv_attribute.mNumComponents = 3;
 				uv_attribute.mData.reserve(mesh->mNumVertices * 3);
 
@@ -164,7 +164,7 @@ namespace nap
 			{
 				aiColor4D* color_channel_data = mesh->mColors[color_channel];
 
-				MeshData::Attribute& color_attribute = mesh_data.GetOrCreateAttribute(nap::stringFormat("%s%d", opengl::VertexAttributeIDs::ColorVertexAttr.c_str(), color_channel));
+				MeshData::Attribute& color_attribute = mesh_data.GetOrCreateAttribute(opengl::VertexAttributeIDs::GetColorVertexAttr(color_channel));
 				color_attribute.mNumComponents = 4;
 				color_attribute.mData.reserve(mesh->mNumVertices * 4);
 
@@ -225,7 +225,7 @@ namespace nap
 
 		const MeshData* mesh_data = static_cast<MeshData*>(deserialize_result.mReadObjects[0].get());
 
-		std::unique_ptr<opengl::Mesh> mesh = std::make_unique<opengl::Mesh>(mesh_data->mNumVertices);
+		std::unique_ptr<opengl::Mesh> mesh = std::make_unique<opengl::Mesh>(mesh_data->mNumVertices, opengl::EDrawMode::TRIANGLES);
 
 		// Copy vertex attribute data to mesh
 		for (const MeshData::Attribute& attribute : mesh_data->mAttributes)

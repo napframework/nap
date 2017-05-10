@@ -5,6 +5,8 @@
 
 namespace nap
 {
+	class Material;
+
 	/**
 	 * Highly efficient plane that holds a link to generic
 	 * plane mesh. Use this plane for quick drawing but

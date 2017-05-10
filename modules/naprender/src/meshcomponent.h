@@ -6,6 +6,7 @@
 // External Includes
 #include <nmesh.h>
 
+
 namespace nap
 {
 	class ModelResource;
@@ -23,17 +24,14 @@ namespace nap
 		MeshComponent() = default;
 
 		/**
-		 * Draws the mesh associated with this object
-		 * Doesn't draw anything if getMesh returns nullptr
-		 */
-		virtual void onDraw() override;
+		* Renders the model from the ModelResource, using the material on the ModelResource.
+		*/
+		virtual void draw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
 
 		/**
-		 * Get the material used to draw this object
-		 *
-		 * @return material, nullptr if not found
-		 */
-		virtual Material* getMaterial() override;
+		* @return The ModelResource associated with this component.
+		*/
+		ModelResource* getModelResource() { return mModelResource; }
 
 	public:
 		ModelResource* mModelResource = nullptr;

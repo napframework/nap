@@ -186,7 +186,7 @@ void onUpdate(const nap::SignalAttribute& signal)
 	//xform_v->uniformScale.setValue(nscale);
 
 	// Set some material values
-	nap::Material* material = pigMeshComponent->getMaterial();
+	nap::Material* material = pigMeshComponent->getModelResource()->getMaterial();
 
 	float v = (sin(elapsed_time) + 1.0f) / 2.0f;
 
@@ -200,16 +200,18 @@ void onUpdate(const nap::SignalAttribute& signal)
 	material->setUniformTexture("testTexture", *testTexture);
 
 	// Set plane uniforms
-	rotatingPlaneComponent->getMaterial()->setUniformTexture("pigTexture", *testTexture);
-	rotatingPlaneComponent->getMaterial()->setUniformTexture("testTexture", *testTexture);
-	rotatingPlaneComponent->getMaterial()->setUniformValue<int>("mTextureIndex", 0);
-	rotatingPlaneComponent->getMaterial()->setUniformValue<glm::vec4>("mColor", {1.0f, 1.0f, 1.0f, 1.0f});
+	nap::Material* rotating_plane_material = rotatingPlaneComponent->getModelResource()->getMaterial();
+	rotating_plane_material->setUniformTexture("pigTexture", *testTexture);
+	rotating_plane_material->setUniformTexture("testTexture", *testTexture);
+	rotating_plane_material->setUniformValue<int>("mTextureIndex", 0);
+	rotating_plane_material->setUniformValue<glm::vec4>("mColor", {1.0f, 1.0f, 1.0f, 1.0f});
 
 	// Set sphere uniforms
-	sphereComponent->getMaterial()->setUniformTexture("pigTexture", *worldTexture);
-	sphereComponent->getMaterial()->setUniformTexture("testTexture", *worldTexture);
-	sphereComponent->getMaterial()->setUniformValue<int>("mTextureIndex", 0);
-	sphereComponent->getMaterial()->setUniformValue<glm::vec4>("mColor", { 1.0f, 1.0f, 1.0f, 1.0f });
+	nap::Material* sphere_material = sphereComponent->getModelResource()->getMaterial();
+	sphere_material->setUniformTexture("pigTexture", *worldTexture);
+	sphere_material->setUniformTexture("testTexture", *worldTexture);
+	sphere_material->setUniformValue<int>("mTextureIndex", 0);
+	sphere_material->setUniformValue<glm::vec4>("mColor", { 1.0f, 1.0f, 1.0f, 1.0f });
 
 	//////////////////////////////////////////////////////////////////////////
 	// Camera Update
@@ -310,15 +312,17 @@ void onRender(const nap::SignalAttribute& signal)
 		components_to_render.push_back(planeComponent);
 		components_to_render.push_back(rotatingPlaneComponent);
 
-		planeComponent->getMaterial()->setUniformTexture("testTexture", textureRenderTarget->GetColorTexture());
-		planeComponent->getMaterial()->setUniformTexture("pigTexture", textureRenderTarget->GetColorTexture());
-		planeComponent->getMaterial()->setUniformValue<int>("mTextureIndex", 0);
-		planeComponent->getMaterial()->setUniformValue<glm::vec4>("mColor", { 1.0f, 1.0f, 1.0f, 1.0f });
+		nap::Material* plane_material = planeComponent->getModelResource()->getMaterial();
+		plane_material->setUniformTexture("testTexture", textureRenderTarget->GetColorTexture());
+		plane_material->setUniformTexture("pigTexture", textureRenderTarget->GetColorTexture());
+		plane_material->setUniformValue<int>("mTextureIndex", 0);
+		plane_material->setUniformValue<glm::vec4>("mColor", { 1.0f, 1.0f, 1.0f, 1.0f });
 
-		rotatingPlaneComponent->getMaterial()->setUniformTexture("testTexture", textureRenderTarget->GetColorTexture());
-		rotatingPlaneComponent->getMaterial()->setUniformTexture("pigTexture", textureRenderTarget->GetColorTexture());
-		rotatingPlaneComponent->getMaterial()->setUniformValue<int>("mTextureIndex", 0);
-		rotatingPlaneComponent->getMaterial()->setUniformValue<glm::vec4>("mColor", { 1.0f, 1.0f, 1.0f, 1.0f });
+		nap::Material* rotating_plane_material = planeComponent->getModelResource()->getMaterial();
+		rotating_plane_material->setUniformTexture("testTexture", textureRenderTarget->GetColorTexture());
+		rotating_plane_material->setUniformTexture("pigTexture", textureRenderTarget->GetColorTexture());
+		rotating_plane_material->setUniformValue<int>("mTextureIndex", 0);
+		rotating_plane_material->setUniformValue<glm::vec4>("mColor", { 1.0f, 1.0f, 1.0f, 1.0f });
 
 		opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(render_window->getWindow()->getBackbuffer());
 		renderService->clearRenderTarget(backbuffer, opengl::EClearFlags::COLOR|opengl::EClearFlags::DEPTH|opengl::EClearFlags::STENCIL);

@@ -18,8 +18,6 @@ namespace nap
 {
 	bool ModelResource::init(ErrorState& errorState)
 	{
-		mVAO.setDrawMode(opengl::DrawMode::TRIANGLES);
-
 		for (auto& kvp : mMaterialResource->getShader()->getShader().getAttributes())
 		{
 			const opengl::VertexAttribute* shader_vertex_attribute = kvp.second.get();
@@ -35,9 +33,6 @@ namespace nap
 			mVAO.addVertexBuffer(shader_vertex_attribute->mLocation, *vertex_buffer);
 		}
 		
-		mVAO.setIndexBuffer(*mMeshResource->getMesh().getIndexBuffer());
-		mVAO.setNumVertices(mMeshResource->getMesh().getVertCount());
- 
  		return true;
 	}
 
@@ -54,10 +49,6 @@ namespace nap
 // 		}
 	}
 
-	void ModelResource::draw()
-	{
-		mVAO.draw();
-	}
 
 	const std::string ModelResource::getDisplayName() const
 	{

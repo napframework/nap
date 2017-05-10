@@ -4,6 +4,8 @@
 // External Includes
 #include <nvertexcontainer.h>
 #include <nindexbuffer.h>
+#include "nmesh.h"
+#include <memory>
 
 // Cube vertices
 static float cube_vertices[] =
@@ -207,126 +209,39 @@ static unsigned int plane_indices[] =
 
 
 // Creates a cube
-void createCube(opengl::VertexArrayObject& cube, int vertex_idx, int color_idx, int uv_idx)
+std::unique_ptr<opengl::Mesh> createCube(int vertex_idx, int color_idx, int uv_idx)
 {
-	static opengl::FloatVertexBuffer squarePositionBuffer;
-	static opengl::FloatVertexBuffer squareColorBuffer;
-	static opengl::FloatVertexBuffer squareUVBuffer;
-	static bool buffersAllocated = false;
+	std::unique_ptr<opengl::Mesh> mesh = std::make_unique<opengl::Mesh>(6, opengl::EDrawMode::TRIANGLES);
 
-	if (!buffersAllocated)
-	{
-		// Get number of points
-		int face_point_count(6);
-		int face_count(6);
-		int point_count = face_point_count * face_count;
+	mesh->addVertexAttribute(opengl::VertexAttributeIDs::PositionVertexAttr, 3, cube_vertices);
+	mesh->addVertexAttribute(opengl::VertexAttributeIDs::GetColorVertexAttr(0), 4, cube_colors);
+	mesh->addVertexAttribute(opengl::VertexAttributeIDs::GetUVVertexAttr(0), 3, cube_uvs);
 
-		// Get colors
-		int color_size = 4;
-		int color_count = color_size * point_count;
-
-		// Get number of vertices
-		int vert_size = 3;
-		int vert_count = vert_size * point_count;
-
-		// Get number of uv's
-		int uv_size = 3;
-		int uv_count = uv_size * point_count;
-
-		squarePositionBuffer.init();
-		squarePositionBuffer.setData(vert_size, point_count, GL_STATIC_DRAW, cube_vertices);
-
-		squareColorBuffer.init();
-		squareColorBuffer.setData(color_size, point_count, GL_STATIC_DRAW, cube_colors);
-
-		squareUVBuffer.init();
-		squareUVBuffer.setData(uv_size, point_count, GL_STATIC_DRAW, cube_uvs);
-
-		buffersAllocated = true;
-	}
-
-	// Init container and set draw mode
-	cube.setDrawMode(opengl::DrawMode::TRIANGLES);
-
-	// Add buffers to cube
-	cube.addVertexBuffer(vertex_idx, squarePositionBuffer);
-	cube.addVertexBuffer(color_idx, squareColorBuffer);
-	cube.addVertexBuffer(uv_idx, squareUVBuffer);
+	return mesh;
 }
 
 
 // Creates a simple triangle
-void createTriangle(opengl::VertexArrayObject& triangle, int vertex_idx, int color_idx, int uv_idx)
+std::unique_ptr<opengl::Mesh> createTriangle(int vertex_idx, int color_idx, int uv_idx)
 {
-	// Vertex containers
-	static opengl::VertexContainer trianglePositions;
-	static opengl::VertexContainer triangleColors;
-	static opengl::VertexContainer triangleUvs;
-	static opengl::IndexBuffer triangleIndexBuffer;
-	static bool buffersAllocated = false;
+	std::unique_ptr<opengl::Mesh> mesh = std::make_unique<opengl::Mesh>(3, opengl::EDrawMode::TRIANGLES);
 
-	if (!buffersAllocated)
-	{
-		int face_point_count = 3;
-		int face_count = 1;
-		int point_count = face_point_count * face_count;
-		int vert_size = 3;
-		int color_size = 4;
-		int uv_size = 3;
+	mesh->addVertexAttribute(opengl::VertexAttributeIDs::PositionVertexAttr, 3, triangle_vertices);
+	mesh->addVertexAttribute(opengl::VertexAttributeIDs::GetColorVertexAttr(0), 4, triangle_colors);
+	mesh->addVertexAttribute(opengl::VertexAttributeIDs::GetUVVertexAttr(0), 3, triangle_uvs);
+	mesh->setIndices(3, triangle_indices);
 
-		// Copy over triangle data in container
-		trianglePositions.copyData(GL_FLOAT, vert_size, point_count, triangle_vertices);
-		triangleColors.copyData(GL_FLOAT, color_size, point_count, triangle_colors);
-		triangleUvs.copyData(GL_FLOAT, uv_size, point_count, triangle_uvs);
-
-		triangleIndexBuffer.init();
-		triangleIndexBuffer.setData(triangle_indices, 3);
-
-		buffersAllocated = true;
-	}
-
-	triangle.setDrawMode(opengl::DrawMode::TRIANGLES);
-
-	triangle.addVertexBuffer(vertex_idx, *trianglePositions.getVertexBuffer());
-	triangle.addVertexBuffer(color_idx, *triangleColors.getVertexBuffer());
-	triangle.addVertexBuffer(uv_idx, *triangleUvs.getVertexBuffer());
-	
-	// Use indices for triangle
-	triangle.setIndexBuffer(triangleIndexBuffer);
+	return mesh;
 }
 
-void createPlane(opengl::VertexArrayObject& plane, int vertex_idx, int color_idx, int uv_idx)
+std::unique_ptr<opengl::Mesh> createPlane(int vertex_idx, int color_idx, int uv_idx)
 {
-	static opengl::VertexContainer planePositions;
-	static opengl::VertexContainer planeColors;
-	static opengl::VertexContainer planeUvs;
-	static opengl::IndexBuffer planeIndexBuffer;
-	static bool buffersAllocated = false;
+	std::unique_ptr<opengl::Mesh> mesh = std::make_unique<opengl::Mesh>(4, opengl::EDrawMode::TRIANGLES);
 
-	if (!buffersAllocated)
-	{
-		int point_count = 4;
-		int vert_size = 3;
-		int color_size = 4;
-		int uv_size = 3;
+	mesh->addVertexAttribute(opengl::VertexAttributeIDs::PositionVertexAttr, 3, plane_vertices);
+	mesh->addVertexAttribute(opengl::VertexAttributeIDs::GetColorVertexAttr(0), 4, plane_colors);
+	mesh->addVertexAttribute(opengl::VertexAttributeIDs::GetUVVertexAttr(0), 3, plane_uvs);
+	mesh->setIndices(6, plane_indices);
 
-		// Copy over triangle data in container
-		planePositions.copyData(GL_FLOAT, vert_size, point_count, plane_vertices);
-		planeColors.copyData(GL_FLOAT, color_size, point_count, plane_colors);
-		planeUvs.copyData(GL_FLOAT, uv_size, point_count, plane_uvs);
-
-		planeIndexBuffer.init();
-		planeIndexBuffer.setData(plane_indices, 6);
-		buffersAllocated = true;
-	}
-
-
-	plane.setDrawMode(opengl::DrawMode::TRIANGLES);
-
-	plane.addVertexBuffer(vertex_idx, *planePositions.getVertexBuffer());
-	plane.addVertexBuffer(color_idx, *planeColors.getVertexBuffer());
-	plane.addVertexBuffer(uv_idx, *planeUvs.getVertexBuffer());
-
-	// Use indices for triangle
-	plane.setIndexBuffer(planeIndexBuffer);
+	return mesh;
 }

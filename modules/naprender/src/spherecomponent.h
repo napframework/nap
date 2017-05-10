@@ -4,6 +4,8 @@
 
 namespace nap
 {
+	class Material;
+
 	/**
 	 * Highly efficient sphere that holds a link to a generic
 	 * sphere mesh. Use this sphere for quick drawing but note

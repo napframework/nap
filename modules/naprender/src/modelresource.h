@@ -32,29 +32,36 @@ namespace nap
 		virtual const std::string getDisplayName() const override;
 		
 		/**
-		 * Draws the vertex data associated with this mesh object to the currently active context
-		 * Calls bind before drawing.
-		 */
-		void draw();
+		* @return The Vertex Array Object that contains the description of how the
+		mesh is bound to the shader.
+		*/
+		opengl::VertexArrayObject& getVAO() 
+		{ 
+			return mVAO;  
+		}
 
 		/**
-		* Sets the mode used when drawing this object to a render target
-		* @param mode the new draw mode
+		* @return The Mesh Resource
 		*/
-		void setDrawMode(opengl::DrawMode mode)								{ mVAO.setDrawMode(mode); }
+		MeshResource* getMeshResource() 
+		{ 
+			return mMeshResource; 
+		}
 
 		/**
-		* Returns the current draw mode
-		* @param the current draw mode
+		* @return The Material that is applied to the mesh.
 		*/
-		opengl::DrawMode getDrawMode() const								{ return mVAO.getDrawMode(); }
+		Material* getMaterial() 
+		{ 
+			return mMaterialResource;  
+		}
 
 	public:
 		Material*		mMaterialResource = nullptr;
 		MeshResource*	mMeshResource = nullptr;
 
 	private:
-		opengl::VertexArrayObject	mVAO;
+		opengl::VertexArrayObject	mVAO;			///< Vertex Array Object, describing how to the mesh is bound to the applied shader/material
 
 	};
 
