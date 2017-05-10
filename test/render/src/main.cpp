@@ -92,8 +92,8 @@ nap::SphereComponent* sphereComponent = nullptr;
 nap::RenderableMeshComponent* orientationMeshComponent = nullptr;
 nap::Material* generalMaterial = nullptr;
 nap::Material* worldMaterial = nullptr;
-nap::RenderableMeshResource* orientationModel = nullptr;
-nap::RenderableMeshResource* pigModel = nullptr;
+nap::RenderableMeshResource* orientationRenderableMesh = nullptr;
+nap::RenderableMeshResource* pigRenderableMesh = nullptr;
 
 // movement
 bool moveForward = false;
@@ -461,16 +461,16 @@ bool initResources(nap::ErrorState& errorState)
 	if (!orientationMaterial->init(errorState))
 		return false;
 
-	pigModel = resourceManagerService->createResource<nap::RenderableMeshResource>();
-	pigModel->mMaterialResource = pigMaterial;
-	pigModel->mMeshResource = pigMesh;
-	if (!pigModel->init(errorState))
+	pigRenderableMesh = resourceManagerService->createResource<nap::RenderableMeshResource>();
+	pigRenderableMesh->mMaterialResource = pigMaterial;
+	pigRenderableMesh->mMeshResource = pigMesh;
+	if (!pigRenderableMesh->init(errorState))
 		return false;
 
-	orientationModel = resourceManagerService->createResource<nap::RenderableMeshResource>();
-	orientationModel->mMaterialResource = orientationMaterial;
-	orientationModel->mMeshResource = orientationMesh;
-	if (!orientationModel->init(errorState))
+	orientationRenderableMesh = resourceManagerService->createResource<nap::RenderableMeshResource>();
+	orientationRenderableMesh->mMaterialResource = orientationMaterial;
+	orientationRenderableMesh->mMeshResource = orientationMesh;
+	if (!orientationRenderableMesh->init(errorState))
 		return false;
 
 	return true;
@@ -565,8 +565,8 @@ bool init(nap::Core& core)
  	textureRenderTarget = resourceManagerService->findResource<nap::TextureRenderTargetResource2D>("PlaneRenderTarget");
 	generalMaterial = resourceManagerService->findResource<nap::Material>("GeneralMaterial");
 	worldMaterial = resourceManagerService->findResource<nap::Material>("WorldMaterial");	
-	orientationModel = resourceManagerService->findResource<nap::RenderableMeshResource>("OrientationModel");
-	pigModel = resourceManagerService->findResource<nap::RenderableMeshResource>("PigModel");
+	orientationRenderableMesh = resourceManagerService->findResource<nap::RenderableMeshResource>("OrientationRenderableMesh");
+	pigRenderableMesh = resourceManagerService->findResource<nap::RenderableMeshResource>("PigRenderableMesh");
 #else	
 	if (!initResources(errorState))
 	{
@@ -592,14 +592,14 @@ bool init(nap::Core& core)
 	model = &(core.getRoot().addEntity("model"));
 	nap::TransformComponent& tran_component = model->addComponent<nap::TransformComponent>();
 	pigMeshComponent = &model->addComponent<nap::RenderableMeshComponent>("pig_head_mesh");
-	pigMeshComponent->mRenderableMeshResource = pigModel;
+	pigMeshComponent->mRenderableMeshResource = pigRenderableMesh;
 
 	// Create orientation entity
 	orientation = &(core.getRoot().addEntity("orientation"));
 	nap::TransformComponent& or_tran_component = orientation->addComponent<nap::TransformComponent>();
 	or_tran_component.uniformScale.setValue(0.33f);
 	orientationMeshComponent = &orientation->addComponent<nap::RenderableMeshComponent>("orientation gizmo");
-	orientationMeshComponent->mRenderableMeshResource = orientationModel;
+	orientationMeshComponent->mRenderableMeshResource = orientationRenderableMesh;
 
 	// Create plane entity
 	rotating_plane = &(core.getRoot().addEntity("rotating_plane"));

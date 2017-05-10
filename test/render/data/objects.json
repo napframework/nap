@@ -73,14 +73,14 @@
 		"Path": "data/pig_head_alpha_rotated.mesh"
 	},	
 	
-	"nap::ModelResource": {
-		"mID": "PigModel",
+	"nap::RenderableMeshResource": {
+		"mID": "PigRenderableMesh",
 		"Mesh" : "PigMesh",
 		"Material" : "PigMaterial"
 	},	
 
-	"nap::ModelResource": {
-		"mID": "OrientationModel",
+	"nap::RenderableMeshResource": {
+		"mID": "OrientationRenderableMesh",
 		"Mesh" : "OrientationMesh",
 		"Material" : "OrientationMaterial"
 	},
