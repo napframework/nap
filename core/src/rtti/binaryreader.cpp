@@ -103,6 +103,12 @@ namespace nap
 				if (!deserializeArrayRecursively(rootObject, sub_array, stream, rttiPath, unresolvedPointers, linkedFiles, errorState))
 					return false;
 			}
+			else if (array_type.is_associative_container())
+			{
+				// Maps not supported (yet)
+				errorState.fail("Encountered currently unsupported associative property");
+				return false;
+			}
 			else if (array_type.is_pointer())
 			{
 				// Pointer types must point to objects derived from nap::Object
