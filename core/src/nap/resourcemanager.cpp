@@ -560,15 +560,15 @@ namespace nap
 				continue;
 
 			Resource* target_resource = findResource(unresolved_pointer.mTargetID);
-			if (!errorState.check(target_resource != nullptr, "Unable to resolve link to object %s from attribute %s", unresolved_pointer.mTargetID.c_str(), unresolved_pointer.mRTTIPath.ToString().c_str()))
+			if (!errorState.check(target_resource != nullptr, "Unable to resolve link to object %s from attribute %s", unresolved_pointer.mTargetID.c_str(), unresolved_pointer.mRTTIPath.toString().c_str()))
 				return false;
 
-			RTTI::ResolvedRTTIPath resolved_path = unresolved_pointer.mRTTIPath.Resolve(unresolved_pointer.mObject);
-			if (!errorState.check(resolved_path.IsValid(), "Failed to resolve RTTIPath %s", unresolved_pointer.mRTTIPath.ToString().c_str()))
+			RTTI::ResolvedRTTIPath resolved_path;
+			if (!errorState.check(unresolved_pointer.mRTTIPath.resolve(unresolved_pointer.mObject, resolved_path), "Failed to resolve RTTIPath %s", unresolved_pointer.mRTTIPath.toString().c_str()))
 				return false;
 
-			assert(resolved_path.GetType().is_pointer());
-			bool succeeded = resolved_path.SetValue(target_resource);
+			assert(resolved_path.getType().is_pointer());
+			bool succeeded = resolved_path.setValue(target_resource);
  			if (!errorState.check(succeeded, "Failed to resolve pointer"))
 				return false;
 		}

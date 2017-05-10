@@ -31,14 +31,14 @@ namespace RTTI
 			// Recursively visit each array element
 			for (int index = 0; index < array.get_size(); ++index)
 			{
-				path.PushArrayElement(index);
+				path.pushArrayElement(index);
 
 				RTTI::Variant array_value = array.get_value_as_ref(index);
 
 				// Recurse
 				VisitRTTIPropertiesRecursive(array_value, path, visitFunc);
 
-				path.PopBack();
+				path.popBack();
 			}
 		}
 		else if (!actual_type.is_pointer()) // Don't recurse into properties of pointers
@@ -46,7 +46,7 @@ namespace RTTI
 			// Recursively visit each property of the type
 			for (const RTTI::Property& property : actual_type.get_properties())
 			{
-				path.PushAttribute(property.get_name().data());
+				path.pushAttribute(property.get_name().data());
 
 				RTTI::Variant value = property.get_value(variant);
 				
@@ -56,7 +56,7 @@ namespace RTTI
 				// Recurse
 				VisitRTTIPropertiesRecursive(value, path, visitFunc);
 
-				path.PopBack();
+				path.popBack();
 			}
 		}
 	}
@@ -80,7 +80,7 @@ namespace RTTI
 		// Recursively visit each property of the type
 		for (const RTTI::Property& property : instance.get_derived_type().get_properties())
 		{
-			path.PushAttribute(property.get_name().data());
+			path.pushAttribute(property.get_name().data());
 
 			RTTI::Variant value = property.get_value(instance);
 
@@ -90,7 +90,7 @@ namespace RTTI
 			// Recurse
 			VisitRTTIPropertiesRecursive(value, path, visitFunc);
 
-			path.PopBack();
+			path.popBack();
 		}
 	}
 

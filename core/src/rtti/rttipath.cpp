@@ -4,7 +4,7 @@
 
 namespace RTTI
 {
-	const std::string RTTIPath::ToString() const
+	const std::string RTTIPath::toString() const
 	{
 		std::string result;
 		for (int index = 0; index < mLength; ++index)
@@ -36,112 +36,160 @@ namespace RTTI
 		return result;
 	}
 
-	const RTTIPath RTTIPath::FromString(const std::string& path)
+
+	const RTTIPath RTTIPath::fromString(const std::string& path)
 	{
 		RTTIPath result;
 
+		// Split string on path seperator
 		std::list<std::string> parts;
 		nap::gTokenize(path, parts, ":", true);
 
 		for (const std::string& part : parts)
 		{
+			// Try to extract array index
 			int array_index = 0;
 			if (sscanf(part.c_str(), "[%d]", &array_index) == 1)
 			{
-				result.PushArrayElement(array_index);
+				result.pushArrayElement(array_index);
 			}
 			else
 			{
-				result.PushAttribute(part);
+				// Failed to extract array index; must be an attribute
+				result.pushAttribute(part);
 			}
 		}
 
 		return result;
 	}
 
-	ResolvedRTTIPath::ResolvedRTTIPath(nap::Object* object, const RTTIPath& path)
-	{
-		for (int index = 0; index < path.Length(); ++index)
-		{
-			const RTTIPathElement& element = path.Get(index);
 
+	bool RTTIPath::resolve(nap::Object* object, ResolvedRTTIPath& resolvedPath) const
+	{
+		// Can't resolve an empty path
+		if (mLength == 0)
+			return false;
+
+		for (int index = 0; index < mLength; ++index)
+		{
+			const RTTIPathElement& element = mElements[index];
+
+			// Handle attribute
 			if (element.mType == RTTIPathElement::Type::ATTRIBUTE)
 			{
+				// If this is the first element on the path, we need to push a 'root' element. The root element is identical to the attribute element,
+				// with the difference that the root element does not make a copy of the object that the property is on (the attribute element does)
 				if (index == 0)
 				{
+					// See if the object contains a property with this name. If not, it means the path is invalid
 					RTTI::Property property = object->get_type().get_property(element.Attribute.Name);
 					if (!property.is_valid())
-						return;
+						return false;
 
-					PushRoot(object, property);
+					// Push root
+					resolvedPath.pushRoot(object, property);
 				}
 				else
 				{
-					RTTI::Variant current_context = GetValue();
+					// Retrieve the current value of the resolved path. If there is none, the path is invalid (we're trying to push a nested attribute on an empty path)
+					const RTTI::Variant& current_context = resolvedPath.getValue();
 					if (!current_context.is_valid())
-						return;
+						return false;
 
-					RTTI::TypeInfo value_type = current_context.get_type();
-
-					RTTI::Property property = value_type.get_property(element.Attribute.Name);
+					// See if the object that's currently on the resolved path has a property with this name. If not, it means the path is invalid
+					RTTI::Property property = current_context.get_type().get_property(element.Attribute.Name);
 					if (!property.is_valid())
-						return;
+						return false;
 
-					PushAttribute(current_context, property);
+					// Push attribute
+					resolvedPath.pushAttribute(current_context, property);
 				}
 			}
 			else if (element.mType == RTTIPathElement::Type::ARRAY_ELEMENT)
 			{
-				RTTI::Variant current_context = GetValue();
+				// Retrieve the current value of the resolved path. If there is none, the path is invalid (we're trying to push a nested attribute on an empty path)
+				const RTTI::Variant& current_context = resolvedPath.getValue();
 				if (!current_context.is_valid())
-					return;
+					return false;
 
+				// Since we're pushing an array element, the previous element must be an array. If not, the path is invalid
 				if (!current_context.is_array())
-					return;
+					return false;
 
-				PushArrayElement(current_context, element.ArrayElement.Index);
+				// Push array element
+				resolvedPath.pushArrayElement(current_context, element.ArrayElement.Index);
 			}
 		}
-	}
 
-	const RTTI::Variant ResolvedRTTIPath::GetValue() const
+		return true;
+	}
+	
+	
+	/**
+	 * Note that while this function gets the value of the property currently on the path, it does so by returning a *copy*. See setValue for more information
+	 */
+	const RTTI::Variant ResolvedRTTIPath::getValue() const
 	{
-		if (IsEmpty())
+		// If empty, we can't get the value
+		if (isEmpty())
 			return RTTI::Variant();
 
 		const ResolvedRTTIPathElement& last_element = mElements[mLength - 1];
 		
+		// If this is a root element, get the value of the property on the root instance
 		if (last_element.mType == ResolvedRTTIPathElement::Type::ROOT)
 		{
 			return last_element.Root.Property.get_value(last_element.Root.Instance);
 		}
 		else if (last_element.mType == ResolvedRTTIPathElement::Type::ATTRIBUTE)
 		{
+			// If this is an attribute element, get the value of the property on the attribute object
 			return last_element.Attribute.Property.get_value(last_element.Attribute.Variant);
 		}
 		else if (last_element.mType == ResolvedRTTIPathElement::Type::ARRAY_ELEMENT)
 		{
+			// If this is an array element, get the value of the array at the desired index
 			RTTI::VariantArray array = last_element.ArrayElement.Array.create_array_view();
 			return array.get_value(last_element.ArrayElement.Index);
 		}
 
+		// Unknown type
+		assert(false);
 		return RTTI::Variant();
 	}
 
-	const RTTI::TypeInfo ResolvedRTTIPath::GetType() const
-	{
-		return GetValue().get_type();
-	}
 
-	bool ResolvedRTTIPath::SetValue(const RTTI::Variant& value)
+	/**
+	 * There are some important subtleties to the resolving of an RTTIPath. 
+	 * Key point is that the RTTI system we use does not allow you to retrieve a direct pointer to a property of an object.
+	 * This means that whenever you get a value, you are getting a *copy* of the value actually stored in the property.
+	 * The implication of this is that you can never directly set the property of an object in a nested hierarchy. For example, consider this path (see RTTIPath documentation):
+	 *
+	 *		RTTIPath path;
+	 *		path.PushAttribute("ArrayOfCompounds");		// Push name of the RTTI property on SomeRTTIClass
+	 *		path.PushArrayElement(0);					// Push index into the array 'ArrayOfCompounds' on SomeRTTIClass
+	 *		path.PushAttribute("PointerProperty");		// Push name of the RTTI property on the compound contained in ArrayOfCompounds, namely 'DataStruct'
+	 *
+	 * If we want to set the value of the pointer property, we need to do a couple of things:
+	 * - First, we set the value of the pointer property on a *copy* of the object (DataStruct) that is actually stored in the array
+	 * - Then, we copy the object (DataStruct) to a *copy* of the array that is actually stored in the ArrayOfCompounds property
+	 * - Finally, we copy the entire array back to the actual array on the root element
+	 *
+	 * In essence, setting a value is a recursive function where the value to set is recursively copied up the path from the bottom
+	 */
+	bool ResolvedRTTIPath::setValue(const RTTI::Variant& value)
 	{
-		if (IsEmpty())
+		// Empty path, can't set value
+		if (isEmpty())
 			return false;
 
+		// We keep track of the value we want to set on the current element of the path. We start with the value the user provided.
 		RTTI::Variant value_to_set = value;
 		for (int index = mLength - 1; index >= 0; --index)
 		{
 			const ResolvedRTTIPathElement& element = mElements[index];
+
+			// If this is the root element, directly set the value on the object
 			if (element.mType == ResolvedRTTIPathElement::Type::ROOT)
 			{
 				if (!element.Root.Property.set_value(element.Root.Instance, value_to_set))
@@ -149,17 +197,21 @@ namespace RTTI
 			}
 			else if (element.mType == ResolvedRTTIPathElement::Type::ATTRIBUTE)
 			{
+				// Attribute element: set the value on the *copy* of the object (the variant)
 				if (!element.Attribute.Property.set_value(element.Attribute.Variant, value_to_set))
 					return false;
 					
+				// Now that we've updated our copy, we need to copy our copy to the original object. So we update value_to_set for the next iteration
 				value_to_set = element.Attribute.Variant;
 			}
 			else if (element.mType == ResolvedRTTIPathElement::Type::ARRAY_ELEMENT)
 			{
+				// Array element: set the array index value on a *copy* of the array
 				RTTI::VariantArray array = element.ArrayElement.Array.create_array_view();
 				if (!array.set_value(element.ArrayElement.Index, value_to_set))
 					return false;
 
+				// Now that we've updated our copy of the array, we need to copy our array copy to the original object. So we update value_to_set for the next iteration
 				value_to_set = element.ArrayElement.Array;
 			}
 		}
@@ -167,8 +219,9 @@ namespace RTTI
 		return true;
 	}
 
-	const ResolvedRTTIPath RTTIPath::Resolve(nap::Object* object) const
+
+	const RTTI::TypeInfo ResolvedRTTIPath::getType() const
 	{
-		return ResolvedRTTIPath(object, *this);
+		return getValue().get_type();
 	}
 }

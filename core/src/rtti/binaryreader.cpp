@@ -94,7 +94,7 @@ namespace nap
 		for (std::size_t index = 0; index < length; ++index)
 		{
 			// Add array element to rtti path
-			rttiPath.PushArrayElement(index);
+			rttiPath.pushArrayElement(index);
 
 			if (array_type.is_array())
 			{
@@ -136,7 +136,7 @@ namespace nap
 			}			
 
 			// Remove array element from rtti path again
-			rttiPath.PopBack();
+			rttiPath.popBack();
 		}
 
 		return true;
@@ -156,7 +156,7 @@ namespace nap
 		for (const RTTI::Property& property : object_type.get_properties())
 		{
 			// Push attribute on path
-			rttiPath.PushAttribute(property.get_name().data());
+			rttiPath.pushAttribute(property.get_name().data());
 
 			// Determine meta-data for the property
 			bool is_required = property.get_metadata(RTTI::EPropertyMetaData::Required).is_valid();
@@ -233,7 +233,7 @@ namespace nap
 				linkedFiles.push_back(file_link);
 			}
 
-			rttiPath.PopBack();
+			rttiPath.popBack();
 		}
 
 		return true;

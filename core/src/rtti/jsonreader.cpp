@@ -69,7 +69,7 @@ namespace nap
 		for (const RTTI::Property& property : object_type.get_properties())
 		{
 			// Push attribute on path
-			rttiPath.PushAttribute(property.get_name().data());
+			rttiPath.pushAttribute(property.get_name().data());
 
 			// Determine meta-data for the property
 			bool is_required = property.get_metadata(RTTI::EPropertyMetaData::Required).is_valid();
@@ -82,7 +82,7 @@ namespace nap
 				if (!errorState.check(!is_required, "Required property %s not found in object of type %s", property.get_name().data(), object_type.get_name().data()))
 					return false;
 
-				rttiPath.PopBack();
+				rttiPath.popBack();
 				continue;
 			}
 
@@ -175,7 +175,7 @@ namespace nap
 				linkedFiles.push_back(file_link);
 			}
 
-			rttiPath.PopBack();
+			rttiPath.popBack();
 		}
 
 		return true;
@@ -198,7 +198,7 @@ namespace nap
 		for (std::size_t index = 0; index < jsonArray.Size(); ++index)
 		{
 			// Add array element to rtti path
-			rttiPath.PushArrayElement(index);
+			rttiPath.pushArrayElement(index);
 
 			const rapidjson::Value& json_element = jsonArray[index];
 
@@ -247,7 +247,7 @@ namespace nap
 			}			
 
 			// Remove array element from rtti path again
-			rttiPath.PopBack();
+			rttiPath.popBack();
 		}
 
 		return true;
