@@ -9,39 +9,10 @@
 // External Includes
 #include <memory>
 #include <vector>
+#include <sstream>
 
 namespace opengl
 {
-	using VertexAttributeID = std::string;
-
-	/**
-	 * Known vertex attribute IDs in the system, used for loading/creating meshes with well-known attributes.
-	 */
-	struct VertexAttributeIDs
-	{
-		static const VertexAttributeID PositionVertexAttr;
-		static const VertexAttributeID NormalVertexAttr;
-		static const VertexAttributeID UVVertexAttr;
-		static const VertexAttributeID ColorVertexAttr;
-
-		static const VertexAttributeID GetUVVertexAttr(int uvChannel)
-		{
-			// TODO: replace this once we can use nap::stringformat in nrender
-			VertexAttributeID result;
-			result.resize(64);
-			snprintf(&result[0], 64, "%s%d", opengl::VertexAttributeIDs::UVVertexAttr.c_str(), uvChannel);
-			return result;
-		}
-
-		static const VertexAttributeID GetColorVertexAttr(int colorChannel)
-		{
-			VertexAttributeID result;
-			result.resize(64);
-			snprintf(&result[0], 64, "%s%d", opengl::VertexAttributeIDs::ColorVertexAttr.c_str(), colorChannel);
-			return result;
-		}
-	};
-
 	/**
 	 * Defines a polygonal mesh
 	 * Every mesh has a number of vertex attributes that are identified through an ID.
@@ -49,6 +20,34 @@ namespace opengl
 	class Mesh
 	{
 	public:
+		using VertexAttributeID = std::string;
+
+		/**
+		* Known vertex attribute IDs in the system, used for loading/creating meshes with well-known attributes.
+		*/
+		struct VertexAttributeIDs
+		{
+			static const VertexAttributeID PositionVertexAttr;
+			static const VertexAttributeID NormalVertexAttr;
+			static const VertexAttributeID UVVertexAttr;
+			static const VertexAttributeID ColorVertexAttr;
+
+			static const VertexAttributeID GetUVVertexAttr(int uvChannel)
+			{
+				std::ostringstream stream;
+				stream << UVVertexAttr << uvChannel;
+				return stream.str();
+			}
+
+			static const VertexAttributeID GetColorVertexAttr(int colorChannel)
+			{
+				std::ostringstream stream;
+				stream << ColorVertexAttr << colorChannel;
+				return stream.str();
+			}
+		};
+
+
 		// Default Constructor
 		Mesh(int numVertices, EDrawMode drawMode);
 

@@ -5,6 +5,7 @@
 
 // External Includes
 #include <string>
+#include <sstream>
 
 namespace opengl
 {
@@ -17,6 +18,35 @@ namespace opengl
 	class Shader
 	{
 	public:
+		using VertexAttributeID = std::string;
+
+		/**
+		* Known vertex attribute IDs in the system, used for loading/creating meshes with well-known attributes.
+		*/
+		struct VertexAttributeIDs
+		{
+			static const VertexAttributeID PositionVertexAttr;
+			static const VertexAttributeID NormalVertexAttr;
+			static const VertexAttributeID UVVertexAttr;
+			static const VertexAttributeID ColorVertexAttr;
+
+			static const VertexAttributeID GetUVVertexAttr(int uvChannel)
+			{
+				std::ostringstream stream;
+				stream << UVVertexAttr << uvChannel;
+				return stream.str();
+			}
+
+			static const VertexAttributeID GetColorVertexAttr(int colorChannel)
+			{
+				std::ostringstream stream;
+				stream << ColorVertexAttr << colorChannel;
+				return stream.str();
+			}
+		};
+
+
+
 		/**
 		 * Shader state, everything above 0 is an error
 		 * By default the shader is not loaded

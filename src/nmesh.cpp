@@ -3,10 +3,10 @@
 
 namespace opengl
 {
-	const VertexAttributeID VertexAttributeIDs::PositionVertexAttr("Position");
-	const VertexAttributeID VertexAttributeIDs::NormalVertexAttr("Normal");
-	const VertexAttributeID VertexAttributeIDs::UVVertexAttr("UV");
-	const VertexAttributeID VertexAttributeIDs::ColorVertexAttr("Color");
+	const Mesh::VertexAttributeID Mesh::VertexAttributeIDs::PositionVertexAttr("Position");
+	const Mesh::VertexAttributeID Mesh::VertexAttributeIDs::NormalVertexAttr("Normal");
+	const Mesh::VertexAttributeID Mesh::VertexAttributeIDs::UVVertexAttr("UV");
+	const Mesh::VertexAttributeID Mesh::VertexAttributeIDs::ColorVertexAttr("Color");
 
 	// Constructor initializes object draw mode
 	Mesh::Mesh(int numVertices, EDrawMode drawMode) :

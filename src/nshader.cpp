@@ -37,6 +37,12 @@ static string textFileRead(const std::string& fileName)
 
 namespace opengl
 {
+	const Shader::VertexAttributeID Shader::VertexAttributeIDs::PositionVertexAttr("in_Position");
+	const Shader::VertexAttributeID Shader::VertexAttributeIDs::NormalVertexAttr("in_Normal");
+	const Shader::VertexAttributeID Shader::VertexAttributeIDs::UVVertexAttr("in_UV");
+	const Shader::VertexAttributeID Shader::VertexAttributeIDs::ColorVertexAttr("in_Color");
+
+
 	/**
 	 Constructor for a Shader object which creates a GLSL shader based on a given
 	 vertex and fragment shader file.
