@@ -24,8 +24,15 @@ namespace nap
 	public:
 		struct VertexAttributeBinding
 		{
-			std::string mMeshAttributeID;
-			std::string mShaderAttributeID;
+			VertexAttributeBinding() = default;
+
+			VertexAttributeBinding(const opengl::Mesh::VertexAttributeID& meshAttributeID, const opengl::Shader::VertexAttributeID& shaderAttributeID) :
+				mMeshAttributeID(meshAttributeID),
+				mShaderAttributeID(shaderAttributeID)
+			{
+			}
+			opengl::Mesh::VertexAttributeID mMeshAttributeID;
+			opengl::Shader::VertexAttributeID mShaderAttributeID;
 		};
 
 		// Default constructor
@@ -90,7 +97,16 @@ namespace nap
 		 */
 		void setUniformTexture(const std::string& name, TextureResource& resource);
 		
-		const VertexAttributeBinding* findVertexAttributeBinding(const opengl::VertexAttributeID& shaderAttributeID) const;
+		/**
+		* Finds the mesh/shader attribute binding based on the shader attribute ID.
+		* @param shaderAttributeID: ID of the shader vertex attribute.
+		*/
+		const VertexAttributeBinding* findVertexAttributeBinding(const opengl::Mesh::VertexAttributeID& shaderAttributeID) const;
+
+		/**
+		* @return Returns a mapping with default values for mesh attribute IDs an shader attribute IDs.
+		*/
+		static std::vector<VertexAttributeBinding>& getDefaultVertexAttributeBindings();
 
 	public:
 		std::vector<VertexAttributeBinding> mVertexAttributeBindings;

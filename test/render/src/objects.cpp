@@ -213,9 +213,9 @@ std::unique_ptr<opengl::Mesh> createCube(int vertex_idx, int color_idx, int uv_i
 {
 	std::unique_ptr<opengl::Mesh> mesh = std::make_unique<opengl::Mesh>(6, opengl::EDrawMode::TRIANGLES);
 
-	mesh->addVertexAttribute(opengl::VertexAttributeIDs::PositionVertexAttr, 3, cube_vertices);
-	mesh->addVertexAttribute(opengl::VertexAttributeIDs::GetColorVertexAttr(0), 4, cube_colors);
-	mesh->addVertexAttribute(opengl::VertexAttributeIDs::GetUVVertexAttr(0), 3, cube_uvs);
+	mesh->addVertexAttribute(opengl::Mesh::VertexAttributeIDs::PositionVertexAttr, 3, cube_vertices);
+	mesh->addVertexAttribute(opengl::Mesh::VertexAttributeIDs::GetColorVertexAttr(0), 4, cube_colors);
+	mesh->addVertexAttribute(opengl::Mesh::VertexAttributeIDs::GetUVVertexAttr(0), 3, cube_uvs);
 
 	return mesh;
 }
@@ -226,9 +226,9 @@ std::unique_ptr<opengl::Mesh> createTriangle(int vertex_idx, int color_idx, int 
 {
 	std::unique_ptr<opengl::Mesh> mesh = std::make_unique<opengl::Mesh>(3, opengl::EDrawMode::TRIANGLES);
 
-	mesh->addVertexAttribute(opengl::VertexAttributeIDs::PositionVertexAttr, 3, triangle_vertices);
-	mesh->addVertexAttribute(opengl::VertexAttributeIDs::GetColorVertexAttr(0), 4, triangle_colors);
-	mesh->addVertexAttribute(opengl::VertexAttributeIDs::GetUVVertexAttr(0), 3, triangle_uvs);
+	mesh->addVertexAttribute(opengl::Mesh::VertexAttributeIDs::PositionVertexAttr, 3, triangle_vertices);
+	mesh->addVertexAttribute(opengl::Mesh::VertexAttributeIDs::GetColorVertexAttr(0), 4, triangle_colors);
+	mesh->addVertexAttribute(opengl::Mesh::VertexAttributeIDs::GetUVVertexAttr(0), 3, triangle_uvs);
 	mesh->setIndices(3, triangle_indices);
 
 	return mesh;
@@ -238,9 +238,9 @@ std::unique_ptr<opengl::Mesh> createPlane(int vertex_idx, int color_idx, int uv_
 {
 	std::unique_ptr<opengl::Mesh> mesh = std::make_unique<opengl::Mesh>(4, opengl::EDrawMode::TRIANGLES);
 
-	mesh->addVertexAttribute(opengl::VertexAttributeIDs::PositionVertexAttr, 3, plane_vertices);
-	mesh->addVertexAttribute(opengl::VertexAttributeIDs::GetColorVertexAttr(0), 4, plane_colors);
-	mesh->addVertexAttribute(opengl::VertexAttributeIDs::GetUVVertexAttr(0), 3, plane_uvs);
+	mesh->addVertexAttribute(opengl::Mesh::VertexAttributeIDs::PositionVertexAttr, 3, plane_vertices);
+	mesh->addVertexAttribute(opengl::Mesh::VertexAttributeIDs::GetColorVertexAttr(0), 4, plane_colors);
+	mesh->addVertexAttribute(opengl::Mesh::VertexAttributeIDs::GetUVVertexAttr(0), 3, plane_uvs);
 	mesh->setIndices(6, plane_indices);
 
 	return mesh;

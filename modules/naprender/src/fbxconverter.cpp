@@ -113,7 +113,7 @@ namespace nap
 			mesh_data.mNumVertices = mesh->mNumVertices;
 
 			// Copy vertex data			
-			MeshData::Attribute& position_attribute = mesh_data.GetOrCreateAttribute(opengl::VertexAttributeIDs::PositionVertexAttr);
+			MeshData::Attribute& position_attribute = mesh_data.GetOrCreateAttribute(opengl::Mesh::VertexAttributeIDs::PositionVertexAttr);
 			position_attribute.mNumComponents = 3;
 			position_attribute.mData.reserve(mesh->mNumVertices * 3);
 			for (unsigned int vertex = 0; vertex < mesh->mNumVertices; vertex++)
@@ -127,7 +127,7 @@ namespace nap
 			// Copy normals
 			if (mesh->HasNormals())
 			{
-				MeshData::Attribute& normal_attribute = mesh_data.GetOrCreateAttribute(opengl::VertexAttributeIDs::NormalVertexAttr);
+				MeshData::Attribute& normal_attribute = mesh_data.GetOrCreateAttribute(opengl::Mesh::VertexAttributeIDs::NormalVertexAttr);
 				normal_attribute.mNumComponents = 3;
 				normal_attribute.mData.reserve(mesh->mNumVertices * 3);
 				for (unsigned int vertex = 0; vertex < mesh->mNumVertices; vertex++)
@@ -144,7 +144,7 @@ namespace nap
 			{
 				aiVector3D* uv_channel_data = mesh->mTextureCoords[uv_channel];
 
-				MeshData::Attribute& uv_attribute = mesh_data.GetOrCreateAttribute(opengl::VertexAttributeIDs::GetUVVertexAttr(uv_channel));
+				MeshData::Attribute& uv_attribute = mesh_data.GetOrCreateAttribute(opengl::Mesh::VertexAttributeIDs::GetUVVertexAttr(uv_channel));
 				uv_attribute.mNumComponents = 3;
 				uv_attribute.mData.reserve(mesh->mNumVertices * 3);
 
@@ -164,7 +164,7 @@ namespace nap
 			{
 				aiColor4D* color_channel_data = mesh->mColors[color_channel];
 
-				MeshData::Attribute& color_attribute = mesh_data.GetOrCreateAttribute(opengl::VertexAttributeIDs::GetColorVertexAttr(color_channel));
+				MeshData::Attribute& color_attribute = mesh_data.GetOrCreateAttribute(opengl::Mesh::VertexAttributeIDs::GetColorVertexAttr(color_channel));
 				color_attribute.mNumComponents = 4;
 				color_attribute.mData.reserve(mesh->mNumVertices * 4);
 
@@ -232,7 +232,7 @@ namespace nap
 			mesh->addVertexAttribute(attribute.mID, attribute.mNumComponents, attribute.mData.data());
 
 		// Make sure there's position data
-		if (!errorState.check(mesh->findVertexAttributeBuffer(opengl::VertexAttributeIDs::PositionVertexAttr) != nullptr, "Required attribute 'position' not found in mesh data"))
+		if (!errorState.check(mesh->findVertexAttributeBuffer(opengl::Mesh::VertexAttributeIDs::PositionVertexAttr) != nullptr, "Required attribute 'position' not found in mesh data"))
 			return nullptr;
 			
 		// Copy indices

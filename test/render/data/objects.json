@@ -95,11 +95,11 @@
 			},
 			{
 				"MeshAttributeID": "UV0",
-				"ShaderAttributeID": "in_Uvs"
+				"ShaderAttributeID": "in_UV0"
 			},
 			{
 				"MeshAttributeID": "Color0",
-				"ShaderAttributeID": "in_Color"
+				"ShaderAttributeID": "in_Color0"
 			},
 			{
 				"MeshAttributeID": "Normal",
@@ -118,11 +118,11 @@
 			},
 			{
 				"MeshAttributeID": "UV0",
-				"ShaderAttributeID": "in_Uvs"
+				"ShaderAttributeID": "in_UV0"
 			},
 			{
 				"MeshAttributeID": "Color0",
-				"ShaderAttributeID": "in_Color"
+				"ShaderAttributeID": "in_Color0"
 			},
 			{
 				"MeshAttributeID": "Normal",
@@ -141,11 +141,11 @@
 			},
 			{
 				"MeshAttributeID": "UV0",
-				"ShaderAttributeID": "in_Uvs"
+				"ShaderAttributeID": "in_UV0"
 			},
 			{
 				"MeshAttributeID": "Color0",
-				"ShaderAttributeID": "in_Color"
+				"ShaderAttributeID": "in_Color0"
 			},
 			{
 				"MeshAttributeID": "Normal",
@@ -164,11 +164,11 @@
 			},
 			{
 				"MeshAttributeID": "UV0",
-				"ShaderAttributeID": "in_Uvs"
+				"ShaderAttributeID": "in_UV0"
 			},
 			{
 				"MeshAttributeID": "Color0",
-				"ShaderAttributeID": "in_Color"
+				"ShaderAttributeID": "in_Color0"
 			},
 			{
 				"MeshAttributeID": "Normal",

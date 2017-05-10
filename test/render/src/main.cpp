@@ -443,21 +443,25 @@ bool initResources(nap::ErrorState& errorState)
 
 	nap::Material* pigMaterial = resourceManagerService->createResource<nap::Material>();
 	pigMaterial->mShader = generalShaderResource;
+	pigMaterial->mVertexAttributeBindings = nap::Material::getDefaultVertexAttributeBindings();
 	if (!pigMaterial->init(errorState))
 		return false;
 
 	generalMaterial = resourceManagerService->createResource<nap::Material>();
 	generalMaterial->mShader = generalShaderResource;
+	generalMaterial->mVertexAttributeBindings = nap::Material::getDefaultVertexAttributeBindings();
 	if (!generalMaterial->init(errorState))
 		return false;
 
 	worldMaterial = resourceManagerService->createResource<nap::Material>();
 	worldMaterial->mShader = generalShaderResource;
+	worldMaterial->mVertexAttributeBindings = nap::Material::getDefaultVertexAttributeBindings();
 	if (!worldMaterial->init(errorState))
 		return false;
 
 	nap::Material* orientationMaterial = resourceManagerService->createResource<nap::Material>();
 	orientationMaterial->mShader = orientationShaderResource;
+	orientationMaterial->mVertexAttributeBindings = nap::Material::getDefaultVertexAttributeBindings();
 	if (!orientationMaterial->init(errorState))
 		return false;
 
@@ -570,7 +574,7 @@ bool init(nap::Core& core)
 #else	
 	if (!initResources(errorState))
 	{
-		nap::Logger::fatal("Unable to initialize resources: %s", errorState.mErrorString.c_str());
+		nap::Logger::fatal("Unable to initialize resources: %s", errorState.toString().c_str());
 		return false;
 	}
 #endif

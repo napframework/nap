@@ -68,6 +68,24 @@ namespace nap
 		}
 	}
 
+	std::vector<Material::VertexAttributeBinding>& Material::getDefaultVertexAttributeBindings()
+	{
+		static std::vector<Material::VertexAttributeBinding> bindings;
+		if (bindings.empty())
+		{
+			bindings.push_back({ opengl::Mesh::VertexAttributeIDs::PositionVertexAttr, opengl::Shader::VertexAttributeIDs::PositionVertexAttr });
+			bindings.push_back({ opengl::Mesh::VertexAttributeIDs::NormalVertexAttr, opengl::Shader::VertexAttributeIDs::NormalVertexAttr });
+
+			const int numChannels = 4;
+			for (int channel = 0; channel != numChannels; ++channel)
+			{
+				bindings.push_back({ opengl::Mesh::VertexAttributeIDs::GetColorVertexAttr(channel), opengl::Shader::VertexAttributeIDs::GetColorVertexAttr(channel) });
+				bindings.push_back({ opengl::Mesh::VertexAttributeIDs::GetUVVertexAttr(channel), opengl::Shader::VertexAttributeIDs::GetUVVertexAttr(channel) });
+			}
+		}
+		return bindings;
+	}
+
 	// Unbind shader associated with resource
 	void Material::bind()
 	{	
@@ -137,7 +155,7 @@ namespace nap
 		resource_link->setResource(resource);
 	}
 
-	const Material::VertexAttributeBinding* Material::findVertexAttributeBinding(const opengl::VertexAttributeID& shaderAttributeID) const
+	const Material::VertexAttributeBinding* Material::findVertexAttributeBinding(const opengl::Mesh::VertexAttributeID& shaderAttributeID) const
 	{
 		for (const VertexAttributeBinding& binding : mVertexAttributeBindings)
 			if (binding.mShaderAttributeID == shaderAttributeID)
