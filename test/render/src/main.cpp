@@ -34,7 +34,7 @@
 #include <material.h>
 #include <meshresource.h>
 #include <imageresource.h>
-#include <meshcomponent.h>
+#include <RenderableMeshComponent.h>
 #include <renderservice.h>
 #include <renderwindowcomponent.h>
 #include <openglrenderer.h>
@@ -52,7 +52,7 @@
 
 // STD includes
 #include <ctime>
-#include "modelresource.h"
+#include "RenderableMeshResource.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
@@ -85,15 +85,15 @@ std::vector<nap::RenderWindowComponent*> renderWindows;
 nap::TextureRenderTargetResource2D* textureRenderTarget;
 nap::CameraComponent* cameraComponent = nullptr;
 nap::CameraComponent* splitCameraComponent = nullptr;
-nap::MeshComponent* pigMeshComponent = nullptr;
+nap::RenderableMeshComponent* pigMeshComponent = nullptr;
 nap::PlaneComponent* rotatingPlaneComponent = nullptr;
 nap::PlaneComponent* planeComponent = nullptr;
 nap::SphereComponent* sphereComponent = nullptr;
-nap::MeshComponent* orientationMeshComponent = nullptr;
+nap::RenderableMeshComponent* orientationMeshComponent = nullptr;
 nap::Material* generalMaterial = nullptr;
 nap::Material* worldMaterial = nullptr;
-nap::ModelResource* orientationModel = nullptr;
-nap::ModelResource* pigModel = nullptr;
+nap::RenderableMeshResource* orientationModel = nullptr;
+nap::RenderableMeshResource* pigModel = nullptr;
 
 // movement
 bool moveForward = false;
@@ -186,7 +186,7 @@ void onUpdate(const nap::SignalAttribute& signal)
 	//xform_v->uniformScale.setValue(nscale);
 
 	// Set some material values
-	nap::Material* material = pigMeshComponent->getModelResource()->getMaterial();
+	nap::Material* material = pigMeshComponent->getRenderableMeshResource()->getMaterial();
 
 	float v = (sin(elapsed_time) + 1.0f) / 2.0f;
 
@@ -200,14 +200,14 @@ void onUpdate(const nap::SignalAttribute& signal)
 	material->setUniformTexture("testTexture", *testTexture);
 
 	// Set plane uniforms
-	nap::Material* rotating_plane_material = rotatingPlaneComponent->getModelResource()->getMaterial();
+	nap::Material* rotating_plane_material = rotatingPlaneComponent->getRenderableMeshResource()->getMaterial();
 	rotating_plane_material->setUniformTexture("pigTexture", *testTexture);
 	rotating_plane_material->setUniformTexture("testTexture", *testTexture);
 	rotating_plane_material->setUniformValue<int>("mTextureIndex", 0);
 	rotating_plane_material->setUniformValue<glm::vec4>("mColor", {1.0f, 1.0f, 1.0f, 1.0f});
 
 	// Set sphere uniforms
-	nap::Material* sphere_material = sphereComponent->getModelResource()->getMaterial();
+	nap::Material* sphere_material = sphereComponent->getRenderableMeshResource()->getMaterial();
 	sphere_material->setUniformTexture("pigTexture", *worldTexture);
 	sphere_material->setUniformTexture("testTexture", *worldTexture);
 	sphere_material->setUniformValue<int>("mTextureIndex", 0);
@@ -312,13 +312,13 @@ void onRender(const nap::SignalAttribute& signal)
 		components_to_render.push_back(planeComponent);
 		components_to_render.push_back(rotatingPlaneComponent);
 
-		nap::Material* plane_material = planeComponent->getModelResource()->getMaterial();
+		nap::Material* plane_material = planeComponent->getRenderableMeshResource()->getMaterial();
 		plane_material->setUniformTexture("testTexture", textureRenderTarget->GetColorTexture());
 		plane_material->setUniformTexture("pigTexture", textureRenderTarget->GetColorTexture());
 		plane_material->setUniformValue<int>("mTextureIndex", 0);
 		plane_material->setUniformValue<glm::vec4>("mColor", { 1.0f, 1.0f, 1.0f, 1.0f });
 
-		nap::Material* rotating_plane_material = planeComponent->getModelResource()->getMaterial();
+		nap::Material* rotating_plane_material = planeComponent->getRenderableMeshResource()->getMaterial();
 		rotating_plane_material->setUniformTexture("testTexture", textureRenderTarget->GetColorTexture());
 		rotating_plane_material->setUniformTexture("pigTexture", textureRenderTarget->GetColorTexture());
 		rotating_plane_material->setUniformValue<int>("mTextureIndex", 0);
@@ -461,13 +461,13 @@ bool initResources(nap::ErrorState& errorState)
 	if (!orientationMaterial->init(errorState))
 		return false;
 
-	pigModel = resourceManagerService->createResource<nap::ModelResource>();
+	pigModel = resourceManagerService->createResource<nap::RenderableMeshResource>();
 	pigModel->mMaterialResource = pigMaterial;
 	pigModel->mMeshResource = pigMesh;
 	if (!pigModel->init(errorState))
 		return false;
 
-	orientationModel = resourceManagerService->createResource<nap::ModelResource>();
+	orientationModel = resourceManagerService->createResource<nap::RenderableMeshResource>();
 	orientationModel->mMaterialResource = orientationMaterial;
 	orientationModel->mMeshResource = orientationMesh;
 	if (!orientationModel->init(errorState))
@@ -565,8 +565,8 @@ bool init(nap::Core& core)
  	textureRenderTarget = resourceManagerService->findResource<nap::TextureRenderTargetResource2D>("PlaneRenderTarget");
 	generalMaterial = resourceManagerService->findResource<nap::Material>("GeneralMaterial");
 	worldMaterial = resourceManagerService->findResource<nap::Material>("WorldMaterial");	
-	orientationModel = resourceManagerService->findResource<nap::ModelResource>("OrientationModel");
-	pigModel = resourceManagerService->findResource<nap::ModelResource>("PigModel");
+	orientationModel = resourceManagerService->findResource<nap::RenderableMeshResource>("OrientationModel");
+	pigModel = resourceManagerService->findResource<nap::RenderableMeshResource>("PigModel");
 #else	
 	if (!initResources(errorState))
 	{
@@ -591,15 +591,15 @@ bool init(nap::Core& core)
 	// Create model entity
 	model = &(core.getRoot().addEntity("model"));
 	nap::TransformComponent& tran_component = model->addComponent<nap::TransformComponent>();
-	pigMeshComponent = &model->addComponent<nap::MeshComponent>("pig_head_mesh");
-	pigMeshComponent->mModelResource = pigModel;
+	pigMeshComponent = &model->addComponent<nap::RenderableMeshComponent>("pig_head_mesh");
+	pigMeshComponent->mRenderableMeshResource = pigModel;
 
 	// Create orientation entity
 	orientation = &(core.getRoot().addEntity("orientation"));
 	nap::TransformComponent& or_tran_component = orientation->addComponent<nap::TransformComponent>();
 	or_tran_component.uniformScale.setValue(0.33f);
-	orientationMeshComponent = &orientation->addComponent<nap::MeshComponent>("orientation gizmo");
-	orientationMeshComponent->mModelResource = orientationModel;
+	orientationMeshComponent = &orientation->addComponent<nap::RenderableMeshComponent>("orientation gizmo");
+	orientationMeshComponent->mRenderableMeshResource = orientationModel;
 
 	// Create plane entity
 	rotating_plane = &(core.getRoot().addEntity("rotating_plane"));

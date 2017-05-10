@@ -1,6 +1,6 @@
 // Local Includes
 #include "renderservice.h"
-#include "meshcomponent.h"
+#include "RenderableMeshComponent.h"
 #include "rendercomponent.h"
 #include "renderwindowcomponent.h"
 #include "openglrenderer.h"
@@ -18,7 +18,7 @@ namespace nap
 	void RenderService::registerTypes(nap::Core& core)
 	{
 		core.registerType(*this, RTTI_OF(RenderableComponent));
-		core.registerType(*this, RTTI_OF(MeshComponent));
+		core.registerType(*this, RTTI_OF(RenderableMeshComponent));
 		core.registerType(*this, RTTI_OF(RenderWindowComponent));
 		core.registerType(*this, RTTI_OF(TransformComponent));
 		core.registerType(*this, RTTI_OF(CameraComponent));

@@ -1,6 +1,6 @@
 #include "spherecomponent.h"
 #include "math.h"
-#include "modelresource.h"
+#include "RenderableMeshResource.h"
 #include "meshresource.h"
 
 
@@ -108,11 +108,11 @@ namespace nap
 		bool success = mesh_resource->init(error_state);
 		assert(success);
 
-		mModelResource = new ModelResource();
-		mModelResource->mMaterialResource = &material;
-		mModelResource->mMeshResource = mesh_resource;
+		mRenderableMeshResource = new RenderableMeshResource();
+		mRenderableMeshResource->mMaterialResource = &material;
+		mRenderableMeshResource->mMeshResource = mesh_resource;
 		
-		success = mModelResource->init(error_state);
+		success = mRenderableMeshResource->init(error_state);
 		assert(success);
 	}
 }

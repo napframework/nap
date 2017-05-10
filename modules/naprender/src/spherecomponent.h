@@ -1,6 +1,6 @@
 #pragma once
 
-#include "meshcomponent.h"
+#include "RenderableMeshComponent.h"
 
 namespace nap
 {
@@ -12,9 +12,9 @@ namespace nap
 	 * that this component shares it's vertex data with other plane
 	 * components.
 	 */
-	class SphereComponent : public MeshComponent
+	class SphereComponent : public RenderableMeshComponent
 	{
-		RTTI_ENABLE(MeshComponent)
+		RTTI_ENABLE(RenderableMeshComponent)
 	public:
 		// Default constructor
 		SphereComponent() = default;

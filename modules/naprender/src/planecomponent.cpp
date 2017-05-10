@@ -1,6 +1,6 @@
 #include <planecomponent.h>
 #include "meshresource.h"
-#include "modelresource.h"
+#include "RenderableMeshResource.h"
 
 // All the plane vertices
 static float plane_vertices[] =
@@ -70,11 +70,11 @@ namespace nap
 		bool success = mesh_resource->init(error_state);
 		assert(success);
 
-		mModelResource = new ModelResource();
-		mModelResource->mMaterialResource = &material;
-		mModelResource->mMeshResource = mesh_resource;
+		mRenderableMeshResource = new RenderableMeshResource();
+		mRenderableMeshResource->mMaterialResource = &material;
+		mRenderableMeshResource->mMeshResource = mesh_resource;
 
-		success = mModelResource->init(error_state);
+		success = mRenderableMeshResource->init(error_state);
 		assert(success);
 	}
 };

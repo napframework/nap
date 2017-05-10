@@ -1,7 +1,7 @@
 #pragma once
 
 // Local Includes
-#include "meshcomponent.h"
+#include "RenderableMeshComponent.h"
 
 namespace nap
 {
@@ -14,9 +14,9 @@ namespace nap
 	 * other plane components. TODO: It's better to introduce
 	 * a mesh resource and let the mesh component link to it
 	 */
-	class PlaneComponent : public MeshComponent
+	class PlaneComponent : public RenderableMeshComponent
 	{
-		RTTI_ENABLE(MeshComponent)
+		RTTI_ENABLE(RenderableMeshComponent)
 	public:
 		// Default constructor
 		PlaneComponent() = default;
