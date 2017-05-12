@@ -5,7 +5,7 @@ namespace nap {
     template <typename T>
     const T& AttributeBase::getValue() const
     {
-        assert(getTypeInfo().isKindOf<Attribute<T>>());
+        assert(get_type().is_derived_from<Attribute<T>>());
         auto thisAttribute = static_cast<const Attribute<T>*>(this);
         return thisAttribute->getValue();
     }
@@ -61,7 +61,7 @@ namespace nap {
 	template <typename T>
 	void Attribute<T>::setValue(const AttributeBase &inAttribute)
 	{
-        assert(inAttribute.getTypeInfo() == getTypeInfo());
+        assert(inAttribute.get_type() == get_type());
         
 		const Attribute<T>& in_attr = static_cast<const Attribute<T>&>(inAttribute);
         

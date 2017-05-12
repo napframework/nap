@@ -1,38 +1,64 @@
 // Local Includes
 #include "rendertargetresource.h"
 
+RTTI_BEGIN_CLASS(nap::TextureRenderTargetResource2D)
+	RTTI_PROPERTY_REQUIRED("mColorTexture", &nap::TextureRenderTargetResource2D::mColorTexture)
+	RTTI_PROPERTY_REQUIRED("mDepthTexture", &nap::TextureRenderTargetResource2D::mDepthTexture)
+	RTTI_PROPERTY("mClearColor", &nap::TextureRenderTargetResource2D::mClearColor)
+RTTI_END_CLASS
+
 namespace nap
 {
-	// Return the frame buffer, initialize if necessary
+
+	bool TextureRenderTargetResource2D::init(InitResult& initResult)
+	{
+		if (!initResult.check(mColorTexture != nullptr, "Unable to create render target %s. Color textures not set.", mID.c_str()))
+			return false;
+
+		if (!initResult.check(mDepthTexture != nullptr, "Unable to create render target %s. Depth texture not set.", mID.c_str()))
+			return false;
+
+		mPrevTextureRenderTarget = mTextureRenderTarget;
+		mTextureRenderTarget = new opengl::TextureRenderTarget2D;
+
+		mTextureRenderTarget->init((opengl::Texture2D&)mColorTexture->getTexture(), (opengl::Texture2D&)mDepthTexture->getTexture(), mClearColor);
+		if (!initResult.check(mTextureRenderTarget->isValid(), "unable to validate frame buffer: %s", mID.c_str()))
+			return false;
+		
+		return true;
+	}
+
+	void TextureRenderTargetResource2D::finish(Resource::EFinishMode mode)
+	{
+		if (mode == Resource::EFinishMode::COMMIT)
+		{
+			if (mPrevTextureRenderTarget != nullptr)
+			{
+				delete mPrevTextureRenderTarget;
+				mPrevTextureRenderTarget = nullptr;
+			}
+		}
+		else
+		{
+			assert(mode == Resource::EFinishMode::ROLLBACK);
+			delete mTextureRenderTarget;
+			mTextureRenderTarget = mPrevTextureRenderTarget;
+			mPrevTextureRenderTarget = nullptr;
+		}
+	}
+
+
 	opengl::TextureRenderTarget2D& TextureRenderTargetResource2D::getTarget()
 	{
-		// If the render target hasn't been loaded, do so
-		if (!mLoaded)
-		{
-			if (mColorTexture == nullptr || mDepthTexture == nullptr)
-			{
-				nap::Logger::warn("Unable to create render target %s. Color and/or depth textures missing.", getResourcePath().c_str());
-				return mTextureRenderTarget;
-			}
-
-			mTextureRenderTarget.init((opengl::Texture2D&)mColorTexture->getTexture(), (opengl::Texture2D&)mDepthTexture->getTexture());
-			if (!mTextureRenderTarget.isValid())
-			{
-				nap::Logger::warn("unable to validate frame buffer: %s", getResourcePath().c_str());
-			}
-			mLoaded = true;
-		}
-
-		return mTextureRenderTarget;
+		assert(mTextureRenderTarget != nullptr);
+		return *mTextureRenderTarget;
 	}
 
 
 	// Resource path is display name for frame buffer
-	const std::string& TextureRenderTargetResource2D::getDisplayName() const
+	const std::string TextureRenderTargetResource2D::getDisplayName() const
 	{
-		return getResourcePath();
+		return mID;
 	}
 
 } // nap
-
-RTTI_DEFINE(nap::TextureRenderTargetResource2D)

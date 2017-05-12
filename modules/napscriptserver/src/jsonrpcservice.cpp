@@ -15,7 +15,7 @@ namespace nap
 	{
 		std::vector<std::string> typenames;
 		for (const auto& type : types)
-			typenames.push_back(type.getName());
+			typenames.push_back(type.get_name().data());
 		return typenames;
 	}
 
@@ -297,7 +297,7 @@ namespace nap
 		mod->getDataTypes(types);
 
 		for (const auto& type : types)
-			typenames.push_back(type.getName());
+			typenames.push_back(type.get_name().data());
 		return typenames;
 	}
 
@@ -344,13 +344,13 @@ namespace nap
 		if (!parent)
 			return;
 
-		RTTI::TypeInfo type = RTTI::TypeInfo::getByName(typeName);
-		if (!type.isValid()) {
+		RTTI::TypeInfo type = RTTI::TypeInfo::get_by_name(typeName.c_str());
+		if (!type.is_valid()) {
 			Logger::fatal("Failed to resolve type: %s", typeName.c_str());
 			return;
 		}
 
-		parent->addChild(type.getName(), type);
+		parent->addChild(type.get_name().data(), type);
 	}
 
 	void JsonRpcService::rpc_addEntity(ObjPtr parentEntity)
@@ -382,7 +382,7 @@ namespace nap
 		auto obj = fromPtr<Object>(ptr);
 		if (!obj)
 			return "";
-		return obj->getTypeInfo().getName();
+		return obj->get_type().get_name().data();
 	}
 
 	std::string JsonRpcService::rpc_getAttributeValue(ObjPtr attribPtr)
@@ -411,8 +411,8 @@ namespace nap
 															const std::string& attribValue,
 															const std::string& attribType)
 	{
-		RTTI::TypeInfo valueType = RTTI::TypeInfo::getByName(attribType);
-		if (!valueType.isValid()) {
+		RTTI::TypeInfo valueType = RTTI::TypeInfo::get_by_name(attribType.c_str());
+		if (!valueType.is_valid()) {
 			Logger::fatal("Invalid valueType: %s", attribType.c_str());
 			return;
 		}

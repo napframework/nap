@@ -122,7 +122,7 @@ namespace nap
 	nap::Transition* StateMachineComponent::findMessageTransition(const std::string& name)
 	{
 		for (auto trans : getTransitions(*mCurrentState)) {
-			if (!trans->getTypeInfo().isKindOf<MessageTransition>()) continue;
+			if (!trans->get_type().is_derived_from<MessageTransition>()) continue;
 			MessageTransition* actionTransition = static_cast<MessageTransition*>(trans);
 
 			if (actionTransition->messageString.getValue() == name) {
@@ -134,7 +134,7 @@ namespace nap
 
 	AutoTransition* StateMachineComponent::findAutoTransition(const State& fromState) {
         for (auto trans : getTransitions(fromState)) {
-            if (!trans->getTypeInfo().isKindOf<AutoTransition>())
+            if (!trans->get_type().is_derived_from<AutoTransition>())
                 continue;
             return static_cast<AutoTransition*>(trans);
         }
@@ -169,7 +169,7 @@ namespace nap
 
 	bool StateMachineComponent::handleEvent(Event& event)
 	{
-		if (event.getTypeInfo().isKindOf<Message>()) executeMessage(static_cast<Message*>(&event)->getMessage());
+		if (event.get_type().is_derived_from<Message>()) executeMessage(static_cast<Message*>(&event)->getMessage());
 		return false;
 	}
 

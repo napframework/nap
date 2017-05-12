@@ -6,7 +6,6 @@
 
 using namespace std;
 
-
 namespace nap
 {
 
@@ -67,7 +66,8 @@ namespace nap
 
 	std::vector<RTTI::TypeInfo> Core::getComponentTypes() const
 	{
-		return RTTI::TypeInfo::getRawTypes(RTTI::TypeInfo::get<Component>());
+		RTTI::TypeInfo componentType = RTTI::TypeInfo::get<Component>();
+		return componentType.get_raw_derived_classes();
 	}
 
 
@@ -80,8 +80,8 @@ namespace nap
 	Service* Core::getServiceForType(const RTTI::TypeInfo& inType)
 	{
 		// Get raw type to search for
-		RTTI::TypeInfo raw_search_type = inType.getRawType();
-		if (!raw_search_type.isValid()) 
+		RTTI::TypeInfo raw_search_type = inType.get_raw_type();
+		if (!raw_search_type.is_valid()) 
 		{
 			Logger::warn("Unable to determine object type, can't retrieve service");
 			return nullptr;
@@ -94,7 +94,7 @@ namespace nap
 			// Find type in service
 			const auto& match_type = std::find_if(v.second.begin(), v.second.end(), [&](const RTTI::TypeInfo& info) 
 			{
-				return raw_search_type.isKindOf(info.getRawType());
+				return raw_search_type.is_derived_from(info.get_raw_type());
 			});
 
 			// Check if the type was found in the service list
@@ -129,7 +129,7 @@ namespace nap
 		{
 			if (it->second.find(inTypeInfo) != it->second.end())
 			{
-				nap::Logger::warn("type: %s already registered with service: %s", inTypeInfo.getName().c_str(), inService.getTypeInfo().getName().c_str());
+				nap::Logger::warn("type: %s already registered with service: %s", inTypeInfo.get_name().data(), inService.get_type().get_name().data());
 			}
 			it->second.emplace(inTypeInfo);
 			return;
@@ -170,7 +170,7 @@ namespace nap
 		// Find service of type 
 		const auto& found_service = std::find_if(mServices.begin(), mServices.end(), [&type](const auto& service)
 		{
-			return service->getTypeInfo().isKindOf(type.getRawType());
+			return service->get_type().is_derived_from(type.get_raw_type());
 		});
 
 		// Check if found
@@ -181,20 +181,20 @@ namespace nap
 	// Add a new service
 	Service& Core::addService(const RTTI::TypeInfo& type)
 	{
-        assert(type.isValid());
-		assert(type.canCreateInstance());
-		assert(type.isKindOf<Service>());
+        assert(type.is_valid());
+		assert(type.can_create_instance());
+		assert(type.is_derived_from<Service>());
 
 		// Check if service doesn't already exist
 		nap::Service* existing_service = getService(type);
 		if (existing_service != nullptr)
 		{
-			nap::Logger::warn("can't add service of type: %s, service already exists", type.getName().c_str());
+			nap::Logger::warn("can't add service of type: %s, service already exists", type.get_name().data());
 			return *existing_service;
 		}
 
 		// Add service
-		Service* service = static_cast<Service*>(type.createInstance());
+		Service* service = type.create<Service>();
 		service->mCore = this;
 		service->registerTypes(*this);
 
@@ -209,9 +209,9 @@ namespace nap
 	Service* Core::getOrCreateService(const RTTI::TypeInfo& type)
 	{
 		// Otherwise add
-		if (!type.isKindOf(RTTI_OF(nap::Service)))
+		if (!type.is_derived_from(RTTI_OF(nap::Service)))
 		{
-			nap::Logger::fatal("can't add service, service not of type: %s", RTTI_OF(Service).getName().c_str());
+			nap::Logger::fatal("can't add service, service not of type: %s", RTTI_OF(Service).get_name().data());
 			return nullptr;
 		}
 

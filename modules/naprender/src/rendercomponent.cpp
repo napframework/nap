@@ -3,17 +3,6 @@
 
 namespace nap
 {
-	// On construction adds a material instance
-	// Material can't be removed
-	RenderableComponent::RenderableComponent()
-	{
-		// Create and link
-		Material* new_material = &addChild<Material>("material");
-		new_material->setFlag(nap::ObjectFlag::Removable, false);
-		material.setTarget(*new_material);
-	}
-
-
 	// Bind and draw
 	void RenderableComponent::draw()
 	{
@@ -23,14 +12,6 @@ namespace nap
 		if (mat == nullptr)
 		{
 			nap::Logger::warn("unable to resolve material for render-able component: %s", this->getName().c_str());
-			return;
-		}
-
-		// If we're not dealing with a material that has a resource linked, continue
-		// TODO: Apply Default Material
-		if (!mat->hasShader())
-		{
-			nap::Logger::warn(*this, "unable to draw object, no linked material");
 			return;
 		}
 
@@ -59,4 +40,10 @@ namespace nap
 		return material.getTarget<Material>();
 	}
 
+	void RenderableComponent::setMaterial(Material* newMaterial)
+	{
+		material.setTarget(*newMaterial);
+	}
 }
+
+RTTI_DEFINE_BASE(nap::RenderableComponent)

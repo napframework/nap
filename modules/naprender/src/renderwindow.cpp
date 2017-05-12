@@ -6,4 +6,4 @@ namespace nap
 
 }
 
-RTTI_DEFINE(nap::RenderWindow)
+RTTI_DEFINE_BASE(nap::RenderWindow)

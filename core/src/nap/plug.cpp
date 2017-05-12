@@ -4,9 +4,9 @@
 #include "operator.h"
 #include "plug.h"
 
-RTTI_DEFINE(nap::Plug)
-RTTI_DEFINE(nap::InputPlugBase)
-RTTI_DEFINE(nap::OutputPlugBase)
+RTTI_DEFINE_BASE(nap::Plug)
+RTTI_DEFINE_BASE(nap::InputPlugBase)
+RTTI_DEFINE_BASE(nap::OutputPlugBase)
 
 namespace nap
 {
@@ -83,7 +83,8 @@ namespace nap
     
 	bool InputPlugBase::canConnectTo(OutputPlugBase& plug)
 	{
-		if (getDataType().getName() != plug.getDataType().getName()) return false;
+		if (getDataType().get_name().compare(plug.getDataType().get_name()) != 0) 
+			return false;
 
 		return true;
 	}

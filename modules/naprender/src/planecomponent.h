@@ -14,7 +14,7 @@ namespace nap
 	 */
 	class PlaneComponent : public MeshComponent
 	{
-		RTTI_ENABLE_DERIVED_FROM(MeshComponent)
+		RTTI_ENABLE(MeshComponent)
 	public:
 		// Default constructor
 		PlaneComponent() = default;
@@ -27,4 +27,3 @@ namespace nap
 		virtual opengl::Mesh* getMesh() const override;  
 	};
 }
-RTTI_DECLARE(nap::PlaneComponent)

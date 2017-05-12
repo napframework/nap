@@ -20,4 +20,10 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${NRENDER_INCLUDE_DIRS} src)
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 target_link_libraries(${PROJECT_NAME} napcore nrender mod_napmath)
 
-copy_files_to_bin(${NRENDER_DLLS})
+if (WIN32)
+    set(FILES_TO_COPY
+            ../../../../thirdparty/assimp/msvc64/install/bin/assimp-vc140-mt.dll
+            )
+
+    copy_files_to_bin(${FILES_TO_COPY})
+endif()

@@ -6,9 +6,6 @@
 
 namespace nap
 {
-	// Forward Declares
-	class ShaderResourceLoader;
-
 	/**
 	 * Wraps a shader that can be used as a resource for a material instance
 	 * Note that the shader is not initialized (created) when the resource is created
@@ -17,83 +14,40 @@ namespace nap
 	class ShaderResource : public Resource
 	{
 		friend class ShaderResourceLoader;
-		RTTI_ENABLE_DERIVED_FROM(Resource)
+		RTTI_ENABLE(Resource)
 	public:
-		// Construct a shader resource using a vertex and fragment path
-		ShaderResource(const std::string& vertPath, const std::string& fragPath);
+
+		/**
+		 * Creates and inits opengl shader.
+		 */
+		virtual bool init(InitResult& initResult);
+
+		/**
+		 * Performs commit or rollback of changes made in init.
+		 */
+		virtual void finish(Resource::EFinishMode mode) override;
 
 		/**
 		 * @return the shader resource display name
 		 */
-		virtual const std::string& getDisplayName() const override;
+		virtual const std::string getDisplayName() const override;
 
 		/**
 		 * @return the opengl shader that can be used for drawing
-		 * Note that this will also initialize the shader on the GPU
-		 * if the shader can't be created a warning will be raised
-		 * in that case future binding calls won't work
 		 */
 		opengl::Shader& getShader();
 
-		/**
-		 * @return if the shader is loaded and linked correctly
-		 */
-		bool isLoaded() const;
-
-		/**
-		 * Explicitly load the shader, reloads if necessary
-		 */
-		void load();
-
-		/**
-		 * Signal is emitted when the shader is loaded or reloaded
-		 * The bool represents if issues occurred when loading
-		 */
-		Signal<bool> loaded;
+		std::string					mVertPath;
+		std::string					mFragPath;
 
 	private:
 		// Path to shader on disk
-		std::string		mVertPath;
-		std::string		mFragPath;
-		std::string		mDisplayName;
+		std::string					mDisplayName;
 
 		// Shader that is managed by this resource
-		opengl::Shader	mShader;
-
-		// If the shader has been loaded
-		bool			mLoaded = false;
-	};
-
-
-	/**
-	 * Creates a shader resource, used by resourcemanager
-	 * to check if based on the .frag and .vert extension of a file
-	 * the resource can be loaded
-	 */
-	class ShaderResourceLoader : public ResourceLoader
-	{
-		RTTI_ENABLE_DERIVED_FROM(ResourceLoader)
-	public:
-		// Constructor
-		ShaderResourceLoader();
-
-		/**
-		 * Creates a shader resource
-		 * @return the newly created shader resource
-		 * @param resourcePath path to the resource to load
-		 */
-		virtual std::unique_ptr<Resource> loadResource(const std::string& resourcePath) const override;
-
-		// Vert extension name ("vert")
-		const static std::string vertExtension;
-
-		// Frag extension name ("frag")
-		const static std::string fragExtension;
+		opengl::Shader*				mShader = nullptr;
+		opengl::Shader*				mPrevShader = nullptr;
 	};
 
 }
-
-RTTI_DECLARE_BASE(nap::ShaderResource)
-RTTI_DECLARE(nap::ShaderResourceLoader)
-
 

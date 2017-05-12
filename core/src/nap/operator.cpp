@@ -9,7 +9,7 @@
 
 using namespace std;
 
-RTTI_DEFINE(nap::Operator)
+RTTI_DEFINE_BASE(nap::Operator)
 
 namespace nap
 {
@@ -25,7 +25,7 @@ namespace nap
         Object* parent = getParentObject();
         while (parent)
         {
-            if (parent->getTypeInfo().isKindOf<Entity>())
+            if (parent->get_type().is_derived_from<Entity>())
                 return static_cast<Entity*>(parent);
             else
                 parent = parent->getParentObject();

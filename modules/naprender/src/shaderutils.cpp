@@ -167,7 +167,7 @@ namespace nap
 		}
 
 		// Make sure it's a resource link we're resolving
-		if (!attr.getTypeInfo().isKindOf(RTTI_OF(ResourceLinkAttribute)))
+		if (!attr.get_type().is_derived_from(RTTI_OF(ResourceLinkAttribute)))
 		{
 			nap::Logger::warn("attribute is not of type: ResourceLinkAttribute");
 			return;

@@ -19,7 +19,7 @@ namespace nap
 	 */
 	class OpenGLRenderWindow : public RenderWindow
 	{
-		RTTI_ENABLE_DERIVED_FROM(RenderWindow)
+		RTTI_ENABLE(RenderWindow)
 	public:
 		// Constructor
 		OpenGLRenderWindow(const RenderWindowSettings& settings, opengl::Window* window);
@@ -111,7 +111,7 @@ namespace nap
 	 */
 	class OpenGLRenderer : public Renderer
 	{
-		RTTI_ENABLE_DERIVED_FROM(Renderer)
+		RTTI_ENABLE(Renderer)
 	public:
 		/**
 		 * Initializes the video subsystem
@@ -138,6 +138,3 @@ namespace nap
 
 	};
 }
-
-RTTI_DECLARE(nap::OpenGLRenderer)
-RTTI_DECLARE_BASE(nap::OpenGLRenderWindow)

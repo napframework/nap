@@ -13,7 +13,7 @@ namespace nap
 	//! This is a patch of operators that can be connected to one another through their plugs
 	class Patch : public AttributeObject
 	{
-		RTTI_ENABLE_DERIVED_FROM(AttributeObject)
+		RTTI_ENABLE(AttributeObject)
 	public:
 		class Connection;
 
@@ -39,14 +39,14 @@ namespace nap
 		T& addOperator(const std::string& name)
 		{
             auto type = RTTI::TypeInfo::get<T>();
-            assert(type.template isKindOf<Operator>());
+            assert(type.template is_derived_from<Operator>());
             return addChild<T>(name);
 		}
 
 		// Factory, create an operator based on typeinfo or
 		Operator& addOperator(RTTI::TypeInfo type)
 		{
-            assert(type.isKindOf<Operator>());
+            assert(type.is_derived_from<Operator>());
             return static_cast<Operator&>(addChild(type));
 		}
 
@@ -124,8 +124,4 @@ namespace nap
 		OutputPlugBase& mSource;
 		InputPlugBase& mDestination;
 	};
-
-
-
 }
-RTTI_DECLARE(nap::Patch)

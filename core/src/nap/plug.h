@@ -50,7 +50,7 @@ namespace nap
 	// plugs.
 	class Plug : public Object
 	{
-		RTTI_ENABLE_DERIVED_FROM(Object)
+		RTTI_ENABLE(Object)
 
 	public:
         Plug() : Object() {}
@@ -90,7 +90,7 @@ namespace nap
 	// This class is used as the base class of all output plugs
 	class OutputPlugBase : public Plug
 	{
-		RTTI_ENABLE_DERIVED_FROM(Plug)
+		RTTI_ENABLE(Plug)
 		friend class InputPlugBase;
 
 	public:
@@ -116,7 +116,7 @@ namespace nap
 	// vice versa connectivity is implemented in the input plug class.
 	class InputPlugBase : public Plug
 	{
-		RTTI_ENABLE_DERIVED_FROM(Plug)
+		RTTI_ENABLE(Plug)
 		friend class OutputPlugBase;
 
 	public:
@@ -154,7 +154,7 @@ namespace nap
 		// emitted when disconnected from a plug
 		nap::Signal<InputPlugBase&> disconnected;
         
-    private:
+    protected:
         // The plug to which this plug is connected
         TypedLink<OutputPlugBase> mConnection = { *this };
 
@@ -394,7 +394,7 @@ namespace nap
 	template <typename T>
 	class OutputPullPlug : public OutputPlugBase
 	{
-        RTTI_ENABLE_DERIVED_FROM(OutputPlugBase)
+        RTTI_ENABLE(OutputPlugBase)
 		friend class InputPullPlug<T>;
 
 	public:
@@ -478,7 +478,7 @@ namespace nap
 	template <typename T>
 	class OutputStreamPlug : public OutputPlugBase
 	{
-        RTTI_ENABLE_DERIVED_FROM(OutputPlugBase)
+        RTTI_ENABLE(OutputPlugBase)
 		friend class InputStreamPlug<T>;
 
 	public:
@@ -627,7 +627,7 @@ namespace nap
 	template <typename T>
 	void InputStreamPlug<T>::disconnect()
 	{
-        auto outputPlug = dynamic_cast<OutputStreamPlug<T>*>(mConnection);
+        auto outputPlug = dynamic_cast<OutputStreamPlug<T>*>(mConnection.getTarget());
         onDisconnect(outputPlug->source);
 		InputPlugBase::disconnect();
 	}
@@ -635,7 +635,3 @@ namespace nap
 
 
 }
-
-RTTI_DECLARE_BASE(nap::Plug)
-RTTI_DECLARE_BASE(nap::InputPlugBase)
-RTTI_DECLARE_BASE(nap::OutputPlugBase)

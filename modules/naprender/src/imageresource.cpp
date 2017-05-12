@@ -5,26 +5,70 @@
 #include <nap/logger.h>
 #include <nap/fileutils.h>
 
+RTTI_DEFINE_BASE(nap::TextureResource)
+
+RTTI_BEGIN_CLASS(nap::ImageResource)
+	RTTI_PROPERTY_FILE_LINK("mImagePath", &nap::ImageResource::mImagePath)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS(opengl::Texture2DSettings)
+	RTTI_PROPERTY("mLevel",				&opengl::Texture2DSettings::level)
+	RTTI_PROPERTY("mInternalFormat",	&opengl::Texture2DSettings::internalFormat)
+	RTTI_PROPERTY("mWidth",				&opengl::Texture2DSettings::width)
+	RTTI_PROPERTY("mHeight",			&opengl::Texture2DSettings::height)
+	RTTI_PROPERTY("mFormat",			&opengl::Texture2DSettings::format)
+	RTTI_PROPERTY("mType",				&opengl::Texture2DSettings::type)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS(nap::MemoryTextureResource2D)
+	RTTI_PROPERTY_REQUIRED("mSettings",			&nap::MemoryTextureResource2D::mSettings)
+RTTI_END_CLASS
+
+RTTI_DEFINE(nap::ImageResource)
+
 namespace nap
 {
 	// Initializes 2D texture. Additionally a custom display name can be provided.
-	void MemoryTextureResource2D::init(const opengl::Texture2DSettings& settings, const std::string& displayName)
+	bool MemoryTextureResource2D::init(InitResult& initResult)
 	{
-		mDisplayName = displayName;
-		mTexture.init();
-		mTexture.allocate(settings);
+		mPrevTexture = mTexture;
+		mTexture = new opengl::Texture2D;
+		mTexture->init();
+
+		mTexture->allocate(mSettings);
+
+		return true;
+	}
+
+	void MemoryTextureResource2D::finish(Resource::EFinishMode mode)
+	{
+		if (mode == Resource::EFinishMode::COMMIT)
+		{
+			if (mPrevTexture != nullptr)
+			{
+				delete mPrevTexture;
+				mPrevTexture = nullptr;
+			}
+		}
+		else
+		{
+			assert(mode == Resource::EFinishMode::ROLLBACK);
+			delete mTexture;
+			mTexture = mPrevTexture;
+			mPrevTexture = nullptr;
+		}
 	}
 
 	// Returns 2D texture object
 	const opengl::BaseTexture& MemoryTextureResource2D::getTexture() const
 	{
-		return mTexture;
+		assert(mTexture != nullptr);
+		return *mTexture;
 	}
 
 	// Constructor
 	ImageResource::ImageResource(const std::string& imgPath)
 	{
-		mImagePath = imgPath;
 		mDisplayName = getFileNameWithoutExtension(imgPath);
 		assert(mDisplayName != "");
 	}
@@ -37,69 +81,50 @@ namespace nap
 	}
 
 
-	const std::string& ImageResource::getDisplayName() const
+	const std::string ImageResource::getDisplayName() const
 	{
 		return mDisplayName;
 	}
 
+	bool ImageResource::init(InitResult& initResult)
+	{
+		if (!initResult.check(!mImagePath.empty(), "Imagepath not set"))
+			return false;
+
+		mPrevImage = mImage;
+		mImage = new opengl::Image;
+
+		if (!initResult.check(mImage->load(mImagePath), "Unable to load image from file"))
+			return false;
+
+		return true;
+	}
+
+	void ImageResource::finish(Resource::EFinishMode mode)
+	{
+		if (mode == Resource::EFinishMode::COMMIT)
+		{
+			if (mPrevImage != nullptr)
+			{
+				delete mPrevImage;
+				mPrevImage = nullptr;
+			}
+		}
+		else
+		{
+			assert(mode == Resource::EFinishMode::ROLLBACK);
+			delete mImage;
+			mImage = mPrevImage;
+			mPrevImage = nullptr;
+		}
+	}
 
 	const opengl::Image& ImageResource::getImage() const
 	{
-		if (!mLoaded)
-		{
-			if (!mImage.load(mImagePath))
-			{
-				nap::Logger::warn("unable to load image: %s", mImagePath.c_str());
-			}
-			mLoaded = true;
-		}
-		return mImage;
+		assert(mImage != nullptr);
+		return *mImage;
 	}
 	
-	// Resource loader constructor
-	ImageResourceLoader::ImageResourceLoader()
-	{
-		for (const auto& ext : getSupportedImgExtensions())
-		{
-			addFileExtension(ext);
-		}
-	}
-
-
-	// Returns all supported image extensions
-	const std::vector<std::string>& ImageResourceLoader::getSupportedImgExtensions()
-	{
-		static std::vector<std::string> extensions;
-		if (extensions.empty())
-		{
-			extensions = std::vector<std::string>
-			{
-				"bmp",
-				"dds",
-				"raw",
-				"ico",
-				"jpg",
-				"jpeg",
-				"png",
-				"tga",
-				"tiff",
-				"psd",
-				"hdr",
-				"exr",
-				"gif",
-			};
-		}
-		return extensions;
-	}
-
-
-	// Loads a resource
-	std::unique_ptr<Resource> ImageResourceLoader::loadResource(const std::string& resourcePath) const
-	{
-		return std::make_unique<ImageResource>(resourcePath);
-	}
-
-
 	// Non const getter, following:
 	opengl::BaseTexture& TextureResource::getTexture()
 	{
@@ -107,8 +132,3 @@ namespace nap
 	}
 	
 }
-
-RTTI_DEFINE(nap::TextureResource)
-RTTI_DEFINE(nap::MemoryTextureResource2D)
-RTTI_DEFINE(nap::ImageResource)
-RTTI_DEFINE(nap::ImageResourceLoader)

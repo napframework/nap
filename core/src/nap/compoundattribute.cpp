@@ -21,12 +21,12 @@ namespace nap {
     void CompoundAttribute::initialize()
     {
         childAdded.connect([&](Object& object){
-            if (object.getTypeInfo().isKindOf<AttributeBase>())
+            if (object.get_type().is_derived_from<AttributeBase>())
             {
                 auto& attribute = static_cast<AttributeBase&>(object);
                 attribute.valueChanged.connect(valueChanged);
                 
-                if (object.getTypeInfo().isKindOf<CompoundAttribute>())
+                if (object.get_type().is_derived_from<CompoundAttribute>())
                 {
                     auto& compound = static_cast<CompoundAttribute&>(object);
                     compound.sizeChanged.connect(childSizeChangedSlot);
@@ -37,12 +37,12 @@ namespace nap {
         });
         
         childRemoved.connect([&](Object& object){
-            if (object.getTypeInfo().isKindOf<AttributeBase>())
+            if (object.get_type().is_derived_from<AttributeBase>())
             {
                 auto& attribute = static_cast<AttributeBase&>(object);
                 attribute.valueChanged.disconnect(valueChanged);
                 
-                if (object.getTypeInfo().isKindOf<CompoundAttribute>())
+                if (object.get_type().is_derived_from<CompoundAttribute>())
                 {
                     auto& compound = static_cast<CompoundAttribute&>(object);
                     compound.sizeChanged.disconnect(childSizeChangedSlot);
@@ -58,14 +58,14 @@ namespace nap {
     // Populate @inAttribute with contents of this
     void CompoundAttribute::getValue(AttributeBase& inAttribute) const
     {
-        assert(inAttribute.getTypeInfo().isKindOf(getTypeInfo()));
+        assert(inAttribute.get_type().is_derived_from(get_type()));
         
         auto& other = static_cast<CompoundAttribute&>(inAttribute);
         other.clear();
         
         for (auto& child : getAttributes())
         {
-            auto& newAttribute = other.addChild(child->getName(), child->getTypeInfo());
+            auto& newAttribute = other.addChild(child->getName(), child->get_type());
             static_cast<AttributeBase&>(newAttribute).setValue(*child);
         }
     }
@@ -74,14 +74,14 @@ namespace nap {
     // Populate this with contents of @inAttribute
     void CompoundAttribute::setValue(const AttributeBase& inAttribute)
     {
-        assert(inAttribute.getTypeInfo().isKindOf(getTypeInfo()));
+        assert(inAttribute.get_type().is_derived_from(get_type()));
         
         auto& other = static_cast<const CompoundAttribute&>(inAttribute);
         clear();
         
         for (auto& child : other.getAttributes())
         {
-            auto& newAttribute = addChild(child->getName(), child->getTypeInfo());
+            auto& newAttribute = addChild(child->getName(), child->get_type());
             static_cast<AttributeBase&>(newAttribute).setValue(*child);
         }
     }
@@ -103,9 +103,9 @@ namespace nap {
     
     AttributeBase* CompoundAttribute::addAttribute(const std::string& name, const RTTI::TypeInfo& attributeType)
     {
-        if (!attributeType.isKindOf(RTTI_OF(nap::AttributeBase)))
+        if (!attributeType.is_derived_from(RTTI_OF(nap::AttributeBase)))
         {
-            nap::Logger::warn(*this, "can't add object: %s, not an attribute", attributeType.getName().c_str());
+            nap::Logger::warn(*this, "can't add object: %s, not an attribute", attributeType.get_name().data());
             return nullptr;
         }
         return &static_cast<AttributeBase&>(addChild(name, attributeType));
@@ -175,7 +175,7 @@ namespace nap {
         nap::Object* obj = getChild(index);
         if (obj == nullptr)
             return nullptr;
-        assert(obj->getTypeInfo().isKindOf(RTTI_OF(AttributeBase)));
+        assert(obj->get_type().is_derived_from(RTTI_OF(AttributeBase)));
         return static_cast<AttributeBase*>(obj);
     }
     

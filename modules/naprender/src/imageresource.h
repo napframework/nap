@@ -1,7 +1,10 @@
 #pragma once
 
+#include <nap.h>
 #include <nap/resource.h>
+#include <nap/coreattributes.h>
 #include <nimage.h>
+
 
 namespace nap
 {
@@ -13,7 +16,7 @@ namespace nap
 	class TextureResource : public Resource
 	{
 		friend class ImageResourceLoader;
-		RTTI_ENABLE_DERIVED_FROM(Resource)
+		RTTI_ENABLE(Resource)
 	public:
 		/**
 		 * Virtual override to be implemented by derived classes
@@ -41,13 +44,18 @@ namespace nap
 	*/
 	class MemoryTextureResource2D : public TextureResource
 	{
-		RTTI_ENABLE_DERIVED_FROM(TextureResource)
+		RTTI_ENABLE(TextureResource)
 	public:
 
 		/**
-		* Initializes 2D texture. Additionally a custom display name can be provided.
+		* Creates internal texture resource.
 		*/
-		void init(const opengl::Texture2DSettings& settings, const std::string& displayName = "MemoryTexture2D");
+		virtual bool init(InitResult& initResult) override;
+
+		/**
+		* Commits changes made by init, or rolls them back.
+		*/
+		virtual void finish(Resource::EFinishMode mode) override;
 
 		/**
 		* Returns 2D texture object
@@ -57,11 +65,15 @@ namespace nap
 		/**
 		* Returns custom display name
 		*/
-		virtual const std::string& getDisplayName() const override				{ return mDisplayName;  }
+		virtual const std::string getDisplayName() const override				{ return mDisplayName;  }
+
+	public:
+		opengl::Texture2DSettings mSettings;
 
 	private:
-		opengl::Texture2D mTexture;		// Texture as created during init
-		std::string mDisplayName;		// Custom display name
+		opengl::Texture2D* mTexture				= nullptr;				// Texture as created during init
+		opengl::Texture2D* mPrevTexture			= nullptr;				// Stored texture content before for rolling back
+		std::string mDisplayName				= "MemoryTexture2D";	// Custom display name
 	};
 
 
@@ -73,13 +85,17 @@ namespace nap
 	class ImageResource : public TextureResource
 	{
 		friend class ImageResourceLoader;
-		RTTI_ENABLE_DERIVED_FROM(TextureResource)
+		RTTI_ENABLE(TextureResource)
 	public:
 		// Constructor
 		ImageResource(const std::string& imgPath);
 
 		// Default Constructor
 		ImageResource() = default;
+
+		virtual bool init(InitResult& initResult) override;
+
+		void finish(Resource::EFinishMode mode);
 
 		/**
 		 * @return opengl image + bitmap data
@@ -97,47 +113,19 @@ namespace nap
 		/**
 		 * @return human readable display name
 		 */
-		virtual const std::string& getDisplayName() const override;
+		virtual const std::string getDisplayName() const override;
 
-
-	private:
+	public:
 		// Path to img on disk
 		std::string				mImagePath;
 
+	private:
 		// Display name of img
 		std::string				mDisplayName;
 
-		// If the img has been loaded
-		mutable bool			mLoaded = false;
-
 		// Opengl Image Object
-		mutable opengl::Image	mImage;
+		opengl::Image*			mImage = nullptr;
+		opengl::Image*			mPrevImage = nullptr;
 	};
 
-
-	/**
-	 * Creates the image resource
-	 * for a list of supported formats check: http://freeimage.sourceforge.net/features.html
-	 */
-	class ImageResourceLoader : public ResourceLoader
-	{
-		RTTI_ENABLE_DERIVED_FROM(ResourceLoader)
-	public:
-		ImageResourceLoader();
-
-		/**
-		 * @return all supported image extensions
-		 */
-		static const std::vector<std::string>& getSupportedImgExtensions();
-
-		/**
-		 * Creates an image resource
-		 */
-		virtual std::unique_ptr<Resource> loadResource(const std::string& resourcePath) const override;
-	};
 }
-
-RTTI_DECLARE_BASE(nap::TextureResource)
-RTTI_DECLARE(nap::MemoryTextureResource2D)
-RTTI_DECLARE(nap::ImageResource)
-RTTI_DECLARE(nap::ImageResourceLoader)

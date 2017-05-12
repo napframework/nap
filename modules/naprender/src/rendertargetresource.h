@@ -16,8 +16,19 @@ namespace nap
 	 */
 	class TextureRenderTargetResource2D : public Resource
 	{
-		RTTI_ENABLE_DERIVED_FROM(Resource)
+		RTTI_ENABLE(Resource)
 	public:
+
+		/**
+		* Creates internal OpengL render target, bound to color and depth textures.
+		*/
+		virtual bool init(InitResult& initResult) override;
+
+		/**
+		* Performs commit or rollback of changes made in init.
+		*/
+		virtual void finish(Resource::EFinishMode mode) override;
+
 		/**
 		* Sets color texture resource.
 		*/
@@ -31,7 +42,7 @@ namespace nap
 		/**
 		* Returns color texture resource
 		*/
-		MemoryTextureResource2D& GetColorTexture()							{ return *mColorTexture;  }
+		MemoryTextureResource2D& GetColorTexture()							{ return *mColorTexture; }
 
 		/**
 		* Returns depth texture resource
@@ -47,21 +58,21 @@ namespace nap
 		/**
 		* @return human readable display name
 		*/
-		virtual const std::string& getDisplayName() const override;
+		virtual const std::string getDisplayName() const override;
 
 	private:
+
 		// Framebuffer to draw to
-		opengl::TextureRenderTarget2D mTextureRenderTarget;
+		opengl::TextureRenderTarget2D* mTextureRenderTarget = nullptr;
+		opengl::TextureRenderTarget2D* mPrevTextureRenderTarget = nullptr;
 
-		// If the framebuffer has been loaded
-		bool mLoaded = false;
-
+	public:
 		// Color texture to be used by the render target
-		MemoryTextureResource2D*		mColorTexture = nullptr;
-
+		MemoryTextureResource2D* mColorTexture = nullptr;
+		
 		// Depth texture to be used by the render target
-		MemoryTextureResource2D*		mDepthTexture = nullptr;
+		MemoryTextureResource2D* mDepthTexture = nullptr;
+
+		glm::vec4 mClearColor;
 	};
 }
-
-RTTI_DECLARE(nap::TextureRenderTargetResource2D)

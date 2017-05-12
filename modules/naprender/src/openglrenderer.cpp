@@ -166,7 +166,7 @@ namespace nap
 		// Check if we need to share context information
 		if (settings.sharedWindow != nullptr)
 		{
-			if (!settings.sharedWindow->getTypeInfo().isKindOf(RTTI_OF(OpenGLRenderWindow)))
+			if (!settings.sharedWindow->get_type().is_derived_from(RTTI_OF(OpenGLRenderWindow)))
 			{
 				nap::Logger::fatal("trying to share a context with non OpenGL type window");
 				return nullptr;
@@ -213,4 +213,4 @@ namespace nap
 }
 
 RTTI_DEFINE(nap::OpenGLRenderer)
-RTTI_DEFINE(nap::OpenGLRenderWindow)
+RTTI_DEFINE_BASE(nap::OpenGLRenderWindow)

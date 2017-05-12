@@ -8,8 +8,7 @@
 #include <fstream>
 
 RTTI_DEFINE(nap::JSONSerializer)
-RTTI_DEFINE(nap::JSONResource)
-RTTI_DEFINE(nap::JSONFileLoader)
+RTTI_DEFINE_BASE(nap::JSONResource)
 
 
 
@@ -55,7 +54,7 @@ namespace nap
 	{
 		std::vector<AttributeBase*> attribs;
 		for (AttributeBase* a : attribObj.getAttributes())
-			if (!a->getTypeInfo().isKindOf<CompoundAttribute>())
+			if (!a->get_type().is_derived_from<CompoundAttribute>())
 				attribs.emplace_back(a);
 		return attribs;
 	}
@@ -68,7 +67,7 @@ namespace nap
 			writer.String(J_NAME);
 			writer.String(attrib.getName().c_str());
 			writer.String(J_VALUE_TYPE);
-			writer.String(attrib.getValueType().getName().c_str());
+			writer.String(attrib.getValueType().get_name().data());
 			writer.String(J_FLAGS);
 			writer.Int(attrib.getFlags());
 
@@ -87,7 +86,7 @@ namespace nap
 	}
 
     
-	bool isAttribute(Object& obj) { return obj.getTypeInfo().isKindOf<AttributeBase>(); }
+	bool isAttribute(Object& obj) { return obj.get_type().is_derived_from<AttributeBase>(); }
 
     
 	void writeTheObject(Writer& writer, Object& obj, bool writePointers)
@@ -97,7 +96,7 @@ namespace nap
 			writer.String(J_NAME);
 			writer.String(obj.getName().c_str());
 			writer.String(J_TYPE);
-			writer.String(obj.getTypeInfo().getName().c_str());
+			writer.String(obj.get_type().get_name().data());
 			writer.String(J_FLAGS);
 			writer.Int(obj.getFlags());
 
@@ -105,7 +104,7 @@ namespace nap
 			if (auto plug = rtti_cast<Plug>(&obj))
             {
 				writer.String(J_DATA_TYPE);
-				writer.String(plug->getDataType().getName().c_str());
+				writer.String(plug->getDataType().get_name().data());
 
 				if (auto inputPlug = rtti_cast<nap::InputPlugBase>(plug)) {
                     if (inputPlug->isConnected()) {
@@ -168,12 +167,12 @@ namespace nap
 	TypeList getInstantiableSubTypes(RTTI::TypeInfo parentType)
 	{
 		TypeList types;
-		for (const auto& type : RTTI::TypeInfo::getRawTypes()) {
-			if (!type.isKindOf(parentType))
+		for (const auto& type : RTTI::TypeInfo::get_raw_types()) {
+			if (!type.is_derived_from(parentType))
 				continue;
 			if (type == parentType)
 				continue;
-			if (!type.canCreateInstance())
+			if (!type.can_create_instance())
 				continue;
 			types.push_back(type);
 		}
@@ -184,9 +183,9 @@ namespace nap
 	TypeList getAttributeTypes()
 	{
 		TypeList types;
-		for (const auto& type : RTTI::TypeInfo::getRawTypes()) {
-			if (type.isKindOf<AttributeBase>() && type.canCreateInstance()) {
-				AttributeBase* attrib = static_cast<AttributeBase*>(type.createInstance());
+		for (const auto& type : RTTI::TypeInfo::get_raw_types()) {
+			if (type.is_derived_from<AttributeBase>() && type.can_create_instance()) {
+				AttributeBase* attrib = type.create<AttributeBase>();
 				types.push_back(attrib->getValueType());
 			}
 		}
@@ -198,7 +197,7 @@ namespace nap
 	{
 		w.StartArray();
 		for (const auto& type : types) {
-			w.String(type.getName().c_str());
+			w.String(type.get_name().data());
 		}
 		w.EndArray();
 	}
@@ -228,22 +227,22 @@ namespace nap
 			// Write Type inheritance
 			w.String("types");
 			w.StartArray();
-			for (const auto& type : RTTI::TypeInfo::getRawTypes()) {
+			for (const auto& type : RTTI::TypeInfo::get_raw_types()) {
 
 
 
 				w.StartObject();
 				{
 					w.String("name");
-					w.String(type.getName().c_str());
+					w.String(type.get_name().data());
 
 					w.String("instantiable");
-					w.Bool(type.canCreateInstance());
+					w.Bool(type.can_create_instance());
 
 					w.String("basetypes");
 					w.StartArray();
-					for (const auto &baseType : type.getBaseTypes())
-						w.String(baseType.getName().c_str());
+					for (const auto &baseType : type.get_base_classes())
+						w.String(baseType.get_name().data());
 					w.EndArray();
 				}
 				w.EndObject();
@@ -273,24 +272,24 @@ namespace nap
 		const char* attrName = value.FindMember(J_NAME)->value.GetString();
 		const char* attrValueTypeName = value.FindMember(J_VALUE_TYPE)->value.GetString();
 
-		assert(parent->getTypeInfo().isKindOf<AttributeObject>() ||
-			   parent->getTypeInfo().isKindOf<CompoundAttribute>());
+		assert(parent->get_type().is_derived_from<AttributeObject>() ||
+			   parent->get_type().is_derived_from<CompoundAttribute>());
 		AttributeObject* attributeObject = static_cast<AttributeObject*>(parent);
 
 		AttributeBase* attrib = attributeObject->getAttribute(attrName);
 		if (!attrib) {
-            const RTTI::TypeInfo& attrValueType = RTTI::TypeInfo::getByName(attrValueTypeName);
+            const RTTI::TypeInfo& attrValueType = RTTI::TypeInfo::get_by_name(attrValueTypeName);
 
 			const RTTI::TypeInfo& attrType = getAttributeTypeFromValueType(attrValueType);
 			attrib = &attributeObject->addAttribute(attrName, attrType);
 		}
-		assert(!strcmp(attrValueTypeName, attrib->getValueType().getName().c_str()));
+		assert(!strcmp(attrValueTypeName, attrib->getValueType().get_name().data()));
 
 
 		const TypeConverterBase* converter =
 			core.getModuleManager().getTypeConverter(RTTI_OF(std::string), attrib->getValueType());
 		if (!converter) {
-			nap::Logger::fatal("Cannot convert to %s", attrib->getValueType().getName().c_str());
+			nap::Logger::fatal("Cannot convert to %s", attrib->getValueType().get_name().data());
 			return attrib;
 		}
 
@@ -298,8 +297,8 @@ namespace nap
 		std::string valueStr = value.FindMember(J_VALUE)->value.GetString();
 		strAttr.setValue(valueStr);
 		if (!converter->convert(&strAttr, attrib)) {
-			nap::Logger::fatal("Conversion failed from '%s' to '%s'", converter->inType().getName().c_str(),
-							   converter->outType().getName().c_str());
+			nap::Logger::fatal("Conversion failed from '%s' to '%s'", converter->inType().get_name().data(),
+							   converter->outType().get_name().data());
 		}
 
 		return attrib;
@@ -320,25 +319,25 @@ namespace nap
 			core.getRoot().setName(objectName);
 			obj = &core.getRoot();
 		} else {
-			RTTI::TypeInfo objectType = RTTI::TypeInfo::getByName(objectTypename);
-            if (!objectType.isValid()) {
+			RTTI::TypeInfo objectType = RTTI::TypeInfo::get_by_name(objectTypename);
+            if (!objectType.is_valid()) {
                 Logger::fatal("Failed to retrieve type: '%s'", objectTypename);
                 return nullptr;
             }
 
 
 			// Handle Entity
-			if (objectType.isKindOf<Entity>()) {
-                assert(parent->getTypeInfo().isKindOf<Entity>());
+			if (objectType.is_derived_from<Entity>()) {
+                assert(parent->get_type().is_derived_from<Entity>());
                 Entity* parentEntity = static_cast<Entity*>(parent);
                 obj = &parentEntity->addEntity(objectName);
 			} else {
-                if (!objectType.canCreateInstance()) {
+                if (!objectType.can_create_instance()) {
                     Logger::fatal("Cannot create instance of type: '%s'", objectTypename);
                     return nullptr;
                 }
 				// Handle other types
-				if (parent->hasChild(objectName) && parent->getChild(objectName)->getTypeInfo().isKindOf(objectType)) {
+				if (parent->hasChild(objectName) && parent->getChild(objectName)->get_type().is_derived_from(objectType)) {
 					// Child alread exists
 					obj = parent->getChild(objectName);
 				} else {
@@ -394,14 +393,4 @@ namespace nap
         Object* o = jsonToObject(doc, core, parent);
         return o;
 	}
-
-
-	std::unique_ptr<Resource> JSONFileLoader::loadResource(const std::string& resourcePath) const
-	{
-        std::ifstream is(resourcePath);
-        std::string str((std::istreambuf_iterator<char>(is)),
-                        std::istreambuf_iterator<char>());
-        
-		return std::make_unique<JSONResource>(resourcePath, str);
-    }
 }

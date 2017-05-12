@@ -1,6 +1,6 @@
 #include "rpcservice.h"
 
-RTTI_DEFINE(nap::RpcService)
+RTTI_DEFINE_BASE(nap::RpcService)
 
 namespace nap
 {
@@ -19,12 +19,12 @@ namespace nap
         obj.childRemoved.connect(onChildRemovedSlot);
 
         // Handle attribute changes as well
-        if (obj.getTypeInfo().isKindOf<AttributeBase>()) {
+        if (obj.get_type().is_derived_from<AttributeBase>()) {
             auto& attrib = *static_cast<AttributeBase*>(&obj);
             attrib.valueChanged.connect(onAttributeValueChangedSlot);
         }
 
-        if (obj.getTypeInfo().isKindOf<InputPlugBase>()) {
+        if (obj.get_type().is_derived_from<InputPlugBase>()) {
             auto& plug = *static_cast<InputPlugBase*>(&obj);
             plug.connected.connect(onPlugConnectedSlot);
             plug.disconnected.connect(onPlugDisconnectedSlot);
@@ -39,7 +39,7 @@ namespace nap
 //        mObject.childRemoved.disconnect(this, &RPCObjectCallback::onChildRemoved);
 //
 //        // Handle attribute changes as well
-//        if (mObject.getTypeInfo().isKindOf<AttributeBase>()) {
+//        if (mObject.get_type().is_derived_from<AttributeBase>()) {
 //            auto& attrib = *static_cast<AttributeBase*>(&mObject);
 //            attrib.valueChanged.disconnect(this, &RPCObjectCallback::onAttributeValueChanged);
 //        }
@@ -143,7 +143,4 @@ namespace nap
         std::string result = evalScript(msg);
 		client.enqueueEvent(result);
 	}
-
-
-
 }

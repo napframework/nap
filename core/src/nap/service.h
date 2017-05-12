@@ -24,7 +24,7 @@ namespace nap
 
 	class Service : public AttributeObject
 	{
-		RTTI_ENABLE_DERIVED_FROM(AttributeObject)
+		RTTI_ENABLE(AttributeObject)
 		friend class Core;
 		friend class ServiceableComponent;
         friend class ServiceableOperator;
@@ -40,7 +40,7 @@ namespace nap
 		Core& getCore();
 
 		// Service type name
-		const std::string getTypeName() const { return RTTI::TypeInfo::get(*this).getName(); };
+		const std::string getTypeName() const { return RTTI::TypeInfo::get(*this).get_name().data(); };
 
 		// Component search filter function
         using ObjectFilterFunction = std::function<bool(Object&, Core&)>;
@@ -152,6 +152,3 @@ protected:                    \
 	static void sRegisterTypes(nap::Core& inCore, const nap::Service& inService);
 
 //////////////////////////////////////////////////////////////////////////
-
-
-RTTI_DECLARE_BASE(nap::Service)

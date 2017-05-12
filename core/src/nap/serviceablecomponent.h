@@ -22,7 +22,7 @@ namespace nap
 
 	class ServiceableComponent : public Component
 	{
-		RTTI_ENABLE_DERIVED_FROM(Component)
+		RTTI_ENABLE(Component)
 	public:
 		ServiceableComponent();
 
@@ -42,5 +42,3 @@ namespace nap
 		void registerWithService(const Object& object);
 	};
 }
-
-RTTI_DECLARE_BASE(nap::ServiceableComponent)

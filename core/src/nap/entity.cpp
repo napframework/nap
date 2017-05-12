@@ -6,7 +6,7 @@
 using namespace std;
 
 // Define Entity in Type Registry
-RTTI_DEFINE(nap::Entity)
+RTTI_DEFINE_BASE(nap::Entity)
 
 namespace nap
 {
@@ -23,7 +23,7 @@ namespace nap
     // Add a new component of @componentType
     Component& Entity::addComponent(const RTTI::TypeInfo& componentType)
     {
-        assert(componentType.isKindOf<Component>());
+        assert(componentType.is_derived_from<Component>());
         return *static_cast<Component*>(&addChild("", componentType));
     }
     

@@ -3,7 +3,12 @@
 #include "rpcservice.h"
 #include <rtti/rtti.h>
 #include <vector>
+
+#ifndef NOMINMAX
+	#define NOMINMAX
+#endif
 #include <zmq.hpp>
+#undef NOMINMAX
 
 #include "jsonrpc-lean/server.h"
 
@@ -17,7 +22,7 @@ namespace nap
 	 */
 	class JsonRpcService : public RpcService
 	{
-		RTTI_ENABLE_DERIVED_FROM(RpcService)
+		RTTI_ENABLE(RpcService)
 	public:
 		JsonRpcService();
 
@@ -87,5 +92,3 @@ namespace nap
 		std::mutex mMutex;
 	};
 }
-
-RTTI_DECLARE(nap::JsonRpcService)
