@@ -31,6 +31,16 @@ namespace opengl
 	};
 
 	/**
+	 * Result of OpenGL shader validation
+	 */
+	enum class EShaderValidationResult : uint8_t
+	{
+		SUCCESS,
+		WARNING,
+		ERROR
+	};
+
+	/**
 	 * Uniform set function, where void* is the data, GLint the location and
 	 * GLSizei the number of elements
 	 */
@@ -113,7 +123,7 @@ namespace opengl
 	 * Note that the shader part must be loaded
 	 * @return if the shader part is loaded correctly
 	 */
-	bool validateShader(GLuint shader);
+	EShaderValidationResult validateShader(GLuint shader, std::string& validationMessage);
 
 
 	/**
@@ -123,7 +133,7 @@ namespace opengl
 	 * Note that the shader must be loaded
 	 * @return if the shader program is loaded correctly without errors
 	 */
-	bool validateShaderProgram(GLuint program);
+	EShaderValidationResult validateShaderProgram(GLuint program, std::string& validationMessage);
 
 
 	/**

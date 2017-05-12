@@ -98,32 +98,56 @@ namespace opengl
 		glAssert();
 		
 		glCompileShader(mShaderVp);							// Compile the vertex shader
-		if (!validateShader(mShaderVp))						// Validate the vertex shader
+
+		// Validate the vertex shader
+		std::string vertex_compile_message;
+		EShaderValidationResult vertex_compile_result = validateShader(mShaderVp, vertex_compile_message);
+		if (vertex_compile_result == EShaderValidationResult::ERROR)
 		{
-			printMessage(MessageType::ERROR, "unable to validate vertex shader: %s", vertexText);
+			printMessage(MessageType::ERROR, "Unable to compile vertex shader (%s): %s \r\n%s", vsFile.c_str(), vertex_compile_message.c_str(), vertexText);
 			mState = State::VertexError;
 			return;
 		}
-
+		else if (vertex_compile_result == EShaderValidationResult::WARNING)
+		{
+			printMessage(MessageType::WARNING, "Compilation of vertex shader (%s) succeeded, but with warnings: %s", vsFile.c_str(), vertex_compile_message.c_str());
+		}
+		
 		// Load fragment shader
 		glShaderSource(mShaderFp, 1, &fragmentText, 0);		// Set the source for the fragment shader to the loaded text
 		glAssert();
 		
 		glCompileShader(mShaderFp);							// Compile the fragment shader
-		if (!validateShader(mShaderFp))
+		
+		// Validate the fragment shader
+		std::string fragment_compile_message;
+		EShaderValidationResult fragment_compile_result = validateShader(mShaderFp, fragment_compile_message);
+		if (fragment_compile_result == EShaderValidationResult::ERROR)
 		{
-			printMessage(MessageType::ERROR, "unable to validate fragment shader: %s", fragmentText);
+			printMessage(MessageType::ERROR, "Unable to compile fragment shader (%s): %s \r\n%s", fsFile.c_str(), fragment_compile_message.c_str(), fragmentText);
 			mState = State::FragmentError;
 			return;
-		}													// Validate the fragment shader
-
-		// Link program
-		glLinkProgram(mShaderId);							// Link the vertex and fragment shaders in the program
-		if (!validateShaderProgram(mShaderId))
+		}													
+		else if (fragment_compile_result == EShaderValidationResult::WARNING)
 		{
-			printMessage(MessageType::ERROR, "unable to validate shader program: %s, %s", vsFile.c_str(), fsFile.c_str());
+			printMessage(MessageType::WARNING, "Compilation of fragment shader (%s) succeeded, but with warnings: %s", fsFile.c_str(), fragment_compile_message.c_str());
+		}
+
+		// Link the vertex and fragment shaders in the program
+		glLinkProgram(mShaderId);
+		std::string program_validation_message;
+
+		// Validate the shader program
+		EShaderValidationResult program_validation_result = validateShaderProgram(mShaderId, program_validation_message);
+		if (program_validation_result == EShaderValidationResult::ERROR)
+		{
+			printMessage(MessageType::ERROR, "Unable to validate shader program with vertex shader %s and fragment shader %s: %s", vsFile.c_str(), fsFile.c_str(), program_validation_message.c_str());
 			mState = State::LinkError;
 			return;
+		}
+		else if (program_validation_result == EShaderValidationResult::WARNING)
+		{
+			printMessage(MessageType::WARNING, "Validation of shader program (%s with %s) succeeded, but with warnings: %s", vsFile.c_str(), fsFile.c_str(), program_validation_message.c_str());
 		}
 
 		// Extract all program vertex attributes

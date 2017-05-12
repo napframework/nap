@@ -63,9 +63,10 @@ elseif (APPLE)
     set(CMAKE_LIBRARY_PATH "../thirdparty/glew/osx/lib")
 endif()
 
-if (APPLE)
-    set(CMAKE_PREFIX_PATH ../thirdparty/assimp/osx)
-    set(CMAKE_LIBRARY_PATH "../thirdparty/assimp/osx/lib")
+if (WIN32)
+    set(assimp_DIR "${CMAKE_CURRENT_LIST_DIR}/../thirdparty/assimp/msvc64/install/lib/cmake/assimp-3.3")
+elseif(APPLE)
+    set(assimp_DIR "${CMAKE_CURRENT_LIST_DIR}/../thirdparty/assimp/xcode/install/lib/cmake/assimp-3.3")
 endif()
 
 find_library(GLEW_LIBRARY NAMES GLEW glew32 glew glew32s PATH_SUFFIXES lib64)
@@ -101,13 +102,13 @@ if (MSVC)
     list(APPEND LIBRARIES
             ${GLEW_LIBRARIES}
             ${FREEIMAGE_LIBRARIES}
-            ${ASSIMP_LIBRARIES}
+            ${ASSIMP_LIBRARY_DIRS}/${ASSIMP_LIBRARIES}${CMAKE_STATIC_LIBRARY_SUFFIX}
             )
 elseif(APPLE)
     list(APPEND LIBRARIES
             ${GLEW_LIBRARIES}
             ${FREEIMAGE_LIBRARIES}
-            ${ASSIMP_LIBRARIES}
+            ${ASSIMP_LIBRARY_DIRS}/${ASSIMP_LIBRARIES}${CMAKE_STATIC_LIBRARY_SUFFIX}
 )
 
 elseif(UNIX)

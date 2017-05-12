@@ -4,11 +4,17 @@
 
 namespace opengl
 {
+
+	VertexArrayObject::VertexArrayObject()
+	{
+		int i = 0;
+	}
 	// Destructor
 	VertexArrayObject::~VertexArrayObject()
 	{
-		for (auto state : mContextSpecificState)
-			glDeleteVertexArrays(1, &state.second.mId);
+		// TODO: fix deleting per context!
+// 		for (auto state : mContextSpecificState)
+// 			glDeleteVertexArrays(1, &state.second.mId);
 
 		mContextSpecificState.clear();
 	}
@@ -52,7 +58,11 @@ namespace opengl
 			return false;
 		}
 		
-		glBindVertexArray(mContextSpecificState.find(glContext)->second.mId);
+		ContextSpecificStateMap::iterator kvp = mContextSpecificState.find(glContext);
+		assert(kvp != mContextSpecificState.end());
+		const VertexArrayState& vertex_array_state = kvp->second;
+
+		glBindVertexArray(vertex_array_state.mId);
 		return true;
 	}
 

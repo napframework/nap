@@ -38,7 +38,8 @@ namespace opengl
 		const aiScene* scene = importer->ReadFile(modelPath,
 			aiProcess_CalcTangentSpace |
 			aiProcess_Triangulate |
-			aiProcess_SortByPType);
+			aiProcess_SortByPType |
+			aiProcess_JoinIdenticalVertices);
 
 		// Ensure scene is loaded
 		if (scene == nullptr)
@@ -139,6 +140,22 @@ namespace opengl
 				// Copy color data
 				new_mesh->copyColorData(4, mesh->mNumVertices, &color_data.front());
 			}
+
+			// Retrieve index data
+			assert(mesh->HasFaces());
+			std::vector<unsigned int> indices;
+			indices.reserve(mesh->mNumFaces * 3);
+
+			for (int face_index = 0; face_index != mesh->mNumFaces; ++face_index)
+			{
+				aiFace& face = mesh->mFaces[face_index];
+				assert(face.mNumIndices == 3);
+
+				for (int point_index = 0; point_index != face.mNumIndices; ++point_index)
+					indices.push_back(face.mIndices[point_index]);
+			}
+
+			new_mesh->copyIndexData(indices.size(), &indices[0]);
 
 			// Add mesh
 			model.addMesh(new_mesh);

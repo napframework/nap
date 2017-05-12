@@ -29,7 +29,7 @@ namespace opengl
 	{
 	public:
 		// Construction / Destruction
-		VertexArrayObject() = default;
+		VertexArrayObject();
 		virtual ~VertexArrayObject();
 
 		// Copy is not allowed
