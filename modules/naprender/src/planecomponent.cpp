@@ -61,7 +61,7 @@ static opengl::Mesh* createPlane()
 
 namespace nap
 {
-	PlaneComponent::PlaneComponent(Material& material)
+	PlaneComponent::PlaneComponent(Material& material, RenderService& renderService)
 	{
 		ErrorState error_state;
 		CustomMeshResource* mesh_resource = new CustomMeshResource();
@@ -70,7 +70,7 @@ namespace nap
 		bool success = mesh_resource->init(error_state);
 		assert(success);
 
-		mRenderableMeshResource = new RenderableMeshResource();
+		mRenderableMeshResource = new RenderableMeshResource(renderService);
 		mRenderableMeshResource->mMaterialResource = &material;
 		mRenderableMeshResource->mMeshResource = mesh_resource;
 

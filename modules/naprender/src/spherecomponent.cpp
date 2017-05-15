@@ -99,7 +99,7 @@ static opengl::Mesh* createSphere(float radius, unsigned int rings, unsigned int
 
 namespace nap
 {
-	SphereComponent::SphereComponent(Material& material)
+	SphereComponent::SphereComponent(Material& material, RenderService& renderService)
 	{
 		ErrorState error_state;
 		CustomMeshResource* mesh_resource = new CustomMeshResource();
@@ -108,7 +108,7 @@ namespace nap
 		bool success = mesh_resource->init(error_state);
 		assert(success);
 
-		mRenderableMeshResource = new RenderableMeshResource();
+		mRenderableMeshResource = new RenderableMeshResource(renderService);
 		mRenderableMeshResource->mMaterialResource = &material;
 		mRenderableMeshResource->mMeshResource = mesh_resource;
 		

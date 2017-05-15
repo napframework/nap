@@ -1,4 +1,5 @@
 #include "jsonreader.h"
+#include "factory.h"
 #include "nap/errorstate.h"
 #include "nap/object.h"
 
@@ -59,7 +60,7 @@ namespace nap
 	/**
 	 * Helper function to recursively read an object (can be a nap::Object, nested compound or any other type) from JSON
 	 */
-	static bool readObjectRecursive(nap::Object* object, RTTI::Instance compound, const rapidjson::Value& jsonCompound, RTTI::RTTIPath& rttiPath, UnresolvedPointerList& unresolvedPointers, 
+	static bool readObjectRecursive(nap::Object* object, RTTI::Instance compound, const rapidjson::Value& jsonCompound, RTTI::RTTIPath& rttiPath, UnresolvedPointerList& unresolvedPointers,
 		std::vector<FileLink>& linkedFiles, ErrorState& errorState)
 	{
 		// Determine the object type. Note that we want to *most derived type* of the object.
@@ -253,7 +254,7 @@ namespace nap
 		return true;
 	}
 	
-	bool deserializeJSON(const std::string& json, RTTIDeserializeResult& result, nap::ErrorState& errorState)
+	bool deserializeJSON(const std::string& json, Factory& factory, RTTIDeserializeResult& result, nap::ErrorState& errorState)
 	{
 		// Try to parse the json file
 		rapidjson::Document document;
@@ -299,7 +300,7 @@ namespace nap
 				return false;
 
 			// Create new instance of the object
-			Object* object = type_info.create<Object>();
+			Object* object = factory.create(type_info);
 			result.mReadObjects.push_back(std::unique_ptr<Object>(object));
 
 			// Recursively read properties, nested compounds, etc
@@ -311,7 +312,7 @@ namespace nap
 		return true;
 	}
 
-	bool readJSONFile(const std::string& path, RTTIDeserializeResult& result, nap::ErrorState& errorState)
+	bool readJSONFile(const std::string& path, Factory& factory, RTTIDeserializeResult& result, nap::ErrorState& errorState)
 	{
 		// Open the file
 		std::ifstream in(path, std::ios::in | std::ios::binary);
@@ -329,7 +330,7 @@ namespace nap
 		in.read(&buffer[0], len);
 		in.close();
 
-		if (!deserializeJSON(buffer, result, errorState))
+		if (!deserializeJSON(buffer, factory, result, errorState))
 			return false;
 
 		return true;

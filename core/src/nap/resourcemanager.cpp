@@ -2,6 +2,7 @@
 #include "rtti/rttiutilities.h"
 #include "directorywatcher.h"
 #include "rtti/jsonreader.h"
+#include "rtti/factory.h"
 
 
 RTTI_DEFINE(nap::ResourceManagerService)
@@ -353,7 +354,8 @@ namespace nap
 
 
 	ResourceManagerService::ResourceManagerService() :
-		mDirectoryWatcher(new DirectoryWatcher())
+		mDirectoryWatcher(std::make_unique<DirectoryWatcher>()),
+		mFactory(std::make_unique<Factory>())
 	{
 	}
 
@@ -517,7 +519,7 @@ namespace nap
 
 		// Read objects from disk
 		RTTIDeserializeResult read_result;
-		if (!readJSONFile(filename, read_result, errorState))
+		if (!readJSONFile(filename, *mFactory.get(), read_result, errorState))
 			return false;
 
 		ExistingObjectMap existing_objects;			// Mapping from 'file object' to 'existing object in ResourceMgr'. This is an observer relationship.
@@ -727,7 +729,7 @@ namespace nap
 		}
 
 		// Create instance of resource
-		Resource* resource = type.create<Resource>();
+		Resource* resource = rtti_cast<Resource>(mFactory->create(type));
 
 		// Construct path
 		std::string type_name = type.get_name().data();

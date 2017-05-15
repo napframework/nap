@@ -32,8 +32,8 @@ namespace nap
 		// Set display name
 		mDisplayName = getFileNameWithoutExtension(mVertPath);
 
-		mPrevShader = mShader;
-		mShader = new opengl::Shader;
+		mPrevShader = std::move(mShader);
+		mShader = std::make_unique<opengl::Shader>();
 
 		// Initialize the shader
 		mShader->init(mVertPath, mFragPath);
@@ -47,18 +47,12 @@ namespace nap
 	{
 		if (mode == Resource::EFinishMode::COMMIT)
 		{
-			if (mPrevShader != nullptr)
-			{
-				delete mPrevShader;
-				mPrevShader = nullptr;
-			}
+			mPrevShader = nullptr;
 		}
 		else
 		{
 			assert(mode == Resource::EFinishMode::ROLLBACK);
-			delete mShader;
-			mShader = mPrevShader;
-			mPrevShader = nullptr;
+			mShader = std::move(mPrevShader);
 		}
 	}
 
