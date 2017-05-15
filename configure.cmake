@@ -167,6 +167,21 @@ else()
     set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
 endif()
 
+macro(export_fbx SRCDIR)
+    if (MSVC)
+        add_custom_command(TARGET ${PROJECT_NAME}
+                POST_BUILD
+                COMMAND "$(OutDir)/fbxconverter.exe" -o ${SRCDIR} "${SRCDIR}/*.fbx"
+                COMMENT "Export FBX in '${SRCDIR}'")
+
+    else()
+        add_custom_command(TARGET ${PROJECT_NAME}
+                POST_BUILD
+				COMMAND "${BIN_DIR}/fbxconverter" -o ${SRCDIR} ${SRCDIR}/*.fbx
+                COMMENT "Export FBX in '${SRCDIR}'")
+    endif()
+endmacro()
+
 macro(copy_dir_to_bin SRCDIR DSTDIR)
     if (MSVC)
         add_custom_command(TARGET ${PROJECT_NAME}

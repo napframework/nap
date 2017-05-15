@@ -103,4 +103,12 @@ namespace nap
 	*/
 	bool isFilenameEqual(const std::string& filenameA, const std::string& filenameB);
 
+	/**
+	* Get the modification time of the specified path
+	*
+	* @param path The path to the file
+	* @param modTime The modification time of the file
+	* @return Whether file modification time was successfully retrieved
+	*/
+	bool getFileModificationTime(const std::string& path, uint64_t& modTime);	
 }

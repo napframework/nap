@@ -8,6 +8,8 @@ find_package(openFrameworks REQUIRED)
 find_package(cairo REQUIRED)
 
 add_library(${PROJECT_NAME} STATIC ${sources})
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
+
 target_include_directories(${PROJECT_NAME} PUBLIC
         ${OF_INCLUDE_PATH}
         src

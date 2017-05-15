@@ -5,6 +5,9 @@
 
 // clang-format off
 
+#include <sys/types.h>
+#include <sys/stat.h>
+
 #ifdef _WIN32
 	#ifdef _MSC_VER
 		#include "direntw32.h"
@@ -23,11 +26,13 @@
     #include <sys/stat.h>
     #include <dirent.h>
     #include <fstream>
+	#include <unistd.h>
 #else
     #include <zconf.h>
     #include <sys/stat.h>
     #include <dirent.h>
     #include <fstream>
+	#include <unistd.h>
 #endif
 
 // clang-format on
@@ -150,12 +155,13 @@ namespace nap
 
 
 	// Checks if the file exists on disk
-	bool fileExists(const std::string& filename) {
-        if (FILE *file = fopen(filename.c_str(), "r")) {
-            fclose(file);
-            return true;
-        }
-        return false;
+	bool fileExists(const std::string& filename) 
+	{
+		struct stat result;
+		if (stat(filename.c_str(), &result) != 0)
+			return false;
+
+		return (result.st_mode & S_IFMT) != 0;
     }
 
     
@@ -166,7 +172,9 @@ namespace nap
 			if (access(dirName.c_str(), 0) == 0)
 			{
 				struct stat status;
-				stat(dirName.c_str(), &status);
+				if (stat(dirName.c_str(), &status) != 0)
+					return false;
+
 				if (status.st_mode & S_IFDIR)
 					return true;
 			}
@@ -195,5 +203,20 @@ namespace nap
 	bool isFilenameEqual(const std::string& filenameA, const std::string& filenameB)
 	{
 		return toComparableFilename(filenameA) == toComparableFilename(filenameB);
+	}
+
+
+	bool getFileModificationTime(const std::string& path, uint64_t& modTime)
+	{
+		struct stat result;
+		if (stat(path.c_str(), &result) != 0)
+			return false;
+		
+		// Fail if not a file
+		if ((result.st_mode & S_IFMT) == 0)
+			return false;
+
+		modTime = result.st_mtime;
+		return true;
 	}
 }

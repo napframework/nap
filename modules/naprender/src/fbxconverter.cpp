@@ -77,7 +77,7 @@ namespace nap
 	RTTI_END_CLASS
 
 
-	bool convertFBX(const std::string& fbxPath, const std::string& outputDirectory, ErrorState& errorState)
+	bool convertFBX(const std::string& fbxPath, const std::string& outputDirectory, EFBXConversionOptions convertOptions, std::vector<std::string>& convertedFiles, ErrorState& errorState)
 	{
 		// Create importer
 		std::unique_ptr<Assimp::Importer> importer = std::make_unique<Assimp::Importer>();
@@ -89,10 +89,14 @@ namespace nap
 			aiProcess_SortByPType |
 			aiProcess_JoinIdenticalVertices);
 
-		if (scene == nullptr)
+		if (!errorState.check(scene != nullptr, "Unable to read %s", fbxPath.c_str()))
 			return false;
 
-		if (scene->mNumMeshes == 0)
+		if (!errorState.check(scene->mNumMeshes != 0, "No meshes found in FBX"))
+			return false;
+
+		uint64_t fbx_mod_time;
+		if (!errorState.check(getFileModificationTime(fbxPath, fbx_mod_time), "Failed to retrieve modification time from %s", fbxPath.c_str()))
 			return false;
 
 		// Create meshes for every contained mesh
@@ -101,11 +105,33 @@ namespace nap
 			// Get assimp mesh
 			aiMesh* mesh = scene->mMeshes[i];
 
-			MeshData mesh_data;
-			if (mesh->mName.length != 0)
-				mesh_data.mID = stringFormat("%s:%s", fbxPath.c_str(), mesh->mName.C_Str());
+			// If there is only a single mesh in the file, use the file name as ID. Otherwise, append the index of the mesh to the file name.
+			std::string converted_name;
+			if (scene->mNumMeshes == 1)
+			{
+				converted_name = getFileNameWithoutExtension(fbxPath);
+			}				
 			else
-				mesh_data.mID = stringFormat("%s:mesh%d", fbxPath.c_str(), i);
+			{
+				if (mesh->mName.length != 0)
+					converted_name = stringFormat("%s_%s", fbxPath.c_str(), mesh->mName.C_Str());
+				else
+					converted_name = stringFormat("%s_%d", getFileNameWithoutExtension(fbxPath).c_str(), i);			
+			}				
+
+			std::string output_file = getAbsolutePath(stringFormat("%s/%s.mesh", outputDirectory.c_str(), converted_name.c_str()));
+
+			// Determine whether the output file exists and if it does, its modification time
+			uint64_t output_mod_time;
+			bool output_exists = getFileModificationTime(output_file, output_mod_time);
+
+			// We want to convert the file if it does not exist, or if the source file is newer than the output file
+			bool should_convert = !output_exists || convertOptions == EFBXConversionOptions::CONVERT_ALWAYS || fbx_mod_time > output_mod_time;
+			if (!should_convert)
+				continue;
+
+			MeshData mesh_data;
+			mesh_data.mID = converted_name;
 
 			if (!errorState.check(mesh->mNumVertices != 0, "Encountered mesh with no vertices"))
 				return false;
@@ -197,13 +223,14 @@ namespace nap
 			if (!serializeObjects({ &mesh_data }, binaryWriter, errorState))
 				return false;
 
-			std::string output_file = stringFormat("%s/%s.mesh", outputDirectory.c_str(), getFileNameWithoutExtension(fbxPath).c_str());
 			std::ofstream bin_output(output_file, std::ofstream::out | std::ofstream::binary);
 			if (!errorState.check(bin_output.is_open(), "Failed to open %s for writing", output_file.c_str()))
 				return false;
 
 			bin_output.write((const char*)binaryWriter.getBuffer().data(), binaryWriter.getBuffer().size());
 			bin_output.close();
+
+			convertedFiles.push_back(output_file);
 		}
 
 		return true;

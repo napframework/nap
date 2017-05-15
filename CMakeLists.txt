@@ -56,6 +56,9 @@ get_filename_component(PROJECTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/.. ABSOLUTE)
 add_subdirectory(core)
 add_subdirectory(coreapp)
 
+# tools targets
+add_subdirectory(tools/fbxconverter)
+
 # executable targets
 add_subdirectory(test/unittest)
 add_subdirectory(test/scriptserver)
