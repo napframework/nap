@@ -165,8 +165,8 @@ namespace nap
 			rttiPath.pushAttribute(property.get_name().data());
 
 			// Determine meta-data for the property
-			bool is_required = property.get_metadata(RTTI::EPropertyMetaData::Required).is_valid();
-			bool is_file_link = property.get_metadata(RTTI::EPropertyMetaData::FileLink).is_valid();
+			bool is_required = RTTI::hasFlag(property, RTTI::EPropertyMetaData::Required);
+			bool is_file_link = RTTI::hasFlag(property, RTTI::EPropertyMetaData::FileLink);
 
 			const RTTI::TypeInfo value_type = property.get_type();
 

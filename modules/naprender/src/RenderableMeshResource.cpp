@@ -10,8 +10,8 @@
 #include "shaderutils.h"
 
 RTTI_BEGIN_CLASS(nap::RenderableMeshResource)
-	RTTI_PROPERTY_REQUIRED("Material", &nap::RenderableMeshResource::mMaterialResource)
-	RTTI_PROPERTY_REQUIRED("Mesh", &nap::RenderableMeshResource::mMeshResource)
+	RTTI_PROPERTY("Material",	 &nap::RenderableMeshResource::mMaterialResource,	RTTI::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Mesh",		 &nap::RenderableMeshResource::mMeshResource,		RTTI::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 namespace nap

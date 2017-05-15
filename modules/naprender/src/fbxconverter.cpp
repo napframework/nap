@@ -65,15 +65,15 @@ namespace nap
 	};
 
 	RTTI_BEGIN_CLASS(MeshData::Attribute)
-		RTTI_PROPERTY("ID",				&MeshData::Attribute::mID)
-		RTTI_PROPERTY("NumComponents",	&MeshData::Attribute::mNumComponents)
-		RTTI_PROPERTY("Data",			&MeshData::Attribute::mData)
+		RTTI_PROPERTY("ID",				&MeshData::Attribute::mID, RTTI::EPropertyMetaData::Required)
+		RTTI_PROPERTY("NumComponents",	&MeshData::Attribute::mNumComponents, RTTI::EPropertyMetaData::Required)
+		RTTI_PROPERTY("Data",			&MeshData::Attribute::mData, RTTI::EPropertyMetaData::Required)
 	RTTI_END_CLASS
 
 	RTTI_BEGIN_CLASS(MeshData)
-		RTTI_PROPERTY("Attributes", &MeshData::mAttributes)
-		RTTI_PROPERTY("NumVertices", &MeshData::mNumVertices)
-		RTTI_PROPERTY("Indices", &MeshData::mIndices)
+		RTTI_PROPERTY("Attributes", &MeshData::mAttributes, RTTI::EPropertyMetaData::Required)
+		RTTI_PROPERTY("NumVertices", &MeshData::mNumVertices, RTTI::EPropertyMetaData::Required)
+		RTTI_PROPERTY("Indices", &MeshData::mIndices, RTTI::EPropertyMetaData::Required)
 	RTTI_END_CLASS
 
 

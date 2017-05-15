@@ -8,20 +8,20 @@
 RTTI_DEFINE_BASE(nap::TextureResource)
 
 RTTI_BEGIN_CLASS(nap::ImageResource)
-	RTTI_PROPERTY_FILE_LINK("mImagePath", &nap::ImageResource::mImagePath)
+	RTTI_PROPERTY("mImagePath", 		&nap::ImageResource::mImagePath, 			RTTI::EPropertyMetaData::FileLink | RTTI::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(opengl::Texture2DSettings)
-	RTTI_PROPERTY("mLevel",				&opengl::Texture2DSettings::level)
-	RTTI_PROPERTY("mInternalFormat",	&opengl::Texture2DSettings::internalFormat)
-	RTTI_PROPERTY("mWidth",				&opengl::Texture2DSettings::width)
-	RTTI_PROPERTY("mHeight",			&opengl::Texture2DSettings::height)
-	RTTI_PROPERTY("mFormat",			&opengl::Texture2DSettings::format)
-	RTTI_PROPERTY("mType",				&opengl::Texture2DSettings::type)
+	RTTI_PROPERTY("mLevel",				&opengl::Texture2DSettings::level,			RTTI::EPropertyMetaData::Default)
+	RTTI_PROPERTY("mInternalFormat",	&opengl::Texture2DSettings::internalFormat, RTTI::EPropertyMetaData::Required)
+	RTTI_PROPERTY("mWidth",				&opengl::Texture2DSettings::width,			RTTI::EPropertyMetaData::Required)
+	RTTI_PROPERTY("mHeight",			&opengl::Texture2DSettings::height,			RTTI::EPropertyMetaData::Required)
+	RTTI_PROPERTY("mFormat",			&opengl::Texture2DSettings::format,			RTTI::EPropertyMetaData::Required)
+	RTTI_PROPERTY("mType",				&opengl::Texture2DSettings::type,			RTTI::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::MemoryTextureResource2D)
-	RTTI_PROPERTY_REQUIRED("mSettings",			&nap::MemoryTextureResource2D::mSettings)
+	RTTI_PROPERTY("mSettings",			&nap::MemoryTextureResource2D::mSettings, 	RTTI::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_DEFINE(nap::ImageResource)

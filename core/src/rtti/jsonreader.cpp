@@ -72,8 +72,8 @@ namespace nap
 			rttiPath.pushAttribute(property.get_name().data());
 
 			// Determine meta-data for the property
-			bool is_required = property.get_metadata(RTTI::EPropertyMetaData::Required).is_valid();
-			bool is_file_link = property.get_metadata(RTTI::EPropertyMetaData::FileLink).is_valid();
+			bool is_required = RTTI::hasFlag(property, RTTI::EPropertyMetaData::Required);
+			bool is_file_link = RTTI::hasFlag(property, RTTI::EPropertyMetaData::FileLink);
 
 			// Check whether the property is present in the JSON. If it's not, but the property is required, throw an error
 			rapidjson::Value::ConstMemberIterator json_property = jsonCompound.FindMember(property.get_name().data());

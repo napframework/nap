@@ -7,13 +7,13 @@
 #include <nap/logger.h>
 
 RTTI_BEGIN_CLASS(nap::Material::VertexAttributeBinding)
-	RTTI_PROPERTY_REQUIRED("MeshAttributeID",	&nap::Material::VertexAttributeBinding::mMeshAttributeID)
-	RTTI_PROPERTY_REQUIRED("ShaderAttributeID", &nap::Material::VertexAttributeBinding::mShaderAttributeID)
+	RTTI_PROPERTY("MeshAttributeID",	&nap::Material::VertexAttributeBinding::mMeshAttributeID,	RTTI::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ShaderAttributeID", &nap::Material::VertexAttributeBinding::mShaderAttributeID,	RTTI::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::Material)
-	RTTI_PROPERTY_REQUIRED("Shader",			&nap::Material::mShader)
-	RTTI_PROPERTY("VertexAttributeBindings",	&nap::Material::mVertexAttributeBindings)
+	RTTI_PROPERTY("Shader",						&nap::Material::mShader,					RTTI::EPropertyMetaData::Required)
+	RTTI_PROPERTY("VertexAttributeBindings",	&nap::Material::mVertexAttributeBindings,	RTTI::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
@@ -31,9 +31,33 @@ namespace nap
 
 		uniformAttribute.clear();
 
+// 		struct Uniform
+// 		{
+// 			enum class EType
+// 			{
+// 				Vec2,
+// 				Vec3
+// 			};
+// 
+// 			EType mType;
+// 			glm::vec2 mVec2;
+// 			glm::vec3 mVec3;
+// 		}
+
 		// Add uniforms
 		for (const auto& v : mShader->getShader().getUniforms())
 		{
+// 			map.emplace(std::make_pair(opengl::GLSLType::Float, std::make_unique<GLSLUniformAction>(opengl::GLSLType::Float, createGLSLFloatAttribute, setUniformFloat)));
+// 			map.emplace(std::make_pair(opengl::GLSLType::Int, std::make_unique<GLSLUniformAction>(opengl::GLSLType::Int, createGLSLIntAttribute, setUniformInt)));
+// 			map.emplace(std::make_pair(opengl::GLSLType::UInt, std::make_unique<GLSLUniformAction>(opengl::GLSLType::UInt, createGLSLUIntAttribute, setUniformUInt)));
+// 			map.emplace(std::make_pair(opengl::GLSLType::Vec2, std::make_unique<GLSLUniformAction>(opengl::GLSLType::Vec2, createGLSLVec2Attribute, setUniformVec2)));
+// 			map.emplace(std::make_pair(opengl::GLSLType::Vec3, std::make_unique<GLSLUniformAction>(opengl::GLSLType::Vec3, createGLSLVec3Attribute, setUniformVec3)));
+// 			map.emplace(std::make_pair(opengl::GLSLType::Vec4, std::make_unique<GLSLUniformAction>(opengl::GLSLType::Vec4, createGLSLVec4Attribute, setUniformVec4)));
+// 			map.emplace(std::make_pair(opengl::GLSLType::Mat2, std::make_unique<GLSLUniformAction>(opengl::GLSLType::Mat2, createGLSLMat2Attribute, setUniformMat2)));
+// 			map.emplace(std::make_pair(opengl::GLSLType::Mat3, std::make_unique<GLSLUniformAction>(opengl::GLSLType::Mat3, createGLSLMat3Attribute, setUniformMat3)));
+// 			map.emplace(std::make_pair(opengl::GLSLType::Mat4, std::make_unique<GLSLUniformAction>(opengl::GLSLType::Mat4, createGLSLMat4Attribute, setUniformMat4)));
+// 			map.emplace(std::make_pair(opengl::GLSLType::Tex2D, std::make_unique<GLSLUniformAction>(opengl::GLSLType::Tex2D, createTexture2DAttribute, setTexture2D)));
+
 			// Make sure we have a valid type for the attribute
 			RTTI::TypeInfo attr_value_type = getAttributeType(v.second->mGLSLType);
 			if (!errorState.check(attr_value_type != RTTI::TypeInfo::empty(), "unable to map GLSL uniform, unsupported type"))

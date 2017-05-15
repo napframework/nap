@@ -8,7 +8,7 @@
 
 
 RTTI_BEGIN_CLASS(nap::MeshResource)
-	RTTI_PROPERTY_FILE_LINK("Path", &nap::MeshResource::mPath)
+	RTTI_PROPERTY("Path", &nap::MeshResource::mPath, RTTI::EPropertyMetaData::FileLink | RTTI::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 namespace nap

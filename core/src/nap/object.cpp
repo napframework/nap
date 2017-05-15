@@ -5,7 +5,7 @@
 #include <algorithm>
 
 RTTI_BEGIN_BASE_CLASS(nap::Object)
-	RTTI_PROPERTY_REQUIRED("mID", &nap::Object::mID)
+	RTTI_PROPERTY("mID", &nap::Object::mID, RTTI::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 namespace nap

@@ -7,8 +7,8 @@
 #include <nap/logger.h>
 
 RTTI_BEGIN_CLASS(nap::ShaderResource)
-	RTTI_PROPERTY_FILE_LINK("mVertShader", &nap::ShaderResource::mVertPath)
-	RTTI_PROPERTY_FILE_LINK("mFragShader", &nap::ShaderResource::mFragPath)
+	RTTI_PROPERTY("mVertShader", &nap::ShaderResource::mVertPath, RTTI::EPropertyMetaData::FileLink | RTTI::EPropertyMetaData::Required)
+	RTTI_PROPERTY("mFragShader", &nap::ShaderResource::mFragPath, RTTI::EPropertyMetaData::FileLink | RTTI::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 namespace nap

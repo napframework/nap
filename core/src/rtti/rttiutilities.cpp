@@ -135,7 +135,7 @@ namespace RTTI
 
 		void operator()(const Instance& instance, const Property& property, const Variant& value, const RTTIPath& path)
 		{
-			if (!property.get_metadata(RTTI::EPropertyMetaData::FileLink).is_valid())
+			if (!RTTI::hasFlag(property, RTTI::EPropertyMetaData::FileLink))
 				return;
 
 			assert(value.get_type().is_derived_from<std::string>());

@@ -54,16 +54,16 @@
  *
  *		// RTTIClasses.cpp
  *		RTTI_BEGIN_CLASS(DataStruct)
- *				RTTI_PROPERTY("FloatProperty",	&DataStruct::mFloatProperty);
- *				RTTI_PROPERTY("StringProperty", &DataStruct::mStringProperty);
+ *				RTTI_PROPERTY("FloatProperty",	&DataStruct::mFloatProperty, RTTI::EPropertyMetaData::None);
+ *				RTTI_PROPERTY("StringProperty", &DataStruct::mStringProperty, RTTI::EPropertyMetaData::Required);
  *		RTTI_END_CLASS
  *
  *		RTTI_BEGIN_CLASS(BaseClass)
- *				RTTI_PROPERTY("FloatProperty",	&BaseClass::mFloatProperty);
+ *				RTTI_PROPERTY("FloatProperty",	&BaseClass::mFloatProperty, RTTI::EPropertyMetaData::None);
  *		RTTI_END_CLASS
  *
  *		RTTI_BEGIN_CLASS(DerivedClass)
- *				RTTI_PROPERTY("IntProperty",	&DerivedClass::mIntProperty)
+ *				RTTI_PROPERTY("IntProperty",	&DerivedClass::mIntProperty, RTTI::EPropertyMetaData::None)
  *		RTTI_END_CLASS
  *
  * The above code, which *must* be located in the cpp, is responsible for the registration. As you can see, it is very straightforward.
@@ -98,11 +98,22 @@ namespace RTTI
 	using VariantArray	= rttr::variant_array_view;
 	using VariantMap	= rttr::variant_associative_view;
 
-	enum class EPropertyMetaData
+	enum class EPropertyMetaData : uint8_t
 	{
-		Required,
-		FileLink
+		Default = 0,
+		Required = 1,
+		FileLink = 2,
+		Embedded = 4
 	};
+
+	inline EPropertyMetaData operator&(EPropertyMetaData a, EPropertyMetaData b)
+	{
+		return static_cast<EPropertyMetaData>(static_cast<uint8_t>(a) & static_cast<uint8_t>(b));
+	}
+	inline EPropertyMetaData operator|(EPropertyMetaData a, EPropertyMetaData b)
+	{
+		return static_cast<EPropertyMetaData>(static_cast<uint8_t>(a) | static_cast<uint8_t>(b));
+	}
 
 	/**
 	 * Helper function to determine whether the specified type is a primitive type (i.e. int, float, string, etc)
@@ -110,6 +121,19 @@ namespace RTTI
 	inline bool isPrimitive(const RTTI::TypeInfo& type)
 	{
 		return type.is_arithmetic() || type.is_enumeration() || type == RTTI::TypeInfo::get<std::string>();
+	}
+
+	/**
+	 * Helper function to check whether a property has the specified flag set
+	 */
+	inline bool hasFlag(const RTTI::Property& property, EPropertyMetaData flags)
+	{
+		RTTI::Variant meta_data = property.get_metadata("flags");
+		if (!meta_data.is_valid())
+			return false;
+
+		uint8_t current_flags = meta_data.convert<uint8_t>();
+		return (current_flags & (uint8_t)flags) != 0;
 	}
 }
 
@@ -128,15 +152,8 @@ namespace RTTI
 			using namespace rttr;						\
 			registration::class_<Type>(#Type)			\
 
-
-#define RTTI_PROPERTY(Name, Member)						\
-						  .property(Name, Member)
-
-#define RTTI_PROPERTY_REQUIRED(Name, Member)			\
-						  .property(Name, Member)(metadata(RTTI::EPropertyMetaData::Required, true))
-
-#define RTTI_PROPERTY_FILE_LINK(Name, Member)			\
-						  .property(Name, Member)(metadata(RTTI::EPropertyMetaData::Required, true), metadata(RTTI::EPropertyMetaData::FileLink, true))
+#define RTTI_PROPERTY(Name, Member, Flags)				\
+						  .property(Name, Member)(metadata("flags", (uint8_t)(Flags)))
 
 #define RTTI_END_CLASS									\
 		;												\
