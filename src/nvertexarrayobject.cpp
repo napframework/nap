@@ -4,14 +4,21 @@
 
 namespace opengl
 {
-	// Destructor
 	VertexArrayObject::~VertexArrayObject()
 	{
-		// TODO: fix deleting per context!
-// 		for (auto state : mContextSpecificState)
-// 			glDeleteVertexArrays(1, &state.second.mId);
+		// At this point, all context specific state must be destroyed
+		assert(mContextSpecificState.empty());
+	}
 
-		mContextSpecificState.clear();
+
+	void VertexArrayObject::destroy(opengl::GLContext context)
+	{
+		ContextSpecificStateMap::iterator pos = mContextSpecificState.find(context);
+		if (pos != mContextSpecificState.end())
+		{
+			glDeleteVertexArrays(1, &pos->second);
+			mContextSpecificState.erase(pos);
+		}
 	}
 
 
@@ -46,10 +53,12 @@ namespace opengl
 		}
 	}
 
+
 	void VertexArrayObject::unbind()
 	{
 		glBindVertexArray(0);
 	}
+
 
 	//Adds and binds a vertex buffer to this vertex array object
 	void VertexArrayObject::addVertexBuffer(unsigned int index, const VertexAttributeBuffer& buffer)

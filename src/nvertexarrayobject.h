@@ -12,6 +12,24 @@
 namespace opengl
 {
 	/**
+	 * Interface used for OpenGL resources that are context dependent. Because they are context dependent,
+	 * the correct OpenGL context must be set when destroying these objects, otherwise context from other
+	 * contexts may accidentally be destroyed. 
+	 * To avoid numerous context switches for each destroy, IGLContextResource is used to perform batch destruction
+	 * of such resources per context.
+	 */
+	class IGLContextResource
+	{
+	public:
+		/**
+		 * Used for destruction of a resource that is context dependent.
+		 * @param context: the context to destroy the resource for. This is also the active GL context.
+		 */
+		virtual void destroy(opengl::GLContext context) = 0;
+	};
+
+
+	/**
 	 * Organizes and stores a set of Vertex Data objects that can be rendered
 	 *
 	 * The VertexArrayObject is wraps an OpenGL Vertex Array Object
@@ -25,12 +43,14 @@ namespace opengl
 	 * This object does not own the buffers it organizes!
 	 * For more information: https://www.opengl.org/wiki/Tutorial2:_VAOs,_VBOs,_Vertex_and_Fragment_Shaders_(C_/_SDL)
 	 */
-	class VertexArrayObject
+	class VertexArrayObject : public IGLContextResource
 	{
 	public:
-		// Construction / Destruction
+
 		VertexArrayObject() = default;
-		virtual ~VertexArrayObject();
+		~VertexArrayObject();
+
+		virtual void destroy(opengl::GLContext context) override;
 
 		// Copy is not allowed
 		VertexArrayObject(const VertexArrayObject& other) = delete;
