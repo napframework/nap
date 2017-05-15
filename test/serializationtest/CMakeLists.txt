@@ -9,5 +9,6 @@ include_directories(${RAPIDJSON_INCLUDE_DIRS})
 
 add_executable(${PROJECT_NAME} ${sources})
 set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Test)
 
 target_link_libraries(${PROJECT_NAME} napcore mod_naprender nrender mod_napmath)

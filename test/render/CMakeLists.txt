@@ -17,6 +17,7 @@ source_group("shaders" FILES ${SHADERS})
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS})
 set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Test)
 
 target_link_libraries(${PROJECT_NAME} napcore mod_naprender nrender mod_napmath)
 

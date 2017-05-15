@@ -7,6 +7,7 @@ include_directories(src)
 file(GLOB_RECURSE SOURCES src/ *.cpp *.h)
 
 add_executable(${PROJECT_NAME} ${SOURCES})
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Test)
 
 target_link_libraries(${PROJECT_NAME} napcore mod_napjsonserializer)
 

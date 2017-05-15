@@ -5,6 +5,8 @@ file(GLOB sources src/*.cpp src/*.h)
 find_package(glm REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED ${sources})
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
+
 target_include_directories(${PROJECT_NAME} PUBLIC src ${GLM_INCLUDE_DIRS})
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)

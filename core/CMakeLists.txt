@@ -20,6 +20,7 @@ add_definitions(-DRAPIDJSON_HAS_STDSTRING=1)
 
 add_platform_specific_files("${WIN32_SOURCES}" "${OSX_SOURCES}" "${LINUX_SOURCES}")
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Core)
 
 if (MSVC)
     include(GenerateExportheader)

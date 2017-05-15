@@ -7,6 +7,8 @@ find_package(rapidjson REQUIRED)
 add_definitions(-DRAPIDJSON_HAS_STDSTRING=1)
 
 add_library(${PROJECT_NAME} SHARED ${sources})
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
+
 include_directories(${RAPIDJSON_INCLUDE_DIRS})
 
 target_include_directories(${PROJECT_NAME} PUBLIC src)
