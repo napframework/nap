@@ -31,6 +31,10 @@ BaseClass* createTestHierarchy()
 	pointee->mArrayOfCompounds.push_back(DataStruct(5.0f));
 	pointee->mArrayOfCompounds.push_back(DataStruct(6.0f));
 	pointee->mArrayOfPointers.push_back(pointee);
+	pointee->mEmbeddedPointer = new DerivedClass();
+	pointee->mEmbeddedPointer->mID = "EmbeddedObject";
+	pointee->mArrayOfEmbeddedPointers.push_back(new DerivedClass());
+	pointee->mArrayOfEmbeddedPointers[0]->mID = "EmbeddedArrayObject";
 
 	BaseClass* root = new BaseClass();
 	root->mID									= "Root";

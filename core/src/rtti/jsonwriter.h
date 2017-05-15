@@ -18,6 +18,11 @@ namespace nap
 		std::string GetJSON();
 
 		/**
+		 * Called to determine if this writer supports writing pointers nested in the object pointing to them (embedded pointers)
+		 */
+		virtual bool supportsEmbeddedPointers() const { return true; }
+
+		/**
 		 * Called when serialization starts, but before any objects have been written (i.e. start of 'document')
 		 */
 		virtual bool start() override;

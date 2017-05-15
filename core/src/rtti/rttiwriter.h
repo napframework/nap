@@ -72,6 +72,11 @@ namespace nap
 		 * Called to write a primitive type with the specified value
 		 */
 		virtual bool writePrimitive(const RTTI::TypeInfo& type, const RTTI::Variant& value) = 0;
+
+		/**
+		 * Called to determine if this writer supports writing pointers nested in the object pointing to them (embedded pointers)
+		 */
+		virtual bool supportsEmbeddedPointers() const = 0;
 	};
 
 	/**

@@ -37,4 +37,6 @@ public:
 	std::vector<int>			mArrayOfInts;
 	std::vector<DataStruct>		mArrayOfCompounds;
 	std::vector<nap::Object*>	mArrayOfPointers;
+	nap::Object*				mEmbeddedPointer;
+	std::vector<nap::Object*>	mArrayOfEmbeddedPointers;
 };

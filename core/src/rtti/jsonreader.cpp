@@ -10,9 +10,11 @@
 
 namespace nap
 {
-	static bool readArrayRecursively(nap::Object* rootObject, RTTI::VariantArray& array, const rapidjson::Value& jsonArray, RTTI::RTTIPath& rttiPath,
-		UnresolvedPointerList& unresolvedPointers, std::vector<FileLink>& linkedFiles, ErrorState& errorState);
+	static bool readArrayRecursively(nap::Object* rootObject, const RTTI::Property& property, RTTI::VariantArray& array, const rapidjson::Value& jsonArray, RTTI::RTTIPath& rttiPath,
+		OwnedObjectList& readObjects, UnresolvedPointerList& unresolvedPointers, std::vector<FileLink>& linkedFiles, ErrorState& errorState);
 
+	static nap::Object* readObjectRecursive(const rapidjson::Value::ConstMemberIterator& jsonObject, OwnedObjectList& readObjects, UnresolvedPointerList& unresolvedPointers,
+		std::vector<FileLink>& linkedFiles, nap::ErrorState& errorState);
 
 	/**
 	 * Helper function to read a basic JSON type to a C++ type
@@ -56,11 +58,36 @@ namespace nap
 	}
 
 
+	static bool readEmbeddedObject(const rapidjson::Value& jsonValue, OwnedObjectList& readObjects,
+		UnresolvedPointerList& unresolvedPointers, std::vector<FileLink>& linkedFiles, nap::Object*& resultObject, ErrorState& errorState)
+	{
+		resultObject = nullptr;
+
+		if (jsonValue.GetType() == rapidjson::kStringType)
+		{
+			if (!errorState.check(std::string(jsonValue.GetString()).empty(), "Encountered embedded pointer that points to a non-embedded object"))
+				return false;
+		}
+		else
+		{
+			// Must be exactly one member in the case of an embedded pointer
+			if (!errorState.check(jsonValue.MemberCount() == 1, "Encountered an embedded pointer which has more than 1 child"))
+				return false;
+
+			// Deserialize the nested object
+			resultObject = readObjectRecursive(jsonValue.MemberBegin(), readObjects, unresolvedPointers, linkedFiles, errorState);
+			if (resultObject == nullptr)
+				return false;
+		}
+
+		return true;
+	}
+
 	/**
 	 * Helper function to recursively read an object (can be a nap::Object, nested compound or any other type) from JSON
 	 */
-	static bool readObjectRecursive(nap::Object* object, RTTI::Instance compound, const rapidjson::Value& jsonCompound, RTTI::RTTIPath& rttiPath, UnresolvedPointerList& unresolvedPointers, 
-		std::vector<FileLink>& linkedFiles, ErrorState& errorState)
+	static bool readPropertiesRecursive(nap::Object* object, RTTI::Instance compound, const rapidjson::Value& jsonCompound, RTTI::RTTIPath& rttiPath, OwnedObjectList& readObjects, 
+		UnresolvedPointerList& unresolvedPointers, std::vector<FileLink>& linkedFiles, ErrorState& errorState)
 	{
 		// Determine the object type. Note that we want to *most derived type* of the object.
 		RTTI::TypeInfo object_type = compound.get_derived_type();
@@ -100,20 +127,33 @@ namespace nap
 				if (!errorState.check(value_type.get_raw_type().is_derived_from<nap::Object>(), "Encountered pointer to non-Object. This is not supported"))
 					return false;
 
-				// Pointer types must of string type in JSON
-				if (!errorState.check(json_value.GetType() == rapidjson::kStringType, "Encountered pointer property of unknown type"))
+				bool is_embedded_pointer = RTTI::hasFlag(property, RTTI::EPropertyMetaData::Embedded);
+
+				// Pointer types must be of string type or nested object in JSON
+				if (!errorState.check(json_value.GetType() == rapidjson::kStringType || json_value.GetType() == rapidjson::kObjectType, "Encountered pointer property of unknown type"))
 					return false;
 
-				// Determine the target of the pointer
-				std::string target = std::string(json_value.GetString());
+				if (is_embedded_pointer)
+				{
+					nap::Object* target = nullptr;
+					if (!readEmbeddedObject(json_value, readObjects, unresolvedPointers, linkedFiles, target, errorState))
+						return false;
+					
+					property.set_value(compound, target);
+				}
+				else
+				{
+					// Determine the target of the pointer
+					std::string target = std::string(json_value.GetString());
 
-				// If the target is empty (i.e. null pointer), but the property is required, throw an error
-				if (!errorState.check((is_required && !target.empty()) || (!is_required), "Required property %s not found in object of type %s", property.get_name().data(), object_type.get_name().data()))
-					return false;
+					// If the target is empty (i.e. null pointer), but the property is required, throw an error
+					if (!errorState.check((is_required && !target.empty()) || (!is_required), "Required property %s not found in object of type %s", property.get_name().data(), object_type.get_name().data()))
+						return false;
 
-				// Add to list of unresolved pointers
-				if (!target.empty())
-					unresolvedPointers.push_back(UnresolvedPointer(object, rttiPath, target));
+					// Add to list of unresolved pointers
+					if (!target.empty())
+						unresolvedPointers.push_back(UnresolvedPointer(object, rttiPath, target));
+				}
 			}
 			else
 			{
@@ -131,7 +171,7 @@ namespace nap
 							RTTI::VariantArray array_view = value.create_array_view();
 
 							// Now read the array recursively into array view
-							if (!readArrayRecursively(object, array_view, json_value, rttiPath, unresolvedPointers, linkedFiles, errorState))
+							if (!readArrayRecursively(object, property, array_view, json_value, rttiPath, readObjects, unresolvedPointers, linkedFiles, errorState))
 								return false;
 						}
 						else if (value_type.is_associative_container())
@@ -149,7 +189,7 @@ namespace nap
 					{
 						// If the property is a nested compound, read it recursively
 						RTTI::Variant var = property.get_value(compound);
-						if (!readObjectRecursive(object, var, json_value, rttiPath, unresolvedPointers, linkedFiles, errorState))
+						if (!readPropertiesRecursive(object, var, json_value, rttiPath, readObjects, unresolvedPointers, linkedFiles, errorState))
 							return false;
 
 						// Copy read object back into the target object
@@ -185,8 +225,8 @@ namespace nap
 	/**
 	 * Helper function to recursively read an array (can be an array of basic types, nested compound, or any other type) from JSON
 	 */
-	static bool readArrayRecursively(nap::Object* rootObject, RTTI::VariantArray& array, const rapidjson::Value& jsonArray, RTTI::RTTIPath& rttiPath, 
-		UnresolvedPointerList& unresolvedPointers, std::vector<FileLink>& linkedFiles, ErrorState& errorState)
+	static bool readArrayRecursively(nap::Object* rootObject, const RTTI::Property& property, RTTI::VariantArray& array, const rapidjson::Value& jsonArray, RTTI::RTTIPath& rttiPath, 
+		OwnedObjectList& readObjects, UnresolvedPointerList& unresolvedPointers, std::vector<FileLink>& linkedFiles, ErrorState& errorState)
 	{
 		// Pre-size the array to avoid too many dynamic allocs
 		array.set_size(jsonArray.Size());
@@ -208,16 +248,30 @@ namespace nap
 				if (!errorState.check(array_type.get_raw_type().is_derived_from<nap::Object>(), "Encountered pointer to non-Object. This is not supported"))
 					return false;
 
-				// Pointer types must of string type in JSON
-				if (!errorState.check(json_element.GetType() == rapidjson::kStringType, "Encountered pointer property of unknown type"))
+				bool is_embedded_pointer = RTTI::hasFlag(property, RTTI::EPropertyMetaData::Embedded);
+
+				// Pointer types must be of string type or nested object in JSON
+				if (!errorState.check(json_element.GetType() == rapidjson::kStringType || json_element.GetType() == rapidjson::kObjectType, "Encountered pointer property of unknown type"))
 					return false;
 
-				// Determine the target of the pointer
-				std::string target = std::string(json_element.GetString());
+				if (is_embedded_pointer)
+				{
+					nap::Object* target = nullptr;
+					if (!readEmbeddedObject(json_element, readObjects, unresolvedPointers, linkedFiles, target, errorState))
+						return false;
 
-				// Add to list of unresolved pointers
-				if (!target.empty())
-					unresolvedPointers.push_back(UnresolvedPointer(rootObject, rttiPath, target));
+					array.set_value(index, target);
+				}
+				else
+				{
+					// Determine the target of the pointer
+					std::string target = std::string(json_element.GetString());
+
+					// Add to list of unresolved pointers
+					if (!target.empty())
+						unresolvedPointers.push_back(UnresolvedPointer(rootObject, rttiPath, target));
+				}
+
 			}
 			else
 			{
@@ -225,7 +279,7 @@ namespace nap
 				{
 					// Array-of-arrays; read array recursively
 					RTTI::VariantArray sub_array = array.get_value_as_ref(index).create_array_view();
-					if (!readArrayRecursively(rootObject, sub_array, json_element, rttiPath, unresolvedPointers, linkedFiles, errorState))
+					if (!readArrayRecursively(rootObject, property, sub_array, json_element, rttiPath, readObjects, unresolvedPointers, linkedFiles, errorState))
 						return false;
 				}
 				else if (json_element.IsObject())
@@ -233,7 +287,7 @@ namespace nap
 					// Array-of-compounds; read object recursively
 					RTTI::Variant var_tmp = array.get_value_as_ref(index);
 					RTTI::Variant wrapped_var = var_tmp.extract_wrapped_value();
-					if (!readObjectRecursive(rootObject, wrapped_var, json_element, rttiPath, unresolvedPointers, linkedFiles, errorState))
+					if (!readPropertiesRecursive(rootObject, wrapped_var, json_element, rttiPath, readObjects, unresolvedPointers, linkedFiles, errorState))
 						return false;
 					array.set_value(index, wrapped_var);
 				}
@@ -252,7 +306,36 @@ namespace nap
 
 		return true;
 	}
-	
+
+	nap::Object* readObjectRecursive(const rapidjson::Value::ConstMemberIterator& jsonObject, OwnedObjectList& readObjects, UnresolvedPointerList& unresolvedPointers,
+		std::vector<FileLink>& linkedFiles, nap::ErrorState& errorState)
+	{
+		// Check whether the object is of a known type
+		const char* typeName = jsonObject->name.GetString();
+		RTTI::TypeInfo type_info = RTTI::TypeInfo::get_by_name(typeName);
+		if (!errorState.check(type_info.is_valid(), "Unknown object type %s encountered.", typeName))
+			return nullptr;
+
+		// Check whether this is a type that can actually be instantiated
+		if (!errorState.check(type_info.can_create_instance(), "Unable to instantiate object of type %s.", typeName))
+			return nullptr;
+
+		// We only support root-level objects that derive from nap::Object (compounds, etc can be of any type)
+		if (!errorState.check(type_info.is_derived_from(RTTI_OF(nap::Object)), "Unable to instantiate object %s. Class is not derived from Object.", typeName))
+			return nullptr;
+
+		// Create new instance of the object
+		Object* object = type_info.create<Object>();
+		readObjects.push_back(std::unique_ptr<Object>(object));
+
+		// Recursively read properties, nested compounds, etc
+		RTTI::RTTIPath path;
+		if (!readPropertiesRecursive(object, *object, jsonObject->value, path, readObjects, unresolvedPointers, linkedFiles, errorState))
+			return nullptr;
+
+		return object;
+	}
+
 	bool deserializeJSON(const std::string& json, RTTIDeserializeResult& result, nap::ErrorState& errorState)
 	{
 		// Try to parse the json file
@@ -284,32 +367,13 @@ namespace nap
 		// Read objects
 		for (auto object_pos = document.MemberBegin(); object_pos < document.MemberEnd(); ++object_pos)
 		{
-			// Check whether the object is of a known type
-			const char* typeName = object_pos->name.GetString();
-			RTTI::TypeInfo type_info = RTTI::TypeInfo::get_by_name(typeName);
-			if (!errorState.check(type_info.is_valid(), "Unknown object type %s encountered.", typeName))
-				return false;
-
-			// Check whether this is a type that can actually be instantiated
-			if (!errorState.check(type_info.can_create_instance(), "Unable to instantiate object of type %s.", typeName))
-				return false;
-
-			// We only support root-level objects that derive from nap::Object (compounds, etc can be of any type)
-			if (!errorState.check(type_info.is_derived_from(RTTI_OF(nap::Object)), "Unable to instantiate object %s. Class is not derived from Object.", typeName))
-				return false;
-
-			// Create new instance of the object
-			Object* object = type_info.create<Object>();
-			result.mReadObjects.push_back(std::unique_ptr<Object>(object));
-
-			// Recursively read properties, nested compounds, etc
-			RTTI::RTTIPath path;
-			if (!readObjectRecursive(object, *object, object_pos->value, path, result.mUnresolvedPointers, result.mFileLinks, errorState))
+			if (!readObjectRecursive(object_pos, result.mReadObjects, result.mUnresolvedPointers, result.mFileLinks, errorState))
 				return false;
 		}
 
 		return true;
 	}
+
 
 	bool readJSONFile(const std::string& path, RTTIDeserializeResult& result, nap::ErrorState& errorState)
 	{

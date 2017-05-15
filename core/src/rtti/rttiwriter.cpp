@@ -5,7 +5,7 @@
 namespace nap
 {
 	bool serializeObjectRecursive(const RTTI::Instance object, ObjectList& objectsToSerialize, RTTIWriter& writer, ErrorState& errorState);
-	bool serializeValue(const RTTI::Variant& variant, ObjectList& objectsToSerialize, RTTIWriter& writer, ErrorState& errorState);
+	bool serializeValue(const RTTI::Property& property, const RTTI::Variant& variant, ObjectList& objectsToSerialize, RTTIWriter& writer, ErrorState& errorState);
 
 
 	/**
@@ -24,7 +24,7 @@ namespace nap
 	/**
 	 * Helper function to serialize an array
 	 */
-	bool serializeArray(const RTTI::VariantArray& array, ObjectList& objectsToSerialize, RTTIWriter& writer, ErrorState& errorState)
+	bool serializeArray(const RTTI::Property& property, const RTTI::VariantArray& array, ObjectList& objectsToSerialize, RTTIWriter& writer, ErrorState& errorState)
 	{
 		// Write the start of the array
 		if (!errorState.check(writer.startArray(array.get_size()), "Failed write start of array"))
@@ -36,7 +36,7 @@ namespace nap
 			RTTI::Variant var = array.get_value(i);
 
 			// Write each value
-			if (!serializeValue(var, objectsToSerialize, writer, errorState))
+			if (!serializeValue(property, var, objectsToSerialize, writer, errorState))
 				return false;
 		}
 
@@ -57,7 +57,7 @@ namespace nap
 		if (!errorState.check(writer.writeProperty(property.get_name().data()), "Failed to write property name"))
 			return false;
 
-		if (!serializeValue(value, objectsToSerialize, writer, errorState))
+		if (!serializeValue(property, value, objectsToSerialize, writer, errorState))
 			return false;
 
 		return true;
@@ -67,7 +67,7 @@ namespace nap
 	/**
 	 * Helper function to serialize a value
 	*/
-	bool serializeValue(const RTTI::Variant& value, ObjectList& objectsToSerialize, RTTIWriter& writer, ErrorState& errorState)
+	bool serializeValue(const RTTI::Property& property, const RTTI::Variant& value, ObjectList& objectsToSerialize, RTTIWriter& writer, ErrorState& errorState)
 	{
 		auto value_type = value.get_type();
 		auto wrapped_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
@@ -76,7 +76,7 @@ namespace nap
 		// If this is an array, recurse
 		if (value_type.is_array())
 		{
-			if (!serializeArray(value.create_array_view(), objectsToSerialize, writer, errorState))
+			if (!serializeArray(property, value.create_array_view(), objectsToSerialize, writer, errorState))
 				return false;
 
 			return true;
@@ -95,17 +95,43 @@ namespace nap
 			Object* pointee = value.convert<Object*>();
 			if (pointee != nullptr)
 			{
-				// Objects we point to must also be serialized, so add it to the set of objects to be serialized
-				addObjectToSerialize(objectsToSerialize, pointee);
-
 				// Check that the ID of the pointer is not empty (we can't point to objects without an ID)
 				const std::string& pointee_id = pointee->mID;
 				if (!errorState.check(!pointee_id.empty(), "Encountered pointer to Object with invalid ID"))
 					return false;
 
-				// Write the pointer				
-				if (!errorState.check(writer.writePointer(pointee_id), "Failed to write pointer"))
-					return false;
+				bool is_embedded_pointer = RTTI::hasFlag(property, RTTI::EPropertyMetaData::Embedded);
+				if (is_embedded_pointer && writer.supportsEmbeddedPointers())
+				{
+					// Write start of nested object
+					if (!errorState.check(writer.startCompound(pointee->get_type()), "Failed to start writing root object"))
+						return false;
+
+					// Write start of object
+					if (!errorState.check(writer.startRootObject(pointee->get_type()), "Failed to start writing root object"))
+						return false;
+
+					// Recurse into object
+					if (!serializeObjectRecursive(pointee, objectsToSerialize, writer, errorState))
+						return false;
+
+					// Finish object
+					if (!errorState.check(writer.finishRootObject(), "Failed to finish writing root object"))
+						return false;
+
+					// Finish object
+					if (!errorState.check(writer.finishCompound(), "Failed to finish writing root object"))
+						return false;
+				}
+				else
+				{
+					// Objects we point to must also be serialized, so add it to the set of objects to be serialized
+					addObjectToSerialize(objectsToSerialize, pointee);
+
+					// Write the pointer				
+					if (!errorState.check(writer.writePointer(pointee_id), "Failed to write pointer"))
+						return false;
+				}
 
 				return true;
 			}

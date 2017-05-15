@@ -7,7 +7,7 @@
 
 namespace nap
 {
-	static bool deserializeObjectRecursive(nap::Object* object, RTTI::Instance compound, MemoryStream& stream, RTTI::RTTIPath& rttiPath, UnresolvedPointerList& unresolvedPointers,
+	static bool deserializePropertiesRecursive(nap::Object* object, RTTI::Instance compound, MemoryStream& stream, RTTI::RTTIPath& rttiPath, UnresolvedPointerList& unresolvedPointers,
 		std::vector<FileLink>& linkedFiles, ErrorState& errorState);
 
 	/**
@@ -135,7 +135,7 @@ namespace nap
 				// Array-of-compounds; read object recursively
 				RTTI::Variant var_tmp = array.get_value_as_ref(index);
 				RTTI::Variant wrapped_var = var_tmp.extract_wrapped_value();
-				if (!deserializeObjectRecursive(rootObject, wrapped_var, stream, rttiPath, unresolvedPointers, linkedFiles, errorState))
+				if (!deserializePropertiesRecursive(rootObject, wrapped_var, stream, rttiPath, unresolvedPointers, linkedFiles, errorState))
 					return false;
 			
 				array.set_value(index, wrapped_var);
@@ -152,7 +152,7 @@ namespace nap
 	/**
 	 * Helper function to recursively read an object (can be a nap::Object, nested compound or any other type) from JSON
 	 */
-	static bool deserializeObjectRecursive(nap::Object* object, RTTI::Instance compound, MemoryStream& stream, RTTI::RTTIPath& rttiPath, UnresolvedPointerList& unresolvedPointers, 
+	static bool deserializePropertiesRecursive(nap::Object* object, RTTI::Instance compound, MemoryStream& stream, RTTI::RTTIPath& rttiPath, UnresolvedPointerList& unresolvedPointers, 
 		std::vector<FileLink>& linkedFiles, ErrorState& errorState)
 	{
 		// Determine the object type. Note that we want to *most derived type* of the object.
@@ -223,7 +223,7 @@ namespace nap
 			{
 				// If the property is a nested compound, read it recursively
 				RTTI::Variant var = property.get_value(compound);
-				if (!deserializeObjectRecursive(object, var, stream, rttiPath, unresolvedPointers, linkedFiles, errorState))
+				if (!deserializePropertiesRecursive(object, var, stream, rttiPath, unresolvedPointers, linkedFiles, errorState))
 					return false;
 
 				// Copy read object back into the target object
@@ -283,7 +283,7 @@ namespace nap
 
 			// Recursively read properties, nested compounds, etc
 			RTTI::RTTIPath path;
-			if (!deserializeObjectRecursive(object, *object, stream, path, result.mUnresolvedPointers, result.mFileLinks, errorState))
+			if (!deserializePropertiesRecursive(object, *object, stream, path, result.mUnresolvedPointers, result.mFileLinks, errorState))
 				return false;
 		}
 
