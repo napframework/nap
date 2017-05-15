@@ -1,5 +1,6 @@
 #include "binaryreader.h"
 #include "rttibinaryversion.h"
+#include "factory.h"
 #include "nap/errorstate.h"
 #include "nap/object.h"
 #include <fstream>
@@ -245,7 +246,7 @@ namespace nap
 		return true;
 	}
 
-	bool deserializeBinary(MemoryStream& stream, RTTIDeserializeResult& result, ErrorState& errorState)
+	bool deserializeBinary(MemoryStream& stream, Factory& factory, RTTIDeserializeResult& result, ErrorState& errorState)
 	{
 		if (!errorState.check(!stream.isDone(), "Can't deserialize from empty stream"))
 			return false;
@@ -278,7 +279,7 @@ namespace nap
 				return false;
 
 			// Create new instance of the object
-			Object* object = type_info.create<Object>();
+			Object* object = factory.create(type_info);
 			result.mReadObjects.push_back(std::unique_ptr<Object>(object));
 
 			// Recursively read properties, nested compounds, etc
@@ -290,7 +291,7 @@ namespace nap
 		return true;
 	}
 
-	bool readBinary(const std::string& path, RTTIDeserializeResult& result, nap::ErrorState& errorState)
+	bool readBinary(const std::string& path, Factory& factory, RTTIDeserializeResult& result, nap::ErrorState& errorState)
 	{
 		// Open the file
 		std::ifstream in(path, std::ios::in | std::ios::binary);
@@ -309,7 +310,7 @@ namespace nap
 		in.close();
 
 		MemoryStream stream(buffer.data(), buffer.size());
-		if (!deserializeBinary(stream, result, errorState))
+		if (!deserializeBinary(stream, factory, result, errorState))
 			return false;
 
 		return true;

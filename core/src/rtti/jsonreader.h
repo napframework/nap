@@ -12,6 +12,7 @@ namespace nap
 {
 	class Object;
 	class ErrorState;
+	class Factory;
 
 	/**
 	 * Deserialize a set of objects and their data from the specified JSON string
@@ -22,7 +23,7 @@ namespace nap
 	 *
 	 * @return True if deserialization succeeded, false if not. In case of failure, @a errorState contains detailed error info.
 	 */
-	bool deserializeJSON(const std::string& json, RTTIDeserializeResult& result, nap::ErrorState& errorState);
+	bool deserializeJSON(const std::string& json, Factory& factory, RTTIDeserializeResult& result, nap::ErrorState& errorState);
 
 	/**
 	 * Read and deserialize a set of objects and their data from the specified JSON file
@@ -33,6 +34,6 @@ namespace nap
 	 *
 	 * @return True if deserialization succeeded, false if not. In case of failure, @a errorState contains detailed error info.
 	 */
-	bool readJSONFile(const std::string& path, RTTIDeserializeResult& result, nap::ErrorState& errorState);
+	bool readJSONFile(const std::string& path, Factory& factory, RTTIDeserializeResult& result, nap::ErrorState& errorState);
 } //< End Namespace nap
 

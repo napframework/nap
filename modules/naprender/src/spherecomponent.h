@@ -5,6 +5,7 @@
 namespace nap
 {
 	class Material;
+	class RenderService;
 
 	/**
 	 * Highly efficient sphere that holds a link to a generic
@@ -18,6 +19,6 @@ namespace nap
 	public:
 		// Default constructor
 		SphereComponent() = default;
-		SphereComponent(Material& material);
+		SphereComponent(Material& material, RenderService& renderService);
 	};
 }

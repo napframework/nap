@@ -74,6 +74,11 @@ namespace nap
 		*/
 		void checkForFileChanges();
 
+		/**
+		* @return object capable of creating objects with custom construction parameters.
+		*/
+		Factory& GetFactory() { return *mFactory.get(); }
+
 	private:
 		friend class ObjectRestorer;
 
@@ -91,10 +96,11 @@ namespace nap
 		using ResourceMap = std::map<std::string, std::unique_ptr<Resource>>;
 		using FileLinkMap = std::map<std::string, std::vector<std::string>>; // Map from target file to multiple source files
 
-		ResourceMap					mResources;				// Holds all resources
-		std::set<std::string>		mFilesToWatch;			// Files currently loaded, used for watching changes on the files
-		FileLinkMap					mFileLinkMap;			// Map containing links from target to source file, for updating source files if the file monitor sees changes
-		DirectoryWatcher*			mDirectoryWatcher;		// File monitor, detects changes on files
+		ResourceMap							mResources;				// Holds all resources
+		std::set<std::string>				mFilesToWatch;			// Files currently loaded, used for watching changes on the files
+		FileLinkMap							mFileLinkMap;			// Map containing links from target to source file, for updating source files if the file monitor sees changes
+		std::unique_ptr<DirectoryWatcher>	mDirectoryWatcher;		// File monitor, detects changes on files
+		std::unique_ptr<Factory>			mFactory;				// Responsible for creating objects when deserializing
 	};
 
 }

@@ -297,6 +297,8 @@ void updateCamera(float deltaTime)
 // Called when the window is going to render
 void onRender(const nap::SignalAttribute& signal)
 {
+	renderService->destroyGLContextResources(renderWindows);
+
 	// Render window 0
 	{
 		nap::RenderWindowComponent* render_window = renderWindows[0];
@@ -508,9 +510,11 @@ bool init(nap::Core& core)
 	// GL Service + Window
 	//////////////////////////////////////////////////////////////////////////
 
+	resourceManagerService = core.getOrCreateService<nap::ResourceManagerService>();
+
 	// Create render service
 	renderService = core.getOrCreateService<nap::RenderService>();
-	renderService->setRenderer(RTTI_OF(nap::OpenGLRenderer));
+	renderService->init(RTTI_OF(nap::OpenGLRenderer), *resourceManagerService);
 	nap::Logger::info("initialized render service: %s", renderService->getName().c_str());
 
 	// Create windows
@@ -552,8 +556,6 @@ bool init(nap::Core& core)
 
 	// Make the first ("root") window active so that the resources are created for the right context
 	renderWindows[0]->makeActive();
-
-	resourceManagerService = core.getOrCreateService<nap::ResourceManagerService>();
 
 	nap::ErrorState errorState;
 #if 1
@@ -608,19 +610,19 @@ bool init(nap::Core& core)
 	// Create plane entity
 	rotating_plane = &(core.getRoot().addEntity("rotating_plane"));
 	rotating_plane->addComponent<nap::TransformComponent>();
-	rotatingPlaneComponent = new nap::PlaneComponent(*generalMaterial);
+	rotatingPlaneComponent = new nap::PlaneComponent(*generalMaterial, *renderService);
 	rotating_plane->addComponent(std::move(std::unique_ptr<nap::Component>(rotatingPlaneComponent)));
 
 	// Create plane entity
 	plane = &(core.getRoot().addEntity("plane"));
 	plane->addComponent<nap::TransformComponent>();
-	planeComponent = new nap::PlaneComponent(*generalMaterial);
+	planeComponent = new nap::PlaneComponent(*generalMaterial, *renderService);
 	plane->addComponent(std::move(std::unique_ptr<nap::Component>(planeComponent)));
 
 	// Create sphere entity
 	sphere = &(core.getRoot().addEntity("sphere"));
 	nap::TransformComponent& sphere_tran_component = sphere->addComponent<nap::TransformComponent>();
-	sphereComponent = new nap::SphereComponent(*worldMaterial);
+	sphereComponent = new nap::SphereComponent(*worldMaterial, *renderService);
 	sphere->addComponent(std::move(std::unique_ptr<nap::Component>(sphereComponent)));
 
 	//////////////////////////////////////////////////////////////////////////

@@ -15,6 +15,7 @@ namespace nap
 {
 	class Object;
 	class ErrorState;
+	class Factory;
 
 	/**
 	 * Deserialize a set of objects and their data from the specified stream
@@ -25,7 +26,7 @@ namespace nap
 	 *
 	 * @return True if deserialization succeeded, false if not. In case of failure, @a errorState contains detailed error info.
 	 */
-	bool deserializeBinary(MemoryStream& stream, RTTIDeserializeResult& result, ErrorState& errorState);
+	bool deserializeBinary(MemoryStream& stream, Factory& factory, RTTIDeserializeResult& result, ErrorState& errorState);
 
 	/**
 	 * Deserialize a set of objects and their data from the specified file
@@ -36,6 +37,6 @@ namespace nap
 	 *
 	 * @return True if deserialization succeeded, false if not. In case of failure, @a errorState contains detailed error info.
 	 */
-	bool readBinary(const std::string& path, RTTIDeserializeResult& result, ErrorState& errorState);
+	bool readBinary(const std::string& path, Factory& factory, RTTIDeserializeResult& result, ErrorState& errorState);
 } //< End Namespace nap
 

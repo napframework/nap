@@ -7,6 +7,9 @@
 #include "transformcomponent.h"
 #include "cameracomponent.h"
 #include "renderglobals.h"
+#include "renderablemeshresource.h"
+#include "rtti/factory.h"
+#include "nap/resourcemanager.h"
 
 // External Includes
 #include <nap/core.h>
@@ -257,6 +260,7 @@ namespace nap
 		renderTarget.unbind();
 	}
 
+
 	// Clears the render target.
 	void RenderService::clearRenderTarget(opengl::RenderTarget& renderTarget, opengl::EClearFlags flags)
 	{
@@ -265,8 +269,9 @@ namespace nap
 		renderTarget.unbind();
 	}
 
+
 	// Set the currently active renderer
-	void RenderService::setRenderer(const RTTI::TypeInfo& renderer)
+	void RenderService::init(const RTTI::TypeInfo& renderer, ResourceManagerService& resourceManagerService)
 	{
 		if (!renderer.is_derived_from(RTTI_OF(nap::Renderer)))
 		{
@@ -283,6 +288,34 @@ namespace nap
 		// Create new renderer
 		nap::Renderer* new_renderer = renderer.create<nap::Renderer>();
 		mRenderer.reset(new_renderer);
+
+		std::unique_ptr<RenderableMeshResourceCreator> mesh_creator = std::make_unique<RenderableMeshResourceCreator>(*this);
+		resourceManagerService.GetFactory().addObjectCreator(RTTI_OF(RenderableMeshResource), std::move(mesh_creator));
+	}
+
+
+	void RenderService::queueResourceForDestruction(std::unique_ptr<opengl::IGLContextResource> resource) 
+	{ 
+		if (resource != nullptr)
+			mGLContextResourcesToDestroy.emplace_back(std::move(resource)); 
+	}
+
+
+	void RenderService::destroyGLContextResources(std::vector<RenderWindowComponent*>& renderWindows)
+	{
+		// If there is anything scheduled, destroy
+		if (!mGLContextResourcesToDestroy.empty())
+		{
+			// We go over the windows to make the GL context active, and then destroy 
+			// the resources for that context
+			for (RenderWindowComponent* render_window : renderWindows)
+			{
+				render_window->makeActive();
+				for (auto& resource : mGLContextResourcesToDestroy)
+					resource->destroy(render_window->getWindow()->getContext());
+			}
+			mGLContextResourcesToDestroy.clear();
+		}
 	}
 
 

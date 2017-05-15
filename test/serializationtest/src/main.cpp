@@ -5,6 +5,7 @@
 #include <rtti/jsonwriter.h>
 #include <rtti/binarywriter.h>
 #include <rtti/binaryreader.h>
+#include <rtti/factory.h>
 #include <nap/memorystream.h>
 #include <nap/logger.h>
 #include <nap/core.h>
@@ -113,6 +114,8 @@ int main(int argc, char* argv[])
 	// Restore value so we can compare later
 	resolved_path.setValue(old_value);
 
+	nap::Factory factory;
+
 	{
 		ErrorState error_state;
 
@@ -127,7 +130,7 @@ int main(int argc, char* argv[])
 
 		// Read json and verify it succeeds
 		RTTIDeserializeResult read_result;
-		if (!deserializeJSON(json, read_result, error_state))
+		if (!deserializeJSON(json, factory, read_result, error_state))
 			return -1;
 
 		// Resolve links
@@ -159,7 +162,7 @@ int main(int argc, char* argv[])
 		// Read binary and verify it succeeds
 		MemoryStream stream(binary_writer.getBuffer().data(), binary_writer.getBuffer().size());
 		RTTIDeserializeResult read_result;
-		if (!deserializeBinary(stream, read_result, error_state))
+		if (!deserializeBinary(stream, factory, read_result, error_state))
 			return -1;
 
 		// Resolve links

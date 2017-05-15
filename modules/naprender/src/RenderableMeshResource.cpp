@@ -1,5 +1,6 @@
 // Local Includes
 #include "RenderableMeshResource.h"
+#include "RenderService.h"
 
 // External Includes
 #include <nap/logger.h>
@@ -16,8 +17,22 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	RenderableMeshResource::~RenderableMeshResource()
+	{
+		// VAO is allocated if object had init() call
+		if (mVAO != nullptr)
+		{
+			assert (mRenderService != nullptr);
+			mRenderService->queueResourceForDestruction(std::move(mVAO));
+		}
+	}
+
+
 	bool RenderableMeshResource::init(ErrorState& errorState)
 	{
+		mPrevVAO = std::move(mVAO);
+		mVAO = std::make_unique<opengl::VertexArrayObject>();
+
 		for (auto& kvp : mMaterialResource->getShader()->getShader().getAttributes())
 		{
 			const opengl::VertexAttribute* shader_vertex_attribute = kvp.second.get();
@@ -30,23 +45,25 @@ namespace nap
 			if (!errorState.check(shader_vertex_attribute != nullptr, "Unable to find vertex attribute %s in mesh %s", material_binding->mMeshAttributeID.c_str(), mMeshResource->mPath.c_str()))
 				return false;
 
-			mVAO.addVertexBuffer(shader_vertex_attribute->mLocation, *vertex_buffer);
+			mVAO->addVertexBuffer(shader_vertex_attribute->mLocation, *vertex_buffer);
 		}
 		
  		return true;
 	}
 
+
 	void RenderableMeshResource::finish(Resource::EFinishMode mode)
 	{
-// 		if (mode == Resource::EFinishMode::COMMIT)
-// 		{
-// 			mPrevMesh = nullptr;
-// 		}
-// 		else
-// 		{
-// 			assert(mode == Resource::EFinishMode::ROLLBACK);
-// 			mMesh = std::move(mPrevMesh);
-// 		}
+		if (mode == Resource::EFinishMode::COMMIT)
+		{
+			mRenderService->queueResourceForDestruction(std::move(mPrevVAO)); 
+		}
+		else
+		{
+			assert(mode == Resource::EFinishMode::ROLLBACK);
+			mRenderService->queueResourceForDestruction(std::move(mVAO)); 
+			mVAO = std::move(mPrevVAO);
+		}
 	}
 
 

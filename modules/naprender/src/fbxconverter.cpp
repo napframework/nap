@@ -2,6 +2,7 @@
 #include "fbxconverter.h"
 #include "rtti/typeinfo.h"
 #include "rtti/jsonwriter.h"
+#include "rtti/factory.h"
 
 // STL includes
 #include <memory>
@@ -238,8 +239,10 @@ namespace nap
 
 	std::unique_ptr<opengl::Mesh> loadMesh(const std::string& meshPath, ErrorState& errorState)
 	{
+		nap::Factory factory;
+
 		RTTIDeserializeResult deserialize_result;
-		if (!errorState.check(readBinary(meshPath, deserialize_result, errorState), "Failed to load mesh from %s", meshPath.c_str()))
+		if (!errorState.check(readBinary(meshPath, factory, deserialize_result, errorState), "Failed to load mesh from %s", meshPath.c_str()))
 			return nullptr;
 
 		if (!errorState.check(deserialize_result.mReadObjects.size() == 1, "Trying to load an invalid mesh file. File contains %d objects", deserialize_result.mReadObjects.size()))

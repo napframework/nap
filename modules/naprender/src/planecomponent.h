@@ -6,6 +6,7 @@
 namespace nap
 {
 	class Material;
+	class RenderService;
 
 	/**
 	 * Highly efficient plane that holds a link to generic
@@ -20,6 +21,6 @@ namespace nap
 	public:
 		// Default constructor
 		PlaneComponent() = default;
-		PlaneComponent(Material& material); 
+		PlaneComponent(Material& material, RenderService& renderService);
 	};
 }

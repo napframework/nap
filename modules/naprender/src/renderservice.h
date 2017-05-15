@@ -87,9 +87,9 @@ namespace nap
 
 		/**
 		 * Sets the renderer, the service will own the renderer
-		 * @param renderer the type of renderer to useo
+		 * @param renderer the type of renderer to use
 		 */
-		void setRenderer(const RTTI::TypeInfo& renderer);
+		void init(const RTTI::TypeInfo& renderer, ResourceManagerService& resourceManagerService);
 
 		/**
 		 * Shuts down the managed renderer
@@ -114,6 +114,18 @@ namespace nap
 		* Returns global render state. Use the fields in this objects to modify the renderstate.
 		*/
 		RenderState& getRenderState() { return mRenderState; }
+
+		/**
+		 * Batches an OpenGL resource that is dependent on GLContext for destruction, to avoid many GL context switches during destruction.
+		 * @param resource: object that is dependent on GL context, that is scheduled for destruction. Notice that ownership is transferred here.
+		 */
+		void queueResourceForDestruction(std::unique_ptr<opengl::IGLContextResource> resource);
+
+		/**
+ 		 * Destroys all per-context OpenGL resources that are scheduled for destruction. 
+ 		 * @param renderWindows: all render windows that are active, as they hold the GL contexts.
+		 */
+		void destroyGLContextResources(std::vector<RenderWindowComponent*>& renderWindows);
 
 	protected:
 		/**
@@ -172,5 +184,7 @@ namespace nap
 
 		RenderState mRenderState;									//< The latest render state as set by the user
 		ContextSpecificStateMap	mContextSpecificState;				//< The per-context render state
+
+		std::vector<std::unique_ptr<opengl::IGLContextResource>> mGLContextResourcesToDestroy;	///< Array of per-context GL resources scheduled for destruction
 	};
 } // nap

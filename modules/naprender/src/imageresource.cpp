@@ -31,11 +31,11 @@ namespace nap
 	// Initializes 2D texture. Additionally a custom display name can be provided.
 	bool MemoryTextureResource2D::init(ErrorState& errorState)
 	{
-		mPrevTexture = mTexture;
-		mTexture = new opengl::Texture2D;
+		mPrevTexture = std::move(mTexture);
+		mTexture = std::make_unique<opengl::Texture2D>();
 		mTexture->init();
 
-		mTexture->allocate(mSettings);
+ 		mTexture->allocate(mSettings);
 
 		return true;
 	}
@@ -44,18 +44,12 @@ namespace nap
 	{
 		if (mode == Resource::EFinishMode::COMMIT)
 		{
-			if (mPrevTexture != nullptr)
-			{
-				delete mPrevTexture;
-				mPrevTexture = nullptr;
-			}
+			mPrevTexture = nullptr;
 		}
 		else
 		{
 			assert(mode == Resource::EFinishMode::ROLLBACK);
-			delete mTexture;
-			mTexture = mPrevTexture;
-			mPrevTexture = nullptr;
+			mTexture = std::move(mPrevTexture);
 		}
 	}
 
@@ -91,8 +85,8 @@ namespace nap
 		if (!errorState.check(!mImagePath.empty(), "Imagepath not set"))
 			return false;
 
-		mPrevImage = mImage;
-		mImage = new opengl::Image;
+		mPrevImage = std::move(mImage);
+		mImage = std::make_unique<opengl::Image>();
 
 		if (!errorState.check(mImage->load(mImagePath), "Unable to load image from file"))
 			return false;
@@ -104,18 +98,12 @@ namespace nap
 	{
 		if (mode == Resource::EFinishMode::COMMIT)
 		{
-			if (mPrevImage != nullptr)
-			{
-				delete mPrevImage;
-				mPrevImage = nullptr;
-			}
+			mPrevImage = nullptr;
 		}
 		else
 		{
 			assert(mode == Resource::EFinishMode::ROLLBACK);
-			delete mImage;
-			mImage = mPrevImage;
-			mPrevImage = nullptr;
+			mImage = std::move(mPrevImage);
 		}
 	}
 
