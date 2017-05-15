@@ -14,8 +14,6 @@
 
 #include <rtti/rttipath.h>
 
-#include "fbxconverter.h"
-
 using namespace nap;
 
 BaseClass* createTestHierarchy()
@@ -177,19 +175,6 @@ int main(int argc, char* argv[])
 		if (!RTTI::areObjectsEqual(*objects_by_id["Pointee"], *root->mPointerProperty, RTTI::EPointerComparisonMode::BY_ID))
 			return -1;
 	}
-
-	ErrorState convert_result;
-	if (!convertFBX("C:/dev/Naivi/nap/test/render/data/pig_head_alpha_rotated.fbx", "C:/dev/Naivi/nap/test/render/data", convert_result))
-	{
-		return -1;
-	}
-
-	ErrorState convert_result2;
-	if (!convertFBX("C:/dev/Naivi/nap/test/render/data/orientation.fbx", "C:/dev/Naivi/nap/test/render/data", convert_result2))
-	{
-		return -1;
-	}
-
 
 	return 0;
 }
