@@ -11,7 +11,7 @@ namespace nap
 	 */
 	class ExecuteDrawOperator : public Operator
 	{
-		RTTI_ENABLE_DERIVED_FROM(Operator)
+		RTTI_ENABLE(Operator)
 	public:
 		ExecuteDrawOperator();
 
@@ -21,5 +21,3 @@ namespace nap
 		void init();
 	};
 }
-
-RTTI_DECLARE(nap::ExecuteDrawOperator)

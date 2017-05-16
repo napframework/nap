@@ -96,4 +96,5 @@ RTTI_DEFINE_DATA(nap::IntMap)
 RTTI_DEFINE_DATA(nap::FloatMap)
 RTTI_DEFINE_DATA(nap::StringMap)
 RTTI_DEFINE_DATA(nap::Binary)
+RTTI_DEFINE_DATA(nap::RTTIStringMap)
 

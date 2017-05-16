@@ -1,384 +1,153 @@
 #pragma once
 
-#include "rtti/base/coreprerequisites.h"
-#include "rtti/base/typetraits.h"
-#include <functional>
-#include <string>
-#include <vector>
-#include <memory>
-#include <map>
-#include <cstring>
-#include <functional>
+#include <rttr/type>
+#include <rttr/registration>
 
+/**
+ * This file contains the macros necessary to register types and their attributes with the RTTI system. There are only a few macros important for the user of the RTTI system:
+ * - RTTI_OF - This is a convenience macro used to get the underlying TypeInfo of the named type. Usage example: RTTI_OF(nap::Object).
+ * - RTTI_ENABLE - This macro must be used when you have a class that is part of an inheritance hierarchy. The argument to the macro is a comma-separated list of base classes (empty if the macro is being used in the base class itself).
+ * - RTTI_BEGIN_CLASS, RTTI_END_CLASS, RTTI_PROPERTY - These macros are used to register a type in the RTTI system and must be placed in a .cpp file.
+ * - RTTI_DEFINE_CLASS/RTTI_DEFINE_BASE - Wrapper around RTTI_BEGIN_CLASS/RTTI_END_CLASS for backwards compatibility
+ *
+ * See the following example for a typical usage scenario of these macros:
+ *
+ *		// RTTIClasses.h
+ *		struct DataStruct
+ *		{
+ *				float		mFloatProperty;
+ *				std::string mStringProperty;
+ *		};
+ *
+ *		class BaseClass
+ *		{
+ *				RTTI_ENABLE()
+ *		private:
+ *				float		mFloatProperty;
+ *		};
+ *
+ *		class DerivedClass : public BaseClass
+ *		{
+ *				RTTI_ENABLE(SomeBaseClass)
+ *
+ *		private:
+ *				int			mIntProperty;
+ *		};
+ *
+  * The above code defines three new classes:
+ * - DataStruct:
+ *      A class without base or derived classes. Note that the RTTI_ENABLED macro is not used for this class.
+ *      The fact that the RTTI_ENABLED macro is optional (it's only required when the class is part of an inheritance hierarchy) makes it possible to *add* RTTI to third party classes, since no modification of the class itself is required.
+ *		This is also very efficient, because when RTTI_ENABLED is not used, no vtable is required in the class.
+ *      A good example of this is adding RTTI support to classes such as glm::vec2, glm::vec3, etc; types that we have no control over, but we want to add RTTI to, without adding a vtable to them.
+ *
+ * - BaseClass
+ *		This class is designed to be the base-class of an inheritance hierarchy. Because of this, a RTTI_ENABLED macro is required in the class definition in order for RTTI to properly work
+ *		Note that because this is the base class, no arguments to the RTTI_ENABLED macro are needed
+ *
+ * - DerivedClass
+ *		This class is part of an inheritance hierarchy and in this case inherits from BaseClass. Again, this means a RTTI_ENABLED macro is required in the class definition.
+ *		Note that because this class derives from another RTTI class (BaseClass), the class it derives from must be specified as argument to the RTTI_ENABLE macro.
+ *
+ * Note that the code in the header does not actually register these types with the RTTI system; the RTTI_ENABLED macro is only used to add some plumbing (virtual calls) to the class, not to do actual registration.
+ * In order to actually register the types with the RTTI system, the following code must be added to the cpp file:
+ *
+ *		// RTTIClasses.cpp
+ *		RTTI_BEGIN_CLASS(DataStruct)
+ *				RTTI_PROPERTY("FloatProperty",	&DataStruct::mFloatProperty);
+ *				RTTI_PROPERTY("StringProperty", &DataStruct::mStringProperty);
+ *		RTTI_END_CLASS
+ *
+ *		RTTI_BEGIN_CLASS(BaseClass)
+ *				RTTI_PROPERTY("FloatProperty",	&BaseClass::mFloatProperty);
+ *		RTTI_END_CLASS
+ *
+ *		RTTI_BEGIN_CLASS(DerivedClass)
+ *				RTTI_PROPERTY("IntProperty",	&DerivedClass::mIntProperty)
+ *		RTTI_END_CLASS
+ *
+ * The above code, which *must* be located in the cpp, is responsible for the registration. As you can see, it is very straightforward.
+ * In general, to register a type and its attributes with the RTTI system, you simply use the RTTI_BEGIN_CLASS/RTTI_END_CLASS pair and add RTTI_PROPERTY calls to register the properties you need.
+ *
+ * Once registered, the type can be looked up in the RTTI system and can be inspected for properties etc. A simple example that prints out the names of all properties of an RTTI class:
+ *
+ *		template<class T>
+ *		void printProperties()
+ *		{
+ *			RTTI::TypeInfo type = RTTI_OF(T); // Could also be RTTI::TypeInfo::get<T>()
+ *		
+ *			std::cout << "Properties of " << type.get_name().data() << std::endl;
+ *			for (const RTTI::Property& property : type.get_properties())
+ *			{
+ *				std::cout << " -- " << property.get_name().data() << std::endl;
+ *			}
+ *		}
+ *		
+ *		printProperties<DataStruct>();
+ */
+
+/**
+ * This namespace is only used to redefine some RTTR types to our own types so that the rttr:: namespace does not leak out everywhere
+ */
 namespace RTTI
 {
-	class TypeInfo;
-	using CreateFunction = std::function<void*()>;
+	using TypeInfo		= rttr::type;
+	using Property		= rttr::property;
+	using Variant		= rttr::variant;
+	using Instance		= rttr::instance;
+	using VariantArray	= rttr::variant_array_view;
+	using VariantMap	= rttr::variant_associative_view;
 
-	namespace impl
+	enum class EPropertyMetaData
 	{
-		/*!
-		 * \brief Register the type info for the given name
-		 *
-		 * \remark When a type with the given name is already registered,
-		 *         then the TypeInfo for the already registered type will be returned.
-		 *
-		 * \return A valid TypeInfo object.
-		 */
-		RTTI_API TypeInfo registerOrGetType(const char* name, const TypeInfo& rawTypeInfo,
-											const std::vector<TypeInfo>& info, CreateFunction createFunction);
-
-		RTTI_API TypeInfo getType(const char* name);
-
-		template <typename T, bool>
-		struct RawTypeInfo;
-	} // end namespace impl
-
-	/*!
-	 * This class holds the type information for any arbitrary object.
-	 *
-	 * Every class or atomic data type can have an unique TypeInfo object.
-	 * With the help of this object you can compare unknown types for equality at runtime.
-	 *
-	 * Preparation
-	 * -----------
-	 * Before you can retrieve data from TypeInfo, you have to register your struct or class.
-	 * Therefore use the macro #RTTI_DECLARE_META_TYPE(Type) to make the type known to the TypeInfo system.
-	 * To actual execute the registration process use the macro #RTTI_DEFINE_META_TYPE(Type) in global namespace.
-	 *
-	 * This example shows a typical usage:
-	\code{.cpp}
-
-	  // MyClass.h
-	  class MyClass
-	  {
-		int i;
-	  };
-
-	  RTTI_DECLARE_META_TYPE(MyClass)
-
-	  // MyClass.cpp; in global namespace
-	  RTTI_DEFINE_META_TYPE(myClass)
-	\endcode
-	 *
-	 * Retrieve %TypeInfo
-	 * ------------------
-	 * There are three static template member functions for retrieving the TypeInfo:
-	 *
-	 *  TypeInfo::get<T>()
-		  \code{.cpp}
-			TypeInfo::get<int>() == TypeInfo::get<int>()  // yields to true
-			TypeInfo::get<int>() == TypeInfo::get<bool>() // yields to false
-		  \endcode
-	 *  TypeInfo::get<T>(T* ptr)
-		 \code{.cpp}
-
-			struct Base {};
-			struct Derived : Base {};
-			struct Other : Base {};
-			Derived d;
-			Base* base = &d;
-			TypeInfo::get<Derived>() == TypeInfo::get(base) // yields to true
-
-			Other o;
-			base = &o;
-			TypeInfo::get<Derived>() == TypeInfo::get(base) // yields to false
-		 \endcode
-	 *  TypeInfo::get<T>(T& ref)
-		 \code{.cpp}
-			Derived d;
-			TypeInfo::get<Derived>() == TypeInfo::get(d) // yields to true
-		 \endcode
-	 *
-	 */
-	class RTTI_API TypeInfo
-	{
-	  public:
-		typedef uint16 TypeId;
-        
-		/*!
-		 * \brief Assigns a TypeInfo to another one.
-		 *
-		 */
-		TypeInfo(const TypeInfo& other);
-
-
-		/*!
-		 * \brief Assigns a TypeInfo to another one.
-		 *
-		 * \return A TypeInfo object.
-		 */
-		TypeInfo& operator=(const TypeInfo& other);
-
-
-		/*!
-		 * \brief Comparison operator for sorting the TypeInfo data according to some internal criterion.
-		 *
-		 * \return True if this TypeInfo is less than the \a other.
-		 */
-		bool operator<(const TypeInfo& other) const;
-
-
-		/*!
-		 * \brief Comparison operator for sorting the TypeInfo data according to some internal criterion.
-		 *
-		 * \return True if this TypeInfo is greater than the \a other.
-		 */
-		bool operator>(const TypeInfo& other) const;
-
-
-		/*!
-		 * \brief Comparison operator for sorting the TypeInfo data according to some internal criterion.
-		 *
-		 * \return True if this TypeInfo is greater than or equal to \a other.
-		 */
-		bool operator>=(const TypeInfo& other) const;
-
-
-		/*!
-		 * \brief Comparison operator for sorting the TypeInfo data according to some internal criterion.
-		 *
-		 * \return True if this TypeInfo is less than or equal to \a other.
-		 */
-		bool operator<=(const TypeInfo& other) const;
-
-
-		/*!
-		 * \brief Compares this TypeInfo with the \a other TypeInfo and returns true
-		 *        if both describe the same type, otherwise returns false.
-		 *
-		 * \return True if both TypeInfo are equal, otherwise false.
-		 */
-		bool operator==(const TypeInfo& other) const;
-
-
-		/*!
-		 * \brief Compares this TypeInfo with the \a other TypeInfo and returns true
-		 *        if both describe different types, otherwise returns false.
-		 *
-		 * \return True if both TypeInfo are \b not equal, otherwise false.
-		 */
-		bool operator!=(const TypeInfo& other) const;
-
-
-		/*!
-		 * \brief Returns the id of this type.
-		 *
-		 * \note This id is unique at process runtime,
-		 *       but the id can be changed every time the process is executed.
-		 *
-		 * \return The TypeInfo id.
-		 */
-		TypeId getId() const;
-
-
-		/*!
-		 * \brief Returns the unique and human-readable name of the type.
-		 *
-		 * \return TypeInfo name.
-		 */
-		std::string getName() const;
-
-
-		/*!
-		 * \brief Returns true if this TypeInfo is valid, that means the TypeInfo holds valid data to a type.
-		 *
-		 * \return True if this TypeInfo is valid, otherwise false.
-		 */
-		bool isValid() const;
-
-
-		/*!
-		 * \brief Returns true if this TypeInfo is derived from the given type \a T, otherwise false.
-		 *
-		 * \return Returns true if this TypeInfo is a derived type from \a T, otherwise false.
-		 */
-		template <typename T>
-		bool isKindOf() const;
-
-
-		/*!
-		* \brief Returns true if this TypeInfo is derived from the given TypeInfo \a other, otherwise false.
-		*
-		* \return Returns true if this TypeInfo is a derived type from \a other, otherwise false.
-		*/
-		bool isKindOf(const TypeInfo& other) const;
-
-
-		/*!
-		 * \brief Returns a TypeInfo object which represent the raw type.
-		 *
-		 * That means a the type without any qualifiers (const and volatile) nor any pointer.
-		 *
-		 * \remark When the current TypeInfo is already the raw type, it will return an copy from itself.
-		 *
-		 * \return The TypeInfo of the raw type.
-		 */
-		TypeInfo getRawType() const;
-
-
-        bool canCreateInstance() const;
-
-		/*!
-		 * Create instance of the type using a default (no arguments) constructor
-		 */
-		void* createInstance() const;
-
-
-		/*!
-		 * Create instance of the type using a default (no arguments) constructor
-		 */
-		template <typename T>
-		T* createInstance() const
-		{
-            return isKindOf<T>() ? static_cast<T*>(createInstance()) : nullptr;
-		}
-
-
-		/*!
-		 * \brief Returns a TypeInfo object for the given template type \a T.
-		 *
-		 * \return TypeInfo for the template type \a T.
-		 */
-		template <typename T>
-		static TypeInfo get();
-
-
-		/*!
-		* \brief creates a new instance for the given template type \a T.
-		*
-		* \return TypeInfo for the template type \a T.
-		*/
-		template <typename T>
-		static T* create();
-
-		/*!
-		* \brief creates a new instance for the given type with name\a T.
-		*
-		* \return new instance of that type\a T.
-		*/
-		static void* create(const std::string& name);
-
-
-		/*!
-		 * \brief creates a new instance for the given type with name\a T.
-		 *
-		 * \return new instance of that type\a T.
-		 */
-		template <typename T>
-		static T* create(const std::string& name);
-
-
-		/*!
-		 * \brief Returns a TypeInfo object for the given instance \a object.
-		 *
-		 * \remark If the type of the expression is a cv-qualified type, the result of the TypeInfo::get expression
-		 * refers to a
-		 *         TypeInfo object representing the cv-unqualified type.
-		 *
-		 * \return TypeInfo for an \a object of type \a T.
-		 */
-		template <typename T>
-		static TypeInfo get(T* object);
-
-
-		/*!
-		 * \brief Returns a TypeInfo object for the given instance \a object.
-		 *
-		 * \remark When TypeInfo::get is applied to a glvalue expression whose type is a polymorphic class type,
-		 *         the result refers to a TypeInfo object representing the type of the most derived object.
-		 \code{.cpp}
-		  class D { ... };
-		  D d1;
-		  const D d2;
-		  TypeInfo::get(d1)  == TypeInfo::get(d2);         // yields true
-		  TypeInfo::get<D>() == TypeInfo::get<const D>();  // yields true
-		  TypeInfo::get<D>() == TypeInfo::get(d2);         // yields true
-		  TypeInfo::get<D>() == TypeInfo::get<const D&>(); // yields true
-		 \endcode
-		 *
-		 * \return TypeInfo for an \a object of type \a T.
-		 */
-		template <typename T>
-		static TypeInfo get(T& object);
-        
-        // Return invalid (empty) type info
-        static TypeInfo empty() { return TypeInfo(); }
-
-
-		/*!
-		* \brief Returns a TypeInfo object for the given name of the \a object.
-		*
-		* \remark if the name isn't bound to a valid type information object, an invalid typeinfo is returned
-		*/
-		RTTI_INLINE static TypeInfo getByName(const char* object) { return impl::getType(object); }
-
-
-
-		/*!
-		* \brief Returns a TypeInfo object for the given name of the \a object.
-		*
-		* \remark if the name isn't bound to a valid type information object, an invalid typeinfo is returned
-		*/
-		RTTI_INLINE static TypeInfo getByName(const std::string& object) { return impl::getType(object.c_str()); }
-
-        /*!
-        * \brief Returns an iterable of raw TypeInfos constrained by @kind
-        */
-		static std::vector<TypeInfo> getRawTypes(const TypeInfo &kind);
-
-		static std::vector<TypeInfo> getRawTypes();
-
-        std::vector<TypeInfo> getBaseTypes() const;
-
-	private:
-		/*!
-		 * Constructs an empty and invalid TypeInfo object.
-		 */
-		TypeInfo();
-
-
-		/*!
-		 * \brief Constructs a valid TypeInfo object.
-		 *
-		 * \param id The unique id of the data type.
-		 */
-		TypeInfo(TypeId id);
-
-
-		/*!
-		* \brief Thread safe type registration of object of type T
-		*/
-		RTTI_API friend TypeInfo impl::registerOrGetType(const char* name, const TypeInfo& rawTypeInfo,
-														 const std::vector<TypeInfo>& info,
-														 CreateFunction createFunction);
-		RTTI_API friend TypeInfo impl::getType(const char* name);
-		template <typename T, bool>
-		friend struct impl::RawTypeInfo;
-
-
-		/*!
-		* \brief Registered type id
-		*/
-		TypeId m_id;
-
-	};
-
-} // end namespace RTTI
-
-  // RTTI Hash specialization
-
-namespace std
-{
-	template<>
-	struct hash<RTTI::TypeInfo> {
-		size_t operator()(const RTTI::TypeInfo &k) const {
-			return hash<int>()(k.getRawType().getId());
-		}
+		Required,
+		FileLink
 	};
 }
-// Include template definitions
-#include "rtti/impl/typeinfo_impl.h"
+
 
 // Macros
 #define RTTI_OF(Type) RTTI::TypeInfo::get<Type>()
+
+#define CONCAT_UNIQUE_NAMESPACE(x, y)				namespace x##y
+#define UNIQUE_REGISTRATION_NAMESPACE(id)			CONCAT_UNIQUE_NAMESPACE(__rtti_registration_, id)
+
+#define RTTI_BEGIN_BASE_CLASS(Type)							\
+	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)			\
+	{													\
+		RTTR_REGISTRATION								\
+		{												\
+			using namespace rttr;						\
+			registration::class_<Type>(#Type)			\
+
+
+#define RTTI_PROPERTY(Name, Member)						\
+						  .property(Name, Member)
+
+#define RTTI_PROPERTY_REQUIRED(Name, Member)			\
+						  .property(Name, Member)(metadata(RTTI::EPropertyMetaData::Required, true))
+
+#define RTTI_PROPERTY_FILE_LINK(Name, Member)			\
+						  .property(Name, Member)(metadata(RTTI::EPropertyMetaData::Required, true), metadata(RTTI::EPropertyMetaData::FileLink, true))
+
+#define RTTI_END_CLASS									\
+		;												\
+		}												\
+	}													\
+
+#define RTTI_BEGIN_CLASS(Type)							\
+	RTTI_BEGIN_BASE_CLASS(Type)							\
+	.constructor<>()(policy::ctor::as_raw_ptr)
+
+#define RTTI_ENABLE(...) \
+	RTTR_ENABLE(__VA_ARGS__) \
+	RTTR_REGISTRATION_FRIEND
+
+// Legacy macros only used for backwards compatibility with the old RTTI system.
+#define RTTI_DEFINE(Type)							\
+	RTTI_BEGIN_CLASS(Type)							\
+	RTTI_END_CLASS
+
+#define RTTI_DEFINE_BASE(Type)						\
+	RTTI_BEGIN_BASE_CLASS(Type)						\
+	RTTI_END_CLASS

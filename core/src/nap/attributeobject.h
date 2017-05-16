@@ -23,7 +23,7 @@ namespace nap
 	 */
 	class AttributeObject : public Object
 	{
-		RTTI_ENABLE_DERIVED_FROM(Object)
+		RTTI_ENABLE(Object)
 
 	public:
 		AttributeObject() : Object() {}
@@ -164,7 +164,5 @@ namespace nap
 
 
 }
-
-RTTI_DECLARE(nap::AttributeObject)
 
 #include "attributeobject.hpp"

@@ -10,7 +10,7 @@ namespace nap
 	 */
 	class JSONSerializer : public Serializer
 	{
-		RTTI_ENABLE_DERIVED_FROM(Serializer)
+		RTTI_ENABLE(Serializer)
 	public:
 		void writeObject(std::ostream& ostream, Object& object, bool writePointers = false) const override;
 		void writeModuleInfo(std::ostream& ostream, ModuleManager& moduleManager) const override;
@@ -19,7 +19,7 @@ namespace nap
 
 	class JSONResource : public Resource
 	{
-        RTTI_ENABLE_DERIVED_FROM(Resource)
+        RTTI_ENABLE(Resource)
 	public:
 		JSONResource(const std::string& path, const std::string& contents) : mContents(contents), mPath(path) {}
 
@@ -28,28 +28,11 @@ namespace nap
             return JSONSerializer().fromString(mContents, core, &parent);
         }
 
-		virtual const std::string& getDisplayName() const override { return mPath; }
+		virtual const std::string getDisplayName() const override { return mPath; }
 
     private:
 		const std::string mContents;
 		std::string mPath;
 	};
 
-
-
-	class JSONFileLoader : public ResourceLoader
-	{
-        RTTI_ENABLE_DERIVED_FROM(ResourceLoader)
-	public:
-		JSONFileLoader() : ResourceLoader() { addFileExtension("napj"); }
-
-		std::unique_ptr<Resource> loadResource(const std::string& resourcePath) const override;
-
-	private:
-		JSONSerializer mSerializer;
-	};
 }
-
-RTTI_DECLARE(nap::JSONSerializer)
-RTTI_DECLARE_BASE(nap::JSONResource)
-RTTI_DECLARE(nap::JSONFileLoader)

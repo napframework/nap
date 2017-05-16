@@ -101,6 +101,3 @@ namespace nap
 		float mBottom;
 	};
 }
-RTTI_DECLARE_DATA(nap::Point)
-RTTI_DECLARE_DATA(nap::Rect)
-RTTI_DECLARE_DATA(nap::Margins)

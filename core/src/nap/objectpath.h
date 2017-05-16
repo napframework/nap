@@ -30,7 +30,7 @@ namespace nap
             Object* ob = resolve(root);
             if (nullptr == ob)
                 return nullptr;
-            if (ob->getTypeInfo().isKindOf<T>())
+            if (ob->get_type().is_derived_from<T>())
                 return static_cast<T*>(ob);
 			return nullptr;
 		}

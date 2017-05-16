@@ -3,6 +3,8 @@
 #include "logger.h"
 #include "resourcemanager.h"
 
+RTTI_DEFINE(nap::ResourceLinkAttribute)
+
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
@@ -45,15 +47,15 @@ namespace nap
 	void ResourceLinkAttribute::setResource(Resource& resource)
 	{
 		// Make sure path to resource is valid
-		if (resource.getResourcePath().empty())
+		if (resource.mID.empty())
 		{
 			nap::Logger::warn("unable to link resource, invalid resource path");
 			return;
 		}
 
-		if (!resource.getTypeInfo().isKindOf(mType))
+		if (!resource.get_type().is_derived_from(mType))
 		{
-			nap::Logger::warn("unable to link resource, invalid resource type: %s", resource.getTypeInfo().getName().c_str());
+			nap::Logger::warn("unable to link resource, invalid resource type: %s", resource.get_type().get_name().data());
 			return;
 		}
 
@@ -61,16 +63,16 @@ namespace nap
 		mResource = &resource;
 
 		// Set new path (forcing resolve update on get)
-		setValue(resource.getResourcePath());
+		setValue(resource.mID);
 	}
 
 
 	// Set allowed resource link type
 	void ResourceLinkAttribute::setResourceType(const RTTI::TypeInfo& type)
 	{
-		if (!type.isKindOf(RTTI_OF(nap::Resource)))
+		if (!type.is_derived_from(RTTI_OF(nap::Resource)))
 		{
-			Logger::warn("object: %s not of type resource", type.getName().c_str());
+			Logger::warn("object: %s not of type resource", type.get_name().data());
 			return;
 		}
 		mType = type;
@@ -109,9 +111,9 @@ namespace nap
 
 		// Find root
 		const nap::Object* root = getRootObject();
-		if (!root->getTypeInfo().isKindOf(RTTI_OF(nap::Entity)))
+		if (!root->get_type().is_derived_from(RTTI_OF(nap::Entity)))
 		{
-			nap::Logger::warn("unable to resolve resource path, root object is not of type: %s", RTTI_OF(nap::Entity).getName().c_str());
+			nap::Logger::warn("unable to resolve resource path, root object is not of type: %s", RTTI_OF(nap::Entity).get_name().data());
 			return false;
 		}
 
@@ -128,7 +130,7 @@ namespace nap
 		}
 
 		// Find resource
-		nap::Resource* resource = service->getResource(getValue());
+		nap::Resource* resource = service->findResource(getValue());
 		if (resource == nullptr)
 		{
 			nap::Logger::warn("unable to resolve resource path, resource manager does not contain asset with path: %s", getValue().c_str());
@@ -136,9 +138,9 @@ namespace nap
 		}
 
 		// Make sure the type matches the type specified by the link
-		if (!resource->getTypeInfo().isKindOf(mType))
+		if (!resource->get_type().is_derived_from(mType))
 		{
-			nap::Logger::warn("unable to resolve resource path, resource is not of type: %s", mType.getName().c_str());
+			nap::Logger::warn("unable to resolve resource path, resource is not of type: %s", mType.get_name().data());
 			return false;
 		}
 
@@ -152,7 +154,7 @@ namespace nap
 	void ResourceLinkAttribute::onLinkPathChanged(nap::AttributeBase& attr)
 	{
 		// Always resolve path on get when current resource is empty
-		if (mResource == nullptr || getValue() != mResource->getResourcePath())
+		if (mResource == nullptr || getValue() != mResource->mID)
 		{
 			isDirty = true;
 		}

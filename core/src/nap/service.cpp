@@ -53,7 +53,7 @@ namespace nap
 	void Service::registerObject(Object& object)
 	{ 
 		// Get or create component using emplace
-		auto it = mObjects.emplace(std::make_pair(object.getTypeInfo().getRawType(), ObjectList()));
+		auto it = mObjects.emplace(std::make_pair(object.get_type().get_raw_type(), ObjectList()));
 		(it.first)->second.emplace_back(&object);
 
 		// Make sure we know if it's removal
@@ -70,8 +70,8 @@ namespace nap
 	void Service::removeObject(Object& object)
 	{
 		// Find component container
-		RTTI::TypeInfo info = object.getTypeInfo().getRawType();
-		std::string name = info.getName();
+		RTTI::TypeInfo info = object.get_type().get_raw_type();
+		std::string name = info.get_name().data();
 
 		auto it = mObjects.find(info);
 		if (it == mObjects.end())
@@ -117,10 +117,10 @@ namespace nap
 	{
 		// Get raw compare type
 		outObjects.clear();
-		RTTI::TypeInfo search_type = inInfo.getRawType();
-		if (!search_type.isKindOf<nap::Object>())
+		RTTI::TypeInfo search_type = inInfo.get_raw_type();
+		if (!search_type.is_derived_from<nap::Object>())
 		{
-			Logger::warn("not of type: " + search_type.getName());
+			Logger::warn("not of type: %s", search_type.get_name().data());
 			return 0;
 		}
 
@@ -128,7 +128,7 @@ namespace nap
 		size_t size(0);
 		for (auto& i : mObjects)
 		{
-			if (i.first.isKindOf(search_type))
+			if (i.first.is_derived_from(search_type))
 			{
 				size += i.second.size();
 				outObjects.emplace_back(&(i.second));

@@ -185,8 +185,8 @@ namespace nap
 	const TypeList ModuleManager::getComponentTypes() const
 	{
 		TypeList types;
-		for (const auto& type : RTTI::TypeInfo::getRawTypes()) {
-			if (type.isKindOf<Component>() && type.canCreateInstance())
+		for (const auto& type : RTTI::TypeInfo::get_raw_types()) {
+			if (type.is_derived_from<Component>() && type.can_create_instance())
 				types.push_back(type);
 		}
 		return types;
@@ -212,7 +212,7 @@ namespace nap
 	{
 // 		for (RTTI::TypeInfo& typeInfo : RTTI::TypeInfo::getRawTypes()) {
 // 
-// 			if (!typeInfo.isKindOf<nap::Module>())
+// 			if (!typeInfo.is_derived_from<nap::Module>())
 // 				continue;
 // 			if (!typeInfo.canCreateInstance())
 // 				continue;

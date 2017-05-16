@@ -7,8 +7,8 @@ namespace nap
 	void nap::PointerInputComponent::trigger(nap::InputEvent& inEvent)
 	{
 		// Make sure it's a pointer event
-		RTTI::TypeInfo event_type = inEvent.getTypeInfo().getRawType();
-		if (!event_type.isKindOf(RTTI_OF(PointerEvent)))
+		RTTI::TypeInfo event_type = inEvent.get_type().getRawType();
+		if (!event_type.is_derived_from(RTTI_OF(PointerEvent)))
 		{
 			nap::Logger::warn("Received a non pointer event in a pointer input event handler!");
 			return;
@@ -40,7 +40,7 @@ namespace nap
 		}
 		else
 		{
-			nap::Logger::warn("unable to find matching input handler for pointer event of type: %s", inEvent.getTypeInfo().getName().c_str());
+			nap::Logger::warn("unable to find matching input handler for pointer event of type: %s", inEvent.get_type().getName().c_str());
 		}
 
 		mEventDispatcher.mDirection.setValue(DispatchMethod::Siblings);
@@ -52,8 +52,8 @@ namespace nap
 	void KeyInputComponent::trigger(nap::InputEvent& inEvent)
 	{
 		// Make sure it's a pointer event
-		RTTI::TypeInfo event_type = inEvent.getTypeInfo().getRawType();
-		if (!event_type.isKindOf(RTTI_OF(KeyEvent)))
+		RTTI::TypeInfo event_type = inEvent.get_type().getRawType();
+		if (!event_type.is_derived_from(RTTI_OF(KeyEvent)))
 		{
 			nap::Logger::warn("Received a non key event in a key input event handler!");
 			return;
@@ -73,7 +73,7 @@ namespace nap
 			return;
 		}
 
-		nap::Logger::warn("unable to find matching input handler for key event of type: %s", inEvent.getTypeInfo().getName().c_str());
+		nap::Logger::warn("unable to find matching input handler for key event of type: %s", inEvent.get_type().getName().c_str());
 	}
 }
 

@@ -19,7 +19,7 @@ namespace nap
 	class TransformComponent : public ServiceableComponent
 	{
 		friend class RenderService;
-		RTTI_ENABLE_DERIVED_FROM(ServiceableComponent)
+		RTTI_ENABLE(ServiceableComponent)
 	public:
 		// Default constructor
 		TransformComponent();
@@ -105,5 +105,3 @@ namespace nap
 	};
 
 } // nap
-
-RTTI_DECLARE(nap::TransformComponent)

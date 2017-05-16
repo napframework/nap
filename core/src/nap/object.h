@@ -203,7 +203,7 @@ namespace nap
 		{
 			std::vector<T*> result;
 			for (const auto obj : getChildren(recursive))
-				if (obj->getTypeInfo().isKindOf<T>())
+				if (obj->get_type().is_derived_from<T>())
 					result.emplace_back(static_cast<T*>(obj));
 			return result;
 		}
@@ -223,7 +223,7 @@ namespace nap
 		{
 			std::vector<const T*> result;
 			for (const auto obj : getChildren(recursive))
-				if (obj->getTypeInfo().isKindOf<T>())
+				if (obj->get_type().is_derived_from<T>())
 					result.emplace_back(static_cast<T*>(obj));
 			return result;
 		}
@@ -237,7 +237,7 @@ namespace nap
 		{
 			std::vector<Object*> result;
 			for (const auto obj : getChildren(recursive))
-				if (obj->getTypeInfo().isKindOf(type))
+				if (obj->get_type().is_derived_from(type))
 					result.emplace_back(obj);
 			return result;
 		}
@@ -250,7 +250,7 @@ namespace nap
 		T* getChildOfType()
 		{
 			for (auto& object : mChildren)
-				if (object->getTypeInfo().isKindOf<T>())
+				if (object->get_type().is_derived_from<T>())
 					return static_cast<T*>(object);
 			return nullptr;
 		}
@@ -273,7 +273,7 @@ namespace nap
 		bool hasChildOfType() const
 		{
 			for (auto& child : mChildren)
-				if (child->getTypeInfo().isKindOf<T>())
+				if (child->get_type().is_derived_from<T>())
 					return true;
 			return false;
 		}
@@ -282,7 +282,7 @@ namespace nap
 		bool hasChildOfType(const std::string& name) const
 		{
 			for (auto& child : mChildren)
-				if (child->getTypeInfo().isKindOf<T>() && child->getName() == name)
+				if (child->get_type().is_derived_from<T>() && child->getName() == name)
 					return true;
 			return false;
 		}
@@ -351,7 +351,8 @@ namespace nap
 		// This object's parent
 		Object* mParent = nullptr;
 		int mFlags = Visible | Editable | Removable;
+
+	public:
+		std::string mID;
 	};
 }
-
-RTTI_DECLARE_BASE(nap::Object)

@@ -1,0 +1,92 @@
+{
+	
+
+
+    "nap::ImageResource": {
+		"mID" : "PigTexture",
+		"mImagePath" : "data/pig_head.jpg"
+	},
+	
+    "nap::ImageResource": {
+		"mID" : "WorldTexture",
+		"mImagePath" : "data/world_texture.jpg"
+	},
+
+	"nap::ImageResource": {
+		"mID" : "TestTexture",
+		"mImagePath" : "data/test.jpg"
+	},
+
+	"nap::MemoryTextureResource2D": {
+		"mID" : "ColorTexture",
+		"mSettings" : {
+			"mWidth" : 640,
+			"mHeight" : 480,
+			"mInternalFormat" : 6408,
+			"mFormat" : 6408,
+			"mType" : 5121
+		}
+	},
+	
+	"nap::MemoryTextureResource2D": {
+		"mID" : "DepthTexture",
+		"mSettings" : {
+			"mWidth" : 640,
+			"mHeight" : 480,
+			"mInternalFormat" : 6402,
+			"mFormat" : 6402,
+			"mType" : 5126
+		}
+	},
+	
+	"nap::TextureRenderTargetResource2D": {
+		"mID": "PlaneRenderTarget",
+		"mColorTexture": "ColorTexture",
+		"mDepthTexture": "DepthTexture",
+		"mClearColor" : {
+			"x" : 1.0,
+			"y" : 1.0,
+			"z" : 0.0,
+			"w" : 1.0
+		}
+	},
+
+	"nap::ShaderResource": {
+		"mID": "GeneralShader",
+		"mVertShader": "shaders/shader.vert",
+		"mFragShader": "shaders/shader.frag"
+	},
+
+	"nap::ShaderResource": {
+		"mID": "OrientationShader",
+		"mVertShader": "shaders/orientation.vert",
+		"mFragShader": "shaders/orientation.frag"
+	},
+
+	"nap::ModelResource": {
+		"mID": "OrientationModel",
+		"mModelPath": "data/orientation.fbx"
+	},
+
+	"nap::ModelResource": {
+		"mID": "PigModel",
+		"mModelPath": "data/pig_head_alpha_rotated.fbx"
+	},	
+	"nap::Material": {
+		"mID": "GeneralMaterial",
+		"mShader": "GeneralShader"
+	},
+	"nap::Material": {
+		"mID": "PlaneMaterial",
+		"mShader": "GeneralShader"
+	},
+	"nap::Material": {
+		"mID": "SphereMaterial",
+		"mShader": "GeneralShader"
+	},
+	"nap::Material": {
+		"mID": "OrientationMaterial",
+		"mShader": "OrientationShader"
+	}
+	
+} 

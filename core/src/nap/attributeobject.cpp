@@ -21,7 +21,7 @@ namespace nap
 
     AttributeBase& AttributeObject::addAttribute(const std::string &name, RTTI::TypeInfo attributeType)
     {
-        assert(attributeType.isKindOf<AttributeBase>());
+        assert(attributeType.is_derived_from<AttributeBase>());
         return *static_cast<AttributeBase*>(&addChild(name, attributeType));
     }
 
@@ -48,7 +48,7 @@ namespace nap
 		{
 			if (attribute->getValueType() != valueType) 
 			{
-				Logger::warn("Attribute of type '%s' existed, but had different type: %s", attribute->getValueType().getName().c_str(), valueType.getName().c_str());
+				Logger::warn("Attribute of type '%s' existed, but had different type: %s", attribute->getValueType().get_name().data(), valueType.get_name().data());
 				return nullptr;
 			}
 		}

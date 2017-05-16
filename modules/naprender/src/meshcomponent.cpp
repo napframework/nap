@@ -14,4 +14,4 @@ namespace nap
 	}
 }
 
-RTTI_DEFINE(nap::MeshComponent)
+RTTI_DEFINE_BASE(nap::MeshComponent)

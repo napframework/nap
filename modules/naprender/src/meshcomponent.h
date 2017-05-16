@@ -16,7 +16,7 @@ namespace nap
 	 */
 	class MeshComponent : public RenderableComponent
 	{
-		RTTI_ENABLE_DERIVED_FROM(RenderableComponent)
+		RTTI_ENABLE(RenderableComponent)
 	public:
 		MeshComponent() = default;
 
@@ -38,5 +38,3 @@ namespace nap
 		virtual opengl::Mesh* getMesh() const = 0;
 	};
 }
-
-RTTI_DECLARE_BASE(nap::MeshComponent)

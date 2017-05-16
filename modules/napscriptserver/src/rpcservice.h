@@ -52,7 +52,7 @@ namespace nap
 	 */
 	class RpcService : public Service
 	{
-		RTTI_ENABLE_DERIVED_FROM(Service)
+		RTTI_ENABLE(Service)
 	public:
 		using CallbackMap = std::map<Object*, std::unique_ptr<RPCObjectCallback>>;
 		using ClientCallbackMap = std::map<AsyncTCPClient*, CallbackMap>;
@@ -100,7 +100,7 @@ namespace nap
 			if (!obj)
 				return nullptr;
 
-			if (!obj->getTypeInfo().isKindOf<T>()) {
+			if (!obj->get_type().is_derived_from<T>()) {
 				Logger::warn("Object is not of expected type '%s': '%s'", RTTI_OF(T).getName().c_str(), path.c_str());
 				return nullptr;
 			}
@@ -119,4 +119,3 @@ namespace nap
         std::string mSessionID;
 	};
 }
-RTTI_DECLARE_BASE(nap::RpcService)

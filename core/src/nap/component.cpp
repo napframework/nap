@@ -5,7 +5,7 @@
 #include <nap/entity.h>
 
 // RTTI Define
-RTTI_DEFINE(nap::Component)
+RTTI_DEFINE_BASE(nap::Component)
 
 namespace nap
 {
@@ -26,7 +26,7 @@ namespace nap
     Entity* Component::getRoot()
     {
         Object* root = getRootObject();
-        if (root->getTypeInfo().isKindOf<Entity>())
+        if (root->get_type().is_derived_from<Entity>())
             return static_cast<Entity*>(root);
         return nullptr;
     }

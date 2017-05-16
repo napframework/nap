@@ -14,7 +14,7 @@ using namespace nap;
 
 class DummyComponent : public Component
 {
-	RTTI_ENABLE_DERIVED_FROM(Component)
+	RTTI_ENABLE(Component)
 public:
 	virtual ~DummyComponent() = default;
 
@@ -23,7 +23,6 @@ public:
 	Attribute<std::vector<float>> vecFloatAttribute{this, "vecFloatAttr"};
 	Attribute<std::vector<int>> vecIntAttribute{this, "vecIntAttr"};
 };
-RTTI_DECLARE(DummyComponent)
 RTTI_DEFINE(DummyComponent)
 
 bool testCore()

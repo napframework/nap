@@ -29,7 +29,7 @@ namespace nap
 	class AttributeBase : public Object
 	{
 		friend class AttributeObject;
-		RTTI_ENABLE_DERIVED_FROM(Object)
+		RTTI_ENABLE(Object)
 	public:
 		// Constructor
 		AttributeBase() = default;
@@ -112,7 +112,7 @@ namespace nap
 	template <typename T>
 	class Attribute : public AttributeBase
 	{
-		RTTI_ENABLE_DERIVED_FROM(AttributeBase)
+		RTTI_ENABLE(AttributeBase)
 	public:
 		// Default constructor
 		Attribute() : AttributeBase() {  }
@@ -173,7 +173,7 @@ namespace nap
 	template<typename T>
 	class NumericAttribute : public Attribute<T>
 	{
-		RTTI_ENABLE_DERIVED_FROM(Attribute<T>)
+		RTTI_ENABLE(Attribute<T>)
 	public:
 		// Default constructor
 		NumericAttribute() : Attribute<T>() { }
@@ -227,7 +227,7 @@ namespace nap
 	**/
 	class SignalAttribute : public AttributeBase
 	{
-		RTTI_ENABLE_DERIVED_FROM(AttributeBase)
+		RTTI_ENABLE(AttributeBase)
 	public:
 		SignalAttribute() = default;
 		SignalAttribute(AttributeObject* parent, const std::string& name) : AttributeBase(parent, name) {
@@ -250,7 +250,7 @@ namespace nap
 	private:
 		virtual void getValue(AttributeBase& attribute) const override {}
 		virtual void setValue(const AttributeBase& attribute) override {}
-		virtual const RTTI::TypeInfo getValueType() const override { return getTypeInfo(); }
+		virtual const RTTI::TypeInfo getValueType() const override { return get_type(); }
 
 	};
 
@@ -262,7 +262,7 @@ namespace nap
      */
     class ObjectLinkAttribute : public AttributeBase
     {
-        RTTI_ENABLE_DERIVED_FROM(AttributeBase)
+        RTTI_ENABLE(AttributeBase)
     public:
         // Default constructor
         ObjectLinkAttribute();
@@ -343,11 +343,6 @@ namespace nap
 //////////////////////////////////////////////////////////////////////////
 // RTTI
 //////////////////////////////////////////////////////////////////////////
-
-
-RTTI_DECLARE_BASE(nap::AttributeBase)
-RTTI_DECLARE(nap::SignalAttribute)
-RTTI_DECLARE(nap::ObjectLinkAttribute)
 
 // Create and bind attribute slot with @NAME to @FUNCTION
 #define ATTR_SLOT(NAME, FUNCTION) SLOT(NAME, nap::Attribute&, FUNCTION)

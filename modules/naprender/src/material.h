@@ -17,25 +17,37 @@ namespace nap
 	* Can be used to draw an object to screen
 	* Typically a material instance is a child of a mesh component
 	*/
-	class Material : public AttributeObject
+	class Material : public Resource
 	{
-		RTTI_ENABLE_DERIVED_FROM(AttributeObject)
+		RTTI_ENABLE(Resource)
 	public:
 		// Default constructor
 		Material();
 
 		/**
-		* Binds the GLSL shader resource program
-		* Note that this call will fail when the shader is not initialized properly
-		* @return if the shader was bound successfully
+		* Creates mappings for uniform and vertex attrs.
 		*/
-		bool bind();
+		virtual bool init(InitResult& initResult) override;
+
+		/**
+		* Performs commit or rollback of changes made in init()
+		*/
+		virtual void finish(Resource::EFinishMode mode) override;
+
+		/**
+		* @return display name.
+		*/
+		virtual const std::string getDisplayName() const { return "Material"; }		// TODO
+
+		/**
+		* Binds the GLSL shader resource program
+		*/
+		void bind();
 
 		/**
 		* Unbinds the GLSL shader resource program
-		* @return if the shader was unbound successfully
 		*/
-		bool unbind();
+		void unbind();
 
 		/**
 		 * Utility for getting the shader resource
@@ -44,27 +56,11 @@ namespace nap
 		ShaderResource* getShader() const				{ return mShader; }
 
 		/**
-		 * Utility for checking if this material has a resolved resource
-		 * @return if the shader link has been resolved and a shader resource is set
-		 */
-		bool  hasShader() const							{ return mShader != nullptr; }
-
-		/**
 		* Link to the shader this material uses
 		* By default this link is empty, needs to be set
 		* when using this material for drawing
 		*/
-		ResourceLinkAttribute shaderResourceLink =		{ this, "shader", RTTI_OF(ShaderResource) };
-
-		/**
-		 * Holds all uniform shader variables
-		 */
-		CompoundAttribute uniformAttribute =			{ this, "uniforms" };
-
-		/**
-		 * Holds all vertex attribute variables
-		 */
-		CompoundAttribute vertexAttribute =				{ this, "attributes" };
+		ShaderResource* mShader = nullptr;
 
 		/**
 		 * Uploads all uniform variables to the GPU
@@ -104,45 +100,16 @@ namespace nap
 		void setUniformTexture(const std::string& name, TextureResource& resource);
 		
 	private:
-		
-		/**
-		 * Update shader uniforms and attribute values associated with this material
-		 * Note that this function can only be called when the shader
-		 * has been loaded correctly
-		 */
-		void resolve();
 
 		/**
-		 * Clear shader bindings
-		 */
-		void clear();
+		* Holds all uniform shader variables
+		*/
+		CompoundAttribute uniformAttribute = { this, "uniforms" };
 
 		/**
-		 * Occurs when the resource changes, ie: link is removed or new
-		 * object is linked in. In that case we want to listen to when the 
-		 * shader is loaded or reloaded
-		 */
-		void onResourceLinkChanged(AttributeBase& value);
-
-		/**
-		 * Occurs when the shader this material points to
-		 * is loaded or reloaded, based on the success we 
-		 * update our uniforms
-		 */
-		void onShaderLoaded(bool success);
-
-		/**
-		 * Internal resource cache
-		 */
-		ShaderResource* mShader = nullptr;
-
-		/**
-		 * Tries to resolve the link and cache the shader
-		 */
-		void resolveShaderLink();
-
-		NSLOT(shaderResourceChanged, AttributeBase&, onResourceLinkChanged)
-		NSLOT(shaderLoaded, bool, onShaderLoaded)
+		* Holds all vertex attribute variables
+		*/
+		CompoundAttribute vertexAttribute = { this, "attributes" };
 	};
 
 
@@ -162,5 +129,3 @@ namespace nap
 	}
 
 }
-
-RTTI_DECLARE(nap::Material)

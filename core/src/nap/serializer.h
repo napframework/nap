@@ -100,5 +100,3 @@ namespace nap
 
 	};
 }
-
-RTTI_DECLARE_BASE(nap::Serializer)

@@ -18,11 +18,11 @@ namespace nap
         nap::Entity* entity = getPatch()->getComponent()->getParent();
         assert(entity);
         
-        RTTI::TypeInfo type_info = getTypeInfo();
+        RTTI::TypeInfo type_info = get_type();
         nap::Service* c_service = entity->getCore().getServiceForType(type_info);
         if (c_service == nullptr)
         {
-            Logger::warn("Unable to register object of type: " + type_info.getName() + " with service, type not registered");
+            Logger::warn("Unable to register object of type: %s with service, type not registered", type_info.get_name().data());
             return;
         }
         
@@ -37,4 +37,4 @@ namespace nap
     }
 }
 
-RTTI_DEFINE(nap::ServiceableOperator)
+RTTI_DEFINE_BASE(nap::ServiceableOperator)
