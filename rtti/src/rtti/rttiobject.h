@@ -12,10 +12,9 @@ namespace nap
 	namespace rtti
 	{
 		/**
-		 * The topmost base class for most NAP classes, providing hierarchical structure and inspectability which is useful
-		 * for data serialization amongst other things.
-		 * Instantiation should never be done "manually" but through the addChild methods. An object should always have a
-		 * parent (except for the "world's" root Object, which belongs to Core)
+		 * The base class for all top-level objects that need to support serialization/deserialization.
+		 * You only need to derive from this if your object should be serialized to the root of the document or needs to be
+		 * able to be pointed to from other objects. If you're making, for example, a nested compound (i.e a plain struct), there is no need to derive from this class.
 		 */
 		class RTTIObject
 		{
