@@ -142,6 +142,16 @@ namespace nap
 						if (!readEmbeddedObject(json_value, factory, readObjects, unresolvedPointers, linkedFiles, target, errorState))
 							return false;
 
+						// If target is not null, make sure types match
+						if (target != nullptr)
+						{
+							if (!errorState.check(target->get_type().is_derived_from(property.get_type()), "Failed to read embedded pointer: target of pointer {%s}:%s is of the wrong type (found '%s', expected '%s')",
+								object->mID.c_str(), rttiPath.toString().c_str(), target->get_type().get_name().data(), property.get_type().get_raw_type().get_name().data()))
+							{
+								return false;
+							}
+						}
+
 						property.set_value(compound, target);
 					}
 					else

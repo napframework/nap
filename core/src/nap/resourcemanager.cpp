@@ -570,6 +570,12 @@ namespace nap
 			if (!errorState.check(unresolved_pointer.mRTTIPath.resolve(unresolved_pointer.mObject, resolved_path), "Failed to resolve RTTIPath %s", unresolved_pointer.mRTTIPath.toString().c_str()))
 				return false;
 
+			if (!errorState.check(target_resource->get_type().is_derived_from(resolved_path.getType()), "Failed to resolve pointer: target of pointer {%s}:%s is of the wrong type (found '%s', expected '%s')",
+									unresolved_pointer.mObject->mID.c_str(), unresolved_pointer.mRTTIPath.toString().c_str(), target_resource->get_type().get_name().data(), resolved_path.getType().get_raw_type().get_name().data()))
+			{
+				return false;
+			}				
+
 			assert(resolved_path.getType().is_pointer());
 			bool succeeded = resolved_path.setValue(target_resource);
  			if (!errorState.check(succeeded, "Failed to resolve pointer"))

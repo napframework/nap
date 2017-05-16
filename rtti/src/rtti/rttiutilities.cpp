@@ -115,7 +115,7 @@ namespace nap
 					return;
 
 				assert(value.get_type().is_derived_from<rtti::RTTIObject>());
-				mObjectLinks.push_back({ &mSourceObject, path, value.convert<rtti::RTTIObject*>() });
+				mObjectLinks.push_back({ &mSourceObject, path, value.get_value<rtti::RTTIObject*>() });
 			}
 
 		private:
@@ -141,7 +141,7 @@ namespace nap
 					return;
 
 				assert(value.get_type().is_derived_from<std::string>());
-				mFileLinks.push_back(value.convert<std::string>());
+				mFileLinks.push_back(value.get_value<std::string>());
 			}
 
 		private:
@@ -204,8 +204,8 @@ namespace nap
 						assert(value_a.get_type().is_derived_from<rtti::RTTIObject>() && value_b.get_type().is_derived_from<rtti::RTTIObject>());
 
 						// Extract the objects
-						rtti::RTTIObject* object_a = value_a.convert<rtti::RTTIObject*>();
-						rtti::RTTIObject* object_b = value_b.convert<rtti::RTTIObject*>();
+						rtti::RTTIObject* object_a = value_a.get_value<rtti::RTTIObject*>();
+						rtti::RTTIObject* object_b = value_b.get_value<rtti::RTTIObject*>();
 
 						// If both are null, they're equal
 						if (object_a == nullptr && object_b == nullptr)

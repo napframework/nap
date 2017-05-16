@@ -404,7 +404,7 @@ namespace nap
 		 * Once the path has been successfully resolved, we can use it to get/set the value of the property:
 		 *
 		 *		// Retrieve the value of the pointer
-		 *		rtti::RTTIObject* pointer_value = resolved_path.getValue().convert<rtti::RTTIObject*>();
+		 *		rtti::RTTIObject* pointer_value = resolved_path.getValue().get_value<rtti::RTTIObject*>();
 		 *
 		 *		// Set the value of the pointer
 		 *		rtti::RTTIObject* some_other_object = ... // Get the pointer we want to set

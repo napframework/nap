@@ -94,7 +94,7 @@ namespace nap
 				if (!errorState.check(wrapped_type.is_derived_from<rtti::RTTIObject>(), "Encountered pointer to non-Object"))
 					return false;
 
-				RTTIObject* pointee = value.convert<RTTIObject*>();
+				RTTIObject* pointee = value.get_value<RTTIObject*>();
 				if (pointee != nullptr)
 				{
 					// Check that the ID of the pointer is not empty (we can't point to objects without an ID)

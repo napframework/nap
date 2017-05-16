@@ -108,7 +108,7 @@ int main(int argc, char* argv[])
 		return -1;
 
 	// Verify setting the value works
-	float old_value = resolved_path.getValue().convert<float>();
+	float old_value = resolved_path.getValue().get_value<float>();
 	if (!resolved_path.setValue(8.0f))
 		return -1; 
 
