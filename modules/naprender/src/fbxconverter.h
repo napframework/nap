@@ -9,13 +9,13 @@ namespace opengl
 	class Mesh;
 }
 
-namespace utility
-{
-	class ErrorState;
-}
-
 namespace nap
 {
+	namespace utility
+	{
+		class ErrorState;
+	}
+	
 	/**
 	 * Options to specify when converting FBX
 	 */

@@ -3,60 +3,63 @@
 // RTTI includes
 #include <rtti/rtti.h>
 
-namespace rtti
+namespace nap
 {
-	class RTTIObject;
-
-	/**
-	 * Derive from this object to supply custom constructor arguments to objects.
-	 */
-	class IObjectCreator
+	namespace rtti
 	{
-	public:
-		virtual RTTIObject* create(rtti::TypeInfo) = 0;
-	};
-
-
-	/**
-	 * Manages IObjectCreators.
-	 */
-	class Factory
-	{
-	public:
+		class RTTIObject;
 
 		/**
-		 * Adds association between a type and it's object creator.
-		 * @param typeInfo: the RTTI type to create a mapping for.
-		 * @param objectCreator: the object that can create instances of the type.
+		 * Derive from this object to supply custom constructor arguments to objects.
 		 */
-		void addObjectCreator(rtti::TypeInfo typeInfo, std::unique_ptr<IObjectCreator> objectCreator)
+		class IObjectCreator
 		{
-			mCreators.insert(std::make_pair(typeInfo, std::move(objectCreator)));
-		}
+		public:
+			virtual RTTIObject* create(rtti::TypeInfo) = 0;
+		};
+
 
 		/**
-		 * Creates an object. If there is an existing type mapping, it will use the ObjectCreator for
-		 * that type. If there isn't, the default constructor will be used.
-		 * @return instance of the type.
-		 * @param typeInfo: the type to create an instance of.
+		 * Manages IObjectCreators.
 		 */
-		RTTIObject* create(rtti::TypeInfo typeInfo)
+		class Factory
 		{
-			CreatorMap::iterator creator = mCreators.find(typeInfo);
-			if (creator == mCreators.end())
+		public:
+
+			/**
+			 * Adds association between a type and it's object creator.
+			 * @param typeInfo: the RTTI type to create a mapping for.
+			 * @param objectCreator: the object that can create instances of the type.
+			 */
+			void addObjectCreator(rtti::TypeInfo typeInfo, std::unique_ptr<IObjectCreator> objectCreator)
 			{
-				return typeInfo.create<RTTIObject>();
+				mCreators.insert(std::make_pair(typeInfo, std::move(objectCreator)));
 			}
-			else
+
+			/**
+			 * Creates an object. If there is an existing type mapping, it will use the ObjectCreator for
+			 * that type. If there isn't, the default constructor will be used.
+			 * @return instance of the type.
+			 * @param typeInfo: the type to create an instance of.
+			 */
+			RTTIObject* create(rtti::TypeInfo typeInfo)
 			{
-				return creator->second->create(typeInfo);
+				CreatorMap::iterator creator = mCreators.find(typeInfo);
+				if (creator == mCreators.end())
+				{
+					return typeInfo.create<RTTIObject>();
+				}
+				else
+				{
+					return creator->second->create(typeInfo);
+				}
 			}
-		}
 
-	private:
-		using CreatorMap = std::unordered_map<rtti::TypeInfo, std::unique_ptr<IObjectCreator>>;
-		CreatorMap mCreators;
-	};
+		private:
+			using CreatorMap = std::unordered_map<rtti::TypeInfo, std::unique_ptr<IObjectCreator>>;
+			CreatorMap mCreators;
+		};
 
-} //< End Namespace nap
+	} //< End Namespace nap
 
+}

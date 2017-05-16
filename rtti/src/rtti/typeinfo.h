@@ -54,16 +54,16 @@
  *
  *		// RTTIClasses.cpp
  *		RTTI_BEGIN_CLASS(DataStruct)
- *				RTTI_PROPERTY("FloatProperty",	&DataStruct::mFloatProperty, rtti::EPropertyMetaData::None);
- *				RTTI_PROPERTY("StringProperty", &DataStruct::mStringProperty, rtti::EPropertyMetaData::Required);
+ *				RTTI_PROPERTY("FloatProperty",	&DataStruct::mFloatProperty, nap::rtti::EPropertyMetaData::None);
+ *				RTTI_PROPERTY("StringProperty", &DataStruct::mStringProperty, nap::rtti::EPropertyMetaData::Required);
  *		RTTI_END_CLASS
  *
  *		RTTI_BEGIN_CLASS(BaseClass)
- *				RTTI_PROPERTY("FloatProperty",	&BaseClass::mFloatProperty, rtti::EPropertyMetaData::None);
+ *				RTTI_PROPERTY("FloatProperty",	&BaseClass::mFloatProperty, nap::rtti::EPropertyMetaData::None);
  *		RTTI_END_CLASS
  *
  *		RTTI_BEGIN_CLASS(DerivedClass)
- *				RTTI_PROPERTY("IntProperty",	&DerivedClass::mIntProperty, rtti::EPropertyMetaData::None)
+ *				RTTI_PROPERTY("IntProperty",	&DerivedClass::mIntProperty, nap::rtti::EPropertyMetaData::None)
  *		RTTI_END_CLASS
  *
  * The above code, which *must* be located in the cpp, is responsible for the registration. As you can see, it is very straightforward.
@@ -89,57 +89,60 @@
 /**
  * This namespace is only used to redefine some RTTR types to our own types so that the rttr:: namespace does not leak out everywhere
  */
-namespace rtti
+namespace nap
 {
-	using TypeInfo		= rttr::type;
-	using Property		= rttr::property;
-	using Variant		= rttr::variant;
-	using Instance		= rttr::instance;
-	using VariantArray	= rttr::variant_array_view;
-	using VariantMap	= rttr::variant_associative_view;
-
-	enum class EPropertyMetaData : uint8_t
+	namespace rtti
 	{
-		Default = 0,
-		Required = 1,
-		FileLink = 2,
-		Embedded = 4
-	};
+		using TypeInfo = rttr::type;
+		using Property = rttr::property;
+		using Variant = rttr::variant;
+		using Instance = rttr::instance;
+		using VariantArray = rttr::variant_array_view;
+		using VariantMap = rttr::variant_associative_view;
 
-	inline EPropertyMetaData operator&(EPropertyMetaData a, EPropertyMetaData b)
-	{
-		return static_cast<EPropertyMetaData>(static_cast<uint8_t>(a) & static_cast<uint8_t>(b));
-	}
-	inline EPropertyMetaData operator|(EPropertyMetaData a, EPropertyMetaData b)
-	{
-		return static_cast<EPropertyMetaData>(static_cast<uint8_t>(a) | static_cast<uint8_t>(b));
-	}
+		enum class EPropertyMetaData : uint8_t
+		{
+			Default = 0,
+			Required = 1,
+			FileLink = 2,
+			Embedded = 4
+		};
 
-	/**
-	 * Helper function to determine whether the specified type is a primitive type (i.e. int, float, string, etc)
-	 */
-	inline bool isPrimitive(const rtti::TypeInfo& type)
-	{
-		return type.is_arithmetic() || type.is_enumeration() || type == rtti::TypeInfo::get<std::string>();
-	}
+		inline EPropertyMetaData operator&(EPropertyMetaData a, EPropertyMetaData b)
+		{
+			return static_cast<EPropertyMetaData>(static_cast<uint8_t>(a) & static_cast<uint8_t>(b));
+		}
+		inline EPropertyMetaData operator|(EPropertyMetaData a, EPropertyMetaData b)
+		{
+			return static_cast<EPropertyMetaData>(static_cast<uint8_t>(a) | static_cast<uint8_t>(b));
+		}
 
-	/**
-	 * Helper function to check whether a property has the specified flag set
-	 */
-	inline bool hasFlag(const rtti::Property& property, EPropertyMetaData flags)
-	{
-		rtti::Variant meta_data = property.get_metadata("flags");
-		if (!meta_data.is_valid())
-			return false;
+		/**
+		 * Helper function to determine whether the specified type is a primitive type (i.e. int, float, string, etc)
+		 */
+		inline bool isPrimitive(const rtti::TypeInfo& type)
+		{
+			return type.is_arithmetic() || type.is_enumeration() || type == rtti::TypeInfo::get<std::string>();
+		}
 
-		uint8_t current_flags = meta_data.convert<uint8_t>();
-		return (current_flags & (uint8_t)flags) != 0;
+		/**
+		 * Helper function to check whether a property has the specified flag set
+		 */
+		inline bool hasFlag(const rtti::Property& property, EPropertyMetaData flags)
+		{
+			rtti::Variant meta_data = property.get_metadata("flags");
+			if (!meta_data.is_valid())
+				return false;
+
+			uint8_t current_flags = meta_data.convert<uint8_t>();
+			return (current_flags & (uint8_t)flags) != 0;
+		}
 	}
 }
 
 
 // Macros
-#define RTTI_OF(Type) rtti::TypeInfo::get<Type>()
+#define RTTI_OF(Type) nap::rtti::TypeInfo::get<Type>()
 
 #define CONCAT_UNIQUE_NAMESPACE(x, y)				namespace x##y
 #define UNIQUE_REGISTRATION_NAMESPACE(id)			CONCAT_UNIQUE_NAMESPACE(__rtti_registration_, id)

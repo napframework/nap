@@ -1,6 +1,9 @@
 #pragma once
 
-namespace rtti
+namespace nap
 {
-	static const char* gRTTIBinaryVersion = "RTTIBinary-1.0";
+	namespace rtti
+	{
+		static const char* gRTTIBinaryVersion = "RTTIBinary-1.0";
+	}
 }

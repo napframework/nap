@@ -8,20 +8,20 @@
 RTTI_DEFINE_BASE(nap::TextureResource)
 
 RTTI_BEGIN_CLASS(nap::ImageResource)
-	RTTI_PROPERTY("mImagePath", 		&nap::ImageResource::mImagePath, 			rtti::EPropertyMetaData::FileLink | rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("mImagePath", 		&nap::ImageResource::mImagePath, 			nap::rtti::EPropertyMetaData::FileLink | nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(opengl::Texture2DSettings)
-	RTTI_PROPERTY("mLevel",				&opengl::Texture2DSettings::level,			rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("mInternalFormat",	&opengl::Texture2DSettings::internalFormat, rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("mWidth",				&opengl::Texture2DSettings::width,			rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("mHeight",			&opengl::Texture2DSettings::height,			rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("mFormat",			&opengl::Texture2DSettings::format,			rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("mType",				&opengl::Texture2DSettings::type,			rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("mLevel",				&opengl::Texture2DSettings::level,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("mInternalFormat",	&opengl::Texture2DSettings::internalFormat, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("mWidth",				&opengl::Texture2DSettings::width,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("mHeight",			&opengl::Texture2DSettings::height,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("mFormat",			&opengl::Texture2DSettings::format,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("mType",				&opengl::Texture2DSettings::type,			nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::MemoryTextureResource2D)
-	RTTI_PROPERTY("mSettings",			&nap::MemoryTextureResource2D::mSettings, 	rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("mSettings",			&nap::MemoryTextureResource2D::mSettings, 	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_DEFINE(nap::ImageResource)

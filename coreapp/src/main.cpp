@@ -56,7 +56,7 @@ int main(int argc, char** argv)
 	core.initialize(modulesDirectory);
 
     std::string rpcServiceTypename = "nap::JsonRpcService";
-    rtti::TypeInfo rpcServiceType = rtti::TypeInfo::get_by_name(rpcServiceTypename.c_str());
+    nap::rtti::TypeInfo rpcServiceType = nap::rtti::TypeInfo::get_by_name(rpcServiceTypename.c_str());
     if (!rpcServiceType.is_valid()) {
         nap::Logger::fatal("Failed to retrieve type: '%s'", rpcServiceTypename.c_str());
         return -1;

@@ -374,7 +374,7 @@ void onRender(const nap::SignalAttribute& signal)
 nap::Slot<const nap::SignalAttribute&> renderSlot = { [](const nap::SignalAttribute& attr){ onRender(attr); } };
 
 
-bool initResources(utility::ErrorState& errorState)
+bool initResources(nap::utility::ErrorState& errorState)
 {
 	pigTexture = resourceManagerService->createResource<nap::ImageResource>();
 	pigTexture->mImagePath = pigTextureName;
@@ -557,7 +557,7 @@ bool init(nap::Core& core)
 	// Make the first ("root") window active so that the resources are created for the right context
 	renderWindows[0]->makeActive();
 
-	utility::ErrorState errorState;
+	nap::utility::ErrorState errorState;
 #if 1
 	if (!resourceManagerService->loadFile("data/objects.json", errorState))
 	{

@@ -7,13 +7,13 @@
 #include <nap/logger.h>
 
 RTTI_BEGIN_CLASS(nap::Material::VertexAttributeBinding)
-	RTTI_PROPERTY("MeshAttributeID",	&nap::Material::VertexAttributeBinding::mMeshAttributeID,	rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("ShaderAttributeID", &nap::Material::VertexAttributeBinding::mShaderAttributeID,	rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MeshAttributeID",	&nap::Material::VertexAttributeBinding::mMeshAttributeID,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ShaderAttributeID", &nap::Material::VertexAttributeBinding::mShaderAttributeID,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::Material)
-	RTTI_PROPERTY("Shader",						&nap::Material::mShader,					rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("VertexAttributeBindings",	&nap::Material::mVertexAttributeBindings,	rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Shader",						&nap::Material::mShader,					nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("VertexAttributeBindings",	&nap::Material::mVertexAttributeBindings,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap

@@ -7,10 +7,9 @@
 
 RTTI_DEFINE(nap::ResourceManagerService)
 
-using namespace rtti;
-
 namespace nap
 {
+	using namespace rtti;
 
 	/**
 	* Helper to find index into unresolved pointer array.
