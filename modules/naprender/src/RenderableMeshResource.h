@@ -96,7 +96,7 @@ namespace nap
 		{
 		}
 
-		virtual Object* create(rtti::TypeInfo typeInfo) override
+		virtual rtti::RTTIObject* create(rtti::TypeInfo typeInfo) override
 		{
 			return new RenderableMeshResource(mRenderService);
 		}
