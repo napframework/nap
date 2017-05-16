@@ -374,7 +374,7 @@ void onRender(const nap::SignalAttribute& signal)
 nap::Slot<const nap::SignalAttribute&> renderSlot = { [](const nap::SignalAttribute& attr){ onRender(attr); } };
 
 
-bool initResources(nap::ErrorState& errorState)
+bool initResources(utility::ErrorState& errorState)
 {
 	pigTexture = resourceManagerService->createResource<nap::ImageResource>();
 	pigTexture->mImagePath = pigTextureName;
@@ -494,7 +494,7 @@ bool init(nap::Core& core)
 
 	/*
 	std::string rpcServiceTypename = "nap::JsonRpcService";
-	RTTI::TypeInfo rpcServiceType = RTTI::TypeInfo::getByName(rpcServiceTypename);
+	rtti::TypeInfo rpcServiceType = rtti::TypeInfo::getByName(rpcServiceTypename);
 	if (!rpcServiceType.isValid()) 
 	{
 		nap::Logger::fatal("Failed to retrieve type: '%s'", rpcServiceTypename.c_str());
@@ -557,7 +557,7 @@ bool init(nap::Core& core)
 	// Make the first ("root") window active so that the resources are created for the right context
 	renderWindows[0]->makeActive();
 
-	nap::ErrorState errorState;
+	utility::ErrorState errorState;
 #if 1
 	if (!resourceManagerService->loadFile("data/objects.json", errorState))
 	{

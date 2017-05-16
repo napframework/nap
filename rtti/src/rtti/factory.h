@@ -3,15 +3,17 @@
 // RTTI includes
 #include <rtti/rtti.h>
 
-namespace nap
+namespace rtti
 {
+	class RTTIObject;
+
 	/**
 	 * Derive from this object to supply custom constructor arguments to objects.
 	 */
 	class IObjectCreator
 	{
 	public:
-		virtual Object* create(RTTI::TypeInfo) = 0;
+		virtual RTTIObject* create(rtti::TypeInfo) = 0;
 	};
 
 
@@ -27,7 +29,7 @@ namespace nap
 		 * @param typeInfo: the RTTI type to create a mapping for.
 		 * @param objectCreator: the object that can create instances of the type.
 		 */
-		void addObjectCreator(RTTI::TypeInfo typeInfo, std::unique_ptr<IObjectCreator> objectCreator)
+		void addObjectCreator(rtti::TypeInfo typeInfo, std::unique_ptr<IObjectCreator> objectCreator)
 		{
 			mCreators.insert(std::make_pair(typeInfo, std::move(objectCreator)));
 		}
@@ -38,12 +40,12 @@ namespace nap
 		 * @return instance of the type.
 		 * @param typeInfo: the type to create an instance of.
 		 */
-		Object* create(RTTI::TypeInfo typeInfo)
+		RTTIObject* create(rtti::TypeInfo typeInfo)
 		{
 			CreatorMap::iterator creator = mCreators.find(typeInfo);
 			if (creator == mCreators.end())
 			{
-				return typeInfo.create<Object>();
+				return typeInfo.create<RTTIObject>();
 			}
 			else
 			{
@@ -52,7 +54,7 @@ namespace nap
 		}
 
 	private:
-		using CreatorMap = std::unordered_map<RTTI::TypeInfo, std::unique_ptr<IObjectCreator>>;
+		using CreatorMap = std::unordered_map<rtti::TypeInfo, std::unique_ptr<IObjectCreator>>;
 		CreatorMap mCreators;
 	};
 

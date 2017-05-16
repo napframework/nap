@@ -2,7 +2,7 @@
 #include "rttibinaryversion.h"
 #include "rttiutilities.h"
 
-namespace nap
+namespace rtti
 {
 	bool BinaryWriter::start()
 	{
@@ -10,10 +10,10 @@ namespace nap
 		return true;
 	}
 
-	bool BinaryWriter::startRootObject(const RTTI::TypeInfo& type)
+	bool BinaryWriter::startRootObject(const rtti::TypeInfo& type)
 	{
 		writeString(type.get_name().data(), type.get_name().length());
-		write(RTTI::getRTTIVersion(type));
+		write(rtti::getRTTIVersion(type));
 		return true;
 	}
 
@@ -32,33 +32,33 @@ namespace nap
 	}
 
 
-	bool BinaryWriter::writePrimitive(const RTTI::TypeInfo& type, const RTTI::Variant& value)
+	bool BinaryWriter::writePrimitive(const rtti::TypeInfo& type, const rtti::Variant& value)
 	{
 		if (type.is_arithmetic())
 		{
-			if (type == RTTI::TypeInfo::get<bool>())
+			if (type == rtti::TypeInfo::get<bool>())
 				write(value.to_bool());
-			else if (type == RTTI::TypeInfo::get<char>())
+			else if (type == rtti::TypeInfo::get<char>())
 				write(value.to_uint8());
-			else if (type == RTTI::TypeInfo::get<int8_t>())
+			else if (type == rtti::TypeInfo::get<int8_t>())
 				write(value.to_int8());
-			else if (type == RTTI::TypeInfo::get<int16_t>())
+			else if (type == rtti::TypeInfo::get<int16_t>())
 				write(value.to_int16());
-			else if (type == RTTI::TypeInfo::get<int32_t>())
+			else if (type == rtti::TypeInfo::get<int32_t>())
 				write(value.to_int32());
-			else if (type == RTTI::TypeInfo::get<int64_t>())
+			else if (type == rtti::TypeInfo::get<int64_t>())
 				write(value.to_int64());
-			else if (type == RTTI::TypeInfo::get<uint8_t>())
+			else if (type == rtti::TypeInfo::get<uint8_t>())
 				write(value.to_uint8());
-			else if (type == RTTI::TypeInfo::get<uint16_t>())
+			else if (type == rtti::TypeInfo::get<uint16_t>())
 				write(value.to_uint16());
-			else if (type == RTTI::TypeInfo::get<uint32_t>())
+			else if (type == rtti::TypeInfo::get<uint32_t>())
 				write(value.to_uint32());
-			else if (type == RTTI::TypeInfo::get<uint64_t>())
+			else if (type == rtti::TypeInfo::get<uint64_t>())
 				write(value.to_uint64());
-			else if (type == RTTI::TypeInfo::get<float>())
+			else if (type == rtti::TypeInfo::get<float>())
 				write(value.to_float());
-			else if (type == RTTI::TypeInfo::get<double>())
+			else if (type == rtti::TypeInfo::get<double>())
 				write(value.to_double());
 		}
 		else if (type.is_enumeration())
@@ -71,7 +71,7 @@ namespace nap
 			else
 				return false;
 		}
-		else if (type == RTTI::TypeInfo::get<std::string>())
+		else if (type == rtti::TypeInfo::get<std::string>())
 		{
 			writeString(value.to_string());
 		}

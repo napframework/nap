@@ -8,7 +8,7 @@ RTTI_DEFINE(nap::ParallelCtrl)
 
 namespace nap
 {
-	StateCtrl& CompoundCtrl::addController(const std::string& name, const RTTI::TypeInfo& type)
+	StateCtrl& CompoundCtrl::addController(const std::string& name, const rtti::TypeInfo& type)
 	{
 		assert(type.is_derived_from<StateCtrl>());
 		return *static_cast<StateCtrl*>(&addChild(name, type));

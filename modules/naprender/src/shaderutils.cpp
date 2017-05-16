@@ -314,7 +314,7 @@ namespace nap
 
 
 	// Maps GLSL shader types to nap attribute types
-	using GLSLAttributeMap = std::unordered_map<opengl::GLSLType, RTTI::TypeInfo>;
+	using GLSLAttributeMap = std::unordered_map<opengl::GLSLType, rtti::TypeInfo>;
 	
 	/**
 	* @return a map that holds a type for every GLSL shader input variable
@@ -341,14 +341,14 @@ namespace nap
 
 
 	// The attribute type associated with a certain GLSL shader input type
-	RTTI::TypeInfo getAttributeType(opengl::GLSLType type)
+	rtti::TypeInfo getAttributeType(opengl::GLSLType type)
 	{
 		const nap::GLSLAttributeMap& map = getGLSLAttributeMap();
 		auto it = map.find(type);
 		if (it == map.end())
 		{
 			nap::Logger::warn("unable to find attribute associated with GLSL type: %d", type);
-			return RTTI::TypeInfo::empty();
+			return rtti::TypeInfo::empty();
 		}
 		return it->second;
 	}

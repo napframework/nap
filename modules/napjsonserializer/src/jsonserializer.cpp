@@ -38,7 +38,7 @@ namespace nap
 			return "";
 
 		const TypeConverterBase* converter = root->getCore().getModuleManager().getTypeConverter(
-			attrib.getValueType(), RTTI::TypeInfo::get<std::string>());
+			attrib.getValueType(), rtti::TypeInfo::get<std::string>());
 		if (!converter)
 			return "";
 
@@ -164,10 +164,10 @@ namespace nap
 	}
 
     
-	TypeList getInstantiableSubTypes(RTTI::TypeInfo parentType)
+	TypeList getInstantiableSubTypes(rtti::TypeInfo parentType)
 	{
 		TypeList types;
-		for (const auto& type : RTTI::TypeInfo::get_raw_types()) {
+		for (const auto& type : rtti::TypeInfo::get_raw_types()) {
 			if (!type.is_derived_from(parentType))
 				continue;
 			if (type == parentType)
@@ -183,7 +183,7 @@ namespace nap
 	TypeList getAttributeTypes()
 	{
 		TypeList types;
-		for (const auto& type : RTTI::TypeInfo::get_raw_types()) {
+		for (const auto& type : rtti::TypeInfo::get_raw_types()) {
 			if (type.is_derived_from<AttributeBase>() && type.can_create_instance()) {
 				AttributeBase* attrib = type.create<AttributeBase>();
 				types.push_back(attrib->getValueType());
@@ -227,7 +227,7 @@ namespace nap
 			// Write Type inheritance
 			w.String("types");
 			w.StartArray();
-			for (const auto& type : RTTI::TypeInfo::get_raw_types()) {
+			for (const auto& type : rtti::TypeInfo::get_raw_types()) {
 
 
 
@@ -278,9 +278,9 @@ namespace nap
 
 		AttributeBase* attrib = attributeObject->getAttribute(attrName);
 		if (!attrib) {
-            const RTTI::TypeInfo& attrValueType = RTTI::TypeInfo::get_by_name(attrValueTypeName);
+            const rtti::TypeInfo& attrValueType = rtti::TypeInfo::get_by_name(attrValueTypeName);
 
-			const RTTI::TypeInfo& attrType = getAttributeTypeFromValueType(attrValueType);
+			const rtti::TypeInfo& attrType = getAttributeTypeFromValueType(attrValueType);
 			attrib = &attributeObject->addAttribute(attrName, attrType);
 		}
 		assert(!strcmp(attrValueTypeName, attrib->getValueType().get_name().data()));
@@ -319,7 +319,7 @@ namespace nap
 			core.getRoot().setName(objectName);
 			obj = &core.getRoot();
 		} else {
-			RTTI::TypeInfo objectType = RTTI::TypeInfo::get_by_name(objectTypename);
+			rtti::TypeInfo objectType = rtti::TypeInfo::get_by_name(objectTypename);
             if (!objectType.is_valid()) {
                 Logger::fatal("Failed to retrieve type: '%s'", objectTypename);
                 return nullptr;

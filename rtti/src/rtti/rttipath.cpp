@@ -1,8 +1,8 @@
 #include <rtti/rttipath.h>
-#include <nap/stringutils.h>
-#include <nap/object.h>
+#include <rtti/rttiobject.h>
+#include <utility/stringutils.h>
 
-namespace RTTI
+namespace rtti
 {
 	const std::string RTTIPath::toString() const
 	{
@@ -17,7 +17,7 @@ namespace RTTI
 					if (result.empty())
 						result += element.Attribute.Name;
 					else
-						result += nap::stringFormat(":%s", element.Attribute.Name.c_str());
+						result += utility::stringFormat(":%s", element.Attribute.Name.c_str());
 
 					break;
 				}
@@ -25,9 +25,9 @@ namespace RTTI
 				case RTTIPathElement::Type::ARRAY_ELEMENT:
 				{
 					if (result.empty())
-						result += nap::stringFormat("[%d]", element.ArrayElement.Index);
+						result += utility::stringFormat("[%d]", element.ArrayElement.Index);
 					else
-						result += nap::stringFormat(":[%d]", element.ArrayElement.Index);
+						result += utility::stringFormat(":[%d]", element.ArrayElement.Index);
 					break;
 				}
 			}
@@ -43,7 +43,7 @@ namespace RTTI
 
 		// Split string on path seperator
 		std::list<std::string> parts;
-		nap::gTokenize(path, parts, ":", true);
+		utility::gTokenize(path, parts, ":", true);
 
 		for (const std::string& part : parts)
 		{
@@ -64,7 +64,7 @@ namespace RTTI
 	}
 
 
-	bool RTTIPath::resolve(nap::Object* object, ResolvedRTTIPath& resolvedPath) const
+	bool RTTIPath::resolve(rtti::RTTIObject* object, ResolvedRTTIPath& resolvedPath) const
 	{
 		// Can't resolve an empty path
 		if (mLength == 0)
@@ -82,7 +82,7 @@ namespace RTTI
 				if (index == 0)
 				{
 					// See if the object contains a property with this name. If not, it means the path is invalid
-					RTTI::Property property = object->get_type().get_property(element.Attribute.Name);
+					rtti::Property property = object->get_type().get_property(element.Attribute.Name);
 					if (!property.is_valid())
 						return false;
 
@@ -92,12 +92,12 @@ namespace RTTI
 				else
 				{
 					// Retrieve the current value of the resolved path. If there is none, the path is invalid (we're trying to push a nested attribute on an empty path)
-					const RTTI::Variant& current_context = resolvedPath.getValue();
+					const rtti::Variant& current_context = resolvedPath.getValue();
 					if (!current_context.is_valid())
 						return false;
 
 					// See if the object that's currently on the resolved path has a property with this name. If not, it means the path is invalid
-					RTTI::Property property = current_context.get_type().get_property(element.Attribute.Name);
+					rtti::Property property = current_context.get_type().get_property(element.Attribute.Name);
 					if (!property.is_valid())
 						return false;
 
@@ -108,7 +108,7 @@ namespace RTTI
 			else if (element.mType == RTTIPathElement::Type::ARRAY_ELEMENT)
 			{
 				// Retrieve the current value of the resolved path. If there is none, the path is invalid (we're trying to push a nested attribute on an empty path)
-				const RTTI::Variant& current_context = resolvedPath.getValue();
+				const rtti::Variant& current_context = resolvedPath.getValue();
 				if (!current_context.is_valid())
 					return false;
 
@@ -128,11 +128,11 @@ namespace RTTI
 	/**
 	 * Note that while this function gets the value of the property currently on the path, it does so by returning a *copy*. See setValue for more information
 	 */
-	const RTTI::Variant ResolvedRTTIPath::getValue() const
+	const rtti::Variant ResolvedRTTIPath::getValue() const
 	{
 		// If empty, we can't get the value
 		if (isEmpty())
-			return RTTI::Variant();
+			return rtti::Variant();
 
 		const ResolvedRTTIPathElement& last_element = mElements[mLength - 1];
 		
@@ -149,13 +149,13 @@ namespace RTTI
 		else if (last_element.mType == ResolvedRTTIPathElement::Type::ARRAY_ELEMENT)
 		{
 			// If this is an array element, get the value of the array at the desired index
-			RTTI::VariantArray array = last_element.ArrayElement.Array.create_array_view();
+			rtti::VariantArray array = last_element.ArrayElement.Array.create_array_view();
 			return array.get_value(last_element.ArrayElement.Index);
 		}
 
 		// Unknown type
 		assert(false);
-		return RTTI::Variant();
+		return rtti::Variant();
 	}
 
 
@@ -177,14 +177,14 @@ namespace RTTI
 	 *
 	 * In essence, setting a value is a recursive function where the value to set is recursively copied up the path from the bottom
 	 */
-	bool ResolvedRTTIPath::setValue(const RTTI::Variant& value)
+	bool ResolvedRTTIPath::setValue(const rtti::Variant& value)
 	{
 		// Empty path, can't set value
 		if (isEmpty())
 			return false;
 
 		// We keep track of the value we want to set on the current element of the path. We start with the value the user provided.
-		RTTI::Variant value_to_set = value;
+		rtti::Variant value_to_set = value;
 		for (int index = mLength - 1; index >= 0; --index)
 		{
 			const ResolvedRTTIPathElement& element = mElements[index];
@@ -207,7 +207,7 @@ namespace RTTI
 			else if (element.mType == ResolvedRTTIPathElement::Type::ARRAY_ELEMENT)
 			{
 				// Array element: set the array index value on a *copy* of the array
-				RTTI::VariantArray array = element.ArrayElement.Array.create_array_view();
+				rtti::VariantArray array = element.ArrayElement.Array.create_array_view();
 				if (!array.set_value(element.ArrayElement.Index, value_to_set))
 					return false;
 
@@ -220,7 +220,7 @@ namespace RTTI
 	}
 
 
-	const RTTI::TypeInfo ResolvedRTTIPath::getType() const
+	const rtti::TypeInfo ResolvedRTTIPath::getType() const
 	{
 		return getValue().get_type();
 	}

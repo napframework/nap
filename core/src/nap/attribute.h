@@ -89,7 +89,7 @@ namespace nap
 		/**
 		 * @return the type of the value this attribute holds
 		 */
-		virtual const RTTI::TypeInfo getValueType() const = 0;
+		virtual const rtti::TypeInfo getValueType() const = 0;
 
 		/**
 		 * Emits when the value of this attribute changes
@@ -139,7 +139,7 @@ namespace nap
 			valueChanged.connect(parent, function);
 		}
 
-		virtual const RTTI::TypeInfo getValueType() const override;
+		virtual const rtti::TypeInfo getValueType() const override;
 
 		// Getters
 		virtual void getValue(AttributeBase& inAttribute) const override;
@@ -250,7 +250,7 @@ namespace nap
 	private:
 		virtual void getValue(AttributeBase& attribute) const override {}
 		virtual void setValue(const AttributeBase& attribute) override {}
-		virtual const RTTI::TypeInfo getValueType() const override { return get_type(); }
+		virtual const rtti::TypeInfo getValueType() const override { return get_type(); }
 
 	};
 
@@ -266,7 +266,7 @@ namespace nap
     public:
         // Default constructor
         ObjectLinkAttribute();
-        ObjectLinkAttribute(AttributeObject* parent, const std::string& name, const RTTI::TypeInfo& type);
+        ObjectLinkAttribute(AttributeObject* parent, const std::string& name, const rtti::TypeInfo& type);
         
         // Conversion
         virtual void getValue(AttributeBase& attribute) const override;
@@ -286,12 +286,12 @@ namespace nap
 		/**
 		 * @return the link target type
 		 */
-		RTTI::TypeInfo getTargetType() const				{ return mLink.getTargetType(); }
+		rtti::TypeInfo getTargetType() const				{ return mLink.getTargetType(); }
 
 		/**
 		 * Set the type of object this link is allowed to point to
 		 */
-		void setTargetType(const RTTI::TypeInfo& type)		{ mLink.setTargetType(type); }
+		void setTargetType(const rtti::TypeInfo& type)		{ mLink.setTargetType(type); }
         
         /**
          * @return the link's target object path, empty string if not valid
@@ -324,7 +324,7 @@ namespace nap
         /**
          * returns type of attribute
          */
-        virtual const RTTI::TypeInfo getValueType() const override;
+        virtual const rtti::TypeInfo getValueType() const override;
         
     private:
         // Link to object

@@ -11,7 +11,7 @@ RTTI_DEFINE_BASE(nap::OutputPlugBase)
 namespace nap
 {
 
-	Plug::Plug(Operator* parent, const std::string& name, const RTTI::TypeInfo dataType) : Object()
+	Plug::Plug(Operator* parent, const std::string& name, const rtti::TypeInfo dataType) : Object()
 	{
         mName = name;
         parent->addChild(*this);
@@ -36,7 +36,7 @@ namespace nap
     }
     
     
-	InputPlugBase::InputPlugBase(Operator* parent, const std::string& name, const RTTI::TypeInfo dataType)
+	InputPlugBase::InputPlugBase(Operator* parent, const std::string& name, const rtti::TypeInfo dataType)
 		: Plug(parent, name, dataType)
 	{
 	}
@@ -90,7 +90,7 @@ namespace nap
 	}
     
     
-	OutputPlugBase::OutputPlugBase(Operator* parent, const std::string& name, const RTTI::TypeInfo dataType)
+	OutputPlugBase::OutputPlugBase(Operator* parent, const std::string& name, const rtti::TypeInfo dataType)
 		: Plug(parent, name, dataType)
 	{
         removed.connect([&](Object&){

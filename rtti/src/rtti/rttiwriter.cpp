@@ -1,17 +1,17 @@
 #include <rtti/rttiwriter.h>
-#include <nap/object.h>
-#include "nap/errorstate.h"
+#include <rtti/rttiobject.h>
+#include <utility/errorstate.h>
 
-namespace nap
+namespace rtti
 {
-	bool serializeObjectRecursive(const RTTI::Instance object, ObjectList& objectsToSerialize, RTTIWriter& writer, ErrorState& errorState);
-	bool serializeValue(const RTTI::Property& property, const RTTI::Variant& variant, ObjectList& objectsToSerialize, RTTIWriter& writer, ErrorState& errorState);
+	bool serializeObjectRecursive(const rtti::Instance object, ObjectList& objectsToSerialize, RTTIWriter& writer, utility::ErrorState& errorState);
+	bool serializeValue(const rtti::Property& property, const rtti::Variant& variant, ObjectList& objectsToSerialize, RTTIWriter& writer, utility::ErrorState& errorState);
 
 
 	/**
 	 * Helper function to add the specified object to the list of objects that need to be serialized
 	 */
-	void addObjectToSerialize(ObjectList& objectsToSerialize, Object* object)
+	void addObjectToSerialize(ObjectList& objectsToSerialize, RTTIObject* object)
 	{
 		// If the object is already in the list, ignore it
 		if (std::find(objectsToSerialize.begin(), objectsToSerialize.end(), object) != objectsToSerialize.end())
@@ -24,7 +24,7 @@ namespace nap
 	/**
 	 * Helper function to serialize an array
 	 */
-	bool serializeArray(const RTTI::Property& property, const RTTI::VariantArray& array, ObjectList& objectsToSerialize, RTTIWriter& writer, ErrorState& errorState)
+	bool serializeArray(const rtti::Property& property, const rtti::VariantArray& array, ObjectList& objectsToSerialize, RTTIWriter& writer, utility::ErrorState& errorState)
 	{
 		// Write the start of the array
 		if (!errorState.check(writer.startArray(array.get_size()), "Failed write start of array"))
@@ -33,7 +33,7 @@ namespace nap
 		// Write the elements
 		for (int i = 0; i < array.get_size(); ++i)
 		{
-			RTTI::Variant var = array.get_value(i);
+			rtti::Variant var = array.get_value(i);
 
 			// Write each value
 			if (!serializeValue(property, var, objectsToSerialize, writer, errorState))
@@ -51,7 +51,7 @@ namespace nap
 	/**
 	 * Helper function to serialize a property
 	 */
-	bool serializeProperty(const RTTI::Property& property, const RTTI::Variant& value, ObjectList& objectsToSerialize, RTTIWriter& writer, ErrorState& errorState)
+	bool serializeProperty(const rtti::Property& property, const rtti::Variant& value, ObjectList& objectsToSerialize, RTTIWriter& writer, utility::ErrorState& errorState)
 	{
 		// Write property name
 		if (!errorState.check(writer.writeProperty(property.get_name().data()), "Failed to write property name"))
@@ -67,7 +67,7 @@ namespace nap
 	/**
 	 * Helper function to serialize a value
 	*/
-	bool serializeValue(const RTTI::Property& property, const RTTI::Variant& value, ObjectList& objectsToSerialize, RTTIWriter& writer, ErrorState& errorState)
+	bool serializeValue(const rtti::Property& property, const rtti::Variant& value, ObjectList& objectsToSerialize, RTTIWriter& writer, utility::ErrorState& errorState)
 	{
 		auto value_type = value.get_type();
 		auto wrapped_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
@@ -89,10 +89,10 @@ namespace nap
 		else if (value_type.is_pointer())
 		{
 			// Pointers must be derived from Object
-			if (!errorState.check(wrapped_type.is_derived_from<nap::Object>(), "Encountered pointer to non-Object"))
+			if (!errorState.check(wrapped_type.is_derived_from<rtti::RTTIObject>(), "Encountered pointer to non-Object"))
 				return false;
 
-			Object* pointee = value.convert<Object*>();
+			RTTIObject* pointee = value.convert<RTTIObject*>();
 			if (pointee != nullptr)
 			{
 				// Check that the ID of the pointer is not empty (we can't point to objects without an ID)
@@ -100,7 +100,7 @@ namespace nap
 				if (!errorState.check(!pointee_id.empty(), "Encountered pointer to Object with invalid ID"))
 					return false;
 
-				bool is_embedded_pointer = RTTI::hasFlag(property, RTTI::EPropertyMetaData::Embedded);
+				bool is_embedded_pointer = rtti::hasFlag(property, rtti::EPropertyMetaData::Embedded);
 				if (is_embedded_pointer && writer.supportsEmbeddedPointers())
 				{
 					// Write start of nested object
@@ -144,7 +144,7 @@ namespace nap
 				return true;
 			}
 		}
-		else if (RTTI::isPrimitive(wrapped_type))
+		else if (rtti::isPrimitive(wrapped_type))
 		{
 			// Write primitive type (float, string, etc)
 			if (!errorState.check(writer.writePrimitive(wrapped_type, is_wrapper ? value.extract_wrapped_value() : value), "Failed to write primitive"))
@@ -181,18 +181,18 @@ namespace nap
 
 
 	/**
-	 * Helper function to serialize a RTTI object (not just nap::Object)
+	 * Helper function to serialize a RTTI object (not just rtti::RTTIObject)
 	 */
-	bool serializeObjectRecursive(const RTTI::Instance object, ObjectList& objectsToSerialize, RTTIWriter& writer, ErrorState& errorState)
+	bool serializeObjectRecursive(const rtti::Instance object, ObjectList& objectsToSerialize, RTTIWriter& writer, utility::ErrorState& errorState)
 	{
 		// Determine the actual type of the object
-		RTTI::Instance actual_object = object.get_type().get_raw_type().is_wrapper() ? object.get_wrapped_instance() : object;
+		rtti::Instance actual_object = object.get_type().get_raw_type().is_wrapper() ? object.get_wrapped_instance() : object;
 
 		// Write all properties
-		for (const RTTI::Property& prop : actual_object.get_derived_type().get_properties())
+		for (const rtti::Property& prop : actual_object.get_derived_type().get_properties())
 		{
 			// Get the value of the property
-			RTTI::Variant prop_value = prop.get_value(actual_object);
+			rtti::Variant prop_value = prop.get_value(actual_object);
 			assert(prop_value.is_valid());
 
 			// Serialize the property
@@ -204,7 +204,7 @@ namespace nap
 	}
 
 
-	bool serializeObjects(const ObjectList& rootObjects, RTTIWriter& writer, ErrorState& errorState)
+	bool serializeObjects(const ObjectList& rootObjects, RTTIWriter& writer, utility::ErrorState& errorState)
 	{
 		// Copy the list of objects to write to an internal list that we can modify
 		ObjectList objects_to_write = rootObjects;
@@ -216,7 +216,7 @@ namespace nap
 		// Go through the array of objects to write. Note that we keep querying the length of the array because objects can be added during traversal
 		for (int index = 0; index < objects_to_write.size(); ++index)
 		{
-			Object* object = objects_to_write[index];
+			RTTIObject* object = objects_to_write[index];
 
 			if (!errorState.check(!object->mID.empty(), "Encountered object without ID. This is not allowed"))
 				return false;

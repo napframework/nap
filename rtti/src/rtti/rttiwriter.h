@@ -1,13 +1,17 @@
 #pragma once
 
-#include <vector>
 #include "rtti/typeinfo.h"
+#include <vector>
 
-namespace nap
+namespace utility
 {
-	class Object;
 	class ErrorState;
-	typedef std::vector<Object*> ObjectList;
+}
+
+namespace rtti
+{
+	class RTTIObject;
+	typedef std::vector<RTTIObject*> ObjectList;
 
 	/**
 	 * This is the interface used by serializeObjects to serialize RTTI objects.
@@ -31,7 +35,7 @@ namespace nap
 		/**
 		 * Called when a root object of the specified type is about to be written
 		 */
-		virtual bool startRootObject(const RTTI::TypeInfo& type) = 0;
+		virtual bool startRootObject(const rtti::TypeInfo& type) = 0;
 
 		/**
 		 * Called when a root object has been completely written
@@ -41,7 +45,7 @@ namespace nap
 		/**
 		 * Called when a compound (i.e. struct nested inside a root object) of the specified type is about to be written
 		 */
-		virtual bool startCompound(const RTTI::TypeInfo& type) = 0;
+		virtual bool startCompound(const rtti::TypeInfo& type) = 0;
 
 		/**
 		 * Called when a compound has been completely written
@@ -71,7 +75,7 @@ namespace nap
 		/** 
 		 * Called to write a primitive type with the specified value
 		 */
-		virtual bool writePrimitive(const RTTI::TypeInfo& type, const RTTI::Variant& value) = 0;
+		virtual bool writePrimitive(const rtti::TypeInfo& type, const rtti::Variant& value) = 0;
 
 		/**
 		 * Called to determine if this writer supports writing pointers nested in the object pointing to them (embedded pointers)
@@ -82,5 +86,5 @@ namespace nap
 	/**
 	 * Serialize a set of objects to the specified writer. This function does all the traversal logic, the actual writing is done by the RTTIWriter passed in.
 	 */
-	bool serializeObjects(const ObjectList& rootObjects, RTTIWriter& writer, ErrorState& errorState);
+	bool serializeObjects(const ObjectList& rootObjects, RTTIWriter& writer, utility::ErrorState& errorState);
 }

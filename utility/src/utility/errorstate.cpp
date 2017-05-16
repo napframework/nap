@@ -1,7 +1,7 @@
-#include "errorstate.h"
-#include "stringutils.h"
+#include "utility/errorstate.h"
+#include "utility/stringutils.h"
 
-namespace nap
+namespace utility
 {
 	const std::string ErrorState::toString() const
 	{

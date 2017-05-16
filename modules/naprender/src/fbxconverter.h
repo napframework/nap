@@ -9,10 +9,13 @@ namespace opengl
 	class Mesh;
 }
 
-namespace nap
+namespace utility
 {
 	class ErrorState;
+}
 
+namespace nap
+{
 	/**
 	 * Options to specify when converting FBX
 	 */
@@ -32,7 +35,7 @@ namespace nap
 	 * @param errorState The error state
 	 * @return Whether the conversion succeeded or not
 	 */
-	bool convertFBX(const std::string& fbxPath, const std::string& outputDirectory, EFBXConversionOptions convertOptions, std::vector<std::string>& convertedFiles, ErrorState& errorState);	 
+	bool convertFBX(const std::string& fbxPath, const std::string& outputDirectory, EFBXConversionOptions convertOptions, std::vector<std::string>& convertedFiles, utility::ErrorState& errorState);	 
 
 	/**
 	 * Load a mesh from the specified mesh. The mesh is expected to be our own mesh format as converted by convertFBX
@@ -41,5 +44,5 @@ namespace nap
 	 * @param errorState The error state if the function fails
 	 * @return The loaded mesh if successful, nullptr on failure
 	 */
-	std::unique_ptr<opengl::Mesh> loadMesh(const std::string& meshPath, ErrorState& errorState);
+	std::unique_ptr<opengl::Mesh> loadMesh(const std::string& meshPath, utility::ErrorState& errorState);
 }

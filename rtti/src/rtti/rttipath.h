@@ -4,13 +4,10 @@
 #include <assert.h>
 #include <rtti/typeinfo.h>
 
-namespace nap
+namespace rtti
 {
-	class Object;
-}
+	class RTTIObject;
 
-namespace RTTI
-{
 	/**
 	 * Represents an element on an RTTIPath. Each element is of a specific type and has different data, depending on the type of the element.
 	 * In order to be able to have an array (without dynamic allocs) of these elements, it makes use of an anonymous union to store the data.
@@ -218,7 +215,7 @@ namespace RTTI
 		 * @param instance The root object
 		 * @param property The property on the root object
 		 */
-		ResolvedRTTIPathElement(const RTTI::Instance& instance, const RTTI::Property& property) :
+		ResolvedRTTIPathElement(const rtti::Instance& instance, const rtti::Property& property) :
 			mType(Type::ROOT)
 		{
 			initNonPOD(Root.Instance, instance);
@@ -231,7 +228,7 @@ namespace RTTI
 		 * @param variant The object the property is on
 		 * @param property The property on the object
 		 */
-		ResolvedRTTIPathElement(const RTTI::Variant& variant, const RTTI::Property& property) :
+		ResolvedRTTIPathElement(const rtti::Variant& variant, const rtti::Property& property) :
 			mType(Type::ATTRIBUTE)
 		{
 			initNonPOD(Attribute.Variant, variant);
@@ -244,7 +241,7 @@ namespace RTTI
 		 * @param array The array we're indexing into
 		 * @param index The index in the array
 		 */
-		ResolvedRTTIPathElement(const RTTI::Variant& array, int index) :
+		ResolvedRTTIPathElement(const rtti::Variant& array, int index) :
 			mType(Type::ARRAY_ELEMENT)
 		{
 			initNonPOD(ArrayElement.Array, array);
@@ -343,19 +340,19 @@ namespace RTTI
 		{
 			struct
 			{
-				RTTI::Instance Instance;	// The root object (i.e. pointer) that this path was resolved against
-				RTTI::Property Property;	// The property on the root object that we're setting
+				rtti::Instance Instance;	// The root object (i.e. pointer) that this path was resolved against
+				rtti::Property Property;	// The property on the root object that we're setting
 			} Root;
 
 			struct
 			{
-				RTTI::Variant Variant;		// The object (can be a nested compound) that the attribute we're representing is on
-				RTTI::Property Property;	// The property on the root object we're representing
+				rtti::Variant Variant;		// The object (can be a nested compound) that the attribute we're representing is on
+				rtti::Property Property;	// The property on the root object we're representing
 			} Attribute;
 
 			struct
 			{
-				RTTI::Variant Array;		// The array that the array element we're representing is in
+				rtti::Variant Array;		// The array that the array element we're representing is in
 				int Index;					// The index in the array
 			} ArrayElement;
 		};
@@ -370,19 +367,19 @@ namespace RTTI
 	 *
 	 *		struct DataStruct
 	 *		{
-	 *			float			mFloatProperty = 0.0f;
-	 *			nap::Object*	mPointerProperty = nullptr;
+	 *			float				mFloatProperty = 0.0f;
+	 *			rtti::RTTIObject*	mPointerProperty = nullptr;
 	 *		};
 	 *
-	 *		class SomeRTTIClass : public nap::Object
+	 *		class SomeRTTIClass : public rtti::RTTIObject
 	 *		{
-	 *			RTTI_ENABLE(nap::Object)
+	 *			RTTI_ENABLE(rtti::RTTIObject)
 	 *
 	 *		public:
-	 *			DataStruct					mNestedCompound;
-	 *			std::vector<int>			mArrayOfInts;
-	 *			std::vector<DataStruct>		mArrayOfCompounds;
-	 *			std::vector<nap::Object*>	mArrayOfPointers;
+	 *			DataStruct						mNestedCompound;
+	 *			std::vector<int>				mArrayOfInts;
+	 *			std::vector<DataStruct>			mArrayOfCompounds;
+	 *			std::vector<rtti::RTTIObject*>	mArrayOfPointers;
 	 *		};
 	 *
 	 * Now, let's suppose we want to store a reference to the 'PointerProperty' of the 'DataStruct' embedded in the first element of the 'ArrayOfCompounds' property in 'SomeRTTIClass'.
@@ -405,10 +402,10 @@ namespace RTTI
 	 * Once the path has been successfully resolved, we can use it to get/set the value of the property:
 	 *
 	 *		// Retrieve the value of the pointer
-	 *		nap::Object* pointer_value = resolved_path.getValue().convert<nap::Object*>();
+	 *		rtti::RTTIObject* pointer_value = resolved_path.getValue().convert<rtti::RTTIObject*>();
 	 *
 	 *		// Set the value of the pointer
-	 *		nap::Object* some_other_object = ... // Get the pointer we want to set
+	 *		rtti::RTTIObject* some_other_object = ... // Get the pointer we want to set
 	 *		resolved_path.setValue(some_other_object);
 	 *
 	 * After the setValue, object->mArrayOfCompounds[0].mPointerProperty now points to 'some_other_object'
@@ -491,7 +488,7 @@ namespace RTTI
 		 * @param path The resolved RTTI path
 		 * @return Whether the resolve succeeded or not
 		 */
-		bool resolve(nap::Object* object, ResolvedRTTIPath& resolvedPath) const;
+		bool resolve(rtti::RTTIObject* object, ResolvedRTTIPath& resolvedPath) const;
 
 	private:
 		static const int	RTTIPATH_MAX_LENGTH = 16;			// Maximum number of elements on an RTTIPath
@@ -511,7 +508,7 @@ namespace RTTI
 		 *
 		 * @return The value of the property
 		 */
-		const RTTI::Variant getValue() const;
+		const rtti::Variant getValue() const;
 
 		/**
 		 * Set the value of the property pointed to by this path
@@ -519,14 +516,14 @@ namespace RTTI
 		 * @param value The value to set
 		 * @return Whether the value was successfully set or not
 		 */
-		bool setValue(const RTTI::Variant& value);
+		bool setValue(const rtti::Variant& value);
 
 		/**
 		 * Get the type of the value pointed to by this path
 		 *
 		 * @return The type of the value
 		 */
-		const RTTI::TypeInfo getType() const;
+		const rtti::TypeInfo getType() const;
 
 		/**
 		 * Check whether this resolved path is empty
@@ -551,7 +548,7 @@ namespace RTTI
 		/**
 		 * Push the root object/attribute on the path. Note that this is different from a regular attribute in that no copy is made of the attribute value (it keeps a pointer to the root object)
 		 */
-		inline void	pushRoot(const RTTI::Instance& instance, const RTTI::Property& property)
+		inline void	pushRoot(const rtti::Instance& instance, const rtti::Property& property)
 		{ 
 			assert(mLength < RTTIPATH_MAX_LENGTH); 
 			mElements[mLength++] = ResolvedRTTIPathElement(instance, property); 
@@ -560,7 +557,7 @@ namespace RTTI
 		/**
 		 * Push object/attribute on the path
 		 */
-		inline void	pushAttribute(const RTTI::Variant& variant, const RTTI::Property& property)
+		inline void	pushAttribute(const rtti::Variant& variant, const rtti::Property& property)
 		{ 
 			assert(mLength < RTTIPATH_MAX_LENGTH); 
 			mElements[mLength++] = ResolvedRTTIPathElement(variant, property); 
@@ -569,7 +566,7 @@ namespace RTTI
 		/**
 		 * Push array element on the path
 		 */
-		inline void	pushArrayElement(const RTTI::Variant& array, int index)
+		inline void	pushArrayElement(const rtti::Variant& array, int index)
 		{ 
 			assert(mLength < RTTIPATH_MAX_LENGTH); 
 			mElements[mLength++] = ResolvedRTTIPathElement(array, index); 

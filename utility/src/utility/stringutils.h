@@ -13,7 +13,7 @@
 String utilities not offered by std::string
 **/
 
-namespace nap
+namespace utility
 {
 	/**
 	@brief Splits a string based on @inDelim, populates @ioParts
@@ -64,6 +64,4 @@ namespace nap
      * @return A modified type name such as "nap::MyType<float>"
      */
     std::string replaceTemplateType(const std::string& typeName, const std::string& templateTypeName);
-
-
 }

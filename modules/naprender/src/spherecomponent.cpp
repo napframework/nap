@@ -90,8 +90,8 @@ static opengl::Mesh* createSphere(float radius, unsigned int rings, unsigned int
 	opengl::Mesh* sphere_mesh = new opengl::Mesh(vertex_count, opengl::EDrawMode::TRIANGLES);
 	sphere_mesh->addVertexAttribute(opengl::Mesh::VertexAttributeIDs::PositionVertexAttr, 3, &vertices.front());
 	sphere_mesh->addVertexAttribute(opengl::Mesh::VertexAttributeIDs::NormalVertexAttr, 3, &normals.front());
-	sphere_mesh->addVertexAttribute(nap::stringFormat("%s%d", opengl::Mesh::VertexAttributeIDs::UVVertexAttr.c_str(), 0), 3, &texcoords.front());
-	sphere_mesh->addVertexAttribute(nap::stringFormat("%s%d", opengl::Mesh::VertexAttributeIDs::ColorVertexAttr.c_str(), 0), 4, &colors.front());
+	sphere_mesh->addVertexAttribute(utility::stringFormat("%s%d", opengl::Mesh::VertexAttributeIDs::UVVertexAttr.c_str(), 0), 3, &texcoords.front());
+	sphere_mesh->addVertexAttribute(utility::stringFormat("%s%d", opengl::Mesh::VertexAttributeIDs::ColorVertexAttr.c_str(), 0), 4, &colors.front());
 	sphere_mesh->setIndices(index_count, &indices.front());
 	
 	return sphere_mesh;
@@ -101,7 +101,7 @@ namespace nap
 {
 	SphereComponent::SphereComponent(Material& material, RenderService& renderService)
 	{
-		ErrorState error_state;
+		utility::ErrorState error_state;
 		CustomMeshResource* mesh_resource = new CustomMeshResource();
 		mesh_resource->mCustomMesh.reset(createSphere(1.0f, 50, 50));
 		

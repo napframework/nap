@@ -1,10 +1,11 @@
 #pragma once
 
+#include <utility/stringutils.h>
+
 #include <vector>
 #include <string>
-#include "nap/stringutils.h"
 
-namespace nap
+namespace utility
 {
 	/**
 	 * ErrorState is a class that can be used to maintain an error state over (nested) function calls. It's useful to be able to return detailed error information

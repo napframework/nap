@@ -11,7 +11,7 @@ inline std::string addresStr(T thing) {
 
 namespace nap
 {
-	TypeConverterBase::TypeConverterBase(RTTI::TypeInfo inType, RTTI::TypeInfo outType)
+	TypeConverterBase::TypeConverterBase(rtti::TypeInfo inType, rtti::TypeInfo outType)
 		: mInType(inType), mOutType(outType)
 	{
 //		Module::get().registerTypeConverter(this);

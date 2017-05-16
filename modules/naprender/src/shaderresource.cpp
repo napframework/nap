@@ -7,8 +7,8 @@
 #include <nap/logger.h>
 
 RTTI_BEGIN_CLASS(nap::ShaderResource)
-	RTTI_PROPERTY("mVertShader", &nap::ShaderResource::mVertPath, RTTI::EPropertyMetaData::FileLink | RTTI::EPropertyMetaData::Required)
-	RTTI_PROPERTY("mFragShader", &nap::ShaderResource::mFragPath, RTTI::EPropertyMetaData::FileLink | RTTI::EPropertyMetaData::Required)
+	RTTI_PROPERTY("mVertShader", &nap::ShaderResource::mVertPath, rtti::EPropertyMetaData::FileLink | rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("mFragShader", &nap::ShaderResource::mFragPath, rtti::EPropertyMetaData::FileLink | rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 namespace nap
@@ -21,7 +21,7 @@ namespace nap
 
 
 	// Store path and create display names
-	bool ShaderResource::init(ErrorState& errorState)
+	bool ShaderResource::init(utility::ErrorState& errorState)
 	{
 		if (!errorState.check(!mVertPath.empty(), "Vertex shader path not set"))
 			return false;

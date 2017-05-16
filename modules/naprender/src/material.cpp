@@ -7,13 +7,13 @@
 #include <nap/logger.h>
 
 RTTI_BEGIN_CLASS(nap::Material::VertexAttributeBinding)
-	RTTI_PROPERTY("MeshAttributeID",	&nap::Material::VertexAttributeBinding::mMeshAttributeID,	RTTI::EPropertyMetaData::Required)
-	RTTI_PROPERTY("ShaderAttributeID", &nap::Material::VertexAttributeBinding::mShaderAttributeID,	RTTI::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MeshAttributeID",	&nap::Material::VertexAttributeBinding::mMeshAttributeID,	rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ShaderAttributeID", &nap::Material::VertexAttributeBinding::mShaderAttributeID,	rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::Material)
-	RTTI_PROPERTY("Shader",						&nap::Material::mShader,					RTTI::EPropertyMetaData::Required)
-	RTTI_PROPERTY("VertexAttributeBindings",	&nap::Material::mVertexAttributeBindings,	RTTI::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Shader",						&nap::Material::mShader,					rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("VertexAttributeBindings",	&nap::Material::mVertexAttributeBindings,	rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
@@ -22,7 +22,7 @@ namespace nap
 	{
 	}
 
-	bool Material::init(ErrorState& errorState)
+	bool Material::init(utility::ErrorState& errorState)
 	{
 		if (!errorState.check(mShader != nullptr, "Shader not set in material"))
 			return false;
@@ -59,8 +59,8 @@ namespace nap
 // 			map.emplace(std::make_pair(opengl::GLSLType::Tex2D, std::make_unique<GLSLUniformAction>(opengl::GLSLType::Tex2D, createTexture2DAttribute, setTexture2D)));
 
 			// Make sure we have a valid type for the attribute
-			RTTI::TypeInfo attr_value_type = getAttributeType(v.second->mGLSLType);
-			if (!errorState.check(attr_value_type != RTTI::TypeInfo::empty(), "unable to map GLSL uniform, unsupported type"))
+			rtti::TypeInfo attr_value_type = getAttributeType(v.second->mGLSLType);
+			if (!errorState.check(attr_value_type != rtti::TypeInfo::empty(), "unable to map GLSL uniform, unsupported type"))
 				return false;
 
 			// Get attribute create function

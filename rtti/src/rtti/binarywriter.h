@@ -3,9 +3,9 @@
 #include "rttiwriter.h"
 #include <vector>
 
-namespace nap
+namespace rtti
 {
-	class BinaryWriter : public nap::RTTIWriter
+	class BinaryWriter : public RTTIWriter
 	{
 	public:
 		/**
@@ -34,7 +34,7 @@ namespace nap
 		/**
 		 * Called when a root object of the specified type is about to be written
 		 */
-		virtual bool startRootObject(const RTTI::TypeInfo& type) override;
+		virtual bool startRootObject(const rtti::TypeInfo& type) override;
 
 		/**
 		 * Called when a root object has been completely written
@@ -44,7 +44,7 @@ namespace nap
 		/**
 		 * Called when a compound (i.e. struct nested inside a root object) of the specified type is about to be written
 		 */
-		virtual bool startCompound(const RTTI::TypeInfo& type) override { return true; }
+		virtual bool startCompound(const rtti::TypeInfo& type) override { return true; }
 
 		/**
 		 * Called when a compound has been completely written
@@ -74,7 +74,7 @@ namespace nap
 		/** 
 		 * Called to write a primitive type with the specified value
 		 */
-		virtual bool writePrimitive(const RTTI::TypeInfo& type, const RTTI::Variant& value) override;
+		virtual bool writePrimitive(const rtti::TypeInfo& type, const rtti::Variant& value) override;
 
 	private:
 		/**

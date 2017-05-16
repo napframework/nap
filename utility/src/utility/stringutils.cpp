@@ -1,5 +1,5 @@
 // Core Includes
-#include "stringutils.h"
+#include "utility/stringutils.h"
 
 // Std Includes
 #include <algorithm>
@@ -8,7 +8,7 @@
 #include <cstring>
 #include <locale>
 
-namespace nap
+namespace utility
 {
 
 	// Splits a string based on @inDelim

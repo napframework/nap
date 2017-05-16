@@ -2,15 +2,15 @@
 #include "rendertargetresource.h"
 
 RTTI_BEGIN_CLASS(nap::TextureRenderTargetResource2D)
-	RTTI_PROPERTY("mColorTexture",	&nap::TextureRenderTargetResource2D::mColorTexture, RTTI::EPropertyMetaData::Required)
-	RTTI_PROPERTY("mDepthTexture",	&nap::TextureRenderTargetResource2D::mDepthTexture, RTTI::EPropertyMetaData::Required)
-	RTTI_PROPERTY("mClearColor",	&nap::TextureRenderTargetResource2D::mClearColor,	RTTI::EPropertyMetaData::Default)
+	RTTI_PROPERTY("mColorTexture",	&nap::TextureRenderTargetResource2D::mColorTexture, rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("mDepthTexture",	&nap::TextureRenderTargetResource2D::mDepthTexture, rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("mClearColor",	&nap::TextureRenderTargetResource2D::mClearColor,	rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
 {
 
-	bool TextureRenderTargetResource2D::init(ErrorState& errorState)
+	bool TextureRenderTargetResource2D::init(utility::ErrorState& errorState)
 	{
 		if (!errorState.check(mColorTexture != nullptr, "Unable to create render target %s. Color textures not set.", mID.c_str()))
 			return false;

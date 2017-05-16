@@ -5,9 +5,9 @@
 #include <rapidjson/prettywriter.h>
 #include <rapidjson/document.h>
 
-namespace nap
+namespace rtti
 {
-	class JSONWriter : public nap::RTTIWriter
+	class JSONWriter : public RTTIWriter
 	{
 	public:
 		JSONWriter();
@@ -35,7 +35,7 @@ namespace nap
 		/**
 		 * Called when a root object of the specified type is about to be written
 		 */
-		virtual bool startRootObject(const RTTI::TypeInfo& type) override;
+		virtual bool startRootObject(const rtti::TypeInfo& type) override;
 
 		/**
 		 * Called when a root object has been completely written
@@ -45,7 +45,7 @@ namespace nap
 		/**
 		 * Called when a compound (i.e. struct nested inside a root object) of the specified type is about to be written
 		 */
-		virtual bool startCompound(const RTTI::TypeInfo& type) override;
+		virtual bool startCompound(const rtti::TypeInfo& type) override;
 
 		/**
 		 * Called when a compound has been completely written
@@ -75,7 +75,7 @@ namespace nap
 		/** 
 		 * Called to write a primitive type with the specified value
 		 */
-		virtual bool writePrimitive(const RTTI::TypeInfo& type, const RTTI::Variant& value) override;
+		virtual bool writePrimitive(const rtti::TypeInfo& type, const rtti::Variant& value) override;
 
 	private:
 		rapidjson::StringBuffer								mStringBuffer;	// The string buffer we're writing to

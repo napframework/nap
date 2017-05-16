@@ -1,7 +1,7 @@
 #pragma once
 
 // Local Includes
-#include "stringutils.h"
+#include "utility/stringutils.h"
 #include "signalslot.h"
 
 // External Includes
@@ -11,31 +11,31 @@
 
 
 // TODO is there a way to avoid/get rid of this macro?
-#define NAP_DECLARE_LOG_LEVEL(LEVEL, NAME)                                           \
-	static const LogLevel& NAME##Level()                                             \
-	{                                                                                \
-        static LogLevel lvl(#NAME, LEVEL);                                           \
-		return lvl;                                                                  \
-    }                                                                                \
-    static void NAME(const std::string& msg)                                                     \
-	{                                                                                \
-		instance().log(LogMessage(NAME##Level(), msg));                              \
-	}                                                                                \
+#define NAP_DECLARE_LOG_LEVEL(LEVEL, NAME)														\
+	static const LogLevel& NAME##Level()														\
+	{																							\
+        static LogLevel lvl(#NAME, LEVEL);														\
+		return lvl;																				\
+    }																							\
+    static void NAME(const std::string& msg)													\
+	{																							\
+		instance().log(LogMessage(NAME##Level(), msg));											\
+	}																							\
 	\
-static void                                                                          \
-	NAME(const Object& obj, const std::string& msg)                                  \
-	{                                                                                \
-		instance().log(LogMessage(NAME##Level(), msg, &obj));                        \
-	}                                                                                \
-	template <typename... Args>                                                      \
-	static void NAME(const std::string& msg, Args... args)                           \
-	{                                                                                \
-		instance().log(LogMessage(NAME##Level(), stringFormat(msg, args...)));       \
-	}                                                                                \
-	template <typename... Args>                                                      \
-	static void NAME(const Object& obj, const std::string& msg, Args... args)        \
-	{                                                                                \
-		instance().log(LogMessage(NAME##Level(), stringFormat(msg, args...), &obj)); \
+static void																						\
+	NAME(const Object& obj, const std::string& msg)												\
+	{																							\
+		instance().log(LogMessage(NAME##Level(), msg, &obj));									\
+	}																							\
+	template <typename... Args>																	\
+	static void NAME(const std::string& msg, Args... args)										\
+	{																							\
+		instance().log(LogMessage(NAME##Level(), utility::stringFormat(msg, args...)));			\
+	}																							\
+	template <typename... Args>																	\
+	static void NAME(const Object& obj, const std::string& msg, Args... args)					\
+	{																							\
+		instance().log(LogMessage(NAME##Level(), utility::stringFormat(msg, args...), &obj));	\
 	}
 
 

@@ -8,10 +8,9 @@
 #include <string>
 
 
-namespace nap
+namespace rtti
 {
-	class Object;
-	class ErrorState;
+	class RTTIObject;
 
 	/**
 	 * An UnresolvedPointer represents a pointer property in a nap object that is currently unresolved (i.e. null)
@@ -21,15 +20,15 @@ namespace nap
 	 */
 	struct UnresolvedPointer
 	{
-		UnresolvedPointer(Object* object, const RTTI::RTTIPath& path, const std::string& targetID) :
+		UnresolvedPointer(RTTIObject* object, const rtti::RTTIPath& path, const std::string& targetID) :
 			mObject(object),
 			mRTTIPath(path),
 			mTargetID(targetID)
 		{
 		}
 
-		Object*			mObject;		// The object this pointer is on
-		RTTI::RTTIPath	mRTTIPath;		// RTTIPath to the pointer on <mObject>
+		RTTIObject*		mObject;		// The object this pointer is on
+		rtti::RTTIPath	mRTTIPath;		// RTTIPath to the pointer on <mObject>
 		std::string		mTargetID;		// The ID of the target this pointer should point to
 	};
 
@@ -45,8 +44,8 @@ namespace nap
 		std::string		mTargetFile;		// The path to the file that's being to
 	};
 
-	using OwnedObjectList		= std::vector<std::unique_ptr<nap::Object>>;
-	using ObservedObjectList	= std::vector<nap::Object*>;
+	using OwnedObjectList		= std::vector<std::unique_ptr<rtti::RTTIObject>>;
+	using ObservedObjectList	= std::vector<rtti::RTTIObject*>;
 	using UnresolvedPointerList = std::vector<UnresolvedPointer>;
 
 	/**

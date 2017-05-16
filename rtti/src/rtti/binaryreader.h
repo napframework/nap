@@ -1,5 +1,8 @@
 #pragma once
 
+// NAP includes
+#include <utility/memorystream.h>
+
 // RTTI includes
 #include <rtti/rtti.h>
 #include <rtti/rttipath.h>
@@ -8,32 +11,36 @@
 // STL includes
 #include <string>
 
-namespace nap
+namespace utility
 {
-	class Object;
 	class ErrorState;
+}
+
+namespace rtti
+{
+	class RTTIObject;
 	class Factory;
 
 	/**
-	 * Deserialize a set of objects and their data from the specified JSON string
+	 * Deserialize a set of objects and their data from the specified stream
 	 *
-	 * @param json The JSON to deserialize from
+	 * @param stream The stream to deserialize from
 	 * @param result The result of deserialization
 	 * @param errorState The error state of deserialization
 	 *
 	 * @return True if deserialization succeeded, false if not. In case of failure, @a errorState contains detailed error info.
 	 */
-	bool deserializeJSON(const std::string& json, Factory& factory, RTTIDeserializeResult& result, nap::ErrorState& errorState);
+	bool deserializeBinary(utility::MemoryStream& stream, Factory& factory, RTTIDeserializeResult& result, utility::ErrorState& errorState);
 
 	/**
-	 * Read and deserialize a set of objects and their data from the specified JSON file
+	 * Deserialize a set of objects and their data from the specified file
 	 *
-	 * @param json The JSON file to deserialize from
+	 * @param file The file to deserialize from
 	 * @param result The result of deserialization
 	 * @param errorState The error state of deserialization
 	 *
 	 * @return True if deserialization succeeded, false if not. In case of failure, @a errorState contains detailed error info.
 	 */
-	bool readJSONFile(const std::string& path, Factory& factory, RTTIDeserializeResult& result, nap::ErrorState& errorState);
+	bool readBinary(const std::string& path, Factory& factory, RTTIDeserializeResult& result, utility::ErrorState& errorState);
 } //< End Namespace nap
 

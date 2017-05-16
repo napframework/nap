@@ -48,7 +48,7 @@ namespace nap
         if (!root)
             return;
         
-        auto converter = root->getCore().getModuleManager().getTypeConverter(getValueType(), RTTI::TypeInfo::get<std::string>());
+        auto converter = root->getCore().getModuleManager().getTypeConverter(getValueType(), rtti::TypeInfo::get<std::string>());
         if (!converter)
             return;
         
@@ -67,7 +67,7 @@ namespace nap
         if (!root)
             return;
         
-        auto converter = root->getCore().getModuleManager().getTypeConverter(RTTI::TypeInfo::get<std::string>(), getValueType());
+        auto converter = root->getCore().getModuleManager().getTypeConverter(rtti::TypeInfo::get<std::string>(), getValueType());
         if (!converter)
             return;
         
@@ -85,7 +85,7 @@ namespace nap
 	/**
 	 * constructor using a type as link type
 	 */
-	ObjectLinkAttribute::ObjectLinkAttribute(AttributeObject* parent, const std::string& name, const RTTI::TypeInfo& type) :
+	ObjectLinkAttribute::ObjectLinkAttribute(AttributeObject* parent, const std::string& name, const rtti::TypeInfo& type) :
 		AttributeBase(parent, name)
 	{
 		mLink.setTargetType(type);
@@ -139,7 +139,7 @@ namespace nap
 	/**
 	 * Always returns type of link
 	 */
-	const RTTI::TypeInfo ObjectLinkAttribute::getValueType() const
+	const rtti::TypeInfo ObjectLinkAttribute::getValueType() const
 	{
 		return RTTI_OF(nap::Link);
 	}

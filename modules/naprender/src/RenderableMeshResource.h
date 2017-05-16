@@ -36,7 +36,7 @@ namespace nap
 		/**
  		 * Loads model from file.
  		 */
-		virtual bool init(ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
  		 * Performs commit or rollback of changes made in init.
@@ -88,7 +88,7 @@ namespace nap
 	* Factory for creating RenderableMeshResources. The factory is responsible for passing the RenderService
 	* to the RenderableMeshResource on construction.
 	*/
-	class RenderableMeshResourceCreator : public IObjectCreator
+	class RenderableMeshResourceCreator : public rtti::IObjectCreator
 	{
 	public:
 		RenderableMeshResourceCreator(RenderService& renderService) :
@@ -96,7 +96,7 @@ namespace nap
 		{
 		}
 
-		virtual Object* create(RTTI::TypeInfo typeInfo) override
+		virtual Object* create(rtti::TypeInfo typeInfo) override
 		{
 			return new RenderableMeshResource(mRenderService);
 		}

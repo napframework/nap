@@ -26,7 +26,7 @@ namespace nap
 	* @return the attribute type associated with a certain GLSL shader input type
 	* returns invalid if the attribute type is not supported
 	*/
-	RTTI::TypeInfo getAttributeType(opengl::GLSLType type);
+	rtti::TypeInfo getAttributeType(opengl::GLSLType type);
 
 	/**
 	* @return an attribute create function based on a certain GLSL type

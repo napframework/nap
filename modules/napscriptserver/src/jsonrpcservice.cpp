@@ -11,7 +11,7 @@ RTTI_DEFINE(nap::JsonRpcService)
 namespace nap
 {
 
-	static std::vector<std::string> toStringList(const std::vector<RTTI::TypeInfo>& types)
+	static std::vector<std::string> toStringList(const std::vector<rtti::TypeInfo>& types)
 	{
 		std::vector<std::string> typenames;
 		for (const auto& type : types)
@@ -344,7 +344,7 @@ namespace nap
 		if (!parent)
 			return;
 
-		RTTI::TypeInfo type = RTTI::TypeInfo::get_by_name(typeName.c_str());
+		rtti::TypeInfo type = rtti::TypeInfo::get_by_name(typeName.c_str());
 		if (!type.is_valid()) {
 			Logger::fatal("Failed to resolve type: %s", typeName.c_str());
 			return;
@@ -411,7 +411,7 @@ namespace nap
 															const std::string& attribValue,
 															const std::string& attribType)
 	{
-		RTTI::TypeInfo valueType = RTTI::TypeInfo::get_by_name(attribType.c_str());
+		rtti::TypeInfo valueType = rtti::TypeInfo::get_by_name(attribType.c_str());
 		if (!valueType.is_valid()) {
 			Logger::fatal("Invalid valueType: %s", attribType.c_str());
 			return;

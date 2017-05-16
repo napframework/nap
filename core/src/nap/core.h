@@ -78,7 +78,7 @@ namespace nap
 		 * @return a new or already existing service of @type, nullptr if service can't be created or found
 		 * @param type the type of service to get or create
 		 */
-        Service* getOrCreateService(const RTTI::TypeInfo& type);
+        Service* getOrCreateService(const rtti::TypeInfo& type);
 
 		/**
 		 * @return a new or already existing service of type T
@@ -91,7 +91,7 @@ namespace nap
 		 * @param type the type of service to add
 		 * @return the newly added service
 		 */
-        Service& addService(const RTTI::TypeInfo& type);
+        Service& addService(const rtti::TypeInfo& type);
 
         /**
          * Start all registered services (TODO: DEPRECATED)
@@ -123,7 +123,7 @@ namespace nap
 		 * @return an already registered service of @type
 		 * @param type the type of service to get
 		 */
-		Service* getService(const RTTI::TypeInfo& type);
+		Service* getService(const rtti::TypeInfo& type);
 
 		/**
 		 *  @return a service of type T, returns nullptr if that service can't be found
@@ -135,7 +135,7 @@ namespace nap
 		 * @return the service associated with type @inType
 		 * @param inType the type to get associated service for
 		 */
-		Service* getServiceForType(const RTTI::TypeInfo& inType);
+		Service* getServiceForType(const rtti::TypeInfo& inType);
 
 		/**
 		 * @return the service associated with type T, nullptr if no service is associated
@@ -149,12 +149,12 @@ namespace nap
 		 * @param inService the service to associated the type with
 		 * @param typeInfo the type to associate with the service
 		 */
-		void registerType(const Service& inService, RTTI::TypeInfo typeInfo);
+		void registerType(const Service& inService, rtti::TypeInfo typeInfo);
 
 		/**
 		 * @return a list of all available component types
 		 */
-		std::vector<RTTI::TypeInfo> getComponentTypes() const;
+		std::vector<rtti::TypeInfo> getComponentTypes() const;
 
 		/**
 		 * @return the manager that manages all registered modules (aka plugins)
@@ -172,7 +172,7 @@ namespace nap
 		using ServiceList = std::vector<std::unique_ptr<Service>>;
 
 		// Typedef for types associated with a service
-		using ServiceTypeMap = std::unordered_map<std::string, std::unordered_set<RTTI::TypeInfo>>;
+		using ServiceTypeMap = std::unordered_map<std::string, std::unordered_set<rtti::TypeInfo>>;
 
 		// Type store with all registered components for every service
 		ServiceTypeMap mTypes;

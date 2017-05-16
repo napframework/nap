@@ -23,7 +23,7 @@ void runScriptServerComponent()
     root.addComponent<PatchComponent>();
 
 	std::string serverTypename = "nap::JsonRpcService";
-	RTTI::TypeInfo serverCompType = RTTI::TypeInfo::get_by_name(serverTypename.c_str());
+	rtti::TypeInfo serverCompType = rtti::TypeInfo::get_by_name(serverTypename.c_str());
 	if (!serverCompType.is_valid())
 	{
 		Logger::fatal("Type not found: %s", serverTypename.c_str());

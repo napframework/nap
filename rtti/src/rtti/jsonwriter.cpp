@@ -1,6 +1,6 @@
 #include "jsonwriter.h"
 
-namespace nap
+namespace rtti
 {
 	JSONWriter::JSONWriter() :
 		mWriter(mStringBuffer)
@@ -29,7 +29,7 @@ namespace nap
 	}
 
 
-	bool JSONWriter::startRootObject(const RTTI::TypeInfo& type)
+	bool JSONWriter::startRootObject(const rtti::TypeInfo& type)
 	{
 		if (!mWriter.String(type.get_name().data()))
 			return false;
@@ -44,7 +44,7 @@ namespace nap
 	}
 
 
-	bool JSONWriter::startCompound(const RTTI::TypeInfo& type)
+	bool JSONWriter::startCompound(const rtti::TypeInfo& type)
 	{
 		return mWriter.StartObject();
 	}
@@ -81,33 +81,33 @@ namespace nap
 	}
 
 
-	bool JSONWriter::writePrimitive(const RTTI::TypeInfo& type, const RTTI::Variant& value)
+	bool JSONWriter::writePrimitive(const rtti::TypeInfo& type, const rtti::Variant& value)
 	{
 		if (type.is_arithmetic())
 		{
-			if (type == RTTI::TypeInfo::get<bool>())
+			if (type == rtti::TypeInfo::get<bool>())
 				return mWriter.Bool(value.to_bool());
-			else if (type == RTTI::TypeInfo::get<char>())
+			else if (type == rtti::TypeInfo::get<char>())
 				return mWriter.Bool(value.to_bool());
-			else if (type == RTTI::TypeInfo::get<int8_t>())
+			else if (type == rtti::TypeInfo::get<int8_t>())
 				return mWriter.Int(value.to_int8());
-			else if (type == RTTI::TypeInfo::get<int16_t>())
+			else if (type == rtti::TypeInfo::get<int16_t>())
 				return mWriter.Int(value.to_int16());
-			else if (type == RTTI::TypeInfo::get<int32_t>())
+			else if (type == rtti::TypeInfo::get<int32_t>())
 				return mWriter.Int(value.to_int32());
-			else if (type == RTTI::TypeInfo::get<int64_t>())
+			else if (type == rtti::TypeInfo::get<int64_t>())
 				return mWriter.Int64(value.to_int64());
-			else if (type == RTTI::TypeInfo::get<uint8_t>())
+			else if (type == rtti::TypeInfo::get<uint8_t>())
 				return mWriter.Uint(value.to_uint8());
-			else if (type == RTTI::TypeInfo::get<uint16_t>())
+			else if (type == rtti::TypeInfo::get<uint16_t>())
 				return mWriter.Uint(value.to_uint16());
-			else if (type == RTTI::TypeInfo::get<uint32_t>())
+			else if (type == rtti::TypeInfo::get<uint32_t>())
 				return mWriter.Uint(value.to_uint32());
-			else if (type == RTTI::TypeInfo::get<uint64_t>())
+			else if (type == rtti::TypeInfo::get<uint64_t>())
 				return mWriter.Uint64(value.to_uint64());
-			else if (type == RTTI::TypeInfo::get<float>())
+			else if (type == rtti::TypeInfo::get<float>())
 				return mWriter.Double(value.to_double());
-			else if (type == RTTI::TypeInfo::get<double>())
+			else if (type == rtti::TypeInfo::get<double>())
 				return mWriter.Double(value.to_double());
 
 			return false;
@@ -132,7 +132,7 @@ namespace nap
 
 			return false;
 		}
-		else if (type == RTTI::TypeInfo::get<std::string>())
+		else if (type == rtti::TypeInfo::get<std::string>())
 		{
 			return mWriter.String(value.to_string());
 		}
