@@ -164,7 +164,7 @@ namespace nap
 //		registerRTTIModules();
 	}
 
-	const TypeConverterBase* ModuleManager::getTypeConverter(RTTI::TypeInfo fromType, RTTI::TypeInfo toType) const
+	const TypeConverterBase* ModuleManager::getTypeConverter(rtti::TypeInfo fromType, rtti::TypeInfo toType) const
 	{
 		if (fromType == toType)
 		{
@@ -185,7 +185,7 @@ namespace nap
 	const TypeList ModuleManager::getComponentTypes() const
 	{
 		TypeList types;
-		for (const auto& type : RTTI::TypeInfo::get_raw_types()) {
+		for (const auto& type : rtti::TypeInfo::get_raw_types()) {
 			if (type.is_derived_from<Component>() && type.can_create_instance())
 				types.push_back(type);
 		}
@@ -210,7 +210,7 @@ namespace nap
 
 	void ModuleManager::registerRTTIModules()
 	{
-// 		for (RTTI::TypeInfo& typeInfo : RTTI::TypeInfo::getRawTypes()) {
+// 		for (rtti::TypeInfo& typeInfo : rtti::TypeInfo::getRawTypes()) {
 // 
 // 			if (!typeInfo.is_derived_from<nap::Module>())
 // 				continue;

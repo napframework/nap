@@ -3,7 +3,7 @@
 // Local Includes
 #include <nap/coreattributes.h>
 #include "attributeobject.h"
-#include "errorstate.h"
+#include "utility/errorstate.h"
 
 // External Includes
 #include <string>
@@ -33,7 +33,7 @@ namespace nap
 		/**
 		* 
 		*/
-		virtual bool init(ErrorState& errorState) = 0;
+		virtual bool init(utility::ErrorState& errorState) = 0;
 
 		/**
 		* 

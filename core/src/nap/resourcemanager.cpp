@@ -9,11 +9,12 @@ RTTI_DEFINE(nap::ResourceManagerService)
 
 namespace nap
 {
+	using namespace rtti;
 
 	/**
 	* Helper to find index into unresolved pointer array.
 	*/
-	static int findUnresolvedPointer(UnresolvedPointerList& unresolvedPointers, Object* object, const RTTI::RTTIPath& path)
+	static int findUnresolvedPointer(UnresolvedPointerList& unresolvedPointers, RTTIObject* object, const rtti::RTTIPath& path)
 	{
 		for (int index = 0; index < unresolvedPointers.size(); ++index)
 		{
@@ -62,7 +63,7 @@ namespace nap
 		struct Node
 		{
 			int					mDepth = -1;			// Depth of the node is calculated during build, it represents at what level from the root this node is.
-			Object*				mObject = nullptr;		// If this is an Object node, set to the Object, otherwise null.
+			RTTIObject*			mObject = nullptr;		// If this is an Object node, set to the Object, otherwise null.
 			std::string			mFile;					// If this is a file node, set to the filename, otherwise empty.
 			std::vector<Edge*>	mIncomingEdges;			// List of incoming edges
 			std::vector<Edge*>	mOutgoingEdges;			// List of outgoing edges
@@ -74,29 +75,29 @@ namespace nap
 		* @param objectList : list of objects to build the graph from.
 		* @param errorState: if false is returned, contains error information.
 		*/
-		bool Build(const ObservedObjectList& objectList, ErrorState& errorState)
+		bool Build(const ObservedObjectList& objectList, utility::ErrorState& errorState)
 		{
-			using ObjectMap = std::map<std::string, Object*>;
+			using ObjectMap = std::map<std::string, RTTIObject*>;
 			ObjectMap object_map;
 
 			// Build map from ID => object
-			for (Object* object : objectList)
+			for (RTTIObject* object : objectList)
 			{
 				object_map.insert({ object->mID, object });
 			}
 
 			// Scan all objects for rtti links and build data structure
-			for (Object* object : objectList)
+			for (RTTIObject* object : objectList)
 			{
 				Node* source_node = GetOrCreateObjectNode(*object);
 
 				// Process pointers to other objects
-				std::vector<RTTI::ObjectLink> object_links;
-				RTTI::findObjectLinks(*object, object_links);
+				std::vector<rtti::ObjectLink> object_links;
+				rtti::findObjectLinks(*object, object_links);
 
-				for (const RTTI::ObjectLink& link : object_links)
+				for (const rtti::ObjectLink& link : object_links)
 				{
-					Object* linked_object = link.mTarget;
+					RTTIObject* linked_object = link.mTarget;
 
 					ObjectMap::iterator dest_object = object_map.find(linked_object->mID);
 					if (!errorState.check(dest_object != object_map.end(), "Object %s is pointing to an object that is not in the objectlist!", linked_object->mID.c_str()))
@@ -113,7 +114,7 @@ namespace nap
 			
 				// Process pointers to files
 				std::vector<std::string> file_links;
-				RTTI::findFileLinks(*object, file_links);
+				rtti::findFileLinks(*object, file_links);
 
 				for (std::string& filename : file_links)
 				{
@@ -193,7 +194,7 @@ namespace nap
 		/**
 		* Creates a node of the 'object node' type.
 		*/
-		Node* GetOrCreateObjectNode(Object& object)
+		Node* GetOrCreateObjectNode(RTTIObject& object)
 		{
 			Node* result = nullptr;
 			NodeMap::iterator iter = mNodes.find(object.mID);
@@ -284,9 +285,9 @@ namespace nap
 			// Make backups of all existing objects by cloning them
 			for (auto kvp : mExistingObjects)
 			{
-				Object* source = kvp.first;			// file object
-				Object* target = kvp.second;		// object in ResourceMgr
-				std::unique_ptr<Object> copy = std::move(RTTI::cloneObject(*target));
+				RTTIObject* source = kvp.first;			// file object
+				RTTIObject* target = kvp.second;		// object in ResourceMgr
+				std::unique_ptr<RTTIObject> copy = std::move(rtti::cloneObject(*target));
                 mClonedObjects[source] = std::move(copy); // Mapping from 'read object' to backup of file in ResourceMgr
 			}
 		}
@@ -299,13 +300,13 @@ namespace nap
 				// Copy attributes from clones back to the original objects
 				for (auto kvp : mExistingObjects)
 				{
-					Object* source = kvp.first;
-					Object* target = kvp.second;
+					RTTIObject* source = kvp.first;
+					RTTIObject* target = kvp.second;
 
 					ResourceManagerService::ClonedObjectMap::const_iterator clone = mClonedObjects.find(source);
 					assert(clone != mClonedObjects.end());
 
-					RTTI::copyObject(*(clone->second), *target);
+					rtti::copyObject(*(clone->second), *target);
 				}
 
 				// Remove objects from resource manager if they were added
@@ -363,7 +364,7 @@ namespace nap
 	/**
 	* Copies rtti attributes from File object to object existing in the manager. Patches the unresolved pointer list so the it contains the correct object.
 	*/
-	bool ResourceManagerService::updateExistingObjects(const ExistingObjectMap& existingObjectMap, UnresolvedPointerList& unresolvedPointers, ErrorState& errorState)
+	bool ResourceManagerService::updateExistingObjects(const ExistingObjectMap& existingObjectMap, UnresolvedPointerList& unresolvedPointers, utility::ErrorState& errorState)
 	{
 		for (auto kvp : existingObjectMap)
 		{
@@ -378,11 +379,11 @@ namespace nap
 				return false;
 
 			// Find all links from the resource
-			std::vector<RTTI::ObjectLink> links;
-			RTTI::findObjectLinks(*resource, links);
+			std::vector<rtti::ObjectLink> links;
+			rtti::findObjectLinks(*resource, links);
 
 			// We need to update the UnresolvedPointers to by unresolved against the object from the manager, instead of the object from the file
-			for (const RTTI::ObjectLink& link : links)
+			for (const rtti::ObjectLink& link : links)
 			{
 				// Patch the mObject member: it should not use the File object anymore, but the object from the manager
 				int unresolved_pointer_index = findUnresolvedPointer(unresolvedPointers, resource, link.mSourcePath);
@@ -391,11 +392,11 @@ namespace nap
 			}
 
 			// Copy regular properties
-			for (const RTTI::Property& property : resource->get_type().get_properties())
+			for (const rtti::Property& property : resource->get_type().get_properties())
 			{
 				if (!property.get_type().is_pointer())
 				{
-					RTTI::Variant new_value = property.get_value(*resource);
+					rtti::Variant new_value = property.get_value(*resource);
 					property.set_value(existing_resource, new_value);
 				}
 			}
@@ -410,7 +411,7 @@ namespace nap
 	* the object graph to find the minimum set of objects that requires an init. Finally, the list of objects is sorted on object graph depth so that the init() order
 	* is correct.
 	*/
-	bool ResourceManagerService::determineObjectsToInit(const ExistingObjectMap& existingObjects, const ClonedObjectMap& clonedObjects, const ObservedObjectList& newObjects, const std::string& externalChangedFile, ObservedObjectList& objectsToInit, ErrorState& errorState)
+	bool ResourceManagerService::determineObjectsToInit(const ExistingObjectMap& existingObjects, const ClonedObjectMap& clonedObjects, const ObservedObjectList& newObjects, const std::string& externalChangedFile, ObservedObjectList& objectsToInit, utility::ErrorState& errorState)
 	{
 		// Build an object graph of all objects in the ResourceMgr
 		ObservedObjectList all_objects;
@@ -429,12 +430,12 @@ namespace nap
 			ExistingObjectMap::const_iterator existing_object = existingObjects.find(kvp.first);
 			assert(existing_object != existingObjects.end());
 
-			if (!RTTI::areObjectsEqual(*existing_object->second, *kvp.second.get()))
+			if (!rtti::areObjectsEqual(*existing_object->second, *kvp.second.get()))
 				dirty_nodes.insert(kvp.first->mID);
 		}
 
 		// All new objects need an init
-		for (Object* new_object : newObjects)
+		for (RTTIObject* new_object : newObjects)
 			dirty_nodes.insert(new_object->mID);
 
 		// Add externally changed file that caused load of this json file
@@ -495,7 +496,7 @@ namespace nap
 	}
 
 
-	bool ResourceManagerService::loadFile(const std::string& filename, nap::ErrorState& errorState)
+	bool ResourceManagerService::loadFile(const std::string& filename, utility::ErrorState& errorState)
 	{
 		return loadFile(filename, std::string(), errorState);
 	}
@@ -512,7 +513,7 @@ namespace nap
 	* When a rollback occurs, any newly added objects are removed from the manager, effectively deleting them.
 	* Other maps/list like existing/new are merely observers into the file objects and manager objects.
 	*/
-	bool ResourceManagerService::loadFile(const std::string& filename, const std::string& externalChangedFile, nap::ErrorState& errorState)
+	bool ResourceManagerService::loadFile(const std::string& filename, const std::string& externalChangedFile, utility::ErrorState& errorState)
 	{
 		// ExternalChangedFile should only be used if it's different from the file being reloaded
 		assert(toComparableFilename(filename) != toComparableFilename(externalChangedFile));
@@ -565,9 +566,15 @@ namespace nap
 			if (!errorState.check(target_resource != nullptr, "Unable to resolve link to object %s from attribute %s", unresolved_pointer.mTargetID.c_str(), unresolved_pointer.mRTTIPath.toString().c_str()))
 				return false;
 
-			RTTI::ResolvedRTTIPath resolved_path;
+			rtti::ResolvedRTTIPath resolved_path;
 			if (!errorState.check(unresolved_pointer.mRTTIPath.resolve(unresolved_pointer.mObject, resolved_path), "Failed to resolve RTTIPath %s", unresolved_pointer.mRTTIPath.toString().c_str()))
 				return false;
+
+			if (!errorState.check(target_resource->get_type().is_derived_from(resolved_path.getType()), "Failed to resolve pointer: target of pointer {%s}:%s is of the wrong type (found '%s', expected '%s')",
+									unresolved_pointer.mObject->mID.c_str(), unresolved_pointer.mRTTIPath.toString().c_str(), target_resource->get_type().get_name().data(), resolved_path.getType().get_raw_type().get_name().data()))
+			{
+				return false;
+			}				
 
 			assert(resolved_path.getType().is_pointer());
 			bool succeeded = resolved_path.setValue(target_resource);
@@ -583,7 +590,7 @@ namespace nap
 		// Init all objects in the correct order
 		std::vector<Resource*> initted_objects;
 		bool init_success = true;
-		for (Object* object : objects_to_init)
+		for (RTTIObject* object : objects_to_init)
 		{
 			nap::Resource* resource = rtti_cast<Resource>(object);
 			if (resource == nullptr)
@@ -656,7 +663,7 @@ namespace nap
 
 					for (const std::string& source_file : files_to_reload)
 					{
-						nap::ErrorState errorState;
+						utility::ErrorState errorState;
 						if (!loadFile(source_file, source_file == modified_file ? std::string() : modified_file, errorState))
 						{
 							nap::Logger::warn("Failed to reload %s:\n %s. \n\n See log for more information.", source_file.c_str(), errorState.toString().c_str());
@@ -714,7 +721,7 @@ namespace nap
 	}
 
 
-	Resource* ResourceManagerService::createResource(const RTTI::TypeInfo& type)
+	Resource* ResourceManagerService::createResource(const rtti::TypeInfo& type)
 	{
 		if (!type.is_derived_from(RTTI_OF(Resource)))
 		{
@@ -733,13 +740,13 @@ namespace nap
 
 		// Construct path
 		std::string type_name = type.get_name().data();
-		std::string reso_path = stringFormat("resource::%s", type_name.c_str());
+		std::string reso_path = utility::stringFormat("resource::%s", type_name.c_str());
 		std::string reso_unique_path = reso_path;
 		int idx = 0;
 		while (mResources.find(reso_unique_path) != mResources.end())
 		{
 			++idx;
-			reso_unique_path = stringFormat("%s_%d", reso_path.c_str(), idx);
+			reso_unique_path = utility::stringFormat("%s_%d", reso_path.c_str(), idx);
 		}
 
 		resource->mID = reso_unique_path;

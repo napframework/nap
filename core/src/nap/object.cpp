@@ -1,11 +1,10 @@
 #include "object.h"
-#include "stringutils.h"
+#include "utility/stringutils.h"
 #include "component.h"
 
 #include <algorithm>
 
 RTTI_BEGIN_BASE_CLASS(nap::Object)
-	RTTI_PROPERTY("mID", &nap::Object::mID, RTTI::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 namespace nap
@@ -28,7 +27,7 @@ namespace nap
 	const std::string& Object::setName(const std::string& name)
 	{
 		std::string objName = name;
-		objName = trim(objName);
+		objName = utility::trim(objName);
 		if (objName.empty()) objName = get_type().get_name().data();
 		std::string sanitizedName = sanitizeName(objName);
 		mName = getUniqueName(sanitizedName);
@@ -58,7 +57,7 @@ namespace nap
 			{
 				break;
 			}
-			newName = stringFormat("%s_%d", suggestedName.c_str(), i++);
+			newName = utility::stringFormat("%s_%d", suggestedName.c_str(), i++);
 			child = getParentObject()->getChild(newName);
 		}
 		return newName;
@@ -94,7 +93,7 @@ namespace nap
     }
     
     
-    nap::Object& Object::addChild(const std::string& name, const RTTI::TypeInfo& type)
+    nap::Object& Object::addChild(const std::string& name, const rtti::TypeInfo& type)
     {
         assert(type.can_create_instance());
         assert(type.is_derived_from<Object>());
@@ -106,7 +105,7 @@ namespace nap
     }
     
     
-    Object& Object::addChild(const RTTI::TypeInfo& type)
+    Object& Object::addChild(const rtti::TypeInfo& type)
     {
         return addChild("", type); // Name will be sanitized later
     }
@@ -166,7 +165,7 @@ namespace nap
     
 
 	// Clears all children of a specific type
-	void Object::clearChildren(const RTTI::TypeInfo& type)
+	void Object::clearChildren(const rtti::TypeInfo& type)
 	{
         // look for the children of type type in the children vector and erase
         for (auto it = mChildren.begin(); it != mChildren.end();)
@@ -264,7 +263,7 @@ namespace nap
 	}
     
 
-	Object* Object::getChildOfType(const RTTI::TypeInfo& type)
+	Object* Object::getChildOfType(const rtti::TypeInfo& type)
 	{
 		for (auto& object : mChildren)
 			if (object->get_type() == type) return object;

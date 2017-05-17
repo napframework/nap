@@ -84,7 +84,7 @@ namespace nap
 			if (!attrib)
 				return;
 
-			RTTI::TypeInfo plugType = getOutpullPlugFromValueType(attrib->getValueType());
+			rtti::TypeInfo plugType = getOutpullPlugFromValueType(attrib->getValueType());
 			OutputPullPlugBase& outPlug = *static_cast<OutputPullPlugBase*>(&addChild(plugType));
 			outPlug.setAttribute(attrib);
 		}
@@ -118,7 +118,7 @@ namespace nap
 				removeChild(*plug);
 		}
 
-		ObjectLinkAttribute objectLink = {this, "sourceObject", RTTI::TypeInfo::get<AttributeObject>()};
+		ObjectLinkAttribute objectLink = {this, "sourceObject", rtti::TypeInfo::get<AttributeObject>()};
 
 		AttributeObject* mCurrentObject = nullptr;
 	};

@@ -46,7 +46,7 @@ namespace nap
 		 * @param attributeType The type of the attribute, not it's value
 		 * @return The newly created Attribute
 		 */
-        AttributeBase& addAttribute(const std::string &name, RTTI::TypeInfo attributeType);
+        AttributeBase& addAttribute(const std::string &name, rtti::TypeInfo attributeType);
 
 		/**
 		 * Add an attribute with the specified name
@@ -90,7 +90,7 @@ namespace nap
 		 * @param name: Name of the attribute to add
 		 * @param type: Type the object link should point to
 		 */
-		ObjectLinkAttribute& addObjectLinkAttribute(const std::string& name, const RTTI::TypeInfo& type);
+		ObjectLinkAttribute& addObjectLinkAttribute(const std::string& name, const rtti::TypeInfo& type);
 
 		/**
 		 * Remove and destroy the provided Attribute.
@@ -124,7 +124,7 @@ namespace nap
 		 * @param valueType The value type of the attribute to be found or created
 		 * @return The retrieved or created attribute, nullptr if the provided type was different from the existing attribute.
 		 */
-		AttributeBase* getOrCreateAttribute(const std::string& name, const RTTI::TypeInfo& valueType);
+		AttributeBase* getOrCreateAttribute(const std::string& name, const rtti::TypeInfo& valueType);
 
 		/**
 		 * Check if this object has an attribute with the provided name

@@ -271,7 +271,7 @@ namespace nap
 
 
 	// Set the currently active renderer
-	void RenderService::init(const RTTI::TypeInfo& renderer, ResourceManagerService& resourceManagerService)
+	void RenderService::init(const rtti::TypeInfo& renderer, ResourceManagerService& resourceManagerService)
 	{
 		if (!renderer.is_derived_from(RTTI_OF(nap::Renderer)))
 		{

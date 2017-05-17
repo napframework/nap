@@ -1,5 +1,5 @@
 #include "fileutils.h"
-#include "stringutils.h"
+#include "utility/stringutils.h"
 
 #include <cstring>
 
@@ -150,7 +150,7 @@ namespace nap
 	// Check if the file has an extension of type extension
 	bool hasExtension(const std::string& file, const std::string& extension)
 	{
-		return gToLower(getFileExtension(file)) == gToLower(extension);
+		return utility::gToLower(getFileExtension(file)) == utility::gToLower(extension);
 	}
 
 

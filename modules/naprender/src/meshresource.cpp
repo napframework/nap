@@ -8,7 +8,7 @@
 
 
 RTTI_BEGIN_CLASS(nap::MeshResource)
-	RTTI_PROPERTY("Path", &nap::MeshResource::mPath, RTTI::EPropertyMetaData::FileLink | RTTI::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Path", &nap::MeshResource::mPath, nap::rtti::EPropertyMetaData::FileLink | nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 namespace nap
@@ -20,7 +20,7 @@ namespace nap
 		return *mMesh;
 	}
 
-	bool MeshResource::init(ErrorState& errorState)
+	bool MeshResource::init(utility::ErrorState& errorState)
 	{
 		mPrevMesh = std::move(mMesh);
 
@@ -49,7 +49,7 @@ namespace nap
 		return getFileNameWithoutExtension(mPath);
 	}
 
-	bool CustomMeshResource::init(ErrorState& errorState)
+	bool CustomMeshResource::init(utility::ErrorState& errorState)
 	{
 		mPrevMesh = std::move(mMesh);
 		

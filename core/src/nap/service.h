@@ -40,7 +40,7 @@ namespace nap
 		Core& getCore();
 
 		// Service type name
-		const std::string getTypeName() const { return RTTI::TypeInfo::get(*this).get_name().data(); };
+		const std::string getTypeName() const { return rtti::TypeInfo::get(*this).get_name().data(); };
 
 		// Component search filter function
         using ObjectFilterFunction = std::function<bool(Object&, Core&)>;
@@ -50,7 +50,7 @@ namespace nap
 		void getObjects(std::vector<T*>& outObjects, ObjectFilterFunction inFilter = nullptr);
 
 		// Get all components associated with RTTI inTypeInfo
-		void getObjects(const RTTI::TypeInfo& inTypeInfo, std::vector<Object*> outObjects);
+		void getObjects(const rtti::TypeInfo& inTypeInfo, std::vector<Object*> outObjects);
 
 		// Register a newly added object
 		virtual void registerObject(Object& object);
@@ -81,7 +81,7 @@ namespace nap
 
 		// Created components
 		using ObjectList = std::vector<Object*>;
-		using ObjectMap = std::unordered_map<RTTI::TypeInfo, ObjectList>;
+		using ObjectMap = std::unordered_map<rtti::TypeInfo, ObjectList>;
 		
 
 		// all the registered (currently available) objects
@@ -102,7 +102,7 @@ namespace nap
 		Core* mCore = nullptr;
 
 		// Returns all valid components as a list based on @inInfo
-		size_t getTypeFilteredObjects(const RTTI::TypeInfo& inInfo, std::vector<ObjectList*>& outObjects);
+		size_t getTypeFilteredObjects(const rtti::TypeInfo& inInfo, std::vector<ObjectList*>& outObjects);
 	};
 
 

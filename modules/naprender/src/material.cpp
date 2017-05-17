@@ -9,14 +9,14 @@
 
 
 RTTI_BEGIN_CLASS(nap::Material::VertexAttributeBinding)
-	RTTI_PROPERTY("MeshAttributeID",	&nap::Material::VertexAttributeBinding::mMeshAttributeID,	RTTI::EPropertyMetaData::Required)
-	RTTI_PROPERTY("ShaderAttributeID",	&nap::Material::VertexAttributeBinding::mShaderAttributeID,	RTTI::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MeshAttributeID",	&nap::Material::VertexAttributeBinding::mMeshAttributeID,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ShaderAttributeID",	&nap::Material::VertexAttributeBinding::mShaderAttributeID,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::Material)
-	RTTI_PROPERTY("Shader",						&nap::Material::mShader,					RTTI::EPropertyMetaData::Required)
-	RTTI_PROPERTY("VertexAttributeBindings",	&nap::Material::mVertexAttributeBindings,	RTTI::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Uniforms",					&nap::Material::mUniforms,					RTTI::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Shader",						&nap::Material::mShader,					nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("VertexAttributeBindings",	&nap::Material::mVertexAttributeBindings,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Uniforms",					&nap::Material::mUniforms,					nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 
@@ -47,7 +47,7 @@ namespace nap
 	}
 
 
-	bool Material::init(ErrorState& errorState)
+	bool Material::init(utility::ErrorState& errorState)
 	{
 		if (!errorState.check(mShader != nullptr, "Shader not set in material"))
 			return false;
@@ -100,7 +100,7 @@ namespace nap
 				if (!errorState.check(matching_uniform->getGLSLType() == declaration.mGLSLType, "Uniform %s does not match the variable type in the shader"))
 					return false;
 
-				RTTI::copyObject(*matching_uniform, *new_uniform.get());
+				nap::rtti::copyObject(*matching_uniform, *new_uniform.get());
 			}
 
 			// Create association between uniform and declaration. At the same time, split between textures and values

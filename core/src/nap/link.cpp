@@ -12,7 +12,7 @@ namespace nap
 
 
     // Initialize link with specific target type
-	Link::Link(Object& parent, const RTTI::TypeInfo& type) : mTargetType(type)
+	Link::Link(Object& parent, const rtti::TypeInfo& type) : mTargetType(type)
 	{
 		setParent(parent);
 	}

@@ -16,7 +16,7 @@ namespace nap
 		/**
  		 * Loads model from file.
  		 */
-		virtual bool init(ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
  		 * Performs commit or rollback of changes made in init.
@@ -50,7 +50,7 @@ namespace nap
 	class CustomMeshResource : public MeshResource
 	{
 	public:
-		virtual bool init(ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 	public:
 		std::unique_ptr<opengl::Mesh> mCustomMesh = nullptr;

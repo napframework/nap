@@ -162,7 +162,7 @@ bool testSerializer(const Serializer& ser)
 	// Deserialize
 	Core dstCore;
     dstCore.initialize();
-//    RTTI::TypeInfo serverType = RTTI::TypeInfo::getByName("nap::JsonRpcService");
+//    rtti::TypeInfo serverType = rtti::TypeInfo::getByName("nap::JsonRpcService");
 //    TEST_ASSERT(serverType.isValid(), "Could not find server type");
 //    auto service = dstCore.getOrCreateService(serverType);
 //    TEST_ASSERT(service != nullptr, "Could not get server service");
@@ -297,7 +297,7 @@ bool testFileUtils()
 
 
 bool testResourceManager() {
-	RTTI::TypeInfo::get<nap::JSONFileLoader>();
+	rtti::TypeInfo::get<nap::JSONFileLoader>();
     Core core;
     auto resourceMan = core.getOrCreateService<ResourceManagerService>();
 

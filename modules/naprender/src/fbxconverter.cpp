@@ -13,11 +13,11 @@
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
-#include "nap/stringutils.h"
+#include "utility/stringutils.h"
 #include "nap/object.h"
 #include "rtti/binarywriter.h"
 #include "nap/fileutils.h"
-#include "nap/errorstate.h"
+#include "utility/errorstate.h"
 #include "rtti/binaryreader.h"
 #include "nmesh.h"
 
@@ -66,19 +66,19 @@ namespace nap
 	};
 
 	RTTI_BEGIN_CLASS(MeshData::Attribute)
-		RTTI_PROPERTY("ID",				&MeshData::Attribute::mID, RTTI::EPropertyMetaData::Required)
-		RTTI_PROPERTY("NumComponents",	&MeshData::Attribute::mNumComponents, RTTI::EPropertyMetaData::Required)
-		RTTI_PROPERTY("Data",			&MeshData::Attribute::mData, RTTI::EPropertyMetaData::Required)
+		RTTI_PROPERTY("ID",				&MeshData::Attribute::mID, nap::rtti::EPropertyMetaData::Required)
+		RTTI_PROPERTY("NumComponents",	&MeshData::Attribute::mNumComponents, nap::rtti::EPropertyMetaData::Required)
+		RTTI_PROPERTY("Data",			&MeshData::Attribute::mData, nap::rtti::EPropertyMetaData::Required)
 	RTTI_END_CLASS
 
 	RTTI_BEGIN_CLASS(MeshData)
-		RTTI_PROPERTY("Attributes", &MeshData::mAttributes, RTTI::EPropertyMetaData::Required)
-		RTTI_PROPERTY("NumVertices", &MeshData::mNumVertices, RTTI::EPropertyMetaData::Required)
-		RTTI_PROPERTY("Indices", &MeshData::mIndices, RTTI::EPropertyMetaData::Required)
+		RTTI_PROPERTY("Attributes", &MeshData::mAttributes, nap::rtti::EPropertyMetaData::Required)
+		RTTI_PROPERTY("NumVertices", &MeshData::mNumVertices, nap::rtti::EPropertyMetaData::Required)
+		RTTI_PROPERTY("Indices", &MeshData::mIndices, nap::rtti::EPropertyMetaData::Required)
 	RTTI_END_CLASS
 
 
-	bool convertFBX(const std::string& fbxPath, const std::string& outputDirectory, EFBXConversionOptions convertOptions, std::vector<std::string>& convertedFiles, ErrorState& errorState)
+	bool convertFBX(const std::string& fbxPath, const std::string& outputDirectory, EFBXConversionOptions convertOptions, std::vector<std::string>& convertedFiles, utility::ErrorState& errorState)
 	{
 		// Create importer
 		std::unique_ptr<Assimp::Importer> importer = std::make_unique<Assimp::Importer>();
@@ -115,12 +115,12 @@ namespace nap
 			else
 			{
 				if (mesh->mName.length != 0)
-					converted_name = stringFormat("%s_%s", fbxPath.c_str(), mesh->mName.C_Str());
+					converted_name = utility::stringFormat("%s_%s", fbxPath.c_str(), mesh->mName.C_Str());
 				else
-					converted_name = stringFormat("%s_%d", getFileNameWithoutExtension(fbxPath).c_str(), i);			
+					converted_name = utility::stringFormat("%s_%d", getFileNameWithoutExtension(fbxPath).c_str(), i);			
 			}				
 
-			std::string output_file = getAbsolutePath(stringFormat("%s/%s.mesh", outputDirectory.c_str(), converted_name.c_str()));
+			std::string output_file = getAbsolutePath(utility::stringFormat("%s/%s.mesh", outputDirectory.c_str(), converted_name.c_str()));
 
 			// Determine whether the output file exists and if it does, its modification time
 			uint64_t output_mod_time;
@@ -220,8 +220,8 @@ namespace nap
 					mesh_data.mIndices.push_back(face.mIndices[point_index]);
 			}
 
-			BinaryWriter binaryWriter;
-			if (!serializeObjects({ &mesh_data }, binaryWriter, errorState))
+			rtti::BinaryWriter binaryWriter;
+			if (!rtti::serializeObjects({ &mesh_data }, binaryWriter, errorState))
 				return false;
 
 			std::ofstream bin_output(output_file, std::ofstream::out | std::ofstream::binary);
@@ -237,11 +237,11 @@ namespace nap
 		return true;
 	}
 
-	std::unique_ptr<opengl::Mesh> loadMesh(const std::string& meshPath, ErrorState& errorState)
+	std::unique_ptr<opengl::Mesh> loadMesh(const std::string& meshPath, utility::ErrorState& errorState)
 	{
-		nap::Factory factory;
+		rtti::Factory factory;
 
-		RTTIDeserializeResult deserialize_result;
+		rtti::RTTIDeserializeResult deserialize_result;
 		if (!errorState.check(readBinary(meshPath, factory, deserialize_result, errorState), "Failed to load mesh from %s", meshPath.c_str()))
 			return nullptr;
 

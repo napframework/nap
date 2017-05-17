@@ -89,7 +89,7 @@ namespace nap
 		 * Sets the renderer, the service will own the renderer
 		 * @param renderer the type of renderer to use
 		 */
-		void init(const RTTI::TypeInfo& renderer, ResourceManagerService& resourceManagerService);
+		void init(const rtti::TypeInfo& renderer, ResourceManagerService& resourceManagerService);
 
 		/**
 		 * Shuts down the managed renderer

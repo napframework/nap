@@ -12,7 +12,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	// Constructs the resource link using a name and type
-	ResourceLinkAttribute::ResourceLinkAttribute(AttributeObject* parent, const std::string& name, const RTTI::TypeInfo& type) :
+	ResourceLinkAttribute::ResourceLinkAttribute(AttributeObject* parent, const std::string& name, const rtti::TypeInfo& type) :
 		Attribute<std::string>(parent, name)
 	{
 		setResourceType(type);
@@ -68,7 +68,7 @@ namespace nap
 
 
 	// Set allowed resource link type
-	void ResourceLinkAttribute::setResourceType(const RTTI::TypeInfo& type)
+	void ResourceLinkAttribute::setResourceType(const rtti::TypeInfo& type)
 	{
 		if (!type.is_derived_from(RTTI_OF(nap::Resource)))
 		{

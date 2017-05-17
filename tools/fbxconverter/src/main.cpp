@@ -1,5 +1,5 @@
 #include <nap/core.h>
-#include <nap/errorstate.h>
+#include <utility/errorstate.h>
 #include "fbxconverter.h"
 #include "commandline.h"
 
@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
 		Logger::info("Converting %s to %s", file.c_str(), commandLine.mOutputDirectory.c_str());
 
 		std::vector<std::string> converted_files;
-		ErrorState convert_result;
+		utility::ErrorState convert_result;
 		if (!convertFBX(file, commandLine.mOutputDirectory, convert_options, converted_files, convert_result))
 		{
 			Logger::fatal("\tFailed to convert: %s", convert_result.toString().c_str());

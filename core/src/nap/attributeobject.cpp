@@ -19,7 +19,7 @@ namespace nap
     }
     
 
-    AttributeBase& AttributeObject::addAttribute(const std::string &name, RTTI::TypeInfo attributeType)
+    AttributeBase& AttributeObject::addAttribute(const std::string &name, rtti::TypeInfo attributeType)
     {
         assert(attributeType.is_derived_from<AttributeBase>());
         return *static_cast<AttributeBase*>(&addChild(name, attributeType));
@@ -32,7 +32,7 @@ namespace nap
     }
 
 
-	ObjectLinkAttribute& AttributeObject::addObjectLinkAttribute(const std::string& name, const RTTI::TypeInfo& type)
+	ObjectLinkAttribute& AttributeObject::addObjectLinkAttribute(const std::string& name, const rtti::TypeInfo& type)
 	{
 		ObjectLinkAttribute& object_link = addChild<ObjectLinkAttribute>(name);
 		object_link.setTargetType(type);
@@ -40,7 +40,7 @@ namespace nap
 	}
 
 
-	AttributeBase *AttributeObject::getOrCreateAttribute(const std::string &name, const RTTI::TypeInfo &valueType)
+	AttributeBase *AttributeObject::getOrCreateAttribute(const std::string &name, const rtti::TypeInfo &valueType)
 	{
 		auto attribute = getAttribute(name);
 

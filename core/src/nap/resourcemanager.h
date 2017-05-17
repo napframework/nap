@@ -25,7 +25,7 @@ namespace nap
 		/**
 		* Helper that calls loadFile without additional modified objects. See loadFile comments for a full description.
 		*/
-		bool loadFile(const std::string& filename, nap::ErrorState& errorState);
+		bool loadFile(const std::string& filename, utility::ErrorState& errorState);
 
 		/*
 		* Loads a json file containing objects. All objects are added to the manager. If objects already exist (which is checked by their ID), than the
@@ -44,7 +44,7 @@ namespace nap
 		* @param externalChangedFile: externally changed file that caused load of this file (like texture, shader etc)
 		* @param errorState: if the function returns false, contains error information.
 		*/
-		bool loadFile(const std::string& filename, const std::string& externalChangedFile, nap::ErrorState& errorState);
+		bool loadFile(const std::string& filename, const std::string& externalChangedFile, utility::ErrorState& errorState);
 
 		/**
 		* Find a resource by object ID. Returns null if not found.
@@ -60,7 +60,7 @@ namespace nap
 		/**
 		* Creates a resource and adds it to the manager.
 		*/
-		Resource* createResource(const RTTI::TypeInfo& type);
+		Resource* createResource(const rtti::TypeInfo& type);
 
 		/**
 		* Creates a resource and adds it to the manager.
@@ -77,17 +77,17 @@ namespace nap
 		/**
 		* @return object capable of creating objects with custom construction parameters.
 		*/
-		Factory& GetFactory() { return *mFactory.get(); }
+		rtti::Factory& GetFactory() { return *mFactory.get(); }
 
 	private:
 		friend class ObjectRestorer;
 
-		using ClonedObjectMap = std::map<Object*, std::unique_ptr<Object>>;
-		using ExistingObjectMap = std::map<Object*, Object*>;
+		using ClonedObjectMap = std::map<RTTIObject*, std::unique_ptr<RTTIObject>>;
+		using ExistingObjectMap = std::map<RTTIObject*, RTTIObject*>;
 		
-		void splitFileObjects(OwnedObjectList& fileObjects, ExistingObjectMap& existingObjects, ObservedObjectList& newObjects);
-		bool determineObjectsToInit(const ExistingObjectMap& existingObjects, const ClonedObjectMap& clonedObjects, const ObservedObjectList& newObjects, const std::string& externalChangedFile, ObservedObjectList& objectsToInit, ErrorState& errorState);
-		bool updateExistingObjects(const ExistingObjectMap& existingObjectMap, UnresolvedPointerList& unresolvedPointers, ErrorState& errorState);
+		void splitFileObjects(rtti::OwnedObjectList& fileObjects, ExistingObjectMap& existingObjects, rtti::ObservedObjectList& newObjects);
+		bool determineObjectsToInit(const ExistingObjectMap& existingObjects, const ClonedObjectMap& clonedObjects, const rtti::ObservedObjectList& newObjects, const std::string& externalChangedFile, rtti::ObservedObjectList& objectsToInit, utility::ErrorState& errorState);
+		bool updateExistingObjects(const ExistingObjectMap& existingObjectMap, rtti::UnresolvedPointerList& unresolvedPointers, utility::ErrorState& errorState);
 		void addResource(const std::string& id, std::unique_ptr<Resource> resource);
 		void removeResource(const std::string& id);
 		void addFileLink(const std::string& sourceFile, const std::string& targetFile);
@@ -100,7 +100,7 @@ namespace nap
 		std::set<std::string>				mFilesToWatch;			// Files currently loaded, used for watching changes on the files
 		FileLinkMap							mFileLinkMap;			// Map containing links from target to source file, for updating source files if the file monitor sees changes
 		std::unique_ptr<DirectoryWatcher>	mDirectoryWatcher;		// File monitor, detects changes on files
-		std::unique_ptr<Factory>			mFactory;				// Responsible for creating objects when deserializing
+		std::unique_ptr<rtti::Factory>		mFactory;				// Responsible for creating objects when deserializing
 	};
 
 }

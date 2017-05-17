@@ -117,7 +117,7 @@ namespace nap
 			}
 
 			// Do key lookup if a key event occured
-			RTTI::TypeInfo event_info = event->get_type().getRawType();
+			rtti::TypeInfo event_info = event->get_type().getRawType();
 			if (event_info.is_derived_from(RTTI_OF(KeyEvent)))
 			{
 				doLookup(*event, KeyFilter);

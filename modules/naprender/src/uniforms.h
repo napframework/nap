@@ -18,7 +18,7 @@ namespace nap
 		/**
 		*
 		*/
-		virtual bool init(ErrorState& errorState) override { return true; }
+		virtual bool init(utility::ErrorState& errorState) override { return true; }
 
 		/**
 		*

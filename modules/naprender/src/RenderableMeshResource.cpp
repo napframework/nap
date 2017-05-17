@@ -10,8 +10,8 @@
 #include "meshresource.h"
 
 RTTI_BEGIN_CLASS(nap::RenderableMeshResource)
-	RTTI_PROPERTY("Material",	 &nap::RenderableMeshResource::mMaterialResource,	RTTI::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Mesh",		 &nap::RenderableMeshResource::mMeshResource,		RTTI::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Material",	 &nap::RenderableMeshResource::mMaterialResource,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Mesh",		 &nap::RenderableMeshResource::mMeshResource,		nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 namespace nap
@@ -27,7 +27,7 @@ namespace nap
 	}
 
 
-	bool RenderableMeshResource::init(ErrorState& errorState)
+	bool RenderableMeshResource::init(utility::ErrorState& errorState)
 	{
 		mPrevVAO = std::move(mVAO);
 		mVAO = std::make_unique<opengl::VertexArrayObject>();

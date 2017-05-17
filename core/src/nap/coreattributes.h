@@ -22,7 +22,7 @@ namespace nap
     using FloatMap = std::unordered_map<std::string, float>;
     using IntMap = std::unordered_map<std::string, int>;
     using StringMap = std::unordered_map<std::string, std::string>;
-    using RTTIStringMap = std::unordered_map<RTTI::TypeInfo, std::string>;
+    using RTTIStringMap = std::unordered_map<rtti::TypeInfo, std::string>;
     using Binary = std::vector<char>;
 
     // Comparison operator for map and list type attributes

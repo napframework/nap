@@ -45,7 +45,7 @@ namespace nap
 		/**
 		* Creates mappings for uniform and vertex attrs.
 		*/
-		virtual bool init(ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		* Performs commit or rollback of changes made in init()

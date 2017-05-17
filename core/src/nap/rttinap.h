@@ -30,7 +30,7 @@
 
 namespace nap
 {
-	RTTI::TypeInfo getAttributeTypeFromValueType(const RTTI::TypeInfo& valueType);
-	RTTI::TypeInfo getOutpullPlugFromValueType(const RTTI::TypeInfo& valueType);
-    RTTI::TypeInfo getInputPullPlugFromValueType(const RTTI::TypeInfo& valueType);
+	rtti::TypeInfo getAttributeTypeFromValueType(const rtti::TypeInfo& valueType);
+	rtti::TypeInfo getOutpullPlugFromValueType(const rtti::TypeInfo& valueType);
+    rtti::TypeInfo getInputPullPlugFromValueType(const rtti::TypeInfo& valueType);
 }
