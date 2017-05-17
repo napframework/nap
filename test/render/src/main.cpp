@@ -192,26 +192,14 @@ void onUpdate(const nap::SignalAttribute& signal)
 
 	// Set uniforms
 	glm::vec4 color(v, 1.0f-v, 1.0f, 1.0f);
-	material->setUniformValue<glm::vec4>("mColor", color);
-	material->setUniformValue<int>("mTextureIndex", static_cast<int>(0));
-
-	// Bind correct texture and send to shader
-	material->setUniformTexture("pigTexture", *pigTexture);
-	material->setUniformTexture("testTexture", *testTexture);
+	material->getUniform<nap::UniformVec4>("mColor").setValue(color);
 
 	// Set plane uniforms
 	nap::Material* rotating_plane_material = rotatingPlaneComponent->getRenderableMeshResource()->getMaterial();
-	rotating_plane_material->setUniformTexture("pigTexture", *testTexture);
-	rotating_plane_material->setUniformTexture("testTexture", *testTexture);
-	rotating_plane_material->setUniformValue<int>("mTextureIndex", 0);
-	rotating_plane_material->setUniformValue<glm::vec4>("mColor", {1.0f, 1.0f, 1.0f, 1.0f});
-
-	// Set sphere uniforms
-	nap::Material* sphere_material = sphereComponent->getRenderableMeshResource()->getMaterial();
-	sphere_material->setUniformTexture("pigTexture", *worldTexture);
-	sphere_material->setUniformTexture("testTexture", *worldTexture);
-	sphere_material->setUniformValue<int>("mTextureIndex", 0);
-	sphere_material->setUniformValue<glm::vec4>("mColor", { 1.0f, 1.0f, 1.0f, 1.0f });
+	rotating_plane_material->getUniform<nap::UniformTexture2D>("pigTexture").setTexture(*testTexture);
+	rotating_plane_material->getUniform<nap::UniformTexture2D>("testTexture").setTexture(*testTexture);
+	rotating_plane_material->getUniform<nap::UniformInt>("mTextureIndex").setValue(0);
+	rotating_plane_material->getUniform<nap::UniformVec4>("mColor").setValue({ 1.0f, 1.0f, 1.0f, 1.0f });
 
 	//////////////////////////////////////////////////////////////////////////
 	// Camera Update
@@ -315,16 +303,16 @@ void onRender(const nap::SignalAttribute& signal)
 		components_to_render.push_back(rotatingPlaneComponent);
 
 		nap::Material* plane_material = planeComponent->getRenderableMeshResource()->getMaterial();
-		plane_material->setUniformTexture("testTexture", textureRenderTarget->GetColorTexture());
-		plane_material->setUniformTexture("pigTexture", textureRenderTarget->GetColorTexture());
-		plane_material->setUniformValue<int>("mTextureIndex", 0);
-		plane_material->setUniformValue<glm::vec4>("mColor", { 1.0f, 1.0f, 1.0f, 1.0f });
+		plane_material->getUniform<nap::UniformTexture2D>("testTexture").setTexture(textureRenderTarget->GetColorTexture());
+		plane_material->getUniform<nap::UniformTexture2D>("pigTexture").setTexture(textureRenderTarget->GetColorTexture());
+		plane_material->getUniform<nap::UniformInt>("mTextureIndex").setValue(0);
+		plane_material->getUniform<nap::UniformVec4>("mColor").setValue({ 1.0f, 1.0f, 1.0f, 1.0f });
 
-		nap::Material* rotating_plane_material = planeComponent->getRenderableMeshResource()->getMaterial();
-		rotating_plane_material->setUniformTexture("testTexture", textureRenderTarget->GetColorTexture());
-		rotating_plane_material->setUniformTexture("pigTexture", textureRenderTarget->GetColorTexture());
-		rotating_plane_material->setUniformValue<int>("mTextureIndex", 0);
-		rotating_plane_material->setUniformValue<glm::vec4>("mColor", { 1.0f, 1.0f, 1.0f, 1.0f });
+		nap::Material* rotating_plane_material = rotatingPlaneComponent->getRenderableMeshResource()->getMaterial();
+		rotating_plane_material->getUniform<nap::UniformTexture2D>("testTexture").setTexture(textureRenderTarget->GetColorTexture());
+		rotating_plane_material->getUniform<nap::UniformTexture2D>("pigTexture").setTexture(textureRenderTarget->GetColorTexture());
+		rotating_plane_material->getUniform<nap::UniformInt>("mTextureIndex").setValue(0);
+		rotating_plane_material->getUniform<nap::UniformVec4>("mColor").setValue({ 1.0f, 1.0f, 1.0f, 1.0f });
 
 		opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(render_window->getWindow()->getBackbuffer());
 		renderService->clearRenderTarget(backbuffer, opengl::EClearFlags::COLOR|opengl::EClearFlags::DEPTH|opengl::EClearFlags::STENCIL);

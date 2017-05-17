@@ -8,7 +8,6 @@
 #include "fbxconverter.h"
 #include "material.h"
 #include "meshresource.h"
-#include "shaderutils.h"
 
 RTTI_BEGIN_CLASS(nap::RenderableMeshResource)
 	RTTI_PROPERTY("Material",	 &nap::RenderableMeshResource::mMaterialResource,	RTTI::EPropertyMetaData::Required)

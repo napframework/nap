@@ -128,7 +128,48 @@
 				"MeshAttributeID": "Normal",
 				"ShaderAttributeID": "in_Normals"
 			}
-		]
+		],
+		"Uniforms" : 
+		[
+			{
+				"nap::UniformVec4" : 
+				{
+					"mID" : "worldMaterialColor",
+					"Name" : "mColor",
+					"Value" : 
+					{
+						"x" : 1.0,
+						"y" : 1.0,
+						"z" : 1.0,
+						"w" : 1.0						
+					}
+				}
+			},
+			{
+				"nap::UniformInt" : 
+				{
+					"mID" : "worldTexindex",
+					"Name" : "mTextureIndex",
+					"Value" : 0
+				}
+			},
+			{
+				"nap::UniformTexture2D" : 
+				{
+					"mID" : "worldTexture1",
+					"Name" : "pigTexture",
+					"Texture" : "WorldTexture"
+				}
+			},
+			{
+				"nap::UniformTexture2D" : 
+				{
+					"mID" : "worldTexture2",
+					"Name" : "testTexture",
+					"Texture" : "WorldTexture"
+				}
+			}
+		]	
 	},
 	
 	"nap::Material": {
@@ -151,7 +192,48 @@
 				"MeshAttributeID": "Normal",
 				"ShaderAttributeID": "in_Normals"
 			}
-		]
+		],
+		"Uniforms" : 
+		[
+			{
+				"nap::UniformVec4" : 
+				{
+					"mID" : "pigMaterialColor",
+					"Name" : "mColor",
+					"Value" : 
+					{
+						"x" : 1.0,
+						"y" : 1.0,
+						"z" : 0.0,
+						"w" : 1.0						
+					}
+				}
+			},
+			{
+				"nap::UniformInt" : 
+				{
+					"mID" : "texindex",
+					"Name" : "mTextureIndex",
+					"Value" : 0
+				}
+			},
+			{
+				"nap::UniformTexture2D" : 
+				{
+					"mID" : "uniformPigTexture",
+					"Name" : "pigTexture",
+					"Texture" : "PigTexture"
+				}
+			},
+			{
+				"nap::UniformTexture2D" : 
+				{
+					"mID" : "uniformTestTexture",
+					"Name" : "testTexture",
+					"Texture" : "TestTexture"
+				}
+			}
+		]	
 	},
 	
 	"nap::Material": {

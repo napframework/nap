@@ -23,7 +23,6 @@ namespace nap
 		// Default constructor
 		RenderableMeshResource()
 		{
-			assert(false);
 		}
 
 		RenderableMeshResource(RenderService& renderService) : 

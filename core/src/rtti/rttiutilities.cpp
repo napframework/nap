@@ -17,7 +17,7 @@ namespace RTTI
 	 *
 	 */
 	template<class FUNC>
-	void VisitRTTIPropertiesRecursive(const Variant& variant, RTTIPath& path, FUNC& visitFunc)
+	void VisitRTTIPropertiesRecursive(const RTTI::Property& property, const Variant& variant, RTTIPath& path, FUNC& visitFunc)
 	{
 		// Extract wrapped type
 		auto value_type = variant.get_type();
@@ -35,26 +35,31 @@ namespace RTTI
 
 				RTTI::Variant array_value = array.get_value_as_ref(index);
 
+				// Invoke visit func
+				visitFunc(variant, property, array_value, path);
+
 				// Recurse
-				VisitRTTIPropertiesRecursive(array_value, path, visitFunc);
+				if (!array_value.get_type().get_wrapped_type().is_pointer()) // Don't recurse into properties of pointers
+					VisitRTTIPropertiesRecursive(property, array_value, path, visitFunc);
 
 				path.popBack();
 			}
 		}
-		else if (!actual_type.is_pointer()) // Don't recurse into properties of pointers
+		else 
 		{
 			// Recursively visit each property of the type
-			for (const RTTI::Property& property : actual_type.get_properties())
+			for (const RTTI::Property& nested_property : actual_type.get_properties())
 			{
-				path.pushAttribute(property.get_name().data());
+				path.pushAttribute(nested_property.get_name().data());
 
-				RTTI::Variant value = property.get_value(variant);
+				RTTI::Variant value = nested_property.get_value(variant);
 				
 				// Invoke visit func
-				visitFunc(variant, property, value, path);
+				visitFunc(variant, nested_property, value, path);
 
 				// Recurse
-				VisitRTTIPropertiesRecursive(value, path, visitFunc);
+				if (!actual_type.is_pointer()) // Don't recurse into properties of pointers
+					VisitRTTIPropertiesRecursive(nested_property, value, path, visitFunc);
 
 				path.popBack();
 			}
@@ -88,7 +93,8 @@ namespace RTTI
 			visitFunc(instance, property, value, path);
 
 			// Recurse
-			VisitRTTIPropertiesRecursive(value, path, visitFunc);
+			if (!property.get_type().is_pointer()) // Don't recurse into properties of pointers
+				VisitRTTIPropertiesRecursive(property, value, path, visitFunc);
 
 			path.popBack();
 		}
@@ -109,11 +115,14 @@ namespace RTTI
 
 		void operator()(const Instance& instance, const Property& property, const Variant& value, const RTTIPath& path)
 		{
-			if (!property.get_type().is_pointer())
+			auto actual_type = value.get_type().is_wrapper() ? value.get_type().get_wrapped_type() : value.get_type();
+			if (!actual_type.is_pointer())
 				return;
 
-			assert(value.get_type().is_derived_from<nap::Object>());
-			mObjectLinks.push_back({ &mSourceObject, path, value.convert<nap::Object*>() });
+			Variant actual_value = value.get_type().is_wrapper() ? value.extract_wrapped_value() : value;
+
+			assert(actual_value.get_type().is_derived_from<nap::Object>());
+			mObjectLinks.push_back({ &mSourceObject, path, actual_value.convert<nap::Object*>() });
 		}
 
 	private:
@@ -138,8 +147,10 @@ namespace RTTI
 			if (!RTTI::hasFlag(property, RTTI::EPropertyMetaData::FileLink))
 				return;
 
-			assert(value.get_type().is_derived_from<std::string>());
-			mFileLinks.push_back(value.convert<std::string>());
+			Variant actual_value = value.get_type().is_wrapper() ? value.extract_wrapped_value() : value;
+
+			assert(actual_value.get_type().is_derived_from<std::string>());
+			mFileLinks.push_back(actual_value.convert<std::string>());
 		}
 
 	private:

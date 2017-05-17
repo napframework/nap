@@ -28,9 +28,9 @@ namespace nap
 		comp_mat->bind();
 
 		// Set uniform variables
-		comp_mat->setUniformValue<glm::mat4x4>(projectionMatrixUniform, projectionMatrix);
-		comp_mat->setUniformValue<glm::mat4x4>(viewMatrixUniform, viewMatrix);
-		comp_mat->setUniformValue<glm::mat4x4>(modelMatrixUniform, model_matrix);
+		comp_mat->getUniform<UniformMat4>(projectionMatrixUniform).setValue(projectionMatrix);
+		comp_mat->getUniform<UniformMat4>(viewMatrixUniform).setValue(viewMatrix);
+		comp_mat->getUniform<UniformMat4>(modelMatrixUniform).setValue(model_matrix);
 
 		comp_mat->pushUniforms();
 
