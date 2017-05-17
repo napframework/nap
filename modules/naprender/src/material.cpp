@@ -22,6 +22,9 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	/**
+	 * Creates Uniform objects based on a declaration.
+	 */
 	std::unique_ptr<Uniform> createUniform(const opengl::UniformDeclaration& declaration)
 	{
 		std::unique_ptr<Uniform> result;
