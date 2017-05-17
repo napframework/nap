@@ -41,18 +41,6 @@ namespace opengl
 	};
 
 	/**
-	 * Uniform set function, where void* is the data, GLint the location and
-	 * GLSizei the number of elements
-	 */
-	using UniformSetterFunction = std::function<void(const void*, const GLint&, const GLsizei&)>;
-
-	/**
-	 * @return the uniform set function for the associated type
-	 * returns nullptr if there's no setter found
-	 */
-	UniformSetterFunction* getUniformSetter(GLSLType type);
-
-	/**
 	 * @return the uniform type based on the opengl uniform type
 	 * @param glType: opengl internal type that describes a uniform
 	 */
@@ -82,39 +70,11 @@ namespace opengl
 	};
 
 
-	/**
-	 * Represents a GLSL uniform variable
-	 */
-	class UniformVariable : public ShaderInput
-	{
-	public:
-		// Constructor
-		UniformVariable(GLuint shaderProgram, const std::string& name, GLenum type, GLint location, GLint size);
-
-		/**
-		 * Sets the uniform variable, note that the shader this uniform belongs
-		 * to needs be bound before setting it. 
-		 * @param data: pointer to data in memory to set. This data needs to be align
-		 * with the GLSL type associated with this uniform
-		 * @param count: the length of the array
-		 */
-		void set(const void* data) const;
-	};
-
-
-	/**
-	 * Represents a GLSL vertex attribute
-	 */
-	class VertexAttribute : public ShaderInput
-	{
-	public:
-		// Constructor
-		VertexAttribute(GLuint shaderProgram, const std::string& name, GLenum type, GLint location, GLint size);
-	};
-
-
 	// Typedefs
-	using UniformVariables = std::unordered_map<std::string, std::unique_ptr<UniformVariable>>;
+	using UniformDeclaration = ShaderInput;
+	using UniformDeclarations = std::unordered_map<std::string, std::unique_ptr<UniformDeclaration>>;
+
+	using VertexAttribute = ShaderInput;
 	using VertexAttributes = std::unordered_map<std::string, std::unique_ptr<VertexAttribute>>;
 
 	/**
@@ -141,7 +101,7 @@ namespace opengl
 	 * @param program: The shader program to extract uniform inputs from
 	 * @param uniforms: The populated list of uniforms
 	 */
-	void extractShaderUniforms(GLuint program, UniformVariables& outUniforms);
+	void extractShaderUniforms(GLuint program, UniformDeclarations& outUniforms);
 
 
 	/**

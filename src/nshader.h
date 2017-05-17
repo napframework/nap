@@ -129,7 +129,7 @@ namespace opengl
 		 * nullptr if the uniform is not found
 		 * @param name: Name of the uniform attribute to get
 		 */
-		const UniformVariable* getUniform(const std::string& name) const;
+		const UniformDeclaration* getUniform(const std::string& name) const;
 
 		/**
 		 * @return all vertex shader attributes
@@ -146,14 +146,14 @@ namespace opengl
 		/**
 		 * @return all uniform shader attributes
 		 */
-		const UniformVariables& getUniforms() const			{ return mShaderUniforms; }
+		const UniformDeclarations& getUniformDeclarations() const			{ return mUniformDeclarations; }
 
 	private:
 		unsigned int mShaderId = 0;				// The shader program identifier
 		unsigned int mShaderVp = 0;				// The vertex shader identifier
 		unsigned int mShaderFp = 0;				// The fragment shader identifier
 
-		UniformVariables mShaderUniforms;		// Shader program uniform attributes
+		UniformDeclarations mUniformDeclarations;	// Shader program uniform attributes
 		VertexAttributes mShaderAttributes;		// Shader program vertex attribute inputs
 		State mState = State::NotLoaded;		// Holds current state of shader program
 	};

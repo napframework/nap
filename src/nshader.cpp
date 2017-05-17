@@ -64,7 +64,7 @@ namespace opengl
 
 		// Clear attributes
 		mShaderAttributes.clear();
-		mShaderUniforms.clear();
+		mUniformDeclarations.clear();
 
 		// Create GPU side shader resources
 		if (!isAllocated())
@@ -162,7 +162,7 @@ namespace opengl
 
 		// Extract all program uniform attributes
 		printMessage(MessageType::INFO, "sampling shader program uniforms: %s", vsFile.c_str());
-		extractShaderUniforms(mShaderId, mShaderUniforms);
+		extractShaderUniforms(mShaderId, mUniformDeclarations);
 		
 		// Successfully loaded shader
 		mState = State::Linked;
@@ -192,57 +192,12 @@ namespace opengl
 	}
 
 
-	// Sets the uniform value in shader based on type
-	void Shader::setUniform(GLSLType type, const std::string& name, const void* data)
-	{
-		// Make sure shader is linked
-		if (!isLinked())
-		{
-			printMessage(MessageType::ERROR, "unable to set shader uniform: %s, shader not linked", name.c_str());
-			return;
-		}
-
-		// Get uniform
-		const UniformVariable* uniform_binding = getUniform(name);
-		if (uniform_binding == nullptr)
-			return;
-
-		// Make sure uniform types match
-		if (uniform_binding->mGLSLType != type)
-		{
-			printMessage(MessageType::WARNING, "shader uniform: %s types don't match", name.c_str());
-			return;
-		}
-
-		uniform_binding->set(data);
-	}
-
-
-	// Set uniform using auto type resolving
-	void Shader::setUniform(const std::string& name, const void* data)
-	{
-		// Make sure shader is linked
-		if (!isLinked())
-		{
-			printMessage(MessageType::ERROR, "unable to set shader uniform: %s, shader not linked", name.c_str());
-			return;
-		}
-
-		// Get uniform
-		const UniformVariable* uniform_binding = getUniform(name);
-		if (uniform_binding == nullptr)
-			return;
-
-		uniform_binding->set(data);
-	}
-
-
 	// Returns a uniform shader input with name
-	const UniformVariable* Shader::getUniform(const std::string& name) const
+	const UniformDeclaration* Shader::getUniform(const std::string& name) const
 	{
 		// Find uniform with name
-		auto it = mShaderUniforms.find(name);
-		if (it == mShaderUniforms.end())
+		auto it = mUniformDeclarations.find(name);
+		if (it == mUniformDeclarations.end())
 		{
 			printMessage(MessageType::WARNING, "shader has no active uniform with name: %s", name.c_str());
 			return nullptr;
