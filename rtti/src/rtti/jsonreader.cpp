@@ -89,7 +89,7 @@ namespace nap
 		/**
 		 * Helper function to recursively read an object (can be a rtti::RTTIObject, nested compound or any other type) from JSON
 		 */
-		static bool readPropertiesRecursive(rtti::RTTIObject* object, rtti::Instance compound, const rapidjson::Value& jsonCompound, rtti::RTTIPath& rttiPath, Factory& factory,
+		static bool readPropertiesRecursive(rtti::RTTIObject* rootObject, rtti::Instance compound, const rapidjson::Value& jsonCompound, rtti::RTTIPath& rttiPath, Factory& factory,
 			OwnedObjectList& readObjects, UnresolvedPointerList& unresolvedPointers, std::vector<FileLink>& linkedFiles, utility::ErrorState& errorState)
 		{
 			// Determine the object type. Note that we want to *most derived type* of the object.
@@ -132,9 +132,19 @@ namespace nap
 
 					bool is_embedded_pointer = rtti::hasFlag(property, nap::rtti::EPropertyMetaData::Embedded);
 
-					// Pointer types must be of string type or nested object in JSON
-					if (!errorState.check(json_value.GetType() == rapidjson::kStringType || json_value.GetType() == rapidjson::kObjectType, "Encountered pointer property of unknown type"))
-						return false;
+					// Check if type in json is the expected type
+					if (is_embedded_pointer)
+					{
+						bool valid_type = json_value.GetType() == rapidjson::kStringType || json_value.GetType() == rapidjson::kObjectType;
+						if (!errorState.check(valid_type, "Encountered invalid embedded pointer property value for property {%s}:%s (must be a string or an object)", rootObject->mID.c_str(), rttiPath.toString().c_str()))
+							return false;
+					}
+					else
+					{
+						bool valid_type = json_value.GetType() == rapidjson::kStringType;
+						if (!errorState.check(valid_type, "Encountered invalid pointer property value for property {%s}:%s (must be a string for non-embedded pointer types)", rootObject->mID.c_str(), rttiPath.toString().c_str()))
+							return false;
+					}
 
 					if (is_embedded_pointer)
 					{
@@ -146,7 +156,7 @@ namespace nap
 						if (target != nullptr)
 						{
 							if (!errorState.check(target->get_type().is_derived_from(property.get_type()), "Failed to read embedded pointer: target of pointer {%s}:%s is of the wrong type (found '%s', expected '%s')",
-								object->mID.c_str(), rttiPath.toString().c_str(), target->get_type().get_name().data(), property.get_type().get_raw_type().get_name().data()))
+									rootObject->mID.c_str(), rttiPath.toString().c_str(), target->get_type().get_name().data(), property.get_type().get_raw_type().get_name().data()))
 							{
 								return false;
 							}
@@ -165,7 +175,7 @@ namespace nap
 
 						// Add to list of unresolved pointers
 						if (!target.empty())
-							unresolvedPointers.push_back(UnresolvedPointer(object, rttiPath, target));
+							unresolvedPointers.push_back(UnresolvedPointer(rootObject, rttiPath, target));
 					}
 				}
 				else
@@ -184,7 +194,7 @@ namespace nap
 							rtti::VariantArray array_view = value.create_array_view();
 
 							// Now read the array recursively into array view
-							if (!readArrayRecursively(object, property, array_view, json_value, rttiPath, factory, readObjects, unresolvedPointers, linkedFiles, errorState))
+							if (!readArrayRecursively(rootObject, property, array_view, json_value, rttiPath, factory, readObjects, unresolvedPointers, linkedFiles, errorState))
 								return false;
 						}
 						else if (value_type.is_associative_container())
@@ -202,7 +212,7 @@ namespace nap
 					{
 						// If the property is a nested compound, read it recursively
 						rtti::Variant var = property.get_value(compound);
-						if (!readPropertiesRecursive(object, var, json_value, rttiPath, factory, readObjects, unresolvedPointers, linkedFiles, errorState))
+						if (!readPropertiesRecursive(rootObject, var, json_value, rttiPath, factory, readObjects, unresolvedPointers, linkedFiles, errorState))
 							return false;
 
 						// Copy read object back into the target object
@@ -263,9 +273,19 @@ namespace nap
 
 					bool is_embedded_pointer = rtti::hasFlag(property, nap::rtti::EPropertyMetaData::Embedded);
 
-					// Pointer types must be of string type or nested object in JSON
-					if (!errorState.check(json_element.GetType() == rapidjson::kStringType || json_element.GetType() == rapidjson::kObjectType, "Encountered pointer property of unknown type"))
-						return false;
+					// Check if type in json is the expected type
+					if (is_embedded_pointer)
+					{
+						bool valid_type = json_element.GetType() == rapidjson::kStringType || json_element.GetType() == rapidjson::kObjectType;
+						if (!errorState.check(valid_type, "Encountered invalid embedded pointer property value for property {%s}:%s (must be a string or an object)", rootObject->mID.c_str(), rttiPath.toString().c_str()))
+							return false;
+					}
+					else
+					{
+						bool valid_type = json_element.GetType() == rapidjson::kStringType;
+						if (!errorState.check(valid_type, "Encountered invalid pointer property value for property {%s}:%s (must be a string for non-embedded pointer types)", rootObject->mID.c_str(), rttiPath.toString().c_str()))
+							return false;
+					}
 
 					if (is_embedded_pointer)
 					{
