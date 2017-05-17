@@ -38,6 +38,7 @@ namespace nap
 			RTTIObject& operator=(RTTIObject&&) = delete;
 
 		public:
+			static bool isIDProperty(rtti::Instance& object, const rtti::Property& property);
 			std::string mID;
 		};
 	}

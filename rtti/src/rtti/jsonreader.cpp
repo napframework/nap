@@ -13,11 +13,36 @@ namespace nap
 {
 	namespace rtti
 	{
-		static bool readArrayRecursively(rtti::RTTIObject* rootObject, const rtti::Property& property, rtti::VariantArray& array, const rapidjson::Value& jsonArray, rtti::RTTIPath& rttiPath,
-			Factory& factory, OwnedObjectList& readObjects, UnresolvedPointerList& unresolvedPointers, std::vector<FileLink>& linkedFiles, utility::ErrorState& errorState);
+		struct ReadState
+		{
+			ReadState(Factory& factory, RTTIDeserializeResult& result) :
+				mFactory(factory),
+				mResult(result)
+			{
+			}
 
-		static rtti::RTTIObject* readObjectRecursive(const rapidjson::Value::ConstMemberIterator& jsonObject, Factory& factory, OwnedObjectList& readObjects, UnresolvedPointerList& unresolvedPointers,
-			std::vector<FileLink>& linkedFiles, utility::ErrorState& errorState);
+			RTTIPath							mCurrentRTTIPath;
+			Factory&							mFactory;
+			RTTIDeserializeResult&				mResult;
+			std::unordered_set<std::string>		mObjectIDs;
+		};
+
+		static const std::string generateUniqueID(std::unordered_set<std::string>& objectIDs, const std::string& baseID = "Generated")
+		{
+			std::string unique_id = baseID;
+
+			int index = 1;
+			while (objectIDs.find(unique_id) != objectIDs.end())
+				unique_id = utility::stringFormat("%s_%d", baseID.c_str(), index);
+
+			objectIDs.insert(unique_id);
+
+			return unique_id;
+		}
+
+		static bool readArrayRecursively(rtti::RTTIObject* rootObject, const rtti::Property& property, rtti::VariantArray& array, const rapidjson::Value& jsonArray, ReadState& readState, utility::ErrorState& errorState);
+
+		static rtti::RTTIObject* readObjectRecursive(const rapidjson::Value::ConstMemberIterator& jsonObject, bool isEmbeddedObject, ReadState& readState, utility::ErrorState& errorState);
 
 		/**
 		 * Helper function to read a basic JSON type to a C++ type
@@ -26,33 +51,33 @@ namespace nap
 		{
 			switch (jsonValue.GetType())
 			{
-			case rapidjson::kStringType:
-			{
-				return std::string(jsonValue.GetString());
-				break;
-			}
-			case rapidjson::kNullType:
-				break;
-			case rapidjson::kFalseType:
-			case rapidjson::kTrueType:
-			{
-				return jsonValue.GetBool();
-				break;
-			}
-			case rapidjson::kNumberType:
-			{
-				if (jsonValue.IsInt())
-					return jsonValue.GetInt();
-				else if (jsonValue.IsDouble())
-					return jsonValue.GetDouble();
-				else if (jsonValue.IsUint())
-					return jsonValue.GetUint();
-				else if (jsonValue.IsInt64())
-					return jsonValue.GetInt64();
-				else if (jsonValue.IsUint64())
-					return jsonValue.GetUint64();
-				break;
-			}
+				case rapidjson::kStringType:
+				{
+					return std::string(jsonValue.GetString());
+					break;
+				}
+				case rapidjson::kNullType:
+					break;
+				case rapidjson::kFalseType:
+				case rapidjson::kTrueType:
+				{
+					return jsonValue.GetBool();
+					break;
+				}
+				case rapidjson::kNumberType:
+				{
+					if (jsonValue.IsInt())
+						return jsonValue.GetInt();
+					else if (jsonValue.IsDouble())
+						return jsonValue.GetDouble();
+					else if (jsonValue.IsUint())
+						return jsonValue.GetUint();
+					else if (jsonValue.IsInt64())
+						return jsonValue.GetInt64();
+					else if (jsonValue.IsUint64())
+						return jsonValue.GetUint64();
+					break;
+				}
 			}
 
 			// Unknown type
@@ -61,8 +86,7 @@ namespace nap
 		}
 
 
-		static bool readEmbeddedObject(const rapidjson::Value& jsonValue, Factory& factory, OwnedObjectList& readObjects,
-			UnresolvedPointerList& unresolvedPointers, std::vector<FileLink>& linkedFiles, rtti::RTTIObject*& resultObject, utility::ErrorState& errorState)
+		static bool readEmbeddedObject(const rapidjson::Value& jsonValue, ReadState& readState, rtti::RTTIObject*& resultObject, utility::ErrorState& errorState)
 		{
 			resultObject = nullptr;
 
@@ -78,7 +102,7 @@ namespace nap
 					return false;
 
 				// Deserialize the nested object
-				resultObject = readObjectRecursive(jsonValue.MemberBegin(), factory, readObjects, unresolvedPointers, linkedFiles, errorState);
+				resultObject = readObjectRecursive(jsonValue.MemberBegin(), true, readState, errorState);
 				if (resultObject == nullptr)
 					return false;
 			}
@@ -89,8 +113,7 @@ namespace nap
 		/**
 		 * Helper function to recursively read an object (can be a rtti::RTTIObject, nested compound or any other type) from JSON
 		 */
-		static bool readPropertiesRecursive(rtti::RTTIObject* rootObject, rtti::Instance compound, const rapidjson::Value& jsonCompound, rtti::RTTIPath& rttiPath, Factory& factory,
-			OwnedObjectList& readObjects, UnresolvedPointerList& unresolvedPointers, std::vector<FileLink>& linkedFiles, utility::ErrorState& errorState)
+		static bool readPropertiesRecursive(rtti::RTTIObject* rootObject, rtti::Instance compound, const rapidjson::Value& jsonCompound, bool isEmbeddedObject, ReadState& readState, utility::ErrorState& errorState)
 		{
 			// Determine the object type. Note that we want to *most derived type* of the object.
 			rtti::TypeInfo object_type = compound.get_derived_type();
@@ -99,20 +122,30 @@ namespace nap
 			for (const rtti::Property& property : object_type.get_properties())
 			{
 				// Push attribute on path
-				rttiPath.pushAttribute(property.get_name().data());
+				readState.mCurrentRTTIPath.pushAttribute(property.get_name().data());
 
 				// Determine meta-data for the property
 				bool is_required = rtti::hasFlag(property, nap::rtti::EPropertyMetaData::Required);
 				bool is_file_link = rtti::hasFlag(property, nap::rtti::EPropertyMetaData::FileLink);
+				bool is_object_id = RTTIObject::isIDProperty(compound, property);
 
 				// Check whether the property is present in the JSON. If it's not, but the property is required, throw an error
 				rapidjson::Value::ConstMemberIterator json_property = jsonCompound.FindMember(property.get_name().data());
 				if (json_property == jsonCompound.MemberEnd())
 				{
-					if (!errorState.check(!is_required, "Required property %s not found in object of type %s", property.get_name().data(), object_type.get_name().data()))
-						return false;
+					// If this is the ObjectID property and we're allowing missing ids, generate one
+					if (is_object_id && isEmbeddedObject)
+					{
+						rootObject->mID = generateUniqueID(readState.mObjectIDs, rootObject->get_type().get_name().data());
+					}
+					else
+					{
+						// Otherwise make sure the property is not required
+						if (!errorState.check(!is_required || (is_object_id && isEmbeddedObject), "Required property %s not found in object of type %s", property.get_name().data(), object_type.get_name().data()))
+							return false;
+					}
 
-					rttiPath.popBack();
+					readState.mCurrentRTTIPath.popBack();
 					continue;
 				}
 
@@ -136,96 +169,92 @@ namespace nap
 					if (is_embedded_pointer)
 					{
 						bool valid_type = json_value.GetType() == rapidjson::kStringType || json_value.GetType() == rapidjson::kObjectType;
-						if (!errorState.check(valid_type, "Encountered invalid embedded pointer property value for property {%s}:%s (must be a string or an object)", rootObject->mID.c_str(), rttiPath.toString().c_str()))
+						if (!errorState.check(valid_type, "Encountered invalid embedded pointer property value for property {%s}:%s (must be a string or an object)", rootObject->mID.c_str(), readState.mCurrentRTTIPath.toString().c_str()))
 							return false;
 					}
 					else
 					{
 						bool valid_type = json_value.GetType() == rapidjson::kStringType;
-						if (!errorState.check(valid_type, "Encountered invalid pointer property value for property {%s}:%s (must be a string for non-embedded pointer types)", rootObject->mID.c_str(), rttiPath.toString().c_str()))
+						if (!errorState.check(valid_type, "Encountered invalid pointer property value for property {%s}:%s (must be a string for non-embedded pointer types)", rootObject->mID.c_str(), readState.mCurrentRTTIPath.toString().c_str()))
 							return false;
 					}
 
+					// Determine the target of the pointer
+					std::string target_id;
 					if (is_embedded_pointer)
 					{
+						// Read embedded object
 						rtti::RTTIObject* target = nullptr;
-						if (!readEmbeddedObject(json_value, factory, readObjects, unresolvedPointers, linkedFiles, target, errorState))
+						if (!readEmbeddedObject(json_value, readState, target, errorState))
 							return false;
 
-						// If target is not null, make sure types match
 						if (target != nullptr)
 						{
-							if (!errorState.check(target->get_type().is_derived_from(property.get_type()), "Failed to read embedded pointer: target of pointer {%s}:%s is of the wrong type (found '%s', expected '%s')",
-									rootObject->mID.c_str(), rttiPath.toString().c_str(), target->get_type().get_name().data(), property.get_type().get_raw_type().get_name().data()))
-							{
-								return false;
-							}
-						}
-
-						property.set_value(compound, target);
+							assert(!target->mID.empty());
+							target_id = target->mID;
+						}							
 					}
 					else
 					{
-						// Determine the target of the pointer
-						std::string target = std::string(json_value.GetString());
-
-						// If the target is empty (i.e. null pointer), but the property is required, throw an error
-						if (!errorState.check((is_required && !target.empty()) || (!is_required), "Required property %s not found in object of type %s", property.get_name().data(), object_type.get_name().data()))
-							return false;
-
-						// Add to list of unresolved pointers
-						if (!target.empty())
-							unresolvedPointers.push_back(UnresolvedPointer(rootObject, rttiPath, target));
+						target_id = std::string(json_value.GetString());
 					}
+
+					// If the target is empty (i.e. null pointer), but the property is required, throw an error
+					if (!errorState.check((is_required && !target_id.empty()) || (!is_required), "Required property %s not found in object of type %s", property.get_name().data(), object_type.get_name().data()))
+						return false;
+
+					// Add to list of unresolved pointers
+					if (!target_id.empty())
+						readState.mResult.mUnresolvedPointers.push_back(UnresolvedPointer(rootObject, readState.mCurrentRTTIPath, target_id));
 				}
 				else
 				{
 					// Regular property; read the value and set the property
 					switch (json_value.GetType())
 					{
-					case rapidjson::kArrayType:
-					{
-						// If this is an array, read its elements recursively again (in case of nested compounds)
-						rtti::Variant value;
-						if (value_type.is_array())
+						case rapidjson::kArrayType:
 						{
-							// Get instance of the current value (this is a copy) and create an array view on it so we can fill it
-							value = property.get_value(compound);
-							rtti::VariantArray array_view = value.create_array_view();
+							// If this is an array, read its elements recursively again (in case of nested compounds)
+							rtti::Variant value;
+							if (value_type.is_array())
+							{
+								// Get instance of the current value (this is a copy) and create an array view on it so we can fill it
+								value = property.get_value(compound);
+								rtti::VariantArray array_view = value.create_array_view();
 
-							// Now read the array recursively into array view
-							if (!readArrayRecursively(rootObject, property, array_view, json_value, rttiPath, factory, readObjects, unresolvedPointers, linkedFiles, errorState))
+								// Now read the array recursively into array view
+								if (!readArrayRecursively(rootObject, property, array_view, json_value, readState, errorState))
+									return false;
+							}
+							else if (value_type.is_associative_container())
+							{
+								// Maps not supported (yet)
+								errorState.fail("Encountered currently unsupported associative property");
 								return false;
+							}
+
+							// Now copy the read array back into the target object
+							property.set_value(compound, value);
+							break;
 						}
-						else if (value_type.is_associative_container())
+						case rapidjson::kObjectType:
 						{
-							// Maps not supported (yet)
-							errorState.fail("Encountered currently unsupported associative property");
-							return false;
+							// If the property is a nested compound, read it recursively
+							rtti::Variant var = property.get_value(compound);
+							if (!readPropertiesRecursive(rootObject, var, json_value, false, readState, errorState))
+								return false;
+
+							// Copy read object back into the target object
+							property.set_value(compound, var);
+							break;
 						}
-
-						// Now copy the read array back into the target object
-						property.set_value(compound, value);
-						break;
-					}
-					case rapidjson::kObjectType:
-					{
-						// If the property is a nested compound, read it recursively
-						rtti::Variant var = property.get_value(compound);
-						if (!readPropertiesRecursive(rootObject, var, json_value, rttiPath, factory, readObjects, unresolvedPointers, linkedFiles, errorState))
-							return false;
-
-						// Copy read object back into the target object
-						property.set_value(compound, var);
-						break;
-					}
-					default:
-					{
-						// Basic JSON type, read value and copy to target
-						rtti::Variant extracted_value = readBasicType(json_value);
-						if (extracted_value.convert(value_type))
-							property.set_value(compound, extracted_value);
-					}
+						default:
+						{
+							// Basic JSON type, read value and copy to target
+							rtti::Variant extracted_value = readBasicType(json_value);
+							if (extracted_value.convert(value_type))
+								property.set_value(compound, extracted_value);
+						}
 					}
 				}
 
@@ -235,10 +264,28 @@ namespace nap
 					FileLink file_link;
 					file_link.mSourceObjectID = compound.try_convert<RTTIObject>()->mID;
 					file_link.mTargetFile = property.get_value(compound).get_value<std::string>();;
-					linkedFiles.push_back(file_link);
+					readState.mResult.mFileLinks.push_back(file_link);
 				}
 
-				rttiPath.popBack();
+				// If this property is the object ID, do some validation
+				if (is_object_id)
+				{
+					// Make sure the ID is not empty
+					if (!errorState.check(!rootObject->mID.empty(), "Object of type %s doesn't have an ID", object_type.get_name().data()))
+						return false;
+
+					// Make sure it's not a duplicate ID
+					if (!errorState.check(readState.mObjectIDs.find(rootObject->mID) == readState.mObjectIDs.end(),
+							"Encountered object of type %s with duplicate ID %s", object_type.get_name().data(), rootObject->mID.c_str()))
+					{
+						return false;
+					}
+
+					// Add to set of IDs
+					readState.mObjectIDs.insert(rootObject->mID);
+				}
+
+				readState.mCurrentRTTIPath.popBack();
 			}
 
 			return true;
@@ -248,8 +295,7 @@ namespace nap
 		/**
 		 * Helper function to recursively read an array (can be an array of basic types, nested compound, or any other type) from JSON
 		 */
-		static bool readArrayRecursively(rtti::RTTIObject* rootObject, const rtti::Property& property, rtti::VariantArray& array, const rapidjson::Value& jsonArray, rtti::RTTIPath& rttiPath,
-			Factory& factory, OwnedObjectList& readObjects, UnresolvedPointerList& unresolvedPointers, std::vector<FileLink>& linkedFiles, utility::ErrorState& errorState)
+		static bool readArrayRecursively(rtti::RTTIObject* rootObject, const rtti::Property& property, rtti::VariantArray& array, const rapidjson::Value& jsonArray, ReadState& readState, utility::ErrorState& errorState)
 		{
 			// Pre-size the array to avoid too many dynamic allocs
 			array.set_size(jsonArray.Size());
@@ -261,7 +307,7 @@ namespace nap
 			for (std::size_t index = 0; index < jsonArray.Size(); ++index)
 			{
 				// Add array element to rtti path
-				rttiPath.pushArrayElement(index);
+				readState.mCurrentRTTIPath.pushArrayElement(index);
 
 				const rapidjson::Value& json_element = jsonArray[index];
 
@@ -277,34 +323,38 @@ namespace nap
 					if (is_embedded_pointer)
 					{
 						bool valid_type = json_element.GetType() == rapidjson::kStringType || json_element.GetType() == rapidjson::kObjectType;
-						if (!errorState.check(valid_type, "Encountered invalid embedded pointer property value for property {%s}:%s (must be a string or an object)", rootObject->mID.c_str(), rttiPath.toString().c_str()))
+						if (!errorState.check(valid_type, "Encountered invalid embedded pointer property value for property {%s}:%s (must be a string or an object)", rootObject->mID.c_str(), readState.mCurrentRTTIPath.toString().c_str()))
 							return false;
 					}
 					else
 					{
 						bool valid_type = json_element.GetType() == rapidjson::kStringType;
-						if (!errorState.check(valid_type, "Encountered invalid pointer property value for property {%s}:%s (must be a string for non-embedded pointer types)", rootObject->mID.c_str(), rttiPath.toString().c_str()))
+						if (!errorState.check(valid_type, "Encountered invalid pointer property value for property {%s}:%s (must be a string for non-embedded pointer types)", rootObject->mID.c_str(), readState.mCurrentRTTIPath.toString().c_str()))
 							return false;
 					}
 
+					std::string target_id;
 					if (is_embedded_pointer)
 					{
 						rtti::RTTIObject* target = nullptr;
-						if (!readEmbeddedObject(json_element, factory, readObjects, unresolvedPointers, linkedFiles, target, errorState))
+						if (!readEmbeddedObject(json_element, readState, target, errorState))
 							return false;
 
-						array.set_value(index, target);
+						if (target != nullptr)
+						{
+							assert(!target->mID.empty());
+							target_id = target->mID;
+						}
 					}
 					else
 					{
 						// Determine the target of the pointer
-						std::string target = std::string(json_element.GetString());
-
-						// Add to list of unresolved pointers
-						if (!target.empty())
-							unresolvedPointers.push_back(UnresolvedPointer(rootObject, rttiPath, target));
+						target_id = std::string(json_element.GetString());
 					}
 
+					// Add to list of unresolved pointers
+					if (!target_id.empty())
+						readState.mResult.mUnresolvedPointers.push_back(UnresolvedPointer(rootObject, readState.mCurrentRTTIPath, target_id));
 				}
 				else
 				{
@@ -312,7 +362,7 @@ namespace nap
 					{
 						// Array-of-arrays; read array recursively
 						rtti::VariantArray sub_array = array.get_value_as_ref(index).create_array_view();
-						if (!readArrayRecursively(rootObject, property, sub_array, json_element, rttiPath, factory, readObjects, unresolvedPointers, linkedFiles, errorState))
+						if (!readArrayRecursively(rootObject, property, sub_array, json_element, readState, errorState))
 							return false;
 					}
 					else if (json_element.IsObject())
@@ -320,7 +370,7 @@ namespace nap
 						// Array-of-compounds; read object recursively
 						rtti::Variant var_tmp = array.get_value_as_ref(index);
 						rtti::Variant wrapped_var = var_tmp.extract_wrapped_value();
-						if (!readPropertiesRecursive(rootObject, wrapped_var, json_element, rttiPath, factory, readObjects, unresolvedPointers, linkedFiles, errorState))
+						if (!readPropertiesRecursive(rootObject, wrapped_var, json_element, false, readState, errorState))
 							return false;
 						array.set_value(index, wrapped_var);
 					}
@@ -334,14 +384,13 @@ namespace nap
 				}
 
 				// Remove array element from rtti path again
-				rttiPath.popBack();
+				readState.mCurrentRTTIPath.popBack();
 			}
 
 			return true;
 		}
 
-		rtti::RTTIObject* readObjectRecursive(const rapidjson::Value::ConstMemberIterator& jsonObject, Factory& factory, OwnedObjectList& readObjects, UnresolvedPointerList& unresolvedPointers,
-			std::vector<FileLink>& linkedFiles, utility::ErrorState& errorState)
+		rtti::RTTIObject* readObjectRecursive(const rapidjson::Value::ConstMemberIterator& jsonObject, bool isEmbeddedObject, ReadState& readState, utility::ErrorState& errorState)
 		{
 			// Check whether the object is of a known type
 			const char* typeName = jsonObject->name.GetString();
@@ -358,12 +407,12 @@ namespace nap
 				return nullptr;
 
 			// Create new instance of the object
-			RTTIObject* object = factory.create(type_info);
-			readObjects.push_back(std::unique_ptr<RTTIObject>(object));
+			RTTIObject* object = readState.mFactory.create(type_info);
+			readState.mResult.mReadObjects.push_back(std::unique_ptr<RTTIObject>(object));
 
 			// Recursively read properties, nested compounds, etc
 			rtti::RTTIPath path;
-			if (!readPropertiesRecursive(object, *object, jsonObject->value, path, factory, readObjects, unresolvedPointers, linkedFiles, errorState))
+			if (!readPropertiesRecursive(object, *object, jsonObject->value, isEmbeddedObject, readState, errorState))
 				return nullptr;
 
 			return object;
@@ -398,9 +447,10 @@ namespace nap
 			}
 
 			// Read objects
+			ReadState readState(factory, result);
 			for (auto object_pos = document.MemberBegin(); object_pos < document.MemberEnd(); ++object_pos)
 			{
-				if (!readObjectRecursive(object_pos, factory, result.mReadObjects, result.mUnresolvedPointers, result.mFileLinks, errorState))
+				if (!readObjectRecursive(object_pos, false, readState, errorState))
 					return false;
 			}
 

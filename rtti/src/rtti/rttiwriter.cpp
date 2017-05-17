@@ -6,7 +6,7 @@ namespace nap
 {
 	namespace rtti
 	{
-		bool serializeObjectRecursive(const rtti::Instance object, ObjectList& objectsToSerialize, RTTIWriter& writer, utility::ErrorState& errorState);
+		bool serializeObjectRecursive(const rtti::Instance object, ObjectList& objectsToSerialize, bool isEmbeddedObject, RTTIWriter& writer, utility::ErrorState& errorState);
 		bool serializeValue(const rtti::Property& property, const rtti::Variant& variant, ObjectList& objectsToSerialize, RTTIWriter& writer, utility::ErrorState& errorState);
 
 
@@ -97,11 +97,6 @@ namespace nap
 				RTTIObject* pointee = value.get_value<RTTIObject*>();
 				if (pointee != nullptr)
 				{
-					// Check that the ID of the pointer is not empty (we can't point to objects without an ID)
-					const std::string& pointee_id = pointee->mID;
-					if (!errorState.check(!pointee_id.empty(), "Encountered pointer to Object with invalid ID"))
-						return false;
-
 					bool is_embedded_pointer = rtti::hasFlag(property, nap::rtti::EPropertyMetaData::Embedded);
 					if (is_embedded_pointer && writer.supportsEmbeddedPointers())
 					{
@@ -114,7 +109,7 @@ namespace nap
 							return false;
 
 						// Recurse into object
-						if (!serializeObjectRecursive(pointee, objectsToSerialize, writer, errorState))
+						if (!serializeObjectRecursive(pointee, objectsToSerialize, true, writer, errorState))
 							return false;
 
 						// Finish object
@@ -127,6 +122,11 @@ namespace nap
 					}
 					else
 					{
+						// Check that the ID of the pointer is not empty (we can't point to objects without an ID)
+						const std::string& pointee_id = pointee->mID;
+						if (!errorState.check(!pointee_id.empty(), "Encountered pointer to Object with invalid ID"))
+							return false;
+
 						// Objects we point to must also be serialized, so add it to the set of objects to be serialized
 						addObjectToSerialize(objectsToSerialize, pointee);
 
@@ -165,7 +165,7 @@ namespace nap
 						return false;
 
 					// Recurse into compound
-					if (!serializeObjectRecursive(value, objectsToSerialize, writer, errorState))
+					if (!serializeObjectRecursive(value, objectsToSerialize, false, writer, errorState))
 						return false;
 
 					// Finish compound
@@ -185,20 +185,25 @@ namespace nap
 		/**
 		 * Helper function to serialize a RTTI object (not just rtti::RTTIObject)
 		 */
-		bool serializeObjectRecursive(const rtti::Instance object, ObjectList& objectsToSerialize, RTTIWriter& writer, utility::ErrorState& errorState)
+		bool serializeObjectRecursive(const rtti::Instance object, ObjectList& objectsToSerialize, bool isEmbeddedObject, RTTIWriter& writer, utility::ErrorState& errorState)
 		{
 			// Determine the actual type of the object
 			rtti::Instance actual_object = object.get_type().get_raw_type().is_wrapper() ? object.get_wrapped_instance() : object;
 
 			// Write all properties
-			for (const rtti::Property& prop : actual_object.get_derived_type().get_properties())
+			for (const rtti::Property& property : actual_object.get_derived_type().get_properties())
 			{
+				// Don't write the ID for embedded objects (if the writer supports it)
+				bool is_id = RTTIObject::isIDProperty(actual_object, property);
+				if (is_id && isEmbeddedObject && writer.supportsEmbeddedPointers())
+					continue;
+
 				// Get the value of the property
-				rtti::Variant prop_value = prop.get_value(actual_object);
+				rtti::Variant prop_value = property.get_value(actual_object);
 				assert(prop_value.is_valid());
 
 				// Serialize the property
-				if (!serializeProperty(prop, prop_value, objectsToSerialize, writer, errorState))
+				if (!serializeProperty(property, prop_value, objectsToSerialize, writer, errorState))
 					return false;
 			}
 
@@ -228,7 +233,7 @@ namespace nap
 					return false;
 
 				// Recurse into object
-				if (!serializeObjectRecursive(object, objects_to_write, writer, errorState))
+				if (!serializeObjectRecursive(object, objects_to_write, false, writer, errorState))
 					return false;
 
 				// Finish object
