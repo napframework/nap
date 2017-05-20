@@ -30,9 +30,6 @@ namespace nap
 
 		/**
 		 * @return the opengl mesh that can be drawn to screen or buffer
-		 * Note that this will also initialize the mesh on the GPU
-		 * if the mesh can't be allocated a warning will be raised
-		 * in that case future binding calls won't work
 		 */
 		opengl::Mesh& getMesh() const;
 
@@ -46,6 +43,7 @@ namespace nap
 		std::unique_ptr<opengl::Mesh>	mMesh;
 		std::unique_ptr<opengl::Mesh>	mPrevMesh;
 	};
+
 
 	class CustomMeshResource : public MeshResource
 	{
