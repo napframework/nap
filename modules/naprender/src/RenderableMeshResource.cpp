@@ -16,6 +16,9 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	RenderableMeshResource::RenderableMeshResource(RenderService& renderService) : mRenderService(&renderService)
+	{}
+
 	RenderableMeshResource::~RenderableMeshResource()
 	{
 		// VAO is allocated if object had init() call

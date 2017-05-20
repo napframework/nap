@@ -3,6 +3,7 @@
 
 // External Includes
 #include <algorithm>
+#include <nap/resourcemanager.h>
 
 using namespace std;
 
@@ -27,7 +28,7 @@ namespace nap
 
 	Creates a default entity as the root
 	**/
-	Core::Core()
+	Core::Core() : mFactory(std::make_unique<rtti::Factory>())
 	{
         getModuleManager().loadCoreModule();
 
@@ -37,6 +38,9 @@ namespace nap
 
 		// Initialize timer
 		mTimer.start();
+
+		// Add resource manager service
+		addService(RTTI_OF(ResourceManagerService));
 	}
 
 
@@ -197,6 +201,7 @@ namespace nap
 		Service* service = type.create<Service>();
 		service->mCore = this;
 		service->registerTypes(*this);
+		service->registerObjectCreators(*mFactory);
 
 		// Add service
 		mServices.emplace_back(std::unique_ptr<Service>(service));

@@ -6,6 +6,7 @@
 
 // rtti include
 #include <rtti/rtti.h>
+#include <rtti/factory.h>
 
 // Core Includes
 #include "component.h"
@@ -64,15 +65,6 @@ namespace nap
 		 * @return start time point
 		 */
 		TimePoint getStartTime() const;
-
-		/**
-		 * Add a custom service to the nap core, this has to be called by
-		 * service plugin libraries
-		 * @param args the arguments used for service construction
-		 * @return the newly added service
-		 */
-		template <typename T, typename... Args>
-		T& addService(Args&&... args);
 
 		/**
 		 * @return a new or already existing service of @type, nullptr if service can't be created or found
@@ -167,6 +159,11 @@ namespace nap
 		 */
         void initialize(const std::string& modulesDir = ".")        { mModuleManager.loadModules(modulesDir); }
 
+		/**
+		* @return object capable of creating objects with custom construction parameters.
+		*/
+		rtti::Factory& getFactory()									{ return *mFactory; }
+
 	private:
 		// Typedef for a list of services
 		using ServiceList = std::vector<std::unique_ptr<Service>>;
@@ -190,46 +187,15 @@ namespace nap
 
 		// Timer
 		SimpleTimer mTimer;
+
+		// Responsible for creating objects when de-serializing
+		std::unique_ptr<rtti::Factory>		mFactory;				
 	};
 
 
 	//////////////////////////////////////////////////////////////////////////
 	// Template definitions
 	//////////////////////////////////////////////////////////////////////////
-
-	// Templated function to add a service to the core
-	template <typename T, typename... Args>
-	T& Core::addService(Args&&... inArguments)
-	{
-		// Check for existing service
-		T* existing_service = getService<T>();
-		if (existing_service != nullptr)
-		{
-			nap::Logger::warn("cant add service of type: %s, service already exists", RTTI_OF(T).getName().c_str());
-			return *existing_service;
-		}
-
-		// Create new service
-		auto unique_ptr = std::make_unique<T>(std::forward<Args>(inArguments)...);
-
-		// set the core pointer of the service
-		unique_ptr->mCore = this;
-
-		// This is deprecated, use registerTypes instead!
-		T::sRegisterTypes(*this, *unique_ptr);
-
-		// Correct way of doing it
-		unique_ptr->registerTypes(*this);
-
-		// Get member
-		T& return_v = *unique_ptr;
-
-		// Add unique
-		mServices.emplace_back(std::move(unique_ptr));
-
-		// Return ref
-		return return_v;
-	}
 
 
 	// Searches for a service of type T in the services and returns it,

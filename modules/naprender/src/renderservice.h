@@ -89,7 +89,7 @@ namespace nap
 		 * Sets the renderer, the service will own the renderer
 		 * @param renderer the type of renderer to use
 		 */
-		void init(const rtti::TypeInfo& renderer, ResourceManagerService& resourceManagerService);
+		void init(const rtti::TypeInfo& renderer);
 
 		/**
 		 * Shuts down the managed renderer
@@ -132,6 +132,11 @@ namespace nap
 		 * Type registration
 		 */
 		virtual void registerTypes(nap::Core& core) override;
+
+		/**
+		* Object creation registration
+		*/
+		virtual void registerObjectCreators(rtti::Factory& factory) override;
 
 		/**
 		 * Occurs when an object registers itself with the service

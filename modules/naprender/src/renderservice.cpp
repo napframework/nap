@@ -27,6 +27,12 @@ namespace nap
 		core.registerType(*this, RTTI_OF(CameraComponent));
 	}
 
+	// Register all object creation functions
+	void RenderService::registerObjectCreators(rtti::Factory& factory)
+	{
+		std::unique_ptr<RenderableMeshResourceCreator> mesh_creator = std::make_unique<RenderableMeshResourceCreator>(*this);
+		factory.addObjectCreator(RTTI_OF(RenderableMeshResource), std::move(mesh_creator));
+	}
 
 	// Occurs when an object registers itself with the service
 	void RenderService::objectRegistered(Object& inObject)
@@ -271,7 +277,7 @@ namespace nap
 
 
 	// Set the currently active renderer
-	void RenderService::init(const rtti::TypeInfo& renderer, ResourceManagerService& resourceManagerService)
+	void RenderService::init(const rtti::TypeInfo& renderer)
 	{
 		if (!renderer.is_derived_from(RTTI_OF(nap::Renderer)))
 		{
@@ -288,9 +294,6 @@ namespace nap
 		// Create new renderer
 		nap::Renderer* new_renderer = renderer.create<nap::Renderer>();
 		mRenderer.reset(new_renderer);
-
-		std::unique_ptr<RenderableMeshResourceCreator> mesh_creator = std::make_unique<RenderableMeshResourceCreator>(*this);
-		resourceManagerService.GetFactory().addObjectCreator(RTTI_OF(RenderableMeshResource), std::move(mesh_creator));
 	}
 
 

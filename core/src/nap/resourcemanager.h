@@ -77,7 +77,7 @@ namespace nap
 		/**
 		* @return object capable of creating objects with custom construction parameters.
 		*/
-		rtti::Factory& GetFactory() { return *mFactory.get(); }
+		rtti::Factory& getFactory();
 
 	private:
 		friend class ObjectRestorer;
@@ -100,7 +100,6 @@ namespace nap
 		std::set<std::string>				mFilesToWatch;			// Files currently loaded, used for watching changes on the files
 		FileLinkMap							mFileLinkMap;			// Map containing links from target to source file, for updating source files if the file monitor sees changes
 		std::unique_ptr<DirectoryWatcher>	mDirectoryWatcher;		// File monitor, detects changes on files
-		std::unique_ptr<rtti::Factory>		mFactory;				// Responsible for creating objects when deserializing
 	};
 
 }

@@ -21,14 +21,9 @@ namespace nap
 		RTTI_ENABLE(Resource)
 	public:
 		// Default constructor
-		RenderableMeshResource()
-		{
-		}
+		RenderableMeshResource() = default;
 
-		RenderableMeshResource(RenderService& renderService) : 
-			mRenderService(&renderService)
-		{
-		}
+		RenderableMeshResource(RenderService& renderService);
 
 		~RenderableMeshResource();
 

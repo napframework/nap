@@ -9,6 +9,7 @@
 
 // External Includes
 #include <rtti/rtti.h>
+#include <rtti/factory.h>
 #include <set>
 
 namespace nap
@@ -78,6 +79,9 @@ namespace nap
 		// Override if you want to have types auto register / deregister
 		// with your service
 		virtual void registerTypes(nap::Core& core) {}
+
+		// Registers all available object creation functions associated with a module
+		virtual void registerObjectCreators(rtti::Factory& factory) {}
 
 		// Created components
 		using ObjectList = std::vector<Object*>;

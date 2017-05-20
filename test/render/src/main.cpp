@@ -498,11 +498,12 @@ bool init(nap::Core& core)
 	// GL Service + Window
 	//////////////////////////////////////////////////////////////////////////
 
+	// Get resource manager service
 	resourceManagerService = core.getOrCreateService<nap::ResourceManagerService>();
 
 	// Create render service
 	renderService = core.getOrCreateService<nap::RenderService>();
-	renderService->init(RTTI_OF(nap::OpenGLRenderer), *resourceManagerService);
+	renderService->init(RTTI_OF(nap::OpenGLRenderer));
 	nap::Logger::info("initialized render service: %s", renderService->getName().c_str());
 
 	// Create windows
