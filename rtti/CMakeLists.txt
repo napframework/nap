@@ -11,6 +11,8 @@ if (WIN32)
     endif()
 elseif(APPLE)
     set(RTTR_DIR "${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/rttr/xcode/install/cmake")
+else()
+    set(RTTR_DIR "${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/rttr/install/cmake")
 endif()
 
 find_package(RTTR CONFIG REQUIRED Core)
