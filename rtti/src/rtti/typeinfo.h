@@ -153,7 +153,7 @@ namespace nap
 		RTTR_REGISTRATION								\
 		{												\
 			using namespace rttr;						\
-			registration::class_<Type>(#Type)			\
+			registration::class_<Type>(#Type)
 
 #define RTTI_PROPERTY(Name, Member, Flags)				\
 						  .property(Name, Member)(metadata("flags", (uint8_t)(Flags)))
@@ -161,7 +161,7 @@ namespace nap
 #define RTTI_END_CLASS									\
 		;												\
 		}												\
-	}													\
+	}
 
 #define RTTI_BEGIN_CLASS(Type)							\
 	RTTI_BEGIN_BASE_CLASS(Type)							\
