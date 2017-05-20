@@ -9,7 +9,7 @@ namespace nap
 	namespace rtti
 	{
 		class RTTIObject;
-
+        class ResolvedRTTIPath;
 		/**
 		 * Represents an element on an RTTIPath. Each element is of a specific type and has different data, depending on the type of the element.
 		 * In order to be able to have an array (without dynamic allocs) of these elements, it makes use of an anonymous union to store the data.
