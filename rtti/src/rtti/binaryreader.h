@@ -44,6 +44,6 @@ namespace nap
 		 * @return True if deserialization succeeded, false if not. In case of failure, @a errorState contains detailed error info.
 		 */
 		bool readBinary(const std::string& path, Factory& factory, RTTIDeserializeResult& result, utility::ErrorState& errorState);
-	} //< End Namespace nap
+	}
 
 }
