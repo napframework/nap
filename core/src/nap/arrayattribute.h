@@ -71,7 +71,7 @@ namespace nap
             valueChanged.connect(parent, function);
         }
         
-        virtual const RTTI::TypeInfo getValueType() const override;
+        virtual const rtti::TypeInfo getValueType() const override;
         
         // Getters
         virtual void getValue(AttributeBase& inAttribute) const override;
@@ -120,9 +120,9 @@ namespace nap
     // TEMPLATE DEFINITIONS
     
     template <typename T>
-    const RTTI::TypeInfo ArrayAttribute<T>::getValueType() const
+    const rtti::TypeInfo ArrayAttribute<T>::getValueType() const
     {
-        return RTTI::TypeInfo::get<T>();
+        return rtti::TypeInfo::get<T>();
     }
     
     

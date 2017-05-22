@@ -48,8 +48,8 @@ class QBaseWindow(QMainWindow):
     def showEvent(self, e):
         super(QBaseWindow, self).showEvent(e)
         s = QSettings()
-        self.restoreGeometry(s.value(self.__WIN_GEO).toByteArray())
-        self.restoreState(s.value(self.__WIN_STATE).toByteArray())
+        self.restoreGeometry(s.value(self.__WIN_GEO))
+        self.restoreState(s.value(self.__WIN_STATE))
 
     def closeEvent(self, e):
         super(QBaseWindow, self).closeEvent(e)

@@ -1,12 +1,15 @@
 // Local Includes
 #include "renderservice.h"
-#include "meshcomponent.h"
+#include "RenderableMeshComponent.h"
 #include "rendercomponent.h"
 #include "renderwindowcomponent.h"
 #include "openglrenderer.h"
 #include "transformcomponent.h"
 #include "cameracomponent.h"
 #include "renderglobals.h"
+#include "renderablemeshresource.h"
+#include "rtti/factory.h"
+#include "nap/resourcemanager.h"
 
 // External Includes
 #include <nap/core.h>
@@ -18,10 +21,16 @@ namespace nap
 	void RenderService::registerTypes(nap::Core& core)
 	{
 		core.registerType(*this, RTTI_OF(RenderableComponent));
-		core.registerType(*this, RTTI_OF(MeshComponent));
+		core.registerType(*this, RTTI_OF(RenderableMeshComponent));
 		core.registerType(*this, RTTI_OF(RenderWindowComponent));
 		core.registerType(*this, RTTI_OF(TransformComponent));
 		core.registerType(*this, RTTI_OF(CameraComponent));
+	}
+
+	// Register all object creation functions
+	void RenderService::registerObjectCreators(rtti::Factory& factory)
+	{
+		factory.addObjectCreator(std::make_unique<RenderableMeshResourceCreator>(*this));
 	}
 
 
@@ -252,37 +261,11 @@ namespace nap
 
 		// Draw
 		for (auto& comp : comps)
-		{
-			Material* comp_mat = comp->getMaterial();
-			if (comp_mat == nullptr)
-			{
-				nap::Logger::warn("render able object has no material: %s", comp->getName().c_str());
-				continue;
-			}
-
-			// Get xform component
-			nap::Entity* parent_entity = comp->getParent();
-			assert(parent_entity != nullptr);
-			TransformComponent* xform_comp = parent_entity->getComponent<TransformComponent>();
-
-			// Make sure it exists and extract global matrix
-			if (xform_comp == nullptr)
-			{
-				nap::Logger::warn("render able object has no transform: %s", comp->getName().c_str());
-			}
-			const glm::mat4x4& global_matrix = xform_comp == nullptr ? identityMatrix : xform_comp->getGlobalTransform();
-
-			// Set uniform variables
-			comp_mat->setUniformValue<glm::mat4x4>(projectionMatrixUniform, projection_matrix);
-			comp_mat->setUniformValue<glm::mat4x4>(viewMatrixUniform, view_matrix);
-			comp_mat->setUniformValue<glm::mat4x4>(modelMatrixUniform, global_matrix);
-
-			// Draw
-			comp->draw();
-		}
+			comp->draw(view_matrix, projection_matrix);
 
 		renderTarget.unbind();
 	}
+
 
 	// Clears the render target.
 	void RenderService::clearRenderTarget(opengl::RenderTarget& renderTarget, opengl::EClearFlags flags)
@@ -292,13 +275,13 @@ namespace nap
 		renderTarget.unbind();
 	}
 
+
 	// Set the currently active renderer
-	void RenderService::setRenderer(const RTTI::TypeInfo& renderer)
+	bool RenderService::init(const rtti::TypeInfo& renderer, nap::utility::ErrorState& errorState)
 	{
-		if (!renderer.is_derived_from(RTTI_OF(nap::Renderer)))
+		if (!errorState.check(renderer.is_derived_from(RTTI_OF(nap::Renderer)), "unable to add: %s as renderer, object not of type: %s", renderer.get_name().data(), RTTI_OF(nap::Renderer).get_name().data()))
 		{
-			nap::Logger::warn(*this, "unable to add: %s as renderer, object not of type: %s", renderer.get_name().data(), RTTI_OF(nap::Renderer).get_name().data());
-			return;
+			return false;
 		}
 
 		// Shut down existing renderer
@@ -310,6 +293,33 @@ namespace nap
 		// Create new renderer
 		nap::Renderer* new_renderer = renderer.create<nap::Renderer>();
 		mRenderer.reset(new_renderer);
+
+		return true;
+	}
+
+
+	void RenderService::queueResourceForDestruction(std::unique_ptr<opengl::IGLContextResource> resource) 
+	{ 
+		if (resource != nullptr)
+			mGLContextResourcesToDestroy.emplace_back(std::move(resource)); 
+	}
+
+
+	void RenderService::destroyGLContextResources(std::vector<RenderWindowComponent*>& renderWindows)
+	{
+		// If there is anything scheduled, destroy
+		if (!mGLContextResourcesToDestroy.empty())
+		{
+			// We go over the windows to make the GL context active, and then destroy 
+			// the resources for that context
+			for (RenderWindowComponent* render_window : renderWindows)
+			{
+				render_window->makeActive();
+				for (auto& resource : mGLContextResourcesToDestroy)
+					resource->destroy(render_window->getWindow()->getContext());
+			}
+			mGLContextResourcesToDestroy.clear();
+		}
 	}
 
 

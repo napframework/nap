@@ -7,7 +7,7 @@
 #include <nap/attributeobject.h>
 #include <nap/signalslot.h>
 #include <rtti/rtti.h>
-#include "stringutils.h"
+#include "utility/stringutils.h"
 
 namespace nap
 {
@@ -35,7 +35,7 @@ namespace nap
 		template <typename T>
         T& addComponent(const std::string& name)
         {
-            auto type = RTTI::TypeInfo::get<T>();
+            auto type = rtti::TypeInfo::get<T>();
             assert(type.template is_derived_from<Component>());
             return addChild<T>(name);
         }
@@ -43,13 +43,13 @@ namespace nap
 		template <typename T>
         T& addComponent()
         {
-			RTTI::TypeInfo type = RTTI::TypeInfo::get<T>();
+			rtti::TypeInfo type = rtti::TypeInfo::get<T>();
             assert(type.is_derived_from<Component>());
             return addChild<T>(type.get_name().data());
         }
 
 		// Add a new component of @componentType
-        Component& addComponent(const RTTI::TypeInfo& componentType);
+        Component& addComponent(const rtti::TypeInfo& componentType);
 		// Add a component from somewhere else, forwarding parentship to this entity
         Component& addComponent(std::unique_ptr<Component> component);
 		// Remove a component from this entity
@@ -63,7 +63,7 @@ namespace nap
 		Component* getComponent(const std::string& name) { return getChild<Component>(name); }
 
 		// Returns the first component with the given type
-        Component* getComponentOfType(const RTTI::TypeInfo& componentType);
+        Component* getComponentOfType(const rtti::TypeInfo& componentType);
 		// Returns all registered components of this entity
         std::vector<Component*> getComponents() { return getChildrenOfType<Component>(); }
 
@@ -116,7 +116,7 @@ namespace nap
 
     template <typename T>
     bool Entity::hasComponent() const {
-        RTTI::TypeInfo type = RTTI::TypeInfo::get<T>();
+        rtti::TypeInfo type = rtti::TypeInfo::get<T>();
         assert(type.is_derived_from<Component>());
         return hasChildOfType<T>();
     }
@@ -124,7 +124,7 @@ namespace nap
     
     template <typename T>
     T* Entity::getComponent() {
-        RTTI::TypeInfo type = RTTI::TypeInfo::get<T>();
+        rtti::TypeInfo type = rtti::TypeInfo::get<T>();
         assert(type.is_derived_from<Component>());
         return getChildOfType<T>();
     }

@@ -7,7 +7,7 @@ namespace nap
 	void nap::PointerInputComponent::trigger(nap::InputEvent& inEvent)
 	{
 		// Make sure it's a pointer event
-		RTTI::TypeInfo event_type = inEvent.get_type().getRawType();
+		rtti::TypeInfo event_type = inEvent.get_type().getRawType();
 		if (!event_type.is_derived_from(RTTI_OF(PointerEvent)))
 		{
 			nap::Logger::warn("Received a non pointer event in a pointer input event handler!");
@@ -52,7 +52,7 @@ namespace nap
 	void KeyInputComponent::trigger(nap::InputEvent& inEvent)
 	{
 		// Make sure it's a pointer event
-		RTTI::TypeInfo event_type = inEvent.get_type().getRawType();
+		rtti::TypeInfo event_type = inEvent.get_type().getRawType();
 		if (!event_type.is_derived_from(RTTI_OF(KeyEvent)))
 		{
 			nap::Logger::warn("Received a non key event in a key input event handler!");

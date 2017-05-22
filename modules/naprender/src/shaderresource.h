@@ -20,7 +20,7 @@ namespace nap
 		/**
 		 * Creates and inits opengl shader.
 		 */
-		virtual bool init(InitResult& initResult);
+		virtual bool init(utility::ErrorState& errorState);
 
 		/**
 		 * Performs commit or rollback of changes made in init.
@@ -37,16 +37,16 @@ namespace nap
 		 */
 		opengl::Shader& getShader();
 
-		std::string					mVertPath;
-		std::string					mFragPath;
+		std::string							mVertPath;
+		std::string							mFragPath;
 
 	private:
 		// Path to shader on disk
-		std::string					mDisplayName;
+		std::string							mDisplayName;
 
 		// Shader that is managed by this resource
-		opengl::Shader*				mShader = nullptr;
-		opengl::Shader*				mPrevShader = nullptr;
+		std::unique_ptr<opengl::Shader>		mShader;
+		std::unique_ptr<opengl::Shader>		mPrevShader;
 	};
 
 }

@@ -12,6 +12,7 @@ add_subdirectory(SFML-2.3.2)
 endif()
 
 add_library(${PROJECT_NAME} SHARED ${sources})
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 target_link_libraries(${PROJECT_NAME} napcore sfml-graphics sfml-window sfml-system)

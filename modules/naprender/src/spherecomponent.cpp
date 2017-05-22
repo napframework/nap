@@ -1,5 +1,7 @@
 #include "spherecomponent.h"
 #include "math.h"
+#include "RenderableMeshResource.h"
+#include "meshresource.h"
 
 
 /**
@@ -85,31 +87,34 @@ static opengl::Mesh* createSphere(float radius, unsigned int rings, unsigned int
 		}
 	}
 
-	opengl::Mesh* sphere_mesh = new opengl::Mesh();
-	sphere_mesh->copyVertexData(vertex_count, &vertices.front());
-	sphere_mesh->copyNormalData(vertex_count, &normals.front());
-	sphere_mesh->copyUVData(3, vertex_count, &texcoords.front());
-	sphere_mesh->copyColorData(4, vertex_count, &colors.front());
-	sphere_mesh->copyIndexData(index_count, &indices.front());
+	opengl::Mesh* sphere_mesh = new opengl::Mesh(vertex_count, opengl::EDrawMode::TRIANGLES);
+	sphere_mesh->addVertexAttribute(opengl::Mesh::VertexAttributeIDs::PositionVertexAttr, 3, &vertices.front());
+	sphere_mesh->addVertexAttribute(opengl::Mesh::VertexAttributeIDs::NormalVertexAttr, 3, &normals.front());
+	sphere_mesh->addVertexAttribute(nap::utility::stringFormat("%s%d", opengl::Mesh::VertexAttributeIDs::UVVertexAttr.c_str(), 0), 3, &texcoords.front());
+	sphere_mesh->addVertexAttribute(nap::utility::stringFormat("%s%d", opengl::Mesh::VertexAttributeIDs::ColorVertexAttr.c_str(), 0), 4, &colors.front());
+	sphere_mesh->setIndices(index_count, &indices.front());
 	
 	return sphere_mesh;
 }
 
-
-// The shared sphere
-static std::unique_ptr<opengl::Mesh> sPhere = nullptr;
-
 namespace nap
 {
-	opengl::Mesh* SphereComponent::getMesh() const
+	SphereComponent::SphereComponent(Material& material, RenderService& renderService)
 	{
-		if (sPhere == nullptr)
-		{
-			sPhere.reset(createSphere(1.0f, 50, 50));
-		}
-		return sPhere.get();
-	}
+		utility::ErrorState error_state;
+		CustomMeshResource* mesh_resource = new CustomMeshResource();
+		mesh_resource->mCustomMesh.reset(createSphere(1.0f, 50, 50));
+		
+		bool success = mesh_resource->init(error_state);
+		assert(success);
 
+		mRenderableMeshResource = new RenderableMeshResource(renderService);
+		mRenderableMeshResource->mMaterialResource = &material;
+		mRenderableMeshResource->mMeshResource = mesh_resource;
+		
+		success = mRenderableMeshResource->init(error_state);
+		assert(success);
+	}
 }
 
 RTTI_DEFINE(nap::SphereComponent)

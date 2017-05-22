@@ -1,10 +1,13 @@
 #pragma once
 
 // Local Includes
-#include "meshcomponent.h"
+#include "RenderableMeshComponent.h"
 
 namespace nap
 {
+	class Material;
+	class RenderService;
+
 	/**
 	 * Highly efficient plane that holds a link to generic
 	 * plane mesh. Use this plane for quick drawing but
@@ -12,18 +15,12 @@ namespace nap
 	 * other plane components. TODO: It's better to introduce
 	 * a mesh resource and let the mesh component link to it
 	 */
-	class PlaneComponent : public MeshComponent
+	class PlaneComponent : public RenderableMeshComponent
 	{
-		RTTI_ENABLE(MeshComponent)
+		RTTI_ENABLE(RenderableMeshComponent)
 	public:
 		// Default constructor
 		PlaneComponent() = default;
-
-		/**
-		 * @return the plane mesh
-		 * Note that this mesh is shared between every instance
-		 * of the plane component
-		 */
-		virtual opengl::Mesh* getMesh() const override;  
+		PlaneComponent(Material& material, RenderService& renderService);
 	};
 }

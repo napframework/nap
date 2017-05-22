@@ -1,7 +1,6 @@
 #include <planecomponent.h>
-
-// The plane
-static std::unique_ptr<opengl::Mesh> sPlane = nullptr;
+#include "meshresource.h"
+#include "RenderableMeshResource.h"
 
 // All the plane vertices
 static float plane_vertices[] =
@@ -46,23 +45,37 @@ static unsigned int plane_indices[] =
 	0,3,2
 };
 
+static opengl::Mesh* createPlane()
+{
+	opengl::Mesh* plane_mesh = new opengl::Mesh(4, opengl::EDrawMode::TRIANGLES);
+	plane_mesh->addVertexAttribute(opengl::Mesh::VertexAttributeIDs::PositionVertexAttr, 3, plane_vertices);
+	plane_mesh->addVertexAttribute(opengl::Mesh::VertexAttributeIDs::NormalVertexAttr, 3, plane_normals);
+	plane_mesh->addVertexAttribute(nap::utility::stringFormat("%s%d", opengl::Mesh::VertexAttributeIDs::UVVertexAttr.c_str(), 0), 3, plane_uvs);
+	plane_mesh->addVertexAttribute(nap::utility::stringFormat("%s%d", opengl::Mesh::VertexAttributeIDs::ColorVertexAttr.c_str(), 0), 4, plane_colors);
+	plane_mesh->setIndices(6, plane_indices);
+
+	return plane_mesh;
+}
+
 //////////////////////////////////////////////////////////////////////////
 
 namespace nap
 {
-	opengl::Mesh* PlaneComponent::getMesh() const
+	PlaneComponent::PlaneComponent(Material& material, RenderService& renderService)
 	{
-		// TODO: Make Thread Safe
-		if (sPlane == nullptr)
-		{
-			sPlane = std::make_unique<opengl::Mesh>();
-			sPlane->copyVertexData(4, plane_vertices);
-			sPlane->copyNormalData(4, plane_normals);
-			sPlane->copyUVData(3, 4, plane_uvs);
-			sPlane->copyColorData(4, 4, plane_colors);
-			sPlane->copyIndexData(6, plane_indices);
-		}
-		return sPlane.get();
+		utility::ErrorState error_state;
+		CustomMeshResource* mesh_resource = new CustomMeshResource();
+		mesh_resource->mCustomMesh.reset(createPlane());
+
+		bool success = mesh_resource->init(error_state);
+		assert(success);
+
+		mRenderableMeshResource = new RenderableMeshResource(renderService);
+		mRenderableMeshResource->mMaterialResource = &material;
+		mRenderableMeshResource->mMeshResource = mesh_resource;
+
+		success = mRenderableMeshResource->init(error_state);
+		assert(success);
 	}
 };
 

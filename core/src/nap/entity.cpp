@@ -21,7 +21,7 @@ namespace nap
     
     
     // Add a new component of @componentType
-    Component& Entity::addComponent(const RTTI::TypeInfo& componentType)
+    Component& Entity::addComponent(const rtti::TypeInfo& componentType)
     {
         assert(componentType.is_derived_from<Component>());
         return *static_cast<Component*>(&addChild("", componentType));
@@ -41,7 +41,7 @@ namespace nap
     }
     
     
-    Component* Entity::getComponentOfType(const RTTI::TypeInfo& componentType)
+    Component* Entity::getComponentOfType(const rtti::TypeInfo& componentType)
     {
         return dynamic_cast<Component*>(getChildOfType(componentType));
     }

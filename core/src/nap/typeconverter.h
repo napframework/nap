@@ -15,22 +15,22 @@ namespace nap
 	class TypeConverterBase
 	{
 	public:
-		TypeConverterBase(RTTI::TypeInfo inType, RTTI::TypeInfo outType);
+		TypeConverterBase(rtti::TypeInfo inType, rtti::TypeInfo outType);
         virtual ~TypeConverterBase() = default;
 
 		// The type to convert from
-		const RTTI::TypeInfo inType() const { return mInType; }
+		const rtti::TypeInfo inType() const { return mInType; }
 
 		// The type to convert into
-		const RTTI::TypeInfo outType() const { return mOutType; }
+		const rtti::TypeInfo outType() const { return mOutType; }
 
 		// Here we can only convert values in an opaque container,
 		// derived types will expose specialized behavior
 		virtual bool convert(const AttributeBase* inAttrib, AttributeBase* outAttrib) const = 0;
 
 	protected:
-		const RTTI::TypeInfo mInType;
-		const RTTI::TypeInfo mOutType;
+		const rtti::TypeInfo mInType;
+		const rtti::TypeInfo mOutType;
 	};
 
     
@@ -51,7 +51,7 @@ namespace nap
         typedef bool(*ConvertFunction)(const I&, O&);
 
 		TypeConverter(ConvertFunction func)
-			: TypeConverterBase(RTTI::TypeInfo::get<I>(), RTTI::TypeInfo::get<O>()), convertFunction(func)
+			: TypeConverterBase(rtti::TypeInfo::get<I>(), rtti::TypeInfo::get<O>()), convertFunction(func)
 		{
 		}
 
@@ -86,7 +86,7 @@ namespace nap
     
 	class TypeConverterPassThrough : public TypeConverterBase {
 	public:
-		TypeConverterPassThrough() : TypeConverterBase(RTTI::TypeInfo::empty(), RTTI::TypeInfo::empty()) {}
+		TypeConverterPassThrough() : TypeConverterBase(rtti::TypeInfo::empty(), rtti::TypeInfo::empty()) {}
 
 		bool convert(const AttributeBase *inAttrib, AttributeBase *outAttrib) const override {
 			outAttrib->setValue(*inAttrib);

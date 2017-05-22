@@ -5,7 +5,7 @@
 #include "object.h"
 #include "service.h"
 #include "resource.h"
-#include "jsonreader.h"
+#include "rtti/jsonreader.h"
 #include <map>
 
 namespace nap
@@ -25,7 +25,7 @@ namespace nap
 		/**
 		* Helper that calls loadFile without additional modified objects. See loadFile comments for a full description.
 		*/
-		bool loadFile(const std::string& filename, nap::InitResult& initResult);
+		bool loadFile(const std::string& filename, utility::ErrorState& errorState);
 
 		/*
 		* Loads a json file containing objects. All objects are added to the manager. If objects already exist (which is checked by their ID), than the
@@ -42,9 +42,9 @@ namespace nap
 		*
 		* @param filename: json file containing objects.
 		* @param externalChangedFile: externally changed file that caused load of this file (like texture, shader etc)
-		* @param initResult: if the function returns false, contains error information.
+		* @param errorState: if the function returns false, contains error information.
 		*/
-		bool loadFile(const std::string& filename, const std::string& externalChangedFile, nap::InitResult& initResult);
+		bool loadFile(const std::string& filename, const std::string& externalChangedFile, utility::ErrorState& errorState);
 
 		/**
 		* Find a resource by object ID. Returns null if not found.
@@ -60,7 +60,7 @@ namespace nap
 		/**
 		* Creates a resource and adds it to the manager.
 		*/
-		Resource* createResource(const RTTI::TypeInfo& type);
+		Resource* createResource(const rtti::TypeInfo& type);
 
 		/**
 		* Creates a resource and adds it to the manager.
@@ -74,15 +74,20 @@ namespace nap
 		*/
 		void checkForFileChanges();
 
+		/**
+		* @return object capable of creating objects with custom construction parameters.
+		*/
+		rtti::Factory& getFactory();
+
 	private:
 		friend class ObjectRestorer;
 
-		using ClonedObjectMap = std::map<Object*, std::unique_ptr<Object>>;
-		using ExistingObjectMap = std::map<Object*, Object*>;
+		using ClonedObjectMap = std::map<RTTIObject*, std::unique_ptr<RTTIObject>>;
+		using ExistingObjectMap = std::map<RTTIObject*, RTTIObject*>;
 		
-		void splitFileObjects(OwnedObjectList& fileObjects, ExistingObjectMap& existingObjects, ObservedObjectList& newObjects);
-		bool determineObjectsToInit(const ExistingObjectMap& existingObjects, const ClonedObjectMap& clonedObjects, const ObservedObjectList& newObjects, const std::string& externalChangedFile, ObservedObjectList& objectsToInit, InitResult& initResult);
-		bool updateExistingObjects(const ExistingObjectMap& existingObjectMap, UnresolvedPointerList& unresolvedPointers, InitResult& initResult);
+		void splitFileObjects(rtti::OwnedObjectList& fileObjects, ExistingObjectMap& existingObjects, rtti::ObservedObjectList& newObjects);
+		bool determineObjectsToInit(const ExistingObjectMap& existingObjects, const ClonedObjectMap& clonedObjects, const rtti::ObservedObjectList& newObjects, const std::string& externalChangedFile, rtti::ObservedObjectList& objectsToInit, utility::ErrorState& errorState);
+		bool updateExistingObjects(const ExistingObjectMap& existingObjectMap, rtti::UnresolvedPointerList& unresolvedPointers, utility::ErrorState& errorState);
 		void addResource(const std::string& id, std::unique_ptr<Resource> resource);
 		void removeResource(const std::string& id);
 		void addFileLink(const std::string& sourceFile, const std::string& targetFile);
@@ -91,10 +96,10 @@ namespace nap
 		using ResourceMap = std::map<std::string, std::unique_ptr<Resource>>;
 		using FileLinkMap = std::map<std::string, std::vector<std::string>>; // Map from target file to multiple source files
 
-		ResourceMap					mResources;				// Holds all resources
-		std::set<std::string>		mFilesToWatch;			// Files currently loaded, used for watching changes on the files
-		FileLinkMap					mFileLinkMap;			// Map containing links from target to source file, for updating source files if the file monitor sees changes
-		DirectoryWatcher*			mDirectoryWatcher;		// File monitor, detects changes on files
+		ResourceMap							mResources;				// Holds all resources
+		std::set<std::string>				mFilesToWatch;			// Files currently loaded, used for watching changes on the files
+		FileLinkMap							mFileLinkMap;			// Map containing links from target to source file, for updating source files if the file monitor sees changes
+		std::unique_ptr<DirectoryWatcher>	mDirectoryWatcher;		// File monitor, detects changes on files
 	};
 
 }

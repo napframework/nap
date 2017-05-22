@@ -56,7 +56,7 @@ namespace nap
         Plug() : Object() {}
 
 		// Constructor
-		Plug(Operator* parent, const std::string& name, const RTTI::TypeInfo dataType);
+		Plug(Operator* parent, const std::string& name, const rtti::TypeInfo dataType);
 
         // Virtual destructor because of virtual methods!
 		virtual ~Plug() = default;
@@ -67,7 +67,7 @@ namespace nap
 
 		// This is the RTTI type info of the data type that is being sent or
 		// received by this plug
-		virtual const RTTI::TypeInfo getDataType() const = 0;
+		virtual const rtti::TypeInfo getDataType() const = 0;
 
 		// Returns operator owning this plug
 		Operator* getParent() const;
@@ -98,7 +98,7 @@ namespace nap
 
 		// Constructor takes a parent operator, a name, a type and an rtti data
 		// type
-		OutputPlugBase(Operator* parent, const std::string& name, const RTTI::TypeInfo dataType);
+		OutputPlugBase(Operator* parent, const std::string& name, const rtti::TypeInfo dataType);
         
         // Returns the plugs to which this plug is connected
         const std::set<InputPlugBase*> getConnections() const;
@@ -124,7 +124,7 @@ namespace nap
 
 		// Constructor takes a parent operator, a name, a type and an rtti data
 		// type
-		InputPlugBase(Operator* parent, const std::string& name, const RTTI::TypeInfo dataType);
+		InputPlugBase(Operator* parent, const std::string& name, const rtti::TypeInfo dataType);
 
 		// Destructor
 		virtual ~InputPlugBase();
@@ -168,7 +168,7 @@ namespace nap
 		using TriggerFunction = std::function<void(void)>;
 
 		InputTriggerPlug(Operator* parent, const std::string& name, TriggerFunction func, bool locking = false)
-			: InputPlugBase(parent, name, RTTI::TypeInfo::empty()), mTriggerFunction(func), mLocking(locking)
+			: InputPlugBase(parent, name, rtti::TypeInfo::empty()), mTriggerFunction(func), mLocking(locking)
 		{
             getParentObject()->addChild(mAttribute);
             mAttribute.setName(name + "Execute");
@@ -180,7 +180,7 @@ namespace nap
         // when new data enters the plug
         template <typename U, typename F>
         InputTriggerPlug(U* parent, F memberFunction, const std::string& name, bool locking = false)
-            : InputPlugBase(parent, name, RTTI::TypeInfo::empty()),
+            : InputPlugBase(parent, name, rtti::TypeInfo::empty()),
                 mTriggerFunction(std::bind(memberFunction, parent)), mLocking(locking)
         {
             getParentObject()->addChild(mAttribute);
@@ -192,7 +192,7 @@ namespace nap
         // Triggers the action associated with this plug
         void trigger();
 
-        const RTTI::TypeInfo getDataType() const override { return RTTI::TypeInfo::empty(); }
+        const rtti::TypeInfo getDataType() const override { return rtti::TypeInfo::empty(); }
 
         SignalAttribute& getAttribute() { return mAttribute; }
         
@@ -217,14 +217,14 @@ namespace nap
     public:
         // The constructor takes the name of the plug
         OutputTriggerPlug(Operator* parent, const std::string& name)
-        : OutputPlugBase(parent, name, RTTI::TypeInfo::empty())
+        : OutputPlugBase(parent, name, rtti::TypeInfo::empty())
         {
         }
 
         // The operator owning this plug can output through it using the trigger() method.
         void trigger();
 
-        const RTTI::TypeInfo getDataType() const override { return RTTI::TypeInfo::empty(); }
+        const rtti::TypeInfo getDataType() const override { return rtti::TypeInfo::empty(); }
 
     };
 
@@ -245,7 +245,7 @@ namespace nap
 		// executed when new data enters trough the
 		// plug
 		InputPushPlug(Operator* parent, const std::string& name, PushFunction pushFunction, bool locking = false)
-			: InputPlugBase(parent, name, RTTI::TypeInfo::get<T>()), pushFunction(pushFunction), mLocking(locking)
+			: InputPlugBase(parent, name, rtti::TypeInfo::get<T>()), pushFunction(pushFunction), mLocking(locking)
 		{
 		}
 
@@ -253,7 +253,7 @@ namespace nap
 		// when new data enters the plug
 		template <typename U, typename F>
 		InputPushPlug(U* parent, F memberFunction, const std::string& name, bool locking = false)
-			: InputPlugBase(parent, name, RTTI::TypeInfo::get<T>()),
+			: InputPlugBase(parent, name, rtti::TypeInfo::get<T>()),
 			  pushFunction(std::bind(memberFunction, parent, std::placeholders::_1)), mLocking(locking)
 		{
 		}
@@ -262,7 +262,7 @@ namespace nap
 		// attribute that will be controlled by this
 		// plug's input
 		InputPushPlug(Operator* parent, const std::string& name, Attribute<T>& attribute, bool locking = false)
-			: InputPlugBase(parent, name, RTTI::TypeInfo::get<T>()),
+			: InputPlugBase(parent, name, rtti::TypeInfo::get<T>()),
 			  pushFunction([&attribute](const T& value) { attribute.setValue(value); }), mLocking(locking)
 		{
 		}
@@ -277,7 +277,7 @@ namespace nap
 		// Push data into the plug
         void push(const T& value);
 
-        const RTTI::TypeInfo getDataType() const override { return RTTI::TypeInfo::get<T>(); }
+        const rtti::TypeInfo getDataType() const override { return rtti::TypeInfo::get<T>(); }
     private:
 		// User function that is executed when data is pushed into the plug
 		PushFunction pushFunction = nullptr;
@@ -301,7 +301,7 @@ namespace nap
 	public:
 		// The constructor takes the name of the plug
 		OutputPushPlug(Operator* parent, const std::string& name)
-			: OutputPlugBase(parent, name, RTTI::TypeInfo::get<T>())
+			: OutputPlugBase(parent, name, rtti::TypeInfo::get<T>())
 		{
 		}
         
@@ -310,7 +310,7 @@ namespace nap
         // value changes will be sent through this
         // plug
         OutputPushPlug(Operator* parent, const std::string& name, Attribute<T>& attribute)
-        : OutputPlugBase(parent, name, RTTI::TypeInfo::get<T>()),
+        : OutputPlugBase(parent, name, rtti::TypeInfo::get<T>()),
         attributeSlot(std::make_unique<Slot<const AttributeBase&>>([&](const AttributeBase& attr) { push(attr.getValue<T>()); }))
         {
             attribute.valueChanged.connect(*attributeSlot);
@@ -321,7 +321,7 @@ namespace nap
 		// push() method.
 		void push(const T& output);
 
-        const RTTI::TypeInfo getDataType() const override { return RTTI::TypeInfo::get<T>(); }
+        const rtti::TypeInfo getDataType() const override { return rtti::TypeInfo::get<T>(); }
 
     private:
 		// This slot is used to listen to changes in an attached attribute so
@@ -349,7 +349,7 @@ namespace nap
 
 		// The constructor takes the name of the plug
 		InputPullPlug(Operator* parent, const std::string& name)
-			: InputPlugBase(parent, name, RTTI::TypeInfo::get<T>())
+			: InputPlugBase(parent, name, rtti::TypeInfo::get<T>())
 		{
             getParentObject()->addChild(mAttribute);
             mAttribute.setName(name + "Value");
@@ -358,7 +358,7 @@ namespace nap
         
         // The constructor takes the name of the plug and a default value for it's attribute
         InputPullPlug(Operator* parent, const std::string& name, const T& defaultValue)
-        : InputPlugBase(parent, name, RTTI::TypeInfo::get<T>())
+        : InputPlugBase(parent, name, rtti::TypeInfo::get<T>())
         {
             mAttribute.setValue(defaultValue);
             getParentObject()->addChild(mAttribute);
@@ -371,7 +371,7 @@ namespace nap
 		// data will be stored in the input parameter.
 		void pull(T& input);
 
-        const RTTI::TypeInfo getDataType() const override { return RTTI::TypeInfo::get<T>(); }
+        const rtti::TypeInfo getDataType() const override { return rtti::TypeInfo::get<T>(); }
         
         Attribute<T>& getAttribute() { return mAttribute; }
         
@@ -407,13 +407,13 @@ namespace nap
 
         // Constructor takes the name of the plug and the pull function that is executed when the plug is polled.
         OutputPullPlug(Operator* parent, const std::string& name)
-                : OutputPlugBase(parent, name, RTTI::TypeInfo::get<T>())
+                : OutputPlugBase(parent, name, rtti::TypeInfo::get<T>())
         {
         }
 
         // Constructor takes the name of the plug and the pull function that is executed when the plug is polled.
 		OutputPullPlug(Operator* parent, const std::string& name, PullFunction pullFunction, bool locking = false)
-			: OutputPlugBase(parent, name, RTTI::TypeInfo::get<T>()), pullFunction(pullFunction), mLocking(locking)
+			: OutputPlugBase(parent, name, rtti::TypeInfo::get<T>()), pullFunction(pullFunction), mLocking(locking)
 		{
 		}
         
@@ -421,7 +421,7 @@ namespace nap
         // when new data enters the plug
         template <typename U, typename F>
         OutputPullPlug(U* parent, F memberFunction, const std::string& name, bool locking = false)
-            : OutputPlugBase(parent, name, RTTI::TypeInfo::get<T>()),
+            : OutputPlugBase(parent, name, rtti::TypeInfo::get<T>()),
               pullFunction(std::bind(memberFunction, parent, std::placeholders::_1)), mLocking(locking)
         {
         }
@@ -429,7 +429,7 @@ namespace nap
 		// This function is called by connected input pull plugs to poll for output. It calls the user defined pull funciton.
         void pull(T& output);
 
-        const RTTI::TypeInfo getDataType() const override { return RTTI::TypeInfo::get<T>(); }
+        const rtti::TypeInfo getDataType() const override { return rtti::TypeInfo::get<T>(); }
 
     private:
 		PullFunction pullFunction;
@@ -449,7 +449,7 @@ namespace nap
 		// and disconnect lambda to implement
 		// (dis)connection of the data source
 		InputStreamPlug(Operator* parent, const std::string& name)
-			: InputPlugBase(parent, name, RTTI::TypeInfo::get<T>())
+			: InputPlugBase(parent, name, rtti::TypeInfo::get<T>())
 		{
 		}
 
@@ -486,7 +486,7 @@ namespace nap
 		// source that will be passed to an input
 		// plug on connection
 		OutputStreamPlug(Operator* parent, const std::string& name, T* source)
-			: OutputPlugBase(parent, name, RTTI::TypeInfo::get<T>()), source(source)
+			: OutputPlugBase(parent, name, rtti::TypeInfo::get<T>()), source(source)
 		{
 		}
 

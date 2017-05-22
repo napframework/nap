@@ -54,12 +54,18 @@ get_filename_component(PROJECTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/.. ABSOLUTE)
 
 # library targets
 add_subdirectory(core)
+add_subdirectory(utility)
+add_subdirectory(rtti)
 add_subdirectory(coreapp)
+
+# tools targets
+add_subdirectory(tools/fbxconverter)
 
 # executable targets
 add_subdirectory(test/unittest)
 add_subdirectory(test/scriptserver)
 add_subdirectory(test/render)
+add_subdirectory(test/serializationtest)
 
 # Modules
 add_subdirectory(modules/napfsm)

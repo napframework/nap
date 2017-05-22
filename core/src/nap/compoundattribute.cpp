@@ -93,7 +93,7 @@ namespace nap {
     }
     
     
-    ResourceLinkAttribute& CompoundAttribute::addResourceLinkAttribute(const std::string& name, const RTTI::TypeInfo& type)
+    ResourceLinkAttribute& CompoundAttribute::addResourceLinkAttribute(const std::string& name, const rtti::TypeInfo& type)
     {
         ResourceLinkAttribute& link_attr = addChild<ResourceLinkAttribute>(name);
         link_attr.setResourceType(type);
@@ -101,7 +101,7 @@ namespace nap {
     }
     
     
-    AttributeBase* CompoundAttribute::addAttribute(const std::string& name, const RTTI::TypeInfo& attributeType)
+    AttributeBase* CompoundAttribute::addAttribute(const std::string& name, const rtti::TypeInfo& attributeType)
     {
         if (!attributeType.is_derived_from(RTTI_OF(nap::AttributeBase)))
         {

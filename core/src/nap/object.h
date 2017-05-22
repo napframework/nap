@@ -9,6 +9,7 @@
 #include <memory>
 #include <mutex>
 #include <rtti/rtti.h>
+#include <rtti/rttiobject.h>
 #include <unordered_map>
 
 namespace nap
@@ -29,9 +30,10 @@ namespace nap
 	 * Instantiation should never be done "manually" but through the addChild methods. An object should always have a
 	 * parent (except for the "world's" root Object, which belongs to Core)
 	 */
-	class Object
+	class Object : public rtti::RTTIObject
 	{
-		RTTI_ENABLE()
+		RTTI_ENABLE(rtti::RTTIObject)
+
 	public:
 		// Construction / Destruction
 		Object() = default;
@@ -81,7 +83,7 @@ namespace nap
 		template <typename T>
 		T& addChild(const std::string& name)
 		{
-			return static_cast<T&>(addChild(name, RTTI::TypeInfo::get<T>()));
+			return static_cast<T&>(addChild(name, rtti::TypeInfo::get<T>()));
 		}
 
         /**
@@ -91,7 +93,7 @@ namespace nap
          * @param type The type of the newly created Object
          * @return The newly created Object
          */
-		Object& addChild(const std::string& name, const RTTI::TypeInfo& type);
+		Object& addChild(const std::string& name, const rtti::TypeInfo& type);
 
 		/**
 		 * Given the provided type, create and add a child Object of the provided type. A default name will be given to the object.
@@ -99,7 +101,7 @@ namespace nap
 		 * @param type The type of the newly created Object
 		 * @return The newly created Object
 		 */
-		Object& addChild(const RTTI::TypeInfo& type);
+		Object& addChild(const rtti::TypeInfo& type);
 
 		/**
 		 * Add the provided child and require ownership transfer.
@@ -165,7 +167,7 @@ namespace nap
 		 * Remove all children of a specific type.
 		 * @param type The type of children to be removed
 		 */
-		void clearChildren(const RTTI::TypeInfo& type);
+		void clearChildren(const rtti::TypeInfo& type);
 
 		/**
 		 * Remove all children of a specific type T
@@ -233,7 +235,7 @@ namespace nap
          * @param recursive If true, include all children of the children etc as well.
          * @return A new vector containing the retrieved children
          */
-		std::vector<Object*> getChildrenOfType(const RTTI::TypeInfo& type, bool recursive = false)
+		std::vector<Object*> getChildrenOfType(const rtti::TypeInfo& type, bool recursive = false)
 		{
 			std::vector<Object*> result;
 			for (const auto obj : getChildren(recursive))
@@ -256,7 +258,7 @@ namespace nap
 		}
 
 		// Get the first child with type @type
-		Object* getChildOfType(const RTTI::TypeInfo& type);
+		Object* getChildOfType(const rtti::TypeInfo& type);
 
 		// Get child by name, returns nullptr if none found
 		template <typename T>
@@ -351,8 +353,5 @@ namespace nap
 		// This object's parent
 		Object* mParent = nullptr;
 		int mFlags = Visible | Editable | Removable;
-
-	public:
-		std::string mID;
 	};
 }

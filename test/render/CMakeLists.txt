@@ -17,6 +17,8 @@ source_group("shaders" FILES ${SHADERS})
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS})
 set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Test)
+add_dependencies(${PROJECT_NAME} fbxconverter)
 
 target_link_libraries(${PROJECT_NAME} napcore mod_naprender nrender mod_napmath)
 
@@ -33,5 +35,6 @@ if (WIN32)
 endif()
 
 # create post build event
+export_fbx(${CMAKE_CURRENT_LIST_DIR}/data)
 copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/data data)
 copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/shaders shaders)

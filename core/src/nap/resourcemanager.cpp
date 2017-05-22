@@ -1,24 +1,26 @@
 #include "resourcemanager.h"
-#include "rttiutilities.h"
+#include "rtti/rttiutilities.h"
 #include "directorywatcher.h"
-#include "jsonreader.h"
-
+#include "rtti/jsonreader.h"
+#include "rtti/factory.h"
+#include "nap/core.h"
 
 RTTI_DEFINE(nap::ResourceManagerService)
 
 namespace nap
 {
+	using namespace rtti;
 
 	/**
 	* Helper to find index into unresolved pointer array.
 	*/
-	static int findUnresolvedPointer(UnresolvedPointerList& unresolvedPointers, Object* object, const RTTI::Property& property)
+	static int findUnresolvedPointer(UnresolvedPointerList& unresolvedPointers, RTTIObject* object, const rtti::RTTIPath& path)
 	{
 		for (int index = 0; index < unresolvedPointers.size(); ++index)
 		{
 			UnresolvedPointer& unresolved_pointer = unresolvedPointers[index];
 			if (unresolved_pointer.mObject == object &&
-				unresolved_pointer.mProperty == property)
+				unresolved_pointer.mRTTIPath == path)
 			{
 				return index;
 			}
@@ -61,7 +63,7 @@ namespace nap
 		struct Node
 		{
 			int					mDepth = -1;			// Depth of the node is calculated during build, it represents at what level from the root this node is.
-			Object*				mObject = nullptr;		// If this is an Object node, set to the Object, otherwise null.
+			RTTIObject*			mObject = nullptr;		// If this is an Object node, set to the Object, otherwise null.
 			std::string			mFile;					// If this is a file node, set to the filename, otherwise empty.
 			std::vector<Edge*>	mIncomingEdges;			// List of incoming edges
 			std::vector<Edge*>	mOutgoingEdges;			// List of outgoing edges
@@ -71,32 +73,34 @@ namespace nap
 		/*
 		* Builds the object graph. If building fails, return false. 
 		* @param objectList : list of objects to build the graph from.
-		* @param initResult: if false is returned, contains error information.
+		* @param errorState: if false is returned, contains error information.
 		*/
-		bool Build(const ObservedObjectList& objectList, InitResult& initResult)
+		bool Build(const ObservedObjectList& objectList, utility::ErrorState& errorState)
 		{
-			using ObjectMap = std::map<std::string, Object*>;
+			using ObjectMap = std::map<std::string, RTTIObject*>;
 			ObjectMap object_map;
 
 			// Build map from ID => object
-			for (Object* object : objectList)
+			for (RTTIObject* object : objectList)
 			{
 				object_map.insert({ object->mID, object });
 			}
 
 			// Scan all objects for rtti links and build data structure
-			for (Object* object : objectList)
+			for (RTTIObject* object : objectList)
 			{
 				Node* source_node = GetOrCreateObjectNode(*object);
 
 				// Process pointers to other objects
-				std::vector<Object*> object_links;
-				RTTI::findObjectLinks(*object, object_links);
+				std::vector<rtti::ObjectLink> object_links;
+				rtti::findObjectLinks(*object, object_links);
 
-				for (Object* object : object_links)
+				for (const rtti::ObjectLink& link : object_links)
 				{
-					ObjectMap::iterator dest_object = object_map.find(object->mID);
-					if (!initResult.check(dest_object != object_map.end(), "Object %s is pointing to an object that is not in the objectlist!", object->mID.c_str()))
+					RTTIObject* linked_object = link.mTarget;
+
+					ObjectMap::iterator dest_object = object_map.find(linked_object->mID);
+					if (!errorState.check(dest_object != object_map.end(), "Object %s is pointing to an object that is not in the objectlist!", linked_object->mID.c_str()))
 						return false;
 
 					Edge* edge = new Edge();
@@ -110,7 +114,7 @@ namespace nap
 			
 				// Process pointers to files
 				std::vector<std::string> file_links;
-				RTTI::findFileLinks(*object, file_links);
+				rtti::findFileLinks(*object, file_links);
 
 				for (std::string& filename : file_links)
 				{
@@ -190,7 +194,7 @@ namespace nap
 		/**
 		* Creates a node of the 'object node' type.
 		*/
-		Node* GetOrCreateObjectNode(Object& object)
+		Node* GetOrCreateObjectNode(RTTIObject& object)
 		{
 			Node* result = nullptr;
 			NodeMap::iterator iter = mNodes.find(object.mID);
@@ -281,9 +285,9 @@ namespace nap
 			// Make backups of all existing objects by cloning them
 			for (auto kvp : mExistingObjects)
 			{
-				Object* source = kvp.first;			// file object
-				Object* target = kvp.second;		// object in ResourceMgr
-				std::unique_ptr<Object> copy = std::move(RTTI::cloneObject(*target));
+				RTTIObject* source = kvp.first;			// file object
+				RTTIObject* target = kvp.second;		// object in ResourceMgr
+				std::unique_ptr<RTTIObject> copy = std::move(rtti::cloneObject(*target));
                 mClonedObjects[source] = std::move(copy); // Mapping from 'read object' to backup of file in ResourceMgr
 			}
 		}
@@ -296,13 +300,13 @@ namespace nap
 				// Copy attributes from clones back to the original objects
 				for (auto kvp : mExistingObjects)
 				{
-					Object* source = kvp.first;
-					Object* target = kvp.second;
+					RTTIObject* source = kvp.first;
+					RTTIObject* target = kvp.second;
 
 					ResourceManagerService::ClonedObjectMap::const_iterator clone = mClonedObjects.find(source);
 					assert(clone != mClonedObjects.end());
 
-					RTTI::copyObject(*(clone->second), *target);
+					rtti::copyObject(*(clone->second), *target);
 				}
 
 				// Remove objects from resource manager if they were added
@@ -351,15 +355,14 @@ namespace nap
 
 
 	ResourceManagerService::ResourceManagerService() :
-		mDirectoryWatcher(new DirectoryWatcher())
-	{
-	}
+		mDirectoryWatcher(std::make_unique<DirectoryWatcher>())
+	{ }
 
 
 	/**
 	* Copies rtti attributes from File object to object existing in the manager. Patches the unresolved pointer list so the it contains the correct object.
 	*/
-	bool ResourceManagerService::updateExistingObjects(const ExistingObjectMap& existingObjectMap, UnresolvedPointerList& unresolvedPointers, InitResult& initResult)
+	bool ResourceManagerService::updateExistingObjects(const ExistingObjectMap& existingObjectMap, UnresolvedPointerList& unresolvedPointers, utility::ErrorState& errorState)
 	{
 		for (auto kvp : existingObjectMap)
 		{
@@ -370,21 +373,28 @@ namespace nap
 			Resource* existing_resource = rtti_cast<Resource>(kvp.second);
 			assert(existing_resource != nullptr);
 
-			if (!initResult.check(existing_resource->get_type() == resource->get_type(), "Unable to update object, different types"))		// todo: actually support this properly
+			if (!errorState.check(existing_resource->get_type() == resource->get_type(), "Unable to update object, different types"))		// todo: actually support this properly
 				return false;
 
-			for (const RTTI::Property& property : resource->get_type().get_properties())
+			// Find all links from the resource
+			std::vector<rtti::ObjectLink> links;
+			rtti::findObjectLinks(*resource, links);
+
+			// We need to update the UnresolvedPointers to by unresolved against the object from the manager, instead of the object from the file
+			for (const rtti::ObjectLink& link : links)
 			{
-				if (property.get_type().is_pointer())
+				// Patch the mObject member: it should not use the File object anymore, but the object from the manager
+				int unresolved_pointer_index = findUnresolvedPointer(unresolvedPointers, resource, link.mSourcePath);
+				assert(unresolved_pointer_index != -1);
+				unresolvedPointers[unresolved_pointer_index].mObject = existing_resource;
+			}
+
+			// Copy regular properties
+			for (const rtti::Property& property : resource->get_type().get_properties())
+			{
+				if (!property.get_type().is_pointer())
 				{
-					// Patch the mObject member: it should not use the File object anymore, but the object from the manager
-					int unresolved_pointer_index = findUnresolvedPointer(unresolvedPointers, resource, property);
-					assert(unresolved_pointer_index != -1);
-					unresolvedPointers[unresolved_pointer_index].mObject = existing_resource;
-				}
-				else
-				{
-					RTTI::Variant new_value = property.get_value(*resource);
+					rtti::Variant new_value = property.get_value(*resource);
 					property.set_value(existing_resource, new_value);
 				}
 			}
@@ -399,7 +409,7 @@ namespace nap
 	* the object graph to find the minimum set of objects that requires an init. Finally, the list of objects is sorted on object graph depth so that the init() order
 	* is correct.
 	*/
-	bool ResourceManagerService::determineObjectsToInit(const ExistingObjectMap& existingObjects, const ClonedObjectMap& clonedObjects, const ObservedObjectList& newObjects, const std::string& externalChangedFile, ObservedObjectList& objectsToInit, InitResult& initResult)
+	bool ResourceManagerService::determineObjectsToInit(const ExistingObjectMap& existingObjects, const ClonedObjectMap& clonedObjects, const ObservedObjectList& newObjects, const std::string& externalChangedFile, ObservedObjectList& objectsToInit, utility::ErrorState& errorState)
 	{
 		// Build an object graph of all objects in the ResourceMgr
 		ObservedObjectList all_objects;
@@ -407,7 +417,7 @@ namespace nap
 			all_objects.push_back(kvp.second.get());
 
 		ObjectGraph object_graph;
-		if (!object_graph.Build(all_objects, initResult))
+		if (!object_graph.Build(all_objects, errorState))
 			return false;
 
 		// Build set of changed IDs. These are objects that have different attributes, and objects that are added.
@@ -418,12 +428,12 @@ namespace nap
 			ExistingObjectMap::const_iterator existing_object = existingObjects.find(kvp.first);
 			assert(existing_object != existingObjects.end());
 
-			if (!RTTI::areObjectsEqual(*existing_object->second, *kvp.second.get()))
+			if (!rtti::areObjectsEqual(*existing_object->second, *kvp.second.get()))
 				dirty_nodes.insert(kvp.first->mID);
 		}
 
 		// All new objects need an init
-		for (Object* new_object : newObjects)
+		for (RTTIObject* new_object : newObjects)
 			dirty_nodes.insert(new_object->mID);
 
 		// Add externally changed file that caused load of this json file
@@ -484,9 +494,9 @@ namespace nap
 	}
 
 
-	bool ResourceManagerService::loadFile(const std::string& filename, nap::InitResult& initResult)
+	bool ResourceManagerService::loadFile(const std::string& filename, utility::ErrorState& errorState)
 	{
-		return loadFile(filename, std::string(), initResult);
+		return loadFile(filename, std::string(), errorState);
 	}
 
 
@@ -501,14 +511,14 @@ namespace nap
 	* When a rollback occurs, any newly added objects are removed from the manager, effectively deleting them.
 	* Other maps/list like existing/new are merely observers into the file objects and manager objects.
 	*/
-	bool ResourceManagerService::loadFile(const std::string& filename, const std::string& externalChangedFile, nap::InitResult& initResult)
+	bool ResourceManagerService::loadFile(const std::string& filename, const std::string& externalChangedFile, utility::ErrorState& errorState)
 	{
 		// ExternalChangedFile should only be used if it's different from the file being reloaded
 		assert(toComparableFilename(filename) != toComparableFilename(externalChangedFile));
 
 		// Read objects from disk
-		ReadJSONFileResult read_result;
-		if (!readJSONFile(filename, read_result, initResult))
+		RTTIDeserializeResult read_result;
+		if (!readJSONFile(filename, getFactory(), read_result, errorState))
 			return false;
 
 		ExistingObjectMap existing_objects;			// Mapping from 'file object' to 'existing object in ResourceMgr'. This is an observer relationship.
@@ -522,7 +532,7 @@ namespace nap
 		ObjectRestorer object_restorer(*this, existing_objects, new_objects);
 
 		// Update attributes of objects already existing in ResourceMgr
-		if (!updateExistingObjects(existing_objects, read_result.mUnresolvedPointers, initResult))
+		if (!updateExistingObjects(existing_objects, read_result.mUnresolvedPointers, errorState))
 			return false;
 
 		// Add objects that were not yet present in ResourceMgr
@@ -551,23 +561,34 @@ namespace nap
 				continue;
 
 			Resource* target_resource = findResource(unresolved_pointer.mTargetID);
-			if (!initResult.check(target_resource != nullptr, "Unable to resolve link to object %s from attribute %s", unresolved_pointer.mTargetID.c_str(), unresolved_pointer.mProperty.get_name().data()))
+			if (!errorState.check(target_resource != nullptr, "Unable to resolve link to object %s from attribute %s", unresolved_pointer.mTargetID.c_str(), unresolved_pointer.mRTTIPath.toString().c_str()))
 				return false;
 
- 			bool succeeded = unresolved_pointer.mProperty.set_value(unresolved_pointer.mObject, target_resource);
- 			if (!initResult.check(succeeded, "Failed to resolve pointer"))
+			rtti::ResolvedRTTIPath resolved_path;
+			if (!errorState.check(unresolved_pointer.mRTTIPath.resolve(unresolved_pointer.mObject, resolved_path), "Failed to resolve RTTIPath %s", unresolved_pointer.mRTTIPath.toString().c_str()))
+				return false;
+
+			if (!errorState.check(target_resource->get_type().is_derived_from(resolved_path.getType()), "Failed to resolve pointer: target of pointer {%s}:%s is of the wrong type (found '%s', expected '%s')",
+									unresolved_pointer.mObject->mID.c_str(), unresolved_pointer.mRTTIPath.toString().c_str(), target_resource->get_type().get_name().data(), resolved_path.getType().get_raw_type().get_name().data()))
+			{
+				return false;
+			}				
+
+			assert(resolved_path.getType().is_pointer());
+			bool succeeded = resolved_path.setValue(target_resource);
+ 			if (!errorState.check(succeeded, "Failed to resolve pointer"))
 				return false;
 		}
 
 		// Find out what objects to init and in what order to init them
 		ObservedObjectList objects_to_init;
-		if (!determineObjectsToInit(existing_objects, object_restorer.getClonedObjects(), new_objects, externalChangedFile, objects_to_init, initResult))
+		if (!determineObjectsToInit(existing_objects, object_restorer.getClonedObjects(), new_objects, externalChangedFile, objects_to_init, errorState))
 			return false;
 		
 		// Init all objects in the correct order
 		std::vector<Resource*> initted_objects;
 		bool init_success = true;
-		for (Object* object : objects_to_init)
+		for (RTTIObject* object : objects_to_init)
 		{
 			nap::Resource* resource = rtti_cast<Resource>(object);
 			if (resource == nullptr)
@@ -575,7 +596,7 @@ namespace nap
 
 			initted_objects.push_back(resource);
 
-			if (!resource->init(initResult))
+			if (!resource->init(errorState))
 			{
 				init_success = false;
 				break;
@@ -640,16 +661,22 @@ namespace nap
 
 					for (const std::string& source_file : files_to_reload)
 					{
-						nap::InitResult initResult;
-						if (!loadFile(source_file, source_file == modified_file ? std::string() : modified_file, initResult))
+						utility::ErrorState errorState;
+						if (!loadFile(source_file, source_file == modified_file ? std::string() : modified_file, errorState))
 						{
-							nap::Logger::warn("Failed to reload %s: %s. See log for more information.", source_file.c_str(), initResult.mErrorString.c_str());
+							nap::Logger::warn("Failed to reload %s:\n %s. \n\n See log for more information.", source_file.c_str(), errorState.toString().c_str());
 							break;
 						}
 					}
 				}
 			}
 		}
+	}
+
+
+	nap::rtti::Factory& ResourceManagerService::getFactory()
+	{
+		return getCore().getFactory();
 	}
 
 
@@ -698,7 +725,7 @@ namespace nap
 	}
 
 
-	Resource* ResourceManagerService::createResource(const RTTI::TypeInfo& type)
+	Resource* ResourceManagerService::createResource(const rtti::TypeInfo& type)
 	{
 		if (!type.is_derived_from(RTTI_OF(Resource)))
 		{
@@ -713,17 +740,17 @@ namespace nap
 		}
 
 		// Create instance of resource
-		Resource* resource = type.create<Resource>();
+		Resource* resource = rtti_cast<Resource>(getFactory().create(type));
 
 		// Construct path
 		std::string type_name = type.get_name().data();
-		std::string reso_path = stringFormat("resource::%s", type_name.c_str());
+		std::string reso_path = utility::stringFormat("resource::%s", type_name.c_str());
 		std::string reso_unique_path = reso_path;
 		int idx = 0;
 		while (mResources.find(reso_unique_path) != mResources.end())
 		{
 			++idx;
-			reso_unique_path = stringFormat("%s_%d", reso_path.c_str(), idx);
+			reso_unique_path = utility::stringFormat("%s_%d", reso_path.c_str(), idx);
 		}
 
 		resource->mID = reso_unique_path;
