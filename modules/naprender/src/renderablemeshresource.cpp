@@ -1,6 +1,6 @@
 // Local Includes
-#include "RenderableMeshResource.h"
-#include "RenderService.h"
+#include "renderablemeshresource.h"
+#include "renderservice.h"
 
 // External Includes
 #include <nap/logger.h>
