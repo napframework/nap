@@ -1,6 +1,6 @@
 #include "objectpath.h"
 #include "patch.h"
-#include "stringutils.h"
+#include "utility/stringutils.h"
 #include "logger.h"
 
 #define DELIMITER "/"
@@ -46,7 +46,7 @@ namespace nap
 		if (mAbsolutePath == DELIMITER) return root.getRootObject();
 
 		std::list<std::string> tokens;
-		gTokenize(mAbsolutePath, tokens, DELIMITER);
+		utility::gTokenize(mAbsolutePath, tokens, DELIMITER);
 
 		nap::Object* currentNode = root.getRootObject();
 

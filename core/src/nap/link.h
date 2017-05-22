@@ -19,7 +19,7 @@ namespace nap
 	public:
 		// Constructor
 		Link(Object& parent);
-		Link(Object& parent, const RTTI::TypeInfo&  type);
+		Link(Object& parent, const rtti::TypeInfo&  type);
 		Link() : Object() {}
 
 		/**
@@ -61,7 +61,7 @@ namespace nap
 		 * @return object type of the link
 		 * only objects derived from the target type are eligible as link targets
 		 */
-		RTTI::TypeInfo getType()								{ return mTargetType; }
+		rtti::TypeInfo getType()								{ return mTargetType; }
 
 		/**
 		 * @return true if the link points to an object or a link path is specified
@@ -77,12 +77,12 @@ namespace nap
 		 * specifies the object target type to link to
 		 * @param info the type information of the object this link points to
 		 */
-		void setTargetType(RTTI::TypeInfo info)					{ mTargetType = info; }
+		void setTargetType(rtti::TypeInfo info)					{ mTargetType = info; }
 
 		/**
 		 * @return the type of the object this link is allowed to point to
 		 */
-		RTTI::TypeInfo getTargetType() const					{ return mTargetType; }
+		rtti::TypeInfo getTargetType() const					{ return mTargetType; }
 
 		/**
 		 * emitted when the target object of the link changes
@@ -91,7 +91,7 @@ namespace nap
 
 	protected:
 		// the link target type
-		RTTI::TypeInfo mTargetType = RTTI::TypeInfo::empty();
+		rtti::TypeInfo mTargetType = rtti::TypeInfo::empty();
 
 	private:
 		/**

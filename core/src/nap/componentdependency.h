@@ -57,7 +57,7 @@ namespace nap
 		mParentComponent = localComponent;
 		mRequired = required;
 		assert(localComponent);
-		RTTI::TypeInfo type = RTTI_OF(T);
+		rtti::TypeInfo type = RTTI_OF(T);
 		assert(type.is_derived_from<Component>());
 
 		localComponent->added.connect([=](Object& parent)

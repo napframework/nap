@@ -38,13 +38,13 @@ namespace nap
 		template <typename T>
 		T& addOperator(const std::string& name)
 		{
-            auto type = RTTI::TypeInfo::get<T>();
+            auto type = rtti::TypeInfo::get<T>();
             assert(type.template is_derived_from<Operator>());
             return addChild<T>(name);
 		}
 
 		// Factory, create an operator based on typeinfo or
-		Operator& addOperator(RTTI::TypeInfo type)
+		Operator& addOperator(rtti::TypeInfo type)
 		{
             assert(type.is_derived_from<Operator>());
             return static_cast<Operator&>(addChild(type));

@@ -70,7 +70,7 @@ namespace nap
 	void Service::removeObject(Object& object)
 	{
 		// Find component container
-		RTTI::TypeInfo info = object.get_type().get_raw_type();
+		rtti::TypeInfo info = object.get_type().get_raw_type();
 		std::string name = info.get_name().data();
 
 		auto it = mObjects.find(info);
@@ -113,11 +113,11 @@ namespace nap
 	Note that this function is fast, it uses the RTTI Map to figure out if components registered with the service are of type @inType
 	It returns the total amount of compatible components + a list of components lists vector<vector<Component*>>
 	**/
-	size_t Service::getTypeFilteredObjects(const RTTI::TypeInfo& inInfo, std::vector<ObjectList*>& outObjects)
+	size_t Service::getTypeFilteredObjects(const rtti::TypeInfo& inInfo, std::vector<ObjectList*>& outObjects)
 	{
 		// Get raw compare type
 		outObjects.clear();
-		RTTI::TypeInfo search_type = inInfo.get_raw_type();
+		rtti::TypeInfo search_type = inInfo.get_raw_type();
 		if (!search_type.is_derived_from<nap::Object>())
 		{
 			Logger::warn("not of type: %s", search_type.get_name().data());
@@ -141,7 +141,7 @@ namespace nap
 	/**
 	@brief Get all components associated with RTTI inTypeInfo
 	**/
-	void Service::getObjects(const RTTI::TypeInfo& inTypeInfo, std::vector<Object*> outObjects)
+	void Service::getObjects(const rtti::TypeInfo& inTypeInfo, std::vector<Object*> outObjects)
 	{
 		// Clear
 		outObjects.clear();

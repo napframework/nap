@@ -91,9 +91,12 @@ namespace nap
     void writeStringToFile(const std::string& filename, const std::string& contents);
 
 	/**
-	* @return returns a string that can be used to compare against other filenames. Is also suitable for use as key in map or set.
-	* @param filename: the source filename.
-	*/
+	 * TODO: This may well be a platform independent 'toCanonicalFilename' or 'URI'
+	 *      as described here: https://en.wikipedia.org/wiki/File_URI_scheme
+	 *
+	 * @return returns a string that can be used to compare against other filenames. Is also suitable for use as key in map or set.
+	 * @param filename: the source filename.
+	 */
 	const std::string toComparableFilename(const std::string& filename);
 
 	/**
@@ -103,4 +106,12 @@ namespace nap
 	*/
 	bool isFilenameEqual(const std::string& filenameA, const std::string& filenameB);
 
+	/**
+	* Get the modification time of the specified path
+	*
+	* @param path The path to the file
+	* @param modTime The modification time of the file
+	* @return Whether file modification time was successfully retrieved
+	*/
+	bool getFileModificationTime(const std::string& path, uint64_t& modTime);	
 }

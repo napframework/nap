@@ -1,26 +1,24 @@
 #pragma once
 
-#include "meshcomponent.h"
+#include "RenderableMeshComponent.h"
 
 namespace nap
 {
+	class Material;
+	class RenderService;
+
 	/**
 	 * Highly efficient sphere that holds a link to a generic
 	 * sphere mesh. Use this sphere for quick drawing but note
 	 * that this component shares it's vertex data with other plane
 	 * components.
 	 */
-	class SphereComponent : public MeshComponent
+	class SphereComponent : public RenderableMeshComponent
 	{
-		RTTI_ENABLE(MeshComponent)
+		RTTI_ENABLE(RenderableMeshComponent)
 	public:
 		// Default constructor
 		SphereComponent() = default;
-
-		/**
-		 * @return the sphere mesh
-		 * Note that this mesh is shared between every sphere component instance
-		 */
-		virtual opengl::Mesh* getMesh() const override;
+		SphereComponent(Material& material, RenderService& renderService);
 	};
 }

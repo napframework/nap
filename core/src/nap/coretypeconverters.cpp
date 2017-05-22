@@ -1,6 +1,6 @@
 // Local
 #include "coretypeconverters.h"
-#include "stringutils.h"
+#include "utility/stringutils.h"
 #include "logger.h"
 
 // External
@@ -89,7 +89,7 @@ namespace nap {
     {
         outValue.clear();
         std::vector<std::string> out_string;
-        gSplitString(inString, ',', out_string);
+        utility::gSplitString(inString, ',', out_string);
         for (auto& value : out_string) {
             outValue.emplace_back((float) atof(value.c_str()));
         }
@@ -115,7 +115,7 @@ namespace nap {
     {
         outValue.clear();
         std::vector<std::string> out_string;
-        gSplitString(inString, ',', out_string);
+        utility::gSplitString(inString, ',', out_string);
         for (auto& pair : out_string) {
             outValue.emplace_back(pair);
         }
@@ -128,7 +128,7 @@ namespace nap {
         std::ostringstream ss;
         for (auto it = inValue.begin(); it != inValue.end(); it++) 
 		{
-			if (gContains(*it, ","))
+			if (utility::gContains(*it, ","))
 			{
 				nap::Logger::warn("Invalid serialization string character: %s", it->c_str());
 				continue;
@@ -162,7 +162,7 @@ namespace nap {
     {
         outValue.clear();
         std::vector<std::string> out_string;
-        gSplitString(inString, ',', out_string);
+        utility::gSplitString(inString, ',', out_string);
         for (auto& value : out_string) {
             outValue.emplace_back(atoi(value.c_str()));
         }
@@ -174,10 +174,10 @@ namespace nap {
     {
         outValue.clear();
         std::vector<std::string> out_string;
-        gSplitString(inString, ',', out_string);
+        utility::gSplitString(inString, ',', out_string);
         for (auto& pair : out_string) {
             std::vector<std::string> keyvalue;
-            gSplitString(pair, ':', keyvalue);
+            utility::gSplitString(pair, ':', keyvalue);
             assert(keyvalue.size() == 2);
             float v = (float)atof(keyvalue[1].c_str());
             outValue.emplace(std::make_pair(keyvalue[0], v));
@@ -206,10 +206,10 @@ namespace nap {
     {
         outValue.clear();
         std::vector<std::string> out_string;
-        gSplitString(inString, ',', out_string);
+        utility::gSplitString(inString, ',', out_string);
         for (auto& pair : out_string) {
             std::vector<std::string> keyvalue;
-            gSplitString(pair, ':', keyvalue);
+            utility::gSplitString(pair, ':', keyvalue);
             assert(keyvalue.size() == 2);
             int v = atoi(keyvalue[1].c_str());
             outValue[keyvalue[0]] = v;

@@ -8,26 +8,44 @@
 // Local includes
 #include "shaderresource.h"
 #include "imageresource.h"
+#include "uniforms.h"
+#include "nmesh.h"
 
 namespace nap
 {
 	/**
-	* Instance of a shader that lives in your object tree
-	* Holds a pointer to the actual shader resource program
-	* Can be used to draw an object to screen
-	* Typically a material instance is a child of a mesh component
+	* Material can be considered as the interface towards a shader. 
+	* It contains default mappings for how mesh vertex attributes are bound to a shader's vertex attributes.
+	* It also holds the actual uniform values that are pushed into the shader at runtime.
 	*/
 	class Material : public Resource
 	{
 		RTTI_ENABLE(Resource)
 	public:
+
+		/**
+		* Binding betwee mesh vertex attr and shader vertex attr
+		*/
+		struct VertexAttributeBinding
+		{
+			VertexAttributeBinding() = default;
+
+			VertexAttributeBinding(const opengl::Mesh::VertexAttributeID& meshAttributeID, const opengl::Shader::VertexAttributeID& shaderAttributeID) :
+				mMeshAttributeID(meshAttributeID),
+				mShaderAttributeID(shaderAttributeID)
+			{
+			}
+			opengl::Mesh::VertexAttributeID mMeshAttributeID;
+			opengl::Shader::VertexAttributeID mShaderAttributeID;
+		};
+
 		// Default constructor
-		Material();
+		Material() = default;
 
 		/**
 		* Creates mappings for uniform and vertex attrs.
 		*/
-		virtual bool init(InitResult& initResult) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		* Performs commit or rollback of changes made in init()
@@ -69,63 +87,99 @@ namespace nap
 		void pushUniforms();
 
 		/**
-		 * Updates the variable attribute bindings on the GPU
-		 * Note that this call needs to be called before binding the material
-		 * Shader index operations are only pushed on a new bind because of linking impact
-		 */
-		void pushAttributes();
-
-		/**
-		 * Updates the vertex attribute binding location
-		 * The binding location is associated with a specific buffer when drawing
-		 * Every buffer has it's own location withing the array object that is used
-		 * @param name: Name of the vertex attribute in the shader
-		 * @param location: New buffer location to use when drawing
-		 */
-		void linkVertexBuffer(const std::string& name, int location);
-
-		/**
-		 * Template uniform set function
-		 * @param name: name of the uniform variable
-		 * @param value: value to set
-		 */
+		* @return a uniform texture object that can be used to set a texture or value. 
+		* If the uniform is not found, returns nullptr.
+		*/
 		template<typename T>
-		void setUniformValue(const std::string& name, const T& value);
+		T* findUniform(const std::string& name);
 
 		/**
-		 * Uniform texture set function
-		 * @param name: name of the texture binding
-		 * @param resource: resource to link the uniform binding to, TODO: Should be const (Coen)!
-		 */
-		void setUniformTexture(const std::string& name, TextureResource& resource);
-		
+		* @return a uniform object that can be used to set a texture or value.
+		* If the uniform is not found it will assert.
+		*/
+		template<typename T>
+		T& getUniform(const std::string& name);
+
+
+		/**
+		* Finds the mesh/shader attribute binding based on the shader attribute ID.
+		* @param shaderAttributeID: ID of the shader vertex attribute.
+		*/
+		const VertexAttributeBinding* findVertexAttributeBinding(const opengl::Mesh::VertexAttributeID& shaderAttributeID) const;
+
+		/**
+		* @return Returns a mapping with default values for mesh attribute IDs an shader attribute IDs.
+		*/
+		static std::vector<VertexAttributeBinding>& getDefaultVertexAttributeBindings();
+
+	public:
+		std::vector<VertexAttributeBinding> mVertexAttributeBindings;		///< Mapping from mesh vertex attr to shader vertex attr
+		std::vector<Uniform*>				mUniforms;						///< Static uniforms (as read from file, or as set in code before calling init())
+
 	private:
 
 		/**
-		* Holds all uniform shader variables
+		* Binds the Uniform data to the declaration from the shader. Together
+		* they can be used to push the uniform.
 		*/
-		CompoundAttribute uniformAttribute = { this, "uniforms" };
+		template<typename UNIFORM>
+		struct UniformBinding
+		{
+			UniformBinding(std::unique_ptr<UNIFORM>&& uniform, const opengl::UniformDeclaration& declaration) :
+				mUniform(std::move(uniform)),
+				mDeclaration(&declaration)
+			{
+			}
 
-		/**
-		* Holds all vertex attribute variables
-		*/
-		CompoundAttribute vertexAttribute = { this, "attributes" };
+			UniformBinding(UniformBinding&& other) : 
+				mUniform(std::move(other.mUniform)),
+				mDeclaration(other.mDeclaration)
+			{
+			}
+ 
+			UniformBinding& operator=(UniformBinding&& other)
+			{
+				mUniform = std::move(other.mUniform);
+				mDeclaration = other.mDeclaration;
+				return *this;
+			}
+
+			std::unique_ptr<UNIFORM> mUniform;
+			const opengl::UniformDeclaration* mDeclaration;
+		};
+
+		using UniformTextureBindings = std::unordered_map<std::string, UniformBinding<UniformTexture>>;
+		using UniformValueBindings = std::unordered_map<std::string, UniformBinding<UniformValue>>;
+		UniformTextureBindings	mUniformTextureBindings;			///< Runtime map of texture uniforms (superset of texture uniforms in mUniforms due to default uniforms).
+		UniformTextureBindings	mPrevUniformTextureBindings;		///< For commit/rollback
+		UniformValueBindings	mUniformValueBindings;;				///< Runtime map of value uniforms (superset of value uniforms in mUniforms due to default uniforms).
+		UniformValueBindings	mPrevUniformValueBindings;			///< For commit/rollback
 	};
 
 
 	//////////////////////////////////////////////////////////////////////////
 	// Template Definitions
 	//////////////////////////////////////////////////////////////////////////
+
 	template<typename T>
-	void nap::Material::setUniformValue(const std::string& name, const T& value)
+	T* nap::Material::findUniform(const std::string& name)
 	{
-		Attribute<T>* attr = uniformAttribute.getAttribute<T>(name);
-		if (attr == nullptr)
-		{
-			nap::Logger::warn(*this, "uniform variable: %s does not exist", name.c_str());
-			return;
-		}
-		attr->setValue(value);
+		UniformTextureBindings::iterator texture_binding = mUniformTextureBindings.find(name);
+		if (texture_binding != mUniformTextureBindings.end() && texture_binding->second.mUniform->get_type() == RTTI_OF(T))
+			return (T*)texture_binding->second.mUniform.get();
+
+		UniformValueBindings::iterator value_binding = mUniformValueBindings.find(name);
+		if (value_binding != mUniformValueBindings.end() && value_binding->second.mUniform->get_type() == RTTI_OF(T))
+			return (T*)value_binding->second.mUniform.get();
+
+		return nullptr;
 	}
 
+	template<typename T>
+	T& nap::Material::getUniform(const std::string& name)
+	{
+		T* result = findUniform<T>(name);
+		assert(result);
+		return *result;
+	}
 }

@@ -62,7 +62,7 @@
 //}
 //
 //NAP_EXPORT void* object_addChild(void* object, const char* typeName, const char* name) {
-//    return &static_cast<Object*>(object)->addChild(name, RTTI::TypeInfo::getByName(typeName));
+//    return &static_cast<Object*>(object)->addChild(name, rtti::TypeInfo::getByName(typeName));
 //}
 //
 //// TYPES
@@ -72,7 +72,7 @@
 //}
 //
 //NAP_EXPORT char* core_getDataTypeName(void* core, int idx) {
-//    RTTI::TypeInfo type = static_cast<Core*>(core)->getModuleManager().getDataTypes()[idx];
+//    rtti::TypeInfo type = static_cast<Core*>(core)->getModuleManager().getDataTypes()[idx];
 //    return reString(type.getName());
 //}
 //
@@ -81,7 +81,7 @@
 //}
 //
 //NAP_EXPORT char* core_getOperatorTypeName(void* core, int idx) {
-//    RTTI::TypeInfo type = static_cast<Core*>(core)->getModuleManager().getOperatorTypes()[idx];
+//    rtti::TypeInfo type = static_cast<Core*>(core)->getModuleManager().getOperatorTypes()[idx];
 //    return reString(type.getName());
 //}
 //
@@ -90,7 +90,7 @@
 //}
 //
 //NAP_EXPORT char* core_getComponentTypeName(void* core, int idx) {
-//    RTTI::TypeInfo type = static_cast<Core*>(core)->getModuleManager().getComponentTypes()[idx];
+//    rtti::TypeInfo type = static_cast<Core*>(core)->getModuleManager().getComponentTypes()[idx];
 //    return reString(type.getName());
 //}
 

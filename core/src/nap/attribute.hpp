@@ -12,9 +12,9 @@ namespace nap {
     
     
 	template <typename T>
-	const RTTI::TypeInfo Attribute<T>::getValueType() const
+	const rtti::TypeInfo Attribute<T>::getValueType() const
 	{
-		return RTTI::TypeInfo::get<T>();
+		return rtti::TypeInfo::get<T>();
 	}
 
 

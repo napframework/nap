@@ -18,7 +18,7 @@ namespace nap
 		nap::Entity* parent = this->getParent();
 		assert(parent != nullptr);
 
-		RTTI::TypeInfo type_info = get_type();
+		rtti::TypeInfo type_info = get_type();
 		nap::Service* c_service = parent->getCore().getServiceForType(type_info);
 		if (c_service == nullptr)
 		{

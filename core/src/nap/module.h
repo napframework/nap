@@ -6,7 +6,7 @@
 
 namespace nap
 {
-	using TypeList = std::vector<RTTI::TypeInfo>;
+	using TypeList = std::vector<rtti::TypeInfo>;
     class ModuleManager;
 
 	/**
@@ -38,10 +38,10 @@ namespace nap
 
 		bool hasTypeConverter(const nap::TypeConverterBase* tc) const;
 
-		void registerOperatorType(RTTI::TypeInfo type) { mOperatorTypes.push_back(type); }
-		void registerComponentType(RTTI::TypeInfo type) { mComponentTypes.push_back(type); }
-		void registerDataType(RTTI::TypeInfo type) { mDataTypes.push_back(type); }
-        void registerServiceType(RTTI::TypeInfo type) { mServiceTypes.push_back(type); }
+		void registerOperatorType(rtti::TypeInfo type) { mOperatorTypes.push_back(type); }
+		void registerComponentType(rtti::TypeInfo type) { mComponentTypes.push_back(type); }
+		void registerDataType(rtti::TypeInfo type) { mDataTypes.push_back(type); }
+        void registerServiceType(rtti::TypeInfo type) { mServiceTypes.push_back(type); }
 
 		/**
 		 * @param func: the conversion function from @I to @O

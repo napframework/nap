@@ -63,30 +63,191 @@
 		"mFragShader": "shaders/orientation.frag"
 	},
 
-	"nap::ModelResource": {
-		"mID": "OrientationModel",
-		"mModelPath": "data/orientation.fbx"
+	"nap::MeshResource": {
+		"mID": "OrientationMesh",
+		"Path": "data/orientation.mesh"
 	},
 
-	"nap::ModelResource": {
-		"mID": "PigModel",
-		"mModelPath": "data/pig_head_alpha_rotated.fbx"
+	"nap::MeshResource": {
+		"mID": "PigMesh",
+		"Path": "data/pig_head_alpha_rotated.mesh"
 	},	
+	
+	"nap::RenderableMeshResource": {
+		"mID": "PigRenderableMesh",
+		"Mesh" : "PigMesh",
+		"Material" : "PigMaterial"
+	},	
+
+	"nap::RenderableMeshResource": {
+		"mID": "OrientationRenderableMesh",
+		"Mesh" : "OrientationMesh",
+		"Material" : "OrientationMaterial"
+	},
+	
 	"nap::Material": {
 		"mID": "GeneralMaterial",
-		"mShader": "GeneralShader"
+		"Shader": "GeneralShader",
+		"VertexAttributeBindings" : [
+			{
+				"MeshAttributeID": "Position",
+				"ShaderAttributeID": "in_Position"
+			},
+			{
+				"MeshAttributeID": "UV0",
+				"ShaderAttributeID": "in_UV0"
+			},
+			{
+				"MeshAttributeID": "Color0",
+				"ShaderAttributeID": "in_Color0"
+			},
+			{
+				"MeshAttributeID": "Normal",
+				"ShaderAttributeID": "in_Normals"
+			}
+		]
 	},
+	
 	"nap::Material": {
-		"mID": "PlaneMaterial",
-		"mShader": "GeneralShader"
+		"mID": "WorldMaterial",
+		"Shader": "GeneralShader",
+		"VertexAttributeBindings" : [
+			{
+				"MeshAttributeID": "Position",
+				"ShaderAttributeID": "in_Position"
+			},
+			{
+				"MeshAttributeID": "UV0",
+				"ShaderAttributeID": "in_UV0"
+			},
+			{
+				"MeshAttributeID": "Color0",
+				"ShaderAttributeID": "in_Color0"
+			},
+			{
+				"MeshAttributeID": "Normal",
+				"ShaderAttributeID": "in_Normals"
+			}
+		],
+		"Uniforms" : 
+		[
+			{
+				"nap::UniformVec4" : 
+				{
+					"Name" : "mColor",
+					"Value" : 
+					{
+						"x" : 1.0,
+						"y" : 1.0,
+						"z" : 1.0,
+						"w" : 1.0						
+					}
+				}
+			},
+			{
+				"nap::UniformInt" : 
+				{
+					"Name" : "mTextureIndex",
+					"Value" : 0
+				}
+			},
+			{
+				"nap::UniformTexture2D" : 
+				{
+					"Name" : "pigTexture",
+					"Texture" : "WorldTexture"
+				}
+			},
+			{
+				"nap::UniformTexture2D" : 
+				{
+					"Name" : "testTexture",
+					"Texture" : "WorldTexture"
+				}
+			}
+		]	
 	},
+	
 	"nap::Material": {
-		"mID": "SphereMaterial",
-		"mShader": "GeneralShader"
+		"mID": "PigMaterial",
+		"Shader": "GeneralShader",
+		"VertexAttributeBindings" : [
+			{
+				"MeshAttributeID": "Position",
+				"ShaderAttributeID": "in_Position"
+			},
+			{
+				"MeshAttributeID": "UV0",
+				"ShaderAttributeID": "in_UV0"
+			},
+			{
+				"MeshAttributeID": "Color0",
+				"ShaderAttributeID": "in_Color0"
+			},
+			{
+				"MeshAttributeID": "Normal",
+				"ShaderAttributeID": "in_Normals"
+			}
+		],
+		"Uniforms" : 
+		[
+			{
+				"nap::UniformVec4" : 
+				{
+					"Name" : "mColor",
+					"Value" : 
+					{
+						"x" : 1.0,
+						"y" : 1.0,
+						"z" : 0.0,
+						"w" : 1.0						
+					}
+				}
+			},
+			{
+				"nap::UniformInt" : 
+				{
+					"Name" : "mTextureIndex",
+					"Value" : 0
+				}
+			},
+			{
+				"nap::UniformTexture2D" : 
+				{
+					"Name" : "pigTexture",
+					"Texture" : "PigTexture"
+				}
+			},
+			{
+				"nap::UniformTexture2D" : 
+				{
+					"Name" : "testTexture",
+					"Texture" : "TestTexture"
+				}
+			}
+		]	
 	},
+	
 	"nap::Material": {
 		"mID": "OrientationMaterial",
-		"mShader": "OrientationShader"
-	}
-	
+		"Shader": "OrientationShader",
+		"VertexAttributeBindings" : [
+			{
+				"MeshAttributeID": "Position",
+				"ShaderAttributeID": "in_Position"
+			},
+			{
+				"MeshAttributeID": "UV0",
+				"ShaderAttributeID": "in_UV0"
+			},
+			{
+				"MeshAttributeID": "Color0",
+				"ShaderAttributeID": "in_Color0"
+			},
+			{
+				"MeshAttributeID": "Normal",
+				"ShaderAttributeID": "in_Normals"
+			}
+		]
+	}	
 } 

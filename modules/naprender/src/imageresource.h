@@ -50,7 +50,7 @@ namespace nap
 		/**
 		* Creates internal texture resource.
 		*/
-		virtual bool init(InitResult& initResult) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		* Commits changes made by init, or rolls them back.
@@ -71,9 +71,9 @@ namespace nap
 		opengl::Texture2DSettings mSettings;
 
 	private:
-		opengl::Texture2D* mTexture				= nullptr;				// Texture as created during init
-		opengl::Texture2D* mPrevTexture			= nullptr;				// Stored texture content before for rolling back
-		std::string mDisplayName				= "MemoryTexture2D";	// Custom display name
+		std::unique_ptr<opengl::Texture2D> mTexture;				// Texture as created during init
+		std::unique_ptr<opengl::Texture2D> mPrevTexture;			// Stored texture content before for rolling back
+		std::string mDisplayName = "MemoryTexture2D";				// Custom display name
 	};
 
 
@@ -93,7 +93,7 @@ namespace nap
 		// Default Constructor
 		ImageResource() = default;
 
-		virtual bool init(InitResult& initResult) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		void finish(Resource::EFinishMode mode);
 
@@ -124,8 +124,8 @@ namespace nap
 		std::string				mDisplayName;
 
 		// Opengl Image Object
-		opengl::Image*			mImage = nullptr;
-		opengl::Image*			mPrevImage = nullptr;
+		std::unique_ptr<opengl::Image>	mImage = nullptr;
+		std::unique_ptr<opengl::Image>	mPrevImage = nullptr;
 	};
 
 }

@@ -17,7 +17,7 @@ namespace nap
 
 	public:
 		ResourceLinkAttribute();
-		ResourceLinkAttribute(AttributeObject* parent, const std::string& name, const RTTI::TypeInfo& type);
+		ResourceLinkAttribute(AttributeObject* parent, const std::string& name, const rtti::TypeInfo& type);
 		ResourceLinkAttribute(AttributeObject* parent, const std::string& name);
 
 		/**
@@ -37,7 +37,7 @@ namespace nap
 		/**
 		 * @return type of the resource this object links to
 		 */
-		RTTI::TypeInfo getResourceType() const						{ return mType; }
+		rtti::TypeInfo getResourceType() const						{ return mType; }
 
 		/**
 		 * @return the path to the resource this link points to
@@ -60,7 +60,7 @@ namespace nap
 		 * Set the resource link type
 		 * @param type, type of resource this link is allowed to point to
 		 */
-		void setResourceType(const RTTI::TypeInfo& type);
+		void setResourceType(const rtti::TypeInfo& type);
 
 		/**
 		 * @return if the the resource is currently linked
@@ -75,7 +75,7 @@ namespace nap
 
 	private:
 		// Type of the resource this link should point to
-		RTTI::TypeInfo mType = RTTI_OF(nap::Resource);
+		rtti::TypeInfo mType = RTTI_OF(nap::Resource);
 
 		// Internally managed resource
 		mutable Resource* mResource = nullptr;

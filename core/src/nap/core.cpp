@@ -3,6 +3,7 @@
 
 // External Includes
 #include <algorithm>
+#include <nap/resourcemanager.h>
 
 using namespace std;
 
@@ -27,7 +28,7 @@ namespace nap
 
 	Creates a default entity as the root
 	**/
-	Core::Core()
+	Core::Core() : mFactory(std::make_unique<rtti::Factory>())
 	{
         getModuleManager().loadCoreModule();
 
@@ -37,6 +38,9 @@ namespace nap
 
 		// Initialize timer
 		mTimer.start();
+
+		// Add resource manager service
+		addService(RTTI_OF(ResourceManagerService));
 	}
 
 
@@ -64,9 +68,9 @@ namespace nap
 	}
 
 
-	std::vector<RTTI::TypeInfo> Core::getComponentTypes() const
+	std::vector<rtti::TypeInfo> Core::getComponentTypes() const
 	{
-		RTTI::TypeInfo componentType = RTTI::TypeInfo::get<Component>();
+		rtti::TypeInfo componentType = rtti::TypeInfo::get<Component>();
 		return componentType.get_raw_derived_classes();
 	}
 
@@ -77,10 +81,10 @@ namespace nap
 	TODO: This method is only here for serviceable component and can go
 	Every serviceable component should list its own services of interest
 	**/
-	Service* Core::getServiceForType(const RTTI::TypeInfo& inType)
+	Service* Core::getServiceForType(const rtti::TypeInfo& inType)
 	{
 		// Get raw type to search for
-		RTTI::TypeInfo raw_search_type = inType.get_raw_type();
+		rtti::TypeInfo raw_search_type = inType.get_raw_type();
 		if (!raw_search_type.is_valid()) 
 		{
 			Logger::warn("Unable to determine object type, can't retrieve service");
@@ -92,7 +96,7 @@ namespace nap
 		for (auto& v : mTypes) 
 		{
 			// Find type in service
-			const auto& match_type = std::find_if(v.second.begin(), v.second.end(), [&](const RTTI::TypeInfo& info) 
+			const auto& match_type = std::find_if(v.second.begin(), v.second.end(), [&](const rtti::TypeInfo& info) 
 			{
 				return raw_search_type.is_derived_from(info.get_raw_type());
 			});
@@ -121,7 +125,7 @@ namespace nap
 	@brief Register a type associated with a service
 	 TODO: Move registration into actual service
 	**/
-	void Core::registerType(const Service& inService, RTTI::TypeInfo inTypeInfo)
+	void Core::registerType(const Service& inService, rtti::TypeInfo inTypeInfo)
 	{
 		// Find and add
 		auto it = mTypes.find(inService.getTypeName());
@@ -165,7 +169,7 @@ namespace nap
 
 
 	// Returns service that matches @type
-	Service* Core::getService(const RTTI::TypeInfo& type)
+	Service* Core::getService(const rtti::TypeInfo& type)
 	{
 		// Find service of type 
 		const auto& found_service = std::find_if(mServices.begin(), mServices.end(), [&type](const auto& service)
@@ -179,7 +183,7 @@ namespace nap
 
 
 	// Add a new service
-	Service& Core::addService(const RTTI::TypeInfo& type)
+	Service& Core::addService(const rtti::TypeInfo& type)
 	{
         assert(type.is_valid());
 		assert(type.can_create_instance());
@@ -197,6 +201,7 @@ namespace nap
 		Service* service = type.create<Service>();
 		service->mCore = this;
 		service->registerTypes(*this);
+		service->registerObjectCreators(*mFactory);
 
 		// Add service
 		mServices.emplace_back(std::unique_ptr<Service>(service));
@@ -206,7 +211,7 @@ namespace nap
 
 
 	// Creates a new service of type @type if doesn't exist yet
-	Service* Core::getOrCreateService(const RTTI::TypeInfo& type)
+	Service* Core::getOrCreateService(const rtti::TypeInfo& type)
 	{
 		// Otherwise add
 		if (!type.is_derived_from(RTTI_OF(nap::Service)))

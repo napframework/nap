@@ -16,6 +16,7 @@ set(LIBRARIES napcore mod_napjsonserializer)
 set(INCLUDES ${RAPIDJSON_INCLUDE_DIRS} ${JSONRPCLEAN_INCLUDE_DIRS} src include-zmq)
 
 add_library(${PROJECT_NAME} SHARED ${sources})
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
 
 if(WIN32)
     list(APPEND INCLUDES ${ZMQ_INCLUDE_DIR})

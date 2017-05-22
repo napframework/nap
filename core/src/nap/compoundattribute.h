@@ -23,7 +23,7 @@ namespace nap {
         void initialize();
         
         // Compound attribute has no value type because it can hold anything
-        const RTTI::TypeInfo getValueType() const override { return RTTI::TypeInfo::empty(); }
+        const rtti::TypeInfo getValueType() const override { return rtti::TypeInfo::empty(); }
         
         // Value accessors
         void getValue(AttributeBase& inAttribute) const override;
@@ -39,7 +39,7 @@ namespace nap {
         ArrayAttribute<T>& addArrayAttribute(const std::string& name = "");
         
         // Add resource link attribute of resource type
-        ResourceLinkAttribute& addResourceLinkAttribute(const std::string& name, const RTTI::TypeInfo& type);
+        ResourceLinkAttribute& addResourceLinkAttribute(const std::string& name, const rtti::TypeInfo& type);
         
         // Add an attribute of type T
         template <typename T>
@@ -50,7 +50,7 @@ namespace nap {
         Attribute<T>& addAttribute(const std::string& name, const T& value);
         
         // Adds an attribute of type @type, with name: @name
-        AttributeBase* addAttribute(const std::string& name, const RTTI::TypeInfo& attributeType);
+        AttributeBase* addAttribute(const std::string& name, const rtti::TypeInfo& attributeType);
         
         // Add a floating attribute, this object takes ownership of the attribute
         void addAttribute(AttributeBase& attr);

@@ -40,7 +40,7 @@ namespace nap
 		 * Tries to find the correct type converter based on @fromtype and @toType
 		 * @return a converter, nullptr if not found
 		 */
-		const TypeConverterBase* getTypeConverter(RTTI::TypeInfo fromType, RTTI::TypeInfo toType) const;
+		const TypeConverterBase* getTypeConverter(rtti::TypeInfo fromType, rtti::TypeInfo toType) const;
 
 		const TypeList getComponentTypes() const;
 

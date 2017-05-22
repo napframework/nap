@@ -2,27 +2,27 @@
 #include "rendertargetresource.h"
 
 RTTI_BEGIN_CLASS(nap::TextureRenderTargetResource2D)
-	RTTI_PROPERTY_REQUIRED("mColorTexture", &nap::TextureRenderTargetResource2D::mColorTexture)
-	RTTI_PROPERTY_REQUIRED("mDepthTexture", &nap::TextureRenderTargetResource2D::mDepthTexture)
-	RTTI_PROPERTY("mClearColor", &nap::TextureRenderTargetResource2D::mClearColor)
+	RTTI_PROPERTY("mColorTexture",	&nap::TextureRenderTargetResource2D::mColorTexture, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("mDepthTexture",	&nap::TextureRenderTargetResource2D::mDepthTexture, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("mClearColor",	&nap::TextureRenderTargetResource2D::mClearColor,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
 {
 
-	bool TextureRenderTargetResource2D::init(InitResult& initResult)
+	bool TextureRenderTargetResource2D::init(utility::ErrorState& errorState)
 	{
-		if (!initResult.check(mColorTexture != nullptr, "Unable to create render target %s. Color textures not set.", mID.c_str()))
+		if (!errorState.check(mColorTexture != nullptr, "Unable to create render target %s. Color textures not set.", mID.c_str()))
 			return false;
 
-		if (!initResult.check(mDepthTexture != nullptr, "Unable to create render target %s. Depth texture not set.", mID.c_str()))
+		if (!errorState.check(mDepthTexture != nullptr, "Unable to create render target %s. Depth texture not set.", mID.c_str()))
 			return false;
 
 		mPrevTextureRenderTarget = mTextureRenderTarget;
 		mTextureRenderTarget = new opengl::TextureRenderTarget2D;
 
 		mTextureRenderTarget->init((opengl::Texture2D&)mColorTexture->getTexture(), (opengl::Texture2D&)mDepthTexture->getTexture(), mClearColor);
-		if (!initResult.check(mTextureRenderTarget->isValid(), "unable to validate frame buffer: %s", mID.c_str()))
+		if (!errorState.check(mTextureRenderTarget->isValid(), "unable to validate frame buffer: %s", mID.c_str()))
 			return false;
 		
 		return true;
