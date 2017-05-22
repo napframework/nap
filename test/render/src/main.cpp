@@ -503,7 +503,17 @@ bool init(nap::Core& core)
 
 	// Create render service
 	renderService = core.getOrCreateService<nap::RenderService>();
-	renderService->init(RTTI_OF(nap::OpenGLRenderer));
+	
+	// TODO: Init should be without arguments and called by core when added to the system (COEN)
+	// Problem is custom service arguments such as the one below (render type), maybe have a settings construct for
+	// services?
+	nap::utility::ErrorState error;
+	if (!renderService->init(RTTI_OF(nap::OpenGLRenderer), error))
+	{
+		nap::Logger::fatal(error.toString());
+		return false;
+	}
+
 	nap::Logger::info("initialized render service: %s", renderService->getName().c_str());
 
 	// Create windows

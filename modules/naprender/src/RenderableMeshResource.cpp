@@ -73,6 +73,23 @@ namespace nap
 	{
 		return "ModelResource";
 	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// RenderableMeshResourceCreator
+	//////////////////////////////////////////////////////////////////////////
+
+	rtti::TypeInfo RenderableMeshResourceCreator::getTypeToCreate() const
+	{
+		return RTTI_OF(RenderableMeshResource);
+	}
+
+
+	rtti::RTTIObject* RenderableMeshResourceCreator::create()
+	{
+		return new RenderableMeshResource(mRenderService);
+	}
+
 }
 
 RTTI_DEFINE(nap::RenderableMeshResource)

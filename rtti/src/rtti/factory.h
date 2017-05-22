@@ -1,7 +1,7 @@
 #pragma once
 
 // RTTI includes
-#include <rtti/rtti.h>
+#include "rttiobject.h"
 
 namespace nap
 {
@@ -15,7 +15,15 @@ namespace nap
 		class IObjectCreator
 		{
 		public:
-			virtual RTTIObject* create(rtti::TypeInfo) = 0;
+			/**
+			* Creates the object specified with getCreationType()
+			*/
+			virtual RTTIObject* create() = 0;
+
+			/**
+			* @return the type this object creates
+			*/
+			virtual rtti::TypeInfo getTypeToCreate() const = 0;
 		};
 
 
@@ -25,16 +33,12 @@ namespace nap
 		class Factory
 		{
 		public:
-
 			/**
 			 * Adds association between a type and it's object creator.
 			 * @param typeInfo: the RTTI type to create a mapping for.
 			 * @param objectCreator: the object that can create instances of the type.
 			 */
-			void addObjectCreator(rtti::TypeInfo typeInfo, std::unique_ptr<IObjectCreator> objectCreator)
-			{
-				mCreators.insert(std::make_pair(typeInfo, std::move(objectCreator)));
-			}
+			void addObjectCreator(std::unique_ptr<IObjectCreator> objectCreator);
 
 			/**
 			 * Creates an object. If there is an existing type mapping, it will use the ObjectCreator for
@@ -42,18 +46,7 @@ namespace nap
 			 * @return instance of the type.
 			 * @param typeInfo: the type to create an instance of.
 			 */
-			RTTIObject* create(rtti::TypeInfo typeInfo)
-			{
-				CreatorMap::iterator creator = mCreators.find(typeInfo);
-				if (creator == mCreators.end())
-				{
-					return typeInfo.create<RTTIObject>();
-				}
-				else
-				{
-					return creator->second->create(typeInfo);
-				}
-			}
+			RTTIObject* create(rtti::TypeInfo typeInfo);
 
 		private:
 			using CreatorMap = std::unordered_map<rtti::TypeInfo, std::unique_ptr<IObjectCreator>>;

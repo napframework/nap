@@ -30,9 +30,9 @@ namespace nap
 	// Register all object creation functions
 	void RenderService::registerObjectCreators(rtti::Factory& factory)
 	{
-		std::unique_ptr<RenderableMeshResourceCreator> mesh_creator = std::make_unique<RenderableMeshResourceCreator>(*this);
-		factory.addObjectCreator(RTTI_OF(RenderableMeshResource), std::move(mesh_creator));
+		factory.addObjectCreator(std::make_unique<RenderableMeshResourceCreator>(*this));
 	}
+
 
 	// Occurs when an object registers itself with the service
 	void RenderService::objectRegistered(Object& inObject)
@@ -277,12 +277,11 @@ namespace nap
 
 
 	// Set the currently active renderer
-	void RenderService::init(const rtti::TypeInfo& renderer)
+	bool RenderService::init(const rtti::TypeInfo& renderer, nap::utility::ErrorState& errorState)
 	{
-		if (!renderer.is_derived_from(RTTI_OF(nap::Renderer)))
+		if (!errorState.check(renderer.is_derived_from(RTTI_OF(nap::Renderer)), "unable to add: %s as renderer, object not of type: %s", renderer.get_name().data(), RTTI_OF(nap::Renderer).get_name().data()))
 		{
-			nap::Logger::warn(*this, "unable to add: %s as renderer, object not of type: %s", renderer.get_name().data(), RTTI_OF(nap::Renderer).get_name().data());
-			return;
+			return false;
 		}
 
 		// Shut down existing renderer
@@ -294,6 +293,8 @@ namespace nap
 		// Create new renderer
 		nap::Renderer* new_renderer = renderer.create<nap::Renderer>();
 		mRenderer.reset(new_renderer);
+
+		return true;
 	}
 
 

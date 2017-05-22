@@ -89,7 +89,7 @@ namespace nap
 		 * Sets the renderer, the service will own the renderer
 		 * @param renderer the type of renderer to use
 		 */
-		void init(const rtti::TypeInfo& renderer);
+		bool init(const rtti::TypeInfo& renderer, nap::utility::ErrorState& errorState);
 
 		/**
 		 * Shuts down the managed renderer

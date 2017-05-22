@@ -162,7 +162,7 @@ namespace nap
 		/**
 		* @return object capable of creating objects with custom construction parameters.
 		*/
-		rtti::Factory& getFactory()									{ return *mFactory; }
+		rtti::Factory& getFactory()							{ return *mFactory; }
 
 	private:
 		// Typedef for a list of services
@@ -189,7 +189,7 @@ namespace nap
 		SimpleTimer mTimer;
 
 		// Responsible for creating objects when de-serializing
-		std::unique_ptr<rtti::Factory>		mFactory;				
+		std::unique_ptr<rtti::Factory>						mFactory;				
 	};
 
 

@@ -46,26 +46,17 @@ namespace nap
 		* @return The Vertex Array Object that contains the description of how the
 		mesh is bound to the shader.
 		*/
-		opengl::VertexArrayObject& getVAO() 
-		{ 
-			return *mVAO.get();  
-		}
+		opengl::VertexArrayObject& getVAO()				{ return *mVAO.get(); }
 
 		/**
 		* @return The Mesh Resource
 		*/
-		MeshResource* getMeshResource() 
-		{ 
-			return mMeshResource; 
-		}
+		MeshResource* getMeshResource()					{ return mMeshResource; }
 
 		/**
 		* @return The Material that is applied to the mesh.
 		*/
-		Material* getMaterial() 
-		{ 
-			return mMaterialResource;  
-		}
+		Material* getMaterial()							{ return mMaterialResource; }
 
 	public:
 		Material*		mMaterialResource = nullptr;
@@ -86,14 +77,17 @@ namespace nap
 	{
 	public:
 		RenderableMeshResourceCreator(RenderService& renderService) :
-			mRenderService(renderService)
-		{
-		}
+			mRenderService(renderService) { }
 
-		virtual rtti::RTTIObject* create(rtti::TypeInfo typeInfo) override
-		{
-			return new RenderableMeshResource(mRenderService);
-		}
+		/**
+		* @return Type of RenderableMeshResource
+		*/
+		rtti::TypeInfo getTypeToCreate() const override;
+
+		/**
+		* @return creates a renderableMeshResource
+		*/
+		virtual rtti::RTTIObject* create() override;
 
 	private:
 		RenderService& mRenderService;
