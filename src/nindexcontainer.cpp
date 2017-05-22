@@ -9,7 +9,7 @@ namespace opengl
 	}
 
 	// Copy all contents in to vector
-	void IndexContainer::copyData(unsigned int count, unsigned int* indices)
+	void IndexContainer::copyData(unsigned int count, const unsigned int* indices)
 	{
 		clear();
 		mIndices.insert(mIndices.end(), indices, &indices[count]);

@@ -26,7 +26,7 @@ namespace opengl
 
 
 	// binds this vertex buffer on the GPU for subsequent GPU calls
-	bool Buffer::bind()
+	bool Buffer::bind() const
 	{
 		if (!isAllocated())
 		{
@@ -39,7 +39,7 @@ namespace opengl
 
 
 	// unbinds this vertex buffer on the GPU for subsequent GPU calls
-	bool Buffer::unbind()
+	bool Buffer::unbind() const
 	{
 		if (!isAllocated())
 		{

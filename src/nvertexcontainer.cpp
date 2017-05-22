@@ -38,7 +38,7 @@ namespace opengl
 	// Updates settings and allocated memory
 	bool VertexContainer::allocateMemory(GLenum type, unsigned int components, unsigned int verts)
 	{
-		VertexBufferSettings new_settings(type, components, verts);
+		VertexAttributeBufferSettings new_settings(type, components, verts);
 		if (!new_settings.isValid())
 		{
 			printMessage(MessageType::ERROR, "unable to allocate memory, invalid vertex buffer settings provided");
@@ -54,7 +54,7 @@ namespace opengl
 
 
 	// Copies source in to mData
-	bool VertexContainer::copyData(void* source)
+	bool VertexContainer::copyData(const void* source)
 	{
 		if (!mSettings.isValid())
 		{
@@ -75,10 +75,10 @@ namespace opengl
 
 
 	// Applies new settings and performs copy
-	bool VertexContainer::copyData(GLenum type, unsigned int components, unsigned int verts, void* source)
+	bool VertexContainer::copyData(GLenum type, unsigned int components, unsigned int verts, const void* source)
 	{
 		// Check settings
-		VertexBufferSettings new_settings(type, components, verts);
+		VertexAttributeBufferSettings new_settings(type, components, verts);
 		if (!new_settings.isValid())
 		{
 			printMessage(MessageType::ERROR, "unable to copy data in to vertex container, invalid buffer settings provided!");
@@ -136,7 +136,7 @@ namespace opengl
 
 	// Creates and returns the vertex buffer associated with this container
 	// nullptr if the buffer can't be created
-	VertexBuffer* VertexContainer::getVertexBuffer()
+	VertexAttributeBuffer* VertexContainer::getVertexBuffer()
 	{
 		// Create one if we don't have one yet
 		if (mGPUBuffer == nullptr)
@@ -158,7 +158,7 @@ namespace opengl
 		}
 
 		// Retrieve vertex buffer
-		opengl::VertexBuffer* buffer = getVertexBuffer();
+		opengl::VertexAttributeBuffer* buffer = getVertexBuffer();
 		if (buffer == nullptr)
 		{
 			printMessage(MessageType::ERROR, "unable to update vertex buffer, can't retrieve container associated GPU buffer");
@@ -180,7 +180,7 @@ namespace opengl
 			return;
 		}
 
-		opengl::VertexBuffer* buffer = getVertexBuffer();
+		opengl::VertexAttributeBuffer* buffer = getVertexBuffer();
 		if (buffer == nullptr)
 		{
 			printMessage(MessageType::ERROR, "unable to sync vertex buffer, can't retrieve container associated GPU buffer");
@@ -191,7 +191,7 @@ namespace opengl
 
 
 	// Helper function to create a new GPU bound vertex buffer
-	std::unique_ptr<VertexBuffer> VertexContainer::createVertexBuffer()
+	std::unique_ptr<VertexAttributeBuffer> VertexContainer::createVertexBuffer()
 	{
 		if (!mSettings.isValid())
 		{
@@ -200,7 +200,7 @@ namespace opengl
 		}
 		
 		// Create and initialize
-		std::unique_ptr<VertexBuffer> new_buffer = std::make_unique<VertexBuffer>(mSettings);
+		std::unique_ptr<VertexAttributeBuffer> new_buffer = std::make_unique<VertexAttributeBuffer>(mSettings);
 		new_buffer->init();
 
 		// Set data if data is available

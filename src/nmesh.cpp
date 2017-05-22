@@ -3,124 +3,59 @@
 
 namespace opengl
 {
+	const Mesh::VertexAttributeID Mesh::VertexAttributeIDs::PositionVertexAttr("Position");
+	const Mesh::VertexAttributeID Mesh::VertexAttributeIDs::NormalVertexAttr("Normal");
+	const Mesh::VertexAttributeID Mesh::VertexAttributeIDs::UVVertexAttr("UV");
+	const Mesh::VertexAttributeID Mesh::VertexAttributeIDs::ColorVertexAttr("Color");
+
 	// Constructor initializes object draw mode
-	Mesh::Mesh()
+	Mesh::Mesh(int numVertices, EDrawMode drawMode) :
+		mNumVertices(numVertices),
+		mDrawMode(drawMode)
 	{
-		mObject.setDrawMode(DrawMode::TRIANGLES);
 	}
 
 
-	// Adds vertex data
-	void Mesh::copyVertexData(unsigned int vertices, float* data)
+	void Mesh::addVertexAttribute(const VertexAttributeID& id, unsigned int components, const float* data)
 	{
-		updateVertexContainer<float>(mVertices, 3, vertices, data);
+		Attribute attribute;
+		attribute.mID = id;
+		attribute.mData = std::make_unique<FloatVertexContainer>();
+
+		// Copy our data
+		bool success = attribute.mData->copyData(components, mNumVertices, data);
+		assert(success);
+
+		// Synchronize on success (data in CPU memory will be uploaded to GPU)
+		attribute.mData->sync();
+
+		mAttributes.emplace_back(std::move(attribute));
 	}
 
 
-	// Adds normal data
-	void Mesh::copyNormalData(unsigned int vertices, float* data)
+	const VertexAttributeBuffer* Mesh::findVertexAttributeBuffer(const VertexAttributeID& id) const
 	{
-		updateVertexContainer<float>(mNormals, 3, vertices, data);
+		for (const Attribute& attribute : mAttributes)
+			if (attribute.mID == id)
+				return attribute.mData->getVertexBuffer();
+
+		return nullptr;
 	}
 
 
-	// Adds color data
-	void Mesh::copyColorData(unsigned int components, unsigned int vertices, float* data)
-	{
-		std::unique_ptr<FloatVertexContainer> container = nullptr;
-		updateVertexContainer(container, components, vertices, data);
-		mColors.emplace_back(std::move(container));
-	}
-
-
-	// Adds uv data
-	void Mesh::copyUVData(unsigned int components, unsigned int vertices, float* data)
-	{
-		std::unique_ptr<FloatVertexContainer> container = nullptr;
-		updateVertexContainer(container, components, vertices, data);
-		mUvs.emplace_back(std::move(container));
-	}
-
-
-	void Mesh::copyIndexData(unsigned int count, unsigned int* data)
+	void Mesh::setIndices(unsigned int count, const unsigned int* data)
 	{
 		assert(count > 0);
-		updateIndexContainer(mIndices, count, data);
-	}
 
-
-	// Draw mesh object
-	void Mesh::draw()
-	{
-		mObject.draw();
-	}
-
-
-	// Update mesh indices
-	void Mesh::updateIndexContainer(std::unique_ptr<IndexContainer>& location, unsigned int count, unsigned int* data)
-	{
-		// Check if exists, if not create, move and add
-		if (location == nullptr)
+		if (mIndices == nullptr)
 		{
-			location = std::make_unique<IndexContainer>();
-			mObject.setIndexBuffer(*(location->getIndexBuffer()));
+			mIndices = std::make_unique<IndexContainer>();
 		}
 
 		// Copy our data
-		location->copyData(count, data);
+		mIndices->copyData(count, data);
 
 		// Synchronize on success (data in CPU memory will be uploaded to GPU)
-		location->sync();
+		mIndices->sync();
 	}
-
-
-	// Utility that is used for retrieving the binding for @container
-	int Mesh::getContainerBindingIndex(VertexContainer* container) const
-	{
-		if (container == nullptr)
-		{
-			printMessage(MessageType::WARNING, "unable to retrieve vertex buffer binding index, vertex container has no data");
-			return -1;
-		}
-		return mObject.getVertexBufferIndex(*(container->getVertexBuffer()));
-	}
-
-
-	// Return vertex buffer index
-	int Mesh::getVertexBufferIndex() const
-	{
-		return getContainerBindingIndex(mVertices.get());
-	}
-
-
-	// Return normal buffer index
-	int Mesh::getNormalBufferIndex() const
-	{
-		return getContainerBindingIndex(mNormals.get());
-	}
-
-
-	// Return the color buffer binding index, -1 if not found
-	int Mesh::getColorBufferIndex(unsigned int colorChannel) const
-	{
-		if (colorChannel >= mColors.size())
-		{
-			printMessage(MessageType::WARNING, "unable to retrieve vertex buffer index, index out of bounds");
-			return -1;
-		}
-		return getContainerBindingIndex(mColors[colorChannel].get());
-	}
-
-
-	// the uv buffer binding index, -1 if not found
-	int Mesh::getUvBufferIndex(unsigned int uvChannel) const
-	{
-		if (uvChannel >= mUvs.size())
-		{
-			printMessage(MessageType::WARNING, "unable to retrieve vertex buffer index, index out of bounds");
-			return -1;
-		}
-		return getContainerBindingIndex(mUvs[uvChannel].get());
-	}
-
 }

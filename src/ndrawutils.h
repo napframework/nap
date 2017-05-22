@@ -9,7 +9,7 @@ namespace opengl
 	/**
 	* Holds all available GL drawing modes
 	*/
-	enum class DrawMode : uint8_t
+	enum class EDrawMode : uint8_t
 	{
 		POINTS = 1,
 		LINES = 2,
@@ -27,7 +27,7 @@ namespace opengl
 	 * @param mode the internal DrawMode
 	 * @return the OpenGL draw mode enum, GL_INVALID_ENUM if mode is unknown
 	 */
-	GLenum getGLMode(DrawMode mode);
+	GLenum getGLMode(EDrawMode mode);
 
 
 	/**
@@ -35,6 +35,6 @@ namespace opengl
 	 * @param mode the OpenGL draw mode
 	 * @return the correct DrawMode, UNKNOWN if that draw mode is unknown or unsupported
 	 */
-	DrawMode getDrawMode(GLenum mode);
+	EDrawMode getDrawMode(GLenum mode);
 
 } // opengl

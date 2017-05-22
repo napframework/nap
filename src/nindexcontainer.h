@@ -48,7 +48,7 @@ namespace opengl
 		* Note that this call will update CPU memory, if  a GPU buffer has been created those settings will be invalidated
 		* To make sure the GPU buffer is in sync with local memory -> call sync()
 		*/
-		void copyData(unsigned int count, unsigned int* indices);
+		void copyData(unsigned int count, const unsigned int* indices);
 
 		/**
 		 * Adds a new index to the current list of indices

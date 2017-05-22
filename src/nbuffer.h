@@ -57,12 +57,12 @@ namespace opengl
 		/**
 		* binds this vertex buffer on the GPU for subsequent GPU calls
 		*/
-		bool bind();
+		bool bind() const;
 
 		/**
 		* unbinds this vertex buffer on the GPU for subsequent GPU calls
 		*/
-		bool unbind();
+		bool unbind() const;
 
 	private:
 		// Buffer GPU ID

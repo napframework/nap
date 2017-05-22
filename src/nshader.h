@@ -5,6 +5,7 @@
 
 // External Includes
 #include <string>
+#include <sstream>
 
 namespace opengl
 {
@@ -17,6 +18,35 @@ namespace opengl
 	class Shader
 	{
 	public:
+		using VertexAttributeID = std::string;
+
+		/**
+		* Known vertex attribute IDs in the system, used for loading/creating meshes with well-known attributes.
+		*/
+		struct VertexAttributeIDs
+		{
+			static const VertexAttributeID PositionVertexAttr;
+			static const VertexAttributeID NormalVertexAttr;
+			static const VertexAttributeID UVVertexAttr;
+			static const VertexAttributeID ColorVertexAttr;
+
+			static const VertexAttributeID GetUVVertexAttr(int uvChannel)
+			{
+				std::ostringstream stream;
+				stream << UVVertexAttr << uvChannel;
+				return stream.str();
+			}
+
+			static const VertexAttributeID GetColorVertexAttr(int colorChannel)
+			{
+				std::ostringstream stream;
+				stream << ColorVertexAttr << colorChannel;
+				return stream.str();
+			}
+		};
+
+
+
 		/**
 		 * Shader state, everything above 0 is an error
 		 * By default the shader is not loaded
@@ -77,15 +107,6 @@ namespace opengl
 		bool isLinked() const								{ return mState == State::Linked; }
 
 		/**
-		 * Associate a generic vertex attribute index with a named attribute variable
-		 * Note that this call links the shader program again
-		 * When not explicetly binding vertex locations the location will be bound automatically
-		 * @param index specifies the index of the generic vertex attribute to be bound
-		 * @param name the name of the vertex shader attribute variable to which index is to be bound.
-		 */
-		void bindVertexAttribute(unsigned int index, const std::string& name);
-
-		/**
 		 * Sets a uniform variable based on the given type, note that
 		 * you need to bind the shader before calling this function
 		 * @param type:  the uniform type
@@ -108,7 +129,7 @@ namespace opengl
 		 * nullptr if the uniform is not found
 		 * @param name: Name of the uniform attribute to get
 		 */
-		const UniformVariable* getUniform(const std::string& name) const;
+		const UniformDeclaration* getUniform(const std::string& name) const;
 
 		/**
 		 * @return all vertex shader attributes
@@ -125,16 +146,15 @@ namespace opengl
 		/**
 		 * @return all uniform shader attributes
 		 */
-		const UniformVariables& getUniforms() const			{ return mShaderUniforms; }
+		const UniformDeclarations& getUniformDeclarations() const			{ return mUniformDeclarations; }
 
 	private:
 		unsigned int mShaderId = 0;				// The shader program identifier
 		unsigned int mShaderVp = 0;				// The vertex shader identifier
 		unsigned int mShaderFp = 0;				// The fragment shader identifier
 
-		UniformVariables mShaderUniforms;		// Shader program uniform attributes
+		UniformDeclarations mUniformDeclarations;	// Shader program uniform attributes
 		VertexAttributes mShaderAttributes;		// Shader program vertex attribute inputs
 		State mState = State::NotLoaded;		// Holds current state of shader program
-		bool mAttributeLocationChanged = false;	// Holds if the attribute location changed, if so, re-link program
 	};
 }	// opengl
