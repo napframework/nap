@@ -252,8 +252,15 @@ namespace opengl
 		SDL_GL_MakeCurrent(window.getWindow(), window.getContext());
 	}
 
+    // TODO: Not sure why __stdcall is used, making this work on 'the other' compilers
+    #ifdef _MSC_VER
+        #define __STDCALL __stdcall
+    #else
+        #define __STDCALL
+    #endif
+
 	// OpenGL message callback; invoked when debug is enabled on the OpenGL context
-	void __stdcall openGLMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
+	void __STDCALL openGLMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 	{
 		std::string readable_type;
 		MessageType message_type = MessageType::INFO;
