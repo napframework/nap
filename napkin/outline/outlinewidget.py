@@ -126,8 +126,7 @@ class OutlineWidget(QWidget):
         self.__saveHeaderState()
 
     def onCoreChanged(self, *args):
-        # qtutils.restoreExpanded(self.__treeView, 'OutlineExpandedState')
-        pass
+        self.__outlineModel.setRoot(self.ctx.core().root())
 
     def __onFilterChanged(self):
         self.__filterModel.setFilterRegExp(self.__filterEdit.text())

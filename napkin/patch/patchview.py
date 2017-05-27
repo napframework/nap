@@ -3,7 +3,7 @@ from PyQt5.QtGui import QCursor, QMouseEvent, QPainter, QKeySequence, QTransform
 from PyQt5.QtWidgets import QGraphicsView, QAction, QMenu
 
 import iconstore
-from appcontext import DisconnectPlugsAction, RemoveObjectsAction
+from actions import DisconnectPlugsAction, RemoveObjectsAction
 from patch.layeritem import LayerItem
 from patch.operatoritem import OperatorItem
 

@@ -1,58 +1,14 @@
 import os
-from typing import Iterable
 
 from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
 
 import core_native.nap
 import core_py.nap
-import iconstore
 import nap
 
 CORE_TYPES = [
     core_py.nap.Core, core_native.nap.Core
 ]
-
-
-class AddChildAction(QAction):
-    def __init__(self, ctx, parentObj, typename):
-        """
-        @type ctx: core_native.Core
-        """
-        super(AddChildAction, self).__init__(iconstore.icon('brick_add'), typename, None)
-        self.__parentObj = parentObj
-        self.__ctx = ctx
-        self.__typename = typename
-        self.triggered.connect(self.perform)
-
-    def perform(self, b: bool):
-        self.__ctx.core().addChild(self.__parentObj, self.__typename)
-
-
-class RemoveObjectsAction(QAction):
-    def __init__(self, ctx: AppContext, objects: Iterable[nap.Object]):
-        super(RemoveObjectsAction, self).__init__(iconstore.icon('delete'), 'Remove', None)
-        self.__ctx = ctx
-        self.__objects = objects
-        self.triggered.connect(self.perform)
-
-    def perform(self, b: bool):
-        self.__ctx.core().removeObjects(self.__objects)
-
-
-class DisconnectPlugsAction(QAction):
-    def __init__(self, ctx: AppContext, plugs: Iterable[nap.Plug]):
-        """
-        @type ctx: core_native.Core
-        """
-        super(DisconnectPlugsAction, self).__init__(iconstore.icon('delete'), 'Disconnect', None)
-        self.__ctx = ctx
-        self.__plugs = plugs
-        self.triggered.connect(self.perform)
-
-    def perform(self, b):
-        for plug in self.__plugs:
-            self.__ctx.core().disconnectPlug(plug)
 
 
 class AppContext(QObject):
@@ -70,7 +26,7 @@ class AppContext(QObject):
 
     def __init__(self):
         super(AppContext, self).__init__()
-        self.__core = nap.Core()
+        self.__core = core_py.nap.Core()
         self.__selectedObjects = None
         self.__editorTypes = {}
         self.__editors = {}
@@ -88,10 +44,7 @@ class AppContext(QObject):
     def registerEditor(self, objType, editorType):
         self.__editorTypes[objType] = editorType
 
-    def core(self):
-        """
-        @rtype: core_native.Core
-        """
+    def core(self) -> nap.Core:
         return self.__core
 
     def setCore(self, core=None):
@@ -111,12 +64,6 @@ class AppContext(QObject):
 
     def requestEditorFor(self, obj):
         self.editorRequested.emit(obj)
-
-    def __onConnectionChanged(self):
-        self.core()._handle_getObjectTree()
-
-    def connect(self, host):
-        self.__core.loadModuleInfo()
 
     def selection(self):
         return self.__selectedObjects

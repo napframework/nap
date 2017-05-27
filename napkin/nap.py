@@ -1,9 +1,17 @@
 from PyQt5.QtCore import pyqtSignal, QObject
 
 
-class Object(object):
+class Object(QObject):
+
+    nameChanged = pyqtSignal(str)
+    childAdded = pyqtSignal(object)
+    childRemoved = pyqtSignal(object)
+
     def __init__(self):
         super(Object, self).__init__()
+
+    def isEditable(self) -> bool:
+        raise NotImplementedError()
 
 
 class Entity(Object):
@@ -21,9 +29,13 @@ class Operator(Object):
         super(Operator, self).__init__()
 
 
-class Attribute(object):
+class Attribute(Object):
     def __init__(self):
         super(Attribute, self).__init__()
+
+class Plug(Object):
+    def __init__(self):
+        super(Plug, self).__init__()
 
 
 class Core(QObject):
@@ -55,3 +67,6 @@ class Core(QObject):
 
     def __init__(self):
         super(Core, self).__init__()
+
+    def root(self):
+        raise NotImplementedError()

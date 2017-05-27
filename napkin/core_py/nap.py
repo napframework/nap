@@ -44,16 +44,14 @@ class Module:
 
 class ModuleManager:
     def __init__(self, directory):
-        self._dir = os.path.abspath(directory)
+        self.__dir = os.path.abspath(directory)
 
     @staticmethod
     def __loadModule(filename: str) -> Optional[Module]:
-        split = os.path.splitext(filename)
-        if len(split) < 2:
-            return None
-        if split[1].lower() != '.napkin':
+        if not filename.endswith('.py'):
             return None
 
+        logging.info('Loading module %s' % filename)
         basename = os.path.basename(filename)
         spec = importlib.util.spec_from_file_location(basename, filename)
         mod = importlib.util.module_from_spec(spec)
@@ -62,9 +60,10 @@ class ModuleManager:
 
     @lru_cache(maxsize=None)
     def modules(self) -> Iterable[Module]:
+        logging.info('Loading modules from %s' % os.path.abspath(self.__dir))
         mods = []
-        for f in os.listdir(self._dir):
-            filename = os.path.join(self._dir, f)
+        for f in os.listdir(self.__dir):
+            filename = os.path.join(self.__dir, f)
             mod = self.__loadModule(filename)
             if mod:
                 mods.append(mod)
@@ -75,7 +74,7 @@ class Core(nap.Core):
 
     def __init__(self):
         super(Core, self).__init__()
-        self.__root = nap.Entity()
+        self.__root = Entity()
 
     def root(self):
         return self.__root
@@ -101,3 +100,9 @@ class Core(nap.Core):
         return (typ for mod in self.moduleInfo().modules() for typ in mod.dataTypes())
 
 
+class Entity(nap.Entity):
+
+
+
+    def __init__(self):
+        super(Entity, self).__init__()

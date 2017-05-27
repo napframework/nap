@@ -8,10 +8,10 @@ from utils.butils import allSubClasses
 
 
 class ModuleModel(QStandardItemModel):
-    def __init__(self, ctx, modInfo):
+    def __init__(self, ctx, moduleManager):
         """
         @type ctx: appcontext.AppContext
-        @type modInfo: core_native.ModuleInfo
+        @type moduleManager: core_native.ModuleInfo
         """
         super(ModuleModel, self).__init__()
         self.ctx = ctx
@@ -20,7 +20,7 @@ class ModuleModel(QStandardItemModel):
 
         modulesItem = self._item('Modules', 'wooden-box')
         self.appendRow(modulesItem)
-        for mod in modInfo.modules():
+        for mod in moduleManager.modules():
             modItem = self._item(mod.name(), 'box')
             modItem.appendRow(self._item(mod.filename(), 'document'))
             modulesItem.appendRow(modItem)
@@ -144,7 +144,7 @@ class CoreSettingsWidget(QWidget):
 
         self.cbCoreType = QComboBox()
         for coreType in appcontext.CORE_TYPES:
-            self.cbCoreType.addItem(coreType.__name__, coreType)
+            self.cbCoreType.addItem(coreType.__module__, coreType)
         self.cbCoreType.currentIndexChanged.connect(self.__onCoreTypeChanged)
         self.layout().addWidget(self.cbCoreType)
 
