@@ -14,7 +14,7 @@ from PyQt5 import QtCore
 
 if __name__ == '__main__'
     """Kick off the applicatoin"""
-    QCoreApplication.setApplicationName('NapEditor')
+    QCoreApplication.setApplicationName('Napkin')
     QCoreApplication.setOrganizationName('Naivi')
 
     app = QApplication(sys.argv)

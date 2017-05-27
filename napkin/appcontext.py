@@ -1,4 +1,5 @@
 import os
+from typing import Iterable
 
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
@@ -12,6 +13,7 @@ CORE_TYPES = [
     core_py.nap.Core, core_native.nap.Core
 ]
 
+
 class AddChildAction(QAction):
     def __init__(self, ctx, parentObj, typename):
         """
@@ -23,23 +25,23 @@ class AddChildAction(QAction):
         self.__typename = typename
         self.triggered.connect(self.perform)
 
-    def perform(self, b):
+    def perform(self, b: bool):
         self.__ctx.core().addChild(self.__parentObj, self.__typename)
 
 
 class RemoveObjectsAction(QAction):
-    def __init__(self, ctx, objects):
+    def __init__(self, ctx: AppContext, objects: Iterable[nap.Object]):
         super(RemoveObjectsAction, self).__init__(iconstore.icon('delete'), 'Remove', None)
         self.__ctx = ctx
         self.__objects = objects
         self.triggered.connect(self.perform)
 
-    def perform(self, b):
+    def perform(self, b: bool):
         self.__ctx.core().removeObjects(self.__objects)
 
 
 class DisconnectPlugsAction(QAction):
-    def __init__(self, ctx, plugs):
+    def __init__(self, ctx: AppContext, plugs: Iterable[nap.Plug]):
         """
         @type ctx: core_native.Core
         """
@@ -51,7 +53,6 @@ class DisconnectPlugsAction(QAction):
     def perform(self, b):
         for plug in self.__plugs:
             self.__ctx.core().disconnectPlug(plug)
-
 
 
 class AppContext(QObject):
@@ -77,7 +78,6 @@ class AppContext(QObject):
         self.__core.logMessageReceived.connect(self.logMessageReceived)
         self.__core.messageReceived.connect(self.__onMessageReceived)
         self.__core.waitingForMessage.connect(self.__onWaitingFormessage)
-
 
     def __onWaitingFormessage(self):
         self.suspendApp()
