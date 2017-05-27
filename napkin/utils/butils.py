@@ -1,5 +1,6 @@
 import os
 
+
 def walkDir(d):
     for root, dirs, files in os.walk(d):
         for f in files:
@@ -30,3 +31,14 @@ def _excludeTypes(items, Types):
         if not exclude:
             filteredItems.append(item)
     return filteredItems
+
+
+def allSubClasses(cls):
+    """ Retrieve all subclasses of the specified type. Results may vary depending on what is imported. """
+    all_subclasses = []
+
+    for subclass in cls.__subclasses__():
+        all_subclasses.append(subclass)
+        all_subclasses.extend(allSubClasses(subclass))
+
+    return reversed(all_subclasses)

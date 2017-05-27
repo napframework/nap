@@ -40,4 +40,4 @@ def iconFor(obj):
     for regType in _ICON_NAMES.keys():
         if issubclass(objType, regType):
             return icon(_ICON_NAMES[regType])
-    raise Exception('Failed to get icon')
+    raise Exception('Failed to get icon for %s' % obj)

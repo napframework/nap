@@ -1,8 +1,8 @@
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 import nap
-from appcontext import AppContext
+from PyQt5.QtWidgets import *
+
+import nap
 
 
 class StatemachineScene(QGraphicsScene):
@@ -22,5 +22,5 @@ class StatemachineEditor(QWidget):
         self.view = StatemachineView()
         self.layout().addWidget(self.view)
 
-    def setModel(self, obj:nap.Object):
+    def setModel(self, obj: nap.Object):
         pass

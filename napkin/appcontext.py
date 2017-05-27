@@ -3,15 +3,19 @@ import os
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
-import core
+import core_native.nap
+import core_py.nap
 import iconstore
 import nap
 
+CORE_TYPES = [
+    core_py.nap.Core, core_native.nap.Core
+]
 
 class AddChildAction(QAction):
     def __init__(self, ctx, parentObj, typename):
         """
-        @type ctx: core.Core
+        @type ctx: core_native.Core
         """
         super(AddChildAction, self).__init__(iconstore.icon('brick_add'), typename, None)
         self.__parentObj = parentObj
@@ -37,7 +41,7 @@ class RemoveObjectsAction(QAction):
 class DisconnectPlugsAction(QAction):
     def __init__(self, ctx, plugs):
         """
-        @type ctx: core.Core
+        @type ctx: core_native.Core
         """
         super(DisconnectPlugsAction, self).__init__(iconstore.icon('delete'), 'Disconnect', None)
         self.__ctx = ctx
@@ -51,7 +55,7 @@ class DisconnectPlugsAction(QAction):
 
 
 class AppContext(QObject):
-    connectionChanged = pyqtSignal(bool, str, str)
+    coreChanged = pyqtSignal(object)
     selectionChanged = pyqtSignal(object)
     applicationClosing = pyqtSignal()
     logMessageReceived = pyqtSignal(int, str, str)
@@ -65,12 +69,11 @@ class AppContext(QObject):
 
     def __init__(self):
         super(AppContext, self).__init__()
-        self.__core = core.Core()
+        self.__core = nap.Core()
         self.__selectedObjects = None
         self.__editorTypes = {}
         self.__editors = {}
         self.__suspended = False
-        self.connectionChanged.connect(self.__onConnectionChanged)
         self.__core.logMessageReceived.connect(self.logMessageReceived)
         self.__core.messageReceived.connect(self.__onMessageReceived)
         self.__core.waitingForMessage.connect(self.__onWaitingFormessage)
@@ -87,9 +90,16 @@ class AppContext(QObject):
 
     def core(self):
         """
-        @rtype: core.Core
+        @rtype: core_native.Core
         """
         return self.__core
+
+    def setCore(self, core=None):
+        if not core:
+            core = CORE_TYPES[0]()
+        self.__core = core
+        self.coreChanged.emit(core)
+        self.__core.refresh()
 
     def hasEditorFor(self, obj):
         return obj.typename() in self.__editorTypes.keys()
@@ -108,7 +118,7 @@ class AppContext(QObject):
     def connect(self, host):
         self.__core.loadModuleInfo()
 
-    def selection(self, types=None):
+    def selection(self):
         return self.__selectedObjects
 
     def setSelection(self, objects):

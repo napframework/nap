@@ -1,5 +1,6 @@
 from PyQt5.QtCore import Qt, QTimer, QSettings
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QTreeView, QAction, QMenu, QApplication, \
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QTreeView, QAction, \
+    QMenu, QApplication, \
     QMessageBox, QFileDialog
 
 import iconstore
@@ -61,7 +62,7 @@ class OutlineWidget(QWidget):
         self.layout().addWidget(self.__treeView)
 
         self.ctx.applicationClosing.connect(self.onCloseApp)
-        self.ctx.connectionChanged.connect(self.onConnectionChanged)
+        self.ctx.coreChanged.connect(self.onCoreChanged)
         QTimer.singleShot(0, self.onDataChanged)
         self.__restoreHeaderState()
 
@@ -124,7 +125,7 @@ class OutlineWidget(QWidget):
     def onCloseApp(self):
         self.__saveHeaderState()
 
-    def onConnectionChanged(self, *args):
+    def onCoreChanged(self, *args):
         # qtutils.restoreExpanded(self.__treeView, 'OutlineExpandedState')
         pass
 
@@ -163,10 +164,10 @@ class OutlineWidget(QWidget):
             self.ctx.setSelection(self.__selectedObject())
 
     # def __createComponentActions(self, parentObj, menu):
-    #     for compType in self.ctx.core().componentTypes():
+    #     for compType in self.ctx.core_native().componentTypes():
     #         print(compType)
     #         action = QAction(iconstore.icon('brick_add'), compType, menu)
-    #         action.triggered[()].connect(lambda compType=compType: self.ctx.core().addChild(parentObj, compType))
+    #         action.triggered[()].connect(lambda compType=compType: self.ctx.core_native().addChild(parentObj, compType))
     #         yield action
 
     @staticmethod

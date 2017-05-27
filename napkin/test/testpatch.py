@@ -196,6 +196,9 @@ class PatchView(QWidget):
         return self.__scene
 
 
+
+
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
 
