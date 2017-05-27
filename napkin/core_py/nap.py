@@ -51,7 +51,7 @@ class ModuleManager:
         split = os.path.splitext(filename)
         if len(split) < 2:
             return None
-        if split[1].lower() != '.py':
+        if split[1].lower() != '.napkin':
             return None
 
         basename = os.path.basename(filename)
