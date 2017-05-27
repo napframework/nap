@@ -1,8 +1,6 @@
 #include "uniforms.h"
-#include "nshaderutils.h"
 #include "nglutils.h"
 #include "imageresource.h"
-#include <gl/glew.h>
 
 
 RTTI_BEGIN_BASE_CLASS(nap::Uniform)
