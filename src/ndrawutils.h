@@ -2,7 +2,7 @@
 
 // External Includes
 #include <stdint.h>
-#include <gl/glew.h>
+#include <GL/glew.h>
 
 namespace opengl
 {
