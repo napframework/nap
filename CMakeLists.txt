@@ -54,7 +54,7 @@ if (WIN32)
     if (MSVC)
         set(CMAKE_PREFIX_PATH ../thirdparty/glew/msvc)
         set(CMAKE_LIBRARY_PATH "../thirdparty/glew/msvc/lib/Release/x64")
-    else()
+    else ()
         set(CMAKE_PREFIX_PATH ../thirdparty/glew/msvc)
         set(CMAKE_LIBRARY_PATH "../thirdparty/glew/msvc/lib/Release/x64")
     endif()
@@ -74,13 +74,12 @@ find_library(GLEW_LIBRARY NAMES GLEW glew32 glew glew32s PATH_SUFFIXES lib64)
 find_package(GLEW REQUIRED)
 find_package(OpenGL)
 find_package(glm REQUIRED)
-find_package(freeimage REQUIRED)
 find_package(assimp REQUIRED)
+if (!UNIX)
+    find_package(freeimage REQUIRED)
+endif ()
 
-# add all cpp files to SOURCES
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
-#source_group("headers" FILES ${HEADERS})
-#source_group("sources" FILES ${SOURCES})
 
 # compile shared lib as target
 add_library(${PROJECT_NAME} STATIC ${SOURCES})
@@ -89,6 +88,7 @@ set(INCLUDES
         ${SDL2_INCLUDE_DIR}
         ${GLM_INCLUDE_DIRS}
         ${GLEW_INCLUDE_DIRS}
+        ${GLEW_INCLUDE_DIR}
         ${FREEIMAGE_INCLUDE_DIRS}
         ${ASSIMP_INCLUDE_DIRS}
         )
@@ -109,7 +109,7 @@ elseif(APPLE)
             ${GLEW_LIBRARIES}
             ${FREEIMAGE_LIBRARIES}
             ${ASSIMP_LIBRARY_DIRS}/${CMAKE_SHARED_LIBRARY_PREFIX}${ASSIMP_LIBRARIES}${CMAKE_SHARED_LIBRARY_SUFFIX}
-)
+            )
 
 elseif(UNIX)
     list(APPEND LIBRARIES
@@ -117,7 +117,6 @@ elseif(UNIX)
             GLEW
             assimp
             )
-
 endif()
 
 # add to include path and expose to depending projects
