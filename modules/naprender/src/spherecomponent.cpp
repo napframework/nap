@@ -2,6 +2,7 @@
 #include "math.h"
 #include "RenderableMeshResource.h"
 #include "meshresource.h"
+#include "material.h"
 
 
 /**

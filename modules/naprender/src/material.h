@@ -4,6 +4,7 @@
 #include <nap/serviceablecomponent.h>
 #include <nap/attribute.h>
 #include <nap/resourcelinkattribute.h>
+#include <nap/ObjectPtr.h>
 
 // Local includes
 #include "shaderresource.h"
@@ -48,11 +49,6 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		* Performs commit or rollback of changes made in init()
-		*/
-		virtual void finish(Resource::EFinishMode mode) override;
-
-		/**
 		* @return display name.
 		*/
 		virtual const std::string getDisplayName() const { return "Material"; }		// TODO
@@ -71,14 +67,7 @@ namespace nap
 		 * Utility for getting the shader resource
 		 * @return the link as a shader resource, nullptr if not linked
 		 */
-		ShaderResource* getShader() const				{ return mShader; }
-
-		/**
-		* Link to the shader this material uses
-		* By default this link is empty, needs to be set
-		* when using this material for drawing
-		*/
-		ShaderResource* mShader = nullptr;
+		ShaderResource* getShader() const				{ return mShader.get(); }
 
 		/**
 		 * Uploads all uniform variables to the GPU
@@ -100,7 +89,6 @@ namespace nap
 		template<typename T>
 		T& getUniform(const std::string& name);
 
-
 		/**
 		* Finds the mesh/shader attribute binding based on the shader attribute ID.
 		* @param shaderAttributeID: ID of the shader vertex attribute.
@@ -113,8 +101,9 @@ namespace nap
 		static std::vector<VertexAttributeBinding>& getDefaultVertexAttributeBindings();
 
 	public:
-		std::vector<VertexAttributeBinding> mVertexAttributeBindings;		///< Mapping from mesh vertex attr to shader vertex attr
-		std::vector<Uniform*>				mUniforms;						///< Static uniforms (as read from file, or as set in code before calling init())
+		std::vector<VertexAttributeBinding>		mVertexAttributeBindings;		///< Mapping from mesh vertex attr to shader vertex attr
+		std::vector<nap::ObjectPtr<Uniform>>	mUniforms;						///< Static uniforms (as read from file, or as set in code before calling init())
+		nap::ObjectPtr<ShaderResource>			mShader = nullptr;				///< The shader that this material is using
 
 	private:
 
@@ -151,9 +140,7 @@ namespace nap
 		using UniformTextureBindings = std::unordered_map<std::string, UniformBinding<UniformTexture>>;
 		using UniformValueBindings = std::unordered_map<std::string, UniformBinding<UniformValue>>;
 		UniformTextureBindings	mUniformTextureBindings;			///< Runtime map of texture uniforms (superset of texture uniforms in mUniforms due to default uniforms).
-		UniformTextureBindings	mPrevUniformTextureBindings;		///< For commit/rollback
 		UniformValueBindings	mUniformValueBindings;;				///< Runtime map of value uniforms (superset of value uniforms in mUniforms due to default uniforms).
-		UniformValueBindings	mPrevUniformValueBindings;			///< For commit/rollback
 	};
 
 

@@ -6,6 +6,7 @@
 
 // External Includes
 #include <nap/resource.h>
+#include <nap/ObjectPtr.h>
 #include <nframebuffer.h>
 
 namespace nap
@@ -23,11 +24,6 @@ namespace nap
 		* Creates internal OpengL render target, bound to color and depth textures.
 		*/
 		virtual bool init(utility::ErrorState& errorState) override;
-
-		/**
-		* Performs commit or rollback of changes made in init.
-		*/
-		virtual void finish(Resource::EFinishMode mode) override;
 
 		/**
 		* Sets color texture resource.
@@ -64,14 +60,13 @@ namespace nap
 
 		// Framebuffer to draw to
 		opengl::TextureRenderTarget2D* mTextureRenderTarget = nullptr;
-		opengl::TextureRenderTarget2D* mPrevTextureRenderTarget = nullptr;
 
 	public:
 		// Color texture to be used by the render target
-		MemoryTextureResource2D* mColorTexture = nullptr;
+		nap::ObjectPtr<MemoryTextureResource2D> mColorTexture = nullptr;
 		
 		// Depth texture to be used by the render target
-		MemoryTextureResource2D* mDepthTexture = nullptr;
+		nap::ObjectPtr<MemoryTextureResource2D> mDepthTexture = nullptr;
 
 		glm::vec4 mClearColor;
 	};

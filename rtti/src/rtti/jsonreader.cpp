@@ -157,17 +157,19 @@ namespace nap
 				}
 
 				const rtti::TypeInfo value_type = property.get_type();
+				const rtti::TypeInfo wrapped_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
+
 				const rapidjson::Value& json_value = json_property->value;
 
 				// If this is a file link, make sure it's of the expected type (string)
-				if (!errorState.check((is_file_link && value_type.get_raw_type().is_derived_from<std::string>()) || !is_file_link, "Encountered a non-string file link. This is not supported"))
+				if (!errorState.check((is_file_link && wrapped_type.get_raw_type().is_derived_from<std::string>()) || !is_file_link, "Encountered a non-string file link. This is not supported"))
 					return false;
 
 				// If the property is of pointer type, we can't set the property here but need to resolve it later
-				if (value_type.is_pointer())
+				if (wrapped_type.is_pointer())
 				{
 					// Pointer types must point to objects derived from rtti::RTTIObject
-					if (!errorState.check(value_type.get_raw_type().is_derived_from<rtti::RTTIObject>(), "Encountered pointer to non-Object. This is not supported"))
+					if (!errorState.check(wrapped_type.get_raw_type().is_derived_from<rtti::RTTIObject>(), "Encountered pointer to non-Object. This is not supported"))
 						return false;
 
 					bool is_embedded_pointer = rtti::hasFlag(property, nap::rtti::EPropertyMetaData::Embedded);
@@ -223,7 +225,7 @@ namespace nap
 						{
 							// If this is an array, read its elements recursively again (in case of nested compounds)
 							rtti::Variant value;
-							if (value_type.is_array())
+							if (wrapped_type.is_array())
 							{
 								// Get instance of the current value (this is a copy) and create an array view on it so we can fill it
 								value = property.get_value(compound);
@@ -233,7 +235,7 @@ namespace nap
 								if (!readArrayRecursively(rootObject, property, array_view, json_value, readState, errorState))
 									return false;
 							}
-							else if (value_type.is_associative_container())
+							else if (wrapped_type.is_associative_container())
 							{
 								// Maps not supported (yet)
 								errorState.fail("Encountered currently unsupported associative property");
@@ -259,8 +261,10 @@ namespace nap
 						{
 							// Basic JSON type, read value and copy to target
 							rtti::Variant extracted_value = readBasicType(json_value);
-							if (extracted_value.convert(value_type))
-								property.set_value(compound, extracted_value);
+							if (!errorState.check(extracted_value.convert(wrapped_type), "Failed to extract primitive type"))
+								return false;
+
+							property.set_value(compound, extracted_value);
 						}
 					}
 				}
@@ -309,6 +313,7 @@ namespace nap
 
 			// Determine the rank of the array (i.e. how many dimensions it has)
 			const rtti::TypeInfo array_type = array.get_rank_type(array.get_rank());
+			const rtti::TypeInfo wrapped_type = array_type.is_wrapper() ? array_type.get_wrapped_type() : array_type;
 
 			// Read values from JSON array
 			for (std::size_t index = 0; index < jsonArray.Size(); ++index)
@@ -318,10 +323,10 @@ namespace nap
 
 				const rapidjson::Value& json_element = jsonArray[index];
 
-				if (array_type.is_pointer())
+				if (wrapped_type.is_pointer())
 				{
 					// Pointer types must point to objects derived from rtti::RTTIObject
-					if (!errorState.check(array_type.get_raw_type().is_derived_from<rtti::RTTIObject>(), "Encountered pointer to non-Object. This is not supported"))
+					if (!errorState.check(wrapped_type.get_raw_type().is_derived_from<rtti::RTTIObject>(), "Encountered pointer to non-Object. This is not supported"))
 						return false;
 
 					bool is_embedded_pointer = rtti::hasFlag(property, nap::rtti::EPropertyMetaData::Embedded);
@@ -385,8 +390,10 @@ namespace nap
 					{
 						// Array of basic types; read basic type
 						rtti::Variant extracted_value = readBasicType(json_element);
-						if (extracted_value.convert(array_type))
-							array.set_value(index, extracted_value);
+						if (!errorState.check(extracted_value.convert(wrapped_type), "Failed to extract primitive type"))
+							return false;
+						
+						array.set_value(index, extracted_value);
 					}
 				}
 

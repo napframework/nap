@@ -55,10 +55,6 @@ namespace nap
 		if (!errorState.check(mShader != nullptr, "Shader not set in material"))
 			return false;
 
-		// Store state for rollback
-		mPrevUniformTextureBindings = std::move(mUniformTextureBindings);
-		mPrevUniformValueBindings = std::move(mUniformValueBindings);
-
 		// Start empty
 		mUniformTextureBindings.clear();
 		mUniformValueBindings.clear();
@@ -85,11 +81,11 @@ namespace nap
 
 			// See if we have a matching uniform in our input data
 			Uniform* matching_uniform = nullptr;
-			for (Uniform* uniform : mUniforms)
+			for (ObjectPtr<Uniform>& uniform : mUniforms)
 			{
 				if (uniform->mName == name)
 				{
-					matching_uniform = uniform;
+					matching_uniform = uniform.get();
 					break;
 				}
 			}
@@ -122,7 +118,7 @@ namespace nap
 		}
 		
 		// Verify that we don't have uniform mapping that do not exist in the shader
-		for (const Uniform* uniform : mUniforms)
+		for (ObjectPtr<Uniform>& uniform : mUniforms)
 		{
 			opengl::UniformDeclarations::const_iterator declaration = uniform_declarations.find(uniform->mName);
 			if (!errorState.check(declaration != uniform_declarations.end(), "Unable to find uniform %s in shader", uniform->mName))
@@ -130,22 +126,6 @@ namespace nap
 		}
 
 		return true;
-	}
-
-
-	void Material::finish(Resource::EFinishMode mode)
-	{
-		if (mode == Resource::EFinishMode::COMMIT)
-		{
-			mPrevUniformTextureBindings.clear();
-			mPrevUniformValueBindings.clear();
-		}
-		else
-		{
-			assert(mode == Resource::EFinishMode::ROLLBACK);
-			mUniformTextureBindings = std::move(mPrevUniformTextureBindings);
-			mUniformValueBindings = std::move(mPrevUniformValueBindings);
-		}
 	}
 
 

@@ -2,6 +2,7 @@
 
 // Local Includes
 #include "rendercomponent.h"
+#include "nap/objectptr.h"
 
 // External Includes
 #include <nmesh.h>
@@ -32,9 +33,9 @@ namespace nap
 		/**
 		* @return The ModelResource associated with this component.
 		*/
-		RenderableMeshResource* getRenderableMeshResource() { return mRenderableMeshResource; }
+		RenderableMeshResource* getRenderableMeshResource();
 
 	public:
-		RenderableMeshResource* mRenderableMeshResource = nullptr;
+		ObjectPtr<RenderableMeshResource> mRenderableMeshResource = nullptr;
 	};
 }

@@ -2,6 +2,7 @@
 
 #include "nshaderutils.h"
 #include "nap/resource.h"
+#include "nap/ObjectPtr.h"
 #include "glm/glm.hpp"
 
 namespace nap
@@ -17,17 +18,12 @@ namespace nap
 	public:
 		
 		/**
-		* TODO: temp, this may be removed later when we use different base class
+		* @return true.
 		*/
 		virtual bool init(utility::ErrorState& errorState) override { return true; }
 
 		/**
-		* TODO: temp, this may be removed later when we use different base class
-		*/
-		virtual void finish(EFinishMode mode) override {}
-
-		/**
-		* TODO: temp, this may be removed later when we use different base class
+		* 
 		*/
 		virtual const std::string getDisplayName() const  override { return "uniform"; }
 
@@ -187,6 +183,6 @@ namespace nap
 		*/
 		virtual opengl::GLSLType getGLSLType() const override { return opengl::GLSLType::Tex2D; }
 
-		TextureResource* mTexture = nullptr;		///< Texture to use for this uniform
+		ObjectPtr<TextureResource> mTexture = nullptr;		///< Texture to use for this uniform
 	};
 }

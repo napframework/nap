@@ -2,6 +2,7 @@
 
 // RTTI includes
 #include <rtti/rtti.h>
+#include <rtti/rttiobject.h>
 
 namespace nap
 {

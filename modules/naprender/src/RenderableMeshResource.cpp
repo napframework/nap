@@ -32,7 +32,6 @@ namespace nap
 
 	bool RenderableMeshResource::init(utility::ErrorState& errorState)
 	{
-		mPrevVAO = std::move(mVAO);
 		mVAO = std::make_unique<opengl::VertexArrayObject>();
 
 		for (auto& kvp : mMaterialResource->getShader()->getShader().getAttributes())
@@ -54,24 +53,21 @@ namespace nap
 	}
 
 
-	void RenderableMeshResource::finish(Resource::EFinishMode mode)
-	{
-		if (mode == Resource::EFinishMode::COMMIT)
-		{
-			mRenderService->queueResourceForDestruction(std::move(mPrevVAO)); 
-		}
-		else
-		{
-			assert(mode == Resource::EFinishMode::ROLLBACK);
-			mRenderService->queueResourceForDestruction(std::move(mVAO)); 
-			mVAO = std::move(mPrevVAO);
-		}
-	}
-
-
 	const std::string RenderableMeshResource::getDisplayName() const
 	{
 		return "ModelResource";
+	}
+
+
+	Material* RenderableMeshResource::getMaterial()
+	{
+		return mMaterialResource.get();
+	}
+
+
+	MeshResource* RenderableMeshResource::getMeshResource()
+	{
+		return mMeshResource.get();
 	}
 }
 

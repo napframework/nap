@@ -1,6 +1,7 @@
 #include <planecomponent.h>
 #include "meshresource.h"
 #include "RenderableMeshResource.h"
+#include "material.h"
 
 // All the plane vertices
 static float plane_vertices[] =

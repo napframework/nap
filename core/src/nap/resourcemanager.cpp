@@ -4,6 +4,7 @@
 #include "rtti/jsonreader.h"
 #include "rtti/factory.h"
 #include "nap/core.h"
+#include "ObjectPtr.h"
 
 RTTI_DEFINE(nap::ResourceManagerService)
 
@@ -11,10 +12,11 @@ namespace nap
 {
 	using namespace rtti;
 
+
 	/**
 	* Helper to find index into unresolved pointer array.
 	*/
-	static int findUnresolvedPointer(UnresolvedPointerList& unresolvedPointers, RTTIObject* object, const rtti::RTTIPath& path)
+	static int findUnresolvedPointer(UnresolvedPointerList& unresolvedPointers, const RTTIObject* object, const rtti::RTTIPath& path)
 	{
 		for (int index = 0; index < unresolvedPointers.size(); ++index)
 		{
@@ -28,6 +30,160 @@ namespace nap
 
 		return -1;
 	}
+
+
+	/**
+	* Helper function to recursively check whether two variants (i.e. values) are equal
+	* Correctly deals with arrays and nested compounds, but note: does not follow pointers
+	*/
+	bool areVariantsEqualRecursive(const RTTIObject* unresolvedPointerRootObject, const rtti::Variant& variantA, const rtti::Variant& variantB, RTTIPath& rttiPath, rtti::UnresolvedPointerList& unresolvedPointers)
+	{
+		// Extract wrapped type
+		auto value_type = variantA.get_type();
+		auto actual_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
+		bool is_wrapper = actual_type != value_type;
+
+		// Types must match
+		assert(value_type == variantB.get_type());
+
+		// If this is an array, compare the array element-wise
+		if (actual_type.is_array())
+		{
+			// Get the arrays
+			rtti::VariantArray array_a = variantA.create_array_view();
+			rtti::VariantArray array_b = variantB.create_array_view();
+
+			// If the sizes don't match, the arrays can't be equal
+			if (array_a.get_size() != array_b.get_size())
+				return false;
+
+			// Recursively compare each array element
+			for (int index = 0; index < array_a.get_size(); ++index)
+			{
+				rttiPath.pushArrayElement(index);
+
+				rtti::Variant array_value_a = array_a.get_value(index);
+				rtti::Variant array_value_b = array_b.get_value(index);
+
+				if (!areVariantsEqualRecursive(unresolvedPointerRootObject, array_value_a, array_value_b, rttiPath, unresolvedPointers))
+					return false;
+
+				rttiPath.popBack();
+			}
+		}
+		else
+		{
+			// Special case handling for pointers so we can compare by ID or by actual pointer value
+			if (actual_type.is_pointer())
+			{
+				std::string target_a_id;
+				std::string target_b_id;
+
+				// Extract the pointer
+				rtti::Variant value_a = is_wrapper ? variantA.extract_wrapped_value() : variantA;
+				rtti::Variant value_b = is_wrapper ? variantB.extract_wrapped_value() : variantB;
+
+				// Can only compare pointers that are of type Object
+				assert(value_a.get_type().is_derived_from<rtti::RTTIObject>() && value_b.get_type().is_derived_from<rtti::RTTIObject>());
+
+				// Extract the objects
+				rtti::RTTIObject* object_a = value_a.get_value<rtti::RTTIObject*>();
+				if (object_a == nullptr)
+				{
+					int unresolved_pointer_index = findUnresolvedPointer(unresolvedPointers, unresolvedPointerRootObject, rttiPath);
+					if (unresolved_pointer_index != -1)
+						target_a_id = unresolvedPointers[unresolved_pointer_index].mTargetID;
+				}
+				else
+				{
+					target_a_id = object_a->mID;
+				}
+
+				rtti::RTTIObject* object_b = value_b.get_value<rtti::RTTIObject*>();
+				if (object_b != nullptr)
+					target_b_id = object_b->mID;
+
+				// Check whether the IDs match
+				return target_a_id == target_b_id;
+			}
+
+			// If the type of this variant is a primitive type or non-primitive type with no RTTI properties,
+			// we perform a normal comparison
+			auto child_properties = actual_type.get_properties();
+			if (rtti::isPrimitive(actual_type) || child_properties.empty())
+				return is_wrapper ? (variantA.extract_wrapped_value() == variantB.extract_wrapped_value()) : (variantA == variantB);
+
+			// Recursively compare each property of the compound
+			for (const rtti::Property& property : child_properties)
+			{
+				rttiPath.pushAttribute(property.get_name().data());
+
+				rtti::Variant value_a = property.get_value(variantA);
+				rtti::Variant value_b = property.get_value(variantB);
+				if (!areVariantsEqualRecursive(unresolvedPointerRootObject, value_a, value_b, rttiPath, unresolvedPointers))
+					return false;
+
+				rttiPath.popBack();
+			}
+		}
+
+		return true;
+	}
+
+
+	/**
+	* Tests whether the attributes of two objects have the same values. This is a special version that takes the unresolved pointer list
+	* and compares any unresolved pointers against IDs present in that list.
+	* @param objectA: first object to compare attributes from.
+	* @param objectB: second object to compare attributes from.
+	* @param unresolvedPointers: list of unresolved pointers as returned from readJSONFile.
+	*/
+	bool areObjectsEqual(const rtti::RTTIObject& objectA, const rtti::RTTIObject& objectB, rtti::UnresolvedPointerList& unresolvedPointers)
+	{
+		rtti::TypeInfo typeA = objectA.get_type();
+		assert(typeA == objectB.get_type());
+
+		RTTIPath path;
+		for (const rtti::Property& property : typeA.get_properties())
+		{
+			path.pushAttribute(property.get_name().data());
+
+			rtti::Variant valueA = property.get_value(objectA);
+			rtti::Variant valueB = property.get_value(objectB);
+			if (!areVariantsEqualRecursive(&objectA, valueA, valueB, path, unresolvedPointers))
+				return false;
+
+			path.popBack();
+		}
+
+		return true;
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// ResourceManagerService::RollbackHelper
+	//////////////////////////////////////////////////////////////////////////
+
+
+	ResourceManagerService::RollbackHelper::RollbackHelper(ResourceManagerService& service) :
+		mService(service)
+	{
+	}
+
+	ResourceManagerService::RollbackHelper::~RollbackHelper()
+	{
+		if (mPatchObjects)
+			mService.patchObjectPtrs(mService.mResources);
+	}
+
+	void ResourceManagerService::RollbackHelper::clear()
+	{
+		mPatchObjects = false;
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// ObjectGraph
+	//////////////////////////////////////////////////////////////////////////
 
 
 	/** 
@@ -262,190 +418,61 @@ namespace nap
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// ObjectRestorer
-	//////////////////////////////////////////////////////////////////////////
-
-	/*
-	* This is a helper object to restore state during loading. On construction,
-	* an rtti clone is created of all the 'existing' objects. On destruction, the 
-	* clone is used to copy the rtti attribute values back from the clone into the
-	* original object. Also, any 'new' objects that were added to the manager are
-	* removed (destroying them in the process).
-	* To disable restoring of the objects, use enableRestore(false).
-	*/
-	class ObjectRestorer final
-	{
-	public:
-
-		ObjectRestorer(ResourceManagerService& resourceManagerService, ResourceManagerService::ExistingObjectMap& existingObjects, ObservedObjectList& newObjects) :
-			mResourceManagerService(resourceManagerService),
-			mExistingObjects(existingObjects),
-			mNewObjects(newObjects)
-		{
-			// Make backups of all existing objects by cloning them
-			for (auto kvp : mExistingObjects)
-			{
-				RTTIObject* source = kvp.first;			// file object
-				RTTIObject* target = kvp.second;		// object in ResourceMgr
-				std::unique_ptr<RTTIObject> copy = std::move(rtti::cloneObject(*target));
-                mClonedObjects[source] = std::move(copy); // Mapping from 'read object' to backup of file in ResourceMgr
-			}
-		}
-
-
-		~ObjectRestorer()
-		{
-			if (mRestore)
-			{
-				// Copy attributes from clones back to the original objects
-				for (auto kvp : mExistingObjects)
-				{
-					RTTIObject* source = kvp.first;
-					RTTIObject* target = kvp.second;
-
-					ResourceManagerService::ClonedObjectMap::const_iterator clone = mClonedObjects.find(source);
-					assert(clone != mClonedObjects.end());
-
-					rtti::copyObject(*(clone->second), *target);
-				}
-
-				// Remove objects from resource manager if they were added
-				for (auto& object : mNewObjects)
-				{
-					nap::Resource* resource = rtti_cast<Resource>(object);
-					if (resource != nullptr)
-					{
-						if (mResourceManagerService.findResource(resource->mID) != nullptr)
-							mResourceManagerService.removeResource(resource->mID);
-					}
-				}
-			}
-		}
-
-
-		/**
-		* Disables restoring of attributes on destruction.
-		*/
-		void clear()
-		{ 
-			mRestore = false; 
-		}
-
-
-		/**
-		* Returns objects cloned from existing objects during init().
-		*/
-		const ResourceManagerService::ClonedObjectMap& getClonedObjects() const
-		{ 
-			return mClonedObjects; 
-		}
-
-	private:
-		ResourceManagerService&							mResourceManagerService;
-		ResourceManagerService::ClonedObjectMap			mClonedObjects;				// Objects as cloned from existing objects during init()
-		ResourceManagerService::ExistingObjectMap&		mExistingObjects;			// Objects existing in manager
-		ObservedObjectList&								mNewObjects;				// Objects as added to the manager during loading
-		bool											mRestore = true;			// Flag indicating whether to enable or disable restoring during destruction
-	};
-
-
-	//////////////////////////////////////////////////////////////////////////
 	// ResourceManagerService
 	//////////////////////////////////////////////////////////////////////////
 
 
 	ResourceManagerService::ResourceManagerService() :
 		mDirectoryWatcher(std::make_unique<DirectoryWatcher>())
-	{ }
-
-
-	/**
-	* Copies rtti attributes from File object to object existing in the manager. Patches the unresolved pointer list so the it contains the correct object.
-	*/
-	bool ResourceManagerService::updateExistingObjects(const ExistingObjectMap& existingObjectMap, UnresolvedPointerList& unresolvedPointers, utility::ErrorState& errorState)
-	{
-		for (auto kvp : existingObjectMap)
-		{
-			Resource* resource = rtti_cast<Resource>(kvp.first);
-			if (resource == nullptr)
-				continue;
-
-			Resource* existing_resource = rtti_cast<Resource>(kvp.second);
-			assert(existing_resource != nullptr);
-
-			if (!errorState.check(existing_resource->get_type() == resource->get_type(), "Unable to update object, different types"))		// todo: actually support this properly
-				return false;
-
-			// Find all links from the resource
-			std::vector<rtti::ObjectLink> links;
-			rtti::findObjectLinks(*resource, links);
-
-			// We need to update the UnresolvedPointers to by unresolved against the object from the manager, instead of the object from the file
-			for (const rtti::ObjectLink& link : links)
-			{
-				// Patch the mObject member: it should not use the File object anymore, but the object from the manager
-				int unresolved_pointer_index = findUnresolvedPointer(unresolvedPointers, resource, link.mSourcePath);
-				assert(unresolved_pointer_index != -1);
-				unresolvedPointers[unresolved_pointer_index].mObject = existing_resource;
-			}
-
-			// Copy regular properties
-			for (const rtti::Property& property : resource->get_type().get_properties())
-			{
-				if (!property.get_type().is_pointer())
-				{
-					rtti::Variant new_value = property.get_value(*resource);
-					property.set_value(existing_resource, new_value);
-				}
-			}
-		}
-
-		return true;
+	{ 
 	}
 
 
 	/**
-	* Builds an object graph of all objects currently in the manager. Then, from all objects that are effectively changed (determined by an RTTI diff), it traverses 
+	* Builds an object graph of all objects currently in the manager, overlayed by objects that about to be updated. Then, from all objects that are effectively changed or added, it traverses
 	* the object graph to find the minimum set of objects that requires an init. Finally, the list of objects is sorted on object graph depth so that the init() order
 	* is correct.
 	*/
-	bool ResourceManagerService::determineObjectsToInit(const ExistingObjectMap& existingObjects, const ClonedObjectMap& clonedObjects, const ObservedObjectList& newObjects, const std::string& externalChangedFile, ObservedObjectList& objectsToInit, utility::ErrorState& errorState)
+	bool ResourceManagerService::determineObjectsToInit(const ObjectsToUpdate& objectsToUpdate, const std::string& externalChangedFile, std::vector<std::string>& objectsToInit, utility::ErrorState& errorState)
 	{
-		// Build an object graph of all objects in the ResourceMgr
+		// Build an object graph of all objects in the ResourceMgr. If any object is in the objectsToUpdate list,
+		// that object is added instead. This makes objectsToUpdate and 'overlay'.
 		ObservedObjectList all_objects;
 		for (auto& kvp : mResources)
-			all_objects.push_back(kvp.second.get());
-
-		ObjectGraph object_graph;
-		if (!object_graph.Build(all_objects, errorState))
-			return false;
-
-		// Build set of changed IDs. These are objects that have different attributes, and objects that are added.
-		// Note: we need to use the cloned objects because the original have been copied over already.
-		std::set<std::string> dirty_nodes;
-		for (auto& kvp : clonedObjects)
 		{
-			ExistingObjectMap::const_iterator existing_object = existingObjects.find(kvp.first);
-			assert(existing_object != existingObjects.end());
-
-			if (!rtti::areObjectsEqual(*existing_object->second, *kvp.second.get()))
-				dirty_nodes.insert(kvp.first->mID);
+			ObjectsToUpdate::const_iterator object_to_update = objectsToUpdate.find(kvp.first);
+			if (object_to_update == objectsToUpdate.end())
+				all_objects.push_back(kvp.second.get());
+			else
+				all_objects.push_back(object_to_update->second.get());
 		}
 
-		// All new objects need an init
-		for (RTTIObject* new_object : newObjects)
-			dirty_nodes.insert(new_object->mID);
+		std::set<std::string> dirty_nodes;
+		for (auto& kvp : objectsToUpdate)
+		{
+			// Mark all the objects to update as 'dirty', we need to init() those and 
+			// all the objects that point to them (recursively)
+			dirty_nodes.insert(kvp.first);
+
+			// Any objects not yet in the manager are new and need to be added to the graph as well
+			if (mResources.find(kvp.first) == mResources.end())
+				all_objects.push_back(kvp.second.get());
+		}
 
 		// Add externally changed file that caused load of this json file
 		if (!externalChangedFile.empty())
 			dirty_nodes.insert(externalChangedFile);
+
+		ObjectGraph object_graph;
+		if (!object_graph.Build(all_objects, errorState))
+			return false;
 
 		// Traverse graph for incoming links and add all of them
 		std::set<ObjectGraph::Node*> objects_to_init;
 		for (const std::string& dirty_node : dirty_nodes)
 		{
 			ObjectGraph::Node* node = object_graph.FindNode(dirty_node);
-		
+
 			// In the case that file links change as part of the file modification(s), it's possible for the dirty node to not be present in the ObjectGraph,
 			// so we can't assert here but need to deal with that case.
 			if (node != nullptr)
@@ -458,39 +485,13 @@ namespace nap
 			sorted_objects_to_init.push_back(object_to_init);
 
 		std::sort(sorted_objects_to_init.begin(), sorted_objects_to_init.end(),
-				[](ObjectGraph::Node* nodeA, ObjectGraph::Node* nodeB) { return nodeA->mDepth > nodeB->mDepth; });
+			[](ObjectGraph::Node* nodeA, ObjectGraph::Node* nodeB) { return nodeA->mDepth > nodeB->mDepth; });
 
 		for (ObjectGraph::Node* sorted_object_to_init : sorted_objects_to_init)
 			if (sorted_object_to_init->mObject != nullptr)
-				objectsToInit.push_back(sorted_object_to_init->mObject);
+				objectsToInit.push_back(sorted_object_to_init->mObject->mID);
 
 		return true;
-	}
-
-	
-	/** 
-	* Splits fileObjects into lists of objects that exist in the manager and do not yet exist.
-	* @param fileObjects: objects as read from file.
-	* @param existingObjects: mapping from file object to object in manager
-	* @param newObjects: list of objects not yet in manager.
-	*/
-	void ResourceManagerService::splitFileObjects(OwnedObjectList& fileObjects, ExistingObjectMap& existingObjects, ObservedObjectList& newObjects)
-	{
-		// Split file objects into new/existing/target lists
-		for (auto& source_object : fileObjects)
-		{
-			Resource* resource = rtti_cast<Resource>(source_object.get());
-			if (resource == nullptr)
-				continue;
-
-			std::string id = resource->mID;
-
-			Resource* existing_resource = findResource(id);
-			if (existing_resource == nullptr)
-				newObjects.push_back(source_object.get());
-			else
-				existingObjects.insert({ source_object.get(), existing_resource });
-		}
 	}
 
 
@@ -500,17 +501,75 @@ namespace nap
 	}
 
 
-	/*
-	* Important to understand in this function is how ownership flows through the various data structures.
-	* First, objects are loaded into file_objects and owned by it. Any objects that did not yet exist
-	* in the manager are moved to the manager (so ownership is transfered for those objects, but those
-	* objects only).
-	* Existing objects are copied over from the file object to the existing object, and the source file object
-	* will be deleted when file_objects goes out of scope, as ownership will remain in the file_objects list for
-	* the existing objects.
-	* When a rollback occurs, any newly added objects are removed from the manager, effectively deleting them.
-	* Other maps/list like existing/new are merely observers into the file objects and manager objects.
-	*/
+	bool ResourceManagerService::resolvePointers(ObjectsToUpdate& objectsToUpdate, const UnresolvedPointerList& unresolvedPointers, utility::ErrorState& errorState)
+	{
+		for (const UnresolvedPointer& unresolved_pointer : unresolvedPointers)
+		{
+			nap::Resource* source_resource = rtti_cast<Resource>(unresolved_pointer.mObject);
+			if (source_resource == nullptr)
+				continue;
+
+			// Objects in objectsToUpdate have preference over the manager's objects
+			Resource* target_resource = nullptr;
+			ObjectsToUpdate::iterator object_to_update = objectsToUpdate.find(unresolved_pointer.mTargetID);
+			if (object_to_update == objectsToUpdate.end())
+				target_resource = findResource(unresolved_pointer.mTargetID);
+			else
+				target_resource = rtti_cast<Resource>(object_to_update->second.get());
+
+			if (!errorState.check(target_resource != nullptr, "Unable to resolve link to object %s from attribute %s", unresolved_pointer.mTargetID.c_str(), unresolved_pointer.mRTTIPath.toString().c_str()))
+				return false;
+
+			rtti::ResolvedRTTIPath resolved_path;
+			if (!errorState.check(unresolved_pointer.mRTTIPath.resolve(unresolved_pointer.mObject, resolved_path), "Failed to resolve RTTIPath %s", unresolved_pointer.mRTTIPath.toString().c_str()))
+				return false;
+
+			rtti::TypeInfo resolved_path_type = resolved_path.getType();
+			rtti::TypeInfo actual_type = resolved_path_type.is_wrapper() ? resolved_path_type.get_wrapped_type() : resolved_path_type;
+
+			if (!errorState.check(target_resource->get_type().is_derived_from(actual_type), "Failed to resolve pointer: target of pointer {%s}:%s is of the wrong type (found '%s', expected '%s')",
+				unresolved_pointer.mObject->mID.c_str(), unresolved_pointer.mRTTIPath.toString().c_str(), target_resource->get_type().get_name().data(), actual_type.get_raw_type().get_name().data()))
+			{
+				return false;
+			}
+
+			assert(actual_type.is_pointer());
+			bool succeeded = resolved_path.setValue(target_resource);
+			if (!errorState.check(succeeded, "Failed to resolve pointer"))
+				return false;
+		}
+
+		return true;
+	}
+
+
+	// inits all objects 
+	bool ResourceManagerService::initObjects(std::vector<std::string> objectsToInit, ObjectsToUpdate& objectsToUpdate, utility::ErrorState& errorState)
+	{
+		// Init all objects in the correct order
+		for (const std::string& id : objectsToInit)
+		{
+			rtti::RTTIObject* object = nullptr;
+			
+			// We perform lookup by ID. Objects in objectsToUpdate have preference over the manager's objects.
+			ObjectsToUpdate::iterator updated_object = objectsToUpdate.find(id);
+			if (updated_object != objectsToUpdate.end())
+				object = updated_object->second.get();
+			else
+				object = findResource(id);
+
+			nap::Resource* resource = rtti_cast<Resource>(object);
+			if (resource == nullptr)
+				continue;
+
+			if (!resource->init(errorState))
+				return false;
+		}
+
+		return true;
+	}
+
+
 	bool ResourceManagerService::loadFile(const std::string& filename, const std::string& externalChangedFile, utility::ErrorState& errorState)
 	{
 		// ExternalChangedFile should only be used if it's different from the file being reloaded
@@ -521,110 +580,97 @@ namespace nap
 		if (!readJSONFile(filename, getFactory(), read_result, errorState))
 			return false;
 
-		ExistingObjectMap existing_objects;			// Mapping from 'file object' to 'existing object in ResourceMgr'. This is an observer relationship.
-		ObservedObjectList new_objects;				// Objects not (yet) present in ResourceMgr.
-
-		// Split file objects into observer lists for new/existing objects. 
-		splitFileObjects(read_result.mReadObjects, existing_objects, new_objects);
-
-		// The ObjectRestorer is capable of undoing changes that we are going to make in the loading process
-		// (adding objects, updating objects).
-		ObjectRestorer object_restorer(*this, existing_objects, new_objects);
-
-		// Update attributes of objects already existing in ResourceMgr
-		if (!updateExistingObjects(existing_objects, read_result.mUnresolvedPointers, errorState))
-			return false;
-
-		// Add objects that were not yet present in ResourceMgr
-		// Note that we cannot iterate over new_objects as we need to transfer ownership
-		// of the file object to the resource manager.
-		for (auto& object : read_result.mReadObjects)
+		// We first gather the objects that require an update. These are the new objects and the changed objects.
+		// Change detection is performed by comparing RTTI attributes. Very important to note is that, after reading
+		// a json file, pointers are unresolved. When comparing them to the existing objects, they are always different
+		// because in the existing objects the pointers are already resolved.
+		// To solve this, we have a special RTTI comparison function that receives the unresolved pointer list from readJSONFile.
+		// Internally, when a pointer is found, the ID of the unresolved pointer is checked against the mID of the target object.
+		//
+		// The reason why we cannot first resolve and then compare, is because deciding what to resolve against what objects
+		// depends on the dirty comparison.
+		// Finally, we could improve on the unresolved pointer check if we could introduce actual UnresolvedPointer objects
+		// that the pointers are pointing to after loading. These would hold the ID, so that comparisons could be made easier.
+		// The reason we don't do this is because it isn't possible to do so in RTTR as it's very strict in it's type safety.
+		ObjectsToUpdate objects_to_update;
+		for (auto& read_object : read_result.mReadObjects)
 		{
-			nap::Resource* resource = rtti_cast<Resource>(object.get());
+			Resource* resource = rtti_cast<Resource>(read_object.get());
 			if (resource == nullptr)
 				continue;
 
-			if (findResource(resource->mID) != nullptr)
-				continue;
+			std::string id = resource->mID;
 
-			// Note: because the manager currently owns only Resource types, we need to release
-			// the Object* here and create a new unique_ptr of type Resource.
-			object.release();
-			addResource(resource->mID, std::unique_ptr<Resource>(resource));
-		}
-
-		// Resolve all unresolved pointers against the ResourceMgr
-		for (const UnresolvedPointer& unresolved_pointer : read_result.mUnresolvedPointers)
-		{
-			nap::Resource* source_resource = rtti_cast<Resource>(unresolved_pointer.mObject);
-			if (source_resource == nullptr)
-				continue;
-
-			Resource* target_resource = findResource(unresolved_pointer.mTargetID);
-			if (!errorState.check(target_resource != nullptr, "Unable to resolve link to object %s from attribute %s", unresolved_pointer.mTargetID.c_str(), unresolved_pointer.mRTTIPath.toString().c_str()))
-				return false;
-
-			rtti::ResolvedRTTIPath resolved_path;
-			if (!errorState.check(unresolved_pointer.mRTTIPath.resolve(unresolved_pointer.mObject, resolved_path), "Failed to resolve RTTIPath %s", unresolved_pointer.mRTTIPath.toString().c_str()))
-				return false;
-
-			if (!errorState.check(target_resource->get_type().is_derived_from(resolved_path.getType()), "Failed to resolve pointer: target of pointer {%s}:%s is of the wrong type (found '%s', expected '%s')",
-									unresolved_pointer.mObject->mID.c_str(), unresolved_pointer.mRTTIPath.toString().c_str(), target_resource->get_type().get_name().data(), resolved_path.getType().get_raw_type().get_name().data()))
+			ResourceMap::iterator existing_resource = mResources.find(id);
+			if (existing_resource == mResources.end() ||
+				!areObjectsEqual(*read_object.get(), *existing_resource->second.get(), read_result.mUnresolvedPointers))
 			{
-				return false;
-			}				
-
-			assert(resolved_path.getType().is_pointer());
-			bool succeeded = resolved_path.setValue(target_resource);
- 			if (!errorState.check(succeeded, "Failed to resolve pointer"))
-				return false;
-		}
-
-		// Find out what objects to init and in what order to init them
-		ObservedObjectList objects_to_init;
-		if (!determineObjectsToInit(existing_objects, object_restorer.getClonedObjects(), new_objects, externalChangedFile, objects_to_init, errorState))
-			return false;
-		
-		// Init all objects in the correct order
-		std::vector<Resource*> initted_objects;
-		bool init_success = true;
-		for (RTTIObject* object : objects_to_init)
-		{
-			nap::Resource* resource = rtti_cast<Resource>(object);
-			if (resource == nullptr)
-				continue;
-
-			initted_objects.push_back(resource);
-
-			if (!resource->init(errorState))
-			{
-				init_success = false;
-				break;
+				objects_to_update.emplace(std::make_pair(id, std::move(read_object)));
 			}
 		}
 
-		// In case of error, rollback all modifications done by attempted init calls
-		if (!init_success)
-		{
-			for (Resource* initted_object : initted_objects)
-				initted_object->finish(Resource::EFinishMode::ROLLBACK);
 
+		// Resolve all unresolved pointers. The set of objects to resolve against are the objects in the ResourceManager, with the new/dirty
+		// objects acting as an overlay on the existing objects. In other words, when resolving, objects read from the json file have 
+		// preference over objects in the resource manager as these are the ones that will eventually be (re)placed in the manager.
+		if (!resolvePointers(objects_to_update, read_result.mUnresolvedPointers, errorState))
 			return false;
+
+		// We instantiate a helper that will perform a rollback of any pointer patching that we have done.
+		// In case of success we clear this helper.
+		// We only ever need to rollback the pointer patching, because the resource manager remains untouched
+		// until the very end where we know that all init() calls have succeeded
+		RollbackHelper rollback_helper(*this);
+
+		// Patch ObjectPtrs so that they point to the updated object instead of the old object. We need to do this before determining
+		// init order, otherwise a part of the graph may still be pointing to the old objects.
+		patchObjectPtrs(objects_to_update);
+
+		// Find out what objects to init and in what order to init them
+		std::vector<std::string> objects_to_init;
+		if (!determineObjectsToInit(objects_to_update, externalChangedFile, objects_to_init, errorState))
+			return false;
+
+		// The objects that require an init may contain objects that were not present in the file (because they are
+		// pointing to objects that will be reconstructed and initted). In that case we reconstruct those objects 
+		// as well by cloning them and pushing them into the objects_to_update list.
+		for (const std::string& object_to_init : objects_to_init)
+		{
+			if (objects_to_update.find(object_to_init) == objects_to_update.end())
+			{
+				Resource* resource = findResource(object_to_init);
+				assert(resource);
+
+				std::unique_ptr<Resource> cloned_resource = rtti::cloneObject(*resource, getFactory());
+				objects_to_update.emplace(std::make_pair(cloned_resource->mID, std::move(cloned_resource)));
+			}
 		}
 
-		// Everything was successful. Tell the restorer not to perform a rollback of the state.
-		object_restorer.clear();
+		// Patch again to update pointers to objects that were cloned
+		patchObjectPtrs(objects_to_update);
 
-		// Everything successful, commit changes
-		for (Resource* resource : initted_objects)
-			resource->finish(Resource::EFinishMode::COMMIT);
+		// init all objects in the correct order
+		if (!initObjects(objects_to_init, objects_to_update, errorState))
+			return false;
+
+		// In case all init() operations were successful, we can now replace the objects
+		// in the manager by the new objects. This effectively destroys the old objects as well.
+		for (auto& kvp : objects_to_update)
+		{
+			mResources.erase(kvp.first);
+			mResources.emplace(std::make_pair(kvp.first, std::move(rtti_cast<Resource>(kvp.second))));
+		}
 
 		for (const FileLink& file_link : read_result.mFileLinks)
 			addFileLink(filename, file_link.mTargetFile);
 
 		mFilesToWatch.insert(toComparableFilename(filename));
+		
+		// Everything was successful, don't rollback any changes that were made
+		rollback_helper.clear();
 
 		return true;
+
 	}
 
 

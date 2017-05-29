@@ -58,6 +58,11 @@ namespace nap
 		mRenderableMeshResource->getVAO().unbind();
 
 	}
+
+	RenderableMeshResource* RenderableMeshComponent::getRenderableMeshResource()
+	{
+		return mRenderableMeshResource.get();
+	}
 }
 
 RTTI_DEFINE(nap::RenderableMeshComponent)

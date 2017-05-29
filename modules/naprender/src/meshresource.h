@@ -19,11 +19,6 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
- 		 * Performs commit or rollback of changes made in init.
- 		 */
-		virtual void finish(Resource::EFinishMode mode) override;
-
-		/**
 		 * @return the mesh display name
 		 */
 		virtual const std::string getDisplayName() const override;
@@ -41,7 +36,6 @@ namespace nap
 
 		// opengl mesh object
 		std::unique_ptr<opengl::Mesh>	mMesh;
-		std::unique_ptr<opengl::Mesh>	mPrevMesh;
 	};
 
 

@@ -3,6 +3,7 @@
 // RTTI Includes
 #include <rtti/rtti.h>
 #include "rttipath.h"
+#include "factory.h"
 
 namespace nap
 {
@@ -42,10 +43,9 @@ namespace nap
 		* @param object: the object to copy rtti attributes from.
 		*/
 		template<typename T>
-		std::unique_ptr<T> cloneObject(T& object)
+		std::unique_ptr<T> cloneObject(T& object, rtti::Factory& factory)
 		{
-			rtti::TypeInfo type = object.get_type();
-			T* copy = type.create<T>();
+			T* copy = static_cast<T*>(factory.create(object.get_type()));
 			copyObject(object, *copy);
 
 			return std::unique_ptr<T>(copy);

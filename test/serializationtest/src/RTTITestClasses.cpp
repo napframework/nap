@@ -9,6 +9,7 @@ RTTI_BEGIN_CLASS(BaseClass)
 	RTTI_PROPERTY("IntProperty",				&BaseClass::mIntProperty,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("StringProperty",				&BaseClass::mStringProperty,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("PointerProperty",			&BaseClass::mPointerProperty,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ObjectPtrProperty",			&BaseClass::mObjectPtrProperty,				nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(DerivedClass)

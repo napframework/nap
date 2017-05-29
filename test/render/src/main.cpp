@@ -82,7 +82,7 @@ nap::ResourceManagerService* resourceManagerService = nullptr;
 nap::Service* rpcService = nullptr;
 std::vector<nap::RenderWindowComponent*> renderWindows;
 
-nap::TextureRenderTargetResource2D* textureRenderTarget;
+nap::ObjectPtr<nap::TextureRenderTargetResource2D> textureRenderTarget;
 nap::CameraComponent* cameraComponent = nullptr;
 nap::CameraComponent* splitCameraComponent = nullptr;
 nap::RenderableMeshComponent* pigMeshComponent = nullptr;
@@ -90,10 +90,10 @@ nap::PlaneComponent* rotatingPlaneComponent = nullptr;
 nap::PlaneComponent* planeComponent = nullptr;
 nap::SphereComponent* sphereComponent = nullptr;
 nap::RenderableMeshComponent* orientationMeshComponent = nullptr;
-nap::Material* generalMaterial = nullptr;
-nap::Material* worldMaterial = nullptr;
-nap::RenderableMeshResource* orientationRenderableMesh = nullptr;
-nap::RenderableMeshResource* pigRenderableMesh = nullptr;
+nap::ObjectPtr<nap::Material> generalMaterial = nullptr;
+nap::ObjectPtr<nap::Material> worldMaterial = nullptr;
+nap::ObjectPtr<nap::RenderableMeshResource> orientationRenderableMesh = nullptr;
+nap::ObjectPtr<nap::RenderableMeshResource> pigRenderableMesh = nullptr;
 
 // movement
 bool moveForward = false;
