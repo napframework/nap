@@ -75,7 +75,7 @@ find_package(GLEW REQUIRED)
 find_package(OpenGL)
 find_package(glm REQUIRED)
 find_package(assimp REQUIRED)
-if (!UNIX)
+if (NOT UNIX)
     find_package(freeimage REQUIRED)
 endif ()
 
