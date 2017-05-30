@@ -21,6 +21,6 @@ namespace nap
 	public:
 		// Default constructor
 		PlaneComponent() = default;
-		PlaneComponent(Material& material, RenderService& renderService);
+		PlaneComponent(MaterialInstance& materialInstance, RenderService& renderService);
 	};
 }

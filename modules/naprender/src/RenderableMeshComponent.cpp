@@ -8,6 +8,64 @@
 
 namespace nap
 {
+	// Upload all uniform variables to GPU
+	void RenderableMeshComponent::pushUniforms()
+	{
+		Material* comp_mat = mRenderableMeshResource->getMaterial();
+
+		// Build a list of all the uniforms that we are going to set
+		std::unordered_map<std::string, const UniformBinding<UniformTexture>*> texture_bindings;
+		const UniformTextureBindings& shared_texture_bindings = comp_mat->getUniformTextureBindings();
+		texture_bindings.reserve(shared_texture_bindings.size());
+
+		std::unordered_map<std::string, const UniformBinding<UniformValue>*> value_bindings;
+		const UniformValueBindings& shared_value_bindings = comp_mat->getUniformValueBindings();
+		value_bindings.reserve(value_bindings.size());
+
+		// Add all the uniforms present in the instance
+		if (mMaterialInstance != nullptr)
+		{
+			const UniformTextureBindings& instance_texture_bindings = mMaterialInstance->getUniformTextureBindings();
+			for (auto& kvp : instance_texture_bindings)
+				texture_bindings.emplace(std::make_pair(kvp.first, &kvp.second));
+
+			const UniformValueBindings& instance_value_bindings = mMaterialInstance->getUniformValueBindings();
+			for (auto& kvp : instance_value_bindings)
+				value_bindings.emplace(std::make_pair(kvp.first, &kvp.second));
+		}
+
+		// Add all the uniforms from the material that weren't set yet
+		// Note that the material contains mappings for all the possible uniforms in the shader
+		for (auto& kvp : shared_texture_bindings)
+			if (texture_bindings.find(kvp.first) == texture_bindings.end())
+				texture_bindings.emplace(std::make_pair(kvp.first, &kvp.second));
+
+		for (auto& kvp : shared_value_bindings)
+			if (value_bindings.find(kvp.first) == value_bindings.end())
+				value_bindings.emplace(std::make_pair(kvp.first, &kvp.second));
+
+		// Push values
+		for (auto& kvp : value_bindings)
+			kvp.second->mUniform->push(*kvp.second->mDeclaration);
+
+		// Push textures
+		int texture_unit = 0;
+		for (auto& kvp : texture_bindings)
+			kvp.second->mUniform->push(*kvp.second->mDeclaration, texture_unit++);
+
+		glActiveTexture(GL_TEXTURE0);
+	}
+
+
+	bool RenderableMeshComponent::init(utility::ErrorState& errorState)
+	{
+		if (!errorState.check(mMaterialInstance == nullptr || mMaterialInstance->getMaterial() == mRenderableMeshResource->getMaterial(), "MaterialInstance does not override the material from the RenderableMeshResource"))
+			return false;
+
+		return true;
+	}
+
+
 	// Draw Mesh
 	void RenderableMeshComponent::draw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{
@@ -32,7 +90,7 @@ namespace nap
 		comp_mat->getUniform<UniformMat4>(viewMatrixUniform).setValue(viewMatrix);
 		comp_mat->getUniform<UniformMat4>(modelMatrixUniform).setValue(model_matrix);
 
-		comp_mat->pushUniforms();
+		pushUniforms();
 
 		mRenderableMeshResource->getVAO().bind();
 
@@ -62,6 +120,11 @@ namespace nap
 	RenderableMeshResource* RenderableMeshComponent::getRenderableMeshResource()
 	{
 		return mRenderableMeshResource.get();
+	}
+
+	MaterialInstance* RenderableMeshComponent::getMaterialInstance()
+	{
+		return mMaterialInstance.get();
 	}
 }
 

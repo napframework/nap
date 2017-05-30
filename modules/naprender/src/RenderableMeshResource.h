@@ -58,8 +58,8 @@ namespace nap
 		Material* getMaterial();
 
 	public:
-		nap::ObjectPtr<Material>		mMaterialResource = nullptr;
-		nap::ObjectPtr<MeshResource>	mMeshResource = nullptr;
+		ObjectPtr<Material>		mMaterialResource = nullptr;
+		ObjectPtr<MeshResource>	mMeshResource = nullptr;
 
 	private:
 		std::unique_ptr<opengl::VertexArrayObject>	mVAO;			///< Vertex Array Object, describing how to the mesh is bound to the applied shader/material

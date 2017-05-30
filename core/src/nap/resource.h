@@ -25,11 +25,6 @@ namespace nap
 		Resource() = default;
 
 		/**
-		* 
-		*/
-		virtual bool init(utility::ErrorState& errorState) = 0;
-
-		/**
 		* @return Human readable string representation of this path
 		*/
 		virtual const std::string getDisplayName() const = 0;

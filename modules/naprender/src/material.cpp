@@ -9,23 +9,30 @@
 
 
 RTTI_BEGIN_CLASS(nap::Material::VertexAttributeBinding)
-	RTTI_PROPERTY("MeshAttributeID",	&nap::Material::VertexAttributeBinding::mMeshAttributeID,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("ShaderAttributeID",	&nap::Material::VertexAttributeBinding::mShaderAttributeID,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MeshAttributeID",			&nap::Material::VertexAttributeBinding::mMeshAttributeID, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ShaderAttributeID",			&nap::Material::VertexAttributeBinding::mShaderAttributeID, nap::rtti::EPropertyMetaData::Required)
+RTTI_END_CLASS
+
+RTTI_BEGIN_BASE_CLASS(nap::UniformContainer)
+	RTTI_PROPERTY("Uniforms", &nap::UniformContainer::mUniforms, nap::rtti::EPropertyMetaData::Embedded)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS(nap::MaterialInstance)
+	RTTI_PROPERTY("Material",					&nap::MaterialInstance::mMaterial,			nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::Material)
 	RTTI_PROPERTY("Shader",						&nap::Material::mShader,					nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("VertexAttributeBindings",	&nap::Material::mVertexAttributeBindings,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Uniforms",					&nap::Material::mUniforms,					nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 
 namespace nap
 {
 	/**
-	 * Creates Uniform objects based on a declaration.
-	 */
-	std::unique_ptr<Uniform> createUniform(const opengl::UniformDeclaration& declaration)
+	* Creates Uniform objects based on a declaration.
+	*/
+	std::unique_ptr<Uniform> createUniformFromDeclaration(const opengl::UniformDeclaration& declaration)
 	{
 		std::unique_ptr<Uniform> result;
 
@@ -50,14 +57,85 @@ namespace nap
 	}
 
 
+	//////////////////////////////////////////////////////////////////////////
+	// UniformContainer
+	//////////////////////////////////////////////////////////////////////////
+
+
+	Uniform& UniformContainer::AddUniform(std::unique_ptr<Uniform> uniform, const opengl::UniformDeclaration& declaration)
+	{
+		// Create association between uniform and declaration. At the same time, split between textures and values
+		// as texture have a slightly different interface.
+		std::unique_ptr<UniformTexture> texture_uniform = rtti_cast<UniformTexture>(uniform);
+		if (texture_uniform == nullptr)
+		{
+			std::unique_ptr<UniformValue> value_uniform = rtti_cast<UniformValue>(uniform);
+			assert(value_uniform);
+			auto inserted = mUniformValueBindings.emplace(std::make_pair(declaration.mName, UniformBinding<UniformValue>(std::move(value_uniform), declaration)));
+			return *inserted.first->second.mUniform;
+		}
+		else
+		{
+			auto inserted = mUniformTextureBindings.emplace(std::make_pair(declaration.mName, UniformBinding<UniformTexture>(std::move(texture_uniform), declaration)));
+			return *inserted.first->second.mUniform;
+		}
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// MaterialInstance
+	//////////////////////////////////////////////////////////////////////////
+
+
+	Uniform& MaterialInstance::createUniform(const std::string& name)
+	{
+		const opengl::UniformDeclarations& uniform_declarations = mMaterial->getShader()->getShader().getUniformDeclarations();
+
+		opengl::UniformDeclarations::const_iterator pos = uniform_declarations.find(name);
+		assert(pos != uniform_declarations.end());
+
+		const opengl::UniformDeclaration* declaration = pos->second.get();
+		std::unique_ptr<Uniform> uniform = createUniformFromDeclaration(*declaration);
+		return AddUniform(std::move(uniform), *declaration);
+	}
+
+
+	bool MaterialInstance::init(utility::ErrorState& errorState)
+	{
+		const opengl::UniformDeclarations& uniform_declarations = mMaterial->getShader()->getShader().getUniformDeclarations();
+
+		// Create new uniforms for all the uniforms in mUniforms
+		for (ObjectPtr<Uniform>& uniform : mUniforms)
+		{
+			opengl::UniformDeclarations::const_iterator declaration = uniform_declarations.find(uniform->mName);
+			if (!errorState.check(declaration != uniform_declarations.end(), "Unable to find uniform %s in shader", uniform->mName.c_str()))
+				return false;
+
+			if (!errorState.check(uniform->getGLSLType() == declaration->second->mGLSLType, "Uniform %s does not match the variable type in the shader"))
+				return false;
+
+			std::unique_ptr<Uniform> new_uniform = createUniformFromDeclaration(*declaration->second);
+			nap::rtti::copyObject(*uniform, *new_uniform.get());
+
+			AddUniform(std::move(new_uniform), *declaration->second);
+		}
+
+		return true;
+	}
+
+	Material* MaterialInstance::getMaterial() 
+	{ 
+		return mMaterial.get(); 
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Material
+	//////////////////////////////////////////////////////////////////////////
+
 	bool Material::init(utility::ErrorState& errorState)
 	{
 		if (!errorState.check(mShader != nullptr, "Shader not set in material"))
 			return false;
-
-		// Start empty
-		mUniformTextureBindings.clear();
-		mUniformValueBindings.clear();
 
 		const opengl::UniformDeclarations& uniform_declarations = mShader->getShader().getUniformDeclarations();
 
@@ -68,9 +146,8 @@ namespace nap
 		// - Because we create default uniforms with default values, the ownership of those newly created objects
 		//   lies within the Material. It is very inconvenient if half of the Uniforms is owned by the system and
 		//   half of the Uniforms by Material. Instead, materials owns all of them.
-		// - It is important to maintain a separation between the input data (mUniforms) and the runtime data. For real-time
-		//   editing we can now just store runtime data for a rollback without any reference to the original input data
-		//   that can get modified during updating.
+		// - It is important to maintain a separation between the input data (mUniforms) and the runtime data. Json objects
+		//   should always be considered constant.
 		// - The separation makes it easy to build faster mappings for textures and values, and to provide a map interface
 		//   instead of a vector interface (which is what is supported at the moment for serialization).
 
@@ -91,7 +168,7 @@ namespace nap
 			}
 
 			// Create a new uniform
-			std::unique_ptr<Uniform> new_uniform = createUniform(declaration);
+			std::unique_ptr<Uniform> new_uniform = createUniformFromDeclaration(declaration);
 
 			// If there is a match, see if the types match and copy the attributes from the input object
 			if (matching_uniform != nullptr)
@@ -102,26 +179,14 @@ namespace nap
 				nap::rtti::copyObject(*matching_uniform, *new_uniform.get());
 			}
 
-			// Create association between uniform and declaration. At the same time, split between textures and values
-			// as texture have a slightly different interface.
-			std::unique_ptr<UniformTexture> texture_uniform = rtti_cast<UniformTexture>(new_uniform);
-			if (texture_uniform == nullptr)
-			{
-				std::unique_ptr<UniformValue> value_uniform = rtti_cast<UniformValue>(new_uniform);
-				assert(value_uniform);
-				mUniformValueBindings.emplace(std::make_pair(name, UniformBinding<UniformValue>(std::move(value_uniform), declaration)));
-			}
-			else
-			{
-				mUniformTextureBindings.emplace(std::make_pair(name, UniformBinding<UniformTexture>(std::move(texture_uniform), declaration)));
-			}
+			AddUniform(std::move(new_uniform), declaration);
 		}
 		
 		// Verify that we don't have uniform mapping that do not exist in the shader
 		for (ObjectPtr<Uniform>& uniform : mUniforms)
 		{
 			opengl::UniformDeclarations::const_iterator declaration = uniform_declarations.find(uniform->mName);
-			if (!errorState.check(declaration != uniform_declarations.end(), "Unable to find uniform %s in shader", uniform->mName))
+			if (!errorState.check(declaration != uniform_declarations.end(), "Unable to find uniform %s in shader", uniform->mName.c_str()))
 				return false;
 		}
 
@@ -160,23 +225,6 @@ namespace nap
 	{
 		mShader->getShader().unbind();
 	}
-
-
-	// Upload all uniform variables to GPU
-	void Material::pushUniforms()
-	{
-		// Push values
-		for (auto& kvp : mUniformValueBindings)
-			kvp.second.mUniform->push(*kvp.second.mDeclaration);
-
-		// Push textures
-		int texture_unit = 0;
-		for (auto& kvp : mUniformTextureBindings)
-			kvp.second.mUniform->push(*kvp.second.mDeclaration, texture_unit++);
-
-		glActiveTexture(GL_TEXTURE0);
-	}
-
 
 	const Material::VertexAttributeBinding* Material::findVertexAttributeBinding(const opengl::Mesh::VertexAttributeID& shaderAttributeID) const
 	{
