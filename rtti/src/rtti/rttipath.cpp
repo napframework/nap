@@ -186,7 +186,12 @@ namespace nap
 				return false;
 
 			// We keep track of the value we want to set on the current element of the path. We start with the value the user provided.
+
+			const rtti::TypeInfo value_type = getType();
 			rtti::Variant value_to_set = value;
+			if (!value_to_set.convert(value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type))
+				return false;
+
 			for (int index = mLength - 1; index >= 0; --index)
 			{
 				const ResolvedRTTIPathElement& element = mElements[index];

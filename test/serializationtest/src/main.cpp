@@ -38,15 +38,25 @@ BaseClass* createTestHierarchy()
 	pointee->mArrayOfEmbeddedPointers.push_back(new DerivedClass());
 	pointee->mArrayOfEmbeddedPointers[0]->mID = "EmbeddedArrayObject";
 
+	DerivedClass* unique_pointee = new DerivedClass();
+	unique_pointee->mID = "UniquePointee";
+
 	BaseClass* root = new BaseClass();
 	root->mID									= "Root";
 	root->mIntProperty							= 42 / 2;
 	root->mStringProperty						= "Root String";
 	root->mPointerProperty						= pointee;
+	root->mObjectPtrProperty					= pointee;
 
 	return root;
 }
 
+
+template<typename T>
+rtti::Variant createVariant(T value)
+{
+	return ObjectPtr<T>(value);
+}
 
 bool ResolveLinks(const OwnedObjectList& objects, const UnresolvedPointerList& unresolvedPointers)
 {
@@ -64,15 +74,84 @@ bool ResolveLinks(const OwnedObjectList& objects, const UnresolvedPointerList& u
 		if (pos == objects_by_id.end())
 			return false;
 
-		if (!resolved_path.setValue(pos->second))
+		//rtti::Variant var = pos->second;
+		
+		//ObjectPtr<nap::Object>(pos->second);
+
+		const rtti::TypeInfo type = resolved_path.getType();
+// 		if (type.is_wrapper())
+// 		{
+// 			var = ObjectPtr
+// 		}
+
+		//if (!var.convert(type))
+		//	return false;
+
+		//Variant var = ObjectPtr<nap::Object>(pos->second)
+
+		//unresolvedPointer.mObject->get_type().get_property("ObjectPtrProperty")
+
+		//unresolvedPointer.mObject->get_type().get_property("ObjectPtrProperty").set_value(unresolvedPointer->mObject, ObjectPtr<nap::Object>(pos->second));
+
+		rtti::Variant var = pos->second; // nap::RTTIObject*
+		if (resolved_path.getType().is_wrapper())
+		{
+			if (!var.convert(resolved_path.getType().get_wrapped_type()))
+				return false;
+		}
+
+		if (!resolved_path.setValue(var))
 			return false;
 	}
 
 	return true;
 }
 
+void testObjectPtr()
+{
+	typedef ObjectPtr<BaseClass> BaseClassPtr;
+	typedef ObjectPtr<DerivedClass> DerivedClassPtr;
+	typedef ObjectPtr<DerivedClass2> DerivedClass2Ptr;
+	
+	DerivedClassPtr derived = new DerivedClass();
+	BaseClassPtr base = derived;
+	BaseClassPtr other_base;
+	other_base = derived;
+	other_base = std::move(derived);
+	derived = base;
+
+	std::vector<DerivedClassPtr> resize_test;
+	resize_test.resize(10);
+	for (int i = 0; i < 10; ++i)
+	{
+		DerivedClass* object = new DerivedClass();
+		object->mIntProperty = i;
+		resize_test[i] = object;
+
+		DerivedClassPtr copy_constr = resize_test[i];
+	}
+	resize_test.resize(1000);
+
+	std::vector<DerivedClassPtr> objects;
+	for (int i = 0; i < 1000; ++i)
+	{
+		DerivedClass* object = new DerivedClass();
+		object->mIntProperty = i;
+
+		objects.push_back(object);
+	}
+}
+
 int main(int argc, char* argv[])
 {
+	rtti::TypeInfo::register_converter_func(
+		[](RTTIObject* ptr, bool& ok) -> ObjectPtr<RTTIObject>
+	{
+		ok = true;
+		return ObjectPtr<RTTIObject>(ptr);
+	});
+
+	//testObjectPtr();
 	Logger::setLevel(Logger::debugLevel());
 
 	Core core;
@@ -184,4 +263,4 @@ int main(int argc, char* argv[])
 	}
 
 	return 0;
-}
+} 

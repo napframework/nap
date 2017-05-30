@@ -1,7 +1,7 @@
 #pragma once
 
 // Local Includes
-#include "RenderableMeshComponent.h"
+#include "renderablemeshcomponent.h"
 
 namespace nap
 {
@@ -21,6 +21,6 @@ namespace nap
 	public:
 		// Default constructor
 		PlaneComponent() = default;
-		PlaneComponent(Material& material, RenderService& renderService);
+		PlaneComponent(MaterialInstance& materialInstance, RenderService& renderService);
 	};
 }

@@ -18,7 +18,6 @@ namespace nap
 		if (!errorState.check(mDepthTexture != nullptr, "Unable to create render target %s. Depth texture not set.", mID.c_str()))
 			return false;
 
-		mPrevTextureRenderTarget = mTextureRenderTarget;
 		mTextureRenderTarget = new opengl::TextureRenderTarget2D;
 
 		mTextureRenderTarget->init((opengl::Texture2D&)mColorTexture->getTexture(), (opengl::Texture2D&)mDepthTexture->getTexture(), mClearColor);
@@ -26,25 +25,6 @@ namespace nap
 			return false;
 		
 		return true;
-	}
-
-	void TextureRenderTargetResource2D::finish(Resource::EFinishMode mode)
-	{
-		if (mode == Resource::EFinishMode::COMMIT)
-		{
-			if (mPrevTextureRenderTarget != nullptr)
-			{
-				delete mPrevTextureRenderTarget;
-				mPrevTextureRenderTarget = nullptr;
-			}
-		}
-		else
-		{
-			assert(mode == Resource::EFinishMode::ROLLBACK);
-			delete mTextureRenderTarget;
-			mTextureRenderTarget = mPrevTextureRenderTarget;
-			mPrevTextureRenderTarget = nullptr;
-		}
 	}
 
 

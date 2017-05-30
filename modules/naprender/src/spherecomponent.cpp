@@ -1,7 +1,8 @@
 #include "spherecomponent.h"
 #include "math.h"
-#include "RenderableMeshResource.h"
+#include "renderablemeshresource.h"
 #include "meshresource.h"
+#include "material.h"
 
 
 /**
@@ -99,17 +100,18 @@ static opengl::Mesh* createSphere(float radius, unsigned int rings, unsigned int
 
 namespace nap
 {
-	SphereComponent::SphereComponent(Material& material, RenderService& renderService)
+	SphereComponent::SphereComponent(MaterialInstance& materialInstance, RenderService& renderService)
 	{
 		utility::ErrorState error_state;
 		CustomMeshResource* mesh_resource = new CustomMeshResource();
 		mesh_resource->mCustomMesh.reset(createSphere(1.0f, 50, 50));
 		
+		mMaterialInstance = &materialInstance;
 		bool success = mesh_resource->init(error_state);
 		assert(success);
 
 		mRenderableMeshResource = new RenderableMeshResource(renderService);
-		mRenderableMeshResource->mMaterialResource = &material;
+		mRenderableMeshResource->mMaterialResource = materialInstance.getMaterial();
 		mRenderableMeshResource->mMeshResource = mesh_resource;
 		
 		success = mRenderableMeshResource->init(error_state);

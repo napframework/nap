@@ -32,7 +32,6 @@ namespace nap
 		// Set display name
 		mDisplayName = getFileNameWithoutExtension(mVertPath);
 
-		mPrevShader = std::move(mShader);
 		mShader = std::make_unique<opengl::Shader>();
 
 		// Initialize the shader
@@ -43,18 +42,6 @@ namespace nap
 		return true;
 	}
 
-	void ShaderResource::finish(Resource::EFinishMode mode)
-	{
-		if (mode == Resource::EFinishMode::COMMIT)
-		{
-			mPrevShader = nullptr;
-		}
-		else
-		{
-			assert(mode == Resource::EFinishMode::ROLLBACK);
-			mShader = std::move(mPrevShader);
-		}
-	}
 
 	// Returns the associated opengl shader
 	opengl::Shader& ShaderResource::getShader()

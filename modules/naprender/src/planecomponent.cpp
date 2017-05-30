@@ -1,6 +1,7 @@
 #include <planecomponent.h>
 #include "meshresource.h"
-#include "RenderableMeshResource.h"
+#include "renderablemeshresource.h"
+#include "material.h"
 
 // All the plane vertices
 static float plane_vertices[] =
@@ -61,17 +62,18 @@ static opengl::Mesh* createPlane()
 
 namespace nap
 {
-	PlaneComponent::PlaneComponent(Material& material, RenderService& renderService)
+	PlaneComponent::PlaneComponent(MaterialInstance& materialInstance, RenderService& renderService)
 	{
 		utility::ErrorState error_state;
 		CustomMeshResource* mesh_resource = new CustomMeshResource();
 		mesh_resource->mCustomMesh.reset(createPlane());
 
+		mMaterialInstance = &materialInstance;
 		bool success = mesh_resource->init(error_state);
 		assert(success);
 
 		mRenderableMeshResource = new RenderableMeshResource(renderService);
-		mRenderableMeshResource->mMaterialResource = &material;
+		mRenderableMeshResource->mMaterialResource = materialInstance.getMaterial();
 		mRenderableMeshResource->mMeshResource = mesh_resource;
 
 		success = mRenderableMeshResource->init(error_state);

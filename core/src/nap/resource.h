@@ -22,23 +22,7 @@ namespace nap
 	{
 		RTTI_ENABLE(AttributeObject)
 	public:
-		enum class EFinishMode : uint8
-		{
-			COMMIT,
-			ROLLBACK
-		};
-
 		Resource() = default;
-
-		/**
-		* 
-		*/
-		virtual bool init(utility::ErrorState& errorState) = 0;
-
-		/**
-		* 
-		*/
-		virtual void finish(EFinishMode mode) = 0;
 
 		/**
 		* @return Human readable string representation of this path

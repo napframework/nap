@@ -5,6 +5,7 @@
 #include <memory>
 #include <mutex>
 #include <rtti/rtti.h>
+#include "utility/errorstate.h"
 #include <unordered_map>
 
 namespace nap
@@ -24,6 +25,11 @@ namespace nap
 			// Construction / Destruction
 			RTTIObject();
 			virtual ~RTTIObject() = default;
+
+			/**
+			* 
+			*/
+			virtual bool init(utility::ErrorState& errorState) { return true; }
 
 			/**
 			 * Copy is not allowed

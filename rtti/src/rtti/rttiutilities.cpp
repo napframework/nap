@@ -35,7 +35,7 @@ namespace nap
 				{
 					path.pushArrayElement(index);
 
-					rtti::Variant array_value = array.get_value_as_ref(index);
+					rtti::Variant array_value = array.get_value(index);
 
 					// Invoke visit func
 					visitFunc(variant, property, array_value, path);
@@ -94,8 +94,10 @@ namespace nap
 				// Invoke visit func
 				visitFunc(instance, property, value, path);
 
+				rtti::TypeInfo actual_type = property.get_type().is_wrapper() ? property.get_type().get_wrapped_type() : property.get_type();
+
 				// Recurse
-				if (!property.get_type().is_pointer()) // Don't recurse into properties of pointers
+				if (!actual_type.is_pointer()) // Don't recurse into properties of pointers
 					VisitRTTIPropertiesRecursive(property, value, path, visitFunc);
 
 				path.popBack();
@@ -175,7 +177,7 @@ namespace nap
 			assert(value_type == variantB.get_type());
 
 			// If this is an array, compare the array element-wise
-			if (value_type.is_array())
+			if (actual_type.is_array())
 			{
 				// Get the arrays
 				rtti::VariantArray array_a = variantA.create_array_view();
@@ -188,8 +190,8 @@ namespace nap
 				// Recursively compare each array element
 				for (int index = 0; index < array_a.get_size(); ++index)
 				{
-					rtti::Variant array_value_a = array_a.get_value_as_ref(index);
-					rtti::Variant array_value_b = array_a.get_value_as_ref(index);
+					rtti::Variant array_value_a = array_a.get_value(index);
+					rtti::Variant array_value_b = array_b.get_value(index);
 
 					if (!areVariantsEqualRecursive(array_value_a, array_value_b, pointerComparisonMode))
 						return false;
@@ -198,7 +200,7 @@ namespace nap
 			else
 			{
 				// Special case handling for pointers so we can compare by ID or by actual pointer value
-				if (value_type.is_pointer())
+				if (actual_type.is_pointer())
 				{
 					// If we don't want to compare by ID, just check the pointers directly
 					if (pointerComparisonMode == EPointerComparisonMode::BY_POINTER)
@@ -238,7 +240,7 @@ namespace nap
 				// If the type of this variant is a primitive type or non-primitive type with no RTTI properties,
 				// we perform a normal comparison
 				auto child_properties = actual_type.get_properties();
-				if (rtti::isPrimitive(value_type) || child_properties.empty())
+				if (rtti::isPrimitive(actual_type) || child_properties.empty())
 					return is_wrapper ? (variantA.extract_wrapped_value() == variantB.extract_wrapped_value()) : (variantA == variantB);
 
 				// Recursively compare each property of the compound
@@ -266,7 +268,8 @@ namespace nap
 			for (const rtti::Property& property : type.get_properties())
 			{
 				rtti::Variant new_value = property.get_value(srcObject);
-				property.set_value(dstObject, new_value);
+				bool success = property.set_value(dstObject, new_value);
+				assert(success);
 			}
 		}
 

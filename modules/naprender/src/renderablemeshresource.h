@@ -1,6 +1,7 @@
 #pragma once
 
 #include <nap/resource.h>
+#include <nap/objectptr.h>
 #include "rtti/factory.h"
 #include "nvertexarrayobject.h"
 #include "ndrawutils.h"
@@ -33,11 +34,6 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
- 		 * Performs commit or rollback of changes made in init.
- 		 */
-		virtual void finish(Resource::EFinishMode mode) override;
-
-		/**
 		 * @return the mesh display name
 		 */
 		virtual const std::string getDisplayName() const override;
@@ -51,20 +47,19 @@ namespace nap
 		/**
 		* @return The Mesh Resource
 		*/
-		MeshResource* getMeshResource()					{ return mMeshResource; }
+		MeshResource* getMeshResource();
 
 		/**
 		* @return The Material that is applied to the mesh.
 		*/
-		Material* getMaterial()							{ return mMaterialResource; }
+		Material* getMaterial();
 
 	public:
-		Material*		mMaterialResource = nullptr;
-		MeshResource*	mMeshResource = nullptr;
+		ObjectPtr<Material>		mMaterialResource = nullptr;
+		ObjectPtr<MeshResource>	mMeshResource = nullptr;
 
 	private:
 		std::unique_ptr<opengl::VertexArrayObject>	mVAO;			///< Vertex Array Object, describing how to the mesh is bound to the applied shader/material
-		std::unique_ptr<opengl::VertexArrayObject>	mPrevVAO;		///< Prev VAO, used for commit/rollback
 		RenderService* mRenderService = nullptr;					///< RenderService, used for deferring destruction of VAO
 	};
 

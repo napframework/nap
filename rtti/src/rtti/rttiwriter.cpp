@@ -76,25 +76,25 @@ namespace nap
 			bool is_wrapper = wrapped_type != value_type;
 
 			// If this is an array, recurse
-			if (value_type.is_array())
+			if (wrapped_type.is_array())
 			{
 				if (!serializeArray(property, value.create_array_view(), objectsToSerialize, writer, errorState))
 					return false;
 
 				return true;
 			}
-			else if (value_type.is_associative_container())
+			else if (wrapped_type.is_associative_container())
 			{
 				errorState.fail("Associative containers are not supported");
 				return false;
 			}
-			else if (value_type.is_pointer())
+			else if (wrapped_type.is_pointer())
 			{
 				// Pointers must be derived from Object
 				if (!errorState.check(wrapped_type.is_derived_from<rtti::RTTIObject>(), "Encountered pointer to non-Object"))
 					return false;
 
-				RTTIObject* pointee = value.get_value<RTTIObject*>();
+				RTTIObject* pointee = is_wrapper ? value.extract_wrapped_value().get_value<RTTIObject*>() : value.get_value<RTTIObject*>();
 				if (pointee != nullptr)
 				{
 					bool is_embedded_pointer = rtti::hasFlag(property, nap::rtti::EPropertyMetaData::Embedded);

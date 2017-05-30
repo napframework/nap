@@ -23,11 +23,6 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState);
 
 		/**
-		 * Performs commit or rollback of changes made in init.
-		 */
-		virtual void finish(Resource::EFinishMode mode) override;
-
-		/**
 		 * @return the shader resource display name
 		 */
 		virtual const std::string getDisplayName() const override;
@@ -46,7 +41,6 @@ namespace nap
 
 		// Shader that is managed by this resource
 		std::unique_ptr<opengl::Shader>		mShader;
-		std::unique_ptr<opengl::Shader>		mPrevShader;
 	};
 
 }

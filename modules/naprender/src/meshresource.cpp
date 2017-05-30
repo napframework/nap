@@ -22,26 +22,11 @@ namespace nap
 
 	bool MeshResource::init(utility::ErrorState& errorState)
 	{
-		mPrevMesh = std::move(mMesh);
-
 		mMesh = loadMesh(mPath, errorState);
 		if (!errorState.check(mMesh != nullptr, "Unable to load mesh %s", mPath.c_str()))
 			return false;
 
 		return true;
-	}
-
-	void MeshResource::finish(Resource::EFinishMode mode)
-	{
-		if (mode == Resource::EFinishMode::COMMIT)
-		{
-			mPrevMesh = nullptr;
-		}
-		else
-		{
-			assert(mode == Resource::EFinishMode::ROLLBACK);
-			mMesh = std::move(mPrevMesh);
-		}
 	}
 
 	const std::string MeshResource::getDisplayName() const
@@ -51,8 +36,6 @@ namespace nap
 
 	bool CustomMeshResource::init(utility::ErrorState& errorState)
 	{
-		mPrevMesh = std::move(mMesh);
-		
 		mMesh = std::move(mCustomMesh);
 		if (!errorState.check(mMesh != nullptr, "Unable to init custom mesh"))
 			return false;

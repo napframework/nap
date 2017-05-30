@@ -1,6 +1,7 @@
 #pragma once
 
 #include <nap/object.h>
+#include <nap/objectptr.h>
 
 struct DataStruct
 {
@@ -26,6 +27,7 @@ public:
 	int				mIntProperty = 0;
 	std::string		mStringProperty;
 	nap::Object*	mPointerProperty = nullptr;
+	nap::ObjectPtr<nap::Object>	mObjectPtrProperty;
 };
 
 class DerivedClass : public BaseClass
@@ -39,4 +41,9 @@ public:
 	std::vector<nap::Object*>	mArrayOfPointers;
 	nap::Object*				mEmbeddedPointer;
 	std::vector<nap::Object*>	mArrayOfEmbeddedPointers;
+};
+
+class DerivedClass2 : public BaseClass
+{
+
 };
