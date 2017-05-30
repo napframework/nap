@@ -34,7 +34,7 @@
 #include <material.h>
 #include <meshresource.h>
 #include <imageresource.h>
-#include <RenderableMeshComponent.h>
+#include <renderablemeshcomponent.h>
 #include <renderservice.h>
 #include <renderwindowcomponent.h>
 #include <openglrenderer.h>
@@ -44,6 +44,7 @@
 #include <planecomponent.h>
 #include <spherecomponent.h>
 #include <rendertargetresource.h>
+#include "renderablemeshresource.h"
 
 // Nap includes
 #include <nap/core.h>
@@ -52,7 +53,6 @@
 
 // STD includes
 #include <ctime>
-#include "RenderableMeshResource.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Globals

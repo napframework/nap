@@ -1,6 +1,6 @@
 #include "spherecomponent.h"
 #include "math.h"
-#include "RenderableMeshResource.h"
+#include "renderablemeshresource.h"
 #include "meshresource.h"
 #include "material.h"
 

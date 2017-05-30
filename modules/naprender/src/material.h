@@ -4,7 +4,7 @@
 #include <nap/serviceablecomponent.h>
 #include <nap/attribute.h>
 #include <nap/resourcelinkattribute.h>
-#include <nap/ObjectPtr.h>
+#include <nap/objectptr.h>
 
 // Local includes
 #include "shaderresource.h"

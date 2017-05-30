@@ -1,7 +1,7 @@
 #pragma once
 
 #include <nap/object.h>
-#include <nap/ObjectPtr.h>
+#include <nap/objectptr.h>
 
 struct DataStruct
 {

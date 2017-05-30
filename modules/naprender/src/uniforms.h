@@ -2,7 +2,7 @@
 
 #include "nshaderutils.h"
 #include "nap/resource.h"
-#include "nap/ObjectPtr.h"
+#include "nap/objectptr.h"
 #include "glm/glm.hpp"
 
 namespace nap

@@ -1,6 +1,6 @@
-#include "RenderableMeshComponent.h"
+#include "renderablemeshcomponent.h"
 #include "meshresource.h"
-#include "RenderableMeshResource.h"
+#include "renderablemeshresource.h"
 #include "ncamera.h"
 #include "transformcomponent.h"
 #include "renderglobals.h"

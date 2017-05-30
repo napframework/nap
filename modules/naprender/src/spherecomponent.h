@@ -1,6 +1,6 @@
 #pragma once
 
-#include "RenderableMeshComponent.h"
+#include "renderablemeshcomponent.h"
 
 namespace nap
 {

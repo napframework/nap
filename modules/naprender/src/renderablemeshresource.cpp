@@ -1,5 +1,5 @@
 // Local Includes
-#include "RenderableMeshResource.h"
+#include "renderablemeshresource.h"
 #include "RenderService.h"
 
 // External Includes

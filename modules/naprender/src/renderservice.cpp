@@ -1,6 +1,6 @@
 // Local Includes
 #include "renderservice.h"
-#include "RenderableMeshComponent.h"
+#include "renderablemeshcomponent.h"
 #include "rendercomponent.h"
 #include "renderwindowcomponent.h"
 #include "openglrenderer.h"

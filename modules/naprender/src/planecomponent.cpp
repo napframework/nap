@@ -1,6 +1,6 @@
 #include <planecomponent.h>
 #include "meshresource.h"
-#include "RenderableMeshResource.h"
+#include "renderablemeshresource.h"
 #include "material.h"
 
 // All the plane vertices

@@ -4,7 +4,7 @@
 #include "rtti/jsonreader.h"
 #include "rtti/factory.h"
 #include "nap/core.h"
-#include "ObjectPtr.h"
+#include "objectptr.h"
 
 RTTI_DEFINE(nap::ResourceManagerService)
 

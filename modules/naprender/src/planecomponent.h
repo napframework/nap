@@ -1,7 +1,7 @@
 #pragma once
 
 // Local Includes
-#include "RenderableMeshComponent.h"
+#include "renderablemeshcomponent.h"
 
 namespace nap
 {

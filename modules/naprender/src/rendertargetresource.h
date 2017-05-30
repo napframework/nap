@@ -6,7 +6,7 @@
 
 // External Includes
 #include <nap/resource.h>
-#include <nap/ObjectPtr.h>
+#include <nap/objectptr.h>
 #include <nframebuffer.h>
 
 namespace nap
