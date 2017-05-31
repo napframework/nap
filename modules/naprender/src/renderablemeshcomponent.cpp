@@ -13,45 +13,37 @@ namespace nap
 	{
 		Material* comp_mat = mMaterialInstance->getMaterial();
 
-		// Build a list of all the uniforms that we are going to set
-		std::unordered_map<std::string, const UniformBinding<UniformTexture>*> texture_bindings;
-		const UniformTextureBindings& shared_texture_bindings = comp_mat->getUniformTextureBindings();
-		texture_bindings.reserve(shared_texture_bindings.size());
+		// Keep track of which uniforms were set (i.e. overridden) by the material instance
+		std::unordered_set<std::string> instance_bindings;
+		int texture_unit = 0;
 
-		std::unordered_map<std::string, const UniformBinding<UniformValue>*> value_bindings;
-		const UniformValueBindings& shared_value_bindings = comp_mat->getUniformValueBindings();
-		value_bindings.reserve(value_bindings.size());
-
-		// Add all the uniforms present in the instance
+		// Push all uniforms that are set (i.e. overridden) in the instance
 		if (mMaterialInstance != nullptr)
 		{
 			const UniformTextureBindings& instance_texture_bindings = mMaterialInstance->getUniformTextureBindings();
 			for (auto& kvp : instance_texture_bindings)
-				texture_bindings.emplace(std::make_pair(kvp.first, &kvp.second));
+			{
+				kvp.second.mUniform->push(*kvp.second.mDeclaration, texture_unit++);
+				instance_bindings.insert(kvp.first);
+			}				
 
 			const UniformValueBindings& instance_value_bindings = mMaterialInstance->getUniformValueBindings();
 			for (auto& kvp : instance_value_bindings)
-				value_bindings.emplace(std::make_pair(kvp.first, &kvp.second));
+			{
+				kvp.second.mUniform->push(*kvp.second.mDeclaration);
+				instance_bindings.insert(kvp.first);
+			}
 		}
 
-		// Add all the uniforms from the material that weren't set yet
+		// Push all uniforms in the material that weren't overridden by the instance
 		// Note that the material contains mappings for all the possible uniforms in the shader
-		for (auto& kvp : shared_texture_bindings)
-			if (texture_bindings.find(kvp.first) == texture_bindings.end())
-				texture_bindings.emplace(std::make_pair(kvp.first, &kvp.second));
+		for (auto& kvp : comp_mat->getUniformTextureBindings())
+			if (instance_bindings.find(kvp.first) == instance_bindings.end())
+				kvp.second.mUniform->push(*kvp.second.mDeclaration, texture_unit++);
 
-		for (auto& kvp : shared_value_bindings)
-			if (value_bindings.find(kvp.first) == value_bindings.end())
-				value_bindings.emplace(std::make_pair(kvp.first, &kvp.second));
-
-		// Push values
-		for (auto& kvp : value_bindings)
-			kvp.second->mUniform->push(*kvp.second->mDeclaration);
-
-		// Push textures
-		int texture_unit = 0;
-		for (auto& kvp : texture_bindings)
-			kvp.second->mUniform->push(*kvp.second->mDeclaration, texture_unit++);
+		for (auto& kvp : comp_mat->getUniformValueBindings())
+			if (instance_bindings.find(kvp.first) == instance_bindings.end())
+				kvp.second.mUniform->push(*kvp.second.mDeclaration);
 
 		glActiveTexture(GL_TEXTURE0);
 	}

@@ -4,21 +4,13 @@
 #include <rtti/rtti.h>
 #include "rttipath.h"
 #include "factory.h"
+#include "unresolvedpointer.h"
 
 namespace nap
 {
 	namespace rtti
 	{
 		class RTTIObject;
-
-		/**
-		 * Represents the comparison mode to use when comparing pointers
-		 */
-		enum class EPointerComparisonMode
-		{
-			BY_POINTER,							// Compare pointers by pointer value
-			BY_ID								// Compare pointers by the ID of the rtti::RTTIObject they're pointing to
-		};
 
 		/**
 		 * Represents a link from an object
@@ -55,8 +47,9 @@ namespace nap
 		* Tests whether the attributes of two objects have the same values.
 		* @param objectA: first object to compare attributes from.
 		* @param objectB: second object to compare attributes from.
+		* @param unresolvedPointers: list of unresolved pointers that should be used for pointer comparisons in case of unresolved pointers.
 		*/
-		bool areObjectsEqual(const rtti::RTTIObject& objectA, const rtti::RTTIObject& objectB, EPointerComparisonMode pointerComparisonMode = EPointerComparisonMode::BY_POINTER);
+		bool areObjectsEqual(const rtti::RTTIObject& objectA, const rtti::RTTIObject& objectB, const rtti::UnresolvedPointerList& unresolvedPointers = UnresolvedPointerList());
 
 		/**
 		* Searches through object's rtti attributes for attribute that have the 'file link' tag.
@@ -71,6 +64,17 @@ namespace nap
 		* @param objectLinks: output array containing the object links
 		*/
 		void findObjectLinks(const rtti::RTTIObject& object, std::vector<ObjectLink>& objectLinks);
+
+		/**
+		* Helper to find the index of the unresolved pointer with the specified object and path combination
+		*
+		* @param unresolvedPointers The list of UnresolvedPointers to search in
+		* @param object The object that the UnresolvedPointer originates in
+		* @param path The path to the attribute on the object that the UnresolvedPointer originates in
+		*
+		* @return The index of the UnresolvedPointer in the specified list. -1 if not found.
+		*/
+		int findUnresolvedPointer(const UnresolvedPointerList& unresolvedPointers, const RTTIObject* object, const rtti::RTTIPath& path);
 
 		/**
 		* Calculate the version number of the specified type
