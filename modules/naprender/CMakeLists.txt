@@ -1,7 +1,5 @@
 project(mod_naprender)
 
-find_package(nrender REQUIRED)
-
 # add all cpp files to SOURCES
 file(GLOB SOURCES src/*.cpp)
 file(GLOB HEADERS src/*.h)
