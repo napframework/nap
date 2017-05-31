@@ -29,10 +29,10 @@ class Module:
             elif issubclass(obj, typ):
                 yield obj
 
-    def componentTypes(self):
+    def componentTypes(self) -> Iterable[nap.Component]:
         return (t for t in self.__classes(nap.Component))
 
-    def operatorTypes(self):
+    def operatorTypes(self) -> Iterable[nap.Component]:
         return (t for t in self.__classes(nap.Operator))
 
     def dataTypes(self):

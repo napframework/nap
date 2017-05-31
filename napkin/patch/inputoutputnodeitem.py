@@ -3,21 +3,25 @@ from PyQt5.QtGui import QPen
 from PyQt5.QtWidgets import QGraphicsObject, QGraphicsTextItem, QGraphicsItem, QApplication
 
 import nap
-from patch.plugitem import PlugItem
+from patch._plugitem import _PlugItem, InPlugItem, OutPlugItem
 from patch.patchutils import COL_NODE_TITLE, _canConnect, moveToFront, _getObjectEditorPos
 
 
-class OperatorItem(QGraphicsObject):
+class NodeItem(QGraphicsObject):
+    def __init__(self):
+        super(NodeItem, self).__init__()
+
+
+
+class InputOutputNodeItem(NodeItem):
     moved = pyqtSignal()
     plugConnected = pyqtSignal(object, object)
     plugDisconnected = pyqtSignal(object, object)
 
-    def __init__(self, parent, op):
-        super(OperatorItem, self).__init__()
-        assert (isinstance(op, nap.Operator))
+    def __init__(self, name:str):
+        super(InputOutputNodeItem, self).__init__()
         self.__inputPlugs = []
         self.__outputPlugs = []
-        self.__operator = op
         self.__titleLabel = QGraphicsTextItem(self)
         self.setFlag(QGraphicsItem.ItemIsFocusable, True)
         self.setFlag(QGraphicsItem.ItemIsSelectable, True)
@@ -25,14 +29,7 @@ class OperatorItem(QGraphicsObject):
         self.__operatorBorder = 1
         self.__operatorBorderSelected = 2
 
-        self.setTitle(op.name())
-
-        # TODO: Port some extra code from the C++ implementation here
-
-        for p in self.__operator.inputPlugs():
-            self.__onInputPlugAdded(p)
-        for p in self.__operator.outputPlugs():
-            self.__onOutputPlugAdded(p)
+        self.setTitle(name)
 
     def inputPlugs(self):
         return self.__inputPlugs
@@ -74,12 +71,6 @@ class OperatorItem(QGraphicsObject):
 
     def name(self):
         return str(self.__titleLabel.toPlainText())
-
-    def operator(self):
-        """
-        @rtype: nap.Operator
-        """
-        return self.__operator
 
     def hideIncompatiblePlugs(self, src):
         for plug in self.plugs():
@@ -125,33 +116,21 @@ class OperatorItem(QGraphicsObject):
             moveToFront(self)
         if change == QGraphicsItem.ItemPositionHasChanged:
             self.moved.emit()
-        return super(OperatorItem, self).itemChange(change, value)
+        return super(InputOutputNodeItem, self).itemChange(change, value)
 
-    def __onInputPlugAdded(self, plug):
-        """
-        @type plug: nap.InputPlugBase
-        """
-        plug.connected.connect(self.__onPlugConnected)
-        plug.disconnected.connect(self.__onPlugDisconnected)
-        plugItem = PlugItem(self, plug)
-        self.__inputPlugs.append(plugItem)
+    def addInlet(self, name:str):
+        plug = InPlugItem(name)
+        plug.setParentItem(self)
+        self.__inputPlugs.append(plug)
         self.layout()
 
-    def __onOutputPlugAdded(self, plug):
-        plugItem = PlugItem(self, plug)
-        self.__outputPlugs.append(plugItem)
+    def addOutlet(self, name:str):
+        plug = OutPlugItem(name)
+        plug.setParentItem(self)
+        self.__outputPlugs.append(plug)
         self.layout()
 
-    def __onPlugRemoved(self, plug):
+    def removePlug(self, plug):
         item = self.findPlugItem(plug)
         del item
 
-    def __onAttributeChanged(self, attrib):
-        # TODO: Review
-        self.setPos(_getObjectEditorPos(self.__operator))
-
-    def __onPlugConnected(self, srcPlug, dstPlug):
-        self.plugConnected.emit(srcPlug, dstPlug)
-
-    def __onPlugDisconnected(self, srcPlug, dstPlug):
-        self.plugDisconnected.emit(srcPlug, dstPlug)

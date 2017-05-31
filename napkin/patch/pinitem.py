@@ -1,6 +1,6 @@
-from PyQt5.QtCore import Qt, QPointF
-from PyQt5.QtGui import QPen, QPainterPath
-from PyQt5.QtWidgets import QGraphicsPathItem
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 
 
 class PinItem(QGraphicsPathItem):
@@ -8,12 +8,12 @@ class PinItem(QGraphicsPathItem):
 
     def __init__(self, plugItem):
         """
-        @type plugItem: patch.plugitem.PlugItem
+        @type plugItem: patch._plugitem._PlugItem
         """
         super(PinItem, self).__init__(plugItem)
-        self.__plugItem = plugItem
+        self._PlugItem = plugItem
 
-        self.__color = self.plugItem().plug().core().typeColor(self.plugItem().plug().dataType())
+        self.__color = QColor('#FF00FF')
 
         self.setPen(QPen(Qt.NoPen))
         self.setBrush(self.__color)
@@ -24,14 +24,14 @@ class PinItem(QGraphicsPathItem):
 
     def attachPos(self):
         r = self.boundingRect()
-        if self.__plugItem.isInput():
+        if self._PlugItem.isInput():
             return QPointF(self.scenePos().x() - r.left(),
                            self.scenePos().y() + r.height() / 2)
         return QPointF(self.scenePos().x() + r.right(),
                        self.scenePos().y() + r.height() / 2)
 
     def plugItem(self):
-        return self.__plugItem
+        return self._PlugItem
 
     def color(self):
         return self.__color

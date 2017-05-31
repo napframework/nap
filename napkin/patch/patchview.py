@@ -3,14 +3,13 @@ from PyQt5.QtGui import QCursor, QMouseEvent, QPainter, QKeySequence, QTransform
 from PyQt5.QtWidgets import QGraphicsView, QAction, QMenu
 
 import iconstore
-from actions import DisconnectPlugsAction, RemoveObjectsAction
 from patch.layeritem import LayerItem
-from patch.operatoritem import OperatorItem
+from patch.inputoutputnodeitem import InputOutputNodeItem
 
 from patch.patchutils import _setObjectEditorPos, _canConnect
 from patch.pinitem import PinItem
-from patch.plugitem import PlugItem
-from patch.wireitem import WireItem
+from patch._plugitem import _PlugItem
+from patch.edgeitem import EdgeItem
 from utils.butils import _excludeTypes, _filter
 
 
@@ -22,12 +21,11 @@ class PatchView(QGraphicsView):
      panning and zooming the view and connecting Operators.
      """
 
-    def __init__(self, ctx):
+    def __init__(self):
         """
         @param ctx: The application context
         @type ctx: AppContext
         """
-        self.ctx = ctx
         super(PatchView, self).__init__()
         self.setRenderHint(QPainter.Antialiasing, True)
         self.__interactMode = None
@@ -70,7 +68,7 @@ class PatchView(QGraphicsView):
             self.ctx.createObjectActions(patch, self.ctx.core().operatorTypes(),
                                          addCompMenu)
         else:
-            wires = list(_filter(clickedItems, WireItem))
+            wires = list(_filter(clickedItems, EdgeItem))
             if len(wires) > 0:
                 plugs = []
                 for wire in wires:
@@ -79,7 +77,7 @@ class PatchView(QGraphicsView):
                 a.setParent(menu)
                 menu.addAction(a)
 
-            operatorItems = list(_filter(clickedItems, OperatorItem))
+            operatorItems = list(_filter(clickedItems, InputOutputNodeItem))
             if len(operatorItems) > 0:
                 operators = []
                 for item in operatorItems:
@@ -103,7 +101,6 @@ class PatchView(QGraphicsView):
             super(PatchView, self).mouseReleaseEvent(evt)
 
     def wheelEvent(self, evt):
-        return
         self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
 
         scaleFactor = 1.15
@@ -130,15 +127,15 @@ class PatchView(QGraphicsView):
 
     def plugAt(self, scenePos):
         """
-        @rtype: patch.plugitem.PlugItem
+        @rtype: patch._plugitem._PlugItem
         """
-        return self._itemAt(scenePos, PlugItem)
+        return self._itemAt(scenePos, _PlugItem)
 
     def operatorAt(self, scenePos):
         """
-        @rtype: OperatorItem
+        @rtype: InputOutputNodeItem
         """
-        return self._itemAt(scenePos, OperatorItem)
+        return self._itemAt(scenePos, InputOutputNodeItem)
 
 
 class InteractMode(object):
@@ -264,7 +261,7 @@ class DragInteractMode(InteractMode):
         """
         pos = evt.pos()
         delta = view.mapToScene(pos) - view.mapToScene(self.__oldMousePos)
-        for opItem in view.scene().selectedOperatorItems():
+        for opItem in view.scene().selectedNodes():
             opItem.moveBy(delta.x(), delta.y())
         self.__oldMousePos = pos
         return False
@@ -276,10 +273,10 @@ class DragInteractMode(InteractMode):
         """
         if not view.scene():
             return True
-        delta = evt.pos() - self.__mouseClickPos
-        if not delta.isNull():
-            for opItem in view.scene().selectedOperatorItems():
-                _setObjectEditorPos(opItem.operator(), opItem.pos())
+        # delta = evt.pos() - self.__mouseClickPos
+        # if not delta.isNull():
+        #     for opItem in view.scene().selectedOperatorItems():
+        #         _setObjectEditorPos(opItem.operator(), opItem.pos())
         view.setInteractMode(DefaultInteractMode)
         return False
 

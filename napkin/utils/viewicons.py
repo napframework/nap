@@ -23,7 +23,7 @@ class Window(QBaseWindow):
         for f in iconFiles():
             lb = QLabel()
             lb.setPixmap(QPixmap(f))
-            w.layout().addWidget(lb)
+            w._layout().addWidget(lb)
 
         scroll = QScrollArea()
         # scroll.setMinimumSize(100,100)
@@ -32,7 +32,7 @@ class Window(QBaseWindow):
 
         p = QWidget()
         p.setLayout(QVBoxLayout())
-        p.layout().addWidget(scroll)
+        p._layout().addWidget(scroll)
 
         self.setCentralWidget(p)
 

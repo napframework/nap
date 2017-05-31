@@ -5,29 +5,29 @@ from PyQt5.QtGui import QPen
 from PyQt5.QtWidgets import QGraphicsScene, QApplication
 
 from patch.layeritem import LayerItem
-from patch.operatoritem import OperatorItem
+from patch.inputoutputnodeitem import InputOutputNodeItem, NodeItem
 from patch.patchutils import _getObjectEditorPos
-from patch.wireitem import WireItem
+from patch._plugitem import _PlugItem
+from patch.edgeitem import EdgeItem
 from patch.wirepreview import WirePreview
+
+_typeFilter = lambda m, t: isinstance(m, t)
 
 
 class PatchScene(QGraphicsScene):
-    operatorSelectionChanged = pyqtSignal(list)
+    nodeSelectionChanged = pyqtSignal(list)
 
-    def __init__(self, ctx, patch):
+    def __init__(self):
         """
         @type ctx: AppContext
         """
-        self.ctx = ctx
-        assert (patch)
         super(PatchScene, self).__init__()
         self.__wireIsOutput = False
-        self.__patch = patch
 
-        self.__operatorLayer = LayerItem()
-        self.addItem(self.__operatorLayer)
-        self.__wireLayer = LayerItem()
-        self.addItem(self.__wireLayer)
+        self.__nodeLayer = LayerItem()
+        self.addItem(self.__nodeLayer)
+        self.__edgeLayer = LayerItem()
+        self.addItem(self.__edgeLayer)
         self.__interactionLayer = LayerItem()
         self.__interactionLayer.setAcceptedMouseButtons(Qt.NoButton)
         self.__interactionLayer.setAcceptHoverEvents(False)
@@ -44,17 +44,26 @@ class PatchScene(QGraphicsScene):
 
         # self.setSceneRect(-1000, -1000, 1000, 1000)
         self.selectionChanged.connect(self.__onSelectionChanged)
-        self.__patch.childAdded.connect(self.__onOperatorAdded)
-        self.__patch.childRemoved.connect(self.__onOperatorRemoved)
 
-        for op in self.__patch.children():
-            self.__onOperatorAdded(op)
-
-        for opItem in self.operatorItems():
+        for opItem in self.nodes():
             for inPlug in opItem.operator().inputPlugs():
                 con = inPlug.connection()
                 if con:
-                    self.__addWire(con, inPlug)
+                    self.addEdge(con, inPlug)
+
+        self.changed.connect(self.__sceneChanged)
+
+    def __sceneChanged(self, regions):
+        self.ensureLargeEnoughSceneRect()
+
+    def ensureLargeEnoughSceneRect(self):
+        """Enlarge scenerect so dragging nodes around doesn't feel so weird"""
+        margin = 1000
+        adjusted = self.itemsBoundingRect().adjusted(-margin, -margin, margin, margin)
+        self.setSceneRect(self.sceneRect().united(adjusted))
+
+    def addNode(self, node: NodeItem):
+        self.addItem(node)
 
     def startDragConnection(self, pinItem):
         self.hideIncompaticlePlugs(pinItem.plugItem())
@@ -116,49 +125,33 @@ class PatchScene(QGraphicsScene):
             painter.drawLine(QPointF(xmin, y) * spacing,
                              QPointF(xmax, y) * spacing)
 
-    def operatorItems(self):
-        for item in self.__operatorLayer.childItems():
-            if isinstance(item, OperatorItem):
-                yield item
+    def nodes(self):
+        return filter(lambda m: isinstance(m, NodeItem),
+                      self.__edgeLayer.childItems())
 
-    def wireItems(self):
-        for item in self.__wireLayer.childItems():
-            if isinstance(item, WireItem):
-                yield item
-
-    def patch(self):
-        return self.__patch
+    def edges(self):
+        return filter(lambda m: isinstance(m, EdgeItem),
+                      self.__edgeLayer.childItems())
 
     def hideIncompaticlePlugs(self, src):
-        for opItem in self.operatorItems():
+        for opItem in self.nodes():
             opItem.hideIncompatiblePlugs(src)
 
     def showAllPlugs(self):
-        for opItem in self.operatorItems():
+        for opItem in self.nodes():
             opItem.showAllPlugs()
 
-    def selectedOperatorItems(self):
-        return (item for item in self.selectedItems() if
-                isinstance(item, OperatorItem))
+    def selectedNodes(self):
+        return filter(lambda m: isinstance(m, NodeItem), self.selectedItems())
 
-    def selectedOperators(self):
-        for opItem in self.selectedOperatorItems():
-            yield opItem.operator()
+    def selectedEdges(self):
+        return filter(lambda m: isinstance(m, EdgeItem), self.selectedItems())
 
-    def selectedWires(self):
-        return (item for item in self.selectedItems() if
-                isinstance(item, WireItem))
-
-    def findOperatorItem(self, op):
-        for item in self.operatorItems():
-            if item.operator() == op:
+    def findEdge(self, plugA: _PlugItem, plugB: _PlugItem):
+        for item in self.edges():
+            if item.srcPin.plugItem() == plugA and item.dstPin.plugItem() == plugB:
                 return item
-
-        print('Could not find operator: %s' % op)
-
-    def findWireItem(self, srcPlugItem, dstPlugItem):
-        for item in self.wireItems():
-            if item.srcPin.plugItem().plug() == srcPlugItem and item.dstPin.plugItem().plug() == dstPlugItem:
+            if item.dstPin.plugItem() == plugB and item.dstPin.plugItem() == plugA:
                 return item
 
     def dragConnectionSource(self):
@@ -169,37 +162,31 @@ class PatchScene(QGraphicsScene):
         return None
 
     def __onSelectionChanged(self):
-        operators = list(self.selectedOperators())
-        self.ctx.setSelection(operators)
-        self.operatorSelectionChanged.emit(operators)
+        self.nodeSelectionChanged.emit(list(self.selectedNodes()))
 
-    def __addWire(self, srcPlug, dstPlug):
-        """
-        @type srcPlug: nap.OutputPlugBase
-        @type dstPlug: nap.InputPlugBase
-        """
+    def addEdge(self, srcPlug: _PlugItem, dstPlug: _PlugItem):
         srcPlugItem = self.findOperatorItem(srcPlug.parent()).findPlugItem(
             srcPlug)
         dstPlugItem = self.findOperatorItem(dstPlug.parent()).findPlugItem(
             dstPlug)
 
-        wire = WireItem(srcPlugItem.pin(), dstPlugItem.pin())
-        wire.setParentItem(self.__wireLayer)
+        wire = EdgeItem(srcPlugItem.pin(), dstPlugItem.pin())
+        wire.setParentItem(self.__edgeLayer)
 
-    def __removeWire(self, srcPlug, dstPlug):
-        wire = self.findWireItem(srcPlug, dstPlug)
-        assert(wire)
+    def removeEdge(self, srcPlug, dstPlug):
+        wire = self.findEdge(srcPlug, dstPlug)
+        assert (wire)
         self.__removeItem(wire)
 
     def __onOperatorAdded(self, op):
         """
         @type op: nap.Operator
         """
-        item = OperatorItem(self.__operatorLayer, op)
+        item = InputOutputNodeItem(self.__nodeLayer, op)
         item.moved.connect(self.__updateSceneRect)
-        item.setParentItem(self.__operatorLayer)
-        item.plugConnected.connect(self.__addWire)
-        item.plugDisconnected.connect(self.__removeWire)
+        item.setParentItem(self.__nodeLayer)
+        item.plugConnected.connect(self.addEdge)
+        item.plugDisconnected.connect(self.removeEdge)
         item.setPos(_getObjectEditorPos(op))
         self.__updateSceneRect()
 

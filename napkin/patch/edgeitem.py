@@ -5,13 +5,13 @@ from PyQt5.QtWidgets import QGraphicsPathItem, QGraphicsItem
 from patch.patchutils import calculateWirePath
 
 
-class WireItem(QGraphicsPathItem):
+class EdgeItem(QGraphicsPathItem):
     def __init__(self, srcPinItem, dstPinItem):
         """
         @type srcPinItem: patch.pinitem.PinItem
         @type dstPinItem: patch.pinitem.PinItem
         """
-        super(WireItem, self).__init__()
+        super(EdgeItem, self).__init__()
         self.srcPin = srcPinItem
         self.dstPin = dstPinItem
         self.srcPos = QPointF()
@@ -23,7 +23,7 @@ class WireItem(QGraphicsPathItem):
     def paint(self, painter, option, widget=None):
         if self.isVisible():
             self.updatePath()
-        super(WireItem, self).paint(painter, option, widget)
+        super(EdgeItem, self).paint(painter, option, widget)
 
     def updatePath(self):
         if self.srcPin:
