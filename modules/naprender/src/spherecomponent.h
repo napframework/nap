@@ -19,6 +19,6 @@ namespace nap
 	public:
 		// Default constructor
 		SphereComponent() = default;
-		SphereComponent(MaterialInstance& materialInstance, RenderService& renderService);
+		SphereComponent(MaterialInstance& materialInstance);
 	};
 }

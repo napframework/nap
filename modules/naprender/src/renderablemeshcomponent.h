@@ -2,16 +2,14 @@
 
 // Local Includes
 #include "rendercomponent.h"
-#include "material.h"
 #include "nap/objectptr.h"
-
-// External Includes
-#include <nmesh.h>
+#include "vao.h"
 
 
 namespace nap
 {
-	class RenderableMeshResource;
+	class MeshResource;
+	class MaterialInstance;
 
 	/**
 	 * Represents a drawable mesh that can be used as a component in an object tree
@@ -38,11 +36,6 @@ namespace nap
 		virtual void draw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
 
 		/**
-		 * @return The ModelResource associated with this component.
-		 */
-		RenderableMeshResource* getRenderableMeshResource();
-
-		/**
 		 * @return MaterialInstance for this component.
 		 */
 		MaterialInstance* getMaterialInstance();
@@ -51,7 +44,8 @@ namespace nap
 		void pushUniforms();
 
 	public:
-		ObjectPtr<RenderableMeshResource>	mRenderableMeshResource;			///< The mesh+material object
+		ObjectPtr<MeshResource>				mMeshResource;
 		ObjectPtr<MaterialInstance>			mMaterialInstance;					///< MaterialInstance, which is used to override uniforms for this instance
+		std::unique_ptr<VAOHandle>			mVAOHandle;
 	};
 }

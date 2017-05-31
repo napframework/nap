@@ -7,7 +7,7 @@
 #include "transformcomponent.h"
 #include "cameracomponent.h"
 #include "renderglobals.h"
-#include "renderablemeshresource.h"
+#include "meshresource.h"
 #include "rtti/factory.h"
 #include "nap/resourcemanager.h"
 
@@ -30,7 +30,6 @@ namespace nap
 	// Register all object creation functions
 	void RenderService::registerObjectCreators(rtti::Factory& factory)
 	{
-		factory.addObjectCreator(std::make_unique<RenderableMeshResourceCreator>(*this));
 	}
 
 
@@ -332,6 +331,60 @@ namespace nap
 			mRenderer->shutdown();
 		}
 		state = State::Uninitialized;
+	}
+
+
+	std::unique_ptr<VAOHandle> RenderService::acquireVertexArrayObject(const Material& material, const MeshResource& meshResource, utility::ErrorState& errorState)
+	{
+		/// Construct a key based on material-mesh, and see if we have a VAO for this combination
+		VAOKey key(material, meshResource);
+		VAOMap::iterator kvp = mVAOMap.find(key);
+		if (kvp != mVAOMap.end())
+		{
+			// Increase refcount and return handle to our internal opengl object
+			++kvp->second.mRefCount;
+			return VAOHandle::create(*this, kvp->second.mObject.get());
+		}
+
+		// VAO was not found for this material-mesh combination, create a new one
+		RefCountedVAO ref_counted_vao;
+		ref_counted_vao.mObject = std::make_unique<opengl::VertexArrayObject>();
+
+		// Use the mapping in the material to bind mesh vertex attrs to shader vertex attrs
+		for (auto& kvp : material.getShader()->getShader().getAttributes())
+		{
+			const opengl::VertexAttribute* shader_vertex_attribute = kvp.second.get();
+
+			const Material::VertexAttributeBinding* material_binding = material.findVertexAttributeBinding(kvp.first);
+			if (!errorState.check(material_binding != nullptr, "Unable to find binding %s for shader %s in material %s", kvp.first.c_str(), material.getShader()->mVertPath.c_str(), material.mID.c_str()))
+				return nullptr;
+
+			const opengl::VertexAttributeBuffer* vertex_buffer = meshResource.getMesh().findVertexAttributeBuffer(material_binding->mMeshAttributeID);
+			if (!errorState.check(shader_vertex_attribute != nullptr, "Unable to find vertex attribute %s in mesh %s", material_binding->mMeshAttributeID.c_str(), meshResource.mPath.c_str()))
+				return nullptr;
+
+			ref_counted_vao.mObject->addVertexBuffer(shader_vertex_attribute->mLocation, *vertex_buffer);
+		}
+
+		auto inserted = mVAOMap.emplace(key, std::move(ref_counted_vao));
+
+		return VAOHandle::create(*this, inserted.first->second.mObject.get());
+	}
+
+
+	void RenderService::releaseVertexArrayObject(opengl::VertexArrayObject* vao)
+	{
+		// Find the VAO in the map by value
+		VAOMap::iterator it = find_if(mVAOMap.begin(), mVAOMap.end(), [&](auto&& kvp) { return kvp.second.mObject.get() == vao; });
+		assert(it != mVAOMap.end());
+
+		// If this is the last usage of this VAO, queue it for destruction (VAOs need to be destructed per active context,
+		// so we defer destruction)
+		if (--it->second.mRefCount == 0)
+		{
+			queueResourceForDestruction(std::move(it->second.mObject));
+			mVAOMap.erase(it);
+		}
 	}
 
 } // Renderservice

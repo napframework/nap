@@ -11,6 +11,7 @@
 // Local Includes
 #include "renderer.h"
 #include "renderstate.h"
+#include "vao.h"
 
 namespace opengl
 {
@@ -127,6 +128,16 @@ namespace nap
 		 */
 		void destroyGLContextResources(std::vector<RenderWindowComponent*>& renderWindows);
 
+		/**
+		* Creates a handle to a VertexArrayObject given a material-mesh combination. Internally the RenderService holds a map of VAOs for such
+		* combinations, and it hands out handles to the VAOs that are stored internally. The handle will release itself on destruction.
+		* @param material: Material to acquire the VAO for.
+		* @param meshResource: mesh to acquire the VAO for.
+		* @errorstate: in case it was not possible to create a VAO for this combination of material and mesh, this will hold error information.
+		* @return On success, this will hold a pointer to the handle, on failure this will return nullptr (check errorState for details).
+		*/
+		std::unique_ptr<VAOHandle> acquireVertexArrayObject(const Material& material, const MeshResource& meshResource, utility::ErrorState& errorState);
+
 	protected:
 		/**
 		 * Type registration
@@ -144,6 +155,14 @@ namespace nap
 		virtual void objectRegistered(Object& inObject) override;
 
     private:
+		friend class VAOHandle;
+
+	
+		/**
+		* Called by VAOHandle on destruction, decreases refcount and queues VAO for destruction
+		* if refcount hits zero.
+		*/
+		void releaseVertexArrayObject(opengl::VertexArrayObject* vao);
 
 		// Keeps track of glew initialization
 		// If there is no active context we can't initialize glew
@@ -191,5 +210,20 @@ namespace nap
 		ContextSpecificStateMap	mContextSpecificState;				//< The per-context render state
 
 		std::vector<std::unique_ptr<opengl::IGLContextResource>> mGLContextResourcesToDestroy;	///< Array of per-context GL resources scheduled for destruction
+
+		/**
+		* Helper struct to refcount opengl VAOs.
+		*/
+		struct RefCountedVAO final
+		{
+			std::unique_ptr<opengl::VertexArrayObject> mObject;
+			int mRefCount = 1;
+		};
+
+		using VAOMap = std::unordered_map<VAOKey, RefCountedVAO>;
+		VAOMap mVAOMap;		///< Map from material-mesh combiantion to opengl VAO
 	};
 } // nap
+
+
+

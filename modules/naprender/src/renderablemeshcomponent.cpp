@@ -1,17 +1,17 @@
 #include "RenderableMeshComponent.h"
 #include "meshresource.h"
-#include "RenderableMeshResource.h"
 #include "ncamera.h"
 #include "transformcomponent.h"
 #include "renderglobals.h"
 #include "material.h"
+#include "renderservice.h"
 
 namespace nap
 {
 	// Upload all uniform variables to GPU
 	void RenderableMeshComponent::pushUniforms()
 	{
-		Material* comp_mat = mRenderableMeshResource->getMaterial();
+		Material* comp_mat = mMaterialInstance->getMaterial();
 
 		// Build a list of all the uniforms that we are going to set
 		std::unordered_map<std::string, const UniformBinding<UniformTexture>*> texture_bindings;
@@ -59,7 +59,11 @@ namespace nap
 
 	bool RenderableMeshComponent::init(utility::ErrorState& errorState)
 	{
-		if (!errorState.check(mMaterialInstance == nullptr || mMaterialInstance->getMaterial() == mRenderableMeshResource->getMaterial(), "MaterialInstance does not override the material from the RenderableMeshResource"))
+		assert(mService->get_type() == RTTI_OF(RenderService));
+		RenderService& render_service = *static_cast<RenderService*>(mService);
+
+		mVAOHandle = render_service.acquireVertexArrayObject(*mMaterialInstance->getMaterial(), *mMeshResource, errorState);
+		if (mVAOHandle == nullptr)
 			return false;
 
 		return true;
@@ -81,7 +85,7 @@ namespace nap
 		}
 		const glm::mat4x4& model_matrix = xform_comp == nullptr ? identityMatrix : xform_comp->getGlobalTransform();
 
-		Material* comp_mat = mRenderableMeshResource->getMaterial();
+		Material* comp_mat = mMaterialInstance->getMaterial();
 
 		comp_mat->bind();
 
@@ -92,10 +96,10 @@ namespace nap
 
 		pushUniforms();
 
-		mRenderableMeshResource->getVAO().bind();
+		mVAOHandle->mObject->bind();
 
 		// Gather draw info
-		const opengl::Mesh& mesh = mRenderableMeshResource->getMeshResource()->getMesh();
+		const opengl::Mesh& mesh = mMeshResource->getMesh();
 		GLenum draw_mode = getGLMode(mesh.getDrawMode());
 		const opengl::IndexBuffer* index_buffer = mesh.getIndexBuffer();
 		GLsizei draw_count = static_cast<GLsizei>(index_buffer->getCount());
@@ -113,14 +117,9 @@ namespace nap
 		}
 		comp_mat->unbind();
 
-		mRenderableMeshResource->getVAO().unbind();
-
+		mVAOHandle->mObject->unbind();
 	}
 
-	RenderableMeshResource* RenderableMeshComponent::getRenderableMeshResource()
-	{
-		return mRenderableMeshResource.get();
-	}
 
 	MaterialInstance* RenderableMeshComponent::getMaterialInstance()
 	{
