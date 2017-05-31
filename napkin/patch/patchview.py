@@ -1,16 +1,12 @@
-from PyQt5.QtCore import Qt, QPointF
-from PyQt5.QtGui import QCursor, QMouseEvent, QPainter, QKeySequence, QTransform
-from PyQt5.QtWidgets import QGraphicsView, QAction, QMenu
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 
 import iconstore
 from patch.layeritem import LayerItem
-from patch.inputoutputnodeitem import InputOutputNodeItem
-
-from patch.patchutils import _setObjectEditorPos, _canConnect
-from patch.pinitem import PinItem
-from patch._plugitem import _PlugItem
+from patch.inputoutputnodeitem import InputOutputNodeItem, NodeItem
 from patch.edgeitem import EdgeItem
-from utils.butils import _excludeTypes, _filter
+from patch.socketitem import SocketItem
 
 
 class PatchView(QGraphicsView):
@@ -56,8 +52,8 @@ class PatchView(QGraphicsView):
     def __onCustomContextMenuRequested(self, pos):
         if not self.scene():
             return
-        clickedItems = self.items(pos)
-        filteredClickedItems = _excludeTypes(clickedItems, [LayerItem])
+
+        filteredClickedItems = filter(lambda m: not isinstance(m, LayerItem), self.items(pos))
 
         menu = QMenu(self)
 
@@ -119,23 +115,11 @@ class PatchView(QGraphicsView):
             if isinstance(item, itemType):
                 return item
 
-    def pinAt(self, scenePos):
-        """
-        @rtype: patch.pinitem.PinItem
-        """
-        return self._itemAt(scenePos, PinItem)
+    def socketAt(self, scenePos) -> SocketItem:
+        return self._itemAt(scenePos, SocketItem)
 
-    def plugAt(self, scenePos):
-        """
-        @rtype: patch._plugitem._PlugItem
-        """
-        return self._itemAt(scenePos, _PlugItem)
-
-    def operatorAt(self, scenePos):
-        """
-        @rtype: InputOutputNodeItem
-        """
-        return self._itemAt(scenePos, InputOutputNodeItem)
+    def operatorAt(self, scenePos) -> NodeItem:
+        return self._itemAt(scenePos, NodeItem)
 
 
 class InteractMode(object):
@@ -144,25 +128,13 @@ class InteractMode(object):
     def __init__(self):
         pass
 
-    def mousePressed(self, view, evt):
-        """
-        @param view: PatchView
-        @param evt: QMousePressEvent
-        """
+    def mousePressed(self, view:PatchView, evt:QMouseEvent):
         raise NotImplementedError()
 
-    def mouseMoved(self, view, evt):
-        """
-        @param view: PatchView
-        @param evt: QMouseMoveEvent
-        """
+    def mouseMoved(self, view:PatchView, evt:QMouseEvent):
         raise NotImplementedError()
 
-    def mouseReleased(self, view, evt):
-        """
-        @param view: PatchView
-        @param evt: QMouseReleaseEvent
-        """
+    def mouseReleased(self, view:PatchView, evt:QMouseEvent):
         raise NotImplementedError()
 
 
@@ -176,19 +148,15 @@ class DefaultInteractMode(InteractMode):
         view.viewport().unsetCursor()
         view.setDragMode(QGraphicsView.RubberBandDrag)
 
-    def mousePressed(self, view, evt):
-        """
-        @type view: PatchView
-        @type evt: QMouseEvent
-        """
+    def mousePressed(self, view: PatchView, evt:QMouseEvent):
         item = view.itemAt(evt.pos())
         if item:
             item.setVisible(True)
-        pin = view.pinAt(evt.pos())
+        socket = view.socketAt(evt.pos())
         opItem = view.operatorAt(evt.pos())
 
         if evt.buttons() == Qt.LeftButton:
-            if pin:
+            if socket:
                 return True
 
             if opItem:
@@ -204,28 +172,20 @@ class DefaultInteractMode(InteractMode):
 
         return False
 
-    def mouseMoved(self, view, evt):
-        """
-        @type view: PatchView
-        @type evt: QMouseEvent
-        """
-        pin = view.pinAt(evt.pos())
-        if pin:
+    def mouseMoved(self, view: PatchView, evt:QMouseEvent):
+        socket = view.socketAt(evt.pos())
+        if socket:
             view.viewport().setCursor(Qt.PointingHandCursor)
         else:
             view.viewport().unsetCursor()
         return False
 
-    def mouseReleased(self, view, evt):
-        """
-        @type view: PatchView
-        @type evt: QMouseEvent
-        """
+    def mouseReleased(self, view: PatchView, evt:QMouseEvent):
         if not view.scene():
             return True
-        pin = view.pinAt(evt.pos())
-        if pin:
-            view.scene().startDragConnection(pin)
+        plug = view.socketAt(evt.pos())
+        if plug:
+            view.scene().startDragConnection(plug)
             view.setInteractMode(ConnectInteractMode)
             return True
         return False
@@ -246,19 +206,11 @@ class DragInteractMode(InteractMode):
         self.__oldMousePos = view.mapFromGlobal(QCursor.pos())
         self.__mouseClickPos = self.__oldMousePos
 
-    def mousePressed(self, view, evt):
-        """
-        @type view: PatchView
-        @type evt: QMouseEvent
-        """
+    def mousePressed(self, view: PatchView, evt:QMouseEvent):
         self.__mouseClickPos = evt.pos()
         return False
 
-    def mouseMoved(self, view, evt):
-        """
-        @type view: PatchView
-        @type evt: QMouseEvent
-        """
+    def mouseMoved(self, view: PatchView, evt:QMouseEvent):
         pos = evt.pos()
         delta = view.mapToScene(pos) - view.mapToScene(self.__oldMousePos)
         for opItem in view.scene().selectedNodes():
@@ -266,11 +218,7 @@ class DragInteractMode(InteractMode):
         self.__oldMousePos = pos
         return False
 
-    def mouseReleased(self, view, evt):
-        """
-        @type view: PatchView
-        @type evt: QMouseEvent
-        """
+    def mouseReleased(self, view: PatchView, evt:QMouseEvent):
         if not view.scene():
             return True
         # delta = evt.pos() - self.__mouseClickPos
@@ -288,27 +236,16 @@ class PanInteractMode(InteractMode):
         super(PanInteractMode, self).__init__()
         self.__oldMousePos = QPointF()
 
-    def init(self, view):
-        """
-        @type view: PatchView
-        """
+    def init(self, view: PatchView):
         view.viewport().setCursor(Qt.ClosedHandCursor)
         view.setDragMode(QGraphicsView.NoDrag)
         self.__oldMousePos = view.mapFromGlobal(QCursor.pos())
 
-    def mousePressed(self, view, evt):
-        """
-        @type view: PatchView
-        @type evt: QMouseEvent
-        """
+    def mousePressed(self, view: PatchView, evt:QMouseEvent):
         self.__oldMousePos = QPointF()
         return False
 
-    def mouseMoved(self, view, evt):
-        """
-        @type view: PatchView
-        @type evt: QMouseEvent
-        """
+    def mouseMoved(self, view: PatchView, evt:QMouseEvent):
         delta = evt.pos() - self.__oldMousePos
         view.horizontalScrollBar().setValue(
             view.horizontalScrollBar().value() - delta.x())
@@ -317,11 +254,7 @@ class PanInteractMode(InteractMode):
         self.__oldMousePos = evt.pos()
         return False
 
-    def mouseReleased(self, view, evt):
-        """
-        @type view: PatchView
-        @type evt: QMouseEvent
-        """
+    def mouseReleased(self, view: PatchView, evt:QMouseEvent):
         if not view.scene():
             return True
         view.setInteractMode(DefaultInteractMode)
@@ -333,46 +266,36 @@ class ConnectInteractMode(InteractMode):
         super(ConnectInteractMode, self).__init__()
         self.__oldMousePos = QPointF()
 
-    def init(self, view):
-        """
-        @type view: PatchView
-        """
+    def init(self, view: PatchView):
         view.setDragMode(QGraphicsView.NoDrag)
 
-    def mousePressed(self, view, evt):
-        """
-        @type view: PatchView
-        @type evt: QMouseEvent
-        """
-        pin = view.pinAt(evt.pos())
-        print("stopDrag")
-        view.scene().stopDragConnection(pin)
+    def mousePressed(self, view: PatchView, evt:QMouseEvent):
+        socket = view.socketAt(evt.pos())
+        view.scene().stopDragConnection(socket)
         return False
 
-    def mouseMoved(self, view: PatchView, evt: QMouseEvent):
-        pin = view.pinAt(evt.pos())
-        srcPlug = view.scene().dragConnectionSource()
-        pt = view.mapToScene(evt.pos())
-        if pin and srcPlug:
-            plug = pin.plugItem()
-            if plug and plug.plug() and _canConnect(srcPlug, plug.plug()):
-                pt = plug.pin().attachPos()
+    def mouseMoved(self, view: PatchView, evt:QMouseEvent):
+        srcSocket = view.scene().dragConnectionSource()
+        dstSocket = view.socketAt(evt.pos())
+
+        # pos, vec = srcSocket.attachPosVec()
+        vec = QPointF()
+        pos = view.mapToScene(evt.pos())
+
+        if dstSocket:
+            if view.scene().canConnect(srcSocket, dstSocket):
+                pos, vec = dstSocket.attachPosVec()
                 view.viewport().setCursor(Qt.PointingHandCursor)
             else:
                 view.viewport().unsetCursor()
-        view.scene().updateDragConnection(pt)
+
+        view.scene().updateDragConnection(pos, vec)
 
         self.__oldMousePos = evt.pos()
         return False
 
-    def mouseReleased(self, view, evt):
-        """
-        @type view: PatchView
-        @type evt: QMouseEvent
-        """
+    def mouseReleased(self, view: PatchView, evt:QMouseEvent):
         if not view.scene():
             return True
         view.setInteractMode(DefaultInteractMode)
         return False
-
-

@@ -1,10 +1,8 @@
-from PyQt5.QtCore import pyqtSignal, QRectF, Qt
-from PyQt5.QtGui import QPen
-from PyQt5.QtWidgets import QGraphicsObject, QGraphicsTextItem, QGraphicsItem, QApplication
-
-import nap
-from patch._plugitem import _PlugItem, InPlugItem, OutPlugItem
-from patch.patchutils import COL_NODE_TITLE, _canConnect, moveToFront, _getObjectEditorPos
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+from patch.socketitem import InputSocketItem, OutputSocketItem
+from patch.patchutils import COL_NODE_TITLE, moveToFront
 
 
 class NodeItem(QGraphicsObject):
@@ -119,13 +117,13 @@ class InputOutputNodeItem(NodeItem):
         return super(InputOutputNodeItem, self).itemChange(change, value)
 
     def addInlet(self, name:str):
-        plug = InPlugItem(name)
+        plug = InputSocketItem(name)
         plug.setParentItem(self)
         self.__inputPlugs.append(plug)
         self.layout()
 
     def addOutlet(self, name:str):
-        plug = OutPlugItem(name)
+        plug = OutputSocketItem(name)
         plug.setParentItem(self)
         self.__outputPlugs.append(plug)
         self.layout()

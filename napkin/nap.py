@@ -10,9 +10,6 @@ class Object(QObject):
     def __init__(self):
         super(Object, self).__init__()
 
-    def isEditable(self) -> bool:
-        raise NotImplementedError()
-
 
 class Entity(Object):
     def __init__(self):

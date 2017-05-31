@@ -28,10 +28,6 @@ if __name__ == '__main__':
 
     # Hack to enable exception printing on crash
     def excepthookForward(typ, value, tback):
-        name = '%s\n%s' % (type(value).__name__, str(value))
-        tracestr = ''.join(traceback.format_tb(tback))
-        QMessageBox.critical(win, '%s Uncaught Exception' % _APPLICATION_NAME,
-                             '%s\n\n%s' % (name, tracestr))
         raise value
 
 

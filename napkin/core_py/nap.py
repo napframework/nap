@@ -75,6 +75,7 @@ class Core(nap.Core):
     def __init__(self):
         super(Core, self).__init__()
         self.__root = Entity()
+        self.__root.setName('Root')
 
     def root(self):
         return self.__root
@@ -100,9 +101,28 @@ class Core(nap.Core):
         return (typ for mod in self.moduleInfo().modules() for typ in mod.dataTypes())
 
 
-class Entity(nap.Entity):
+class Object(nap.Object):
+    def __init__(self):
+        super(Object, self).__init__()
+        self.__editable = True
+        self.__name = 'Unnamed'
 
+    def name(self):
+        return self.__name
 
+    def setName(self, name):
+        self.__name = name
+
+    def isEditable(self):
+        return self.__editable
+
+    def setEditable(self, editable):
+        self.__editable = editable
+
+    def typename(self):
+        return type(self).__name__
+
+class Entity(Object):
 
     def __init__(self):
         super(Entity, self).__init__()

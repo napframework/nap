@@ -1,41 +1,55 @@
-from PyQt5.QtCore import QPointF
+from PyQt5.QtCore import QPointF, Qt
 from PyQt5.QtGui import QPen, QPainterPath
 from PyQt5.QtWidgets import QGraphicsPathItem, QGraphicsItem
 
 from patch.patchutils import calculateWirePath
+from patch.socketitem import SocketItem
 
 
-class EdgeItem(QGraphicsPathItem):
-    def __init__(self, srcPinItem, dstPinItem):
-        """
-        @type srcPinItem: patch.pinitem.PinItem
-        @type dstPinItem: patch.pinitem.PinItem
-        """
-        super(EdgeItem, self).__init__()
-        self.srcPin = srcPinItem
-        self.dstPin = dstPinItem
+class EdgeItemBase(QGraphicsPathItem):
+    def __init__(self):
+        super(EdgeItemBase, self).__init__()
+        self.srcSocket = None
+        self.dstSocket = None
         self.srcPos = QPointF()
+        self.srcVec = QPointF()
         self.dstPos = QPointF()
+        self.dstVec = QPointF()
+
+    def updatePath(self):
+        if self.srcSocket:
+            self.srcPos, self.srcVec = self.srcSocket.attachPosVec()
+            self.srcPos = self.mapToScene(self.srcPos)
+        if self.dstSocket:
+            self.dstPos, self.dstVec = self.dstSocket.attachPosVec()
+            self.dstPos = self.mapToScene(self.dstPos)
+
+        p = QPainterPath()
+        calculateWirePath(self.srcPos, self.srcVec, self.dstPos, self.dstVec, p)
+        self.setPath(p)
+
+
+
+class EdgeItem(EdgeItemBase):
+    def __init__(self, srcPinItem: SocketItem, dstPinItem: SocketItem):
+        super(EdgeItem, self).__init__()
+        self.srcSocket = srcPinItem
+        self.dstSocket = dstPinItem
         self.setFlag(QGraphicsItem.ItemIsFocusable, True)
         self.setFlag(QGraphicsItem.ItemIsSelectable, True)
         self.updatePath()
 
-    def paint(self, painter, option, widget=None):
-        if self.isVisible():
-            self.updatePath()
-        super(EdgeItem, self).paint(painter, option, widget)
 
-    def updatePath(self):
-        if self.srcPin:
-            self.srcPos = self.srcPin.attachPos()
-        if self.dstPin:
-            self.dstPos = self.dstPin.attachPos()
+class PreviewEdge(EdgeItemBase):
+    def __init__(self):
+        super(PreviewEdge, self).__init__()
+        self.setAcceptTouchEvents(False)
+        self.setAcceptHoverEvents(False)
 
         pen = QPen()
-        pen.setColor(self.srcPin.color())
         pen.setWidth(1)
+        pen.setStyle(Qt.DashLine)
         self.setPen(pen)
 
-        p = QPainterPath()
-        calculateWirePath(self.srcPos, self.dstPos, p)
-        self.setPath(p)
+    def boundingRect(self):
+        return self.path().boundingRect()

@@ -44,7 +44,7 @@ class ObjectItem(QStandardItem):
         self.setEditable(self.__obj.isEditable())
         self.setText(obj.name())
         self.setToolTip('%s (%s)' % (obj.name(), obj.typename()))
-        self.setData(obj.ptr(), Qt.UserRole)
+        self.setData(obj, Qt.UserRole)
         self.setIcon(iconstore.iconFor(obj))
 
         for obj in obj.children():

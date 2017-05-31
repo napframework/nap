@@ -1,7 +1,5 @@
-from PyQt5.QtCore import Qt, QTimer, QSettings
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QTreeView, QAction, \
-    QMenu, QApplication, \
-    QMessageBox, QFileDialog
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
 
 import iconstore
 import nap
@@ -21,8 +19,6 @@ class OutlineWidget(QWidget):
         super(OutlineWidget, self).__init__()
 
         self.setObjectName(objectName)
-
-        self.setEnabled(False)
 
         self.__propagateSelection = False
         self.setLayout(QVBoxLayout())

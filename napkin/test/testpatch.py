@@ -1,18 +1,16 @@
+import random
 import sys
-import typing
-
-import math
 from collections import namedtuple
 
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
 from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
+from random_words.random_words import RandomWords
 
 from patch.inputoutputnodeitem import InputOutputNodeItem
 from patch.patchscene import PatchScene
 from patch.patchview import PatchView
-from patch._plugitem import _PlugItem
 from utils.qtutils import QBaseWindow
+
 Margins = namedtuple('Margins', ['top', 'right', 'bottom', 'left'])
 
 
@@ -30,12 +28,16 @@ if __name__ == '__main__':
     scene = PatchScene()
     view.setScene(scene)
 
-    op = InputOutputNodeItem('SimpleOperator')
-    op.addInlet('MyInlet')
-    op.addInlet('AnotherInput With Long Name')
-    op.addOutlet('out')
+    rw = RandomWords()
 
-    scene.addNode(op)
+    for i in range(100):
+        op = InputOutputNodeItem(rw.random_word())
+        for i in range(random.randint(0, 4)):
+            op.addInlet(rw.random_word())
+        for i in range(random.randint(0, 4)):
+            op.addOutlet(rw.random_word())
+        op.setPos(random.randint(-800, 800), random.randint(-800, 800))
+        scene.addNode(op)
 
     win.setCentralWidget(QWidget())
     win.centralWidget().setLayout(QVBoxLayout())
