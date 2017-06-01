@@ -6,7 +6,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from random_words.random_words import RandomWords
 
-from patch.inputoutputnodeitem import InputOutputNodeItem
+from patch.nodeitem import InputOutputNodeItem
 from patch.patchscene import PatchScene
 from patch.patchview import PatchView
 from utils.qtutils import QBaseWindow

@@ -15,7 +15,11 @@ class EdgeItemBase(QGraphicsPathItem):
         self.srcVec = QPointF()
         self.dstPos = QPointF()
         self.dstVec = QPointF()
-
+    
+    def update(self):
+        self.updatePath()
+        super(EdgeItemBase, self).update()
+    
     def updatePath(self):
         if self.srcSocket:
             self.srcPos, self.srcVec = self.srcSocket.attachPosVec()
@@ -31,10 +35,10 @@ class EdgeItemBase(QGraphicsPathItem):
 
 
 class EdgeItem(EdgeItemBase):
-    def __init__(self, srcPinItem: SocketItem, dstPinItem: SocketItem):
+    def __init__(self, src: SocketItem, dst: SocketItem):
         super(EdgeItem, self).__init__()
-        self.srcSocket = srcPinItem
-        self.dstSocket = dstPinItem
+        self.srcSocket = src
+        self.dstSocket = dst
         self.setFlag(QGraphicsItem.ItemIsFocusable, True)
         self.setFlag(QGraphicsItem.ItemIsSelectable, True)
         self.updatePath()

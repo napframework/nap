@@ -10,6 +10,9 @@ class SocketItem(QGraphicsItem):
         self._pin = PinItem(self)
         self.setName(name)
 
+    def node(self):
+        return self.parentItem()
+
     def setDirty(self):
         self.__layoutDirty = True
 
@@ -91,9 +94,3 @@ class PinItem(QGraphicsPathItem):
         self.setPath(p)
 
 
-def inputOutputConnectCondition(src: SocketItem, dst: SocketItem):
-    if isinstance(src, InputSocketItem) and isinstance(dst, InputSocketItem):
-        return False
-    if isinstance(src, OutputSocketItem) and isinstance(src, OutputSocketItem):
-        return False
-    return True

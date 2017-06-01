@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import *
 
 import iconstore
 from patch.layeritem import LayerItem
-from patch.inputoutputnodeitem import InputOutputNodeItem, NodeItem
+from patch.nodeitem import InputOutputNodeItem, NodeItem
 from patch.edgeitem import EdgeItem
 from patch.socketitem import SocketItem
 
@@ -116,7 +116,11 @@ class PatchView(QGraphicsView):
                 return item
 
     def socketAt(self, scenePos) -> SocketItem:
-        return self._itemAt(scenePos, SocketItem)
+        for item in self.items(scenePos):
+            if isinstance(item, NodeItem):
+                return None
+            if isinstance(item, SocketItem):
+                return item
 
     def operatorAt(self, scenePos) -> NodeItem:
         return self._itemAt(scenePos, NodeItem)
@@ -149,9 +153,6 @@ class DefaultInteractMode(InteractMode):
         view.setDragMode(QGraphicsView.RubberBandDrag)
 
     def mousePressed(self, view: PatchView, evt:QMouseEvent):
-        item = view.itemAt(evt.pos())
-        if item:
-            item.setVisible(True)
         socket = view.socketAt(evt.pos())
         opItem = view.operatorAt(evt.pos())
 

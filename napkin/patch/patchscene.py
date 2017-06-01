@@ -5,12 +5,21 @@ from PyQt5.QtCore import pyqtSignal, Qt, QPointF
 from PyQt5.QtGui import QPen
 from PyQt5.QtWidgets import QGraphicsScene, QApplication
 
-from patch.edgeitem import EdgeItem, PreviewEdge
-from patch.inputoutputnodeitem import NodeItem
-from patch.layeritem import LayerItem
-from patch.socketitem import SocketItem
+from patch import nodeitem
+from patch.edgeitem import *
+from patch.nodeitem import *
+from patch.layeritem import *
+from patch.socketitem import *
 
 _typeFilter = lambda m, t: isinstance(m, t)
+
+
+def inputOutputConnectCondition(src: SocketItem, dst: SocketItem):
+    if isinstance(src, InputSocketItem) and isinstance(dst, InputSocketItem):
+        return False
+    if isinstance(src, OutputSocketItem) and isinstance(dst, OutputSocketItem):
+        return False
+    return True
 
 
 class PatchScene(QGraphicsScene):
@@ -21,10 +30,13 @@ class PatchScene(QGraphicsScene):
         @type ctx: AppContext
         """
         super(PatchScene, self).__init__()
+
         self.__nodeLayer = LayerItem()
         self.addItem(self.__nodeLayer)
+
         self.__edgeLayer = LayerItem()
         self.addItem(self.__edgeLayer)
+
         self.__interactionLayer = LayerItem()
         self.__interactionLayer.setAcceptedMouseButtons(Qt.NoButton)
         self.__interactionLayer.setAcceptHoverEvents(False)
@@ -33,14 +45,15 @@ class PatchScene(QGraphicsScene):
         self.addItem(self.__interactionLayer)
 
         self.__overlayer = LayerItem()
+        self.__overlayer.setZValue(100)
+        self.addItem(self.__overlayer)
+
         self.__previewWire = PreviewEdge()
         self.__previewWire.setEnabled(False)
-        self.__previewWire.setParentItem(self.__overlayer)
         self.__previewWire.setVisible(False)
-        self.addItem(self.__overlayer)
-        self.__overlayer.setZValue(100)
+        self.__previewWire.setParentItem(self.__overlayer)
 
-        self.__connectConditions = []
+        self.__connectConditions = [inputOutputConnectCondition]
 
         self.__isWiring = False
 
@@ -48,7 +61,7 @@ class PatchScene(QGraphicsScene):
         self.selectionChanged.connect(self.__onSelectionChanged)
 
         for opItem in self.nodes():
-            for inPlug in opItem.operator().inputPlugs():
+            for inPlug in opItem.operator().inputSockets():
                 con = inPlug.connection()
                 if con:
                     self.addEdge(con, inPlug)
@@ -61,6 +74,10 @@ class PatchScene(QGraphicsScene):
     def __sceneChanged(self, regions):
         self.ensureLargeEnoughSceneRect()
 
+    def itemMoved(self, node):
+        for edge in self.findEdges(node):
+            edge.update()
+
     def ensureLargeEnoughSceneRect(self):
         """Enlarge scenerect so dragging nodes around doesn't feel so weird"""
         margin = 1000
@@ -68,7 +85,7 @@ class PatchScene(QGraphicsScene):
         self.setSceneRect(self.sceneRect().united(adjusted))
 
     def addNode(self, node: NodeItem):
-        self.addItem(node)
+        node.setParentItem(self.__nodeLayer)
 
     def canConnect(self, src: SocketItem, dst: SocketItem):
         for cond in self.__connectConditions:
@@ -76,13 +93,10 @@ class PatchScene(QGraphicsScene):
                 return False
         return True
 
-    def connect(self, src: SocketItem, dst: SocketItem):
-        print('Connecting: %s -> %s' % (src.name(), dst.name()))
-
-    def startDragConnection(self, plugItem):
-        self.hideIncompaticlePlugs(plugItem)
-        self.__previewWire.srcSocket = plugItem
-        self.__previewWire.dstPos = plugItem.attachPosVec()
+    def startDragConnection(self, socket):
+        self.hideIncompatiblePlugs(socket)
+        self.__previewWire.srcSocket = socket
+        self.__previewWire.dstPos = socket.attachPosVec()
         self.__previewWire.setVisible(True)
         self.__isWiring = True
 
@@ -96,7 +110,7 @@ class PatchScene(QGraphicsScene):
             return
         if dstSocket:
             srcSocket = self.__previewWire.srcSocket
-            self.connect(srcSocket, dstSocket)
+            self.addEdge(srcSocket, dstSocket)
 
         self.__previewWire.srcSocket = None
         self.__previewWire.dstSocket = None
@@ -117,23 +131,22 @@ class PatchScene(QGraphicsScene):
         painter.setPen(pen)
 
         for x in range(xmin, xmax):
-            painter.drawLine(QPointF(x, ymin) * spacing,
-                             QPointF(x, ymax) * spacing)
+            painter.drawLine(QPointF(x, ymin) * spacing, QPointF(x, ymax) * spacing)
         for y in range(ymin, ymax):
-            painter.drawLine(QPointF(xmin, y) * spacing,
-                             QPointF(xmax, y) * spacing)
+            painter.drawLine(QPointF(xmin, y) * spacing, QPointF(xmax, y) * spacing)
 
-    def nodes(self):
-        return filter(lambda m: isinstance(m, NodeItem),
-                      self.__edgeLayer.childItems())
+    def nodes(self) -> Iterable[NodeItem]:
+        return filter(lambda m: isinstance(m, NodeItem), self.__nodeLayer.childItems())
 
-    def edges(self):
-        return filter(lambda m: isinstance(m, EdgeItem),
-                      self.__edgeLayer.childItems())
+    def edges(self) -> Iterable[EdgeItem]:
+        return filter(lambda m: isinstance(m, EdgeItem), self.__edgeLayer.childItems())
 
-    def hideIncompaticlePlugs(self, src):
-        for opItem in self.nodes():
-            opItem.hideIncompatiblePlugs(src)
+    def hideIncompatiblePlugs(self, src):
+        for node in self.nodes():
+            for dst in node.sockets():
+                if not self.canConnect(src, dst):
+                    dst.setUsable(False)
+
 
     def showAllPlugs(self):
         for opItem in self.nodes():
@@ -152,6 +165,13 @@ class PatchScene(QGraphicsScene):
             if item.dstPin.plugItem() == plugB and item.dstPin.plugItem() == plugA:
                 return item
 
+    def findEdges(self, node):
+        for edge in self.edges():
+            if edge.dstSocket.node() == node:
+                yield edge
+            if edge.srcSocket.node() == node:
+                yield edge
+
     def dragConnectionSource(self) -> SocketItem:
         if self.__previewWire.srcSocket:
             return self.__previewWire.srcSocket
@@ -160,23 +180,19 @@ class PatchScene(QGraphicsScene):
         return None
 
     def __onSelectionChanged(self):
-        selection = self.selectedNodes()
+        selection = list(self.selectedNodes())
+        print('Moving to top: %s' % selection)
+        startindex = 0
+        for z, node in enumerate(self.nodes()):
+            node.setZValue(z)
+            startindex = z
+        for z, node in enumerate(selection):
+            node.setZValue(startindex + z)
 
-        # startindex = 0
-        # for z, node in enumerate(self.nodes()):
-        #     node.setZValue(z)
-        #     startindex = z
-        # for z, node in enumerate(selection):
-        #     node.setZValue(startindex + z)
         self.nodeSelectionChanged.emit(list(self.selectedNodes()))
 
-    def addEdge(self, srcPlug: SocketItem, dstPlug: SocketItem):
-        srcPlugItem = self.findOperatorItem(srcPlug.parent()).findPlugItem(
-            srcPlug)
-        dstPlugItem = self.findOperatorItem(dstPlug.parent()).findPlugItem(
-            dstPlug)
-
-        wire = EdgeItem(srcPlugItem.pin(), dstPlugItem.pin())
+    def addEdge(self, src: SocketItem, dst: SocketItem):
+        wire = EdgeItem(src, dst)
         wire.setParentItem(self.__edgeLayer)
 
     def removeEdge(self, srcPlug, dstPlug):
@@ -188,6 +204,3 @@ class PatchScene(QGraphicsScene):
         self.removeItem(item)
         del item
 
-    def __updateSceneRect(self):
-        self.setSceneRect(
-            self.itemsBoundingRect().adjusted(-1000, -1000, 1000, 1000))
