@@ -304,7 +304,7 @@ namespace nap
 				ObjectPtrManager::get().add(*this);
 
 			if (other.mPtr != mPtr)
-				mPtr = static_cast<T*>(const_cast<OTHER*>(other.get()));
+				mPtr = static_cast<T*>(other.get());
 
 			if (mPtr == nullptr)
 				ObjectPtrManager::get().remove(*this);

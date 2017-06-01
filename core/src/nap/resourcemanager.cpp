@@ -367,7 +367,7 @@ namespace nap
 			Resource* target_resource = nullptr;
 			ObjectsToUpdate::iterator object_to_update = objectsToUpdate.find(unresolved_pointer.mTargetID);
 			if (object_to_update == objectsToUpdate.end())
-				target_resource = findResource(unresolved_pointer.mTargetID);
+				target_resource = findResource(unresolved_pointer.mTargetID).get();
 			else
 				target_resource = rtti_cast<Resource>(object_to_update->second.get());
 
@@ -410,7 +410,7 @@ namespace nap
 			if (updated_object != objectsToUpdate.end())
 				object = updated_object->second.get();
 			else
-				object = findResource(id);
+				object = findResource(id).get();
 
 			nap::Resource* resource = rtti_cast<Resource>(object);
 			if (resource == nullptr)
@@ -492,7 +492,7 @@ namespace nap
 		{
 			if (objects_to_update.find(object_to_init) == objects_to_update.end())
 			{
-				Resource* resource = findResource(object_to_init);
+				Resource* resource = findResource(object_to_init).get();
 				assert(resource);
 
 				std::unique_ptr<Resource> cloned_resource = rtti::cloneObject(*resource, getFactory());
@@ -580,12 +580,12 @@ namespace nap
 	}
 
 
-	Resource* ResourceManagerService::findResource(const std::string& id)
+	const ObjectPtr<Resource> ResourceManagerService::findResource(const std::string& id)
 	{
 		const auto& it = mResources.find(id);
 		
 		if (it != mResources.end())
-			return it->second.get();
+			return ObjectPtr<Resource>(it->second.get());
 		
 		return nullptr;
 	}
@@ -625,7 +625,7 @@ namespace nap
 	}
 
 
-	Resource* ResourceManagerService::createResource(const rtti::TypeInfo& type)
+	const ObjectPtr<Resource> ResourceManagerService::createResource(const rtti::TypeInfo& type)
 	{
 		if (!type.is_derived_from(RTTI_OF(Resource)))
 		{
@@ -656,6 +656,6 @@ namespace nap
 		resource->mID = reso_unique_path;
 		addResource(reso_unique_path, std::unique_ptr<Resource>(resource));
 		
-		return resource;
+		return ObjectPtr<Resource>(resource);
 	}
 }

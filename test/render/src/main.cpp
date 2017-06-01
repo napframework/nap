@@ -67,11 +67,11 @@ std::string		orientationVertShaderName = "shaders/orientation.vert";
 std::string		orientationFragShaderName = "shaders/orientation.frag";
 
 static const std::string testTextureName = "data/test.jpg";
-static nap::ImageResource* testTexture = nullptr;
+static nap::ObjectPtr<nap::ImageResource> testTexture = nullptr;
 static const std::string pigTextureName = "data/pig_head.jpg";
-static nap::ImageResource* pigTexture = nullptr;
+static nap::ObjectPtr<nap::ImageResource> pigTexture = nullptr;
 static const std::string worldTextureName = "data/world_texture.jpg";
-static nap::ImageResource* worldTexture = nullptr;
+static nap::ObjectPtr<nap::ImageResource> worldTexture = nullptr;
 static float movementScale = 3.0f;
 static float rotateScale = 1.0f;
 
@@ -387,7 +387,7 @@ bool initResources(nap::utility::ErrorState& errorState)
 	if (!worldTexture->init(errorState))
 		return false;
 
-	nap::MemoryTextureResource2D* color_texture = resourceManagerService->createResource<nap::MemoryTextureResource2D>();
+	nap::ObjectPtr<nap::MemoryTextureResource2D> color_texture = resourceManagerService->createResource<nap::MemoryTextureResource2D>();
 	color_texture->mSettings.width = 640;
 	color_texture->mSettings.height = 480;
 	color_texture->mSettings.internalFormat = GL_RGBA;
@@ -396,7 +396,7 @@ bool initResources(nap::utility::ErrorState& errorState)
 	if (!color_texture->init(errorState))
 		return false;
 
-	nap::MemoryTextureResource2D* depth_texture = resourceManagerService->createResource<nap::MemoryTextureResource2D>();
+	nap::ObjectPtr<nap::MemoryTextureResource2D> depth_texture = resourceManagerService->createResource<nap::MemoryTextureResource2D>();
 	depth_texture->mSettings.width = 640;
 	depth_texture->mSettings.height = 480;
 	depth_texture->mSettings.internalFormat = GL_DEPTH_COMPONENT;
@@ -414,14 +414,14 @@ bool initResources(nap::utility::ErrorState& errorState)
 		return false;
 
 	// Load general shader
-	nap::ShaderResource* generalShaderResource = resourceManagerService->createResource<nap::ShaderResource>();
+	nap::ObjectPtr<nap::ShaderResource> generalShaderResource = resourceManagerService->createResource<nap::ShaderResource>();
 	generalShaderResource->mVertPath = vertShaderName;
 	generalShaderResource->mFragPath = fragShaderName;
 	if (!generalShaderResource->init(errorState))
 		return false;
 
 	// Load orientation shader
-	nap::ShaderResource* orientationShaderResource = resourceManagerService->createResource<nap::ShaderResource>();
+	nap::ObjectPtr<nap::ShaderResource> orientationShaderResource = resourceManagerService->createResource<nap::ShaderResource>();
 	orientationShaderResource->mVertPath = orientationVertShaderName;
 	orientationShaderResource->mFragPath = orientationFragShaderName;
 	if (!orientationShaderResource->init(errorState))
@@ -439,13 +439,13 @@ bool initResources(nap::utility::ErrorState& errorState)
 	if (!pigMesh->init(errorState))
 		return false;
 	
-	nap::Material* orientationMaterial = resourceManagerService->createResource<nap::Material>();
+	nap::ObjectPtr<nap::Material> orientationMaterial = resourceManagerService->createResource<nap::Material>();
 	orientationMaterial->mShader = orientationShaderResource;
 	orientationMaterial->mVertexAttributeBindings = nap::Material::getDefaultVertexAttributeBindings();
 	if (!orientationMaterial->init(errorState))
 		return false;
 
-	nap::Material* generalMaterial = resourceManagerService->createResource<nap::Material>();
+	nap::ObjectPtr<nap::Material> generalMaterial = resourceManagerService->createResource<nap::Material>();
 	generalMaterial->mShader = generalShaderResource;
 	generalMaterial->mVertexAttributeBindings = nap::Material::getDefaultVertexAttributeBindings();
 	if (!generalMaterial->init(errorState))

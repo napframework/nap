@@ -3,6 +3,7 @@
 // Local Includes
 #include "coreattributes.h"
 #include "resource.h"
+#include "objectptr.h"
 
 namespace nap
 {
@@ -25,7 +26,7 @@ namespace nap
 		* This call will resolve the path if a resource is not associated with this attribute
 		* @return pointer to the resource, nullptr if not found
 		*/
-		Resource* getResource() const;
+		const ObjectPtr<Resource>& getResource() const;
 
 		/**
 		 * @return the resource this link points to, nullptr if empty or not valid
@@ -78,7 +79,7 @@ namespace nap
 		rtti::TypeInfo mType = RTTI_OF(nap::Resource);
 
 		// Internally managed resource
-		mutable Resource* mResource = nullptr;
+		mutable ObjectPtr<Resource> mResource = nullptr;
 
 		/**
 		* Resolves the link using the asset manager service

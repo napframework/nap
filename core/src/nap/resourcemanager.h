@@ -5,6 +5,7 @@
 #include "object.h"
 #include "service.h"
 #include "resource.h"
+#include "objectptr.h"
 #include "rtti/jsonreader.h"
 #include "rtti/rttireader.h"
 #include <map>
@@ -51,24 +52,24 @@ namespace nap
 		/**
 		* Find a resource by object ID. Returns null if not found.
 		*/
-		Resource* findResource(const std::string& id);
+		const ObjectPtr<Resource> findResource(const std::string& id);
 
 		/**
 		* Find a resource by object ID. Returns null if not found.
 		*/
 		template<class T>
-		T* findResource(const std::string& id) { return rtti_cast<T>(findResource(id)); }
+		const ObjectPtr<T> findResource(const std::string& id) { return ObjectPtr<T>(findResource(id)); }
 
 		/**
 		* Creates a resource and adds it to the manager.
 		*/
-		Resource* createResource(const rtti::TypeInfo& type);
+		const ObjectPtr<Resource> createResource(const rtti::TypeInfo& type);
 
 		/**
 		* Creates a resource and adds it to the manager.
 		*/
 		template<typename T>
-		T* createResource() { return rtti_cast<T>(createResource(RTTI_OF(T))); }
+		const ObjectPtr<T> createResource() { return ObjectPtr<T>(createResource(RTTI_OF(T))); }
 
 		/**
 		* Function that runs the file monitor to check for changes. If changes are found in files that were loaded by the manager,
