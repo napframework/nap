@@ -1,8 +1,8 @@
-from PyQt5.QtWidgets import QWidget, QHBoxLayout
+from PyQt5.QtWidgets import *
 
 import nap
-from patch.patchscene import PatchScene
-from patch.patchview import PatchView
+from patch.graphscene import GraphScene
+from patch.graphview import GraphView
 
 
 class PatchEditor(QWidget):
@@ -15,7 +15,7 @@ class PatchEditor(QWidget):
         self.ctx = ctx
         super(PatchEditor, self).__init__()
         self.setLayout(QHBoxLayout())
-        self.__patchView = PatchView(ctx)
+        self.__patchView = GraphView(ctx)
         self.layout().addWidget(self.__patchView)
         # self.__scene = PatchScene()
         # self.__patchView.setScene(self.__scene)
@@ -23,4 +23,4 @@ class PatchEditor(QWidget):
     def setModel(self, patch):
         if isinstance(patch, nap.Component):
             patch = patch.childOftype('nap::Patch')
-        self.__patchView.setScene(PatchScene(self.ctx, patch))
+        self.__patchView.setScene(GraphScene(self.ctx, patch))

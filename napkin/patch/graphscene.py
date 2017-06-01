@@ -1,14 +1,10 @@
 import math
 from typing import Iterable
 
-from PyQt5.QtCore import pyqtSignal, Qt, QPointF
-from PyQt5.QtGui import QPen
-from PyQt5.QtWidgets import QGraphicsScene, QApplication
-
-from patch import nodeitem
 from patch.edgeitem import *
-from patch.nodeitem import *
+from patch.inoutnodeitem import *
 from patch.layeritem import *
+from patch.nodeitem import *
 from patch.socketitem import *
 
 _typeFilter = lambda m, t: isinstance(m, t)
@@ -22,14 +18,14 @@ def inputOutputConnectCondition(src: SocketItem, dst: SocketItem):
     return True
 
 
-class PatchScene(QGraphicsScene):
+class GraphScene(QGraphicsScene):
     nodeSelectionChanged = pyqtSignal(list)
 
     def __init__(self):
         """
         @type ctx: AppContext
         """
-        super(PatchScene, self).__init__()
+        super(GraphScene, self).__init__()
 
         self.__nodeLayer = LayerItem()
         self.addItem(self.__nodeLayer)
@@ -141,16 +137,15 @@ class PatchScene(QGraphicsScene):
     def edges(self) -> Iterable[EdgeItem]:
         return filter(lambda m: isinstance(m, EdgeItem), self.__edgeLayer.childItems())
 
-    def hideIncompatiblePlugs(self, src):
+    def hideIncompatiblePlugs(self, src: SocketItem):
         for node in self.nodes():
             for dst in node.sockets():
                 if not self.canConnect(src, dst):
                     dst.setUsable(False)
 
-
     def showAllPlugs(self):
-        for opItem in self.nodes():
-            opItem.showAllPlugs()
+        for node in self.nodes():
+            node.showAllPlugs()
 
     def selectedNodes(self) -> Iterable[NodeItem]:
         return filter(lambda m: isinstance(m, NodeItem), self.selectedItems())
@@ -181,15 +176,18 @@ class PatchScene(QGraphicsScene):
 
     def __onSelectionChanged(self):
         selection = list(self.selectedNodes())
-        print('Moving to top: %s' % selection)
+        self.__moveNodesToTop(selection)
+
+    def __moveNodesToTop(self, nodes):
         startindex = 0
         for z, node in enumerate(self.nodes()):
             node.setZValue(z)
             startindex = z
-        for z, node in enumerate(selection):
+        for z, node in enumerate(nodes):
             node.setZValue(startindex + z)
 
         self.nodeSelectionChanged.emit(list(self.selectedNodes()))
+
 
     def addEdge(self, src: SocketItem, dst: SocketItem):
         wire = EdgeItem(src, dst)
@@ -203,4 +201,3 @@ class PatchScene(QGraphicsScene):
     def __removeItem(self, item):
         self.removeItem(item)
         del item
-

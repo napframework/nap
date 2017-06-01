@@ -2,8 +2,8 @@ from PyQt5.QtCore import QPointF, Qt
 from PyQt5.QtGui import QPen, QPainterPath
 from PyQt5.QtWidgets import QGraphicsPathItem, QGraphicsItem
 
+from patch.nodeitem import SocketItem
 from patch.patchutils import calculateWirePath
-from patch.socketitem import SocketItem
 
 
 class EdgeItemBase(QGraphicsPathItem):

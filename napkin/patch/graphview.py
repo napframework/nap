@@ -2,14 +2,10 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-import iconstore
-from patch.layeritem import LayerItem
-from patch.nodeitem import InputOutputNodeItem, NodeItem
-from patch.edgeitem import EdgeItem
-from patch.socketitem import SocketItem
+from patch.nodeitem import NodeItem, SocketItem, PinItem
 
 
-class PatchView(QGraphicsView):
+class GraphView(QGraphicsView):
     """ The view the user will interact with when editing patches.
 
      Most likely this will be the only view for a patch,
@@ -22,15 +18,13 @@ class PatchView(QGraphicsView):
         @param ctx: The application context
         @type ctx: AppContext
         """
-        super(PatchView, self).__init__()
+        super(GraphView, self).__init__()
         self.setRenderHint(QPainter.Antialiasing, True)
         self.__interactMode = None
         self.__oldMousePos = QPointF()
         self.__mouseClickPos = QPointF()
         self.setInteractMode(DefaultInteractMode)
         self.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.customContextMenuRequested.connect(
-            self.__onCustomContextMenuRequested)
 
         deleteAction = QAction('Delete Selected', self)
         deleteAction.setShortcut(QKeySequence.Delete)
@@ -49,52 +43,17 @@ class PatchView(QGraphicsView):
         self.__interactMode = mode()
         self.__interactMode.init(self)
 
-    def __onCustomContextMenuRequested(self, pos):
-        if not self.scene():
-            return
-
-        filteredClickedItems = filter(lambda m: not isinstance(m, LayerItem), self.items(pos))
-
-        menu = QMenu(self)
-
-        if not filteredClickedItems:
-            patch = self.scene().patch()
-            addCompMenu = menu.addMenu(iconstore.icon('brick_add'),
-                                       'Add Operator...')
-            self.ctx.createObjectActions(patch, self.ctx.core().operatorTypes(),
-                                         addCompMenu)
-        else:
-            wires = list(_filter(clickedItems, EdgeItem))
-            if len(wires) > 0:
-                plugs = []
-                for wire in wires:
-                    plugs.append(wire.dstPin.plugItem().plug())
-                a = DisconnectPlugsAction(self.ctx, plugs)
-                a.setParent(menu)
-                menu.addAction(a)
-
-            operatorItems = list(_filter(clickedItems, InputOutputNodeItem))
-            if len(operatorItems) > 0:
-                operators = []
-                for item in operatorItems:
-                    operators.append(item.operator())
-                a = RemoveObjectsAction(self.ctx, operators)
-                a.setParent(menu)
-                menu.addAction(a)
-
-        menu.exec_(QCursor.pos())
-
     def mousePressEvent(self, evt):
         if not self.__interactMode.mousePressed(self, evt):
-            super(PatchView, self).mousePressEvent(evt)
+            super(GraphView, self).mousePressEvent(evt)
 
     def mouseMoveEvent(self, evt):
         if not self.__interactMode.mouseMoved(self, evt):
-            super(PatchView, self).mouseMoveEvent(evt)
+            super(GraphView, self).mouseMoveEvent(evt)
 
     def mouseReleaseEvent(self, evt):
         if not self.__interactMode.mouseReleased(self, evt):
-            super(PatchView, self).mouseReleaseEvent(evt)
+            super(GraphView, self).mouseReleaseEvent(evt)
 
     def wheelEvent(self, evt):
         self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
@@ -118,8 +77,15 @@ class PatchView(QGraphicsView):
     def socketAt(self, scenePos) -> SocketItem:
         for item in self.items(scenePos):
             if isinstance(item, NodeItem):
-                return None
+                return None  # keep from selecting items behind nodes
             if isinstance(item, SocketItem):
+                return item
+
+    def pinAt(self, scenePos) -> PinItem:
+        for item in self.items(scenePos):
+            if isinstance(item, NodeItem):
+                return None  # keep from selecting items behind nodes
+            if isinstance(item, PinItem):
                 return item
 
     def operatorAt(self, scenePos) -> NodeItem:
@@ -132,13 +98,13 @@ class InteractMode(object):
     def __init__(self):
         pass
 
-    def mousePressed(self, view:PatchView, evt:QMouseEvent):
+    def mousePressed(self, view: GraphView, evt: QMouseEvent):
         raise NotImplementedError()
 
-    def mouseMoved(self, view:PatchView, evt:QMouseEvent):
+    def mouseMoved(self, view: GraphView, evt: QMouseEvent):
         raise NotImplementedError()
 
-    def mouseReleased(self, view:PatchView, evt:QMouseEvent):
+    def mouseReleased(self, view: GraphView, evt: QMouseEvent):
         raise NotImplementedError()
 
 
@@ -152,15 +118,15 @@ class DefaultInteractMode(InteractMode):
         view.viewport().unsetCursor()
         view.setDragMode(QGraphicsView.RubberBandDrag)
 
-    def mousePressed(self, view: PatchView, evt:QMouseEvent):
-        socket = view.socketAt(evt.pos())
-        opItem = view.operatorAt(evt.pos())
+    def mousePressed(self, view: GraphView, evt: QMouseEvent):
+        pin = view.pinAt(evt.pos())
+        node = view.operatorAt(evt.pos())
 
         if evt.buttons() == Qt.LeftButton:
-            if socket:
+            if pin:
                 return True
 
-            if opItem:
+            if node:
                 view.setInteractMode(DragInteractMode)
                 return False
         elif evt.buttons() == Qt.MiddleButton:
@@ -173,20 +139,20 @@ class DefaultInteractMode(InteractMode):
 
         return False
 
-    def mouseMoved(self, view: PatchView, evt:QMouseEvent):
-        socket = view.socketAt(evt.pos())
-        if socket:
+    def mouseMoved(self, view: GraphView, evt: QMouseEvent):
+        pin = view.pinAt(evt.pos())
+        if pin:
             view.viewport().setCursor(Qt.PointingHandCursor)
         else:
             view.viewport().unsetCursor()
         return False
 
-    def mouseReleased(self, view: PatchView, evt:QMouseEvent):
+    def mouseReleased(self, view: GraphView, evt: QMouseEvent):
         if not view.scene():
             return True
-        plug = view.socketAt(evt.pos())
-        if plug:
-            view.scene().startDragConnection(plug)
+        pin = view.pinAt(evt.pos())
+        if pin:
+            view.scene().startDragConnection(pin.socket())
             view.setInteractMode(ConnectInteractMode)
             return True
         return False
@@ -202,16 +168,16 @@ class DragInteractMode(InteractMode):
 
     def init(self, view):
         """
-        @type view: PatchView
+        @type view: GraphView
         """
         self.__oldMousePos = view.mapFromGlobal(QCursor.pos())
         self.__mouseClickPos = self.__oldMousePos
 
-    def mousePressed(self, view: PatchView, evt:QMouseEvent):
+    def mousePressed(self, view: GraphView, evt: QMouseEvent):
         self.__mouseClickPos = evt.pos()
         return False
 
-    def mouseMoved(self, view: PatchView, evt:QMouseEvent):
+    def mouseMoved(self, view: GraphView, evt: QMouseEvent):
         pos = evt.pos()
         delta = view.mapToScene(pos) - view.mapToScene(self.__oldMousePos)
         for opItem in view.scene().selectedNodes():
@@ -219,7 +185,7 @@ class DragInteractMode(InteractMode):
         self.__oldMousePos = pos
         return False
 
-    def mouseReleased(self, view: PatchView, evt:QMouseEvent):
+    def mouseReleased(self, view: GraphView, evt: QMouseEvent):
         if not view.scene():
             return True
         # delta = evt.pos() - self.__mouseClickPos
@@ -237,16 +203,16 @@ class PanInteractMode(InteractMode):
         super(PanInteractMode, self).__init__()
         self.__oldMousePos = QPointF()
 
-    def init(self, view: PatchView):
+    def init(self, view: GraphView):
         view.viewport().setCursor(Qt.ClosedHandCursor)
         view.setDragMode(QGraphicsView.NoDrag)
         self.__oldMousePos = view.mapFromGlobal(QCursor.pos())
 
-    def mousePressed(self, view: PatchView, evt:QMouseEvent):
+    def mousePressed(self, view: GraphView, evt: QMouseEvent):
         self.__oldMousePos = QPointF()
         return False
 
-    def mouseMoved(self, view: PatchView, evt:QMouseEvent):
+    def mouseMoved(self, view: GraphView, evt: QMouseEvent):
         delta = evt.pos() - self.__oldMousePos
         view.horizontalScrollBar().setValue(
             view.horizontalScrollBar().value() - delta.x())
@@ -255,7 +221,7 @@ class PanInteractMode(InteractMode):
         self.__oldMousePos = evt.pos()
         return False
 
-    def mouseReleased(self, view: PatchView, evt:QMouseEvent):
+    def mouseReleased(self, view: GraphView, evt: QMouseEvent):
         if not view.scene():
             return True
         view.setInteractMode(DefaultInteractMode)
@@ -267,15 +233,15 @@ class ConnectInteractMode(InteractMode):
         super(ConnectInteractMode, self).__init__()
         self.__oldMousePos = QPointF()
 
-    def init(self, view: PatchView):
+    def init(self, view: GraphView):
         view.setDragMode(QGraphicsView.NoDrag)
 
-    def mousePressed(self, view: PatchView, evt:QMouseEvent):
+    def mousePressed(self, view: GraphView, evt: QMouseEvent):
         socket = view.socketAt(evt.pos())
         view.scene().stopDragConnection(socket)
         return False
 
-    def mouseMoved(self, view: PatchView, evt:QMouseEvent):
+    def mouseMoved(self, view: GraphView, evt: QMouseEvent):
         srcSocket = view.scene().dragConnectionSource()
         dstSocket = view.socketAt(evt.pos())
 
@@ -295,7 +261,7 @@ class ConnectInteractMode(InteractMode):
         self.__oldMousePos = evt.pos()
         return False
 
-    def mouseReleased(self, view: PatchView, evt:QMouseEvent):
+    def mouseReleased(self, view: GraphView, evt: QMouseEvent):
         if not view.scene():
             return True
         view.setInteractMode(DefaultInteractMode)
