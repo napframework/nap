@@ -2,7 +2,7 @@ find_path(
         FREEIMAGE_DIR
         NAMES msvc/Dist/x64/FreeImage.h
         HINTS
-        ${CMAKE_CURRENT_LIST_DIR}/../thirdparty/FreeImage
+        ${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/FreeImage
 )
 
 if (WIN32)
