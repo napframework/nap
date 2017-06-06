@@ -38,8 +38,8 @@
 #include <transformcomponent.h>
 #include <cameracomponent.h>
 #include <mathutils.h>
-#include <planecomponent.h>
-#include <spherecomponent.h>
+#include <planemeshresource.h>
+#include <spheremeshresource.h>
 #include <rendertargetresource.h>
 
 // Nap includes
@@ -276,14 +276,14 @@ bool init(nap::Core& core)
 	nap::TransformComponent& plane_transform = plane->addComponent<nap::TransformComponent>();
 	plane_transform.translate.setValue({ 1.5f, 0.0, 0.0f });
 	
-	nap::PlaneComponent* planeComponent = new nap::PlaneComponent(*ui_material_instance);
-	plane->addComponent(std::move(std::unique_ptr<nap::Component>(planeComponent)));
-	if (!planeComponent->init(errorState))
+	nap::RenderableMeshComponent& plane_component = plane->addComponent<nap::RenderableMeshComponent>();
+	plane_component.mMaterialInstance = ui_material_instance;
+	plane_component.mMeshResource = resourceManagerService->findObject<nap::MeshResource>("PlaneMesh");
+	if (!plane_component.init(errorState))
 	{
 		nap::Logger::fatal("Unable to initialize resources: %s", errorState.toString().c_str());
 		return false;  
 	}
-	 
 
 	//////////////////////////////////////////////////////////////////////////
 

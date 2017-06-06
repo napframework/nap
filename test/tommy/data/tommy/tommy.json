@@ -15,6 +15,10 @@
 		"mFragShader": "shaders/tommy/ui.frag"
 	},	
 	
+	"nap::PlaneMeshResource": {
+		"mID": "PlaneMesh"
+	},
+	
 	"nap::Material": {
 		"mID": "UIMaterial",
 		"Shader": "UIShader",

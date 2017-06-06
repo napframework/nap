@@ -41,8 +41,8 @@
 #include <transformcomponent.h>
 #include <cameracomponent.h>
 #include <mathutils.h>
-#include <planecomponent.h>
-#include <spherecomponent.h>
+#include <planemeshresource.h>
+#include <spheremeshresource.h>
 #include <rendertargetresource.h>
 
 // Nap includes
@@ -85,11 +85,13 @@ nap::ObjectPtr<nap::TextureRenderTargetResource2D> textureRenderTarget;
 nap::CameraComponent* cameraComponent = nullptr;
 nap::CameraComponent* splitCameraComponent = nullptr;
 nap::RenderableMeshComponent* pigMeshComponent = nullptr;
-nap::PlaneComponent* rotatingPlaneComponent = nullptr;
-nap::PlaneComponent* planeComponent = nullptr;
-nap::SphereComponent* sphereComponent = nullptr;
-nap::ObjectPtr<nap::MeshResource> pigMesh = nullptr;
-nap::ObjectPtr<nap::MeshResource> orientationMesh = nullptr;
+nap::RenderableMeshComponent* rotatingPlaneComponent = nullptr;
+nap::RenderableMeshComponent* planeComponent = nullptr;
+nap::RenderableMeshComponent* sphereComponent = nullptr;
+nap::ObjectPtr<nap::MeshFromFileResource> pigMesh = nullptr;
+nap::ObjectPtr<nap::MeshFromFileResource> orientationMesh = nullptr;
+nap::ObjectPtr<nap::MeshResource> planeMesh = nullptr;
+nap::ObjectPtr<nap::MeshResource> sphereMesh = nullptr;
 nap::RenderableMeshComponent* orientationMeshComponent = nullptr;
 nap::ObjectPtr<nap::MaterialInstance> pigMaterialInstance = nullptr;
 nap::ObjectPtr<nap::MaterialInstance> planeMaterialInstance = nullptr;
@@ -428,17 +430,25 @@ bool initResources(nap::utility::ErrorState& errorState)
 		return false;
 
 	// Load orientation resource
-	orientationMesh = resourceManagerService->createObject<nap::MeshResource>();
+	orientationMesh = resourceManagerService->createObject<nap::MeshFromFileResource>();
 	orientationMesh->mPath = "data/orientation.mesh";
 	if (!orientationMesh->init(errorState))
 		return false;
 
 	// Load mesh resource
-	pigMesh = resourceManagerService->createObject<nap::MeshResource>();
+	pigMesh = resourceManagerService->createObject<nap::MeshFromFileResource>();
 	pigMesh->mPath = "data/pig_head_alpha_rotated.mesh";
 	if (!pigMesh->init(errorState))
 		return false;
-	
+
+	planeMesh = resourceManagerService->createObject<nap::PlaneMeshResource>();
+	if (!planeMesh->init(errorState))
+		return false;
+
+	sphereMesh = resourceManagerService->createObject<nap::SphereMeshResource>();
+	if (!sphereMesh->init(errorState))
+		return false;
+
 	nap::ObjectPtr<nap::Material> orientationMaterial = resourceManagerService->createObject<nap::Material>();
 	orientationMaterial->mShader = orientationShaderResource;
 	orientationMaterial->mVertexAttributeBindings = nap::Material::getDefaultVertexAttributeBindings();
@@ -585,8 +595,10 @@ bool init(nap::Core& core)
 	orientationMaterialInstance = resourceManagerService->findObject<nap::MaterialInstance>("OrientationMaterialInstance");
 	rotatingPlaneMaterialInstance = resourceManagerService->findObject<nap::MaterialInstance>("RotatingPlaneMaterialInstance");
 	worldMaterialInstance = resourceManagerService->findObject<nap::MaterialInstance>("WorldMaterialInstance");
-	pigMesh = resourceManagerService->findObject<nap::MeshResource>("PigMesh");
-	orientationMesh = resourceManagerService->findObject<nap::MeshResource>("OrientationMesh");
+	pigMesh = resourceManagerService->findObject<nap::MeshFromFileResource>("PigMesh");
+	orientationMesh = resourceManagerService->findObject<nap::MeshFromFileResource>("OrientationMesh");
+	planeMesh = resourceManagerService->findObject<nap::PlaneMeshResource>("PlaneMesh");
+	sphereMesh = resourceManagerService->findObject<nap::SphereMeshResource>("SphereMesh");
 #else	
 	if (!initResources(errorState))
 	{
@@ -637,8 +649,9 @@ bool init(nap::Core& core)
 	// Create plane entity
 	rotating_plane = &(core.getRoot().addEntity("rotating_plane"));
 	rotating_plane->addComponent<nap::TransformComponent>();
-	rotatingPlaneComponent = new nap::PlaneComponent(*rotatingPlaneMaterialInstance);
-	rotating_plane->addComponent(std::move(std::unique_ptr<nap::Component>(rotatingPlaneComponent)));
+	rotatingPlaneComponent = &rotating_plane->addComponent<nap::RenderableMeshComponent>();	
+	rotatingPlaneComponent->mMeshResource = planeMesh;
+	rotatingPlaneComponent->mMaterialInstance = rotatingPlaneMaterialInstance;
 	if (!rotatingPlaneComponent->init(errorState))
 	{
 		nap::Logger::fatal("Unable to initialize resources: %s", errorState.toString().c_str());
@@ -648,8 +661,9 @@ bool init(nap::Core& core)
 	// Create plane entity
 	plane = &(core.getRoot().addEntity("plane"));
 	plane->addComponent<nap::TransformComponent>();
-	planeComponent = new nap::PlaneComponent(*planeMaterialInstance);
-	plane->addComponent(std::move(std::unique_ptr<nap::Component>(planeComponent)));
+	planeComponent = &plane->addComponent<nap::RenderableMeshComponent>();
+	planeComponent->mMeshResource = planeMesh;
+	planeComponent->mMaterialInstance = planeMaterialInstance;
 	if (!planeComponent->init(errorState))
 	{
 		nap::Logger::fatal("Unable to initialize resources: %s", errorState.toString().c_str());
@@ -659,8 +673,9 @@ bool init(nap::Core& core)
 	// Create sphere entity
 	sphere = &(core.getRoot().addEntity("sphere"));
 	nap::TransformComponent& sphere_tran_component = sphere->addComponent<nap::TransformComponent>();
-	sphereComponent = new nap::SphereComponent(*worldMaterialInstance);
-	sphere->addComponent(std::move(std::unique_ptr<nap::Component>(sphereComponent)));
+	sphereComponent = &sphere->addComponent<nap::RenderableMeshComponent>();
+	sphereComponent->mMeshResource = sphereMesh;
+	sphereComponent->mMaterialInstance = worldMaterialInstance;
 	if (!sphereComponent->init(errorState))
 	{
 		nap::Logger::fatal("Unable to initialize resources: %s", errorState.toString().c_str());

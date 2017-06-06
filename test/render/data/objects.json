@@ -63,15 +63,23 @@
 		"mFragShader": "shaders/orientation.frag"
 	},
 
-	"nap::MeshResource": {
+	"nap::MeshFromFileResource": {
 		"mID": "OrientationMesh",
 		"Path": "data/orientation.mesh"
 	},
 
-	"nap::MeshResource": {
+	"nap::MeshFromFileResource": {
 		"mID": "PigMesh",
 		"Path": "data/pig_head_alpha_rotated.mesh"
 	},	
+	
+	"nap::PlaneMeshResource": {
+		"mID": "PlaneMesh"
+	},
+	
+	"nap::SphereMeshResource": {
+		"mID": "SphereMesh"
+	},
 	
 	"nap::Material": {
 		"mID": "GeneralMaterial",
@@ -207,6 +215,5 @@
 				}
 			}
 		]
-	}
-	
+	}	
 } 

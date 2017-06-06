@@ -14,39 +14,35 @@ namespace nap
 		MeshResource() = default;
 
 		/**
- 		 * Loads model from file.
+ 		 * Load the mesh
  		 */
-		virtual bool init(utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) = 0;
 
 		/**
 		 * @return the mesh display name
 		 */
-		virtual const std::string getDisplayName() const override;
+		virtual const std::string getDisplayName() const override { return "mesh"; }
 
 		/**
 		 * @return the opengl mesh that can be drawn to screen or buffer
 		 */
 		opengl::Mesh& getMesh() const;
 
-		std::string				mPath;
-
 	protected:
-		// Name of mesh
-		std::string				mDisplayName;
-
 		// opengl mesh object
 		std::unique_ptr<opengl::Mesh>	mMesh;
 	};
 
-
-	class CustomMeshResource : public MeshResource
+	class MeshFromFileResource : public MeshResource
 	{
+		RTTI_ENABLE(MeshResource)
+	
 	public:
+		/**
+ 		 * Loads model from file.
+ 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
-
-	public:
-		std::unique_ptr<opengl::Mesh> mCustomMesh = nullptr;
+		std::string				mPath;
 	};
-
 } // nap
 

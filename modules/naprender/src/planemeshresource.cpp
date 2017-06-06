@@ -1,4 +1,4 @@
-#include <planecomponent.h>
+#include <planemeshresource.h>
 #include "meshresource.h"
 #include "material.h"
 
@@ -59,19 +59,16 @@ static opengl::Mesh* createPlane()
 
 //////////////////////////////////////////////////////////////////////////
 
+
+RTTI_BEGIN_CLASS(nap::PlaneMeshResource)
+	RTTI_PROPERTY("DummyProperty", &nap::PlaneMeshResource::mDummyProperty, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
 namespace nap
 {
-	PlaneComponent::PlaneComponent(MaterialInstance& materialInstance)
+	bool PlaneMeshResource::init(utility::ErrorState& errorState)
 	{
-		utility::ErrorState error_state;
-		CustomMeshResource* mesh_resource = new CustomMeshResource();
-		mesh_resource->mCustomMesh.reset(createPlane());
-		mMeshResource = mesh_resource;
-
-		mMaterialInstance = &materialInstance;
-		bool success = mesh_resource->init(error_state);
-		assert(success);
+		mMesh.reset(createPlane());		
+		return true;
 	}
 };
-
-RTTI_DEFINE(nap::PlaneComponent)

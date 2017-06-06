@@ -6,9 +6,11 @@
 #include <nap/fileutils.h>
 #include "fbxconverter.h"
 
+RTTI_BEGIN_BASE_CLASS(nap::MeshResource)
+RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::MeshResource)
-	RTTI_PROPERTY("Path", &nap::MeshResource::mPath, nap::rtti::EPropertyMetaData::FileLink | nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::MeshFromFileResource)
+	RTTI_PROPERTY("Path", &nap::MeshFromFileResource::mPath, nap::rtti::EPropertyMetaData::FileLink | nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 namespace nap
@@ -20,7 +22,9 @@ namespace nap
 		return *mMesh;
 	}
 
-	bool MeshResource::init(utility::ErrorState& errorState)
+	//////////////////////////////////////////////////////////////////////////
+
+	bool MeshFromFileResource::init(utility::ErrorState& errorState)
 	{
 		mMesh = loadMesh(mPath, errorState);
 		if (!errorState.check(mMesh != nullptr, "Unable to load mesh %s", mPath.c_str()))
@@ -28,20 +32,4 @@ namespace nap
 
 		return true;
 	}
-
-	const std::string MeshResource::getDisplayName() const
-	{
-		return getFileNameWithoutExtension(mPath);
-	}
-
-	bool CustomMeshResource::init(utility::ErrorState& errorState)
-	{
-		mMesh = std::move(mCustomMesh);
-		if (!errorState.check(mMesh != nullptr, "Unable to init custom mesh"))
-			return false;
-
-		return true;
-	}
 }
-
-RTTI_DEFINE(nap::MeshResource)
