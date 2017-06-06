@@ -26,7 +26,7 @@ namespace nap
 	ResourceManagerService::RollbackHelper::~RollbackHelper()
 	{
 		if (mPatchObjects)
-			mService.patchObjectPtrs(mService.mResources);
+			mService.patchObjectPtrs(mService.mObjects);
 	}
 
 	void ResourceManagerService::RollbackHelper::clear()
@@ -287,14 +287,14 @@ namespace nap
 	* the object graph to find the minimum set of objects that requires an init. Finally, the list of objects is sorted on object graph depth so that the init() order
 	* is correct.
 	*/
-	bool ResourceManagerService::determineObjectsToInit(const ObjectsToUpdate& objectsToUpdate, const std::string& externalChangedFile, std::vector<std::string>& objectsToInit, utility::ErrorState& errorState)
+	bool ResourceManagerService::determineObjectsToInit(const ObjectByIDMap& objectsToUpdate, const std::string& externalChangedFile, std::vector<std::string>& objectsToInit, utility::ErrorState& errorState)
 	{
 		// Build an object graph of all objects in the ResourceMgr. If any object is in the objectsToUpdate list,
 		// that object is added instead. This makes objectsToUpdate and 'overlay'.
 		ObservedObjectList all_objects;
-		for (auto& kvp : mResources)
+		for (auto& kvp : mObjects)
 		{
-			ObjectsToUpdate::const_iterator object_to_update = objectsToUpdate.find(kvp.first);
+			ObjectByIDMap::const_iterator object_to_update = objectsToUpdate.find(kvp.first);
 			if (object_to_update == objectsToUpdate.end())
 				all_objects.push_back(kvp.second.get());
 			else
@@ -309,7 +309,7 @@ namespace nap
 			dirty_nodes.insert(kvp.first);
 
 			// Any objects not yet in the manager are new and need to be added to the graph as well
-			if (mResources.find(kvp.first) == mResources.end())
+			if (mObjects.find(kvp.first) == mObjects.end())
 				all_objects.push_back(kvp.second.get());
 		}
 
@@ -355,23 +355,19 @@ namespace nap
 	}
 
 
-	bool ResourceManagerService::resolvePointers(ObjectsToUpdate& objectsToUpdate, const UnresolvedPointerList& unresolvedPointers, utility::ErrorState& errorState)
+	bool ResourceManagerService::resolvePointers(ObjectByIDMap& objectsToUpdate, const UnresolvedPointerList& unresolvedPointers, utility::ErrorState& errorState)
 	{
 		for (const UnresolvedPointer& unresolved_pointer : unresolvedPointers)
 		{
-			nap::Resource* source_resource = rtti_cast<Resource>(unresolved_pointer.mObject);
-			if (source_resource == nullptr)
-				continue;
-
 			// Objects in objectsToUpdate have preference over the manager's objects
-			Resource* target_resource = nullptr;
-			ObjectsToUpdate::iterator object_to_update = objectsToUpdate.find(unresolved_pointer.mTargetID);
+			RTTIObject* target_object = nullptr;
+			ObjectByIDMap::iterator object_to_update = objectsToUpdate.find(unresolved_pointer.mTargetID);
 			if (object_to_update == objectsToUpdate.end())
-				target_resource = findResource(unresolved_pointer.mTargetID).get();
+				target_object = findObject(unresolved_pointer.mTargetID).get();
 			else
-				target_resource = rtti_cast<Resource>(object_to_update->second.get());
+				target_object = object_to_update->second.get();
 
-			if (!errorState.check(target_resource != nullptr, "Unable to resolve link to object %s from attribute %s", unresolved_pointer.mTargetID.c_str(), unresolved_pointer.mRTTIPath.toString().c_str()))
+			if (!errorState.check(target_object != nullptr, "Unable to resolve link to object %s from attribute %s", unresolved_pointer.mTargetID.c_str(), unresolved_pointer.mRTTIPath.toString().c_str()))
 				return false;
 
 			rtti::ResolvedRTTIPath resolved_path;
@@ -381,14 +377,14 @@ namespace nap
 			rtti::TypeInfo resolved_path_type = resolved_path.getType();
 			rtti::TypeInfo actual_type = resolved_path_type.is_wrapper() ? resolved_path_type.get_wrapped_type() : resolved_path_type;
 
-			if (!errorState.check(target_resource->get_type().is_derived_from(actual_type), "Failed to resolve pointer: target of pointer {%s}:%s is of the wrong type (found '%s', expected '%s')",
-				unresolved_pointer.mObject->mID.c_str(), unresolved_pointer.mRTTIPath.toString().c_str(), target_resource->get_type().get_name().data(), actual_type.get_raw_type().get_name().data()))
+			if (!errorState.check(target_object->get_type().is_derived_from(actual_type), "Failed to resolve pointer: target of pointer {%s}:%s is of the wrong type (found '%s', expected '%s')",
+				unresolved_pointer.mObject->mID.c_str(), unresolved_pointer.mRTTIPath.toString().c_str(), target_object->get_type().get_name().data(), actual_type.get_raw_type().get_name().data()))
 			{
 				return false;
 			}
 
 			assert(actual_type.is_pointer());
-			bool succeeded = resolved_path.setValue(target_resource);
+			bool succeeded = resolved_path.setValue(target_object);
 			if (!errorState.check(succeeded, "Failed to resolve pointer"))
 				return false;
 		}
@@ -398,7 +394,7 @@ namespace nap
 
 
 	// inits all objects 
-	bool ResourceManagerService::initObjects(std::vector<std::string> objectsToInit, ObjectsToUpdate& objectsToUpdate, utility::ErrorState& errorState)
+	bool ResourceManagerService::initObjects(std::vector<std::string> objectsToInit, ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState)
 	{
 		// Init all objects in the correct order
 		for (const std::string& id : objectsToInit)
@@ -406,23 +402,39 @@ namespace nap
 			rtti::RTTIObject* object = nullptr;
 			
 			// We perform lookup by ID. Objects in objectsToUpdate have preference over the manager's objects.
-			ObjectsToUpdate::iterator updated_object = objectsToUpdate.find(id);
+			ObjectByIDMap::iterator updated_object = objectsToUpdate.find(id);
 			if (updated_object != objectsToUpdate.end())
 				object = updated_object->second.get();
 			else
-				object = findResource(id).get();
+				object = findObject(id).get();
 
-			nap::Resource* resource = rtti_cast<Resource>(object);
-			if (resource == nullptr)
-				continue;
-
-			if (!resource->init(errorState))
+			if (!object->init(errorState))
 				return false;
 		}
 
 		return true;
 	}
 
+	/** 
+	 * Traverses all pointers in ObjectPtrManager and, for each target, replaces the target with the one in the map that is passed.
+	 * @param container The container holding an ID -> pointer mapping with the pointer to patch to.
+	 */
+	void ResourceManagerService::patchObjectPtrs(ObjectByIDMap& newTargetObjects)
+	{
+		ObjectPtrManager::ObjectPtrSet& object_ptrs = ObjectPtrManager::get().GetObjectPointers();
+
+		for (ObjectPtrBase* ptr : object_ptrs)
+		{
+			RTTIObject* target = ptr->get();
+			if (target == nullptr)
+				continue;
+
+			std::string& target_id = target->mID;
+			ObjectByIDMap::iterator new_target = newTargetObjects.find(target_id);
+			if (new_target != newTargetObjects.end())
+				ptr->set(new_target->second.get());
+		}
+	}
 
 	bool ResourceManagerService::loadFile(const std::string& filename, const std::string& externalChangedFile, utility::ErrorState& errorState)
 	{
@@ -446,18 +458,14 @@ namespace nap
 		// Finally, we could improve on the unresolved pointer check if we could introduce actual UnresolvedPointer objects
 		// that the pointers are pointing to after loading. These would hold the ID, so that comparisons could be made easier.
 		// The reason we don't do this is because it isn't possible to do so in RTTR as it's very strict in it's type safety.
-		ObjectsToUpdate objects_to_update;
+		ObjectByIDMap objects_to_update;
 		for (auto& read_object : read_result.mReadObjects)
 		{
-			Resource* resource = rtti_cast<Resource>(read_object.get());
-			if (resource == nullptr)
-				continue;
+			std::string id = read_object->mID;
 
-			std::string id = resource->mID;
-
-			ResourceMap::iterator existing_resource = mResources.find(id);
-			if (existing_resource == mResources.end() ||
-				!areObjectsEqual(*read_object.get(), *existing_resource->second.get(), read_result.mUnresolvedPointers))
+			ObjectByIDMap::iterator existing_object = mObjects.find(id);
+			if (existing_object == mObjects.end() ||
+				!areObjectsEqual(*read_object.get(), *existing_object->second.get(), read_result.mUnresolvedPointers))
 			{
 				objects_to_update.emplace(std::make_pair(id, std::move(read_object)));
 			}
@@ -492,11 +500,11 @@ namespace nap
 		{
 			if (objects_to_update.find(object_to_init) == objects_to_update.end())
 			{
-				Resource* resource = findResource(object_to_init).get();
-				assert(resource);
+				RTTIObject* object = findObject(object_to_init).get();
+				assert(object);
 
-				std::unique_ptr<Resource> cloned_resource = rtti::cloneObject(*resource, getFactory());
-				objects_to_update.emplace(std::make_pair(cloned_resource->mID, std::move(cloned_resource)));
+				std::unique_ptr<RTTIObject> cloned_object = rtti::cloneObject(*object, getFactory());
+				objects_to_update.emplace(std::make_pair(cloned_object->mID, std::move(cloned_object)));
 			}
 		}
 
@@ -511,8 +519,8 @@ namespace nap
 		// in the manager by the new objects. This effectively destroys the old objects as well.
 		for (auto& kvp : objects_to_update)
 		{
-			mResources.erase(kvp.first);
-			mResources.emplace(std::make_pair(kvp.first, std::move(rtti_cast<Resource>(kvp.second))));
+			mObjects.erase(kvp.first);
+			mObjects.emplace(std::make_pair(kvp.first, std::move(kvp.second)));
 		}
 
 		for (const FileLink& file_link : read_result.mFileLinks)
@@ -580,28 +588,28 @@ namespace nap
 	}
 
 
-	const ObjectPtr<Resource> ResourceManagerService::findResource(const std::string& id)
+	const ObjectPtr<RTTIObject> ResourceManagerService::findObject(const std::string& id)
 	{
-		const auto& it = mResources.find(id);
+		const auto& it = mObjects.find(id);
 		
-		if (it != mResources.end())
-			return ObjectPtr<Resource>(it->second.get());
+		if (it != mObjects.end())
+			return ObjectPtr<RTTIObject>(it->second.get());
 		
 		return nullptr;
 	}
 
 
-	void ResourceManagerService::addResource(const std::string& id, std::unique_ptr<Resource> resource)
+	void ResourceManagerService::addObject(const std::string& id, std::unique_ptr<RTTIObject> object)
 	{
-		assert(mResources.find(id) == mResources.end());
-		mResources.emplace(id, std::move(resource));
+		assert(mObjects.find(id) == mObjects.end());
+		mObjects.emplace(id, std::move(object));
 	}
 
 
-	void ResourceManagerService::removeResource(const std::string& id)
+	void ResourceManagerService::removeObject(const std::string& id)
 	{
-		assert(mResources.find(id) != mResources.end());
-		mResources.erase(mResources.find(id));
+		assert(mObjects.find(id) != mObjects.end());
+		mObjects.erase(mObjects.find(id));
 	}
 
 
@@ -625,37 +633,37 @@ namespace nap
 	}
 
 
-	const ObjectPtr<Resource> ResourceManagerService::createResource(const rtti::TypeInfo& type)
+	const ObjectPtr<RTTIObject> ResourceManagerService::createObject(const rtti::TypeInfo& type)
 	{
-		if (!type.is_derived_from(RTTI_OF(Resource)))
+		if (!type.is_derived_from(RTTI_OF(RTTIObject)))
 		{
-			nap::Logger::warn("unable to create resource of type: %s", type.get_name().data());
+			nap::Logger::warn("unable to create object of type: %s", type.get_name().data());
 			return nullptr;
 		}
 
 		if (!type.can_create_instance())
 		{
-			nap::Logger::warn("can't create resource instance of type: %s", type.get_name().data());
+			nap::Logger::warn("can't create object instance of type: %s", type.get_name().data());
 			return nullptr;
 		}
 
-		// Create instance of resource
-		Resource* resource = rtti_cast<Resource>(getFactory().create(type));
+		// Create instance of object
+		RTTIObject* object = rtti_cast<RTTIObject>(getFactory().create(type));
 
 		// Construct path
 		std::string type_name = type.get_name().data();
-		std::string reso_path = utility::stringFormat("resource::%s", type_name.c_str());
+		std::string reso_path = utility::stringFormat("object::%s", type_name.c_str());
 		std::string reso_unique_path = reso_path;
 		int idx = 0;
-		while (mResources.find(reso_unique_path) != mResources.end())
+		while (mObjects.find(reso_unique_path) != mObjects.end())
 		{
 			++idx;
 			reso_unique_path = utility::stringFormat("%s_%d", reso_path.c_str(), idx);
 		}
 
-		resource->mID = reso_unique_path;
-		addResource(reso_unique_path, std::unique_ptr<Resource>(resource));
+		object->mID = reso_unique_path;
+		addObject(reso_unique_path, std::unique_ptr<RTTIObject>(object));
 		
-		return ObjectPtr<Resource>(resource);
+		return ObjectPtr<RTTIObject>(object);
 	}
 }

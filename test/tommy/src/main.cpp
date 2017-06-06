@@ -266,7 +266,7 @@ bool init(nap::Core& core)
 
 	//////////////////////////////////////////////////////////////////////////
 
-	nap::ObjectPtr<nap::MaterialInstance> ui_material_instance = resourceManagerService->findResource("UIMaterialInstance");
+	nap::ObjectPtr<nap::MaterialInstance> ui_material_instance = resourceManagerService->findObject("UIMaterialInstance");
 	assert(ui_material_instance != nullptr);
 
 	//////////////////////////////////////////////////////////////////////////

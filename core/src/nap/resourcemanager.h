@@ -4,7 +4,6 @@
 #include "logger.h"
 #include "object.h"
 #include "service.h"
-#include "resource.h"
 #include "objectptr.h"
 #include "rtti/jsonreader.h"
 #include "rtti/rttireader.h"
@@ -15,7 +14,7 @@ namespace nap
 	class DirectoryWatcher;
 
 	/**
-	 * Manager, holding resource data, capable of loading and real-time updating of content.
+	 * Manager, holding all objects, capable of loading and real-time updating of content.
 	 */
 	class ResourceManagerService : public Service
 	{
@@ -50,26 +49,26 @@ namespace nap
 		bool loadFile(const std::string& filename, const std::string& externalChangedFile, utility::ErrorState& errorState);
 
 		/**
-		* Find a resource by object ID. Returns null if not found.
+		* Find an object by object ID. Returns null if not found.
 		*/
-		const ObjectPtr<Resource> findResource(const std::string& id);
+		const ObjectPtr<RTTIObject> findObject(const std::string& id);
 
 		/**
-		* Find a resource by object ID. Returns null if not found.
+		* Find an object by object ID. Returns null if not found.
 		*/
 		template<class T>
-		const ObjectPtr<T> findResource(const std::string& id) { return ObjectPtr<T>(findResource(id)); }
+		const ObjectPtr<T> findObject(const std::string& id) { return ObjectPtr<T>(findObject(id)); }
 
 		/**
-		* Creates a resource and adds it to the manager.
+		* Creates an object and adds it to the manager.
 		*/
-		const ObjectPtr<Resource> createResource(const rtti::TypeInfo& type);
+		const ObjectPtr<RTTIObject> createObject(const rtti::TypeInfo& type);
 
 		/**
-		* Creates a resource and adds it to the manager.
+		* Creates an object and adds it to the manager.
 		*/
 		template<typename T>
-		const ObjectPtr<T> createResource() { return ObjectPtr<T>(createResource(RTTI_OF(T))); }
+		const ObjectPtr<T> createObject() { return ObjectPtr<T>(createObject(RTTI_OF(T))); }
 
 		/**
 		* Function that runs the file monitor to check for changes. If changes are found in files that were loaded by the manager,
@@ -83,19 +82,17 @@ namespace nap
 		rtti::Factory& getFactory();
 
 	private:
-		using ResourceMap = std::map<std::string, std::unique_ptr<Resource>>;
+		using ObjectByIDMap = std::map<std::string, std::unique_ptr<RTTIObject>>;
 		using FileLinkMap = std::map<std::string, std::vector<std::string>>; // Map from target file to multiple source files
-		using ObjectsToUpdate = std::unordered_map<std::string, std::unique_ptr<RTTIObject>>;
 
-		void addResource(const std::string& id, std::unique_ptr<Resource> resource);
-		void removeResource(const std::string& id);
+		void addObject(const std::string& id, std::unique_ptr<RTTIObject> object);
+		void removeObject(const std::string& id);
 		void addFileLink(const std::string& sourceFile, const std::string& targetFile);
 
-		bool determineObjectsToInit(const ObjectsToUpdate& objectsToUpdate, const std::string& externalChangedFile, std::vector<std::string>& objectsToInit, utility::ErrorState& errorState);
-		bool resolvePointers(ObjectsToUpdate& objectsToUpdate, const rtti::UnresolvedPointerList& unresolvedPointers, utility::ErrorState& errorState);
-		bool initObjects(std::vector<std::string> objectsToInit, ObjectsToUpdate& objectsToUpdate, utility::ErrorState& errorState);
-		template<typename MAP>
-		void patchObjectPtrs(MAP& container);
+		bool determineObjectsToInit(const ObjectByIDMap& objectsToUpdate, const std::string& externalChangedFile, std::vector<std::string>& objectsToInit, utility::ErrorState& errorState);
+		bool resolvePointers(ObjectByIDMap& objectsToUpdate, const rtti::UnresolvedPointerList& unresolvedPointers, utility::ErrorState& errorState);
+		bool initObjects(std::vector<std::string> objectsToInit, ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState);
+		void patchObjectPtrs(ObjectByIDMap& newTargetObjects);
 
 	private:
 		struct RollbackHelper
@@ -111,33 +108,9 @@ namespace nap
 			bool mPatchObjects = true;
 		};
 
-		ResourceMap							mResources;				// Holds all resources
+		ObjectByIDMap						mObjects;				// Holds all objects
 		std::set<std::string>				mFilesToWatch;			// Files currently loaded, used for watching changes on the files
 		FileLinkMap							mFileLinkMap;			// Map containing links from target to source file, for updating source files if the file monitor sees changes
 		std::unique_ptr<DirectoryWatcher>	mDirectoryWatcher;		// File monitor, detects changes on files
 	};
-
-
-	/** 
-	 * Traverses all pointers in ObjectPtrManager and, for each target, replaces the target with the one in the map that is passed.
-	 * @param container The container holding an ID -> pointer mapping with the pointer to patch to.
-	 */
-	template<typename MAP>
-	void ResourceManagerService::patchObjectPtrs(MAP& container)
-	{
-		ObjectPtrManager::ObjectPtrSet& object_ptrs = ObjectPtrManager::get().GetObjectPointers();
-
-		for (ObjectPtrBase* ptr : object_ptrs)
-		{
-			RTTIObject* target = ptr->get();
-			if (target == nullptr)
-				continue;
-
-			std::string& target_id = target->mID;
-			MAP::iterator new_target = container.find(target_id);
-			if (new_target != container.end())
-				ptr->set(new_target->second.get());
-		}
-	}
-
 }

@@ -18,9 +18,9 @@ namespace nap
 	* Abstract base class for any Asset. Could be a TextureAsset, ModelAsset or AudioAsset for example.
 	* WARNING: A resource may only be created through the ResourceManagerService providing a valid resource path
 	*/
-	class Resource : public AttributeObject
+	class Resource : public rtti::RTTIObject
 	{
-		RTTI_ENABLE(AttributeObject)
+		RTTI_ENABLE(rtti::RTTIObject)
 	public:
 		Resource() = default;
 

@@ -16,12 +16,6 @@ namespace nap
 	{
 		RTTI_ENABLE(Resource)
 	public:
-		
-		/**
-		* @return true.
-		*/
-		virtual bool init(utility::ErrorState& errorState) override { return true; }
-
 		/**
 		* 
 		*/

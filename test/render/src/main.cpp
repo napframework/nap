@@ -372,22 +372,22 @@ nap::Slot<const nap::SignalAttribute&> renderSlot = { [](const nap::SignalAttrib
 
 bool initResources(nap::utility::ErrorState& errorState)
 {
-	pigTexture = resourceManagerService->createResource<nap::ImageResource>();
+	pigTexture = resourceManagerService->createObject<nap::ImageResource>();
 	pigTexture->mImagePath = pigTextureName;
 	if (!pigTexture->init(errorState))
 		return false;
 	
-	testTexture = resourceManagerService->createResource<nap::ImageResource>();
+	testTexture = resourceManagerService->createObject<nap::ImageResource>();
 	testTexture->mImagePath = testTextureName;
 	if (!testTexture->init(errorState))
 		return false;
 
-	worldTexture = resourceManagerService->createResource<nap::ImageResource>();
+	worldTexture = resourceManagerService->createObject<nap::ImageResource>();
 	worldTexture->mImagePath = worldTextureName;
 	if (!worldTexture->init(errorState))
 		return false;
 
-	nap::ObjectPtr<nap::MemoryTextureResource2D> color_texture = resourceManagerService->createResource<nap::MemoryTextureResource2D>();
+	nap::ObjectPtr<nap::MemoryTextureResource2D> color_texture = resourceManagerService->createObject<nap::MemoryTextureResource2D>();
 	color_texture->mSettings.width = 640;
 	color_texture->mSettings.height = 480;
 	color_texture->mSettings.internalFormat = GL_RGBA;
@@ -396,7 +396,7 @@ bool initResources(nap::utility::ErrorState& errorState)
 	if (!color_texture->init(errorState))
 		return false;
 
-	nap::ObjectPtr<nap::MemoryTextureResource2D> depth_texture = resourceManagerService->createResource<nap::MemoryTextureResource2D>();
+	nap::ObjectPtr<nap::MemoryTextureResource2D> depth_texture = resourceManagerService->createObject<nap::MemoryTextureResource2D>();
 	depth_texture->mSettings.width = 640;
 	depth_texture->mSettings.height = 480;
 	depth_texture->mSettings.internalFormat = GL_DEPTH_COMPONENT;
@@ -406,7 +406,7 @@ bool initResources(nap::utility::ErrorState& errorState)
 		return false;
 	
 	// Create frame buffer
-	textureRenderTarget = resourceManagerService->createResource<nap::TextureRenderTargetResource2D>();
+	textureRenderTarget = resourceManagerService->createObject<nap::TextureRenderTargetResource2D>();
 	textureRenderTarget->setColorTexture(*color_texture);
 	textureRenderTarget->setDepthTexture(*depth_texture);
 	textureRenderTarget->mClearColor = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
@@ -414,66 +414,66 @@ bool initResources(nap::utility::ErrorState& errorState)
 		return false;
 
 	// Load general shader
-	nap::ObjectPtr<nap::ShaderResource> generalShaderResource = resourceManagerService->createResource<nap::ShaderResource>();
+	nap::ObjectPtr<nap::ShaderResource> generalShaderResource = resourceManagerService->createObject<nap::ShaderResource>();
 	generalShaderResource->mVertPath = vertShaderName;
 	generalShaderResource->mFragPath = fragShaderName;
 	if (!generalShaderResource->init(errorState))
 		return false;
 
 	// Load orientation shader
-	nap::ObjectPtr<nap::ShaderResource> orientationShaderResource = resourceManagerService->createResource<nap::ShaderResource>();
+	nap::ObjectPtr<nap::ShaderResource> orientationShaderResource = resourceManagerService->createObject<nap::ShaderResource>();
 	orientationShaderResource->mVertPath = orientationVertShaderName;
 	orientationShaderResource->mFragPath = orientationFragShaderName;
 	if (!orientationShaderResource->init(errorState))
 		return false;
 
 	// Load orientation resource
-	orientationMesh = resourceManagerService->createResource<nap::MeshResource>();
+	orientationMesh = resourceManagerService->createObject<nap::MeshResource>();
 	orientationMesh->mPath = "data/orientation.mesh";
 	if (!orientationMesh->init(errorState))
 		return false;
 
 	// Load mesh resource
-	pigMesh = resourceManagerService->createResource<nap::MeshResource>();
+	pigMesh = resourceManagerService->createObject<nap::MeshResource>();
 	pigMesh->mPath = "data/pig_head_alpha_rotated.mesh";
 	if (!pigMesh->init(errorState))
 		return false;
 	
-	nap::ObjectPtr<nap::Material> orientationMaterial = resourceManagerService->createResource<nap::Material>();
+	nap::ObjectPtr<nap::Material> orientationMaterial = resourceManagerService->createObject<nap::Material>();
 	orientationMaterial->mShader = orientationShaderResource;
 	orientationMaterial->mVertexAttributeBindings = nap::Material::getDefaultVertexAttributeBindings();
 	if (!orientationMaterial->init(errorState))
 		return false;
 
-	nap::ObjectPtr<nap::Material> generalMaterial = resourceManagerService->createResource<nap::Material>();
+	nap::ObjectPtr<nap::Material> generalMaterial = resourceManagerService->createObject<nap::Material>();
 	generalMaterial->mShader = generalShaderResource;
 	generalMaterial->mVertexAttributeBindings = nap::Material::getDefaultVertexAttributeBindings();
 	if (!generalMaterial->init(errorState))
 		return false;
 	generalMaterial->getUniform<nap::UniformVec4>("mColor").setValue(glm::vec4(1.0, 1.0f, 1.0f, 1.0f));
 
-	pigMaterialInstance = resourceManagerService->createResource<nap::MaterialInstance>();
+	pigMaterialInstance = resourceManagerService->createObject<nap::MaterialInstance>();
 	pigMaterialInstance->mMaterial = generalMaterial;
 	if (!pigMaterialInstance->init(errorState))
 		return false;
 	pigMaterialInstance->getOrCreateUniform<nap::UniformTexture2D>("pigTexture").setTexture(*pigTexture);
 
-	planeMaterialInstance = resourceManagerService->createResource<nap::MaterialInstance>();
+	planeMaterialInstance = resourceManagerService->createObject<nap::MaterialInstance>();
 	planeMaterialInstance->mMaterial = generalMaterial;
 	if (!planeMaterialInstance->init(errorState))
 		return false;
 
-	rotatingPlaneMaterialInstance = resourceManagerService->createResource<nap::MaterialInstance>();
+	rotatingPlaneMaterialInstance = resourceManagerService->createObject<nap::MaterialInstance>();
 	rotatingPlaneMaterialInstance->mMaterial = generalMaterial;
 	if (!rotatingPlaneMaterialInstance->init(errorState))
 		return false;
 
-	orientationMaterialInstance = resourceManagerService->createResource<nap::MaterialInstance>();
+	orientationMaterialInstance = resourceManagerService->createObject<nap::MaterialInstance>();
 	orientationMaterialInstance->mMaterial = orientationMaterial;
 	if (!orientationMaterialInstance->init(errorState))
 		return false;
 
-	worldMaterialInstance = resourceManagerService->createResource<nap::MaterialInstance>();
+	worldMaterialInstance = resourceManagerService->createObject<nap::MaterialInstance>();
 	worldMaterialInstance->mMaterial = generalMaterial;
 	if (!worldMaterialInstance->init(errorState))
 		return false;
@@ -576,17 +576,17 @@ bool init(nap::Core& core)
 		return false;
 	}
 
-	pigTexture = resourceManagerService->findResource<nap::ImageResource>("PigTexture");
- 	testTexture = resourceManagerService->findResource<nap::ImageResource>("TestTexture");
- 	worldTexture = resourceManagerService->findResource<nap::ImageResource>("WorldTexture");
- 	textureRenderTarget = resourceManagerService->findResource<nap::TextureRenderTargetResource2D>("PlaneRenderTarget");
-	pigMaterialInstance = resourceManagerService->findResource<nap::MaterialInstance>("PigMaterialInstance");
-	planeMaterialInstance = resourceManagerService->findResource<nap::MaterialInstance>("PlaneMaterialInstance");
-	orientationMaterialInstance = resourceManagerService->findResource<nap::MaterialInstance>("OrientationMaterialInstance");
-	rotatingPlaneMaterialInstance = resourceManagerService->findResource<nap::MaterialInstance>("RotatingPlaneMaterialInstance");
-	worldMaterialInstance = resourceManagerService->findResource<nap::MaterialInstance>("WorldMaterialInstance");
-	pigMesh = resourceManagerService->findResource<nap::MeshResource>("PigMesh");
-	orientationMesh = resourceManagerService->findResource<nap::MeshResource>("OrientationMesh");
+	pigTexture = resourceManagerService->findObject<nap::ImageResource>("PigTexture");
+ 	testTexture = resourceManagerService->findObject<nap::ImageResource>("TestTexture");
+ 	worldTexture = resourceManagerService->findObject<nap::ImageResource>("WorldTexture");
+ 	textureRenderTarget = resourceManagerService->findObject<nap::TextureRenderTargetResource2D>("PlaneRenderTarget");
+	pigMaterialInstance = resourceManagerService->findObject<nap::MaterialInstance>("PigMaterialInstance");
+	planeMaterialInstance = resourceManagerService->findObject<nap::MaterialInstance>("PlaneMaterialInstance");
+	orientationMaterialInstance = resourceManagerService->findObject<nap::MaterialInstance>("OrientationMaterialInstance");
+	rotatingPlaneMaterialInstance = resourceManagerService->findObject<nap::MaterialInstance>("RotatingPlaneMaterialInstance");
+	worldMaterialInstance = resourceManagerService->findObject<nap::MaterialInstance>("WorldMaterialInstance");
+	pigMesh = resourceManagerService->findObject<nap::MeshResource>("PigMesh");
+	orientationMesh = resourceManagerService->findObject<nap::MeshResource>("OrientationMesh");
 #else	
 	if (!initResources(errorState))
 	{
