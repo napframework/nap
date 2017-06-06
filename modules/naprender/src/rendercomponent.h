@@ -4,10 +4,16 @@
 #include <nap/serviceablecomponent.h>
 #include <nap/coremodule.h>
 #include <glm/glm.hpp>
+#include "nap/entity.h"
 
 
 namespace nap
 {
+	class RenderableComponentResource : public ComponentResource
+	{
+		RTTI_ENABLE(ComponentResource)
+	};
+
 	/**
 	 * Represents an object that can be rendered to screen
 	 * or any other type of buffer. This is the base class
@@ -15,10 +21,15 @@ namespace nap
 	 * 
 	 * You can override default draw behavior by specializing the draw method
 	 */
-	class RenderableComponent : public ServiceableComponent
+	class RenderableComponent : public ComponentInstance//ServiceableComponent
 	{
-		RTTI_ENABLE(ServiceableComponent)
+		RTTI_ENABLE(ComponentInstance)
+
 	public:
+		RenderableComponent(EntityInstance& entity) :
+			ComponentInstance(entity)
+		{
+		}
 
 		/**
 		 * Draws the data to the currently active render target

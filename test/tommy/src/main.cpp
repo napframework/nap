@@ -65,6 +65,8 @@ std::vector<nap::RenderWindowComponent*> renderWindows;
 
 nap::CameraComponent* cameraComponent = nullptr;
 
+nap::RenderableMeshComponent* backgroundImagePlane = nullptr;
+
 static float movementScale = 3.0f;
 static float rotateScale = 1.0f;
 bool moveForward = false;
@@ -184,7 +186,12 @@ void onRender(const nap::SignalAttribute& signal)
 		render_target->setClearColor(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
 		renderService->clearRenderTarget(*render_target, opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH);
 
-		renderService->renderObjects(*render_target, *cameraComponent);
+		if (backgroundImagePlane != nullptr)
+		{
+			std::vector<nap::RenderableComponent*> components_to_render;
+			components_to_render.push_back(backgroundImagePlane);
+			renderService->renderObjects(*render_target, components_to_render, *cameraComponent);
+		}
 
 		render_window->swap();
 	}
@@ -261,7 +268,7 @@ bool init(nap::Core& core)
 	if (!resourceManagerService->loadFile("data/tommy/tommy.json", errorState))
 	{
 		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
-		return false;    
+		return false;     
 	}
 
 	//////////////////////////////////////////////////////////////////////////
@@ -272,18 +279,11 @@ bool init(nap::Core& core)
 	//////////////////////////////////////////////////////////////////////////
 
 	// Create plane entity
-	nap::Entity* plane = &(core.getRoot().addEntity("plane"));
-	nap::TransformComponent& plane_transform = plane->addComponent<nap::TransformComponent>();
-	plane_transform.translate.setValue({ 1.5f, 0.0, 0.0f });
-	
-	nap::RenderableMeshComponent& plane_component = plane->addComponent<nap::RenderableMeshComponent>();
-	plane_component.mMaterialInstance = ui_material_instance;
-	plane_component.mMeshResource = resourceManagerService->findObject<nap::MeshResource>("PlaneMesh");
-	if (!plane_component.init(errorState))
-	{
-		nap::Logger::fatal("Unable to initialize resources: %s", errorState.toString().c_str());
-		return false;  
-	}
+// 	nap::Entity* plane = &(core.getRoot().addEntity("plane"));
+// 	nap::TransformComponent& plane_transform = plane->addComponent<nap::TransformComponent>();
+// 	plane_transform.translate.setValue({ 1.5f, 0.0, 0.0f });
+// 	
+// 	backgroundImagePlane = &plane->addComponent(*resourceManagerService->findObject<nap::RenderableMeshComponent>("BackgroundImagePlane"));
 
 	//////////////////////////////////////////////////////////////////////////
 

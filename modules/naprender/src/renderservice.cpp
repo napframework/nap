@@ -144,34 +144,34 @@ namespace nap
 		viewMatrix = cam_xform->getGlobalTransform();
 
 		// Get look at object
-		if (!camera.lookAt.isLinked())
+		//if (!camera.lookAt.isLinked())
 		{
 			viewMatrix = glm::inverse(viewMatrix);
 			return;
 		}
 
-		// Extract lookat component
-		RenderableComponent* lookat_comp = const_cast<CameraComponent&>(camera).lookAt.getTarget<RenderableComponent>();
-		if (lookat_comp == nullptr)
-		{
-			nap::Logger::warn(camera, "unable to resolve look at target: %s", camera.lookAt.getPath().toString().c_str());
-			viewMatrix = glm::inverse(viewMatrix);
-			return;
-		}
-
-		// Extract xform to look at
-		TransformComponent* lookat_xform = lookat_comp->getParent()->getComponent<TransformComponent>();
-		if (lookat_xform == nullptr)
-		{
-			nap::Logger::warn(camera, "unable to resolve object transform for look at object: %s", camera.lookAt.getPath().toString().c_str());
-			viewMatrix = glm::inverse(viewMatrix);
-			return;
-		}
-
-		// Create lookat matrix
-		glm::vec3 lookat_pos = lookat_xform->getGlobalTransform()[3];
-		glm::vec3 eye_pos = glm::vec3(viewMatrix[3]);
-		viewMatrix = glm::lookAt(eye_pos, lookat_pos, glm::vec3(0, 1, 0));
+// 		// Extract lookat component
+// 		RenderableComponent* lookat_comp = const_cast<CameraComponent&>(camera).lookAt.getTarget<RenderableComponent>();
+// 		if (lookat_comp == nullptr)
+// 		{
+// 			nap::Logger::warn(camera, "unable to resolve look at target: %s", camera.lookAt.getPath().toString().c_str());
+// 			viewMatrix = glm::inverse(viewMatrix);
+// 			return;
+// 		}
+// 
+// 		// Extract xform to look at
+// 		TransformComponent* lookat_xform = lookat_comp->getEntity()->getComponent<TransformComponent>();
+// 		if (lookat_xform == nullptr)
+// 		{
+// 			nap::Logger::warn(camera, "unable to resolve object transform for look at object: %s", camera.lookAt.getPath().toString().c_str());
+// 			viewMatrix = glm::inverse(viewMatrix);
+// 			return;
+// 		}
+// 
+// 		// Create lookat matrix
+// 		glm::vec3 lookat_pos = lookat_xform->getGlobalTransform()[3];
+// 		glm::vec3 eye_pos = glm::vec3(viewMatrix[3]);
+// 		viewMatrix = glm::lookAt(eye_pos, lookat_pos, glm::vec3(0, 1, 0));
 	}
 
 
@@ -222,8 +222,8 @@ namespace nap
 	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, const CameraComponent& camera)
 	{
 		// Get all render components
-		std::vector<nap::RenderableComponent*> render_comps;
-		getObjects<nap::RenderableComponent>(render_comps);
+ 		std::vector<nap::RenderableComponent*> render_comps;
+// 		getObjects<nap::RenderableComponent>(render_comps);
 
 		renderObjects(renderTarget, render_comps, camera);
 	}

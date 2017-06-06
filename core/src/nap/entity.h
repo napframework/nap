@@ -8,12 +8,135 @@
 #include <nap/signalslot.h>
 #include <rtti/rtti.h>
 #include "utility/stringutils.h"
+#include "objectptr.h"
 
 namespace nap
 {
     class Core;
 	class Deserializer;
     class Component;
+
+	class EntityInstance;
+	class ComponentResource;
+	class ComponentInstance
+	{
+		RTTI_ENABLE()
+
+	public:
+		ComponentInstance(EntityInstance& entity) :
+			mEntity(&entity)
+		{
+		}
+
+		nap::EntityInstance* getEntity() const
+		{
+			return mEntity;
+		}
+
+		virtual bool init(const ObjectPtr<ComponentResource>& resource, utility::ErrorState& errorState)
+		{
+			return true;
+		}
+
+	private:
+		EntityInstance* mEntity;
+	};
+
+	class EntityInstance
+	{
+	public:
+		using ComponentList = std::vector<std::unique_ptr<ComponentInstance>>;
+
+		EntityInstance(Core& core) :
+			mCore(&core)
+		{
+		}
+
+		void addComponent(std::unique_ptr<ComponentInstance> inComponent)
+		{
+			mComponents.emplace_back(std::move(inComponent));
+		}
+
+		ComponentInstance* findComponent(const rtti::TypeInfo& inType) const
+		{
+			ComponentList::const_iterator pos = std::find_if(mComponents.begin(), mComponents.end(), [&](auto& element) { return element->get_type() == inType; });
+			if (pos == mComponents.end())
+				return nullptr;
+
+			return pos->get();
+		}
+
+		template<class T>
+		T* findComponent() const
+		{ 
+			return rtti_cast<T>(findComponent(rtti::TypeInfo::get<T>())); 
+		}
+
+		bool hasComponent(const rtti::TypeInfo& inType) const
+		{
+			return findComponent(inType) != nullptr;
+		}
+
+		template<class T>
+		bool hasComponent() const
+		{
+			return hasComponent(rtti::TypeInfo::get<T>());
+		}
+		
+		ComponentInstance& getComponent(const rtti::TypeInfo& inType) const
+		{
+			ComponentInstance* result = findComponent(inType);
+			assert(result != nullptr);
+			return *result;
+		}
+
+		template<class T>
+		T* getComponent() const
+		{
+			return rtti_cast<T>(getComponent(rtti::TypeInfo::get<T>()));
+		}
+
+		Core* getCore() const
+		{
+			return mCore;
+		}
+
+	private:
+		Core* mCore;
+		ComponentList mComponents;
+	};
+
+	class ComponentResource : public rtti::RTTIObject
+	{
+		RTTI_ENABLE(rtti::RTTIObject)
+
+	public:
+		virtual const std::vector<rtti::TypeInfo> getDependentComponents() { return std::vector<rtti::TypeInfo>(); }
+		virtual std::unique_ptr<ComponentInstance> createInstance(EntityInstance& entity, utility::ErrorState& outErrorState) = 0;
+	};
+
+	class EntityResource : public rtti::RTTIObject
+	{
+		RTTI_ENABLE(rtti::RTTIObject)
+
+	public:
+		std::unique_ptr<EntityInstance> createInstance(Core& core, utility::ErrorState& outErrorState)
+		{
+			std::unique_ptr<EntityInstance> entity_instance = std::make_unique<EntityInstance>(core);
+			for (auto& componentData : mComponents)
+			{
+				std::unique_ptr<ComponentInstance> component_instance = componentData->createInstance(*entity_instance, outErrorState);
+				if (component_instance == nullptr)
+					return nullptr;
+
+				entity_instance->addComponent(std::move(component_instance));
+			}
+			return entity_instance;
+		}
+		std::vector<ObjectPtr<ComponentResource>> mComponents;
+	};
+
+
 
 	// The entity is a general purpose object. It only consists of a unique id.
 	// They "tag every coarse object as a separate item".

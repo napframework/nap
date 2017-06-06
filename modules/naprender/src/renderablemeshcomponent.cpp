@@ -6,28 +6,53 @@
 #include "material.h"
 #include "renderservice.h"
 
+RTTI_BEGIN_CLASS(nap::RenderableMeshComponentResource)
+	RTTI_PROPERTY("Mesh",				&nap::RenderableMeshComponentResource::mMeshResource,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MaterialInstance",	&nap::RenderableMeshComponentResource::mMaterialInstance,	nap::rtti::EPropertyMetaData::Required)
+RTTI_END_CLASS
+
+RTTI_BEGIN_BASE_CLASS(nap::RenderableMeshComponent)
+RTTI_END_CLASS
+
 namespace nap
 {
+	const std::vector<rtti::TypeInfo> RenderableMeshComponentResource::getDependentComponents()
+	{
+		std::vector<rtti::TypeInfo> result;
+		result.push_back(RTTI_OF(TransformComponent));
+		return result;
+	}
+	
+	std::unique_ptr<ComponentInstance> RenderableMeshComponentResource::createInstance(EntityInstance& entity, utility::ErrorState& outErrorState)
+	{
+		std::unique_ptr<ComponentInstance> instance = std::make_unique<RenderableMeshComponent>(entity);
+		if (!instance->init(this, outErrorState))
+			return nullptr;
+
+		return instance;
+	}
+
 	// Upload all uniform variables to GPU
 	void RenderableMeshComponent::pushUniforms()
 	{
-		Material* comp_mat = mMaterialInstance->getMaterial();
+		MaterialInstance* material_instance = mResource->mMaterialInstance.get();
+		Material* comp_mat = material_instance->getMaterial();
 
 		// Keep track of which uniforms were set (i.e. overridden) by the material instance
 		std::unordered_set<std::string> instance_bindings;
 		int texture_unit = 0;
 
 		// Push all uniforms that are set (i.e. overridden) in the instance
-		if (mMaterialInstance != nullptr)
+		if (material_instance != nullptr)
 		{
-			const UniformTextureBindings& instance_texture_bindings = mMaterialInstance->getUniformTextureBindings();
+			const UniformTextureBindings& instance_texture_bindings = material_instance->getUniformTextureBindings();
 			for (auto& kvp : instance_texture_bindings)
 			{
 				kvp.second.mUniform->push(*kvp.second.mDeclaration, texture_unit++);
 				instance_bindings.insert(kvp.first);
 			}				
 
-			const UniformValueBindings& instance_value_bindings = mMaterialInstance->getUniformValueBindings();
+			const UniformValueBindings& instance_value_bindings = material_instance->getUniformValueBindings();
 			for (auto& kvp : instance_value_bindings)
 			{
 				kvp.second.mUniform->push(*kvp.second.mDeclaration);
@@ -48,14 +73,23 @@ namespace nap
 		glActiveTexture(GL_TEXTURE0);
 	}
 
-
-	bool RenderableMeshComponent::init(utility::ErrorState& errorState)
+	RenderableMeshComponent::RenderableMeshComponent(EntityInstance& entity) :
+		RenderableComponent(entity)
 	{
-		assert(mService->get_type() == RTTI_OF(RenderService));
-		RenderService& render_service = *static_cast<RenderService*>(mService);
+	}
 
-		mVAOHandle = render_service.acquireVertexArrayObject(*mMaterialInstance->getMaterial(), *mMeshResource, errorState);
+	bool RenderableMeshComponent::init(const ObjectPtr<ComponentResource>& resource, utility::ErrorState& errorState)
+	{
+		assert(resource->get_type().is_derived_from<RenderableMeshComponentResource>());
+		mResource = rtti_cast<RenderableMeshComponentResource>(resource.get());
+
+		RenderService* render_service = getEntity()->getCore()->getService<RenderService>();
+		mVAOHandle = render_service->acquireVertexArrayObject(*mResource->mMaterialInstance->getMaterial(), *mResource->mMeshResource, errorState);
 		if (mVAOHandle == nullptr)
+			return false;
+
+		mTransformComponent = getEntity()->findComponent<TransformComponent>();
+		if (!errorState.check(mTransformComponent != nullptr, "Missing transform component"))
 			return false;
 
 		return true;
@@ -64,20 +98,10 @@ namespace nap
 
 	// Draw Mesh
 	void RenderableMeshComponent::draw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
-	{
-		// Get xform component
-		nap::Entity* parent_entity = getParent();
-		assert(parent_entity != nullptr);
-		TransformComponent* xform_comp = parent_entity->getComponent<TransformComponent>();
+	{	
+		const glm::mat4x4& model_matrix = mTransformComponent->getGlobalTransform();
 
-		// Make sure it exists and extract global matrix
-		if (xform_comp == nullptr)
-		{
-			nap::Logger::warn("render able object has no transform: %s", getName().c_str());
-		}
-		const glm::mat4x4& model_matrix = xform_comp == nullptr ? identityMatrix : xform_comp->getGlobalTransform();
-
-		Material* comp_mat = mMaterialInstance->getMaterial();
+		Material* comp_mat = mResource->mMaterialInstance->getMaterial();
 
 		comp_mat->bind();
 
@@ -99,7 +123,7 @@ namespace nap
 		mVAOHandle->mObject->bind();
 
 		// Gather draw info
-		const opengl::Mesh& mesh = mMeshResource->getMesh();
+		const opengl::Mesh& mesh = mResource->mMeshResource->getMesh();
 		GLenum draw_mode = getGLMode(mesh.getDrawMode());
 		const opengl::IndexBuffer* index_buffer = mesh.getIndexBuffer();
 		GLsizei draw_count = static_cast<GLsizei>(index_buffer->getCount());
@@ -123,8 +147,7 @@ namespace nap
 
 	MaterialInstance* RenderableMeshComponent::getMaterialInstance()
 	{
-		return mMaterialInstance.get();
+		return mResource->mMaterialInstance.get();
 	}
 }
 
-RTTI_DEFINE(nap::RenderableMeshComponent)

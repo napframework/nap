@@ -10,6 +10,19 @@ namespace nap
 {
 	class MeshResource;
 	class MaterialInstance;
+	class TransformComponent;
+
+	class RenderableMeshComponentResource : public RenderableComponentResource
+	{
+		RTTI_ENABLE(RenderableComponentResource)
+
+		virtual const std::vector<rtti::TypeInfo> getDependentComponents();
+		virtual std::unique_ptr<ComponentInstance> createInstance(EntityInstance& entity, utility::ErrorState& outErrorState);
+
+	public:
+		ObjectPtr<MeshResource>				mMeshResource;
+		ObjectPtr<MaterialInstance>			mMaterialInstance;					///< MaterialInstance, which is used to override uniforms for this instance
+	};
 
 	/**
 	 * Represents a drawable mesh that can be used as a component in an object tree
@@ -23,12 +36,12 @@ namespace nap
 		RTTI_ENABLE(RenderableComponent)
 
 	public:
-		RenderableMeshComponent() = default;
+		RenderableMeshComponent(EntityInstance& entity);
 
 		/**
 		 * Tests whether the MaterialInstance is overriding uniforms from the mesh that we are drawing.
 		 */
-		virtual bool init(utility::ErrorState& errorState);
+		virtual bool init(const ObjectPtr<ComponentResource>& resource, utility::ErrorState& errorState);
 
 		/**
 		 * Renders the model from the ModelResource, using the material on the ModelResource.
@@ -43,9 +56,9 @@ namespace nap
 	private:
 		void pushUniforms();
 
-	public:
-		ObjectPtr<MeshResource>				mMeshResource;
-		ObjectPtr<MaterialInstance>			mMaterialInstance;					///< MaterialInstance, which is used to override uniforms for this instance
-		std::unique_ptr<VAOHandle>			mVAOHandle;
+	private:
+		ObjectPtr<RenderableMeshComponentResource>	mResource;
+		TransformComponent*							mTransformComponent;
+		std::unique_ptr<VAOHandle>					mVAOHandle;
 	};
 }

@@ -18,7 +18,7 @@
 	"nap::PlaneMeshResource": {
 		"mID": "PlaneMesh"
 	},
-	
+		
 	"nap::Material": {
 		"mID": "UIMaterial",
 		"Shader": "UIShader",
