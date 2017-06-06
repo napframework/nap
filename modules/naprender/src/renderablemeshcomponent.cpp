@@ -82,9 +82,17 @@ namespace nap
 		comp_mat->bind();
 
 		// Set uniform variables
-		comp_mat->getUniform<UniformMat4>(projectionMatrixUniform).setValue(projectionMatrix);
-		comp_mat->getUniform<UniformMat4>(viewMatrixUniform).setValue(viewMatrix);
-		comp_mat->getUniform<UniformMat4>(modelMatrixUniform).setValue(model_matrix);
+		UniformMat4* projectionUniform = comp_mat->findUniform<UniformMat4>(projectionMatrixUniform);
+		if (projectionUniform != nullptr)
+			projectionUniform->setValue(projectionMatrix);
+
+		UniformMat4* viewUniform = comp_mat->findUniform<UniformMat4>(viewMatrixUniform);
+		if (viewUniform != nullptr)
+			viewUniform->setValue(viewMatrix);
+
+		UniformMat4* modelUniform = comp_mat->findUniform<UniformMat4>(modelMatrixUniform);
+		if (modelUniform != nullptr)
+			modelUniform->setValue(model_matrix);
 
 		pushUniforms();
 
