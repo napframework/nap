@@ -28,6 +28,8 @@ namespace nap
 		{
 		}
 
+		virtual ~ComponentInstance() = default;
+
 		nap::EntityInstance* getEntity() const
 		{
 			return mEntity;
@@ -93,7 +95,7 @@ namespace nap
 		template<class T>
 		T* getComponent() const
 		{
-			return rtti_cast<T>(getComponent(rtti::TypeInfo::get<T>()));
+			return rtti_cast<T>(&getComponent(rtti::TypeInfo::get<T>()));
 		}
 
 		Core* getCore() const

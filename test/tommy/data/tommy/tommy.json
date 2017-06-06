@@ -18,6 +18,19 @@
 	"nap::PlaneMeshResource": {
 		"mID": "PlaneMesh"
 	},
+	
+	"nap::EntityResource": {
+		"mID": "BackgroundImageEntity",
+		"Components" : 
+		[
+			{
+				"nap::RenderableMeshComponentResource": {
+					"Mesh" : "PlaneMesh",
+					"MaterialInstance" : "UIMaterialInstance"
+				}		
+			}
+		]
+	},
 		
 	"nap::Material": {
 		"mID": "UIMaterial",

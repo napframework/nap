@@ -65,8 +65,6 @@ std::vector<nap::RenderWindowComponent*> renderWindows;
 
 nap::CameraComponent* cameraComponent = nullptr;
 
-nap::RenderableMeshComponent* backgroundImagePlane = nullptr;
-
 static float movementScale = 3.0f;
 static float rotateScale = 1.0f;
 bool moveForward = false;
@@ -186,12 +184,11 @@ void onRender(const nap::SignalAttribute& signal)
 		render_target->setClearColor(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
 		renderService->clearRenderTarget(*render_target, opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH);
 
-		if (backgroundImagePlane != nullptr)
-		{
-			std::vector<nap::RenderableComponent*> components_to_render;
-			components_to_render.push_back(backgroundImagePlane);
-			renderService->renderObjects(*render_target, components_to_render, *cameraComponent);
-		}
+		std::vector<nap::RenderableComponent*> components_to_render;
+	
+		nap::EntityInstance* entity = resourceManagerService->findEntity("BackgroundImageEntity");
+		components_to_render.push_back(entity->getComponent<nap::RenderableMeshComponent>());
+		renderService->renderObjects(*render_target, components_to_render, *cameraComponent);
 
 		render_window->swap();
 	}
@@ -268,22 +265,12 @@ bool init(nap::Core& core)
 	if (!resourceManagerService->loadFile("data/tommy/tommy.json", errorState))
 	{
 		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
-		return false;     
+		return false;       
 	}
 
 	//////////////////////////////////////////////////////////////////////////
 
-	nap::ObjectPtr<nap::MaterialInstance> ui_material_instance = resourceManagerService->findObject("UIMaterialInstance");
-	assert(ui_material_instance != nullptr);
 
-	//////////////////////////////////////////////////////////////////////////
-
-	// Create plane entity
-// 	nap::Entity* plane = &(core.getRoot().addEntity("plane"));
-// 	nap::TransformComponent& plane_transform = plane->addComponent<nap::TransformComponent>();
-// 	plane_transform.translate.setValue({ 1.5f, 0.0, 0.0f });
-// 	
-// 	backgroundImagePlane = &plane->addComponent(*resourceManagerService->findObject<nap::RenderableMeshComponent>("BackgroundImagePlane"));
 
 	//////////////////////////////////////////////////////////////////////////
 

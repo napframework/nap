@@ -5,6 +5,7 @@
 #include "rtti/factory.h"
 #include "nap/core.h"
 #include "objectptr.h"
+#include "entity.h"
 
 RTTI_DEFINE(nap::ResourceManagerService)
 
@@ -415,6 +416,51 @@ namespace nap
 		return true;
 	}
 
+
+	bool ResourceManagerService::initEntities(ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState)
+	{
+		// Build list of all entities we need to update. We need to use the objects in objectsToUpdate over those already in the ResourceManager
+		// In essence, objectsToUpdate functions as an 'overlay' on top of the ResourceManager
+		std::vector<EntityResource*> entities;
+		
+		// First add all EntityResources in the list of objects to update
+		for (auto& kvp : objectsToUpdate)
+		{
+			if (kvp.second->get_type() != RTTI_OF(EntityResource))
+				continue;
+
+			entities.push_back(rtti_cast<EntityResource>(kvp.second.get()));
+		}
+
+		// Next, go through all EntityResources currently in the resource manager and add them if they're not in the list of objects to update
+		for (auto& kvp : mObjects)
+		{
+			if (kvp.second->get_type() != RTTI_OF(EntityResource))
+				continue;
+
+			ObjectByIDMap::const_iterator object_to_update = objectsToUpdate.find(kvp.first);
+			if (object_to_update == objectsToUpdate.end())
+				entities.push_back(rtti_cast<EntityResource>(kvp.second.get()));
+		}
+
+		// Reinstantiate all entities
+		EntityByIDMap new_entity_instances;
+		for (EntityResource* entity_resource : entities)
+		{
+			std::unique_ptr<EntityInstance> entity_instance = entity_resource->createInstance(getCore(), errorState);
+			if (entity_instance == nullptr)
+				return false;
+
+			new_entity_instances.emplace(std::make_pair(entity_resource->mID, std::move(entity_instance)));
+		}
+
+		// Replace entities currently in the resource manager with the new set
+		mEntities = std::move(new_entity_instances);
+
+		return true;
+	}
+
+
 	/** 
 	 * Traverses all pointers in ObjectPtrManager and, for each target, replaces the target with the one in the map that is passed.
 	 * @param container The container holding an ID -> pointer mapping with the pointer to patch to.
@@ -515,6 +561,10 @@ namespace nap
 		if (!initObjects(objects_to_init, objects_to_update, errorState))
 			return false;
 
+		// Init all entities
+		if (!initEntities(objects_to_update, errorState))
+			return false;
+
 		// In case all init() operations were successful, we can now replace the objects
 		// in the manager by the new objects. This effectively destroys the old objects as well.
 		for (auto& kvp : objects_to_update)
@@ -532,7 +582,6 @@ namespace nap
 		rollback_helper.clear();
 
 		return true;
-
 	}
 
 
@@ -666,4 +715,14 @@ namespace nap
 		
 		return ObjectPtr<RTTIObject>(object);
 	}
+
+	EntityInstance* ResourceManagerService::findEntity(const std::string& inID) const
+	{
+		EntityByIDMap::const_iterator pos = mEntities.find(inID);
+		if (pos == mEntities.end())
+			return nullptr;
+
+		return pos->second.get();
+	}
+
 }

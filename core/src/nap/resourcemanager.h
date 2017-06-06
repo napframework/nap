@@ -12,6 +12,7 @@
 namespace nap
 {
 	class DirectoryWatcher;
+	class EntityInstance;
 
 	/**
 	 * Manager, holding all objects, capable of loading and real-time updating of content.
@@ -81,9 +82,12 @@ namespace nap
 		*/
 		rtti::Factory& getFactory();
 
+		EntityInstance* findEntity(const std::string& inID) const;
+
 	private:
-		using ObjectByIDMap = std::map<std::string, std::unique_ptr<RTTIObject>>;
-		using FileLinkMap = std::map<std::string, std::vector<std::string>>; // Map from target file to multiple source files
+		using ObjectByIDMap = std::unordered_map<std::string, std::unique_ptr<RTTIObject>>;
+		using FileLinkMap = std::unordered_map<std::string, std::vector<std::string>>; // Map from target file to multiple source files
+		using EntityByIDMap = std::unordered_map<std::string, std::unique_ptr<EntityInstance>>;
 
 		void addObject(const std::string& id, std::unique_ptr<RTTIObject> object);
 		void removeObject(const std::string& id);
@@ -92,6 +96,7 @@ namespace nap
 		bool determineObjectsToInit(const ObjectByIDMap& objectsToUpdate, const std::string& externalChangedFile, std::vector<std::string>& objectsToInit, utility::ErrorState& errorState);
 		bool resolvePointers(ObjectByIDMap& objectsToUpdate, const rtti::UnresolvedPointerList& unresolvedPointers, utility::ErrorState& errorState);
 		bool initObjects(std::vector<std::string> objectsToInit, ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState);
+		bool initEntities(ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState);
 		void patchObjectPtrs(ObjectByIDMap& newTargetObjects);
 
 	private:
@@ -109,6 +114,7 @@ namespace nap
 		};
 
 		ObjectByIDMap						mObjects;				// Holds all objects
+		EntityByIDMap						mEntities;
 		std::set<std::string>				mFilesToWatch;			// Files currently loaded, used for watching changes on the files
 		FileLinkMap							mFileLinkMap;			// Map containing links from target to source file, for updating source files if the file monitor sees changes
 		std::unique_ptr<DirectoryWatcher>	mDirectoryWatcher;		// File monitor, detects changes on files
