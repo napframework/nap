@@ -65,8 +65,19 @@ std::vector<nap::RenderWindowComponent*> renderWindows;
 
 nap::CameraComponent* cameraComponent = nullptr;
 
+static float movementScale = 3.0f;
+static float rotateScale = 1.0f;
+bool moveForward = false;
+bool moveBackward = false;
+bool moveLeft = false;
+bool moveRight = false;
+bool lookUp = false;
+bool lookDown = false;
+bool lookLeft = false;
+bool lookRight = false;
+
 // Window width / height on startup
-unsigned int windowWidth(512);
+unsigned int windowWidth(512); 
 unsigned int windowHeight(512);
 
 // Some utilities
@@ -87,9 +98,77 @@ void onUpdate(const nap::SignalAttribute& signal)
 	{
 		delta_time = 0.01f;
 	}
+
+	updateCamera(delta_time);
 }
 nap::Slot<const nap::SignalAttribute&> updateSlot = { [](const nap::SignalAttribute& attr){ onUpdate(attr); } };
 
+void updateCamera(float deltaTime)
+{
+	float movement = movementScale * deltaTime;
+	float rotate = rotateScale * deltaTime;
+	float rotate_rad = rotate;
+
+	nap::TransformComponent* cam_xform = cameraComponent->getParent()->getComponent<nap::TransformComponent>();
+	//glm::vec3 lookat_pos = cam_xform->getGlobalTransform()[0];
+	//glm::vec3 dir = glm::cross(glm::normalize(lookat_pos), glm::vec3(cam_xform->getGlobalTransform()[1]));
+	//glm::vec3 dir_f = glm::cross(glm::normalize(lookat_pos), glm::vec3(0.0,1.0,0.0));
+	//glm::vec3 dir_s = glm::cross(glm::normalize(lookat_pos), glm::vec3(0.0, 0.0, 1.0));
+	//dir_f *= movement;
+	//dir_s *= movement;
+
+	glm::vec3 side(1.0, 0.0, 0.0);
+	glm::vec3 forward(0.0, 0.0, 1.0);
+
+	glm::vec3 dir_forward = glm::rotate(cam_xform->rotate.getValue(), forward);
+	glm::vec3 movement_forward = dir_forward * movement;
+
+	glm::vec3 dir_sideways = glm::rotate(cam_xform->rotate.getValue(), side);
+	glm::vec3 movement_sideways = dir_sideways * movement;
+
+	//nap::Logger::info("direction: %f, %f,%f", dir_f.x, dir_f.y, dir_f.z);
+
+	if (moveForward)
+	{
+		cam_xform->translate.setValue(cam_xform->translate.getValue() - movement_forward);
+	}
+	if (moveBackward)
+	{
+		cam_xform->translate.setValue(cam_xform->translate.getValue() + movement_forward);
+	}
+	if (moveLeft)
+	{
+		cam_xform->translate.setValue(cam_xform->translate.getValue() - movement_sideways);
+	}
+	if (moveRight)
+	{
+		cam_xform->translate.setValue(cam_xform->translate.getValue() + movement_sideways);
+	}
+	if (lookUp)
+	{
+		glm::quat r = cam_xform->rotate.getValue();
+		glm::quat nr = glm::rotate(r, rotate_rad, glm::vec3(1.0, 0.0, 0.0));
+		cam_xform->rotate.setValue(nr);
+	}
+	if (lookDown)
+	{
+		glm::quat r = cam_xform->rotate.getValue();
+		glm::quat nr = glm::rotate(r, -1.0f * rotate_rad, glm::vec3(1.0, 0.0, 0.0));
+		cam_xform->rotate.setValue(nr);
+	}
+	if (lookRight)
+	{
+		glm::quat r = cam_xform->rotate.getValue();
+		glm::quat nr = glm::rotate(r, -1.0f*rotate_rad, glm::vec3(0.0, 1.0, 0.0));
+		cam_xform->rotate.setValue(nr);
+	}
+	if (lookLeft)
+	{
+		glm::quat r = cam_xform->rotate.getValue();
+		glm::quat nr = glm::rotate(r, rotate_rad, glm::vec3(0.0, 1.0, 0.0));
+		cam_xform->rotate.setValue(nr);
+	}
+}
 
 // Called when the window is going to render
 void onRender(const nap::SignalAttribute& signal)
@@ -102,8 +181,11 @@ void onRender(const nap::SignalAttribute& signal)
 		render_window->makeActive();
 
 		opengl::RenderTarget* render_target = (opengl::RenderTarget*)render_window->getWindow()->getBackbuffer();
-		render_target->setClearColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-		renderService->clearRenderTarget(*render_target, opengl::EClearFlags::COLOR);
+		render_target->setClearColor(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
+		renderService->clearRenderTarget(*render_target, opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH);
+
+		renderService->renderObjects(*render_target, *cameraComponent);
+
 		render_window->swap();
 	}
 }
@@ -176,11 +258,35 @@ bool init(nap::Core& core)
 	renderWindows[0]->makeActive();
 
 	nap::utility::ErrorState errorState;
-	if (!resourceManagerService->loadFile("data/tommy.json", errorState))
+	if (!resourceManagerService->loadFile("data/tommy/tommy.json", errorState))
 	{
 		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
-		return false;
+		return false;    
 	}
+
+	//////////////////////////////////////////////////////////////////////////
+
+	nap::ObjectPtr<nap::MaterialInstance> ui_material_instance = resourceManagerService->findResource("UIMaterialInstance");
+	assert(ui_material_instance != nullptr);
+
+	//////////////////////////////////////////////////////////////////////////
+
+	// Create plane entity
+	nap::Entity* plane = &(core.getRoot().addEntity("plane"));
+	nap::TransformComponent& plane_transform = plane->addComponent<nap::TransformComponent>();
+	plane_transform.translate.setValue({ 1.5f, 0.0, 0.0f });
+	
+	nap::PlaneComponent* planeComponent = new nap::PlaneComponent(*ui_material_instance);
+	plane->addComponent(std::move(std::unique_ptr<nap::Component>(planeComponent)));
+	if (!planeComponent->init(errorState))
+	{
+		nap::Logger::fatal("Unable to initialize resources: %s", errorState.toString().c_str());
+		return false;  
+	}
+	 
+
+	//////////////////////////////////////////////////////////////////////////
+
 
 	// Set render states
 	nap::RenderState& render_state = renderService->getRenderState();
@@ -256,19 +362,99 @@ void runGame(nap::Core& core)
 						renderWindow->fullScreen.setValue(fullScreen);
 					break;
 				}
+				case SDLK_w:
+				{
+					moveForward = true;
+					break;
+				}
+				case SDLK_s:
+				{
+					moveBackward = true;
+					break;
+				}
+				case SDLK_a:
+				{
+					moveLeft = true;
+					break;
+				}
+				case SDLK_d:
+				{
+					moveRight = true;
+					break;
+				}
+				case SDLK_UP:
+				{
+					lookUp = true;
+					break;
+				}
+				case SDLK_DOWN:
+				{
+					lookDown = true;
+					break;
+				}
+				case SDLK_LEFT:
+				{
+					lookLeft = true;
+					break;
+				}
+				case SDLK_RIGHT:
+				{
+					lookRight = true;
+					break;
+				}
 				default:
 					break;
 				}
 			}
 
-// 			if (event.type == SDL_KEYUP)
-// 			{
-// 				switch (event.key.keysym.sym)
-// 				{
-// 				default:
-// 					break;
-// 				}
-// 			}
+			if (event.type == SDL_KEYUP)
+			{
+				switch (event.key.keysym.sym)
+				{
+				case SDLK_w:
+				{
+					moveForward = false;
+					break;
+				}
+				case SDLK_s:
+				{
+					moveBackward = false;
+					break;
+				}
+				case SDLK_a:
+				{
+					moveLeft = false;
+					break;
+				}
+				case SDLK_d:
+				{
+					moveRight = false;
+					break;
+				}
+				case SDLK_UP:
+				{
+					lookUp = false;
+					break;
+				}
+				case SDLK_DOWN:
+				{
+					lookDown = false;
+					break;
+				}
+				case SDLK_LEFT:
+				{
+					lookLeft = false;
+					break;
+				}
+				case SDLK_RIGHT:
+				{
+					lookRight = false;
+					break;
+				}
+				default:
+					break;
+				}
+			}
 
 			if (event.type == SDL_WINDOWEVENT)
 			{
@@ -320,3 +506,4 @@ void runGame(nap::Core& core)
 	renderService->shutdown();
 }
        
+ 

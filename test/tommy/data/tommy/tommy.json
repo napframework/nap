@@ -1,0 +1,50 @@
+{
+	"nap::ImageResource": {
+		"mID" : "BackgroundImage",
+		"mImagePath" : "data/tommy/background.jpg"
+	},
+	
+	"nap::ImageResource": {
+		"mID" : "Looks_01",
+		"mImagePath" : "data/tommy/01.png"
+	},
+	
+	"nap::ShaderResource": {
+		"mID": "UIShader",
+		"mVertShader": "shaders/tommy/ui.vert",
+		"mFragShader": "shaders/tommy/ui.frag"
+	},	
+	
+	"nap::Material": {
+		"mID": "UIMaterial",
+		"Shader": "UIShader",
+		"VertexAttributeBindings" : [
+			{
+				"MeshAttributeID": "Position",
+				"ShaderAttributeID": "in_Position"
+			},
+			{
+				"MeshAttributeID": "UV0",
+				"ShaderAttributeID": "in_UV0"
+			}
+		],
+		"Uniforms" : 
+		[			
+		]			
+	},
+	
+	"nap::MaterialInstance": {
+		"mID": "UIMaterialInstance",
+		"Material": "UIMaterial",
+		"Uniforms" : 
+		[		
+			{		
+				"nap::UniformTexture2D" : 
+				{
+					"Name" : "mTexture",
+					"Texture" : "BackgroundImage"
+				}
+			}
+		]			
+	}
+} 
