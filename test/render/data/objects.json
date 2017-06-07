@@ -401,7 +401,7 @@
 		"Components" : 
 		[
 			{
-				"nap::CameraComponentResource": {
+				"nap::PerspCameraComponentResource": {
 					"Properties": {
 						"FieldOfView": 45.0,
 						"NearClippingPlane" : 0.01,
@@ -440,7 +440,7 @@
 		"Components" : 
 		[
 			{
-				"nap::CameraComponentResource": {
+				"nap::PerspCameraComponentResource": {
 					"Properties": {
 						"FieldOfView": 45.0,
 						"NearClippingPlane" : 0.01,

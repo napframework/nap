@@ -36,7 +36,7 @@
 #include <renderwindowcomponent.h>
 #include <openglrenderer.h>
 #include <transformcomponent.h>
-#include <cameracomponent.h>
+#include <orthocameracomponent.h>
 #include <mathutils.h>
 #include <planemeshresource.h>
 #include <spheremeshresource.h>
@@ -66,7 +66,7 @@ std::vector<nap::RenderWindowComponent*> renderWindows;
 nap::ObjectPtr<nap::EntityInstance> backgroundImageEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance> cameraEntity = nullptr;
 
-static float movementScale = 3.0f;
+static float movementScale = 0.5f;
 static float rotateScale = 1.0f;
 bool moveForward = false;
 bool moveBackward = false;
@@ -186,10 +186,7 @@ void onRender(const nap::SignalAttribute& signal)
 		render_target->setClearColor(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
 		renderService->clearRenderTarget(*render_target, opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH);
 
-		std::vector<nap::RenderableComponent*> components_to_render;
-	
-		components_to_render.push_back(&backgroundImageEntity->getComponent<nap::RenderableMeshComponent>());
-		renderService->renderObjects(*render_target, components_to_render, cameraEntity->getComponent<nap::CameraComponent>());
+		renderService->renderObjects(*render_target, cameraEntity->getComponent<nap::OrthoCameraComponent>());
 
 		render_window->swap();
 	}
@@ -269,9 +266,6 @@ bool init(nap::Core& core)
 		return false;       
 	}
 
-	//////////////////////////////////////////////////////////////////////////
-
-
 
 	//////////////////////////////////////////////////////////////////////////
 
@@ -288,7 +282,7 @@ bool init(nap::Core& core)
 	cameraEntity = resourceManagerService->findEntity("CameraEntity");
 	assert(cameraEntity != nullptr);
 
-	cameraEntity->getComponent<nap::CameraComponent>().setAspectRatio((float)windowWidth, (float)windowHeight);
+	cameraEntity->getComponent<nap::OrthoCameraComponent>().setAspectRatio((float)windowWidth, (float)windowHeight);
 
 	backgroundImageEntity = resourceManagerService->findEntity("BackgroundImageEntity");
 
@@ -455,7 +449,7 @@ void runGame(nap::Core& core)
 							renderWindow->size.setValue({ width, height });
 					}
 
-					cameraEntity->getComponent<nap::CameraComponent>().setAspectRatio((float)width, (float)height);
+					cameraEntity->getComponent<nap::OrthoCameraComponent>().setAspectRatio((float)width, (float)height);
 					break;
 				}
 				case SDL_WINDOWEVENT_MOVED:

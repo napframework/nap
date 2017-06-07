@@ -39,7 +39,7 @@
 #include <renderwindowcomponent.h>
 #include <openglrenderer.h>
 #include <transformcomponent.h>
-#include <cameracomponent.h>
+#include <perspcameracomponent.h>
 #include <mathutils.h>
 #include <planemeshresource.h>
 #include <spheremeshresource.h>
@@ -279,7 +279,7 @@ void onRender(const nap::SignalAttribute& signal)
 		
 		// Render entire scene to texture
 		renderService->clearRenderTarget(textureRenderTarget->getTarget(), opengl::EClearFlags::COLOR|opengl::EClearFlags::DEPTH|opengl::EClearFlags::STENCIL);
-		renderService->renderObjects(textureRenderTarget->getTarget(), cameraEntity->getComponent<nap::CameraComponent>());
+		renderService->renderObjects(textureRenderTarget->getTarget(), cameraEntity->getComponent<nap::PerspCameraComponent>());
 
 		// Render output texture to plane
 		std::vector<nap::RenderableComponent*> components_to_render;
@@ -300,13 +300,13 @@ void onRender(const nap::SignalAttribute& signal)
 
 		opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(render_window->getWindow()->getBackbuffer());
 		renderService->clearRenderTarget(backbuffer, opengl::EClearFlags::COLOR|opengl::EClearFlags::DEPTH|opengl::EClearFlags::STENCIL);
-		renderService->renderObjects(backbuffer, components_to_render, cameraEntity->getComponent<nap::CameraComponent>());
+		renderService->renderObjects(backbuffer, components_to_render, cameraEntity->getComponent<nap::PerspCameraComponent>());
 
 		// Render sphere using split camera with custom projection matrix
-		splitCameraEntity->getComponent<nap::CameraComponent>().setGridLocation(0, 0);
+		splitCameraEntity->getComponent<nap::PerspCameraComponent>().setGridLocation(0, 0);
 		components_to_render.clear();
 		components_to_render.push_back(&worldEntity->getComponent<nap::RenderableMeshComponent>());
-		renderService->renderObjects(backbuffer, components_to_render, splitCameraEntity->getComponent<nap::CameraComponent>());
+		renderService->renderObjects(backbuffer, components_to_render, splitCameraEntity->getComponent<nap::PerspCameraComponent>());
 
 		render_window->swap();
 	}
@@ -323,13 +323,13 @@ void onRender(const nap::SignalAttribute& signal)
 
 		opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(render_window->getWindow()->getBackbuffer());
 		renderService->clearRenderTarget(backbuffer, opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH | opengl::EClearFlags::STENCIL);
-		renderService->renderObjects(backbuffer, components_to_render, cameraEntity->getComponent<nap::CameraComponent>());
+		renderService->renderObjects(backbuffer, components_to_render, cameraEntity->getComponent<nap::PerspCameraComponent>());
 
 		// Render sphere using split camera with custom projection matrix
-		splitCameraEntity->getComponent<nap::CameraComponent>().setGridLocation(0, 1);
+		splitCameraEntity->getComponent<nap::PerspCameraComponent>().setGridLocation(0, 1);
  		components_to_render.clear();
  		components_to_render.push_back(&worldEntity->getComponent<nap::RenderableMeshComponent>());
- 		renderService->renderObjects(backbuffer, components_to_render, splitCameraEntity->getComponent<nap::CameraComponent>());
+ 		renderService->renderObjects(backbuffer, components_to_render, splitCameraEntity->getComponent<nap::PerspCameraComponent>());
 
 		render_window->swap(); 
 
@@ -590,8 +590,8 @@ bool init(nap::Core& core)
 	render_state.mPointSize = 2.0f;
 	render_state.mPolygonMode = opengl::PolygonMode::FILL;
 
-	cameraEntity->getComponent<nap::CameraComponent>().setAspectRatio((float)windowWidth, (float)windowHeight);
-	splitCameraEntity->getComponent<nap::CameraComponent>().setAspectRatio((float)windowWidth * 2.0f, (float)windowHeight);
+	cameraEntity->getComponent<nap::PerspCameraComponent>().setAspectRatio((float)windowWidth, (float)windowHeight);
+	splitCameraEntity->getComponent<nap::PerspCameraComponent>().setAspectRatio((float)windowWidth * 2.0f, (float)windowHeight);
 
 	return true;
 }
@@ -776,8 +776,8 @@ void runGame(nap::Core& core)
 							renderWindow->size.setValue({ width, height });
 					}
 
-					cameraEntity->getComponent<nap::CameraComponent>().setAspectRatio((float)width, (float)height);
-					splitCameraEntity->getComponent<nap::CameraComponent>().setAspectRatio((float)width * 2.0f, (float)height);
+					cameraEntity->getComponent<nap::PerspCameraComponent>().setAspectRatio((float)width, (float)height);
+					splitCameraEntity->getComponent<nap::PerspCameraComponent>().setAspectRatio((float)width * 2.0f, (float)height);
 					break;
 				}
 				case SDL_WINDOWEVENT_MOVED:

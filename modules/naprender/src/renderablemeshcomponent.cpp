@@ -83,6 +83,10 @@ namespace nap
 	// Draw Mesh
 	void RenderableMeshComponent::draw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{	
+		// temp hardcoded blend mode
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 		const glm::mat4x4& model_matrix = mTransformComponent->getGlobalTransform();
 
 		Material* comp_mat = mResource->mMaterialInstance->getMaterial();

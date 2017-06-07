@@ -11,7 +11,7 @@ out vec3 pass_Uvs;
 
 void main(void)
 {
-    //gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(in_Position, 1.0);
-	gl_Position = vec4(in_Position, 1.0f);
+    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(in_Position, 1.0);
+	//gl_Position = vec4(in_Position, 1.0f);
 	pass_Uvs = in_UV0;
 }
