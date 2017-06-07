@@ -10,27 +10,41 @@
 
 namespace nap
 {
+	struct TransformProperties
+	{
+		glm::vec3		mTranslate;
+		glm::quat		mRotate;
+		glm::vec3		mScale = glm::vec3(1.0f, 1.0f, 1.0f);
+		float			mUniformScale = 1.0f;
+	};
+
+	class TransformComponent;
+	class TransformComponentResource : public ComponentResource
+	{
+		RTTI_ENABLE(ComponentResource)
+
+		virtual const rtti::TypeInfo getInstanceType() const { return RTTI_OF(TransformComponent); }
+
+	public:
+		TransformProperties mProperties;
+	};
+
 	/**
 	 * Describes a local transform that is used to compute 
 	 * the global transform of an object. When the transform is created
 	 * the global and local transform is invalid. You can always query the
 	 * current local matrix, the global matrix is updated on compute.
 	 */
-	class TransformComponent : public ServiceableComponent
+	class TransformComponent : public ComponentInstance
 	{
-		friend class RenderService;
-		RTTI_ENABLE(ServiceableComponent)
+		RTTI_ENABLE(ComponentInstance)
 	public:
-		// Default constructor
-		TransformComponent();
-		
-		// Attributes
-		Attribute<glm::vec3>		translate		{ this,	"Translation",	{ 0.0, 0.0, 0.0 } };		// vector 3 - x, y z
-		Attribute<glm::quat>		rotate			{ this, "Rotation" };								// quaternion - x, y, z, w
-		Attribute<glm::vec3>		scale			{ this, "Scale",		{ 1.0, 1.0, 1.0 } };		// vector 3 - x, y, z
-		
-		// Uniform Scale
-		Attribute<float>			uniformScale	{ this, "UniformScale", 1.0f };						// vector 3 - x, y, z
+		TransformComponent(EntityInstance& entity) :
+			ComponentInstance(entity)
+		{
+		}
+
+		bool init(const ObjectPtr<ComponentResource>& resource, utility::ErrorState& errorState);
 
 		/**
 		 * Constructs and returns a local transform
@@ -61,13 +75,7 @@ namespace nap
 		/**
 		 * @return if the local transform is dirty
 		 */
-		bool isDirty() const					{ return mLocalDirty; }
-
-	protected:
-		/**
-		 * Sets dirty flags
-		 */
-		void onSetDirty(AttributeBase& object)		{ setDirty(); }
+		bool isDirty() const					{ return mWorldDirty; }
 
 		/**
 		 * Updates the global matrix based on the parent matrix
@@ -75,33 +83,40 @@ namespace nap
 		 * global matrix of this node is recomputed. This is a recursive
 		 * call
 		 */
-		void update(TransformComponent* parent = nullptr);
+		void update(const glm::mat4& parentTransform);
+
+		void setTranslate(const glm::vec3& translate);
+		const glm::vec3& getTranslate() const { return mProperties.mTranslate;  }
+
+		void setRotate(const glm::quat& rotate);
+		const glm::quat& getRotate() const { return mProperties.mRotate; }
+
+		void setScale(const glm::vec3& scale);
+		const glm::vec3& getScale() const { return mProperties.mScale; }
+
+		void setUniformScale(float scale);
+		const float getUniformScale() const { return mProperties.mUniformScale; }
+
+	protected:
+		/**
+		 * Sets dirty flags
+		 */
+		void onSetDirty(AttributeBase& object)		{ setDirty(); }
 
 	private:
 		/**
 		 * Holds if the current node is dirty
 		 */
-		mutable bool mNodeDirty  = true;
+		mutable bool mWorldDirty  = true;
 
 		// Holds if the local matrix has been dirtied
 		mutable bool mLocalDirty = true;
-
-		/**
-		* Link to parent transform
-		* this link is automatically resolved when added
-		* if the link can't be resolved it will be resolved immediately
-		* this component will try to the next time it is called
-		*/
-		ObjectLinkAttribute parentTransform = { this, "ParentXForm", RTTI_OF(TransformComponent) };
 
 		// Local / Global Matrices
 		mutable glm::mat4x4 mLocalMatrix;							//< Local  Matrix
 		mutable glm::mat4x4 mGlobalMatrix;							//< Global Matrix
 		
-		// SLots
-		NSLOT(xformChanged, AttributeBase&, onSetDirty)
-
-
+		TransformProperties mProperties;
 	};
 
 } // nap

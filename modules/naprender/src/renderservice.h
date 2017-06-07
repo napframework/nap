@@ -181,16 +181,6 @@ namespace nap
 		std::unique_ptr<nap::Renderer> mRenderer = nullptr;
 
 		/**
-		 * Finds all top level transforms, this is a recursive function
-		 * If an entity has a transform it will be considered to be at the top of the chain
-		 * if not, all subsequent children will be checked, until the top most level xforms have 
-		 * been found
-		 * @param entity, entity to check for transform component
-		 * @param xforms the total amount of top level transforms
-		 */
-		void getTopLevelTransforms(Entity* entity, std::vector<TransformComponent*>& xforms);
-
-		/**
 		* Updates the current context's render state by using the latest render state as set by the user.
 		*/
 		void updateRenderState();

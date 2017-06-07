@@ -446,17 +446,26 @@ namespace nap
 		// Reinstantiate all entities
 		EntityByIDMap new_entity_instances;
 
-		std::unordered_map<std::string, rtti::RTTIObject*> new_instances;
+		using InstanceByIDMap = std::unordered_map<std::string, rtti::RTTIObject*>;
+		InstanceByIDMap new_instances;
 		for (EntityResource* entity_resource : entities)
 		{
-			std::unique_ptr<EntityInstance> entity_instance = entity_resource->createInstance(getCore(), errorState);
-			if (entity_instance == nullptr)
-				return false;
+			std::unique_ptr<EntityInstance> entity_instance = std::make_unique<EntityInstance>(getCore());
+			entity_instance->mID = mID + "_instance";
+			for (auto& componentData : entity_resource->mComponents)
+			{
+				const rtti::TypeInfo& instance_type = componentData->getInstanceType();
+				assert(instance_type.can_create_instance());
+
+				std::unique_ptr<ComponentInstance> component_instance(instance_type.create<ComponentInstance>({ *entity_instance }));
+				assert(component_instance);
+				component_instance->mID = componentData->mID + "_instance";
+
+				new_instances.insert(std::make_pair(component_instance->mID, component_instance.get()));
+				entity_instance->addComponent(std::move(component_instance));
+			}
 
 			new_instances.insert(std::make_pair(entity_instance->mID, entity_instance.get()));
-			for (ComponentInstance* component : *entity_instance)
-				new_instances.insert(std::make_pair(component->mID, component));
-
 			new_entity_instances.emplace(std::make_pair(entity_resource->mID, std::move(entity_instance)));
 		}
 
@@ -470,6 +479,21 @@ namespace nap
 				EntityByIDMap::iterator child_entity_instance = new_entity_instances.find(child_entity_resource->mID);
 				assert(child_entity_instance != new_entity_instances.end());
 				entity_instance->second->addChild(*child_entity_instance->second);
+			}
+		}
+
+		for (EntityResource* entity_resource : entities)
+		{
+			for (auto& componentData : entity_resource->mComponents)
+			{
+				InstanceByIDMap::iterator pos = new_instances.find(componentData->mID + "_instance");
+				assert(pos != new_instances.end());
+
+				ComponentInstance* component_instance = rtti_cast<ComponentInstance>(pos->second);
+				assert(component_instance != nullptr);
+				
+				if (!component_instance->init(componentData, errorState))
+					return false;
 			}
 		}
 

@@ -111,8 +111,6 @@ void updateCamera(float deltaTime)
 	float rotate_rad = rotate;
 
 	nap::TransformComponent* cam_xform = cameraComponent->getEntity()->findComponent<nap::TransformComponent>();
-	if (cam_xform == nullptr)
-		return;
 
 	//glm::vec3 lookat_pos = cam_xform->getGlobalTransform()[0];
 	//glm::vec3 dir = glm::cross(glm::normalize(lookat_pos), glm::vec3(cam_xform->getGlobalTransform()[1]));
@@ -124,53 +122,53 @@ void updateCamera(float deltaTime)
 	glm::vec3 side(1.0, 0.0, 0.0);
 	glm::vec3 forward(0.0, 0.0, 1.0);
 
-	glm::vec3 dir_forward = glm::rotate(cam_xform->rotate.getValue(), forward);
+	glm::vec3 dir_forward = glm::rotate(cam_xform->getRotate(), forward);
 	glm::vec3 movement_forward = dir_forward * movement;
 
-	glm::vec3 dir_sideways = glm::rotate(cam_xform->rotate.getValue(), side);
+	glm::vec3 dir_sideways = glm::rotate(cam_xform->getRotate(), side);
 	glm::vec3 movement_sideways = dir_sideways * movement;
 
 	//nap::Logger::info("direction: %f, %f,%f", dir_f.x, dir_f.y, dir_f.z);
 
 	if (moveForward)
 	{
-		cam_xform->translate.setValue(cam_xform->translate.getValue() - movement_forward);
+		cam_xform->setTranslate(cam_xform->getTranslate() - movement_forward);
 	}
 	if (moveBackward)
 	{
-		cam_xform->translate.setValue(cam_xform->translate.getValue() + movement_forward);
+		cam_xform->setTranslate(cam_xform->getTranslate() + movement_forward);
 	}
 	if (moveLeft)
 	{
-		cam_xform->translate.setValue(cam_xform->translate.getValue() - movement_sideways);
+		cam_xform->setTranslate(cam_xform->getTranslate() - movement_sideways);
 	}
 	if (moveRight)
 	{
-		cam_xform->translate.setValue(cam_xform->translate.getValue() + movement_sideways);
+		cam_xform->setTranslate(cam_xform->getTranslate() + movement_sideways);
 	}
 	if (lookUp)
 	{
-		glm::quat r = cam_xform->rotate.getValue();
+		glm::quat r = cam_xform->getRotate();
 		glm::quat nr = glm::rotate(r, rotate_rad, glm::vec3(1.0, 0.0, 0.0));
-		cam_xform->rotate.setValue(nr);
+		cam_xform->setRotate(nr);
 	}
 	if (lookDown)
 	{
-		glm::quat r = cam_xform->rotate.getValue();
+		glm::quat r = cam_xform->getRotate();
 		glm::quat nr = glm::rotate(r, -1.0f * rotate_rad, glm::vec3(1.0, 0.0, 0.0));
-		cam_xform->rotate.setValue(nr);
+		cam_xform->setRotate(nr);
 	}
 	if (lookRight)
 	{
-		glm::quat r = cam_xform->rotate.getValue();
+		glm::quat r = cam_xform->getRotate();
 		glm::quat nr = glm::rotate(r, -1.0f*rotate_rad, glm::vec3(0.0, 1.0, 0.0));
-		cam_xform->rotate.setValue(nr);
+		cam_xform->setRotate(nr);
 	}
 	if (lookLeft)
 	{
-		glm::quat r = cam_xform->rotate.getValue();
+		glm::quat r = cam_xform->getRotate();
 		glm::quat nr = glm::rotate(r, rotate_rad, glm::vec3(0.0, 1.0, 0.0));
-		cam_xform->rotate.setValue(nr);
+		cam_xform->setRotate(nr);
 	}
 }
 

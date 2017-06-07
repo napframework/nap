@@ -23,8 +23,6 @@ namespace nap
 		core.registerType(*this, RTTI_OF(RenderableComponent));
 		core.registerType(*this, RTTI_OF(RenderableMeshComponent));
 		core.registerType(*this, RTTI_OF(RenderWindowComponent));
-		core.registerType(*this, RTTI_OF(TransformComponent));
-		core.registerType(*this, RTTI_OF(CameraComponent));
 	}
 
 	// Register all object creation functions
@@ -104,27 +102,6 @@ namespace nap
 	}
 
 
-	// Finds all top level transforms
-	void RenderService::getTopLevelTransforms(Entity* entity, std::vector<TransformComponent*>& xforms)
-	{
-		// Get xform on current entity
-		nap::TransformComponent* xform_comp = entity->getComponent<TransformComponent>();
-
-		// If we found one, add it
-		if (xform_comp != nullptr)
-		{
-			xforms.emplace_back(xform_comp);
-			return;
-		}
-
-		// If not try it's children
-		for (auto& child : entity->getEntities())
-		{
-			getTopLevelTransforms(child, xforms);
-		}
-	}
-
-
 	// Shut down render service
 	RenderService::~RenderService()
 	{
@@ -156,15 +133,38 @@ namespace nap
 	}
 
 
+	void updateTransformsRecursive(EntityInstance& entity, bool parentDirty, const glm::mat4& parentTransform)
+	{
+		glm::mat4 new_transform = parentTransform;
+
+		bool is_dirty = parentDirty;
+		TransformComponent* transform = entity.findComponent<TransformComponent>();
+		if (transform && (transform->isDirty() || parentDirty))
+		{
+			is_dirty = true;
+			transform->update(parentTransform);
+			new_transform = transform->getGlobalTransform();
+		}
+
+		for (EntityInstance* child : entity.getChildren())
+			updateTransformsRecursive(*child, is_dirty, new_transform);
+	}
+
 	// Updates all transform components
 	void RenderService::updateTransforms()
 	{
-		std::vector<TransformComponent*> top_xforms;
-		getTopLevelTransforms(&(getCore().getRoot()), top_xforms);
-		for (auto& xform : top_xforms)
-		{
-			xform->update();
-		}
+		//updateTransformsRecursive(getCore().getRoot(), false, glm::mat4(1.0f));
+// 		EntityInstance* root = getCore().getRoot();
+// 		for (EntityInstance* child : root->getChildren())
+// 		{
+// 		}
+// 
+// 		std::vector<TransformComponent*> top_xforms;
+// 		getTopLevelTransforms(&(getCore().getRoot()), top_xforms);
+// 		for (auto& xform : top_xforms)
+// 		{
+// 			xform->update();
+// 		}
 	}
 
 

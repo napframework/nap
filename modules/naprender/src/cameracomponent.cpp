@@ -142,8 +142,8 @@ namespace nap
 	{
 		mProperties = rtti_cast<CameraComponentResource>(resource.get())->mProperties;
 		mTransformComponent = getEntity()->findComponent<TransformComponent>();
-		// 		if (!errorState.check(mTransformComponent != nullptr, "Missing transform component"))
-		// 			return false;
+		if (!errorState.check(mTransformComponent != nullptr, "Missing transform component"))
+			return false;
 
 		return true;
 	}
@@ -204,9 +204,6 @@ namespace nap
 
 	const glm::mat4 CameraComponent::getViewMatrix() const
 	{
-		if (mTransformComponent == nullptr)
-			return glm::mat4(1.0f);
-
 		const glm::mat4& global_transform = mTransformComponent->getGlobalTransform();
 		return glm::inverse(global_transform);
 	}

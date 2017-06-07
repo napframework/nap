@@ -7,32 +7,39 @@
 #include <glm/gtx/quaternion.hpp>
 #include <mathutils.h>
 
+RTTI_BEGIN_CLASS(nap::TransformProperties)
+	RTTI_PROPERTY("Translate",		&nap::TransformProperties::mTranslate,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Rotate",			&nap::TransformProperties::mRotate,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Scale",			&nap::TransformProperties::mScale,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("UniformScale",	&nap::TransformProperties::mUniformScale,	nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS(nap::TransformComponentResource)
+	RTTI_PROPERTY("Properties", &nap::TransformComponentResource::mProperties, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::TransformComponent, nap::EntityInstance&)
+RTTI_END_CLASS
+
 namespace nap
 {
-	// Constructor
-	TransformComponent::TransformComponent()
-	{
-		// Set flag for link
-		parentTransform.setFlag(nap::ObjectFlag::Visible, false);
-	
-		// Connect attributes for dirty
-		translate.valueChanged.connect(xformChanged);
-		scale.valueChanged.connect(xformChanged);
-		rotate.valueChanged.connect(xformChanged);
-		uniformScale.valueChanged.connect(xformChanged);
-	}
 
+	bool TransformComponent::init(const ObjectPtr<ComponentResource>& resource, utility::ErrorState& errorState)
+	{
+		mProperties = rtti_cast<TransformComponentResource>(resource.get())->mProperties;
+		return true;
+	}
 
 	// Constructs and returns this components local transform
 	const glm::mat4x4& TransformComponent::getLocalTransform() const
 	{
 		if (mLocalDirty)
 		{
-			glm::mat4x4 xform_matrix = glm::translate(glm::mat4x4(), translate.getValue());
-			glm::mat4x4 rotat_matrix = glm::toMat4(rotate.getValue());
-			glm::mat4x4 scale_matrix = glm::scale(glm::mat4x4(), scale.getValue() * uniformScale.getValue());
+			glm::mat4x4 xform_matrix = glm::translate(glm::mat4x4(), mProperties.mTranslate);
+			glm::mat4x4 rotat_matrix = glm::toMat4(mProperties.mRotate);
+			glm::mat4x4 scale_matrix = glm::scale(glm::mat4x4(), mProperties.mScale * mProperties.mUniformScale);
 			mLocalMatrix = (xform_matrix * rotat_matrix * scale_matrix);
-			mLocalDirty  = false;
+			mLocalDirty = false;
 		}
 		return mLocalMatrix;
 	}
@@ -41,79 +48,46 @@ namespace nap
 	// Return the global transform
 	const glm::mat4x4& TransformComponent::getGlobalTransform() const
 	{
-		if (isDirty())
-			nap::Logger::warn(*this, "global matrix out of sync");
 		return mGlobalMatrix;
 	}
 
-
-	// Returns the parent transform, nullptr if this node has no transform
-	nap::TransformComponent* TransformComponent::getParentTransform()
-	{
-		// Get this parent
-		nap::Entity* parent = this->getParent();
-		assert(parent != nullptr);
-
-		// Get transform parent
-		nap::Entity* parent_entity = parent->getParent();
-
-		// If there's no parent this object is floating around
-		// somewhere, probably not intentional
-		if (parent_entity == nullptr)
-		{
-			nap::Logger::warn(*this, "unable to resolve parent entity, this object appears to be floating");
-			return nullptr;
-		}
-
-		// Otherwise try to find transform
-		TransformComponent* parent_xform = parent_entity->getComponent<TransformComponent>();
-		if (parent_xform == nullptr)
-		{
-			nap::Logger::warn(*this, "parent entity has no transform");
-			return nullptr;
-		}
-
-		return parent_xform;
-	}
 
 	// Sets local flag dirty
 	void TransformComponent::setDirty()
 	{
 		mLocalDirty = true;
-		mNodeDirty  = true;
+		mWorldDirty = true;
 	}
 
 
 	// Updates it's global and local matrix
-	void TransformComponent::update(TransformComponent* parent)
+	void TransformComponent::update(const glm::mat4& parentTransform)
 	{
-		// Check if it's dirty
-		bool parent_dirty = parent != nullptr ? parent->mNodeDirty : false;
+		mGlobalMatrix = parentTransform * getLocalTransform();
+		mWorldDirty = false;
+	}
 
-		// Update global matrix if parent is dirty or we're dirty
-		if (mNodeDirty | parent_dirty)
-		{
-			const glm::mat4x4& parent_mat = parent == nullptr ? identityMatrix : parent->getGlobalTransform();
-			mGlobalMatrix = parent_mat * getLocalTransform();
-		}
+	void TransformComponent::setTranslate(const glm::vec3& translate)
+	{
+		mProperties.mTranslate = translate;
+		setDirty();
+	}
 
-		// Update dirty based on parent and locality
-		// Necessary for other components to check dirty state
-		mNodeDirty |= parent_dirty;
+	void TransformComponent::setRotate(const glm::quat& rotate)
+	{
+		mProperties.mRotate = rotate;
+		setDirty();
+	}
 
-		// Get child transforms and update
-		nap::Entity* parent_entity = getParent();
-		assert(parent_entity != nullptr);
+	void TransformComponent::setScale(const glm::vec3& scale)
+	{
+		mProperties.mScale = scale;
+		setDirty();
+	}
 
-		// Update child xform components: TODO: auto compute
-		for (auto& e : parent_entity->getEntities())
-		{
-			for (auto& xform : e->getComponentsOfType<TransformComponent>())
-				xform->update();
-		}
-
-		// Change dirty flag
-		mNodeDirty = false;
+	void TransformComponent::setUniformScale(float scale)
+	{
+		mProperties.mUniformScale = scale;
+		setDirty();
 	}
 }
-RTTI_DEFINE(nap::TransformComponent)

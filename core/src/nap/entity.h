@@ -134,6 +134,16 @@ namespace nap
 			mChildren.push_back(&child);
 		}
 
+		const ChildList& getChildren() const
+		{
+			return mChildren;
+		}
+
+		EntityInstance* getParent() const
+		{
+			return mParent;
+		}
+
 		Core* getCore() const
 		{
 			return mCore;
@@ -166,28 +176,7 @@ namespace nap
 	class EntityResource : public rtti::RTTIObject
 	{
 		RTTI_ENABLE(rtti::RTTIObject)
-
 	public:
-		std::unique_ptr<EntityInstance> createInstance(Core& core, utility::ErrorState& outErrorState)
-		{
-			std::unique_ptr<EntityInstance> entity_instance = std::make_unique<EntityInstance>(core);
-			entity_instance->mID = mID + "_instance";
-			for (auto& componentData : mComponents)
-			{
-				const rtti::TypeInfo& instance_type = componentData->getInstanceType();
-				assert(instance_type.can_create_instance());
-
-				std::unique_ptr<ComponentInstance> component_instance(instance_type.create<ComponentInstance>({ *entity_instance }));
-				assert(component_instance);
-				component_instance->mID = componentData->mID + "_instance";
-
-				if (!component_instance->init(componentData, outErrorState))
-					return false;
-
-				entity_instance->addComponent(std::move(component_instance));
-			}
-			return entity_instance;
-		}
 		std::vector<ObjectPtr<ComponentResource>>	mComponents;
 		std::vector<ObjectPtr<EntityResource>>		mChildren;
 	};

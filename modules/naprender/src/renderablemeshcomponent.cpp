@@ -73,8 +73,8 @@ namespace nap
 			return false;
 
 		mTransformComponent = getEntity()->findComponent<TransformComponent>();
-// 		if (!errorState.check(mTransformComponent != nullptr, "Missing transform component"))
-// 			return false;
+ 		if (!errorState.check(mTransformComponent != nullptr, "Missing transform component"))
+ 			return false;
 
 		return true;
 	}
@@ -83,7 +83,7 @@ namespace nap
 	// Draw Mesh
 	void RenderableMeshComponent::draw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{	
-		//const glm::mat4x4& model_matrix = mTransformComponent->getGlobalTransform();
+		const glm::mat4x4& model_matrix = mTransformComponent->getGlobalTransform();
 
 		Material* comp_mat = mResource->mMaterialInstance->getMaterial();
 
@@ -98,9 +98,9 @@ namespace nap
 		if (viewUniform != nullptr)
 			viewUniform->setValue(viewMatrix);
 
-// 		UniformMat4* modelUniform = comp_mat->findUniform<UniformMat4>(modelMatrixUniform);
-// 		if (modelUniform != nullptr)
-// 			modelUniform->setValue(model_matrix);
+		UniformMat4* modelUniform = comp_mat->findUniform<UniformMat4>(modelMatrixUniform);
+		if (modelUniform != nullptr)
+			modelUniform->setValue(model_matrix);
 
 		pushUniforms();
 
