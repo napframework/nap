@@ -76,6 +76,7 @@ namespace nap
 	{
 	public:
 		using ComponentList = std::vector<std::unique_ptr<ComponentInstance>>;
+		using ChildList = std::vector<EntityInstance*>;
 
 		EntityInstance(Core& core) :
 			mCore(&core)
@@ -126,6 +127,13 @@ namespace nap
 			return rtti_cast<T>(&getComponent(rtti::TypeInfo::get<T>()));
 		}
 
+		void addChild(EntityInstance& child)
+		{
+			assert(child.mParent == nullptr);
+			child.mParent = this;
+			mChildren.push_back(&child);
+		}
+
 		Core* getCore() const
 		{
 			return mCore;
@@ -140,8 +148,10 @@ namespace nap
 		ComponentIteratorConst end() const		{ return ComponentIteratorConst(mComponents.end()); }
 
 	private:
-		Core* mCore;
-		ComponentList mComponents;
+		Core*			mCore;
+		EntityInstance* mParent = nullptr;
+		ComponentList	mComponents;
+		ChildList		mChildren;
 	};
 
 	class ComponentResource : public rtti::RTTIObject
@@ -178,7 +188,8 @@ namespace nap
 			}
 			return entity_instance;
 		}
-		std::vector<ObjectPtr<ComponentResource>> mComponents;
+		std::vector<ObjectPtr<ComponentResource>>	mComponents;
+		std::vector<ObjectPtr<EntityResource>>		mChildren;
 	};
 
 

@@ -460,6 +460,19 @@ namespace nap
 			new_entity_instances.emplace(std::make_pair(entity_resource->mID, std::move(entity_instance)));
 		}
 
+		for (EntityResource* entity_resource : entities)
+		{
+			EntityByIDMap::iterator entity_instance = new_entity_instances.find(entity_resource->mID);
+			assert(entity_instance != new_entity_instances.end());
+
+			for (ObjectPtr<EntityResource>& child_entity_resource : entity_resource->mChildren)
+			{
+				EntityByIDMap::iterator child_entity_instance = new_entity_instances.find(child_entity_resource->mID);
+				assert(child_entity_instance != new_entity_instances.end());
+				entity_instance->second->addChild(*child_entity_instance->second);
+			}
+		}
+
 		patchObjectPtrs(new_instances);
 
 		// Replace entities currently in the resource manager with the new set
