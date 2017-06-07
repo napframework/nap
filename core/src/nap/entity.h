@@ -97,6 +97,22 @@ namespace nap
 			return pos->get();
 		}
 
+		void getComponentsOfType(const rtti::TypeInfo& inType, std::vector<ComponentInstance*>& components)
+		{
+			for (auto& component : mComponents)
+				if (component->get_type().is_derived_from(inType))
+					components.push_back(component.get());
+		}
+
+		template<class T>
+		void getComponentsOfType(std::vector<T*>& components)
+		{
+			const rtti::TypeInfo type = rtti::TypeInfo::get<T>();
+			for (auto& component : mComponents)
+				if (component->get_type().is_derived_from(type))
+					components.push_back(rtti_cast<T>(component.get()));
+		}
+
 		template<class T>
 		T* findComponent() const
 		{ 
@@ -122,9 +138,9 @@ namespace nap
 		}
 
 		template<class T>
-		T* getComponent() const
+		T& getComponent() const
 		{
-			return rtti_cast<T>(&getComponent(rtti::TypeInfo::get<T>()));
+			return *rtti_cast<T>(&getComponent(rtti::TypeInfo::get<T>()));
 		}
 
 		void addChild(EntityInstance& child)
@@ -132,6 +148,14 @@ namespace nap
 			assert(child.mParent == nullptr);
 			child.mParent = this;
 			mChildren.push_back(&child);
+		}
+
+		void clearChildren()
+		{
+			for (EntityInstance* child : mChildren)
+				child->mParent = nullptr;
+
+			mChildren.clear();
 		}
 
 		const ChildList& getChildren() const

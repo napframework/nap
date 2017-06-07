@@ -45,7 +45,7 @@
 		"mDepthTexture": "DepthTexture",
 		"mClearColor" : {
 			"x" : 1.0,
-			"y" : 0.0,
+			"y" : 1.0,
 			"z" : 1.0,
 			"w" : 1.0
 		}
@@ -215,5 +215,267 @@
 				}
 			}
 		]
-	}	
+	},	
+	
+	"nap::EntityResource": {
+		"mID": "PigEntity",
+		"Components" : 
+		[
+			{
+				"nap::RenderableMeshComponentResource": {
+					"Mesh" : "PigMesh",
+					"MaterialInstance" : "PigMaterialInstance"
+				}		
+			},
+			{
+				"nap::TransformComponentResource": {
+					"Properties": {
+						"Translate": {
+							"x": 0.1,
+							"y": 0.0,
+							"z": 0.0
+						},
+						"Rotate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0,
+							"w": 1.0
+						},
+						"Scale": {
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.0
+					}
+				}		
+			}
+		]
+	},
+	
+	"nap::EntityResource": {
+		"mID": "OrientationEntity",
+		"Components" : 
+		[
+			{
+				"nap::RenderableMeshComponentResource": {
+					"Mesh" : "OrientationMesh",
+					"MaterialInstance" : "OrientationMaterialInstance"
+				}		
+			},
+			{
+				"nap::TransformComponentResource": {
+					"Properties": {
+						"Translate": {
+							"x": -1.5,
+							"y": -1.5,
+							"z": 0.0
+						},
+						"Rotate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0,
+							"w": 1.0
+						},
+						"Scale": {
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.00					
+					}
+				}		
+			}
+		]
+	},	
+	
+	"nap::EntityResource": {
+		"mID": "PlaneEntity",
+		"Components" : 
+		[
+			{
+				"nap::RenderableMeshComponentResource": {
+					"Mesh" : "PlaneMesh",
+					"MaterialInstance" : "PlaneMaterialInstance"
+				}		
+			},
+			{
+				"nap::TransformComponentResource": {
+					"Properties": {
+						"Translate": {
+							"x": -1.0,
+							"y": 0.0,
+							"z": 0.0
+						},
+						"Rotate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0,
+							"w": 1.0
+						},
+						"Scale": {
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.5					
+					}
+				}		
+			}
+		]
+	},	
+	"nap::EntityResource": {
+		"mID": "RotatingPlaneEntity",
+		"Components" : 
+		[
+			{
+				"nap::RenderableMeshComponentResource": {
+					"Mesh" : "PlaneMesh",
+					"MaterialInstance" : "RotatingPlaneMaterialInstance"
+				}		
+			},
+			{
+				"nap::TransformComponentResource": {
+					"Properties": {
+						"Translate": {
+							"x": 1.0,
+							"y": 0.0,
+							"z": 0.0
+						},
+						"Rotate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0,
+							"w": 1.0
+						},
+						"Scale": {
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.5
+					}
+				}		
+			}
+		]
+	},	
+
+	"nap::EntityResource": {
+		"mID": "WorldEntity",
+		"Components" : 
+		[
+			{
+				"nap::RenderableMeshComponentResource": {
+					"Mesh" : "SphereMesh",
+					"MaterialInstance" : "WorldMaterialInstance"
+				}		
+			},
+			{
+				"nap::TransformComponentResource": {
+					"Properties": {
+						"Translate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0
+						},
+						"Rotate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0,
+							"w": 1.0
+						},
+						"Scale": {
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.0						
+					}
+				}		
+			}
+		]
+	},
+	
+	"nap::EntityResource": {
+		"mID": "CameraEntity",
+		"Components" : 
+		[
+			{
+				"nap::CameraComponentResource": {
+					"Properties": {
+						"FieldOfView": 45.0,
+						"NearClippingPlane" : 0.01,
+						"FarClippingPlane" : 1000.0
+					}
+				}		
+			},
+			{
+				"nap::TransformComponentResource": {
+					"Properties": {
+						"Translate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 5.0
+						},
+						"Rotate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0,
+							"w": 1.0
+						},
+						"Scale": {
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.0						
+					}
+				}		
+			}
+		]
+	},
+
+	"nap::EntityResource": {
+		"mID": "SplitCameraEntity",
+		"Components" : 
+		[
+			{
+				"nap::CameraComponentResource": {
+					"Properties": {
+						"FieldOfView": 45.0,
+						"NearClippingPlane" : 0.01,
+						"FarClippingPlane" : 1000.0,
+						"GridDimensions": {
+							"x": 2,
+							"y": 1
+						}
+					}
+				}		
+			},
+			{
+				"nap::TransformComponentResource": {
+					"Properties": {
+						"Translate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 5.0
+						},
+						"Rotate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0,
+							"w": 1.0
+						},
+						"Scale": {
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.0						
+					}
+				}		
+			}
+		]
+	}
+
 } 

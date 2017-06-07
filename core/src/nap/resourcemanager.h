@@ -14,6 +14,55 @@ namespace nap
 	class DirectoryWatcher;
 	class EntityInstance;
 
+	template<class ITERATORTYPE, class ELEMENTTYPE>
+	class UniquePtrMapIterator
+	{
+	public:
+		UniquePtrMapIterator(ITERATORTYPE pos) :
+			mPos(pos)
+		{
+		}
+
+		UniquePtrMapIterator operator++()
+		{
+			mPos++;
+			return *this;
+		}
+
+		bool operator!=(const UniquePtrMapIterator& rhs)
+		{
+			return rhs.mPos != mPos;
+		}
+
+		ELEMENTTYPE operator*() const
+		{
+			return mPos->second.get();
+		}
+
+		ITERATORTYPE mPos;
+	};
+
+	template<class T, class ELEMENTTYPE>
+	class UniquePtrMapWrapper
+	{
+	public:
+		UniquePtrMapWrapper(T& map) :
+			mMap(&map)
+		{
+		}
+
+		using Iterator = UniquePtrMapIterator<typename T::iterator, ELEMENTTYPE>;
+		using ConstIterator = UniquePtrMapIterator<typename T::const_iterator, const ELEMENTTYPE>;
+
+		Iterator begin()			{ return Iterator(mMap->begin()); }
+		Iterator end()				{ return Iterator(mMap->end()); }
+		ConstIterator begin() const	{ return ConstIterator(mMap->begin()); }
+		ConstIterator end() const	{ return ConstIterator(mMap->end()); }
+
+	private:
+		T* mMap;
+	};
+
 	/**
 	 * Manager, holding all objects, capable of loading and real-time updating of content.
 	 */
@@ -21,6 +70,7 @@ namespace nap
 	{
 		RTTI_ENABLE(Service)
 	public:
+		using EntityByIDMap = std::unordered_map<std::string, std::unique_ptr<EntityInstance>>;
 
 		ResourceManagerService();
 
@@ -82,12 +132,26 @@ namespace nap
 		*/
 		rtti::Factory& getFactory();
 
-		EntityInstance* findEntity(const std::string& inID) const;
+		const ObjectPtr<EntityInstance> findEntity(const std::string& inID) const;
+
+		const EntityInstance& getRootEntity() const
+		{
+			return *mRootEntity;
+		}
+
+		EntityInstance& getRootEntity()
+		{
+			return *mRootEntity;
+		}
+
+		using EntityCollection = UniquePtrMapWrapper<EntityByIDMap, EntityInstance*>;
+		EntityCollection getEntities() { return EntityCollection(mEntities); }
+
+		virtual void initialized();
 
 	private:
 		using ObjectByIDMap = std::unordered_map<std::string, std::unique_ptr<RTTIObject>>;
 		using FileLinkMap = std::unordered_map<std::string, std::vector<std::string>>; // Map from target file to multiple source files
-		using EntityByIDMap = std::unordered_map<std::string, std::unique_ptr<EntityInstance>>;
 
 		void addObject(const std::string& id, std::unique_ptr<RTTIObject> object);
 		void removeObject(const std::string& id);
@@ -119,6 +183,7 @@ namespace nap
 			bool mPatchObjects = true;
 		};
 
+		std::unique_ptr<EntityInstance>		mRootEntity;
 		ObjectByIDMap						mObjects;				// Holds all objects
 		EntityByIDMap						mEntities;
 		std::set<std::string>				mFilesToWatch;			// Files currently loaded, used for watching changes on the files

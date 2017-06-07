@@ -63,8 +63,8 @@ nap::ResourceManagerService* resourceManagerService = nullptr;
 nap::Service* rpcService = nullptr;
 std::vector<nap::RenderWindowComponent*> renderWindows;
 
-nap::ObjectPtr<nap::EntityInstance> background_image_entity = nullptr;
-nap::ObjectPtr<nap::CameraComponent> cameraComponent = nullptr;
+nap::ObjectPtr<nap::EntityInstance> backgroundImageEntity = nullptr;
+nap::ObjectPtr<nap::EntityInstance> cameraEntity = nullptr;
 
 static float movementScale = 3.0f;
 static float rotateScale = 1.0f;
@@ -110,7 +110,7 @@ void updateCamera(float deltaTime)
 	float rotate = rotateScale * deltaTime;
 	float rotate_rad = rotate;
 
-	nap::TransformComponent* cam_xform = cameraComponent->getEntity()->findComponent<nap::TransformComponent>();
+	nap::TransformComponent* cam_xform = cameraEntity->findComponent<nap::TransformComponent>();
 
 	//glm::vec3 lookat_pos = cam_xform->getGlobalTransform()[0];
 	//glm::vec3 dir = glm::cross(glm::normalize(lookat_pos), glm::vec3(cam_xform->getGlobalTransform()[1]));
@@ -188,8 +188,8 @@ void onRender(const nap::SignalAttribute& signal)
 
 		std::vector<nap::RenderableComponent*> components_to_render;
 	
-		components_to_render.push_back(background_image_entity->getComponent<nap::RenderableMeshComponent>());
-		renderService->renderObjects(*render_target, components_to_render, *cameraComponent);
+		components_to_render.push_back(&backgroundImageEntity->getComponent<nap::RenderableMeshComponent>());
+		renderService->renderObjects(*render_target, components_to_render, cameraEntity->getComponent<nap::CameraComponent>());
 
 		render_window->swap();
 	}
@@ -285,18 +285,12 @@ bool init(nap::Core& core)
 	render_state.mPointSize = 2.0f;
 	render_state.mPolygonMode = opengl::PolygonMode::FILL;
 
-	//////////////////////////////////////////////////////////////////////////
-	// Add Camera
-	//////////////////////////////////////////////////////////////////////////
+	cameraEntity = resourceManagerService->findEntity("CameraEntity");
+	assert(cameraEntity != nullptr);
 
-	// Normal camera
-	nap::EntityInstance* camera_entity = resourceManagerService->findEntity("CameraEntity");
-	assert(camera_entity);
-		
-	cameraComponent = camera_entity->getComponent<nap::CameraComponent>();
-	camera_entity->getComponent<nap::CameraComponent>()->setAspectRatio((float)windowWidth, (float)windowHeight);
+	cameraEntity->getComponent<nap::CameraComponent>().setAspectRatio((float)windowWidth, (float)windowHeight);
 
-	background_image_entity = resourceManagerService->findEntity("BackgroundImageEntity");
+	backgroundImageEntity = resourceManagerService->findEntity("BackgroundImageEntity");
 
 	return true;
 }
@@ -461,7 +455,7 @@ void runGame(nap::Core& core)
 							renderWindow->size.setValue({ width, height });
 					}
 
-					cameraComponent->setAspectRatio((float)width, (float)height);
+					cameraEntity->getComponent<nap::CameraComponent>().setAspectRatio((float)width, (float)height);
 					break;
 				}
 				case SDL_WINDOWEVENT_MOVED:

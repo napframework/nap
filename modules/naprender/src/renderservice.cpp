@@ -153,27 +153,18 @@ namespace nap
 	// Updates all transform components
 	void RenderService::updateTransforms()
 	{
-		//updateTransformsRecursive(getCore().getRoot(), false, glm::mat4(1.0f));
-// 		EntityInstance* root = getCore().getRoot();
-// 		for (EntityInstance* child : root->getChildren())
-// 		{
-// 		}
-// 
-// 		std::vector<TransformComponent*> top_xforms;
-// 		getTopLevelTransforms(&(getCore().getRoot()), top_xforms);
-// 		for (auto& xform : top_xforms)
-// 		{
-// 			xform->update();
-// 		}
+		updateTransformsRecursive(getCore().getService<ResourceManagerService>()->getRootEntity(), false, glm::mat4(1.0f));
 	}
 
 
-	// Render all objects in scene graph using specifief camera
+	// Render all objects in scene graph using specified camera
 	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, const CameraComponent& camera)
 	{
 		// Get all render components
  		std::vector<nap::RenderableComponent*> render_comps;
-// 		getObjects<nap::RenderableComponent>(render_comps);
+
+		for (EntityInstance* entity : getCore().getService<ResourceManagerService>()->getEntities())
+			entity->getComponentsOfType<nap::RenderableComponent>(render_comps);
 
 		renderObjects(renderTarget, render_comps, camera);
 	}

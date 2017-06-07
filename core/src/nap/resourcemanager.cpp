@@ -282,6 +282,11 @@ namespace nap
 	{ 
 	}
 
+	void ResourceManagerService::initialized()
+	{
+		mRootEntity = std::make_unique<EntityInstance>(getCore());
+	}
+
 
 	/**
 	* Builds an object graph of all objects currently in the manager, overlayed by objects that about to be updated. Then, from all objects that are effectively changed or added, it traverses
@@ -451,7 +456,7 @@ namespace nap
 		for (EntityResource* entity_resource : entities)
 		{
 			std::unique_ptr<EntityInstance> entity_instance = std::make_unique<EntityInstance>(getCore());
-			entity_instance->mID = mID + "_instance";
+			entity_instance->mID = entity_resource->mID + "_instance";
 			for (auto& componentData : entity_resource->mComponents)
 			{
 				const rtti::TypeInfo& instance_type = componentData->getInstanceType();
@@ -495,6 +500,13 @@ namespace nap
 				if (!component_instance->init(componentData, errorState))
 					return false;
 			}
+		}
+
+		mRootEntity->clearChildren();
+		for (auto& kvp : new_entity_instances)
+		{
+			if (kvp.second->getParent() == nullptr)
+				mRootEntity->addChild(*kvp.second);
 		}
 
 		patchObjectPtrs(new_instances);
@@ -740,7 +752,7 @@ namespace nap
 		return ObjectPtr<RTTIObject>(object);
 	}
 
-	EntityInstance* ResourceManagerService::findEntity(const std::string& inID) const
+	const ObjectPtr<EntityInstance> ResourceManagerService::findEntity(const std::string& inID) const
 	{
 		EntityByIDMap::const_iterator pos = mEntities.find(inID);
 		if (pos == mEntities.end())
