@@ -11,27 +11,11 @@ RTTI_BEGIN_CLASS(nap::RenderableMeshComponentResource)
 	RTTI_PROPERTY("MaterialInstance",	&nap::RenderableMeshComponentResource::mMaterialInstance,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-RTTI_BEGIN_BASE_CLASS(nap::RenderableMeshComponent)
+RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::RenderableMeshComponent, nap::EntityInstance&)
 RTTI_END_CLASS
 
 namespace nap
 {
-	const std::vector<rtti::TypeInfo> RenderableMeshComponentResource::getDependentComponents()
-	{
-		std::vector<rtti::TypeInfo> result;
-		result.push_back(RTTI_OF(TransformComponent));
-		return result;
-	}
-	
-	std::unique_ptr<ComponentInstance> RenderableMeshComponentResource::createInstance(EntityInstance& entity, utility::ErrorState& outErrorState)
-	{
-		std::unique_ptr<ComponentInstance> instance = std::make_unique<RenderableMeshComponent>(entity);
-		if (!instance->init(this, outErrorState))
-			return nullptr;
-
-		return instance;
-	}
-
 	// Upload all uniform variables to GPU
 	void RenderableMeshComponent::pushUniforms()
 	{

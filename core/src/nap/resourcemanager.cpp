@@ -445,14 +445,22 @@ namespace nap
 
 		// Reinstantiate all entities
 		EntityByIDMap new_entity_instances;
+
+		std::unordered_map<std::string, rtti::RTTIObject*> new_instances;
 		for (EntityResource* entity_resource : entities)
 		{
 			std::unique_ptr<EntityInstance> entity_instance = entity_resource->createInstance(getCore(), errorState);
 			if (entity_instance == nullptr)
 				return false;
 
+			new_instances.insert(std::make_pair(entity_instance->mID, entity_instance.get()));
+			for (ComponentInstance* component : *entity_instance)
+				new_instances.insert(std::make_pair(component->mID, component));
+
 			new_entity_instances.emplace(std::make_pair(entity_resource->mID, std::move(entity_instance)));
 		}
+
+		patchObjectPtrs(new_instances);
 
 		// Replace entities currently in the resource manager with the new set
 		mEntities = std::move(new_entity_instances);
@@ -460,27 +468,6 @@ namespace nap
 		return true;
 	}
 
-
-	/** 
-	 * Traverses all pointers in ObjectPtrManager and, for each target, replaces the target with the one in the map that is passed.
-	 * @param container The container holding an ID -> pointer mapping with the pointer to patch to.
-	 */
-	void ResourceManagerService::patchObjectPtrs(ObjectByIDMap& newTargetObjects)
-	{
-		ObjectPtrManager::ObjectPtrSet& object_ptrs = ObjectPtrManager::get().GetObjectPointers();
-
-		for (ObjectPtrBase* ptr : object_ptrs)
-		{
-			RTTIObject* target = ptr->get();
-			if (target == nullptr)
-				continue;
-
-			std::string& target_id = target->mID;
-			ObjectByIDMap::iterator new_target = newTargetObjects.find(target_id);
-			if (new_target != newTargetObjects.end())
-				ptr->set(new_target->second.get());
-		}
-	}
 
 	bool ResourceManagerService::loadFile(const std::string& filename, const std::string& externalChangedFile, utility::ErrorState& errorState)
 	{

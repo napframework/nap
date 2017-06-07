@@ -63,7 +63,8 @@ nap::ResourceManagerService* resourceManagerService = nullptr;
 nap::Service* rpcService = nullptr;
 std::vector<nap::RenderWindowComponent*> renderWindows;
 
-nap::CameraComponent* cameraComponent = nullptr;
+nap::ObjectPtr<nap::EntityInstance> background_image_entity = nullptr;
+nap::ObjectPtr<nap::CameraComponent> cameraComponent = nullptr;
 
 static float movementScale = 3.0f;
 static float rotateScale = 1.0f;
@@ -109,7 +110,10 @@ void updateCamera(float deltaTime)
 	float rotate = rotateScale * deltaTime;
 	float rotate_rad = rotate;
 
-	nap::TransformComponent* cam_xform = cameraComponent->getParent()->getComponent<nap::TransformComponent>();
+	nap::TransformComponent* cam_xform = cameraComponent->getEntity()->findComponent<nap::TransformComponent>();
+	if (cam_xform == nullptr)
+		return;
+
 	//glm::vec3 lookat_pos = cam_xform->getGlobalTransform()[0];
 	//glm::vec3 dir = glm::cross(glm::normalize(lookat_pos), glm::vec3(cam_xform->getGlobalTransform()[1]));
 	//glm::vec3 dir_f = glm::cross(glm::normalize(lookat_pos), glm::vec3(0.0,1.0,0.0));
@@ -186,8 +190,7 @@ void onRender(const nap::SignalAttribute& signal)
 
 		std::vector<nap::RenderableComponent*> components_to_render;
 	
-		nap::EntityInstance* entity = resourceManagerService->findEntity("BackgroundImageEntity");
-		components_to_render.push_back(entity->getComponent<nap::RenderableMeshComponent>());
+		components_to_render.push_back(background_image_entity->getComponent<nap::RenderableMeshComponent>());
 		renderService->renderObjects(*render_target, components_to_render, *cameraComponent);
 
 		render_window->swap();
@@ -289,13 +292,13 @@ bool init(nap::Core& core)
 	//////////////////////////////////////////////////////////////////////////
 
 	// Normal camera
-	nap::Entity& camera_entity = core.addEntity("camera");
-	cameraComponent = &camera_entity.addComponent<nap::CameraComponent>();
-	nap::TransformComponent& camera_transform = camera_entity.addComponent<nap::TransformComponent>();
-	camera_transform.translate.setValue({ 0.0f, 0.0f, 5.0f });
-	cameraComponent->clippingPlanes.setValue(glm::vec2(0.01f, 1000.0f));
-	cameraComponent->fieldOfView.setValue(45.0f);
-	cameraComponent->setAspectRatio((float)windowWidth, (float)windowHeight);
+	nap::EntityInstance* camera_entity = resourceManagerService->findEntity("CameraEntity");
+	assert(camera_entity);
+		
+	cameraComponent = camera_entity->getComponent<nap::CameraComponent>();
+	camera_entity->getComponent<nap::CameraComponent>()->setAspectRatio((float)windowWidth, (float)windowHeight);
+
+	background_image_entity = resourceManagerService->findEntity("BackgroundImageEntity");
 
 	return true;
 }

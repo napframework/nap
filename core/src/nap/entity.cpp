@@ -7,7 +7,9 @@ using namespace std;
 
 // Define Entity in Type Registry
 RTTI_DEFINE_BASE(nap::Entity)
-RTTI_DEFINE_BASE(nap::ComponentInstance)
+
+RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::ComponentInstance, nap::EntityInstance&)
+RTTI_END_CLASS
 
 RTTI_BEGIN_BASE_CLASS(nap::ComponentResource)
 RTTI_END_CLASS

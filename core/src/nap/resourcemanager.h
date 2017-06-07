@@ -97,7 +97,13 @@ namespace nap
 		bool resolvePointers(ObjectByIDMap& objectsToUpdate, const rtti::UnresolvedPointerList& unresolvedPointers, utility::ErrorState& errorState);
 		bool initObjects(std::vector<std::string> objectsToInit, ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState);
 		bool initEntities(ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState);
-		void patchObjectPtrs(ObjectByIDMap& newTargetObjects);
+		
+		/** 
+		* Traverses all pointers in ObjectPtrManager and, for each target, replaces the target with the one in the map that is passed.
+		* @param container The container holding an ID -> pointer mapping with the pointer to patch to.
+		*/
+		template<class OBJECTSBYIDMAP> 
+		void patchObjectPtrs(OBJECTSBYIDMAP& newTargetObjects);
 
 	private:
 		struct RollbackHelper
@@ -119,4 +125,22 @@ namespace nap
 		FileLinkMap							mFileLinkMap;			// Map containing links from target to source file, for updating source files if the file monitor sees changes
 		std::unique_ptr<DirectoryWatcher>	mDirectoryWatcher;		// File monitor, detects changes on files
 	};
+
+	template<class OBJECTSBYIDMAP>
+	void ResourceManagerService::patchObjectPtrs(OBJECTSBYIDMAP& newTargetObjects)
+	{
+		ObjectPtrManager::ObjectPtrSet& object_ptrs = ObjectPtrManager::get().GetObjectPointers();
+
+		for (ObjectPtrBase* ptr : object_ptrs)
+		{
+			RTTIObject* target = ptr->get();
+			if (target == nullptr)
+				continue;
+
+			std::string& target_id = target->mID;
+			OBJECTSBYIDMAP::iterator new_target = newTargetObjects.find(target_id);
+			if (new_target != newTargetObjects.end())
+				ptr->set(&*(new_target->second));
+		}
+	}
 }

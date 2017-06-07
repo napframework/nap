@@ -3,6 +3,22 @@
 
 // External Includes
 #include <glm/gtc/matrix_transform.hpp> 
+#include "transformcomponent.h"
+
+RTTI_BEGIN_CLASS(nap::CameraProperties)
+	RTTI_PROPERTY("FieldOfView",		&nap::CameraProperties::mFieldOfView,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("NearClippingPlane",	&nap::CameraProperties::mNearClippingPlane,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FarClippingPlane",	&nap::CameraProperties::mFarClippingPlane,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("GridDimensions",		&nap::CameraProperties::mGridDimensions,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("GridLocation",		&nap::CameraProperties::mGridLocation,		nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS(nap::CameraComponentResource)
+	RTTI_PROPERTY("Properties",			&nap::CameraComponentResource::mProperties,		nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::CameraComponent, nap::EntityInstance&)
+RTTI_END_CLASS
 
 namespace nap
 {
@@ -117,42 +133,50 @@ namespace nap
 	}
 
 	// Hook up attribute changes
-	CameraComponent::CameraComponent()
+	CameraComponent::CameraComponent(EntityInstance& entity) :
+		ComponentInstance(entity)
 	{
-		// Connect attribute changes, marks this node to be dirty
-		fieldOfView.valueChanged.connect(cameraValueChanged);
-		aspectRatio.valueChanged.connect(cameraValueChanged);
-		clippingPlanes.valueChanged.connect(cameraValueChanged);
+	}
+
+	bool CameraComponent::init(const ObjectPtr<ComponentResource>& resource, utility::ErrorState& errorState)
+	{
+		mProperties = rtti_cast<CameraComponentResource>(resource.get())->mProperties;
+		mTransformComponent = getEntity()->findComponent<TransformComponent>();
+		// 		if (!errorState.check(mTransformComponent != nullptr, "Missing transform component"))
+		// 			return false;
+
+		return true;
 	}
 
 
 	// Set camera aspect ratio derived from width and height
 	void CameraComponent::setAspectRatio(float width, float height)
 	{
-		aspectRatio.setValue( width / height );
+		mAspectRatio = width / height;
+		setDirty();
 	}
 
 	// Use this function to split the projection into a grid of same-sized rectangles.
 	void CameraComponent::setGridDimensions(int numRows, int numColumns)
 	{
-		if (numColumns != mGridDimensions.x || numRows != mGridDimensions.y)
+		if (numColumns != mProperties.mGridDimensions.x || numRows != mProperties.mGridDimensions.y)
 		{
-			assert(mGridLocation.x < numColumns && mGridLocation.y < numRows);
-			mGridDimensions.x = numColumns;
-			mGridDimensions.y = numRows;
-			mDirty = true;
+			assert(mProperties.mGridLocation.x < numColumns && mProperties.mGridLocation.y < numRows);
+			mProperties.mGridDimensions.x = numColumns;
+			mProperties.mGridDimensions.y = numRows;
+			setDirty();
 		}
 	}
 
 	// Sets the horizontal and vertical index into the projection grid as set by setSplitDimensions.
 	void CameraComponent::setGridLocation(int row, int column)
 	{
-		if (column != mGridLocation.x || row != mGridLocation.y)
+		if (column != mProperties.mGridLocation.x || row != mProperties.mGridLocation.y)
 		{
-			assert(column >= 0 && column < mGridDimensions.x && row >= 0 && row < mGridDimensions.y);
-			mGridLocation.x = column;
-			mGridLocation.y = row;
-			mDirty = true;
+			assert(column >= 0 && column < mProperties.mGridDimensions.x && row >= 0 && row < mProperties.mGridDimensions.y);
+			mProperties.mGridLocation.x = column;
+			mProperties.mGridLocation.y = row;
+			setDirty();
 		}
 	}
 
@@ -162,14 +186,14 @@ namespace nap
 	{
 		if (mDirty)
 		{
-			const float fov = glm::radians(fieldOfView.getValue());
-			const float near_plane = clippingPlanes.getValue().x;
-			const float far_plane = clippingPlanes.getValue().y;
-			const float aspect_ratio = aspectRatio.getValue();
+			const float fov = glm::radians(mProperties.mFieldOfView);
+			const float near_plane = mProperties.mNearClippingPlane;
+			const float far_plane = mProperties.mFarClippingPlane;
+			const float aspect_ratio = mAspectRatio;
 
 			float left, right, top, bottom;
-			calculateCameraPlanes(fov, aspect_ratio, near_plane, mGridDimensions.x, mGridLocation.x, left, right);
-			calculateCameraPlanes(fov, 1.0f, near_plane, mGridDimensions.y, mGridLocation.y, bottom, top);
+			calculateCameraPlanes(fov, aspect_ratio, near_plane, mProperties.mGridDimensions.x, mProperties.mGridLocation.x, left, right);
+			calculateCameraPlanes(fov, 1.0f, near_plane, mProperties.mGridDimensions.y, mProperties.mGridLocation.y, bottom, top);
 
 			mProjectionMatrix = createASymmetricProjection(near_plane, far_plane, left, right, top, bottom);
 
@@ -177,6 +201,13 @@ namespace nap
 		}
 		return mProjectionMatrix;
 	}
-}
 
-RTTI_DEFINE(nap::CameraComponent)
+	const glm::mat4 CameraComponent::getViewMatrix() const
+	{
+		if (mTransformComponent == nullptr)
+			return glm::mat4(1.0f);
+
+		const glm::mat4& global_transform = mTransformComponent->getGlobalTransform();
+		return glm::inverse(global_transform);
+	}
+}

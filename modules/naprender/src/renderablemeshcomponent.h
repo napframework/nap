@@ -11,13 +11,20 @@ namespace nap
 	class MeshResource;
 	class MaterialInstance;
 	class TransformComponent;
-
+	class RenderableMeshComponent;
 	class RenderableMeshComponentResource : public RenderableComponentResource
 	{
 		RTTI_ENABLE(RenderableComponentResource)
 
-		virtual const std::vector<rtti::TypeInfo> getDependentComponents();
-		virtual std::unique_ptr<ComponentInstance> createInstance(EntityInstance& entity, utility::ErrorState& outErrorState);
+		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components)
+		{
+			components.push_back(RTTI_OF(TransformComponent));
+		}
+
+		virtual const rtti::TypeInfo getInstanceType() const
+		{
+			return RTTI_OF(RenderableMeshComponent);
+		}
 
 	public:
 		ObjectPtr<MeshResource>				mMeshResource;
@@ -39,7 +46,7 @@ namespace nap
 		RenderableMeshComponent(EntityInstance& entity);
 
 		/**
-		 * Tests whether the MaterialInstance is overriding uniforms from the mesh that we are drawing.
+		 * 
 		 */
 		virtual bool init(const ObjectPtr<ComponentResource>& resource, utility::ErrorState& errorState);
 

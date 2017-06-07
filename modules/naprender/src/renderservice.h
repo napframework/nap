@@ -191,15 +191,6 @@ namespace nap
 		void getTopLevelTransforms(Entity* entity, std::vector<TransformComponent*>& xforms);
 
 		/**
-		 * Returns the view matrix of the associated camera
-		 * The view is determined by a number of factors including the camera's position
-		 * and possible look at objects
-		 * @param camera: The camera to extract the view matrix for
-		 * @param viewMatrix: The populated view matrix
-		 */
-		void getViewMatrix(const nap::CameraComponent& camera, glm::mat4x4& viewMatrix);
-
-		/**
 		* Updates the current context's render state by using the latest render state as set by the user.
 		*/
 		void updateRenderState();

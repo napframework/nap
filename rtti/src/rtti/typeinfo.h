@@ -167,6 +167,10 @@ namespace nap
 	RTTI_BEGIN_BASE_CLASS(Type)							\
 	.constructor<>()(policy::ctor::as_raw_ptr)
 
+#define RTTI_BEGIN_CLASS_CONSTRUCTOR1(Type, CtorArg1)	\
+	RTTI_BEGIN_BASE_CLASS(Type)							\
+	.constructor<CtorArg1>()(policy::ctor::as_raw_ptr)
+
 #define RTTI_ENABLE(...) \
 	RTTR_ENABLE(__VA_ARGS__) \
 	RTTR_REGISTRATION_FRIEND

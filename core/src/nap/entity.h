@@ -18,7 +18,7 @@ namespace nap
 
 	class EntityInstance;
 	class ComponentResource;
-	class ComponentInstance
+	class ComponentInstance : public rtti::RTTIObject
 	{
 		RTTI_ENABLE()
 
@@ -44,7 +44,35 @@ namespace nap
 		EntityInstance* mEntity;
 	};
 
-	class EntityInstance
+	template<class ITERATORTYPE, class ELEMENTTYPE>
+	class UniquePtrIterator
+	{
+	public:
+		UniquePtrIterator(ITERATORTYPE pos) :
+			mPos(pos)
+		{
+		}
+
+		UniquePtrIterator operator++() 
+		{ 
+			mPos++;  
+			return *this; 
+		}
+		
+		bool operator!=(const UniquePtrIterator& rhs) 
+		{ 
+			return rhs.mPos != mPos; 
+		}
+
+		ELEMENTTYPE operator*() const 
+		{ 
+			return mPos->get(); 
+		}
+
+		ITERATORTYPE mPos;
+	};
+
+	class EntityInstance : public rtti::RTTIObject
 	{
 	public:
 		using ComponentList = std::vector<std::unique_ptr<ComponentInstance>>;
@@ -103,6 +131,14 @@ namespace nap
 			return mCore;
 		}
 
+		using ComponentIterator = UniquePtrIterator<ComponentList::iterator, ComponentInstance*>;
+		using ComponentIteratorConst = UniquePtrIterator<ComponentList::const_iterator, const ComponentInstance*>;
+
+		ComponentIterator begin()				{ return ComponentIterator(mComponents.begin()); }
+		ComponentIterator end()					{ return ComponentIterator(mComponents.end()); }
+		ComponentIteratorConst begin() const	{ return ComponentIteratorConst(mComponents.begin()); }
+		ComponentIteratorConst end() const		{ return ComponentIteratorConst(mComponents.end()); }
+
 	private:
 		Core* mCore;
 		ComponentList mComponents;
@@ -113,8 +149,8 @@ namespace nap
 		RTTI_ENABLE(rtti::RTTIObject)
 
 	public:
-		virtual const std::vector<rtti::TypeInfo> getDependentComponents() { return std::vector<rtti::TypeInfo>(); }
-		virtual std::unique_ptr<ComponentInstance> createInstance(EntityInstance& entity, utility::ErrorState& outErrorState) = 0;
+		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) { }
+		virtual const rtti::TypeInfo getInstanceType() const = 0;
 	};
 
 	class EntityResource : public rtti::RTTIObject
@@ -125,11 +161,18 @@ namespace nap
 		std::unique_ptr<EntityInstance> createInstance(Core& core, utility::ErrorState& outErrorState)
 		{
 			std::unique_ptr<EntityInstance> entity_instance = std::make_unique<EntityInstance>(core);
+			entity_instance->mID = mID + "_instance";
 			for (auto& componentData : mComponents)
 			{
-				std::unique_ptr<ComponentInstance> component_instance = componentData->createInstance(*entity_instance, outErrorState);
-				if (component_instance == nullptr)
-					return nullptr;
+				const rtti::TypeInfo& instance_type = componentData->getInstanceType();
+				assert(instance_type.can_create_instance());
+
+				std::unique_ptr<ComponentInstance> component_instance(instance_type.create<ComponentInstance>({ *entity_instance }));
+				assert(component_instance);
+				component_instance->mID = componentData->mID + "_instance";
+
+				if (!component_instance->init(componentData, outErrorState))
+					return false;
 
 				entity_instance->addComponent(std::move(component_instance));
 			}

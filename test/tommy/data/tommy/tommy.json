@@ -31,6 +31,22 @@
 			}
 		]
 	},
+	
+	"nap::EntityResource": {
+		"mID": "CameraEntity",
+		"Components" : 
+		[
+			{
+				"nap::CameraComponentResource": {
+					"Properties": {
+						"FieldOfView": 45.0,
+						"NearClippingPlane" : 0.01,
+						"FarClippingPlane" : 1000.0
+					}
+				}		
+			}
+		]
+	},
 		
 	"nap::Material": {
 		"mID": "UIMaterial",
