@@ -5,7 +5,6 @@ from patch.edgeitem import *
 from patch.inoutnodeitem import *
 from patch.layeritem import *
 from patch.nodeitem import *
-from patch.socketitem import *
 
 _typeFilter = lambda m, t: isinstance(m, t)
 
@@ -41,7 +40,7 @@ class GraphScene(QGraphicsScene):
         self.addItem(self.__interactionLayer)
 
         self.__overlayer = LayerItem()
-        self.__overlayer.setZValue(100)
+        self.__overlayer.setZValue(-10000)
         self.addItem(self.__overlayer)
 
         self.__previewWire = PreviewEdge()
@@ -142,6 +141,7 @@ class GraphScene(QGraphicsScene):
             for dst in node.sockets():
                 if not self.canConnect(src, dst):
                     dst.setUsable(False)
+        src.setUsable(True)
 
     def showAllPlugs(self):
         for node in self.nodes():
