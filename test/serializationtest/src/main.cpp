@@ -24,8 +24,10 @@ BaseClass* createTestHierarchy()
 	pointee->mID								= "Pointee";
 	pointee->mIntProperty						= 42;
 	pointee->mStringProperty					= "Pointee String";
+	pointee->mEnumProperty						= ETestEnum::Two;
 	pointee->mNestedCompound.mFloatProperty		= 16.0f;
 	pointee->mNestedCompound.mPointerProperty	= pointee;
+	pointee->mNestedCompound.mNestedEnum		= DataStruct::ENestedEnum::Eight;
 	pointee->mArrayOfInts.push_back(1);
 	pointee->mArrayOfInts.push_back(2);
 	pointee->mArrayOfInts.push_back(3);
@@ -37,9 +39,6 @@ BaseClass* createTestHierarchy()
 	pointee->mEmbeddedPointer->mID = "EmbeddedObject";
 	pointee->mArrayOfEmbeddedPointers.push_back(new DerivedClass());
 	pointee->mArrayOfEmbeddedPointers[0]->mID = "EmbeddedArrayObject";
-
-	DerivedClass* unique_pointee = new DerivedClass();
-	unique_pointee->mID = "UniquePointee";
 
 	BaseClass* root = new BaseClass();
 	root->mID									= "Root";

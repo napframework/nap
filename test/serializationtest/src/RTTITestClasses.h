@@ -3,8 +3,24 @@
 #include <nap/object.h>
 #include <nap/objectptr.h>
 
+enum class ETestEnum
+{
+	One,
+	Two,
+	Three,
+	Four
+};
+
 struct DataStruct
 {
+	enum class ENestedEnum
+	{
+		Five,
+		Six,
+		Seven,
+		Eight
+	};
+
 	DataStruct()
 	{
 	}
@@ -17,6 +33,7 @@ struct DataStruct
 
 	float			mFloatProperty = 0.0f;
 	nap::Object*	mPointerProperty = nullptr;
+	ENestedEnum		mNestedEnum = ENestedEnum::Five;
 };
 
 class BaseClass : public nap::Object
@@ -27,6 +44,7 @@ public:
 	int				mIntProperty = 0;
 	std::string		mStringProperty;
 	nap::Object*	mPointerProperty = nullptr;
+	ETestEnum		mEnumProperty = ETestEnum::One;
 	nap::ObjectPtr<nap::Object>	mObjectPtrProperty;
 };
 
