@@ -16,6 +16,33 @@ namespace nap
 {
 	class Material;
 
+	/**
+	* Blend mode for Materials.
+	*/
+	enum class EBlendMode
+	{
+		NotSet,					// Default value for MaterialInstances, means that the Material's blend mode is used instead
+
+		Opaque,					// Regular opaque, similar to (One, Zero) blend
+		AlphaBlend,				// Transparant object (SrcAlpha, InvSrcAlpha) blend
+		Additive				// Additive, (One, One) blend
+	};
+
+	/**
+	* Determines how to z-buffer is used for reading and writing.
+	* When inheriting from blend mode
+	*/
+	enum class EDepthMode
+	{
+		NotSet,					// Default value for MaterialInstances, means that the Material's blend is used instead
+
+		InheritFromBlendMode,	// Transparent objects do not write depth, but do read depth. Opaque objects read and write depth.
+		ReadWrite,				// Read and write depth
+		ReadOnly,				// Only read depth
+		WriteOnly,				// Only write depth
+		NoReadWrite				// Neither read or write depth
+	};
+
 
 	/**
 	* Binds the Uniform data to the declaration from the shader. Together
@@ -136,6 +163,19 @@ namespace nap
 		template<typename T>
 		T& getOrCreateUniform(const std::string& name);
 
+		/**
+		* @return If blend mode was overridden for this material, returns blend mode, otherwise material's blendmode.
+		*/
+		EBlendMode getBlendMode() const;
+
+		/**
+		* @return If depth mode was overridden for this material, returns depth mode, otherwise material's depthmode.
+		*/
+		EDepthMode getDepthMode() const;
+
+		EBlendMode mBlendMode = EBlendMode::NotSet;				///< Blend mode override. By default uses material blend mode
+		EDepthMode mDepthMode = EDepthMode::NotSet;				///< Depth mode override. By default uses material depth mode
+
 	private:
 		Uniform& createUniform(const std::string& name);
 	};
@@ -199,6 +239,16 @@ namespace nap
 		ShaderResource* getShader() const { return mShader.get(); }
 
 		/**
+		* @return Blending mode for this material
+		*/
+		EBlendMode getBlendMode() const { assert(mBlendMode != EBlendMode::NotSet); return mBlendMode; }
+
+		/**
+		* @return Depth mode mode for this material
+		*/
+		EDepthMode getDepthMode() const { assert(mDepthMode != EDepthMode::NotSet); return mDepthMode; }
+
+		/**
 		* Finds the mesh/shader attribute binding based on the shader attribute ID.
 		* @param shaderAttributeID: ID of the shader vertex attribute.
 		*/
@@ -210,8 +260,10 @@ namespace nap
 		static std::vector<VertexAttributeBinding>& getDefaultVertexAttributeBindings();
 
 	public:
-		std::vector<VertexAttributeBinding>		mVertexAttributeBindings;		///< Mapping from mesh vertex attr to shader vertex attr
-		ObjectPtr<ShaderResource>				mShader = nullptr;				///< The shader that this material is using
+		std::vector<VertexAttributeBinding>		mVertexAttributeBindings;							///< Mapping from mesh vertex attr to shader vertex attr
+		ObjectPtr<ShaderResource>				mShader = nullptr;									///< The shader that this material is using
+		EBlendMode								mBlendMode = EBlendMode::Opaque;					///< Blend mode for this material
+		EDepthMode								mDepthMode = EDepthMode::InheritFromBlendMode;		///< Determiness how the Z buffer is used
 	};
 
 

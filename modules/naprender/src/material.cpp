@@ -7,6 +7,21 @@
 #include <GL/glew.h>
 #include "rtti/rttiutilities.h"
 
+RTTI_BEGIN_ENUM(nap::EBlendMode)
+	RTTI_ENUM_VALUE(nap::EBlendMode::NotSet,				"NotSet"),
+	RTTI_ENUM_VALUE(nap::EBlendMode::Opaque,				"Opaque"),
+	RTTI_ENUM_VALUE(nap::EBlendMode::AlphaBlend,			"AlphaBlend"),
+	RTTI_ENUM_VALUE(nap::EBlendMode::Additive,				"Additive")
+RTTI_END_ENUM
+
+RTTI_BEGIN_ENUM(nap::EDepthMode)
+	RTTI_ENUM_VALUE(nap::EDepthMode::NotSet,				"NotSet"),
+	RTTI_ENUM_VALUE(nap::EDepthMode::InheritFromBlendMode,	"InheritFromBlendMode"),
+	RTTI_ENUM_VALUE(nap::EDepthMode::ReadWrite,				"ReadWrite"),
+	RTTI_ENUM_VALUE(nap::EDepthMode::ReadOnly,				"ReadOnly"),
+	RTTI_ENUM_VALUE(nap::EDepthMode::WriteOnly,				"WriteOnly"),
+	RTTI_ENUM_VALUE(nap::EDepthMode::NoReadWrite,			"NoReadWrite")
+RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS(nap::Material::VertexAttributeBinding)
 	RTTI_PROPERTY("MeshAttributeID",			&nap::Material::VertexAttributeBinding::mMeshAttributeID, nap::rtti::EPropertyMetaData::Required)
@@ -19,13 +34,16 @@ RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::MaterialInstance)
 	RTTI_PROPERTY("Material",					&nap::MaterialInstance::mMaterial,			nap::rtti::EPropertyMetaData::Required)
-RTTI_END_CLASS
+	RTTI_PROPERTY("BlendMode",					&nap::MaterialInstance::mBlendMode,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DepthMode",					&nap::MaterialInstance::mDepthMode,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::Material)
 	RTTI_PROPERTY("Shader",						&nap::Material::mShader,					nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("VertexAttributeBindings",	&nap::Material::mVertexAttributeBindings,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("BlendMode",					&nap::Material::mBlendMode,					nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DepthMode",					&nap::Material::mDepthMode,					nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
-
 
 namespace nap
 {
@@ -125,6 +143,24 @@ namespace nap
 	Material* MaterialInstance::getMaterial() 
 	{ 
 		return mMaterial.get(); 
+	}
+
+
+	EBlendMode MaterialInstance::getBlendMode() const
+	{
+		if (mBlendMode != EBlendMode::NotSet)
+			return mBlendMode;
+
+		return mMaterial->getBlendMode();
+	}
+
+
+	EDepthMode MaterialInstance::getDepthMode() const
+	{
+		if (mDepthMode != EDepthMode::NotSet)
+			return mDepthMode;
+
+		return mMaterial->getDepthMode();
 	}
 
 

@@ -8,7 +8,7 @@
 
 RTTI_BEGIN_CLASS(nap::RenderableMeshComponentResource)
 	RTTI_PROPERTY("Mesh",				&nap::RenderableMeshComponentResource::mMeshResource,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("MaterialInstance",	&nap::RenderableMeshComponentResource::mMaterialInstance,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MaterialInstance",	&nap::RenderableMeshComponentResource::mMaterialInstance,	nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::RenderableMeshComponent, nap::EntityInstance&)
@@ -57,6 +57,72 @@ namespace nap
 		glActiveTexture(GL_TEXTURE0);
 	}
 
+
+	void RenderableMeshComponent::setBlendMode()
+	{
+		MaterialInstance* material_instance = mResource->mMaterialInstance.get();
+
+		EDepthMode depth_mode = material_instance->getDepthMode();
+		
+		glDepthFunc(GL_LEQUAL);
+		glBlendEquation(GL_FUNC_ADD);
+
+		switch (material_instance->getBlendMode())
+		{
+		case EBlendMode::Opaque:
+			glDisable(GL_BLEND);
+			if (depth_mode == EDepthMode::InheritFromBlendMode)
+			{
+				glEnable(GL_DEPTH_TEST);
+				glDepthMask(GL_TRUE);
+			}
+			break;
+		case EBlendMode::AlphaBlend:
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			if (depth_mode == EDepthMode::InheritFromBlendMode)
+			{
+				glEnable(GL_DEPTH_TEST);
+				glDepthMask(GL_FALSE);
+			}
+			break;
+		case EBlendMode::Additive:
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_ONE, GL_ONE);
+			if (depth_mode == EDepthMode::InheritFromBlendMode)
+			{
+				glEnable(GL_DEPTH_TEST);
+				glDepthMask(GL_FALSE);
+			}
+			break;
+		}
+
+		if (depth_mode != EDepthMode::InheritFromBlendMode)
+		{
+			switch (depth_mode)
+			{
+			case EDepthMode::ReadWrite:
+				glEnable(GL_DEPTH_TEST);
+				glDepthMask(GL_TRUE);
+				break;
+			case EDepthMode::ReadOnly:
+				glEnable(GL_DEPTH_TEST);
+				glDepthMask(GL_FALSE);
+				break;
+			case EDepthMode::WriteOnly:
+				glDisable(GL_DEPTH_TEST);
+				glDepthMask(GL_TRUE);
+				break;
+			case EDepthMode::NoReadWrite:
+				glDisable(GL_DEPTH_TEST);
+				glDepthMask(GL_FALSE);
+				break;
+			default:
+				assert(false);
+			}
+		}
+	}
+
 	RenderableMeshComponent::RenderableMeshComponent(EntityInstance& entity) :
 		RenderableComponent(entity)
 	{
@@ -83,10 +149,6 @@ namespace nap
 	// Draw Mesh
 	void RenderableMeshComponent::draw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{	
-		// temp hardcoded blend mode
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 		const glm::mat4x4& model_matrix = mTransformComponent->getGlobalTransform();
 
 		Material* comp_mat = mResource->mMaterialInstance->getMaterial();
@@ -106,6 +168,7 @@ namespace nap
 		if (modelUniform != nullptr)
 			modelUniform->setValue(model_matrix);
 
+		setBlendMode();
 		pushUniforms();
 
 		mVAOHandle->mObject->bind();

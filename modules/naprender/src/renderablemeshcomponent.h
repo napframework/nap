@@ -62,6 +62,7 @@ namespace nap
 
 	private:
 		void pushUniforms();
+		void setBlendMode();
 
 	private:
 		ObjectPtr<RenderableMeshComponentResource>	mResource;

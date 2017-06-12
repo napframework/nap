@@ -21,7 +21,7 @@ namespace nap
 	 * 
 	 * You can override default draw behavior by specializing the draw method
 	 */
-	class RenderableComponent : public ComponentInstance//ServiceableComponent
+	class RenderableComponent : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 
@@ -35,6 +35,5 @@ namespace nap
 		 * Draws the data to the currently active render target
 		 */
 		virtual void draw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) = 0;
-
 	};
 }

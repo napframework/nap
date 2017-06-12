@@ -272,8 +272,6 @@ bool init(nap::Core& core)
 
 	// Set render states
 	nap::RenderState& render_state = renderService->getRenderState();
-	render_state.mEnableDepthTest = true;
-	render_state.mEnableBlending = true;
 	render_state.mEnableMultiSampling = true;
 	render_state.mLineWidth = 1.3f;
 	render_state.mPointSize = 2.0f;

@@ -144,79 +144,6 @@
 		]			
 	},
 	
-	"nap::MaterialInstance": {
-		"mID": "WorldMaterialInstance",
-		"Material": "GeneralMaterial",
-		"Uniforms" : 
-		[
-			{
-				"nap::UniformInt" : 
-				{
-					"Name" : "mTextureIndex",
-					"Value" : 1
-				}
-			},
-			{
-				"nap::UniformTexture2D" : 
-				{
-					"Name" : "pigTexture",
-					"Texture" : "WorldTexture"
-				}
-			},
-			{
-				"nap::UniformTexture2D" : 
-				{
-					"Name" : "testTexture",
-					"Texture" : "WorldTexture"
-				}
-			}
-		]	
-	},
-	
-	"nap::MaterialInstance": {
-		"mID": "OrientationMaterialInstance",
-		"Material": "OrientationMaterial"
-	},
-	
-	"nap::MaterialInstance": {
-		"mID": "PlaneMaterialInstance",
-		"Material": "GeneralMaterial"
-	},
-	
-	"nap::MaterialInstance": {
-		"mID": "RotatingPlaneMaterialInstance",
-		"Material": "GeneralMaterial"
-	},
-	
-	"nap::MaterialInstance": { 
-		"mID": "PigMaterialInstance",
-		"Material": "GeneralMaterial",
-		"Uniforms" : 
-		[
-			{
-				"nap::UniformInt" : 
-				{
-					"Name" : "mTextureIndex",
-					"Value" : 0
-				}
-			},
-			{
-				"nap::UniformTexture2D" : 
-				{
-					"Name" : "pigTexture",
-					"Texture" : "PigTexture"
-				}
-			},
-			{
-				"nap::UniformTexture2D" : 
-				{
-					"Name" : "testTexture",
-					"Texture" : "TestTexture"
-				}
-			}
-		]
-	},	
-	
 	"nap::EntityResource": {
 		"mID": "PigEntity",
 		"Components" : 
@@ -224,7 +151,36 @@
 			{
 				"nap::RenderableMeshComponentResource": {
 					"Mesh" : "PigMesh",
-					"MaterialInstance" : "PigMaterialInstance"
+					"MaterialInstance" : {
+						"nap::MaterialInstance": { 
+							"Material": "GeneralMaterial",
+							"BlendMode": "Opaque",
+							"Uniforms" : 
+							[
+								{
+									"nap::UniformInt" : 
+									{
+										"Name" : "mTextureIndex",
+										"Value" : 0
+									}
+								},
+								{
+									"nap::UniformTexture2D" : 
+									{
+										"Name" : "pigTexture",
+										"Texture" : "PigTexture"
+									}
+								},
+								{
+									"nap::UniformTexture2D" : 
+									{
+										"Name" : "testTexture",
+										"Texture" : "TestTexture"
+									}
+								}
+							]
+						}
+					}
 				}		
 			},
 			{
@@ -260,7 +216,11 @@
 			{
 				"nap::RenderableMeshComponentResource": {
 					"Mesh" : "OrientationMesh",
-					"MaterialInstance" : "OrientationMaterialInstance"
+					"MaterialInstance" : {
+						"nap::MaterialInstance": {
+							"Material": "OrientationMaterial"
+						}
+					}
 				}		
 			},
 			{
@@ -296,7 +256,11 @@
 			{
 				"nap::RenderableMeshComponentResource": {
 					"Mesh" : "PlaneMesh",
-					"MaterialInstance" : "PlaneMaterialInstance"
+					"MaterialInstance" : {
+						"nap::MaterialInstance": {
+							"Material": "GeneralMaterial"
+						}
+					}
 				}		
 			},
 			{
@@ -324,6 +288,7 @@
 			}
 		]
 	},	
+	
 	"nap::EntityResource": {
 		"mID": "RotatingPlaneEntity",
 		"Components" : 
@@ -331,7 +296,11 @@
 			{
 				"nap::RenderableMeshComponentResource": {
 					"Mesh" : "PlaneMesh",
-					"MaterialInstance" : "RotatingPlaneMaterialInstance"
+					"MaterialInstance" : {
+						"nap::MaterialInstance": {
+							"Material": "GeneralMaterial"
+						}
+					}
 				}		
 			},
 			{
@@ -367,8 +336,37 @@
 			{
 				"nap::RenderableMeshComponentResource": {
 					"Mesh" : "SphereMesh",
-					"MaterialInstance" : "WorldMaterialInstance"
-				}		
+					"MaterialInstance" : {
+						"nap::MaterialInstance": {
+							"mID": "WorldMaterialInstance",
+							"Material": "GeneralMaterial",
+							"Uniforms" : 
+							[
+								{
+									"nap::UniformInt" : 
+									{
+										"Name" : "mTextureIndex",
+										"Value" : 1
+									}
+								},
+								{
+									"nap::UniformTexture2D" : 
+									{
+										"Name" : "pigTexture",
+										"Texture" : "WorldTexture"
+									}
+								},
+								{
+									"nap::UniformTexture2D" : 
+									{
+										"Name" : "testTexture",
+										"Texture" : "WorldTexture"
+									}
+								}
+							]	
+						}
+					}
+				}					
 			},
 			{
 				"nap::TransformComponentResource": {

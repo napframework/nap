@@ -432,6 +432,23 @@ namespace nap
 			return object;
 		}
 
+
+		int getLine(const std::string& json, size_t offset)
+		{
+			int line = 1;
+			int line_offset = 0;
+			while (true)
+			{
+				line_offset = json.find('\n', line_offset);
+				if (line_offset == std::string::npos || line_offset > offset)
+					break;
+				++line;
+				line_offset += 1;
+			}
+			return line;
+		}
+
+
 		bool deserializeJSON(const std::string& json, Factory& factory, RTTIDeserializeResult& result, utility::ErrorState& errorState)
 		{
 			// Try to parse the json file
@@ -439,24 +456,7 @@ namespace nap
 			rapidjson::ParseResult parse_result = document.Parse(json.c_str());
 			if (!parse_result)
 			{
-				// RapidJSON does not offer a way to find out the line that the error was on, so we do some custom work here to be able to print out
-				// the offending line in the case of a parse error
-				size_t error_line_start = json.rfind('\n', parse_result.Offset());
-				size_t error_line_end = json.find('\n', parse_result.Offset());
-
-				if (error_line_start == std::string::npos)
-					error_line_start = 0;
-				else
-					error_line_start += 1;
-
-				if (error_line_end == std::string::npos)
-					error_line_end = json.size();
-				else
-					error_line_end -= 1;
-
-				std::string error_line = json.substr(error_line_start, error_line_end - error_line_start);
-
-				errorState.fail("Error parsing json: %s (line: %s)", rapidjson::GetParseError_En(parse_result.Code()), error_line.c_str());
+				errorState.fail("Error parsing json: %s (line: %d)", rapidjson::GetParseError_En(parse_result.Code()), getLine(json, parse_result.Offset()));
 				return false;
 			}
 

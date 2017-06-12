@@ -29,6 +29,7 @@ namespace opengl
 	// Clears color buffer of the currently active context
 	void clearColor(float r, float g, float b, float a)
 	{
+		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 		glClearColor(r, g, b, a);
 		opengl::clear(GL_COLOR_BUFFER_BIT);
 	}
@@ -37,6 +38,7 @@ namespace opengl
 	// Clears the depth buffer of the currently active context
 	void clearDepth()
 	{
+		glDepthMask(GL_TRUE);
 		opengl::clear(GL_DEPTH_BUFFER_BIT);
 	}
 
@@ -44,6 +46,7 @@ namespace opengl
 	// Clears the stencil buffer of the currently active context
 	void clearStencil()
 	{
+		glStencilMask(1);
 		opengl::clear(GL_STENCIL_BUFFER_BIT);
 	}
 

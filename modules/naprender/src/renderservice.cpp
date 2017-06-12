@@ -17,6 +17,46 @@
 
 namespace nap
 {
+	/**
+	 * Helper class that can sort RenderableComponents back to front or front to back.
+	 */
+	class DepthSorter
+	{
+	public:
+		enum class EMode
+		{
+			FrontToBack,
+			BackToFront
+		};
+
+		DepthSorter(EMode mode, const glm::mat4x4& viewMatrix) :
+			mViewMatrix(viewMatrix),
+			mMode(mode)
+		{
+		}
+
+		bool operator()(const nap::RenderableComponent* objectA, const nap::RenderableComponent* objectB)
+		{
+			const nap::EntityInstance& entityA = *objectA->getEntity();
+			const nap::TransformComponent& transformA = entityA.getComponent<nap::TransformComponent>();
+			const glm::mat4 view_space_a = mViewMatrix * transformA.getGlobalTransform();
+
+			const nap::EntityInstance& entityB = *objectB->getEntity();
+			const nap::TransformComponent& transformB = entityB.getComponent<nap::TransformComponent>();
+			const glm::mat4 view_space_b = mViewMatrix * transformB.getGlobalTransform();
+
+			if (mMode == EMode::BackToFront)
+				return view_space_a[3][3] < view_space_b[3][3];
+			else
+				return view_space_a[3][3] > view_space_b[3][3];
+		}
+
+	private:
+		const glm::mat4x4& mViewMatrix;
+		EMode mMode;
+	};
+
+
 	// Register all types
 	void RenderService::registerTypes(nap::Core& core)
 	{
@@ -166,7 +206,32 @@ namespace nap
 		for (EntityInstance* entity : getCore().getService<ResourceManagerService>()->getEntities())
 			entity->getComponentsOfType<nap::RenderableComponent>(render_comps);
 
-		renderObjects(renderTarget, render_comps, camera);
+		// Split into front to back and back to front meshes
+		std::vector<nap::RenderableComponent*> front_to_back;
+		std::vector<nap::RenderableComponent*> back_to_front;
+
+		for (nap::RenderableComponent* component : render_comps)
+		{
+			nap::RenderableMeshComponent* renderable_mesh = rtti_cast<RenderableMeshComponent>(component);
+			if (renderable_mesh != nullptr)
+			{
+				EBlendMode blend_mode = renderable_mesh->getMaterialInstance()->getBlendMode();
+				if (blend_mode == EBlendMode::AlphaBlend)
+					back_to_front.push_back(component);
+				else
+					front_to_back.push_back(component);
+			}
+		}
+		
+		// Sort front to back and render those first
+		DepthSorter front_to_back_sorter(DepthSorter::EMode::FrontToBack, camera.getViewMatrix());
+		std::sort(front_to_back.begin(), front_to_back.end(), front_to_back_sorter);
+		renderObjects(renderTarget, front_to_back, camera);
+
+		// Then sort back to front and render these
+		DepthSorter back_to_front_sorter(DepthSorter::EMode::BackToFront, camera.getViewMatrix());
+		std::sort(back_to_front.begin(), back_to_front.end(), back_to_front_sorter);
+		renderObjects(renderTarget, back_to_front, camera);
 	}
 
 	// Updates the current context's render state by using the latest render state as set by the user.
