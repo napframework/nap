@@ -61,7 +61,6 @@ static opengl::Mesh* createPlane()
 
 
 RTTI_BEGIN_CLASS(nap::PlaneMeshResource)
-	RTTI_PROPERTY("DummyProperty", &nap::PlaneMeshResource::mDummyProperty, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
