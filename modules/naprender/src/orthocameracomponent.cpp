@@ -39,7 +39,8 @@ namespace nap
 	// Set camera aspect ratio derived from width and height
 	void OrthoCameraComponent::setAspectRatio(float width, float height)
 	{
-		mAspectRatio = width / height;
+		mWidth = width;
+		mHeight = height;
 		setDirty();
 	}
 
@@ -49,7 +50,7 @@ namespace nap
 	{
 		if (mDirty)
 		{
-			mProjectionMatrix = glm::ortho(-1.0f * mAspectRatio, 1.0f * mAspectRatio, -1.0f, 1.0f, 0.0f, 1000.0f);
+			mProjectionMatrix = glm::ortho(0.0f, mWidth, mHeight, 0.0f, 0.0f, 1000.0f);
 			mDirty = false;
 		}
 

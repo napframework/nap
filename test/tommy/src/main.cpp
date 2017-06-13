@@ -49,6 +49,7 @@
 
 // STD includes
 #include <ctime>
+#include "fractionlayoutcomponent.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
@@ -63,8 +64,8 @@ nap::ResourceManagerService* resourceManagerService = nullptr;
 nap::Service* rpcService = nullptr;
 std::vector<nap::RenderWindowComponent*> renderWindows;
 
-nap::ObjectPtr<nap::EntityInstance> backgroundImageEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance> cameraEntity = nullptr;
+nap::ObjectPtr<nap::EntityInstance> rootLayoutEntity = nullptr;
 
 static float movementScale = 0.5f;
 static float rotateScale = 1.0f;
@@ -101,7 +102,17 @@ void onUpdate(const nap::SignalAttribute& signal)
 	}
 
 	updateCamera(delta_time);
+
+	glm::vec2 window_size = renderWindows[0]->size.getValue();
+
+	nap::TransformComponent& transform_component = rootLayoutEntity->getComponent<nap::TransformComponent>();
+	transform_component.setTranslate(glm::vec3(0.0f, 0.0f, -50.0f));
+	transform_component.setScale(glm::vec3(window_size.x, window_size.y, 1.0));
+
+	nap::FractionLayoutComponent& layout = rootLayoutEntity->getComponent<nap::FractionLayoutComponent>();
+	layout.updateLayout();
 }
+
 nap::Slot<const nap::SignalAttribute&> updateSlot = { [](const nap::SignalAttribute& attr){ onUpdate(attr); } };
 
 void updateCamera(float deltaTime)
@@ -170,6 +181,9 @@ void updateCamera(float deltaTime)
 		glm::quat nr = glm::rotate(r, rotate_rad, glm::vec3(0.0, 1.0, 0.0));
 		cam_xform->setRotate(nr);
 	}
+
+	glm::vec2 window_size = renderWindows[0]->size.getValue();
+	cameraEntity->getComponent<nap::OrthoCameraComponent>().setAspectRatio(window_size.x, window_size.y);
 }
 
 // Called when the window is going to render
@@ -282,7 +296,8 @@ bool init(nap::Core& core)
 
 	cameraEntity->getComponent<nap::OrthoCameraComponent>().setAspectRatio((float)windowWidth, (float)windowHeight);
 
-	backgroundImageEntity = resourceManagerService->findEntity("BackgroundImageEntity");
+	rootLayoutEntity = resourceManagerService->findEntity("RootEntity");
+	assert(rootLayoutEntity != nullptr);
 
 	return true;
 }
@@ -480,4 +495,4 @@ void runGame(nap::Core& core)
 	renderService->shutdown();
 }
        
- 
+  

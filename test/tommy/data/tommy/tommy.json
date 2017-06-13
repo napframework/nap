@@ -63,6 +63,40 @@
 		]			
 	},
 
+	"nap::EntityResource": {
+		"mID": "RootEntity",
+		"Components" : 
+		[
+			{
+				"nap::FractionLayoutComponentResource" : {
+					"Properties" : {
+						"Position" : {
+							"x": 0.0,
+							"y": 0.0
+						},
+						"Size" : {
+							"x": 1.00,
+							"y": 1.00
+						}
+					}
+
+				}
+			},
+			{
+				"nap::TransformComponentResource": {				
+				}		
+			}			
+		],
+		"Children" :
+		[
+			"BackgroundImageEntity",
+			"TitleEntity",
+			"LooksEntity",
+			"ButtonLeftEntity",
+			"LooksTitleEntity",
+			"ButtonRightEntity"
+		] 
+	},
 	
 	"nap::EntityResource": {
 		"mID": "BackgroundImageEntity",
@@ -94,27 +128,22 @@
 			},
 			{
 				"nap::TransformComponentResource": {
-					"Properties": {
-						"Translate": {
-							"x": 0.0,
-							"y": 0.0,
-							"z": -100.0
-						},
-						"Rotate": {
-							"x": 0.0,
-							"y": 0.0,
-							"z": 0.0,
-							"w": 1.0
-						},
-						"Scale": {
-							"x": 1.0,
-							"y": 1.6875,
-							"z": 1.0
-						},
-						"UniformScale": 1.0						
-					}
 				}		
-			}
+			},
+			{
+				"nap::FractionLayoutComponentResource" : {
+					"Properties" : {
+						"Position" : {
+							"x": 0.25,
+							"y": 0.075
+						},
+						"SizeBehaviour" : "HeightFromImageAspectRatio", 
+						"Size" : {  
+							"x": 0.5
+						}
+					}
+				}
+			}		
 		]
 	},
 
@@ -148,26 +177,22 @@
 			},
 			{
 				"nap::TransformComponentResource": {
-					"Properties": {
-						"Translate": {
-							"x": 0.0,
-							"y": 0.75,
-							"z": -50.0
-						},
-						"Rotate": {
-							"x": 0.0,
-							"y": 0.0,
-							"z": 0.0,
-							"w": 1.0
-						},
-						"Scale": {
-							"x": 1.0,
-							"y": 0.096,
-							"z": 1.0
-						},
-						"UniformScale": 0.3						
-					}
 				}		
+			},
+			{
+				"nap::FractionLayoutComponentResource" : {
+					"Properties" : {
+						"PositionPivot" : "Center",
+						"Position" : {
+							"x": 0.5,
+							"y": 0.12
+						},
+						"SizeBehaviour" : "HeightFromImageAspectRatio", 
+						"Size" : {  
+							"x": 0.2
+						}
+					}
+				}
 			}
 		]
 	},
@@ -202,26 +227,22 @@
 			},
 			{
 				"nap::TransformComponentResource": {
-					"Properties": {
-						"Translate": {
-							"x": 0.0,
-							"y": 0.0,
-							"z": -50.0
+				}
+			},
+			{
+				"nap::FractionLayoutComponentResource" : {
+					"Properties" : {
+						"PositionPivot" : "Center",
+						"Position" : {
+							"x": 0.5,
+							"y": 0.5
 						},
-						"Rotate": {
-							"x": 0.0,
-							"y": 0.0,
-							"z": 0.0,
-							"w": 1.0
-						},
-						"Scale": {
-							"x": 1.0,
-							"y": 1.6875,
-							"z": 1.0
-						},
-						"UniformScale": 1.0						
+						"SizeBehaviour" : "HeightFromImageAspectRatio", 
+						"Size" : {  
+							"x": 0.5
+						}
 					}
-				}		
+				}
 			}
 		]
 	},
@@ -256,26 +277,22 @@
 			},
 			{
 				"nap::TransformComponentResource": {
-					"Properties": {
-						"Translate": {
-							"x": -0.3,
-							"y": 0.0,
-							"z": -50.0
-						},
-						"Rotate": {
-							"x": 0.0,
-							"y": 0.0,
-							"z": 0.0,
-							"w": 1.0
-						},
-						"Scale": {
-							"x": 1.0,
-							"y": 1.0,
-							"z": 1.0
-						},
-						"UniformScale": 0.1
-					}
 				}		
+			},
+			{
+				"nap::FractionLayoutComponentResource" : {
+					"Properties" : {
+						"PositionPivot" : "Center",
+						"Position" : {
+							"x": 0.3,
+							"y": 0.5
+						},
+						"SizeBehaviour" : "HeightFromImageAspectRatio", 
+						"Size" : {  
+							"x": 0.075
+						}
+					}
+				}
 			}
 		]
 	},
@@ -310,26 +327,22 @@
 			},
 			{
 				"nap::TransformComponentResource": {
-					"Properties": {
-						"Translate": {
-							"x": 0.0,
-							"y": 0.6,
-							"z": -50.0
-						},
-						"Rotate": {
-							"x": 0.0,
-							"y": 0.0,
-							"z": 0.0,
-							"w": 1.0
-						},
-						"Scale": {
-							"x": 1.0,
-							"y": 0.095,
-							"z": 1.0
-						},
-						"UniformScale": 1.0
-					}
 				}		
+			},
+			{
+				"nap::FractionLayoutComponentResource" : {
+					"Properties" : {
+						"PositionPivot" : "Center",
+						"Position" : {
+							"x": 0.5,
+							"y": 0.2
+						},
+						"SizeBehaviour" : "HeightFromImageAspectRatio", 
+						"Size" : {  
+							"x": 0.6
+						}
+					}
+				}
 			}
 		]
 	},
@@ -364,26 +377,22 @@
 			},
 			{
 				"nap::TransformComponentResource": {
-					"Properties": {
-						"Translate": {
-							"x": 0.3,
-							"y": 0.0,
-							"z": -50.0
-						},
-						"Rotate": {
-							"x": 0.0,
-							"y": 0.0,
-							"z": 0.0,
-							"w": 1.0
-						},
-						"Scale": {
-							"x": 1.0,
-							"y": 1.0,
-							"z": 1.0
-						},
-						"UniformScale": 0.1
-					}
 				}		
+			},
+			{
+				"nap::FractionLayoutComponentResource" : {
+					"Properties" : {
+						"PositionPivot" : "Center",
+						"Position" : {
+							"x": 0.7,
+							"y": 0.5
+						},
+						"SizeBehaviour" : "HeightFromImageAspectRatio", 
+						"Size" : {  
+							"x": 0.075
+						}
+					}
+				}
 			}
 		]
 	},
