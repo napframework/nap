@@ -106,11 +106,11 @@ void onUpdate(const nap::SignalAttribute& signal)
 	glm::vec2 window_size = renderWindows[0]->size.getValue();
 
 	nap::TransformComponent& transform_component = rootLayoutEntity->getComponent<nap::TransformComponent>();
-	transform_component.setTranslate(glm::vec3(0.0f, 0.0f, -50.0f));
+	transform_component.setTranslate(glm::vec3(window_size.x*0.5, window_size.y*0.5, -50.0f));
 	transform_component.setScale(glm::vec3(window_size.x, window_size.y, 1.0));
 
 	nap::FractionLayoutComponent& layout = rootLayoutEntity->getComponent<nap::FractionLayoutComponent>();
-	layout.updateLayout();
+	layout.updateLayout(glm::mat4(1.0f));
 }
 
 nap::Slot<const nap::SignalAttribute&> updateSlot = { [](const nap::SignalAttribute& attr){ onUpdate(attr); } };

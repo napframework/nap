@@ -48,10 +48,12 @@ namespace nap
 		return true;
 	}
 
-	void FractionLayoutComponent::updateLayout()
+	void FractionLayoutComponent::updateLayout(const glm::mat4x4& parentWorldTransform)
 	{
+		const glm::mat4x4 world_transform = parentWorldTransform * mTransformComponent->getLocalTransform();
+
 		glm::vec2 parent_pos = mTransformComponent->getTranslate();
-		glm::vec2 parent_size = mTransformComponent->getScale();
+		glm::vec2 parent_size(world_transform[0][0], world_transform[1][1]);
 
 		for (EntityInstance* child_entity : getEntity()->getChildren())
 		{
@@ -86,10 +88,12 @@ namespace nap
 			if (child_layout->mProperties.mPositionPivot == FractionLayoutProperties::EPositionPivot::TopLeft)
 				relative_child_pos_frac += relative_child_size_frac * 0.5f;
 
-			child_transform.setTranslate(glm::vec3(relative_child_pos_frac, -50.0f));
+			relative_child_pos_frac -= glm::vec2(0.5f, 0.5f);
+
+			child_transform.setTranslate(glm::vec3(relative_child_pos_frac, mTransformComponent->getTranslate().z + 5.0f));
 			child_transform.setScale(glm::vec3(relative_child_size_frac, 1.0f));
 
-			child_layout->updateLayout();
+			child_layout->updateLayout(world_transform);
 		}
 	}
 }
