@@ -41,6 +41,7 @@
 #include <planemeshresource.h>
 #include <spheremeshresource.h>
 #include <rendertargetresource.h>
+#include <slideshowcomponent.h>
 
 // Nap includes
 #include <nap/core.h>
@@ -63,7 +64,7 @@ nap::ResourceManagerService* resourceManagerService = nullptr;
 nap::Service* rpcService = nullptr;
 std::vector<nap::RenderWindowComponent*> renderWindows;
 
-nap::ObjectPtr<nap::EntityInstance> backgroundImageEntity = nullptr;
+nap::ObjectPtr<nap::EntityInstance> slideShowEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance> cameraEntity = nullptr;
 
 static float movementScale = 0.5f;
@@ -99,6 +100,9 @@ void onUpdate(const nap::SignalAttribute& signal)
 	{
 		delta_time = 0.01f;
 	}
+
+	nap::SlideShowComponent& component = slideShowEntity->getComponent<nap::SlideShowComponent>();
+	component.update(delta_time);
 
 	updateCamera(delta_time);
 }
@@ -282,7 +286,7 @@ bool init(nap::Core& core)
 
 	cameraEntity->getComponent<nap::OrthoCameraComponent>().setAspectRatio((float)windowWidth, (float)windowHeight);
 
-	backgroundImageEntity = resourceManagerService->findEntity("BackgroundImageEntity");
+	slideShowEntity = resourceManagerService->findEntity("SlideShowEntity");
 
 	return true;
 }
@@ -354,6 +358,18 @@ void runGame(nap::Core& core)
 				case SDLK_d:
 				{
 					moveRight = true;
+					break;
+				}
+				case SDLK_n:
+				{
+					nap::SlideShowComponent& component = slideShowEntity->getComponent<nap::SlideShowComponent>();
+					component.cycleLeft();
+					break;
+				}
+				case SDLK_m:
+				{
+					nap::SlideShowComponent& component = slideShowEntity->getComponent<nap::SlideShowComponent>();
+					component.cycleRight();
 					break;
 				}
 				case SDLK_UP:

@@ -81,9 +81,9 @@ namespace nap
 	/**
 	 * Base class for both Material and MaterialInstance. Basic support for uniforms.
 	 */
-	class UniformContainer : public Resource
+	class UniformContainer
 	{
-		RTTI_ENABLE(Resource)
+		RTTI_ENABLE()
 	public:
 
 		/**
@@ -110,8 +110,6 @@ namespace nap
 		 */
 		const UniformValueBindings& getUniformValueBindings() { return mUniformValueBindings; }
 
-		std::vector<ObjectPtr<Uniform>>	mUniforms;					///< Static uniforms (as read from file, or as set in code before calling init())
-
 	protected:
 		/**
 		 * Puts the uniform into either the texture or value mapping.
@@ -126,9 +124,23 @@ namespace nap
 		UniformValueBindings		mUniformValueBindings;		///< Runtime map of value uniforms (superset of value uniforms in mUniforms due to default uniforms).
 	};
 
+	/**
+	* MaterialInstanceResource is the 'resource' or 'data' counterpart of MaterialInstance, intended to be used 
+	* as fields in ComponentResources. The object needs to be passed to MaterialInstance's init() function.
+	*/
+	class MaterialInstanceResource
+	{
+	public:
+		std::vector<ObjectPtr<Uniform>>		mUniforms;										///< Uniforms that you're overriding
+		ObjectPtr<Material>					mMaterial;										///< Material that you're overriding uniforms from
+		EBlendMode							mBlendMode = EBlendMode::NotSet;				///< Blend mode override. By default uses material blend mode
+		EDepthMode							mDepthMode = EDepthMode::NotSet;				///< Depth mode override. By default uses material depth mode
+	};
 
 	/**
-	 * MaterialInstance holds uniform overloads of a Material.
+	 * MaterialInstance holds overloads of Material properties. It is intended to be used as a field in 
+	 * ComponentInstances. It needs to be initialized with a MaterialInstanceResource object to fill it's
+	 * runtime data. init() needs to be called from the ComponentInstance's init() function.
 	 */
 	class MaterialInstance : public UniformContainer
 	{
@@ -137,19 +149,12 @@ namespace nap
 		/**
 		 * For each uniform in mUniforms, creates a mapping.
 		 */
-		virtual bool init(utility::ErrorState& errorState) override;
-
-		/**
-		 *
-		 */
-		virtual const std::string getDisplayName() const { return "MaterialInstance"; }
+		bool init(MaterialInstanceResource& resource, utility::ErrorState& errorState);
 
 		/**
 		* @return material that this instance is overriding.
 		*/
 		Material* getMaterial();
-
-		ObjectPtr<Material>	mMaterial;		///< Material that you're overriding uniforms from
 
 		/**
 		 * Get a uniform for this material instance. This means that the uniform returned is only applicable
@@ -173,11 +178,10 @@ namespace nap
 		*/
 		EDepthMode getDepthMode() const;
 
-		EBlendMode mBlendMode = EBlendMode::NotSet;				///< Blend mode override. By default uses material blend mode
-		EDepthMode mDepthMode = EDepthMode::NotSet;				///< Depth mode override. By default uses material depth mode
-
 	private:
 		Uniform& createUniform(const std::string& name);
+
+		MaterialInstanceResource* mResource;
 	};
 
 
@@ -188,9 +192,9 @@ namespace nap
 	* on the material, all the objects that use this material will use that value. To change uniform values
 	* per object, set uniform values on MaterialInstances.
 	*/
-	class Material : public UniformContainer
+	class Material : public Resource, public UniformContainer
 	{
-		RTTI_ENABLE(UniformContainer)
+		RTTI_ENABLE(Resource, UniformContainer)
 	public:
 
 		/**
@@ -260,10 +264,11 @@ namespace nap
 		static std::vector<VertexAttributeBinding>& getDefaultVertexAttributeBindings();
 
 	public:
+		std::vector<ObjectPtr<Uniform>>			mUniforms;											///< Static uniforms (as read from file, or as set in code before calling init())
 		std::vector<VertexAttributeBinding>		mVertexAttributeBindings;							///< Mapping from mesh vertex attr to shader vertex attr
 		ObjectPtr<ShaderResource>				mShader = nullptr;									///< The shader that this material is using
 		EBlendMode								mBlendMode = EBlendMode::Opaque;					///< Blend mode for this material
-		EDepthMode								mDepthMode = EDepthMode::InheritFromBlendMode;		///< Determiness how the Z buffer is used
+		EDepthMode								mDepthMode = EDepthMode::InheritFromBlendMode;		///< Determines how the Z buffer is used
 	};
 
 

@@ -28,17 +28,15 @@ RTTI_BEGIN_CLASS(nap::Material::VertexAttributeBinding)
 	RTTI_PROPERTY("ShaderAttributeID",			&nap::Material::VertexAttributeBinding::mShaderAttributeID, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-RTTI_BEGIN_BASE_CLASS(nap::UniformContainer)
-	RTTI_PROPERTY("Uniforms", &nap::UniformContainer::mUniforms, nap::rtti::EPropertyMetaData::Embedded)
-RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS(nap::MaterialInstance)
-	RTTI_PROPERTY("Material",					&nap::MaterialInstance::mMaterial,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("BlendMode",					&nap::MaterialInstance::mBlendMode,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DepthMode",					&nap::MaterialInstance::mDepthMode,			nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::MaterialInstanceResource)
+	RTTI_PROPERTY("Material",					&nap::MaterialInstanceResource::mMaterial,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Uniforms",					&nap::MaterialInstanceResource::mUniforms,	nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("BlendMode",					&nap::MaterialInstanceResource::mBlendMode,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DepthMode",					&nap::MaterialInstanceResource::mDepthMode,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::Material)
+	RTTI_PROPERTY("Uniforms",					&nap::Material::mUniforms,					nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Shader",						&nap::Material::mShader,					nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("VertexAttributeBindings",	&nap::Material::mVertexAttributeBindings,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("BlendMode",					&nap::Material::mBlendMode,					nap::rtti::EPropertyMetaData::Default)
@@ -106,7 +104,7 @@ namespace nap
 
 	Uniform& MaterialInstance::createUniform(const std::string& name)
 	{
-		const opengl::UniformDeclarations& uniform_declarations = mMaterial->getShader()->getShader().getUniformDeclarations();
+		const opengl::UniformDeclarations& uniform_declarations = mResource->mMaterial->getShader()->getShader().getUniformDeclarations();
 
 		opengl::UniformDeclarations::const_iterator pos = uniform_declarations.find(name);
 		assert(pos != uniform_declarations.end());
@@ -117,12 +115,13 @@ namespace nap
 	}
 
 
-	bool MaterialInstance::init(utility::ErrorState& errorState)
+	bool MaterialInstance::init(MaterialInstanceResource& resource, utility::ErrorState& errorState)
 	{
-		const opengl::UniformDeclarations& uniform_declarations = mMaterial->getShader()->getShader().getUniformDeclarations();
+		mResource = &resource;
+		const opengl::UniformDeclarations& uniform_declarations = resource.mMaterial->getShader()->getShader().getUniformDeclarations();
 
 		// Create new uniforms for all the uniforms in mUniforms
-		for (ObjectPtr<Uniform>& uniform : mUniforms)
+		for (ObjectPtr<Uniform>& uniform : resource.mUniforms)
 		{
 			opengl::UniformDeclarations::const_iterator declaration = uniform_declarations.find(uniform->mName);
 			if (!errorState.check(declaration != uniform_declarations.end(), "Unable to find uniform %s in shader", uniform->mName.c_str()))
@@ -142,25 +141,25 @@ namespace nap
 
 	Material* MaterialInstance::getMaterial() 
 	{ 
-		return mMaterial.get(); 
+		return mResource->mMaterial.get(); 
 	}
 
 
 	EBlendMode MaterialInstance::getBlendMode() const
 	{
-		if (mBlendMode != EBlendMode::NotSet)
-			return mBlendMode;
+		if (mResource->mBlendMode != EBlendMode::NotSet)
+			return mResource->mBlendMode;
 
-		return mMaterial->getBlendMode();
+		return mResource->mMaterial->getBlendMode();
 	}
 
 
 	EDepthMode MaterialInstance::getDepthMode() const
 	{
-		if (mDepthMode != EDepthMode::NotSet)
-			return mDepthMode;
+		if (mResource->mDepthMode != EDepthMode::NotSet)
+			return mResource->mDepthMode;
 
-		return mMaterial->getDepthMode();
+		return mResource->mMaterial->getDepthMode();
 	}
 
 

@@ -201,8 +201,32 @@ namespace nap
 	{
 		RTTI_ENABLE(rtti::RTTIObject)
 	public:
-		std::vector<ObjectPtr<ComponentResource>>	mComponents;
-		std::vector<ObjectPtr<EntityResource>>		mChildren;
+		using ComponentList = std::vector<ObjectPtr<ComponentResource>>;
+		using EntityList = std::vector<ObjectPtr<EntityResource>>;
+
+		ObjectPtr<ComponentResource> findComponent(const rtti::TypeInfo& inType) const
+		{
+			ComponentList::const_iterator pos = std::find_if(mComponents.begin(), mComponents.end(), [&](auto& element) { return element->get_type() == inType; });
+			if (pos == mComponents.end())
+				return nullptr;
+
+			return pos->get();
+		}
+
+		bool hasComponent(const rtti::TypeInfo& inType) const
+		{
+			return findComponent(inType) != nullptr;
+		}
+
+		template<class T>
+		bool hasComponent() const
+		{
+			return hasComponent(rtti::TypeInfo::get<T>());
+		}
+
+		ComponentList	mComponents;
+		EntityList		mChildren;
+		bool			mAutoSpawn = true;
 	};
 
 

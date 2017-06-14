@@ -13,6 +13,7 @@ namespace nap
 {
 	class DirectoryWatcher;
 	class EntityInstance;
+	class EntityResource;
 
 	template<class ITERATORTYPE, class ELEMENTTYPE>
 	class UniquePtrMapIterator
@@ -116,6 +117,11 @@ namespace nap
 		const ObjectPtr<RTTIObject> createObject(const rtti::TypeInfo& type);
 
 		/**
+		* Instantiates an Entity.
+		*/
+		const ObjectPtr<EntityInstance> createEntity(const EntityResource& entityResource, const std::string& entityID, utility::ErrorState& errorState);
+
+		/**
 		* Creates an object and adds it to the manager.
 		*/
 		template<typename T>
@@ -150,6 +156,7 @@ namespace nap
 		virtual void initialized();
 
 	private:
+		using InstanceByIDMap = std::unordered_map<std::string, rtti::RTTIObject*>;
 		using ObjectByIDMap = std::unordered_map<std::string, std::unique_ptr<RTTIObject>>;
 		using FileLinkMap = std::unordered_map<std::string, std::vector<std::string>>; // Map from target file to multiple source files
 
@@ -161,7 +168,8 @@ namespace nap
 		bool resolvePointers(ObjectByIDMap& objectsToUpdate, const rtti::UnresolvedPointerList& unresolvedPointers, utility::ErrorState& errorState);
 		bool initObjects(std::vector<std::string> objectsToInit, ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState);
 		bool initEntities(ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState);
-		
+		bool createEntities(const std::vector<const EntityResource*>& entityResources, EntityByIDMap& entityInstances, InstanceByIDMap& allNewInstances, utility::ErrorState& errorState);
+
 		/** 
 		* Traverses all pointers in ObjectPtrManager and, for each target, replaces the target with the one in the map that is passed.
 		* @param container The container holding an ID -> pointer mapping with the pointer to patch to.
@@ -186,6 +194,8 @@ namespace nap
 		std::unique_ptr<EntityInstance>		mRootEntity;
 		ObjectByIDMap						mObjects;				// Holds all objects
 		EntityByIDMap						mEntities;
+		EntityByIDMap						mEntitiesCreatedDuringInit;
+		InstanceByIDMap						mInstancesCreatedDuringInit;
 		std::set<std::string>				mFilesToWatch;			// Files currently loaded, used for watching changes on the files
 		FileLinkMap							mFileLinkMap;			// Map containing links from target to source file, for updating source files if the file monitor sees changes
 		std::unique_ptr<DirectoryWatcher>	mDirectoryWatcher;		// File monitor, detects changes on files

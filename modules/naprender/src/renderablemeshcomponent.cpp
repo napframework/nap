@@ -6,10 +6,18 @@
 #include "material.h"
 #include "renderservice.h"
 
-RTTI_BEGIN_CLASS(nap::RenderableMeshComponentResource)
-	RTTI_PROPERTY("Mesh",				&nap::RenderableMeshComponentResource::mMeshResource,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("MaterialInstance",	&nap::RenderableMeshComponentResource::mMaterialInstance,	nap::rtti::EPropertyMetaData::Embedded)
+RTTI_BEGIN_CLASS(nap::Rect)
+	RTTI_PROPERTY("X",		&nap::Rect::mX,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Y",		&nap::Rect::mY,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Width",	&nap::Rect::mWidth,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Height", &nap::Rect::mHeight,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS(nap::RenderableMeshComponentResource)
+	RTTI_PROPERTY("Mesh",				&nap::RenderableMeshComponentResource::mMeshResource,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MaterialInstance",	&nap::RenderableMeshComponentResource::mMaterialInstanceResource,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ClipRect",			&nap::RenderableMeshComponentResource::mClipRect,					nap::rtti::EPropertyMetaData::Default)
+	RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::RenderableMeshComponent, nap::EntityInstance&)
 RTTI_END_CLASS
@@ -19,29 +27,25 @@ namespace nap
 	// Upload all uniform variables to GPU
 	void RenderableMeshComponent::pushUniforms()
 	{
-		MaterialInstance* material_instance = mResource->mMaterialInstance.get();
-		Material* comp_mat = material_instance->getMaterial();
+		Material* comp_mat = mMaterialInstance.getMaterial();
 
 		// Keep track of which uniforms were set (i.e. overridden) by the material instance
 		std::unordered_set<std::string> instance_bindings;
 		int texture_unit = 0;
 
 		// Push all uniforms that are set (i.e. overridden) in the instance
-		if (material_instance != nullptr)
+		const UniformTextureBindings& instance_texture_bindings = mMaterialInstance.getUniformTextureBindings();
+		for (auto& kvp : instance_texture_bindings)
 		{
-			const UniformTextureBindings& instance_texture_bindings = material_instance->getUniformTextureBindings();
-			for (auto& kvp : instance_texture_bindings)
-			{
-				kvp.second.mUniform->push(*kvp.second.mDeclaration, texture_unit++);
-				instance_bindings.insert(kvp.first);
-			}				
+			kvp.second.mUniform->push(*kvp.second.mDeclaration, texture_unit++);
+			instance_bindings.insert(kvp.first);
+		}				
 
-			const UniformValueBindings& instance_value_bindings = material_instance->getUniformValueBindings();
-			for (auto& kvp : instance_value_bindings)
-			{
-				kvp.second.mUniform->push(*kvp.second.mDeclaration);
-				instance_bindings.insert(kvp.first);
-			}
+		const UniformValueBindings& instance_value_bindings = mMaterialInstance.getUniformValueBindings();
+		for (auto& kvp : instance_value_bindings)
+		{
+			kvp.second.mUniform->push(*kvp.second.mDeclaration);
+			instance_bindings.insert(kvp.first);
 		}
 
 		// Push all uniforms in the material that weren't overridden by the instance
@@ -60,14 +64,12 @@ namespace nap
 
 	void RenderableMeshComponent::setBlendMode()
 	{
-		MaterialInstance* material_instance = mResource->mMaterialInstance.get();
-
-		EDepthMode depth_mode = material_instance->getDepthMode();
+		EDepthMode depth_mode = mMaterialInstance.getDepthMode();
 		
 		glDepthFunc(GL_LEQUAL);
 		glBlendEquation(GL_FUNC_ADD);
 
-		switch (material_instance->getBlendMode())
+		switch (mMaterialInstance.getBlendMode())
 		{
 		case EBlendMode::Opaque:
 			glDisable(GL_BLEND);
@@ -133,14 +135,19 @@ namespace nap
 		assert(resource->get_type().is_derived_from<RenderableMeshComponentResource>());
 		mResource = rtti_cast<RenderableMeshComponentResource>(resource.get());
 
+		if (!mMaterialInstance.init(mResource->mMaterialInstanceResource, errorState))
+			return false;
+
 		RenderService* render_service = getEntity()->getCore()->getService<RenderService>();
-		mVAOHandle = render_service->acquireVertexArrayObject(*mResource->mMaterialInstance->getMaterial(), *mResource->mMeshResource, errorState);
+		mVAOHandle = render_service->acquireVertexArrayObject(*mMaterialInstance.getMaterial(), *mResource->mMeshResource, errorState);
 		if (mVAOHandle == nullptr)
 			return false;
 
 		mTransformComponent = getEntity()->findComponent<TransformComponent>();
  		if (!errorState.check(mTransformComponent != nullptr, "Missing transform component"))
  			return false;
+
+		mClipRect = mResource->mClipRect;
 
 		return true;
 	}
@@ -149,9 +156,12 @@ namespace nap
 	// Draw Mesh
 	void RenderableMeshComponent::draw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{	
+		if (!mVisible)
+			return;
+
 		const glm::mat4x4& model_matrix = mTransformComponent->getGlobalTransform();
 
-		Material* comp_mat = mResource->mMaterialInstance->getMaterial();
+		Material* comp_mat = mMaterialInstance.getMaterial();
 
 		comp_mat->bind();
 
@@ -179,6 +189,12 @@ namespace nap
 		const opengl::IndexBuffer* index_buffer = mesh.getIndexBuffer();
 		GLsizei draw_count = static_cast<GLsizei>(index_buffer->getCount());
 
+		if (mClipRect.mWidth > 0.0f && mClipRect.mHeight > 0.0f)
+		{
+			glEnable(GL_SCISSOR_TEST);
+			glScissor(mClipRect.mX, mClipRect.mY, mClipRect.mWidth, mClipRect.mHeight);
+		}
+
 		// Draw with or without using indices
 		if (index_buffer == nullptr)
 		{
@@ -193,12 +209,14 @@ namespace nap
 		comp_mat->unbind();
 
 		mVAOHandle->mObject->unbind();
+
+		glDisable(GL_SCISSOR_TEST);
 	}
 
 
-	MaterialInstance* RenderableMeshComponent::getMaterialInstance()
+	MaterialInstance& RenderableMeshComponent::getMaterialInstance()
 	{
-		return mResource->mMaterialInstance.get();
+		return mMaterialInstance;
 	}
 }
 

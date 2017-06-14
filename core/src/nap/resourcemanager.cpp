@@ -421,39 +421,38 @@ namespace nap
 		return true;
 	}
 
-
-	bool ResourceManagerService::initEntities(ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState)
+	const ObjectPtr<EntityInstance> ResourceManagerService::createEntity(const EntityResource& entityResource, const std::string& entityID, utility::ErrorState& errorState)
 	{
-		// Build list of all entities we need to update. We need to use the objects in objectsToUpdate over those already in the ResourceManager
-		// In essence, objectsToUpdate functions as an 'overlay' on top of the ResourceManager
-		std::vector<EntityResource*> entities;
-		
-		// First add all EntityResources in the list of objects to update
-		for (auto& kvp : objectsToUpdate)
-		{
-			if (kvp.second->get_type() != RTTI_OF(EntityResource))
-				continue;
+		if (!errorState.check(mEntitiesCreatedDuringInit.find(entityID) == mEntitiesCreatedDuringInit.end(), "Trying to create entity with existing ID"))
+			return nullptr;
 
-			entities.push_back(rtti_cast<EntityResource>(kvp.second.get()));
-		}
+		// Create a single entity
+		std::vector<const EntityResource*> entityResources;
+		entityResources.push_back(&entityResource);
+		EntityByIDMap new_entity_instances;
+		InstanceByIDMap all_new_instances;
+		bool result = createEntities(entityResources, new_entity_instances, all_new_instances, errorState);
+		if (!result)
+			return false;
 
-		// Next, go through all EntityResources currently in the resource manager and add them if they're not in the list of objects to update
-		for (auto& kvp : mObjects)
-		{
-			if (kvp.second->get_type() != RTTI_OF(EntityResource))
-				continue;
+		assert(new_entity_instances.size() == 1);
+		new_entity_instances.begin()->second->mID = entityID;
 
-			ObjectByIDMap::const_iterator object_to_update = objectsToUpdate.find(kvp.first);
-			if (object_to_update == objectsToUpdate.end())
-				entities.push_back(rtti_cast<EntityResource>(kvp.second.get()));
-		}
+		// All new instances should be remembered so that we can patch any pointers to them
+		for (auto& kvp : all_new_instances)
+			mInstancesCreatedDuringInit.emplace(kvp);
 
-		// Reinstantiate all entities
+		auto inserted = mEntitiesCreatedDuringInit.emplace(entityID, std::move(new_entity_instances.begin()->second));
+
+		return inserted.first->second.get();
+	}
+
+	bool ResourceManagerService::createEntities(const std::vector<const EntityResource*>& entityResources, EntityByIDMap& entityInstances, InstanceByIDMap& allNewInstances, utility::ErrorState& errorState)
+	{
 		EntityByIDMap new_entity_instances;
 
-		using InstanceByIDMap = std::unordered_map<std::string, rtti::RTTIObject*>;
-		InstanceByIDMap new_instances;
-		for (EntityResource* entity_resource : entities)
+		// Create all entity instances and component instances
+		for (const EntityResource* entity_resource : entityResources)
 		{
 			std::unique_ptr<EntityInstance> entity_instance = std::make_unique<EntityInstance>(getCore());
 			entity_instance->mID = entity_resource->mID + "_instance";
@@ -466,20 +465,21 @@ namespace nap
 				assert(component_instance);
 				component_instance->mID = componentData->mID + "_instance";
 
-				new_instances.insert(std::make_pair(component_instance->mID, component_instance.get()));
+				allNewInstances.insert(std::make_pair(component_instance->mID, component_instance.get()));
 				entity_instance->addComponent(std::move(component_instance));
 			}
 
-			new_instances.insert(std::make_pair(entity_instance->mID, entity_instance.get()));
+			allNewInstances.insert(std::make_pair(entity_instance->mID, entity_instance.get()));
 			new_entity_instances.emplace(std::make_pair(entity_resource->mID, std::move(entity_instance)));
 		}
 
-		for (EntityResource* entity_resource : entities)
+		// Now that all entities are created, make sure that parent-child relations are set correctly
+		for (const EntityResource* entity_resource : entityResources)
 		{
 			EntityByIDMap::iterator entity_instance = new_entity_instances.find(entity_resource->mID);
 			assert(entity_instance != new_entity_instances.end());
 
-			for (ObjectPtr<EntityResource>& child_entity_resource : entity_resource->mChildren)
+			for (const ObjectPtr<EntityResource>& child_entity_resource : entity_resource->mChildren)
 			{
 				EntityByIDMap::iterator child_entity_instance = new_entity_instances.find(child_entity_resource->mID);
 				assert(child_entity_instance != new_entity_instances.end());
@@ -487,21 +487,71 @@ namespace nap
 			}
 		}
 
-		for (EntityResource* entity_resource : entities)
+		// Now that all entities are setup correctly, initialize the component instances with the
+		// component resource data.
+		for (const EntityResource* entity_resource : entityResources)
 		{
-			for (auto& componentData : entity_resource->mComponents)
+			for (auto& component_resource : entity_resource->mComponents)
 			{
-				InstanceByIDMap::iterator pos = new_instances.find(componentData->mID + "_instance");
-				assert(pos != new_instances.end());
+				InstanceByIDMap::iterator pos = allNewInstances.find(component_resource->mID + "_instance");
+				assert(pos != allNewInstances.end());
 
 				ComponentInstance* component_instance = rtti_cast<ComponentInstance>(pos->second);
 				assert(component_instance != nullptr);
-				
-				if (!component_instance->init(componentData, errorState))
+
+				if (!component_instance->init(component_resource, errorState))
 					return false;
 			}
 		}
 
+		// Everything was successful, move to the output list
+		entityInstances = std::move(new_entity_instances);
+
+		return true;
+	}
+
+	bool ResourceManagerService::initEntities(ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState)
+	{
+		// Build list of all entities we need to update. We need to use the objects in objectsToUpdate over those already in the ResourceManager
+		// In essence, objectsToUpdate functions as an 'overlay' on top of the ResourceManager
+		std::vector<const EntityResource*> entities_to_spawn;
+		
+		// First add all EntityResources in the list of objects to update
+		for (auto& kvp : objectsToUpdate)
+		{
+			if (kvp.second->get_type() != RTTI_OF(EntityResource))
+				continue;
+
+			EntityResource* resource = rtti_cast<EntityResource>(kvp.second.get());
+			if (resource->mAutoSpawn)
+				entities_to_spawn.push_back(resource);
+		}
+
+		// Next, go through all EntityResources currently in the resource manager and add them if they're not in the list of objects to update
+		for (auto& kvp : mObjects)
+		{
+			if (kvp.second->get_type() != RTTI_OF(EntityResource))
+				continue;
+
+			ObjectByIDMap::const_iterator object_to_update = objectsToUpdate.find(kvp.first);
+			if (object_to_update == objectsToUpdate.end())
+			{
+				EntityResource* resource = rtti_cast<EntityResource>(kvp.second.get());
+				if (resource->mAutoSpawn)
+					entities_to_spawn.push_back(resource);
+			}
+		}
+
+		EntityByIDMap new_entity_instances;
+		InstanceByIDMap all_new_instances;
+		if (!createEntities(entities_to_spawn, new_entity_instances, all_new_instances, errorState))
+		{
+			mEntitiesCreatedDuringInit.clear();			
+			mInstancesCreatedDuringInit.clear();
+			return false;
+		}
+
+		// Start with an empty root and add all entities without a parent to the root
 		mRootEntity->clearChildren();
 		for (auto& kvp : new_entity_instances)
 		{
@@ -509,10 +559,19 @@ namespace nap
 				mRootEntity->addChild(*kvp.second);
 		}
 
-		patchObjectPtrs(new_instances);
+		// Any instances (entities and components) that were created during init phase should be patched too
+		for (auto& kvp : mInstancesCreatedDuringInit)
+			all_new_instances.emplace(kvp);
+
+		patchObjectPtrs(all_new_instances);
 
 		// Replace entities currently in the resource manager with the new set
 		mEntities = std::move(new_entity_instances);
+		for (auto& kvp : mEntitiesCreatedDuringInit)
+			mEntities.emplace(kvp.first, std::move(kvp.second));
+		
+		mEntitiesCreatedDuringInit.clear();
+		mInstancesCreatedDuringInit.clear();
 
 		return true;
 	}

@@ -8,6 +8,15 @@
 
 namespace nap
 {
+	class Rect final
+	{
+	public:
+		float mX = 0.0f;
+		float mY = 0.0f;
+		float mWidth = 0.0f;
+		float mHeight = 0.0f;
+	};
+
 	class MeshResource;
 	class MaterialInstance;
 	class TransformComponent;
@@ -28,7 +37,8 @@ namespace nap
 
 	public:
 		ObjectPtr<MeshResource>				mMeshResource;
-		ObjectPtr<MaterialInstance>			mMaterialInstance;					///< MaterialInstance, which is used to override uniforms for this instance
+		MaterialInstanceResource			mMaterialInstanceResource;			///< MaterialInstance, which is used to override uniforms for this instance
+		Rect								mClipRect;
 	};
 
 	/**
@@ -58,7 +68,12 @@ namespace nap
 		/**
 		 * @return MaterialInstance for this component.
 		 */
-		MaterialInstance* getMaterialInstance();
+		MaterialInstance& getMaterialInstance();
+
+		/**
+		 * Toggles visibility.
+		 */
+		void setVisible(bool visible) { mVisible = visible; }
 
 	private:
 		void pushUniforms();
@@ -68,5 +83,8 @@ namespace nap
 		ObjectPtr<RenderableMeshComponentResource>	mResource;
 		TransformComponent*							mTransformComponent;
 		std::unique_ptr<VAOHandle>					mVAOHandle;
+		MaterialInstance							mMaterialInstance;
+		bool										mVisible = true;
+		Rect										mClipRect;
 	};
 }
