@@ -8,5 +8,6 @@ uniform sampler2D	mTexture;
 void main(void)
 {
 	vec2 uvs = vec2(pass_Uvs.x, pass_Uvs.y);
+	uvs.y = 1.0 - uvs.y;
 	out_Color = texture(mTexture, uvs);
 }

@@ -70,7 +70,8 @@ namespace nap
 		mutable glm::mat4x4		mProjectionMatrix;		// The composed projection matrix
 
 		mutable bool			mDirty = true;			// If the projection matrix needs to be recalculated
-		float					mAspectRatio = 1.0f;
+		float					mWidth;
+		float					mHeight;
 		
 		OrthoCameraProperties	mProperties;
 		TransformComponent*		mTransformComponent;

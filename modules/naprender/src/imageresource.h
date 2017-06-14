@@ -4,7 +4,7 @@
 #include <nap/resource.h>
 #include <nap/coreattributes.h>
 #include <nimage.h>
-
+#include <renderattributes.h>
 
 namespace nap
 {
@@ -27,6 +27,11 @@ namespace nap
 		 * Non const accessors
 		 */
 		opengl::BaseTexture& getTexture();
+
+		/**
+		 * Virtual override to get the size of the texture, to be implemented by derived classes
+		 */
+		virtual const glm::vec2 getSize() const = 0;
 
 		/**
 		 * Binds the texture
@@ -61,6 +66,11 @@ namespace nap
 		* Returns custom display name
 		*/
 		virtual const std::string getDisplayName() const override				{ return mDisplayName;  }
+
+		/**
+		 * Get the size of the texture
+		 */
+		virtual const glm::vec2 getSize() const override;
 
 	public:
 		opengl::Texture2DSettings mSettings;
@@ -110,6 +120,11 @@ namespace nap
 		 * @return human readable display name
 		 */
 		virtual const std::string getDisplayName() const override;
+
+		/**
+		 * Get the size of the texture
+		 */
+		virtual const glm::vec2 getSize() const override;
 
 	public:
 		// Path to img on disk

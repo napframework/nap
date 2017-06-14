@@ -47,6 +47,13 @@ namespace nap
 		return *mTexture;
 	}
 
+
+	const glm::vec2 MemoryTextureResource2D::getSize() const
+	{
+		return glm::vec2(mTexture->getSettings().width, mTexture->getSettings().height);
+	}
+
+
 	// Constructor
 	ImageResource::ImageResource(const std::string& imgPath)
 	{
@@ -85,6 +92,13 @@ namespace nap
 		assert(mImage != nullptr);
 		return *mImage;
 	}
+
+
+	const glm::vec2 ImageResource::getSize() const
+	{
+		return glm::vec2(mImage->getWidth(), mImage->getHeight());
+	}
+
 	
 	// Non const getter, following:
 	opengl::BaseTexture& TextureResource::getTexture()
