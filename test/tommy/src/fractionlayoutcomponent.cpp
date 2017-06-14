@@ -48,15 +48,26 @@ namespace nap
 		return true;
 	}
 
-	void FractionLayoutComponent::updateLayout(const glm::mat4x4& parentWorldTransform)
+	void FractionLayoutComponent::updateLayout(const glm::vec2& windowSize, const glm::mat4x4& parentWorldTransform)
 	{
 		const glm::mat4x4 world_transform = parentWorldTransform * mTransformComponent->getLocalTransform();
 
-		glm::vec2 parent_pos = mTransformComponent->getTranslate();
+		glm::vec2 parent_pos(world_transform[3][0], world_transform[3][1]);
 		glm::vec2 parent_size(world_transform[0][0], world_transform[1][1]);
 
 		for (EntityInstance* child_entity : getEntity()->getChildren())
 		{
+			RenderableMeshComponent* child_renderable_mesh = child_entity->findComponent<RenderableMeshComponent>();
+			if (child_renderable_mesh)
+			{
+				Rect clip_rect;
+				clip_rect.mX = parent_pos.x - parent_size.x*0.5f;
+				clip_rect.mY = (windowSize.y - parent_pos.y)-parent_size.y*0.5f;
+				clip_rect.mWidth = parent_size.x;
+				clip_rect.mHeight = parent_size.y;
+				child_renderable_mesh->setClipRect(clip_rect);
+			}
+
 			FractionLayoutComponent* child_layout = child_entity->findComponent<FractionLayoutComponent>();
 			if (child_layout == nullptr)
 				continue;
@@ -93,7 +104,7 @@ namespace nap
 			child_transform.setTranslate(glm::vec3(relative_child_pos_frac, mTransformComponent->getTranslate().z + 5.0f));
 			child_transform.setScale(glm::vec3(relative_child_size_frac, 1.0f));
 
-			child_layout->updateLayout(world_transform);
+			child_layout->updateLayout(windowSize, world_transform);
 		}
 	}
 }

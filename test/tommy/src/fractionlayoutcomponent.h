@@ -55,7 +55,7 @@ namespace nap
 		}
 
 		bool init(const ObjectPtr<ComponentResource>& resource, utility::ErrorState& errorState);
-		void updateLayout(const glm::mat4x4& parentWorldTransform);
+		void updateLayout(const glm::vec2& windowSize, const glm::mat4x4& parentWorldTransform);
 
 		const glm::vec2& getPosition() const { return mProperties.mPosition; }
 		const glm::vec2& getSize() const { return mProperties.mSize; }

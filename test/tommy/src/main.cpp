@@ -97,7 +97,7 @@ void onUpdate(const nap::SignalAttribute& signal)
 	// Update model transform
 	float elapsed_time = renderService->getCore().getElapsedTime();
 	static float prev_elapsed_time = elapsed_time;
-	float delta_time = prev_elapsed_time - elapsed_time;
+	float delta_time = elapsed_time - prev_elapsed_time;
 	if (delta_time < 0.01f)
 	{
 		delta_time = 0.01f;
@@ -115,7 +115,9 @@ void onUpdate(const nap::SignalAttribute& signal)
 	transform_component.setScale(glm::vec3(window_size.x, window_size.y, 1.0));
 
 	nap::FractionLayoutComponent& layout = rootLayoutEntity->getComponent<nap::FractionLayoutComponent>();
-	layout.updateLayout(glm::mat4(1.0f));
+	layout.updateLayout(window_size, glm::mat4(1.0f));
+
+	prev_elapsed_time = elapsed_time;
 }
 
 nap::Slot<const nap::SignalAttribute&> updateSlot = { [](const nap::SignalAttribute& attr){ onUpdate(attr); } };
@@ -282,7 +284,7 @@ bool init(nap::Core& core)
 	if (!resourceManagerService->loadFile("data/tommy/tommy.json", errorState))
 	{
 		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
-		return false;       
+		return false;        
 	}
 
 

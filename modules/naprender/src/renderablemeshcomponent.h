@@ -75,6 +75,8 @@ namespace nap
 		 */
 		void setVisible(bool visible) { mVisible = visible; }
 
+		void setClipRect(const Rect& rect) { mClipRect = rect; }
+
 	private:
 		void pushUniforms();
 		void setBlendMode();

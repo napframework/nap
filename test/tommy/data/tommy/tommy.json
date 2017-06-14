@@ -253,13 +253,6 @@
 			{
 				"nap::RenderableMeshComponentResource": {
 					"Mesh" : "PlaneMesh",
-					"ClipRect" : 
-					{
-						"X" : 125,
-						"Y" : 60,
-						"Width" : 250,
-						"Height" : 650
-					}, 
 					"MaterialInstance" : 
 					{
 						"Material": "UIMaterial",
