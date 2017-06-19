@@ -72,7 +72,7 @@ namespace nap
 		if (mTargetImageIndex != mImageIndex)
 		{
 			mTimer += deltaTime;
-			const float scroll_time = 1.0f;
+			const float scroll_time = 0.7f;
 			const float timeScale = mTimer / scroll_time;
 
 			if (timeScale >= 1.0f)

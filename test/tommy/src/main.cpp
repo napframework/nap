@@ -98,9 +98,9 @@ void onUpdate(const nap::SignalAttribute& signal)
 	float elapsed_time = renderService->getCore().getElapsedTime();
 	static float prev_elapsed_time = elapsed_time;
 	float delta_time = elapsed_time - prev_elapsed_time;
-	if (delta_time < 0.01f)
+	if (delta_time < 0.0001f)
 	{
-		delta_time = 0.01f;
+		delta_time = 0.0001f;
 	}
 
 	nap::SlideShowComponent& component = slideShowEntity->getComponent<nap::SlideShowComponent>();
