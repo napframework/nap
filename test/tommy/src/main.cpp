@@ -100,7 +100,7 @@ void onUpdate(const nap::SignalAttribute& signal)
 		cameraEntity = resourceManagerService->findEntity("CameraEntity");
 		if (cameraEntity != nullptr)
 		{
-			const glm::ivec2 windowSize = renderWindows[0]->size.getValue();
+			const glm::ivec2 windowSize = renderWindows[0]->getSize();
 			cameraEntity->getComponent<nap::OrthoCameraComponent>().setAspectRatio((float)windowSize.x, (float)windowSize.y);
 		}
 	}
