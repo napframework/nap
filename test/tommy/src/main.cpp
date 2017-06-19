@@ -95,6 +95,23 @@ void onUpdate(const nap::SignalAttribute& signal)
 	renderService->getPrimaryWindow().makeCurrent();
 	resourceManagerService->checkForFileChanges();
 
+	if (cameraEntity == nullptr)
+	{
+		cameraEntity = resourceManagerService->findEntity("CameraEntity");
+		if (cameraEntity != nullptr)
+		{
+			const glm::ivec2 windowSize = renderWindows[0]->size.getValue();
+			cameraEntity->getComponent<nap::OrthoCameraComponent>().setAspectRatio((float)windowSize.x, (float)windowSize.y);
+		}
+	}
+
+	if (slideShowEntity == nullptr)
+		slideShowEntity = resourceManagerService->findEntity("SlideShowEntity");
+
+	if (rootLayoutEntity == nullptr)
+		rootLayoutEntity = resourceManagerService->findEntity("RootEntity");
+
+
 	// Update model transform
 	float elapsed_time = renderService->getCore().getElapsedTime();
 	static float prev_elapsed_time = elapsed_time;
@@ -104,19 +121,26 @@ void onUpdate(const nap::SignalAttribute& signal)
 		delta_time = 0.0001f;
 	}
 
-	nap::SlideShowComponent& component = slideShowEntity->getComponent<nap::SlideShowComponent>();
-	component.update(delta_time);
+	if (slideShowEntity != nullptr)
+	{
+		nap::SlideShowComponent& component = slideShowEntity->getComponent<nap::SlideShowComponent>();
+		component.update(delta_time);
+	}
 
-	updateCamera(delta_time);
+	if (cameraEntity != nullptr)
+		updateCamera(delta_time);
 
 	glm::vec2 window_size = renderWindows[0]->getSize();
 
-	nap::TransformComponent& transform_component = rootLayoutEntity->getComponent<nap::TransformComponent>();
-	transform_component.setTranslate(glm::vec3(window_size.x*0.5, window_size.y*0.5, -50.0f));
-	transform_component.setScale(glm::vec3(window_size.x, window_size.y, 1.0));
+	if (rootLayoutEntity != nullptr)
+	{
+		nap::TransformComponent& transform_component = rootLayoutEntity->getComponent<nap::TransformComponent>();
+		transform_component.setTranslate(glm::vec3(window_size.x*0.5, window_size.y*0.5, -50.0f));
+		transform_component.setScale(glm::vec3(window_size.x, window_size.y, 1.0));
 
-	nap::FractionLayoutComponent& layout = rootLayoutEntity->getComponent<nap::FractionLayoutComponent>();
-	layout.updateLayout(window_size, glm::mat4(1.0f));
+		nap::FractionLayoutComponent& layout = rootLayoutEntity->getComponent<nap::FractionLayoutComponent>();
+		layout.updateLayout(window_size, glm::mat4(1.0f));
+	}
 
 	prev_elapsed_time = elapsed_time;
 }
@@ -202,15 +226,18 @@ void onRender(const nap::SignalAttribute& signal)
 	{
 		nap::WindowResource* render_window = renderWindows[0].get();
 
-		render_window->makeActive();
+		if (cameraEntity != nullptr)
+		{
+			render_window->makeActive();
 
-		opengl::RenderTarget* render_target = (opengl::RenderTarget*)render_window->getWindow()->getBackbuffer();
-		render_target->setClearColor(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
-		renderService->clearRenderTarget(*render_target, opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH);
+			opengl::RenderTarget* render_target = (opengl::RenderTarget*)render_window->getWindow()->getBackbuffer();
+			render_target->setClearColor(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
+			renderService->clearRenderTarget(*render_target, opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH);
 
-		renderService->renderObjects(*render_target, cameraEntity->getComponent<nap::OrthoCameraComponent>());
+			renderService->renderObjects(*render_target, cameraEntity->getComponent<nap::OrthoCameraComponent>());
 
-		render_window->swap();
+			render_window->swap();
+		}
 	}
 }
 nap::Slot<const nap::SignalAttribute&> renderSlot = { [](const nap::SignalAttribute& attr){ onRender(attr); } };
@@ -267,16 +294,6 @@ bool init(nap::Core& core)
 	render_state.mLineWidth = 1.3f;
 	render_state.mPointSize = 2.0f;
 	render_state.mPolygonMode = opengl::PolygonMode::FILL;
-
-	cameraEntity = resourceManagerService->findEntity("CameraEntity");
-	assert(cameraEntity != nullptr);
-
-	cameraEntity->getComponent<nap::OrthoCameraComponent>().setAspectRatio((float)windowWidth, (float)windowHeight);
-
-	slideShowEntity = resourceManagerService->findEntity("SlideShowEntity");
-	assert(slideShowEntity != nullptr);
-	rootLayoutEntity = resourceManagerService->findEntity("RootEntity");
-	assert(rootLayoutEntity != nullptr);
 
 	return true;
 }
@@ -352,14 +369,20 @@ void runGame(nap::Core& core)
 				}
 				case SDLK_n:
 				{
-					nap::SlideShowComponent& component = slideShowEntity->getComponent<nap::SlideShowComponent>();
-					component.cycleLeft();
+					if (slideShowEntity != nullptr)
+					{
+						nap::SlideShowComponent& component = slideShowEntity->getComponent<nap::SlideShowComponent>();
+						component.cycleLeft();
+					}
 					break;
 				}
 				case SDLK_m:
 				{
-					nap::SlideShowComponent& component = slideShowEntity->getComponent<nap::SlideShowComponent>();
-					component.cycleRight();
+					if (slideShowEntity != nullptr)
+					{
+						nap::SlideShowComponent& component = slideShowEntity->getComponent<nap::SlideShowComponent>();
+						component.cycleRight();
+					}
 					break;
 				}
 				case SDLK_UP:
@@ -453,7 +476,8 @@ void runGame(nap::Core& core)
 // 							renderWindow->size.setValue({ width, height });
 // 					}
 
-					cameraEntity->getComponent<nap::OrthoCameraComponent>().setAspectRatio((float)width, (float)height);
+					if (cameraEntity != nullptr)
+						cameraEntity->getComponent<nap::OrthoCameraComponent>().setAspectRatio((float)width, (float)height);
 					break;
 				}
 				case SDL_WINDOWEVENT_MOVED:
