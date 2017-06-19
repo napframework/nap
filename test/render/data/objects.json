@@ -1,7 +1,18 @@
 {
+	"nap::WindowResource": {
+		"mID" : "Window0",
+		"Width" : 256,
+		"Height" : 256,
+		"Title" : "Window 1"
+	},
+
+	"nap::WindowResource": {
+		"mID" : "Window1",
+		"Width" : 512,
+		"Height" : 512,
+		"Title" : "Window 2"
+	},
 	
-
-
     "nap::ImageResource": {
 		"mID" : "PigTexture",
 		"mImagePath" : "data/pig_head.jpg"
@@ -152,34 +163,32 @@
 				"nap::RenderableMeshComponentResource": {
 					"Mesh" : "PigMesh",
 					"MaterialInstance" : {
-						"nap::MaterialInstance": { 
-							"Material": "GeneralMaterial",
-							"BlendMode": "Opaque",
-							"Uniforms" : 
-							[
+						"Material": "GeneralMaterial",
+						"BlendMode": "Opaque",
+						"Uniforms" : 
+						[
+							{
+								"nap::UniformInt" : 
 								{
-									"nap::UniformInt" : 
-									{
-										"Name" : "mTextureIndex",
-										"Value" : 0
-									}
-								},
-								{
-									"nap::UniformTexture2D" : 
-									{
-										"Name" : "pigTexture",
-										"Texture" : "PigTexture"
-									}
-								},
-								{
-									"nap::UniformTexture2D" : 
-									{
-										"Name" : "testTexture",
-										"Texture" : "TestTexture"
-									}
+									"Name" : "mTextureIndex",
+									"Value" : 0
 								}
-							]
-						}
+							},
+							{
+								"nap::UniformTexture2D" : 
+								{
+									"Name" : "pigTexture",
+									"Texture" : "PigTexture"
+								}
+							},
+							{
+								"nap::UniformTexture2D" : 
+								{
+									"Name" : "testTexture",
+									"Texture" : "TestTexture"
+								}
+							}
+						]
 					}
 				}		
 			},
@@ -217,9 +226,7 @@
 				"nap::RenderableMeshComponentResource": {
 					"Mesh" : "OrientationMesh",
 					"MaterialInstance" : {
-						"nap::MaterialInstance": {
-							"Material": "OrientationMaterial"
-						}
+						"Material": "OrientationMaterial"
 					}
 				}		
 			},
@@ -257,9 +264,7 @@
 				"nap::RenderableMeshComponentResource": {
 					"Mesh" : "PlaneMesh",
 					"MaterialInstance" : {
-						"nap::MaterialInstance": {
-							"Material": "GeneralMaterial"
-						}
+						"Material": "GeneralMaterial"
 					}
 				}		
 			},
@@ -297,9 +302,7 @@
 				"nap::RenderableMeshComponentResource": {
 					"Mesh" : "PlaneMesh",
 					"MaterialInstance" : {
-						"nap::MaterialInstance": {
-							"Material": "GeneralMaterial"
-						}
+						"Material": "GeneralMaterial"
 					}
 				}		
 			},
@@ -337,34 +340,32 @@
 				"nap::RenderableMeshComponentResource": {
 					"Mesh" : "SphereMesh",
 					"MaterialInstance" : {
-						"nap::MaterialInstance": {
-							"mID": "WorldMaterialInstance",
-							"Material": "GeneralMaterial",
-							"Uniforms" : 
-							[
+						"mID": "WorldMaterialInstance",
+						"Material": "GeneralMaterial",
+						"Uniforms" : 
+						[
+							{
+								"nap::UniformInt" : 
 								{
-									"nap::UniformInt" : 
-									{
-										"Name" : "mTextureIndex",
-										"Value" : 1
-									}
-								},
-								{
-									"nap::UniformTexture2D" : 
-									{
-										"Name" : "pigTexture",
-										"Texture" : "WorldTexture"
-									}
-								},
-								{
-									"nap::UniformTexture2D" : 
-									{
-										"Name" : "testTexture",
-										"Texture" : "WorldTexture"
-									}
+									"Name" : "mTextureIndex",
+									"Value" : 1
 								}
-							]	
-						}
+							},
+							{
+								"nap::UniformTexture2D" : 
+								{
+									"Name" : "pigTexture",
+									"Texture" : "WorldTexture"
+								}
+							},
+							{
+								"nap::UniformTexture2D" : 
+								{
+									"Name" : "testTexture",
+									"Texture" : "WorldTexture"
+								}
+							}
+						]	
 					}
 				}					
 			},

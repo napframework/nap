@@ -1,6 +1,7 @@
 // Local Includes
 #include "nsdlgl.h"
 #include "nglutils.h"
+#include "utility/errorstate.h"
 
 // External Includes
 #include <iostream>
@@ -66,12 +67,13 @@ namespace opengl
 	* Creates a new opengl window using the parameters specified
 	* @return: the create window, nullptr if not successful
 	*/
-	static SDL_Window* createSDLWindow(const WindowSettings& settings)
+	static SDL_Window* createSDLWindow(const WindowSettings& settings, nap::utility::ErrorState& errorState)
 	{
 		// Construct options
 		Uint32 options = SDL_WINDOW_OPENGL;
 		options = settings.resizable  ? options | SDL_WINDOW_RESIZABLE  : options;
 		options = settings.borderless ? options | SDL_WINDOW_BORDERLESS : options;
+		options = !settings.visible ? options | SDL_WINDOW_HIDDEN : options;
 
 		SDL_Window* new_window = SDL_CreateWindow(settings.title.c_str(),
 			settings.x,
@@ -80,12 +82,9 @@ namespace opengl
 			settings.height,
 			options);
 
-		// Make sure we were able to create oen
-		if (new_window == nullptr)
-		{	
-			printMessage(MessageType::ERROR, "unable to create a new window with name: %s", settings.title.c_str());
-			printSDLError();
-		}
+		if (!errorState.check(new_window != nullptr, "Failed to create window: %s", getSDLError().c_str()))
+			return nullptr;
+
 		return new_window;
 	}
 
@@ -97,15 +96,11 @@ namespace opengl
 	* Also makes the current context current
 	* @return: the created context, nullptr if not successful
 	*/
-	static SDL_GLContext createContext(SDL_Window& window, bool vSync)
+	static SDL_GLContext createContext(SDL_Window& window, bool vSync, nap::utility::ErrorState& errorState)
 	{
 		SDL_GLContext context = SDL_GL_CreateContext(&window);
-		if (context == nullptr)
-		{
-			printMessage(MessageType::ERROR, "unable to create context for window: %s", SDL_GetWindowTitle(&window));
-			printSDLError();
-			return nullptr;
-		}
+		if (!errorState.check(context != nullptr, "Failed to create OpenGL Context: %s", getSDLError().c_str()))
+			return false;
 
 		// Print Context Info
 		const char* window_title = SDL_GetWindowTitle(&window);
@@ -125,20 +120,16 @@ namespace opengl
 		SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &mb);
 		SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &ms);
 		SDL_GL_GetAttribute(SDL_GL_STENCIL_SIZE, &ss);
-		printMessage(MessageType::INFO, "color buffer size (rgba): %d, %d, %d, %d", rs, gs, bs, as);
-		printMessage(MessageType::INFO, "depth buffer size: %d", ds);
-		printMessage(MessageType::INFO, "stencil size: %d", ss);
-		printMessage(MessageType::INFO, "multi-sampling: %d, samples: %d", mb, ms);
 
 		return context;
 	}
 
 
 	// Creates a window with an associated OpenGL context
-	Window* createWindow(const WindowSettings& settings)
+	std::unique_ptr<Window> createWindow(const WindowSettings& settings, nap::utility::ErrorState& errorState)
 	{
 		// create the window
-		SDL_Window* new_window = createSDLWindow(settings);
+		SDL_Window* new_window = createSDLWindow(settings, errorState);
 		if (new_window == nullptr)
 			return nullptr;
 
@@ -163,12 +154,12 @@ namespace opengl
 		}
 
 		// Create context
-		SDL_GLContext context = createContext(*new_window, true);
+		SDL_GLContext context = createContext(*new_window, true, errorState);
 		if (context == nullptr)
 			return nullptr;
 
 		// Create window container
-		return new Window(settings, new_window, context);
+		return std::make_unique<Window>(settings, new_window, context);
 	}
 
 

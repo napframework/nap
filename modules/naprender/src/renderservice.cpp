@@ -68,77 +68,37 @@ namespace nap
 	// Register all object creation functions
 	void RenderService::registerObjectCreators(rtti::Factory& factory)
 	{
-	}
-
-
-	// Occurs when an object registers itself with the service
-	void RenderService::objectRegistered(Object& inObject)
-	{
-		// If we have a render window component and glew hasn't been initialized
-		// Initialize glew. Otherwise subsequent render calls will fail
-		if (inObject.get_type().is_derived_from(RTTI_OF(RenderWindowComponent)))
-		{
-			RenderWindowComponent& new_window = static_cast<RenderWindowComponent&>(inObject);
-			createWindow(new_window);
-		}
+		factory.addObjectCreator(std::make_unique<WindowResourceCreator>(*this));
 	}
 
 
 	// Creates a new opengl window and assigns it to the component
 	// TODO: Add Mutex
-	void RenderService::createWindow(RenderWindowComponent& window)
+	std::unique_ptr<RenderWindow>  RenderService::createWindow(WindowResource& window, utility::ErrorState& errorState)
 	{
-		// Make sure we don't procedeed when errors have been raised before
-		if (state > State::Initialized)
-		{
-			nap::Logger::fatal(*this, "unable to create new window, previous error occurred");
-			return;
-		}
-
-		// Make sure we have a renderer
-		if (mRenderer == nullptr)
-		{
-			nap::Logger::fatal(*this, "unable to create new window, no associated renderer");
-			state = State::SystemError;
-			return;
-		}
-
-		// Initialize video render 
-		if (state == State::Uninitialized)
-		{
-			if (!mRenderer->preInit())
-			{
-				nap::Logger::fatal(*this, "unable to initialize renderer");
-				state = State::SystemError;
-				return;
-			}
-		}
+		assert(mRenderer != nullptr);
 
 		// Get settings
-		const nap::RenderWindowSettings& window_settings = window.getConstructionSettings();
-		nap::RenderWindow* new_window = mRenderer->createRenderWindow(window_settings);
+		RenderWindowSettings window_settings;
+		window_settings.width		= window.mWidth;
+		window_settings.height		= window.mHeight;
+		window_settings.borderless	= window.mBorderless;
+		window_settings.resizable	= window.mResizable;
+		window_settings.title		= window.mTitle;
+
+		std::unique_ptr<RenderWindow> new_window = mRenderer->createRenderWindow(window_settings, errorState);
 		if (new_window == nullptr)
-		{
-			nap::Logger::fatal(*this, "unable to create render window and context");
-			state = State::WindowError;
-			return;
-		}
-		
-		// Set window on window component
-		window.mWindow.reset(new_window);
+			return nullptr;
 
-		// Initialize Glew
-		if (state == State::Uninitialized)
-		{
-			if (!mRenderer->postInit())
-			{
-				state = State::SystemError;
-				nap::Logger::fatal(*this, "unable to finalize render initialization process");
-				return;
-			}
-		}
+		// After window creation, make sure the primary window stays active, so that render resource creation always goes to that context
+		getPrimaryWindow().makeCurrent();
 
-		state = State::Initialized;
+		return new_window;
+	}
+
+	RenderWindow& RenderService::getPrimaryWindow()
+	{
+		return mRenderer->getPrimaryWindow();
 	}
 
 
@@ -152,18 +112,6 @@ namespace nap
 	// Emits the draw call
 	void RenderService::render()
 	{
-		if (state == State::Uninitialized)
-		{
-			nap::Logger::fatal(*this, "unable to execute render call, service is not initialized");
-			return;
-		}
-
-		if (state > State::Initialized)
-		{
-			nap::Logger::fatal(*this, "unable to execute render call, internal error occurred: %d", static_cast<int>(state));
-			return;
-		}
-
 		update.trigger();
 
 		// Collect all transform changes and push
@@ -288,20 +236,16 @@ namespace nap
 			return false;
 		}
 
-		// Shut down existing renderer
-		shutdown();
-
-		// Set state
-		state = State::Uninitialized;
-
 		// Create new renderer
 		nap::Renderer* new_renderer = renderer.create<nap::Renderer>();
 		mRenderer.reset(new_renderer);
 
+		if (!mRenderer->init(errorState))
+			return false;
+
 		return true;
 	}
-
-
+	
 	void RenderService::queueResourceForDestruction(std::unique_ptr<opengl::IGLContextResource> resource) 
 	{ 
 		if (resource != nullptr)
@@ -309,14 +253,19 @@ namespace nap
 	}
 
 
-	void RenderService::destroyGLContextResources(std::vector<RenderWindowComponent*>& renderWindows)
+	void RenderService::destroyGLContextResources(const std::vector<ObjectPtr<WindowResource>>& renderWindows)
 	{
 		// If there is anything scheduled, destroy
 		if (!mGLContextResourcesToDestroy.empty())
 		{
+			// Destroy resources for primary window
+			getPrimaryWindow().makeCurrent();
+			for (auto& resource : mGLContextResourcesToDestroy)
+				resource->destroy(getPrimaryWindow().getContext());
+
 			// We go over the windows to make the GL context active, and then destroy 
 			// the resources for that context
-			for (RenderWindowComponent* render_window : renderWindows)
+			for (const ObjectPtr<WindowResource>& render_window : renderWindows)
 			{
 				render_window->makeActive();
 				for (auto& resource : mGLContextResourcesToDestroy)
@@ -330,12 +279,8 @@ namespace nap
 	// Shut down renderer
 	void RenderService::shutdown()
 	{
-		if (state == State::Initialized)
-		{
-			assert(mRenderer != nullptr);
-			mRenderer->shutdown();
-		}
-		state = State::Uninitialized;
+		assert(mRenderer != nullptr);
+		mRenderer->shutdown();
 	}
 
 

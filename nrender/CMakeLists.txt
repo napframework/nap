@@ -84,7 +84,7 @@ endif()
 
 # add to include path and expose to depending projects
 target_include_directories(${PROJECT_NAME} PUBLIC src ${INCLUDES})
-target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${LIBRARIES} naputility)
 
 if (MSVC)
     include(GenerateExportheader)

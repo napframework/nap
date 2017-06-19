@@ -79,8 +79,8 @@ static float rotateScale = 1.0f;
 nap::RenderService* renderService = nullptr;
 nap::ResourceManagerService* resourceManagerService = nullptr;
 nap::Service* rpcService = nullptr;
-std::vector<nap::RenderWindowComponent*> renderWindows;
 
+std::vector<nap::ObjectPtr<nap::WindowResource>>	renderWindows;
 nap::ObjectPtr<nap::TextureRenderTargetResource2D>	textureRenderTarget;
 nap::ObjectPtr<nap::EntityInstance>					pigEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance>					rotatingPlaneEntity = nullptr;
@@ -115,7 +115,8 @@ void createSpheres(nap::Core& core, nap::Resource& shader);
 // Called when the window is updating
 void onUpdate(const nap::SignalAttribute& signal)
 {
-	renderWindows[0]->makeActive();	// TEMP: if any changes are detected, and we are reloading, we need to do this on the correct context
+	// Need to make primary window active before reloading files, as renderer resources need to be created in that context
+	renderService->getPrimaryWindow().makeCurrent();
 	resourceManagerService->checkForFileChanges();
 
 	// Update model transform
@@ -164,26 +165,26 @@ void onUpdate(const nap::SignalAttribute& signal)
 	//xform_v->uniformScale.setValue(nscale);
 
 	// Set some material values
-	nap::MaterialInstance* material_instance = pigEntity->getComponent<nap::RenderableMeshComponent>().getMaterialInstance();
+	nap::MaterialInstance& material_instance = pigEntity->getComponent<nap::RenderableMeshComponent>().getMaterialInstance();
 
 	float v = (sin(elapsed_time) + 1.0f) / 2.0f;
 
 	// Set uniforms
 	glm::vec4 color(v, 1.0f-v, 1.0f, 1.0f);
-	material_instance->getOrCreateUniform<nap::UniformVec4>("mColor").setValue(color);
+	material_instance.getOrCreateUniform<nap::UniformVec4>("mColor").setValue(color);
 
 	// Set plane uniforms
-	nap::MaterialInstance* plane_material = planeEntity->getComponent<nap::RenderableMeshComponent>().getMaterialInstance();
-	plane_material->getOrCreateUniform<nap::UniformTexture2D>("pigTexture").setTexture(*testTexture);
-	plane_material->getOrCreateUniform<nap::UniformTexture2D>("testTexture").setTexture(*testTexture);
-	plane_material->getOrCreateUniform<nap::UniformInt>("mTextureIndex").setValue(0);
-	plane_material->getOrCreateUniform<nap::UniformVec4>("mColor").setValue({ 1.0f, 1.0f, 1.0f, 1.0f });
+	nap::MaterialInstance& plane_material = planeEntity->getComponent<nap::RenderableMeshComponent>().getMaterialInstance();
+	plane_material.getOrCreateUniform<nap::UniformTexture2D>("pigTexture").setTexture(*testTexture);
+	plane_material.getOrCreateUniform<nap::UniformTexture2D>("testTexture").setTexture(*testTexture);
+	plane_material.getOrCreateUniform<nap::UniformInt>("mTextureIndex").setValue(0);
+	plane_material.getOrCreateUniform<nap::UniformVec4>("mColor").setValue({ 1.0f, 1.0f, 1.0f, 1.0f });
 
-	nap::MaterialInstance* rotating_plane_material = rotatingPlaneEntity->getComponent<nap::RenderableMeshComponent>().getMaterialInstance();
-	rotating_plane_material->getOrCreateUniform<nap::UniformTexture2D>("pigTexture").setTexture(*testTexture);
-	rotating_plane_material->getOrCreateUniform<nap::UniformTexture2D>("testTexture").setTexture(*testTexture);
-	rotating_plane_material->getOrCreateUniform<nap::UniformInt>("mTextureIndex").setValue(0);
-	rotating_plane_material->getOrCreateUniform<nap::UniformVec4>("mColor").setValue({ 1.0f, 1.0f, 1.0f, 1.0f });
+	nap::MaterialInstance& rotating_plane_material = rotatingPlaneEntity->getComponent<nap::RenderableMeshComponent>().getMaterialInstance();
+	rotating_plane_material.getOrCreateUniform<nap::UniformTexture2D>("pigTexture").setTexture(*testTexture);
+	rotating_plane_material.getOrCreateUniform<nap::UniformTexture2D>("testTexture").setTexture(*testTexture);
+	rotating_plane_material.getOrCreateUniform<nap::UniformInt>("mTextureIndex").setValue(0);
+	rotating_plane_material.getOrCreateUniform<nap::UniformVec4>("mColor").setValue({ 1.0f, 1.0f, 1.0f, 1.0f });
 
 	//////////////////////////////////////////////////////////////////////////
 	// Camera Update
@@ -271,32 +272,38 @@ void onRender(const nap::SignalAttribute& signal)
 {
 	renderService->destroyGLContextResources(renderWindows);
 
+
+	// Render offscreen surface(s)
+	{
+		renderService->getPrimaryWindow().makeCurrent();
+
+		// Render entire scene to texture
+		renderService->clearRenderTarget(textureRenderTarget->getTarget(), opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH | opengl::EClearFlags::STENCIL);
+		renderService->renderObjects(textureRenderTarget->getTarget(), cameraEntity->getComponent<nap::PerspCameraComponent>());
+	}
+
 	// Render window 0
 	{
-		nap::RenderWindowComponent* render_window = renderWindows[0];
+		nap::WindowResource* render_window = renderWindows[0].get();
 
 		render_window->makeActive();
-		
-		// Render entire scene to texture
-		renderService->clearRenderTarget(textureRenderTarget->getTarget(), opengl::EClearFlags::COLOR|opengl::EClearFlags::DEPTH|opengl::EClearFlags::STENCIL);
-		renderService->renderObjects(textureRenderTarget->getTarget(), cameraEntity->getComponent<nap::PerspCameraComponent>());
 
 		// Render output texture to plane
 		std::vector<nap::RenderableComponent*> components_to_render;
 		components_to_render.push_back(&planeEntity->getComponent<nap::RenderableMeshComponent>());
 		components_to_render.push_back(&rotatingPlaneEntity->getComponent<nap::RenderableMeshComponent>());
 
-		nap::MaterialInstance* plane_material = planeEntity->getComponent<nap::RenderableMeshComponent>().getMaterialInstance();
-		plane_material->getUniform<nap::UniformTexture2D>("testTexture").setTexture(textureRenderTarget->GetColorTexture());
-		plane_material->getUniform<nap::UniformTexture2D>("pigTexture").setTexture(textureRenderTarget->GetColorTexture());
-		plane_material->getUniform<nap::UniformInt>("mTextureIndex").setValue(0);
-		plane_material->getUniform<nap::UniformVec4>("mColor").setValue({ 1.0f, 1.0f, 1.0f, 1.0f });
+		nap::MaterialInstance& plane_material = planeEntity->getComponent<nap::RenderableMeshComponent>().getMaterialInstance();
+		plane_material.getUniform<nap::UniformTexture2D>("testTexture").setTexture(textureRenderTarget->GetColorTexture());
+		plane_material.getUniform<nap::UniformTexture2D>("pigTexture").setTexture(textureRenderTarget->GetColorTexture());
+		plane_material.getUniform<nap::UniformInt>("mTextureIndex").setValue(0);
+		plane_material.getUniform<nap::UniformVec4>("mColor").setValue({ 1.0f, 1.0f, 1.0f, 1.0f });
 
-		nap::MaterialInstance* rotating_plane_material = rotatingPlaneEntity->getComponent<nap::RenderableMeshComponent>().getMaterialInstance();
-		rotating_plane_material->getUniform<nap::UniformTexture2D>("testTexture").setTexture(textureRenderTarget->GetColorTexture());
-		rotating_plane_material->getUniform<nap::UniformTexture2D>("pigTexture").setTexture(textureRenderTarget->GetColorTexture());
-		rotating_plane_material->getUniform<nap::UniformInt>("mTextureIndex").setValue(0);
-		rotating_plane_material->getUniform<nap::UniformVec4>("mColor").setValue({ 1.0f, 1.0f, 1.0f, 1.0f });
+		nap::MaterialInstance& rotating_plane_material = rotatingPlaneEntity->getComponent<nap::RenderableMeshComponent>().getMaterialInstance();
+		rotating_plane_material.getUniform<nap::UniformTexture2D>("testTexture").setTexture(textureRenderTarget->GetColorTexture());
+		rotating_plane_material.getUniform<nap::UniformTexture2D>("pigTexture").setTexture(textureRenderTarget->GetColorTexture());
+		rotating_plane_material.getUniform<nap::UniformInt>("mTextureIndex").setValue(0);
+		rotating_plane_material.getUniform<nap::UniformVec4>("mColor").setValue({ 1.0f, 1.0f, 1.0f, 1.0f });
 
 		opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(render_window->getWindow()->getBackbuffer());
 		renderService->clearRenderTarget(backbuffer, opengl::EClearFlags::COLOR|opengl::EClearFlags::DEPTH|opengl::EClearFlags::STENCIL);
@@ -313,7 +320,7 @@ void onRender(const nap::SignalAttribute& signal)
 	 
 	// render window 1
 	{
-		nap::RenderWindowComponent* render_window = renderWindows[1];
+		nap::WindowResource* render_window = renderWindows[1].get();
 
 		render_window->makeActive();
 
@@ -332,15 +339,6 @@ void onRender(const nap::SignalAttribute& signal)
  		renderService->renderObjects(backbuffer, components_to_render, splitCameraEntity->getComponent<nap::PerspCameraComponent>());
 
 		render_window->swap(); 
-
-	}
-
-	static float fps_time = 0.0f;
-	fps_time += renderWindows[0]->getDeltaTimeFloat();
-	if (fps_time > 0.99f)
-	{
-		nap::Logger::info("fps: %f", renderWindows[0]->getFps());
-		fps_time = 0.0f;
 	}
 }
 nap::Slot<const nap::SignalAttribute&> renderSlot = { [](const nap::SignalAttribute& attr){ onRender(attr); } };
@@ -513,36 +511,6 @@ bool init(nap::Core& core)
 
 	nap::Logger::info("initialized render service: %s", renderService->getName().c_str());
 
-	// Create windows
-	int num_windows = 2;
-	for (int index = 0; index < num_windows; ++index)
-	{
-		char name[100];
-		sprintf(name, "Window %d", index);
-
-		nap::Entity& window_entity = core.addEntity(name);
-		
-		// Create the window component (but don't add it to the entity yet), so that we can set the construction settings
-		nap::RenderWindowComponent* renderWindow = RTTI_OF(nap::RenderWindowComponent).create<nap::RenderWindowComponent>();
-
-		// If this is not the first window, make it share its OpenGL context with the first window
-		nap::RenderWindowSettings settings;
-		if (index != 0)
-			settings.sharedWindow = renderWindows[0]->getWindow();
-
-		// Set the construction settings and add it to the entity
-		renderWindow->setConstructionSettings(settings);
-		renderWindow->setName(name);
-		window_entity.addComponent(std::move(std::unique_ptr<nap::RenderWindowComponent>(renderWindow)));
-
-		renderWindow->size.setValue({ windowWidth, windowHeight });
-		renderWindow->position.setValue({ (1920 / 2) - 256, 1080 / 2 - 256 });
-		renderWindow->title.setValue(name);
-		renderWindow->sync.setValue(false);		
-
-		renderWindows.push_back(renderWindow);
-	}
-
 	renderService->draw.signal.connect(renderSlot);
 	renderService->update.signal.connect(updateSlot);
 
@@ -550,16 +518,16 @@ bool init(nap::Core& core)
 	// Resources
 	//////////////////////////////////////////////////////////////////////////
 
-	// Make the first ("root") window active so that the resources are created for the right context
-	renderWindows[0]->makeActive();
-
 	nap::utility::ErrorState errorState;
 #if 1
 	if (!resourceManagerService->loadFile("data/objects.json", errorState))
 	{
 		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
 		return false;  
-	}
+	}  
+
+	renderWindows.push_back(resourceManagerService->findObject<nap::WindowResource>("Window0"));
+	renderWindows.push_back(resourceManagerService->findObject<nap::WindowResource>("Window1"));
 
 	pigTexture				= resourceManagerService->findObject<nap::ImageResource>("PigTexture");
  	testTexture				= resourceManagerService->findObject<nap::ImageResource>("TestTexture");
@@ -659,8 +627,8 @@ void runGame(nap::Core& core)
 					static bool fullScreen = false;
 					fullScreen = !fullScreen;
 
-					for (nap::RenderWindowComponent* renderWindow : renderWindows)
-						renderWindow->fullScreen.setValue(fullScreen);
+// 					for (nap::RenderWindowComponent* renderWindow : renderWindows)
+// 						renderWindow->fullScreen.setValue(fullScreen);
 					break;
 				}
 				case SDLK_w:
@@ -768,11 +736,11 @@ void runGame(nap::Core& core)
 
 					SDL_Window* window = SDL_GetWindowFromID(event.window.windowID);
 
-					for (nap::RenderWindowComponent* renderWindow : renderWindows)
-					{
-						if (renderWindow->getWindow()->getWindow() == window)
-							renderWindow->size.setValue({ width, height });
-					}
+// 					for (nap::RenderWindowComponent* renderWindow : renderWindows)
+// 					{
+// 						if (renderWindow->getWindow()->getWindow() == window)
+// 							renderWindow->size.setValue({ width, height });
+// 					}
 
 					cameraEntity->getComponent<nap::PerspCameraComponent>().setAspectRatio((float)width, (float)height);
 					splitCameraEntity->getComponent<nap::PerspCameraComponent>().setAspectRatio((float)width * 2.0f, (float)height);
@@ -785,11 +753,11 @@ void runGame(nap::Core& core)
 
 					SDL_Window* window = SDL_GetWindowFromID(event.window.windowID);
 
-					for (nap::RenderWindowComponent* renderWindow : renderWindows)
-					{
-						if (renderWindow->getWindow()->getWindow() == window)
-							renderWindow->position.setValue({ x,y });
-					}
+// 					for (nap::RenderWindowComponent* renderWindow : renderWindows)
+// 					{
+// 						if (renderWindow->getWindow()->getWindow() == window)
+// 							renderWindow->position.setValue({ x,y });
+// 					}
 						
 					break;
 				}

@@ -23,9 +23,12 @@ namespace nap
 		RenderWindowSettings() = default;
 		virtual ~RenderWindowSettings() = default;
 
-		bool borderless = false;				//< If the window is borderless
-		bool resizable = true;					//< If the window is resizable
-		RenderWindow* sharedWindow = nullptr;	//< If the window shares a context with another window
+		std::string		title;						// Name of the window
+		int				width			= 512;		// Width of the window
+		int				height			= 512;		// Height of the window
+		bool			borderless		= false;	// If the window is borderless
+		bool			resizable		= true;		// If the window is resizable
+		bool			visible			= true;		// If the window is visible or not
 	};
 
 

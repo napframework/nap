@@ -1,4 +1,11 @@
 {
+	"nap::WindowResource": {
+		"mID" : "Window",
+		"Width" : 512,
+		"Height" : 512,
+		"Title" : "Tommy"
+	},
+	
 	"nap::ImageResource": {
 		"mID" : "BackgroundImage",
 		"mImagePath" : "data/tommy/background.jpg"

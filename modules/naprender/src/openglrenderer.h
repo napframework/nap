@@ -22,7 +22,7 @@ namespace nap
 		RTTI_ENABLE(RenderWindow)
 	public:
 		// Constructor
-		OpenGLRenderWindow(const RenderWindowSettings& settings, opengl::Window* window);
+		OpenGLRenderWindow(const RenderWindowSettings& settings, std::unique_ptr<opengl::Window> window);
 
 		/**
 		 * @return SDL_Window*
@@ -114,27 +114,27 @@ namespace nap
 		RTTI_ENABLE(Renderer)
 	public:
 		/**
-		 * Initializes the video subsystem
-		 * @return if initialization of subsystem was successful
+		 * Initialize the renderer
 		 */
-		virtual bool preInit() override;
+		virtual bool init(nap::utility::ErrorState& errorState) override;
 
 		/**
 		 * Creates an opengl render window using the settings provided
 		 * @return the opengl render window, nullptr if unsuccessful
 		 */
-		virtual RenderWindow* createRenderWindow(const RenderWindowSettings& settings) override;
-
-		/**
-		 * Initializes GLEW
-		 * @return if glew has been initialized successfully
-		 */
-		virtual bool postInit() override;
+		virtual std::unique_ptr<RenderWindow> createRenderWindow(const RenderWindowSettings& settings, utility::ErrorState& errorState) override;
 
 		/**
 		 * Closes all active opengl systems
 		 */
 		virtual void shutdown() override;
 
+		/**
+		 * Get the primary window (i.e. the window that was used to init OpenGL against)
+		 */
+		virtual RenderWindow& getPrimaryWindow() override { return *mPrimaryWindow; }
+
+	private:
+		std::unique_ptr<RenderWindow> mPrimaryWindow;
 	};
 }

@@ -4,9 +4,18 @@
 #include <SDL.h>
 #include <string>
 #include <stdint.h>
+#include <memory>
 
 // Local Includes
 #include "nwindow.h"
+
+namespace nap
+{
+	namespace utility
+	{
+		class ErrorState;
+	}
+}
 
 namespace opengl
 {
@@ -48,7 +57,7 @@ namespace opengl
 	* Note that it's possible to have one window share multiple contexts
 	* But every context needs to be associated with at least 1 window
 	*/
-	Window* createWindow(const WindowSettings& settings);
+	std::unique_ptr<Window> createWindow(const WindowSettings& settings, nap::utility::ErrorState& errorState);
 
 
 	/**
