@@ -50,7 +50,7 @@ namespace nap
 	{
 		if (mDirty)
 		{
-			mProjectionMatrix = glm::ortho(0.0f, mWidth, mHeight, 0.0f, 0.0f, 1000.0f);
+			mProjectionMatrix = glm::ortho(0.0f, mWidth, mHeight, 0.0f, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
 			mDirty = false;
 		}
 

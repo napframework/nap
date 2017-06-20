@@ -45,10 +45,12 @@ namespace nap
 			const nap::TransformComponent& transformB = entityB.getComponent<nap::TransformComponent>();
 			const glm::mat4 view_space_b = mViewMatrix * transformB.getGlobalTransform();
 
+			float a_z = view_space_a[3].z;
+			float b_z = view_space_b[3].z;
 			if (mMode == EMode::BackToFront)
-				return view_space_a[3][3] < view_space_b[3][3];
+				return a_z < b_z;
 			else
-				return view_space_a[3][3] > view_space_b[3][3];
+				return a_z > b_z;
 		}
 
 	private:
