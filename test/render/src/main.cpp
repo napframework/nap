@@ -306,6 +306,7 @@ void onRender(const nap::SignalAttribute& signal)
 		rotating_plane_material.getUniform<nap::UniformVec4>("mColor").setValue({ 1.0f, 1.0f, 1.0f, 1.0f });
 
 		opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(render_window->getWindow()->getBackbuffer());
+		backbuffer.setClearColor(glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
 		renderService->clearRenderTarget(backbuffer, opengl::EClearFlags::COLOR|opengl::EClearFlags::DEPTH|opengl::EClearFlags::STENCIL);
 		renderService->renderObjects(backbuffer, components_to_render, cameraEntity->getComponent<nap::PerspCameraComponent>());
 
@@ -727,43 +728,10 @@ void runGame(nap::Core& core)
 
 			if (event.type == SDL_WINDOWEVENT)
 			{
-				switch (event.window.event)
-				{
-				case SDL_WINDOWEVENT_RESIZED:
-				{
-					int width = event.window.data1;
-					int height = event.window.data2;
-
-					SDL_Window* window = SDL_GetWindowFromID(event.window.windowID);
-
-// 					for (nap::RenderWindowComponent* renderWindow : renderWindows)
-// 					{
-// 						if (renderWindow->getWindow()->getWindow() == window)
-// 							renderWindow->size.setValue({ width, height });
-// 					}
-
-					cameraEntity->getComponent<nap::PerspCameraComponent>().setAspectRatio((float)width, (float)height);
-					splitCameraEntity->getComponent<nap::PerspCameraComponent>().setAspectRatio((float)width * 2.0f, (float)height);
-					break;
-				}
-				case SDL_WINDOWEVENT_MOVED:
-				{
-					int x = event.window.data1;
-					int y = event.window.data2;
-
-					SDL_Window* window = SDL_GetWindowFromID(event.window.windowID);
-
-// 					for (nap::RenderWindowComponent* renderWindow : renderWindows)
-// 					{
-// 						if (renderWindow->getWindow()->getWindow() == window)
-// 							renderWindow->position.setValue({ x,y });
-// 					}
-						
-					break;
-				}
-				default:
-					break;
-				}
+				SDL_Window* native_window = SDL_GetWindowFromID(event.window.windowID);
+				nap::WindowResource* window = renderService->findWindow(native_window);
+				nap::OpenGLRenderWindow* opengl_window = (nap::OpenGLRenderWindow*)(window->getWindow());
+				opengl_window->handleEvent(event);
 			}
 		}
 

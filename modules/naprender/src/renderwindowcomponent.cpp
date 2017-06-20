@@ -15,19 +15,20 @@ namespace nap
 	{
 	}
 
+	WindowResource::~WindowResource()
+	{
+		if (mWindow != nullptr)
+			mRenderService->removeWindow(*this);
+	}
+
 	bool WindowResource::init(utility::ErrorState& errorState)
 	{
-		mWindow = mRenderService->createWindow(*this, errorState);
+		mWindow = mRenderService->addWindow(*this, errorState);
 		if (!errorState.check(mWindow != nullptr, "Failed to create window"))
 			return false;
 
 		return true;
 	}
-
-	const glm::vec2 WindowResource::getSize() const
-	{
-		return glm::vec2(mWidth, mHeight);
-	} 
 
 	//////////////////////////////////////////////////////////////////////////
 

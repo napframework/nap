@@ -65,7 +65,7 @@ namespace nap
 		/**
 		* @return the hardware window handle, nullptr if undefined
 		*/
-		virtual void* getWindow() const = 0;
+		virtual void* getNativeWindow() const = 0;
 
 		/**
 		* @return the hardware window context, nullptr if undefined
@@ -94,6 +94,11 @@ namespace nap
 		 * @param size the new window size in pixels
 		 */
 		virtual void setSize(const glm::ivec2& size) = 0;
+
+		/**
+		 * Get the window size
+		 */
+		virtual const glm::ivec2 getSize() const = 0;
 
 		/* 
 		 * Set the window viewport

@@ -72,9 +72,7 @@ namespace nap
 	}
 
 
-	// Creates a new opengl window and assigns it to the component
-	// TODO: Add Mutex
-	std::unique_ptr<RenderWindow>  RenderService::createWindow(WindowResource& window, utility::ErrorState& errorState)
+	std::unique_ptr<RenderWindow> RenderService::addWindow(WindowResource& window, utility::ErrorState& errorState)
 	{
 		assert(mRenderer != nullptr);
 
@@ -90,10 +88,28 @@ namespace nap
 		if (new_window == nullptr)
 			return nullptr;
 
+		mWindows.push_back(&window);
+
 		// After window creation, make sure the primary window stays active, so that render resource creation always goes to that context
 		getPrimaryWindow().makeCurrent();
 
 		return new_window;
+	}
+
+	void RenderService::removeWindow(WindowResource& window)
+	{
+		WindowList::iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val) { return val == &window; });
+		assert(pos != mWindows.end());
+		mWindows.erase(pos);
+	}
+	
+	WindowResource* RenderService::findWindow(void* nativeWindow) const
+	{
+		WindowList::const_iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val) { return val->getWindow()->getNativeWindow() == nativeWindow; });
+		if (pos != mWindows.end())
+			return *pos;
+
+		return nullptr;
 	}
 
 	RenderWindow& RenderService::getPrimaryWindow()

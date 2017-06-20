@@ -18,6 +18,7 @@ namespace nap
 
 		// Default constructor
 		WindowResource() = default;
+		~WindowResource();
 
 		WindowResource(RenderService& renderService);
 
@@ -49,14 +50,12 @@ namespace nap
 		 */
 		void makeActive()														{ mWindow->makeCurrent(); }
 
-		const glm::vec2 getSize() const;
-
 	public:
-		int							mWidth			= 512;			// Width of the window
-		int							mHeight			= 512;			// Height of the window
-		bool						mBorderless		= false;		// If the window is borderless
-		bool						mResizable		= true;			// If the window is resizable
-		std::string					mTitle;							// Name of the window
+		int								mWidth			= 512;			// Width of the window
+		int								mHeight			= 512;			// Height of the window
+		bool							mBorderless		= false;		// If the window is borderless
+		bool							mResizable		= true;			// If the window is resizable
+		std::string						mTitle;							// Name of the window
 
 	private:
 		RenderService*					mRenderService	= nullptr;

@@ -100,7 +100,7 @@ void onUpdate(const nap::SignalAttribute& signal)
 		cameraEntity = resourceManagerService->findEntity("CameraEntity");
 		if (cameraEntity != nullptr)
 		{
-			const glm::ivec2 windowSize = renderWindows[0]->getSize();
+			const glm::ivec2 windowSize = renderWindows[0]->getWindow()->getSize();
 			cameraEntity->getComponent<nap::OrthoCameraComponent>().setAspectRatio((float)windowSize.x, (float)windowSize.y);
 		}
 	}
@@ -130,7 +130,7 @@ void onUpdate(const nap::SignalAttribute& signal)
 	if (cameraEntity != nullptr)
 		updateCamera(delta_time);
 
-	glm::vec2 window_size = renderWindows[0]->getSize();
+	glm::vec2 window_size = renderWindows[0]->getWindow()->getSize();
 
 	if (rootLayoutEntity != nullptr)
 	{
@@ -214,7 +214,7 @@ void updateCamera(float deltaTime)
 		cam_xform->setRotate(nr);
 	}
 
-	glm::vec2 window_size = renderWindows[0]->getSize();
+	glm::vec2 window_size = renderWindows[0]->getWindow()->getSize();
 	cameraEntity->getComponent<nap::OrthoCameraComponent>().setAspectRatio(window_size.x, window_size.y);
 }
 
@@ -461,43 +461,10 @@ void runGame(nap::Core& core)
 
 			if (event.type == SDL_WINDOWEVENT)
 			{
-				switch (event.window.event)
-				{
-				case SDL_WINDOWEVENT_RESIZED:
-				{
-					int width = event.window.data1;
-					int height = event.window.data2;
-
-					SDL_Window* window = SDL_GetWindowFromID(event.window.windowID);
-
-// 					for (nap::RenderWindowComponent* renderWindow : renderWindows)
-// 					{
-// 						if (renderWindow->getWindow()->getWindow() == window)
-// 							renderWindow->size.setValue({ width, height });
-// 					}
-
-					if (cameraEntity != nullptr)
-						cameraEntity->getComponent<nap::OrthoCameraComponent>().setAspectRatio((float)width, (float)height);
-					break;
-				}
-				case SDL_WINDOWEVENT_MOVED:
-				{
-					int x = event.window.data1;
-					int y = event.window.data2;
-
-					SDL_Window* window = SDL_GetWindowFromID(event.window.windowID);
-
-// 					for (nap::RenderWindowComponent* renderWindow : renderWindows)
-// 					{
-// 						if (renderWindow->getWindow()->getWindow() == window)
-// 							renderWindow->position.setValue({ x,y });
-// 					}
-						
-					break;
-				}
-				default:
-					break;
-				}
+				SDL_Window* native_window = SDL_GetWindowFromID(event.window.windowID);
+				nap::WindowResource* window = renderService->findWindow(native_window);
+				nap::OpenGLRenderWindow* opengl_window = (nap::OpenGLRenderWindow*)(window->getWindow());
+				opengl_window->handleEvent(event);
 			}
 		}
 

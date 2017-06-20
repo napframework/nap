@@ -135,10 +135,20 @@ namespace nap
 		std::unique_ptr<VAOHandle> acquireVertexArrayObject(const Material& material, const MeshResource& meshResource, utility::ErrorState& errorState);
 
 		/**
-		 * Creates a new window and assigns it to the window component
-		 * Note that this call implicitly initializes OpenGL
+		 * Add a new window for the specified resource
 		 */
-		std::unique_ptr<RenderWindow> createWindow(WindowResource& window, utility::ErrorState& errorState);
+		std::unique_ptr<RenderWindow> addWindow(WindowResource& window, utility::ErrorState& errorState);
+
+		/**
+		 * Remove a window
+		 */
+		void removeWindow(WindowResource& window);
+
+		/**
+		 * Find a WindowResource by its native handle
+		 * @param nativeWindow the native window handle (i.e. the SDL_Window pointer)
+		 */
+		WindowResource* findWindow(void* nativeWindow) const;
 
 		/**
 		 * Get the primary window (i.e. the window that was used to init OpenGL against)
@@ -177,6 +187,7 @@ namespace nap
 		void updateRenderState();
 
 		using ContextSpecificStateMap = std::unordered_map<opengl::GLContext, RenderState>;
+		using WindowList = std::vector<WindowResource*>;
 
 		RenderState mRenderState;									//< The latest render state as set by the user
 		ContextSpecificStateMap	mContextSpecificState;				//< The per-context render state
@@ -193,7 +204,9 @@ namespace nap
 		};
 
 		using VAOMap = std::unordered_map<VAOKey, RefCountedVAO>;
-		VAOMap mVAOMap;		///< Map from material-mesh combiantion to opengl VAO
+		VAOMap mVAOMap;												///< Map from material-mesh combiantion to opengl VAO
+		
+		WindowList mWindows;
 	};
 } // nap
 

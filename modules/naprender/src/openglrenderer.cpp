@@ -12,11 +12,12 @@ namespace nap
 		mWindow(std::move(window)),
 		mBackbuffer(new opengl::BackbufferRenderTarget())
 	{
+		setSize(glm::vec2(settings.width, settings.height));
 	}
 
 
 	// Returns the actual opengl window
-	void* OpenGLRenderWindow::getWindow() const
+	void* OpenGLRenderWindow::getNativeWindow() const
 	{
 		return mWindow->getWindow();
 	}
@@ -67,6 +68,8 @@ namespace nap
 	// Set opengl window size 
 	void OpenGLRenderWindow::setSize(const glm::ivec2& size)
 	{
+		mBackbuffer->setSize(size);
+
 		// Ensure sizes are not the same
 		int width, height;
 		opengl::getWindowSize(*mWindow, width, height);
@@ -75,6 +78,16 @@ namespace nap
 
 		// Otherwise set
 		opengl::setWindowSize(*mWindow, size.x, size.y);
+	}
+
+
+	// Get the window size
+	const glm::ivec2 OpenGLRenderWindow::getSize() const
+	{
+		int width, height;
+		opengl::getWindowSize(*mWindow, width, height);
+		
+		return glm::ivec2(width, height);
 	}
 
 
@@ -127,6 +140,24 @@ namespace nap
 	void OpenGLRenderWindow::makeCurrent()
 	{
 		opengl::makeCurrent(*mWindow);
+	}
+
+	bool OpenGLRenderWindow::handleEvent(const SDL_Event& event)
+	{
+		assert(event.type == SDL_WINDOWEVENT);
+		switch (event.window.event)
+		{
+			case SDL_WINDOWEVENT_RESIZED:
+			{
+				int width = event.window.data1;
+				int height = event.window.data2;
+
+				setSize(glm::vec2(width, height));
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	bool OpenGLRenderer::init(utility::ErrorState& errorState)

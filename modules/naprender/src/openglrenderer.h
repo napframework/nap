@@ -27,7 +27,7 @@ namespace nap
 		/**
 		 * @return SDL_Window*
 		 */
-		virtual void* getWindow() const override;
+		virtual void* getNativeWindow() const override;
 
 		/**
 		 * @return SDL_GLContext (=void*)
@@ -64,6 +64,11 @@ namespace nap
 		virtual void setSize(const glm::ivec2& size) override;
 
 		/**
+		 * Get the window size
+		 */
+		virtual const glm::ivec2 getSize() const override;
+		
+		/**
 		 * Set the render viewport
 		 */
 		virtual void setViewport(const glm::ivec2& viewport) override;
@@ -98,6 +103,8 @@ namespace nap
 		 * Make this window's context active
 		 */
 		virtual void makeCurrent() override;
+
+		bool handleEvent(const SDL_Event& event);
 
 	private:
 		std::unique_ptr<opengl::Window> mWindow = nullptr;

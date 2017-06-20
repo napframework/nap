@@ -163,6 +163,10 @@ namespace opengl
 		*/
 		virtual bool unbind() override { return true; }
 
+		void setSize(const glm::ivec2& size) { mSize = size; }
+
+	private:
+		glm::ivec2 mSize;
 	};
 
 } // opengl

@@ -109,6 +109,7 @@ namespace opengl
 			return false;
 		}
 		glBindFramebuffer(GL_FRAMEBUFFER, mFbo);
+		glViewport(0, 0, mColorTexture->getSettings().width, mColorTexture->getSettings().height);
 		return true;
 	}
 
@@ -173,6 +174,7 @@ namespace opengl
 	bool BackbufferRenderTarget::bind()
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glViewport(0, 0, mSize.x, mSize.y);
 		return true;
 	}
 }
