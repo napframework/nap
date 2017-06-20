@@ -1,7 +1,36 @@
 #include "renderwindowcomponent.h"
 
+RTTI_BEGIN_CLASS(nap::WindowResource)
+	RTTI_PROPERTY("Width",			&nap::WindowResource::mWidth,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Height",			&nap::WindowResource::mHeight,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Borderless",		&nap::WindowResource::mBorderless,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Resizable",		&nap::WindowResource::mResizable,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Title",			&nap::WindowResource::mTitle,		nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
 namespace nap
 {
+	WindowResource::WindowResource(RenderService& renderService) :
+		mRenderService(&renderService)
+	{
+	}
+
+	bool WindowResource::init(utility::ErrorState& errorState)
+	{
+		mWindow = mRenderService->createWindow(*this, errorState);
+		if (!errorState.check(mWindow != nullptr, "Failed to create window"))
+			return false;
+
+		return true;
+	}
+
+	const glm::vec2 WindowResource::getSize() const
+	{
+		return glm::vec2(mWidth, mHeight);
+	} 
+
+	//////////////////////////////////////////////////////////////////////////
+
 	// Constructor
 	RenderWindowComponent::RenderWindowComponent()
 	{

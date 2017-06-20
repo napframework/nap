@@ -7,12 +7,11 @@
 namespace nap
 {
 	// GL Render window constructor
-	OpenGLRenderWindow::OpenGLRenderWindow(const RenderWindowSettings& settings, opengl::Window* window) : 
+	OpenGLRenderWindow::OpenGLRenderWindow(const RenderWindowSettings& settings, std::unique_ptr<opengl::Window> window) : 
 		RenderWindow(settings),
+		mWindow(std::move(window)),
 		mBackbuffer(new opengl::BackbufferRenderTarget())
 	{
-		// Set window
-		mWindow.reset(window);
 	}
 
 
@@ -124,18 +123,15 @@ namespace nap
 		opengl::swap(*mWindow);
 	}
 
-
 	// Make this window's context current 
 	void OpenGLRenderWindow::makeCurrent()
 	{
 		opengl::makeCurrent(*mWindow);
 	}
 
-
-	// Initializes the opengl subsystem
-	bool OpenGLRenderer::preInit()
+	bool OpenGLRenderer::init(utility::ErrorState& errorState)
 	{
-		if (!opengl::initVideo())
+		if (!errorState.check(opengl::initVideo(), "Failed to init SDL"))
 			return false;
 
 		// Set GL Attributes
@@ -150,57 +146,41 @@ namespace nap
 #endif
 		opengl::setAttributes(attrs);
 
-		// Success
+		RenderWindowSettings settings;
+		settings.visible = false;
+		mPrimaryWindow = createRenderWindow(settings, errorState);
+
+		if (!errorState.check(opengl::init(), "Failed to init OpenGL"))
+			return false;
+
+		mPrimaryWindow->makeCurrent();
+
 		return true;
 	}
-
+	
 
 	// Create an opengl window
-	RenderWindow* OpenGLRenderer::createRenderWindow(const RenderWindowSettings& settings)
+	std::unique_ptr<RenderWindow> OpenGLRenderer::createRenderWindow(const RenderWindowSettings& settings, utility::ErrorState& errorState)
 	{
 		// Convert settings to gl settings
 		opengl::WindowSettings gl_window_settings;
 		gl_window_settings.borderless = settings.borderless;
 		gl_window_settings.resizable = settings.resizable;
-		
-		// Check if we need to share context information
-		if (settings.sharedWindow != nullptr)
-		{
-			if (!settings.sharedWindow->get_type().is_derived_from(RTTI_OF(OpenGLRenderWindow)))
-			{
-				nap::Logger::fatal("trying to share a context with non OpenGL type window");
-				return nullptr;
-			}
-			else
-			{
-				OpenGLRenderWindow* gl_share_window = static_cast<OpenGLRenderWindow*>(settings.sharedWindow);
-				assert(gl_share_window != nullptr);
-				gl_window_settings.share = gl_share_window->getContainer();
-			}
-		}
+		gl_window_settings.visible = settings.visible;
+		gl_window_settings.width = settings.width;
+		gl_window_settings.height = settings.height;
+		gl_window_settings.title = settings.title;
+
+		if (mPrimaryWindow != nullptr)
+			gl_window_settings.share = static_cast<OpenGLRenderWindow*>(mPrimaryWindow.get())->getContainer();
 
 		// Construct new window using these settings
-		opengl::Window* new_window = opengl::createWindow(gl_window_settings);
+		std::unique_ptr<opengl::Window> new_window = opengl::createWindow(gl_window_settings, errorState);
 		if (new_window == nullptr)
-		{
-			nap::Logger::fatal("unable to create new OpenGL render window");
 			return nullptr;
-		}
 
 		// Construct and return new window
-		return new OpenGLRenderWindow(settings, new_window);
-	}
-
-
-	// Initialize glew subsystem
-	bool OpenGLRenderer::postInit()
-	{
-		if (!opengl::init())
-		{
-			nap::Logger::fatal("unable to initialize OpenGL glew subsystem");
-			return false;
-		}
-		return true;
+		return std::make_unique<OpenGLRenderWindow>(settings, std::move(new_window));
 	}
 
 

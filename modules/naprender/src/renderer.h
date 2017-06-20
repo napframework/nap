@@ -33,31 +33,26 @@ namespace nap
 		Renderer() = default;
 
 		/**
-		 * Called before creating the first render context
-		 * @return if the initialization call was successful
-		 */
-		virtual bool preInit() = 0;
-
-
-		/**
 		 * Called to create a window
 		 * Create a window with associated render context
 		 * @return the new render window or nullptr if unsuccessful
 		 * @param settings the window settings used to create the window
 		 */
-		virtual RenderWindow* createRenderWindow(const RenderWindowSettings& settings) = 0;
-
+		virtual std::unique_ptr<RenderWindow> createRenderWindow(const RenderWindowSettings& settings, utility::ErrorState& errorState) = 0;
 
 		/**
-		 * Called after the first render context is created
-		 * @retrun if the initialization call was successful
+		 * Initialize the renderer
 		 */
-		virtual bool postInit() = 0;
-
+		virtual bool init(utility::ErrorState& errorState) = 0;
 
 		/**
 		 * Called when the renderer needs to shut down
 		 */
 		virtual void shutdown() = 0;
+
+		/**
+		 * Get the primary window (i.e. the window that was used to init OpenGL against)
+		 */
+		virtual RenderWindow& getPrimaryWindow() = 0;
 	};
 }

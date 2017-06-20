@@ -28,6 +28,7 @@ namespace opengl
 		int height = 512;						// Height of the window
 		bool borderless = false;				// If the window has no borders
 		bool resizable = false;					// If the window is resizable
+		bool visible = true;					// If the window is visible or not
 		Window* share = nullptr;				// The window whose context to share resources with
 	};
 

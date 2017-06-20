@@ -25,6 +25,7 @@ namespace nap
 	class TransformComponent;
 	class CameraComponent;
 	class RenderableComponent;
+	class WindowResource;
 
 	/**
 	 * Main interface for rendering operations. 
@@ -82,11 +83,6 @@ namespace nap
 		void clearRenderTarget(opengl::RenderTarget& renderTarget, opengl::EClearFlags flags);
 
 		/**
-		 * @return if OpenGL has been initialized
-		 */
-		bool isInitialized() const									{ return state == State::Initialized; }
-
-		/**
 		 * Sets the renderer, the service will own the renderer
 		 * @param renderer the type of renderer to use
 		 */
@@ -126,7 +122,7 @@ namespace nap
  		 * Destroys all per-context OpenGL resources that are scheduled for destruction. 
  		 * @param renderWindows: all render windows that are active, as they hold the GL contexts.
 		 */
-		void destroyGLContextResources(std::vector<RenderWindowComponent*>& renderWindows);
+		void destroyGLContextResources(const std::vector<ObjectPtr<WindowResource>>& renderWindows);
 
 		/**
 		* Creates a handle to a VertexArrayObject given a material-mesh combination. Internally the RenderService holds a map of VAOs for such
@@ -137,6 +133,17 @@ namespace nap
 		* @return On success, this will hold a pointer to the handle, on failure this will return nullptr (check errorState for details).
 		*/
 		std::unique_ptr<VAOHandle> acquireVertexArrayObject(const Material& material, const MeshResource& meshResource, utility::ErrorState& errorState);
+
+		/**
+		 * Creates a new window and assigns it to the window component
+		 * Note that this call implicitly initializes OpenGL
+		 */
+		std::unique_ptr<RenderWindow> createWindow(WindowResource& window, utility::ErrorState& errorState);
+
+		/**
+		 * Get the primary window (i.e. the window that was used to init OpenGL against)
+		 */
+		RenderWindow& getPrimaryWindow();
 
 	protected:
 		/**
@@ -149,11 +156,6 @@ namespace nap
 		*/
 		virtual void registerObjectCreators(rtti::Factory& factory) override;
 
-		/**
-		 * Occurs when an object registers itself with the service
-		 */
-		virtual void objectRegistered(Object& inObject) override;
-
     private:
 		friend class VAOHandle;
 
@@ -163,17 +165,6 @@ namespace nap
 		* if refcount hits zero.
 		*/
 		void releaseVertexArrayObject(opengl::VertexArrayObject* vao);
-
-		// Keeps track of glew initialization
-		// If there is no active context we can't initialize glew
-		// This 
-		State state = State::Uninitialized;
-
-		/**
-		 * Creates a new window and assigns it to the window component
-		 * Note that this call implicitly initializes OpenGL
-		 */
-		void createWindow(RenderWindowComponent& window);
 
 		/**
 		 * Holds the currently active renderer

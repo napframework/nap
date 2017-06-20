@@ -9,6 +9,91 @@
 
 namespace nap
 {
+	class WindowResource : public Resource
+	{
+		RTTI_ENABLE(Resource)
+
+	public:
+		friend class RenderService;
+
+		// Default constructor
+		WindowResource() = default;
+
+		WindowResource(RenderService& renderService);
+
+		/**
+		* Creates internal texture resource.
+		*/
+		virtual bool init(utility::ErrorState& errorState) override;
+		virtual const std::string getDisplayName() const { return ""; }
+
+		/**
+		 * @return if the component manages a window. 
+		 * If show hasn't been called this call will resolve to false
+		 */
+		bool hasWindow() const													{ return mWindow != nullptr; }
+
+		/**
+		 * @return the window managed by this component
+		 */
+		RenderWindow* getWindow()												{ return mWindow.get(); }
+
+		/**
+		 * Swaps window buffers
+		 */
+		void swap() const														{ mWindow->swap(); }
+
+		/**
+		 * Makes this window active
+		 * calls activate afterwards
+		 */
+		void makeActive()														{ mWindow->makeCurrent(); }
+
+		const glm::vec2 getSize() const;
+
+	public:
+		int							mWidth			= 512;			// Width of the window
+		int							mHeight			= 512;			// Height of the window
+		bool						mBorderless		= false;		// If the window is borderless
+		bool						mResizable		= true;			// If the window is resizable
+		std::string					mTitle;							// Name of the window
+
+	private:
+		RenderService*					mRenderService	= nullptr;
+		std::unique_ptr<RenderWindow>	mWindow			= nullptr;
+	};
+
+	/**
+	* Factory for creating WindowResources. The factory is responsible for passing the RenderService
+	* to the WindowResource on construction.
+	*/
+	class WindowResourceCreator : public rtti::IObjectCreator
+	{
+	public:
+		WindowResourceCreator(RenderService& renderService) :
+			mRenderService(renderService) { }
+
+		/**
+		* @return Type of WindowResource
+		*/
+		rtti::TypeInfo getTypeToCreate() const override
+		{
+			return RTTI_OF(WindowResource);
+		}
+
+		/**
+		* @return Creates a WindowResource
+		*/
+		virtual rtti::RTTIObject* create() override
+		{
+			return new WindowResource(mRenderService);
+		}
+
+	private:
+		RenderService& mRenderService;
+	};
+
+
 	/**
 	 * Render window. 
 	 * When adding this object to an entity a new render window is created

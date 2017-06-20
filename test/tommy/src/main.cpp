@@ -63,8 +63,8 @@ std::string		programName			= "Model Loading Test";
 nap::RenderService* renderService = nullptr;
 nap::ResourceManagerService* resourceManagerService = nullptr;
 nap::Service* rpcService = nullptr;
-std::vector<nap::RenderWindowComponent*> renderWindows;
 
+std::vector<nap::ObjectPtr<nap::WindowResource>> renderWindows;
 nap::ObjectPtr<nap::EntityInstance> slideShowEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance> cameraEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance> rootLayoutEntity = nullptr;
@@ -91,7 +91,8 @@ void updateCamera(float elapsedTime);
 // Called when the window is updating
 void onUpdate(const nap::SignalAttribute& signal)
 {
-	renderWindows[0]->makeActive();	// TEMP: if any changes are detected, and we are reloading, we need to do this on the correct context
+	// If any changes are detected, and we are reloading, we need to do this on the correct context
+	renderService->getPrimaryWindow().makeCurrent();
 	resourceManagerService->checkForFileChanges();
 
 	if (cameraEntity == nullptr)
@@ -99,7 +100,7 @@ void onUpdate(const nap::SignalAttribute& signal)
 		cameraEntity = resourceManagerService->findEntity("CameraEntity");
 		if (cameraEntity != nullptr)
 		{
-			const glm::ivec2 windowSize = renderWindows[0]->size.getValue();
+			const glm::ivec2 windowSize = renderWindows[0]->getSize();
 			cameraEntity->getComponent<nap::OrthoCameraComponent>().setAspectRatio((float)windowSize.x, (float)windowSize.y);
 		}
 	}
@@ -129,7 +130,7 @@ void onUpdate(const nap::SignalAttribute& signal)
 	if (cameraEntity != nullptr)
 		updateCamera(delta_time);
 
-	glm::vec2 window_size = renderWindows[0]->size.getValue();
+	glm::vec2 window_size = renderWindows[0]->getSize();
 
 	if (rootLayoutEntity != nullptr)
 	{
@@ -214,7 +215,7 @@ void updateCamera(float deltaTime)
 		cam_xform->setRotate(nr);
 	}
 
-	glm::vec2 window_size = renderWindows[0]->size.getValue();
+	glm::vec2 window_size = renderWindows[0]->getSize();
 	cameraEntity->getComponent<nap::OrthoCameraComponent>().setAspectRatio(window_size.x, window_size.y);
 }
 
@@ -224,7 +225,7 @@ void onRender(const nap::SignalAttribute& signal)
 	renderService->destroyGLContextResources(renderWindows);
 
 	{
-		nap::RenderWindowComponent* render_window = renderWindows[0];
+		nap::WindowResource* render_window = renderWindows[0].get();
 
 		if (cameraEntity != nullptr)
 		{
@@ -268,45 +269,12 @@ bool init(nap::Core& core)
 		return false;
 	}
 
-	// Create windows
-	int num_windows = 1;
-	for (int index = 0; index < num_windows; ++index)
-	{
-		char name[100];
-		sprintf(name, "Window %d", index);
-
-		nap::Entity& window_entity = core.addEntity(name);
-		
-		// Create the window component (but don't add it to the entity yet), so that we can set the construction settings
-		nap::RenderWindowComponent* renderWindow = RTTI_OF(nap::RenderWindowComponent).create<nap::RenderWindowComponent>();
-
-		// If this is not the first window, make it share its OpenGL context with the first window
-		nap::RenderWindowSettings settings;
-		if (index != 0)
-			settings.sharedWindow = renderWindows[0]->getWindow();
-
-		// Set the construction settings and add it to the entity
-		renderWindow->setConstructionSettings(settings);
-		renderWindow->setName(name);
-		window_entity.addComponent(std::move(std::unique_ptr<nap::RenderWindowComponent>(renderWindow)));
-
-		renderWindow->size.setValue({ windowWidth, windowHeight });
-		renderWindow->position.setValue({ (1920 / 2) - 256, 1080 / 2 - 256 });
-		renderWindow->title.setValue(name);
-		renderWindow->sync.setValue(false);		
-
-		renderWindows.push_back(renderWindow);
-	}
-
 	renderService->draw.signal.connect(renderSlot);
 	renderService->update.signal.connect(updateSlot);
 
 	//////////////////////////////////////////////////////////////////////////
 	// Resources
 	//////////////////////////////////////////////////////////////////////////
-
-	// Make the first ("root") window active so that the resources are created for the right context
-	renderWindows[0]->makeActive();
 
 	nap::utility::ErrorState errorState;
 	if (!resourceManagerService->loadFile("data/tommy/tommy.json", errorState))
@@ -318,6 +286,8 @@ bool init(nap::Core& core)
 
 	//////////////////////////////////////////////////////////////////////////
 
+
+	renderWindows.push_back(resourceManagerService->findObject<nap::WindowResource>("Window"));
 
 	// Set render states
 	nap::RenderState& render_state = renderService->getRenderState();
@@ -374,8 +344,8 @@ void runGame(nap::Core& core)
 					static bool fullScreen = false;
 					fullScreen = !fullScreen;
 
-					for (nap::RenderWindowComponent* renderWindow : renderWindows)
-						renderWindow->fullScreen.setValue(fullScreen);
+// 					for (nap::RenderWindowComponent* renderWindow : renderWindows)
+// 						renderWindow->fullScreen.setValue(fullScreen);
 					break;
 				}
 				case SDLK_w:
@@ -501,11 +471,11 @@ void runGame(nap::Core& core)
 
 					SDL_Window* window = SDL_GetWindowFromID(event.window.windowID);
 
-					for (nap::RenderWindowComponent* renderWindow : renderWindows)
-					{
-						if (renderWindow->getWindow()->getWindow() == window)
-							renderWindow->size.setValue({ width, height });
-					}
+// 					for (nap::RenderWindowComponent* renderWindow : renderWindows)
+// 					{
+// 						if (renderWindow->getWindow()->getWindow() == window)
+// 							renderWindow->size.setValue({ width, height });
+// 					}
 
 					if (cameraEntity != nullptr)
 						cameraEntity->getComponent<nap::OrthoCameraComponent>().setAspectRatio((float)width, (float)height);
@@ -518,11 +488,11 @@ void runGame(nap::Core& core)
 
 					SDL_Window* window = SDL_GetWindowFromID(event.window.windowID);
 
-					for (nap::RenderWindowComponent* renderWindow : renderWindows)
-					{
-						if (renderWindow->getWindow()->getWindow() == window)
-							renderWindow->position.setValue({ x,y });
-					}
+// 					for (nap::RenderWindowComponent* renderWindow : renderWindows)
+// 					{
+// 						if (renderWindow->getWindow()->getWindow() == window)
+// 							renderWindow->position.setValue({ x,y });
+// 					}
 						
 					break;
 				}
