@@ -21,7 +21,7 @@ namespace nap
 		};
 
 		EPositionPivot	mPositionPivot = EPositionPivot::TopLeft;
-		glm::vec2		mPosition;
+		glm::vec3		mPosition;
 		ESizeBehaviour	mSizeBehaviour = ESizeBehaviour::Default;
 		glm::vec2		mSize = glm::vec2(1.0f, 1.0f);
 	};
@@ -57,7 +57,7 @@ namespace nap
 		bool init(const ObjectPtr<ComponentResource>& resource, utility::ErrorState& errorState);
 		void updateLayout(const glm::vec2& windowSize, const glm::mat4x4& parentWorldTransform);
 
-		const glm::vec2& getPosition() const { return mProperties.mPosition; }
+		const glm::vec3& getPosition() const { return mProperties.mPosition; }
 		const glm::vec2& getSize() const { return mProperties.mSize; }
 
 	private:

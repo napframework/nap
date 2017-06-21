@@ -129,8 +129,9 @@ void onUpdate(const nap::SignalAttribute& signal)
 
 	if (rootLayoutEntity != nullptr)
 	{
+		// First layout element. We start at -1000.0f, a value in front of the camera that is 'far away' 
 		nap::TransformComponent& transform_component = rootLayoutEntity->getComponent<nap::TransformComponent>();
-		transform_component.setTranslate(glm::vec3(window_size.x*0.5, window_size.y*0.5, -50.0f));
+		transform_component.setTranslate(glm::vec3(window_size.x*0.5, window_size.y*0.5, -1000.0f));
 		transform_component.setScale(glm::vec3(window_size.x, window_size.y, 1.0));
 
 		nap::FractionLayoutComponent& layout = rootLayoutEntity->getComponent<nap::FractionLayoutComponent>();

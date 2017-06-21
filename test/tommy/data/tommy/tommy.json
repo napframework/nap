@@ -102,7 +102,7 @@
 				"nap::OrthoCameraComponentResource": {
 					"Properties": {
 						"NearClippingPlane" : 0.01,
-						"FarClippingPlane" : 1000.0
+						"FarClippingPlane" : 10000.0
 					}
 				}		
 			},
@@ -112,7 +112,7 @@
 						"Translate": {
 							"x": 0.0,
 							"y": 0.0,
-							"z": 5.0
+							"z": 0.0
 						},
 						"Rotate": {
 							"x": 0.0,
@@ -141,7 +141,8 @@
 					"Properties" : {
 						"Position" : {
 							"x": 0.0,
-							"y": 0.0
+							"y": 0.0,
+							"z": 0.0
 						},
 						"Size" : {
 							"x": 1.00,
@@ -195,7 +196,8 @@
 					"Properties" : {
 						"Position" : {
 							"x": 0.25,
-							"y": 0.075
+							"y": 0.075,
+							"z": 0.0
 						},
 						"SizeBehaviour" : "HeightFromImageAspectRatio", 
 						"Size" : {  
@@ -227,7 +229,7 @@
 					{
 						"Material": "UIMaterial",
 						"BlendMode" : "AlphaBlend",
-						"DepthMode" : "NoReadWrite",
+						"DepthMode" : "ReadOnly",
 						"Uniforms" : 
 						[		
 							{		
@@ -264,7 +266,8 @@
 						"PositionPivot" : "Center",
 						"Position" : {
 							"x": 0.1,
-							"y": 0.5
+							"y": 0.5,
+							"z": 10.0
 						},
 						"SizeBehaviour" : "HeightFromImageAspectRatio", 
 						"Size" : {  
@@ -288,7 +291,7 @@
 					{
 						"Material": "UIMaterial",
 						"BlendMode" : "AlphaBlend",
-						"DepthMode" : "NoReadWrite",
+						"DepthMode" : "ReadOnly",
 						"Uniforms" : 
 						[		
 							{		
@@ -312,7 +315,8 @@
 						"PositionPivot" : "Center",
 						"Position" : {
 							"x": 0.9,
-							"y": 0.5
+							"y": 0.5,
+							"z": 10.0
 						},
 						"SizeBehaviour" : "HeightFromImageAspectRatio", 
 						"Size" : {  
@@ -336,7 +340,7 @@
 					{
 						"Material": "UIMaterial",
 						"BlendMode" : "AlphaBlend",
-						"DepthMode" : "NoReadWrite",
+						"DepthMode" : "ReadOnly",
 						"Uniforms" : 
 						[		
 							{		
@@ -360,7 +364,8 @@
 						"PositionPivot" : "Center",
 						"Position" : {
 							"x": 0.5,
-							"y": 0.075
+							"y": 0.075,
+							"z": 0.0
 						},
 						"SizeBehaviour" : "HeightFromImageAspectRatio", 
 						"Size" : {  
@@ -384,7 +389,7 @@
 					{
 						"Material": "UIMaterial",
 						"BlendMode" : "AlphaBlend",
-						"DepthMode" : "NoReadWrite",
+						"DepthMode" : "ReadOnly",
 						"Uniforms" : 
 						[		
 							{		
@@ -408,7 +413,8 @@
 						"PositionPivot" : "Center",
 						"Position" : {
 							"x": 0.5,
-							"y": 0.15
+							"y": 0.15,
+							"z": 0.0
 						},
 						"SizeBehaviour" : "HeightFromImageAspectRatio", 
 						"Size" : {  
@@ -448,7 +454,8 @@
 						"PositionPivot" : "Center",
 						"Position" : {
 							"x": 0.5,
-							"y": 0.5
+							"y": 0.5,
+							"z": 0.0
 						},
 						"Size" : {  
 							"x": 1.0,
@@ -473,7 +480,7 @@
 					{
 						"Material": "UIMaterial",
 						"BlendMode" : "AlphaBlend",
-						"DepthMode" : "NoReadWrite",
+						"DepthMode" : "ReadOnly",
 						"Uniforms" : 
 						[		
 							{		
