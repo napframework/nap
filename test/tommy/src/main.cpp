@@ -98,11 +98,6 @@ void onUpdate(const nap::SignalAttribute& signal)
 	if (cameraEntity == nullptr)
 	{
 		cameraEntity = resourceManagerService->findEntity("CameraEntity");
-		if (cameraEntity != nullptr)
-		{
-			const glm::ivec2 windowSize = renderWindows[0]->getWindow()->getSize();
-			cameraEntity->getComponent<nap::OrthoCameraComponent>().setAspectRatio((float)windowSize.x, (float)windowSize.y);
-		}
 	}
 
 	if (slideShowEntity == nullptr)
@@ -213,9 +208,6 @@ void updateCamera(float deltaTime)
 		glm::quat nr = glm::rotate(r, rotate_rad, glm::vec3(0.0, 1.0, 0.0));
 		cam_xform->setRotate(nr);
 	}
-
-	glm::vec2 window_size = renderWindows[0]->getWindow()->getSize();
-	cameraEntity->getComponent<nap::OrthoCameraComponent>().setAspectRatio(window_size.x, window_size.y);
 }
 
 // Called when the window is going to render

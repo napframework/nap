@@ -65,6 +65,8 @@ namespace opengl
 		*/
 		virtual void clear(EClearFlags flags);
 
+		virtual const glm::ivec2 getSize() const = 0;
+
 		/**
 		* Sets the clear color to be used by clear.
 		*/
@@ -130,6 +132,8 @@ namespace opengl
 		 */
 		opengl::Texture2D& getDepthTexture() 					{ assert(mDepthTexture != nullptr);  return *mDepthTexture; }
 
+		virtual const glm::ivec2 getSize() const override		{ return glm::ivec2(mColorTexture->getSettings().width, mColorTexture->getSettings().height); }
+
 	private:
 		/**
 		 * Generates the OpenGL FBO object, attaches color and depth textures.
@@ -164,6 +168,7 @@ namespace opengl
 		virtual bool unbind() override { return true; }
 
 		void setSize(const glm::ivec2& size) { mSize = size; }
+		virtual const glm::ivec2 getSize() const override { return mSize; }
 
 	private:
 		glm::ivec2 mSize;

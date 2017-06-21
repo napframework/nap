@@ -162,7 +162,7 @@ namespace nap
 
 
 	// Render all objects in scene graph using specified camera
-	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, const CameraComponent& camera)
+	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, CameraComponent& camera)
 	{
 		// Get all render components
  		std::vector<nap::RenderableComponent*> render_comps;
@@ -190,12 +190,12 @@ namespace nap
 		// Sort front to back and render those first
 		DepthSorter front_to_back_sorter(DepthSorter::EMode::FrontToBack, camera.getViewMatrix());
 		std::sort(front_to_back.begin(), front_to_back.end(), front_to_back_sorter);
-		renderObjects(renderTarget, front_to_back, camera);
+		renderObjects(renderTarget, camera, front_to_back);
 
 		// Then sort back to front and render these
 		DepthSorter back_to_front_sorter(DepthSorter::EMode::BackToFront, camera.getViewMatrix());
 		std::sort(back_to_front.begin(), back_to_front.end(), back_to_front_sorter);
-		renderObjects(renderTarget, back_to_front, camera);
+		renderObjects(renderTarget, camera, back_to_front);
 	}
 
 	// Updates the current context's render state by using the latest render state as set by the user.
@@ -215,9 +215,11 @@ namespace nap
 	}
 
 	// Renders all available objects to a specific renderTarget.
-	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, const std::vector<RenderableComponent*>& comps, const CameraComponent& camera)
+	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, CameraComponent& camera, const std::vector<RenderableComponent*>& comps)
 	{
 		renderTarget.bind();
+
+		camera.setRenderTargetSize(renderTarget.getSize());
 
 		updateRenderState();
 

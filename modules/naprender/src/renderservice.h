@@ -70,12 +70,12 @@ namespace nap
 		/**
 		 * Renders all available objects to a specific renderTarget.
 		 */
-		void renderObjects(opengl::RenderTarget& renderTarget, const CameraComponent& camera);
+		void renderObjects(opengl::RenderTarget& renderTarget, CameraComponent& camera);
 
 		/**
 		 * Renders a specific set of objects to a specific renderTarget.
 		 */
-		void renderObjects(opengl::RenderTarget& renderTarget, const std::vector<RenderableComponent*>& comps, const CameraComponent& camera);
+		void renderObjects(opengl::RenderTarget& renderTarget, CameraComponent& camera, const std::vector<RenderableComponent*>& comps);
 
 		/**
 		* Clears the renderTarget.

@@ -69,6 +69,7 @@ namespace nap
 	void OpenGLRenderWindow::setSize(const glm::ivec2& size)
 	{
 		mBackbuffer->setSize(size);
+		mResizeEvent.trigger(WindowResizeEvent(size));
 
 		// Ensure sizes are not the same
 		int width, height;
@@ -152,7 +153,7 @@ namespace nap
 				int width = event.window.data1;
 				int height = event.window.data2;
 
-				setSize(glm::vec2(width, height));
+				setSize(glm::ivec2(width, height));
 				return true;
 			}
 		}

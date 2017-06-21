@@ -72,21 +72,21 @@ namespace nap
 
 
 	// Occurs when the window title changes
-	void RenderWindowComponent::onTitleChanged(const AttributeBase& attr)
+	void RenderWindowComponent::onTitleChanged(AttributeBase& attr)
 	{
         mWindow->setTitle(attr.getValue<std::string>());
 	}
 
 
 	// Set Position
-	void RenderWindowComponent::onPositionChanged(const AttributeBase& attr)
+	void RenderWindowComponent::onPositionChanged(AttributeBase& attr)
 	{
         mWindow->setPosition(attr.getValue<glm::ivec2>());
 	}
 
 
 	// Set Size
-	void RenderWindowComponent::onSizeChanged(const AttributeBase& attr)
+	void RenderWindowComponent::onSizeChanged(AttributeBase& attr)
 	{
         glm::ivec2 value = attr.getValue<glm::ivec2>();
 		mWindow->setSize(value);
@@ -95,14 +95,14 @@ namespace nap
 
 
 	// Turn v-sync on - off
-	void RenderWindowComponent::onSyncChanged(const AttributeBase& attr)
+	void RenderWindowComponent::onSyncChanged(AttributeBase& attr)
 	{
 		mWindow->setSync(attr.getValue<bool>());
 	}
 
 
 	// Make window full screen
-	void RenderWindowComponent::onFullscreenChanged(const AttributeBase& attr)
+	void RenderWindowComponent::onFullscreenChanged(AttributeBase& attr)
 	{
 		mWindow->setFullScreen(attr.getValue<bool>());
 	}

@@ -150,10 +150,13 @@ namespace nap
 
 
 	// Set camera aspect ratio derived from width and height
-	void PerspCameraComponent::setAspectRatio(float width, float height)
+	void PerspCameraComponent::setRenderTargetSize(glm::ivec2 size)
 	{
-		mAspectRatio = width / height;
-		setDirty();
+		if (mRenderTargetSize != size)
+		{
+			mRenderTargetSize = size;
+			setDirty();
+		}
 	}
 
 	// Use this function to split the projection into a grid of same-sized rectangles.
@@ -189,7 +192,7 @@ namespace nap
 			const float fov = glm::radians(mProperties.mFieldOfView);
 			const float near_plane = mProperties.mNearClippingPlane;
 			const float far_plane = mProperties.mFarClippingPlane;
-			const float aspect_ratio = mAspectRatio;
+			const float aspect_ratio = ((float)(mRenderTargetSize.x * mProperties.mGridDimensions.x)) / ((float)(mRenderTargetSize.y * mProperties.mGridDimensions.y));
 
 			float left, right, top, bottom;
 			calculateCameraPlanes(fov, aspect_ratio, near_plane, mProperties.mGridDimensions.x, mProperties.mGridLocation.x, left, right);

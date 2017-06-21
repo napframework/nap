@@ -28,5 +28,7 @@ namespace nap
 		 * @return The populated view matrix
 		 */
 		virtual const glm::mat4 getViewMatrix() const = 0;
+
+		virtual void setRenderTargetSize(glm::ivec2 size) = 0;
 	};
 }

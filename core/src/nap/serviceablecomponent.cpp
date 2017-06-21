@@ -13,7 +13,7 @@ namespace nap
 
 
 	// Registers itself with the correct associated service
-	void ServiceableComponent::registerWithService(const Object& object)
+	void ServiceableComponent::registerWithService(Object& object)
 	{
 		nap::Entity* parent = this->getParent();
 		assert(parent != nullptr);

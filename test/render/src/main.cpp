@@ -308,13 +308,13 @@ void onRender(const nap::SignalAttribute& signal)
 		opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(render_window->getWindow()->getBackbuffer());
 		backbuffer.setClearColor(glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
 		renderService->clearRenderTarget(backbuffer, opengl::EClearFlags::COLOR|opengl::EClearFlags::DEPTH|opengl::EClearFlags::STENCIL);
-		renderService->renderObjects(backbuffer, components_to_render, cameraEntity->getComponent<nap::PerspCameraComponent>());
+		renderService->renderObjects(backbuffer, cameraEntity->getComponent<nap::PerspCameraComponent>(), components_to_render);
 
 		// Render sphere using split camera with custom projection matrix
 		splitCameraEntity->getComponent<nap::PerspCameraComponent>().setGridLocation(0, 0);
 		components_to_render.clear();
 		components_to_render.push_back(&worldEntity->getComponent<nap::RenderableMeshComponent>());
-		renderService->renderObjects(backbuffer, components_to_render, splitCameraEntity->getComponent<nap::PerspCameraComponent>());
+		renderService->renderObjects(backbuffer, splitCameraEntity->getComponent<nap::PerspCameraComponent>(), components_to_render);
 
 		render_window->swap();
 	}
@@ -331,13 +331,13 @@ void onRender(const nap::SignalAttribute& signal)
 
 		opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(render_window->getWindow()->getBackbuffer());
 		renderService->clearRenderTarget(backbuffer, opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH | opengl::EClearFlags::STENCIL);
-		renderService->renderObjects(backbuffer, components_to_render, cameraEntity->getComponent<nap::PerspCameraComponent>());
+		renderService->renderObjects(backbuffer, cameraEntity->getComponent<nap::PerspCameraComponent>(), components_to_render);
 
 		// Render sphere using split camera with custom projection matrix
 		splitCameraEntity->getComponent<nap::PerspCameraComponent>().setGridLocation(0, 1);
  		components_to_render.clear();
  		components_to_render.push_back(&worldEntity->getComponent<nap::RenderableMeshComponent>());
- 		renderService->renderObjects(backbuffer, components_to_render, splitCameraEntity->getComponent<nap::PerspCameraComponent>());
+ 		renderService->renderObjects(backbuffer, splitCameraEntity->getComponent<nap::PerspCameraComponent>(), components_to_render);
 
 		render_window->swap(); 
 	}
@@ -530,16 +530,16 @@ bool init(nap::Core& core)
 	renderWindows.push_back(resourceManagerService->findObject<nap::WindowResource>("Window0"));
 	renderWindows.push_back(resourceManagerService->findObject<nap::WindowResource>("Window1"));
 
-	pigTexture				= resourceManagerService->findObject<nap::ImageResource>("PigTexture");
- 	testTexture				= resourceManagerService->findObject<nap::ImageResource>("TestTexture");
- 	worldTexture			= resourceManagerService->findObject<nap::ImageResource>("WorldTexture");
- 	textureRenderTarget		= resourceManagerService->findObject<nap::TextureRenderTargetResource2D>("PlaneRenderTarget");
+	pigTexture					= resourceManagerService->findObject<nap::ImageResource>("PigTexture");
+ 	testTexture					= resourceManagerService->findObject<nap::ImageResource>("TestTexture");
+ 	worldTexture				= resourceManagerService->findObject<nap::ImageResource>("WorldTexture");
+ 	textureRenderTarget			= resourceManagerService->findObject<nap::TextureRenderTargetResource2D>("PlaneRenderTarget");
 
-	pigEntity				= resourceManagerService->findEntity("PigEntity");
-	rotatingPlaneEntity		= resourceManagerService->findEntity("RotatingPlaneEntity");
-	planeEntity				= resourceManagerService->findEntity("PlaneEntity");
-	worldEntity				= resourceManagerService->findEntity("WorldEntity");
-	orientationEntity		= resourceManagerService->findEntity("OrientationEntity");
+	pigEntity					= resourceManagerService->findEntity("PigEntity");
+	rotatingPlaneEntity			= resourceManagerService->findEntity("RotatingPlaneEntity");
+	planeEntity					= resourceManagerService->findEntity("PlaneEntity");
+	worldEntity					= resourceManagerService->findEntity("WorldEntity");
+	orientationEntity			= resourceManagerService->findEntity("OrientationEntity");
 	cameraEntity			= resourceManagerService->findEntity("CameraEntity");
 	splitCameraEntity		= resourceManagerService->findEntity("SplitCameraEntity");
 #else	
@@ -556,9 +556,6 @@ bool init(nap::Core& core)
 	render_state.mLineWidth = 1.3f;
 	render_state.mPointSize = 2.0f;
 	render_state.mPolygonMode = opengl::PolygonMode::FILL;
-
-	cameraEntity->getComponent<nap::PerspCameraComponent>().setAspectRatio((float)windowWidth, (float)windowHeight);
-	splitCameraEntity->getComponent<nap::PerspCameraComponent>().setAspectRatio((float)windowWidth * 2.0f, (float)windowHeight);
 
 	return true;
 }
@@ -578,7 +575,7 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
-
+ 
 
 void runGame(nap::Core& core)
 {

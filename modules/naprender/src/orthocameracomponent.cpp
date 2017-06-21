@@ -37,11 +37,13 @@ namespace nap
 
 
 	// Set camera aspect ratio derived from width and height
-	void OrthoCameraComponent::setAspectRatio(float width, float height)
+	void OrthoCameraComponent::setRenderTargetSize(glm::ivec2 size)
 	{
-		mWidth = width;
-		mHeight = height;
-		setDirty();
+		if (mRenderTargetSize != size)
+		{
+			mRenderTargetSize = size;
+			setDirty();
+		}
 	}
 
 	// Computes projection matrix if dirty, otherwise returns the
@@ -50,7 +52,7 @@ namespace nap
 	{
 		if (mDirty)
 		{
-			mProjectionMatrix = glm::ortho(0.0f, mWidth, mHeight, 0.0f, 0.0f, 1000.0f);
+			mProjectionMatrix = glm::ortho(0.0f, (float)mRenderTargetSize.x, (float)mRenderTargetSize.y, 0.0f, 0.0f, 1000.0f);
 			mDirty = false;
 		}
 

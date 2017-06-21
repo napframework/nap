@@ -203,11 +203,11 @@ namespace nap
 		/**
 		 * Attribute changes
 		 */
-		void onTitleChanged(const AttributeBase& title);
-		void onPositionChanged(const AttributeBase& position);
-		void onSizeChanged(const AttributeBase& size);
-		void onSyncChanged(const AttributeBase& value);
-		void onFullscreenChanged(const AttributeBase& value);
+		void onTitleChanged(AttributeBase& title);
+		void onPositionChanged(AttributeBase& position);
+		void onSizeChanged(AttributeBase& size);
+		void onSyncChanged(AttributeBase& value);
+		void onFullscreenChanged(AttributeBase& value);
 
 		/**
 		 * Occurs when the window is registered with the render service
@@ -221,11 +221,11 @@ namespace nap
 		// Slot declarations
 		NSLOT(showWindow, const SignalAttribute&, onShowWindow)
 		NSLOT(hideWindow, const SignalAttribute&, onHideWindow)
-		NSLOT(titleChanged, const AttributeBase&, onTitleChanged)
-		NSLOT(positionChanged, const AttributeBase&, onPositionChanged)
-		NSLOT(sizeChanged, const AttributeBase&, onSizeChanged)
-		NSLOT(syncChanged, const AttributeBase&, onSyncChanged)
-		NSLOT(fullScreenChanged, const AttributeBase&, onFullscreenChanged)
+		NSLOT(titleChanged, AttributeBase&, onTitleChanged)
+		NSLOT(positionChanged, AttributeBase&, onPositionChanged)
+		NSLOT(sizeChanged, AttributeBase&, onSizeChanged)
+		NSLOT(syncChanged, AttributeBase&, onSyncChanged)
+		NSLOT(fullScreenChanged, AttributeBase&, onFullscreenChanged)
 
 	private:
 		/**

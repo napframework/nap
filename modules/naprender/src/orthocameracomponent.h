@@ -44,7 +44,7 @@ namespace nap
 		* @param width, arbitrary width, most often the resolution of the canvas
 		* @param height, arbitrary height, most often the resolution of the canvas
 		*/
-		void setAspectRatio(float width, float height);
+		virtual void setRenderTargetSize(glm::ivec2 size) override;
 
 		/**
 		* @return camera projection matrix
@@ -70,8 +70,7 @@ namespace nap
 		mutable glm::mat4x4		mProjectionMatrix;		// The composed projection matrix
 
 		mutable bool			mDirty = true;			// If the projection matrix needs to be recalculated
-		float					mWidth;
-		float					mHeight;
+		glm::ivec2				mRenderTargetSize;		// The size of the rendertarget we're rendering to
 		
 		OrthoCameraProperties	mProperties;
 		TransformComponent*		mTransformComponent;
