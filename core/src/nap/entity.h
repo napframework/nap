@@ -8,6 +8,7 @@
 #include <nap/signalslot.h>
 #include <rtti/rtti.h>
 #include "utility/stringutils.h"
+#include "utility/uniqueptrvectoriterator.h"
 #include "objectptr.h"
 
 namespace nap
@@ -42,34 +43,6 @@ namespace nap
 
 	private:
 		EntityInstance* mEntity;
-	};
-
-	template<class ITERATORTYPE, class ELEMENTTYPE>
-	class UniquePtrIterator
-	{
-	public:
-		UniquePtrIterator(ITERATORTYPE pos) :
-			mPos(pos)
-		{
-		}
-
-		UniquePtrIterator operator++() 
-		{ 
-			mPos++;  
-			return *this; 
-		}
-		
-		bool operator!=(const UniquePtrIterator& rhs) 
-		{ 
-			return rhs.mPos != mPos; 
-		}
-
-		ELEMENTTYPE operator*() const 
-		{ 
-			return mPos->get(); 
-		}
-
-		ITERATORTYPE mPos;
 	};
 
 	class EntityInstance : public rtti::RTTIObject
@@ -173,8 +146,8 @@ namespace nap
 			return mCore;
 		}
 
-		using ComponentIterator = UniquePtrIterator<ComponentList::iterator, ComponentInstance*>;
-		using ComponentIteratorConst = UniquePtrIterator<ComponentList::const_iterator, const ComponentInstance*>;
+		using ComponentIterator = utility::UniquePtrVectorIterator<ComponentList::iterator, ComponentInstance*>;
+		using ComponentIteratorConst = utility::UniquePtrVectorIterator<ComponentList::const_iterator, const ComponentInstance*>;
 
 		ComponentIterator begin()				{ return ComponentIterator(mComponents.begin()); }
 		ComponentIterator end()					{ return ComponentIterator(mComponents.end()); }
