@@ -24,11 +24,13 @@ namespace nap
 	{
 	}
 
+
 	ResourceManagerService::RollbackHelper::~RollbackHelper()
 	{
 		if (mPatchObjects)
 			mService.patchObjectPtrs(mService.mObjects);
 	}
+
 
 	void ResourceManagerService::RollbackHelper::clear()
 	{
@@ -282,6 +284,7 @@ namespace nap
 	{ 
 	}
 
+
 	void ResourceManagerService::initialized()
 	{
 		mRootEntity = std::make_unique<EntityInstance>(getCore());
@@ -421,6 +424,7 @@ namespace nap
 		return true;
 	}
 
+
 	const ObjectPtr<EntityInstance> ResourceManagerService::createEntity(const EntityResource& entityResource, const std::string& entityID, utility::ErrorState& errorState)
 	{
 		if (!errorState.check(mEntitiesCreatedDuringInit.find(entityID) == mEntitiesCreatedDuringInit.end(), "Trying to create entity with existing ID"))
@@ -446,6 +450,7 @@ namespace nap
 
 		return inserted.first->second.get();
 	}
+
 
 	bool ResourceManagerService::createEntities(const std::vector<const EntityResource*>& entityResources, EntityByIDMap& entityInstances, InstanceByIDMap& allNewInstances, utility::ErrorState& errorState)
 	{
@@ -509,6 +514,7 @@ namespace nap
 
 		return true;
 	}
+
 
 	bool ResourceManagerService::initEntities(ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState)
 	{
@@ -810,6 +816,7 @@ namespace nap
 		
 		return ObjectPtr<RTTIObject>(object);
 	}
+
 
 	const ObjectPtr<EntityInstance> ResourceManagerService::findEntity(const std::string& inID) const
 	{

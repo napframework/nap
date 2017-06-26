@@ -10,6 +10,10 @@ namespace nap
 	// Forward declares
 	class InputService;
 
+	/**
+	 * Base class for all input components. The trigger function is called when an InputRouter-derived class
+	 * decides to route the input to this specific component.
+	 */
 	class InputComponent : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
@@ -19,10 +23,17 @@ namespace nap
 		{
 		}
 
+		/**
+		 * This function is called by an InputRouter derived class if it decides to route the input to this component.
+		 * Implement this function in a derived class to handle input. 
+		 * @param inEvent An InputEvent-derived class. Use RTTI queries to test the type of event and to retrieve data from it.
+		 */
 		virtual void trigger(const nap::InputEvent& inEvent) = 0;
 	};
 
-
+	/**
+	 * The resource class for the InputComponent.
+	 */
 	class InputComponentResource : public ComponentResource
 	{
 		RTTI_ENABLE(ComponentResource)
@@ -32,10 +43,8 @@ namespace nap
 
 
 	/**
-	@brief Button Input Component
-
-	Handles key presses (event type keypress)
-	**/
+	 * Input component for press/release key events.
+	 */
 	class KeyInputComponent : public InputComponent
 	{
 		friend class InputService;
@@ -55,6 +64,10 @@ namespace nap
 		virtual void trigger(const nap::InputEvent& inEvent) override;
 	};
 
+
+	/**
+ 	 * Resource class for KeyInputComponent.
+	 */
 	class KeyInputComponentResource : public InputComponentResource
 	{
 		RTTI_ENABLE(InputComponentResource)
@@ -64,10 +77,8 @@ namespace nap
 	};
 
 	/**
-	@brief pointer input component
-
-	Handles pointer (mouse) presses input events
-	**/
+	 * Input component for mouse/touch events.
+	 */
 	class PointerInputComponent : public InputComponent
 	{
 		friend class InputService;
@@ -88,6 +99,9 @@ namespace nap
 		virtual void trigger(const nap::InputEvent& inEvent) override;
 	};
 
+	/**
+	 * Resource class for PointerInputComponent.
+	 */
 	class PointerInputComponentResource : public InputComponentResource
 	{
 		RTTI_ENABLE(InputComponentResource)

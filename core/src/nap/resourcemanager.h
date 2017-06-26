@@ -1,13 +1,11 @@
 #pragma once
 
-#include "fileutils.h"
-#include "logger.h"
-#include "object.h"
 #include "service.h"
 #include "objectptr.h"
-#include "rtti/jsonreader.h"
-#include "rtti/rttireader.h"
+#include "utility/uniqueptrmapiterator.h"
+#include "rtti/unresolvedpointer.h"
 #include <map>
+
 
 namespace nap
 {
@@ -15,63 +13,15 @@ namespace nap
 	class EntityInstance;
 	class EntityResource;
 
-	template<class ITERATORTYPE, class ELEMENTTYPE>
-	class UniquePtrMapIterator
-	{
-	public:
-		UniquePtrMapIterator(ITERATORTYPE pos) :
-			mPos(pos)
-		{
-		}
-
-		UniquePtrMapIterator operator++()
-		{
-			mPos++;
-			return *this;
-		}
-
-		bool operator!=(const UniquePtrMapIterator& rhs)
-		{
-			return rhs.mPos != mPos;
-		}
-
-		ELEMENTTYPE operator*() const
-		{
-			return mPos->second.get();
-		}
-
-		ITERATORTYPE mPos;
-	};
-
-	template<class T, class ELEMENTTYPE>
-	class UniquePtrMapWrapper
-	{
-	public:
-		UniquePtrMapWrapper(T& map) :
-			mMap(&map)
-		{
-		}
-
-		using Iterator = UniquePtrMapIterator<typename T::iterator, ELEMENTTYPE>;
-		using ConstIterator = UniquePtrMapIterator<typename T::const_iterator, const ELEMENTTYPE>;
-
-		Iterator begin()			{ return Iterator(mMap->begin()); }
-		Iterator end()				{ return Iterator(mMap->end()); }
-		ConstIterator begin() const	{ return ConstIterator(mMap->begin()); }
-		ConstIterator end() const	{ return ConstIterator(mMap->end()); }
-
-	private:
-		T* mMap;
-	};
-
 	/**
-	 * Manager, holding all objects, capable of loading and real-time updating of content.
+	 * Manager, owner of all objects, capable of loading and real-time updating of content.
 	 */
 	class ResourceManagerService : public Service
 	{
 		RTTI_ENABLE(Service)
 	public:
 		using EntityByIDMap = std::unordered_map<std::string, std::unique_ptr<EntityInstance>>;
+		using EntityIterator = utility::UniquePtrMapWrapper<EntityByIDMap, EntityInstance*>;
 
 		ResourceManagerService();
 
@@ -138,27 +88,41 @@ namespace nap
 		*/
 		rtti::Factory& getFactory();
 
+		/**
+		* @return EntityInstance.
+		*/
 		const ObjectPtr<EntityInstance> findEntity(const std::string& inID) const;
 
+		/**
+		* @return The root entity as created by the system, which is the root parent of all entities.
+		*/
 		const EntityInstance& getRootEntity() const
 		{
 			return *mRootEntity;
 		}
 
+		/**
+		* @return The root entity as created by the system, which is the root parent of all entities.
+		*/
 		EntityInstance& getRootEntity()
 		{
 			return *mRootEntity;
 		}
 
-		using EntityCollection = UniquePtrMapWrapper<EntityByIDMap, EntityInstance*>;
-		EntityCollection getEntities() { return EntityCollection(mEntities); }
+		/**
+		* @return Iterator to all entities in the system.
+		*/
+		EntityIterator getEntities() { return EntityIterator(mEntities); }
 
+		/**
+		* 
+		*/
 		virtual void initialized();
 
 	private:
-		using InstanceByIDMap = std::unordered_map<std::string, rtti::RTTIObject*>;
-		using ObjectByIDMap = std::unordered_map<std::string, std::unique_ptr<RTTIObject>>;
-		using FileLinkMap = std::unordered_map<std::string, std::vector<std::string>>; // Map from target file to multiple source files
+		using InstanceByIDMap	= std::unordered_map<std::string, rtti::RTTIObject*>;				// Map from object ID to object (non-owned)
+		using ObjectByIDMap		= std::unordered_map<std::string, std::unique_ptr<RTTIObject>>;		// Map from object ID to object (owned)
+		using FileLinkMap		= std::unordered_map<std::string, std::vector<std::string>>;		// Map from target file to multiple source files
 
 		void addObject(const std::string& id, std::unique_ptr<RTTIObject> object);
 		void removeObject(const std::string& id);
@@ -178,6 +142,11 @@ namespace nap
 		void patchObjectPtrs(OBJECTSBYIDMAP& newTargetObjects);
 
 	private:
+
+		/**
+		 * Helper class that patches object pointers back to the objects as present in the resource manager.
+		 * When clear is called, no rollback is performed.
+		 */
 		struct RollbackHelper
 		{
 		public:
@@ -191,15 +160,16 @@ namespace nap
 			bool mPatchObjects = true;
 		};
 
-		std::unique_ptr<EntityInstance>		mRootEntity;
-		ObjectByIDMap						mObjects;				// Holds all objects
-		EntityByIDMap						mEntities;
-		EntityByIDMap						mEntitiesCreatedDuringInit;
-		InstanceByIDMap						mInstancesCreatedDuringInit;
-		std::set<std::string>				mFilesToWatch;			// Files currently loaded, used for watching changes on the files
-		FileLinkMap							mFileLinkMap;			// Map containing links from target to source file, for updating source files if the file monitor sees changes
-		std::unique_ptr<DirectoryWatcher>	mDirectoryWatcher;		// File monitor, detects changes on files
+		std::unique_ptr<EntityInstance>		mRootEntity;					// Root entity, owned and created by the system
+		ObjectByIDMap						mObjects;						// Holds all objects
+		EntityByIDMap						mEntities;						// Holds all entitites
+		EntityByIDMap						mEntitiesCreatedDuringInit;		// Keeps track of all entities that were created during init of entities (runtime spawned entities)
+		InstanceByIDMap						mInstancesCreatedDuringInit;	// Keeps track of all instances that were created during init of entities (runtime spawned entities)
+		std::set<std::string>				mFilesToWatch;					// Files currently loaded, used for watching changes on the files
+		FileLinkMap							mFileLinkMap;					// Map containing links from target to source file, for updating source files if the file monitor sees changes
+		std::unique_ptr<DirectoryWatcher>	mDirectoryWatcher;				// File monitor, detects changes on files
 	};
+
 
 	template<class OBJECTSBYIDMAP>
 	void ResourceManagerService::patchObjectPtrs(OBJECTSBYIDMAP& newTargetObjects)

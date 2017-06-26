@@ -10,12 +10,11 @@ namespace nap
 		mEvents.emplace_back(std::move(inEvent));
 	}
 
+
 	void WindowResource::processEvents()
 	{
 		for (auto& event : mEvents)
-		{
 			onEvent(*event);
-		}
 
 		mEvents.clear();
 	}
