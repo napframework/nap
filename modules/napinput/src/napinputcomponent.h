@@ -3,7 +3,6 @@
 #include <rtti/rtti.h>
 #include <nap/serviceablecomponent.h>
 #include <nap/signalslot.h>
-#include <nap/eventdispatcher.h>
 #include <napinputevent.h>
 
 namespace nap
@@ -21,7 +20,7 @@ namespace nap
 	class InputComponent : public ServiceableComponent
 	{
 		friend class InputService;
-		RTTI_ENABLE_DERIVED_FROM(ServiceableComponent)
+		RTTI_ENABLE(ServiceableComponent)
 
 	public:
 		// Default constructor
@@ -30,9 +29,6 @@ namespace nap
 		// Disable copy
 		InputComponent(const InputComponent& that) = delete;
 		InputComponent& operator=(const InputComponent&) = delete;
-
-		// If this input component is input enabled
-		Attribute<bool> enabled = { this, "enabled", true };
 
 	protected:
 		virtual void trigger(nap::InputEvent& inEvent) = 0;
@@ -47,7 +43,7 @@ namespace nap
 	class KeyInputComponent : public InputComponent
 	{
 		friend class InputService;
-		RTTI_ENABLE_DERIVED_FROM(InputComponent)
+		RTTI_ENABLE(InputComponent)
 	
 	public:
 		// Signals
@@ -67,7 +63,7 @@ namespace nap
 	class PointerInputComponent : public InputComponent
 	{
 		friend class InputService;
-		RTTI_ENABLE_DERIVED_FROM(InputComponent)
+		RTTI_ENABLE(InputComponent)
 	public:
 		Signal<PointerPressEvent&>		pressed;		//< If the input component was clicked
 		Signal<PointerReleaseEvent&>	released;		//< If the input component click has been released
@@ -75,11 +71,6 @@ namespace nap
 		Signal<PointerMoveEvent&>		moved;			//< If the component received a move (mousemove)
 
 	protected:
-		EventDispatcher mEventDispatcher = { this, "EventDispatcher" };
 		virtual void trigger(nap::InputEvent& inEvent) override;
 	};
 }
-
-RTTI_DECLARE_BASE(nap::InputComponent)
-RTTI_DECLARE(nap::KeyInputComponent)
-RTTI_DECLARE(nap::PointerInputComponent)
