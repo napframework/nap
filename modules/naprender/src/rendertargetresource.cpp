@@ -34,11 +34,4 @@ namespace nap
 		return *mTextureRenderTarget;
 	}
 
-
-	// Resource path is display name for frame buffer
-	const std::string TextureRenderTargetResource2D::getDisplayName() const
-	{
-		return mID;
-	}
-
 } // nap

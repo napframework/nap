@@ -192,9 +192,9 @@ namespace nap
 	* on the material, all the objects that use this material will use that value. To change uniform values
 	* per object, set uniform values on MaterialInstances.
 	*/
-	class Material : public Resource, public UniformContainer
+	class Material : public rtti::RTTIObject, public UniformContainer
 	{
-		RTTI_ENABLE(Resource, UniformContainer)
+		RTTI_ENABLE(rtti::RTTIObject, UniformContainer)
 	public:
 
 		/**
@@ -220,11 +220,6 @@ namespace nap
 		* Creates mappings for uniform and vertex attrs.
 		*/
 		virtual bool init(utility::ErrorState& errorState) override;
-
-		/**
-		* @return display name.
-		*/
-		virtual const std::string getDisplayName() const { return "Material"; }		// TODO
 
 		/**
 		* Binds the GLSL shader resource program

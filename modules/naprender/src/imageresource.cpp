@@ -57,8 +57,6 @@ namespace nap
 	// Constructor
 	ImageResource::ImageResource(const std::string& imgPath)
 	{
-		mDisplayName = getFileNameWithoutExtension(imgPath);
-		assert(mDisplayName != "");
 	}
 
 
@@ -69,10 +67,6 @@ namespace nap
 	}
 
 
-	const std::string ImageResource::getDisplayName() const
-	{
-		return mDisplayName;
-	}
 
 	bool ImageResource::init(utility::ErrorState& errorState)
 	{

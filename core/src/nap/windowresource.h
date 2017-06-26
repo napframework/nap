@@ -6,15 +6,14 @@
 
 namespace nap
 {
-	class WindowResource : public Resource
+	class WindowResource : public rtti::RTTIObject
 	{
-		RTTI_ENABLE(Resource)
+		RTTI_ENABLE(rtti::RTTIObject)
 
 	public:
 		using EventPtrList = std::vector<EventPtr>;
 		using EventPtrConstIterator = utility::UniquePtrConstVectorWrapper<EventPtrList, Event*>;
 
-		virtual const std::string getDisplayName() const { return ""; }
 		void addEvent(EventPtr inEvent);
 		void processEvents();
 

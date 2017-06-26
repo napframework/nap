@@ -6,9 +6,9 @@
 
 namespace nap
 {
-	class MeshResource : public Resource
+	class MeshResource : public rtti::RTTIObject
 	{
-		RTTI_ENABLE(Resource)
+		RTTI_ENABLE(rtti::RTTIObject)
 	public:
 		// Default constructor
 		MeshResource() = default;
@@ -17,11 +17,6 @@ namespace nap
  		 * Load the mesh
  		 */
 		virtual bool init(utility::ErrorState& errorState) = 0;
-
-		/**
-		 * @return the mesh display name
-		 */
-		virtual const std::string getDisplayName() const override { return "mesh"; }
 
 		/**
 		 * @return the opengl mesh that can be drawn to screen or buffer

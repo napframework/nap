@@ -15,9 +15,9 @@ namespace nap
 	 * Frame buffer specialization of the render target resource
 	 * Wraps an opengl frame buffer (RGBA + DEPTH)
 	 */
-	class TextureRenderTargetResource2D : public Resource
+	class TextureRenderTargetResource2D : public rtti::RTTIObject
 	{
-		RTTI_ENABLE(Resource)
+		RTTI_ENABLE(rtti::RTTIObject)
 	public:
 
 		/**
@@ -50,11 +50,6 @@ namespace nap
 		* Note that this implicitly initializes the frame buffer
 		*/
 		opengl::TextureRenderTarget2D& getTarget();
-
-		/**
-		* @return human readable display name
-		*/
-		virtual const std::string getDisplayName() const override;
 
 	private:
 

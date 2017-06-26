@@ -12,14 +12,10 @@ namespace nap
 	/**
 	 * Base class for all types of uniforms, whether texture or value.
 	 */
-	class Uniform : public Resource	// TODO: derive from simple Object class
+	class Uniform : public rtti::RTTIObject
 	{
-		RTTI_ENABLE(Resource)
+		RTTI_ENABLE(rtti::RTTIObject)
 	public:
-		/**
-		* 
-		*/
-		virtual const std::string getDisplayName() const  override { return "uniform"; }
 
 		/**
 		* @return the type that this uniform can handle. This should map to the shader's type.

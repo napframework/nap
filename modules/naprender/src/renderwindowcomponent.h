@@ -27,7 +27,6 @@ namespace nap
 		* Creates internal texture resource.
 		*/
 		virtual bool init(utility::ErrorState& errorState) override;
-		virtual const std::string getDisplayName() const { return ""; }
 
 		/**
 		 * @return if the component manages a window. 

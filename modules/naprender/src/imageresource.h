@@ -13,10 +13,10 @@ namespace nap
 	/**
 	 * Base class for texture resources
 	 */
-	class TextureResource : public Resource
+	class TextureResource : public rtti::RTTIObject
 	{
 		friend class ImageResourceLoader;
-		RTTI_ENABLE(Resource)
+		RTTI_ENABLE(rtti::RTTIObject)
 	public:
 		/**
 		 * Virtual override to be implemented by derived classes
@@ -61,11 +61,6 @@ namespace nap
 		* Returns 2D texture object
 		*/
 		virtual const opengl::BaseTexture& getTexture() const override;
-
-		/**
-		* Returns custom display name
-		*/
-		virtual const std::string getDisplayName() const override				{ return mDisplayName;  }
 
 		/**
 		 * Get the size of the texture
@@ -117,11 +112,6 @@ namespace nap
 		virtual const opengl::BaseTexture& getTexture() const override;
 
 		/**
-		 * @return human readable display name
-		 */
-		virtual const std::string getDisplayName() const override;
-
-		/**
 		 * Get the size of the texture
 		 */
 		virtual const glm::vec2 getSize() const override;
@@ -131,9 +121,6 @@ namespace nap
 		std::string				mImagePath;
 
 	private:
-		// Display name of img
-		std::string				mDisplayName;
-
 		// Opengl Image Object
 		std::unique_ptr<opengl::Image>	mImage = nullptr;
 	};

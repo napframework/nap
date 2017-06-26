@@ -13,13 +13,6 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	// Display name derived from path
-	const std::string nap::ShaderResource::getDisplayName() const
-	{
-		return mDisplayName;
-	}
-
-
 	// Store path and create display names
 	bool ShaderResource::init(utility::ErrorState& errorState)
 	{

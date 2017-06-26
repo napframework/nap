@@ -12,6 +12,8 @@ RTTI_END_CLASS
 
 namespace nap
 {
+
+
 	void InputService::handleInput(WindowResource& window, const EntityList& entities)
 	{
 		for (const Event* event : window.GetEvents())
