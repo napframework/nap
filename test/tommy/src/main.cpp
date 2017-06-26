@@ -1,68 +1,35 @@
 // firstSDLapp.cpp : Defines the entry point for the console application.
 //
 
-// SDL
-#include <SDL.h>
-
-// Naivi GL
-#include <nopengl.h>
-
 // GLM
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>  
 #include <glm/ext.hpp>
-#include <glm/gtx/euler_angles.hpp>
-#include <chrono>
 #include <glm/matrix.hpp>
-#include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/transform.hpp>
-#include <glm/gtx/matrix_decompose.hpp>
-
-// C++ Headers
-#include <string>
-#include <iostream>
-#include <FreeImage.h>
-
-// OpenGL / glew Headers
-#define GL3_PROTOTYPES 1
-#include <GL/glew.h>
 
 // Mod nap render includes
-#include <material.h>
-#include <meshresource.h>
-#include <imageresource.h>
-#include <renderablemeshcomponent.h>
 #include <renderservice.h>
 #include <renderwindowcomponent.h>
 #include <openglrenderer.h>
 #include <transformcomponent.h>
 #include <orthocameracomponent.h>
-#include <mathutils.h>
-#include <planemeshresource.h>
-#include <spheremeshresource.h>
 #include <rendertargetresource.h>
 #include <slideshowcomponent.h>
+#include "fractionlayoutcomponent.h"
 
 // Nap includes
 #include <nap/core.h>
 #include <nap/resourcemanager.h>
-#include <nap/coreattributes.h>
 
-// STD includes
-#include <ctime>
-#include "fractionlayoutcomponent.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
 //////////////////////////////////////////////////////////////////////////
 
-// Window Name
-std::string		programName			= "Model Loading Test";
-
 // Nap Objects
 nap::RenderService* renderService = nullptr;
 nap::ResourceManagerService* resourceManagerService = nullptr;
-nap::Service* rpcService = nullptr;
 
 std::vector<nap::ObjectPtr<nap::WindowResource>> renderWindows;
 nap::ObjectPtr<nap::EntityInstance> slideShowEntity = nullptr;
@@ -79,10 +46,6 @@ bool lookUp = false;
 bool lookDown = false;
 bool lookLeft = false;
 bool lookRight = false;
-
-// Window width / height on startup
-unsigned int windowWidth(512); 
-unsigned int windowHeight(512);
 
 // Some utilities
 void runGame(nap::Core& core);	
