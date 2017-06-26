@@ -291,7 +291,8 @@ nap::ObjectPtr<nap::EntityInstance>						rotatingPlaneEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance>						planeEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance>						worldEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance>						orientationEntity = nullptr;
-nap::ObjectPtr<nap::EntityInstance>						cameraEntity = nullptr;
+nap::ObjectPtr<nap::EntityInstance>						cameraEntityLeft = nullptr;
+nap::ObjectPtr<nap::EntityInstance>						cameraEntityRight = nullptr;
 nap::ObjectPtr<nap::EntityInstance>						splitCameraEntity = nullptr;
 
 
@@ -301,6 +302,28 @@ void runGame(nap::Core& core);
 // Called when the window is updating
 void onUpdate()
 {
+	{
+		// Update input for first window
+		std::vector<nap::EntityInstance*> entities;
+		entities.push_back(cameraEntityLeft.get());
+
+		nap::WindowResource* window = renderWindows[0].get();
+		inputService->handleInput(*window, entities);
+	}
+
+	{
+		// Update input for second window
+		std::vector<nap::EntityInstance*> entities;
+		entities.push_back(cameraEntityRight.get());
+
+		nap::WindowResource* window = renderWindows[1].get();
+		inputService->handleInput(*window, entities);
+	}
+	
+	// Process events for all windows
+	for (auto& window : renderWindows)
+		window->processEvents();
+
 	// Need to make primary window active before reloading files, as renderer resources need to be created in that context
 	renderService->getPrimaryWindow().makeCurrent();
 	resourceManagerService->checkForFileChanges();
@@ -376,8 +399,11 @@ void onUpdate()
 	// Camera Update
 	//////////////////////////////////////////////////////////////////////////
 
-	nap::FirstPersonController& controller = cameraEntity->getComponent<nap::FirstPersonController>();
-	controller.update(delta_time);
+	nap::FirstPersonController& left_controller = cameraEntityLeft->getComponent<nap::FirstPersonController>();
+	left_controller.update(delta_time);
+
+	nap::FirstPersonController& right_controller = cameraEntityRight->getComponent<nap::FirstPersonController>();
+	right_controller.update(delta_time);
 }
 
 
@@ -393,7 +419,7 @@ void onRender()
 
 		// Render entire scene to texture
 		renderService->clearRenderTarget(textureRenderTarget->getTarget(), opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH | opengl::EClearFlags::STENCIL);
-		renderService->renderObjects(textureRenderTarget->getTarget(), cameraEntity->getComponent<nap::PerspCameraComponent>());
+		renderService->renderObjects(textureRenderTarget->getTarget(), cameraEntityLeft->getComponent<nap::PerspCameraComponent>());
 	}
 
 	// Render window 0
@@ -422,7 +448,7 @@ void onRender()
 		opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(render_window->getWindow()->getBackbuffer());
 		backbuffer.setClearColor(glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
 		renderService->clearRenderTarget(backbuffer, opengl::EClearFlags::COLOR|opengl::EClearFlags::DEPTH|opengl::EClearFlags::STENCIL);
-		renderService->renderObjects(backbuffer, cameraEntity->getComponent<nap::PerspCameraComponent>(), components_to_render);
+		renderService->renderObjects(backbuffer, cameraEntityLeft->getComponent<nap::PerspCameraComponent>(), components_to_render);
 
 		// Render sphere using split camera with custom projection matrix
 		splitCameraEntity->getComponent<nap::PerspCameraComponent>().setGridLocation(0, 0);
@@ -445,7 +471,7 @@ void onRender()
 
 		opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(render_window->getWindow()->getBackbuffer());
 		renderService->clearRenderTarget(backbuffer, opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH | opengl::EClearFlags::STENCIL);
-		renderService->renderObjects(backbuffer, cameraEntity->getComponent<nap::PerspCameraComponent>(), components_to_render);
+		renderService->renderObjects(backbuffer, cameraEntityRight->getComponent<nap::PerspCameraComponent>(), components_to_render);
 
 		// Render sphere using split camera with custom projection matrix
 		splitCameraEntity->getComponent<nap::PerspCameraComponent>().setGridLocation(0, 1);
@@ -659,7 +685,8 @@ bool init(nap::Core& core)
 	planeEntity					= resourceManagerService->findEntity("PlaneEntity");
 	worldEntity					= resourceManagerService->findEntity("WorldEntity");
 	orientationEntity			= resourceManagerService->findEntity("OrientationEntity");
-	cameraEntity				= resourceManagerService->findEntity("CameraEntity");
+	cameraEntityLeft			= resourceManagerService->findEntity("CameraEntityLeft");
+	cameraEntityRight			= resourceManagerService->findEntity("CameraEntityRight");
 	splitCameraEntity			= resourceManagerService->findEntity("SplitCameraEntity");
 #else	
 	if (!initResources(errorState))
@@ -724,9 +751,6 @@ void runGame(nap::Core& core)
 		}
 
 		//////////////////////////////////////////////////////////////////////////
-
-		for (auto& window : renderWindows)
-			window->processEvents();
 
 		// run render call
 		renderService->render();

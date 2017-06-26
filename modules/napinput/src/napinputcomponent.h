@@ -19,7 +19,7 @@ namespace nap
 		{
 		}
 
-		virtual void trigger(nap::InputEvent& inEvent) = 0;
+		virtual void trigger(const nap::InputEvent& inEvent) = 0;
 	};
 
 
@@ -52,7 +52,7 @@ namespace nap
 		Signal<const KeyReleaseEvent&>		released;		//< If the key has been released
 
 	protected:
-		virtual void trigger(nap::InputEvent& inEvent) override;
+		virtual void trigger(const nap::InputEvent& inEvent) override;
 	};
 
 	class KeyInputComponentResource : public InputComponentResource
@@ -79,13 +79,13 @@ namespace nap
 		{
 		}
 
-		Signal<PointerPressEvent&>		pressed;		//< If the input component was clicked
-		Signal<PointerReleaseEvent&>	released;		//< If the input component click has been released
-		Signal<PointerDragEvent&>		dragged;		//< If the component received a drag (mousedrag)
-		Signal<PointerMoveEvent&>		moved;			//< If the component received a move (mousemove)
+		Signal<const PointerPressEvent&>	pressed;		//< If the input component was clicked
+		Signal<const PointerReleaseEvent&>	released;		//< If the input component click has been released
+		Signal<const PointerDragEvent&>		dragged;		//< If the component received a drag (mousedrag)
+		Signal<const PointerMoveEvent&>		moved;			//< If the component received a move (mousemove)
 
 	protected:
-		virtual void trigger(nap::InputEvent& inEvent) override;
+		virtual void trigger(const nap::InputEvent& inEvent) override;
 	};
 
 	class PointerInputComponentResource : public InputComponentResource

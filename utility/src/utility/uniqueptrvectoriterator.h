@@ -42,15 +42,30 @@ namespace nap
 			}
 
 			using Iterator = UniquePtrVectorIterator<typename VECTORTYPE::iterator, ELEMENTTYPE>;
-			using ConstIterator = UniquePtrVectorIterator<typename VECTORTYPE::const_iterator, const ELEMENTTYPE>;
 
 			Iterator begin() { return Iterator(mVector->begin()); }
 			Iterator end() { return Iterator(mVector->end()); }
+
+		private:
+			VECTORTYPE* mVector;
+		};
+
+		template<class VECTORTYPE, class ELEMENTTYPE>
+		class UniquePtrConstVectorWrapper
+		{
+		public:
+			UniquePtrConstVectorWrapper(const VECTORTYPE& inVector) :
+				mVector(&inVector)
+			{
+			}
+
+			using ConstIterator = UniquePtrVectorIterator<typename VECTORTYPE::const_iterator, const ELEMENTTYPE>;
+
 			ConstIterator begin() const { return ConstIterator(mVector->begin()); }
 			ConstIterator end() const { return ConstIterator(mVector->end()); }
 
 		private:
-			VECTORTYPE* mVector;
+			const VECTORTYPE* mVector;
 		};
 	}
 }

@@ -396,7 +396,7 @@
 	},
 	
 	"nap::EntityResource": {
-		"mID": "CameraEntity",
+		"mID": "CameraEntityLeft",
 		"Components" : 
 		[
 			{
@@ -444,6 +444,55 @@
 		]
 	},
 
+	"nap::EntityResource": {
+		"mID": "CameraEntityRight",
+		"Components" : 
+		[
+			{
+				"nap::PerspCameraComponentResource": {
+					"Properties": {
+						"FieldOfView": 45.0,
+						"NearClippingPlane" : 0.01,
+						"FarClippingPlane" : 1000.0
+					}
+				}		
+			},
+			{
+				"nap::KeyInputComponentResource": {
+				}
+			},
+			{
+				"nap::FirstPersonControllerResource": {
+					"MovementSpeed": 10.0,
+					"RotateSpeed": 2.0
+				}
+			},
+			{
+				"nap::TransformComponentResource": {
+					"Properties": {
+						"Translate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 5.0
+						},
+						"Rotate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0,
+							"w": 1.0
+						},
+						"Scale": {
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.0						
+					}
+				}		
+			}
+		]
+	},
+	
 	"nap::EntityResource": {
 		"mID": "SplitCameraEntity",
 		"Components" : 

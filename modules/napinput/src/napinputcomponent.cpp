@@ -24,7 +24,7 @@ RTTI_END_CLASS
 namespace nap
 {
 	// Pointer input forwarding
-	void nap::PointerInputComponent::trigger(nap::InputEvent& inEvent)
+	void nap::PointerInputComponent::trigger(const nap::InputEvent& inEvent)
 	{
 		// Make sure it's a pointer event
 		rtti::TypeInfo event_type = inEvent.get_type().get_raw_type();
@@ -37,24 +37,24 @@ namespace nap
 		// Forward to correct signal
 		if (event_type == RTTI_OF(PointerPressEvent))
 		{
-			PointerPressEvent& press_event = static_cast<PointerPressEvent&>(inEvent);
+			const PointerPressEvent& press_event = static_cast<const PointerPressEvent&>(inEvent);
 			pressed.trigger(press_event);
 
 		}
 		else if (event_type == RTTI_OF(PointerReleaseEvent))
 		{
-			PointerReleaseEvent& release_event = static_cast<PointerReleaseEvent&>(inEvent);
+			const PointerReleaseEvent& release_event = static_cast<const PointerReleaseEvent&>(inEvent);
 			released.trigger(release_event);
 		}
 		else if (event_type == RTTI_OF(PointerMoveEvent))
 		{
-			PointerMoveEvent& move_event = static_cast<PointerMoveEvent&>(inEvent);
+			const PointerMoveEvent& move_event = static_cast<const PointerMoveEvent&>(inEvent);
 			moved.trigger(move_event);
 			return;
 		}
 		else if (event_type == RTTI_OF(PointerDragEvent))
 		{
-			PointerDragEvent& drag_event = static_cast<PointerDragEvent&>(inEvent);
+			const PointerDragEvent& drag_event = static_cast<const PointerDragEvent&>(inEvent);
 			dragged.trigger(drag_event);
 			return;
 		}
@@ -66,7 +66,7 @@ namespace nap
 
 
 	// Key forward handling
-	void KeyInputComponent::trigger(nap::InputEvent& inEvent)
+	void KeyInputComponent::trigger(const nap::InputEvent& inEvent)
 	{
 		// Make sure it's a pointer event
 		rtti::TypeInfo event_type = inEvent.get_type().get_raw_type();
@@ -78,14 +78,14 @@ namespace nap
 
 		if (event_type == RTTI_OF(KeyPressEvent))
 		{
-			KeyPressEvent& press_event = static_cast<KeyPressEvent&>(inEvent);
+			const KeyPressEvent& press_event = static_cast<const KeyPressEvent&>(inEvent);
 			pressed.trigger(press_event);
 			return;
 		}
 
 		if (event_type == RTTI_OF(KeyReleaseEvent))
 		{
-			KeyReleaseEvent& release_event = static_cast<KeyReleaseEvent&>(inEvent);
+			const KeyReleaseEvent& release_event = static_cast<const KeyReleaseEvent&>(inEvent);
 			released.trigger(release_event);
 			return;
 		}

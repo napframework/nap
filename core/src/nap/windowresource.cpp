@@ -5,10 +5,6 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	WindowResource::~WindowResource()
-	{
-	}
-
 	void WindowResource::addEvent(EventPtr inEvent)
 	{
 		mEvents.emplace_back(std::move(inEvent));
