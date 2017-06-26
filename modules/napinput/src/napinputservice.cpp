@@ -10,11 +10,31 @@
 RTTI_BEGIN_CLASS(nap::InputService)
 RTTI_END_CLASS
 
+RTTI_BEGIN_BASE_CLASS(nap::InputRouter)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS(nap::DefaultInputRouter)
+RTTI_END_CLASS
+
+
 namespace nap
 {
 
+	void DefaultInputRouter::routeEvent(const InputEvent& event, const EntityList& entities)
+	{
+		for (EntityInstance* entity : entities)
+		{
+			std::vector<InputComponent*> input_components;
+			entity->getComponentsOfType<InputComponent>(input_components);
 
-	void InputService::handleInput(WindowResource& window, const EntityList& entities)
+			for (InputComponent* component : input_components)
+			{
+				component->trigger(event);
+			}
+		}
+	}
+
+	void InputService::handleInput(WindowResource& window, InputRouter& inputRouter, const EntityList& entities)
 	{
 		for (const Event* event : window.GetEvents())
 		{
@@ -22,16 +42,7 @@ namespace nap
 			if (input_event == nullptr)
 				continue;
 
-			for (EntityInstance* entity : entities)
-			{
-				std::vector<InputComponent*> input_components;
-				entity->getComponentsOfType<InputComponent>(input_components);
-
-				for (InputComponent* component : input_components)
-				{
-					component->trigger(*input_event);
-				}
-			}
+			inputRouter.routeEvent(*input_event, entities);
 		}
 	}
 }

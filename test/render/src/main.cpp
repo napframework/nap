@@ -294,6 +294,7 @@ nap::ObjectPtr<nap::EntityInstance>						orientationEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance>						cameraEntityLeft = nullptr;
 nap::ObjectPtr<nap::EntityInstance>						cameraEntityRight = nullptr;
 nap::ObjectPtr<nap::EntityInstance>						splitCameraEntity = nullptr;
+nap::ObjectPtr<nap::DefaultInputRouter>					defaultInputRouter = nullptr;
 
 
 // Some utilities
@@ -308,7 +309,7 @@ void onUpdate()
 		entities.push_back(cameraEntityLeft.get());
 
 		nap::WindowResource* window = renderWindows[0].get();
-		inputService->handleInput(*window, entities);
+		inputService->handleInput(*window, *defaultInputRouter, entities);
 	}
 
 	{
@@ -317,7 +318,7 @@ void onUpdate()
 		entities.push_back(cameraEntityRight.get());
 
 		nap::WindowResource* window = renderWindows[1].get();
-		inputService->handleInput(*window, entities);
+		inputService->handleInput(*window, *defaultInputRouter, entities);
 	}
 	
 	// Process events for all windows
@@ -679,6 +680,7 @@ bool init(nap::Core& core)
  	testTexture					= resourceManagerService->findObject<nap::ImageResource>("TestTexture");
  	worldTexture				= resourceManagerService->findObject<nap::ImageResource>("WorldTexture");
  	textureRenderTarget			= resourceManagerService->findObject<nap::TextureRenderTargetResource2D>("PlaneRenderTarget");
+	defaultInputRouter			= resourceManagerService->findObject<nap::DefaultInputRouter>("InputRouter");
 
 	pigEntity					= resourceManagerService->findEntity("PigEntity");
 	rotatingPlaneEntity			= resourceManagerService->findEntity("RotatingPlaneEntity");
@@ -687,7 +689,7 @@ bool init(nap::Core& core)
 	orientationEntity			= resourceManagerService->findEntity("OrientationEntity");
 	cameraEntityLeft			= resourceManagerService->findEntity("CameraEntityLeft");
 	cameraEntityRight			= resourceManagerService->findEntity("CameraEntityRight");
-	splitCameraEntity			= resourceManagerService->findEntity("SplitCameraEntity");
+	splitCameraEntity			= resourceManagerService->findEntity("SplitCameraEntity");	
 #else	
 	if (!initResources(errorState))
 	{

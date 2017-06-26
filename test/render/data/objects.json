@@ -13,6 +13,10 @@
 		"Title" : "Window 2"
 	},
 	
+	"nap::DefaultInputRouter": {
+		"mID": "InputRouter"
+	},
+	
     "nap::ImageResource": {
 		"mID" : "PigTexture",
 		"mImagePath" : "data/pig_head.jpg"
