@@ -23,6 +23,9 @@
 #include <nap/resourcemanager.h>
 #include <sdlinput.h>
 #include <sdlwindow.h>
+#include "uiinputrouter.h"
+#include "napinputservice.h"
+#include "napinputcomponent.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -32,26 +35,16 @@
 // Nap Objects
 nap::RenderService* renderService = nullptr;
 nap::ResourceManagerService* resourceManagerService = nullptr;
+nap::InputService* inputService = nullptr;
 
 std::vector<nap::ObjectPtr<nap::RenderWindowResource>> renderWindows;
 nap::ObjectPtr<nap::EntityInstance> slideShowEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance> cameraEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance> rootLayoutEntity = nullptr;
-
-static float movementScale = 0.5f;
-static float rotateScale = 1.0f;
-bool moveForward = false;
-bool moveBackward = false;
-bool moveLeft = false;
-bool moveRight = false;
-bool lookUp = false;
-bool lookDown = false;
-bool lookLeft = false;
-bool lookRight = false;
+nap::ObjectPtr<nap::UIInputRouter>	uiInputRouter = nullptr;
 
 // Some utilities
 void runGame(nap::Core& core);	
-void updateCamera(float elapsedTime);
 
 // Called when the window is updating
 void onUpdate()
@@ -71,6 +64,18 @@ void onUpdate()
 	if (rootLayoutEntity == nullptr)
 		rootLayoutEntity = resourceManagerService->findEntity("RootEntity");
 
+	if (cameraEntity != nullptr)
+	{
+		std::vector<nap::EntityInstance*> entities;
+		entities.push_back(&resourceManagerService->getRootEntity());
+
+		uiInputRouter->setCamera(cameraEntity->getComponent<nap::OrthoCameraComponent>());
+		inputService->handleInput(*renderWindows[0], *uiInputRouter, entities);
+	}
+
+	// Process events for all windows
+	for (auto& window : renderWindows)
+		window->processEvents();
 
 	// Update model transform
 	float elapsed_time = renderService->getCore().getElapsedTime();
@@ -87,9 +92,6 @@ void onUpdate()
 		component.update(delta_time);
 	}
 
-	if (cameraEntity != nullptr)
-		updateCamera(delta_time);
-
 	glm::vec2 window_size = renderWindows[0]->getWindow()->getSize();
 
 	if (rootLayoutEntity != nullptr)
@@ -104,74 +106,6 @@ void onUpdate()
 	}
 
 	prev_elapsed_time = elapsed_time;
-}
-
-void updateCamera(float deltaTime)
-{
-	float movement = movementScale * deltaTime;
-	float rotate = rotateScale * deltaTime;
-	float rotate_rad = rotate;
-
-	nap::TransformComponent* cam_xform = cameraEntity->findComponent<nap::TransformComponent>();
-
-	//glm::vec3 lookat_pos = cam_xform->getGlobalTransform()[0];
-	//glm::vec3 dir = glm::cross(glm::normalize(lookat_pos), glm::vec3(cam_xform->getGlobalTransform()[1]));
-	//glm::vec3 dir_f = glm::cross(glm::normalize(lookat_pos), glm::vec3(0.0,1.0,0.0));
-	//glm::vec3 dir_s = glm::cross(glm::normalize(lookat_pos), glm::vec3(0.0, 0.0, 1.0));
-	//dir_f *= movement;
-	//dir_s *= movement;
-
-	glm::vec3 side(1.0, 0.0, 0.0);
-	glm::vec3 forward(0.0, 0.0, 1.0);
-
-	glm::vec3 dir_forward = glm::rotate(cam_xform->getRotate(), forward);
-	glm::vec3 movement_forward = dir_forward * movement;
-
-	glm::vec3 dir_sideways = glm::rotate(cam_xform->getRotate(), side);
-	glm::vec3 movement_sideways = dir_sideways * movement;
-
-	//nap::Logger::info("direction: %f, %f,%f", dir_f.x, dir_f.y, dir_f.z);
-
-	if (moveForward)
-	{
-		cam_xform->setTranslate(cam_xform->getTranslate() - movement_forward);
-	}
-	if (moveBackward)
-	{
-		cam_xform->setTranslate(cam_xform->getTranslate() + movement_forward);
-	}
-	if (moveLeft)
-	{
-		cam_xform->setTranslate(cam_xform->getTranslate() - movement_sideways);
-	}
-	if (moveRight)
-	{
-		cam_xform->setTranslate(cam_xform->getTranslate() + movement_sideways);
-	}
-	if (lookUp)
-	{
-		glm::quat r = cam_xform->getRotate();
-		glm::quat nr = glm::rotate(r, rotate_rad, glm::vec3(1.0, 0.0, 0.0));
-		cam_xform->setRotate(nr);
-	}
-	if (lookDown)
-	{
-		glm::quat r = cam_xform->getRotate();
-		glm::quat nr = glm::rotate(r, -1.0f * rotate_rad, glm::vec3(1.0, 0.0, 0.0));
-		cam_xform->setRotate(nr);
-	}
-	if (lookRight)
-	{
-		glm::quat r = cam_xform->getRotate();
-		glm::quat nr = glm::rotate(r, -1.0f*rotate_rad, glm::vec3(0.0, 1.0, 0.0));
-		cam_xform->setRotate(nr);
-	}
-	if (lookLeft)
-	{
-		glm::quat r = cam_xform->getRotate();
-		glm::quat nr = glm::rotate(r, rotate_rad, glm::vec3(0.0, 1.0, 0.0));
-		cam_xform->setRotate(nr);
-	}
 }
 
 // Called when the window is going to render
@@ -223,8 +157,10 @@ bool init(nap::Core& core)
 		return false;
 	}
 
-	renderService->draw.connect([]() { onRender(); });
-	renderService->update.connect([]() { onUpdate(); });
+	renderService->draw.connect(std::bind(&onRender));
+	renderService->update.connect(std::bind(&onUpdate));
+
+	inputService = core.getOrCreateService<nap::InputService>();
 
 	//////////////////////////////////////////////////////////////////////////
 	// Resources
@@ -237,11 +173,32 @@ bool init(nap::Core& core)
 		return false;        
 	}
 
-
 	//////////////////////////////////////////////////////////////////////////
 
-
+	uiInputRouter = resourceManagerService->findObject<nap::UIInputRouter>("InputRouter");
 	renderWindows.push_back(resourceManagerService->findObject<nap::RenderWindowResource>("Window"));
+
+	nap::ObjectPtr<nap::EntityInstance> buttonRightEntity = resourceManagerService->findEntity("ButtonRightEntity");
+	nap::ObjectPtr<nap::EntityInstance> buttonLeftEntity = resourceManagerService->findEntity("ButtonLeftEntity");
+
+	buttonRightEntity->getComponent<nap::PointerInputComponent>().pressed.connect([](const nap::PointerPressEvent&)
+	{
+		if (slideShowEntity != nullptr)
+		{
+			nap::SlideShowComponent& component = slideShowEntity->getComponent<nap::SlideShowComponent>();
+			component.cycleRight();
+		}
+	});
+
+	buttonLeftEntity->getComponent<nap::PointerInputComponent>().pressed.connect([](const nap::PointerPressEvent&)
+	{
+		if (slideShowEntity != nullptr)
+		{
+			nap::SlideShowComponent& component = slideShowEntity->getComponent<nap::SlideShowComponent>();
+			component.cycleLeft();
+		}
+	});
+
 
 	// Set render states
 	nap::RenderState& render_state = renderService->getRenderState();
@@ -305,132 +262,14 @@ void runGame(nap::Core& core)
 				case SDLK_ESCAPE:
 					loop = false;
 					break;
-				case SDLK_f:
-				{
-					static bool fullScreen = false;
-					fullScreen = !fullScreen;
 
-// 					for (nap::RenderWindowComponent* renderWindow : renderWindows)
-// 						renderWindow->fullScreen.setValue(fullScreen);
-					break;
-				}
-				case SDLK_w:
-				{
-					moveForward = true;
-					break;
-				}
-				case SDLK_s:
-				{
-					moveBackward = true;
-					break;
-				}
-				case SDLK_a:
-				{
-					moveLeft = true;
-					break;
-				}
-				case SDLK_d:
-				{
-					moveRight = true;
-					break;
-				}
-				case SDLK_n:
-				{
-					if (slideShowEntity != nullptr)
-					{
-						nap::SlideShowComponent& component = slideShowEntity->getComponent<nap::SlideShowComponent>();
-						component.cycleLeft();
-					}
-					break;
-				}
-				case SDLK_m:
-				{
-					if (slideShowEntity != nullptr)
-					{
-						nap::SlideShowComponent& component = slideShowEntity->getComponent<nap::SlideShowComponent>();
-						component.cycleRight();
-					}
-					break;
-				}
-				case SDLK_UP:
-				{
-					lookUp = true;
-					break;
-				}
-				case SDLK_DOWN:
-				{
-					lookDown = true;
-					break;
-				}
-				case SDLK_LEFT:
-				{
-					lookLeft = true;
-					break;
-				}
-				case SDLK_RIGHT:
-				{
-					lookRight = true;
-					break;
-				}
 				default:
 					break;
 				}
-			}
-
-			if (event.type == SDL_KEYUP)
-			{
-				switch (event.key.keysym.sym)
-				{
-				case SDLK_w:
-				{
-					moveForward = false;
-					break;
-				}
-				case SDLK_s:
-				{
-					moveBackward = false;
-					break;
-				}
-				case SDLK_a:
-				{
-					moveLeft = false;
-					break;
-				}
-				case SDLK_d:
-				{
-					moveRight = false;
-					break;
-				}
-				case SDLK_UP:
-				{
-					lookUp = false;
-					break;
-				}
-				case SDLK_DOWN:
-				{
-					lookDown = false;
-					break;
-				}
-				case SDLK_LEFT:
-				{
-					lookLeft = false;
-					break;
-				}
-				case SDLK_RIGHT:
-				{
-					lookRight = false;
-					break;
-				}
-				default:
-					break;
-				}
-			}
+			}			
 		}
 
 		//////////////////////////////////////////////////////////////////////////
-
-		for (auto& window : renderWindows)
-			window->processEvents();
 
 		// run render call
 		renderService->render();

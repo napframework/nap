@@ -1,11 +1,9 @@
 // local includes
 #include "transformcomponent.h"
-#include "renderglobals.h"
 
 // External includes
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/quaternion.hpp>
-#include <mathutils.h>
 
 RTTI_BEGIN_CLASS(nap::TransformProperties)
 	RTTI_PROPERTY("Translate",		&nap::TransformProperties::mTranslate,		nap::rtti::EPropertyMetaData::Default)

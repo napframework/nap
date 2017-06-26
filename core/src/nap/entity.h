@@ -70,7 +70,7 @@ namespace nap
 			return pos->get();
 		}
 
-		void getComponentsOfType(const rtti::TypeInfo& inType, std::vector<ComponentInstance*>& components)
+		void getComponentsOfType(const rtti::TypeInfo& inType, std::vector<ComponentInstance*>& components) const
 		{
 			for (auto& component : mComponents)
 				if (component->get_type().is_derived_from(inType))
@@ -78,12 +78,27 @@ namespace nap
 		}
 
 		template<class T>
-		void getComponentsOfType(std::vector<T*>& components)
+		void getComponentsOfType(std::vector<T*>& components) const
 		{
 			const rtti::TypeInfo type = rtti::TypeInfo::get<T>();
 			for (auto& component : mComponents)
 				if (component->get_type().is_derived_from(type))
 					components.push_back(rtti_cast<T>(component.get()));
+		}
+
+		bool hasComponentsOfType(const rtti::TypeInfo& inType) const
+		{
+			for (auto& component : mComponents)
+				if (component->get_type().is_derived_from(inType))
+					return true;
+
+			return false;
+		}
+
+		template<class T>
+		bool hasComponentsOfType() const
+		{
+			return hasComponentsOfType(rtti::TypeInfo::get<T>());
 		}
 
 		template<class T>

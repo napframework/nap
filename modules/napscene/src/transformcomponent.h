@@ -4,9 +4,11 @@
 #include <nap/serviceablecomponent.h>
 #include <nap/rttinap.h>
 #include <nap/coreattributes.h>
+#include <nap/entity.h>
 
 // Local Includes
-#include "renderattributes.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 namespace nap
 {

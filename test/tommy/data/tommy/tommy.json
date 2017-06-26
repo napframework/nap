@@ -6,6 +6,10 @@
 		"Title" : "Tommy"
 	},
 	
+	"nap::UIInputRouter": {
+		"mID": "InputRouter"
+	},
+	
 	"nap::ImageResource": {
 		"mID" : "BackgroundImage",
 		"mImagePath" : "data/tommy/background.jpg"
@@ -261,6 +265,10 @@
 				}		
 			},
 			{
+				"nap::PointerInputComponentResource": {
+				}
+			},
+			{
 				"nap::FractionLayoutComponentResource" : {
 					"Properties" : {
 						"PositionPivot" : "Center",
@@ -309,6 +317,10 @@
 				"nap::TransformComponentResource": {
 				}		
 			},
+			{
+				"nap::PointerInputComponentResource": {
+				}
+			},	
 			{
 				"nap::FractionLayoutComponentResource" : {
 					"Properties" : {

@@ -263,6 +263,21 @@ namespace nap
 			windowID = sdlEvent.key.windowID;
 			return std::make_unique<nap::KeyReleaseEvent>(toNapKeyCode(sdlEvent.key.keysym.sym));
 		}
+		else if (sdlEvent.type == SDL_MOUSEBUTTONDOWN)
+		{
+			windowID = sdlEvent.button.windowID;
+			return std::make_unique<nap::PointerPressEvent>(sdlEvent.button.x, sdlEvent.button.y, sdlEvent.button.button);
+		}
+		else if (sdlEvent.type == SDL_MOUSEBUTTONUP)
+		{
+			windowID = sdlEvent.button.windowID;
+			return std::make_unique<nap::PointerReleaseEvent>(sdlEvent.button.x, sdlEvent.button.y, sdlEvent.button.button);
+		}
+		else if (sdlEvent.type == SDL_MOUSEMOTION)
+		{
+			windowID = sdlEvent.button.windowID;
+			return std::make_unique<nap::PointerMoveEvent>(sdlEvent.motion.x, sdlEvent.motion.y);
+		}
 
 		return nullptr;
 	}
