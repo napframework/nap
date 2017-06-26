@@ -143,23 +143,6 @@ namespace nap
 		opengl::makeCurrent(*mWindow);
 	}
 
-	bool OpenGLRenderWindow::handleEvent(const SDL_Event& event)
-	{
-		assert(event.type == SDL_WINDOWEVENT);
-		switch (event.window.event)
-		{
-			case SDL_WINDOWEVENT_RESIZED:
-			{
-				int width = event.window.data1;
-				int height = event.window.data2;
-
-				setSize(glm::ivec2(width, height));
-				return true;
-			}
-		}
-
-		return false;
-	}
 
 	bool OpenGLRenderer::init(utility::ErrorState& errorState)
 	{

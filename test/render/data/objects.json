@@ -1,12 +1,12 @@
 {
-	"nap::WindowResource": {
+	"nap::RenderWindowResource": {
 		"mID" : "Window0",
 		"Width" : 256,
 		"Height" : 256,
 		"Title" : "Window 1"
 	},
 
-	"nap::WindowResource": {
+	"nap::RenderWindowResource": {
 		"mID" : "Window1",
 		"Width" : 512,
 		"Height" : 512,

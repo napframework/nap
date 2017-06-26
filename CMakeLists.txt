@@ -78,6 +78,7 @@ add_subdirectory(modules/naprender)
 add_subdirectory(modules/napgui)
 add_subdirectory(modules/napmath)
 add_subdirectory(modules/napsdlinput)
+add_subdirectory(modules/napsdlwindow)
 
 #add_dependencies(napkin mod_napfsm)
 add_dependencies(scriptserver mod_napscriptserver)

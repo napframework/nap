@@ -104,8 +104,6 @@ namespace nap
 		 */
 		virtual void makeCurrent() override;
 
-		bool handleEvent(const SDL_Event& event);
-
 	private:
 		std::unique_ptr<opengl::Window> mWindow = nullptr;
 		std::unique_ptr<opengl::BackbufferRenderTarget> mBackbuffer = nullptr;

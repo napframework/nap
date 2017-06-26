@@ -1,33 +1,44 @@
 #include "renderwindowcomponent.h"
+#include "nap\windowevent.h"
 
-RTTI_BEGIN_CLASS(nap::WindowResource)
-	RTTI_PROPERTY("Width",			&nap::WindowResource::mWidth,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Height",			&nap::WindowResource::mHeight,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Borderless",		&nap::WindowResource::mBorderless,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Resizable",		&nap::WindowResource::mResizable,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Title",			&nap::WindowResource::mTitle,		nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::RenderWindowResource)
+	RTTI_PROPERTY("Width",			&nap::RenderWindowResource::mWidth,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Height",			&nap::RenderWindowResource::mHeight,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Borderless",		&nap::RenderWindowResource::mBorderless,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Resizable",		&nap::RenderWindowResource::mResizable,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Title",			&nap::RenderWindowResource::mTitle,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
 {
-	WindowResource::WindowResource(RenderService& renderService) :
+	RenderWindowResource::RenderWindowResource(RenderService& renderService) :
 		mRenderService(&renderService)
 	{
 	}
 
-	WindowResource::~WindowResource()
+	RenderWindowResource::~RenderWindowResource()
 	{
 		if (mWindow != nullptr)
 			mRenderService->removeWindow(*this);
 	}
 
-	bool WindowResource::init(utility::ErrorState& errorState)
+	bool RenderWindowResource::init(utility::ErrorState& errorState)
 	{
 		mWindow = mRenderService->addWindow(*this, errorState);
 		if (!errorState.check(mWindow != nullptr, "Failed to create window"))
 			return false;
 
+		onEvent.connect(std::bind(&RenderWindowResource::handleEvent, this, std::placeholders::_1));
 		return true;
+	}
+
+	void RenderWindowResource::handleEvent(const Event& event)
+	{
+		const WindowResizedEvent* resized_event = rtti_cast<const WindowResizedEvent>(&event);
+		if (resized_event != nullptr)
+		{
+			mWindow->setSize(glm::ivec2(resized_event->mWidth, resized_event->mHeight));
+		}
 	}
 
 	//////////////////////////////////////////////////////////////////////////

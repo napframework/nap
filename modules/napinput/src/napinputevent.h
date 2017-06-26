@@ -2,6 +2,8 @@
 
 // External Includes
 #include <rtti/rtti.h>
+#include "nap/event.h"
+#include "keycode.h"
 
 namespace nap
 {
@@ -10,9 +12,9 @@ namespace nap
 
 	Defines an input event that is passed along the system
 	**/
-	class InputEvent
+	class InputEvent : public Event
 	{
-		RTTI_ENABLE()
+		RTTI_ENABLE(Event)
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -26,12 +28,12 @@ namespace nap
 	{
 		RTTI_ENABLE(InputEvent)
 	public:
-		KeyEvent(int inKey) :
+		KeyEvent(EKeyCode inKey) :
 			mKey(inKey)	
 		{
 		}
 		
-		int	mKey;
+		EKeyCode mKey;
 	};
 
 	
@@ -39,7 +41,7 @@ namespace nap
 	{
 		RTTI_ENABLE(KeyEvent)
 	public:
-		KeyPressEvent(int inKey) : 
+		KeyPressEvent(EKeyCode inKey) : 
 			KeyEvent(inKey) 
 		{ 
 		}
@@ -50,7 +52,7 @@ namespace nap
 	{
 		RTTI_ENABLE(KeyEvent)
 	public:
-		KeyReleaseEvent(int inKey) :
+		KeyReleaseEvent(EKeyCode inKey) :
 			KeyEvent(inKey) 
 		{
 		}

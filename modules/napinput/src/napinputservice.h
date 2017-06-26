@@ -25,5 +25,6 @@ namespace nap
 		InputService& operator=(const InputService&) = delete;
 
 	private:
+
 	};
 }

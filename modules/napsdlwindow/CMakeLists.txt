@@ -1,4 +1,4 @@
-project(mod_napsdlinput)
+project(mod_napsdlwindow)
 
 # add all cpp files to SOURCES
 file(GLOB SOURCES src/*.cpp)
@@ -25,4 +25,4 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
 target_include_directories(${PROJECT_NAME} PUBLIC src ${SDL2_INCLUDE_DIR})
 
 # link with external libs
-target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARY} napcore mod_napinput)
+target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARY} napcore)

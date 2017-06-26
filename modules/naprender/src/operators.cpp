@@ -18,7 +18,7 @@ namespace nap
 		nap::Entity* root_entity = static_cast<nap::Entity*>(this->getRootObject());
 		nap::RenderService* render_service = root_entity->getCore().getOrCreateService<RenderService>();
 
-		render_service->draw.signal.connect([&](const nap::SignalAttribute& attr)
+		render_service->draw.connect([&]()
 		{
 			drawOutputPlug.trigger();
 		});

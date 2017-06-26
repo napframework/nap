@@ -40,11 +40,19 @@
 #include <perspcameracomponent.h>
 #include <mathutils.h>
 #include <rendertargetresource.h>
+#include <sdlinput.h>
+#include <sdlwindow.h>
 
 // Nap includes
 #include <nap/core.h>
 #include <nap/resourcemanager.h>
 #include <nap/coreattributes.h>
+#include "napinputservice.h"
+#include "nap/windowresource.h"
+#include "KeyCode.h"
+#include "napinputevent.h"
+#include "nap/windowevent.h"
+#include "nap/event.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -61,16 +69,17 @@ static float rotateScale = 1.0f;
 // Nap Objects
 nap::RenderService* renderService = nullptr;
 nap::ResourceManagerService* resourceManagerService = nullptr;
+nap::InputService* inputService = nullptr;
 
-std::vector<nap::ObjectPtr<nap::WindowResource>>	renderWindows;
-nap::ObjectPtr<nap::TextureRenderTargetResource2D>	textureRenderTarget;
-nap::ObjectPtr<nap::EntityInstance>					pigEntity = nullptr;
-nap::ObjectPtr<nap::EntityInstance>					rotatingPlaneEntity = nullptr;
-nap::ObjectPtr<nap::EntityInstance>					planeEntity = nullptr;
-nap::ObjectPtr<nap::EntityInstance>					worldEntity = nullptr;
-nap::ObjectPtr<nap::EntityInstance>					orientationEntity = nullptr;
-nap::ObjectPtr<nap::EntityInstance>					cameraEntity = nullptr;
-nap::ObjectPtr<nap::EntityInstance>					splitCameraEntity = nullptr;
+std::vector<nap::ObjectPtr<nap::RenderWindowResource>>	renderWindows;
+nap::ObjectPtr<nap::TextureRenderTargetResource2D>		textureRenderTarget;
+nap::ObjectPtr<nap::EntityInstance>						pigEntity = nullptr;
+nap::ObjectPtr<nap::EntityInstance>						rotatingPlaneEntity = nullptr;
+nap::ObjectPtr<nap::EntityInstance>						planeEntity = nullptr;
+nap::ObjectPtr<nap::EntityInstance>						worldEntity = nullptr;
+nap::ObjectPtr<nap::EntityInstance>						orientationEntity = nullptr;
+nap::ObjectPtr<nap::EntityInstance>						cameraEntity = nullptr;
+nap::ObjectPtr<nap::EntityInstance>						splitCameraEntity = nullptr;
 
 // movement
 bool moveForward = false;
@@ -87,7 +96,7 @@ void runGame(nap::Core& core);
 void updateCamera(float elapsedTime);
 
 // Called when the window is updating
-void onUpdate(const nap::SignalAttribute& signal)
+void onUpdate()
 {
 	// Need to make primary window active before reloading files, as renderer resources need to be created in that context
 	renderService->getPrimaryWindow().makeCurrent();
@@ -170,8 +179,6 @@ void onUpdate(const nap::SignalAttribute& signal)
 	//rot_quat = glm::rotate(glm::quat(), rot_angle_radians, glm::vec3(0.0, 1.0, 0.0));
 	//cam_xform->setRotate(nap::quatToVector(rot_quat));
 }
-nap::Slot<const nap::SignalAttribute&> updateSlot = { [](const nap::SignalAttribute& attr){ onUpdate(attr); } };
-
 
 void updateCamera(float deltaTime)
 {
@@ -242,7 +249,7 @@ void updateCamera(float deltaTime)
 
 
 // Called when the window is going to render
-void onRender(const nap::SignalAttribute& signal)
+void onRender()
 {
 	renderService->destroyGLContextResources(renderWindows);
 
@@ -258,7 +265,7 @@ void onRender(const nap::SignalAttribute& signal)
 
 	// Render window 0
 	{
-		nap::WindowResource* render_window = renderWindows[0].get();
+		nap::RenderWindowResource* render_window = renderWindows[0].get();
 
 		render_window->makeActive();
 
@@ -295,7 +302,7 @@ void onRender(const nap::SignalAttribute& signal)
 	 
 	// render window 1
 	{
-		nap::WindowResource* render_window = renderWindows[1].get();
+		nap::RenderWindowResource* render_window = renderWindows[1].get();
 
 		render_window->makeActive();
 
@@ -316,7 +323,6 @@ void onRender(const nap::SignalAttribute& signal)
 		render_window->swap(); 
 	}
 }
-nap::Slot<const nap::SignalAttribute&> renderSlot = { [](const nap::SignalAttribute& attr){ onRender(attr); } };
 
 #if 0
 bool initResources(nap::utility::ErrorState& errorState)
@@ -486,8 +492,14 @@ bool init(nap::Core& core)
 
 	nap::Logger::info("initialized render service: %s", renderService->getName().c_str());
 
-	renderService->draw.signal.connect(renderSlot);
-	renderService->update.signal.connect(updateSlot);
+	renderService->draw.connect(std::bind(&onRender));
+	renderService->update.connect(std::bind(&onUpdate));
+
+	//////////////////////////////////////////////////////////////////////////
+	// Input
+	//////////////////////////////////////////////////////////////////////////
+
+	inputService = core.getOrCreateService<nap::InputService>();
 
 	//////////////////////////////////////////////////////////////////////////
 	// Resources
@@ -501,8 +513,8 @@ bool init(nap::Core& core)
 		return false;  
 	}  
 
-	renderWindows.push_back(resourceManagerService->findObject<nap::WindowResource>("Window0"));
-	renderWindows.push_back(resourceManagerService->findObject<nap::WindowResource>("Window1"));
+	renderWindows.push_back(resourceManagerService->findObject<nap::RenderWindowResource>("Window0"));
+	renderWindows.push_back(resourceManagerService->findObject<nap::RenderWindowResource>("Window1"));
 
 	pigTexture					= resourceManagerService->findObject<nap::ImageResource>("PigTexture");
  	testTexture					= resourceManagerService->findObject<nap::ImageResource>("TestTexture");
@@ -549,7 +561,6 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
- 
 
 void runGame(nap::Core& core)
 {
@@ -565,6 +576,18 @@ void runGame(nap::Core& core)
 			// Check if we need to quit
 			if (event.type == SDL_QUIT)
 				loop = false;
+
+			uint32_t window_id;
+			nap::EventPtr translated_event = nap::translateInputEvent(event, window_id);
+			if (translated_event == nullptr)
+				translated_event = nap::translateWindowEvent(event, window_id);
+
+			if (translated_event != nullptr)
+			{
+				SDL_Window* native_window = SDL_GetWindowFromID(window_id);
+				nap::WindowResource* window = renderService->findWindow(native_window);
+				window->addEvent(std::move(translated_event));
+			}
 
 			// Check if escape was pressed
 			if (event.type == SDL_KEYDOWN)
@@ -696,17 +719,12 @@ void runGame(nap::Core& core)
 					break;
 				}
 			}
-
-			if (event.type == SDL_WINDOWEVENT)
-			{
-				SDL_Window* native_window = SDL_GetWindowFromID(event.window.windowID);
-				nap::WindowResource* window = renderService->findWindow(native_window);
-				nap::OpenGLRenderWindow* opengl_window = (nap::OpenGLRenderWindow*)(window->getWindow());
-				opengl_window->handleEvent(event);
-			}
 		}
 
 		//////////////////////////////////////////////////////////////////////////
+
+		for (auto& window : renderWindows)
+			window->processEvents();
 
 		// run render call
 		renderService->render();
@@ -715,3 +733,4 @@ void runGame(nap::Core& core)
 	renderService->shutdown();
 }
        
+ 

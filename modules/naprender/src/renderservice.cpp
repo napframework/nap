@@ -70,11 +70,11 @@ namespace nap
 	// Register all object creation functions
 	void RenderService::registerObjectCreators(rtti::Factory& factory)
 	{
-		factory.addObjectCreator(std::make_unique<WindowResourceCreator>(*this));
+		factory.addObjectCreator(std::make_unique<RenderWindowResourceCreator>(*this));
 	}
 
 
-	std::unique_ptr<RenderWindow> RenderService::addWindow(WindowResource& window, utility::ErrorState& errorState)
+	std::unique_ptr<RenderWindow> RenderService::addWindow(RenderWindowResource& window, utility::ErrorState& errorState)
 	{
 		assert(mRenderer != nullptr);
 
@@ -98,14 +98,14 @@ namespace nap
 		return new_window;
 	}
 
-	void RenderService::removeWindow(WindowResource& window)
+	void RenderService::removeWindow(RenderWindowResource& window)
 	{
 		WindowList::iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val) { return val == &window; });
 		assert(pos != mWindows.end());
 		mWindows.erase(pos);
 	}
 	
-	WindowResource* RenderService::findWindow(void* nativeWindow) const
+	RenderWindowResource* RenderService::findWindow(void* nativeWindow) const
 	{
 		WindowList::const_iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val) { return val->getWindow()->getNativeWindow() == nativeWindow; });
 		if (pos != mWindows.end())
@@ -273,7 +273,7 @@ namespace nap
 	}
 
 
-	void RenderService::destroyGLContextResources(const std::vector<ObjectPtr<WindowResource>>& renderWindows)
+	void RenderService::destroyGLContextResources(const std::vector<ObjectPtr<RenderWindowResource>>& renderWindows)
 	{
 		// If there is anything scheduled, destroy
 		if (!mGLContextResourcesToDestroy.empty())
@@ -285,7 +285,7 @@ namespace nap
 
 			// We go over the windows to make the GL context active, and then destroy 
 			// the resources for that context
-			for (const ObjectPtr<WindowResource>& render_window : renderWindows)
+			for (const ObjectPtr<RenderWindowResource>& render_window : renderWindows)
 			{
 				render_window->makeActive();
 				for (auto& resource : mGLContextResourcesToDestroy)

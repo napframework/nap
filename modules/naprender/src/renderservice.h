@@ -25,7 +25,7 @@ namespace nap
 	class TransformComponent;
 	class CameraComponent;
 	class RenderableComponent;
-	class WindowResource;
+	class RenderWindowResource;
 
 	/**
 	 * Main interface for rendering operations. 
@@ -98,14 +98,14 @@ namespace nap
 		* Connect to this signal to render objects to the context
 		* associated with this window.
 		*/
-		SignalAttribute draw{ this, "Draw" };
+		Signal<> draw;
 
 		/**
 		* Update signal, emitted before a render operation
 		* Connect to this signal to update your scene
 		* graph before the render call is emitted
 		*/
-		SignalAttribute update{ this, "Update" };
+		Signal<> update;
 
 		/**
 		* Returns global render state. Use the fields in this objects to modify the renderstate.
@@ -122,7 +122,7 @@ namespace nap
  		 * Destroys all per-context OpenGL resources that are scheduled for destruction. 
  		 * @param renderWindows: all render windows that are active, as they hold the GL contexts.
 		 */
-		void destroyGLContextResources(const std::vector<ObjectPtr<WindowResource>>& renderWindows);
+		void destroyGLContextResources(const std::vector<ObjectPtr<RenderWindowResource>>& renderWindows);
 
 		/**
 		* Creates a handle to a VertexArrayObject given a material-mesh combination. Internally the RenderService holds a map of VAOs for such
@@ -137,18 +137,18 @@ namespace nap
 		/**
 		 * Add a new window for the specified resource
 		 */
-		std::unique_ptr<RenderWindow> addWindow(WindowResource& window, utility::ErrorState& errorState);
+		std::unique_ptr<RenderWindow> addWindow(RenderWindowResource& window, utility::ErrorState& errorState);
 
 		/**
 		 * Remove a window
 		 */
-		void removeWindow(WindowResource& window);
+		void removeWindow(RenderWindowResource& window);
 
 		/**
-		 * Find a WindowResource by its native handle
+		 * Find a RenderWindowResource by its native handle
 		 * @param nativeWindow the native window handle (i.e. the SDL_Window pointer)
 		 */
-		WindowResource* findWindow(void* nativeWindow) const;
+		RenderWindowResource* findWindow(void* nativeWindow) const;
 
 		/**
 		 * Get the primary window (i.e. the window that was used to init OpenGL against)
@@ -187,7 +187,7 @@ namespace nap
 		void updateRenderState();
 
 		using ContextSpecificStateMap = std::unordered_map<opengl::GLContext, RenderState>;
-		using WindowList = std::vector<WindowResource*>;
+		using WindowList = std::vector<RenderWindowResource*>;
 
 		RenderState mRenderState;									//< The latest render state as set by the user
 		ContextSpecificStateMap	mContextSpecificState;				//< The per-context render state

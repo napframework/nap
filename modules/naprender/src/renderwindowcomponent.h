@@ -6,21 +6,22 @@
 
 // External Includes
 #include <nap.h>
+#include "nap/windowresource.h"
 
 namespace nap
 {
-	class WindowResource : public Resource
+	class RenderWindowResource : public WindowResource
 	{
-		RTTI_ENABLE(Resource)
+		RTTI_ENABLE(WindowResource)
 
 	public:
 		friend class RenderService;
 
 		// Default constructor
-		WindowResource() = default;
-		~WindowResource();
+		RenderWindowResource() = default;
+		~RenderWindowResource();
 
-		WindowResource(RenderService& renderService);
+		RenderWindowResource(RenderService& renderService);
 
 		/**
 		* Creates internal texture resource.
@@ -50,6 +51,9 @@ namespace nap
 		 */
 		void makeActive()														{ mWindow->makeCurrent(); }
 
+	private:
+		void handleEvent(const Event& event);
+
 	public:
 		int								mWidth			= 512;			// Width of the window
 		int								mHeight			= 512;			// Height of the window
@@ -66,10 +70,10 @@ namespace nap
 	* Factory for creating WindowResources. The factory is responsible for passing the RenderService
 	* to the WindowResource on construction.
 	*/
-	class WindowResourceCreator : public rtti::IObjectCreator
+	class RenderWindowResourceCreator : public rtti::IObjectCreator
 	{
 	public:
-		WindowResourceCreator(RenderService& renderService) :
+		RenderWindowResourceCreator(RenderService& renderService) :
 			mRenderService(renderService) { }
 
 		/**
@@ -77,7 +81,7 @@ namespace nap
 		*/
 		rtti::TypeInfo getTypeToCreate() const override
 		{
-			return RTTI_OF(WindowResource);
+			return RTTI_OF(RenderWindowResource);
 		}
 
 		/**
@@ -85,7 +89,7 @@ namespace nap
 		*/
 		virtual rtti::RTTIObject* create() override
 		{
-			return new WindowResource(mRenderService);
+			return new RenderWindowResource(mRenderService);
 		}
 
 	private:

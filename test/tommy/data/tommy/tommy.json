@@ -1,5 +1,5 @@
 {
-	"nap::WindowResource": {
+	"nap::RenderWindowResource": {
 		"mID" : "Window",
 		"Width" : 512,
 		"Height" : 512,
