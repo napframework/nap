@@ -32,8 +32,6 @@
 
 // Mod nap render includes
 #include <material.h>
-#include <meshresource.h>
-#include <imageresource.h>
 #include <renderablemeshcomponent.h>
 #include <renderservice.h>
 #include <renderwindowcomponent.h>
@@ -41,8 +39,6 @@
 #include <transformcomponent.h>
 #include <perspcameracomponent.h>
 #include <mathutils.h>
-#include <planemeshresource.h>
-#include <spheremeshresource.h>
 #include <rendertargetresource.h>
 
 // Nap includes
@@ -50,27 +46,14 @@
 #include <nap/resourcemanager.h>
 #include <nap/coreattributes.h>
 
-// STD includes
-#include <ctime>
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
 //////////////////////////////////////////////////////////////////////////
 
-// Window Name
-std::string		programName			= "Model Loading Test";
-std::string		vertShaderName		= "shaders/shader.vert";
-std::string		fragShaderName		= "shaders/shader.frag";
-std::string		vertShaderNameTwo	= "shaders/shader_two.vert";
-std::string		fragShaderNameTwo	= "shaders/shader_two.frag";
-std::string		orientationVertShaderName = "shaders/orientation.vert";
-std::string		orientationFragShaderName = "shaders/orientation.frag";
 
-static const std::string testTextureName = "data/test.jpg";
 static nap::ObjectPtr<nap::ImageResource> testTexture = nullptr;
-static const std::string pigTextureName = "data/pig_head.jpg";
 static nap::ObjectPtr<nap::ImageResource> pigTexture = nullptr;
-static const std::string worldTextureName = "data/world_texture.jpg";
 static nap::ObjectPtr<nap::ImageResource> worldTexture = nullptr;
 static float movementScale = 3.0f;
 static float rotateScale = 1.0f;
@@ -78,7 +61,6 @@ static float rotateScale = 1.0f;
 // Nap Objects
 nap::RenderService* renderService = nullptr;
 nap::ResourceManagerService* resourceManagerService = nullptr;
-nap::Service* rpcService = nullptr;
 
 std::vector<nap::ObjectPtr<nap::WindowResource>>	renderWindows;
 nap::ObjectPtr<nap::TextureRenderTargetResource2D>	textureRenderTarget;
@@ -100,17 +82,9 @@ bool lookDown = false;
 bool lookLeft = false;
 bool lookRight = false;
 
-// Window width / height on startup
-unsigned int windowWidth(512);
-unsigned int windowHeight(512);
-
-// GLM
-glm::mat4 modelMatrix;			// Store the model matrix
-
 // Some utilities
 void runGame(nap::Core& core);	
 void updateCamera(float elapsedTime);
-void createSpheres(nap::Core& core, nap::Resource& shader);
 
 // Called when the window is updating
 void onUpdate(const nap::SignalAttribute& signal)
