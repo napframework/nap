@@ -2,13 +2,22 @@
 
 #include <nap/objectutils.h>
 
+RTTI_BEGIN_BASE_CLASS(nap::InputComponentResource)
+RTTI_END_CLASS
+
 RTTI_BEGIN_BASE_CLASS(nap::InputComponent)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::KeyInputComponent)
+RTTI_BEGIN_CLASS(nap::KeyInputComponentResource)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::PointerInputComponent)
+RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::KeyInputComponent, nap::EntityInstance&)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS(nap::PointerInputComponentResource)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::PointerInputComponent, nap::EntityInstance&)
 RTTI_END_CLASS
 
 

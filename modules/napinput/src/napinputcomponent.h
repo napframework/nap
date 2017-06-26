@@ -1,8 +1,8 @@
 #pragma once
 
 #include <rtti/rtti.h>
-#include <nap/serviceablecomponent.h>
 #include <nap/signalslot.h>
+#include "nap/entity.h"
 #include <napinputevent.h>
 
 namespace nap
@@ -10,28 +10,24 @@ namespace nap
 	// Forward declares
 	class InputService;
 
-	/**
-	@brief InputComponent
-
-	Defines a component that can be called by the input service when an input event occurs
-	Register slots to the signals exposed to this component to define behavior
-	**/
-
-	class InputComponent : public ServiceableComponent
+	class InputComponent : public ComponentInstance
 	{
-		friend class InputService;
-		RTTI_ENABLE(ServiceableComponent)
-
+		RTTI_ENABLE(ComponentInstance)
 	public:
-		// Default constructor
-		InputComponent() = default;
+		InputComponent(EntityInstance& entity) :
+			ComponentInstance(entity)
+		{
+		}
 
-		// Disable copy
-		InputComponent(const InputComponent& that) = delete;
-		InputComponent& operator=(const InputComponent&) = delete;
-
-	protected:
 		virtual void trigger(nap::InputEvent& inEvent) = 0;
+	};
+
+
+	class InputComponentResource : public ComponentResource
+	{
+		RTTI_ENABLE(ComponentResource)
+	public:
+		virtual const rtti::TypeInfo getInstanceType() const { return RTTI_OF(InputComponent); }
 	};
 
 
@@ -46,14 +42,26 @@ namespace nap
 		RTTI_ENABLE(InputComponent)
 	
 	public:
+		KeyInputComponent(EntityInstance& entity) :
+			InputComponent(entity)
+		{
+		}
+
 		// Signals
-		Signal<KeyPressEvent&>			pressed;		//< If the key has been pressed
-		Signal<KeyReleaseEvent&>		released;		//< If the key has been released
+		Signal<const KeyPressEvent&>		pressed;		//< If the key has been pressed
+		Signal<const KeyReleaseEvent&>		released;		//< If the key has been released
 
 	protected:
 		virtual void trigger(nap::InputEvent& inEvent) override;
 	};
 
+	class KeyInputComponentResource : public InputComponentResource
+	{
+		RTTI_ENABLE(InputComponentResource)
+
+	public:
+		virtual const rtti::TypeInfo getInstanceType() const { return RTTI_OF(KeyInputComponent); }
+	};
 
 	/**
 	@brief pointer input component
@@ -64,7 +72,13 @@ namespace nap
 	{
 		friend class InputService;
 		RTTI_ENABLE(InputComponent)
+
 	public:
+		PointerInputComponent(EntityInstance& entity) :
+			InputComponent(entity)
+		{
+		}
+
 		Signal<PointerPressEvent&>		pressed;		//< If the input component was clicked
 		Signal<PointerReleaseEvent&>	released;		//< If the input component click has been released
 		Signal<PointerDragEvent&>		dragged;		//< If the component received a drag (mousedrag)
@@ -73,4 +87,13 @@ namespace nap
 	protected:
 		virtual void trigger(nap::InputEvent& inEvent) override;
 	};
+
+	class PointerInputComponentResource : public InputComponentResource
+	{
+		RTTI_ENABLE(InputComponentResource)
+
+	public:
+		virtual const rtti::TypeInfo getInstanceType() const { return RTTI_OF(PointerInputComponent); }
+	};
+
 }

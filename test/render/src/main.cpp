@@ -53,18 +53,231 @@
 #include "napinputevent.h"
 #include "nap/windowevent.h"
 #include "nap/event.h"
-
+#include "napinputcomponent.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
 //////////////////////////////////////////////////////////////////////////
 
+namespace nap
+{
+	class FirstPersonController;
+	class FirstPersonControllerResource : public ComponentResource
+	{
+		RTTI_ENABLE(ComponentResource)
+	public:
+		virtual const rtti::TypeInfo getInstanceType() const { return RTTI_OF(FirstPersonController); }
+
+		float mMovementScale = 3.0f;
+		float mRotateScale = 1.0f;
+	};
+
+	class FirstPersonController : public ComponentInstance
+	{
+		RTTI_ENABLE(ComponentInstance)
+	public:
+		FirstPersonController(EntityInstance& entity) :
+			ComponentInstance(entity)
+		{
+		}
+
+		virtual bool init(const ObjectPtr<ComponentResource>& resource, utility::ErrorState& errorState)
+		{
+			KeyInputComponent* key_component = getEntity()->findComponent<KeyInputComponent>();
+			if (!errorState.check(key_component != nullptr, "Could not find keyInputComponent"))
+				return false;
+
+			mTransformComponent = getEntity()->findComponent<TransformComponent>();
+			if (!errorState.check(mTransformComponent != nullptr, "Could not find transform component"))
+				return false;
+
+			mResource = rtti_cast<FirstPersonControllerResource>(resource.get());
+			assert(mResource != nullptr);
+
+			key_component->pressed.connect(std::bind(&FirstPersonController::onKeyPress, this, std::placeholders::_1));
+			key_component->released.connect(std::bind(&FirstPersonController::onKeyRelease, this, std::placeholders::_1));
+
+			return true;
+		}
+
+		void update(double deltaTime)
+		{
+			float movement = mResource->mMovementScale * deltaTime;
+			float rotate = mResource->mRotateScale * deltaTime;
+			float rotate_rad = rotate;
+
+			glm::vec3 side(1.0, 0.0, 0.0);
+			glm::vec3 forward(0.0, 0.0, 1.0);
+
+			glm::vec3 dir_forward = glm::rotate(mTransformComponent->getRotate(), forward);
+			glm::vec3 movement_forward = dir_forward * movement;
+
+			glm::vec3 dir_sideways = glm::rotate(mTransformComponent->getRotate(), side);
+			glm::vec3 movement_sideways = dir_sideways * movement;
+
+			if (mMoveForward)
+			{
+				mTransformComponent->setTranslate(mTransformComponent->getTranslate() - movement_forward);
+			}
+			if (mMoveBackward)
+			{
+				mTransformComponent->setTranslate(mTransformComponent->getTranslate() + movement_forward);
+			}
+			if (mMoveLeft)
+			{
+				mTransformComponent->setTranslate(mTransformComponent->getTranslate() - movement_sideways);
+			}
+			if (mMoveRight)
+			{
+				mTransformComponent->setTranslate(mTransformComponent->getTranslate() + movement_sideways);
+			}
+			if (mLookUp)
+			{
+				glm::quat r = mTransformComponent->getRotate();
+				glm::quat nr = glm::rotate(r, rotate_rad, glm::vec3(1.0, 0.0, 0.0));
+				mTransformComponent->setRotate(nr);
+			}
+			if (mLookDown)
+			{
+				glm::quat r = mTransformComponent->getRotate();
+				glm::quat nr = glm::rotate(r, -1.0f * rotate_rad, glm::vec3(1.0, 0.0, 0.0));
+				mTransformComponent->setRotate(nr);
+			}
+			if (mLookRight)
+			{
+				glm::quat r = mTransformComponent->getRotate();
+				glm::quat nr = glm::rotate(r, -1.0f*rotate_rad, glm::vec3(0.0, 1.0, 0.0));
+				mTransformComponent->setRotate(nr);
+			}
+			if (mLookLeft)
+			{
+				glm::quat r = mTransformComponent->getRotate();
+				glm::quat nr = glm::rotate(r, rotate_rad, glm::vec3(0.0, 1.0, 0.0));
+				mTransformComponent->setRotate(nr);
+			}
+		}
+
+	private:
+		void onKeyPress(const KeyPressEvent& keyPressEvent)
+		{
+			switch (keyPressEvent.mKey)
+			{
+				case EKeyCode::KEY_w:
+				{
+					mMoveForward = true;
+					break;
+				}
+				case EKeyCode::KEY_s:
+				{
+					mMoveBackward = true;
+					break;
+				}
+				case EKeyCode::KEY_a:
+				{
+					mMoveLeft = true;
+					break;
+				}
+				case EKeyCode::KEY_d:
+				{
+					mMoveRight = true;
+					break;
+				}
+				case EKeyCode::KEY_UP:
+				{
+					mLookUp = true;
+					break;
+				}
+				case EKeyCode::KEY_DOWN:
+				{
+					mLookDown = true;
+					break;
+				}
+				case EKeyCode::KEY_LEFT:
+				{
+					mLookLeft = true;
+					break;
+				}
+				case EKeyCode::KEY_RIGHT:
+				{
+					mLookRight = true;
+					break;
+				}
+			}
+		}
+
+		void onKeyRelease(const KeyReleaseEvent& keyReleaseEvent)
+		{
+			switch (keyReleaseEvent.mKey)
+			{
+				case EKeyCode::KEY_w:
+				{
+					mMoveForward = false;
+					break;
+				}
+				case EKeyCode::KEY_s:
+				{
+					mMoveBackward = false;
+					break;
+				}
+				case EKeyCode::KEY_a:
+				{
+					mMoveLeft = false;
+					break;
+				}
+				case EKeyCode::KEY_d:
+				{
+					mMoveRight = false;
+					break;
+				}
+				case EKeyCode::KEY_UP:
+				{
+					mLookUp = false;
+					break;
+				}
+				case EKeyCode::KEY_DOWN:
+				{
+					mLookDown = false;
+					break;
+				}
+				case EKeyCode::KEY_LEFT:
+				{
+					mLookLeft = false;
+					break;
+				}
+				case EKeyCode::KEY_RIGHT:
+				{
+					mLookRight = false;
+					break;
+				}
+			}
+		}
+
+	private:
+		FirstPersonControllerResource* mResource;
+		TransformComponent* mTransformComponent = nullptr;
+		bool mMoveForward	= false;
+		bool mMoveBackward	= false;
+		bool mMoveLeft		= false;
+		bool mMoveRight		= false;
+		bool mLookUp		= false;
+		bool mLookDown		= false;
+		bool mLookLeft		= false;
+		bool mLookRight		= false;
+	};
+
+}
+
+RTTI_BEGIN_CLASS(nap::FirstPersonControllerResource)
+	RTTI_PROPERTY("MovementSpeed",	&nap::FirstPersonControllerResource::mMovementScale,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("RotateSpeed",	&nap::FirstPersonControllerResource::mRotateScale,		nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS 
+
+RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::FirstPersonController, nap::EntityInstance&)
+RTTI_END_CLASS
 
 static nap::ObjectPtr<nap::ImageResource> testTexture = nullptr;
 static nap::ObjectPtr<nap::ImageResource> pigTexture = nullptr;
 static nap::ObjectPtr<nap::ImageResource> worldTexture = nullptr;
-static float movementScale = 3.0f;
-static float rotateScale = 1.0f;
 
 // Nap Objects
 nap::RenderService* renderService = nullptr;
@@ -81,19 +294,9 @@ nap::ObjectPtr<nap::EntityInstance>						orientationEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance>						cameraEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance>						splitCameraEntity = nullptr;
 
-// movement
-bool moveForward = false;
-bool moveBackward = false;
-bool moveLeft = false;
-bool moveRight = false;
-bool lookUp = false;
-bool lookDown = false;
-bool lookLeft = false;
-bool lookRight = false;
 
 // Some utilities
 void runGame(nap::Core& core);	
-void updateCamera(float elapsedTime);
 
 // Called when the window is updating
 void onUpdate()
@@ -173,78 +376,8 @@ void onUpdate()
 	// Camera Update
 	//////////////////////////////////////////////////////////////////////////
 
-	updateCamera(delta_time);
-
-	//nap::TransformComponent* cam_xform = cameraComponent->getParent()->getComponent<nap::TransformComponent>();
-	//rot_quat = glm::rotate(glm::quat(), rot_angle_radians, glm::vec3(0.0, 1.0, 0.0));
-	//cam_xform->setRotate(nap::quatToVector(rot_quat));
-}
-
-void updateCamera(float deltaTime)
-{
-	float movement = movementScale * deltaTime;
-	float rotate = rotateScale * deltaTime;
-	float rotate_rad = rotate;
-
-	nap::TransformComponent* cam_xform = &cameraEntity->getComponent<nap::TransformComponent>();
-	//glm::vec3 lookat_pos = cam_xform->getGlobalTransform()[0];
-	//glm::vec3 dir = glm::cross(glm::normalize(lookat_pos), glm::vec3(cam_xform->getGlobalTransform()[1]));
-	//glm::vec3 dir_f = glm::cross(glm::normalize(lookat_pos), glm::vec3(0.0,1.0,0.0));
-	//glm::vec3 dir_s = glm::cross(glm::normalize(lookat_pos), glm::vec3(0.0, 0.0, 1.0));
-	//dir_f *= movement;
-	//dir_s *= movement;
-
-	glm::vec3 side(1.0, 0.0, 0.0);
-	glm::vec3 forward(0.0, 0.0, 1.0);
-
-	glm::vec3 dir_forward = glm::rotate(cam_xform->getRotate(),forward);
-	glm::vec3 movement_forward = dir_forward * movement;
-
-	glm::vec3 dir_sideways = glm::rotate(cam_xform->getRotate(), side);
-	glm::vec3 movement_sideways = dir_sideways * movement;
-		
-	//nap::Logger::info("direction: %f, %f,%f", dir_f.x, dir_f.y, dir_f.z);
-
-	if (moveForward)
-	{
-		cam_xform->setTranslate(cam_xform->getTranslate() - movement_forward);
-	}
-	if (moveBackward)
-	{
-		cam_xform->setTranslate(cam_xform->getTranslate() + movement_forward);
-	}
-	if (moveLeft)
-	{
-		cam_xform->setTranslate(cam_xform->getTranslate() - movement_sideways);
-	}
-	if (moveRight)
-	{
-		cam_xform->setTranslate(cam_xform->getTranslate() + movement_sideways);
-	}
-	if (lookUp)
-	{
-		glm::quat r = cam_xform->getRotate();
-		glm::quat nr = glm::rotate(r, rotate_rad, glm::vec3(1.0, 0.0, 0.0));
-		cam_xform->setRotate(nr);
-	}
-	if (lookDown)
-	{
-		glm::quat r = cam_xform->getRotate();
-		glm::quat nr = glm::rotate(r, -1.0f * rotate_rad, glm::vec3(1.0, 0.0, 0.0));
-		cam_xform->setRotate(nr);
-	}
-	if (lookRight)
-	{
-		glm::quat r = cam_xform->getRotate();
-		glm::quat nr = glm::rotate(r, -1.0f*rotate_rad, glm::vec3(0.0, 1.0, 0.0));
-		cam_xform->setRotate(nr);
-	}
-	if (lookLeft)
-	{
-		glm::quat r = cam_xform->getRotate();
-		glm::quat nr = glm::rotate(r, rotate_rad, glm::vec3(0.0, 1.0, 0.0));
-		cam_xform->setRotate(nr);
-	}
+	nap::FirstPersonController& controller = cameraEntity->getComponent<nap::FirstPersonController>();
+	controller.update(delta_time);
 }
 
 
@@ -526,8 +659,8 @@ bool init(nap::Core& core)
 	planeEntity					= resourceManagerService->findEntity("PlaneEntity");
 	worldEntity					= resourceManagerService->findEntity("WorldEntity");
 	orientationEntity			= resourceManagerService->findEntity("OrientationEntity");
-	cameraEntity			= resourceManagerService->findEntity("CameraEntity");
-	splitCameraEntity		= resourceManagerService->findEntity("SplitCameraEntity");
+	cameraEntity				= resourceManagerService->findEntity("CameraEntity");
+	splitCameraEntity			= resourceManagerService->findEntity("SplitCameraEntity");
 #else	
 	if (!initResources(errorState))
 	{
@@ -587,137 +720,6 @@ void runGame(nap::Core& core)
 				SDL_Window* native_window = SDL_GetWindowFromID(window_id);
 				nap::WindowResource* window = renderService->findWindow(native_window);
 				window->addEvent(std::move(translated_event));
-			}
-
-			// Check if escape was pressed
-			if (event.type == SDL_KEYDOWN)
-			{
-				switch (event.key.keysym.sym)
-				{
-				case SDLK_0:
-				{
-					//cameraComponent->lookAt.clear();
-					break;
-				}
-				case SDLK_1:
-				{
-					//cameraComponent->lookAt.setTarget(*pigMeshComponent);
-					break;
-				}
-				case SDLK_2:
-				{
-					//cameraComponent->lookAt.setTarget(*rotatingPlaneComponent);
-					break;
-				}
-				case SDLK_3:
-				{
-					//cameraComponent->lookAt.setTarget(*sphereComponent);
-					break;
-				}
-				case SDLK_ESCAPE:
-					loop = false;
-					break;
-				case SDLK_f:
-				{
-					static bool fullScreen = false;
-					fullScreen = !fullScreen;
-
-// 					for (nap::RenderWindowComponent* renderWindow : renderWindows)
-// 						renderWindow->fullScreen.setValue(fullScreen);
-					break;
-				}
-				case SDLK_w:
-				{
-					moveForward = true;
-					break;
-				}
-				case SDLK_s:
-				{
-					moveBackward = true;
-					break;
-				}
-				case SDLK_a:
-				{
-					moveLeft = true;
-					break;
-				}
-				case SDLK_d:
-				{
-					moveRight = true;
-					break;
-				}
-				case SDLK_UP:
-				{
-					lookUp = true;
-					break;
-				}
-				case SDLK_DOWN:
-				{
-					lookDown = true;
-					break;
-				}
-				case SDLK_LEFT:
-				{
-					lookLeft = true;
-					break;
-				}
-				case SDLK_RIGHT:
-				{
-					lookRight = true;
-					break;
-				}
-				default:
-					break;
-				}
-			}
-
-			if (event.type == SDL_KEYUP)
-			{
-				switch (event.key.keysym.sym)
-				{
-				case SDLK_w:
-				{
-					moveForward = false;
-					break;
-				}
-				case SDLK_s:
-				{
-					moveBackward = false;
-					break;
-				}
-				case SDLK_a:
-				{
-					moveLeft = false;
-					break;
-				}
-				case SDLK_d:
-				{
-					moveRight = false;
-					break;
-				}
-				case SDLK_UP:
-				{
-					lookUp = false;
-					break;
-				}
-				case SDLK_DOWN:
-				{
-					lookDown = false;
-					break;
-				}
-				case SDLK_LEFT:
-				{
-					lookLeft = false;
-					break;
-				}
-				case SDLK_RIGHT:
-				{
-					lookRight = false;
-					break;
-				}
-				default:
-					break;
-				}
 			}
 		}
 

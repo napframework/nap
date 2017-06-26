@@ -409,6 +409,16 @@
 				}		
 			},
 			{
+				"nap::KeyInputComponentResource": {
+				}
+			},
+			{
+				"nap::FirstPersonControllerResource": {
+					"MovementSpeed": 3.0,
+					"RotateSpeed": 1.0
+				}
+			},
+			{
 				"nap::TransformComponentResource": {
 					"Properties": {
 						"Translate": {
