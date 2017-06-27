@@ -1,37 +1,13 @@
-// firstSDLapp.cpp : Defines the entry point for the console application.
+// main.cpp : Defines the entry point for the console application.
 //
 
 // Local Includes
 #include "objects.h"
 
-// SDL
-#include <SDL.h>
-
-// Naivi GL
-#include <nopengl.h>
-
 // GLM
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>  
-#include <glm/ext.hpp>
-#include <glm/gtx/euler_angles.hpp>
-#include <chrono>
-#include <glm/matrix.hpp>
-#include <glm/gtx/quaternion.hpp>
-#include <glm/gtx/transform.hpp>
-#include <glm/gtx/matrix_decompose.hpp>
-
-// C++ Headers
-#include <string>
-#include <iostream>
-#include <FreeImage.h>
-
-// OpenGL / glew Headers
-#define GL3_PROTOTYPES 1
-#include <GL/glew.h>
 
 // Mod nap render includes
-#include <material.h>
 #include <renderablemeshcomponent.h>
 #include <renderservice.h>
 #include <renderwindowcomponent.h>
@@ -46,11 +22,8 @@
 // Nap includes
 #include <nap/core.h>
 #include <nap/resourcemanager.h>
-#include <nap/coreattributes.h>
 #include "inputservice.h"
 #include "nap/windowresource.h"
-#include "KeyCode.h"
-#include "inputevent.h"
 #include "nap/windowevent.h"
 #include "nap/event.h"
 #include "inputcomponent.h"
@@ -58,6 +31,8 @@
 #include "inputrouter.h"
 #include "nap/entityinstance.h"
 #include "nap/componentinstance.h"
+#include "planemeshresource.h"
+#include "spheremeshresource.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
@@ -272,128 +247,6 @@ void onRender()
 	}
 }
 
-#if 0
-bool initResources(nap::utility::ErrorState& errorState)
-{
-	pigTexture = resourceManagerService->createObject<nap::ImageResource>();
-	pigTexture->mImagePath = pigTextureName;
-	if (!pigTexture->init(errorState))
-		return false;
-	
-	testTexture = resourceManagerService->createObject<nap::ImageResource>();
-	testTexture->mImagePath = testTextureName;
-	if (!testTexture->init(errorState))
-		return false;
-
-	worldTexture = resourceManagerService->createObject<nap::ImageResource>();
-	worldTexture->mImagePath = worldTextureName;
-	if (!worldTexture->init(errorState))
-		return false;
-
-	nap::ObjectPtr<nap::MemoryTextureResource2D> color_texture = resourceManagerService->createObject<nap::MemoryTextureResource2D>();
-	color_texture->mSettings.width = 640;
-	color_texture->mSettings.height = 480;
-	color_texture->mSettings.internalFormat = GL_RGBA;
-	color_texture->mSettings.format = GL_RGBA;
-	color_texture->mSettings.type = GL_UNSIGNED_BYTE;
-	if (!color_texture->init(errorState))
-		return false;
-
-	nap::ObjectPtr<nap::MemoryTextureResource2D> depth_texture = resourceManagerService->createObject<nap::MemoryTextureResource2D>();
-	depth_texture->mSettings.width = 640;
-	depth_texture->mSettings.height = 480;
-	depth_texture->mSettings.internalFormat = GL_DEPTH_COMPONENT;
-	depth_texture->mSettings.format = GL_DEPTH_COMPONENT;
-	depth_texture->mSettings.type = GL_FLOAT;
-	if (!depth_texture->init(errorState))
-		return false;
-	
-	// Create frame buffer
-	textureRenderTarget = resourceManagerService->createObject<nap::TextureRenderTargetResource2D>();
-	textureRenderTarget->setColorTexture(*color_texture);
-	textureRenderTarget->setDepthTexture(*depth_texture);
-	textureRenderTarget->mClearColor = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
-	if (!textureRenderTarget->init(errorState))
-		return false;
-
-	// Load general shader
-	nap::ObjectPtr<nap::ShaderResource> generalShaderResource = resourceManagerService->createObject<nap::ShaderResource>();
-	generalShaderResource->mVertPath = vertShaderName;
-	generalShaderResource->mFragPath = fragShaderName;
-	if (!generalShaderResource->init(errorState))
-		return false;
-
-	// Load orientation shader
-	nap::ObjectPtr<nap::ShaderResource> orientationShaderResource = resourceManagerService->createObject<nap::ShaderResource>();
-	orientationShaderResource->mVertPath = orientationVertShaderName;
-	orientationShaderResource->mFragPath = orientationFragShaderName;
-	if (!orientationShaderResource->init(errorState))
-		return false;
-
-	// Load orientation resource
-	orientationMesh = resourceManagerService->createObject<nap::MeshFromFileResource>();
-	orientationMesh->mPath = "data/orientation.mesh";
-	if (!orientationMesh->init(errorState))
-		return false;
-
-	// Load mesh resource
-	pigMesh = resourceManagerService->createObject<nap::MeshFromFileResource>();
-	pigMesh->mPath = "data/pig_head_alpha_rotated.mesh";
-	if (!pigMesh->init(errorState))
-		return false;
-
-	planeMesh = resourceManagerService->createObject<nap::PlaneMeshResource>();
-	if (!planeMesh->init(errorState))
-		return false;
-
-	sphereMesh = resourceManagerService->createObject<nap::SphereMeshResource>();
-	if (!sphereMesh->init(errorState))
-		return false;
-
-	nap::ObjectPtr<nap::Material> orientationMaterial = resourceManagerService->createObject<nap::Material>();
-	orientationMaterial->mShader = orientationShaderResource;
-	orientationMaterial->mVertexAttributeBindings = nap::Material::getDefaultVertexAttributeBindings();
-	if (!orientationMaterial->init(errorState))
-		return false;
-
-	nap::ObjectPtr<nap::Material> generalMaterial = resourceManagerService->createObject<nap::Material>();
-	generalMaterial->mShader = generalShaderResource;
-	generalMaterial->mVertexAttributeBindings = nap::Material::getDefaultVertexAttributeBindings();
-	if (!generalMaterial->init(errorState))
-		return false;
-	generalMaterial->getUniform<nap::UniformVec4>("mColor").setValue(glm::vec4(1.0, 1.0f, 1.0f, 1.0f));
-
-	pigMaterialInstance = resourceManagerService->createObject<nap::MaterialInstance>();
-	pigMaterialInstance->mMaterial = generalMaterial;
-	if (!pigMaterialInstance->init(errorState))
-		return false;
-	pigMaterialInstance->getOrCreateUniform<nap::UniformTexture2D>("pigTexture").setTexture(*pigTexture);
-
-	planeMaterialInstance = resourceManagerService->createObject<nap::MaterialInstance>();
-	planeMaterialInstance->mMaterial = generalMaterial;
-	if (!planeMaterialInstance->init(errorState))
-		return false;
-
-	rotatingPlaneMaterialInstance = resourceManagerService->createObject<nap::MaterialInstance>();
-	rotatingPlaneMaterialInstance->mMaterial = generalMaterial;
-	if (!rotatingPlaneMaterialInstance->init(errorState))
-		return false;
-
-	orientationMaterialInstance = resourceManagerService->createObject<nap::MaterialInstance>();
-	orientationMaterialInstance->mMaterial = orientationMaterial;
-	if (!orientationMaterialInstance->init(errorState))
-		return false;
-
-	worldMaterialInstance = resourceManagerService->createObject<nap::MaterialInstance>();
-	worldMaterialInstance->mMaterial = generalMaterial;
-	if (!worldMaterialInstance->init(errorState))
-		return false;
-	worldMaterialInstance->getOrCreateUniform<nap::UniformTexture2D>("pigTexture").setTexture(*worldTexture);
-
-	return true;
-}
-#endif
-
 /**
 * Initialize all the resources and instances used for drawing
 * slowly migrating all functionality to nap
@@ -401,22 +254,6 @@ bool initResources(nap::utility::ErrorState& errorState)
 bool init(nap::Core& core)
 {
 	core.initialize();
-
-	//////////////////////////////////////////////////////////////////////////
-
-	/*
-	std::string rpcServiceTypename = "nap::JsonRpcService";
-	rtti::TypeInfo rpcServiceType = rtti::TypeInfo::getByName(rpcServiceTypename);
-	if (!rpcServiceType.isValid()) 
-	{
-		nap::Logger::fatal("Failed to retrieve type: '%s'", rpcServiceTypename.c_str());
-		return -1;
-	}
-	
-	rpcService = core.getOrCreateService(rpcServiceType);
-	//rpcService->getAttribute<bool>("manual")->setValue(true);
-	rpcService->getAttribute<bool>("running")->setValue(true);
-	*/
 
 	//////////////////////////////////////////////////////////////////////////
 	// GL Service + Window
@@ -428,9 +265,6 @@ bool init(nap::Core& core)
 	// Create render service
 	renderService = core.getOrCreateService<nap::RenderService>();
 	
-	// TODO: Init should be without arguments and called by core when added to the system (COEN)
-	// Problem is custom service arguments such as the one below (render type), maybe have a settings construct for
-	// services?
 	nap::utility::ErrorState error;
 	if (!renderService->init(RTTI_OF(nap::OpenGLRenderer), error))
 	{
@@ -454,7 +288,7 @@ bool init(nap::Core& core)
 	//////////////////////////////////////////////////////////////////////////
 
 	nap::utility::ErrorState errorState;
-#if 1
+
 	if (!resourceManagerService->loadFile("data/objects.json", errorState))
 	{
 		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
@@ -478,13 +312,6 @@ bool init(nap::Core& core)
 	cameraEntityLeft			= resourceManagerService->findEntity("CameraEntityLeft");
 	cameraEntityRight			= resourceManagerService->findEntity("CameraEntityRight");
 	splitCameraEntity			= resourceManagerService->findEntity("SplitCameraEntity");	
-#else	
-	if (!initResources(errorState))
-	{
-		nap::Logger::fatal("Unable to initialize resources: %s", errorState.toString().c_str());
-		return false;
-	}
-#endif
 
 	// Set render states
 	nap::RenderState& render_state = renderService->getRenderState();
