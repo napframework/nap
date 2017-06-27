@@ -27,7 +27,7 @@ namespace nap
 			virtual ~RTTIObject() = default;
 
 			/**
-			* 
+			* Init this object after deserialization
 			*/
 			virtual bool init(utility::ErrorState& errorState) { return true; }
 

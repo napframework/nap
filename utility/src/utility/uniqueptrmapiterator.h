@@ -4,6 +4,9 @@ namespace nap
 {
 	namespace utility
 	{
+		/**
+		 * Helper class that can be used to wrap an iterator to a map of unique_ptrs and extract its underlying type, without having to expose the unique_ptr itself.
+		 */
 		template<class ITERATORTYPE, class ELEMENTTYPE>
 		class UniquePtrMapIterator
 		{
@@ -32,6 +35,10 @@ namespace nap
 			ITERATORTYPE mPos;
 		};
 
+		/**
+		 * Helper class to wrap a map of unique_ptrs, allowing you to expose the map values to clients, while hiding the unique_ptr.
+		 * This is the non-const version.
+		 */
 		template<class MAPTYPE, class ELEMENTTYPE>
 		class UniquePtrMapWrapper
 		{
@@ -42,15 +49,34 @@ namespace nap
 			}
 
 			using Iterator = UniquePtrMapIterator<typename MAPTYPE::iterator, ELEMENTTYPE>;
-			using ConstIterator = UniquePtrMapIterator<typename MAPTYPE::const_iterator, const ELEMENTTYPE>;
 
 			Iterator begin() { return Iterator(mMap->begin()); }
 			Iterator end() { return Iterator(mMap->end()); }
+
+		private:
+			MAPTYPE* mMap;
+		};
+
+		/**
+		 * Helper class to wrap a map of unique_ptrs, allowing you to expose the map values to clients, while hiding the unique_ptr.
+		 * This is the const version.
+		 */
+		template<class MAPTYPE, class ELEMENTTYPE>
+		class UniquePtrConstMapWrapper
+		{
+		public:
+			UniquePtrConstMapWrapper(const MAPTYPE& inMap) :
+				mMap(&inMap)
+			{
+			}
+
+			using ConstIterator = UniquePtrMapIterator<typename MAPTYPE::const_iterator, const ELEMENTTYPE>;
+
 			ConstIterator begin() const { return ConstIterator(mMap->begin()); }
 			ConstIterator end() const { return ConstIterator(mMap->end()); }
 
 		private:
-			MAPTYPE* mMap;
+			const MAPTYPE* mMap;
 		};
 	}
 }

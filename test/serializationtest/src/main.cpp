@@ -73,33 +73,7 @@ bool ResolveLinks(const OwnedObjectList& objects, const UnresolvedPointerList& u
 		if (pos == objects_by_id.end())
 			return false;
 
-		//rtti::Variant var = pos->second;
-		
-		//ObjectPtr<nap::Object>(pos->second);
-
-		const rtti::TypeInfo type = resolved_path.getType();
-// 		if (type.is_wrapper())
-// 		{
-// 			var = ObjectPtr
-// 		}
-
-		//if (!var.convert(type))
-		//	return false;
-
-		//Variant var = ObjectPtr<nap::Object>(pos->second)
-
-		//unresolvedPointer.mObject->get_type().get_property("ObjectPtrProperty")
-
-		//unresolvedPointer.mObject->get_type().get_property("ObjectPtrProperty").set_value(unresolvedPointer->mObject, ObjectPtr<nap::Object>(pos->second));
-
-		rtti::Variant var = pos->second; // nap::RTTIObject*
-		if (resolved_path.getType().is_wrapper())
-		{
-			if (!var.convert(resolved_path.getType().get_wrapped_type()))
-				return false;
-		}
-
-		if (!resolved_path.setValue(var))
+		if (!resolved_path.setValue(pos->second))
 			return false;
 	}
 
@@ -143,13 +117,6 @@ void testObjectPtr()
 
 int main(int argc, char* argv[])
 {
-	rtti::TypeInfo::register_converter_func(
-		[](RTTIObject* ptr, bool& ok) -> ObjectPtr<RTTIObject>
-	{
-		ok = true;
-		return ObjectPtr<RTTIObject>(ptr);
-	});
-
 	//testObjectPtr();
 	Logger::setLevel(Logger::debugLevel());
 
