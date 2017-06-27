@@ -6,142 +6,7 @@
 
 namespace nap
 {
-	// GL Render window constructor
-	OpenGLRenderWindow::OpenGLRenderWindow(const RenderWindowSettings& settings, std::unique_ptr<opengl::Window> window) : 
-		RenderWindow(settings),
-		mWindow(std::move(window)),
-		mBackbuffer(new opengl::BackbufferRenderTarget())
-	{
-		setSize(glm::vec2(settings.width, settings.height));
-	}
-
-
-	// Returns the actual opengl window
-	void* OpenGLRenderWindow::getNativeWindow() const
-	{
-		return mWindow->getWindow();
-	}
-
-
-	// Returns the backbuffer
-	void* OpenGLRenderWindow::getBackbuffer() const
-	{
-		return mBackbuffer.get();
-	}
-
-
-	// Returns the actual opengl context
-	void* OpenGLRenderWindow::getContext() const
-	{
-		return mWindow->getContext();
-	}
-
-
-	// return window
-	opengl::Window* OpenGLRenderWindow::getContainer() const
-	{
-		return mWindow.get();
-	}
-
-
-	// Set window title
-	void OpenGLRenderWindow::setTitle(const std::string& title)
-	{
-		opengl::setWindowTitle(*mWindow, title.c_str());
-	}
-
-
-	// Set opengl window position
-	void OpenGLRenderWindow::setPosition(const glm::ivec2& position)
-	{
-		// Ensure position is not the same
-		int x, y;
-		opengl::getWindowPosition(*mWindow, x, y);
-		if (x == position.x && y == position.y)
-			return;
-
-		// Update position
-		opengl::setWindowPosition(*mWindow, position.x, position.y);
-	}
-
-
-	// Set opengl window size 
-	void OpenGLRenderWindow::setSize(const glm::ivec2& size)
-	{
-		mBackbuffer->setSize(size);
-
-		// Ensure sizes are not the same
-		int width, height;
-		opengl::getWindowSize(*mWindow, width, height);
-		if (width == size.x && height == size.y)
-			return;
-
-		// Otherwise set
-		opengl::setWindowSize(*mWindow, size.x, size.y);
-	}
-
-
-	// Get the window size
-	const glm::ivec2 OpenGLRenderWindow::getSize() const
-	{
-		int width, height;
-		opengl::getWindowSize(*mWindow, width, height);
-		
-		return glm::ivec2(width, height);
-	}
-
-
-	// Update render viewport
-	void OpenGLRenderWindow::setViewport(const glm::ivec2& viewport)
-	{
-		opengl::setViewport(viewport.x, viewport.y);
-	}
-
-
-	// Set opengl sync
-	void OpenGLRenderWindow::setSync(bool value)
-	{
-		opengl::setVSync(*mWindow, value);
-	}
-
-
-	// Makes the window go full screen
-	void OpenGLRenderWindow::setFullScreen(bool value)
-	{
-		// Otherwise set
-		nap::uint32 full_screen_flag = SDL_WINDOW_FULLSCREEN_DESKTOP;
-		nap::uint32 flag = value ? full_screen_flag : 0;
-		SDL_SetWindowFullscreen(mWindow->getWindow(), flag);
-	}
-
-
-	// Show opengl window
-	void OpenGLRenderWindow::showWindow()
-	{
-		opengl::showWindow(*mWindow);
-	}
-
-
-	// Hide opengl window
-	void OpenGLRenderWindow::hideWindow()
-	{
-		opengl::hideWindow(*mWindow);
-	}
-
-
-	// Swap OpenGL buffers
-	void OpenGLRenderWindow::swap()
-	{
-		opengl::flush();
-		opengl::swap(*mWindow);
-	}
-
-	// Make this window's context current 
-	void OpenGLRenderWindow::makeCurrent()
-	{
-		opengl::makeCurrent(*mWindow);
-	}
-
+	//////////////////////////////////////////////////////////////////////////
 
 	bool OpenGLRenderer::init(utility::ErrorState& errorState)
 	{
@@ -186,7 +51,7 @@ namespace nap
 		gl_window_settings.title = settings.title;
 
 		if (mPrimaryWindow != nullptr)
-			gl_window_settings.share = static_cast<OpenGLRenderWindow*>(mPrimaryWindow.get())->getContainer();
+			gl_window_settings.share = mPrimaryWindow->getContainer();
 
 		// Construct new window using these settings
 		std::unique_ptr<opengl::Window> new_window = opengl::createWindow(gl_window_settings, errorState);
@@ -194,7 +59,7 @@ namespace nap
 			return nullptr;
 
 		// Construct and return new window
-		return std::make_unique<OpenGLRenderWindow>(settings, std::move(new_window));
+		return std::make_unique<RenderWindow>(settings, std::move(new_window));
 	}
 
 
@@ -207,4 +72,3 @@ namespace nap
 }
 
 RTTI_DEFINE(nap::OpenGLRenderer)
-RTTI_DEFINE_BASE(nap::OpenGLRenderWindow)
