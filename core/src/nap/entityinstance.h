@@ -9,6 +9,19 @@ namespace nap
     class Core;
 	class ComponentInstance;
 	class ComponentResource;
+	class EntityInstance;
+
+	/**
+	 * Structure used to hold data necessary to create new instances during init
+	 */
+	struct EntityCreationParameters
+	{
+		using EntityByIDMap = std::unordered_map<std::string, std::unique_ptr<EntityInstance>>;
+		using InstanceByIDMap = std::unordered_map<std::string, rtti::RTTIObject*>;
+
+		EntityByIDMap mEntitiesByID;
+		InstanceByIDMap mAllInstancesByID;
+	};
 
 	/**
 	 * An EntityInstance is the runtime-instance of an EntityResource, which is read from json.

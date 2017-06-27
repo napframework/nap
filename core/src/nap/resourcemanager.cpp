@@ -263,7 +263,7 @@ namespace nap
 	* @param node: start node to traverse incoming edges from.
 	* @param incomingObjects: output of the function.
 	*/
-	void addIncomingObjectsRecursive(ObjectGraph::Node* node, std::set<ObjectGraph::Node*>& incomingObjects)
+	static void addIncomingObjectsRecursive(ObjectGraph::Node* node, std::set<ObjectGraph::Node*>& incomingObjects)
 	{
 		if (incomingObjects.find(node) != incomingObjects.end())
 			return;
@@ -272,6 +272,21 @@ namespace nap
 
 		for (ObjectGraph::Edge* incoming_edge : node->mIncomingEdges)
 			addIncomingObjectsRecursive(incoming_edge->mSource, incomingObjects);
+	}
+
+
+	/**
+	 * Helper function to generate a unique ID for an entity or component instance, based on instances already created
+	 */
+	static const std::string generateInstanceID(const std::string& baseID, EntityCreationParameters& entityCreationParams)
+	{
+		std::string result = baseID;
+
+		int index = 0;
+		while (entityCreationParams.mAllInstancesByID.find(result) != entityCreationParams.mAllInstancesByID.end())
+			result = utility::stringFormat("%s_%d", baseID.c_str(), index++);
+
+		return result;
 	}
 
 
@@ -425,70 +440,60 @@ namespace nap
 		return true;
 	}
 
-
-	const ObjectPtr<EntityInstance> ResourceManagerService::createEntity(const EntityResource& entityResource, const std::string& entityID, utility::ErrorState& errorState)
+	const ObjectPtr<EntityInstance> ResourceManagerService::createEntity(const EntityResource& entityResource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
-		if (!errorState.check(mEntitiesCreatedDuringInit.find(entityID) == mEntitiesCreatedDuringInit.end(), "Trying to create entity with existing ID"))
-			return nullptr;
-
 		// Create a single entity
+		std::vector<std::string> generated_ids;
 		std::vector<const EntityResource*> entityResources;
 		entityResources.push_back(&entityResource);
-		EntityByIDMap new_entity_instances;
-		InstanceByIDMap all_new_instances;
-		bool result = createEntities(entityResources, new_entity_instances, all_new_instances, errorState);
+		bool result = createEntities(entityResources, entityCreationParams, generated_ids, errorState);
 		if (!result)
 			return false;
 
-		assert(new_entity_instances.size() == 1);
-		new_entity_instances.begin()->second->mID = entityID;
-
-		// All new instances should be remembered so that we can patch any pointers to them
-		for (auto& kvp : all_new_instances)
-			mInstancesCreatedDuringInit.emplace(kvp);
-
-		auto inserted = mEntitiesCreatedDuringInit.emplace(entityID, std::move(new_entity_instances.begin()->second));
-
-		return inserted.first->second.get();
+		assert(generated_ids.size() == 1);
+		return entityCreationParams.mEntitiesByID.find(generated_ids[0])->second.get();
 	}
 
 
-	bool ResourceManagerService::createEntities(const std::vector<const EntityResource*>& entityResources, EntityByIDMap& entityInstances, InstanceByIDMap& allNewInstances, utility::ErrorState& errorState)
+	bool ResourceManagerService::createEntities(const std::vector<const EntityResource*>& entityResources, EntityCreationParameters& entityCreationParams, std::vector<std::string>& generatedEntityIDs, utility::ErrorState& errorState)
 	{
-		EntityByIDMap new_entity_instances;
+		std::unordered_map<ComponentResource*, ComponentInstance*> new_component_instances;
 
 		// Create all entity instances and component instances
 		for (const EntityResource* entity_resource : entityResources)
 		{
-			std::unique_ptr<EntityInstance> entity_instance = std::make_unique<EntityInstance>(getCore());
-			entity_instance->mID = entity_resource->mID + "_instance";
-			for (auto& componentData : entity_resource->mComponents)
+			EntityInstance* entity_instance = new EntityInstance(getCore());
+			entity_instance->mID = generateInstanceID(entity_resource->mID, entityCreationParams);
+
+			entityCreationParams.mEntitiesByID.emplace(std::make_pair(entity_instance->mID, std::move(std::unique_ptr<EntityInstance>(entity_instance))));
+			entityCreationParams.mAllInstancesByID.insert(std::make_pair(entity_instance->mID, entity_instance));
+			generatedEntityIDs.push_back(entity_instance->mID);
+
+			for (auto& component_resource : entity_resource->mComponents)
 			{
-				const rtti::TypeInfo& instance_type = componentData->getInstanceType();
+				const rtti::TypeInfo& instance_type = component_resource->getInstanceType();
 				assert(instance_type.can_create_instance());
 
 				std::unique_ptr<ComponentInstance> component_instance(instance_type.create<ComponentInstance>({ *entity_instance }));
 				assert(component_instance);
-				component_instance->mID = componentData->mID + "_instance";
+				component_instance->mID = generateInstanceID(component_resource->mID + "_instance", entityCreationParams);
 
-				allNewInstances.insert(std::make_pair(component_instance->mID, component_instance.get()));
+				new_component_instances.insert(std::make_pair(component_resource.get(), component_instance.get()));
+				entityCreationParams.mAllInstancesByID.insert(std::make_pair(component_instance->mID, component_instance.get()));
 				entity_instance->addComponent(std::move(component_instance));
 			}
-
-			allNewInstances.insert(std::make_pair(entity_instance->mID, entity_instance.get()));
-			new_entity_instances.emplace(std::make_pair(entity_resource->mID, std::move(entity_instance)));
 		}
 
 		// Now that all entities are created, make sure that parent-child relations are set correctly
 		for (const EntityResource* entity_resource : entityResources)
 		{
-			EntityByIDMap::iterator entity_instance = new_entity_instances.find(entity_resource->mID);
-			assert(entity_instance != new_entity_instances.end());
+			EntityByIDMap::iterator entity_instance = entityCreationParams.mEntitiesByID.find(entity_resource->mID);
+			assert(entity_instance != entityCreationParams.mEntitiesByID.end());
 
 			for (const ObjectPtr<EntityResource>& child_entity_resource : entity_resource->mChildren)
 			{
-				EntityByIDMap::iterator child_entity_instance = new_entity_instances.find(child_entity_resource->mID);
-				assert(child_entity_instance != new_entity_instances.end());
+				EntityByIDMap::iterator child_entity_instance = entityCreationParams.mEntitiesByID.find(child_entity_resource->mID);
+				assert(child_entity_instance != entityCreationParams.mEntitiesByID.end());
 				entity_instance->second->addChild(*child_entity_instance->second);
 			}
 		}
@@ -499,19 +504,13 @@ namespace nap
 		{
 			for (auto& component_resource : entity_resource->mComponents)
 			{
-				InstanceByIDMap::iterator pos = allNewInstances.find(component_resource->mID + "_instance");
-				assert(pos != allNewInstances.end());
+				auto& pos = new_component_instances.find(component_resource.get());
+				assert(pos != new_component_instances.end());
 
-				ComponentInstance* component_instance = rtti_cast<ComponentInstance>(pos->second);
-				assert(component_instance != nullptr);
-
-				if (!component_instance->init(component_resource, errorState))
+				if (!pos->second->init(component_resource, entityCreationParams, errorState))
 					return false;
 			}
 		}
-
-		// Everything was successful, move to the output list
-		entityInstances = std::move(new_entity_instances);
 
 		return true;
 	}
@@ -549,37 +548,26 @@ namespace nap
 			}
 		}
 
-		EntityByIDMap new_entity_instances;
-		InstanceByIDMap all_new_instances;
-		if (!createEntities(entities_to_spawn, new_entity_instances, all_new_instances, errorState))
+		std::vector<std::string> generated_ids;
+		EntityCreationParameters entityCreationParams;
+		if (!createEntities(entities_to_spawn, entityCreationParams, generated_ids, errorState))
 		{
-			mEntitiesCreatedDuringInit.clear();			
-			mInstancesCreatedDuringInit.clear();
 			return false;
 		}
 
 		// Start with an empty root and add all entities without a parent to the root
 		mRootEntity->clearChildren();
-		for (auto& kvp : new_entity_instances)
+		for (auto& kvp : entityCreationParams.mEntitiesByID)
 		{
 			if (kvp.second->getParent() == nullptr)
 				mRootEntity->addChild(*kvp.second);
 		}
 
-		// Any instances (entities and components) that were created during init phase should be patched too
-		for (auto& kvp : mInstancesCreatedDuringInit)
-			all_new_instances.emplace(kvp);
-
-		patchObjectPtrs(all_new_instances);
+		patchObjectPtrs(entityCreationParams.mAllInstancesByID);
 
 		// Replace entities currently in the resource manager with the new set
-		mEntities = std::move(new_entity_instances);
-		for (auto& kvp : mEntitiesCreatedDuringInit)
-			mEntities.emplace(kvp.first, std::move(kvp.second));
+		mEntities = std::move(entityCreationParams.mEntitiesByID);
 		
-		mEntitiesCreatedDuringInit.clear();
-		mInstancesCreatedDuringInit.clear();
-
 		return true;
 	}
 

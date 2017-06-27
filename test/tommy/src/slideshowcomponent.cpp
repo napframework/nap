@@ -23,7 +23,7 @@ namespace nap
 	}
 
 
-	bool SlideShowComponent::init(const ObjectPtr<ComponentResource>& resource, utility::ErrorState& errorState)
+	bool SlideShowComponent::init(const ObjectPtr<ComponentResource>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
 		ResourceManagerService& resource_manager = *getEntity()->getCore()->getService<nap::ResourceManagerService>();
 
@@ -38,19 +38,19 @@ namespace nap
 			return false;
 
 		// Spawn left child
-		mLeftChildInstance = resource_manager.createEntity(*mResource->mEntityPrototype, "SlideShowLeftEntity", errorState);
+		mLeftChildInstance = resource_manager.createEntity(*mResource->mEntityPrototype, entityCreationParams, errorState);
 		if (mLeftChildInstance == nullptr)
 			return false;
 		getEntity()->addChild(*mLeftChildInstance);
 
 		// Spawn center child
- 		mCenterChildInstance = resource_manager.createEntity(*mResource->mEntityPrototype, "SlideShowCenterEntity", errorState);
+ 		mCenterChildInstance = resource_manager.createEntity(*mResource->mEntityPrototype, entityCreationParams, errorState);
  		if (mCenterChildInstance == nullptr)
  			return false;
 		getEntity()->addChild(*mCenterChildInstance);
 
 		// Spawn right child
-		mRightChildInstance = resource_manager.createEntity(*mResource->mEntityPrototype, "SlideShowRightEntity", errorState);
+		mRightChildInstance = resource_manager.createEntity(*mResource->mEntityPrototype, entityCreationParams, errorState);
 		if (mRightChildInstance == nullptr)
 			return false;
 		getEntity()->addChild(*mRightChildInstance);

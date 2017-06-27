@@ -51,9 +51,13 @@ namespace nap
 		OrthoCameraComponent(EntityInstance& entity);
 
 		/**
-		 * Checks whether a transform component is available.
-		 */
-		virtual bool init(const ObjectPtr<ComponentResource>& resource, utility::ErrorState& errorState);
+		* Initialize this component from its resource
+		*
+		* @param resource The resource we're being instantiated from
+		* @param entityCreationParams Parameters required to create new entity instances during init
+		* @param errorState The error object
+		*/
+		virtual bool init(const ObjectPtr<ComponentResource>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
 		/**
 		* This implementation extracts the size in pixels of the render target to make sure that the orthographic

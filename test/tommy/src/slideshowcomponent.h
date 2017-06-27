@@ -46,7 +46,7 @@ namespace nap
 		 * Spawns left/center/right children, sets intial textures and positions.
 		 * @return false if prototype does not match requirements.
 		 */
-		virtual bool init(const ObjectPtr<ComponentResource>& resource, utility::ErrorState& errorState);
+		virtual bool init(const ObjectPtr<ComponentResource>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
 
 		/**
 		 * Updates animation.

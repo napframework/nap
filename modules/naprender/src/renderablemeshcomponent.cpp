@@ -133,7 +133,7 @@ namespace nap
 	}
 
 
-	bool RenderableMeshComponent::init(const ObjectPtr<ComponentResource>& resource, utility::ErrorState& errorState)
+	bool RenderableMeshComponent::init(const ObjectPtr<ComponentResource>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
 		assert(resource->get_type().is_derived_from<RenderableMeshComponentResource>());
 		mResource = rtti_cast<RenderableMeshComponentResource>(resource.get());

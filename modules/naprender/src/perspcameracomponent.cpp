@@ -141,7 +141,7 @@ namespace nap
 	}
 
 
-	bool PerspCameraComponent::init(const ObjectPtr<ComponentResource>& resource, utility::ErrorState& errorState)
+	bool PerspCameraComponent::init(const ObjectPtr<ComponentResource>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
 		mProperties = rtti_cast<PerspCameraComponentResource>(resource.get())->mProperties;
 		mTransformComponent = getEntity()->findComponent<TransformComponent>();

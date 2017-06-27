@@ -54,7 +54,7 @@ namespace nap
 		/**
 		 * Initialize this ComponentInstance
 		 */
-		virtual bool init(const ObjectPtr<ComponentResource>& resource, utility::ErrorState& errorState) override;
+		virtual bool init(const ObjectPtr<ComponentResource>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
 		/**
 		 * Update this ComponentInstance

@@ -85,7 +85,7 @@ namespace nap
 		/**
 		 * Init this object after deserialization
 		 */
-		bool init(const ObjectPtr<ComponentResource>& resource, utility::ErrorState& errorState);
+		bool init(const ObjectPtr<ComponentResource>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
 
 		/** 
 		 * Update the layout for this entity

@@ -31,7 +31,7 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	bool FractionLayoutComponent::init(const ObjectPtr<ComponentResource>& resource, utility::ErrorState& errorState)
+	bool FractionLayoutComponent::init(const ObjectPtr<ComponentResource>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
 		mProperties = rtti_cast<FractionLayoutComponentResource>(resource.get())->mProperties;
 

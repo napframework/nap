@@ -25,7 +25,7 @@ namespace nap
 	}
 
 
-	bool FirstPersonController::init(const ObjectPtr<ComponentResource>& resource, utility::ErrorState& errorState)
+	bool FirstPersonController::init(const ObjectPtr<ComponentResource>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
 		// KeyInputComponent is required to receive input
 		KeyInputComponent* key_component = getEntity()->findComponent<KeyInputComponent>();

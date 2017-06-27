@@ -12,6 +12,7 @@ namespace nap
 
 	class EntityInstance;
 	class ComponentResource;
+	struct EntityCreationParameters;
 
 	/**
 	 * A ComponentInstance is the runtime-instance of a ComponentResource, which is read from json.
@@ -43,9 +44,10 @@ namespace nap
 		 * Initialize this component from its resource
 		 *
 		 * @param resource The resource we're being instantiated from
+		 * @param entityCreationParams Parameters required to create new entity instances during init
 		 * @param errorState The error object
 		 */
-		virtual bool init(const ObjectPtr<ComponentResource>& resource, utility::ErrorState& errorState)
+		virtual bool init(const ObjectPtr<ComponentResource>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 		{
 			return true;
 		}

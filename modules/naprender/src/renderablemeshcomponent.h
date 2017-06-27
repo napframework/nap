@@ -68,7 +68,7 @@ namespace nap
 		/**
 		 * Acquires VAO, copies clipping rectangle, initializes material instance.
 		 */
-		virtual bool init(const ObjectPtr<ComponentResource>& resource, utility::ErrorState& errorState);
+		virtual bool init(const ObjectPtr<ComponentResource>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
 		/**
 		 * Renders the model from the ModelResource, using the material on the ModelResource.

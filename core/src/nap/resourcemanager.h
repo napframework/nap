@@ -12,6 +12,7 @@ namespace nap
 	class DirectoryWatcher;
 	class EntityInstance;
 	class EntityResource;
+	struct EntityCreationParameters;
 
 	/**
 	 * Manager, owner of all objects, capable of loading and real-time updating of content.
@@ -69,7 +70,7 @@ namespace nap
 		/**
 		* Instantiates an Entity.
 		*/
-		const ObjectPtr<EntityInstance> createEntity(const EntityResource& entityResource, const std::string& entityID, utility::ErrorState& errorState);
+		const ObjectPtr<EntityInstance> createEntity(const EntityResource& entityResource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
 
 		/**
 		* Creates an object and adds it to the manager.
@@ -132,7 +133,7 @@ namespace nap
 		bool resolvePointers(ObjectByIDMap& objectsToUpdate, const rtti::UnresolvedPointerList& unresolvedPointers, utility::ErrorState& errorState);
 		bool initObjects(std::vector<std::string> objectsToInit, ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState);
 		bool initEntities(ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState);
-		bool createEntities(const std::vector<const EntityResource*>& entityResources, EntityByIDMap& entityInstances, InstanceByIDMap& allNewInstances, utility::ErrorState& errorState);
+		bool createEntities(const std::vector<const EntityResource*>& entityResources, EntityCreationParameters& entityCreationParams, std::vector<std::string>& generatedEntityIDs, utility::ErrorState& errorState);
 
 		/** 
 		* Traverses all pointers in ObjectPtrManager and, for each target, replaces the target with the one in the map that is passed.
@@ -163,8 +164,6 @@ namespace nap
 		std::unique_ptr<EntityInstance>		mRootEntity;					// Root entity, owned and created by the system
 		ObjectByIDMap						mObjects;						// Holds all objects
 		EntityByIDMap						mEntities;						// Holds all entitites
-		EntityByIDMap						mEntitiesCreatedDuringInit;		// Keeps track of all entities that were created during init of entities (runtime spawned entities)
-		InstanceByIDMap						mInstancesCreatedDuringInit;	// Keeps track of all instances that were created during init of entities (runtime spawned entities)
 		std::set<std::string>				mFilesToWatch;					// Files currently loaded, used for watching changes on the files
 		FileLinkMap							mFileLinkMap;					// Map containing links from target to source file, for updating source files if the file monitor sees changes
 		std::unique_ptr<DirectoryWatcher>	mDirectoryWatcher;				// File monitor, detects changes on files

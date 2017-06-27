@@ -22,8 +22,7 @@ RTTI_END_CLASS
 
 namespace nap
 {
-
-	bool TransformComponent::init(const ObjectPtr<ComponentResource>& resource, utility::ErrorState& errorState)
+	bool TransformComponent::init(const ObjectPtr<ComponentResource>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
 		mProperties = rtti_cast<TransformComponentResource>(resource.get())->mProperties;
 		return true;
