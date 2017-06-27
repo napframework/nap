@@ -21,9 +21,6 @@ namespace nap
 	// Register all types
 	void RenderService::registerTypes(nap::Core& core)
 	{
-		core.registerType(*this, RTTI_OF(RenderableComponent));
-		core.registerType(*this, RTTI_OF(RenderableMeshComponent));
-		core.registerType(*this, RTTI_OF(RenderWindowComponent));
 	}
 
 	// Register all object creation functions
@@ -57,6 +54,7 @@ namespace nap
 		return new_window;
 	}
 
+
 	void RenderService::removeWindow(RenderWindowResource& window)
 	{
 		WindowList::iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val) { return val == &window; });
@@ -64,6 +62,7 @@ namespace nap
 		mWindows.erase(pos);
 	}
 	
+
 	RenderWindowResource* RenderService::findWindow(void* nativeWindow) const
 	{
 		WindowList::const_iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val) { return val->getWindow()->getNativeWindow() == nativeWindow; });
@@ -72,6 +71,7 @@ namespace nap
 
 		return nullptr;
 	}
+
 
 	RenderWindow& RenderService::getPrimaryWindow()
 	{
@@ -114,6 +114,7 @@ namespace nap
 		for (EntityInstance* child : entity.getChildren())
 			updateTransformsRecursive(*child, is_dirty, new_transform);
 	}
+
 
 	// Updates all transform components
 	void RenderService::updateTransforms()
@@ -180,6 +181,8 @@ namespace nap
 	{
 		renderTarget.bind();
 
+		// Before we render, we always set render target size. This avoids overly complex
+		// responding to various changes in render target sizes.
 		camera.setRenderTargetSize(renderTarget.getSize());
 
 		updateRenderState();

@@ -1,8 +1,6 @@
 #pragma once
 
 // External Includes
-#include <nap/serviceablecomponent.h>
-#include <nap/coremodule.h>
 #include <glm/glm.hpp>
 #include "nap/entity.h"
 
