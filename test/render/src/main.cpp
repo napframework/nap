@@ -55,6 +55,7 @@
 #include "nap/event.h"
 #include "napinputcomponent.h"
 #include "firstpersoncontroller.h"
+#include "inputrouter.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
