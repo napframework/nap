@@ -1,6 +1,6 @@
 /// local includes
-#include <napinputservice.h>
-#include "napinputevent.h"
+#include <inputservice.h>
+#include "inputevent.h"
 #include "inputrouter.h"
 #include "nap/windowresource.h"
 

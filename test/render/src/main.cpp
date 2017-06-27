@@ -47,13 +47,13 @@
 #include <nap/core.h>
 #include <nap/resourcemanager.h>
 #include <nap/coreattributes.h>
-#include "napinputservice.h"
+#include "inputservice.h"
 #include "nap/windowresource.h"
 #include "KeyCode.h"
-#include "napinputevent.h"
+#include "inputevent.h"
 #include "nap/windowevent.h"
 #include "nap/event.h"
-#include "napinputcomponent.h"
+#include "inputcomponent.h"
 #include "firstpersoncontroller.h"
 #include "inputrouter.h"
 

@@ -1,7 +1,7 @@
 // local includes
 #include <inputrouter.h>
-#include "napinputevent.h"
-#include "napinputcomponent.h"
+#include "inputevent.h"
+#include "inputcomponent.h"
 
 RTTI_BEGIN_BASE_CLASS(nap::InputRouter)
 RTTI_END_CLASS
