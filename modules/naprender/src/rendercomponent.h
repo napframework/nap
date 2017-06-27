@@ -2,8 +2,7 @@
 
 // External Includes
 #include <glm/glm.hpp>
-#include "nap/entity.h"
-
+#include "nap/componentinstance.h"
 
 namespace nap
 {

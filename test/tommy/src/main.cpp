@@ -15,7 +15,7 @@
 #include <transformcomponent.h>
 #include <orthocameracomponent.h>
 #include <rendertargetresource.h>
-#include <slideshowcomponent.h>
+#include "slideshowcomponent.h"
 #include "fractionlayoutcomponent.h"
 
 // Nap includes

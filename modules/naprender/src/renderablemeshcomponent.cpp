@@ -1,4 +1,5 @@
 #include "RenderableMeshComponent.h"
+#include <nap/entityinstance.h>
 #include "meshresource.h"
 #include "ncamera.h"
 #include "transformcomponent.h"

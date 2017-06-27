@@ -4,7 +4,7 @@
 #include <nap/serviceablecomponent.h>
 #include <nap/rttinap.h>
 #include <nap/coreattributes.h>
-#include <nap/entity.h>
+#include <nap/componentinstance.h>
 
 // Local Includes
 #include <glm/glm.hpp>

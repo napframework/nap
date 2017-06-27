@@ -5,7 +5,8 @@
 #include "rtti/factory.h"
 #include "nap/core.h"
 #include "objectptr.h"
-#include "entity.h"
+#include "entityinstance.h"
+#include "componentinstance.h"
 
 RTTI_DEFINE(nap::ResourceManagerService)
 

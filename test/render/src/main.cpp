@@ -56,6 +56,8 @@
 #include "inputcomponent.h"
 #include "firstpersoncontroller.h"
 #include "inputrouter.h"
+#include "nap/entityinstance.h"
+#include "nap/componentinstance.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Globals

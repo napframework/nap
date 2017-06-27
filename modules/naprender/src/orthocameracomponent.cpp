@@ -1,5 +1,6 @@
 // Local Includes
 #include "orthocameracomponent.h"
+#include <nap/entityinstance.h>
 
 // External Includes
 #include <glm/gtc/matrix_transform.hpp> 

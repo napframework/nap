@@ -1,5 +1,4 @@
 #include "uiinputrouter.h"
-#include "nap/entity.h"
 #include "transformcomponent.h"
 #include "inputcomponent.h"
 #include "cameracomponent.h"

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "nap/entity.h"
+#include "nap/componentinstance.h"
 #include "renderattributes.h"
 
 namespace nap

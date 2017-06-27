@@ -8,18 +8,6 @@ using namespace std;
 // Define Entity in Type Registry
 RTTI_DEFINE_BASE(nap::Entity)
 
-RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::ComponentInstance, nap::EntityInstance&)
-RTTI_END_CLASS
-
-RTTI_BEGIN_BASE_CLASS(nap::ComponentResource)
-RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS(nap::EntityResource)
-	RTTI_PROPERTY("Components", &nap::EntityResource::mComponents,	nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("Children",	&nap::EntityResource::mChildren,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("AutoSpawn",	&nap::EntityResource::mAutoSpawn,	nap::rtti::EPropertyMetaData::Default)
-RTTI_END_CLASS
-
 namespace nap
 {
 	Entity* Entity::getRoot()

@@ -1,6 +1,7 @@
 #pragma once
 
-#include "nap/entity.h"
+#include "nap/componentinstance.h"
+#include "nap/entityinstance.h"
 #include "imageresource.h"
 #include <glm/glm.hpp>
 

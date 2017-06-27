@@ -1,4 +1,5 @@
 #include <inputcomponent.h>
+#include <nap/entityinstance.h>
 #include <nap/objectutils.h>
 
 RTTI_BEGIN_BASE_CLASS(nap::InputComponentResource)

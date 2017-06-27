@@ -2,7 +2,7 @@
 
 #include <rtti/rtti.h>
 #include <nap/signalslot.h>
-#include "nap/entity.h"
+#include "nap/componentinstance.h"
 #include <inputevent.h>
 
 namespace nap

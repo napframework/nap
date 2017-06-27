@@ -1,7 +1,7 @@
 #pragma once
 
-#include "nap/entity.h"
 #include "glm/glm.hpp"
+#include "nap/componentinstance.h"
 
 namespace nap
 {

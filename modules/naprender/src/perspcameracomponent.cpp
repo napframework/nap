@@ -3,6 +3,7 @@
 
 // External Includes
 #include <glm/gtc/matrix_transform.hpp> 
+#include <nap/entityinstance.h>
 #include "transformcomponent.h"
 
 RTTI_BEGIN_CLASS(nap::PerpCameraProperties)

@@ -1,5 +1,6 @@
 // local includes
 #include "transformcomponent.h"
+#include "nap/entityinstance.h"
 
 // External includes
 #include <glm/gtx/transform.hpp>

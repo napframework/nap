@@ -2,6 +2,7 @@
 #include <inputrouter.h>
 #include "inputevent.h"
 #include "inputcomponent.h"
+#include "nap/entityinstance.h"
 
 RTTI_BEGIN_BASE_CLASS(nap::InputRouter)
 RTTI_END_CLASS
