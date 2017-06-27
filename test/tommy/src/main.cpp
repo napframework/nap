@@ -10,7 +10,7 @@
 
 // Mod nap render includes
 #include <renderservice.h>
-#include <renderwindowcomponent.h>
+#include <renderwindowresource.h>
 #include <openglrenderer.h>
 #include <transformcomponent.h>
 #include <orthocameracomponent.h>

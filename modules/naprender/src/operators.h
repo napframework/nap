@@ -2,7 +2,6 @@
 
 // External Includes
 #include <nap.h>
-#include "renderwindowcomponent.h"
 
 namespace nap
 {

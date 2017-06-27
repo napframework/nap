@@ -2,7 +2,7 @@
 #include "renderservice.h"
 #include "renderablemeshcomponent.h"
 #include "rendercomponent.h"
-#include "renderwindowcomponent.h"
+#include "renderwindowresource.h"
 #include "openglrenderer.h"
 #include "transformcomponent.h"
 #include "cameracomponent.h"

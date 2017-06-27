@@ -1,4 +1,4 @@
-#include "renderwindowcomponent.h"
+#include "renderwindowresource.h"
 #include "nap\windowevent.h"
 
 RTTI_BEGIN_CLASS(nap::RenderWindowResource)

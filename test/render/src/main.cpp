@@ -10,7 +10,7 @@
 // Mod nap render includes
 #include <renderablemeshcomponent.h>
 #include <renderservice.h>
-#include <renderwindowcomponent.h>
+#include <renderwindowresource.h>
 #include <openglrenderer.h>
 #include <transformcomponent.h>
 #include <perspcameracomponent.h>
@@ -31,8 +31,6 @@
 #include "inputrouter.h"
 #include "nap/entityinstance.h"
 #include "nap/componentinstance.h"
-#include "planemeshresource.h"
-#include "spheremeshresource.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
