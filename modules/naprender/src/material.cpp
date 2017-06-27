@@ -33,7 +33,7 @@ RTTI_BEGIN_CLASS(nap::MaterialInstanceResource)
 	RTTI_PROPERTY("Uniforms",					&nap::MaterialInstanceResource::mUniforms,	nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("BlendMode",					&nap::MaterialInstanceResource::mBlendMode,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DepthMode",					&nap::MaterialInstanceResource::mDepthMode,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_END_CLASS
+RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::Material)
 	RTTI_PROPERTY("Uniforms",					&nap::Material::mUniforms,					nap::rtti::EPropertyMetaData::Embedded)
@@ -138,6 +138,7 @@ namespace nap
 
 		return true;
 	}
+
 
 	Material* MaterialInstance::getMaterial() 
 	{ 
