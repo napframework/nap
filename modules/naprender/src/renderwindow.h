@@ -1,7 +1,5 @@
 #pragma once
 
-#include "nap/signalslot.h"
-
 // External Includes
 #include <rtti/rtti.h>
 #include <string.h>
@@ -11,16 +9,6 @@ namespace nap
 {
 	// Forward Declares
 	class RenderWindow;
-
-	struct WindowResizeEvent
-	{
-		WindowResizeEvent(const glm::ivec2& size) :
-			mNewSize(size)
-		{
-		}
-
-		glm::ivec2 mNewSize;
-	};
 
 	/**
 	* Holds all window launch settings
@@ -148,8 +136,6 @@ namespace nap
 		 * Make this window active
 		 */
 		virtual void makeCurrent() = 0;
-
-		NSIGNAL(mResizeEvent, const WindowResizeEvent&);
 
 	protected:
 		RenderWindowSettings mSettings;

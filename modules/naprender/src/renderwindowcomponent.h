@@ -10,6 +10,9 @@
 
 namespace nap
 {
+	/**
+	 * Resource class for RenderWindow
+	 */
 	class RenderWindowResource : public WindowResource
 	{
 		RTTI_ENABLE(WindowResource)
@@ -24,8 +27,8 @@ namespace nap
 		RenderWindowResource(RenderService& renderService);
 
 		/**
-		* Creates internal texture resource.
-		*/
+		 * Creates window, connects to resize event.
+		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**

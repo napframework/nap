@@ -16,24 +16,30 @@ namespace nap
 	{
 	}
 
+
 	RenderWindowResource::~RenderWindowResource()
 	{
 		if (mWindow != nullptr)
 			mRenderService->removeWindow(*this);
 	}
 
+
 	bool RenderWindowResource::init(utility::ErrorState& errorState)
 	{
+		// Let the renderservice create a window
 		mWindow = mRenderService->addWindow(*this, errorState);
 		if (!errorState.check(mWindow != nullptr, "Failed to create window"))
 			return false;
 
+		// We want to respond to resize events for this window
 		onEvent.connect(std::bind(&RenderWindowResource::handleEvent, this, std::placeholders::_1));
 		return true;
 	}
 
+
 	void RenderWindowResource::handleEvent(const Event& event)
 	{
+		// Update window size when resizing
 		const WindowResizedEvent* resized_event = rtti_cast<const WindowResizedEvent>(&event);
 		if (resized_event != nullptr)
 		{

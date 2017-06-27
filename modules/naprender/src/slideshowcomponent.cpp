@@ -28,32 +28,42 @@ namespace nap
 
  		mResource = rtti_cast<SlideShowComponentResource>(resource.get());
 
+		// Prototype needs RenderableMeshComponent
 		if (!errorState.check(mResource->mEntityPrototype->hasComponent<RenderableMeshComponentResource>(), "Entity prototype is missing RenderableMeshComponent"))
 			return false;
 
+		// Prototype needs TransformComponent
 		if (!errorState.check(mResource->mEntityPrototype->hasComponent<TransformComponentResource>(), "Entity prototype is missing TransformComponent"))
 			return false;
 
+		// Spawn left child
 		mLeftChildInstance = resource_manager.createEntity(*mResource->mEntityPrototype, "SlideShowLeftEntity", errorState);
 		if (mLeftChildInstance == nullptr)
 			return false;
 		getEntity()->addChild(*mLeftChildInstance);
 
+		// Spawn center child
  		mCenterChildInstance = resource_manager.createEntity(*mResource->mEntityPrototype, "SlideShowCenterEntity", errorState);
  		if (mCenterChildInstance == nullptr)
  			return false;
 		getEntity()->addChild(*mCenterChildInstance);
 
+		// Spawn right child
 		mRightChildInstance = resource_manager.createEntity(*mResource->mEntityPrototype, "SlideShowRightEntity", errorState);
 		if (mRightChildInstance == nullptr)
 			return false;
 		getEntity()->addChild(*mRightChildInstance);
 
+		// Perform initial switch to set all textures and positions correctly
 		Switch();
 
 		return true;
 	}
 
+	/** 
+	 * Sets correct textures for left/center/right children based on mImageIndex
+	 * Sets positions based on start position.
+	 */
 	void SlideShowComponent::Switch()
 	{
 		assignTexture(*mLeftChildInstance, mImageIndex - 1);
@@ -66,6 +76,7 @@ namespace nap
 		setTranslate(*mRightChildInstance, glm::vec3(imageDistance, 0.0f, 0.0f));
 		setVisible(*mRightChildInstance, false);
 	}
+
 
 	void SlideShowComponent::update(double deltaTime)
 	{
@@ -101,6 +112,7 @@ namespace nap
 		}
 	}
 
+
 	void SlideShowComponent::assignTexture(nap::EntityInstance& entity, int imageIndex)
 	{
 		if (imageIndex < 0)
@@ -113,17 +125,20 @@ namespace nap
 		material_instance.getOrCreateUniform<nap::UniformTexture2D>("mTexture").setTexture(*mResource->mImages[imageIndex]);
 	}
 
+
 	void SlideShowComponent::setVisible(nap::EntityInstance& entity, bool visible)
 	{
 		RenderableMeshComponent& renderable = entity.getComponent<RenderableMeshComponent>();
 		renderable.setVisible(visible);
 	}
 
+
 	void SlideShowComponent::setTranslate(nap::EntityInstance& entity, const glm::vec3& translate)
 	{
 		TransformComponent& transform = entity.getComponent<TransformComponent>();
 		transform.setTranslate(translate);
 	}
+
 
 	void SlideShowComponent::cycleLeft()
 	{
