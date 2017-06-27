@@ -21,7 +21,6 @@ namespace opengl
 namespace nap
 {
 	// Forward Declares
-	class RenderWindowComponent;
 	class TransformComponent;
 	class CameraComponent;
 	class RenderableComponent;
