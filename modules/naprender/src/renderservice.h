@@ -62,12 +62,6 @@ namespace nap
 		void render();
 
 		/**
-		* Call this to update all transform components
-		* This call is also called when rendering
-		*/
-		void updateTransforms();
-
-		/**
 		 * Renders all available objects to a specific renderTarget.
 		 */
 		void renderObjects(opengl::RenderTarget& renderTarget, CameraComponent& camera);

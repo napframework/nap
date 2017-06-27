@@ -144,4 +144,11 @@ namespace nap
 		TransformProperties mProperties;
 	};
 
+
+	/**
+	 * Recursively updates the transform hierarchy. The entity hierarchy is traversed. For any TransformComponent
+	 * the world transform is updated.
+	 */
+	void updateTransforms(EntityInstance& entityInstance);
+
 } // nap

@@ -168,6 +168,9 @@ void onUpdate()
 
 	nap::FirstPersonController& right_controller = cameraEntityRight->getComponent<nap::FirstPersonController>();
 	right_controller.update(delta_time);
+
+	// Update the scene
+	updateTransforms(resourceManagerService->getRootEntity());
 }
 
 

@@ -90,36 +90,7 @@ namespace nap
 	void RenderService::render()
 	{
 		update.trigger();
-
-		// Collect all transform changes and push
-		updateTransforms();
-
 		draw.trigger();
-	}
-
-
-	void updateTransformsRecursive(EntityInstance& entity, bool parentDirty, const glm::mat4& parentTransform)
-	{
-		glm::mat4 new_transform = parentTransform;
-
-		bool is_dirty = parentDirty;
-		TransformComponent* transform = entity.findComponent<TransformComponent>();
-		if (transform && (transform->isDirty() || parentDirty))
-		{
-			is_dirty = true;
-			transform->update(parentTransform);
-			new_transform = transform->getGlobalTransform();
-		}
-
-		for (EntityInstance* child : entity.getChildren())
-			updateTransformsRecursive(*child, is_dirty, new_transform);
-	}
-
-
-	// Updates all transform components
-	void RenderService::updateTransforms()
-	{
-		updateTransformsRecursive(getCore().getService<ResourceManagerService>()->getRootEntity(), false, glm::mat4(1.0f));
 	}
 
 

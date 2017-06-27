@@ -108,6 +108,9 @@ void onUpdate()
 		layout.updateLayout(window_size, glm::mat4(1.0f));
 	}
 
+	// Update the scene
+	updateTransforms(resourceManagerService->getRootEntity());
+
 	prev_elapsed_time = elapsed_time;
 }
 
