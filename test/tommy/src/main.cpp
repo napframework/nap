@@ -92,15 +92,17 @@ void onUpdate()
 		component.update(delta_time);
 	}
 
-	glm::vec2 window_size = renderWindows[0]->getWindow()->getSize();
-
 	if (rootLayoutEntity != nullptr)
 	{
+		glm::vec2 window_size = renderWindows[0]->getWindow()->getSize();
+
 		// First layout element. We start at -1000.0f, a value in front of the camera that is 'far away' 
+		// We set the position/size of the root layout element to cover the full screen.
 		nap::TransformComponent& transform_component = rootLayoutEntity->getComponent<nap::TransformComponent>();
 		transform_component.setTranslate(glm::vec3(window_size.x*0.5, window_size.y*0.5, -1000.0f));
 		transform_component.setScale(glm::vec3(window_size.x, window_size.y, 1.0));
 
+		// Update the layout
 		nap::FractionLayoutComponent& layout = rootLayoutEntity->getComponent<nap::FractionLayoutComponent>();
 		layout.updateLayout(window_size, glm::mat4(1.0f));
 	}

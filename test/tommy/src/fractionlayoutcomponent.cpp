@@ -34,10 +34,12 @@ namespace nap
 	{
 		mProperties = rtti_cast<FractionLayoutComponentResource>(resource.get())->mProperties;
 
+		// Must have a TransformComponent
 		mTransformComponent = getEntity()->findComponent<TransformComponent>();
 		if (!errorState.check(mTransformComponent != nullptr, "Missing transform component"))
 			return false;
 
+		// If the size of this element is dependent on the aspect ratio of the image, we also need a RenderableMeshComponent
 		if (mProperties.mSizeBehaviour != FractionLayoutProperties::ESizeBehaviour::Default)
 		{
 			mRenderableMeshComponent = getEntity()->findComponent<RenderableMeshComponent>();
@@ -47,6 +49,7 @@ namespace nap
 
 		return true;
 	}
+
 
 	void FractionLayoutComponent::updateLayout(const glm::vec2& windowSize, const glm::mat4x4& parentWorldTransform)
 	{
@@ -70,13 +73,14 @@ namespace nap
 				child_renderable_mesh->setClipRect(clip_rect);
 			}
 
+			// If the child has no layout itself, continue to next element (don't recurse)
 			FractionLayoutComponent* child_layout = child_entity->findComponent<FractionLayoutComponent>();
 			if (child_layout == nullptr)
 				continue;
 
 			// Get size of child in world space
 			TransformComponent& child_transform = child_entity->getComponent<TransformComponent>();
-			glm::vec2 relative_child_size_frac = child_layout->getSize();
+			glm::vec2 relative_child_size_frac = child_layout->mProperties.mSize;
 			glm::vec2 world_child_size = world_parent_size * relative_child_size_frac;
 
 			// Handle aspect ratio's that are derived from textures
@@ -100,7 +104,7 @@ namespace nap
 			relative_child_size_frac = world_child_size / world_parent_size;
 
 			// Get the child position. The components are expressed as a fraction relative to the parent.
-			glm::vec3 relative_child_pos_frac = child_layout->getPosition();
+			glm::vec3 relative_child_pos_frac = child_layout->mProperties.mPosition;
 			
 			// The plane that we use has it's pivot at the center. We need to correct half the size to calculate from the top-left
 			if (child_layout->mProperties.mPositionPivot == FractionLayoutProperties::EPositionPivot::TopLeft)
@@ -109,9 +113,11 @@ namespace nap
 			// The parent's final position is also expressed relative to it's center, so we correct for this as well:
 			relative_child_pos_frac -= glm::vec3(0.5f, 0.5f, 0.0f);
 
+			// Update position/size of the child
 			child_transform.setTranslate(relative_child_pos_frac);
 			child_transform.setScale(glm::vec3(relative_child_size_frac, 1.0f));
 
+			// Recurse into child
 			child_layout->updateLayout(windowSize, world_transform);
 		}
 	}

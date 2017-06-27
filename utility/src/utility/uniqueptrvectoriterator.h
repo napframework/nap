@@ -4,6 +4,9 @@ namespace nap
 {
 	namespace utility
 	{
+		/**
+		 * Helper class that can be used to wrap an iterator to a vector of unique_ptrs and extract its underlying type, without having to expose the unique_ptr itself.
+		 */
 		template<class ITERATORTYPE, class ELEMENTTYPE>
 		class UniquePtrVectorIterator
 		{
@@ -32,6 +35,10 @@ namespace nap
 			ITERATORTYPE mPos;
 		};
 
+		/**
+		 * Helper class to wrap a vector of unique_ptrs, allowing you to expose the vector to clients, while hiding the unique_ptr.
+		 * This is the non-const version.
+		 */
 		template<class VECTORTYPE, class ELEMENTTYPE>
 		class UniquePtrVectorWrapper
 		{
@@ -50,6 +57,10 @@ namespace nap
 			VECTORTYPE* mVector;
 		};
 
+		/**
+		 * Helper class to wrap a vector of unique_ptrs, allowing you to expose the vector to clients, while hiding the unique_ptr.
+		 * This is the const version.
+		 */
 		template<class VECTORTYPE, class ELEMENTTYPE>
 		class UniquePtrConstVectorWrapper
 		{
