@@ -1,6 +1,6 @@
 #pragma once
 
-#include "napinputservice.h"
+#include "inputrouter.h"
 
 namespace nap
 {

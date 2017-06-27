@@ -29,6 +29,12 @@ namespace nap
 		 */
 		virtual const glm::mat4 getViewMatrix() const = 0;
 
+		/**
+		 * This is used by derived classes for extracting information like aspect ratio
+		 * or the the size of the screen, in case of orthographic camera's (where pixels coordinates
+		 * are used).
+		 * @param size: size of the render target in pixels.
+		 */
 		virtual void setRenderTargetSize(glm::ivec2 size) = 0;
 	};
 }

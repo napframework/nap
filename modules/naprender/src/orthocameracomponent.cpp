@@ -25,6 +25,7 @@ namespace nap
 	{
 	}
 
+
 	bool OrthoCameraComponent::init(const ObjectPtr<ComponentResource>& resource, utility::ErrorState& errorState)
 	{
 		mProperties = rtti_cast<OrthoCameraComponentResource>(resource.get())->mProperties;
@@ -40,11 +41,12 @@ namespace nap
 	void OrthoCameraComponent::setRenderTargetSize(glm::ivec2 size)
 	{
 		if (mRenderTargetSize != size)
-	{
+		{
 			mRenderTargetSize = size;
-		setDirty();
+			setDirty();
+		}
 	}
-	}
+
 
 	// Computes projection matrix if dirty, otherwise returns the
 	// cached version
@@ -58,6 +60,7 @@ namespace nap
 
 		return mProjectionMatrix;
 	}
+
 
 	const glm::mat4 OrthoCameraComponent::getViewMatrix() const
 	{

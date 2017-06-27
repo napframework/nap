@@ -132,11 +132,13 @@ namespace nap
 		max = glm::tan(max_angle) * aspectRatio * nearPlane;
 	}
 
+
 	// Hook up attribute changes
 	PerspCameraComponent::PerspCameraComponent(EntityInstance& entity) :
 		CameraComponent(entity)
 	{
 	}
+
 
 	bool PerspCameraComponent::init(const ObjectPtr<ComponentResource>& resource, utility::ErrorState& errorState)
 	{
@@ -171,6 +173,7 @@ namespace nap
 		}
 	}
 
+
 	// Sets the horizontal and vertical index into the projection grid as set by setSplitDimensions.
 	void PerspCameraComponent::setGridLocation(int row, int column)
 	{
@@ -182,6 +185,7 @@ namespace nap
 			setDirty();
 		}
 	}
+
 
 	// Computes projection matrix if dirty, otherwise returns the
 	// cached version
@@ -205,6 +209,7 @@ namespace nap
 
 		return mProjectionMatrix;
 	}
+
 
 	const glm::mat4 PerspCameraComponent::getViewMatrix() const
 	{

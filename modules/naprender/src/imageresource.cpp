@@ -67,7 +67,6 @@ namespace nap
 	}
 
 
-
 	bool ImageResource::init(utility::ErrorState& errorState)
 	{
 		if (!errorState.check(!mImagePath.empty(), "Imagepath not set"))
@@ -80,6 +79,7 @@ namespace nap
 
 		return true;
 	}
+
 
 	const opengl::Image& ImageResource::getImage() const
 	{
