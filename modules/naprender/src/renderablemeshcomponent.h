@@ -21,24 +21,34 @@ namespace nap
 	class MaterialInstance;
 	class TransformComponent;
 	class RenderableMeshComponent;
+
+	/**
+	 * Resource class for RenderableMeshResource. Hold static data as read from file.
+	 */
 	class RenderableMeshComponentResource : public RenderableComponentResource
 	{
 		RTTI_ENABLE(RenderableComponentResource)
 
+		/**
+		 * RenderableMesh uses transform to position itself in the world.
+		 */
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components)
 		{
 			components.push_back(RTTI_OF(TransformComponent));
 		}
 
+		/**
+		 * @return instance type to create for this resource.
+		 */
 		virtual const rtti::TypeInfo getInstanceType() const
 		{
 			return RTTI_OF(RenderableMeshComponent);
 		}
 
 	public:
-		ObjectPtr<MeshResource>				mMeshResource;
+		ObjectPtr<MeshResource>				mMeshResource;						///< Resource to render
 		MaterialInstanceResource			mMaterialInstanceResource;			///< MaterialInstance, which is used to override uniforms for this instance
-		Rect								mClipRect;
+		Rect								mClipRect;							///< Clipping rectangle, in pixel coordinates
 	};
 
 	/**
@@ -56,7 +66,7 @@ namespace nap
 		RenderableMeshComponent(EntityInstance& entity);
 
 		/**
-		 * 
+		 * Acquires VAO, copies clipping rectangle, initializes material instance.
 		 */
 		virtual bool init(const ObjectPtr<ComponentResource>& resource, utility::ErrorState& errorState);
 
@@ -75,6 +85,10 @@ namespace nap
 		 */
 		void setVisible(bool visible) { mVisible = visible; }
 
+		/**
+		 * Sets clipping rectangle on this instance.
+		 * @param rect Rectangle in pixel coordinates.
+		 */
 		void setClipRect(const Rect& rect) { mClipRect = rect; }
 
 	private:
@@ -82,11 +96,11 @@ namespace nap
 		void setBlendMode();
 
 	private:
-		ObjectPtr<RenderableMeshComponentResource>	mResource;
-		TransformComponent*							mTransformComponent;
-		std::unique_ptr<VAOHandle>					mVAOHandle;
-		MaterialInstance							mMaterialInstance;
-		bool										mVisible = true;
-		Rect										mClipRect;
+		ObjectPtr<RenderableMeshComponentResource>	mResource;				// Pointer to resource of this instance
+		TransformComponent*							mTransformComponent;	// Cached pointer to transform
+		std::unique_ptr<VAOHandle>					mVAOHandle;				// Handle to Vertex Array Object
+		MaterialInstance							mMaterialInstance;		// MaterialInstance
+		bool										mVisible = true;		// Whether this instance is visible or not
+		Rect										mClipRect;				// Clipping rectangle for this instance, in pixel coordinates
 	};
 }

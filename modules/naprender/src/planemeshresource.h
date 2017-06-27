@@ -6,15 +6,16 @@
 namespace nap
 {
 	/**
-	 * Predefined plane mesh
+	 * Predefined plane mesh with size 1x1, centered at origin.
 	 */
 	class PlaneMeshResource : public MeshResource
 	{
 		RTTI_ENABLE(MeshResource)
 
 	public:
+		/**
+		 * Creates the mesh.
+		 */
 		virtual bool init(utility::ErrorState& errorState) override;
-
-		int mDummyProperty = 0;
 	};
 }

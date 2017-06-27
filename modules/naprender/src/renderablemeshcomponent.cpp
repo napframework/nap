@@ -125,10 +125,12 @@ namespace nap
 		}
 	}
 
+
 	RenderableMeshComponent::RenderableMeshComponent(EntityInstance& entity) :
 		RenderableComponent(entity)
 	{
 	}
+
 
 	bool RenderableMeshComponent::init(const ObjectPtr<ComponentResource>& resource, utility::ErrorState& errorState)
 	{
@@ -138,6 +140,7 @@ namespace nap
 		if (!mMaterialInstance.init(mResource->mMaterialInstanceResource, errorState))
 			return false;
 
+		// Here we acquire a VAO from the render service. The service will try to reuse VAOs for similar Material-Mesh combinations
 		RenderService* render_service = getEntity()->getCore()->getService<RenderService>();
 		mVAOHandle = render_service->acquireVertexArrayObject(*mMaterialInstance.getMaterial(), *mResource->mMeshResource, errorState);
 		if (mVAOHandle == nullptr)
@@ -147,6 +150,7 @@ namespace nap
  		if (!errorState.check(mTransformComponent != nullptr, "Missing transform component"))
  			return false;
 
+		// Copy cliprect. Any modifications are done per instance
 		mClipRect = mResource->mClipRect;
 
 		return true;
@@ -189,6 +193,7 @@ namespace nap
 		const opengl::IndexBuffer* index_buffer = mesh.getIndexBuffer();
 		GLsizei draw_count = static_cast<GLsizei>(index_buffer->getCount());
 
+		// If a cliprect was set, enable scissor and set correct values
 		if (mClipRect.mWidth > 0.0f && mClipRect.mHeight > 0.0f)
 		{
 			glEnable(GL_SCISSOR_TEST);
