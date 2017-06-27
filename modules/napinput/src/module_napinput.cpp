@@ -1,5 +1,5 @@
 #include <nap/module.h>
-#include <napinputcomponent.h>
+#include <inputcomponent.h>
 
 NAP_MODULE_BEGIN(NAP_INPUT)
 {

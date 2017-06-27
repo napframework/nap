@@ -1,4 +1,4 @@
-#include <napinputevent.h>
+#include <inputevent.h>
 
 // RTTI Definitions
 RTTI_BEGIN_BASE_CLASS(nap::InputEvent)

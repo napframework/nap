@@ -1,6 +1,6 @@
 #include "firstpersoncontroller.h"
-#include "napinputevent.h"
-#include "napinputcomponent.h"
+#include "inputevent.h"
+#include "inputcomponent.h"
 #include "transformcomponent.h"
 
 #include <glm/glm.hpp>

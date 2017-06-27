@@ -4,6 +4,7 @@
 #include <rtti/rtti.h>
 #include "nap/event.h"
 #include "keycode.h"
+#include "mousebutton.h"
 
 namespace nap
 {
@@ -87,13 +88,13 @@ namespace nap
 	{
 		RTTI_ENABLE(PointerEvent)
 	public:
-		PointerClickEvent(float inX, float inY, int inButton, int inId = 0) : 
+		PointerClickEvent(float inX, float inY, EMouseButton inButton, int inId = 0) : 
 			PointerEvent(inX, inY, inId), 
 			mButton(inButton)	
 		{
 		}
 
-		int mButton;
+		EMouseButton mButton;
 	};
 
 	
@@ -101,7 +102,7 @@ namespace nap
 	{
 		RTTI_ENABLE(PointerClickEvent)
 	public:
-		PointerPressEvent(float inX, float inY, int inButton, int inId = 0) : 
+		PointerPressEvent(float inX, float inY, EMouseButton inButton, int inId = 0) : 
 			PointerClickEvent(inX, inY, inButton, inId)
 		{
 		}
@@ -112,7 +113,7 @@ namespace nap
 	{
 		RTTI_ENABLE(PointerClickEvent)
 	public:
-		PointerReleaseEvent (float inX, float inY, int inButton, int inId = 0) : 
+		PointerReleaseEvent (float inX, float inY, EMouseButton inButton, int inId = 0) : 
 			PointerClickEvent(inX, inY, inButton, inId)
 		{
 		}
@@ -123,7 +124,7 @@ namespace nap
 	{
 		RTTI_ENABLE(PointerClickEvent)
 	public:
-		PointerDragEvent (float inX, float inY, int inButton, int inId = 0) : 
+		PointerDragEvent (float inX, float inY, EMouseButton inButton, int inId = 0) : 
 			PointerClickEvent(inX, inY, inButton, inId)
 		{
 		}

@@ -1,8 +1,11 @@
 #include "sdlinput.h"
-#include "napinputevent.h"
+#include "inputevent.h"
 
 namespace nap
 {
+	/** 
+	 * Mapping used to translate from SDL KeyCode to nap KeyCodes
+	 */
 	static std::unordered_map<SDL_Keycode, nap::EKeyCode> SDLToKeyCodeMapping =
 	{
 		std::make_pair(SDLK_RETURN,					nap::EKeyCode::KEY_RETURN),
@@ -242,14 +245,38 @@ namespace nap
 		std::make_pair(SDLK_SLEEP,					nap::EKeyCode::KEY_SLEEP)
 	};
 
+
+	/**
+	 * Helper function to convert an SDL KeyCode to nap KeyCode
+	 */
 	nap::EKeyCode toNapKeyCode(SDL_Keycode inKey)
 	{
 		auto pos = SDLToKeyCodeMapping.find(inKey);
 		if (pos == SDLToKeyCodeMapping.end())
-			return nap::EKeyCode::KEY_NONE;
+			return nap::EKeyCode::KEY_UNKNOWN;
 
 		return pos->second;
 	}
+
+
+	/**
+	 * Helper function to convert an SDL mouse button to nap MouseButton
+	 */
+	nap::EMouseButton toNapMouseButton(uint8_t inButton)
+	{
+		switch (inButton)
+		{
+			case SDL_BUTTON_LEFT:
+				return EMouseButton::LEFT;
+			case SDL_BUTTON_MIDDLE:
+				return EMouseButton::MIDDLE;
+			case SDL_BUTTON_RIGHT:
+				return EMouseButton::RIGHT;
+		}
+
+		return EMouseButton::UNKNOWN;
+	}
+
 
 	nap::EventPtr translateInputEvent(SDL_Event& sdlEvent, uint32_t& windowID)
 	{
@@ -266,12 +293,12 @@ namespace nap
 		else if (sdlEvent.type == SDL_MOUSEBUTTONDOWN)
 		{
 			windowID = sdlEvent.button.windowID;
-			return std::make_unique<nap::PointerPressEvent>(sdlEvent.button.x, sdlEvent.button.y, sdlEvent.button.button);
+			return std::make_unique<nap::PointerPressEvent>(sdlEvent.button.x, sdlEvent.button.y, toNapMouseButton(sdlEvent.button.button));
 		}
 		else if (sdlEvent.type == SDL_MOUSEBUTTONUP)
 		{
 			windowID = sdlEvent.button.windowID;
-			return std::make_unique<nap::PointerReleaseEvent>(sdlEvent.button.x, sdlEvent.button.y, sdlEvent.button.button);
+			return std::make_unique<nap::PointerReleaseEvent>(sdlEvent.button.x, sdlEvent.button.y, toNapMouseButton(sdlEvent.button.button));
 		}
 		else if (sdlEvent.type == SDL_MOUSEMOTION)
 		{

@@ -12,24 +12,40 @@
 
 namespace nap
 {
+	class TransformComponent;
+
+	/** 
+	 * Struct to hold properties shared between Resource and Instance
+	 */
 	struct TransformProperties
 	{
-		glm::vec3		mTranslate;
-		glm::quat		mRotate;
-		glm::vec3		mScale = glm::vec3(1.0f, 1.0f, 1.0f);
-		float			mUniformScale = 1.0f;
+		glm::vec3		mTranslate;											// The translation of this component
+		glm::quat		mRotate;											// The rotation of this component
+		glm::vec3		mScale			= glm::vec3(1.0f, 1.0f, 1.0f);		// The scale of this component
+		float			mUniformScale	= 1.0f;								// The uniform scale of this component
 	};
 
-	class TransformComponent;
+
+	/**
+	 * Resource for the TransformComponent
+	 */
 	class TransformComponentResource : public ComponentResource
 	{
 		RTTI_ENABLE(ComponentResource)
-
-		virtual const rtti::TypeInfo getInstanceType() const { return RTTI_OF(TransformComponent); }
+	
+	public:
+		/**
+		 * Get the type of ComponentInstance to create
+		 */
+		virtual const rtti::TypeInfo getInstanceType() const
+		{ 
+			return RTTI_OF(TransformComponent); 
+		}
 
 	public:
 		TransformProperties mProperties;
 	};
+
 
 	/**
 	 * Describes a local transform that is used to compute 

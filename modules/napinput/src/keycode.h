@@ -2,9 +2,12 @@
 
 namespace nap
 {
+	/**
+	 * Enum describing a list of all possible keys that are supported
+	 */
 	enum class EKeyCode
 	{
-		KEY_NONE,
+		KEY_UNKNOWN,
 		KEY_RETURN,
 		KEY_ESCAPE,
 		KEY_BACKSPACE,

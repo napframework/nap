@@ -25,16 +25,21 @@ namespace nap
 
 		bool operator()(const nap::ComponentInstance* objectA, const nap::ComponentInstance* objectB)
 		{
-			const nap::EntityInstance& entityA = *objectA->getEntity();
-			const nap::TransformComponent& transformA = entityA.getComponent<nap::TransformComponent>();
-			const glm::mat4 view_space_a = mViewMatrix * transformA.getGlobalTransform();
+			// Get the transform of objectA in view space
+			const nap::EntityInstance& entityA			= *objectA->getEntity();
+			const nap::TransformComponent& transformA	= entityA.getComponent<nap::TransformComponent>();
+			const glm::mat4 view_space_a				= mViewMatrix * transformA.getGlobalTransform();
 
-			const nap::EntityInstance& entityB = *objectB->getEntity();
-			const nap::TransformComponent& transformB = entityB.getComponent<nap::TransformComponent>();
-			const glm::mat4 view_space_b = mViewMatrix * transformB.getGlobalTransform();
+			// Get the transform of objectB in view space
+			const nap::EntityInstance& entityB			= *objectB->getEntity();
+			const nap::TransformComponent& transformB	= entityB.getComponent<nap::TransformComponent>();
+			const glm::mat4 view_space_b				= mViewMatrix * transformB.getGlobalTransform();
 
+			// Get the z-component (i.e. depth) of both entities
 			float a_z = view_space_a[3].z;
 			float b_z = view_space_b[3].z;
+			
+			// Compare
 			if (mMode == EMode::BackToFront)
 				return a_z < b_z;
 			else

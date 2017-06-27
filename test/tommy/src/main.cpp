@@ -24,8 +24,9 @@
 #include <sdlinput.h>
 #include <sdlwindow.h>
 #include "uiinputrouter.h"
-#include "napinputservice.h"
-#include "napinputcomponent.h"
+#include "inputservice.h"
+#include "inputcomponent.h"
+#include "mousebutton.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -183,18 +184,18 @@ bool init(nap::Core& core)
 	nap::ObjectPtr<nap::EntityInstance> buttonRightEntity = resourceManagerService->findEntity("ButtonRightEntity");
 	nap::ObjectPtr<nap::EntityInstance> buttonLeftEntity = resourceManagerService->findEntity("ButtonLeftEntity");
 
-	buttonRightEntity->getComponent<nap::PointerInputComponent>().pressed.connect([](const nap::PointerPressEvent&)
+	buttonRightEntity->getComponent<nap::PointerInputComponent>().pressed.connect([](const nap::PointerPressEvent& evt)
 	{
-		if (slideShowEntity != nullptr)
+		if (slideShowEntity != nullptr && evt.mButton == nap::EMouseButton::LEFT)
 		{
 			nap::SlideShowComponent& component = slideShowEntity->getComponent<nap::SlideShowComponent>();
 			component.cycleRight();
 		}
 	});
 
-	buttonLeftEntity->getComponent<nap::PointerInputComponent>().pressed.connect([](const nap::PointerPressEvent&)
+	buttonLeftEntity->getComponent<nap::PointerInputComponent>().pressed.connect([](const nap::PointerPressEvent& evt)
 	{
-		if (slideShowEntity != nullptr)
+		if (slideShowEntity != nullptr && evt.mButton == nap::EMouseButton::LEFT)
 		{
 			nap::SlideShowComponent& component = slideShowEntity->getComponent<nap::SlideShowComponent>();
 			component.cycleLeft();
