@@ -1,22 +1,23 @@
 #pragma once
 
-// External Includes
+#include "nframebuffer.h"
 #include <rtti/rtti.h>
+
+// External Includes
 #include <string.h>
 #include <glm/glm.hpp>
-#include "nframebuffer.h"
-#include "nwindow.h"
+#include <SDL_video.h>
 
 struct SDL_Window;
 typedef void *SDL_GLContext;
 
-namespace opengl
-{
-	class Window;
-}
-
 namespace nap
 {
+	namespace utility
+	{
+		class ErrorState;
+	}
+
 	// Forward Declares
 	class RenderWindow;
 
@@ -33,37 +34,33 @@ namespace nap
 		RenderWindowSettings() = default;
 		virtual ~RenderWindowSettings() = default;
 
-		std::string		title;						// Name of the window
-		int				width			= 512;		// Width of the window
-		int				height			= 512;		// Height of the window
-		bool			borderless		= false;	// If the window is borderless
-		bool			resizable		= true;		// If the window is resizable
-		bool			visible			= true;		// If the window is visible or not
+		std::string		title;										// Name of the window
+		int				x				= SDL_WINDOWPOS_CENTERED;	// Position
+		int				y				= SDL_WINDOWPOS_CENTERED;	// Position
+		int				width			= 512;						// Width of the window
+		int				height			= 512;						// Height of the window
+		bool			borderless		= false;					// If the window is borderless
+		bool			resizable		= true;						// If the window is resizable
+		bool			visible			= true;						// If the window is visible or not
 	};
 
 
 	/**
 	* Render window base class
 	*/
-	class RenderWindow
+	class RenderWindow final
 	{
 		RTTI_ENABLE()
 	public:
 		/**
 		* 
 		*/
-		RenderWindow(const RenderWindowSettings& settings, std::unique_ptr<opengl::Window> window);
+		RenderWindow();
 
 		/**
-		* Default destruction
+		* 
 		*/
-		virtual ~RenderWindow() = default;
-
-		/**
-		* Only construct using window settings
-		*/
-		RenderWindow(const RenderWindowSettings& settings) :
-			mSettings(settings) {}
+		~RenderWindow();
 
 		/**
 		* Delete copy construction
@@ -71,12 +68,12 @@ namespace nap
 		RenderWindow(const RenderWindow& other) = delete;
 		RenderWindow& operator=(const RenderWindow& other) = delete;
 
+		bool init(const RenderWindowSettings& settings, RenderWindow* sharedWindow, utility::ErrorState& errorState);
+
 		/**
 		* @return the hardware window handle, nullptr if undefined
 		*/
 		SDL_Window* getNativeWindow() const;
-
-		opengl::Window* getContainer() const { return mWindow.get(); }
 
 		/**
 		* @return the hardware window context, nullptr if undefined
@@ -111,17 +108,6 @@ namespace nap
 		 */
 		const glm::ivec2 getSize() const;
 
-		/* 
-		 * Set the window viewport
-		 */
-		void setViewport(const glm::ivec2& viewport);
-
-		/**
-		 * Turns v-sync on / off
-		 * @param value if v-sync should be turned on or off
-		 */
-		void setSync(bool value);
-
 		/**
 		 * Makes the window full screen
 		 * @param value if the window should be full screen or not
@@ -149,8 +135,8 @@ namespace nap
 		void makeCurrent();
 
 	private:
-		RenderWindowSettings mSettings;
-		std::unique_ptr<opengl::Window> mWindow = nullptr;
 		std::unique_ptr<opengl::BackbufferRenderTarget> mBackbuffer = nullptr;
+		SDL_Window*										mWindow = nullptr;		// Actual GL window
+		SDL_GLContext									mContext = nullptr;		// GL Context
 	};
 }

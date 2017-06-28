@@ -6,7 +6,6 @@
 #include <nap/timer.h>
 #include <nopengl.h>
 #include <thread>
-#include <nwindow.h>
 
 // Local Includes
 #include "renderer.h"
@@ -77,9 +76,8 @@ namespace nap
 
 		/**
 		 * Sets the renderer, the service will own the renderer
-		 * @param renderer the type of renderer to use
 		 */
-		bool init(const rtti::TypeInfo& renderer, nap::utility::ErrorState& errorState);
+		bool init(nap::utility::ErrorState& errorState);
 
 		/**
 		 * Shuts down the managed renderer

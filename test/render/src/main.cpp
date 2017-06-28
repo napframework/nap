@@ -11,7 +11,6 @@
 #include <renderablemeshcomponent.h>
 #include <renderservice.h>
 #include <renderwindowresource.h>
-#include <openglrenderer.h>
 #include <transformcomponent.h>
 #include <perspcameracomponent.h>
 #include <mathutils.h>
@@ -267,7 +266,7 @@ bool init(nap::Core& core)
 	renderService = core.getOrCreateService<nap::RenderService>();
 	
 	nap::utility::ErrorState error;
-	if (!renderService->init(RTTI_OF(nap::OpenGLRenderer), error))
+	if (!renderService->init(error))
 	{
 		nap::Logger::fatal(error.toString());
 		return false;
