@@ -33,42 +33,45 @@ namespace nap
 	}
 
 
-	ComponentInstance* EntityInstance::findComponent(const rtti::TypeInfo& type) const
+	ComponentInstance* EntityInstance::findComponent(const rtti::TypeInfo& type, ETypeCheck typeCheck) const
 	{
-		ComponentList::const_iterator pos = std::find_if(mComponents.begin(), mComponents.end(), [&](auto& element) { return element->get_type() == type; });
+		ComponentList::const_iterator pos = std::find_if(mComponents.begin(), mComponents.end(), [&](auto& element) 
+		{ 
+			return isTypeMatch(element->get_type(), type, typeCheck); 
+		});
 		if (pos == mComponents.end())
 			return nullptr;
 
 		return pos->get();
 	}
 
-	void EntityInstance::getComponentsOfType(const rtti::TypeInfo& type, std::vector<ComponentInstance*>& components) const
+	void EntityInstance::getComponentsOfType(const rtti::TypeInfo& type, std::vector<ComponentInstance*>& components, ETypeCheck typeCheck) const
 	{
 		for (auto& component : mComponents)
-			if (component->get_type().is_derived_from(type))
+			if (isTypeMatch(component->get_type(), type, typeCheck))
 				components.push_back(component.get());
 	}
 
 
-	bool EntityInstance::hasComponentsOfType(const rtti::TypeInfo& type) const
+	bool EntityInstance::hasComponentsOfType(const rtti::TypeInfo& type, ETypeCheck typeCheck) const
 	{
 		for (auto& component : mComponents)
-			if (component->get_type().is_derived_from(type))
+			if (isTypeMatch(component->get_type(), type, typeCheck))
 				return true;
 
 		return false;
 	}
 
 
-	bool EntityInstance::hasComponent(const rtti::TypeInfo& type) const
+	bool EntityInstance::hasComponent(const rtti::TypeInfo& type, ETypeCheck typeCheck) const
 	{
-		return findComponent(type) != nullptr;
+		return findComponent(type, typeCheck) != nullptr;
 	}
 
 
-	ComponentInstance& EntityInstance::getComponent(const rtti::TypeInfo& type) const
+	ComponentInstance& EntityInstance::getComponent(const rtti::TypeInfo& type, ETypeCheck typeCheck) const
 	{
-		ComponentInstance* result = findComponent(type);
+		ComponentInstance* result = findComponent(type, typeCheck);
 		assert(result != nullptr);
 		return *result;
 	}
@@ -110,9 +113,9 @@ namespace nap
 
 	//////////////////////////////////////////////////////////////////////////
 
-	ObjectPtr<ComponentResource> EntityResource::findComponent(const rtti::TypeInfo& type) const
+	ObjectPtr<ComponentResource> EntityResource::findComponent(const rtti::TypeInfo& type, ETypeCheck typeCheck) const
 	{
-		ComponentList::const_iterator pos = std::find_if(mComponents.begin(), mComponents.end(), [&](auto& element) { return element->get_type() == type; });
+		ComponentList::const_iterator pos = std::find_if(mComponents.begin(), mComponents.end(), [&](auto& element) { return isTypeMatch(element->get_type(), type, typeCheck); });
 		if (pos == mComponents.end())
 			return nullptr;
 
@@ -120,9 +123,9 @@ namespace nap
 	}
 
 
-	bool EntityResource::hasComponent(const rtti::TypeInfo& type) const
+	bool EntityResource::hasComponent(const rtti::TypeInfo& type, ETypeCheck typeCheck) const
 	{
-		return findComponent(type) != nullptr;
+		return findComponent(type, typeCheck) != nullptr;
 	}
 
 }
