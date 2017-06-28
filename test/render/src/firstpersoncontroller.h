@@ -59,7 +59,7 @@ namespace nap
 		/**
 		 * Update this ComponentInstance
 		 */
-		void update(double deltaTime);
+		virtual void update(double deltaTime) override;
 
 	private:
 		/**

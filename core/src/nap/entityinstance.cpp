@@ -17,6 +17,16 @@ namespace nap
 	}
 
 
+	void EntityInstance::update(double deltaTime)
+	{
+		for (auto& component : mComponents)
+			component->update(deltaTime);
+
+		for (EntityInstance* child : mChildren)
+			child->update(deltaTime);
+	}
+
+
 	void EntityInstance::addComponent(std::unique_ptr<ComponentInstance> component)
 	{
 		mComponents.emplace_back(std::move(component));

@@ -43,6 +43,11 @@ namespace nap
 		EntityInstance(Core& core);
 
 		/**
+		 * Update this entity hierarchy
+		 */
+		void update(double deltaTime);
+
+		/**
 		 * Add a component to this entity
 		 *
 		 * @param component The component to add. Ownership is transfered to this entity

@@ -86,11 +86,7 @@ void onUpdate()
 		delta_time = 0.0001f;
 	}
 
-	if (slideShowEntity != nullptr)
-	{
-		nap::SlideShowComponent& component = slideShowEntity->getComponent<nap::SlideShowComponent>();
-		component.update(delta_time);
-	}
+	resourceManagerService->getRootEntity().update(delta_time);
 
 	if (rootLayoutEntity != nullptr)
 	{
