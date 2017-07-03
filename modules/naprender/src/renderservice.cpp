@@ -3,7 +3,6 @@
 #include "renderablemeshcomponent.h"
 #include "rendercomponent.h"
 #include "renderwindowresource.h"
-#include "openglrenderer.h"
 #include "transformcomponent.h"
 #include "cameracomponent.h"
 #include "renderglobals.h"
@@ -182,19 +181,13 @@ namespace nap
 
 
 	// Set the currently active renderer
-	bool RenderService::init(const rtti::TypeInfo& renderer, nap::utility::ErrorState& errorState)
+	bool RenderService::init(nap::utility::ErrorState& errorState)
 	{
-		if (!errorState.check(renderer.is_derived_from(RTTI_OF(nap::Renderer)), "unable to add: %s as renderer, object not of type: %s", renderer.get_name().data(), RTTI_OF(nap::Renderer).get_name().data()))
-		{
+		std::unique_ptr<Renderer> renderer = std::make_unique<nap::Renderer>();
+		if (!renderer->init(errorState))
 			return false;
-		}
 
-		// Create new renderer
-		nap::Renderer* new_renderer = renderer.create<nap::Renderer>();
-		mRenderer.reset(new_renderer);
-
-		if (!mRenderer->init(errorState))
-			return false;
+		mRenderer = std::move(renderer);
 
 		return true;
 	}

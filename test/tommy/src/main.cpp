@@ -11,7 +11,6 @@
 // Mod nap render includes
 #include <renderservice.h>
 #include <renderwindowresource.h>
-#include <openglrenderer.h>
 #include <transformcomponent.h>
 #include <orthocameracomponent.h>
 #include <rendertargetresource.h>
@@ -87,11 +86,7 @@ void onUpdate()
 		delta_time = 0.0001f;
 	}
 
-	if (slideShowEntity != nullptr)
-	{
-		nap::SlideShowComponent& component = slideShowEntity->getComponent<nap::SlideShowComponent>();
-		component.update(delta_time);
-	}
+	resourceManagerService->getRootEntity().update(delta_time);
 
 	if (rootLayoutEntity != nullptr)
 	{
@@ -157,7 +152,7 @@ bool init(nap::Core& core)
 	renderService = core.getOrCreateService<nap::RenderService>();
 	
 	nap::utility::ErrorState error;
-	if (!renderService->init(RTTI_OF(nap::OpenGLRenderer), error))
+	if (!renderService->init(error))
 	{
 		nap::Logger::fatal(error.toString());
 		return false;

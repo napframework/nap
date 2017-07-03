@@ -33,6 +33,11 @@ namespace nap
 		virtual ~ComponentInstance() = default;
 
 		/**
+		 * Update this component
+		 */
+		virtual void update(double deltaTime) {}
+
+		/**
 		 * Get the entity this component belongs to
 		 */
 		nap::EntityInstance* getEntity() const

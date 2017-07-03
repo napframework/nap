@@ -46,12 +46,12 @@ namespace nap
 		 * Spawns left/center/right children, sets intial textures and positions.
 		 * @return false if prototype does not match requirements.
 		 */
-		virtual bool init(const ObjectPtr<ComponentResource>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
+		virtual bool init(const ObjectPtr<ComponentResource>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
 		/**
 		 * Updates animation.
 		 */
-		void update(double deltaTime);
+		virtual void update(double deltaTime) override;
 
 		/**
 		 * Cycles one element to the left. When reaching the beginning it will cycle to the end of the list.
