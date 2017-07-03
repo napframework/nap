@@ -44,28 +44,136 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 
-	/** 
-	* Scans objects for links to other objects and other files. This is done through RTTI scanning, where
-	* link properties are examined. The end result is a list of Nodes and Edges that can be used to traverse
-	* the graph.
-	*/
-	class ObjectGraph final
+	class RTTIObjectGraphItem
 	{
 	public:
-		enum class EEdgeType : uint8
+		using Type = rtti::RTTIObject*;
+
+		static const RTTIObjectGraphItem create(Type object)
+		{
+			RTTIObjectGraphItem item;
+			item.mType = EType::Object;
+			item.mObject = object;
+			
+			return item;
+		}
+
+		const std::string getID() const
+		{
+			assert(mType == EType::File || mType == EType::Object);
+
+			if (mType == EType::File)
+				return mFilename;
+			else 
+				return mObject->mID;
+		}
+
+		uint8_t getType() const { return (uint8_t)mType; }
+
+		bool getPointers(std::vector<RTTIObjectGraphItem>& pointers, utility::ErrorState& errorState) const
+		{
+			std::vector<rtti::ObjectLink> object_links;
+			rtti::findObjectLinks(*mObject, object_links);
+
+			for (const rtti::ObjectLink& link : object_links)
+			{
+				RTTIObjectGraphItem item;
+				item.mType = EType::Object;
+				item.mObject = link.mTarget;
+				pointers.push_back(item);
+			}
+
+			std::vector<std::string> file_links;
+			rtti::findFileLinks(*mObject, file_links);
+
+			for (std::string& filename : file_links)
+			{
+				RTTIObjectGraphItem item;
+				item.mType = EType::File;
+				item.mFilename = filename;
+				pointers.push_back(item);
+			}
+			
+			return true;
+		}
+
+		enum class EType : uint8_t
 		{
 			Object,
 			File
 		};
 
+		EType				mType;
+		std::string			mFilename;
+		rtti::RTTIObject*	mObject = nullptr;
+	};
+
+	class TypeInfoGraphItem
+	{
+	public:
+		using Type = ObjectPtr<ComponentResource>;
+		using ComponentMap = std::unordered_map<rtti::TypeInfo, std::vector<Type>>;
+
+		static const TypeInfoGraphItem create(const ComponentMap& componentMap, Type inComponent)
+		{
+			TypeInfoGraphItem item;
+			item.mComponentMap = &componentMap;
+			item.mComponent = inComponent;
+
+			return item;
+		}
+
+		const std::string getID() const
+		{
+			return mComponent->mID;
+		}
+
+		bool getPointers(std::vector<TypeInfoGraphItem>& pointers, utility::ErrorState& errorState) const
+		{
+			std::vector<rtti::TypeInfo> dependent_types;
+			mComponent->getDependentComponents(dependent_types);
+
+			for (rtti::TypeInfo& type : dependent_types)
+			{
+				ComponentMap::const_iterator dependent_component = mComponentMap->find(type);
+				if (!errorState.check(dependent_component != mComponentMap->end(), "Component %s was unable to find dependent component of type %s", getID().c_str(), type.get_name().data()))
+					return false;
+
+				const std::vector<ObjectPtr<ComponentResource>> components = dependent_component->second;
+				for (Type component : components)
+				{
+					TypeInfoGraphItem item;
+					item.mComponent = component;
+					item.mComponentMap = mComponentMap;
+					pointers.push_back(item);
+				}
+			}
+
+			return true;
+		}
+
+		const ComponentMap*	mComponentMap = nullptr;
+		Type				mComponent = nullptr;
+	};
+
+	/** 
+	* Scans objects for links to other objects and other files. This is done through RTTI scanning, where
+	* link properties are examined. The end result is a list of Nodes and Edges that can be used to traverse
+	* the graph.
+	*/
+	template<typename ITEM>
+	class ObjectGraph final
+	{
+	public:
 		struct Node;
+
+		using ItemList = std::vector<typename ITEM::Type>;
 
 		/**
 		* Represent an 'edge' in the ObjectGraph. This is a link from an object to either a file or another object.
 		*/
 		struct Edge
 		{
-			EEdgeType	mType;					// File/Object target
 			Node*		mSource = nullptr;		// Link source
 			Node*		mDest = nullptr;		// Link target
 		};
@@ -77,8 +185,7 @@ namespace nap
 		struct Node
 		{
 			int					mDepth = -1;			// Depth of the node is calculated during build, it represents at what level from the root this node is.
-			RTTIObject*			mObject = nullptr;		// If this is an Object node, set to the Object, otherwise null.
-			std::string			mFile;					// If this is a file node, set to the filename, otherwise empty.
+			ITEM				mItem;					// 
 			std::vector<Edge*>	mIncomingEdges;			// List of incoming edges
 			std::vector<Edge*>	mOutgoingEdges;			// List of outgoing edges
 		};
@@ -89,53 +196,31 @@ namespace nap
 		* @param objectList : list of objects to build the graph from.
 		* @param errorState: if false is returned, contains error information.
 		*/
-		bool Build(const ObservedObjectList& objectList, utility::ErrorState& errorState)
+		bool build(const ItemList& objectList, std::function<ITEM(typename ITEM::Type)> creationFunction, utility::ErrorState& errorState)
 		{
-			using ObjectMap = std::map<std::string, RTTIObject*>;
+			using ObjectMap = std::map<std::string, ITEM>;
 			ObjectMap object_map;
 
 			// Build map from ID => object
-			for (RTTIObject* object : objectList)
+			for (typename ITEM::Type object : objectList)
 			{
-				object_map.insert({ object->mID, object });
+				object_map.insert({ object->mID, creationFunction(object) });
 			}
 
 			// Scan all objects for rtti links and build data structure
-			for (RTTIObject* object : objectList)
+			for (typename ITEM::Type object : objectList)
 			{
-				Node* source_node = GetOrCreateObjectNode(*object);
+				Node* source_node = getOrCreateItemNode(creationFunction(object));
 
-				// Process pointers to other objects
-				std::vector<rtti::ObjectLink> object_links;
-				rtti::findObjectLinks(*object, object_links);
+				std::vector<ITEM> pointees;
+				if (!source_node->mItem.getPointers(pointees, errorState))
+					return false;
 
-				for (const rtti::ObjectLink& link : object_links)
-				{
-					RTTIObject* linked_object = link.mTarget;
-
-					ObjectMap::iterator dest_object = object_map.find(linked_object->mID);
-					if (!errorState.check(dest_object != object_map.end(), "Object %s is pointing to an object that is not in the objectlist!", linked_object->mID.c_str()))
-						return false;
-
-					Edge* edge = new Edge();
-					edge->mType = EEdgeType::Object;
-					edge->mSource = source_node;
-					edge->mDest = GetOrCreateObjectNode(*(dest_object->second));
-					edge->mDest->mIncomingEdges.push_back(edge);
-					edge->mSource->mOutgoingEdges.push_back(edge);
-					mEdges.push_back(std::unique_ptr<Edge>(edge));
-				}
-			
-				// Process pointers to files
-				std::vector<std::string> file_links;
-				rtti::findFileLinks(*object, file_links);
-
-				for (std::string& filename : file_links)
+				for (ITEM& item : pointees)
 				{
 					Edge* edge = new Edge();
-					edge->mType = EEdgeType::File;
 					edge->mSource = source_node;
-					edge->mDest = GetOrCreateFileNode(filename);
+					edge->mDest = getOrCreateItemNode(item);;
 					edge->mDest->mIncomingEdges.push_back(edge);
 					edge->mSource->mOutgoingEdges.push_back(edge);
 					mEdges.push_back(std::unique_ptr<Edge>(edge));
@@ -163,13 +248,25 @@ namespace nap
 		/*
 		* Returns object graph node.
 		*/
-		Node* FindNode(const std::string& ID)
+		Node* findNode(const std::string& ID)
 		{
 			NodeMap::iterator iter = mNodes.find(ID);
 			if (iter == mNodes.end())
 				return nullptr;
 			
 			return iter->second.get();
+		}
+
+		std::vector<Node*> getSortedNodes()
+		{
+			std::vector<Node*> sorted_nodes;
+			sorted_nodes.reserve(mNodes.size());
+			for (auto& kvp : mNodes)
+				sorted_nodes.push_back(kvp.second.get());
+
+			std::sort(sorted_nodes.begin(), sorted_nodes.end(), [](Node* nodeA, Node* nodeB) { return nodeA->mDepth > nodeB->mDepth; });
+
+			return sorted_nodes;
 		}
 
 	private:
@@ -205,43 +302,16 @@ namespace nap
 		}
 
 
-		/**
-		* Creates a node of the 'object node' type.
-		*/
-		Node* GetOrCreateObjectNode(RTTIObject& object)
+		Node* getOrCreateItemNode(const ITEM& item)
 		{
 			Node* result = nullptr;
-			NodeMap::iterator iter = mNodes.find(object.mID);
+			NodeMap::iterator iter = mNodes.find(item.getID());
 			if (iter == mNodes.end())
 			{
-                auto node = std::make_unique<Node>();
-                node->mObject = &object;
-                result = node.get();
-                mNodes.insert(std::make_pair(object.mID, std::move(node)));
-			}
-			else
-			{
-				result = iter->second.get();
-			}
-
-            return result;
-		}
-
-
-		/**
-		* Creates a node of the 'file node' type.
-		*/
-		Node* GetOrCreateFileNode(const std::string& filename)
-		{
-            Node* result = nullptr;
-			NodeMap::iterator iter = mNodes.find(filename);
-			if (iter == mNodes.end())
-			{
-                auto node = std::make_unique<Node>();
-                node->mObject = nullptr;
-                node->mFile = filename;
-                result = node.get();
-                mNodes.insert(std::make_pair(filename, std::move(node)));
+				auto node = std::make_unique<Node>();
+				node->mItem = item;
+				result = node.get();
+				mNodes.insert(std::make_pair(item.getID(), std::move(node)));
 			}
 			else
 			{
@@ -257,21 +327,25 @@ namespace nap
 		std::vector<std::unique_ptr<Edge>>	mEdges;		// All edges in the graph
 	};
 
+	using RTTIObjectGraph = ObjectGraph<RTTIObjectGraphItem>;
+	using TypeDependencyGraph = ObjectGraph<TypeInfoGraphItem>;
+
 
 	/**
 	* Walks object graph by traversing incoming edges and pushing the results in an array.
 	* @param node: start node to traverse incoming edges from.
 	* @param incomingObjects: output of the function.
 	*/
-	static void addIncomingObjectsRecursive(ObjectGraph::Node* node, std::set<ObjectGraph::Node*>& incomingObjects)
+	template<typename GRAPHTYPE>
+	static void addIncomingObjectsRecursive(typename GRAPHTYPE::Node* node, std::set<typename GRAPHTYPE::Node*>& incomingObjects)
 	{
 		if (incomingObjects.find(node) != incomingObjects.end())
 			return;
 
 		incomingObjects.insert(node);
 
-		for (ObjectGraph::Edge* incoming_edge : node->mIncomingEdges)
-			addIncomingObjectsRecursive(incoming_edge->mSource, incomingObjects);
+		for (typename GRAPHTYPE::Edge* incoming_edge : node->mIncomingEdges)
+			addIncomingObjectsRecursive<GRAPHTYPE>(incoming_edge->mSource, incomingObjects);
 	}
 
 
@@ -287,6 +361,12 @@ namespace nap
 			result = utility::stringFormat("%s_%d", baseID.c_str(), index++);
 
 		return result;
+	}
+
+
+	const std::string getInstanceID(const std::string& baseID)
+	{
+		return baseID + "_instance";
 	}
 
 
@@ -342,33 +422,33 @@ namespace nap
 		if (!externalChangedFile.empty())
 			dirty_nodes.insert(externalChangedFile);
 
-		ObjectGraph object_graph;
-		if (!object_graph.Build(all_objects, errorState))
-			return false;
+		RTTIObjectGraph object_graph;
+		if (!object_graph.build(all_objects, [](rtti::RTTIObject* object) { return RTTIObjectGraphItem::create(object); }, errorState))
+			return false;		
 
 		// Traverse graph for incoming links and add all of them
-		std::set<ObjectGraph::Node*> objects_to_init;
+		std::set<RTTIObjectGraph::Node*> objects_to_init;
 		for (const std::string& dirty_node : dirty_nodes)
 		{
-			ObjectGraph::Node* node = object_graph.FindNode(dirty_node);
+			RTTIObjectGraph::Node* node = object_graph.findNode(dirty_node);
 
 			// In the case that file links change as part of the file modification(s), it's possible for the dirty node to not be present in the ObjectGraph,
 			// so we can't assert here but need to deal with that case.
 			if (node != nullptr)
-				addIncomingObjectsRecursive(node, objects_to_init);
+				addIncomingObjectsRecursive<RTTIObjectGraph>(node, objects_to_init);
 		}
 
 		// Sort on graph depth for the correct init() order
-		std::vector<ObjectGraph::Node*> sorted_objects_to_init;
-		for (ObjectGraph::Node* object_to_init : objects_to_init)
+		std::vector<RTTIObjectGraph::Node*> sorted_objects_to_init;
+		for (RTTIObjectGraph::Node* object_to_init : objects_to_init)
 			sorted_objects_to_init.push_back(object_to_init);
 
 		std::sort(sorted_objects_to_init.begin(), sorted_objects_to_init.end(),
-			[](ObjectGraph::Node* nodeA, ObjectGraph::Node* nodeB) { return nodeA->mDepth > nodeB->mDepth; });
+			[](RTTIObjectGraph::Node* nodeA, RTTIObjectGraph::Node* nodeB) { return nodeA->mDepth > nodeB->mDepth; });
 
-		for (ObjectGraph::Node* sorted_object_to_init : sorted_objects_to_init)
-			if (sorted_object_to_init->mObject != nullptr)
-				objectsToInit.push_back(sorted_object_to_init->mObject->mID);
+		for (RTTIObjectGraph::Node* sorted_object_to_init : sorted_objects_to_init)
+			if (sorted_object_to_init->mItem.mObject != nullptr)
+				objectsToInit.push_back(sorted_object_to_init->mItem.mObject->mID);
 
 		return true;
 	}
@@ -454,6 +534,12 @@ namespace nap
 		return entityCreationParams.mEntitiesByID.find(generated_ids[0])->second.get();
 	}
 
+	void addComponentsByType(std::unordered_map<rtti::TypeInfo, std::vector<ObjectPtr<ComponentResource>>>& componentsByType, const ObjectPtr<ComponentResource>& component, const rtti::TypeInfo& type)
+	{
+		componentsByType[type].push_back(component);
+		for (const rtti::TypeInfo& base_type : type.get_base_classes())
+			addComponentsByType(componentsByType, component, base_type);
+	}
 
 	bool ResourceManagerService::createEntities(const std::vector<const EntityResource*>& entityResources, EntityCreationParameters& entityCreationParams, std::vector<std::string>& generatedEntityIDs, utility::ErrorState& errorState)
 	{
@@ -463,7 +549,7 @@ namespace nap
 		for (const EntityResource* entity_resource : entityResources)
 		{
 			EntityInstance* entity_instance = new EntityInstance(getCore());
-			entity_instance->mID = generateInstanceID(entity_resource->mID, entityCreationParams);
+			entity_instance->mID = generateInstanceID(getInstanceID(entity_resource->mID), entityCreationParams);
 
 			entityCreationParams.mEntitiesByID.emplace(std::make_pair(entity_instance->mID, std::move(std::unique_ptr<EntityInstance>(entity_instance))));
 			entityCreationParams.mAllInstancesByID.insert(std::make_pair(entity_instance->mID, entity_instance));
@@ -476,7 +562,7 @@ namespace nap
 
 				std::unique_ptr<ComponentInstance> component_instance(instance_type.create<ComponentInstance>({ *entity_instance }));
 				assert(component_instance);
-				component_instance->mID = generateInstanceID(component_resource->mID + "_instance", entityCreationParams);
+				component_instance->mID = generateInstanceID(getInstanceID(component_resource->mID), entityCreationParams);
 
 				new_component_instances.insert(std::make_pair(component_resource.get(), component_instance.get()));
 				entityCreationParams.mAllInstancesByID.insert(std::make_pair(component_instance->mID, component_instance.get()));
@@ -487,12 +573,12 @@ namespace nap
 		// Now that all entities are created, make sure that parent-child relations are set correctly
 		for (const EntityResource* entity_resource : entityResources)
 		{
-			EntityByIDMap::iterator entity_instance = entityCreationParams.mEntitiesByID.find(entity_resource->mID);
+			EntityByIDMap::iterator entity_instance = entityCreationParams.mEntitiesByID.find(getInstanceID(entity_resource->mID));
 			assert(entity_instance != entityCreationParams.mEntitiesByID.end());
 
 			for (const ObjectPtr<EntityResource>& child_entity_resource : entity_resource->mChildren)
 			{
-				EntityByIDMap::iterator child_entity_instance = entityCreationParams.mEntitiesByID.find(child_entity_resource->mID);
+				EntityByIDMap::iterator child_entity_instance = entityCreationParams.mEntitiesByID.find(getInstanceID(child_entity_resource->mID));
 				assert(child_entity_instance != entityCreationParams.mEntitiesByID.end());
 				entity_instance->second->addChild(*child_entity_instance->second);
 			}
@@ -502,12 +588,22 @@ namespace nap
 		// component resource data.
 		for (const EntityResource* entity_resource : entityResources)
 		{
-			for (auto& component_resource : entity_resource->mComponents)
+			std::unordered_map<rtti::TypeInfo, std::vector<ObjectPtr<ComponentResource>>> components_by_type;
+			for (auto& node : entity_resource->mComponents)
+				addComponentsByType(components_by_type, node.get(), node->get_type());
+
+			TypeDependencyGraph graph;
+			if (!graph.build(entity_resource->mComponents, [&components_by_type](ObjectPtr<ComponentResource>& component) { return TypeInfoGraphItem::create(components_by_type, component); }, errorState))
+				return false;
+
+			std::vector<TypeDependencyGraph::Node*> sorted_nodes = graph.getSortedNodes();
+
+			for (TypeDependencyGraph::Node* node : sorted_nodes)
 			{
-				auto& pos = new_component_instances.find(component_resource.get());
+				auto& pos = new_component_instances.find(node->mItem.mComponent.get());
 				assert(pos != new_component_instances.end());
 
-				if (!pos->second->init(component_resource, entityCreationParams, errorState))
+				if (!pos->second->init(node->mItem.mComponent, entityCreationParams, errorState))
 					return false;
 			}
 		}
@@ -809,7 +905,7 @@ namespace nap
 
 	const ObjectPtr<EntityInstance> ResourceManagerService::findEntity(const std::string& inID) const
 	{
-		EntityByIDMap::const_iterator pos = mEntities.find(inID);
+		EntityByIDMap::const_iterator pos = mEntities.find(getInstanceID(inID));
 		if (pos == mEntities.end())
 			return nullptr;
 

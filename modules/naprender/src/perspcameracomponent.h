@@ -6,6 +6,7 @@ namespace nap
 {
 	class PerspCameraComponent;
 	class TransformComponent;
+	class TransformComponentResource;
 
 	/**
 	 * Properties of the perspective camera, used in both the camera resource and instance.
@@ -30,7 +31,7 @@ namespace nap
 		/**
 		 * Camera is dependent on the transform component for calculating the view matrix.
 		 */
-		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) { components.push_back(RTTI_OF(TransformComponent)); }
+		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) { components.push_back(RTTI_OF(TransformComponentResource)); }
 
 		/**
 		 * Returns instance type to create for this ComponentResource.

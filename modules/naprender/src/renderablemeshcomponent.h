@@ -20,6 +20,7 @@ namespace nap
 	class MeshResource;
 	class MaterialInstance;
 	class TransformComponent;
+	class TransformComponentResource;
 	class RenderableMeshComponent;
 
 	/**
@@ -34,7 +35,7 @@ namespace nap
 		 */
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components)
 		{
-			components.push_back(RTTI_OF(TransformComponent));
+			components.push_back(RTTI_OF(TransformComponentResource));
 		}
 
 		/**

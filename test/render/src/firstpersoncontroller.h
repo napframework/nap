@@ -8,7 +8,9 @@ namespace nap
 	class KeyPressEvent;
 	class KeyReleaseEvent;
 	class TransformComponent;
+	class TransformComponentResource;
 	class KeyInputComponent;
+	class KeyInputComponentResource;
 
 	/**
 	 * Resource for the FirstPersonController
@@ -30,8 +32,8 @@ namespace nap
 		 */
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) 
 		{
-			components.push_back(RTTI_OF(TransformComponent));
-			components.push_back(RTTI_OF(KeyInputComponent));
+			components.push_back(RTTI_OF(TransformComponentResource));
+			components.push_back(RTTI_OF(KeyInputComponentResource));
 		}
 
 		float mMovementSpeed	= 3.0f;		// The speed with which to move

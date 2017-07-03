@@ -6,6 +6,7 @@ namespace nap
 {
 	class OrthoCameraComponent;
 	class TransformComponent;
+	class TransformComponentResource;
 
 	
 	/**
@@ -27,7 +28,7 @@ namespace nap
 		/**
 		 * Camera is dependent on the transform component for calculating the view matrix.
 		 */
-		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) { components.push_back(RTTI_OF(TransformComponent)); }
+		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) { components.push_back(RTTI_OF(TransformComponentResource)); }
 
 		/**
 		 * Returns instance type to create for this ComponentResource.
