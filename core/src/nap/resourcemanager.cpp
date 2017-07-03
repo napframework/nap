@@ -7,6 +7,7 @@
 #include "objectptr.h"
 #include "entityinstance.h"
 #include "componentinstance.h"
+#include "objectgraph.h"
 
 RTTI_DEFINE(nap::ResourceManagerService)
 
@@ -40,16 +41,30 @@ namespace nap
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// ObjectGraph
+	// RTTIObjectGraphItem
 	//////////////////////////////////////////////////////////////////////////
 
-
+	/**
+	 * Item class for ObjectGraph usage.
+	 * Wraps both an RTTIObject and a File object (by filename).
+	 * Uses RTTI traversal to scan pointers to other objects and pointers to files.
+	 */
 	class RTTIObjectGraphItem
 	{
 	public:
 		using Type = rtti::RTTIObject*;
 
-		static const RTTIObjectGraphItem create(Type object)
+		enum class EType : uint8_t
+		{
+			Object,
+			File
+		};
+
+		/**
+		 * Creates a graph item.
+		 * @param object Object to wrap in the item that is created.
+		 */
+		static const RTTIObjectGraphItem create(rtti::RTTIObject* object)
 		{
 			RTTIObjectGraphItem item;
 			item.mType = EType::Object;
@@ -58,6 +73,9 @@ namespace nap
 			return item;
 		}
 
+		/**
+		 * @return ID of the item. For objects, the ID is the object ID, for files, it is the filename.
+		 */
 		const std::string getID() const
 		{
 			assert(mType == EType::File || mType == EType::Object);
@@ -68,9 +86,19 @@ namespace nap
 				return mObject->mID;
 		}
 
+		/**
+		 * @return EType of the type (file or object).
+		 */
 		uint8_t getType() const { return (uint8_t)mType; }
 
-		bool getPointers(std::vector<RTTIObjectGraphItem>& pointers, utility::ErrorState& errorState) const
+
+		/**
+		 * Performs rtti traversal of pointers to both files and objects.
+		 * @param pointees Output parameter, contains all objects and files this object points to.
+		 * @param errorState If false is returned, contains information about the error.
+		 * @return true is succeeded, false otherwise.
+		 */
+		bool getPointees(std::vector<RTTIObjectGraphItem>& pointees, utility::ErrorState& errorState) const
 		{
 			std::vector<rtti::ObjectLink> object_links;
 			rtti::findObjectLinks(*mObject, object_links);
@@ -80,7 +108,7 @@ namespace nap
 				RTTIObjectGraphItem item;
 				item.mType = EType::Object;
 				item.mObject = link.mTarget;
-				pointers.push_back(item);
+				pointees.push_back(item);
 			}
 
 			std::vector<std::string> file_links;
@@ -91,44 +119,64 @@ namespace nap
 				RTTIObjectGraphItem item;
 				item.mType = EType::File;
 				item.mFilename = filename;
-				pointers.push_back(item);
+				pointees.push_back(item);
 			}
 			
 			return true;
 		}
-
-		enum class EType : uint8_t
-		{
-			Object,
-			File
-		};
-
-		EType				mType;
-		std::string			mFilename;
-		rtti::RTTIObject*	mObject = nullptr;
+		
+		EType				mType;					// Type: file or object
+		std::string			mFilename;				// If type is file, contains filename
+		rtti::RTTIObject*	mObject = nullptr;		// If type is object, contains object pointer
 	};
 
-	class TypeInfoGraphItem
+
+	//////////////////////////////////////////////////////////////////////////
+	// ComponentGraphItem
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Item class for ObjectGraph usage.
+	 * Wraps a ComponentResource and a map of Type to Component, which can be used to look up components by type
+	 * Uses the getDependentTypes function on ComponentResource to determine "pointees"
+	 */
+	class ComponentGraphItem
 	{
 	public:
 		using Type = ObjectPtr<ComponentResource>;
-		using ComponentMap = std::unordered_map<rtti::TypeInfo, std::vector<Type>>;
+		using ComponentMap = std::unordered_map<rtti::TypeInfo, std::vector<ObjectPtr<ComponentResource>>>;
 
-		static const TypeInfoGraphItem create(const ComponentMap& componentMap, Type inComponent)
+		/**
+		 * Creates a graph item.
+		 * @param componentMap Mapping from Type to ComponentResource, used to quickly lookup components by type
+		 * @param component The ComponentResource we're wrapping
+		 */
+		static const ComponentGraphItem create(const ComponentMap& componentMap, const ObjectPtr<ComponentResource>& component)
 		{
-			TypeInfoGraphItem item;
+			ComponentGraphItem item;
 			item.mComponentMap = &componentMap;
-			item.mComponent = inComponent;
+			item.mComponent = component;
 
 			return item;
 		}
 
+		/**
+		 * @return ID of the underlying ComponentResource
+		 */
 		const std::string getID() const
 		{
 			return mComponent->mID;
 		}
 
-		bool getPointers(std::vector<TypeInfoGraphItem>& pointers, utility::ErrorState& errorState) const
+		/**
+		 * Get the component items the wrapped ComponentResource depends on. It uses the getDependentComponents function on ComponentResource
+		 * to determine what points to what.
+		 *
+		 * @param pointees Output parameter, contains all component items this component item "points" to
+		 * @param errorState If false is returned, contains information about the error.
+		 * @return true is succeeded, false otherwise.
+		 */
+		bool getPointees(std::vector<ComponentGraphItem>& pointees, utility::ErrorState& errorState) const
 		{
 			std::vector<rtti::TypeInfo> dependent_types;
 			mComponent->getDependentComponents(dependent_types);
@@ -140,214 +188,27 @@ namespace nap
 					return false;
 
 				const std::vector<ObjectPtr<ComponentResource>> components = dependent_component->second;
-				for (Type component : components)
+				for (const ObjectPtr<ComponentResource>& component : components)
 				{
-					TypeInfoGraphItem item;
+					ComponentGraphItem item;
 					item.mComponent = component;
 					item.mComponentMap = mComponentMap;
-					pointers.push_back(item);
+					pointees.push_back(item);
 				}
 			}
 
 			return true;
 		}
 
-		const ComponentMap*	mComponentMap = nullptr;
-		Type				mComponent = nullptr;
-	};
-
-	/** 
-	* Scans objects for links to other objects and other files. This is done through RTTI scanning, where
-	* link properties are examined. The end result is a list of Nodes and Edges that can be used to traverse
-	* the graph.
-	*/
-	template<typename ITEM>
-	class ObjectGraph final
-	{
-	public:
-		struct Node;
-
-		using ItemList = std::vector<typename ITEM::Type>;
-
-		/**
-		* Represent an 'edge' in the ObjectGraph. This is a link from an object to either a file or another object.
-		*/
-		struct Edge
-		{
-			Node*		mSource = nullptr;		// Link source
-			Node*		mDest = nullptr;		// Link target
-		};
-
-
-		/*
-		* Represents a node in the ObjectGraph, which can be an object or a file.
-		*/
-		struct Node
-		{
-			int					mDepth = -1;			// Depth of the node is calculated during build, it represents at what level from the root this node is.
-			ITEM				mItem;					// 
-			std::vector<Edge*>	mIncomingEdges;			// List of incoming edges
-			std::vector<Edge*>	mOutgoingEdges;			// List of outgoing edges
-		};
-
-
-		/*
-		* Builds the object graph. If building fails, return false. 
-		* @param objectList : list of objects to build the graph from.
-		* @param errorState: if false is returned, contains error information.
-		*/
-		bool build(const ItemList& objectList, std::function<ITEM(typename ITEM::Type)> creationFunction, utility::ErrorState& errorState)
-		{
-			using ObjectMap = std::map<std::string, ITEM>;
-			ObjectMap object_map;
-
-			// Build map from ID => object
-			for (typename ITEM::Type object : objectList)
-			{
-				object_map.insert({ object->mID, creationFunction(object) });
-			}
-
-			// Scan all objects for rtti links and build data structure
-			for (typename ITEM::Type object : objectList)
-			{
-				Node* source_node = getOrCreateItemNode(creationFunction(object));
-
-				std::vector<ITEM> pointees;
-				if (!source_node->mItem.getPointers(pointees, errorState))
-					return false;
-
-				for (ITEM& item : pointees)
-				{
-					Edge* edge = new Edge();
-					edge->mSource = source_node;
-					edge->mDest = getOrCreateItemNode(item);;
-					edge->mDest->mIncomingEdges.push_back(edge);
-					edge->mSource->mOutgoingEdges.push_back(edge);
-					mEdges.push_back(std::unique_ptr<Edge>(edge));
-				}
-			}
-
-			// Assign graph depth
-			std::vector<Node*> root_nodes;
-			for (auto& kvp : mNodes)
-			{
-				Node* node = kvp.second.get();
-				if (node->mIncomingEdges.empty())
-					root_nodes.push_back(node);
-			}
-
-			for (Node* root_node : root_nodes)
-			{
-				assignDepthRecursive(root_node, 0);
-			}
-
-			return true;
-		}
-
-
-		/*
-		* Returns object graph node.
-		*/
-		Node* findNode(const std::string& ID)
-		{
-			NodeMap::iterator iter = mNodes.find(ID);
-			if (iter == mNodes.end())
-				return nullptr;
-			
-			return iter->second.get();
-		}
-
-		std::vector<Node*> getSortedNodes()
-		{
-			std::vector<Node*> sorted_nodes;
-			sorted_nodes.reserve(mNodes.size());
-			for (auto& kvp : mNodes)
-				sorted_nodes.push_back(kvp.second.get());
-
-			std::sort(sorted_nodes.begin(), sorted_nodes.end(), [](Node* nodeA, Node* nodeB) { return nodeA->mDepth > nodeB->mDepth; });
-
-			return sorted_nodes;
-		}
-
-	private:
-
-		/**
-		* Recursively scans outgoing edges of nodes and increments the depth for each level deeper.
-		* We try to avoid rescanning parts of a graph that have already been processed, but sometimes
-		* we must revisit a part of the graph to make sure that the depth is accurate. For example:
-		*
-		*	A ---> B ----------> C
-		*    \                /
-		*     \---> D ---> E -
-		*
-		* In this situation, if the A-B-C branch is visited first, C will have depth 3, but it will
-		* be corrected when processing branch A-D-E-C: object E will have depth 3, which is >= object C's depth.
-		* So, the final depth will become:
-		* 
-		*	A(1) ---> B(2) ----------> C(4)
-		*    \                      /
-		*     \---> D(2) ---> E(3) -
-		*
-		*/
-		void assignDepthRecursive(Node* node, int depth)
-		{
-			// The following is both a test for 'is visited' and 'should we revisit':
-			if (node->mDepth >= depth)
-				return;
-
-			for (Edge* outgoing_edge : node->mOutgoingEdges)
-				assignDepthRecursive(outgoing_edge->mDest, depth + 1);
-
-			node->mDepth = depth;
-		}
-
-
-		Node* getOrCreateItemNode(const ITEM& item)
-		{
-			Node* result = nullptr;
-			NodeMap::iterator iter = mNodes.find(item.getID());
-			if (iter == mNodes.end())
-			{
-				auto node = std::make_unique<Node>();
-				node->mItem = item;
-				result = node.get();
-				mNodes.insert(std::make_pair(item.getID(), std::move(node)));
-			}
-			else
-			{
-				result = iter->second.get();
-			}
-
-			return result;
-		}
-
-	private:
-		using NodeMap = std::map<std::string, std::unique_ptr<Node>>;
-		NodeMap								mNodes;		// All nodes in the graph, mapped from ID to node
-		std::vector<std::unique_ptr<Edge>>	mEdges;		// All edges in the graph
+		const ComponentMap*				mComponentMap = nullptr;	// Type-to-ComponentResource mapping (passed from outside)
+		ObjectPtr<ComponentResource>	mComponent = nullptr;		// The ComponentResource we're wrapping
 	};
 
 	using RTTIObjectGraph = ObjectGraph<RTTIObjectGraphItem>;
-	using TypeDependencyGraph = ObjectGraph<TypeInfoGraphItem>;
+	using TypeDependencyGraph = ObjectGraph<ComponentGraphItem>;
 
 
-	/**
-	* Walks object graph by traversing incoming edges and pushing the results in an array.
-	* @param node: start node to traverse incoming edges from.
-	* @param incomingObjects: output of the function.
-	*/
-	template<typename GRAPHTYPE>
-	static void addIncomingObjectsRecursive(typename GRAPHTYPE::Node* node, std::set<typename GRAPHTYPE::Node*>& incomingObjects)
-	{
-		if (incomingObjects.find(node) != incomingObjects.end())
-			return;
-
-		incomingObjects.insert(node);
-
-		for (typename GRAPHTYPE::Edge* incoming_edge : node->mIncomingEdges)
-			addIncomingObjectsRecursive<GRAPHTYPE>(incoming_edge->mSource, incomingObjects);
-	}
-
+	//////////////////////////////////////////////////////////////////////////
 
 	/**
 	 * Helper function to generate a unique ID for an entity or component instance, based on instances already created
@@ -435,7 +296,7 @@ namespace nap
 			// In the case that file links change as part of the file modification(s), it's possible for the dirty node to not be present in the ObjectGraph,
 			// so we can't assert here but need to deal with that case.
 			if (node != nullptr)
-				addIncomingObjectsRecursive<RTTIObjectGraph>(node, objects_to_init);
+				RTTIObjectGraph::addIncomingObjectsRecursive(node, objects_to_init);
 		}
 
 		// Sort on graph depth for the correct init() order
@@ -593,7 +454,7 @@ namespace nap
 				addComponentsByType(components_by_type, node.get(), node->get_type());
 
 			TypeDependencyGraph graph;
-			if (!graph.build(entity_resource->mComponents, [&components_by_type](ObjectPtr<ComponentResource>& component) { return TypeInfoGraphItem::create(components_by_type, component); }, errorState))
+			if (!graph.build(entity_resource->mComponents, [&components_by_type](ObjectPtr<ComponentResource>& component) { return ComponentGraphItem::create(components_by_type, component); }, errorState))
 				return false;
 
 			std::vector<TypeDependencyGraph::Node*> sorted_nodes = graph.getSortedNodes();
