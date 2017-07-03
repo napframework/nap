@@ -95,9 +95,9 @@ namespace nap
 		/*
 		 * Returns object graph node.
 		 */
-		Node* findNode(const std::string& ID)
+		Node* findNode(const std::string& ID) const
 		{
-			NodeMap::iterator iter = mNodes.find(ID);
+			NodeMap::const_iterator iter = mNodes.find(ID);
 			if (iter == mNodes.end())
 				return nullptr;
 			
@@ -107,7 +107,7 @@ namespace nap
 		/*
 		 * Returns all nodes that are processed during build, sorted on graph depth. 
 		 */
-		std::vector<Node*> getSortedNodes()
+		const std::vector<Node*> getSortedNodes() const
 		{
 			std::vector<Node*> sorted_nodes;
 			sorted_nodes.reserve(mNodes.size());

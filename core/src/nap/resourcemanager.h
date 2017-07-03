@@ -12,6 +12,11 @@ namespace nap
 	class DirectoryWatcher;
 	class EntityInstance;
 	class EntityResource;
+	
+	class RTTIObjectGraphItem;
+	template<typename ITEM> class ObjectGraph;
+	using RTTIObjectGraph = ObjectGraph<RTTIObjectGraphItem>;
+
 	struct EntityCreationParameters;
 
 	/**
@@ -129,12 +134,12 @@ namespace nap
 		void removeObject(const std::string& id);
 		void addFileLink(const std::string& sourceFile, const std::string& targetFile);
 
-		bool determineObjectsToInit(const ObjectByIDMap& objectsToUpdate, const std::string& externalChangedFile, std::vector<std::string>& objectsToInit, utility::ErrorState& errorState);
+		void determineObjectsToInit(const RTTIObjectGraph& objectGraph, const ObjectByIDMap& objectsToUpdate, const std::string& externalChangedFile, std::vector<std::string>& objectsToInit);
 		bool resolvePointers(ObjectByIDMap& objectsToUpdate, const rtti::UnresolvedPointerList& unresolvedPointers, utility::ErrorState& errorState);
-		bool initObjects(std::vector<std::string> objectsToInit, ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState);
-		bool initEntities(ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState);
+		bool initObjects(const std::vector<std::string>& objectsToInit, const ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState);
+		bool initEntities(const RTTIObjectGraph& objectGraph, const ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState);
 		bool createEntities(const std::vector<const EntityResource*>& entityResources, EntityCreationParameters& entityCreationParams, std::vector<std::string>& generatedEntityIDs, utility::ErrorState& errorState);
-
+		bool buildObjectGraph(const ObjectByIDMap& objectsToUpdate, RTTIObjectGraph& objectGraph, utility::ErrorState& errorState);
 		/** 
 		* Traverses all pointers in ObjectPtrManager and, for each target, replaces the target with the one in the map that is passed.
 		* @param container The container holding an ID -> pointer mapping with the pointer to patch to.

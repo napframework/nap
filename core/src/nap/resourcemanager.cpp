@@ -249,11 +249,9 @@ namespace nap
 
 
 	/**
-	* Builds an object graph of all objects currently in the manager, overlayed by objects that about to be updated. Then, from all objects that are effectively changed or added, it traverses
-	* the object graph to find the minimum set of objects that requires an init. Finally, the list of objects is sorted on object graph depth so that the init() order
-	* is correct.
-	*/
-	bool ResourceManagerService::determineObjectsToInit(const ObjectByIDMap& objectsToUpdate, const std::string& externalChangedFile, std::vector<std::string>& objectsToInit, utility::ErrorState& errorState)
+	 * Add all objects from the resource manager into an object graph, overlayed by @param objectsToUpdate.
+ 	 */
+	bool ResourceManagerService::buildObjectGraph(const ObjectByIDMap& objectsToUpdate, RTTIObjectGraph& objectGraph, utility::ErrorState& errorState)
 	{
 		// Build an object graph of all objects in the ResourceMgr. If any object is in the objectsToUpdate list,
 		// that object is added instead. This makes objectsToUpdate and 'overlay'.
@@ -267,51 +265,69 @@ namespace nap
 				all_objects.push_back(object_to_update->second.get());
 		}
 
-		std::set<std::string> dirty_nodes;
+		// Any objects not yet in the manager are new and need to be added to the graph as well
 		for (auto& kvp : objectsToUpdate)
-		{
-			// Mark all the objects to update as 'dirty', we need to init() those and 
-			// all the objects that point to them (recursively)
-			dirty_nodes.insert(kvp.first);
-
-			// Any objects not yet in the manager are new and need to be added to the graph as well
 			if (mObjects.find(kvp.first) == mObjects.end())
 				all_objects.push_back(kvp.second.get());
-		}
 
-		// Add externally changed file that caused load of this json file
-		if (!externalChangedFile.empty())
-			dirty_nodes.insert(externalChangedFile);
+		if (!objectGraph.build(all_objects, [](rtti::RTTIObject* object) { return RTTIObjectGraphItem::create(object); }, errorState))
+			return false;
 
-		RTTIObjectGraph object_graph;
-		if (!object_graph.build(all_objects, [](rtti::RTTIObject* object) { return RTTIObjectGraphItem::create(object); }, errorState))
-			return false;		
+		return true;
+	}
+	
 
+	/**
+	 * Performs a graph traversal of all objects in the graph that have the ID that matches any of the objects in @param dirtyObjects.
+     * All the edges in the graph are traversed in the incoming direction. Any object that is encountered is added to the set.
+     * Finally, all objects that were visited are sorted on graph depth.
+ 	 */
+	void traverseAndSortIncomingObjects(const std::unordered_map<std::string, rtti::RTTIObject*>& dirtyObjects, const RTTIObjectGraph& objectGraph, std::vector<std::string>& sortedObjects)
+	{
 		// Traverse graph for incoming links and add all of them
-		std::set<RTTIObjectGraph::Node*> objects_to_init;
-		for (const std::string& dirty_node : dirty_nodes)
+		std::set<RTTIObjectGraph::Node*> nodes;
+		for (auto& kvp : dirtyObjects)
 		{
-			RTTIObjectGraph::Node* node = object_graph.findNode(dirty_node);
+			RTTIObjectGraph::Node* node = objectGraph.findNode(kvp.first);
 
 			// In the case that file links change as part of the file modification(s), it's possible for the dirty node to not be present in the ObjectGraph,
 			// so we can't assert here but need to deal with that case.
 			if (node != nullptr)
-				RTTIObjectGraph::addIncomingObjectsRecursive(node, objects_to_init);
+				RTTIObjectGraph::addIncomingObjectsRecursive(node, nodes);
 		}
 
 		// Sort on graph depth for the correct init() order
-		std::vector<RTTIObjectGraph::Node*> sorted_objects_to_init;
-		for (RTTIObjectGraph::Node* object_to_init : objects_to_init)
-			sorted_objects_to_init.push_back(object_to_init);
+		std::vector<RTTIObjectGraph::Node*> sorted_nodes;
+		for (RTTIObjectGraph::Node* object_to_init : nodes)
+			sorted_nodes.push_back(object_to_init);
 
-		std::sort(sorted_objects_to_init.begin(), sorted_objects_to_init.end(),
+		std::sort(sorted_nodes.begin(), sorted_nodes.end(),
 			[](RTTIObjectGraph::Node* nodeA, RTTIObjectGraph::Node* nodeB) { return nodeA->mDepth > nodeB->mDepth; });
 
-		for (RTTIObjectGraph::Node* sorted_object_to_init : sorted_objects_to_init)
+		for (RTTIObjectGraph::Node* sorted_object_to_init : sorted_nodes)
 			if (sorted_object_to_init->mItem.mObject != nullptr)
-				objectsToInit.push_back(sorted_object_to_init->mItem.mObject->mID);
+				sortedObjects.push_back(sorted_object_to_init->mItem.mObject->mID);
+	}
 
-		return true;
+
+	/**
+	 * From all objects that are effectively changed or added, traverses the object graph to find the minimum set of objects that requires an init. 
+	 * The list of objects is sorted on object graph depth so that the init() order is correct.
+	 */
+	void ResourceManagerService::determineObjectsToInit(const RTTIObjectGraph& objectGraph, const ObjectByIDMap& objectsToUpdate, const std::string& externalChangedFile, std::vector<std::string>& objectsToInit)
+	{
+		// Mark all the objects to update as 'dirty', we need to init() those and 
+		// all the objects that point to them (recursively)
+		std::unordered_map<std::string, nap::RTTIObject*> dirty_nodes;
+		for (auto& kvp : objectsToUpdate)
+			dirty_nodes.insert(std::make_pair(kvp.first, kvp.second.get()));
+
+		// Add externally changed file that caused load of this json file
+		if (!externalChangedFile.empty())
+			dirty_nodes.insert(std::make_pair(externalChangedFile, nullptr));
+
+		// Traverse graph for incoming links and add all of them, and sort them based on graph depth
+		traverseAndSortIncomingObjects(dirty_nodes, objectGraph, objectsToInit);
 	}
 
 
@@ -360,7 +376,7 @@ namespace nap
 
 
 	// inits all objects 
-	bool ResourceManagerService::initObjects(std::vector<std::string> objectsToInit, ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState)
+	bool ResourceManagerService::initObjects(const std::vector<std::string>& objectsToInit, const ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState)
 	{
 		// Init all objects in the correct order
 		for (const std::string& id : objectsToInit)
@@ -368,7 +384,7 @@ namespace nap
 			rtti::RTTIObject* object = nullptr;
 			
 			// We perform lookup by ID. Objects in objectsToUpdate have preference over the manager's objects.
-			ObjectByIDMap::iterator updated_object = objectsToUpdate.find(id);
+			ObjectByIDMap::const_iterator updated_object = objectsToUpdate.find(id);
 			if (updated_object != objectsToUpdate.end())
 				object = updated_object->second.get();
 			else
@@ -473,11 +489,11 @@ namespace nap
 	}
 
 
-	bool ResourceManagerService::initEntities(ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState)
+	bool ResourceManagerService::initEntities(const RTTIObjectGraph& objectGraph, const ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState)
 	{
 		// Build list of all entities we need to update. We need to use the objects in objectsToUpdate over those already in the ResourceManager
 		// In essence, objectsToUpdate functions as an 'overlay' on top of the ResourceManager
-		std::vector<const EntityResource*> entities_to_spawn;
+		std::unordered_map<std::string, rtti::RTTIObject*> entities_to_spawn;
 		
 		// First add all EntityResources in the list of objects to update
 		for (auto& kvp : objectsToUpdate)
@@ -487,7 +503,7 @@ namespace nap
 
 			EntityResource* resource = rtti_cast<EntityResource>(kvp.second.get());
 			if (resource->mAutoSpawn)
-				entities_to_spawn.push_back(resource);
+				entities_to_spawn.insert(std::make_pair(resource->mID, resource));
 		}
 
 		// Next, go through all EntityResources currently in the resource manager and add them if they're not in the list of objects to update
@@ -501,16 +517,30 @@ namespace nap
 			{
 				EntityResource* resource = rtti_cast<EntityResource>(kvp.second.get());
 				if (resource->mAutoSpawn)
-					entities_to_spawn.push_back(resource);
+					entities_to_spawn.insert(std::make_pair(resource->mID, resource));
 			}
+		}
+
+		// Traverse the object graph and sort all entities based on their dependencies
+		// This is determined based on an object graph traversal.
+		std::vector<std::string> sorted_entity_ids_to_spawn;
+		traverseAndSortIncomingObjects(entities_to_spawn, objectGraph, sorted_entity_ids_to_spawn);
+		
+		// Use the object IDs that were found to create a vector of objects
+		std::vector<const EntityResource*> sorted_entities_to_spawn;
+		for (const std::string& id : sorted_entity_ids_to_spawn)
+		{
+			auto pos = entities_to_spawn.find(id);
+			assert(pos != entities_to_spawn.end());
+			assert(pos->second->get_type().is_derived_from<EntityResource>());
+
+			sorted_entities_to_spawn.push_back(rtti_cast<EntityResource>(pos->second));
 		}
 
 		std::vector<std::string> generated_ids;
 		EntityCreationParameters entityCreationParams;
-		if (!createEntities(entities_to_spawn, entityCreationParams, generated_ids, errorState))
-		{
+		if (!createEntities(sorted_entities_to_spawn, entityCreationParams, generated_ids, errorState))
 			return false;
-		}
 
 		// Start with an empty root and add all entities without a parent to the root
 		mRootEntity->clearChildren();
@@ -581,10 +611,15 @@ namespace nap
 		// init order, otherwise a part of the graph may still be pointing to the old objects.
 		patchObjectPtrs(objects_to_update);
 
+		// Build object graph of all the objects in the manager, overlayed by the objects we want to update. Later, we will
+		// performs queries against this graph to determine init order for both resources and entities.
+		RTTIObjectGraph object_graph;
+		if (!buildObjectGraph(objects_to_update, object_graph, errorState))
+			return false;
+
 		// Find out what objects to init and in what order to init them
 		std::vector<std::string> objects_to_init;
-		if (!determineObjectsToInit(objects_to_update, externalChangedFile, objects_to_init, errorState))
-			return false;
+		determineObjectsToInit(object_graph, objects_to_update, externalChangedFile, objects_to_init);
 
 		// The objects that require an init may contain objects that were not present in the file (because they are
 		// pointing to objects that will be reconstructed and initted). In that case we reconstruct those objects 
@@ -609,7 +644,7 @@ namespace nap
 			return false;
 
 		// Init all entities
-		if (!initEntities(objects_to_update, errorState))
+		if (!initEntities(object_graph, objects_to_update, errorState))
 			return false;
 
 		// In case all init() operations were successful, we can now replace the objects
