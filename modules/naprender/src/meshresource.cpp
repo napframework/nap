@@ -27,7 +27,7 @@ namespace nap
 	bool MeshFromFileResource::init(utility::ErrorState& errorState)
 	{
 		mMesh = loadMesh(mPath, errorState);
-		if (!errorState.check(mMesh != nullptr, "Unable to load mesh %s", mPath.c_str()))
+		if (!errorState.check(mMesh != nullptr, "Unable to load mesh %s for resource %d", mPath.c_str(), mID.c_str()))
 			return false;
 
 		return true;

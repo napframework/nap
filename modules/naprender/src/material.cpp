@@ -124,10 +124,10 @@ namespace nap
 		for (ObjectPtr<Uniform>& uniform : resource.mUniforms)
 		{
 			opengl::UniformDeclarations::const_iterator declaration = uniform_declarations.find(uniform->mName);
-			if (!errorState.check(declaration != uniform_declarations.end(), "Unable to find uniform %s in shader", uniform->mName.c_str()))
+			if (!errorState.check(declaration != uniform_declarations.end(), "Unable to find uniform %s in shader %s for material %s", uniform->mName.c_str(), resource.mMaterial->getShader()->mID.c_str()))
 				return false;
 
-			if (!errorState.check(uniform->getGLSLType() == declaration->second->mGLSLType, "Uniform %s does not match the variable type in the shader"))
+			if (!errorState.check(uniform->getGLSLType() == declaration->second->mGLSLType, "Uniform %s does not match the variable type in the shader %s", uniform->mName.c_str(), resource.mMaterial->getShader()->mID.c_str()))
 				return false;
 
 			std::unique_ptr<Uniform> new_uniform = createUniformFromDeclaration(*declaration->second);
@@ -170,7 +170,7 @@ namespace nap
 
 	bool Material::init(utility::ErrorState& errorState)
 	{
-		if (!errorState.check(mShader != nullptr, "Shader not set in material"))
+		if (!errorState.check(mShader != nullptr, "Shader not set in material %s", mID.c_str()))
 			return false;
 
 		const opengl::UniformDeclarations& uniform_declarations = mShader->getShader().getUniformDeclarations();
@@ -209,7 +209,7 @@ namespace nap
 			// If there is a match, see if the types match and copy the attributes from the input object
 			if (matching_uniform != nullptr)
 			{
-				if (!errorState.check(matching_uniform->getGLSLType() == declaration.mGLSLType, "Uniform %s does not match the variable type in the shader"))
+				if (!errorState.check(matching_uniform->getGLSLType() == declaration.mGLSLType, "Uniform %s does not match the variable type in the shader %s", mShader->mID.c_str()))
 					return false;
 
 				nap::rtti::copyObject(*matching_uniform, *new_uniform.get());
@@ -222,7 +222,7 @@ namespace nap
 		for (ObjectPtr<Uniform>& uniform : mUniforms)
 		{
 			opengl::UniformDeclarations::const_iterator declaration = uniform_declarations.find(uniform->mName);
-			if (!errorState.check(declaration != uniform_declarations.end(), "Unable to find uniform %s in shader", uniform->mName.c_str()))
+			if (!errorState.check(declaration != uniform_declarations.end(), "Unable to find uniform %s in shader %s", uniform->mName.c_str(), mShader->mID.c_str()))
 				return false;
 		}
 

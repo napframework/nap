@@ -29,6 +29,9 @@ namespace nap
 		settings.visible = false;
 		mPrimaryWindow = createRenderWindow(settings, errorState);
 
+		if (!errorState.check(mPrimaryWindow != nullptr, "Failed to create primary window"))
+			return false;
+
 		if (!errorState.check(opengl::init(), "Failed to init OpenGL"))
 			return false;
 

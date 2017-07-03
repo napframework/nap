@@ -144,7 +144,7 @@ namespace nap
 		// Here we acquire a VAO from the render service. The service will try to reuse VAOs for similar Material-Mesh combinations
 		RenderService* render_service = getEntity()->getCore()->getService<RenderService>();
 		mVAOHandle = render_service->acquireVertexArrayObject(*mMaterialInstance.getMaterial(), *mResource->mMeshResource, errorState);
-		if (mVAOHandle == nullptr)
+		if (!errorState.check(mVAOHandle != nullptr, "Failed to acquire VAO for RenderableMeshComponent %s", mResource->mID.c_str()))
 			return false;
 
 		mTransformComponent = getEntity()->findComponent<TransformComponent>();
