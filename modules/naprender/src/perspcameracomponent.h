@@ -48,7 +48,7 @@ namespace nap
 	 */
 	class PerspCameraComponent : public CameraComponent
 	{
-		RTTI_ENABLE(ComponentInstance)
+		RTTI_ENABLE(CameraComponent)
 	public:
 		// Default constructor
 		PerspCameraComponent(EntityInstance& entity);

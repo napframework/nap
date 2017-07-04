@@ -54,7 +54,7 @@ nap::ObjectPtr<nap::EntityInstance>						orientationEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance>						cameraEntityLeft = nullptr;
 nap::ObjectPtr<nap::EntityInstance>						cameraEntityRight = nullptr;
 nap::ObjectPtr<nap::EntityInstance>						splitCameraEntity = nullptr;
-nap::ObjectPtr<nap::DefaultInputRouter>					defaultInputRouter = nullptr;
+nap::ObjectPtr<nap::EntityInstance>						defaultInputRouter = nullptr;
 
 
 // Some utilities
@@ -63,13 +63,15 @@ void runGame(nap::Core& core);
 // Called when the window is updating
 void onUpdate()
 {
+	nap::DefaultInputRouter& input_router = defaultInputRouter->getComponent<nap::DefaultInputRouterComponent>().mInputRouter;
+
 	{
 		// Update input for first window
 		std::vector<nap::EntityInstance*> entities;
 		entities.push_back(cameraEntityLeft.get());
 
 		nap::WindowResource* window = renderWindows[0].get();
-		inputService->handleInput(*window, *defaultInputRouter, entities);
+		inputService->handleInput(*window, input_router, entities);
 	}
 
 	{
@@ -78,7 +80,7 @@ void onUpdate()
 		entities.push_back(cameraEntityRight.get());
 
 		nap::WindowResource* window = renderWindows[1].get();
-		inputService->handleInput(*window, *defaultInputRouter, entities);
+		inputService->handleInput(*window, input_router, entities);
 	}
 	
 	// Process events for all windows
@@ -298,7 +300,6 @@ bool init(nap::Core& core)
  	testTexture					= resourceManagerService->findObject<nap::ImageResource>("TestTexture");
  	worldTexture				= resourceManagerService->findObject<nap::ImageResource>("WorldTexture");
  	textureRenderTarget			= resourceManagerService->findObject<nap::TextureRenderTargetResource2D>("PlaneRenderTarget");
-	defaultInputRouter			= resourceManagerService->findObject<nap::DefaultInputRouter>("InputRouter");
 
 	pigEntity					= resourceManagerService->findEntity("PigEntity");
 	rotatingPlaneEntity			= resourceManagerService->findEntity("RotatingPlaneEntity");
@@ -308,6 +309,7 @@ bool init(nap::Core& core)
 	cameraEntityLeft			= resourceManagerService->findEntity("CameraEntityLeft");
 	cameraEntityRight			= resourceManagerService->findEntity("CameraEntityRight");
 	splitCameraEntity			= resourceManagerService->findEntity("SplitCameraEntity");	
+	defaultInputRouter			= resourceManagerService->findEntity("DefaultInputRouterEntity");
 
 	// Set render states
 	nap::RenderState& render_state = renderService->getRenderState();

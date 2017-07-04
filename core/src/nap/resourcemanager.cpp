@@ -8,6 +8,7 @@
 #include "entityinstance.h"
 #include "componentinstance.h"
 #include "objectgraph.h"
+#include "entityptr.h"
 
 RTTI_DEFINE(nap::ResourceManagerService)
 
@@ -231,6 +232,51 @@ namespace nap
 	}
 
 
+	/** 
+	 * Recursively adds all types to the componentsByType map. Notice that all base classes are inserted into the map as well to make sure we can perform 
+	 * is_derived_from check against this map.
+	 */
+	void addComponentsByType(std::unordered_map<rtti::TypeInfo, std::vector<ObjectPtr<ComponentResource>>>& componentsByType, const ObjectPtr<ComponentResource>& component, const rtti::TypeInfo& type)
+	{
+		componentsByType[type].push_back(component);
+		for (const rtti::TypeInfo& base_type : type.get_base_classes())
+			addComponentsByType(componentsByType, component, base_type);
+	}
+
+
+	/**
+	 * Performs a graph traversal of all objects in the graph that have the ID that matches any of the objects in @param dirtyObjects.
+     * All the edges in the graph are traversed in the incoming direction. Any object that is encountered is added to the set.
+     * Finally, all objects that were visited are sorted on graph depth.
+ 	 */
+	void traverseAndSortIncomingObjects(const std::unordered_map<std::string, rtti::RTTIObject*>& dirtyObjects, const RTTIObjectGraph& objectGraph, std::vector<std::string>& sortedObjects)
+	{
+		// Traverse graph for incoming links and add all of them
+		std::set<RTTIObjectGraph::Node*> nodes;
+		for (auto& kvp : dirtyObjects)
+		{
+			RTTIObjectGraph::Node* node = objectGraph.findNode(kvp.first);
+
+			// In the case that file links change as part of the file modification(s), it's possible for the dirty node to not be present in the ObjectGraph,
+			// so we can't assert here but need to deal with that case.
+			if (node != nullptr)
+				RTTIObjectGraph::addIncomingObjectsRecursive(node, nodes);
+		}
+
+		// Sort on graph depth for the correct init() order
+		std::vector<RTTIObjectGraph::Node*> sorted_nodes;
+		for (RTTIObjectGraph::Node* object_to_init : nodes)
+			sorted_nodes.push_back(object_to_init);
+
+		std::sort(sorted_nodes.begin(), sorted_nodes.end(),
+			[](RTTIObjectGraph::Node* nodeA, RTTIObjectGraph::Node* nodeB) { return nodeA->mDepth > nodeB->mDepth; });
+
+		for (RTTIObjectGraph::Node* sorted_object_to_init : sorted_nodes)
+			if (sorted_object_to_init->mItem.mObject != nullptr)
+				sortedObjects.push_back(sorted_object_to_init->mItem.mObject->mID);
+	}
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// ResourceManagerService
 	//////////////////////////////////////////////////////////////////////////
@@ -276,39 +322,6 @@ namespace nap
 		return true;
 	}
 	
-
-	/**
-	 * Performs a graph traversal of all objects in the graph that have the ID that matches any of the objects in @param dirtyObjects.
-     * All the edges in the graph are traversed in the incoming direction. Any object that is encountered is added to the set.
-     * Finally, all objects that were visited are sorted on graph depth.
- 	 */
-	void traverseAndSortIncomingObjects(const std::unordered_map<std::string, rtti::RTTIObject*>& dirtyObjects, const RTTIObjectGraph& objectGraph, std::vector<std::string>& sortedObjects)
-	{
-		// Traverse graph for incoming links and add all of them
-		std::set<RTTIObjectGraph::Node*> nodes;
-		for (auto& kvp : dirtyObjects)
-		{
-			RTTIObjectGraph::Node* node = objectGraph.findNode(kvp.first);
-
-			// In the case that file links change as part of the file modification(s), it's possible for the dirty node to not be present in the ObjectGraph,
-			// so we can't assert here but need to deal with that case.
-			if (node != nullptr)
-				RTTIObjectGraph::addIncomingObjectsRecursive(node, nodes);
-		}
-
-		// Sort on graph depth for the correct init() order
-		std::vector<RTTIObjectGraph::Node*> sorted_nodes;
-		for (RTTIObjectGraph::Node* object_to_init : nodes)
-			sorted_nodes.push_back(object_to_init);
-
-		std::sort(sorted_nodes.begin(), sorted_nodes.end(),
-			[](RTTIObjectGraph::Node* nodeA, RTTIObjectGraph::Node* nodeB) { return nodeA->mDepth > nodeB->mDepth; });
-
-		for (RTTIObjectGraph::Node* sorted_object_to_init : sorted_nodes)
-			if (sorted_object_to_init->mItem.mObject != nullptr)
-				sortedObjects.push_back(sorted_object_to_init->mItem.mObject->mID);
-	}
-
 
 	/**
 	 * From all objects that are effectively changed or added, traverses the object graph to find the minimum set of objects that requires an init. 
@@ -397,6 +410,7 @@ namespace nap
 		return true;
 	}
 
+
 	const ObjectPtr<EntityInstance> ResourceManagerService::createEntity(const EntityResource& entityResource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
 		// Create a single entity
@@ -411,12 +425,6 @@ namespace nap
 		return entityCreationParams.mEntitiesByID.find(generated_ids[0])->second.get();
 	}
 
-	void addComponentsByType(std::unordered_map<rtti::TypeInfo, std::vector<ObjectPtr<ComponentResource>>>& componentsByType, const ObjectPtr<ComponentResource>& component, const rtti::TypeInfo& type)
-	{
-		componentsByType[type].push_back(component);
-		for (const rtti::TypeInfo& base_type : type.get_base_classes())
-			addComponentsByType(componentsByType, component, base_type);
-	}
 
 	bool ResourceManagerService::createEntities(const std::vector<const EntityResource*>& entityResources, EntityCreationParameters& entityCreationParams, std::vector<std::string>& generatedEntityIDs, utility::ErrorState& errorState)
 	{
@@ -444,6 +452,45 @@ namespace nap
 				new_component_instances.insert(std::make_pair(component_resource.get(), component_instance.get()));
 				entityCreationParams.mAllInstancesByID.insert(std::make_pair(component_instance->mID, component_instance.get()));
 				entity_instance->addComponent(std::move(component_instance));
+			}
+		}
+
+		// We go over all entities and their components and fill in all the entity instances for all EntityPtrs
+		for (const EntityResource* entity_resource : entityResources)
+		{
+			for (auto& component_resource : entity_resource->mComponents)
+			{
+				std::vector<rtti::ObjectLink> links;
+				rtti::findObjectLinks(*component_resource, links);
+
+				for (rtti::ObjectLink& link : links)
+				{
+					rtti::ResolvedRTTIPath resolved_path;
+					if (!errorState.check(link.mSourcePath.resolve(component_resource.get(), resolved_path), "Encountered link from object %s that could not be resolved: %s", component_resource->mID.c_str(), link.mSourcePath.toString().c_str()))
+						return false;
+
+					// Skip non-EntityPtr types
+					if (resolved_path.getType() != RTTI_OF(EntityPtr))
+						continue;
+
+					EntityPtr entity_ptr = resolved_path.getValue().convert<EntityPtr>();
+					EntityResource* target_entity_resource = entity_ptr.getResource();
+
+					// Skip null targets
+					if (target_entity_resource == nullptr)
+						continue;
+
+					// Only AutoSpawn resources have a one-to-one relationship between resource and instance. We do not support pointers to non-AutoSpawn objects
+					if (!errorState.check(target_entity_resource->mAutoSpawn, "Encountered pointer from object %s to non-AutoSpawn entity %s. This is not supported.", component_resource->mID.c_str(), target_entity_resource->mID.c_str()))
+						return false;
+
+					// Find the EntityInstance and fill it in in the EntityPtr.mInstance
+					EntityByIDMap::iterator target_entity_instance = entityCreationParams.mEntitiesByID.find(getInstanceID(target_entity_resource->mID));
+					assert(target_entity_instance != entityCreationParams.mEntitiesByID.end());
+					entity_ptr.mInstance = target_entity_instance->second.get();
+
+					resolved_path.setValue(entity_ptr);
+				}
 			}
 		}
 
@@ -531,7 +578,11 @@ namespace nap
 		for (const std::string& id : sorted_entity_ids_to_spawn)
 		{
 			auto pos = entities_to_spawn.find(id);
-			assert(pos != entities_to_spawn.end());
+
+			// We can also encounter non-entity objects in the object graph, so we ignore those
+			if (pos == entities_to_spawn.end())
+				continue;
+
 			assert(pos->second->get_type().is_derived_from<EntityResource>());
 
 			sorted_entities_to_spawn.push_back(rtti_cast<EntityResource>(pos->second));

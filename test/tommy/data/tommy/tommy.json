@@ -6,10 +6,6 @@
 		"Title" : "Tommy"
 	},
 	
-	"nap::UIInputRouter": {
-		"mID": "InputRouter"
-	},
-	
 	"nap::ImageResource": {
 		"mID" : "BackgroundImage",
 		"mImagePath" : "data/tommy/background.jpg"
@@ -95,6 +91,19 @@
 				}
 			}
 		]			
+	},
+	
+	"nap::EntityResource": {
+		"mID": "UIInputRouterEntity",
+		
+		"Components" : 
+		[
+			{
+				"nap::UIInputRouterComponentResource": {
+					"CameraEntity" : "CameraEntity"
+				}		
+			}
+		]
 	},
 
 	"nap::EntityResource": {

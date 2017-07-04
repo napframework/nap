@@ -46,7 +46,7 @@ namespace nap
 	 */
 	class OrthoCameraComponent : public CameraComponent
 	{
-		RTTI_ENABLE(ComponentInstance)
+		RTTI_ENABLE(CameraComponent)
 	public:
 		// Default constructor
 		OrthoCameraComponent(EntityInstance& entity);

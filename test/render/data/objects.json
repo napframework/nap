@@ -12,11 +12,7 @@
 		"Height" : 512,
 		"Title" : "Window 2"
 	},
-	
-	"nap::DefaultInputRouter": {
-		"mID": "InputRouter"
-	},
-	
+		
     "nap::ImageResource": {
 		"mID" : "PigTexture",
 		"mImagePath" : "data/pig_head.jpg"
@@ -157,6 +153,18 @@
 				"ShaderAttributeID": "in_Normals"
 			}
 		]			
+	},
+	
+	"nap::EntityResource": {
+		"mID": "DefaultInputRouterEntity",
+		
+		"Components" : 
+		[
+			{
+				"nap::DefaultInputRouterComponentResource": {
+				}		
+			}
+		]
 	},
 	
 	"nap::EntityResource": {

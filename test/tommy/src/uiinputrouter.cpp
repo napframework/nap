@@ -4,8 +4,14 @@
 #include "cameracomponent.h"
 #include "depthsorter.h"
 
-RTTI_BEGIN_CLASS(nap::UIInputRouter)
+
+RTTI_BEGIN_CLASS(nap::UIInputRouterComponentResource)
+	RTTI_PROPERTY("CameraEntity", &nap::UIInputRouterComponentResource::mCameraEntity, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::UIInputRouterComponent, nap::EntityInstance&)
+RTTI_END_CLASS
+
 
 namespace nap
 {
@@ -58,6 +64,21 @@ namespace nap
 				break;
 			}
 		}
+	}
+
+
+	bool UIInputRouterComponent::init(const ObjectPtr<ComponentResource>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	{
+		UIInputRouterComponentResource* component_resource = static_cast<UIInputRouterComponentResource*>(resource.get());
+
+		CameraComponent* camera_component = component_resource->mCameraEntity->findComponent<CameraComponent>(ETypeCheck::IS_DERIVED_FROM);
+		if (!errorState.check(camera_component != nullptr, "UIInputRouter %s expects Camera entity %s to have a camera component", resource->mID.c_str(), component_resource->mCameraEntity.getResource()->mID.c_str()))
+			return false;
+
+		if (!mInputRouter.init(*camera_component, errorState))
+			return false;
+
+		return true; 
 	}
 }
 

@@ -41,7 +41,7 @@ std::vector<nap::ObjectPtr<nap::RenderWindowResource>> renderWindows;
 nap::ObjectPtr<nap::EntityInstance> slideShowEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance> cameraEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance> rootLayoutEntity = nullptr;
-nap::ObjectPtr<nap::UIInputRouter>	uiInputRouter = nullptr;
+nap::ObjectPtr<nap::EntityInstance>	uiInputRouter = nullptr;
 
 // Some utilities
 void runGame(nap::Core& core);	
@@ -69,8 +69,8 @@ void onUpdate()
 		std::vector<nap::EntityInstance*> entities;
 		entities.push_back(&resourceManagerService->getRootEntity());
 
-		uiInputRouter->setCamera(cameraEntity->getComponent<nap::OrthoCameraComponent>());
-		inputService->handleInput(*renderWindows[0], *uiInputRouter, entities);
+		nap::UIInputRouter& router = uiInputRouter->getComponent<nap::UIInputRouterComponent>().mInputRouter;
+		inputService->handleInput(*renderWindows[0], router, entities);
 	}
 
 	// Process events for all windows
@@ -176,7 +176,7 @@ bool init(nap::Core& core)
 
 	//////////////////////////////////////////////////////////////////////////
 
-	uiInputRouter = resourceManagerService->findObject<nap::UIInputRouter>("InputRouter");
+	uiInputRouter = resourceManagerService->findEntity("UIInputRouterEntity");
 	renderWindows.push_back(resourceManagerService->findObject<nap::RenderWindowResource>("Window"));
 
 	nap::ObjectPtr<nap::EntityInstance> buttonRightEntity = resourceManagerService->findEntity("ButtonRightEntity");

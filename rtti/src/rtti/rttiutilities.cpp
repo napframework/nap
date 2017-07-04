@@ -56,11 +56,13 @@ namespace nap
 
 					rtti::Variant value = nested_property.get_value(variant);
 
+					auto nested_property_type = nested_property.get_type().is_wrapper() ? nested_property.get_type().get_wrapped_type() : nested_property.get_type();
+
 					// Invoke visit func
-					visitFunc(variant, nested_property, value, path);
+					visitFunc(variant, nested_property, value, path);					
 
 					// Recurse
-					if (!actual_type.is_pointer()) // Don't recurse into properties of pointers
+					if (!nested_property_type.is_pointer()) // Don't recurse into properties of pointers
 						VisitRTTIPropertiesRecursive(nested_property, value, path, visitFunc);
 
 					path.popBack();
