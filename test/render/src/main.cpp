@@ -3,6 +3,7 @@
 
 // Local Includes
 #include "objects.h"
+#include "firstpersoncontroller.h"
 
 // GLM
 #include <glm/glm.hpp>
@@ -21,15 +22,16 @@
 // Nap includes
 #include <nap/core.h>
 #include <nap/resourcemanager.h>
-#include "inputservice.h"
-#include "nap/windowresource.h"
-#include "nap/windowevent.h"
-#include "nap/event.h"
-#include "inputcomponent.h"
-#include "firstpersoncontroller.h"
-#include "inputrouter.h"
-#include "nap/entityinstance.h"
-#include "nap/componentinstance.h"
+#include <inputservice.h>
+#include <nap/windowresource.h>
+#include <nap/windowevent.h>
+#include <nap/event.h>
+#include <inputcomponent.h>
+#include <inputrouter.h>
+#include <nap/entityinstance.h>
+#include <nap/componentinstance.h>
+#include <sceneservice.h>
+
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
@@ -42,6 +44,7 @@ static nap::ObjectPtr<nap::ImageResource> worldTexture = nullptr;
 // Nap Objects
 nap::RenderService* renderService = nullptr;
 nap::ResourceManagerService* resourceManagerService = nullptr;
+nap::SceneService* sceneService = nullptr;
 nap::InputService* inputService = nullptr;
 
 std::vector<nap::ObjectPtr<nap::RenderWindowResource>>	renderWindows;
@@ -165,7 +168,7 @@ void onUpdate()
 	resourceManagerService->getRootEntity().update(delta_time);
 
 	// Update the scene
-	updateTransforms(resourceManagerService->getRootEntity());
+	sceneService->update();
 }
 
 
@@ -272,14 +275,16 @@ bool init(nap::Core& core)
 
 	nap::Logger::info("initialized render service: %s", renderService->getName().c_str());
 
-	renderService->draw.connect(std::bind(&onRender));
-	renderService->update.connect(std::bind(&onUpdate));
-
 	//////////////////////////////////////////////////////////////////////////
 	// Input
 	//////////////////////////////////////////////////////////////////////////
 
 	inputService = core.getOrCreateService<nap::InputService>();
+
+	//////////////////////////////////////////////////////////////////////////
+	// Scene
+	//////////////////////////////////////////////////////////////////////////
+	sceneService = core.getOrCreateService<nap::SceneService>();
 
 	//////////////////////////////////////////////////////////////////////////
 	// Resources
@@ -367,8 +372,11 @@ void runGame(nap::Core& core)
 
 		//////////////////////////////////////////////////////////////////////////
 
-		// run render call
-		renderService->render();
+		// Update
+		onUpdate();
+
+		// Render
+		onRender();
 	}
 
 	renderService->shutdown();

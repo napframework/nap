@@ -85,14 +85,6 @@ namespace nap
 	}
 
 
-	// Emits the draw call
-	void RenderService::render()
-	{
-		update.trigger();
-		draw.trigger();
-	}
-
-
 	// Render all objects in scene graph using specified camera
 	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, CameraComponent& camera)
 	{

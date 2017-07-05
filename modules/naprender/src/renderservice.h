@@ -51,15 +51,6 @@ namespace nap
 		virtual ~RenderService();
 
 		/**
-		 * Call this in your app loop to emit a render call
-		 * Note that this call will gather all available windows
-		 * and for every window call it's update and render signals
-		 * Subscribe to those signals to update app members and
-		 * render objects to a specific target
-		 */
-		void render();
-
-		/**
 		 * Renders all available objects to a specific renderTarget.
 		 */
 		void renderObjects(opengl::RenderTarget& renderTarget, CameraComponent& camera);
@@ -83,20 +74,6 @@ namespace nap
 		 * Shuts down the managed renderer
 		 */
 		void shutdown();
-
-		/**
-		* Render signal, emitted every render iteration
-		* Connect to this signal to render objects to the context
-		* associated with this window.
-		*/
-		Signal<> draw;
-
-		/**
-		* Update signal, emitted before a render operation
-		* Connect to this signal to update your scene
-		* graph before the render call is emitted
-		*/
-		Signal<> update;
 
 		/**
 		* Returns global render state. Use the fields in this objects to modify the renderstate.

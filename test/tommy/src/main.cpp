@@ -14,7 +14,6 @@
 #include <transformcomponent.h>
 #include <orthocameracomponent.h>
 #include <rendertargetresource.h>
-#include "slideshowcomponent.h"
 #include "fractionlayoutcomponent.h"
 
 // Nap includes
@@ -22,10 +21,14 @@
 #include <nap/resourcemanager.h>
 #include <sdlinput.h>
 #include <sdlwindow.h>
+#include <inputservice.h>
+#include <inputcomponent.h>
+#include <mousebutton.h>
+#include <sceneservice.h>
+
+// Local includes
 #include "uiinputrouter.h"
-#include "inputservice.h"
-#include "inputcomponent.h"
-#include "mousebutton.h"
+#include "slideshowcomponent.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -36,6 +39,7 @@
 nap::RenderService* renderService = nullptr;
 nap::ResourceManagerService* resourceManagerService = nullptr;
 nap::InputService* inputService = nullptr;
+nap::SceneService* sceneService = nullptr;
 
 std::vector<nap::ObjectPtr<nap::RenderWindowResource>> renderWindows;
 nap::ObjectPtr<nap::EntityInstance> slideShowEntity = nullptr;
@@ -104,7 +108,7 @@ void onUpdate()
 	}
 
 	// Update the scene
-	updateTransforms(resourceManagerService->getRootEntity());
+	sceneService->update();
 
 	prev_elapsed_time = elapsed_time;
 }
@@ -158,10 +162,15 @@ bool init(nap::Core& core)
 		return false;
 	}
 
-	renderService->draw.connect(std::bind(&onRender));
-	renderService->update.connect(std::bind(&onUpdate));
-
+	//////////////////////////////////////////////////////////////////////////
+	// Input Service
 	inputService = core.getOrCreateService<nap::InputService>();
+	//////////////////////////////////////////////////////////////////////////
+
+	//////////////////////////////////////////////////////////////////////////
+	// Scene service
+	//////////////////////////////////////////////////////////////////////////
+	sceneService = core.getOrCreateService<nap::SceneService>();
 
 	//////////////////////////////////////////////////////////////////////////
 	// Resources
@@ -173,8 +182,7 @@ bool init(nap::Core& core)
 		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
 		return false;        
 	}
-
-	//////////////////////////////////////////////////////////////////////////
+	
 
 	uiInputRouter = resourceManagerService->findEntity("UIInputRouterEntity");
 	renderWindows.push_back(resourceManagerService->findObject<nap::RenderWindowResource>("Window"));
@@ -272,8 +280,11 @@ void runGame(nap::Core& core)
 
 		//////////////////////////////////////////////////////////////////////////
 
+		// run update call
+		onUpdate();
+
 		// run render call
-		renderService->render();
+		onRender();
 	}
 
 	renderService->shutdown();
