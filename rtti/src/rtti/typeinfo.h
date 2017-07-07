@@ -192,6 +192,18 @@ namespace nap
 	RTTI_BEGIN_BASE_CLASS(Type)							\
 	.constructor<CtorArg1>()(policy::ctor::as_raw_ptr)
 
+#define RTTI_BEGIN_CLASS_CONSTRUCTOR2(Type, CtorArg1, CtorArg2)	\
+	RTTI_BEGIN_BASE_CLASS(Type)							\
+	.constructor<CtorArg1, CtorArg2>()(policy::ctor::as_raw_ptr)
+
+#define RTTI_BEGIN_CLASS_CONSTRUCTOR3(Type, CtorArg1, CtorArg2, CtorArg3)	\
+	RTTI_BEGIN_BASE_CLASS(Type)							\
+	.constructor<CtorArg1, CtorArg2, CtorArg3>()(policy::ctor::as_raw_ptr)
+
+#define RTTI_BEGIN_CLASS_CONSTRUCTOR4(Type, CtorArg1, CtorArg2, CtorArg3, CtorArg4)	\
+	RTTI_BEGIN_BASE_CLASS(Type)							\
+	.constructor<CtorArg1, CtorArg2, CtorArg3, CtorArg4>()(policy::ctor::as_raw_ptr)
+
 #define RTTI_BEGIN_ENUM(Type)							\
 	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)			\
 	{													\

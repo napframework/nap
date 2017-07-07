@@ -37,7 +37,9 @@ namespace nap
 		EKeyCode mKey;
 	};
 
-	
+	/**
+	 *	Key has been pressed
+	 */
 	class KeyPressEvent : public KeyEvent
 	{
 		RTTI_ENABLE(KeyEvent)
@@ -48,7 +50,9 @@ namespace nap
 		}
 	};
 
-	
+	/**
+	 *	Key has been released
+	 */
 	class KeyReleaseEvent : public KeyEvent
 	{
 		RTTI_ENABLE(KeyEvent)
@@ -71,24 +75,27 @@ namespace nap
 	{
 		RTTI_ENABLE(InputEvent)
 	public:
-		PointerEvent(float inX, float inY, int inId = 0) :  
+		PointerEvent(int inX, int inY, int inId = 0) :  
 			mX(inX), 
 			mY(inY),
 			mId(inId)		
 		{ 
 		}
 
-		float	mX;
-		float	mY;
+		int		mX;
+		int		mY;
 		int		mId;
 	};
-
 	
+	/**
+	 *	@brief PointerClickEvent
+	 *  Base class for all click related pointer events
+	 */
 	class PointerClickEvent : public PointerEvent
 	{
 		RTTI_ENABLE(PointerEvent)
 	public:
-		PointerClickEvent(float inX, float inY, EMouseButton inButton, int inId = 0) : 
+		PointerClickEvent(int inX, int inY, EMouseButton inButton, int inId = 0) : 
 			PointerEvent(inX, inY, inId), 
 			mButton(inButton)	
 		{
@@ -96,46 +103,54 @@ namespace nap
 
 		EMouseButton mButton;
 	};
-
 	
+	/**
+	 *	Click occurred
+	 */
 	class PointerPressEvent : public PointerClickEvent
 	{
 		RTTI_ENABLE(PointerClickEvent)
 	public:
-		PointerPressEvent(float inX, float inY, EMouseButton inButton, int inId = 0) : 
+		PointerPressEvent(int inX, int inY, EMouseButton inButton, int inId = 0) : 
 			PointerClickEvent(inX, inY, inButton, inId)
 		{
 		}
 	};
-
 	
+	/**
+	 *	Click has been released
+	 */
 	class PointerReleaseEvent : public PointerClickEvent
 	{
 		RTTI_ENABLE(PointerClickEvent)
 	public:
-		PointerReleaseEvent (float inX, float inY, EMouseButton inButton, int inId = 0) : 
+		PointerReleaseEvent (int inX, int inY, EMouseButton inButton, int inId = 0) : 
 			PointerClickEvent(inX, inY, inButton, inId)
 		{
 		}
 	};
 
-
+	/**
+	 *	Pointer drag occurred
+	 */
 	class PointerDragEvent : public PointerClickEvent
 	{
 		RTTI_ENABLE(PointerClickEvent)
 	public:
-		PointerDragEvent (float inX, float inY, EMouseButton inButton, int inId = 0) : 
+		PointerDragEvent (int inX, int inY, EMouseButton inButton, int inId = 0) : 
 			PointerClickEvent(inX, inY, inButton, inId)
 		{
 		}
 	};
 
-
+	/**
+	 *	Pointer movement occurred
+	 */
 	class PointerMoveEvent : public PointerEvent
 	{
 		RTTI_ENABLE(PointerEvent)
 	public:
-		PointerMoveEvent(float inX, float inY, int inId = 0) : 
+		PointerMoveEvent(int inX, int inY, int inId = 0) : 
 			PointerEvent(inX, inY, inId)
 		{
 		}

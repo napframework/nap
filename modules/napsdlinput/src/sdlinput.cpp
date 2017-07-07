@@ -246,6 +246,23 @@ namespace nap
 	};
 
 
+	// Binds a specific sdl mouse event to a pointer event type
+	static std::unordered_map<Uint32, rtti::TypeInfo> SDLToPointerMapping =
+	{
+		std::make_pair(SDL_MOUSEBUTTONDOWN, RTTI_OF(nap::PointerPressEvent)),
+		std::make_pair(SDL_MOUSEBUTTONUP,	RTTI_OF(nap::PointerReleaseEvent)),
+		std::make_pair(SDL_MOUSEMOTION,		RTTI_OF(nap::PointerMoveEvent)),
+	};
+
+
+	// Binds a specific sdl key event to a pointer event type
+	static std::unordered_map<Uint32, rtti::TypeInfo> SDLToKeyMapping = 
+	{
+		std::make_pair(SDL_KEYDOWN, RTTI_OF(nap::KeyPressEvent)),
+		std::make_pair(SDL_KEYUP,	RTTI_OF(nap::KeyReleaseEvent)),
+	};
+
+
 	/**
 	 * Helper function to convert an SDL KeyCode to nap KeyCode
 	 */
@@ -278,34 +295,56 @@ namespace nap
 	}
 
 
-	nap::EventPtr translateInputEvent(SDL_Event& sdlEvent, uint32_t& windowID)
+	// Translates the SDL event in to a NAP input event
+	nap::EventPtr translateInputEvent(SDL_Event& sdlEvent)
 	{
-		if (sdlEvent.type == SDL_KEYDOWN)
+		// If it's a key event, create, map and return
+		auto key_it = SDLToKeyMapping.find(sdlEvent.type);
+		if (key_it != SDLToKeyMapping.end())
 		{
-			windowID = sdlEvent.key.windowID;
-			return std::make_unique<nap::KeyPressEvent>(toNapKeyCode(sdlEvent.key.keysym.sym));
-		}
-		else if (sdlEvent.type == SDL_KEYUP)
-		{
-			windowID = sdlEvent.key.windowID;
-			return std::make_unique<nap::KeyReleaseEvent>(toNapKeyCode(sdlEvent.key.keysym.sym));
-		}
-		else if (sdlEvent.type == SDL_MOUSEBUTTONDOWN)
-		{
-			windowID = sdlEvent.button.windowID;
-			return std::make_unique<nap::PointerPressEvent>(sdlEvent.button.x, sdlEvent.button.y, toNapMouseButton(sdlEvent.button.button));
-		}
-		else if (sdlEvent.type == SDL_MOUSEBUTTONUP)
-		{
-			windowID = sdlEvent.button.windowID;
-			return std::make_unique<nap::PointerReleaseEvent>(sdlEvent.button.x, sdlEvent.button.y, toNapMouseButton(sdlEvent.button.button));
-		}
-		else if (sdlEvent.type == SDL_MOUSEMOTION)
-		{
-			windowID = sdlEvent.button.windowID;
-			return std::make_unique<nap::PointerMoveEvent>(sdlEvent.motion.x, sdlEvent.motion.y);
+			KeyEvent* key_event = key_it->second.create<KeyEvent>({ toNapKeyCode(sdlEvent.key.keysym.sym) });
+			return EventPtr(key_event);
 		}
 
+		// If it's a pointer event it generally has a button except for a move operation
+		// That's the reason for the if / else
+		auto inp_it = SDLToPointerMapping.find(sdlEvent.type);
+		if (inp_it != SDLToPointerMapping.end())
+		{
+			PointerEvent* pointer_event = nullptr;
+			if (inp_it->second == RTTI_OF(nap::PointerMoveEvent))
+			{
+				pointer_event = inp_it->second.create<PointerEvent>({ sdlEvent.motion.x, sdlEvent.motion.y, 0 });
+			}
+			else
+			{
+				pointer_event = inp_it->second.create<PointerEvent>({ sdlEvent.motion.x, sdlEvent.motion.y, toNapMouseButton(sdlEvent.button.button), 0 });
+			}
+			return EventPtr(pointer_event);
+		}
+
+		// SDL event could not be mapped to a valid nap input event
 		return nullptr;
 	}
+
+
+	bool isKeyEvent(SDL_Event& sdlEvent)
+	{
+		return SDLToKeyMapping.find(sdlEvent.type) != SDLToKeyMapping.end();
+	}
+
+
+
+	bool isPointerEvent(SDL_Event& sdlEvent)
+	{
+		return SDLToPointerMapping.find(sdlEvent.type) != SDLToPointerMapping.end();
+	}
+
+
+
+	bool isInputEvent(SDL_Event& sdlEvent)
+	{
+		return isKeyEvent(sdlEvent) || isPointerEvent(sdlEvent);
+	}
+
 }

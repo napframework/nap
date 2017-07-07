@@ -350,24 +350,39 @@ void runGame(nap::Core& core)
 	// Loop
 	while (loop)
 	{
-		SDL_Event event;
-		if (SDL_PollEvent(&event))
+		opengl::Event event;
+		if (opengl::pollEvent(event))
 		{
-			// Check if we need to quit
-			if (event.type == SDL_QUIT)
-				loop = false;
-
-			uint32_t window_id;
-			nap::EventPtr translated_event = nap::translateInputEvent(event, window_id);
-			if (translated_event == nullptr)
-				translated_event = nap::translateWindowEvent(event, window_id);
-
-			if (translated_event != nullptr)
+			// Check if we are dealing with an input event (mouse / keyboard)
+			nap::EventPtr nap_event = nullptr;
+			if (nap::isInputEvent(event))
 			{
-				SDL_Window* native_window = SDL_GetWindowFromID(window_id);
-				nap::WindowResource* window = renderService->findWindow(native_window);
-				window->addEvent(std::move(translated_event));
+				nap_event = nap::translateInputEvent(event);
+
+				// If we pressed escape, quit the loop
+				if (nap_event->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
+				{
+					nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(nap_event.get());
+					if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
+						loop = false;
+				}
 			}
+
+			// Check if we're dealing with a window event
+			else if (nap::isWindowEvent(event))
+			{
+				nap_event = nap::translateWindowEvent(event);
+			}
+
+			// Don't perform any actions if no valid event was mapped
+			if (nap_event == nullptr)
+			{
+				continue;
+			}
+
+			SDL_Window* native_window = opengl::getWindow(event.window.windowID);
+			nap::WindowResource* window = renderService->findWindow(native_window);
+			window->addEvent(std::move(nap_event));
 		}
 
 		//////////////////////////////////////////////////////////////////////////

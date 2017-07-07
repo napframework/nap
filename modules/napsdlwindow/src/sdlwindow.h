@@ -11,5 +11,12 @@ namespace nap
 	 * @param windowID The window ID that the event is for (output)
 	 * @return Null if the sdlEvent is not a window event (or an unknown window event), the nap event otherwise
 	 */
-	nap::EventPtr translateWindowEvent(SDL_Event& sdlEvent, uint32_t& windowID);
+	nap::EventPtr translateWindowEvent(SDL_Event& sdlEvent);
+
+	/**
+	 * Utility function to check if the sdl event is a window event
+	 * @param sdlEvent the sdl event to verify
+	 * @return if the sdl event is a window event
+	 */
+	bool isWindowEvent(SDL_Event& sdlEvent);
 }

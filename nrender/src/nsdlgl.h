@@ -2,9 +2,14 @@
 
 // External Includes
 #include <string>
+#include <SDL.h>
 
 namespace opengl
 {
+	/**
+	 *	Typedef for SDL_Event
+	 */
+	using Event = SDL_Event;
 
 	/**
 	 * Turn window v-sync on / off
@@ -57,5 +62,21 @@ namespace opengl
 	 * TODO: Should go in to a separate sdl header in a different project 
 	 */
 	void printSDLError();
+
+
+	/**
+	 * Polls SDL for an event
+	 * @param event the event that was generated
+	 * @return if an event has been generated
+	 */
+	bool pollEvent(opengl::Event& inputEvent);
+
+
+	/**
+	 * Returns an SDL window based on the given ID
+	 * @param id, the window id to query
+	 * @return handle to the SDL window, nullptr if not found
+	 */
+	SDL_Window* getWindow(uint32_t id);
 
 }	// opengl

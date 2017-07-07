@@ -4,33 +4,23 @@
 
 namespace nap
 {
-	/** 
-	 *	Window has been shown 
+	/**
+	 *	Base class for all window related events
 	 */
-	class WindowShownEvent : public Event
+	class WindowEvent : public Event
 	{
 		RTTI_ENABLE(Event)
 	};
 
 	/**
-	 * Window has been hidden
+	 *	Base class for all window events that have parameters associated with it
 	 */
-	class WindowHiddenEvent : public Event
+	class ParameterizedWindowEvent : public WindowEvent
 	{
-		RTTI_ENABLE(Event)
-	};
-
-	/**
-	 * Window has been moved to the specified coordinates
-	 */
-	class WindowMovedEvent : public Event
-	{
-		RTTI_ENABLE(Event)
+		RTTI_ENABLE(WindowEvent)
 	public:
-		WindowMovedEvent() = default;
-		WindowMovedEvent(int x, int y) : 
-			mX(x),
-			mY(y)
+		ParameterizedWindowEvent(int inX, int inY) : 
+			mX(inX), mY(inY)		
 		{
 		}
 
@@ -38,85 +28,109 @@ namespace nap
 		int mY;
 	};
 
+	//////////////////////////////////////////////////////////////////////////
+
+	/** 
+	 *	Window has been shown 
+	 */
+	class WindowShownEvent : public WindowEvent
+	{
+		RTTI_ENABLE(WindowEvent)
+	};
+
+	/**
+	 * Window has been hidden
+	 */
+	class WindowHiddenEvent : public WindowEvent
+	{
+		RTTI_ENABLE(WindowEvent)
+	};
+
+	/**
+	 * Window has been moved to the specified coordinates
+	 */
+	class WindowMovedEvent : public ParameterizedWindowEvent
+	{
+		RTTI_ENABLE(ParameterizedWindowEvent)
+	public:
+		WindowMovedEvent(int x, int y) : ParameterizedWindowEvent(x, y)
+		{
+		}
+	};
+
 	/**
 	 * Window has been resized to the specified size
 	 */
-	class WindowResizedEvent : public Event
+	class WindowResizedEvent : public ParameterizedWindowEvent
 	{
-		RTTI_ENABLE(Event)
+		RTTI_ENABLE(ParameterizedWindowEvent)
 	public:
-		WindowResizedEvent() = default;
-		WindowResizedEvent(int width, int height) : 
-			mWidth(width),
-			mHeight(height)
+		WindowResizedEvent(int width, int height) :ParameterizedWindowEvent(width, height) 
 		{
 		}
-
-		int mWidth;
-		int mHeight;
 	};
 
 	/**
 	 * Window has been minimized
 	 */
-	class WindowMinimizedEvent : public Event
+	class WindowMinimizedEvent : public WindowEvent
 	{
-		RTTI_ENABLE(Event)
+		RTTI_ENABLE(WindowEvent)
 	};
 
 	/**
 	 * Window has been maximized
 	 */
-	class WindowMaximizedEvent : public Event
+	class WindowMaximizedEvent : public WindowEvent
 	{
-		RTTI_ENABLE(Event)
+		RTTI_ENABLE(WindowEvent)
 	};
 
 	/**
 	 * Window has been restored to normal size and position
 	 */
-	class WindowRestoredEvent : public Event
+	class WindowRestoredEvent : public WindowEvent
 	{
-		RTTI_ENABLE(Event)
+		RTTI_ENABLE(WindowEvent)
 	};
 
 	/**
 	 * Window has gained mouse focus
 	 */
-	class WindowEnterEvent : public Event
+	class WindowEnterEvent : public WindowEvent
 	{
-		RTTI_ENABLE(Event)
+		RTTI_ENABLE(WindowEvent)
 	};
 
 	/**
 	 * Window has lost mouse focus
 	 */
-	class WindowLeaveEvent : public Event
+	class WindowLeaveEvent : public WindowEvent
 	{
-		RTTI_ENABLE(Event)
+		RTTI_ENABLE(WindowEvent)
 	};
 
 	/**
 	 * Window has gained keyboard focus
 	 */
-	class WindowFocusGainedEvent : public Event
+	class WindowFocusGainedEvent : public WindowEvent
 	{
-		RTTI_ENABLE(Event)
+		RTTI_ENABLE(WindowEvent)
 	};
 
 	/**
 	 * Window has lost keyboard focus
 	 */
-	class WindowFocusLostEvent : public Event
+	class WindowFocusLostEvent : public WindowEvent
 	{
-		RTTI_ENABLE(Event)
+		RTTI_ENABLE(WindowEvent)
 	};
 
 	/**
 	 * The window manager requests that the window be closed 
 	 */
-	class WindowCloseEvent : public Event
+	class WindowCloseEvent : public WindowEvent
 	{
-		RTTI_ENABLE(Event)
+		RTTI_ENABLE(WindowEvent)
 	};
 }

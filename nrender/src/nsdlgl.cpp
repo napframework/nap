@@ -151,4 +151,18 @@ namespace opengl
 		printMessage(MessageType::ERROR, getSDLError().c_str());
 	}
 
+
+	// Checks is sdl received an event
+	bool pollEvent(opengl::Event& inputEvent)
+	{
+		return SDL_PollEvent(&inputEvent) > 0;
+	}
+
+
+	// Returns an SDL window based on the given id
+	SDL_Window* getWindow(uint32_t  id)
+	{
+		return SDL_GetWindowFromID((Uint32)(id));
+	}
+
 }	// opengl

@@ -1,15 +1,21 @@
 #include "windowevent.h"
 
+RTTI_BEGIN_BASE_CLASS(nap::WindowEvent)
+RTTI_END_CLASS
+
+RTTI_BEGIN_BASE_CLASS(nap::ParameterizedWindowEvent)
+RTTI_END_CLASS
+
 RTTI_BEGIN_CLASS(nap::WindowShownEvent)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::WindowHiddenEvent)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::WindowMovedEvent)
+RTTI_BEGIN_CLASS_CONSTRUCTOR2(nap::WindowMovedEvent, int, int)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::WindowResizedEvent)
+RTTI_BEGIN_CLASS_CONSTRUCTOR2(nap::WindowResizedEvent, int, int)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::WindowMinimizedEvent)
