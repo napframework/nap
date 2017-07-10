@@ -26,14 +26,19 @@ namespace nap
 
 	bool RenderWindowResource::init(utility::ErrorState& errorState)
 	{
-		// Let the renderservice create a window
 		mWindow = mRenderService->addWindow(*this, errorState);
 		if (!errorState.check(mWindow != nullptr, "Failed to create window"))
 			return false;
 
 		// We want to respond to resize events for this window
-		onEvent.connect(std::bind(&RenderWindowResource::handleEvent, this, std::placeholders::_1));
+		onWindowEvent.connect(std::bind(&RenderWindowResource::handleEvent, this, std::placeholders::_1));
 		return true;
+	}
+
+
+	uint RenderWindowResource::getNumber() const
+	{
+		return static_cast<uint>(getWindow()->getNumber());
 	}
 
 

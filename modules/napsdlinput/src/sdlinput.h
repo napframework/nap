@@ -1,7 +1,7 @@
 #pragma once
-#include "KeyCode.h"
-#include "SDL_events.h"
-#include "nap/event.h"
+#include <KeyCode.h>
+#include <SDL_events.h>
+#include <inputevent.h>
 
 namespace nap
 {
@@ -11,7 +11,7 @@ namespace nap
 	 * @param sdlEvent The event to translate
 	 * @return Null if the sdlEvent is not an input event (or an unknown input event), the nap event otherwise
 	 */
-	nap::EventPtr translateInputEvent(SDL_Event& sdlEvent);
+	nap::InputEventPtr translateInputEvent(SDL_Event& sdlEvent);
 
 	/**
 	 * Utility function that checks if this is a key input event
@@ -25,7 +25,7 @@ namespace nap
 	 * @param sdlEvent the SDL event to verify
 	 * @return if the event is a mouse input event
 	 */
-	bool isMouseEvent(SDL_Event& sdlEvent);
+	bool isPointerEvent(SDL_Event& sdlEvent);
 
 	/**
 	 * Utility function that checks if this is an input event (key, mouse)

@@ -2,7 +2,8 @@
 
 // External Includes
 #include <rtti/rtti.h>
-#include "nap/event.h"
+#include <nap/configure.h>
+#include <nap/event.h>
 #include "keycode.h"
 #include "mousebutton.h"
 
@@ -16,6 +17,12 @@ namespace nap
 	class InputEvent : public Event
 	{
 		RTTI_ENABLE(Event)
+	public:
+		InputEvent(int window) : mWindow(window)
+		{
+		}
+
+		int mWindow;
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -29,7 +36,7 @@ namespace nap
 	{
 		RTTI_ENABLE(InputEvent)
 	public:
-		KeyEvent(EKeyCode inKey) :
+		KeyEvent(EKeyCode inKey, int window = 0) : InputEvent(window),
 			mKey(inKey)	
 		{
 		}
@@ -44,8 +51,8 @@ namespace nap
 	{
 		RTTI_ENABLE(KeyEvent)
 	public:
-		KeyPressEvent(EKeyCode inKey) : 
-			KeyEvent(inKey) 
+		KeyPressEvent(EKeyCode inKey, int window = 0) : 
+			KeyEvent(inKey, window) 
 		{ 
 		}
 	};
@@ -57,8 +64,8 @@ namespace nap
 	{
 		RTTI_ENABLE(KeyEvent)
 	public:
-		KeyReleaseEvent(EKeyCode inKey) :
-			KeyEvent(inKey) 
+		KeyReleaseEvent(EKeyCode inKey, int window = 0) :
+			KeyEvent(inKey, window) 
 		{
 		}
 	};
@@ -75,7 +82,7 @@ namespace nap
 	{
 		RTTI_ENABLE(InputEvent)
 	public:
-		PointerEvent(int inX, int inY, int inId = 0) :  
+		PointerEvent(int inX, int inY, int window = 0, int inId = 0) : InputEvent(window),
 			mX(inX), 
 			mY(inY),
 			mId(inId)		
@@ -95,8 +102,8 @@ namespace nap
 	{
 		RTTI_ENABLE(PointerEvent)
 	public:
-		PointerClickEvent(int inX, int inY, EMouseButton inButton, int inId = 0) : 
-			PointerEvent(inX, inY, inId), 
+		PointerClickEvent(int inX, int inY, EMouseButton inButton, int window = 0, int inId = 0) :
+			PointerEvent(inX, inY, window, inId), 
 			mButton(inButton)	
 		{
 		}
@@ -111,8 +118,8 @@ namespace nap
 	{
 		RTTI_ENABLE(PointerClickEvent)
 	public:
-		PointerPressEvent(int inX, int inY, EMouseButton inButton, int inId = 0) : 
-			PointerClickEvent(inX, inY, inButton, inId)
+		PointerPressEvent(int inX, int inY, EMouseButton inButton, int window=0, int inId = 0) : 
+			PointerClickEvent(inX, inY, inButton, window, inId)
 		{
 		}
 	};
@@ -124,8 +131,8 @@ namespace nap
 	{
 		RTTI_ENABLE(PointerClickEvent)
 	public:
-		PointerReleaseEvent (int inX, int inY, EMouseButton inButton, int inId = 0) : 
-			PointerClickEvent(inX, inY, inButton, inId)
+		PointerReleaseEvent (int inX, int inY, EMouseButton inButton, int window=0, int inId = 0) : 
+			PointerClickEvent(inX, inY, inButton, window, inId)
 		{
 		}
 	};
@@ -137,8 +144,8 @@ namespace nap
 	{
 		RTTI_ENABLE(PointerClickEvent)
 	public:
-		PointerDragEvent (int inX, int inY, EMouseButton inButton, int inId = 0) : 
-			PointerClickEvent(inX, inY, inButton, inId)
+		PointerDragEvent (int inX, int inY, EMouseButton inButton, int window=0, int inId = 0) : 
+			PointerClickEvent(inX, inY, inButton, window, inId)
 		{
 		}
 	};
@@ -150,9 +157,12 @@ namespace nap
 	{
 		RTTI_ENABLE(PointerEvent)
 	public:
-		PointerMoveEvent(int inX, int inY, int inId = 0) : 
-			PointerEvent(inX, inY, inId)
+		PointerMoveEvent(int inX, int inY, int window=0, int inId = 0) : 
+			PointerEvent(inX, inY, window, inId)
 		{
 		}
 	};
+
+	using InputEventPtr = std::unique_ptr<nap::InputEvent>;
+	using InputEventPtrList = std::vector<InputEventPtr>;
 }

@@ -74,13 +74,11 @@ void onUpdate()
 		entities.push_back(&resourceManagerService->getRootEntity());
 
 		nap::UIInputRouter& router = uiInputRouter->getComponent<nap::UIInputRouterComponent>().mInputRouter;
-		inputService->handleInput(*renderWindows[0], router, entities);
+		inputService->processEvents(*renderWindows[0], router, entities);
 	}
 
 	// Process events for all windows
-
-	for (auto& window : renderWindows)
-		window->processEvents();
+	renderService->processEvents();
 
 	// Update model transform
 	float elapsed_time = renderService->getCore().getElapsedTime();
@@ -245,39 +243,31 @@ void runGame(nap::Core& core)
 	// Loop
 	while (loop)
 	{
-		SDL_Event event;
+		opengl::Event event;
 		if (opengl::pollEvent(event))
 		{
-			nap::EventPtr nap_event;
-
 			// Check if we're dealing with an input event
 			if (nap::isInputEvent(event))
 			{
 				// Fetch event
-				nap_event = nap::translateInputEvent(event);
-				assert(nap_event != nullptr);
+				nap::InputEventPtr input_event = nap::translateInputEvent(event);
 
 				// If we pressed escape, quit the loop
-				if (nap_event->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
+				if (input_event->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
 				{
-					nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(nap_event.get());
+					nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(input_event.get());
 					if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
 						loop = false;
 				}
+				inputService->addEvent(std::move(input_event));
 			}
 
 			// Check if it's a window event
 			else if (nap::isWindowEvent(event))
 			{
-				nap_event = nap::translateWindowEvent(event);
+				// Add input event for later processing
+				renderService->addEvent(std::move(nap::translateWindowEvent(event)));
 			}
-
-			if (nap_event == nullptr)
-				continue;
-
-			// Add input event for later processing
-			nap::ObjectPtr<nap::WindowResource> window = renderService->getWindow(event.window.windowID);
-			window->addEvent(std::move(nap_event));
 		}
 
 		//////////////////////////////////////////////////////////////////////////

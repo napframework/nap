@@ -4,6 +4,7 @@
 #include <nap/attribute.h>
 #include <nap/service.h>
 #include <nap/timer.h>
+#include <nap/windowevent.h>
 #include <nopengl.h>
 #include <thread>
 
@@ -129,6 +130,18 @@ namespace nap
 		 * Get the primary window (i.e. the window that was used to init OpenGL against)
 		 */
 		RenderWindow& getPrimaryWindow();
+
+		/**
+		 * Add a window event that is processed later, ownership is transferred here
+		 * The window number in the event is used to find the right render window to forward the event to
+		 * @param event the event to add
+		 */
+		void addEvent(WindowEventPtr windowEvent);
+
+		/**
+		 *	Processes all window related events for all available windows
+		 */
+		void processEvents();
 
 	protected:
 		/**

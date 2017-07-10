@@ -74,7 +74,7 @@ void onUpdate()
 		entities.push_back(cameraEntityLeft.get());
 
 		nap::WindowResource* window = renderWindows[0].get();
-		inputService->handleInput(*window, input_router, entities);
+		inputService->processEvents(*window, input_router, entities);
 	}
 
 	{
@@ -83,12 +83,11 @@ void onUpdate()
 		entities.push_back(cameraEntityRight.get());
 
 		nap::WindowResource* window = renderWindows[1].get();
-		inputService->handleInput(*window, input_router, entities);
+		inputService->processEvents(*window, input_router, entities);
 	}
 	
 	// Process events for all windows
-	for (auto& window : renderWindows)
-		window->processEvents();
+	renderService->processEvents();
 
 	// Need to make primary window active before reloading files, as renderer resources need to be created in that context
 	renderService->getPrimaryWindow().makeCurrent();
@@ -354,35 +353,28 @@ void runGame(nap::Core& core)
 		if (opengl::pollEvent(event))
 		{
 			// Check if we are dealing with an input event (mouse / keyboard)
-			nap::EventPtr nap_event = nullptr;
 			if (nap::isInputEvent(event))
 			{
-				nap_event = nap::translateInputEvent(event);
+				nap::InputEventPtr input_event = nap::translateInputEvent(event);
 
 				// If we pressed escape, quit the loop
-				if (nap_event->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
+				if (input_event->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
 				{
-					nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(nap_event.get());
+					nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(input_event.get());
 					if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
 						loop = false;
 				}
+
+				// Add event to input service for further processing
+				inputService->addEvent(std::move(input_event));
 			}
 
 			// Check if we're dealing with a window event
 			else if (nap::isWindowEvent(event))
 			{
-				nap_event = nap::translateWindowEvent(event);
+				nap::WindowEventPtr nap_event = nap::translateWindowEvent(event);
+				renderService->addEvent(std::move(nap_event));
 			}
-
-			// Don't perform any actions if no valid event was mapped
-			if (nap_event == nullptr)
-			{
-				continue;
-			}
-
-			// Get window resource
-			nap::ObjectPtr<nap::WindowResource> window = renderService->getWindow(event.window.windowID);
-			window->addEvent(std::move(nap_event));
 		}
 
 		//////////////////////////////////////////////////////////////////////////

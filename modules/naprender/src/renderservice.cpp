@@ -74,14 +74,32 @@ namespace nap
 
 	ObjectPtr<RenderWindowResource> RenderService::getWindow(uint id) const
 	{
-		SDL_Window* gl_window = opengl::getWindow(id);
-		return gl_window != nullptr ? findWindow(gl_window) : nullptr;
+		WindowList::const_iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val) { return val->getNumber() == id; });
+		if (pos != mWindows.end())
+			return *pos;
+		return nullptr;
 	}
 
 
 	RenderWindow& RenderService::getPrimaryWindow()
 	{
 		return mRenderer->getPrimaryWindow();
+	}
+
+
+	void RenderService::addEvent(WindowEventPtr windowEvent)
+	{
+		nap::ObjectPtr<nap::WindowResource> window = getWindow(windowEvent->mWindow);
+		window->addEvent(std::move(windowEvent));
+	}
+
+
+	void RenderService::processEvents()
+	{
+		for (const auto& window : mWindows)
+		{
+			window->processEvents();
+		}
 	}
 
 

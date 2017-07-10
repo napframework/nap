@@ -296,14 +296,16 @@ namespace nap
 
 
 	// Translates the SDL event in to a NAP input event
-	nap::EventPtr translateInputEvent(SDL_Event& sdlEvent)
+	nap::InputEventPtr translateInputEvent(SDL_Event& sdlEvent)
 	{
+		int window_id = static_cast<int>(sdlEvent.window.windowID);
+
 		// If it's a key event, create, map and return
 		auto key_it = SDLToKeyMapping.find(sdlEvent.type);
 		if (key_it != SDLToKeyMapping.end())
 		{
-			KeyEvent* key_event = key_it->second.create<KeyEvent>({ toNapKeyCode(sdlEvent.key.keysym.sym) });
-			return EventPtr(key_event);
+			KeyEvent* key_event = key_it->second.create<KeyEvent>({ toNapKeyCode(sdlEvent.key.keysym.sym), window_id });
+			return InputEventPtr(key_event);
 		}
 
 		// If it's a pointer event it generally has a button except for a move operation
@@ -314,13 +316,13 @@ namespace nap
 			PointerEvent* pointer_event = nullptr;
 			if (inp_it->second == RTTI_OF(nap::PointerMoveEvent))
 			{
-				pointer_event = inp_it->second.create<PointerEvent>({ sdlEvent.motion.x, sdlEvent.motion.y, 0 });
+				pointer_event = inp_it->second.create<PointerEvent>({ sdlEvent.motion.x, sdlEvent.motion.y, window_id, 0 });
 			}
 			else
 			{
-				pointer_event = inp_it->second.create<PointerEvent>({ sdlEvent.motion.x, sdlEvent.motion.y, toNapMouseButton(sdlEvent.button.button), 0 });
+				pointer_event = inp_it->second.create<PointerEvent>({ sdlEvent.motion.x, sdlEvent.motion.y, toNapMouseButton(sdlEvent.button.button), window_id, 0 });
 			}
-			return EventPtr(pointer_event);
+			return InputEventPtr(pointer_event);
 		}
 
 		// SDL event could not be mapped to a valid nap input event

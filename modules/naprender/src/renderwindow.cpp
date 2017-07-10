@@ -201,6 +201,12 @@ namespace nap
 		SDL_GL_MakeCurrent(mWindow, mContext);
 	}
 
+	// The window number
+	nap::uint32 RenderWindow::getNumber() const
+	{
+		return opengl::getWindowId(getNativeWindow());
+	}
+
 }
 
 RTTI_DEFINE_BASE(nap::RenderWindow)

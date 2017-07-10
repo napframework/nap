@@ -40,7 +40,7 @@ namespace nap
 		/**
 		 * @return the window managed by this component
 		 */
-		RenderWindow* getWindow()												{ return mWindow.get(); }
+		RenderWindow* getWindow() const											{ return mWindow.get(); }
 
 		/**
 		 * Swaps window buffers
@@ -52,6 +52,11 @@ namespace nap
 		 * calls activate afterwards
 		 */
 		void makeActive()														{ mWindow->makeCurrent(); }
+
+		/**
+		 *	@return the hardware window number
+		 */
+		virtual uint getNumber() const override;
 
 	private:
 		void handleEvent(const Event& event);

@@ -3,6 +3,9 @@
 // Nap Includes
 #include <nap/service.h>
 
+// Local Includes
+#include "inputevent.h"
+
 namespace nap
 {
 	class InputService;
@@ -33,6 +36,15 @@ namespace nap
 		 * @param inputRouter The input router that selects what InputComponents receive input messages.
 		 * @param entities A list of root entities that are used to traverse the entity hierarchy.
 		 */
-		void handleInput(WindowResource& window, InputRouter& inputRouter, const EntityList& entities);
+		void processEvents(WindowResource& window, InputRouter& inputRouter, const EntityList& entities);
+
+		/**
+		 * Adds an input event to the queue, to be processed later
+		 * @param inputEvent, the event to add, ownership is transfered here
+		 */
+		void addEvent(InputEventPtr inEvent);
+
+	private:
+		InputEventPtrList mInputEvents;
 	};
 }

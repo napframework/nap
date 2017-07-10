@@ -5,11 +5,18 @@
 namespace nap
 {
 	/**
-	 *	Base class for all window related events
+	 *	Base class for all window related events, only holds the window id
 	 */
 	class WindowEvent : public Event
 	{
+	public:
 		RTTI_ENABLE(Event)
+
+	public:
+		WindowEvent(int window) : mWindow(window) 
+		{}
+		
+		int mWindow;
 	};
 
 	/**
@@ -19,7 +26,7 @@ namespace nap
 	{
 		RTTI_ENABLE(WindowEvent)
 	public:
-		ParameterizedWindowEvent(int inX, int inY) : 
+		ParameterizedWindowEvent(int inX, int inY, int window) : WindowEvent(window),
 			mX(inX), mY(inY)		
 		{
 		}
@@ -36,6 +43,8 @@ namespace nap
 	class WindowShownEvent : public WindowEvent
 	{
 		RTTI_ENABLE(WindowEvent)
+	public:
+		WindowShownEvent(int window) : WindowEvent(window) { }
 	};
 
 	/**
@@ -44,6 +53,8 @@ namespace nap
 	class WindowHiddenEvent : public WindowEvent
 	{
 		RTTI_ENABLE(WindowEvent)
+	public:
+		WindowHiddenEvent(int window) : WindowEvent(window) { }
 	};
 
 	/**
@@ -53,7 +64,7 @@ namespace nap
 	{
 		RTTI_ENABLE(ParameterizedWindowEvent)
 	public:
-		WindowMovedEvent(int x, int y) : ParameterizedWindowEvent(x, y)
+		WindowMovedEvent(int x, int y, int window) : ParameterizedWindowEvent(x, y, window)
 		{
 		}
 	};
@@ -65,7 +76,7 @@ namespace nap
 	{
 		RTTI_ENABLE(ParameterizedWindowEvent)
 	public:
-		WindowResizedEvent(int width, int height) :ParameterizedWindowEvent(width, height) 
+		WindowResizedEvent(int width, int height, int window) :ParameterizedWindowEvent(width, height, window) 
 		{
 		}
 	};
@@ -76,6 +87,8 @@ namespace nap
 	class WindowMinimizedEvent : public WindowEvent
 	{
 		RTTI_ENABLE(WindowEvent)
+	public:
+		WindowMinimizedEvent(int window) : WindowEvent(window) { }
 	};
 
 	/**
@@ -84,6 +97,9 @@ namespace nap
 	class WindowMaximizedEvent : public WindowEvent
 	{
 		RTTI_ENABLE(WindowEvent)
+	public:
+		WindowMaximizedEvent(int window) : WindowEvent(window) { }
+
 	};
 
 	/**
@@ -92,6 +108,8 @@ namespace nap
 	class WindowRestoredEvent : public WindowEvent
 	{
 		RTTI_ENABLE(WindowEvent)
+	public:
+		WindowRestoredEvent(int window) : WindowEvent(window) { }
 	};
 
 	/**
@@ -100,6 +118,8 @@ namespace nap
 	class WindowEnterEvent : public WindowEvent
 	{
 		RTTI_ENABLE(WindowEvent)
+	public:
+		WindowEnterEvent(int window) : WindowEvent(window) { }
 	};
 
 	/**
@@ -108,6 +128,8 @@ namespace nap
 	class WindowLeaveEvent : public WindowEvent
 	{
 		RTTI_ENABLE(WindowEvent)
+	public:
+		WindowLeaveEvent(int window) : WindowEvent(window) { }
 	};
 
 	/**
@@ -116,6 +138,8 @@ namespace nap
 	class WindowFocusGainedEvent : public WindowEvent
 	{
 		RTTI_ENABLE(WindowEvent)
+	public:
+		WindowFocusGainedEvent(int window) : WindowEvent(window) { }
 	};
 
 	/**
@@ -124,6 +148,8 @@ namespace nap
 	class WindowFocusLostEvent : public WindowEvent
 	{
 		RTTI_ENABLE(WindowEvent)
+	public:
+		WindowFocusLostEvent(int window) : WindowEvent(window) { }
 	};
 
 	/**
@@ -132,5 +158,10 @@ namespace nap
 	class WindowCloseEvent : public WindowEvent
 	{
 		RTTI_ENABLE(WindowEvent)
+	public:
+		WindowCloseEvent(int window) : WindowEvent(window) { }
 	};
+
+	using WindowEventPtr = std::unique_ptr<WindowEvent>;
+	using WindowEventPtrList = std::vector<WindowEventPtr>;
 }

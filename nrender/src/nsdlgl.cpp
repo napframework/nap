@@ -165,4 +165,10 @@ namespace opengl
 		return SDL_GetWindowFromID((Uint32)(id));
 	}
 
+
+	uint32_t getWindowId(SDL_Window* window)
+	{
+		return SDL_GetWindowID(window);
+	}
+
 }	// opengl

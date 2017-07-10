@@ -3,6 +3,7 @@
 #include "resource.h"
 #include "event.h"
 #include "utility/uniqueptrvectoriterator.h"
+#include "windowevent.h"
 
 namespace nap
 {
@@ -18,13 +19,13 @@ namespace nap
 
 	public:
 		using EventPtrList = std::vector<EventPtr>;
-		using EventPtrConstIterator = utility::UniquePtrConstVectorWrapper<EventPtrList, Event*>;
+		using EventPtrConstIterator = utility::UniquePtrConstVectorWrapper<WindowEventPtrList, Event*>;
 
 		/**
 		 * Adds an event to the queue, to be processed later.
 		 * @param inEvent The event to add, ownership is transfered here.
 		 */
-		void addEvent(EventPtr inEvent);
+		void addEvent(WindowEventPtr inEvent);
 
 		/**
 		 * Processes the queue that was built up in addEvent. Sends all the queued events
@@ -33,13 +34,21 @@ namespace nap
 		void processEvents();
 
 		/**
+		 *	@return the associated window number
+		 */
+		virtual uint getNumber() const = 0;
+
+		/**
 		 * @return all queued events. Queue is not cleared.
 		 */
-		EventPtrConstIterator GetEvents() const { return EventPtrConstIterator(mEvents); }
+		EventPtrConstIterator GetEvents() const { return EventPtrConstIterator(mWindowEvents); }
 
-		Signal<const Event&> onEvent;	// Subscribe to this signal to respond to any events broadcasted by processEvents.
+		/*
+		* Subscribe to this signal to respond to any events broad-casted by processEvents.
+		*/
+		Signal<const WindowEvent&> onWindowEvent;	
 
 	private:		
-		EventPtrList mEvents;			// Queue of all the events added by addEvent
+		WindowEventPtrList mWindowEvents;			// Queue of all the events added by addEvent
 	};
 }

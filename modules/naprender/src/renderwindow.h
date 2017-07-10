@@ -7,6 +7,7 @@
 #include <string.h>
 #include <glm/glm.hpp>
 #include <SDL_video.h>
+#include <nap/configure.h>
 
 struct SDL_Window;
 typedef void *SDL_GLContext;
@@ -133,6 +134,11 @@ namespace nap
 		 * Make this window active
 		 */
 		void makeCurrent();
+
+		/**
+		 *	Returns the window number
+		 */
+		uint32 getNumber() const;
 
 	private:
 		std::unique_ptr<opengl::BackbufferRenderTarget> mBackbuffer = nullptr;

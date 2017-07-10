@@ -23,7 +23,7 @@ namespace nap
 	};
 
 
-	nap::EventPtr translateWindowEvent(SDL_Event& sdlEvent)
+	nap::WindowEventPtr translateWindowEvent(SDL_Event& sdlEvent)
 	{
 		// Get the binding and create correct event
 		// If the event can't be located there's no valid event mapping 
@@ -31,15 +31,17 @@ namespace nap
 		if (window_it == SDLToWindowMapping.end())
 			return nullptr;
 
+		int window_id = static_cast<int>(sdlEvent.window.windowID);
+
 		// If it's one of the two parameterized constructors, add the arguments
 		rtti::TypeInfo event_type = window_it->second;
 		if (event_type.is_derived_from(RTTI_OF(nap::ParameterizedWindowEvent)))
 		{
-			return EventPtr(event_type.create<Event>({ sdlEvent.window.data1, sdlEvent.window.data2 }));
+			return WindowEventPtr(event_type.create<WindowEvent>({ sdlEvent.window.data1, sdlEvent.window.data2, window_id }));
 		}
 
 		// Create and return correct window event
-		return EventPtr(event_type.create<nap::Event>());
+		return WindowEventPtr(event_type.create<nap::WindowEvent>({ window_id }));
 	}
 
 

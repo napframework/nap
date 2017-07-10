@@ -79,4 +79,10 @@ namespace opengl
 	 */
 	SDL_Window* getWindow(uint32_t id);
 
+	/**
+	 * @return the id associated with a specific opengl window
+	 * @param window, the opengl window to get the id for
+	 */
+	uint32_t getWindowId(SDL_Window* window);
+
 }	// opengl

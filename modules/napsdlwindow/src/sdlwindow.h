@@ -1,6 +1,7 @@
 #pragma once
 #include "SDL_events.h"
-#include "nap/event.h"
+#include <nap/event.h>
+#include <nap/windowevent.h>
 
 namespace nap
 {
@@ -11,7 +12,7 @@ namespace nap
 	 * @param windowID The window ID that the event is for (output)
 	 * @return Null if the sdlEvent is not a window event (or an unknown window event), the nap event otherwise
 	 */
-	nap::EventPtr translateWindowEvent(SDL_Event& sdlEvent);
+	nap::WindowEventPtr translateWindowEvent(SDL_Event& sdlEvent);
 
 	/**
 	 * Utility function to check if the sdl event is a window event
