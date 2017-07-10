@@ -630,7 +630,7 @@ namespace nap
 		// The reason why we cannot first resolve and then compare, is because deciding what to resolve against what objects
 		// depends on the dirty comparison.
 		// Finally, we could improve on the unresolved pointer check if we could introduce actual UnresolvedPointer objects
-		// that the pointers are pointing to after loading. These would hold the ID, so that comparisons could be made easier.
+		// that the pointers are pointing to after loading. These would hol3d the ID, so that comparisons could be made easier.
 		// The reason we don't do this is because it isn't possible to do so in RTTR as it's very strict in it's type safety.
 		ObjectByIDMap objects_to_update;
 		for (auto& read_object : read_result.mReadObjects)

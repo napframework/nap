@@ -380,8 +380,8 @@ void runGame(nap::Core& core)
 				continue;
 			}
 
-			SDL_Window* native_window = opengl::getWindow(event.window.windowID);
-			nap::WindowResource* window = renderService->findWindow(native_window);
+			// Get window resource
+			nap::ObjectPtr<nap::WindowResource> window = renderService->getWindow(event.window.windowID);
 			window->addEvent(std::move(nap_event));
 		}
 

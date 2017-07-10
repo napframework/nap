@@ -72,6 +72,13 @@ namespace nap
 	}
 
 
+	ObjectPtr<RenderWindowResource> RenderService::getWindow(uint id) const
+	{
+		SDL_Window* gl_window = opengl::getWindow(id);
+		return gl_window != nullptr ? findWindow(gl_window) : nullptr;
+	}
+
+
 	RenderWindow& RenderService::getPrimaryWindow()
 	{
 		return mRenderer->getPrimaryWindow();

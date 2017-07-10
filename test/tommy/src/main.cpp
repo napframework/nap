@@ -78,6 +78,7 @@ void onUpdate()
 	}
 
 	// Process events for all windows
+
 	for (auto& window : renderWindows)
 		window->processEvents();
 
@@ -275,8 +276,7 @@ void runGame(nap::Core& core)
 				continue;
 
 			// Add input event for later processing
-			SDL_Window* native_window = opengl::getWindow(event.window.windowID);
-			nap::WindowResource* window = renderService->findWindow(native_window);
+			nap::ObjectPtr<nap::WindowResource> window = renderService->getWindow(event.window.windowID);
 			window->addEvent(std::move(nap_event));
 		}
 
