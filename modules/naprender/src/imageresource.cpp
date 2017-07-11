@@ -31,7 +31,6 @@ namespace nap
 	// Initializes 2D texture. Additionally a custom display name can be provided.
 	bool MemoryTextureResource2D::init(utility::ErrorState& errorState)
 	{
-		mPrevTexture = std::move(mTexture);
 		mTexture = std::make_unique<opengl::Texture2D>();
 		mTexture->init();
 
@@ -40,18 +39,6 @@ namespace nap
 		return true;
 	}
 
-	void MemoryTextureResource2D::finish(Resource::EFinishMode mode)
-	{
-		if (mode == Resource::EFinishMode::COMMIT)
-		{
-			mPrevTexture = nullptr;
-		}
-		else
-		{
-			assert(mode == Resource::EFinishMode::ROLLBACK);
-			mTexture = std::move(mPrevTexture);
-		}
-	}
 
 	// Returns 2D texture object
 	const opengl::BaseTexture& MemoryTextureResource2D::getTexture() const
@@ -60,11 +47,16 @@ namespace nap
 		return *mTexture;
 	}
 
+
+	const glm::vec2 MemoryTextureResource2D::getSize() const
+	{
+		return glm::vec2(mTexture->getSettings().width, mTexture->getSettings().height);
+	}
+
+
 	// Constructor
 	ImageResource::ImageResource(const std::string& imgPath)
 	{
-		mDisplayName = getFileNameWithoutExtension(imgPath);
-		assert(mDisplayName != "");
 	}
 
 
@@ -75,43 +67,32 @@ namespace nap
 	}
 
 
-	const std::string ImageResource::getDisplayName() const
-	{
-		return mDisplayName;
-	}
-
 	bool ImageResource::init(utility::ErrorState& errorState)
 	{
-		if (!errorState.check(!mImagePath.empty(), "Imagepath not set"))
+		if (!errorState.check(!mImagePath.empty(), "Image path not set for ImageResource %s", mID.c_str()))
 			return false;
 
-		mPrevImage = std::move(mImage);
 		mImage = std::make_unique<opengl::Image>();
 
-		if (!errorState.check(mImage->load(mImagePath), "Unable to load image from file"))
+		if (!errorState.check(mImage->load(mImagePath), "Unable to load image from file %s for ImageResource %s", mImagePath.c_str(), mID.c_str()))
 			return false;
 
 		return true;
 	}
 
-	void ImageResource::finish(Resource::EFinishMode mode)
-	{
-		if (mode == Resource::EFinishMode::COMMIT)
-		{
-			mPrevImage = nullptr;
-		}
-		else
-		{
-			assert(mode == Resource::EFinishMode::ROLLBACK);
-			mImage = std::move(mPrevImage);
-		}
-	}
 
 	const opengl::Image& ImageResource::getImage() const
 	{
 		assert(mImage != nullptr);
 		return *mImage;
 	}
+
+
+	const glm::vec2 ImageResource::getSize() const
+	{
+		return glm::vec2(mImage->getWidth(), mImage->getHeight());
+	}
+
 	
 	// Non const getter, following:
 	opengl::BaseTexture& TextureResource::getTexture()

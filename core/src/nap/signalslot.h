@@ -3,9 +3,12 @@
 #include <functional>
 #include <set>
 #include <vector>
+#include <memory>
 
 namespace nap
 {
+	template<typename... Args> class Slot;
+
 	/**
 	Manages a function object.
 	Every event needs to be initialized with a function that can be called by other events
@@ -13,71 +16,78 @@ namespace nap
 	Other events can be connected/disconnected to an event.
 	**/
 	template <typename... Args>
-	class SignalSlotBase
+	class Signal final
 	{
 	public:
-		// Forward Declares
 		using Function = std::function<void(Args... args)>;
 
-	public:
-		// Construction
-		SignalSlotBase(Function inFunction) : mFunction(inFunction) {}
-		SignalSlotBase() {}
-
 		// Destruction
-		~SignalSlotBase();
-
-        // TODO: What is function doing?
-        void setFunction(Function func) { mFunction = func; }
+		~Signal();
 
 		// Connection
-		void connect(SignalSlotBase<Args...>& event);
-		void disconnect(SignalSlotBase<Args...>& event);
-        void disconnectAll();
+		void connect(Signal<Args...>& signal);
+		void disconnect(Signal<Args...>& signal);
 
-		// connect a raw functionobject. Lifelong connection only, disconnection not possible.
-        // TODO: Fix disconnection
+		void connect(Slot<Args...>& slot);
+		void disconnect(Slot<Args...>& slot);
+
+		// Connect a raw function object. Lifelong connection only, disconnection not possible.
 		void connect(Function inFunction);
 
-		// convenience method for lifelong connection in case of single parameter events
-        // TODO: Fix disconnection
+		// Convenience method for lifelong connection in case of single parameter events
 		template <typename U, typename F>
-		void connect(U* parent, F memberFunction)
+		void connect(U* object, F memberFunction)
 		{
-			connect(std::bind(memberFunction, parent, std::placeholders::_1));
+			connect(std::bind(memberFunction, object, std::placeholders::_1));
 		}
 
-
-
-		inline void operator()(Args... args) { trigger(std::forward<Args>(args)...); }
+		inline void operator()(Args... args) 
+		{ 
+			trigger(std::forward<Args>(args)...); 
+		}
 
 		// Trigger the event
 		void trigger(Args... args);
 
 	private:
-		// Function pointer
-		Function mFunction;
+		void addCause(Signal<Args...>& event);
+		void removeCause(Signal<Args...>& event);
 
-	protected:
+	private:
+
+		// Data acts like a variant type with a few known types.  
+		// The reason for this approach is that we can use a single list
+		// of elements in Signal instead of having a separate list for each.
+		// This saves out a number of dynamic memory allocations and a large
+		// overhead in member data, without introducing any virtual function
+		// calls.
+		struct Data
+		{
+			union 
+			{
+				struct
+				{
+					Signal<Args...>* mSignal;
+				} Signal;
+
+				struct
+				{
+					Slot<Args...>* mSlot;
+				} Slot;
+			};
+
+			enum class EType : uint8_t
+			{
+				SignalCause,
+				SignalEffect,
+				SlotEffect
+			};
+			EType mType;
+		};
+
 		// Members
-		std::set<SignalSlotBase<Args...>*> mCauses;  //< Signals
-		std::set<SignalSlotBase<Args...>*> mEffects; //< Slots or Signals
-		std::vector<Function> mFunctionEffects;		 //< function objects
-	};
-
-
-	/**
-	A signal can be emitted, which results in all the connected events or slots being called.
-	**/
-	template <typename... Args>
-	class Signal : public SignalSlotBase<Args...>
-	{
-	public:
-		// Constructor
-		Signal() : SignalSlotBase<Args...>(nullptr) {}
-
-		// returns the number of connected slots and signals
-		unsigned int getConnectionCount() { return SignalSlotBase<Args...>::mEffects.size(); }
+		std::vector<Data>						mData;					// Signal/slot effects, Signal causes
+		std::unique_ptr<std::vector<Function>>	mFunctionEffects;		// function objects
 	};
 
 
@@ -88,39 +98,58 @@ namespace nap
 	A slot hides the connect / disconnect behavior of an event.
 	**/
 	template <typename... Args>
-	class Slot : public SignalSlotBase<Args...>
+	class Slot final
 	{
 	public:
-		//@name The function pointer needs to be redeclared public here because somehow the LLVM compiler does not
-		//recognize it from the base class Event
 		using Function = std::function<void(Args... args)>;
 
 	public:
 		//@name Construction
-		Slot(Function inFunction) : SignalSlotBase<Args...>(inFunction) {}
-		Slot() : SignalSlotBase<Args...>() {}
+		Slot() = default;
+
+		Slot(Function inFunction) : 
+			mFunction(inFunction) 
+		{
+		}
 
 		//! This templated constructor can be used to initialize the slot with a member function with one single
 		//! parameter
 		template <typename U, typename F>
-		Slot(U* parent, F memberFunction)
-			: SignalSlotBase<Args...>(std::bind(memberFunction, parent, std::placeholders::_1))
+		Slot(U* parent, F memberFunction) : 
+			mFunction(std::bind(memberFunction, parent, std::placeholders::_1))
 		{
 		}
 
 		//! This templated constructor can be used to initialize the slot with a member function with one single
 		//! parameter, last argument is a signal to connect to straightaway after construction
 		template <typename U, typename F>
-		Slot(U* parent, F memberFunction, Signal<Args...>& signal)
-			: SignalSlotBase<Args...>(std::bind(memberFunction, parent, std::placeholders::_1))
+		Slot(U* parent, F memberFunction, Signal<Args...>& signal) : 
+			mFunction(std::bind(memberFunction, parent, std::placeholders::_1))
 		{
 			signal.connect(*this);
 		}
 
-		//@name Remove members
-        // TODO: Why? These two methods can just as well be declared in Signal alone
-		void connect(SignalSlotBase<Args...>& event) = delete;
-		void disconnect(SignalSlotBase<Args...>& event) = delete;
+		void setFunction(Function func) 
+		{ 
+			mFunction = func; 
+		}
+
+		void trigger(Args... args)
+		{
+			if (mFunction)
+				mFunction(std::forward<Args>(args)...);
+		}
+
+	private:
+		template<typename... Args> friend class Signal;
+
+		void addCause(Signal<Args...>& event);
+		void removeCause(Signal<Args...>& event);
+
+	private:
+		typedef std::vector<Signal<Args...>*> SignalList;
+		Function mFunction;
+		SignalList mCauses;
 	};
 
 
@@ -129,65 +158,138 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template <typename... Args>
-	SignalSlotBase<Args...>::~SignalSlotBase()
+	Signal<Args...>::~Signal()
 	{
-		for (auto& cause : mCauses)
-			cause->mEffects.erase(this);
-
-		for (auto& effect : mEffects)
-			effect->mCauses.erase(this);
+		for (auto& data : mData)
+		{
+			if (data.mType == Data::EType::SignalCause)
+				data.Signal.mSignal->disconnect(*this);
+			else if (data.mType == Data::EType::SignalEffect)
+				data.Signal.mSignal->removeCause(*this);
+			else
+				data.Slot.mSlot->removeCause(*this);
+		}
 	}
 
+	template <typename... Args>
+	void Signal<Args...>::addCause(Signal<Args...>& signal)
+	{
+		Data data;
+		data.mType = Data::EType::SignalCause;
+		data.Signal.mSignal = &signal;
+		mData.push_back(data);
+	}
+
+	template <typename... Args>
+	void Signal<Args...>::removeCause(Signal<Args...>& event)
+	{
+		for (int index = 0; index < mData.size(); ++index)
+		{
+			Data& value = mData[index];
+			if (value.mType == Data::EType::SignalCause && value.Signal.mSignal == &event)
+			{
+				mData.erase(mData.begin() + index);
+				break;
+			}
+		}
+	}
     
 	template <typename... Args>
-	void SignalSlotBase<Args...>::connect(SignalSlotBase<Args...>& event)
+	void Signal<Args...>::connect(Signal<Args...>& signal)
 	{
-		mEffects.emplace(&event);
-		event.mCauses.emplace(this);
+		Data data;
+		data.mType = Data::EType::SignalEffect;
+		data.Signal.mSignal = &signal;
+		mData.push_back(data);
+
+		signal.addCause(*this);
+	}
+
+	template <typename... Args>
+	void Signal<Args...>::disconnect(Signal<Args...>& signal)
+	{
+		for (int index = 0; index < mData.size(); ++index)
+		{
+			Data& value = mData[index];
+			if (value.mType == Data::EType::SignalEffect && value.Signal.mSignal == &signal)
+			{
+				value.Signal.mSignal->removeCause(*this);
+				mData.erase(mData.begin() + index);
+				break;
+			}
+		}
+	}
+
+	template <typename... Args>
+	void Signal<Args...>::connect(Slot<Args...>& slot)
+	{
+		Data data;
+		data.mType = Data::EType::SlotEffect;
+		data.Slot.mSlot = &slot;
+		mData.push_back(data);
+
+		slot.addCause(*this);
+	}
+
+	template <typename... Args>
+	void Signal<Args...>::disconnect(Slot<Args...>& slot)
+	{
+		for (int index = 0; index < mData.size(); ++index)
+		{
+			Data& data = mData[index];
+			if (data.mType == Data::EType::SlotEffect && data.Slot.mSlot == &slot)
+			{
+				data.Slot.mSlot->removeCause(*this);
+				mData.erase(mData.begin() + index);
+				break;
+			}
+		}
 	}
     
     
 	template <typename... Args>
-	void SignalSlotBase<Args...>::connect(Function inFunction)
+	void Signal<Args...>::connect(Function inFunction)
 	{
-		mFunctionEffects.emplace_back(inFunction);
-	}
+		if (!mFunctionEffects)
+			mFunctionEffects = std::make_unique<std::vector<Function>>();
 
-    
-	template <typename... Args>
-	void SignalSlotBase<Args...>::disconnect(SignalSlotBase<Args...>& event)
-	{
-		mEffects.erase(&event);
-		event.mCauses.erase(this);
-        
-        mCauses.erase(&event);
-        event.mEffects.erase(this);
+		mFunctionEffects->emplace_back(inFunction);
 	}
-
-    
-    template <typename... Args>
-    void SignalSlotBase<Args...>::disconnectAll()
-    {
-        for (auto effect : mEffects)
-            effect->mCauses.erase(this);
-        for (auto cause : mCauses)
-            cause->mEffects.erase(this);
-        mEffects.clear();
-        mCauses.clear();
-    }
     
     
 	template <typename... Args>
-	void SignalSlotBase<Args...>::trigger(Args... args)
+	void Signal<Args...>::trigger(Args... args)
 	{
-		if (mFunction)
-			mFunction(std::forward<Args>(args)...);
+		for (auto& data : mData)
+		{
+			if (data.mType == Data::EType::SignalEffect)
+				data.Signal.mSignal->trigger(std::forward<Args>(args)...);
+			else if (data.mType == Data::EType::SlotEffect)
+				data.Slot.mSlot->trigger(std::forward<Args>(args)...);
+		}
 
-		for (auto& effect : mEffects)
-			effect->trigger(std::forward<Args>(args)...);
+		if (mFunctionEffects)
+			for (auto& effect : *mFunctionEffects)
+				effect(std::forward<Args>(args)...);
+	}
 
-		for (auto& effect : mFunctionEffects)
-			effect(std::forward<Args>(args)...);
+	template <typename... Args>
+	void Slot<Args...>::addCause(Signal<Args...>& event)
+	{
+		mCauses.push_back(&event);
+	}
+
+	template <typename... Args>
+	void Slot<Args...>::removeCause(Signal<Args...>& event)
+	{
+		for (SignalList::iterator pos = mCauses.begin(); pos != mCauses.end(); ++pos)
+		{
+			if ((*pos) == &event)
+			{
+				mCauses.erase(pos);
+				break;
+			}
+		}
 	}
 
 } // End Namespace nap

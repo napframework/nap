@@ -36,9 +36,9 @@ namespace nap
         
     private:
         // Slots that handle service registration / deregistration
-        Slot<const Object&> mAdded = { this, &ServiceableOperator::registerWithService };
+        Slot<Object&> mAdded = { this, &ServiceableOperator::registerWithService };
         
         // Slot Calls
-        void registerWithService(const Object& object);
+        void registerWithService(Object& object);
     };
 }

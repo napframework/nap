@@ -2,6 +2,7 @@
 
 #include "nshaderutils.h"
 #include "nap/resource.h"
+#include "nap/objectptr.h"
 #include "glm/glm.hpp"
 
 namespace nap
@@ -11,25 +12,10 @@ namespace nap
 	/**
 	 * Base class for all types of uniforms, whether texture or value.
 	 */
-	class Uniform : public Resource	// TODO: derive from simple Object class
+	class Uniform : public rtti::RTTIObject
 	{
-		RTTI_ENABLE(Resource)
+		RTTI_ENABLE(rtti::RTTIObject)
 	public:
-		
-		/**
-		* TODO: temp, this may be removed later when we use different base class
-		*/
-		virtual bool init(utility::ErrorState& errorState) override { return true; }
-
-		/**
-		* TODO: temp, this may be removed later when we use different base class
-		*/
-		virtual void finish(EFinishMode mode) override {}
-
-		/**
-		* TODO: temp, this may be removed later when we use different base class
-		*/
-		virtual const std::string getDisplayName() const  override { return "uniform"; }
 
 		/**
 		* @return the type that this uniform can handle. This should map to the shader's type.
@@ -187,6 +173,6 @@ namespace nap
 		*/
 		virtual opengl::GLSLType getGLSLType() const override { return opengl::GLSLType::Tex2D; }
 
-		TextureResource* mTexture = nullptr;		///< Texture to use for this uniform
+		ObjectPtr<TextureResource> mTexture = nullptr;		///< Texture to use for this uniform
 	};
 }

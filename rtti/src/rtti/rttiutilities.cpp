@@ -35,7 +35,7 @@ namespace nap
 				{
 					path.pushArrayElement(index);
 
-					rtti::Variant array_value = array.get_value_as_ref(index);
+					rtti::Variant array_value = array.get_value(index);
 
 					// Invoke visit func
 					visitFunc(variant, property, array_value, path);
@@ -56,11 +56,13 @@ namespace nap
 
 					rtti::Variant value = nested_property.get_value(variant);
 
+					auto nested_property_type = nested_property.get_type().is_wrapper() ? nested_property.get_type().get_wrapped_type() : nested_property.get_type();
+
 					// Invoke visit func
-					visitFunc(variant, nested_property, value, path);
+					visitFunc(variant, nested_property, value, path);					
 
 					// Recurse
-					if (!actual_type.is_pointer()) // Don't recurse into properties of pointers
+					if (!nested_property_type.is_pointer()) // Don't recurse into properties of pointers
 						VisitRTTIPropertiesRecursive(nested_property, value, path, visitFunc);
 
 					path.popBack();
@@ -94,8 +96,10 @@ namespace nap
 				// Invoke visit func
 				visitFunc(instance, property, value, path);
 
+				rtti::TypeInfo actual_type = property.get_type().is_wrapper() ? property.get_type().get_wrapped_type() : property.get_type();
+
 				// Recurse
-				if (!property.get_type().is_pointer()) // Don't recurse into properties of pointers
+				if (!actual_type.is_pointer()) // Don't recurse into properties of pointers
 					VisitRTTIPropertiesRecursive(property, value, path, visitFunc);
 
 				path.popBack();
@@ -161,10 +165,10 @@ namespace nap
 
 
 		/**
-		 * Helper function to recursively check whether two variants (i.e. values) are equal
-		 * Correctly deals with arrays and nested compounds, but note: does not follow pointers
-		 */
-		bool areVariantsEqualRecursive(const rtti::Variant& variantA, const rtti::Variant& variantB, EPointerComparisonMode pointerComparisonMode)
+		* Helper function to recursively check whether two variants (i.e. values) are equal
+		* Correctly deals with arrays and nested compounds, but note: does not follow pointers
+		*/
+		bool areVariantsEqualRecursive(const RTTIObject* unresolvedPointerRootObject, const rtti::Variant& variantA, const rtti::Variant& variantB, RTTIPath& currentRTTIPath, const rtti::UnresolvedPointerList& unresolvedPointers)
 		{
 			// Extract wrapped type
 			auto value_type = variantA.get_type();
@@ -175,7 +179,7 @@ namespace nap
 			assert(value_type == variantB.get_type());
 
 			// If this is an array, compare the array element-wise
-			if (value_type.is_array())
+			if (actual_type.is_array())
 			{
 				// Get the arrays
 				rtti::VariantArray array_a = variantA.create_array_view();
@@ -188,66 +192,70 @@ namespace nap
 				// Recursively compare each array element
 				for (int index = 0; index < array_a.get_size(); ++index)
 				{
-					rtti::Variant array_value_a = array_a.get_value_as_ref(index);
-					rtti::Variant array_value_b = array_a.get_value_as_ref(index);
+					currentRTTIPath.pushArrayElement(index);
 
-					if (!areVariantsEqualRecursive(array_value_a, array_value_b, pointerComparisonMode))
+					rtti::Variant array_value_a = array_a.get_value(index);
+					rtti::Variant array_value_b = array_b.get_value(index);
+
+					if (!areVariantsEqualRecursive(unresolvedPointerRootObject, array_value_a, array_value_b, currentRTTIPath, unresolvedPointers))
 						return false;
+
+					currentRTTIPath.popBack();
 				}
 			}
 			else
 			{
 				// Special case handling for pointers so we can compare by ID or by actual pointer value
-				if (value_type.is_pointer())
+				if (actual_type.is_pointer())
 				{
-					// If we don't want to compare by ID, just check the pointers directly
-					if (pointerComparisonMode == EPointerComparisonMode::BY_POINTER)
+					std::string target_a_id;
+					std::string target_b_id;
+
+					// Extract the pointer
+					rtti::Variant value_a = is_wrapper ? variantA.extract_wrapped_value() : variantA;
+					rtti::Variant value_b = is_wrapper ? variantB.extract_wrapped_value() : variantB;
+
+					// Can only compare pointers that are of type Object
+					assert(value_a.get_type().is_derived_from<rtti::RTTIObject>() && value_b.get_type().is_derived_from<rtti::RTTIObject>());
+
+					// Extract the objects
+					rtti::RTTIObject* object_a = value_a.get_value<rtti::RTTIObject*>();
+					if (object_a == nullptr)
 					{
-						return is_wrapper ? (variantA.extract_wrapped_value() == variantB.extract_wrapped_value()) : (variantA == variantB);
-					}
-					else if (pointerComparisonMode == EPointerComparisonMode::BY_ID)
-					{
-						// Extract the pointer
-						rtti::Variant value_a = is_wrapper ? variantA.extract_wrapped_value() : variantA;
-						rtti::Variant value_b = is_wrapper ? variantB.extract_wrapped_value() : variantB;
-
-						// Can only compare pointers that are of type Object
-						assert(value_a.get_type().is_derived_from<rtti::RTTIObject>() && value_b.get_type().is_derived_from<rtti::RTTIObject>());
-
-						// Extract the objects
-						rtti::RTTIObject* object_a = value_a.convert<rtti::RTTIObject*>();
-						rtti::RTTIObject* object_b = value_b.convert<rtti::RTTIObject*>();
-
-						// If both are null, they're equal
-						if (object_a == nullptr && object_b == nullptr)
-							return true;
-
-						// If only one is null, they can't be equal
-						if (object_a == nullptr || object_b == nullptr)
-							return false;
-
-						// Check whether the IDs match
-						return object_a->mID == object_b->mID;
+						int unresolved_pointer_index = findUnresolvedPointer(unresolvedPointers, unresolvedPointerRootObject, currentRTTIPath);
+						if (unresolved_pointer_index != -1)
+							target_a_id = unresolvedPointers[unresolved_pointer_index].mTargetID;
 					}
 					else
 					{
-						assert(false);
+						target_a_id = object_a->mID;
 					}
+
+					rtti::RTTIObject* object_b = value_b.get_value<rtti::RTTIObject*>();
+					if (object_b != nullptr)
+						target_b_id = object_b->mID;
+
+					// Check whether the IDs match
+					return target_a_id == target_b_id;
 				}
 
 				// If the type of this variant is a primitive type or non-primitive type with no RTTI properties,
 				// we perform a normal comparison
 				auto child_properties = actual_type.get_properties();
-				if (rtti::isPrimitive(value_type) || child_properties.empty())
+				if (rtti::isPrimitive(actual_type) || child_properties.empty())
 					return is_wrapper ? (variantA.extract_wrapped_value() == variantB.extract_wrapped_value()) : (variantA == variantB);
 
 				// Recursively compare each property of the compound
 				for (const rtti::Property& property : child_properties)
 				{
+					currentRTTIPath.pushAttribute(property.get_name().data());
+
 					rtti::Variant value_a = property.get_value(variantA);
 					rtti::Variant value_b = property.get_value(variantB);
-					if (!areVariantsEqualRecursive(value_a, value_b, pointerComparisonMode))
+					if (!areVariantsEqualRecursive(unresolvedPointerRootObject, value_a, value_b, currentRTTIPath, unresolvedPointers))
 						return false;
+
+					currentRTTIPath.popBack();
 				}
 			}
 
@@ -266,27 +274,35 @@ namespace nap
 			for (const rtti::Property& property : type.get_properties())
 			{
 				rtti::Variant new_value = property.get_value(srcObject);
-				property.set_value(dstObject, new_value);
+				bool success = property.set_value(dstObject, new_value);
+				assert(success);
 			}
 		}
 
 
 		/**
-		* Tests whether the attributes of two objects have the same values.
-		* @param objectA: first object to compare attributes from.
-		* @param objectB: second object to compare attributes from.
-		*/
-		bool areObjectsEqual(const rtti::RTTIObject& objectA, const rtti::RTTIObject& objectB, EPointerComparisonMode pointerComparisonMode)
+		 * Tests whether the attributes of two objects have the same values. This is a special version that takes the unresolved pointer list
+		 * and compares any unresolved pointers against IDs present in that list.
+		 * @param objectA: first object to compare attributes from.
+		 * @param objectB: second object to compare attributes from.
+		 * @param unresolvedPointers: list of unresolved pointers as returned from readJSONFile.
+		 */
+		bool areObjectsEqual(const rtti::RTTIObject& objectA, const rtti::RTTIObject& objectB, const rtti::UnresolvedPointerList& unresolvedPointers)
 		{
 			rtti::TypeInfo typeA = objectA.get_type();
 			assert(typeA == objectB.get_type());
 
+			RTTIPath path;
 			for (const rtti::Property& property : typeA.get_properties())
 			{
+				path.pushAttribute(property.get_name().data());
+
 				rtti::Variant valueA = property.get_value(objectA);
 				rtti::Variant valueB = property.get_value(objectB);
-				if (!areVariantsEqualRecursive(valueA, valueB, pointerComparisonMode))
+				if (!areVariantsEqualRecursive(&objectA, valueA, valueB, path, unresolvedPointers))
 					return false;
+
+				path.popBack();
 			}
 
 			return true;
@@ -369,6 +385,22 @@ namespace nap
 			// Hash
 			std::size_t hash = std::hash<std::string>()(version_string);
 			return hash;
+		}
+
+		
+		/**
+		 * Helper to find the index of the unresolved pointer with the specified object and path combination
+		 */
+		int findUnresolvedPointer(const UnresolvedPointerList& unresolvedPointers, const RTTIObject* object, const rtti::RTTIPath& path)
+		{
+			for (int index = 0; index < unresolvedPointers.size(); ++index)
+			{
+				const UnresolvedPointer& unresolved_pointer = unresolvedPointers[index];
+				if (unresolved_pointer.mObject == object && unresolved_pointer.mRTTIPath == path)
+					return index;
+			}
+
+			return -1;
 		}
 	}
 }

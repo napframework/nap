@@ -17,6 +17,7 @@ int main(int argc, char* argv[])
 	Logger::setLevel(Logger::debugLevel());
 
 	// Validate all files are fbx files
+	std::vector<std::string> files_to_convert;
 	for (const std::string& file : commandLine.mFilesToConvert)
 	{
 		if (getFileExtension(file) != "fbx")
@@ -24,13 +25,16 @@ int main(int argc, char* argv[])
 			Logger::fatal("Input files %s is not a FBX file", file.c_str());
 			return -1;
 		}
+		
+		if (getFileName(file) != "*.fbx")
+			files_to_convert.push_back(file);
 	}
 
 	// Determine convert options
 	EFBXConversionOptions convert_options = commandLine.mForceConvert ? EFBXConversionOptions::CONVERT_ALWAYS : EFBXConversionOptions::CONVERT_IF_NEWER;
 
 	// Convert files
-	for (const std::string& file : commandLine.mFilesToConvert)
+	for (const std::string& file : files_to_convert)
 	{
 		Logger::info("Converting %s to %s", file.c_str(), commandLine.mOutputDirectory.c_str());
 
