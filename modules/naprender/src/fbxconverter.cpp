@@ -115,7 +115,7 @@ namespace nap
 			else
 			{
 				if (mesh->mName.length != 0)
-					converted_name = utility::stringFormat("%s_%s", fbxPath.c_str(), mesh->mName.C_Str());
+					converted_name = utility::stringFormat("%s_%s", getFileNameWithoutExtension(fbxPath).c_str(), mesh->mName.C_Str());
 				else
 					converted_name = utility::stringFormat("%s_%d", getFileNameWithoutExtension(fbxPath).c_str(), i);			
 			}				
