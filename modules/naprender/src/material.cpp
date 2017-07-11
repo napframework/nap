@@ -124,7 +124,7 @@ namespace nap
 		for (ObjectPtr<Uniform>& uniform : resource.mUniforms)
 		{
 			opengl::UniformDeclarations::const_iterator declaration = uniform_declarations.find(uniform->mName);
-			if (!errorState.check(declaration != uniform_declarations.end(), "Unable to find uniform %s in shader %s for material %s", uniform->mName.c_str(), resource.mMaterial->getShader()->mID.c_str(), resource.mMaterial->mID))
+			if (!errorState.check(declaration != uniform_declarations.end(), "Unable to find uniform %s in shader %s for material %s", uniform->mName.c_str(), resource.mMaterial->getShader()->mID.c_str(), resource.mMaterial->mID.c_str()))
 				return false;
 
 			if (!errorState.check(uniform->getGLSLType() == declaration->second->mGLSLType, "Uniform %s does not match the variable type in the shader %s", uniform->mName.c_str(), resource.mMaterial->getShader()->mID.c_str()))
