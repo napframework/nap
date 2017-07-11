@@ -95,7 +95,6 @@ namespace nap
 		void removed(nap::Object& obj);
 
 		// Virtuals called when components are added / removed
-		virtual void objectRegistered(Object& inObject)		{ };
 		virtual void objectRemoved(Object& inObject)		{ };
 
 	private:

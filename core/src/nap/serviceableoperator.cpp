@@ -13,7 +13,7 @@ namespace nap
     
     
     // Registers itself with the correct associated service
-    void ServiceableOperator::registerWithService(const Object& object)
+    void ServiceableOperator::registerWithService(Object& object)
     {
         nap::Entity* entity = getPatch()->getComponent()->getParent();
         assert(entity);

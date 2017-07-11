@@ -1,7 +1,18 @@
 {
-	
+	"nap::RenderWindowResource": {
+		"mID" : "Window0",
+		"Width" : 256,
+		"Height" : 256,
+		"Title" : "Window 1"
+	},
 
-
+	"nap::RenderWindowResource": {
+		"mID" : "Window1",
+		"Width" : 512,
+		"Height" : 512,
+		"Title" : "Window 2"
+	},
+		
     "nap::ImageResource": {
 		"mID" : "PigTexture",
 		"mImagePath" : "data/pig_head.jpg"
@@ -46,7 +57,7 @@
 		"mClearColor" : {
 			"x" : 1.0,
 			"y" : 1.0,
-			"z" : 0.0,
+			"z" : 1.0,
 			"w" : 1.0
 		}
 	},
@@ -63,26 +74,22 @@
 		"mFragShader": "shaders/orientation.frag"
 	},
 
-	"nap::MeshResource": {
+	"nap::MeshFromFileResource": {
 		"mID": "OrientationMesh",
 		"Path": "data/orientation.mesh"
 	},
 
-	"nap::MeshResource": {
+	"nap::MeshFromFileResource": {
 		"mID": "PigMesh",
 		"Path": "data/pig_head_alpha_rotated.mesh"
 	},	
 	
-	"nap::RenderableMeshResource": {
-		"mID": "PigRenderableMesh",
-		"Mesh" : "PigMesh",
-		"Material" : "PigMaterial"
-	},	
-
-	"nap::RenderableMeshResource": {
-		"mID": "OrientationRenderableMesh",
-		"Mesh" : "OrientationMesh",
-		"Material" : "OrientationMaterial"
+	"nap::PlaneMeshResource": {
+		"mID": "PlaneMesh"
+	},
+	
+	"nap::SphereMeshResource": {
+		"mID": "SphereMesh"
 	},
 	
 	"nap::Material": {
@@ -105,29 +112,6 @@
 				"MeshAttributeID": "Normal",
 				"ShaderAttributeID": "in_Normals"
 			}
-		]
-	},
-	
-	"nap::Material": {
-		"mID": "WorldMaterial",
-		"Shader": "GeneralShader",
-		"VertexAttributeBindings" : [
-			{
-				"MeshAttributeID": "Position",
-				"ShaderAttributeID": "in_Position"
-			},
-			{
-				"MeshAttributeID": "UV0",
-				"ShaderAttributeID": "in_UV0"
-			},
-			{
-				"MeshAttributeID": "Color0",
-				"ShaderAttributeID": "in_Color0"
-			},
-			{
-				"MeshAttributeID": "Normal",
-				"ShaderAttributeID": "in_Normals"
-			}
 		],
 		"Uniforms" : 
 		[
@@ -138,95 +122,15 @@
 					"Value" : 
 					{
 						"x" : 1.0,
-						"y" : 1.0,
-						"z" : 1.0,
-						"w" : 1.0						
-					}
-				}
-			},
-			{
-				"nap::UniformInt" : 
-				{
-					"Name" : "mTextureIndex",
-					"Value" : 0
-				}
-			},
-			{
-				"nap::UniformTexture2D" : 
-				{
-					"Name" : "pigTexture",
-					"Texture" : "WorldTexture"
-				}
-			},
-			{
-				"nap::UniformTexture2D" : 
-				{
-					"Name" : "testTexture",
-					"Texture" : "WorldTexture"
-				}
-			}
-		]	
-	},
-	
-	"nap::Material": {
-		"mID": "PigMaterial",
-		"Shader": "GeneralShader",
-		"VertexAttributeBindings" : [
-			{
-				"MeshAttributeID": "Position",
-				"ShaderAttributeID": "in_Position"
-			},
-			{
-				"MeshAttributeID": "UV0",
-				"ShaderAttributeID": "in_UV0"
-			},
-			{
-				"MeshAttributeID": "Color0",
-				"ShaderAttributeID": "in_Color0"
-			},
-			{
-				"MeshAttributeID": "Normal",
-				"ShaderAttributeID": "in_Normals"
-			}
-		],
-		"Uniforms" : 
-		[
-			{
-				"nap::UniformVec4" : 
-				{
-					"Name" : "mColor",
-					"Value" : 
-					{
-						"x" : 1.0,
-						"y" : 1.0,
+						"y" : 0.0,
 						"z" : 0.0,
 						"w" : 1.0						
 					}
 				}
-			},
-			{
-				"nap::UniformInt" : 
-				{
-					"Name" : "mTextureIndex",
-					"Value" : 0
-				}
-			},
-			{
-				"nap::UniformTexture2D" : 
-				{
-					"Name" : "pigTexture",
-					"Texture" : "PigTexture"
-				}
-			},
-			{
-				"nap::UniformTexture2D" : 
-				{
-					"Name" : "testTexture",
-					"Texture" : "TestTexture"
-				}
 			}
-		]	
+		]			
 	},
+	
 	
 	"nap::Material": {
 		"mID": "OrientationMaterial",
@@ -248,6 +152,400 @@
 				"MeshAttributeID": "Normal",
 				"ShaderAttributeID": "in_Normals"
 			}
+		]			
+	},
+	
+	"nap::EntityResource": {
+		"mID": "DefaultInputRouterEntity",
+		
+		"Components" : 
+		[
+			{
+				"nap::DefaultInputRouterComponentResource": {
+				}		
+			}
 		]
-	}	
+	},
+	
+	"nap::EntityResource": {
+		"mID": "PigEntity",
+		"Components" : 
+		[
+			{
+				"nap::RenderableMeshComponentResource": {
+					"Mesh" : "PigMesh",
+					"MaterialInstance" : {
+						"Material": "GeneralMaterial",
+						"BlendMode": "Opaque",
+						"Uniforms" : 
+						[
+							{
+								"nap::UniformInt" : 
+								{
+									"Name" : "mTextureIndex",
+									"Value" : 0
+								}
+							},
+							{
+								"nap::UniformTexture2D" : 
+								{
+									"Name" : "pigTexture",
+									"Texture" : "PigTexture"
+								}
+							},
+							{
+								"nap::UniformTexture2D" : 
+								{
+									"Name" : "testTexture",
+									"Texture" : "TestTexture"
+								}
+							}
+						]
+					}
+				}		
+			},
+			{
+				"nap::TransformComponentResource": {
+					"Properties": {
+						"Translate": {
+							"x": 0.1,
+							"y": 0.0,
+							"z": 0.0
+						},
+						"Rotate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0,
+							"w": 1.0
+						},
+						"Scale": {
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.0
+					}
+				}		
+			}
+		]
+	},
+	
+	"nap::EntityResource": {
+		"mID": "OrientationEntity",
+		"Components" : 
+		[
+			{
+				"nap::RenderableMeshComponentResource": {
+					"Mesh" : "OrientationMesh",
+					"MaterialInstance" : {
+						"Material": "OrientationMaterial"
+					}
+				}		
+			},
+			{
+				"nap::TransformComponentResource": {
+					"Properties": {
+						"Translate": {
+							"x": -1.5,
+							"y": -1.5,
+							"z": 0.0
+						},
+						"Rotate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0,
+							"w": 1.0
+						},
+						"Scale": {
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.00					
+					}
+				}		
+			}
+		]
+	},	
+	
+	"nap::EntityResource": {
+		"mID": "PlaneEntity",
+		"Components" : 
+		[
+			{
+				"nap::RenderableMeshComponentResource": {
+					"Mesh" : "PlaneMesh",
+					"MaterialInstance" : {
+						"Material": "GeneralMaterial"
+					}
+				}		
+			},
+			{
+				"nap::TransformComponentResource": {
+					"Properties": {
+						"Translate": {
+							"x": -1.0,
+							"y": 0.0,
+							"z": 0.0
+						},
+						"Rotate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0,
+							"w": 1.0
+						},
+						"Scale": {
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.5					
+					}
+				}		
+			}
+		]
+	},	
+	
+	"nap::EntityResource": {
+		"mID": "RotatingPlaneEntity",
+		"Components" : 
+		[
+			{
+				"nap::RenderableMeshComponentResource": {
+					"Mesh" : "PlaneMesh",
+					"MaterialInstance" : {
+						"Material": "GeneralMaterial"
+					}
+				}		
+			},
+			{
+				"nap::TransformComponentResource": {
+					"Properties": {
+						"Translate": {
+							"x": 1.0,
+							"y": 0.0,
+							"z": 0.0
+						},
+						"Rotate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0,
+							"w": 1.0
+						},
+						"Scale": {
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.5
+					}
+				}		
+			}
+		]
+	},	
+
+	"nap::EntityResource": {
+		"mID": "WorldEntity",
+		"Components" : 
+		[
+			{
+				"nap::RenderableMeshComponentResource": {
+					"Mesh" : "SphereMesh",
+					"MaterialInstance" : {
+						"mID": "WorldMaterialInstance",
+						"Material": "GeneralMaterial",
+						"Uniforms" : 
+						[
+							{
+								"nap::UniformInt" : 
+								{
+									"Name" : "mTextureIndex",
+									"Value" : 1
+								}
+							},
+							{
+								"nap::UniformTexture2D" : 
+								{
+									"Name" : "pigTexture",
+									"Texture" : "WorldTexture"
+								}
+							},
+							{
+								"nap::UniformTexture2D" : 
+								{
+									"Name" : "testTexture",
+									"Texture" : "WorldTexture"
+								}
+							}
+						]	
+					}
+				}					
+			},
+			{
+				"nap::TransformComponentResource": {
+					"Properties": {
+						"Translate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0
+						},
+						"Rotate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0,
+							"w": 1.0
+						},
+						"Scale": {
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.0						
+					}
+				}		
+			}
+		]
+	},
+	
+	"nap::EntityResource": {
+		"mID": "CameraEntityLeft",
+		"Components" : 
+		[
+			{
+				"nap::PerspCameraComponentResource": {
+					"Properties": {
+						"FieldOfView": 45.0,
+						"NearClippingPlane" : 0.01,
+						"FarClippingPlane" : 1000.0
+					}
+				}		
+			},
+			{
+				"nap::KeyInputComponentResource": {
+				}
+			},
+			{
+				"nap::FirstPersonControllerResource": {
+					"MovementSpeed": 3.0,
+					"RotateSpeed": 1.0
+				}
+			},
+			{
+				"nap::TransformComponentResource": {
+					"Properties": {
+						"Translate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 5.0
+						},
+						"Rotate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0,
+							"w": 1.0
+						},
+						"Scale": {
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.0						
+					}
+				}		
+			}
+		]
+	},
+
+	"nap::EntityResource": {
+		"mID": "CameraEntityRight",
+		"Components" : 
+		[
+			{
+				"nap::PerspCameraComponentResource": {
+					"Properties": {
+						"FieldOfView": 45.0,
+						"NearClippingPlane" : 0.01,
+						"FarClippingPlane" : 1000.0
+					}
+				}		
+			},
+			{
+				"nap::KeyInputComponentResource": {
+				}
+			},
+			{
+				"nap::FirstPersonControllerResource": {
+					"MovementSpeed": 10.0,
+					"RotateSpeed": 2.0
+				}
+			},
+			{
+				"nap::TransformComponentResource": {
+					"Properties": {
+						"Translate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 5.0
+						},
+						"Rotate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0,
+							"w": 1.0
+						},
+						"Scale": {
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.0						
+					}
+				}		
+			}
+		]
+	},
+	
+	"nap::EntityResource": {
+		"mID": "SplitCameraEntity",
+		"Components" : 
+		[
+			{
+				"nap::PerspCameraComponentResource": {
+					"Properties": {
+						"FieldOfView": 45.0,
+						"NearClippingPlane" : 0.01,
+						"FarClippingPlane" : 1000.0,
+						"GridDimensions": {
+							"x": 2,
+							"y": 1
+						}
+					}
+				}		
+			},
+			{
+				"nap::TransformComponentResource": {
+					"Properties": {
+						"Translate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 5.0
+						},
+						"Rotate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0,
+							"w": 1.0
+						},
+						"Scale": {
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.0						
+					}
+				}		
+			}
+		]
+	}
+
 } 

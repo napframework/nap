@@ -92,6 +92,7 @@ namespace nap
 
 			// Determine the rank of the array (i.e. how many dimensions it has)
 			const rtti::TypeInfo array_type = array.get_rank_type(array.get_rank());
+			const rtti::TypeInfo wrapped_type = array_type.is_wrapper() ? array_type.get_wrapped_type() : array_type;
 
 			// Read values from JSON array
 			for (std::size_t index = 0; index < length; ++index)
@@ -99,23 +100,23 @@ namespace nap
 				// Add array element to rtti path
 				rttiPath.pushArrayElement(index);
 
-				if (array_type.is_array())
+				if (wrapped_type.is_array())
 				{
 					// Array-of-arrays; read array recursively
 					rtti::VariantArray sub_array = array.get_value_as_ref(index).create_array_view();
 					if (!deserializeArrayRecursively(rootObject, sub_array, stream, rttiPath, unresolvedPointers, linkedFiles, errorState))
 						return false;
 				}
-				else if (array_type.is_associative_container())
+				else if (wrapped_type.is_associative_container())
 				{
 					// Maps not supported (yet)
 					errorState.fail("Encountered currently unsupported associative property");
 					return false;
 				}
-				else if (array_type.is_pointer())
+				else if (wrapped_type.is_pointer())
 				{
 					// Pointer types must point to objects derived from rtti::RTTIObject
-					if (!errorState.check(array_type.get_raw_type().is_derived_from<rtti::RTTIObject>(), "Encountered pointer to non-Object. This is not supported"))
+					if (!errorState.check(wrapped_type.get_raw_type().is_derived_from<rtti::RTTIObject>(), "Encountered pointer to non-Object. This is not supported"))
 						return false;
 
 					// Determine the target of the pointer
@@ -126,11 +127,11 @@ namespace nap
 					if (!target.empty())
 						unresolvedPointers.push_back(UnresolvedPointer(rootObject, rttiPath, target));
 				}
-				else if (rtti::isPrimitive(array_type))
+				else if (rtti::isPrimitive(wrapped_type))
 				{
 					// Array of basic types; read basic type
-					rtti::Variant extracted_value = deserializePrimitive(array_type, stream);
-					if (extracted_value.convert(array_type))
+					rtti::Variant extracted_value = deserializePrimitive(wrapped_type, stream);
+					if (extracted_value.convert(wrapped_type))
 						array.set_value(index, extracted_value);
 				}
 				else
@@ -172,13 +173,14 @@ namespace nap
 				bool is_file_link = rtti::hasFlag(property, nap::rtti::EPropertyMetaData::FileLink);
 
 				const rtti::TypeInfo value_type = property.get_type();
+				const rtti::TypeInfo wrapped_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
 
 				// If this is a file link, make sure it's of the expected type (string)
-				if (!errorState.check((is_file_link && value_type.get_raw_type().is_derived_from<std::string>()) || !is_file_link, "Encountered a non-string file link. This is not supported"))
+				if (!errorState.check((is_file_link && wrapped_type.get_raw_type().is_derived_from<std::string>()) || !is_file_link, "Encountered a non-string file link. This is not supported"))
 					return false;
 
 				// If this is an array, read its elements recursively again (in case of nested compounds)
-				if (value_type.is_array())
+				if (wrapped_type.is_array())
 				{
 					// Get instance of the current value (this is a copy) and create an array view on it so we can fill it
 					rtti::Variant value = property.get_value(compound);
@@ -191,16 +193,16 @@ namespace nap
 					// Now copy the read array back into the target object
 					property.set_value(compound, value);
 				}
-				else if (value_type.is_associative_container())
+				else if (wrapped_type.is_associative_container())
 				{
 					// Maps not supported (yet)
 					errorState.fail("Encountered currently unsupported associative property %s", property.get_type().get_name().data());
 					return false;
 				}
-				else if (value_type.is_pointer())
+				else if (wrapped_type.is_pointer())
 				{
 					// Pointer types must point to objects derived from rtti::RTTIObject
-					if (!errorState.check(value_type.get_raw_type().is_derived_from<rtti::RTTIObject>(), "Encountered pointer to non-Object. This is not supported"))
+					if (!errorState.check(wrapped_type.get_raw_type().is_derived_from<rtti::RTTIObject>(), "Encountered pointer to non-Object. This is not supported"))
 						return false;
 
 					// Determine the target of the pointer
@@ -215,11 +217,11 @@ namespace nap
 					if (!target.empty())
 						unresolvedPointers.push_back(UnresolvedPointer(object, rttiPath, target));
 				}
-				else if (rtti::isPrimitive(value_type))
+				else if (rtti::isPrimitive(wrapped_type))
 				{
 					// Basic JSON type, read value and copy to target
-					rtti::Variant extracted_value = deserializePrimitive(value_type, stream);
-					if (extracted_value.convert(value_type))
+					rtti::Variant extracted_value = deserializePrimitive(wrapped_type, stream);
+					if (extracted_value.convert(wrapped_type))
 						property.set_value(compound, extracted_value);
 				}
 				else
@@ -319,3 +321,4 @@ namespace nap
 		}
 	}
 }
+      

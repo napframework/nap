@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 project(rendertest)
 
-#get nrender
-add_subdirectory(../../../nrender build)
-
 #add all cpp files to SOURCES
 file(GLOB SOURCES src/*.cpp)
 file(GLOB HEADERS src/*.h)
@@ -20,7 +17,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Test)
 add_dependencies(${PROJECT_NAME} fbxconverter)
 
-target_link_libraries(${PROJECT_NAME} napcore mod_naprender nrender mod_napmath)
+target_link_libraries(${PROJECT_NAME} napcore mod_naprender nrender mod_napmath mod_napsdlinput mod_napsdlwindow)
 
 if (WIN32)
     # Copy over some crap window dlls

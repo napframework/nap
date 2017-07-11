@@ -35,3 +35,10 @@ napkin/Release/
 *.idb
 .idea
 log.csv
+CMakeCache.txt
+CMakeFiles/3.8.0-rc3/CMakeCCompiler.cmake
+CMakeFiles/3.8.0-rc3/CMakeCXXCompiler.cmake
+CMakeFiles/3.8.0-rc3/CMakeSystem.cmake
+CMakeFiles/cmake.check_cache
+arch.c
+modules/.vs/Project/v14/.suo

@@ -55,7 +55,7 @@ namespace nap
 
 	void UniformTexture2D::push(const opengl::UniformDeclaration& declaration, int textureUnit) const
 	{
-		if (!mTexture)
+		if (mTexture == nullptr)
 			return;
 
 		glActiveTexture(GL_TEXTURE0 + textureUnit);

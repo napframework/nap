@@ -19,8 +19,6 @@ namespace nap
 	 */
 	struct RenderState
 	{
-		bool				mEnableDepthTest = true;
-		bool				mEnableBlending = true;
 		bool				mEnableMultiSampling = true;
 		float				mLineWidth = 1.0f;
 		float				mPointSize = 1.0;

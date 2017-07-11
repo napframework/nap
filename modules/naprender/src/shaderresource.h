@@ -11,26 +11,16 @@ namespace nap
 	 * Note that the shader is not initialized (created) when the resource is created
 	 * this is deferred to actual rendering because of gl initialization
 	 */
-	class ShaderResource : public Resource
+	class ShaderResource : public rtti::RTTIObject
 	{
 		friend class ShaderResourceLoader;
-		RTTI_ENABLE(Resource)
+		RTTI_ENABLE(rtti::RTTIObject)
 	public:
 
 		/**
 		 * Creates and inits opengl shader.
 		 */
 		virtual bool init(utility::ErrorState& errorState);
-
-		/**
-		 * Performs commit or rollback of changes made in init.
-		 */
-		virtual void finish(Resource::EFinishMode mode) override;
-
-		/**
-		 * @return the shader resource display name
-		 */
-		virtual const std::string getDisplayName() const override;
 
 		/**
 		 * @return the opengl shader that can be used for drawing
@@ -46,7 +36,6 @@ namespace nap
 
 		// Shader that is managed by this resource
 		std::unique_ptr<opengl::Shader>		mShader;
-		std::unique_ptr<opengl::Shader>		mPrevShader;
 	};
 
 }

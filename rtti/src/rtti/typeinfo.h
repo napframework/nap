@@ -9,14 +9,24 @@
  * - RTTI_ENABLE - This macro must be used when you have a class that is part of an inheritance hierarchy. The argument to the macro is a comma-separated list of base classes (empty if the macro is being used in the base class itself).
  * - RTTI_BEGIN_CLASS, RTTI_END_CLASS, RTTI_PROPERTY - These macros are used to register a type in the RTTI system and must be placed in a .cpp file.
  * - RTTI_DEFINE_CLASS/RTTI_DEFINE_BASE - Wrapper around RTTI_BEGIN_CLASS/RTTI_END_CLASS for backwards compatibility
+ * - RTTI_BEGIN_ENUM/RTTI_END_ENUM - These macros are used to register an enum in the RTTI system and must be placed in a .cpp file
  *
  * See the following example for a typical usage scenario of these macros:
+ *
+  *		enum class ETestEnum
+ *		{
+ *			One,
+ *			Two,
+ *			Three,
+ *			Four
+ *		};
  *
  *		// RTTIClasses.h
  *		struct DataStruct
  *		{
  *				float		mFloatProperty;
  *				std::string mStringProperty;
+ *				ETestEnum	mEnumProperty;
  *		};
  *
  *		class BaseClass
@@ -34,7 +44,10 @@
  *				int			mIntProperty;
  *		};
  *
-  * The above code defines three new classes:
+ * The above code defines four new types:
+ * - ETestEnum
+ *		An enum that will be used in one of the other RTTI classes
+ *
  * - DataStruct:
  *      A class without base or derived classes. Note that the RTTI_ENABLED macro is not used for this class.
  *      The fact that the RTTI_ENABLED macro is optional (it's only required when the class is part of an inheritance hierarchy) makes it possible to *add* RTTI to third party classes, since no modification of the class itself is required.
@@ -53,9 +66,17 @@
  * In order to actually register the types with the RTTI system, the following code must be added to the cpp file:
  *
  *		// RTTIClasses.cpp
+ *		RTTI_BEGIN_ENUM(ETestEnum)
+ *			RTTI_ENUM_VALUE(ETestEnum::One,		"One"),
+ *			RTTI_ENUM_VALUE(ETestEnum::Two,		"Two"),
+ *			RTTI_ENUM_VALUE(ETestEnum::Three,	"Three"),
+ *			RTTI_ENUM_VALUE(ETestEnum::Four,	"Four")
+ *		RTTI_END_ENUM
+
  *		RTTI_BEGIN_CLASS(DataStruct)
- *				RTTI_PROPERTY("FloatProperty",	&DataStruct::mFloatProperty, nap::rtti::EPropertyMetaData::None);
- *				RTTI_PROPERTY("StringProperty", &DataStruct::mStringProperty, nap::rtti::EPropertyMetaData::Required);
+ *				RTTI_PROPERTY("FloatProperty",	&DataStruct::mFloatProperty,	nap::rtti::EPropertyMetaData::None);
+ *				RTTI_PROPERTY("StringProperty", &DataStruct::mStringProperty,	nap::rtti::EPropertyMetaData::Required);
+ *				RTTI_PROPERTY("EnumProperty",	&DataStruct::mEnumProperty,		nap::rtti::EPropertyMetaData::Required);
  *		RTTI_END_CLASS
  *
  *		RTTI_BEGIN_CLASS(BaseClass)
@@ -166,6 +187,43 @@ namespace nap
 #define RTTI_BEGIN_CLASS(Type)							\
 	RTTI_BEGIN_BASE_CLASS(Type)							\
 	.constructor<>()(policy::ctor::as_raw_ptr)
+
+#define RTTI_BEGIN_CLASS_CONSTRUCTOR1(Type, CtorArg1)	\
+	RTTI_BEGIN_BASE_CLASS(Type)							\
+	.constructor<CtorArg1>()(policy::ctor::as_raw_ptr)
+
+#define RTTI_BEGIN_CLASS_CONSTRUCTOR2(Type, CtorArg1, CtorArg2)	\
+	RTTI_BEGIN_BASE_CLASS(Type)							\
+	.constructor<CtorArg1, CtorArg2>()(policy::ctor::as_raw_ptr)
+
+#define RTTI_BEGIN_CLASS_CONSTRUCTOR3(Type, CtorArg1, CtorArg2, CtorArg3)	\
+	RTTI_BEGIN_BASE_CLASS(Type)							\
+	.constructor<CtorArg1, CtorArg2, CtorArg3>()(policy::ctor::as_raw_ptr)
+
+#define RTTI_BEGIN_CLASS_CONSTRUCTOR4(Type, CtorArg1, CtorArg2, CtorArg3, CtorArg4)	\
+	RTTI_BEGIN_BASE_CLASS(Type)							\
+	.constructor<CtorArg1, CtorArg2, CtorArg3, CtorArg4>()(policy::ctor::as_raw_ptr)
+
+#define RTTI_BEGIN_CLASS_CONSTRUCTOR5(Type, CtorArg1, CtorArg2, CtorArg3, CtorArg4, CtorArg5)	\
+	RTTI_BEGIN_BASE_CLASS(Type)							\
+	.constructor<CtorArg1, CtorArg2, CtorArg3, CtorArg4, CtorArg5>()(policy::ctor::as_raw_ptr)
+
+#define RTTI_BEGIN_ENUM(Type)							\
+	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)			\
+	{													\
+		RTTR_REGISTRATION								\
+		{												\
+			using namespace rttr;						\
+			registration::enumeration<Type>(#Type)		\
+			(
+
+#define RTTI_ENUM_VALUE(Value, String)					\
+				value(String, Value)
+
+#define RTTI_END_ENUM									\
+			);											\
+		}												\
+	}
 
 #define RTTI_ENABLE(...) \
 	RTTR_ENABLE(__VA_ARGS__) \
