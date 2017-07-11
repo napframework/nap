@@ -1,0 +1,161 @@
+{
+	"nap::RenderWindowResource": {
+		"mID" : "Viewport",
+		"Width" : 512,
+		"Height" : 512,
+		"Title" : "Viewport"
+	},
+		
+    "nap::ImageResource": {
+		"mID" : "VinylImage",
+		"mImagePath" : "data/steef/vinyl.jpg"
+	},
+
+	"nap::ImageResource": {
+		"mID" : "VinylImageDiff",
+		"mImagePath" : "data/steef/vinyl_diff.jpg"
+	},
+
+	"nap::ShaderResource": {
+		"mID": "GeneralShader",
+		"mVertShader": "shaders/steef/shader.vert",
+		"mFragShader": "shaders/steef/shader.frag"
+	},
+
+	"nap::MeshFromFileResource": {
+		"mID": "CoverMesh",
+		"Path": "data/steef/vinyl_cover_cover.mesh"
+	},
+
+		"nap::MeshFromFileResource": {
+		"mID": "VinylMesh",
+		"Path": "data/steef/vinyl_cover_vinyl.mesh"
+	},
+	
+	"nap::Material": {
+		"mID": "GeneralMaterial",
+		"Shader": "GeneralShader",
+		"VertexAttributeBindings" : [
+			{
+				"MeshAttributeID": "Position",
+				"ShaderAttributeID": "in_Position"
+			},
+			{
+				"MeshAttributeID": "UV0",
+				"ShaderAttributeID": "in_UV0"
+			},
+			{
+				"MeshAttributeID": "Color0",
+				"ShaderAttributeID": "in_Color0"
+			},
+			{
+				"MeshAttributeID": "Normal",
+				"ShaderAttributeID": "in_Normals"
+			}
+		],
+		"Uniforms" : 
+		[
+			{
+				"nap::UniformVec4" : 
+				{
+					"Name" : "mColor",
+					"Value" : 
+					{
+						"x" : 1.0,
+						"y" : 1.0,
+						"z" : 1.0,
+						"w" : 1.0						
+					}
+				}
+			}
+		]			
+	},
+	
+	"nap::EntityResource": {
+		"mID": "VinylEntity",
+		"Components" : 
+		[
+			{
+				"nap::RenderableMeshComponentResource": {
+					"Mesh" : "VinylMesh",
+					"MaterialInstance" : {
+						"Material": "GeneralMaterial",
+						"BlendMode": "Opaque",
+						"Uniforms" : 
+						[
+							{
+								"nap::UniformTexture2D" : 
+								{
+									"Name" : "vinylTextureColor",
+									"Texture" : "VinylImage"
+								}
+							}
+						]
+					}
+				}		
+			},
+			{
+				"nap::TransformComponentResource": {
+					"Properties": {
+						"Translate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0
+						},
+						"Rotate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0,
+							"w": 1.0
+						},
+						"Scale": {
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.0
+					}
+				}		
+			}
+		]
+	},
+	
+	"nap::EntityResource": {
+		"mID": "CameraEntity",
+		"Components" : 
+		[
+			{
+				"nap::PerspCameraComponentResource": {
+					"Properties": {
+						"FieldOfView": 45.0,
+						"NearClippingPlane" : 0.01,
+						"FarClippingPlane" : 1000.0
+					}
+				}		
+			},
+			{
+				"nap::TransformComponentResource": {
+					"Properties": {
+						"Translate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 50.0
+						},
+						"Rotate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0,
+							"w": 1.0
+						},
+						"Scale": {
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.0						
+					}
+				}		
+			}
+		]
+	}
+} 
