@@ -8,6 +8,8 @@
 #include <nap/signalslot.h>
 #include <rtti/rtti.h>
 #include "utility/stringutils.h"
+#include "utility/uniqueptrvectoriterator.h"
+#include "objectptr.h"
 
 namespace nap
 {

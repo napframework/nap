@@ -17,9 +17,9 @@ namespace nap
 		Object* readObject(std::istream& istream, Core& core, Object* parent = nullptr) const override;
 	};
 
-	class JSONResource : public Resource
+	class JSONResource : public rtti::RTTIObject
 	{
-        RTTI_ENABLE(Resource)
+        RTTI_ENABLE(rtti::RTTIObject)
 	public:
 		JSONResource(const std::string& path, const std::string& contents) : mContents(contents), mPath(path) {}
 
@@ -27,8 +27,6 @@ namespace nap
 		{
             return JSONSerializer().fromString(mContents, core, &parent);
         }
-
-		virtual const std::string getDisplayName() const override { return mPath; }
 
     private:
 		const std::string mContents;

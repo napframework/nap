@@ -4,6 +4,11 @@
 #include "rtti/jsonreader.h"
 #include "rtti/factory.h"
 #include "nap/core.h"
+#include "objectptr.h"
+#include "entityinstance.h"
+#include "componentinstance.h"
+#include "objectgraph.h"
+#include "entityptr.h"
 
 RTTI_DEFINE(nap::ResourceManagerService)
 
@@ -11,342 +16,265 @@ namespace nap
 {
 	using namespace rtti;
 
-	/**
-	* Helper to find index into unresolved pointer array.
-	*/
-	static int findUnresolvedPointer(UnresolvedPointerList& unresolvedPointers, RTTIObject* object, const rtti::RTTIPath& path)
-	{
-		for (int index = 0; index < unresolvedPointers.size(); ++index)
-		{
-			UnresolvedPointer& unresolved_pointer = unresolvedPointers[index];
-			if (unresolved_pointer.mObject == object &&
-				unresolved_pointer.mRTTIPath == path)
-			{
-				return index;
-			}
-		}
 
-		return -1;
+	//////////////////////////////////////////////////////////////////////////
+	// ResourceManagerService::RollbackHelper
+	//////////////////////////////////////////////////////////////////////////
+
+
+	ResourceManagerService::RollbackHelper::RollbackHelper(ResourceManagerService& service) :
+		mService(service)
+	{
 	}
 
 
-	/** 
-	* Scans objects for links to other objects and other files. This is done through RTTI scanning, where
-	* link properties are examined. The end result is a list of Nodes and Edges that can be used to traverse
-	* the graph.
-	*/
-	class ObjectGraph final
+	ResourceManagerService::RollbackHelper::~RollbackHelper()
+	{
+		if (mPatchObjects)
+			mService.patchObjectPtrs(mService.mObjects);
+	}
+
+
+	void ResourceManagerService::RollbackHelper::clear()
+	{
+		mPatchObjects = false;
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// RTTIObjectGraphItem
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Item class for ObjectGraph usage.
+	 * Wraps both an RTTIObject and a File object (by filename).
+	 * Uses RTTI traversal to scan pointers to other objects and pointers to files.
+	 */
+	class RTTIObjectGraphItem
 	{
 	public:
-		enum class EEdgeType : uint8
+		using Type = rtti::RTTIObject*;
+
+		enum class EType : uint8_t
 		{
 			Object,
 			File
 		};
 
-		struct Node;
+		/**
+		 * Creates a graph item.
+		 * @param object Object to wrap in the item that is created.
+		 */
+		static const RTTIObjectGraphItem create(rtti::RTTIObject* object)
+		{
+			RTTIObjectGraphItem item;
+			item.mType = EType::Object;
+			item.mObject = object;
+			
+			return item;
+		}
 
 		/**
-		* Represent an 'edge' in the ObjectGraph. This is a link from an object to either a file or another object.
-		*/
-		struct Edge
+		 * @return ID of the item. For objects, the ID is the object ID, for files, it is the filename.
+		 */
+		const std::string getID() const
 		{
-			EEdgeType	mType;					// File/Object target
-			Node*		mSource = nullptr;		// Link source
-			Node*		mDest = nullptr;		// Link target
-		};
+			assert(mType == EType::File || mType == EType::Object);
+
+			if (mType == EType::File)
+				return mFilename;
+			else 
+				return mObject->mID;
+		}
+
+		/**
+		 * @return EType of the type (file or object).
+		 */
+		uint8_t getType() const { return (uint8_t)mType; }
 
 
-		/*
-		* Represents a node in the ObjectGraph, which can be an object or a file.
-		*/
-		struct Node
+		/**
+		 * Performs rtti traversal of pointers to both files and objects.
+		 * @param pointees Output parameter, contains all objects and files this object points to.
+		 * @param errorState If false is returned, contains information about the error.
+		 * @return true is succeeded, false otherwise.
+		 */
+		bool getPointees(std::vector<RTTIObjectGraphItem>& pointees, utility::ErrorState& errorState) const
 		{
-			int					mDepth = -1;			// Depth of the node is calculated during build, it represents at what level from the root this node is.
-			RTTIObject*			mObject = nullptr;		// If this is an Object node, set to the Object, otherwise null.
-			std::string			mFile;					// If this is a file node, set to the filename, otherwise empty.
-			std::vector<Edge*>	mIncomingEdges;			// List of incoming edges
-			std::vector<Edge*>	mOutgoingEdges;			// List of outgoing edges
-		};
+			std::vector<rtti::ObjectLink> object_links;
+			rtti::findObjectLinks(*mObject, object_links);
 
-
-		/*
-		* Builds the object graph. If building fails, return false. 
-		* @param objectList : list of objects to build the graph from.
-		* @param errorState: if false is returned, contains error information.
-		*/
-		bool Build(const ObservedObjectList& objectList, utility::ErrorState& errorState)
-		{
-			using ObjectMap = std::map<std::string, RTTIObject*>;
-			ObjectMap object_map;
-
-			// Build map from ID => object
-			for (RTTIObject* object : objectList)
+			for (const rtti::ObjectLink& link : object_links)
 			{
-				object_map.insert({ object->mID, object });
+				RTTIObjectGraphItem item;
+				item.mType = EType::Object;
+				item.mObject = link.mTarget;
+				pointees.push_back(item);
 			}
 
-			// Scan all objects for rtti links and build data structure
-			for (RTTIObject* object : objectList)
+			std::vector<std::string> file_links;
+			rtti::findFileLinks(*mObject, file_links);
+
+			for (std::string& filename : file_links)
 			{
-				Node* source_node = GetOrCreateObjectNode(*object);
-
-				// Process pointers to other objects
-				std::vector<rtti::ObjectLink> object_links;
-				rtti::findObjectLinks(*object, object_links);
-
-				for (const rtti::ObjectLink& link : object_links)
-				{
-					RTTIObject* linked_object = link.mTarget;
-
-					ObjectMap::iterator dest_object = object_map.find(linked_object->mID);
-					if (!errorState.check(dest_object != object_map.end(), "Object %s is pointing to an object that is not in the objectlist!", linked_object->mID.c_str()))
-						return false;
-
-					Edge* edge = new Edge();
-					edge->mType = EEdgeType::Object;
-					edge->mSource = source_node;
-					edge->mDest = GetOrCreateObjectNode(*(dest_object->second));
-					edge->mDest->mIncomingEdges.push_back(edge);
-					edge->mSource->mOutgoingEdges.push_back(edge);
-					mEdges.push_back(std::unique_ptr<Edge>(edge));
-				}
+				RTTIObjectGraphItem item;
+				item.mType = EType::File;
+				item.mFilename = filename;
+				pointees.push_back(item);
+			}
 			
-				// Process pointers to files
-				std::vector<std::string> file_links;
-				rtti::findFileLinks(*object, file_links);
+			return true;
+		}
+		
+		EType				mType;					// Type: file or object
+		std::string			mFilename;				// If type is file, contains filename
+		rtti::RTTIObject*	mObject = nullptr;		// If type is object, contains object pointer
+	};
 
-				for (std::string& filename : file_links)
+
+	//////////////////////////////////////////////////////////////////////////
+	// ComponentGraphItem
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Item class for ObjectGraph usage.
+	 * Wraps a ComponentResource and a map of Type to Component, which can be used to look up components by type
+	 * Uses the getDependentTypes function on ComponentResource to determine "pointees"
+	 */
+	class ComponentGraphItem
+	{
+	public:
+		using Type = ObjectPtr<ComponentResource>;
+		using ComponentMap = std::unordered_map<rtti::TypeInfo, std::vector<ObjectPtr<ComponentResource>>>;
+
+		/**
+		 * Creates a graph item.
+		 * @param componentMap Mapping from Type to ComponentResource, used to quickly lookup components by type
+		 * @param component The ComponentResource we're wrapping
+		 */
+		static const ComponentGraphItem create(const ComponentMap& componentMap, const ObjectPtr<ComponentResource>& component)
+		{
+			ComponentGraphItem item;
+			item.mComponentMap = &componentMap;
+			item.mComponent = component;
+
+			return item;
+		}
+
+		/**
+		 * @return ID of the underlying ComponentResource
+		 */
+		const std::string getID() const
+		{
+			return mComponent->mID;
+		}
+
+		/**
+		 * Get the component items the wrapped ComponentResource depends on. It uses the getDependentComponents function on ComponentResource
+		 * to determine what points to what.
+		 *
+		 * @param pointees Output parameter, contains all component items this component item "points" to
+		 * @param errorState If false is returned, contains information about the error.
+		 * @return true is succeeded, false otherwise.
+		 */
+		bool getPointees(std::vector<ComponentGraphItem>& pointees, utility::ErrorState& errorState) const
+		{
+			std::vector<rtti::TypeInfo> dependent_types;
+			mComponent->getDependentComponents(dependent_types);
+
+			for (rtti::TypeInfo& type : dependent_types)
+			{
+				ComponentMap::const_iterator dependent_component = mComponentMap->find(type);
+				if (!errorState.check(dependent_component != mComponentMap->end(), "Component %s was unable to find dependent component of type %s", getID().c_str(), type.get_name().data()))
+					return false;
+
+				const std::vector<ObjectPtr<ComponentResource>> components = dependent_component->second;
+				for (const ObjectPtr<ComponentResource>& component : components)
 				{
-					Edge* edge = new Edge();
-					edge->mType = EEdgeType::File;
-					edge->mSource = source_node;
-					edge->mDest = GetOrCreateFileNode(filename);
-					edge->mDest->mIncomingEdges.push_back(edge);
-					edge->mSource->mOutgoingEdges.push_back(edge);
-					mEdges.push_back(std::unique_ptr<Edge>(edge));
+					ComponentGraphItem item;
+					item.mComponent = component;
+					item.mComponentMap = mComponentMap;
+					pointees.push_back(item);
 				}
-			}
-
-			// Assign graph depth
-			std::vector<Node*> root_nodes;
-			for (auto& kvp : mNodes)
-			{
-				Node* node = kvp.second.get();
-				if (node->mIncomingEdges.empty())
-					root_nodes.push_back(node);
-			}
-
-			for (Node* root_node : root_nodes)
-			{
-				assignDepthRecursive(root_node, 0);
 			}
 
 			return true;
 		}
 
-
-		/*
-		* Returns object graph node.
-		*/
-		Node* FindNode(const std::string& ID)
-		{
-			NodeMap::iterator iter = mNodes.find(ID);
-			if (iter == mNodes.end())
-				return nullptr;
-			
-			return iter->second.get();
-		}
-
-	private:
-
-		/**
-		* Recursively scans outgoing edges of nodes and increments the depth for each level deeper.
-		* We try to avoid rescanning parts of a graph that have already been processed, but sometimes
-		* we must revisit a part of the graph to make sure that the depth is accurate. For example:
-		*
-		*	A ---> B ----------> C
-		*    \                /
-		*     \---> D ---> E -
-		*
-		* In this situation, if the A-B-C branch is visited first, C will have depth 3, but it will
-		* be corrected when processing branch A-D-E-C: object E will have depth 3, which is >= object C's depth.
-		* So, the final depth will become:
-		* 
-		*	A(1) ---> B(2) ----------> C(4)
-		*    \                      /
-		*     \---> D(2) ---> E(3) -
-		*
-		*/
-		void assignDepthRecursive(Node* node, int depth)
-		{
-			// The following is both a test for 'is visited' and 'should we revisit':
-			if (node->mDepth >= depth)
-				return;
-
-			for (Edge* outgoing_edge : node->mOutgoingEdges)
-				assignDepthRecursive(outgoing_edge->mDest, depth + 1);
-
-			node->mDepth = depth;
-		}
-
-
-		/**
-		* Creates a node of the 'object node' type.
-		*/
-		Node* GetOrCreateObjectNode(RTTIObject& object)
-		{
-			Node* result = nullptr;
-			NodeMap::iterator iter = mNodes.find(object.mID);
-			if (iter == mNodes.end())
-			{
-                auto node = std::make_unique<Node>();
-                node->mObject = &object;
-                result = node.get();
-                mNodes.insert(std::make_pair(object.mID, std::move(node)));
-			}
-			else
-			{
-				result = iter->second.get();
-			}
-
-            return result;
-		}
-
-
-		/**
-		* Creates a node of the 'file node' type.
-		*/
-		Node* GetOrCreateFileNode(const std::string& filename)
-		{
-            Node* result = nullptr;
-			NodeMap::iterator iter = mNodes.find(filename);
-			if (iter == mNodes.end())
-			{
-                auto node = std::make_unique<Node>();
-                node->mObject = nullptr;
-                node->mFile = filename;
-                result = node.get();
-                mNodes.insert(std::make_pair(filename, std::move(node)));
-			}
-			else
-			{
-				result = iter->second.get();
-			}
-
-			return result;
-		}
-
-	private:
-		using NodeMap = std::map<std::string, std::unique_ptr<Node>>;
-		NodeMap								mNodes;		// All nodes in the graph, mapped from ID to node
-		std::vector<std::unique_ptr<Edge>>	mEdges;		// All edges in the graph
+		const ComponentMap*				mComponentMap = nullptr;	// Type-to-ComponentResource mapping (passed from outside)
+		ObjectPtr<ComponentResource>	mComponent = nullptr;		// The ComponentResource we're wrapping
 	};
 
+	using RTTIObjectGraph = ObjectGraph<RTTIObjectGraphItem>;
+	using TypeDependencyGraph = ObjectGraph<ComponentGraphItem>;
+
+
+	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	* Walks object graph by traversing incoming edges and pushing the results in an array.
-	* @param node: start node to traverse incoming edges from.
-	* @param incomingObjects: output of the function.
-	*/
-	void addIncomingObjectsRecursive(ObjectGraph::Node* node, std::set<ObjectGraph::Node*>& incomingObjects)
+	 * Helper function to generate a unique ID for an entity or component instance, based on instances already created
+	 */
+	static const std::string generateInstanceID(const std::string& baseID, EntityCreationParameters& entityCreationParams)
 	{
-		if (incomingObjects.find(node) != incomingObjects.end())
-			return;
+		std::string result = baseID;
 
-		incomingObjects.insert(node);
+		int index = 0;
+		while (entityCreationParams.mAllInstancesByID.find(result) != entityCreationParams.mAllInstancesByID.end())
+			result = utility::stringFormat("%s_%d", baseID.c_str(), index++);
 
-		for (ObjectGraph::Edge* incoming_edge : node->mIncomingEdges)
-			addIncomingObjectsRecursive(incoming_edge->mSource, incomingObjects);
+		return result;
 	}
 
 
-	//////////////////////////////////////////////////////////////////////////
-	// ObjectRestorer
-	//////////////////////////////////////////////////////////////////////////
-
-	/*
-	* This is a helper object to restore state during loading. On construction,
-	* an rtti clone is created of all the 'existing' objects. On destruction, the 
-	* clone is used to copy the rtti attribute values back from the clone into the
-	* original object. Also, any 'new' objects that were added to the manager are
-	* removed (destroying them in the process).
-	* To disable restoring of the objects, use enableRestore(false).
-	*/
-	class ObjectRestorer final
+	const std::string getInstanceID(const std::string& baseID)
 	{
-	public:
+		return baseID + "_instance";
+	}
 
-		ObjectRestorer(ResourceManagerService& resourceManagerService, ResourceManagerService::ExistingObjectMap& existingObjects, ObservedObjectList& newObjects) :
-			mResourceManagerService(resourceManagerService),
-			mExistingObjects(existingObjects),
-			mNewObjects(newObjects)
+
+	/** 
+	 * Recursively adds all types to the componentsByType map. Notice that all base classes are inserted into the map as well to make sure we can perform 
+	 * is_derived_from check against this map.
+	 */
+	void addComponentsByType(std::unordered_map<rtti::TypeInfo, std::vector<ObjectPtr<ComponentResource>>>& componentsByType, const ObjectPtr<ComponentResource>& component, const rtti::TypeInfo& type)
+	{
+		componentsByType[type].push_back(component);
+		for (const rtti::TypeInfo& base_type : type.get_base_classes())
+			addComponentsByType(componentsByType, component, base_type);
+	}
+
+
+	/**
+	 * Performs a graph traversal of all objects in the graph that have the ID that matches any of the objects in @param dirtyObjects.
+     * All the edges in the graph are traversed in the incoming direction. Any object that is encountered is added to the set.
+     * Finally, all objects that were visited are sorted on graph depth.
+ 	 */
+	void traverseAndSortIncomingObjects(const std::unordered_map<std::string, rtti::RTTIObject*>& dirtyObjects, const RTTIObjectGraph& objectGraph, std::vector<std::string>& sortedObjects)
+	{
+		// Traverse graph for incoming links and add all of them
+		std::set<RTTIObjectGraph::Node*> nodes;
+		for (auto& kvp : dirtyObjects)
 		{
-			// Make backups of all existing objects by cloning them
-			for (auto kvp : mExistingObjects)
-			{
-				RTTIObject* source = kvp.first;			// file object
-				RTTIObject* target = kvp.second;		// object in ResourceMgr
-				std::unique_ptr<RTTIObject> copy = std::move(rtti::cloneObject(*target));
-                mClonedObjects[source] = std::move(copy); // Mapping from 'read object' to backup of file in ResourceMgr
-			}
+			RTTIObjectGraph::Node* node = objectGraph.findNode(kvp.first);
+
+			// In the case that file links change as part of the file modification(s), it's possible for the dirty node to not be present in the ObjectGraph,
+			// so we can't assert here but need to deal with that case.
+			if (node != nullptr)
+				RTTIObjectGraph::addIncomingObjectsRecursive(node, nodes);
 		}
 
+		// Sort on graph depth for the correct init() order
+		std::vector<RTTIObjectGraph::Node*> sorted_nodes;
+		for (RTTIObjectGraph::Node* object_to_init : nodes)
+			sorted_nodes.push_back(object_to_init);
 
-		~ObjectRestorer()
-		{
-			if (mRestore)
-			{
-				// Copy attributes from clones back to the original objects
-				for (auto kvp : mExistingObjects)
-				{
-					RTTIObject* source = kvp.first;
-					RTTIObject* target = kvp.second;
+		std::sort(sorted_nodes.begin(), sorted_nodes.end(),
+			[](RTTIObjectGraph::Node* nodeA, RTTIObjectGraph::Node* nodeB) { return nodeA->mDepth > nodeB->mDepth; });
 
-					ResourceManagerService::ClonedObjectMap::const_iterator clone = mClonedObjects.find(source);
-					assert(clone != mClonedObjects.end());
-
-					rtti::copyObject(*(clone->second), *target);
-				}
-
-				// Remove objects from resource manager if they were added
-				for (auto& object : mNewObjects)
-				{
-					nap::Resource* resource = rtti_cast<Resource>(object);
-					if (resource != nullptr)
-					{
-						if (mResourceManagerService.findResource(resource->mID) != nullptr)
-							mResourceManagerService.removeResource(resource->mID);
-					}
-				}
-			}
-		}
-
-
-		/**
-		* Disables restoring of attributes on destruction.
-		*/
-		void clear()
-		{ 
-			mRestore = false; 
-		}
-
-
-		/**
-		* Returns objects cloned from existing objects during init().
-		*/
-		const ResourceManagerService::ClonedObjectMap& getClonedObjects() const
-		{ 
-			return mClonedObjects; 
-		}
-
-	private:
-		ResourceManagerService&							mResourceManagerService;
-		ResourceManagerService::ClonedObjectMap			mClonedObjects;				// Objects as cloned from existing objects during init()
-		ResourceManagerService::ExistingObjectMap&		mExistingObjects;			// Objects existing in manager
-		ObservedObjectList&								mNewObjects;				// Objects as added to the manager during loading
-		bool											mRestore = true;			// Flag indicating whether to enable or disable restoring during destruction
-	};
+		for (RTTIObjectGraph::Node* sorted_object_to_init : sorted_nodes)
+			if (sorted_object_to_init->mItem.mObject != nullptr)
+				sortedObjects.push_back(sorted_object_to_init->mItem.mObject->mID);
+	}
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -356,141 +284,63 @@ namespace nap
 
 	ResourceManagerService::ResourceManagerService() :
 		mDirectoryWatcher(std::make_unique<DirectoryWatcher>())
-	{ }
+	{ 
+	}
 
 
-	/**
-	* Copies rtti attributes from File object to object existing in the manager. Patches the unresolved pointer list so the it contains the correct object.
-	*/
-	bool ResourceManagerService::updateExistingObjects(const ExistingObjectMap& existingObjectMap, UnresolvedPointerList& unresolvedPointers, utility::ErrorState& errorState)
+	void ResourceManagerService::initialized()
 	{
-		for (auto kvp : existingObjectMap)
-		{
-			Resource* resource = rtti_cast<Resource>(kvp.first);
-			if (resource == nullptr)
-				continue;
-
-			Resource* existing_resource = rtti_cast<Resource>(kvp.second);
-			assert(existing_resource != nullptr);
-
-			if (!errorState.check(existing_resource->get_type() == resource->get_type(), "Unable to update object, different types"))		// todo: actually support this properly
-				return false;
-
-			// Find all links from the resource
-			std::vector<rtti::ObjectLink> links;
-			rtti::findObjectLinks(*resource, links);
-
-			// We need to update the UnresolvedPointers to by unresolved against the object from the manager, instead of the object from the file
-			for (const rtti::ObjectLink& link : links)
-			{
-				// Patch the mObject member: it should not use the File object anymore, but the object from the manager
-				int unresolved_pointer_index = findUnresolvedPointer(unresolvedPointers, resource, link.mSourcePath);
-				assert(unresolved_pointer_index != -1);
-				unresolvedPointers[unresolved_pointer_index].mObject = existing_resource;
-			}
-
-			// Copy regular properties
-			for (const rtti::Property& property : resource->get_type().get_properties())
-			{
-				if (!property.get_type().is_pointer())
-				{
-					rtti::Variant new_value = property.get_value(*resource);
-					property.set_value(existing_resource, new_value);
-				}
-			}
-		}
-
-		return true;
+		mRootEntity = std::make_unique<EntityInstance>(getCore());
 	}
 
 
 	/**
-	* Builds an object graph of all objects currently in the manager. Then, from all objects that are effectively changed (determined by an RTTI diff), it traverses 
-	* the object graph to find the minimum set of objects that requires an init. Finally, the list of objects is sorted on object graph depth so that the init() order
-	* is correct.
-	*/
-	bool ResourceManagerService::determineObjectsToInit(const ExistingObjectMap& existingObjects, const ClonedObjectMap& clonedObjects, const ObservedObjectList& newObjects, const std::string& externalChangedFile, ObservedObjectList& objectsToInit, utility::ErrorState& errorState)
+	 * Add all objects from the resource manager into an object graph, overlayed by @param objectsToUpdate.
+ 	 */
+	bool ResourceManagerService::buildObjectGraph(const ObjectByIDMap& objectsToUpdate, RTTIObjectGraph& objectGraph, utility::ErrorState& errorState)
 	{
-		// Build an object graph of all objects in the ResourceMgr
+		// Build an object graph of all objects in the ResourceMgr. If any object is in the objectsToUpdate list,
+		// that object is added instead. This makes objectsToUpdate and 'overlay'.
 		ObservedObjectList all_objects;
-		for (auto& kvp : mResources)
-			all_objects.push_back(kvp.second.get());
-
-		ObjectGraph object_graph;
-		if (!object_graph.Build(all_objects, errorState))
-			return false;
-
-		// Build set of changed IDs. These are objects that have different attributes, and objects that are added.
-		// Note: we need to use the cloned objects because the original have been copied over already.
-		std::set<std::string> dirty_nodes;
-		for (auto& kvp : clonedObjects)
+		for (auto& kvp : mObjects)
 		{
-			ExistingObjectMap::const_iterator existing_object = existingObjects.find(kvp.first);
-			assert(existing_object != existingObjects.end());
-
-			if (!rtti::areObjectsEqual(*existing_object->second, *kvp.second.get()))
-				dirty_nodes.insert(kvp.first->mID);
+			ObjectByIDMap::const_iterator object_to_update = objectsToUpdate.find(kvp.first);
+			if (object_to_update == objectsToUpdate.end())
+				all_objects.push_back(kvp.second.get());
+			else
+				all_objects.push_back(object_to_update->second.get());
 		}
 
-		// All new objects need an init
-		for (RTTIObject* new_object : newObjects)
-			dirty_nodes.insert(new_object->mID);
+		// Any objects not yet in the manager are new and need to be added to the graph as well
+		for (auto& kvp : objectsToUpdate)
+			if (mObjects.find(kvp.first) == mObjects.end())
+				all_objects.push_back(kvp.second.get());
+
+		if (!objectGraph.build(all_objects, [](rtti::RTTIObject* object) { return RTTIObjectGraphItem::create(object); }, errorState))
+			return false;
+
+		return true;
+	}
+	
+
+	/**
+	 * From all objects that are effectively changed or added, traverses the object graph to find the minimum set of objects that requires an init. 
+	 * The list of objects is sorted on object graph depth so that the init() order is correct.
+	 */
+	void ResourceManagerService::determineObjectsToInit(const RTTIObjectGraph& objectGraph, const ObjectByIDMap& objectsToUpdate, const std::string& externalChangedFile, std::vector<std::string>& objectsToInit)
+	{
+		// Mark all the objects to update as 'dirty', we need to init() those and 
+		// all the objects that point to them (recursively)
+		std::unordered_map<std::string, nap::RTTIObject*> dirty_nodes;
+		for (auto& kvp : objectsToUpdate)
+			dirty_nodes.insert(std::make_pair(kvp.first, kvp.second.get()));
 
 		// Add externally changed file that caused load of this json file
 		if (!externalChangedFile.empty())
-			dirty_nodes.insert(externalChangedFile);
+			dirty_nodes.insert(std::make_pair(externalChangedFile, nullptr));
 
-		// Traverse graph for incoming links and add all of them
-		std::set<ObjectGraph::Node*> objects_to_init;
-		for (const std::string& dirty_node : dirty_nodes)
-		{
-			ObjectGraph::Node* node = object_graph.FindNode(dirty_node);
-		
-			// In the case that file links change as part of the file modification(s), it's possible for the dirty node to not be present in the ObjectGraph,
-			// so we can't assert here but need to deal with that case.
-			if (node != nullptr)
-				addIncomingObjectsRecursive(node, objects_to_init);
-		}
-
-		// Sort on graph depth for the correct init() order
-		std::vector<ObjectGraph::Node*> sorted_objects_to_init;
-		for (ObjectGraph::Node* object_to_init : objects_to_init)
-			sorted_objects_to_init.push_back(object_to_init);
-
-		std::sort(sorted_objects_to_init.begin(), sorted_objects_to_init.end(),
-				[](ObjectGraph::Node* nodeA, ObjectGraph::Node* nodeB) { return nodeA->mDepth > nodeB->mDepth; });
-
-		for (ObjectGraph::Node* sorted_object_to_init : sorted_objects_to_init)
-			if (sorted_object_to_init->mObject != nullptr)
-				objectsToInit.push_back(sorted_object_to_init->mObject);
-
-		return true;
-	}
-
-	
-	/** 
-	* Splits fileObjects into lists of objects that exist in the manager and do not yet exist.
-	* @param fileObjects: objects as read from file.
-	* @param existingObjects: mapping from file object to object in manager
-	* @param newObjects: list of objects not yet in manager.
-	*/
-	void ResourceManagerService::splitFileObjects(OwnedObjectList& fileObjects, ExistingObjectMap& existingObjects, ObservedObjectList& newObjects)
-	{
-		// Split file objects into new/existing/target lists
-		for (auto& source_object : fileObjects)
-		{
-			Resource* resource = rtti_cast<Resource>(source_object.get());
-			if (resource == nullptr)
-				continue;
-
-			std::string id = resource->mID;
-
-			Resource* existing_resource = findResource(id);
-			if (existing_resource == nullptr)
-				newObjects.push_back(source_object.get());
-			else
-				existingObjects.insert({ source_object.get(), existing_resource });
-		}
+		// Traverse graph for incoming links and add all of them, and sort them based on graph depth
+		traverseAndSortIncomingObjects(dirty_nodes, objectGraph, objectsToInit);
 	}
 
 
@@ -500,17 +350,266 @@ namespace nap
 	}
 
 
-	/*
-	* Important to understand in this function is how ownership flows through the various data structures.
-	* First, objects are loaded into file_objects and owned by it. Any objects that did not yet exist
-	* in the manager are moved to the manager (so ownership is transfered for those objects, but those
-	* objects only).
-	* Existing objects are copied over from the file object to the existing object, and the source file object
-	* will be deleted when file_objects goes out of scope, as ownership will remain in the file_objects list for
-	* the existing objects.
-	* When a rollback occurs, any newly added objects are removed from the manager, effectively deleting them.
-	* Other maps/list like existing/new are merely observers into the file objects and manager objects.
-	*/
+	bool ResourceManagerService::resolvePointers(ObjectByIDMap& objectsToUpdate, const UnresolvedPointerList& unresolvedPointers, utility::ErrorState& errorState)
+	{
+		for (const UnresolvedPointer& unresolved_pointer : unresolvedPointers)
+		{
+			// Objects in objectsToUpdate have preference over the manager's objects
+			RTTIObject* target_object = nullptr;
+			ObjectByIDMap::iterator object_to_update = objectsToUpdate.find(unresolved_pointer.mTargetID);
+			if (object_to_update == objectsToUpdate.end())
+				target_object = findObject(unresolved_pointer.mTargetID).get();
+			else
+				target_object = object_to_update->second.get();
+
+			if (!errorState.check(target_object != nullptr, "Unable to resolve link to object %s from attribute %s", unresolved_pointer.mTargetID.c_str(), unresolved_pointer.mRTTIPath.toString().c_str()))
+				return false;
+
+			rtti::ResolvedRTTIPath resolved_path;
+			if (!errorState.check(unresolved_pointer.mRTTIPath.resolve(unresolved_pointer.mObject, resolved_path), "Failed to resolve RTTIPath %s", unresolved_pointer.mRTTIPath.toString().c_str()))
+				return false;
+
+			rtti::TypeInfo resolved_path_type = resolved_path.getType();
+			rtti::TypeInfo actual_type = resolved_path_type.is_wrapper() ? resolved_path_type.get_wrapped_type() : resolved_path_type;
+
+			if (!errorState.check(target_object->get_type().is_derived_from(actual_type), "Failed to resolve pointer: target of pointer {%s}:%s is of the wrong type (found '%s', expected '%s')",
+				unresolved_pointer.mObject->mID.c_str(), unresolved_pointer.mRTTIPath.toString().c_str(), target_object->get_type().get_name().data(), actual_type.get_raw_type().get_name().data()))
+			{
+				return false;
+			}
+
+			assert(actual_type.is_pointer());
+			bool succeeded = resolved_path.setValue(target_object);
+			if (!errorState.check(succeeded, "Failed to resolve pointer"))
+				return false;
+		}
+
+		return true;
+	}
+
+
+	// inits all objects 
+	bool ResourceManagerService::initObjects(const std::vector<std::string>& objectsToInit, const ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState)
+	{
+		// Init all objects in the correct order
+		for (const std::string& id : objectsToInit)
+		{
+			rtti::RTTIObject* object = nullptr;
+			
+			// We perform lookup by ID. Objects in objectsToUpdate have preference over the manager's objects.
+			ObjectByIDMap::const_iterator updated_object = objectsToUpdate.find(id);
+			if (updated_object != objectsToUpdate.end())
+				object = updated_object->second.get();
+			else
+				object = findObject(id).get();
+
+			if (!object->init(errorState))
+				return false;
+		}
+
+		return true;
+	}
+
+
+	const ObjectPtr<EntityInstance> ResourceManagerService::createEntity(const EntityResource& entityResource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	{
+		// Create a single entity
+		std::vector<std::string> generated_ids;
+		std::vector<const EntityResource*> entityResources;
+		entityResources.push_back(&entityResource);
+		bool result = createEntities(entityResources, entityCreationParams, generated_ids, errorState);
+		if (!result)
+			return false;
+
+		assert(generated_ids.size() == 1);
+		return entityCreationParams.mEntitiesByID.find(generated_ids[0])->second.get();
+	}
+
+
+	bool ResourceManagerService::createEntities(const std::vector<const EntityResource*>& entityResources, EntityCreationParameters& entityCreationParams, std::vector<std::string>& generatedEntityIDs, utility::ErrorState& errorState)
+	{
+		std::unordered_map<ComponentResource*, ComponentInstance*> new_component_instances;
+
+		// Create all entity instances and component instances
+		for (const EntityResource* entity_resource : entityResources)
+		{
+			EntityInstance* entity_instance = new EntityInstance(getCore());
+			entity_instance->mID = generateInstanceID(getInstanceID(entity_resource->mID), entityCreationParams);
+
+			entityCreationParams.mEntitiesByID.emplace(std::make_pair(entity_instance->mID, std::move(std::unique_ptr<EntityInstance>(entity_instance))));
+			entityCreationParams.mAllInstancesByID.insert(std::make_pair(entity_instance->mID, entity_instance));
+			generatedEntityIDs.push_back(entity_instance->mID);
+
+			for (auto& component_resource : entity_resource->mComponents)
+			{
+				const rtti::TypeInfo& instance_type = component_resource->getInstanceType();
+				assert(instance_type.can_create_instance());
+
+				std::unique_ptr<ComponentInstance> component_instance(instance_type.create<ComponentInstance>({ *entity_instance }));
+				assert(component_instance);
+				component_instance->mID = generateInstanceID(getInstanceID(component_resource->mID), entityCreationParams);
+
+				new_component_instances.insert(std::make_pair(component_resource.get(), component_instance.get()));
+				entityCreationParams.mAllInstancesByID.insert(std::make_pair(component_instance->mID, component_instance.get()));
+				entity_instance->addComponent(std::move(component_instance));
+			}
+		}
+
+		// We go over all entities and their components and fill in all the entity instances for all EntityPtrs
+		for (const EntityResource* entity_resource : entityResources)
+		{
+			for (auto& component_resource : entity_resource->mComponents)
+			{
+				std::vector<rtti::ObjectLink> links;
+				rtti::findObjectLinks(*component_resource, links);
+
+				for (rtti::ObjectLink& link : links)
+				{
+					rtti::ResolvedRTTIPath resolved_path;
+					if (!errorState.check(link.mSourcePath.resolve(component_resource.get(), resolved_path), "Encountered link from object %s that could not be resolved: %s", component_resource->mID.c_str(), link.mSourcePath.toString().c_str()))
+						return false;
+
+					// Skip non-EntityPtr types
+					if (resolved_path.getType() != RTTI_OF(EntityPtr))
+						continue;
+
+					EntityPtr entity_ptr = resolved_path.getValue().convert<EntityPtr>();
+					EntityResource* target_entity_resource = entity_ptr.getResource();
+
+					// Skip null targets
+					if (target_entity_resource == nullptr)
+						continue;
+
+					// Only AutoSpawn resources have a one-to-one relationship between resource and instance. We do not support pointers to non-AutoSpawn objects
+					if (!errorState.check(target_entity_resource->mAutoSpawn, "Encountered pointer from object %s to non-AutoSpawn entity %s. This is not supported.", component_resource->mID.c_str(), target_entity_resource->mID.c_str()))
+						return false;
+
+					// Find the EntityInstance and fill it in in the EntityPtr.mInstance
+					EntityByIDMap::iterator target_entity_instance = entityCreationParams.mEntitiesByID.find(getInstanceID(target_entity_resource->mID));
+					assert(target_entity_instance != entityCreationParams.mEntitiesByID.end());
+					entity_ptr.mInstance = target_entity_instance->second.get();
+
+					resolved_path.setValue(entity_ptr);
+				}
+			}
+		}
+
+		// Now that all entities are created, make sure that parent-child relations are set correctly
+		for (const EntityResource* entity_resource : entityResources)
+		{
+			EntityByIDMap::iterator entity_instance = entityCreationParams.mEntitiesByID.find(getInstanceID(entity_resource->mID));
+			assert(entity_instance != entityCreationParams.mEntitiesByID.end());
+
+			for (const ObjectPtr<EntityResource>& child_entity_resource : entity_resource->mChildren)
+			{
+				EntityByIDMap::iterator child_entity_instance = entityCreationParams.mEntitiesByID.find(getInstanceID(child_entity_resource->mID));
+				assert(child_entity_instance != entityCreationParams.mEntitiesByID.end());
+				entity_instance->second->addChild(*child_entity_instance->second);
+			}
+		}
+
+		// Now that all entities are setup correctly, initialize the component instances with the
+		// component resource data.
+		for (const EntityResource* entity_resource : entityResources)
+		{
+			std::unordered_map<rtti::TypeInfo, std::vector<ObjectPtr<ComponentResource>>> components_by_type;
+			for (auto& node : entity_resource->mComponents)
+				addComponentsByType(components_by_type, node.get(), node->get_type());
+
+			TypeDependencyGraph graph;
+			if (!graph.build(entity_resource->mComponents, [&components_by_type](ObjectPtr<ComponentResource>& component) { return ComponentGraphItem::create(components_by_type, component); }, errorState))
+				return false;
+
+			std::vector<TypeDependencyGraph::Node*> sorted_nodes = graph.getSortedNodes();
+
+			for (TypeDependencyGraph::Node* node : sorted_nodes)
+			{
+				auto& pos = new_component_instances.find(node->mItem.mComponent.get());
+				assert(pos != new_component_instances.end());
+
+				if (!pos->second->init(node->mItem.mComponent, entityCreationParams, errorState))
+					return false;
+			}
+		}
+
+		return true;
+	}
+
+
+	bool ResourceManagerService::initEntities(const RTTIObjectGraph& objectGraph, const ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState)
+	{
+		// Build list of all entities we need to update. We need to use the objects in objectsToUpdate over those already in the ResourceManager
+		// In essence, objectsToUpdate functions as an 'overlay' on top of the ResourceManager
+		std::unordered_map<std::string, rtti::RTTIObject*> entities_to_spawn;
+		
+		// First add all EntityResources in the list of objects to update
+		for (auto& kvp : objectsToUpdate)
+		{
+			if (kvp.second->get_type() != RTTI_OF(EntityResource))
+				continue;
+
+			EntityResource* resource = rtti_cast<EntityResource>(kvp.second.get());
+			if (resource->mAutoSpawn)
+				entities_to_spawn.insert(std::make_pair(resource->mID, resource));
+		}
+
+		// Next, go through all EntityResources currently in the resource manager and add them if they're not in the list of objects to update
+		for (auto& kvp : mObjects)
+		{
+			if (kvp.second->get_type() != RTTI_OF(EntityResource))
+				continue;
+
+			ObjectByIDMap::const_iterator object_to_update = objectsToUpdate.find(kvp.first);
+			if (object_to_update == objectsToUpdate.end())
+			{
+				EntityResource* resource = rtti_cast<EntityResource>(kvp.second.get());
+				if (resource->mAutoSpawn)
+					entities_to_spawn.insert(std::make_pair(resource->mID, resource));
+			}
+		}
+
+		// Traverse the object graph and sort all entities based on their dependencies
+		// This is determined based on an object graph traversal.
+		std::vector<std::string> sorted_entity_ids_to_spawn;
+		traverseAndSortIncomingObjects(entities_to_spawn, objectGraph, sorted_entity_ids_to_spawn);
+		
+		// Use the object IDs that were found to create a vector of objects
+		std::vector<const EntityResource*> sorted_entities_to_spawn;
+		for (const std::string& id : sorted_entity_ids_to_spawn)
+		{
+			auto pos = entities_to_spawn.find(id);
+
+			// We can also encounter non-entity objects in the object graph, so we ignore those
+			if (pos == entities_to_spawn.end())
+				continue;
+
+			assert(pos->second->get_type().is_derived_from<EntityResource>());
+
+			sorted_entities_to_spawn.push_back(rtti_cast<EntityResource>(pos->second));
+		}
+
+		std::vector<std::string> generated_ids;
+		EntityCreationParameters entityCreationParams;
+		if (!createEntities(sorted_entities_to_spawn, entityCreationParams, generated_ids, errorState))
+			return false;
+
+		// Start with an empty root and add all entities without a parent to the root
+		mRootEntity->clearChildren();
+		for (auto& kvp : entityCreationParams.mEntitiesByID)
+		{
+			if (kvp.second->getParent() == nullptr)
+				mRootEntity->addChild(*kvp.second);
+		}
+
+		patchObjectPtrs(entityCreationParams.mAllInstancesByID);
+
+		// Replace entities currently in the resource manager with the new set
+		mEntities = std::move(entityCreationParams.mEntitiesByID);
+		
+		return true;
+	}
+
+
 	bool ResourceManagerService::loadFile(const std::string& filename, const std::string& externalChangedFile, utility::ErrorState& errorState)
 	{
 		// ExternalChangedFile should only be used if it's different from the file being reloaded
@@ -521,108 +620,99 @@ namespace nap
 		if (!readJSONFile(filename, getFactory(), read_result, errorState))
 			return false;
 
-		ExistingObjectMap existing_objects;			// Mapping from 'file object' to 'existing object in ResourceMgr'. This is an observer relationship.
-		ObservedObjectList new_objects;				// Objects not (yet) present in ResourceMgr.
-
-		// Split file objects into observer lists for new/existing objects. 
-		splitFileObjects(read_result.mReadObjects, existing_objects, new_objects);
-
-		// The ObjectRestorer is capable of undoing changes that we are going to make in the loading process
-		// (adding objects, updating objects).
-		ObjectRestorer object_restorer(*this, existing_objects, new_objects);
-
-		// Update attributes of objects already existing in ResourceMgr
-		if (!updateExistingObjects(existing_objects, read_result.mUnresolvedPointers, errorState))
-			return false;
-
-		// Add objects that were not yet present in ResourceMgr
-		// Note that we cannot iterate over new_objects as we need to transfer ownership
-		// of the file object to the resource manager.
-		for (auto& object : read_result.mReadObjects)
+		// We first gather the objects that require an update. These are the new objects and the changed objects.
+		// Change detection is performed by comparing RTTI attributes. Very important to note is that, after reading
+		// a json file, pointers are unresolved. When comparing them to the existing objects, they are always different
+		// because in the existing objects the pointers are already resolved.
+		// To solve this, we have a special RTTI comparison function that receives the unresolved pointer list from readJSONFile.
+		// Internally, when a pointer is found, the ID of the unresolved pointer is checked against the mID of the target object.
+		//
+		// The reason why we cannot first resolve and then compare, is because deciding what to resolve against what objects
+		// depends on the dirty comparison.
+		// Finally, we could improve on the unresolved pointer check if we could introduce actual UnresolvedPointer objects
+		// that the pointers are pointing to after loading. These would hol3d the ID, so that comparisons could be made easier.
+		// The reason we don't do this is because it isn't possible to do so in RTTR as it's very strict in it's type safety.
+		ObjectByIDMap objects_to_update;
+		for (auto& read_object : read_result.mReadObjects)
 		{
-			nap::Resource* resource = rtti_cast<Resource>(object.get());
-			if (resource == nullptr)
-				continue;
+			std::string id = read_object->mID;
 
-			if (findResource(resource->mID) != nullptr)
-				continue;
-
-			// Note: because the manager currently owns only Resource types, we need to release
-			// the Object* here and create a new unique_ptr of type Resource.
-			object.release();
-			addResource(resource->mID, std::unique_ptr<Resource>(resource));
-		}
-
-		// Resolve all unresolved pointers against the ResourceMgr
-		for (const UnresolvedPointer& unresolved_pointer : read_result.mUnresolvedPointers)
-		{
-			nap::Resource* source_resource = rtti_cast<Resource>(unresolved_pointer.mObject);
-			if (source_resource == nullptr)
-				continue;
-
-			Resource* target_resource = findResource(unresolved_pointer.mTargetID);
-			if (!errorState.check(target_resource != nullptr, "Unable to resolve link to object %s from attribute %s", unresolved_pointer.mTargetID.c_str(), unresolved_pointer.mRTTIPath.toString().c_str()))
-				return false;
-
-			rtti::ResolvedRTTIPath resolved_path;
-			if (!errorState.check(unresolved_pointer.mRTTIPath.resolve(unresolved_pointer.mObject, resolved_path), "Failed to resolve RTTIPath %s", unresolved_pointer.mRTTIPath.toString().c_str()))
-				return false;
-
-			if (!errorState.check(target_resource->get_type().is_derived_from(resolved_path.getType()), "Failed to resolve pointer: target of pointer {%s}:%s is of the wrong type (found '%s', expected '%s')",
-									unresolved_pointer.mObject->mID.c_str(), unresolved_pointer.mRTTIPath.toString().c_str(), target_resource->get_type().get_name().data(), resolved_path.getType().get_raw_type().get_name().data()))
+			ObjectByIDMap::iterator existing_object = mObjects.find(id);
+			if (existing_object == mObjects.end() ||
+				!areObjectsEqual(*read_object.get(), *existing_object->second.get(), read_result.mUnresolvedPointers))
 			{
-				return false;
-			}				
-
-			assert(resolved_path.getType().is_pointer());
-			bool succeeded = resolved_path.setValue(target_resource);
- 			if (!errorState.check(succeeded, "Failed to resolve pointer"))
-				return false;
-		}
-
-		// Find out what objects to init and in what order to init them
-		ObservedObjectList objects_to_init;
-		if (!determineObjectsToInit(existing_objects, object_restorer.getClonedObjects(), new_objects, externalChangedFile, objects_to_init, errorState))
-			return false;
-		
-		// Init all objects in the correct order
-		std::vector<Resource*> initted_objects;
-		bool init_success = true;
-		for (RTTIObject* object : objects_to_init)
-		{
-			nap::Resource* resource = rtti_cast<Resource>(object);
-			if (resource == nullptr)
-				continue;
-
-			initted_objects.push_back(resource);
-
-			if (!resource->init(errorState))
-			{
-				init_success = false;
-				break;
+				objects_to_update.emplace(std::make_pair(id, std::move(read_object)));
 			}
 		}
 
-		// In case of error, rollback all modifications done by attempted init calls
-		if (!init_success)
-		{
-			for (Resource* initted_object : initted_objects)
-				initted_object->finish(Resource::EFinishMode::ROLLBACK);
 
+		// Resolve all unresolved pointers. The set of objects to resolve against are the objects in the ResourceManager, with the new/dirty
+		// objects acting as an overlay on the existing objects. In other words, when resolving, objects read from the json file have 
+		// preference over objects in the resource manager as these are the ones that will eventually be (re)placed in the manager.
+		if (!resolvePointers(objects_to_update, read_result.mUnresolvedPointers, errorState))
 			return false;
+
+		// We instantiate a helper that will perform a rollback of any pointer patching that we have done.
+		// In case of success we clear this helper.
+		// We only ever need to rollback the pointer patching, because the resource manager remains untouched
+		// until the very end where we know that all init() calls have succeeded
+		RollbackHelper rollback_helper(*this);
+
+		// Patch ObjectPtrs so that they point to the updated object instead of the old object. We need to do this before determining
+		// init order, otherwise a part of the graph may still be pointing to the old objects.
+		patchObjectPtrs(objects_to_update);
+
+		// Build object graph of all the objects in the manager, overlayed by the objects we want to update. Later, we will
+		// performs queries against this graph to determine init order for both resources and entities.
+		RTTIObjectGraph object_graph;
+		if (!buildObjectGraph(objects_to_update, object_graph, errorState))
+			return false;
+
+		// Find out what objects to init and in what order to init them
+		std::vector<std::string> objects_to_init;
+		determineObjectsToInit(object_graph, objects_to_update, externalChangedFile, objects_to_init);
+
+		// The objects that require an init may contain objects that were not present in the file (because they are
+		// pointing to objects that will be reconstructed and initted). In that case we reconstruct those objects 
+		// as well by cloning them and pushing them into the objects_to_update list.
+		for (const std::string& object_to_init : objects_to_init)
+		{
+			if (objects_to_update.find(object_to_init) == objects_to_update.end())
+			{
+				RTTIObject* object = findObject(object_to_init).get();
+				assert(object);
+
+				std::unique_ptr<RTTIObject> cloned_object = rtti::cloneObject(*object, getFactory());
+				objects_to_update.emplace(std::make_pair(cloned_object->mID, std::move(cloned_object)));
+			}
 		}
 
-		// Everything was successful. Tell the restorer not to perform a rollback of the state.
-		object_restorer.clear();
+		// Patch again to update pointers to objects that were cloned
+		patchObjectPtrs(objects_to_update);
 
-		// Everything successful, commit changes
-		for (Resource* resource : initted_objects)
-			resource->finish(Resource::EFinishMode::COMMIT);
+		// init all objects in the correct order
+		if (!initObjects(objects_to_init, objects_to_update, errorState))
+			return false;
+
+		// Init all entities
+		if (!initEntities(object_graph, objects_to_update, errorState))
+			return false;
+
+		// In case all init() operations were successful, we can now replace the objects
+		// in the manager by the new objects. This effectively destroys the old objects as well.
+		for (auto& kvp : objects_to_update)
+		{
+			mObjects.erase(kvp.first);
+			mObjects.emplace(std::make_pair(kvp.first, std::move(kvp.second)));
+		}
 
 		for (const FileLink& file_link : read_result.mFileLinks)
 			addFileLink(filename, file_link.mTargetFile);
 
 		mFilesToWatch.insert(toComparableFilename(filename));
+		
+		// Everything was successful, don't rollback any changes that were made
+		rollback_helper.clear();
 
 		return true;
 	}
@@ -680,28 +770,28 @@ namespace nap
 	}
 
 
-	Resource* ResourceManagerService::findResource(const std::string& id)
+	const ObjectPtr<RTTIObject> ResourceManagerService::findObject(const std::string& id)
 	{
-		const auto& it = mResources.find(id);
+		const auto& it = mObjects.find(id);
 		
-		if (it != mResources.end())
-			return it->second.get();
+		if (it != mObjects.end())
+			return ObjectPtr<RTTIObject>(it->second.get());
 		
 		return nullptr;
 	}
 
 
-	void ResourceManagerService::addResource(const std::string& id, std::unique_ptr<Resource> resource)
+	void ResourceManagerService::addObject(const std::string& id, std::unique_ptr<RTTIObject> object)
 	{
-		assert(mResources.find(id) == mResources.end());
-		mResources.emplace(id, std::move(resource));
+		assert(mObjects.find(id) == mObjects.end());
+		mObjects.emplace(id, std::move(object));
 	}
 
 
-	void ResourceManagerService::removeResource(const std::string& id)
+	void ResourceManagerService::removeObject(const std::string& id)
 	{
-		assert(mResources.find(id) != mResources.end());
-		mResources.erase(mResources.find(id));
+		assert(mObjects.find(id) != mObjects.end());
+		mObjects.erase(mObjects.find(id));
 	}
 
 
@@ -725,37 +815,48 @@ namespace nap
 	}
 
 
-	Resource* ResourceManagerService::createResource(const rtti::TypeInfo& type)
+	const ObjectPtr<RTTIObject> ResourceManagerService::createObject(const rtti::TypeInfo& type)
 	{
-		if (!type.is_derived_from(RTTI_OF(Resource)))
+		if (!type.is_derived_from(RTTI_OF(RTTIObject)))
 		{
-			nap::Logger::warn("unable to create resource of type: %s", type.get_name().data());
+			nap::Logger::warn("unable to create object of type: %s", type.get_name().data());
 			return nullptr;
 		}
 
 		if (!type.can_create_instance())
 		{
-			nap::Logger::warn("can't create resource instance of type: %s", type.get_name().data());
+			nap::Logger::warn("can't create object instance of type: %s", type.get_name().data());
 			return nullptr;
 		}
 
-		// Create instance of resource
-		Resource* resource = rtti_cast<Resource>(getFactory().create(type));
+		// Create instance of object
+		RTTIObject* object = rtti_cast<RTTIObject>(getFactory().create(type));
 
 		// Construct path
 		std::string type_name = type.get_name().data();
-		std::string reso_path = utility::stringFormat("resource::%s", type_name.c_str());
+		std::string reso_path = utility::stringFormat("object::%s", type_name.c_str());
 		std::string reso_unique_path = reso_path;
 		int idx = 0;
-		while (mResources.find(reso_unique_path) != mResources.end())
+		while (mObjects.find(reso_unique_path) != mObjects.end())
 		{
 			++idx;
 			reso_unique_path = utility::stringFormat("%s_%d", reso_path.c_str(), idx);
 		}
 
-		resource->mID = reso_unique_path;
-		addResource(reso_unique_path, std::unique_ptr<Resource>(resource));
+		object->mID = reso_unique_path;
+		addObject(reso_unique_path, std::unique_ptr<RTTIObject>(object));
 		
-		return resource;
+		return ObjectPtr<RTTIObject>(object);
 	}
+
+
+	const ObjectPtr<EntityInstance> ResourceManagerService::findEntity(const std::string& inID) const
+	{
+		EntityByIDMap::const_iterator pos = mEntities.find(getInstanceID(inID));
+		if (pos == mEntities.end())
+			return nullptr;
+
+		return pos->second.get();
+	}
+
 }

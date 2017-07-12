@@ -33,7 +33,7 @@ namespace nap
 	}
 
 	// Returns the resource this link points to
-	Resource* ResourceLinkAttribute::getResource() const
+	const ObjectPtr<Resource>& ResourceLinkAttribute::getResource() const
 	{
 		if (isDirty)
 			isDirty = resolve();
@@ -130,7 +130,7 @@ namespace nap
 		}
 
 		// Find resource
-		nap::Resource* resource = service->findResource(getValue());
+		ObjectPtr<Resource> resource = service->findObject(getValue());
 		if (resource == nullptr)
 		{
 			nap::Logger::warn("unable to resolve resource path, resource manager does not contain asset with path: %s", getValue().c_str());

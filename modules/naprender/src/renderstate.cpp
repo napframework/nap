@@ -5,8 +5,6 @@ namespace nap
 	// Forces the setting of all render states as currently set.
 	void RenderState::force()
 	{
-		opengl::enableDepthTest(mEnableDepthTest);
-		opengl::enableBlending(mEnableBlending);
 		opengl::enableMultiSampling(mEnableMultiSampling);
 		opengl::setLineWidth(mLineWidth);
 		opengl::setPointSize(mPointSize);
@@ -17,14 +15,6 @@ namespace nap
 	// will actually cause openGL calls.
 	void RenderState::update(const RenderState& targetRenderState)
 	{
-		if (targetRenderState.mEnableDepthTest != mEnableDepthTest)
-		{
-			opengl::enableDepthTest(targetRenderState.mEnableDepthTest);
-		}
-		if (targetRenderState.mEnableBlending != mEnableBlending)
-		{
-			opengl::enableBlending(targetRenderState.mEnableBlending);
-		}
 		if (targetRenderState.mEnableMultiSampling != mEnableMultiSampling)
 		{
 			opengl::enableMultiSampling(targetRenderState.mEnableMultiSampling);

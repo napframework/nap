@@ -93,7 +93,7 @@ namespace nap
 		if (!errorState.check(scene != nullptr, "Unable to read %s", fbxPath.c_str()))
 			return false;
 
-		if (!errorState.check(scene->mNumMeshes != 0, "No meshes found in FBX"))
+		if (!errorState.check(scene->mNumMeshes != 0, "No meshes found in FBX %s", fbxPath.c_str()))
 			return false;
 
 		uint64_t fbx_mod_time;
@@ -115,7 +115,7 @@ namespace nap
 			else
 			{
 				if (mesh->mName.length != 0)
-					converted_name = utility::stringFormat("%s_%s", fbxPath.c_str(), mesh->mName.C_Str());
+					converted_name = utility::stringFormat("%s_%s", getFileNameWithoutExtension(fbxPath).c_str(), mesh->mName.C_Str());
 				else
 					converted_name = utility::stringFormat("%s_%d", getFileNameWithoutExtension(fbxPath).c_str(), i);			
 			}				
@@ -245,10 +245,10 @@ namespace nap
 		if (!errorState.check(readBinary(meshPath, factory, deserialize_result, errorState), "Failed to load mesh from %s", meshPath.c_str()))
 			return nullptr;
 
-		if (!errorState.check(deserialize_result.mReadObjects.size() == 1, "Trying to load an invalid mesh file. File contains %d objects", deserialize_result.mReadObjects.size()))
+		if (!errorState.check(deserialize_result.mReadObjects.size() == 1, "Trying to load an invalid mesh file. File %s contains %d objects, expected 1", meshPath.c_str(), deserialize_result.mReadObjects.size()))
 			return nullptr;
 
-		if (!errorState.check(deserialize_result.mReadObjects[0]->get_type() == RTTI_OF(MeshData), "Trying to load an invalid mesh file. File does not contain MeshData"))
+		if (!errorState.check(deserialize_result.mReadObjects[0]->get_type() == RTTI_OF(MeshData), "Trying to load an invalid mesh file %s; file does not contain MeshData", meshPath.c_str()))
 			return nullptr;
 
 		assert(deserialize_result.mUnresolvedPointers.empty());
@@ -262,11 +262,11 @@ namespace nap
 			mesh->addVertexAttribute(attribute.mID, attribute.mNumComponents, attribute.mData.data());
 
 		// Make sure there's position data
-		if (!errorState.check(mesh->findVertexAttributeBuffer(opengl::Mesh::VertexAttributeIDs::PositionVertexAttr) != nullptr, "Required attribute 'position' not found in mesh data"))
+		if (!errorState.check(mesh->findVertexAttributeBuffer(opengl::Mesh::VertexAttributeIDs::PositionVertexAttr) != nullptr, "Required attribute 'position' not found in mesh %s", meshPath.c_str()))
 			return nullptr;
 			
 		// Copy indices
-		if (!errorState.check(!mesh_data->mIndices.empty(), "No index data found in mesh"))
+		if (!errorState.check(!mesh_data->mIndices.empty(), "No index data found in mesh %s", meshPath.c_str()))
 			return nullptr;
 
 		mesh->setIndices(mesh_data->mIndices.size(), mesh_data->mIndices.data());

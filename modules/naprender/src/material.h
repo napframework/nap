@@ -4,6 +4,7 @@
 #include <nap/serviceablecomponent.h>
 #include <nap/attribute.h>
 #include <nap/resourcelinkattribute.h>
+#include <nap/objectptr.h>
 
 // Local includes
 #include "shaderresource.h"
@@ -13,18 +14,191 @@
 
 namespace nap
 {
+	class Material;
+
 	/**
-	* Material can be considered as the interface towards a shader. 
-	* It contains default mappings for how mesh vertex attributes are bound to a shader's vertex attributes.
-	* It also holds the actual uniform values that are pushed into the shader at runtime.
+	* Blend mode for Materials.
 	*/
-	class Material : public Resource
+	enum class EBlendMode
 	{
-		RTTI_ENABLE(Resource)
+		NotSet,					// Default value for MaterialInstances, means that the Material's blend mode is used instead
+
+		Opaque,					// Regular opaque, similar to (One, Zero) blend
+		AlphaBlend,				// Transparant object (SrcAlpha, InvSrcAlpha) blend
+		Additive				// Additive, (One, One) blend
+	};
+
+	/**
+	* Determines how to z-buffer is used for reading and writing.
+	* When inheriting from blend mode
+	*/
+	enum class EDepthMode
+	{
+		NotSet,					// Default value for MaterialInstances, means that the Material's blend is used instead
+
+		InheritFromBlendMode,	// Transparent objects do not write depth, but do read depth. Opaque objects read and write depth.
+		ReadWrite,				// Read and write depth
+		ReadOnly,				// Only read depth
+		WriteOnly,				// Only write depth
+		NoReadWrite				// Neither read or write depth
+	};
+
+
+	/**
+	* Binds the Uniform data to the declaration from the shader. Together
+	* they can be used to push the uniform.
+	*/
+	template<typename UNIFORM>
+	struct UniformBinding
+	{
+		UniformBinding(std::unique_ptr<UNIFORM>&& uniform, const opengl::UniformDeclaration& declaration) :
+			mUniform(std::move(uniform)),
+			mDeclaration(&declaration)
+		{
+		}
+
+		UniformBinding(UniformBinding&& other) :
+			mUniform(std::move(other.mUniform)),
+			mDeclaration(other.mDeclaration)
+		{
+		}
+
+		UniformBinding& operator=(UniformBinding&& other)
+		{
+			mUniform = std::move(other.mUniform);
+			mDeclaration = other.mDeclaration;
+			return *this;
+		}
+
+		std::unique_ptr<UNIFORM> mUniform;
+		const opengl::UniformDeclaration* mDeclaration;
+	};
+
+	using UniformTextureBindings = std::unordered_map<std::string, UniformBinding<UniformTexture>>;
+	using UniformValueBindings = std::unordered_map<std::string, UniformBinding<UniformValue>>;
+
+
+	/**
+	 * Base class for both Material and MaterialInstance. Basic support for uniforms.
+	 */
+	class UniformContainer
+	{
+		RTTI_ENABLE()
 	public:
 
 		/**
-		* Binding betwee mesh vertex attr and shader vertex attr
+		 * @return a uniform texture object that can be used to set a texture or value.
+		 * If the uniform is not found, returns nullptr.
+		 */
+		template<typename T>
+		T* findUniform(const std::string& name);
+
+		/**
+		 * @return a uniform object that can be used to set a texture or value.
+		 * If the uniform is not found it will assert.
+		 */
+		template<typename T>
+		T& getUniform(const std::string& name);
+
+		/**
+		 * @return All texture uniform bindings.
+		 */
+		const UniformTextureBindings& getUniformTextureBindings() { return mUniformTextureBindings; }
+
+		/**
+		 * @return All value uniform bindings.
+		 */
+		const UniformValueBindings& getUniformValueBindings() { return mUniformValueBindings; }
+
+	protected:
+		/**
+		 * Puts the uniform into either the texture or value mapping.
+		 * @param uniform: the uniform to add. Ownership is transferred.
+		 * @param declaration: the shader uniform declaration to bind the uniform to.
+		 * @return reference to the newly added uniform.
+		 */
+		Uniform& AddUniform(std::unique_ptr<Uniform> uniform, const opengl::UniformDeclaration& declaration);
+
+	private:
+		UniformTextureBindings		mUniformTextureBindings;	///< Runtime map of texture uniforms (superset of texture uniforms in mUniforms due to default uniforms).
+		UniformValueBindings		mUniformValueBindings;		///< Runtime map of value uniforms (superset of value uniforms in mUniforms due to default uniforms).
+	};
+
+	/**
+	* MaterialInstanceResource is the 'resource' or 'data' counterpart of MaterialInstance, intended to be used 
+	* as fields in ComponentResources. The object needs to be passed to MaterialInstance's init() function.
+	*/
+	class MaterialInstanceResource
+	{
+	public:
+		std::vector<ObjectPtr<Uniform>>		mUniforms;										///< Uniforms that you're overriding
+		ObjectPtr<Material>					mMaterial;										///< Material that you're overriding uniforms from
+		EBlendMode							mBlendMode = EBlendMode::NotSet;				///< Blend mode override. By default uses material blend mode
+		EDepthMode							mDepthMode = EDepthMode::NotSet;				///< Depth mode override. By default uses material depth mode
+	};
+
+	/**
+	 * MaterialInstance holds overloads of Material properties. It is intended to be used as a field in 
+	 * ComponentInstances. It needs to be initialized with a MaterialInstanceResource object to fill it's
+	 * runtime data. init() needs to be called from the ComponentInstance's init() function.
+	 */
+	class MaterialInstance : public UniformContainer
+	{
+		RTTI_ENABLE(UniformContainer)
+	public:
+		/**
+		 * For each uniform in mUniforms, creates a mapping.
+		 */
+		bool init(MaterialInstanceResource& resource, utility::ErrorState& errorState);
+
+		/**
+		* @return material that this instance is overriding.
+		*/
+		Material* getMaterial();
+
+		/**
+		 * Get a uniform for this material instance. This means that the uniform returned is only applicable
+		 * to this instance. In order to change a uniform so that it's value is shared among materials, use
+		 * getMaterial().getUniform().
+		 * This function will assert if the name of the uniform does not match the type that you are trying to 
+		 * create.
+		 * @param name: the name of the uniform as it is in the shader.
+		 * @return reference to the uniform that was found or created.
+		 */
+		template<typename T>
+		T& getOrCreateUniform(const std::string& name);
+
+		/**
+		* @return If blend mode was overridden for this material, returns blend mode, otherwise material's blendmode.
+		*/
+		EBlendMode getBlendMode() const;
+
+		/**
+		* @return If depth mode was overridden for this material, returns depth mode, otherwise material's depthmode.
+		*/
+		EDepthMode getDepthMode() const;
+
+	private:
+		Uniform& createUniform(const std::string& name);
+
+		MaterialInstanceResource* mResource;
+	};
+
+
+	/**
+	* Material can be considered as the interface towards a shader.
+	* It contains default mappings for how mesh vertex attributes are bound to a shader's vertex attributes.
+	* It also holds the uniform values for all the uniforms present in the shader. If a uniform is updated 
+	* on the material, all the objects that use this material will use that value. To change uniform values
+	* per object, set uniform values on MaterialInstances.
+	*/
+	class Material : public rtti::RTTIObject, public UniformContainer
+	{
+		RTTI_ENABLE(rtti::RTTIObject, UniformContainer)
+	public:
+
+		/**
+		* Binding between mesh vertex attr and shader vertex attr
 		*/
 		struct VertexAttributeBinding
 		{
@@ -48,16 +222,6 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		* Performs commit or rollback of changes made in init()
-		*/
-		virtual void finish(Resource::EFinishMode mode) override;
-
-		/**
-		* @return display name.
-		*/
-		virtual const std::string getDisplayName() const { return "Material"; }		// TODO
-
-		/**
 		* Binds the GLSL shader resource program
 		*/
 		void bind();
@@ -71,35 +235,17 @@ namespace nap
 		 * Utility for getting the shader resource
 		 * @return the link as a shader resource, nullptr if not linked
 		 */
-		ShaderResource* getShader() const				{ return mShader; }
+		ShaderResource* getShader() const { return mShader.get(); }
 
 		/**
-		* Link to the shader this material uses
-		* By default this link is empty, needs to be set
-		* when using this material for drawing
+		* @return Blending mode for this material
 		*/
-		ShaderResource* mShader = nullptr;
+		EBlendMode getBlendMode() const { assert(mBlendMode != EBlendMode::NotSet); return mBlendMode; }
 
 		/**
-		 * Uploads all uniform variables to the GPU
-		 * Note that this call will only work when the shader is bound!
-		 */
-		void pushUniforms();
-
-		/**
-		* @return a uniform texture object that can be used to set a texture or value. 
-		* If the uniform is not found, returns nullptr.
+		* @return Depth mode mode for this material
 		*/
-		template<typename T>
-		T* findUniform(const std::string& name);
-
-		/**
-		* @return a uniform object that can be used to set a texture or value.
-		* If the uniform is not found it will assert.
-		*/
-		template<typename T>
-		T& getUniform(const std::string& name);
-
+		EDepthMode getDepthMode() const { assert(mDepthMode != EDepthMode::NotSet); return mDepthMode; }
 
 		/**
 		* Finds the mesh/shader attribute binding based on the shader attribute ID.
@@ -113,47 +259,11 @@ namespace nap
 		static std::vector<VertexAttributeBinding>& getDefaultVertexAttributeBindings();
 
 	public:
-		std::vector<VertexAttributeBinding> mVertexAttributeBindings;		///< Mapping from mesh vertex attr to shader vertex attr
-		std::vector<Uniform*>				mUniforms;						///< Static uniforms (as read from file, or as set in code before calling init())
-
-	private:
-
-		/**
-		* Binds the Uniform data to the declaration from the shader. Together
-		* they can be used to push the uniform.
-		*/
-		template<typename UNIFORM>
-		struct UniformBinding
-		{
-			UniformBinding(std::unique_ptr<UNIFORM>&& uniform, const opengl::UniformDeclaration& declaration) :
-				mUniform(std::move(uniform)),
-				mDeclaration(&declaration)
-			{
-			}
-
-			UniformBinding(UniformBinding&& other) : 
-				mUniform(std::move(other.mUniform)),
-				mDeclaration(other.mDeclaration)
-			{
-			}
- 
-			UniformBinding& operator=(UniformBinding&& other)
-			{
-				mUniform = std::move(other.mUniform);
-				mDeclaration = other.mDeclaration;
-				return *this;
-			}
-
-			std::unique_ptr<UNIFORM> mUniform;
-			const opengl::UniformDeclaration* mDeclaration;
-		};
-
-		using UniformTextureBindings = std::unordered_map<std::string, UniformBinding<UniformTexture>>;
-		using UniformValueBindings = std::unordered_map<std::string, UniformBinding<UniformValue>>;
-		UniformTextureBindings	mUniformTextureBindings;			///< Runtime map of texture uniforms (superset of texture uniforms in mUniforms due to default uniforms).
-		UniformTextureBindings	mPrevUniformTextureBindings;		///< For commit/rollback
-		UniformValueBindings	mUniformValueBindings;;				///< Runtime map of value uniforms (superset of value uniforms in mUniforms due to default uniforms).
-		UniformValueBindings	mPrevUniformValueBindings;			///< For commit/rollback
+		std::vector<ObjectPtr<Uniform>>			mUniforms;											///< Static uniforms (as read from file, or as set in code before calling init())
+		std::vector<VertexAttributeBinding>		mVertexAttributeBindings;							///< Mapping from mesh vertex attr to shader vertex attr
+		ObjectPtr<ShaderResource>				mShader = nullptr;									///< The shader that this material is using
+		EBlendMode								mBlendMode = EBlendMode::Opaque;					///< Blend mode for this material
+		EDepthMode								mDepthMode = EDepthMode::InheritFromBlendMode;		///< Determines how the Z buffer is used
 	};
 
 
@@ -162,7 +272,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	T* nap::Material::findUniform(const std::string& name)
+	T* UniformContainer::findUniform(const std::string& name)
 	{
 		UniformTextureBindings::iterator texture_binding = mUniformTextureBindings.find(name);
 		if (texture_binding != mUniformTextureBindings.end() && texture_binding->second.mUniform->get_type() == RTTI_OF(T))
@@ -175,11 +285,23 @@ namespace nap
 		return nullptr;
 	}
 
+
 	template<typename T>
-	T& nap::Material::getUniform(const std::string& name)
+	T& UniformContainer::getUniform(const std::string& name)
 	{
 		T* result = findUniform<T>(name);
 		assert(result);
 		return *result;
+	}
+
+
+	template<typename T>
+	T& MaterialInstance::getOrCreateUniform(const std::string& name)
+	{
+		T* existing = findUniform<T>(name);
+		if (existing != nullptr)
+			return *existing;
+		
+		return static_cast<T&>(createUniform(name));
 	}
 }
