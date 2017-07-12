@@ -14,7 +14,7 @@ namespace opengl
 		TextureParameters()  =	default;
 		~TextureParameters() =	default;
 
-		GLint minFilter =		GL_LINEAR_MIPMAP_LINEAR;		//< Filter used when sampling down
+		GLint minFilter =		GL_LINEAR;						//< Filter used when sampling down
 		GLint maxFilter =		GL_LINEAR;						//< Filter used when sampling up
 		GLint wrapVertical =	GL_CLAMP_TO_EDGE;				//< Method used for clamping texture vertically
 		GLint wrapHorizontal =	GL_CLAMP_TO_EDGE;				//< Method used for clamping texture horizontally

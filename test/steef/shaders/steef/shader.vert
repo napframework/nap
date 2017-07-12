@@ -8,9 +8,11 @@ in vec3	in_Position;
 in vec4	in_Color0;
 in vec3 in_Normals;
 in vec3	in_UV0;
+in vec3 in_UV1;
 
 out vec4 pass_Color;
-out vec3 pass_Uvs;
+out vec3 pass_Uvs0;
+out vec3 pass_Uvs1;
 
 void main(void)
 {
@@ -19,5 +21,6 @@ void main(void)
 
 	// Pass color and uv's 
 	pass_Color = in_Color0;
-	pass_Uvs = in_UV0;
+	pass_Uvs0 = in_UV0;
+	pass_Uvs1 = in_UV1;
 }

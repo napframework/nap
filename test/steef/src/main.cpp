@@ -37,8 +37,8 @@
 
 // Nap Objects
 
-static nap::ObjectPtr<nap::ImageResource>				vinylTextureColor   = nullptr;
-static nap::ObjectPtr<nap::ImageResource>				vinylTextureDiffuse = nullptr;
+static nap::ObjectPtr<nap::ImageResource>				vinylLabelImg   = nullptr;
+static nap::ObjectPtr<nap::ImageResource>				vinylCoverImg = nullptr;
 
 nap::RenderService*										renderService = nullptr;
 nap::ResourceManagerService*							resourceManagerService = nullptr;
@@ -131,7 +131,7 @@ void onRender()
 	components_to_render.push_back(&vinylEntity->getComponent<nap::RenderableMeshComponent>());
 
 	nap::MaterialInstance& vinyl_material = vinylEntity->getComponent<nap::RenderableMeshComponent>().getMaterialInstance();
-	vinyl_material.getUniform<nap::UniformTexture2D>("vinylTextureColor").setTexture(*vinylTextureColor);
+	vinyl_material.getUniform<nap::UniformTexture2D>("vinylLabel").setTexture(*vinylLabelImg);
 
 	opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(renderWindow->getWindow()->getBackbuffer());
 	backbuffer.setClearColor(glm::vec4(0.0705f, 0.49f, 0.5647f, 1.0f));
@@ -166,7 +166,6 @@ bool init(nap::Core& core)
 		return false;
 	}
 
-
 	nap::Logger::info("initialized render service: %s", renderService->getName().c_str());
 
 	//////////////////////////////////////////////////////////////////////////
@@ -192,12 +191,13 @@ bool init(nap::Core& core)
 		return false;  
 	}  
 
+
 	// Extract loaded resources
 	renderWindow = resourceManagerService->findObject<nap::RenderWindowResource>("Viewport");
 
 	// Get vintl textures
-	vinylTextureColor   = resourceManagerService->findObject<nap::ImageResource>("VinylImage");
-	vinylTextureDiffuse = resourceManagerService->findObject<nap::ImageResource>("VinylImageDiff");
+	vinylLabelImg = resourceManagerService->findObject<nap::ImageResource>("LabelImage");
+	vinylCoverImg = resourceManagerService->findObject<nap::ImageResource>("CoverImage");
 	
 	// Get entity that holds vinyl
 	vinylEntity			= resourceManagerService->findEntity("VinylEntity");

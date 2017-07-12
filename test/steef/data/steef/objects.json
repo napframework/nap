@@ -7,13 +7,18 @@
 	},
 		
     "nap::ImageResource": {
-		"mID" : "VinylImage",
-		"mImagePath" : "data/steef/vinyl.jpg"
+		"mID" : "LabelImage",
+		"mImagePath" : "data/steef/label.jpg"
 	},
 
 	"nap::ImageResource": {
-		"mID" : "VinylImageDiff",
-		"mImagePath" : "data/steef/vinyl_diff.jpg"
+		"mID" : "CoverImage",
+		"mImagePath" : "data/steef/cover.jpg"
+	},
+
+	"nap::ImageResource": {
+		"mID" : "MaskImage",
+		"mImagePath" : "data/steef/label_mask.jpg"
 	},
 
 	"nap::ShaderResource": {
@@ -24,12 +29,12 @@
 
 	"nap::MeshFromFileResource": {
 		"mID": "CoverMesh",
-		"Path": "data/steef/vinyl_cover_cover.mesh"
+		"Path": "data/steef/cover.mesh"
 	},
 
 		"nap::MeshFromFileResource": {
 		"mID": "VinylMesh",
-		"Path": "data/steef/vinyl_cover_vinyl.mesh"
+		"Path": "data/steef/vinyl.mesh"
 	},
 	
 	"nap::Material": {
@@ -43,6 +48,10 @@
 			{
 				"MeshAttributeID": "UV0",
 				"ShaderAttributeID": "in_UV0"
+			},
+			{
+				"MeshAttributeID" : "UV1",
+				"ShaderAttributeID": "in_UV1"
 			},
 			{
 				"MeshAttributeID": "Color0",
@@ -86,8 +95,15 @@
 							{
 								"nap::UniformTexture2D" : 
 								{
-									"Name" : "vinylTextureColor",
-									"Texture" : "VinylImage"
+									"Name" : "vinylLabel",
+									"Texture" : "LabelImage"
+								}
+							},
+														{
+								"nap::UniformTexture2D" : 
+								{
+									"Name" : "vinylMask",
+									"Texture" : "MaskImage"
 								}
 							}
 						]
