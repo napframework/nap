@@ -8,23 +8,50 @@
 		
     "nap::ImageResource": {
 		"mID" : "LabelImage",
-		"mImagePath" : "data/steef/label.jpg"
+		"mImagePath" : "data/steef/label.jpg",
+		"mParameters" : {
+			"mMinFilter" : 9987,		
+			"mMaxFilter" : 9729,		
+			"mWrapVertical" : 33071,	
+			"mWrapHorizontal" : 33071,
+			"mMaxLodLevel" : 3
+		}
 	},
 
 	"nap::ImageResource": {
 		"mID" : "CoverImage",
-		"mImagePath" : "data/steef/cover.jpg"
+		"mImagePath" : "data/steef/cover.jpg",
+		"mParameters" : {
+				"mMinFilter" : 9987,		
+				"mMaxFilter" : 9729,		
+				"mWrapVertical" : 33071,	
+				"mWrapHorizontal" : 33071,
+				"mMaxLodLevel" : 3
+			}
 	},
 
 	"nap::ImageResource": {
 		"mID" : "MaskImage",
-		"mImagePath" : "data/steef/label_mask.jpg"
+		"mImagePath" : "data/steef/label_mask.jpg",
+		"mParameters" : {
+			"mMinFilter" : 9987,		
+			"mMaxFilter" : 9729,		
+			"mWrapVertical" : 33071,	
+			"mWrapHorizontal" : 33071,
+			"mMaxLodLevel" : 3
+		}
 	},
 
 	"nap::ShaderResource": {
 		"mID": "GeneralShader",
 		"mVertShader": "shaders/steef/shader.vert",
 		"mFragShader": "shaders/steef/shader.frag"
+	},
+
+	"nap::ShaderResource": {
+		"mID": "CoverShader",
+		"mVertShader": "shaders/steef/cover.vert",
+		"mFragShader": "shaders/steef/cover.frag"
 	},
 
 	"nap::MeshFromFileResource": {
@@ -79,6 +106,64 @@
 			}
 		]			
 	},
+
+	"nap::Material": {
+		"mID": "CoverMaterial",
+		"Shader": "CoverShader",
+		"VertexAttributeBindings" : [
+			{
+				"MeshAttributeID": "Position",
+				"ShaderAttributeID": "in_Position"
+			},
+			{
+				"MeshAttributeID": "UV0",
+				"ShaderAttributeID": "in_UV0"
+			},
+			{
+				"MeshAttributeID": "Normal",
+				"ShaderAttributeID": "in_Normals"
+			},
+			{
+				"MeshAttributeID": "Color0",
+				"ShaderAttributeID": "in_Color0"
+			}
+		]			
+	},
+
+	"nap::EntityResource": {
+		"mID": "ModelEntity",
+		"Components" : 
+		[
+			{
+				"nap::TransformComponentResource": {
+					"Properties": {
+						"Translate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0
+						},
+						"Rotate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0,
+							"w": 1.0
+						},
+						"Scale": {
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 0.7
+					}
+				}		
+			}
+		],
+		"Children" :
+		[
+			"VinylEntity",
+			"CoverEntity"
+		] 
+	},
 	
 	"nap::EntityResource": {
 		"mID": "VinylEntity",
@@ -114,7 +199,56 @@
 				"nap::TransformComponentResource": {
 					"Properties": {
 						"Translate": {
+							"x": 10.0,
+							"y": 0.0,
+							"z": 0.0
+						},
+						"Rotate": {
 							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0,
+							"w": 1.0
+						},
+						"Scale": {
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.0
+					}
+				}		
+			}
+		]
+	},
+
+	"nap::EntityResource": {
+		"mID": "CoverEntity",
+		"Components" : 
+		[
+			{
+				"nap::RenderableMeshComponentResource": {
+					"Mesh" : "CoverMesh",
+					"MaterialInstance" : {
+						"Material": "CoverMaterial",
+						"BlendMode": "Opaque",
+						"Uniforms" : 
+						[
+							{
+								"nap::UniformTexture2D" : 
+								{
+									"Name" : "coverImage",
+									"Texture" : "CoverImage"
+								}
+							}
+						]
+					}
+				}		
+			},
+			{
+				"nap::TransformComponentResource": {
+					"Properties": {
+						"Translate": {
+							"x": -10.0,
 							"y": 0.0,
 							"z": 0.0
 						},

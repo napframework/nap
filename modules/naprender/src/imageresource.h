@@ -42,6 +42,11 @@ namespace nap
 		 * Unbinds the texture
 		 */
 		virtual bool unbind() 				{ return getTexture().unbind(); }
+
+		/**
+		 *	Holds all the texture related parameters
+		 */
+		opengl::TextureParameters			mParameters;
 	};
 
 	/**

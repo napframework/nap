@@ -54,6 +54,13 @@ namespace opengl
 		const std::string&		getPath() const			{ return mPath; }
 
 		/**
+		* sets the parameters to be used when initializing the Texture
+		* note that you mush call this function before calling load
+		* @param parameters the parameters to associate with this texture
+		*/
+		void					setTextureParameters(const opengl::TextureParameters& parameters);
+
+		/**
 		 * isCompressed
 		 *
 		 * Checks if the image is compressed on the GPU

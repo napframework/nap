@@ -47,6 +47,8 @@ nap::InputService*										inputService = nullptr;
 
 nap::ObjectPtr<nap::RenderWindowResource>				renderWindow;
 nap::ObjectPtr<nap::EntityInstance>						vinylEntity = nullptr;
+nap::ObjectPtr<nap::EntityInstance>						coverEntity = nullptr;
+nap::ObjectPtr<nap::EntityInstance>						modelEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance>						cameraEntity = nullptr;
 
 nap::DefaultInputRouter inputRouter;
@@ -79,23 +81,24 @@ void onUpdate()
 	delta_time = delta_time < 0.01f ? 0.01f : delta_time;
 
 	// Get transform of vinyl record
-	nap::TransformComponent* vinyl_xform = &vinylEntity->getComponent<nap::TransformComponent>();
+	nap::TransformComponent*  model_xform = &modelEntity->getComponent<nap::TransformComponent>();
+	nap::TransformComponent*  vinyl_xform = &vinylEntity->getComponent<nap::TransformComponent>();
 
 	// Get rotation angle
-	float rot_speed_x = 0.1f;
-	float rot_angle_x = elapsed_time * 360.0f * rot_speed_x;
-	float rot_angle_radians_x = glm::radians(rot_angle_x);
+	float rot_angle_radians_x = glm::radians(-90.0f);
 
-	float rot_speed_y = 0.25f;
+	// Rotate vinyl
+	vinyl_xform->setRotate(glm::rotate(glm::quat(), rot_angle_radians_x, glm::vec3(1.0, 0.0, 0.0)));
+
+	float rot_speed_y = 0.125f;
 	float rot_angle_y = elapsed_time * 360.0f * rot_speed_y;
 	float rot_angle_radians_y = glm::radians(rot_angle_y);
 
 	// Calculate rotation quaternion
-	glm::quat rot_quat = glm::rotate(glm::quat(), (float)rot_angle_radians_x, glm::vec3(1.0, 0.0, 0.0));
-	rot_quat = glm::rotate(rot_quat, (float)rot_angle_radians_y, glm::vec3(0.0, 0.0, 1.0));
+	glm::quat rot_quat = glm::rotate(glm::quat(), (float)rot_angle_radians_y, glm::vec3(0.0, 1.0, 0.0));
 
 	// Set rotation on vinyl component
-	vinyl_xform->setRotate(rot_quat);
+	model_xform->setRotate(rot_quat);
 
 	// Set some material values
 	nap::MaterialInstance& vinyl_material = vinylEntity ->getComponent<nap::RenderableMeshComponent>().getMaterialInstance();
@@ -129,9 +132,7 @@ void onRender()
 	// Render output texture to plane
 	std::vector<nap::RenderableComponent*> components_to_render;
 	components_to_render.push_back(&vinylEntity->getComponent<nap::RenderableMeshComponent>());
-
-	nap::MaterialInstance& vinyl_material = vinylEntity->getComponent<nap::RenderableMeshComponent>().getMaterialInstance();
-	vinyl_material.getUniform<nap::UniformTexture2D>("vinylLabel").setTexture(*vinylLabelImg);
+	components_to_render.push_back(&coverEntity->getComponent<nap::RenderableMeshComponent>());
 
 	opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(renderWindow->getWindow()->getBackbuffer());
 	backbuffer.setClearColor(glm::vec4(0.0705f, 0.49f, 0.5647f, 1.0f));
@@ -191,7 +192,6 @@ bool init(nap::Core& core)
 		return false;  
 	}  
 
-
 	// Extract loaded resources
 	renderWindow = resourceManagerService->findObject<nap::RenderWindowResource>("Viewport");
 
@@ -200,10 +200,12 @@ bool init(nap::Core& core)
 	vinylCoverImg = resourceManagerService->findObject<nap::ImageResource>("CoverImage");
 	
 	// Get entity that holds vinyl
-	vinylEntity			= resourceManagerService->findEntity("VinylEntity");
+	modelEntity = resourceManagerService->findEntity("ModelEntity");
+	vinylEntity	= resourceManagerService->findEntity("VinylEntity");
+	coverEntity = resourceManagerService->findEntity("CoverEntity");
 
 	// Get entity that holds the camera
-	cameraEntity		= resourceManagerService->findEntity("CameraEntity");
+	cameraEntity = resourceManagerService->findEntity("CameraEntity");
 
 	// Set render states
 	nap::RenderState& render_state = renderService->getRenderState();

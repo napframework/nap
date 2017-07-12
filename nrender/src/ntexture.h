@@ -14,10 +14,11 @@ namespace opengl
 		TextureParameters()  =	default;
 		~TextureParameters() =	default;
 
-		GLint minFilter =		GL_LINEAR;						//< Filter used when sampling down
+		GLint minFilter =		GL_LINEAR_MIPMAP_LINEAR;		//< Filter used when sampling down
 		GLint maxFilter =		GL_LINEAR;						//< Filter used when sampling up
 		GLint wrapVertical =	GL_CLAMP_TO_EDGE;				//< Method used for clamping texture vertically
 		GLint wrapHorizontal =	GL_CLAMP_TO_EDGE;				//< Method used for clamping texture horizontally
+		GLint maxLodLevel =		20;								// Maximum number of lods
 	};
 
 
@@ -49,10 +50,16 @@ namespace opengl
 		BaseTexture& operator=(const BaseTexture& other) = delete;
 
 		/**
-		 * init call uploads current parameters to GPU
+		 * init call uploads current parameters to GPU and creates a texture
 		 * make sure to call this function after creating the object!
 		 */
 		void init();
+
+		/**
+		 * sets the parameters to be used when initializing the Texture
+		 * @param parameters the parameters to associate with this texture
+		 */
+		void setParameters(const opengl::TextureParameters& parameters);
 
 		/**
 		 * All future texture functions will modify this texture
@@ -185,7 +192,6 @@ namespace opengl
 	struct Texture2DSettings
 	{
 	public:
-		GLint level = 0;					//< level of detail number, 0 is highest
 		GLint internalFormat = GL_RGB;		//< Specifies the number of color components in the texture
 		GLsizei width = 0;					//< Specifies the width of the texture
 		GLsizei height = 0;					//< Specifies the height of the texture
