@@ -20,6 +20,9 @@ find_package(RTTR CONFIG REQUIRED Core)
 find_package(rapidjson REQUIRED)
 add_definitions(-DRAPIDJSON_HAS_STDSTRING=1)
 
+set(pybind11_DIR "${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/pybind11/install/share/cmake/pybind11")
+find_package(pybind11) 
+
 add_platform_specific_files("${WIN32_SOURCES}" "${OSX_SOURCES}" "${LINUX_SOURCES}")
 add_library(${PROJECT_NAME} STATIC ${SOURCES})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Core)
@@ -29,9 +32,12 @@ if (MSVC)
     GENERATE_EXPORT_HEADER(${PROJECT_NAME})
 endif()
 
+target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME} PUBLIC src)
 target_include_directories(${PROJECT_NAME} PUBLIC ${RAPIDJSON_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PUBLIC ${pybind11_INCLUDE_DIRS})
 
+target_link_libraries(${PROJECT_NAME} pybind11::embed)
 target_link_libraries(${PROJECT_NAME} RTTR::Core)
 target_link_libraries(${PROJECT_NAME} naputility)
 

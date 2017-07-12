@@ -32,6 +32,9 @@
 #include <nap/componentinstance.h>
 #include <sceneservice.h>
 
+#include <pybind11/pybind11.h>
+#include <pybind11/embed.h>
+#include <rtti/pythonmodule.h>
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
@@ -325,9 +328,129 @@ bool init(nap::Core& core)
 	return true;
 }
 
+class Foo
+{
+public:
+	int Bar(int inArg)
+	{
+		return 10 * inArg;
+	}
+
+	int mProperty;
+};
+
+namespace py = pybind11;
+
+
+// 
+// void test()
+// {
+// 	using namespace rttr;
+// 	auto bla = registration::class_<Foo>("Foo");
+// 	bla.property("Property", &Foo::mProperty);
+// 	bla.property("Property", &Foo::mProperty);
+// }
+
+// void test()
+// {
+// 	using namespace rttr;
+// 	auto& rttr_class = registration::class_<Foo>("Foo");
+// 	auto py_class = py::class_<Foo>(m, "Foo");
+// 
+// 	rttr_class.property("Property", &Foo::mProperty);		
+// 	py_class.def("Bar", &Foo::Bar);
+// }
+
+REGISTER_MODULE_PYTHON_BINDINGS()
+
+void testPython()
+{
+	using namespace nap;
+	using namespace rtti;
+
+	PythonClass<Foo> python_class("Foo");
+	python_class.registerFunction([](py::class_<Foo>& cls, py::module& module) 
+	{
+		cls.def(py::init<>());
+		cls.def("Bar", &Foo::Bar);
+	});
+
+	PythonModule& python_module = rtti::PythonModule::get(STRINGIFY(MODULE_NAME));
+	python_module.registerClass([python_class](py::module& module) 
+	{
+		python_class.invoke(module);
+	});
+	
+	py::scoped_interpreter guard{};
+
+	try
+	{
+		auto script = py::module::import("script");
+		py::object result = script.attr("Test")(1);
+		int n = result.cast<int>();
+	}
+	catch (const py::error_already_set& err)
+	{
+		int i = 0;
+	}
+// 
+// 
+// 	PyObject *pModule, *pDict, *pFunc;
+// 	PyObject *pArgs, *pValue;
+// 
+// 	//PyImport_AppendInittab("emb", &PyInit_emb);
+// 	Py_Initialize();
+// 	//pybind11_init();
+// 
+// 	pModule = PyImport_ImportModule("script");
+// 
+// 	if (pModule != NULL)
+// 	{
+// 		pFunc = PyObject_GetAttrString(pModule, "Test");
+// 		/* pFunc is a new reference */
+// 
+// 		if (pFunc && PyCallable_Check(pFunc))
+// 		{
+// 			pArgs = PyTuple_New(1);
+// 			pValue = PyLong_FromLong(100);
+// 			if (!pValue)
+// 			{
+// 				PyErr_Print();
+// 			}
+// 
+// 			PyTuple_SetItem(pArgs, 0, pValue);
+// 
+// 			pValue = PyObject_CallObject(pFunc, pArgs);
+// 			Py_DECREF(pArgs);
+// 
+// 			if (pValue != NULL) {
+// 				printf("Result of call: %ld\n", PyLong_AsLong(pValue));
+// 				Py_DECREF(pValue);
+// 			}
+// 			else {
+// 				Py_DECREF(pFunc);
+// 				Py_DECREF(pModule);
+// 				PyErr_Print();
+// 			}
+// 		}
+// 		else {
+// 			if (PyErr_Occurred())
+// 				PyErr_Print();
+// 		}
+// 		Py_XDECREF(pFunc);
+// 		Py_DECREF(pModule);
+// 	}
+// 	else {
+// 		PyErr_Print();
+// 	}
+// 	Py_Finalize();
+}
+
 // Main loop
 int main(int argc, char *argv[])
 {
+	testPython();
+
 	// Create core
 	nap::Core core;
 

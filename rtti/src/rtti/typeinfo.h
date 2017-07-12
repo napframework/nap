@@ -169,44 +169,44 @@ namespace nap
 #define UNIQUE_REGISTRATION_NAMESPACE(id)			CONCAT_UNIQUE_NAMESPACE(__rtti_registration_, id)
 
 #define RTTI_BEGIN_BASE_CLASS(Type)							\
-	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)			\
-	{													\
-		RTTR_REGISTRATION								\
-		{												\
-			using namespace rttr;						\
-			registration::class_<Type>(#Type)
+	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)				\
+	{														\
+		RTTR_REGISTRATION									\
+		{													\
+			using namespace rttr;							\
+			registration::class_<Type> class_type(#Type);
 
-#define RTTI_PROPERTY(Name, Member, Flags)				\
-						  .property(Name, Member)(metadata("flags", (uint8_t)(Flags)))
+#define RTTI_PROPERTY(Name, Member, Flags)					\
+			class_type.property(Name, Member)(metadata("flags", (uint8_t)(Flags)));
 
-#define RTTI_END_CLASS									\
-		;												\
-		}												\
+#define RTTI_END_CLASS										\
+		;													\
+		}													\
 	}
 
-#define RTTI_BEGIN_CLASS(Type)							\
-	RTTI_BEGIN_BASE_CLASS(Type)							\
-	.constructor<>()(policy::ctor::as_raw_ptr)
+#define RTTI_BEGIN_CLASS(Type)								\
+	RTTI_BEGIN_BASE_CLASS(Type)								\
+	class_type.constructor<>()(policy::ctor::as_raw_ptr);
 
-#define RTTI_BEGIN_CLASS_CONSTRUCTOR1(Type, CtorArg1)	\
-	RTTI_BEGIN_BASE_CLASS(Type)							\
-	.constructor<CtorArg1>()(policy::ctor::as_raw_ptr)
+#define RTTI_BEGIN_CLASS_CONSTRUCTOR1(Type, CtorArg1)		\
+	RTTI_BEGIN_BASE_CLASS(Type)								\
+	class_type.constructor<CtorArg1>()(policy::ctor::as_raw_ptr);
 
 #define RTTI_BEGIN_CLASS_CONSTRUCTOR2(Type, CtorArg1, CtorArg2)	\
 	RTTI_BEGIN_BASE_CLASS(Type)							\
-	.constructor<CtorArg1, CtorArg2>()(policy::ctor::as_raw_ptr)
+	class_type.constructor<CtorArg1, CtorArg2>()(policy::ctor::as_raw_ptr);
 
 #define RTTI_BEGIN_CLASS_CONSTRUCTOR3(Type, CtorArg1, CtorArg2, CtorArg3)	\
 	RTTI_BEGIN_BASE_CLASS(Type)							\
-	.constructor<CtorArg1, CtorArg2, CtorArg3>()(policy::ctor::as_raw_ptr)
+	class_type.constructor<CtorArg1, CtorArg2, CtorArg3>()(policy::ctor::as_raw_ptr);
 
 #define RTTI_BEGIN_CLASS_CONSTRUCTOR4(Type, CtorArg1, CtorArg2, CtorArg3, CtorArg4)	\
 	RTTI_BEGIN_BASE_CLASS(Type)							\
-	.constructor<CtorArg1, CtorArg2, CtorArg3, CtorArg4>()(policy::ctor::as_raw_ptr)
+	class_type.constructor<CtorArg1, CtorArg2, CtorArg3, CtorArg4>()(policy::ctor::as_raw_ptr);
 
 #define RTTI_BEGIN_CLASS_CONSTRUCTOR5(Type, CtorArg1, CtorArg2, CtorArg3, CtorArg4, CtorArg5)	\
 	RTTI_BEGIN_BASE_CLASS(Type)							\
-	.constructor<CtorArg1, CtorArg2, CtorArg3, CtorArg4, CtorArg5>()(policy::ctor::as_raw_ptr)
+	class_type.constructor<CtorArg1, CtorArg2, CtorArg3, CtorArg4, CtorArg5>()(policy::ctor::as_raw_ptr);
 
 #define RTTI_BEGIN_ENUM(Type)							\
 	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)			\

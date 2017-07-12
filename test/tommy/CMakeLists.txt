@@ -16,6 +16,7 @@ add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS})
 set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Test)
 add_dependencies(${PROJECT_NAME} fbxconverter)
+target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
 target_link_libraries(${PROJECT_NAME} napcore mod_naprender nrender mod_napmath mod_napinput mod_napsdlinput mod_napsdlwindow)
 

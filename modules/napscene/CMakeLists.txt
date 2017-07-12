@@ -15,5 +15,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
 # add include dirs
 target_include_directories(${PROJECT_NAME} PUBLIC ${GLM_INCLUDE_DIRS} src)
 
+target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
+
 # link with external libs
 target_link_libraries(${PROJECT_NAME} napcore)
