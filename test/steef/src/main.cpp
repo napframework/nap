@@ -29,7 +29,7 @@
 #include <nap/entityinstance.h>
 #include <nap/componentinstance.h>
 #include <sceneservice.h>
-
+#include <orthocameracomponent.h>
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
@@ -50,6 +50,7 @@ nap::ObjectPtr<nap::EntityInstance>						vinylEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance>						coverEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance>						modelEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance>						cameraEntity = nullptr;
+nap::ObjectPtr<nap::EntityInstance>						backgroundEntity = nullptr;
 
 nap::DefaultInputRouter inputRouter;
 
@@ -86,12 +87,17 @@ void onUpdate()
 
 	// Get rotation angle
 	float rot_angle_radians_x = glm::radians(-90.0f);
+	float rot_speed_vinyl = 0.015f;
+	float rot_angle_vinyl = elapsed_time * 360.0f * rot_speed_vinyl;
+
+	glm::quat rotate_vinyl = glm::rotate(glm::quat(), rot_angle_radians_x, glm::vec3(1.0, 0.0, 0.0));
+	rotate_vinyl = glm::rotate(rotate_vinyl, rot_angle_vinyl, glm::vec3(0.0, 1.0, 0.0));
 
 	// Rotate vinyl
-	vinyl_xform->setRotate(glm::rotate(glm::quat(), rot_angle_radians_x, glm::vec3(1.0, 0.0, 0.0)));
+	vinyl_xform->setRotate(rotate_vinyl);
 
-	float rot_speed_y = 0.125f;
-	float rot_angle_y = elapsed_time * 360.0f * rot_speed_y;
+	float rot_speed_model = 0.125f;
+	float rot_angle_y = elapsed_time * 360.0f * rot_speed_model;
 	float rot_angle_radians_y = glm::radians(rot_angle_y);
 
 	// Calculate rotation quaternion
@@ -107,7 +113,7 @@ void onUpdate()
 
 	// Set uniforms
 	glm::vec4 color(v, 1.0f-v, 1.0f, 1.0f);
-	vinyl_material.getOrCreateUniform<nap::UniformVec4>("mColor").setValue(color);
+	// vinyl_material.getOrCreateUniform<nap::UniformVec4>("mColor").setValue({1.0f, 1.0f, 1.0f, 1.0f});
 
 	//////////////////////////////////////////////////////////////////////////
 	// Camera Update
@@ -129,16 +135,29 @@ void onRender()
 	// Activate current window for drawing
 	renderWindow->makeActive();
 
-	// Render output texture to plane
-	std::vector<nap::RenderableComponent*> components_to_render;
-	components_to_render.push_back(&vinylEntity->getComponent<nap::RenderableMeshComponent>());
-	components_to_render.push_back(&coverEntity->getComponent<nap::RenderableMeshComponent>());
-
+	// Clear back-buffer
 	opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(renderWindow->getWindow()->getBackbuffer());
 	backbuffer.setClearColor(glm::vec4(0.0705f, 0.49f, 0.5647f, 1.0f));
 	renderService->clearRenderTarget(backbuffer, opengl::EClearFlags::COLOR|opengl::EClearFlags::DEPTH|opengl::EClearFlags::STENCIL);
+	
+	// Render Background
+
+	std::vector<nap::RenderableComponent*> components_to_render;
+
+	// Render Vinyl
+	components_to_render.clear();
+	for (const nap::EntityInstance* e : modelEntity->getChildren())
+	{
+		if (e->hasComponent<nap::RenderableMeshComponent>())
+			components_to_render.emplace_back(&(e->getComponent<nap::RenderableMeshComponent>()));
+	}
 	renderService->renderObjects(backbuffer, cameraEntity->getComponent<nap::PerspCameraComponent>(), components_to_render);
 
+	components_to_render.clear();
+	components_to_render.emplace_back(&(backgroundEntity->getComponent<nap::RenderableMeshComponent>()));
+	renderService->renderObjects(backbuffer, cameraEntity->getComponent<nap::PerspCameraComponent>(), components_to_render);
+
+	// Update gpu frame
 	renderWindow->swap();
 }
 
@@ -185,10 +204,11 @@ bool init(nap::Core& core)
 	//////////////////////////////////////////////////////////////////////////
 
 	nap::utility::ErrorState errorState;
-
+	
 	if (!resourceManagerService->loadFile("data/steef/objects.json", errorState))
 	{
 		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
+		assert(false);
 		return false;  
 	}  
 
@@ -203,6 +223,9 @@ bool init(nap::Core& core)
 	modelEntity = resourceManagerService->findEntity("ModelEntity");
 	vinylEntity	= resourceManagerService->findEntity("VinylEntity");
 	coverEntity = resourceManagerService->findEntity("CoverEntity");
+
+	// Get entity that holds the background image
+	backgroundEntity = resourceManagerService->findEntity("BackgroundEntity");
 
 	// Get entity that holds the camera
 	cameraEntity = resourceManagerService->findEntity("CameraEntity");
@@ -236,6 +259,7 @@ int main(int argc, char *argv[])
 void runGame(nap::Core& core)
 {
 	// Run function
+
 	bool loop = true;
 
 	// Loop
@@ -255,6 +279,13 @@ void runGame(nap::Core& core)
 					nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(input_event.get());
 					if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
 						loop = false;
+
+					if (press_event->mKey == nap::EKeyCode::KEY_f)
+					{
+						static bool fullscreen = true;
+						resourceManagerService->findObject<nap::RenderWindowResource>("Viewport")->getWindow()->setFullScreen(fullscreen);
+						fullscreen = !fullscreen;
+					}
 				}
 
 				// Add event to input service for further processing
@@ -277,7 +308,6 @@ void runGame(nap::Core& core)
 		// Render
 		onRender();
 	}
-
 	renderService->shutdown();
 }
        

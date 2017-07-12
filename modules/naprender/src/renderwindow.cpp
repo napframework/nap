@@ -206,7 +206,6 @@ namespace nap
 	{
 		return opengl::getWindowId(getNativeWindow());
 	}
-
 }
 
 RTTI_DEFINE_BASE(nap::RenderWindow)

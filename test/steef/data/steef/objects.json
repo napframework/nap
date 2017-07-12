@@ -5,6 +5,10 @@
 		"Height" : 512,
 		"Title" : "Viewport"
 	},
+
+		"nap::PlaneMeshResource": {
+		"mID": "BackgroundPlaneMesh"
+	},
 		
     "nap::ImageResource": {
 		"mID" : "LabelImage",
@@ -31,6 +35,18 @@
 	},
 
 	"nap::ImageResource": {
+		"mID" : "BackgroundImage",
+		"mImagePath" : "data/steef/background.jpg",
+		"mParameters" : {
+				"mMinFilter" : 9987,		
+				"mMaxFilter" : 9729,		
+				"mWrapVertical" : 33071,	
+				"mWrapHorizontal" : 33071,
+				"mMaxLodLevel" : 3
+			}
+	},
+
+	"nap::ImageResource": {
 		"mID" : "MaskImage",
 		"mImagePath" : "data/steef/label_mask.jpg",
 		"mParameters" : {
@@ -43,9 +59,15 @@
 	},
 
 	"nap::ShaderResource": {
-		"mID": "GeneralShader",
+		"mID": "VinylShader",
 		"mVertShader": "shaders/steef/shader.vert",
 		"mFragShader": "shaders/steef/shader.frag"
+	},
+
+	"nap::ShaderResource": {
+		"mID": "BackgroundShader",
+		"mVertShader": "shaders/steef/background.vert",
+		"mFragShader": "shaders/steef/background.frag"
 	},
 
 	"nap::ShaderResource": {
@@ -65,8 +87,8 @@
 	},
 	
 	"nap::Material": {
-		"mID": "GeneralMaterial",
-		"Shader": "GeneralShader",
+		"mID": "VinylMaterial",
+		"Shader": "VinylShader",
 		"VertexAttributeBindings" : [
 			{
 				"MeshAttributeID": "Position",
@@ -130,6 +152,29 @@
 		]			
 	},
 
+	"nap::Material": {
+		"mID": "BackgroundMaterial",
+		"Shader": "BackgroundShader",
+		"VertexAttributeBindings" : [
+			{
+				"MeshAttributeID": "Position",
+				"ShaderAttributeID": "in_Position"
+			},
+			{
+				"MeshAttributeID": "UV0",
+				"ShaderAttributeID": "in_UV0"
+			},
+			{
+				"MeshAttributeID": "Normal",
+				"ShaderAttributeID": "in_Normals"
+			},
+			{
+				"MeshAttributeID": "Color0",
+				"ShaderAttributeID": "in_Color0"
+			}
+		]			
+	},
+
 	"nap::EntityResource": {
 		"mID": "ModelEntity",
 		"Components" : 
@@ -140,7 +185,7 @@
 						"Translate": {
 							"x": 0.0,
 							"y": 0.0,
-							"z": 0.0
+							"z": 2.75
 						},
 						"Rotate": {
 							"x": 0.0,
@@ -153,9 +198,9 @@
 							"y": 1.0,
 							"z": 1.0
 						},
-						"UniformScale": 0.7
+						"UniformScale": 0.33
 					}
-				}		
+				}	
 			}
 		],
 		"Children" :
@@ -173,7 +218,7 @@
 				"nap::RenderableMeshComponentResource": {
 					"Mesh" : "VinylMesh",
 					"MaterialInstance" : {
-						"Material": "GeneralMaterial",
+						"Material": "VinylMaterial",
 						"BlendMode": "Opaque",
 						"Uniforms" : 
 						[
@@ -199,7 +244,7 @@
 				"nap::TransformComponentResource": {
 					"Properties": {
 						"Translate": {
-							"x": 10.0,
+							"x": 1.0,
 							"y": 0.0,
 							"z": 0.0
 						},
@@ -214,7 +259,7 @@
 							"y": 1.0,
 							"z": 1.0
 						},
-						"UniformScale": 1.0
+						"UniformScale": 0.1
 					}
 				}		
 			}
@@ -248,7 +293,7 @@
 				"nap::TransformComponentResource": {
 					"Properties": {
 						"Translate": {
-							"x": -10.0,
+							"x": -1.0,
 							"y": 0.0,
 							"z": 0.0
 						},
@@ -263,13 +308,62 @@
 							"y": 1.0,
 							"z": 1.0
 						},
-						"UniformScale": 1.0
+						"UniformScale": 0.1
 					}
 				}		
 			}
 		]
 	},
 	
+	"nap::EntityResource": {
+		"mID": "BackgroundEntity",
+		"Components" : 
+		[
+			{
+				"nap::RenderableMeshComponentResource": {
+					"Mesh" : "BackgroundPlaneMesh",
+					"MaterialInstance" : {
+						"Material": "BackgroundMaterial",
+						"BlendMode": "Opaque",
+						"Uniforms" : 
+						[
+							{
+								"nap::UniformTexture2D" : 
+								{
+									"Name" : "backgroundTexture",
+									"Texture" : "BackgroundImage"
+								}
+							}
+						]
+					}
+				}		
+			},
+			{
+				"nap::TransformComponentResource": {
+					"Properties": {
+						"Translate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": -0.0
+						},
+						"Rotate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0,
+							"w": 1.0
+						},
+						"Scale": {
+							"x": 10.0,
+							"y": 10.0,
+							"z": 1.0
+						},
+						"UniformScale":1.0
+					}
+				}	
+			}
+		]
+	},
+
 	"nap::EntityResource": {
 		"mID": "CameraEntity",
 		"Components" : 
@@ -284,12 +378,20 @@
 				}		
 			},
 			{
+				"nap::OrthoCameraComponentResource": {
+					"Properties": {
+						"NearClippingPlane" : 0.01,
+						"FarClippingPlane" : 10000.0
+					}
+				}		
+			},
+			{
 				"nap::TransformComponentResource": {
 					"Properties": {
 						"Translate": {
 							"x": 0.0,
 							"y": 0.0,
-							"z": 50.0
+							"z": 5.0
 						},
 						"Rotate": {
 							"x": 0.0,

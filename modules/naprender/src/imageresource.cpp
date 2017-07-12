@@ -15,7 +15,7 @@ RTTI_BEGIN_CLASS(opengl::TextureParameters)
 RTTI_END_CLASS
 
 RTTI_BEGIN_BASE_CLASS(nap::TextureResource)
-	RTTI_PROPERTY("mParameters", 		&nap::TextureResource::mParameters,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("mParameters", 		&nap::TextureResource::mParameters,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 
