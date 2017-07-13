@@ -8,24 +8,19 @@ out vec4 out_Color;
 
 uniform sampler2D	vinylLabel;
 uniform sampler2D	vinylMask;
-uniform vec4		mColor;
+uniform vec3		recordColor;
 
 void main(void)
 {
 	// Get color of mask based on first uv set
 	float mask_color = texture(vinylMask, pass_Uvs0.xy).r;
-	
-	// Based on that we fetch the right uv set, values > 0 are not the label
-	vec3 color = vec3(0.0, 0.0, 0.0);
-	if(mask_color > 0.01)
-	{
-		vec2 uvs = vec2(pass_Uvs1.x, pass_Uvs1.y);
-		color = texture(vinylLabel, uvs).rgb;
-	}
 
-	// Fetch both colors
-	// vec3 color = texture(vinylLabel, uvs).rgb;
+	// Label color
+	vec3 label_color = texture(vinylLabel, pass_Uvs1.xy).rgb;
+
+	// Blend based on mask color
+	vec3 out_color = mix(recordColor, label_color, mask_color);
 
 	// Set output color
-	out_Color = vec4(color, 1.0) * mColor;
+	out_Color = vec4(out_color, 1.0);
 }

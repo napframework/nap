@@ -30,6 +30,7 @@
 #include <nap/componentinstance.h>
 #include <sceneservice.h>
 #include <orthocameracomponent.h>
+#include "rotatecomponent.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
@@ -46,8 +47,6 @@ nap::SceneService*										sceneService = nullptr;
 nap::InputService*										inputService = nullptr;
 
 nap::ObjectPtr<nap::RenderWindowResource>				renderWindow;
-nap::ObjectPtr<nap::EntityInstance>						vinylEntity = nullptr;
-nap::ObjectPtr<nap::EntityInstance>						coverEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance>						modelEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance>						cameraEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance>						backgroundEntity = nullptr;
@@ -75,51 +74,12 @@ void onUpdate()
 	// Reload all files if data changed
 	resourceManagerService->checkForFileChanges();
 
-	// Update model transform
-	float elapsed_time = renderService->getCore().getElapsedTime();
-	static float prev_elapsed_time = elapsed_time;
-	float delta_time = prev_elapsed_time - elapsed_time;
-	delta_time = delta_time < 0.01f ? 0.01f : delta_time;
-
-	// Get transform of vinyl record
-	nap::TransformComponent*  model_xform = &modelEntity->getComponent<nap::TransformComponent>();
-	nap::TransformComponent*  vinyl_xform = &vinylEntity->getComponent<nap::TransformComponent>();
-
-	// Get rotation angle
-	float rot_angle_radians_x = glm::radians(-90.0f);
-	float rot_speed_vinyl = 0.015f;
-	float rot_angle_vinyl = elapsed_time * 360.0f * rot_speed_vinyl;
-
-	glm::quat rotate_vinyl = glm::rotate(glm::quat(), rot_angle_radians_x, glm::vec3(1.0, 0.0, 0.0));
-	rotate_vinyl = glm::rotate(rotate_vinyl, rot_angle_vinyl, glm::vec3(0.0, 1.0, 0.0));
-
-	// Rotate vinyl
-	vinyl_xform->setRotate(rotate_vinyl);
-
-	float rot_speed_model = 0.125f;
-	float rot_angle_y = elapsed_time * 360.0f * rot_speed_model;
-	float rot_angle_radians_y = glm::radians(rot_angle_y);
-
-	// Calculate rotation quaternion
-	glm::quat rot_quat = glm::rotate(glm::quat(), (float)rot_angle_radians_y, glm::vec3(0.0, 1.0, 0.0));
-
-	// Set rotation on vinyl component
-	model_xform->setRotate(rot_quat);
-
-	// Set some material values
-	nap::MaterialInstance& vinyl_material = vinylEntity ->getComponent<nap::RenderableMeshComponent>().getMaterialInstance();
-
-	float v = (sin(elapsed_time) + 1.0f) / 2.0f;
-
-	// Set uniforms
-	glm::vec4 color(v, 1.0f-v, 1.0f, 1.0f);
-	// vinyl_material.getOrCreateUniform<nap::UniformVec4>("mColor").setValue({1.0f, 1.0f, 1.0f, 1.0f});
+	// Tick for all components that are listening
+	resourceManagerService->update();
 
 	//////////////////////////////////////////////////////////////////////////
 	// Camera Update
 	//////////////////////////////////////////////////////////////////////////
-
-	resourceManagerService->getRootEntity().update(delta_time);
 
 	// Update the scene
 	sceneService->update();
@@ -185,7 +145,6 @@ bool init(nap::Core& core)
 		nap::Logger::fatal(error.toString());
 		return false;
 	}
-
 	nap::Logger::info("initialized render service: %s", renderService->getName().c_str());
 
 	//////////////////////////////////////////////////////////////////////////
@@ -204,7 +163,8 @@ bool init(nap::Core& core)
 	//////////////////////////////////////////////////////////////////////////
 
 	nap::utility::ErrorState errorState;
-	
+
+
 	if (!resourceManagerService->loadFile("data/steef/objects.json", errorState))
 	{
 		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
@@ -221,8 +181,6 @@ bool init(nap::Core& core)
 	
 	// Get entity that holds vinyl
 	modelEntity = resourceManagerService->findEntity("ModelEntity");
-	vinylEntity	= resourceManagerService->findEntity("VinylEntity");
-	coverEntity = resourceManagerService->findEntity("CoverEntity");
 
 	// Get entity that holds the background image
 	backgroundEntity = resourceManagerService->findEntity("BackgroundEntity");

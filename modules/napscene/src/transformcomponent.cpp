@@ -6,6 +6,10 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/quaternion.hpp>
 
+//////////////////////////////////////////////////////////////////////////
+// RTTI
+//////////////////////////////////////////////////////////////////////////
+
 RTTI_BEGIN_CLASS(nap::TransformProperties)
 	RTTI_PROPERTY("Translate",		&nap::TransformProperties::mTranslate,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Rotate",			&nap::TransformProperties::mRotate,			nap::rtti::EPropertyMetaData::Default)
@@ -20,11 +24,21 @@ RTTI_END_CLASS
 RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::TransformComponent, nap::EntityInstance&)
 RTTI_END_CLASS
 
+//////////////////////////////////////////////////////////////////////////
+// TransformComponent
+//////////////////////////////////////////////////////////////////////////
+
 namespace nap
 {
 	bool TransformComponent::init(const ObjectPtr<ComponentResource>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
-		mProperties = rtti_cast<TransformComponentResource>(resource.get())->mProperties;
+		TransformComponentResource* xform_resource = rtti_cast<TransformComponentResource>(resource.get());
+		mTranslate = xform_resource->mProperties.mTranslate;
+		mRotate = glm::quat(glm::vec3(glm::radians(xform_resource->mProperties.mRotate.x), 
+			glm::radians(xform_resource->mProperties.mRotate.y), 
+			glm::radians(xform_resource->mProperties.mRotate.z)));
+		mScale = xform_resource->mProperties.mScale;
+		mUniformScale = xform_resource->mProperties.mUniformScale;
 		return true;
 	}
 
@@ -33,9 +47,9 @@ namespace nap
 	{
 		if (mLocalDirty)
 		{
-			glm::mat4x4 xform_matrix = glm::translate(glm::mat4x4(), mProperties.mTranslate);
-			glm::mat4x4 rotat_matrix = glm::toMat4(mProperties.mRotate);
-			glm::mat4x4 scale_matrix = glm::scale(glm::mat4x4(), mProperties.mScale * mProperties.mUniformScale);
+			glm::mat4x4 xform_matrix = glm::translate(glm::mat4x4(), mTranslate);
+			glm::mat4x4 rotat_matrix = glm::toMat4(mRotate);
+			glm::mat4x4 scale_matrix = glm::scale(glm::mat4x4(), mScale * mUniformScale);
 			mLocalMatrix = (xform_matrix * rotat_matrix * scale_matrix);
 			mLocalDirty = false;
 		}
@@ -67,25 +81,25 @@ namespace nap
 
 	void TransformComponent::setTranslate(const glm::vec3& translate)
 	{
-		mProperties.mTranslate = translate;
+		mTranslate = translate;
 		setDirty();
 	}
 
 	void TransformComponent::setRotate(const glm::quat& rotate)
 	{
-		mProperties.mRotate = rotate;
+		mRotate = rotate;
 		setDirty();
 	}
 
 	void TransformComponent::setScale(const glm::vec3& scale)
 	{
-		mProperties.mScale = scale;
+		mScale = scale;
 		setDirty();
 	}
 
 	void TransformComponent::setUniformScale(float scale)
 	{
-		mProperties.mUniformScale = scale;
+		mUniformScale = scale;
 		setDirty();
 	}
 }

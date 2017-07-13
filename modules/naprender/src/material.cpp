@@ -66,6 +66,9 @@ namespace nap
 		case opengl::GLSLType::Tex2D:
 			result = std::make_unique<UniformTexture2D>();
 			break;
+		case opengl::GLSLType::Vec3:
+			result = std::make_unique<UniformVec3>();
+			break;
 		}
 		assert(result);
 		result->mName = declaration.mName;
