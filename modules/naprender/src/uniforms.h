@@ -91,6 +91,35 @@ namespace nap
 		int mValue;			///< Data storage
 	};
 
+
+	/**
+	* Stores integer data and is capable of updating the integer uniform in the shader.
+	*/
+	class UniformFloat : public UniformValue
+	{
+		RTTI_ENABLE(UniformValue)
+	public:
+
+		/**
+		* @param value integer value to set.
+		*/
+		void setValue(float value) { mValue = value; }
+
+		/**
+		* Updates the uniform in the shader.
+		* @param declaration: the uniform declaration from the shader that is used to set the value.
+		*/
+		virtual void push(const opengl::UniformDeclaration& declaration) const override;
+
+		/**
+		* @return integer GLSL type.
+		*/
+		virtual opengl::GLSLType getGLSLType() const override { return opengl::GLSLType::Float; }
+
+		float mValue;			///< Data storage
+	};
+
+
 	/**
 	* Stores vec4 data and is capable of updating the vec4 uniform in the shader.
 	*/

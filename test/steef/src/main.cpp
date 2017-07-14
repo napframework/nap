@@ -54,8 +54,24 @@ nap::ObjectPtr<nap::EntityInstance>						backgroundEntity = nullptr;
 nap::DefaultInputRouter inputRouter;
 
 
-// Some utilities
-void runGame(nap::Core& core);	
+// predefines
+void runGame(nap::Core& core);
+
+
+/**
+* updates the background image to match the size of the output window
+*/
+void updateBackgroundImage()
+{
+	// Get size
+	glm::ivec2 window_size = renderWindow->getWindow()->getSize();
+
+	// Now update background texture
+	nap::TransformComponent& xform_comp = backgroundEntity->getComponent<nap::TransformComponent>();
+	xform_comp.setScale(glm::vec3(window_size.x, window_size.y*-1.0f, 0.0f));
+	xform_comp.setTranslate(glm::vec3(float(window_size.x) / 2.0f, float(window_size.y) / 2.0f, 0.0f));
+}
+
 
 // Called when the window is updating
 void onUpdate()
@@ -77,12 +93,11 @@ void onUpdate()
 	// Tick for all components that are listening
 	resourceManagerService->update();
 
-	//////////////////////////////////////////////////////////////////////////
-	// Camera Update
-	//////////////////////////////////////////////////////////////////////////
-
 	// Update the scene
 	sceneService->update();
+
+	// Make sure background image matches window size
+	updateBackgroundImage();
 }
 
 
@@ -101,8 +116,9 @@ void onRender()
 	renderService->clearRenderTarget(backbuffer, opengl::EClearFlags::COLOR|opengl::EClearFlags::DEPTH|opengl::EClearFlags::STENCIL);
 	
 	// Render Background
-
 	std::vector<nap::RenderableComponent*> components_to_render;
+	components_to_render.emplace_back(&(backgroundEntity->getComponent<nap::RenderableMeshComponent>()));
+	renderService->renderObjects(backbuffer, cameraEntity->getComponent<nap::OrthoCameraComponent>(), components_to_render);
 
 	// Render Vinyl
 	components_to_render.clear();
@@ -113,13 +129,27 @@ void onRender()
 	}
 	renderService->renderObjects(backbuffer, cameraEntity->getComponent<nap::PerspCameraComponent>(), components_to_render);
 
-	components_to_render.clear();
-	components_to_render.emplace_back(&(backgroundEntity->getComponent<nap::RenderableMeshComponent>()));
-	renderService->renderObjects(backbuffer, cameraEntity->getComponent<nap::PerspCameraComponent>(), components_to_render);
-
 	// Update gpu frame
 	renderWindow->swap();
 }
+
+
+/**
+ * Handles the window event
+ * When the window size changes we want to update the background texture to reflect those changes, ie:
+ * Scale to the right size
+ */
+void handleWindowEvent(const nap::WindowEvent& windowEvent)
+{
+	nap::rtti::TypeInfo e_type = windowEvent.get_type();
+	if (e_type.is_derived_from(RTTI_OF(nap::WindowResizedEvent)) ||
+		e_type.is_derived_from(RTTI_OF(nap::WindowShownEvent)))
+	{
+		nap::Logger::debug("window resized");
+		updateBackgroundImage();
+	}
+}
+
 
 /**
 * Initialize all the resources and instances used for drawing
@@ -163,17 +193,17 @@ bool init(nap::Core& core)
 	//////////////////////////////////////////////////////////////////////////
 
 	nap::utility::ErrorState errorState;
-
-
 	if (!resourceManagerService->loadFile("data/steef/objects.json", errorState))
 	{
 		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
+
 		assert(false);
 		return false;  
 	}  
 
 	// Extract loaded resources
 	renderWindow = resourceManagerService->findObject<nap::RenderWindowResource>("Viewport");
+	renderWindow->onWindowEvent.connect(std::bind(&handleWindowEvent, std::placeholders::_1));
 
 	// Get vintl textures
 	vinylLabelImg = resourceManagerService->findObject<nap::ImageResource>("LabelImage");

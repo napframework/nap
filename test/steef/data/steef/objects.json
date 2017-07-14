@@ -347,6 +347,7 @@
 					"MaterialInstance" : {
 						"Material": "BackgroundMaterial",
 						"BlendMode": "Opaque",
+						"DepthMode" : "ReadOnly",
 						"Uniforms" : 
 						[
 							{
@@ -354,6 +355,13 @@
 								{
 									"Name" : "backgroundTexture",
 									"Texture" : "BackgroundImage"
+								}
+							},
+							{
+								"nap::UniformFloat":
+								{
+									"Name" : "intensity",
+									"Value": 1.0
 								}
 							}
 						]
