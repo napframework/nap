@@ -44,6 +44,24 @@ class QBaseWindow(QMainWindow):
     def __init__(self):
         super(QBaseWindow, self).__init__()
         self.setWindowTitle(QCoreApplication.applicationName())
+        self.setDockNestingEnabled(True)
+        self.__windowMenu = None
+        # self.centralWidget().setVisible(False)
+
+    def windowMenu(self):
+        if not self.__windowMenu:
+            self.__windowMenu = self.menuBar().addMenu('Window')
+        return self.__windowMenu
+
+    def addDock(self, name, widget, area=Qt.TopDockWidgetArea):
+        dock = QDockWidget()
+        dock.setObjectName(name)
+        dock.setWidget(widget)
+        dock.setWindowTitle(name)
+        action = self.windowMenu().addAction(name)
+        action.setCheckable(True)
+        action.setChecked(True)
+        self.addDockWidget(area, dock)
 
     def showEvent(self, e):
         super(QBaseWindow, self).showEvent(e)
