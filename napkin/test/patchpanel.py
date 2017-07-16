@@ -31,31 +31,25 @@ class OperatorItem(InputOutputNodeItem):
             socket = self.addInlet(inlet.name())
             socket.inlet = inlet
             if isinstance(inlet, DataInlet):
-                socket.setToolTip('%s <%s>' % (inlet.name(), inlet.valueType.__name__))
+                socket.setToolTip('%s (%s)' % (inlet.name(), inlet.valueType.__name__))
                 socket.setPinColor(randomTypeColor(inlet.valueType))
             elif isinstance(inlet, TriggerInlet):
-                socket.setToolTip('%s <<trigger>>' % inlet.name())
-
+                socket.setToolTip('%s <trigger>' % inlet.name())
 
         for outlet in self.operator.outlets():
             socket = self.addOutlet(outlet.name())
             socket.outlet = outlet
             if isinstance(outlet, DataOutlet):
-                socket.setToolTip('%s <%s>' % (outlet.name(), outlet.valueType.__name__))
+                socket.setToolTip('%s (%s)' % (outlet.name(), outlet.valueType.__name__))
                 socket.setPinColor(randomTypeColor(outlet.valueType))
             elif isinstance(outlet, TriggerOutlet):
-                socket.setToolTip('%s <<trigger>>' % outlet.name())
-
-
-def dataColorFactory(valueType):
-    return QColor.red()
+                socket.setToolTip('%s <trigger>' % outlet.name())
 
 
 class PatchScene(GraphScene):
     def __init__(self):
         super(PatchScene, self).__init__()
         self.patch = Patch()
-        self.dataColorFactory = dataColorFactory
         self.addConnectCondition(dataTypeCondition)
 
     def createOperator(self, opType, pos):
@@ -97,7 +91,6 @@ class PatchScene(GraphScene):
                 item.dstSocket.inlet.disconnect()
             elif isinstance(item.srcSocket.outlet, TriggerOutlet):
                 item.srcSocket.outlet.disconnect()
-
 
         super(PatchScene, self).removeItem(item)
 
