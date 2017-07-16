@@ -6,13 +6,13 @@ from patch.inoutnodeitem import *
 from patch.layeritem import *
 from patch.nodeitem import *
 
-_typeFilter = lambda m, t: isinstance(m, t)
-
 
 def inputOutputConnectCondition(src: SocketItem, dst: SocketItem):
     if isinstance(src, InputSocketItem) and isinstance(dst, InputSocketItem):
         return False
     if isinstance(src, OutputSocketItem) and isinstance(dst, OutputSocketItem):
+        return False
+    if src.node() == dst.node():
         return False
     return True
 
@@ -82,11 +82,22 @@ class GraphScene(QGraphicsScene):
     def addNode(self, node: NodeItem):
         node.setParentItem(self.__nodeLayer)
 
+    def addEdge(self, src: SocketItem, dst: SocketItem):
+        edge = EdgeItem(src, dst)
+        edge.setParentItem(self.__edgeLayer)
+
+    def removeItems(self, items: Iterable[QGraphicsItem]):
+        for item in items:
+            self.removeItem(item)
+
+    def removeItem(self, item: QGraphicsItem):
+        if isinstance(item, NodeItem):
+            # remove edges first
+            self.removeItems(item.edges())
+        super(GraphScene, self).removeItem(item)
+
     def canConnect(self, src: SocketItem, dst: SocketItem):
-        for cond in self.__connectConditions:
-            if not cond(src, dst):
-                return False
-        return True
+        return all(c(src, dst) for c in self.__connectConditions)
 
     def startDragConnection(self, socket):
         self.hideIncompatiblePlugs(socket)
@@ -153,13 +164,6 @@ class GraphScene(QGraphicsScene):
     def selectedEdges(self) -> Iterable[EdgeItem]:
         return filter(lambda m: isinstance(m, EdgeItem), self.selectedItems())
 
-    def findEdge(self, plugA: SocketItem, plugB: SocketItem):
-        for item in self.edges():
-            if item.srcPin.plugItem() == plugA and item.dstPin.plugItem() == plugB:
-                return item
-            if item.dstPin.plugItem() == plugB and item.dstPin.plugItem() == plugA:
-                return item
-
     def findEdges(self, node):
         for edge in self.edges():
             if edge.dstSocket.node() == node:
@@ -187,16 +191,6 @@ class GraphScene(QGraphicsScene):
             node.setZValue(startindex + z)
 
         self.nodeSelectionChanged.emit(list(self.selectedNodes()))
-
-
-    def addEdge(self, src: SocketItem, dst: SocketItem):
-        wire = EdgeItem(src, dst)
-        wire.setParentItem(self.__edgeLayer)
-
-    def removeEdge(self, srcPlug, dstPlug):
-        wire = self.findEdge(srcPlug, dstPlug)
-        assert (wire)
-        self.__removeItem(wire)
 
     def __removeItem(self, item):
         self.removeItem(item)
