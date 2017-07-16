@@ -56,6 +56,7 @@ get_filename_component(PROJECTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/.. ABSOLUTE)
 add_subdirectory(core)
 add_subdirectory(utility)
 add_subdirectory(rtti)
+add_subdirectory(nrender)
 add_subdirectory(coreapp)
 
 # tools targets
@@ -65,6 +66,7 @@ add_subdirectory(tools/fbxconverter)
 add_subdirectory(test/unittest)
 add_subdirectory(test/scriptserver)
 add_subdirectory(test/render)
+add_subdirectory(test/tommy)
 add_subdirectory(test/serializationtest)
 
 # Modules
@@ -76,6 +78,8 @@ add_subdirectory(modules/naprender)
 add_subdirectory(modules/napgui)
 add_subdirectory(modules/napmath)
 add_subdirectory(modules/napsdlinput)
+add_subdirectory(modules/napsdlwindow)
+add_subdirectory(modules/napscene)
 
 #add_dependencies(napkin mod_napfsm)
 add_dependencies(scriptserver mod_napscriptserver)

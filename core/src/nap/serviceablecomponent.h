@@ -34,11 +34,11 @@ namespace nap
 		virtual void registered()	{ }
 
 		// Slots that handle service registration / deregistration
-		Slot<const Object&> mAdded = { this, &ServiceableComponent::registerWithService };
+		Slot<Object&> mAdded = { this, &ServiceableComponent::registerWithService };
 
 	private:
         
 		// Slot Calls
-		void registerWithService(const Object& object);
+		void registerWithService(Object& object);
 	};
 }

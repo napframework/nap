@@ -58,9 +58,6 @@ namespace nap
 
 		// Make sure we know if it's removal
 		object.removed.connect(mRemoved);
-
-		// Let derived service handle possible changes
-		objectRegistered(object);
 	}
 
 

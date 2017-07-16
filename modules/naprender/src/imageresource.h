@@ -4,7 +4,7 @@
 #include <nap/resource.h>
 #include <nap/coreattributes.h>
 #include <nimage.h>
-
+#include <renderattributes.h>
 
 namespace nap
 {
@@ -13,10 +13,10 @@ namespace nap
 	/**
 	 * Base class for texture resources
 	 */
-	class TextureResource : public Resource
+	class TextureResource : public rtti::RTTIObject
 	{
 		friend class ImageResourceLoader;
-		RTTI_ENABLE(Resource)
+		RTTI_ENABLE(rtti::RTTIObject)
 	public:
 		/**
 		 * Virtual override to be implemented by derived classes
@@ -27,6 +27,11 @@ namespace nap
 		 * Non const accessors
 		 */
 		opengl::BaseTexture& getTexture();
+
+		/**
+		 * Virtual override to get the size of the texture, to be implemented by derived classes
+		 */
+		virtual const glm::vec2 getSize() const = 0;
 
 		/**
 		 * Binds the texture
@@ -53,26 +58,20 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		* Commits changes made by init, or rolls them back.
-		*/
-		virtual void finish(Resource::EFinishMode mode) override;
-
-		/**
 		* Returns 2D texture object
 		*/
 		virtual const opengl::BaseTexture& getTexture() const override;
 
 		/**
-		* Returns custom display name
-		*/
-		virtual const std::string getDisplayName() const override				{ return mDisplayName;  }
+		 * Get the size of the texture
+		 */
+		virtual const glm::vec2 getSize() const override;
 
 	public:
 		opengl::Texture2DSettings mSettings;
 
 	private:
 		std::unique_ptr<opengl::Texture2D> mTexture;				// Texture as created during init
-		std::unique_ptr<opengl::Texture2D> mPrevTexture;			// Stored texture content before for rolling back
 		std::string mDisplayName = "MemoryTexture2D";				// Custom display name
 	};
 
@@ -93,9 +92,11 @@ namespace nap
 		// Default Constructor
 		ImageResource() = default;
 
+		/**
+		* Loads the image from mImagePath.
+		* @return true when successful, otherwise false.
+		*/
 		virtual bool init(utility::ErrorState& errorState) override;
-
-		void finish(Resource::EFinishMode mode);
 
 		/**
 		 * @return opengl image + bitmap data
@@ -111,21 +112,17 @@ namespace nap
 		virtual const opengl::BaseTexture& getTexture() const override;
 
 		/**
-		 * @return human readable display name
+		 * Get the size of the texture
 		 */
-		virtual const std::string getDisplayName() const override;
+		virtual const glm::vec2 getSize() const override;
 
 	public:
 		// Path to img on disk
 		std::string				mImagePath;
 
 	private:
-		// Display name of img
-		std::string				mDisplayName;
-
 		// Opengl Image Object
 		std::unique_ptr<opengl::Image>	mImage = nullptr;
-		std::unique_ptr<opengl::Image>	mPrevImage = nullptr;
 	};
 
 }

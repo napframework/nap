@@ -16,7 +16,7 @@ namespace nap
 	 * a specific render target. The render target initialization
 	 * and binding is handled by that target
 	 */
-	class Renderer
+	class Renderer final
 	{
 		RTTI_ENABLE()
 	public:
@@ -29,15 +29,8 @@ namespace nap
 		/**
 		 * Default constructor and destructor
 		 */
-		virtual ~Renderer() = default;
+		~Renderer() = default;
 		Renderer() = default;
-
-		/**
-		 * Called before creating the first render context
-		 * @return if the initialization call was successful
-		 */
-		virtual bool preInit() = 0;
-
 
 		/**
 		 * Called to create a window
@@ -45,19 +38,24 @@ namespace nap
 		 * @return the new render window or nullptr if unsuccessful
 		 * @param settings the window settings used to create the window
 		 */
-		virtual RenderWindow* createRenderWindow(const RenderWindowSettings& settings) = 0;
-
+		std::unique_ptr<RenderWindow> createRenderWindow(const RenderWindowSettings& settings, utility::ErrorState& errorState);
 
 		/**
-		 * Called after the first render context is created
-		 * @retrun if the initialization call was successful
+		 * Initialize the renderer
 		 */
-		virtual bool postInit() = 0;
-
+		bool init(utility::ErrorState& errorState);
 
 		/**
 		 * Called when the renderer needs to shut down
 		 */
-		virtual void shutdown() = 0;
+		void shutdown();
+
+		/**
+		 * Get the primary window (i.e. the window that was used to init OpenGL against)
+		 */
+		RenderWindow& getPrimaryWindow() { return *mPrimaryWindow; }
+
+	private:
+		std::unique_ptr<RenderWindow> mPrimaryWindow;
 	};
 }

@@ -1,8 +1,6 @@
 #include "uniforms.h"
-#include "nshaderutils.h"
 #include "nglutils.h"
 #include "imageresource.h"
-#include <gl/glew.h>
 
 
 RTTI_BEGIN_BASE_CLASS(nap::Uniform)
@@ -57,7 +55,7 @@ namespace nap
 
 	void UniformTexture2D::push(const opengl::UniformDeclaration& declaration, int textureUnit) const
 	{
-		if (!mTexture)
+		if (mTexture == nullptr)
 			return;
 
 		glActiveTexture(GL_TEXTURE0 + textureUnit);

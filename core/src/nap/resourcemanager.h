@@ -1,24 +1,33 @@
 #pragma once
 
-#include "fileutils.h"
-#include "logger.h"
-#include "object.h"
 #include "service.h"
-#include "resource.h"
-#include "rtti/jsonreader.h"
+#include "objectptr.h"
+#include "utility/uniqueptrmapiterator.h"
+#include "rtti/unresolvedpointer.h"
 #include <map>
+
 
 namespace nap
 {
 	class DirectoryWatcher;
+	class EntityInstance;
+	class EntityResource;
+	
+	class RTTIObjectGraphItem;
+	template<typename ITEM> class ObjectGraph;
+	using RTTIObjectGraph = ObjectGraph<RTTIObjectGraphItem>;
+
+	struct EntityCreationParameters;
 
 	/**
-	 * Manager, holding resource data, capable of loading and real-time updating of content.
+	 * Manager, owner of all objects, capable of loading and real-time updating of content.
 	 */
 	class ResourceManagerService : public Service
 	{
 		RTTI_ENABLE(Service)
 	public:
+		using EntityByIDMap = std::unordered_map<std::string, std::unique_ptr<EntityInstance>>;
+		using EntityIterator = utility::UniquePtrMapWrapper<EntityByIDMap, EntityInstance*>;
 
 		ResourceManagerService();
 
@@ -28,17 +37,18 @@ namespace nap
 		bool loadFile(const std::string& filename, utility::ErrorState& errorState);
 
 		/*
-		* Loads a json file containing objects. All objects are added to the manager. If objects already exist (which is checked by their ID), than the
-		* objects are updated. If objects already exist but are unchanged, they are not updated.
+		* Loads a json file containing objects. When the objects are loaded, a comparison is performed against the objects that are already loaded. Only
+		* the new objects and the objects that are different from the existing objects are loaded into the manager. The set of objects that is new
+		* or changed then receives an init() call in the correct dependency order: if an object has a pointer to another object, the pointee is initted
+		* first. In case an already existing object that wasn't in the file points to something that is changed, that object is recreated by 
+		* cloning it and then calling init() on it. That also happens in the correct dependency order.
 		*
-		* After objects are created or updated, init() is called for all these objects. init() is called in the correct dependency order: if an object
-		* has a pointer to another object, the pointee is initted first. Note that it may be required that init() is called for objects that do not exist
-		* in the file, but were already existing in the manager: if object A points to object B, and object B is loaded from file, then object A must be
-		* initted as well, as it may rely on new data from object B.
-		* 
-		* If there were no errors during the loading and updating process, finish(COMMIT) is called on all objects.
-		* If errors did occur, finish(ROLLBACK) is called, and the objects are responsible for returning their internal state back to the state before init()
-		* was called. NOTE though, that loadFile will rollback any RTTI attribute values for you already, so this is only about rolling back internal non-rtti state.
+		* Because there may be other objects pointing to objects that were read from json (which is only allowed through the ObjectPtr class), the updating
+		* mechanism patches all those pointers before calling init(). 
+		*
+		* In case one of the init() calls fail, the previous state is completely restored by patching the pointers back and destroying objects that were read.
+		* The client does not need to worry about handling such cases.
+		* In case all init() calls succeed, any old objects are destructed (the cloned and the previously existing objects).
 		*
 		* @param filename: json file containing objects.
 		* @param externalChangedFile: externally changed file that caused load of this file (like texture, shader etc)
@@ -47,26 +57,31 @@ namespace nap
 		bool loadFile(const std::string& filename, const std::string& externalChangedFile, utility::ErrorState& errorState);
 
 		/**
-		* Find a resource by object ID. Returns null if not found.
+		* Find an object by object ID. Returns null if not found.
 		*/
-		Resource* findResource(const std::string& id);
+		const ObjectPtr<RTTIObject> findObject(const std::string& id);
 
 		/**
-		* Find a resource by object ID. Returns null if not found.
+		* Find an object by object ID. Returns null if not found.
 		*/
 		template<class T>
-		T* findResource(const std::string& id) { return rtti_cast<T>(findResource(id)); }
+		const ObjectPtr<T> findObject(const std::string& id) { return ObjectPtr<T>(findObject(id)); }
 
 		/**
-		* Creates a resource and adds it to the manager.
+		* Creates an object and adds it to the manager.
 		*/
-		Resource* createResource(const rtti::TypeInfo& type);
+		const ObjectPtr<RTTIObject> createObject(const rtti::TypeInfo& type);
 
 		/**
-		* Creates a resource and adds it to the manager.
+		* Instantiates an Entity.
+		*/
+		const ObjectPtr<EntityInstance> createEntity(const EntityResource& entityResource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
+
+		/**
+		* Creates an object and adds it to the manager.
 		*/
 		template<typename T>
-		T* createResource() { return rtti_cast<T>(createResource(RTTI_OF(T))); }
+		const ObjectPtr<T> createObject() { return ObjectPtr<T>(createObject(RTTI_OF(T))); }
 
 		/**
 		* Function that runs the file monitor to check for changes. If changes are found in files that were loaded by the manager,
@@ -79,27 +94,102 @@ namespace nap
 		*/
 		rtti::Factory& getFactory();
 
-	private:
-		friend class ObjectRestorer;
+		/**
+		* @return EntityInstance.
+		*/
+		const ObjectPtr<EntityInstance> findEntity(const std::string& inID) const;
 
-		using ClonedObjectMap = std::map<RTTIObject*, std::unique_ptr<RTTIObject>>;
-		using ExistingObjectMap = std::map<RTTIObject*, RTTIObject*>;
-		
-		void splitFileObjects(rtti::OwnedObjectList& fileObjects, ExistingObjectMap& existingObjects, rtti::ObservedObjectList& newObjects);
-		bool determineObjectsToInit(const ExistingObjectMap& existingObjects, const ClonedObjectMap& clonedObjects, const rtti::ObservedObjectList& newObjects, const std::string& externalChangedFile, rtti::ObservedObjectList& objectsToInit, utility::ErrorState& errorState);
-		bool updateExistingObjects(const ExistingObjectMap& existingObjectMap, rtti::UnresolvedPointerList& unresolvedPointers, utility::ErrorState& errorState);
-		void addResource(const std::string& id, std::unique_ptr<Resource> resource);
-		void removeResource(const std::string& id);
+		/**
+		* @return The root entity as created by the system, which is the root parent of all entities.
+		*/
+		const EntityInstance& getRootEntity() const
+		{
+			return *mRootEntity;
+		}
+
+		/**
+		* @return The root entity as created by the system, which is the root parent of all entities.
+		*/
+		EntityInstance& getRootEntity()
+		{
+			return *mRootEntity;
+		}
+
+		/**
+		* @return Iterator to all entities in the system.
+		*/
+		EntityIterator getEntities() { return EntityIterator(mEntities); }
+
+		/**
+		* 
+		*/
+		virtual void initialized();
+
+	private:
+		using InstanceByIDMap	= std::unordered_map<std::string, rtti::RTTIObject*>;				// Map from object ID to object (non-owned)
+		using ObjectByIDMap		= std::unordered_map<std::string, std::unique_ptr<RTTIObject>>;		// Map from object ID to object (owned)
+		using FileLinkMap		= std::unordered_map<std::string, std::vector<std::string>>;		// Map from target file to multiple source files
+
+		void addObject(const std::string& id, std::unique_ptr<RTTIObject> object);
+		void removeObject(const std::string& id);
 		void addFileLink(const std::string& sourceFile, const std::string& targetFile);
 
-	private:
-		using ResourceMap = std::map<std::string, std::unique_ptr<Resource>>;
-		using FileLinkMap = std::map<std::string, std::vector<std::string>>; // Map from target file to multiple source files
+		void determineObjectsToInit(const RTTIObjectGraph& objectGraph, const ObjectByIDMap& objectsToUpdate, const std::string& externalChangedFile, std::vector<std::string>& objectsToInit);
+		bool resolvePointers(ObjectByIDMap& objectsToUpdate, const rtti::UnresolvedPointerList& unresolvedPointers, utility::ErrorState& errorState);
+		bool initObjects(const std::vector<std::string>& objectsToInit, const ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState);
+		bool initEntities(const RTTIObjectGraph& objectGraph, const ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState);
+		bool createEntities(const std::vector<const EntityResource*>& entityResources, EntityCreationParameters& entityCreationParams, std::vector<std::string>& generatedEntityIDs, utility::ErrorState& errorState);
+		bool buildObjectGraph(const ObjectByIDMap& objectsToUpdate, RTTIObjectGraph& objectGraph, utility::ErrorState& errorState);
+		/** 
+		* Traverses all pointers in ObjectPtrManager and, for each target, replaces the target with the one in the map that is passed.
+		* @param container The container holding an ID -> pointer mapping with the pointer to patch to.
+		*/
+		template<class OBJECTSBYIDMAP> 
+		void patchObjectPtrs(OBJECTSBYIDMAP& newTargetObjects);
 
-		ResourceMap							mResources;				// Holds all resources
-		std::set<std::string>				mFilesToWatch;			// Files currently loaded, used for watching changes on the files
-		FileLinkMap							mFileLinkMap;			// Map containing links from target to source file, for updating source files if the file monitor sees changes
-		std::unique_ptr<DirectoryWatcher>	mDirectoryWatcher;		// File monitor, detects changes on files
+	private:
+
+		/**
+		 * Helper class that patches object pointers back to the objects as present in the resource manager.
+		 * When clear is called, no rollback is performed.
+		 */
+		struct RollbackHelper
+		{
+		public:
+			RollbackHelper(ResourceManagerService& service);
+			~RollbackHelper();
+
+			void clear();
+
+		private:
+			ResourceManagerService& mService;
+			bool mPatchObjects = true;
+		};
+
+		std::unique_ptr<EntityInstance>		mRootEntity;					// Root entity, owned and created by the system
+		ObjectByIDMap						mObjects;						// Holds all objects
+		EntityByIDMap						mEntities;						// Holds all entitites
+		std::set<std::string>				mFilesToWatch;					// Files currently loaded, used for watching changes on the files
+		FileLinkMap							mFileLinkMap;					// Map containing links from target to source file, for updating source files if the file monitor sees changes
+		std::unique_ptr<DirectoryWatcher>	mDirectoryWatcher;				// File monitor, detects changes on files
 	};
 
+
+	template<class OBJECTSBYIDMAP>
+	void ResourceManagerService::patchObjectPtrs(OBJECTSBYIDMAP& newTargetObjects)
+	{
+		ObjectPtrManager::ObjectPtrSet& object_ptrs = ObjectPtrManager::get().GetObjectPointers();
+
+		for (ObjectPtrBase* ptr : object_ptrs)
+		{
+			RTTIObject* target = ptr->get();
+			if (target == nullptr)
+				continue;
+
+			std::string& target_id = target->mID;
+			OBJECTSBYIDMAP::iterator new_target = newTargetObjects.find(target_id);
+			if (new_target != newTargetObjects.end())
+				ptr->set(&*(new_target->second));
+		}
+	}
 }
