@@ -13,6 +13,7 @@ class GraphView(QGraphicsView):
      panning and zooming the view and connecting Operators.
      """
 
+
     def __init__(self):
         """
         @param ctx: The application context
@@ -32,9 +33,7 @@ class GraphView(QGraphicsView):
         self.addAction(deleteAction)
 
     def __onDeleteSelected(self):
-        assert False
-        for item in self.scene().selectedItems():
-            print(item)
+        self.scene().removeItems(self.scene().selectedItems())
 
     def focusNextChild(self, next):
         return False
@@ -249,7 +248,7 @@ class ConnectInteractMode(InteractMode):
         vec = QPointF()
         pos = view.mapToScene(evt.pos())
 
-        if dstSocket:
+        if srcSocket and dstSocket:
             if view.scene().canConnect(srcSocket, dstSocket):
                 pos, vec = dstSocket.attachPosVec()
                 view.viewport().setCursor(Qt.PointingHandCursor)
