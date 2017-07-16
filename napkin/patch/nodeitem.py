@@ -27,6 +27,7 @@ class PinItem(QGraphicsPathItem):
     def socket(self):
         return self._socket
 
+
 class SocketItem(QGraphicsItem):
     def __init__(self, name):
         super(SocketItem, self).__init__()
@@ -37,10 +38,21 @@ class SocketItem(QGraphicsItem):
     def node(self):
         return self.parentItem()
 
+    def isConnected(self):
+        return bool(self.edge())
+
+    def edge(self):
+        from patch.edgeitem import EdgeItem
+        for e in self.scene().edges():
+            assert isinstance(e, EdgeItem)
+            if e.srcSocket == self: return e
+            if e.dstSocket == self: return e
+        return None
+
     def setDirty(self):
         self.__layoutDirty = True
 
-    def setName(self, name:str):
+    def setName(self, name: str):
         self._label.setPlainText(name)
         self.setDirty()
 
@@ -55,7 +67,7 @@ class SocketItem(QGraphicsItem):
             self.layout()
             self.__layoutDirty = False
 
-    def setUsable(self, b:bool):
+    def setUsable(self, b: bool):
         self.setVisible(b)
 
 
@@ -71,6 +83,14 @@ class NodeItem(QGraphicsObject):
         if change == QGraphicsObject.ItemPositionChange:
             self.scene().itemMoved(self)
         return super(NodeItem, self).itemChange(change, value)
+
+    def edges(self):
+        """
+        :rtype: Iterable[EdgeItem]
+        """
+        for s in self.sockets():
+            e = s.edge()
+            if e: yield e
 
     def sockets(self) -> Iterable[SocketItem]:
         yield
