@@ -12,6 +12,9 @@ class InputSocketItem(SocketItem):
         self._pin = PinItem(self)
         self.__vec = QPointF(-1, 0)
 
+    def setPinColor(self, col):
+        self._pin.setBrush(col)
+
     def layout(self):
         pinY = self._label.boundingRect().height() / 2 - self._pin.boundingRect().height() / 2
         self._label.setPos(self._pin.boundingRect().width(), 0)
@@ -30,6 +33,9 @@ class OutputSocketItem(SocketItem):
         super(OutputSocketItem, self).__init__(name)
         self._pin = PinItem(self)
         self.__vec = QPointF(1, 0)
+
+    def setPinColor(self, col):
+        self._pin.setBrush(col)
 
     def layout(self):
         pinY = self._label.boundingRect().height() / 2 - self._pin.boundingRect().height() / 2

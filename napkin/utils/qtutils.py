@@ -1,3 +1,4 @@
+import hashlib
 import json
 
 import math
@@ -20,6 +21,9 @@ def randomColor(h):
     col = QColor()
     col.setHslF(hh, saturation, value)
     return col
+
+def randomTypeColor(typ):
+    return randomColor(abs(hash(typ.__name__)) % (10 ** 8))
 
 def expandChildren(view, index, expanded=True):
     if not index.isValid():

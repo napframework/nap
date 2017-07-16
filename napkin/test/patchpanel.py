@@ -4,6 +4,7 @@ from patch.graphview import GraphView
 from patch.inoutnodeitem import *
 from patch.nodeitem import SocketItem
 from patch.operator import *
+from utils.qtutils import randomTypeColor
 
 
 def dataTypeCondition(src: SocketItem, dst: SocketItem):
@@ -31,14 +32,17 @@ class OperatorItem(InputOutputNodeItem):
             socket.inlet = inlet
             if isinstance(inlet, DataInlet):
                 socket.setToolTip('%s <%s>' % (inlet.name(), inlet.valueType.__name__))
+                socket.setPinColor(randomTypeColor(inlet.valueType))
             elif isinstance(inlet, TriggerInlet):
                 socket.setToolTip('%s <<trigger>>' % inlet.name())
+
 
         for outlet in self.operator.outlets():
             socket = self.addOutlet(outlet.name())
             socket.outlet = outlet
             if isinstance(outlet, DataOutlet):
                 socket.setToolTip('%s <%s>' % (outlet.name(), outlet.valueType.__name__))
+                socket.setPinColor(randomTypeColor(outlet.valueType))
             elif isinstance(outlet, TriggerOutlet):
                 socket.setToolTip('%s <<trigger>>' % outlet.name())
 

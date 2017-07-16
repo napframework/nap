@@ -15,7 +15,7 @@ class PinItem(QGraphicsPathItem):
         super(PinItem, self).__init__(socket)
         self._socket = socket
 
-        self.__color = QColor('#FF00FF')
+        self.__color = QColor('#000000')
 
         self.setPen(QPen(Qt.NoPen))
         self.setBrush(self.__color)

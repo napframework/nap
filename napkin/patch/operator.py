@@ -21,6 +21,7 @@ TYPE_CONVERSION = {
 TYPE_CONVERSION_PASSTHROUGH = lambda v: v
 
 
+
 def addTypeConverter(fromType, toType, func):
     assert not typeConverter(fromType, toType)
     TYPE_CONVERSION.setdefault(fromType, {}).setdefault(toType, func)
