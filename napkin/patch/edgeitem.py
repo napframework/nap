@@ -1,6 +1,6 @@
-from PyQt5.QtCore import QPointF, Qt
-from PyQt5.QtGui import QPen, QPainterPath
-from PyQt5.QtWidgets import QGraphicsPathItem, QGraphicsItem
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 
 from patch.nodeitem import SocketItem
 from patch.patchutils import calculateWirePath
@@ -15,11 +15,11 @@ class EdgeItemBase(QGraphicsPathItem):
         self.srcVec = QPointF()
         self.dstPos = QPointF()
         self.dstVec = QPointF()
-    
+
     def update(self):
         self.updatePath()
         super(EdgeItemBase, self).update()
-    
+
     def updatePath(self):
         if self.srcSocket:
             self.srcPos, self.srcVec = self.srcSocket.attachPosVec()
@@ -32,12 +32,20 @@ class EdgeItemBase(QGraphicsPathItem):
         calculateWirePath(self.srcPos, self.srcVec, self.dstPos, self.dstVec, p)
         self.setPath(p)
 
+    def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget = None):
+        if self.isSelected():
+            pen = painter.pen()
+            pen.setWidth(3)
+            painter.setPen(pen)
+        painter.drawPath(self.path())
 
 
 class EdgeItem(EdgeItemBase):
     def __init__(self, src: SocketItem, dst: SocketItem):
         super(EdgeItem, self).__init__()
+        # type:SocketItem
         self.srcSocket = src
+        # type:SocketItem
         self.dstSocket = dst
         self.setFlag(QGraphicsItem.ItemIsFocusable, True)
         self.setFlag(QGraphicsItem.ItemIsSelectable, True)
