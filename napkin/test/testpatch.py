@@ -1,52 +1,58 @@
-import random
+import json
+import os
 import sys
-from collections import namedtuple
 
 from PyQt5.QtCore import *
+from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-from random_words.random_words import RandomWords
 
-from patch.graphscene import GraphScene
-from patch.graphview import GraphView
-from patch.inoutnodeitem import InputOutputNodeItem
-from utils.qtutils import QBaseWindow
+from test.patchpanel import PatchPanel
+from utils.qtutils import QBaseWindow, QCoreApplication
 
+EXT = '.json'
+FILE_FILTER = "json (*%s)" % EXT
+DOC_DIR = '~/Documents'
 
+SETTINGS = None
+
+def getSaveFilename(parent):
+    filename, _ = QFileDialog.getSaveFileName(parent, 'Save File', '', FILE_FILTER)
+    if not filename: return None
+    if not filename.lower().endswith(EXT):
+        filename = '%s%s' % (filename, EXT)
+    return filename
 
 
 if __name__ == '__main__':
     def __hook(type, value, traceback):
         raise value
+
     sys.excepthook = __hook
     QCoreApplication.setOrganizationDomain('Naivi')
     QCoreApplication.setApplicationName(__file__)
 
     app = QApplication(sys.argv)
 
+    patchPanel = PatchPanel()
+
     win = QBaseWindow()
-    view = GraphView()
-    scene = GraphScene()
-    view.setScene(scene)
+    win.addDock('Patch', patchPanel)
 
-    rw = RandomWords()
+    def save():
+        filename = getSaveFilename(win)
+        if not filename: return
+        with open(filename, 'w') as fh:
+            dic = patchPanel.patch().dict()
+            json.dump(dic, fh, indent=2)
 
-    for i in range(100):
-        op = InputOutputNodeItem(rw.random_word())
-        for n in range(random.randint(0, 4)):
-            op.addInlet(rw.random_word())
-        for n in range(random.randint(0, 4)):
-            op.addOutlet(rw.random_word())
-        op.setPos(random.randint(-800, 800), random.randint(-800, 800))
-        scene.addNode(op)
 
-    win.setCentralWidget(QWidget())
-    win.centralWidget().setLayout(QVBoxLayout())
-    win.centralWidget().layout().addWidget(view)
-    win.centralWidget().layout().setContentsMargins(0, 0, 0, 0)
+    saveAction = QAction('Save')
+    saveAction.setShortcut(QKeySequence.Save)
+    saveAction.triggered.connect(save)
+    win.addAction(saveAction)
 
-    win.centralWidget().layout().addWidget(QPushButton('Le Butten'))
 
     win.show()
 
-    app.exec_()
 
+    app.exec_()

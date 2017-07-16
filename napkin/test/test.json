@@ -1,0 +1,57 @@
+{
+  "name": "patch",
+  "type": "patch.operator.Patch",
+  "children": [
+    {
+      "name": "concat",
+      "type": "patch.operator.concat",
+      "children": [
+        {
+          "name": "a",
+          "value": "",
+          "type": "patch.operator.DataInlet"
+        },
+        {
+          "name": "b",
+          "value": "",
+          "type": "patch.operator.DataInlet"
+        },
+        {
+          "name": "out",
+          "type": "patch.operator.DataOutlet"
+        }
+      ]
+    },
+    {
+      "name": "Start",
+      "type": "patch.operators.control.StartOperator",
+      "children": [
+        {
+          "name": "trigger",
+          "type": "patch.operator.TriggerOutlet",
+          "connection": ""
+        }
+      ]
+    },
+    {
+      "name": "sub",
+      "type": "patch.operator.sub",
+      "children": [
+        {
+          "name": "a",
+          "value": 1,
+          "type": "patch.operator.DataInlet"
+        },
+        {
+          "name": "b",
+          "value": 1,
+          "type": "patch.operator.DataInlet"
+        },
+        {
+          "name": "out",
+          "type": "patch.operator.DataOutlet"
+        }
+      ]
+    }
+  ]
+}
