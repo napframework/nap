@@ -6,6 +6,44 @@ from patch.nodeitem import SocketItem, NodeItem, PinItem
 from patch.patchutils import moveToFront, Margins
 
 
+class InputSocketItem(SocketItem):
+    def __init__(self, name):
+        super(InputSocketItem, self).__init__(name)
+        self._pin = PinItem(self)
+        self.__vec = QPointF(-1, 0)
+
+    def layout(self):
+        pinY = self._label.boundingRect().height() / 2 - self._pin.boundingRect().height() / 2
+        self._label.setPos(self._pin.boundingRect().width(), 0)
+        self._pin.setPos(0, pinY)
+        if self.scene():
+            self.scene().update()
+
+    def attachPosVec(self) -> (QPointF, QPointF):
+        r = self._pin.boundingRect()
+        pos = self._pin.mapToScene(QPointF(r.left(), r.top() + r.height() / 2))
+        return pos, self.__vec
+
+
+class OutputSocketItem(SocketItem):
+    def __init__(self, name):
+        super(OutputSocketItem, self).__init__(name)
+        self._pin = PinItem(self)
+        self.__vec = QPointF(1, 0)
+
+    def layout(self):
+        pinY = self._label.boundingRect().height() / 2 - self._pin.boundingRect().height() / 2
+        self._label.setPos(0, 0)
+        self._pin.setPos(self._label.boundingRect().width(), pinY)
+        if self.scene():
+            self.scene().update()
+
+    def attachPosVec(self) -> (QPointF, QPointF):
+        r = self._pin.boundingRect()
+        pos = self._pin.mapToScene(QPointF(r.right(), r.top() + r.height() / 2))
+        return pos, self.__vec
+
+
 class InputOutputNodeItem(NodeItem):
     moved = pyqtSignal()
     plugConnected = pyqtSignal(object, object)
@@ -113,17 +151,19 @@ class InputOutputNodeItem(NodeItem):
             self.moved.emit()
         return super(InputOutputNodeItem, self).itemChange(change, value)
 
-    def addInlet(self, name: str):
-        plug = InputSocketItem(name)
-        plug.setParentItem(self)
-        self.__inputSockets.append(plug)
+    def addInlet(self, name: str) -> InputSocketItem:
+        sock = InputSocketItem(name)
+        sock.setParentItem(self)
+        self.__inputSockets.append(sock)
         self.layout()
+        return sock
 
-    def addOutlet(self, name: str):
-        plug = OutputSocketItem(name)
-        plug.setParentItem(self)
-        self.__outputSockets.append(plug)
+    def addOutlet(self, name: str) -> OutputSocketItem:
+        sock = OutputSocketItem(name)
+        sock.setParentItem(self)
+        self.__outputSockets.append(sock)
         self.layout()
+        return sock
 
     def removePlug(self, plug):
         item = self.findPlugItem(plug)
@@ -133,88 +173,49 @@ class InputOutputNodeItem(NodeItem):
 class TitleItem(QGraphicsTextItem):
     def __init__(self):
         super(TitleItem, self).__init__()
-    
-    def paint(self, painter:QPainter, option:QStyleOptionGraphicsItem, widget:QWidget):
+
+    def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget):
         painter.fillRect(self.boundingRect(), QBrush(QColor('#DDDDDD')))
         super(TitleItem, self).paint(painter, option, widget)
-        
-    
-    #     self.__font = QApplication.font()
-    #     self.__fontMetrics = QFontMetricsF(self.__font)
-    #     self.__text = 'Unknown'
-    #     self.__rect = QRectF()
-    #     self.__textPen = QPen(QColor(QApplication.instance().palette().windowText()))
-    #     self.__textRect = QRectF()
-    #     self.__preferredWidth = 0
-    #     self.__dirty = True
-    #     self.__textMargins = Margins(top=2, right=4, bottom=4, left=4)
-    #
-    # def __updateMetrics(self):
-    #     if not self.__dirty:
-    #         return
-    #     self.__textRect = self.__fontMetrics.boundingRect(self.__text)
-    #     self.__textRect.setWidth(self.__preferredWidth)
-    #     self.__textRect.adjust(self.__textMargins.left, self.__textMargins.top,
-    #                            self.__textMargins.left, self.__textMargins.top)
-    #     self.__rect = self.__textRect.adjusted(-self.__textMargins.left, -self.__textMargins.top,
-    #                                            self.__textMargins.right, self.__textMargins.bottom)
-    #     self.__dirty = False
-    #
-    #
-    # def setPlainText(self, text):
-    #     self.__text = text
-    #     self.__dirty = True
-    #
-    # def boundingRect(self):
-    #     self.__updateMetrics()
-    #     return self.__rect
-    #
-    # def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget):
-    #     self.__updateMetrics()
-    #     painter.setPen(Qt.NoPen)
-    #     painter.fillRect(self.__rect, QBrush(QColor('#DDDDDD')))
-    #     painter.setPen(self.__textPen)
-    #     painter.drawText(self.__textRect, Qt.AlignLeft, self.__text)
-    #
-    # def setPreferredWidth(self, w):
-    #     self.__preferredWidth = w
-    #     self.__dirty = True
-
-class InputSocketItem(SocketItem):
-    def __init__(self, name):
-        super(InputSocketItem, self).__init__(name)
-        self._pin = PinItem(self)
-        self.__vec = QPointF(-1, 0)
-
-    def layout(self):
-        pinY = self._label.boundingRect().height() / 2 - self._pin.boundingRect().height() / 2
-        self._label.setPos(self._pin.boundingRect().width(), 0)
-        self._pin.setPos(0, pinY)
-        if self.scene():
-            self.scene().update()
-
-    def attachPosVec(self) -> (QPointF, QPointF):
-        r = self._pin.boundingRect()
-        pos = self._pin.mapToScene(QPointF(r.left(), r.top() + r.height() / 2))
-        return pos, self.__vec
 
 
-class OutputSocketItem(SocketItem):
-    def __init__(self, name):
-        super(OutputSocketItem, self).__init__(name)
-        self._pin = PinItem(self)
-        self.__vec = QPointF(1, 0)
-
-    def layout(self):
-        pinY = self._label.boundingRect().height() / 2 - self._pin.boundingRect().height() / 2
-        self._label.setPos(0, 0)
-        self._pin.setPos(self._label.boundingRect().width(), pinY)
-        if self.scene():
-            self.scene().update()
-
-    def attachPosVec(self) -> (QPointF, QPointF):
-        r = self._pin.boundingRect()
-        pos = self._pin.mapToScene(QPointF(r.right(), r.top() + r.height() / 2))
-        return pos, self.__vec
-
-
+        #     self.__font = QApplication.font()
+        #     self.__fontMetrics = QFontMetricsF(self.__font)
+        #     self.__text = 'Unknown'
+        #     self.__rect = QRectF()
+        #     self.__textPen = QPen(QColor(QApplication.instance().palette().windowText()))
+        #     self.__textRect = QRectF()
+        #     self.__preferredWidth = 0
+        #     self.__dirty = True
+        #     self.__textMargins = Margins(top=2, right=4, bottom=4, left=4)
+        #
+        # def __updateMetrics(self):
+        #     if not self.__dirty:
+        #         return
+        #     self.__textRect = self.__fontMetrics.boundingRect(self.__text)
+        #     self.__textRect.setWidth(self.__preferredWidth)
+        #     self.__textRect.adjust(self.__textMargins.left, self.__textMargins.top,
+        #                            self.__textMargins.left, self.__textMargins.top)
+        #     self.__rect = self.__textRect.adjusted(-self.__textMargins.left, -self.__textMargins.top,
+        #                                            self.__textMargins.right, self.__textMargins.bottom)
+        #     self.__dirty = False
+        #
+        #
+        # def setPlainText(self, text):
+        #     self.__text = text
+        #     self.__dirty = True
+        #
+        # def boundingRect(self):
+        #     self.__updateMetrics()
+        #     return self.__rect
+        #
+        # def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget):
+        #     self.__updateMetrics()
+        #     painter.setPen(Qt.NoPen)
+        #     painter.fillRect(self.__rect, QBrush(QColor('#DDDDDD')))
+        #     painter.setPen(self.__textPen)
+        #     painter.drawText(self.__textRect, Qt.AlignLeft, self.__text)
+        #
+        # def setPreferredWidth(self, w):
+        #     self.__preferredWidth = w
+        #     self.__dirty = True
