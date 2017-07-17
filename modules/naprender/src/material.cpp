@@ -57,6 +57,9 @@ namespace nap
 		case opengl::GLSLType::Int:
 			result = std::make_unique<UniformInt>();
 			break;
+		case opengl::GLSLType::Float:
+			result = std::make_unique<UniformFloat>();
+			break;
 		case opengl::GLSLType::Vec4:
 			result = std::make_unique<UniformVec4>();
 			break;
@@ -65,6 +68,9 @@ namespace nap
 			break;
 		case opengl::GLSLType::Tex2D:
 			result = std::make_unique<UniformTexture2D>();
+			break;
+		case opengl::GLSLType::Vec3:
+			result = std::make_unique<UniformVec3>();
 			break;
 		}
 		assert(result);

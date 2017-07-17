@@ -93,6 +93,62 @@ namespace nap
 
 
 	/**
+	* Stores integer data and is capable of updating the integer uniform in the shader.
+	*/
+	class UniformFloat : public UniformValue
+	{
+		RTTI_ENABLE(UniformValue)
+	public:
+
+		/**
+		* @param value integer value to set.
+		*/
+		void setValue(float value) { mValue = value; }
+
+		/**
+		* Updates the uniform in the shader.
+		* @param declaration: the uniform declaration from the shader that is used to set the value.
+		*/
+		virtual void push(const opengl::UniformDeclaration& declaration) const override;
+
+		/**
+		* @return integer GLSL type.
+		*/
+		virtual opengl::GLSLType getGLSLType() const override { return opengl::GLSLType::Float; }
+
+		float mValue;			///< Data storage
+	};
+
+
+	/**
+	* Stores vec4 data and is capable of updating the vec4 uniform in the shader.
+	*/
+	class UniformVec3 : public UniformValue
+	{
+		RTTI_ENABLE(UniformValue)
+	public:
+
+		/**
+		* @param value vec4 value to set.
+		*/
+		void setValue(const glm::vec3& value) { mValue = value; }
+
+		/**
+		* Updates the uniform in the shader.
+		* @param declaration: the uniform declaration from the shader that is used to set the value.
+		*/
+		virtual void push(const opengl::UniformDeclaration& declaration) const override;
+
+		/**
+		* @return vec4 GLSL type.
+		*/
+		virtual opengl::GLSLType getGLSLType() const override { return opengl::GLSLType::Vec3; }
+
+		glm::vec3 mValue;		///< Data storage
+	};
+
+
+	/**
 	* Stores vec4 data and is capable of updating the vec4 uniform in the shader.
 	*/
 	class UniformVec4 : public UniformValue

@@ -290,7 +290,17 @@ namespace nap
 
 	void ResourceManagerService::initialized()
 	{
+		mLastTimeStamp = getCore().getElapsedTime();
 		mRootEntity = std::make_unique<EntityInstance>(getCore());
+	}
+
+
+	void ResourceManagerService::update()
+	{
+		double new_time   = getCore().getElapsedTime();
+		double delta_time = new_time - mLastTimeStamp;
+		mLastTimeStamp = new_time;
+		getRootEntity().update(delta_time);
 	}
 
 

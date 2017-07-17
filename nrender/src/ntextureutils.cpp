@@ -195,7 +195,6 @@ namespace opengl
 		// Populate settings with fetched values from bitmap
 		texture_settings.internalFormat = internal_format;
 		texture_settings.format = format;
-		texture_settings.level = 0;
 		texture_settings.type = type;
 		texture_settings.width = bitmap.getWidth();
 		texture_settings.height = bitmap.getHeight();

@@ -6,7 +6,6 @@
 #include "rtti/unresolvedpointer.h"
 #include <map>
 
-
 namespace nap
 {
 	class DirectoryWatcher;
@@ -121,9 +120,14 @@ namespace nap
 		EntityIterator getEntities() { return EntityIterator(mEntities); }
 
 		/**
-		* 
+		* Occurs when the manager has been initialized, creates the root entity
 		*/
 		virtual void initialized();
+
+		/**
+		 * Forwards an update to all entities managed under the root
+		 */
+		virtual void update();
 
 	private:
 		using InstanceByIDMap	= std::unordered_map<std::string, rtti::RTTIObject*>;				// Map from object ID to object (non-owned)
@@ -172,6 +176,7 @@ namespace nap
 		std::set<std::string>				mFilesToWatch;					// Files currently loaded, used for watching changes on the files
 		FileLinkMap							mFileLinkMap;					// Map containing links from target to source file, for updating source files if the file monitor sees changes
 		std::unique_ptr<DirectoryWatcher>	mDirectoryWatcher;				// File monitor, detects changes on files
+		double								mLastTimeStamp = 0;				// Last time stamp used for calculating delta time
 	};
 
 
