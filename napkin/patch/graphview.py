@@ -26,6 +26,7 @@ class GraphView(QGraphicsView):
         self.__mouseClickPos = QPointF()
         self.setInteractMode(DefaultInteractMode)
         self.setContextMenuPolicy(Qt.CustomContextMenu)
+        # self.setBackgroundBrush(QColor('#BBB'))
 
         deleteAction = QAction('Delete Selected', self)
         deleteAction.setShortcut(QKeySequence.Delete)

@@ -1,7 +1,10 @@
+import math
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
+from patch.inoutnodeitem import InputSocketItem
+from patch.inoutnodeitem import OutputSocketItem
 from patch.nodeitem import SocketItem
 from patch.patchutils import calculateWirePath
 
@@ -9,14 +12,24 @@ from patch.patchutils import calculateWirePath
 class EdgeItemBase(QGraphicsPathItem):
     def __init__(self):
         super(EdgeItemBase, self).__init__()
+        # type: OutputSocketItem
         self.srcSocket = None
+        # type: InputSocketItem
         self.dstSocket = None
         self.srcPos = QPointF()
         self.srcVec = QPointF()
         self.dstPos = QPointF()
         self.dstVec = QPointF()
+        self.defaultCol = QColor("#888888")
 
-    def update(self):
+        self.brush = QLinearGradient()
+        self.brush.setCoordinateMode(QLinearGradient.ObjectBoundingMode)
+        self.brush.setColorAt(0, QColor('#FF0000'))
+        self.brush.setColorAt(1, QColor('#00FF00'))
+        self.brush.setStart(0, 0)
+        self.brush.setFinalStop(1, 1)
+
+    def update(self, *args):
         self.updatePath()
         super(EdgeItemBase, self).update()
 
@@ -24,19 +37,34 @@ class EdgeItemBase(QGraphicsPathItem):
         if self.srcSocket:
             self.srcPos, self.srcVec = self.srcSocket.attachPosVec()
             self.srcPos = self.mapToScene(self.srcPos)
+            self.brush.setColorAt(0, self.srcSocket.pinColor())
+        else:
+            self.brush.setColorAt(0, self.defaultCol)
+
         if self.dstSocket:
             self.dstPos, self.dstVec = self.dstSocket.attachPosVec()
             self.dstPos = self.mapToScene(self.dstPos)
+            self.brush.setColorAt(1, self.dstSocket.pinColor())
+        else:
+            self.brush.setColorAt(1, self.defaultCol)
+
+        if self.srcPos.y() > self.dstPos.y():
+            self.brush.setStart(0.5, 1)
+            self.brush.setFinalStop(0.5, 0)
+        else:
+            self.brush.setStart(0.5, 0)
+            self.brush.setFinalStop(0.5, 1)
 
         p = QPainterPath()
         calculateWirePath(self.srcPos, self.srcVec, self.dstPos, self.dstVec, p)
         self.setPath(p)
 
     def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget = None):
+        pen = painter.pen()
+        pen.setBrush(self.brush)
         if self.isSelected():
-            pen = painter.pen()
             pen.setWidth(3)
-            painter.setPen(pen)
+        painter.setPen(pen)
         painter.drawPath(self.path())
 
 

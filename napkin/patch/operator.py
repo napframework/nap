@@ -5,21 +5,46 @@ import json
 import os
 import types
 from collections import OrderedDict
-from typing import Iterable, Tuple
+from typing import Iterable, Tuple, Union
+
+import collections
 
 from patch import operators
 
 TYPE_CONVERSION = {
     object: {
-        str: lambda v: str(v)
+        str: lambda v: str(v),
+        # bool: lambda v
+
     },
     str: {
         float: lambda v: float(v),
         int: lambda v: int(v),
+        bool: lambda v: bool(v),
     },
+    float: {
+        int: lambda v: int(v),
+        bool: lambda v: bool(v),
+    },
+    bool: {
+        int: lambda v: int(v),
+        float: lambda v: float(v),
+    },
+    int: {
+        float: lambda v: float(v),
+        bool: lambda b: bool(int),
+    }
 }
 TYPE_CONVERSION_PASSTHROUGH = lambda v: v
+PYTHON_TYPES = (float, int, str, bool)
 
+
+def convertToPythonType(v, typ):
+    try:
+        typ(v)
+    except Exception as e:
+        print(e)
+        return None
 
 
 def addTypeConverter(fromType, toType, func):
@@ -28,8 +53,17 @@ def addTypeConverter(fromType, toType, func):
 
 
 def typeConverter(fromType, toType):
+    # same types
     if fromType == toType:
         return TYPE_CONVERSION_PASSTHROUGH
+    # any python type to object
+    if fromType in PYTHON_TYPES and issubclass(toType, object):
+        return TYPE_CONVERSION_PASSTHROUGH
+
+    # any object to python type
+    if issubclass(toType, object) and fromType in PYTHON_TYPES:
+        return lambda v: convertToPythonType(v, toType)
+
     for fromT, conv in TYPE_CONVERSION.items():
         if not issubclass(fromType, fromT): continue
         for toT, cv in conv.items():
@@ -37,117 +71,127 @@ def typeConverter(fromType, toType):
             return cv
 
 
-class Obj(object):
-    def __init__(self, name):
+class OrderedClass(type):
+    @classmethod
+    def __prepare__(mcs, name, bases):
+        return OrderedDict()
+
+    def __new__(cls, name, bases, classdict):
+        result = type.__new__(cls, name, bases, dict(classdict))
+        result.__fields__ = list(classdict.keys())
+        return result
+
+
+class Obj(object, metaclass=OrderedClass):
+    def __init__(self, parent):
         super(Obj, self).__init__()
-        self.__children = []
-        self.__name = None
-        self.__parent = None
-        self.setName(name)
+        self.__parent = parent
+        self.__meta = None
 
-    def name(self):
-        return self.__name
+    def meta(self):
+        if not self.__meta:
+            self.__meta = Meta()
+        return self.__meta
 
-    def setName(self, name):
-        if not self.__parent:
-            self.__name = name
-        else:
-            self.__name = self.__parent.__uniqueChildName(name)
+    def addAttr(self, name, valueType, value):
+        self.add(Attr(name, valueType, valueType))
 
-    def path(self):
-        p = [self.name()]
+    def name(self) -> str:
         if self.__parent:
-            return self.__parent.path() + p
-        return p
+            return next((k for k, v in self.__parent.children() if v == self), None)
+        return ''
 
-    def pathStr(self):
-        return '/'.join(self.path())
-
-    def add(self, obj):
+    def add(self, name, obj):
         obj.__parent = self
-        obj.setName(self.__uniqueChildName(obj.name()))
-        self.__children.append(obj)
+        name = self.__uniqueChildName(name)
+        assert not name in dir(self)
+        if not name in self.__dict__:
+            self.__dict__[name] = obj
         return obj
-
-    def _triggerInlet(self, name, func):
-        return self.add(TriggerInlet(name, func))
-
-    def _triggerOutlet(self, name):
-        return self.add(TriggerOutlet(name))
-
-    def _dataInlet(self, name, valueType, value):
-        return self.add(DataInlet(name, valueType, value))
-
-    def _dataOutlet(self, name, valueType, getter):
-        return self.add(DataOutlet(name, valueType, getter))
 
     def children(self, typ=None):
         if typ is None: typ = Obj
-        return (c for c in self.__children if isinstance(c, typ))
+        for k, v in self.__dict__.items():
+            if k.startswith('_'): continue
+            if not isinstance(v, typ): continue
+            yield k, v
 
     def __uniqueChildName(self, name):
         newname = name
         i = 1
-        while self.findChild(newname):
+        while newname in dir(self):
             newname = '%s%s' % (name, i)
             i += 1
         return newname
 
     def findChild(self, name):
-        return next((c for c in self.__children if c.name() == name), None)
+        return self.__dict__.get(name, None)
 
     def __typeName(self):
         return '%s.%s' % (self.__module__, self.__class__.__name__)
 
+    def path(self) -> str:
+        if self.__parent:
+            return '%s/%s' % (self.__parent.path(), self.name())
+        return self.name()
+
     def dict(self):
-        dic = OrderedDict(
-            name=self.name(),
-            type=self.__typeName(),
-        )
-        if self.__children:
-            dic['children'] = [c.dict() for c in self.__children]
+        # TODO: Link resolve
+        dic = OrderedDict()
+        for k, v in self.children():
+            dic[k] = v.dict()
+        dic['__type'] = self.__typeName()
         return dic
 
 
+class Link(object):
+    def __init__(self):
+        super(Link, self).__init__()
+        self.__target = None
+
+    def set(self, target: Obj):
+        self.__target = target
+
+    def target(self) -> Union[Obj, None]:
+        return self.__target
+
+    def clear(self):
+        self.__target = None
+
+
 class Attr(Obj):
-    def __init__(self, name, valueType, value):
-        super(Attr, self).__init__(name)
+    def __init__(self, parent: Obj, valueType, value):
+        super(Attr, self).__init__(parent)
         self.valueType = valueType
-        self.__value = value
+        self.value = value
 
-    def dict(self):
-        return {**super(Attr, self).dict(), **OrderedDict(
-            valueType=self.valueType.__name__,
-            value=self.__value
-        )}
-
-    def __call__(self):
-        return self.__value
+    def __call__(self, value=None):
+        if value:
+            self.value = value
+        return self.value
 
 
 class Meta(Obj):
     def __init__(self):
-        super(Meta, self).__init__('meta')
-        self.x = self.add(Attr('x', float, 0))
-        self.y = self.add(Attr('y', float, 0))
+        super(Meta, self).__init__()
 
 
 class Outlet(Obj):
-    def __init__(self, name):
-        super(Outlet, self).__init__(name)
+    def __init__(self, parent: Obj):
+        super(Outlet, self).__init__(parent)
 
 
 class Inlet(Obj):
-    def __init__(self, name):
-        super(Inlet, self).__init__(name)
+    def __init__(self, parent: Obj):
+        super(Inlet, self).__init__(parent)
 
     def __call__(self, *args):
         return self.connectedOutlet.eval() if self.connectedOutlet else self()
 
 
 class DataOutlet(Outlet):
-    def __init__(self, name, valueType, getter):
-        super(DataOutlet, self).__init__(name)
+    def __init__(self, parent: Obj, valueType, getter):
+        super(DataOutlet, self).__init__(parent)
         self.valueType = valueType
         self.__getter = getter
 
@@ -156,66 +200,82 @@ class DataOutlet(Outlet):
 
 
 class DataInlet(Inlet):
-    def __init__(self, name, valueType, value):
-        super(DataInlet, self).__init__(name)
-        assert not value is None
+    def __init__(self, parent: Obj, valueType, value):
+        super(DataInlet, self).__init__(parent)
+        # assert not value is None
         self.valueType = valueType
         self.value = value
-        self.connectedOutlet = None
+        self.__connection = Link()
 
     def __call__(self):
-        if self.connectedOutlet:
-            return self.connectedOutlet()
+        if self.__connection.target():
+            return self.__connection.target()()
         return self.value
 
+    def isConnected(self):
+        return bool(self.__connection.target())
+
+    def connection(self):
+        return self.__connection.target()
+
     def connect(self, outlet: DataOutlet):
-        self.connectedOutlet = outlet
+        self.__connection.set(outlet)
 
     def disconnect(self):
-        self.connectedOutlet = None
+        self.__connection.clear()
 
-    def dict(self):
-        dic = {**super(DataInlet, self).dict(), **OrderedDict(
-            value=self.value,
-        )}
-        if self.connectedOutlet:
-            dic['connection'] = self.connectedOutlet.pathStr()
-        return dic
+        # def dict(self):
+        #     dic = {**super(DataInlet, self).dict(), **OrderedDict(
+        #         value=self.value,
+        #     )}
+        #     if self.connectedOutlet:
+        #         dic['connection'] = self.connectedOutlet.pathStr()
+        #     return dic
 
 
 class TriggerInlet(Inlet):
-    def __init__(self, name, function):
-        super(TriggerInlet, self).__init__(name)
-        self.function = function
+    def __init__(self, parent: Obj, func):
+        super(TriggerInlet, self).__init__(parent)
+        self.function = func
 
 
 class TriggerOutlet(Outlet):
-    def __init__(self, name):
-        super(TriggerOutlet, self).__init__(name)
+    def __init__(self, parent: Obj):
+        super(TriggerOutlet, self).__init__(parent)
         # type: TriggerInlet
-        self.connectedInlet = None
+        self.__connection = Link()
 
     def trigger(self):
-        if self.connectedInlet:
-            self.connectedInlet.function()
+        if self.__connection:
+            self.__connection.target().function()
+
+    def __call__(self):
+        if self.__connection:
+            self.__connection.target().function()
+
+    def isConnected(self):
+        return bool(self.__connection.target())
+
+    def connection(self):
+        return self.__connection.target()
 
     def connect(self, inlet: TriggerInlet):
-        self.connectedInlet = inlet
+        self.__connection.set(inlet)
 
     def disconnect(self):
-        self.connectedInlet = None
+        self.__connection.clear()
 
-    def dict(self):
-        return {**super(TriggerOutlet, self).dict(), **OrderedDict(
-            connection=self.connectedInlet.pathStr() if self.connectedInlet else "",
-        )}
+        # def dict(self):
+        #     return {**super(TriggerOutlet, self).dict(), **OrderedDict(
+        #         connection=self.connectedInlet.pathStr() if self.connectedInlet else "",
+        #     )}
 
 
 class Operator(Obj):
-    meta = Meta()
-
-    def __init__(self):
-        super(Operator, self).__init__(self.displayName)
+    def __init__(self, parent: Obj):
+        super(Operator, self).__init__(parent)
+        self.x = Attr(self, float, 0)
+        self.y = Attr(self, float, 0)
 
     def inlets(self) -> Iterable[Inlet]:
         for inlet in self.children(Inlet):
@@ -227,8 +287,8 @@ class Operator(Obj):
 
 
 class Patch(Obj):
-    def __init__(self):
-        super(Patch, self).__init__('patch')
+    def __init__(self, parent=None):
+        super(Patch, self).__init__(parent)
 
     def addOperator(self, op: Operator):
         self.add(op)
@@ -243,7 +303,7 @@ def operatorsInModule(mod: types.ModuleType) -> Iterable[type]:
         yield member
 
 
-def modulesInFolder(folder:str) -> Iterable[types.ModuleType]:
+def modulesInFolder(folder: str) -> Iterable[types.ModuleType]:
     for f in os.listdir(folder):
         name, ext = os.path.splitext(f)
         if not ext == '.py': continue
@@ -268,13 +328,13 @@ def allOperators() -> Iterable[Operator]:
 def operatorFromFunction(func):
     spec = inspect.getfullargspec(func)
 
-    def __init__(self):
-        super(type(self), self).__init__()
-        for arg, default in zip(spec.args, spec.defaults):
-            self._dataInlet(arg, spec.annotations[arg], default)
+    def __init__(self, parent: Obj):
+        super(type(self), self).__init__(parent)
+        for arg, default in zip(reversed(spec.args), reversed(spec.defaults)):
+            self.__dict__[arg] = DataInlet(self, spec.annotations[arg], default)
 
         retype = spec.annotations['return']
-        self._dataOutlet('out', retype, func)
+        self.__dict__['out'] = DataOutlet(self, retype, func)
 
     cls = type(func.__name__, (Operator,), {'__init__': __init__})
     cls.displayName = func.__name__

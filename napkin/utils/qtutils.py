@@ -8,6 +8,16 @@ from PyQt5.QtWidgets import *
 
 import nap
 
+
+
+_TYPE_COLORS = {
+    str: QColor('#e89430'),
+    int: QColor('#30a4e8'),
+    float: QColor('#38e830'),
+    bool: QColor('#e8306e'),
+    object: QColor('#808080'),
+    list: QColor('#c230e8'),
+}
 _GOLDEN_RATIO_CONJUGATE = 0.618033988749895
 
 def randomColor(h):
@@ -23,7 +33,7 @@ def randomColor(h):
     return col
 
 def randomTypeColor(typ):
-    return randomColor(abs(hash(typ.__name__)) % (10 ** 8))
+    return _TYPE_COLORS.setdefault(typ, randomColor(abs(hash(typ.__name__)) % (10 ** 8)))
 
 def expandChildren(view, index, expanded=True):
     if not index.isValid():

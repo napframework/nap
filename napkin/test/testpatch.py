@@ -6,6 +6,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
+from patch.outline import OutlinePanel
 from test.patchpanel import PatchPanel
 from utils.qtutils import QBaseWindow, QCoreApplication
 
@@ -34,9 +35,12 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
 
     patchPanel = PatchPanel()
+    outline = OutlinePanel()
+    patchPanel.selectionChanged.connect(outline.setObjects)
 
     win = QBaseWindow()
     win.addDock('Patch', patchPanel)
+    win.addDock('Outline', outline)
 
     def save():
         filename = getSaveFilename(win)
@@ -50,6 +54,16 @@ if __name__ == '__main__':
     saveAction.setShortcut(QKeySequence.Save)
     saveAction.triggered.connect(save)
     win.addAction(saveAction)
+
+    def toggle():
+        for n in patchPanel.scene.selectedNodes():
+            pass
+
+
+    toggleDisplayAction = QAction('ToggleNodeDisplay')
+    toggleDisplayAction.setShortcut("1")
+    toggleDisplayAction.triggered.connect(lambda: print('Toggle'))
+    win.addAction(toggleDisplayAction)
 
 
     win.show()

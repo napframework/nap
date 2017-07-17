@@ -15,6 +15,9 @@ class InputSocketItem(SocketItem):
     def setPinColor(self, col):
         self._pin.setBrush(col)
 
+    def pinColor(self):
+        return self._pin.brush().color()
+
     def layout(self):
         pinY = self._label.boundingRect().height() / 2 - self._pin.boundingRect().height() / 2
         self._label.setPos(self._pin.boundingRect().width(), 0)
@@ -36,6 +39,9 @@ class OutputSocketItem(SocketItem):
 
     def setPinColor(self, col):
         self._pin.setBrush(col)
+
+    def pinColor(self):
+        return self._pin.brush().color()
 
     def layout(self):
         pinY = self._label.boundingRect().height() / 2 - self._pin.boundingRect().height() / 2
@@ -113,6 +119,9 @@ class InputOutputNodeItem(NodeItem):
             plug.setVisible(True)
 
     def layout(self):
+        self.layoutRegular()
+
+    def layoutRegular(self):
         headerHeight = 20
         headerSpacing = 6
         itemSpacing = 14

@@ -3,6 +3,7 @@ import inspect
 from patch.operators import *
 from patch.operators.math import *
 from patch.operator import *
+from utils.qtutils import randomColor
 
 
 def testPlugEvaluation():
@@ -40,6 +41,5 @@ if __name__ == '__main__':
     # testListOperators()
     # testOperatorFromFunction()
 
-
-    for op in allOperators():
-        print(op)
+    for i in range(100):
+        print('<font color="{0}">{0}</font><br/>'.format(randomColor(i).name()))
