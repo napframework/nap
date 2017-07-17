@@ -2,6 +2,7 @@
 
 // External Includes
 #include <nopengl.h>
+#include <utility/errorstate.h>
 
 RTTI_DEFINE(nap::Renderer)
 

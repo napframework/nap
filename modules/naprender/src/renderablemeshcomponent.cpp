@@ -1,11 +1,15 @@
-#include "RenderableMeshComponent.h"
-#include <nap/entityinstance.h>
+// Local Includes
+#include "renderablemeshcomponent.h"
 #include "meshresource.h"
 #include "ncamera.h"
 #include "transformcomponent.h"
 #include "renderglobals.h"
 #include "material.h"
 #include "renderservice.h"
+
+// External Includes
+#include <nap/entityinstance.h>
+#include <nap/entity.h>
 
 RTTI_BEGIN_CLASS(nap::Rect)
 	RTTI_PROPERTY("X",		&nap::Rect::mX,			nap::rtti::EPropertyMetaData::Required)

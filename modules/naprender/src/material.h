@@ -221,7 +221,7 @@ namespace nap
 	template<typename T>
 	T& MaterialInstance::getOrCreateUniform(const std::string& name)
 	{
-		T* existing = mContainer.findUniform<T>(name);
+		T* existing = findUniform<T>(name);
 		if (existing != nullptr)
 			return *existing;
 		
