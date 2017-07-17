@@ -145,7 +145,7 @@ namespace nap
 			return;
 
 		// Otherwise set
-		SDL_SetWindowSize(mWindow, width, height);
+		SDL_SetWindowSize(mWindow, size.x, size.y);
 	}
 
 

@@ -51,6 +51,7 @@ namespace nap
 	{
 		RTTI_ENABLE(TextureResource)
 	public:
+		using TextureResource::getTexture;
 
 		/**
 		* Creates internal texture resource.
