@@ -3,6 +3,7 @@
 // External Includes
 #include <nshader.h>
 #include <nap/resource.h>
+#include <nap/dllexport.h>
 
 namespace nap
 {
@@ -11,7 +12,7 @@ namespace nap
 	 * Note that the shader is not initialized (created) when the resource is created
 	 * this is deferred to actual rendering because of gl initialization
 	 */
-	class ShaderResource : public rtti::RTTIObject
+	class NAPAPI ShaderResource : public rtti::RTTIObject
 	{
 		friend class ShaderResourceLoader;
 		RTTI_ENABLE(rtti::RTTIObject)

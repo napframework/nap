@@ -8,7 +8,7 @@ namespace nap
 	/**
 	 * Predefined plane mesh with size 1x1, centered at origin.
 	 */
-	class PlaneMeshResource : public MeshResource
+	class NAPAPI PlaneMeshResource : public MeshResource
 	{
 		RTTI_ENABLE(MeshResource)
 

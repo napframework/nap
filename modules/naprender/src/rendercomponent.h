@@ -2,11 +2,12 @@
 
 // External Includes
 #include <glm/glm.hpp>
-#include "nap/componentinstance.h"
+#include <nap/componentinstance.h>
+#include <nap/dllexport.h>
 
 namespace nap
 {
-	class RenderableComponentResource : public ComponentResource
+	class NAPAPI RenderableComponentResource : public ComponentResource
 	{
 		RTTI_ENABLE(ComponentResource)
 	};

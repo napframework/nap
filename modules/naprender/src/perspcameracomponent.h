@@ -11,7 +11,7 @@ namespace nap
 	/**
 	 * Properties of the perspective camera, used in both the camera resource and instance.
 	 */
-	struct PerpCameraProperties
+	struct NAPAPI PerpCameraProperties
 	{
 		float mFieldOfView			= 50.0f;				// Field of View
 		float mNearClippingPlane	= 1.0f;					// Near clipping plane
@@ -24,7 +24,7 @@ namespace nap
 	/**
 	 * Resource class for the perspective camera. Holds static data as read from file.
 	 */
-	class PerspCameraComponentResource : public ComponentResource
+	class NAPAPI PerspCameraComponentResource : public ComponentResource
 	{
 		RTTI_ENABLE(ComponentResource)
 
@@ -46,7 +46,7 @@ namespace nap
 	 * Implementation of the perspective camera. View matrix is calculated from the transform component
 	 * that is attached to the entity. Be sure to call setRenderTargetSize to use the correct aspect ratio.
 	 */
-	class PerspCameraComponent : public CameraComponent
+	class NAPAPI PerspCameraComponent : public CameraComponent
 	{
 		RTTI_ENABLE(CameraComponent)
 	public:

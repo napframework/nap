@@ -3,10 +3,11 @@
 #include <nap/resource.h>
 #include <nmesh.h>
 #include <memory>
+#include <nap/dllexport.h>
 
 namespace nap
 {
-	class MeshResource : public rtti::RTTIObject
+	class NAPAPI MeshResource : public rtti::RTTIObject
 	{
 		RTTI_ENABLE(rtti::RTTIObject)
 	public:
@@ -28,7 +29,8 @@ namespace nap
 		std::unique_ptr<opengl::Mesh>	mMesh;
 	};
 
-	class MeshFromFileResource : public MeshResource
+
+	class NAPAPI MeshFromFileResource : public MeshResource
 	{
 		RTTI_ENABLE(MeshResource)
 	

@@ -2,9 +2,10 @@
 
 // Local Includes
 #include "rendercomponent.h"
-#include "nap/objectptr.h"
 #include "vao.h"
 
+// External Includes
+#include <nap/objectptr.h>
 
 namespace nap
 {
@@ -26,7 +27,7 @@ namespace nap
 	/**
 	 * Resource class for RenderableMeshResource. Hold static data as read from file.
 	 */
-	class RenderableMeshComponentResource : public RenderableComponentResource
+	class NAPAPI RenderableMeshComponentResource : public RenderableComponentResource
 	{
 		RTTI_ENABLE(RenderableComponentResource)
 
@@ -59,7 +60,7 @@ namespace nap
 	 * uniform shader values from that material for this particular instance, the 
 	 * component has a MaterialInstance.
 	 */
-	class RenderableMeshComponent : public RenderableComponent
+	class NAPAPI RenderableMeshComponent : public RenderableComponent
 	{
 		RTTI_ENABLE(RenderableComponent)
 

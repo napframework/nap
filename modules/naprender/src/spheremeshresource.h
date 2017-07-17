@@ -1,13 +1,14 @@
 #pragma once
 
 #include "meshresource.h"
+#include <nap/dllexport.h>
 
 namespace nap
 {
 	/**
 	 * Predefined sphere mesh
 	 */
-	class SphereMeshResource : public MeshResource
+	class NAPAPI SphereMeshResource : public MeshResource
 	{
 		RTTI_ENABLE(MeshResource)
 

@@ -1,9 +1,13 @@
 #pragma once
 
+// Local Includes
 #include "nshaderutils.h"
-#include "nap/resource.h"
-#include "nap/objectptr.h"
-#include "glm/glm.hpp"
+
+// External Includes
+#include <nap/resource.h>
+#include <nap/objectptr.h>
+#include <glm/glm.hpp>
+#include <nap/dllexport.h>
 
 namespace nap
 {
@@ -12,7 +16,7 @@ namespace nap
 	/**
 	 * Base class for all types of uniforms, whether texture or value.
 	 */
-	class Uniform : public rtti::RTTIObject
+	class NAPAPI Uniform : public rtti::RTTIObject
 	{
 		RTTI_ENABLE(rtti::RTTIObject)
 	public:
@@ -22,7 +26,6 @@ namespace nap
 		*/
 		virtual opengl::GLSLType getGLSLType() const = 0;
 
-	public:
 		std::string mName;		///< Name of uniform as in shader
 	};
 
@@ -32,7 +35,7 @@ namespace nap
 	* Derived classes should store value data and implement push() to update the
 	* value in the shader.
 	*/
-	class UniformValue : public Uniform
+	class NAPAPI UniformValue : public Uniform
 	{
 		RTTI_ENABLE(Uniform)
 	public:
@@ -50,7 +53,7 @@ namespace nap
 	* Derived classes should activate the texture unit, bind the appropriate texture
 	* to the unit (whether 1D, 2D or 3D) and update the uniform in the shader.
 	*/
-	class UniformTexture : public Uniform
+	class NAPAPI UniformTexture : public Uniform
 	{
 		RTTI_ENABLE(Uniform)
 	public:
@@ -67,7 +70,7 @@ namespace nap
 	/**
 	* Stores integer data and is capable of updating the integer uniform in the shader.
 	*/
-	class UniformInt : public UniformValue
+	class NAPAPI UniformInt : public UniformValue
 	{
 		RTTI_ENABLE(UniformValue)
 	public:
@@ -95,7 +98,7 @@ namespace nap
 	/**
 	* Stores integer data and is capable of updating the integer uniform in the shader.
 	*/
-	class UniformFloat : public UniformValue
+	class NAPAPI UniformFloat : public UniformValue
 	{
 		RTTI_ENABLE(UniformValue)
 	public:
@@ -123,7 +126,7 @@ namespace nap
 	/**
 	* Stores vec4 data and is capable of updating the vec4 uniform in the shader.
 	*/
-	class UniformVec3 : public UniformValue
+	class NAPAPI UniformVec3 : public UniformValue
 	{
 		RTTI_ENABLE(UniformValue)
 	public:
@@ -151,7 +154,7 @@ namespace nap
 	/**
 	* Stores vec4 data and is capable of updating the vec4 uniform in the shader.
 	*/
-	class UniformVec4 : public UniformValue
+	class NAPAPI UniformVec4 : public UniformValue
 	{
 		RTTI_ENABLE(UniformValue)
 	public:
@@ -179,7 +182,7 @@ namespace nap
 	/**
 	* Stores mat4 data and is capable of updating the mat4 uniform in the shader.
 	*/
-	class UniformMat4 : public UniformValue
+	class NAPAPI UniformMat4 : public UniformValue
 	{
 		RTTI_ENABLE(UniformValue)
 	public:
@@ -207,7 +210,7 @@ namespace nap
 	/**
 	* Texture2D type uniform
 	*/
-	class UniformTexture2D : public UniformTexture
+	class NAPAPI UniformTexture2D : public UniformTexture
 	{
 		RTTI_ENABLE(UniformTexture)
 	public:

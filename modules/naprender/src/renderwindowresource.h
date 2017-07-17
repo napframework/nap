@@ -5,15 +5,15 @@
 #include "renderattributes.h"
 
 // External Includes
-#include <nap.h>
-#include "nap/windowresource.h"
+#include <nap/windowresource.h>
+#include <nap/dllexport.h>
 
 namespace nap
 {
 	/**
 	 * Resource class for RenderWindow
 	 */
-	class RenderWindowResource : public WindowResource
+	class NAPAPI RenderWindowResource : public WindowResource
 	{
 		RTTI_ENABLE(WindowResource)
 

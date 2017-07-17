@@ -35,29 +35,45 @@ namespace nap
 		int texture_unit = 0;
 
 		// Push all uniforms that are set (i.e. overridden) in the instance
-		const UniformTextureBindings& instance_texture_bindings = mMaterialInstance.getUniformTextureBindings();
+		const UniformTextureBindings& instance_texture_bindings = mMaterialInstance.getTextureBindings();
 		for (auto& kvp : instance_texture_bindings)
 		{
-			kvp.second.mUniform->push(*kvp.second.mDeclaration, texture_unit++);
+			nap::Uniform* uniform_tex = kvp.second.mUniform.get();
+			assert(uniform_tex->get_type().is_derived_from(RTTI_OF(nap::UniformTexture)));
+			static_cast<nap::UniformTexture*>(uniform_tex)->push(*kvp.second.mDeclaration, texture_unit++);
 			instance_bindings.insert(kvp.first);
 		}				
 
-		const UniformValueBindings& instance_value_bindings = mMaterialInstance.getUniformValueBindings();
+		const UniformValueBindings& instance_value_bindings = mMaterialInstance.getValueBindings();
 		for (auto& kvp : instance_value_bindings)
 		{
-			kvp.second.mUniform->push(*kvp.second.mDeclaration);
+			nap::Uniform* uniform_tex = kvp.second.mUniform.get();
+			assert(uniform_tex->get_type().is_derived_from(RTTI_OF(nap::UniformValue)));
+			static_cast<nap::UniformValue*>(uniform_tex)->push(*kvp.second.mDeclaration);
 			instance_bindings.insert(kvp.first);
 		}
 
 		// Push all uniforms in the material that weren't overridden by the instance
 		// Note that the material contains mappings for all the possible uniforms in the shader
-		for (auto& kvp : comp_mat->getUniformTextureBindings())
+		for (auto& kvp : comp_mat->getTextureBindings())
+		{
 			if (instance_bindings.find(kvp.first) == instance_bindings.end())
-				kvp.second.mUniform->push(*kvp.second.mDeclaration, texture_unit++);
+			{
+				nap::Uniform* uniform_val = kvp.second.mUniform.get();
+				assert(uniform_val->get_type().is_derived_from(RTTI_OF(nap::UniformTexture)));
+				static_cast<nap::UniformTexture*>(uniform_val)->push(*kvp.second.mDeclaration, texture_unit++);
+			}
 
-		for (auto& kvp : comp_mat->getUniformValueBindings())
+		}
+		for (auto& kvp : comp_mat->getValueBindings())
+		{
 			if (instance_bindings.find(kvp.first) == instance_bindings.end())
-				kvp.second.mUniform->push(*kvp.second.mDeclaration);
+			{
+				nap::Uniform* uniform_val = kvp.second.mUniform.get();
+				assert(uniform_val->get_type().is_derived_from(RTTI_OF(nap::UniformValue)));
+				static_cast<nap::UniformValue*>(uniform_val)->push(*kvp.second.mDeclaration);
+			}
+		}
 
 		glActiveTexture(GL_TEXTURE0);
 	}

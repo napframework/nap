@@ -1,6 +1,10 @@
 #pragma once
 
+// Local Includes
 #include "cameracomponent.h"
+
+// External Includes
+#include <nap/dllexport.h>
 
 namespace nap
 {
@@ -12,7 +16,7 @@ namespace nap
 	/**
 	 * Properties for orthographic camera. Used in both resource and instance.
 	 */
-	struct OrthoCameraProperties
+	struct NAPAPI OrthoCameraProperties
 	{
 		float mNearClippingPlane = 1.0f;
 		float mFarClippingPlane = 1000.0f;
@@ -21,7 +25,7 @@ namespace nap
 	/**
 	 * Orthographic camera resource, hold json properties for the camera.
 	 */
-	class OrthoCameraComponentResource : public ComponentResource
+	class NAPAPI OrthoCameraComponentResource : public ComponentResource
 	{
 		RTTI_ENABLE(ComponentResource)
 
@@ -44,7 +48,7 @@ namespace nap
 	 * Be sure to call setRenderTargetSize so that the camera's space is updated correctly.
 	 * The transform to calculate the view matrix is retrieved from the transform component.
 	 */
-	class OrthoCameraComponent : public CameraComponent
+	class NAPAPI OrthoCameraComponent : public CameraComponent
 	{
 		RTTI_ENABLE(CameraComponent)
 	public:

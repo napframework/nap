@@ -8,6 +8,7 @@
 #include <glm/glm.hpp>
 #include <SDL_video.h>
 #include <nap/configure.h>
+#include <nap/dllexport.h>
 
 struct SDL_Window;
 typedef void *SDL_GLContext;
@@ -28,7 +29,7 @@ namespace nap
 	* Use the size, position and title attributes on the component
 	* to position the window
 	*/
-	struct RenderWindowSettings
+	struct NAPAPI RenderWindowSettings
 	{
 	public:
 		// Construction / Destruction
@@ -49,7 +50,7 @@ namespace nap
 	/**
 	* Render window base class
 	*/
-	class RenderWindow final
+	class NAPAPI RenderWindow final
 	{
 		RTTI_ENABLE()
 	public:

@@ -6,6 +6,7 @@
 // External Includes
 #include <rtti/rtti.h>
 #include <renderattributes.h>
+#include <nap/dllexport.h>
 
 namespace nap
 {
@@ -16,7 +17,7 @@ namespace nap
 	 * a specific render target. The render target initialization
 	 * and binding is handled by that target
 	 */
-	class Renderer final
+	class NAPAPI Renderer final
 	{
 		RTTI_ENABLE()
 	public:

@@ -1,14 +1,16 @@
 #pragma once
 
-#include "glm/glm.hpp"
-#include "nap/componentinstance.h"
+// External Includes
+#include <glm/glm.hpp>
+#include <nap/componentinstance.h>
+#include <nap/dllexport.h>
 
 namespace nap
 {
 	/**
 	 * Base class for perspective and orthographic cameras.
 	 */
-	class CameraComponent : public ComponentInstance
+	class NAPAPI CameraComponent : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:

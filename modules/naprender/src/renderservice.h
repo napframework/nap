@@ -29,7 +29,7 @@ namespace nap
 	/**
 	 * Main interface for rendering operations. 
 	 */
-	class RenderService : public Service
+	class NAPAPI RenderService : public Service
 	{
 		RTTI_ENABLE(Service)
 

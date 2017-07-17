@@ -1,10 +1,11 @@
 #pragma once
 
-#include <nap.h>
+// External Includes
 #include <nap/resource.h>
-#include <nap/coreattributes.h>
+#include <nap/rttinap.h>
+#include <nap/dllexport.h>
 #include <nimage.h>
-#include <renderattributes.h>
+#include <glm/glm.hpp>
 
 namespace nap
 {
@@ -13,7 +14,7 @@ namespace nap
 	/**
 	 * Base class for texture resources
 	 */
-	class TextureResource : public rtti::RTTIObject
+	class NAPAPI TextureResource : public rtti::RTTIObject
 	{
 		friend class ImageResourceLoader;
 		RTTI_ENABLE(rtti::RTTIObject)
@@ -52,7 +53,7 @@ namespace nap
 	/**
 	* 2D Texture resource that only has an in-memory representation.
 	*/
-	class MemoryTextureResource2D : public TextureResource
+	class NAPAPI MemoryTextureResource2D : public TextureResource
 	{
 		RTTI_ENABLE(TextureResource)
 	public:
@@ -86,7 +87,7 @@ namespace nap
 	 * An image holds both the cpu and gpu data associated
 	 * with a 2d image, resulting in a 2d texture (GPU) and bitmap data (CPU)
 	 */
-	class ImageResource : public TextureResource
+	class NAPAPI ImageResource : public TextureResource
 	{
 		friend class ImageResourceLoader;
 		RTTI_ENABLE(TextureResource)

@@ -15,7 +15,7 @@ namespace nap
 	 * Frame buffer specialization of the render target resource
 	 * Wraps an opengl frame buffer (RGBA + DEPTH)
 	 */
-	class TextureRenderTargetResource2D : public rtti::RTTIObject
+	class NAPAPI TextureRenderTargetResource2D : public rtti::RTTIObject
 	{
 		RTTI_ENABLE(rtti::RTTIObject)
 	public:
