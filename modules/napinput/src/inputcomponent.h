@@ -2,8 +2,9 @@
 
 #include <rtti/rtti.h>
 #include <nap/signalslot.h>
-#include "nap/componentinstance.h"
+#include <nap/componentinstance.h>
 #include <inputevent.h>
+#include <nap/dllexport.h>
 
 namespace nap
 {
@@ -14,7 +15,7 @@ namespace nap
 	 * Base class for all input components. The trigger function is called when an InputRouter-derived class
 	 * decides to route the input to this specific component.
 	 */
-	class InputComponent : public ComponentInstance
+	class NAPAPI InputComponent : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
@@ -31,6 +32,7 @@ namespace nap
 		virtual void trigger(const nap::InputEvent& inEvent) = 0;
 	};
 
+
 	/**
 	 * The resource class for the InputComponent.
 	 */
@@ -42,10 +44,11 @@ namespace nap
 	};
 
 
+
 	/**
 	 * Input component for press/release key events.
 	 */
-	class KeyInputComponent : public InputComponent
+	class NAPAPI KeyInputComponent : public InputComponent
 	{
 		friend class InputService;
 		RTTI_ENABLE(InputComponent)
@@ -68,7 +71,7 @@ namespace nap
 	/**
  	 * Resource class for KeyInputComponent.
 	 */
-	class KeyInputComponentResource : public InputComponentResource
+	class NAPAPI KeyInputComponentResource : public InputComponentResource
 	{
 		RTTI_ENABLE(InputComponentResource)
 
@@ -76,10 +79,11 @@ namespace nap
 		virtual const rtti::TypeInfo getInstanceType() const { return RTTI_OF(KeyInputComponent); }
 	};
 
+
 	/**
 	 * Input component for mouse/touch events.
 	 */
-	class PointerInputComponent : public InputComponent
+	class NAPAPI PointerInputComponent : public InputComponent
 	{
 		friend class InputService;
 		RTTI_ENABLE(InputComponent)
@@ -99,10 +103,11 @@ namespace nap
 		virtual void trigger(const nap::InputEvent& inEvent) override;
 	};
 
+
 	/**
 	 * Resource class for PointerInputComponent.
 	 */
-	class PointerInputComponentResource : public InputComponentResource
+	class NAPAPI PointerInputComponentResource : public InputComponentResource
 	{
 		RTTI_ENABLE(InputComponentResource)
 

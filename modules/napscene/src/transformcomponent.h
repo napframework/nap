@@ -1,8 +1,6 @@
 #pragma once
 
 // External Includes
-#include <nap/rttinap.h>
-#include <nap/coreattributes.h>
 #include <nap/componentinstance.h>
 
 // Local Includes
@@ -122,12 +120,6 @@ namespace nap
 
 		void setUniformScale(float scale);
 		const float getUniformScale() const				{ return mUniformScale; }
-
-	protected:
-		/**
-		 * Sets dirty flags
-		 */
-		void onSetDirty(AttributeBase& object)			{ setDirty(); }
 
 	private:
 		/**

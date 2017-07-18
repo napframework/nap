@@ -2,9 +2,11 @@
 
 #include "rtti/rttiobject.h"
 #include "nap/objectptr.h"
+#include "dllexport.h"
 
 namespace nap
 {
+	// Forward Declares
 	namespace utility
 	{
 		class ErrorState;
@@ -17,7 +19,7 @@ namespace nap
 	/**
 	 * A ComponentInstance is the runtime-instance of a ComponentResource, which is read from json.
 	 */
-	class ComponentInstance : public rtti::RTTIObject
+	class NAPAPI ComponentInstance : public rtti::RTTIObject
 	{
 		RTTI_ENABLE(rtti::RTTIObject)
 
@@ -25,12 +27,7 @@ namespace nap
 		/**
 		 * Constructor
 		 */
-		ComponentInstance(EntityInstance& entity);
-
-		/** 
-		 * Destructor
-		 */
-		virtual ~ComponentInstance() = default;
+		ComponentInstance(EntityInstance& entity) : mEntity(&entity) { }
 
 		/**
 		 * Update this component
@@ -65,7 +62,7 @@ namespace nap
 	/**
 	 * A ComponentResource is the static data that is deserialized from json. A ComponentInstance is created from it
 	 */
-	class ComponentResource : public rtti::RTTIObject
+	class NAPAPI ComponentResource : public rtti::RTTIObject
 	{
 		RTTI_ENABLE(rtti::RTTIObject)
 

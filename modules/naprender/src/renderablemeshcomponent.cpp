@@ -9,7 +9,7 @@
 
 // External Includes
 #include <nap/entityinstance.h>
-#include <nap/entity.h>
+#include <nap/core.h>
 
 RTTI_BEGIN_CLASS(nap::Rect)
 	RTTI_PROPERTY("X",		&nap::Rect::mX,			nap::rtti::EPropertyMetaData::Required)
@@ -162,7 +162,7 @@ namespace nap
 			return false;
 
 		// Here we acquire a VAO from the render service. The service will try to reuse VAOs for similar Material-Mesh combinations
-		RenderService* render_service = getEntity()->getCore()->getService<RenderService>();
+		nap::RenderService* render_service = getEntity()->getCore()->getService<nap::RenderService>();
 		mVAOHandle = render_service->acquireVertexArrayObject(*mMaterialInstance.getMaterial(), *mResource->mMeshResource, errorState);
 		if (!errorState.check(mVAOHandle != nullptr, "Failed to acquire VAO for RenderableMeshComponent %s", mResource->mID.c_str()))
 			return false;

@@ -13,7 +13,7 @@ namespace nap
 	 * wraps both a pointer to an EntityResource and to an EntityInstance. From an RTTI perspective, EntityPtr acts
 	 * like a pointer to another EntityResource, while at runtime, the pointer acts like a pointer to an EntityInstance.
 	 */
-	class EntityPtr
+	class NAPAPI EntityPtr
 	{
 	public:
 		EntityPtr() = default;

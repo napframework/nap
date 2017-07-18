@@ -17,11 +17,6 @@
 
 namespace nap
 {
-	// Register all types
-	void RenderService::registerTypes(nap::Core& core)
-	{
-	}
-
 	// Register all object creation functions
 	void RenderService::registerObjectCreators(rtti::Factory& factory)
 	{

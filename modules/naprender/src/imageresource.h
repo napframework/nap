@@ -1,8 +1,7 @@
 #pragma once
 
 // External Includes
-#include <nap/resource.h>
-#include <nap/rttinap.h>
+#include <rtti/rttiobject.h>
 #include <nap/dllexport.h>
 #include <nimage.h>
 #include <glm/glm.hpp>

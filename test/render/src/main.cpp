@@ -30,7 +30,9 @@
 #include <inputrouter.h>
 #include <nap/entityinstance.h>
 #include <nap/componentinstance.h>
+#include <nap/logger.h>
 #include <sceneservice.h>
+#include <mathutils.h>
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -135,7 +137,7 @@ void onUpdate()
 	// Set scale
 	float scale_speed = 4.0f;
 	float nscale = (sin(elapsed_time  * scale_speed) + 1) / 2.0f;
-	nscale = nap::fit<float>(nscale, 0.0f, 1.0f, 0.25f, 1.0f);
+	nscale = nap::math::fit<float>(nscale, 0.0f, 1.0f, 0.25f, 1.0f);
 	//xform_v->uniformScale.setValue(nscale);
 
 	// Set some material values
@@ -272,7 +274,7 @@ bool init(nap::Core& core)
 		return false;
 	}
 
-	nap::Logger::info("initialized render service: %s", renderService->getName().c_str());
+	nap::Logger::info("initialized render service: %s", renderService->getTypeName().c_str());
 
 	//////////////////////////////////////////////////////////////////////////
 	// Input

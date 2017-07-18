@@ -6,11 +6,3 @@ RTTI_END_CLASS
 
 RTTI_BEGIN_BASE_CLASS(nap::ComponentResource)
 RTTI_END_CLASS
-
-namespace nap
-{
-	ComponentInstance::ComponentInstance(EntityInstance& entity) :
-		mEntity(&entity)
-	{
-	} 
-}

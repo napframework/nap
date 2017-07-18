@@ -1,7 +1,6 @@
 #pragma once
 
 // External Includes
-#include <nap/attribute.h>
 #include <nap/service.h>
 #include <nap/timer.h>
 #include <nap/windowevent.h>
@@ -144,11 +143,6 @@ namespace nap
 		void processEvents();
 
 	protected:
-		/**
-		 * Type registration
-		 */
-		virtual void registerTypes(nap::Core& core) override;
-
 		/**
 		* Object creation registration
 		*/

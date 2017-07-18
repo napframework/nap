@@ -1,27 +1,28 @@
 #pragma once
 
+// Local Includes
 #include "service.h"
 #include "objectptr.h"
+#include "dllexport.h"
 #include "utility/uniqueptrmapiterator.h"
-#include "rtti/unresolvedpointer.h"
+#include "directorywatcher.h"
+#include "entityinstance.h"
+#include "componentinstance.h"
+
+// External Includes
+#include <rtti/unresolvedpointer.h>
 #include <map>
 
 namespace nap
-{
-	class DirectoryWatcher;
-	class EntityInstance;
-	class EntityResource;
-	
+{	
 	class RTTIObjectGraphItem;
 	template<typename ITEM> class ObjectGraph;
 	using RTTIObjectGraph = ObjectGraph<RTTIObjectGraphItem>;
 
-	struct EntityCreationParameters;
-
 	/**
 	 * Manager, owner of all objects, capable of loading and real-time updating of content.
 	 */
-	class ResourceManagerService : public Service
+	class NAPAPI ResourceManagerService : public Service
 	{
 		RTTI_ENABLE(Service)
 	public:
@@ -58,7 +59,7 @@ namespace nap
 		/**
 		* Find an object by object ID. Returns null if not found.
 		*/
-		const ObjectPtr<RTTIObject> findObject(const std::string& id);
+		const ObjectPtr<rtti::RTTIObject> findObject(const std::string& id);
 
 		/**
 		* Find an object by object ID. Returns null if not found.
@@ -69,7 +70,7 @@ namespace nap
 		/**
 		* Creates an object and adds it to the manager.
 		*/
-		const ObjectPtr<RTTIObject> createObject(const rtti::TypeInfo& type);
+		const ObjectPtr<rtti::RTTIObject> createObject(const rtti::TypeInfo& type);
 
 		/**
 		* Instantiates an Entity.
@@ -130,11 +131,11 @@ namespace nap
 		virtual void update();
 
 	private:
-		using InstanceByIDMap	= std::unordered_map<std::string, rtti::RTTIObject*>;				// Map from object ID to object (non-owned)
-		using ObjectByIDMap		= std::unordered_map<std::string, std::unique_ptr<RTTIObject>>;		// Map from object ID to object (owned)
-		using FileLinkMap		= std::unordered_map<std::string, std::vector<std::string>>;		// Map from target file to multiple source files
+		using InstanceByIDMap	= std::unordered_map<std::string, rtti::RTTIObject*>;					// Map from object ID to object (non-owned)
+		using ObjectByIDMap		= std::unordered_map<std::string, std::unique_ptr<rtti::RTTIObject>>;	// Map from object ID to object (owned)
+		using FileLinkMap		= std::unordered_map<std::string, std::vector<std::string>>;			// Map from target file to multiple source files
 
-		void addObject(const std::string& id, std::unique_ptr<RTTIObject> object);
+		void addObject(const std::string& id, std::unique_ptr<rtti::RTTIObject> object);
 		void removeObject(const std::string& id);
 		void addFileLink(const std::string& sourceFile, const std::string& targetFile);
 

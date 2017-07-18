@@ -1,6 +1,6 @@
 #pragma once
 
-
+// Local Includes
 #include "utility/uniqueptrvectoriterator.h"
 #include "objectptr.h"
 
@@ -16,8 +16,11 @@ namespace nap
 	 */
 	struct EntityCreationParameters
 	{
-		using EntityByIDMap = std::unordered_map<std::string, std::unique_ptr<EntityInstance>>;
+		using EntityByIDMap   = std::unordered_map<std::string, std::unique_ptr<EntityInstance>>;
 		using InstanceByIDMap = std::unordered_map<std::string, rtti::RTTIObject*>;
+
+		virtual ~EntityCreationParameters() = default;
+		EntityCreationParameters() = default;
 
 		EntityByIDMap mEntitiesByID;
 		InstanceByIDMap mAllInstancesByID;
@@ -27,7 +30,7 @@ namespace nap
 	* Selects whether the type check should be an exact type match or whether
 	* the type should be derived from the given type.
 	*/
-	enum class ETypeCheck : uint8_t
+	enum class NAPAPI ETypeCheck : uint8_t
 	{
 		EXACT_MATCH,
 		IS_DERIVED_FROM
@@ -49,7 +52,7 @@ namespace nap
 	 * An EntityInstance is the runtime-instance of an EntityResource, which is read from json.
 	 * It contains a list of ComponentInstances and functionality to query these components
 	 */
-	class EntityInstance : public rtti::RTTIObject
+	class NAPAPI EntityInstance : public rtti::RTTIObject
 	{
 		RTTI_ENABLE(rtti::RTTIObject)
 
@@ -188,7 +191,7 @@ namespace nap
 	/**
 	 * An EntityResource is the static data as deserialized from json. It can be used to create an EntityInstance
 	 */
-	class EntityResource : public rtti::RTTIObject
+	class NAPAPI EntityResource : public rtti::RTTIObject
 	{
 		RTTI_ENABLE(rtti::RTTIObject)
 	public:

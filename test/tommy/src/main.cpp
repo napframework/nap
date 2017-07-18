@@ -25,6 +25,7 @@
 #include <inputcomponent.h>
 #include <mousebutton.h>
 #include <sceneservice.h>
+#include <nap/logger.h>
 
 // Local includes
 #include "uiinputrouter.h"

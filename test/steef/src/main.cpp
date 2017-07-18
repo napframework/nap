@@ -2,6 +2,7 @@
 //
 
 // Local Includes
+#include "rotatecomponent.h"
 
 // GLM
 #include <glm/glm.hpp>
@@ -19,6 +20,7 @@
 
 // Nap includes
 #include <nap/core.h>
+#include <nap/logger.h>
 #include <nap/resourcemanager.h>
 #include <inputservice.h>
 #include <nap/windowresource.h>
@@ -30,7 +32,6 @@
 #include <nap/componentinstance.h>
 #include <sceneservice.h>
 #include <orthocameracomponent.h>
-#include "rotatecomponent.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
@@ -175,7 +176,7 @@ bool init(nap::Core& core)
 		nap::Logger::fatal(error.toString());
 		return false;
 	}
-	nap::Logger::info("initialized render service: %s", renderService->getName().c_str());
+	nap::Logger::info("initialized render service: %s", renderService->getTypeName().c_str());
 
 	//////////////////////////////////////////////////////////////////////////
 	// Input
@@ -227,6 +228,7 @@ bool init(nap::Core& core)
 
 	return true;
 }
+
 
 // Main loop
 int main(int argc, char *argv[])

@@ -9,6 +9,8 @@
 #include "componentinstance.h"
 #include "objectgraph.h"
 #include "entityptr.h"
+#include "fileutils.h"
+#include "logger.h"
 
 RTTI_DEFINE(nap::ResourceManagerService)
 

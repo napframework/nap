@@ -2,6 +2,7 @@
 
 // Nap Includes
 #include <nap/service.h>
+#include <nap/dllexport.h>
 
 // Local Includes
 #include "inputevent.h"
@@ -16,7 +17,7 @@ namespace nap
 	/**
 	 * Extracts input events from Window and forwards them to an InputRouter.
 	 */
-	class InputService : public Service
+	class NAPAPI InputService : public Service
 	{
 		RTTI_ENABLE(Service)
 

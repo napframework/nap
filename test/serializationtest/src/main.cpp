@@ -8,11 +8,10 @@
 #include <rtti/factory.h>
 #include <nap/core.h>
 #include <nap/logger.h>
-#include <nap/resource.h>
 #include <utility/memorystream.h>
 #include <utility/stringutils.h>
-
 #include <rtti/rttipath.h>
+#include <iostream>
 
 using namespace nap;
 using namespace rtti;

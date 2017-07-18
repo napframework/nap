@@ -1,9 +1,8 @@
 #pragma once
 
 // External includes
-#include <nap/rttinap.h>
-#include <nap/coreattributes.h>
 #include <nap/componentinstance.h>
+#include <nap/dllexport.h>
 
 // Local includes
 #include "transformcomponent.h"
@@ -12,7 +11,7 @@
 
 namespace nap
 {
-	struct RotateProperties
+	struct NAPAPI RotateProperties
 	{
 		glm::vec3	mAxis;		// Rotation axis
 		float		mSpeed;		// Rotation speed (seconds)
@@ -26,7 +25,7 @@ namespace nap
 	/**
 	 * Rotate component resource
 	 */
-	class RotateComponent : public ComponentResource
+	class NAPAPI RotateComponent : public ComponentResource
 	{
 		RTTI_ENABLE(ComponentResource)
 	public:
@@ -57,7 +56,7 @@ namespace nap
 	 * This component updates (overrides) the rotate value of the transform component
 	 * Entities that use this component must have a transform
 	 */
-	class RotateComponentInstance : public ComponentInstance
+	class NAPAPI RotateComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:

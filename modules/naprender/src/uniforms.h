@@ -4,7 +4,6 @@
 #include "nshaderutils.h"
 
 // External Includes
-#include <nap/resource.h>
 #include <nap/objectptr.h>
 #include <glm/glm.hpp>
 #include <nap/dllexport.h>
