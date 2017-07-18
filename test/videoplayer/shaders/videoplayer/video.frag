@@ -15,9 +15,9 @@ out vec4 out_Color;
 
 void main() 
 {
-  float y = texture(yTexture, vec2(pass_Uvs.x, 1 - pass_Uvs.y)).r;
-  float u = texture(uTexture, vec2(pass_Uvs.x, 1 - pass_Uvs.y)).r;
-  float v = texture(vTexture, vec2(pass_Uvs.x, 1 - pass_Uvs.y)).r;
+  float y = texture(yTexture, vec2(pass_Uvs.x, pass_Uvs.y)).r;
+  float u = texture(uTexture, vec2(pass_Uvs.x, pass_Uvs.y)).r;
+  float v = texture(vTexture, vec2(pass_Uvs.x, pass_Uvs.y)).r;
   vec3 yuv = vec3(y,u,v);
   yuv += offset;
   out_Color = vec4(0.0, 0.0, 0.0, 1.0);

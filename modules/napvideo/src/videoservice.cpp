@@ -125,52 +125,123 @@ namespace nap
 		return true;
 	}
 
+	void VideoResource::play()
+	{
+		mDecodeThread = std::thread(std::bind(&VideoResource::decodeThread, this));
+		mPlaying = true;		
+	}
+
+	void VideoResource::decodeThread()
+	{
+		AVRational frame_rate = av_guess_frame_rate(mFormatContext, mFormatContext->streams[mVideoStream], nullptr);
+		double frame_duration = (frame_rate.num && frame_rate.den ? av_q2d(AVRational { frame_rate.den, frame_rate.num }) : 0);
+		double stream_start_time = 0.0;
+		if (mFormatContext->streams[mVideoStream]->start_time != AV_NOPTS_VALUE)
+			stream_start_time = mFormatContext->streams[mVideoStream]->start_time *av_q2d(mFormatContext->streams[mVideoStream]->time_base);
+
+		while (true)
+		{
+			AVPacket packet;
+			int frame_finished = 0;
+			while (!frame_finished)
+			{
+				int result = av_read_frame(mFormatContext, &packet);
+				if (result == AVERROR_EOF)
+				{
+					// stop?
+					mPlaying = false;
+					return;
+				}
+				else if (result < 0)
+				{
+					mPlaying = false;
+					return;
+				}
+
+				// Is this a packet from the video stream?
+				if (packet.stream_index != mVideoStream)
+					continue;
+
+				// Decode video frame
+				result = avcodec_decode_video2(mContext, mFrame, &frame_finished, &packet);
+
+				if (result < 0)
+				{
+					mPlaying = false;
+					return;
+				}
+
+				// Free the packet that was allocated by av_read_frame
+				av_free_packet(&packet);
+			}
+
+			Frame new_frame;
+
+			new_frame.mPTSSecs = DBL_MAX;
+			if (mFrame->pts == AV_NOPTS_VALUE)
+			{
+				if (mPrevPTSSecs == DBL_MAX)
+					new_frame.mPTSSecs = 0.0;
+				else
+					new_frame.mPTSSecs = mPrevPTSSecs + frame_duration;
+			}
+			else
+			{
+				new_frame.mPTSSecs = (mFrame->pts * av_q2d(mFormatContext->streams[mVideoStream]->time_base)) - stream_start_time;
+			}
+
+			mPrevPTSSecs = new_frame.mPTSSecs;
+
+			new_frame.mFrame = av_frame_alloc();
+			av_frame_move_ref(new_frame.mFrame, mFrame);
+
+			{
+				std::unique_lock<std::mutex> lock(mFrameQueueMutex);
+				mQueueRoomAvailableCondition.wait(lock, [this]() { return mFrameQueue.size() < 3; });
+				mFrameQueue.push(new_frame);
+				mDataAvailableCondition.notify_one();
+			}
+		}
+	}
+
 	void VideoResource::update(double deltaTime)
 	{
 		if (!mPlaying)
 			return;
 
-		AVPacket packet;
-		int frame_finished = 0;
-
-		while (!frame_finished)
+		if (mVideoClockSecs == DBL_MAX)
 		{
-			int result = av_read_frame(mFormatContext, &packet);
-			if (result == AVERROR_EOF)
-			{
-				// stop?
-				mPlaying = false;
-				return;
-			}
-			else if (result < 0)
-			{
-				mPlaying = false;
-				return;
-			}
-
-			// Is this a packet from the video stream?
-			if (packet.stream_index != mVideoStream)
-				continue;
-
-			// Decode video frame
-			result = avcodec_decode_video2(mContext, mFrame, &frame_finished, &packet);
-			if (result < 0)
-			{
-				mPlaying = false;
-				return;
-			}
-
-			// Free the packet that was allocated by av_read_frame
-			av_free_packet(&packet);
+			mVideoClockSecs = 0.0;
+			mCurrentTimeSecs = 0.0;
 		}
 
-		assert(mFrame->linesize[0] == mFrame->width);
-		assert(mFrame->linesize[1] == mFrame->width / 2);
-		assert(mFrame->linesize[2] == mFrame->width / 2);
+		mCurrentTimeSecs += deltaTime;
 
-		rtti_cast<TextureResource>(mYTexture.get())->getTexture().setData(mFrame->data[0]);
-		rtti_cast<TextureResource>(mUTexture.get())->getTexture().setData(mFrame->data[1]);
-		rtti_cast<TextureResource>(mVTexture.get())->getTexture().setData(mFrame->data[2]);
+		Frame cur_frame;
+		{
+			std::unique_lock<std::mutex> lock(mFrameQueueMutex);
+
+			mDataAvailableCondition.wait(lock, [this]() { return !mFrameQueue.empty(); });
+
+			if (mFrameQueue.empty() || mCurrentTimeSecs < mFrameQueue.front().mPTSSecs)
+				return;
+
+			cur_frame = mFrameQueue.front();
+			mFrameQueue.pop();
+
+			mQueueRoomAvailableCondition.notify_one();
+		}
+
+		assert(cur_frame.mFrame->linesize[0] == cur_frame.mFrame->width);
+		assert(cur_frame.mFrame->linesize[1] == cur_frame.mFrame->width / 2);
+		assert(cur_frame.mFrame->linesize[2] == cur_frame.mFrame->width / 2);
+
+		rtti_cast<TextureResource>(mYTexture.get())->getTexture().setData(cur_frame.mFrame->data[0]);
+		rtti_cast<TextureResource>(mUTexture.get())->getTexture().setData(cur_frame.mFrame->data[1]);
+		rtti_cast<TextureResource>(mVTexture.get())->getTexture().setData(cur_frame.mFrame->data[2]);
+
+		av_frame_unref(cur_frame.mFrame);
+		av_frame_free(&cur_frame.mFrame);
 	}
 }
 

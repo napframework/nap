@@ -2,6 +2,7 @@
 
 // Nap Includes
 #include <nap/service.h>
+#include <queue>
 
 namespace opengl
 {
@@ -25,7 +26,10 @@ namespace nap
 		bool init(nap::utility::ErrorState& errorState);
 
 		void update(double deltaTime);
-		void play() { mPlaying = true; }
+		void play();
+
+	private:
+		void decodeThread();
 
 	public:
 		std::string mPath;
@@ -48,6 +52,22 @@ namespace nap
 		std::unique_ptr<MemoryTextureResource2D> mYTexture;
 		std::unique_ptr<MemoryTextureResource2D> mUTexture;
 		std::unique_ptr<MemoryTextureResource2D> mVTexture;
+
+		double mPrevPTSSecs = 0.0;
+		double mCurrentTimeSecs = DBL_MAX;
+		double mVideoClockSecs = DBL_MAX;
+
+		std::thread mDecodeThread;
+		std::mutex mFrameQueueMutex;
+		std::condition_variable mDataAvailableCondition;
+		std::condition_variable mQueueRoomAvailableCondition;
+
+		struct Frame
+		{
+			AVFrame*	mFrame;
+			double		mPTSSecs;
+		};
+		std::queue<Frame> mFrameQueue;
 	};
 
 	/**

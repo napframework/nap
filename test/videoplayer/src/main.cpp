@@ -77,14 +77,7 @@ void onUpdate()
 
 	if (videoEntity != nullptr)
 	{
-		static float dt_accum = 0.0f;
-		dt_accum += delta_time;
-
-		if (dt_accum >= 1.0f / 24.0f)
-		{
-			videoResource->update(delta_time);
-			dt_accum -= 1.0f / 24.0f;
-		}		
+		videoResource->update(delta_time);
 
 		float aspect_ratio = (float)videoResource->mWidth / (float)videoResource->mHeight;
 		glm::vec2 window_size = renderWindows[0]->getWindow()->getSize();
@@ -101,7 +94,7 @@ void onUpdate()
 		nap::TransformComponent& transform_component = videoEntity->getComponent<nap::TransformComponent>();
 		transform_component.setTranslate(glm::vec3(window_size.x*0.5, window_size.y*0.5, -1000.0f));
 		transform_component.setScale(glm::vec3(window_size.x, window_size.y, 1.0));
-	}
+	} 
 
 	// Update the scene
 	sceneService->update();
@@ -183,7 +176,7 @@ bool init(nap::Core& core)
 	videoService->init(errorState);
 
 	videoResource = new nap::VideoResource();
-	videoResource->mPath = "C:\\4kcontent\\video2.mp4";
+	videoResource->mPath = "C:\\4kcontent\\city1.mp4";
 	if (!videoResource->init(errorState))
 		return false;
 
