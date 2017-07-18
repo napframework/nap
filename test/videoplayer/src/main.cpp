@@ -37,7 +37,7 @@ nap::ResourceManagerService* resourceManagerService = nullptr;
 nap::InputService* inputService = nullptr;
 nap::SceneService* sceneService = nullptr;
 nap::VideoService* videoService = nullptr;
-nap::VideoResource* videoResource = nullptr;
+std::vector<nap::ObjectPtr<nap::VideoResource>> videoResources;
 
 std::vector<nap::ObjectPtr<nap::RenderWindowResource>> renderWindows;
 nap::ObjectPtr<nap::EntityInstance> cameraEntity = nullptr;
@@ -77,19 +77,25 @@ void onUpdate()
 
 	if (videoEntity != nullptr)
 	{
-		videoResource->update(delta_time);
-
-		float aspect_ratio = (float)videoResource->mWidth / (float)videoResource->mHeight;
 		glm::vec2 window_size = renderWindows[0]->getWindow()->getSize();
-		window_size.y = window_size.x / aspect_ratio;
+
+		float new_window_height = -FLT_MAX;
+		for (auto& video_resource : videoResources)
+		{
+			video_resource->update(delta_time);
+			
+			float aspect_ratio = (float)video_resource->getWidth() / (float)video_resource->getHeight();
+			new_window_height = std::max(new_window_height, window_size.x / aspect_ratio);
+		}
+
+		window_size.y = new_window_height;		
 		renderWindows[0]->getWindow()->setSize(window_size);
 
 		nap::MaterialInstance& plane_material = videoEntity->getComponent<nap::RenderableMeshComponent>().getMaterialInstance();
-		plane_material.getOrCreateUniform<nap::UniformTexture2D>("yTexture").setTexture(videoResource->getYTexture());
-		plane_material.getOrCreateUniform<nap::UniformTexture2D>("uTexture").setTexture(videoResource->getUTexture());
-		plane_material.getOrCreateUniform<nap::UniformTexture2D>("vTexture").setTexture(videoResource->getVTexture());
+		plane_material.getOrCreateUniform<nap::UniformTexture2D>("yTexture").setTexture(videoResources[0]->getYTexture());
+		plane_material.getOrCreateUniform<nap::UniformTexture2D>("uTexture").setTexture(videoResources[0]->getUTexture()); 
+		plane_material.getOrCreateUniform<nap::UniformTexture2D>("vTexture").setTexture(videoResources[0]->getVTexture());
 
-		// First layout element. We start at -1000.0f, a value in front of the camera that is 'far away' 
 		// We set the position/size of the root layout element to cover the full screen.
 		nap::TransformComponent& transform_component = videoEntity->getComponent<nap::TransformComponent>();
 		transform_component.setTranslate(glm::vec3(window_size.x*0.5, window_size.y*0.5, -1000.0f));
@@ -151,38 +157,29 @@ bool init(nap::Core& core)
 		return false;
 	}
 
-	//////////////////////////////////////////////////////////////////////////
-	// Input Service
 	inputService = core.getOrCreateService<nap::InputService>();
-	//////////////////////////////////////////////////////////////////////////
-
-	//////////////////////////////////////////////////////////////////////////
-	// Scene service
-	//////////////////////////////////////////////////////////////////////////
 	sceneService = core.getOrCreateService<nap::SceneService>();
-
-	//////////////////////////////////////////////////////////////////////////
-	// Resources
-	//////////////////////////////////////////////////////////////////////////
+	videoService = core.getOrCreateService<nap::VideoService>();
 
 	nap::utility::ErrorState errorState;
+	if (!videoService->init(errorState))
+	{
+		nap::Logger::fatal("Failed to init video service: \n %s", errorState.toString().c_str());
+		return false;
+	}
+
 	if (!resourceManagerService->loadFile("data/videoplayer/videoplayer.json", errorState))
 	{
 		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
 		return false;        
-	}
-
-	videoService = core.getOrCreateService<nap::VideoService>();
-	videoService->init(errorState);
-
-	videoResource = new nap::VideoResource();
-	videoResource->mPath = "C:\\4kcontent\\city1.mp4";
-	if (!videoResource->init(errorState))
-		return false;
-
-	videoResource->play();
+	} 
 	
 	renderWindows.push_back(resourceManagerService->findObject<nap::RenderWindowResource>("Window"));
+
+	videoResources.push_back(resourceManagerService->findObject<nap::VideoResource>("Video1"));
+
+	for (auto& videoResource : videoResources)
+		videoResource->play();
 
 	// Set render states
 	nap::RenderState& render_state = renderService->getRenderState();

@@ -16,6 +16,11 @@
 		"mFragShader": "shaders/videoplayer/video.frag"
 	},
 	
+	"nap::VideoResource": {
+		"mID": "Video1",
+		"Path": "data/videoplayer/video2.mp4"
+	},
+	
 	"nap::Material": {
 		"mID": "VideoMaterial",
 		"Shader": "VideoShader",

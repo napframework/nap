@@ -15,7 +15,9 @@ extern "C"
 	#include <libavformat/avformat.h>
 }
 
-#define INBUF_SIZE 4096
+RTTI_BEGIN_CLASS(nap::VideoResource)
+	RTTI_PROPERTY("Path", &nap::VideoResource::mPath, nap::rtti::EPropertyMetaData::Required)
+RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::VideoService)
 RTTI_END_CLASS
@@ -54,33 +56,37 @@ namespace nap
 		// Dump information about file onto standard error
 		av_dump_format(mFormatContext, 0, mPath.c_str(), 0);
 
-		AVCodecContext* codecContext = nullptr;
+		AVCodecContext* codec_context = nullptr;
 		for (int i = 0; i < mFormatContext->nb_streams; ++i)
 		{
 			if (mFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO)
 			{
-				codecContext = mFormatContext->streams[i]->codec;
+				codec_context = mFormatContext->streams[i]->codec;
 				mVideoStream = i;
 				break;
 			}
 		}
 
-		if (!errorState.check(codecContext != nullptr, "No video stream found"))
+		if (!errorState.check(codec_context != nullptr, "No video stream found"))
 			return false;
 
 		// Find the decoder for the video stream
-		mCodec = avcodec_find_decoder(codecContext->codec_id);
+		mCodec = avcodec_find_decoder(codec_context->codec_id);
 		if (!errorState.check(mCodec != nullptr, "Unable to find codec"))
 			return false;
 
 		// Copy context
 		mContext = avcodec_alloc_context3(mCodec);
-		error = avcodec_copy_context(mContext, codecContext);
+		error = avcodec_copy_context(mContext, codec_context);
 		if (!errorState.check(error == 0, "Unable to copy codec context: %s", error_to_string(error).c_str()))
 			return false;
 
 		/* open it */
-		error = avcodec_open2(mContext, mCodec, nullptr);
+		AVDictionary* opts = nullptr;
+		if (!av_dict_get(opts, "threads", NULL, 0))
+			av_dict_set(&opts, "threads", "auto", 0);
+
+		error = avcodec_open2(mContext, mCodec, &opts);
 		if (!errorState.check(error == 0, "Unable to open codec: %s", error_to_string(error).c_str()))
 			return false;
 
@@ -128,7 +134,39 @@ namespace nap
 	void VideoResource::play()
 	{
 		mDecodeThread = std::thread(std::bind(&VideoResource::decodeThread, this));
+		mIOThread = std::thread(std::bind(&VideoResource::ioThread, this));
 		mPlaying = true;		
+	}
+
+	void VideoResource::ioThread()
+	{
+		while (true)
+		{
+			AVPacket* packet = av_packet_alloc();
+			int result = av_read_frame(mFormatContext, packet);
+			if (result == AVERROR_EOF)
+			{
+				// stop?
+				mPlaying = false;
+				return;
+			}
+			else if (result < 0)
+			{
+				mPlaying = false;
+				return;
+			}
+
+			// Is this a packet from the video stream?
+			if (packet->stream_index != mVideoStream)
+				continue;
+
+			{
+				std::unique_lock<std::mutex> lock(mPacketQueueMutex);
+				mPacketQueueRoomAvailableCondition.wait(lock, [this]() { return mPacketQueue.size() < 3; });
+				mPacketQueue.push(packet);
+				mPacketAvailableCondition.notify_one();
+			}
+		}
 	}
 
 	void VideoResource::decodeThread()
@@ -141,30 +179,19 @@ namespace nap
 
 		while (true)
 		{
-			AVPacket packet;
 			int frame_finished = 0;
 			while (!frame_finished)
 			{
-				int result = av_read_frame(mFormatContext, &packet);
-				if (result == AVERROR_EOF)
+				AVPacket* packet;
 				{
-					// stop?
-					mPlaying = false;
-					return;
-				}
-				else if (result < 0)
-				{
-					mPlaying = false;
-					return;
+					std::unique_lock<std::mutex> lock(mPacketQueueMutex);
+					mPacketAvailableCondition.wait(lock, [this]() { return !mPacketQueue.empty(); });
+					packet = mPacketQueue.front();
+					mPacketQueue.pop();
+					mPacketQueueRoomAvailableCondition.notify_one();
 				}
 
-				// Is this a packet from the video stream?
-				if (packet.stream_index != mVideoStream)
-					continue;
-
-				// Decode video frame
-				result = avcodec_decode_video2(mContext, mFrame, &frame_finished, &packet);
-
+				int result = avcodec_decode_video2(mContext, mFrame, &frame_finished, packet);
 				if (result < 0)
 				{
 					mPlaying = false;
@@ -172,7 +199,7 @@ namespace nap
 				}
 
 				// Free the packet that was allocated by av_read_frame
-				av_free_packet(&packet);
+				av_free_packet(packet);
 			}
 
 			Frame new_frame;
@@ -197,9 +224,9 @@ namespace nap
 
 			{
 				std::unique_lock<std::mutex> lock(mFrameQueueMutex);
-				mQueueRoomAvailableCondition.wait(lock, [this]() { return mFrameQueue.size() < 3; });
+				mFrameQueueRoomAvailableCondition.wait(lock, [this]() { return mFrameQueue.size() < 3; });
 				mFrameQueue.push(new_frame);
-				mDataAvailableCondition.notify_one();
+				mFrameDataAvailableCondition.notify_one();
 			}
 		}
 	}
@@ -210,26 +237,23 @@ namespace nap
 			return;
 
 		if (mVideoClockSecs == DBL_MAX)
-		{
 			mVideoClockSecs = 0.0;
-			mCurrentTimeSecs = 0.0;
-		}
 
-		mCurrentTimeSecs += deltaTime;
+		mVideoClockSecs += deltaTime;
 
 		Frame cur_frame;
 		{
 			std::unique_lock<std::mutex> lock(mFrameQueueMutex);
 
-			mDataAvailableCondition.wait(lock, [this]() { return !mFrameQueue.empty(); });
+			//mFrameDataAvailableCondition.wait(lock, [this]() { return !mFrameQueue.empty(); });
 
-			if (mFrameQueue.empty() || mCurrentTimeSecs < mFrameQueue.front().mPTSSecs)
+			if (mFrameQueue.empty() || mVideoClockSecs < mFrameQueue.front().mPTSSecs)
 				return;
 
 			cur_frame = mFrameQueue.front();
 			mFrameQueue.pop();
 
-			mQueueRoomAvailableCondition.notify_one();
+			mFrameQueueRoomAvailableCondition.notify_one();
 		}
 
 		assert(cur_frame.mFrame->linesize[0] == cur_frame.mFrame->width);

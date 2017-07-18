@@ -20,19 +20,34 @@ namespace nap
 {
 	class MemoryTextureResource2D;
 
-	class VideoResource
+	class VideoResource : public rtti::RTTIObject
 	{
+		RTTI_ENABLE(rtti::RTTIObject)
+
 	public:
-		bool init(nap::utility::ErrorState& errorState);
+		virtual bool init(nap::utility::ErrorState& errorState) override;
 
 		void update(double deltaTime);
 		void play();
 
 	private:
 		void decodeThread();
+		void ioThread();
 
 	public:
 		std::string mPath;
+
+		MemoryTextureResource2D& getYTexture() { return *mYTexture; }
+		MemoryTextureResource2D& getUTexture() { return *mUTexture; }
+		MemoryTextureResource2D& getVTexture() { return *mVTexture; }
+
+		int getWidth() const { return mWidth; }
+		int getHeight() const { return mHeight; }
+
+	private:
+		std::unique_ptr<MemoryTextureResource2D> mYTexture;
+		std::unique_ptr<MemoryTextureResource2D> mUTexture;
+		std::unique_ptr<MemoryTextureResource2D> mVTexture;
 
 		// Runtime data
 		AVCodec*				mCodec = nullptr;
@@ -43,31 +58,25 @@ namespace nap
 		bool					mPlaying = false;
 		int						mWidth = 0;
 		int						mHeight = 0;
-
-		MemoryTextureResource2D& getYTexture() { return *mYTexture; }
-		MemoryTextureResource2D& getUTexture() { return *mUTexture; }
-		MemoryTextureResource2D& getVTexture() { return *mVTexture; }
-
-	private:
-		std::unique_ptr<MemoryTextureResource2D> mYTexture;
-		std::unique_ptr<MemoryTextureResource2D> mUTexture;
-		std::unique_ptr<MemoryTextureResource2D> mVTexture;
-
-		double mPrevPTSSecs = 0.0;
-		double mCurrentTimeSecs = DBL_MAX;
-		double mVideoClockSecs = DBL_MAX;
-
-		std::thread mDecodeThread;
-		std::mutex mFrameQueueMutex;
-		std::condition_variable mDataAvailableCondition;
-		std::condition_variable mQueueRoomAvailableCondition;
+		double					mPrevPTSSecs = 0.0;
+		double					mVideoClockSecs = DBL_MAX;
 
 		struct Frame
 		{
 			AVFrame*	mFrame;
 			double		mPTSSecs;
 		};
-		std::queue<Frame> mFrameQueue;
+		std::queue<Frame>		mFrameQueue;
+		std::thread				mDecodeThread;
+		std::mutex				mFrameQueueMutex;
+		std::condition_variable mFrameDataAvailableCondition;
+		std::condition_variable mFrameQueueRoomAvailableCondition;
+
+		std::thread				mIOThread;
+		std::mutex				mPacketQueueMutex;
+		std::condition_variable mPacketAvailableCondition;
+		std::condition_variable mPacketQueueRoomAvailableCondition;
+		std::queue<AVPacket*>	mPacketQueue;
 	};
 
 	/**
