@@ -83,8 +83,8 @@ namespace nap
 
 		/* open it */
 		AVDictionary* opts = nullptr;
-		if (!av_dict_get(opts, "threads", NULL, 0))
-			av_dict_set(&opts, "threads", "auto", 0);
+// 		if (!av_dict_get(opts, "threads", NULL, 0))
+// 			av_dict_set(&opts, "threads", "0", 0);
 
 		error = avcodec_open2(mContext, mCodec, &opts);
 		if (!errorState.check(error == 0, "Unable to open codec: %s", error_to_string(error).c_str()))
