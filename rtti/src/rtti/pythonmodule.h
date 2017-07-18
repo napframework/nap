@@ -25,7 +25,7 @@ namespace nap
 		class PythonClass
 		{
 		public:
-			using RegistrationFunction = std::function<void(pybind11::class_<T>&, pybind11::module&)>;
+			using RegistrationFunction = std::function<void(pybind11::class_<T>&)>;
 
 			PythonClass(const char* name) :
 				mName(name)
@@ -41,7 +41,7 @@ namespace nap
 			{
 				auto cls = pybind11::class_<T>(module, mName);
 				for (auto& func : mRegistrationFunctions)
-					func(cls, module);
+					func(cls);
 			}
 
 		private:

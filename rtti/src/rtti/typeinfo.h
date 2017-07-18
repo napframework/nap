@@ -2,6 +2,7 @@
 
 #include <rttr/type>
 #include <rttr/registration>
+#include "rtti/pythonmodule.h"
 
 /**
  * This file contains the macros necessary to register types and their attributes with the RTTI system. There are only a few macros important for the user of the RTTI system:
@@ -168,72 +169,108 @@ namespace nap
 #define CONCAT_UNIQUE_NAMESPACE(x, y)				namespace x##y
 #define UNIQUE_REGISTRATION_NAMESPACE(id)			CONCAT_UNIQUE_NAMESPACE(__rtti_registration_, id)
 
-#define RTTI_BEGIN_BASE_CLASS(Type)							\
-	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)				\
-	{														\
-		RTTR_REGISTRATION									\
-		{													\
-			using namespace rttr;							\
-			registration::class_<Type> class_type(#Type);
+#define RTTI_BEGIN_BASE_CLASS(Type)																				\
+	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)																	\
+	{																											\
+		RTTR_REGISTRATION																						\
+		{																										\
+			using namespace rttr;																				\
+			namespace py = pybind11;																			\
+																												\
+			typedef Type ClassType;																				\
+			registration::class_<Type> rtti_class_type(#Type);													\
+			nap::rtti::PythonClass<Type> python_class(#Type);
 
-#define RTTI_PROPERTY(Name, Member, Flags)					\
-			class_type.property(Name, Member)(metadata("flags", (uint8_t)(Flags)));
+#define RTTI_PROPERTY(Name, Member, Flags)																		\
+			rtti_class_type.property(Name, Member)(metadata("flags", (uint8_t)(Flags)));						\
+			python_class.registerFunction([](py::class_<ClassType>& cls)										\
+			{																									\
+				cls.def_readwrite(Name, Member);																\
+			});			
 
-#define RTTI_END_CLASS										\
-		;													\
-		}													\
+#define RTTI_END_CLASS																							\
+			nap::rtti::PythonModule& python_module = nap::rtti::PythonModule::get(STRINGIFY(MODULE_NAME));		\
+			python_module.registerClass([python_class](py::module& module)										\
+			{																									\
+				python_class.invoke(module);																	\
+			});																									\
+		}																										\
 	}
 
-#define RTTI_BEGIN_CLASS(Type)								\
-	RTTI_BEGIN_BASE_CLASS(Type)								\
-	class_type.constructor<>()(policy::ctor::as_raw_ptr);
+#define RTTI_BEGIN_CLASS(Type)																					\
+	RTTI_BEGIN_BASE_CLASS(Type)																					\
+	rtti_class_type.constructor<>()(policy::ctor::as_raw_ptr);													\
+	python_class.registerFunction([](py::class_<Type>& cls)														\
+	{																											\
+		cls.def(py::init<>());																					\
+	});	
 
-#define RTTI_BEGIN_CLASS_CONSTRUCTOR1(Type, CtorArg1)		\
-	RTTI_BEGIN_BASE_CLASS(Type)								\
-	class_type.constructor<CtorArg1>()(policy::ctor::as_raw_ptr);
+#define RTTI_BEGIN_CLASS_CONSTRUCTOR1(Type, CtorArg1)															\
+	RTTI_BEGIN_BASE_CLASS(Type)																					\
+	rtti_class_type.constructor<CtorArg1>()(policy::ctor::as_raw_ptr);											\
+	python_class.registerFunction([](py::class_<Type>& cls)														\
+	{																											\
+		cls.def(py::init<CtorArg1>());																			\
+	});
 
-#define RTTI_BEGIN_CLASS_CONSTRUCTOR2(Type, CtorArg1, CtorArg2)	\
-	RTTI_BEGIN_BASE_CLASS(Type)							\
-	class_type.constructor<CtorArg1, CtorArg2>()(policy::ctor::as_raw_ptr);
+#define RTTI_BEGIN_CLASS_CONSTRUCTOR2(Type, CtorArg1, CtorArg2)													\
+	RTTI_BEGIN_BASE_CLASS(Type)																					\
+	rtti_class_type.constructor<CtorArg1, CtorArg2>()(policy::ctor::as_raw_ptr);								\
+	python_class.registerFunction([](py::class_<Type>& cls)														\
+	{																											\
+		cls.def(py::init<CtorArg1, CtorArg2>());																\
+	});
 
-#define RTTI_BEGIN_CLASS_CONSTRUCTOR3(Type, CtorArg1, CtorArg2, CtorArg3)	\
-	RTTI_BEGIN_BASE_CLASS(Type)							\
-	class_type.constructor<CtorArg1, CtorArg2, CtorArg3>()(policy::ctor::as_raw_ptr);
+#define RTTI_BEGIN_CLASS_CONSTRUCTOR3(Type, CtorArg1, CtorArg2, CtorArg3)										\
+	RTTI_BEGIN_BASE_CLASS(Type)																					\
+	rtti_class_type.constructor<CtorArg1, CtorArg2, CtorArg3>()(policy::ctor::as_raw_ptr);						\
+	python_class.registerFunction([](py::class_<Type>& cls)														\
+	{																											\
+		cls.def(py::init<CtorArg1, CtorArg2, CtorArg3>());														\
+	});
 
-#define RTTI_BEGIN_CLASS_CONSTRUCTOR4(Type, CtorArg1, CtorArg2, CtorArg3, CtorArg4)	\
-	RTTI_BEGIN_BASE_CLASS(Type)							\
-	class_type.constructor<CtorArg1, CtorArg2, CtorArg3, CtorArg4>()(policy::ctor::as_raw_ptr);
+#define RTTI_BEGIN_CLASS_CONSTRUCTOR4(Type, CtorArg1, CtorArg2, CtorArg3, CtorArg4)								\
+	RTTI_BEGIN_BASE_CLASS(Type)																					\
+	rtti_class_type.constructor<CtorArg1, CtorArg2, CtorArg3, CtorArg4>()(policy::ctor::as_raw_ptr);			\
+	python_class.registerFunction([](py::class_<Type>& cls)														\
+	{																											\
+		cls.def(py::init<CtorArg1, CtorArg2, CtorArg3, CtorArg4>());											\
+	});
 
-#define RTTI_BEGIN_CLASS_CONSTRUCTOR5(Type, CtorArg1, CtorArg2, CtorArg3, CtorArg4, CtorArg5)	\
-	RTTI_BEGIN_BASE_CLASS(Type)							\
-	class_type.constructor<CtorArg1, CtorArg2, CtorArg3, CtorArg4, CtorArg5>()(policy::ctor::as_raw_ptr);
+#define RTTI_BEGIN_CLASS_CONSTRUCTOR5(Type, CtorArg1, CtorArg2, CtorArg3, CtorArg4, CtorArg5)					\
+	RTTI_BEGIN_BASE_CLASS(Type)																					\
+	rtti_class_type.constructor<CtorArg1, CtorArg2, CtorArg3, CtorArg4, CtorArg5>()(policy::ctor::as_raw_ptr);	\
+	python_class.registerFunction([](py::class_<Type>& cls)														\
+	{																											\
+		cls.def(py::init<CtorArg1, CtorArg2, CtorArg3, CtorArg4, CtorArg5>());									\
+	});
 
-#define RTTI_BEGIN_ENUM(Type)							\
-	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)			\
-	{													\
-		RTTR_REGISTRATION								\
-		{												\
-			using namespace rttr;						\
-			registration::enumeration<Type>(#Type)		\
+#define RTTI_BEGIN_ENUM(Type)																					\
+	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)																	\
+	{																											\
+		RTTR_REGISTRATION																						\
+		{																										\
+			using namespace rttr;																				\
+			registration::enumeration<Type>(#Type)																\
 			(
 
-#define RTTI_ENUM_VALUE(Value, String)					\
+#define RTTI_ENUM_VALUE(Value, String)																			\
 				value(String, Value)
 
-#define RTTI_END_ENUM									\
-			);											\
-		}												\
+#define RTTI_END_ENUM																							\
+			);																									\
+		}																										\
 	}
 
-#define RTTI_ENABLE(...) \
-	RTTR_ENABLE(__VA_ARGS__) \
+#define RTTI_ENABLE(...)																						\
+	RTTR_ENABLE(__VA_ARGS__)																					\
 	RTTR_REGISTRATION_FRIEND
 
 // Legacy macros only used for backwards compatibility with the old RTTI system.
-#define RTTI_DEFINE(Type)							\
-	RTTI_BEGIN_CLASS(Type)							\
+#define RTTI_DEFINE(Type)																						\
+	RTTI_BEGIN_CLASS(Type)																						\
 	RTTI_END_CLASS
 
-#define RTTI_DEFINE_BASE(Type)						\
-	RTTI_BEGIN_BASE_CLASS(Type)						\
+#define RTTI_DEFINE_BASE(Type)																					\
+	RTTI_BEGIN_BASE_CLASS(Type)																					\
 	RTTI_END_CLASS

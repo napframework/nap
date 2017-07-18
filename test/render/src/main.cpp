@@ -369,7 +369,7 @@ void testPython()
 	using namespace rtti;
 
 	PythonClass<Foo> python_class("Foo");
-	python_class.registerFunction([](py::class_<Foo>& cls, py::module& module) 
+	python_class.registerFunction([](py::class_<Foo>& cls) 
 	{
 		cls.def(py::init<>());
 		cls.def("Bar", &Foo::Bar);

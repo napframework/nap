@@ -91,7 +91,7 @@ namespace nap
 		attrs.versionMajor = 3;
 		attrs.enableMultiSampling = true;
 		attrs.multiSampleSamples = 8;
-#if _DEBUG
+#ifdef _DEBUG
 		attrs.debug = true;
 #endif
 		setOpenGLAttributes(attrs);
