@@ -1,6 +1,6 @@
-#include "spheremeshresource.h"
+#include "spheremesh.h"
 #include "math.h"
-#include "meshresource.h"
+#include "mesh.h"
 #include "material.h"
 
 
@@ -97,15 +97,15 @@ static opengl::Mesh* createSphere(float radius, unsigned int rings, unsigned int
 	return sphere_mesh;
 }
 
-RTTI_BEGIN_CLASS(nap::SphereMeshResource)
-	RTTI_PROPERTY("Radius",		&nap::SphereMeshResource::mRadius,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Rings",		&nap::SphereMeshResource::mRings,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Sectors",	&nap::SphereMeshResource::mSectors, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::SphereMesh)
+	RTTI_PROPERTY("Radius",		&nap::SphereMesh::mRadius,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Rings",		&nap::SphereMesh::mRings,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Sectors",	&nap::SphereMesh::mSectors, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
 {
-	bool SphereMeshResource::init(utility::ErrorState& errorState)
+	bool SphereMesh::init(utility::ErrorState& errorState)
 	{
 		mMesh.reset(createSphere(mRadius, mRings, mSectors));
 		return true;

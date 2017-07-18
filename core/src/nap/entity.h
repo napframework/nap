@@ -8,7 +8,7 @@ namespace nap
 {
     class Core;
 	class ComponentInstance;
-	class ComponentResource;
+	class Component;
 	class EntityInstance;
 
 	/**
@@ -49,7 +49,7 @@ namespace nap
 
 
 	/**
-	 * An EntityInstance is the runtime-instance of an EntityResource, which is read from json.
+	 * An EntityInstance is the runtime-instance of an Entity, which is read from json.
 	 * It contains a list of ComponentInstances and functionality to query these components
 	 */
 	class NAPAPI EntityInstance : public rtti::RTTIObject
@@ -188,15 +188,19 @@ namespace nap
 	};
 
 
+	//////////////////////////////////////////////////////////////////////////
+	// Entity Resource
+	//////////////////////////////////////////////////////////////////////////
+
 	/**
-	 * An EntityResource is the static data as deserialized from json. It can be used to create an EntityInstance
+	 * An Entity is the static data as deserialized from json. It can be used to create an EntityInstance
 	 */
-	class NAPAPI EntityResource : public rtti::RTTIObject
+	class NAPAPI Entity : public rtti::RTTIObject
 	{
 		RTTI_ENABLE(rtti::RTTIObject)
 	public:
-		using ComponentList = std::vector<ObjectPtr<ComponentResource>>;
-		using EntityList = std::vector<ObjectPtr<EntityResource>>;
+		using ComponentList = std::vector<ObjectPtr<Component>>;
+		using EntityList = std::vector<ObjectPtr<Entity>>;
 
 		/**
 		 * Find component of the specified type
@@ -204,7 +208,7 @@ namespace nap
 		 * @param type The type of component to find
 		 * @return The found component. Null if not found
 		 */
-		ObjectPtr<ComponentResource> findComponent(const rtti::TypeInfo& type, ETypeCheck typeCheck = ETypeCheck::EXACT_MATCH) const;
+		ObjectPtr<Component> findComponent(const rtti::TypeInfo& type, ETypeCheck typeCheck = ETypeCheck::EXACT_MATCH) const;
 
 		/**
 		 * Check whether this Entity has a component of the specified type
@@ -263,7 +267,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<class T>
-	bool EntityResource::hasComponent(ETypeCheck typeCheck) const
+	bool Entity::hasComponent(ETypeCheck typeCheck) const
 	{
 		return hasComponent(rtti::TypeInfo::get<T>(), typeCheck);
 	}

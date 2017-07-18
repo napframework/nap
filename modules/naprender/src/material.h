@@ -5,8 +5,8 @@
 #include <nap/dllexport.h>
 
 // Local includes
-#include "shaderresource.h"
-#include "imageresource.h"
+#include "shader.h"
+#include "image.h"
 #include "nmesh.h"
 #include "uniformbinding.h"
 
@@ -158,7 +158,7 @@ namespace nap
 		 * Utility for getting the shader resource
 		 * @return the link as a shader resource, nullptr if not linked
 		 */
-		ShaderResource* getShader() const				{ return mShader.get(); }
+		Shader* getShader() const				{ return mShader.get(); }
 
 		/**
 		* @return Blending mode for this material
@@ -184,7 +184,7 @@ namespace nap
 	public:
 		std::vector<ObjectPtr<Uniform>>			mUniforms;											///< Static uniforms (as read from file, or as set in code before calling init())
 		std::vector<VertexAttributeBinding>		mVertexAttributeBindings;							///< Mapping from mesh vertex attr to shader vertex attr
-		ObjectPtr<ShaderResource>				mShader = nullptr;									///< The shader that this material is using
+		ObjectPtr<Shader>				mShader = nullptr;									///< The shader that this material is using
 		EBlendMode								mBlendMode = EBlendMode::Opaque;					///< Blend mode for this material
 		EDepthMode								mDepthMode = EDepthMode::InheritFromBlendMode;		///< Determines how the Z buffer is used									///< Holds all the uniform values
 	};

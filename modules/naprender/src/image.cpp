@@ -1,5 +1,5 @@
 // Local Includes
-#include "imageresource.h"
+#include "image.h"
 
 // External Includes
 #include <nap/logger.h>
@@ -14,13 +14,13 @@ RTTI_BEGIN_CLASS(opengl::TextureParameters)
 	RTTI_PROPERTY("mMaxLodLevel",		&opengl::TextureParameters::maxLodLevel,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-RTTI_BEGIN_BASE_CLASS(nap::TextureResource)
-	RTTI_PROPERTY("mParameters", 		&nap::TextureResource::mParameters,			nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_BASE_CLASS(nap::Texture)
+	RTTI_PROPERTY("mParameters", 		&nap::Texture::mParameters,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 
-RTTI_BEGIN_CLASS(nap::ImageResource)
-	RTTI_PROPERTY("mImagePath", 		&nap::ImageResource::mImagePath, 			nap::rtti::EPropertyMetaData::FileLink | nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::Image)
+	RTTI_PROPERTY("mImagePath", 		&nap::Image::mImagePath, 			nap::rtti::EPropertyMetaData::FileLink | nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(opengl::Texture2DSettings)
@@ -31,16 +31,16 @@ RTTI_BEGIN_CLASS(opengl::Texture2DSettings)
 	RTTI_PROPERTY("mType",				&opengl::Texture2DSettings::type,			nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::MemoryTextureResource2D)
-	RTTI_PROPERTY("mSettings",			&nap::MemoryTextureResource2D::mSettings, 	nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::MemoryTexture2D)
+	RTTI_PROPERTY("mSettings",			&nap::MemoryTexture2D::mSettings, 	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-RTTI_DEFINE(nap::ImageResource)
+RTTI_DEFINE(nap::Image)
 
 namespace nap
 {
 	// Initializes 2D texture. Additionally a custom display name can be provided.
-	bool MemoryTextureResource2D::init(utility::ErrorState& errorState)
+	bool MemoryTexture2D::init(utility::ErrorState& errorState)
 	{
 		// Create 2D texture
 		mTexture = std::make_unique<opengl::Texture2D>();
@@ -57,33 +57,33 @@ namespace nap
 
 
 	// Returns 2D texture object
-	const opengl::BaseTexture& MemoryTextureResource2D::getTexture() const
+	const opengl::BaseTexture& MemoryTexture2D::getTexture() const
 	{
 		assert(mTexture != nullptr);
 		return *mTexture;
 	}
 
 
-	const glm::vec2 MemoryTextureResource2D::getSize() const
+	const glm::vec2 MemoryTexture2D::getSize() const
 	{
 		return glm::vec2(mTexture->getSettings().width, mTexture->getSettings().height);
 	}
 
 
 	// Constructor
-	ImageResource::ImageResource(const std::string& imgPath)
+	Image::Image(const std::string& imgPath)
 	{
 	}
 
 
 	// Load image if required and extract texture
-	const opengl::BaseTexture& ImageResource::getTexture() const
+	const opengl::BaseTexture& Image::getTexture() const
 	{
 		return getImage().getTexture();
 	}
 
 
-	bool ImageResource::init(utility::ErrorState& errorState)
+	bool Image::init(utility::ErrorState& errorState)
 	{
 		if (!errorState.check(!mImagePath.empty(), "Image path not set for ImageResource %s", mID.c_str()))
 			return false;
@@ -100,23 +100,23 @@ namespace nap
 	}
 
 
-	const opengl::Image& ImageResource::getImage() const
+	const opengl::Image& Image::getImage() const
 	{
 		assert(mImage != nullptr);
 		return *mImage;
 	}
 
 
-	const glm::vec2 ImageResource::getSize() const
+	const glm::vec2 Image::getSize() const
 	{
 		return glm::vec2(mImage->getWidth(), mImage->getHeight());
 	}
 
 	
 	// Non const getter, following:
-	opengl::BaseTexture& TextureResource::getTexture()
+	opengl::BaseTexture& Texture::getTexture()
 	{
-		return const_cast<opengl::BaseTexture&>(static_cast<const TextureResource&>(*this).getTexture());
+		return const_cast<opengl::BaseTexture&>(static_cast<const Texture&>(*this).getTexture());
 	}
 	
 }

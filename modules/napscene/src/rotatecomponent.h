@@ -1,7 +1,7 @@
 #pragma once
 
 // External includes
-#include <nap/componentinstance.h>
+#include <nap/component.h>
 #include <nap/dllexport.h>
 
 // Local includes
@@ -25,9 +25,9 @@ namespace nap
 	/**
 	 * Rotate component resource
 	 */
-	class NAPAPI RotateComponent : public ComponentResource
+	class NAPAPI RotateComponent : public Component
 	{
-		RTTI_ENABLE(ComponentResource)
+		RTTI_ENABLE(Component)
 	public:
 		virtual const rtti::TypeInfo getInstanceType() const override
 		{
@@ -39,7 +39,7 @@ namespace nap
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components)
 		{
-			components.push_back(RTTI_OF(TransformComponentResource));
+			components.push_back(RTTI_OF(TransformComponent));
 		}
 
 	public:
@@ -69,7 +69,7 @@ namespace nap
 		 * @param used for creating new entity instances
 		 * @param errorState the error object
 		 */
-		virtual bool init(const ObjectPtr<ComponentResource>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
 		/**
 		 * Rotates the component every tick based on the speed and exis
@@ -82,7 +82,7 @@ namespace nap
 
 	private:
 		// Store pointer to transform, set during init
-		nap::TransformComponent* mTransform;
+		nap::TransformComponentInstance* mTransform;
 
 		// Local elapsed time
 		double mElapsedTime = 0.0;

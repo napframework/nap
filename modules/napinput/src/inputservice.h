@@ -10,7 +10,7 @@
 namespace nap
 {
 	class InputService;
-	class WindowResource;
+	class Window;
 	class EntityInstance;
 	class InputRouter;
 
@@ -37,7 +37,7 @@ namespace nap
 		 * @param inputRouter The input router that selects what InputComponents receive input messages.
 		 * @param entities A list of root entities that are used to traverse the entity hierarchy.
 		 */
-		void processEvents(WindowResource& window, InputRouter& inputRouter, const EntityList& entities);
+		void processEvents(Window& window, InputRouter& inputRouter, const EntityList& entities);
 
 		/**
 		 * Adds an input event to the queue, to be processed later

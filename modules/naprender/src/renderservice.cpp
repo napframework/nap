@@ -2,18 +2,18 @@
 #include "renderservice.h"
 #include "renderablemeshcomponent.h"
 #include "rendercomponent.h"
-#include "renderwindowresource.h"
+#include "renderwindow.h"
 #include "transformcomponent.h"
 #include "cameracomponent.h"
 #include "renderglobals.h"
-#include "meshresource.h"
-#include "rtti/factory.h"
-#include "nap/resourcemanager.h"
+#include "mesh.h"
 #include "depthsorter.h"
 
 // External Includes
 #include <nap/core.h>
 #include <glm/gtx/matrix_decompose.hpp>
+#include <rtti/factory.h>
+#include <nap/resourcemanager.h>
 
 namespace nap
 {
@@ -24,7 +24,7 @@ namespace nap
 	}
 
 
-	std::unique_ptr<RenderWindow> RenderService::addWindow(RenderWindowResource& window, utility::ErrorState& errorState)
+	std::unique_ptr<GLWindow> RenderService::addWindow(RenderWindow& window, utility::ErrorState& errorState)
 	{
 		assert(mRenderer != nullptr);
 
@@ -36,7 +36,7 @@ namespace nap
 		window_settings.resizable	= window.mResizable;
 		window_settings.title		= window.mTitle;
 
-		std::unique_ptr<RenderWindow> new_window = mRenderer->createRenderWindow(window_settings, errorState);
+		std::unique_ptr<GLWindow> new_window = mRenderer->createRenderWindow(window_settings, errorState);
 		if (new_window == nullptr)
 			return nullptr;
 
@@ -49,7 +49,7 @@ namespace nap
 	}
 
 
-	void RenderService::removeWindow(RenderWindowResource& window)
+	void RenderService::removeWindow(RenderWindow& window)
 	{
 		WindowList::iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val) { return val == &window; });
 		assert(pos != mWindows.end());
@@ -57,7 +57,7 @@ namespace nap
 	}
 	
 
-	RenderWindowResource* RenderService::findWindow(void* nativeWindow) const
+	RenderWindow* RenderService::findWindow(void* nativeWindow) const
 	{
 		WindowList::const_iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val) { return val->getWindow()->getNativeWindow() == nativeWindow; });
 		if (pos != mWindows.end())
@@ -67,7 +67,7 @@ namespace nap
 	}
 
 
-	ObjectPtr<RenderWindowResource> RenderService::getWindow(uint id) const
+	ObjectPtr<RenderWindow> RenderService::getWindow(uint id) const
 	{
 		WindowList::const_iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val) { return val->getNumber() == id; });
 		if (pos != mWindows.end())
@@ -76,7 +76,7 @@ namespace nap
 	}
 
 
-	RenderWindow& RenderService::getPrimaryWindow()
+	GLWindow& RenderService::getPrimaryWindow()
 	{
 		return mRenderer->getPrimaryWindow();
 	}
@@ -84,7 +84,7 @@ namespace nap
 
 	void RenderService::addEvent(WindowEventPtr windowEvent)
 	{
-		nap::ObjectPtr<nap::WindowResource> window = getWindow(windowEvent->mWindow);
+		nap::ObjectPtr<nap::Window> window = getWindow(windowEvent->mWindow);
 		window->addEvent(std::move(windowEvent));
 	}
 
@@ -106,21 +106,21 @@ namespace nap
 
 
 	// Render all objects in scene graph using specified camera
-	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, CameraComponent& camera)
+	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera)
 	{
 		// Get all render components
- 		std::vector<nap::RenderableComponent*> render_comps;
+ 		std::vector<nap::RenderableComponentInstance*> render_comps;
 
 		for (EntityInstance* entity : getCore().getService<ResourceManagerService>()->getEntities())
-			entity->getComponentsOfType<nap::RenderableComponent>(render_comps);
+			entity->getComponentsOfType<nap::RenderableComponentInstance>(render_comps);
 
 		// Split into front to back and back to front meshes
-		std::vector<nap::RenderableComponent*> front_to_back;
-		std::vector<nap::RenderableComponent*> back_to_front;
+		std::vector<nap::RenderableComponentInstance*> front_to_back;
+		std::vector<nap::RenderableComponentInstance*> back_to_front;
 
-		for (nap::RenderableComponent* component : render_comps)
+		for (nap::RenderableComponentInstance* component : render_comps)
 		{
-			nap::RenderableMeshComponent* renderable_mesh = rtti_cast<RenderableMeshComponent>(component);
+			nap::RenderableMeshComponentInstance* renderable_mesh = rtti_cast<RenderableMeshComponentInstance>(component);
 			if (renderable_mesh != nullptr)
 			{
 				EBlendMode blend_mode = renderable_mesh->getMaterialInstance().getBlendMode();
@@ -159,7 +159,7 @@ namespace nap
 	}
 
 	// Renders all available objects to a specific renderTarget.
-	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, CameraComponent& camera, const std::vector<RenderableComponent*>& comps)
+	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps)
 	{
 		renderTarget.bind();
 
@@ -211,7 +211,7 @@ namespace nap
 	}
 
 
-	void RenderService::destroyGLContextResources(const std::vector<ObjectPtr<RenderWindowResource>>& renderWindows)
+	void RenderService::destroyGLContextResources(const std::vector<ObjectPtr<RenderWindow>>& renderWindows)
 	{
 		// If there is anything scheduled, destroy
 		if (!mGLContextResourcesToDestroy.empty())
@@ -223,7 +223,7 @@ namespace nap
 
 			// We go over the windows to make the GL context active, and then destroy 
 			// the resources for that context
-			for (const ObjectPtr<RenderWindowResource>& render_window : renderWindows)
+			for (const ObjectPtr<RenderWindow>& render_window : renderWindows)
 			{
 				render_window->makeActive();
 				for (auto& resource : mGLContextResourcesToDestroy)
@@ -242,7 +242,7 @@ namespace nap
 	}
 
 
-	std::unique_ptr<VAOHandle> RenderService::acquireVertexArrayObject(const Material& material, const MeshResource& meshResource, utility::ErrorState& errorState)
+	std::unique_ptr<VAOHandle> RenderService::acquireVertexArrayObject(const Material& material, const Mesh& meshResource, utility::ErrorState& errorState)
 	{
 		/// Construct a key based on material-mesh, and see if we have a VAO for this combination
 		VAOKey key(material, meshResource);

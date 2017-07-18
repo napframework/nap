@@ -13,11 +13,11 @@ namespace nap
 	}
 
 	class EntityInstance;
-	class ComponentResource;
+	class Component;
 	struct EntityCreationParameters;
 
 	/**
-	 * A ComponentInstance is the runtime-instance of a ComponentResource, which is read from json.
+	 * A ComponentInstance is the runtime-instance of a Component, which is read from json.
 	 */
 	class NAPAPI ComponentInstance : public rtti::RTTIObject
 	{
@@ -49,7 +49,7 @@ namespace nap
 		 * @param entityCreationParams Parameters required to create new entity instances during init
 		 * @param errorState The error object
 		 */
-		virtual bool init(const ObjectPtr<ComponentResource>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+		virtual bool init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 		{
 			return true;
 		}
@@ -58,11 +58,14 @@ namespace nap
 		EntityInstance* mEntity;	// The entity this component belongs to
 	};
 
+	///////////////////////////////////////////////////////////////////////////
+	// Component
+	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * A ComponentResource is the static data that is deserialized from json. A ComponentInstance is created from it
+	 * A Component is the static data that is deserialized from json. A ComponentInstance is created from it
 	 */
-	class NAPAPI ComponentResource : public rtti::RTTIObject
+	class NAPAPI Component : public rtti::RTTIObject
 	{
 		RTTI_ENABLE(rtti::RTTIObject)
 
@@ -73,7 +76,7 @@ namespace nap
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) { }
 
 		/** 
-		 * Get the type of ComponentInstance that should be created from this ComponentResource
+		 * Get the type of ComponentInstance that should be created from this Component
 		 */
 		virtual const rtti::TypeInfo getInstanceType() const = 0;
 	};

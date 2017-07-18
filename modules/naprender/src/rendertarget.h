@@ -2,7 +2,7 @@
 
 // Local Includes
 #include "renderattributes.h"
-#include "imageresource.h"
+#include "image.h"
 
 // External Includes
 #include <nap/objectptr.h>
@@ -14,7 +14,7 @@ namespace nap
 	 * Frame buffer specialization of the render target resource
 	 * Wraps an opengl frame buffer (RGBA + DEPTH)
 	 */
-	class NAPAPI TextureRenderTargetResource2D : public rtti::RTTIObject
+	class NAPAPI TextureRenderTarget2D : public rtti::RTTIObject
 	{
 		RTTI_ENABLE(rtti::RTTIObject)
 	public:
@@ -27,22 +27,22 @@ namespace nap
 		/**
 		* Sets color texture resource.
 		*/
-		void setColorTexture(MemoryTextureResource2D& colorTexture)			{ mColorTexture = &colorTexture; }
+		void setColorTexture(MemoryTexture2D& colorTexture)			{ mColorTexture = &colorTexture; }
 
 		/**
 		* Sets depth texture resource
 		*/
-		void setDepthTexture(MemoryTextureResource2D& depthTexture)			{ mDepthTexture = &depthTexture; }
+		void setDepthTexture(MemoryTexture2D& depthTexture)			{ mDepthTexture = &depthTexture; }
 
 		/**
 		* Returns color texture resource
 		*/
-		MemoryTextureResource2D& GetColorTexture()							{ return *mColorTexture; }
+		MemoryTexture2D& getColorTexture()							{ return *mColorTexture; }
 
 		/**
 		* Returns depth texture resource
 		*/
-		MemoryTextureResource2D& GetDepthTexture()							{ return *mDepthTexture; }
+		MemoryTexture2D& getDepthTexture()							{ return *mDepthTexture; }
 
 		/**
 		* @return opengl base frame buffer object
@@ -57,10 +57,10 @@ namespace nap
 
 	public:
 		// Color texture to be used by the render target
-		nap::ObjectPtr<MemoryTextureResource2D> mColorTexture = nullptr;
+		nap::ObjectPtr<MemoryTexture2D> mColorTexture = nullptr;
 		
 		// Depth texture to be used by the render target
-		nap::ObjectPtr<MemoryTextureResource2D> mDepthTexture = nullptr;
+		nap::ObjectPtr<MemoryTexture2D> mDepthTexture = nullptr;
 
 		glm::vec4 mClearColor;
 	};

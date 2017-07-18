@@ -1,16 +1,16 @@
 // Local Includes
-#include "rendertargetresource.h"
+#include "rendertarget.h"
 
-RTTI_BEGIN_CLASS(nap::TextureRenderTargetResource2D)
-	RTTI_PROPERTY("mColorTexture",	&nap::TextureRenderTargetResource2D::mColorTexture, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("mDepthTexture",	&nap::TextureRenderTargetResource2D::mDepthTexture, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("mClearColor",	&nap::TextureRenderTargetResource2D::mClearColor,	nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::TextureRenderTarget2D)
+	RTTI_PROPERTY("mColorTexture",	&nap::TextureRenderTarget2D::mColorTexture, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("mDepthTexture",	&nap::TextureRenderTarget2D::mDepthTexture, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("mClearColor",	&nap::TextureRenderTarget2D::mClearColor,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
 {
 
-	bool TextureRenderTargetResource2D::init(utility::ErrorState& errorState)
+	bool TextureRenderTarget2D::init(utility::ErrorState& errorState)
 	{
 		if (!errorState.check(mColorTexture != nullptr, "Unable to create render target %s. Color textures not set.", mID.c_str()))
 			return false;
@@ -28,7 +28,7 @@ namespace nap
 	}
 
 
-	opengl::TextureRenderTarget2D& TextureRenderTargetResource2D::getTarget()
+	opengl::TextureRenderTarget2D& TextureRenderTarget2D::getTarget()
 	{
 		assert(mTextureRenderTarget != nullptr);
 		return *mTextureRenderTarget;

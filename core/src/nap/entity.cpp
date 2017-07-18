@@ -1,13 +1,13 @@
-#include <nap/entityinstance.h>
-#include <nap/componentinstance.h>
-#include <nap/core.h>
+#include "entity.h"
+#include "component.h"
+#include "core.h"
 
 using namespace std;
 
-RTTI_BEGIN_CLASS(nap::EntityResource)
-	RTTI_PROPERTY("Components", &nap::EntityResource::mComponents, nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("Children", &nap::EntityResource::mChildren, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("AutoSpawn", &nap::EntityResource::mAutoSpawn, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::Entity)
+	RTTI_PROPERTY("Components", &nap::Entity::mComponents, nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Children", &nap::Entity::mChildren, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("AutoSpawn", &nap::Entity::mAutoSpawn, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::EntityInstance, nap::Core&)
@@ -117,7 +117,7 @@ namespace nap
 
 	//////////////////////////////////////////////////////////////////////////
 
-	ObjectPtr<ComponentResource> EntityResource::findComponent(const rtti::TypeInfo& type, ETypeCheck typeCheck) const
+	ObjectPtr<Component> Entity::findComponent(const rtti::TypeInfo& type, ETypeCheck typeCheck) const
 	{
 		ComponentList::const_iterator pos = std::find_if(mComponents.begin(), mComponents.end(), [&](auto& element) { return isTypeMatch(element->get_type(), type, typeCheck); });
 		if (pos == mComponents.end())
@@ -127,7 +127,7 @@ namespace nap
 	}
 
 
-	bool EntityResource::hasComponent(const rtti::TypeInfo& type, ETypeCheck typeCheck) const
+	bool Entity::hasComponent(const rtti::TypeInfo& type, ETypeCheck typeCheck) const
 	{
 		return findComponent(type, typeCheck) != nullptr;
 	}

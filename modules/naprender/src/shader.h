@@ -12,7 +12,7 @@ namespace nap
 	 * Note that the shader is not initialized (created) when the resource is created
 	 * this is deferred to actual rendering because of gl initialization
 	 */
-	class NAPAPI ShaderResource : public rtti::RTTIObject
+	class NAPAPI Shader : public rtti::RTTIObject
 	{
 		friend class ShaderResourceLoader;
 		RTTI_ENABLE(rtti::RTTIObject)

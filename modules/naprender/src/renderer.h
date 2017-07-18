@@ -1,7 +1,7 @@
 #pragma once
 
 // Local Includes
-#include <renderwindow.h>
+#include "glwindow.h"
 
 // External Includes
 #include <rtti/rtti.h>
@@ -39,7 +39,7 @@ namespace nap
 		 * @return the new render window or nullptr if unsuccessful
 		 * @param settings the window settings used to create the window
 		 */
-		std::unique_ptr<RenderWindow> createRenderWindow(const RenderWindowSettings& settings, utility::ErrorState& errorState);
+		std::unique_ptr<GLWindow> createRenderWindow(const RenderWindowSettings& settings, utility::ErrorState& errorState);
 
 		/**
 		 * Initialize the renderer
@@ -54,9 +54,9 @@ namespace nap
 		/**
 		 * Get the primary window (i.e. the window that was used to init OpenGL against)
 		 */
-		RenderWindow& getPrimaryWindow() { return *mPrimaryWindow; }
+		GLWindow& getPrimaryWindow() { return *mPrimaryWindow; }
 
 	private:
-		std::unique_ptr<RenderWindow> mPrimaryWindow;
+		std::unique_ptr<GLWindow> mPrimaryWindow;
 	};
 }

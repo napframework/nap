@@ -1,20 +1,20 @@
 // Local Includes
-#include "shaderresource.h"
+#include "shader.h"
 #include "material.h"
 
 // External Includes
 #include <nap/fileutils.h>
 #include <nap/logger.h>
 
-RTTI_BEGIN_CLASS(nap::ShaderResource)
-	RTTI_PROPERTY("mVertShader", &nap::ShaderResource::mVertPath, nap::rtti::EPropertyMetaData::FileLink | nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("mFragShader", &nap::ShaderResource::mFragPath, nap::rtti::EPropertyMetaData::FileLink | nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::Shader)
+	RTTI_PROPERTY("mVertShader", &nap::Shader::mVertPath, nap::rtti::EPropertyMetaData::FileLink | nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("mFragShader", &nap::Shader::mFragPath, nap::rtti::EPropertyMetaData::FileLink | nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 namespace nap
 {
 	// Store path and create display names
-	bool ShaderResource::init(utility::ErrorState& errorState)
+	bool Shader::init(utility::ErrorState& errorState)
 	{
 		if (!errorState.check(!mVertPath.empty(), "Vertex shader path not set"))
 			return false;
@@ -37,7 +37,7 @@ namespace nap
 
 
 	// Returns the associated opengl shader
-	opengl::Shader& ShaderResource::getShader()
+	opengl::Shader& Shader::getShader()
 	{
 		assert(mShader != nullptr);
 		return *mShader;
@@ -45,4 +45,4 @@ namespace nap
 
 }
 
-RTTI_DEFINE(nap::ShaderResource)
+RTTI_DEFINE(nap::Shader)

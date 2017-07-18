@@ -7,12 +7,12 @@
 
 namespace nap
 {
-	class NAPAPI MeshResource : public rtti::RTTIObject
+	class NAPAPI Mesh : public rtti::RTTIObject
 	{
 		RTTI_ENABLE(rtti::RTTIObject)
 	public:
 		// Default constructor
-		MeshResource() = default;
+		Mesh() = default;
 
 		/**
  		 * Load the mesh
@@ -30,9 +30,9 @@ namespace nap
 	};
 
 
-	class NAPAPI MeshFromFileResource : public MeshResource
+	class NAPAPI MeshFromFile : public Mesh
 	{
-		RTTI_ENABLE(MeshResource)
+		RTTI_ENABLE(Mesh)
 	
 	public:
 		/**

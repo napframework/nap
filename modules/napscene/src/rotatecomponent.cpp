@@ -1,6 +1,6 @@
 // Local Includes
 #include "rotatecomponent.h"
-#include <nap/entityinstance.h>
+#include <nap/entity.h>
 
 //////////////////////////////////////////////////////////////////////////
 // RTTI
@@ -25,12 +25,12 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	bool RotateComponentInstance::init(const ObjectPtr<ComponentResource>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool RotateComponentInstance::init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
 		assert(resource->get_type().is_derived_from<RotateComponent>());
 		
 		// Make sure we have a transform
-		mTransform = getEntity()->findComponent<TransformComponent>(ETypeCheck::IS_DERIVED_FROM);
+		mTransform = getEntity()->findComponent<TransformComponentInstance>(ETypeCheck::IS_DERIVED_FROM);
 		if (!errorState.check(mTransform != nullptr, "missing transform component"))
 			return false;
 		

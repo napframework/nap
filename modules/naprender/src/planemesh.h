@@ -1,16 +1,16 @@
 #pragma once
 
 // Local Includes
-#include "meshresource.h"
+#include "mesh.h"
 
 namespace nap
 {
 	/**
 	 * Predefined plane mesh with size 1x1, centered at origin.
 	 */
-	class NAPAPI PlaneMeshResource : public MeshResource
+	class NAPAPI PlaneMesh : public Mesh
 	{
-		RTTI_ENABLE(MeshResource)
+		RTTI_ENABLE(Mesh)
 
 	public:
 		/**

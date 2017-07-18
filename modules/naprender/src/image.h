@@ -13,7 +13,7 @@ namespace nap
 	/**
 	 * Base class for texture resources
 	 */
-	class NAPAPI TextureResource : public rtti::RTTIObject
+	class NAPAPI Texture : public rtti::RTTIObject
 	{
 		friend class ImageResourceLoader;
 		RTTI_ENABLE(rtti::RTTIObject)
@@ -52,9 +52,9 @@ namespace nap
 	/**
 	* 2D Texture resource that only has an in-memory representation.
 	*/
-	class NAPAPI MemoryTextureResource2D : public TextureResource
+	class NAPAPI MemoryTexture2D : public Texture
 	{
-		RTTI_ENABLE(TextureResource)
+		RTTI_ENABLE(Texture)
 	public:
 
 		/**
@@ -86,16 +86,16 @@ namespace nap
 	 * An image holds both the cpu and gpu data associated
 	 * with a 2d image, resulting in a 2d texture (GPU) and bitmap data (CPU)
 	 */
-	class NAPAPI ImageResource : public TextureResource
+	class NAPAPI Image : public Texture
 	{
 		friend class ImageResourceLoader;
-		RTTI_ENABLE(TextureResource)
+		RTTI_ENABLE(Texture)
 	public:
 		// Constructor
-		ImageResource(const std::string& imgPath);
+		Image(const std::string& imgPath);
 
 		// Default Constructor
-		ImageResource() = default;
+		Image() = default;
 
 		/**
 		* Loads the image from mImagePath.

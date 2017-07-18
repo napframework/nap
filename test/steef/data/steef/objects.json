@@ -1,16 +1,16 @@
 {
-	"nap::RenderWindowResource": {
+	"nap::RenderWindow": {
 		"mID" : "Viewport",
 		"Width" : 512,
 		"Height" : 512,
 		"Title" : "Viewport"
 	},
 
-		"nap::PlaneMeshResource": {
+		"nap::PlaneMesh": {
 		"mID": "BackgroundPlaneMesh"
 	},
 		
-    "nap::ImageResource": {
+    "nap::Image": {
 		"mID" : "LabelImage",
 		"mImagePath" : "data/steef/label.jpg",
 		"mParameters" : {
@@ -22,7 +22,7 @@
 		}
 	},
 
-	"nap::ImageResource": {
+	"nap::Image": {
 		"mID" : "CoverImage",
 		"mImagePath" : "data/steef/cover.jpg",
 		"mParameters" : {
@@ -34,7 +34,7 @@
 			}
 	},
 
-	"nap::ImageResource": {
+	"nap::Image": {
 		"mID" : "BackgroundImage",
 		"mImagePath" : "data/steef/background.jpg",
 		"mParameters" : {
@@ -46,7 +46,7 @@
 			}
 	},
 
-	"nap::ImageResource": {
+	"nap::Image": {
 		"mID" : "MaskImage",
 		"mImagePath" : "data/steef/label_mask.jpg",
 		"mParameters" : {
@@ -58,30 +58,30 @@
 		}
 	},
 
-	"nap::ShaderResource": {
+	"nap::Shader": {
 		"mID": "VinylShader",
 		"mVertShader": "shaders/steef/shader.vert",
 		"mFragShader": "shaders/steef/shader.frag"
 	},
 
-	"nap::ShaderResource": {
+	"nap::Shader": {
 		"mID": "BackgroundShader",
 		"mVertShader": "shaders/steef/background.vert",
 		"mFragShader": "shaders/steef/background.frag"
 	},
 
-	"nap::ShaderResource": {
+	"nap::Shader": {
 		"mID": "CoverShader",
 		"mVertShader": "shaders/steef/cover.vert",
 		"mFragShader": "shaders/steef/cover.frag"
 	},
 
-	"nap::MeshFromFileResource": {
+	"nap::MeshFromFile": {
 		"mID": "CoverMesh",
 		"Path": "data/steef/cover.mesh"
 	},
 
-		"nap::MeshFromFileResource": {
+		"nap::MeshFromFile": {
 		"mID": "VinylMesh",
 		"Path": "data/steef/vinyl.mesh"
 	},
@@ -174,12 +174,12 @@
 		]			
 	},
 
-	"nap::EntityResource": {
+	"nap::Entity": {
 		"mID": "ModelEntity",
 		"Components" : 
 		[
 			{
-				"nap::TransformComponentResource": {
+				"nap::TransformComponent": {
 					"Properties": {
 						"Translate": {
 							"x": 0.0,
@@ -221,12 +221,12 @@
 		] 
 	},
 	
-	"nap::EntityResource": {
+	"nap::Entity": {
 		"mID": "VinylEntity",
 		"Components" : 
 		[
 			{
-				"nap::RenderableMeshComponentResource": {
+				"nap::RenderableMeshComponent": {
 					"Mesh" : "VinylMesh",
 					"MaterialInstance" : {
 						"Material": "VinylMaterial",
@@ -252,7 +252,7 @@
 				}		
 			},
 			{
-				"nap::TransformComponentResource": {
+				"nap::TransformComponent": {
 					"Properties": {
 						"Translate": {
 							"x": 1.0,
@@ -289,12 +289,12 @@
 		]
 	},
 
-	"nap::EntityResource": {
+	"nap::Entity": {
 		"mID": "CoverEntity",
 		"Components" : 
 		[
 			{
-				"nap::RenderableMeshComponentResource": {
+				"nap::RenderableMeshComponent": {
 					"Mesh" : "CoverMesh",
 					"MaterialInstance" : {
 						"Material": "CoverMaterial",
@@ -313,7 +313,7 @@
 				}		
 			},
 			{
-				"nap::TransformComponentResource": {
+				"nap::TransformComponent": {
 					"Properties": {
 						"Translate": {
 							"x": -1.0,
@@ -337,12 +337,12 @@
 		]
 	},
 	
-	"nap::EntityResource": {
+	"nap::Entity": {
 		"mID": "BackgroundEntity",
 		"Components" : 
 		[
 			{
-				"nap::RenderableMeshComponentResource": {
+				"nap::RenderableMeshComponent": {
 					"Mesh" : "BackgroundPlaneMesh",
 					"MaterialInstance" : {
 						"Material": "BackgroundMaterial",
@@ -369,7 +369,7 @@
 				}		
 			},
 			{
-				"nap::TransformComponentResource": {
+				"nap::TransformComponent": {
 					"Properties": {
 						"Translate": {
 							"x": 0.0,
@@ -393,12 +393,12 @@
 		]
 	},
 
-	"nap::EntityResource": {
+	"nap::Entity": {
 		"mID": "CameraEntity",
 		"Components" : 
 		[
 			{
-				"nap::PerspCameraComponentResource": {
+				"nap::PerspCameraComponent": {
 					"Properties": {
 						"FieldOfView": 45.0,
 						"NearClippingPlane" : 0.01,
@@ -407,7 +407,7 @@
 				}		
 			},
 			{
-				"nap::OrthoCameraComponentResource": {
+				"nap::OrthoCameraComponent": {
 					"Properties": {
 						"NearClippingPlane" : 0.01,
 						"FarClippingPlane" : 10000.0
@@ -415,7 +415,7 @@
 				}		
 			},
 			{
-				"nap::TransformComponentResource": {
+				"nap::TransformComponent": {
 					"Properties": {
 						"Translate": {
 							"x": 0.0,

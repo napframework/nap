@@ -1,6 +1,6 @@
 #include "uniforms.h"
 #include "nglutils.h"
-#include "imageresource.h"
+#include "image.h"
 
 
 RTTI_BEGIN_BASE_CLASS(nap::Uniform)

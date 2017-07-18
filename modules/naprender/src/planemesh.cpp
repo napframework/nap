@@ -1,5 +1,5 @@
-#include <planemeshresource.h>
-#include "meshresource.h"
+#include "planemesh.h"
+#include "mesh.h"
 #include "material.h"
 
 // All the plane vertices
@@ -60,12 +60,12 @@ static opengl::Mesh* createPlane()
 //////////////////////////////////////////////////////////////////////////
 
 
-RTTI_BEGIN_CLASS(nap::PlaneMeshResource)
+RTTI_BEGIN_CLASS(nap::PlaneMesh)
 RTTI_END_CLASS
 
 namespace nap
 {
-	bool PlaneMeshResource::init(utility::ErrorState& errorState)
+	bool PlaneMesh::init(utility::ErrorState& errorState)
 	{
 		mMesh.reset(createPlane());		
 		return true;

@@ -1,6 +1,6 @@
 // Local Includes
 #include "renderablemeshcomponent.h"
-#include "meshresource.h"
+#include "mesh.h"
 #include "ncamera.h"
 #include "transformcomponent.h"
 #include "renderglobals.h"
@@ -8,7 +8,7 @@
 #include "renderservice.h"
 
 // External Includes
-#include <nap/entityinstance.h>
+#include <nap/entity.h>
 #include <nap/core.h>
 
 RTTI_BEGIN_CLASS(nap::Rect)
@@ -18,19 +18,19 @@ RTTI_BEGIN_CLASS(nap::Rect)
 	RTTI_PROPERTY("Height", &nap::Rect::mHeight,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::RenderableMeshComponentResource)
-	RTTI_PROPERTY("Mesh",				&nap::RenderableMeshComponentResource::mMeshResource,				nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("MaterialInstance",	&nap::RenderableMeshComponentResource::mMaterialInstanceResource,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("ClipRect",			&nap::RenderableMeshComponentResource::mClipRect,					nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::RenderableMeshComponent)
+	RTTI_PROPERTY("Mesh",				&nap::RenderableMeshComponent::mMeshResource,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MaterialInstance",	&nap::RenderableMeshComponent::mMaterialInstanceResource,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ClipRect",			&nap::RenderableMeshComponent::mClipRect,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::RenderableMeshComponent, nap::EntityInstance&)
+RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::RenderableMeshComponentInstance, nap::EntityInstance&)
 RTTI_END_CLASS
 
 namespace nap
 {
 	// Upload all uniform variables to GPU
-	void RenderableMeshComponent::pushUniforms()
+	void RenderableMeshComponentInstance::pushUniforms()
 	{
 		Material* comp_mat = mMaterialInstance.getMaterial();
 
@@ -83,7 +83,7 @@ namespace nap
 	}
 
 
-	void RenderableMeshComponent::setBlendMode()
+	void RenderableMeshComponentInstance::setBlendMode()
 	{
 		EDepthMode depth_mode = mMaterialInstance.getDepthMode();
 		
@@ -147,16 +147,16 @@ namespace nap
 	}
 
 
-	RenderableMeshComponent::RenderableMeshComponent(EntityInstance& entity) :
-		RenderableComponent(entity)
+	RenderableMeshComponentInstance::RenderableMeshComponentInstance(EntityInstance& entity) :
+		RenderableComponentInstance(entity)
 	{
 	}
 
 
-	bool RenderableMeshComponent::init(const ObjectPtr<ComponentResource>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool RenderableMeshComponentInstance::init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
-		assert(resource->get_type().is_derived_from<RenderableMeshComponentResource>());
-		mResource = rtti_cast<RenderableMeshComponentResource>(resource.get());
+		assert(resource->get_type().is_derived_from<RenderableMeshComponent>());
+		mResource = rtti_cast<RenderableMeshComponent>(resource.get());
 
 		if (!mMaterialInstance.init(mResource->mMaterialInstanceResource, errorState))
 			return false;
@@ -167,7 +167,7 @@ namespace nap
 		if (!errorState.check(mVAOHandle != nullptr, "Failed to acquire VAO for RenderableMeshComponent %s", mResource->mID.c_str()))
 			return false;
 
-		mTransformComponent = getEntity()->findComponent<TransformComponent>();
+		mTransformComponent = getEntity()->findComponent<TransformComponentInstance>();
  		if (!errorState.check(mTransformComponent != nullptr, "Missing transform component"))
  			return false;
 
@@ -179,7 +179,7 @@ namespace nap
 
 
 	// Draw Mesh
-	void RenderableMeshComponent::draw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
+	void RenderableMeshComponentInstance::draw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{	
 		if (!mVisible)
 			return;
@@ -240,7 +240,7 @@ namespace nap
 	}
 
 
-	MaterialInstance& RenderableMeshComponent::getMaterialInstance()
+	MaterialInstance& RenderableMeshComponentInstance::getMaterialInstance()
 	{
 		return mMaterialInstance;
 	}

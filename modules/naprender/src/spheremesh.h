@@ -1,6 +1,6 @@
 #pragma once
 
-#include "meshresource.h"
+#include "mesh.h"
 #include <nap/dllexport.h>
 
 namespace nap
@@ -8,9 +8,9 @@ namespace nap
 	/**
 	 * Predefined sphere mesh
 	 */
-	class NAPAPI SphereMeshResource : public MeshResource
+	class NAPAPI SphereMesh : public Mesh
 	{
-		RTTI_ENABLE(MeshResource)
+		RTTI_ENABLE(Mesh)
 
 	public:
 		/**

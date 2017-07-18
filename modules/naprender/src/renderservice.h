@@ -20,10 +20,10 @@ namespace opengl
 namespace nap
 {
 	// Forward Declares
-	class TransformComponent;
-	class CameraComponent;
-	class RenderableComponent;
-	class RenderWindowResource;
+	class TransformComponentInstance;
+	class CameraComponentInstance;
+	class RenderableComponentInstance;
+	class RenderWindow;
 
 	/**
 	 * Main interface for rendering operations. 
@@ -53,12 +53,12 @@ namespace nap
 		/**
 		 * Renders all available objects to a specific renderTarget.
 		 */
-		void renderObjects(opengl::RenderTarget& renderTarget, CameraComponent& camera);
+		void renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera);
 
 		/**
 		 * Renders a specific set of objects to a specific renderTarget.
 		 */
-		void renderObjects(opengl::RenderTarget& renderTarget, CameraComponent& camera, const std::vector<RenderableComponent*>& comps);
+		void renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps);
 
 		/**
 		* Clears the renderTarget.
@@ -90,7 +90,7 @@ namespace nap
  		 * Destroys all per-context OpenGL resources that are scheduled for destruction. 
  		 * @param renderWindows: all render windows that are active, as they hold the GL contexts.
 		 */
-		void destroyGLContextResources(const std::vector<ObjectPtr<RenderWindowResource>>& renderWindows);
+		void destroyGLContextResources(const std::vector<ObjectPtr<RenderWindow>>& renderWindows);
 
 		/**
 		* Creates a handle to a VertexArrayObject given a material-mesh combination. Internally the RenderService holds a map of VAOs for such
@@ -100,35 +100,35 @@ namespace nap
 		* @errorstate: in case it was not possible to create a VAO for this combination of material and mesh, this will hold error information.
 		* @return On success, this will hold a pointer to the handle, on failure this will return nullptr (check errorState for details).
 		*/
-		std::unique_ptr<VAOHandle> acquireVertexArrayObject(const Material& material, const MeshResource& meshResource, utility::ErrorState& errorState);
+		std::unique_ptr<VAOHandle> acquireVertexArrayObject(const Material& material, const Mesh& meshResource, utility::ErrorState& errorState);
 
 		/**
 		 * Add a new window for the specified resource
 		 */
-		std::unique_ptr<RenderWindow> addWindow(RenderWindowResource& window, utility::ErrorState& errorState);
+		std::unique_ptr<GLWindow> addWindow(RenderWindow& window, utility::ErrorState& errorState);
 
 		/**
 		 * Remove a window
 		 */
-		void removeWindow(RenderWindowResource& window);
+		void removeWindow(RenderWindow& window);
 
 		/**
 		 * Find a RenderWindowResource by its native handle
 		 * @param nativeWindow the native window handle (i.e. the SDL_Window pointer)
 		 */
-		RenderWindowResource* findWindow(void* nativeWindow) const;
+		RenderWindow* findWindow(void* nativeWindow) const;
 
 		/**
 		 * Find a RenderWindow based on it's id
 		 * @param the associated window id
 		 * @return the RenderWindowResource, nullptr if not found
 		 */
-		ObjectPtr<RenderWindowResource> getWindow(uint id) const;
+		ObjectPtr<RenderWindow> getWindow(uint id) const;
 
 		/**
 		 * Get the primary window (i.e. the window that was used to init OpenGL against)
 		 */
-		RenderWindow& getPrimaryWindow();
+		GLWindow& getPrimaryWindow();
 
 		/**
 		 * Add a window event that is processed later, ownership is transferred here
@@ -169,7 +169,7 @@ namespace nap
 		void updateRenderState();
 
 		using ContextSpecificStateMap = std::unordered_map<opengl::GLContext, RenderState>;
-		using WindowList = std::vector<RenderWindowResource*>;
+		using WindowList = std::vector<RenderWindow*>;
 
 		RenderState mRenderState;									//< The latest render state as set by the user
 		ContextSpecificStateMap	mContextSpecificState;				//< The per-context render state

@@ -6,8 +6,8 @@
 #include "dllexport.h"
 #include "utility/uniqueptrmapiterator.h"
 #include "directorywatcher.h"
-#include "entityinstance.h"
-#include "componentinstance.h"
+#include "entity.h"
+#include "component.h"
 
 // External Includes
 #include <rtti/unresolvedpointer.h>
@@ -75,7 +75,7 @@ namespace nap
 		/**
 		* Instantiates an Entity.
 		*/
-		const ObjectPtr<EntityInstance> createEntity(const EntityResource& entityResource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
+		const ObjectPtr<EntityInstance> createEntity(const Entity& Entity, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
 
 		/**
 		* Creates an object and adds it to the manager.
@@ -143,7 +143,7 @@ namespace nap
 		bool resolvePointers(ObjectByIDMap& objectsToUpdate, const rtti::UnresolvedPointerList& unresolvedPointers, utility::ErrorState& errorState);
 		bool initObjects(const std::vector<std::string>& objectsToInit, const ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState);
 		bool initEntities(const RTTIObjectGraph& objectGraph, const ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState);
-		bool createEntities(const std::vector<const EntityResource*>& entityResources, EntityCreationParameters& entityCreationParams, std::vector<std::string>& generatedEntityIDs, utility::ErrorState& errorState);
+		bool createEntities(const std::vector<const Entity*>& entityResources, EntityCreationParameters& entityCreationParams, std::vector<std::string>& generatedEntityIDs, utility::ErrorState& errorState);
 		bool buildObjectGraph(const ObjectByIDMap& objectsToUpdate, RTTIObjectGraph& objectGraph, utility::ErrorState& errorState);
 		/** 
 		* Traverses all pointers in ObjectPtrManager and, for each target, replaces the target with the one in the map that is passed.

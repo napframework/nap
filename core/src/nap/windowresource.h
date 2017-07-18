@@ -19,7 +19,7 @@ namespace nap
 	 * for dealing with input and window related messages, without relying on any platform or graphics
 	 * API.
 	 */
-	class NAPAPI WindowResource : public rtti::RTTIObject
+	class NAPAPI Window : public rtti::RTTIObject
 	{
 		RTTI_ENABLE(rtti::RTTIObject)
 

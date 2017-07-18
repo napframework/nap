@@ -2,14 +2,14 @@
 
 // External Includes
 #include <rtti/rttiobject.h>
-#include <nap/componentinstance.h>
+#include <nap/component.h>
 #include <nap/dllexport.h>
 
 namespace nap
 {
 	class InputEvent;
 	class EntityInstance;
-	class DefaultInputRouterComponent;
+	class DefaultInputRouterComponentInstance;
 
 	/**
 	 * Base class for input routing. An input router selects InputComponents from a hierarchy of entities
@@ -45,27 +45,27 @@ namespace nap
 	/**
 	 * Component used to have a default input router entity
 	 */
-	class NAPAPI DefaultInputRouterComponentResource : public ComponentResource
+	class NAPAPI DefaultInputRouterComponent : public Component
 	{
-		RTTI_ENABLE(ComponentResource)
+		RTTI_ENABLE(Component)
 
 	public:
 		/**
 		 * @return Instance type to create for this resource.
 		 */
-		virtual const rtti::TypeInfo getInstanceType() const override	{ return RTTI_OF(DefaultInputRouterComponent); }
+		virtual const rtti::TypeInfo getInstanceType() const override	{ return RTTI_OF(DefaultInputRouterComponentInstance); }
 	};
 
 
 	/**
 	 * Wrapper component for Default Input Router
 	 */
-	class NAPAPI DefaultInputRouterComponent : public ComponentInstance
+	class NAPAPI DefaultInputRouterComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 
 	public:
-		DefaultInputRouterComponent(EntityInstance& entity) :
+		DefaultInputRouterComponentInstance(EntityInstance& entity) :
 			ComponentInstance(entity)
 		{
 		}

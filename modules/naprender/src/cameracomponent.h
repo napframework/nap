@@ -2,7 +2,7 @@
 
 // External Includes
 #include <glm/glm.hpp>
-#include <nap/componentinstance.h>
+#include <nap/component.h>
 #include <nap/dllexport.h>
 
 namespace nap
@@ -10,12 +10,12 @@ namespace nap
 	/**
 	 * Base class for perspective and orthographic cameras.
 	 */
-	class NAPAPI CameraComponent : public ComponentInstance
+	class NAPAPI CameraComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
 		// Default constructor
-		CameraComponent(EntityInstance& entity);
+		CameraComponentInstance(EntityInstance& entity);
 
 		/**
 		* @return camera projection matrix

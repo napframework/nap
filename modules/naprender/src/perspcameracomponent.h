@@ -4,9 +4,9 @@
 
 namespace nap
 {
-	class PerspCameraComponent;
+	class PerspCameraComponentInstance;
+	class TransformComponentInstance;
 	class TransformComponent;
-	class TransformComponentResource;
 
 	/**
 	 * Properties of the perspective camera, used in both the camera resource and instance.
@@ -24,19 +24,19 @@ namespace nap
 	/**
 	 * Resource class for the perspective camera. Holds static data as read from file.
 	 */
-	class NAPAPI PerspCameraComponentResource : public ComponentResource
+	class NAPAPI PerspCameraComponent : public Component
 	{
-		RTTI_ENABLE(ComponentResource)
+		RTTI_ENABLE(Component)
 
 		/**
 		 * Camera is dependent on the transform component for calculating the view matrix.
 		 */
-		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) { components.push_back(RTTI_OF(TransformComponentResource)); }
+		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) { components.push_back(RTTI_OF(TransformComponent)); }
 
 		/**
 		 * Returns instance type to create for this ComponentResource.
 		 */
-		virtual const rtti::TypeInfo getInstanceType() const { return RTTI_OF(PerspCameraComponent); }
+		virtual const rtti::TypeInfo getInstanceType() const { return RTTI_OF(PerspCameraComponentInstance); }
 
 	public:
 		PerpCameraProperties mProperties;	// Properties of the camera
@@ -46,17 +46,17 @@ namespace nap
 	 * Implementation of the perspective camera. View matrix is calculated from the transform component
 	 * that is attached to the entity. Be sure to call setRenderTargetSize to use the correct aspect ratio.
 	 */
-	class NAPAPI PerspCameraComponent : public CameraComponent
+	class NAPAPI PerspCameraComponentInstance : public CameraComponentInstance
 	{
-		RTTI_ENABLE(CameraComponent)
+		RTTI_ENABLE(CameraComponentInstance)
 	public:
 		// Default constructor
-		PerspCameraComponent(EntityInstance& entity);
+		PerspCameraComponentInstance(EntityInstance& entity);
 
 		/**
 		 * Checks whether a transform component is available.
 		 */
-		virtual bool init(const ObjectPtr<ComponentResource>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
 		/**
 		 * This implementation extracts the size in pixels of the render target to make sure that the orthographic
@@ -102,6 +102,6 @@ namespace nap
 		glm::ivec2				mRenderTargetSize;		// The size of the render target we're rendering to
 		
 		PerpCameraProperties	mProperties;			// These properties are copied from the resource to the instance. When these are changed, only the instance is affected
-		TransformComponent*		mTransformComponent;	// Cached transform component
+		TransformComponentInstance*		mTransformComponent;	// Cached transform component
 	};
 }
