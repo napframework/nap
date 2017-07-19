@@ -72,9 +72,21 @@ void updateBackgroundImage()
 	xform_comp.setTranslate(glm::vec3(float(window_size.x) / 2.0f, float(window_size.y) / 2.0f, 0.0f));
 }
 
+
 void updateShader()
 {
-	//resourceManagerService->findEntity("")
+	nap::TransformComponentInstance& cam_xform = cameraEntity->getComponent<nap::TransformComponentInstance>();
+	
+	// Set camera location on shader, used for rendering highlights
+	for (const nap::EntityInstance* e : modelEntity->getChildren())
+	{
+		nap::RenderableMeshComponentInstance* mesh = e->findComponent<nap::RenderableMeshComponentInstance>();
+		if(mesh == nullptr)
+			continue;
+
+		nap::UniformVec3& cameraLocation = mesh->getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("cameraLocation");
+		cameraLocation.setValue(cam_xform.getTranslate());
+	}
 }
 
 
@@ -105,7 +117,8 @@ void onUpdate()
 	updateBackgroundImage();
 
 	// Update our shader variables
-	void updateshader();
+	updateShader();
+
 }
 
 
@@ -158,7 +171,6 @@ void handleWindowEvent(const nap::WindowEvent& windowEvent)
 	}
 }
 
-
 /**
 * Initialize all the resources and instances used for drawing
 * slowly migrating all functionality to nap
@@ -207,8 +219,7 @@ bool init(nap::Core& core)
 		
 		assert(false);
 		return false;  
-	}  
-
+	}
 
 	// Extract loaded resources
 	renderWindow = resourceManagerService->findObject<nap::RenderWindow>("Viewport");
@@ -257,8 +268,8 @@ int main(int argc, char *argv[])
 void runGame(nap::Core& core)
 {
 	// Run function
-
 	bool loop = true;
+
 
 	// Loop
 	while (loop)

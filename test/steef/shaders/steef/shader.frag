@@ -11,9 +11,16 @@ out vec4 out_Color;
 
 uniform sampler2D	vinylLabel;
 uniform sampler2D	vinylMask;
+uniform sampler2D	grooveNormalMap;
 uniform vec3		recordColor;
 uniform vec3		lightPosition;
 uniform vec3		lightIntensity;
+uniform float		ambientIntensity;	// Ambient light intensity
+uniform float		shininess;			// Specular angle shininess
+uniform float		specularIntensity;	// Amount of added specular
+uniform float		attenuationScale;	// Light Falloff
+uniform float		grooveScale;		// Amount of groove highlight
+uniform vec3		cameraLocation;		// World space location of the camera
 
 void main(void)
 {
@@ -22,29 +29,47 @@ void main(void)
 
 	// Label color
 	vec3 label_color = texture(vinylLabel, pass_Uvs1.xy).rgb;
+	vec3 color = mix(recordColor.rgb, label_color.rgb, mask_color);
+
+	vec3 groove_color = texture(grooveNormalMap, pass_Uvs0.xy).rgb;
+	vec3 groove_normal_tangent_space = (groove_color *2.0 - 1.0) * grooveScale;
+	vec3 adjusted_vinyl_normal = pass_Normals + vec3(groove_normal_tangent_space.x,0.0, groove_normal_tangent_space.y);
 
 	//calculate normal in world coordinates
     mat3 normal_matrix = transpose(inverse(mat3(pass_ModelMatrix)));
-    vec3 normal = normalize(normal_matrix * pass_Normals);
+    vec3 normal = normalize(normal_matrix * adjusted_vinyl_normal);
 
 	//calculate the location of this fragment (pixel) in world coordinates
     vec3 frag_position = vec3(pass_ModelMatrix * vec4(pass_Vert, 1));
 
-	//calculate the vector from this pixels surface to the light source
-    vec3 light_position = lightPosition;
-	vec3 surfaceToLight = light_position - frag_position;
+	//calculate the vector that defines the direction of the light to the surface
+	vec3 surfaceToLight = normalize(lightPosition - frag_position);
 
-	//calculate the cosine of the angle of incidence
-    float brightness = dot(normal, surfaceToLight) / (length(surfaceToLight) * length(normal));
-    brightness = clamp(brightness, 0, 1);
+	// calculate vector that defines the direction of camera to the surface
+	vec3 cameraPosition = cameraLocation;
+	vec3 surfaceToCamera = normalize(cameraPosition - frag_position);
 
-	vec3 light_intensity = lightIntensity;
-	vec3 label_color_lit = vec3(brightness * light_intensity * label_color.rgb);
-	vec3 record_color_lit = vec3(brightness * light_intensity * recordColor.rgb);
+	// Ambient color
+	vec3 ambient = color.rgb * lightIntensity * ambientIntensity;
 
-	// Blend based on mask color
-	vec3 out_color = mix(record_color_lit, label_color_lit, mask_color);
+	//diffuse
+    float diffuseCoefficient = max(0.0, dot(normal, surfaceToLight));
+	vec3 diffuse = diffuseCoefficient * color.rgb * lightIntensity;
 
-	// Set output color
-	out_Color = vec4(out_color, 1.0);
+	//specular
+	vec3 specularColor = vec3(1.0,1.0,1.0);
+	float specularCoefficient = 0.0;
+    if(diffuseCoefficient > 0.0)
+        specularCoefficient = pow(max(0.0, dot(surfaceToCamera, reflect(-surfaceToLight, normal))), shininess);
+    vec3 specular = specularCoefficient * specularColor * lightIntensity * specularIntensity;
+
+	//attenuation based on light distance
+    float distanceToLight = length(lightPosition - frag_position);
+    float attenuation = 1.0 / (1.0 + attenuationScale * pow(distanceToLight, 2));
+	
+	//linear color (color before gamma correction)
+    vec3 linearColor = ambient + attenuation*(diffuse + specular);
+
+	//final color (after gamma correction)
+	out_Color = vec4(linearColor, 1.0);
 }

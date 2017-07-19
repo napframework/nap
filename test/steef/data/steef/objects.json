@@ -58,6 +58,18 @@
 		}
 	},
 
+	"nap::Image": {
+		"mID" : "GrooveNormalMap",
+		"mImagePath" : "data/steef/grooves.jpg",
+		"mParameters" : {
+			"mMinFilter" : 9987,		
+			"mMaxFilter" : 9729,		
+			"mWrapVertical" : 33071,	
+			"mWrapHorizontal" : 33071,
+			"mMaxLodLevel" : 3
+		}
+	},
+
 	"nap::Shader": {
 		"mID": "VinylShader",
 		"mVertShader": "shaders/steef/shader.vert",
@@ -148,6 +160,53 @@
 						"z" : 1.0
 					}
 				}
+			},
+			{
+			"nap::UniformFloat" : 
+				{
+					"Name" : "ambientIntensity",
+					"Value" : 0.0
+				}
+			},
+			{
+			"nap::UniformFloat" : 
+				{
+					"Name" : "shininess",
+					"Value" : 40
+				}
+			},
+			{
+			"nap::UniformFloat" : 
+				{
+					"Name" : "specularIntensity",
+					"Value" : 0.3
+				}
+			},
+			{
+			"nap::UniformFloat" : 
+				{
+					"Name" : "attenuationScale",
+					"Value" : 0.00001
+				}
+			},
+			{
+			"nap::UniformFloat" : 
+				{
+					"Name" : "grooveScale",
+					"Value" : 0.15
+				}
+			},
+			{
+				"nap::UniformVec3" : 
+				{
+					"Name" : "cameraLocation",
+					"Value" : 
+					{
+						"x" : 0.0,
+						"y" : 0.0,
+						"z" : 5.0
+					}
+				}
 			}
 		]			
 	},
@@ -197,6 +256,46 @@
 						"x" : 1.0,
 						"y" : 1.0,
 						"z" : 1.0
+					}
+				}
+			},
+			{
+			"nap::UniformFloat" : 
+				{
+					"Name" : "ambientIntensity",
+					"Value" : 0.0
+				}
+			},
+			{
+			"nap::UniformFloat" : 
+				{
+					"Name" : "shininess",
+					"Value" : 7.5
+				}
+			},
+			{
+			"nap::UniformFloat" : 
+				{
+					"Name" : "specularIntensity",
+					"Value" : 0.25
+				}
+			},
+			{
+			"nap::UniformFloat" : 
+				{
+					"Name" : "attenuationScale",
+					"Value" : 0.00001
+				}
+			},
+			{
+				"nap::UniformVec3" : 
+				{
+					"Name" : "cameraLocation",
+					"Value" : 
+					{
+						"x" : 0.0,
+						"y" : 0.0,
+						"z" : 5.0
 					}
 				}
 			}
@@ -297,6 +396,13 @@
 								{
 									"Name" : "vinylMask",
 									"Texture" : "MaskImage"
+								}
+							},
+							{
+								"nap::UniformTexture2D" : 
+								{
+									"Name" : "grooveNormalMap",
+									"Texture" : "GrooveNormalMap"
 								}
 							}
 						]
