@@ -11,6 +11,9 @@ in vec3	in_UV0;
 
 out vec4 pass_Color;
 out vec3 pass_Uvs0;
+out mat4 pass_ModelMatrix;
+out vec3 pass_Vert;
+out vec3 pass_Normals;
 
 void main(void)
 {
@@ -20,4 +23,7 @@ void main(void)
 	// Pass color and uv's 
 	pass_Color = in_Color0;
 	pass_Uvs0 = in_UV0;
+	pass_Vert = in_Position;
+	pass_ModelMatrix = modelMatrix;
+	pass_Normals = in_Normals;
 }

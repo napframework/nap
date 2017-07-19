@@ -124,6 +124,30 @@
 						"z" : 0.0
 					}
 				}
+			},
+			{
+				"nap::UniformVec3" : 
+				{
+					"Name" : "lightPosition",
+					"Value" : 
+					{
+						"x" : 1.0,
+						"y" : 2.5,
+						"z" : 10.0
+					}
+				}
+			},
+			{
+				"nap::UniformVec3" : 
+				{
+					"Name" : "lightIntensity",
+					"Value" : 
+					{
+						"x" : 1.0,
+						"y" : 1.0,
+						"z" : 1.0
+					}
+				}
 			}
 		]			
 	},
@@ -131,7 +155,8 @@
 	"nap::Material": {
 		"mID": "CoverMaterial",
 		"Shader": "CoverShader",
-		"VertexAttributeBindings" : [
+		"VertexAttributeBindings" : 
+		[
 			{
 				"MeshAttributeID": "Position",
 				"ShaderAttributeID": "in_Position"
@@ -148,7 +173,34 @@
 				"MeshAttributeID": "Color0",
 				"ShaderAttributeID": "in_Color0"
 			}
-		]			
+		],
+		"Uniforms" : 
+		[
+			{
+				"nap::UniformVec3" : 
+				{
+					"Name" : "lightPosition",
+					"Value" : 
+					{
+						"x" : 1.0,
+						"y" : 2.5,
+						"z" : 10.0
+					}
+				}
+			},
+			{
+				"nap::UniformVec3" : 
+				{
+					"Name" : "lightIntensity",
+					"Value" : 
+					{
+						"x" : 1.0,
+						"y" : 1.0,
+						"z" : 1.0
+					}
+				}
+			}
+		]	
 	},
 
 	"nap::Material": {
@@ -240,7 +292,7 @@
 									"Texture" : "LabelImage"
 								}
 							},
-														{
+							{
 								"nap::UniformTexture2D" : 
 								{
 									"Name" : "vinylMask",

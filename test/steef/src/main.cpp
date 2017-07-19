@@ -72,6 +72,11 @@ void updateBackgroundImage()
 	xform_comp.setTranslate(glm::vec3(float(window_size.x) / 2.0f, float(window_size.y) / 2.0f, 0.0f));
 }
 
+void updateShader()
+{
+	//resourceManagerService->findEntity("")
+}
+
 
 // Called when the window is updating
 void onUpdate()
@@ -98,6 +103,9 @@ void onUpdate()
 
 	// Make sure background image matches window size
 	updateBackgroundImage();
+
+	// Update our shader variables
+	void updateshader();
 }
 
 
