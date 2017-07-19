@@ -172,14 +172,14 @@
 			"nap::UniformFloat" : 
 				{
 					"Name" : "shininess",
-					"Value" : 40
+					"Value" : 45
 				}
 			},
 			{
 			"nap::UniformFloat" : 
 				{
 					"Name" : "specularIntensity",
-					"Value" : 0.3
+					"Value" : 0.4
 				}
 			},
 			{
@@ -263,7 +263,7 @@
 			"nap::UniformFloat" : 
 				{
 					"Name" : "ambientIntensity",
-					"Value" : 0.0
+					"Value" : 0.25
 				}
 			},
 			{

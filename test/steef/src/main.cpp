@@ -72,11 +72,9 @@ void updateBackgroundImage()
 	xform_comp.setTranslate(glm::vec3(float(window_size.x) / 2.0f, float(window_size.y) / 2.0f, 0.0f));
 }
 
-
 void updateShader()
 {
 	nap::TransformComponentInstance& cam_xform = cameraEntity->getComponent<nap::TransformComponentInstance>();
-	
 	// Set camera location on shader, used for rendering highlights
 	for (const nap::EntityInstance* e : modelEntity->getChildren())
 	{
