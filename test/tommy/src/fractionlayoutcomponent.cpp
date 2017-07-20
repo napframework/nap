@@ -1,5 +1,5 @@
 #include "fractionlayoutcomponent.h"
-#include <nap/entityinstance.h>
+#include <nap/entity.h>
 #include "transformcomponent.h"
 #include "renderablemeshcomponent.h"
 #include "uniforms.h"
@@ -22,28 +22,28 @@ RTTI_BEGIN_CLASS(nap::FractionLayoutProperties)
 	RTTI_PROPERTY("SizeBehaviour",	&nap::FractionLayoutProperties::mSizeBehaviour,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::FractionLayoutComponentResource)
-	RTTI_PROPERTY("Properties", &nap::FractionLayoutComponentResource::mProperties, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::FractionLayoutComponent)
+	RTTI_PROPERTY("Properties", &nap::FractionLayoutComponent::mProperties, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::FractionLayoutComponent, nap::EntityInstance&)
+RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::FractionLayoutComponentInstance, nap::EntityInstance&)
 RTTI_END_CLASS
 
 namespace nap
 {
-	bool FractionLayoutComponent::init(const ObjectPtr<ComponentResource>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool FractionLayoutComponentInstance::init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
-		mProperties = rtti_cast<FractionLayoutComponentResource>(resource.get())->mProperties;
+		mProperties = rtti_cast<FractionLayoutComponent>(resource.get())->mProperties;
 
 		// Must have a TransformComponent
-		mTransformComponent = getEntity()->findComponent<TransformComponent>();
+		mTransformComponent = getEntity()->findComponent<TransformComponentInstance>();
 		if (!errorState.check(mTransformComponent != nullptr, "Missing transform component"))
 			return false;
 
 		// If the size of this element is dependent on the aspect ratio of the image, we also need a RenderableMeshComponent
 		if (mProperties.mSizeBehaviour != FractionLayoutProperties::ESizeBehaviour::Default)
 		{
-			mRenderableMeshComponent = getEntity()->findComponent<RenderableMeshComponent>();
+			mRenderableMeshComponent = getEntity()->findComponent<RenderableMeshComponentInstance>();
 			if (!errorState.check(mRenderableMeshComponent != nullptr, "FractionLayoutComponent requires a RenderableMeshComponent if the size behaviour is not Default"))
 				return false;
 		}
@@ -52,7 +52,7 @@ namespace nap
 	}
 
 
-	void FractionLayoutComponent::updateLayout(const glm::vec2& windowSize, const glm::mat4x4& parentWorldTransform)
+	void FractionLayoutComponentInstance::updateLayout(const glm::vec2& windowSize, const glm::mat4x4& parentWorldTransform)
 	{
 		// Get world transform of this element
 		const glm::mat4x4 world_transform = parentWorldTransform * mTransformComponent->getLocalTransform();
@@ -63,7 +63,7 @@ namespace nap
 		for (EntityInstance* child_entity : getEntity()->getChildren())
 		{
 			// Set the clip rectangle for RenderableMeshComponents to this layout's size
-			RenderableMeshComponent* child_renderable_mesh = child_entity->findComponent<RenderableMeshComponent>();
+			RenderableMeshComponentInstance* child_renderable_mesh = child_entity->findComponent<RenderableMeshComponentInstance>();
 			if (child_renderable_mesh)
 			{
 				Rect clip_rect;
@@ -75,12 +75,12 @@ namespace nap
 			}
 
 			// If the child has no layout itself, continue to next element (don't recurse)
-			FractionLayoutComponent* child_layout = child_entity->findComponent<FractionLayoutComponent>();
+			FractionLayoutComponentInstance* child_layout = child_entity->findComponent<FractionLayoutComponentInstance>();
 			if (child_layout == nullptr)
 				continue;
 
 			// Get size of child in world space
-			TransformComponent& child_transform = child_entity->getComponent<TransformComponent>();
+			TransformComponentInstance& child_transform = child_entity->getComponent<TransformComponentInstance>();
 			glm::vec2 relative_child_size_frac = child_layout->mProperties.mSize;
 			glm::vec2 world_child_size = world_parent_size * relative_child_size_frac;
 

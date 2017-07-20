@@ -1,7 +1,4 @@
 #include "logger.h"
-#include "object.h"
-#include "objectpath.h"
-
 #include <iostream>
 
 using namespace std;
@@ -13,7 +10,7 @@ namespace nap {
             return;
 
         outputMutex.lock();
-        const Object* obj = message.object();
+        const rtti::RTTIObject* obj = message.object();
 
         ostream* os = &cout;
         if (message.level().level() >= Logger::fatalLevel().level()) {
@@ -21,7 +18,7 @@ namespace nap {
         }
 
         if (obj) {
-            *os << "LOG[" << message.level().name() << "] in " << ObjectPath(obj).toString() << ": " << message.text() << endl;
+            *os << "LOG[" << message.level().name() << "] in " << obj->mID.c_str()  << ": " << message.text() << endl;
         } else {
             *os << "LOG[" << message.level().name() << "] " << message.text() << endl;
         }

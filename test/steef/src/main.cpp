@@ -1,7 +1,7 @@
 // main.cpp : Defines the entry point for the console application.
 //
-
 // Local Includes
+#include "rotatecomponent.h"
 
 // GLM
 #include <glm/glm.hpp>
@@ -9,16 +9,17 @@
 // Mod nap render includes
 #include <renderablemeshcomponent.h>
 #include <renderservice.h>
-#include <renderwindowresource.h>
+#include <renderwindow.h>
 #include <transformcomponent.h>
 #include <perspcameracomponent.h>
 #include <mathutils.h>
-#include <rendertargetresource.h>
+#include <rendertarget.h>
 #include <sdlinput.h>
 #include <sdlwindow.h>
 
 // Nap includes
 #include <nap/core.h>
+#include <nap/logger.h>
 #include <nap/resourcemanager.h>
 #include <inputservice.h>
 #include <nap/windowresource.h>
@@ -26,11 +27,10 @@
 #include <nap/event.h>
 #include <inputcomponent.h>
 #include <inputrouter.h>
-#include <nap/entityinstance.h>
-#include <nap/componentinstance.h>
+#include <nap/entity.h>
+#include <nap/component.h>
 #include <sceneservice.h>
 #include <orthocameracomponent.h>
-#include "rotatecomponent.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
@@ -38,15 +38,15 @@
 
 // Nap Objects
 
-static nap::ObjectPtr<nap::ImageResource>				vinylLabelImg   = nullptr;
-static nap::ObjectPtr<nap::ImageResource>				vinylCoverImg = nullptr;
+static nap::ObjectPtr<nap::Image>				vinylLabelImg   = nullptr;
+static nap::ObjectPtr<nap::Image>				vinylCoverImg = nullptr;
 
 nap::RenderService*										renderService = nullptr;
 nap::ResourceManagerService*							resourceManagerService = nullptr;
 nap::SceneService*										sceneService = nullptr;
 nap::InputService*										inputService = nullptr;
 
-nap::ObjectPtr<nap::RenderWindowResource>				renderWindow;
+nap::ObjectPtr<nap::RenderWindow>				renderWindow;
 nap::ObjectPtr<nap::EntityInstance>						modelEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance>						cameraEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance>						backgroundEntity = nullptr;
@@ -67,9 +67,24 @@ void updateBackgroundImage()
 	glm::ivec2 window_size = renderWindow->getWindow()->getSize();
 
 	// Now update background texture
-	nap::TransformComponent& xform_comp = backgroundEntity->getComponent<nap::TransformComponent>();
+	nap::TransformComponentInstance& xform_comp = backgroundEntity->getComponent<nap::TransformComponentInstance>();
 	xform_comp.setScale(glm::vec3(window_size.x, window_size.y*-1.0f, 0.0f));
 	xform_comp.setTranslate(glm::vec3(float(window_size.x) / 2.0f, float(window_size.y) / 2.0f, 0.0f));
+}
+
+void updateShader()
+{
+	nap::TransformComponentInstance& cam_xform = cameraEntity->getComponent<nap::TransformComponentInstance>();
+	// Set camera location on shader, used for rendering highlights
+	for (const nap::EntityInstance* e : modelEntity->getChildren())
+	{
+		nap::RenderableMeshComponentInstance* mesh = e->findComponent<nap::RenderableMeshComponentInstance>();
+		if(mesh == nullptr)
+			continue;
+
+		nap::UniformVec3& cameraLocation = mesh->getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("cameraLocation");
+		cameraLocation.setValue(cam_xform.getTranslate());
+	}
 }
 
 
@@ -98,6 +113,10 @@ void onUpdate()
 
 	// Make sure background image matches window size
 	updateBackgroundImage();
+
+	// Update our shader variables
+	updateShader();
+
 }
 
 
@@ -116,18 +135,18 @@ void onRender()
 	renderService->clearRenderTarget(backbuffer, opengl::EClearFlags::COLOR|opengl::EClearFlags::DEPTH|opengl::EClearFlags::STENCIL);
 	
 	// Render Background
-	std::vector<nap::RenderableComponent*> components_to_render;
-	components_to_render.emplace_back(&(backgroundEntity->getComponent<nap::RenderableMeshComponent>()));
-	renderService->renderObjects(backbuffer, cameraEntity->getComponent<nap::OrthoCameraComponent>(), components_to_render);
+	std::vector<nap::RenderableComponentInstance*> components_to_render;
+	components_to_render.emplace_back(&(backgroundEntity->getComponent<nap::RenderableMeshComponentInstance>()));
+	renderService->renderObjects(backbuffer, cameraEntity->getComponent<nap::OrthoCameraComponentInstance>(), components_to_render);
 
 	// Render Vinyl
 	components_to_render.clear();
 	for (const nap::EntityInstance* e : modelEntity->getChildren())
 	{
-		if (e->hasComponent<nap::RenderableMeshComponent>())
-			components_to_render.emplace_back(&(e->getComponent<nap::RenderableMeshComponent>()));
+		if (e->hasComponent<nap::RenderableMeshComponentInstance>())
+			components_to_render.emplace_back(&(e->getComponent<nap::RenderableMeshComponentInstance>()));
 	}
-	renderService->renderObjects(backbuffer, cameraEntity->getComponent<nap::PerspCameraComponent>(), components_to_render);
+	renderService->renderObjects(backbuffer, cameraEntity->getComponent<nap::PerspCameraComponentInstance>(), components_to_render);
 
 	// Update gpu frame
 	renderWindow->swap();
@@ -149,7 +168,6 @@ void handleWindowEvent(const nap::WindowEvent& windowEvent)
 		updateBackgroundImage();
 	}
 }
-
 
 /**
 * Initialize all the resources and instances used for drawing
@@ -175,7 +193,7 @@ bool init(nap::Core& core)
 		nap::Logger::fatal(error.toString());
 		return false;
 	}
-	nap::Logger::info("initialized render service: %s", renderService->getName().c_str());
+	nap::Logger::info("initialized render service: %s", renderService->getTypeName().c_str());
 
 	//////////////////////////////////////////////////////////////////////////
 	// Input
@@ -196,18 +214,18 @@ bool init(nap::Core& core)
 	if (!resourceManagerService->loadFile("data/steef/objects.json", errorState))
 	{
 		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
-
+		
 		assert(false);
 		return false;  
-	}  
+	}
 
 	// Extract loaded resources
-	renderWindow = resourceManagerService->findObject<nap::RenderWindowResource>("Viewport");
+	renderWindow = resourceManagerService->findObject<nap::RenderWindow>("Viewport");
 	renderWindow->onWindowEvent.connect(std::bind(&handleWindowEvent, std::placeholders::_1));
 
 	// Get vintl textures
-	vinylLabelImg = resourceManagerService->findObject<nap::ImageResource>("LabelImage");
-	vinylCoverImg = resourceManagerService->findObject<nap::ImageResource>("CoverImage");
+	vinylLabelImg = resourceManagerService->findObject<nap::Image>("LabelImage");
+	vinylCoverImg = resourceManagerService->findObject<nap::Image>("CoverImage");
 	
 	// Get entity that holds vinyl
 	modelEntity = resourceManagerService->findEntity("ModelEntity");
@@ -228,6 +246,7 @@ bool init(nap::Core& core)
 	return true;
 }
 
+
 // Main loop
 int main(int argc, char *argv[])
 {
@@ -247,8 +266,8 @@ int main(int argc, char *argv[])
 void runGame(nap::Core& core)
 {
 	// Run function
-
 	bool loop = true;
+
 
 	// Loop
 	while (loop)
@@ -271,7 +290,7 @@ void runGame(nap::Core& core)
 					if (press_event->mKey == nap::EKeyCode::KEY_f)
 					{
 						static bool fullscreen = true;
-						resourceManagerService->findObject<nap::RenderWindowResource>("Viewport")->getWindow()->setFullScreen(fullscreen);
+						resourceManagerService->findObject<nap::RenderWindow>("Viewport")->getWindow()->setFullScreen(fullscreen);
 						fullscreen = !fullscreen;
 					}
 				}

@@ -1,6 +1,6 @@
 #include "uniforms.h"
 #include "nglutils.h"
-#include "imageresource.h"
+#include "image.h"
 
 
 RTTI_BEGIN_BASE_CLASS(nap::Uniform)
@@ -46,11 +46,13 @@ namespace nap
 		glAssert();
 	}
 
+
 	void UniformFloat::push(const opengl::UniformDeclaration& declaration) const
 	{
 		glUniform1fv(declaration.mLocation, declaration.mSize, static_cast<const GLfloat*>(&mValue));
 		glAssert();
 	}
+
 
 	void UniformVec3::push(const opengl::UniformDeclaration& declaration) const
 	{
@@ -79,9 +81,7 @@ namespace nap
 			return;
 
 		glActiveTexture(GL_TEXTURE0 + textureUnit);
-
 		mTexture->bind();
-
 		glUniform1iv(declaration.mLocation, declaration.mSize, static_cast<const GLint*>(&textureUnit));
 	}
 

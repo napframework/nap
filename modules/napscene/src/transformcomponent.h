@@ -1,9 +1,7 @@
 #pragma once
 
 // External Includes
-#include <nap/rttinap.h>
-#include <nap/coreattributes.h>
-#include <nap/componentinstance.h>
+#include <nap/component.h>
 
 // Local Includes
 #include <glm/glm.hpp>
@@ -11,7 +9,7 @@
 
 namespace nap
 {
-	class TransformComponent;
+	class TransformComponentInstance;
 
 	/** 
 	 * Struct to hold properties shared between Resource and Instance
@@ -30,9 +28,9 @@ namespace nap
 	/**
 	 * Resource for the TransformComponent
 	 */
-	class TransformComponentResource : public ComponentResource
+	class TransformComponent : public Component
 	{
-		RTTI_ENABLE(ComponentResource)
+		RTTI_ENABLE(Component)
 	
 	public:
 		/**
@@ -40,7 +38,7 @@ namespace nap
 		 */
 		virtual const rtti::TypeInfo getInstanceType() const override
 		{ 
-			return RTTI_OF(TransformComponent); 
+			return RTTI_OF(TransformComponentInstance); 
 		}
 
 	public:
@@ -54,11 +52,11 @@ namespace nap
 	 * the global and local transform is invalid. You can always query the
 	 * current local matrix, the global matrix is updated on compute.
 	 */
-	class TransformComponent : public ComponentInstance
+	class TransformComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
-		TransformComponent(EntityInstance& entity) :
+		TransformComponentInstance(EntityInstance& entity) :
 			ComponentInstance(entity)
 		{
 		}
@@ -70,7 +68,7 @@ namespace nap
 		* @param entityCreationParams Parameters required to create new entity instances during init
 		* @param errorState The error object
 		*/
-		virtual bool init(const ObjectPtr<ComponentResource>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
+		virtual bool init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
 
 		/**
 		 * Constructs and returns a local transform
@@ -91,7 +89,7 @@ namespace nap
 		 * @return the parent transform, nullptr if this node
 		 * has no parent transform
 		 */
-		nap::TransformComponent* getParentTransform();
+		nap::TransformComponentInstance* getParentTransform();
 
 		/**
 		 * Sets the dirty flag
@@ -122,12 +120,6 @@ namespace nap
 
 		void setUniformScale(float scale);
 		const float getUniformScale() const				{ return mUniformScale; }
-
-	protected:
-		/**
-		 * Sets dirty flags
-		 */
-		void onSetDirty(AttributeBase& object)			{ setDirty(); }
 
 	private:
 		/**

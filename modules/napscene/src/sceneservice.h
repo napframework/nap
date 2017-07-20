@@ -1,7 +1,7 @@
 #pragma once
 
 #include <nap/service.h>
-#include <nap/entityinstance.h>
+#include <nap/entity.h>
 
 namespace nap
 {

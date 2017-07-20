@@ -1,16 +1,16 @@
 {
-	"nap::RenderWindowResource": {
+	"nap::RenderWindow": {
 		"mID" : "Viewport",
 		"Width" : 512,
 		"Height" : 512,
 		"Title" : "Viewport"
 	},
 
-		"nap::PlaneMeshResource": {
+		"nap::PlaneMesh": {
 		"mID": "BackgroundPlaneMesh"
 	},
 		
-    "nap::ImageResource": {
+    "nap::Image": {
 		"mID" : "LabelImage",
 		"mImagePath" : "data/steef/label.jpg",
 		"mParameters" : {
@@ -22,7 +22,7 @@
 		}
 	},
 
-	"nap::ImageResource": {
+	"nap::Image": {
 		"mID" : "CoverImage",
 		"mImagePath" : "data/steef/cover.jpg",
 		"mParameters" : {
@@ -34,7 +34,7 @@
 			}
 	},
 
-	"nap::ImageResource": {
+	"nap::Image": {
 		"mID" : "BackgroundImage",
 		"mImagePath" : "data/steef/background.jpg",
 		"mParameters" : {
@@ -46,7 +46,7 @@
 			}
 	},
 
-	"nap::ImageResource": {
+	"nap::Image": {
 		"mID" : "MaskImage",
 		"mImagePath" : "data/steef/label_mask.jpg",
 		"mParameters" : {
@@ -58,30 +58,42 @@
 		}
 	},
 
-	"nap::ShaderResource": {
+	"nap::Image": {
+		"mID" : "GrooveNormalMap",
+		"mImagePath" : "data/steef/grooves.jpg",
+		"mParameters" : {
+			"mMinFilter" : 9987,		
+			"mMaxFilter" : 9729,		
+			"mWrapVertical" : 33071,	
+			"mWrapHorizontal" : 33071,
+			"mMaxLodLevel" : 3
+		}
+	},
+
+	"nap::Shader": {
 		"mID": "VinylShader",
 		"mVertShader": "shaders/steef/shader.vert",
 		"mFragShader": "shaders/steef/shader.frag"
 	},
 
-	"nap::ShaderResource": {
+	"nap::Shader": {
 		"mID": "BackgroundShader",
 		"mVertShader": "shaders/steef/background.vert",
 		"mFragShader": "shaders/steef/background.frag"
 	},
 
-	"nap::ShaderResource": {
+	"nap::Shader": {
 		"mID": "CoverShader",
 		"mVertShader": "shaders/steef/cover.vert",
 		"mFragShader": "shaders/steef/cover.frag"
 	},
 
-	"nap::MeshFromFileResource": {
+	"nap::MeshFromFile": {
 		"mID": "CoverMesh",
 		"Path": "data/steef/cover.mesh"
 	},
 
-		"nap::MeshFromFileResource": {
+		"nap::MeshFromFile": {
 		"mID": "VinylMesh",
 		"Path": "data/steef/vinyl.mesh"
 	},
@@ -124,6 +136,77 @@
 						"z" : 0.0
 					}
 				}
+			},
+			{
+				"nap::UniformVec3" : 
+				{
+					"Name" : "lightPosition",
+					"Value" : 
+					{
+						"x" : 1.0,
+						"y" : 2.5,
+						"z" : 10.0
+					}
+				}
+			},
+			{
+				"nap::UniformVec3" : 
+				{
+					"Name" : "lightIntensity",
+					"Value" : 
+					{
+						"x" : 1.0,
+						"y" : 1.0,
+						"z" : 1.0
+					}
+				}
+			},
+			{
+			"nap::UniformFloat" : 
+				{
+					"Name" : "ambientIntensity",
+					"Value" : 0.0
+				}
+			},
+			{
+			"nap::UniformFloat" : 
+				{
+					"Name" : "shininess",
+					"Value" : 45
+				}
+			},
+			{
+			"nap::UniformFloat" : 
+				{
+					"Name" : "specularIntensity",
+					"Value" : 0.4
+				}
+			},
+			{
+			"nap::UniformFloat" : 
+				{
+					"Name" : "attenuationScale",
+					"Value" : 0.00001
+				}
+			},
+			{
+			"nap::UniformFloat" : 
+				{
+					"Name" : "grooveScale",
+					"Value" : 0.15
+				}
+			},
+			{
+				"nap::UniformVec3" : 
+				{
+					"Name" : "cameraLocation",
+					"Value" : 
+					{
+						"x" : 0.0,
+						"y" : 0.0,
+						"z" : 5.0
+					}
+				}
 			}
 		]			
 	},
@@ -131,7 +214,8 @@
 	"nap::Material": {
 		"mID": "CoverMaterial",
 		"Shader": "CoverShader",
-		"VertexAttributeBindings" : [
+		"VertexAttributeBindings" : 
+		[
 			{
 				"MeshAttributeID": "Position",
 				"ShaderAttributeID": "in_Position"
@@ -148,7 +232,74 @@
 				"MeshAttributeID": "Color0",
 				"ShaderAttributeID": "in_Color0"
 			}
-		]			
+		],
+		"Uniforms" : 
+		[
+			{
+				"nap::UniformVec3" : 
+				{
+					"Name" : "lightPosition",
+					"Value" : 
+					{
+						"x" : 1.0,
+						"y" : 2.5,
+						"z" : 10.0
+					}
+				}
+			},
+			{
+				"nap::UniformVec3" : 
+				{
+					"Name" : "lightIntensity",
+					"Value" : 
+					{
+						"x" : 1.0,
+						"y" : 1.0,
+						"z" : 1.0
+					}
+				}
+			},
+			{
+			"nap::UniformFloat" : 
+				{
+					"Name" : "ambientIntensity",
+					"Value" : 0.25
+				}
+			},
+			{
+			"nap::UniformFloat" : 
+				{
+					"Name" : "shininess",
+					"Value" : 7.5
+				}
+			},
+			{
+			"nap::UniformFloat" : 
+				{
+					"Name" : "specularIntensity",
+					"Value" : 0.25
+				}
+			},
+			{
+			"nap::UniformFloat" : 
+				{
+					"Name" : "attenuationScale",
+					"Value" : 0.00001
+				}
+			},
+			{
+				"nap::UniformVec3" : 
+				{
+					"Name" : "cameraLocation",
+					"Value" : 
+					{
+						"x" : 0.0,
+						"y" : 0.0,
+						"z" : 5.0
+					}
+				}
+			}
+		]	
 	},
 
 	"nap::Material": {
@@ -174,12 +325,12 @@
 		]			
 	},
 
-	"nap::EntityResource": {
+	"nap::Entity": {
 		"mID": "ModelEntity",
 		"Components" : 
 		[
 			{
-				"nap::TransformComponentResource": {
+				"nap::TransformComponent": {
 					"Properties": {
 						"Translate": {
 							"x": 0.0,
@@ -221,12 +372,12 @@
 		] 
 	},
 	
-	"nap::EntityResource": {
+	"nap::Entity": {
 		"mID": "VinylEntity",
 		"Components" : 
 		[
 			{
-				"nap::RenderableMeshComponentResource": {
+				"nap::RenderableMeshComponent": {
 					"Mesh" : "VinylMesh",
 					"MaterialInstance" : {
 						"Material": "VinylMaterial",
@@ -240,11 +391,18 @@
 									"Texture" : "LabelImage"
 								}
 							},
-														{
+							{
 								"nap::UniformTexture2D" : 
 								{
 									"Name" : "vinylMask",
 									"Texture" : "MaskImage"
+								}
+							},
+							{
+								"nap::UniformTexture2D" : 
+								{
+									"Name" : "grooveNormalMap",
+									"Texture" : "GrooveNormalMap"
 								}
 							}
 						]
@@ -252,7 +410,7 @@
 				}		
 			},
 			{
-				"nap::TransformComponentResource": {
+				"nap::TransformComponent": {
 					"Properties": {
 						"Translate": {
 							"x": 1.0,
@@ -289,12 +447,12 @@
 		]
 	},
 
-	"nap::EntityResource": {
+	"nap::Entity": {
 		"mID": "CoverEntity",
 		"Components" : 
 		[
 			{
-				"nap::RenderableMeshComponentResource": {
+				"nap::RenderableMeshComponent": {
 					"Mesh" : "CoverMesh",
 					"MaterialInstance" : {
 						"Material": "CoverMaterial",
@@ -313,7 +471,7 @@
 				}		
 			},
 			{
-				"nap::TransformComponentResource": {
+				"nap::TransformComponent": {
 					"Properties": {
 						"Translate": {
 							"x": -1.0,
@@ -337,12 +495,12 @@
 		]
 	},
 	
-	"nap::EntityResource": {
+	"nap::Entity": {
 		"mID": "BackgroundEntity",
 		"Components" : 
 		[
 			{
-				"nap::RenderableMeshComponentResource": {
+				"nap::RenderableMeshComponent": {
 					"Mesh" : "BackgroundPlaneMesh",
 					"MaterialInstance" : {
 						"Material": "BackgroundMaterial",
@@ -369,7 +527,7 @@
 				}		
 			},
 			{
-				"nap::TransformComponentResource": {
+				"nap::TransformComponent": {
 					"Properties": {
 						"Translate": {
 							"x": 0.0,
@@ -393,12 +551,12 @@
 		]
 	},
 
-	"nap::EntityResource": {
+	"nap::Entity": {
 		"mID": "CameraEntity",
 		"Components" : 
 		[
 			{
-				"nap::PerspCameraComponentResource": {
+				"nap::PerspCameraComponent": {
 					"Properties": {
 						"FieldOfView": 45.0,
 						"NearClippingPlane" : 0.01,
@@ -407,7 +565,7 @@
 				}		
 			},
 			{
-				"nap::OrthoCameraComponentResource": {
+				"nap::OrthoCameraComponent": {
 					"Properties": {
 						"NearClippingPlane" : 0.01,
 						"FarClippingPlane" : 10000.0
@@ -415,7 +573,7 @@
 				}		
 			},
 			{
-				"nap::TransformComponentResource": {
+				"nap::TransformComponent": {
 					"Properties": {
 						"Translate": {
 							"x": 0.0,
