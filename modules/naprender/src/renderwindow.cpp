@@ -1,5 +1,5 @@
 #include "renderwindow.h"
-#include "nap\windowevent.h"
+#include "nap/windowevent.h"
 
 RTTI_BEGIN_CLASS(nap::RenderWindow)
 	RTTI_PROPERTY("Width",			&nap::RenderWindow::mWidth,			nap::rtti::EPropertyMetaData::Default)

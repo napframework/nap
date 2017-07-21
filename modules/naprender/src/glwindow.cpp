@@ -2,8 +2,7 @@
 #include "glwindow.h"
 #include "nsdlgl.h"
 #include "nglutils.h"
-#include "nap\configure.h"
-#include "utility\errorstate.h"
+#include "utility/errorstate.h"
 
 namespace nap
 {
