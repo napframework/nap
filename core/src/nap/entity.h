@@ -3,11 +3,11 @@
 // Local Includes
 #include "utility/uniqueptrvectoriterator.h"
 #include "objectptr.h"
+#include "component.h"
 
 namespace nap
 {
     class Core;
-	class ComponentInstance;
 	class Component;
 	class EntityInstance;
 
