@@ -1,9 +1,15 @@
 #pragma once
 
-#include "resource.h"
+// External Includes
+#include <rtti/rttiobject.h>
+#include <nap/configure.h>
+#include <nap/signalslot.h>
+
+// Local Includes
 #include "event.h"
 #include "utility/uniqueptrvectoriterator.h"
 #include "windowevent.h"
+#include "dllexport.h"
 
 namespace nap
 {
@@ -13,7 +19,7 @@ namespace nap
 	 * for dealing with input and window related messages, without relying on any platform or graphics
 	 * API.
 	 */
-	class WindowResource : public rtti::RTTIObject
+	class NAPAPI Window : public rtti::RTTIObject
 	{
 		RTTI_ENABLE(rtti::RTTIObject)
 

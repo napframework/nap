@@ -1,28 +1,17 @@
 // Local Includes
 #include "core.h"
+#include "resourcemanager.h"
+#include "logger.h"
 
 // External Includes
 #include <algorithm>
-#include <nap/resourcemanager.h>
 
 using namespace std;
 
+RTTI_DEFINE(nap::Core)
+
 namespace nap
 {
-
-	/**
-	@brief Stops all associated services and clears root
-	**/
-	Core::~Core()
-	{
-		if (mIsRunning) stop();
-
-		// make sure the entities are deleted before the services are destructed, otherwise entities can try
-		// deregistering themselves with destructed services!
-		mRoot = nullptr;
-	}
-
-
 	/**
 	@brief Constructor
 
@@ -30,141 +19,11 @@ namespace nap
 	**/
 	Core::Core() : mFactory(std::make_unique<rtti::Factory>())
 	{
-        getModuleManager().loadCoreModule();
-
-		// the root entity has no parent: nullptr
-		mRoot = std::unique_ptr<Entity>(new Entity(*this));
-		mRoot->mName = "root";
-
 		// Initialize timer
 		mTimer.start();
 
 		// Add resource manager service
 		addService(RTTI_OF(ResourceManagerService));
-	}
-
-
-	/**
-	@brief Start core
-	**/
-	void Core::start()
-	{
-		mIsRunning = true;
-		for (auto& service : mServices)
-		{
-			service->start();
-		}
-	}
-
-
-	/**
-	@brief Stop core
-	**/
-	void Core::stop()
-	{
-		mIsRunning = false;
-		for (auto& service : mServices)
-			service->stop();
-	}
-
-
-	std::vector<rtti::TypeInfo> Core::getComponentTypes() const
-	{
-		rtti::TypeInfo componentType = rtti::TypeInfo::get<Component>();
-		return componentType.get_raw_derived_classes();
-	}
-
-
-	/**
-	@brief Find the service associated with the RTTI of type
-
-	TODO: This method is only here for serviceable component and can go
-	Every serviceable component should list its own services of interest
-	**/
-	Service* Core::getServiceForType(const rtti::TypeInfo& inType)
-	{
-		// Get raw type to search for
-		rtti::TypeInfo raw_search_type = inType.get_raw_type();
-		if (!raw_search_type.is_valid()) 
-		{
-			Logger::warn("Unable to determine object type, can't retrieve service");
-			return nullptr;
-		}
-
-		// Service name
-		std::string found_service;
-		for (auto& v : mTypes) 
-		{
-			// Find type in service
-			const auto& match_type = std::find_if(v.second.begin(), v.second.end(), [&](const rtti::TypeInfo& info) 
-			{
-				return raw_search_type.is_derived_from(info.get_raw_type());
-			});
-
-			// Check if the type was found in the service list
-			if (match_type != v.second.end()) 
-			{
-				found_service = v.first;
-				break;
-			}
-		}
-
-		// if no service if found, return null
-		if (found_service.empty()) return nullptr;
-
-		// Return the service if found
-		const auto& v = std::find_if(mServices.begin(), mServices.end(), [&](const auto& service) 
-		{ 
-			return service->getTypeName() == found_service; 
-		});
-		return v == mServices.end() ? nullptr : (*v).get();
-	}
-
-
-	/**
-	@brief Register a type associated with a service
-	 TODO: Move registration into actual service
-	**/
-	void Core::registerType(const Service& inService, rtti::TypeInfo inTypeInfo)
-	{
-		// Find and add
-		auto it = mTypes.find(inService.getTypeName());
-		if (it != mTypes.end()) 
-		{
-			if (it->second.find(inTypeInfo) != it->second.end())
-			{
-				nap::Logger::warn("type: %s already registered with service: %s", inTypeInfo.get_name().data(), inService.get_type().get_name().data());
-			}
-			it->second.emplace(inTypeInfo);
-			return;
-		}
-
-		// Add new key with type info if new
-		mTypes[inService.getTypeName()] = {inTypeInfo};
-	}
-
-
-	Entity& Core::addEntity(const std::string& name) 
-	{ 
-		return mRoot->addEntity(name); 
-	}
-
-
-	Entity* Core::getEntity(const std::string& name) 
-	{ 
-		return mRoot->getEntity(name); 
-	}
-
-	
-	void Core::setRoot(Entity& entity) 
-	{ 
-		mRoot = std::unique_ptr<Entity>(&entity); 
-	}
-
-
-	void Core::clear() 
-	{ 
-		mRoot->clearChildren(); 
 	}
 
 
@@ -200,7 +59,6 @@ namespace nap
 		// Add service
 		Service* service = type.create<Service>();
 		service->mCore = this;
-		service->registerTypes(*this);
 		service->registerObjectCreators(*mFactory);
 
 		// Add service
@@ -251,6 +109,4 @@ namespace nap
 	{
 		return mTimer.getStartTime();
 	}
-    
-    
 }

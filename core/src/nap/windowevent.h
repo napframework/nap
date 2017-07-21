@@ -1,13 +1,14 @@
 #pragma once
 
 #include "event.h"
+#include "dllexport.h"
 
 namespace nap
 {
 	/**
 	 *	Base class for all window related events, only holds the window id
 	 */
-	class WindowEvent : public Event
+	class NAPAPI WindowEvent : public Event
 	{
 	public:
 		RTTI_ENABLE(Event)
@@ -22,7 +23,7 @@ namespace nap
 	/**
 	 *	Base class for all window events that have parameters associated with it
 	 */
-	class ParameterizedWindowEvent : public WindowEvent
+	class NAPAPI ParameterizedWindowEvent : public WindowEvent
 	{
 		RTTI_ENABLE(WindowEvent)
 	public:
@@ -40,7 +41,7 @@ namespace nap
 	/** 
 	 *	Window has been shown 
 	 */
-	class WindowShownEvent : public WindowEvent
+	class NAPAPI WindowShownEvent : public WindowEvent
 	{
 		RTTI_ENABLE(WindowEvent)
 	public:
@@ -50,7 +51,7 @@ namespace nap
 	/**
 	 * Window has been hidden
 	 */
-	class WindowHiddenEvent : public WindowEvent
+	class NAPAPI WindowHiddenEvent : public WindowEvent
 	{
 		RTTI_ENABLE(WindowEvent)
 	public:
@@ -60,7 +61,7 @@ namespace nap
 	/**
 	 * Window has been moved to the specified coordinates
 	 */
-	class WindowMovedEvent : public ParameterizedWindowEvent
+	class NAPAPI WindowMovedEvent : public ParameterizedWindowEvent
 	{
 		RTTI_ENABLE(ParameterizedWindowEvent)
 	public:
@@ -72,7 +73,7 @@ namespace nap
 	/**
 	 * Window has been resized to the specified size
 	 */
-	class WindowResizedEvent : public ParameterizedWindowEvent
+	class NAPAPI WindowResizedEvent : public ParameterizedWindowEvent
 	{
 		RTTI_ENABLE(ParameterizedWindowEvent)
 	public:
@@ -84,7 +85,7 @@ namespace nap
 	/**
 	 * Window has been minimized
 	 */
-	class WindowMinimizedEvent : public WindowEvent
+	class NAPAPI WindowMinimizedEvent : public WindowEvent
 	{
 		RTTI_ENABLE(WindowEvent)
 	public:
@@ -94,7 +95,7 @@ namespace nap
 	/**
 	 * Window has been maximized
 	 */
-	class WindowMaximizedEvent : public WindowEvent
+	class NAPAPI WindowMaximizedEvent : public WindowEvent
 	{
 		RTTI_ENABLE(WindowEvent)
 	public:
@@ -105,7 +106,7 @@ namespace nap
 	/**
 	 * Window has been restored to normal size and position
 	 */
-	class WindowRestoredEvent : public WindowEvent
+	class NAPAPI WindowRestoredEvent : public WindowEvent
 	{
 		RTTI_ENABLE(WindowEvent)
 	public:
@@ -115,7 +116,7 @@ namespace nap
 	/**
 	 * Window has gained mouse focus
 	 */
-	class WindowEnterEvent : public WindowEvent
+	class NAPAPI WindowEnterEvent : public WindowEvent
 	{
 		RTTI_ENABLE(WindowEvent)
 	public:
@@ -125,7 +126,7 @@ namespace nap
 	/**
 	 * Window has lost mouse focus
 	 */
-	class WindowLeaveEvent : public WindowEvent
+	class NAPAPI WindowLeaveEvent : public WindowEvent
 	{
 		RTTI_ENABLE(WindowEvent)
 	public:
@@ -135,7 +136,7 @@ namespace nap
 	/**
 	 * Window has gained keyboard focus
 	 */
-	class WindowFocusGainedEvent : public WindowEvent
+	class NAPAPI WindowFocusGainedEvent : public WindowEvent
 	{
 		RTTI_ENABLE(WindowEvent)
 	public:
@@ -145,7 +146,7 @@ namespace nap
 	/**
 	 * Window has lost keyboard focus
 	 */
-	class WindowFocusLostEvent : public WindowEvent
+	class NAPAPI WindowFocusLostEvent : public WindowEvent
 	{
 		RTTI_ENABLE(WindowEvent)
 	public:
@@ -155,7 +156,7 @@ namespace nap
 	/**
 	 * The window manager requests that the window be closed 
 	 */
-	class WindowCloseEvent : public WindowEvent
+	class NAPAPI WindowCloseEvent : public WindowEvent
 	{
 		RTTI_ENABLE(WindowEvent)
 	public:

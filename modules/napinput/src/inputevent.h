@@ -14,14 +14,11 @@ namespace nap
 
 	Defines an input event that is passed along the system
 	**/
-	class InputEvent : public Event
+	class NAPAPI InputEvent : public Event
 	{
 		RTTI_ENABLE(Event)
 	public:
-		InputEvent(int window) : mWindow(window)
-		{
-		}
-
+		InputEvent(int window) : mWindow(window) { }
 		int mWindow;
 	};
 
@@ -32,7 +29,7 @@ namespace nap
 
 	Key input event, tied to pressed and released
 	**/
-	class KeyEvent : public InputEvent
+	class NAPAPI KeyEvent : public InputEvent
 	{
 		RTTI_ENABLE(InputEvent)
 	public:
@@ -47,7 +44,7 @@ namespace nap
 	/**
 	 *	Key has been pressed
 	 */
-	class KeyPressEvent : public KeyEvent
+	class NAPAPI KeyPressEvent : public KeyEvent
 	{
 		RTTI_ENABLE(KeyEvent)
 	public:
@@ -60,7 +57,7 @@ namespace nap
 	/**
 	 *	Key has been released
 	 */
-	class KeyReleaseEvent : public KeyEvent
+	class NAPAPI KeyReleaseEvent : public KeyEvent
 	{
 		RTTI_ENABLE(KeyEvent)
 	public:
@@ -78,7 +75,7 @@ namespace nap
 	Contains all relevant information for pointer specific interaction
 	Can also be used to signal multi touch gestures (therefore the id)
 	**/
-	class PointerEvent : public InputEvent
+	class NAPAPI PointerEvent : public InputEvent
 	{
 		RTTI_ENABLE(InputEvent)
 	public:
@@ -98,7 +95,7 @@ namespace nap
 	 *	@brief PointerClickEvent
 	 *  Base class for all click related pointer events
 	 */
-	class PointerClickEvent : public PointerEvent
+	class NAPAPI PointerClickEvent : public PointerEvent
 	{
 		RTTI_ENABLE(PointerEvent)
 	public:
@@ -114,7 +111,7 @@ namespace nap
 	/**
 	 *	Click occurred
 	 */
-	class PointerPressEvent : public PointerClickEvent
+	class NAPAPI PointerPressEvent : public PointerClickEvent
 	{
 		RTTI_ENABLE(PointerClickEvent)
 	public:
@@ -127,7 +124,7 @@ namespace nap
 	/**
 	 *	Click has been released
 	 */
-	class PointerReleaseEvent : public PointerClickEvent
+	class NAPAPI PointerReleaseEvent : public PointerClickEvent
 	{
 		RTTI_ENABLE(PointerClickEvent)
 	public:
@@ -140,7 +137,7 @@ namespace nap
 	/**
 	 *	Pointer drag occurred
 	 */
-	class PointerDragEvent : public PointerClickEvent
+	class NAPAPI PointerDragEvent : public PointerClickEvent
 	{
 		RTTI_ENABLE(PointerClickEvent)
 	public:
@@ -153,7 +150,7 @@ namespace nap
 	/**
 	 *	Pointer movement occurred
 	 */
-	class PointerMoveEvent : public PointerEvent
+	class NAPAPI PointerMoveEvent : public PointerEvent
 	{
 		RTTI_ENABLE(PointerEvent)
 	public:

@@ -13,12 +13,13 @@
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
-#include "utility/stringutils.h"
-#include "nap/object.h"
-#include "rtti/binarywriter.h"
-#include "nap/fileutils.h"
-#include "utility/errorstate.h"
-#include "rtti/binaryreader.h"
+#include <utility/stringutils.h>
+#include <rtti/binarywriter.h>
+#include <nap/fileutils.h>
+#include <utility/errorstate.h>
+#include <rtti/binaryreader.h>
+
+// Local Includes
 #include "nmesh.h"
 
 namespace nap
@@ -26,9 +27,9 @@ namespace nap
 	static int gMaxNumUVAttributes = 16;
 	static int gMaxNumColorAttributes = 16;
 
-	class MeshData : public Object
+	class MeshData : public rtti::RTTIObject
 	{
-		RTTI_ENABLE(Object)
+		RTTI_ENABLE(rtti::RTTIObject)
 
 	public:
 		struct Attribute

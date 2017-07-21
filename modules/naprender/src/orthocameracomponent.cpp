@@ -1,6 +1,6 @@
 // Local Includes
 #include "orthocameracomponent.h"
-#include <nap/entityinstance.h>
+#include <nap/entity.h>
 
 // External Includes
 #include <glm/gtc/matrix_transform.hpp> 
@@ -11,26 +11,26 @@ RTTI_BEGIN_CLASS(nap::OrthoCameraProperties)
 	RTTI_PROPERTY("FarClippingPlane",	&nap::OrthoCameraProperties::mFarClippingPlane,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::OrthoCameraComponentResource)
-	RTTI_PROPERTY("Properties",			&nap::OrthoCameraComponentResource::mProperties,	nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::OrthoCameraComponent)
+	RTTI_PROPERTY("Properties",			&nap::OrthoCameraComponent::mProperties,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::OrthoCameraComponent, nap::EntityInstance&)
+RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::OrthoCameraComponentInstance, nap::EntityInstance&)
 RTTI_END_CLASS
 
 namespace nap
 {
 	// Hook up attribute changes
-	OrthoCameraComponent::OrthoCameraComponent(EntityInstance& entity) :
-		CameraComponent(entity)
+	OrthoCameraComponentInstance::OrthoCameraComponentInstance(EntityInstance& entity) :
+		CameraComponentInstance(entity)
 	{
 	}
 
 
-	bool OrthoCameraComponent::init(const ObjectPtr<ComponentResource>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool OrthoCameraComponentInstance::init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
-		mProperties = rtti_cast<OrthoCameraComponentResource>(resource.get())->mProperties;
-		mTransformComponent =	getEntity()->findComponent<TransformComponent>();
+		mProperties = rtti_cast<OrthoCameraComponent>(resource.get())->mProperties;
+		mTransformComponent =	getEntity()->findComponent<TransformComponentInstance>();
 		if (!errorState.check(mTransformComponent != nullptr, "Missing transform component"))
 			return false;
 
@@ -39,7 +39,7 @@ namespace nap
 
 
 	// Set camera aspect ratio derived from width and height
-	void OrthoCameraComponent::setRenderTargetSize(glm::ivec2 size)
+	void OrthoCameraComponentInstance::setRenderTargetSize(glm::ivec2 size)
 	{
 		if (mRenderTargetSize != size)
 		{
@@ -51,7 +51,7 @@ namespace nap
 
 	// Computes projection matrix if dirty, otherwise returns the
 	// cached version
-	const glm::mat4& OrthoCameraComponent::getProjectionMatrix() const
+	const glm::mat4& OrthoCameraComponentInstance::getProjectionMatrix() const
 	{
 		if (mDirty)
 		{
@@ -63,7 +63,7 @@ namespace nap
 	}
 
 
-	const glm::mat4 OrthoCameraComponent::getViewMatrix() const
+	const glm::mat4 OrthoCameraComponentInstance::getViewMatrix() const
 	{
 		const glm::mat4& global_transform = mTransformComponent->getGlobalTransform();
 		return glm::inverse(global_transform);

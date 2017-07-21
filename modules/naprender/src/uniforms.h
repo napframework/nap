@@ -1,18 +1,21 @@
 #pragma once
 
+// Local Includes
 #include "nshaderutils.h"
-#include "nap/resource.h"
-#include "nap/objectptr.h"
-#include "glm/glm.hpp"
+
+// External Includes
+#include <nap/objectptr.h>
+#include <glm/glm.hpp>
+#include <nap/dllexport.h>
 
 namespace nap
 {
-	class TextureResource;
+	class Texture;
 
 	/**
 	 * Base class for all types of uniforms, whether texture or value.
 	 */
-	class Uniform : public rtti::RTTIObject
+	class NAPAPI Uniform : public rtti::RTTIObject
 	{
 		RTTI_ENABLE(rtti::RTTIObject)
 	public:
@@ -22,7 +25,6 @@ namespace nap
 		*/
 		virtual opengl::GLSLType getGLSLType() const = 0;
 
-	public:
 		std::string mName;		///< Name of uniform as in shader
 	};
 
@@ -32,7 +34,7 @@ namespace nap
 	* Derived classes should store value data and implement push() to update the
 	* value in the shader.
 	*/
-	class UniformValue : public Uniform
+	class NAPAPI UniformValue : public Uniform
 	{
 		RTTI_ENABLE(Uniform)
 	public:
@@ -50,7 +52,7 @@ namespace nap
 	* Derived classes should activate the texture unit, bind the appropriate texture
 	* to the unit (whether 1D, 2D or 3D) and update the uniform in the shader.
 	*/
-	class UniformTexture : public Uniform
+	class NAPAPI UniformTexture : public Uniform
 	{
 		RTTI_ENABLE(Uniform)
 	public:
@@ -67,7 +69,7 @@ namespace nap
 	/**
 	* Stores integer data and is capable of updating the integer uniform in the shader.
 	*/
-	class UniformInt : public UniformValue
+	class NAPAPI UniformInt : public UniformValue
 	{
 		RTTI_ENABLE(UniformValue)
 	public:
@@ -93,9 +95,65 @@ namespace nap
 
 
 	/**
+	* Stores integer data and is capable of updating the integer uniform in the shader.
+	*/
+	class NAPAPI UniformFloat : public UniformValue
+	{
+		RTTI_ENABLE(UniformValue)
+	public:
+
+		/**
+		* @param value integer value to set.
+		*/
+		void setValue(float value) { mValue = value; }
+
+		/**
+		* Updates the uniform in the shader.
+		* @param declaration: the uniform declaration from the shader that is used to set the value.
+		*/
+		virtual void push(const opengl::UniformDeclaration& declaration) const override;
+
+		/**
+		* @return integer GLSL type.
+		*/
+		virtual opengl::GLSLType getGLSLType() const override { return opengl::GLSLType::Float; }
+
+		float mValue;			///< Data storage
+	};
+
+
+	/**
 	* Stores vec4 data and is capable of updating the vec4 uniform in the shader.
 	*/
-	class UniformVec4 : public UniformValue
+	class NAPAPI UniformVec3 : public UniformValue
+	{
+		RTTI_ENABLE(UniformValue)
+	public:
+
+		/**
+		* @param value vec4 value to set.
+		*/
+		void setValue(const glm::vec3& value) { mValue = value; }
+
+		/**
+		* Updates the uniform in the shader.
+		* @param declaration: the uniform declaration from the shader that is used to set the value.
+		*/
+		virtual void push(const opengl::UniformDeclaration& declaration) const override;
+
+		/**
+		* @return vec4 GLSL type.
+		*/
+		virtual opengl::GLSLType getGLSLType() const override { return opengl::GLSLType::Vec3; }
+
+		glm::vec3 mValue;		///< Data storage
+	};
+
+
+	/**
+	* Stores vec4 data and is capable of updating the vec4 uniform in the shader.
+	*/
+	class NAPAPI UniformVec4 : public UniformValue
 	{
 		RTTI_ENABLE(UniformValue)
 	public:
@@ -123,7 +181,7 @@ namespace nap
 	/**
 	* Stores mat4 data and is capable of updating the mat4 uniform in the shader.
 	*/
-	class UniformMat4 : public UniformValue
+	class NAPAPI UniformMat4 : public UniformValue
 	{
 		RTTI_ENABLE(UniformValue)
 	public:
@@ -151,7 +209,7 @@ namespace nap
 	/**
 	* Texture2D type uniform
 	*/
-	class UniformTexture2D : public UniformTexture
+	class NAPAPI UniformTexture2D : public UniformTexture
 	{
 		RTTI_ENABLE(UniformTexture)
 	public:
@@ -159,7 +217,7 @@ namespace nap
 		/**
 		* @param texture The texture resource to set for this uniform.
 		*/
-		void setTexture(TextureResource& texture) { mTexture = &texture; }
+		void setTexture(Texture& texture) { mTexture = &texture; }
 
 		/**
 		* Updates the uniform in the shader.
@@ -173,6 +231,6 @@ namespace nap
 		*/
 		virtual opengl::GLSLType getGLSLType() const override { return opengl::GLSLType::Tex2D; }
 
-		ObjectPtr<TextureResource> mTexture = nullptr;		///< Texture to use for this uniform
+		ObjectPtr<Texture> mTexture = nullptr;		///< Texture to use for this uniform
 	};
 }

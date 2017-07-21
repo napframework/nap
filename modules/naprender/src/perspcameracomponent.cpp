@@ -3,7 +3,7 @@
 
 // External Includes
 #include <glm/gtc/matrix_transform.hpp> 
-#include <nap/entityinstance.h>
+#include <nap/entity.h>
 #include "transformcomponent.h"
 
 RTTI_BEGIN_CLASS(nap::PerpCameraProperties)
@@ -14,11 +14,11 @@ RTTI_BEGIN_CLASS(nap::PerpCameraProperties)
 	RTTI_PROPERTY("GridLocation",		&nap::PerpCameraProperties::mGridLocation,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::PerspCameraComponentResource)
-	RTTI_PROPERTY("Properties",			&nap::PerspCameraComponentResource::mProperties,		nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::PerspCameraComponent)
+	RTTI_PROPERTY("Properties",			&nap::PerspCameraComponent::mProperties,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::PerspCameraComponent, nap::EntityInstance&)
+RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::PerspCameraComponentInstance, nap::EntityInstance&)
 RTTI_END_CLASS
 
 namespace nap
@@ -135,16 +135,16 @@ namespace nap
 
 
 	// Hook up attribute changes
-	PerspCameraComponent::PerspCameraComponent(EntityInstance& entity) :
-		CameraComponent(entity)
+	PerspCameraComponentInstance::PerspCameraComponentInstance(EntityInstance& entity) :
+		CameraComponentInstance(entity)
 	{
 	}
 
 
-	bool PerspCameraComponent::init(const ObjectPtr<ComponentResource>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool PerspCameraComponentInstance::init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
-		mProperties = rtti_cast<PerspCameraComponentResource>(resource.get())->mProperties;
-		mTransformComponent = getEntity()->findComponent<TransformComponent>();
+		mProperties = rtti_cast<PerspCameraComponent>(resource.get())->mProperties;
+		mTransformComponent = getEntity()->findComponent<TransformComponentInstance>();
 		if (!errorState.check(mTransformComponent != nullptr, "Missing transform component"))
 			return false;
 
@@ -153,7 +153,7 @@ namespace nap
 
 
 	// Set camera aspect ratio derived from width and height
-	void PerspCameraComponent::setRenderTargetSize(glm::ivec2 size)
+	void PerspCameraComponentInstance::setRenderTargetSize(glm::ivec2 size)
 	{
 		if (mRenderTargetSize != size)
 		{
@@ -163,7 +163,7 @@ namespace nap
 	}
 
 	// Use this function to split the projection into a grid of same-sized rectangles.
-	void PerspCameraComponent::setGridDimensions(int numRows, int numColumns)
+	void PerspCameraComponentInstance::setGridDimensions(int numRows, int numColumns)
 	{
 		if (numColumns != mProperties.mGridDimensions.x || numRows != mProperties.mGridDimensions.y)
 		{
@@ -176,7 +176,7 @@ namespace nap
 
 
 	// Sets the horizontal and vertical index into the projection grid as set by setSplitDimensions.
-	void PerspCameraComponent::setGridLocation(int row, int column)
+	void PerspCameraComponentInstance::setGridLocation(int row, int column)
 	{
 		if (column != mProperties.mGridLocation.x || row != mProperties.mGridLocation.y)
 		{
@@ -190,7 +190,7 @@ namespace nap
 
 	// Computes projection matrix if dirty, otherwise returns the
 	// cached version
-	const glm::mat4& PerspCameraComponent::getProjectionMatrix() const
+	const glm::mat4& PerspCameraComponentInstance::getProjectionMatrix() const
 	{
 		if (mDirty)
 		{
@@ -212,7 +212,7 @@ namespace nap
 	}
 
 
-	const glm::mat4 PerspCameraComponent::getViewMatrix() const
+	const glm::mat4 PerspCameraComponentInstance::getViewMatrix() const
 	{
 		const glm::mat4& global_transform = mTransformComponent->getGlobalTransform();
 		return glm::inverse(global_transform);

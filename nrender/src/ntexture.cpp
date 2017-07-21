@@ -40,6 +40,10 @@ namespace opengl
 		updateParameters(mParameters);
 	}
 
+	void BaseTexture::setParameters(const opengl::TextureParameters& parameters)
+	{
+		mParameters = parameters;
+	}
 
 	// Binds the texture
 	bool BaseTexture::bind()
@@ -77,6 +81,7 @@ namespace opengl
 		glTexParameteri(getTargetType(), GL_TEXTURE_MAG_FILTER, settings.maxFilter);
 		glTexParameteri(getTargetType(), GL_TEXTURE_WRAP_S,		settings.wrapHorizontal);
 		glTexParameteri(getTargetType(), GL_TEXTURE_WRAP_T,		settings.wrapVertical);
+		glTexParameteri(getTargetType(), GL_TEXTURE_MAX_LEVEL,  settings.maxLodLevel);
 
 		// Store settings
 		mParameters = settings;
@@ -135,7 +140,7 @@ namespace opengl
 	{
 		// Upload texture data
 		glTexImage2D(getTargetType(),
-			mSettings.level,
+			0,
 			mSettings.internalFormat,
 			mSettings.width,
 			mSettings.height,

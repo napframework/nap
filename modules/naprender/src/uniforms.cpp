@@ -1,6 +1,6 @@
 #include "uniforms.h"
 #include "nglutils.h"
-#include "imageresource.h"
+#include "image.h"
 
 
 RTTI_BEGIN_BASE_CLASS(nap::Uniform)
@@ -15,6 +15,14 @@ RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::UniformInt)
 	RTTI_PROPERTY("Value", &nap::UniformInt::mValue, nap::rtti::EPropertyMetaData::Required)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS(nap::UniformFloat)
+	RTTI_PROPERTY("Value", &nap::UniformFloat::mValue, nap::rtti::EPropertyMetaData::Required)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS(nap::UniformVec3)
+RTTI_PROPERTY("Value", &nap::UniformVec3::mValue, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::UniformVec4)
@@ -39,6 +47,20 @@ namespace nap
 	}
 
 
+	void UniformFloat::push(const opengl::UniformDeclaration& declaration) const
+	{
+		glUniform1fv(declaration.mLocation, declaration.mSize, static_cast<const GLfloat*>(&mValue));
+		glAssert();
+	}
+
+
+	void UniformVec3::push(const opengl::UniformDeclaration& declaration) const
+	{
+		glUniform3fv(declaration.mLocation, declaration.mSize, static_cast<const GLfloat*>(&mValue.x));
+		glAssert();
+	}
+
+
 	void UniformVec4::push(const opengl::UniformDeclaration& declaration) const
 	{
 		glUniform4fv(declaration.mLocation, declaration.mSize, static_cast<const GLfloat*>(&mValue.x));
@@ -59,9 +81,7 @@ namespace nap
 			return;
 
 		glActiveTexture(GL_TEXTURE0 + textureUnit);
-
 		mTexture->bind();
-
 		glUniform1iv(declaration.mLocation, declaration.mSize, static_cast<const GLint*>(&textureUnit));
 	}
 

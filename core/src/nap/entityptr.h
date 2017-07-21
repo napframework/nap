@@ -4,22 +4,22 @@
 
 namespace nap
 {
-	class EntityResource;
+	class Entity;
 	class EntityInstance;
 
 	/**
 	 * EntityPtr is used to access EntityInstance object. Because EntityInstances are spawned at runtime, the file
 	 * objects have no knowledge of instances. To make sure that we can point to EntityInstances, EntityPtr
-	 * wraps both a pointer to an EntityResource and to an EntityInstance. From an RTTI perspective, EntityPtr acts
-	 * like a pointer to another EntityResource, while at runtime, the pointer acts like a pointer to an EntityInstance.
+	 * wraps both a pointer to an Entity and to an EntityInstance. From an RTTI perspective, EntityPtr acts
+	 * like a pointer to another Entity, while at runtime, the pointer acts like a pointer to an EntityInstance.
 	 */
-	class EntityPtr
+	class NAPAPI EntityPtr
 	{
 	public:
 		EntityPtr() = default;
 
 		// Regular ptr Ctor
-		EntityPtr(EntityResource* ptr) :
+		EntityPtr(Entity* ptr) :
 			mResource(ptr)
 		{
 		}
@@ -95,14 +95,14 @@ namespace nap
 			return mInstance != entityInstance;
 		}
 
-		bool operator==(const EntityResource* entityResource) const
+		bool operator==(const Entity* Entity) const
 		{
-			return mResource == entityResource;
+			return mResource == Entity;
 		}
 
-		bool operator!=(const EntityResource* entityResource) const
+		bool operator!=(const Entity* Entity) const
 		{
-			return mResource != entityResource;
+			return mResource != Entity;
 		}
 
 		bool operator<(const EntityPtr& other) const
@@ -125,12 +125,12 @@ namespace nap
 			return mInstance >= other.mInstance;
 		}
 
-		EntityResource* getResource()
+		Entity* getResource()
 		{
 			return mResource.get();
 		}
 
-		EntityResource* getResource() const
+		Entity* getResource() const
 		{
 			return mResource.get();
 		}
@@ -155,7 +155,7 @@ namespace nap
 
 	private:
 		friend class ResourceManagerService;
-		ObjectPtr<EntityResource> mResource;
+		ObjectPtr<Entity> mResource;
 		EntityInstance* mInstance = nullptr;
 	};
 }
@@ -168,7 +168,7 @@ namespace rttr
 	template<>
 	struct wrapper_mapper<nap::EntityPtr>
 	{
-		using wrapped_type = nap::EntityResource*;
+		using wrapped_type = nap::Entity*;
 		using type = nap::EntityPtr;
 		
 		inline static wrapped_type get(const type& obj)
