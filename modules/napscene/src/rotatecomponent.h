@@ -37,7 +37,7 @@ namespace nap
 		/**
 		* Uses transform to rotate itself in the world.
 		*/
-		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components)
+		void getDependentComponents(std::vector<rtti::TypeInfo>& components) override
 		{
 			components.push_back(RTTI_OF(TransformComponent));
 		}
