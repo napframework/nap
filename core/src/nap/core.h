@@ -105,7 +105,7 @@ namespace nap
 		SimpleTimer mTimer;
 
 		// Responsible for creating objects when de-serializing
-		std::unique_ptr<rtti::Factory>						mFactory;				
+		std::unique_ptr<rtti::Factory>						mFactory;
 	};
 
 
@@ -133,11 +133,5 @@ namespace nap
 	}
 
 
-	// Returns the service for type T
-	template <typename T>
-	Service* Core::getServiceForType()
-	{
-		return getServiceForType(RTTI_OF(T));
-	}
 }
 
