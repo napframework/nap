@@ -1,6 +1,7 @@
 #pragma once
 
 // Local Includes
+#include "rtti/rtti.h"
 #include "service.h"
 #include "objectptr.h"
 #include "dllexport.h"
@@ -188,12 +189,12 @@ namespace nap
 
 		for (ObjectPtrBase* ptr : object_ptrs)
 		{
-			RTTIObject* target = ptr->get();
+			rtti::RTTIObject* target = ptr->get();
 			if (target == nullptr)
 				continue;
 
 			std::string& target_id = target->mID;
-			OBJECTSBYIDMAP::iterator new_target = newTargetObjects.find(target_id);
+			typename OBJECTSBYIDMAP::iterator new_target = newTargetObjects.find(target_id);
 			if (new_target != newTargetObjects.end())
 				ptr->set(&*(new_target->second));
 		}

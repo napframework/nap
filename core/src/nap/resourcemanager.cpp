@@ -1,12 +1,7 @@
 #include "resourcemanager.h"
 #include "rtti/rttiutilities.h"
-#include "directorywatcher.h"
 #include "rtti/jsonreader.h"
-#include "rtti/factory.h"
 #include "nap/core.h"
-#include "objectptr.h"
-#include "entity.h"
-#include "component.h"
 #include "objectgraph.h"
 #include "entityptr.h"
 #include "fileutils.h"
@@ -368,7 +363,7 @@ namespace nap
 		{
 			// Objects in objectsToUpdate have preference over the manager's objects
 			RTTIObject* target_object = nullptr;
-			ObjectByIDMap::iterator object_to_update = objectsToUpdate.find(unresolved_pointer.mTargetID);
+            auto object_to_update = objectsToUpdate.find(unresolved_pointer.mTargetID);
 			if (object_to_update == objectsToUpdate.end())
 				target_object = findObject(unresolved_pointer.mTargetID).get();
 			else
@@ -392,7 +387,7 @@ namespace nap
 
 			assert(actual_type.is_pointer());
 			bool succeeded = resolved_path.setValue(target_object);
-			if (!errorState.check(succeeded, "Failed to resolve pointer"))
+			if (!errorState.check(succeeded, "Failed to resolve pointer for: " + target_object->mID))
 				return false;
 		}
 
@@ -431,7 +426,7 @@ namespace nap
 		entityResources.push_back(&Entity);
 		bool result = createEntities(entityResources, entityCreationParams, generated_ids, errorState);
 		if (!result)
-			return false;
+			return nullptr;
 
 		assert(generated_ids.size() == 1);
 		return entityCreationParams.mEntitiesByID.find(generated_ids[0])->second.get();
@@ -528,15 +523,19 @@ namespace nap
 			for (auto& node : entity_resource->mComponents)
 				addComponentsByType(components_by_type, node.get(), node->get_type());
 
+            auto creation_function = [&components_by_type](ObjectPtr<Component> component) {
+                return ComponentGraphItem::create(components_by_type, component);
+            };
+
 			TypeDependencyGraph graph;
-			if (!graph.build(entity_resource->mComponents, [&components_by_type](ObjectPtr<Component>& component) { return ComponentGraphItem::create(components_by_type, component); }, errorState))
+			if (!graph.build(entity_resource->mComponents, creation_function, errorState))
 				return false;
 
 			std::vector<TypeDependencyGraph::Node*> sorted_nodes = graph.getSortedNodes();
 
 			for (TypeDependencyGraph::Node* node : sorted_nodes)
 			{
-				auto& pos = new_component_instances.find(node->mItem.mComponent.get());
+				auto pos = new_component_instances.find(node->mItem.mComponent.get());
 				assert(pos != new_component_instances.end());
 
 				if (!pos->second->init(node->mItem.mComponent, entityCreationParams, errorState))
