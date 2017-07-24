@@ -25,24 +25,25 @@ namespace nap
 		RTTI_ENABLE(rtti::RTTIObject)
 
 	public:
+		~VideoResource();
 		virtual bool init(nap::utility::ErrorState& errorState) override;
 
 		void update(double deltaTime);
 		void play();
-
-	private:
-		void decodeThread();
-		void ioThread();
-
-	public:
-		std::string mPath;
-
+		void stop();
+	
 		MemoryTexture2D& getYTexture() { return *mYTexture; }
 		MemoryTexture2D& getUTexture() { return *mUTexture; }
 		MemoryTexture2D& getVTexture() { return *mVTexture; }
 
 		int getWidth() const { return mWidth; }
 		int getHeight() const { return mHeight; }
+
+		std::string mPath;
+
+	private:
+		void decodeThread();
+		void ioThread();
 
 	private:
 		std::unique_ptr<MemoryTexture2D> mYTexture;
@@ -52,7 +53,6 @@ namespace nap
 		AVCodec*				mCodec = nullptr;
 		AVCodecContext*			mCodecContext = nullptr;
 		AVFormatContext*		mFormatContext = nullptr;
-		AVFrame*				mFrame = nullptr;
 		int						mVideoStream = -1;
 		bool					mPlaying = false;
 		int						mWidth = 0;
@@ -76,6 +76,7 @@ namespace nap
 		std::condition_variable mPacketAvailableCondition;
 		std::condition_variable mPacketQueueRoomAvailableCondition;
 		std::queue<AVPacket*>	mPacketQueue;
+		bool					mExitThreadSignalled = false;
 	};
 
 	/**

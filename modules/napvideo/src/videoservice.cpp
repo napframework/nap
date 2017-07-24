@@ -43,6 +43,11 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 
+	VideoResource::~VideoResource()
+	{
+		stop();
+	}
+
 	bool VideoResource::init(nap::utility::ErrorState& errorState)
 	{
 		mFormatContext = avformat_alloc_context();
@@ -87,17 +92,15 @@ namespace nap
 		if (!errorState.check(error == 0, "Unable to copy codec context: %s", error_to_string(error).c_str()))
 			return false;
 
-		/* open it */
 		AVDictionary* opts = nullptr;
-// 		if (!av_dict_get(opts, "threads", NULL, 0))
-// 			av_dict_set(&opts, "threads", "0", 0);
+		av_dict_set(&opts, "threads", "auto", 0);
+
+		// We need to set this option to make sure that the decoder transfers ownership from decode buffers to us
+		// when we decode frames. Otherwise, the decoder will reuse buffers, which will then overwrite data already in our queue.
+		av_dict_set(&opts, "refcounted_frames", "1", 0);
 
 		error = avcodec_open2(mCodecContext, mCodec, &opts);
 		if (!errorState.check(error == 0, "Unable to open codec: %s", error_to_string(error).c_str()))
-			return false;
-
-		mFrame = av_frame_alloc();
-		if (!errorState.check(mFrame != nullptr, "Unable to allocate frame"))
 			return false;
 
 		mWidth = mCodecContext->width;
@@ -118,6 +121,7 @@ namespace nap
 		mYTexture->mSettings = settings;
 		if (!mYTexture->init(errorState))
 			return false;
+
 		mYTexture->getTexture().updateParameters(parameters);
 
 		// The video is encoded in YUV format. The U and V texture are half the resolution of the Y texture
@@ -128,12 +132,14 @@ namespace nap
 		mUTexture->mSettings = settings;
 		if (!mUTexture->init(errorState))
 			return false;
+
 		mUTexture->getTexture().updateParameters(parameters);
 
 		mVTexture = std::make_unique<MemoryTexture2D>();
 		mVTexture->mSettings = settings;
 		if (!mVTexture->init(errorState))
 			return false;
+
 		mVTexture->getTexture().updateParameters(parameters);
 
 		return true;
@@ -148,9 +154,28 @@ namespace nap
 	}
 
 
+	void VideoResource::stop()
+	{
+		if (!mPlaying)
+			return;
+
+		mExitThreadSignalled = true;
+		mPlaying = false;
+
+		// Notify conditions so threads waiting on them unblock
+		mPacketQueueRoomAvailableCondition.notify_one();
+		mPacketAvailableCondition.notify_one();
+		mFrameQueueRoomAvailableCondition.notify_one();
+
+		// Join thread
+		mIOThread.join();
+		mDecodeThread.join();
+	}
+
+
 	void VideoResource::ioThread()
 	{
-		while (true)
+		while (!mExitThreadSignalled)
 		{
 			// Read packets from the stream and push them onto the packet queue
 			AVPacket* packet = av_packet_alloc();
@@ -173,7 +198,10 @@ namespace nap
 
 			{
 				std::unique_lock<std::mutex> lock(mPacketQueueMutex);
-				mPacketQueueRoomAvailableCondition.wait(lock, [this]() { return mPacketQueue.size() < 3; });
+				mPacketQueueRoomAvailableCondition.wait(lock, [this]() { return mPacketQueue.size() < 3 || mExitThreadSignalled; });
+				if (mExitThreadSignalled)
+					break;
+
 				mPacketQueue.push(packet);
 				mPacketAvailableCondition.notify_one();
 			}
@@ -193,7 +221,8 @@ namespace nap
 		if (mFormatContext->streams[mVideoStream]->start_time != AV_NOPTS_VALUE)
 			stream_start_time = mFormatContext->streams[mVideoStream]->start_time *av_q2d(mFormatContext->streams[mVideoStream]->time_base);
 
-		while (true)
+		AVFrame* frame = av_frame_alloc();
+		while (!mExitThreadSignalled)
 		{
 			// Here we pull packets from the queue and decode them until all data for this frame is processed
 			int frame_finished = 0;
@@ -202,13 +231,16 @@ namespace nap
 				AVPacket* packet;
 				{
 					std::unique_lock<std::mutex> lock(mPacketQueueMutex);
-					mPacketAvailableCondition.wait(lock, [this]() { return !mPacketQueue.empty(); });
+					mPacketAvailableCondition.wait(lock, [this]() { return !mPacketQueue.empty() || mExitThreadSignalled; });
+					if (mExitThreadSignalled)
+						return;
+
 					packet = mPacketQueue.front();
 					mPacketQueue.pop();
 					mPacketQueueRoomAvailableCondition.notify_one();
 				}
 
-				int result = avcodec_decode_video2(mCodecContext, mFrame, &frame_finished, packet);
+				int result = avcodec_decode_video2(mCodecContext, frame, &frame_finished, packet);
 				if (result < 0)
 				{
 					mPlaying = false;
@@ -223,7 +255,7 @@ namespace nap
 			// when there is no PTS available, we need to account for these cases.
 			Frame new_frame;
 			new_frame.mPTSSecs = DBL_MAX;
-			if (mFrame->pts == AV_NOPTS_VALUE)
+			if (frame->pts == AV_NOPTS_VALUE)
 			{
 				// In case there is no PTS we use the previous PTS time plus the frame time as a best prediction. However, if there is 
 				// no previous frame, we assume zero.
@@ -235,18 +267,23 @@ namespace nap
 			else
 			{
 				// Use the PTS in the timespace of the video stream, starting from the videostream start
-				new_frame.mPTSSecs = (mFrame->pts * av_q2d(mFormatContext->streams[mVideoStream]->time_base)) - stream_start_time;
+				new_frame.mPTSSecs = (frame->pts * av_q2d(mFormatContext->streams[mVideoStream]->time_base)) - stream_start_time;
 			}
+
 			mPrevPTSSecs = new_frame.mPTSSecs;
 
 			// We MOVE the decoded frame to this new frame. It is freed when processed
 			new_frame.mFrame = av_frame_alloc();
-			av_frame_move_ref(new_frame.mFrame, mFrame);
+			av_frame_move_ref(new_frame.mFrame, frame);
+			av_frame_unref(frame);
 
 			// Push the frame onto the frame queue
 			{
 				std::unique_lock<std::mutex> lock(mFrameQueueMutex);
-				mFrameQueueRoomAvailableCondition.wait(lock, [this]() { return mFrameQueue.size() < 3; });
+				mFrameQueueRoomAvailableCondition.wait(lock, [this]() { return mFrameQueue.size() < 3 || mExitThreadSignalled; });
+				if (mExitThreadSignalled)
+					return;
+
 				mFrameQueue.push(new_frame);
 				mFrameDataAvailableCondition.notify_one();
 			}
@@ -273,7 +310,7 @@ namespace nap
 			std::unique_lock<std::mutex> lock(mFrameQueueMutex);
 
 			// This can be enabled to block waiting until data is available
-			//mFrameDataAvailableCondition.wait(lock, [this]() { return !mFrameQueue.empty(); });
+//			mFrameDataAvailableCondition.wait(lock, [this]() { return !mFrameQueue.empty(); });
 
 			if (mFrameQueue.empty() || mVideoClockSecs < mFrameQueue.front().mPTSSecs)
 				return;
@@ -298,5 +335,4 @@ namespace nap
 		av_frame_free(&cur_frame.mFrame);
 	}
 }
-
 
