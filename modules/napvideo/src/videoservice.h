@@ -29,8 +29,10 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		bool update(double deltaTime, utility::ErrorState& errorState);
-		void play();
+		void play(double startTimeSecs = 0.0);
 		void stop();
+		void seek(double seconds);
+		double getCurrentTime() const { return mVideoClockSecs; }
 	
 		MemoryTexture2D& getYTexture() { return *mYTexture; }
 		MemoryTexture2D& getUTexture() { return *mUTexture; }
@@ -44,9 +46,13 @@ namespace nap
 	private:
 		void decodeThread();
 		void exitDecodeThread();
+
 		void ioThread();
 		void exitIOThread();
+
 		bool decodeFrame(AVFrame& frame);
+		void clearPacketQueue();
+		void clearFrameQueue();
 
 	private:
 		std::unique_ptr<MemoryTexture2D> mYTexture;
@@ -85,6 +91,8 @@ namespace nap
 		bool					mExitDecodeThreadSignalled = false;
 		bool					mPacketsFinished = false;
 		bool					mFramesFinished = false;
+
+		int64_t					mSeekTarget = -1;
 	};
 
 	/**

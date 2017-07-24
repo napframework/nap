@@ -111,11 +111,28 @@ namespace nap
 		mWidth = mCodecContext->width;
 		mHeight = mCodecContext->height;
 
-		opengl::Texture2DSettings settings;
-		settings.format = GL_RED;
-		settings.internalFormat = GL_RED;
-		settings.width = mCodecContext->width;
-		settings.height = mCodecContext->height;
+		opengl::Texture2DSettings y_settings;
+		y_settings.format = GL_RED;
+		y_settings.internalFormat = GL_RED;
+		y_settings.width = mCodecContext->width;
+		y_settings.height = mCodecContext->height;
+
+		// The video is encoded in YUV format. The U and V texture are half the resolution of the Y texture
+		opengl::Texture2DSettings uv_settings = y_settings;
+		uv_settings.width *= 0.5f;
+		uv_settings.height *= 0.5f;
+
+		// YUV420p to RGB conversion uses an 'offset' value of (-0.0625, -0.5, -0.5) in the shader. 
+		// This means that initializing the YUV planes to zero does not actually result in black output.
+		// To fix this, we initialize the YUV planes to the negative of the offset
+		std::vector<uint8_t> y_default_data;
+		y_default_data.resize(y_settings.width * y_settings.height);
+		std::memset(y_default_data.data(), 16, y_default_data.size());
+
+		// Initialize UV planes
+		std::vector<uint8_t> uv_default_data;
+		uv_default_data.resize(uv_settings.width * uv_settings.height);
+		std::memset(uv_default_data.data(), 127, uv_default_data.size());
 
 		// Disable mipmapping for video
 		opengl::TextureParameters parameters;
@@ -123,39 +140,46 @@ namespace nap
 		parameters.maxFilter = GL_LINEAR;
 
 		mYTexture = std::make_unique<MemoryTexture2D>();
-		mYTexture->mSettings = settings;
+		mYTexture->mSettings = y_settings;
 		if (!mYTexture->init(errorState))
 			return false;
 
-		mYTexture->getTexture().updateParameters(parameters);
-
-		// The video is encoded in YUV format. The U and V texture are half the resolution of the Y texture
-		settings.width *= 0.5f;
-		settings.height *= 0.5f;
+		mYTexture->getTexture().updateParameters(parameters);		
+		mYTexture->getTexture().setData(y_default_data.data());
 
 		mUTexture = std::make_unique<MemoryTexture2D>();
-		mUTexture->mSettings = settings;
+		mUTexture->mSettings = uv_settings;
 		if (!mUTexture->init(errorState))
 			return false;
 
 		mUTexture->getTexture().updateParameters(parameters);
+		mUTexture->getTexture().setData(uv_default_data.data());
 
 		mVTexture = std::make_unique<MemoryTexture2D>();
-		mVTexture->mSettings = settings;
+		mVTexture->mSettings = uv_settings;
 		if (!mVTexture->init(errorState))
 			return false;
 
 		mVTexture->getTexture().updateParameters(parameters);
+		mVTexture->getTexture().setData(uv_default_data.data());
 
 		return true;
 	}
 
 
-	void VideoResource::play()
+	void VideoResource::play(double startTimeSecs)
 	{
-		mDecodeThread = std::thread(std::bind(&VideoResource::decodeThread, this));
-		mIOThread = std::thread(std::bind(&VideoResource::ioThread, this));
+		// Reset all state to make sure threads don't immediately exit from a previous 'stop' call
+		mExitIOThreadSignalled = false;
+		mExitDecodeThreadSignalled = false;
+		mPacketsFinished = false;
+		mFramesFinished = false;
 		mPlaying = true;
+		
+		seek(startTimeSecs);
+		
+		mDecodeThread = std::thread(std::bind(&VideoResource::decodeThread, this));
+		mIOThread = std::thread(std::bind(&VideoResource::ioThread, this));		
 	}
 
 
@@ -172,13 +196,35 @@ namespace nap
 		mIOThread.join();
 		mDecodeThread.join();
 
+		clearPacketQueue();
+		clearFrameQueue();
+	}
+
+	void VideoResource::seek(double seconds)
+	{
+		// All timing information is relative to the stream start. If the stream start has no PTS value, we assume zero to be the start
+		double stream_start_time = 0.0;
+		if (mFormatContext->streams[mVideoStream]->start_time != AV_NOPTS_VALUE)
+			stream_start_time = mFormatContext->streams[mVideoStream]->start_time *av_q2d(mFormatContext->streams[mVideoStream]->time_base);
+
+		mSeekTarget = std::round((seconds - stream_start_time) / av_q2d(mFormatContext->streams[mVideoStream]->time_base));
+		mVideoClockSecs = DBL_MAX;
+	}
+
+	void VideoResource::clearPacketQueue()
+	{
+		std::unique_lock<std::mutex> lock(mPacketQueueMutex);
 		while (!mPacketQueue.empty())
 		{
 			AVPacket* packet = mPacketQueue.front();
 			mPacketQueue.pop();
 			av_free_packet(packet);
 		}
+	}
 
+	void VideoResource::clearFrameQueue()
+	{
+		std::unique_lock<std::mutex> lock(mFrameQueueMutex);
 		while (!mFrameQueue.empty())
 		{
 			Frame frame = mFrameQueue.front();
@@ -187,7 +233,6 @@ namespace nap
 			av_frame_free(&frame.mFrame);
 		}
 	}
-
 
 	void VideoResource::ioThread()
 	{
@@ -200,6 +245,29 @@ namespace nap
 
 		while (!mExitIOThreadSignalled)
 		{
+			// Seek to target
+			if (mSeekTarget != -1)
+			{
+				int result = av_seek_frame(mFormatContext, mVideoStream, mSeekTarget, 0);
+				if (result < 0)
+				{
+					mPacketsFinished = true;
+					mErrorString = error_to_string(result);
+					return;
+				}
+
+				clearPacketQueue();
+
+				{
+					// Add a 'null' packet to the queue, to signal the decoder thread that it should flush its queues and decoder buffer
+					std::unique_lock<std::mutex> lock(mPacketQueueMutex);
+					mPacketQueue.push(nullptr);
+					mPacketAvailableCondition.notify_one();
+				}
+
+				mSeekTarget = -1;
+			}
+
 			// Read packets from the stream and push them onto the packet queue
 			PacketWrapper packet;
 			int result = av_read_frame(mFormatContext, packet.mPacket);
@@ -265,17 +333,27 @@ namespace nap
 				mPacketQueueRoomAvailableCondition.notify_one();
 			}
 
-			int result = avcodec_decode_video2(mCodecContext, &frame, &frame_finished, packet);
-
-			// Free the packet that was allocated by av_read_frame in the IO thread
-			av_free_packet(packet);
-
-			if (result < 0)
+			// If we dequeued a flush packet, flush all buffers for the video codec and clear the frame queue
+			if (packet == nullptr)
 			{
-				mFramesFinished = true;
-				exitIOThread();
-				mErrorString = error_to_string(result);
-				return false;
+				avcodec_flush_buffers(mCodecContext);
+				clearFrameQueue();
+			}				
+			else
+			{
+				// Decode the frame
+				int result = avcodec_decode_video2(mCodecContext, &frame, &frame_finished, packet);
+
+				// Free the packet that was allocated by av_read_frame in the IO thread
+				av_free_packet(packet);
+
+				if (result < 0)
+				{
+					mFramesFinished = true;
+					exitIOThread();
+					mErrorString = error_to_string(result);
+					return false;
+				}
 			}
 		}
 
@@ -356,10 +434,8 @@ namespace nap
 		if (!mPlaying)
 			return true;
 
-		// Lazy init of video clock
-		if (mVideoClockSecs == DBL_MAX)
-			mVideoClockSecs = 0.0;
-		else
+		// Update clock if it has been initialized
+		if (mVideoClockSecs != DBL_MAX)
 			mVideoClockSecs += deltaTime;
 
 		// Peek into the frame queue. If we have a frame and the PTS value of the first frame on
@@ -370,13 +446,17 @@ namespace nap
 			std::unique_lock<std::mutex> lock(mFrameQueueMutex);
 
 			// This can be enabled to block waiting until data is available
-//			mFrameDataAvailableCondition.wait(lock, [this]() { return !mFrameQueue.empty(); });
+			//mFrameDataAvailableCondition.wait(lock, [this]() { return !mFrameQueue.empty(); });
 
 			if (mFrameQueue.empty() && mFramesFinished)
 			{
 				mPlaying = false;
 				return errorState.check(mErrorString.empty(), mErrorString);
 			}
+
+			// Initialize the video clock to the first frame we see (if it has not been initialized yet)
+			if (!mFrameQueue.empty() && mVideoClockSecs == DBL_MAX)
+				mVideoClockSecs = mFrameQueue.front().mPTSSecs;
 
 			if (mFrameQueue.empty() || mVideoClockSecs < mFrameQueue.front().mPTSSecs)
 				return true;

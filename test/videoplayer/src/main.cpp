@@ -80,9 +80,19 @@ void onUpdate()
 	{
 		glm::vec2 window_size = renderWindows[0]->getWindow()->getSize();
 
+		static float total_update_time = 0.0f;
+		total_update_time += delta_time;
+
 		float new_window_height = -FLT_MAX;
 		for (auto& video_resource : videoResources)
 		{
+			if (total_update_time >= 10.0f)
+			{
+				video_resource->stop();
+				video_resource->play();
+				total_update_time = 0.0f;
+			}
+
 			nap::utility::ErrorState error_state;
 			if (!video_resource->update(delta_time, error_state))
 			{
@@ -211,7 +221,7 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
-
+ 
 
 void runGame(nap::Core& core)
 {
