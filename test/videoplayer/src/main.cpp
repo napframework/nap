@@ -10,10 +10,10 @@
 
 // Mod nap render includes
 #include <renderservice.h>
-#include <renderwindowresource.h>
+#include <renderwindow.h>
 #include <transformcomponent.h>
 #include <orthocameracomponent.h>
-#include <rendertargetresource.h>
+#include <rendertarget.h>
 
 // Nap includes
 #include <nap/core.h>
@@ -26,6 +26,7 @@
 #include <sceneservice.h>
 #include <videoservice.h>
 #include "RenderableMeshComponent.h"
+#include "nap/logger.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
@@ -39,7 +40,7 @@ nap::SceneService* sceneService = nullptr;
 nap::VideoService* videoService = nullptr;
 std::vector<nap::ObjectPtr<nap::VideoResource>> videoResources;
 
-std::vector<nap::ObjectPtr<nap::RenderWindowResource>> renderWindows;
+std::vector<nap::ObjectPtr<nap::RenderWindow>> renderWindows;
 nap::ObjectPtr<nap::EntityInstance> cameraEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance> videoEntity = nullptr;
 
@@ -91,13 +92,13 @@ void onUpdate()
 		window_size.y = new_window_height;		
 		renderWindows[0]->getWindow()->setSize(window_size);
 
-		nap::MaterialInstance& plane_material = videoEntity->getComponent<nap::RenderableMeshComponent>().getMaterialInstance();
+		nap::MaterialInstance& plane_material = videoEntity->getComponent<nap::RenderableMeshComponentInstance>().getMaterialInstance();
 		plane_material.getOrCreateUniform<nap::UniformTexture2D>("yTexture").setTexture(videoResources[0]->getYTexture());
 		plane_material.getOrCreateUniform<nap::UniformTexture2D>("uTexture").setTexture(videoResources[0]->getUTexture()); 
 		plane_material.getOrCreateUniform<nap::UniformTexture2D>("vTexture").setTexture(videoResources[0]->getVTexture());
 
 		// We set the position/size of the root layout element to cover the full screen.
-		nap::TransformComponent& transform_component = videoEntity->getComponent<nap::TransformComponent>();
+		nap::TransformComponentInstance& transform_component = videoEntity->getComponent<nap::TransformComponentInstance>();
 		transform_component.setTranslate(glm::vec3(window_size.x*0.5, window_size.y*0.5, -1000.0f));
 		transform_component.setScale(glm::vec3(window_size.x, window_size.y, 1.0));
 	} 
@@ -114,7 +115,7 @@ void onRender()
 	renderService->destroyGLContextResources(renderWindows);
 
 	{
-		nap::RenderWindowResource* render_window = renderWindows[0].get();
+		nap::RenderWindow* render_window = renderWindows[0].get();
 
 		if (cameraEntity != nullptr)
 		{
@@ -124,7 +125,7 @@ void onRender()
 			render_target->setClearColor(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
 			renderService->clearRenderTarget(*render_target, opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH);
 
-			renderService->renderObjects(*render_target, cameraEntity->getComponent<nap::OrthoCameraComponent>());
+			renderService->renderObjects(*render_target, cameraEntity->getComponent<nap::OrthoCameraComponentInstance>());
 
 			render_window->swap();
 		}
@@ -174,7 +175,7 @@ bool init(nap::Core& core)
 		return false;        
 	} 
 	
-	renderWindows.push_back(resourceManagerService->findObject<nap::RenderWindowResource>("Window"));
+	renderWindows.push_back(resourceManagerService->findObject<nap::RenderWindow>("Window"));
 
 	videoResources.push_back(resourceManagerService->findObject<nap::VideoResource>("Video1"));
 
@@ -255,4 +256,4 @@ void runGame(nap::Core& core)
 	renderService->shutdown();
 }
        
-  
+    

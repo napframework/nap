@@ -4,6 +4,12 @@
 
 namespace opengl
 {	
+
+	void Image::setTextureParameters(const opengl::TextureParameters& parameters)
+	{
+		mTexture.setParameters(parameters);
+	}
+
 	// Returns if the texture is compressed (on the GPU)
 	bool Image::isCompressed()
 	{

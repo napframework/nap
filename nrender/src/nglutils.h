@@ -180,7 +180,7 @@ namespace opengl
 	/**
 	 * Assert when something went wrong with an opengl call
 	 */
-	#define glAssert() assert(!opengl::printErrorMessage(__FILE__, __LINE__))
+	#define glAssert() assert(!opengl::printErrorMessage((char*)__FILE__, __LINE__))
 
 
 	 /**

@@ -18,7 +18,7 @@ struct AVFrame;
 
 namespace nap
 {
-	class MemoryTextureResource2D;
+	class MemoryTexture2D;
 
 	class VideoResource : public rtti::RTTIObject
 	{
@@ -37,17 +37,17 @@ namespace nap
 	public:
 		std::string mPath;
 
-		MemoryTextureResource2D& getYTexture() { return *mYTexture; }
-		MemoryTextureResource2D& getUTexture() { return *mUTexture; }
-		MemoryTextureResource2D& getVTexture() { return *mVTexture; }
+		MemoryTexture2D& getYTexture() { return *mYTexture; }
+		MemoryTexture2D& getUTexture() { return *mUTexture; }
+		MemoryTexture2D& getVTexture() { return *mVTexture; }
 
 		int getWidth() const { return mWidth; }
 		int getHeight() const { return mHeight; }
 
 	private:
-		std::unique_ptr<MemoryTextureResource2D> mYTexture;
-		std::unique_ptr<MemoryTextureResource2D> mUTexture;
-		std::unique_ptr<MemoryTextureResource2D> mVTexture;
+		std::unique_ptr<MemoryTexture2D> mYTexture;
+		std::unique_ptr<MemoryTexture2D> mUTexture;
+		std::unique_ptr<MemoryTexture2D> mVTexture;
 
 		AVCodec*				mCodec = nullptr;
 		AVCodecContext*			mCodecContext = nullptr;

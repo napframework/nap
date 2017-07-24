@@ -1,16 +1,16 @@
 {
-	"nap::RenderWindowResource": {
+	"nap::RenderWindow": {
 		"mID" : "Window",
 		"Width" : 512,
 		"Height" : 512,
 		"Title" : "Videoplayer"
 	},
 	
-	"nap::PlaneMeshResource": {
+	"nap::PlaneMesh": {
 		"mID": "PlaneMesh"
 	},
 	
-	"nap::ShaderResource": {
+	"nap::Shader": {
 		"mID": "VideoShader",
 		"mVertShader": "shaders/videoplayer/video.vert",
 		"mFragShader": "shaders/videoplayer/video.frag"
@@ -36,13 +36,13 @@
 		]
 	},
 	
-	"nap::EntityResource": {
+	"nap::Entity": {
 		"mID": "CameraEntity",
 		
 		"Components" : 
 		[
 			{
-				"nap::OrthoCameraComponentResource": {
+				"nap::OrthoCameraComponent": {
 					"Properties": {
 						"NearClippingPlane" : 0.01,
 						"FarClippingPlane" : 10000.0
@@ -50,7 +50,7 @@
 				}		
 			},
 			{
-				"nap::TransformComponentResource": {
+				"nap::TransformComponent": {
 					"Properties": {
 						"Translate": {
 							"x": 0.0,
@@ -75,13 +75,13 @@
 		]
 	},
 
-	"nap::EntityResource": {
+	"nap::Entity": {
 		"mID": "VideoEntity",
 		
 		"Components" : 
 		[
 			{
-				"nap::RenderableMeshComponentResource": 
+				"nap::RenderableMeshComponent": 
 				{
 					"Mesh" : "PlaneMesh",
 					"MaterialInstance" : {
@@ -90,7 +90,7 @@
 				}
 			},
 			{
-				"nap::TransformComponentResource": {
+				"nap::TransformComponent": {
 				}		
 			}
 		]	

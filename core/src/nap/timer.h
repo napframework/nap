@@ -5,6 +5,7 @@
 
 // Local Includes
 #include "configure.h"
+#include "dllexport.h"
 
 namespace nap
 {
@@ -23,7 +24,7 @@ namespace nap
 	 * This timer is not threaded and doesn't work with callbacks
 	 * it simply returns a time based on a start time
 	 */
-	class SimpleTimer
+	class NAPAPI SimpleTimer
 	{
 	public:
 		// Construction / Destruction

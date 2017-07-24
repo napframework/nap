@@ -1,13 +1,14 @@
 #pragma once
 
 #include <cstdint>
+#include <nap/dllexport.h>
 
 namespace nap
 {
 	/**
 	 * Enum describing a list of all possible keys that are supported
 	 */
-	enum class EKeyCode : uint8_t
+	enum class NAPAPI EKeyCode : uint8_t
 	{
 		KEY_UNKNOWN,
 		KEY_RETURN,

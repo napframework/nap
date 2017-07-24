@@ -1,30 +1,30 @@
 #pragma once
 
-#include "nap/componentinstance.h"
+#include "nap/component.h"
 
 namespace nap
 {
-	class FirstPersonController;
+	class FirstPersonControllerInstance;
 	class KeyPressEvent;
 	class KeyReleaseEvent;
+	class TransformComponentInstance;
 	class TransformComponent;
-	class TransformComponentResource;
 	class KeyInputComponent;
-	class KeyInputComponentResource;
+	class KeyInputComponent;
 
 	/**
 	 * Resource for the FirstPersonController
 	 */
-	class FirstPersonControllerResource : public ComponentResource
+	class FirstPersonController : public Component
 	{
-		RTTI_ENABLE(ComponentResource)
+		RTTI_ENABLE(Component)
 	public:
 		/**
 		 * Get the type of ComponentInstance to create
 		 */
 		virtual const rtti::TypeInfo getInstanceType() const 
 		{
-			return RTTI_OF(FirstPersonController); 
+			return RTTI_OF(FirstPersonControllerInstance); 
 		}
 
 		/**
@@ -32,8 +32,8 @@ namespace nap
 		 */
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) 
 		{
-			components.push_back(RTTI_OF(TransformComponentResource));
-			components.push_back(RTTI_OF(KeyInputComponentResource));
+			components.push_back(RTTI_OF(TransformComponent));
+			components.push_back(RTTI_OF(KeyInputComponent));
 		}
 
 		float mMovementSpeed	= 3.0f;		// The speed with which to move
@@ -47,16 +47,16 @@ namespace nap
 	 *
 	 * WASD to move, arrow keys to rotate
 	 */
-	class FirstPersonController : public ComponentInstance
+	class FirstPersonControllerInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
-		FirstPersonController(EntityInstance& entity);
+		FirstPersonControllerInstance(EntityInstance& entity);
 
 		/**
 		 * Initialize this ComponentInstance
 		 */
-		virtual bool init(const ObjectPtr<ComponentResource>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
 		/**
 		 * Update this ComponentInstance
@@ -75,8 +75,8 @@ namespace nap
 		void onKeyRelease(const KeyReleaseEvent& keyReleaseEvent);
 
 	private:
-		FirstPersonControllerResource*	mResource			= nullptr;		// The resource containing the movement properties
-		TransformComponent*				mTransformComponent = nullptr;		// The transform component used to move the entity
+		FirstPersonController*	mResource			= nullptr;		// The resource containing the movement properties
+		TransformComponentInstance*				mTransformComponent = nullptr;		// The transform component used to move the entity
 		bool							mMoveForward		= false;		// Whether we're moving forward
 		bool							mMoveBackward		= false;		// Whether we're moving backwards
 		bool							mMoveLeft			= false;		// Whether we're moving left

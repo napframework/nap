@@ -1,7 +1,7 @@
 #pragma once
 
-#include "nap/entityinstance.h"
-#include "nap/componentinstance.h"
+#include "nap/entity.h"
+#include "nap/component.h"
 #include "transformcomponent.h"
 
 namespace nap
@@ -28,12 +28,12 @@ namespace nap
 		{
 			// Get the transform of objectA in view space
 			const nap::EntityInstance& entityA			= *objectA->getEntity();
-			const nap::TransformComponent& transformA	= entityA.getComponent<nap::TransformComponent>();
+			const nap::TransformComponentInstance& transformA	= entityA.getComponent<nap::TransformComponentInstance>();
 			const glm::mat4 view_space_a				= mViewMatrix * transformA.getGlobalTransform();
 
 			// Get the transform of objectB in view space
 			const nap::EntityInstance& entityB			= *objectB->getEntity();
-			const nap::TransformComponent& transformB	= entityB.getComponent<nap::TransformComponent>();
+			const nap::TransformComponentInstance& transformB	= entityB.getComponent<nap::TransformComponentInstance>();
 			const glm::mat4 view_space_b				= mViewMatrix * transformB.getGlobalTransform();
 
 			// Get the z-component (i.e. depth) of both entities

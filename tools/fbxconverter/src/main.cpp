@@ -1,5 +1,7 @@
 #include <nap/core.h>
 #include <utility/errorstate.h>
+#include <nap/logger.h>
+
 #include "fbxconverter.h"
 #include "commandline.h"
 

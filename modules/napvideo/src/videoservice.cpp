@@ -7,7 +7,7 @@
 #include <string.h>
 
 #include "ntexture.h"
-#include "imageresource.h"
+#include "image.h"
 
 extern "C"
 {
@@ -114,7 +114,7 @@ namespace nap
 		parameters.minFilter = GL_LINEAR;
 		parameters.maxFilter = GL_LINEAR;
 
-		mYTexture = std::make_unique<MemoryTextureResource2D>();
+		mYTexture = std::make_unique<MemoryTexture2D>();
 		mYTexture->mSettings = settings;
 		if (!mYTexture->init(errorState))
 			return false;
@@ -124,13 +124,13 @@ namespace nap
 		settings.width *= 0.5f;
 		settings.height *= 0.5f;
 
-		mUTexture = std::make_unique<MemoryTextureResource2D>();
+		mUTexture = std::make_unique<MemoryTexture2D>();
 		mUTexture->mSettings = settings;
 		if (!mUTexture->init(errorState))
 			return false;
 		mUTexture->getTexture().updateParameters(parameters);
 
-		mVTexture = std::make_unique<MemoryTextureResource2D>();
+		mVTexture = std::make_unique<MemoryTexture2D>();
 		mVTexture->mSettings = settings;
 		if (!mVTexture->init(errorState))
 			return false;
@@ -289,9 +289,9 @@ namespace nap
 		assert(cur_frame.mFrame->linesize[2] == cur_frame.mFrame->width / 2);
 
 		// Copy data into texture
-		rtti_cast<TextureResource>(mYTexture.get())->getTexture().setData(cur_frame.mFrame->data[0]);
-		rtti_cast<TextureResource>(mUTexture.get())->getTexture().setData(cur_frame.mFrame->data[1]);
-		rtti_cast<TextureResource>(mVTexture.get())->getTexture().setData(cur_frame.mFrame->data[2]);
+		mYTexture->getTexture().setData(cur_frame.mFrame->data[0]);
+		mUTexture->getTexture().setData(cur_frame.mFrame->data[1]);
+		mVTexture->getTexture().setData(cur_frame.mFrame->data[2]);
 
 		// Destroy frame that was allocated in the decode thread, after it has been processed
 		av_frame_unref(cur_frame.mFrame);

@@ -10,10 +10,10 @@
 
 // Mod nap render includes
 #include <renderservice.h>
-#include <renderwindowresource.h>
+#include <renderwindow.h>
 #include <transformcomponent.h>
 #include <orthocameracomponent.h>
-#include <rendertargetresource.h>
+#include <rendertarget.h>
 #include "fractionlayoutcomponent.h"
 
 // Nap includes
@@ -25,6 +25,7 @@
 #include <inputcomponent.h>
 #include <mousebutton.h>
 #include <sceneservice.h>
+#include <nap/logger.h>
 
 // Local includes
 #include "uiinputrouter.h"
@@ -41,7 +42,7 @@ nap::ResourceManagerService* resourceManagerService = nullptr;
 nap::InputService* inputService = nullptr;
 nap::SceneService* sceneService = nullptr;
 
-std::vector<nap::ObjectPtr<nap::RenderWindowResource>> renderWindows;
+std::vector<nap::ObjectPtr<nap::RenderWindow>> renderWindows;
 nap::ObjectPtr<nap::EntityInstance> slideShowEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance> cameraEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance> rootLayoutEntity = nullptr;
@@ -73,7 +74,7 @@ void onUpdate()
 		std::vector<nap::EntityInstance*> entities;
 		entities.push_back(&resourceManagerService->getRootEntity());
 
-		nap::UIInputRouter& router = uiInputRouter->getComponent<nap::UIInputRouterComponent>().mInputRouter;
+		nap::UIInputRouter& router = uiInputRouter->getComponent<nap::UIInputRouterComponentInstance>().mInputRouter;
 		inputService->processEvents(*renderWindows[0], router, entities);
 	}
 
@@ -97,12 +98,13 @@ void onUpdate()
 
 		// First layout element. We start at -1000.0f, a value in front of the camera that is 'far away' 
 		// We set the position/size of the root layout element to cover the full screen.
-		nap::TransformComponent& transform_component = rootLayoutEntity->getComponent<nap::TransformComponent>();
+		nap::TransformComponentInstance& transform_component = rootLayoutEntity->getComponent<nap::TransformComponentInstance>();
 		transform_component.setTranslate(glm::vec3(window_size.x*0.5, window_size.y*0.5, -1000.0f));
 		transform_component.setScale(glm::vec3(window_size.x, window_size.y, 1.0));
 
+
 		// Update the layout
-		nap::FractionLayoutComponent& layout = rootLayoutEntity->getComponent<nap::FractionLayoutComponent>();
+		nap::FractionLayoutComponentInstance& layout = rootLayoutEntity->getComponent<nap::FractionLayoutComponentInstance>();
 		layout.updateLayout(window_size, glm::mat4(1.0f));
 	}
 
@@ -118,7 +120,7 @@ void onRender()
 	renderService->destroyGLContextResources(renderWindows);
 
 	{
-		nap::RenderWindowResource* render_window = renderWindows[0].get();
+		nap::RenderWindow* render_window = renderWindows[0].get();
 
 		if (cameraEntity != nullptr)
 		{
@@ -128,7 +130,7 @@ void onRender()
 			render_target->setClearColor(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
 			renderService->clearRenderTarget(*render_target, opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH);
 
-			renderService->renderObjects(*render_target, cameraEntity->getComponent<nap::OrthoCameraComponent>());
+			renderService->renderObjects(*render_target, cameraEntity->getComponent<nap::OrthoCameraComponentInstance>());
 
 			render_window->swap();
 		}
@@ -184,25 +186,25 @@ bool init(nap::Core& core)
 	
 
 	uiInputRouter = resourceManagerService->findEntity("UIInputRouterEntity");
-	renderWindows.push_back(resourceManagerService->findObject<nap::RenderWindowResource>("Window"));
+	renderWindows.push_back(resourceManagerService->findObject<nap::RenderWindow>("Window"));
 
 	nap::ObjectPtr<nap::EntityInstance> buttonRightEntity = resourceManagerService->findEntity("ButtonRightEntity");
 	nap::ObjectPtr<nap::EntityInstance> buttonLeftEntity = resourceManagerService->findEntity("ButtonLeftEntity");
 
-	buttonRightEntity->getComponent<nap::PointerInputComponent>().pressed.connect([](const nap::PointerPressEvent& evt)
+	buttonRightEntity->getComponent<nap::PointerInputComponentInstance>().pressed.connect([](const nap::PointerPressEvent& evt)
 	{
 		if (slideShowEntity != nullptr && evt.mButton == nap::EMouseButton::LEFT)
 		{
-			nap::SlideShowComponent& component = slideShowEntity->getComponent<nap::SlideShowComponent>();
+			nap::SlideShowComponentInstance& component = slideShowEntity->getComponent<nap::SlideShowComponentInstance>();
 			component.cycleRight();
 		}
 	});
 
-	buttonLeftEntity->getComponent<nap::PointerInputComponent>().pressed.connect([](const nap::PointerPressEvent& evt)
+	buttonLeftEntity->getComponent<nap::PointerInputComponentInstance>().pressed.connect([](const nap::PointerPressEvent& evt)
 	{
 		if (slideShowEntity != nullptr && evt.mButton == nap::EMouseButton::LEFT)
 		{
-			nap::SlideShowComponent& component = slideShowEntity->getComponent<nap::SlideShowComponent>();
+			nap::SlideShowComponentInstance& component = slideShowEntity->getComponent<nap::SlideShowComponentInstance>();
 			component.cycleLeft();
 		}
 	});
@@ -278,7 +280,6 @@ void runGame(nap::Core& core)
 		// run render call
 		onRender();
 	}
-
 	renderService->shutdown();
 }
        

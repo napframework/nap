@@ -1,18 +1,22 @@
 #pragma once
 
+// Local Includes
 #include "cameracomponent.h"
+
+// External Includes
+#include <nap/dllexport.h>
 
 namespace nap
 {
-	class OrthoCameraComponent;
+	class OrthoCameraComponentInstance;
+	class TransformComponentInstance;
 	class TransformComponent;
-	class TransformComponentResource;
 
 	
 	/**
 	 * Properties for orthographic camera. Used in both resource and instance.
 	 */
-	struct OrthoCameraProperties
+	struct NAPAPI OrthoCameraProperties
 	{
 		float mNearClippingPlane = 1.0f;
 		float mFarClippingPlane = 1000.0f;
@@ -21,19 +25,19 @@ namespace nap
 	/**
 	 * Orthographic camera resource, hold json properties for the camera.
 	 */
-	class OrthoCameraComponentResource : public ComponentResource
+	class NAPAPI OrthoCameraComponent : public Component
 	{
-		RTTI_ENABLE(ComponentResource)
+		RTTI_ENABLE(Component)
 
 		/**
 		 * Camera is dependent on the transform component for calculating the view matrix.
 		 */
-		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) { components.push_back(RTTI_OF(TransformComponentResource)); }
+		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) { components.push_back(RTTI_OF(TransformComponent)); }
 
 		/**
 		 * Returns instance type to create for this ComponentResource.
 		 */
-		virtual const rtti::TypeInfo getInstanceType() const { return RTTI_OF(OrthoCameraComponent); }
+		virtual const rtti::TypeInfo getInstanceType() const { return RTTI_OF(OrthoCameraComponentInstance); }
 
 	public:
 		OrthoCameraProperties mProperties;		// Properties of the camera
@@ -44,12 +48,12 @@ namespace nap
 	 * Be sure to call setRenderTargetSize so that the camera's space is updated correctly.
 	 * The transform to calculate the view matrix is retrieved from the transform component.
 	 */
-	class OrthoCameraComponent : public CameraComponent
+	class NAPAPI OrthoCameraComponentInstance : public CameraComponentInstance
 	{
-		RTTI_ENABLE(CameraComponent)
+		RTTI_ENABLE(CameraComponentInstance)
 	public:
 		// Default constructor
-		OrthoCameraComponent(EntityInstance& entity);
+		OrthoCameraComponentInstance(EntityInstance& entity);
 
 		/**
 		* Initialize this component from its resource
@@ -58,7 +62,7 @@ namespace nap
 		* @param entityCreationParams Parameters required to create new entity instances during init
 		* @param errorState The error object
 		*/
-		virtual bool init(const ObjectPtr<ComponentResource>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
 		/**
 		* This implementation extracts the size in pixels of the render target to make sure that the orthographic
@@ -94,6 +98,6 @@ namespace nap
 		glm::ivec2				mRenderTargetSize;		// The size of the rendertarget we're rendering to
 		
 		OrthoCameraProperties	mProperties;			// These properties are copied from the resource to the instance. When these are changed, only the instance is affected
-		TransformComponent*		mTransformComponent;	// Cached transform component
+		TransformComponentInstance*		mTransformComponent;	// Cached transform component
 	};
 }
