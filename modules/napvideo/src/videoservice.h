@@ -49,9 +49,8 @@ namespace nap
 		std::unique_ptr<MemoryTextureResource2D> mUTexture;
 		std::unique_ptr<MemoryTextureResource2D> mVTexture;
 
-		// Runtime data
 		AVCodec*				mCodec = nullptr;
-		AVCodecContext*			mContext = nullptr;
+		AVCodecContext*			mCodecContext = nullptr;
 		AVFormatContext*		mFormatContext = nullptr;
 		AVFrame*				mFrame = nullptr;
 		int						mVideoStream = -1;
