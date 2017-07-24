@@ -25,6 +25,7 @@
 #include <mousebutton.h>
 #include <sceneservice.h>
 #include <videoservice.h>
+#include <video.h>
 #include "RenderableMeshComponent.h"
 #include "nap/logger.h"
 
@@ -38,7 +39,7 @@ nap::ResourceManagerService* resourceManagerService = nullptr;
 nap::InputService* inputService = nullptr;
 nap::SceneService* sceneService = nullptr;
 nap::VideoService* videoService = nullptr;
-std::vector<nap::ObjectPtr<nap::VideoResource>> videoResources;
+std::vector<nap::ObjectPtr<nap::Video>> videoResources;
 
 std::vector<nap::ObjectPtr<nap::RenderWindow>> renderWindows;
 nap::ObjectPtr<nap::EntityInstance> cameraEntity = nullptr;
@@ -191,7 +192,7 @@ bool init(nap::Core& core)
 	
 	renderWindows.push_back(resourceManagerService->findObject<nap::RenderWindow>("Window"));
 
-	videoResources.push_back(resourceManagerService->findObject<nap::VideoResource>("Video1"));
+	videoResources.push_back(resourceManagerService->findObject<nap::Video>("Video1"));
 
 	for (auto& videoResource : videoResources)
 		videoResource->play();
@@ -270,4 +271,4 @@ void runGame(nap::Core& core)
 	renderService->shutdown();
 }
        
-    
+     
