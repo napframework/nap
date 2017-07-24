@@ -33,6 +33,8 @@
 // Globals
 //////////////////////////////////////////////////////////////////////////
 
+static bool loopVideo = false;
+
 // Nap Objects
 nap::RenderService* renderService = nullptr;
 nap::ResourceManagerService* resourceManagerService = nullptr;
@@ -87,7 +89,7 @@ void onUpdate()
 		float new_window_height = -FLT_MAX;
 		for (auto& video_resource : videoResources)
 		{
-			if (total_update_time >= 10.0f)
+			if (loopVideo && total_update_time >= 10.0f)
 			{
 				video_resource->stop();
 				video_resource->play();

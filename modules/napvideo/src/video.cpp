@@ -419,6 +419,10 @@ namespace nap
 		if (!mPlaying)
 			return true;
 
+		// If the frametime spikes, make sure we re-sync to the first frame again, otherwise we may be running too fast
+		if (deltaTime > 1.0)
+			mVideoClockSecs = DBL_MAX;
+
 		// Update clock if it has been initialized
 		if (mVideoClockSecs != DBL_MAX)
 			mVideoClockSecs += deltaTime;
