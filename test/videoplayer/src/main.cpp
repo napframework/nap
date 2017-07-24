@@ -33,7 +33,7 @@
 // Globals
 //////////////////////////////////////////////////////////////////////////
 
-static bool loopVideo = false;
+static bool loopVideo = true;
 
 // Nap Objects
 nap::RenderService* renderService = nullptr;
@@ -89,12 +89,13 @@ void onUpdate()
 		float new_window_height = -FLT_MAX;
 		for (auto& video_resource : videoResources)
 		{
-			if (loopVideo && total_update_time >= 10.0f)
+			if (loopVideo && total_update_time >= 5.0f)
 			{
 				video_resource->stop();
 				video_resource->play();
 				total_update_time = 0.0f;
 			}
+
 
 			nap::utility::ErrorState error_state;
 			if (!video_resource->update(delta_time, error_state))
@@ -247,6 +248,14 @@ void runGame(nap::Core& core)
 				if (input_event->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
 				{
 					nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(input_event.get());
+
+					if (press_event->mKey == nap::EKeyCode::KEY_f)
+					{
+						static bool fullscreen = true;
+						resourceManagerService->findObject<nap::RenderWindow>("Window")->getWindow()->setFullScreen(fullscreen);
+						fullscreen = !fullscreen;
+					}
+
 					if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
 						loop = false;
 				}
