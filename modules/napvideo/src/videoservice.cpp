@@ -46,6 +46,11 @@ namespace nap
 	VideoResource::~VideoResource()
 	{
 		stop();
+
+		avcodec_close(mCodecContext);
+		avcodec_free_context(&mCodecContext);
+		avformat_close_input(&mFormatContext);
+		avformat_free_context(mFormatContext);
 	}
 
 	bool VideoResource::init(nap::utility::ErrorState& errorState)
@@ -159,53 +164,122 @@ namespace nap
 		if (!mPlaying)
 			return;
 
-		mExitThreadSignalled = true;
+		exitIOThread();
+		exitDecodeThread();
 		mPlaying = false;
-
-		// Notify conditions so threads waiting on them unblock
-		mPacketQueueRoomAvailableCondition.notify_one();
-		mPacketAvailableCondition.notify_one();
-		mFrameQueueRoomAvailableCondition.notify_one();
 
 		// Join thread
 		mIOThread.join();
 		mDecodeThread.join();
+
+		while (!mPacketQueue.empty())
+		{
+			AVPacket* packet = mPacketQueue.front();
+			mPacketQueue.pop();
+			av_free_packet(packet);
+		}
+
+		while (!mFrameQueue.empty())
+		{
+			Frame frame = mFrameQueue.front();
+			mFrameQueue.pop();
+			av_frame_unref(frame.mFrame);
+			av_frame_free(&frame.mFrame);
+		}
 	}
 
 
 	void VideoResource::ioThread()
 	{
-		while (!mExitThreadSignalled)
+		// Helper to free packet when it goes out of scope
+		struct PacketWrapper
+		{
+			~PacketWrapper() { av_free_packet(mPacket); }
+			AVPacket* mPacket = av_packet_alloc();
+		};
+
+		while (!mExitIOThreadSignalled)
 		{
 			// Read packets from the stream and push them onto the packet queue
-			AVPacket* packet = av_packet_alloc();
-			int result = av_read_frame(mFormatContext, packet);
+			PacketWrapper packet;
+			int result = av_read_frame(mFormatContext, packet.mPacket);
 			if (result == AVERROR_EOF)
 			{
-				// stop?
-				mPlaying = false;
+				mPacketsFinished = true;
 				return;
 			}
 			else if (result < 0)
 			{
-				mPlaying = false;
+				mPacketsFinished = true;
+				mErrorString = error_to_string(result);
 				return;
 			}
 
 			// Is this a packet from the video stream?
-			if (packet->stream_index != mVideoStream)
+			if (packet.mPacket->stream_index != mVideoStream)
 				continue;
 
 			{
 				std::unique_lock<std::mutex> lock(mPacketQueueMutex);
-				mPacketQueueRoomAvailableCondition.wait(lock, [this]() { return mPacketQueue.size() < 3 || mExitThreadSignalled; });
-				if (mExitThreadSignalled)
+				mPacketQueueRoomAvailableCondition.wait(lock, [this]() { return mPacketQueue.size() < 3 || mExitIOThreadSignalled; });
+				if (mExitIOThreadSignalled)
 					break;
 
-				mPacketQueue.push(packet);
-				mPacketAvailableCondition.notify_one();
+				mPacketQueue.push(packet.mPacket);
+				packet.mPacket = nullptr;
+
+				mPacketAvailableCondition.notify_one();				
 			}
 		}
+	}
+
+
+	void VideoResource::exitIOThread()
+	{
+		mExitIOThreadSignalled = true;
+		mPacketQueueRoomAvailableCondition.notify_one();
+	}
+
+
+	bool VideoResource::decodeFrame(AVFrame& frame)
+	{
+		// Here we pull packets from the queue and decode them until all data for this frame is processed
+		int frame_finished = 0;
+		while (!frame_finished)
+		{
+			AVPacket* packet;
+			{
+				std::unique_lock<std::mutex> lock(mPacketQueueMutex);
+				mPacketAvailableCondition.wait(lock, [this]() { return !mPacketQueue.empty() || mExitDecodeThreadSignalled || mPacketsFinished; });
+				if (mExitDecodeThreadSignalled)
+					return false;
+
+				if (mPacketQueue.empty() && mPacketsFinished)
+				{
+					mFramesFinished = true;
+					return false;
+				}
+
+				packet = mPacketQueue.front();
+				mPacketQueue.pop();
+				mPacketQueueRoomAvailableCondition.notify_one();
+			}
+
+			int result = avcodec_decode_video2(mCodecContext, &frame, &frame_finished, packet);
+
+			// Free the packet that was allocated by av_read_frame in the IO thread
+			av_free_packet(packet);
+
+			if (result < 0)
+			{
+				mFramesFinished = true;
+				exitIOThread();
+				mErrorString = error_to_string(result);
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 
@@ -222,34 +296,11 @@ namespace nap
 			stream_start_time = mFormatContext->streams[mVideoStream]->start_time *av_q2d(mFormatContext->streams[mVideoStream]->time_base);
 
 		AVFrame* frame = av_frame_alloc();
-		while (!mExitThreadSignalled)
+
+		while (!mExitDecodeThreadSignalled)
 		{
-			// Here we pull packets from the queue and decode them until all data for this frame is processed
-			int frame_finished = 0;
-			while (!frame_finished)
-			{
-				AVPacket* packet;
-				{
-					std::unique_lock<std::mutex> lock(mPacketQueueMutex);
-					mPacketAvailableCondition.wait(lock, [this]() { return !mPacketQueue.empty() || mExitThreadSignalled; });
-					if (mExitThreadSignalled)
-						return;
-
-					packet = mPacketQueue.front();
-					mPacketQueue.pop();
-					mPacketQueueRoomAvailableCondition.notify_one();
-				}
-
-				int result = avcodec_decode_video2(mCodecContext, frame, &frame_finished, packet);
-				if (result < 0)
-				{
-					mPlaying = false;
-					return;
-				}
-
-				// Free the packet that was allocated by av_read_frame in the IO thread
-				av_free_packet(packet);
-			}
+			if (!decodeFrame(*frame))
+				break;
 
 			// We calculate when the next frame needs to be displayed. The videostream contains PTS information, but there are cases
 			// when there is no PTS available, we need to account for these cases.
@@ -280,21 +331,30 @@ namespace nap
 			// Push the frame onto the frame queue
 			{
 				std::unique_lock<std::mutex> lock(mFrameQueueMutex);
-				mFrameQueueRoomAvailableCondition.wait(lock, [this]() { return mFrameQueue.size() < 3 || mExitThreadSignalled; });
-				if (mExitThreadSignalled)
-					return;
+				mFrameQueueRoomAvailableCondition.wait(lock, [this]() { return mFrameQueue.size() < 3 || mExitDecodeThreadSignalled; });
+				if (mExitDecodeThreadSignalled)
+					break;
 
 				mFrameQueue.push(new_frame);
 				mFrameDataAvailableCondition.notify_one();
 			}
 		}
+
+		av_frame_free(&frame);
+	}
+
+	void VideoResource::exitDecodeThread()
+	{
+		mExitDecodeThreadSignalled = true;
+		mPacketAvailableCondition.notify_one();
+		mFrameQueueRoomAvailableCondition.notify_one();
 	}
 
 
-	void VideoResource::update(double deltaTime)
+	bool VideoResource::update(double deltaTime, utility::ErrorState& errorState)
 	{
 		if (!mPlaying)
-			return;
+			return true;
 
 		// Lazy init of video clock
 		if (mVideoClockSecs == DBL_MAX)
@@ -312,8 +372,14 @@ namespace nap
 			// This can be enabled to block waiting until data is available
 //			mFrameDataAvailableCondition.wait(lock, [this]() { return !mFrameQueue.empty(); });
 
+			if (mFrameQueue.empty() && mFramesFinished)
+			{
+				mPlaying = false;
+				return errorState.check(mErrorString.empty(), mErrorString);
+			}
+
 			if (mFrameQueue.empty() || mVideoClockSecs < mFrameQueue.front().mPTSSecs)
-				return;
+				return true;
 
 			cur_frame = mFrameQueue.front();
 			mFrameQueue.pop();
@@ -333,6 +399,8 @@ namespace nap
 		// Destroy frame that was allocated in the decode thread, after it has been processed
 		av_frame_unref(cur_frame.mFrame);
 		av_frame_free(&cur_frame.mFrame);
+
+		return true;
 	}
 }
 

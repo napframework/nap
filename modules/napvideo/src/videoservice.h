@@ -26,9 +26,9 @@ namespace nap
 
 	public:
 		~VideoResource();
-		virtual bool init(nap::utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
-		void update(double deltaTime);
+		bool update(double deltaTime, utility::ErrorState& errorState);
 		void play();
 		void stop();
 	
@@ -43,7 +43,10 @@ namespace nap
 
 	private:
 		void decodeThread();
+		void exitDecodeThread();
 		void ioThread();
+		void exitIOThread();
+		bool decodeFrame(AVFrame& frame);
 
 	private:
 		std::unique_ptr<MemoryTexture2D> mYTexture;
@@ -59,6 +62,8 @@ namespace nap
 		int						mHeight = 0;
 		double					mPrevPTSSecs = 0.0;
 		double					mVideoClockSecs = DBL_MAX;
+
+		std::string				mErrorString;
 
 		struct Frame
 		{
@@ -76,7 +81,10 @@ namespace nap
 		std::condition_variable mPacketAvailableCondition;
 		std::condition_variable mPacketQueueRoomAvailableCondition;
 		std::queue<AVPacket*>	mPacketQueue;
-		bool					mExitThreadSignalled = false;
+		bool					mExitIOThreadSignalled = false;
+		bool					mExitDecodeThreadSignalled = false;
+		bool					mPacketsFinished = false;
+		bool					mFramesFinished = false;
 	};
 
 	/**

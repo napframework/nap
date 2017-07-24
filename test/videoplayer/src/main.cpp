@@ -83,7 +83,11 @@ void onUpdate()
 		float new_window_height = -FLT_MAX;
 		for (auto& video_resource : videoResources)
 		{
-			video_resource->update(delta_time);
+			nap::utility::ErrorState error_state;
+			if (!video_resource->update(delta_time, error_state))
+			{
+				nap::Logger::fatal(error_state.toString());
+			}
 			
 			float aspect_ratio = (float)video_resource->getWidth() / (float)video_resource->getHeight();
 			new_window_height = std::max(new_window_height, window_size.x / aspect_ratio);
