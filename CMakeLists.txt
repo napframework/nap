@@ -66,6 +66,12 @@ add_subdirectory(test/tommy)
 add_subdirectory(test/steef)
 add_subdirectory(test/serializationtest)
 
+if (APPLE)
+    set(GENERATE_XCODE_PROJECT_TARGET generateXcodeProject)
+    add_custom_target(generateXcodeProject cmake -H. -Bxcode -G Xcode -DCMAKE_BUILD_TYPE=Debug ../)
+endif()
+#add_dependencies(${PROJECT_NAME} ${GENERATE_XCODE_PROJECT_TARGET})
+
 # Modules
 add_subdirectory(modules/napinput)
 add_subdirectory(modules/naprender)
