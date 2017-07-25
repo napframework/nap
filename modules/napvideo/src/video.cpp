@@ -20,13 +20,14 @@ RTTI_END_CLASS
 
 namespace nap
 {
+
 	const std::string error_to_string(int err)
 	{
 		char error_buf[256];
 		av_make_error_string(error_buf, sizeof(error_buf), err);
-
 		return std::string(error_buf);
 	}
+
 
 	Video::~Video()
 	{
@@ -37,6 +38,7 @@ namespace nap
 		avformat_close_input(&mFormatContext);
 		avformat_free_context(mFormatContext);
 	}
+
 
 	bool Video::init(nap::utility::ErrorState& errorState)
 	{
@@ -82,6 +84,7 @@ namespace nap
 		if (!errorState.check(error == 0, "Unable to copy codec context: %s", error_to_string(error).c_str()))
 			return false;
 
+		// This option causes the codec context to spawn threads internally for decoding, speeding up the decoding process
 		AVDictionary* opts = nullptr;
 		av_dict_set(&opts, "threads", "auto", 0);
 
@@ -154,6 +157,8 @@ namespace nap
 
 	void Video::play(double startTimeSecs)
 	{
+		assert(!mPlaying);
+
 		// Reset all state to make sure threads don't immediately exit from a previous 'stop' call
 		mExitIOThreadSignalled = false;
 		mExitDecodeThreadSignalled = false;
@@ -185,6 +190,7 @@ namespace nap
 		clearFrameQueue();
 	}
 
+
 	void Video::seek(double seconds)
 	{
 		// All timing information is relative to the stream start. If the stream start has no PTS value, we assume zero to be the start
@@ -196,6 +202,7 @@ namespace nap
 		mVideoClockSecs = DBL_MAX;
 	}
 
+
 	void Video::clearPacketQueue()
 	{
 		std::unique_lock<std::mutex> lock(mPacketQueueMutex);
@@ -206,6 +213,7 @@ namespace nap
 			av_free_packet(packet);
 		}
 	}
+
 
 	void Video::clearFrameQueue()
 	{
@@ -219,6 +227,7 @@ namespace nap
 		}
 	}
 
+
 	void Video::ioThread()
 	{
 		// Helper to free packet when it goes out of scope
@@ -230,7 +239,7 @@ namespace nap
 
 		while (!mExitIOThreadSignalled)
 		{
-			// Seek to target
+			// If a seek target is set, seek to that position
 			if (mSeekTarget != -1)
 			{
 				int result = av_seek_frame(mFormatContext, mVideoStream, mSeekTarget, 0);
@@ -241,6 +250,7 @@ namespace nap
 					return;
 				}
 
+				// After seeking we should clear any queues. We will clear the packet queue here, the frame queue can only be cleared by the decode thread.
 				clearPacketQueue();
 
 				{
@@ -406,6 +416,7 @@ namespace nap
 		av_frame_free(&frame);
 	}
 
+
 	void Video::exitDecodeThread()
 	{
 		mExitDecodeThreadSignalled = true;
@@ -419,7 +430,8 @@ namespace nap
 		if (!mPlaying)
 			return true;
 
-		// If the frametime spikes, make sure we re-sync to the first frame again, otherwise we may be running too fast
+		// If the frametime spikes, make sure we re-sync to the first frame again, otherwise it may be possible that
+		// the main thread is trying to catch up, but it never really can catch up
 		if (deltaTime > 1.0)
 			mVideoClockSecs = DBL_MAX;
 
