@@ -14,7 +14,7 @@ namespace nap
 		glm::mat4 new_transform = parentTransform;
 
 		bool is_dirty = parentDirty;
-		TransformComponent* transform = entity.findComponent<TransformComponent>();
+		TransformComponentInstance* transform = entity.findComponent<TransformComponentInstance>();
 		if (transform && (transform->isDirty() || parentDirty))
 		{
 			is_dirty = true;

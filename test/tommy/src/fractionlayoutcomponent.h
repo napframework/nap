@@ -1,14 +1,18 @@
 #pragma once
 
-#include "nap/componentinstance.h"
+// External Includes
+#include <nap/component.h>
+#include <glm/glm.hpp>
+
+// Local Includes
 #include "renderattributes.h"
 
 namespace nap
 {
-	class FractionLayoutComponent;
+	class FractionLayoutComponentInstance;
+	class TransformComponentInstance;
 	class TransformComponent;
-	class TransformComponentResource;
-	class RenderableMeshComponent;
+	class RenderableMeshComponentInstance;
 
 	/**
 	 * Struct to contain the properties of a FractionLayout, so that they can be shared between the Resource and Instance
@@ -44,16 +48,16 @@ namespace nap
 	/**
 	 * The Resource for the FractionLayoutComponent (i.e. what the user specifies in json)
 	 */
-	class FractionLayoutComponentResource : public ComponentResource
+	class FractionLayoutComponent : public Component
 	{
-		RTTI_ENABLE(ComponentResource)
+		RTTI_ENABLE(Component)
 
 		/**
 		 * Get the type of ComponentInstance to create
 		 */
 		virtual const rtti::TypeInfo getInstanceType() const 
 		{ 
-			return RTTI_OF(FractionLayoutComponent); 
+			return RTTI_OF(FractionLayoutComponentInstance); 
 		}
 		
 		/**
@@ -61,7 +65,7 @@ namespace nap
 		 */
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components)
 		{
-			components.push_back(RTTI_OF(TransformComponentResource));
+			components.push_back(RTTI_OF(TransformComponent));
 		}
 
 	public:
@@ -73,12 +77,12 @@ namespace nap
 	 * The FractionLayoutComponent (runtime instance). This component is used to position and size an entity, relative to its parent (i.e. in fractions)
 	 * It is assumed that an orthographic camera is used, with pixel-space coordinates
 	 */
-	class FractionLayoutComponent : public ComponentInstance
+	class FractionLayoutComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 
 	public:
-		FractionLayoutComponent(EntityInstance& entity) :
+		FractionLayoutComponentInstance(EntityInstance& entity) :
 			ComponentInstance(entity)
 		{
 		}
@@ -86,7 +90,7 @@ namespace nap
 		/**
 		 * Init this object after deserialization
 		 */
-		bool init(const ObjectPtr<ComponentResource>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
+		bool init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
 
 		/** 
 		 * Update the layout for this entity
@@ -98,7 +102,7 @@ namespace nap
 
 	private:
 		FractionLayoutProperties	mProperties;
-		TransformComponent*			mTransformComponent = nullptr;
-		RenderableMeshComponent*	mRenderableMeshComponent = nullptr;
+		TransformComponentInstance*			mTransformComponent = nullptr;
+		RenderableMeshComponentInstance*	mRenderableMeshComponent = nullptr;
 	};
 }

@@ -9,7 +9,7 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	void InputService::processEvents(WindowResource& window, InputRouter& inputRouter, const EntityList& entities)
+	void InputService::processEvents(Window& window, InputRouter& inputRouter, const EntityList& entities)
 	{
 		int window_number = static_cast<int>(window.getNumber());
 

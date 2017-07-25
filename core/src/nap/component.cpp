@@ -1,35 +1,8 @@
-// Nap Includes
-#include <nap/component.h>
-#include <nap/core.h>
-#include <nap/logger.h>
-#include <nap/entity.h>
+#include "nap/component.h"
+#include "nap/entity.h"
 
-// RTTI Define
-RTTI_DEFINE_BASE(nap::Component)
+RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::ComponentInstance, nap::EntityInstance&)
+RTTI_END_CLASS
 
-namespace nap
-{
-	// Locks the component
-	void nap::Component::lockComponent() { mMutex.lock(); }
-
-
-	// Unlocks the component
-	void Component::unlockComponent() { mMutex.unlock(); }
-
-
-	Entity* Component::getParent() const
-	{
-		return static_cast<Entity*>(getParentObject());
-	}
-    
-    
-    Entity* Component::getRoot()
-    {
-        Object* root = getRootObject();
-        if (root->get_type().is_derived_from<Entity>())
-            return static_cast<Entity*>(root);
-        return nullptr;
-    }
-    
-
-}
+RTTI_BEGIN_BASE_CLASS(nap::Component)
+RTTI_END_CLASS

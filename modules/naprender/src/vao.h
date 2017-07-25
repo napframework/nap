@@ -1,7 +1,7 @@
 #pragma once
 
 #include "material.h"
-#include "meshresource.h"
+#include "mesh.h"
 
 #include <type_traits>
 
@@ -23,7 +23,7 @@ namespace nap
 		/**
 		 * ctor
 		 */
-		VAOKey(const Material& material, const MeshResource& meshResource);
+		VAOKey(const Material& material, const Mesh& meshResource);
 
 		/**
 		* Equality operator, for use in maps
@@ -31,7 +31,7 @@ namespace nap
 		bool operator==(const VAOKey& rhs) const	{ return &mMaterial == &rhs.mMaterial && &mMeshResource == &rhs.mMeshResource; }
 
 		const Material&			mMaterial;
-		const MeshResource&		mMeshResource;
+		const Mesh&		mMeshResource;
 	};
 
 
@@ -80,7 +80,7 @@ namespace std
 		std::size_t operator()(const nap::VAOKey& key) const
 		{
 			std::size_t value1 = std::hash<nap::Material*>{}((nap::Material*)&key.mMaterial);
-			std::size_t value2 = std::hash<nap::MeshResource*>{}((nap::MeshResource*)&key.mMeshResource);
+			std::size_t value2 = std::hash<nap::Mesh*>{}((nap::Mesh*)&key.mMeshResource);
 			return value1 ^ value2;
 		}
 	};

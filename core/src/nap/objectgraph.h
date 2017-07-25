@@ -97,7 +97,7 @@ namespace nap
 		 */
 		Node* findNode(const std::string& ID) const
 		{
-			NodeMap::const_iterator iter = mNodes.find(ID);
+			typename NodeMap::const_iterator iter = mNodes.find(ID);
 			if (iter == mNodes.end())
 				return nullptr;
 			
@@ -171,7 +171,7 @@ namespace nap
 		Node* getOrCreateItemNode(const ITEM& item)
 		{
 			Node* result = nullptr;
-			NodeMap::iterator iter = mNodes.find(item.getID());
+			typename NodeMap::iterator iter = mNodes.find(item.getID());
 			if (iter == mNodes.end())
 			{
 				auto node = std::make_unique<Node>();

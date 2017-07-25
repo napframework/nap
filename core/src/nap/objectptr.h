@@ -1,5 +1,9 @@
 #pragma once
 
+// Local Includes
+#include "dllexport.h"
+
+// External Includes
 #include <unordered_set>
 #include <rtti/rttiobject.h>
 
@@ -23,7 +27,7 @@ namespace nap
 	 * (which is obviously incorrect), this may cause dangling pointers in this manager. The only case
 	 * where this may happen is when destructors aren't virtual and the derived class holds ObjectPtrs.
 	 */
-	class ObjectPtrManager
+	class NAPAPI ObjectPtrManager
 	{
 	public:
 		typedef std::unordered_set<ObjectPtrBase*> ObjectPtrSet;
@@ -70,7 +74,7 @@ namespace nap
 	 * so that ObjectPtrManager can contain a set of pointers with a known base type (RTTIObject), while the 
 	 * clients use derived pointers that are strongly typed.
 	 */
-	class ObjectPtrBase
+	class NAPAPI ObjectPtrBase
 	{
 	private:
 		ObjectPtrBase() = default;

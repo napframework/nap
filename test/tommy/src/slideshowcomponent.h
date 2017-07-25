@@ -1,32 +1,32 @@
 #pragma once
 
-#include "nap/componentinstance.h"
-#include "nap/entityinstance.h"
-#include "imageresource.h"
+#include "nap/component.h"
+#include "nap/entity.h"
+#include "image.h"
 #include <glm/glm.hpp>
 
 namespace nap
 {
-	class SlideShowComponent;
+	class SlideShowComponentInstance;
 
 	/**
 	 * Resource for SlideShowComponent, holds static data from file.
 	 */
-	class SlideShowComponentResource : public ComponentResource
+	class SlideShowComponent : public Component
 	{
-		RTTI_ENABLE(ComponentResource)
+		RTTI_ENABLE(Component)
 
 		/**
 		 * @return Instance type to create for this resource.
 		 */
 		virtual const rtti::TypeInfo getInstanceType() const
 		{
-			return RTTI_OF(SlideShowComponent);
+			return RTTI_OF(SlideShowComponentInstance);
 		}
 
 	public:
- 		std::vector<ObjectPtr<nap::ImageResource>>		mImages;			///< Array of images to display in the slidesho2
-		ObjectPtr<nap::EntityResource>					mEntityPrototype;	///< Prototype of entity to instantiate during Instance::init
+ 		std::vector<ObjectPtr<nap::Image>>		mImages;			///< Array of images to display in the slidesho2
+		ObjectPtr<nap::Entity>					mEntityPrototype;	///< Prototype of entity to instantiate during Instance::init
 	};
 
 	/**
@@ -35,18 +35,18 @@ namespace nap
 	 * MaterialInstance properties.
 	 * It is assumed that any clipping that is required is done a different system, for instance, the layout system.
 	 */
-	class SlideShowComponent : public ComponentInstance
+	class SlideShowComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 
 	public:
-		SlideShowComponent(EntityInstance& entity);
+		SlideShowComponentInstance(EntityInstance& entity);
 
 		/**
 		 * Spawns left/center/right children, sets intial textures and positions.
 		 * @return false if prototype does not match requirements.
 		 */
-		virtual bool init(const ObjectPtr<ComponentResource>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
 		/**
 		 * Updates animation.
@@ -70,7 +70,7 @@ namespace nap
 		void setVisible(nap::EntityInstance& entity, bool visible);
 
 	private:
-		ObjectPtr<SlideShowComponentResource>		mResource;				// Stati resource data
+		ObjectPtr<SlideShowComponent>		mResource;				// Stati resource data
 		ObjectPtr<nap::EntityInstance>				mLeftChildInstance;		// Instance of left child
 		ObjectPtr<nap::EntityInstance>				mCenterChildInstance;	// Instance of center child
 		ObjectPtr<nap::EntityInstance>				mRightChildInstance;	// Instance of right child

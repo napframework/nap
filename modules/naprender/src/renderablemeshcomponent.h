@@ -2,9 +2,10 @@
 
 // Local Includes
 #include "rendercomponent.h"
-#include "nap/objectptr.h"
 #include "vao.h"
 
+// External Includes
+#include <nap/objectptr.h>
 
 namespace nap
 {
@@ -17,16 +18,16 @@ namespace nap
 		float mHeight = 0.0f;
 	};
 
-	class MeshResource;
+	class Mesh;
 	class MaterialInstance;
+	class TransformComponentInstance;
 	class TransformComponent;
-	class TransformComponentResource;
-	class RenderableMeshComponent;
+	class RenderableMeshComponentInstance;
 
 	/**
 	 * Resource class for RenderableMeshResource. Hold static data as read from file.
 	 */
-	class RenderableMeshComponentResource : public RenderableComponentResource
+	class NAPAPI RenderableMeshComponent : public RenderableComponentResource
 	{
 		RTTI_ENABLE(RenderableComponentResource)
 
@@ -35,7 +36,7 @@ namespace nap
 		 */
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components)
 		{
-			components.push_back(RTTI_OF(TransformComponentResource));
+			components.push_back(RTTI_OF(TransformComponent));
 		}
 
 		/**
@@ -43,11 +44,11 @@ namespace nap
 		 */
 		virtual const rtti::TypeInfo getInstanceType() const
 		{
-			return RTTI_OF(RenderableMeshComponent);
+			return RTTI_OF(RenderableMeshComponentInstance);
 		}
 
 	public:
-		ObjectPtr<MeshResource>				mMeshResource;						///< Resource to render
+		ObjectPtr<Mesh>				mMeshResource;						///< Resource to render
 		MaterialInstanceResource			mMaterialInstanceResource;			///< MaterialInstance, which is used to override uniforms for this instance
 		Rect								mClipRect;							///< Clipping rectangle, in pixel coordinates
 	};
@@ -59,17 +60,17 @@ namespace nap
 	 * uniform shader values from that material for this particular instance, the 
 	 * component has a MaterialInstance.
 	 */
-	class RenderableMeshComponent : public RenderableComponent
+	class NAPAPI RenderableMeshComponentInstance : public RenderableComponentInstance
 	{
-		RTTI_ENABLE(RenderableComponent)
+		RTTI_ENABLE(RenderableComponentInstance)
 
 	public:
-		RenderableMeshComponent(EntityInstance& entity);
+		RenderableMeshComponentInstance(EntityInstance& entity);
 
 		/**
 		 * Acquires VAO, copies clipping rectangle, initializes material instance.
 		 */
-		virtual bool init(const ObjectPtr<ComponentResource>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
 		/**
 		 * Renders the model from the ModelResource, using the material on the ModelResource.
@@ -97,8 +98,8 @@ namespace nap
 		void setBlendMode();
 
 	private:
-		ObjectPtr<RenderableMeshComponentResource>	mResource;				// Pointer to resource of this instance
-		TransformComponent*							mTransformComponent;	// Cached pointer to transform
+		ObjectPtr<RenderableMeshComponent>	mResource;				// Pointer to resource of this instance
+		TransformComponentInstance*							mTransformComponent;	// Cached pointer to transform
 		std::unique_ptr<VAOHandle>					mVAOHandle;				// Handle to Vertex Array Object
 		MaterialInstance							mMaterialInstance;		// MaterialInstance
 		bool										mVisible = true;		// Whether this instance is visible or not

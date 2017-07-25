@@ -141,7 +141,7 @@ namespace nap
 		}
 
 	private:
-		template<typename... Args> friend class Signal;
+		template<typename... Args_> friend class Signal;
 
 		void addCause(Signal<Args...>& event);
 		void removeCause(Signal<Args...>& event);
@@ -282,7 +282,7 @@ namespace nap
 	template <typename... Args>
 	void Slot<Args...>::removeCause(Signal<Args...>& event)
 	{
-		for (SignalList::iterator pos = mCauses.begin(); pos != mCauses.end(); ++pos)
+		for (typename SignalList::iterator pos = mCauses.begin(); pos != mCauses.end(); ++pos)
 		{
 			if ((*pos) == &event)
 			{

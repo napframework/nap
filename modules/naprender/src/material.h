@@ -1,25 +1,24 @@
 #pragma once
 
 // External includes
-#include <nap/serviceablecomponent.h>
-#include <nap/attribute.h>
-#include <nap/resourcelinkattribute.h>
 #include <nap/objectptr.h>
+#include <nap/dllexport.h>
 
 // Local includes
-#include "shaderresource.h"
-#include "imageresource.h"
-#include "uniforms.h"
+#include "shader.h"
+#include "image.h"
 #include "nmesh.h"
+#include "uniformbinding.h"
 
 namespace nap
 {
 	class Material;
+	class MaterialInstance;
 
 	/**
 	* Blend mode for Materials.
 	*/
-	enum class EBlendMode
+	enum class NAPAPI EBlendMode
 	{
 		NotSet,					// Default value for MaterialInstances, means that the Material's blend mode is used instead
 
@@ -32,7 +31,7 @@ namespace nap
 	* Determines how to z-buffer is used for reading and writing.
 	* When inheriting from blend mode
 	*/
-	enum class EDepthMode
+	enum class NAPAPI EDepthMode
 	{
 		NotSet,					// Default value for MaterialInstances, means that the Material's blend is used instead
 
@@ -45,90 +44,10 @@ namespace nap
 
 
 	/**
-	* Binds the Uniform data to the declaration from the shader. Together
-	* they can be used to push the uniform.
-	*/
-	template<typename UNIFORM>
-	struct UniformBinding
-	{
-		UniformBinding(std::unique_ptr<UNIFORM>&& uniform, const opengl::UniformDeclaration& declaration) :
-			mUniform(std::move(uniform)),
-			mDeclaration(&declaration)
-		{
-		}
-
-		UniformBinding(UniformBinding&& other) :
-			mUniform(std::move(other.mUniform)),
-			mDeclaration(other.mDeclaration)
-		{
-		}
-
-		UniformBinding& operator=(UniformBinding&& other)
-		{
-			mUniform = std::move(other.mUniform);
-			mDeclaration = other.mDeclaration;
-			return *this;
-		}
-
-		std::unique_ptr<UNIFORM> mUniform;
-		const opengl::UniformDeclaration* mDeclaration;
-	};
-
-	using UniformTextureBindings = std::unordered_map<std::string, UniformBinding<UniformTexture>>;
-	using UniformValueBindings = std::unordered_map<std::string, UniformBinding<UniformValue>>;
-
-
-	/**
-	 * Base class for both Material and MaterialInstance. Basic support for uniforms.
-	 */
-	class UniformContainer
-	{
-		RTTI_ENABLE()
-	public:
-
-		/**
-		 * @return a uniform texture object that can be used to set a texture or value.
-		 * If the uniform is not found, returns nullptr.
-		 */
-		template<typename T>
-		T* findUniform(const std::string& name);
-
-		/**
-		 * @return a uniform object that can be used to set a texture or value.
-		 * If the uniform is not found it will assert.
-		 */
-		template<typename T>
-		T& getUniform(const std::string& name);
-
-		/**
-		 * @return All texture uniform bindings.
-		 */
-		const UniformTextureBindings& getUniformTextureBindings() { return mUniformTextureBindings; }
-
-		/**
-		 * @return All value uniform bindings.
-		 */
-		const UniformValueBindings& getUniformValueBindings() { return mUniformValueBindings; }
-
-	protected:
-		/**
-		 * Puts the uniform into either the texture or value mapping.
-		 * @param uniform: the uniform to add. Ownership is transferred.
-		 * @param declaration: the shader uniform declaration to bind the uniform to.
-		 * @return reference to the newly added uniform.
-		 */
-		Uniform& AddUniform(std::unique_ptr<Uniform> uniform, const opengl::UniformDeclaration& declaration);
-
-	private:
-		UniformTextureBindings		mUniformTextureBindings;	///< Runtime map of texture uniforms (superset of texture uniforms in mUniforms due to default uniforms).
-		UniformValueBindings		mUniformValueBindings;		///< Runtime map of value uniforms (superset of value uniforms in mUniforms due to default uniforms).
-	};
-
-	/**
 	* MaterialInstanceResource is the 'resource' or 'data' counterpart of MaterialInstance, intended to be used 
 	* as fields in ComponentResources. The object needs to be passed to MaterialInstance's init() function.
 	*/
-	class MaterialInstanceResource
+	class NAPAPI MaterialInstanceResource
 	{
 	public:
 		std::vector<ObjectPtr<Uniform>>		mUniforms;										///< Uniforms that you're overriding
@@ -142,9 +61,9 @@ namespace nap
 	 * ComponentInstances. It needs to be initialized with a MaterialInstanceResource object to fill it's
 	 * runtime data. init() needs to be called from the ComponentInstance's init() function.
 	 */
-	class MaterialInstance : public UniformContainer
+	class NAPAPI MaterialInstance : public UniformContainer
 	{
-		RTTI_ENABLE(UniformContainer)
+		RTTI_ENABLE()
 	public:
 		/**
 		 * For each uniform in mUniforms, creates a mapping.
@@ -157,18 +76,6 @@ namespace nap
 		Material* getMaterial();
 
 		/**
-		 * Get a uniform for this material instance. This means that the uniform returned is only applicable
-		 * to this instance. In order to change a uniform so that it's value is shared among materials, use
-		 * getMaterial().getUniform().
-		 * This function will assert if the name of the uniform does not match the type that you are trying to 
-		 * create.
-		 * @param name: the name of the uniform as it is in the shader.
-		 * @return reference to the uniform that was found or created.
-		 */
-		template<typename T>
-		T& getOrCreateUniform(const std::string& name);
-
-		/**
 		* @return If blend mode was overridden for this material, returns blend mode, otherwise material's blendmode.
 		*/
 		EBlendMode getBlendMode() const;
@@ -178,9 +85,25 @@ namespace nap
 		*/
 		EDepthMode getDepthMode() const;
 
+		/**
+		* Get a uniform for this material instance. This means that the uniform returned is only applicable
+		* to this instance. In order to change a uniform so that it's value is shared among materials, use
+		* getMaterial().getUniforms().getUniform().
+		* This function will assert if the name of the uniform does not match the type that you are trying to
+		* create.
+		* @param name: the name of the uniform as it is in the shader.
+		* @return reference to the uniform that was found or created.
+		*/
+		template<typename T>
+		T& getOrCreateUniform(const std::string& name);
+
 	private:
+		/**
+		 * Creates a new uniform with the given name
+		 */
 		Uniform& createUniform(const std::string& name);
 
+		//. Resource this instance is associated with
 		MaterialInstanceResource* mResource;
 	};
 
@@ -192,9 +115,9 @@ namespace nap
 	* on the material, all the objects that use this material will use that value. To change uniform values
 	* per object, set uniform values on MaterialInstances.
 	*/
-	class Material : public rtti::RTTIObject, public UniformContainer
+	class NAPAPI Material : public rtti::RTTIObject, public UniformContainer
 	{
-		RTTI_ENABLE(rtti::RTTIObject, UniformContainer)
+		RTTI_ENABLE(rtti::RTTIObject)
 	public:
 
 		/**
@@ -235,12 +158,12 @@ namespace nap
 		 * Utility for getting the shader resource
 		 * @return the link as a shader resource, nullptr if not linked
 		 */
-		ShaderResource* getShader() const { return mShader.get(); }
+		Shader* getShader() const				{ return mShader.get(); }
 
 		/**
 		* @return Blending mode for this material
 		*/
-		EBlendMode getBlendMode() const { assert(mBlendMode != EBlendMode::NotSet); return mBlendMode; }
+		EBlendMode getBlendMode() const					{ assert(mBlendMode != EBlendMode::NotSet); return mBlendMode; }
 
 		/**
 		* @return Depth mode mode for this material
@@ -261,9 +184,9 @@ namespace nap
 	public:
 		std::vector<ObjectPtr<Uniform>>			mUniforms;											///< Static uniforms (as read from file, or as set in code before calling init())
 		std::vector<VertexAttributeBinding>		mVertexAttributeBindings;							///< Mapping from mesh vertex attr to shader vertex attr
-		ObjectPtr<ShaderResource>				mShader = nullptr;									///< The shader that this material is using
+		ObjectPtr<Shader>				mShader = nullptr;									///< The shader that this material is using
 		EBlendMode								mBlendMode = EBlendMode::Opaque;					///< Blend mode for this material
-		EDepthMode								mDepthMode = EDepthMode::InheritFromBlendMode;		///< Determines how the Z buffer is used
+		EDepthMode								mDepthMode = EDepthMode::InheritFromBlendMode;		///< Determines how the Z buffer is used									///< Holds all the uniform values
 	};
 
 

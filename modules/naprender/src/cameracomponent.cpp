@@ -3,7 +3,7 @@
 
 namespace nap
 {
-	CameraComponent::CameraComponent(EntityInstance& entity) :
+	CameraComponentInstance::CameraComponentInstance(EntityInstance& entity) :
 		ComponentInstance(entity)
 	{
 	}

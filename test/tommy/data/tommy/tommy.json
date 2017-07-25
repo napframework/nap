@@ -1,63 +1,63 @@
 {
-	"nap::RenderWindowResource": {
+	"nap::RenderWindow": {
 		"mID" : "Window",
 		"Width" : 512,
 		"Height" : 512,
 		"Title" : "Tommy"
 	},
 	
-	"nap::ImageResource": {
+	"nap::Image": {
 		"mID" : "BackgroundImage",
 		"mImagePath" : "data/tommy/background.jpg"
 	},
 	
-	"nap::ImageResource": {
+	"nap::Image": {
 		"mID" : "Looks_01",
 		"mImagePath" : "data/tommy/01.png"
 	},
 
-	"nap::ImageResource": {
+	"nap::Image": {
 		"mID" : "Looks_02",
 		"mImagePath" : "data/tommy/02.png"
 	},
 
-	"nap::ImageResource": {
+	"nap::Image": {
 		"mID" : "Looks_03",
 		"mImagePath" : "data/tommy/03.png"
 	},
 
-	"nap::ImageResource": {
+	"nap::Image": {
 		"mID" : "Looks_04",
 		"mImagePath" : "data/tommy/04.png"
 	},
 
-	"nap::ImageResource": {
+	"nap::Image": {
 		"mID" : "ButtonLeft",
 		"mImagePath" : "data/tommy/prev.png"
 	},
 
-	"nap::ImageResource": {
+	"nap::Image": {
 		"mID" : "ButtonRight",  
 		"mImagePath" : "data/tommy/next.png"
 	}, 
 
-	"nap::ImageResource": {
+	"nap::Image": {
 		"mID" : "Title",
 		"mImagePath" : "data/tommy/tommyxgigi.png" 
 	},
 
-	"nap::ImageResource": {
+	"nap::Image": {
 		"mID" : "LooksTitle",
 		"mImagePath" : "data/tommy/looks.png"
 	},
 	
-	"nap::ShaderResource": {
+	"nap::Shader": {
 		"mID": "UIShader",
 		"mVertShader": "shaders/tommy/ui.vert",
 		"mFragShader": "shaders/tommy/ui.frag"
 	},	
 	
-	"nap::PlaneMeshResource": {
+	"nap::PlaneMesh": {
 		"mID": "PlaneMesh"
 	},
 	
@@ -93,26 +93,26 @@
 		]			
 	},
 	
-	"nap::EntityResource": {
+	"nap::Entity": {
 		"mID": "UIInputRouterEntity",
 		
 		"Components" : 
 		[
 			{
-				"nap::UIInputRouterComponentResource": {
+				"nap::UIInputRouterComponent": {
 					"CameraEntity" : "CameraEntity"
 				}		
 			}
 		]
 	},
 
-	"nap::EntityResource": {
+	"nap::Entity": {
 		"mID": "CameraEntity",
 		
 		"Components" : 
 		[
 			{
-				"nap::OrthoCameraComponentResource": {
+				"nap::OrthoCameraComponent": {
 					"Properties": {
 						"NearClippingPlane" : 0.01,
 						"FarClippingPlane" : 10000.0
@@ -120,7 +120,7 @@
 				}		
 			},
 			{
-				"nap::TransformComponentResource": {
+				"nap::TransformComponent": {
 					"Properties": {
 						"Translate": {
 							"x": 0.0,
@@ -130,8 +130,7 @@
 						"Rotate": {
 							"x": 0.0,
 							"y": 0.0,
-							"z": 0.0,
-							"w": 1.0
+							"z": 0.0
 						},
 						"Scale": {
 							"x": 1.0,
@@ -145,12 +144,12 @@
 		]
 	},
 	
-	"nap::EntityResource": {
+	"nap::Entity": {
 		"mID": "RootEntity",
 		"Components" : 
 		[
 			{
-				"nap::FractionLayoutComponentResource" : {
+				"nap::FractionLayoutComponent" : {
 					"Properties" : {
 						"Position" : {
 							"x": 0.0,
@@ -166,7 +165,7 @@
 				}
 			},
 			{
-				"nap::TransformComponentResource": {				
+				"nap::TransformComponent": {				
 				}		
 			}			
 		],
@@ -176,13 +175,13 @@
 		] 
 	},
 
-	"nap::EntityResource": {
+	"nap::Entity": {
 		"mID": "BackgroundImageEntity",
 		
 		"Components" : 
 		[
 			{
-				"nap::RenderableMeshComponentResource": 
+				"nap::RenderableMeshComponent": 
 				{
 					"Mesh" : "PlaneMesh",
 					"MaterialInstance" : {
@@ -201,11 +200,11 @@
 				}
 			},
 			{
-				"nap::TransformComponentResource": {
+				"nap::TransformComponent": {
 				}		
 			},
 			{
-				"nap::FractionLayoutComponentResource" : {
+				"nap::FractionLayoutComponent" : {
 					"Properties" : {
 						"Position" : {
 							"x": 0.25,
@@ -230,13 +229,13 @@
 		] 		
 	},
 	
-	"nap::EntityResource": {
+	"nap::Entity": {
 		"mID": "ButtonLeftEntity",
 		
 		"Components" : 
 		[
 			{
-				"nap::RenderableMeshComponentResource": {
+				"nap::RenderableMeshComponent": {
 					"Mesh" : "PlaneMesh",
 					"MaterialInstance" : 
 					{
@@ -270,15 +269,15 @@
 				}	
 			},
 			{
-				"nap::TransformComponentResource": {
+				"nap::TransformComponent": {
 				}		
 			},
 			{
-				"nap::PointerInputComponentResource": {
+				"nap::PointerInputComponent": {
 				}
 			},
 			{
-				"nap::FractionLayoutComponentResource" : {
+				"nap::FractionLayoutComponent" : {
 					"Properties" : {
 						"PositionPivot" : "Center",
 						"Position" : {
@@ -296,13 +295,13 @@
 		]
 	},
 	
-	"nap::EntityResource": {
+	"nap::Entity": {
 		"mID": "ButtonRightEntity",
 		
 		"Components" : 
 		[
 			{
-				"nap::RenderableMeshComponentResource": {
+				"nap::RenderableMeshComponent": {
 					"Mesh" : "PlaneMesh",
 					"MaterialInstance" : 
 					{
@@ -323,15 +322,15 @@
 				}
 			},
 			{
-				"nap::TransformComponentResource": {
+				"nap::TransformComponent": {
 				}		
 			},
 			{
-				"nap::PointerInputComponentResource": {
+				"nap::PointerInputComponent": {
 				}
 			},	
 			{
-				"nap::FractionLayoutComponentResource" : {
+				"nap::FractionLayoutComponent" : {
 					"Properties" : {
 						"PositionPivot" : "Center",
 						"Position" : {
@@ -349,13 +348,13 @@
 		]
 	},
 	
-	"nap::EntityResource": {
+	"nap::Entity": {
 		"mID": "TitleEntity",
 		
 		"Components" : 
 		[
 			{
-				"nap::RenderableMeshComponentResource": {
+				"nap::RenderableMeshComponent": {
 					"Mesh" : "PlaneMesh",
 					"MaterialInstance" : 
 					{
@@ -376,11 +375,11 @@
 				}		
 			},
 			{
-				"nap::TransformComponentResource": {
+				"nap::TransformComponent": {
 				}		
 			},
 			{
-				"nap::FractionLayoutComponentResource" : {
+				"nap::FractionLayoutComponent" : {
 					"Properties" : {
 						"PositionPivot" : "Center",
 						"Position" : {
@@ -398,13 +397,13 @@
 		]
 	},
 	
-	"nap::EntityResource": {
+	"nap::Entity": {
 		"mID": "LooksTitleEntity",
 
 		"Components" : 
 		[
 			{
-				"nap::RenderableMeshComponentResource": {
+				"nap::RenderableMeshComponent": {
 					"Mesh" : "PlaneMesh",
 					"MaterialInstance" : 
 					{
@@ -425,11 +424,11 @@
 				}	
 			},
 			{
-				"nap::TransformComponentResource": {
+				"nap::TransformComponent": {
 				}		
 			},
 			{
-				"nap::FractionLayoutComponentResource" : {
+				"nap::FractionLayoutComponent" : {
 					"Properties" : {
 						"PositionPivot" : "Center",
 						"Position" : {
@@ -447,13 +446,13 @@
 		]
 	},
 	
-	"nap::EntityResource": {
+	"nap::Entity": {
 		"mID": "SlideShowEntity",
 		
 		"Components" : 
 		[
 			{
-				"nap::SlideShowComponentResource": 
+				"nap::SlideShowComponent": 
 				{
 					"Images" : 
 					[
@@ -466,11 +465,11 @@
 				}
 			},
 			{
-				"nap::TransformComponentResource": {
+				"nap::TransformComponent": {
 				}
 			},
 			{
-				"nap::FractionLayoutComponentResource" : {
+				"nap::FractionLayoutComponent" : {
 					"Properties" : {
 						"PositionPivot" : "Center",
 						"Position" : {
@@ -488,14 +487,14 @@
 		]
 	},
 	
-	"nap::EntityResource": {
+	"nap::Entity": {
 		"mID": "LooksEntity",
 		"AutoSpawn" : "false",
 		
 		"Components" : 
 		[
 			{
-				"nap::RenderableMeshComponentResource": {
+				"nap::RenderableMeshComponent": {
 					"Mesh" : "PlaneMesh",
 					"MaterialInstance" : 
 					{
@@ -516,7 +515,7 @@
 				}		
 			},
 			{
-				"nap::TransformComponentResource": {
+				"nap::TransformComponent": {
 				}		
 			}
 		]

@@ -1,5 +1,5 @@
 #pragma once
-#include <KeyCode.h>
+#include <keycode.h>
 #include <SDL_events.h>
 #include <inputevent.h>
 

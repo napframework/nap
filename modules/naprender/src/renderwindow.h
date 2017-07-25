@@ -1,148 +1,105 @@
 #pragma once
 
-#include "nframebuffer.h"
-#include <rtti/rtti.h>
+// Local Includes
+#include "renderservice.h"
+#include "renderattributes.h"
 
 // External Includes
-#include <string.h>
-#include <glm/glm.hpp>
-#include <SDL_video.h>
-#include <nap/configure.h>
-
-struct SDL_Window;
-typedef void *SDL_GLContext;
+#include <nap/windowresource.h>
+#include <nap/dllexport.h>
 
 namespace nap
 {
-	namespace utility
-	{
-		class ErrorState;
-	}
-
-	// Forward Declares
-	class RenderWindow;
-
 	/**
-	* Holds all window launch settings
-	* Note that this object is only used when constructing the window
-	* Use the size, position and title attributes on the component
-	* to position the window
-	*/
-	struct RenderWindowSettings
+	 * Resource class for RenderWindow
+	 */
+	class NAPAPI RenderWindow : public Window
 	{
+		RTTI_ENABLE(Window)
+
 	public:
-		// Construction / Destruction
-		RenderWindowSettings() = default;
-		virtual ~RenderWindowSettings() = default;
+		friend class RenderService;
 
-		std::string		title;										// Name of the window
-		int				x				= SDL_WINDOWPOS_CENTERED;	// Position
-		int				y				= SDL_WINDOWPOS_CENTERED;	// Position
-		int				width			= 512;						// Width of the window
-		int				height			= 512;						// Height of the window
-		bool			borderless		= false;					// If the window is borderless
-		bool			resizable		= true;						// If the window is resizable
-		bool			visible			= true;						// If the window is visible or not
-	};
-
-
-	/**
-	* Render window base class
-	*/
-	class RenderWindow final
-	{
-		RTTI_ENABLE()
-	public:
-		/**
-		* 
-		*/
-		RenderWindow();
-
-		/**
-		* 
-		*/
+		// Default constructor
+		RenderWindow() = default;
 		~RenderWindow();
 
-		/**
-		* Delete copy construction
-		*/
-		RenderWindow(const RenderWindow& other) = delete;
-		RenderWindow& operator=(const RenderWindow& other) = delete;
-
-		bool init(const RenderWindowSettings& settings, RenderWindow* sharedWindow, utility::ErrorState& errorState);
+		RenderWindow(RenderService& renderService);
 
 		/**
-		* @return the hardware window handle, nullptr if undefined
-		*/
-		SDL_Window* getNativeWindow() const;
-
-		/**
-		* @return the hardware window context, nullptr if undefined
-		*/
-		SDL_GLContext getContext() const;
-
-		/**
-		 *@return the backbuffer
+		 * Creates window, connects to resize event.
 		 */
-		opengl::BackbufferRenderTarget* getBackbuffer() const;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * Set the window title
-		 * @param title the new window title
+		 * @return if the component manages a window. 
+		 * If show hasn't been called this call will resolve to false
 		 */
-		void setTitle(const std::string& title);
+		bool hasWindow() const													{ return mWindow != nullptr; }
 
 		/**
-		 * Set the window position
-		 * @param position the window position coordinates in pixels
+		 * @return the window managed by this component
 		 */
-		void setPosition(const glm::ivec2& position);
+		GLWindow* getWindow() const									{ return mWindow.get(); }
 
 		/**
-		 * Set the window size
-		 * @param size the new window size in pixels
+		 * Swaps window buffers
 		 */
-		void setSize(const glm::ivec2& size);
+		void swap() const														{ mWindow->swap(); }
 
 		/**
-		 * Get the window size
+		 * Makes this window active
+		 * calls activate afterwards
 		 */
-		const glm::ivec2 getSize() const;
+		void makeActive()														{ mWindow->makeCurrent(); }
 
 		/**
-		 * Makes the window full screen
-		 * @param value if the window should be full screen or not
+		 *	@return the hardware window number
 		 */
-		void setFullScreen(bool value);
-
-		/**
-		 * Show window
-		 */
-		void showWindow();
-
-		/**
-		 * Hide window
-		 */
-		void hideWindow();
-
-		/**
-		 * Swap buffers
-		 */
-		void swap();
-
-		/**
-		 * Make this window active
-		 */
-		void makeCurrent();
-
-		/**
-		 *	Returns the window number
-		 */
-		uint32 getNumber() const;
+		virtual uint getNumber() const override;
 
 	private:
-		std::unique_ptr<opengl::BackbufferRenderTarget> mBackbuffer = nullptr;
-		SDL_Window*										mWindow = nullptr;		// Actual GL window
-		SDL_GLContext									mContext = nullptr;		// GL Context
+		void handleEvent(const Event& event);
+
+	public:
+		int										mWidth			= 512;			// Width of the window
+		int										mHeight			= 512;			// Height of the window
+		bool									mBorderless		= false;		// If the window is borderless
+		bool									mResizable		= true;			// If the window is resizable
+		std::string								mTitle;							// Name of the window
+
+	private:
+		RenderService*							mRenderService	= nullptr;
+		std::unique_ptr<GLWindow>	mWindow			= nullptr;
+	};
+
+	/**
+	* Factory for creating WindowResources. The factory is responsible for passing the RenderService
+	* to the WindowResource on construction.
+	*/
+	class RenderWindowResourceCreator : public rtti::IObjectCreator
+	{
+	public:
+		RenderWindowResourceCreator(RenderService& renderService) :
+			mRenderService(renderService) { }
+
+		/**
+		* @return Type of WindowResource
+		*/
+		rtti::TypeInfo getTypeToCreate() const override
+		{
+			return RTTI_OF(RenderWindow);
+		}
+
+		/**
+		* @return Creates a WindowResource
+		*/
+		virtual rtti::RTTIObject* create() override
+		{
+			return new RenderWindow(mRenderService);
+		}
+
+	private:
+		RenderService& mRenderService;
 	};
 }
