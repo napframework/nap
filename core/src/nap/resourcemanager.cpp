@@ -7,7 +7,9 @@
 #include "fileutils.h"
 #include "logger.h"
 
-RTTI_DEFINE(nap::ResourceManagerService)
+RTTI_BEGIN_CLASS(nap::ResourceManagerService)
+	RTTI_FUNCTION("findEntity", &nap::ResourceManagerService::findEntity)
+RTTI_END_CLASS
 
 namespace nap
 {

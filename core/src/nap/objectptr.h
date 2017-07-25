@@ -11,7 +11,7 @@ namespace nap
 {
 
 	class ObjectPtrBase;
-
+	
 	/**
 	 * Holds a set of all ObjectPtrs in the application. The purpose of the manager is to be able to
 	 * retarget ObjectPtrs if objects get replaced by another object in the real-time updating system.
@@ -339,3 +339,5 @@ namespace rttr
 		}		
 	};
 }
+
+PYBIND11_DECLARE_HOLDER_TYPE(T, nap::ObjectPtr<T>, true);

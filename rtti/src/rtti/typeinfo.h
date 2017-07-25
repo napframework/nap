@@ -186,7 +186,14 @@ namespace nap
 			python_class.registerFunction([](py::class_<ClassType>& cls)										\
 			{																									\
 				cls.def_readwrite(Name, Member);																\
-			});			
+			});		
+
+#define RTTI_FUNCTION(Name, Member)																				\
+			rtti_class_type.method(Name, Member);																\
+			python_class.registerFunction([](py::class_<ClassType>& cls)										\
+			{																									\
+				cls.def(Name, Member, py::return_value_policy::reference);											\
+			});		
 
 #define RTTI_END_CLASS																							\
 			nap::rtti::PythonModule& python_module = nap::rtti::PythonModule::get(STRINGIFY(MODULE_NAME));		\

@@ -27,9 +27,13 @@ namespace nap
 		public:
 			using RegistrationFunction = std::function<void(pybind11::class_<T>&)>;
 
-			PythonClass(const char* name) :
-				mName(name)
+			PythonClass(const std::string& name)
 			{
+				int namespace_separator_pos = name.find_last_of(':');
+				if (namespace_separator_pos != std::string::npos)
+					mName = name.substr(namespace_separator_pos+1);
+				else
+					mName = name;
 			}
 
 			void registerFunction(const RegistrationFunction& function)
@@ -39,13 +43,13 @@ namespace nap
 
 			void invoke(pybind11::module& module) const
 			{
-				auto cls = pybind11::class_<T>(module, mName);
+				auto cls = pybind11::class_<T>(module, mName.c_str());
 				for (auto& func : mRegistrationFunctions)
 					func(cls);
 			}
 
 		private:
-			const char* mName;
+			std::string mName;
 			std::vector<RegistrationFunction> mRegistrationFunctions;
 		};
 
