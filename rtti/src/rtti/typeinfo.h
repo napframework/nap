@@ -193,11 +193,11 @@ namespace nap
 			rtti_class_type.method(Name, Member);																\
 			python_class.registerFunction([](py::class_<ClassType>& cls)										\
 			{																									\
-				cls.def(Name, Member, py::return_value_policy::reference);											\
+				cls.def(Name, Member, py::return_value_policy::automatic_reference);							\
 			});		
 
 #define RTTI_END_CLASS																							\
-			nap::rtti::PythonModule& python_module = nap::rtti::PythonModule::get(STRINGIFY(MODULE_NAME));		\
+			nap::rtti::PythonModule& python_module = nap::rtti::PythonModule::get("nap");						\
 			python_module.registerClass([python_class](py::module& module)										\
 			{																									\
 				python_class.invoke(module);																	\

@@ -79,6 +79,8 @@ namespace nap
 		 */
 		void addComponent(std::unique_ptr<ComponentInstance> component);
 
+		ComponentInstance* findComponentPython(const std::string& inType) const;
+
 		/**
 		* Finds the first component of the specified type. 
 		*

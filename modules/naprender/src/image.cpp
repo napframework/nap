@@ -35,8 +35,6 @@ RTTI_BEGIN_CLASS(nap::MemoryTexture2D)
 	RTTI_PROPERTY("mSettings",			&nap::MemoryTexture2D::mSettings, 	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-RTTI_DEFINE(nap::Image)
-
 namespace nap
 {
 	// Initializes 2D texture. Additionally a custom display name can be provided.

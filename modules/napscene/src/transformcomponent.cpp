@@ -22,6 +22,8 @@ RTTI_BEGIN_CLASS(nap::TransformComponent)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::TransformComponentInstance, nap::EntityInstance&)
+	RTTI_FUNCTION("getTranslate",	&nap::TransformComponentInstance::getTranslate)
+	RTTI_FUNCTION("setTranslate",	&nap::TransformComponentInstance::setTranslatePython)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -78,6 +80,13 @@ namespace nap
 		mGlobalMatrix = parentTransform * getLocalTransform();
 		mWorldDirty = false;
 	}
+
+	void TransformComponentInstance::setTranslatePython(float x, float y, float z)
+	{
+		mTranslate = glm::vec3(x, y, z);
+		setDirty();
+	}
+
 
 	void TransformComponentInstance::setTranslate(const glm::vec3& translate)
 	{

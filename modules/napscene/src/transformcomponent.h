@@ -109,6 +109,7 @@ namespace nap
 		 */
 		void update(const glm::mat4& parentTransform);
 
+		void setTranslatePython(float x, float y, float z);
 		void setTranslate(const glm::vec3& translate);
 		const glm::vec3& getTranslate() const			{ return mTranslate;  }
 

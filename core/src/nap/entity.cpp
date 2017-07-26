@@ -11,6 +11,7 @@ RTTI_BEGIN_CLASS(nap::Entity)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::EntityInstance, nap::Core&)
+	RTTI_FUNCTION("findComponentPython", &nap::EntityInstance::findComponentPython)
 RTTI_END_CLASS
 
 namespace nap
@@ -36,6 +37,11 @@ namespace nap
 		mComponents.emplace_back(std::move(component));
 	}
 
+
+	ComponentInstance* EntityInstance::findComponentPython(const std::string& type) const
+	{
+		return findComponent(rtti::TypeInfo::get_by_name(type));
+	}
 
 	ComponentInstance* EntityInstance::findComponent(const rtti::TypeInfo& type, ETypeCheck typeCheck) const
 	{
