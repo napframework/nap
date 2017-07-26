@@ -5,7 +5,7 @@
 
 // Local Includes
 #include "configure.h"
-#include "dllexport.h"
+#include "utility/dllexport.h"
 
 namespace nap
 {

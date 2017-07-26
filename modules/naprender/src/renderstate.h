@@ -2,7 +2,7 @@
 
 // External Includes
 #include "nglutils.h"
-#include <nap/dllexport.h>
+#include <utility/dllexport.h>
 
 namespace nap
 {

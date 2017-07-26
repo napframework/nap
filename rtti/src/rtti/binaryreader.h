@@ -2,6 +2,8 @@
 
 // NAP includes
 #include <utility/memorystream.h>
+#include "utility/dllexport.h"
+
 
 // RTTI includes
 #include <rtti/rtti.h>
@@ -32,7 +34,7 @@ namespace nap
 		 *
 		 * @return True if deserialization succeeded, false if not. In case of failure, @a errorState contains detailed error info.
 		 */
-		bool deserializeBinary(utility::MemoryStream& stream, Factory& factory, RTTIDeserializeResult& result, utility::ErrorState& errorState);
+		bool NAPAPI deserializeBinary(utility::MemoryStream& stream, Factory& factory, RTTIDeserializeResult& result, utility::ErrorState& errorState);
 
 		/**
 		 * Deserialize a set of objects and their data from the specified file
@@ -43,7 +45,7 @@ namespace nap
 		 *
 		 * @return True if deserialization succeeded, false if not. In case of failure, @a errorState contains detailed error info.
 		 */
-		bool readBinary(const std::string& path, Factory& factory, RTTIDeserializeResult& result, utility::ErrorState& errorState);
+		bool NAPAPI readBinary(const std::string& path, Factory& factory, RTTIDeserializeResult& result, utility::ErrorState& errorState);
 	}
 
 }

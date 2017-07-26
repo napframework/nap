@@ -4,7 +4,7 @@
 #include <nap/signalslot.h>
 #include <nap/component.h>
 #include <inputevent.h>
-#include <nap/dllexport.h>
+#include <utility/dllexport.h>
 
 namespace nap
 {

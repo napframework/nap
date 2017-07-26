@@ -3,6 +3,7 @@
 #include <rttr/type>
 #include <rttr/registration>
 #include "rtti/pythonmodule.h"
+#include "utility/dllexport.h"
 
 /**
  * This file contains the macros necessary to register types and their attributes with the RTTI system. There are only a few macros important for the user of the RTTI system:
@@ -122,7 +123,7 @@ namespace nap
 		using VariantArray = rttr::variant_array_view;
 		using VariantMap = rttr::variant_associative_view;
 
-		enum class EPropertyMetaData : uint8_t
+		enum class NAPAPI EPropertyMetaData : uint8_t
 		{
 			Default = 0,
 			Required = 1,
@@ -130,11 +131,11 @@ namespace nap
 			Embedded = 4
 		};
 
-		inline EPropertyMetaData operator&(EPropertyMetaData a, EPropertyMetaData b)
+		inline EPropertyMetaData NAPAPI operator&(EPropertyMetaData a, EPropertyMetaData b)
 		{
 			return static_cast<EPropertyMetaData>(static_cast<uint8_t>(a) & static_cast<uint8_t>(b));
 		}
-		inline EPropertyMetaData operator|(EPropertyMetaData a, EPropertyMetaData b)
+		inline EPropertyMetaData NAPAPI operator|(EPropertyMetaData a, EPropertyMetaData b)
 		{
 			return static_cast<EPropertyMetaData>(static_cast<uint8_t>(a) | static_cast<uint8_t>(b));
 		}
@@ -142,7 +143,7 @@ namespace nap
 		/**
 		 * Helper function to determine whether the specified type is a primitive type (i.e. int, float, string, etc)
 		 */
-		inline bool isPrimitive(const rtti::TypeInfo& type)
+		inline bool NAPAPI isPrimitive(const rtti::TypeInfo& type)
 		{
 			return type.is_arithmetic() || type.is_enumeration() || type == rtti::TypeInfo::get<std::string>();
 		}
@@ -150,7 +151,7 @@ namespace nap
 		/**
 		 * Helper function to check whether a property has the specified flag set
 		 */
-		inline bool hasFlag(const rtti::Property& property, EPropertyMetaData flags)
+		inline bool NAPAPI hasFlag(const rtti::Property& property, EPropertyMetaData flags)
 		{
 			rtti::Variant meta_data = property.get_metadata("flags");
 			if (!meta_data.is_valid())

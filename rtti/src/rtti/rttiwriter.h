@@ -2,6 +2,7 @@
 
 #include "rtti/typeinfo.h"
 #include <vector>
+#include "utility/dllexport.h"
 
 namespace nap
 {
@@ -20,7 +21,7 @@ namespace nap
 		 * Having this interface allows the object hierarchy traversal logic to remain seperate from the actual writing logic.
 		 * This in turn means that the same interface (serializeObjects) can be used to write to a variety of formats (JSON, binary, BSON, etc).
 		 */
-		class RTTIWriter
+		class NAPAPI RTTIWriter
 		{
 		public:
 
@@ -88,6 +89,6 @@ namespace nap
 		/**
 		 * Serialize a set of objects to the specified writer. This function does all the traversal logic, the actual writing is done by the RTTIWriter passed in.
 		 */
-		bool serializeObjects(const ObjectList& rootObjects, RTTIWriter& writer, utility::ErrorState& errorState);
+		bool NAPAPI serializeObjects(const ObjectList& rootObjects, RTTIWriter& writer, utility::ErrorState& errorState);
 	}
 }

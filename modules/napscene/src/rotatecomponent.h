@@ -2,7 +2,7 @@
 
 // External includes
 #include <nap/component.h>
-#include <nap/dllexport.h>
+#include <utility/dllexport.h>
 
 // Local includes
 #include "transformcomponent.h"

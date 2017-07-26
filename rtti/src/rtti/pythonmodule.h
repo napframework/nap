@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <vector>
+#include "utility/dllexport.h"
 
 #include "pybind11/pybind11.h"
 #include "pybind11/embed.h"
@@ -53,7 +54,7 @@ namespace nap
 			std::vector<RegistrationFunction> mRegistrationFunctions;
 		};
 
-		class PythonModule
+		class NAPAPI PythonModule
 		{
 		public:
 			using RegistrationFunction = std::function<void(pybind11::module&)>;

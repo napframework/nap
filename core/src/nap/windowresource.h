@@ -9,7 +9,7 @@
 #include "event.h"
 #include "utility/uniqueptrvectoriterator.h"
 #include "windowevent.h"
-#include "dllexport.h"
+#include "utility/dllexport.h"
 
 namespace nap
 {

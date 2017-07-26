@@ -2,7 +2,7 @@
 
 // External includes
 #include <nap/objectptr.h>
-#include <nap/dllexport.h>
+#include <utility/dllexport.h>
 
 // Local includes
 #include "shader.h"

@@ -8,7 +8,7 @@
 #include <glm/glm.hpp>
 #include <SDL_video.h>
 #include <nap/configure.h>
-#include <nap/dllexport.h>
+#include <utility/dllexport.h>
 
 struct SDL_Window;
 typedef void *SDL_GLContext;

@@ -2,7 +2,7 @@
 
 // External Includes
 #include <nshader.h>
-#include <nap/dllexport.h>
+#include <utility/dllexport.h>
 #include <rtti/rttiobject.h>
 
 namespace nap

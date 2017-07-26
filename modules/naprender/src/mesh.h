@@ -2,7 +2,7 @@
 
 #include <nmesh.h>
 #include <memory>
-#include <nap/dllexport.h>
+#include <utility/dllexport.h>
 #include <rtti/rttiobject.h>
 
 namespace nap

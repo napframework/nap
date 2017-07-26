@@ -6,6 +6,8 @@
 
 // STL includes
 #include <string>
+#include "utility/dllexport.h"
+
 
 namespace nap
 {
@@ -19,7 +21,7 @@ namespace nap
 		 *
 		 * This is an output of readJSonFile and is intended for clients to be able to resolve pointers as they see fit.
 		 */
-		struct UnresolvedPointer
+		struct NAPAPI UnresolvedPointer
 		{
 			UnresolvedPointer(RTTIObject* object, const rtti::RTTIPath& path, const std::string& targetID) :
 				mObject(object),

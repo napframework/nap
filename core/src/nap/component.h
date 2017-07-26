@@ -2,7 +2,7 @@
 
 #include "rtti/rttiobject.h"
 #include "nap/objectptr.h"
-#include "dllexport.h"
+#include "utility/dllexport.h"
 
 namespace nap
 {

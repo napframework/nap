@@ -4,7 +4,7 @@
 #include "cameracomponent.h"
 
 // External Includes
-#include <nap/dllexport.h>
+#include <utility/dllexport.h>
 
 namespace nap
 {

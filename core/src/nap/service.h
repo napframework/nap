@@ -2,7 +2,7 @@
 
 // Local Includes
 #include "configure.h"
-#include "dllexport.h"
+#include "utility/dllexport.h"
 
 // External Includes
 #include <rtti/rttiobject.h>

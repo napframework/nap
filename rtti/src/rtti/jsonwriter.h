@@ -1,6 +1,7 @@
 #pragma once
 
 #include "rttiwriter.h"
+#include "utility/dllexport.h"
 
 #include <rapidjson/prettywriter.h>
 #include <rapidjson/document.h>
@@ -9,7 +10,7 @@ namespace nap
 {
 	namespace rtti
 	{
-		class JSONWriter : public RTTIWriter
+		class NAPAPI JSONWriter : public RTTIWriter
 		{
 		public:
 			JSONWriter();

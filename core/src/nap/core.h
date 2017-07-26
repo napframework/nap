@@ -12,7 +12,7 @@
 // Core Includes
 #include "service.h"
 #include "timer.h"
-#include "dllexport.h"
+#include "utility/dllexport.h"
 
 namespace nap
 {
