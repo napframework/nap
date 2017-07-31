@@ -79,6 +79,7 @@ add_subdirectory(modules/napmath)
 add_subdirectory(modules/napsdlinput)
 add_subdirectory(modules/napsdlwindow)
 add_subdirectory(modules/napscene)
+add_subdirectory(modules/nappython)
 
 # Exe dependencies
 add_dependencies(rendertest mod_naprender)

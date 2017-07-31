@@ -37,6 +37,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/embed.h>
 #include <rtti/pythonmodule.h>
+#include "pythonscriptcomponent.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
@@ -67,6 +68,10 @@ nap::ObjectPtr<nap::EntityInstance>						defaultInputRouter = nullptr;
 
 // Some utilities
 void runGame(nap::Core& core);	
+
+namespace py = pybind11;
+
+//py::module script;
 
 // Called when the window is updating
 void onUpdate()
@@ -109,7 +114,7 @@ void onUpdate()
 
 	nap::TransformComponentInstance* pig_transform = &pigEntity->getComponent<nap::TransformComponentInstance>();
 	nap::TransformComponentInstance* rotating_plane_transform = &rotatingPlaneEntity->getComponent<nap::TransformComponentInstance>();
-	nap::TransformComponentInstance* world_sphere_transform = &worldEntity->getComponent<nap::TransformComponentInstance>();
+//	nap::TransformComponentInstance* world_sphere_transform = &worldEntity->getComponent<nap::TransformComponentInstance>();
 
 	// Get rotation angle
 	float rot_speed = 0.1f;
@@ -133,9 +138,9 @@ void onUpdate()
 	quaternion.w = 1.0f;
 
 	// Set rotation on sphere
-	glm::quat rot_quat_sphere = glm::rotate(glm::quat(), -1.0f*(float)rot_angle_radians_sphere, glm::vec3(0.0, 1.0, 0.0));
-	world_sphere_transform->setRotate(rot_quat_sphere);
-	world_sphere_transform->setTranslate({ glm::sin(elapsed_time) * 5.0f, 0.0f, -3.0f });
+// 	glm::quat rot_quat_sphere = glm::rotate(glm::quat(), -1.0f*(float)rot_angle_radians_sphere, glm::vec3(0.0, 1.0, 0.0));
+// 	world_sphere_transform->setRotate(rot_quat_sphere);
+// 	world_sphere_transform->setTranslate({ glm::sin(elapsed_time) * 5.0f, 0.0f, -3.0f });
 
 	// Set scale
 	float scale_speed = 4.0f;
@@ -296,12 +301,14 @@ bool init(nap::Core& core)
 
 	nap::utility::ErrorState errorState;
 
+	// Needed to make sure python module is loaded (should be removed)
+	nap::PythonScriptComponent* bla = new nap::PythonScriptComponent();
 
 	if (!resourceManagerService->loadFile("data/objects.json", errorState))
 	{
 		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
 		return false;  
-	}  
+	}   
 
 	renderWindows.push_back(resourceManagerService->findObject<nap::RenderWindow>("Window0"));
 	renderWindows.push_back(resourceManagerService->findObject<nap::RenderWindow>("Window1"));
@@ -328,141 +335,38 @@ bool init(nap::Core& core)
 	render_state.mPointSize = 2.0f;
 	render_state.mPolygonMode = opengl::PolygonMode::FILL;
 
-	return true;
+	return true; 
 }
 
-class Foo
+
+std::unique_ptr<nap::Core> gCore;
+
+
+PYBIND11_EMBEDDED_MODULE(core, module) 
 {
-public:
-	int Bar(int inArg)
-	{
-		return 10 * inArg;
-	}
+	module.attr("resourceManagerService") = gCore->getService<nap::ResourceManagerService>();
+}
 
-	int mProperty;
-};
-
-namespace py = pybind11;
-
-
-// 
-// void test()
-// {
-// 	using namespace rttr;
-// 	auto bla = registration::class_<Foo>("Foo");
-// 	bla.property("Property", &Foo::mProperty);
-// 	bla.property("Property", &Foo::mProperty);
-// }
-
-// void test()
-// {
-// 	using namespace rttr;
-// 	auto& rttr_class = registration::class_<Foo>("Foo");
-// 	auto py_class = py::class_<Foo>(m, "Foo");
-// 
-// 	rttr_class.property("Property", &Foo::mProperty);		
-// 	py_class.def("Bar", &Foo::Bar);
-// }
-
-REGISTER_MODULE_PYTHON_BINDINGS()
-
-void testPython()
+PYBIND11_EMBEDDED_MODULE(nap, module)
 {
-	using namespace nap;
-	using namespace rtti;
-
-	PythonClass<Foo> python_class("Foo");
-	python_class.registerFunction([](py::class_<Foo>& cls) 
-	{
-		cls.def(py::init<>());
-		cls.def("Bar", &Foo::Bar);
-	});
-
-	PythonModule& python_module = rtti::PythonModule::get(STRINGIFY(MODULE_NAME));
-	python_module.registerClass([python_class](py::module& module) 
-	{
-		python_class.invoke(module);
-	});
-	
-	py::scoped_interpreter guard{};
-
-	try
-	{
-		auto script = py::module::import("script");
-		py::object result = script.attr("Test")(1);
-		int n = result.cast<int>();
-	}
-	catch (const py::error_already_set& err)
-	{
-		int i = 0;
-	}
-// 
-// 
-// 	PyObject *pModule, *pDict, *pFunc;
-// 	PyObject *pArgs, *pValue;
-// 
-// 	//PyImport_AppendInittab("emb", &PyInit_emb);
-// 	Py_Initialize();
-// 	//pybind11_init();
-// 
-// 	pModule = PyImport_ImportModule("script");
-// 
-// 	if (pModule != NULL)
-// 	{
-// 		pFunc = PyObject_GetAttrString(pModule, "Test");
-// 		/* pFunc is a new reference */
-// 
-// 		if (pFunc && PyCallable_Check(pFunc))
-// 		{
-// 			pArgs = PyTuple_New(1);
-// 			pValue = PyLong_FromLong(100);
-// 			if (!pValue)
-// 			{
-// 				PyErr_Print();
-// 			}
-// 
-// 			PyTuple_SetItem(pArgs, 0, pValue);
-// 
-// 			pValue = PyObject_CallObject(pFunc, pArgs);
-// 			Py_DECREF(pArgs);
-// 
-// 			if (pValue != NULL) {
-// 				printf("Result of call: %ld\n", PyLong_AsLong(pValue));
-// 				Py_DECREF(pValue);
-// 			}
-// 			else {
-// 				Py_DECREF(pFunc);
-// 				Py_DECREF(pModule);
-// 				PyErr_Print();
-// 			}
-// 		}
-// 		else {
-// 			if (PyErr_Occurred())
-// 				PyErr_Print();
-// 		}
-// 		Py_XDECREF(pFunc);
-// 		Py_DECREF(pModule);
-// 	}
-// 	else {
-// 		PyErr_Print();
-// 	}
-// 	Py_Finalize();
+	nap::rtti::PythonModule& python_module = nap::rtti::PythonModule::get("nap");
+	python_module.invoke(module);
 }
 
 // Main loop
 int main(int argc, char *argv[])
 {
-	testPython();
+	py::scoped_interpreter guard{};
 
 	// Create core
-	nap::Core core;
+	gCore = std::make_unique<nap::Core>();
 
 	// Initialize render stuff
-	if (!init(core))
+	if (!init(*gCore))
 		return -1;
 
 	// Run Gam
-	runGame(core);
+	runGame(*gCore);
 
 	return 0;
 }

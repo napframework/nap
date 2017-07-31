@@ -225,6 +225,11 @@
 						"UniformScale": 1.0
 					}
 				}		
+			},
+			{
+				"nap::PythonScriptComponent": {
+					"Path": "data/pig.py"
+				}
 			}
 		]
 	},
