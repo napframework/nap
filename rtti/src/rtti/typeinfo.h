@@ -198,7 +198,7 @@ namespace nap
 
 #define RTTI_END_CLASS																							\
 			nap::rtti::PythonModule& python_module = nap::rtti::PythonModule::get("nap");						\
-			python_module.registerClass([python_class](py::module& module)										\
+			python_module.registerImportCallback([python_class](py::module& module)								\
 			{																									\
 				python_class.invoke(module);																	\
 			});																									\

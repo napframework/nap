@@ -13,14 +13,14 @@ namespace nap
 			return pythonModules[std::string(moduleName)];
 		}
 
-		void PythonModule::registerClass(RegistrationFunction function)
+		void PythonModule::registerImportCallback(RegistrationFunction function)
 		{
-			mClassRegistrations.push_back(function);
+			mImportCallbacks.push_back(function);
 		}
 
 		void PythonModule::invoke(pybind11::module& module)
 		{
-			for (auto& func : mClassRegistrations)
+			for (auto& func : mImportCallbacks)
 				func(module);
 		}
 	}

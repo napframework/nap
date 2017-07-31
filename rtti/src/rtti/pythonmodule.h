@@ -61,12 +61,12 @@ namespace nap
 
 			static PythonModule& get(const char* moduleName);
 
-			void registerClass(RegistrationFunction function);
+			void registerImportCallback(RegistrationFunction function);
 
 			void invoke(pybind11::module& module);
 
 		private:
-			std::vector<RegistrationFunction> mClassRegistrations;
+			std::vector<RegistrationFunction> mImportCallbacks;
 		};
 	}
 }

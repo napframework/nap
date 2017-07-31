@@ -8,7 +8,10 @@
 
 using namespace std;
 
-RTTI_DEFINE(nap::Core)
+RTTI_BEGIN_CLASS(nap::Core)
+	RTTI_FUNCTION("getOrCreateService", (nap::Service* (nap::Core::*)(const std::string&))&nap::Core::getOrCreateService)
+RTTI_END_CLASS
+
 
 namespace nap
 {
@@ -24,6 +27,15 @@ namespace nap
 
 		// Add resource manager service
 		addService(RTTI_OF(ResourceManagerService));
+	}
+
+
+	void Core::initialize()
+	{ 
+		nap::rtti::PythonModule::get("nap").registerImportCallback([this](pybind11::module& module)
+		{
+			module.attr("core") = this;
+		});
 	}
 
 
@@ -65,6 +77,12 @@ namespace nap
 		mServices.emplace_back(std::unique_ptr<Service>(service));
 		service->initialized();
 		return *service;
+	}
+
+
+	Service* Core::getOrCreateService(const std::string& type)
+	{
+		return getOrCreateService(rtti::TypeInfo::get_by_name(type));
 	}
 
 

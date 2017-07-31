@@ -309,7 +309,7 @@ bool init(nap::Core& core)
 		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
 		return false;  
 	}   
-
+	 
 	renderWindows.push_back(resourceManagerService->findObject<nap::RenderWindow>("Window0"));
 	renderWindows.push_back(resourceManagerService->findObject<nap::RenderWindow>("Window1"));
 
@@ -339,34 +339,18 @@ bool init(nap::Core& core)
 }
 
 
-std::unique_ptr<nap::Core> gCore;
-
-
-PYBIND11_EMBEDDED_MODULE(core, module) 
-{
-	module.attr("resourceManagerService") = gCore->getService<nap::ResourceManagerService>();
-}
-
-PYBIND11_EMBEDDED_MODULE(nap, module)
-{
-	nap::rtti::PythonModule& python_module = nap::rtti::PythonModule::get("nap");
-	python_module.invoke(module);
-}
-
 // Main loop
 int main(int argc, char *argv[])
 {
-	py::scoped_interpreter guard{};
-
 	// Create core
-	gCore = std::make_unique<nap::Core>();
+	nap::Core core;
 
 	// Initialize render stuff
-	if (!init(*gCore))
+	if (!init(core))
 		return -1;
 
-	// Run Gam
-	runGame(*gCore);
+	// Run Game
+	runGame(core);
 
 	return 0;
 }

@@ -18,5 +18,6 @@ namespace nap
 
 		ModuleMap mLoadedModules;
 		SystemPathSet mSystemPaths;
+		pybind11::scoped_interpreter mInterpreter;
 	};
 }
