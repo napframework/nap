@@ -1,6 +1,9 @@
 #include <pythonscriptcomponent.h>
 #include <nap/entity.h>
 #include "nap/fileutils.h"
+#include "nap/core.h"
+#include "pythonscriptservice.h"
+#include "nap/logger.h"
 
 RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::PythonScriptComponentInstance, nap::EntityInstance&)
 RTTI_END_CLASS
@@ -11,8 +14,6 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	pybind11::module PythonScriptComponentInstance::mScript;
-
 	void PythonScriptComponentInstance::update(double deltaTime)
 	{
 		try
@@ -21,38 +22,18 @@ namespace nap
 		}
 		catch (const pybind11::error_already_set& err)
 		{
-			int i = 0; 
+			nap::Logger::info("Runtime python error while executing %s: %s", mScriptComponent->mPath.c_str(), err.what());
 		}
 	}
 
 	bool PythonScriptComponentInstance::init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
-		const PythonScriptComponent* scriptComponent = rtti_cast<PythonScriptComponent>(resource.get());
-		
-		try 
-		{
-			PyObject* sysPath = PySys_GetObject((char*)"path");
-			PyList_Append(sysPath, Py_BuildValue("s", getAbsolutePath(getFileDir(scriptComponent->mPath)).c_str()));
+		mScriptComponent = rtti_cast<PythonScriptComponent>(resource.get());
 
-			if (!mScript.ptr())
-			{
-				mScript = pybind11::module::import(getFileNameWithoutExtension(scriptComponent->mPath).c_str());
-			}
-			else
-			{
-				mScript = pybind11::reinterpret_steal<pybind11::module>(PyImport_ReloadModule(mScript.ptr()));
-			}
-
-			if (!errorState.check(mScript.ptr(), "Failed to reload %s; check for syntax errors", scriptComponent->mPath.c_str()))
-				return false;
-		}
-		catch (const pybind11::error_already_set& err)
-		{
-			errorState.fail(err.what());
+		PythonScriptService* script_service = getEntity()->getCore()->getOrCreateService<PythonScriptService>();
+		if (!errorState.check(script_service->TryLoad(mScriptComponent->mPath, mScript, errorState), "Failed to load %s", mScriptComponent->mPath.c_str()))
 			return false;
-		}		 
-		// TODO: check script
-
+		
 		return true;
 	}
 }

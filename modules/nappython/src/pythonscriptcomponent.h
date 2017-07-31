@@ -7,8 +7,8 @@
 
 namespace nap
 {
-	// Forward declares
 	class InputService;
+	class PythonScriptComponent;
 
 	class NAPAPI PythonScriptComponentInstance : public ComponentInstance
 	{
@@ -23,7 +23,8 @@ namespace nap
 		virtual bool init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
 	private:
-		static pybind11::module mScript;
+		const PythonScriptComponent* mScriptComponent = nullptr;
+		pybind11::module mScript;
 	};
 
 
