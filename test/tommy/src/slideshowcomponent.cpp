@@ -10,7 +10,8 @@ RTTI_BEGIN_CLASS(nap::SlideShowComponent)
 	RTTI_PROPERTY("EntityPrototype",	&nap::SlideShowComponent::mEntityPrototype, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::SlideShowComponentInstance, nap::EntityInstance&)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SlideShowComponentInstance)
+	RTTI_CONSTRUCTOR(nap::EntityInstance&)
 RTTI_END_CLASS
 
 namespace nap

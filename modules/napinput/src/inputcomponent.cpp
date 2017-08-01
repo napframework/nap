@@ -1,22 +1,24 @@
 #include <inputcomponent.h>
 #include <nap/entity.h>
 
-RTTI_BEGIN_BASE_CLASS(nap::InputComponent)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::InputComponent)
 RTTI_END_CLASS
 
-RTTI_BEGIN_BASE_CLASS(nap::InputComponentInstance)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::InputComponentInstance)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::KeyInputComponent)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::KeyInputComponentInstance, nap::EntityInstance&)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::KeyInputComponentInstance)
+	RTTI_CONSTRUCTOR(nap::EntityInstance&)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::PointerInputComponent)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::PointerInputComponentInstance, nap::EntityInstance&)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PointerInputComponentInstance)
+	RTTI_CONSTRUCTOR(nap::EntityInstance&)
 RTTI_END_CLASS
 
 

@@ -14,7 +14,7 @@ RTTI_BEGIN_CLASS(opengl::TextureParameters)
 	RTTI_PROPERTY("mMaxLodLevel",		&opengl::TextureParameters::maxLodLevel,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-RTTI_BEGIN_BASE_CLASS(nap::Texture)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Texture)
 	RTTI_PROPERTY("mParameters", 		&nap::Texture::mParameters,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 

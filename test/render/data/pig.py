@@ -9,4 +9,8 @@ def update(elapsedTime):
 	resourceMgr = nap.core.getOrCreateService("nap::ResourceManagerService")
 	worldEntity = resourceMgr.findEntity("WorldEntity")
 	transform = worldEntity.findComponent("nap::TransformComponentInstance")
-	transform.setTranslate(math.sin(currentTime*2) * 5.0, 0.0, -3.0)
+	
+	translate = transform.getTranslate()
+	translate = nap.vec3(math.sin(currentTime*2), 0.0, 0.0)
+	translate.z = -3.0
+	transform.setTranslate(translate)

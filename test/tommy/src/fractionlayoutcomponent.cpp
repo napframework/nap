@@ -26,7 +26,8 @@ RTTI_BEGIN_CLASS(nap::FractionLayoutComponent)
 	RTTI_PROPERTY("Properties", &nap::FractionLayoutComponent::mProperties, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::FractionLayoutComponentInstance, nap::EntityInstance&)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::FractionLayoutComponentInstance)
+	RTTI_CONSTRUCTOR(nap::EntityInstance&)
 RTTI_END_CLASS
 
 namespace nap

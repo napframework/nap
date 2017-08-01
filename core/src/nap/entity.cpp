@@ -10,7 +10,8 @@ RTTI_BEGIN_CLASS(nap::Entity)
 	RTTI_PROPERTY("AutoSpawn", &nap::Entity::mAutoSpawn, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::EntityInstance, nap::Core&)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::EntityInstance)
+	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_FUNCTION("findComponent", (nap::ComponentInstance* (nap::EntityInstance::*)(const std::string &) const) &nap::EntityInstance::findComponent)
 RTTI_END_CLASS
 

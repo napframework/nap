@@ -3,14 +3,14 @@
 #include "image.h"
 
 
-RTTI_BEGIN_BASE_CLASS(nap::Uniform)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Uniform)
 	RTTI_PROPERTY("Name", &nap::Uniform::mName, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-RTTI_BEGIN_BASE_CLASS(nap::UniformValue)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformValue)
 RTTI_END_CLASS
 
-RTTI_BEGIN_BASE_CLASS(nap::UniformTexture)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformTexture)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::UniformInt)

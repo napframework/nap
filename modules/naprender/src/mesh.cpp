@@ -6,7 +6,7 @@
 #include <nap/fileutils.h>
 #include "fbxconverter.h"
 
-RTTI_BEGIN_BASE_CLASS(nap::Mesh)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Mesh)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::MeshFromFile)

@@ -18,7 +18,8 @@ RTTI_BEGIN_CLASS(nap::PerspCameraComponent)
 	RTTI_PROPERTY("Properties",			&nap::PerspCameraComponent::mProperties,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::PerspCameraComponentInstance, nap::EntityInstance&)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PerspCameraComponentInstance)
+	RTTI_CONSTRUCTOR(nap::EntityInstance&)
 RTTI_END_CLASS
 
 namespace nap

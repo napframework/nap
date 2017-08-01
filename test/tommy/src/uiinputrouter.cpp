@@ -9,7 +9,8 @@ RTTI_BEGIN_CLASS(nap::UIInputRouterComponent)
 	RTTI_PROPERTY("CameraEntity", &nap::UIInputRouterComponent::mCameraEntity, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::UIInputRouterComponentInstance, nap::EntityInstance&)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UIInputRouterComponentInstance)
+	RTTI_CONSTRUCTOR(nap::EntityInstance&)
 RTTI_END_CLASS
 
 

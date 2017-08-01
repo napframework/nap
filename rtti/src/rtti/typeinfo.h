@@ -188,7 +188,7 @@ namespace nap
 #define CONCAT_UNIQUE_NAMESPACE(x, y)				namespace x##y
 #define UNIQUE_REGISTRATION_NAMESPACE(id)			CONCAT_UNIQUE_NAMESPACE(__rtti_registration_, id)
 
-#define RTTI_BEGIN_BASE_CLASS(Type)																				\
+#define RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(Type)																				\
 	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)																	\
 	{																											\
 		RTTR_REGISTRATION																						\
@@ -216,6 +216,16 @@ namespace nap
 				cls.def(Name, Member, py::return_value_policy::automatic_reference);							\
 			});		
 
+#define RTTI_CUSTOM_REGISTRATION_FUNCTION(Func)																	\
+			python_class.registerFunction(std::bind(&Func<PythonClassType::PybindClass>, std::placeholders::_1));
+
+#define RTTI_CONSTRUCTOR(...)																					\
+			rtti_class_type.constructor<__VA_ARGS__>()(policy::ctor::as_raw_ptr);								\
+			python_class.registerFunction([](PythonClassType::PybindClass& cls)									\
+			{																									\
+				cls.def(py::init<__VA_ARGS__>());																\
+			});
+
 #define RTTI_END_CLASS																							\
 			nap::rtti::PythonModule& python_module = nap::rtti::PythonModule::get("nap");						\
 			python_module.registerTypeImportCallback(rtti_class_type_name,										\
@@ -231,52 +241,8 @@ namespace nap
 	}
 
 #define RTTI_BEGIN_CLASS(Type)																					\
-	RTTI_BEGIN_BASE_CLASS(Type)																					\
-	rtti_class_type.constructor<>()(policy::ctor::as_raw_ptr);													\
-	python_class.registerFunction([](PythonClassType::PybindClass& cls)											\
-	{																											\
-		cls.def(py::init<>());																					\
-	});	
-
-#define RTTI_BEGIN_CLASS_CONSTRUCTOR1(Type, CtorArg1)															\
-	RTTI_BEGIN_BASE_CLASS(Type)																					\
-	rtti_class_type.constructor<CtorArg1>()(policy::ctor::as_raw_ptr);											\
-	python_class.registerFunction([](PythonClassType::PybindClass& cls)											\
-	{																											\
-		cls.def(py::init<CtorArg1>());																			\
-	});
-
-#define RTTI_BEGIN_CLASS_CONSTRUCTOR2(Type, CtorArg1, CtorArg2)													\
-	RTTI_BEGIN_BASE_CLASS(Type)																					\
-	rtti_class_type.constructor<CtorArg1, CtorArg2>()(policy::ctor::as_raw_ptr);								\
-	python_class.registerFunction([](PythonClassType::PybindClass& cls)											\
-	{																											\
-		cls.def(py::init<CtorArg1, CtorArg2>());																\
-	});
-
-#define RTTI_BEGIN_CLASS_CONSTRUCTOR3(Type, CtorArg1, CtorArg2, CtorArg3)										\
-	RTTI_BEGIN_BASE_CLASS(Type)																					\
-	rtti_class_type.constructor<CtorArg1, CtorArg2, CtorArg3>()(policy::ctor::as_raw_ptr);						\
-	python_class.registerFunction([](PythonClassType::PybindClass& cls)											\
-	{																											\
-		cls.def(py::init<CtorArg1, CtorArg2, CtorArg3>());														\
-	});
-
-#define RTTI_BEGIN_CLASS_CONSTRUCTOR4(Type, CtorArg1, CtorArg2, CtorArg3, CtorArg4)								\
-	RTTI_BEGIN_BASE_CLASS(Type)																					\
-	rtti_class_type.constructor<CtorArg1, CtorArg2, CtorArg3, CtorArg4>()(policy::ctor::as_raw_ptr);			\
-	python_class.registerFunction([](PythonClassType::PybindClass& cls)											\
-	{																											\
-		cls.def(py::init<CtorArg1, CtorArg2, CtorArg3, CtorArg4>());											\
-	});
-
-#define RTTI_BEGIN_CLASS_CONSTRUCTOR5(Type, CtorArg1, CtorArg2, CtorArg3, CtorArg4, CtorArg5)					\
-	RTTI_BEGIN_BASE_CLASS(Type)																					\
-	rtti_class_type.constructor<CtorArg1, CtorArg2, CtorArg3, CtorArg4, CtorArg5>()(policy::ctor::as_raw_ptr);	\
-	python_class.registerFunction([](PythonClassType::PybindClass& cls)											\
-	{																											\
-		cls.def(py::init<CtorArg1, CtorArg2, CtorArg3, CtorArg4, CtorArg5>());									\
-	});
+	RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(Type)																\
+	RTTI_CONSTRUCTOR()
 
 #define RTTI_BEGIN_ENUM(Type)																					\
 	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)																	\
@@ -305,5 +271,5 @@ namespace nap
 	RTTI_END_CLASS
 
 #define RTTI_DEFINE_BASE(Type)																					\
-	RTTI_BEGIN_BASE_CLASS(Type)																					\
+	RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(Type)																\
 	RTTI_END_CLASS

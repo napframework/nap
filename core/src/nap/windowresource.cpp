@@ -1,6 +1,6 @@
 #include "windowresource.h"
 
-RTTI_BEGIN_BASE_CLASS(nap::Window)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Window)
 RTTI_END_CLASS
 
 namespace nap
