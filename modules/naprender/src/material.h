@@ -63,7 +63,7 @@ namespace nap
 	 */
 	class NAPAPI MaterialInstance : public UniformContainer
 	{
-		RTTI_ENABLE()
+		RTTI_ENABLE(UniformContainer)
 	public:
 		/**
 		 * For each uniform in mUniforms, creates a mapping.
@@ -84,6 +84,17 @@ namespace nap
 		* @return If depth mode was overridden for this material, returns depth mode, otherwise material's depthmode.
 		*/
 		EDepthMode getDepthMode() const;
+
+		/**
+		* Get a uniform for this material instance. This means that the uniform returned is only applicable
+		* to this instance. In order to change a uniform so that it's value is shared among materials, use
+		* getMaterial().getUniforms().getUniform().
+		* This function will assert if the name of the uniform does not match the type that you are trying to
+		* create.
+		* @param name: the name of the uniform as it is in the shader.
+		* @return reference to the uniform that was found or created.
+		*/
+		Uniform* getOrCreateUniform(const std::string& name);
 
 		/**
 		* Get a uniform for this material instance. This means that the uniform returned is only applicable
@@ -184,39 +195,14 @@ namespace nap
 	public:
 		std::vector<ObjectPtr<Uniform>>			mUniforms;											///< Static uniforms (as read from file, or as set in code before calling init())
 		std::vector<VertexAttributeBinding>		mVertexAttributeBindings;							///< Mapping from mesh vertex attr to shader vertex attr
-		ObjectPtr<Shader>				mShader = nullptr;									///< The shader that this material is using
+		ObjectPtr<Shader>						mShader = nullptr;									///< The shader that this material is using
 		EBlendMode								mBlendMode = EBlendMode::Opaque;					///< Blend mode for this material
 		EDepthMode								mDepthMode = EDepthMode::InheritFromBlendMode;		///< Determines how the Z buffer is used									///< Holds all the uniform values
 	};
 
-
 	//////////////////////////////////////////////////////////////////////////
 	// Template Definitions
 	//////////////////////////////////////////////////////////////////////////
-
-	template<typename T>
-	T* UniformContainer::findUniform(const std::string& name)
-	{
-		UniformTextureBindings::iterator texture_binding = mUniformTextureBindings.find(name);
-		if (texture_binding != mUniformTextureBindings.end() && texture_binding->second.mUniform->get_type() == RTTI_OF(T))
-			return (T*)texture_binding->second.mUniform.get();
-
-		UniformValueBindings::iterator value_binding = mUniformValueBindings.find(name);
-		if (value_binding != mUniformValueBindings.end() && value_binding->second.mUniform->get_type() == RTTI_OF(T))
-			return (T*)value_binding->second.mUniform.get();
-
-		return nullptr;
-	}
-
-
-	template<typename T>
-	T& UniformContainer::getUniform(const std::string& name)
-	{
-		T* result = findUniform<T>(name);
-		assert(result);
-		return *result;
-	}
-
 
 	template<typename T>
 	T& MaterialInstance::getOrCreateUniform(const std::string& name)

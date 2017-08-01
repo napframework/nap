@@ -35,6 +35,10 @@ RTTI_BEGIN_CLASS(nap::MaterialInstanceResource)
 	RTTI_PROPERTY("DepthMode",					&nap::MaterialInstanceResource::mDepthMode,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS(nap::MaterialInstance)
+	RTTI_FUNCTION("getOrCreateUniform",			(nap::Uniform* (nap::MaterialInstance::*)(const std::string&)) &nap::MaterialInstance::getOrCreateUniform);
+RTTI_END_CLASS
+
 RTTI_BEGIN_CLASS(nap::Material)
 	RTTI_PROPERTY("Uniforms",					&nap::Material::mUniforms,					nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Shader",						&nap::Material::mShader,					nap::rtti::EPropertyMetaData::Required)
@@ -82,6 +86,15 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 	// MaterialInstance
 	//////////////////////////////////////////////////////////////////////////
+
+	Uniform* MaterialInstance::getOrCreateUniform(const std::string& name)
+	{
+		Uniform* existing = findUniform(name);
+		if (existing != nullptr)
+			return existing;
+
+		return &createUniform(name);
+	}
 
 
 	Uniform& MaterialInstance::createUniform(const std::string& name)

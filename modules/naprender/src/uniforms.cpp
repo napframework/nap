@@ -15,26 +15,32 @@ RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::UniformInt)
 	RTTI_PROPERTY("Value", &nap::UniformInt::mValue, nap::rtti::EPropertyMetaData::Required)
+	RTTI_FUNCTION("setValue", &nap::UniformInt::setValue)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::UniformFloat)
 	RTTI_PROPERTY("Value", &nap::UniformFloat::mValue, nap::rtti::EPropertyMetaData::Required)
+	RTTI_FUNCTION("setValue", &nap::UniformFloat::setValue)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::UniformVec3)
-RTTI_PROPERTY("Value", &nap::UniformVec3::mValue, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Value", &nap::UniformVec3::mValue, nap::rtti::EPropertyMetaData::Required)
+	RTTI_FUNCTION("setValue", &nap::UniformVec3::setValue)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::UniformVec4)
 	RTTI_PROPERTY("Value", &nap::UniformVec4::mValue, nap::rtti::EPropertyMetaData::Required)
+	RTTI_FUNCTION("setValue", &nap::UniformVec4::setValue)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::UniformMat4)
 	RTTI_PROPERTY("Value", &nap::UniformMat4::mValue, nap::rtti::EPropertyMetaData::Required)
+	RTTI_FUNCTION("setValue", &nap::UniformMat4::setValue)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::UniformTexture2D)
 	RTTI_PROPERTY("Texture", &nap::UniformTexture2D::mTexture, nap::rtti::EPropertyMetaData::Required)
+	RTTI_FUNCTION("setTexture", &nap::UniformTexture2D::setTexture)
 RTTI_END_CLASS
 
 

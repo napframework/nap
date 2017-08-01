@@ -26,6 +26,7 @@ RTTI_BEGIN_CLASS(nap::RenderableMeshComponent)
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderableMeshComponentInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&)
+	RTTI_FUNCTION("getMaterialInstance", &nap::RenderableMeshComponentInstance::getMaterialInstance)
 RTTI_END_CLASS
 
 namespace nap
@@ -241,9 +242,9 @@ namespace nap
 	}
 
 
-	MaterialInstance& RenderableMeshComponentInstance::getMaterialInstance()
+	MaterialInstance* RenderableMeshComponentInstance::getMaterialInstance()
 	{
-		return mMaterialInstance;
+		return &mMaterialInstance;
 	}
-}
+} 
 

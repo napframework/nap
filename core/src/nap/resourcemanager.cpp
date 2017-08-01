@@ -9,6 +9,7 @@
 
 RTTI_BEGIN_CLASS(nap::ResourceManagerService)
 	RTTI_FUNCTION("findEntity", &nap::ResourceManagerService::findEntity)
+	RTTI_FUNCTION("findObject", (const nap::ObjectPtr<nap::rtti::RTTIObject> (nap::ResourceManagerService::*)(const std::string&))&nap::ResourceManagerService::findObject)
 RTTI_END_CLASS
 
 namespace nap

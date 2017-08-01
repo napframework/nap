@@ -304,6 +304,11 @@
 						"UniformScale": 1.5					
 					}
 				}		
+			},
+			{
+				"nap::PythonScriptComponent": {
+					"Path": "data/scripts/plane.py"
+				}
 			}
 		]
 	},	
