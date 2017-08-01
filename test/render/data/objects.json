@@ -228,7 +228,7 @@
 			},
 			{
 				"nap::PythonScriptComponent": {
-					"Path": "data/pig.py"
+					"Path": "data/scripts/pig.py"
 				}
 			}
 		]
@@ -341,7 +341,13 @@
 						"UniformScale": 1.5
 					}
 				}		
+			},
+			{
+				"nap::PythonScriptComponent": {
+					"Path": "data/scripts/rotating_plane.py"
+				}
 			}
+		
 		]
 	},	
 
@@ -403,7 +409,12 @@
 						"UniformScale": 1.0						
 					}
 				}		
-			}
+			},
+			{
+				"nap::PythonScriptComponent": {
+					"Path": "data/scripts/world.py"
+				}
+			}			
 		]
 	},
 	

@@ -5,11 +5,12 @@
 #include <glm/fwd.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <pybind11/operators.h>
+#include <pybind11/pybind11.h>
 
 // TODO: move glm RTTI definitions to some central place
 
 template<class PythonClassType>
-static void sRegisterFloatVectorOperators(PythonClassType& cls)
+static void sRegisterFloatVectorOperators(pybind11::module& module, PythonClassType& cls)
 {
 	cls.def(pybind11::self + pybind11::self);
 	cls.def(pybind11::self += pybind11::self);
@@ -27,7 +28,7 @@ static void sRegisterFloatVectorOperators(PythonClassType& cls)
 }
 
 template<class PythonClassType>
-static void sRegisterIntVectorOperators(PythonClassType& cls)
+static void sRegisterIntVectorOperators(pybind11::module& module, PythonClassType& cls)
 {
 	cls.def(pybind11::self + pybind11::self);
 	cls.def(pybind11::self += pybind11::self);
@@ -45,7 +46,7 @@ static void sRegisterIntVectorOperators(PythonClassType& cls)
 }
 
 template<class PythonClassType>
-static void sRegisterQuatOperators(PythonClassType& cls)
+static void sRegisterQuatOperators(pybind11::module& module, PythonClassType& cls)
 {
 	cls.def(pybind11::self + pybind11::self);
 	cls.def(pybind11::self += pybind11::self);
@@ -57,6 +58,8 @@ static void sRegisterQuatOperators(PythonClassType& cls)
 	cls.def(pybind11::self * float());
 
 	cls.def(float() * pybind11::self);
+
+	module.def("rotate", &glm::rotate<glm::quat::value_type, glm::highp>);
 }
 
 RTTI_BEGIN_CLASS(glm::vec2)

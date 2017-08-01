@@ -112,42 +112,6 @@ void onUpdate()
 		delta_time = 0.01f;
 	}
 
-	nap::TransformComponentInstance* pig_transform = &pigEntity->getComponent<nap::TransformComponentInstance>();
-	nap::TransformComponentInstance* rotating_plane_transform = &rotatingPlaneEntity->getComponent<nap::TransformComponentInstance>();
-//	nap::TransformComponentInstance* world_sphere_transform = &worldEntity->getComponent<nap::TransformComponentInstance>();
-
-	// Get rotation angle
-	float rot_speed = 0.1f;
-	float rot_angle = elapsed_time * 360.0f * rot_speed;
-	float rot_angle_radians = glm::radians(rot_angle);
-
-	float rot_speed_sphere = 0.01f;
-	float rot_angle_sphere = elapsed_time * 360.0f * rot_speed_sphere;
-	float rot_angle_radians_sphere = glm::radians(rot_angle_sphere);
-
-	// Calculate rotation quaternion
-	glm::quat rot_quat = glm::rotate(glm::quat(), (float)rot_angle_radians, glm::vec3(0.0, 1.0, 0.0));
-
-	// Set rotation on model component
-	pig_transform->setRotate(rot_quat);
-
-	// Set rotation on plane component
-	rotating_plane_transform->setRotate(rot_quat);
-
-	glm::quat quaternion;
-	quaternion.w = 1.0f;
-
-	// Set rotation on sphere
-// 	glm::quat rot_quat_sphere = glm::rotate(glm::quat(), -1.0f*(float)rot_angle_radians_sphere, glm::vec3(0.0, 1.0, 0.0));
-// 	world_sphere_transform->setRotate(rot_quat_sphere);
-// 	world_sphere_transform->setTranslate({ glm::sin(elapsed_time) * 5.0f, 0.0f, -3.0f });
-
-	// Set scale
-	float scale_speed = 4.0f;
-	float nscale = (sin(elapsed_time  * scale_speed) + 1) / 2.0f;
-	nscale = nap::math::fit<float>(nscale, 0.0f, 1.0f, 0.25f, 1.0f);
-	//xform_v->uniformScale.setValue(nscale);
-
 	// Set some material values
 	nap::MaterialInstance& material_instance = pigEntity->getComponent<nap::RenderableMeshComponentInstance>().getMaterialInstance();
 
@@ -307,7 +271,7 @@ bool init(nap::Core& core)
 	if (!resourceManagerService->loadFile("data/objects.json", errorState))
 	{
 		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
-		return false;  
+		return false;   
 	}   
 	 
 	renderWindows.push_back(resourceManagerService->findObject<nap::RenderWindow>("Window0"));

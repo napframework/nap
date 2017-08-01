@@ -61,7 +61,7 @@ namespace nap
 		{
 		public:
 			using PybindClass = pybind11::class_<T, BaseClasses...>;
-			using RegistrationFunction = std::function<void(PybindClass&)>;
+			using RegistrationFunction = std::function<void(pybind11::module&, PybindClass&)>;
 
 			PythonClass(const std::string& name)
 			{
@@ -81,7 +81,7 @@ namespace nap
 			{
 				auto cls = PybindClass(module, mName.c_str());
 				for (auto& func : mRegistrationFunctions)
-					func(cls);
+					func(module, cls);
 			}
 
 			static void GetBaseTypes(std::vector<std::string>& dependentTypes)

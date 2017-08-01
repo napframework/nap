@@ -204,24 +204,24 @@ namespace nap
 
 #define RTTI_PROPERTY(Name, Member, Flags)																		\
 			rtti_class_type.property(Name, Member)(metadata("flags", (uint8_t)(Flags)));						\
-			python_class.registerFunction([](PythonClassType::PybindClass& cls)									\
+			python_class.registerFunction([](pybind11::module& module, PythonClassType::PybindClass& cls)		\
 			{																									\
 				cls.def_readwrite(Name, Member);																\
 			});		
 
 #define RTTI_FUNCTION(Name, Member)																				\
 			rtti_class_type.method(Name, Member);																\
-			python_class.registerFunction([](PythonClassType::PybindClass& cls)									\
+			python_class.registerFunction([](pybind11::module& module, PythonClassType::PybindClass& cls)		\
 			{																									\
 				cls.def(Name, Member, py::return_value_policy::automatic_reference);							\
 			});		
 
 #define RTTI_CUSTOM_REGISTRATION_FUNCTION(Func)																	\
-			python_class.registerFunction(std::bind(&Func<PythonClassType::PybindClass>, std::placeholders::_1));
+			python_class.registerFunction(std::bind(&Func<PythonClassType::PybindClass>, std::placeholders::_1, std::placeholders::_2));
 
 #define RTTI_CONSTRUCTOR(...)																					\
 			rtti_class_type.constructor<__VA_ARGS__>()(policy::ctor::as_raw_ptr);								\
-			python_class.registerFunction([](PythonClassType::PybindClass& cls)									\
+			python_class.registerFunction([](pybind11::module& module, PythonClassType::PybindClass& cls)		\
 			{																									\
 				cls.def(py::init<__VA_ARGS__>());																\
 			});

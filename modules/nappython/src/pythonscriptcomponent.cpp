@@ -19,7 +19,7 @@ namespace nap
 	{
 		try
 		{
-			mScript.attr("update")(deltaTime);
+			mScript.attr("update")(getEntity(), getEntity()->getCore()->getElapsedTime(), deltaTime);
 		}
 		catch (const pybind11::error_already_set& err)
 		{
