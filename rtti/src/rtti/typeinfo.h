@@ -161,6 +161,24 @@ namespace nap
 			return (current_flags & (uint8_t)flags) != 0;
 		}
 	}
+
+	namespace detail
+	{
+		template<typename T>
+		struct void_ { typedef void type; };
+
+		template<typename Type, typename = void>
+		struct BaseClassList
+		{
+			using List = rttr::detail::type_list<>;
+		};
+
+		template<typename Type>
+		struct BaseClassList<Type, typename void_<typename Type::base_class_list>::type>
+		{
+			using List = typename Type::base_class_list;
+		};
+	}
 }
 
 
@@ -179,36 +197,43 @@ namespace nap
 			namespace py = pybind11;																			\
 																												\
 			typedef Type ClassType;																				\
+			using PythonClassType = nap::rtti::PythonClass<Type, nap::detail::BaseClassList<Type>::List>;		\
+			std::string rtti_class_type_name = #Type;															\
 			registration::class_<Type> rtti_class_type(#Type);													\
-			nap::rtti::PythonClass<Type> python_class(#Type);
+			PythonClassType python_class(#Type);
 
 #define RTTI_PROPERTY(Name, Member, Flags)																		\
 			rtti_class_type.property(Name, Member)(metadata("flags", (uint8_t)(Flags)));						\
-			python_class.registerFunction([](py::class_<ClassType>& cls)										\
+			python_class.registerFunction([](PythonClassType::PybindClass& cls)									\
 			{																									\
 				cls.def_readwrite(Name, Member);																\
 			});		
 
 #define RTTI_FUNCTION(Name, Member)																				\
 			rtti_class_type.method(Name, Member);																\
-			python_class.registerFunction([](py::class_<ClassType>& cls)										\
+			python_class.registerFunction([](PythonClassType::PybindClass& cls)									\
 			{																									\
 				cls.def(Name, Member, py::return_value_policy::automatic_reference);							\
 			});		
 
 #define RTTI_END_CLASS																							\
 			nap::rtti::PythonModule& python_module = nap::rtti::PythonModule::get("nap");						\
-			python_module.registerImportCallback([python_class](py::module& module)								\
-			{																									\
-				python_class.invoke(module);																	\
-			});																									\
+			python_module.registerTypeImportCallback(rtti_class_type_name,										\
+													 [](std::vector<std::string>& baseTypes)					\
+													 {															\
+														PythonClassType::GetBaseTypes(baseTypes);				\
+													 },															\
+													 [python_class](py::module& module)							\
+													 {															\
+														python_class.invoke(module);							\
+													 });														\
 		}																										\
 	}
 
 #define RTTI_BEGIN_CLASS(Type)																					\
 	RTTI_BEGIN_BASE_CLASS(Type)																					\
 	rtti_class_type.constructor<>()(policy::ctor::as_raw_ptr);													\
-	python_class.registerFunction([](py::class_<Type>& cls)														\
+	python_class.registerFunction([](PythonClassType::PybindClass& cls)											\
 	{																											\
 		cls.def(py::init<>());																					\
 	});	
@@ -216,7 +241,7 @@ namespace nap
 #define RTTI_BEGIN_CLASS_CONSTRUCTOR1(Type, CtorArg1)															\
 	RTTI_BEGIN_BASE_CLASS(Type)																					\
 	rtti_class_type.constructor<CtorArg1>()(policy::ctor::as_raw_ptr);											\
-	python_class.registerFunction([](py::class_<Type>& cls)														\
+	python_class.registerFunction([](PythonClassType::PybindClass& cls)											\
 	{																											\
 		cls.def(py::init<CtorArg1>());																			\
 	});
@@ -224,7 +249,7 @@ namespace nap
 #define RTTI_BEGIN_CLASS_CONSTRUCTOR2(Type, CtorArg1, CtorArg2)													\
 	RTTI_BEGIN_BASE_CLASS(Type)																					\
 	rtti_class_type.constructor<CtorArg1, CtorArg2>()(policy::ctor::as_raw_ptr);								\
-	python_class.registerFunction([](py::class_<Type>& cls)														\
+	python_class.registerFunction([](PythonClassType::PybindClass& cls)											\
 	{																											\
 		cls.def(py::init<CtorArg1, CtorArg2>());																\
 	});
@@ -232,7 +257,7 @@ namespace nap
 #define RTTI_BEGIN_CLASS_CONSTRUCTOR3(Type, CtorArg1, CtorArg2, CtorArg3)										\
 	RTTI_BEGIN_BASE_CLASS(Type)																					\
 	rtti_class_type.constructor<CtorArg1, CtorArg2, CtorArg3>()(policy::ctor::as_raw_ptr);						\
-	python_class.registerFunction([](py::class_<Type>& cls)														\
+	python_class.registerFunction([](PythonClassType::PybindClass& cls)											\
 	{																											\
 		cls.def(py::init<CtorArg1, CtorArg2, CtorArg3>());														\
 	});
@@ -240,7 +265,7 @@ namespace nap
 #define RTTI_BEGIN_CLASS_CONSTRUCTOR4(Type, CtorArg1, CtorArg2, CtorArg3, CtorArg4)								\
 	RTTI_BEGIN_BASE_CLASS(Type)																					\
 	rtti_class_type.constructor<CtorArg1, CtorArg2, CtorArg3, CtorArg4>()(policy::ctor::as_raw_ptr);			\
-	python_class.registerFunction([](py::class_<Type>& cls)														\
+	python_class.registerFunction([](PythonClassType::PybindClass& cls)											\
 	{																											\
 		cls.def(py::init<CtorArg1, CtorArg2, CtorArg3, CtorArg4>());											\
 	});
@@ -248,7 +273,7 @@ namespace nap
 #define RTTI_BEGIN_CLASS_CONSTRUCTOR5(Type, CtorArg1, CtorArg2, CtorArg3, CtorArg4, CtorArg5)					\
 	RTTI_BEGIN_BASE_CLASS(Type)																					\
 	rtti_class_type.constructor<CtorArg1, CtorArg2, CtorArg3, CtorArg4, CtorArg5>()(policy::ctor::as_raw_ptr);	\
-	python_class.registerFunction([](py::class_<Type>& cls)														\
+	python_class.registerFunction([](PythonClassType::PybindClass& cls)											\
 	{																											\
 		cls.def(py::init<CtorArg1, CtorArg2, CtorArg3, CtorArg4, CtorArg5>());									\
 	});

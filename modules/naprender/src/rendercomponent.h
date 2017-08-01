@@ -19,7 +19,7 @@ namespace nap
 	 * 
 	 * You can override default draw behavior by specializing the draw method
 	 */
-	class RenderableComponentInstance : public ComponentInstance
+	class NAPAPI RenderableComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 
