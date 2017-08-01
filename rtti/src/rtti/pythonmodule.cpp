@@ -4,8 +4,6 @@
 #include "utility/stringutils.h"
 #include <unordered_map>
 
-#include "windows.h"
-
 namespace nap
 {
 	namespace rtti
@@ -45,7 +43,6 @@ namespace nap
 			}
 
 			itemToRegister->second.mRegistrationFunction(module);
-			OutputDebugString(utility::stringFormat("%s\n", itemToRegister->first.c_str()).c_str());
 		}
 
 		void PythonModule::invoke(pybind11::module& module)
