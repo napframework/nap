@@ -32,6 +32,9 @@ namespace nap
 
 	void Core::initialize()
 	{ 
+		// Here we register a callback that is called when the nap python module is imported.
+		// We register a 'core' attribute so that we can write nap.core.<function>() in python
+		// to access core functionality as a 'global'.
 		nap::rtti::PythonModule::get("nap").registerImportCallback([this](pybind11::module& module)
 		{
 			module.attr("core") = this;

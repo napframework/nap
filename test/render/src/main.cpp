@@ -71,8 +71,6 @@ void runGame(nap::Core& core);
 
 namespace py = pybind11;
 
-//py::module script;
-
 // Called when the window is updating
 void onUpdate()
 {
@@ -239,7 +237,7 @@ bool init(nap::Core& core)
 
 	nap::utility::ErrorState errorState;
 
-	// Needed to make sure python module is loaded (should be removed)
+	// Needed to make sure python module is loaded (should be removed later when dynamic module loading is back in)
 	nap::PythonScriptComponent* bla = new nap::PythonScriptComponent();
 
 	if (!resourceManagerService->loadFile("data/objects.json", errorState))
@@ -273,9 +271,8 @@ bool init(nap::Core& core)
 	render_state.mPointSize = 2.0f;
 	render_state.mPolygonMode = opengl::PolygonMode::FILL;
 
-	return true; 
+	return true;
 }
-
 
 // Main loop
 int main(int argc, char *argv[])
