@@ -27,8 +27,11 @@ if (WIN32)
             ../../../../thirdparty/glew/msvc/bin/Release/x64/glew32.dll
             )
     # copy nrender (hack)
-
     copy_files_to_bin(${FILES_TO_COPY})
+    
+	# copy all ffmpeg dlls
+	file(GLOB FFMPEGDLLS ${CMAKE_CURRENT_LIST_DIR}/../../../thirdparty/ffmpeg/bin/*.dll)
+    copy_files_to_bin(${FFMPEGDLLS})
 endif()
 
 # create post build event
