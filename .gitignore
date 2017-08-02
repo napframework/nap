@@ -5,7 +5,8 @@ build/
 py/.idea/
 lib/Clang/
 build.sh
-xcode/
+xcode/*
+!xcode/Project.xcodeproj
 core/Debug/
 vs/
 modules/napof/Debug/
@@ -42,3 +43,4 @@ CMakeFiles/3.8.0-rc3/CMakeSystem.cmake
 CMakeFiles/cmake.check_cache
 arch.c
 modules/.vs/Project/v14/.suo
+.DS_Store
