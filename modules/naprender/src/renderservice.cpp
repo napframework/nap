@@ -123,7 +123,7 @@ namespace nap
 			nap::RenderableMeshComponentInstance* renderable_mesh = rtti_cast<RenderableMeshComponentInstance>(component);
 			if (renderable_mesh != nullptr)
 			{
-				EBlendMode blend_mode = renderable_mesh->getMaterialInstance()->getBlendMode();
+				EBlendMode blend_mode = renderable_mesh->getMaterialInstance().getBlendMode();
 				if (blend_mode == EBlendMode::AlphaBlend)
 					back_to_front.push_back(component);
 				else

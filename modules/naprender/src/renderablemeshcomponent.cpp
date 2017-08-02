@@ -242,9 +242,9 @@ namespace nap
 	}
 
 
-	MaterialInstance* RenderableMeshComponentInstance::getMaterialInstance()
+	MaterialInstance& RenderableMeshComponentInstance::getMaterialInstance()
 	{
-		return &mMaterialInstance;
+		return mMaterialInstance;
 	}
 } 
 

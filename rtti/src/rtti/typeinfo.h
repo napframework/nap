@@ -178,6 +178,25 @@ namespace nap
 		{
 			using List = typename Type::base_class_list;
 		};
+
+		template <typename Return, typename... Args>
+		bool isReturnTypeLValueReference(Return(*f)(Args...))
+		{
+			return std::is_lvalue_reference<Return>();
+		}
+
+		template <typename Return, typename Class, typename... Arg>
+		bool isReturnTypeLValueReference(Return(Class::*f)(Arg...))
+		{
+			return std::is_lvalue_reference<Return>();
+		}
+
+		template <typename Return, typename Class, typename... Arg>
+		bool isReturnTypeLValueReference(Return(Class::*f)(Arg...) const)
+		{
+			return std::is_lvalue_reference<Return>();
+		}
+
 	}
 }
 
@@ -213,7 +232,7 @@ namespace nap
 			rtti_class_type.method(Name, Member);																\
 			python_class.registerFunction([](pybind11::module& module, PythonClassType::PybindClass& cls)		\
 			{																									\
-				cls.def(Name, Member, py::return_value_policy::automatic_reference);							\
+ 				cls.def(Name, Member, nap::detail::isReturnTypeLValueReference(Member) ? py::return_value_policy::reference : py::return_value_policy::automatic_reference);	\
 			});		
 
 #define RTTI_CUSTOM_REGISTRATION_FUNCTION(Func)																	\

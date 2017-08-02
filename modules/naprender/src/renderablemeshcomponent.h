@@ -80,7 +80,7 @@ namespace nap
 		/**
 		 * @return MaterialInstance for this component.
 		 */
-		MaterialInstance* getMaterialInstance();
+		MaterialInstance& getMaterialInstance();
 
 		/**
 		 * Toggles visibility.

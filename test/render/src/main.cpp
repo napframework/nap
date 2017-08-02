@@ -145,17 +145,17 @@ void onRender()
 		components_to_render.push_back(&planeEntity->getComponent<nap::RenderableMeshComponentInstance>());
 		components_to_render.push_back(&rotatingPlaneEntity->getComponent<nap::RenderableMeshComponentInstance>());
 
-		nap::MaterialInstance* plane_material = planeEntity->getComponent<nap::RenderableMeshComponentInstance>().getMaterialInstance();
-		plane_material->getOrCreateUniform<nap::UniformTexture2D>("testTexture").setTexture(textureRenderTarget->getColorTexture());
-		plane_material->getOrCreateUniform<nap::UniformTexture2D>("pigTexture").setTexture(textureRenderTarget->getColorTexture());
-		plane_material->getOrCreateUniform<nap::UniformInt>("mTextureIndex").setValue(0);
-		plane_material->getOrCreateUniform<nap::UniformVec4>("mColor").setValue({ 1.0f, 1.0f, 1.0f, 1.0f });
+		nap::MaterialInstance& plane_material = planeEntity->getComponent<nap::RenderableMeshComponentInstance>().getMaterialInstance();
+		plane_material.getOrCreateUniform<nap::UniformTexture2D>("testTexture").setTexture(textureRenderTarget->getColorTexture());
+		plane_material.getOrCreateUniform<nap::UniformTexture2D>("pigTexture").setTexture(textureRenderTarget->getColorTexture());
+		plane_material.getOrCreateUniform<nap::UniformInt>("mTextureIndex").setValue(0);
+		plane_material.getOrCreateUniform<nap::UniformVec4>("mColor").setValue({ 1.0f, 1.0f, 1.0f, 1.0f });
 
-		nap::MaterialInstance* rotating_plane_material = rotatingPlaneEntity->getComponent<nap::RenderableMeshComponentInstance>().getMaterialInstance();
-		rotating_plane_material->getOrCreateUniform<nap::UniformTexture2D>("testTexture").setTexture(textureRenderTarget->getColorTexture());
-		rotating_plane_material->getOrCreateUniform<nap::UniformTexture2D>("pigTexture").setTexture(textureRenderTarget->getColorTexture());
-		rotating_plane_material->getOrCreateUniform<nap::UniformInt>("mTextureIndex").setValue(0);
-		rotating_plane_material->getOrCreateUniform<nap::UniformVec4>("mColor").setValue({ 1.0f, 1.0f, 1.0f, 1.0f });
+		nap::MaterialInstance& rotating_plane_material = rotatingPlaneEntity->getComponent<nap::RenderableMeshComponentInstance>().getMaterialInstance();
+		rotating_plane_material.getOrCreateUniform<nap::UniformTexture2D>("testTexture").setTexture(textureRenderTarget->getColorTexture());
+		rotating_plane_material.getOrCreateUniform<nap::UniformTexture2D>("pigTexture").setTexture(textureRenderTarget->getColorTexture());
+		rotating_plane_material.getOrCreateUniform<nap::UniformInt>("mTextureIndex").setValue(0);
+		rotating_plane_material.getOrCreateUniform<nap::UniformVec4>("mColor").setValue({ 1.0f, 1.0f, 1.0f, 1.0f });
 
 		opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(render_window->getWindow()->getBackbuffer());
 		backbuffer.setClearColor(glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
