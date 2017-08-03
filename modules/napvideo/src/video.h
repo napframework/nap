@@ -75,37 +75,48 @@ namespace nap
 		/**
 		 * @return The current playback position, in seconds.
 		 */
-		double getCurrentTime() const { return mVideoClockSecs; }
+		double getCurrentTime() const			{ return mVideoClockSecs; }
 
 		/**
 		 * @return The Y texture as it is updated by update(). Initially, the texture is not initialized
 		 * to zero, but to the 'black' equivalent in YUV space. The size of the Y texture is width * height.
 		 */
-		MemoryTexture2D& getYTexture() { return *mYTexture; }
+		MemoryTexture2D& getYTexture()			{ return *mYTexture; }
 
 		/**
 		 * @return The U texture as it is updated by update(). Initially, the texture is not initialized
 		 * to zero, but to the 'black' equivalent in YUV space. The size of the Y texture is HALF the width * height.
 		 */
-		MemoryTexture2D& getUTexture() { return *mUTexture; }
+		MemoryTexture2D& getUTexture()			{ return *mUTexture; }
 
 		/**
 		 * @return The V texture as it is updated by update(). Initially, the texture is not initialized
 		 * to zero, but to the 'black' equivalent in YUV space. The size of the V texture is HALF the width * height.
 		 */
-		MemoryTexture2D& getVTexture() { return *mVTexture; }
+		MemoryTexture2D& getVTexture()			{ return *mVTexture; }
 
 		/**
 		 * @return Width of the video, in pixels.
 		 */
-		int getWidth() const { return mWidth; }
+		int getWidth() const					{ return mWidth; }
 
 		/**
 		 * @return Height of the video, in pixels.
 		 */
-		int getHeight() const { return mHeight; }
+		int getHeight() const					{ return mHeight; }
 
-		std::string mPath;		///< Path to the video to playback
+		/**
+		* @return The duration of the video in seconds.
+		*/
+		double getDuration() const				{ return mDuration; }
+
+		/**
+		* @return The time stamp of the current video frame in seconds
+		*/
+		double getTimeStamp() const				{ return mPrevPTSSecs; }
+			
+		std::string mPath;				///< Path to the video to playback
+		bool		mLoop = false;		///< If the video needs to loop
 
 	private:
 
@@ -147,6 +158,7 @@ namespace nap
 		bool					mPlaying = false;				///< Set if playing. Should only be controlled from main thread
 		int						mWidth = 0;						///< Width of the video, in pixels
 		int						mHeight = 0;					///< Height of the video, in pixels
+		float					mDuration = 0.0f;				///< Duration of the video in seconds
 		double					mPrevPTSSecs = 0.0;				///< Stored timing information for the previous frame
 		double					mVideoClockSecs = DBL_MAX;		///< Clock that we use to synchronize the video to
 

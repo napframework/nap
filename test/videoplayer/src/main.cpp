@@ -57,51 +57,31 @@ void onUpdate()
 	renderService->getPrimaryWindow().makeCurrent();
 	resourceManagerService->checkForFileChanges();
 
-	if (cameraEntity == nullptr)
-	{
-		cameraEntity = resourceManagerService->findEntity("CameraEntity");
-	}
-
-	if (videoEntity == nullptr)
-		videoEntity = resourceManagerService->findEntity("VideoEntity");
-
 	// Process events for all windows
 	renderService->processEvents();
+
+	// Update all resources
+	resourceManagerService->update();
 
 	// Update model transform
 	float elapsed_time = renderService->getCore().getElapsedTime();
 	static float prev_elapsed_time = elapsed_time;
 	float delta_time = elapsed_time - prev_elapsed_time;
-	if (delta_time < 0.0001f)
-	{
-		delta_time = 0.0001f;
-	}
-
-	resourceManagerService->getRootEntity().update(delta_time);
 
 	if (videoEntity != nullptr)
 	{
 		glm::vec2 window_size = renderWindows[0]->getWindow()->getSize();
 
-		static float total_update_time = 0.0f;
-		total_update_time += delta_time;
-
 		float new_window_height = -FLT_MAX;
 		for (auto& video_resource : videoResources)
 		{
-			if (loopVideo && total_update_time >= 5.0f)
-			{
-				video_resource->stop();
-				video_resource->play();
-				total_update_time = 0.0f;
-			}
-
-
 			nap::utility::ErrorState error_state;
 			if (!video_resource->update(delta_time, error_state))
 			{
 				nap::Logger::fatal(error_state.toString());
 			}
+
+			//std::cout << video_resource->getTimeStamp() << "\n";
 			
 			float aspect_ratio = (float)video_resource->getWidth() / (float)video_resource->getHeight();
 			new_window_height = std::max(new_window_height, window_size.x / aspect_ratio);
@@ -193,12 +173,23 @@ bool init(nap::Core& core)
 		return false;        
 	} 
 	
+	// Get important entities
+	cameraEntity = resourceManagerService->findEntity("CameraEntity");
+	assert(cameraEntity != nullptr);
+
+	videoEntity = resourceManagerService->findEntity("VideoEntity");
+	assert(videoEntity != nullptr);
+
+	// Store all render windows
 	renderWindows.push_back(resourceManagerService->findObject<nap::RenderWindow>("Window"));
 
+	// Collect all video resources and play
 	videoResources.push_back(resourceManagerService->findObject<nap::Video>("Video1"));
-
 	for (auto& videoResource : videoResources)
+	{
+		videoResource->mLoop = true;
 		videoResource->play();
+	}
 
 	// Set render states
 	nap::RenderState& render_state = renderService->getRenderState();

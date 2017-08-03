@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <iostream>
 
 extern "C"
 {
@@ -16,6 +17,7 @@ extern "C"
 
 RTTI_BEGIN_CLASS(nap::Video)
 	RTTI_PROPERTY("Path", &nap::Video::mPath, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Loop", &nap::Video::mLoop, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
@@ -98,6 +100,7 @@ namespace nap
 
 		mWidth = mCodecContext->width;
 		mHeight = mCodecContext->height;
+		mDuration = static_cast<double>(mFormatContext->duration / AV_TIME_BASE);
 
 		opengl::Texture2DSettings y_settings;
 		y_settings.format = GL_RED;
@@ -259,17 +262,28 @@ namespace nap
 					mPacketQueue.push(nullptr);
 					mPacketAvailableCondition.notify_one();
 				}
-
 				mSeekTarget = -1;
 			}
 
 			// Read packets from the stream and push them onto the packet queue
 			PacketWrapper packet;
 			int result = av_read_frame(mFormatContext, packet.mPacket);
+
+			// If we ended playback we either exit the loop or start from the beginning
 			if (result == AVERROR_EOF)
 			{
-				mPacketsFinished = true;
-				return;
+				if (mLoop)
+				{
+					// Signal a reset of the video stream
+					seek(0.0f);
+					continue;
+				}
+				else
+				{
+					// Exit loop
+					mPacketsFinished = true;
+					return;
+				}
 			}
 			else if (result < 0)
 			{
@@ -313,7 +327,11 @@ namespace nap
 			AVPacket* packet;
 			{
 				std::unique_lock<std::mutex> lock(mPacketQueueMutex);
-				mPacketAvailableCondition.wait(lock, [this]() { return !mPacketQueue.empty() || mExitDecodeThreadSignalled || mPacketsFinished; });
+				mPacketAvailableCondition.wait(lock, [this]() 
+				{ 
+					return !mPacketQueue.empty() || mExitDecodeThreadSignalled || mPacketsFinished; }
+				);
+				
 				if (mExitDecodeThreadSignalled)
 					return false;
 
@@ -383,10 +401,7 @@ namespace nap
 			{
 				// In case there is no PTS we use the previous PTS time plus the frame time as a best prediction. However, if there is 
 				// no previous frame, we assume zero.
-				if (mPrevPTSSecs == DBL_MAX)
-					new_frame.mPTSSecs = 0.0;
-				else
-					new_frame.mPTSSecs = mPrevPTSSecs + frame_duration;
+				new_frame.mPTSSecs = mPrevPTSSecs == DBL_MAX ? 0.0 : mPrevPTSSecs + frame_duration;
 			}
 			else
 			{
@@ -444,10 +459,8 @@ namespace nap
 		// we return, effectively keeping the same contents in the existing textures.
 		Frame cur_frame;
 		{
-			std::unique_lock<std::mutex> lock(mFrameQueueMutex);
-
 			// This can be enabled to block waiting until data is available
-			//mFrameDataAvailableCondition.wait(lock, [this]() { return !mFrameQueue.empty(); });
+			// mFrameDataAvailableCondition.wait(lock, [this]() { return !mFrameQueue.empty(); });
 
 			if (mFrameQueue.empty() && mFramesFinished)
 			{
@@ -455,9 +468,14 @@ namespace nap
 				return errorState.check(mErrorString.empty(), mErrorString);
 			}
 
+			std::unique_lock<std::mutex> lock(mFrameQueueMutex);
+
 			// Initialize the video clock to the first frame we see (if it has not been initialized yet)
 			if (!mFrameQueue.empty() && mVideoClockSecs == DBL_MAX)
+			{
 				mVideoClockSecs = mFrameQueue.front().mPTSSecs;
+			}
+			std::cout << mVideoClockSecs << "\n";
 
 			if (mFrameQueue.empty() || mVideoClockSecs < mFrameQueue.front().mPTSSecs)
 				return true;

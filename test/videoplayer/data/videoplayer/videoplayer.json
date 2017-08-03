@@ -18,7 +18,7 @@
 	
 	"nap::Video": {
 		"mID": "Video1",
-		"Path": "data/videoplayer/video2.mp4"
+		"Path": "data/videoplayer/jellyfish-50-mbps-hd-h264.mkv"
 	},
 	
 	"nap::Material": {
