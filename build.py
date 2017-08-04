@@ -5,7 +5,7 @@ from multiprocessing import cpu_count
 WORKING_DIR = os.path.dirname(__file__)
 
 THIRDPARTY = 'thirdparty'
-THIRDPARTY_DIR = '%s/../thirdparty' % WORKING_DIR
+THIRDPARTY_DIR = '%s/thirdparty' % WORKING_DIR
 THIRDPARTY_URL = 'https://ae53bb936bc44bbffbac2dbd1f37101838603903@github.com/naivisoftware/thirdparty.git'
 
 
