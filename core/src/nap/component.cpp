@@ -1,3 +1,4 @@
+#include <rtti/pythonmodule.h>
 #include "nap/component.h"
 #include "nap/entity.h"
 

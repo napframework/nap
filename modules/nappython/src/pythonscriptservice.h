@@ -1,6 +1,8 @@
 #pragma once
 
 #include <utility/dllexport.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/embed.h>
 #include "nap/service.h"
 
 namespace nap

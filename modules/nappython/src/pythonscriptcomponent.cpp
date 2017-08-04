@@ -1,5 +1,6 @@
 #include <pythonscriptcomponent.h>
 #include <nap/entity.h>
+#include <rtti/pythonmodule.h>
 #include "nap/fileutils.h"
 #include "nap/core.h"
 #include "pythonscriptservice.h"

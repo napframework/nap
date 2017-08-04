@@ -1,3 +1,4 @@
+#include <rtti/pythonmodule.h>
 #include "resourcemanager.h"
 #include "rtti/rttiutilities.h"
 #include "rtti/jsonreader.h"

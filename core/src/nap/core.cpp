@@ -4,7 +4,7 @@
 #include "logger.h"
 
 // External Includes
-#include <algorithm>
+#include <rtti/pythonmodule.h>
 
 using namespace std;
 

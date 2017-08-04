@@ -1,4 +1,7 @@
+#include <pybind11/pybind11.h>
 #include "rttiobject.h"
+#include "pythonmodule.h"
+
 
 static const char* sIDPropertyName = "mID";
 

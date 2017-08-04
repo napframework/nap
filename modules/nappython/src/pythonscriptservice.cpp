@@ -1,3 +1,4 @@
+#include <rtti/pythonmodule.h>
 #include "pythonscriptservice.h"
 #include "nap/fileutils.h"
 
@@ -32,7 +33,7 @@ namespace nap
 			{
 				pybind11::module new_module = pybind11::module::import(getFileNameWithoutExtension(modulePath).c_str());
 
-				auto& inserted = mLoadedModules.emplace(std::make_pair(toComparableFilename(modulePath), new_module));
+				auto inserted = mLoadedModules.emplace(std::make_pair(toComparableFilename(modulePath), new_module));
 				module = inserted.first->second;
 			}
 		}

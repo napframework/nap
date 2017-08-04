@@ -1,5 +1,5 @@
+#include <rtti/pythonmodule.h>
 #include "entity.h"
-#include "component.h"
 #include "core.h"
 
 using namespace std;

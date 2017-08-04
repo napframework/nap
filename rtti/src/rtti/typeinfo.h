@@ -2,7 +2,7 @@
 
 #include <rttr/type>
 #include <rttr/registration>
-#include "rtti/pythonmodule.h"
+//#include "rtti/pythonmodule.h"
 #include "utility/dllexport.h"
 
 /**

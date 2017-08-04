@@ -4,6 +4,7 @@
 #include <nap/signalslot.h>
 #include <nap/component.h>
 #include <utility/dllexport.h>
+#include <pybind11/pybind11.h>
 
 namespace nap
 {

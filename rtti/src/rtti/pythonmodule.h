@@ -7,6 +7,7 @@
 #include "pybind11/pybind11.h"
 #include "pybind11/embed.h"
 #include "rttr/detail/misc/misc_type_traits.h"
+#include "typeinfo.h"
 
 namespace nap
 {
@@ -52,7 +53,7 @@ namespace nap
 			inline void GetTypeNames<>(std::vector<std::string>& result)
 			{
 			}
-		}	
+		}
 
 		template<class T, class BaseClasses>
 		class PythonClass;

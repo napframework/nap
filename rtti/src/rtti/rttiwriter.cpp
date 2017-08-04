@@ -1,6 +1,6 @@
 #include <rtti/rttiwriter.h>
 #include <rtti/rttiobject.h>
-#include <utility/errorstate.h>
+#include <cassert>
 
 namespace nap
 {
