@@ -18,7 +18,7 @@ def isLocalGitRepo(d):
     return True
 
 
-def call(cwd, cmd):
+def call(cwd=None, cmd=None):
     print('dir: %s' % cwd)
     print('cmd: %s' % cmd)
     proc = subprocess.Popen(cmd, cwd=cwd)
@@ -32,7 +32,7 @@ if __name__ == '__main__':
     print('Refreshing: %s' % THIRDPARTY)
     d = THIRDPARTY_DIR
     if not isLocalGitRepo(d):
-        call(d, ['git', 'clone', THIRDPARTY_URL])
+        call(None, ['git', 'clone', THIRDPARTY_URL])
     else:
         call(d, ['git', 'fetch', '--all'])
         call(d, ['git', 'reset', '--hard', 'master'])
