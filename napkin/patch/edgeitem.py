@@ -48,12 +48,25 @@ class EdgeItemBase(QGraphicsPathItem):
         else:
             self.brush.setColorAt(1, self.defaultCol)
 
-        if self.srcPos.y() > self.dstPos.y():
+        sx = self.srcPos.x()
+        sy = self.srcPos.y()
+        tx = self.dstPos.x()
+        ty = self.dstPos.y()
+        a = math.atan2(ty - sy, tx - sx)
+
+        if a < -math.pi/2:
             self.brush.setStart(0.5, 1)
             self.brush.setFinalStop(0.5, 0)
-        else:
+        elif a > math.pi/2:
             self.brush.setStart(0.5, 0)
             self.brush.setFinalStop(0.5, 1)
+        elif sy > ty:
+            self.brush.setStart(0, 1)
+            self.brush.setFinalStop(0, 0)
+        else:
+            self.brush.setStart(0, 0)
+            self.brush.setFinalStop(0, 1)
+
 
         p = QPainterPath()
         calculateWirePath(self.srcPos, self.srcVec, self.dstPos, self.dstVec, p)
