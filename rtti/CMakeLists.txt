@@ -10,11 +10,21 @@ if (WIN32)
         set(RTTR_DIR "${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/rttr/msvc32/install/cmake")
     endif()
 elseif(APPLE)
-    set(RTTR_DIR "${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/rttr/xcode/install/cmake")
-    set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};thirdparty/rttr/install/cmake")
+    find_path(
+            RTTR_DIR
+            NAMES rttr-config.cmake
+            HINTS
+            ${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/rttr/xcode/install/cmake
+            ${CMAKE_CURRENT_LIST_DIR}/../../rttr
+    )
 else()
-    set(RTTR_DIR "${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/rttr/install/cmake")
-    set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};thirdparty/rttr/install/cmake")
+    find_path(
+            RTTR_DIR
+            NAMES rttr-config.cmake
+            HINTS
+            ${CMAKE_CURRENT_LIST_DIR}/../../rttr/install/cmake
+            ${CMAKE_CURRENT_LIST_DIR}/../thirdparty/rttr/install/cmake
+    )
 endif()
 
 find_package(RTTR CONFIG REQUIRED Core)
