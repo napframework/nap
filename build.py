@@ -1,7 +1,5 @@
 import os
 import subprocess
-
-from git.repo.base import Repo
 from multiprocessing import cpu_count
 
 WORKING_DIR = os.path.dirname(__file__)
@@ -12,9 +10,10 @@ THIRDPARTY_URL = 'https://ae53bb936bc44bbffbac2dbd1f37101838603903@github.com/na
 
 
 
-def isThirdpartyCloned():
-    if not os.path.exists(THIRDPARTY_DIR): return False
-    try: Repo(THIRDPARTY_DIR)
+def isLocalGitRepo(d):
+    if not os.path.exists(d): return False
+    try:
+        call(d, ['git', 'rev-parse'])
     except: return False
     return True
 
@@ -25,14 +24,14 @@ def call(cwd, cmd):
     proc = subprocess.Popen(cmd, cwd=cwd)
     proc.communicate()
     if proc.returncode != 0:
-        exit(proc.returncode)
+        raise Exception(proc.returncode)
 
 
 if __name__ == '__main__':
 
     print('Refreshing: %s' % THIRDPARTY)
     d = THIRDPARTY_DIR
-    if not isThirdpartyCloned():
+    if not isLocalGitRepo(d):
         call(d, ['git', 'clone', THIRDPARTY_URL])
     else:
         call(d, ['git', 'fetch', '--all'])
