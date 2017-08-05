@@ -30,7 +30,7 @@ def call(cwd=WORKING_DIR, cmd=None):
 
 def installDependenciesLinux():
     d = WORKING_DIR
-    call(d, ['sudo', 'apt-get', '--assume-yes', 'install',
+    call('.', ['sudo', 'apt-get', '--assume-yes', 'install',
              'cmake',
              'build-essential',
              'libsdl2-dev',
