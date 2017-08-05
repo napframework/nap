@@ -46,9 +46,12 @@ def installDependenciesLinux():
 
 def installDependenciesOSX():
     d = WORKING_DIR
-    # https://stackoverflow.com/questions/25535407/bypassing-prompt-to-press-return-in-homebrew-install-script
-    # ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" </dev/null
-    # call(d, ['ruby', '-e', '"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"'])
+    try:
+        call(d, ['brew'])
+    except:
+        # https://stackoverflow.com/questions/25535407/bypassing-prompt-to-press-return-in-homebrew-install-script
+        # ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" </dev/null
+        call(d, ['ruby', '-e', '"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"'])
 
     call(d, ['brew', 'install',
              'cmake', 'sdl2', 'glew', 'glm', 'assimp', 'tclap'
