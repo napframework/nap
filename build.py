@@ -24,7 +24,7 @@ def isLocalGitRepo(d):
 def call(cwd, cmd):
     print('dir: %s' % cwd)
     print('cmd: %s' % cmd)
-    proc = subprocess.Popen(cmd, cwd=cwd)
+    proc = subprocess.Popen(cmd, cwd=cwd, shell=True)
     proc.communicate()
     if proc.returncode != 0:
         raise Exception(proc.returncode)
