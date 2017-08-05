@@ -88,7 +88,9 @@ def main():
 
     print('Building')
     d = '%s/%s' % (WORKING_DIR, BUILD_DIR)
-    targets = ['napcore', 'rendertest', 'steef', 'serializationtest']
+
+    # targets = ['napcore', 'rendertest', 'steef', 'serializationtest']
+    targets = ['napcore', 'serializationtest']
     for t in targets:
         call(d, ['cmake', '--build', '.', '--target', t])
 
