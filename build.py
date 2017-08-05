@@ -85,7 +85,8 @@ def main():
     print('Building RTTR')
     d = '%s/rttr' % THIRDPARTY_DIR
     call(d, ['cmake', '.'])
-    call(d, ['make', 'install', '-j%s' % cpu_count()])
+    call(d, ['sudo', 'make', 'install', '-j%s' % cpu_count()])
+    call(d, ['sudo', 'chmod'. '-R', '777', d])
 
     print('Running CMAKE')
     d = WORKING_DIR
