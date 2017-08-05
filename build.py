@@ -30,9 +30,11 @@ def call(cwd=WORKING_DIR, cmd=None):
 
 def installDependenciesLinux():
     d = WORKING_DIR
-    call(d, ['sudo', 'apt-get', 'install',
+    call(d, ['sudo', 'apt-get', '--assume-yes', 'install',
              'cmake',
-             'clang-3.8',
+             'build-essential',
+             'libsdl2-dev',
+             'libglew-dev'
              ])
 
 
@@ -40,10 +42,10 @@ def installDependenciesOSX():
     d = WORKING_DIR
     # https://stackoverflow.com/questions/25535407/bypassing-prompt-to-press-return-in-homebrew-install-script
     # ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" </dev/null
-    call(d, ['ruby', '-e', '"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"'])
+    # call(d, ['ruby', '-e', '"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"'])
 
     call(d, ['brew', 'install',
-             'cmake'
+             'cmake', 'sdl2', 'glew', 'glm', 'assimp', 'freeimage', 'tclap'
              ])
 
 
@@ -57,12 +59,16 @@ def installDependencies():
         # Windows...
         pass
 
-
-def main():
-    # installDependencies()
+def gitPull():
     print('Updating repo')
     d = WORKING_DIR
     call(d, ['git', 'pull'])
+
+def main():
+    gitPull()
+
+    installDependencies()
+
 
     print('Refreshing: %s' % THIRDPARTY)
     d = THIRDPARTY_DIR
@@ -80,7 +86,9 @@ def main():
     print('Building NAPCore')
     d = WORKING_DIR
     call(d, ['cmake', '.'])
-    call(d, ['make', 'napcore', '-j%s' % cpu_count()])
+    targets = ['napcore', 'rendertest', 'steef', 'serializationtest']
+    for t in targets:
+        call(d, ['make', t, '-j%s' % cpu_count()])
 
 
 if __name__ == '__main__':
