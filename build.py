@@ -86,6 +86,7 @@ def main():
     d = '%s/rttr' % THIRDPARTY_DIR
     if platform in ["linux", "linux2", "darwin"]:
         call(d, ['sudo', 'cmake', '--build', '.', '--target', 'install'])
+        call(d, ['sudo', 'chmod', '-R', '777', '%s/rttr/install' % THIRDPARTY_DIR])
     else:
         call(d, ['cmake', '--build', '.', '--target', 'install'])
 
