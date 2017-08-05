@@ -84,7 +84,10 @@ def main():
 
     print('Building RTTR')
     d = '%s/rttr' % THIRDPARTY_DIR
-    call(d, ['cmake', '--build', '.', '--target', 'install'])
+    if platform in ["linux", "linux2", "darwin"]:
+        call(d, ['sudo', 'cmake', '--build', '.', '--target', 'install'])
+    else:
+        call(d, ['cmake', '--build', '.', '--target', 'install'])
 
     print('Building')
     d = '%s/%s' % (WORKING_DIR, BUILD_DIR)
