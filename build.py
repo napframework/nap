@@ -19,7 +19,7 @@ def isLocalGitRepo(d):
     return True
 
 
-def call(cwd=WORKING_DIR, cmd=None):
+def call(cwd, cmd):
     print('dir: %s' % cwd)
     print('cmd: %s' % cmd)
     proc = subprocess.Popen(cmd, cwd=cwd)
