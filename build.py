@@ -86,7 +86,7 @@ def main():
     d = '%s/rttr' % THIRDPARTY_DIR
     if platform in ["linux", "linux2", "darwin"]:
         call(d, ['cmake', '.'])
-        call(d, ['make', 'install'])
+        call(d, ['make', 'install', '-j%s' % cpu_count()])
     else:
         call(d, ['cmake', '--build', '.', '--target', 'install'])
 
@@ -97,7 +97,7 @@ def main():
     for t in targets:
         if platform in ["linux", "linux2", "darwin"]:
             d = '%s/%s' % (WORKING_DIR, BUILD_DIR)
-            call(d, ['make', t])
+            call(d, ['make', t, '-j%s' % cpu_count()])
         else:
             d = WORKING_DIR
             bd = '%s/build64' % d
