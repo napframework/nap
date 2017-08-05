@@ -85,19 +85,26 @@ def main():
     print('Building RTTR')
     d = '%s/rttr' % THIRDPARTY_DIR
     if platform in ["linux", "linux2", "darwin"]:
+        call(d, ['cmake', '.'])
         call(d, ['sudo', 'cmake', '--build', '.', '--target', 'install'])
         call(d, ['sudo', 'chmod', '-R', '777', 'install'])
     else:
         call(d, ['cmake', '--build', '.', '--target', 'install'])
 
     print('Building')
-    d = '%s/%s' % (WORKING_DIR, BUILD_DIR)
 
     # targets = ['napcore', 'rendertest', 'steef', 'serializationtest']
     targets = ['napcore', 'serializationtest']
     for t in targets:
-        call(d, ['cmake', '--build', '.', '--target', t])
-
+        if platform in ["linux", "linux2", "darwin"]:
+            d = '%s/%s' % (WORKING_DIR, BUILD_DIR)
+            call(d, ['cmake', '--build', '.', '--target', t])
+        else:
+            d = WORKING_DIR
+            bd = '%s/build64' % d
+            if not os.path.exists(bd): os.makedirs(bd)
+            call(bd, ['cmake', '-G', 'Visual Studio 14 2015 Win64', '..'])
+            call(d, ['cmake', '--build', 'build64', '--target', t])
 
 if __name__ == '__main__':
     main()
