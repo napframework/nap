@@ -97,15 +97,19 @@ def main():
 
     # targets = ['napcore', 'rendertest', 'steef', 'serializationtest']
     targets = ['napcore', 'serializationtest']
+    if platform in ["linux", "linux2", "darwin"]:
+        call(WORKING_DIR, ['cmake', '-H.', '-Bbuild'])
+    else:
+        bd = '%s/build64' % WORKING_DIR
+        if not os.path.exists(bd): os.makedirs(bd)
+        call(bd, ['cmake', '-G', 'Visual Studio 14 2015 Win64', '..'])
+
     for t in targets:
         if platform in ["linux", "linux2", "darwin"]:
             d = '%s/%s' % (WORKING_DIR, BUILD_DIR)
             call(d, ['make', t, '-j%s' % cpu_count()])
         else:
             d = WORKING_DIR
-            bd = '%s/build64' % d
-            if not os.path.exists(bd): os.makedirs(bd)
-            call(bd, ['cmake', '-G', 'Visual Studio 14 2015 Win64', '..'])
             call(d, ['cmake', '--build', 'build64', '--target', t])
 
 if __name__ == '__main__':
