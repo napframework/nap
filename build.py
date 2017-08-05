@@ -3,7 +3,7 @@ import subprocess
 from multiprocessing import cpu_count
 from sys import platform
 
-WORKING_DIR = os.path.dirname(__file__)
+WORKING_DIR = '.'
 
 THIRDPARTY = 'thirdparty'
 THIRDPARTY_DIR = '%s/thirdparty' % WORKING_DIR
@@ -34,7 +34,8 @@ def installDependenciesLinux():
              'cmake',
              'build-essential',
              'libsdl2-dev',
-             'libglew-dev'
+             'libglew-dev',
+             'libassimp-dev',
              ])
 
 
