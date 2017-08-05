@@ -8,7 +8,7 @@ WORKING_DIR = os.path.dirname(__file__)
 THIRDPARTY = 'thirdparty'
 THIRDPARTY_DIR = '%s/thirdparty' % WORKING_DIR
 THIRDPARTY_URL = 'https://ae53bb936bc44bbffbac2dbd1f37101838603903@github.com/naivisoftware/thirdparty.git'
-
+NAP_URL = 'https://ae53bb936bc44bbffbac2dbd1f37101838603903@github.com/naivisoftware/nap.git'
 
 def isLocalGitRepo(d):
     if not os.path.exists(d): return False
@@ -62,13 +62,10 @@ def installDependencies():
 def gitPull():
     print('Updating repo')
     d = WORKING_DIR
-    call(d, ['git', 'pull'])
+    call(d, ['git', 'pull', NAP_URL])
 
 def main():
-    gitPull()
-
     installDependencies()
-
 
     print('Refreshing: %s' % THIRDPARTY)
     d = THIRDPARTY_DIR
