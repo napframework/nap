@@ -83,10 +83,10 @@ def main():
         call(d, ['git', 'reset', '--hard', 'master'])
 
     print('Building RTTR')
-    d = 'thirdparty/rttr'
+    d = '%s/rttr' % THIRDPARTY_DIR
     call(d, ['cmake', '.'])
     call(d, ['sudo', 'make', 'install', '-j%s' % cpu_count()])
-    call(d, ['sudo', 'chmod', '-R', '777', d])
+    call(d, ['sudo', 'chmod', '-R', '777', '.'])
 
     print('Running CMAKE')
     d = WORKING_DIR
