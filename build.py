@@ -9,6 +9,8 @@ THIRDPARTY = 'thirdparty'
 THIRDPARTY_DIR = '%s/thirdparty' % WORKING_DIR
 THIRDPARTY_URL = 'https://ae53bb936bc44bbffbac2dbd1f37101838603903@github.com/naivisoftware/thirdparty.git'
 NAP_URL = 'https://ae53bb936bc44bbffbac2dbd1f37101838603903@github.com/naivisoftware/nap.git'
+NAP_BRANCH = 'build'
+
 
 def isLocalGitRepo(d):
     if not os.path.exists(d): return False
@@ -31,12 +33,14 @@ def call(cwd, cmd):
 def installDependenciesLinux():
     d = WORKING_DIR
     call('.', ['sudo', 'apt-get', '--assume-yes', 'install',
-             'cmake',
-             'build-essential',
-             'libsdl2-dev',
-             'libglew-dev',
-             'libassimp-dev',
-             ])
+               'cmake',
+               'build-essential',
+               'libsdl2-dev',
+               'libglew-dev',
+               'libassimp-dev',
+               'libglm-dev',
+               'libtclap-dev',
+               ])
 
 
 def installDependenciesOSX():
@@ -46,7 +50,7 @@ def installDependenciesOSX():
     # call(d, ['ruby', '-e', '"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"'])
 
     call(d, ['brew', 'install',
-             'cmake', 'sdl2', 'glew', 'glm', 'assimp', 'freeimage', 'tclap'
+             'cmake', 'sdl2', 'glew', 'glm', 'assimp', 'tclap'
              ])
 
 
@@ -60,10 +64,12 @@ def installDependencies():
         # Windows...
         pass
 
+
 def gitPull():
     print('Updating repo')
     d = WORKING_DIR
     call(d, ['git', 'pull', NAP_URL])
+
 
 def main():
     installDependencies()
@@ -83,7 +89,7 @@ def main():
 
     print('Building NAPCore')
     d = WORKING_DIR
-    call(d, ['cmake', '.'])
+    call(d, ['cmake', '.', '-H.', '-Bbuild'])
     targets = ['napcore', 'rendertest', 'steef', 'serializationtest']
     for t in targets:
         call(d, ['make', t, '-j%s' % cpu_count()])
