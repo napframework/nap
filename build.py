@@ -62,7 +62,7 @@ def main():
     # installDependencies()
     print('Updating repo')
     d = WORKING_DIR
-    call(d, ['git', 'fetch', '--all'])
+    call(d, ['git', 'pull'])
 
     print('Refreshing: %s' % THIRDPARTY)
     d = THIRDPARTY_DIR
