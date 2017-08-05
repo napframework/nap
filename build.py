@@ -86,8 +86,7 @@ def main():
     d = '%s/rttr' % THIRDPARTY_DIR
     if platform in ["linux", "linux2", "darwin"]:
         call(d, ['cmake', '.'])
-        call(d, ['sudo', 'cmake', '--build', '.', '--target', 'install'])
-        call(d, ['sudo', 'chmod', '-R', '777', 'install'])
+        call(d, ['make', 'install'])
     else:
         call(d, ['cmake', '--build', '.', '--target', 'install'])
 
@@ -98,7 +97,7 @@ def main():
     for t in targets:
         if platform in ["linux", "linux2", "darwin"]:
             d = '%s/%s' % (WORKING_DIR, BUILD_DIR)
-            call(d, ['cmake', '--build', '.', '--target', t])
+            call(d, ['make', t])
         else:
             d = WORKING_DIR
             bd = '%s/build64' % d
