@@ -15,7 +15,7 @@ elseif(APPLE)
             NAMES rttr-config.cmake
             HINTS
             ${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/rttr/xcode/install/cmake
-            ${CMAKE_CURRENT_LIST_DIR}/../../rttr
+            ${CMAKE_CURRENT_LIST_DIR}/../thirdparty/rttr/install/cmake
     )
 else()
     find_path(
