@@ -46,7 +46,10 @@ def installDependenciesLinux():
 
 
 def isBrewInstalled():
-    return os.path.exists(call(WORKING_DIR, ['which', 'brew']))
+    try:
+        return os.path.exists(call(WORKING_DIR, ['which', 'brew']))
+    except:
+        return False
 
 def installDependenciesOSX():
     d = WORKING_DIR
