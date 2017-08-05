@@ -25,9 +25,10 @@ def call(cwd, cmd):
     print('dir: %s' % cwd)
     print('cmd: %s' % cmd)
     proc = subprocess.Popen(cmd, cwd=cwd)
-    proc.communicate()
+    out, err = proc.communicate()
     if proc.returncode != 0:
         raise Exception(proc.returncode)
+    return out
 
 
 def installDependenciesLinux():
@@ -44,11 +45,12 @@ def installDependenciesLinux():
                ])
 
 
+def isBrewInstalled():
+    return os.path.exists(call(WORKING_DIR, ['which', 'brew']))
+
 def installDependenciesOSX():
     d = WORKING_DIR
-    try:
-        call(d, ['brew'])
-    except:
+    if not isBrewInstalled():
         # https://stackoverflow.com/questions/25535407/bypassing-prompt-to-press-return-in-homebrew-install-script
         # ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" </dev/null
         call(d, ['ruby', '-e', '"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"'])
