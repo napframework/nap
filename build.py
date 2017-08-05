@@ -87,9 +87,12 @@ def main():
     call(d, ['cmake', '.'])
     call(d, ['sudo', 'make', 'install', '-j%s' % cpu_count()])
 
-    print('Building NAPCore')
-    d = '%s/%s' % (WORKING_DIR, BUILD_DIR)
+    print('Running CMAKE')
+    d = WORKING_DIR
     call(d, ['cmake', '.', '-H.', '-B%s' % BUILD_DIR])
+
+    print('Building')
+    d = '%s/%s' % (WORKING_DIR, BUILD_DIR)
     targets = ['napcore', 'rendertest', 'steef', 'serializationtest']
     for t in targets:
         call(d, ['make', t, '-j%s' % cpu_count()])
