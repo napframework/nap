@@ -81,7 +81,7 @@ def main():
     print('Building RTTR')
     d = '%s/rttr' % THIRDPARTY_DIR
     call(d, ['cmake', '.'])
-    call(d, ['make', 'install', '-j%s' % cpu_count()])
+    call(d, ['sudo', 'make', 'install', '-j%s' % cpu_count()])
 
     print('Building NAPCore')
     d = WORKING_DIR
