@@ -40,6 +40,7 @@ def installDependenciesLinux():
                'libassimp-dev',
                'libglm-dev',
                'libtclap-dev',
+               'libfreeimage-dev',
                ])
 
 
@@ -79,24 +80,17 @@ def main():
     if not isLocalGitRepo(d):
         call(None, ['git', 'clone', THIRDPARTY_URL])
     else:
-        call(d, ['git', 'fetch', '--all'])
-        call(d, ['git', 'reset', '--hard', 'master'])
+        call(d, ['git', 'pull'])
 
     print('Building RTTR')
     d = '%s/rttr' % THIRDPARTY_DIR
-    call(d, ['cmake', '.'])
-    call(d, ['sudo', 'make', 'install', '-j%s' % cpu_count()])
-    call(d, ['sudo', 'chmod', '-R', '777', '.'])
-
-    print('Running CMAKE')
-    d = WORKING_DIR
-    call(d, ['cmake', '.', '-H.', '-B%s' % BUILD_DIR])
+    call(d, ['cmake', '--build', '.', '--target', 'install'])
 
     print('Building')
     d = '%s/%s' % (WORKING_DIR, BUILD_DIR)
     targets = ['napcore', 'rendertest', 'steef', 'serializationtest']
     for t in targets:
-        call(d, ['make', t, '-j%s' % cpu_count()])
+        call(d, ['cmake', '--build', '.', '--target', t])
 
 
 if __name__ == '__main__':
