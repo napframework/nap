@@ -10,7 +10,7 @@ THIRDPARTY_DIR = '%s/thirdparty' % WORKING_DIR
 THIRDPARTY_URL = 'https://ae53bb936bc44bbffbac2dbd1f37101838603903@github.com/naivisoftware/thirdparty.git'
 NAP_URL = 'https://ae53bb936bc44bbffbac2dbd1f37101838603903@github.com/naivisoftware/nap.git'
 NAP_BRANCH = 'build'
-
+BUILD_DIR = 'build'
 
 def isLocalGitRepo(d):
     if not os.path.exists(d): return False
@@ -88,8 +88,8 @@ def main():
     call(d, ['sudo', 'make', 'install', '-j%s' % cpu_count()])
 
     print('Building NAPCore')
-    d = WORKING_DIR
-    call(d, ['cmake', '.', '-H.', '-Bbuild'])
+    d = '%/%s' % (WORKING_DIR, BUILD_DIR)
+    call(d, ['cmake', '.', '-H.', '-B%s' % BUILD_DIR])
     targets = ['napcore', 'rendertest', 'steef', 'serializationtest']
     for t in targets:
         call(d, ['make', t, '-j%s' % cpu_count()])
