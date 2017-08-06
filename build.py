@@ -53,9 +53,11 @@ def isBrewInstalled():
 
 def installDependenciesOSX():
     d = WORKING_DIR
-    call(d, ['brew', 'install',
-             'cmake', 'sdl2', 'glew', 'glm', 'assimp', 'tclap'
-             ])
+    for pack in ['cmake', 'sdl2', 'glew', 'glm', 'assimp', 'tclap']:
+        try:
+            call(d, ['brew', 'install', pack])
+        except:
+            print('Failed installing %s' % pack)
 
 
 def installDependencies():
