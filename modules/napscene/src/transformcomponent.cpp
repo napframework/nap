@@ -21,7 +21,16 @@ RTTI_BEGIN_CLASS(nap::TransformComponent)
 	RTTI_PROPERTY("Properties", &nap::TransformComponent::mProperties, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::TransformComponentInstance, nap::EntityInstance&)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TransformComponentInstance)
+	RTTI_CONSTRUCTOR(nap::EntityInstance&)
+	RTTI_FUNCTION("getTranslate",		&nap::TransformComponentInstance::getTranslate)
+	RTTI_FUNCTION("setTranslate",		&nap::TransformComponentInstance::setTranslate)
+	RTTI_FUNCTION("setRotate",			&nap::TransformComponentInstance::setRotate)
+	RTTI_FUNCTION("getRotate",			&nap::TransformComponentInstance::getRotate)
+	RTTI_FUNCTION("setScale",			&nap::TransformComponentInstance::setScale)
+	RTTI_FUNCTION("getScale",			&nap::TransformComponentInstance::getScale)
+	RTTI_FUNCTION("setUniformScale",	&nap::TransformComponentInstance::setUniformScale)
+	RTTI_FUNCTION("getUniformScale",	&nap::TransformComponentInstance::getUniformScale)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -78,6 +87,7 @@ namespace nap
 		mGlobalMatrix = parentTransform * getLocalTransform();
 		mWorldDirty = false;
 	}
+
 
 	void TransformComponentInstance::setTranslate(const glm::vec3& translate)
 	{

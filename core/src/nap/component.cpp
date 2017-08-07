@@ -1,8 +1,10 @@
+#include <rtti/pythonmodule.h>
 #include "nap/component.h"
 #include "nap/entity.h"
 
-RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::ComponentInstance, nap::EntityInstance&)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ComponentInstance)
+	RTTI_CONSTRUCTOR(nap::EntityInstance&)
 RTTI_END_CLASS
 
-RTTI_BEGIN_BASE_CLASS(nap::Component)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Component)
 RTTI_END_CLASS

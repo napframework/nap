@@ -1,5 +1,6 @@
 #pragma once
 
+#include "utility/dllexport.h"
 #include "rttiwriter.h"
 #include <vector>
 
@@ -7,7 +8,7 @@ namespace nap
 {
 	namespace rtti
 	{
-		class BinaryWriter : public RTTIWriter
+		class NAPAPI BinaryWriter : public RTTIWriter
 		{
 		public:
 			/**

@@ -3,7 +3,7 @@
 // External Includes
 #include <rtti/rttiobject.h>
 #include <nap/component.h>
-#include <nap/dllexport.h>
+#include <utility/dllexport.h>
 
 namespace nap
 {

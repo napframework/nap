@@ -3,6 +3,7 @@
 #include <string>
 #include <assert.h>
 #include <rtti/typeinfo.h>
+#include "utility/dllexport.h"
 
 namespace nap
 {
@@ -24,7 +25,7 @@ namespace nap
 		 *
 		 * Note: this class should be used through RTTIPath, not directly
 		 */
-		class RTTIPathElement
+		class NAPAPI RTTIPathElement
 		{
 		public:
 			/**
@@ -188,7 +189,7 @@ namespace nap
 		/**
 		 * This is the analogue to RTTIPathElement; it is used to represent an element on a ResolvedRTTIPath. See RTTIPathElement for more documentation.
 		 */
-		class ResolvedRTTIPathElement
+		class NAPAPI ResolvedRTTIPathElement
 		{
 		private:
 			friend class ResolvedRTTIPath;
@@ -412,7 +413,7 @@ namespace nap
 		 *
 		 * After the setValue, object->mArrayOfCompounds[0].mPointerProperty now points to 'some_other_object'
 		*/
-		class RTTIPath
+		class NAPAPI RTTIPath
 		{
 		public:
 			/**
@@ -502,7 +503,7 @@ namespace nap
 		 * ResolvedRTTIPath is the 'resolved' version of an RTTIPath and can be used to get/set the value of the property being pointed to
 		 * See RTTIPath for further documentation
 		 */
-		class ResolvedRTTIPath
+		class NAPAPI ResolvedRTTIPath
 		{
 		public:
 			/**

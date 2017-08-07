@@ -1,7 +1,7 @@
 #pragma once
 
 #include "rtti/rtti.h"
-#include "dllexport.h"
+#include "utility/dllexport.h"
 
 namespace nap
 {

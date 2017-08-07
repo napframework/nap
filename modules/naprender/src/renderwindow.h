@@ -6,7 +6,7 @@
 
 // External Includes
 #include <nap/windowresource.h>
-#include <nap/dllexport.h>
+#include <utility/dllexport.h>
 
 namespace nap
 {

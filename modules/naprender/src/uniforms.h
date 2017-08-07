@@ -6,7 +6,7 @@
 // External Includes
 #include <nap/objectptr.h>
 #include <glm/glm.hpp>
-#include <nap/dllexport.h>
+#include <utility/dllexport.h>
 
 namespace nap
 {

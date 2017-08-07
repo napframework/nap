@@ -10,6 +10,7 @@ include_directories(${TCLAP_INCLUDE_DIRS})
 add_executable(${PROJECT_NAME} ${sources})
 set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Tools)
+target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
 if (MSVC)
 	# Link against setargv.obj so that the shell does wildcard expansion for us

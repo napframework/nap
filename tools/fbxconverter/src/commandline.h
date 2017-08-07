@@ -1,6 +1,7 @@
 #pragma once
 
 #include <nap/fileutils.h>
+#undef HAVE_LONG_LONG
 #include "tclap/CmdLine.h"
 
 /**

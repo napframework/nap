@@ -1,9 +1,13 @@
 #include "uniformbinding.h"
 #include <rtti/rttiutilities.h>
 
+RTTI_BEGIN_CLASS(nap::UniformContainer)
+	RTTI_FUNCTION("findUniform", (nap::Uniform* (nap::UniformContainer::*)(const std::string&)) &nap::UniformContainer::findUniform)
+RTTI_END_CLASS
+
+
 namespace nap
 {
-
 	UniformBinding::~UniformBinding()
 	{
 		mUniform = nullptr;
@@ -56,6 +60,19 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 	// UniformContainer
 	//////////////////////////////////////////////////////////////////////////
+
+	Uniform* UniformContainer::findUniform(const std::string& name)
+	{
+		UniformTextureBindings::iterator texture_binding = mUniformTextureBindings.find(name);
+		if (texture_binding != mUniformTextureBindings.end())
+			return texture_binding->second.mUniform.get();
+
+		UniformValueBindings::iterator value_binding = mUniformValueBindings.find(name);
+		if (value_binding != mUniformValueBindings.end())
+			return value_binding->second.mUniform.get();
+
+		return nullptr;
+	}
 
 
 	Uniform& UniformContainer::AddUniform(std::unique_ptr<Uniform> uniform, const opengl::UniformDeclaration& declaration)

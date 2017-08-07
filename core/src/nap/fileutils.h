@@ -6,7 +6,7 @@
 #include <vector>
 
 // Local Includes
-#include "dllexport.h"
+#include "utility/dllexport.h"
 
 namespace nap
 {

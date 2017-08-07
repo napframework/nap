@@ -2,7 +2,7 @@
 
 // Nap Includes
 #include <nap/service.h>
-#include <nap/dllexport.h>
+#include <utility/dllexport.h>
 
 // Local Includes
 #include "inputevent.h"

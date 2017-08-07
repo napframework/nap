@@ -43,6 +43,13 @@ namespace nap
 	{
 		RTTI_ENABLE()
 	public:
+
+		/**
+		* @return a uniform texture object that can be used to set a texture or value.
+		* If the uniform is not found, returns nullptr.
+		*/
+		Uniform* findUniform(const std::string& name);
+
 		/**
 		* @return a uniform texture object that can be used to set a texture or value.
 		* If the uniform is not found, returns nullptr.
@@ -80,4 +87,32 @@ namespace nap
 		UniformTextureBindings		mUniformTextureBindings;	///< Runtime map of texture uniforms (superset of texture uniforms in mUniforms due to default uniforms).
 		UniformValueBindings		mUniformValueBindings;		///< Runtime map of value uniforms (superset of value uniforms in mUniforms due to default uniforms).
 	};
+
+	//////////////////////////////////////////////////////////////////////////
+	// Template Definitions
+	//////////////////////////////////////////////////////////////////////////
+
+	template<typename T>
+	T* UniformContainer::findUniform(const std::string& name)
+	{
+		UniformTextureBindings::iterator texture_binding = mUniformTextureBindings.find(name);
+		if (texture_binding != mUniformTextureBindings.end() && texture_binding->second.mUniform->get_type() == RTTI_OF(T))
+			return (T*)texture_binding->second.mUniform.get();
+
+		UniformValueBindings::iterator value_binding = mUniformValueBindings.find(name);
+		if (value_binding != mUniformValueBindings.end() && value_binding->second.mUniform->get_type() == RTTI_OF(T))
+			return (T*)value_binding->second.mUniform.get();
+
+		return nullptr;
+	}
+
+
+	template<typename T>
+	T& UniformContainer::getUniform(const std::string& name)
+	{
+		T* result = findUniform<T>(name);
+		assert(result);
+		return *result;
+	}
+
 } // nap

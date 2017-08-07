@@ -1,5 +1,5 @@
+#include <rtti/pythonmodule.h>
 #include "entity.h"
-#include "component.h"
 #include "core.h"
 
 using namespace std;
@@ -10,7 +10,9 @@ RTTI_BEGIN_CLASS(nap::Entity)
 	RTTI_PROPERTY("AutoSpawn", &nap::Entity::mAutoSpawn, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::EntityInstance, nap::Core&)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::EntityInstance)
+	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_FUNCTION("findComponent", (nap::ComponentInstance* (nap::EntityInstance::*)(const std::string &) const) &nap::EntityInstance::findComponent)
 RTTI_END_CLASS
 
 namespace nap
@@ -36,6 +38,11 @@ namespace nap
 		mComponents.emplace_back(std::move(component));
 	}
 
+
+	ComponentInstance* EntityInstance::findComponent(const std::string& type) const
+	{
+		return findComponent(rtti::TypeInfo::get_by_name(type));
+	}
 
 	ComponentInstance* EntityInstance::findComponent(const rtti::TypeInfo& type, ETypeCheck typeCheck) const
 	{

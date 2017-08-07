@@ -4,7 +4,7 @@
 #include "rtti/rtti.h"
 #include "service.h"
 #include "objectptr.h"
-#include "dllexport.h"
+#include "utility/dllexport.h"
 #include "utility/uniqueptrmapiterator.h"
 #include "directorywatcher.h"
 #include "entity.h"

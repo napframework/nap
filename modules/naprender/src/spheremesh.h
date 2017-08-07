@@ -1,7 +1,7 @@
 #pragma once
 
 #include "mesh.h"
-#include <nap/dllexport.h>
+#include <utility/dllexport.h>
 
 namespace nap
 {

@@ -4,7 +4,7 @@
 #include <string>
 #include <glm/glm.hpp>
 
-#include <nap/dllexport.h>
+#include <utility/dllexport.h>
 
 namespace nap
 {

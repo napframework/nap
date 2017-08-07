@@ -3,7 +3,7 @@
 #include <string>
 #include <memory>
 #include <vector>
-#include <nap/dllexport.h>
+#include <utility/dllexport.h>
 
 namespace opengl
 {

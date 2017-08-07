@@ -1,7 +1,7 @@
 // Local Includes
+#include <rtti/pythonmodule.h>
 #include "logger.h"
 #include "service.h"
-#include "configure.h"
 
 RTTI_DEFINE_BASE(nap::Service)
 

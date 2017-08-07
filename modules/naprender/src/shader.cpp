@@ -44,5 +44,3 @@ namespace nap
 	}
 
 }
-
-RTTI_DEFINE(nap::Shader)

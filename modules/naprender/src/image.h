@@ -2,7 +2,7 @@
 
 // External Includes
 #include <rtti/rttiobject.h>
-#include <nap/dllexport.h>
+#include <utility/dllexport.h>
 #include <nimage.h>
 #include <glm/glm.hpp>
 

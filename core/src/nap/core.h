@@ -12,7 +12,7 @@
 // Core Includes
 #include "service.h"
 #include "timer.h"
-#include "dllexport.h"
+#include "utility/dllexport.h"
 
 namespace nap
 {
@@ -54,6 +54,12 @@ namespace nap
 
 		/**
 		 * @return a new or already existing service of @type, nullptr if service can't be created or found
+		 * @param type the type name of service to get or create
+		 */
+		Service* getOrCreateService(const std::string& type);
+
+		/**
+		 * @return a new or already existing service of @type, nullptr if service can't be created or found
 		 * @param type the type of service to get or create
 		 */
         Service* getOrCreateService(const rtti::TypeInfo& type);
@@ -87,7 +93,7 @@ namespace nap
 		 * Loads all modules in to the core environment 
          * @modulesDir is a path relative to the working directory containing the modules
 		 */
-        void initialize()				{  }
+		void initialize();
 
 		/**
 		* @return object capable of creating objects with custom construction parameters.

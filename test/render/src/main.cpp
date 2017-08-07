@@ -34,6 +34,10 @@
 #include <sceneservice.h>
 #include <mathutils.h>
 
+#include <pybind11/pybind11.h>
+#include <pybind11/embed.h>
+#include <rtti/pythonmodule.h>
+#include "pythonscriptcomponent.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
@@ -64,6 +68,8 @@ nap::ObjectPtr<nap::EntityInstance>						defaultInputRouter = nullptr;
 
 // Some utilities
 void runGame(nap::Core& core);	
+
+namespace py = pybind11;
 
 // Called when the window is updating
 void onUpdate()
@@ -104,68 +110,6 @@ void onUpdate()
 		delta_time = 0.01f;
 	}
 
-	nap::TransformComponentInstance* pig_transform = &pigEntity->getComponent<nap::TransformComponentInstance>();
-	nap::TransformComponentInstance* rotating_plane_transform = &rotatingPlaneEntity->getComponent<nap::TransformComponentInstance>();
-	nap::TransformComponentInstance* world_sphere_transform = &worldEntity->getComponent<nap::TransformComponentInstance>();
-
-	// Get rotation angle
-	float rot_speed = 0.1f;
-	float rot_angle = elapsed_time * 360.0f * rot_speed;
-	float rot_angle_radians = glm::radians(rot_angle);
-
-	float rot_speed_sphere = 0.01f;
-	float rot_angle_sphere = elapsed_time * 360.0f * rot_speed_sphere;
-	float rot_angle_radians_sphere = glm::radians(rot_angle_sphere);
-
-	// Calculate rotation quaternion
-	glm::quat rot_quat = glm::rotate(glm::quat(), (float)rot_angle_radians, glm::vec3(0.0, 1.0, 0.0));
-
-	// Set rotation on model component
-	pig_transform->setRotate(rot_quat);
-
-	// Set rotation on plane component
-	rotating_plane_transform->setRotate(rot_quat);
-
-	glm::quat quaternion;
-	quaternion.w = 1.0f;
-
-	// Set rotation on sphere
-	glm::quat rot_quat_sphere = glm::rotate(glm::quat(), -1.0f*(float)rot_angle_radians_sphere, glm::vec3(0.0, 1.0, 0.0));
-	world_sphere_transform->setRotate(rot_quat_sphere);
-	world_sphere_transform->setTranslate({ glm::sin(elapsed_time) * 5.0f, 0.0f, -3.0f });
-
-	// Set scale
-	float scale_speed = 4.0f;
-	float nscale = (sin(elapsed_time  * scale_speed) + 1) / 2.0f;
-	nscale = nap::math::fit<float>(nscale, 0.0f, 1.0f, 0.25f, 1.0f);
-	//xform_v->uniformScale.setValue(nscale);
-
-	// Set some material values
-	nap::MaterialInstance& material_instance = pigEntity->getComponent<nap::RenderableMeshComponentInstance>().getMaterialInstance();
-
-	float v = (sin(elapsed_time) + 1.0f) / 2.0f;
-
-	// Set uniforms
-	glm::vec4 color(v, 1.0f-v, 1.0f, 1.0f);
-	material_instance.getOrCreateUniform<nap::UniformVec4>("mColor").setValue(color);
-
-	// Set plane uniforms
-	nap::MaterialInstance& plane_material = planeEntity->getComponent<nap::RenderableMeshComponentInstance>().getMaterialInstance();
-	plane_material.getOrCreateUniform<nap::UniformTexture2D>("pigTexture").setTexture(*testTexture);
-	plane_material.getOrCreateUniform<nap::UniformTexture2D>("testTexture").setTexture(*testTexture);
-	plane_material.getOrCreateUniform<nap::UniformInt>("mTextureIndex").setValue(0);
-	plane_material.getOrCreateUniform<nap::UniformVec4>("mColor").setValue({ 1.0f, 1.0f, 1.0f, 1.0f });
-
-	nap::MaterialInstance& rotating_plane_material = rotatingPlaneEntity->getComponent<nap::RenderableMeshComponentInstance>().getMaterialInstance();
-	rotating_plane_material.getOrCreateUniform<nap::UniformTexture2D>("pigTexture").setTexture(*testTexture);
-	rotating_plane_material.getOrCreateUniform<nap::UniformTexture2D>("testTexture").setTexture(*testTexture);
-	rotating_plane_material.getOrCreateUniform<nap::UniformInt>("mTextureIndex").setValue(0);
-	rotating_plane_material.getOrCreateUniform<nap::UniformVec4>("mColor").setValue({ 1.0f, 1.0f, 1.0f, 1.0f });
-
-	//////////////////////////////////////////////////////////////////////////
-	// Camera Update
-	//////////////////////////////////////////////////////////////////////////
-
 	resourceManagerService->getRootEntity().update(delta_time);
 
 	// Update the scene
@@ -200,16 +144,16 @@ void onRender()
 		components_to_render.push_back(&rotatingPlaneEntity->getComponent<nap::RenderableMeshComponentInstance>());
 
 		nap::MaterialInstance& plane_material = planeEntity->getComponent<nap::RenderableMeshComponentInstance>().getMaterialInstance();
-		plane_material.getUniform<nap::UniformTexture2D>("testTexture").setTexture(textureRenderTarget->getColorTexture());
-		plane_material.getUniform<nap::UniformTexture2D>("pigTexture").setTexture(textureRenderTarget->getColorTexture());
-		plane_material.getUniform<nap::UniformInt>("mTextureIndex").setValue(0);
-		plane_material.getUniform<nap::UniformVec4>("mColor").setValue({ 1.0f, 1.0f, 1.0f, 1.0f });
+		plane_material.getOrCreateUniform<nap::UniformTexture2D>("testTexture").setTexture(textureRenderTarget->getColorTexture());
+		plane_material.getOrCreateUniform<nap::UniformTexture2D>("pigTexture").setTexture(textureRenderTarget->getColorTexture());
+		plane_material.getOrCreateUniform<nap::UniformInt>("mTextureIndex").setValue(0);
+		plane_material.getOrCreateUniform<nap::UniformVec4>("mColor").setValue({ 1.0f, 1.0f, 1.0f, 1.0f });
 
 		nap::MaterialInstance& rotating_plane_material = rotatingPlaneEntity->getComponent<nap::RenderableMeshComponentInstance>().getMaterialInstance();
-		rotating_plane_material.getUniform<nap::UniformTexture2D>("testTexture").setTexture(textureRenderTarget->getColorTexture());
-		rotating_plane_material.getUniform<nap::UniformTexture2D>("pigTexture").setTexture(textureRenderTarget->getColorTexture());
-		rotating_plane_material.getUniform<nap::UniformInt>("mTextureIndex").setValue(0);
-		rotating_plane_material.getUniform<nap::UniformVec4>("mColor").setValue({ 1.0f, 1.0f, 1.0f, 1.0f });
+		rotating_plane_material.getOrCreateUniform<nap::UniformTexture2D>("testTexture").setTexture(textureRenderTarget->getColorTexture());
+		rotating_plane_material.getOrCreateUniform<nap::UniformTexture2D>("pigTexture").setTexture(textureRenderTarget->getColorTexture());
+		rotating_plane_material.getOrCreateUniform<nap::UniformInt>("mTextureIndex").setValue(0);
+		rotating_plane_material.getOrCreateUniform<nap::UniformVec4>("mColor").setValue({ 1.0f, 1.0f, 1.0f, 1.0f });
 
 		opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(render_window->getWindow()->getBackbuffer());
 		backbuffer.setClearColor(glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
@@ -293,13 +237,15 @@ bool init(nap::Core& core)
 
 	nap::utility::ErrorState errorState;
 
+	// Needed to make sure python module is loaded (should be removed later when dynamic module loading is back in)
+	nap::PythonScriptComponent* bla = new nap::PythonScriptComponent();
 
 	if (!resourceManagerService->loadFile("data/objects.json", errorState))
 	{
 		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
-		return false;  
-	}  
-
+		return false;   
+	}   
+	 
 	renderWindows.push_back(resourceManagerService->findObject<nap::RenderWindow>("Window0"));
 	renderWindows.push_back(resourceManagerService->findObject<nap::RenderWindow>("Window1"));
 
@@ -338,7 +284,7 @@ int main(int argc, char *argv[])
 	if (!init(core))
 		return -1;
 
-	// Run Gam
+	// Run Game
 	runGame(core);
 
 	return 0;
