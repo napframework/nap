@@ -85,7 +85,7 @@ def main():
     print('Refreshing: %s' % THIRDPARTY)
     d = THIRDPARTY_DIR
     if not isLocalGitRepo(d):
-        call(None, ['git', 'clone', THIRDPARTY_URL])
+        call(WORKING_DIR, ['git', 'clone', THIRDPARTY_URL, d])
     else:
         call(d, ['git', 'pull'])
 
