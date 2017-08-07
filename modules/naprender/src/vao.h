@@ -43,10 +43,13 @@ namespace nap
 	 */
 	class VAOHandle final
 	{
+    private:
+        RenderService& mRenderService;		///< Back pointer to RenderService, for removal on destruction
+        
 	public:
 		opengl::VertexArrayObject* mObject = nullptr;			///< The actual opengl object that can be used to bind and  unbind before drawing
-		~VAOHandle();
-
+        ~VAOHandle();
+        
 	private:
 		friend class RenderService;
 
@@ -60,12 +63,10 @@ namespace nap
 		*/
 		VAOHandle(RenderService& renderService, opengl::VertexArrayObject* object);
 
-		VAOHandle(const VAOHandle& rhs) = delete;
-		VAOHandle& operator=(const VAOHandle& rhs) = delete;
- 		VAOHandle(VAOHandle&& rhs) = delete;
-		VAOHandle& operator=(VAOHandle&& ths) = delete;
-
-		RenderService& mRenderService;		///< Back pointer to RenderService, for removal on destruction
+		VAOHandle(const VAOHandle& rhs)             = delete;
+		VAOHandle& operator=(const VAOHandle& rhs)  = delete;
+ 		VAOHandle(VAOHandle&& rhs)                  = delete;
+		VAOHandle& operator=(VAOHandle&& ths)       = delete;
 	};
 }
 

@@ -24,6 +24,8 @@ namespace nap
 		RTTI_ENABLE(rtti::RTTIObject)
 
 	public:
+        using RTTIObject::init;
+        
 		/**
 		 * Constructor
 		 */
@@ -49,10 +51,7 @@ namespace nap
 		 * @param entityCreationParams Parameters required to create new entity instances during init
 		 * @param errorState The error object
 		 */
-		virtual bool init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
-		{
-			return true;
-		}
+        virtual bool init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
 
 	private:
 		EntityInstance* mEntity;	// The entity this component belongs to

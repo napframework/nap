@@ -34,7 +34,7 @@ namespace opengl
 		// Create one if we don't have one yet
 		if (mIndexBuffer == nullptr)
 		{
-			mIndexBuffer = std::move(createIndexBuffer());
+			mIndexBuffer = createIndexBuffer();
 		}
 		return mIndexBuffer.get();
 	}

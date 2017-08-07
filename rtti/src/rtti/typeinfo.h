@@ -253,9 +253,7 @@ namespace nap
 		{																										\
 			using namespace rttr;																				\
 			namespace py = pybind11;																			\
-																												\
-			typedef Type ClassType;																				\
-			using PythonClassType = nap::rtti::PythonClass<Type, nap::detail::BaseClassList<Type>::List>;		\
+            using PythonClassType = nap::rtti::PythonClass<Type, nap::detail::BaseClassList<Type>::List>;		\
 			std::string rtti_class_type_name = #Type;															\
 			registration::class_<Type> rtti_class_type(#Type);													\
 			PythonClassType python_class(#Type);

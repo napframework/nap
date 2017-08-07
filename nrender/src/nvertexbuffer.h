@@ -24,9 +24,9 @@ namespace opengl
 			mComponents(components),
 			mVerts(verts)				{ }
 
-		unsigned int	mComponents  = 0;			// defines the number of components (3 for color, 2 for uv's etc)
 		GLenum			mType  = GL_INVALID_ENUM;	// defines the internal GL type of the buffer
-		unsigned int	mVerts = 0;					// defines the number of points in the buffer
+		unsigned int	mComponents  = 0;			// defines the number of components (3 for color, 2 for uv's etc)
+        unsigned int	mVerts = 0;					// defines the number of points in the buffer
 		GLenum			mUsage = GL_STATIC_DRAW;	// defines the expected usage pattern of the data storage: https://www.opengl.org/sdk/docs/man4/html/glBufferData.xhtml
 
 		/**

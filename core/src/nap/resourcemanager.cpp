@@ -447,7 +447,7 @@ namespace nap
 			EntityInstance* entity_instance = new EntityInstance(getCore());
 			entity_instance->mID = generateInstanceID(getInstanceID(entity_resource->mID), entityCreationParams);
 
-			entityCreationParams.mEntitiesByID.emplace(std::make_pair(entity_instance->mID, std::move(std::unique_ptr<EntityInstance>(entity_instance))));
+			entityCreationParams.mEntitiesByID.emplace(std::make_pair(entity_instance->mID, std::unique_ptr<EntityInstance>(entity_instance)));
 			entityCreationParams.mAllInstancesByID.insert(std::make_pair(entity_instance->mID, entity_instance));
 			generatedEntityIDs.push_back(entity_instance->mID);
 

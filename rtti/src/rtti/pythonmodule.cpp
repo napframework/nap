@@ -1,5 +1,3 @@
-#pragma once
-
 #include "pythonmodule.h"
 #include "utility/stringutils.h"
 #include <unordered_map>

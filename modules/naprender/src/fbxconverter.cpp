@@ -24,9 +24,6 @@
 
 namespace nap
 {
-	static int gMaxNumUVAttributes = 16;
-	static int gMaxNumColorAttributes = 16;
-
 	class MeshData : public rtti::RTTIObject
 	{
 		RTTI_ENABLE(rtti::RTTIObject)

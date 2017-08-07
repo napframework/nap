@@ -21,8 +21,8 @@ namespace opengl
 		~GLTex2DInternalFormatOption() = default;
 
 		GLint				mUncompressedInternalFormat		= GL_INVALID_VALUE;		//< GL's matching uncompressed internal format
+        GLint				mPreferredInternalCompression	= GL_INVALID_VALUE;		//< GL's preferred internal compression
 		std::vector<GLint>	mCompressedInternalFormats;								//< GL's matching compressed  internal formats
-		GLint				mPreferredInternalCompression	= GL_INVALID_VALUE;		//< GL's preferred internal compression
 
 		// Returns if this option supports compression
 		bool supportsCompression() const					{ return mPreferredInternalCompression != GL_INVALID_VALUE; }

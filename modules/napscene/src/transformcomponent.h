@@ -60,6 +60,8 @@ namespace nap
 			ComponentInstance(entity)
 		{
 		}
+        
+        using ComponentInstance::update;
 
 		/**
 		* Initialize this component from its resource
