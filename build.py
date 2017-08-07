@@ -80,23 +80,10 @@ def gitPull():
 
 
 def main():
+    # install osx / linux specific dependendies
     installDependencies()
 
-    print('Refreshing: %s' % THIRDPARTY)
-    d = THIRDPARTY_DIR
-    if not isLocalGitRepo(d):
-        call(WORKING_DIR, ['git', 'clone', THIRDPARTY_URL, d])
-    else:
-        call(d, ['git', 'pull'])
-
-    #print('BUILD RTTR')
-    #d = '%s/rttr' % THIRDPARTY_DIR
-    #if platform in ["linux", "linux2", "darwin"]:
-    #    call(d, ['cmake', '.'])
-    #    call(d, ['make', 'install', '-j%s' % cpu_count()])
-    #else:
-    #    call(d, ['cmake', '--build', '.', '--target', 'install'])
-
+    # build all targets
     print('BUILD TARGETS')
     targets = ['napcore', 'serializationtest']
     if platform in ["linux", "linux2", "darwin"]:
