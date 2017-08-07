@@ -6,11 +6,12 @@ from sys import platform
 WORKING_DIR = '.'
 
 THIRDPARTY = 'thirdparty'
-THIRDPARTY_DIR = '%s/thirdparty' % WORKING_DIR
+THIRDPARTY_DIR = '%s/../thirdparty' % WORKING_DIR
 THIRDPARTY_URL = 'https://ae53bb936bc44bbffbac2dbd1f37101838603903@github.com/naivisoftware/thirdparty.git'
 NAP_URL = 'https://ae53bb936bc44bbffbac2dbd1f37101838603903@github.com/naivisoftware/nap.git'
 NAP_BRANCH = 'build'
 BUILD_DIR = 'build'
+
 
 def isLocalGitRepo(d):
     if not os.path.exists(d): return False
@@ -51,6 +52,7 @@ def isBrewInstalled():
     except:
         return False
 
+
 def installDependenciesOSX():
     d = WORKING_DIR
     for pack in ['cmake', 'sdl2', 'glew', 'glm', 'assimp', 'tclap']:
@@ -87,7 +89,7 @@ def main():
     else:
         call(d, ['git', 'pull'])
 
-    print('Building RTTR')
+    print('BUILD RTTR')
     d = '%s/rttr' % THIRDPARTY_DIR
     if platform in ["linux", "linux2", "darwin"]:
         call(d, ['cmake', '.'])
@@ -95,15 +97,16 @@ def main():
     else:
         call(d, ['cmake', '--build', '.', '--target', 'install'])
 
-    print('Building')
-
-    # targets = ['napcore', 'rendertest', 'steef', 'serializationtest']
+    print('BUILD TARGETS')
     targets = ['napcore', 'serializationtest']
     if platform in ["linux", "linux2", "darwin"]:
-        call(WORKING_DIR, ['cmake', '-H.', '-Bbuild'])
+        call(WORKING_DIR, ['cmake', '-H.', '-B%s' % BUILD_DIR])
     else:
-        bd = '%s/build64' % WORKING_DIR
-        if not os.path.exists(bd): os.makedirs(bd)
+        bd = '%s/%s' % (WORKING_DIR, BUILD_DIR)
+        if os.path.exists(bd):
+            os.unlink(bd)
+        if not os.path.exists(bd):
+            os.makedirs(bd)
         call(bd, ['cmake', '-G', 'Visual Studio 14 2015 Win64', '..'])
 
     for t in targets:
@@ -112,7 +115,8 @@ def main():
             call(d, ['make', t, '-j%s' % cpu_count()])
         else:
             d = WORKING_DIR
-            call(d, ['cmake', '--build', 'build64', '--target', t])
+            call(d, ['cmake', '--build', BUILD_DIR, '--target', t])
+
 
 if __name__ == '__main__':
     main()
