@@ -6,8 +6,10 @@
 
 #include "pybind11/pybind11.h"
 #include "pybind11/embed.h"
+
+// Note: including rttr headers directly here instead of going through typeinfo.h to avoid circular dependencies between the two headers
 #include "rttr/detail/misc/misc_type_traits.h"
-#include "typeinfo.h"
+#include <rttr/type>
 
 namespace nap
 {
@@ -30,7 +32,7 @@ namespace nap
 			template<typename T>
 			inline void GetTypeNamesImpl(std::vector<std::string>& result)
 			{
-				result.push_back(rtti::TypeInfo::get<T>().get_name().data());
+				result.push_back(rttr::type::get<T>().get_name().data());
 			}
 
 			template<typename... Targs>
