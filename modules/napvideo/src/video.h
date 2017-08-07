@@ -1,6 +1,8 @@
 #pragma once
 
 #include <queue>
+#include <thread>
+#include <mutex>
 #include "rtti/rttiobject.h"
 
 struct AVPacket;
