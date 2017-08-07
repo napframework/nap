@@ -55,7 +55,7 @@ def isBrewInstalled():
 
 def installDependenciesOSX():
     d = WORKING_DIR
-    for pack in ['cmake', 'sdl2', 'glew', 'glm', 'assimp', 'tclap', 'freeimage']:
+    for pack in ['cmake', 'sdl2', 'glew', 'glm', 'assimp', 'tclap']:
         try:
             call(d, ['brew', 'install', pack])
         except:
@@ -89,13 +89,13 @@ def main():
     else:
         call(d, ['git', 'pull'])
 
-    print('BUILD RTTR')
-    d = '%s/rttr' % THIRDPARTY_DIR
-    if platform in ["linux", "linux2", "darwin"]:
-        call(d, ['cmake', '.'])
-        call(d, ['make', 'install', '-j%s' % cpu_count()])
-    else:
-        call(d, ['cmake', '--build', '.', '--target', 'install'])
+    #print('BUILD RTTR')
+    #d = '%s/rttr' % THIRDPARTY_DIR
+    #if platform in ["linux", "linux2", "darwin"]:
+    #    call(d, ['cmake', '.'])
+    #    call(d, ['make', 'install', '-j%s' % cpu_count()])
+    #else:
+    #    call(d, ['cmake', '--build', '.', '--target', 'install'])
 
     print('BUILD TARGETS')
     targets = ['napcore', 'serializationtest']
