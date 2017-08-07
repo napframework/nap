@@ -13,7 +13,7 @@ elseif (APPLE)
         NAMES include/FreeImage.h
         HINTS
             ${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/FreeImage
-            ${CMAKE_CURRENT_LIST_DIR}/../thirdparty/FreeImage/osx
+            ${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/FreeImage/osx
     )
     set(FREEIMAGE_INCLUDE_DIRS ${FREEIMAGE_DIR}/include)
     set(FREEIMAGE_LIBRARIES ${FREEIMAGE_DIR}/lib/osx/freeimage.a)
