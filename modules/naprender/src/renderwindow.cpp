@@ -47,10 +47,10 @@ namespace nap
 		// Update window size when resizing
 		const WindowResizedEvent* resized_event = rtti_cast<const WindowResizedEvent>(&event);
 		if (resized_event != nullptr)
-		{
+	{
 			mWindow->setSize(glm::ivec2(resized_event->mX, resized_event->mY));
-		}
 	}
-}
+	}
+	}
 
 
