@@ -475,7 +475,9 @@ namespace nap
 			{
 				mVideoClockSecs = mFrameQueue.front().mPTSSecs;
 			}
-			std::cout << mVideoClockSecs << "\n";
+
+			// UNCOMMENT FOR DEBUGGING LOOPING
+			//std::cout << mVideoClockSecs << "\n";
 
 			if (mFrameQueue.empty() || mVideoClockSecs < mFrameQueue.front().mPTSSecs)
 				return true;
