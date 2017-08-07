@@ -5,7 +5,8 @@ build/
 py/.idea/
 lib/Clang/
 build.sh
-xcode/
+xcode/*
+!xcode/Project.xcodeproj
 core/Debug/
 vs/
 modules/napof/Debug/

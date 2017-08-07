@@ -178,7 +178,7 @@ macro(export_fbx SRCDIR)
         add_custom_command(TARGET ${PROJECT_NAME}
                 POST_BUILD
 				COMMAND "${BIN_DIR}/fbxconverter" -o ${SRCDIR} ${SRCDIR}/*.fbx
-                COMMENT "Export FBX in '${SRCDIR}'")
+                COMMENT "${BIN_DIR}/fbxconverter -o ${SRCDIR} ${SRCDIR}/*.fbx")
     endif()
 endmacro()
 
