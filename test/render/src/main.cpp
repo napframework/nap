@@ -36,8 +36,6 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/embed.h>
-#include <rtti/pythonmodule.h>
-#include "pythonscriptcomponent.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
@@ -236,9 +234,6 @@ bool init(nap::Core& core)
 	//////////////////////////////////////////////////////////////////////////
 
 	nap::utility::ErrorState errorState;
-
-	// Needed to make sure python module is loaded (should be removed later when dynamic module loading is back in)
-	nap::PythonScriptComponent* bla = new nap::PythonScriptComponent();
 
 	if (!resourceManagerService->loadFile("data/objects.json", errorState))
 	{

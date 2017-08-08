@@ -5,7 +5,7 @@
 
 namespace nap
 {
-	class SceneService : public Service
+	class NAPAPI SceneService : public Service
 	{
 		RTTI_ENABLE(Service)
 
