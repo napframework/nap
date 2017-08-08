@@ -381,24 +381,24 @@ namespace pybind11
 {
 	namespace detail 
 	{
-//		template <typename type>
-//		struct always_construct_holder<nap::ObjectPtr<type>> : always_construct_holder<void, true>
-//		{
-//		};
+		template <typename type>
+		struct always_construct_holder<nap::ObjectPtr<type>> : always_construct_holder<void, true>
+		{
+		};
 
-//		template <typename type> class type_caster<nap::ObjectPtr<type>> : public copyable_holder_caster<type, nap::ObjectPtr<type>>
-//		{
-//		public:
-//			static handle cast(const nap::ObjectPtr<type>& src, return_value_policy, handle)
-//			{
-//				const auto *ptr = holder_helper<nap::ObjectPtr<type>>::get(src);
-//
-//				auto st = src_and_type(ptr);
-//
-//				return type_caster_generic::cast(
-//					st.first, return_value_policy::reference, {}, st.second,
-//					nullptr, nullptr, nullptr);
-//			}
-//		};
+		template <typename type> class type_caster<nap::ObjectPtr<type>> : public copyable_holder_caster<type, nap::ObjectPtr<type>>
+		{
+		public:
+			static handle cast(const nap::ObjectPtr<type>& src, return_value_policy, handle)
+			{
+				const auto *ptr = holder_helper<nap::ObjectPtr<type>>::get(src);
+
+				auto st = src_and_type(ptr);
+
+				return type_caster_generic::cast(
+					st.first, return_value_policy::reference, {}, st.second,
+					nullptr, nullptr, nullptr);
+			}
+		};
 	}
 }
