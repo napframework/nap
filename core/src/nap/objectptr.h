@@ -391,9 +391,9 @@ namespace pybind11
 		public:
 			static handle cast(const nap::ObjectPtr<type>& src, return_value_policy, handle)
 			{
-				const auto *ptr = holder_helper<nap::ObjectPtr<type>>::get(src);
+				const auto *ptr = src.get();
 
-				auto st = src_and_type(ptr);
+				auto st = copyable_holder_caster<type, nap::ObjectPtr<type>>::src_and_type(ptr);
 
 				return type_caster_generic::cast(
 					st.first, return_value_policy::reference, {}, st.second,
