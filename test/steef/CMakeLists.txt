@@ -28,10 +28,11 @@ if (WIN32)
             )
     # copy nrender (hack)
 
+
     copy_files_to_bin(${FILES_TO_COPY})
 endif()
 
 # create post build event
-export_fbx(${CMAKE_CURRENT_LIST_DIR}/data)
+export_fbx(${CMAKE_CURRENT_LIST_DIR}/data/steef)
 copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/data data)
 copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/shaders shaders)

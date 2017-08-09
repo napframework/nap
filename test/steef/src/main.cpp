@@ -2,6 +2,7 @@
 //
 // Local Includes
 #include "rotatecomponent.h"
+#include "../../../modules/nappython/src/pythonscriptservice.h"
 
 // GLM
 #include <glm/glm.hpp>
@@ -176,10 +177,8 @@ void handleWindowEvent(const nap::WindowEvent& windowEvent)
 bool init(nap::Core& core)
 {
 	core.initialize();
+    auto scriptservice = core.getOrCreateService<nap::PythonScriptService>();
 
-	//////////////////////////////////////////////////////////////////////////
-	// GL Service + Window
-	//////////////////////////////////////////////////////////////////////////
 
 	// Get resource manager service
 	resourceManagerService = core.getOrCreateService<nap::ResourceManagerService>();
@@ -194,21 +193,8 @@ bool init(nap::Core& core)
 		return false;
 	}
 	nap::Logger::info("initialized render service: %s", renderService->getTypeName().c_str());
-
-	//////////////////////////////////////////////////////////////////////////
-	// Input
-	//////////////////////////////////////////////////////////////////////////
-
 	inputService = core.getOrCreateService<nap::InputService>();
-
-	//////////////////////////////////////////////////////////////////////////
-	// Scene
-	//////////////////////////////////////////////////////////////////////////
 	sceneService = core.getOrCreateService<nap::SceneService>();
-
-	//////////////////////////////////////////////////////////////////////////
-	// Resources
-	//////////////////////////////////////////////////////////////////////////
 
 	nap::utility::ErrorState errorState;
 	if (!resourceManagerService->loadFile("data/steef/objects.json", errorState))

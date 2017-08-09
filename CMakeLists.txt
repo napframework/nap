@@ -58,6 +58,7 @@ add_subdirectory(utility)
 add_subdirectory(rtti)
 add_subdirectory(nrender)
 
+
 # tools targets
 add_subdirectory(tools/fbxconverter)
 
@@ -67,6 +68,7 @@ add_subdirectory(test/tommy)
 add_subdirectory(test/steef)
 add_subdirectory(test/videoplayer)
 add_subdirectory(test/serializationtest)
+add_subdirectory(test/pynap)
 
 if (APPLE)
     set(GENERATE_XCODE_PROJECT_TARGET generateXcodeProject)

@@ -23,20 +23,11 @@
 #include <nap/core.h>
 #include <nap/resourcemanager.h>
 #include <inputservice.h>
-#include <nap/windowresource.h>
-#include <nap/windowevent.h>
-#include <nap/event.h>
 #include <inputcomponent.h>
 #include <inputrouter.h>
-#include <nap/entity.h>
-#include <nap/component.h>
 #include <nap/logger.h>
 #include <sceneservice.h>
-#include <mathutils.h>
 
-#include <pybind11/pybind11.h>
-#include <pybind11/embed.h>
-#include <rtti/pythonmodule.h>
 #include "pythonscriptcomponent.h"
 
 //////////////////////////////////////////////////////////////////////////
