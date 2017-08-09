@@ -11,6 +11,7 @@
 
 namespace
 {
+	// Extension for shared libraries (dependent on platform)
 #ifdef _WIN32
 	static std::string moduleExtension = "dll";
 #elif __APPLE__
@@ -19,6 +20,11 @@ namespace
 	static std::string moduleExtension = "so";
 #endif
 
+
+	/**
+	 * Platform-wrapper function to get the error string for loading a module (if an error was thrown)
+	 * @return The error string
+	 */
 	std::string GetModuleLoadErrrorString()
 	{
 #ifdef _WIN32
@@ -40,6 +46,13 @@ namespace
 #endif
 	}
 
+
+	/**
+	 * Platform-wrapper function to load a shared library
+	 * @param modulePath The path to the shared library to load
+	 * @param errorString If the module failed to load, the error string
+	 * @return Handle to the loaded module
+	 */
 	void* LoadModule(const std::string& modulePath, std::string& errorString)
 	{
 		void* result;
@@ -49,27 +62,40 @@ namespace
 		result = dlopen(modulePath.c_str(), RTLD_LAZY);
 #endif
 
+		// If we failed to load the module, get the error string
 		if (!result)
 			errorString = GetModuleLoadErrrorString();
 
 		return result;
 	}
 
+
+	/**
+	 * Platform-wrapper function to unload a shared library
+	 * @param module The module to load
+	 */
 	void UnloadModule(void* module)
 	{
 #ifdef _WIN32
 		FreeLibrary((HMODULE)module);
 #else
-		dlclose(module, RTLD_LAZY);
+		dlclose(module);
 #endif
 	}
 
-	void* FindSymbol(void* module, const char* inSymbolName)
+
+	/**
+	 * Platform-wrapper function to find the address of a symbol in the specified shared library
+	 * @param module Handle to the module to find the symbol in
+	 * @param symbolName Name of the symbol to find
+	 * @return The pointer to the symbol if found, nullptr if not
+	 */
+	void* FindSymbol(void* module, const char* symbolName)
 	{
 #ifdef _WIN32
-		return GetProcAddress((HMODULE)module, inSymbolName);
+		return GetProcAddress((HMODULE)module, symbolName);
 #else
-		return dlsym(module, inSymbolName);
+		return dlsym(module, symbolName);
 #endif
 	}
 }
@@ -79,6 +105,7 @@ namespace nap
 	ModuleManager::ModuleManager()
 	{
 #ifdef _WIN32
+		// On windows, disable DLL load failure dialog boxes (we handle the errors ourselves))
 		SetErrorMode(SEM_FAILCRITICALERRORS);
 #endif
 	}
@@ -91,6 +118,7 @@ namespace nap
 
 	void ModuleManager::loadModules(const std::string& directory)
 	{
+		// Find all files in the specified directory
 		std::vector<std::string> files_in_directory;
 		nap::listDir(directory.c_str(), files_in_directory);
 
@@ -106,6 +134,7 @@ namespace nap
 
 			std::string module_path = getAbsolutePath(filename);
 			
+			// Try to load the module
 			std::string error_string;
 			void* module_handle = LoadModule(module_path, error_string);
 			if (!module_handle)
