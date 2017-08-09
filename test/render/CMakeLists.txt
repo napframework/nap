@@ -18,7 +18,7 @@ find_package(pybind11)
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS})
 set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Test)
-add_dependencies(${PROJECT_NAME} fbxconverter)
+add_dependencies(${PROJECT_NAME} fbxconverter mod_nappython)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${pybind11_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} napcore mod_naprender nrender mod_napmath mod_napsdlinput mod_napsdlwindow)
