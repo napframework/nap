@@ -28,7 +28,7 @@ namespace nap
 	/**
 	 * Resource for the TransformComponent
 	 */
-	class TransformComponent : public Component
+	class NAPAPI TransformComponent : public Component
 	{
 		RTTI_ENABLE(Component)
 	
@@ -52,7 +52,7 @@ namespace nap
 	 * the global and local transform is invalid. You can always query the
 	 * current local matrix, the global matrix is updated on compute.
 	 */
-	class TransformComponentInstance : public ComponentInstance
+	class NAPAPI TransformComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:

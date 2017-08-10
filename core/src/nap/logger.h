@@ -49,7 +49,7 @@ namespace nap
      * A higher number means it will be output in more situations.
      * Examples are fatal error messages, warnings or debug messages.
      */
-	class LogLevel
+	class NAPAPI LogLevel
 	{
 	public:
         /**
@@ -76,7 +76,7 @@ namespace nap
      * A LogMessage is tagged with a log level.
      * Optionally it stores the object that outputs the message.
      */
-	class LogMessage
+	class NAPAPI LogMessage
 	{
 	public:
 		LogMessage(const LogLevel& lvl, const std::string& msg, const rtti::RTTIObject* obj = nullptr)
@@ -109,7 +109,7 @@ namespace nap
     /**
      * The Logger invokes log messages through a global system using a singleton isntance.
      */
-	class Logger
+	class NAPAPI Logger
 	{
 	public:
         /** 

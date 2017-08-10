@@ -57,7 +57,7 @@ namespace nap
 		* @param object: object to find file links from.
 		* @param fileLinks: output array containing the filenames.
 		*/
-		void findFileLinks(const rtti::RTTIObject& object, std::vector<std::string>& fileLinks);
+		void NAPAPI findFileLinks(const rtti::RTTIObject& object, std::vector<std::string>& fileLinks);
 
 		/**
 		* Searches through object's rtti attributes for pointer attributes.

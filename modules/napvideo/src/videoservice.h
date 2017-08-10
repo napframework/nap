@@ -9,7 +9,7 @@ namespace nap
 	/**
 	 * 
 	 */
-	class VideoService : public Service
+	class NAPAPI VideoService : public Service
 	{
 		RTTI_ENABLE(Service)
 

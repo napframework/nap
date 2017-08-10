@@ -12,6 +12,7 @@
 // Core Includes
 #include "service.h"
 #include "timer.h"
+#include "modulemanager.h"
 #include "utility/dllexport.h"
 
 namespace nap
@@ -103,6 +104,8 @@ namespace nap
 	private:
 		// Typedef for a list of services
 		using ServiceList = std::vector<std::unique_ptr<Service>>;
+
+		ModuleManager mModuleManager;						// The module manager
 
 		// All the services associated with core
 		ServiceList mServices;
