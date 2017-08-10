@@ -1,36 +1,35 @@
 cmake_minimum_required(VERSION 2.8.12)
-project(pynap)
+project(nap)
 
 
-find_path(
-        RTTR_DIR
-        NAMES rttr-config.cmake
-        HINTS
-        ${CMAKE_CURRENT_LIST_DIR}/../../../thirdparty/rttr/linux/install/cmake
-)
-
-
-find_package(RTTR CONFIG REQUIRED Core)
+# Prerequisites
 find_package(pybind11 REQUIRED)
 
-add_library(pynap_lib src/main.cpp)
 
-pybind11_add_module(${PROJECT_NAME} src/main.cpp)
+# Library
+set(LIBS napcore)
+file(GLOB_RECURSE SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/*.cpp)
+pybind11_add_module(${PROJECT_NAME} ${SOURCES})
+target_link_libraries(${PROJECT_NAME} PRIVATE ${LIBS})
+add_definitions(-DNAP_DISABLE_EMBEDDED_PYTHON)
 
 
+# Install
+install(FILES tests/test.py DESTINATION ${LIB_DIR})
+add_custom_target(${PROJECT_NAME}_install
+        $(MAKE) install
+        DEPENDS ${PROJECT_NAME}
+        COMMENT "Installing ${PROJECT_NAME}")
 
-target_link_libraries(${PROJECT_NAME} PRIVATE napcore python)
 
-
-# generate python module
-set(OUT ${CMAKE_CURRENT_LIST_DIR}/dist)
-
+# Test
+set(OUT out)
+add_custom_target(${PROJECT_NAME}_test DEPENDS ${OUT})
 add_custom_command(
         OUTPUT ${OUT}
         COMMAND python3
-        ARGS setup.py bdist
-        WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
-        DEPENDS ${PROJECT_NAME}
+        ARGS test.py
+        WORKING_DIRECTORY ${LIB_DIR}
+        DEPENDS ${PROJECT_NAME}_install
+        COMMENT "Running tests..."
 )
-
-add_custom_target(${PROJECT_NAME}_install DEPENDS ${OUT})

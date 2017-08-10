@@ -1,5 +1,8 @@
 #include <pybind11/pybind11.h>
+#include <nap/logger.h>
+#include <iostream>
 #include <nap/core.h>
+
 
 int add(int i, int j) {
     return i + j;
@@ -9,16 +12,24 @@ int subtract(int i, int j) {
     return i - j;
 }
 
+nap::Core &core() {
+    static nap::Core c;
+    return c;
+}
+
 namespace py = pybind11;
 
-PYBIND11_PLUGIN(pynap) {
-    py::module m("pynap");
+PYBIND11_MODULE(nap, m) {
 
-    m.def("add", &add);
+    core();
+    nap::rtti::PythonModule &python_module = nap::rtti::PythonModule::get("nap");
+    python_module.invoke(m);
 
-    m.def("subtract", &subtract);
-
-    py::class_<nap::Core>(m, 'Core');
+//    m.attr("core") = &core();
+//    m.attr("one") = 10;
+//
+//    py::class_<nap::Core>(m, "Core")
+//            .def("getElapsedTime", &nap::Core::getElapsedTime);
 
 #ifdef VERSION_INFO
     m.attr("__version__") = py::str(VERSION_INFO);
@@ -26,5 +37,9 @@ PYBIND11_PLUGIN(pynap) {
     m.attr("__version__") = py::str("dev");
 #endif
 
-    return m.ptr();
+}
+
+int main(int argc, char** argv) {
+    std::cout << "Hullo..." << std::endl;
+    return 0;
 }

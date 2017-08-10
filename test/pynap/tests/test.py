@@ -1,14 +1,5 @@
-import sys
-
-import os
-
-sys.path.append(r'%s/../build/lib.linux-x86_64-3.5' %
-                os.path.dirname(__file__))
-
-import pynap as m
-
-assert m.__version__ == '0.0.1'
-assert m.add(1, 2) == 3
-assert m.subtract(1, 2) == -1
-
-print('Tests OK')
+import nap
+if __name__ == '__main__':
+    print("Members of nap (%s)" % nap)
+    for k in sorted(nap.__dict__.keys()):
+        print(('\t%s ' % k).ljust(30, '.'), nap.__dict__[k])
