@@ -83,6 +83,7 @@ add_subdirectory(modules/napsdlwindow)
 add_subdirectory(modules/napscene)
 add_subdirectory(modules/nappython)
 add_subdirectory(modules/napvideo)
+add_subdirectory(modules/napetherdream)
 
 # Exe dependencies
 add_dependencies(rendertest mod_naprender)
