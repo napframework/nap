@@ -14,6 +14,7 @@ int subtract(int i, int j) {
 
 nap::Core &core() {
     static nap::Core c;
+    c.initialize();
     return c;
 }
 
@@ -24,6 +25,8 @@ PYBIND11_MODULE(nap, m) {
     core();
     nap::rtti::PythonModule &python_module = nap::rtti::PythonModule::get("nap");
     python_module.invoke(m);
+
+    m.def("initialize", &core);
 
 //    m.attr("core") = &core();
 //    m.attr("one") = 10;
