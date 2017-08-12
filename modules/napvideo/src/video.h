@@ -33,7 +33,7 @@ namespace nap
 	 * thread to decode the package) and pushes the frame onto the frame queue. 
 	 * The main thread will consume the frames when they are present in the frame queue and their timestamp has 'passed'.
 	 */
-	class Video final : public rtti::RTTIObject
+	class NAPAPI Video final : public rtti::RTTIObject
 	{
 		RTTI_ENABLE(rtti::RTTIObject)
 
