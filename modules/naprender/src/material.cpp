@@ -35,6 +35,10 @@ RTTI_BEGIN_CLASS(nap::MaterialInstanceResource)
 	RTTI_PROPERTY("DepthMode",					&nap::MaterialInstanceResource::mDepthMode,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS(nap::MaterialInstance)
+	RTTI_FUNCTION("getOrCreateUniform",			(nap::Uniform* (nap::MaterialInstance::*)(const std::string&)) &nap::MaterialInstance::getOrCreateUniform);
+RTTI_END_CLASS
+
 RTTI_BEGIN_CLASS(nap::Material)
 	RTTI_PROPERTY("Uniforms",					&nap::Material::mUniforms,					nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Shader",						&nap::Material::mShader,					nap::rtti::EPropertyMetaData::Required)
@@ -57,6 +61,9 @@ namespace nap
 		case opengl::GLSLType::Int:
 			result = std::make_unique<UniformInt>();
 			break;
+		case opengl::GLSLType::Float:
+			result = std::make_unique<UniformFloat>();
+			break;
 		case opengl::GLSLType::Vec4:
 			result = std::make_unique<UniformVec4>();
 			break;
@@ -66,6 +73,9 @@ namespace nap
 		case opengl::GLSLType::Tex2D:
 			result = std::make_unique<UniformTexture2D>();
 			break;
+		case opengl::GLSLType::Vec3:
+			result = std::make_unique<UniformVec3>();
+			break;
 		}
 		assert(result);
 		result->mName = declaration.mName;
@@ -74,32 +84,17 @@ namespace nap
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// UniformContainer
-	//////////////////////////////////////////////////////////////////////////
-
-
-	Uniform& UniformContainer::AddUniform(std::unique_ptr<Uniform> uniform, const opengl::UniformDeclaration& declaration)
-	{
-		// Create association between uniform and declaration. At the same time, split between textures and values
-		// as texture have a slightly different interface.
-		std::unique_ptr<UniformTexture> texture_uniform = rtti_cast<UniformTexture>(uniform);
-		if (texture_uniform == nullptr)
-		{
-			std::unique_ptr<UniformValue> value_uniform = rtti_cast<UniformValue>(uniform);
-			assert(value_uniform);
-			auto inserted = mUniformValueBindings.emplace(std::make_pair(declaration.mName, UniformBinding<UniformValue>(std::move(value_uniform), declaration)));
-			return *inserted.first->second.mUniform;
-		}
-		else
-		{
-			auto inserted = mUniformTextureBindings.emplace(std::make_pair(declaration.mName, UniformBinding<UniformTexture>(std::move(texture_uniform), declaration)));
-			return *inserted.first->second.mUniform;
-		}
-	}
-
-	//////////////////////////////////////////////////////////////////////////
 	// MaterialInstance
 	//////////////////////////////////////////////////////////////////////////
+
+	Uniform* MaterialInstance::getOrCreateUniform(const std::string& name)
+	{
+		Uniform* existing = findUniform(name);
+		if (existing != nullptr)
+			return existing;
+
+		return &createUniform(name);
+	}
 
 
 	Uniform& MaterialInstance::createUniform(const std::string& name)

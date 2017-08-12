@@ -1,18 +1,20 @@
 #pragma once
 
 #include <string>
+// Exernal Includes
 #include <memory>
 #include <vector>
 
+// Local Includes
+#include "utility/dllexport.h"
+
 namespace nap
 {
-    
-    
 	/**
 	* Monitors file changes in a directory (currently hardcoded to active directory, and hardcoded to respond to file 'writes').
 	* This class works polling-based, so continue to call update to retrieve what files are modified on disk.
 	*/
-	class DirectoryWatcher
+	class NAPAPI DirectoryWatcher
 	{
 	public:
 		DirectoryWatcher();

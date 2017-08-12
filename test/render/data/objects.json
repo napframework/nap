@@ -1,34 +1,34 @@
 {
-	"nap::RenderWindowResource": {
+	"nap::RenderWindow": {
 		"mID" : "Window0",
 		"Width" : 256,
 		"Height" : 256,
 		"Title" : "Window 1"
 	},
 
-	"nap::RenderWindowResource": {
+	"nap::RenderWindow": {
 		"mID" : "Window1",
 		"Width" : 512,
 		"Height" : 512,
 		"Title" : "Window 2"
 	},
 		
-    "nap::ImageResource": {
+    "nap::Image": {
 		"mID" : "PigTexture",
 		"mImagePath" : "data/pig_head.jpg"
 	},
 	
-    "nap::ImageResource": {
+    "nap::Image": {
 		"mID" : "WorldTexture",
 		"mImagePath" : "data/world_texture.jpg"
 	},
 
-	"nap::ImageResource": {
+	"nap::Image": {
 		"mID" : "TestTexture",
 		"mImagePath" : "data/test.jpg"
 	},
 
-	"nap::MemoryTextureResource2D": {
+	"nap::MemoryTexture2D": {
 		"mID" : "ColorTexture",
 		"mSettings" : {
 			"mWidth" : 640,
@@ -39,7 +39,7 @@
 		}
 	},
 	
-	"nap::MemoryTextureResource2D": {
+	"nap::MemoryTexture2D": {
 		"mID" : "DepthTexture",
 		"mSettings" : {
 			"mWidth" : 640,
@@ -50,7 +50,7 @@
 		}
 	},
 	
-	"nap::TextureRenderTargetResource2D": {
+	"nap::TextureRenderTarget2D": {
 		"mID": "PlaneRenderTarget",
 		"mColorTexture": "ColorTexture",
 		"mDepthTexture": "DepthTexture",
@@ -62,33 +62,33 @@
 		}
 	},
 
-	"nap::ShaderResource": {
+	"nap::Shader": {
 		"mID": "GeneralShader",
 		"mVertShader": "shaders/shader.vert",
 		"mFragShader": "shaders/shader.frag"
 	},
 
-	"nap::ShaderResource": {
+	"nap::Shader": {
 		"mID": "OrientationShader",
 		"mVertShader": "shaders/orientation.vert",
 		"mFragShader": "shaders/orientation.frag"
 	},
 
-	"nap::MeshFromFileResource": {
+	"nap::MeshFromFile": {
 		"mID": "OrientationMesh",
 		"Path": "data/orientation.mesh"
 	},
 
-	"nap::MeshFromFileResource": {
+	"nap::MeshFromFile": {
 		"mID": "PigMesh",
 		"Path": "data/pig_head_alpha_rotated.mesh"
 	},	
 	
-	"nap::PlaneMeshResource": {
+	"nap::PlaneMesh": {
 		"mID": "PlaneMesh"
 	},
 	
-	"nap::SphereMeshResource": {
+	"nap::SphereMesh": {
 		"mID": "SphereMesh"
 	},
 	
@@ -155,24 +155,24 @@
 		]			
 	},
 	
-	"nap::EntityResource": {
+	"nap::Entity": {
 		"mID": "DefaultInputRouterEntity",
 		
 		"Components" : 
 		[
 			{
-				"nap::DefaultInputRouterComponentResource": {
+				"nap::DefaultInputRouterComponent": {
 				}		
 			}
 		]
 	},
 	
-	"nap::EntityResource": {
+	"nap::Entity": {
 		"mID": "PigEntity",
 		"Components" : 
 		[
 			{
-				"nap::RenderableMeshComponentResource": {
+				"nap::RenderableMeshComponent": {
 					"Mesh" : "PigMesh",
 					"MaterialInstance" : {
 						"Material": "GeneralMaterial",
@@ -205,7 +205,7 @@
 				}		
 			},
 			{
-				"nap::TransformComponentResource": {
+				"nap::TransformComponent": {
 					"Properties": {
 						"Translate": {
 							"x": 0.1,
@@ -215,8 +215,7 @@
 						"Rotate": {
 							"x": 0.0,
 							"y": 0.0,
-							"z": 0.0,
-							"w": 1.0
+							"z": 0.0
 						},
 						"Scale": {
 							"x": 1.0,
@@ -226,16 +225,21 @@
 						"UniformScale": 1.0
 					}
 				}		
+			},
+			{
+				"nap::PythonScriptComponent": {
+					"Path": "data/scripts/pig.py"
+				}
 			}
 		]
 	},
 	
-	"nap::EntityResource": {
+	"nap::Entity": {
 		"mID": "OrientationEntity",
 		"Components" : 
 		[
 			{
-				"nap::RenderableMeshComponentResource": {
+				"nap::RenderableMeshComponent": {
 					"Mesh" : "OrientationMesh",
 					"MaterialInstance" : {
 						"Material": "OrientationMaterial"
@@ -243,7 +247,7 @@
 				}		
 			},
 			{
-				"nap::TransformComponentResource": {
+				"nap::TransformComponent": {
 					"Properties": {
 						"Translate": {
 							"x": -1.5,
@@ -253,8 +257,7 @@
 						"Rotate": {
 							"x": 0.0,
 							"y": 0.0,
-							"z": 0.0,
-							"w": 1.0
+							"z": 0.0
 						},
 						"Scale": {
 							"x": 1.0,
@@ -268,12 +271,12 @@
 		]
 	},	
 	
-	"nap::EntityResource": {
+	"nap::Entity": {
 		"mID": "PlaneEntity",
 		"Components" : 
 		[
 			{
-				"nap::RenderableMeshComponentResource": {
+				"nap::RenderableMeshComponent": {
 					"Mesh" : "PlaneMesh",
 					"MaterialInstance" : {
 						"Material": "GeneralMaterial"
@@ -281,7 +284,7 @@
 				}		
 			},
 			{
-				"nap::TransformComponentResource": {
+				"nap::TransformComponent": {
 					"Properties": {
 						"Translate": {
 							"x": -1.0,
@@ -291,8 +294,7 @@
 						"Rotate": {
 							"x": 0.0,
 							"y": 0.0,
-							"z": 0.0,
-							"w": 1.0
+							"z": 0.0
 						},
 						"Scale": {
 							"x": 1.0,
@@ -302,16 +304,21 @@
 						"UniformScale": 1.5					
 					}
 				}		
+			},
+			{
+				"nap::PythonScriptComponent": {
+					"Path": "data/scripts/plane.py"
+				}
 			}
 		]
 	},	
 	
-	"nap::EntityResource": {
+	"nap::Entity": {
 		"mID": "RotatingPlaneEntity",
 		"Components" : 
 		[
 			{
-				"nap::RenderableMeshComponentResource": {
+				"nap::RenderableMeshComponent": {
 					"Mesh" : "PlaneMesh",
 					"MaterialInstance" : {
 						"Material": "GeneralMaterial"
@@ -319,7 +326,7 @@
 				}		
 			},
 			{
-				"nap::TransformComponentResource": {
+				"nap::TransformComponent": {
 					"Properties": {
 						"Translate": {
 							"x": 1.0,
@@ -329,8 +336,7 @@
 						"Rotate": {
 							"x": 0.0,
 							"y": 0.0,
-							"z": 0.0,
-							"w": 1.0
+							"z": 0.0
 						},
 						"Scale": {
 							"x": 1.0,
@@ -340,16 +346,22 @@
 						"UniformScale": 1.5
 					}
 				}		
+			},
+			{
+				"nap::PythonScriptComponent": {
+					"Path": "data/scripts/rotating_plane.py"
+				}
 			}
+		
 		]
 	},	
 
-	"nap::EntityResource": {
+	"nap::Entity": {
 		"mID": "WorldEntity",
 		"Components" : 
 		[
 			{
-				"nap::RenderableMeshComponentResource": {
+				"nap::RenderableMeshComponent": {
 					"Mesh" : "SphereMesh",
 					"MaterialInstance" : {
 						"mID": "WorldMaterialInstance",
@@ -382,7 +394,7 @@
 				}					
 			},
 			{
-				"nap::TransformComponentResource": {
+				"nap::TransformComponent": {
 					"Properties": {
 						"Translate": {
 							"x": 0.0,
@@ -392,8 +404,7 @@
 						"Rotate": {
 							"x": 0.0,
 							"y": 0.0,
-							"z": 0.0,
-							"w": 1.0
+							"z": 0.0
 						},
 						"Scale": {
 							"x": 1.0,
@@ -403,16 +414,21 @@
 						"UniformScale": 1.0						
 					}
 				}		
-			}
+			},
+			{
+				"nap::PythonScriptComponent": {
+					"Path": "data/scripts/world.py"
+				}
+			}			
 		]
 	},
 	
-	"nap::EntityResource": {
+	"nap::Entity": {
 		"mID": "CameraEntityLeft",
 		"Components" : 
 		[
 			{
-				"nap::PerspCameraComponentResource": {
+				"nap::PerspCameraComponent": {
 					"Properties": {
 						"FieldOfView": 45.0,
 						"NearClippingPlane" : 0.01,
@@ -421,17 +437,17 @@
 				}		
 			},
 			{
-				"nap::KeyInputComponentResource": {
+				"nap::KeyInputComponent": {
 				}
 			},
 			{
-				"nap::FirstPersonControllerResource": {
+				"nap::FirstPersonController": {
 					"MovementSpeed": 3.0,
 					"RotateSpeed": 1.0
 				}
 			},
 			{
-				"nap::TransformComponentResource": {
+				"nap::TransformComponent": {
 					"Properties": {
 						"Translate": {
 							"x": 0.0,
@@ -441,8 +457,7 @@
 						"Rotate": {
 							"x": 0.0,
 							"y": 0.0,
-							"z": 0.0,
-							"w": 1.0
+							"z": 0.0
 						},
 						"Scale": {
 							"x": 1.0,
@@ -456,12 +471,12 @@
 		]
 	},
 
-	"nap::EntityResource": {
+	"nap::Entity": {
 		"mID": "CameraEntityRight",
 		"Components" : 
 		[
 			{
-				"nap::PerspCameraComponentResource": {
+				"nap::PerspCameraComponent": {
 					"Properties": {
 						"FieldOfView": 45.0,
 						"NearClippingPlane" : 0.01,
@@ -470,17 +485,17 @@
 				}		
 			},
 			{
-				"nap::KeyInputComponentResource": {
+				"nap::KeyInputComponent": {
 				}
 			},
 			{
-				"nap::FirstPersonControllerResource": {
+				"nap::FirstPersonController": {
 					"MovementSpeed": 10.0,
 					"RotateSpeed": 2.0
 				}
 			},
 			{
-				"nap::TransformComponentResource": {
+				"nap::TransformComponent": {
 					"Properties": {
 						"Translate": {
 							"x": 0.0,
@@ -490,8 +505,7 @@
 						"Rotate": {
 							"x": 0.0,
 							"y": 0.0,
-							"z": 0.0,
-							"w": 1.0
+							"z": 0.0
 						},
 						"Scale": {
 							"x": 1.0,
@@ -505,12 +519,12 @@
 		]
 	},
 	
-	"nap::EntityResource": {
+	"nap::Entity": {
 		"mID": "SplitCameraEntity",
 		"Components" : 
 		[
 			{
-				"nap::PerspCameraComponentResource": {
+				"nap::PerspCameraComponent": {
 					"Properties": {
 						"FieldOfView": 45.0,
 						"NearClippingPlane" : 0.01,
@@ -523,7 +537,7 @@
 				}		
 			},
 			{
-				"nap::TransformComponentResource": {
+				"nap::TransformComponent": {
 					"Properties": {
 						"Translate": {
 							"x": 0.0,

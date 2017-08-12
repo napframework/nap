@@ -1,151 +1,282 @@
 #pragma once
 
-#include <assert.h>
-#include <memory>
-#include <list>
-#include <nap/core.h>
-#include <nap/attributeobject.h>
-#include <nap/signalslot.h>
-#include <rtti/rtti.h>
-#include "utility/stringutils.h"
+// Local Includes
 #include "utility/uniqueptrvectoriterator.h"
 #include "objectptr.h"
+#include "component.h"
 
 namespace nap
 {
     class Core;
-	class Deserializer;
-    class Component;
+	class Component;
+	class EntityInstance;
 
-	// The entity is a general purpose object. It only consists of a unique id.
-	// They "tag every coarse object as a separate item".
-	// An entity carries a set of components that define its behavior
-	class Entity : public AttributeObject
+	/**
+	 * Structure used to hold data necessary to create new instances during init
+	 */
+	struct EntityCreationParameters
 	{
-		friend Core;
-		friend Deserializer;
-		RTTI_ENABLE(AttributeObject)
+		using EntityByIDMap   = std::unordered_map<std::string, std::unique_ptr<EntityInstance>>;
+		using InstanceByIDMap = std::unordered_map<std::string, rtti::RTTIObject*>;
+
+		virtual ~EntityCreationParameters() = default;
+		EntityCreationParameters() = default;
+
+		EntityByIDMap mEntitiesByID;
+		InstanceByIDMap mAllInstancesByID;
+	};
+
+	/**
+	* Selects whether the type check should be an exact type match or whether
+	* the type should be derived from the given type.
+	*/
+	enum class NAPAPI ETypeCheck : uint8_t
+	{
+		EXACT_MATCH,
+		IS_DERIVED_FROM
+	};
+
+	/**
+	* Helper function to check whether two types match, based on a comparison mode
+	*/
+	static inline bool isTypeMatch(const rtti::TypeInfo& typeA, const rtti::TypeInfo& typeB, ETypeCheck typeCheck)
+	{
+		if (typeCheck == ETypeCheck::EXACT_MATCH)
+			return typeA == typeB;
+		else
+			return typeA.is_derived_from(typeB);
+	}
+
+
+	/**
+	 * An EntityInstance is the runtime-instance of an Entity, which is read from json.
+	 * It contains a list of ComponentInstances and functionality to query these components
+	 */
+	class NAPAPI EntityInstance : public rtti::RTTIObject
+	{
+		RTTI_ENABLE(rtti::RTTIObject)
 
 	public:
-        Entity() = default;
-        
-        // Virtual destructor because of virtual methods!
-        virtual ~Entity() = default;
+		using ComponentList = std::vector<std::unique_ptr<ComponentInstance>>;
+		using ChildList = std::vector<EntityInstance*>;
+		using ComponentIterator = utility::UniquePtrVectorWrapper<ComponentList, ComponentInstance*>;
+		using ComponentConstIterator = utility::UniquePtrConstVectorWrapper<ComponentList, ComponentInstance*>;
 
-		// Add Component of type T
-		// This method also ensures the new component is registered with core
-		template <typename T>
-        T& addComponent(const std::string& name)
-        {
-            auto type = rtti::TypeInfo::get<T>();
-            assert(type.template is_derived_from<Component>());
-            return addChild<T>(name);
-        }
+		/**
+		 * The constructor
+		 */
+		EntityInstance(Core& core);
 
-		template <typename T>
-        T& addComponent()
-        {
-			rtti::TypeInfo type = rtti::TypeInfo::get<T>();
-            assert(type.is_derived_from<Component>());
-            return addChild<T>(type.get_name().data());
-        }
+		/**
+		 * Update this entity hierarchy
+		 */
+		void update(double deltaTime);
 
-		// Add a new component of @componentType
-        Component& addComponent(const rtti::TypeInfo& componentType);
-		// Add a component from somewhere else, forwarding parentship to this entity
-        Component& addComponent(std::unique_ptr<Component> component);
-		// Remove a component from this entity
-        bool removeComponent(Component& comp);
-        
-		// Return true if this entity has a component of type T
-		template <typename T>
-        bool hasComponent() const;
-        
-		// Returns a component with the given name, null if not found
-		Component* getComponent(const std::string& name) { return getChild<Component>(name); }
+		/**
+		 * Add a component to this entity
+		 *
+		 * @param component The component to add. Ownership is transfered to this entity
+		 */
+		void addComponent(std::unique_ptr<ComponentInstance> component);
 
-		// Returns the first component with the given type
-        Component* getComponentOfType(const rtti::TypeInfo& componentType);
-		// Returns all registered components of this entity
-        std::vector<Component*> getComponents() { return getChildrenOfType<Component>(); }
+		/**
+		* Finds the first component of the specified type. 
+		*
+		* @param type The type name of the component to find.
+		* @return The found component. Null if not found.
+		*/
+		ComponentInstance* findComponent(const std::string& type) const;
 
-		// Returns the first component of type T
-		template <typename T>
-        T* getComponent();
-        
-        // Returns the first component of type T, if none exists, create one and return it
-        template<typename T>
-        T& getOrCreateComponent();
-        
-        // Returns all components that are kind of T
-		template <typename T>
-        void getComponentsOfType(std::vector<T*>& outComponents) { outComponents = getChildrenOfType<T>(); }
+		/**
+		* Finds the first component of the specified type. 
+		*
+		* @param type The type of the component to find.
+		* @return The found component. Null if not found.
+		*/
+		ComponentInstance* findComponent(const rtti::TypeInfo& type, ETypeCheck typeCheck = ETypeCheck::EXACT_MATCH) const;
 
-        // Returns all components that are kind of T
-		template<typename T>
-        std::vector<T*> getComponentsOfType();
-        
-		// Returns the root entity by traversing the tree up
-		Entity* getRoot();
+		/**
+		* Convenience template function to find the first component of the specified type
+		*/
+		template<class T>
+		T* findComponent(ETypeCheck typeCheck = ETypeCheck::EXACT_MATCH) const;
 
-		// Returns core system
-		Core& getCore() const { return mCore; }
+		/**
+		* Check whether this entity has a component of the specified type
+		*
+		* @param type The type of component to check for
+		*/
+		bool hasComponent(const rtti::TypeInfo& type, ETypeCheck typeCheck = ETypeCheck::EXACT_MATCH) const;
 
-		// Create a new child Entity and return a pointer to it.
-        Entity& addEntity(const std::string& name);
+		/**
+		* Convenience function to check whether this entity has a component of the specified type
+		*/
+		template<class T>
+		bool hasComponent(ETypeCheck typeCheck = ETypeCheck::EXACT_MATCH) const;
 
-		// Remove the specified entity. The entityRemoved signal will be emitted so observers can act on it before it
-		// is destroyed.
-        bool removeEntity(Entity& e) { return removeChild(e); }
+		/**
+		* Get a component of the specified type. Asserts if not found.
+		*
+		* @param type The type of component to get
+		* @return The component
+		*/
+		ComponentInstance& getComponent(const rtti::TypeInfo& type, ETypeCheck typeCheck = ETypeCheck::EXACT_MATCH) const;
 
-		// Find a child entity by name and return it. Returns a null pointer when it hasn't been found.
-        Entity* getEntity(const std::string& name) { return dynamic_cast<Entity*>(getChild(name)); }
+		/**
+		* Convenience function to get a component of the specified type
+		*/
+		template<class T>
+		T& getComponent(ETypeCheck typeCheck = ETypeCheck::EXACT_MATCH) const;
 
-		// Return the parent/parent of this entity.
-		Entity* getParent() const { return static_cast<Entity*>(getParentObject()); }
+		/**
+		 * Get all components of the specified type. 
+		 *
+		 * @param type The type of the component to find
+		 * @param components The list of components found
+		 */
+		void getComponentsOfType(const rtti::TypeInfo& type, std::vector<ComponentInstance*>& components, ETypeCheck typeCheck = ETypeCheck::IS_DERIVED_FROM) const;
 
-		// Return a list of child entities of which this entity is the parent.
-        std::vector<Entity*> getEntities() { return getChildrenOfType<Entity>(); }
+		/**
+		 * Convenience template function to get all components of the specified type
+		 */
+		template<class T>
+		void getComponentsOfType(std::vector<T*>& components, ETypeCheck typeCheck = ETypeCheck::IS_DERIVED_FROM) const;
+
+		/**
+		 * Check whether this entity has any of components of the specified type
+		 * 
+		 * @param type The type of component to check for
+		 */
+		bool hasComponentsOfType(const rtti::TypeInfo& type, ETypeCheck typeCheck = ETypeCheck::IS_DERIVED_FROM) const;
+
+		/**
+		 * Convenience template function to check whether this entity has any component of the specified type
+		 */
+		template<class T>
+		bool hasComponentsOfType(ETypeCheck typeCheck = ETypeCheck::IS_DERIVED_FROM) const;
+
+		/**
+		 * Add a child entity to this entity. Ownership is not transfered to this entity.
+		 *
+		 * @param child The entity to add.
+		 */
+		void addChild(EntityInstance& child);
+
+		/**
+		 * Clear all children from this entity
+		 */
+		void clearChildren();
+
+		/**
+		 * Get all children of this entity
+		 */
+		const ChildList& getChildren() const;
+
+		/**
+		 * Get the parent of this entity (if any)
+		 */
+		EntityInstance* getParent() const;
+
+		/**
+		 * Get core
+		 */
+		Core* getCore() const;
+
+		/**
+		 * Get components of this entity
+		 */
+		ComponentIterator getComponents() { return ComponentIterator(mComponents); }
+		ComponentConstIterator getComponents() const { return ComponentConstIterator(mComponents); }
 
 	private:
-		// Force local bookkeeping by disallowing left-wing hippie type object construction.
-		Entity(Core& core) : mCore(core) {}
-		Core& mCore;
+		Core*			mCore;
+		EntityInstance* mParent = nullptr;		// Parent of this entity
+		ComponentList	mComponents;			// The components of this entity
+		ChildList		mChildren;				// The children of this entity
 	};
-    
-    
-    // template definitions
 
-    template <typename T>
-    bool Entity::hasComponent() const {
-        rtti::TypeInfo type = rtti::TypeInfo::get<T>();
-        assert(type.is_derived_from<Component>());
-        return hasChildOfType<T>();
-    }
-    
-    
-    template <typename T>
-    T* Entity::getComponent() {
-        rtti::TypeInfo type = rtti::TypeInfo::get<T>();
-        assert(type.is_derived_from<Component>());
-        return getChildOfType<T>();
-    }
-    
-    
-    template<typename T>
-    T& Entity::getOrCreateComponent() {
-        T* component = getComponent<T>();
-        if (component)
-            return *component;
-        return addComponent<T>();
-    }
 
-    
-    template<typename T>
-    std::vector<T*> Entity::getComponentsOfType() {
-        std::vector<T*> comps;
-        getComponentsOfType<T>(comps);
-        return comps;
-    }
-    
+	//////////////////////////////////////////////////////////////////////////
+	// Entity Resource
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * An Entity is the static data as deserialized from json. It can be used to create an EntityInstance
+	 */
+	class NAPAPI Entity : public rtti::RTTIObject
+	{
+		RTTI_ENABLE(rtti::RTTIObject)
+	public:
+		using ComponentList = std::vector<ObjectPtr<Component>>;
+		using EntityList = std::vector<ObjectPtr<Entity>>;
+
+		/**
+		 * Find component of the specified type
+		 *
+		 * @param type The type of component to find
+		 * @return The found component. Null if not found
+		 */
+		ObjectPtr<Component> findComponent(const rtti::TypeInfo& type, ETypeCheck typeCheck = ETypeCheck::EXACT_MATCH) const;
+
+		/**
+		 * Check whether this Entity has a component of the specified type
+		 *
+		 * @param type The type of component to check for
+		 */
+		bool hasComponent(const rtti::TypeInfo& type, ETypeCheck typeCheck = ETypeCheck::EXACT_MATCH) const;
+
+		/** 
+		 * Convenience function to check whether this entity has a component of the specified type
+		 */
+		template<class T>
+		bool hasComponent(ETypeCheck typeCheck = ETypeCheck::EXACT_MATCH) const;
+
+	public:
+		ComponentList	mComponents;			// The components of this entity
+		EntityList		mChildren;				// The children of this entity
+		bool			mAutoSpawn = true;		// Whether this entity should be automatically instantiated after deserialization
+	};
+
+	//////////////////////////////////////////////////////////////////////////
+
+	template<class T>
+	void EntityInstance::getComponentsOfType(std::vector<T*>& components, ETypeCheck typeCheck) const
+	{
+		const rtti::TypeInfo type = rtti::TypeInfo::get<T>();
+		for (auto& component : mComponents)
+			if (isTypeMatch(component->get_type(), type, typeCheck))
+				components.push_back(rtti_cast<T>(component.get()));
+	}
+
+	template<class T>
+	bool EntityInstance::hasComponentsOfType(ETypeCheck typeCheck) const
+	{
+		return hasComponentsOfType(rtti::TypeInfo::get<T>(), typeCheck);
+	}
+
+	template<class T>
+	T* EntityInstance::findComponent(ETypeCheck typeCheck) const
+	{
+		return rtti_cast<T>(findComponent(rtti::TypeInfo::get<T>(), typeCheck));
+	}
+
+	template<class T>
+	bool EntityInstance::hasComponent(ETypeCheck typeCheck) const
+	{
+		return hasComponent(rtti::TypeInfo::get<T>(), typeCheck);
+	}
+
+	template<class T>
+	T& EntityInstance::getComponent(ETypeCheck typeCheck) const
+	{
+		return *rtti_cast<T>(&getComponent(rtti::TypeInfo::get<T>(), typeCheck));
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+
+	template<class T>
+	bool Entity::hasComponent(ETypeCheck typeCheck) const
+	{
+		return hasComponent(rtti::TypeInfo::get<T>(), typeCheck);
+	}
 }

@@ -2,13 +2,14 @@
 
 // External Includes
 #include <glm/glm.hpp>
-#include "nap/componentinstance.h"
+#include <nap/component.h>
+#include <utility/dllexport.h>
 
 namespace nap
 {
-	class RenderableComponentResource : public ComponentResource
+	class NAPAPI RenderableComponentResource : public Component
 	{
-		RTTI_ENABLE(ComponentResource)
+		RTTI_ENABLE(Component)
 	};
 
 	/**
@@ -18,12 +19,12 @@ namespace nap
 	 * 
 	 * You can override default draw behavior by specializing the draw method
 	 */
-	class RenderableComponent : public ComponentInstance
+	class NAPAPI RenderableComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 
 	public:
-		RenderableComponent(EntityInstance& entity) :
+		RenderableComponentInstance(EntityInstance& entity) :
 			ComponentInstance(entity)
 		{
 		}

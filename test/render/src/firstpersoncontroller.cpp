@@ -2,53 +2,54 @@
 #include "inputevent.h"
 #include "inputcomponent.h"
 #include "transformcomponent.h"
-#include <nap/entityinstance.h>
+#include <nap/entity.h>
 
 #include <glm/glm.hpp>
 #include <glm/matrix.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/transform.hpp>
 
-RTTI_BEGIN_CLASS(nap::FirstPersonControllerResource)
-	RTTI_PROPERTY("MovementSpeed",	&nap::FirstPersonControllerResource::mMovementSpeed,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("RotateSpeed",	&nap::FirstPersonControllerResource::mRotateSpeed,		nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::FirstPersonController)
+	RTTI_PROPERTY("MovementSpeed",	&nap::FirstPersonController::mMovementSpeed,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("RotateSpeed",	&nap::FirstPersonController::mRotateSpeed,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS 
 
-RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::FirstPersonController, nap::EntityInstance&)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::FirstPersonControllerInstance)
+	RTTI_CONSTRUCTOR(nap::EntityInstance&)
 RTTI_END_CLASS
 
 namespace nap
 {
-	FirstPersonController::FirstPersonController(EntityInstance& entity) :
+	FirstPersonControllerInstance::FirstPersonControllerInstance(EntityInstance& entity) :
 			ComponentInstance(entity)
 	{
 	}
 
 
-	bool FirstPersonController::init(const ObjectPtr<ComponentResource>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool FirstPersonControllerInstance::init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
 		// KeyInputComponent is required to receive input
-		KeyInputComponent* key_component = getEntity()->findComponent<KeyInputComponent>();
+		KeyInputComponentInstance* key_component = getEntity()->findComponent<KeyInputComponentInstance>();
 		if (!errorState.check(key_component != nullptr, "Could not find KeyInputComponent"))
 			return false;
 
 		// TransformComponent is required to move the entity
-		mTransformComponent = getEntity()->findComponent<TransformComponent>();
+		mTransformComponent = getEntity()->findComponent<TransformComponentInstance>();
 		if (!errorState.check(mTransformComponent != nullptr, "Could not find transform component"))
 			return false;
 
-		mResource = rtti_cast<FirstPersonControllerResource>(resource.get());
+		mResource = rtti_cast<FirstPersonController>(resource.get());
 		assert(mResource != nullptr);
 
 		// Connect key handlers
-		key_component->pressed.connect(std::bind(&FirstPersonController::onKeyPress, this, std::placeholders::_1));
-		key_component->released.connect(std::bind(&FirstPersonController::onKeyRelease, this, std::placeholders::_1));
+		key_component->pressed.connect(std::bind(&FirstPersonControllerInstance::onKeyPress, this, std::placeholders::_1));
+		key_component->released.connect(std::bind(&FirstPersonControllerInstance::onKeyRelease, this, std::placeholders::_1));
 
 		return true;
 	}
 
 
-	void FirstPersonController::update(double deltaTime)
+	void FirstPersonControllerInstance::update(double deltaTime)
 	{
 		float movement = mResource->mMovementSpeed * deltaTime;
 		float rotate = mResource->mRotateSpeed * deltaTime;
@@ -106,7 +107,7 @@ namespace nap
 	}
 
 
-	void FirstPersonController::onKeyPress(const KeyPressEvent& keyPressEvent)
+	void FirstPersonControllerInstance::onKeyPress(const KeyPressEvent& keyPressEvent)
 	{
 		switch (keyPressEvent.mKey)
 		{
@@ -154,7 +155,7 @@ namespace nap
 	}
 
 
-	void FirstPersonController::onKeyRelease(const KeyReleaseEvent& keyReleaseEvent)
+	void FirstPersonControllerInstance::onKeyRelease(const KeyReleaseEvent& keyReleaseEvent)
 	{
 		switch (keyReleaseEvent.mKey)
 		{

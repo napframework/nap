@@ -1,19 +1,23 @@
 #pragma once
 
+// Local Includes
+#include "blockingconcurrentqueue.h"
+#include "signalslot.h"
+#include "utility/dllexport.h"
 
+// External Includes
 #include <functional>
 #include <thread>
 #include <vector>
-#include <nap/blockingconcurrentqueue.h>
-#include <nap/signalslot.h>
 
-namespace nap {
-    
+namespace nap 
+{
     /**
      * Thread safe queue for tasks that are encapsulated in function objects.
      * It is possible to enqueue tasks at the end of the queue and to execute the tasks in the queue.
      */
-    class TaskQueue {
+    class NAPAPI TaskQueue 
+	{
     public:
         // a task in the queue is a function object
         using Task = std::function<void()>;
@@ -41,7 +45,8 @@ namespace nap {
     /**
      * A single thread that runs its own task queue
      */
-    class WorkerThread {
+    class NAPAPI WorkerThread 
+	{
     public:
         /**
          * @blocking: 
@@ -80,7 +85,8 @@ namespace nap {
     /**
      * A pool of threads that can be used to perform multiple tasks at the same time
      */
-    class ThreadPool {
+    class NAPAPI ThreadPool 
+	{
     public:
         ThreadPool(unsigned int numberOfThreads = 1, unsigned int maxQueueItems = 20);
         ~ThreadPool();
@@ -107,6 +113,4 @@ namespace nap {
         std::atomic<bool> stop;
         TaskQueue taskQueue;
     };
-    
-    
 }

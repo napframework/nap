@@ -2,6 +2,7 @@
 
 // External Includes
 #include <nopengl.h>
+#include <utility/errorstate.h>
 
 RTTI_DEFINE(nap::Renderer)
 
@@ -91,7 +92,7 @@ namespace nap
 		attrs.versionMajor = 3;
 		attrs.enableMultiSampling = true;
 		attrs.multiSampleSamples = 8;
-#if _DEBUG
+#ifdef _DEBUG
 		attrs.debug = true;
 #endif
 		setOpenGLAttributes(attrs);
@@ -110,10 +111,10 @@ namespace nap
 
 
 	// Create an opengl window
-	std::unique_ptr<RenderWindow> Renderer::createRenderWindow(const RenderWindowSettings& settings, utility::ErrorState& errorState)
+	std::unique_ptr<GLWindow> Renderer::createRenderWindow(const RenderWindowSettings& settings, utility::ErrorState& errorState)
 	{
 		// Construct and return new window
-		std::unique_ptr<RenderWindow> new_window = std::make_unique<RenderWindow>();
+		std::unique_ptr<GLWindow> new_window = std::make_unique<GLWindow>();
 
 		if (!new_window->init(settings, mPrimaryWindow.get(), errorState))
 			return nullptr;

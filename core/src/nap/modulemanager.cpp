@@ -1,243 +1,171 @@
-#include "coreattributes.h"
-#include "coremodule.h"
 #include "modulemanager.h"
-
-// clang-format off
+#include "fileutils.h"
+#include "logger.h"
 
 #ifdef _WIN32
+	#define WIN32_LEAN_AND_MEAN
 	#include <windows.h> // Windows dll loading
 #else
 	#include <dlfcn.h> // Posix shared object loading
 #endif
 
+namespace
+{
+	// Extension for shared libraries (dependent on platform)
 #ifdef _WIN32
-	std::string GetLastErrorAsString()
+	static std::string moduleExtension = "dll";
+#elif __APPLE__
+	static std::string moduleExtension = "dylib";
+#else
+	static std::string moduleExtension = "so";
+#endif
+
+
+	/**
+	 * Platform-wrapper function to get the error string for loading a module (if an error was thrown)
+	 * @return The error string
+	 */
+	std::string GetModuleLoadErrrorString()
 	{
-		//Get the error message, if any.
-		DWORD errorMessageID = ::GetLastError();
-		if(errorMessageID == 0)
-			return std::string(); //No error message has been recorded
+#ifdef _WIN32
+		// Get the error code
+		DWORD error_code = ::GetLastError();
+		if (error_code == 0)
+			return std::string();
 
 		LPSTR messageBuffer = nullptr;
 		size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-									 NULL, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
+			NULL, error_code, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
 
 		std::string message(messageBuffer, size);
-
-		//Free the buffer.
 		LocalFree(messageBuffer);
 
 		return message;
+#else
+		return dlerror();
+#endif
 	}
+
+
+	/**
+	 * Platform-wrapper function to load a shared library
+	 * @param modulePath The path to the shared library to load
+	 * @param errorString If the module failed to load, the error string
+	 * @return Handle to the loaded module
+	 */
+	void* LoadModule(const std::string& modulePath, std::string& errorString)
+	{
+		void* result;
+#ifdef _WIN32
+		result = LoadLibraryA(modulePath.c_str());
+#else
+		result = dlopen(modulePath.c_str(), RTLD_LAZY);
 #endif
 
+		// If we failed to load the module, get the error string
+		if (!result)
+			errorString = GetModuleLoadErrrorString();
+
+		return result;
+	}
+
+
+	/**
+	 * Platform-wrapper function to unload a shared library
+	 * @param module The module to load
+	 */
+	void UnloadModule(void* module)
+	{
+#ifdef _WIN32
+		FreeLibrary((HMODULE)module);
+#else
+		dlclose(module);
+#endif
+	}
+
+
+	/**
+	 * Platform-wrapper function to find the address of a symbol in the specified shared library
+	 * @param module Handle to the module to find the symbol in
+	 * @param symbolName Name of the symbol to find
+	 * @return The pointer to the symbol if found, nullptr if not
+	 */
+	void* FindSymbol(void* module, const char* symbolName)
+	{
+#ifdef _WIN32
+		return GetProcAddress((HMODULE)module, symbolName);
+#else
+		return dlsym(module, symbolName);
+#endif
+	}
+}
 
 namespace nap
 {
-	/**
-	 * Loads a shared object / dll as a module and register if found
-	 * @return the loaded module at @fileName, nullptr if module could not be loaded
-	 */
-	Module* loadModule(const char* filename)
-	{
-		std::stringstream errorString;
-
-		// First load library and get a pointer
-
-		#ifdef _WIN32
-			#ifdef _MSC_VER
-				void* libPtr = LoadLibrary(filename);
-			#else
-				void* libPtr = LoadLibrary((LPCSTR)filename);
-			#endif
-
-			if (!libPtr) {
-				Logger::warn("Shared library load failed: %s, reason: %s", filename, GetLastErrorAsString().c_str());
-				return nullptr;
-			}
-
-        #else
-			void* libPtr = dlopen(filename, RTLD_LAZY);
-
-			if (!libPtr) {
-				Logger::warn("Shared library load failed: %s, %s", filename, dlerror());
-				return nullptr;
-			}
-		#endif
-
-
-		// Load the initialization function
-		const char* fn_name = "nap_init_module";
-
-		#ifdef _WIN32
-			init_module_fn init_module = (init_module_fn)GetProcAddress((HINSTANCE)libPtr, fn_name);
-		#else
-				init_module_fn init_module = (init_module_fn)dlsym(libPtr, fn_name);
-		//		char* error = dlerror();
-		#endif
-
-		if (!init_module) 
-		{
-			Logger::debug("Failed to load init function: %s", fn_name);
-			return nullptr;
-		}
-
-		// Initialize the plugin
-		Module* module = init_module();
-		if (nullptr == module) 
-		{
-			Logger::warn("Failed to initialize the plugin");
-			return nullptr;
-		}
-
-		module->setFilename(filename);
-		return module;
-	}
-
-
-
-	bool ModuleManager::hasModule(const Module& module)
-	{
-		for (const auto& mod : mModules) 
-		{
-			std::string modNameA = module.getName();
-			std::string modNameB = mod->getName();
-			if (modNameB == modNameA)
-				return true;
-		}
-		return false;
-	}
-
-
-	void ModuleManager::loadModules(const std::string directory)
-	{
-		std::string fullPath(getAbsolutePath(directory));
-		Logger::debug("Looking for modules in directory: '%s'", fullPath.c_str());
-		std::vector<std::string> files;
-		nap::listDir(directory.c_str(), files);
-
-
-		for (const auto& filename : files) 
-		{
-            if (dirExists(filename))
-                continue;
-			std::string absFilename = getAbsolutePath(filename);
-#ifdef _WIN32
-			if (getFileExtension(absFilename) != "dll")
-				continue;
-#elif __APPLE__
-            if (getFileExtension(absFilename) != "dylib")
-                continue;
-            
-#else
-            if (getFileExtension(absFilename) != "so")
-                continue;
-#endif
-			Logger::debug("Attempting to load module '%s'", getAbsolutePath(filename).c_str());
-			Module* module = loadModule(absFilename.c_str());
-			if (!module) 
-			{
-				Logger::warn("Failed to load module '%s'", absFilename.c_str());
-				continue;
-			}
-
-			registerModule(*module);
-		}
-	}
-
-
-	void ModuleManager::registerModule(Module& module)
-	{
-		if (hasModule(module)) 
-		{
-			Logger::warn("Module already exists: %s", module.getName().c_str());
-			return;
-		}
-		mModules.push_back(&module);
-		moduleLoaded.trigger(module);
-		Logger::info("Module registered: %s", module.getName().c_str());
-	}
-
 	ModuleManager::ModuleManager()
 	{
-//		registerModule(*new ModuleNapCore());
-//		registerRTTIModules();
+#ifdef _WIN32
+		// On windows, disable DLL load failure dialog boxes (we handle the errors ourselves))
+		SetErrorMode(SEM_FAILCRITICALERRORS);
+#endif
 	}
 
-	const TypeConverterBase* ModuleManager::getTypeConverter(rtti::TypeInfo fromType, rtti::TypeInfo toType) const
+	ModuleManager::~ModuleManager()
 	{
-		if (fromType == toType)
-		{
-			return &mTypeConverterPassThrough;
-		}
+		for (Module& module : mModules)
+			UnloadModule(module.mHandle);
+	}
 
-		for (auto module : mModules) 
+	void ModuleManager::loadModules(const std::string& directory)
+	{
+		// Find all files in the specified directory
+		std::vector<std::string> files_in_directory;
+		nap::listDir(directory.c_str(), files_in_directory);
+
+		for (const auto& filename : files_in_directory)
 		{
-			for (auto conv : module->getTypeConverters()) 
+			// Ignore directories
+			if (dirExists(filename))
+				continue;
+
+			// Ignore non-shared libraries
+			if (getFileExtension(filename) != moduleExtension)
+				continue;
+
+			std::string module_path = getAbsolutePath(filename);
+			
+			// Try to load the module
+			std::string error_string;
+			void* module_handle = LoadModule(module_path, error_string);
+			if (!module_handle)
 			{
-				if (conv->inType() == fromType && conv->outType() == toType)
-					return conv;
+				Logger::info("Failed to load module %s: %s", module_path.c_str(), error_string.c_str());
+				continue;
 			}
+
+			// Find descriptor. If the descriptor wasn't found in the dll, assume it's not actually a nap module and unload it again.
+			ModuleDescriptor* descriptor = (ModuleDescriptor*)FindSymbol(module_handle, "descriptor");
+			if (descriptor == nullptr)
+			{
+				UnloadModule(module_handle);
+				continue;
+			}
+
+			// Check that the module version matches, skip otherwise.
+			if (descriptor->mAPIVersion != ModuleDescriptor::ModuleAPIVersion)
+			{
+				Logger::info("Module %s was built against a different version of nap (found %d, expected %d); skipping.", module_path.c_str(), descriptor->mAPIVersion, ModuleDescriptor::ModuleAPIVersion);
+				UnloadModule(module_handle);				
+				continue;
+			}
+
+			Logger::info("Loaded module %s v%s", descriptor->mID, descriptor->mVersion);
+
+			Module module;
+			module.mDescriptor = descriptor;
+			module.mHandle = module_handle;
+
+			mModules.push_back(module);
 		}
-		return nullptr;
 	}
-
-	const TypeList ModuleManager::getComponentTypes() const
-	{
-		TypeList types;
-		for (const auto& type : rtti::TypeInfo::get_raw_types()) {
-			if (type.is_derived_from<Component>() && type.can_create_instance())
-				types.push_back(type);
-		}
-		return types;
-	}
-
-	const TypeList ModuleManager::getDataTypes() const
-	{
-		TypeList types;
-		for (const auto& mod : getModules())
-			mod->getDataTypes(types);
-		return types;
-	}
-
-	const TypeList ModuleManager::getOperatorTypes() const
-	{
-		TypeList types;
-		for (const auto& mod : getModules())
-			mod->getOperatorTypes(types);
-		return types;
-	}
-
-	void ModuleManager::registerRTTIModules()
-	{
-// 		for (rtti::TypeInfo& typeInfo : rtti::TypeInfo::getRawTypes()) {
-// 
-// 			if (!typeInfo.is_derived_from<nap::Module>())
-// 				continue;
-// 			if (!typeInfo.canCreateInstance())
-// 				continue;
-// 
-// 			nap::Module* module = (nap::Module*)typeInfo.createInstance();
-// 			assert(module);
-// 			registerModule(*module);
-// 		}
-	}
-
-	Module* ModuleManager::getModule(const std::string& name) const
-	{
-		for (Module* module : mModules)
-			if (module->getName() == name)
-				return module;
-		return nullptr;
-	}
-
-
-	// TODO: Make this a unique ptr
-    void ModuleManager::loadCoreModule() 
-	{
-        registerModule(*new ModuleNapCore());
-    }
 }
-
-
-// clang-format on

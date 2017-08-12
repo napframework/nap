@@ -3,6 +3,7 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <utility/dllexport.h>
 
 namespace opengl
 {
@@ -19,7 +20,7 @@ namespace nap
 	/**
 	 * Options to specify when converting FBX
 	 */
-	enum class EFBXConversionOptions
+	enum class NAPAPI EFBXConversionOptions
 	{
 		CONVERT_ALWAYS,		// Always convert FBX
 		CONVERT_IF_NEWER	// Only convert FBX if the destination does not exist or is older
@@ -35,7 +36,7 @@ namespace nap
 	 * @param errorState The error state
 	 * @return Whether the conversion succeeded or not
 	 */
-	bool convertFBX(const std::string& fbxPath, const std::string& outputDirectory, EFBXConversionOptions convertOptions, std::vector<std::string>& convertedFiles, utility::ErrorState& errorState);	 
+	NAPAPI bool convertFBX(const std::string& fbxPath, const std::string& outputDirectory, EFBXConversionOptions convertOptions, std::vector<std::string>& convertedFiles, utility::ErrorState& errorState);
 
 	/**
 	 * Load a mesh from the specified mesh. The mesh is expected to be our own mesh format as converted by convertFBX
@@ -44,5 +45,5 @@ namespace nap
 	 * @param errorState The error state if the function fails
 	 * @return The loaded mesh if successful, nullptr on failure
 	 */
-	std::unique_ptr<opengl::Mesh> loadMesh(const std::string& meshPath, utility::ErrorState& errorState);
+	NAPAPI std::unique_ptr<opengl::Mesh> loadMesh(const std::string& meshPath, utility::ErrorState& errorState);
 }

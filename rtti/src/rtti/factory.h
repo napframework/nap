@@ -2,6 +2,7 @@
 
 // RTTI includes
 #include "rttiobject.h"
+#include "utility/dllexport.h"
 
 namespace nap
 {
@@ -12,7 +13,7 @@ namespace nap
 		/**
 		 * Derive from this object to supply custom constructor arguments to objects.
 		 */
-		class IObjectCreator
+		class NAPAPI IObjectCreator
 		{
 		public:
 			/**
@@ -30,9 +31,13 @@ namespace nap
 		/**
 		 * Manages IObjectCreators.
 		 */
-		class Factory
+		class NAPAPI Factory
 		{
 		public:
+			Factory() = default;
+			Factory(const Factory&) = delete;
+			Factory& operator=(const Factory&) = delete;
+
 			/**
 			 * Adds association between a type and it's object creator.
 			 * @param typeInfo: the RTTI type to create a mapping for.

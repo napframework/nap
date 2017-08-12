@@ -1,13 +1,13 @@
 #pragma once
 
 #include "inputrouter.h"
-#include "nap/componentinstance.h"
+#include "nap/component.h"
 #include "nap/entityptr.h"
 
 namespace nap
 {
-	class CameraComponent;
-	class UIInputRouterComponent;
+	class CameraComponentInstance;
+	class UIInputRouterComponentInstance;
 
 	/**
 	 * Implementation of InputRouter that knows how to route input events to the correct UI element, based on its screen-space position/size
@@ -18,7 +18,7 @@ namespace nap
 		/**
 		 * Set the camera used to perform depth sorting
 		 */
-		bool init(CameraComponent& camera, utility::ErrorState& errorState) { mCamera = &camera; return true; }
+		bool init(CameraComponentInstance& camera, utility::ErrorState& errorState) { mCamera = &camera; return true; }
 
 		/**
 		 * Route the specified input event to the correct InputComponent in the specified list of entities
@@ -29,7 +29,7 @@ namespace nap
 		virtual void routeEvent(const InputEvent& event, const EntityList& entities) override;
 
 	private:
-		CameraComponent* mCamera;	// The camera used for depth sorting
+		CameraComponentInstance* mCamera;	// The camera used for depth sorting
 	};
 
 
@@ -37,15 +37,15 @@ namespace nap
 	 * This component holds a pointer to the camera entity so that the instance can 
 	 * access the camera entity to initialize it's camera.
 	 */
-	class UIInputRouterComponentResource : public ComponentResource
+	class UIInputRouterComponent : public Component
 	{
-		RTTI_ENABLE(ComponentResource)
+		RTTI_ENABLE(Component)
 
 	public:
 		/**
 		 * @return Instance type to create for this resource.
 		 */
-		virtual const rtti::TypeInfo getInstanceType() const override	{ return RTTI_OF(UIInputRouterComponent); }
+		virtual const rtti::TypeInfo getInstanceType() const override	{ return RTTI_OF(UIInputRouterComponentInstance); }
 
 		EntityPtr mCameraEntity;		// Pointer to camera entity resource and instance
 	};
@@ -55,7 +55,7 @@ namespace nap
 	 * Wrapper for a UIInputRouter. Retrieves the camera entity and it's camera component to initialize
 	 * the input router.
 	 */
-	class UIInputRouterComponent : public ComponentInstance
+	class UIInputRouterComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 
@@ -65,9 +65,9 @@ namespace nap
 		 * @param resource UIInputRouterComponentResource
 		 * @return true on success, other false.
 		 */
-		virtual bool init(const ObjectPtr<ComponentResource>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
-		UIInputRouterComponent(EntityInstance& entity) :
+		UIInputRouterComponentInstance(EntityInstance& entity) :
 			ComponentInstance(entity)
 		{
 		}

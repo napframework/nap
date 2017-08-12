@@ -1,8 +1,11 @@
+#include <pybind11/pybind11.h>
 #include "rttiobject.h"
+#include "pythonmodule.h"
+
 
 static const char* sIDPropertyName = "mID";
 
-RTTI_BEGIN_BASE_CLASS(nap::rtti::RTTIObject)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::rtti::RTTIObject)
 	RTTI_PROPERTY(sIDPropertyName, &nap::rtti::RTTIObject::mID, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 

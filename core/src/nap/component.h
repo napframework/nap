@@ -1,54 +1,82 @@
 #pragma once
 
-// RTTI Includes
-#include <rtti/rtti.h>
-
-// Core Includes
-#include <nap/attributeobject.h>
-
+#include "rtti/rttiobject.h"
+#include "nap/objectptr.h"
+#include "utility/dllexport.h"
 
 namespace nap
 {
 	// Forward Declares
-	class Entity;
-	class Core;
+	namespace utility
+	{
+		class ErrorState;
+	}
+
+	class EntityInstance;
+	class Component;
+	struct EntityCreationParameters;
 
 	/**
-	@brief Component
-
-	Represents the raw data for one aspect of an Entity, and how it interacts with the world.
-	A Component labels an Entity as possessing this particular aspect. An example of
-	a component is a Physics Component, enabling collision detection for an Entity
-	**/
-
-	class Component : public AttributeObject
+	 * A ComponentInstance is the runtime-instance of a Component, which is read from json.
+	 */
+	class NAPAPI ComponentInstance : public rtti::RTTIObject
 	{
-		friend Entity;
-		RTTI_ENABLE(AttributeObject)
+		RTTI_ENABLE(rtti::RTTIObject)
+
 	public:
-		// All components need to have a default constructor in order to be able to constructed in a
-		// modular system or a deserialization process by the help of the rtti system.
-		Component() = default;
-
-		// This method can be overriden to provide initialization behaviour. On new creation this method is called
-		// after the constructor. In a de-serialization process this method is called after the attributes of this
-		// component have been assigned.
-		virtual void initialize(Core& core)	{ }
-
-		// Parent
-		Entity* getParent() const;
+        using RTTIObject::init;
         
-        // Root entity
-        Entity* getRoot();
+		/**
+		 * Constructor
+		 */
+		ComponentInstance(EntityInstance& entity) : mEntity(&entity) { }
 
-		// Lock the component
-		void lockComponent();
+		/**
+		 * Update this component
+		 */
+		virtual void update(double deltaTime) {}
 
-		// Unlock the component
-		void unlockComponent();
+		/**
+		 * Get the entity this component belongs to
+		 */
+		nap::EntityInstance* getEntity() const
+		{
+			return mEntity;
+		}
 
-    protected:
-		std::mutex mMutex;
+		/**
+		 * Initialize this component from its resource
+		 *
+		 * @param resource The resource we're being instantiated from
+		 * @param entityCreationParams Parameters required to create new entity instances during init
+		 * @param errorState The error object
+		 */
+        virtual bool init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
+
+	private:
+		EntityInstance* mEntity;	// The entity this component belongs to
 	};
 
-} //< End Namespace nap
+	///////////////////////////////////////////////////////////////////////////
+	// Component
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * A Component is the static data that is deserialized from json. A ComponentInstance is created from it
+	 */
+	class NAPAPI Component : public rtti::RTTIObject
+	{
+		RTTI_ENABLE(rtti::RTTIObject)
+
+	public:
+		/**
+		 * Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
+		 */
+		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) { }
+
+		/** 
+		 * Get the type of ComponentInstance that should be created from this Component
+		 */
+		virtual const rtti::TypeInfo getInstanceType() const = 0;
+	};
+}

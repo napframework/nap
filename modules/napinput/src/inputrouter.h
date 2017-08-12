@@ -1,19 +1,21 @@
 #pragma once
 
-#include "rtti/rttiobject.h"
-#include "nap/componentinstance.h"
+// External Includes
+#include <rtti/rttiobject.h>
+#include <nap/component.h>
+#include <utility/dllexport.h>
 
 namespace nap
 {
 	class InputEvent;
 	class EntityInstance;
-	class DefaultInputRouterComponent;
+	class DefaultInputRouterComponentInstance;
 
 	/**
 	 * Base class for input routing. An input router selects InputComponents from a hierarchy of entities
 	 * to send the input to.
 	 */
-	class InputRouter
+	class NAPAPI InputRouter
 	{
 	public:
 		using EntityList = std::vector<EntityInstance*>;
@@ -26,10 +28,11 @@ namespace nap
 		virtual void routeEvent(const InputEvent& event, const EntityList& entities) = 0;
 	};
 
+
 	/**
 	 * Default implementation of InputRouter. Sends event to all entities.
 	 */
-	class DefaultInputRouter : public InputRouter
+	class NAPAPI DefaultInputRouter : public InputRouter
 	{
 	public:
 		/**
@@ -38,30 +41,31 @@ namespace nap
 		virtual void routeEvent(const InputEvent& event, const EntityList& entities);
 	};
 
+
 	/**
 	 * Component used to have a default input router entity
 	 */
-	class DefaultInputRouterComponentResource : public ComponentResource
+	class NAPAPI DefaultInputRouterComponent : public Component
 	{
-		RTTI_ENABLE(ComponentResource)
+		RTTI_ENABLE(Component)
 
 	public:
 		/**
 		 * @return Instance type to create for this resource.
 		 */
-		virtual const rtti::TypeInfo getInstanceType() const override	{ return RTTI_OF(DefaultInputRouterComponent); }
+		virtual const rtti::TypeInfo getInstanceType() const override	{ return RTTI_OF(DefaultInputRouterComponentInstance); }
 	};
 
 
 	/**
 	 * Wrapper component for Default Input Router
 	 */
-	class DefaultInputRouterComponent : public ComponentInstance
+	class NAPAPI DefaultInputRouterComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 
 	public:
-		DefaultInputRouterComponent(EntityInstance& entity) :
+		DefaultInputRouterComponentInstance(EntityInstance& entity) :
 			ComponentInstance(entity)
 		{
 		}

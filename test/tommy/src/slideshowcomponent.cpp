@@ -1,40 +1,41 @@
 #include "slideshowcomponent.h"
 #include "nap/core.h"
 #include "nap/resourcemanager.h"
-#include <nap/entityinstance.h>
+#include <nap/entity.h>
 #include "renderablemeshcomponent.h"
 #include "transformcomponent.h"
 
-RTTI_BEGIN_CLASS(nap::SlideShowComponentResource)
-	RTTI_PROPERTY("Images",				&nap::SlideShowComponentResource::mImages,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("EntityPrototype",	&nap::SlideShowComponentResource::mEntityPrototype, nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::SlideShowComponent)
+	RTTI_PROPERTY("Images",				&nap::SlideShowComponent::mImages,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("EntityPrototype",	&nap::SlideShowComponent::mEntityPrototype, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::SlideShowComponent, nap::EntityInstance&)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SlideShowComponentInstance)
+	RTTI_CONSTRUCTOR(nap::EntityInstance&)
 RTTI_END_CLASS
 
 namespace nap
 {
 	static const float imageDistance = 0.8f;
 
-	SlideShowComponent::SlideShowComponent(EntityInstance& entity) :
+	SlideShowComponentInstance::SlideShowComponentInstance(EntityInstance& entity) :
 		ComponentInstance(entity)
 	{
 	}
 
 
-	bool SlideShowComponent::init(const ObjectPtr<ComponentResource>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool SlideShowComponentInstance::init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
 		ResourceManagerService& resource_manager = *getEntity()->getCore()->getService<nap::ResourceManagerService>();
 
- 		mResource = rtti_cast<SlideShowComponentResource>(resource.get());
+ 		mResource = rtti_cast<SlideShowComponent>(resource.get());
 
 		// Prototype needs RenderableMeshComponent
-		if (!errorState.check(mResource->mEntityPrototype->hasComponent<RenderableMeshComponentResource>(), "Entity prototype is missing RenderableMeshComponent"))
+		if (!errorState.check(mResource->mEntityPrototype->hasComponent<RenderableMeshComponent>(), "Entity prototype is missing RenderableMeshComponent"))
 			return false;
 
 		// Prototype needs TransformComponent
-		if (!errorState.check(mResource->mEntityPrototype->hasComponent<TransformComponentResource>(), "Entity prototype is missing TransformComponent"))
+		if (!errorState.check(mResource->mEntityPrototype->hasComponent<TransformComponent>(), "Entity prototype is missing TransformComponent"))
 			return false;
 
 		// Spawn left child
@@ -65,7 +66,7 @@ namespace nap
 	 * Sets correct textures for left/center/right children based on mImageIndex
 	 * Sets positions based on start position.
 	 */
-	void SlideShowComponent::Switch()
+	void SlideShowComponentInstance::Switch()
 	{
 		assignTexture(*mLeftChildInstance, mImageIndex - 1);
 		setTranslate(*mLeftChildInstance, glm::vec3(-imageDistance, 0.0f, 0.0f));
@@ -79,7 +80,7 @@ namespace nap
 	}
 
 
-	void SlideShowComponent::update(double deltaTime)
+	void SlideShowComponentInstance::update(double deltaTime)
 	{
 		if (mTargetImageIndex != mImageIndex)
 		{
@@ -114,34 +115,34 @@ namespace nap
 	}
 
 
-	void SlideShowComponent::assignTexture(nap::EntityInstance& entity, int imageIndex)
+	void SlideShowComponentInstance::assignTexture(nap::EntityInstance& entity, int imageIndex)
 	{
 		if (imageIndex < 0)
 			imageIndex = mResource->mImages.size() - 1;
 		else if (imageIndex > mResource->mImages.size() - 1)
 			imageIndex = 0;
 
-		RenderableMeshComponent& renderable = entity.getComponent<RenderableMeshComponent>();
+		RenderableMeshComponentInstance& renderable = entity.getComponent<RenderableMeshComponentInstance>();
 		MaterialInstance& material_instance = renderable.getMaterialInstance();
 		material_instance.getOrCreateUniform<nap::UniformTexture2D>("mTexture").setTexture(*mResource->mImages[imageIndex]);
 	}
 
 
-	void SlideShowComponent::setVisible(nap::EntityInstance& entity, bool visible)
+	void SlideShowComponentInstance::setVisible(nap::EntityInstance& entity, bool visible)
 	{
-		RenderableMeshComponent& renderable = entity.getComponent<RenderableMeshComponent>();
+		RenderableMeshComponentInstance& renderable = entity.getComponent<RenderableMeshComponentInstance>();
 		renderable.setVisible(visible);
 	}
 
 
-	void SlideShowComponent::setTranslate(nap::EntityInstance& entity, const glm::vec3& translate)
+	void SlideShowComponentInstance::setTranslate(nap::EntityInstance& entity, const glm::vec3& translate)
 	{
-		TransformComponent& transform = entity.getComponent<TransformComponent>();
+		TransformComponentInstance& transform = entity.getComponent<TransformComponentInstance>();
 		transform.setTranslate(translate);
 	}
 
 
-	void SlideShowComponent::cycleLeft()
+	void SlideShowComponentInstance::cycleLeft()
 	{
 		if (mImageIndex == mTargetImageIndex)
 		{
@@ -153,7 +154,7 @@ namespace nap
 		}
 	}
 
-	void SlideShowComponent::cycleRight()
+	void SlideShowComponentInstance::cycleRight()
 	{
 		if (mImageIndex == mTargetImageIndex)
 		{

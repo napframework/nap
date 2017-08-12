@@ -24,8 +24,4 @@ namespace nap
 	using uint32 = uint32_t;
 	using uint64 = uint64_t;
 	using uint = unsigned int;
-
-	// epsilon and double float
-	extern const float	f_epsilon;
-	extern const double d_epsilon;
 }

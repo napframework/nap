@@ -1,28 +1,29 @@
 #pragma once
 
+// Local Includes
+#include "rtti/rtti.h"
 #include "service.h"
 #include "objectptr.h"
+#include "utility/dllexport.h"
 #include "utility/uniqueptrmapiterator.h"
-#include "rtti/unresolvedpointer.h"
+#include "directorywatcher.h"
+#include "entity.h"
+#include "component.h"
+
+// External Includes
+#include <rtti/unresolvedpointer.h>
 #include <map>
 
-
 namespace nap
-{
-	class DirectoryWatcher;
-	class EntityInstance;
-	class EntityResource;
-	
+{	
 	class RTTIObjectGraphItem;
 	template<typename ITEM> class ObjectGraph;
 	using RTTIObjectGraph = ObjectGraph<RTTIObjectGraphItem>;
 
-	struct EntityCreationParameters;
-
 	/**
 	 * Manager, owner of all objects, capable of loading and real-time updating of content.
 	 */
-	class ResourceManagerService : public Service
+	class NAPAPI ResourceManagerService : public Service
 	{
 		RTTI_ENABLE(Service)
 	public:
@@ -59,7 +60,7 @@ namespace nap
 		/**
 		* Find an object by object ID. Returns null if not found.
 		*/
-		const ObjectPtr<RTTIObject> findObject(const std::string& id);
+		const ObjectPtr<rtti::RTTIObject> findObject(const std::string& id);
 
 		/**
 		* Find an object by object ID. Returns null if not found.
@@ -70,12 +71,12 @@ namespace nap
 		/**
 		* Creates an object and adds it to the manager.
 		*/
-		const ObjectPtr<RTTIObject> createObject(const rtti::TypeInfo& type);
+		const ObjectPtr<rtti::RTTIObject> createObject(const rtti::TypeInfo& type);
 
 		/**
 		* Instantiates an Entity.
 		*/
-		const ObjectPtr<EntityInstance> createEntity(const EntityResource& entityResource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
+		const ObjectPtr<EntityInstance> createEntity(const Entity& Entity, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
 
 		/**
 		* Creates an object and adds it to the manager.
@@ -121,16 +122,21 @@ namespace nap
 		EntityIterator getEntities() { return EntityIterator(mEntities); }
 
 		/**
-		* 
+		* Occurs when the manager has been initialized, creates the root entity
 		*/
 		virtual void initialized();
 
-	private:
-		using InstanceByIDMap	= std::unordered_map<std::string, rtti::RTTIObject*>;				// Map from object ID to object (non-owned)
-		using ObjectByIDMap		= std::unordered_map<std::string, std::unique_ptr<RTTIObject>>;		// Map from object ID to object (owned)
-		using FileLinkMap		= std::unordered_map<std::string, std::vector<std::string>>;		// Map from target file to multiple source files
+		/**
+		 * Forwards an update to all entities managed under the root
+		 */
+		virtual void update();
 
-		void addObject(const std::string& id, std::unique_ptr<RTTIObject> object);
+	private:
+		using InstanceByIDMap	= std::unordered_map<std::string, rtti::RTTIObject*>;					// Map from object ID to object (non-owned)
+		using ObjectByIDMap		= std::unordered_map<std::string, std::unique_ptr<rtti::RTTIObject>>;	// Map from object ID to object (owned)
+		using FileLinkMap		= std::unordered_map<std::string, std::vector<std::string>>;			// Map from target file to multiple source files
+
+		void addObject(const std::string& id, std::unique_ptr<rtti::RTTIObject> object);
 		void removeObject(const std::string& id);
 		void addFileLink(const std::string& sourceFile, const std::string& targetFile);
 
@@ -138,7 +144,7 @@ namespace nap
 		bool resolvePointers(ObjectByIDMap& objectsToUpdate, const rtti::UnresolvedPointerList& unresolvedPointers, utility::ErrorState& errorState);
 		bool initObjects(const std::vector<std::string>& objectsToInit, const ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState);
 		bool initEntities(const RTTIObjectGraph& objectGraph, const ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState);
-		bool createEntities(const std::vector<const EntityResource*>& entityResources, EntityCreationParameters& entityCreationParams, std::vector<std::string>& generatedEntityIDs, utility::ErrorState& errorState);
+		bool createEntities(const std::vector<const Entity*>& entityResources, EntityCreationParameters& entityCreationParams, std::vector<std::string>& generatedEntityIDs, utility::ErrorState& errorState);
 		bool buildObjectGraph(const ObjectByIDMap& objectsToUpdate, RTTIObjectGraph& objectGraph, utility::ErrorState& errorState);
 		/** 
 		* Traverses all pointers in ObjectPtrManager and, for each target, replaces the target with the one in the map that is passed.
@@ -172,6 +178,7 @@ namespace nap
 		std::set<std::string>				mFilesToWatch;					// Files currently loaded, used for watching changes on the files
 		FileLinkMap							mFileLinkMap;					// Map containing links from target to source file, for updating source files if the file monitor sees changes
 		std::unique_ptr<DirectoryWatcher>	mDirectoryWatcher;				// File monitor, detects changes on files
+		double								mLastTimeStamp = 0;				// Last time stamp used for calculating delta time
 	};
 
 
@@ -182,12 +189,12 @@ namespace nap
 
 		for (ObjectPtrBase* ptr : object_ptrs)
 		{
-			RTTIObject* target = ptr->get();
+			rtti::RTTIObject* target = ptr->get();
 			if (target == nullptr)
 				continue;
 
 			std::string& target_id = target->mID;
-			OBJECTSBYIDMAP::iterator new_target = newTargetObjects.find(target_id);
+			typename OBJECTSBYIDMAP::iterator new_target = newTargetObjects.find(target_id);
 			if (new_target != newTargetObjects.end())
 				ptr->set(&*(new_target->second));
 		}

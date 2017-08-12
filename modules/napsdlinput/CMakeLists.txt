@@ -18,11 +18,13 @@ endif()
 find_package(SDL2 REQUIRED)
 
 # compile shared lib as target
-add_library(${PROJECT_NAME} STATIC ${SOURCES} ${HEADERS})
+add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
 
 # add include dirs
 target_include_directories(${PROJECT_NAME} PUBLIC src ${SDL2_INCLUDE_DIR})
+target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
+target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
 # link with external libs
 target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARY} napcore mod_napinput)

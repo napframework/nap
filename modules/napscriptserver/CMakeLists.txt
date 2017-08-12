@@ -37,6 +37,7 @@ add_definitions(-DRAPIDJSON_HAS_STDSTRING=1)
 target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDES})
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
 
+target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 
 

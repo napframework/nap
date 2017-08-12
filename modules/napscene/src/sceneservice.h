@@ -1,11 +1,11 @@
 #pragma once
 
 #include <nap/service.h>
-#include <nap/entityinstance.h>
+#include <nap/entity.h>
 
 namespace nap
 {
-	class SceneService : public Service
+	class NAPAPI SceneService : public Service
 	{
 		RTTI_ENABLE(Service)
 

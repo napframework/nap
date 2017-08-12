@@ -1,16 +1,17 @@
+#include <rtti/pythonmodule.h>
 #include "windowresource.h"
 
-RTTI_BEGIN_BASE_CLASS(nap::WindowResource)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Window)
 RTTI_END_CLASS
 
 namespace nap
 {
-	void WindowResource::addEvent(WindowEventPtr inEvent)
+	void Window::addEvent(WindowEventPtr inEvent)
 	{
 		mWindowEvents.emplace_back(std::move(inEvent));
 	}
 
-	void WindowResource::processEvents()
+	void Window::processEvents()
 	{
 		for (auto& event : mWindowEvents)
 			onWindowEvent(*event);

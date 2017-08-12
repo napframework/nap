@@ -417,7 +417,7 @@ namespace nap
 				return nullptr;
 
 			// We only support root-level objects that derive from rtti::RTTIObject (compounds, etc can be of any type)
-			if (!errorState.check(type_info.is_derived_from(RTTI_OF(rtti::RTTIObject)), "Unable to instantiate object %s. Class is not derived from Object.", typeName))
+			if (!errorState.check(type_info.is_derived_from(RTTI_OF(rtti::RTTIObject)), "Unable to instantiate object %s. Class is not derived from RTTIObject.", typeName))
 				return nullptr;
 
 			// Create new instance of the object

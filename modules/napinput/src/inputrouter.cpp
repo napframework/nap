@@ -2,12 +2,13 @@
 #include <inputrouter.h>
 #include "inputevent.h"
 #include "inputcomponent.h"
-#include "nap/entityinstance.h"
+#include "nap/entity.h"
 
-RTTI_BEGIN_CLASS(nap::DefaultInputRouterComponentResource)
+RTTI_BEGIN_CLASS(nap::DefaultInputRouterComponent)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::DefaultInputRouterComponent, nap::EntityInstance&)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::DefaultInputRouterComponentInstance)
+	RTTI_CONSTRUCTOR(nap::EntityInstance&)
 RTTI_END_CLASS
 
 namespace nap
@@ -17,10 +18,10 @@ namespace nap
 	{
 		for (EntityInstance* entity : entities)
 		{
-			std::vector<InputComponent*> input_components;
-			entity->getComponentsOfType<InputComponent>(input_components);
+			std::vector<InputComponentInstance*> input_components;
+			entity->getComponentsOfType<InputComponentInstance>(input_components);
 
-			for (InputComponent* component : input_components)
+			for (InputComponentInstance* component : input_components)
 			{
 				component->trigger(event);
 			}

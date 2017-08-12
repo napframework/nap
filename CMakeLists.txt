@@ -12,13 +12,13 @@ if (WIN32)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4244 /wd4305 /wd4996 /wd4267 /wd4018 /MP /bigobj")
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
         set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /DEBUG /OPT:REF /OPT:ICF")
-        set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
+		set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /DEBUG /OPT:REF /OPT:ICF")
     else()
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse -Wa,-mbig-obj")
 #        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse")
     endif()
 elseif(UNIX)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -Wno-format-security -Wno-switch")
 endif()
 
 if(APPLE)
@@ -57,33 +57,34 @@ add_subdirectory(core)
 add_subdirectory(utility)
 add_subdirectory(rtti)
 add_subdirectory(nrender)
-add_subdirectory(coreapp)
+
 
 # tools targets
 add_subdirectory(tools/fbxconverter)
 
 # executable targets
-add_subdirectory(test/unittest)
-add_subdirectory(test/scriptserver)
 add_subdirectory(test/render)
 add_subdirectory(test/tommy)
+add_subdirectory(test/steef)
+add_subdirectory(test/videoplayer)
 add_subdirectory(test/serializationtest)
+add_subdirectory(test/pynap)
+
+if (APPLE)
+    set(GENERATE_XCODE_PROJECT_TARGET generateXcodeProject)
+    add_custom_target(generateXcodeProject cmake -H. -Bxcode -G Xcode -DCMAKE_BUILD_TYPE=Debug ../)
+endif()
+#add_dependencies(${PROJECT_NAME} ${GENERATE_XCODE_PROJECT_TARGET})
 
 # Modules
-add_subdirectory(modules/napfsm)
 add_subdirectory(modules/napinput)
-add_subdirectory(modules/napscriptserver)
-add_subdirectory(modules/napjsonserializer)
 add_subdirectory(modules/naprender)
-add_subdirectory(modules/napgui)
 add_subdirectory(modules/napmath)
 add_subdirectory(modules/napsdlinput)
 add_subdirectory(modules/napsdlwindow)
 add_subdirectory(modules/napscene)
+add_subdirectory(modules/nappython)
+add_subdirectory(modules/napvideo)
 
-#add_dependencies(napkin mod_napfsm)
-add_dependencies(scriptserver mod_napscriptserver)
-add_dependencies(CoreApp mod_napscriptserver)
+# Exe dependencies
 add_dependencies(rendertest mod_naprender)
-add_dependencies(unittest mod_naprender mod_napscriptserver)
-

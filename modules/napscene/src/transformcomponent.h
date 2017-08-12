@@ -1,10 +1,7 @@
 #pragma once
 
 // External Includes
-#include <nap/serviceablecomponent.h>
-#include <nap/rttinap.h>
-#include <nap/coreattributes.h>
-#include <nap/componentinstance.h>
+#include <nap/component.h>
 
 // Local Includes
 #include <glm/glm.hpp>
@@ -12,15 +9,17 @@
 
 namespace nap
 {
-	class TransformComponent;
+	class TransformComponentInstance;
 
 	/** 
 	 * Struct to hold properties shared between Resource and Instance
+	 * Note that the rotation is in euler angles (Pitch, Yaw, Roll) but after instantiation all 
+	 * rotate related functionality is performed using quaternions
 	 */
 	struct TransformProperties
 	{
-		glm::vec3		mTranslate;											// The translation of this component
-		glm::quat		mRotate;											// The rotation of this component
+		glm::vec3		mTranslate		= glm::vec3(0.0f, 0.0f, 0.0f);		// The translation of this component in units
+		glm::vec3		mRotate 		= glm::vec3(0.0f, 0.0f, 0.0f);		// The amount of rotation in degrees (yaw, pitch, roll)											
 		glm::vec3		mScale			= glm::vec3(1.0f, 1.0f, 1.0f);		// The scale of this component
 		float			mUniformScale	= 1.0f;								// The uniform scale of this component
 	};
@@ -29,17 +28,17 @@ namespace nap
 	/**
 	 * Resource for the TransformComponent
 	 */
-	class TransformComponentResource : public ComponentResource
+	class NAPAPI TransformComponent : public Component
 	{
-		RTTI_ENABLE(ComponentResource)
+		RTTI_ENABLE(Component)
 	
 	public:
 		/**
 		 * Get the type of ComponentInstance to create
 		 */
-		virtual const rtti::TypeInfo getInstanceType() const
+		virtual const rtti::TypeInfo getInstanceType() const override
 		{ 
-			return RTTI_OF(TransformComponent); 
+			return RTTI_OF(TransformComponentInstance); 
 		}
 
 	public:
@@ -53,14 +52,16 @@ namespace nap
 	 * the global and local transform is invalid. You can always query the
 	 * current local matrix, the global matrix is updated on compute.
 	 */
-	class TransformComponent : public ComponentInstance
+	class NAPAPI TransformComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
-		TransformComponent(EntityInstance& entity) :
+		TransformComponentInstance(EntityInstance& entity) :
 			ComponentInstance(entity)
 		{
 		}
+        
+        using ComponentInstance::update;
 
 		/**
 		* Initialize this component from its resource
@@ -69,7 +70,7 @@ namespace nap
 		* @param entityCreationParams Parameters required to create new entity instances during init
 		* @param errorState The error object
 		*/
-		virtual bool init(const ObjectPtr<ComponentResource>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
+		virtual bool init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
 
 		/**
 		 * Constructs and returns a local transform
@@ -90,7 +91,7 @@ namespace nap
 		 * @return the parent transform, nullptr if this node
 		 * has no parent transform
 		 */
-		nap::TransformComponent* getParentTransform();
+		nap::TransformComponentInstance* getParentTransform();
 
 		/**
 		 * Sets the dirty flag
@@ -100,7 +101,7 @@ namespace nap
 		/**
 		 * @return if the local transform is dirty
 		 */
-		bool isDirty() const					{ return mWorldDirty; }
+		bool isDirty() const							{ return mWorldDirty; }
 
 		/**
 		 * Updates the global matrix based on the parent matrix
@@ -111,22 +112,16 @@ namespace nap
 		void update(const glm::mat4& parentTransform);
 
 		void setTranslate(const glm::vec3& translate);
-		const glm::vec3& getTranslate() const { return mProperties.mTranslate;  }
+		const glm::vec3& getTranslate() const			{ return mTranslate;  }
 
 		void setRotate(const glm::quat& rotate);
-		const glm::quat& getRotate() const { return mProperties.mRotate; }
+		const glm::quat& getRotate() const				{ return mRotate; }
 
 		void setScale(const glm::vec3& scale);
-		const glm::vec3& getScale() const { return mProperties.mScale; }
+		const glm::vec3& getScale() const				{ return mScale; }
 
 		void setUniformScale(float scale);
-		const float getUniformScale() const { return mProperties.mUniformScale; }
-
-	protected:
-		/**
-		 * Sets dirty flags
-		 */
-		void onSetDirty(AttributeBase& object)		{ setDirty(); }
+		const float getUniformScale() const				{ return mUniformScale; }
 
 	private:
 		/**
@@ -141,7 +136,11 @@ namespace nap
 		mutable glm::mat4x4 mLocalMatrix;							//< Local  Matrix
 		mutable glm::mat4x4 mGlobalMatrix;							//< Global Matrix
 		
-		TransformProperties mProperties;
+		// Local instance properties
+		glm::vec3	mTranslate		= glm::vec3(0.0f, 0.0f, 0.0f);
+		glm::quat	mRotate			= glm::quat();
+		glm::vec3	mScale			= glm::vec3(1.0f, 1.0f, 1.0f);
+		float		mUniformScale	= 1.0f;
 	};
 
 } // nap

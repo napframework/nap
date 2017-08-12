@@ -5,6 +5,7 @@
 #include "rttipath.h"
 #include "factory.h"
 #include "unresolvedpointer.h"
+#include "utility/dllexport.h"
 
 namespace nap
 {
@@ -15,7 +16,7 @@ namespace nap
 		/**
 		 * Represents a link from an object
 		 */
-		struct ObjectLink
+		struct NAPAPI ObjectLink
 		{
 			const rtti::RTTIObject*	mSource;		// The object the link originates from
 			RTTIPath				mSourcePath;	// The RTTIPath to the pointer property linking to the object
@@ -28,7 +29,7 @@ namespace nap
 		* @param srcObject: the object to copy attributes from
 		* @param dstObject: the target object
 		*/
-		void copyObject(const rtti::RTTIObject& srcObject, rtti::RTTIObject& dstObject);
+		void NAPAPI copyObject(const rtti::RTTIObject& srcObject, rtti::RTTIObject& dstObject);
 
 		/**
 		* Creates a new object with the same attributes as it's source.
@@ -49,21 +50,21 @@ namespace nap
 		* @param objectB: second object to compare attributes from.
 		* @param unresolvedPointers: list of unresolved pointers that should be used for pointer comparisons in case of unresolved pointers.
 		*/
-		bool areObjectsEqual(const rtti::RTTIObject& objectA, const rtti::RTTIObject& objectB, const rtti::UnresolvedPointerList& unresolvedPointers = UnresolvedPointerList());
+		bool NAPAPI areObjectsEqual(const rtti::RTTIObject& objectA, const rtti::RTTIObject& objectB, const rtti::UnresolvedPointerList& unresolvedPointers = UnresolvedPointerList());
 
 		/**
 		* Searches through object's rtti attributes for attribute that have the 'file link' tag.
 		* @param object: object to find file links from.
 		* @param fileLinks: output array containing the filenames.
 		*/
-		void findFileLinks(const rtti::RTTIObject& object, std::vector<std::string>& fileLinks);
+		void NAPAPI findFileLinks(const rtti::RTTIObject& object, std::vector<std::string>& fileLinks);
 
 		/**
 		* Searches through object's rtti attributes for pointer attributes.
 		* @param object: object to find file links from.
 		* @param objectLinks: output array containing the object links
 		*/
-		void findObjectLinks(const rtti::RTTIObject& object, std::vector<ObjectLink>& objectLinks);
+		void NAPAPI findObjectLinks(const rtti::RTTIObject& object, std::vector<ObjectLink>& objectLinks);
 
 		/**
 		* Helper to find the index of the unresolved pointer with the specified object and path combination
@@ -74,7 +75,7 @@ namespace nap
 		*
 		* @return The index of the UnresolvedPointer in the specified list. -1 if not found.
 		*/
-		int findUnresolvedPointer(const UnresolvedPointerList& unresolvedPointers, const RTTIObject* object, const rtti::RTTIPath& path);
+		int NAPAPI findUnresolvedPointer(const UnresolvedPointerList& unresolvedPointers, const RTTIObject* object, const rtti::RTTIPath& path);
 
 		/**
 		* Calculate the version number of the specified type
@@ -82,7 +83,7 @@ namespace nap
 		* @param type The type to calculate the version number for
 		* @return The version number
 		*/
-		std::size_t getRTTIVersion(const rtti::TypeInfo& type);
+		std::size_t NAPAPI getRTTIVersion(const rtti::TypeInfo& type);
 
 	} //< End Namespace RTTI
 

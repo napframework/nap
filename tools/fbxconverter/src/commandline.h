@@ -1,6 +1,7 @@
 #pragma once
 
 #include <nap/fileutils.h>
+#undef HAVE_LONG_LONG
 #include "tclap/CmdLine.h"
 
 /**
@@ -43,6 +44,11 @@ public:
 			std::cerr << "error: " << e.error() << " for arg " << e.argId() << std::endl;
 			return false;
 		}
+
+
+        if (commandLine.mFilesToConvert.size() == 0) {
+            std::cerr << "error: No files to convert.";
+        }
 
 		return true;
 	}

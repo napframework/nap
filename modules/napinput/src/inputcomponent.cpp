@@ -1,30 +1,31 @@
 #include <inputcomponent.h>
-#include <nap/entityinstance.h>
-#include <nap/objectutils.h>
+#include <nap/entity.h>
 
-RTTI_BEGIN_BASE_CLASS(nap::InputComponentResource)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::InputComponent)
 RTTI_END_CLASS
 
-RTTI_BEGIN_BASE_CLASS(nap::InputComponent)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::InputComponentInstance)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::KeyInputComponentResource)
+RTTI_BEGIN_CLASS(nap::KeyInputComponent)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::KeyInputComponent, nap::EntityInstance&)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::KeyInputComponentInstance)
+	RTTI_CONSTRUCTOR(nap::EntityInstance&)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::PointerInputComponentResource)
+RTTI_BEGIN_CLASS(nap::PointerInputComponent)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_CONSTRUCTOR1(nap::PointerInputComponent, nap::EntityInstance&)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PointerInputComponentInstance)
+	RTTI_CONSTRUCTOR(nap::EntityInstance&)
 RTTI_END_CLASS
 
 
 namespace nap
 {
 	// Pointer input forwarding
-	void nap::PointerInputComponent::trigger(const nap::InputEvent& inEvent)
+	void nap::PointerInputComponentInstance::trigger(const nap::InputEvent& inEvent)
 	{
 		// Make sure it's a pointer event
 		rtti::TypeInfo event_type = inEvent.get_type().get_raw_type();
@@ -57,7 +58,7 @@ namespace nap
 
 
 	// Key forward handling
-	void KeyInputComponent::trigger(const nap::InputEvent& inEvent)
+	void KeyInputComponentInstance::trigger(const nap::InputEvent& inEvent)
 	{
 		// Make sure it's a pointer event
 		rtti::TypeInfo event_type = inEvent.get_type().get_raw_type();

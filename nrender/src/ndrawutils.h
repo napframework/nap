@@ -3,6 +3,7 @@
 // External Includes
 #include <stdint.h>
 #include <GL/glew.h>
+#include <unordered_map>
 
 namespace opengl
 {
@@ -38,3 +39,15 @@ namespace opengl
 	EDrawMode getDrawMode(GLenum mode);
 
 } // opengl
+
+namespace std
+{
+	template <>
+	struct hash<opengl::EDrawMode>
+	{
+		size_t operator()(const opengl::EDrawMode& v) const
+		{
+			return hash<uint8_t>()(static_cast<uint8_t>(v));
+		}
+	};
+}

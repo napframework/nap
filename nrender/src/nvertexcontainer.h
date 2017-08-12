@@ -198,6 +198,8 @@ namespace opengl
 	class TypedVertexContainer : public VertexContainer
 	{
 	public:
+        using VertexContainer::allocateMemory;
+        
 		// Constructor
 		TypedVertexContainer();
 		TypedVertexContainer(unsigned int components, unsigned int verts);

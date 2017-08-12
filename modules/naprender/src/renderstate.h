@@ -2,6 +2,7 @@
 
 // External Includes
 #include "nglutils.h"
+#include <utility/dllexport.h>
 
 namespace nap
 {
@@ -17,7 +18,7 @@ namespace nap
 	 * Whenever objects are rendered, the RenderService will diff the global state against the
 	 * context's state and update only the GL states that are necessary.
 	 */
-	struct RenderState
+	struct NAPAPI RenderState
 	{
 		bool				mEnableMultiSampling = true;
 		float				mLineWidth = 1.0f;
