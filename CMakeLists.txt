@@ -83,10 +83,7 @@ add_subdirectory(modules/napsdlwindow)
 add_subdirectory(modules/napscene)
 add_subdirectory(modules/nappython)
 add_subdirectory(modules/napvideo)
-if(WIN32)
-	# no common OSX / LINUX driver available
-	add_subdirectory(modules/napetherdream)
-endif()
+add_subdirectory(modules/napetherdream)
 
 # Exe dependencies
 add_dependencies(rendertest mod_naprender)
