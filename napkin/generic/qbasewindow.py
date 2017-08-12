@@ -1,5 +1,5 @@
 from PyQt5.QtCore import QCoreApplication, QSettings
-from PyQt5.QtGui import Qt
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMainWindow, QDockWidget
 
 
