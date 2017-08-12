@@ -14,6 +14,14 @@ elseif(APPLE)
 	)
 	set(ETHERDREAM_INCLUDE_DIRS ${ETHERDREAM_DIR}/osx/include)
 	set(ETHERDREAM_LIBS ${ETHERDREAM_DIR}/osx/bin/Release/libEtherDream.dylib)
+else()
+	find_path(
+		ETHERDREAM_DIR
+		NAMES linux/include/etherdream.h
+		HINTS ${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/etherdream
+	set(ETHERDREAM_INCLUDE_DIRS ${ETHERDREAM_DIR}/linux/include)
+	set(ETHERDREAM_LIBS ${ETHERDREAM_DIR}/linux/bin/libetherdream.so)
+	)
 endif()
 
 mark_as_advanced(ETHERDREAM_INCLUDE_DIRS)
