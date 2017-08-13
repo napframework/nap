@@ -1,20 +1,16 @@
 project(mod_napetherdream)
 
 # add all cpp files to SOURCES
-file(GLOB_RECURSE SOURCES src/*.cpp)
-file(GLOB_RECURSE HEADERS src/*.h)
-
-source_group("headers" FILES ${HEADERS})
-
+file(GLOB_RECURSE SOURCES src/ *.cpp *.h)
 filter_platform_specific_files(SOURCES)
-source_group("sources" FILES ${SOURCES})
+add_platform_specific_files("${WIN32_SOURCES}" "${OSX_SOURCES}" "${LINUX_SOURCES}")
 
 find_package(etherdream REQUIRED)
 
 # LIBRARY
 
 # compile shared lib as target
-add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
+add_library(${PROJECT_NAME} SHARED ${SOURCES})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
 
 # add include dirs

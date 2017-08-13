@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "0098DF963ADD4E22907BCA67"
+               BlueprintIdentifier = "A6E27F6DF16D428288B231CC"
                BuildableName = "libmod_napetherdream.dylib"
                BlueprintName = "mod_napetherdream"
                ReferencedContainer = "container:xcode/Project.xcodeproj">
@@ -45,7 +45,7 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "0098DF963ADD4E22907BCA67"
+            BlueprintIdentifier = "A6E27F6DF16D428288B231CC"
             BuildableName = "libmod_napetherdream.dylib"
             BlueprintName = "mod_napetherdream"
             ReferencedContainer = "container:xcode/Project.xcodeproj">
@@ -63,7 +63,7 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "0098DF963ADD4E22907BCA67"
+            BlueprintIdentifier = "A6E27F6DF16D428288B231CC"
             BuildableName = "libmod_napetherdream.dylib"
             BlueprintName = "mod_napetherdream"
             ReferencedContainer = "container:xcode/Project.xcodeproj">
