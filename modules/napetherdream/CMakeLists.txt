@@ -1,9 +1,12 @@
 project(mod_napetherdream)
 
 # add all cpp files to SOURCES
-file(GLOB SOURCES src/*.cpp)
-file(GLOB HEADERS src/*.h)
+file(GLOB_RECURSE SOURCES src/*.cpp)
+file(GLOB_RECURSE HEADERS src/*.h)
+
 source_group("headers" FILES ${HEADERS})
+
+filter_platform_specific_files(SOURCES)
 source_group("sources" FILES ${SOURCES})
 
 find_package(etherdream REQUIRED)
