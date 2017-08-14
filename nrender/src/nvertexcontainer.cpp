@@ -141,7 +141,7 @@ namespace opengl
 		// Create one if we don't have one yet
 		if (mGPUBuffer == nullptr)
 		{
-			mGPUBuffer = std::move(createVertexBuffer());
+			mGPUBuffer = createVertexBuffer();
 		}
 		return mGPUBuffer.get();
 	}
