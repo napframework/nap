@@ -7,7 +7,7 @@ find_package(pybind11 REQUIRED)
 
 
 # Library
-set(LIBS napcore)
+set(LIBS napcore mod_naprender mod_napinput mod_napscene)
 file(GLOB_RECURSE SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/*.cpp)
 pybind11_add_module(${PROJECT_NAME} ${SOURCES})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${LIBS})

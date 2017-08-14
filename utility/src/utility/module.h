@@ -10,7 +10,7 @@ namespace nap
 	 */
 	struct ModuleDescriptor
 	{
-		static const int	ModuleAPIVersion = 1; // Current version of the module API version
+        static const int	ModuleAPIVersion = 1; // Current version of the module API version
 
 		int					mAPIVersion;	// The version of the module API this module was built against. Must be the first member.
 		const char*			mID;			// The ID (name) of the module
@@ -31,3 +31,4 @@ namespace nap
 			};																			\
 		}
 }
+

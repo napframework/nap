@@ -1,15 +1,12 @@
 import sys
 
 import os
-
-# TODO: Dirty hack to get things going right now
-p = '%s/../../lib/Clang-Debug-x86_64' % os.path.dirname(__file__)
-sys.path.append(p)
 import nap
 
-def napClasses():
+def napClasses(baseClass=None):
     for k, v in nap.__dict__.items():
         if not isinstance(v, type): continue
+        if baseClass and not issubclass(v, baseClass): continue
         yield v
 
 

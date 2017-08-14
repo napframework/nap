@@ -4,17 +4,14 @@
 #include <nap/core.h>
 
 
-int add(int i, int j) {
-    return i + j;
-}
-
-int subtract(int i, int j) {
-    return i - j;
-}
 
 nap::Core &core() {
+    static bool initialized = false;
     static nap::Core c;
-    c.initialize();
+    if (!initialized) {
+        c.initialize();
+        initialized = true;
+    }
     return c;
 }
 
@@ -26,7 +23,6 @@ PYBIND11_MODULE(nap, m) {
     nap::rtti::PythonModule &python_module = nap::rtti::PythonModule::get("nap");
     python_module.invoke(m);
 
-    m.def("initialize", &core);
 
 //    m.attr("core") = &core();
 //    m.attr("one") = 10;

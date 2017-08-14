@@ -11,6 +11,8 @@
 RTTI_BEGIN_CLASS(nap::ResourceManagerService)
 	RTTI_FUNCTION("findEntity", &nap::ResourceManagerService::findEntity)
 	RTTI_FUNCTION("findObject", (const nap::ObjectPtr<nap::rtti::RTTIObject> (nap::ResourceManagerService::*)(const std::string&))&nap::ResourceManagerService::findObject)
+    RTTI_FUNCTION("loadFile", (bool (nap::ResourceManagerService::*)(const std::string&))&nap::ResourceManagerService::loadFile)
+    RTTI_FUNCTION("createObject", (const nap::ObjectPtr<nap::rtti::RTTIObject> (nap::ResourceManagerService::*)(const std::string&))&nap::ResourceManagerService::createObject)
 RTTI_END_CLASS
 
 namespace nap
@@ -360,8 +362,17 @@ namespace nap
 		return loadFile(filename, std::string(), errorState);
 	}
 
+    bool ResourceManagerService::loadFile(const std::string &filename)
+    {
+        utility::ErrorState err;
+        if (!loadFile(filename, err)) {
+            nap::Logger::warn(err.toString());
+            return false;
+        }
+        return true;
+    }
 
-	bool ResourceManagerService::resolvePointers(ObjectByIDMap& objectsToUpdate, const UnresolvedPointerList& unresolvedPointers, utility::ErrorState& errorState)
+    bool ResourceManagerService::resolvePointers(ObjectByIDMap& objectsToUpdate, const UnresolvedPointerList& unresolvedPointers, utility::ErrorState& errorState)
 	{
 		for (const UnresolvedPointer& unresolved_pointer : unresolvedPointers)
 		{
@@ -864,8 +875,20 @@ namespace nap
 		return ObjectPtr<RTTIObject>(object);
 	}
 
+    const ObjectPtr<rtti::RTTIObject> ResourceManagerService::createObject(const std::string &typeName) {
+        nap::Logger::info(typeName.c_str());
+        auto type = rtti::TypeInfo::get_by_name(typeName);
+        if (!type.is_valid())
+        {
+            nap::Logger::fatal("Invalid type: %s", typeName.c_str());
+            return nullptr;
+        }
+        return createObject(type);
+    }
 
-	const ObjectPtr<EntityInstance> ResourceManagerService::findEntity(const std::string& inID) const
+
+
+    const ObjectPtr<EntityInstance> ResourceManagerService::findEntity(const std::string& inID) const
 	{
 		EntityByIDMap::const_iterator pos = mEntities.find(getInstanceID(inID));
 		if (pos == mEntities.end())
@@ -873,5 +896,7 @@ namespace nap
 
 		return pos->second.get();
 	}
+
+
 
 }

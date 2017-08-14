@@ -9,6 +9,7 @@
 #include "directorywatcher.h"
 #include "entity.h"
 #include "component.h"
+#include "logger.h"
 
 // External Includes
 #include <rtti/unresolvedpointer.h>
@@ -36,6 +37,8 @@ namespace nap
 		* Helper that calls loadFile without additional modified objects. See loadFile comments for a full description.
 		*/
 		bool loadFile(const std::string& filename, utility::ErrorState& errorState);
+
+        bool loadFile(const std::string& filename);
 
 		/*
 		* Loads a json file containing objects. When the objects are loaded, a comparison is performed against the objects that are already loaded. Only
@@ -72,6 +75,8 @@ namespace nap
 		* Creates an object and adds it to the manager.
 		*/
 		const ObjectPtr<rtti::RTTIObject> createObject(const rtti::TypeInfo& type);
+
+        const ObjectPtr<rtti::RTTIObject> createObject(const std::string& typeName);
 
 		/**
 		* Instantiates an Entity.

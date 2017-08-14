@@ -85,19 +85,28 @@ namespace nap
 	}
 
 
-	Service* Core::getOrCreateService(const std::string& type)
+	Service* Core::getOrCreateService(const std::string& typeName)
 	{
-		return getOrCreateService(rtti::TypeInfo::get_by_name(type));
+        nap::Logger::info(typeName.c_str());
+        auto type = rtti::TypeInfo::get_by_name(typeName);
+        if (!type.is_valid())
+        {
+            nap::Logger::fatal("Invalid type: %s", typeName.c_str());
+            return nullptr;
+        }
+
+		return getOrCreateService(type);
 	}
 
 
 	// Creates a new service of type @type if doesn't exist yet
 	Service* Core::getOrCreateService(const rtti::TypeInfo& type)
 	{
+
 		// Otherwise add
 		if (!type.is_derived_from(RTTI_OF(nap::Service)))
 		{
-			nap::Logger::fatal("can't add service, service not of type: %s", RTTI_OF(Service).get_name().data());
+			nap::Logger::fatal("can't add service, service not of type: %s", type.get_name().data());
 			return nullptr;
 		}
 
