@@ -66,6 +66,7 @@ add_subdirectory(test/tommy)
 add_subdirectory(test/steef)
 add_subdirectory(test/videoplayer)
 add_subdirectory(test/serializationtest)
+add_subdirectory(test/etherdream)
 
 if (APPLE)
     set(GENERATE_XCODE_PROJECT_TARGET generateXcodeProject)

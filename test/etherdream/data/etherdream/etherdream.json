@@ -1,0 +1,78 @@
+{
+	"nap::RenderWindow": {
+		"mID" : "Window",
+		"Width" : 512,
+		"Height" : 512,
+		"Title" : "Etherdream"
+	},
+	
+	"nap::PlaneMesh": {
+		"mID": "PlaneMesh"
+	},
+	
+	"nap::Shader": {
+		"mID": "PlaneShader",
+		"mVertShader": "shaders/etherdream/plane.vert",
+		"mFragShader": "shaders/etherdream/plane.frag"
+	},
+	
+	"nap::Material": {
+		"mID": "PlaneMaterial",
+		"Shader": "PlaneShader",
+		"VertexAttributeBindings" : [
+			{
+				"MeshAttributeID": "Position",
+				"ShaderAttributeID": "in_Position"
+			},
+			{
+				"MeshAttributeID": "UV0",
+				"ShaderAttributeID": "in_UV0"
+			}
+		]
+	},
+
+	"nap::EtherDreamDac": {
+		"mID": "Laser1",
+		"DacName": "dc3c10",
+		"PointRate": "30000"
+	},
+	
+	"nap::Entity": {
+		"mID": "CameraEntity",
+		
+		"Components" : 
+		[
+			{
+				"nap::OrthoCameraComponent": {
+					"Properties": {
+						"NearClippingPlane" : 0.01,
+						"FarClippingPlane" : 10000.0
+					}
+				}		
+			},
+			{
+				"nap::TransformComponent": {
+					"Properties": {
+						"Translate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0
+						},
+						"Rotate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0,
+							"w": 1.0
+						},
+						"Scale": {
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.0						
+					}
+				}		
+			}
+		]
+	}
+} 

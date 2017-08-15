@@ -46,7 +46,7 @@ namespace nap
 		/**
 		 *	Destructor
 		 */
-		~EtherDreamInterface()					{ close(); }
+		~EtherDreamInterface() = default;
 
 		/**
 		 * Initialize the Etherdream library
