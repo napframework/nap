@@ -1,13 +1,11 @@
 #pragma once
 
+// External Includes
 #include <nap/service.h>
 #include <nap/entity.h>
-#include "etherdreaminterface.h"
 
-namespace nap
-{
-	class EtherDreamInterface;
-}
+// Local Includes
+#include "etherdreamdac.h"
 
 namespace nap
 {

@@ -1,8 +1,6 @@
 // Local Includes
 #include "etherdreamservice.h"
-#include "etherdreaminterface.h"
-#include "etherdreamdac.h"
-
+ 
 // External Includes
 #include <glm/glm.hpp>
 #include <nap/core.h>

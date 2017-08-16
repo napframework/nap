@@ -1,11 +1,17 @@
 #pragma once
 
-// Local Includes
-#include "etherdreamservice.h"
-
 // External Includes
 #include <rtti/rttiobject.h>
 #include <rtti/factory.h>
+
+// Local Includes
+#include "etherdreaminterface.h"
+
+// Forward Declares
+namespace nap
+{
+	class EtherDreamService;
+};
 
 namespace nap
 {
@@ -48,7 +54,7 @@ namespace nap
 		/**
 		 *	@return current DAC connection status
 		 */
-		EConnectionStatus	getConnectionStatus() const			{ return mStatus; }
+		EConnectionStatus	getConnectionStatus() const;
 
 		/**
 		 *	@return current DAC read / write status
@@ -58,7 +64,7 @@ namespace nap
 		/**
 		 *	@return if the DAC is connected
 		 */
-		bool isConnected() const								{ return getConnectionStatus() == EConnectionStatus::CONNECTED; }
+		bool isConnected() const;
 
 		/**
 		 *	@return if the DAC is ready to accept new points

@@ -57,11 +57,23 @@ namespace nap
 	}
 
 
+	nap::EtherDreamDac::EConnectionStatus EtherDreamDac::getConnectionStatus() const
+	{
+		return mStatus;
+	}
+
+
 	nap::EtherDreamInterface::EStatus EtherDreamDac::getWriteStatus() const
 	{
 		return isConnected() ? mService->getInterface()->getStatus(mIndex) : EtherDreamInterface::EStatus::ERROR;
 	}
 	
+
+	bool EtherDreamDac::isConnected() const
+	{
+		return getConnectionStatus() == EConnectionStatus::CONNECTED;
+	}
+
 
 	bool EtherDreamDac::isReady() const
 	{
