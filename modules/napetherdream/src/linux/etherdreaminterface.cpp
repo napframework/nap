@@ -20,6 +20,10 @@ static etherdream* getEtherDreamDac(int number)
 }
 
 
+nap::EtherDreamInterface::EtherDreamInterface()     { }
+
+
+
 bool nap::EtherDreamInterface::init()
 {
     return etherdream_lib_start() == 0 ? true : false;
