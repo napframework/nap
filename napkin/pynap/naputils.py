@@ -1,7 +1,13 @@
-import sys
-
-import os
 import nap
+
+
+def fullTypename(cls):
+    return '%s.%s' % (cls.__module__, cls.__name__)
+
+
+def fullCPPTypename(cls):
+    return fullTypename(cls).replace('.', '::')
+
 
 def napClasses(baseClass=None):
     for k, v in nap.__dict__.items():
