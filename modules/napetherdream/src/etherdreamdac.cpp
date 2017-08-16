@@ -18,6 +18,10 @@ namespace nap
 		if (isConnected())
 		{
 			nap::Logger::info("Disconnecting Etherdream DAC: %s, index: %d", mDacName.c_str(), mIndex);
+			if (!mService->getInterface()->stop(mIndex))
+			{
+				nap::Logger::warn("Unable to stop Etherdream DAC: %s, index: %d", mDacName.c_str(), mIndex);
+			}
 			mService->getInterface()->disconnect(mIndex);
 		}
 

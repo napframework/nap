@@ -3,6 +3,7 @@
 
 // Local Includes
 #include "RenderableMeshComponent.h"
+#include "lasershapes.h"
 
 // GLM
 #include <glm/glm.hpp>
@@ -50,6 +51,7 @@ nap::ObjectPtr<nap::EntityInstance> cameraEntity = nullptr;
 
 // Laser DAC
 nap::ObjectPtr<nap::EtherDreamDac> laser = nullptr;
+nap::ObjectPtr<nap::EntityInstance> laserEntity = nullptr;
 
 //////////////////////////////////////////////////////////////////////////
 // LASER STUFF
@@ -157,22 +159,25 @@ void onUpdate()
 	// Update the scene
 	sceneService->update();
 
+	
 	static int phase = 0;
 	int size = sizeof(nap::EtherDreamPoint) * CIRCLE_POINTS;
 
 	// Fill the circle
 	FillCircle(static_cast<float>(phase) / 50.0f, 2);
+	
+	//nap::LaserSquareComponentInstance& square_shape = laserEntity->getComponent<nap::LaserSquareComponentInstance>();
 
 	// Send some data
-	if (laser->isReady())
+	if (laser->getWriteStatus() == nap::EtherDreamInterface::EStatus::READY)
 	{
 		// Write circle
 		bool write = laser->writeFrame(circle, CIRCLE_POINTS);
-
-		// Increment phase
 		phase++;
 	}
 }
+
+
 
 
 // Called when the window is going to render
@@ -218,7 +223,6 @@ bool init(nap::Core& core)
 		return false;
 	}
 
-
 	// Collects all the errors
 	nap::utility::ErrorState errorState;
 
@@ -248,6 +252,7 @@ bool init(nap::Core& core)
 
 	// Store laser dacs
 	laser = resourceManagerService->findObject<nap::EtherDreamDac>("Laser1");
+	laserEntity = resourceManagerService->findEntity("LaserEntity1");
 
 	// Set render states
 	nap::RenderState& render_state = renderService->getRenderState();

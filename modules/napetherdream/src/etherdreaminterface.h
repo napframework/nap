@@ -7,6 +7,10 @@
 
 namespace nap
 {
+	// Static useful values
+	NAPAPI extern const int16_t etherMinValue;
+	NAPAPI extern const int16_t etherMaxValue;
+
 	/**
 	 * Point that is send to the EtherDream DAC
 	 */

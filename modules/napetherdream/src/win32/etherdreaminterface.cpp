@@ -5,6 +5,11 @@
 #include <windows.h>
 #include <j4cDAC.h>
 
+namespace nap
+{
+	NAPAPI const int16_t etherMinValue = std::numeric_limits<int16_t>::min();
+	NAPAPI const int16_t etherMaxValue = std::numeric_limits<int16_t>::max();
+}
 
 /**
  *	The laser module is initialized the moment the dll is loaded (Windows only)

@@ -36,8 +36,15 @@
 		"DacName": "dc3c10",
 		"PointRate": "30000"
 	},
+
+	"nap::EtherDreamDac": {
+		"mID": "Laser2",
+		"DacName": "dbf6d0",
+		"PointRate": "30000"
+	},
 	
-	"nap::Entity": {
+	"nap::Entity": 
+	{
 		"mID": "CameraEntity",
 		
 		"Components" : 
@@ -70,6 +77,31 @@
 							"z": 1.0
 						},
 						"UniformScale": 1.0						
+					}
+				}		
+			}
+		]
+	},
+
+	"nap::Entity": 
+	{
+		"mID": "LaserEntity1",
+		
+		"Components" : 
+		[
+			{
+				"nap::LaserDotComponent": {
+					"Properties": { 
+						"PointCount" : 450,
+						"Speed" : 0.0
+					}
+				}		
+			},
+			{
+				"nap::LaserSquareComponent": {
+					"Properties": {
+						"PointCount" : 400,
+						"Speed" : 0.0
 					}
 				}		
 			}

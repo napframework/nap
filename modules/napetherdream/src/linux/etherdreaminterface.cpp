@@ -5,6 +5,13 @@
 #include <stdio.h>
 #include <etherdream.h>
 #include <nap/logger.h>
+#include <numeric>
+
+namespace nap
+{
+	NAPAPI const int16_t etherMinValue = std::numeric_limits<int16_t>::min();
+	NAPAPI const int16_t etherMaxValue = std::numeric_limits<int16_t>::max();
+}
 
 // Helper method used for retrieving dac
 static etherdream* getEtherDreamDac(int number)
