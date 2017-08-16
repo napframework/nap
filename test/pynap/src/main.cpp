@@ -15,6 +15,15 @@ nap::Core &core() {
     return c;
 }
 
+bool isInstantiable(const std::string& typeName) {
+    auto type = nap::rtti::TypeInfo::get_by_name(typeName);
+    if (!type.is_valid()) {
+        nap::Logger::warn("Invalid type '%s'", typeName.c_str());
+        return false;
+    }
+    return type.can_create_instance();
+}
+
 namespace py = pybind11;
 
 PYBIND11_MODULE(nap, m) {
@@ -23,7 +32,7 @@ PYBIND11_MODULE(nap, m) {
     nap::rtti::PythonModule &python_module = nap::rtti::PythonModule::get("nap");
     python_module.invoke(m);
 
-
+    m.def("isInstantiable", &isInstantiable);
 //    m.attr("core") = &core();
 //    m.attr("one") = 10;
 //
