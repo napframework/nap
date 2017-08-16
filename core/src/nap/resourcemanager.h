@@ -126,7 +126,13 @@ namespace nap
 		*/
 		EntityIterator getEntities() { return EntityIterator(mEntities); }
 
-		/**
+        /**
+         * @return A vector of all objects in the ResourceManager
+         */
+        std::vector<nap::ObjectPtr<rtti::RTTIObject>> getObjects();
+
+
+        /**
 		* Occurs when the manager has been initialized, creates the root entity
 		*/
 		virtual void initialized();

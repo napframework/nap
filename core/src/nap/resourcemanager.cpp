@@ -13,6 +13,7 @@ RTTI_BEGIN_CLASS(nap::ResourceManagerService)
 	RTTI_FUNCTION("findObject", (const nap::ObjectPtr<nap::rtti::RTTIObject> (nap::ResourceManagerService::*)(const std::string&))&nap::ResourceManagerService::findObject)
     RTTI_FUNCTION("loadFile", (bool (nap::ResourceManagerService::*)(const std::string&))&nap::ResourceManagerService::loadFile)
     RTTI_FUNCTION("createObject", (const nap::ObjectPtr<nap::rtti::RTTIObject> (nap::ResourceManagerService::*)(const std::string&))&nap::ResourceManagerService::createObject)
+    RTTI_FUNCTION("getObjects", (std::vector<nap::ObjectPtr<nap::rtti::RTTIObject>> (nap::ResourceManagerService::*)(void))&nap::ResourceManagerService::getObjects)
 RTTI_END_CLASS
 
 namespace nap
@@ -73,7 +74,7 @@ namespace nap
 			RTTIObjectGraphItem item;
 			item.mType = EType::Object;
 			item.mObject = object;
-			
+
 			return item;
 		}
 
@@ -86,7 +87,7 @@ namespace nap
 
 			if (mType == EType::File)
 				return mFilename;
-			else 
+			else
 				return mObject->mID;
 		}
 
@@ -125,10 +126,10 @@ namespace nap
 				item.mFilename = filename;
 				pointees.push_back(item);
 			}
-			
+
 			return true;
 		}
-		
+
 		EType				mType;					// Type: file or object
 		std::string			mFilename;				// If type is file, contains filename
 		rtti::RTTIObject*	mObject = nullptr;		// If type is object, contains object pointer
@@ -235,8 +236,8 @@ namespace nap
 	}
 
 
-	/** 
-	 * Recursively adds all types to the componentsByType map. Notice that all base classes are inserted into the map as well to make sure we can perform 
+	/**
+	 * Recursively adds all types to the componentsByType map. Notice that all base classes are inserted into the map as well to make sure we can perform
 	 * is_derived_from check against this map.
 	 */
 	void addComponentsByType(std::unordered_map<rtti::TypeInfo, std::vector<ObjectPtr<Component>>>& componentsByType, const ObjectPtr<Component>& component, const rtti::TypeInfo& type)
@@ -287,7 +288,7 @@ namespace nap
 
 	ResourceManagerService::ResourceManagerService() :
 		mDirectoryWatcher(std::make_unique<DirectoryWatcher>())
-	{ 
+	{
 	}
 
 
@@ -334,15 +335,15 @@ namespace nap
 
 		return true;
 	}
-	
+
 
 	/**
-	 * From all objects that are effectively changed or added, traverses the object graph to find the minimum set of objects that requires an init. 
+	 * From all objects that are effectively changed or added, traverses the object graph to find the minimum set of objects that requires an init.
 	 * The list of objects is sorted on object graph depth so that the init() order is correct.
 	 */
 	void ResourceManagerService::determineObjectsToInit(const RTTIObjectGraph& objectGraph, const ObjectByIDMap& objectsToUpdate, const std::string& externalChangedFile, std::vector<std::string>& objectsToInit)
 	{
-		// Mark all the objects to update as 'dirty', we need to init() those and 
+		// Mark all the objects to update as 'dirty', we need to init() those and
 		// all the objects that point to them (recursively)
 		std::unordered_map<std::string, nap::RTTIObject*> dirty_nodes;
 		for (auto& kvp : objectsToUpdate)
@@ -410,14 +411,14 @@ namespace nap
 	}
 
 
-	// inits all objects 
+	// inits all objects
 	bool ResourceManagerService::initObjects(const std::vector<std::string>& objectsToInit, const ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState)
 	{
 		// Init all objects in the correct order
 		for (const std::string& id : objectsToInit)
 		{
 			rtti::RTTIObject* object = nullptr;
-			
+
 			// We perform lookup by ID. Objects in objectsToUpdate have preference over the manager's objects.
 			ObjectByIDMap::const_iterator updated_object = objectsToUpdate.find(id);
 			if (updated_object != objectsToUpdate.end())
@@ -567,7 +568,7 @@ namespace nap
 		// Build list of all entities we need to update. We need to use the objects in objectsToUpdate over those already in the ResourceManager
 		// In essence, objectsToUpdate functions as an 'overlay' on top of the ResourceManager
 		std::unordered_map<std::string, rtti::RTTIObject*> entities_to_spawn;
-		
+
 		// First add all EntityResources in the list of objects to update
 		for (auto& kvp : objectsToUpdate)
 		{
@@ -598,7 +599,7 @@ namespace nap
 		// This is determined based on an object graph traversal.
 		std::vector<std::string> sorted_entity_ids_to_spawn;
 		traverseAndSortIncomingObjects(entities_to_spawn, objectGraph, sorted_entity_ids_to_spawn);
-		
+
 		// Use the object IDs that were found to create a vector of objects
 		std::vector<const Entity*> sorted_entities_to_spawn;
 		for (const std::string& id : sorted_entity_ids_to_spawn)
@@ -631,7 +632,7 @@ namespace nap
 
 		// Replace entities currently in the resource manager with the new set
 		mEntities = std::move(entityCreationParams.mEntitiesByID);
-		
+
 		return true;
 	}
 
@@ -673,7 +674,7 @@ namespace nap
 
 
 		// Resolve all unresolved pointers. The set of objects to resolve against are the objects in the ResourceManager, with the new/dirty
-		// objects acting as an overlay on the existing objects. In other words, when resolving, objects read from the json file have 
+		// objects acting as an overlay on the existing objects. In other words, when resolving, objects read from the json file have
 		// preference over objects in the resource manager as these are the ones that will eventually be (re)placed in the manager.
 		if (!resolvePointers(objects_to_update, read_result.mUnresolvedPointers, errorState))
 			return false;
@@ -699,7 +700,7 @@ namespace nap
 		determineObjectsToInit(object_graph, objects_to_update, externalChangedFile, objects_to_init);
 
 		// The objects that require an init may contain objects that were not present in the file (because they are
-		// pointing to objects that will be reconstructed and initted). In that case we reconstruct those objects 
+		// pointing to objects that will be reconstructed and initted). In that case we reconstruct those objects
 		// as well by cloning them and pushing them into the objects_to_update list.
 		for (const std::string& object_to_init : objects_to_init)
 		{
@@ -736,7 +737,7 @@ namespace nap
 			addFileLink(filename, file_link.mTargetFile);
 
 		mFilesToWatch.insert(toComparableFilename(filename));
-		
+
 		// Everything was successful, don't rollback any changes that were made
 		rollback_helper.clear();
 
@@ -763,7 +764,7 @@ namespace nap
 				else
 				{
 					// Find all the sources of this file
-					FileLinkMap::iterator file_link = mFileLinkMap.find(modified_file);
+                    auto file_link = mFileLinkMap.find(modified_file);
 					if (file_link != mFileLinkMap.end())
 						for (const std::string& source_file : file_link->second)
 							files_to_reload.insert(toComparableFilename(source_file));
@@ -799,10 +800,10 @@ namespace nap
 	const ObjectPtr<RTTIObject> ResourceManagerService::findObject(const std::string& id)
 	{
 		const auto& it = mObjects.find(id);
-		
+
 		if (it != mObjects.end())
 			return ObjectPtr<RTTIObject>(it->second.get());
-		
+
 		return nullptr;
 	}
 
@@ -825,8 +826,8 @@ namespace nap
 	{
 		std::string source_file = toComparableFilename(sourceFile);
 		std::string target_file = toComparableFilename(targetFile);
-		
-		FileLinkMap::iterator existing = mFileLinkMap.find(targetFile);
+
+        auto existing = mFileLinkMap.find(targetFile);
 		if (existing == mFileLinkMap.end())
 		{
 			std::vector<std::string> source_files;
@@ -841,7 +842,7 @@ namespace nap
 	}
 
 
-	const ObjectPtr<RTTIObject> ResourceManagerService::createObject(const rtti::TypeInfo& type)
+    const ObjectPtr<RTTIObject> ResourceManagerService::createObject(const rtti::TypeInfo& type)
 	{
 		if (!type.is_derived_from(RTTI_OF(RTTIObject)))
 		{
@@ -871,11 +872,12 @@ namespace nap
 
 		object->mID = reso_unique_path;
 		addObject(reso_unique_path, std::unique_ptr<RTTIObject>(object));
-		
+
 		return ObjectPtr<RTTIObject>(object);
 	}
 
-    const ObjectPtr<rtti::RTTIObject> ResourceManagerService::createObject(const std::string &typeName) {
+    const ObjectPtr<rtti::RTTIObject> ResourceManagerService::createObject(const std::string &typeName)
+    {
         nap::Logger::info(typeName.c_str());
         auto type = rtti::TypeInfo::get_by_name(typeName);
         if (!type.is_valid())
@@ -887,15 +889,23 @@ namespace nap
     }
 
 
-
     const ObjectPtr<EntityInstance> ResourceManagerService::findEntity(const std::string& inID) const
 	{
-		EntityByIDMap::const_iterator pos = mEntities.find(getInstanceID(inID));
+        auto pos = mEntities.find(getInstanceID(inID));
 		if (pos == mEntities.end())
 			return nullptr;
 
 		return pos->second.get();
 	}
+
+
+    std::vector<nap::ObjectPtr<rtti::RTTIObject>> ResourceManagerService::getObjects()
+    {
+        std::vector<nap::ObjectPtr<rtti::RTTIObject>> result;
+        for (auto& ob : mObjects)
+            result.emplace_back(ob.second.get());
+        return result;
+    }
 
 
 

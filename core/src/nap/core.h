@@ -8,16 +8,19 @@
 #include <rtti/rtti.h>
 #include <rtti/factory.h>
 #include <unordered_set>
+#include <pybind11/stl.h>
 
 // Core Includes
 #include "service.h"
 #include "timer.h"
 #include "modulemanager.h"
 #include "utility/dllexport.h"
+#include "objectptr.h"
+
 
 namespace nap
 {
-	/**
+    /**
 	 * Core is the class that manages entities and services.
 	 * Only Core can make entities, as this objects manages entity relationships
 	 * Use Core to register a service, start services and stop services.
@@ -26,7 +29,11 @@ namespace nap
 	class NAPAPI Core
 	{
 		RTTI_ENABLE()
-	public:
+
+        // Typedef for a list of services
+        using ServiceList = std::vector<std::unique_ptr<Service>>;
+
+    public:
 		/**
 		 * Constructor
 		 */
@@ -90,6 +97,12 @@ namespace nap
 		template <typename T>
 		T* getService();
 
+
+        /**
+         * @return All currently registered services
+         */
+        std::vector<Service*> getServices();
+
 		/**
 		 * Loads all modules in to the core environment 
          * @modulesDir is a path relative to the working directory containing the modules
@@ -102,8 +115,6 @@ namespace nap
 		rtti::Factory& getFactory()									{ return *mFactory; }
 
 	private:
-		// Typedef for a list of services
-		using ServiceList = std::vector<std::unique_ptr<Service>>;
 
 		ModuleManager mModuleManager;						// The module manager
 

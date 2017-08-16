@@ -10,6 +10,7 @@ using namespace std;
 
 RTTI_BEGIN_CLASS(nap::Core)
 	RTTI_FUNCTION("getOrCreateService", (nap::Service* (nap::Core::*)(const std::string&))&nap::Core::getOrCreateService)
+    RTTI_FUNCTION("getServices", (std::vector<nap::Service*> (nap::Core::*)(void))&nap::Core::getServices)
 RTTI_END_CLASS
 
 
@@ -57,8 +58,15 @@ namespace nap
 		return found_service == mServices.end() ? nullptr : (*found_service).get();
 	}
 
+    vector<Service*> Core::getServices() {
+        std::vector<Service*> ret;
+        for (auto& s : mServices)
+            ret.emplace_back(s.get());
+        return ret;
+    }
 
-	// Add a new service
+
+    // Add a new service
 	Service& Core::addService(const rtti::TypeInfo& type)
 	{
         assert(type.is_valid());
@@ -141,4 +149,5 @@ namespace nap
 	{
 		return mTimer.getStartTime();
 	}
+
 }
