@@ -24,6 +24,12 @@ namespace nap
 	}
 
 
+	// Reset the timer
+	void SimpleTimer::reset()
+	{
+		start();
+	}
+
 	// Return number of ticks in milliseconds
 	uint32 SimpleTimer::getTicks() const
 	{

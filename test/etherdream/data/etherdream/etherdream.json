@@ -37,6 +37,12 @@
 		"DacName": "dc3c10",
 		"PointRate": "30000"
 	},
+
+	"nap::EtherDreamDac": {
+		"mID": "Laser2",
+		"DacName": "dbf6d0",
+		"PointRate": "30000"
+	},
 	
 	"nap::Entity": 
 	{
@@ -118,6 +124,12 @@
 				"nap::LaserOutputComponent": {
 					"Index" : 1,
 					"Dac" : "Laser1"
+				}		
+			},
+			{
+				"nap::LaserOutputComponent": {
+					"Index" : 1,
+					"Dac" : "Laser2"
 				}		
 			}
 		]

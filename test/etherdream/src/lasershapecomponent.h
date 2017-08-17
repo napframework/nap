@@ -58,7 +58,10 @@ namespace nap
 		virtual void update(double deltaTime) override;
 
 		// Returns the current pointer to points
-		EtherDreamPoint* getPoints()							{ return &(mPoints.front()); }
+		std::vector<EtherDreamPoint>& getPoints()				{ return mPoints; }
+
+		// Return a copy of the current points
+		std::vector<EtherDreamPoint> getPointCopy() const		{ return mPoints; }
 
 		uint getCount() const									{ return static_cast<uint>(mPoints.size()); }
 

@@ -23,7 +23,7 @@ target_link_libraries(${PROJECT_NAME} mod_naprender ${ETHERDREAM_LIBS})
 
 if (WIN32)
     set(FILES_TO_COPY
-            ../../../../thirdparty/etherdream/msvc/bin/Release/EtherDream.dll
+            ../../../../thirdparty/etherdream/msvc/bin/Debug/EtherDream.dll
             )
 
     copy_files_to_bin(${FILES_TO_COPY})

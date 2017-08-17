@@ -3,6 +3,8 @@
 // External Includes
 #include <rtti/rttiobject.h>
 #include <rtti/factory.h>
+#include <thread>
+#include <mutex>
 
 // Local Includes
 #include "etherdreaminterface.h"
@@ -54,12 +56,7 @@ namespace nap
 		/**
 		 *	@return current DAC connection status
 		 */
-		EConnectionStatus	getConnectionStatus() const;
-
-		/**
-		 *	@return current DAC read / write status
-		 */
-		EtherDreamInterface::EStatus getWriteStatus() const;
+		EConnectionStatus getConnectionStatus() const;
 
 		/**
 		 *	@return if the DAC is connected
@@ -67,14 +64,9 @@ namespace nap
 		bool isConnected() const;
 
 		/**
-		 *	@return if the DAC is ready to accept new points
+		 *	Set the points for this dac to write
 		 */
-		bool isReady() const;
-
-		/**
-		 *	Write a frame
-		 */
-		bool writeFrame(EtherDreamPoint* data, uint npoints);
+		void setPoints(std::vector<EtherDreamPoint>& points);
 
 		// Unique name of the dac (property), used for finding the device on the network
 		std::string	mDacName;
@@ -91,6 +83,35 @@ namespace nap
 
 		// The DAC system index, -1 if not available
 		int	 mIndex = -1;
+
+		// Thread used to write frames
+		std::mutex						mWriteMutex;
+		std::thread						mWriteThread;
+		bool							mStopWriting = false;
+		void							writeThread();
+		std::vector<EtherDreamPoint>	mPoints;
+
+		/**
+		 *	Signals the laser write thread to stop writing data and exit
+		 */
+		void exitWriteThread();
+
+		/**
+		* Write a frame
+		* @param data, all the points to write
+		* @param npoints, number of points to write
+		*/
+		bool writeFrame(EtherDreamPoint* data, uint npoints);
+
+		/**
+		* @return current DAC read / write status
+		*/
+		EtherDreamInterface::EStatus getWriteStatus() const;
+
+		/**
+		 *	If the etherdream is running and pumping out frames
+		 */
+		bool mIsRunning = false;
 	};
 
 	using DacObjectCreator = rtti::ObjectCreator<EtherDreamDac, EtherDreamService>;

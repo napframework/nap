@@ -16,13 +16,14 @@ namespace nap
  */
 bool nap::EtherDreamInterface::init()
 {
+	mAvailableDacs = EtherDreamGetCardNum();
 	return true;
 }
 
 
 int nap::EtherDreamInterface::getCount() const
 {
-	return EtherDreamGetCardNum();
+	return mAvailableDacs;
 }
 
 

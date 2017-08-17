@@ -2,6 +2,7 @@
 #include "laseroutputcomponent.h"
 
 #include <nap/entity.h>
+#include <nap/logger.h>
 #include <mathutils.h>
 
 using namespace nap::math;
@@ -39,9 +40,7 @@ namespace nap
 		assert(mIndex < mShapes.size());
 		LaserShapeComponentInstance* instance = mShapes[mIndex];
 
-		if (mDac->isReady())
-		{
-			mDac->writeFrame(instance->getPoints(), instance->getCount());
-		}
+		// Don't do anything when the dac isn't connected
+		mDac->setPoints(instance->getPoints());
 	}
 }

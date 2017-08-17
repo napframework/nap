@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <string>
 #include <nap/configure.h>
+#include <mutex>
 
 namespace nap
 {
@@ -60,6 +61,8 @@ namespace nap
 
 		/**
 		 * @return the number of available Etherdream DAC interfaces
+		 * Note that this call closes all active connections. Call only once
+		 * after initialization!
 		 */
 		int			getCount() const;
 
@@ -109,5 +112,9 @@ namespace nap
 		 * @param repeatCount: Number of times to repeat the drawing of the points, must not be 0, 1 is default
 		 */
 		bool		writeFrame(int number, const EtherDreamPoint* data, uint npoints, uint pps, uint repeatCount);
+
+	private:
+		// Number of available dacs found after initialization
+		int			mAvailableDacs = 0;
 	};
 }

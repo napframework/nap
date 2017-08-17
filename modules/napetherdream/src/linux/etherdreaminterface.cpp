@@ -26,13 +26,17 @@ nap::EtherDreamInterface::EtherDreamInterface()     { }
 
 bool nap::EtherDreamInterface::init()
 {
-    return etherdream_lib_start() == 0 ? true : false;
+	mAvailableDacs = 0;
+	if (etherdream_lib_start() != 0)
+		return false;
+	mAvailableDacs = etherdream_dac_count();
+	return true;
 }
 
 
 int nap::EtherDreamInterface::getCount() const
 {
-    return etherdream_dac_count();
+    return mAvailableDacs;
 }
 
 

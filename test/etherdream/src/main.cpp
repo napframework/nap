@@ -78,6 +78,7 @@ void onUpdate()
 }
 
 
+
 // Called when the window is going to render
 void onRender()
 {
@@ -182,13 +183,13 @@ void runGame(nap::Core& core)
 	// Run function
 	bool loop = true;
 
+
 	// Loop
 	while (loop)
 	{
 		opengl::Event event;
 		if (opengl::pollEvent(event))
 		{
-
 			// Check if we're dealing with an input event
 			if (nap::isInputEvent(event))
 			{
@@ -213,6 +214,7 @@ void runGame(nap::Core& core)
 				inputService->addEvent(std::move(input_event));
 			}
 
+
 			// Check if it's a window event
 			else if (nap::isWindowEvent(event))
 			{
@@ -222,6 +224,7 @@ void runGame(nap::Core& core)
 		}
 
 		//////////////////////////////////////////////////////////////////////////
+
 
 		// run update call
 		onUpdate();
