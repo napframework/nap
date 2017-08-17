@@ -1,10 +1,4 @@
 
-NAP Notes
-=========
-
-* ResourceManagerService cannot save files
-* Who owns entities? i.e. Where to create an Entity on the fly?
-
 Naming and Intuition
 --------------------
 * **Entity / EntityInstance** should be **EntityResource / Entity** 
@@ -109,8 +103,24 @@ Possible solutions:
 - IPC Messaging (flexible, more complicated to maintain)
 - Polling (performance...)
 
-Suggested is Signal/Slot combined with a thin messaging layer in order to tackle threading hell.
+Generalize Object Construction
+------------------------------
+From a python perspective, it's unclear which objects may be created and which ones crash the application.
+The RTTI lib exposes `can_create_instance` but that doesn't mean it will properly construct an object when invoking a default constructor.
+Many classes currently have constructor parameters and require specialized factories in order to pass in the required values.
 
-Author runtime or file?
------------------------
-If the user creates an Entity in the editor, does she create an Entity or EntityInstance?
+As a suggestion I would again like to propose looking at Unity's scripting API:
+`gameObject.addComponent<AnyComponentTypeHere>()`
+
+Benefits:
+- Create new objects on the fly from an automatically generated list, all objects are created equal
+- *Easy to use* because the rules are simpler 
+- One wrapper rules them all (Component)
+
+Various Little Big Things
+-------------------------
+- TypeError: Unable to convert function return value to a Python type! The signature was
+	(self: nap.Material) -> nap::EBlendMode
+- Python boolean to c++ always evaluates to True
+- Cannot serialize/save data files
+- Logging (display output in gui window, stdout piping is nasty)

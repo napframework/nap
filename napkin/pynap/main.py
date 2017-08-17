@@ -2,6 +2,7 @@ import sys
 import os
 
 # TODO: Dirty hack to get things going right now
+from napkin.pynap.logpanel import LogPanel
 
 p = '%s/../../lib/Clang-Debug-x86_64' % os.path.dirname(__file__)
 sys.path.append(p)
@@ -28,6 +29,8 @@ if __name__ == '__main__':
 
     propPanel = PropertyPanel()
     win.addDock('Properties', propPanel)
+
+    win.addDock('Log', LogPanel())
 
     resourcePanel.selectionChanged.connect(propPanel.setItems)
 

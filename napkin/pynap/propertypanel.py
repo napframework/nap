@@ -15,8 +15,8 @@ class KeyItem(QStandardItem):
         self.setEditable(False)
         self.setText(text)
 
-class ValueItem(QStandardItem):
 
+class ValueItem(QStandardItem):
     def __init__(self, obj, attrib):
         super(ValueItem, self).__init__()
         self.obj = obj
@@ -39,7 +39,6 @@ class ValueItem(QStandardItem):
             self.setText(str(self.value()))
         else:
             super(ValueItem, self).setData(value, role)
-
 
 
 class PropertyModel(QStandardItemModel):
@@ -74,9 +73,8 @@ class PropertyPanel(QWidget):
         self.__treeView.setModel(self.__model)
         self.layout().addWidget(self.__treeView)
 
-
     def setItems(self, items):
         for item in items:
             self.__model.setObject(item)
             return
-        # self.__model.setObject(next(items, None))
+            # self.__model.setObject(next(items, None))
