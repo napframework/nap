@@ -5,7 +5,7 @@ if (WIN32)
         HINTS ${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/etherdream
     )
     set(ETHERDREAM_INCLUDE_DIRS ${ETHERDREAM_DIR}/msvc/include)
-    set(ETHERDREAM_LIBS ${ETHERDREAM_DIR}/msvc/bin/Release/EtherDream.lib)
+    set(ETHERDREAM_LIBS ${ETHERDREAM_DIR}/msvc/bin/Debug/EtherDream.lib)
 elseif(APPLE)
 	find_path(
 		ETHERDREAM_DIR
