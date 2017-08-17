@@ -63,6 +63,9 @@ namespace nap
 		// All DACS that are registered and available to the system
 		std::unordered_map<int, EtherDreamDac*>		mAvailableDacs;
 
+		// All dacs found on the network associated with their index
+		std::unordered_map<int, std::string>		mDacNames;
+
 		/**
 		* @return the dac number associated with a dac name, -1 if the dac is not available
 		*/

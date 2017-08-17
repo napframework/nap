@@ -31,7 +31,11 @@ namespace nap
 		// Print some info
 		nap::Logger::info("Initialized Etherdream library: found %d DAC(s)", mInterface->getCount());
 		for (int i = 0; i < mInterface->getCount(); i++)
-			nap::Logger::info("DAC name: %s", mInterface->getName(i).c_str());
+		{
+			std::string dac_name = mInterface->getName(i);
+			mDacNames.emplace(std::make_pair(i, dac_name));
+			nap::Logger::info("DAC name: %s", dac_name.c_str());
+		}
 
 		return true;
 	}
@@ -45,11 +49,11 @@ namespace nap
 
 	int EtherDreamService::getIndex(const std::string& name)
 	{
-		for (int i = 0; i < mInterface->getCount(); i++)
+		for (const auto& it : mDacNames)
 		{
-			if (name == mInterface->getName(i))
+			if (it.second == name)
 			{
-				return i;
+				return it.first;
 			}
 		}
 		return -1;
