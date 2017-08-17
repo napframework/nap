@@ -5,6 +5,10 @@
 #include <mathutils.h>
 #include <etherdreaminterface.h>
 
+#ifndef M_PI
+	#define M_PI 3.14159265358979323846
+#endif
+
 RTTI_BEGIN_CLASS(nap::LaserDotComponent)
 RTTI_END_CLASS
 
@@ -21,6 +25,34 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LaserSquareComponentInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&)
 RTTI_END_CLASS
 
+//////////////////////////////////////////////////////////////////////////
+
+RTTI_BEGIN_CLASS(nap::LaserCircleComponent)
+	RTTI_PROPERTY("Index", &nap::LaserCircleComponent::mIndex, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LaserCircleComponentInstance)
+	RTTI_CONSTRUCTOR(nap::EntityInstance&)
+RTTI_END_CLASS
+
+//////////////////////////////////////////////////////////////////////////
+
+/**
+@brief Calculate color value
+**/
+static int16_t colorsin(float pos)
+{
+	int max_value = nap::etherMaxValue;
+	int min_value = nap::etherMinValue;
+
+	// Get color value
+	int res = (sin(pos) + 1) * max_value;
+	res = res > max_value ? max_value : res;
+	res = res < min_value ? min_value : res;
+	return res;
+}
+
+//////////////////////////////////////////////////////////////////////////
 
 using namespace nap::math;
 
@@ -61,16 +93,19 @@ namespace nap
 		int x_center = static_cast<int>(lerp<int16_t>(min_value, max_value, loc_x));
 		int y_center = static_cast<int>(lerp<int16_t>(min_value, max_value, loc_y));
 
+		// Calculate color value
+		int16_t color_value = lerp<int16_t>(0, max_value, mShapeProperties.mBrightness);
+
 		// Now fill buffer
 		for (int i = 0; i < mShapeProperties.mNumberOfPoints; i++)
 		{
 			EtherDreamPoint* current_point = &(mPoints[i]);
 			current_point->X = x_center;
 			current_point->Y = y_center;
-			current_point->R = max_value;
-			current_point->G = max_value;
-			current_point->B = max_value;
-			current_point->I = max_value;
+			current_point->R = color_value;
+			current_point->G = color_value;
+			current_point->B = color_value;
+			current_point->I = color_value;
 		}
 	}
 
@@ -104,7 +139,7 @@ namespace nap
 		sy = lerp<float>(0.4f, 0.6f, sy);
 
 		// Fill the square
-		fillSquare(sy, sx, 1.0f, 0.25f);
+		fillSquare(sy, sx, mShapeProperties.mBrightness, mShapeProperties.mSize);
 	}
 
 
@@ -202,4 +237,83 @@ namespace nap
 		}
 	}
 
+	//////////////////////////////////////////////////////////////////////////
+	// Laser Circle
+	//////////////////////////////////////////////////////////////////////////
+
+	bool LaserCircleComponentInstance::init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	{
+		LaserShapeComponentInstance::init(resource, entityCreationParams, errorState);
+
+		// Copy index
+		LaserCircleComponent* circle_resource = rtti_cast<LaserCircleComponent>(resource.get());
+		mIndex = circle_resource->mIndex;
+
+		return true;
+	}
+
+	void LaserCircleComponentInstance::update(double deltaTime)
+	{
+		LaserShapeComponentInstance::update(deltaTime);
+
+		// Fill the circle
+		FillCircle(mCurrentTime, mIndex);
+	}
+
+	void LaserCircleComponentInstance::FillCircle(float phase, int mode)
+	{
+		int i;
+		int max_value = std::numeric_limits<int16_t>::max();
+
+		for (i = 0; i < mShapeProperties.mNumberOfPoints; i++) 
+		{
+			struct EtherDreamPoint *pt = &mPoints[i];
+			float ip = (float)i * 2.0 * M_PI / (float)(mShapeProperties.mNumberOfPoints);
+			float ipf = fmod(ip + phase, 2.0 * M_PI);;
+
+			switch (mode) {
+			default:
+			case 0: {
+				float cmult = .05 * sin(30 * (ip - phase / 3));
+				pt->X = sin(ip) * 20000 * (1 + cmult) * mShapeProperties.mSize;
+				pt->Y = cos(ip) * 20000 * (1 + cmult) * mShapeProperties.mSize;
+				break;
+			}
+			case 1: {
+				float cmult = .10 * sin(10 * (ip - phase / 3));
+				pt->X = sin(ip) * 20000 * (1 + cmult) * mShapeProperties.mSize;
+				pt->Y = cos(ip) * 20000 * (1 + cmult) * mShapeProperties.mSize;
+				break;
+			}
+			case 2: {
+				ip *= 3;
+				float R = 5;
+				float r = 3;
+				float D = 5;
+
+				pt->X = (2500 * ((R - r)*cos(ip + phase) + D*cos((R - r)*ip / r))) * mShapeProperties.mSize;
+				pt->Y = (2500 * ((R - r)*sin(ip + phase) - D*sin((R - r)*ip / r))) * mShapeProperties.mSize;
+				break;
+			}
+			case 3: {
+				int n = 5;
+				float R = 5 * cos(M_PI / n) / cos(fmod(ip, (2 * M_PI / n)) - (M_PI / n));
+				pt->X = 3500 * R*cos(ip + phase) * mShapeProperties.mSize;
+				pt->Y = 3500 * R*sin(ip + phase) * mShapeProperties.mSize;
+				break;
+			}
+			case 4: {
+				float Xo = sin(ip);
+				pt->X = 20000 * Xo * cos(phase / 4) * mShapeProperties.mSize;
+				pt->Y = 20000 * Xo * -sin(phase / 4) * mShapeProperties.mSize;
+				ipf = fmod(((Xo + 1) / 2.0) + phase / 3, 1.0) * 2 * M_PI;
+			}
+			}
+
+			pt->R = lerp<int16_t>(0, colorsin(ipf), mShapeProperties.mBrightness);
+			pt->G = lerp<int16_t>(0, colorsin(ipf + (2.0 * M_PI / 3.0)), mShapeProperties.mBrightness);
+			pt->B = lerp<int16_t>(0, colorsin(ipf + (4.0 * M_PI / 3.0)), mShapeProperties.mBrightness);
+			pt->I = mShapeProperties.mBrightness;
+		}
+	}
 }

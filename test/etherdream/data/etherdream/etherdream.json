@@ -3,7 +3,8 @@
 		"mID" : "Window",
 		"Width" : 512,
 		"Height" : 512,
-		"Title" : "Etherdream"
+		"Title" : "Etherdream",
+		"Sync" : "false"
 	},
 	
 	"nap::PlaneMesh": {
@@ -34,12 +35,6 @@
 	"nap::EtherDreamDac": {
 		"mID": "Laser1",
 		"DacName": "dc3c10",
-		"PointRate": "30000"
-	},
-
-	"nap::EtherDreamDac": {
-		"mID": "Laser2",
-		"DacName": "dbf6d0",
 		"PointRate": "30000"
 	},
 	
@@ -93,7 +88,8 @@
 				"nap::LaserDotComponent": {
 					"Properties": { 
 						"PointCount" : 450,
-						"Speed" : 0.0
+						"Speed" : 1.0,
+						"Brightness" : 1.0
 					}
 				}		
 			},
@@ -101,8 +97,27 @@
 				"nap::LaserSquareComponent": {
 					"Properties": {
 						"PointCount" : 400,
-						"Speed" : 0.0
+						"Speed" : 1.0,
+						"Brightness" : 1.0,
+						"Size" : 0.5
 					}
+				}		
+			},
+			{
+				"nap::LaserCircleComponent": {
+					"Properties": {
+						"PointCount" : 466,
+						"Speed" : 1.0,
+						"Brightness" : 1.0,
+						"Size" : 1.0
+					}, 
+					"Index" : 0
+				}		
+			},
+			{
+				"nap::LaserOutputComponent": {
+					"Index" : 1,
+					"Dac" : "Laser1"
 				}		
 			}
 		]

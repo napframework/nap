@@ -48,7 +48,7 @@ namespace nap
 		}
 
 	public:
-		ObjectPtr<Mesh>				mMeshResource;						///< Resource to render
+		ObjectPtr<Mesh>						mMeshResource;						///< Resource to render
 		MaterialInstanceResource			mMaterialInstanceResource;			///< MaterialInstance, which is used to override uniforms for this instance
 		Rect								mClipRect;							///< Clipping rectangle, in pixel coordinates
 	};

@@ -7,7 +7,9 @@
 
 RTTI_BEGIN_CLASS(nap::LaseShapeProperties)
 	RTTI_PROPERTY("PointCount", &nap::LaseShapeProperties::mNumberOfPoints, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Speed", &nap::LaseShapeProperties::mSpeed, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Speed",		&nap::LaseShapeProperties::mSpeed,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Size",		&nap::LaseShapeProperties::mSize,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Brightness",	&nap::LaseShapeProperties::mBrightness,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::LaserShapeComponent)

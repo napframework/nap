@@ -50,91 +50,8 @@ std::vector<nap::ObjectPtr<nap::RenderWindow>> renderWindows;
 nap::ObjectPtr<nap::EntityInstance> cameraEntity = nullptr;
 
 // Laser DAC
-nap::ObjectPtr<nap::EtherDreamDac> laser = nullptr;
+nap::ObjectPtr<nap::EtherDreamDac> laser_one = nullptr;
 nap::ObjectPtr<nap::EntityInstance> laserEntity = nullptr;
-
-//////////////////////////////////////////////////////////////////////////
-// LASER STUFF
-//////////////////////////////////////////////////////////////////////////
-
-/**
-@brief Creates a simple drawable circle
-**/
-
-#define CIRCLE_POINTS								600
-struct nap::EtherDreamPoint circle[CIRCLE_POINTS];
-
-
-/**
-@brief Calculate color value
-**/
-int16_t colorsin(float pos)
-{
-	int max_value = std::numeric_limits<int16_t>::max();
-	int min_value = std::numeric_limits<int16_t>::min();
-
-	// Get color value
-	int res = (sin(pos) + 1) * max_value;
-	res = res > max_value ? max_value : res;
-	res = res < min_value ? min_value : res;
-	return res;
-}
-
-void FillCircle(float phase, int mode) 
-{
-	int i;
-	int max_value = std::numeric_limits<int16_t>::max();
-
-	for (i = 0; i < CIRCLE_POINTS; i++) {
-		struct nap::EtherDreamPoint *pt = &circle[i];
-		float ip = (float)i * 2.0 * M_PI / (float)CIRCLE_POINTS;
-		float ipf = fmod(ip + phase, 2.0 * M_PI);;
-
-		switch (mode) {
-		default:
-		case 0: {
-			float cmult = .05 * sin(30 * (ip - phase / 3));
-			pt->X = sin(ip) * 20000 * (1 + cmult);
-			pt->Y = cos(ip) * 20000 * (1 + cmult);
-			break;
-		}
-		case 1: {
-			float cmult = .10 * sin(10 * (ip - phase / 3));
-			pt->X = sin(ip) * 20000 * (1 + cmult);
-			pt->Y = cos(ip) * 20000 * (1 + cmult);
-			break;
-		}
-		case 2: {
-			ip *= 3;
-			float R = 5;
-			float r = 3;
-			float D = 5;
-
-			pt->X = 2500 * ((R - r)*cos(ip + phase) + D*cos((R - r)*ip / r));
-			pt->Y = 2500 * ((R - r)*sin(ip + phase) - D*sin((R - r)*ip / r));
-			break;
-		}
-		case 3: {
-			int n = 5;
-			float R = 5 * cos(M_PI / n) / cos(fmod(ip, (2 * M_PI / n)) - (M_PI / n));
-			pt->X = 3500 * R*cos(ip + phase);
-			pt->Y = 3500 * R*sin(ip + phase);
-			break;
-		}
-		case 4: {
-			float Xo = sin(ip);
-			pt->X = 20000 * Xo * cos(phase / 4);
-			pt->Y = 20000 * Xo * -sin(phase / 4);
-			ipf = fmod(((Xo + 1) / 2.0) + phase / 3, 1.0) * 2 * M_PI;
-		}
-		}
-
-		pt->R = colorsin(ipf);
-		pt->G = colorsin(ipf + (2.0 * M_PI / 3.0));
-		pt->B = colorsin(ipf + (4.0 * M_PI / 3.0));
-		pt->I = max_value;
-	}
-}
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -158,26 +75,7 @@ void onUpdate()
 
 	// Update the scene
 	sceneService->update();
-
-	
-	static int phase = 0;
-	int size = sizeof(nap::EtherDreamPoint) * CIRCLE_POINTS;
-
-	// Fill the circle
-	FillCircle(static_cast<float>(phase) / 50.0f, 2);
-	
-	//nap::LaserSquareComponentInstance& square_shape = laserEntity->getComponent<nap::LaserSquareComponentInstance>();
-
-	// Send some data
-	if (laser->getWriteStatus() == nap::EtherDreamInterface::EStatus::READY)
-	{
-		// Write circle
-		bool write = laser->writeFrame(circle, CIRCLE_POINTS);
-		phase++;
-	}
 }
-
-
 
 
 // Called when the window is going to render
@@ -204,7 +102,6 @@ void onRender()
 bool init(nap::Core& core)
 {
 	core.initialize();
-
 
 	//////////////////////////////////////////////////////////////////////////
 	// GL Service + Window
@@ -251,7 +148,7 @@ bool init(nap::Core& core)
 	renderWindows.push_back(resourceManagerService->findObject<nap::RenderWindow>("Window"));
 
 	// Store laser dacs
-	laser = resourceManagerService->findObject<nap::EtherDreamDac>("Laser1");
+	laser_one = resourceManagerService->findObject<nap::EtherDreamDac>("Laser1");
 	laserEntity = resourceManagerService->findEntity("LaserEntity1");
 
 	// Set render states
@@ -279,7 +176,6 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
- 
 
 void runGame(nap::Core& core)
 {
@@ -292,6 +188,7 @@ void runGame(nap::Core& core)
 		opengl::Event event;
 		if (opengl::pollEvent(event))
 		{
+
 			// Check if we're dealing with an input event
 			if (nap::isInputEvent(event))
 			{

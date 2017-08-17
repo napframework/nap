@@ -1,6 +1,8 @@
 #include "etherdreamdac.h"
 #include "etherdreamservice.h"
 #include <nap/logger.h>
+#include <chrono>
+#include <thread>
 
 RTTI_BEGIN_CLASS(nap::EtherDreamDac)
 	RTTI_PROPERTY("DacName",	&nap::EtherDreamDac::mDacName,		nap::rtti::EPropertyMetaData::Required)
@@ -23,6 +25,9 @@ namespace nap
 				nap::Logger::warn("Unable to stop Etherdream DAC: %s, index: %d", mDacName.c_str(), mIndex);
 			}
 			mService->getInterface()->disconnect(mIndex);
+
+			// Wait a bit
+			std::this_thread::sleep_for(std::chrono::milliseconds(500));
 		}
 
 		// Remove dac from service
@@ -55,6 +60,9 @@ namespace nap
 		{
 			nap::Logger::info("Successfully connected to Etherdream DAC with name: %s, index: %d", mDacName.c_str(), mIndex);
 		}
+
+		// Wait a bit
+		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
 		mStatus = EConnectionStatus::CONNECTED;
 		return true;

@@ -15,6 +15,8 @@ namespace nap
 	{
 		int		mNumberOfPoints = 500;				//< Number of points in the laser shape
 		float	mSpeed = 1.0f;						//< Transformation speed
+		float	mSize = 1.0f;						//< Size of the shape
+		float	mBrightness = 1.0f;					//< Brightness of the shape
 	};
 
 
