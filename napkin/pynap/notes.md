@@ -32,6 +32,10 @@ Possible solutions so far:
 - Do magic and expose `getResources` on `ResourceManager` 
 
 
+Python Attribute Naming
+-----------------------
+Python attribute names should be either underscored lowercase (PEP8) or camelcase (PyQt, preferred)
+
 Discern instantiable types
 --------------------------
 No way to know if a type can be instantiated through Python object inspection

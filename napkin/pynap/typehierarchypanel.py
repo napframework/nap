@@ -3,6 +3,7 @@ from collections import OrderedDict
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
+from napkin.generic.filtertreeview import FilterTreeView
 from napkin.pynap import naputils
 
 
@@ -91,7 +92,7 @@ class TypeHierarchyPanel(QWidget):
         self.__modelRadioGrp.addButton(self.__rbUpstream)
         self.__modelRadioButtons.layout().addWidget(self.__rbUpstream)
 
-        self.__treeView = QTreeView()
+        self.__treeView = FilterTreeView()
         self.__treeView.setHeaderHidden(True)
         self.layout().addWidget(self.__treeView)
 

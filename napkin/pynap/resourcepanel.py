@@ -6,15 +6,16 @@ from PyQt5.QtCore import *
 
 import nap
 
+from napkin.generic.filtertreeview import FilterTreeView
 from napkin.generic.searchablepopuplist import SearchablePopupList, SearchablePopup
 from napkin.pynap import naputils
 
 
 class ResourceItem(QStandardItem):
-    def __init__(self, res):
+    def __init__(self, obj):
         super(ResourceItem, self).__init__()
-        self.res = res
-        self.setText(res.mID)
+        self.obj = obj
+        self.setText(obj.mID)
 
 
 class ResourceModel(QStandardItemModel):
@@ -34,6 +35,9 @@ class ResourceModel(QStandardItemModel):
 
 
 class ResourcePanel(QWidget):
+
+    selectionChanged = pyqtSignal(list)
+
     def __init__(self):
         super(ResourcePanel, self).__init__()
         self.setLayout(QVBoxLayout())
@@ -42,10 +46,17 @@ class ResourcePanel(QWidget):
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.__customContextMenuRequested)
 
-        self.__treeView = QTreeView()
+        self.__treeView = FilterTreeView()
         self.layout().addWidget(self.__treeView)
         self.__model = ResourceModel()
         self.__treeView.setModel(self.__model)
+        self.__treeView.selectionModel().selectionChanged.connect(self.__onSelectionChanged)
+
+    def __onSelectionChanged(self, selected, deselected):
+        self.selectionChanged.emit(list(self.__selectedItems()))
+
+    def __selectedItems(self):
+        return (m.obj for m in self.__treeView.selectedItems())
 
     def __createEntity(self, typename):
         self.__model.createObject(typename)

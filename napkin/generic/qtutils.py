@@ -15,6 +15,7 @@ _TYPE_COLORS = {
 }
 _GOLDEN_RATIO_CONJUGATE = 0.618033988749895
 
+
 def randomColor(h):
     """
     Generate a 'nice' contrasting color based on an integer
@@ -27,8 +28,10 @@ def randomColor(h):
     col.setHslF(hh, saturation, value)
     return col
 
+
 def randomTypeColor(typ):
     return _TYPE_COLORS.setdefault(typ, randomColor(abs(hash(typ.__name__)) % (10 ** 8)))
+
 
 def expandChildren(view, index, expanded=True):
     if not index.isValid():
@@ -200,9 +203,6 @@ def dictToQStandardItems(dic):
     return QStandardItem('WHooo')
 
 
-
-
-
 class LeafFilterProxyModel(QSortFilterProxyModel):
     """ Class to override the following behaviour:
             If a parent item doesn't match the filter,
@@ -222,9 +222,8 @@ class LeafFilterProxyModel(QSortFilterProxyModel):
 
     def filterAcceptsRow(self, row, parentIndex):
         """ Overriding the parent function """
-        if not self.sourceModel().isRootVisible() and not parentIndex.isValid():
+        if not parentIndex.isValid():
             return True
-
 
         if self.__itemFilter:
             source_index = self.sourceModel().index(row, 0, parentIndex)
@@ -257,7 +256,7 @@ class LeafFilterProxyModel(QSortFilterProxyModel):
         source_index = model.index(row_num, 0, parent)
 
         children_count = model.rowCount(source_index)
-        for i in xrange(children_count):
+        for i in range(children_count):
             if self.filterAcceptsRow(i, source_index):
                 return True
         return False
