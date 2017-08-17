@@ -2,6 +2,7 @@ __pycache__
 bin/
 build/
 .idea/
+.idea/workspace.xml
 py/.idea/
 lib/Clang/
 build.sh
