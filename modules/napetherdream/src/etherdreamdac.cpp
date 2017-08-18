@@ -76,7 +76,7 @@ namespace nap
 		mWriteThread = std::thread(std::bind(&EtherDreamDac::writeThread, this));
 
 		// Wait a bit for the connection to be established (hack)
-		std::this_thread::sleep_for(std::chrono::milliseconds(500));
+		// std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
 		return true;
 	}
@@ -89,6 +89,7 @@ namespace nap
 		// We're running now
 		mIsRunning = true;
 
+		// Timer is used for checking heart-beat
 		SimpleTimer timer;
 		timer.start();
 
@@ -102,11 +103,11 @@ namespace nap
 				{
 					nap::Logger::warn("Unable to write to DAC: %s, error occurred", mDacName.c_str());
 					std::this_thread::sleep_for(std::chrono::milliseconds(100));
-					continue;
+					break;
 				}
 				case EtherDreamInterface::EStatus::BUSY:
 				{
-					continue;
+					break;
 				}
 				case EtherDreamInterface::EStatus::READY:
 				{
@@ -121,15 +122,28 @@ namespace nap
 					mPointsToWrite = mPoints;
 					mWriteMutex.unlock();
 
-					if (timer.getElapsedTime() > 1.0f)
+					// Write data
+					if (!writeFrame(&(mPointsToWrite.front()), mPointsToWrite.size()))
 					{
-						// Write frame
-						nap::Logger::info("still kicking it from: %s", mDacName.c_str());
+						nap::Logger::warn("Unable to write frame to Etherdream DAC: %s", mDacName.c_str());
+					}
+					else
+					{
+						// Reset timer for heart-beat
 						timer.reset();
 					}
-					writeFrame(&(mPointsToWrite.front()), mPointsToWrite.size());
 					break;
 				}
+			}
+
+			// Check if we have had success writing frames
+			// If the time passed between the last write is higher than 3 seconds something
+			// must be wrong
+			if (timer.getElapsedTime() > 3.0f)
+			{
+				// Write frame
+				nap::Logger::warn("Etherdream: %s isn't writing any new frames", mDacName.c_str());
+				timer.reset();
 			}
 		}
 
