@@ -6,6 +6,7 @@
 #include <etherdream.h>
 #include <nap/logger.h>
 #include <numeric>
+#include <thread>
 
 namespace nap
 {
