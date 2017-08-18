@@ -36,9 +36,12 @@ namespace opengl
 	const VertexAttributeBuffer* Mesh::findVertexAttributeBuffer(const VertexAttributeID& id) const
 	{
 		for (const Attribute& attribute : mAttributes)
-			if (attribute.mID == id)
-				return attribute.mData->getVertexBuffer();
+        {
+            if (attribute.mID == id)
+                return attribute.mData->getVertexBuffer();
+        }
 
+        opengl::printMessage(opengl::MessageType::ERROR, "Unable to find vertex attribute buffer associated with attribute: %s. The shader compiler might have stripped it away", id.c_str());
 		return nullptr;
 	}
 
