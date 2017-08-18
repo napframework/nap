@@ -4,6 +4,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <j4cDAC.h>
+#include <thread>
 
 namespace nap
 {
@@ -16,6 +17,11 @@ namespace nap
  */
 bool nap::EtherDreamInterface::init()
 {
+	// The etherdream dac emits a signal once every second, make sure we wait long
+	// enough to gather all available dacs (according to docs and verified)
+	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+	// Now get all available dacs
 	mAvailableDacs = EtherDreamGetCardNum();
 	return true;
 }

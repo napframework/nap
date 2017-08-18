@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <etherdream.h>
 #include <nap/logger.h>
+#include <thread>
 
 namespace nap
 {
@@ -27,6 +28,10 @@ bool nap::EtherDreamInterface::init()
 	mAvailableDacs = 0;
 	if (etherdream_lib_start() != 0)
 		return false;
+
+	// The etherdream dac emits a signal once every second, make sure we wait long
+	// enough to gather all available dacs (according to docs and verified)
+	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 	mAvailableDacs = etherdream_dac_count();
 	return true;
 }
