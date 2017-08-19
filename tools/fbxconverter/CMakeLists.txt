@@ -46,6 +46,6 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         )
 
 # auto run test
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ctest -C $<CONFIGURATION> --output-on-failure
-        DEPENDS always_rebuild)
+#add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+#        COMMAND ctest -C $<CONFIGURATION> --output-on-failure
+#        DEPENDS always_rebuild)
