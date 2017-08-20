@@ -13,148 +13,148 @@
       "items": {
         "anyOf": [
           {
-            "$ref": "#/definitions/nap::DefaultInputRouterComponent"
-          },
-          {
-            "$ref": "#/definitions/nap::UniformValue"
-          },
-          {
-            "$ref": "#/definitions/nap::Image"
-          },
-          {
-            "$ref": "#/definitions/nap::TransformComponent"
-          },
-          {
-            "$ref": "#/definitions/nap::RenderableComponentInstance"
-          },
-          {
-            "$ref": "#/definitions/nap::OrthoCameraComponentInstance"
-          },
-          {
-            "$ref": "#/definitions/nap::PointerInputComponentInstance"
-          },
-          {
-            "$ref": "#/definitions/nap::DefaultInputRouterComponentInstance"
-          },
-          {
-            "$ref": "#/definitions/nap::InputComponentInstance"
-          },
-          {
-            "$ref": "#/definitions/nap::PlaneMesh"
-          },
-          {
-            "$ref": "#/definitions/nap::Texture"
-          },
-          {
-            "$ref": "#/definitions/nap::KeyInputComponent"
-          },
-          {
-            "$ref": "#/definitions/nap::Mesh"
-          },
-          {
-            "$ref": "#/definitions/nap::UniformTexture2D"
-          },
-          {
-            "$ref": "#/definitions/nap::Component"
-          },
-          {
-            "$ref": "#/definitions/nap::TextureRenderTarget2D"
-          },
-          {
-            "$ref": "#/definitions/nap::UniformTexture"
-          },
-          {
-            "$ref": "#/definitions/nap::EntityInstance"
-          },
-          {
             "$ref": "#/definitions/nap::RenderWindow"
           },
           {
             "$ref": "#/definitions/nap::RTTIObject"
           },
           {
-            "$ref": "#/definitions/nap::PerspCameraComponentInstance"
-          },
-          {
-            "$ref": "#/definitions/nap::OrthoCameraComponent"
-          },
-          {
-            "$ref": "#/definitions/nap::UniformVec3"
-          },
-          {
-            "$ref": "#/definitions/nap::UniformFloat"
-          },
-          {
-            "$ref": "#/definitions/nap::Window"
-          },
-          {
-            "$ref": "#/definitions/nap::MeshFromFile"
-          },
-          {
-            "$ref": "#/definitions/nap::UniformVec4"
-          },
-          {
-            "$ref": "#/definitions/nap::KeyInputComponentInstance"
-          },
-          {
-            "$ref": "#/definitions/nap::ComponentInstance"
-          },
-          {
-            "$ref": "#/definitions/nap::PointerInputComponent"
-          },
-          {
-            "$ref": "#/definitions/nap::RenderableComponentResource"
-          },
-          {
-            "$ref": "#/definitions/nap::RenderableMeshComponentInstance"
-          },
-          {
-            "$ref": "#/definitions/nap::MemoryTexture2D"
-          },
-          {
-            "$ref": "#/definitions/nap::Entity"
-          },
-          {
-            "$ref": "#/definitions/nap::TransformComponentInstance"
-          },
-          {
-            "$ref": "#/definitions/nap::RotateComponent"
-          },
-          {
-            "$ref": "#/definitions/nap::Shader"
-          },
-          {
-            "$ref": "#/definitions/nap::RotateComponentInstance"
+            "$ref": "#/definitions/nap::UniformInt"
           },
           {
             "$ref": "#/definitions/nap::SphereMesh"
           },
           {
-            "$ref": "#/definitions/nap::UniformInt"
+            "$ref": "#/definitions/nap::Shader"
+          },
+          {
+            "$ref": "#/definitions/nap::ComponentInstance"
+          },
+          {
+            "$ref": "#/definitions/nap::MemoryTexture2D"
+          },
+          {
+            "$ref": "#/definitions/nap::TransformComponentInstance"
+          },
+          {
+            "$ref": "#/definitions/nap::KeyInputComponentInstance"
+          },
+          {
+            "$ref": "#/definitions/nap::UniformTexture"
+          },
+          {
+            "$ref": "#/definitions/nap::RenderableComponentInstance"
+          },
+          {
+            "$ref": "#/definitions/nap::MeshFromFile"
+          },
+          {
+            "$ref": "#/definitions/nap::UniformVec3"
+          },
+          {
+            "$ref": "#/definitions/nap::DefaultInputRouterComponentInstance"
+          },
+          {
+            "$ref": "#/definitions/nap::PerspCameraComponentInstance"
+          },
+          {
+            "$ref": "#/definitions/nap::Component"
           },
           {
             "$ref": "#/definitions/nap::MeshData"
           },
           {
-            "$ref": "#/definitions/nap::PerspCameraComponent"
+            "$ref": "#/definitions/nap::TransformComponent"
+          },
+          {
+            "$ref": "#/definitions/nap::CameraComponentInstance"
+          },
+          {
+            "$ref": "#/definitions/nap::PointerInputComponentInstance"
           },
           {
             "$ref": "#/definitions/nap::Material"
           },
           {
-            "$ref": "#/definitions/nap::UniformMat4"
+            "$ref": "#/definitions/nap::RenderableMeshComponent"
           },
           {
             "$ref": "#/definitions/nap::Uniform"
           },
           {
+            "$ref": "#/definitions/nap::PlaneMesh"
+          },
+          {
+            "$ref": "#/definitions/nap::PerspCameraComponent"
+          },
+          {
+            "$ref": "#/definitions/nap::Entity"
+          },
+          {
+            "$ref": "#/definitions/nap::UniformTexture2D"
+          },
+          {
+            "$ref": "#/definitions/nap::UniformMat4"
+          },
+          {
+            "$ref": "#/definitions/nap::OrthoCameraComponent"
+          },
+          {
+            "$ref": "#/definitions/nap::EntityInstance"
+          },
+          {
+            "$ref": "#/definitions/nap::TextureRenderTarget2D"
+          },
+          {
+            "$ref": "#/definitions/nap::Image"
+          },
+          {
+            "$ref": "#/definitions/nap::UniformValue"
+          },
+          {
             "$ref": "#/definitions/nap::InputComponent"
           },
           {
-            "$ref": "#/definitions/nap::RenderableMeshComponent"
+            "$ref": "#/definitions/nap::UniformVec4"
           },
           {
-            "$ref": "#/definitions/nap::CameraComponentInstance"
+            "$ref": "#/definitions/nap::DefaultInputRouterComponent"
+          },
+          {
+            "$ref": "#/definitions/nap::Window"
+          },
+          {
+            "$ref": "#/definitions/nap::UniformFloat"
+          },
+          {
+            "$ref": "#/definitions/nap::RotateComponentInstance"
+          },
+          {
+            "$ref": "#/definitions/nap::KeyInputComponent"
+          },
+          {
+            "$ref": "#/definitions/nap::RotateComponent"
+          },
+          {
+            "$ref": "#/definitions/nap::RenderableComponentResource"
+          },
+          {
+            "$ref": "#/definitions/nap::PointerInputComponent"
+          },
+          {
+            "$ref": "#/definitions/nap::Texture"
+          },
+          {
+            "$ref": "#/definitions/nap::Mesh"
+          },
+          {
+            "$ref": "#/definitions/nap::InputComponentInstance"
+          },
+          {
+            "$ref": "#/definitions/nap::OrthoCameraComponentInstance"
+          },
+          {
+            "$ref": "#/definitions/nap::RenderableMeshComponentInstance"
           }
         ]
       }
@@ -162,409 +162,6 @@
     "entities": {}
   },
   "definitions": {
-    "nap::DefaultInputRouterComponent": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "pattern": "nap::DefaultInputRouterComponent"
-        },
-        "mID": {
-          "type": "string"
-        },
-        "props": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {}
-        }
-      }
-    },
-    "nap::UniformValue": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "pattern": "nap::UniformValue"
-        },
-        "mID": {
-          "type": "string"
-        },
-        "props": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "Name": {}
-          }
-        }
-      }
-    },
-    "nap::Image": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "pattern": "nap::Image"
-        },
-        "mID": {
-          "type": "string"
-        },
-        "props": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "mImagePath": {
-              "type": "string"
-            },
-            "mParameters": {}
-          }
-        }
-      }
-    },
-    "nap::TransformComponent": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "pattern": "nap::TransformComponent"
-        },
-        "mID": {
-          "type": "string"
-        },
-        "props": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "Properties": {}
-          }
-        }
-      }
-    },
-    "nap::RenderableComponentInstance": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "pattern": "nap::RenderableComponentInstance"
-        },
-        "mID": {
-          "type": "string"
-        },
-        "props": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {}
-        }
-      }
-    },
-    "nap::OrthoCameraComponentInstance": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "pattern": "nap::OrthoCameraComponentInstance"
-        },
-        "mID": {
-          "type": "string"
-        },
-        "props": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {}
-        }
-      }
-    },
-    "nap::PointerInputComponentInstance": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "pattern": "nap::PointerInputComponentInstance"
-        },
-        "mID": {
-          "type": "string"
-        },
-        "props": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {}
-        }
-      }
-    },
-    "nap::DefaultInputRouterComponentInstance": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "pattern": "nap::DefaultInputRouterComponentInstance"
-        },
-        "mID": {
-          "type": "string"
-        },
-        "props": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {}
-        }
-      }
-    },
-    "nap::InputComponentInstance": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "pattern": "nap::InputComponentInstance"
-        },
-        "mID": {
-          "type": "string"
-        },
-        "props": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {}
-        }
-      }
-    },
-    "nap::PlaneMesh": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "pattern": "nap::PlaneMesh"
-        },
-        "mID": {
-          "type": "string"
-        },
-        "props": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {}
-        }
-      }
-    },
-    "nap::Texture": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "pattern": "nap::Texture"
-        },
-        "mID": {
-          "type": "string"
-        },
-        "props": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "mParameters": {}
-          }
-        }
-      }
-    },
-    "nap::KeyInputComponent": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "pattern": "nap::KeyInputComponent"
-        },
-        "mID": {
-          "type": "string"
-        },
-        "props": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {}
-        }
-      }
-    },
-    "nap::Mesh": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "pattern": "nap::Mesh"
-        },
-        "mID": {
-          "type": "string"
-        },
-        "props": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {}
-        }
-      }
-    },
-    "nap::UniformTexture2D": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "pattern": "nap::UniformTexture2D"
-        },
-        "mID": {
-          "type": "string"
-        },
-        "props": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "Name": {
-              "type": "string"
-            },
-            "Texture": {},
-            "setTexture": {}
-          }
-        }
-      }
-    },
-    "nap::Component": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "pattern": "nap::Component"
-        },
-        "mID": {
-          "type": "string"
-        },
-        "props": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {}
-        }
-      }
-    },
-    "nap::TextureRenderTarget2D": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "pattern": "nap::TextureRenderTarget2D"
-        },
-        "mID": {
-          "type": "string"
-        },
-        "props": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "mClearColor": {},
-            "mColorTexture": {},
-            "mDepthTexture": {}
-          }
-        }
-      }
-    },
-    "nap::UniformTexture": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "pattern": "nap::UniformTexture"
-        },
-        "mID": {
-          "type": "string"
-        },
-        "props": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "Name": {}
-          }
-        }
-      }
-    },
-    "nap::EntityInstance": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "pattern": "nap::EntityInstance"
-        },
-        "mID": {
-          "type": "string"
-        },
-        "props": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "findComponent": {}
-          }
-        }
-      }
-    },
     "nap::RenderWindow": {
       "type": "object",
       "additionalProperties": false,
@@ -623,7 +220,7 @@
         }
       }
     },
-    "nap::PerspCameraComponentInstance": {
+    "nap::UniformInt": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -632,78 +229,7 @@
       "properties": {
         "type": {
           "type": "string",
-          "pattern": "nap::PerspCameraComponentInstance"
-        },
-        "mID": {
-          "type": "string"
-        },
-        "props": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {}
-        }
-      }
-    },
-    "nap::OrthoCameraComponent": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "pattern": "nap::OrthoCameraComponent"
-        },
-        "mID": {
-          "type": "string"
-        },
-        "props": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "Properties": {}
-          }
-        }
-      }
-    },
-    "nap::UniformVec3": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "pattern": "nap::UniformVec3"
-        },
-        "mID": {
-          "type": "string"
-        },
-        "props": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "Name": {
-              "type": "string"
-            },
-            "Value": {},
-            "setValue": {}
-          }
-        }
-      }
-    },
-    "nap::UniformFloat": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "pattern": "nap::UniformFloat"
+          "pattern": "nap::UniformInt"
         },
         "mID": {
           "type": "string"
@@ -716,14 +242,16 @@
               "type": "string"
             },
             "Value": {
-              "type": "number"
+              "type": "integer"
             },
-            "setValue": {}
+            "setValue": {
+              "type": null
+            }
           }
         }
       }
     },
-    "nap::Window": {
+    "nap::SphereMesh": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -732,7 +260,207 @@
       "properties": {
         "type": {
           "type": "string",
-          "pattern": "nap::Window"
+          "pattern": "nap::SphereMesh"
+        },
+        "mID": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "Radius": {
+              "type": "number"
+            },
+            "Rings": {
+              "type": "number"
+            },
+            "Sectors": {
+              "type": "number"
+            }
+          }
+        }
+      }
+    },
+    "nap::Shader": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "nap::Shader"
+        },
+        "mID": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "mFragShader": {
+              "type": "string"
+            },
+            "mVertShader": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "nap::ComponentInstance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "nap::ComponentInstance"
+        },
+        "mID": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {}
+        }
+      }
+    },
+    "nap::MemoryTexture2D": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "nap::MemoryTexture2D"
+        },
+        "mID": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "mParameters": {
+              "type": null
+            },
+            "mSettings": {
+              "type": null
+            }
+          }
+        }
+      }
+    },
+    "nap::TransformComponentInstance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "nap::TransformComponentInstance"
+        },
+        "mID": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "getRotate": {
+              "type": null
+            },
+            "getScale": {
+              "type": null
+            },
+            "getTranslate": {
+              "type": null
+            },
+            "getUniformScale": {
+              "type": null
+            },
+            "setRotate": {
+              "type": null
+            },
+            "setScale": {
+              "type": null
+            },
+            "setTranslate": {
+              "type": null
+            },
+            "setUniformScale": {
+              "type": null
+            }
+          }
+        }
+      }
+    },
+    "nap::KeyInputComponentInstance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "nap::KeyInputComponentInstance"
+        },
+        "mID": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {}
+        }
+      }
+    },
+    "nap::UniformTexture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "nap::UniformTexture"
+        },
+        "mID": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "Name": {
+              "type": null
+            }
+          }
+        }
+      }
+    },
+    "nap::RenderableComponentInstance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "nap::RenderableComponentInstance"
         },
         "mID": {
           "type": "string"
@@ -769,7 +497,7 @@
         }
       }
     },
-    "nap::UniformVec4": {
+    "nap::UniformVec3": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -778,7 +506,7 @@
       "properties": {
         "type": {
           "type": "string",
-          "pattern": "nap::UniformVec4"
+          "pattern": "nap::UniformVec3"
         },
         "mID": {
           "type": "string"
@@ -790,13 +518,17 @@
             "Name": {
               "type": "string"
             },
-            "Value": {},
-            "setValue": {}
+            "Value": {
+              "type": null
+            },
+            "setValue": {
+              "type": null
+            }
           }
         }
       }
     },
-    "nap::KeyInputComponentInstance": {
+    "nap::DefaultInputRouterComponentInstance": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -805,7 +537,7 @@
       "properties": {
         "type": {
           "type": "string",
-          "pattern": "nap::KeyInputComponentInstance"
+          "pattern": "nap::DefaultInputRouterComponentInstance"
         },
         "mID": {
           "type": "string"
@@ -817,7 +549,7 @@
         }
       }
     },
-    "nap::ComponentInstance": {
+    "nap::PerspCameraComponentInstance": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -826,7 +558,7 @@
       "properties": {
         "type": {
           "type": "string",
-          "pattern": "nap::ComponentInstance"
+          "pattern": "nap::PerspCameraComponentInstance"
         },
         "mID": {
           "type": "string"
@@ -838,7 +570,7 @@
         }
       }
     },
-    "nap::PointerInputComponent": {
+    "nap::Component": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -847,7 +579,7 @@
       "properties": {
         "type": {
           "type": "string",
-          "pattern": "nap::PointerInputComponent"
+          "pattern": "nap::Component"
         },
         "mID": {
           "type": "string"
@@ -859,7 +591,7 @@
         }
       }
     },
-    "nap::RenderableComponentResource": {
+    "nap::MeshData": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -868,28 +600,7 @@
       "properties": {
         "type": {
           "type": "string",
-          "pattern": "nap::RenderableComponentResource"
-        },
-        "mID": {
-          "type": "string"
-        },
-        "props": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {}
-        }
-      }
-    },
-    "nap::RenderableMeshComponentInstance": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "pattern": "nap::RenderableMeshComponentInstance"
+          "pattern": "nap::MeshData"
         },
         "mID": {
           "type": "string"
@@ -898,12 +609,20 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "getMaterialInstance": {}
+            "Attributes": {
+              "type": null
+            },
+            "Indices": {
+              "type": null
+            },
+            "NumVertices": {
+              "type": "integer"
+            }
           }
         }
       }
     },
-    "nap::MemoryTexture2D": {
+    "nap::TransformComponent": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -912,7 +631,7 @@
       "properties": {
         "type": {
           "type": "string",
-          "pattern": "nap::MemoryTexture2D"
+          "pattern": "nap::TransformComponent"
         },
         "mID": {
           "type": "string"
@@ -921,8 +640,190 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "mParameters": {},
-            "mSettings": {}
+            "Properties": {
+              "type": null
+            }
+          }
+        }
+      }
+    },
+    "nap::CameraComponentInstance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "nap::CameraComponentInstance"
+        },
+        "mID": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {}
+        }
+      }
+    },
+    "nap::PointerInputComponentInstance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "nap::PointerInputComponentInstance"
+        },
+        "mID": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {}
+        }
+      }
+    },
+    "nap::Material": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "nap::Material"
+        },
+        "mID": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "BlendMode": {
+              "type": null
+            },
+            "DepthMode": {
+              "type": null
+            },
+            "Shader": {
+              "type": null
+            },
+            "Uniforms": {
+              "type": null
+            },
+            "VertexAttributeBindings": {
+              "type": null
+            }
+          }
+        }
+      }
+    },
+    "nap::RenderableMeshComponent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "nap::RenderableMeshComponent"
+        },
+        "mID": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "ClipRect": {
+              "type": null
+            },
+            "MaterialInstance": {
+              "type": null
+            },
+            "Mesh": {
+              "type": null
+            }
+          }
+        }
+      }
+    },
+    "nap::Uniform": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "nap::Uniform"
+        },
+        "mID": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "Name": {
+              "type": null
+            }
+          }
+        }
+      }
+    },
+    "nap::PlaneMesh": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "nap::PlaneMesh"
+        },
+        "mID": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {}
+        }
+      }
+    },
+    "nap::PerspCameraComponent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "nap::PerspCameraComponent"
+        },
+        "mID": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "Properties": {
+              "type": null
+            }
           }
         }
       }
@@ -958,7 +859,7 @@
         }
       }
     },
-    "nap::TransformComponentInstance": {
+    "nap::UniformTexture2D": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -967,7 +868,7 @@
       "properties": {
         "type": {
           "type": "string",
-          "pattern": "nap::TransformComponentInstance"
+          "pattern": "nap::UniformTexture2D"
         },
         "mID": {
           "type": "string"
@@ -976,64 +877,304 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "getRotate": {},
-            "getScale": {},
-            "getTranslate": {},
-            "getUniformScale": {},
-            "setRotate": {},
-            "setScale": {},
-            "setTranslate": {},
-            "setUniformScale": {}
-          }
-        }
-      }
-    },
-    "nap::RotateComponent": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "pattern": "nap::RotateComponent"
-        },
-        "mID": {
-          "type": "string"
-        },
-        "props": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "Properties": {}
-          }
-        }
-      }
-    },
-    "nap::Shader": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "pattern": "nap::Shader"
-        },
-        "mID": {
-          "type": "string"
-        },
-        "props": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "mFragShader": {
+            "Name": {
               "type": "string"
             },
-            "mVertShader": {
+            "Texture": {
+              "type": null
+            },
+            "setTexture": {
+              "type": null
+            }
+          }
+        }
+      }
+    },
+    "nap::UniformMat4": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "nap::UniformMat4"
+        },
+        "mID": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "Name": {
               "type": "string"
+            },
+            "Value": {
+              "type": null
+            },
+            "setValue": {
+              "type": null
+            }
+          }
+        }
+      }
+    },
+    "nap::OrthoCameraComponent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "nap::OrthoCameraComponent"
+        },
+        "mID": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "Properties": {
+              "type": null
+            }
+          }
+        }
+      }
+    },
+    "nap::EntityInstance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "nap::EntityInstance"
+        },
+        "mID": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "findComponent": {
+              "type": null
+            }
+          }
+        }
+      }
+    },
+    "nap::TextureRenderTarget2D": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "nap::TextureRenderTarget2D"
+        },
+        "mID": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "mClearColor": {
+              "type": null
+            },
+            "mColorTexture": {
+              "type": null
+            },
+            "mDepthTexture": {
+              "type": null
+            }
+          }
+        }
+      }
+    },
+    "nap::Image": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "nap::Image"
+        },
+        "mID": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "mImagePath": {
+              "type": "string"
+            },
+            "mParameters": {
+              "type": null
+            }
+          }
+        }
+      }
+    },
+    "nap::UniformValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "nap::UniformValue"
+        },
+        "mID": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "Name": {
+              "type": null
+            }
+          }
+        }
+      }
+    },
+    "nap::InputComponent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "nap::InputComponent"
+        },
+        "mID": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {}
+        }
+      }
+    },
+    "nap::UniformVec4": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "nap::UniformVec4"
+        },
+        "mID": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "Name": {
+              "type": "string"
+            },
+            "Value": {
+              "type": null
+            },
+            "setValue": {
+              "type": null
+            }
+          }
+        }
+      }
+    },
+    "nap::DefaultInputRouterComponent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "nap::DefaultInputRouterComponent"
+        },
+        "mID": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {}
+        }
+      }
+    },
+    "nap::Window": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "nap::Window"
+        },
+        "mID": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {}
+        }
+      }
+    },
+    "nap::UniformFloat": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "nap::UniformFloat"
+        },
+        "mID": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "Name": {
+              "type": "string"
+            },
+            "Value": {
+              "type": "number"
+            },
+            "setValue": {
+              "type": null
             }
           }
         }
@@ -1060,7 +1201,7 @@
         }
       }
     },
-    "nap::SphereMesh": {
+    "nap::KeyInputComponent": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -1069,194 +1210,7 @@
       "properties": {
         "type": {
           "type": "string",
-          "pattern": "nap::SphereMesh"
-        },
-        "mID": {
-          "type": "string"
-        },
-        "props": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "Radius": {
-              "type": "number"
-            },
-            "Rings": {
-              "type": "number"
-            },
-            "Sectors": {
-              "type": "number"
-            }
-          }
-        }
-      }
-    },
-    "nap::UniformInt": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "pattern": "nap::UniformInt"
-        },
-        "mID": {
-          "type": "string"
-        },
-        "props": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "Name": {
-              "type": "string"
-            },
-            "Value": {
-              "type": "integer"
-            },
-            "setValue": {}
-          }
-        }
-      }
-    },
-    "nap::MeshData": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "pattern": "nap::MeshData"
-        },
-        "mID": {
-          "type": "string"
-        },
-        "props": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "Attributes": {},
-            "Indices": {},
-            "NumVertices": {
-              "type": "integer"
-            }
-          }
-        }
-      }
-    },
-    "nap::PerspCameraComponent": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "pattern": "nap::PerspCameraComponent"
-        },
-        "mID": {
-          "type": "string"
-        },
-        "props": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "Properties": {}
-          }
-        }
-      }
-    },
-    "nap::Material": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "pattern": "nap::Material"
-        },
-        "mID": {
-          "type": "string"
-        },
-        "props": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "BlendMode": {},
-            "DepthMode": {},
-            "Shader": {},
-            "Uniforms": {},
-            "VertexAttributeBindings": {}
-          }
-        }
-      }
-    },
-    "nap::UniformMat4": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "pattern": "nap::UniformMat4"
-        },
-        "mID": {
-          "type": "string"
-        },
-        "props": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "Name": {
-              "type": "string"
-            },
-            "Value": {},
-            "setValue": {}
-          }
-        }
-      }
-    },
-    "nap::Uniform": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "pattern": "nap::Uniform"
-        },
-        "mID": {
-          "type": "string"
-        },
-        "props": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "Name": {}
-          }
-        }
-      }
-    },
-    "nap::InputComponent": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "pattern": "nap::InputComponent"
+          "pattern": "nap::KeyInputComponent"
         },
         "mID": {
           "type": "string"
@@ -1268,7 +1222,7 @@
         }
       }
     },
-    "nap::RenderableMeshComponent": {
+    "nap::RotateComponent": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -1277,7 +1231,7 @@
       "properties": {
         "type": {
           "type": "string",
-          "pattern": "nap::RenderableMeshComponent"
+          "pattern": "nap::RotateComponent"
         },
         "mID": {
           "type": "string"
@@ -1286,14 +1240,14 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "ClipRect": {},
-            "MaterialInstance": {},
-            "Mesh": {}
+            "Properties": {
+              "type": null
+            }
           }
         }
       }
     },
-    "nap::CameraComponentInstance": {
+    "nap::RenderableComponentResource": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -1302,7 +1256,7 @@
       "properties": {
         "type": {
           "type": "string",
-          "pattern": "nap::CameraComponentInstance"
+          "pattern": "nap::RenderableComponentResource"
         },
         "mID": {
           "type": "string"
@@ -1311,6 +1265,140 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {}
+        }
+      }
+    },
+    "nap::PointerInputComponent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "nap::PointerInputComponent"
+        },
+        "mID": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {}
+        }
+      }
+    },
+    "nap::Texture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "nap::Texture"
+        },
+        "mID": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "mParameters": {
+              "type": null
+            }
+          }
+        }
+      }
+    },
+    "nap::Mesh": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "nap::Mesh"
+        },
+        "mID": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {}
+        }
+      }
+    },
+    "nap::InputComponentInstance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "nap::InputComponentInstance"
+        },
+        "mID": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {}
+        }
+      }
+    },
+    "nap::OrthoCameraComponentInstance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "nap::OrthoCameraComponentInstance"
+        },
+        "mID": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {}
+        }
+      }
+    },
+    "nap::RenderableMeshComponentInstance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "nap::RenderableMeshComponentInstance"
+        },
+        "mID": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "getMaterialInstance": {
+              "type": null
+            }
+          }
         }
       }
     }

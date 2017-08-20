@@ -38,7 +38,11 @@ def props(naptype):
     for k in dir(naptype):
         if k.startswith('__'): continue
         if k == 'mID': continue
-        dic[k] = {'type': propType(naptype, k)}  # TODO: Property type
+        typestr = propType(naptype, k)
+        if typestr:
+            dic[k] = {'type': typestr}  # TODO: Property type
+        else:
+            dic[k] = {}
     return dic
 
 
@@ -81,7 +85,7 @@ def writeSchema(filename):
 
     dic = OrderedDict([
         ('$schema', 'http://json-schema.org/draft-04/schema#'),
-        ('description', 'NAP Test JSon Schema'),
+        ('description', 'NAP JSON Schema'),
         __TYPE_OBJECT, __NO_ADD_PROPS,
         ('required', ['resources', 'entities']),
         ('properties', OrderedDict([
@@ -113,7 +117,7 @@ def testSchema(schemaFile, testFile):
 
 if __name__ == '__main__':
     file_test = 'test_schema_valid.nap.json'
-    file_schema = 'schema-generated.json'
+    file_schema = 'napschema.json'
 
     writeSchema(file_schema)
-    # testSchema(file_schema, file_test)
+    testSchema(file_schema, file_test)
