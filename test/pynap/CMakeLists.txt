@@ -3,6 +3,7 @@ project(nap)
 
 
 # Prerequisites
+set(pybind11_DIR "${CMAKE_CURRENT_LIST_DIR}/../../../thirdparty/pybind11/install/share/cmake/pybind11")
 find_package(pybind11 REQUIRED)
 
 
