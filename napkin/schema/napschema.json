@@ -1,0 +1,96 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "NAP Test JSon Schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "resources",
+    "entities"
+  ],
+  "properties": {
+    "resources": {
+      "items": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/nap::RenderWindow"
+          },
+          {
+            "$ref": "#/definitions/nap::MemoryTexture2D"
+          }
+        ]
+      },
+      "type": "array"
+    }
+  },
+  "definitions": {
+    "nap::RenderWindow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "nap::RenderWindow"
+          ]
+        },
+        "mID": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "Borderless": {
+              "type": "boolean"
+            },
+            "Height": {
+              "type": "integer"
+            },
+            "Resizable": {
+              "type": "boolean"
+            },
+            "Title": {
+              "type": "string"
+            },
+            "Width": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    },
+    "nap::MemoryTexture2D": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "nap::MemoryTexture2D"
+          ]
+        },
+        "mID": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "mParameters": {
+              "type": "object"
+            },
+            "mSettings": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    }
+  }
+}

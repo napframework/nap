@@ -1,0 +1,37 @@
+{
+  "resources": [
+    {
+      "type": "nap::RenderWindow",
+      "mID": "Window0",
+      "props": {
+        "Width": 256,
+        "Height": 256,
+        "Title": "Window 1"
+      }
+    },
+    {
+      "type": "nap::RenderWindow",
+      "mID": "Window1",
+      "props": {
+        "Width": 512,
+        "Height": 512,
+        "Title": "Window 2"
+      }
+    },
+    {
+      "type": "nap::MemoryTexture2D",
+      "mID": "ColorTexture",
+      "props": {
+        "mSettings": {
+          "mWidth": 640,
+          "mHeight": 480,
+          "mInternalFormat": 6408,
+          "mFormat": 6408,
+          "mType": 5121
+        }
+      }
+    }
+  ],
+  "entities": [
+  ]
+}
