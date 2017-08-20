@@ -10,6 +10,8 @@ def fullCPPTypename(cls):
 
 
 def napClasses(baseClass=None):
+    if not baseClass:
+        baseClass = nap.RTTIObject
     for k, v in nap.__dict__.items():
         if not isinstance(v, type): continue
         if baseClass and not issubclass(v, baseClass): continue
