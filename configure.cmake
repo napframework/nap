@@ -307,7 +307,9 @@ set(NAP_INSTALL_DIR ${CMAKE_CURRENT_LIST_DIR}/install/${BUILD_CONF})
 macro(nap_install_lib PROJECT_NAME)
     install(TARGETS ${PROJECT_NAME}
             PUBLIC_HEADER DESTINATION ${NAP_INSTALL_DIR}/include
-            LIBRARY DESTINATION ${NAP_INSTALL_DIR}/lib)
+            ARCHIVE DESTINATION ${NAP_INSTALL_DIR}/lib
+            LIBRARY DESTINATION ${NAP_INSTALL_DIR}/lib
+            )
 
     add_custom_target(${PROJECT_NAME}_install
             $(MAKE) install
