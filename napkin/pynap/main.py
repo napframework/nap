@@ -1,12 +1,6 @@
 import sys
-import os
 
-# TODO: Dirty hack to get things going right now
 from pynap.logpanel import LogPanel
-
-p = '%s/../../lib/Clang-Debug-x86_64' % os.path.dirname(__file__)
-sys.path.append(p)
-
 from pynap.propertypanel import PropertyPanel
 from pynap.servicepanel import ServicePanel
 from generic.qbasewindow import QBaseWindow
