@@ -3,8 +3,8 @@ from collections import OrderedDict
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from napkin.generic.filtertreeview import FilterTreeView
-from napkin.pynap import naputils
+from generic.filtertreeview import FilterTreeView
+from pynap import naputils
 
 
 class TypeByLeafItem(QStandardItem):

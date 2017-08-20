@@ -6,9 +6,9 @@ from PyQt5.QtCore import *
 
 import nap
 
-from napkin.generic.filtertreeview import FilterTreeView
-from napkin.generic.searchablepopuplist import SearchablePopupList, SearchablePopup
-from napkin.pynap import naputils
+from generic.filtertreeview import FilterTreeView
+from generic.searchablepopuplist import SearchablePopupList, SearchablePopup
+from pynap import naputils
 
 
 class ResourceItem(QStandardItem):

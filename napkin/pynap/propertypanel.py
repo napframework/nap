@@ -6,7 +6,7 @@ from PyQt5.QtCore import *
 
 import nap
 
-from napkin.generic.filtertreeview import FilterTreeView
+from generic.filtertreeview import FilterTreeView
 
 
 class KeyItem(QStandardItem):

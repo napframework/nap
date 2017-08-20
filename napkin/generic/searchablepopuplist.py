@@ -5,7 +5,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 
-from napkin.generic import butils
+from generic import butils
 
 
 class SearchablePopupList(QMenu):

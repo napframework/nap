@@ -1,8 +1,8 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import *
 
-from napkin.generic import qtutils
-from napkin.generic.qtutils import LeafFilterProxyModel
+from generic import qtutils
+from generic.qtutils import LeafFilterProxyModel
 
 
 class FilterTreeView(QWidget):
