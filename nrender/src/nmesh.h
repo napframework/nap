@@ -27,24 +27,24 @@ namespace opengl
 		*/
 		struct VertexAttributeIDs
 		{
-			static const VertexAttributeID PositionVertexAttr;
-			static const VertexAttributeID NormalVertexAttr;
-			static const VertexAttributeID UVVertexAttr;
-			static const VertexAttributeID ColorVertexAttr;
+			static const VertexAttributeID PositionVertexAttr;	//< Default position vertex attribute name
+			static const VertexAttributeID NormalVertexAttr;		//< Default normal vertex attribute name
+			static const VertexAttributeID UVVertexAttr;			//< Default uv vertex attribute name
+			static const VertexAttributeID ColorVertexAttr;		//< Default color vertex attribute name
 
-			static const VertexAttributeID GetUVVertexAttr(int uvChannel)
-			{
-				std::ostringstream stream;
-				stream << UVVertexAttr << uvChannel;
-				return stream.str();
-			}
+			/**
+			 * Returns the name of the vertex uv attribute based on the queried uv channel
+			 * @param uvChannel: the uv channel index to query
+			 * @return the name of the vertex attribute
+			 */
+			static const VertexAttributeID GetUVVertexAttr(int uvChannel);
 
-			static const VertexAttributeID GetColorVertexAttr(int colorChannel)
-			{
-				std::ostringstream stream;
-				stream << ColorVertexAttr << colorChannel;
-				return stream.str();
-			}
+			/**
+			 *	Returns the name of the vertex color attribute based on the queried uv channel
+			 * @param colorChannel: the color channel index to query
+			 * @return the name of the color vertex attribute
+			 */
+			static const VertexAttributeID GetColorVertexAttr(int colorChannel);
 		};
 
 
@@ -101,17 +101,21 @@ namespace opengl
 		EDrawMode getDrawMode() const { return mDrawMode;  }
 
 	private:
-		struct Attribute
+		/**
+		 * Helper object that binds a vertex attribute buy name to a vertex container
+		 * TODO: This object needs to be templated, currently only supports float data
+		 */
+		struct VertexAttribute
 		{
 			std::string mID;
 			std::unique_ptr<FloatVertexContainer> mData;
 
-			Attribute() = default;
-			Attribute(Attribute&& other) : mID(other.mID), mData(std::move(other.mData)) {}
+			VertexAttribute() = default;
+			VertexAttribute(VertexAttribute&& other) : mID(other.mID), mData(std::move(other.mData)) {}
 		};
 
-		int										mNumVertices = 0;
-		std::vector<Attribute>					mAttributes;
+		int										mNumVertices = 0;					//< Total number of vertices
+		std::vector<VertexAttribute>			mAttributes;						//< All vertex buffers associated with this mesh
 		std::unique_ptr<IndexContainer>			mIndices = nullptr;					//< Mesh connectivity
 		EDrawMode								mDrawMode = EDrawMode::TRIANGLES;	//< Draw mode
 	};

@@ -8,17 +8,32 @@ namespace opengl
 	const Mesh::VertexAttributeID Mesh::VertexAttributeIDs::UVVertexAttr("UV");
 	const Mesh::VertexAttributeID Mesh::VertexAttributeIDs::ColorVertexAttr("Color");
 
+	const opengl::Mesh::VertexAttributeID Mesh::VertexAttributeIDs::GetUVVertexAttr(int uvChannel)
+	{
+		std::ostringstream stream;
+		stream << UVVertexAttr << uvChannel;
+		return stream.str();
+	}
+
+
+	const opengl::Mesh::VertexAttributeID Mesh::VertexAttributeIDs::GetColorVertexAttr(int colorChannel)
+	{
+		std::ostringstream stream;
+		stream << ColorVertexAttr << colorChannel;
+		return stream.str();
+	}
+
+
 	// Constructor initializes object draw mode
 	Mesh::Mesh(int numVertices, EDrawMode drawMode) :
 		mNumVertices(numVertices),
 		mDrawMode(drawMode)
-	{
-	}
+	{	}
 
 
 	void Mesh::addVertexAttribute(const VertexAttributeID& id, unsigned int components, const float* data)
 	{
-		Attribute attribute;
+		VertexAttribute attribute;
 		attribute.mID = id;
 		attribute.mData = std::make_unique<FloatVertexContainer>();
 
@@ -35,7 +50,7 @@ namespace opengl
 
 	const VertexAttributeBuffer* Mesh::findVertexAttributeBuffer(const VertexAttributeID& id) const
 	{
-		for (const Attribute& attribute : mAttributes)
+		for (const VertexAttribute& attribute : mAttributes)
         {
             if (attribute.mID == id)
                 return attribute.mData->getVertexBuffer();
