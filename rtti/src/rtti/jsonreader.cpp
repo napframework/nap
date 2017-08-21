@@ -42,7 +42,7 @@ namespace nap
 
 		static bool readArrayRecursively(rtti::RTTIObject* rootObject, const rtti::Property& property, rtti::VariantArray& array, const rapidjson::Value& jsonArray, ReadState& readState, utility::ErrorState& errorState);
 
-		static rtti::RTTIObject* readObjectRecursive(const rapidjson::Value::ConstMemberIterator& jsonObject, bool isEmbeddedObject, ReadState& readState, utility::ErrorState& errorState);
+		static rtti::RTTIObject* readObjectRecursive(const rapidjson::Value& jsonObject, bool isEmbeddedObject, ReadState& readState, utility::ErrorState& errorState);
 
 		/**
 		 * Helper function to read a basic JSON type to a C++ type
@@ -97,16 +97,12 @@ namespace nap
 			}
 			else
 			{
-				// Must be exactly one member in the case of an embedded pointer
-				if (!errorState.check(jsonValue.MemberCount() == 1, "Encountered an embedded pointer which has more than 1 child"))
-					return false;
-
 				// Because we're entering a new embedded object, we need to reset the 'current' RTTIPath to restart with the nested object
 				RTTIPath old_rtti_path = readState.mCurrentRTTIPath;
 				readState.mCurrentRTTIPath = RTTIPath();
 
 				// Deserialize the nested object
-				resultObject = readObjectRecursive(jsonValue.MemberBegin(), true, readState, errorState);
+				resultObject = readObjectRecursive(jsonValue, true, readState, errorState);
 				if (resultObject == nullptr)
 					return false;
 
@@ -404,10 +400,14 @@ namespace nap
 			return true;
 		}
 
-		rtti::RTTIObject* readObjectRecursive(const rapidjson::Value::ConstMemberIterator& jsonObject, bool isEmbeddedObject, ReadState& readState, utility::ErrorState& errorState)
+		rtti::RTTIObject* readObjectRecursive(const rapidjson::Value& jsonObject, bool isEmbeddedObject, ReadState& readState, utility::ErrorState& errorState)
 		{
 			// Check whether the object is of a known type
-			const char* typeName = jsonObject->name.GetString();
+			rapidjson::Value::ConstMemberIterator type = jsonObject.FindMember("Type");
+			if (!errorState.check(type != jsonObject.MemberEnd(), "Unable to find required 'Type' property for object"))
+				return false;
+
+			const char* typeName = type->value.GetString();
 			rtti::TypeInfo type_info = rtti::TypeInfo::get_by_name(typeName);
 			if (!errorState.check(type_info.is_valid(), "Unknown object type %s encountered.", typeName))
 				return nullptr;
@@ -426,7 +426,7 @@ namespace nap
 
 			// Recursively read properties, nested compounds, etc
 			rtti::RTTIPath path;
-			if (!readPropertiesRecursive(object, *object, jsonObject->value, isEmbeddedObject, readState, errorState))
+			if (!readPropertiesRecursive(object, *object, jsonObject, isEmbeddedObject, readState, errorState))
 				return nullptr;
 
 			return object;
@@ -462,9 +462,17 @@ namespace nap
 
 			// Read objects
 			ReadState readState(factory, result);
-			for (auto object_pos = document.MemberBegin(); object_pos < document.MemberEnd(); ++object_pos)
+			rapidjson::Value::ConstMemberIterator objects = document.FindMember("Objects");
+			if (!errorState.check(objects != document.MemberEnd(), "Unable to find required 'Objects' field"))
+				return false;
+
+			if (!errorState.check(objects->value.IsArray(), "'Objects' field must be an array"))
+				return false;
+	
+			for (std::size_t index = 0; index < objects->value.Size(); ++index)
 			{
-				if (!readObjectRecursive(object_pos, false, readState, errorState))
+				const rapidjson::Value& json_element = objects->value[index];
+				if (!readObjectRecursive(json_element, false, readState, errorState))
 					return false;
 			}
 
