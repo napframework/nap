@@ -18,12 +18,24 @@ namespace nap
 
 		bool JSONWriter::start()
 		{
-			return mWriter.StartObject();
+			if (!mWriter.StartObject())
+				return false;
+
+			if (!mWriter.String("Objects"))
+				return false;
+
+			if (!mWriter.StartArray())
+				return false;
+
+			return true;
 		}
 
 
 		bool JSONWriter::finish()
 		{
+			if (!mWriter.EndArray())
+				return false;
+
 			if (!mWriter.EndObject())
 				return false;
 
@@ -33,10 +45,16 @@ namespace nap
 
 		bool JSONWriter::startRootObject(const rtti::TypeInfo& type)
 		{
+			if (!mWriter.StartObject())
+				return false;
+
+			if (!mWriter.String("Type"))
+				return false;
+
 			if (!mWriter.String(type.get_name().data()))
 				return false;
 
-			return mWriter.StartObject();
+			return true;
 		}
 
 

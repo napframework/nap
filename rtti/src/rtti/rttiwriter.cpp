@@ -100,10 +100,6 @@ namespace nap
 					bool is_embedded_pointer = rtti::hasFlag(property, nap::rtti::EPropertyMetaData::Embedded);
 					if (is_embedded_pointer && writer.supportsEmbeddedPointers())
 					{
-						// Write start of nested object
-						if (!errorState.check(writer.startCompound(pointee->get_type()), "Failed to start writing root object"))
-							return false;
-
 						// Write start of object
 						if (!errorState.check(writer.startRootObject(pointee->get_type()), "Failed to start writing root object"))
 							return false;
@@ -114,10 +110,6 @@ namespace nap
 
 						// Finish object
 						if (!errorState.check(writer.finishRootObject(), "Failed to finish writing root object"))
-							return false;
-
-						// Finish object
-						if (!errorState.check(writer.finishCompound(), "Failed to finish writing root object"))
 							return false;
 					}
 					else
