@@ -405,7 +405,7 @@ namespace nap
 			// Check whether the object is of a known type
 			rapidjson::Value::ConstMemberIterator type = jsonObject.FindMember("Type");
 			if (!errorState.check(type != jsonObject.MemberEnd(), "Unable to find required 'Type' property for object"))
-				return false;
+				return nullptr;
 
 			const char* typeName = type->value.GetString();
 			rtti::TypeInfo type_info = rtti::TypeInfo::get_by_name(typeName);
