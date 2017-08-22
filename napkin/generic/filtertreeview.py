@@ -34,6 +34,9 @@ class FilterTreeView(QWidget):
         collapseAction.triggered.connect(self.__onCollapseSelected)
         self.addAction(collapseAction)
 
+    def tree(self):
+        return self.__treeView
+
     def __onExpandSelected(self):
         for idx in self.selectedIndexes():
             qtutils.expandChildren(self.__treeView, idx, True)
@@ -50,7 +53,7 @@ class FilterTreeView(QWidget):
             yield self.model().itemFromIndex(idx)
 
     def selectedIndexes(self):
-        for idx in self.__treeView.selectionModel().selectedIndexes():
+        for idx in self.selectionModel().selectedRows():
             yield self.__sortFilter.mapToSource(idx)
 
     def __filterTextChanged(self, text):
