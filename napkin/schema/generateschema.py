@@ -34,7 +34,14 @@ def propType(naptype, prop):
 
 
 def props(naptype):
-    dic = OrderedDict()
+    dic = OrderedDict([
+        ('Type', OrderedDict([
+            ('type', 'string'),
+            # ('enum', [fullCPPTypename(naptype)])
+            ('pattern', fullCPPTypename(naptype))
+        ])),
+        ('mID', {'type': 'string'})])
+
     for k in dir(naptype):
         if k.startswith('__'): continue
         if k == 'mID': continue
@@ -47,24 +54,11 @@ def props(naptype):
 
 
 def resourceDef(naptype):
-    dic = OrderedDict([
+    return OrderedDict([
         __TYPE_OBJECT, __NO_ADD_PROPS,
-        ('required', ['type']),
-        ('properties', OrderedDict([
-            ('type', OrderedDict([
-                ('type', 'string'),
-                # ('enum', [fullCPPTypename(naptype)])
-                ('pattern', fullCPPTypename(naptype))
-            ])),
-            ('mID', {'type': 'string'}),
-            ('props', OrderedDict([
-                __TYPE_OBJECT, __NO_ADD_PROPS,
-                ('properties', props(naptype))
-            ]))
-        ]))
+        ('required', ['Type']),
+        ('properties', props(naptype))
     ])
-
-    return dic
 
 
 def resourceDefinitions(naptypes):
@@ -87,13 +81,13 @@ def writeSchema(filename):
         ('$schema', 'http://json-schema.org/draft-04/schema#'),
         ('description', 'NAP JSON Schema'),
         __TYPE_OBJECT, __NO_ADD_PROPS,
-        ('required', ['resources', 'entities']),
+        ('required', ['Objects']),
         ('properties', OrderedDict([
-            ('resources', OrderedDict([
+            ('Objects', OrderedDict([
                 ('type', 'array'),
                 ('items', {'anyOf': [resourceRef(t) for t in types]})
             ])),
-            ('entities', {})
+            # ('entities', {})
         ])),
         ('definitions', resourceDefinitions(types))
     ])
