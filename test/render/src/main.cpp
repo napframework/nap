@@ -23,12 +23,19 @@
 #include <nap/core.h>
 #include <nap/resourcemanager.h>
 #include <inputservice.h>
+#include <nap/windowresource.h>
+#include <nap/windowevent.h>
+#include <nap/event.h>
 #include <inputcomponent.h>
 #include <inputrouter.h>
+#include <nap/entity.h>
+#include <nap/component.h>
 #include <nap/logger.h>
 #include <sceneservice.h>
+#include <mathutils.h>
 
-#include "pythonscriptcomponent.h"
+#include <pybind11/pybind11.h>
+#include <pybind11/embed.h>
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
@@ -228,9 +235,6 @@ bool init(nap::Core& core)
 
 	nap::utility::ErrorState errorState;
 
-	// Needed to make sure python module is loaded (should be removed later when dynamic module loading is back in)
-	nap::PythonScriptComponent* bla = new nap::PythonScriptComponent();
-
 	if (!resourceManagerService->loadFile("data/objects.json", errorState))
 	{
 		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
@@ -329,4 +333,4 @@ void runGame(nap::Core& core)
 	renderService->shutdown();
 }
        
- 
+   

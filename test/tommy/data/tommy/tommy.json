@@ -1,85 +1,98 @@
 {
-	"nap::RenderWindow": {
-		"mID" : "Window",
-		"Width" : 512,
-		"Height" : 512,
-		"Title" : "Tommy"
-	},
-	
-	"nap::Image": {
-		"mID" : "BackgroundImage",
-		"mImagePath" : "data/tommy/background.jpg"
-	},
-	
-	"nap::Image": {
-		"mID" : "Looks_01",
-		"mImagePath" : "data/tommy/01.png"
-	},
+	"Objects" : 
+	[
+		{
+			"Type" : "nap::RenderWindow",
+			"mID" : "Window",
+			"Width" : 512,
+			"Height" : 512,
+			"Title" : "Tommy"
+		},
+		
+		{
+			"Type" : "nap::Image",
+			"mID" : "BackgroundImage",
+			"mImagePath" : "data/tommy/background.jpg"
+		},
+		
+		{
+			"Type" : "nap::Image",
+			"mID" : "Looks_01",
+			"mImagePath" : "data/tommy/01.png"
+		},
 
-	"nap::Image": {
-		"mID" : "Looks_02",
-		"mImagePath" : "data/tommy/02.png"
-	},
+		{
+			"Type" : "nap::Image",
+			"mID" : "Looks_02",
+			"mImagePath" : "data/tommy/02.png"
+		},
 
-	"nap::Image": {
-		"mID" : "Looks_03",
-		"mImagePath" : "data/tommy/03.png"
-	},
+		{
+			"Type" : "nap::Image",
+			"mID" : "Looks_03",
+			"mImagePath" : "data/tommy/03.png"
+		},
 
-	"nap::Image": {
-		"mID" : "Looks_04",
-		"mImagePath" : "data/tommy/04.png"
-	},
+		{
+			"Type" : "nap::Image",
+			"mID" : "Looks_04",
+			"mImagePath" : "data/tommy/04.png"
+		},
 
-	"nap::Image": {
-		"mID" : "ButtonLeft",
-		"mImagePath" : "data/tommy/prev.png"
-	},
+		{
+			"Type" : "nap::Image",
+			"mID" : "ButtonLeft",
+			"mImagePath" : "data/tommy/prev.png"
+		},
 
-	"nap::Image": {
-		"mID" : "ButtonRight",  
-		"mImagePath" : "data/tommy/next.png"
-	}, 
+		{
+			"Type" : "nap::Image",
+			"mID" : "ButtonRight",  
+			"mImagePath" : "data/tommy/next.png"
+		}, 
 
-	"nap::Image": {
-		"mID" : "Title",
-		"mImagePath" : "data/tommy/tommyxgigi.png" 
-	},
+		{
+			"Type" : "nap::Image",
+			"mID" : "Title",
+			"mImagePath" : "data/tommy/tommyxgigi.png" 
+		},
 
-	"nap::Image": {
-		"mID" : "LooksTitle",
-		"mImagePath" : "data/tommy/looks.png"
-	},
-	
-	"nap::Shader": {
-		"mID": "UIShader",
-		"mVertShader": "shaders/tommy/ui.vert",
-		"mFragShader": "shaders/tommy/ui.frag"
-	},	
-	
-	"nap::PlaneMesh": {
-		"mID": "PlaneMesh"
-	},
-	
-	"nap::Material": 
-	{
-		"mID": "UIMaterial",
-		"Shader": "UIShader",
-		"VertexAttributeBindings" : [
-			{
-				"MeshAttributeID": "Position",
-				"ShaderAttributeID": "in_Position"
-			},
-			{
-				"MeshAttributeID": "UV0",
-				"ShaderAttributeID": "in_UV0"
-			}
-		],
-		"Uniforms" : 
-		[		
-			{
-				"nap::UniformVec4" : 
+		{
+			"Type" : "nap::Image",
+			"mID" : "LooksTitle",
+			"mImagePath" : "data/tommy/looks.png"
+		},
+		
+		{
+			"Type" : "nap::Shader",
+			"mID": "UIShader",
+			"mVertShader": "shaders/tommy/ui.vert",
+			"mFragShader": "shaders/tommy/ui.frag"
+		},	
+		
+		{
+			"Type" : "nap::PlaneMesh",
+			"mID": "PlaneMesh"
+		},
+		
+		{
+			"Type" : "nap::Material",
+			"mID": "UIMaterial",
+			"Shader": "UIShader",
+			"VertexAttributeBindings" : [
 				{
+					"MeshAttributeID": "Position",
+					"ShaderAttributeID": "in_Position"
+				},
+				{
+					"MeshAttributeID": "UV0",
+					"ShaderAttributeID": "in_UV0"
+				}
+			],
+			"Uniforms" : 
+			[		
+				{
+					"Type" : "nap::UniformVec4",
 					"Name" : "inColor",
 					"Value" : 
 					{
@@ -89,38 +102,37 @@
 						"w" : 1.0
 					}
 				}
-			}
-		]			
-	},
-	
-	"nap::Entity": {
-		"mID": "UIInputRouterEntity",
+			]			
+		},
 		
-		"Components" : 
-		[
-			{
-				"nap::UIInputRouterComponent": {
+		{
+			"Type" : "nap::Entity",
+			"mID": "UIInputRouterEntity",
+			
+			"Components" : 
+			[
+				{
+					"Type" : "nap::UIInputRouterComponent",
 					"CameraEntity" : "CameraEntity"
-				}		
-			}
-		]
-	},
+				}
+			]
+		},
 
-	"nap::Entity": {
-		"mID": "CameraEntity",
-		
-		"Components" : 
-		[
-			{
-				"nap::OrthoCameraComponent": {
+		{
+			"Type" : "nap::Entity",
+			"mID": "CameraEntity",
+			
+			"Components" : 
+			[
+				{
+					"Type" : "nap::OrthoCameraComponent",
 					"Properties": {
 						"NearClippingPlane" : 0.01,
 						"FarClippingPlane" : 10000.0
 					}
-				}		
-			},
-			{
-				"nap::TransformComponent": {
+				},
+				{
+					"Type" : "nap::TransformComponent",
 					"Properties": {
 						"Translate": {
 							"x": 0.0,
@@ -139,17 +151,17 @@
 						},
 						"UniformScale": 1.0						
 					}
-				}		
-			}
-		]
-	},
-	
-	"nap::Entity": {
-		"mID": "RootEntity",
-		"Components" : 
-		[
-			{
-				"nap::FractionLayoutComponent" : {
+				}
+			]
+		},
+		
+		{
+			"Type" : "nap::Entity",
+			"mID": "RootEntity",
+			"Components" : 
+			[
+				{
+					"Type" : "nap::FractionLayoutComponent",
 					"Properties" : {
 						"Position" : {
 							"x": 0.0,
@@ -161,50 +173,43 @@
 							"y": 1.00
 						}
 					}
-
-				}
-			},
-			{
-				"nap::TransformComponent": {				
-				}		
-			}			
-		],
-		"Children" :
-		[
-			"BackgroundImageEntity"
-		] 
-	},
-
-	"nap::Entity": {
-		"mID": "BackgroundImageEntity",
-		
-		"Components" : 
-		[
-			{
-				"nap::RenderableMeshComponent": 
+				},
 				{
+					"Type" : "nap::TransformComponent"
+				}			
+			],
+			"Children" :
+			[
+				"BackgroundImageEntity"
+			] 
+		},
+
+		{
+			"Type" : "nap::Entity",
+			"mID": "BackgroundImageEntity",
+			
+			"Components" : 
+			[
+				{
+					"Type" : "nap::RenderableMeshComponent",
 					"Mesh" : "PlaneMesh",
 					"MaterialInstance" : {
 						"Material": "UIMaterial",
 						"Uniforms" : 
 						[		
 							{		
-								"nap::UniformTexture2D" : 
-								{
-									"Name" : "mTexture",
-									"Texture" : "BackgroundImage"
-								}
+								"Type" : "nap::UniformTexture2D",
+								"Name" : "mTexture",
+								"Texture" : "BackgroundImage"
 							}
 						]			
 					}
-				}
-			},
-			{
-				"nap::TransformComponent": {
-				}		
-			},
-			{
-				"nap::FractionLayoutComponent" : {
+				},
+				{
+					"Type" : "nap::TransformComponent"
+				},
+				{
+					"Type" : "nap::FractionLayoutComponent",
 					"Properties" : {
 						"Position" : {
 							"x": 0.25,
@@ -216,26 +221,26 @@
 							"x": 0.4
 						}
 					}
-				}
-			}	
-		],
-		"Children" :
-		[
-			"ButtonLeftEntity",
-			"ButtonRightEntity",
-			"TitleEntity",
-			"LooksTitleEntity",
-			"SlideShowEntity"
-		] 		
-	},
-	
-	"nap::Entity": {
-		"mID": "ButtonLeftEntity",
+				}	
+			],
+			"Children" :
+			[
+				"ButtonLeftEntity",
+				"ButtonRightEntity",
+				"TitleEntity",
+				"LooksTitleEntity",
+				"SlideShowEntity"
+			] 		
+		},
 		
-		"Components" : 
-		[
-			{
-				"nap::RenderableMeshComponent": {
+		{
+			"Type" : "nap::Entity",
+			"mID": "ButtonLeftEntity",
+			
+			"Components" : 
+			[
+				{
+					"Type" : "nap::RenderableMeshComponent",
 					"Mesh" : "PlaneMesh",
 					"MaterialInstance" : 
 					{
@@ -245,39 +250,32 @@
 						"Uniforms" : 
 						[		
 							{		
-								"nap::UniformTexture2D" : 
-								{
-									"Name" : "mTexture",
-									"Texture" : "ButtonLeft"
-								}
+								"Type" : "nap::UniformTexture2D",
+								"Name" : "mTexture",
+								"Texture" : "ButtonLeft"
 							},
 							{
-								"nap::UniformVec4" : 
+								"Type" : "nap::UniformVec4",
+								"Name" : "inColor",
+								"Value" : 
 								{
-									"Name" : "inColor",
-									"Value" : 
-									{
-										"x" : 1.0,
-										"y" : 1.0,
-										"z" : 1.0,
-										"w" : 1.0
-									}
-								}							
+									"x" : 1.0,
+									"y" : 1.0,
+									"z" : 1.0,
+									"w" : 1.0
+								}
 							}
 						]			
 					}
-				}	
-			},
-			{
-				"nap::TransformComponent": {
-				}		
-			},
-			{
-				"nap::PointerInputComponent": {
-				}
-			},
-			{
-				"nap::FractionLayoutComponent" : {
+				},
+				{
+					"Type" : "nap::TransformComponent"
+				},
+				{
+					"Type" : "nap::PointerInputComponent"
+				},
+				{
+					"Type" : "nap::FractionLayoutComponent",
 					"Properties" : {
 						"PositionPivot" : "Center",
 						"Position" : {
@@ -291,17 +289,17 @@
 						}
 					}
 				}
-			}
-		]
-	},
-	
-	"nap::Entity": {
-		"mID": "ButtonRightEntity",
+			]
+		},
 		
-		"Components" : 
-		[
-			{
-				"nap::RenderableMeshComponent": {
+		{
+			"Type" : "nap::Entity",
+			"mID": "ButtonRightEntity",
+			
+			"Components" : 
+			[
+				{
+					"Type" : "nap::RenderableMeshComponent",
 					"Mesh" : "PlaneMesh",
 					"MaterialInstance" : 
 					{
@@ -311,26 +309,21 @@
 						"Uniforms" : 
 						[		
 							{		
-								"nap::UniformTexture2D" : 
-								{
-									"Name" : "mTexture",
-									"Texture" : "ButtonRight"
-								}
+								"Type" : "nap::UniformTexture2D",
+								"Name" : "mTexture",
+								"Texture" : "ButtonRight"
 							}
 						]			
 					}
-				}
-			},
-			{
-				"nap::TransformComponent": {
-				}		
-			},
-			{
-				"nap::PointerInputComponent": {
-				}
-			},	
-			{
-				"nap::FractionLayoutComponent" : {
+				},
+				{
+					"Type" : "nap::TransformComponent"
+				},
+				{
+					"Type" : "nap::PointerInputComponent"
+				},	
+				{
+					"Type" : "nap::FractionLayoutComponent",
 					"Properties" : {
 						"PositionPivot" : "Center",
 						"Position" : {
@@ -344,17 +337,17 @@
 						}
 					}
 				}
-			}
-		]
-	},
-	
-	"nap::Entity": {
-		"mID": "TitleEntity",
+			]
+		},
 		
-		"Components" : 
-		[
-			{
-				"nap::RenderableMeshComponent": {
+		{
+			"Type" : "nap::Entity",
+			"mID": "TitleEntity",
+			
+			"Components" : 
+			[
+				{
+					"Type" : "nap::RenderableMeshComponent",
 					"Mesh" : "PlaneMesh",
 					"MaterialInstance" : 
 					{
@@ -364,22 +357,18 @@
 						"Uniforms" : 
 						[		
 							{		
-								"nap::UniformTexture2D" : 
-								{
-									"Name" : "mTexture",
-									"Texture" : "Title"
-								}
+								"Type" : "nap::UniformTexture2D",
+								"Name" : "mTexture",
+								"Texture" : "Title"
 							}
 						]			
 					}				
-				}		
-			},
-			{
-				"nap::TransformComponent": {
-				}		
-			},
-			{
-				"nap::FractionLayoutComponent" : {
+				},
+				{
+					"Type" : "nap::TransformComponent"
+				},
+				{
+					"Type" : "nap::FractionLayoutComponent",
 					"Properties" : {
 						"PositionPivot" : "Center",
 						"Position" : {
@@ -393,17 +382,17 @@
 						}
 					}
 				}
-			}
-		]
-	},
-	
-	"nap::Entity": {
-		"mID": "LooksTitleEntity",
+			]
+		},
+		
+		{
+			"Type" : "nap::Entity",
+			"mID": "LooksTitleEntity",
 
-		"Components" : 
-		[
-			{
-				"nap::RenderableMeshComponent": {
+			"Components" : 
+			[
+				{
+					"Type" : "nap::RenderableMeshComponent",
 					"Mesh" : "PlaneMesh",
 					"MaterialInstance" : 
 					{
@@ -413,22 +402,18 @@
 						"Uniforms" : 
 						[		
 							{		
-								"nap::UniformTexture2D" : 
-								{
-									"Name" : "mTexture",
-									"Texture" : "LooksTitle"
-								}
+								"Type" : "nap::UniformTexture2D",
+								"Name" : "mTexture",
+								"Texture" : "LooksTitle"
 							}
 						]			
 					}				
-				}	
-			},
-			{
-				"nap::TransformComponent": {
-				}		
-			},
-			{
-				"nap::FractionLayoutComponent" : {
+				},
+				{
+					"Type" : "nap::TransformComponent"
+				},
+				{
+					"Type" : "nap::FractionLayoutComponent",
 					"Properties" : {
 						"PositionPivot" : "Center",
 						"Position" : {
@@ -442,18 +427,17 @@
 						}
 					}
 				}
-			}
-		]
-	},
-	
-	"nap::Entity": {
-		"mID": "SlideShowEntity",
+			]
+		},
 		
-		"Components" : 
-		[
-			{
-				"nap::SlideShowComponent": 
+		{
+			"Type" : "nap::Entity",
+			"mID": "SlideShowEntity",
+			
+			"Components" : 
+			[
 				{
+					"Type" : "nap::SlideShowComponent",
 					"Images" : 
 					[
 						"Looks_01",
@@ -462,14 +446,12 @@
 						"Looks_04"
 					],
 					"EntityPrototype" : "LooksEntity"
-				}
-			},
-			{
-				"nap::TransformComponent": {
-				}
-			},
-			{
-				"nap::FractionLayoutComponent" : {
+				},
+				{
+					"Type" : "nap::TransformComponent"
+				},
+				{
+					"Type" : "nap::FractionLayoutComponent",
 					"Properties" : {
 						"PositionPivot" : "Center",
 						"Position" : {
@@ -483,18 +465,18 @@
 						}
 					}
 				}
-			}
-		]
-	},
-	
-	"nap::Entity": {
-		"mID": "LooksEntity",
-		"AutoSpawn" : "false",
+			]
+		},
 		
-		"Components" : 
-		[
-			{
-				"nap::RenderableMeshComponent": {
+		{
+			"Type" : "nap::Entity",
+			"mID": "LooksEntity",
+			"AutoSpawn" : "false",
+			
+			"Components" : 
+			[
+				{
+					"Type" : "nap::RenderableMeshComponent",
 					"Mesh" : "PlaneMesh",
 					"MaterialInstance" : 
 					{
@@ -504,24 +486,17 @@
 						"Uniforms" : 
 						[		
 							{		
-								"nap::UniformTexture2D" : 
-								{
-									"Name" : "mTexture",
-									"Texture" : "Looks_01"
-								}
+								"Type" : "nap::UniformTexture2D",
+								"Name" : "mTexture",
+								"Texture" : "Looks_01"
 							}
 						]			
 					}
-				}		
-			},
-			{
-				"nap::TransformComponent": {
-				}		
-			}
-		]
-	}
-	
-	
-	
-
+				},
+				{
+					"Type" : "nap::TransformComponent"
+				}
+			]
+		}
+	]
 } 

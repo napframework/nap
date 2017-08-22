@@ -20,3 +20,32 @@ endif()
 
 target_link_libraries(${PROJECT_NAME} napcore mod_naprender nrender mod_napmath)
 
+
+# ======================= UNIT TESTS
+enable_testing()
+
+# ensure failure without arguments
+add_test(NAME NoArguments COMMAND ${PROJECT_NAME})
+set_tests_properties(NoArguments PROPERTIES WILL_FAIL true)
+
+# convert an fbx
+add_test(NAME ConvertFile COMMAND ${PROJECT_NAME} -o
+        $<TARGET_FILE_DIR:${PROJECT_NAME}>/res-test/vinyl_cover_converted.mesh
+        $<TARGET_FILE_DIR:${PROJECT_NAME}>/res-test/vinyl_cover.fbx)
+
+
+# dummy command. When depended on, the target wil always be run
+add_custom_command(OUTPUT always_rebuild COMMAND cmake -E echo)
+
+# copy test data
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_CURRENT_LIST_DIR}/res/vinyl_cover.fbx
+        $<TARGET_FILE_DIR:${PROJECT_NAME}>/res-test/vinyl_cover.fbx
+        DEPENDS always_rebuild
+        )
+
+# auto run test
+#add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+#        COMMAND ctest -C $<CONFIGURATION> --output-on-failure
+#        DEPENDS always_rebuild)
