@@ -27,7 +27,6 @@ class ObjectModel(QStandardItemModel):
     def setObjects(self, objects):
         while self.rowCount():
             self.removeRow(0)
-        print(objects)
         for ob in objects:
             self.appendRow([
                 ObjectItem(ob),

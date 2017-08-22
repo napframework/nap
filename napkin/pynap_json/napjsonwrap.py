@@ -11,9 +11,7 @@ class NAPType(object):
 
     def properties(self):
         propsdic = self.__data['properties']
-        print('=============================')
         for name in propsdic:
-            print(name)
             yield NAPProperty(self, name, propsdic[name])
 
     def __repr__(self):
@@ -21,12 +19,15 @@ class NAPType(object):
 
 
 class NAPProperty(object):
-    def __init__(self, type, name, data):
+    def __init__(self, ownerType, name, data):
         super(NAPProperty, self).__init__()
-        self.__type = type
+        self.__ownerType = ownerType
         self.name = name
         self.__data = data
 
+    def type(self):
+
+        return self.__data['type'] if 'type' in self.__data else '<<UNKNOWN>>'
 
 class NAPInstance(object):
     def __init__(self, data):

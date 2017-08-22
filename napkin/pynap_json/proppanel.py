@@ -31,6 +31,13 @@ class KeyItem(QStandardItem):
         self.prop = prop
         self.setText(prop)
 
+class TypeItem(QStandardItem):
+    def __init__(self, obj, prop):
+        super(TypeItem, self).__init__()
+        self.obj = obj
+        self.prop = prop
+        self.setText(prop.type())
+
 
 class PropModel(QStandardItemModel):
     def __init__(self):
@@ -51,7 +58,8 @@ class PropModel(QStandardItemModel):
         for prop in self.__object.type().properties():
             self.appendRow([
                 KeyItem(self.__object, prop.name),
-                ValueItem(self.__object, prop.name)
+                ValueItem(self.__object, prop.name),
+                TypeItem(self.__object, prop)
             ])
 
 
