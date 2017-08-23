@@ -88,6 +88,7 @@ void updateShader()
 }
 
 
+
 // Called when the window is updating
 void onUpdate()
 {
@@ -118,7 +119,6 @@ void onUpdate()
 	updateShader();
 
 }
-
 
 // Called when the window is going to render
 void onRender()

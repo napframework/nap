@@ -35,6 +35,7 @@ namespace nap
 		window_settings.borderless	= window.mBorderless;
 		window_settings.resizable	= window.mResizable;
 		window_settings.title		= window.mTitle;
+		window_settings.sync		= window.mSync;
 
 		std::unique_ptr<GLWindow> new_window = mRenderer->createRenderWindow(window_settings, errorState);
 		if (new_window == nullptr)

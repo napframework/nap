@@ -22,8 +22,14 @@ namespace nap
 
 		// Default constructor
 		RenderWindow() = default;
+		
+		// Destructor
 		~RenderWindow();
 
+		/**
+		 * This constructor is called when creating the render window using the resource manager
+		 * Every render window needs to be aware of it's render service
+		 */
 		RenderWindow(RenderService& renderService);
 
 		/**
@@ -40,7 +46,7 @@ namespace nap
 		/**
 		 * @return the window managed by this component
 		 */
-		GLWindow* getWindow() const									{ return mWindow.get(); }
+		GLWindow* getWindow() const												{ return mWindow.get(); }
 
 		/**
 		 * Swaps window buffers
@@ -48,8 +54,7 @@ namespace nap
 		void swap() const														{ mWindow->swap(); }
 
 		/**
-		 * Makes this window active
-		 * calls activate afterwards
+		 * Makes this window active, calls activate afterwards
 		 */
 		void makeActive()														{ mWindow->makeCurrent(); }
 
@@ -66,12 +71,14 @@ namespace nap
 		int										mHeight			= 512;			// Height of the window
 		bool									mBorderless		= false;		// If the window is borderless
 		bool									mResizable		= true;			// If the window is resizable
-		std::string								mTitle;							// Name of the window
+		bool									mSync			= true;			// If v-sync is turned on for the window
+		std::string								mTitle			= "";			// Name of the window
 
 	private:
-		RenderService*							mRenderService	= nullptr;
-		std::unique_ptr<GLWindow>	mWindow			= nullptr;
+		RenderService*							mRenderService	= nullptr;		// Render service
+		std::unique_ptr<GLWindow>				mWindow			= nullptr;		// Actual OpenGL hardware window
 	};
+
 
 	/**
 	* Factory for creating WindowResources. The factory is responsible for passing the RenderService

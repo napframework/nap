@@ -257,7 +257,27 @@ namespace nap
 
 		// Copy vertex attribute data to mesh
 		for (const MeshData::Attribute& attribute : mesh_data->mAttributes)
-			mesh->addVertexAttribute(attribute.mID, attribute.mNumComponents, attribute.mData.data());
+		{
+			switch (attribute.mNumComponents)
+			{
+			case 1:
+				mesh->addVertexAttribute<float>(attribute.mID, attribute.mData.data());
+				break;
+			case 2:
+				mesh->addVertexAttribute<glm::vec2>(attribute.mID, (glm::vec2*)(attribute.mData.data()));
+				break;
+			case 3:
+				mesh->addVertexAttribute<glm::vec3>(attribute.mID, (glm::vec3*)(attribute.mData.data()));
+				break;
+			case 4:
+				mesh->addVertexAttribute<glm::vec4>(attribute.mID, (glm::vec4*)(attribute.mData.data()));
+				break;
+			default:
+				assert(false);
+				break;
+			}
+		}
+			
 
 		// Make sure there's position data
 		if (!errorState.check(mesh->findVertexAttributeBuffer(opengl::Mesh::VertexAttributeIDs::PositionVertexAttr) != nullptr, "Required attribute 'position' not found in mesh %s", meshPath.c_str()))

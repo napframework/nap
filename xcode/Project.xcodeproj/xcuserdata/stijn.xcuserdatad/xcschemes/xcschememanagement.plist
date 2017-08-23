@@ -14,6 +14,11 @@
 			<key>orderHint</key>
 			<integer>1</integer>
 		</dict>
+		<key>etherdream.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>21</integer>
+		</dict>
 		<key>fbxconverter.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
@@ -23,6 +28,11 @@
 		<dict>
 			<key>orderHint</key>
 			<integer>2</integer>
+		</dict>
+		<key>mod_napetherdream.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>22</integer>
 		</dict>
 		<key>mod_napinput.xcscheme</key>
 		<dict>
@@ -167,6 +177,11 @@
 			<key>primary</key>
 			<true/>
 		</dict>
+		<key>88769E8EC18C4851831CFD65</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
 		<key>8F47DB7EB35A4B45BFC180ED</key>
 		<dict>
 			<key>primary</key>
@@ -203,6 +218,11 @@
 			<true/>
 		</dict>
 		<key>DFCDC921B6F74838B33301C6</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>F002BE5574144405A3E82F19</key>
 		<dict>
 			<key>primary</key>
 			<true/>

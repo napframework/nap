@@ -16,6 +16,8 @@ namespace nap
 		class NAPAPI IObjectCreator
 		{
 		public:
+			virtual ~IObjectCreator() = default;
+
 			/**
 			* Creates the object specified with getCreationType()
 			*/
@@ -25,6 +27,35 @@ namespace nap
 			* @return the type this object creates
 			*/
 			virtual rtti::TypeInfo getTypeToCreate() const = 0;
+		};
+
+
+		/**
+		* Allows easy construction of object @Object using a single argument @T.
+		*/
+		template <typename Object, typename T>
+		class ObjectCreator : public rtti::IObjectCreator
+		{
+		public:
+			/**
+			* Constructor
+			* @param service: the service to associate with this object creator
+			*/
+			ObjectCreator(T& argument) :
+				mArgument(argument) { }
+
+			/**
+			* @return type to create
+			*/
+			rtti::TypeInfo getTypeToCreate() const override		{ return RTTI_OF(Object); }
+
+			/**
+			* @return Creates the object with the
+			*/
+			virtual rtti::RTTIObject* create() override			{ return new Object(mArgument); }
+
+		private:
+			T& mArgument;
 		};
 
 

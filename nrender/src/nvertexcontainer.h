@@ -5,6 +5,7 @@
 
 // External Includes
 #include <memory>
+#include <glm/glm.hpp>
 
 namespace opengl
 {
@@ -202,7 +203,7 @@ namespace opengl
         
 		// Constructor
 		TypedVertexContainer();
-		TypedVertexContainer(unsigned int components, unsigned int verts);
+		TypedVertexContainer(unsigned int verts);
 
 		/**
 		 * Needs to be implemented by every specialized type
@@ -216,7 +217,7 @@ namespace opengl
 		* @param verts the number of vertices to allocate memory for
 		* @return if allocation was successful
 		*/
-		bool allocateMemory(unsigned int components, unsigned int verts);
+		bool allocateMemory(unsigned int verts);
 
 		/**
 		* Copies data from source in to this vertex container
@@ -240,7 +241,7 @@ namespace opengl
 		* @param source data to copy
 		* @return if copy was successful
 		*/
-		bool copyData(unsigned int components, unsigned int verts, const T* source);
+		bool copyData(unsigned int verts, const T* source);
 
 		/**
 		* Sets data to be associated with this vertex container
@@ -263,6 +264,12 @@ namespace opengl
 		virtual bool copyData(const void* source) override															{ return false; }
 		virtual void setData(void* data) override																{ }
 
+		/**
+		* Needs to be implemented by every specialized type
+		* @return the number of components for this templated type
+		*/
+		unsigned int getComponents() const;
+
 		// utilities
 		bool updateSettingsIfValid(unsigned int components, unsigned int verts);
 	};
@@ -276,14 +283,14 @@ namespace opengl
 	opengl::TypedVertexContainer<T>::TypedVertexContainer()
 	{
 		mSettings.mType = getType();
+		mSettings.mComponents = getComponents();
 	}
-
 
 	// Stores settings and forces internal type
 	template<typename T>
-	opengl::TypedVertexContainer<T>::TypedVertexContainer(unsigned int components, unsigned int verts)
+	opengl::TypedVertexContainer<T>::TypedVertexContainer(unsigned int verts)
 	{
-		mSettings.mComponents = components;
+		mSettings.mComponents = getComponents();
 		mSettings.mVerts = verts;
 		mSettings.mType = getType();
 	}
@@ -291,10 +298,10 @@ namespace opengl
 
 	// Allocates memory for the typed vertex container
 	template<typename T>
-	bool opengl::TypedVertexContainer<T>::allocateMemory(unsigned int components, unsigned int verts)
+	bool opengl::TypedVertexContainer<T>::allocateMemory(unsigned int verts)
 	{
 		// Make sure new settings are valid
-		if (!updateSettingsIfValid(components, verts))
+		if (!updateSettingsIfValid(getComponents(), verts))
 			return false;
 
 		// Allocate
@@ -312,9 +319,9 @@ namespace opengl
 
 	// Copies data in to container, note that components and verts > 0
 	template<typename T>
-	bool opengl::TypedVertexContainer<T>::copyData(unsigned int components, unsigned int verts, const T* source)
+	bool opengl::TypedVertexContainer<T>::copyData(unsigned int verts, const T* source)
 	{
-		if (!updateSettingsIfValid(components, verts))
+		if (!updateSettingsIfValid(getComponents(), verts))
 			return false;
 		return VertexContainer::copyData(static_cast<const void*>(source));
 	}
@@ -364,5 +371,8 @@ namespace opengl
 	using IntVertexContainer    = TypedVertexContainer<int>;
 	using ByteVertexContainer   = TypedVertexContainer<int8_t>;
 	using DoubleVertexContainer = TypedVertexContainer<double>;
+	using Vec3VertexContainer	= TypedVertexContainer<glm::vec3>;
+	using Vec2VertexContainer	= TypedVertexContainer<glm::vec2>;
+	using vec4VertexContainer	= TypedVertexContainer<glm::vec4>;
 
 } // opengl
