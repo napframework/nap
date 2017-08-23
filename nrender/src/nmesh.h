@@ -44,10 +44,10 @@ namespace opengl
 			// Move operator
 			Attribute(Attribute&& other) : mID(other.mID), mContainer(std::move(other.mContainer))	{ }
 
-		protected:
 			// Associated vertex container, created when adding a vertex buffer to a mesh
 			std::unique_ptr<VertexContainer> mContainer = nullptr;
 
+		protected:
 			// Name of the attribute
 			std::string mID;
 		};
