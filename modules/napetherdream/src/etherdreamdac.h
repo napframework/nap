@@ -27,13 +27,6 @@ namespace nap
 	 */
 	class NAPAPI EtherDreamDac : public rtti::RTTIObject
 	{
-		enum class NAPAPI EConnectionStatus : int
-		{
-			CONNECTED			= 0,	// The DAC is available and connected
-			CONNECTION_ERROR	= 1,	// The DAC is available but a connection could not be established
-			UNAVAILABLE			= 2,	// The DAC is not available (not found in the system)
-		};
-
 		friend class EtherDreamService;
 		RTTI_ENABLE(rtti::RTTIObject)
 	public:
@@ -54,16 +47,6 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 *	@return current DAC connection status
-		 */
-		EConnectionStatus getConnectionStatus() const;
-
-		/**
-		 *	@return if the DAC is connected
-		 */
-		bool isConnected() const;
-
-		/**
 		 *	Set the points for this dac to write
 		 */
 		void setPoints(std::vector<EtherDreamPoint>& points);
@@ -74,12 +57,12 @@ namespace nap
 		// The amount of points per second the connected laser is allowed to draw (property)
 		int	mPointRate = 30000;
 
+		// If initialization succeeds when the DAC can't be found on the network or can't be connected to
+		bool mAllowFailure = true;
+
 	private:
 		// The etherdream service
 		EtherDreamService*	mService = nullptr;
-
-		// Current DAC status
-		EConnectionStatus mStatus = EConnectionStatus::UNAVAILABLE;
 
 		// The DAC system index, -1 if not available
 		int	 mIndex = -1;
@@ -88,8 +71,11 @@ namespace nap
 		std::mutex						mWriteMutex;
 		std::thread						mWriteThread;
 		bool							mStopWriting = false;
-		void							writeThread();
 		std::vector<EtherDreamPoint>	mPoints;
+		bool							mConnected = false;
+
+		// Thread that writes frame to laser when available
+		void							writeThread();
 
 		/**
 		 *	Signals the laser write thread to stop writing data and exit
@@ -102,6 +88,11 @@ namespace nap
 		* @param npoints, number of points to write
 		*/
 		bool writeFrame(EtherDreamPoint* data, uint npoints);
+
+		/**
+		*	@return if the DAC is connected
+		*/
+		bool isConnected() const;
 
 		/**
 		* @return current DAC read / write status

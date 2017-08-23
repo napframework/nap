@@ -6,8 +6,9 @@
 #include <nap/timer.h>
 
 RTTI_BEGIN_CLASS(nap::EtherDreamDac)
-	RTTI_PROPERTY("DacName",	&nap::EtherDreamDac::mDacName,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("PointRate",	&nap::EtherDreamDac::mPointRate,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("DacName",		&nap::EtherDreamDac::mDacName,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("PointRate",		&nap::EtherDreamDac::mPointRate,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("AllowFailure",	&nap::EtherDreamDac::mAllowFailure,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
@@ -39,10 +40,8 @@ namespace nap
 
 			// Disconnect
 			mService->getInterface()->disconnect(mIndex);
+			mConnected = false;
 		}
-
-		// Remove dac from service
-		mService->removeDAC(*this);
 	}
 
 
@@ -50,33 +49,30 @@ namespace nap
 	{
 		assert(mService != nullptr);
 		mIsRunning = false;
+		mConnected = false;
 
 		// Add the DAC to the system
-		// If the call returns true the DAC is valid and has been added, otherwise the DAC isn't
-		// available to the current systems
-		if (!mService->addDAC(*this))
+		// If the call returns true the DAC is valid and has been added, otherwise the DAC isn't available to the current systems
+		if (!mService->allocateDAC(*this))
 		{
-			nap::Logger::warn("Unable to find Etherdream DAC with name: %s", mDacName.c_str());
-			mStatus = EConnectionStatus::UNAVAILABLE;
-			return true;
+			std::string error = nap::utility::stringFormat("Unable to find Etherdream DAC with name: %s", mDacName.c_str());
+			nap::Logger::warn(error.c_str());
+			return errorState.check(mAllowFailure, error.c_str());
 		}
 
 		// Connect the dac
 		if (!mService->getInterface()->connect(mIndex))
 		{
-			nap::Logger::warn("Unable to connect to Etherdream DAC with name: %s, index: %d", mDacName.c_str(), mIndex);
-			mStatus = EConnectionStatus::CONNECTION_ERROR;
-			return true;
+			std::string error = nap::utility::stringFormat("Unable to connect to Etherdream DAC with name: %s, index: %d", mDacName.c_str(), mIndex);
+			nap::Logger::warn(error.c_str());
+			return errorState.check(mAllowFailure, error.c_str());
 		}
 
 		nap::Logger::info("Successfully connected to Etherdream DAC with name: %s, index: %d", mDacName.c_str(), mIndex);
-		mStatus = EConnectionStatus::CONNECTED;
+		mConnected = true;
 
 		// Start thread
 		mWriteThread = std::thread(std::bind(&EtherDreamDac::writeThread, this));
-
-		// Wait a bit for the connection to be established (hack)
-		// std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
 		return true;
 	}
@@ -157,21 +153,15 @@ namespace nap
 	}
 
 
-	nap::EtherDreamDac::EConnectionStatus EtherDreamDac::getConnectionStatus() const
-	{
-		return mStatus;
-	}
-
-
 	nap::EtherDreamInterface::EStatus EtherDreamDac::getWriteStatus() const
 	{
-		return isConnected() ? mService->getInterface()->getStatus(mIndex) : EtherDreamInterface::EStatus::ERROR;
+		return mService->getInterface()->getStatus(mIndex);
 	}
 	
 
 	bool EtherDreamDac::isConnected() const
 	{
-		return getConnectionStatus() == EConnectionStatus::CONNECTED;
+		return mConnected;
 	}
 
 

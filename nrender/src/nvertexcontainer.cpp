@@ -213,16 +213,45 @@ namespace opengl
 	// Template Specialization
 	//////////////////////////////////////////////////////////////////////////
     template<>
-	GLenum TypedVertexContainer<float>::getType() const		{ return GL_FLOAT; }
+	GLenum TypedVertexContainer<float>::getType() const						{ return GL_FLOAT; }
 
     template<>
-    GLenum TypedVertexContainer<int>::getType()   const		{ return GL_INT; }
+    GLenum TypedVertexContainer<int>::getType()   const						{ return GL_INT; }
 
     template<>
-    GLenum TypedVertexContainer<int8_t>::getType() const	{ return GL_BYTE; }
+    GLenum TypedVertexContainer<int8_t>::getType() const					{ return GL_BYTE; }
 
     template<>
-    GLenum TypedVertexContainer<double>::getType() const	{ return GL_DOUBLE; }
+    GLenum TypedVertexContainer<double>::getType() const					{ return GL_DOUBLE; }
 
+	template<>
+	GLenum TypedVertexContainer<glm::vec2>::getType() const					{ return GL_FLOAT; }
+
+	template<>
+	GLenum TypedVertexContainer<glm::vec3>::getType() const					{ return GL_FLOAT; }
+
+	template<>
+	GLenum TypedVertexContainer<glm::vec4>::getType() const					{ return GL_FLOAT; }
+
+	template<>
+	unsigned int TypedVertexContainer<float>::getComponents() const			{ return 1; }
+
+	template<>
+	unsigned int TypedVertexContainer<int>::getComponents()   const			{ return 1; }
+
+	template<>
+	unsigned int TypedVertexContainer<int8_t>::getComponents() const		{ return 1; }
+
+	template<>
+	unsigned int TypedVertexContainer<double>::getComponents() const		{ return 1; }
+
+	template<>
+	unsigned int TypedVertexContainer<glm::vec2>::getComponents() const		{ return 2; }
+
+	template<>
+	unsigned int TypedVertexContainer<glm::vec3>::getComponents() const		{ return 3; }
+
+	template<>
+	unsigned int TypedVertexContainer<glm::vec4>::getComponents() const		{ return 4; }
 
 } // opengl

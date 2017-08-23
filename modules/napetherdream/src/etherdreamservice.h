@@ -43,13 +43,7 @@ namespace nap
 		 * on the etherdream dac object
 		 * @return if the dac has been found and added to the system
 		 */
-		bool addDAC(EtherDreamDac& dac);
-
-		/**
-		 * Removes a dac from the system
-		 * @param dac the dac to remove
-		 */
-		void removeDAC(EtherDreamDac& dac);
+		bool allocateDAC(EtherDreamDac& dac);
 
 		/**
 		* @return the etherdream interface that manages all the DACs

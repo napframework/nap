@@ -31,29 +31,12 @@ namespace opengl
 	{	}
 
 
-	void Mesh::addVertexAttribute(const VertexAttributeID& id, unsigned int components, const float* data)
-	{
-		VertexAttribute attribute;
-		attribute.mID = id;
-		attribute.mData = std::make_unique<FloatVertexContainer>();
-
-		// Copy our data
-		bool success = attribute.mData->copyData(components, mNumVertices, data);
-		assert(success);
-
-		// Synchronize on success (data in CPU memory will be uploaded to GPU)
-		attribute.mData->sync();
-
-		mAttributes.emplace_back(std::move(attribute));
-	}
-
-
 	const VertexAttributeBuffer* Mesh::findVertexAttributeBuffer(const VertexAttributeID& id) const
 	{
-		for (const VertexAttribute& attribute : mAttributes)
+		for (const vertex::Attribute& attribute : mAttributes)
         {
-            if (attribute.mID == id)
-                return attribute.mData->getVertexBuffer();
+            if (attribute.getName() == id)
+                return attribute.getContainer()->getVertexBuffer();
         }
 
         opengl::printMessage(opengl::MessageType::ERROR, "Unable to find vertex attribute buffer associated with attribute: %s. The shader compiler might have stripped it away", id.c_str());
@@ -76,4 +59,11 @@ namespace opengl
 		// Synchronize on success (data in CPU memory will be uploaded to GPU)
 		mIndices->sync();
 	}
+
+
+	const opengl::IndexBuffer* Mesh::getIndexBuffer() const
+	{
+		return mIndices->getIndexBuffer();
+	}
+
 }

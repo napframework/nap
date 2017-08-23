@@ -66,7 +66,7 @@ namespace nap
 	}
 
 
-	bool EtherDreamService::addDAC(EtherDreamDac& dac)
+	bool EtherDreamService::allocateDAC(EtherDreamDac& dac)
 	{
 		// Get the associated number and set it
 		int dac_number = getIndex(dac.mDacName);
@@ -78,21 +78,7 @@ namespace nap
 			nap::Logger::warn("DAC with name: %s is not available", dac.mDacName.c_str());
 			return false;
 		}
-
-		// Register and return number
-		mAvailableDacs.emplace(std::make_pair(dac_number, &dac));
 		return true;
-	}
-
-
-	// Removes the dac from the system
-	void EtherDreamService::removeDAC(EtherDreamDac& dac)
-	{
-		auto it = mAvailableDacs.find(dac.mIndex);
-		if (it == mAvailableDacs.end())
-			return;
-
-		mAvailableDacs.erase(it);
 	}
 }
 

@@ -2,7 +2,6 @@
 //
 
 // Local Includes
-#include "objects.h"
 #include "firstpersoncontroller.h"
 
 // GLM
@@ -62,7 +61,6 @@ nap::ObjectPtr<nap::EntityInstance>						cameraEntityLeft = nullptr;
 nap::ObjectPtr<nap::EntityInstance>						cameraEntityRight = nullptr;
 nap::ObjectPtr<nap::EntityInstance>						splitCameraEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance>						defaultInputRouter = nullptr;
-
 
 // Some utilities
 void runGame(nap::Core& core);	
