@@ -1,6 +1,6 @@
-from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
 
 from generic.filtertreeview import FilterTreeView
 from pynap_json.constants import PROP_COMPONENTS, PROP_CHILDREN
@@ -11,7 +11,11 @@ class ValueItem(QStandardItem):
     def __init__(self, object: NAPObject, prop: str):
         super(ValueItem, self).__init__()
         self.object = object
+        self.object.changed.connect(self.__changed)
         self.prop = prop
+        self.updateText()
+
+    def __changed(self):
         self.updateText()
 
     def value(self):
@@ -23,7 +27,11 @@ class ValueItem(QStandardItem):
     def updateText(self):
         if self.object.hasValue(self.prop):
             self.setText(str(self.object.value(self.prop)))
-
+    
+    def setData(self, value, role):
+        if role == Qt.EditRole:
+            self.object.setValue(self.prop, value)
+        super(ValueItem, self).setData(value, role)
 
 class KeyItem(QStandardItem):
     def __init__(self, obj, prop):

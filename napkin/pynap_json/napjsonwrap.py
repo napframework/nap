@@ -3,8 +3,8 @@ import os
 import re
 from collections import OrderedDict
 from typing import Iterable
-
-from pynap_json.constants import UNKNOWN_TYPE, PROP_COMPONENTS, PROP_CHILDREN
+from PyQt5.QtCore import *
+from pynap_json.constants import *
 
 
 class NAPProperty(object):
@@ -33,17 +33,24 @@ class NAPType(object):
         return '<NAPType (%s)>' % self.name
 
 
-class NAPObject(object):
+class NAPObject(QObject):
+
+    changed = pyqtSignal()
+
     def __init__(self, data):
         super(NAPObject, self).__init__()
         self.__data = data
         self.__type = schema().typeFromName(self.typeName())
 
     def name(self):
-        return self.__data['mID']
+        return self.__data[PROP_ID]
+
+    def setName(self, name):
+        self.__data[PROP_ID] = name
+        self.changed.emit()
 
     def typeName(self):
-        return self.__data['Type']
+        return self.__data[PROP_TYPE]
 
     def type(self) -> NAPType:
         return self.__type
@@ -56,6 +63,7 @@ class NAPObject(object):
 
     def setValue(self, name, valuestr):
         self.__data[name] = valuestr
+        self.changed.emit()
 
     def components(self):
         """

@@ -1,19 +1,20 @@
 from itertools import chain
 from typing import Iterable
 
-from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
 
 from generic.filtertreeview import FilterTreeView
-from pynap_json.napjsonwrap import NAPObject, NAPComponent
+from pynap_json.napjsonwrap import *
 
 
 class ObjectItem(QStandardItem):
     def __init__(self, obj:NAPObject):
         super(ObjectItem, self).__init__()
         self.object = obj
-        self.setText(self.object.name())
+        self.object.changed.connect(self.refresh)
+        self.refresh()
 
         for ob in chain(self.object.components(), self.object.children()):
             self.appendRow([
@@ -21,6 +22,14 @@ class ObjectItem(QStandardItem):
                 ObjectTypeItem(ob),
             ])
 
+    def refresh(self):
+        self.setText(self.object.name())
+
+    def setData(self, value, role):
+        if role == Qt.EditRole:
+            self.object.setName(value)
+        super(ObjectItem, self).setData(value, role)
+            
 class ComponentItem(QStandardItem):
     def __init__(self, comp:NAPComponent):
         super(ComponentItem, self).__init__()
