@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "759160D515EC4D16BCF1D322"
-               BuildableName = "libnrender.a"
-               BlueprintName = "nrender"
+               BlueprintIdentifier = "F4E94802F40640068028E9CD"
+               BuildableName = "libmod_napinput.dylib"
+               BlueprintName = "mod_napinput"
                ReferencedContainer = "container:xcode/Project.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -45,9 +45,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "759160D515EC4D16BCF1D322"
-            BuildableName = "libnrender.a"
-            BlueprintName = "nrender"
+            BlueprintIdentifier = "F4E94802F40640068028E9CD"
+            BuildableName = "libmod_napinput.dylib"
+            BlueprintName = "mod_napinput"
             ReferencedContainer = "container:xcode/Project.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -63,9 +63,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "759160D515EC4D16BCF1D322"
-            BuildableName = "libnrender.a"
-            BlueprintName = "nrender"
+            BlueprintIdentifier = "F4E94802F40640068028E9CD"
+            BuildableName = "libmod_napinput.dylib"
+            BlueprintName = "mod_napinput"
             ReferencedContainer = "container:xcode/Project.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

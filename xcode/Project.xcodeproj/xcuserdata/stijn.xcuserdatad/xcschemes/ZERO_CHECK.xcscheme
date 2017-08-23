@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "9929004C0F9E4DDCA4F0CAF9"
-               BuildableName = "libmod_napsdlinput.a"
-               BlueprintName = "mod_napsdlinput"
+               BlueprintIdentifier = "382BFAE2F031425EBCA916A3"
+               BuildableName = "ZERO_CHECK"
+               BlueprintName = "ZERO_CHECK"
                ReferencedContainer = "container:xcode/Project.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -45,9 +45,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "9929004C0F9E4DDCA4F0CAF9"
-            BuildableName = "libmod_napsdlinput.a"
-            BlueprintName = "mod_napsdlinput"
+            BlueprintIdentifier = "382BFAE2F031425EBCA916A3"
+            BuildableName = "ZERO_CHECK"
+            BlueprintName = "ZERO_CHECK"
             ReferencedContainer = "container:xcode/Project.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -63,9 +63,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "9929004C0F9E4DDCA4F0CAF9"
-            BuildableName = "libmod_napsdlinput.a"
-            BlueprintName = "mod_napsdlinput"
+            BlueprintIdentifier = "382BFAE2F031425EBCA916A3"
+            BuildableName = "ZERO_CHECK"
+            BlueprintName = "ZERO_CHECK"
             ReferencedContainer = "container:xcode/Project.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

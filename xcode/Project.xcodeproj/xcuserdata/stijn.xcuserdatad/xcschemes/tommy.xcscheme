@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "AF575A07C0204E86B3327681"
-               BuildableName = "libmod_naprender.dylib"
-               BlueprintName = "mod_naprender"
+               BlueprintIdentifier = "ABFA866E924742398C94912E"
+               BuildableName = "tommy"
+               BlueprintName = "tommy"
                ReferencedContainer = "container:xcode/Project.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -29,6 +29,15 @@
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
       </Testables>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "ABFA866E924742398C94912E"
+            BuildableName = "tommy"
+            BlueprintName = "tommy"
+            ReferencedContainer = "container:xcode/Project.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
       <AdditionalOptions>
       </AdditionalOptions>
    </TestAction>
@@ -42,15 +51,16 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
-      <MacroExpansion>
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "AF575A07C0204E86B3327681"
-            BuildableName = "libmod_naprender.dylib"
-            BlueprintName = "mod_naprender"
+            BlueprintIdentifier = "ABFA866E924742398C94912E"
+            BuildableName = "tommy"
+            BlueprintName = "tommy"
             ReferencedContainer = "container:xcode/Project.xcodeproj">
          </BuildableReference>
-      </MacroExpansion>
+      </BuildableProductRunnable>
       <AdditionalOptions>
       </AdditionalOptions>
    </LaunchAction>
@@ -60,15 +70,16 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <MacroExpansion>
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "AF575A07C0204E86B3327681"
-            BuildableName = "libmod_naprender.dylib"
-            BlueprintName = "mod_naprender"
+            BlueprintIdentifier = "ABFA866E924742398C94912E"
+            BuildableName = "tommy"
+            BlueprintName = "tommy"
             ReferencedContainer = "container:xcode/Project.xcodeproj">
          </BuildableReference>
-      </MacroExpansion>
+      </BuildableProductRunnable>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

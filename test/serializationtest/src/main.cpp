@@ -119,8 +119,8 @@ int main(int argc, char* argv[])
 	//testObjectPtr();
 	Logger::setLevel(Logger::debugLevel());
 
-	Core core;
-	core.initialize();
+//	Core core;
+//	core.initialize();
 
 	rtti::TypeInfo::get<std::vector<DataStruct>>();
 

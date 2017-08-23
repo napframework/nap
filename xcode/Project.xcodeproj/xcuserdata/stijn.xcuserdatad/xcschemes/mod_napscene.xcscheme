@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "3967BCB0A9054EAABFBFFA84"
-               BuildableName = "libmod_napsdlwindow.a"
-               BlueprintName = "mod_napsdlwindow"
+               BlueprintIdentifier = "21E0E81AE8CC4B5A9C093078"
+               BuildableName = "libmod_napscene.dylib"
+               BlueprintName = "mod_napscene"
                ReferencedContainer = "container:xcode/Project.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -45,9 +45,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "3967BCB0A9054EAABFBFFA84"
-            BuildableName = "libmod_napsdlwindow.a"
-            BlueprintName = "mod_napsdlwindow"
+            BlueprintIdentifier = "21E0E81AE8CC4B5A9C093078"
+            BuildableName = "libmod_napscene.dylib"
+            BlueprintName = "mod_napscene"
             ReferencedContainer = "container:xcode/Project.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -63,9 +63,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "3967BCB0A9054EAABFBFFA84"
-            BuildableName = "libmod_napsdlwindow.a"
-            BlueprintName = "mod_napsdlwindow"
+            BlueprintIdentifier = "21E0E81AE8CC4B5A9C093078"
+            BuildableName = "libmod_napscene.dylib"
+            BlueprintName = "mod_napscene"
             ReferencedContainer = "container:xcode/Project.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

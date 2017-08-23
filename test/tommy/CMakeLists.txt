@@ -33,6 +33,8 @@ if (WIN32)
 endif()
 
 # create post build event
-export_fbx(${CMAKE_CURRENT_LIST_DIR}/data)
+if (WIN32)
+	export_fbx(${CMAKE_CURRENT_LIST_DIR}/data)
+endif()
 copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/data data)
 copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/shaders shaders)

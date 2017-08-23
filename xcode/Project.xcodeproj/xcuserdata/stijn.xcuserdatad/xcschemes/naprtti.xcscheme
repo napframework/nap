@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "19F75B87D18F49139C75E106"
-               BuildableName = "generateXcodeProject"
-               BlueprintName = "generateXcodeProject"
+               BlueprintIdentifier = "801C10FC4692498AA35086CE"
+               BuildableName = "libnaprtti.dylib"
+               BlueprintName = "naprtti"
                ReferencedContainer = "container:xcode/Project.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -45,9 +45,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "19F75B87D18F49139C75E106"
-            BuildableName = "generateXcodeProject"
-            BlueprintName = "generateXcodeProject"
+            BlueprintIdentifier = "801C10FC4692498AA35086CE"
+            BuildableName = "libnaprtti.dylib"
+            BlueprintName = "naprtti"
             ReferencedContainer = "container:xcode/Project.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -63,9 +63,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "19F75B87D18F49139C75E106"
-            BuildableName = "generateXcodeProject"
-            BlueprintName = "generateXcodeProject"
+            BlueprintIdentifier = "801C10FC4692498AA35086CE"
+            BuildableName = "libnaprtti.dylib"
+            BlueprintName = "naprtti"
             ReferencedContainer = "container:xcode/Project.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

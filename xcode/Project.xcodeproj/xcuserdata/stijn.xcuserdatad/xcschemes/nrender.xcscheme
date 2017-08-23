@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "3F7E1C4FA1864463B0A4F995"
-               BuildableName = "libnaputility.a"
-               BlueprintName = "naputility"
+               BlueprintIdentifier = "847483671B044926AB25C4FA"
+               BuildableName = "libnrender.a"
+               BlueprintName = "nrender"
                ReferencedContainer = "container:xcode/Project.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -45,9 +45,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "3F7E1C4FA1864463B0A4F995"
-            BuildableName = "libnaputility.a"
-            BlueprintName = "naputility"
+            BlueprintIdentifier = "847483671B044926AB25C4FA"
+            BuildableName = "libnrender.a"
+            BlueprintName = "nrender"
             ReferencedContainer = "container:xcode/Project.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -63,9 +63,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "3F7E1C4FA1864463B0A4F995"
-            BuildableName = "libnaputility.a"
-            BlueprintName = "naputility"
+            BlueprintIdentifier = "847483671B044926AB25C4FA"
+            BuildableName = "libnrender.a"
+            BlueprintName = "nrender"
             ReferencedContainer = "container:xcode/Project.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

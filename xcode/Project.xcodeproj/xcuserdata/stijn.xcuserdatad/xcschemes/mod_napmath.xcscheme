@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "6049C1A1CF4D424687A9A4D3"
-               BuildableName = "tommy"
-               BlueprintName = "tommy"
+               BlueprintIdentifier = "9A031CEBAC8345C3BC897D80"
+               BuildableName = "libmod_napmath.dylib"
+               BlueprintName = "mod_napmath"
                ReferencedContainer = "container:xcode/Project.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -29,15 +29,6 @@
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
       </Testables>
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "6049C1A1CF4D424687A9A4D3"
-            BuildableName = "tommy"
-            BlueprintName = "tommy"
-            ReferencedContainer = "container:xcode/Project.xcodeproj">
-         </BuildableReference>
-      </MacroExpansion>
       <AdditionalOptions>
       </AdditionalOptions>
    </TestAction>
@@ -51,16 +42,15 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
+      <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "6049C1A1CF4D424687A9A4D3"
-            BuildableName = "tommy"
-            BlueprintName = "tommy"
+            BlueprintIdentifier = "9A031CEBAC8345C3BC897D80"
+            BuildableName = "libmod_napmath.dylib"
+            BlueprintName = "mod_napmath"
             ReferencedContainer = "container:xcode/Project.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </MacroExpansion>
       <AdditionalOptions>
       </AdditionalOptions>
    </LaunchAction>
@@ -70,16 +60,15 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
+      <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "6049C1A1CF4D424687A9A4D3"
-            BuildableName = "tommy"
-            BlueprintName = "tommy"
+            BlueprintIdentifier = "9A031CEBAC8345C3BC897D80"
+            BuildableName = "libmod_napmath.dylib"
+            BlueprintName = "mod_napmath"
             ReferencedContainer = "container:xcode/Project.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

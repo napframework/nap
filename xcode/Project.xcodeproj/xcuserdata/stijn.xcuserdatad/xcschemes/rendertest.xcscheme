@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "3152988C2661431EAF52E1F2"
-               BuildableName = "libnapcore.dylib"
-               BlueprintName = "napcore"
+               BlueprintIdentifier = "BCD1981BF6A24EF485E1C45D"
+               BuildableName = "rendertest"
+               BlueprintName = "rendertest"
                ReferencedContainer = "container:xcode/Project.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -29,6 +29,15 @@
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
       </Testables>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "BCD1981BF6A24EF485E1C45D"
+            BuildableName = "rendertest"
+            BlueprintName = "rendertest"
+            ReferencedContainer = "container:xcode/Project.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
       <AdditionalOptions>
       </AdditionalOptions>
    </TestAction>
@@ -42,15 +51,16 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
-      <MacroExpansion>
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "3152988C2661431EAF52E1F2"
-            BuildableName = "libnapcore.dylib"
-            BlueprintName = "napcore"
+            BlueprintIdentifier = "BCD1981BF6A24EF485E1C45D"
+            BuildableName = "rendertest"
+            BlueprintName = "rendertest"
             ReferencedContainer = "container:xcode/Project.xcodeproj">
          </BuildableReference>
-      </MacroExpansion>
+      </BuildableProductRunnable>
       <AdditionalOptions>
       </AdditionalOptions>
    </LaunchAction>
@@ -60,15 +70,16 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <MacroExpansion>
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "3152988C2661431EAF52E1F2"
-            BuildableName = "libnapcore.dylib"
-            BlueprintName = "napcore"
+            BlueprintIdentifier = "BCD1981BF6A24EF485E1C45D"
+            BuildableName = "rendertest"
+            BlueprintName = "rendertest"
             ReferencedContainer = "container:xcode/Project.xcodeproj">
          </BuildableReference>
-      </MacroExpansion>
+      </BuildableProductRunnable>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "198885AF5A58489D8A4B92C4"
-               BuildableName = "libmod_napmath.dylib"
-               BlueprintName = "mod_napmath"
+               BlueprintIdentifier = "1A864DB13A1743F6BB12A460"
+               BuildableName = "libmod_nappython.dylib"
+               BlueprintName = "mod_nappython"
                ReferencedContainer = "container:xcode/Project.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -45,9 +45,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "198885AF5A58489D8A4B92C4"
-            BuildableName = "libmod_napmath.dylib"
-            BlueprintName = "mod_napmath"
+            BlueprintIdentifier = "1A864DB13A1743F6BB12A460"
+            BuildableName = "libmod_nappython.dylib"
+            BlueprintName = "mod_nappython"
             ReferencedContainer = "container:xcode/Project.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -63,9 +63,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "198885AF5A58489D8A4B92C4"
-            BuildableName = "libmod_napmath.dylib"
-            BlueprintName = "mod_napmath"
+            BlueprintIdentifier = "1A864DB13A1743F6BB12A460"
+            BuildableName = "libmod_nappython.dylib"
+            BlueprintName = "mod_nappython"
             ReferencedContainer = "container:xcode/Project.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

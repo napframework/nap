@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "DA5347A14DD64F99A6BF8B2D"
-               BuildableName = "ZERO_CHECK"
-               BlueprintName = "ZERO_CHECK"
+               BlueprintIdentifier = "50EBD9987B3B4AA2B5038498"
+               BuildableName = "libmod_naprender.dylib"
+               BlueprintName = "mod_naprender"
                ReferencedContainer = "container:xcode/Project.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -45,9 +45,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "DA5347A14DD64F99A6BF8B2D"
-            BuildableName = "ZERO_CHECK"
-            BlueprintName = "ZERO_CHECK"
+            BlueprintIdentifier = "50EBD9987B3B4AA2B5038498"
+            BuildableName = "libmod_naprender.dylib"
+            BlueprintName = "mod_naprender"
             ReferencedContainer = "container:xcode/Project.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -63,9 +63,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "DA5347A14DD64F99A6BF8B2D"
-            BuildableName = "ZERO_CHECK"
-            BlueprintName = "ZERO_CHECK"
+            BlueprintIdentifier = "50EBD9987B3B4AA2B5038498"
+            BuildableName = "libmod_naprender.dylib"
+            BlueprintName = "mod_naprender"
             ReferencedContainer = "container:xcode/Project.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

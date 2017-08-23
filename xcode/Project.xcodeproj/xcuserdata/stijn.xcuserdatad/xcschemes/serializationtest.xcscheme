@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "A09CD1140C4441C698515593"
-               BuildableName = "libmod_napinput.dylib"
-               BlueprintName = "mod_napinput"
+               BlueprintIdentifier = "F1F1BA9FB0064F6AA364748B"
+               BuildableName = "serializationtest"
+               BlueprintName = "serializationtest"
                ReferencedContainer = "container:xcode/Project.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -29,6 +29,15 @@
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
       </Testables>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "F1F1BA9FB0064F6AA364748B"
+            BuildableName = "serializationtest"
+            BlueprintName = "serializationtest"
+            ReferencedContainer = "container:xcode/Project.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
       <AdditionalOptions>
       </AdditionalOptions>
    </TestAction>
@@ -42,15 +51,16 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
-      <MacroExpansion>
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "A09CD1140C4441C698515593"
-            BuildableName = "libmod_napinput.dylib"
-            BlueprintName = "mod_napinput"
+            BlueprintIdentifier = "F1F1BA9FB0064F6AA364748B"
+            BuildableName = "serializationtest"
+            BlueprintName = "serializationtest"
             ReferencedContainer = "container:xcode/Project.xcodeproj">
          </BuildableReference>
-      </MacroExpansion>
+      </BuildableProductRunnable>
       <AdditionalOptions>
       </AdditionalOptions>
    </LaunchAction>
@@ -60,15 +70,16 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <MacroExpansion>
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "A09CD1140C4441C698515593"
-            BuildableName = "libmod_napinput.dylib"
-            BlueprintName = "mod_napinput"
+            BlueprintIdentifier = "F1F1BA9FB0064F6AA364748B"
+            BuildableName = "serializationtest"
+            BlueprintName = "serializationtest"
             ReferencedContainer = "container:xcode/Project.xcodeproj">
          </BuildableReference>
-      </MacroExpansion>
+      </BuildableProductRunnable>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">
