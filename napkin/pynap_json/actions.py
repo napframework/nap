@@ -12,18 +12,23 @@ NAP_FILE_FILTER = 'NAP JSON Files (*.nap.json *.json)'
 
 
 class OpenFileAction(QAction):
-    def __init__(self, parent, model):
+    def __init__(self, parent, model, filename=None):
         super(OpenFileAction, self).__init__('Open...', parent)
         self.__model = model
+        self.__filename = filename
         self.setShortcut(QKeySequence.Open)
         self.triggered.connect(self.__perform)
 
     def __perform(self):
         settings = QSettings()
-        filename = \
-            QFileDialog.getOpenFileName(self.parentWidget(), 'Open NAP Data',
-                                        settings.value(LAST_FILE),
-                                        NAP_FILE_FILTER)[0]
+
+        filename = self.__filename
+        if not filename:
+            filename = \
+                QFileDialog.getOpenFileName(self.parentWidget(), 'Open NAP Data',
+                                            settings.value(LAST_FILE),
+                                            NAP_FILE_FILTER)[0]
+
         if not filename:
             return
 
@@ -45,22 +50,26 @@ class SaveFileAction(QAction):
         super(SaveFileAction, self).__init__('Save', parent)
         self.__model = model
         self.setShortcut(QKeySequence.Save)
-        self.triggered.connect(self.__perform)
+        self.triggered.connect(self._perform)
 
-    def __perform(self):
+    def _perform(self):
         if not CURRENT_FILE:
             SaveFileAsAction(self.parentWidget(), self.__model).trigger()
             return
 
+        self._saveFile(CURRENT_FILE)
 
-class SaveFileAsAction(QAction):
+    def _saveFile(self, filename):
+        saveFile(filename, self.__model.objects())
+        print('File saved: %s' % filename)
+
+class SaveFileAsAction(SaveFileAction):
     def __init__(self, parent, model: ObjectModel):
-        super(SaveFileAsAction, self).__init__('Save as...', parent)
-        self.__model = model
+        super(SaveFileAsAction, self).__init__(parent, model)
+        self.setText('Save as...')
         self.setShortcut(QKeySequence.SaveAs)
-        self.triggered.connect(self.__perform)
 
-    def __perform(self):
+    def _perform(self):
         settings = QSettings()
         lastfile = settings.value(LAST_FILE)
         if lastfile:
@@ -71,10 +80,9 @@ class SaveFileAsAction(QAction):
         filename = QFileDialog.getSaveFileName(self.parentWidget(),
                                                'Select NAP file to save to',
                                                folder, NAP_FILE_FILTER)[0]
-        if not filename:
-            return
+        if not filename: return
 
         if not filename.endswith('.nap.json'):
             filename = '%s.nap.json' % filename
 
-        saveFile(filename, self.__model.objects())
+        self._saveFile(filename)

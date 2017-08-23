@@ -34,7 +34,6 @@ class ExecutablePanel(QWidget):
 
         self.layout().addStretch(1)
 
-
         self.__process = None
 
         self.__refreshAvailability()

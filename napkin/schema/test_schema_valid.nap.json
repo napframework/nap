@@ -162,7 +162,7 @@
     },
     {
       "Type": "nap::Entity",
-      "mID": "PigEntity",
+      "mID": "Pig",
       "Components": [
         {
           "Type": "nap::RenderableMeshComponent",
@@ -218,7 +218,7 @@
     },
     {
       "Type": "nap::Entity",
-      "mID": "OrientationEntity",
+      "mID": "MyOrientation",
       "Components": [
         {
           "Type": "nap::RenderableMeshComponent",
@@ -245,7 +245,7 @@
               "y": 1.0,
               "z": 1.0
             },
-            "UniformScale": 1.00
+            "UniformScale": 1.0
           }
         }
       ]

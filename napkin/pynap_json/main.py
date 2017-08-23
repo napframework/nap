@@ -38,9 +38,7 @@ def main():
 
 
     # load last file
-    filename = QSettings().value(LAST_FILE)
-    if os.path.exists(filename):
-        objectPanel.model().setObjects(loadFile(filename))
+    OpenFileAction(None, objectPanel.model(), QSettings().value(LAST_FILE)).trigger()
 
     objectPanel.selectionChanged.connect(propPanel.setObjects)
 
