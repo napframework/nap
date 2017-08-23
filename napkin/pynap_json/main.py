@@ -8,6 +8,7 @@ from generic.proxystyle import MyProxyStyle
 from generic.qbasewindow import QBaseWindow
 from pynap_json.actions import LAST_FILE, OpenFileAction, SaveFileAction, \
     SaveFileAsAction
+from pynap_json.executablepanel import ExecutablePanel
 from pynap_json.napjsonwrap import loadFile
 from pynap_json.outlinepanel import OutlinePanel
 from pynap_json.inspectorpanel import InspectorPanel
@@ -23,6 +24,9 @@ def main():
 
     propPanel = InspectorPanel()
     win.addDock('Inspector', propPanel)
+
+    exePanel = ExecutablePanel()
+    win.addDock('Executable', exePanel)
 
     filemenu = QMenu('File', win.menuBar())
     filemenu.addActions([
