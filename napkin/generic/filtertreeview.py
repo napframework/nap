@@ -2,7 +2,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import *
 
 from generic import qtutils
-from generic.qtutils import LeafFilterProxyModel
+from generic.leaffilterproxymodel import LeafFilterProxyModel
 
 
 class FilterTreeView(QWidget):

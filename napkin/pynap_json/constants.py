@@ -1,0 +1,5 @@
+
+
+UNKNOWN_TYPE = '<<UNKNOWN>>'
+PROP_COMPONENTS = 'Components'
+PROP_CHILDREN = 'Children'

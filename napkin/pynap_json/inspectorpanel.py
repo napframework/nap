@@ -3,11 +3,12 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
 from generic.filtertreeview import FilterTreeView
-from pynap_json.napjsonwrap import NAPInstance, NAPProperty
+from pynap_json.constants import PROP_COMPONENTS, PROP_CHILDREN
+from pynap_json.napjsonwrap import NAPObject, NAPProperty
 
 
 class ValueItem(QStandardItem):
-    def __init__(self, object: NAPInstance, prop: str):
+    def __init__(self, object: NAPObject, prop: str):
         super(ValueItem, self).__init__()
         self.object = object
         self.prop = prop
@@ -31,6 +32,7 @@ class KeyItem(QStandardItem):
         self.prop = prop
         self.setText(prop)
 
+
 class TypeItem(QStandardItem):
     def __init__(self, obj, prop):
         super(TypeItem, self).__init__()
@@ -43,6 +45,7 @@ class PropModel(QStandardItemModel):
     def __init__(self):
         super(PropModel, self).__init__()
         self.__object = None
+        self.setHorizontalHeaderLabels(['Property', 'Value', 'Type'])
 
     def setObjects(self, objects):
         while self.rowCount():
@@ -53,9 +56,16 @@ class PropModel(QStandardItemModel):
             return
 
         self.__object = objects[0]
-        assert isinstance(self.__object, NAPInstance)
+        assert isinstance(self.__object, NAPObject)
 
-        for prop in self.__object.type().properties():
+        objtype = self.__object.type()
+        if not objtype:
+            return
+
+        for prop in objtype.properties():
+            if prop.name == PROP_COMPONENTS: continue
+            if prop.name == PROP_CHILDREN: continue
+
             self.appendRow([
                 KeyItem(self.__object, prop.name),
                 ValueItem(self.__object, prop.name),
@@ -63,14 +73,16 @@ class PropModel(QStandardItemModel):
             ])
 
 
-class PropPanel(QWidget):
+class InspectorPanel(QWidget):
     def __init__(self):
-        super(PropPanel, self).__init__()
+        super(InspectorPanel, self).__init__()
         self.setLayout(QVBoxLayout())
         self.__tree = FilterTreeView()
         self.__tree.setModel(PropModel())
         self.layout().addWidget(self.__tree)
-        self.__tree.tree().setColumnWidth(0, 200)
+        self.__tree.tree().setColumnWidth(0, 150)
+        self.__tree.tree().setColumnWidth(1, 200)
 
     def setObjects(self, objects):
         self.__tree.model().setObjects(objects)
+        self.__tree.expandAll()

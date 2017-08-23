@@ -2,63 +2,39 @@ import os
 import sys
 
 from PyQt5.QtCore import QSettings
-from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import *
 
+from generic.proxystyle import MyProxyStyle
 from generic.qbasewindow import QBaseWindow
+from pynap_json.actions import LAST_FILE, OpenFileAction, SaveFileAction, \
+    SaveFileAsAction
 from pynap_json.napjsonwrap import loadFile
-from pynap_json.objectpanel import ObjectPanel
-from pynap_json.proppanel import PropPanel
-
-LAST_DIR = 'LAST_DIR'
-
-
-class OpenFileAction(QAction):
-    def __init__(self, parent, model):
-        super(OpenFileAction, self).__init__('Open...', parent)
-        self.__model = model
-        self.setShortcut(QKeySequence.Open)
-        self.triggered.connect(self.__perform)
-
-    def __perform(self):
-        settings = QSettings()
-        filename = QFileDialog.getOpenFileName(self.parent(), 'Open NAP Data', settings.value(LAST_DIR),
-                                               'NAP JSON Files (*.nap.json *.json)')[0]
-        if not filename:
-            return
-
-        settings.setValue(LAST_DIR, filename)
-
-        try:
-            data = loadFile(filename)
-            self.__model.setObjects(data)
-        except Exception as e:
-            QMessageBox.warning(QApplication.topLevelWidgets()[0], 'Error loading file', str(e))
-            raise
+from pynap_json.outlinepanel import OutlinePanel
+from pynap_json.inspectorpanel import InspectorPanel
 
 
 def main():
+    # QApplication.setStyle(MyProxyStyle(QApplication.style()))
     app = QApplication(sys.argv)
     win = QBaseWindow()
 
-    # win.addDock('Types', TypeHierarchyPanel())
+    objectPanel = OutlinePanel()
+    win.addDock('Outline', objectPanel)
 
-
-
-    objectPanel = ObjectPanel()
-    win.addDock('Objects', objectPanel)
-
-    propPanel = PropPanel()
-    win.addDock('Properties', propPanel)
+    propPanel = InspectorPanel()
+    win.addDock('Inspector', propPanel)
 
     filemenu = QMenu('File', win.menuBar())
-
-    openAction = OpenFileAction(filemenu, objectPanel.model())
-    filemenu.addAction(openAction)
+    filemenu.addActions([
+        OpenFileAction(filemenu, objectPanel.model()),
+        SaveFileAction(filemenu, objectPanel.model()),
+        SaveFileAsAction(filemenu, objectPanel.model()),
+    ])
     win.menuBar().insertMenu(win.windowMenu().menuAction(), filemenu)
 
+
     # load last file
-    filename = QSettings().value(LAST_DIR)
+    filename = QSettings().value(LAST_FILE)
     if os.path.exists(filename):
         objectPanel.model().setObjects(loadFile(filename))
 
