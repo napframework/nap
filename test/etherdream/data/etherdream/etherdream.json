@@ -1,137 +1,121 @@
 {
-	"nap::RenderWindow": {
-		"mID" : "Window",
-		"Width" : 512,
-		"Height" : 512,
-		"Title" : "Etherdream",
-		"Sync" : "false"
-	},
-	
-	"nap::PlaneMesh": {
-		"mID": "PlaneMesh"
-	},
-	
-	"nap::Shader": {
-		"mID": "PlaneShader",
-		"mVertShader": "shaders/etherdream/plane.vert",
-		"mFragShader": "shaders/etherdream/plane.frag"
-	},
-	
-	"nap::Material": {
-		"mID": "PlaneMaterial",
-		"Shader": "PlaneShader",
-		"VertexAttributeBindings" : [
-			{
-				"MeshAttributeID": "Position",
-				"ShaderAttributeID": "in_Position"
-			},
-			{
-				"MeshAttributeID": "UV0",
-				"ShaderAttributeID": "in_UV0"
-			}
-		]
-	},
+	"Objects":
+	[
+		{
+			"Type" : "nap::RenderWindow",
+			"mID" : "Window",
+			"Width" : 512,
+			"Height" : 512,
+			"Title" : "Etherdream",
+			"Sync" : "false"
+		},
 
-	"nap::EtherDreamDac": {
-		"mID": "Laser1",
-		"DacName": "dc3c10",
-		"PointRate": "30000"
-	},
+		{
+			"Type" : "nap::EtherDreamDac",
+			"mID": "Laser1",
+			"DacName": "dc3c10",
+			"PointRate": "30000"
+		},
 
-	"nap::EtherDreamDac": {
-		"mID": "Laser2",
-		"DacName": "dbf6d0",
-		"PointRate": "30000"
-	},
-	
-	"nap::Entity": 
-	{
-		"mID": "CameraEntity",
-		
-		"Components" : 
-		[
-			{
-				"nap::OrthoCameraComponent": {
-					"Properties": {
+		{
+			"Type" : "nap::EtherDreamDac",
+			"mID": "Laser2",
+			"DacName": "dbf6d0",
+			"PointRate": "30000"
+		},
+
+		{
+			"Type" : "nap::Entity",
+			"mID": "CameraEntity",
+			"Components" : 
+			[
+				{
+					"Type" : "nap::OrthoCameraComponent",
+					"Properties": 
+					{
 						"NearClippingPlane" : 0.01,
 						"FarClippingPlane" : 10000.0
 					}
-				}		
-			},
-			{
-				"nap::TransformComponent": {
-					"Properties": {
-						"Translate": {
+				},
+				{
+					"Type" : "nap::TransformComponent",
+					"Properties": 
+					{
+						"Translate": 
+						{
 							"x": 0.0,
 							"y": 0.0,
 							"z": 0.0
 						},
-						"Rotate": {
+						"Rotate": 
+						{
 							"x": 0.0,
 							"y": 0.0,
 							"z": 0.0,
 							"w": 1.0
 						},
-						"Scale": {
+						"Scale": 
+						{
 							"x": 1.0,
 							"y": 1.0,
 							"z": 1.0
 						},
 						"UniformScale": 1.0						
-					}
-				}		
-			}
-		]
-	},
+					}			
+				}
+			]
+		},
+		{
+			"Type" : "nap::Entity",
+			"mID": "LaserEntity1",
 
-	"nap::Entity": 
-	{
-		"mID": "LaserEntity1",
-		
-		"Components" : 
-		[
-			{
-				"nap::LaserDotComponent": {
-					"Properties": { 
+			"Components" : 
+			[
+				{
+					"Type" : "nap::LaserDotComponent",
+					"Properties": 
+					{ 
 						"PointCount" : 450,
 						"Speed" : 1.0,
 						"Brightness" : 1.0
 					}
-				}		
-			},
-			{
-				"nap::LaserSquareComponent": {
-					"Properties": {
+				},
+
+				{
+					"Type" : "nap::LaserSquareComponent",
+					"Properties": 
+					{
 						"PointCount" : 400,
 						"Speed" : 1.0,
 						"Brightness" : 1.0,
 						"Size" : 0.5
-					}
-				}		
-			},
-			{
-				"nap::LaserCircleComponent": {
-					"Properties": {
+					}	
+				},
+				
+				{
+					"Type" : "nap::LaserCircleComponent",
+					"Properties": 
+					{
 						"PointCount" : 466,
 						"Speed" : 1.0,
 						"Brightness" : 1.0,
 						"Size" : 1.0
 					}, 
 					"Index" : 0
-				}		
-			},
-			{
-				"nap::LaserOutputComponent": {
+				},		
+				
+				{
+					"Type":"nap::LaserOutputComponent",
 					"Index" : 1,
 					"Dac" : "Laser1"
-				}		
-			},
-			{
-				"nap::LaserOutputComponent": {
+				},		
+				
+				{
+					"Type":"nap::LaserOutputComponent",
 					"Index" : 1,
 					"Dac" : "Laser2"
 				}		
-			}
-		]
-	}
-} 
+			]
+		}
+	]
+}
