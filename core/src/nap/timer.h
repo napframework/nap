@@ -47,6 +47,11 @@ namespace nap
 		void stop();
 
 		/**
+		 *	Resets the timer and starts it again
+		 */
+		void reset();
+
+		/**
 		 * @return amount of processed ticks
 		 */
 		uint32 getTicks() const;

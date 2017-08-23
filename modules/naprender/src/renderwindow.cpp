@@ -7,6 +7,7 @@ RTTI_BEGIN_CLASS(nap::RenderWindow)
 	RTTI_PROPERTY("Borderless",		&nap::RenderWindow::mBorderless,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Resizable",		&nap::RenderWindow::mResizable,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Title",			&nap::RenderWindow::mTitle,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Sync",			&nap::RenderWindow::mSync,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
@@ -47,10 +48,10 @@ namespace nap
 		// Update window size when resizing
 		const WindowResizedEvent* resized_event = rtti_cast<const WindowResizedEvent>(&event);
 		if (resized_event != nullptr)
-	{
+		{
 			mWindow->setSize(glm::ivec2(resized_event->mX, resized_event->mY));
+		}
 	}
-	}
-	}
+}
 
 

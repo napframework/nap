@@ -1,5 +1,4 @@
 #
-
 cmake_minimum_required(VERSION 3.5)
 
 include(cmake/targetarch.cmake)
@@ -67,6 +66,7 @@ add_subdirectory(test/tommy)
 add_subdirectory(test/steef)
 add_subdirectory(test/videoplayer)
 add_subdirectory(test/serializationtest)
+add_subdirectory(test/etherdream)
 
 if (APPLE)
     set(GENERATE_XCODE_PROJECT_TARGET generateXcodeProject)
@@ -83,6 +83,7 @@ add_subdirectory(modules/napsdlwindow)
 add_subdirectory(modules/napscene)
 add_subdirectory(modules/nappython)
 add_subdirectory(modules/napvideo)
+add_subdirectory(modules/napetherdream)
 
 # Exe dependencies
 add_dependencies(rendertest mod_naprender)

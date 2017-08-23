@@ -2,6 +2,7 @@
 #include "math.h"
 #include "mesh.h"
 #include "material.h"
+#include <glm/glm.hpp>
 
 
 /**
@@ -11,10 +12,10 @@
  */
 static opengl::Mesh* createSphere(float radius, unsigned int rings, unsigned int sectors)
 {
-	std::vector<float> vertices;
-	std::vector<float> normals;
-	std::vector<float> texcoords;
-	std::vector<float> colors;
+	std::vector<glm::vec3> vertices;
+	std::vector<glm::vec3> normals;
+	std::vector<glm::vec3> texcoords;
+	std::vector<glm::vec4> colors;
 	std::vector<unsigned int> indices;
 
 	float const R = 1. / (float)(rings - 1);
@@ -24,15 +25,15 @@ static opengl::Mesh* createSphere(float radius, unsigned int rings, unsigned int
 	// Get total amount of vertices
 	unsigned int vertex_count = rings * sectors;
 
-	vertices.resize(vertex_count * 3);
-	normals.resize(vertex_count * 3);
-	texcoords.resize(vertex_count * 3);
-	colors.resize(vertex_count * 4);
+	vertices.resize(vertex_count);
+	normals.resize(vertex_count);
+	texcoords.resize(vertex_count);
+	colors.resize(vertex_count);
 
-	std::vector<float>::iterator v = vertices.begin();
-	std::vector<float>::iterator n = normals.begin();
-	std::vector<float>::iterator t = texcoords.begin();
-	std::vector<float>::iterator c = colors.begin();
+	std::vector<glm::vec3>::iterator v = vertices.begin();
+	std::vector<glm::vec3> ::iterator n = normals.begin();
+	std::vector<glm::vec3>::iterator t = texcoords.begin();
+	std::vector<glm::vec4>::iterator c = colors.begin();
 
 	for (r = 0; r < rings; r++)
 	{
@@ -43,25 +44,16 @@ static opengl::Mesh* createSphere(float radius, unsigned int rings, unsigned int
 			float const z = sin(2 * M_PI * s * S) * sin(M_PI * r * R);
 
 			// Set texture coordinates
-			*t++ = 1.0f-(s*S);
-			*t++ = r*R;
-			*t++ = 0.5f;
+			*t++ = { 1.0f - (s*S), r*R, 0.5f };
 
 			// Set vertex coordinates
-			*v++ = x * radius;
-			*v++ = y * radius;
-			*v++ = z * radius;
+			*v++ = { x * radius, y * radius, z * radius };
 
 			// Set normal coordinates
-			*n++ = x;
-			*n++ = y;
-			*n++ = z;
+			*n++ = { x, y, z };
 
 			// Set color coordinates
-			*c++ = 1.0f;
-			*c++ = 1.0f;
-			*c++ = 1.0f;
-			*c++ = 1.0f;
+			*c++ = { 1.0f, 1.0f, 1.0f, 1.0f };
 		}
 	}
 
@@ -88,10 +80,10 @@ static opengl::Mesh* createSphere(float radius, unsigned int rings, unsigned int
 	}
 
 	opengl::Mesh* sphere_mesh = new opengl::Mesh(vertex_count, opengl::EDrawMode::TRIANGLES);
-	sphere_mesh->addVertexAttribute(opengl::Mesh::VertexAttributeIDs::PositionVertexAttr, 3, &vertices.front());
-	sphere_mesh->addVertexAttribute(opengl::Mesh::VertexAttributeIDs::NormalVertexAttr, 3, &normals.front());
-	sphere_mesh->addVertexAttribute(nap::utility::stringFormat("%s%d", opengl::Mesh::VertexAttributeIDs::UVVertexAttr.c_str(), 0), 3, &texcoords.front());
-	sphere_mesh->addVertexAttribute(nap::utility::stringFormat("%s%d", opengl::Mesh::VertexAttributeIDs::ColorVertexAttr.c_str(), 0), 4, &colors.front());
+	sphere_mesh->addVertexAttribute<glm::vec3>(opengl::Mesh::VertexAttributeIDs::PositionVertexAttr, &vertices.front());
+	sphere_mesh->addVertexAttribute<glm::vec3>(opengl::Mesh::VertexAttributeIDs::NormalVertexAttr,  &normals.front());
+	sphere_mesh->addVertexAttribute<glm::vec3>(nap::utility::stringFormat("%s%d", opengl::Mesh::VertexAttributeIDs::UVVertexAttr.c_str(), 0), &texcoords.front());
+	sphere_mesh->addVertexAttribute<glm::vec4>(nap::utility::stringFormat("%s%d", opengl::Mesh::VertexAttributeIDs::ColorVertexAttr.c_str(), 0), &colors.front());
 	sphere_mesh->setIndices(index_count, &indices.front());
 	
 	return sphere_mesh;

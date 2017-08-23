@@ -85,7 +85,7 @@ namespace nap
 		if (!errorState.check(opengl::initVideo(), "Failed to init SDL"))
 			return false;
 
-		// Set GL Attributes
+		// Set GL Attributes for creation of native render window
 		OpenGLAttributes attrs;
 		attrs.doubleBuffer = true;
 		attrs.versionMinor = 3;
@@ -97,13 +97,20 @@ namespace nap
 #endif
 		setOpenGLAttributes(attrs);
 
+		// Create the primary window, this window is invisible and only
+		// used to synchronize resources. Therefore it does not need to be v-synced
 		RenderWindowSettings settings;
 		settings.visible = false;
+		settings.sync = false;
+
+		// Create main winow
 		mPrimaryWindow = createRenderWindow(settings, errorState);
 
+		// Make sure initialization of that window succeeded
 		if (!errorState.check(opengl::init(), "Failed to init OpenGL"))
 			return false;
 
+		// Further calls go to main window
 		mPrimaryWindow->makeCurrent();
 
 		return true;
