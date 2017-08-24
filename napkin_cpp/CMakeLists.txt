@@ -10,7 +10,7 @@ if (MSVC)
             )
     set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QT_DIR})
 endif ()
-
+add_definitions(-DQT_NO_KEYWORDS)
 set(CMAKE_AUTOMOC ON)
 
 #set(QT_MODULES  Xml Multimedia 3DCore 3DInput 3DLogic 3DRender)
