@@ -5,7 +5,8 @@ if (WIN32)
         HINTS ${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/etherdream
     )
     set(ETHERDREAM_INCLUDE_DIRS ${ETHERDREAM_DIR}/msvc/include)
-    set(ETHERDREAM_LIBS ${ETHERDREAM_DIR}/msvc/bin/Debug/EtherDream.lib)
+    set(ETHERDREAM_LIBS ${ETHERDREAM_DIR}/msvc/bin/Release/EtherDream.lib)
+    set(ETHERDREAM_LIBS_DIR ${ETHERDREAM_DIR}/msvc/bin/Release)
 elseif(APPLE)
 	find_path(
 		ETHERDREAM_DIR
@@ -14,6 +15,7 @@ elseif(APPLE)
 	)
 	set(ETHERDREAM_INCLUDE_DIRS ${ETHERDREAM_DIR}/osx/include)
 	set(ETHERDREAM_LIBS ${ETHERDREAM_DIR}/osx/bin/Release/libEtherDream.dylib)
+	set(ETHERDREAM_LIBS_DIR ${ETHERDREAM_DIR}/osx/bin/Release)
 else()
 	find_path(
 		ETHERDREAM_DIR
@@ -22,9 +24,11 @@ else()
 	)
 	set(ETHERDREAM_INCLUDE_DIRS ${ETHERDREAM_DIR}/linux/include)
 	set(ETHERDREAM_LIBS ${ETHERDREAM_DIR}/linux/bin/libetherdream.so)
+	set(ETHERDREAM_LIBS_DIR ${ETHERDREAM_DIR}/linux/bin)
 endif()
 
 mark_as_advanced(ETHERDREAM_INCLUDE_DIRS)
+mark_as_advanced(ETHERDREAM_LIBS_DIR)
 
 INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(etherdream REQUIRED_VARS ETHERDREAM_INCLUDE_DIRS ETHERDREAM_LIBS)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(etherdream REQUIRED_VARS ETHERDREAM_INCLUDE_DIRS ETHERDREAM_LIBS ETHERDREAM_LIBS_DIR)

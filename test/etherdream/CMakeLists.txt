@@ -20,12 +20,14 @@ add_dependencies(${PROJECT_NAME} fbxconverter)
 target_link_libraries(${PROJECT_NAME} mod_napetherdream mod_napinput mod_napsdlinput mod_napsdlwindow)
 
 if (WIN32)
+	find_package(etherdream REQUIRED)
+
     # Copy over some crap window dlls
     set(FILES_TO_COPY
             ${FREEIMAGE_DIR}/msvc/Dist/x64/FreeImage.dll
             ../../../../thirdparty/sdl2/msvc/lib/x64/SDL2.dll
             ../../../../thirdparty/glew/msvc/bin/Release/x64/glew32.dll
-            ../../../../thirdparty/etherdream/msvc/bin/Release/EtherDream.dll
+            ${ETHERDREAM_LIBS_DIR}/EtherDream.dll
             )
     # copy nrender (hack)
     copy_files_to_bin(${FILES_TO_COPY})
