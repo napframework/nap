@@ -1,15 +1,11 @@
-// firstSDLapp.cpp : Defines the entry point for the console application.
-//
-
-// Local Includes
-#include "RenderableMeshComponent.h"
-
 // GLM
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>  
 #include <glm/ext.hpp>
 #include <glm/matrix.hpp>
 #include <glm/gtx/transform.hpp>
+
+#include <artnetservice.h>
 
 // Mod nap render includes
 #include <renderservice.h>
@@ -28,7 +24,6 @@
 #include <mousebutton.h>
 #include <sceneservice.h>
 #include <nap/logger.h>
-#include <artnetservice.h>
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
@@ -127,6 +122,12 @@ bool init(nap::Core& core)
 
 	// Create artnet service
 	artnetService = core.getOrCreateService<nap::ArtnetService>();
+	artnetService->mIpAddress = "192.168.1.100";
+	if (!artnetService->init(errorState))
+	{
+		nap::Logger::fatal(errorState.toString());
+		return false;
+	}
 
 	// Load scene
 	if (!resourceManagerService->loadFile("data/artnet/artnet.json", errorState))

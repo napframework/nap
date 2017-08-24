@@ -20,6 +20,15 @@ namespace nap
 		ArtnetService() = default;
 
 		// Default Destructor
-		virtual ~ArtnetService() = default;
+		virtual ~ArtnetService();
+
+		// Initialization
+		bool init(nap::utility::ErrorState& errorState);
+
+		// Ip address used by the artnet connection
+		std::string mIpAddress = "localhost";
+
+	private:
+		void* mNode = nullptr;
 	};
 }
