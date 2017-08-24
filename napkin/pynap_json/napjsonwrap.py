@@ -1,15 +1,30 @@
 import json
 import os
+import re
 from collections import OrderedDict
+from typing import Iterable
+from PyQt5.QtCore import *
+from pynap_json.constants import *
+
+
+class NAPProperty(object):
+    def __init__(self, ownerType, name: str, data: OrderedDict):
+        super(NAPProperty, self).__init__()
+        self.__ownerType = ownerType
+        self.name = name
+        self.__data = data
+
+    def type(self) -> str:
+        return self.__data.get('type', UNKNOWN_TYPE)
 
 
 class NAPType(object):
-    def __init__(self, name, data):
+    def __init__(self, name: str, data: OrderedDict):
         super(NAPType, self).__init__()
         self.name = name
         self.__data = data
 
-    def properties(self):
+    def properties(self) -> Iterable[NAPProperty]:
         propsdic = self.__data['properties']
         for name in propsdic:
             yield NAPProperty(self, name, propsdic[name])
@@ -18,28 +33,24 @@ class NAPType(object):
         return '<NAPType (%s)>' % self.name
 
 
-class NAPProperty(object):
-    def __init__(self, ownerType, name, data):
-        super(NAPProperty, self).__init__()
-        self.__ownerType = ownerType
-        self.name = name
-        self.__data = data
+class NAPObject(QObject):
 
-    def type(self):
+    changed = pyqtSignal()
 
-        return self.__data['type'] if 'type' in self.__data else '<<UNKNOWN>>'
-
-class NAPInstance(object):
     def __init__(self, data):
-        super(NAPInstance, self).__init__()
+        super(NAPObject, self).__init__()
         self.__data = data
         self.__type = schema().typeFromName(self.typeName())
 
     def name(self):
-        return self.__data['mID']
+        return self.__data[PROP_ID]
+
+    def setName(self, name):
+        self.__data[PROP_ID] = name
+        self.changed.emit()
 
     def typeName(self):
-        return self.__data['Type']
+        return self.__data[PROP_TYPE]
 
     def type(self) -> NAPType:
         return self.__type
@@ -52,12 +63,38 @@ class NAPInstance(object):
 
     def setValue(self, name, valuestr):
         self.__data[name] = valuestr
+        self.changed.emit()
+
+    def components(self):
+        """
+        :rtype: Iterable[NAPObject]
+        """
+        return (NAPComponent(c) for c in self.__data.get(PROP_COMPONENTS, ()))
+
+    def children(self):
+        """
+        :rtype: Iterable[NAPObject]
+        """
+        return (NAPObject(c) for c in self.__data.get(PROP_CHILDREN, ()))
+
 
     @staticmethod
     def fromDict(dic):
-        inst = NAPInstance(dic)
-        return inst
+        return NAPObject(dic)
 
+    def toDict(self):
+        return self.__data
+
+
+class NAPComponent(NAPObject):
+    def __init__(self, data):
+        super(NAPComponent, self).__init__(data)
+        self.__nameRegex = re.compile(r".+::(.+)+?")
+
+    def name(self):
+        m =  self.__nameRegex.match(self.typeName())
+
+        return re.sub('Component$', '', m.group(1))
 
 
 __SCHEMA = None
@@ -73,7 +110,8 @@ def schema():
 class NAPSchema(object):
     def __init__(self, filename=None):
         super(NAPSchema, self).__init__()
-        self.__filename = filename or '%s/../schema/napschema.json' % os.path.dirname(__file__)
+        self.__filename = filename or '%s/../schema/napschema.json' % os.path.dirname(
+            __file__)
         self.__schema = None
         self.__types = set()
         self.readSchema()
@@ -96,5 +134,11 @@ def loadFile(filename):
         data = json.load(fp, object_pairs_hook=OrderedDict)
     objects = []
     for ob in data['Objects']:
-        objects.append(NAPInstance.fromDict(ob))
+        objects.append(NAPObject.fromDict(ob))
     return objects
+
+
+def saveFile(filename, objects: Iterable[NAPObject]):
+    with open(filename, 'w') as fp:
+        data = {'Objects': [o.toDict() for o in objects]}
+        json.dump(data, fp, indent=2)

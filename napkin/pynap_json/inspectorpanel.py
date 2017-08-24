@@ -1,16 +1,21 @@
-from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
 
 from generic.filtertreeview import FilterTreeView
-from pynap_json.napjsonwrap import NAPInstance, NAPProperty
+from pynap_json.constants import PROP_COMPONENTS, PROP_CHILDREN
+from pynap_json.napjsonwrap import NAPObject, NAPProperty
 
 
 class ValueItem(QStandardItem):
-    def __init__(self, object: NAPInstance, prop: str):
+    def __init__(self, object: NAPObject, prop: str):
         super(ValueItem, self).__init__()
         self.object = object
+        self.object.changed.connect(self.__changed)
         self.prop = prop
+        self.updateText()
+
+    def __changed(self):
         self.updateText()
 
     def value(self):
@@ -22,7 +27,11 @@ class ValueItem(QStandardItem):
     def updateText(self):
         if self.object.hasValue(self.prop):
             self.setText(str(self.object.value(self.prop)))
-
+    
+    def setData(self, value, role):
+        if role == Qt.EditRole:
+            self.object.setValue(self.prop, value)
+        super(ValueItem, self).setData(value, role)
 
 class KeyItem(QStandardItem):
     def __init__(self, obj, prop):
@@ -30,6 +39,7 @@ class KeyItem(QStandardItem):
         self.obj = obj
         self.prop = prop
         self.setText(prop)
+
 
 class TypeItem(QStandardItem):
     def __init__(self, obj, prop):
@@ -43,6 +53,7 @@ class PropModel(QStandardItemModel):
     def __init__(self):
         super(PropModel, self).__init__()
         self.__object = None
+        self.setHorizontalHeaderLabels(['Property', 'Value', 'Type'])
 
     def setObjects(self, objects):
         while self.rowCount():
@@ -53,9 +64,16 @@ class PropModel(QStandardItemModel):
             return
 
         self.__object = objects[0]
-        assert isinstance(self.__object, NAPInstance)
+        assert isinstance(self.__object, NAPObject)
 
-        for prop in self.__object.type().properties():
+        objtype = self.__object.type()
+        if not objtype:
+            return
+
+        for prop in objtype.properties():
+            if prop.name == PROP_COMPONENTS: continue
+            if prop.name == PROP_CHILDREN: continue
+
             self.appendRow([
                 KeyItem(self.__object, prop.name),
                 ValueItem(self.__object, prop.name),
@@ -63,14 +81,16 @@ class PropModel(QStandardItemModel):
             ])
 
 
-class PropPanel(QWidget):
+class InspectorPanel(QWidget):
     def __init__(self):
-        super(PropPanel, self).__init__()
+        super(InspectorPanel, self).__init__()
         self.setLayout(QVBoxLayout())
         self.__tree = FilterTreeView()
         self.__tree.setModel(PropModel())
         self.layout().addWidget(self.__tree)
-        self.__tree.tree().setColumnWidth(0, 200)
+        self.__tree.tree().setColumnWidth(0, 150)
+        self.__tree.tree().setColumnWidth(1, 200)
 
     def setObjects(self, objects):
         self.__tree.model().setObjects(objects)
+        self.__tree.expandAll()

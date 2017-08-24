@@ -1,13 +1,10 @@
-from functools import partial
-
+import nap
+from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-
-import nap
 
 from generic.filtertreeview import FilterTreeView
-from generic.searchablepopuplist import SearchablePopupList, SearchablePopup
+from generic.searchablepopuplist import SearchablePopup
 from pynap import naputils
 
 
