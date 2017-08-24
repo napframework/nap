@@ -57,7 +57,7 @@ add_subdirectory(core)
 add_subdirectory(utility)
 add_subdirectory(rtti)
 add_subdirectory(nrender)
-
+add_subdirectory(napkin_cpp)
 
 # tools targets
 add_subdirectory(tools/fbxconverter)
