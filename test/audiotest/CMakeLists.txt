@@ -21,10 +21,11 @@ if (WIN32)
     # Copy over some crap window dlls
     set(FILES_TO_COPY
             ../../../../thirdparty/sdl2/msvc/lib/x64/SDL2.dll
+            ../../../../thirdparty/portaudio/msvc64/portaudio_x64.dll
             )
     # copy nrender (hack)
     copy_files_to_bin(${FILES_TO_COPY})
 endif()
 
 # create post build event
-copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/data data)
+# copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/data data)
