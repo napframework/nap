@@ -16,8 +16,8 @@ find_path(PORTAUDIO_DIR include/portaudio.h
         )
 
 if(WIN32)
-    set(PORTAUDIO_LIB_DIR ${PORTAUDIO_DIR}/lib)
-    set(PORTAUDIO_LIBRARIES ${PORTAUDIO_LIB_DIR}/libportaudio.lib)
+    set(PORTAUDIO_LIB_DIR ${PORTAUDIO_DIR}/msvc64)
+    set(PORTAUDIO_LIBRARIES ${PORTAUDIO_LIB_DIR}/portaudio_x64.lib)
 elseif(APPLE)
     set(PORTAUDIO_LIB_DIR ${PORTAUDIO_DIR}/lib/.libs)
     set(PORTAUDIO_LIBRARIES ${PORTAUDIO_LIB_DIR}/libportaudio.a)
