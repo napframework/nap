@@ -5,6 +5,9 @@
 #include <nap/resourcemanager.h>
 #include <nap/logger.h>
 
+// Audio module includes
+#include <audiodevice.h>
+
 //////////////////////////////////////////////////////////////////////////
 // Globals
 //////////////////////////////////////////////////////////////////////////
@@ -12,10 +15,13 @@
 // Nap Objects
 nap::ResourceManagerService* resourceManagerService = nullptr;
 
+// Audio device
+nap::audio::AudioDeviceManager audioDeviceManager;
+
 //////////////////////////////////////////////////////////////////////////
 
 // Some utilities
-void runGame(nap::Core& core);	
+void run(nap::Core& core);
 
 
 // Called when the window is updating
@@ -33,11 +39,10 @@ void onUpdate()
 */
 bool init(nap::Core& core)
 {
+    // Start audio device
+    audioDeviceManager.startDefaultDevice(1, 2, 44100, 256);
+    
 	core.initialize();
-
-	//////////////////////////////////////////////////////////////////////////
-	// GL Service + Window
-	//////////////////////////////////////////////////////////////////////////
 
 	// Get resource manager service
 	resourceManagerService = core.getOrCreateService<nap::ResourceManagerService>();
@@ -46,11 +51,11 @@ bool init(nap::Core& core)
 	nap::utility::ErrorState errorState;
 
 	// Load scene
-	if (!resourceManagerService->loadFile("data/audiotest/audiotest.json", errorState))
-	{
-		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
-		return false;        
-	} 
+//	if (!resourceManagerService->loadFile("data/audiotest/audiotest.json", errorState))
+//	{
+//		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
+//		return false;        
+//	} 
 	
 //	// Get important entities
 //	cameraEntity = resourceManagerService->findEntity("CameraEntity");
@@ -83,13 +88,15 @@ int main(int argc, char *argv[])
 	if (!init(core))
 		return -1;
 
-	// Run Gam
-	runGame(core);
-
+	// Run loop
+//	run(core);
+    
+    audioDeviceManager.stop();
+    
 	return 0;
 }
 
-void runGame(nap::Core& core)
+void run(nap::Core& core)
 {
 	// Run function
 	bool loop = true;
