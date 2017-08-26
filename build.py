@@ -43,7 +43,7 @@ def installDependenciesLinux():
                'libglm-dev',
                'libtclap-dev',
                'libfreeimage-dev',
-               'libportaudio2-dev'
+               'libportaudio19-dev'
                ])
 
 
