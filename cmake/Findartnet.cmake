@@ -5,7 +5,6 @@ find_path(
 	HINTS ${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/libartnet
 )
 
-# only windows for now, need to compile the others
 if (WIN32)
 	set(ARTNET_LIBS ${ARTNET_DIR}/msvc/install/bin/Release/libartnet.lib)
 	set(ARTNET_LIBS_DIR ${ARTNET_DIR}/msvc/install/bin/Release)
@@ -14,6 +13,10 @@ elseif(APPLE)
 	set(ARTNET_LIBS ${ARTNET_DIR}/osx/bin/Release/libArtnet.dylib)
 	set(ARTNET_LIBS_DIR ${ARTNET_DIR}/osx/bin/Release)
 	set(ARTNET_INCLUDE_DIRS ${ARTNET_DIR} ${ARTNET_DIR}/osx)
+else()
+	set(ARTNET_LIBS ${ARTNET_DIR}/linux/bin/libartnet.so)
+	set(ARTNET_LIBS_DIR ${ARTNET_DIR}/linux/bin)
+	set(ARTNET_INCLUDE_DIRS ${ARTNET_DIR} ${ARTNET_DIR}/linux)
 endif()
 
 mark_as_advanced(ARTNET_INCLUDE_DIRS)
