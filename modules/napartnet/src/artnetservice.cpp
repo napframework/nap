@@ -29,15 +29,31 @@ namespace nap
 	bool ArtnetService::init(nap::utility::ErrorState& errorState)
 	{
 		// Create new artnet instance
-		mNode = artnet_new(mIpAddress.c_str(), verbose);
-		if (!errorState.check(mNode != nullptr, "Unable to create new Artnet connection, ip: %s", mIpAddress.c_str()))
+		mNode = artnet_new(NULL, verbose);
+		if (!errorState.check(mNode != nullptr, "Unable to create new art-net connection, error: %s", artnet_strerror()))
 			return false;
+
+		// Set node name and type (server)
+		artnet_set_short_name(mNode, "artnet-nap");
+		artnet_set_long_name(mNode, "Artnet NAP Node");
 		
+		// The node is an artnet server
+		artnet_set_node_type(mNode, ARTNET_SRV);
+
+		// set poll reply handler
+		// artnet_set_handler(mNode, ARTNET_REPLY_HANDLER, reply_handler, NULL);
+
 		// Start connection
-		if (!errorState.check(artnet_start(mNode) == 0, "Unable to start Artnet connection, ip: %s", mIpAddress.c_str()))
+		if (!errorState.check(artnet_start(mNode) == 0, "Unable to start art-net connection, error: %s", artnet_strerror()))
 			return false;
+
+		// broadcast a poll request
+		if (artnet_send_poll(mNode, NULL, ARTNET_TTM_DEFAULT) != ARTNET_EOK)
+		{
+			printf("art-net send poll failed\n");
+			return false;
+		}
 
 		return true;
 	}
-
 }

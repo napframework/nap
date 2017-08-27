@@ -6,6 +6,8 @@
 
 namespace nap
 {
+	using ArtnetNode = void*;
+
 	/**
 	 * Main interface for rendering to various Etherdream Dacs
 	 * The service is responsible for opening / closing the general Etherdream library
@@ -25,10 +27,15 @@ namespace nap
 		// Initialization
 		bool init(nap::utility::ErrorState& errorState);
 
-		// Ip address used by the artnet connection
-		std::string mIpAddress = "localhost";
+		/**
+		 * @return the artnet node instance associated with this application
+		 */
+		ArtnetNode getNode() const										{ return mNode; }
 
 	private:
-		void* mNode = nullptr;
+		// The artnet node associated with this application instance
+		// The node is something we probably want as a resource, although I am not sure if we want
+		// Multiple nodes per running instance.
+		ArtnetNode mNode = nullptr;
 	};
 }

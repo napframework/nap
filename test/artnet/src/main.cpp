@@ -1,11 +1,4 @@
-// GLM
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>  
-#include <glm/ext.hpp>
-#include <glm/matrix.hpp>
-#include <glm/gtx/transform.hpp>
-
-#include <artnetservice.h>
+#include <nap/configure.h>
 
 // Mod nap render includes
 #include <renderservice.h>
@@ -24,6 +17,8 @@
 #include <mousebutton.h>
 #include <sceneservice.h>
 #include <nap/logger.h>
+#include <artnetservice.h>
+#include <nap/event.h>
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
@@ -122,7 +117,6 @@ bool init(nap::Core& core)
 
 	// Create artnet service
 	artnetService = core.getOrCreateService<nap::ArtnetService>();
-	artnetService->mIpAddress = "192.168.1.100";
 	if (!artnetService->init(errorState))
 	{
 		nap::Logger::fatal(errorState.toString());
@@ -152,6 +146,7 @@ bool init(nap::Core& core)
 
 	return true;
 }
+
 
 // Main loop
 int main(int argc, char *argv[])
