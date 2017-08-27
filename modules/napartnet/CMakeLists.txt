@@ -14,9 +14,14 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
 # add include dirs
 target_include_directories(${PROJECT_NAME} PUBLIC src ${ARTNET_INCLUDE_DIRS})
 
-# link with external libs
+# preprocessor
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
-target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
+
+# link with external libs
+if(NOT WIN32)
+	target_compile_definitions(${PROJECT_NAME} PUBLIC HAVE_CONFIG_H)
+endif()
+
 target_link_libraries(${PROJECT_NAME} napcore ${ARTNET_LIBS})
 
 if (WIN32)
