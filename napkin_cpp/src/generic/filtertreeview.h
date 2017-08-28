@@ -73,7 +73,7 @@ public:
 protected:
 
     void onFilterChanged(const QString& text) {
-
+        sortFilter.setFilterRegExp(text);
     }
 
     void onExpandSelected() {

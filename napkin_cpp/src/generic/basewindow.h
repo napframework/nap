@@ -1,22 +1,22 @@
 #pragma once
+
 #include <QMainWindow>
 #include <QMenu>
-#include <QSettings>
 #include <QDockWidget>
 #include <QMenuBar>
+#include "appcontext.h"
 
-
-#define WIN_GEO "WindowGeometry"
-#define WIN_STATE "WindowState"
 
 class BaseWindow : public QMainWindow {
+//    Q_OBJECT
 public:
-    BaseWindow() : QMainWindow() {
-        setWindowTitle(QApplication::applicationName());
-        setDockNestingEnabled(true);
-        mWindowMenu = new QMenu("Window");
-        menuBar()->addMenu(mWindowMenu);
-    }
+    BaseWindow();
+    virtual ~BaseWindow() {}
+
+    /**
+     * @return The QMenu that contains the list of available windows
+     */
+    QMenu* windowMenu() { return mWindowMenu; }
 
     /**
      * Add a QWidget to this window, display it as a dockwidget and add a toggle menuitem to the menubar
@@ -24,36 +24,12 @@ public:
      * @param widget The widget to be added as a dockwidget.
      * @param area The initial area to stick the the dock into.
      */
-    QDockWidget* addDock(const QString &name, QWidget* widget, Qt::DockWidgetArea area = Qt::TopDockWidgetArea) {
-        auto dock = new QDockWidget(this);
-        dock->setObjectName(name);
-        dock->setWidget(widget);
-        dock->setWindowTitle(name);
-
-        auto action = mWindowMenu->addAction(name);
-        action->setCheckable(true);
-        action->setChecked(true);
-        connect(action, &QAction::triggered, [dock, action]() {
-            dock->setVisible(action->isChecked());
-        });
-        addDockWidget(area, dock);
-        return dock;
-    }
+    QDockWidget* addDock(const QString& name, QWidget* widget, Qt::DockWidgetArea area = Qt::TopDockWidgetArea);
 
 protected:
-    void showEvent(QShowEvent* event) override {
-        QWidget::showEvent(event);
-        QSettings s;
-        restoreGeometry(s.value(WIN_GEO).toByteArray());
-        restoreState(s.value(WIN_STATE).toByteArray());
-    }
+    void showEvent(QShowEvent* event) override;
 
-    void closeEvent(QCloseEvent* event) override {
-        QSettings s;
-        s.setValue(WIN_STATE, saveState());
-        s.setValue(WIN_GEO, saveGeometry());
-        QWidget::closeEvent(event);
-    }
+    void closeEvent(QCloseEvent* event) override;
 
 
 private:

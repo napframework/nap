@@ -1,32 +1,39 @@
 #pragma once
 
+#include <QStandardItemModel>
+#include <nap/resourcemanager.h>
 #include "generic/filtertreeview.h"
-#include <QWidget>
+#include "appcontext.h"
 
 namespace nap { namespace rtti { class RTTIObject; }}
 
 class ObjectItem : public QStandardItem {
 public:
-    ObjectItem(nap::rtti::RTTIObject& rttiObject) : QStandardItem(), object(rttiObject) {
-//        refresh();
-    }
+    ObjectItem(nap::rtti::RTTIObject& rttiObject);
 
-//    void refresh() {
-//        setText(QString::fromStdString(object.mID));
-//    }
+    void refresh();
 
 private:
     nap::rtti::RTTIObject& object;
 };
 
-class OutlinePanel : public QWidget {
+class OutlineModel : public QStandardItemModel {
 public:
-    OutlinePanel() {
-        setLayout(&layout);
-        layout.addWidget(&treeView);
-    }
+    OutlineModel();
+
 
 private:
-    QVBoxLayout layout;
-    FilterTreeView treeView;
+    void onFileOpened(const QString& filename);
+
+    void refresh();
+};
+
+class OutlinePanel : public QWidget {
+public:
+    OutlinePanel();
+
+private:
+    QVBoxLayout mLayout;
+    OutlineModel mModel;
+    FilterTreeView mTreeView;
 };

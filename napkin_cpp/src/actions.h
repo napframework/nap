@@ -1,11 +1,35 @@
 #pragma once
 
+#include <QAction>
+#include <QKeySequence>
+#include <QFileDialog>
+#include "appcontext.h"
 
-#include <QtWidgets/QAction>
+class OpenFileAction : public QAction {
 
-class OpenFileCommand : public QAction {
+public:
+    OpenFileAction(QObject* parent);
 
-
+private:
+    void perform();
 
 };
 
+
+class SaveFileAction : public QAction {
+public:
+    SaveFileAction(QObject* parent);
+
+private:
+    void perform();
+
+};
+
+class SaveFileAsAction : public QAction {
+public:
+    SaveFileAsAction(QObject* parent);
+
+private:
+    void perform();
+
+};
