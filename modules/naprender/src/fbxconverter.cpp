@@ -20,62 +20,10 @@
 #include <rtti/binaryreader.h>
 
 // Local Includes
-#include "nmesh.h"
+#include "mesh.h"
 
 namespace nap
 {
-	class MeshData : public rtti::RTTIObject
-	{
-		RTTI_ENABLE(rtti::RTTIObject)
-
-	public:
-		struct Attribute
-		{
-			std::string			mID;
-			int					mNumComponents;
-			std::vector<float>	mData;
-		};
-
-		std::vector<Attribute> mAttributes;
-		int mNumVertices = 0;
-		std::vector<unsigned int> mIndices;
-
-		const Attribute* FindAttribute(const std::string& id) const
-		{
-			for (const Attribute& attribute : mAttributes)
-				if (attribute.mID == id)
-					return &attribute;
-
-			return nullptr;
-		}
-
-		Attribute& GetOrCreateAttribute(const std::string& id)
-		{
-			for (Attribute& attribute : mAttributes)
-				if (attribute.mID == id)
-					return attribute;
-
-			Attribute new_attribute;
-			new_attribute.mID = id;
-			mAttributes.push_back(new_attribute);
-
-			return mAttributes[mAttributes.size() - 1];
-		}
-	};
-
-	RTTI_BEGIN_CLASS(MeshData::Attribute)
-		RTTI_PROPERTY("ID",				&MeshData::Attribute::mID, nap::rtti::EPropertyMetaData::Required)
-		RTTI_PROPERTY("NumComponents",	&MeshData::Attribute::mNumComponents, nap::rtti::EPropertyMetaData::Required)
-		RTTI_PROPERTY("Data",			&MeshData::Attribute::mData, nap::rtti::EPropertyMetaData::Required)
-	RTTI_END_CLASS
-
-	RTTI_BEGIN_CLASS(MeshData)
-		RTTI_PROPERTY("Attributes", &MeshData::mAttributes, nap::rtti::EPropertyMetaData::Required)
-		RTTI_PROPERTY("NumVertices", &MeshData::mNumVertices, nap::rtti::EPropertyMetaData::Required)
-		RTTI_PROPERTY("Indices", &MeshData::mIndices, nap::rtti::EPropertyMetaData::Required)
-	RTTI_END_CLASS
-
-
 	bool convertFBX(const std::string& fbxPath, const std::string& outputDirectory, EFBXConversionOptions convertOptions, std::vector<std::string>& convertedFiles, utility::ErrorState& errorState)
 	{
 		// Create importer
@@ -102,7 +50,7 @@ namespace nap
 		for (unsigned int i = 0; i < scene->mNumMeshes; i++)
 		{
 			// Get assimp mesh
-			aiMesh* mesh = scene->mMeshes[i];
+			aiMesh* fbx_mesh = scene->mMeshes[i];
 
 			// If there is only a single mesh in the file, use the file name as ID. Otherwise, append the index of the mesh to the file name.
 			std::string converted_name;
@@ -112,8 +60,8 @@ namespace nap
 			}				
 			else
 			{
-				if (mesh->mName.length != 0)
-					converted_name = utility::stringFormat("%s_%s", getFileNameWithoutExtension(fbxPath).c_str(), mesh->mName.C_Str());
+				if (fbx_mesh->mName.length != 0)
+					converted_name = utility::stringFormat("%s_%s", getFileNameWithoutExtension(fbxPath).c_str(), fbx_mesh->mName.C_Str());
 				else
 					converted_name = utility::stringFormat("%s_%d", getFileNameWithoutExtension(fbxPath).c_str(), i);			
 			}				
@@ -129,93 +77,81 @@ namespace nap
 			if (!should_convert)
 				continue;
 
-			MeshData mesh_data;
+			Mesh mesh_data;
 			mesh_data.mID = converted_name;
 
-			if (!errorState.check(mesh->mNumVertices != 0, "Encountered mesh with no vertices"))
+			if (!errorState.check(fbx_mesh->mNumVertices != 0, "Encountered mesh with no vertices"))
 				return false;
 
-			mesh_data.mNumVertices = mesh->mNumVertices;
+			mesh_data.mNumVertices = fbx_mesh->mNumVertices;
+			mesh_data.mDrawMode = opengl::EDrawMode::TRIANGLES;
 
 			// Copy vertex data			
-			MeshData::Attribute& position_attribute = mesh_data.GetOrCreateAttribute(opengl::Mesh::VertexAttributeIDs::PositionVertexAttr);
-			position_attribute.mNumComponents = 3;
-			position_attribute.mData.reserve(mesh->mNumVertices * 3);
-			for (unsigned int vertex = 0; vertex < mesh->mNumVertices; vertex++)
+			TypedMeshAttribute<glm::vec3>& position_attribute = mesh_data.GetOrCreateAttribute<glm::vec3>(opengl::Mesh::VertexAttributeIDs::PositionVertexAttr);
+			position_attribute.Reserve(fbx_mesh->mNumVertices);
+			for (unsigned int vertex = 0; vertex < fbx_mesh->mNumVertices; vertex++)
 			{
-				aiVector3D* current_id = &(mesh->mVertices[vertex]);
-				position_attribute.mData.emplace_back(static_cast<float>(current_id->x));
-				position_attribute.mData.emplace_back(static_cast<float>(current_id->y));
-				position_attribute.mData.emplace_back(static_cast<float>(current_id->z));
+				aiVector3D* current_id = &(fbx_mesh->mVertices[vertex]);
+				position_attribute.Add(glm::vec3(static_cast<float>(current_id->x), static_cast<float>(current_id->y), static_cast<float>(current_id->z)));
 			}
 
 			// Copy normals
-			if (mesh->HasNormals())
+			if (fbx_mesh->HasNormals())
 			{
-				MeshData::Attribute& normal_attribute = mesh_data.GetOrCreateAttribute(opengl::Mesh::VertexAttributeIDs::NormalVertexAttr);
-				normal_attribute.mNumComponents = 3;
-				normal_attribute.mData.reserve(mesh->mNumVertices * 3);
-				for (unsigned int vertex = 0; vertex < mesh->mNumVertices; vertex++)
+				TypedMeshAttribute<glm::vec3>& normal_attribute = mesh_data.GetOrCreateAttribute<glm::vec3>(opengl::Mesh::VertexAttributeIDs::NormalVertexAttr);
+				normal_attribute.Reserve(fbx_mesh->mNumVertices);
+				for (unsigned int vertex = 0; vertex < fbx_mesh->mNumVertices; vertex++)
 				{
-					aiVector3D* current_id = &(mesh->mNormals[vertex]);
-					normal_attribute.mData.emplace_back(static_cast<float>(current_id->x));
-					normal_attribute.mData.emplace_back(static_cast<float>(current_id->y));
-					normal_attribute.mData.emplace_back(static_cast<float>(current_id->z));
+					aiVector3D* current_id = &(fbx_mesh->mNormals[vertex]);
+					normal_attribute.Add(glm::vec3(static_cast<float>(current_id->x), static_cast<float>(current_id->y), static_cast<float>(current_id->z)));
 				}
 			}
 
 			// Copy all uv data channels
-			for (unsigned int uv_channel = 0; uv_channel < mesh->GetNumUVChannels(); uv_channel++)
+			for (unsigned int uv_channel = 0; uv_channel < fbx_mesh->GetNumUVChannels(); uv_channel++)
 			{
-				aiVector3D* uv_channel_data = mesh->mTextureCoords[uv_channel];
+				aiVector3D* uv_channel_data = fbx_mesh->mTextureCoords[uv_channel];
 
-				MeshData::Attribute& uv_attribute = mesh_data.GetOrCreateAttribute(opengl::Mesh::VertexAttributeIDs::GetUVVertexAttr(uv_channel));
-				uv_attribute.mNumComponents = 3;
-				uv_attribute.mData.reserve(mesh->mNumVertices * 3);
+				TypedMeshAttribute<glm::vec3>& uv_attribute = mesh_data.GetOrCreateAttribute<glm::vec3>(opengl::Mesh::VertexAttributeIDs::GetUVVertexAttr(uv_channel));
+				uv_attribute.Reserve(fbx_mesh->mNumVertices);
 
 				// Copy uv data channel
-				for (unsigned int vertex = 0; vertex < mesh->mNumVertices; vertex++)
+				for (unsigned int vertex = 0; vertex < fbx_mesh->mNumVertices; vertex++)
 				{
 					aiVector3D* current_id = &(uv_channel_data[vertex]);
-					uv_attribute.mData.emplace_back(static_cast<float>(current_id->x));
-					uv_attribute.mData.emplace_back(static_cast<float>(current_id->y));
-					uv_attribute.mData.emplace_back(static_cast<float>(current_id->z));
+					uv_attribute.Add(glm::vec3(static_cast<float>(current_id->x), static_cast<float>(current_id->y), static_cast<float>(current_id->z)));
 				}
 			}
 
 
 			// Copy all color data channels
-			for (unsigned int color_channel = 0; color_channel < mesh->GetNumColorChannels(); color_channel++)
+			for (unsigned int color_channel = 0; color_channel < fbx_mesh->GetNumColorChannels(); color_channel++)
 			{
-				aiColor4D* color_channel_data = mesh->mColors[color_channel];
+				aiColor4D* color_channel_data = fbx_mesh->mColors[color_channel];
 
-				MeshData::Attribute& color_attribute = mesh_data.GetOrCreateAttribute(opengl::Mesh::VertexAttributeIDs::GetColorVertexAttr(color_channel));
-				color_attribute.mNumComponents = 4;
-				color_attribute.mData.reserve(mesh->mNumVertices * 4);
+				TypedMeshAttribute<glm::vec4>& color_attribute = mesh_data.GetOrCreateAttribute<glm::vec4>(opengl::Mesh::VertexAttributeIDs::GetColorVertexAttr(color_channel));
+				color_attribute.Reserve(fbx_mesh->mNumVertices);
 
 				// Copy color data channel
-				for (unsigned int vertex = 0; vertex < mesh->mNumVertices; vertex++)
+				for (unsigned int vertex = 0; vertex < fbx_mesh->mNumVertices; vertex++)
 				{
 					aiColor4D* current_id = &(color_channel_data[vertex]);
-					color_attribute.mData.emplace_back(static_cast<float>(current_id->r));
-					color_attribute.mData.emplace_back(static_cast<float>(current_id->g));
-					color_attribute.mData.emplace_back(static_cast<float>(current_id->b));
-					color_attribute.mData.emplace_back(static_cast<float>(current_id->a));
+					color_attribute.Add(glm::vec4(static_cast<float>(current_id->r), static_cast<float>(current_id->g), static_cast<float>(current_id->b), static_cast<float>(current_id->a)));
 				}
 			}
 
 			// Retrieve index data
-			if (!errorState.check(mesh->HasFaces(), "Mesh has no indices"))
+			if (!errorState.check(fbx_mesh->HasFaces(), "Mesh has no indices"))
 				return false;
 
-			mesh_data.mIndices.reserve(mesh->mNumFaces * 3);
-			for (int face_index = 0; face_index != mesh->mNumFaces; ++face_index)
+			mesh_data.ReserveIndices(fbx_mesh->mNumFaces * 3);
+			for (int face_index = 0; face_index != fbx_mesh->mNumFaces; ++face_index)
 			{
-				aiFace& face = mesh->mFaces[face_index];
+				aiFace& face = fbx_mesh->mFaces[face_index];
 				assert(face.mNumIndices == 3);
 
 				for (int point_index = 0; point_index != face.mNumIndices; ++point_index)
-					mesh_data.mIndices.push_back(face.mIndices[point_index]);
+					mesh_data.AddIndex(face.mIndices[point_index]);
 			}
 
 			rtti::BinaryWriter binaryWriter;
@@ -235,7 +171,7 @@ namespace nap
 		return true;
 	}
 
-	std::unique_ptr<opengl::Mesh> loadMesh(const std::string& meshPath, utility::ErrorState& errorState)
+	std::unique_ptr<Mesh> loadMesh(const std::string& meshPath, utility::ErrorState& errorState)
 	{
 		rtti::Factory factory;
 
@@ -246,48 +182,12 @@ namespace nap
 		if (!errorState.check(deserialize_result.mReadObjects.size() == 1, "Trying to load an invalid mesh file. File %s contains %d objects, expected 1", meshPath.c_str(), deserialize_result.mReadObjects.size()))
 			return nullptr;
 
-		if (!errorState.check(deserialize_result.mReadObjects[0]->get_type() == RTTI_OF(MeshData), "Trying to load an invalid mesh file %s; file does not contain MeshData", meshPath.c_str()))
+		if (!errorState.check(deserialize_result.mReadObjects[0]->get_type() == RTTI_OF(Mesh), "Trying to load an invalid mesh file %s; file does not contain MeshData", meshPath.c_str()))
 			return nullptr;
 
 		assert(deserialize_result.mUnresolvedPointers.empty());
 
-		const MeshData* mesh_data = static_cast<MeshData*>(deserialize_result.mReadObjects[0].get());
-
-		std::unique_ptr<opengl::Mesh> mesh = std::make_unique<opengl::Mesh>(mesh_data->mNumVertices, opengl::EDrawMode::TRIANGLES);
-
-		// Copy vertex attribute data to mesh
-		for (const MeshData::Attribute& attribute : mesh_data->mAttributes)
-		{
-			switch (attribute.mNumComponents)
-			{
-			case 1:
-				mesh->addVertexAttribute<float>(attribute.mID, attribute.mData.data());
-				break;
-			case 2:
-				mesh->addVertexAttribute<glm::vec2>(attribute.mID, (glm::vec2*)(attribute.mData.data()));
-				break;
-			case 3:
-				mesh->addVertexAttribute<glm::vec3>(attribute.mID, (glm::vec3*)(attribute.mData.data()));
-				break;
-			case 4:
-				mesh->addVertexAttribute<glm::vec4>(attribute.mID, (glm::vec4*)(attribute.mData.data()));
-				break;
-			default:
-				assert(false);
-				break;
-			}
-		}
-			
-
-		// Make sure there's position data
-		if (!errorState.check(mesh->findVertexAttributeBuffer(opengl::Mesh::VertexAttributeIDs::PositionVertexAttr) != nullptr, "Required attribute 'position' not found in mesh %s", meshPath.c_str()))
-			return nullptr;
-			
-		// Copy indices
-		if (!errorState.check(!mesh_data->mIndices.empty(), "No index data found in mesh %s", meshPath.c_str()))
-			return nullptr;
-
-		mesh->setIndices(mesh_data->mIndices.size(), mesh_data->mIndices.data());
+		std::unique_ptr<Mesh> mesh = std::move(rtti_cast<Mesh>(deserialize_result.mReadObjects[0]));
 
 		return mesh;
 	}

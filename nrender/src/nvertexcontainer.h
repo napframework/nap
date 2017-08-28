@@ -9,6 +9,7 @@
 
 namespace opengl
 {
+#if 0
 	/**
 	 * VertexContainer
 	 *
@@ -374,5 +375,5 @@ namespace opengl
 	using Vec3VertexContainer	= TypedVertexContainer<glm::vec3>;
 	using Vec2VertexContainer	= TypedVertexContainer<glm::vec2>;
 	using vec4VertexContainer	= TypedVertexContainer<glm::vec4>;
-
+#endif
 } // opengl

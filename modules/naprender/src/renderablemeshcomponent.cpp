@@ -212,7 +212,7 @@ namespace nap
 
 		// Gather draw info
 		const opengl::Mesh& mesh = mResource->mMeshResource->getMesh();
-		GLenum draw_mode = getGLMode(mesh.getDrawMode());
+		GLenum draw_mode = getGLMode(mResource->mMeshResource->mDrawMode);
 		const opengl::IndexBuffer* index_buffer = mesh.getIndexBuffer();
 		GLsizei draw_count = static_cast<GLsizei>(index_buffer->getCount());
 

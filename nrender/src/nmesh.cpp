@@ -23,23 +23,19 @@ namespace opengl
 		return stream.str();
 	}
 
-
-	// Constructor initializes object draw mode
-	Mesh::Mesh(int numVertices, EDrawMode drawMode) :
-		mNumVertices(numVertices),
-		mDrawMode(drawMode)
-	{	}
-
+	void Mesh::addVertexAttribute(const VertexAttributeID& id, GLenum type, unsigned int numComponents, unsigned int numVertices, GLenum usage)
+	{
+		mAttributes.emplace_back(std::move(Attribute(id, type, numComponents, numVertices, usage)));
+	}
 
 	const VertexAttributeBuffer* Mesh::findVertexAttributeBuffer(const VertexAttributeID& id) const
 	{
-		for (const vertex::Attribute& attribute : mAttributes)
+		for (const Attribute& attribute : mAttributes)
         {
-            if (attribute.getName() == id)
-                return attribute.getContainer()->getVertexBuffer();
+			if (attribute.mID == id)
+				return attribute.mBuffer.get();
         }
 
-        opengl::printMessage(opengl::MessageType::ERROR, "Unable to find vertex attribute buffer associated with attribute: %s. The shader compiler might have stripped it away", id.c_str());
 		return nullptr;
 	}
 
@@ -48,22 +44,17 @@ namespace opengl
 	{
 		assert(count > 0);
 
-		if (mIndices == nullptr)
-		{
-			mIndices = std::make_unique<IndexContainer>();
-		}
-
 		// Copy our data
-		mIndices->copyData(count, data);
+		//mIndices.copyData(count, data);
 
 		// Synchronize on success (data in CPU memory will be uploaded to GPU)
-		mIndices->sync();
+		//mIndices->sync();
 	}
 
 
 	const opengl::IndexBuffer* Mesh::getIndexBuffer() const
 	{
-		return mIndices->getIndexBuffer();
+		return &mIndexBuffer;
 	}
 
 }

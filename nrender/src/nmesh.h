@@ -17,42 +17,6 @@ namespace opengl
 	 * Defines a polygonal mesh
 	 * Every mesh has a number of vertex attributes that are identified through an ID.
 	 */
-	class Mesh;
-
-	namespace vertex
-	{
-		/**
-		* Helper object that binds a vertex attribute buy name to a vertex container
-		*/
-		class Attribute
-		{
-			friend class Mesh;
-		public:
-			Attribute(const std::string& name) : mID(name)	{ }
-			virtual ~Attribute() = default;
-
-			/**
-			 *	@return the name of the vertex attribute
-			 */
-			const std::string& getName() const			{ return mID; }
-
-			/**
-			 * @return the vertex container that holds the GPU and CPU buffers
-			 */
-			VertexContainer* getContainer() const		{ return mContainer.get(); }
-
-			// Move operator
-			Attribute(Attribute&& other) : mID(other.mID), mContainer(std::move(other.mContainer))	{ }
-
-			// Associated vertex container, created when adding a vertex buffer to a mesh
-			std::unique_ptr<VertexContainer> mContainer = nullptr;
-
-		protected:
-			// Name of the attribute
-			std::string mID;
-		};
-	}
-
 	class Mesh
 	{
 	public:
@@ -83,10 +47,6 @@ namespace opengl
 			static const VertexAttributeID GetColorVertexAttr(int colorChannel);
 		};
 
-
-		// Default Constructor
-		Mesh(int numVertices, EDrawMode drawMode);
-
 		// Default destructor
 		virtual ~Mesh() = default;
 
@@ -101,8 +61,7 @@ namespace opengl
 		* @param components: number of component per element (for instance, 3 for vector with 3 floats)
 		* @param data: Pointer to array containing attribute data.
 		*/
-		template<typename T>
-		void addVertexAttribute(const VertexAttributeID& id, const T* data);
+		void addVertexAttribute(const VertexAttributeID& id, GLenum type, unsigned int numComponents, unsigned int numVertices, GLenum usage);
 
 		/**
 		* @return Returns pointer to the attribute buffer if found, otherwise nullptr.
@@ -124,46 +83,19 @@ namespace opengl
 		*/
 		const IndexBuffer* getIndexBuffer() const;
 
-		/**
-		* @return the number of vertices associated with the data in the vertex buffers.
-		*/
-		unsigned int getVertCount() const	{ return mNumVertices; }
-
-		/**
-		* @return the drawmode as set in the constructor.
-		*/
-		EDrawMode getDrawMode() const		{ return mDrawMode;  }
-
 	private:
-		int										mNumVertices = 0;					//< Total number of vertices
-		std::vector<vertex::Attribute>		mAttributes;						//< All vertex buffers associated with this mesh
-		std::unique_ptr<IndexContainer>			mIndices = nullptr;					//< Mesh connectivity
-		EDrawMode								mDrawMode = EDrawMode::TRIANGLES;	//< Draw mode
+		struct Attribute
+		{
+			Attribute(const VertexAttributeID& id, GLenum type, unsigned int numComponents, unsigned int numVertices, GLenum usage) :
+				mID(id),
+				mBuffer(std::make_unique<VertexAttributeBuffer>(type, numComponents, numVertices, usage))
+			{
+			}
+
+			VertexAttributeID		mID;
+			std::unique_ptr<VertexAttributeBuffer>	mBuffer;
+		};
+		std::vector<Attribute>		mAttributes;
+		IndexBuffer					mIndexBuffer;
 	};
-
-
-	//////////////////////////////////////////////////////////////////////////
-	// Template definitions
-	//////////////////////////////////////////////////////////////////////////
-
-	template<typename T>
-	void opengl::Mesh::addVertexAttribute(const VertexAttributeID& id, const T* data)
-	{
-		// Create the attribute
-		opengl::vertex::Attribute attribute(id);
-		 
-		// Make the buffer and copy data
-		std::unique_ptr<TypedVertexContainer<T>> new_container = std::make_unique<TypedVertexContainer<T>>();
-		bool success = new_container->copyData(mNumVertices, data);
-		assert(success);
-
-		// Upload data to GPU
-		new_container->sync();
-
-		// Set the container
-		attribute.mContainer = std::move(new_container);
-
-		// Add the attribute
-		mAttributes.emplace_back(std::move(attribute));
-	}
 } // opengl

@@ -2,6 +2,7 @@
 #include "nvertexcontainer.h"
 #include "nglutils.h"
 
+#if 0
 namespace opengl
 {
 	// Clear vertex container (data in memory)
@@ -255,3 +256,4 @@ namespace opengl
 	unsigned int TypedVertexContainer<glm::vec4>::getComponents() const		{ return 4; }
 
 } // opengl
+#endif
