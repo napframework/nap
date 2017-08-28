@@ -85,7 +85,7 @@ def main():
 
     # build all targets
     print('BUILD TARGETS')
-    targets = ['napcore', 'mod_napetherdream','serializationtest']
+    targets = ['napcore', 'mod_napetherdream','serializationtest', 'mod_napartnet']
     if platform in ["linux", "linux2", "darwin"]:
         call(WORKING_DIR, ['cmake', '-H.', '-B%s' % BUILD_DIR])
     else:
