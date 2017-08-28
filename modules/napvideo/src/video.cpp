@@ -168,6 +168,7 @@ namespace nap
 		mPacketsFinished = false;
 		mFramesFinished = false;
 		mPlaying = true;
+		mVideoClockSecs = DBL_MAX;
 
 		seek(startTimeSecs);
 
@@ -202,7 +203,6 @@ namespace nap
 			stream_start_time = mFormatContext->streams[mVideoStream]->start_time *av_q2d(mFormatContext->streams[mVideoStream]->time_base);
 
 		mSeekTarget = std::round((seconds - stream_start_time) / av_q2d(mFormatContext->streams[mVideoStream]->time_base));
-		mVideoClockSecs = DBL_MAX;
 	}
 
 
@@ -228,6 +228,9 @@ namespace nap
 			av_frame_unref(frame.mFrame);
 			av_frame_free(&frame.mFrame);
 		}
+
+		// After clearing the frame queue, we also need to reset the video clock in order for playback to re-sync to possible new frames
+		mVideoClockSecs = DBL_MAX;
 	}
 
 
@@ -447,8 +450,8 @@ namespace nap
 
 		// If the frametime spikes, make sure we re-sync to the first frame again, otherwise it may be possible that
 		// the main thread is trying to catch up, but it never really can catch up
-		if (deltaTime > 1.0)
-			mVideoClockSecs = DBL_MAX;
+ 		if (deltaTime > 1.0)
+ 			mVideoClockSecs = DBL_MAX;
 
 		// Update clock if it has been initialized
 		if (mVideoClockSecs != DBL_MAX)
@@ -464,7 +467,8 @@ namespace nap
 
 			if (mFrameQueue.empty() && mFramesFinished)
 			{
-				mPlaying = false;
+				// Call stop instead of directly setting mPlaying to make sure threads exit correctly
+				stop();
 				return errorState.check(mErrorString.empty(), mErrorString);
 			}
 
