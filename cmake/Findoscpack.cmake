@@ -8,6 +8,9 @@ find_path(
 if (WIN32)
 	set(OSCPACK_LIBS_DEBUG ${OSCPACK_DIR}/msvc64/Debug/oscpack.lib Ws2_32 winmm)
 	set(OSCPACK_LIBS_RELEASE ${OSCPACK_DIR}/msvc64/Release/oscpack.lib Ws2_32 winmm)
+elseif(APPLE)
+	set(OSCPACK_LIBS_DEBUG ${OSCPACK_DIR}/xcode/Debug/liboscpack.a)
+	set(OSCPACK_LIBS_RELEASE ${OSCPACK_DIR}/xcode/Release/liboscpack.a)
 endif()
 
 # include directory is universal
