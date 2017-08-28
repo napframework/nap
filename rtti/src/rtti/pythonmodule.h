@@ -4,8 +4,13 @@
 #include <vector>
 #include "utility/dllexport.h"
 
+// Qt's slots keyword overlaps with Python's
+#pragma push_macro("slots")
+#undef slots
 #include "pybind11/pybind11.h"
 #include "pybind11/embed.h"
+#pragma pop_macro("slots")
+
 
 // Note: including rttr headers directly here instead of going through typeinfo.h to avoid circular dependencies between the two headers
 #include "rttr/detail/misc/misc_type_traits.h"
