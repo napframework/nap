@@ -11,7 +11,7 @@ if (WIN32)
 elseif(APPLE)
 	set(OSCPACK_LIBS_DEBUG ${OSCPACK_DIR}/xcode/Debug/liboscpack.a)
 	set(OSCPACK_LIBS_RELEASE ${OSCPACK_DIR}/xcode/Release/liboscpack.a)
-else
+else()
 	set(OSCPACK_LIBS_DEBUG ${OSCPACK_DIR}/linux/liboscpack.a)
 	set(OSCPACK_LIBS_RELEASE ${OSCPACK_DIR}/linux/liboscpack.a)
 endif()
