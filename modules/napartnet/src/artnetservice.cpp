@@ -48,11 +48,8 @@ namespace nap
 			return false;
 
 		// broadcast a poll request
-		if (artnet_send_poll(mNode, NULL, ARTNET_TTM_DEFAULT) != ARTNET_EOK)
-		{
-			printf("art-net send poll failed\n");
+		if (!errorState.check(artnet_send_poll(mNode, NULL, ARTNET_TTM_DEFAULT) == ARTNET_EOK, "art-net send poll failed\n"))
 			return false;
-		}
 
 		return true;
 	}
