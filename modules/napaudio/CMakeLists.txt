@@ -9,7 +9,7 @@ if (APPLE)
 elseif(UNIX)
     set(LIBRARIES napcore portaudio)
 else()
-    set(LIBRARIES napcore ${PORTAUDIO_LIBRARIES} portaudio)
+    set(LIBRARIES napcore ${PORTAUDIO_LIBRARIES})
 endif()
 
 set(INCLUDES src ${PORTAUDIO_INCLUDE_DIR})
