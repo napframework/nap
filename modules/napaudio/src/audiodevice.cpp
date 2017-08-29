@@ -123,10 +123,11 @@ namespace nap {
         
         void AudioDeviceManager::stop()
         {
-            if (Pa_IsStreamActive(mStream) == 1)
+            if (mStream && Pa_IsStreamActive(mStream) == 1)
             {
                 Pa_StopStream(mStream);
                 Pa_CloseStream(mStream);
+				mStream = nullptr;
             }
             Logger::debug("Portaudio stopped");
         }

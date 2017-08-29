@@ -52,6 +52,8 @@ namespace nap {
             // set the samplerate
             outSampleRate = info.samplerate;
             
+			// cleanup
+			delete[] readBuffer;
             sf_close(sndFile);
             
             
