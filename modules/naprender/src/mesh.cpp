@@ -18,8 +18,8 @@ RTTI_BEGIN_CLASS(nap::MeshFromFile)
 	RTTI_PROPERTY("Path", &nap::MeshFromFile::mPath, nap::rtti::EPropertyMetaData::FileLink | nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::MeshAttribute)
-	RTTI_PROPERTY("AttributeID", &nap::MeshAttribute::mAttributeID, nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexAttribute)
+	RTTI_PROPERTY("AttributeID", &nap::VertexAttribute::mAttributeID, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::FloatMeshAttribute)
@@ -53,12 +53,32 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	const Mesh::VertexAttributeID Mesh::VertexAttributeIDs::PositionVertexAttr("Position");
+	const Mesh::VertexAttributeID Mesh::VertexAttributeIDs::NormalVertexAttr("Normal");
+	const Mesh::VertexAttributeID Mesh::VertexAttributeIDs::UVVertexAttr("UV");
+	const Mesh::VertexAttributeID Mesh::VertexAttributeIDs::ColorVertexAttr("Color");
+
+	const Mesh::VertexAttributeID Mesh::VertexAttributeIDs::GetUVVertexAttr(int uvChannel)
+	{
+		std::ostringstream stream;
+		stream << UVVertexAttr << uvChannel;
+		return stream.str();
+	}
+
+	const Mesh::VertexAttributeID Mesh::VertexAttributeIDs::GetColorVertexAttr(int colorChannel)
+	{
+		std::ostringstream stream;
+		stream << ColorVertexAttr << colorChannel;
+		return stream.str();
+	}
+
+
 	Mesh::~Mesh()
 	{
 	}
 
 	// Returns associated mesh
-	opengl::Mesh& Mesh::getMesh() const
+	opengl::GPUMesh& Mesh::getGPUMesh() const
 	{
 		assert(mGPUMesh != nullptr);
 		return *mGPUMesh;
@@ -67,37 +87,45 @@ namespace nap
 
 	bool Mesh::init(utility::ErrorState& errorState)
 	{
-		initMesh(mRTTIAttributes);
-		return true;
-	}
-
-
-	void Mesh::initMesh(const RTTIAttributeList& rttiAttributes)
-	{
-		mOwnedAttributes.reserve(rttiAttributes.size());
-		for (auto& mesh_attribute : rttiAttributes)
+		if (mOwnedAttributes.empty())
 		{
-			std::unique_ptr<MeshAttribute> owned_mesh_attribute(mesh_attribute->get_type().create<MeshAttribute>());
-			rtti::copyObject(*mesh_attribute, *owned_mesh_attribute);
-			mOwnedAttributes.emplace_back(std::move(owned_mesh_attribute));
+			mOwnedAttributes.reserve(mRTTIAttributes.size());
+			for (auto& mesh_attribute : mRTTIAttributes)
+			{
+				std::unique_ptr<VertexAttribute> owned_mesh_attribute(mesh_attribute->get_type().create<VertexAttribute>());
+				rtti::copyObject(*mesh_attribute, *owned_mesh_attribute);
+				mOwnedAttributes.emplace_back(std::move(owned_mesh_attribute));
+			}
 		}
 
-// 		for (auto& mesh_attribute : mOwnedAttributes)
-// 		{
-// 			mGPUMesh->addVertexAttribute(mesh_attribute->mAttributeID, , , mNumVertices, GL_STATIC_DRAW);
-// 		}
+		mGPUMesh = std::make_unique<opengl::GPUMesh>();
+		for (auto& mesh_attribute : mOwnedAttributes)
+			mGPUMesh->addVertexAttribute(mesh_attribute->mAttributeID, mesh_attribute->getType(), mesh_attribute->getNumComponents(), mNumVertices, GL_STATIC_DRAW);
+
 		update();
+
+		return true;
 	}
 
 	void Mesh::update()
 	{
-// 		mGPUMesh->clear();
-// 		for (auto& mesh_attribute : mOwnedAttributes)
-// 		{
-// 			mGPUMesh->addVertexAttribute<T>(mesh_attribute->mAttributeID, mesh_attribute->getData());
-// 		}
+		for (auto& mesh_attribute : mOwnedAttributes)
+		{
+			const opengl::VertexAttributeBuffer& vertex_attr_buffer = mGPUMesh->getVertexAttributeBuffer(mesh_attribute->mAttributeID);
+			vertex_attr_buffer.setData(mesh_attribute->getData());
+		}
+
+		mGPUMesh->setIndices(mIndices);
 	}
 
+	void Mesh::moveFrom(Mesh& mesh)
+	{
+		mNumVertices		= mesh.mNumVertices;
+		mDrawMode			= mesh.mDrawMode;
+		mIndices			= mesh.mIndices;
+		mGPUMesh			= std::move(mesh.mGPUMesh);
+		mOwnedAttributes	= std::move(mesh.mOwnedAttributes);
+	}
 
 	//////////////////////////////////////////////////////////////////////////
 
@@ -107,11 +135,8 @@ namespace nap
 		if (!errorState.check(mesh != nullptr, "Unable to load mesh %s for resource %d", mPath.c_str(), mID.c_str()))
 			return false;
 
-		mNumVertices	= mesh->mNumVertices;
-		mDrawMode		= mesh->mDrawMode;
-		mIndices		= mesh->mIndices;
+		moveFrom(*mesh);
 
-		initMesh(mesh->mRTTIAttributes);
 		return true;
 	}
 }

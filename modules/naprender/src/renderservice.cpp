@@ -262,13 +262,13 @@ namespace nap
 		// Use the mapping in the material to bind mesh vertex attrs to shader vertex attrs
 		for (auto& kvp : material.getShader()->getShader().getAttributes())
 		{
-			const opengl::VertexAttribute* shader_vertex_attribute = kvp.second.get();
+			const opengl::ShaderVertexAttribute* shader_vertex_attribute = kvp.second.get();
 
 			const Material::VertexAttributeBinding* material_binding = material.findVertexAttributeBinding(kvp.first);
 			if (!errorState.check(material_binding != nullptr, "Unable to find binding %s for shader %s in material %s", kvp.first.c_str(), material.getShader()->mVertPath.c_str(), material.mID.c_str()))
 				return nullptr;
 
-			const opengl::VertexAttributeBuffer* vertex_buffer = meshResource.getMesh().findVertexAttributeBuffer(material_binding->mMeshAttributeID);
+			const opengl::VertexAttributeBuffer* vertex_buffer = meshResource.getGPUMesh().findVertexAttributeBuffer(material_binding->mMeshAttributeID);
 			if (!errorState.check(shader_vertex_attribute != nullptr, "Unable to find vertex attribute %s in mesh %s", material_binding->mMeshAttributeID.c_str(), meshResource.mID.c_str()))
 				return nullptr;
 

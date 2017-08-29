@@ -134,14 +134,14 @@ namespace opengl
 		/**
 		 * @return all vertex shader attributes
 		 */
-		const VertexAttributes& getAttributes() const		{ return mShaderAttributes; }
+		const ShaderVertexAttributes& getAttributes() const		{ return mShaderAttributes; }
 
 		/**
 		 * @return shader vertex attribute with given name
 		 * nullptr if the attribute is not found
 		 * @param name: Name of the vertex attribute
 		 */
-		const VertexAttribute* getAttribute(const std::string& name) const;
+		const ShaderVertexAttribute* getAttribute(const std::string& name) const;
 
 		/**
 		 * @return all uniform shader attributes
@@ -154,7 +154,7 @@ namespace opengl
 		unsigned int mShaderFp = 0;				// The fragment shader identifier
 
 		UniformDeclarations mUniformDeclarations;	// Shader program uniform attributes
-		VertexAttributes mShaderAttributes;		// Shader program vertex attribute inputs
+		ShaderVertexAttributes mShaderAttributes;		// Shader program vertex attribute inputs
 		State mState = State::NotLoaded;		// Holds current state of shader program
 	};
 }	// opengl

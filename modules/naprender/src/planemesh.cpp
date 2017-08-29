@@ -46,22 +46,6 @@ static unsigned int plane_indices[] =
 	0,3,2
 };
 
-static opengl::Mesh* createPlane()
-{
-// 	opengl::Mesh* plane_mesh = new opengl::Mesh(4, opengl::EDrawMode::TRIANGLES);
-// 	plane_mesh->addVertexAttribute<glm::vec3>(opengl::Mesh::VertexAttributeIDs::PositionVertexAttr, plane_vertices);
-// 	plane_mesh->addVertexAttribute<glm::vec3>(opengl::Mesh::VertexAttributeIDs::NormalVertexAttr, plane_normals);
-// 	plane_mesh->addVertexAttribute<glm::vec3>(nap::utility::stringFormat("%s%d", opengl::Mesh::VertexAttributeIDs::UVVertexAttr.c_str(), 0), plane_uvs);
-// 	plane_mesh->addVertexAttribute<glm::vec4>(nap::utility::stringFormat("%s%d", opengl::Mesh::VertexAttributeIDs::ColorVertexAttr.c_str(), 0), plane_colors);
-// 	plane_mesh->setIndices(6, plane_indices);
-// 
-// 	return plane_mesh;
-
-	return nullptr;
-}
-
-//////////////////////////////////////////////////////////////////////////
-
 
 RTTI_BEGIN_CLASS(nap::PlaneMesh)
 RTTI_END_CLASS
@@ -70,7 +54,19 @@ namespace nap
 {
 	bool PlaneMesh::init(utility::ErrorState& errorState)
 	{
-		//mMesh.reset(createPlane());		
-		return true;
+		mNumVertices = 4;
+		mDrawMode = opengl::EDrawMode::TRIANGLES;
+		Vec3MeshAttribute& position_attribute	= GetOrCreateAttribute<glm::vec3>(Mesh::VertexAttributeIDs::PositionVertexAttr);
+		Vec3MeshAttribute& normal_attribute		= GetOrCreateAttribute<glm::vec3>(Mesh::VertexAttributeIDs::NormalVertexAttr);
+		Vec3MeshAttribute& uv_attribute			= GetOrCreateAttribute<glm::vec3>(nap::utility::stringFormat("%s%d", Mesh::VertexAttributeIDs::UVVertexAttr.c_str(), 0));
+		Vec4MeshAttribute& color_attribute		= GetOrCreateAttribute<glm::vec4>(nap::utility::stringFormat("%s%d", Mesh::VertexAttributeIDs::ColorVertexAttr.c_str(), 0));
+
+		position_attribute.setData(plane_vertices, mNumVertices);
+		normal_attribute.setData(plane_normals, mNumVertices);
+		uv_attribute.setData(plane_uvs, mNumVertices);
+		color_attribute.setData(plane_colors, mNumVertices);
+		setIndices(plane_indices, 6);
+
+		return Mesh::init(errorState);
 	}
 };

@@ -24,6 +24,30 @@
 
 namespace nap
 {
+	static bool resolveLinks(const rtti::OwnedObjectList& objects, const rtti::UnresolvedPointerList& unresolvedPointers)
+	{
+		using ObjectsByIDMap = std::unordered_map<std::string, rtti::RTTIObject*>;
+		ObjectsByIDMap objects_by_id;
+		for (auto& object : objects)
+			objects_by_id.insert({ object->mID, object.get() });
+
+		for (const rtti::UnresolvedPointer& unresolvedPointer : unresolvedPointers)
+		{
+			rtti::ResolvedRTTIPath resolved_path;
+			if (!unresolvedPointer.mRTTIPath.resolve(unresolvedPointer.mObject, resolved_path))
+				return false;
+
+			ObjectsByIDMap::iterator pos = objects_by_id.find(unresolvedPointer.mTargetID);
+			if (pos == objects_by_id.end())
+				return false;
+
+			if (!resolved_path.setValue(pos->second))
+				return false;
+		}
+
+		return true;
+	}
+
 	bool convertFBX(const std::string& fbxPath, const std::string& outputDirectory, EFBXConversionOptions convertOptions, std::vector<std::string>& convertedFiles, utility::ErrorState& errorState)
 	{
 		// Create importer
@@ -87,23 +111,23 @@ namespace nap
 			mesh_data.mDrawMode = opengl::EDrawMode::TRIANGLES;
 
 			// Copy vertex data			
-			TypedMeshAttribute<glm::vec3>& position_attribute = mesh_data.GetOrCreateAttribute<glm::vec3>(opengl::Mesh::VertexAttributeIDs::PositionVertexAttr);
-			position_attribute.Reserve(fbx_mesh->mNumVertices);
+			TypedVertexAttribute<glm::vec3>& position_attribute = mesh_data.GetOrCreateAttribute<glm::vec3>(Mesh::VertexAttributeIDs::PositionVertexAttr);
+			position_attribute.reserve(fbx_mesh->mNumVertices);
 			for (unsigned int vertex = 0; vertex < fbx_mesh->mNumVertices; vertex++)
 			{
 				aiVector3D* current_id = &(fbx_mesh->mVertices[vertex]);
-				position_attribute.Add(glm::vec3(static_cast<float>(current_id->x), static_cast<float>(current_id->y), static_cast<float>(current_id->z)));
+				position_attribute.add(glm::vec3(static_cast<float>(current_id->x), static_cast<float>(current_id->y), static_cast<float>(current_id->z)));
 			}
 
 			// Copy normals
 			if (fbx_mesh->HasNormals())
 			{
-				TypedMeshAttribute<glm::vec3>& normal_attribute = mesh_data.GetOrCreateAttribute<glm::vec3>(opengl::Mesh::VertexAttributeIDs::NormalVertexAttr);
-				normal_attribute.Reserve(fbx_mesh->mNumVertices);
+				TypedVertexAttribute<glm::vec3>& normal_attribute = mesh_data.GetOrCreateAttribute<glm::vec3>(Mesh::VertexAttributeIDs::NormalVertexAttr);
+				normal_attribute.reserve(fbx_mesh->mNumVertices);
 				for (unsigned int vertex = 0; vertex < fbx_mesh->mNumVertices; vertex++)
 				{
 					aiVector3D* current_id = &(fbx_mesh->mNormals[vertex]);
-					normal_attribute.Add(glm::vec3(static_cast<float>(current_id->x), static_cast<float>(current_id->y), static_cast<float>(current_id->z)));
+					normal_attribute.add(glm::vec3(static_cast<float>(current_id->x), static_cast<float>(current_id->y), static_cast<float>(current_id->z)));
 				}
 			}
 
@@ -112,14 +136,14 @@ namespace nap
 			{
 				aiVector3D* uv_channel_data = fbx_mesh->mTextureCoords[uv_channel];
 
-				TypedMeshAttribute<glm::vec3>& uv_attribute = mesh_data.GetOrCreateAttribute<glm::vec3>(opengl::Mesh::VertexAttributeIDs::GetUVVertexAttr(uv_channel));
-				uv_attribute.Reserve(fbx_mesh->mNumVertices);
+				TypedVertexAttribute<glm::vec3>& uv_attribute = mesh_data.GetOrCreateAttribute<glm::vec3>(Mesh::VertexAttributeIDs::GetUVVertexAttr(uv_channel));
+				uv_attribute.reserve(fbx_mesh->mNumVertices);
 
 				// Copy uv data channel
 				for (unsigned int vertex = 0; vertex < fbx_mesh->mNumVertices; vertex++)
 				{
 					aiVector3D* current_id = &(uv_channel_data[vertex]);
-					uv_attribute.Add(glm::vec3(static_cast<float>(current_id->x), static_cast<float>(current_id->y), static_cast<float>(current_id->z)));
+					uv_attribute.add(glm::vec3(static_cast<float>(current_id->x), static_cast<float>(current_id->y), static_cast<float>(current_id->z)));
 				}
 			}
 
@@ -129,14 +153,14 @@ namespace nap
 			{
 				aiColor4D* color_channel_data = fbx_mesh->mColors[color_channel];
 
-				TypedMeshAttribute<glm::vec4>& color_attribute = mesh_data.GetOrCreateAttribute<glm::vec4>(opengl::Mesh::VertexAttributeIDs::GetColorVertexAttr(color_channel));
-				color_attribute.Reserve(fbx_mesh->mNumVertices);
+				TypedVertexAttribute<glm::vec4>& color_attribute = mesh_data.GetOrCreateAttribute<glm::vec4>(Mesh::VertexAttributeIDs::GetColorVertexAttr(color_channel));
+				color_attribute.reserve(fbx_mesh->mNumVertices);
 
 				// Copy color data channel
 				for (unsigned int vertex = 0; vertex < fbx_mesh->mNumVertices; vertex++)
 				{
 					aiColor4D* current_id = &(color_channel_data[vertex]);
-					color_attribute.Add(glm::vec4(static_cast<float>(current_id->r), static_cast<float>(current_id->g), static_cast<float>(current_id->b), static_cast<float>(current_id->a)));
+					color_attribute.add(glm::vec4(static_cast<float>(current_id->r), static_cast<float>(current_id->g), static_cast<float>(current_id->b), static_cast<float>(current_id->a)));
 				}
 			}
 
@@ -179,15 +203,26 @@ namespace nap
 		if (!errorState.check(readBinary(meshPath, factory, deserialize_result, errorState), "Failed to load mesh from %s", meshPath.c_str()))
 			return nullptr;
 
-		if (!errorState.check(deserialize_result.mReadObjects.size() == 1, "Trying to load an invalid mesh file. File %s contains %d objects, expected 1", meshPath.c_str(), deserialize_result.mReadObjects.size()))
+		if (!errorState.check(resolveLinks(deserialize_result.mReadObjects, deserialize_result.mUnresolvedPointers), "Failed to resolve pointers"))
+			return false;
+		
+		// Find mesh(es) in the file
+		int numMeshes = 0;
+		std::unique_ptr<Mesh> mesh;
+		for (auto& object : deserialize_result.mReadObjects)
+		{
+			if (object->get_type() == RTTI_OF(nap::Mesh))
+			{
+				mesh = rtti_cast<Mesh>(object);
+				++numMeshes;
+			}
+		}
+
+		if (!errorState.check(numMeshes == 1, "Trying to load an invalid mesh file. File %s contains %d meshes, expected 1", meshPath.c_str(), numMeshes))
 			return nullptr;
 
-		if (!errorState.check(deserialize_result.mReadObjects[0]->get_type() == RTTI_OF(Mesh), "Trying to load an invalid mesh file %s; file does not contain MeshData", meshPath.c_str()))
-			return nullptr;
-
-		assert(deserialize_result.mUnresolvedPointers.empty());
-
-		std::unique_ptr<Mesh> mesh = std::move(rtti_cast<Mesh>(deserialize_result.mReadObjects[0]));
+		if (!errorState.check(mesh->init(errorState), "Failed to init mesh"))
+			return false;
 
 		return mesh;
 	}

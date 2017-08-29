@@ -209,7 +209,7 @@ namespace opengl
 
 
 	// Returns a vertex attribute with name
-	const VertexAttribute* Shader::getAttribute(const std::string& name) const
+	const ShaderVertexAttribute* Shader::getAttribute(const std::string& name) const
 	{
 		auto it = mShaderAttributes.find(name);
 		if (it == mShaderAttributes.end())

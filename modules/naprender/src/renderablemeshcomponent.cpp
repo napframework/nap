@@ -211,7 +211,7 @@ namespace nap
 		mVAOHandle->mObject->bind();
 
 		// Gather draw info
-		const opengl::Mesh& mesh = mResource->mMeshResource->getMesh();
+		const opengl::GPUMesh& mesh = mResource->mMeshResource->getGPUMesh();
 		GLenum draw_mode = getGLMode(mResource->mMeshResource->mDrawMode);
 		const opengl::IndexBuffer* index_buffer = mesh.getIndexBuffer();
 		GLsizei draw_count = static_cast<GLsizei>(index_buffer->getCount());

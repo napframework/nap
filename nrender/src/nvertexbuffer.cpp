@@ -9,16 +9,14 @@
 namespace opengl
 {
 	// Uploads the data block to the GPU
-	void VertexAttributeBuffer::setData(void* data)
+	void VertexAttributeBuffer::setData(void* data) const
 	{
-		if (!bind())
-			return;
+		bind();
 
 		size_t size = getGLTypeSize(mType) * mNumComponents * mNumVertices;
 		glBufferData(getBufferType(), size, data, mUsage);
 		glAssert();
 
-		// Unbind buffer after setting data
 		unbind();
 	}
 

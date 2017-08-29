@@ -74,8 +74,8 @@ namespace opengl
 	using UniformDeclaration = ShaderInput;
 	using UniformDeclarations = std::unordered_map<std::string, std::unique_ptr<UniformDeclaration>>;
 
-	using VertexAttribute = ShaderInput;
-	using VertexAttributes = std::unordered_map<std::string, std::unique_ptr<VertexAttribute>>;
+	using ShaderVertexAttribute = ShaderInput;
+	using ShaderVertexAttributes = std::unordered_map<std::string, std::unique_ptr<ShaderVertexAttribute>>;
 
 	/**
 	 * Given part of a shader (say vertex shader), validateShader will get information from OpenGl 
@@ -109,7 +109,7 @@ namespace opengl
 	 * @param program: The shader program to extract attribute inputs from
 	 * @param attributes: The populated list of shader attributes
 	 */
-	void extractShaderAttributes(GLuint program, VertexAttributes& outAttributes);
+	void extractShaderAttributes(GLuint program, ShaderVertexAttributes& outAttributes);
 }
 
 //////////////////////////////////////////////////////////////////////////

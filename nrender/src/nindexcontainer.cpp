@@ -2,6 +2,7 @@
 
 namespace opengl
 {
+#if 0
 	// Set new index data
 	void IndexContainer::copyData(const VertexIndices& indices)
 	{
@@ -59,7 +60,7 @@ namespace opengl
 		}
 
 		// Set data (unsafe, make sure buffer and container settings match)
-		buffer->setData(&mIndices.front());
+		buffer->setData(mIndices);
 	}
 
 
@@ -100,5 +101,5 @@ namespace opengl
 		}
 		return new_buffer;
 	}
-
+#endif
 }

@@ -12,8 +12,6 @@
 namespace opengl
 {
 	/**
-	 * VertexBufferBase
-	 *
 	 * Defines a vertex buffer on the GPU that is associated with a single set of vertex data
 	 * Vertex data is arbitrary vertex data such as position, uv, color etc.
 	 * This object does not manage or owns any data
@@ -50,7 +48,7 @@ namespace opengl
 		 * This function binds the buffer before uploading the data
 		 * @param data pointer to the block of data that needs to be uploaded
 		 */
-		void setData(void* data);
+		void setData(void* data) const;
 
 	private:
 		GLenum			mType			= GL_INVALID_ENUM;	// defines the internal GL type of the buffer
