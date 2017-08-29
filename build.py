@@ -2,6 +2,8 @@ import os
 import subprocess
 from multiprocessing import cpu_count
 from sys import platform
+import sys
+import shutil
 
 WORKING_DIR = '.'
 
@@ -73,37 +75,63 @@ def installDependencies():
         pass
 
 
-def gitPull():
-    print('Updating repo')
-    d = WORKING_DIR
-    call(d, ['git', 'pull', NAP_URL])
-
-
-def main():
+def main(targets):
     # install osx / linux specific dependendies
     installDependencies()
 
-    # build all targets
-    print('BUILD TARGETS')
-    targets = ['napcore', 'mod_napetherdream','serializationtest', 'mod_napartnet']
+    # generate solutions
     if platform in ["linux", "linux2", "darwin"]:
         call(WORKING_DIR, ['cmake', '-H.', '-B%s' % BUILD_DIR])
     else:
         bd = '%s/%s' % (WORKING_DIR, BUILD_DIR)
-        if os.path.exists(bd):
-            os.unlink(bd)
+        #if os.path.exists(bd):
+        #    shutil.rmtree(bd)
         if not os.path.exists(bd):
             os.makedirs(bd)
-        call(bd, ['cmake', '-G', 'Visual Studio 14 2015 Win64', '..'])
+        call(WORKING_DIR, ['cmake', '-H.','-B%s' % BUILD_DIR,'-G', 'Visual Studio 14 2015 Win64', '-DPYBIND11_PYTHON_VERSION=3.5'])
+
+    #copy targets
+    build_targets = targets
+
+    # add targets here
+    # build_targets.append("hello")
 
     for t in targets:
+        # osc / linux
         if platform in ["linux", "linux2", "darwin"]:
             d = '%s/%s' % (WORKING_DIR, BUILD_DIR)
             call(d, ['make', t, '-j%s' % cpu_count()])
+        # windows
         else:
             d = WORKING_DIR
             call(d, ['cmake', '--build', BUILD_DIR, '--target', t])
 
 
+# Extracts all targets from the command line input arguments, syntax is: target:project, ie: target:napcore
+def extractTargets():
+    targets = []
+    for arg in sys.argv:
+        # not a target
+        if not "target" in arg:
+            continue
+
+        # try to split
+        result = str.split(arg, ':')
+        if len(result) == 1:
+            print("invalid target: %s, can't be split using delimiter ':'" % arg)
+            continue
+        
+        # add
+        print("adding build target: %s" % result[1])
+        targets.append(result[1])
+    return targets
+
+
+# main run
 if __name__ == '__main__':
-    main()
+
+    # extract command line targets
+    targets = extractTargets()
+
+    # run main
+    main(targets)
