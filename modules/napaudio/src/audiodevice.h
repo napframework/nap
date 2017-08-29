@@ -1,9 +1,12 @@
 #pragma once
 
+// std library includes
 #include <vector>
 
+// third party includes
 #include <portaudio.h>
 
+// nap includes
 #include <utility/dllexport.h>
 
 //#include "audioservice.h"

@@ -7,6 +7,8 @@
 
 // Audio module includes
 #include <audiodevice.h>
+#include <audiotypes.h>
+#include <utility/audiofilereader.h>
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
@@ -17,6 +19,9 @@ nap::ResourceManagerService* resourceManagerService = nullptr;
 
 // Audio device
 nap::audio::AudioDeviceManager audioDeviceManager;
+
+// Audio buffer
+nap::audio::MultiSampleBuffer audioFileBuffer;
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -39,6 +44,10 @@ void onUpdate()
 */
 bool init(nap::Core& core)
 {
+    // Read an audio file
+    float sampleRate;
+    nap::audio::readAudioFile("data/audiotest/test.wav", audioFileBuffer, sampleRate);
+    
     // Start audio device
     audioDeviceManager.startDefaultDevice(1, 2, 44100, 256);
     

@@ -28,4 +28,4 @@ if (WIN32)
 endif()
 
 # create post build event
-# copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/data data)
+copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/data data)
