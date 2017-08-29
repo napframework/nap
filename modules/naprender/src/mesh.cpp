@@ -73,7 +73,8 @@ namespace nap
 			vertex_attr_buffer.setData(mesh_attribute->getData());
 		}
 
-		mGPUMesh->setIndices(mIndices);
+		if (!mIndices.empty())
+			mGPUMesh->getOrCreateIndexBuffer().setData(mIndices);
 	}
 
 	void Mesh::moveFrom(Mesh& mesh)

@@ -1,4 +1,4 @@
-#include "nmesh.h"
+#include "ngpumesh.h"
 #include <assert.h>
 
 namespace opengl
@@ -27,15 +27,18 @@ namespace opengl
 	}
 
 
-	void GPUMesh::setIndices(const std::vector<unsigned int>& indices)
+	opengl::IndexBuffer& GPUMesh::getOrCreateIndexBuffer()
 	{
-		mIndexBuffer.setData(indices);
+		if (mIndexBuffer == nullptr)
+			mIndexBuffer = std::make_unique<IndexBuffer>();
+
+		return *mIndexBuffer;
 	}
 
 
 	const opengl::IndexBuffer* GPUMesh::getIndexBuffer() const
 	{
-		return &mIndexBuffer;
+		return mIndexBuffer.get();
 	}
 
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <nmesh.h>
+#include <ngpumesh.h>
 #include <memory>
 #include <utility/dllexport.h>
 #include <rtti/rttiobject.h>
@@ -109,7 +109,7 @@ namespace nap
 		RTTIAttributeList				mRTTIAttributes;
 		IndexList						mIndices;
 
-	protected:
+	private:
 		std::unique_ptr<opengl::GPUMesh>	mGPUMesh;
 	};
 } // nap

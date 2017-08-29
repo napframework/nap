@@ -20,7 +20,7 @@
 #include "nvertexarrayobject.h"
 #include "ngltypes.h"
 #include "nvertexbuffer.h"
-#include "nmesh.h"
+#include "ngpumesh.h"
 #include "nframebuffer.h"
 #include "ncamera.h"
 #include "nindexbuffer.h"

@@ -48,23 +48,19 @@ namespace opengl
 		const VertexAttributeBuffer& getVertexAttributeBuffer(const VertexAttributeID& id) const;
 
 		/**
-		 * Adds a set of indices to the mesh. Without indices the regular
-		 * array draw method applies, with indices the mesh will be drawn
-		 * using the connectivity described by the indices
-		 * @param count: The number of indices that will be copied
-		 * @param indices: The array of indices that will describe mesh connectivity
-		 */
-		void setIndices(const std::vector<unsigned int>& indices);
+		* @return The indexbuffer if one is created, otherwise null.
+		*/
+		IndexBuffer& getOrCreateIndexBuffer();
 
 		/**
-		* @return The indexbuffer if set, otherwise nullptr.
+		* @return The indexbuffer if one is created, otherwise null.
 		*/
 		const IndexBuffer* getIndexBuffer() const;
 
 	private:
 
 		using AttributeMap = std::unordered_map<VertexAttributeID, std::unique_ptr<VertexAttributeBuffer>>;
-		AttributeMap	mAttributes;
-		IndexBuffer		mIndexBuffer;
+		AttributeMap					mAttributes;
+		std::unique_ptr<IndexBuffer>	mIndexBuffer;
 	};
 } // opengl

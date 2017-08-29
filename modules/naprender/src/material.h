@@ -7,7 +7,7 @@
 // Local includes
 #include "shader.h"
 #include "image.h"
-#include "nmesh.h"
+#include "ngpumesh.h"
 #include "uniformbinding.h"
 
 namespace nap
