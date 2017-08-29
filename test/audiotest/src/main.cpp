@@ -4,6 +4,7 @@
 #include <nap/core.h>
 #include <nap/resourcemanager.h>
 #include <nap/logger.h>
+#include <utility/dllexport.h>
 
 // Audio module includes
 #include <audiodevice.h>

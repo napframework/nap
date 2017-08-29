@@ -14,9 +14,9 @@ namespace nap {
          * Value of a single audio sample
          * Change this to double to build with double precision sample calculation
          */
-        using NAPAPI SampleValue = float;
+        typedef NAPAPI float SampleValue;
         
-        using NAPAPI SampleBuffer = std::vector<SampleValue>;
+        typedef NAPAPI std::vector<SampleValue> SampleBuffer;
 
         class NAPAPI MultiSampleBuffer {
         public:
@@ -42,20 +42,20 @@ namespace nap {
          * Value of control parameter
          * Change this to double to build with double precision sample calculation
          */
-        using NAPAPI ControllerValue = float;
+        typedef NAPAPI float ControllerValue;
         
         /*
          * Time value in milliseconds
          */
-        using NAPAPI TimeValue = float;
+		typedef NAPAPI float TimeValue;
         
         /*
          * Time value in samples
          */
-        using NAPAPI DiscreteTimeValue = long;
+		typedef NAPAPI long DiscreteTimeValue;
         
         
-        constexpr NAPAPI ControllerValue pi = 3.1415926535897932384626433832795028841971693993751;
+        // constexpr NAPAPI ControllerValue pi = 3.1415926535897932384626433832795028841971693993751;
         
     }
         

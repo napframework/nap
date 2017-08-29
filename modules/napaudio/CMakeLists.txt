@@ -23,3 +23,11 @@ target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 
+if (WIN32)
+    set(FILES_TO_COPY
+            ${LIBSNDFILE_LIB_DIR}/libsndfile-1.dll
+            )
+
+    copy_files_to_bin(${FILES_TO_COPY})
+endif()
+

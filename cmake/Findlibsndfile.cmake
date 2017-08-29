@@ -16,8 +16,8 @@ find_path(LIBSNDFILE_DIR src/sndfile.h
         )
 
 if(WIN32)
-    set(LIBSNDFILE_LIB_DIR ${LIBSNDFILE_DIR}/lib)
-    set(LIBSNDFILE_LIBRARIES ${LIBSNDFILE_LIB_DIR}/libsndfile.lib)
+    set(LIBSNDFILE_LIB_DIR ${LIBSNDFILE_DIR}/msvc64)
+    set(LIBSNDFILE_LIBRARIES ${LIBSNDFILE_LIB_DIR}/libsndfile-1.lib)
 elseif(APPLE)
     set(LIBSNDFILE_LIB_DIR ${LIBSNDFILE_DIR}/src/.libs)
     set(LIBSNDFILE_LIBRARIES ${LIBSNDFILE_LIB_DIR}/libsndfile.a)
