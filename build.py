@@ -45,7 +45,7 @@ def installDependenciesLinux():
                'libglm-dev',
                'libtclap-dev',
                'libfreeimage-dev',
-               'ffmpeg-dev'
+               'ffmpeg'
                ])
 
 
