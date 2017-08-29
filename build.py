@@ -13,6 +13,7 @@ THIRDPARTY_URL = 'https://ae53bb936bc44bbffbac2dbd1f37101838603903@github.com/na
 NAP_URL = 'https://ae53bb936bc44bbffbac2dbd1f37101838603903@github.com/naivisoftware/nap.git'
 NAP_BRANCH = 'build'
 BUILD_DIR = 'build'
+CLEAN_BUILD = False
 
 
 def isLocalGitRepo(d):
@@ -85,10 +86,17 @@ def main(targets):
         call(WORKING_DIR, ['cmake', '-H.', '-B%s' % BUILD_DIR])
     else:
         bd = '%s/%s' % (WORKING_DIR, BUILD_DIR)
-        #if os.path.exists(bd):
-        #    shutil.rmtree(bd)
+        
+        # clear build directory when a clean build is required
+        print(CLEAN_BUILD)
+        if CLEAN_BUILD and os.path.exists(bd):
+            shutil.rmtree(bd)
+
+        # create dir if it doesn't exist
         if not os.path.exists(bd):
             os.makedirs(bd)
+
+        # generate prject
         call(WORKING_DIR, ['cmake', '-H.','-B%s' % BUILD_DIR,'-G', 'Visual Studio 14 2015 Win64', '-DPYBIND11_PYTHON_VERSION=3.5'])
 
     #copy targets
@@ -112,6 +120,13 @@ def main(targets):
 def extractTargets():
     targets = []
     for arg in sys.argv:
+        # if the argument clean has been given, perform a clean build
+        if arg == "clean":
+            print("performing clean build")
+            global CLEAN_BUILD
+            CLEAN_BUILD = True
+            continue
+
         # not a target
         if not "target" in arg:
             continue
