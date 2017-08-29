@@ -16,9 +16,9 @@ namespace nap
 	{
 		// Construct options
 		Uint32 options = SDL_WINDOW_OPENGL;
-		options = settings.resizable ? options | SDL_WINDOW_RESIZABLE : options;
+		options = settings.resizable ? options	| SDL_WINDOW_RESIZABLE : options;
 		options = settings.borderless ? options | SDL_WINDOW_BORDERLESS : options;
-		options = !settings.visible ? options | SDL_WINDOW_HIDDEN : options;
+		options = !settings.visible ? options	| SDL_WINDOW_HIDDEN : options;
 
 		SDL_Window* new_window = SDL_CreateWindow(	settings.title.c_str(),
 													settings.x,
@@ -84,8 +84,10 @@ namespace nap
 			return false;
 		}
 
-		setSize(glm::vec2(settings.width, settings.height));
+		// Disable / Enable v-sync
+		opengl::setVSync(settings.sync);
 
+		setSize(glm::vec2(settings.width, settings.height));
 		return true;
 	}
 
