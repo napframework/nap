@@ -5,6 +5,7 @@
 #include <utility/dllexport.h>
 #include <rtti/rttiobject.h>
 #include <nap/objectptr.h>
+#include <glm/glm.hpp>
 
 namespace nap
 {

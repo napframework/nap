@@ -1,15 +1,12 @@
 #pragma once
 
 // Local Includes
-#include "nvertexcontainer.h"
 #include "nvertexarrayobject.h"
 #include "nglutils.h"
-#include "nindexcontainer.h"
 
 // External Includes
 #include <memory>
 #include <vector>
-#include <sstream>
 
 namespace opengl
 {
