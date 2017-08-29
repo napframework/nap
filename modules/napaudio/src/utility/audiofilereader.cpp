@@ -1,7 +1,5 @@
 #include "audiofilereader.h"
 
-#include <string>
-
 // third party includes
 #include <sndfile.h>
 

@@ -1,6 +1,9 @@
 #pragma once
 
-#include <stdio.h>
+// std library includes
+#include <string>
+
+// nap includes
 #include <audiotypes.h>
 
 namespace nap {
