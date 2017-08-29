@@ -56,10 +56,10 @@ namespace nap
 	{
 		mNumVertices = 4;
 		mDrawMode = opengl::EDrawMode::TRIANGLES;
-		Vec3MeshAttribute& position_attribute	= GetOrCreateAttribute<glm::vec3>(Mesh::VertexAttributeIDs::PositionVertexAttr);
-		Vec3MeshAttribute& normal_attribute		= GetOrCreateAttribute<glm::vec3>(Mesh::VertexAttributeIDs::NormalVertexAttr);
-		Vec3MeshAttribute& uv_attribute			= GetOrCreateAttribute<glm::vec3>(nap::utility::stringFormat("%s%d", Mesh::VertexAttributeIDs::UVVertexAttr.c_str(), 0));
-		Vec4MeshAttribute& color_attribute		= GetOrCreateAttribute<glm::vec4>(nap::utility::stringFormat("%s%d", Mesh::VertexAttributeIDs::ColorVertexAttr.c_str(), 0));
+		Vec3VertexAttribute& position_attribute	= GetOrCreateAttribute<glm::vec3>(Mesh::VertexAttributeIDs::PositionVertexAttr);
+		Vec3VertexAttribute& normal_attribute		= GetOrCreateAttribute<glm::vec3>(Mesh::VertexAttributeIDs::NormalVertexAttr);
+		Vec3VertexAttribute& uv_attribute			= GetOrCreateAttribute<glm::vec3>(nap::utility::stringFormat("%s%d", Mesh::VertexAttributeIDs::UVVertexAttr.c_str(), 0));
+		Vec4VertexAttribute& color_attribute		= GetOrCreateAttribute<glm::vec4>(nap::utility::stringFormat("%s%d", Mesh::VertexAttributeIDs::ColorVertexAttr.c_str(), 0));
 
 		position_attribute.setData(plane_vertices, mNumVertices);
 		normal_attribute.setData(plane_normals, mNumVertices);

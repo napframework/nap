@@ -6,32 +6,32 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexAttribute)
 	RTTI_PROPERTY("AttributeID", &nap::VertexAttribute::mAttributeID, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::FloatMeshAttribute)
-	RTTI_PROPERTY("Data", &nap::FloatMeshAttribute::mData, nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::FloatVertexAttribute)
+	RTTI_PROPERTY("Data", &nap::FloatVertexAttribute::mData, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::IntMeshAttribute)
-	RTTI_PROPERTY("Data", &nap::IntMeshAttribute::mData, nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::IntVertexAttribute)
+	RTTI_PROPERTY("Data", &nap::IntVertexAttribute::mData, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::ByteMeshAttribute)
-	RTTI_PROPERTY("Data", &nap::ByteMeshAttribute::mData, nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::ByteVertexAttribute)
+	RTTI_PROPERTY("Data", &nap::ByteVertexAttribute::mData, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::DoubleMeshAttribute)
-	RTTI_PROPERTY("Data", &nap::DoubleMeshAttribute::mData, nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::DoubleVertexAttribute)
+	RTTI_PROPERTY("Data", &nap::DoubleVertexAttribute::mData, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::Vec2MeshAttribute)
-	RTTI_PROPERTY("Data", &nap::Vec2MeshAttribute::mData, nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::Vec2VertexAttribute)
+	RTTI_PROPERTY("Data", &nap::Vec2VertexAttribute::mData, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::Vec3MeshAttribute)
-	RTTI_PROPERTY("Data", &nap::Vec3MeshAttribute::mData, nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::Vec3VertexAttribute)
+	RTTI_PROPERTY("Data", &nap::Vec3VertexAttribute::mData, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::Vec4MeshAttribute)
-	RTTI_PROPERTY("Data", &nap::Vec4MeshAttribute::mData, nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::Vec4VertexAttribute)
+	RTTI_PROPERTY("Data", &nap::Vec4VertexAttribute::mData, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 namespace nap

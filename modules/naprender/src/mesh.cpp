@@ -5,7 +5,7 @@
 RTTI_BEGIN_CLASS(nap::Mesh)
 	RTTI_PROPERTY("NumVertices",	&nap::Mesh::mNumVertices,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DrawMode",		&nap::Mesh::mDrawMode,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("RTTIAttributes", &nap::Mesh::mRTTIAttributes,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Attributes",		&nap::Mesh::mRTTIAttributes,	nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Indices",		&nap::Mesh::mIndices,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS	
 

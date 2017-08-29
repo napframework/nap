@@ -55,55 +55,55 @@ namespace nap
 		std::vector<ELEMENTTYPE>	mData;
 	};
 
-	using FloatMeshAttribute	= TypedVertexAttribute<float>;
-	using IntMeshAttribute		= TypedVertexAttribute<int>;
-	using ByteMeshAttribute		= TypedVertexAttribute<int8_t>;
-	using DoubleMeshAttribute	= TypedVertexAttribute<double>;
-	using Vec2MeshAttribute		= TypedVertexAttribute<glm::vec2>;
-	using Vec3MeshAttribute		= TypedVertexAttribute<glm::vec3>;
-	using Vec4MeshAttribute		= TypedVertexAttribute<glm::vec4>;
+	using FloatVertexAttribute	= TypedVertexAttribute<float>;
+	using IntVertexAttribute	= TypedVertexAttribute<int>;
+	using ByteVertexAttribute	= TypedVertexAttribute<int8_t>;
+	using DoubleVertexAttribute	= TypedVertexAttribute<double>;
+	using Vec2VertexAttribute	= TypedVertexAttribute<glm::vec2>;
+	using Vec3VertexAttribute	= TypedVertexAttribute<glm::vec3>;
+	using Vec4VertexAttribute	= TypedVertexAttribute<glm::vec4>;
 
 	template<>
-	GLenum FloatMeshAttribute::getType() const { return GL_FLOAT; }
+	GLenum FloatVertexAttribute::getType() const { return GL_FLOAT; }
 
 	template<>
-	int FloatMeshAttribute::getNumComponents() const { return 1; }
+	int FloatVertexAttribute::getNumComponents() const { return 1; }
 
 	template<>
-	GLenum IntMeshAttribute::getType() const { return GL_INT; }
+	GLenum IntVertexAttribute::getType() const { return GL_INT; }
 
 	template<>
-	int IntMeshAttribute::getNumComponents() const { return 1; }
+	int IntVertexAttribute::getNumComponents() const { return 1; }
 
 	template<>
-	GLenum ByteMeshAttribute::getType() const { return GL_BYTE; }
+	GLenum ByteVertexAttribute::getType() const { return GL_BYTE; }
 
 	template<>
-	int ByteMeshAttribute::getNumComponents() const { return 1; }
+	int ByteVertexAttribute::getNumComponents() const { return 1; }
 
 	template<>
-	GLenum DoubleMeshAttribute::getType() const { return GL_DOUBLE; }
+	GLenum DoubleVertexAttribute::getType() const { return GL_DOUBLE; }
 
 	template<>
-	int DoubleMeshAttribute::getNumComponents() const { return 1; }
+	int DoubleVertexAttribute::getNumComponents() const { return 1; }
 
 	template<>
-	GLenum Vec2MeshAttribute::getType() const { return GL_FLOAT; }
+	GLenum Vec2VertexAttribute::getType() const { return GL_FLOAT; }
 
 	template<>
-	int Vec2MeshAttribute::getNumComponents() const { return 2; }
+	int Vec2VertexAttribute::getNumComponents() const { return 2; }
 
 	template<>
-	GLenum Vec3MeshAttribute::getType() const { return GL_FLOAT; }
+	GLenum Vec3VertexAttribute::getType() const { return GL_FLOAT; }
 
 	template<>
-	int Vec3MeshAttribute::getNumComponents() const { return 3; }
+	int Vec3VertexAttribute::getNumComponents() const { return 3; }
 
 	template<>
-	GLenum Vec4MeshAttribute::getType() const { return GL_FLOAT; }
+	GLenum Vec4VertexAttribute::getType() const { return GL_FLOAT; }
 
 	template<>
-	int Vec4MeshAttribute::getNumComponents() const { return 4; }
+	int Vec4VertexAttribute::getNumComponents() const { return 4; }
 
 } // nap
 
