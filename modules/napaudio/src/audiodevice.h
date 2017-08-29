@@ -4,6 +4,8 @@
 
 #include <portaudio.h>
 
+#include <utility/dllexport.h>
+
 //#include "audioservice.h"
 
 namespace nap {
@@ -11,7 +13,7 @@ namespace nap {
     namespace audio {
         
         
-        class AudioDeviceManager {
+        class NAPAPI AudioDeviceManager {
         public:
         public:
             AudioDeviceManager();
