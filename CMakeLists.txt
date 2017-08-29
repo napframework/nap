@@ -59,6 +59,7 @@ add_subdirectory(nrender)
 
 # tools targets
 add_subdirectory(tools/fbxconverter)
+add_subdirectory(napkin_cpp)
 
 # executable targets
 add_subdirectory(test/render)

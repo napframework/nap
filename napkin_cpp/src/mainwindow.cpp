@@ -3,7 +3,8 @@
 #include <QApplication>
 
 void MainWindow::bindSignals() {
-    connect(&AppContext::instance(), &AppContext::fileOpened, this, &MainWindow::onFileOpened);
+    connect(&AppContext::get(), &AppContext::fileOpened, this, &MainWindow::onFileOpened);
+    connect(&AppContext::get(), &AppContext::fileSaved, this, &MainWindow::onFileSaved);
 }
 
 void MainWindow::addDocks() {
@@ -30,5 +31,13 @@ void MainWindow::addMenu() {
 }
 
 void MainWindow::onFileOpened(const QString& filename) {
-    setWindowTitle(QString("%1 - %2").arg(QApplication::applicationName(), filename));
+    updateWindowTitle();
+}
+
+void MainWindow::onFileSaved(const QString& filename) {
+    updateWindowTitle();
+}
+
+void MainWindow::updateWindowTitle() {
+    setWindowTitle(QString("%1 - %2").arg(QApplication::applicationName(), AppContext::get().currentFilename()));
 }

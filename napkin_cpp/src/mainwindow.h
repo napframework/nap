@@ -25,6 +25,9 @@ private:
 
 private:
     void onFileOpened(const QString& filename);
+    void onFileSaved(const QString& filename);
+
+    void updateWindowTitle();
 
 private:
     OutlinePanel outlinePanel;

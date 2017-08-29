@@ -9,7 +9,7 @@ OpenFileAction::OpenFileAction(QObject* parent) : QAction("Open...", parent) {
 }
 
 void OpenFileAction::perform() {
-    auto lastFilename = AppContext::instance().lastOpenedFilename();
+    auto lastFilename = AppContext::get().lastOpenedFilename();
     QString filename = QFileDialog::getOpenFileName(QApplication::topLevelWidgets()[0],
                                                     "Open NAP Data File",
                                                     lastFilename,
@@ -17,7 +17,7 @@ void OpenFileAction::perform() {
     if (filename.isNull())
         return;
 
-    AppContext::instance().openFile(filename);
+    AppContext::get().loadFile(filename);
 }
 
 SaveFileAction::SaveFileAction(QObject* parent) : QAction("Save", parent) {
@@ -26,7 +26,11 @@ SaveFileAction::SaveFileAction(QObject* parent) : QAction("Save", parent) {
 }
 
 void SaveFileAction::perform() {
-
+    if (AppContext::get().currentFilename().isNull()) {
+        SaveFileAsAction(parent()).trigger();
+        return;
+    }
+    AppContext::get().saveFile();
 }
 
 SaveFileAsAction::SaveFileAsAction(QObject* parent) : QAction("Save as...", parent) {
@@ -35,5 +39,16 @@ SaveFileAsAction::SaveFileAsAction(QObject* parent) : QAction("Save as...", pare
 }
 
 void SaveFileAsAction::perform() {
+    auto& ctx = AppContext::get();
+    auto prevFilename = ctx.currentFilename();
+    if (prevFilename.isNull())
+        prevFilename = ctx.lastOpenedFilename();
 
+    QString filename = QFileDialog::getSaveFileName(QApplication::topLevelWidgets()[0],
+                                                    "Save NAP Data File", prevFilename, NAP_FILE_FILTER);
+
+    if (filename.isNull())
+        return;
+
+    ctx.saveFileAs(filename);
 }
