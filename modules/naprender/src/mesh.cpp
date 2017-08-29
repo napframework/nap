@@ -1,11 +1,6 @@
 // Local Includes
 #include "mesh.h"
-
-// External Includes
-#include <nap/logger.h>
-#include <nap/fileutils.h>
-#include "fbxconverter.h"
-#include "rtti/rttiutilities.h"
+#include <rtti/rttiutilities.h>
 
 RTTI_BEGIN_CLASS(nap::Mesh)
 	RTTI_PROPERTY("NumVertices",	&nap::Mesh::mNumVertices,		nap::rtti::EPropertyMetaData::Default)
@@ -13,43 +8,6 @@ RTTI_BEGIN_CLASS(nap::Mesh)
 	RTTI_PROPERTY("RTTIAttributes", &nap::Mesh::mRTTIAttributes,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Indices",		&nap::Mesh::mIndices,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS	
-
-RTTI_BEGIN_CLASS(nap::MeshFromFile)
-	RTTI_PROPERTY("Path", &nap::MeshFromFile::mPath, nap::rtti::EPropertyMetaData::FileLink | nap::rtti::EPropertyMetaData::Required)
-RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexAttribute)
-	RTTI_PROPERTY("AttributeID", &nap::VertexAttribute::mAttributeID, nap::rtti::EPropertyMetaData::Required)
-RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS(nap::FloatMeshAttribute)
-	RTTI_PROPERTY("Data", &nap::FloatMeshAttribute::mData, nap::rtti::EPropertyMetaData::Required)
-RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS(nap::IntMeshAttribute)
-	RTTI_PROPERTY("Data", &nap::IntMeshAttribute::mData, nap::rtti::EPropertyMetaData::Required)
-RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS(nap::ByteMeshAttribute)
-	RTTI_PROPERTY("Data", &nap::ByteMeshAttribute::mData, nap::rtti::EPropertyMetaData::Required)
-RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS(nap::DoubleMeshAttribute)
-	RTTI_PROPERTY("Data", &nap::DoubleMeshAttribute::mData, nap::rtti::EPropertyMetaData::Required)
-RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS(nap::Vec2MeshAttribute)
-	RTTI_PROPERTY("Data", &nap::Vec2MeshAttribute::mData, nap::rtti::EPropertyMetaData::Required)
-RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS(nap::Vec3MeshAttribute)
-	RTTI_PROPERTY("Data", &nap::Vec3MeshAttribute::mData, nap::rtti::EPropertyMetaData::Required)
-RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS(nap::Vec4MeshAttribute)
-	RTTI_PROPERTY("Data", &nap::Vec4MeshAttribute::mData, nap::rtti::EPropertyMetaData::Required)
-RTTI_END_CLASS
-
 
 namespace nap
 {
@@ -125,18 +83,5 @@ namespace nap
 		mIndices			= mesh.mIndices;
 		mGPUMesh			= std::move(mesh.mGPUMesh);
 		mOwnedAttributes	= std::move(mesh.mOwnedAttributes);
-	}
-
-	//////////////////////////////////////////////////////////////////////////
-
-	bool MeshFromFile::init(utility::ErrorState& errorState)
-	{
-		std::unique_ptr<Mesh> mesh = loadMesh(mPath, errorState);
-		if (!errorState.check(mesh != nullptr, "Unable to load mesh %s for resource %d", mPath.c_str(), mID.c_str()))
-			return false;
-
-		moveFrom(*mesh);
-
-		return true;
 	}
 }
