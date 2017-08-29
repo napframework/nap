@@ -45,6 +45,7 @@ def installDependenciesLinux():
                'libglm-dev',
                'libtclap-dev',
                'libfreeimage-dev',
+               'ffmpeg-dev'
                ])
 
 
@@ -57,7 +58,7 @@ def isBrewInstalled():
 
 def installDependenciesOSX():
     d = WORKING_DIR
-    for pack in ['cmake', 'sdl2', 'glew', 'glm', 'assimp', 'tclap']:
+    for pack in ['cmake', 'sdl2', 'glew', 'glm', 'assimp', 'tclap', 'ffmpeg']:
         try:
             call(d, ['brew', 'install', pack])
         except:
