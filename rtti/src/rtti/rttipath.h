@@ -16,13 +16,6 @@ namespace nap
 		 * In order to be able to have an array (without dynamic allocs) of these elements, it makes use of an anonymous union to store the data.
 		 * Then, depending on the type of the element, you can access the data through Element.Attribute or Element.ArrayElement.
 		 *
-		 * One important thing to note is that we have non-POD types in the union; this used to be impossible, but since C++11 this is allowed in the form of
-		 * 'unrestricted unions'. However, as soon as you use unrestricted unions, the compiler deletes the default constructors, copy constructors and assignment operators.
-		 *
-		 * So, we need to reimplement all these functions.
-		 *
-		 * For more information on unrestricted unions, see https://faouellet.github.io/unrestricted-unions/
-		 *
 		 * Note: this class should be used through RTTIPath, not directly
 		 */
 		class NAPAPI RTTIPathElement
@@ -70,7 +63,7 @@ namespace nap
 			{
 				struct
 				{
-					std::string Name;		// The name of the attribute we're representing
+					const char* Name;		// The name of the attribute we're representing
 				} Attribute;
 
 				struct
@@ -91,14 +84,29 @@ namespace nap
 			}
 
 			/**
-			 * Constructor for the attribute type
+			 * Constructor for the attribute type. 
+			 * Note: The attribute name string is expected to have a lifetime of at least as long as this RTTIPath. The string is not copied.
 			 *
-			 * @param attributeName The name of the attribute represented by this element
+			 * @param attributeName The name of the attribute represented by this element. 
+			 */
+			RTTIPathElement(const char* attributeName) :
+				mType(Type::ATTRIBUTE)
+			{
+				Attribute.Name = attributeName;
+			}
+
+			/**
+			 * Constructor for the attribute type. 
+			 * Note: The specified name is copied to internal storage (the element takes ownership). 
+			 *       If you know that your string has a longer lifetime than the RTTIPath, use the const char* constructor, which is more efficient.
+			 *
+			 * @param attributeName The name of the attribute represented by this element. 
 			 */
 			RTTIPathElement(const std::string& attributeName) :
 				mType(Type::ATTRIBUTE)
 			{
-				initNonPOD(Attribute.Name, attributeName);
+				mAttributeNameStorage = std::make_unique<std::string>(attributeName);
+				Attribute.Name = mAttributeNameStorage->data();
 			}
 
 			/**
@@ -121,14 +129,6 @@ namespace nap
 			}
 
 			/**
-			 * Destructor
-			 */
-			~RTTIPathElement()
-			{
-				destroy();
-			}
-
-			/**
 			 * Assignment operator
 			 */
 			RTTIPathElement& operator=(const RTTIPathElement& other)
@@ -138,35 +138,9 @@ namespace nap
 					return *this;
 
 				// Destroy current value and copy over new data
-				destroy();
 				copyFrom(other);
 
 				return *this;
-			}
-
-			/**
-			 * Helper function to copy-construct a non-pod from a value. This is necessary because non-POD members of unrestricted unions must be placement new'd
-			 *
-			 * @param member The non-POD to construct
-			 * @param val The value to construct the non-POD from
-			 */
-			template <typename T>
-			inline void initNonPOD(T& member, const T& val)
-			{
-				new (&member) T(val);
-			}
-
-			/**
-			 * Helper function to correctly destroy the data
-			 */
-			inline void destroy()
-			{
-				if (mType == Type::ATTRIBUTE)
-				{
-					// The Attribute.Name property is placement new'd; we must destroy it explicitly.
-					using std::string;
-					Attribute.Name.~string();
-				}
 			}
 
 			/**
@@ -177,13 +151,24 @@ namespace nap
 				mType = other.mType;
 				if (mType == Type::ATTRIBUTE)
 				{
-					initNonPOD(Attribute.Name, other.Attribute.Name);
+					if (other.mAttributeNameStorage == nullptr)
+					{
+						Attribute.Name = other.Attribute.Name;
+					}
+					else
+					{
+						mAttributeNameStorage = std::make_unique<std::string>(*other.mAttributeNameStorage);
+						Attribute.Name = mAttributeNameStorage->data();
+					}
 				}
 				else if (mType == Type::ARRAY_ELEMENT)
 				{
 					ArrayElement.Index = other.ArrayElement.Index;
 				}
 			}
+
+		private:
+			std::unique_ptr<std::string> mAttributeNameStorage;
 		};
 
 		/**
@@ -417,7 +402,21 @@ namespace nap
 		{
 		public:
 			/**
-			 * Push an attribute on the path
+			 * Push an attribute on the path.
+			 * The specified attribute name string is expected to have a lifetime longer than that of the RTTIPath.
+			 *
+			 * @param attributeName The name of the attribute to push
+			 */
+			inline void pushAttribute(const char* attributeName)
+			{
+				assert(mLength < RTTIPATH_MAX_LENGTH);
+				mElements[mLength++] = RTTIPathElement(attributeName);
+			}
+
+			/**
+			 * Push an attribute on the path. 
+			 * The specified attribute name string is copied locally; use the const char* overload for better performance,
+			 * if you know that the lifetime of your string is longer than that of the RTTIPath.
 			 *
 			 * @param attributeName The name of the attribute to push
 			 */

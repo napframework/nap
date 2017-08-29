@@ -10,8 +10,37 @@ namespace nap
 {
 	namespace rtti
 	{
-		static bool deserializePropertiesRecursive(rtti::RTTIObject* object, rtti::Instance compound, utility::MemoryStream& stream, rtti::RTTIPath& rttiPath, UnresolvedPointerList& unresolvedPointers,
-			std::vector<FileLink>& linkedFiles, utility::ErrorState& errorState);
+		struct PropertyMetaData
+		{
+			bool mIsRequired;
+			bool mIsFileLink;
+		};
+
+		using PropertyMetaDataList = std::vector<PropertyMetaData>;
+
+		const PropertyMetaDataList getAllPropertyMetaData(const rtti::TypeInfo& type)
+		{
+			PropertyMetaDataList result;
+
+			// Go through all properties of the object
+			const auto& range = type.get_properties();
+			result.resize(range.size());
+
+			int index = 0;
+			for (const rtti::Property& property : range)
+			{
+				PropertyMetaData& metadata = result[index++];
+
+				// Determine meta-data for the property
+				metadata.mIsRequired = rtti::hasFlag(property, nap::rtti::EPropertyMetaData::Required);
+				metadata.mIsFileLink = rtti::hasFlag(property, nap::rtti::EPropertyMetaData::FileLink);
+			}
+
+			return result;
+		}
+
+		static bool deserializePropertiesRecursive(rtti::RTTIObject* object, rtti::Instance compound, const PropertyMetaDataList& compoundPropertyMetaData, utility::MemoryStream& stream, rtti::RTTIPath& rttiPath, 
+			UnresolvedPointerList& unresolvedPointers, std::vector<FileLink>& linkedFiles,  utility::ErrorState& errorState);
 
 		/**
 		 * Helper function to check if the specified stream starts with the RTTI binary version header
@@ -95,6 +124,7 @@ namespace nap
 			const rtti::TypeInfo wrapped_type = array_type.is_wrapper() ? array_type.get_wrapped_type() : array_type;
 
 			// Read values from JSON array
+			const PropertyMetaDataList& wrapped_var_metadata = getAllPropertyMetaData(wrapped_type);
 			for (std::size_t index = 0; index < length; ++index)
 			{
 				// Add array element to rtti path
@@ -139,7 +169,7 @@ namespace nap
 					// Array-of-compounds; read object recursively
 					rtti::Variant var_tmp = array.get_value_as_ref(index);
 					rtti::Variant wrapped_var = var_tmp.extract_wrapped_value();
-					if (!deserializePropertiesRecursive(rootObject, wrapped_var, stream, rttiPath, unresolvedPointers, linkedFiles, errorState))
+					if (!deserializePropertiesRecursive(rootObject, wrapped_var, wrapped_var_metadata, stream, rttiPath, unresolvedPointers, linkedFiles, errorState))
 						return false;
 
 					array.set_value(index, wrapped_var);
@@ -156,27 +186,27 @@ namespace nap
 		/**
 		 * Helper function to recursively read an object (can be a rtti::RTTIObject, nested compound or any other type) from JSON
 		 */
-		static bool deserializePropertiesRecursive(rtti::RTTIObject* object, rtti::Instance compound, utility::MemoryStream& stream, rtti::RTTIPath& rttiPath, UnresolvedPointerList& unresolvedPointers,
-			std::vector<FileLink>& linkedFiles, utility::ErrorState& errorState)
+		static bool deserializePropertiesRecursive(rtti::RTTIObject* object, rtti::Instance compound, const PropertyMetaDataList& compoundPropertyMetaData, utility::MemoryStream& stream, 
+			rtti::RTTIPath& rttiPath, UnresolvedPointerList& unresolvedPointers, std::vector<FileLink>& linkedFiles, utility::ErrorState& errorState)
 		{
 			// Determine the object type. Note that we want to *most derived type* of the object.
 			rtti::TypeInfo object_type = compound.get_derived_type();
 
 			// Go through all properties of the object
+			int property_index = 0;
 			for (const rtti::Property& property : object_type.get_properties())
 			{
 				// Push attribute on path
 				rttiPath.pushAttribute(property.get_name().data());
 
 				// Determine meta-data for the property
-				bool is_required = rtti::hasFlag(property, nap::rtti::EPropertyMetaData::Required);
-				bool is_file_link = rtti::hasFlag(property, nap::rtti::EPropertyMetaData::FileLink);
+				const PropertyMetaData& metadata = compoundPropertyMetaData[property_index++];
 
 				const rtti::TypeInfo value_type = property.get_type();
 				const rtti::TypeInfo wrapped_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
 
 				// If this is a file link, make sure it's of the expected type (string)
-				if (!errorState.check((is_file_link && wrapped_type.get_raw_type().is_derived_from<std::string>()) || !is_file_link, "Encountered a non-string file link. This is not supported"))
+				if (!errorState.check((metadata.mIsFileLink && wrapped_type.get_raw_type().is_derived_from<std::string>()) || !metadata.mIsFileLink, "Encountered a non-string file link. This is not supported"))
 					return false;
 
 				// If this is an array, read its elements recursively again (in case of nested compounds)
@@ -210,7 +240,7 @@ namespace nap
 					stream.readString(target);
 
 					// If the target is empty (i.e. null pointer), but the property is required, throw an error
-					if (!errorState.check((is_required && !target.empty()) || (!is_required), "Required property %s not found in object of type %s", property.get_name().data(), object_type.get_name().data()))
+					if (!errorState.check((metadata.mIsRequired && !target.empty()) || (!metadata.mIsRequired), "Required property %s not found in object of type %s", property.get_name().data(), object_type.get_name().data()))
 						return false;
 
 					// Add to list of unresolved pointers
@@ -228,7 +258,7 @@ namespace nap
 				{
 					// If the property is a nested compound, read it recursively
 					rtti::Variant var = property.get_value(compound);
-					if (!deserializePropertiesRecursive(object, var, stream, rttiPath, unresolvedPointers, linkedFiles, errorState))
+					if (!deserializePropertiesRecursive(object, var, getAllPropertyMetaData(var.get_type()), stream, rttiPath, unresolvedPointers, linkedFiles, errorState))
 						return false;
 
 					// Copy read object back into the target object
@@ -236,7 +266,7 @@ namespace nap
 				}
 
 				// If this property is a file link, add it to the list of file links
-				if (is_file_link)
+				if (metadata.mIsFileLink)
 				{
 					FileLink file_link;
 					file_link.mSourceObjectID = compound.try_convert<RTTIObject>()->mID;
@@ -288,7 +318,7 @@ namespace nap
 
 				// Recursively read properties, nested compounds, etc
 				rtti::RTTIPath path;
-				if (!deserializePropertiesRecursive(object, *object, stream, path, result.mUnresolvedPointers, result.mFileLinks, errorState))
+				if (!deserializePropertiesRecursive(object, *object, getAllPropertyMetaData(object->get_type()), stream, path, result.mUnresolvedPointers, result.mFileLinks, errorState))
 					return false;
 			}
 

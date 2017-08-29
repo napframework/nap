@@ -19,7 +19,7 @@ namespace nap
 					if (result.empty())
 						result += element.Attribute.Name;
 					else
-						result += utility::stringFormat(":%s", element.Attribute.Name.c_str());
+						result += utility::stringFormat(":%s", element.Attribute.Name);
 
 					break;
 				}
