@@ -40,4 +40,48 @@ namespace nap
 	VertexAttribute::VertexAttribute()
 	{
 	}
+
+	//////////////////////////////////////////////////////////////////////////
+
+	template<>
+	GLenum FloatVertexAttribute::getType() const { return GL_FLOAT; }
+
+	template<>
+	int FloatVertexAttribute::getNumComponents() const { return 1; }
+
+	template<>
+	GLenum IntVertexAttribute::getType() const { return GL_INT; }
+
+	template<>
+	int IntVertexAttribute::getNumComponents() const { return 1; }
+
+	template<>
+	GLenum ByteVertexAttribute::getType() const { return GL_BYTE; }
+
+	template<>
+	int ByteVertexAttribute::getNumComponents() const { return 1; }
+
+	template<>
+	GLenum DoubleVertexAttribute::getType() const { return GL_DOUBLE; }
+
+	template<>
+	int DoubleVertexAttribute::getNumComponents() const { return 1; }
+
+	template<>
+	GLenum Vec2VertexAttribute::getType() const { return GL_FLOAT; }
+
+	template<>
+	int Vec2VertexAttribute::getNumComponents() const { return 2; }
+
+	template<>
+	GLenum Vec3VertexAttribute::getType() const { return GL_FLOAT; }
+
+	template<>
+	int Vec3VertexAttribute::getNumComponents() const { return 3; }
+
+	template<>
+	GLenum Vec4VertexAttribute::getType() const { return GL_FLOAT; }
+
+	template<>
+	int Vec4VertexAttribute::getNumComponents() const { return 4; }
 }
