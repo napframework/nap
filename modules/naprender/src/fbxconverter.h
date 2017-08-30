@@ -7,7 +7,7 @@
 
 namespace nap
 {
-	class Mesh;
+	class MeshInstance;
 	namespace utility
 	{
 		class ErrorState;
@@ -41,5 +41,5 @@ namespace nap
 	 * @param errorState The error state if the function fails
 	 * @return The loaded mesh if successful, nullptr on failure
 	 */
-	NAPAPI std::unique_ptr<Mesh> loadMesh(const std::string& meshPath, utility::ErrorState& errorState);
+	NAPAPI std::unique_ptr<MeshInstance> loadMesh(const std::string& meshPath, utility::ErrorState& errorState);
 }

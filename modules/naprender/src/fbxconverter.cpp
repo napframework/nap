@@ -48,6 +48,22 @@ namespace nap
 		return true;
 	}
 
+
+	template<class T>
+	static TypedVertexAttribute<T>& CreateAttribute(Mesh& mesh, const std::string& id, std::vector<std::unique_ptr<VertexAttribute>>& storage)
+	{
+		std::unique_ptr<TypedVertexAttribute<T>> new_attribute = std::make_unique<TypedVertexAttribute<T>>();
+		new_attribute->mAttributeID = id;
+
+		assert(!mesh.mID.empty());
+		new_attribute->mID = mesh.mID + "_" + id;
+		mesh.mProperties.mAttributes.push_back(new_attribute.get());
+		storage.emplace_back(std::move(new_attribute));
+
+		return static_cast<TypedVertexAttribute<T>&>(*mesh.mProperties.mAttributes[mesh.mProperties.mAttributes.size() - 1]);
+	}
+
+
 	bool convertFBX(const std::string& fbxPath, const std::string& outputDirectory, EFBXConversionOptions convertOptions, std::vector<std::string>& convertedFiles, utility::ErrorState& errorState)
 	{
 		// Create importer
@@ -107,11 +123,13 @@ namespace nap
 			if (!errorState.check(fbx_mesh->mNumVertices != 0, "Encountered mesh with no vertices"))
 				return false;
 
-			mesh_data.mNumVertices = fbx_mesh->mNumVertices;
-			mesh_data.mDrawMode = opengl::EDrawMode::TRIANGLES;
+			mesh_data.mProperties.mNumVertices = fbx_mesh->mNumVertices;
+			mesh_data.mProperties.mDrawMode = opengl::EDrawMode::TRIANGLES;
+
+			std::vector<std::unique_ptr<VertexAttribute>> vertex_attribute_storage;
 
 			// Copy vertex data			
-			TypedVertexAttribute<glm::vec3>& position_attribute = mesh_data.GetOrCreateAttribute<glm::vec3>(Mesh::VertexAttributeIDs::PositionVertexAttr);
+			TypedVertexAttribute<glm::vec3>& position_attribute = CreateAttribute<glm::vec3>(mesh_data, MeshInstance::VertexAttributeIDs::PositionVertexAttr, vertex_attribute_storage);
 			position_attribute.reserve(fbx_mesh->mNumVertices);
 			for (unsigned int vertex = 0; vertex < fbx_mesh->mNumVertices; vertex++)
 			{
@@ -122,7 +140,7 @@ namespace nap
 			// Copy normals
 			if (fbx_mesh->HasNormals())
 			{
-				TypedVertexAttribute<glm::vec3>& normal_attribute = mesh_data.GetOrCreateAttribute<glm::vec3>(Mesh::VertexAttributeIDs::NormalVertexAttr);
+				TypedVertexAttribute<glm::vec3>& normal_attribute = CreateAttribute<glm::vec3>(mesh_data, MeshInstance::VertexAttributeIDs::NormalVertexAttr, vertex_attribute_storage);
 				normal_attribute.reserve(fbx_mesh->mNumVertices);
 				for (unsigned int vertex = 0; vertex < fbx_mesh->mNumVertices; vertex++)
 				{
@@ -136,7 +154,7 @@ namespace nap
 			{
 				aiVector3D* uv_channel_data = fbx_mesh->mTextureCoords[uv_channel];
 
-				TypedVertexAttribute<glm::vec3>& uv_attribute = mesh_data.GetOrCreateAttribute<glm::vec3>(Mesh::VertexAttributeIDs::GetUVVertexAttr(uv_channel));
+				TypedVertexAttribute<glm::vec3>& uv_attribute = CreateAttribute<glm::vec3>(mesh_data, MeshInstance::VertexAttributeIDs::GetUVVertexAttr(uv_channel), vertex_attribute_storage);
 				uv_attribute.reserve(fbx_mesh->mNumVertices);
 
 				// Copy uv data channel
@@ -153,7 +171,7 @@ namespace nap
 			{
 				aiColor4D* color_channel_data = fbx_mesh->mColors[color_channel];
 
-				TypedVertexAttribute<glm::vec4>& color_attribute = mesh_data.GetOrCreateAttribute<glm::vec4>(Mesh::VertexAttributeIDs::GetColorVertexAttr(color_channel));
+				TypedVertexAttribute<glm::vec4>& color_attribute = CreateAttribute<glm::vec4>(mesh_data, MeshInstance::VertexAttributeIDs::GetColorVertexAttr(color_channel), vertex_attribute_storage);
 				color_attribute.reserve(fbx_mesh->mNumVertices);
 
 				// Copy color data channel
@@ -168,14 +186,14 @@ namespace nap
 			if (!errorState.check(fbx_mesh->HasFaces(), "Mesh has no indices"))
 				return false;
 
-			mesh_data.ReserveIndices(fbx_mesh->mNumFaces * 3);
+			mesh_data.mProperties.mIndices.reserve(fbx_mesh->mNumFaces * 3);
 			for (int face_index = 0; face_index != fbx_mesh->mNumFaces; ++face_index)
 			{
 				aiFace& face = fbx_mesh->mFaces[face_index];
 				assert(face.mNumIndices == 3);
 
 				for (int point_index = 0; point_index != face.mNumIndices; ++point_index)
-					mesh_data.AddIndex(face.mIndices[point_index]);
+					mesh_data.mProperties.mIndices.push_back(face.mIndices[point_index]);
 			}
 
 			rtti::BinaryWriter binaryWriter;
@@ -195,7 +213,7 @@ namespace nap
 		return true;
 	}
 
-	std::unique_ptr<Mesh> loadMesh(const std::string& meshPath, utility::ErrorState& errorState)
+	std::unique_ptr<MeshInstance> loadMesh(const std::string& meshPath, utility::ErrorState& errorState)
 	{
 		rtti::Factory factory;
 
@@ -221,10 +239,11 @@ namespace nap
 		if (!errorState.check(numMeshes == 1, "Trying to load an invalid mesh file. File %s contains %d meshes, expected 1", meshPath.c_str(), numMeshes))
 			return nullptr;
 
-		if (!errorState.check(mesh->init(errorState), "Failed to init mesh"))
+		std::unique_ptr<MeshInstance> mesh_instance = std::make_unique<MeshInstance>();
+		if (!mesh_instance->init(mesh->mProperties, errorState))
 			return false;
 
-		return mesh;
+		return std::move(mesh_instance);
 	}
 
 } // opengl

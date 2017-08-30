@@ -180,7 +180,7 @@ bool init(nap::Core& core)
 	nap::utility::ErrorState errorState;
 	if (!resourceManagerService->loadFile("data/tommy/tommy.json", errorState))
 	{
-		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
+		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str()); 
 		return false;        
 	}
 	

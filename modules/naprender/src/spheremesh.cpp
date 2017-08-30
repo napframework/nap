@@ -15,12 +15,8 @@ namespace nap
 {
 	bool SphereMesh::init(utility::ErrorState& errorState)
 	{
-		initSphere();
-		return Mesh::init(errorState);
-	}
+		mMeshInstance = std::make_unique<MeshInstance>();
 
-	void SphereMesh::initSphere()
-	{
 		std::vector<glm::vec3> vertices;
 		std::vector<glm::vec3> normals;
 		std::vector<glm::vec3> texcoords;
@@ -88,17 +84,19 @@ namespace nap
 			}
 		}
 
-		mNumVertices = vertex_count;
-		mDrawMode = opengl::EDrawMode::TRIANGLES;
-		nap::Vec3VertexAttribute& position_attribute = GetOrCreateAttribute<glm::vec3>(nap::Mesh::VertexAttributeIDs::PositionVertexAttr);
-		nap::Vec3VertexAttribute& normal_attribute = GetOrCreateAttribute<glm::vec3>(nap::Mesh::VertexAttributeIDs::NormalVertexAttr);
-		nap::Vec3VertexAttribute& uv_attribute = GetOrCreateAttribute<glm::vec3>(nap::utility::stringFormat("%s%d", nap::Mesh::VertexAttributeIDs::UVVertexAttr.c_str(), 0));
-		nap::Vec4VertexAttribute& color_attribute = GetOrCreateAttribute<glm::vec4>(nap::utility::stringFormat("%s%d", nap::Mesh::VertexAttributeIDs::ColorVertexAttr.c_str(), 0));
+		mMeshInstance->setNumVertices(vertex_count);
+		mMeshInstance->setDrawMode(opengl::EDrawMode::TRIANGLES);
+		nap::Vec3VertexAttribute& position_attribute = mMeshInstance->GetOrCreateAttribute<glm::vec3>(nap::MeshInstance::VertexAttributeIDs::PositionVertexAttr);
+		nap::Vec3VertexAttribute& normal_attribute = mMeshInstance->GetOrCreateAttribute<glm::vec3>(nap::MeshInstance::VertexAttributeIDs::NormalVertexAttr);
+		nap::Vec3VertexAttribute& uv_attribute = mMeshInstance->GetOrCreateAttribute<glm::vec3>(nap::utility::stringFormat("%s%d", nap::MeshInstance::VertexAttributeIDs::UVVertexAttr.c_str(), 0));
+		nap::Vec4VertexAttribute& color_attribute = mMeshInstance->GetOrCreateAttribute<glm::vec4>(nap::utility::stringFormat("%s%d", nap::MeshInstance::VertexAttributeIDs::ColorVertexAttr.c_str(), 0));
 
-		position_attribute.setData(vertices.data(), mNumVertices);
-		normal_attribute.setData(normals.data(), mNumVertices);
-		uv_attribute.setData(texcoords.data(), mNumVertices);
-		color_attribute.setData(colors.data(), mNumVertices);
-		setIndices(indices.data(), index_count);
+		position_attribute.setData(vertices.data(), vertex_count);
+		normal_attribute.setData(normals.data(), vertex_count);
+		uv_attribute.setData(texcoords.data(), vertex_count);
+		color_attribute.setData(colors.data(), vertex_count);
+		mMeshInstance->setIndices(indices.data(), index_count);
+
+		return mMeshInstance->init(errorState);
 	}
 }

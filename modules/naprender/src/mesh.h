@@ -10,10 +10,23 @@
 
 namespace nap
 {
-	class NAPAPI Mesh : public rtti::RTTIObject
+	template<typename VERTEX_ATTRIBUTE_PTR>
+	struct MeshProperties
 	{
-		RTTI_ENABLE(rtti::RTTIObject)
+		using VertexAttributeList = std::vector<VERTEX_ATTRIBUTE_PTR>;
+		using IndexList = std::vector<unsigned int>;
 
+		int								mNumVertices;
+		opengl::EDrawMode				mDrawMode;
+		VertexAttributeList				mAttributes;
+		IndexList						mIndices;
+	};
+
+	using RTTIMeshProperties = MeshProperties<ObjectPtr<VertexAttribute>>;
+
+	class NAPAPI MeshInstance
+	{
+		RTTI_ENABLE()
 	public:
 		using VertexAttributeID = std::string;
 
@@ -27,11 +40,11 @@ namespace nap
 			static const VertexAttributeID UVVertexAttr;		//< Default uv vertex attribute name
 			static const VertexAttributeID ColorVertexAttr;		//< Default color vertex attribute name
 
-																/**
-																* Returns the name of the vertex uv attribute based on the queried uv channel
-																* @param uvChannel: the uv channel index to query
-																* @return the name of the vertex attribute
-																*/
+			/**
+			* Returns the name of the vertex uv attribute based on the queried uv channel
+			* @param uvChannel: the uv channel index to query
+			* @return the name of the vertex attribute
+			*/
 			static const VertexAttributeID GetUVVertexAttr(int uvChannel);
 
 			/**
@@ -42,17 +55,17 @@ namespace nap
 			static const VertexAttributeID GetColorVertexAttr(int colorChannel);
 		};
 
-		using RTTIAttributeList = std::vector<ObjectPtr<VertexAttribute>>;
-
 		// Default constructor
-		Mesh() = default;
+		MeshInstance() = default;
 
-		~Mesh();
+		virtual ~MeshInstance();
 
 		/**
  		 * Load the mesh
  		 */
-		virtual bool init(utility::ErrorState& errorState) override;
+		bool init(utility::ErrorState& errorState);
+
+		bool init(RTTIMeshProperties& meshProperties, utility::ErrorState& errorState);
 
 		/**
 		 * @return the opengl mesh that can be drawn to screen or buffer
@@ -62,55 +75,81 @@ namespace nap
 		template<class T>
 		TypedVertexAttribute<T>& GetOrCreateAttribute(const std::string& id)
 		{
-			for (auto& attribute : mOwnedAttributes)
+			for (auto& attribute : mProperties.mAttributes)
 				if (attribute->mAttributeID == id)
 					return static_cast<TypedVertexAttribute<T>&>(*attribute);
 
 			std::unique_ptr<TypedVertexAttribute<T>> new_attribute = std::make_unique<TypedVertexAttribute<T>>();
 			new_attribute->mAttributeID = id;
+			mProperties.mAttributes.emplace_back(std::move(new_attribute));
 
-			assert(!mID.empty());
-			new_attribute->mID = mID + "_" + id;
-
-			mRTTIAttributes.push_back(ObjectPtr<VertexAttribute>(new_attribute.get()));
-			mOwnedAttributes.emplace_back(std::move(new_attribute));
-
-			return static_cast<TypedVertexAttribute<T>&>(*mOwnedAttributes[mOwnedAttributes.size() - 1]);
+			return static_cast<TypedVertexAttribute<T>&>(*mProperties.mAttributes[mProperties.mAttributes.size() - 1]);
 		}
 
 		void ReserveIndices(size_t numIndices)
 		{
-			mIndices.reserve(numIndices);
+			mProperties.mIndices.reserve(numIndices);
 		}
 
 		void AddIndex(int index)
 		{
-			mIndices.push_back(index);
+			mProperties.mIndices.push_back(index);
 		}
 
 		void setIndices(uint32_t* indices, int numIndices)
 		{
-			mIndices.resize(numIndices);
-			std::memcpy(mIndices.data(), indices, numIndices * sizeof(uint32_t));
+			mProperties.mIndices.resize(numIndices);
+			std::memcpy(mProperties.mIndices.data(), indices, numIndices * sizeof(uint32_t));
 		}
+
+		void setNumVertices(int numVertices)
+		{
+			mProperties.mNumVertices = numVertices;
+		}
+
+		void setDrawMode(opengl::EDrawMode drawMode)
+		{
+			mProperties.mDrawMode = drawMode;
+		}
+
+		opengl::EDrawMode getDrawMode() const { return mProperties.mDrawMode; }
+
+		int getNumVertices() const { return mProperties.mNumVertices; }
 
 		void update();
 
 	protected:
-		void moveFrom(Mesh& mesh);
-
-	public:
-		using OwnedAttributeList = std::vector<std::unique_ptr<VertexAttribute>>;		
-		using IndexList = std::vector<unsigned int>;
-
-		int								mNumVertices;
-		opengl::EDrawMode				mDrawMode;
-		OwnedAttributeList				mOwnedAttributes;
-		RTTIAttributeList				mRTTIAttributes;
-		IndexList						mIndices;
+		void initGPUData();
 
 	private:
-		std::unique_ptr<opengl::GPUMesh>	mGPUMesh;
+		MeshProperties<std::unique_ptr<VertexAttribute>>	mProperties;
+		std::unique_ptr<opengl::GPUMesh>					mGPUMesh;
 	};
+
+	class IMesh : public rtti::RTTIObject
+	{
+		RTTI_ENABLE(rtti::RTTIObject)
+
+	public:
+		virtual MeshInstance& getMeshInstance() = 0;
+		virtual const MeshInstance& getMeshInstance() const = 0;
+	};
+
+	class Mesh : public IMesh
+	{
+		RTTI_ENABLE(IMesh)
+
+	public:
+		virtual bool init(utility::ErrorState& errorState) override;
+
+		virtual MeshInstance& getMeshInstance()				{ return mMeshInstance; }
+		virtual const MeshInstance& getMeshInstance() const	{ return mMeshInstance; }
+
+		RTTIMeshProperties	mProperties;
+
+	private:
+		MeshInstance	mMeshInstance;
+	};
+
 } // nap
 

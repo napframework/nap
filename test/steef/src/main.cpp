@@ -215,8 +215,8 @@ bool init(nap::Core& core)
 	{
 		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
 		
-		assert(false);
-		return false;  
+		assert(false); 
+		return false;   
 	}
 
 	// Extract loaded resources

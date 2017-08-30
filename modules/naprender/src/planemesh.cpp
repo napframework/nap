@@ -54,19 +54,22 @@ namespace nap
 {
 	bool PlaneMesh::init(utility::ErrorState& errorState)
 	{
-		mNumVertices = 4;
-		mDrawMode = opengl::EDrawMode::TRIANGLES;
-		Vec3VertexAttribute& position_attribute	= GetOrCreateAttribute<glm::vec3>(Mesh::VertexAttributeIDs::PositionVertexAttr);
-		Vec3VertexAttribute& normal_attribute		= GetOrCreateAttribute<glm::vec3>(Mesh::VertexAttributeIDs::NormalVertexAttr);
-		Vec3VertexAttribute& uv_attribute			= GetOrCreateAttribute<glm::vec3>(nap::utility::stringFormat("%s%d", Mesh::VertexAttributeIDs::UVVertexAttr.c_str(), 0));
-		Vec4VertexAttribute& color_attribute		= GetOrCreateAttribute<glm::vec4>(nap::utility::stringFormat("%s%d", Mesh::VertexAttributeIDs::ColorVertexAttr.c_str(), 0));
+		mMeshInstance = std::make_unique<MeshInstance>();
 
-		position_attribute.setData(plane_vertices, mNumVertices);
-		normal_attribute.setData(plane_normals, mNumVertices);
-		uv_attribute.setData(plane_uvs, mNumVertices);
-		color_attribute.setData(plane_colors, mNumVertices);
-		setIndices(plane_indices, 6);
+		int numVertices = 4;
+		mMeshInstance->setNumVertices(numVertices);
+		mMeshInstance->setDrawMode(opengl::EDrawMode::TRIANGLES);
+		Vec3VertexAttribute& position_attribute		= mMeshInstance->GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::PositionVertexAttr);
+		Vec3VertexAttribute& normal_attribute		= mMeshInstance->GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::NormalVertexAttr);
+		Vec3VertexAttribute& uv_attribute			= mMeshInstance->GetOrCreateAttribute<glm::vec3>(nap::utility::stringFormat("%s%d", MeshInstance::VertexAttributeIDs::UVVertexAttr.c_str(), 0));
+		Vec4VertexAttribute& color_attribute		= mMeshInstance->GetOrCreateAttribute<glm::vec4>(nap::utility::stringFormat("%s%d", MeshInstance::VertexAttributeIDs::ColorVertexAttr.c_str(), 0));
 
-		return Mesh::init(errorState);
+		position_attribute.setData(plane_vertices, numVertices);
+		normal_attribute.setData(plane_normals, numVertices);
+		uv_attribute.setData(plane_uvs, numVertices);
+		color_attribute.setData(plane_colors, numVertices);
+		mMeshInstance->setIndices(plane_indices, 6);
+
+		return mMeshInstance->init(errorState);
 	}
 };

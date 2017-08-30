@@ -18,7 +18,7 @@ namespace nap
 		float mHeight = 0.0f;
 	};
 
-	class Mesh;
+	class IMesh;
 	class MaterialInstance;
 	class TransformComponentInstance;
 	class TransformComponent;
@@ -48,7 +48,7 @@ namespace nap
 		}
 
 	public:
-		ObjectPtr<Mesh>						mMeshResource;						///< Resource to render
+		ObjectPtr<IMesh>					mMeshResource;						///< Resource to render
 		MaterialInstanceResource			mMaterialInstanceResource;			///< MaterialInstance, which is used to override uniforms for this instance
 		Rect								mClipRect;							///< Clipping rectangle, in pixel coordinates
 	};

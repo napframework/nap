@@ -8,9 +8,9 @@ namespace nap
 	/**
 	 * Predefined sphere mesh
 	 */
-	class NAPAPI SphereMesh : public Mesh
+	class NAPAPI SphereMesh : public IMesh
 	{
-		RTTI_ENABLE(Mesh)
+		RTTI_ENABLE(IMesh)
 
 	public:
 		/**
@@ -18,12 +18,15 @@ namespace nap
  		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-	private:
-		void initSphere();
+		virtual MeshInstance& getMeshInstance() override { return *mMeshInstance; }
+		virtual const MeshInstance& getMeshInstance() const { return *mMeshInstance; }
 
 	public:
 		float mRadius	= 1.0f;		// The radius of the mesh
 		float mRings	= 50.0f;	// The number of rings in the mesh
 		float mSectors	= 50.0f;	// The number of sectors in the mesh
+
+	private:
+		std::unique_ptr<MeshInstance> mMeshInstance;
 	};
 }

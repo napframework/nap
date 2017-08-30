@@ -231,14 +231,14 @@ namespace nap
 		static std::vector<Material::VertexAttributeBinding> bindings;
 		if (bindings.empty())
 		{
-			bindings.push_back({ Mesh::VertexAttributeIDs::PositionVertexAttr, opengl::Shader::VertexAttributeIDs::PositionVertexAttr });
-			bindings.push_back({ Mesh::VertexAttributeIDs::NormalVertexAttr, opengl::Shader::VertexAttributeIDs::NormalVertexAttr });
+			bindings.push_back({ MeshInstance::VertexAttributeIDs::PositionVertexAttr, opengl::Shader::VertexAttributeIDs::PositionVertexAttr });
+			bindings.push_back({ MeshInstance::VertexAttributeIDs::NormalVertexAttr, opengl::Shader::VertexAttributeIDs::NormalVertexAttr });
 
 			const int numChannels = 4;
 			for (int channel = 0; channel != numChannels; ++channel)
 			{
-				bindings.push_back({ Mesh::VertexAttributeIDs::GetColorVertexAttr(channel), opengl::Shader::VertexAttributeIDs::GetColorVertexAttr(channel) });
-				bindings.push_back({ Mesh::VertexAttributeIDs::GetUVVertexAttr(channel), opengl::Shader::VertexAttributeIDs::GetUVVertexAttr(channel) });
+				bindings.push_back({ MeshInstance::VertexAttributeIDs::GetColorVertexAttr(channel), opengl::Shader::VertexAttributeIDs::GetColorVertexAttr(channel) });
+				bindings.push_back({ MeshInstance::VertexAttributeIDs::GetUVVertexAttr(channel), opengl::Shader::VertexAttributeIDs::GetUVVertexAttr(channel) });
 			}
 		}
 		return bindings;

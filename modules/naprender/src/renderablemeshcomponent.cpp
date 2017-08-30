@@ -217,15 +217,17 @@ namespace nap
 			glScissor(mClipRect.mX, mClipRect.mY, mClipRect.mWidth, mClipRect.mHeight);
 		}
 
+		MeshInstance& mesh_instance = mResource->mMeshResource->getMeshInstance();
+
 		// Gather draw info
-		const opengl::GPUMesh& mesh = mResource->mMeshResource->getGPUMesh();
-		GLenum draw_mode = getGLMode(mResource->mMeshResource->mDrawMode);
+		const opengl::GPUMesh& mesh = mesh_instance.getGPUMesh();
+		GLenum draw_mode = getGLMode(mesh_instance.getDrawMode());
 		const opengl::IndexBuffer* index_buffer = mesh.getIndexBuffer();
 
 		// Draw with or without using indices
 		if (index_buffer == nullptr)
 		{
-			glDrawArrays(draw_mode, 0, mResource->mMeshResource->mNumVertices);
+			glDrawArrays(draw_mode, 0, mesh_instance.getNumVertices());
 		}
 		else
 		{

@@ -23,7 +23,7 @@ namespace nap
 		/**
 		 * ctor
 		 */
-		VAOKey(const Material& material, const Mesh& meshResource);
+		VAOKey(const Material& material, const MeshInstance& meshResource);
 
 		/**
 		* Equality operator, for use in maps
@@ -31,7 +31,7 @@ namespace nap
 		bool operator==(const VAOKey& rhs) const	{ return &mMaterial == &rhs.mMaterial && &mMeshResource == &rhs.mMeshResource; }
 
 		const Material&			mMaterial;
-		const Mesh&		mMeshResource;
+		const MeshInstance&		mMeshResource;
 	};
 
 
@@ -81,7 +81,7 @@ namespace std
 		std::size_t operator()(const nap::VAOKey& key) const
 		{
 			std::size_t value1 = std::hash<nap::Material*>{}((nap::Material*)&key.mMaterial);
-			std::size_t value2 = std::hash<nap::Mesh*>{}((nap::Mesh*)&key.mMeshResource);
+			std::size_t value2 = std::hash<nap::MeshInstance*>{}((nap::MeshInstance*)&key.mMeshResource);
 			return value1 ^ value2;
 		}
 	};

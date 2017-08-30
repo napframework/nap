@@ -10,12 +10,11 @@ namespace nap
 {
 	bool MeshFromFile::init(utility::ErrorState& errorState)
 	{
-		std::unique_ptr<Mesh> mesh = loadMesh(mPath, errorState);
-		if (!errorState.check(mesh != nullptr, "Unable to load mesh %s for resource %d", mPath.c_str(), mID.c_str()))
+		std::unique_ptr<MeshInstance> mesh_instance = loadMesh(mPath, errorState);
+		if (!errorState.check(mesh_instance != nullptr, "Unable to load mesh %s for resource %d", mPath.c_str(), mID.c_str()))
 			return false;
 
-		moveFrom(*mesh);
-
+		mMeshInstance = std::move(mesh_instance);
 		return true;
 	}
 }
