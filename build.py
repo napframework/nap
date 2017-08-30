@@ -48,8 +48,6 @@ def installDependenciesLinux():
                'libfreeimage-dev',
                'ffmpeg',
                'libportaudio19-dev',
-               'libvorbis',
-               'flac',
                'libsndfile1-dev'
                ])
 
@@ -63,7 +61,7 @@ def isBrewInstalled():
 
 def installDependenciesOSX():
     d = WORKING_DIR
-    for pack in ['cmake', 'sdl2', 'glew', 'glm', 'assimp', 'tclap', 'ffmpeg', 'portaudio', 'libsndfile']:
+    for pack in ['cmake', 'sdl2', 'glew', 'glm', 'assimp', 'tclap', 'ffmpeg', 'portaudio', 'libvorbis', 'flac', 'libsndfile']:
         try:
             call(d, ['brew', 'install', pack])
         except:
