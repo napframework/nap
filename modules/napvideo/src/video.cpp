@@ -465,7 +465,7 @@ namespace nap
 			if (mFrameQueue.empty() && mFramesFinished)
 			{
 				mPlaying = false;
-				return errorState.check(mErrorString.empty(), mErrorString);
+				return errorState.check(mErrorString.empty(), mErrorString.c_str());
 			}
 
 			std::unique_lock<std::mutex> lock(mFrameQueueMutex);
