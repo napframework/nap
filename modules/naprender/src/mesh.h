@@ -272,7 +272,7 @@ namespace nap
 		/**
 		 * @return MeshInstance as created during init().
 		 */
-		virtual const MeshInstance& getMeshInstance() const	{ return mMeshInstance; }
+		virtual const MeshInstance& getMeshInstance() const	override { return mMeshInstance; }
 
 		/**
 		 * Finds vertex attribute.

@@ -251,7 +251,7 @@ namespace nap
 		// meshes, this can be supported later by adding it. This could be the case if we are doing dynamic geometry based on a binary mesh where we keep the source mesh for reference.
 		std::unique_ptr<MeshInstance> mesh_instance = std::make_unique<MeshInstance>();
 		if (!mesh_instance->init(mesh->mProperties, errorState))
-			return false;
+			return nullptr;
 
 		return std::move(mesh_instance);
 	}

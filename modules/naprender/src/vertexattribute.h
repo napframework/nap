@@ -100,7 +100,7 @@ namespace nap
 		/**
 		 * @return Should return amount of element in the buffer.
 		 */
-		virtual int getNumElements() const { return mData.size(); }
+		virtual int getNumElements() const override { return mData.size(); }
 
 		std::vector<ELEMENTTYPE>	mData;		///< Actual typed data of the attribute
 
