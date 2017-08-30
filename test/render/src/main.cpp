@@ -123,7 +123,10 @@ void onUpdate()
 
 	// Sine wave over our quad
 	for (int index = 0; index != src_positions.size() - 1; ++index)
-		dst_positions[index] = src_positions[index] * sin(elapsed_time + (float)index * 0.2f);
+    {
+        float s = sin(elapsed_time + (float)index * 0.2f);
+        dst_positions[index] = src_positions[index] * glm::vec3(s,s,s);
+    }
 
 	dst_positions.back() = *dst_positions.begin();
 
