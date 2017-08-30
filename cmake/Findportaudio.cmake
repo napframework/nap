@@ -25,7 +25,7 @@ elseif(APPLE)
     set(PORTAUDIO_LIB_DIR /${PORTAUDIO_DIR}/xcode)
     set(PORTAUDIO_LIBRARIES ${PORTAUDIO_LIB_DIR}/libportaudio.a)
 
-elseif(UNIX)
+else()
     set(PORTAUDIO_LIB_DIR  ${PORTAUDIO_DIR}/linux)
     set(PORTAUDIO_LIBRARIES ${PORTAUDIO_LIB_DIR}/libportaudio.a)
 

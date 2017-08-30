@@ -22,7 +22,7 @@ elseif(APPLE)
     set(LIBSNDFILE_LIB_DIR ${LIBSNDFILE_DIR}/xcode)
     set(LIBSNDFILE_LIBRARIES ${LIBSNDFILE_LIB_DIR}/libsndfile.a)
 
-elseif(UNIX)
+else()
     set(LIBSNDFILE_LIB_DIR ${LIBSNDFILE_DIR}/linux)
     set(LIBSNDFILE_LIBRARIES ${LIBSNDFILE_LIB_DIR}/libsndfile.a)
 
