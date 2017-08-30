@@ -25,7 +25,9 @@ namespace nap
 	{
 		RTTI_ENABLE(VertexAttribute)
 	public:
-		const std::vector<ELEMENTTYPE>& getData() const { return mData;  }
+		const std::vector<ELEMENTTYPE>& getValues() const { return mData;  }
+
+		std::vector<ELEMENTTYPE>& getValues() { return mData; }
 
 		void reserve(size_t numElements)
 		{

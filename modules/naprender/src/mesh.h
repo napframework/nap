@@ -35,24 +35,22 @@ namespace nap
 		*/
 		struct VertexAttributeIDs
 		{
-			static const VertexAttributeID PositionVertexAttr;	//< Default position vertex attribute name
-			static const VertexAttributeID NormalVertexAttr;	//< Default normal vertex attribute name
-			static const VertexAttributeID UVVertexAttr;		//< Default uv vertex attribute name
-			static const VertexAttributeID ColorVertexAttr;		//< Default color vertex attribute name
+			static const NAPAPI VertexAttributeID GetPositionVertexAttr();	//< Default position vertex attribute name
+			static const NAPAPI VertexAttributeID GetNormalVertexAttr();	//< Default normal vertex attribute name
 
 			/**
 			* Returns the name of the vertex uv attribute based on the queried uv channel
 			* @param uvChannel: the uv channel index to query
 			* @return the name of the vertex attribute
 			*/
-			static const VertexAttributeID GetUVVertexAttr(int uvChannel);
+			static const NAPAPI VertexAttributeID GetUVVertexAttr(int uvChannel);
 
 			/**
 			*	Returns the name of the vertex color attribute based on the queried uv channel
 			* @param colorChannel: the color channel index to query
 			* @return the name of the color vertex attribute
 			*/
-			static const VertexAttributeID GetColorVertexAttr(int colorChannel);
+			static const NAPAPI VertexAttributeID GetColorVertexAttr(int colorChannel);
 		};
 
 		// Default constructor
@@ -72,18 +70,37 @@ namespace nap
 		 */
 		opengl::GPUMesh& getGPUMesh() const;
 
-		template<class T>
-		TypedVertexAttribute<T>& GetOrCreateAttribute(const std::string& id)
+		template<typename T>
+		TypedVertexAttribute<T>* FindAttribute(const std::string& id)
 		{
 			for (auto& attribute : mProperties.mAttributes)
 				if (attribute->mAttributeID == id)
-					return static_cast<TypedVertexAttribute<T>&>(*attribute);
+					return static_cast<TypedVertexAttribute<T>*>(attribute.get());
 
-			std::unique_ptr<TypedVertexAttribute<T>> new_attribute = std::make_unique<TypedVertexAttribute<T>>();
-			new_attribute->mAttributeID = id;
-			mProperties.mAttributes.emplace_back(std::move(new_attribute));
+			return nullptr;
+		}
 
-			return static_cast<TypedVertexAttribute<T>&>(*mProperties.mAttributes[mProperties.mAttributes.size() - 1]);
+		template<typename T>
+		TypedVertexAttribute<T>& GetAttribute(const std::string& id)
+		{
+			TypedVertexAttribute<T>* attribute = FindAttribute<T>(id);
+			assert(attribute != nullptr);
+			return *attribute;
+		}
+
+		template<typename T>
+		TypedVertexAttribute<T>& GetOrCreateAttribute(const std::string& id)
+		{
+			TypedVertexAttribute<T>* attribute = FindAttribute<T>(id);
+			if (attribute == nullptr)
+			{
+				std::unique_ptr<TypedVertexAttribute<T>> new_attribute = std::make_unique<TypedVertexAttribute<T>>();
+				new_attribute->mAttributeID = id;
+				attribute = new_attribute.get();
+				mProperties.mAttributes.emplace_back(std::move(new_attribute));
+			}
+
+			return *attribute;
 		}
 
 		void ReserveIndices(size_t numIndices)
@@ -144,6 +161,24 @@ namespace nap
 
 		virtual MeshInstance& getMeshInstance()				{ return mMeshInstance; }
 		virtual const MeshInstance& getMeshInstance() const	{ return mMeshInstance; }
+
+		template<typename T>
+		const TypedVertexAttribute<T>* FindAttribute(const std::string& id) const
+		{
+			for (auto& attribute : mProperties.mAttributes)
+				if (attribute->mAttributeID == id)
+					return static_cast<TypedVertexAttribute<T>*>(attribute.get());
+
+			return nullptr;
+		}
+
+		template<typename T>
+		const TypedVertexAttribute<T>& GetAttribute(const std::string& id) const
+		{
+			const TypedVertexAttribute<T>* attribute = FindAttribute<T>(id);
+			assert(attribute != nullptr);
+			return *attribute;
+		}
 
 		RTTIMeshProperties	mProperties;
 

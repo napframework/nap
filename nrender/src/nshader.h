@@ -25,24 +25,10 @@ namespace opengl
 		*/
 		struct VertexAttributeIDs
 		{
-			static const VertexAttributeID PositionVertexAttr;
-			static const VertexAttributeID NormalVertexAttr;
-			static const VertexAttributeID UVVertexAttr;
-			static const VertexAttributeID ColorVertexAttr;
-
-			static const VertexAttributeID GetUVVertexAttr(int uvChannel)
-			{
-				std::ostringstream stream;
-				stream << UVVertexAttr << uvChannel;
-				return stream.str();
-			}
-
-			static const VertexAttributeID GetColorVertexAttr(int colorChannel)
-			{
-				std::ostringstream stream;
-				stream << ColorVertexAttr << colorChannel;
-				return stream.str();
-			}
+			static const VertexAttributeID GetPositionVertexAttr();
+			static const VertexAttributeID GetNormalVertexAttr();
+			static const VertexAttributeID GetUVVertexAttr(int uvChannel);
+			static const VertexAttributeID GetColorVertexAttr(int colorChannel);
 		};
 
 

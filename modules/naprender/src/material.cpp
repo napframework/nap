@@ -231,8 +231,8 @@ namespace nap
 		static std::vector<Material::VertexAttributeBinding> bindings;
 		if (bindings.empty())
 		{
-			bindings.push_back({ MeshInstance::VertexAttributeIDs::PositionVertexAttr, opengl::Shader::VertexAttributeIDs::PositionVertexAttr });
-			bindings.push_back({ MeshInstance::VertexAttributeIDs::NormalVertexAttr, opengl::Shader::VertexAttributeIDs::NormalVertexAttr });
+			bindings.push_back({ MeshInstance::VertexAttributeIDs::GetPositionVertexAttr(), opengl::Shader::VertexAttributeIDs::GetPositionVertexAttr() });
+			bindings.push_back({ MeshInstance::VertexAttributeIDs::GetNormalVertexAttr(), opengl::Shader::VertexAttributeIDs::GetNormalVertexAttr() });
 
 			const int numChannels = 4;
 			for (int channel = 0; channel != numChannels; ++channel)

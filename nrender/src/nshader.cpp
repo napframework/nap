@@ -37,10 +37,22 @@ static string textFileRead(const std::string& fileName)
 
 namespace opengl
 {
-	const Shader::VertexAttributeID Shader::VertexAttributeIDs::PositionVertexAttr("in_Position");
-	const Shader::VertexAttributeID Shader::VertexAttributeIDs::NormalVertexAttr("in_Normal");
-	const Shader::VertexAttributeID Shader::VertexAttributeIDs::UVVertexAttr("in_UV");
-	const Shader::VertexAttributeID Shader::VertexAttributeIDs::ColorVertexAttr("in_Color");
+	const Shader::VertexAttributeID Shader::VertexAttributeIDs::GetPositionVertexAttr() { return "in_Position"; }
+	const Shader::VertexAttributeID Shader::VertexAttributeIDs::GetNormalVertexAttr()	{ return "in_Normal"; }
+
+	const Shader::VertexAttributeID Shader::VertexAttributeIDs::GetUVVertexAttr(int uvChannel)
+	{
+		std::ostringstream stream;
+		stream << "in_UV" << uvChannel;
+		return stream.str();
+	}
+
+	const Shader::VertexAttributeID Shader::VertexAttributeIDs::GetColorVertexAttr(int colorChannel)
+	{
+		std::ostringstream stream;
+		stream << "in_Color" << colorChannel;
+		return stream.str();
+	}
 
 
 	/**

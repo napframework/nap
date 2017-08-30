@@ -86,10 +86,10 @@ namespace nap
 
 		mMeshInstance->setNumVertices(vertex_count);
 		mMeshInstance->setDrawMode(opengl::EDrawMode::TRIANGLES);
-		nap::Vec3VertexAttribute& position_attribute = mMeshInstance->GetOrCreateAttribute<glm::vec3>(nap::MeshInstance::VertexAttributeIDs::PositionVertexAttr);
-		nap::Vec3VertexAttribute& normal_attribute = mMeshInstance->GetOrCreateAttribute<glm::vec3>(nap::MeshInstance::VertexAttributeIDs::NormalVertexAttr);
-		nap::Vec3VertexAttribute& uv_attribute = mMeshInstance->GetOrCreateAttribute<glm::vec3>(nap::utility::stringFormat("%s%d", nap::MeshInstance::VertexAttributeIDs::UVVertexAttr.c_str(), 0));
-		nap::Vec4VertexAttribute& color_attribute = mMeshInstance->GetOrCreateAttribute<glm::vec4>(nap::utility::stringFormat("%s%d", nap::MeshInstance::VertexAttributeIDs::ColorVertexAttr.c_str(), 0));
+		nap::Vec3VertexAttribute& position_attribute	= mMeshInstance->GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionVertexAttr());
+		nap::Vec3VertexAttribute& normal_attribute		= mMeshInstance->GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetNormalVertexAttr());
+		nap::Vec3VertexAttribute& uv_attribute			= mMeshInstance->GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetUVVertexAttr(0));
+		nap::Vec4VertexAttribute& color_attribute		= mMeshInstance->GetOrCreateAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorVertexAttr(0));
 
 		position_attribute.setData(vertices.data(), vertex_count);
 		normal_attribute.setData(normals.data(), vertex_count);

@@ -31,6 +31,7 @@ namespace nap
 	{
 		RTTI_ENABLE(RenderableComponentResource)
 
+	public:
 		/**
 		 * RenderableMesh uses transform to position itself in the world.
 		 */
@@ -46,6 +47,8 @@ namespace nap
 		{
 			return RTTI_OF(RenderableMeshComponentInstance);
 		}
+
+		IMesh& getMeshResource() { return *mMeshResource; }
 
 	public:
 		ObjectPtr<IMesh>					mMeshResource;						///< Resource to render
@@ -82,6 +85,10 @@ namespace nap
 		 */
 		MaterialInstance& getMaterialInstance();
 
+		IMesh& getMesh() { return mResource->getMeshResource(); }
+
+		MeshInstance& getMeshInstance() { return mResource->getMeshResource().getMeshInstance(); }
+
 		/**
 		 * Toggles visibility.
 		 */
@@ -98,8 +105,8 @@ namespace nap
 		void setBlendMode();
 
 	private:
-		ObjectPtr<RenderableMeshComponent>	mResource;				// Pointer to resource of this instance
-		TransformComponentInstance*							mTransformComponent;	// Cached pointer to transform
+		ObjectPtr<RenderableMeshComponent>			mResource;				// Pointer to resource of this instance
+		TransformComponentInstance*					mTransformComponent;	// Cached pointer to transform
 		std::unique_ptr<VAOHandle>					mVAOHandle;				// Handle to Vertex Array Object
 		MaterialInstance							mMaterialInstance;		// MaterialInstance
 		bool										mVisible = true;		// Whether this instance is visible or not

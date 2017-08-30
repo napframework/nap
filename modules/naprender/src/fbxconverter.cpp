@@ -129,7 +129,7 @@ namespace nap
 			std::vector<std::unique_ptr<VertexAttribute>> vertex_attribute_storage;
 
 			// Copy vertex data			
-			TypedVertexAttribute<glm::vec3>& position_attribute = CreateAttribute<glm::vec3>(mesh_data, MeshInstance::VertexAttributeIDs::PositionVertexAttr, vertex_attribute_storage);
+			TypedVertexAttribute<glm::vec3>& position_attribute = CreateAttribute<glm::vec3>(mesh_data, MeshInstance::VertexAttributeIDs::GetPositionVertexAttr(), vertex_attribute_storage);
 			position_attribute.reserve(fbx_mesh->mNumVertices);
 			for (unsigned int vertex = 0; vertex < fbx_mesh->mNumVertices; vertex++)
 			{
@@ -140,7 +140,7 @@ namespace nap
 			// Copy normals
 			if (fbx_mesh->HasNormals())
 			{
-				TypedVertexAttribute<glm::vec3>& normal_attribute = CreateAttribute<glm::vec3>(mesh_data, MeshInstance::VertexAttributeIDs::NormalVertexAttr, vertex_attribute_storage);
+				TypedVertexAttribute<glm::vec3>& normal_attribute = CreateAttribute<glm::vec3>(mesh_data, MeshInstance::VertexAttributeIDs::GetNormalVertexAttr(), vertex_attribute_storage);
 				normal_attribute.reserve(fbx_mesh->mNumVertices);
 				for (unsigned int vertex = 0; vertex < fbx_mesh->mNumVertices; vertex++)
 				{
