@@ -67,6 +67,7 @@ add_subdirectory(test/steef)
 add_subdirectory(test/videoplayer)
 add_subdirectory(test/serializationtest)
 add_subdirectory(test/etherdream)
+add_subdirectory(test/artnet)
 
 if (APPLE)
     set(GENERATE_XCODE_PROJECT_TARGET generateXcodeProject)
@@ -84,6 +85,8 @@ add_subdirectory(modules/napscene)
 add_subdirectory(modules/nappython)
 add_subdirectory(modules/napvideo)
 add_subdirectory(modules/napetherdream)
+add_subdirectory(modules/napartnet)
+add_subdirectory(modules/naposc)
 
 # Exe dependencies
 add_dependencies(rendertest mod_naprender)

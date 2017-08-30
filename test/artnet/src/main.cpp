@@ -1,16 +1,4 @@
-// firstSDLapp.cpp : Defines the entry point for the console application.
-//
-
-// Local Includes
-#include "RenderableMeshComponent.h"
-#include "lasershapes.h"
-
-// GLM
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>  
-#include <glm/ext.hpp>
-#include <glm/matrix.hpp>
-#include <glm/gtx/transform.hpp>
+#include <nap/configure.h>
 
 // Mod nap render includes
 #include <renderservice.h>
@@ -22,8 +10,6 @@
 // Nap includes
 #include <nap/core.h>
 #include <nap/resourcemanager.h>
-#include <etherdreamservice.h>
-#include <oscservice.h>
 #include <sdlinput.h>
 #include <sdlwindow.h>
 #include <inputservice.h>
@@ -31,29 +17,25 @@
 #include <mousebutton.h>
 #include <sceneservice.h>
 #include <nap/logger.h>
-#include <etherdreamdac.h>
+#include <artnetservice.h>
+#include <nap/event.h>
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
 //////////////////////////////////////////////////////////////////////////
 
-// Nap Objects
-nap::RenderService* renderService = nullptr;
-nap::ResourceManagerService* resourceManagerService = nullptr;
-nap::InputService* inputService = nullptr;
-nap::SceneService* sceneService = nullptr;
-nap::EtherDreamService* laserService = nullptr;
-nap::OSCService* oscService = nullptr;
+// Nap Services
+nap::RenderService*				renderService = nullptr;
+nap::ResourceManagerService*	resourceManagerService = nullptr;
+nap::InputService*				inputService = nullptr;
+nap::SceneService*				sceneService = nullptr;
+nap::ArtnetService*				artnetService = nullptr;
 
 // Holds all render windows
 std::vector<nap::ObjectPtr<nap::RenderWindow>> renderWindows;
 
 // Main camera
 nap::ObjectPtr<nap::EntityInstance> cameraEntity = nullptr;
-
-// Laser DAC
-nap::ObjectPtr<nap::EtherDreamDac> laser_one = nullptr;
-nap::ObjectPtr<nap::EntityInstance> laserEntity = nullptr;
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -94,6 +76,7 @@ void onRender()
 	backbuffer.setClearColor(glm::vec4(0.0705f, 0.49f, 0.5647f, 1.0f));
 	renderService->clearRenderTarget(backbuffer, opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH | opengl::EClearFlags::STENCIL);
 
+	// Swap backbuffer
 	renderWindows[0]->swap();
 }
 
@@ -132,26 +115,18 @@ bool init(nap::Core& core)
 	// Create scene service
 	sceneService = core.getOrCreateService<nap::SceneService>();
 
-	// Create etherdream service
-	laserService = core.getOrCreateService<nap::EtherDreamService>();
-	if (!laserService->init(errorState))
+	// Create artnet service
+	artnetService = core.getOrCreateService<nap::ArtnetService>();
+	if (!artnetService->init(errorState))
 	{
-		nap::Logger::fatal("unable to create laser service: %s", errorState.toString().c_str());
-		return false;
-	}
-
-	// Create osc service
-	oscService = core.getOrCreateService<nap::OSCService>();
-	if (!oscService->init(errorState))
-	{
-		nap::Logger::fatal("unable to create osc service: %s", errorState.toString().c_str());
+		nap::Logger::fatal(errorState.toString());
 		return false;
 	}
 
 	// Load scene
-	if (!resourceManagerService->loadFile("data/etherdream/etherdream.json", errorState))
+	if (!resourceManagerService->loadFile("data/artnet/artnet.json", errorState))
 	{
-		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
+		nap::Logger::fatal("Unable to de-serialize resources: \n %s", errorState.toString().c_str());
 		return false;        
 	} 
 	
@@ -162,10 +137,6 @@ bool init(nap::Core& core)
 	// Store all render windows
 	renderWindows.push_back(resourceManagerService->findObject<nap::RenderWindow>("Window"));
 
-	// Store laser dacs
-	laser_one = resourceManagerService->findObject<nap::EtherDreamDac>("Laser1");
-	laserEntity = resourceManagerService->findEntity("LaserEntity1");
-
 	// Set render states
 	nap::RenderState& render_state = renderService->getRenderState();
 	render_state.mEnableMultiSampling = true;
@@ -175,6 +146,7 @@ bool init(nap::Core& core)
 
 	return true;
 }
+
 
 // Main loop
 int main(int argc, char *argv[])
