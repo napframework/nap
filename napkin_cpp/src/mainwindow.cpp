@@ -5,11 +5,14 @@
 void MainWindow::bindSignals() {
     connect(&AppContext::get(), &AppContext::fileOpened, this, &MainWindow::onFileOpened);
     connect(&AppContext::get(), &AppContext::fileSaved, this, &MainWindow::onFileSaved);
+
+    connect(&mOutlinePanel, &OutlinePanel::selectionChanged, &mInspectorPanel, &InspectorPanel::setObjects);
 }
 
 void MainWindow::addDocks() {
-    addDock("Outline", &outlinePanel);
-    addDock("Types", &hierarchyPanel);
+    addDock("Outline", &mOutlinePanel);
+    addDock("Types", &mHierarchyPanel);
+    addDock("Inspector", &mInspectorPanel);
 }
 
 void MainWindow::addMenu() {

@@ -5,6 +5,7 @@
 #include "actions.h"
 #include "hierarchypanel.h"
 #include "appcontext.h"
+#include "proppanel.h"
 
 class MainWindow : public BaseWindow {
     Q_OBJECT
@@ -30,7 +31,8 @@ private:
     void updateWindowTitle();
 
 private:
-    OutlinePanel outlinePanel;
-    HierarchyPanel hierarchyPanel;
+    OutlinePanel mOutlinePanel;
+    HierarchyPanel mHierarchyPanel;
+    InspectorPanel mInspectorPanel;
 };
 

@@ -1,4 +1,6 @@
 #include "outlinepanel.h"
+#include "napgeneric.h"
+
 
 ObjectItem::ObjectItem(nap::rtti::RTTIObject& rttiObject) : mObject(rttiObject) {
     refresh();
@@ -12,19 +14,9 @@ const QString ObjectItem::name() const {
     return QString::fromStdString(mObject.mID);
 }
 
-ObjectTypeItem::ObjectTypeItem(nap::rtti::RTTIObject& o) : mObject(o) {
-    setEditable(false);
-    setText(name());
-}
-
-const QString ObjectTypeItem::name() const {
-    return QString(mObject.get_type().get_name().data());
-}
-
 
 OutlineModel::OutlineModel() {
     setHorizontalHeaderLabels({"Name", "Type"});
-
 }
 
 
@@ -41,7 +33,7 @@ void OutlineModel::refresh() {
     // The loaded list has no structure, build it here.
     for (auto& ob : AppContext::get().loadedObjects()) {
 
-        auto typeItem = new ObjectTypeItem(*ob);
+        auto typeItem = new TypeItem(ob->get_type());
         if (ob.get()->get_type().is_derived_from<nap::Entity>()) {
             // Grab entities and stuff them in a group
             auto& e = static_cast<nap::Entity&>(*ob);
@@ -50,7 +42,7 @@ void OutlineModel::refresh() {
 
             for (auto& comp : e.mComponents) {
                 auto compItem = new ComponentItem(*comp);
-                auto compTypeItem = new ObjectTypeItem(*comp);
+                auto compTypeItem = new TypeItem(comp->get_type());
                 entityItem->appendRow({compItem, compTypeItem});
             }
 
@@ -69,10 +61,25 @@ OutlinePanel::OutlinePanel() {
     mTreeView.tree().setColumnWidth(0, 300);
     mTreeView.tree().setSortingEnabled(true);
     connect(&AppContext::get(), &AppContext::fileOpened, this, &OutlinePanel::onFileOpened);
+    connect(mTreeView.selectionModel(), &QItemSelectionModel::selectionChanged, this,
+            &OutlinePanel::onSelectionChanged);
 
 }
 
 void OutlinePanel::onFileOpened(const QString& filename) {
     mModel.refresh();
     mTreeView.tree().expandAll();
+}
+
+void OutlinePanel::onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected) {
+    // Grab selected nap objects
+    QList<nap::rtti::RTTIObject*> selectedObjects;
+    for (auto m : mTreeView.selectedItems()) {
+        auto item = dynamic_cast<ObjectItem*>(m);
+        if (!item)
+            continue;
+        selectedObjects << &item->object();
+    }
+
+    selectionChanged(selectedObjects);
 }

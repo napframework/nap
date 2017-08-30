@@ -19,6 +19,8 @@ public:
 
     void refresh();
 
+    nap::rtti::RTTIObject& object() const { return mObject; }
+
     virtual const QString name() const;
 
 protected:
@@ -60,12 +62,17 @@ public:
 };
 
 class OutlinePanel : public QWidget {
+    Q_OBJECT
 public:
     OutlinePanel();
 
+signals:
+    void selectionChanged(QList<nap::rtti::RTTIObject*>& obj);
+
 private:
     void onFileOpened(const QString& filename);
-
+    void onSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
+private:
     QVBoxLayout mLayout;
     OutlineModel mModel;
     FilterTreeView mTreeView;
