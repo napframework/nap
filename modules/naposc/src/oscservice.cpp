@@ -14,38 +14,15 @@
 
 RTTI_DEFINE(nap::OSCService)
 
-static bool verbose = true;
-
-class OscDumpPacketListener : public PacketListener {
-public:
-	virtual void ProcessPacket(const char *data, int size,
-		const IpEndpointName& remoteEndpoint)
-	{
-		(void)remoteEndpoint; // suppress unused parameter warning
-
-		std::cout << osc::ReceivedPacket(data, size);
-	}
-};
-
-
 namespace nap
 {
 	OSCService::~OSCService()
 	{
-
 	}
 
 
 	bool OSCService::init(nap::utility::ErrorState& errorState)
 	{
-		int port = 7000;
-
-		OscDumpPacketListener listener;
-		UdpListeningReceiveSocket s
-		(
-			IpEndpointName(IpEndpointName::ANY_ADDRESS, port),
-			&listener
-		);
 		return true;
 	}
 }

@@ -7,9 +7,7 @@
 namespace nap
 {
 	/**
-	 * Main interface for rendering to various Etherdream Dacs
-	 * The service is responsible for opening / closing the general Etherdream library
-	 * and allows for rendering data to the available dacs
+	 * Main interface for OSC messages in NAP
 	 */
 	class NAPAPI OSCService : public Service
 	{
