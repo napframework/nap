@@ -23,6 +23,7 @@
 #include <nap/core.h>
 #include <nap/resourcemanager.h>
 #include <etherdreamservice.h>
+#include <oscservice.h>
 #include <sdlinput.h>
 #include <sdlwindow.h>
 #include <inputservice.h>
@@ -42,6 +43,7 @@ nap::ResourceManagerService* resourceManagerService = nullptr;
 nap::InputService* inputService = nullptr;
 nap::SceneService* sceneService = nullptr;
 nap::EtherDreamService* laserService = nullptr;
+nap::OSCService* oscService = nullptr;
 
 // Holds all render windows
 std::vector<nap::ObjectPtr<nap::RenderWindow>> renderWindows;
@@ -132,7 +134,19 @@ bool init(nap::Core& core)
 
 	// Create etherdream service
 	laserService = core.getOrCreateService<nap::EtherDreamService>();
-	laserService->init(errorState);
+	if (!laserService->init(errorState))
+	{
+		nap::Logger::fatal("unable to create laser service: %s", errorState.toString().c_str());
+		return false;
+	}
+
+	// Create osc service
+	oscService = core.getOrCreateService<nap::OSCService>();
+	if (!oscService->init(errorState))
+	{
+		nap::Logger::fatal("unable to create osc service: %s", errorState.toString().c_str());
+		return false;
+	}
 
 	// Load scene
 	if (!resourceManagerService->loadFile("data/etherdream/etherdream.json", errorState))
