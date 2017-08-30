@@ -105,7 +105,7 @@ def main(targets):
     build_targets = targets
 
     # add targets here
-    # build_targets.append("hello")
+    build_targets.append("mod_napaudio")
 
     for t in targets:
         # osc / linux
