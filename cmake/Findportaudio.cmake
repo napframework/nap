@@ -22,7 +22,7 @@ if(WIN32)
     set(PORTAUDIO_LIBRARIES ${PORTAUDIO_LIB_DIR}/portaudio_x64.lib)
 
 elseif(APPLE)
-    set(PORTAUDIO_LIB_DIR /usr/local/lib)
+    set(PORTAUDIO_LIB_DIR /${PORTAUDIO_DIR}/xcode)
     set(PORTAUDIO_LIBRARIES ${PORTAUDIO_LIB_DIR}/libportaudio.a)
 
 elseif(UNIX)
