@@ -46,9 +46,7 @@ def installDependenciesLinux():
                'libglm-dev',
                'libtclap-dev',
                'libfreeimage-dev',
-               'ffmpeg',
-               'libportaudio19-dev',
-               'libsndfile1-dev'
+               'ffmpeg'
                ])
 
 
