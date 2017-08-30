@@ -18,6 +18,8 @@ if(WIN32)
     set(LIBSNDFILE_LIB_DIR ${LIBSNDFILE_DIR}/msvc64)
     set(LIBSNDFILE_LIBRARIES ${LIBSNDFILE_LIB_DIR}/libsndfile-1.lib)
 
+    set(LIBSNDFILE_INCLUDE_DIR ${LIBSNDFILE_DIR}/src)
+
     include(FindPackageHandleStandardArgs)
     # handle the QUIETLY and REQUIRED arguments and set LIBSNDFILE_FOUND to TRUE
     # if all listed variables are TRUE
