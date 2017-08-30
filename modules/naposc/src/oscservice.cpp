@@ -46,8 +46,6 @@ namespace nap
 			IpEndpointName(IpEndpointName::ANY_ADDRESS, port),
 			&listener
 		);
-
-		std::cout << "listening for input on port " << port << "...\n";
-		return 0;
+		return true;
 	}
 }
