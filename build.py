@@ -2,6 +2,8 @@ import os
 import subprocess
 from multiprocessing import cpu_count
 from sys import platform
+import sys
+import shutil
 
 WORKING_DIR = '.'
 
@@ -11,6 +13,7 @@ THIRDPARTY_URL = 'https://ae53bb936bc44bbffbac2dbd1f37101838603903@github.com/na
 NAP_URL = 'https://ae53bb936bc44bbffbac2dbd1f37101838603903@github.com/naivisoftware/nap.git'
 NAP_BRANCH = 'build'
 BUILD_DIR = 'build'
+CLEAN_BUILD = False
 
 
 def isLocalGitRepo(d):
@@ -43,7 +46,8 @@ def installDependenciesLinux():
                'libglm-dev',
                'libtclap-dev',
                'libfreeimage-dev',
-               'portaudio19-dev',
+               'ffmpeg',
+               'libportaudio19-dev',
                'libsndfile1-dev'
                ])
 
@@ -57,7 +61,7 @@ def isBrewInstalled():
 
 def installDependenciesOSX():
     d = WORKING_DIR
-    for pack in ['cmake', 'sdl2', 'glew', 'glm', 'assimp', 'tclap', 'portaudio', 'libsndfile']:
+    for pack in ['cmake', 'sdl2', 'glew', 'glm', 'assimp', 'tclap', 'ffmpeg', 'portaudio', 'libsndfile']:
         try:
             call(d, ['brew', 'install', pack])
         except:
@@ -75,37 +79,77 @@ def installDependencies():
         pass
 
 
-def gitPull():
-    print('Updating repo')
-    d = WORKING_DIR
-    call(d, ['git', 'pull', NAP_URL])
-
-
-def main():
+def main(targets):
     # install osx / linux specific dependendies
     installDependencies()
 
-    # build all targets
-    print('BUILD TARGETS')
-    targets = ['napcore', 'mod_napetherdream','serializationtest', 'mod_napaudio', 'audiotest']
+    # generate solutions
     if platform in ["linux", "linux2", "darwin"]:
         call(WORKING_DIR, ['cmake', '-H.', '-B%s' % BUILD_DIR])
     else:
         bd = '%s/%s' % (WORKING_DIR, BUILD_DIR)
-        if os.path.exists(bd):
-            os.unlink(bd)
+        
+        # clear build directory when a clean build is required
+        print(CLEAN_BUILD)
+        if CLEAN_BUILD and os.path.exists(bd):
+            shutil.rmtree(bd)
+
+        # create dir if it doesn't exist
         if not os.path.exists(bd):
             os.makedirs(bd)
-        call(bd, ['cmake', '-G', 'Visual Studio 14 2015 Win64', '..'])
+
+        # generate prject
+        call(WORKING_DIR, ['cmake', '-H.','-B%s' % BUILD_DIR,'-G', 'Visual Studio 14 2015 Win64', '-DPYBIND11_PYTHON_VERSION=3.5'])
+
+    #copy targets
+    build_targets = targets
+
+    # add targets here
+    # build_targets.append("hello")
 
     for t in targets:
+        # osc / linux
         if platform in ["linux", "linux2", "darwin"]:
             d = '%s/%s' % (WORKING_DIR, BUILD_DIR)
             call(d, ['make', t, '-j%s' % cpu_count()])
+        # windows
         else:
             d = WORKING_DIR
             call(d, ['cmake', '--build', BUILD_DIR, '--target', t])
 
 
+# Extracts all targets from the command line input arguments, syntax is: target:project, ie: target:napcore
+def extractTargets():
+    targets = []
+    for arg in sys.argv:
+        # if the argument clean has been given, perform a clean build
+        if arg == "clean":
+            print("performing clean build")
+            global CLEAN_BUILD
+            CLEAN_BUILD = True
+            continue
+
+        # not a target
+        if not "target" in arg:
+            continue
+
+        # try to split
+        result = str.split(arg, ':')
+        if len(result) == 1:
+            print("invalid target: %s, can't be split using delimiter ':'" % arg)
+            continue
+        
+        # add
+        print("adding build target: %s" % result[1])
+        targets.append(result[1])
+    return targets
+
+
+# main run
 if __name__ == '__main__':
-    main()
+
+    # extract command line targets
+    targets = extractTargets()
+
+    # run main
+    main(targets)
