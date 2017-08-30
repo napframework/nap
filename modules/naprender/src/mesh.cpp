@@ -29,6 +29,7 @@ namespace nap
 		return stream.str();
 	}
 
+
 	const MeshInstance::VertexAttributeID MeshInstance::VertexAttributeIDs::GetColorVertexAttr(int colorChannel)
 	{
 		std::ostringstream stream;
@@ -36,9 +37,11 @@ namespace nap
 		return stream.str();
 	}
 
+
 	MeshInstance::~MeshInstance()
 	{
 	}
+
 
 	// Returns associated mesh
 	opengl::GPUMesh& MeshInstance::getGPUMesh() const
@@ -47,6 +50,8 @@ namespace nap
 		return *mGPUMesh;
 	}
 
+
+	// Creates GPU vertex attributes and updates mesh
 	void MeshInstance::initGPUData()
 	{
 		mGPUMesh = std::make_unique<opengl::GPUMesh>();
@@ -56,11 +61,13 @@ namespace nap
 		update();
 	}
 
+
 	bool MeshInstance::init(utility::ErrorState& errorState)
 	{
 		initGPUData();
 		return true;
 	}
+
 
 	bool MeshInstance::init(RTTIMeshProperties& meshProperties, utility::ErrorState& errorState)
 	{
@@ -80,6 +87,7 @@ namespace nap
 		return true;
 	}
 
+
 	void MeshInstance::update()
 	{
 		for (auto& mesh_attribute : mProperties.mAttributes)
@@ -91,6 +99,7 @@ namespace nap
 		if (!mProperties.mIndices.empty())
 			mGPUMesh->getOrCreateIndexBuffer().setData(mProperties.mIndices);
 	}
+
 
 	bool Mesh::init(utility::ErrorState& errorState)
 	{
