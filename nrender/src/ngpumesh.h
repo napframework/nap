@@ -6,13 +6,11 @@
 
 // External Includes
 #include <memory>
-#include <vector>
 
 namespace opengl
 {
 	/**
-	 * Defines a polygonal mesh
-	 * Every mesh has a number of vertex attributes that are identified through an ID.
+	 * Defines the GPU data of a polygonal mesh
 	 */
 	class GPUMesh
 	{
@@ -48,19 +46,20 @@ namespace opengl
 		const VertexAttributeBuffer& getVertexAttributeBuffer(const VertexAttributeID& id) const;
 
 		/**
-		* @return The indexbuffer if one is created, otherwise null.
+		 * Creates an index buffer is one does not exist, otherwise returns the existing buffer.
+		* @return A valid index buffer.
 		*/
 		IndexBuffer& getOrCreateIndexBuffer();
 
 		/**
-		* @return The indexbuffer if one is created, otherwise null.
+		* @return The indexbuffer if one is created, if no index buffer exists, null is returned.
 		*/
 		const IndexBuffer* getIndexBuffer() const;
 
 	private:
 
 		using AttributeMap = std::unordered_map<VertexAttributeID, std::unique_ptr<VertexAttributeBuffer>>;
-		AttributeMap					mAttributes;
-		std::unique_ptr<IndexBuffer>	mIndexBuffer;
+		AttributeMap					mAttributes;		///< Map from vertex attribute ID to buffer
+		std::unique_ptr<IndexBuffer>	mIndexBuffer;		///< Index buffer
 	};
 } // opengl

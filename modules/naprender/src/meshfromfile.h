@@ -4,6 +4,10 @@
 
 namespace nap
 {
+	/**
+	 * Represent a mesh that is loaded from a binary file. 
+	 * A MeshInstance is loaded from binary file that is stored internally.
+	 */
 	class NAPAPI MeshFromFile : public IMesh
 	{
 		RTTI_ENABLE(IMesh)
@@ -14,7 +18,14 @@ namespace nap
  		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
+		/**
+		 * @return MeshInstance as created during init().
+		 */
 		virtual MeshInstance& getMeshInstance() { return *mMeshInstance; }
+
+		/**
+		 * @return MeshInstance as created during init().
+		 */
 		virtual const MeshInstance& getMeshInstance() const { return *mMeshInstance; }
 
 		std::string		mPath;

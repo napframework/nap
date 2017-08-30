@@ -47,7 +47,9 @@ namespace nap
 		{
 			return RTTI_OF(RenderableMeshComponentInstance);
 		}
-
+		/**
+		 * @return Mesh resource.
+		 */
 		IMesh& getMeshResource() { return *mMeshResource; }
 
 	public:
@@ -85,8 +87,14 @@ namespace nap
 		 */
 		MaterialInstance& getMaterialInstance();
 
+		/**
+		 * @return MeshResource for the RenderableMeshComponent.
+		 */
 		IMesh& getMesh() { return mResource->getMeshResource(); }
 
+		/**
+		 * @return MeshInstance for the RenderableMeshComponent's Mesh.
+		 */
 		MeshInstance& getMeshInstance() { return mResource->getMeshResource().getMeshInstance(); }
 
 		/**

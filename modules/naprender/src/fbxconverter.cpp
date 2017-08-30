@@ -24,6 +24,7 @@
 
 namespace nap
 {
+	// Resolves all links in @objects.
 	static bool resolveLinks(const rtti::OwnedObjectList& objects, const rtti::UnresolvedPointerList& unresolvedPointers)
 	{
 		using ObjectsByIDMap = std::unordered_map<std::string, rtti::RTTIObject*>;
@@ -49,6 +50,10 @@ namespace nap
 	}
 
 
+	/**
+	 * Creates a vertex attribute in the Mesh. Because the Mesh is used ObjectPtrs to refer to attributes, a storage object is used that
+	 * has ownership over the objects. The storage object should live at least as long than the Mesh.
+	 */
 	template<class T>
 	static TypedVertexAttribute<T>& CreateAttribute(Mesh& mesh, const std::string& id, std::vector<std::unique_ptr<VertexAttribute>>& storage)
 	{
@@ -239,6 +244,11 @@ namespace nap
 		if (!errorState.check(numMeshes == 1, "Trying to load an invalid mesh file. File %s contains %d meshes, expected 1", meshPath.c_str(), numMeshes))
 			return nullptr;
 
+		// We create the MeshInstance here instead of returning the Mesh object. The reason is that the objects that are read (in this case, Mesh and multiple 
+		// VertexAttribute objects) are owned by the deserialize_result object. Instead of returning the mesh, we create the MeshInstance here. The init()
+		// will clone contents and take ownership of the cloned content. 
+		// The RTTI data in Mesh is lost, which is intentional as we don't need an extra copy of CPU data in memory. If we need to have an option to keep the source CPU data for binary
+		// meshes, this can be supported later by adding it. This could be the case if we are doing dynamic geometry based on a binary mesh where we keep the source mesh for reference.
 		std::unique_ptr<MeshInstance> mesh_instance = std::make_unique<MeshInstance>();
 		if (!mesh_instance->init(mesh->mProperties, errorState))
 			return false;

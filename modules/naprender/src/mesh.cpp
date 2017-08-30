@@ -52,20 +52,19 @@ namespace nap
 
 
 	// Creates GPU vertex attributes and updates mesh
-	void MeshInstance::initGPUData()
+	bool MeshInstance::initGPUData(utility::ErrorState& errorState)
 	{
 		mGPUMesh = std::make_unique<opengl::GPUMesh>();
 		for (auto& mesh_attribute : mProperties.mAttributes)
 			mGPUMesh->addVertexAttribute(mesh_attribute->mAttributeID, mesh_attribute->getType(), mesh_attribute->getNumComponents(), mProperties.mNumVertices, GL_STATIC_DRAW);
 
-		update();
+		return update(errorState);
 	}
 
 
 	bool MeshInstance::init(utility::ErrorState& errorState)
 	{
-		initGPUData();
-		return true;
+		return initGPUData(errorState);
 	}
 
 
@@ -82,14 +81,22 @@ namespace nap
 		mProperties.mDrawMode = meshProperties.mDrawMode;
 		mProperties.mIndices = meshProperties.mIndices;
 
-		initGPUData();
-
-		return true;
+		return initGPUData(errorState);
 	}
 
 
-	void MeshInstance::update()
+	bool MeshInstance::update(utility::ErrorState& errorState)
 	{
+		// Check for mismatches in sizes
+		for (auto& mesh_attribute : mProperties.mAttributes)
+		{
+			if (!errorState.check(mesh_attribute->getNumElements() == mProperties.mNumVertices,
+					"Vertex attribute %s has a different amount of elements (%d) than the mesh (%d)", mesh_attribute->mAttributeID.c_str(), mesh_attribute->getNumElements(), mProperties.mNumVertices))
+			{
+				return false;
+			}
+		}
+
 		for (auto& mesh_attribute : mProperties.mAttributes)
 		{
 			const opengl::VertexAttributeBuffer& vertex_attr_buffer = mGPUMesh->getVertexAttributeBuffer(mesh_attribute->mAttributeID);
@@ -98,6 +105,8 @@ namespace nap
 
 		if (!mProperties.mIndices.empty())
 			mGPUMesh->getOrCreateIndexBuffer().setData(mProperties.mIndices);
+
+		return true;
 	}
 
 

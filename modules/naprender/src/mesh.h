@@ -213,11 +213,14 @@ namespace nap
 		/**
 		 * Uses the CPU mesh data to update the GPU mesh. Note that update() is called during init(),
 		 * so this is only required if CPU data is modified after init().
+		 * If there is a mismatch between vertex buffer, an error will be returned.
+		 * @param errorState Contains error information if an error occurred.
+		 * @return True if succeeded, false on error.		 
 		 */
-		void update();
+		bool update(utility::ErrorState& errorState);
 
 	protected:
-		void initGPUData();
+		bool initGPUData(utility::ErrorState& errorState);
 
 	private:
 		MeshProperties<std::unique_ptr<VertexAttribute>>	mProperties;		///< CPU mesh data

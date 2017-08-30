@@ -8,6 +8,14 @@
 
 namespace opengl
 {
+	VertexAttributeBuffer::VertexAttributeBuffer(GLenum type, unsigned int numComponents, unsigned int numVertices, GLenum usage) :
+		mType(type),
+		mNumComponents(numComponents),
+		mNumVertices(numVertices),
+		mUsage(usage)
+	{
+	}
+
 	// Uploads the data block to the GPU
 	void VertexAttributeBuffer::setData(void* data) const
 	{

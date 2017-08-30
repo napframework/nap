@@ -20,13 +20,8 @@ namespace opengl
 	{
 	public:
 		VertexAttributeBuffer() = default;
-		VertexAttributeBuffer(GLenum type, unsigned int numComponents, unsigned int numVertices, GLenum usage) :
-			mType(type),
-			mNumComponents(numComponents),
-			mNumVertices(numVertices),
-			mUsage(usage)
-		{
-		}
+
+		VertexAttributeBuffer(GLenum type, unsigned int numComponents, unsigned int numVertices, GLenum usage);
 
 		/**
 		 * @return the buffer OpenGL type, INVALID_ENUM if not specified

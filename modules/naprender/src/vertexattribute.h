@@ -34,6 +34,11 @@ namespace nap
 		 */
 		virtual int getNumComponents() const = 0;
 
+		/**
+		 * @return Should return amount of element in the buffer.
+		 */
+		virtual int getNumElements() const = 0;
+
 		std::string			mAttributeID;		///< Name/ID of the attribute
 	};
 
@@ -91,6 +96,11 @@ namespace nap
 		 * Default implementation. If this is called, the proper specialization is not properly implemented.
 		 */
 		virtual int getNumComponents() const override { assert(false); return -1; }
+
+		/**
+		 * @return Should return amount of element in the buffer.
+		 */
+		virtual int getNumElements() const { return mData.size(); }
 
 		std::vector<ELEMENTTYPE>	mData;		///< Actual typed data of the attribute
 
