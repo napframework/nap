@@ -48,6 +48,8 @@ def installDependenciesLinux():
                'libfreeimage-dev',
                'ffmpeg',
                'libportaudio19-dev',
+               'libvorbis',
+               'flac',
                'libsndfile1-dev'
                ])
 
