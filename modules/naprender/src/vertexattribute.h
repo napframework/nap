@@ -90,12 +90,12 @@ namespace nap
 		/**
 		 * Default implementation. If this is called, the proper specialization is not properly implemented.
 		 */
-		virtual GLenum getType() const override { assert(false); return GL_FLOAT; }
+		virtual GLenum getType() const override;
 
 		/**
 		 * Default implementation. If this is called, the proper specialization is not properly implemented.
 		 */
-		virtual int getNumComponents() const override { assert(false); return -1; }
+		virtual int getNumComponents() const override;
 
 		/**
 		 * @return Should return amount of element in the buffer.
@@ -123,50 +123,5 @@ namespace nap
 	using Vec2VertexAttribute	= TypedVertexAttribute<glm::vec2>;
 	using Vec3VertexAttribute	= TypedVertexAttribute<glm::vec3>;
 	using Vec4VertexAttribute	= TypedVertexAttribute<glm::vec4>;
-
-	//////////////////////////////////////////////////////////////////////////
-
-	template<>
-	GLenum FloatVertexAttribute::getType() const { return GL_FLOAT; }
-
-	template<>
-	int FloatVertexAttribute::getNumComponents() const { return 1; }
-
-	template<>
-	GLenum IntVertexAttribute::getType() const { return GL_INT; }
-
-	template<>
-	int IntVertexAttribute::getNumComponents() const { return 1; }
-
-	template<>
-	GLenum ByteVertexAttribute::getType() const { return GL_BYTE; }
-
-	template<>
-	int ByteVertexAttribute::getNumComponents() const { return 1; }
-
-	template<>
-	GLenum DoubleVertexAttribute::getType() const { return GL_DOUBLE; }
-
-	template<>
-	int DoubleVertexAttribute::getNumComponents() const { return 1; }
-
-	template<>
-	GLenum Vec2VertexAttribute::getType() const { return GL_FLOAT; }
-
-	template<>
-	int Vec2VertexAttribute::getNumComponents() const { return 2; }
-
-	template<>
-	GLenum Vec3VertexAttribute::getType() const { return GL_FLOAT; }
-
-	template<>
-	int Vec3VertexAttribute::getNumComponents() const { return 3; }
-
-	template<>
-	GLenum Vec4VertexAttribute::getType() const { return GL_FLOAT; }
-
-	template<>
-	int Vec4VertexAttribute::getNumComponents() const { return 4; }
-
 } // nap
 
