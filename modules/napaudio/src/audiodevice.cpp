@@ -97,7 +97,11 @@ namespace nap {
                 Logger::warn("Portaudio error: " + std::string(Pa_GetErrorText(error)));
             
             if (error == paNoError)
-                Logger::debug("Portaudio started");
+            {
+                PaDeviceInfo inputInfo = getDeviceInfo(inputDevice);
+                PaDeviceInfo outputInfo = getDeviceInfo(outputDevice);
+                Logger::info("Portaudio stream started: %s, %s, %i inputs, %i outputs, samplerate %i, buffersize %i", inputInfo.name, outputInfo.name, inputChannelCount, outputChannelCount, sampleRate, bufferSize);
+            }
         }
         
         
@@ -116,7 +120,7 @@ namespace nap {
                 Logger::warn("Portaudio error: " + std::string(Pa_GetErrorText(error)));
             
             if (error == paNoError)
-                Logger::debug("Portaudio started");
+                Logger::info("Portaudio default stream started: %i inputs, %i outputs, samplerate %i, buffersize %i", inputChannelCount, outputChannelCount, int(sampleRate), bufferSize);
         }
         
         
@@ -129,7 +133,7 @@ namespace nap {
                 Pa_CloseStream(mStream);
 				mStream = nullptr;
             }
-            Logger::debug("Portaudio stopped");
+            Logger::info("Portaudio stopped");
         }
         
         

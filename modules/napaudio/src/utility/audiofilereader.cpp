@@ -21,7 +21,7 @@ namespace nap {
             auto sndFile = sf_open(fileName.c_str(), SFM_READ, &info);
             if (sf_error(sndFile) != SF_ERR_NO_ERROR)
             {
-                nap::Logger::fatal(sf_strerror(sndFile));
+                nap::Logger::fatal("Failed to load audio file %s: %s", fileName.c_str(), sf_strerror(sndFile));
                 return false;
             }
             
@@ -33,7 +33,7 @@ namespace nap {
             sf_readf_float(sndFile, readBuffer, info.frames);
             if (sf_error(sndFile) != SF_ERR_NO_ERROR)
             {
-                nap::Logger::fatal(sf_strerror(sndFile));
+                nap::Logger::fatal("Failed to load audio file %s: %s", fileName.c_str(), sf_strerror(sndFile));
                 return false;
             }
             
@@ -54,6 +54,7 @@ namespace nap {
 			delete[] readBuffer;
             sf_close(sndFile);
             
+            nap::Logger::info("Loaded audio file: %s", fileName.c_str());
             
             return true;
         }
