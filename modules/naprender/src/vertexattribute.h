@@ -3,7 +3,7 @@
 #include <utility/dllexport.h>
 #include "rtti/rttiobject.h"
 #include "glm/glm.hpp"
-#include "gl/glew.h"
+#include "GL/glew.h"
 
 namespace nap
 {

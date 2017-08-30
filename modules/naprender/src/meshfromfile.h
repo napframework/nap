@@ -21,12 +21,12 @@ namespace nap
 		/**
 		 * @return MeshInstance as created during init().
 		 */
-		virtual MeshInstance& getMeshInstance() { return *mMeshInstance; }
+		virtual MeshInstance& getMeshInstance() override { return *mMeshInstance; }
 
 		/**
 		 * @return MeshInstance as created during init().
 		 */
-		virtual const MeshInstance& getMeshInstance() const { return *mMeshInstance; }
+		virtual const MeshInstance& getMeshInstance() const override { return *mMeshInstance; }
 
 		std::string		mPath;
 

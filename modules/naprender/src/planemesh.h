@@ -19,7 +19,7 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		virtual MeshInstance& getMeshInstance() override { return *mMeshInstance; }
-		virtual const MeshInstance& getMeshInstance() const { return *mMeshInstance; }
+		virtual const MeshInstance& getMeshInstance() const override { return *mMeshInstance; }
 
 	private:
 		std::unique_ptr<MeshInstance> mMeshInstance;

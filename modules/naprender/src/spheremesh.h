@@ -19,7 +19,7 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		virtual MeshInstance& getMeshInstance() override { return *mMeshInstance; }
-		virtual const MeshInstance& getMeshInstance() const { return *mMeshInstance; }
+		virtual const MeshInstance& getMeshInstance() const override { return *mMeshInstance; }
 
 	public:
 		float mRadius	= 1.0f;		// The radius of the mesh
