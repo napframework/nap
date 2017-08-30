@@ -126,7 +126,6 @@ void onUpdate()
 		dst_positions[index] = src_positions[index] * sin(elapsed_time + (float)index * 0.2f);
 
 	dst_positions.back() = *dst_positions.begin();
-	dst_positions.push_back(glm::vec3(0));
 
 	nap::utility::ErrorState errorState;
 	if (!mesh_instance.update(errorState))
