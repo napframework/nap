@@ -227,7 +227,7 @@ namespace nap
 			return nullptr;
 
 		if (!errorState.check(resolveLinks(deserialize_result.mReadObjects, deserialize_result.mUnresolvedPointers), "Failed to resolve pointers"))
-			return false;
+			return nullptr;
 		
 		// Find mesh(es) in the file
 		int numMeshes = 0;

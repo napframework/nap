@@ -267,7 +267,7 @@ namespace nap
 		/**
 		 * @return MeshInstance as created during init().
 		 */
-		virtual MeshInstance& getMeshInstance()				{ return mMeshInstance; }
+		virtual MeshInstance& getMeshInstance()	override		{ return mMeshInstance; }
 
 		/**
 		 * @return MeshInstance as created during init().
