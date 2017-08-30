@@ -3,7 +3,7 @@
 // std library includes
 #include <string>
 
-// nap includes
+// nap includes 
 #include <audiotypes.h>
 
 namespace nap {

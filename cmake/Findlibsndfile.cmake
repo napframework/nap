@@ -33,7 +33,7 @@ elseif(APPLE)
     ${CMAKE_CURRENT_LIST_DIR}/../../libsndfile
     )
 
-    set(LIBSNDFILE_LIB_DIR ${LIBSNDFILE_DIR}/usr/local/lib)
+    set(LIBSNDFILE_LIB_DIR /usr/local/lib)
     set(LIBSNDFILE_LIBRARIES ${LIBSNDFILE_LIB_DIR}/libsndfile.a)
 
     set(LIBSNDFILE_INCLUDE_DIR ${LIBSNDFILE_DIR}/src)
