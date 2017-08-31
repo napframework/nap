@@ -7,49 +7,22 @@
 
 namespace opengl
 {
-	// Total size in bytes of index buffer
-	std::size_t IndexBufferSettings::getSize() const
-	{
-		return getGLTypeSize(GL_UNSIGNED_INT) * mCount;
-	}
-
-
-	// If the index settings are valid
-	bool IndexBufferSettings::isValid() const
-	{
-		return mCount != 0;
-	}
-
-
 	// Constructor
-	IndexBuffer::IndexBuffer(const IndexBufferSettings& settings) : mSettings(settings)
+	IndexBuffer::IndexBuffer(GLenum usage) : mUsage(usage)
 	{}
 
 
 	// Upload data
-	void IndexBuffer::setData(unsigned int* indices)
+	void IndexBuffer::setData(const std::vector<unsigned int>& indices)
 	{
-		if (!bind())
-			return;
+		mCount = indices.size();
 
-		if (!mSettings.isValid())
-		{
-			printMessage(MessageType::ERROR, "can't upload vertex index data, invalid index buffer settings");
-			return;
-		}
-		else
-		{
-			glBufferData(getBufferType(), mSettings.getSize(), indices, mSettings.mUsage);
-			glAssert();
-		}
+		bind();
+
+		size_t size = getGLTypeSize(GL_UNSIGNED_INT) * indices.size();
+		glBufferData(getBufferType(), size, indices.data(), mUsage);
+		glAssert();
+
 		unbind();
-	}
-
-
-	// Update settings and upload data
-	void IndexBuffer::setData(unsigned int* indices, std::size_t count)
-	{
-		mSettings.mCount = count;
-		setData(indices);
 	}
 }

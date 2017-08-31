@@ -472,9 +472,8 @@ namespace nap
 
 			if (mFrameQueue.empty() && mFramesFinished)
 			{
-				// Call stop instead of directly setting mPlaying to make sure threads exit correctly
-				stop();
-				return errorState.check(mErrorString.empty(), mErrorString);
+				mPlaying = false;
+				return errorState.check(mErrorString.empty(), mErrorString.c_str());
 			}
 
 			std::unique_lock<std::mutex> lock(mFrameQueueMutex);

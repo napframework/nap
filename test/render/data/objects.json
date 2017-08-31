@@ -109,6 +109,78 @@
 		},
 		
 		{
+			"Type" : "nap::Mesh",
+			"mID" : "CustomLineMesh",
+			"Properties" : {
+				"NumVertices" : 5,
+				"DrawMode" : "LineStrip",
+				"Attributes" : [
+					{
+						"Type" : "nap::Vec3VertexAttribute",
+						"AttributeID" : "Position",
+						"Data" : [
+							{ "x": -0.5, 	"y": -0.5, "z": 0.0 },
+							{ "x":  0.5, 	"y": -0.5,	"z": 0.0 },
+							{ "x":  0.5, 	"y":  0.5,	"z": 0.0 },
+							{ "x": -0.5, 	"y":  0.5,	"z": 0.0 },							
+							{ "x": -0.5, 	"y": -0.5, "z": 0.0 }
+						]
+					},
+					{
+						"Type" : "nap::Vec3VertexAttribute",
+						"AttributeID" : "UV0",
+						"Data" : [
+							{ "x": 0.0, 	"y": 0.0, 	"z": 0.0 },
+							{ "x": 1.0, 	"y": 0.0,	"z": 0.0 },
+							{ "x": 0.0, 	"y": 1.0,	"z": 0.0 },
+							{ "x": 1.0, 	"y": 1.0,	"z": 0.0 },
+							{ "x": 0.0, 	"y": 0.0, 	"z": 0.0 }
+						]
+					}
+				]
+			}
+		},	
+
+		{
+			"Type" : "nap::Mesh",
+			"mID" : "CustomPlaneMesh",
+			"Properties" : {
+				"NumVertices" : 4,
+				"DrawMode" : "Triangles",
+				"Attributes" : [
+					{
+						"Type" : "nap::Vec3VertexAttribute",
+						"AttributeID" : "Position",
+						"Data" : [
+							{ "x": -0.5, 	"y": -0.5, "z": 0.0 },
+							{ "x":  0.5, 	"y": -0.5,	"z": 0.0 },
+							{ "x": -0.5, 	"y":  0.5,	"z": 0.0 },
+							{ "x":  0.5, 	"y":  0.5,	"z": 0.0 }
+						]
+					},
+					{
+						"Type" : "nap::Vec3VertexAttribute",
+						"AttributeID" : "UV0",
+						"Data" : [
+							{ "x": 0.0, 	"y": 0.0, 	"z": 0.0 },
+							{ "x": 1.0, 	"y": 0.0,	"z": 0.0 },
+							{ "x": 0.0, 	"y": 1.0,	"z": 0.0 },
+							{ "x": 1.0, 	"y": 1.0,	"z": 0.0 }
+						]
+					}
+				],
+				"Indices" : [
+					0,
+					1,
+					3,
+					0,
+					3,
+					2
+				]
+			}
+		},	
+		
+		{
 			"Type" : "nap::Material",
 			"mID": "GeneralMaterial",
 			"Shader": "GeneralShader",
@@ -284,7 +356,7 @@
 			[
 				{
 					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "PlaneMesh",
+					"Mesh" : "CustomLineMesh",
 					"MaterialInstance" : {
 						"Material": "GeneralMaterial"
 					}
@@ -324,7 +396,7 @@
 			[
 				{
 					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "PlaneMesh",
+					"Mesh" : "CustomPlaneMesh",
 					"MaterialInstance" : {
 						"Material": "GeneralMaterial"
 					}

@@ -18,7 +18,7 @@ namespace nap
 		float mHeight = 0.0f;
 	};
 
-	class Mesh;
+	class IMesh;
 	class MaterialInstance;
 	class TransformComponentInstance;
 	class TransformComponent;
@@ -31,6 +31,7 @@ namespace nap
 	{
 		RTTI_ENABLE(RenderableComponentResource)
 
+	public:
 		/**
 		 * RenderableMesh uses transform to position itself in the world.
 		 */
@@ -46,9 +47,13 @@ namespace nap
 		{
 			return RTTI_OF(RenderableMeshComponentInstance);
 		}
+		/**
+		 * @return Mesh resource.
+		 */
+		IMesh& getMeshResource() { return *mMeshResource; }
 
 	public:
-		ObjectPtr<Mesh>						mMeshResource;						///< Resource to render
+		ObjectPtr<IMesh>					mMeshResource;						///< Resource to render
 		MaterialInstanceResource			mMaterialInstanceResource;			///< MaterialInstance, which is used to override uniforms for this instance
 		Rect								mClipRect;							///< Clipping rectangle, in pixel coordinates
 	};
@@ -83,6 +88,16 @@ namespace nap
 		MaterialInstance& getMaterialInstance();
 
 		/**
+		 * @return MeshResource for the RenderableMeshComponent.
+		 */
+		IMesh& getMesh() { return mResource->getMeshResource(); }
+
+		/**
+		 * @return MeshInstance for the RenderableMeshComponent's Mesh.
+		 */
+		MeshInstance& getMeshInstance() { return mResource->getMeshResource().getMeshInstance(); }
+
+		/**
 		 * Toggles visibility.
 		 */
 		void setVisible(bool visible) { mVisible = visible; }
@@ -98,8 +113,8 @@ namespace nap
 		void setBlendMode();
 
 	private:
-		ObjectPtr<RenderableMeshComponent>	mResource;				// Pointer to resource of this instance
-		TransformComponentInstance*							mTransformComponent;	// Cached pointer to transform
+		ObjectPtr<RenderableMeshComponent>			mResource;				// Pointer to resource of this instance
+		TransformComponentInstance*					mTransformComponent;	// Cached pointer to transform
 		std::unique_ptr<VAOHandle>					mVAOHandle;				// Handle to Vertex Array Object
 		MaterialInstance							mMaterialInstance;		// MaterialInstance
 		bool										mVisible = true;		// Whether this instance is visible or not

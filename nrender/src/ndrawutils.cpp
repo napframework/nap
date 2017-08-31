@@ -1,9 +1,21 @@
 // Local Includes
+#include <rtti/typeinfo.h>
 #include "ndrawutils.h"
 
 // External Includes
 #include <unordered_map>
 #include <algorithm>
+
+RTTI_BEGIN_ENUM(opengl::EDrawMode)
+	RTTI_ENUM_VALUE(opengl::EDrawMode::UNKNOWN,			"Unknown"),
+	RTTI_ENUM_VALUE(opengl::EDrawMode::POINTS,			"Points"),
+	RTTI_ENUM_VALUE(opengl::EDrawMode::LINES,			"Lines"),
+	RTTI_ENUM_VALUE(opengl::EDrawMode::LINE_STRIP,		"LineStrip"),
+	RTTI_ENUM_VALUE(opengl::EDrawMode::LINE_LOOP,		"LineLoop"),
+	RTTI_ENUM_VALUE(opengl::EDrawMode::TRIANGLES,		"Triangles"),
+	RTTI_ENUM_VALUE(opengl::EDrawMode::TRIANGLE_STRIP,	"TriangleStrip"),
+	RTTI_ENUM_VALUE(opengl::EDrawMode::TRIANGLE_FAN,	"TriangleFan")
+RTTI_END_ENUM
 
 namespace opengl
 {
@@ -11,12 +23,12 @@ namespace opengl
 	static const OpenGLDrawModeMap openGLDrawMap =
 	{
 		{ EDrawMode::POINTS,			GL_POINTS },
-		{ EDrawMode::LINES,			GL_LINES  },
+		{ EDrawMode::LINES,				GL_LINES  },
 		{ EDrawMode::LINE_STRIP,		GL_LINE_STRIP},
-		{ EDrawMode::LINE_LOOP,		GL_LINE_LOOP},
-		{ EDrawMode::TRIANGLES,		GL_TRIANGLES},
+		{ EDrawMode::LINE_LOOP,			GL_LINE_LOOP},
+		{ EDrawMode::TRIANGLES,			GL_TRIANGLES},
 		{ EDrawMode::TRIANGLE_STRIP,	GL_TRIANGLE_STRIP},
-		{ EDrawMode::TRIANGLE_FAN,	GL_TRIANGLE_STRIP}
+		{ EDrawMode::TRIANGLE_FAN,		GL_TRIANGLE_STRIP}
 	};
 
 

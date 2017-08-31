@@ -1,6 +1,7 @@
 // Local Includes
 #include "material.h"
 #include "nshader.h"
+#include "mesh.h"
 
 // External includes
 #include <nap/logger.h>
@@ -230,14 +231,14 @@ namespace nap
 		static std::vector<Material::VertexAttributeBinding> bindings;
 		if (bindings.empty())
 		{
-			bindings.push_back({ opengl::Mesh::VertexAttributeIDs::PositionVertexAttr, opengl::Shader::VertexAttributeIDs::PositionVertexAttr });
-			bindings.push_back({ opengl::Mesh::VertexAttributeIDs::NormalVertexAttr, opengl::Shader::VertexAttributeIDs::NormalVertexAttr });
+			bindings.push_back({ MeshInstance::VertexAttributeIDs::GetPositionVertexAttr(), opengl::Shader::VertexAttributeIDs::GetPositionVertexAttr() });
+			bindings.push_back({ MeshInstance::VertexAttributeIDs::GetNormalVertexAttr(), opengl::Shader::VertexAttributeIDs::GetNormalVertexAttr() });
 
 			const int numChannels = 4;
 			for (int channel = 0; channel != numChannels; ++channel)
 			{
-				bindings.push_back({ opengl::Mesh::VertexAttributeIDs::GetColorVertexAttr(channel), opengl::Shader::VertexAttributeIDs::GetColorVertexAttr(channel) });
-				bindings.push_back({ opengl::Mesh::VertexAttributeIDs::GetUVVertexAttr(channel), opengl::Shader::VertexAttributeIDs::GetUVVertexAttr(channel) });
+				bindings.push_back({ MeshInstance::VertexAttributeIDs::GetColorVertexAttr(channel), opengl::Shader::VertexAttributeIDs::GetColorVertexAttr(channel) });
+				bindings.push_back({ MeshInstance::VertexAttributeIDs::GetUVVertexAttr(channel), opengl::Shader::VertexAttributeIDs::GetUVVertexAttr(channel) });
 			}
 		}
 		return bindings;
@@ -257,7 +258,7 @@ namespace nap
 		mShader->getShader().unbind();
 	}
 
-	const Material::VertexAttributeBinding* Material::findVertexAttributeBinding(const opengl::Mesh::VertexAttributeID& shaderAttributeID) const
+	const Material::VertexAttributeBinding* Material::findVertexAttributeBinding(const opengl::GPUMesh::VertexAttributeID& shaderAttributeID) const
 	{
 		for (const VertexAttributeBinding& binding : mVertexAttributeBindings)
 			if (binding.mShaderAttributeID == shaderAttributeID)

@@ -210,12 +210,6 @@ namespace nap
 
 		mVAOHandle->mObject->bind();
 
-		// Gather draw info
-		const opengl::Mesh& mesh = mResource->mMeshResource->getMesh();
-		GLenum draw_mode = getGLMode(mesh.getDrawMode());
-		const opengl::IndexBuffer* index_buffer = mesh.getIndexBuffer();
-		GLsizei draw_count = static_cast<GLsizei>(index_buffer->getCount());
-
 		// If a cliprect was set, enable scissor and set correct values
 		if (mClipRect.mWidth > 0.0f && mClipRect.mHeight > 0.0f)
 		{
@@ -223,15 +217,24 @@ namespace nap
 			glScissor(mClipRect.mX, mClipRect.mY, mClipRect.mWidth, mClipRect.mHeight);
 		}
 
+		MeshInstance& mesh_instance = mResource->mMeshResource->getMeshInstance();
+
+		// Gather draw info
+		const opengl::GPUMesh& mesh = mesh_instance.getGPUMesh();
+		GLenum draw_mode = getGLMode(mesh_instance.getDrawMode());
+		const opengl::IndexBuffer* index_buffer = mesh.getIndexBuffer();
+
 		// Draw with or without using indices
 		if (index_buffer == nullptr)
 		{
-			glDrawArrays(draw_mode, 0, draw_count);
+			glDrawArrays(draw_mode, 0, mesh_instance.getNumVertices());
 		}
 		else
 		{
+			GLsizei num_indices = static_cast<GLsizei>(index_buffer->getCount());
+
 			index_buffer->bind();
-			glDrawElements(draw_mode, draw_count, index_buffer->getType(), 0);
+			glDrawElements(draw_mode, num_indices, index_buffer->getType(), 0);
 			index_buffer->unbind();
 		}
 		comp_mat->unbind();

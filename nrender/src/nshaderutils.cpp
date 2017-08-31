@@ -146,7 +146,7 @@ namespace opengl
 
 
 	// Extract all shader program attributes
-	void extractShaderAttributes(GLuint program, VertexAttributes& outAttributes)
+	void extractShaderAttributes(GLuint program, ShaderVertexAttributes& outAttributes)
 	{
 		outAttributes.clear();
 
@@ -173,7 +173,7 @@ namespace opengl
 
 			// Add
 			printMessage(MessageType::INFO, "Attribute: %d, type: %d, name: %s, location: %d", i, (unsigned int)type, name, location);
-			outAttributes.emplace(name, std::make_unique<VertexAttribute>(program, std::string(name), type, location, size));
+			outAttributes.emplace(name, std::make_unique<ShaderVertexAttribute>(program, std::string(name), type, location, size));
 		}
 	}
 

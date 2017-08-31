@@ -391,7 +391,7 @@ namespace nap
 
 			assert(actual_type.is_pointer());
 			bool succeeded = resolved_path.setValue(target_object);
-			if (!errorState.check(succeeded, "Failed to resolve pointer for: " + target_object->mID))
+			if (!errorState.check(succeeded, "Failed to resolve pointer for: %s", target_object->mID.c_str()))
 				return false;
 		}
 

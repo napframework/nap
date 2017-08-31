@@ -7,7 +7,7 @@
 // Local includes
 #include "shader.h"
 #include "image.h"
-#include "nmesh.h"
+#include "ngpumesh.h"
 #include "uniformbinding.h"
 
 namespace nap
@@ -138,12 +138,12 @@ namespace nap
 		{
 			VertexAttributeBinding() = default;
 
-			VertexAttributeBinding(const opengl::Mesh::VertexAttributeID& meshAttributeID, const opengl::Shader::VertexAttributeID& shaderAttributeID) :
+			VertexAttributeBinding(const opengl::GPUMesh::VertexAttributeID& meshAttributeID, const opengl::Shader::VertexAttributeID& shaderAttributeID) :
 				mMeshAttributeID(meshAttributeID),
 				mShaderAttributeID(shaderAttributeID)
 			{
 			}
-			opengl::Mesh::VertexAttributeID mMeshAttributeID;
+			opengl::GPUMesh::VertexAttributeID mMeshAttributeID;
 			opengl::Shader::VertexAttributeID mShaderAttributeID;
 		};
 
@@ -185,7 +185,7 @@ namespace nap
 		* Finds the mesh/shader attribute binding based on the shader attribute ID.
 		* @param shaderAttributeID: ID of the shader vertex attribute.
 		*/
-		const VertexAttributeBinding* findVertexAttributeBinding(const opengl::Mesh::VertexAttributeID& shaderAttributeID) const;
+		const VertexAttributeBinding* findVertexAttributeBinding(const opengl::GPUMesh::VertexAttributeID& shaderAttributeID) const;
 
 		/**
 		* @return Returns a mapping with default values for mesh attribute IDs an shader attribute IDs.

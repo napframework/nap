@@ -100,7 +100,7 @@ namespace nap
 		* @errorstate: in case it was not possible to create a VAO for this combination of material and mesh, this will hold error information.
 		* @return On success, this will hold a pointer to the handle, on failure this will return nullptr (check errorState for details).
 		*/
-		std::unique_ptr<VAOHandle> acquireVertexArrayObject(const Material& material, const Mesh& meshResource, utility::ErrorState& errorState);
+		std::unique_ptr<VAOHandle> acquireVertexArrayObject(const Material& material, const IMesh& meshResource, utility::ErrorState& errorState);
 
 		/**
 		 * Add a new window for the specified resource
