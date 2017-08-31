@@ -40,6 +40,7 @@ def installDependenciesLinux():
     call('.', ['sudo', 'apt-get', '--assume-yes', 'install',
                'cmake',
                'build-essential',
+	       'python3-dev',
                'libsdl2-dev',
                'libglew-dev',
                'libassimp-dev',
