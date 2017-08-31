@@ -24,14 +24,14 @@ private:
  */
 class PropertyValueItem : public QStandardItem {
 public:
-    PropertyValueItem(nap::rtti::RTTIObject& obj, rttr::property prop);
+    PropertyValueItem(nap::rtti::Instance obj, rttr::property prop);
 
     QVariant data(int role) const override;
 
     void setData(const QVariant& value, int role) override;
 
 private:
-    nap::rtti::RTTIObject& mInstance;
+    nap::rtti::Instance mInstance;
     const rttr::property mProperty;
 };
 

@@ -1,8 +1,12 @@
+#include <generic/utility.h>
 #include "napgeneric.h"
 
 
 TypeItem::TypeItem(const nap::rtti::TypeInfo& type) : type(type) {
     setText(type.get_name().data());
+    setEditable(false);
+    setForeground(softForeground());
+    setBackground(softBackground());
     refresh();
 }
 

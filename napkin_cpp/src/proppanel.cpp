@@ -1,5 +1,8 @@
+#include <QtWidgets/QApplication>
+#include <generic/utility.h>
 #include "proppanel.h"
 #include "napgeneric.h"
+#include "typeconversion.h"
 
 using namespace nap;
 using namespace nap::rtti;
@@ -7,10 +10,18 @@ using namespace nap::rtti;
 
 PropertyNameItem::PropertyNameItem(rttr::property prop) : QStandardItem(), mProperty(prop) {
     setText(prop.get_name().data());
+    setEditable(false);
+    setForeground(softForeground());
 }
 
-PropertyValueItem::PropertyValueItem(RTTIObject& obj, rttr::property prop)
+PropertyValueItem::PropertyValueItem(rttr::instance obj, rttr::property prop)
         : QStandardItem(), mInstance(obj), mProperty(prop) {
+    mProperty.get_value(mInstance);
+
+    if (!TypeConverter::get(mProperty.get_type())) {
+        setEnabled(false);
+        setForeground(Qt::red);
+    }
 
 }
 
@@ -18,22 +29,9 @@ QVariant PropertyValueItem::data(int role) const {
     auto type = mProperty.get_type();
 
     if (role == Qt::DisplayRole) {
-        auto value = mProperty.get_value(mInstance);
-
-        if (type.is_arithmetic()) {
-            if (type == TypeInfo::get<bool>())
-                return value.to_bool();
-
-            if (type == TypeInfo::get<int>())
-                return value.to_int();
-
-            if (type == TypeInfo::get<float>())
-                return value.to_float();
-
-        } else if (type == TypeInfo::get<std::string>()) {
-            return QString::fromStdString(value.to_string());
-        }
-
+        auto converter = TypeConverter::get(type);
+        if (converter)
+            return converter->toVariant(mProperty, mInstance);
         return QString("<<UNKNOWN>>");
     }
     return QStandardItem::data(role);
@@ -41,27 +39,12 @@ QVariant PropertyValueItem::data(int role) const {
 
 void PropertyValueItem::setData(const QVariant& value, int role) {
     auto type = mProperty.get_type();
-    bool success = false;
+
     if (role == Qt::EditRole) {
+        auto converter = TypeConverter::get(type);
 
-        if (type.is_arithmetic()) {
-            if (type == TypeInfo::get<bool>()) {
-                mProperty.set_value(mInstance, value.toBool());
-
-            } else if (type == TypeInfo::get<int>()) {
-                int v = value.toInt(&success);
-                if (success)
-                    mProperty.set_value(mInstance, v);
-
-            } else if (type == TypeInfo::get<float>()) {
-                float v = value.toFloat(&success);
-                if (success)
-                    mProperty.set_value(mInstance, v);
-            }
-        } else if (type == TypeInfo::get<std::string>()) {
-            mProperty.set_value(mInstance, value.toString().toStdString());
-        }
-
+        if (converter)
+            converter->fromVariant(mProperty, mInstance, value);
     }
     QStandardItem::setData(value, role);
 }
@@ -76,6 +59,7 @@ void InspectorModel::setObjects(QList<RTTIObject*>& inst) {
         return;
 
     mInstance = inst.first();
+    rttr::instance instance(mInstance);
 
     if (nullptr == mInstance)
         return;
@@ -87,8 +71,9 @@ void InspectorModel::setObjects(QList<RTTIObject*>& inst) {
             || prop.get_name() == "Children")
             continue;
 
+
         auto nameItem = new PropertyNameItem(prop);
-        auto valueItem = new PropertyValueItem(*mInstance, prop);
+        auto valueItem = new PropertyValueItem(instance, prop);
         auto typeItem = new TypeItem(prop.get_type());
         appendRow({nameItem, valueItem, typeItem});
     }
