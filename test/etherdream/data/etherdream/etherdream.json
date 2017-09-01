@@ -29,8 +29,7 @@
 					"y":1.0,
 					"z":1.0,
 					"w":1.0
-				},
-				"Closed" : false
+				}
 			},
 			"Start" :
 			{
@@ -43,7 +42,8 @@
 				"x": 1.0,
 				"y": 0.0,
 				"z": 0.0
-			}
+			},
+			"Closed" : false
 		},
 
 		{
@@ -51,15 +51,14 @@
 			"mID": "RectangleMesh",
 			"Properties": 
 			{
-				"Count" : 500,
+				"Count" : 400,
 				"Color" :
 				{
 					"x":1.0,
 					"y":0.0,
 					"z":1.0,
 					"w":1.0
-				},
-				"Closed" : true
+				}
 			},
 			"Dimensions":
 			{
@@ -80,8 +79,7 @@
 					"y":1.0,
 					"z":1.0,
 					"w":1.0
-				},
-				"Closed" : true
+				}
 			},
 			"Radius":1.0
 		},
@@ -223,7 +221,7 @@
 
 				{
 					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "CicleMesh",
+					"Mesh" : "RectangleMesh",
 					"MaterialInstance" : 
 					{
 						"Material": "LineMaterial"

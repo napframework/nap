@@ -53,6 +53,7 @@ nap::OSCService* oscService = nullptr;
 // Holds all render windows
 nap::ObjectPtr<nap::RenderWindow> renderWindow = nullptr;
 
+
 // Main camera
 nap::ObjectPtr<nap::EntityInstance> cameraEntity = nullptr;
 
@@ -74,11 +75,9 @@ void runGame(nap::Core& core);
 void onUpdate()
 {
 	//////////////////////////////////////////////////////////////////////////
-
 	nap::RenderableMeshComponentInstance& mesh_comp = splineEntity->getComponent<nap::RenderableMeshComponentInstance>();
 	nap::PolyLine& line = static_cast<nap::PolyLine&>(mesh_comp.getMesh());
 	double elapsed_time = renderService->getCore().getElapsedTime();
-
 
 	//////////////////////////////////////////////////////////////////////////
 

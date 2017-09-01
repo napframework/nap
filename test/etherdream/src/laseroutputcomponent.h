@@ -46,7 +46,7 @@ namespace nap
 
 
 	/**
-	 *	Converts and outputs lines to a specific laser DAC
+	 *	Sends lines to an etherdream laser DAC
 	 */
 	class LaserOutputComponentInstance : public ComponentInstance
 	{

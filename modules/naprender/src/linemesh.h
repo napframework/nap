@@ -9,9 +9,8 @@ namespace nap
 	 */
 	struct LineMeshProperties
 	{
-		int mVertices = 2;								// Total number of vertices that make up the line
+		int mVertices = 10;								// Total number of vertices that make up the line
 		glm::vec4 mColor = { 1.0f, 1.0f, 1.0f,1.0f };	// Color of the line
-		bool mClosed = false;							// If the shape is closed or open
 	};
 
 
@@ -71,9 +70,12 @@ namespace nap
 	{
 		RTTI_ENABLE(PolyLine)
 	public:
+		// Properties
 		glm::vec3 mStart =	{ -0.5f, 0.0f, 0.0f };	// Start point of the line
 		glm::vec3 mEnd =	{ 0.5f, 0.0f, 0.0f };	// End point of the line
+		bool mClosed =		false;					// If the line is closed or not
 		
+
 		// Creates the line based on start / end points of the line
 		virtual void createLine() override;
 	};
