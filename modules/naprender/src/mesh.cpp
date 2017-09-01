@@ -19,10 +19,10 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	const MeshInstance::VertexAttributeID MeshInstance::VertexAttributeIDs::GetPositionVertexAttr() { return "Position"; }
-	const MeshInstance::VertexAttributeID MeshInstance::VertexAttributeIDs::GetNormalVertexAttr()	{ return "Normal"; }
+	const MeshInstance::VertexAttributeID MeshInstance::VertexAttributeIDs::GetPositionName() { return "Position"; }
+	const MeshInstance::VertexAttributeID MeshInstance::VertexAttributeIDs::getNormalName()	{ return "Normal"; }
 
-	const MeshInstance::VertexAttributeID MeshInstance::VertexAttributeIDs::GetUVVertexAttr(int uvChannel)
+	const MeshInstance::VertexAttributeID MeshInstance::VertexAttributeIDs::GetUVName(int uvChannel)
 	{
 		std::ostringstream stream;
 		stream << "UV" << uvChannel;
@@ -30,7 +30,7 @@ namespace nap
 	}
 
 
-	const MeshInstance::VertexAttributeID MeshInstance::VertexAttributeIDs::GetColorVertexAttr(int colorChannel)
+	const MeshInstance::VertexAttributeID MeshInstance::VertexAttributeIDs::GetColorName(int colorChannel)
 	{
 		std::ostringstream stream;
 		stream << "Color" << colorChannel;

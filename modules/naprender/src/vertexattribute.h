@@ -59,22 +59,38 @@ namespace nap
 		/**
 		 * @return Types interface toward the internal values. Use this function to read CPU data.
 		 */
-		const std::vector<ELEMENTTYPE>& getValues() const { return mData;  }
+		const std::vector<ELEMENTTYPE>& getValues() const		{ return mData;  }
 
 		/**
 		 * @return Types interface toward the internal values. Use this function to read CPU data.
 		 */
-		std::vector<ELEMENTTYPE>& getValues()	{ return mData; }
+		std::vector<ELEMENTTYPE>& getValues()					{ return mData; }
 
 		/**
-		 * Reserves an amount of memory.
+		 * Sets the internal values based on the contained type
+		 * @param values: the values that will be copied over
 		 */
-		void reserve(size_t numElements)		{ mData.reserve(numElements); }
+		void setValues(std::vector<ELEMENTTYPE>& values)		{ mData = values; }
+
+		/**
+		 * Reserves an amount of memory to hold @number amount of elements
+		 */
+		void reserve(size_t numElements)						{ mData.reserve(numElements); }
+
+		/**
+		 *	Resizes the data container to hold @number amount of elements
+		 */
+		void resize(size_t numElements)							{ mData.resize(numElements); }
 
 		/**
 		 * Adds a single element to the buffer.
 		 */
-		void add(const ELEMENTTYPE& element)	{ mData.push_back(element); }
+		void add(const ELEMENTTYPE& element)					{ mData.emplace_back(element); }
+
+		/**
+		 * Clears all data associated with this attribute
+		 */
+		void clear()											{ mData.clear(); }
 
 		/**
 		 * Sets the entire vertex attribute buffer.

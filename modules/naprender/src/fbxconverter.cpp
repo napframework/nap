@@ -134,7 +134,7 @@ namespace nap
 			std::vector<std::unique_ptr<VertexAttribute>> vertex_attribute_storage;
 
 			// Copy vertex data			
-			TypedVertexAttribute<glm::vec3>& position_attribute = CreateAttribute<glm::vec3>(mesh_data, MeshInstance::VertexAttributeIDs::GetPositionVertexAttr(), vertex_attribute_storage);
+			TypedVertexAttribute<glm::vec3>& position_attribute = CreateAttribute<glm::vec3>(mesh_data, MeshInstance::VertexAttributeIDs::GetPositionName(), vertex_attribute_storage);
 			position_attribute.reserve(fbx_mesh->mNumVertices);
 			for (unsigned int vertex = 0; vertex < fbx_mesh->mNumVertices; vertex++)
 			{
@@ -145,7 +145,7 @@ namespace nap
 			// Copy normals
 			if (fbx_mesh->HasNormals())
 			{
-				TypedVertexAttribute<glm::vec3>& normal_attribute = CreateAttribute<glm::vec3>(mesh_data, MeshInstance::VertexAttributeIDs::GetNormalVertexAttr(), vertex_attribute_storage);
+				TypedVertexAttribute<glm::vec3>& normal_attribute = CreateAttribute<glm::vec3>(mesh_data, MeshInstance::VertexAttributeIDs::getNormalName(), vertex_attribute_storage);
 				normal_attribute.reserve(fbx_mesh->mNumVertices);
 				for (unsigned int vertex = 0; vertex < fbx_mesh->mNumVertices; vertex++)
 				{
@@ -159,7 +159,7 @@ namespace nap
 			{
 				aiVector3D* uv_channel_data = fbx_mesh->mTextureCoords[uv_channel];
 
-				TypedVertexAttribute<glm::vec3>& uv_attribute = CreateAttribute<glm::vec3>(mesh_data, MeshInstance::VertexAttributeIDs::GetUVVertexAttr(uv_channel), vertex_attribute_storage);
+				TypedVertexAttribute<glm::vec3>& uv_attribute = CreateAttribute<glm::vec3>(mesh_data, MeshInstance::VertexAttributeIDs::GetUVName(uv_channel), vertex_attribute_storage);
 				uv_attribute.reserve(fbx_mesh->mNumVertices);
 
 				// Copy uv data channel
@@ -176,7 +176,7 @@ namespace nap
 			{
 				aiColor4D* color_channel_data = fbx_mesh->mColors[color_channel];
 
-				TypedVertexAttribute<glm::vec4>& color_attribute = CreateAttribute<glm::vec4>(mesh_data, MeshInstance::VertexAttributeIDs::GetColorVertexAttr(color_channel), vertex_attribute_storage);
+				TypedVertexAttribute<glm::vec4>& color_attribute = CreateAttribute<glm::vec4>(mesh_data, MeshInstance::VertexAttributeIDs::GetColorName(color_channel), vertex_attribute_storage);
 				color_attribute.reserve(fbx_mesh->mNumVertices);
 
 				// Copy color data channel

@@ -113,12 +113,12 @@ void onUpdate()
 	nap::IMesh& mesh = planeEntity->getComponent<nap::RenderableMeshComponentInstance>().getMesh();
 	nap::Mesh* rtti_mesh = rtti_cast<nap::Mesh>(&mesh);
 	assert(rtti_mesh != nullptr);
-	const nap::Vec3VertexAttribute& src_position_attribute = rtti_mesh->GetAttribute<glm::vec3>(nap::MeshInstance::VertexAttributeIDs::GetPositionVertexAttr());
+	const nap::Vec3VertexAttribute& src_position_attribute = rtti_mesh->GetAttribute<glm::vec3>(nap::MeshInstance::VertexAttributeIDs::GetPositionName());
 	const std::vector<glm::vec3>& src_positions = src_position_attribute.getValues();
 
 	// Retrieve destination (instance) mesh data
 	nap::MeshInstance& mesh_instance = mesh.getMeshInstance();
-	nap::Vec3VertexAttribute& dst_position_attribute = mesh_instance.GetAttribute<glm::vec3>(nap::MeshInstance::VertexAttributeIDs::GetPositionVertexAttr());
+	nap::Vec3VertexAttribute& dst_position_attribute = mesh_instance.GetAttribute<glm::vec3>(nap::MeshInstance::VertexAttributeIDs::GetPositionName());
 	std::vector<glm::vec3>& dst_positions = dst_position_attribute.getValues();
 
 	// Sine wave over our quad

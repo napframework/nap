@@ -63,22 +63,22 @@ namespace nap
 		 */
 		struct VertexAttributeIDs
 		{
-			static const NAPAPI VertexAttributeID GetPositionVertexAttr();	//< Default position vertex attribute name
-			static const NAPAPI VertexAttributeID GetNormalVertexAttr();	//< Default normal vertex attribute name
+			static const NAPAPI VertexAttributeID GetPositionName();	//< Default position vertex attribute name
+			static const NAPAPI VertexAttributeID getNormalName();	//< Default normal vertex attribute name
 
 			/**
 			 * Returns the name of the vertex uv attribute based on the queried uv channel
 			 * @param uvChannel: the uv channel index to query
 			 * @return the name of the vertex attribute
 			 */
-			static const NAPAPI VertexAttributeID GetUVVertexAttr(int uvChannel);
+			static const NAPAPI VertexAttributeID GetUVName(int uvChannel);
 
 			/**
 			 *	Returns the name of the vertex color attribute based on the queried uv channel
 			 * @param colorChannel: the color channel index to query
 			 * @return the name of the color vertex attribute
 			 */
-			static const NAPAPI VertexAttributeID GetColorVertexAttr(int colorChannel);
+			static const NAPAPI VertexAttributeID GetColorName(int colorChannel);
 		};
 
 		// Default constructor
