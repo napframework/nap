@@ -3,12 +3,12 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMainWindow, QDockWidget
 
 
-class QBaseWindow(QMainWindow):
+class BaseWindow(QMainWindow):
     __WIN_GEO = 'WindowGeometry'
     __WIN_STATE = 'WindowState'
 
     def __init__(self):
-        super(QBaseWindow, self).__init__()
+        super(BaseWindow, self).__init__()
         self.setWindowTitle(QCoreApplication.applicationName())
         self.setDockNestingEnabled(True)
         self.__windowMenu = None
@@ -30,7 +30,7 @@ class QBaseWindow(QMainWindow):
         self.addDockWidget(area, dock)
 
     def showEvent(self, e):
-        super(QBaseWindow, self).showEvent(e)
+        super(BaseWindow, self).showEvent(e)
         s = QSettings()
         v = s.value(self.__WIN_GEO)
         if v:
@@ -40,7 +40,7 @@ class QBaseWindow(QMainWindow):
             self.restoreState(v)
 
     def closeEvent(self, e):
-        super(QBaseWindow, self).closeEvent(e)
+        super(BaseWindow, self).closeEvent(e)
         s = QSettings()
         s.setValue(self.__WIN_STATE, self.saveState())
         s.setValue(self.__WIN_GEO, self.saveGeometry())

@@ -47,7 +47,7 @@ class LeafFilterProxyModel(QSortFilterProxyModel):
 
     def hasAcceptedChildren(self, row_num, parent):
         """ Starting from the current node as root, traverse all
-            the descendants and test if any of the children match
+            the descendants and _sandbox if any of the children match
         """
         model = self.sourceModel()
         source_index = model.index(row_num, 0, parent)

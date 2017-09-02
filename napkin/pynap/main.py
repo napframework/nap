@@ -3,7 +3,7 @@ import sys
 from pynap.logpanel import LogPanel
 from pynap.propertypanel import PropertyPanel
 from pynap.servicepanel import ServicePanel
-from generic.qbasewindow import QBaseWindow
+from generic.basewindow import BaseWindow
 
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
@@ -13,7 +13,7 @@ from pynap.typehierarchypanel import TypeHierarchyPanel
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    win = QBaseWindow()
+    win = BaseWindow()
 
     win.addDock('Types', TypeHierarchyPanel())
     win.addDock('Services', ServicePanel())

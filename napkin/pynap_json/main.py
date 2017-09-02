@@ -5,7 +5,7 @@ from PyQt5.QtCore import QSettings
 from PyQt5.QtWidgets import *
 
 from generic.proxystyle import MyProxyStyle
-from generic.qbasewindow import QBaseWindow
+from generic.basewindow import BaseWindow
 from pynap_json.actions import LAST_FILE, OpenFileAction, SaveFileAction, \
     SaveFileAsAction
 from pynap_json.executablepanel import ExecutablePanel
@@ -17,7 +17,7 @@ from pynap_json.inspectorpanel import InspectorPanel
 def main():
     # QApplication.setStyle(MyProxyStyle(QApplication.style()))
     app = QApplication(sys.argv)
-    win = QBaseWindow()
+    win = BaseWindow()
 
     objectPanel = OutlinePanel()
     win.addDock('Outline', objectPanel)

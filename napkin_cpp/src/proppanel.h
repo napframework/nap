@@ -10,13 +10,34 @@
 /**
  * This item shows the name of an object's property
  */
-class PropertyNameItem : public QStandardItem {
+class PropertyItem : public QStandardItem {
 public:
-    PropertyNameItem(rttr::property prop);
+    PropertyItem(rttr::property prop, rttr::instance inst);
 
-private:
+protected:
     rttr::property mProperty;
+    rttr::instance mInstance;
 };
+
+/**
+ * The property is has child properties
+ */
+class CompoundPropertyItem : public PropertyItem {
+public:
+    CompoundPropertyItem(rttr::property prop, rttr::instance inst);
+    void processChildren();
+
+};
+
+/**
+ * The property is an editable list of child properties
+ */
+class ArrayPropertyItem : public PropertyItem {
+public:
+    ArrayPropertyItem(rttr::property, rttr::instance inst);
+    void processChildren();
+};
+
 
 
 /**

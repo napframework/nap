@@ -1,3 +1,0 @@
-NAP_MODULE_NAME = 'Math'
-
-DATA_TYPES = []

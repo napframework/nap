@@ -10,7 +10,7 @@ class PinItem(QGraphicsPathItem):
 
     def __init__(self, socket):
         """
-        @type socket: patch.socketitem.SocketItem
+        @type socket: models.socketitem.SocketItem
         """
         super(PinItem, self).__init__(socket)
         self._socket = socket

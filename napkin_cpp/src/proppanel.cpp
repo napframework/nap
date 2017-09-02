@@ -8,11 +8,66 @@ using namespace nap;
 using namespace nap::rtti;
 
 
-PropertyNameItem::PropertyNameItem(rttr::property prop) : QStandardItem(), mProperty(prop) {
+
+QList<QStandardItem*> createItemRow(rttr::property prop, rttr::instance inst) {
+    // Select item based on type
+    auto value = prop.get_value(inst);
+    auto value_type = value.get_type();
+    auto wrapped_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
+    bool is_wrapper = wrapped_type != value_type;
+
+    QStandardItem* nameItem = nullptr;
+
+    if (wrapped_type.is_array()) {
+        nameItem = new ArrayPropertyItem(prop, inst);
+    } else if (wrapped_type.is_associative_container()) {
+        assert(false);
+    } else if (wrapped_type.is_pointer()) {
+        nameItem = new PropertyItem(prop, inst);
+    } else if (rtti::isPrimitive(wrapped_type)) {
+        nameItem = new PropertyItem(prop, inst);
+    } else {
+        nameItem = new CompoundPropertyItem(prop, inst);
+    }
+
+    auto valueItem = new PropertyValueItem(inst, prop);
+    auto typeItem = new TypeItem(prop.get_type());
+    return {nameItem, valueItem, typeItem};
+}
+
+PropertyItem::PropertyItem(rttr::property prop, rttr::instance inst) : QStandardItem(), mProperty(prop), mInstance(inst) {
     setText(prop.get_name().data());
     setEditable(false);
     setForeground(softForeground());
 }
+
+CompoundPropertyItem::CompoundPropertyItem(rttr::property prop, rttr::instance inst) : PropertyItem(prop, inst) {
+    if (!TypeConverter::get(mProperty.get_type()))
+        processChildren();
+}
+
+void CompoundPropertyItem::processChildren() {
+    for (auto childprop : mProperty.get_type().get_properties()) {
+        appendRow(createItemRow(childprop, mProperty));
+    }
+}
+
+ArrayPropertyItem::ArrayPropertyItem(rttr::property prop, rttr::instance inst) : PropertyItem(prop, inst) {
+    processChildren();
+}
+
+void ArrayPropertyItem::processChildren() {
+    auto value = mProperty.get_value(mInstance);
+    auto array = value.create_array_view();
+    for (int i=0; i < array.get_size(); i++) {
+        auto elementType = array.get_rank_type(i);
+        nap::Logger::info(elementType.get_name().data());
+
+        rttr::variant var = array.get_value(i);
+        appendRow(createItemRow(mProperty, var));
+    }
+}
+
 
 PropertyValueItem::PropertyValueItem(rttr::instance obj, rttr::property prop)
         : QStandardItem(), mInstance(obj), mProperty(prop) {
@@ -32,7 +87,7 @@ QVariant PropertyValueItem::data(int role) const {
         auto converter = TypeConverter::get(type);
         if (converter)
             return converter->toVariant(mProperty, mInstance);
-        return QString("<<UNKNOWN>>");
+        return QString("");
     }
     return QStandardItem::data(role);
 }
@@ -71,11 +126,7 @@ void InspectorModel::setObjects(QList<RTTIObject*>& inst) {
             || prop.get_name() == "Children")
             continue;
 
-
-        auto nameItem = new PropertyNameItem(prop);
-        auto valueItem = new PropertyValueItem(instance, prop);
-        auto typeItem = new TypeItem(prop.get_type());
-        appendRow({nameItem, valueItem, typeItem});
+        appendRow(createItemRow(prop, instance));
     }
 }
 
@@ -94,4 +145,6 @@ InspectorPanel::InspectorPanel() {
 
 void InspectorPanel::setObjects(QList<RTTIObject*>& objects) {
     mModel.setObjects(objects);
+    mTreeView.tree().expandAll();
 }
+

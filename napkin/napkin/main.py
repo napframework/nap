@@ -1,13 +1,12 @@
 import json
-import os
 import sys
 
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from generic.qbasewindow import QBaseWindow
-from napkin.test.patchpanel import PatchPanel
+from generic.basewindow import BaseWindow
+from napkin.views.patchpanel import PatchPanel
 from pynap_json.outlinepanel import OutlinePanel
 
 EXT = '.json'
@@ -38,7 +37,7 @@ if __name__ == '__main__':
     outline = OutlinePanel()
     patchPanel.selectionChanged.connect(outline.setObjects)
 
-    win = QBaseWindow()
+    win = BaseWindow()
     win.addDock('Patch', patchPanel)
     win.addDock('Outline', outline)
 

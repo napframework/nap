@@ -1,9 +1,8 @@
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-
-from napkin.patch.nodeitem import SocketItem, NodeItem, PinItem
-from napkin.patch.patchutils import moveToFront, Margins
+from napkin.views.nodeitem import *
+from napkin.views.patchutils import moveToFront
 
 
 class InputSocketItem(SocketItem):
@@ -189,7 +188,8 @@ class TitleItem(QGraphicsTextItem):
     def __init__(self):
         super(TitleItem, self).__init__()
 
-    def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget):
+    def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem,
+              widget: QWidget):
         painter.fillRect(self.boundingRect(), QBrush(QColor('#DDDDDD')))
         super(TitleItem, self).paint(painter, option, widget)
 

@@ -78,11 +78,8 @@ namespace nap
 			// If this is an array, recurse
 			if (wrapped_type.is_array())
 			{
-				if (!serializeArray(property, value.create_array_view(), objectsToSerialize, writer, errorState))
-					return false;
-
-				return true;
-			}
+                return serializeArray(property, value.create_array_view(), objectsToSerialize, writer, errorState);
+            }
 			else if (wrapped_type.is_associative_container())
 			{
 				errorState.fail("Associative containers are not supported");
