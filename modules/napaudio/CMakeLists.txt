@@ -7,8 +7,6 @@ file(GLOB_RECURSE sources src/*.cpp src/*.h)
 
 if (APPLE)
     set(LIBRARIES napcore ${PORTAUDIO_LIBRARIES} ${LIBSNDFILE_LIBRARIES} "-framework CoreAudio" "-framework CoreServices" "-framework CoreFoundation" "-framework AudioUnit" "-framework AudioToolbox")
-elseif(UNIX)
-    set(LIBRARIES napcore portaudio libsndfile)
 else()
     set(LIBRARIES napcore ${PORTAUDIO_LIBRARIES} ${LIBSNDFILE_LIBRARIES})
 endif()

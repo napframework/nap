@@ -7,7 +7,7 @@
 namespace nap {
     
     namespace audio {
-    
+
         void AudioService::process(float** inputBuffer, float** outputBuffer, unsigned long framesPerBuffer)
         {
             // process tasks that are enqueued from outside the audio thread

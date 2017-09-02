@@ -1,4 +1,4 @@
-
+#include <iostream>
 
 // Nap includes
 #include <nap/core.h>
@@ -28,6 +28,7 @@ std::unique_ptr<nap::audio::AudioDeviceManager> audioDeviceManager = nullptr;
 
 // Audio buffer
 nap::audio::MultiSampleBuffer audioFileBuffer;
+float fileSampleRate;
 
 // Audio nodes
 std::unique_ptr<nap::audio::Noise> noise = nullptr;
@@ -60,7 +61,6 @@ void onUpdate()
 bool init(nap::Core& core)
 {
     // Read an audio file
-    float fileSampleRate;
     nap::audio::readAudioFile("data/audiotest/test.wav", audioFileBuffer, fileSampleRate);
     
     audioService = core.getOrCreateService<nap::audio::AudioService>();
@@ -147,17 +147,18 @@ int main(int argc, char *argv[])
 
 void run(nap::Core& core)
 {
-	// Run function
-	bool loop = true;
+//	// Run function
+//	bool loop = true;
+//
+//
+//	// Loop
+//	while (loop)
+//	{
+//		// run update call
+//		onUpdate();
+//	}
 
-
-	// Loop
-	while (loop)
-	{
-		// run update call
-		onUpdate();
-	}
-
+	std::cin.get();
 }
        
      
