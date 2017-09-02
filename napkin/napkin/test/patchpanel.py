@@ -1,10 +1,11 @@
-from patch.edgeitem import EdgeItem
-from patch.graphscene import GraphScene
-from patch.graphview import GraphView
-from patch.inoutnodeitem import *
-from patch.nodeitem import SocketItem
-from patch.operator import *
-from utils.qtutils import randomTypeColor
+from generic.qtutils import randomTypeColor
+from napkin.patch.edgeitem import EdgeItem
+from napkin.patch.graphscene import GraphScene
+from napkin.patch.graphview import GraphView
+from napkin.patch.inoutnodeitem import *
+from napkin.patch.nodeitem import SocketItem
+from napkin.patch.operator import *
+
 
 
 def dataTypeCondition(src: SocketItem, dst: SocketItem):

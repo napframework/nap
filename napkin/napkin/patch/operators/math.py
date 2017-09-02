@@ -1,4 +1,4 @@
-from patch.operator import *
+from napkin.patch.operator import *
 
 
 def add(a: float = 0, b: float = 0) -> float: return a + b

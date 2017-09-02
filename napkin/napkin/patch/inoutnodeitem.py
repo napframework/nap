@@ -2,8 +2,8 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from patch.nodeitem import SocketItem, NodeItem, PinItem
-from patch.patchutils import moveToFront, Margins
+from napkin.patch.nodeitem import SocketItem, NodeItem, PinItem
+from napkin.patch.patchutils import moveToFront, Margins
 
 
 class InputSocketItem(SocketItem):

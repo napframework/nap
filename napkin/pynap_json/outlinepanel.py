@@ -89,6 +89,9 @@ class OutlinePanel(QWidget):
     def __onRowsInserted(self, parent, first, last):
         self.__tree.expandAll()
 
+    def setObjects(self, objects: Iterable[NAPObject]):
+        self.model().setObjects(objects)
+
     def model(self) -> ObjectModel:
         return self.__tree.model()
 

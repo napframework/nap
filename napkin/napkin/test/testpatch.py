@@ -6,9 +6,9 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from patch.outline import OutlinePanel
-from test.patchpanel import PatchPanel
-from utils.qtutils import QBaseWindow, QCoreApplication
+from generic.qbasewindow import QBaseWindow
+from napkin.test.patchpanel import PatchPanel
+from pynap_json.outlinepanel import OutlinePanel
 
 EXT = '.json'
 FILE_FILTER = "json (*%s)" % EXT

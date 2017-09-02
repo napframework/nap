@@ -3,10 +3,10 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from patch.inoutnodeitem import InputSocketItem
-from patch.inoutnodeitem import OutputSocketItem
-from patch.nodeitem import SocketItem
-from patch.patchutils import calculateWirePath
+from napkin.patch.inoutnodeitem import InputSocketItem
+from napkin.patch.inoutnodeitem import OutputSocketItem
+from napkin.patch.nodeitem import SocketItem
+from napkin.patch.patchutils import calculateWirePath
 
 
 class EdgeItemBase(QGraphicsPathItem):

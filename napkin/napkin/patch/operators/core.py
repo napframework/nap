@@ -1,6 +1,6 @@
 from typing import Any
 
-from patch.operator import *
+from napkin.patch.operator import *
 
 
 def bool_and(a: bool = False, b: bool = False) -> bool: return a and b

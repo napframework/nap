@@ -2,7 +2,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from patch.nodeitem import NodeItem, SocketItem, PinItem
+from napkin.patch.nodeitem import NodeItem, SocketItem, PinItem
 
 
 class GraphView(QGraphicsView):

@@ -9,7 +9,8 @@ from typing import Iterable, Tuple, Union
 
 import collections
 
-from patch import operators
+import napkin
+from napkin.patch import operators
 
 TYPE_CONVERSION = {
     object: {
@@ -98,7 +99,8 @@ class Obj(object, metaclass=OrderedClass):
 
     def name(self) -> str:
         if self.__parent:
-            return next((k for k, v in self.__parent.children() if v == self), None)
+            return next((k for k, v in self.__parent.children() if v == self),
+                        None)
         return ''
 
     def add(self, name, obj):
@@ -306,9 +308,12 @@ def operatorsInModule(mod: types.ModuleType) -> Iterable[type]:
 def modulesInFolder(folder: str) -> Iterable[types.ModuleType]:
     for f in os.listdir(folder):
         name, ext = os.path.splitext(f)
-        if not ext == '.py': continue
-        if name == '__init__': continue
-        yield importlib.import_module('patch.operators.%s' % name, f)
+        if not ext == '.py' or name == '__init__':
+            continue
+        from napkin.patch import operators
+        # parentmodule = '%s.%s' % (
+        # operators.__name__, operators.__class__.__name__)
+        yield importlib.import_module('%s.%s' % (operators.__name__, name), f)
         # spec = importlib.util.spec_from_file_location('modname', folder)
         # foo = importlib.util.module_from_spec(spec)
         # return spec.loader.exec_module(foo)

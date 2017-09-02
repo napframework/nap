@@ -1,10 +1,10 @@
 import math
 from typing import Iterable
 
-from patch.edgeitem import *
-from patch.inoutnodeitem import *
-from patch.layeritem import *
-from patch.nodeitem import *
+from napkin.patch.edgeitem import *
+from napkin.patch.inoutnodeitem import *
+from napkin.patch.layeritem import *
+from napkin.patch.nodeitem import *
 
 
 def inputOutputConnectCondition(src: SocketItem, dst: SocketItem):

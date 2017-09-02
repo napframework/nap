@@ -1,4 +1,4 @@
-from patch.operator import *
+from napkin.patch.operator import *
 
 class ReadFile(Operator):
     displayName = 'readfile'
