@@ -24,7 +24,7 @@ elseif(APPLE)
 
 else()
     set(LIBSNDFILE_LIB_DIR ${LIBSNDFILE_DIR}/linux)
-    set(LIBSNDFILE_LIBRARIES ${LIBSNDFILE_LIB_DIR}/libsndfile.a)
+    set(LIBSNDFILE_LIBRARIES ${LIBSNDFILE_LIB_DIR}/libsndfile.so)
 
 endif()
 

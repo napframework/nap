@@ -9,17 +9,17 @@
 // nap includes
 #include <utility/dllexport.h>
 
-//#include "audioservice.h"
-
 namespace nap {
     
     namespace audio {
         
+        // Forward declarations
+        class AudioService;
         
         class NAPAPI AudioDeviceManager {
         public:
         public:
-            AudioDeviceManager();
+            AudioDeviceManager(AudioService& service);
             ~AudioDeviceManager();
             
             static unsigned int getDeviceCount();
@@ -33,6 +33,7 @@ namespace nap {
             
         private:
             PaStream* mStream = nullptr;
+            AudioService& mService;
         };
         
         

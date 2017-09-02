@@ -27,7 +27,7 @@ elseif(APPLE)
 
 else()
     set(PORTAUDIO_LIB_DIR  ${PORTAUDIO_DIR}/linux)
-    set(PORTAUDIO_LIBRARIES ${PORTAUDIO_LIB_DIR}/libportaudio.a)
+    set(PORTAUDIO_LIBRARIES ${PORTAUDIO_LIB_DIR}/libportaudio.so)
 
 endif()
 

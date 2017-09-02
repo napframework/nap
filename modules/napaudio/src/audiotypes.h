@@ -17,6 +17,7 @@ namespace nap {
         typedef NAPAPI float SampleValue;
         
         typedef NAPAPI std::vector<SampleValue> SampleBuffer;
+        typedef NAPAPI SampleBuffer* SampleBufferPtr;
 
         class NAPAPI MultiSampleBuffer {
         public:
@@ -37,6 +38,7 @@ namespace nap {
             
             std::vector<SampleBuffer> channels;
         };
+        typedef NAPAPI MultiSampleBuffer* MultiSampleBufferPtr;
         
         /*
          * Value of control parameter
@@ -55,7 +57,7 @@ namespace nap {
 		typedef NAPAPI long DiscreteTimeValue;
         
         
-        // constexpr NAPAPI ControllerValue pi = 3.1415926535897932384626433832795028841971693993751;
+        constexpr NAPAPI ControllerValue pi = 3.1415926535897932384626433832795028841971693993751;
         
     }
         
