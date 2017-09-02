@@ -9,7 +9,7 @@ namespace nap {
     
         class Gain : public AudioNode {            
         public:
-            Gain(AudioService& service) : AudioNode(service) { }
+            Gain(AudioNodeManager& manager) : AudioNode(manager) { }
             
             AudioInput audioInput;
             AudioOutput audioOutput = { this, &Gain::calculate };

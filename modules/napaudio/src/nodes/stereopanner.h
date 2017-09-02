@@ -8,7 +8,7 @@ namespace nap {
         
         class StereoPanner : public AudioNode {
         public:
-            StereoPanner(AudioService& service) : AudioNode(service)
+            StereoPanner(AudioNodeManager& manager) : AudioNode(manager)
             {
                 setPanning(mPanning);
             }

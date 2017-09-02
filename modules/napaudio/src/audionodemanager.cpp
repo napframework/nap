@@ -1,4 +1,4 @@
-#include "audioservice.h"
+#include "audionodemanager.h"
 #include "audionode.h"
 
 #include <nap/logger.h>
@@ -8,7 +8,7 @@ namespace nap {
     
     namespace audio {
 
-        void AudioService::process(float** inputBuffer, float** outputBuffer, unsigned long framesPerBuffer)
+        void AudioNodeManager::process(float** inputBuffer, float** outputBuffer, unsigned long framesPerBuffer)
         {
             // process tasks that are enqueued from outside the audio thread
             mAudioCallbackTaskQueue.process();
@@ -40,14 +40,14 @@ namespace nap {
         }
         
         
-        void AudioService::setInputChannelCount(int inputChannelCount)
+        void AudioNodeManager::setInputChannelCount(int inputChannelCount)
         {
             mInputChannelCount = inputChannelCount;
         }
         
         
         
-        void AudioService::setOutputChannelCount(int outputChannelCount)
+        void AudioNodeManager::setOutputChannelCount(int outputChannelCount)
         {
             mOutputChannelCount = outputChannelCount;
             mOutputMapping.clear();
@@ -55,7 +55,7 @@ namespace nap {
         }
         
         
-        void AudioService::setInternalBufferSize(int size)
+        void AudioNodeManager::setInternalBufferSize(int size)
         {
             mInternalBufferSize = size;
             for (auto& node : mAudioNodes)
@@ -63,7 +63,7 @@ namespace nap {
         }
         
         
-        void AudioService::setSampleRate(float sampleRate)
+        void AudioNodeManager::setSampleRate(float sampleRate)
         {
             mSampleRate = sampleRate;
             for (auto& node : mAudioNodes)
@@ -71,7 +71,7 @@ namespace nap {
         }
         
         
-        void AudioService::registerNode(AudioNode& node)
+        void AudioNodeManager::registerNode(AudioNode& node)
         {
             mAudioNodes.emplace(&node);
             node.setSampleRate(mSampleRate);
@@ -79,7 +79,7 @@ namespace nap {
         }
         
         
-        void AudioService::addOutputBuffer(SampleBufferPtr buffer, int channel)
+        void AudioNodeManager::addOutputBuffer(SampleBufferPtr buffer, int channel)
         {
             assert(channel < mOutputMapping.size());
             mOutputMapping[channel].emplace_back(buffer);
@@ -88,6 +88,4 @@ namespace nap {
     }
     
 }
-
-RTTI_DEFINE(nap::audio::AudioService)
 

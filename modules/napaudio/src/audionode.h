@@ -14,7 +14,7 @@ namespace nap {
     
         
         // Forward declarations
-        class AudioService;
+        class AudioNodeManager;
         class AudioNode;
         class AudioOutput;
         
@@ -61,7 +61,7 @@ namespace nap {
         private:
             using CalculateFunction = std::function<void(SampleBuffer&)>;
             
-            // Used by the AudioService to resize the internal buffers when necessary
+            // Used by the AudioNodeManager to resize the internal buffers when necessary
             void setBufferSize(int bufferSize);
 
             // The time stamp of the latest calculated sample in the buffer
@@ -80,11 +80,11 @@ namespace nap {
          * Use this as a base class for operators that generate audio output.
          */
         class AudioNode {
-            friend class AudioService;
+            friend class AudioNodeManager;
             friend class AudioOutput;
             
         public:
-            AudioNode(AudioService& service);
+            AudioNode(AudioNodeManager& manager);
             ~AudioNode();
             
             int getBufferSize() const;
@@ -97,10 +97,10 @@ namespace nap {
             // Called whenever the internal buffer size changes
             virtual void bufferSizeChanged(int bufferSize) { }
             
-            AudioService* mAudioService = nullptr;
+            AudioNodeManager* mAudioNodeManager = nullptr;
             
         private:
-            // Used by the AudioService to resize the internal buffers when necessary
+            // Used by the AudioNodeManager to resize the internal buffers when necessary
             void setBufferSize(int bufferSize);
             void setSampleRate(float sampleRate) { sampleRateChanged(sampleRate); }
             
@@ -109,10 +109,10 @@ namespace nap {
         
         
         class AudioTrigger : public AudioNode {
-            friend class AudioService;
+            friend class AudioNodeManager;
             
         public:
-            AudioTrigger(AudioService& service);
+            AudioTrigger(AudioNodeManager& service);
             ~AudioTrigger();
             
         private:
@@ -126,7 +126,7 @@ namespace nap {
          */
         class AudioOutputNode : public AudioTrigger {
         public:
-            AudioOutputNode(AudioService& service) : AudioTrigger(service) { }
+            AudioOutputNode(AudioNodeManager& manager) : AudioTrigger(manager) { }
             
             AudioInput audioInput;
             int outputChannel = 0;
@@ -141,10 +141,10 @@ namespace nap {
          * Input from channel @inputChannel can be pulled from @audioOutput plug.
          */
         class AudioInputNode : public AudioNode {
-            friend class AudioService;
+            friend class AudioNodeManager;
             
         public:
-            AudioInputNode(AudioService& service) : AudioNode(service) { }
+            AudioInputNode(AudioNodeManager& service) : AudioNode(service) { }
             
             AudioOutput audioOutput = { this, &AudioInputNode::fill };
             

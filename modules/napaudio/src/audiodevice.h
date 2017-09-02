@@ -14,12 +14,12 @@ namespace nap {
     namespace audio {
         
         // Forward declarations
-        class AudioService;
+        class AudioNodeManager;
         
         class NAPAPI AudioDeviceManager {
         public:
         public:
-            AudioDeviceManager(AudioService& service);
+            AudioDeviceManager(AudioNodeManager& nodeManager);
             ~AudioDeviceManager();
             
             static unsigned int getDeviceCount();
@@ -33,7 +33,7 @@ namespace nap {
             
         private:
             PaStream* mStream = nullptr;
-            AudioService& mService;
+            AudioNodeManager& mNodeManager;
         };
         
         

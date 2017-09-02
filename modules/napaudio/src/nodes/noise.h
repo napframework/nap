@@ -8,7 +8,7 @@ namespace nap {
         
         class Noise : public AudioNode {
         public:
-            Noise(AudioService& service) : AudioNode(service) { }
+            Noise(AudioNodeManager& manager) : AudioNode(manager) { }
         
             AudioOutput audioOutput = { this, &Noise::calculate };
             

@@ -1,5 +1,5 @@
 #include "audionode.h"
-#include "audioservice.h"
+#include "audionodemanager.h"
 
 
 namespace nap {
@@ -47,32 +47,32 @@ namespace nap {
         
         int AudioNode::getBufferSize() const
         {
-            return mAudioService->getInternalBufferSize();
+            return mAudioNodeManager->getInternalBufferSize();
         }
         
         
         float AudioNode::getSampleRate() const
         {
-            return mAudioService->getSampleRate();
+            return mAudioNodeManager->getSampleRate();
         }
         
         
         DiscreteTimeValue AudioNode::getSampleTime() const
         {
-            return mAudioService->getSampleTime();
+            return mAudioNodeManager->getSampleTime();
         }
         
         
-        AudioNode::AudioNode(AudioService& service)
+        AudioNode::AudioNode(AudioNodeManager& service)
         {
-            mAudioService = &service;
+            mAudioNodeManager = &service;
             service.registerNode(*this);
         }
         
         
         AudioNode::~AudioNode()
         {
-            mAudioService->unregisterNode(*this);
+            mAudioNodeManager->unregisterNode(*this);
         }
         
         
@@ -85,7 +85,7 @@ namespace nap {
         }
         
         
-        AudioTrigger::AudioTrigger(AudioService& service) : AudioNode(service)
+        AudioTrigger::AudioTrigger(AudioNodeManager& service) : AudioNode(service)
         {
             service.registerTrigger(*this);
         }
@@ -93,7 +93,7 @@ namespace nap {
         
         AudioTrigger::~AudioTrigger()
         {
-            mAudioService->unregisterTrigger(*this);
+            mAudioNodeManager->unregisterTrigger(*this);
         }
         
         
@@ -102,14 +102,14 @@ namespace nap {
         {
             SampleBufferPtr buffer = audioInput.pull();
             if (buffer)
-                mAudioService->addOutputBuffer(buffer, outputChannel);
+                mAudioNodeManager->addOutputBuffer(buffer, outputChannel);
         }
         
         
         void AudioInputNode::fill(SampleBuffer& buffer)
         {
             for (auto i = 0; i < buffer.size(); ++i)
-                buffer[i] = mAudioService->getInputSample(inputChannel, i);
+                buffer[i] = mAudioNodeManager->getInputSample(inputChannel, i);
         }
 
     }

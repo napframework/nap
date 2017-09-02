@@ -1,10 +1,9 @@
 // Nap includes
 #include <nap/logger.h>
 
-
 // Audio includes
 #include "audiodevice.h"
-#include "audioservice.h"
+#include "audionodemanager.h"
 
 namespace nap {
     
@@ -20,14 +19,14 @@ namespace nap {
             float** in = (float**)inputBuffer;
             
             
-            AudioService* service = reinterpret_cast<AudioService*>(userData);
-            service->process(in, out, framesPerBuffer);
+            AudioNodeManager* nodeManager = reinterpret_cast<AudioNodeManager*>(userData);
+            nodeManager->process(in, out, framesPerBuffer);
             
             return 0;
         }
         
         
-        AudioDeviceManager::AudioDeviceManager(AudioService& service) : mService(service)
+        AudioDeviceManager::AudioDeviceManager(AudioNodeManager& nodeManager) : mNodeManager(nodeManager)
         {
             auto error = Pa_Initialize();
             if (error != paNoError)
@@ -85,13 +84,13 @@ namespace nap {
             outputParameters.suggestedLatency = 0;
             outputParameters.hostApiSpecificStreamInfo = nullptr;
             
-            auto error = Pa_OpenStream(&mStream, &inputParameters, &outputParameters, sampleRate, bufferSize, paNoFlag, audioCallback, &mService);
+            auto error = Pa_OpenStream(&mStream, &inputParameters, &outputParameters, sampleRate, bufferSize, paNoFlag, audioCallback, &mNodeManager);
             if (error != paNoError)
                 Logger::warn("Portaudio error: " + std::string(Pa_GetErrorText(error)));
             
-            mService.setInputChannelCount(inputChannelCount);
-            mService.setOutputChannelCount(outputChannelCount);
-            mService.setSampleRate(sampleRate);
+            mNodeManager.setInputChannelCount(inputChannelCount);
+            mNodeManager.setOutputChannelCount(outputChannelCount);
+            mNodeManager.setSampleRate(sampleRate);
             
             error = Pa_StartStream(mStream);
             if (error != paNoError)
@@ -108,13 +107,13 @@ namespace nap {
         
         void AudioDeviceManager::startDefaultDevice(int inputChannelCount, int outputChannelCount, float sampleRate, int bufferSize)
         {
-            auto error = Pa_OpenDefaultStream(&mStream, inputChannelCount, outputChannelCount, paFloat32 | paNonInterleaved, sampleRate, bufferSize, audioCallback, &mService);
+            auto error = Pa_OpenDefaultStream(&mStream, inputChannelCount, outputChannelCount, paFloat32 | paNonInterleaved, sampleRate, bufferSize, audioCallback, &mNodeManager);
             if (error != paNoError)
                 Logger::warn("Portaudio error: " + std::string(Pa_GetErrorText(error)));
             
-            mService.setInputChannelCount(inputChannelCount);
-            mService.setOutputChannelCount(outputChannelCount);
-            mService.setSampleRate(sampleRate);
+            mNodeManager.setInputChannelCount(inputChannelCount);
+            mNodeManager.setOutputChannelCount(outputChannelCount);
+            mNodeManager.setSampleRate(sampleRate);
             
             error = Pa_StartStream(mStream);
             if (error != paNoError)

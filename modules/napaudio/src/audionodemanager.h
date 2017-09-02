@@ -4,7 +4,6 @@
 #include <mutex>
 
 // Nap includes
-#include <nap/service.h>
 #include <nap/threading.h>
 
 // Audio includes
@@ -21,9 +20,7 @@ namespace nap {
         /*
          * Services that takes care of the processing of the audio nodes for an audio device
          */
-        class NAPAPI AudioService : public Service {
-            RTTI_ENABLE(Service)
-            
+        class NAPAPI AudioNodeManager {
             friend class AudioNode;
             friend class AudioTrigger;
             friend class AudioOutputNode;
@@ -33,7 +30,7 @@ namespace nap {
             using OutputMapping = std::vector<std::vector<SampleBufferPtr>>;
             
         public:
-            AudioService() = default;
+            AudioNodeManager() = default;
             
             /*
              * This function is called on every audio callback.

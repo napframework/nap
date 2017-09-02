@@ -9,7 +9,7 @@
 // Audio module includes
 #include <audiodevice.h>
 #include <audiotypes.h>
-#include <audioservice.h>
+#include <audionodemanager.h>
 #include <utility/audiofilereader.h>
 #include <nodes/noise.h>
 #include <nodes/bufferplayer.h>
@@ -20,10 +20,13 @@
 //////////////////////////////////////////////////////////////////////////
 
 // Nap Objects
+
+nap::Core core;
+
 nap::ResourceManagerService* resourceManagerService = nullptr;
-nap::audio::AudioService* audioService = nullptr;
 
 // Audio device
+std::unique_ptr<nap::audio::AudioNodeManager> audioNodeManager = nullptr;
 std::unique_ptr<nap::audio::AudioDeviceManager> audioDeviceManager = nullptr;
 
 // Audio buffer
@@ -63,32 +66,32 @@ bool init(nap::Core& core)
     // Read an audio file
     nap::audio::readAudioFile("data/audiotest/test.wav", audioFileBuffer, fileSampleRate);
     
-    audioService = core.getOrCreateService<nap::audio::AudioService>();
+    audioNodeManager = std::make_unique<nap::audio::AudioNodeManager>();
     
     // Start audio device
-    audioDeviceManager = std::make_unique<nap::audio::AudioDeviceManager>(*audioService);
+    audioDeviceManager = std::make_unique<nap::audio::AudioDeviceManager>(*audioNodeManager);
     audioDeviceManager->startDefaultDevice(1, 2, 44100, 256);
     
-    noise = std::make_unique<nap::audio::Noise>(*audioService);
-    playerLeft = std::make_unique<nap::audio::BufferPlayer>(*audioService);
-    playerRight = std::make_unique<nap::audio::BufferPlayer>(*audioService);
-    panner = std::make_unique<nap::audio::StereoPanner>(*audioService);
+    noise = std::make_unique<nap::audio::Noise>(*audioNodeManager);
+    playerLeft = std::make_unique<nap::audio::BufferPlayer>(*audioNodeManager);
+    playerRight = std::make_unique<nap::audio::BufferPlayer>(*audioNodeManager);
+    panner = std::make_unique<nap::audio::StereoPanner>(*audioNodeManager);
     
-    audioService->execute([&](){
+    audioNodeManager->execute([&](){
         panner->leftInput.connect(playerLeft->audioOutput);
         panner->rightInput.connect(playerRight->audioOutput);
         panner->setPanning(0.5);
         
-        leftOut = std::make_unique<nap::audio::AudioOutputNode>(*audioService);
+        leftOut = std::make_unique<nap::audio::AudioOutputNode>(*audioNodeManager);
         leftOut->outputChannel = 0;
         leftOut->audioInput.connect(panner->leftOutput);
         
-        rightOut = std::make_unique<nap::audio::AudioOutputNode>(*audioService);
+        rightOut = std::make_unique<nap::audio::AudioOutputNode>(*audioNodeManager);
         rightOut->outputChannel = 1;
         rightOut->audioInput.connect(panner->rightOutput);
         
-        playerLeft->play(&audioFileBuffer[0], 0, fileSampleRate / audioService->getSampleRate());
-        playerRight->play(&audioFileBuffer[1], 0, fileSampleRate / audioService->getSampleRate());
+        playerLeft->play(&audioFileBuffer[0], 0, fileSampleRate / audioNodeManager->getSampleRate());
+        playerRight->play(&audioFileBuffer[1], 0, fileSampleRate / audioNodeManager->getSampleRate());
     });
     
 	core.initialize();
@@ -130,10 +133,6 @@ bool init(nap::Core& core)
 // Main loop
 int main(int argc, char *argv[])
 {
-	// Create core
-	nap::Core core;
-
-	// Initialize render stuff
 	if (!init(core))
 		return -1;
 

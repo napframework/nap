@@ -2,7 +2,7 @@
 
 // Audio includes
 #include "audionode.h"
-#include "audioservice.h"
+#include "audionodemanager.h"
 
 namespace nap {
     
@@ -10,7 +10,7 @@ namespace nap {
         
         class BufferPlayer : public AudioNode {
         public:
-            BufferPlayer(AudioService& service) : AudioNode(service) { }
+            BufferPlayer(AudioNodeManager& manager) : AudioNode(manager) { }
         
             AudioOutput audioOutput = { this, &BufferPlayer::calculate };
             
