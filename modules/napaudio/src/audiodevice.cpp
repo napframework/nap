@@ -9,13 +9,13 @@
 
 // RTTI
 RTTI_BEGIN_CLASS(nap::audio::AudioInterface)
-RTTI_PROPERTY("UseDefaultDevice", &nap::audio::AudioInterface::mUseDefaultDevice, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("InputDevice", &nap::audio::AudioInterface::mInputDevice, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("OutputDevice", &nap::audio::AudioInterface::mOutputDevice, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("InputChannelCount", &nap::audio::AudioInterface::mInputChannelCount, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("OutputChannelCount", &nap::audio::AudioInterface::mOutputChannelCount, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("SampleRate", &nap::audio::AudioInterface::mSampleRate, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("BufferSize", &nap::audio::AudioInterface::mBufferSize, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("UseDefaultDevice", &nap::audio::AudioInterface::mUseDefaultDevice, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("InputDevice", &nap::audio::AudioInterface::mInputDevice, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("OutputDevice", &nap::audio::AudioInterface::mOutputDevice, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("InputChannelCount", &nap::audio::AudioInterface::mInputChannelCount, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("OutputChannelCount", &nap::audio::AudioInterface::mOutputChannelCount, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("SampleRate", &nap::audio::AudioInterface::mSampleRate, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("BufferSize", &nap::audio::AudioInterface::mBufferSize, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 

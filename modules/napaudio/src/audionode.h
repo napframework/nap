@@ -18,6 +18,7 @@ namespace nap {
         class AudioNode;
         class AudioOutput;
         
+        
         /*
          * An audio input is used by audio node to connect other audio nodes as inputs
          */

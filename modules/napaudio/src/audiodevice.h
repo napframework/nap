@@ -18,10 +18,6 @@ namespace nap {
     namespace audio {
         
         
-        // Forward declarations
-        class AudioDeviceManager;
-        
-        
         class NAPAPI AudioInterface : public rtti::RTTIObject {
             RTTI_ENABLE(rtti::RTTIObject)
             
