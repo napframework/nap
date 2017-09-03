@@ -1,10 +1,14 @@
 #include "filtertreeview.h"
 #include <QTimer>
+#include <nap/logger.h>
 
 FilterTreeView::FilterTreeView() {
     layout.setContentsMargins(0, 0, 0, 0);
     layout.setSpacing(0);
     setLayout(&layout);
+
+    sortFilter.setFilterCaseSensitivity(Qt::CaseInsensitive);
+    sortFilter.setFilterKeyColumn(-1); // Filter all columns
 
     leFilter.setPlaceholderText("filter");
     leFilter.setClearButtonEnabled(true);
@@ -54,6 +58,7 @@ QList<QModelIndex> FilterTreeView::selectedIndexes() {
 
 void FilterTreeView::onFilterChanged(const QString& text) {
     sortFilter.setFilterRegExp(text);
+    treeView.expandAll();
 }
 
 
