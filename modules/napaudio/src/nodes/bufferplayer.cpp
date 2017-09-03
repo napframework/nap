@@ -1,5 +1,8 @@
 #include "bufferplayer.h"
 
+// Std includes
+#include <cstring>
+
 namespace nap {
     
     namespace audio {
