@@ -18,6 +18,24 @@
 		},
 
 		{
+			"Type" : "nap::Shader",
+			"mID": "CanvasShader",
+			"mVertShader": "shaders/etherdream/canvas.vert",
+			"mFragShader": "shaders/etherdream/canvas.frag"
+		},
+
+		{
+			"Type" : "nap::Image",
+			"mID" : "CanvasImage",
+			"mImagePath" : "data/etherdream/laser_canvas.png"
+		},
+
+		{
+			"Type" : "nap::PlaneMesh",
+			"mID" : "CanvasMesh"
+		},
+
+		{
 			"Type" : "nap::Line",
 			"mID": "LineMesh",
 			"Properties": 
@@ -109,6 +127,45 @@
 		},
 
 		{
+			"Type" : "nap::Material",
+			"mID": "CanvasMaterial",
+			"Shader": "CanvasShader",
+			"VertexAttributeBindings" : 
+			[
+				{
+					"MeshAttributeID": "Position",
+					"ShaderAttributeID": "in_Position"
+				},
+				{
+					"MeshAttributeID": "UV0",
+					"ShaderAttributeID": "in_UV0"
+				},
+				{
+					"MeshAttributeID": "Color0",
+					"ShaderAttributeID": "in_Color0"
+				}
+			],
+			"Uniforms" : 
+			[
+				{
+					"Type" : "nap::UniformTexture2D",
+					"Name" : "mCanvas",
+					"Texture" : "CanvasImage"
+				},
+				{
+					"Type" : "nap::UniformVec3",
+					"Name" : "mColor",
+					"Value" : 
+					{
+						"x" : 0.0,
+						"y" : 1.0,
+						"z" : 0.0
+					}
+				}
+			]
+		},
+
+		{
 			"Type" : "nap::EtherDreamDac",
 			"mID": "Laser1",
 			"DacName": "dc3c10",
@@ -146,7 +203,7 @@
 					"Properties": {
 						"FieldOfView": 45.0,
 						"NearClippingPlane" : 0.01,
-						"FarClippingPlane" : 1000.0
+						"FarClippingPlane" : 10000.0
 					}
 				},
 				{
@@ -155,7 +212,7 @@
 						"Translate": {
 							"x": 0.0,
 							"y": 0.0,
-							"z": 3.0
+							"z": 675.0
 						},
 						"Rotate": {
 							"x": 0.0,
@@ -202,7 +259,7 @@
 							"y": 1.0,
 							"z": 1.0
 						},
-						"UniformScale": 1.0						
+						"UniformScale": 64.0						
 					}			
 				},
 
@@ -232,21 +289,44 @@
 
 		{
 			"Type" : "nap::Entity",
+			"mID"  : "LaserDrawEntity",
+			"Components" :
+			[
+				{
+					"Type" : "nap::FrustrumSyncComponent"
+				},
+				{
+					"Type" : "nap::TransformComponent"		
+				},
+				{
+					"Type" : "nap::RenderableMeshComponent",
+					"Mesh" : "CanvasMesh",
+					"MaterialInstance" : 
+					{
+						"Material": "CanvasMaterial",
+						"BlendMode" : "AlphaBlend"
+					}
+				}
+			]
+		},
+
+		{
+			"Type" : "nap::Entity",
 			"mID": "LaserEntity1",
 
 			"Components" : 
 			[
 				{
 					"Type" : "nap::TransformComponent"		
-				},	
+				},
 				{
 					"Type":"nap::LaserOutputComponent",
 					"Properties" :
 					{
 						"Frustrum" :
 						{
-							"x" : 5,
-							"y" : 5
+							"x" : 512,
+							"y" : 512
 						}
 					},
 					"Dac" : "Laser1"
@@ -257,8 +337,8 @@
 					{
 						"Frustrum" :
 						{
-							"x" : 5,
-							"y" : 5
+							"x" : 512,
+							"y" : 512
 						}
 					},
 					"Dac" : "Laser2"
@@ -269,8 +349,8 @@
 					{
 						"Frustrum" :
 						{
-							"x" : 5,
-							"y" : 5
+							"x" : 512,
+							"y" : 512
 						}
 					},
 					"Dac" : "Laser3"
@@ -281,13 +361,17 @@
 					{
 						"Frustrum" :
 						{
-							"x" : 5,
-							"y" : 5
+							"x" : 512,
+							"y" : 512
 						}
 					},
 					"Dac" : "Laser4"
 				}			
-			]
+			],
+			"Children" :
+			[
+				"LaserDrawEntity"
+			] 
 		}
 	]
 }

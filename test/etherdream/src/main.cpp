@@ -37,7 +37,6 @@
 #include <perspcameracomponent.h>
 #include <mathutils.h>
 
-
 //////////////////////////////////////////////////////////////////////////
 // Globals
 //////////////////////////////////////////////////////////////////////////
@@ -53,7 +52,6 @@ nap::OSCService* oscService = nullptr;
 // Holds all render windows
 nap::ObjectPtr<nap::RenderWindow> renderWindow = nullptr;
 
-
 // Main camera
 nap::ObjectPtr<nap::EntityInstance> cameraEntity = nullptr;
 
@@ -63,8 +61,6 @@ nap::ObjectPtr<nap::EntityInstance> laserEntity = nullptr;
 
 // Spline entity
 nap::ObjectPtr<nap::EntityInstance> splineEntity = nullptr;
-std::vector<glm::vec3> splineSrcData;
-
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -106,7 +102,7 @@ void onRender()
 
 	// Clear back-buffer
 	opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(renderWindow->getWindow()->getBackbuffer());
-	backbuffer.setClearColor(glm::vec4(0.0705f, 0.49f, 0.5647f, 1.0f));
+	backbuffer.setClearColor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 	renderService->clearRenderTarget(backbuffer, opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH | opengl::EClearFlags::STENCIL);
 
 	// Render spline
@@ -127,7 +123,6 @@ void onRender()
 	{
 		output->setLine(static_cast<nap::PolyLine&>(line.getMesh()), xform.getGlobalTransform());
 	}
-
 }
 
 /**
@@ -172,7 +167,6 @@ bool init(nap::Core& core)
 		return false;
 	}
 
-
 	// Create osc service
 	oscService = core.getOrCreateService<nap::OSCService>();
 	if (!oscService->init(errorState))
@@ -186,8 +180,9 @@ bool init(nap::Core& core)
 	{
 		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
 		return false;        
-	} 
-	
+	}
+
+
 	// Get important entities
 	cameraEntity = resourceManagerService->findEntity("CameraEntity");
 	assert(cameraEntity != nullptr);
@@ -201,8 +196,6 @@ bool init(nap::Core& core)
 
 	// Store spline entity
 	splineEntity = resourceManagerService->findEntity("SplineEntity");
-	nap::Line& line_mesh = static_cast<nap::Line&>(splineEntity->getComponent<nap::RenderableMeshComponentInstance>().getMesh());
-	splineSrcData = line_mesh.getPositionData()->getValues();
 
 	// Set render states
 	nap::RenderState& render_state = renderService->getRenderState();
@@ -227,7 +220,6 @@ int main(int argc, char *argv[])
 
 	// Run Gam
 	runGame(core);
-
 	return 0;
 }
 
@@ -235,7 +227,6 @@ void runGame(nap::Core& core)
 {
 	// Run function
 	bool loop = true;
-
 
 	// Loop
 	while (loop)
@@ -266,7 +257,6 @@ void runGame(nap::Core& core)
 				}
 				inputService->addEvent(std::move(input_event));
 			}
-
 
 			// Check if it's a window event
 			else if (nap::isWindowEvent(event))
