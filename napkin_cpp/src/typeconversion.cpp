@@ -1,16 +1,19 @@
 #include "typeconversion.h"
+#include "globals.h"
 
 using namespace std;
 using namespace rttr;
+using namespace napkin;
 
+const QVariant TypeConverter::invalid = TXT_UNCONVERTIBLE_TYPE; // NOLINT
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define TO_Q_VARIANT(TYPE) \
-    template<> QVariant TypeConverterImpl<TYPE>::toVariant(const rttr::property& prop, const rttr::instance& inst)
+    template<> QVariant TypeConverterImpl<TYPE>::toVariant(const rttr::property prop, const rttr::instance inst) const
 
 #define FROM_Q_VARIANT(TYPE) \
-    template<> bool TypeConverterImpl<TYPE>::fromVariant(const rttr::property& prop, rttr::instance& inst, const QVariant& value)
+    template<> bool TypeConverterImpl<TYPE>::fromVariant(const rttr::property prop, rttr::instance inst, const QVariant value) const
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -29,6 +32,17 @@ TO_Q_VARIANT(int) { return prop.get_value(inst).to_int(); }
 FROM_Q_VARIANT(int) {
     bool ok;
     int v = value.toInt(&ok);
+    if (!ok) return false;
+    prop.set_value(inst, v);
+    return true;
+}
+
+// unsigned int
+TO_Q_VARIANT(unsigned int) { return prop.get_value(inst).to_uint32(); }
+
+FROM_Q_VARIANT(unsigned int) {
+    bool ok;
+    int v = value.toUInt(&ok);
     if (!ok) return false;
     prop.set_value(inst, v);
     return true;
@@ -68,6 +82,7 @@ std::vector<std::unique_ptr<TypeConverter>>& TypeConverter::typeConverters() {
         list.emplace_back(std::make_unique<TypeConverterImpl<bool>>());
         list.emplace_back(std::make_unique<TypeConverterImpl<float>>());
         list.emplace_back(std::make_unique<TypeConverterImpl<int>>());
+        list.emplace_back(std::make_unique<TypeConverterImpl<unsigned int>>());
     }
     return list;
 }

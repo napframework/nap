@@ -1,4 +1,5 @@
 #include "filtertreeview.h"
+#include <QTimer>
 
 FilterTreeView::FilterTreeView() {
     layout.setContentsMargins(0, 0, 0, 0);

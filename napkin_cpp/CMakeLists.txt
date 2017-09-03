@@ -16,11 +16,13 @@ find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
 
 file(GLOB_RECURSE SOURCES src/*.cpp)
 file(GLOB_RECURSE HEADERS src/*.h)
+file(GLOB_RECURSE RESOURCES resources/*.qrc)
 
-add_executable(${PROJECT_NAME} ${SOURCES} ${UI_HEADERS} ${HEADERS})
+add_executable(${PROJECT_NAME} ${SOURCES} ${UI_HEADERS} ${HEADERS} ${RESOURCES})
 target_include_directories(${PROJECT_NAME} PUBLIC src)
 
 qt5_use_modules(${PROJECT_NAME} Core Widgets)

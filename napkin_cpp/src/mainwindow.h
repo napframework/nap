@@ -17,6 +17,9 @@ public:
     }
     virtual ~MainWindow() {}
 
+protected:
+    void showEvent(QShowEvent* event) override;
+
 private:
     void bindSignals();
 
@@ -27,7 +30,7 @@ private:
 private:
     void onFileOpened(const QString& filename);
     void onFileSaved(const QString& filename);
-
+    void openRecentFile();
     void updateWindowTitle();
 
 private:

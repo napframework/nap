@@ -9,6 +9,12 @@ void MainWindow::bindSignals() {
     connect(&mOutlinePanel, &OutlinePanel::selectionChanged, &mInspectorPanel, &InspectorPanel::setObjects);
 }
 
+void MainWindow::showEvent(QShowEvent* event) {
+    BaseWindow::showEvent(event);
+    openRecentFile();
+}
+
+
 void MainWindow::addDocks() {
     addDock("Outline", &mOutlinePanel);
     addDock("Types", &mHierarchyPanel);
@@ -41,6 +47,17 @@ void MainWindow::onFileSaved(const QString& filename) {
     updateWindowTitle();
 }
 
+void MainWindow::openRecentFile() {
+    auto lastFilename = AppContext::get().lastOpenedFilename();
+    if (lastFilename.isNull())
+        return;
+    AppContext::get().loadFile(lastFilename);
+
+}
+
+
 void MainWindow::updateWindowTitle() {
     setWindowTitle(QString("%1 - %2").arg(QApplication::applicationName(), AppContext::get().currentFilename()));
 }
+
+
