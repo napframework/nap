@@ -129,7 +129,8 @@ namespace nap
 		int p_count = resampleLine(verts, mPostionAttr->getValues(), mLineProperties.mVertices, mClosed);
 
 		// Set color buffer
-		mColorAttr->setValues(std::vector<glm::vec4>(p_count, mLineProperties.mColor));
+        std::vector<glm::vec4> colors(p_count, mLineProperties.mColor);
+		mColorAttr->setValues(colors);
 
 		// Calculate normal
 		glm::vec3 n = glm::cross(glm::vec3(0.0f, 0.0f, 1.0f), glm::normalize(mEnd - mStart));
@@ -192,7 +193,8 @@ namespace nap
 		resampleLine(uv_verts, mUvAttr->getValues(), mLineProperties.mVertices, true);
 
 		// Set color buffer
-		mColorAttr->setValues(std::vector<glm::vec4>(pos_count, mLineProperties.mColor));
+        std::vector<glm::vec4> colors(pos_count, mLineProperties.mColor);
+		mColorAttr->setValues(colors);
 
 		// Set normal buffer
 		std::vector <glm::vec3> n_verts(4);

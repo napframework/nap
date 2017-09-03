@@ -253,7 +253,7 @@ namespace nap
 		if (!mesh_instance->init(mesh->mProperties, errorState))
 			return nullptr;
 
-		return std::move(mesh_instance);
+		return mesh_instance;
 	}
 
 } // opengl
