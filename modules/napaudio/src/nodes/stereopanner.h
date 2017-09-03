@@ -6,7 +6,7 @@ namespace nap {
     
     namespace audio {
         
-        class StereoPanner : public AudioNode {
+        class NAPAPI StereoPanner : public AudioNode {
         public:
             StereoPanner(AudioNodeManager& manager) : AudioNode(manager)
             {

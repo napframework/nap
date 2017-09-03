@@ -72,11 +72,9 @@ namespace nap {
             void addOutputBuffer(SampleBufferPtr buffer, int channel);
             const float& getInputSample(int channel, int index) const { return mInputBuffer[channel][mInternalBufferOffset + index]; }
             
-            int mInputDevice = 0;
-            int mOutputDevice = 0;
-            int mInputChannelCount = 1;
-            int mOutputChannelCount = 2;
-            float mSampleRate = 44100.0;
+            int mInputChannelCount = 0;
+            int mOutputChannelCount = 0;
+            float mSampleRate = 0;
             int mInternalBufferSize = 64;
             
             DiscreteTimeValue mSampleTime = 0;

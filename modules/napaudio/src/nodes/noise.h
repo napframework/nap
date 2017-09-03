@@ -6,7 +6,7 @@ namespace nap {
     
     namespace audio {
         
-        class Noise : public AudioNode {
+        class NAPAPI Noise : public AudioNode {
         public:
             Noise(AudioNodeManager& manager) : AudioNode(manager) { }
         

@@ -7,7 +7,7 @@ namespace nap {
     
     namespace audio {
     
-        class Gain : public AudioNode {            
+        class NAPAPI Gain : public AudioNode {
         public:
             Gain(AudioNodeManager& manager) : AudioNode(manager) { }
             

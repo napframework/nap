@@ -8,7 +8,7 @@ namespace nap {
     
     namespace audio {
         
-        class BufferPlayer : public AudioNode {
+        class NAPAPI BufferPlayer : public AudioNode {
         public:
             BufferPlayer(AudioNodeManager& manager) : AudioNode(manager) { }
         
@@ -21,7 +21,7 @@ namespace nap {
             void calculate(SampleBuffer& outputBuffer);
   
             bool mPlaying = false;
-            DiscreteTimeValue mPosition = 0;
+            long double mPosition = 0;
             ControllerValue mSpeed = 1.f;
             SampleBufferPtr mBuffer = nullptr;
         };

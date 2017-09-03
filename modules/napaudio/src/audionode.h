@@ -21,7 +21,7 @@ namespace nap {
         /*
          * An audio input is used by audio node to connect other audio nodes as inputs
          */
-        class AudioInput {
+        class NAPAPI AudioInput {
         public:
             AudioInput() = default;
             SampleBufferPtr pull();
@@ -37,7 +37,7 @@ namespace nap {
          * It outputs a pointer to a SampleBuffer that it manages itself
          * The PullFunction of the output calls a calculate function on the operator to calculate the new buffer
          */
-        class AudioOutput {
+        class NAPAPI AudioOutput {
             friend class AudioNode;
             friend class AudioInput;
             
@@ -79,7 +79,7 @@ namespace nap {
          * An node does audio processing.
          * Use this as a base class for operators that generate audio output.
          */
-        class AudioNode {
+        class NAPAPI AudioNode {
             friend class AudioNodeManager;
             friend class AudioOutput;
             
@@ -108,7 +108,7 @@ namespace nap {
         };
         
         
-        class AudioTrigger : public AudioNode {
+        class NAPAPI AudioTrigger : public AudioNode {
             friend class AudioNodeManager;
             
         public:
@@ -124,7 +124,7 @@ namespace nap {
          * Node to generate audio output for the audio service's device outputs.
          * Use @triggerInput to pull a new buffer into @audioInput for hardware output channel @outputChannel
          */
-        class AudioOutputNode : public AudioTrigger {
+        class NAPAPI AudioOutputNode : public AudioTrigger {
         public:
             AudioOutputNode(AudioNodeManager& manager) : AudioTrigger(manager) { }
             
@@ -140,7 +140,7 @@ namespace nap {
          * Node to provide audio input from the audio service's device inputs.
          * Input from channel @inputChannel can be pulled from @audioOutput plug.
          */
-        class AudioInputNode : public AudioNode {
+        class NAPAPI AudioInputNode : public AudioNode {
             friend class AudioNodeManager;
             
         public:
