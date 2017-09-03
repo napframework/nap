@@ -14,6 +14,7 @@ endif()
 
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
+find_package(Qt5Gui REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
@@ -25,9 +26,16 @@ file(GLOB_RECURSE RESOURCES resources/*.qrc)
 add_executable(${PROJECT_NAME} ${SOURCES} ${UI_HEADERS} ${HEADERS} ${RESOURCES})
 target_include_directories(${PROJECT_NAME} PUBLIC src)
 
-qt5_use_modules(${PROJECT_NAME} Core Widgets)
+qt5_use_modules(${PROJECT_NAME} Core Widgets Gui)
 
-target_link_libraries(${PROJECT_NAME} napcore Qt5::Widgets
+target_link_libraries(${PROJECT_NAME} napcore Qt5::Widgets Qt5::Core Qt5::Gui
         mod_naprender mod_napinput mod_napscene mod_nappython ) # rendertest
 
-
+add_custom_command(
+        TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        $<TARGET_FILE:Qt5::Widgets>
+        $<TARGET_FILE:Qt5::Core>
+        $<TARGET_FILE:Qt5::Gui>
+        $<TARGET_FILE_DIR:${PROJECT_NAME}>
+)

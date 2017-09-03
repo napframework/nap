@@ -5,7 +5,6 @@
 #include <rtti/jsonwriter.h>
 #include <fstream>
 
-using namespace nap;
 using namespace nap::rtti;
 using namespace nap::utility;
 
@@ -41,16 +40,16 @@ void AppContext::loadFile(const QString& filename) {
     QSettings settings;
     settings.setValue(LAST_OPENED_FILE, filename);
 
-    auto& factory = core().getOrCreateService<ResourceManagerService>()->getFactory();
+    auto& factory = core().getOrCreateService<nap::ResourceManagerService>()->getFactory();
     ErrorState err;
     nap::rtti::RTTIDeserializeResult result;
     if (!readJSONFile(filename.toStdString(), factory, result, err)) {
-        Logger::fatal(err.toString());
+        nap::Logger::fatal(err.toString());
         return;
     }
 
     if (!ResolveLinks(result.mReadObjects, result.mUnresolvedPointers)) {
-        Logger::fatal("Failed to resolve links");
+        nap::Logger::fatal("Failed to resolve links");
         return;
     }
 
@@ -76,7 +75,7 @@ void AppContext::saveFileAs(const QString& filename) {
     JSONWriter writer;
     ErrorState err;
     if (!serializeObjects(objects, writer, err)) {
-        Logger::fatal(err.toString());
+        nap::Logger::fatal(err.toString());
         return;
     }
 
@@ -85,7 +84,7 @@ void AppContext::saveFileAs(const QString& filename) {
     out.close();
 
     mCurrentFilename = filename;
-    Logger::info("Written file: " + filename.toStdString());
+    nap::Logger::info("Written file: " + filename.toStdString());
 
     fileSaved(mCurrentFilename);
 }

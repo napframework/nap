@@ -6,7 +6,6 @@
 #include "typeconversion.h"
 #include "globals.h"
 
-using namespace nap;
 using namespace nap::rtti;
 using namespace napkin;
 
@@ -34,7 +33,7 @@ QList<QStandardItem*> createItemRow(const QString& name, rttr::property prop, rt
                 new TypeItem(prop.get_type())};
     }
 
-    if (rtti::isPrimitive(wrappedType))
+    if (nap::rtti::isPrimitive(wrappedType))
         return {new PropertyItem(prop, inst),
                 new PropertyValueItem(prop, inst),
                 new TypeItem(prop.get_type())};
