@@ -87,7 +87,7 @@
 
 		{
 			"Type" : "nap::Circle",
-			"mID": "CicleMesh",
+			"mID": "CircleMesh",
 			"Properties": 
 			{
 				"Count" : 500,
@@ -259,7 +259,7 @@
 							"y": 1.0,
 							"z": 1.0
 						},
-						"UniformScale": 64.0						
+						"UniformScale": 100.0						
 					}			
 				},
 
@@ -278,7 +278,7 @@
 
 				{
 					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "RectangleMesh",
+					"Mesh" : "CircleMesh",
 					"MaterialInstance" : 
 					{
 						"Material": "LineMaterial"
