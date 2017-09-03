@@ -27,7 +27,7 @@ namespace nap {
             // If we're not playing, fill the buffer with 0's and bail out.
             if (!mPlaying || mBuffer == nullptr)
             {
-                memset(outputBuffer.data(), 0, sizeof(SampleValue) * outputBuffer.size());
+                std::memset(outputBuffer.data(), 0, sizeof(SampleValue) * outputBuffer.size());
                 return;
             }
             
