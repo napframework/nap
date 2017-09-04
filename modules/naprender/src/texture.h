@@ -130,3 +130,29 @@ namespace nap
 		std::string mDisplayName = "MemoryTexture2D";				// Custom display name
 	};
 }
+
+
+//////////////////////////////////////////////////////////////////////////
+// Template Specialization of the Texture filter and wrap modes
+//////////////////////////////////////////////////////////////////////////
+
+namespace std
+{
+	template<>
+	struct hash<nap::EFilterMode>
+	{
+		size_t operator()(const nap::EFilterMode &v) const
+		{
+			return hash<int>()(static_cast<int>(v));
+		}
+	};
+
+	template<>
+	struct hash<nap::EWrapMode>
+	{
+		size_t operator()(const nap::EWrapMode &v) const
+		{
+			return hash<int>()(static_cast<int>(v));
+		}
+	};
+}
