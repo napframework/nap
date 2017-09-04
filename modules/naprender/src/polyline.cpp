@@ -141,16 +141,16 @@ namespace nap
 		std::vector<glm::vec3> verts = { mStart, mEnd };
 
 		// Populate position buffer with data
-		int p_count = resampleLine(verts, getPositionData().getValues(), mLineProperties.mVertices, mClosed);
+		int p_count = resampleLine(verts, getPositionAttr().getValues(), mLineProperties.mVertices, mClosed);
 
 		// Set color buffer
 		std::vector<glm::vec4> colors(p_count, mLineProperties.mColor);
-		getColorData().setValues(colors);
+		getColorAttr().setValues(colors);
 
 		// Calculate normal
 		glm::vec3 n = glm::cross(glm::vec3(0.0f, 0.0f, 1.0f), glm::normalize(mEnd - mStart));
 		std::vector<glm::vec3> n_verts = { n, n };
-		resampleLine(n_verts, getNormalData().getValues(), mLineProperties.mVertices, mClosed, true);
+		resampleLine(n_verts, getNormalAttr().getValues(), mLineProperties.mVertices, mClosed, true);
 
 		// Set normalized uvs
 		glm::vec3 uv_end_offset = mEnd - mStart;
@@ -158,7 +158,7 @@ namespace nap
 		std::vector<glm::vec3> uv_coords = { { 0.0f,0.0f,0.0f }, d_n };
 
 		// Upsample line
-		resampleLine(uv_coords, getUvData().getValues(), mLineProperties.mVertices, mClosed);
+		resampleLine(uv_coords, getUvAttr().getValues(), mLineProperties.mVertices, mClosed);
 		mMeshInstance->setNumVertices(p_count);
 
 		// Set draw mode
@@ -187,7 +187,7 @@ namespace nap
 		p_verts[3] = { 0.0f - dx, 0.0f + dy, 0.0f };
 
 		// Set positions
-		int pos_count = resampleLine(p_verts, getPositionData().getValues(), mLineProperties.mVertices, true);
+		int pos_count = resampleLine(p_verts, getPositionAttr().getValues(), mLineProperties.mVertices, true);
 
 		// Calculate normalized UV coordinates
 		float sx, sy;
@@ -212,16 +212,16 @@ namespace nap
 		uv_verts[3] = { 0.5f - dsx, 0.5f + dsy, 0.0f };
 
 		// Set uv buffer based on normalized uv coordinates
-		resampleLine(uv_verts, getUvData().getValues(), mLineProperties.mVertices, true);
+		resampleLine(uv_verts, getUvAttr().getValues(), mLineProperties.mVertices, true);
 
 		// Set color buffer
 		std::vector<glm::vec4> colors(pos_count, mLineProperties.mColor);
-		getColorData().setValues(colors);
+		getColorAttr().setValues(colors);
 
 		// Set normal buffer
 		std::vector <glm::vec3> n_verts(4);
 		getCentroidNormals(p_verts, n_verts, { 0.0f,0.0f,0.0f });
-		resampleLine(n_verts, getNormalData().getValues(), mLineProperties.mVertices, true, true);
+		resampleLine(n_verts, getNormalAttr().getValues(), mLineProperties.mVertices, true, true);
 
 		// Update mesh vertex count
 		mMeshInstance->setNumVertices(pos_count);
@@ -242,22 +242,22 @@ namespace nap
 		if (!PolyLine::init(errorState))
 			return false;
 
-		nap::TypedVertexAttribute<glm::vec3>& pos_data = getPositionData();
+		nap::TypedVertexAttribute<glm::vec3>& pos_data = getPositionAttr();
 		pos_data.clear();
 		pos_data.resize(mLineProperties.mVertices);
 		std::vector<glm::vec3>::iterator v = pos_data.getValues().begin();
 
-		nap::TypedVertexAttribute<glm::vec3>& normal_data = getNormalData();
+		nap::TypedVertexAttribute<glm::vec3>& normal_data = getNormalAttr();
 		normal_data.clear();
 		normal_data.resize(mLineProperties.mVertices);
 		std::vector<glm::vec3> ::iterator n = normal_data.getValues().begin();
 
-		nap::TypedVertexAttribute<glm::vec4>& color_data = getColorData();
+		nap::TypedVertexAttribute<glm::vec4>& color_data = getColorAttr();
 		color_data.clear();
 		color_data.resize(mLineProperties.mVertices);
 		std::vector<glm::vec4>::iterator c = color_data.getValues().begin();
 
-		nap::TypedVertexAttribute<glm::vec3>& uv_data = getUvData();
+		nap::TypedVertexAttribute<glm::vec3>& uv_data = getUvAttr();
 		uv_data.clear();
 		uv_data.resize(mLineProperties.mVertices);
 		std::vector<glm::vec3>::iterator t = uv_data.getValues().begin();
@@ -293,25 +293,25 @@ namespace nap
 	}
 
 
-	nap::TypedVertexAttribute<glm::vec3>& PolyLine::getPositionData()
+	nap::TypedVertexAttribute<glm::vec3>& PolyLine::getPositionAttr()
 	{
 		return mMeshInstance->GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName());
 	}
 
 
-	nap::TypedVertexAttribute<glm::vec4>& PolyLine::getColorData()
+	nap::TypedVertexAttribute<glm::vec4>& PolyLine::getColorAttr()
 	{
 		return mMeshInstance->GetAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0));
 	}
 
 
-	nap::TypedVertexAttribute<glm::vec3>& PolyLine::getNormalData()
+	nap::TypedVertexAttribute<glm::vec3>& PolyLine::getNormalAttr()
 	{
 		return mMeshInstance->GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::getNormalName());
 	}
 
 
-	nap::TypedVertexAttribute<glm::vec3>& PolyLine::getUvData()
+	nap::TypedVertexAttribute<glm::vec3>& PolyLine::getUvAttr()
 	{
 		return mMeshInstance->GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetUVName(0));
 	}

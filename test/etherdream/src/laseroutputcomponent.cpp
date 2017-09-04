@@ -62,9 +62,9 @@ namespace nap
 	// Sample line and convert to laser
 	void LaserOutputComponentInstance::setLine(PolyLine& line, const glm::mat4x4& xform)
 	{
-		TypedVertexAttribute<glm::vec3>& position_data = line.getPositionData();
+		TypedVertexAttribute<glm::vec3>& position_data = line.getPositionAttr();
 		assert(position_data != nullptr);
-		TypedVertexAttribute<glm::vec4>& color_data = line.getColorData();
+		TypedVertexAttribute<glm::vec4>& color_data = line.getColorAttr();
 		assert(color_data != nullptr);
 
 		// Populate the laser buffer
