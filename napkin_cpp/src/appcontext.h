@@ -35,7 +35,7 @@ signals:
     void fileSaved(const QString& filename);
 
 private:
-    AppContext() = default;
+    AppContext();
 
 
     nap::rtti::OwnedObjectList mObjects;

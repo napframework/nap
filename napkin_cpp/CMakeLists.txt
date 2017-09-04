@@ -24,6 +24,8 @@ file(GLOB_RECURSE HEADERS src/*.h)
 file(GLOB_RECURSE RESOURCES resources/*.qrc)
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${UI_HEADERS} ${HEADERS} ${RESOURCES})
+set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Tools)
 target_include_directories(${PROJECT_NAME} PUBLIC src)
 
 qt5_use_modules(${PROJECT_NAME} Core Widgets Gui)

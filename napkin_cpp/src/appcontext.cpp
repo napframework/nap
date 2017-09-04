@@ -29,6 +29,11 @@ bool ResolveLinks(const OwnedObjectList& objects, const UnresolvedPointerList& u
     return true;
 }
 
+AppContext::AppContext()
+{
+	mCore.initialize();
+}
+
 
 AppContext& AppContext::get() {
     static AppContext inst;
