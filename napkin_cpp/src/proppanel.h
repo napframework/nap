@@ -41,22 +41,21 @@ protected:
  */
 class CompoundPropertyItem : public QStandardItem {
 public:
-    CompoundPropertyItem(const QString& name, rttr::instance inst) : QStandardItem(name), mInstance(inst) {
+    CompoundPropertyItem(const QString& name, rttr::variant compound) : QStandardItem(name), mCompound(compound) {
         std::string nameStr(name.toStdString());
         processChildren();
     }
 
     void processChildren() {
-        for (auto childprop : mInstance.get_type().get_properties()) {
-            auto value = childprop.get_value(mInstance);
+        for (auto childprop : mCompound.get_type().get_properties()) {
+            auto value = childprop.get_value(mCompound);
             std::string name = childprop.get_name().data();
-            int valueInt = value.to_int();
-            appendRow(createItemRow(name.c_str(), childprop, mInstance));
+            appendRow(createItemRow(name.c_str(), childprop, mCompound));
         }
     }
 
 private:
-    rttr::instance mInstance;
+    rttr::variant mCompound;
 };
 
 /**

@@ -48,7 +48,7 @@ QList<QStandardItem*> createArrayElementRow(rttr::variant_array_view mArray, int
     auto name = QString("[%1]").arg(i);
 
     auto value = mArray.get_value(i);
-    auto type = mArray.get_rank_type(1);
+    auto type = mArray.get_rank_type(mArray.get_rank());
     auto wrappedType = type.is_wrapper() ? type.get_wrapped_type() : value.get_type();
 
 
