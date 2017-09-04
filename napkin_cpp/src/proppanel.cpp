@@ -78,21 +78,8 @@ QList<QStandardItem*> createArrayElementRow(rttr::variant_array_view mArray, int
 
 }
 
-//
 PropertyValueItem::PropertyValueItem(rttr::property prop, nap::rtti::Instance inst)
         : QStandardItem(), mInstance(inst), mProperty(prop) {
-
-    nap::Logger::info("%s: %s <%s>",
-                      mProperty.get_name().data(),
-                      TypeConverter::toQVariant(mProperty, mInstance).toString().toStdString().c_str(),
-                      mProperty.get_type().get_name().data());
-    /* Result:
-        LOG[info] mMaxLodLevel: 20 <int>
-        LOG[info] mInternalFormat: 6402 <int>
-        LOG[info] mWidth: 640 <int>
-        LOG[info] mHeight: 480 <int>
-        LOG[info] mFormat: 6402 <unsigned int>
-    */
     if (!TypeConverter::get(mProperty.get_type())) {
         setEnabled(false);
         setForeground(Qt::red);
@@ -101,25 +88,9 @@ PropertyValueItem::PropertyValueItem(rttr::property prop, nap::rtti::Instance in
     mName = mProperty.get_name().data();
 }
 
-// Qt Retrieves data for display in treeview cell
 QVariant PropertyValueItem::data(int role) const {
 
-    nap::Logger::info("%s: %s <%s>",
-                      mProperty.get_name().data(),
-                      TypeConverter::toQVariant(mProperty, mInstance).toString().toStdString().c_str(),
-                      mProperty.get_type().get_name().data());
-
-    /* Result:
-        LOG[info] mMaxLodLevel: 24 <int>
-        LOG[info] mInternalFormat: 17814496 <int>
-        LOG[info] mWidth: 0 <int>
-        LOG[info] mHeight: 1249506750 <int>
-        LOG[info] mFormat: 6402 <unsigned int>
-        LOG[info] mType: 17725216 <unsigned int>
-    */
-
-    if (role == Qt::DisplayRole || role == Qt::EditRole)
-    {
+    if (role == Qt::DisplayRole || role == Qt::EditRole) {
         QVariant variant = TypeConverter::toQVariant(mProperty, mInstance);
         std::string variantValue = variant.toString().toStdString();
         return variant;
