@@ -1,9 +1,9 @@
-#include "linemesh.h"
+#include "polyline.h"
 #include <mathutils.h>
 
-RTTI_BEGIN_CLASS(nap::LineMeshProperties)
-	RTTI_PROPERTY("Count",		&nap::LineMeshProperties::mVertices,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Color",		&nap::LineMeshProperties::mColor,		nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::PolyLineProperties)
+	RTTI_PROPERTY("Count",		&nap::PolyLineProperties::mVertices,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Color",		&nap::PolyLineProperties::mColor,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PolyLine)
@@ -28,6 +28,12 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	/**
+	 * Utility function to create a set of normals based on a set vertex positions and their distance to @center
+	 * @param positions the vertex positions
+	 * @param outNormals the buffer that will be filled with the new normals
+	 * @param center the position from where to calculate direction
+	 */
 	static void getCentroidNormals(const std::vector<glm::vec3>& positions, std::vector<glm::vec3>& outNormals, const glm::vec3& center)
 	{
 		outNormals.resize(positions.size());
@@ -39,6 +45,17 @@ namespace nap
 		}
 	}
 
+	/**
+	 * Utility function to upsample a poly line to @segments
+	 * This function distributes the vertices equally among every segment, something that is not desirable with more uneven, complex lines
+	 * A weighted distribution method is preferred but for now this will do. 
+	 * @param vertices the original mesh vertices
+	 * @param buffer the buffer that will hold the resampled vertices
+	 * @param segments the amount of segments the poly line should have, a segment is the line between two vertices
+	 * @param closed if the line is not, if a line is not closed it will contain one extra point to maintain the last vertex
+	 * @param isNormal if the attribute is a normal, in that case the interpolation will return a normalized value (copied from Houdini)
+	 * @return the total number of generated vertices
+	 */
 	static int resampleLine(std::vector<glm::vec3>& vertices, std::vector<glm::vec3>& buffer, int segments, bool closed, bool isNormal = false)
 	{
 		assert(segments > 0);
@@ -93,10 +110,10 @@ namespace nap
 	void nap::PolyLine::createVertexAttributes()
 	{
 		// Create attributes
-		mPostionAttr = &(mMeshInstance->GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName()));
-		mUvAttr	= &(mMeshInstance->GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetUVName(0)));
-		mColorAttr = &(mMeshInstance->GetOrCreateAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0)));
-		mNormalAttr = &(mMeshInstance->GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::getNormalName()));
+		mMeshInstance->GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName());
+		mMeshInstance->GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetUVName(0));
+		mMeshInstance->GetOrCreateAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0));
+		mMeshInstance->GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::getNormalName());
 	}
 
 
@@ -109,52 +126,57 @@ namespace nap
 		// Create attributes
 		createVertexAttributes();
 
-		// Create line
-		createLine();
-
-		// Initialize line
-		return mMeshInstance->init(errorState);
+		return true;
 	}
 
 
 	//////////////////////////////////////////////////////////////////////////
 
-
-	void Line::createLine()
+	bool Line::init(utility::ErrorState& errorState)
 	{
+		if (!PolyLine::init(errorState))
+			return false;
+
 		// Add initial points
 		std::vector<glm::vec3> verts = { mStart, mEnd };
 
 		// Populate position buffer with data
-		int p_count = resampleLine(verts, mPostionAttr->getValues(), mLineProperties.mVertices, mClosed);
+		int p_count = resampleLine(verts, getPositionData().getValues(), mLineProperties.mVertices, mClosed);
 
 		// Set color buffer
-        std::vector<glm::vec4> colors(p_count, mLineProperties.mColor);
-		mColorAttr->setValues(colors);
+		std::vector<glm::vec4> colors(p_count, mLineProperties.mColor);
+		getColorData().setValues(colors);
 
 		// Calculate normal
 		glm::vec3 n = glm::cross(glm::vec3(0.0f, 0.0f, 1.0f), glm::normalize(mEnd - mStart));
 		std::vector<glm::vec3> n_verts = { n, n };
-		resampleLine(n_verts, mNormalAttr->getValues(), mLineProperties.mVertices, mClosed, true);
+		resampleLine(n_verts, getNormalData().getValues(), mLineProperties.mVertices, mClosed, true);
 
-		// Set uvs, todo: normalize them
+		// Set normalized uvs
 		glm::vec3 uv_end_offset = mEnd - mStart;
 		glm::vec3 d_n = normalize(uv_end_offset);
-		std::vector<glm::vec3> uv_coords = { {0.0f,0.0f,0.0f}, d_n };
+		std::vector<glm::vec3> uv_coords = { { 0.0f,0.0f,0.0f }, d_n };
 
-		resampleLine(uv_coords, mUvAttr->getValues(), mLineProperties.mVertices, mClosed);
+		// Upsample line
+		resampleLine(uv_coords, getUvData().getValues(), mLineProperties.mVertices, mClosed);
 		mMeshInstance->setNumVertices(p_count);
 
 		// Set draw mode
 		mMeshInstance->setDrawMode(mClosed ? opengl::EDrawMode::LINE_LOOP : opengl::EDrawMode::LINE_STRIP);
-	}
 
+		// Initialize line
+		return mMeshInstance->init(errorState);
+
+		return true;
+	}
 
 	//////////////////////////////////////////////////////////////////////////
 
-
-	void Rectangle::createLine()
+	bool Rectangle::init(utility::ErrorState& errorState)
 	{
+		if (!PolyLine::init(errorState))
+			return false;
+
 		float dx = mDimensions.x / 2.0f;
 		float dy = mDimensions.y / 2.0f;
 
@@ -165,8 +187,8 @@ namespace nap
 		p_verts[3] = { 0.0f - dx, 0.0f + dy, 0.0f };
 
 		// Set positions
-		int pos_count = resampleLine(p_verts, mPostionAttr->getValues(), mLineProperties.mVertices, true);
-		
+		int pos_count = resampleLine(p_verts, getPositionData().getValues(), mLineProperties.mVertices, true);
+
 		// Calculate normalized UV coordinates
 		float sx, sy;
 		if (dx > dy)
@@ -190,48 +212,59 @@ namespace nap
 		uv_verts[3] = { 0.5f - dsx, 0.5f + dsy, 0.0f };
 
 		// Set uv buffer based on normalized uv coordinates
-		resampleLine(uv_verts, mUvAttr->getValues(), mLineProperties.mVertices, true);
+		resampleLine(uv_verts, getUvData().getValues(), mLineProperties.mVertices, true);
 
 		// Set color buffer
-        std::vector<glm::vec4> colors(pos_count, mLineProperties.mColor);
-		mColorAttr->setValues(colors);
+		std::vector<glm::vec4> colors(pos_count, mLineProperties.mColor);
+		getColorData().setValues(colors);
 
 		// Set normal buffer
 		std::vector <glm::vec3> n_verts(4);
 		getCentroidNormals(p_verts, n_verts, { 0.0f,0.0f,0.0f });
-		resampleLine(n_verts, mNormalAttr->getValues(), mLineProperties.mVertices, true, true);
+		resampleLine(n_verts, getNormalData().getValues(), mLineProperties.mVertices, true, true);
 
 		// Update mesh vertex count
 		mMeshInstance->setNumVertices(pos_count);
 
 		// Set draw mode
 		mMeshInstance->setDrawMode(opengl::EDrawMode::LINE_LOOP);
-	}
 
+		// Initialize line
+		return mMeshInstance->init(errorState);
+
+		return true;
+	}
 
 	//////////////////////////////////////////////////////////////////////////
 
-
-	void Circle::createLine()
+	bool Circle::init(utility::ErrorState& errorState)
 	{
-		mPostionAttr->clear();
-		mPostionAttr->resize(mLineProperties.mVertices);
-		std::vector<glm::vec3>::iterator v = mPostionAttr->getValues().begin();
+		if (!PolyLine::init(errorState))
+			return false;
 
-		mNormalAttr->clear();
-		mNormalAttr->resize(mLineProperties.mVertices);
-		std::vector<glm::vec3> ::iterator n = mNormalAttr->getValues().begin();
+		nap::TypedVertexAttribute<glm::vec3>& pos_data = getPositionData();
+		pos_data.clear();
+		pos_data.resize(mLineProperties.mVertices);
+		std::vector<glm::vec3>::iterator v = pos_data.getValues().begin();
 
-		mColorAttr->clear();
-		mColorAttr->resize(mLineProperties.mVertices);
-		std::vector<glm::vec4>::iterator c = mColorAttr->getValues().begin();
+		nap::TypedVertexAttribute<glm::vec3>& normal_data = getNormalData();
+		normal_data.clear();
+		normal_data.resize(mLineProperties.mVertices);
+		std::vector<glm::vec3> ::iterator n = normal_data.getValues().begin();
 
-		mUvAttr->clear();
-		mUvAttr->resize(mLineProperties.mVertices);
-		std::vector<glm::vec3>::iterator t = mUvAttr->getValues().begin();
+		nap::TypedVertexAttribute<glm::vec4>& color_data = getColorData();
+		color_data.clear();
+		color_data.resize(mLineProperties.mVertices);
+		std::vector<glm::vec4>::iterator c = color_data.getValues().begin();
+
+		nap::TypedVertexAttribute<glm::vec3>& uv_data = getUvData();
+		uv_data.clear();
+		uv_data.resize(mLineProperties.mVertices);
+		std::vector<glm::vec3>::iterator t = uv_data.getValues().begin();
 
 		float const R = 1.0f / static_cast<float>(mLineProperties.mVertices - 1);
 
+		// Sweep and fill
 		for (int r = 0; r < mLineProperties.mVertices; r++)
 		{
 			float const y = sin(2 * M_PI * r * R);
@@ -252,5 +285,35 @@ namespace nap
 
 		mMeshInstance->setNumVertices(mLineProperties.mVertices);
 		mMeshInstance->setDrawMode(opengl::EDrawMode::LINE_LOOP);
+
+		// Initialize line
+		return mMeshInstance->init(errorState);
+
+		return true;
 	}
+
+
+	nap::TypedVertexAttribute<glm::vec3>& PolyLine::getPositionData()
+	{
+		return mMeshInstance->GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName());
+	}
+
+
+	nap::TypedVertexAttribute<glm::vec4>& PolyLine::getColorData()
+	{
+		return mMeshInstance->GetAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0));
+	}
+
+
+	nap::TypedVertexAttribute<glm::vec3>& PolyLine::getNormalData()
+	{
+		return mMeshInstance->GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::getNormalName());
+	}
+
+
+	nap::TypedVertexAttribute<glm::vec3>& PolyLine::getUvData()
+	{
+		return mMeshInstance->GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetUVName(0));
+	}
+
 }

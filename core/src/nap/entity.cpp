@@ -11,14 +11,14 @@ RTTI_BEGIN_CLASS(nap::Entity)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::EntityInstance)
-	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_CONSTRUCTOR(nap::Core&, const nap::Entity*)
 	RTTI_FUNCTION("findComponent", (nap::ComponentInstance* (nap::EntityInstance::*)(const std::string &) const) &nap::EntityInstance::findComponent)
 RTTI_END_CLASS
 
 namespace nap
 {
-	EntityInstance::EntityInstance(Core& core) :
-		mCore(&core)
+	EntityInstance::EntityInstance(Core& core, const Entity* entity) :
+		mCore(&core), mResource(entity)
 	{
 	}
 
@@ -114,6 +114,12 @@ namespace nap
 	EntityInstance* EntityInstance::getParent() const
 	{
 		return mParent;
+	}
+
+
+	const nap::Entity* EntityInstance::getEntity() const
+	{
+		return mResource;
 	}
 
 

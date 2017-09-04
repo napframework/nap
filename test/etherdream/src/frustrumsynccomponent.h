@@ -5,7 +5,7 @@
 
 // External Includes
 #include <nap/component.h>
-#include <linemesh.h>
+#include "polyline.h"
 #include <transformcomponent.h>
 
 namespace nap

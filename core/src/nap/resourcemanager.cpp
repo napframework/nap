@@ -292,7 +292,7 @@ namespace nap
 	void ResourceManagerService::initialized()
 	{
 		mLastTimeStamp = getCore().getElapsedTime();
-		mRootEntity = std::make_unique<EntityInstance>(getCore());
+		mRootEntity = std::make_unique<EntityInstance>(getCore(), nullptr);
 	}
 
 
@@ -444,7 +444,7 @@ namespace nap
 		// Create all entity instances and component instances
 		for (const nap::Entity* entity_resource : entityResources)
 		{
-			EntityInstance* entity_instance = new EntityInstance(getCore());
+			EntityInstance* entity_instance = new EntityInstance(getCore(), entity_resource);
 			entity_instance->mID = generateInstanceID(getInstanceID(entity_resource->mID), entityCreationParams);
 
 			entityCreationParams.mEntitiesByID.emplace(std::make_pair(entity_instance->mID, std::unique_ptr<EntityInstance>(entity_instance)));

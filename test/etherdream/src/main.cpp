@@ -52,15 +52,8 @@ nap::OSCService* oscService = nullptr;
 // Holds all render windows
 nap::ObjectPtr<nap::RenderWindow> renderWindow = nullptr;
 
-// Main camera
-nap::ObjectPtr<nap::EntityInstance> cameraEntity = nullptr;
-
 // Laser DAC
-nap::ObjectPtr<nap::EtherDreamDac> laser_one = nullptr;
-nap::ObjectPtr<nap::EntityInstance> laserEntity = nullptr;
-
-// Spline entity
-nap::ObjectPtr<nap::EntityInstance> splineEntity = nullptr;
+nap::ObjectPtr<nap::EntityInstance> laserPrototype = nullptr;
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -70,13 +63,6 @@ void runGame(nap::Core& core);
 // Called when the window is updating
 void onUpdate()
 {
-	//////////////////////////////////////////////////////////////////////////
-	nap::RenderableMeshComponentInstance& mesh_comp = splineEntity->getComponent<nap::RenderableMeshComponentInstance>();
-	nap::PolyLine& line = static_cast<nap::PolyLine&>(mesh_comp.getMesh());
-	double elapsed_time = renderService->getCore().getElapsedTime();
-
-	//////////////////////////////////////////////////////////////////////////
-
 	// If any changes are detected, and we are reloading, we need to do this on the correct context
 	renderService->getPrimaryWindow().makeCurrent();
 	resourceManagerService->checkForFileChanges();
@@ -105,19 +91,23 @@ void onRender()
 	backbuffer.setClearColor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 	renderService->clearRenderTarget(backbuffer, opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH | opengl::EClearFlags::STENCIL);
 
+	nap::EntityInstance* spline_entity = laserPrototype->getChildren()[0];
+	nap::EntityInstance* laser_output_entity = laserPrototype->getChildren()[1];
+	nap::EntityInstance* camera_entity = laserPrototype->getChildren()[2];
+
 	// Render spline
-	nap::RenderableMeshComponentInstance& line_mesh = splineEntity->getComponent<nap::RenderableMeshComponentInstance>();
-	renderService->renderObjects(backbuffer, cameraEntity->getComponent<nap::PerspCameraComponentInstance>());
+	nap::RenderableMeshComponentInstance& line_mesh = spline_entity->getComponent<nap::RenderableMeshComponentInstance>();
+	renderService->renderObjects(backbuffer, camera_entity->getComponent<nap::PerspCameraComponentInstance>());
 
 	// Swap back buffer
 	renderWindow->swap();
 
 	// Set the laser line to render
-	nap::RenderableMeshComponentInstance& line = splineEntity->getComponent<nap::RenderableMeshComponentInstance>();
-	nap::TransformComponentInstance& xform = splineEntity->getComponent<nap::TransformComponentInstance>();
+	nap::RenderableMeshComponentInstance& line = spline_entity ->getComponent<nap::RenderableMeshComponentInstance>();
+	nap::TransformComponentInstance& xform = spline_entity->getComponent<nap::TransformComponentInstance>();
 
 	std::vector<nap::LaserOutputComponentInstance*> outputs;
-	laserEntity->getComponentsOfType<nap::LaserOutputComponentInstance>(outputs);
+	laser_output_entity->getComponentsOfType<nap::LaserOutputComponentInstance>(outputs);
 	assert(line.getMesh().get_type().is_derived_from(RTTI_OF(nap::PolyLine)));
 	for (const auto& output : outputs)
 	{
@@ -183,20 +173,11 @@ bool init(nap::Core& core)
 		return false;        
 	}
 
-
-	// Get important entities
-	cameraEntity = resourceManagerService->findEntity("CameraEntity");
-	assert(cameraEntity != nullptr);
-
 	// Store all render windows
 	renderWindow = resourceManagerService->findObject<nap::RenderWindow>("Window");
 
 	// Store laser dacs
-	laser_one = resourceManagerService->findObject<nap::EtherDreamDac>("Laser1");
-	laserEntity = resourceManagerService->findEntity("LaserEntity1");
-
-	// Store spline entity
-	splineEntity = resourceManagerService->findEntity("SplineEntity");
+	laserPrototype = resourceManagerService->findEntity("LaserPrototypeEntity");
 
 	// Set render states
 	nap::RenderState& render_state = renderService->getRenderState();

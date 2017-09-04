@@ -195,6 +195,24 @@
 
 		{
 			"Type" : "nap::Entity",
+			"mID" : "LaserPrototypeEntity",
+
+			"Components" :
+			[
+				{
+					"Type" : "nap::TransformComponent"
+				}
+			],
+			"Children" : 
+			[
+				"SplineEntity",
+				"LaserOutputEntity",
+				"CameraEntity"
+			]
+		},
+
+		{
+			"Type" : "nap::Entity",
 			"mID": "CameraEntity",
 			"Components" : 
 			[
@@ -312,7 +330,7 @@
 
 		{
 			"Type" : "nap::Entity",
-			"mID": "LaserEntity1",
+			"mID": "LaserOutputEntity",
 
 			"Components" : 
 			[

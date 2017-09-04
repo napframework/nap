@@ -5,9 +5,9 @@
 namespace nap
 {
 	/**
-	 * Properties commonly associated with a line mesh
+	 * Properties commonly associated with a PolyLine
 	 */
-	struct LineMeshProperties
+	struct PolyLineProperties
 	{
 		int mVertices = 10;								// Total number of vertices that make up the line
 		glm::vec4 mColor = { 1.0f, 1.0f, 1.0f,1.0f };	// Color of the line
@@ -16,46 +16,57 @@ namespace nap
 
 	/**
 	 * Base class for all line mesh types
-	 * These lines are utility classes for constructing simple polyline objects
-	 * Every line type is constructed using a number of vertices and has a
-	 * color, uv and normal vertex attribute
-	 * And / or if the shape is closed / open
+	 * These lines types are utility classes for constructing simple Poly Line objects
+	 * Every line type is constructed using a number of vertices and has a color, uv and normal vertex attribute
 	 */
 	class NAPAPI PolyLine : public IMesh
 	{
 		RTTI_ENABLE(IMesh)
 	public:
 		/**
-		 *	Create the base mesh
+		 * Create the mesh instance and the necessary vertex attributes (P, Cd, N, Uv)
+		 * When implementing a derived PolyLine, make sure to call the base init first
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
+		/**
+		 *	@return the mesh associated with this poly line
+		 */
 		virtual MeshInstance&			getMeshInstance() override				{ return *mMeshInstance; }
+		
+		/**
+		 *	@return const reference to the mesh associated with this poly line
+		 */
 		virtual const MeshInstance&		getMeshInstance() const override		{ return *mMeshInstance; }
 
-		// Utilities
-		TypedVertexAttribute<glm::vec3>* getPositionData() const				{ return mPostionAttr; }
-		TypedVertexAttribute<glm::vec4>* getColorData() const					{ return mColorAttr; }
-		TypedVertexAttribute<glm::vec3>* getNormalData() const					{ return mNormalAttr; }
-		TypedVertexAttribute<glm::vec3>* getUvData() const						{ return mUvAttr; }
+		/**
+		 *	@return the position vertex data
+		 */
+		TypedVertexAttribute<glm::vec3>& getPositionData();
+		
+		/**
+		 *	@return the color vertex data
+		 */
+		TypedVertexAttribute<glm::vec4>& getColorData();
+		
+		/**
+		 *	@return the normal data
+		 */
+		TypedVertexAttribute<glm::vec3>& getNormalData();
+		
+		/**
+		 *	@return the uv data
+		 */
+		TypedVertexAttribute<glm::vec3>& getUvData();
 
 		// Properties associated with a line
-		LineMeshProperties mLineProperties;
+		PolyLineProperties mLineProperties;
 
 	protected:
 		std::unique_ptr<MeshInstance> mMeshInstance;
 
-		// Creates line, needs to be implemented by derived classes
-		virtual void createLine() = 0;
-
 		// Creates the default vertex line attributes, useful for easy access
 		void createVertexAttributes();
-
-		// The various line attributes that can be used in the rendering pipe
-		TypedVertexAttribute<glm::vec3>* mPostionAttr = nullptr;	// position
-		TypedVertexAttribute<glm::vec3>* mUvAttr = nullptr;			// uv
-		TypedVertexAttribute<glm::vec4>* mColorAttr = nullptr;		// color
-		TypedVertexAttribute<glm::vec3>* mNormalAttr = nullptr;		// normal
 	};
 
 
@@ -75,9 +86,11 @@ namespace nap
 		glm::vec3 mEnd =	{ 0.5f, 0.0f, 0.0f };	// End point of the line
 		bool mClosed =		false;					// If the line is closed or not
 		
-
-		// Creates the line based on start / end points of the line
-		virtual void createLine() override;
+		/**
+		 * Creates the line
+		 * @return if the line was successfully created
+		 */
+		virtual bool init(utility::ErrorState& errorState) override;
 	};
 
 
@@ -94,8 +107,11 @@ namespace nap
 	public:
 		glm::vec2 mDimensions;						// Width / Height of the rectangle 
 
-		// Creates the line based on the rectangle dimensions
-		virtual void createLine() override;
+		/**
+		* Creates the rectangle
+		* @return if the rectangle was successfully created
+		*/
+		virtual bool init(utility::ErrorState& errorState) override;
 	};
 
 
@@ -108,7 +124,10 @@ namespace nap
 	public:
 		float mRadius;							// Radius of the circle
 
-		// Creates the circle based on the radius
-		virtual void createLine() override;
+		/**
+		* Creates the rectangle
+		* @return if the rectangle was successfully created
+		*/
+		virtual bool init(utility::ErrorState& errorState) override;
 	};
 }
