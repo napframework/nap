@@ -63,9 +63,7 @@ namespace nap
 	void LaserOutputComponentInstance::setLine(PolyLine& line, const glm::mat4x4& xform)
 	{
 		TypedVertexAttribute<glm::vec3>& position_data = line.getPositionAttr();
-		assert(position_data != nullptr);
 		TypedVertexAttribute<glm::vec4>& color_data = line.getColorAttr();
-		assert(color_data != nullptr);
 
 		// Populate the laser buffer
 		nap::TransformComponentInstance& laser_xform = this->getEntity()->getComponent<nap::TransformComponentInstance>();
