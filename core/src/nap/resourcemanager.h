@@ -136,6 +136,13 @@ namespace nap
 		using ObjectByIDMap		= std::unordered_map<std::string, std::unique_ptr<rtti::RTTIObject>>;	// Map from object ID to object (owned)
 		using FileLinkMap		= std::unordered_map<std::string, std::vector<std::string>>;			// Map from target file to multiple source files
 
+		enum class EFileModified : uint8_t
+		{
+			Yes,
+			No,
+			Error
+		};
+
 		void addObject(const std::string& id, std::unique_ptr<rtti::RTTIObject> object);
 		void removeObject(const std::string& id);
 		void addFileLink(const std::string& sourceFile, const std::string& targetFile);
@@ -146,6 +153,8 @@ namespace nap
 		bool initEntities(const RTTIObjectGraph& objectGraph, const ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState);
 		bool createEntities(const std::vector<const Entity*>& entityResources, EntityCreationParameters& entityCreationParams, std::vector<std::string>& generatedEntityIDs, utility::ErrorState& errorState);
 		bool buildObjectGraph(const ObjectByIDMap& objectsToUpdate, RTTIObjectGraph& objectGraph, utility::ErrorState& errorState);
+		EFileModified isFileModified(const std::string& modifiedFile);
+
 		/** 
 		* Traverses all pointers in ObjectPtrManager and, for each target, replaces the target with the one in the map that is passed.
 		* @param container The container holding an ID -> pointer mapping with the pointer to patch to.
@@ -172,6 +181,8 @@ namespace nap
 			bool mPatchObjects = true;
 		};
 
+		using ModifiedTimeMap = std::unordered_map<std::string, uint64>;
+
 		std::unique_ptr<EntityInstance>		mRootEntity;					// Root entity, owned and created by the system
 		ObjectByIDMap						mObjects;						// Holds all objects
 		EntityByIDMap						mEntities;						// Holds all entitites
@@ -179,6 +190,7 @@ namespace nap
 		FileLinkMap							mFileLinkMap;					// Map containing links from target to source file, for updating source files if the file monitor sees changes
 		std::unique_ptr<DirectoryWatcher>	mDirectoryWatcher;				// File monitor, detects changes on files
 		double								mLastTimeStamp = 0;				// Last time stamp used for calculating delta time
+		ModifiedTimeMap						mFileModTimes;					// Cache for file modification times to avoid responding to too many file events
 	};
 
 
