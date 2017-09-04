@@ -8,7 +8,9 @@
 #include <nap/logger.h>
 #include <generic/customdelegate.h>
 #include <nap/objectptr.h>
+#include <rtti/rttipath.h>
 #include "generic/utility.h"
+#include "napgeneric.h"
 
 
 QList<QStandardItem*> createItemRow(const QString& name, rttr::property prop, rttr::instance inst);
@@ -20,20 +22,26 @@ public:
     }
 };
 
+class InvalidItem : public QStandardItem {
+public:
+    InvalidItem(const QString& name) : QStandardItem(name) {
+        setForeground(Qt::red);
+        setEditable(false);
+    }
+};
+
 /**
  * This item shows the name of an object's property
  */
 class PropertyItem : public QStandardItem {
 public:
-    PropertyItem(rttr::property prop, rttr::instance inst) : QStandardItem(), mProperty(prop), mInstance(inst) {
-        setText(prop.get_name().data());
+    PropertyItem(const QString& name, nap::rtti::RTTIPath path) : QStandardItem(name), mPath(path) {
         setEditable(false);
         setForeground(softForeground());
     }
 
 protected:
-    rttr::property mProperty;
-    rttr::instance mInstance;
+    nap::rtti::RTTIPath mPath;
 };
 
 /**
@@ -41,21 +49,18 @@ protected:
  */
 class CompoundPropertyItem : public QStandardItem {
 public:
-    CompoundPropertyItem(const QString& name, rttr::variant compound) : QStandardItem(name), mCompound(compound) {
-        std::string nameStr(name.toStdString());
-        processChildren();
+    CompoundPropertyItem(const QString& name, nap::rtti::RTTIPath path, rttr::variant compound)
+            : QStandardItem(name), mPath(path), mCompound(compound) {
+        setForeground(softForeground());
+        populateChildren();
     }
 
-    void processChildren() {
-        for (auto childprop : mCompound.get_type().get_properties()) {
-            auto value = childprop.get_value(mCompound);
-            std::string name = childprop.get_name().data();
-            appendRow(createItemRow(name.c_str(), childprop, mCompound));
-        }
-    }
+    void populateChildren();
 
 private:
+    nap::rtti::RTTIPath mPath;
     rttr::variant mCompound;
+
 };
 
 /**
@@ -63,13 +68,17 @@ private:
  */
 class ArrayPropertyItem : public QStandardItem {
 public:
-    ArrayPropertyItem(const QString& name, rttr::variant_array_view array) : QStandardItem(name), mArray(array) {
-        processChildren();
+    ArrayPropertyItem(const QString& name, nap::rtti::RTTIPath& path, rttr::variant_array_view array)
+            : QStandardItem(name), mArray(array), mPath(path) {
+        populateChildren();
+        setForeground(softForeground());
     }
 
-    void processChildren();
 
 private:
+    void populateChildren();
+
+    nap::rtti::RTTIPath mPath;
     rttr::variant_array_view mArray;
 
 };
@@ -95,16 +104,15 @@ public:
  */
 class PropertyValueItem : public QStandardItem {
 public:
-    PropertyValueItem(rttr::property prop, nap::rtti::Instance inst);
+    PropertyValueItem(const QString& name, nap::rtti::RTTIPath path);
 
     QVariant data(int role) const override;
 
     void setData(const QVariant& value, int role) override;
 
 private:
-    std::string mName;
-    rttr::instance mInstance;
-    const rttr::property mProperty;
+    nap::rtti::RTTIPath mRTTIPath;
+
 };
 
 /**
@@ -114,10 +122,14 @@ class InspectorModel : public QStandardItemModel {
 public:
     InspectorModel();
 
-    void setObjects(QList<nap::rtti::RTTIObject*>& inst);
+    void setObject(nap::rtti::RTTIObject* object);
+
+    nap::rtti::RTTIObject* object() { return mObject; }
 
 private:
-    nap::rtti::RTTIObject* mInstance = nullptr;
+    void populateItems();
+
+    nap::rtti::RTTIObject* mObject = nullptr;
 };
 
 /**
@@ -128,7 +140,7 @@ Q_OBJECT
 public:
     InspectorPanel();
 
-    void setObjects(QList<nap::rtti::RTTIObject*>& objects);
+    void setObject(nap::rtti::RTTIObject* object);
 
 
 private:

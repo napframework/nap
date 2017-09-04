@@ -6,7 +6,9 @@ void MainWindow::bindSignals() {
     connect(&AppContext::get(), &AppContext::fileOpened, this, &MainWindow::onFileOpened);
     connect(&AppContext::get(), &AppContext::fileSaved, this, &MainWindow::onFileSaved);
 
-    connect(&mOutlinePanel, &OutlinePanel::selectionChanged, &mInspectorPanel, &InspectorPanel::setObjects);
+    connect(&mOutlinePanel, &OutlinePanel::selectionChanged, [&](QList<nap::rtti::RTTIObject*>& objects) {
+        mInspectorPanel.setObject(objects.isEmpty() ? nullptr : objects.first());
+    });
 }
 
 void MainWindow::showEvent(QShowEvent* event) {

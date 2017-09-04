@@ -1,88 +1,92 @@
 #include "typeconversion.h"
-#include "globals.h"
 
-using namespace std;
-using namespace rttr;
-using namespace napkin;
+using namespace nap;
 
-const QVariant TypeConverter::invalid = TXT_UNCONVERTIBLE_TYPE; // NOLINT
+bool toQVariant(const nap::rtti::TypeInfo& type, const nap::rtti::Variant& value, QVariant& outValue) {
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-#define TO_Q_VARIANT(TYPE) \
-    template<> QVariant TypeConverterImpl<TYPE>::toVariant(const rttr::property prop, const rttr::instance inst) const
-
-#define FROM_Q_VARIANT(TYPE) \
-    template<> bool TypeConverterImpl<TYPE>::fromVariant(const rttr::property prop, rttr::instance inst, const QVariant value) const
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// bool
-TO_Q_VARIANT(bool) { return prop.get_value(inst).to_bool(); }
-
-FROM_Q_VARIANT(bool) {
-    prop.set_value(inst, value.toBool());
-    return true;
-}
-
-
-// int
-TO_Q_VARIANT(int) { return prop.get_value(inst).to_int(); }
-
-FROM_Q_VARIANT(int) {
-    bool ok;
-    int v = value.toInt(&ok);
-    if (!ok) return false;
-    prop.set_value(inst, v);
-    return true;
-}
-
-// unsigned int
-TO_Q_VARIANT(unsigned int) { return prop.get_value(inst).to_uint32(); }
-
-FROM_Q_VARIANT(unsigned int) {
-    bool ok;
-    int v = value.toUInt(&ok);
-    if (!ok) return false;
-    prop.set_value(inst, v);
-    return true;
-}
-
-// float
-TO_Q_VARIANT(float) { return prop.get_value(inst).to_float(); }
-
-FROM_Q_VARIANT(float) {
-    bool ok;
-    float v = value.toFloat(&ok);
-    if (!ok) return false;
-    prop.set_value(inst, v);
-    return true;
-}
-
-// string
-TO_Q_VARIANT(std::string) { return QString::fromStdString(prop.get_value(inst).to_string()); }
-
-FROM_Q_VARIANT(std::string) {
-    prop.set_value(inst, value.toString().toStdString());
-    return true;
-}
-
-
-TypeConverter* TypeConverter::get(const type& t) {
-    for (auto& conv : typeConverters())
-        if (conv->getType() == t)
-            return conv.get();
-    return nullptr;
-}
-
-std::vector<std::unique_ptr<TypeConverter>>& TypeConverter::typeConverters() {
-    static std::vector<std::unique_ptr<TypeConverter>> list;
-    if (list.size() == 0) {
-        list.emplace_back(std::make_unique<TypeConverterImpl<std::string>>());
-        list.emplace_back(std::make_unique<TypeConverterImpl<bool>>());
-        list.emplace_back(std::make_unique<TypeConverterImpl<float>>());
-        list.emplace_back(std::make_unique<TypeConverterImpl<int>>());
-        list.emplace_back(std::make_unique<TypeConverterImpl<unsigned int>>());
+    if (type.is_arithmetic()) {
+        if (type == rtti::TypeInfo::get<bool>())
+            outValue.setValue(value.to_bool());
+        else if (type == rtti::TypeInfo::get<char>())
+            outValue.setValue(value.to_uint8());
+        else if (type == rtti::TypeInfo::get<int8_t>())
+            outValue.setValue(value.to_int8());
+        else if (type == rtti::TypeInfo::get<int16_t>())
+            outValue.setValue(value.to_int16());
+        else if (type == rtti::TypeInfo::get<int32_t>())
+            outValue.setValue(value.to_int32());
+        else if (type == rtti::TypeInfo::get<int64_t>())
+            outValue.setValue(value.to_int64());
+        else if (type == rtti::TypeInfo::get<uint8_t>())
+            outValue.setValue(value.to_uint8());
+        else if (type == rtti::TypeInfo::get<uint16_t>())
+            outValue.setValue(value.to_uint16());
+        else if (type == rtti::TypeInfo::get<uint32_t>())
+            outValue.setValue(value.to_uint32());
+        else if (type == rtti::TypeInfo::get<uint64_t>())
+            outValue.setValue(value.to_uint64());
+        else if (type == rtti::TypeInfo::get<float>())
+            outValue.setValue(value.to_float());
+        else if (type == rtti::TypeInfo::get<double>())
+            outValue.setValue(value.to_double());
+        else
+            return false;
+        return true;
+    } else if (type.is_enumeration()) {
+        // Try to convert the enum to uint64
+        bool conversion_succeeded = false;
+        uint64_t value_int = value.to_uint64(&conversion_succeeded);
+        if (conversion_succeeded) {
+            outValue.setValue(value_int);
+            return true;
+        } else {
+            return false;
+        }
+    } else if (type == rtti::TypeInfo::get<std::string>()) {
+        outValue.setValue(QString::fromStdString(value.to_string()));
+        return true;
     }
-    return list;
+
+    return false;
 }
+
+
+rtti::Variant fromQVariant(const rtti::TypeInfo& type, const QVariant& variant, bool* ok) {
+    *ok = true;
+
+    if (type.is_arithmetic()) {
+        if (type == rtti::TypeInfo::get<bool>())
+            return variant.toBool();
+        else if (type == rtti::TypeInfo::get<char>())
+            return variant.toInt(ok);
+        else if (type == rtti::TypeInfo::get<int8_t>())
+            return variant.toInt(ok);
+        else if (type == rtti::TypeInfo::get<int16_t>())
+            return variant.toInt(ok);
+        else if (type == rtti::TypeInfo::get<int32_t>())
+            return variant.toInt(ok);
+        else if (type == rtti::TypeInfo::get<int64_t>())
+            return variant.toInt(ok);
+        else if (type == rtti::TypeInfo::get<uint8_t>())
+            return variant.toInt(ok);
+        else if (type == rtti::TypeInfo::get<uint16_t>())
+            return variant.toInt(ok);
+        else if (type == rtti::TypeInfo::get<uint32_t>())
+            return variant.toInt(ok);
+        else if (type == rtti::TypeInfo::get<uint64_t>())
+            return variant.toInt(ok);
+        else if (type == rtti::TypeInfo::get<float>())
+            return variant.toFloat(ok);
+        else if (type == rtti::TypeInfo::get<double>())
+            return variant.toReal(ok);
+    } else if (type.is_enumeration()) {
+        return variant.toUInt(ok);
+    } else if (type == rtti::TypeInfo::get<std::string>()) {
+        return variant.toString().toStdString();
+    }
+
+    // Unknown type
+    assert(false);
+    return rtti::Variant();
+}
+
