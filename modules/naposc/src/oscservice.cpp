@@ -11,18 +11,24 @@
 
 // Local Includes
 #include "oscservice.h"
+#include "oscreceiver.h"
 
 RTTI_DEFINE(nap::OSCService)
 
 namespace nap
 {
 	OSCService::~OSCService()
-	{
-	}
+	{ }
 
 
 	bool OSCService::init(nap::utility::ErrorState& errorState)
 	{
 		return true;
+	}
+
+
+	void OSCService::registerObjectCreators(rtti::Factory& factory)
+	{
+		factory.addObjectCreator(std::make_unique<OSCReceiverObjectCreator>(*this));
 	}
 }

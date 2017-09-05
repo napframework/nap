@@ -77,7 +77,6 @@ void onUpdate()
 	sceneService->update();
 }
 
-
 // Called when the window is going to render
 void onRender()
 {

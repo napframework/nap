@@ -11,6 +11,12 @@
 		},
 
 		{
+			"Type" : "nap::OSCReceiver",
+			"mID" : "OscReceiver",
+			"Port" : 7000
+		},
+
+		{
 			"Type" : "nap::Shader",
 			"mID": "LineShader",
 			"mVertShader": "shaders/etherdream/line.vert",
