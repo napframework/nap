@@ -6,41 +6,42 @@ namespace nap {
     
     namespace audio {
         
+        /**
+         * Node to perform equal power panning on a stereo signal
+         */
         class NAPAPI StereoPanner : public AudioNode {
         public:
-            StereoPanner(AudioNodeManager& manager) : AudioNode(manager)
-            {
-                setPanning(mPanning);
-            }
+            StereoPanner(AudioNodeManager& manager);
             
-            void setPanning(ControllerValue value)
-            {
-                mPanning = value;
-                mLeftGain = cos(mPanning * 0.5 * pi);
-                mRightGain = sin(mPanning * 0.5 * pi);
-            }
+            /**
+             * @param value: 0 is far left, 1 is far right
+             */
+            void setPanning(ControllerValue value);
             
+            /**
+             * Left channel of the stereo input signal
+             */
             AudioInput leftInput;
+            
+            /**
+             * Right channel of the stereo input signal
+             */
             AudioInput rightInput;
+            
+            /**
+             * Left channel of the stereo output signal
+             */
             AudioOutput leftOutput = { this, &StereoPanner::calculateLeft };
+            
+            /**
+             * Right channel of the stereo output signal
+             */
             AudioOutput rightOutput = { this, &StereoPanner::calculateRight };
             
         private:
-            void calculateLeft(SampleBuffer& buffer)
-            {
-                SampleBuffer& inputBuffer = *leftInput.pull();
-                
-                for (auto i = 0; i < buffer.size(); ++i)
-                    buffer[i] = inputBuffer[i] * mLeftGain;
-            }
+            void calculateLeft(SampleBuffer& buffer);
             
-            void calculateRight(SampleBuffer& buffer)
-            {
-                SampleBuffer& inputBuffer = *rightInput.pull();
-                
-                for (auto i = 0; i < buffer.size(); ++i)
-                    buffer[i] = inputBuffer[i] * mRightGain;
-            }
+            void calculateRight(SampleBuffer& buffer);
             
             ControllerValue mPanning = 0.5f;
             ControllerValue mLeftGain = 0;

@@ -9,20 +9,23 @@
 namespace nap {
     
     namespace audio {
-    
+        
+        // Note: in this files typedefs are being used instead of a using statement
+        // This is because the using statement cannot be used in combination with the NAPAPI macro
+        
+        
         /**
          * Value of a single audio sample
          * Change this to double to build with double precision sample calculation
          */
-//        typedef NAPAPI float SampleValue;
-        NAPAPI using SampleValue = float;
+        using SampleValue = float;
         
         
         /**
          * A buffer of samples
          */
-        typedef NAPAPI std::vector<SampleValue> SampleBuffer;
-        typedef NAPAPI SampleBuffer* SampleBufferPtr;
+        using SampleBuffer = std::vector<SampleValue>;
+        using SampleBufferPtr = SampleBuffer*;
 
         
         /**
@@ -75,19 +78,19 @@ namespace nap {
          * Value of control parameter
          * Change this to double to build with double precision sample calculation
          */
-        typedef NAPAPI float ControllerValue;
+        using ControllerValue = float;
         
         
         /**
          * Time value in milliseconds
          */
-		typedef NAPAPI float TimeValue;
+        using TimeValue = float;
         
         
         /**
          * Time value in samples
          */
-		typedef NAPAPI long DiscreteTimeValue;
+        using DiscreteTimeValue = long;
         
         
         /**

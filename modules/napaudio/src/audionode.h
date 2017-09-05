@@ -19,7 +19,7 @@ namespace nap {
         class AudioOutput;
         
         
-        /*
+        /**
          * An audio input is used by audio node to connect it to other nodes.
          * The input connects one channel (mono) audio.
          */
@@ -27,20 +27,20 @@ namespace nap {
         public:
             AudioInput() = default;
             
-            /*
+            /**
              * This method can be used by the node to pull one sample buffer output from the connected audio output.
              * @return If the AudioInput is not connected or somewhere down the graph silence is being output nullptr can be returned.
              */
             SampleBufferPtr pull();
             
-            /*
+            /**
              * Connects another node's @AudioOutput to this input
              * @param connection: The output that this @AudioInput will be connected to.
              */
             void connect(AudioOutput& connection) { mConnection = &connection; }
             
         private:
-            /**
+            /*
              * The audio output connected to this input.
              * When it is a nullptr this input is not connected.
              */
@@ -48,7 +48,7 @@ namespace nap {
         };
         
         
-        /* 
+        /**
          * An audio output is used by audio node to connect it to other nodes.
          * The output connects one channel (mono) audio.
          * It outputs a pointer to an owned @SampleBuffer.
@@ -59,7 +59,7 @@ namespace nap {
             friend class AudioInput;
             
         public:
-            /*
+            /**
              * Constructor takes node and a member function of the node that will be called to calculate the content of the next buffer.
              * @param parent: the owner node if this output
              * @param calcFunctionPtr: a pointer to member function to a member function of the node that calculates this output's output samples
@@ -92,10 +92,13 @@ namespace nap {
             
             // The node that owns this output
             AudioNode* mNode = nullptr;
+            
+            // The input that this output is connected to, nullptr when disconnected
+            AudioInput* mConnection = nullptr;
         };
         
         
-        /*
+        /**
          * An node does audio processing.
          * The node can have an arbitrary number of inputs and outputs, used to connect streams of mono audio between different nodes.
          * Use this as a base class for custom nodes that generate audio output.
@@ -105,13 +108,13 @@ namespace nap {
             friend class AudioOutput;
             
         public:
-            /*
+            /**
              * @param manager: the node manager that this node will be registered to and processed by. The node receives it's buffersize and samplerate from the manager.
              */
             AudioNode(AudioNodeManager& manager);
             ~AudioNode();
             
-            /*
+            /**
              * Returns the internal buffersize of the node system that this node belongs to. 
              * Output is being pulled through the graph buffers of this size at a time.
              * Not to be confused with the buffersize that the audio callback runs on!
@@ -150,19 +153,19 @@ namespace nap {
             AudioNodeManager* mAudioNodeManager = nullptr;
             
         private:
-            /**
+            /*
              * Used by the node manager to notify the node that the buffer size has changed.
              * @param bufefrSize: the new value
              */
             void setBufferSize(int bufferSize);
             
-            /**
+            /*
              * Used by the node manager to notify the node that the sample rate has changed.
              * @param sampleRate: the new value
              */
             void setSampleRate(float sampleRate) { sampleRateChanged(sampleRate); }
             
-            /**
+            /*
              * Used internally by the node to keep track of all its outputs.
              */
             std::set<AudioOutput*> mOutputs;
@@ -196,7 +199,7 @@ namespace nap {
          */
         class NAPAPI AudioOutputNode : public AudioTrigger {
         public:
-            /*
+            /**
              * @param manager: the node manager that this node will be registered to and processed by. This node provides audio output for the manager.
              */
             AudioOutputNode(AudioNodeManager& manager) : AudioTrigger(manager) { }
@@ -232,7 +235,7 @@ namespace nap {
             friend class AudioNodeManager;
             
         public:
-            /*
+            /**
              * @param manager: the node manager that this node will be registered to and processed by. This node provides audio output for the manager.
              */
             AudioInputNode(AudioNodeManager& manager) : AudioNode(manager) { }

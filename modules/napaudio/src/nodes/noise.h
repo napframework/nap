@@ -6,18 +6,20 @@ namespace nap {
     
     namespace audio {
         
+        /**
+         * White noise generator
+         */
         class NAPAPI Noise : public AudioNode {
         public:
             Noise(AudioNodeManager& manager) : AudioNode(manager) { }
         
+            /**
+             * Output signal containing the noise
+             */
             AudioOutput audioOutput = { this, &Noise::calculate };
             
         private:
-            void calculate(SampleBuffer& buffer)
-            {
-                for (auto i = 0; i < buffer.size(); ++i)
-                    buffer[i] = rand() / float(RAND_MAX);
-            }
+            void calculate(SampleBuffer& buffer);
         };
         
     }

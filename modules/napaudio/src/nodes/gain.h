@@ -34,13 +34,10 @@ namespace nap {
             ControllerValue getGain() const { return mGain; }
             
         private:
-            void calculate(SampleBuffer& buffer)
-            {
-                SampleBuffer& inputBuffer = *audioInput.pull();
-                
-                for (auto i = 0; i < buffer.size(); ++i)
-                    buffer[i] = inputBuffer[i] * mGain;
-            }
+            /**
+             * Calculate the output, perform the scaling
+             */
+            void calculate(SampleBuffer& buffer);
             
             ControllerValue mGain  = 1;
         };
