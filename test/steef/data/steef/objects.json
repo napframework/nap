@@ -6,7 +6,8 @@
 			"mID" : "Viewport",
 			"Width" : 512,
 			"Height" : 512,
-			"Title" : "Viewport"
+			"Title" : "Viewport",
+			"Sync" : false
 		},
 
 		{
@@ -19,11 +20,11 @@
 			"mID" : "LabelImage",
 			"mImagePath" : "data/steef/label.jpg",
 			"mParameters" : {
-				"mMinFilter" : 9987,		
-				"mMaxFilter" : 9729,		
-				"mWrapVertical" : 33071,	
-				"mWrapHorizontal" : 33071,
-				"mMaxLodLevel" : 3
+				"MaxFilter" : "Linear",		
+				"MinFilter" : "LinearMipmapLinear",		
+				"WrapVertical" : "ClampToEdge",	
+				"WrapHorizontal" : "ClampToEdge",
+				"MaxLodLevel" : 3
 			}
 		},
 
@@ -32,11 +33,11 @@
 			"mID" : "CoverImage",
 			"mImagePath" : "data/steef/cover.jpg",
 			"mParameters" : {
-				"mMinFilter" : 9987,		
-				"mMaxFilter" : 9729,		
-				"mWrapVertical" : 33071,	
-				"mWrapHorizontal" : 33071,
-				"mMaxLodLevel" : 3
+				"MaxFilter" : "Linear",		
+				"MinFilter" : "LinearMipmapLinear",		
+				"WrapVertical" : "ClampToEdge",	
+				"WrapHorizontal" : "ClampToEdge",
+				"MaxLodLevel" : 3
 			}
 		},
 
@@ -45,11 +46,11 @@
 			"mID" : "BackgroundImage",
 			"mImagePath" : "data/steef/background.jpg",
 			"mParameters" : {
-				"mMinFilter" : 9987,		
-				"mMaxFilter" : 9729,		
-				"mWrapVertical" : 33071,	
-				"mWrapHorizontal" : 33071,
-				"mMaxLodLevel" : 3
+				"MaxFilter" : "Linear",		
+				"MinFilter" : "LinearMipmapLinear",		
+				"WrapVertical" : "ClampToEdge",	
+				"WrapHorizontal" : "ClampToEdge",
+				"MaxLodLevel" : 3
 			}
 		},
 
@@ -58,11 +59,11 @@
 			"mID" : "MaskImage",
 			"mImagePath" : "data/steef/label_mask.jpg",
 			"mParameters" : {
-				"mMinFilter" : 9987,		
-				"mMaxFilter" : 9729,		
-				"mWrapVertical" : 33071,	
-				"mWrapHorizontal" : 33071,
-				"mMaxLodLevel" : 3
+				"MaxFilter" : "Linear",		
+				"MinFilter" : "LinearMipmapLinear",		
+				"WrapVertical" : "ClampToEdge",	
+				"WrapHorizontal" : "ClampToEdge",
+				"MaxLodLevel" : 3
 			}
 		},
 
@@ -71,11 +72,11 @@
 			"mID" : "GrooveNormalMap",
 			"mImagePath" : "data/steef/grooves.jpg",
 			"mParameters" : {
-				"mMinFilter" : 9987,		
-				"mMaxFilter" : 9729,		
-				"mWrapVertical" : 33071,	
-				"mWrapHorizontal" : 33071,
-				"mMaxLodLevel" : 3
+				"MaxFilter" : "Linear",		
+				"MinFilter" : "LinearMipmapLinear",		
+				"WrapVertical" : "ClampToEdge",	
+				"WrapHorizontal" : "ClampToEdge",
+				"MaxLodLevel" : 3
 			}
 		},
 
@@ -103,13 +104,13 @@
 		{
 			"Type" : "nap::MeshFromFile",
 			"mID": "CoverMesh",
-			"Path": "data/steef/cover.mesh"
+			"Path": "data/steef/vinyl_cover_LP12_S_Cover.mesh"
 		},
 
 		{
 			"Type" : "nap::MeshFromFile",
 			"mID": "VinylMesh",
-			"Path": "data/steef/vinyl.mesh"
+			"Path": "data/steef/vinyl_cover_LP_12_.mesh"
 		},
 		
 		{

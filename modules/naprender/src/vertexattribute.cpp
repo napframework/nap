@@ -2,8 +2,8 @@
 #include "vertexattribute.h"
 
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexAttribute)
-	RTTI_PROPERTY("AttributeID", &nap::VertexAttribute::mAttributeID, nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseVertexAttribute)
+	RTTI_PROPERTY("AttributeID", &nap::BaseVertexAttribute::mAttributeID, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::FloatVertexAttribute)
@@ -37,7 +37,7 @@ RTTI_END_CLASS
 namespace nap
 {
 	// Only here to make sure this cpp is not removed during optimization, which would cause the RTTI definitions to be missingo
-	VertexAttribute::VertexAttribute()
+	BaseVertexAttribute::BaseVertexAttribute()
 	{
 	}
 
