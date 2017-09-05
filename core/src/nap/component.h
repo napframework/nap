@@ -57,11 +57,7 @@ namespace nap
 		}
 
 		template<typename T>
-		T* getComponent() const
-		{
-			assert(mResource->get_type().is_derived_from(rtti::TypeInfo::get<T>()));
-			return static_cast<T*>(mResource);
-		}
+		T* getComponent() const;
 
 		/**
 		 * Initialize this component from its resource
@@ -99,4 +95,14 @@ namespace nap
 		 */
 		virtual const rtti::TypeInfo getInstanceType() const = 0;
 	};
+
+	//////////////////////////////////////////////////////////////////////////
+
+	template<typename T>
+	T* ComponentInstance::getComponent() const
+	{
+		assert(mResource->get_type().is_derived_from(rtti::TypeInfo::get<T>()));
+		return static_cast<T*>(mResource);
+	}
+
 }
