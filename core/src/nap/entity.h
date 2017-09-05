@@ -10,6 +10,7 @@ namespace nap
     class Core;
 	class Component;
 	class EntityInstance;
+	class Entity;
 
 	/**
 	 * Structure used to hold data necessary to create new instances during init
@@ -64,8 +65,11 @@ namespace nap
 
 		/**
 		 * The constructor
+		 * @param core: the nap core instance associated with the application
+		 * @param entity: the resource that was used to create this instance, this is null
+		 * when there is no resource associated with the instance, for example: the root entity
 		 */
-		EntityInstance(Core& core);
+		EntityInstance(Core& core, const Entity* entity);
 
 		/**
 		 * Update this entity hierarchy
@@ -178,6 +182,13 @@ namespace nap
 		EntityInstance* getParent() const;
 
 		/**
+		 * Get the entity resource of this instance
+		 * @return the entity resource associated with this instance, nullptr if no resource is associated
+		 * with this entity, ie: the root
+		 */
+		const Entity* getEntity() const;
+
+		/**
 		 * Get core
 		 */
 		Core* getCore() const;
@@ -189,7 +200,8 @@ namespace nap
 		ComponentConstIterator getComponents() const { return ComponentConstIterator(mComponents); }
 
 	private:
-		Core*			mCore;
+		Core*			mCore = nullptr;
+		const Entity*	mResource = nullptr;	// Resource of this entity
 		EntityInstance* mParent = nullptr;		// Parent of this entity
 		ComponentList	mComponents;			// The components of this entity
 		ChildList		mChildren;				// The children of this entity

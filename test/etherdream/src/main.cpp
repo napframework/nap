@@ -4,6 +4,7 @@
 // Local Includes
 #include "RenderableMeshComponent.h"
 #include "lasershapes.h"
+#include "laseroutputcomponent.h"
 
 // GLM
 #include <glm/glm.hpp>
@@ -11,6 +12,7 @@
 #include <glm/ext.hpp>
 #include <glm/matrix.hpp>
 #include <glm/gtx/transform.hpp>
+#include <glm/gtc/noise.hpp>
 
 // Mod nap render includes
 #include <renderservice.h>
@@ -32,6 +34,8 @@
 #include <sceneservice.h>
 #include <nap/logger.h>
 #include <etherdreamdac.h>
+#include <perspcameracomponent.h>
+#include <mathutils.h>
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
@@ -46,21 +50,15 @@ nap::EtherDreamService* laserService = nullptr;
 nap::OSCService* oscService = nullptr;
 
 // Holds all render windows
-std::vector<nap::ObjectPtr<nap::RenderWindow>> renderWindows;
-
-// Main camera
-nap::ObjectPtr<nap::EntityInstance> cameraEntity = nullptr;
+nap::ObjectPtr<nap::RenderWindow> renderWindow = nullptr;
 
 // Laser DAC
-nap::ObjectPtr<nap::EtherDreamDac> laser_one = nullptr;
-nap::ObjectPtr<nap::EntityInstance> laserEntity = nullptr;
-
+nap::ObjectPtr<nap::EntityInstance> laserPrototype = nullptr;
 
 //////////////////////////////////////////////////////////////////////////
 
 // Some utilities
 void runGame(nap::Core& core);	
-
 
 // Called when the window is updating
 void onUpdate()
@@ -80,23 +78,42 @@ void onUpdate()
 }
 
 
-
 // Called when the window is going to render
 void onRender()
 {
-	renderService->destroyGLContextResources(renderWindows);
+	renderService->destroyGLContextResources({ renderWindow });
 	
 	// Activate current window for drawing
-	renderWindows[0]->makeActive();
+	renderWindow->makeActive();
 
 	// Clear back-buffer
-	opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(renderWindows[0]->getWindow()->getBackbuffer());
-	backbuffer.setClearColor(glm::vec4(0.0705f, 0.49f, 0.5647f, 1.0f));
+	opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(renderWindow->getWindow()->getBackbuffer());
+	backbuffer.setClearColor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 	renderService->clearRenderTarget(backbuffer, opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH | opengl::EClearFlags::STENCIL);
 
-	renderWindows[0]->swap();
-}
+	nap::EntityInstance* spline_entity = laserPrototype->getChildren()[0];
+	nap::EntityInstance* laser_output_entity = laserPrototype->getChildren()[1];
+	nap::EntityInstance* camera_entity = laserPrototype->getChildren()[2];
 
+	// Render spline
+	nap::RenderableMeshComponentInstance& line_mesh = spline_entity->getComponent<nap::RenderableMeshComponentInstance>();
+	renderService->renderObjects(backbuffer, camera_entity->getComponent<nap::PerspCameraComponentInstance>());
+
+	// Swap back buffer
+	renderWindow->swap();
+
+	// Set the laser line to render
+	nap::RenderableMeshComponentInstance& line = spline_entity ->getComponent<nap::RenderableMeshComponentInstance>();
+	nap::TransformComponentInstance& xform = spline_entity->getComponent<nap::TransformComponentInstance>();
+
+	std::vector<nap::LaserOutputComponentInstance*> outputs;
+	laser_output_entity->getComponentsOfType<nap::LaserOutputComponentInstance>(outputs);
+	assert(line.getMesh().get_type().is_derived_from(RTTI_OF(nap::PolyLine)));
+	for (const auto& output : outputs)
+	{
+		output->setLine(static_cast<nap::PolyLine&>(line.getMesh()), xform.getGlobalTransform());
+	}
+}
 
 /**
 * Initialize all the resources and instances used for drawing
@@ -122,6 +139,7 @@ bool init(nap::Core& core)
 		nap::Logger::fatal(error.toString());
 		return false;
 	}
+
 
 	// Collects all the errors
 	nap::utility::ErrorState errorState;
@@ -153,18 +171,13 @@ bool init(nap::Core& core)
 	{
 		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
 		return false;        
-	} 
-	
-	// Get important entities
-	cameraEntity = resourceManagerService->findEntity("CameraEntity");
-	assert(cameraEntity != nullptr);
+	}
 
 	// Store all render windows
-	renderWindows.push_back(resourceManagerService->findObject<nap::RenderWindow>("Window"));
+	renderWindow = resourceManagerService->findObject<nap::RenderWindow>("Window");
 
 	// Store laser dacs
-	laser_one = resourceManagerService->findObject<nap::EtherDreamDac>("Laser1");
-	laserEntity = resourceManagerService->findEntity("LaserEntity1");
+	laserPrototype = resourceManagerService->findEntity("LaserPrototypeEntity");
 
 	// Set render states
 	nap::RenderState& render_state = renderService->getRenderState();
@@ -172,6 +185,7 @@ bool init(nap::Core& core)
 	render_state.mLineWidth = 1.3f;
 	render_state.mPointSize = 2.0f;
 	render_state.mPolygonMode = opengl::PolygonMode::FILL;
+
 
 	return true;
 }
@@ -188,7 +202,6 @@ int main(int argc, char *argv[])
 
 	// Run Gam
 	runGame(core);
-
 	return 0;
 }
 
@@ -196,7 +209,6 @@ void runGame(nap::Core& core)
 {
 	// Run function
 	bool loop = true;
-
 
 	// Loop
 	while (loop)
@@ -227,7 +239,6 @@ void runGame(nap::Core& core)
 				}
 				inputService->addEvent(std::move(input_event));
 			}
-
 
 			// Check if it's a window event
 			else if (nap::isWindowEvent(event))

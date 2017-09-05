@@ -19,10 +19,10 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	const MeshInstance::VertexAttributeID MeshInstance::VertexAttributeIDs::GetPositionVertexAttr() { return "Position"; }
-	const MeshInstance::VertexAttributeID MeshInstance::VertexAttributeIDs::GetNormalVertexAttr()	{ return "Normal"; }
+	const MeshInstance::VertexAttributeID MeshInstance::VertexAttributeIDs::GetPositionName() { return "Position"; }
+	const MeshInstance::VertexAttributeID MeshInstance::VertexAttributeIDs::getNormalName()	{ return "Normal"; }
 
-	const MeshInstance::VertexAttributeID MeshInstance::VertexAttributeIDs::GetUVVertexAttr(int uvChannel)
+	const MeshInstance::VertexAttributeID MeshInstance::VertexAttributeIDs::GetUVName(int uvChannel)
 	{
 		std::ostringstream stream;
 		stream << "UV" << uvChannel;
@@ -30,7 +30,7 @@ namespace nap
 	}
 
 
-	const MeshInstance::VertexAttributeID MeshInstance::VertexAttributeIDs::GetColorVertexAttr(int colorChannel)
+	const MeshInstance::VertexAttributeID MeshInstance::VertexAttributeIDs::GetColorName(int colorChannel)
 	{
 		std::ostringstream stream;
 		stream << "Color" << colorChannel;
@@ -73,7 +73,7 @@ namespace nap
 		mProperties.mAttributes.reserve(meshProperties.mAttributes.size());
 		for (auto& mesh_attribute : meshProperties.mAttributes)
 		{
-			std::unique_ptr<VertexAttribute> owned_mesh_attribute(mesh_attribute->get_type().create<VertexAttribute>());
+			std::unique_ptr<BaseVertexAttribute> owned_mesh_attribute(mesh_attribute->get_type().create<BaseVertexAttribute>());
 			rtti::copyObject(*mesh_attribute, *owned_mesh_attribute);
 			mProperties.mAttributes.emplace_back(std::move(owned_mesh_attribute));
 		}
@@ -100,7 +100,7 @@ namespace nap
 		for (auto& mesh_attribute : mProperties.mAttributes)
 		{
 			const opengl::VertexAttributeBuffer& vertex_attr_buffer = mGPUMesh->getVertexAttributeBuffer(mesh_attribute->mAttributeID);
-			vertex_attr_buffer.setData(mesh_attribute->getData());
+			vertex_attr_buffer.setData(mesh_attribute->getRawData());
 		}
 
 		if (!mProperties.mIndices.empty())

@@ -33,7 +33,7 @@ namespace nap
 	};
 
 	// ObjectPtr based mesh properties, used in serializable Mesh format (json/binary)
-	using RTTIMeshProperties = MeshProperties<ObjectPtr<VertexAttribute>>;
+	using RTTIMeshProperties = MeshProperties<ObjectPtr<BaseVertexAttribute>>;
 
 	/**
 	 * Represents a runtime version of a mesh. MeshInstance holds CPU data and can convert this data to 
@@ -63,22 +63,22 @@ namespace nap
 		 */
 		struct VertexAttributeIDs
 		{
-			static const NAPAPI VertexAttributeID GetPositionVertexAttr();	//< Default position vertex attribute name
-			static const NAPAPI VertexAttributeID GetNormalVertexAttr();	//< Default normal vertex attribute name
+			static const NAPAPI VertexAttributeID GetPositionName();	//< Default position vertex attribute name
+			static const NAPAPI VertexAttributeID getNormalName();	//< Default normal vertex attribute name
 
 			/**
 			 * Returns the name of the vertex uv attribute based on the queried uv channel
 			 * @param uvChannel: the uv channel index to query
 			 * @return the name of the vertex attribute
 			 */
-			static const NAPAPI VertexAttributeID GetUVVertexAttr(int uvChannel);
+			static const NAPAPI VertexAttributeID GetUVName(int uvChannel);
 
 			/**
 			 *	Returns the name of the vertex color attribute based on the queried uv channel
 			 * @param colorChannel: the color channel index to query
 			 * @return the name of the color vertex attribute
 			 */
-			static const NAPAPI VertexAttributeID GetColorVertexAttr(int colorChannel);
+			static const NAPAPI VertexAttributeID GetColorName(int colorChannel);
 		};
 
 		// Default constructor
@@ -113,11 +113,11 @@ namespace nap
 		 * @return Type safe vertex attribute if found, nullptr if not found or if there was a type mismatch.
 		 */
 		template<typename T>
-		TypedVertexAttribute<T>* FindAttribute(const std::string& id)
+		VertexAttribute<T>* FindAttribute(const std::string& id)
 		{
 			for (auto& attribute : mProperties.mAttributes)
 				if (attribute->mAttributeID == id)
-					return rtti_cast<TypedVertexAttribute<T>>(attribute.get());
+					return rtti_cast<VertexAttribute<T>>(attribute.get());
 
 			return nullptr;
 		}
@@ -128,9 +128,9 @@ namespace nap
 		 * @return Type safe vertex attribute. If not found or in case there is a type mismatch, the function asserts.
 		 */
 		template<typename T>
-		TypedVertexAttribute<T>& GetAttribute(const std::string& id)
+		VertexAttribute<T>& GetAttribute(const std::string& id)
 		{
-			TypedVertexAttribute<T>* attribute = FindAttribute<T>(id);
+			VertexAttribute<T>* attribute = FindAttribute<T>(id);
 			assert(attribute != nullptr);
 			return *attribute;
 		}
@@ -141,21 +141,21 @@ namespace nap
 		 * @return Type safe vertex attribute. 
 		 */
 		template<typename T>
-		TypedVertexAttribute<T>& GetOrCreateAttribute(const std::string& id)
+		VertexAttribute<T>& GetOrCreateAttribute(const std::string& id)
 		{
 			for (auto& attribute : mProperties.mAttributes)
 			{
 				if (attribute->mAttributeID == id)
 				{
-					TypedVertexAttribute<T>* result = rtti_cast<TypedVertexAttribute<T>>(attribute.get());
+					VertexAttribute<T>* result = rtti_cast<VertexAttribute<T>>(attribute.get());
 					assert(result != nullptr); // Attribute found, but has wrong type!
 					return *result;
 				}
 			}
 
-			std::unique_ptr<TypedVertexAttribute<T>> new_attribute = std::make_unique<TypedVertexAttribute<T>>();
+			std::unique_ptr<VertexAttribute<T>> new_attribute = std::make_unique<VertexAttribute<T>>();
 			new_attribute->mAttributeID = id;
-			TypedVertexAttribute<T>* result = new_attribute.get();
+			VertexAttribute<T>* result = new_attribute.get();
 			mProperties.mAttributes.emplace_back(std::move(new_attribute));
 
 			return *result;
@@ -223,7 +223,7 @@ namespace nap
 		bool initGPUData(utility::ErrorState& errorState);
 
 	private:
-		MeshProperties<std::unique_ptr<VertexAttribute>>	mProperties;		///< CPU mesh data
+		MeshProperties<std::unique_ptr<BaseVertexAttribute>>	mProperties;		///< CPU mesh data
 		std::unique_ptr<opengl::GPUMesh>					mGPUMesh;			///< GPU mesh
 	};
 
@@ -280,11 +280,11 @@ namespace nap
 		 * @return Type safe vertex attribute if found, nullptr if not found or if there was a type mismatch.
 		 */
 		template<typename T>
-		const TypedVertexAttribute<T>* FindAttribute(const std::string& id) const
+		const VertexAttribute<T>* FindAttribute(const std::string& id) const
 		{
 			for (auto& attribute : mProperties.mAttributes)
 				if (attribute->mAttributeID == id)
-					return static_cast<TypedVertexAttribute<T>*>(attribute.get());
+					return static_cast<VertexAttribute<T>*>(attribute.get());
 
 			return nullptr;
 		}
@@ -295,9 +295,9 @@ namespace nap
 		 * @return Type safe vertex attribute. If not found or in case there is a type mismatch, the function asserts.
 		 */
 		template<typename T>
-		const TypedVertexAttribute<T>& GetAttribute(const std::string& id) const
+		const VertexAttribute<T>& GetAttribute(const std::string& id) const
 		{
-			const TypedVertexAttribute<T>* attribute = FindAttribute<T>(id);
+			const VertexAttribute<T>* attribute = FindAttribute<T>(id);
 			assert(attribute != nullptr);
 			return *attribute;
 		}
