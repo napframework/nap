@@ -1,8 +1,6 @@
 #include <rtti/rttipath.h>
 #include <rtti/rttiobject.h>
 #include <utility/stringutils.h>
-#include <iostream>
-#include "../../../core/src/nap/logger.h"
 
 namespace nap
 {
@@ -70,8 +68,6 @@ namespace nap
 
 		bool RTTIPath::resolve(rtti::RTTIObject* object, ResolvedRTTIPath& resolvedPath) const
 		{
-            std::cout << "Resolving: " << object->mID << "/" << toString() << std::endl;
-
 			// Can't resolve an empty path
 			if (mLength == 0)
 				return false;

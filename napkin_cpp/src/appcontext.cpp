@@ -8,7 +8,8 @@
 using namespace nap::rtti;
 using namespace nap::utility;
 
-bool ResolveLinks(const OwnedObjectList& objects, const UnresolvedPointerList& unresolvedPointers) {
+bool ResolveLinks(const OwnedObjectList& objects, const UnresolvedPointerList& unresolvedPointers)
+{
     std::map<std::string, RTTIObject*> objects_by_id;
     for (auto& object : objects)
         objects_by_id.insert({object->mID, object.get()});
@@ -31,16 +32,18 @@ bool ResolveLinks(const OwnedObjectList& objects, const UnresolvedPointerList& u
 
 AppContext::AppContext()
 {
-	mCore.initialize();
+    mCore.initialize();
 }
 
 
-AppContext& AppContext::get() {
+AppContext& AppContext::get()
+{
     static AppContext inst;
     return inst;
 }
 
-void AppContext::loadFile(const QString& filename) {
+void AppContext::loadFile(const QString& filename)
+{
     mCurrentFilename = filename;
     QSettings settings;
     settings.setValue(LAST_OPENED_FILE, filename);
@@ -67,11 +70,13 @@ void AppContext::loadFile(const QString& filename) {
     fileOpened(mCurrentFilename);
 }
 
-void AppContext::saveFile() {
+void AppContext::saveFile()
+{
     saveFileAs(mCurrentFilename);
 }
 
-void AppContext::saveFileAs(const QString& filename) {
+void AppContext::saveFileAs(const QString& filename)
+{
     ObjectList objects;
     for (auto& ob : mObjects) {
         objects.emplace_back(ob.get());
@@ -95,8 +100,8 @@ void AppContext::saveFileAs(const QString& filename) {
 }
 
 
-
-const QString AppContext::lastOpenedFilename() {
+const QString AppContext::lastOpenedFilename()
+{
     QSettings settings;
     return settings.value(LAST_OPENED_FILE).toString();
 }
