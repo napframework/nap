@@ -107,6 +107,9 @@ namespace nap
 
 			for (const rtti::ObjectLink& link : object_links)
 			{
+				if (link.mTarget == nullptr)
+					continue;
+
 				RTTIObjectGraphItem item;
 				item.mType = EType::Object;
 				item.mObject = link.mTarget;
@@ -511,88 +514,92 @@ namespace nap
 			}
 		}
 
-		// We go over all entities and their components and fill in all the entity instances for all EntityPtrs
-		for (auto& entity_instance : entityCreationParams.mEntitiesByID)
+		// We go over all components and resolve all Entity & Component pointers
+		for (auto kvp : new_component_instances)
 		{
-			for (ComponentInstance* component_instance : entity_instance.second->getComponents())
+			ComponentInstance* source_component_instance = kvp.second;
+			Component* source_component_resource = kvp.first;
+
+			std::vector<rtti::ObjectLink> links;
+			rtti::findObjectLinks(*source_component_resource, links);
+
+			for (rtti::ObjectLink& link : links)
 			{
-				Component* component_resource = component_instance->getResource();
+				rtti::ResolvedRTTIPath resolved_path;
+				if (!errorState.check(link.mSourcePath.resolve(source_component_resource, resolved_path), "Encountered link from object %s that could not be resolved: %s", source_component_resource->mID.c_str(), link.mSourcePath.toString().c_str()))
+					return false;
 
-				std::vector<rtti::ObjectLink> links;
-				rtti::findObjectLinks(*component_resource, links);
-
-				for (rtti::ObjectLink& link : links)
+				if (resolved_path.getType() == RTTI_OF(EntityPtr))
 				{
-					rtti::ResolvedRTTIPath resolved_path;
-					if (!errorState.check(link.mSourcePath.resolve(component_resource, resolved_path), "Encountered link from object %s that could not be resolved: %s", component_resource->mID.c_str(), link.mSourcePath.toString().c_str()))
+					EntityPtr entity_ptr = resolved_path.getValue().convert<EntityPtr>();
+					nap::Entity* target_entity_resource = entity_ptr.getResource();
+
+					// Skip null targets
+					if (target_entity_resource == nullptr)
+						continue;
+
+					// Only AutoSpawn resources have a one-to-one relationship between resource and instance. We do not support pointers to non-AutoSpawn objects
+					if (!errorState.check(target_entity_resource->mAutoSpawn, "Encountered pointer from {%s}:%s to non-AutoSpawn entity %s. This is not supported.", source_component_resource->mID.c_str(), link.mSourcePath.toString().c_str(), target_entity_resource->mID.c_str()))
 						return false;
 
-					// Skip non-EntityPtr types
-					if (resolved_path.getType() == RTTI_OF(EntityPtr))
-					{
-						EntityPtr entity_ptr = resolved_path.getValue().convert<EntityPtr>();
-						nap::Entity* target_entity_resource = entity_ptr.getResource();
+					// Find the EntityInstance and fill it in in the EntityPtr.mInstance
+					EntityByIDMap::iterator target_entity_instance = entityCreationParams.mEntitiesByID.find(getInstanceID(target_entity_resource->mID));
+					assert(target_entity_instance != entityCreationParams.mEntitiesByID.end());
+					entity_ptr.mInstance = target_entity_instance->second.get();
 
-						// Skip null targets
-						if (target_entity_resource == nullptr)
-							continue;
+					resolved_path.setValue(entity_ptr);
+				}
+				else if (resolved_path.getType() == RTTI_OF(ComponentPtr))
+				{
+					ComponentPtr component_ptr = resolved_path.getValue().convert<ComponentPtr>();
+					nap::Component* target_component_resource = component_ptr.getResource();
 
-						// Only AutoSpawn resources have a one-to-one relationship between resource and instance. We do not support pointers to non-AutoSpawn objects
-						if (!errorState.check(target_entity_resource->mAutoSpawn, "Encountered pointer from object %s to non-AutoSpawn entity %s. This is not supported.", component_resource->mID.c_str(), target_entity_resource->mID.c_str()))
-							return false;
+					// Skip null targets
+					if (target_component_resource == nullptr)
+						continue;
 
-						// Find the EntityInstance and fill it in in the EntityPtr.mInstance
-						EntityByIDMap::iterator target_entity_instance = entityCreationParams.mEntitiesByID.find(getInstanceID(target_entity_resource->mID));
-						assert(target_entity_instance != entityCreationParams.mEntitiesByID.end());
-						entity_ptr.mInstance = target_entity_instance->second.get();
+					// Find the entity resource of the target
+					EntityCreationParameters::ComponentToEntityMap::iterator target_entity_pos = entityCreationParams.mComponentToEntity.find(target_component_resource);
+					assert(target_entity_pos != entityCreationParams.mComponentToEntity.end());
+					const nap::Entity* target_component_entity = target_entity_pos->second;
 
-						resolved_path.setValue(entity_ptr);
-					}
-					else if (resolved_path.getType() == RTTI_OF(ComponentPtr))
-					{
-						ComponentPtr component_ptr = resolved_path.getValue().convert<ComponentPtr>();
-						nap::Component* target_component_resource = component_ptr.getResource();
-
-						// Skip null targets
-						if (target_component_resource == nullptr)
-							continue;
-
-						// Find the entity resource
-						EntityCreationParameters::ComponentToEntityMap::iterator entity_pos = entityCreationParams.mComponentToEntity.find(target_component_resource);
-						assert(entity_pos != entityCreationParams.mComponentToEntity.end());
-						const nap::Entity* component_entity = entity_pos->second;
-
-						//if (entity_instance.second->getEntity() == component_entity)
-						if (false)
+					// If the source & target entity are the same, we're dealing with an 'internal' component link. We can resolve the link directly against the components in the target entity instance
+					EntityInstance* source_entity = source_component_instance->getEntity();
+					if (source_entity->getEntity() == target_component_entity)
+					{					
+						// Find ComponentInstance with matching resource
+						for (ComponentInstance* target_component_instance : source_entity->getComponents())
 						{
-							for (ComponentInstance* target_component_instance : entity_instance.second->getComponents())
+							if (target_component_instance->getResource() == target_component_resource)
 							{
-								if (target_component_instance->getResource() == target_component_resource)
-								{
-									component_ptr.mInstance = target_component_instance;
-									resolved_path.setValue(component_ptr);
-									break;
-								}
+								component_ptr.mInstance = target_component_instance;
+								break;
 							}
 						}
-						else
-						{
-							// Only AutoSpawn resources have a one-to-one relationship between resource and instance. We do not support pointers to non-AutoSpawn objects
-							if (!errorState.check(component_entity->mAutoSpawn, "Encountered pointer from object %s to non-AutoSpawn entity %s. This is not supported.", component_resource->mID.c_str(), target_component_resource->mID.c_str()))
-								return false;
 
-							InstanceByIDMap::iterator target_component_instance = entityCreationParams.mAllInstancesByID.find(getInstanceID(target_component_resource->mID));
-							assert(target_component_instance != entityCreationParams.mAllInstancesByID.end());
-							assert(target_component_instance->second->get_type().is_derived_from<ComponentInstance>());
-							component_ptr.mInstance = static_cast<ComponentInstance*>(target_component_instance->second);
-
-							resolved_path.setValue(component_ptr);
-						}
+						if (!errorState.check(component_ptr.mInstance != nullptr, "Failed to resolve internal ComponentPtr from {%s}:%s. Matching ComponentInstance not found.", source_component_resource->mID.c_str(), link.mSourcePath.toString().c_str()))
+							return false;
 					}
+					else
+					{
+						// Source & target entity are not the same; we're dealing with an 'external' component pointer.
+						// Only AutoSpawn resources have a one-to-one relationship between resource and instance. We do not support external component pointers to components in non-AutoSpawn objects
+						if (!errorState.check(target_component_entity->mAutoSpawn, "Encountered pointer from {%s}:%s to non-AutoSpawn entity %s. This is not supported.", source_component_resource->mID.c_str(), link.mSourcePath.toString().c_str(), target_component_resource->mID.c_str()))
+							return false;
+
+						// Find target component instance by ID
+						InstanceByIDMap::iterator target_component_instance = entityCreationParams.mAllInstancesByID.find(getInstanceID(target_component_resource->mID));
+						assert(target_component_instance != entityCreationParams.mAllInstancesByID.end());
+						assert(target_component_instance->second->get_type().is_derived_from<ComponentInstance>());
+						component_ptr.mInstance = static_cast<ComponentInstance*>(target_component_instance->second);
+					}
+
+					// Set value back to source
+					resolved_path.setValue(component_ptr);
 				}
 			}
 		}
-
+		
 		// Now that all entities are created, make sure that parent-child relations are set correctly
 		for (const nap::Entity* entity_resource : entityResources)
 		{
@@ -632,7 +639,11 @@ namespace nap
 		for (TypeDependencyGraph::Node* node : sorted_nodes)
 		{
 			auto pos = new_component_instances.find(node->mItem.mComponent);
-			assert(pos != new_component_instances.end());
+			
+			// It's possible for there to be objects in the graph that were not created during this createEntities call,
+			// in the case where a component has ComponentPtrs to components of other entities that have been spawned in a previous iteration
+			if (pos == new_component_instances.end())
+				continue;
 
 			if (!pos->second->init(entityCreationParams, errorState))
 				return false;
