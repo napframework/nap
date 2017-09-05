@@ -26,7 +26,7 @@ namespace nap
 	bool LaserShapeComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
 		// Copy shape properties
-		LaserShapeComponent* laser_shape_resource = getResource<LaserShapeComponent>();
+		LaserShapeComponent* laser_shape_resource = getComponent<LaserShapeComponent>();
 		mShapeProperties = laser_shape_resource->mShapeProperties;
 
 		// Create point buffer

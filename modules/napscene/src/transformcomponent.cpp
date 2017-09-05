@@ -41,7 +41,7 @@ namespace nap
 {
 	bool TransformComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
-		TransformComponent* xform_resource = getResource<TransformComponent>();
+		TransformComponent* xform_resource = getComponent<TransformComponent>();
 		mTranslate = xform_resource->mProperties.mTranslate;
 		mRotate = glm::quat(glm::vec3(glm::radians(xform_resource->mProperties.mRotate.x), 
 			glm::radians(xform_resource->mProperties.mRotate.y), 

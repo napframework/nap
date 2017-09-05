@@ -50,7 +50,7 @@ namespace nap
 	bool LaserOutputComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
 		// Copy over link to the DAC
-		LaserOutputComponent* output_resource = getResource<LaserOutputComponent>();
+		LaserOutputComponent* output_resource = getComponent<LaserOutputComponent>();
 		mDac = output_resource->mDac;
 
 		// Copy over properties
@@ -66,7 +66,7 @@ namespace nap
 		VertexAttribute<glm::vec4>& color_data = line.getColorAttr();
 
 		// Populate the laser buffer
-		nap::TransformComponentInstance& laser_xform = this->getEntity()->getComponent<nap::TransformComponentInstance>();
+		nap::TransformComponentInstance& laser_xform = this->getEntityInstance()->getComponent<nap::TransformComponentInstance>();
 		populateLaserBuffer(position_data.getData(), color_data.getData(), laser_xform.getGlobalTransform(), xform);
 	}
 

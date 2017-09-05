@@ -27,9 +27,9 @@ namespace nap
 
 	bool SlideShowComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
-		ResourceManagerService& resource_manager = *getEntity()->getCore()->getService<nap::ResourceManagerService>();
+		ResourceManagerService& resource_manager = *getEntityInstance()->getCore()->getService<nap::ResourceManagerService>();
 
- 		SlideShowComponent* resource = getResource<SlideShowComponent>();
+ 		SlideShowComponent* resource = getComponent<SlideShowComponent>();
 
 		// Prototype needs RenderableMeshComponent
 		if (!errorState.check(resource->mEntityPrototype->hasComponent<RenderableMeshComponent>(), "Entity prototype is missing RenderableMeshComponent"))
@@ -43,19 +43,19 @@ namespace nap
 		mLeftChildInstance = resource_manager.createEntity(*resource->mEntityPrototype, entityCreationParams, errorState);
 		if (mLeftChildInstance == nullptr)
 			return false;
-		getEntity()->addChild(*mLeftChildInstance);
+		getEntityInstance()->addChild(*mLeftChildInstance);
 
 		// Spawn center child
  		mCenterChildInstance = resource_manager.createEntity(*resource->mEntityPrototype, entityCreationParams, errorState);
  		if (mCenterChildInstance == nullptr)
  			return false;
-		getEntity()->addChild(*mCenterChildInstance);
+		getEntityInstance()->addChild(*mCenterChildInstance);
 
 		// Spawn right child
 		mRightChildInstance = resource_manager.createEntity(*resource->mEntityPrototype, entityCreationParams, errorState);
 		if (mRightChildInstance == nullptr)
 			return false;
-		getEntity()->addChild(*mRightChildInstance);
+		getEntityInstance()->addChild(*mRightChildInstance);
 
 		// Perform initial switch to set all textures and positions correctly
 		Switch();
@@ -85,7 +85,7 @@ namespace nap
 	{
 		if (mTargetImageIndex != mImageIndex)
 		{
-			SlideShowComponent* resource = getResource<SlideShowComponent>();
+			SlideShowComponent* resource = getComponent<SlideShowComponent>();
 
 			mTimer += deltaTime;
 			const float scroll_time = 0.7f;
@@ -120,7 +120,7 @@ namespace nap
 
 	void SlideShowComponentInstance::assignTexture(nap::EntityInstance& entity, int imageIndex)
 	{
-		SlideShowComponent* resource = getResource<SlideShowComponent>();
+		SlideShowComponent* resource = getComponent<SlideShowComponent>();
 
 		if (imageIndex < 0)
 			imageIndex = resource->mImages.size() - 1;

@@ -30,7 +30,7 @@ namespace nap
 		 * Constructor
 		 */
 		ComponentInstance(EntityInstance& entity, Component& resource) : 
-			mEntity(&entity),
+			mEntityInstance(&entity),
 			mResource(&resource)
 		{ 
 		}
@@ -43,21 +43,21 @@ namespace nap
 		/**
 		 * Get the entity this component belongs to
 		 */
-		nap::EntityInstance* getEntity() const
+		nap::EntityInstance* getEntityInstance() const
 		{
-			return mEntity;
+			return mEntityInstance;
 		}
 
 		/**
 		 * Get the resource this component was created from
 		 */
-		nap::Component* getResource() const
+		nap::Component* getComponent() const
 		{
 			return mResource;
 		}
 
 		template<typename T>
-		T* getResource() const
+		T* getComponent() const
 		{
 			assert(mResource->get_type().is_derived_from(rtti::TypeInfo::get<T>()));
 			return static_cast<T*>(mResource);
@@ -73,8 +73,8 @@ namespace nap
         virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
 
 	private:
-		EntityInstance* mEntity;	// The entity this component belongs to
-		Component*		mResource;	// The resource this instance was created from
+		EntityInstance* mEntityInstance;	// The entity this component belongs to
+		Component*		mResource;			// The resource this instance was created from
 	};
 
 	///////////////////////////////////////////////////////////////////////////

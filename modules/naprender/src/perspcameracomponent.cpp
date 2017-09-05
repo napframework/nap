@@ -144,8 +144,8 @@ namespace nap
 
 	bool PerspCameraComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
-		mProperties = getResource<PerspCameraComponent>()->mProperties;
-		mTransformComponent = getEntity()->findComponent<TransformComponentInstance>();
+		mProperties = getComponent<PerspCameraComponent>()->mProperties;
+		mTransformComponent = getEntityInstance()->findComponent<TransformComponentInstance>();
 		if (!errorState.check(mTransformComponent != nullptr, "Missing transform component"))
 			return false;
 

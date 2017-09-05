@@ -116,7 +116,7 @@ namespace nap
 	bool LaserSquareComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
 		// Make sure the square has an equal amount of points
-		LaserShapeComponent* laser_shape_resource = getResource<LaserShapeComponent>();
+		LaserShapeComponent* laser_shape_resource = getComponent<LaserShapeComponent>();
 		if (laser_shape_resource->mShapeProperties.mNumberOfPoints % 4 != 0)
 		{
 			return errorState.check(false, "Square laser points can not be divided by 4");
@@ -246,7 +246,7 @@ namespace nap
 		LaserShapeComponentInstance::init(entityCreationParams, errorState);
 
 		// Copy index
-		LaserCircleComponent* circle_resource = getResource<LaserCircleComponent>();
+		LaserCircleComponent* circle_resource = getComponent<LaserCircleComponent>();
 		mIndex = circle_resource->mIndex;
 
 		return true;

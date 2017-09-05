@@ -16,12 +16,12 @@ namespace nap
 	bool FrustrumSyncComponentInstance::init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
 		// Make sure we have a transform
-		mTransform = getEntity()->findComponent<TransformComponentInstance>(ETypeCheck::IS_DERIVED_FROM);
+		mTransform = getEntityInstance()->findComponent<TransformComponentInstance>(ETypeCheck::IS_DERIVED_FROM);
 		if (!errorState.check(mTransform != nullptr, "missing transform component"))
 			return false;
 
 		// Get the output
-		mOutput = getEntity()->getParent()->findComponent<nap::LaserOutputComponentInstance>();
+		mOutput = getEntityInstance()->getParent()->findComponent<nap::LaserOutputComponentInstance>();
 		if (!errorState.check(mOutput != nullptr, "no laser output component attached to parent"))
 			return false;
 

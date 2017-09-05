@@ -90,12 +90,12 @@ namespace nap
 		/**
 		 * @return MeshResource for the RenderableMeshComponent.
 		 */
-		IMesh& getMesh() { return getResource<RenderableMeshComponent>()->getMeshResource(); }
+		IMesh& getMesh() { return getComponent<RenderableMeshComponent>()->getMeshResource(); }
 
 		/**
 		 * @return MeshInstance for the RenderableMeshComponent's Mesh.
 		 */
-		MeshInstance& getMeshInstance() { return getResource<RenderableMeshComponent>()->getMeshResource().getMeshInstance(); }
+		MeshInstance& getMeshInstance() { return getComponent<RenderableMeshComponent>()->getMeshResource().getMeshInstance(); }
 
 		/**
 		 * Toggles visibility.

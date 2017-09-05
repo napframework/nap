@@ -30,8 +30,8 @@ namespace nap
 
 	bool OrthoCameraComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
-		mProperties = getResource<OrthoCameraComponent>()->mProperties;
-		mTransformComponent =	getEntity()->findComponent<TransformComponentInstance>();
+		mProperties = getComponent<OrthoCameraComponent>()->mProperties;
+		mTransformComponent =	getEntityInstance()->findComponent<TransformComponentInstance>();
 		if (!errorState.check(mTransformComponent != nullptr, "Missing transform component"))
 			return false;
 

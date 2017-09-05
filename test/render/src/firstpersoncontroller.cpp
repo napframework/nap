@@ -29,12 +29,12 @@ namespace nap
 	bool FirstPersonControllerInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
 		// KeyInputComponent is required to receive input
-		KeyInputComponentInstance* key_component = getEntity()->findComponent<KeyInputComponentInstance>();
+		KeyInputComponentInstance* key_component = getEntityInstance()->findComponent<KeyInputComponentInstance>();
 		if (!errorState.check(key_component != nullptr, "Could not find KeyInputComponent"))
 			return false;
 
 		// TransformComponent is required to move the entity
-		mTransformComponent = getEntity()->findComponent<TransformComponentInstance>();
+		mTransformComponent = getEntityInstance()->findComponent<TransformComponentInstance>();
 		if (!errorState.check(mTransformComponent != nullptr, "Could not find transform component"))
 			return false;
 
@@ -48,7 +48,7 @@ namespace nap
 
 	void FirstPersonControllerInstance::update(double deltaTime)
 	{
-		FirstPersonController* resource = getResource<FirstPersonController>();
+		FirstPersonController* resource = getComponent<FirstPersonController>();
 
 		float movement = resource->mMovementSpeed * deltaTime;
 		float rotate = resource->mRotateSpeed * deltaTime;

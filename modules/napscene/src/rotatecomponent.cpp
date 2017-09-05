@@ -29,12 +29,12 @@ namespace nap
 	bool RotateComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
 		// Make sure we have a transform
-		mTransform = getEntity()->findComponent<TransformComponentInstance>(ETypeCheck::IS_DERIVED_FROM);
+		mTransform = getEntityInstance()->findComponent<TransformComponentInstance>(ETypeCheck::IS_DERIVED_FROM);
 		if (!errorState.check(mTransform != nullptr, "missing transform component"))
 			return false;
 		
 		// Copy over properties
-		mProperties = getResource<RotateComponent>()->mProperties;
+		mProperties = getComponent<RotateComponent>()->mProperties;
 
 		// Copy initial rotation
 		mInitialRotate = mTransform->getRotate();

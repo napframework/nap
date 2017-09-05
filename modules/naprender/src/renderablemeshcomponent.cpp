@@ -157,18 +157,18 @@ namespace nap
 
 	bool RenderableMeshComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
-		RenderableMeshComponent* resource = getResource<RenderableMeshComponent>();
+		RenderableMeshComponent* resource = getComponent<RenderableMeshComponent>();
 
 		if (!mMaterialInstance.init(resource->mMaterialInstanceResource, errorState))
 			return false;
 
 		// Here we acquire a VAO from the render service. The service will try to reuse VAOs for similar Material-Mesh combinations
-		nap::RenderService* render_service = getEntity()->getCore()->getService<nap::RenderService>();
+		nap::RenderService* render_service = getEntityInstance()->getCore()->getService<nap::RenderService>();
 		mVAOHandle = render_service->acquireVertexArrayObject(*mMaterialInstance.getMaterial(), *resource->mMeshResource, errorState);
 		if (!errorState.check(mVAOHandle != nullptr, "Failed to acquire VAO for RenderableMeshComponent %s", resource->mID.c_str()))
 			return false;
 
-		mTransformComponent = getEntity()->findComponent<TransformComponentInstance>();
+		mTransformComponent = getEntityInstance()->findComponent<TransformComponentInstance>();
  		if (!errorState.check(mTransformComponent != nullptr, "Missing transform component"))
  			return false;
 

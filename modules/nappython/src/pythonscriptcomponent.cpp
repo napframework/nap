@@ -20,19 +20,19 @@ namespace nap
 	{
 		try
 		{
-			mScript.attr("update")(getEntity(), getEntity()->getCore()->getElapsedTime(), deltaTime);
+			mScript.attr("update")(getEntityInstance(), getEntityInstance()->getCore()->getElapsedTime(), deltaTime);
 		}
 		catch (const pybind11::error_already_set& err)
 		{
-			nap::Logger::info("Runtime python error while executing %s: %s", getResource<PythonScriptComponent>()->mPath.c_str(), err.what());
+			nap::Logger::info("Runtime python error while executing %s: %s", getComponent<PythonScriptComponent>()->mPath.c_str(), err.what());
 		}
 	}
 
 	bool PythonScriptComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
-		PythonScriptComponent* script_component = getResource<PythonScriptComponent>();
+		PythonScriptComponent* script_component = getComponent<PythonScriptComponent>();
 
-		PythonScriptService* script_service = getEntity()->getCore()->getOrCreateService<PythonScriptService>();
+		PythonScriptService* script_service = getEntityInstance()->getCore()->getOrCreateService<PythonScriptService>();
 		if (!errorState.check(script_service->TryLoad(script_component->mPath, mScript, errorState), "Failed to load %s", script_component->mPath.c_str()))
 			return false;
 		

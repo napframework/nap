@@ -536,13 +536,13 @@ namespace nap
 					const nap::Entity* target_component_entity = target_entity_pos->second;
 
 					// If the source & target entity are the same, we're dealing with an 'internal' component link. We can resolve the link directly against the components in the target entity instance
-					EntityInstance* source_entity = source_component_instance->getEntity();
+					EntityInstance* source_entity = source_component_instance->getEntityInstance();
 					if (source_entity->getEntity() == target_component_entity)
 					{
 						// Find ComponentInstance with matching resource
 						for (ComponentInstance* target_component_instance : source_entity->getComponents())
 						{
-							if (target_component_instance->getResource() == target_component_resource)
+							if (target_component_instance->getComponent() == target_component_resource)
 							{
 								component_ptr.mInstance = target_component_instance;
 								break;
