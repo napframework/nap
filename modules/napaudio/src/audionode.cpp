@@ -7,6 +7,12 @@ namespace nap {
     namespace audio {
         
         
+        AudioInput::~AudioInput()
+        {
+            disconnect();
+        }
+        
+        
         SampleBufferPtr AudioInput::pull()
         {
             if (mConnection)
@@ -14,11 +20,42 @@ namespace nap {
             else
                 return nullptr;
         }
+        
+        
+        void AudioInput::connect(AudioOutput& connection)
+        {
+            // disconnect both input and output
+            disconnect();
+            connection.disconnect();
+            
+            // make the input and output point to one another
+            mConnection = &connection;
+            connection.mConnection = this;
+        }
+        
+        
+        void AudioInput::disconnect()
+        {
+            if (mConnection)
+            {
+                mConnection->mConnection = nullptr;
+                mConnection = nullptr;
+            }
+        }
 
         
         AudioOutput::~AudioOutput()
         {
             mNode->mOutputs.erase(this);
+            if (mConnection)
+                disconnect();
+        }
+        
+        
+        void AudioOutput::disconnect()
+        {
+            if (mConnection)
+                mConnection->disconnect();
         }
         
         

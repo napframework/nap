@@ -9,7 +9,6 @@
 
 namespace nap {
     
-    
     namespace audio {
     
         
@@ -28,16 +27,33 @@ namespace nap {
             AudioInput() = default;
             
             /**
+             * Destructor. If the input is connected on destruction the connection will be broken first.
+             */
+            ~AudioInput();
+            
+            /**
              * This method can be used by the node to pull one sample buffer output from the connected audio output.
              * @return If the AudioInput is not connected or somewhere down the graph silence is being output nullptr can be returned.
              */
             SampleBufferPtr pull();
             
             /**
-             * Connects another node's @AudioOutput to this input
+             * Connects another node's @AudioOutput to this input.
+             * If either this ipnut or the connected output is already connected it will be disconnected first.
              * @param connection: The output that this @AudioInput will be connected to.
              */
-            void connect(AudioOutput& connection) { mConnection = &connection; }
+            void connect(AudioOutput& connection);
+            
+            
+            /**
+             * Disconnects this input from the connected output
+             */
+            void disconnect();
+            
+            /**
+             * Checks wether the input is connected
+             */
+            bool isConnected() const { return mConnection; }
             
         private:
             /*
@@ -67,7 +83,17 @@ namespace nap {
             template <typename U>
             AudioOutput(U* parent, void(U::*calcFunctionPtr)(SampleBuffer&));
             
-            ~AudioOutput();
+            ~AudioOutput();            
+            
+            /**
+             * Disconnects the output from the connected input.
+             */
+            void disconnect();
+            
+            /**
+             * Checks wether the output is connected
+             */
+            bool isConnected() const { return mConnection; }
             
         protected:
             /**
@@ -94,6 +120,7 @@ namespace nap {
             AudioNode* mNode = nullptr;
             
             // The input that this output is connected to, nullptr when disconnected
+            // This pointer is kept so the connection can be broken on destruction.
             AudioInput* mConnection = nullptr;
         };
         
