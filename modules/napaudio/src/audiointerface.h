@@ -39,6 +39,7 @@ namespace nap {
             
             /**
              * (Re)starts the audio stream and the audio processing
+             * @return: true on success
              */
             bool start();
             

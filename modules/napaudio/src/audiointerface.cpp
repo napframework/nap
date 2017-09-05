@@ -75,7 +75,7 @@ namespace nap {
         bool AudioInterface::start()
         {
             if (isActive())
-                return;
+                return true;
             
             if (mUseDefaultDevice)
                 return startDefaultDevice();
@@ -115,6 +115,7 @@ namespace nap {
             PaDeviceInfo inputInfo = AudioDeviceManager::getDeviceInfo(mInputDevice);
             PaDeviceInfo outputInfo = AudioDeviceManager::getDeviceInfo(mOutputDevice);
             Logger::info("Portaudio stream started: %s, %s, %i inputs, %i outputs, samplerate %i, buffersize %i", inputInfo.name, outputInfo.name, mInputChannelCount, mOutputChannelCount, mSampleRate, mBufferSize);
+            
             return true;
         }
         
