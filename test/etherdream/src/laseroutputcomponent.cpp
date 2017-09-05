@@ -62,12 +62,12 @@ namespace nap
 	// Sample line and convert to laser
 	void LaserOutputComponentInstance::setLine(PolyLine& line, const glm::mat4x4& xform)
 	{
-		TypedVertexAttribute<glm::vec3>& position_data = line.getPositionAttr();
-		TypedVertexAttribute<glm::vec4>& color_data = line.getColorAttr();
+		VertexAttribute<glm::vec3>& position_data = line.getPositionAttr();
+		VertexAttribute<glm::vec4>& color_data = line.getColorAttr();
 
 		// Populate the laser buffer
 		nap::TransformComponentInstance& laser_xform = this->getEntity()->getComponent<nap::TransformComponentInstance>();
-		populateLaserBuffer(position_data.getValues(), color_data.getValues(), laser_xform.getGlobalTransform(), xform);
+		populateLaserBuffer(position_data.getData(), color_data.getData(), laser_xform.getGlobalTransform(), xform);
 	}
 
 
@@ -77,7 +77,7 @@ namespace nap
 	}
 
 
-	void LaserOutputComponentInstance::populateLaserBuffer(std::vector<glm::vec3>& verts, const std::vector<glm::vec4>& colors, const glm::mat4x4& laserXform, const glm::mat4x4& lineXform)
+	void LaserOutputComponentInstance::populateLaserBuffer(const std::vector<glm::vec3>& verts, const std::vector<glm::vec4>& colors, const glm::mat4x4& laserXform, const glm::mat4x4& lineXform)
 	{
 		assert(verts.size() == colors.size());
 

@@ -104,13 +104,13 @@
 		{
 			"Type" : "nap::MeshFromFile",
 			"mID": "CoverMesh",
-			"Path": "data/steef/cover.mesh"
+			"Path": "data/steef/vinyl_cover_LP12_S_Cover.mesh"
 		},
 
 		{
 			"Type" : "nap::MeshFromFile",
 			"mID": "VinylMesh",
-			"Path": "data/steef/vinyl.mesh"
+			"Path": "data/steef/vinyl_cover_LP_12_.mesh"
 		},
 		
 		{

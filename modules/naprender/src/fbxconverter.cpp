@@ -55,9 +55,9 @@ namespace nap
 	 * has ownership over the objects. The storage object should live at least as long than the Mesh.
 	 */
 	template<class T>
-	static TypedVertexAttribute<T>& CreateAttribute(Mesh& mesh, const std::string& id, std::vector<std::unique_ptr<VertexAttribute>>& storage)
+	static VertexAttribute<T>& CreateAttribute(Mesh& mesh, const std::string& id, std::vector<std::unique_ptr<BaseVertexAttribute>>& storage)
 	{
-		std::unique_ptr<TypedVertexAttribute<T>> new_attribute = std::make_unique<TypedVertexAttribute<T>>();
+		std::unique_ptr<VertexAttribute<T>> new_attribute = std::make_unique<VertexAttribute<T>>();
 		new_attribute->mAttributeID = id;
 
 		assert(!mesh.mID.empty());
@@ -65,7 +65,7 @@ namespace nap
 		mesh.mProperties.mAttributes.push_back(new_attribute.get());
 		storage.emplace_back(std::move(new_attribute));
 
-		return static_cast<TypedVertexAttribute<T>&>(*mesh.mProperties.mAttributes[mesh.mProperties.mAttributes.size() - 1]);
+		return static_cast<VertexAttribute<T>&>(*mesh.mProperties.mAttributes[mesh.mProperties.mAttributes.size() - 1]);
 	}
 
 
@@ -131,10 +131,10 @@ namespace nap
 			mesh_data.mProperties.mNumVertices = fbx_mesh->mNumVertices;
 			mesh_data.mProperties.mDrawMode = opengl::EDrawMode::TRIANGLES;
 
-			std::vector<std::unique_ptr<VertexAttribute>> vertex_attribute_storage;
+			std::vector<std::unique_ptr<BaseVertexAttribute>> vertex_attribute_storage;
 
 			// Copy vertex data			
-			TypedVertexAttribute<glm::vec3>& position_attribute = CreateAttribute<glm::vec3>(mesh_data, MeshInstance::VertexAttributeIDs::GetPositionName(), vertex_attribute_storage);
+			VertexAttribute<glm::vec3>& position_attribute = CreateAttribute<glm::vec3>(mesh_data, MeshInstance::VertexAttributeIDs::GetPositionName(), vertex_attribute_storage);
 			position_attribute.reserve(fbx_mesh->mNumVertices);
 			for (unsigned int vertex = 0; vertex < fbx_mesh->mNumVertices; vertex++)
 			{
@@ -145,7 +145,7 @@ namespace nap
 			// Copy normals
 			if (fbx_mesh->HasNormals())
 			{
-				TypedVertexAttribute<glm::vec3>& normal_attribute = CreateAttribute<glm::vec3>(mesh_data, MeshInstance::VertexAttributeIDs::getNormalName(), vertex_attribute_storage);
+				VertexAttribute<glm::vec3>& normal_attribute = CreateAttribute<glm::vec3>(mesh_data, MeshInstance::VertexAttributeIDs::getNormalName(), vertex_attribute_storage);
 				normal_attribute.reserve(fbx_mesh->mNumVertices);
 				for (unsigned int vertex = 0; vertex < fbx_mesh->mNumVertices; vertex++)
 				{
@@ -159,7 +159,7 @@ namespace nap
 			{
 				aiVector3D* uv_channel_data = fbx_mesh->mTextureCoords[uv_channel];
 
-				TypedVertexAttribute<glm::vec3>& uv_attribute = CreateAttribute<glm::vec3>(mesh_data, MeshInstance::VertexAttributeIDs::GetUVName(uv_channel), vertex_attribute_storage);
+				VertexAttribute<glm::vec3>& uv_attribute = CreateAttribute<glm::vec3>(mesh_data, MeshInstance::VertexAttributeIDs::GetUVName(uv_channel), vertex_attribute_storage);
 				uv_attribute.reserve(fbx_mesh->mNumVertices);
 
 				// Copy uv data channel
@@ -176,7 +176,7 @@ namespace nap
 			{
 				aiColor4D* color_channel_data = fbx_mesh->mColors[color_channel];
 
-				TypedVertexAttribute<glm::vec4>& color_attribute = CreateAttribute<glm::vec4>(mesh_data, MeshInstance::VertexAttributeIDs::GetColorName(color_channel), vertex_attribute_storage);
+				VertexAttribute<glm::vec4>& color_attribute = CreateAttribute<glm::vec4>(mesh_data, MeshInstance::VertexAttributeIDs::GetColorName(color_channel), vertex_attribute_storage);
 				color_attribute.reserve(fbx_mesh->mNumVertices);
 
 				// Copy color data channel

@@ -73,7 +73,7 @@ namespace nap
 		mProperties.mAttributes.reserve(meshProperties.mAttributes.size());
 		for (auto& mesh_attribute : meshProperties.mAttributes)
 		{
-			std::unique_ptr<VertexAttribute> owned_mesh_attribute(mesh_attribute->get_type().create<VertexAttribute>());
+			std::unique_ptr<BaseVertexAttribute> owned_mesh_attribute(mesh_attribute->get_type().create<BaseVertexAttribute>());
 			rtti::copyObject(*mesh_attribute, *owned_mesh_attribute);
 			mProperties.mAttributes.emplace_back(std::move(owned_mesh_attribute));
 		}
@@ -100,7 +100,7 @@ namespace nap
 		for (auto& mesh_attribute : mProperties.mAttributes)
 		{
 			const opengl::VertexAttributeBuffer& vertex_attr_buffer = mGPUMesh->getVertexAttributeBuffer(mesh_attribute->mAttributeID);
-			vertex_attr_buffer.setData(mesh_attribute->getData());
+			vertex_attr_buffer.setData(mesh_attribute->getRawData());
 		}
 
 		if (!mProperties.mIndices.empty())

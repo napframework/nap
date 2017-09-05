@@ -82,7 +82,7 @@ namespace nap
 		std::vector<LaserShapeComponentInstance*> mShapes;
 
 		// Populate Laser Buffer
-		void populateLaserBuffer(std::vector<glm::vec3>& verts, const std::vector<glm::vec4>& colors, const glm::mat4x4& laserXform, const glm::mat4x4& lineXform);
+		void populateLaserBuffer(const std::vector<glm::vec3>& verts, const std::vector<glm::vec4>& colors, const glm::mat4x4& laserXform, const glm::mat4x4& lineXform);
 
 		// Converted laser points
 		std::vector<nap::EtherDreamPoint> mPoints;

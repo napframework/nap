@@ -43,22 +43,22 @@ namespace nap
 		/**
 		 *	@return the position vertex data
 		 */
-		TypedVertexAttribute<glm::vec3>& getPositionAttr();
+		Vec3VertexAttribute& getPositionAttr();
 		
 		/**
 		 *	@return the color vertex data
 		 */
-		TypedVertexAttribute<glm::vec4>& getColorAttr();
+		Vec4VertexAttribute& getColorAttr();
 		
 		/**
 		 *	@return the normal data
 		 */
-		TypedVertexAttribute<glm::vec3>& getNormalAttr();
+		Vec3VertexAttribute& getNormalAttr();
 		
 		/**
 		 *	@return the uv data
 		 */
-		TypedVertexAttribute<glm::vec3>& getUvAttr();
+		Vec3VertexAttribute& getUvAttr();
 
 		// Properties associated with a line
 		PolyLineProperties mLineProperties;
