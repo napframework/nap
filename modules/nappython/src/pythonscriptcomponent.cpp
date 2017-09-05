@@ -7,7 +7,7 @@
 #include "nap/logger.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PythonScriptComponentInstance)
-	RTTI_CONSTRUCTOR(nap::EntityInstance&)
+	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::PythonScriptComponent)
@@ -24,16 +24,16 @@ namespace nap
 		}
 		catch (const pybind11::error_already_set& err)
 		{
-			nap::Logger::info("Runtime python error while executing %s: %s", mScriptComponent->mPath.c_str(), err.what());
+			nap::Logger::info("Runtime python error while executing %s: %s", getResource<PythonScriptComponent>()->mPath.c_str(), err.what());
 		}
 	}
 
-	bool PythonScriptComponentInstance::init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool PythonScriptComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
-		mScriptComponent = rtti_cast<PythonScriptComponent>(resource.get());
+		PythonScriptComponent* script_component = getResource<PythonScriptComponent>();
 
 		PythonScriptService* script_service = getEntity()->getCore()->getOrCreateService<PythonScriptService>();
-		if (!errorState.check(script_service->TryLoad(mScriptComponent->mPath, mScript, errorState), "Failed to load %s", mScriptComponent->mPath.c_str()))
+		if (!errorState.check(script_service->TryLoad(script_component->mPath, mScript, errorState), "Failed to load %s", script_component->mPath.c_str()))
 			return false;
 		
 		return true;

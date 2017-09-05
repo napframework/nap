@@ -13,15 +13,15 @@ RTTI_BEGIN_CLASS(nap::LaserOutputComponent)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LaserOutputComponentInstance)
-	RTTI_CONSTRUCTOR(nap::EntityInstance&)
+	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
 namespace nap
 {
-	bool LaserOutputComponentInstance::init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool LaserOutputComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
 		// Copy over link to the DAC
-		LaserOutputComponent* selector_resource = rtti_cast<LaserOutputComponent>(resource.get());
+		LaserOutputComponent* selector_resource = getResource<LaserOutputComponent>();
 		mDac = selector_resource->mDac;
 
 		// Get all the laser shapes

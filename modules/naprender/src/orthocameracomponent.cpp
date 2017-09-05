@@ -16,21 +16,21 @@ RTTI_BEGIN_CLASS(nap::OrthoCameraComponent)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::OrthoCameraComponentInstance)
-	RTTI_CONSTRUCTOR(nap::EntityInstance&)
+	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
 namespace nap
 {
 	// Hook up attribute changes
-	OrthoCameraComponentInstance::OrthoCameraComponentInstance(EntityInstance& entity) :
-		CameraComponentInstance(entity)
+	OrthoCameraComponentInstance::OrthoCameraComponentInstance(EntityInstance& entity, Component& resource) :
+		CameraComponentInstance(entity, resource)
 	{
 	}
 
 
-	bool OrthoCameraComponentInstance::init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool OrthoCameraComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
-		mProperties = rtti_cast<OrthoCameraComponent>(resource.get())->mProperties;
+		mProperties = getResource<OrthoCameraComponent>()->mProperties;
 		mTransformComponent =	getEntity()->findComponent<TransformComponentInstance>();
 		if (!errorState.check(mTransformComponent != nullptr, "Missing transform component"))
 			return false;

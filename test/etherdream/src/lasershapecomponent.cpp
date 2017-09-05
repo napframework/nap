@@ -17,16 +17,16 @@ RTTI_BEGIN_CLASS(nap::LaserShapeComponent)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LaserShapeComponentInstance)
-	RTTI_CONSTRUCTOR(nap::EntityInstance&)
+	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
 
 namespace nap
 {
-	bool LaserShapeComponentInstance::init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool LaserShapeComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
 		// Copy shape properties
-		LaserShapeComponent* laser_shape_resource = rtti_cast<LaserShapeComponent>(resource.get());
+		LaserShapeComponent* laser_shape_resource = getResource<LaserShapeComponent>();
 		mShapeProperties = laser_shape_resource->mShapeProperties;
 
 		// Create point buffer

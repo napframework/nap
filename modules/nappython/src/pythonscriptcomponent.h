@@ -15,16 +15,15 @@ namespace nap
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
-		PythonScriptComponentInstance(EntityInstance& entity) :
-			ComponentInstance(entity)
+		PythonScriptComponentInstance(EntityInstance& entity, Component& resource) :
+			ComponentInstance(entity, resource)
 		{
 		}
 
 		virtual void update(double deltaTime) override;
-		virtual bool init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
 	private:
-		const PythonScriptComponent* mScriptComponent = nullptr;
 		pybind11::module mScript;
 	};
 

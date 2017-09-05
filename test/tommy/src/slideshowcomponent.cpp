@@ -8,50 +8,51 @@
 RTTI_BEGIN_CLASS(nap::SlideShowComponent)
 	RTTI_PROPERTY("Images",				&nap::SlideShowComponent::mImages,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("EntityPrototype",	&nap::SlideShowComponent::mEntityPrototype, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ComponentPointer",	 &nap::SlideShowComponent::mComponentPointer, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SlideShowComponentInstance)
-	RTTI_CONSTRUCTOR(nap::EntityInstance&)
+	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
 namespace nap
 {
 	static const float imageDistance = 0.8f;
 
-	SlideShowComponentInstance::SlideShowComponentInstance(EntityInstance& entity) :
-		ComponentInstance(entity)
+	SlideShowComponentInstance::SlideShowComponentInstance(EntityInstance& entity, Component& resource) :
+		ComponentInstance(entity, resource)
 	{
 	}
 
 
-	bool SlideShowComponentInstance::init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool SlideShowComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
 		ResourceManagerService& resource_manager = *getEntity()->getCore()->getService<nap::ResourceManagerService>();
 
- 		mResource = rtti_cast<SlideShowComponent>(resource.get());
+ 		SlideShowComponent* resource = getResource<SlideShowComponent>();
 
 		// Prototype needs RenderableMeshComponent
-		if (!errorState.check(mResource->mEntityPrototype->hasComponent<RenderableMeshComponent>(), "Entity prototype is missing RenderableMeshComponent"))
+		if (!errorState.check(resource->mEntityPrototype->hasComponent<RenderableMeshComponent>(), "Entity prototype is missing RenderableMeshComponent"))
 			return false;
 
 		// Prototype needs TransformComponent
-		if (!errorState.check(mResource->mEntityPrototype->hasComponent<TransformComponent>(), "Entity prototype is missing TransformComponent"))
+		if (!errorState.check(resource->mEntityPrototype->hasComponent<TransformComponent>(), "Entity prototype is missing TransformComponent"))
 			return false;
 
 		// Spawn left child
-		mLeftChildInstance = resource_manager.createEntity(*mResource->mEntityPrototype, entityCreationParams, errorState);
+		mLeftChildInstance = resource_manager.createEntity(*resource->mEntityPrototype, entityCreationParams, errorState);
 		if (mLeftChildInstance == nullptr)
 			return false;
 		getEntity()->addChild(*mLeftChildInstance);
 
 		// Spawn center child
- 		mCenterChildInstance = resource_manager.createEntity(*mResource->mEntityPrototype, entityCreationParams, errorState);
+ 		mCenterChildInstance = resource_manager.createEntity(*resource->mEntityPrototype, entityCreationParams, errorState);
  		if (mCenterChildInstance == nullptr)
  			return false;
 		getEntity()->addChild(*mCenterChildInstance);
 
 		// Spawn right child
-		mRightChildInstance = resource_manager.createEntity(*mResource->mEntityPrototype, entityCreationParams, errorState);
+		mRightChildInstance = resource_manager.createEntity(*resource->mEntityPrototype, entityCreationParams, errorState);
 		if (mRightChildInstance == nullptr)
 			return false;
 		getEntity()->addChild(*mRightChildInstance);
@@ -84,6 +85,8 @@ namespace nap
 	{
 		if (mTargetImageIndex != mImageIndex)
 		{
+			SlideShowComponent* resource = getResource<SlideShowComponent>();
+
 			mTimer += deltaTime;
 			const float scroll_time = 0.7f;
 			const float timeScale = mTimer / scroll_time;
@@ -92,8 +95,8 @@ namespace nap
 			{
 				mImageIndex = mTargetImageIndex;
 				if (mImageIndex < 0)
-					mImageIndex = mResource->mImages.size() - 1;
-				else if (mImageIndex > mResource->mImages.size() - 1)
+					mImageIndex = resource->mImages.size() - 1;
+				else if (mImageIndex > resource->mImages.size() - 1)
 					mImageIndex = 0;
 				mTargetImageIndex = mImageIndex;
 
@@ -117,14 +120,16 @@ namespace nap
 
 	void SlideShowComponentInstance::assignTexture(nap::EntityInstance& entity, int imageIndex)
 	{
+		SlideShowComponent* resource = getResource<SlideShowComponent>();
+
 		if (imageIndex < 0)
-			imageIndex = mResource->mImages.size() - 1;
-		else if (imageIndex > mResource->mImages.size() - 1)
+			imageIndex = resource->mImages.size() - 1;
+		else if (imageIndex > resource->mImages.size() - 1)
 			imageIndex = 0;
 
 		RenderableMeshComponentInstance& renderable = entity.getComponent<RenderableMeshComponentInstance>();
 		MaterialInstance& material_instance = renderable.getMaterialInstance();
-		material_instance.getOrCreateUniform<nap::UniformTexture2D>("mTexture").setTexture(*mResource->mImages[imageIndex]);
+		material_instance.getOrCreateUniform<nap::UniformTexture2D>("mTexture").setTexture(*resource->mImages[imageIndex]);
 	}
 
 

@@ -29,7 +29,11 @@ namespace nap
 		/**
 		 * Constructor
 		 */
-		ComponentInstance(EntityInstance& entity) : mEntity(&entity) { }
+		ComponentInstance(EntityInstance& entity, Component& resource) : 
+			mEntity(&entity),
+			mResource(&resource)
+		{ 
+		}
 
 		/**
 		 * Update this component
@@ -45,16 +49,32 @@ namespace nap
 		}
 
 		/**
+		 * Get the resource this component was created from
+		 */
+		nap::Component* getResource() const
+		{
+			return mResource;
+		}
+
+		template<typename T>
+		T* getResource() const
+		{
+			assert(mResource->get_type().is_derived_from(rtti::TypeInfo::get<T>()));
+			return static_cast<T*>(mResource);
+		}
+
+		/**
 		 * Initialize this component from its resource
 		 *
 		 * @param resource The resource we're being instantiated from
 		 * @param entityCreationParams Parameters required to create new entity instances during init
 		 * @param errorState The error object
 		 */
-        virtual bool init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
+        virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
 
 	private:
 		EntityInstance* mEntity;	// The entity this component belongs to
+		Component*		mResource;	// The resource this instance was created from
 	};
 
 	///////////////////////////////////////////////////////////////////////////
@@ -72,7 +92,7 @@ namespace nap
 		/**
 		 * Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
 		 */
-		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) { }
+		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const { }
 
 		/** 
 		 * Get the type of ComponentInstance that should be created from this Component

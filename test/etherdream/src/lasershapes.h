@@ -25,11 +25,11 @@ namespace nap
 		RTTI_ENABLE(LaserShapeComponentInstance)
 	public:
 		// Constructor
-		LaserDotComponentInstance(EntityInstance& entity) : LaserShapeComponentInstance(entity) 
+		LaserDotComponentInstance(EntityInstance& entity, Component& resource) : LaserShapeComponentInstance(entity, resource) 
 		{ }
 
 		// Init
-		virtual bool init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
 		// Update
 		virtual void update(double deltaTime);
@@ -57,11 +57,11 @@ namespace nap
 		RTTI_ENABLE(LaserShapeComponentInstance)
 	public:
 		// Constructor
-		LaserSquareComponentInstance(EntityInstance& entity) : LaserShapeComponentInstance(entity)
+		LaserSquareComponentInstance(EntityInstance& entity, Component& resource) : LaserShapeComponentInstance(entity, resource)
 		{ }
 
 		// Init
-		virtual bool init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
 		// Update
 		virtual void update(double deltaTime);
@@ -95,11 +95,11 @@ namespace nap
 		RTTI_ENABLE(LaserShapeComponentInstance)
 	public:
 		// Constructor
-		LaserCircleComponentInstance(EntityInstance& entity) : LaserShapeComponentInstance(entity)
+		LaserCircleComponentInstance(EntityInstance& entity, Component& resource) : LaserShapeComponentInstance(entity, resource)
 		{ }
 
 		// Init
-		virtual bool init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
 		// Update
 		virtual void update(double deltaTime);

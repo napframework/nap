@@ -27,14 +27,14 @@ RTTI_BEGIN_CLASS(nap::FractionLayoutComponent)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::FractionLayoutComponentInstance)
-	RTTI_CONSTRUCTOR(nap::EntityInstance&)
+	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
 namespace nap
 {
-	bool FractionLayoutComponentInstance::init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool FractionLayoutComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
-		mProperties = rtti_cast<FractionLayoutComponent>(resource.get())->mProperties;
+		mProperties = getResource<FractionLayoutComponent>()->mProperties;
 
 		// Must have a TransformComponent
 		mTransformComponent = getEntity()->findComponent<TransformComponentInstance>();

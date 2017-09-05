@@ -22,7 +22,7 @@ RTTI_BEGIN_CLASS(nap::TransformComponent)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TransformComponentInstance)
-	RTTI_CONSTRUCTOR(nap::EntityInstance&)
+	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 	RTTI_FUNCTION("getTranslate",		&nap::TransformComponentInstance::getTranslate)
 	RTTI_FUNCTION("setTranslate",		&nap::TransformComponentInstance::setTranslate)
 	RTTI_FUNCTION("setRotate",			&nap::TransformComponentInstance::setRotate)
@@ -39,9 +39,9 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	bool TransformComponentInstance::init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool TransformComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
-		TransformComponent* xform_resource = rtti_cast<TransformComponent>(resource.get());
+		TransformComponent* xform_resource = getResource<TransformComponent>();
 		mTranslate = xform_resource->mProperties.mTranslate;
 		mRotate = glm::quat(glm::vec3(glm::radians(xform_resource->mProperties.mRotate.x), 
 			glm::radians(xform_resource->mProperties.mRotate.y), 

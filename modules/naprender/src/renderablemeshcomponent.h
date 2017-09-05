@@ -35,7 +35,7 @@ namespace nap
 		/**
 		 * RenderableMesh uses transform to position itself in the world.
 		 */
-		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components)
+		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override
 		{
 			components.push_back(RTTI_OF(TransformComponent));
 		}
@@ -70,12 +70,12 @@ namespace nap
 		RTTI_ENABLE(RenderableComponentInstance)
 
 	public:
-		RenderableMeshComponentInstance(EntityInstance& entity);
+		RenderableMeshComponentInstance(EntityInstance& entity, Component& component);
 
 		/**
 		 * Acquires VAO, copies clipping rectangle, initializes material instance.
 		 */
-		virtual bool init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
 		/**
 		 * Renders the model from the ModelResource, using the material on the ModelResource.
@@ -90,12 +90,12 @@ namespace nap
 		/**
 		 * @return MeshResource for the RenderableMeshComponent.
 		 */
-		IMesh& getMesh() { return mResource->getMeshResource(); }
+		IMesh& getMesh() { return getResource<RenderableMeshComponent>()->getMeshResource(); }
 
 		/**
 		 * @return MeshInstance for the RenderableMeshComponent's Mesh.
 		 */
-		MeshInstance& getMeshInstance() { return mResource->getMeshResource().getMeshInstance(); }
+		MeshInstance& getMeshInstance() { return getResource<RenderableMeshComponent>()->getMeshResource().getMeshInstance(); }
 
 		/**
 		 * Toggles visibility.
@@ -113,7 +113,6 @@ namespace nap
 		void setBlendMode();
 
 	private:
-		ObjectPtr<RenderableMeshComponent>			mResource;				// Pointer to resource of this instance
 		TransformComponentInstance*					mTransformComponent;	// Cached pointer to transform
 		std::unique_ptr<VAOHandle>					mVAOHandle;				// Handle to Vertex Array Object
 		MaterialInstance							mMaterialInstance;		// MaterialInstance

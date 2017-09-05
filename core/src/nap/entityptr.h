@@ -7,31 +7,37 @@ namespace nap
 	class Entity;
 	class EntityInstance;
 
+	class Component;
+	class ComponentInstance;
+
 	/**
 	 * EntityPtr is used to access EntityInstance object. Because EntityInstances are spawned at runtime, the file
 	 * objects have no knowledge of instances. To make sure that we can point to EntityInstances, EntityPtr
 	 * wraps both a pointer to an Entity and to an EntityInstance. From an RTTI perspective, EntityPtr acts
 	 * like a pointer to another Entity, while at runtime, the pointer acts like a pointer to an EntityInstance.
 	 */
-	class NAPAPI EntityPtr
+	template<typename RESOURCE_TYPE, typename INSTANCE_TYPE>
+	class InstancePtr
 	{
 	public:
-		EntityPtr() = default;
+		using InstancePtrType = InstancePtr<RESOURCE_TYPE, INSTANCE_TYPE>;
+
+		InstancePtr() = default;
 
 		// Regular ptr Ctor
-		EntityPtr(Entity* ptr) :
+		InstancePtr(RESOURCE_TYPE* ptr) :
 			mResource(ptr)
 		{
 		}
 
 		// Copy ctor
-		EntityPtr(const EntityPtr& other)
+		InstancePtr(const InstancePtrType& other)
 		{
 			Assign(other);
 		}
 
 		// Move ctor
-		EntityPtr(EntityPtr&& other)
+		InstancePtr(InstancePtrType&& other)
 		{
 			Assign(other);
 			other.mResource = nullptr;
@@ -39,14 +45,14 @@ namespace nap
 		}
 
 		// Assignment operator
-		EntityPtr& operator=(const EntityPtr& other)
+		InstancePtrType& operator=(const InstancePtrType& other)
 		{
 			Assign(other);
 			return *this;
 		}
 
 		// Move assignment operator
-		EntityPtr& operator=(EntityPtr&& other)
+		InstancePtrType& operator=(InstancePtrType&& other)
 		{
 			Assign(other);
 			other.mResource = nullptr;
@@ -56,98 +62,98 @@ namespace nap
 
 		//////////////////////////////////////////////////////////////////////////
 
-		const EntityInstance& operator*() const
+		const INSTANCE_TYPE& operator*() const
 		{
 			assert(mInstance != nullptr);
 			return *mInstance;
 		}
 
-		EntityInstance& operator*()
+		INSTANCE_TYPE& operator*()
 		{
 			assert(mInstance != nullptr);
 			return *mInstance;
 		}
 
-		EntityInstance* operator->() const
+		INSTANCE_TYPE* operator->() const
 		{
 			assert(mInstance != nullptr);
 			return mInstance;
 		}
 
-		EntityInstance* operator->()
+		INSTANCE_TYPE* operator->()
 		{
 			assert(mInstance != nullptr);
 			return mInstance;
 		}
 
-		bool operator==(const EntityPtr& other) const
+		bool operator==(const InstancePtrType& other) const
 		{
 			return mResource == other.mResource && mInstance == other.mInstance;
 		}
 
-		bool operator==(const EntityInstance* entityInstance) const
+		bool operator==(const INSTANCE_TYPE* entityInstance) const
 		{
 			return mInstance == entityInstance;
 		}
 
-		bool operator!=(const EntityInstance* entityInstance) const
+		bool operator!=(const INSTANCE_TYPE* entityInstance) const
 		{
 			return mInstance != entityInstance;
 		}
 
-		bool operator==(const Entity* Entity) const
+		bool operator==(const RESOURCE_TYPE* Entity) const
 		{
 			return mResource == Entity;
 		}
 
-		bool operator!=(const Entity* Entity) const
+		bool operator!=(const RESOURCE_TYPE* Entity) const
 		{
 			return mResource != Entity;
 		}
 
-		bool operator<(const EntityPtr& other) const
+		bool operator<(const InstancePtrType& other) const
 		{
 			return mInstance < other.mInstance;
 		}
 
-		bool operator>(const EntityPtr& other) const
+		bool operator>(const InstancePtrType& other) const
 		{
 			return mInstance > other.mInstance;
 		}
 
-		bool operator<=(const EntityPtr& other) const
+		bool operator<=(const InstancePtrType& other) const
 		{
 			return mInstance <= other.mInstance;
 		}
 
-		bool operator>=(const EntityPtr& other) const
+		bool operator>=(const InstancePtrType& other) const
 		{
 			return mInstance >= other.mInstance;
 		}
 
-		Entity* getResource()
+		RESOURCE_TYPE* getResource()
 		{
 			return mResource.get();
 		}
 
-		Entity* getResource() const
+		RESOURCE_TYPE* getResource() const
 		{
 			return mResource.get();
 		}
 
-		EntityInstance* get() const
+		INSTANCE_TYPE* get() const
 		{
 			return mInstance;
 		}
 
-		EntityInstance* get()
+		INSTANCE_TYPE* get()
 		{
 			return mInstance;
 		}
 
 	private:
 		
-		void Assign(const EntityPtr& other)
+		void Assign(const InstancePtrType& other)
 		{
 			mResource = other.mResource;
 			mInstance = other.mInstance;
@@ -155,9 +161,12 @@ namespace nap
 
 	private:
 		friend class ResourceManagerService;
-		ObjectPtr<Entity> mResource;
-		EntityInstance* mInstance = nullptr;
+		ObjectPtr<RESOURCE_TYPE> mResource;
+		INSTANCE_TYPE* mInstance = nullptr;
 	};
+
+	using EntityPtr = InstancePtr<Entity, EntityInstance>;
+	using ComponentPtr = InstancePtr<Component, ComponentInstance>;
 }
 
 /**
@@ -180,5 +189,22 @@ namespace rttr
 		{
 			return nap::EntityPtr(value);
 		}		
+	};
+
+	template<>
+	struct wrapper_mapper<nap::ComponentPtr>
+	{
+		using wrapped_type = nap::Component*;
+		using type = nap::ComponentPtr;
+
+		inline static wrapped_type get(const type& obj)
+		{
+			return obj.getResource();
+		}
+
+		inline static type create(const wrapped_type& value)
+		{
+			return nap::ComponentPtr(value);
+		}
 	};
 }

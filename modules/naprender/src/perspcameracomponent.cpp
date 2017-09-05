@@ -19,7 +19,7 @@ RTTI_BEGIN_CLASS(nap::PerspCameraComponent)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PerspCameraComponentInstance)
-	RTTI_CONSTRUCTOR(nap::EntityInstance&)
+	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
 namespace nap
@@ -136,15 +136,15 @@ namespace nap
 
 
 	// Hook up attribute changes
-	PerspCameraComponentInstance::PerspCameraComponentInstance(EntityInstance& entity) :
-		CameraComponentInstance(entity)
+	PerspCameraComponentInstance::PerspCameraComponentInstance(EntityInstance& entity, Component& resource) :
+		CameraComponentInstance(entity, resource)
 	{
 	}
 
 
-	bool PerspCameraComponentInstance::init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool PerspCameraComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
-		mProperties = rtti_cast<PerspCameraComponent>(resource.get())->mProperties;
+		mProperties = getResource<PerspCameraComponent>()->mProperties;
 		mTransformComponent = getEntity()->findComponent<TransformComponentInstance>();
 		if (!errorState.check(mTransformComponent != nullptr, "Missing transform component"))
 			return false;

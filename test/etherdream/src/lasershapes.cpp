@@ -13,7 +13,7 @@ RTTI_BEGIN_CLASS(nap::LaserDotComponent)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LaserDotComponentInstance)
-	RTTI_CONSTRUCTOR(nap::EntityInstance&)
+	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -22,7 +22,7 @@ RTTI_BEGIN_CLASS(nap::LaserSquareComponent)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LaserSquareComponentInstance)
-	RTTI_CONSTRUCTOR(nap::EntityInstance&)
+	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -32,7 +32,7 @@ RTTI_BEGIN_CLASS(nap::LaserCircleComponent)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LaserCircleComponentInstance)
-	RTTI_CONSTRUCTOR(nap::EntityInstance&)
+	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -62,10 +62,10 @@ namespace nap
 	// Laser DOT
 	//////////////////////////////////////////////////////////////////////////
 
-	bool LaserDotComponentInstance::init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool LaserDotComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
 		// Call base class implementation
-		return LaserShapeComponentInstance::init(resource, entityCreationParams, errorState);
+		return LaserShapeComponentInstance::init(entityCreationParams, errorState);
 	}
 
 
@@ -113,17 +113,17 @@ namespace nap
 	// Laser Square
 	//////////////////////////////////////////////////////////////////////////
 
-	bool LaserSquareComponentInstance::init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool LaserSquareComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
 		// Make sure the square has an equal amount of points
-		LaserShapeComponent* laser_shape_resource = rtti_cast<LaserShapeComponent>(resource.get());
+		LaserShapeComponent* laser_shape_resource = getResource<LaserShapeComponent>();
 		if (laser_shape_resource->mShapeProperties.mNumberOfPoints % 4 != 0)
 		{
 			return errorState.check(false, "Square laser points can not be divided by 4");
 		}
 
 		// Call base class implementation
-		return LaserShapeComponentInstance::init(resource, entityCreationParams, errorState);
+		return LaserShapeComponentInstance::init(entityCreationParams, errorState);
 	}
 
 
@@ -241,12 +241,12 @@ namespace nap
 	// Laser Circle
 	//////////////////////////////////////////////////////////////////////////
 
-	bool LaserCircleComponentInstance::init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool LaserCircleComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
-		LaserShapeComponentInstance::init(resource, entityCreationParams, errorState);
+		LaserShapeComponentInstance::init(entityCreationParams, errorState);
 
 		// Copy index
-		LaserCircleComponent* circle_resource = rtti_cast<LaserCircleComponent>(resource.get());
+		LaserCircleComponent* circle_resource = getResource<LaserCircleComponent>();
 		mIndex = circle_resource->mIndex;
 
 		return true;

@@ -46,10 +46,13 @@ namespace nap
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
-		LaserShapeComponentInstance(EntityInstance& entity) : ComponentInstance(entity)		{ }
+		LaserShapeComponentInstance(EntityInstance& entity, Component& resource) : 
+			ComponentInstance(entity, resource)
+		{ 
+		}
 
 		// Initialize the component
-		virtual bool init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
 		// Copied shape properties
 		LaseShapeProperties mShapeProperties;
