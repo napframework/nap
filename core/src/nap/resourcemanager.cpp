@@ -211,7 +211,6 @@ namespace nap
 				if (!errorState.check(link.mSourcePath.resolve(mComponent, resolved_path), "Encountered link from object %s that could not be resolved: %s", mComponent->mID.c_str(), link.mSourcePath.toString().c_str()))
 					return false;
 
-				// Skip non-EntityPtr types
 				if (resolved_path.getType() == RTTI_OF(EntityPtr))
 				{
 					EntityPtr entity_ptr = resolved_path.getValue().convert<EntityPtr>();
@@ -221,6 +220,7 @@ namespace nap
 					if (target_entity_resource == nullptr)
 						continue;
 
+					// For EntityPtrs, add all components as pointers			
 					for (ObjectPtr<Component>& component : target_entity_resource->mComponents)
 					{
 						ComponentGraphItem item;
@@ -238,6 +238,7 @@ namespace nap
 					if (target_component_resource == nullptr)
 						continue;
 
+					// Add target component as pointer
 					ComponentGraphItem item;
 					item.mComponent = target_component_resource;
 					item.mComponentMap = mComponentMap;
@@ -483,39 +484,10 @@ namespace nap
 	}
 
 
-	bool ResourceManagerService::createEntities(const std::vector<const nap::Entity*>& entityResources, EntityCreationParameters& entityCreationParams, std::vector<std::string>& generatedEntityIDs, utility::ErrorState& errorState)
+	bool ResourceManagerService::sResolveComponentPointers(EntityCreationParameters& entityCreationParams, std::unordered_map<Component*, ComponentInstance*>& newComponentInstances, utility::ErrorState& errorState)
 	{
-		std::unordered_map<Component*, ComponentInstance*> new_component_instances;
-
-		// Create all entity instances and component instances
-		for (const nap::Entity* entity_resource : entityResources)
-		{
-			EntityInstance* entity_instance = new EntityInstance(getCore(), entity_resource);
-			entity_instance->mID = generateInstanceID(getInstanceID(entity_resource->mID), entityCreationParams);
-
-			entityCreationParams.mEntitiesByID.emplace(std::make_pair(entity_instance->mID, std::unique_ptr<EntityInstance>(entity_instance)));
-			entityCreationParams.mAllInstancesByID.insert(std::make_pair(entity_instance->mID, entity_instance));
-			generatedEntityIDs.push_back(entity_instance->mID);
-
-			for (auto& component_resource : entity_resource->mComponents)
-			{
-				const rtti::TypeInfo& instance_type = component_resource->getInstanceType();
-				assert(instance_type.can_create_instance());
-
-				entityCreationParams.mComponentToEntity.insert(std::make_pair(component_resource.get(), entity_resource));
-
-				std::unique_ptr<ComponentInstance> component_instance(instance_type.create<ComponentInstance>({ *entity_instance, *component_resource.get() }));
-				assert(component_instance);
-				component_instance->mID = generateInstanceID(getInstanceID(component_resource->mID), entityCreationParams);
-
-				new_component_instances.insert(std::make_pair(component_resource.get(), component_instance.get()));
-				entityCreationParams.mAllInstancesByID.insert(std::make_pair(component_instance->mID, component_instance.get()));
-				entity_instance->addComponent(std::move(component_instance));
-			}
-		}
-
 		// We go over all components and resolve all Entity & Component pointers
-		for (auto kvp : new_component_instances)
+		for (auto kvp : newComponentInstances)
 		{
 			ComponentInstance* source_component_instance = kvp.second;
 			Component* source_component_resource = kvp.first;
@@ -566,7 +538,7 @@ namespace nap
 					// If the source & target entity are the same, we're dealing with an 'internal' component link. We can resolve the link directly against the components in the target entity instance
 					EntityInstance* source_entity = source_component_instance->getEntity();
 					if (source_entity->getEntity() == target_component_entity)
-					{					
+					{
 						// Find ComponentInstance with matching resource
 						for (ComponentInstance* target_component_instance : source_entity->getComponents())
 						{
@@ -599,21 +571,13 @@ namespace nap
 				}
 			}
 		}
-		
-		// Now that all entities are created, make sure that parent-child relations are set correctly
-		for (const nap::Entity* entity_resource : entityResources)
-		{
-			EntityByIDMap::iterator entity_instance = entityCreationParams.mEntitiesByID.find(getInstanceID(entity_resource->mID));
-			assert(entity_instance != entityCreationParams.mEntitiesByID.end());
 
-			for (const ObjectPtr<Entity>& child_entity_resource : entity_resource->mChildren)
-			{
-				EntityByIDMap::iterator child_entity_instance = entityCreationParams.mEntitiesByID.find(getInstanceID(child_entity_resource->mID));
-				assert(child_entity_instance != entityCreationParams.mEntitiesByID.end());
-				entity_instance->second->addChild(*child_entity_instance->second);
-			}
-		}
+		return true;
+	}
 
+
+	static bool sInitComponents(const std::vector<const nap::Entity*>& entityResources, EntityCreationParameters& entityCreationParams, std::unordered_map<Component*, ComponentInstance*>& newComponentInstances, utility::ErrorState& errorState)
+	{
 		TypeDependencyGraph graph;
 
 		std::vector<Component*> all_components;
@@ -638,11 +602,11 @@ namespace nap
 
 		for (TypeDependencyGraph::Node* node : sorted_nodes)
 		{
-			auto pos = new_component_instances.find(node->mItem.mComponent);
-			
+			auto pos = newComponentInstances.find(node->mItem.mComponent);
+
 			// It's possible for there to be objects in the graph that were not created during this createEntities call,
 			// in the case where a component has ComponentPtrs to components of other entities that have been spawned in a previous iteration
-			if (pos == new_component_instances.end())
+			if (pos == newComponentInstances.end())
 				continue;
 
 			if (!pos->second->init(entityCreationParams, errorState))
@@ -650,6 +614,59 @@ namespace nap
 		}
 
 		return true;
+	}
+
+
+	bool ResourceManagerService::createEntities(const std::vector<const nap::Entity*>& entityResources, EntityCreationParameters& entityCreationParams, std::vector<std::string>& generatedEntityIDs, utility::ErrorState& errorState)
+	{
+		std::unordered_map<Component*, ComponentInstance*> new_component_instances;
+
+		// Create all entity instances and component instances
+		for (const nap::Entity* entity_resource : entityResources)
+		{
+			EntityInstance* entity_instance = new EntityInstance(getCore(), entity_resource);
+			entity_instance->mID = generateInstanceID(getInstanceID(entity_resource->mID), entityCreationParams);
+
+			entityCreationParams.mEntitiesByID.emplace(std::make_pair(entity_instance->mID, std::unique_ptr<EntityInstance>(entity_instance)));
+			entityCreationParams.mAllInstancesByID.insert(std::make_pair(entity_instance->mID, entity_instance));
+			generatedEntityIDs.push_back(entity_instance->mID);
+
+			for (auto& component_resource : entity_resource->mComponents)
+			{
+				const rtti::TypeInfo& instance_type = component_resource->getInstanceType();
+				assert(instance_type.can_create_instance());
+
+				entityCreationParams.mComponentToEntity.insert(std::make_pair(component_resource.get(), entity_resource));
+
+				std::unique_ptr<ComponentInstance> component_instance(instance_type.create<ComponentInstance>({ *entity_instance, *component_resource.get() }));
+				assert(component_instance);
+				component_instance->mID = generateInstanceID(getInstanceID(component_resource->mID), entityCreationParams);
+
+				new_component_instances.insert(std::make_pair(component_resource.get(), component_instance.get()));
+				entityCreationParams.mAllInstancesByID.insert(std::make_pair(component_instance->mID, component_instance.get()));
+				entity_instance->addComponent(std::move(component_instance));
+			}
+		}
+
+		
+		// Now that all entities are created, make sure that parent-child relations are set correctly
+		for (const nap::Entity* entity_resource : entityResources)
+		{
+			EntityByIDMap::iterator entity_instance = entityCreationParams.mEntitiesByID.find(getInstanceID(entity_resource->mID));
+			assert(entity_instance != entityCreationParams.mEntitiesByID.end());
+
+			for (const ObjectPtr<Entity>& child_entity_resource : entity_resource->mChildren)
+			{
+				EntityByIDMap::iterator child_entity_instance = entityCreationParams.mEntitiesByID.find(getInstanceID(child_entity_resource->mID));
+				assert(child_entity_instance != entityCreationParams.mEntitiesByID.end());
+				entity_instance->second->addChild(*child_entity_instance->second);
+			}
+		}
+
+		if (!errorState.check(sResolveComponentPointers(entityCreationParams, new_component_instances, errorState), "Unable to resolve pointers in components"))
+			return false;
+
+		return sInitComponents(entityResources, entityCreationParams, new_component_instances, errorState);
 	}
 
 
