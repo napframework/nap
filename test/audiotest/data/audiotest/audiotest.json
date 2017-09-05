@@ -4,18 +4,30 @@
 		{
 			"Type" : "nap::audio::AudioInterface",
 			"mID": "MyAudioInterface",
+			"UseDefaultDevice": "True",
 			"SampleRate": "44100",
-			"BufferSize": "256"
+			"BufferSize": "256",
+			"AllowFailure": "False"
 		},
+
+		{
+			"Type": "nap::audio::AudioFileResource",
+			"mID": "MyAudioFile",
+			"AudioFilePath": "data/audiotest/test.wav",
+			"AllowFailure": "False"
+		},
+
 		{
 			"Type" : "nap::Entity",
 			"mID": "AudioPlayerEntity",
 			"Components" : 
 			[
 				{
-					"Type": "nap::audio::AudioFilePlayerComponent",
+					"Type": "nap::audio::AudioPlayerComponent",
 					"AudioInterface": "MyAudioInterface",
-					"AudioFilePath": "data/audiotest/test.wav"
+					"AudioFile": "MyAudioFile",
+					"Panning": "0.5",
+					"Gain": "1.0"
 				}
 			]
 		}
