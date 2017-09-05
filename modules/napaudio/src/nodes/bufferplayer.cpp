@@ -7,10 +7,10 @@ namespace nap {
     
     namespace audio {
         
-        void BufferPlayer::play(SampleBufferPtr buffer, DiscreteTimeValue position, ControllerValue speed)
+        void BufferPlayer::play(SampleBuffer& buffer, DiscreteTimeValue position, ControllerValue speed)
         {
             mPlaying = true;
-            mBuffer = buffer;
+            mBuffer = &buffer;
             mPosition = position;
             mSpeed = speed;
         }

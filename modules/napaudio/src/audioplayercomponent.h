@@ -6,8 +6,11 @@
 // audio includes
 #include "audionode.h"
 #include "audionodemanager.h"
-#include "audiodevice.h"
+#include "audiointerface.h"
+#include "audiofileresource.h"
 #include "nodes/bufferplayer.h"
+#include "nodes/gain.h"
+#include "nodes/stereopanner.h"
 
 namespace nap {
     
@@ -16,7 +19,9 @@ namespace nap {
         // Forward declarations
         class AudioPlayerComponentInstance;
         
-        
+        /**
+         * A component that plays back a mono or stereo audio file on first 2 channels (stereo) of the system.
+         */
         class NAPAPI AudioPlayerComponent : public nap::Component {
             RTTI_ENABLE(nap::Component)
             
@@ -31,8 +36,25 @@ namespace nap {
             
         public:
             // Properties
+            /**
+             * Pointer to the audio interface the audio file will be played back on
+             */
             ObjectPtr<AudioInterface> mAudioInterface;
-            std::string mAudioFilePath = "";
+            
+            /**
+             * Pointer to the audio file that will be played
+             */
+            ObjectPtr<AudioFileResource> mAudioFile;
+            
+            /**
+             * Gain of the playback between 0 and 1.
+             */
+            float mGain = 1.f;
+            
+            /**
+             * Panning of the playback, 0 is left 1 is right.
+             */
+            float mPanning = 0.5f;
         };
         
         
@@ -46,12 +68,9 @@ namespace nap {
             bool init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
             
         private:
-            // Audio buffer
-            nap::audio::MultiSampleBuffer audioFileBuffer;
-            float fileSampleRate;
-            
-            // One player and one output for every channel of the audio file
             std::vector<std::unique_ptr<BufferPlayer>> mPlayers;
+            std::vector<std::unique_ptr<Gain>> mGains;
+            std::unique_ptr<StereoPanner> mPanner = nullptr;
             std::vector<std::unique_ptr<AudioOutputNode>> mOutputs;
         };
         

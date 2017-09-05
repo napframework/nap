@@ -7,7 +7,6 @@
 #include <utility/dllexport.h>
 
 // Audio module includes
-#include <audioservice.h>
 #include <audiotypes.h>
 
 nap::ResourceManagerService* resourceManagerService = nullptr;
@@ -45,14 +44,14 @@ int main(int argc, char *argv[])
 	if (!init(core))
 		return -1;
     
-    while (true)
-    {
-        resourceManagerService->checkForFileChanges();
-        resourceManagerService->update();
-    }
+//    while (true)
+//    {
+//        resourceManagerService->checkForFileChanges();
+//        resourceManagerService->update();
+//    }
 
-//    std::cout << "Hit key to quit" << std::endl;
-//    std::cin.get();
+    std::cout << "Hit key to quit" << std::endl;
+    std::cin.get();
     
 	return 0;
 }

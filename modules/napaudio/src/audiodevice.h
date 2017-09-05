@@ -1,67 +1,43 @@
 #pragma once
 
-// std library includes
-#include <vector>
-
 // third party includes
 #include <portaudio.h>
-
-// nap includes
-#include <utility/dllexport.h>
-
-// audio includes
-#include "audionodemanager.h"
-
 
 namespace nap {
     
     namespace audio {
         
-        
-        class NAPAPI AudioInterface : public rtti::RTTIObject {
-            RTTI_ENABLE(rtti::RTTIObject)
-            
-        public:
-            AudioInterface();
-            ~AudioInterface();
-            
-            bool init(utility::ErrorState& errorState) override;
-            
-            void start();
-            void stop();
-            bool isActive();
-            
-            AudioNodeManager& getNodeManager() { return mNodeManager; }
-            
-        public:
-            bool mUseDefaultDevice = true;
-            int mInputDevice = 0;
-            int mOutputDevice = 0;
-            int mInputChannelCount = 1;
-            int mOutputChannelCount = 2;
-            float mSampleRate = 44100;
-            int mBufferSize = 256;
-            
-        private:
-            void startDefaultDevice();
-            
-            AudioNodeManager mNodeManager;
-            
-            bool mInitialized = false;
-            PaStream* mStream = nullptr;
-        };
-        
-        
+        /**
+         * This class provided static methods to poll the current system for available audio devices using portaudio.
+         */
         class NAPAPI AudioDeviceManager {
         public:
         public:
-            static bool init();
-            static void terminate();
-            
+            /**
+             * @return: the number of all available audio devices, the total number contains both input and output devices separately.
+             */
             static unsigned int getDeviceCount();
+            
+            /**
+             * Returns information of an audio device in a PaDeviceInfo struct defined by portaudio.
+             * @param deviceIndex: the number of the device
+             */
             static const PaDeviceInfo& getDeviceInfo(unsigned int deviceIndex);
+            
+            /** 
+             * Returns information on all the available devices
+             */
             static std::vector<const PaDeviceInfo*> getDevices();
+            
+            /** 
+             * Prints the number and name of all available audio devices to the console
+             */
             static void printDevices();
+            
+            /** 
+             * @return the name of an available device specified by number
+             * @param deviceIndex: the number of the devie
+             */
             static const std::string& getDeviceName(unsigned int deviceIndex);
         };
         

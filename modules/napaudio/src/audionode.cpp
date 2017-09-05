@@ -14,13 +14,7 @@ namespace nap {
             else
                 return nullptr;
         }
-        
-        AudioOutput::AudioOutput(AudioNode* node) : mNode(node)
-        {
-            mNode->mOutputs.emplace(this);
-            setBufferSize(mNode->getBufferSize());
-        }
-        
+
         
         AudioOutput::~AudioOutput()
         {
@@ -102,14 +96,14 @@ namespace nap {
         {
             SampleBufferPtr buffer = audioInput.pull();
             if (buffer)
-                mAudioNodeManager->addOutputBuffer(buffer, outputChannel);
+                mAudioNodeManager->addOutputBuffer(buffer, mOutputChannel);
         }
         
         
         void AudioInputNode::fill(SampleBuffer& buffer)
         {
             for (auto i = 0; i < buffer.size(); ++i)
-                buffer[i] = mAudioNodeManager->getInputSample(inputChannel, i);
+                buffer[i] = mAudioNodeManager->getInputSample(mInputChannel, i);
         }
 
     }
