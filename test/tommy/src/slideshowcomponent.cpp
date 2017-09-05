@@ -8,7 +8,6 @@
 RTTI_BEGIN_CLASS(nap::SlideShowComponent)
 	RTTI_PROPERTY("Images",				&nap::SlideShowComponent::mImages,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("EntityPrototype",	&nap::SlideShowComponent::mEntityPrototype, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("ComponentPointer",	 &nap::SlideShowComponent::mComponentPointer, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SlideShowComponentInstance)

@@ -28,7 +28,6 @@ namespace nap
 	public:
  		std::vector<ObjectPtr<nap::Image>>		mImages;			///< Array of images to display in the slidesho2
 		ObjectPtr<nap::Entity>					mEntityPrototype;	///< Prototype of entity to instantiate during Instance::init
-		ComponentPtr							mComponentPointer;
 	};
 
 	/**
@@ -53,7 +52,7 @@ namespace nap
 		/**
 		 * Updates animation.
 		 */
-		virtual void update(double deltaTime) override;
+		virtual void update(double deltaTime) override; 
 
 		/**
 		 * Cycles one element to the left. When reaching the beginning it will cycle to the end of the list.
