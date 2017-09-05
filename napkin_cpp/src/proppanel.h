@@ -35,6 +35,8 @@ class BaseItem : public QStandardItem {
 public:
     BaseItem(const QString& name, nap::rtti::RTTIObject* object, const nap::rtti::RTTIPath path)
             : QStandardItem(name), mObject(object), mPath(path) {
+        nap::rtti::ResolvedRTTIPath resolved;
+        assert(path.resolve(object, resolved));
         assert(mObject);
     }
 
@@ -87,6 +89,7 @@ public:
     ArrayPropertyItem(const QString& name, nap::rtti::RTTIObject* object,
                       const nap::rtti::RTTIPath& path, rttr::property prop, rttr::variant_array_view array)
             : BaseItem(name, object, path), mProperty(prop), mArray(array) {
+        std::string pathStr = path.toString();
         populateChildren();
         setForeground(softForeground());
     }
@@ -101,14 +104,46 @@ private:
 class PointerItem : public BaseItem {
 public:
     PointerItem(const QString& name, nap::rtti::RTTIObject* object, const nap::rtti::RTTIPath path)
-            : BaseItem(name, object, path) {}
+            : BaseItem(name, object, path) {
+        setForeground(softForeground());
+    }
 
 private:
 };
 
+
 class PointerValueItem : public QStandardItem {
 public:
-    PointerValueItem(rttr::variant value);
+    PointerValueItem(nap::rtti::RTTIObject* object, const nap::rtti::RTTIPath path)
+            : QStandardItem(), mObject(object), mPath(path) {
+        setForeground(Qt::darkCyan);
+        nap::rtti::ResolvedRTTIPath resolved;
+        assert(path.resolve(object, resolved));
+
+////    setIcon(QIcon(":/icons/link.svg"));
+    }
+
+    QVariant data(int role) const override;
+
+    void setData(const QVariant& value, int role) override {
+        QStandardItem::setData(value, role);
+    }
+
+private:
+    nap::rtti::RTTIObject* mObject;
+    nap::rtti::RTTIPath mPath;
+};
+
+
+class EmbeddedPointerItem : public BaseItem {
+public:
+    EmbeddedPointerItem(const QString& name, nap::rtti::RTTIObject* object, nap::rtti::RTTIPath path)
+            : BaseItem(name, object, path) {
+        populateChildren();
+    }
+
+private:
+    void populateChildren();
 
 };
 

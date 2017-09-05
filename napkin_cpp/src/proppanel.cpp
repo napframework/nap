@@ -10,12 +10,44 @@ using namespace nap::rtti;
 using namespace napkin;
 
 
+QList<QStandardItem*> createItemRow(rttr::type type, const QString& name,
+                                    nap::rtti::RTTIObject* object, const nap::rtti::RTTIPath& path,
+                                    rttr::property prop, rttr::variant value) {
+    QList<QStandardItem*> items;
+    if (type.is_array()) {
+        items << new ArrayPropertyItem(name, object, path, prop, value.create_array_view());
+        items << new EmptyItem();
+        items << new TypeItem(type);
+    } else if (type.is_associative_container()) {
+        assert(false);
+    } else if (type.is_pointer()) {
+        if (nap::rtti::hasFlag(prop, nap::rtti::EPropertyMetaData::Embedded)) {
+            items << new EmbeddedPointerItem(name, object, path);
+            items << new EmptyItem();
+            items << new TypeItem(type);
+        } else {
+            items << new PointerItem(name, object, path);
+            items << new PointerValueItem(object, path);
+            items << new TypeItem(type);
+        }
+    } else if (nap::rtti::isPrimitive(type)) {
+        items << new PropertyItem(name, object, path);
+        items << new PropertyValueItem(name, object, path);
+        items << new TypeItem(type);
+    } else {
+        items << new CompoundPropertyItem(name, object, path);
+        items << new EmptyItem();
+        items << new TypeItem(prop.get_type());
+    }
+    return items;
+}
+
 QVariant PropertyValueItem::data(int role) const {
 
     if (role == Qt::DisplayRole || role == Qt::EditRole) {
-        auto rttiObject = dynamic_cast<InspectorModel*>(model())->object();
         nap::rtti::ResolvedRTTIPath resolvedPath;
-        assert(mPath.resolve(rttiObject, resolvedPath));
+        nap::Logger::info("Resolving: %s/%s", mObject->mID.c_str(), mPath.toString().c_str());
+        assert(mPath.resolve(mObject, resolvedPath));
         QVariant variant;
         if (toQVariant(resolvedPath.getType(), resolvedPath.getValue(), variant))
             return variant;
@@ -28,9 +60,8 @@ QVariant PropertyValueItem::data(int role) const {
 void PropertyValueItem::setData(const QVariant& value, int role) {
 
     if (role == Qt::EditRole) {
-        auto rttiObject = dynamic_cast<InspectorModel*>(model())->object();
         nap::rtti::ResolvedRTTIPath resolvedPath;
-        assert(mPath.resolve(rttiObject, resolvedPath));
+        assert(mPath.resolve(mObject, resolvedPath));
         bool ok;
         auto resultValue = fromQVariant(resolvedPath.getType(), value, &ok);
         if (ok)
@@ -78,12 +109,12 @@ void InspectorModel::populateItems() {
             assert(false);
         } else if (wrappedType.is_pointer()) {
             if (nap::rtti::hasFlag(prop, nap::rtti::EPropertyMetaData::Embedded)) {
-                items << new InvalidItem(qName + "[Embedded Pointer]");
+                items << new EmbeddedPointerItem(qName, mObject, path);
                 items << new EmptyItem();
                 items << new TypeItem(wrappedType);
             } else {
-                items << new InvalidItem(qName + "[Pointer]");
-                items << new EmptyItem();
+                items << new PointerItem(qName, mObject, path);
+                items << new PointerValueItem(mObject, path);
                 items << new TypeItem(wrappedType);
             }
         } else if (nap::rtti::isPrimitive(wrappedType)) {
@@ -127,10 +158,9 @@ void ArrayPropertyItem::populateChildren() {
     for (int i = 0; i < array.get_size(); i++) {
         QList<QStandardItem*> items;
 
-        auto name = QString("[%1]").arg(i);
+        auto name = QString("%1").arg(i);
 
         nap::rtti::RTTIPath path = mPath;
-        nap::rtti::ResolvedRTTIPath p;
         path.pushArrayElement(i);
 
         auto value = array.get_value(i);
@@ -138,25 +168,22 @@ void ArrayPropertyItem::populateChildren() {
         auto wrappedType = type.is_wrapper() ? type.get_wrapped_type() : value.get_type();
 
         if (wrappedType.is_array()) {
-            items << new InvalidItem(name + "[Array]");
+            items << new ArrayPropertyItem(name, mObject, path, mProperty, value.create_array_view());
             items << new EmptyItem();
             items << new TypeItem(wrappedType);
         } else if (wrappedType.is_associative_container()) {
             assert(false);
         } else if (wrappedType.is_pointer()) {
             if (nap::rtti::hasFlag(mProperty, nap::rtti::EPropertyMetaData::Embedded)) {
-                items << new InvalidItem(name + "[Embedded Pointer]");
+                items << new EmbeddedPointerItem(name, mObject, path);
                 items << new EmptyItem();
                 items << new TypeItem(wrappedType);
             } else {
-                items << new InvalidItem(name + "[Pointer]");
-                items << new EmptyItem();
+                items << new PointerItem(name, mObject, path);
+                items << new PointerValueItem(mObject, path);
                 items << new TypeItem(wrappedType);
             }
 
-            items << new InvalidItem(name + "[Pointer]");
-            items << new EmptyItem();
-            items << new TypeItem(wrappedType);
         } else if (nap::rtti::isPrimitive(wrappedType)) {
             items << new PropertyItem(name, mObject, path);
             items << new PropertyValueItem(name, mObject, path);
@@ -172,26 +199,6 @@ void ArrayPropertyItem::populateChildren() {
     }
 }
 
-
-PointerValueItem::PointerValueItem(rttr::variant value) : QStandardItem() {
-
-    auto value_type = value.get_type();
-    auto wrapped_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
-    bool is_wrapper = wrapped_type != value_type;
-    RTTIObject* pointee = is_wrapper ? value.extract_wrapped_value().get_value<RTTIObject*>()
-                                     : value.get_value<RTTIObject*>();
-
-
-    if (nullptr == pointee) {
-        setText("NULL");
-    } else {
-        setText(QString::fromStdString(pointee->mID));
-    }
-
-    setForeground(Qt::darkCyan);
-//    setIcon(QIcon(":/icons/link.svg"));
-    setEditable(false);
-}
 
 void CompoundPropertyItem::populateChildren() {
     auto resolved = resolvePath();
@@ -211,14 +218,21 @@ void CompoundPropertyItem::populateChildren() {
         auto wrappedType = value.get_type().is_wrapper() ? value.get_type().get_wrapped_type() : value.get_type();
 
         if (wrappedType.is_array()) {
-            items << new InvalidItem(qName + "[Array]");
+            items << new ArrayPropertyItem(qName, mObject, path, childprop, value.create_array_view());
             items << new EmptyItem();
             items << new TypeItem(wrappedType);
         } else if (wrappedType.is_associative_container()) { assert(false); }
         else if (wrappedType.is_pointer()) {
-            items << new InvalidItem(qName + "[Pointer]");
-            items << new EmptyItem();
-            items << new TypeItem(wrappedType);
+
+            if (nap::rtti::hasFlag(childprop, nap::rtti::EPropertyMetaData::Embedded)) {
+                items << new EmbeddedPointerItem(qName, mObject, path);
+                items << new EmptyItem();
+                items << new TypeItem(wrappedType);
+            } else {
+                items << new PointerItem(qName, mObject, path);
+                items << new PointerValueItem(mObject, path);
+                items << new TypeItem(wrappedType);
+            }
         } else if (nap::rtti::isPrimitive(wrappedType)) {
             items << new PropertyItem(qName, mObject, path);
             items << new PropertyValueItem(qName, mObject, path);
@@ -231,4 +245,91 @@ void CompoundPropertyItem::populateChildren() {
 
         appendRow(items);
     }
+}
+
+void EmbeddedPointerItem::populateChildren() {
+    // First resolve the pointee, after that behave like compound
+    nap::rtti::ResolvedRTTIPath resolvedPath;
+    assert(mPath.resolve(mObject, resolvedPath));
+    auto value = resolvedPath.getValue();
+
+    auto value_type = value.get_type();
+    auto wrapped_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
+    bool is_wrapper = wrapped_type != value_type;
+    nap::rtti::RTTIObject* pointee = is_wrapper
+                                     ? value.extract_wrapped_value().get_value<nap::rtti::RTTIObject*>()
+                                     : value.get_value<nap::rtti::RTTIObject*>();
+    if (nullptr == pointee) {
+        assert(false); // Embedded pointer always has a target?
+        return;
+    }
+
+    // COMPOUND
+    auto object = pointee;
+    nap::Logger::info("Embedded pointer object: %s (%s)", object->mID.c_str(), object->get_type().get_name().data());
+
+    for (auto childprop : object->get_type().get_properties()) {
+        nap::Logger::info("\tprop: %s", childprop.get_name().data());
+        auto childValue = childprop.get_value(object);
+        std::string name = childprop.get_name().data();
+        QString qName = QString::fromStdString(name);
+
+        nap::rtti::RTTIPath path;
+        path.pushAttribute(name);
+
+        auto wrappedType = childValue.get_type().is_wrapper() ?
+                           childValue.get_type().get_wrapped_type() : childValue.get_type();
+
+        QList<QStandardItem*> items;
+        if (wrappedType.is_array()) {
+            items << new ArrayPropertyItem(qName, object, path, childprop, childValue.create_array_view());
+            items << new EmptyItem();
+            items << new TypeItem(wrappedType);
+        } else if (wrappedType.is_associative_container()) {
+            assert(false);
+        } else if (wrappedType.is_pointer()) {
+
+            if (nap::rtti::hasFlag(childprop, nap::rtti::EPropertyMetaData::Embedded)) {
+                items << new EmbeddedPointerItem(qName, object, path);
+                items << new EmptyItem();
+                items << new TypeItem(wrappedType);
+            } else {
+                items << new PointerItem(qName, object, path);
+                items << new PointerValueItem(object, path);
+                items << new TypeItem(wrappedType);
+            }
+        } else if (nap::rtti::isPrimitive(wrappedType)) {
+            items << new PropertyItem(qName, object, path);
+            items << new PropertyValueItem(qName, object, path);
+            items << new TypeItem(wrappedType);
+        } else {
+            items << new CompoundPropertyItem(qName, object, path);
+            items << new EmptyItem();
+            items << new TypeItem(childprop.get_type());
+        }
+        appendRow(items);
+//        appendRow(createItemRow(wrappedType, qName, object, path, childprop, childValue));
+    }
+}
+
+
+QVariant PointerValueItem::data(int role) const {
+    if (role == Qt::DisplayRole || role == Qt::EditRole) {
+        nap::rtti::ResolvedRTTIPath resolvedPath;
+        assert(mPath.resolve(mObject, resolvedPath));
+        auto value = resolvedPath.getValue();
+
+        auto value_type = value.get_type();
+        auto wrapped_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
+        bool is_wrapper = wrapped_type != value_type;
+        nap::rtti::RTTIObject* pointee = is_wrapper
+                                         ? value.extract_wrapped_value().get_value<nap::rtti::RTTIObject*>()
+                                         : value.get_value<nap::rtti::RTTIObject*>();
+
+        if (nullptr != pointee) {
+            return QString::fromStdString(pointee->mID);
+        }
+        return "NULL";
+    }
+    return QStandardItem::data(role);
 }
