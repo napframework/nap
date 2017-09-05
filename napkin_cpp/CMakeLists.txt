@@ -11,6 +11,14 @@ if (MSVC)
     set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QT_DIR})
 endif()
 
+if (APPLE)
+    find_path(QT_DIR lib/cmake/Qt5/Qt5Config.cmake
+            HINTS
+            ~/Qt/5.8/clang_64
+            )
+    set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QT_DIR})
+endif()
+
 
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
