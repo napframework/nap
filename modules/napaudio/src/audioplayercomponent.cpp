@@ -24,6 +24,9 @@ namespace nap {
     
     namespace audio {
         
+        /**
+         * Initializes the audio node system to play back an audio buffer, either mono or stereo
+         */
         bool AudioPlayerComponentInstance::init(const ObjectPtr<Component>& resourcePtr, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
         {
             AudioPlayerComponent* resource = rtti_cast<AudioPlayerComponent>(resourcePtr.get());
@@ -31,44 +34,61 @@ namespace nap {
             // Mono mode
             if (resource->mAudioFile->getBuffer().getChannelCount() == 1)
             {
+                // one player for the mono buffer
                 mPlayers.emplace_back(std::make_unique<BufferPlayer>(resource->mAudioInterface->getNodeManager()));
-                for (auto i = 0; i < 2; ++i)
-                {
-                    mGains.emplace_back(std::make_unique<Gain>(resource->mAudioInterface->getNodeManager()));
-                    mOutputs.emplace_back(std::make_unique<AudioOutputNode>(resource->mAudioInterface->getNodeManager()));
-                    mGains[i]->audioInput.connect(mPlayers[0]->audioOutput);
-                    mGains[i]->setGain(resource->mGain);
-                    mOutputs[i]->setOutputChannel(i);
-                }
-                mPanner = std::make_unique<StereoPanner>(resource->mAudioInterface->getNodeManager());
-                mPanner->leftInput.connect(mPlayers[0]->audioOutput);
-                mPanner->rightInput.connect(mPlayers[0]->audioOutput);
-                mOutputs[0]->audioInput.connect(mPanner->leftOutput);
-                mOutputs[1]->audioInput.connect(mPanner->rightOutput);
-                mPanner->setPanning(resource->mPanning);
                 mPlayers[0]->play(resource->mAudioFile->getBuffer()[0], 0, resource->mAudioFile->getSampleRate() / resource->mAudioInterface->mSampleRate);
                 
+                // one gain
+                mGains.emplace_back(std::make_unique<Gain>(resource->mAudioInterface->getNodeManager()));
+                mGains[0]->setGain(resource->mGain);
+                mGains[0]->audioInput.connect(mPlayers[0]->audioOutput);
+                
+                // the stereo panner to pan the mono source to a stereo signal
+                mPanner = std::make_unique<StereoPanner>(resource->mAudioInterface->getNodeManager());
+                mPanner->setPanning(resource->mPanning);
+                mPanner->leftInput.connect(mGains[0]->audioOutput);
+                mPanner->rightInput.connect(mGains[0]->audioOutput);
+                
+                // two outputs (stereo output)
+                for (auto i = 0; i < 2; ++i)
+                {
+                    mOutputs.emplace_back(std::make_unique<AudioOutputNode>(resource->mAudioInterface->getNodeManager()));
+                    mOutputs[i]->setOutputChannel(i);
+                }
+                mOutputs[0]->audioInput.connect(mPanner->leftOutput);
+                mOutputs[1]->audioInput.connect(mPanner->rightOutput);
             }
             
             // Stereo mode
-            if (resource->mAudioFile->getChannelCount() > 1)
+            else if (resource->mAudioFile->getChannelCount() > 1)
             {
                 for (auto i = 0; i < 2; ++i)
                 {
+                    // two players for stereo playback
                     mPlayers.emplace_back(std::make_unique<BufferPlayer>(resource->mAudioInterface->getNodeManager()));
-                    mGains.emplace_back(std::make_unique<Gain>(resource->mAudioInterface->getNodeManager()));
-                    mOutputs.emplace_back(std::make_unique<AudioOutputNode>(resource->mAudioInterface->getNodeManager()));
-                    mGains[i]->audioInput.connect(mPlayers[i]->audioOutput);
-                    mGains[i]->setGain(resource->mGain);
-                    mOutputs[i]->setOutputChannel(i);
                     mPlayers[i]->play(resource->mAudioFile->getBuffer()[i], 0, resource->mAudioFile->getSampleRate() / resource->mAudioInterface->mSampleRate);
+                    
+                    // two gains to scale both channels
+                    mGains.emplace_back(std::make_unique<Gain>(resource->mAudioInterface->getNodeManager()));
+                    mGains[i]->setGain(resource->mGain);
+                    mGains[i]->audioInput.connect(mPlayers[i]->audioOutput);
+                    
                 }
+                
+                // the stereo panner
                 mPanner = std::make_unique<StereoPanner>(resource->mAudioInterface->getNodeManager());
+                mPanner->setPanning(resource->mPanning);
                 mPanner->leftInput.connect(mPlayers[0]->audioOutput);
                 mPanner->rightInput.connect(mPlayers[1]->audioOutput);
+                
+                // two outputs for stereo output
+                for (auto i = 0; i < 2; ++i)
+                {
+                    mOutputs.emplace_back(std::make_unique<AudioOutputNode>(resource->mAudioInterface->getNodeManager()));
+                    mOutputs[i]->setOutputChannel(i);
+                }
                 mOutputs[0]->audioInput.connect(mPanner->leftOutput);
                 mOutputs[1]->audioInput.connect(mPanner->rightOutput);
-                mPanner->setPanning(resource->mPanning);
             }
             
             return true;

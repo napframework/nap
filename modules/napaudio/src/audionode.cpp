@@ -133,7 +133,7 @@ namespace nap {
         {
             SampleBufferPtr buffer = audioInput.pull();
             if (buffer)
-                mAudioNodeManager->addOutputBuffer(buffer, mOutputChannel);
+                mAudioNodeManager->provideOutputBufferForChannel(buffer, mOutputChannel);
         }
         
         

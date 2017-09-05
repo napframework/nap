@@ -23,6 +23,10 @@ namespace nap {
     
     namespace audio {
         
+        
+        /*
+         * The audio callback will be called by portaudio to process a buffer of audio input/output
+         */
         static int audioCallback( const void *inputBuffer, void *outputBuffer,
                                  unsigned long framesPerBuffer,
                                  const PaStreamCallbackTimeInfo* timeInfo,
@@ -40,6 +44,10 @@ namespace nap {
         }
         
         
+        /*
+         * The destructor stops the audio stream if it is active an terminates portaudio if it is initialized.
+         * In portaudio every succesful Pa_Initialize() call has to be paired with a Pa_Terminate() call.
+         */
         AudioInterface::~AudioInterface()
         {
             stop();
@@ -53,6 +61,9 @@ namespace nap {
         }
         
         
+        /*
+         * Initializes portaudio and starts the audio stream
+         */
         bool AudioInterface::init(utility::ErrorState& errorState)
         {
             auto error = Pa_Initialize();
@@ -144,7 +155,7 @@ namespace nap {
             return true;
         }
         
-        
+                
         void AudioInterface::stop()
         {
             if (isActive())

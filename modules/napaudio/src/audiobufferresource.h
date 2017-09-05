@@ -19,7 +19,12 @@ namespace nap {
             AudioBufferResource() = default;
             
             /**
-             * @return: sample rate at which the audio material in the buffer was sampled
+             * Sets the sample rate at which the audio material in the buffer was sampled.
+             */
+            void setSampleRate(float sampleRate) { mSampleRate = sampleRate; }
+            
+            /**
+             * @return: sample rate at which the audio material in the buffer was sampled.
              */
             float getSampleRate() const { return mSampleRate; }
             

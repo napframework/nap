@@ -114,11 +114,11 @@ namespace nap {
         private:
             /*
              * Used by @AudioOutputNode to provide new output for the node system
-             * Note: multiple outputs can be mixed on the same channel.
+             * Note: multiple output buffers can be provided for the same channel by different output nodes.
              * @param buffer: a buffer of output
              * @param channel: the channel that the output will be played on
              */
-            void addOutputBuffer(SampleBufferPtr buffer, int channel);
+            void provideOutputBufferForChannel(SampleBufferPtr buffer, int channel);
             
             /*
              * Used by @AudioInputNode to request audio input for the current buffer

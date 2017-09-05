@@ -79,7 +79,7 @@ namespace nap {
         }
         
         
-        void AudioNodeManager::addOutputBuffer(SampleBufferPtr buffer, int channel)
+        void AudioNodeManager::provideOutputBufferForChannel(SampleBufferPtr buffer, int channel)
         {
             assert(channel < mOutputMapping.size());
             mOutputMapping[channel].emplace_back(buffer);

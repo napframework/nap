@@ -19,8 +19,10 @@ namespace nap {
         // Forward declarations
         class AudioPlayerComponentInstance;
         
+        // TODO in the future this component will be split into a AudioPlayerComponent, AudioPannerComponent and AudioOutputComponent that will point to one another using ComponentPtr.
+        
         /**
-         * A component that plays back a mono or stereo audio file on first 2 channels (stereo) of the system.
+         * A component that plays back a mono or stereo audio buffer on first 2 channels (stereo) of the system.
          */
         class NAPAPI AudioPlayerComponent : public nap::Component {
             RTTI_ENABLE(nap::Component)
@@ -58,6 +60,9 @@ namespace nap {
         };
         
         
+        /**
+         * The instance creates the node system to do the actual playback
+         */
         class NAPAPI AudioPlayerComponentInstance : public nap::ComponentInstance {          
             RTTI_ENABLE(nap::ComponentInstance)
             
@@ -68,8 +73,13 @@ namespace nap {
             bool init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
             
         private:
+            // The playback nodes, one for mono two for stereo buffers
             std::vector<std::unique_ptr<BufferPlayer>> mPlayers;
+            
+            // Nodes to do the scaling for gaining, one in case of mono, two in case of stereo
             std::vector<std::unique_ptr<Gain>> mGains;
+            
+            // Stereo panner
             std::unique_ptr<StereoPanner> mPanner = nullptr;
             std::vector<std::unique_ptr<AudioOutputNode>> mOutputs;
         };
