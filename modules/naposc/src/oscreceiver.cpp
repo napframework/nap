@@ -2,6 +2,7 @@
 #include "oscreceiver.h"
 #include "oscpacketlistener.h"
 #include "oscreceivingsocket.h"
+#include "oscservice.h"
 
 // External 
 #include <ip/UdpSocket.h>
@@ -30,6 +31,9 @@ namespace nap
 			mSocket->asynchronousBreak();
 			mEventThread.join();
 		}
+
+		// Remove from service
+		mService->removeReceiver(*this);
 	}
 
 
@@ -38,6 +42,9 @@ namespace nap
 	 */
 	bool OSCReceiver::init(utility::ErrorState& errorState)
 	{
+		// Register the receiver
+		mService->registerReceiver(*this);
+
 		// Create the socket
 		mSocket = std::make_unique<OSCReceivingSocket>(IpEndpointName(IpEndpointName::ANY_ADDRESS, mPort));
 
@@ -50,6 +57,12 @@ namespace nap
 		return true;
 	}
 	
+
+	void OSCReceiver::consumeEvents()
+	{
+		mListener->consumeEvents(mEvents);
+	}
+
 
 	/**
 	 * This thread creates OSC connection and listener

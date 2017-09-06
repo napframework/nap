@@ -5,10 +5,12 @@
 #include <rtti/factory.h>
 #include <utility/dllexport.h>
 #include <thread>
+#include <queue>
 
 // Local Includes
 #include "oscpacketlistener.h"
 #include "oscreceivingsocket.h"
+#include "oscevent.h"
 
 // Forward Declares
 namespace nap
@@ -24,6 +26,7 @@ namespace nap
 	 */
 	class NAPAPI OSCReceiver : public rtti::RTTIObject
 	{
+		friend class OSCService;
 		RTTI_ENABLE(rtti::RTTIObject)
 	public:
 		// Default constructor
@@ -44,6 +47,9 @@ namespace nap
 		// Property: the port to listen to for messages
 		int mPort = 7000;
 
+		// The listener used for handling messages
+		std::unique_ptr<OSCPacketListener>  mListener = nullptr;
+
 	private:
 		// OSC service that manages all the osc receivers / senders
 		OSCService* mService = nullptr;
@@ -57,8 +63,29 @@ namespace nap
 		// The socket used for receiving messages
 		std::unique_ptr<OSCReceivingSocket> mSocket = nullptr;
 
-		// The listener used for handling messages
-		std::unique_ptr<OSCPacketListener>  mListener = nullptr;
+		/**
+		* Consumes all received OSC events from the listener
+		* The result will be stored internally and can be processed by the service
+		*/
+		void consumeEvents();
+
+		/**
+		 *	@return the current event in front of the queue
+		 */
+		const OSCEvent& getFrontEvent() const		{ return *(mEvents.front()); }
+
+		/**
+		 *	Pops an event from the queue
+		 */
+		void popEvent()								{ mEvents.pop(); }
+
+		/**
+		 *	@return if there are any more events in the queue
+		 */
+		bool hasEvents() const						{ return !(mEvents.empty()); }
+
+		// Queue that holds all the consumed events
+		std::queue<OSCEventPtr> mEvents;
 	};
 
 	// Object creator used for constructing the the OSC receiver

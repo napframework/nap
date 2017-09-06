@@ -27,6 +27,8 @@ namespace nap
 		// The osc event address
 		std::string mAddress;
 
+		std::vector<std::unique_ptr<OSCArgument>>& getArguments() { return mArguments; }
+
 		/**
 		 * Adds an OSCArgument to this event
 		 * @args the template arguments used for constructing the argument
@@ -72,3 +74,5 @@ namespace nap
 		return addArgument<nap::OSCValue<T>>(std::forward<Args>(args)...);
 	}
 }
+
+using OSCEventPtr = std::unique_ptr<nap::OSCEvent>;

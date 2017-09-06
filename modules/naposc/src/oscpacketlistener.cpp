@@ -11,7 +11,7 @@ namespace nap
 	void OSCPacketListener::ProcessMessage(const osc::ReceivedMessage& m, const IpEndpointName& remoteEndpoint)
 	{
 		// Make our event
-		std::unique_ptr<OSCEvent> event = std::make_unique<OSCEvent>(m.AddressPattern());
+		OSCEventPtr event = std::make_unique<OSCEvent>(m.AddressPattern());
 
 		// Process argument stream
 		osc::ReceivedMessage::const_iterator arg = m.ArgumentsBegin();
@@ -87,8 +87,27 @@ namespace nap
 			nap::Logger::info("unknown argument in OSC message: %s", event->mAddress.c_str());
 			arg++;
 		}
-
-		std::cout << "message received" << event->mAddress.c_str() << "\n";
+		addEvent(std::move(event));
 	}
+
+
+	void OSCPacketListener::addEvent(OSCEventPtr event)
+	{
+		std::lock_guard<std::mutex> lock(mEventMutex);
+		mReceivedEvents.emplace(std::move(event));
+	}
+
+
+	void OSCPacketListener::consumeEvents(std::queue<OSCEventPtr>& outEvents)
+	{
+		std::lock_guard<std::mutex> lock(mEventMutex);
+
+		// Swap events
+		outEvents.swap(mReceivedEvents);
+
+		// Clear current queue
+		mReceivedEvents.swap(std::queue<OSCEventPtr>());
+	}
+
 }
 
