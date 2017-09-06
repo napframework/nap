@@ -1,12 +1,16 @@
 #pragma once
+// Local Includes
+#include "oscevent.h"
 
 // External Includes
 #include <nap/service.h>
 #include <nap/entity.h>
+#include <nap/timer.h>
 
 namespace nap
 {
 	class OSCReceiver;
+	class OSCInputComponentInstance;
 
 	/**
 	 * Main interface for OSC messages in NAP
@@ -14,6 +18,7 @@ namespace nap
 	class NAPAPI OSCService : public Service
 	{
 		friend class OSCReceiver;
+		friend class OSCInputComponentInstance;
 		RTTI_ENABLE(Service)
 	public:
 		// Default Constructor
@@ -27,14 +32,8 @@ namespace nap
 
 		/**
 		 * Processes all OSC received events
-		 * @param entities: the entities to forward the messages to
 		 */
-		void processEvents(const EntityList& entities);
-
-		/**
-		 *	Processes all OSC received events for all active entities, starting with the root
-		 */
-		void processEvents();
+		void update();
 
 	protected:
 		/**
@@ -55,14 +54,25 @@ namespace nap
 		void removeReceiver(OSCReceiver& receiver);
 
 		/**
-		 *	Forwards all events to osc input components
+		 *	Register an OSC input component with the service
 		 */
-		void forwardEvents(OSCReceiver& receiver, const EntityList& entities);
+		void registerInputComponent(OSCInputComponentInstance& input);
+
+		/**
+		 *	Remove an osc input component from the service
+		 */
+		void removeInputComponent(OSCInputComponentInstance& input);
+
+		/**
+		 * Recursively collects all input components currently available in the system
+		 * @param entity the entity to start iterating from
+		 */
+		void collectInputComponents(const EntityInstance& entity, std::vector<OSCInputComponentInstance*>& components);
 
 		// All the osc receivers currently registered in the system
 		std::vector<OSCReceiver*> mReceivers;
 
-		// Root entity
-		nap::EntityInstance* mRootEntity = nullptr;
+		// All the osc components currently available to the system
+		std::vector<OSCInputComponentInstance*> mInputs;
 	};
 }

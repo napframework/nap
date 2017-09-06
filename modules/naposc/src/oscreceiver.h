@@ -70,9 +70,9 @@ namespace nap
 		void consumeEvents();
 
 		/**
-		 *	@return the current event in front of the queue
+		 *	@return the event in front of the queue
 		 */
-		const OSCEvent& getFrontEvent() const		{ return *(mEvents.front()); }
+		const OSCEvent& currentEvent() const		{ return *(mEvents.front()); }
 
 		/**
 		 *	Pops an event from the queue

@@ -30,6 +30,7 @@ namespace nap
 		{
 			mSocket->asynchronousBreak();
 			mEventThread.join();
+			nap::Logger::info("Stopped listening for OSC messages on port: %d", mPort);
 		}
 
 		// Remove from service
@@ -51,6 +52,7 @@ namespace nap
 		// Create and set the listener
 		mListener = std::make_unique<OSCPacketListener>();
 		mSocket->setListener(mListener.get());
+		nap::Logger::info("Started listening for OCS messages on port: %d", mPort);
 
 		// Create the thread and start listening for events
 		mEventThread = std::thread(std::bind(&OSCReceiver::eventThread, this, mPort));

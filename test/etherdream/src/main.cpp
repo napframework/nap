@@ -70,6 +70,9 @@ void onUpdate()
 	// Process events for all windows
 	renderService->processEvents();
 
+	// Process all events for osc
+	oscService->update();
+
 	// Update all resources
 	resourceManagerService->update();
 

@@ -12,6 +12,7 @@
 // Local Includes
 #include "oscservice.h"
 #include "oscreceiver.h"
+#include "oscinputcomponent.h"
 
 RTTI_DEFINE(nap::OSCService)
 
@@ -25,37 +26,55 @@ namespace nap
 	{
 		ResourceManagerService* resource_manager = getCore().getService<ResourceManagerService>();
 		assert(resource_manager != nullptr);
-		mRootEntity = &(resource_manager->getRootEntity());
 		return true;
 	}
 
 
-	void OSCService::processEvents(const EntityList& entities)
+	void OSCService::update()
 	{
+		// Forward every event to every input component of interest
 		for (auto& receiver : mReceivers)
 		{
-			// Consume all received events
 			receiver->consumeEvents();
 
-			// Forward events to rest of system
-			forwardEvents(*receiver, entities);
+			// Keep forwarding events until the queue runs out
+			while (receiver->hasEvents())
+			{
+				const OSCEvent& osc_event = receiver->currentEvent();
+				for (const auto& input_comp : mInputs)
+				{
+					// Empty (no specified address) always receives the message
+					if (input_comp->mAddresses.empty())
+					{
+						input_comp->trigger(osc_event);
+						continue;
+					}
+
+					// Try to match the address
+					for (const auto& address : input_comp->mAddresses)
+					{
+						if (address == osc_event.mAddress)
+						{
+							input_comp->trigger(osc_event);
+							break;
+						}
+					}
+				}
+				receiver->popEvent();
+			}
 		}
 	}
 
 
-	void OSCService::processEvents()
+	void OSCService::collectInputComponents(const EntityInstance& entity, std::vector<OSCInputComponentInstance*>& components)
 	{
-		assert(mRootEntity != nullptr);
-		processEvents({ mRootEntity });
-	}
-
-
-	void OSCService::forwardEvents(OSCReceiver& receiver, const EntityList& entities)
-	{
-		while (receiver.hasEvents())
+		// Add all possible input components
+		entity.getComponentsOfType<OSCInputComponentInstance>(components);
+		
+		// Sample children
+		for (const auto& child_entity : entity.getChildren())
 		{
-			const OSCEvent& osc_event = receiver.getFrontEvent();
-			receiver.popEvent();
+			collectInputComponents(*child_entity, components);
 		}
 	}
 
@@ -81,4 +100,22 @@ namespace nap
 		assert(found_it != mReceivers.end());
 		mReceivers.erase(found_it);
 	}
+
+
+	void OSCService::registerInputComponent(OSCInputComponentInstance& input)
+	{
+		mInputs.emplace_back(&input);
+	}
+
+
+	void OSCService::removeInputComponent(OSCInputComponentInstance& input)
+	{
+		auto found_it = std::find_if(mInputs.begin(), mInputs.end(), [&](const auto& it)
+		{
+			return it == &input;
+		});
+		assert(found_it != mInputs.end());
+		mInputs.erase(found_it);
+	}
+
 }

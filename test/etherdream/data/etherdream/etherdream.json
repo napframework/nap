@@ -261,6 +261,13 @@
 			"Components" : 
 			[
 				{
+					"Type" : "nap::OSCInputComponent",
+					"Addresses" : 
+					[
+						"/1/multixy1/1"
+					]
+				},
+				{
 					"Type" : "nap::TransformComponent",
 					"Properties": 
 					{
