@@ -15,31 +15,28 @@ RTTI_BEGIN_CLASS(nap::FirstPersonController)
 RTTI_END_CLASS 
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::FirstPersonControllerInstance)
-	RTTI_CONSTRUCTOR(nap::EntityInstance&)
+	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
 namespace nap
 {
-	FirstPersonControllerInstance::FirstPersonControllerInstance(EntityInstance& entity) :
-			ComponentInstance(entity)
+	FirstPersonControllerInstance::FirstPersonControllerInstance(EntityInstance& entity, Component& resource) :
+			ComponentInstance(entity, resource)
 	{
 	}
 
 
-	bool FirstPersonControllerInstance::init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool FirstPersonControllerInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
 		// KeyInputComponent is required to receive input
-		KeyInputComponentInstance* key_component = getEntity()->findComponent<KeyInputComponentInstance>();
+		KeyInputComponentInstance* key_component = getEntityInstance()->findComponent<KeyInputComponentInstance>();
 		if (!errorState.check(key_component != nullptr, "Could not find KeyInputComponent"))
 			return false;
 
 		// TransformComponent is required to move the entity
-		mTransformComponent = getEntity()->findComponent<TransformComponentInstance>();
+		mTransformComponent = getEntityInstance()->findComponent<TransformComponentInstance>();
 		if (!errorState.check(mTransformComponent != nullptr, "Could not find transform component"))
 			return false;
-
-		mResource = rtti_cast<FirstPersonController>(resource.get());
-		assert(mResource != nullptr);
 
 		// Connect key handlers
 		key_component->pressed.connect(std::bind(&FirstPersonControllerInstance::onKeyPress, this, std::placeholders::_1));
@@ -51,8 +48,10 @@ namespace nap
 
 	void FirstPersonControllerInstance::update(double deltaTime)
 	{
-		float movement = mResource->mMovementSpeed * deltaTime;
-		float rotate = mResource->mRotateSpeed * deltaTime;
+		FirstPersonController* resource = getComponent<FirstPersonController>();
+
+		float movement = resource->mMovementSpeed * deltaTime;
+		float rotate = resource->mRotateSpeed * deltaTime;
 		float rotate_rad = rotate;
 
 		glm::vec3 side(1.0, 0.0, 0.0);

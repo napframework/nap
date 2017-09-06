@@ -27,24 +27,24 @@ RTTI_BEGIN_CLASS(nap::FractionLayoutComponent)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::FractionLayoutComponentInstance)
-	RTTI_CONSTRUCTOR(nap::EntityInstance&)
+	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
 namespace nap
 {
-	bool FractionLayoutComponentInstance::init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool FractionLayoutComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
-		mProperties = rtti_cast<FractionLayoutComponent>(resource.get())->mProperties;
+		mProperties = getComponent<FractionLayoutComponent>()->mProperties;
 
 		// Must have a TransformComponent
-		mTransformComponent = getEntity()->findComponent<TransformComponentInstance>();
+		mTransformComponent = getEntityInstance()->findComponent<TransformComponentInstance>();
 		if (!errorState.check(mTransformComponent != nullptr, "Missing transform component"))
 			return false;
 
 		// If the size of this element is dependent on the aspect ratio of the image, we also need a RenderableMeshComponent
 		if (mProperties.mSizeBehaviour != FractionLayoutProperties::ESizeBehaviour::Default)
 		{
-			mRenderableMeshComponent = getEntity()->findComponent<RenderableMeshComponentInstance>();
+			mRenderableMeshComponent = getEntityInstance()->findComponent<RenderableMeshComponentInstance>();
 			if (!errorState.check(mRenderableMeshComponent != nullptr, "FractionLayoutComponent requires a RenderableMeshComponent if the size behaviour is not Default"))
 				return false;
 		}
@@ -61,7 +61,7 @@ namespace nap
 		glm::vec2 world_parent_size(world_transform[0][0], world_transform[1][1]);
 
 		// Loop over child entities to find both RenderableMeshComponents en LayoutComponents
-		for (EntityInstance* child_entity : getEntity()->getChildren())
+		for (EntityInstance* child_entity : getEntityInstance()->getChildren())
 		{
 			// Set the clip rectangle for RenderableMeshComponents to this layout's size
 			RenderableMeshComponentInstance* child_renderable_mesh = child_entity->findComponent<RenderableMeshComponentInstance>();

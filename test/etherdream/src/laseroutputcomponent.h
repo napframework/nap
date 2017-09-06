@@ -53,11 +53,13 @@ namespace nap
 		RTTI_ENABLE(ComponentInstance)
 	public:
 		// Constructor
-		LaserOutputComponentInstance(EntityInstance& entity) : ComponentInstance(entity)
-		{ }
+		LaserOutputComponentInstance(EntityInstance& entity, Component& resource) : 
+			ComponentInstance(entity, resource)
+		{
+		}
 
 		// Init
-		virtual bool init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
 		/**
 		 *	Set the line to upload to the laser

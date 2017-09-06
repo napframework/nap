@@ -18,6 +18,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Test)
 add_dependencies(${PROJECT_NAME} fbxconverter)
 
 target_link_libraries(${PROJECT_NAME} mod_napetherdream mod_napinput mod_napsdlinput mod_napsdlwindow mod_naposc)
+add_dependencies(${PROJECT_NAME} fbxconverter)
 
 if (WIN32)
 	find_package(etherdream REQUIRED)

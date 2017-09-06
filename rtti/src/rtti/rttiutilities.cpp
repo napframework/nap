@@ -126,9 +126,14 @@ namespace nap
 					return;
 
 				Variant actual_value = value.get_type().is_wrapper() ? value.extract_wrapped_value() : value;
-
 				assert(actual_value.get_type().is_derived_from<rtti::RTTIObject>());
-				mObjectLinks.push_back({ &mSourceObject, path, actual_value.convert<rtti::RTTIObject*>() });
+
+				// rttr::Variant::convert<T> fails and returns garbage if the current value of the pointer is a nullptr.
+				// The non-templated convert function instead returns a bool to indicate succss/failure, so we use that one here
+				RTTIObject* target = nullptr;
+				actual_value.convert(target);
+
+				mObjectLinks.push_back({ &mSourceObject, path, target });
 			}
 
 		private:

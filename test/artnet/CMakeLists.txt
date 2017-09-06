@@ -17,6 +17,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Test)
 
 target_link_libraries(${PROJECT_NAME} mod_napartnet mod_napinput mod_napsdlinput mod_napsdlwindow mod_naprender)
+add_dependencies(${PROJECT_NAME} fbxconverter)
 
 if (WIN32)
 	find_package(artnet REQUIRED)
