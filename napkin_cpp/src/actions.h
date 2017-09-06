@@ -8,7 +8,7 @@
 class OpenFileAction : public QAction {
 
 public:
-    OpenFileAction(QObject* parent);
+    OpenFileAction();
 
 private:
     void perform();
@@ -18,7 +18,7 @@ private:
 
 class SaveFileAction : public QAction {
 public:
-    SaveFileAction(QObject* parent);
+    SaveFileAction();
 
 private:
     void perform();
@@ -27,9 +27,14 @@ private:
 
 class SaveFileAsAction : public QAction {
 public:
-    SaveFileAsAction(QObject* parent);
+    SaveFileAsAction();
 
 private:
     void perform();
 
 };
+
+//class DeleteAction : public QAction {
+//public:
+//    DeleteAction(QObject)
+//};

@@ -3,7 +3,7 @@
 #include <QApplication>
 
 
-OpenFileAction::OpenFileAction(QObject* parent) : QAction("Open...", parent) {
+OpenFileAction::OpenFileAction() : QAction("Open...") {
     setShortcut(QKeySequence::Open);
     connect(this, &QAction::triggered, this, &OpenFileAction::perform);
 }
@@ -20,20 +20,20 @@ void OpenFileAction::perform() {
     AppContext::get().loadFile(filename);
 }
 
-SaveFileAction::SaveFileAction(QObject* parent) : QAction("Save", parent) {
+SaveFileAction::SaveFileAction() : QAction("Save") {
     setShortcut(QKeySequence::Save);
     connect(this, &QAction::triggered, this, &SaveFileAction::perform);
 }
 
 void SaveFileAction::perform() {
     if (AppContext::get().currentFilename().isNull()) {
-        SaveFileAsAction(parent()).trigger();
+        SaveFileAsAction().trigger();
         return;
     }
     AppContext::get().saveFile();
 }
 
-SaveFileAsAction::SaveFileAsAction(QObject* parent) : QAction("Save as...", parent) {
+SaveFileAsAction::SaveFileAsAction() : QAction("Save as...") {
     setShortcut(QKeySequence::SaveAs);
     connect(this, &QAction::triggered, this, &SaveFileAsAction::perform);
 }
