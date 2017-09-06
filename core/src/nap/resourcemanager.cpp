@@ -5,6 +5,7 @@
 #include "nap/core.h"
 #include "objectgraph.h"
 #include "entityptr.h"
+#include "componentptr.h"
 #include "fileutils.h"
 #include "logger.h"
 
