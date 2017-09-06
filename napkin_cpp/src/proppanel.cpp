@@ -113,7 +113,7 @@ void ArrayPropertyItem::populateChildren()
 
     for (int i = 0; i < array.get_size(); i++) {
 
-        auto name = QString(i);
+        auto name = QString("%1").arg(i);
 
         nap::rtti::RTTIPath path = mPath;
         path.pushArrayElement(i);
