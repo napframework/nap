@@ -9,22 +9,24 @@ namespace nap
 {
     class Core;
 	class Component;
-	class EntityInstance;
 	class Entity;
+	class EntityInstance;	
 
 	/**
 	 * Structure used to hold data necessary to create new instances during init
 	 */
 	struct EntityCreationParameters
 	{
-		using EntityByIDMap   = std::unordered_map<std::string, std::unique_ptr<EntityInstance>>;
-		using InstanceByIDMap = std::unordered_map<std::string, rtti::RTTIObject*>;
+		using EntityByIDMap			= std::unordered_map<std::string, std::unique_ptr<EntityInstance>>;
+		using InstanceByIDMap		= std::unordered_map<std::string, rtti::RTTIObject*>;
+		using ComponentToEntityMap	= std::unordered_map<Component*, const Entity*>;
 
 		virtual ~EntityCreationParameters() = default;
 		EntityCreationParameters() = default;
 
-		EntityByIDMap mEntitiesByID;
-		InstanceByIDMap mAllInstancesByID;
+		EntityByIDMap			mEntitiesByID;
+		InstanceByIDMap			mAllInstancesByID;
+		ComponentToEntityMap	mComponentToEntity;
 	};
 
 	/**

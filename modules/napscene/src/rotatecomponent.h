@@ -37,7 +37,7 @@ namespace nap
 		/**
 		* Uses transform to rotate itself in the world.
 		*/
-		void getDependentComponents(std::vector<rtti::TypeInfo>& components) override
+		void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override
 		{
 			components.push_back(RTTI_OF(TransformComponent));
 		}
@@ -60,7 +60,7 @@ namespace nap
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
-		RotateComponentInstance(EntityInstance& entity) : ComponentInstance(entity)		{ }
+		RotateComponentInstance(EntityInstance& entity, Component& resource) : ComponentInstance(entity, resource)		{ }
 
 		/**
 		 * Initialize this rotate component, copies it's members over and validates
@@ -69,7 +69,7 @@ namespace nap
 		 * @param used for creating new entity instances
 		 * @param errorState the error object
 		 */
-		virtual bool init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
 		/**
 		 * Rotates the component every tick based on the speed and exis

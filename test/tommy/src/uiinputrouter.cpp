@@ -10,7 +10,7 @@ RTTI_BEGIN_CLASS(nap::UIInputRouterComponent)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UIInputRouterComponentInstance)
-	RTTI_CONSTRUCTOR(nap::EntityInstance&)
+	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
 
@@ -49,7 +49,7 @@ namespace nap
 		for (InputComponentInstance* input_component : input_components)
 		{
 			// Get the world transform. Since we're using an ortographic camera, the world transform is in pixel space.
-			TransformComponentInstance& transform_component = input_component->getEntity()->getComponent<TransformComponentInstance>();
+			TransformComponentInstance& transform_component = input_component->getEntityInstance()->getComponent<TransformComponentInstance>();
 			const glm::mat4& world_transform = transform_component.getGlobalTransform();
 			
 			// Get the size and position of this element.
@@ -68,12 +68,12 @@ namespace nap
 	}
 
 
-	bool UIInputRouterComponentInstance::init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool UIInputRouterComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
-		UIInputRouterComponent* component_resource = static_cast<UIInputRouterComponent*>(resource.get());
+		UIInputRouterComponent* component_resource = getComponent<UIInputRouterComponent>();
 
 		CameraComponentInstance* camera_component = component_resource->mCameraEntity->findComponent<CameraComponentInstance>(ETypeCheck::IS_DERIVED_FROM);
-		if (!errorState.check(camera_component != nullptr, "UIInputRouter %s expects Camera entity %s to have a camera component", resource->mID.c_str(), component_resource->mCameraEntity.getResource()->mID.c_str()))
+		if (!errorState.check(camera_component != nullptr, "UIInputRouter %s expects Camera entity %s to have a camera component", component_resource->mID.c_str(), component_resource->mCameraEntity.getResource()->mID.c_str()))
 			return false;
 
 		if (!mInputRouter.init(*camera_component, errorState))

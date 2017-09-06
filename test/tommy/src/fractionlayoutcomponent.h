@@ -63,7 +63,7 @@ namespace nap
 		/**
 		 * Get the types of components on which this component depends
 		 */
-		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components)
+		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override
 		{
 			components.push_back(RTTI_OF(TransformComponent));
 		}
@@ -82,15 +82,15 @@ namespace nap
 		RTTI_ENABLE(ComponentInstance)
 
 	public:
-		FractionLayoutComponentInstance(EntityInstance& entity) :
-			ComponentInstance(entity)
+		FractionLayoutComponentInstance(EntityInstance& entity, Component& resource) :
+			ComponentInstance(entity, resource)
 		{
 		}
 
 		/**
 		 * Init this object after deserialization
 		 */
-		bool init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
+		bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
 
 		/** 
 		 * Update the layout for this entity
@@ -101,7 +101,7 @@ namespace nap
 		void updateLayout(const glm::vec2& windowSize, const glm::mat4x4& parentWorldTransform);
 
 	private:
-		FractionLayoutProperties	mProperties;
+		FractionLayoutProperties			mProperties;
 		TransformComponentInstance*			mTransformComponent = nullptr;
 		RenderableMeshComponentInstance*	mRenderableMeshComponent = nullptr;
 	};

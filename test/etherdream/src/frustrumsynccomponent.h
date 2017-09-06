@@ -27,7 +27,7 @@ namespace nap
 		/**
 		* Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
 		*/
-		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) override;
+		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 	};
 
 
@@ -36,10 +36,10 @@ namespace nap
 		RTTI_ENABLE(ComponentInstance)
 	public:
 		// Constructor
-		FrustrumSyncComponentInstance(EntityInstance& entity) : ComponentInstance(entity)	{ }
+		FrustrumSyncComponentInstance(EntityInstance& entity, Component& resource) : ComponentInstance(entity, resource)	{ }
 
 		// Init
-		virtual bool init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
 		// Update the size of the transform based on the laser frustrum
 		virtual void update(double deltaTime) override;

@@ -31,7 +31,7 @@ namespace nap
 		/**
 		 * Camera is dependent on the transform component for calculating the view matrix.
 		 */
-		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) { components.push_back(RTTI_OF(TransformComponent)); }
+		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override { components.push_back(RTTI_OF(TransformComponent)); }
 
 		/**
 		 * Returns instance type to create for this ComponentResource.
@@ -51,12 +51,12 @@ namespace nap
 		RTTI_ENABLE(CameraComponentInstance)
 	public:
 		// Default constructor
-		PerspCameraComponentInstance(EntityInstance& entity);
+		PerspCameraComponentInstance(EntityInstance& entity, Component& resource);
 
 		/**
 		 * Checks whether a transform component is available.
 		 */
-		virtual bool init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
 		/**
 		 * This implementation extracts the size in pixels of the render target to make sure that the orthographic
