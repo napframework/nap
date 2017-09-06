@@ -13,36 +13,39 @@ namespace nap {
     
         
         // Forward declarations
-        class AudioNodeManager;
-        class AudioNode;
-        class AudioOutput;
+        class NodeManager;
+        class Node;
+        class OutputPin;
         
         
         /**
          * An audio input is used by audio node to connect it to other nodes.
          * The input connects one channel (mono) audio.
          */
-        class NAPAPI AudioInput {
+        class NAPAPI InputPin
+        {
+            friend class OutputPin;
+            
         public:
-            AudioInput() = default;
+            InputPin() = default;
             
             /**
              * Destructor. If the input is connected on destruction the connection will be broken first.
              */
-            ~AudioInput();
+            ~InputPin();
             
             /**
              * This method can be used by the node to pull one sample buffer output from the connected audio output.
-             * @return If the AudioInput is not connected or somewhere down the graph silence is being output nullptr can be returned.
+             * @return If the InputPin is not connected or somewhere down the graph silence is being output nullptr can be returned.
              */
             SampleBufferPtr pull();
             
             /**
-             * Connects another node's @AudioOutput to this input.
+             * Connects another node's @OutputPin to this input.
              * If either this ipnut or the connected output is already connected it will be disconnected first.
-             * @param connection: The output that this @AudioInput will be connected to.
+             * @param connection: The output that this @InputPin will be connected to.
              */
-            void connect(AudioOutput& connection);
+            void connect(OutputPin& input);
             
             
             /**
@@ -53,14 +56,14 @@ namespace nap {
             /**
              * Checks wether the input is connected
              */
-            bool isConnected() const { return mConnection; }
+            bool isConnected() const { return mInput; }
             
         private:
             /*
              * The audio output connected to this input.
              * When it is a nullptr this input is not connected.
              */
-            AudioOutput* mConnection = nullptr;
+            OutputPin* mInput = nullptr;
         };
         
         
@@ -70,58 +73,48 @@ namespace nap {
          * It outputs a pointer to an owned @SampleBuffer.
          * The PullFunction of this class calls a calculate function on the node it belongs to.
          */
-        class NAPAPI AudioOutput {
-            friend class AudioNode;
-            friend class AudioInput;
+        class NAPAPI OutputPin
+        {
+            friend class Node;
+            friend class InputPin;
             
         public:
             /**
-             * Constructor takes node and a member function of the node that will be called to calculate the content of the next buffer.
              * @param parent: the owner node if this output
-             * @param calcFunctionPtr: a pointer to member function to a member function of the node that calculates this output's output samples
              */
-            template <typename U>
-            AudioOutput(U* parent, void(U::*calcFunctionPtr)(SampleBuffer&));
+            OutputPin(Node* node);
             
-            ~AudioOutput();            
+            ~OutputPin();            
             
             /**
-             * Disconnects the output from the connected input.
+             * Disconnects the output from all connected inputs.
              */
-            void disconnect();
+            void disconnectAll();
             
             /**
-             * Checks wether the output is connected
+             * Checks wether the output is connected to any inputs
              */
-            bool isConnected() const { return mConnection; }
+            bool isConnected() const { return !mOutputs.empty(); }
             
         protected:
             /**
-             * The buffer containing the latest output of the plug
+             * The buffer containing the latest output
              */
             SampleBuffer mBuffer;
                         
         private:
-            using CalculateFunction = std::function<void(SampleBuffer&)>;
-            
-            // Used by @AudioInput to poll this output for a new buffer of output samples
+            // Used by @InputPin to poll this output for a new buffer of output samples
             SampleBufferPtr pull();
             
-            // Used by the @AudioNodeManager to resize the internal buffers when necessary
+            // Used by the @NodeManager to resize the internal buffers when necessary
             void setBufferSize(int bufferSize);
 
-            // The time stamp of the latest calculated sample in the buffer
-            DiscreteTimeValue mLastCalculatedSample = 0;
-            
-            // The functor that will be used to compute the contents of the next buffer
-            CalculateFunction mCalculateFunction = nullptr;
-            
             // The node that owns this output
-            AudioNode* mNode = nullptr;
+            Node* mNode = nullptr;
             
-            // The input that this output is connected to, nullptr when disconnected
-            // This pointer is kept so the connection can be broken on destruction.
-            AudioInput* mConnection = nullptr;
+            // The inputs that this output is connected to
+            // This list is kept so the connections can be broken on destruction.
+            std::set<InputPin*> mOutputs;
         };
         
         
@@ -130,16 +123,17 @@ namespace nap {
          * The node can have an arbitrary number of inputs and outputs, used to connect streams of mono audio between different nodes.
          * Use this as a base class for custom nodes that generate audio output.
          */
-        class NAPAPI AudioNode {
-            friend class AudioNodeManager;
-            friend class AudioOutput;
+        class NAPAPI Node
+        {
+            friend class NodeManager;
+            friend class OutputPin;
             
         public:
             /**
              * @param manager: the node manager that this node will be registered to and processed by. The node receives it's buffersize and samplerate from the manager.
              */
-            AudioNode(AudioNodeManager& manager);
-            ~AudioNode();
+            Node(NodeManager& manager);
+            ~Node();
             
             /**
              * Returns the internal buffersize of the node system that this node belongs to. 
@@ -173,13 +167,33 @@ namespace nap {
              * @param bufferSize: the new buffersize
              */
             virtual void bufferSizeChanged(int bufferSize) { }
+            
+            
+            /**
+             * Use this function within descendants @process() implementation to access the buffers that need to be filled with output.
+             * @param: the output that the buffer is requested for
+             */
+            SampleBuffer& getOutputBuffer(OutputPin& output) { return output.mBuffer; }
 
             /**
              * The node manager that this node is processed on
              */
-            AudioNodeManager* mAudioNodeManager = nullptr;
+            NodeManager* mNodeManager = nullptr;
             
         private:
+            /**
+             * Override this method to do the actual audio processing and fill the buffers of this node's outputs with new audio data
+             * Use @getOutputBuffer() to access the buffers that have to be filled.
+             */
+            virtual void process() { }
+            
+            /*
+             * Invoked by OutputPin::pull methods
+             * Makes sure all the outputs of this node are being processed up to the current time stamp.
+             * Calls process() call if not up to date.
+             */
+            void update();
+            
             /*
              * Used by the node manager to notify the node that the buffer size has changed.
              * @param bufefrSize: the new value
@@ -195,46 +209,32 @@ namespace nap {
             /*
              * Used internally by the node to keep track of all its outputs.
              */
-            std::set<AudioOutput*> mOutputs;
-        };
-        
-        
-        /**
-         * This is a special case audio node that receives a call from the node manager every time a new output buffer has to be processed for the audio callback.
-         * Typically this call will be used to process the nodes' inputs and provide the incoming sample buffers to node manager as output for the audio interface or record it into a buffer.
-         */
-        class NAPAPI AudioTrigger : public AudioNode {
-            friend class AudioNodeManager;
+            std::set<OutputPin*> mOutputs;
             
-        public:
-            /**
-             * @param nodeManager: the node manager that this node will be registered to and processed by. The node receives it's buffersize and samplerate from the manager. It will call this node's @trigger method every time a new buffer of audio has to be calculated as output.
-             */
-            AudioTrigger(AudioNodeManager& nodeManager);
-            ~AudioTrigger();
-            
-        private:
-            /**
-             * Override this method to add behaviour every time a new buffer is processed by the node system.
-             */
-            virtual void trigger() = 0;
+            // The time stamp of the latest calculated sample by this node
+            DiscreteTimeValue mLastCalculatedSample = 0;
         };
         
         
         /**
          * Node to provide audio output for the node manager's audio processing, typically sent to an audio interface.
+         * The OutputNode is a root node that will be directly processed by the node manager.
          */
-        class NAPAPI AudioOutputNode : public AudioTrigger {
+        class NAPAPI OutputNode : public Node
+        {
         public:
             /**
              * @param manager: the node manager that this node will be registered to and processed by. This node provides audio output for the manager.
+             * @param active: true if the node is active and being processed from the moment of creation. This can cause glitches if the node tree and it's parameters are still being build.
              */
-            AudioOutputNode(AudioNodeManager& manager) : AudioTrigger(manager) { }
+            OutputNode(NodeManager& manager, bool active = false);
+            
+            ~OutputNode();
             
             /**
              * Through this input the node receives buffers of audio samples that will be presented to the node manager as output for its audio processing.
              */
-            AudioInput audioInput;
+            InputPin audioInput;
             
             /**
              * Set the audio channel that this node's input will be played on by the node manager.
@@ -247,10 +247,23 @@ namespace nap {
              */
             int getOutputChannel() const { return mOutputChannel; }
             
+            /**
+             * Sets wether the node will be processed by the audio node manager.
+             * On creation the node is inactive by default.
+             */
+            void setActive(bool active) { mActive = true; }
+            
+            /**
+             * @return: true if the node is currently active and thus being processed (triggered) on every callback.
+             */
+            bool isActive() const { return mActive; }
+            
         private:
-            void trigger() override final;
+            void process() override;
             
             int mOutputChannel = 0;
+            
+            bool mActive = false;
         };
         
         
@@ -258,19 +271,20 @@ namespace nap {
          * This node outputs the audio input that is received from the node system's external input, typically an audio interface.
          * Input from channel @inputChannel can be pulled from @audioOutput plug.
          */
-        class NAPAPI AudioInputNode : public AudioNode {
-            friend class AudioNodeManager;
+        class NAPAPI InputNode : public Node
+        {
+            friend class NodeManager;
             
         public:
             /**
              * @param manager: the node manager that this node will be registered to and processed by. This node provides audio output for the manager.
              */
-            AudioInputNode(AudioNodeManager& manager) : AudioNode(manager) { }
+            InputNode(NodeManager& manager) : Node(manager) { }
             
             /**
              * This output will contain the samples received from the node system's external input.
              */
-            AudioOutput audioOutput = { this, &AudioInputNode::fill };
+            OutputPin audioOutput = { this };
             
             /**
              * Sets the channel from which this node receives input.
@@ -283,23 +297,11 @@ namespace nap {
             int getInputChannel() const { return mInputChannel; }
             
         private:
-            void setBufferSize(int bufferSize);
-            void fill(SampleBuffer&);
+            void process() override;
             
             int mInputChannel = 0;
         };
         
-        
-        // --- TEMPLATE DEFINITIONS --- //
-        
-        template <typename U>
-        AudioOutput::AudioOutput(U* node, void(U::*calcFunctionPtr)(SampleBuffer&))
-        {
-            node->mOutputs.emplace(this);
-            mNode = node;
-            mCalculateFunction = std::bind(calcFunctionPtr, node, std::placeholders::_1);
-            setBufferSize(mNode->getBufferSize());
-        }
         
     }
 }

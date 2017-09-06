@@ -31,7 +31,8 @@ namespace nap {
         /**
          * A collection of sample buffers, one for each channel to represent multichannel audio.
          */
-        class NAPAPI MultiSampleBuffer {
+        class NAPAPI MultiSampleBuffer
+        {
         public:
             MultiSampleBuffer() = default;
             
@@ -71,7 +72,7 @@ namespace nap {
             
             std::vector<SampleBuffer> channels;
         };
-        typedef NAPAPI MultiSampleBuffer* MultiSampleBufferPtr;
+        using MultiSampleBufferPtr = MultiSampleBuffer*;
         
         
         /**
@@ -91,12 +92,6 @@ namespace nap {
          * Time value in samples
          */
         using DiscreteTimeValue = long;
-        
-        
-        /**
-         * Pi
-         */
-        constexpr NAPAPI ControllerValue pi = 3.1415926535897932384626433832795028841971693993751;
         
     }
         

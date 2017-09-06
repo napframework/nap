@@ -37,59 +37,47 @@ namespace nap {
             float** in = (float**)inputBuffer;
             
             
-            AudioNodeManager* nodeManager = reinterpret_cast<AudioNodeManager*>(userData);
+            NodeManager* nodeManager = reinterpret_cast<NodeManager*>(userData);
             nodeManager->process(in, out, framesPerBuffer);
             
             return 0;
         }
         
         
-        /*
-         * The destructor stops the audio stream if it is active an terminates portaudio if it is initialized.
-         * In portaudio every succesful Pa_Initialize() call has to be paired with a Pa_Terminate() call.
-         */
-        AudioInterface::~AudioInterface()
+        AudioInterface::AudioInterface(AudioService& service) : mService(&service)
         {
-            stop();
             
-            if (mInitialized)
-            {
-                auto error = Pa_Terminate();
-                if (error != paNoError)
-                    Logger::warn("Portaudio error: " + std::string(Pa_GetErrorText(error)));
-            }
         }
         
         
         /*
-         * Initializes portaudio and starts the audio stream
+         * The destructor stops the audio stream if it is active.
+         */
+        AudioInterface::~AudioInterface()
+        {
+            stop();
+        }
+        
+        
+        /*
+         * Starts the audio stream
          */
         bool AudioInterface::init(utility::ErrorState& errorState)
         {
-            auto error = Pa_Initialize();
-            if (error != paNoError)
-            {
-                mInitialized = false;
-                std::string message = "Portaudio error: " + std::string(Pa_GetErrorText(error));
-                nap::Logger::warn(message);
-                return errorState.check(mAllowFailure, message);
-            }
-            mInitialized = true;
-            
-            if (!start())
+            if (!start(errorState))
                 return errorState.check(mAllowFailure, "Portaudio error: failed to start audio stream");
             
             return true;
         }
         
         
-        bool AudioInterface::start()
+        bool AudioInterface::start(utility::ErrorState& errorState)
         {
             if (isActive())
                 return true;
             
             if (mUseDefaultDevice)
-                return startDefaultDevice();
+                return startDefaultDevice(errorState);
             
             PaStreamParameters inputParameters;
             inputParameters.device = mInputDevice;
@@ -108,7 +96,7 @@ namespace nap {
             auto error = Pa_OpenStream(&mStream, &inputParameters, &outputParameters, mSampleRate, mBufferSize, paNoFlag, audioCallback, &mNodeManager);
             if (error != paNoError)
             {
-                Logger::warn("Portaudio error: " + std::string(Pa_GetErrorText(error)));
+                errorState.fail("Portaudio error: " + std::string(Pa_GetErrorText(error)));
                 return false;
             }
             
@@ -119,24 +107,24 @@ namespace nap {
             error = Pa_StartStream(mStream);
             if (error != paNoError)
             {
-                Logger::warn("Portaudio error: " + std::string(Pa_GetErrorText(error)));
+                errorState.fail("Portaudio error: " + std::string(Pa_GetErrorText(error)));
                 return false;
             }
             
-            PaDeviceInfo inputInfo = AudioDeviceManager::getDeviceInfo(mInputDevice);
-            PaDeviceInfo outputInfo = AudioDeviceManager::getDeviceInfo(mOutputDevice);
+            PaDeviceInfo inputInfo = mService->getDeviceInfo(mInputDevice);
+            PaDeviceInfo outputInfo = mService->getDeviceInfo(mOutputDevice);
             Logger::info("Portaudio stream started: %s, %s, %i inputs, %i outputs, samplerate %i, buffersize %i", inputInfo.name, outputInfo.name, mInputChannelCount, mOutputChannelCount, mSampleRate, mBufferSize);
             
             return true;
         }
         
         
-        bool AudioInterface::startDefaultDevice()
+        bool AudioInterface::startDefaultDevice(utility::ErrorState& errorState)
         {
             auto error = Pa_OpenDefaultStream(&mStream, mInputChannelCount, mOutputChannelCount, paFloat32 | paNonInterleaved, mSampleRate, mBufferSize, audioCallback, &mNodeManager);
             if (error != paNoError)
             {
-                Logger::warn("Portaudio error: " + std::string(Pa_GetErrorText(error)));
+                errorState.fail("Portaudio error: " + std::string(Pa_GetErrorText(error)));
                 return false;
             }
             
@@ -147,7 +135,7 @@ namespace nap {
             error = Pa_StartStream(mStream);
             if (error != paNoError)
             {
-                Logger::warn("Portaudio error: " + std::string(Pa_GetErrorText(error)));
+                errorState.fail("Portaudio error: " + std::string(Pa_GetErrorText(error)));
                 return false;
             }
             

@@ -7,7 +7,7 @@ namespace nap {
     
     namespace audio {
         
-        StereoPanner::StereoPanner(AudioNodeManager& manager) : AudioNode(manager)
+        StereoPanner::StereoPanner(NodeManager& manager) : Node(manager)
         {
             setPanning(mPanning);
         }
@@ -16,29 +16,25 @@ namespace nap {
         void StereoPanner::setPanning(ControllerValue value)
         {
             mPanning = value;
-            mLeftGain = cos(mPanning * 0.5 * pi);
-            mRightGain = sin(mPanning * 0.5 * pi);
+            mLeftGain = cos(mPanning * 0.5 * M_PI);
+            mRightGain = sin(mPanning * 0.5 * M_PI);
         }
         
         
-        void StereoPanner::calculateLeft(SampleBuffer& buffer)
+        void StereoPanner::process()
         {
-            SampleBuffer& inputBuffer = *leftInput.pull();
+            auto& leftInputBuffer = *leftInput.pull();
+            auto& rightInputBuffer = *rightInput.pull();
+            auto& leftOutputBuffer = getOutputBuffer(leftOutput);
+            auto& rightOutputBuffer = getOutputBuffer(rightOutput);
             
-            for (auto i = 0; i < buffer.size(); ++i)
-                buffer[i] = inputBuffer[i] * mLeftGain;
+            for (auto i = 0; i < leftOutputBuffer.size(); ++i)
+                leftOutputBuffer[i] = leftInputBuffer[i] * mLeftGain;
+            
+            for (auto i = 0; i < rightOutputBuffer.size(); ++i)
+                rightOutputBuffer[i] = rightInputBuffer[i] * mRightGain;
         }
         
-        
-        void StereoPanner::calculateRight(SampleBuffer& buffer)
-        {
-            SampleBuffer& inputBuffer = *rightInput.pull();
-            
-            for (auto i = 0; i < buffer.size(); ++i)
-                buffer[i] = inputBuffer[i] * mRightGain;
-        }
-        
-
     }
     
 }

@@ -14,7 +14,7 @@ namespace nap {
     namespace audio {
     
         // Forward declarations
-        class AudioNode;
+        class Node;
         class AudioTrigger;
         
         /**
@@ -23,17 +23,18 @@ namespace nap {
          * A connection represents a mono audio signal.
          * Does not own the nodes but maintains a list of existing nodes that is updated from the node's constructor end destructors.
          */
-        class NAPAPI AudioNodeManager {
-            friend class AudioNode;
+        class NAPAPI NodeManager
+        {
+            friend class Node;
             friend class AudioTrigger;
-            friend class AudioOutputNode;
-            friend class AudioInputNode;
+            friend class OutputNode;
+            friend class InputNode;
             
         public:
             using OutputMapping = std::vector<std::vector<SampleBufferPtr>>;
             
         public:
-            AudioNodeManager() = default;
+            NodeManager() = default;
             
             /**
              * This function is typically called by an audio callback to perform all the audio processing.
@@ -100,20 +101,20 @@ namespace nap {
             
         private:
             // Used by the nodes to register themselves on construction
-            void registerNode(AudioNode& node);
+            void registerNode(Node& node);
             
             // Used by the nodes to unregister themselves on destrction
-            void unregisterNode(AudioNode& node) { mAudioNodes.erase(&node); }
+            void unregisterNode(Node& node) { mNodes.erase(&node); }
             
-            // Used by AudioTrigger nodes to register itseld on construction
-            void registerTrigger(AudioTrigger& trigger) { mAudioTriggers.emplace(&trigger); }
+            // Used by nodes to register themselves to be processed directly by the node manager
+            void registerRootNode(Node& rootNode) { mRootNodes.emplace(&rootNode); }
             
-            // Used by AudioTrigger nodes to unregister themselves on destruction
-            void unregisterTrigger(AudioTrigger& trigger) { mAudioTriggers.erase(&trigger); }
+            // Used by nodes to unregister themselves to be processed directly by the node manager
+            void unregisterRootNode(Node& rootNode) { mRootNodes.erase(&rootNode); }
             
         private:
             /*
-             * Used by @AudioOutputNode to provide new output for the node system
+             * Used by @OutputNode to provide new output for the node system
              * Note: multiple output buffers can be provided for the same channel by different output nodes.
              * @param buffer: a buffer of output
              * @param channel: the channel that the output will be played on
@@ -121,7 +122,7 @@ namespace nap {
             void provideOutputBufferForChannel(SampleBufferPtr buffer, int channel);
             
             /*
-             * Used by @AudioInputNode to request audio input for the current buffer
+             * Used by @InputNode to request audio input for the current buffer
              * @param channel: the input channel that is being monitored
              * @param index: the index of the requested sample within the buffer currently being calculated.
              * TODO: optimize by returning a float array for the whole buffer
@@ -141,8 +142,8 @@ namespace nap {
             
             float** mInputBuffer = nullptr;
             
-            std::set<AudioNode*> mAudioNodes;
-            std::set<AudioTrigger*> mAudioTriggers;
+            std::set<Node*> mNodes;
+            std::set<Node*> mRootNodes;
             
             nap::TaskQueue mAudioCallbackTaskQueue;
         };

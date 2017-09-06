@@ -3,6 +3,9 @@
 // third party includes
 #include <portaudio.h>
 
+// nap includes
+#include <nap/service.h>
+
 namespace nap {
     
     namespace audio {
@@ -10,35 +13,52 @@ namespace nap {
         /**
          * This class provided static methods to poll the current system for available audio devices using portaudio.
          */
-        class NAPAPI AudioDeviceManager {
+        class NAPAPI AudioService : public nap::Service
+        {
+            RTTI_ENABLE(nap::Service)
+            
         public:
-        public:
+            AudioService() = default;
+            
+            ~AudioService();
+            
+            /**
+             * Initializes portaudio.
+             */
+            bool init(nap::utility::ErrorState& errorState);
+            
+            /**
+             *	Register specific object creators
+             */
+            void registerObjectCreators(rtti::Factory& factory) override;
+            
             /**
              * @return: the number of all available audio devices, the total number contains both input and output devices separately.
              */
-            static unsigned int getDeviceCount();
+            unsigned int getDeviceCount();
             
             /**
              * Returns information of an audio device in a PaDeviceInfo struct defined by portaudio.
              * @param deviceIndex: the number of the device
              */
-            static const PaDeviceInfo& getDeviceInfo(unsigned int deviceIndex);
+            const PaDeviceInfo& getDeviceInfo(unsigned int deviceIndex);
             
             /** 
              * Returns information on all the available devices
              */
-            static std::vector<const PaDeviceInfo*> getDevices();
+            std::vector<const PaDeviceInfo*> getDevices();
             
             /** 
              * Prints the number and name of all available audio devices to the console
              */
-            static void printDevices();
+            void printDevices();
             
             /** 
              * @return the name of an available device specified by number
              * @param deviceIndex: the number of the devie
              */
-            static const std::string& getDeviceName(unsigned int deviceIndex);
+            std::string getDeviceName(unsigned int deviceIndex);
+            
         };
         
         

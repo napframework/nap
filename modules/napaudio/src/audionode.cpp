@@ -7,107 +7,123 @@ namespace nap {
     namespace audio {
         
         
-        AudioInput::~AudioInput()
+        InputPin::~InputPin()
         {
             disconnect();
         }
         
         
-        SampleBufferPtr AudioInput::pull()
+        SampleBufferPtr InputPin::pull()
         {
-            if (mConnection)
-                return mConnection->pull();
+            if (mInput)
+                return mInput->pull();
             else
                 return nullptr;
         }
         
         
-        void AudioInput::connect(AudioOutput& connection)
+        void InputPin::connect(OutputPin& input)
         {
-            // disconnect both input and output
+            // disconnect any existing connection
             disconnect();
-            connection.disconnect();
             
             // make the input and output point to one another
-            mConnection = &connection;
-            connection.mConnection = this;
+            mInput = &input;
+            input.mOutputs.emplace(this);
         }
         
         
-        void AudioInput::disconnect()
+        void InputPin::disconnect()
         {
-            if (mConnection)
+            if (mInput)
             {
-                mConnection->mConnection = nullptr;
-                mConnection = nullptr;
+                mInput->mOutputs.erase(this);
+                mInput = nullptr;
             }
         }
 
         
-        AudioOutput::~AudioOutput()
+        OutputPin::OutputPin(Node* node)
+        {
+            node->mOutputs.emplace(this);
+            mNode = node;
+            setBufferSize(mNode->getBufferSize());
+        }
+
+        
+        OutputPin::~OutputPin()
         {
             mNode->mOutputs.erase(this);
-            if (mConnection)
-                disconnect();
+            disconnectAll();
         }
         
         
-        void AudioOutput::disconnect()
+        void OutputPin::disconnectAll()
         {
-            if (mConnection)
-                mConnection->disconnect();
-        }
-        
-        
-        SampleBufferPtr AudioOutput::pull()
-        {
-            if (mLastCalculatedSample < mNode->getSampleTime())
+            for (InputPin* output : mOutputs)
             {
-                mCalculateFunction(mBuffer);
-                mLastCalculatedSample += mBuffer.size();
+                assert(output->mInput == this);
+                output->mInput = nullptr;
             }
+            mOutputs.clear();            
+        }
+        
+        
+        SampleBufferPtr OutputPin::pull()
+        {
+            mNode->update();
             return &mBuffer;
         }
         
         
-        void AudioOutput::setBufferSize(int bufferSize)
+        void OutputPin::setBufferSize(int bufferSize)
         {
             mBuffer.resize(bufferSize);
         }
         
         
-        int AudioNode::getBufferSize() const
+        Node::Node(NodeManager& service)
         {
-            return mAudioNodeManager->getInternalBufferSize();
-        }
-        
-        
-        float AudioNode::getSampleRate() const
-        {
-            return mAudioNodeManager->getSampleRate();
-        }
-        
-        
-        DiscreteTimeValue AudioNode::getSampleTime() const
-        {
-            return mAudioNodeManager->getSampleTime();
-        }
-        
-        
-        AudioNode::AudioNode(AudioNodeManager& service)
-        {
-            mAudioNodeManager = &service;
+            mNodeManager = &service;
             service.registerNode(*this);
         }
         
         
-        AudioNode::~AudioNode()
+        Node::~Node()
         {
-            mAudioNodeManager->unregisterNode(*this);
+            mNodeManager->unregisterNode(*this);
         }
         
         
-        void AudioNode::setBufferSize(int bufferSize)
+        int Node::getBufferSize() const
+        {
+            return mNodeManager->getInternalBufferSize();
+        }
+        
+        
+        float Node::getSampleRate() const
+        {
+            return mNodeManager->getSampleRate();
+        }
+        
+        
+        DiscreteTimeValue Node::getSampleTime() const
+        {
+            return mNodeManager->getSampleTime();
+        }
+        
+        
+        void Node::update()
+        {
+            if (mLastCalculatedSample < getSampleTime())
+            {
+                process();
+                mLastCalculatedSample = getSampleTime();
+            }
+        }
+        
+        
+        void Node::setBufferSize(int bufferSize)
         {
             for (auto& output : mOutputs)
                 output->setBufferSize(bufferSize);
@@ -116,31 +132,35 @@ namespace nap {
         }
         
         
-        AudioTrigger::AudioTrigger(AudioNodeManager& service) : AudioNode(service)
+        OutputNode::OutputNode(NodeManager& manager, bool active) : Node(manager)
         {
-            service.registerTrigger(*this);
+            manager.registerRootNode(*this);
+            mActive = active;
         }
         
         
-        AudioTrigger::~AudioTrigger()
+        OutputNode::~OutputNode()
         {
-            mAudioNodeManager->unregisterTrigger(*this);
+            mNodeManager->unregisterRootNode(*this);
         }
         
         
-        
-        void AudioOutputNode::trigger()
+        void OutputNode::process()
         {
+            if (!mActive)
+                return;
+            
             SampleBufferPtr buffer = audioInput.pull();
             if (buffer)
-                mAudioNodeManager->provideOutputBufferForChannel(buffer, mOutputChannel);
+                mNodeManager->provideOutputBufferForChannel(buffer, mOutputChannel);
         }
         
         
-        void AudioInputNode::fill(SampleBuffer& buffer)
+        void InputNode::process()
         {
+            auto& buffer = getOutputBuffer(audioOutput);
             for (auto i = 0; i < buffer.size(); ++i)
-                buffer[i] = mAudioNodeManager->getInputSample(mInputChannel, i);
+                buffer[i] = mNodeManager->getInputSample(mInputChannel, i);
         }
 
     }

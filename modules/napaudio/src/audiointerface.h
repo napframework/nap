@@ -11,6 +11,7 @@
 #include <rtti/rttiobject.h>
 
 // audio includes
+#include "audiodevice.h"
 #include "audionodemanager.h"
 
 namespace nap {
@@ -21,19 +22,25 @@ namespace nap {
          * Represents an audio stream handling multichannel audio input and output to and from an audio device.
          * It initializes an audio callback and owns a @NodeManager that performs the processing.
          */
-        class NAPAPI AudioInterface : public rtti::RTTIObject {
+        class NAPAPI AudioInterface : public rtti::RTTIObject
+        {
             RTTI_ENABLE(rtti::RTTIObject)
             
         public:
             AudioInterface() = default;
             
             /**
-             * Destructor stops the audio stream and terminates portaudio
+             * Constructor used by the object factory
+             */
+            AudioInterface(AudioService& service);
+            
+            /**
+             * Destructor stops the audio stream 
              */
             ~AudioInterface();
             
             /** 
-             * Initializes portaudio, starts the audio stream and handles possible errors
+             * Starts the audio stream and handles possible errors
              */
             bool init(utility::ErrorState& errorState) override;
             
@@ -41,7 +48,7 @@ namespace nap {
              * (Re)starts the audio stream and the audio processing
              * @return: true on success
              */
-            bool start();
+            bool start(utility::ErrorState& errorState);
             
             /** 
              * Stops the audio stream and the audio processing
@@ -56,7 +63,7 @@ namespace nap {
             /** 
              * @return the node manager that takes care of the audio processing performed on this stream
              */
-            AudioNodeManager& getNodeManager() { return mNodeManager; }
+            NodeManager& getNodeManager() { return mNodeManager; }
             
         public:
             // PROPERTIES
@@ -66,10 +73,14 @@ namespace nap {
              */
             bool mUseDefaultDevice = false;
             
-            // The number of the input device being used. Use @AudioDeviceManager to poll for available devices.
+            /**
+             * The number of the input device being used. Use @AudioService to poll for available devices.
+             */
             int mInputDevice = 0;
 
-            // The number of the output device being used. Use @AudioDeviceManager to poll for available devices.
+            /** 
+             * The number of the output device being used. Use @AudioService to poll for available devices.
+             */
             int mOutputDevice = 0;
             
             /* 
@@ -100,26 +111,20 @@ namespace nap {
             bool mAllowFailure = true;
             
         private:
-            /**
+            /*
              * Start the audio stream using the default audio devices available on the system.
              */
-            bool startDefaultDevice();
+            bool startDefaultDevice(utility::ErrorState& errorState);
             
-            /**
-             * The node manager that performs the audio processing.
-             */
-            AudioNodeManager mNodeManager;
+            NodeManager mNodeManager; // The node manager that performs the audio processing.
             
-            /**
-             * Indicates wether portaudio has been initialized.
-             */
-            bool mInitialized = false;
+            PaStream* mStream = nullptr; // Pointer to the stream managed by portaudio.
             
-            /**
-             * Pointer to the stream managed by portaudio.
-             */
-            PaStream* mStream = nullptr;
-        };                
+            AudioService* mService = nullptr; // The audio service
+        };
+        
+        using AudioInterfaceCreator = rtti::ObjectCreator<AudioInterface, AudioService>;
+        
         
     }
     

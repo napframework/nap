@@ -13,7 +13,7 @@ namespace nap {
     namespace audio {
         
         
-        bool readAudioFile(const std::string& fileName, MultiSampleBuffer& output, float& outSampleRate)
+        bool readAudioFile(const std::string& fileName, MultiSampleBuffer& output, float& outSampleRate, nap::utility::ErrorState& errorState)
         {
             SF_INFO info;
             
@@ -21,25 +21,25 @@ namespace nap {
             auto sndFile = sf_open(fileName.c_str(), SFM_READ, &info);
             if (sf_error(sndFile) != SF_ERR_NO_ERROR)
             {
-                nap::Logger::fatal("Failed to load audio file %s: %s", fileName.c_str(), sf_strerror(sndFile));
+                errorState.fail("Failed to load audio file %s: %s", fileName.c_str(), sf_strerror(sndFile));
                 return false;
             }
             
             // allocare a float buffer to read into by libsndfile
-            float* readBuffer;
-            readBuffer = new float[info.channels * info.frames];
+            std::vector<SampleValue> readBuffer;
+            readBuffer.resize(info.channels * info.frames);
             
             // do the reading
-            sf_readf_float(sndFile, readBuffer, info.frames);
+            sf_readf_float(sndFile, readBuffer.data(), info.frames);
             if (sf_error(sndFile) != SF_ERR_NO_ERROR)
             {
-                nap::Logger::fatal("Failed to load audio file %s: %s", fileName.c_str(), sf_strerror(sndFile));
+                errorState.fail("Failed to load audio file %s: %s", fileName.c_str(), sf_strerror(sndFile));
                 return false;
             }
             
             // copy the read buffer into the output, also performs de-interleaving of the data into separate channels
             output.resize(info.channels, info.frames);
-            auto i = 0;
+            int i = 0;
             for (auto frame = 0; frame < info.frames; ++frame)
                 for (auto channel = 0; channel < info.channels; ++channel)
                 {
@@ -51,7 +51,6 @@ namespace nap {
             outSampleRate = info.samplerate;
             
 			// cleanup
-			delete[] readBuffer;
             sf_close(sndFile);
             
             nap::Logger::info("Loaded audio file: %s", fileName.c_str());

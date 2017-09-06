@@ -4,8 +4,9 @@ namespace nap {
     
     namespace audio {
         
-        void Gain::calculate(SampleBuffer& buffer)
+        void Gain::process()
         {
+            auto& buffer = getOutputBuffer(audioOutput);
             SampleBuffer& inputBuffer = *audioInput.pull();
             
             for (auto i = 0; i < buffer.size(); ++i)

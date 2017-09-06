@@ -26,7 +26,7 @@
 					"Type": "nap::audio::AudioPlayerComponent",
 					"AudioInterface": "MyAudioInterface",
 					"AudioFile": "MyAudioFile",
-					"Panning": "0.5",
+					"Panning": "0.1",
 					"Gain": "1.0"
 				}
 			]

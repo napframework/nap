@@ -8,7 +8,7 @@ namespace nap {
     
     namespace audio {
 
-        void AudioNodeManager::process(float** inputBuffer, float** outputBuffer, unsigned long framesPerBuffer)
+        void NodeManager::process(float** inputBuffer, float** outputBuffer, unsigned long framesPerBuffer)
         {
             // process tasks that are enqueued from outside the audio thread
             mAudioCallbackTaskQueue.process();
@@ -24,8 +24,8 @@ namespace nap {
             {
                 for (auto& channelMapping : mOutputMapping)
                     channelMapping.clear();
-                for (auto& trigger : mAudioTriggers)
-                    trigger->trigger();
+                for (auto& root : mRootNodes)
+                    root->process();
                 
                 for (auto channel  = 0; channel < mOutputChannelCount; ++channel)
                 {
@@ -40,14 +40,14 @@ namespace nap {
         }
         
         
-        void AudioNodeManager::setInputChannelCount(int inputChannelCount)
+        void NodeManager::setInputChannelCount(int inputChannelCount)
         {
             mInputChannelCount = inputChannelCount;
         }
         
         
         
-        void AudioNodeManager::setOutputChannelCount(int outputChannelCount)
+        void NodeManager::setOutputChannelCount(int outputChannelCount)
         {
             mOutputChannelCount = outputChannelCount;
             mOutputMapping.clear();
@@ -55,31 +55,31 @@ namespace nap {
         }
         
         
-        void AudioNodeManager::setInternalBufferSize(int size)
+        void NodeManager::setInternalBufferSize(int size)
         {
             mInternalBufferSize = size;
-            for (auto& node : mAudioNodes)
+            for (auto& node : mNodes)
                 node->setBufferSize(size);
         }
         
         
-        void AudioNodeManager::setSampleRate(float sampleRate)
+        void NodeManager::setSampleRate(float sampleRate)
         {
             mSampleRate = sampleRate;
-            for (auto& node : mAudioNodes)
+            for (auto& node : mNodes)
                 node->setSampleRate(sampleRate);
         }
         
         
-        void AudioNodeManager::registerNode(AudioNode& node)
+        void NodeManager::registerNode(Node& node)
         {
-            mAudioNodes.emplace(&node);
+            mNodes.emplace(&node);
             node.setSampleRate(mSampleRate);
             node.setBufferSize(mInternalBufferSize);
         }
         
         
-        void AudioNodeManager::provideOutputBufferForChannel(SampleBufferPtr buffer, int channel)
+        void NodeManager::provideOutputBufferForChannel(SampleBufferPtr buffer, int channel)
         {
             assert(channel < mOutputMapping.size());
             mOutputMapping[channel].emplace_back(buffer);

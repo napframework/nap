@@ -9,17 +9,18 @@ namespace nap {
         /**
          * White noise generator
          */
-        class NAPAPI Noise : public AudioNode {
+        class NAPAPI Noise : public Node
+        {
         public:
-            Noise(AudioNodeManager& manager) : AudioNode(manager) { }
+            Noise(NodeManager& manager) : Node(manager) { }
         
             /**
              * Output signal containing the noise
              */
-            AudioOutput audioOutput = { this, &Noise::calculate };
+            OutputPin audioOutput = { this };
             
         private:
-            void calculate(SampleBuffer& buffer);
+            void process() override;
         };
         
     }

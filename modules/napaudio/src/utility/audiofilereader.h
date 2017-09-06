@@ -5,6 +5,7 @@
 
 // nap includes
 #include <audiotypes.h>
+#include <utility/errorstate.h>
 
 namespace nap {
     
@@ -17,7 +18,7 @@ namespace nap {
          * @param sampleRate: this will contain the sample rate of the audio file after success
          * @return: true on success
          */
-        bool NAPAPI readAudioFile(const std::string& fileName, MultiSampleBuffer& buffer, float& sampleRate);
+        bool NAPAPI readAudioFile(const std::string& fileName, MultiSampleBuffer& output, float& outSampleRate, nap::utility::ErrorState& errorState);
         
     }
 

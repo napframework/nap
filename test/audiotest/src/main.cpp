@@ -7,6 +7,7 @@
 #include <utility/dllexport.h>
 
 // Audio module includes
+#include <audiodevice.h>
 #include <audiotypes.h>
 
 nap::ResourceManagerService* resourceManagerService = nullptr;
@@ -18,13 +19,21 @@ nap::ResourceManagerService* resourceManagerService = nullptr;
 */
 bool init(nap::Core& core)
 {
+    // Collects all the errors
+    nap::utility::ErrorState errorState;
+    
     core.initialize();
     
     // Get resource manager service
     resourceManagerService = core.getOrCreateService<nap::ResourceManagerService>();
     
-    // Collects all the errors
-    nap::utility::ErrorState errorState;
+    
+    auto audioService = core.getOrCreateService<nap::audio::AudioService>();
+    if (!audioService->init(errorState))
+    {
+        nap::Logger::fatal(errorState.toString());
+        return false;
+    }
     
     // Load scene
     if (!resourceManagerService->loadFile("data/audiotest/audiotest.json", errorState))
@@ -50,7 +59,7 @@ int main(int argc, char *argv[])
 //        resourceManagerService->update();
 //    }
 
-    std::cout << "Hit key to quit" << std::endl;
+    std::cout << "Press return to quit" << std::endl;
     std::cin.get();
     
 	return 0;

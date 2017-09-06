@@ -9,9 +9,10 @@ namespace nap {
         /**
          * Node to perform equal power panning on a stereo signal
          */
-        class NAPAPI StereoPanner : public AudioNode {
+        class NAPAPI StereoPanner : public Node
+        {
         public:
-            StereoPanner(AudioNodeManager& manager);
+            StereoPanner(NodeManager& manager);
             
             /**
              * @param value: 0 is far left, 1 is far right
@@ -21,27 +22,25 @@ namespace nap {
             /**
              * Left channel of the stereo input signal
              */
-            AudioInput leftInput;
+            InputPin leftInput;
             
             /**
              * Right channel of the stereo input signal
              */
-            AudioInput rightInput;
+            InputPin rightInput;
             
             /**
              * Left channel of the stereo output signal
              */
-            AudioOutput leftOutput = { this, &StereoPanner::calculateLeft };
+            OutputPin leftOutput = { this };
             
             /**
              * Right channel of the stereo output signal
              */
-            AudioOutput rightOutput = { this, &StereoPanner::calculateRight };
+            OutputPin rightOutput = { this };
             
         private:
-            void calculateLeft(SampleBuffer& buffer);
-            
-            void calculateRight(SampleBuffer& buffer);
+            void process() override;
             
             ControllerValue mPanning = 0.5f;
             ControllerValue mLeftGain = 0;

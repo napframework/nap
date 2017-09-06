@@ -11,14 +11,15 @@ namespace nap {
         /**
          * Node to play back audio from a buffer
          */
-        class NAPAPI BufferPlayer : public AudioNode {
+        class NAPAPI BufferPlayer : public Node
+        {
         public:
-            BufferPlayer(AudioNodeManager& manager) : AudioNode(manager) { }
+            BufferPlayer(NodeManager& manager) : Node(manager) { }
         
             /**
              * The output to connect to other nodes
              */
-            AudioOutput audioOutput = { this, &BufferPlayer::calculate };
+            OutputPin audioOutput = { this  };
             
             /**
              * Tells the node to start playback
@@ -34,7 +35,7 @@ namespace nap {
             void stop();
             
         private:
-            void calculate(SampleBuffer& outputBuffer);
+            void process() override;
   
             bool mPlaying = false;
             long double mPosition = 0;

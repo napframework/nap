@@ -22,8 +22,10 @@ namespace nap {
         }
         
         
-        void BufferPlayer::calculate(SampleBuffer& outputBuffer)
+        void BufferPlayer::process()
         {
+            auto& outputBuffer = getOutputBuffer(audioOutput);
+            
             DiscreteTimeValue flooredPosition;
             SampleValue lastValue, newValue, fractionalPart;
             

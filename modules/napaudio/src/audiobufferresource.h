@@ -11,17 +11,14 @@ namespace nap {
     namespace audio {
         
         /**
-         * A buffer of multichannel audio data in memory
+         * A base class for a buffer of multichannel audio data in memory
+         * Base class for AudioFileResource and AudioBufferResource
          */
-        class AudioBufferResource : public rtti::RTTIObject {
+        class AudioBufferResourceBase : public rtti::RTTIObject
+        {
             RTTI_ENABLE(rtti::RTTIObject)
         public:
-            AudioBufferResource() = default;
-            
-            /**
-             * Sets the sample rate at which the audio material in the buffer was sampled.
-             */
-            void setSampleRate(float sampleRate) { mSampleRate = sampleRate; }
+            AudioBufferResourceBase() = default;
             
             /**
              * @return: sample rate at which the audio material in the buffer was sampled.
@@ -43,11 +40,18 @@ namespace nap {
              */
             MultiSampleBuffer& getBuffer() { return mBuffer; }
             
-            
         protected:
-            MultiSampleBuffer mBuffer;
+            /**
+             * Sets the sample rate at which the audio material in the buffer was sampled.
+             */
+            void setSampleRate(float sampleRate) { mSampleRate = sampleRate; }            
+
+        private:
             float mSampleRate = 0;
+            MultiSampleBuffer mBuffer;
+            
         };
+        
         
     }
     

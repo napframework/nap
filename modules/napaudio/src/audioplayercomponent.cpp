@@ -52,7 +52,7 @@ namespace nap {
                 // two outputs (stereo output)
                 for (auto i = 0; i < 2; ++i)
                 {
-                    mOutputs.emplace_back(std::make_unique<AudioOutputNode>(resource->mAudioInterface->getNodeManager()));
+                    mOutputs.emplace_back(std::make_unique<OutputNode>(resource->mAudioInterface->getNodeManager()));
                     mOutputs[i]->setOutputChannel(i);
                 }
                 mOutputs[0]->audioInput.connect(mPanner->leftOutput);
@@ -66,6 +66,7 @@ namespace nap {
                 {
                     // two players for stereo playback
                     mPlayers.emplace_back(std::make_unique<BufferPlayer>(resource->mAudioInterface->getNodeManager()));
+                    
                     mPlayers[i]->play(resource->mAudioFile->getBuffer()[i], 0, resource->mAudioFile->getSampleRate() / resource->mAudioInterface->mSampleRate);
                     
                     // two gains to scale both channels
@@ -84,12 +85,17 @@ namespace nap {
                 // two outputs for stereo output
                 for (auto i = 0; i < 2; ++i)
                 {
-                    mOutputs.emplace_back(std::make_unique<AudioOutputNode>(resource->mAudioInterface->getNodeManager()));
+                    mOutputs.emplace_back(std::make_unique<OutputNode>(resource->mAudioInterface->getNodeManager()));
                     mOutputs[i]->setOutputChannel(i);
                 }
                 mOutputs[0]->audioInput.connect(mPanner->leftOutput);
                 mOutputs[1]->audioInput.connect(mPanner->rightOutput);
             }
+            
+            resource->mAudioInterface->getNodeManager().execute([&, resource](){
+                mOutputs[0]->setActive(true);
+                mOutputs[1]->setActive(true);
+            });
             
             return true;
         }

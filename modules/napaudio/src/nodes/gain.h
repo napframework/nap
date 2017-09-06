@@ -9,19 +9,20 @@ namespace nap {
         /**
          * Node to scale an audio signal
          */
-        class NAPAPI Gain : public AudioNode {
+        class NAPAPI Gain : public Node
+        {
         public:
-            Gain(AudioNodeManager& manager) : AudioNode(manager) { }
+            Gain(NodeManager& manager) : Node(manager) { }
             
             /**
              * The input to be scaled
              */
-            AudioInput audioInput;
+            InputPin audioInput;
             
             /**
              * Outputs the scaled signal
              */
-            AudioOutput audioOutput = { this, &Gain::calculate };
+            OutputPin audioOutput = { this };
             
             /**
              * Sets the gain or scaling factor
@@ -37,7 +38,7 @@ namespace nap {
             /**
              * Calculate the output, perform the scaling
              */
-            void calculate(SampleBuffer& buffer);
+            void process() override;
             
             ControllerValue mGain  = 1;
         };
