@@ -33,20 +33,20 @@ namespace nap
 		 * @return the newly created and added argument
 		 */
 		template<typename T, typename... Args>
-		T* addArgument(Args&&... args);
+		OSCArgument* addArgument(Args&&... args);
 
 		/**
-		 * Adds an OSCArgument of type OSCValue<T> to this event
-		 * This is a utility function that wraps addArgument based on it's contained value type
+		 * Adds an OSCArgument that that is constructed with an OSCValue<T> as input argument
+		 * This is a utility function that wraps addArgument based OSC value type
 		 * Note that only registered OSC value types are considered valid
 		 */
 		template<typename T, typename... Args>
-		OSCValue<T>* addValue(Args&&... args);
+		OSCArgument* addValue(Args&&... args);
 
 		/**
 		 * @return the number of arguments associated with this event
 		 */
-		int numberOfArguments()									{ return static_cast<int>(mArguments.size()); }
+		int getSize()											{ return static_cast<int>(mArguments.size()); }
 
 		/**
 		 * @return an argument based on @index
@@ -59,22 +59,6 @@ namespace nap
 		 * @param index the index of the argument
 		 */
 		OSCArgument& getArgument(int index);
-
-		/**
-		 * @return an argument @index of type T. Returns nullptr when argument is not of type T
-		 * @param index the index of the argument
-		 */
-		template<typename T>
-		const T* getArgument(int index) const;
-
-		/**
-		 * @return the value associated with an OSValueArgument of type T
-		 * @param index the index of the argument
-		 * If the argument is not of type value or the wrong type of value this call might lead to
-		 * unexpected results
-		 */
-		template<typename T>
-		T getValue(int index) const;
 
 		// Array subscript overloads
 		OSCArgument& operator[](std::size_t idx)				{ return getArgument(static_cast<int>(idx)); }
@@ -89,15 +73,22 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T, typename... Args>
-	T* nap::OSCEvent::addArgument(Args&&... args)
+	OSCArgument* nap::OSCEvent::addArgument(Args&&... args)
 	{
-		assert(RTTI_OF(T).is_derived_from(RTTI_OF(nap::OSCArgument)));
-		mArguments.emplace_back(std::make_unique<T>(std::forward<Args>(args)...));
-		return static_cast<T*>(mArguments.back().get());
+		assert(RTTI_OF(T).is_derived_from(RTTI_OF(nap::OSCBaseValue)));
+		
+		// Create value
+		std::unique_ptr<T> value = std::make_unique<T>(std::forward<Args>(args)...);
+		
+		// Create argument and move value
+		std::unique_ptr<OSCArgument> argument = std::make_unique<OSCArgument>(std::move(value));
+		
+		mArguments.emplace_back(std::move(argument));
+		return mArguments.back().get();
 	}
 
 	template<typename T, typename... Args>
-	OSCValue<T>* nap::OSCEvent::addValue(Args&&... args)
+	OSCArgument* nap::OSCEvent::addValue(Args&&... args)
 	{
 		// Ensure that the value for the osc argument is valid
 		if(RTTI_OF(nap::OSCValue<T>).empty())
@@ -106,27 +97,6 @@ namespace nap
 			return nullptr;
 		}
 		return addArgument<nap::OSCValue<T>>(std::forward<Args>(args)...);
-	}
-
-	template<typename T>
-	const T* nap::OSCEvent::getArgument(int index) const
-	{
-		// Get argument and validate
-		const OSCArgument& current_arg = getArgument(index);
-		if (!(current_arg.get_type().is_derived_from(RTTI_OF(T))))
-		{
-			assert(false);
-			return nullptr;
-		}
-		return &(static_cast<const T&>(current_arg));
-	}
-
-	template<typename T>
-	T nap::OSCEvent::getValue(int index) const
-	{
-		const OSCArgument& current_arg = getArgument(index);
-		assert(current_arg.get_type().is_derived_from(RTTI_OF(OSCValue<T>)));
-		return static_cast<const OSCValue<T>&>(current_arg).mValue;
 	}
 
 	using OSCEventPtr = std::unique_ptr<nap::OSCEvent>;

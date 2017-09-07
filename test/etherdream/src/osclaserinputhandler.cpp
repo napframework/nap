@@ -57,7 +57,8 @@ namespace nap
 	void OSCLaserInputHandlerInstance::updateColor(const OSCEvent& oscEvent)
 	{
 		// New value
-		float v = oscEvent.getValue<float>(0);
+		assert(oscEvent.getArgument(0).isFloat());
+		float v = oscEvent.getArgument(0).asFloat();
 
 		// Get the vertex colors
 		nap::MeshInstance& mesh = mMeshComponent->getMeshInstance();
@@ -89,7 +90,8 @@ namespace nap
 	void OSCLaserInputHandlerInstance::updateRotate(const OSCEvent& oscEvent)
 	{
 		// New value
-		float v = oscEvent.getValue<float>(0);
+		assert(oscEvent.getArgument(0).isFloat());
+		float v = oscEvent.getArgument(0).asFloat();
 		
 		// Get index
 		std::vector<std::string> parts;
