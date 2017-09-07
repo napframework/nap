@@ -79,8 +79,8 @@ namespace nap {
                 // the stereo panner
                 mPanner = std::make_unique<StereoPanner>(resource->mAudioInterface->getNodeManager());
                 mPanner->setPanning(resource->mPanning);
-                mPanner->leftInput.connect(mPlayers[0]->audioOutput);
-                mPanner->rightInput.connect(mPlayers[1]->audioOutput);
+                mPanner->leftInput.connect(mGains[0]->audioOutput);
+                mPanner->rightInput.connect(mGains[1]->audioOutput);
                 
                 // two outputs for stereo output
                 for (auto i = 0; i < 2; ++i)

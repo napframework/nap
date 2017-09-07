@@ -1,5 +1,8 @@
 #include <iostream>
 
+// Std includes
+#include <thread>
+
 // Nap includes
 #include <nap/core.h>
 #include <nap/resourcemanager.h>
@@ -53,14 +56,15 @@ int main(int argc, char *argv[])
 	if (!init(core))
 		return -1;
     
-//    while (true)
-//    {
-//        resourceManagerService->checkForFileChanges();
-//        resourceManagerService->update();
-//    }
+    while (true)
+    {
+        resourceManagerService->checkForFileChanges();
+        resourceManagerService->update();
+//        std::this_thread::sleep_for(std::chrono::nanoseconds(1000));
+    }
 
-    std::cout << "Press return to quit" << std::endl;
-    std::cin.get();
+//    std::cout << "Press return to quit" << std::endl;
+//    std::cin.get();
     
 	return 0;
 }
