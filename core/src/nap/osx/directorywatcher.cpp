@@ -16,24 +16,32 @@
 
 namespace nap {
     
+    struct CallbackInfo {
+        // the files that have been modified and not yet reported to the user of the system
+        std::vector<std::string> modifiedFiles;
+        
+        // Mutex to lock the modifiedFiles
+        std::mutex watchMutex;
+    };
+    
     /**
      * Internal data container to hide internals from the header.
      */
     struct DirectoryWatcher::PImpl
     {
-        // the files that have been modified and not yet reported to the user of the system
-        std::vector<std::string> modifiedFiles;
-        
         FSEventStreamContext context; // could put stream-specific data here.
-        CFAbsoluteTime latency = 1; // Latency in seconds
+        CFAbsoluteTime latency = 0.01; // Latency in seconds
         std::string executablePath; // path to the current executable
         
         CFArrayRef pathsToWatch;
         FSEventStreamRef stream;
         CFRunLoopRef runLoop;
         std::unique_ptr<std::thread> watchThread = nullptr;
+        
+        CallbackInfo callbackInfo;
     };
     
+
     
     /**
      * Callback called by the event stream to handle file change events
@@ -46,12 +54,15 @@ namespace nap {
                       const FSEventStreamEventFlags eventFlags[],
                       const FSEventStreamEventId eventIds[])
     {
+        CallbackInfo* info = (CallbackInfo*)(clientCallBackInfo);
         char **paths = (char**)eventPaths;
-        std::vector<std::string>* modifiedFiles = (std::vector<std::string>*)(clientCallBackInfo);
-        std::cout << "callback" << std::endl;
         
-        for (auto i = 0; i < numEvents; i++) {
-            modifiedFiles->emplace_back(std::string(paths[i]));
+        {
+            std::unique_lock<std::mutex> lock(info->watchMutex);
+            
+            for (auto i = 0; i < numEvents; i++) {
+                info->modifiedFiles.emplace_back(std::string(paths[i]));
+            }
         }
     }
     
@@ -73,7 +84,7 @@ namespace nap {
             
             // retain and release have to be set to NULL explicitly otherwise this causes irregular crashes
             mPImpl->context.version = 0;
-            mPImpl->context.info = (void*)(&mPImpl->modifiedFiles);
+            mPImpl->context.info = (void*)(&mPImpl->callbackInfo);
             mPImpl->context.retain = NULL;
             mPImpl->context.release = NULL;
             mPImpl->context.copyDescription = NULL;
@@ -129,22 +140,26 @@ namespace nap {
 	*/
 	bool DirectoryWatcher::update(std::vector<std::string>& modifiedFiles)
 	{
-        if (mPImpl->modifiedFiles.empty())
-            return false;
-        
-        for (auto& modifiedFile : mPImpl->modifiedFiles)
         {
-            // check if the executable path is found at the start if the modifiel file's path
-            auto pos = modifiedFile.find(mPImpl->executablePath + "/");
-            if (pos == 0)
+            std::unique_lock<std::mutex> lock(mPImpl->callbackInfo.watchMutex);
+            
+            if (mPImpl->callbackInfo.modifiedFiles.empty())
+                return false;
+            
+            for (auto& modifiedFile : mPImpl->callbackInfo.modifiedFiles)
             {
-                // strip the executable's path from the start
-                modifiedFile.erase(0, mPImpl->executablePath.size() + 1);
-                modifiedFiles.emplace_back(modifiedFile);
+                // check if the executable path is found at the start if the modifiel file's path
+                auto pos = modifiedFile.find(mPImpl->executablePath + "/");
+                if (pos == 0)
+                {
+                    // strip the executable's path from the start
+                    modifiedFile.erase(0, mPImpl->executablePath.size() + 1);
+                    modifiedFiles.emplace_back(modifiedFile);
+                }
             }
+            
+            mPImpl->callbackInfo.modifiedFiles.clear();
         }
-        
-        mPImpl->modifiedFiles.clear();
         
         // if the modified files found by the event stream are not found in the executable's dir we still need to return false
         return !modifiedFiles.empty();
