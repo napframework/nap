@@ -30,11 +30,9 @@ namespace nap
 		{
 			mSocket->asynchronousBreak();
 			mEventThread.join();
+			mService->removeReceiver(*this);
 			nap::Logger::info("Stopped listening for OSC messages on port: %d", mPort);
 		}
-
-		// Remove from service
-		mService->removeReceiver(*this);
 	}
 
 
@@ -50,7 +48,7 @@ namespace nap
 		mSocket = std::make_unique<OSCReceivingSocket>(IpEndpointName(IpEndpointName::ANY_ADDRESS, mPort));
 
 		// Create and set the listener
-		mListener = std::make_unique<OSCPacketListener>();
+		mListener = std::make_unique<OSCPacketListener>(*this);
 		mSocket->setListener(mListener.get());
 		nap::Logger::info("Started listening for OSC messages on port: %d", mPort);
 
@@ -60,9 +58,22 @@ namespace nap
 	}
 	
 
-	void OSCReceiver::consumeEvents()
+	void OSCReceiver::addEvent(OSCEventPtr event)
 	{
-		mListener->consumeEvents(mEvents);
+		std::lock_guard<std::mutex> lock(mEventMutex);
+		mEvents.emplace(std::move(event));
+	}
+
+
+	void OSCReceiver::consumeEvents(std::queue<OSCEventPtr>& outEvents)
+	{
+		std::lock_guard<std::mutex> lock(mEventMutex);
+
+		// Swap events
+		outEvents.swap(mEvents);
+
+		// Clear current queue
+		mEvents.swap(std::queue<OSCEventPtr>());
 	}
 
 

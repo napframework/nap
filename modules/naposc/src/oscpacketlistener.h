@@ -18,26 +18,14 @@ namespace nap
 	class NAPAPI OSCPacketListener : public osc::OscPacketListener
 	{
 		friend class OSCReceiver;
+	public:
+		OSCPacketListener(OSCReceiver& receiver);
+
 	protected:
 		virtual void ProcessMessage(const osc::ReceivedMessage& m, const IpEndpointName& remoteEndpoint) override;
 
 	private:
-		/**
-		 * Adds a new OSC event to the queue, thread safe
-		 * @param event the osc event to add
-		 */
-		void addEvent(OSCEventPtr event);
-
-		/**
-		* Moves all the received OSC events over to @outEvents
-		* @param outEvents the events to populate
-		*/
-		void consumeEvents(std::queue<OSCEventPtr>& outEvents);
-
-		// Holds all the received OSC messages as parsed events
-		std::queue<OSCEventPtr> mReceivedEvents;
-
-		// Mutex associated with setting / getting events
-		std::mutex	mEventMutex;
+		// Receiver that holds the message queue
+		OSCReceiver& mReceiver;
 	};
 }

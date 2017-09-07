@@ -41,7 +41,6 @@ namespace nap
 
 	void OSCInputComponentInstance::trigger(const nap::OSCEvent& oscEvent)
 	{
-		//std::cout << "OSC event: " << oscEvent.mAddress.c_str() << "\n";
 		messageReceived(oscEvent);
 	}
 

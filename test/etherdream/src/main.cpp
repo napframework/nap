@@ -117,6 +117,7 @@ void onRender()
 	}
 }
 
+
 /**
 * Initialize all the resources and instances used for drawing
 * slowly migrating all functionality to nap

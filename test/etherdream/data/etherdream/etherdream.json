@@ -264,8 +264,14 @@
 					"Type" : "nap::OSCInputComponent",
 					"Addresses" : 
 					[
-						"/1/multixy1/1"
+						"/color",
+						"/resetcolor",
+						"/rotate",
+						"/resetrotate"
 					]
+				},
+				{
+					"Type" : "nap::OSCLaserInputHandler"
 				},
 				{
 					"Type" : "nap::TransformComponent",

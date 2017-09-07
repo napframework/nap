@@ -13,4 +13,16 @@ namespace nap
 
 	}
 
+	const OSCArgument& OSCEvent::getArgument(int index) const
+	{
+		assert(index < mArguments.size() && index >= 0);
+		return *(mArguments[index]);
+	}
+
+	nap::OSCArgument& OSCEvent::getArgument(int index)
+	{
+		assert(index < mArguments.size() && index >= 0);
+		return *(mArguments[index]);
+	}
+
 }

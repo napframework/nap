@@ -116,9 +116,9 @@ namespace nap
 			// Sets
 			mPoints[i].X = sEtherInterpolate(cv.x, min_bounds.x, max_bounds.x, false);
 			mPoints[i].Y = sEtherInterpolate(cv.y, min_bounds.y, max_bounds.y, false);
-			mPoints[i].R = sEtherInterpolateColor(cc.r);
-			mPoints[i].G = sEtherInterpolateColor(cc.g);
-			mPoints[i].B = sEtherInterpolateColor(cc.b);
+			mPoints[i].R = sEtherInterpolateColor(cc.r * cc.a);
+			mPoints[i].G = sEtherInterpolateColor(cc.g * cc.a);
+			mPoints[i].B = sEtherInterpolateColor(cc.b * cc.a);
 			mPoints[i].I = sEtherInterpolateColor(cc.a);
 		}
 

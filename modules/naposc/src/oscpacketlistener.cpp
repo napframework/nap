@@ -1,6 +1,7 @@
 // Local includes
 #include "oscpacketlistener.h"
 #include "oscevent.h"
+#include "oscreceiver.h"
 
 // External includes
 #include <iostream>
@@ -8,6 +9,11 @@
 
 namespace nap
 {
+
+	OSCPacketListener::OSCPacketListener(OSCReceiver& receiver) : mReceiver(receiver) 
+	{	}
+
+
 	void OSCPacketListener::ProcessMessage(const osc::ReceivedMessage& m, const IpEndpointName& remoteEndpoint)
 	{
 		// Make our event
@@ -87,27 +93,9 @@ namespace nap
 			nap::Logger::info("unknown argument in OSC message: %s", event->mAddress.c_str());
 			arg++;
 		}
-		addEvent(std::move(event));
+
+		// Add event to receiver
+		mReceiver.addEvent(std::move(event));
 	}
-
-
-	void OSCPacketListener::addEvent(OSCEventPtr event)
-	{
-		std::lock_guard<std::mutex> lock(mEventMutex);
-		mReceivedEvents.emplace(std::move(event));
-	}
-
-
-	void OSCPacketListener::consumeEvents(std::queue<OSCEventPtr>& outEvents)
-	{
-		std::lock_guard<std::mutex> lock(mEventMutex);
-
-		// Swap events
-		outEvents.swap(mReceivedEvents);
-
-		// Clear current queue
-		mReceivedEvents.swap(std::queue<OSCEventPtr>());
-	}
-
 }
 

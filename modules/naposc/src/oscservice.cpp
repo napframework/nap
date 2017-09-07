@@ -8,6 +8,7 @@
 #include <nap/resourcemanager.h>
 #include <nap/logger.h>
 #include <iostream>
+#include <utility/stringutils.h>
 
 // Local Includes
 #include "oscservice.h"
@@ -32,15 +33,17 @@ namespace nap
 
 	void OSCService::update()
 	{
+		std::queue<OSCEventPtr> events;
+
 		// Forward every event to every input component of interest
 		for (auto& receiver : mReceivers)
 		{
-			receiver->consumeEvents();
+			receiver->consumeEvents(events);
 
 			// Keep forwarding events until the queue runs out
-			while (receiver->hasEvents())
+			while (!(events.empty()))
 			{
-				const OSCEvent& osc_event = receiver->currentEvent();
+				const OSCEvent& osc_event = *(events.front());
 				for (const auto& input_comp : mInputs)
 				{
 					// Empty (no specified address) always receives the message
@@ -53,14 +56,14 @@ namespace nap
 					// Try to match the address
 					for (const auto& address : input_comp->mAddresses)
 					{
-						if (address == osc_event.mAddress)
+						if (nap::utility::gStartsWith(osc_event.mAddress, address))
 						{
 							input_comp->trigger(osc_event);
 							break;
 						}
 					}
 				}
-				receiver->popEvent();
+				events.pop();
 			}
 		}
 	}
