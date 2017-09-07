@@ -55,6 +55,8 @@ namespace nap
 
 		void updateColor(const OSCEvent& event);
 		void updateRotate(const OSCEvent& event);
+		void resetRotate(const OSCEvent& event);
+		void resetColor(const OSCEvent& event);
 
 		NSLOT(mMessageReceivedSlot, const nap::OSCEvent&, handleMessageReceived)
 	};

@@ -52,13 +52,25 @@ namespace nap
 			updateRotate(oscEvent);
 			return;
 		}
+
+		if (utility::gStartsWith(oscEvent.mAddress, "/resetrotate"))
+		{
+			resetRotate(oscEvent);
+			return;
+		}
+
+		if (utility::gStartsWith(oscEvent.mAddress, "/resetcolor"))
+		{
+			resetColor(oscEvent);
+			return;
+		}
 	}
 
 	void OSCLaserInputHandlerInstance::updateColor(const OSCEvent& oscEvent)
 	{
 		// New value
-		assert(oscEvent.getArgument(0).isFloat());
-		float v = oscEvent.getArgument(0).asFloat();
+		assert(oscEvent[0].isFloat());
+		float v = oscEvent[0].asFloat();
 
 		// Get the vertex colors
 		nap::MeshInstance& mesh = mMeshComponent->getMeshInstance();
@@ -115,6 +127,39 @@ namespace nap
 			mRotateComponent->mProperties.mSpeed = v;
 			break;
 		default:
+			assert(false);
+		}
+	}
+
+
+	void OSCLaserInputHandlerInstance::resetRotate(const OSCEvent& event)
+	{
+		assert(event[0].isFloat());
+		float v = event[0].asFloat();
+
+		if (v < 0.99f)
+			return;
+
+		mRotateComponent->reset();
+		mRotateComponent->mProperties.mSpeed = 0.0f;
+	}
+
+
+	void OSCLaserInputHandlerInstance::resetColor(const OSCEvent& event)
+	{
+		assert(event[0].isFloat());
+		float v = event[0].asFloat();
+
+		if (v < 0.99f)
+			return;
+
+		nap::MeshInstance& mesh = mMeshComponent->getMeshInstance();
+		Vec4VertexAttribute& color_attr = mesh.GetAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0));
+		color_attr.setData(std::vector<glm::vec4>(color_attr.getSize(), { 1.0f, 1.0f, 1.0f, 1.0f }));
+		
+		nap::utility::ErrorState error;
+		if (!mesh.update(error))
+		{
 			assert(false);
 		}
 	}

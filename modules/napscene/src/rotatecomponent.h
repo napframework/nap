@@ -77,6 +77,11 @@ namespace nap
 		 */
 		virtual void update(double deltaTime) override;
 
+		/**
+		* Resets rotation to be 0
+		*/
+		void reset();
+
 		// Rotation properties
 		RotateProperties mProperties;
 
