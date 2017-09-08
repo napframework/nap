@@ -37,7 +37,7 @@ namespace nap {
             /**
              * Destructor stops the audio stream 
              */
-            ~AudioInterface();
+            virtual ~AudioInterface();
             
             /** 
              * Starts the audio stream and handles possible errors
@@ -105,11 +105,6 @@ namespace nap {
              */
             int mBufferSize = 256;
 
-            /**
-             * When this is true, the app will be able to run also if the audio stream fails to start.
-             */
-            bool mAllowFailure = true;
-            
         private:
             /*
              * Start the audio stream using the default audio devices available on the system.

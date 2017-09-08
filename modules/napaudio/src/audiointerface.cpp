@@ -15,7 +15,6 @@ RTTI_BEGIN_CLASS(nap::audio::AudioInterface)
     RTTI_PROPERTY("OutputChannelCount", &nap::audio::AudioInterface::mOutputChannelCount, nap::rtti::EPropertyMetaData::Default)
     RTTI_PROPERTY("SampleRate", &nap::audio::AudioInterface::mSampleRate, nap::rtti::EPropertyMetaData::Default)
     RTTI_PROPERTY("BufferSize", &nap::audio::AudioInterface::mBufferSize, nap::rtti::EPropertyMetaData::Default)
-    RTTI_PROPERTY("AllowFailure", &nap::audio::AudioInterface::mAllowFailure, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 
@@ -64,10 +63,7 @@ namespace nap {
          */
         bool AudioInterface::init(utility::ErrorState& errorState)
         {
-            if (!start(errorState))
-                return errorState.check(mAllowFailure, "Portaudio error: failed to start audio stream");
-            
-            return true;
+            return start(errorState);
         }
         
         
