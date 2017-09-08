@@ -16,11 +16,6 @@
 #endif
 
 
-//// Not every platform defines M_PI
-//#ifndef M_PI
-//#define M_PI 3.14159265358979323846
-//#endif
-
 // Using
 namespace nap
 {
