@@ -1,7 +1,7 @@
 #include "stereopanner.h"
 
 // Std includes
-#include <cmath>
+#include "math.h"
 
 namespace nap {
     
