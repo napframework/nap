@@ -35,6 +35,7 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/embed.h>
+#include "rtti/rtticast.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
@@ -107,6 +108,33 @@ void onUpdate()
 	}
 
 	resourceManagerService->getRootEntity().update(delta_time);
+
+	// Retrieve source (resource) mesh data
+	nap::IMesh& mesh = planeEntity->getComponent<nap::RenderableMeshComponentInstance>().getMesh();
+	nap::Mesh* rtti_mesh = rtti_cast<nap::Mesh>(&mesh);
+	assert(rtti_mesh != nullptr);
+	const nap::Vec3VertexAttribute& src_position_attribute = rtti_mesh->GetAttribute<glm::vec3>(nap::MeshInstance::VertexAttributeIDs::GetPositionName());
+	const std::vector<glm::vec3>& src_positions = src_position_attribute.getData();
+
+	// Retrieve destination (instance) mesh data
+	nap::MeshInstance& mesh_instance = mesh.getMeshInstance();
+	nap::Vec3VertexAttribute& dst_position_attribute = mesh_instance.GetAttribute<glm::vec3>(nap::MeshInstance::VertexAttributeIDs::GetPositionName());
+	std::vector<glm::vec3>& dst_positions = dst_position_attribute.getData();
+
+	// Sine wave over our quad
+	for (int index = 0; index != src_positions.size() - 1; ++index)
+    {
+        float s = sin(elapsed_time + (float)index * 0.2f);
+        dst_positions[index] = src_positions[index] * glm::vec3(s,s,s);
+    }
+
+	dst_positions.back() = *dst_positions.begin();
+
+	nap::utility::ErrorState errorState;
+	if (!mesh_instance.update(errorState))
+	{
+		nap::Logger::fatal(errorState.toString());
+	}
 
 	// Update the scene
 	sceneService->update();
@@ -331,4 +359,4 @@ void runGame(nap::Core& core)
 	renderService->shutdown();
 }
        
-   
+      

@@ -27,12 +27,12 @@ namespace nap
 		bool operator()(const nap::ComponentInstance* objectA, const nap::ComponentInstance* objectB)
 		{
 			// Get the transform of objectA in view space
-			const nap::EntityInstance& entityA			= *objectA->getEntity();
+			const nap::EntityInstance& entityA			= *objectA->getEntityInstance();
 			const nap::TransformComponentInstance& transformA	= entityA.getComponent<nap::TransformComponentInstance>();
 			const glm::mat4 view_space_a				= mViewMatrix * transformA.getGlobalTransform();
 
 			// Get the transform of objectB in view space
-			const nap::EntityInstance& entityB			= *objectB->getEntity();
+			const nap::EntityInstance& entityB			= *objectB->getEntityInstance();
 			const nap::TransformComponentInstance& transformB	= entityB.getComponent<nap::TransformComponentInstance>();
 			const glm::mat4 view_space_b				= mViewMatrix * transformB.getGlobalTransform();
 

@@ -56,8 +56,8 @@ namespace nap
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
-		TransformComponentInstance(EntityInstance& entity) :
-			ComponentInstance(entity)
+		TransformComponentInstance(EntityInstance& entity, Component& resource) :
+			ComponentInstance(entity, resource)
 		{
 		}
         
@@ -70,7 +70,7 @@ namespace nap
 		* @param entityCreationParams Parameters required to create new entity instances during init
 		* @param errorState The error object
 		*/
-		virtual bool init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
+		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
 
 		/**
 		 * Constructs and returns a local transform

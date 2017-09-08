@@ -20,7 +20,7 @@ namespace opengl
 		/**
 		 * Default constructor
 		 */
-		Buffer() = default;
+		Buffer();
 
 		/**
 		 * Default destructor
@@ -39,17 +39,6 @@ namespace opengl
 		virtual GLenum getBufferType() const = 0;
 
 		/**
-		* Allocates the buffer on the GPU
-		* Always call init after creation otherwise subsequent calls will fail
-		*/
-		void init();
-
-		/**
-		* @return if the buffer is allocated on the GPU
-		*/
-		bool isAllocated() const						{ return mId != 0; }
-
-		/**
 		* @return the id associated with this buffer on the GPU
 		*/
 		GLuint getId() const							{ return mId; }
@@ -57,12 +46,12 @@ namespace opengl
 		/**
 		* binds this vertex buffer on the GPU for subsequent GPU calls
 		*/
-		bool bind() const;
+		void bind() const;
 
 		/**
 		* unbinds this vertex buffer on the GPU for subsequent GPU calls
 		*/
-		bool unbind() const;
+		void unbind() const;
 
 	private:
 		// Buffer GPU ID

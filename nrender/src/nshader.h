@@ -25,24 +25,10 @@ namespace opengl
 		*/
 		struct VertexAttributeIDs
 		{
-			static const VertexAttributeID PositionVertexAttr;
-			static const VertexAttributeID NormalVertexAttr;
-			static const VertexAttributeID UVVertexAttr;
-			static const VertexAttributeID ColorVertexAttr;
-
-			static const VertexAttributeID GetUVVertexAttr(int uvChannel)
-			{
-				std::ostringstream stream;
-				stream << UVVertexAttr << uvChannel;
-				return stream.str();
-			}
-
-			static const VertexAttributeID GetColorVertexAttr(int colorChannel)
-			{
-				std::ostringstream stream;
-				stream << ColorVertexAttr << colorChannel;
-				return stream.str();
-			}
+			static const VertexAttributeID GetPositionVertexAttr();
+			static const VertexAttributeID GetNormalVertexAttr();
+			static const VertexAttributeID GetUVVertexAttr(int uvChannel);
+			static const VertexAttributeID GetColorVertexAttr(int colorChannel);
 		};
 
 
@@ -134,14 +120,14 @@ namespace opengl
 		/**
 		 * @return all vertex shader attributes
 		 */
-		const VertexAttributes& getAttributes() const		{ return mShaderAttributes; }
+		const ShaderVertexAttributes& getAttributes() const		{ return mShaderAttributes; }
 
 		/**
 		 * @return shader vertex attribute with given name
 		 * nullptr if the attribute is not found
 		 * @param name: Name of the vertex attribute
 		 */
-		const VertexAttribute* getAttribute(const std::string& name) const;
+		const ShaderVertexAttribute* getAttribute(const std::string& name) const;
 
 		/**
 		 * @return all uniform shader attributes
@@ -154,7 +140,7 @@ namespace opengl
 		unsigned int mShaderFp = 0;				// The fragment shader identifier
 
 		UniformDeclarations mUniformDeclarations;	// Shader program uniform attributes
-		VertexAttributes mShaderAttributes;		// Shader program vertex attribute inputs
+		ShaderVertexAttributes mShaderAttributes;		// Shader program vertex attribute inputs
 		State mState = State::NotLoaded;		// Holds current state of shader program
 	};
 }	// opengl

@@ -3,6 +3,7 @@
 #include <queue>
 #include <thread>
 #include <mutex>
+#include <limits>
 #include "rtti/rttiobject.h"
 
 struct AVPacket;
@@ -149,6 +150,8 @@ namespace nap
 		void clearFrameQueue();
 
 	private:
+		static const double		sVideoMax;
+
 		std::unique_ptr<MemoryTexture2D> mYTexture;
 		std::unique_ptr<MemoryTexture2D> mUTexture;
 		std::unique_ptr<MemoryTexture2D> mVTexture;
@@ -162,8 +165,7 @@ namespace nap
 		int						mHeight = 0;					///< Height of the video, in pixels
 		float					mDuration = 0.0f;				///< Duration of the video in seconds
 		double					mPrevPTSSecs = 0.0;				///< Stored timing information for the previous frame
-		double					mVideoClockSecs = DBL_MAX;		///< Clock that we use to synchronize the video to
-
+		double					mVideoClockSecs = sVideoMax;	///< Clock that we use to synchronize the video to
 		std::string				mErrorString;					///< If an error occurs, this is the string containing error information. If empty, no error occured.
 
 		/**

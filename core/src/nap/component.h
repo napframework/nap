@@ -28,21 +28,43 @@ namespace nap
         
 		/**
 		 * Constructor
+		 * @param entity instance the entity this component instance belongs to
+		 * @param resource the resource this component was created from
 		 */
-		ComponentInstance(EntityInstance& entity) : mEntity(&entity) { }
+		ComponentInstance(EntityInstance& entity, Component& resource) : 
+			mEntityInstance(&entity),
+			mResource(&resource)
+		{ 
+		}
 
 		/**
 		 * Update this component
+		 * @param deltaTime the time in between cooks in seconds
 		 */
 		virtual void update(double deltaTime) {}
 
 		/**
-		 * Get the entity this component belongs to
+		 * @ return the entity this component belongs to
 		 */
-		nap::EntityInstance* getEntity() const
+		nap::EntityInstance* getEntityInstance() const
 		{
-			return mEntity;
+			return mEntityInstance;
 		}
+
+		/**
+		 * @return the resource this component was created from
+		 */
+		nap::Component* getComponent() const
+		{
+			return mResource;
+		}
+
+		/**
+		 * @return the resource this component was created from as type T
+		 * This will return a nullptr if the component is not derived from T
+		 */
+		template<typename T>
+		T* getComponent() const;
 
 		/**
 		 * Initialize this component from its resource
@@ -51,10 +73,11 @@ namespace nap
 		 * @param entityCreationParams Parameters required to create new entity instances during init
 		 * @param errorState The error object
 		 */
-        virtual bool init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
+        virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
 
 	private:
-		EntityInstance* mEntity;	// The entity this component belongs to
+		EntityInstance* mEntityInstance;	// The entity this component belongs to
+		Component*		mResource;			// The resource this instance was created from
 	};
 
 	///////////////////////////////////////////////////////////////////////////
@@ -72,11 +95,22 @@ namespace nap
 		/**
 		 * Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
 		 */
-		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) { }
+		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const { }
 
 		/** 
 		 * Get the type of ComponentInstance that should be created from this Component
 		 */
 		virtual const rtti::TypeInfo getInstanceType() const = 0;
 	};
+
+	//////////////////////////////////////////////////////////////////////////
+
+	template<typename T>
+	T* ComponentInstance::getComponent() const
+	{
+		T* comp = rtti_cast<T>(mResource);
+		assert(comp != nullptr);
+		return comp;
+	}
+
 }

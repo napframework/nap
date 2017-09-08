@@ -6,13 +6,27 @@
 
 // External Includes
 #include <nap/component.h>
+#include <polyline.h>
+#include <transformcomponent.h>
 
 namespace nap
 {
 	class LaserOutputComponentInstance;
 
 	/**
-	 *	Holds a reference to a laser dac and selects which shape to send data to
+	 *	Laser output properties
+	 */
+	struct LaserOutputProperties
+	{
+		glm::vec2	mFrustrum = { 500.0f, 500.0f };		//< Frustrum of the laser in world space
+		bool		mFlipHorizontal = false;			//< If the output should be flipped horizontal
+		bool		mFlipVertical = false;				//< If the output should be flipped vertical
+	};
+
+
+	/**
+	 * Component that converts and sends data to the laser output DAC
+	 * Converts and outputs lines to a specific laser DAC
 	 */
 	class LaserOutputComponent : public Component
 	{
@@ -23,40 +37,56 @@ namespace nap
 			return RTTI_OF(LaserOutputComponentInstance);
 		}
 
-		// Index property of component to select
-		int mIndex = 0;
-
 		// Link to the DAC
 		ObjectPtr<EtherDreamDac> mDac;
+
+		// Output properties
+		LaserOutputProperties mProperties;
 	};
 
 
 	/**
-	 *	Selects the shape and uploads points
+	 *	Sends lines to an etherdream laser DAC
 	 */
 	class LaserOutputComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
 		// Constructor
-		LaserOutputComponentInstance(EntityInstance& entity) : ComponentInstance(entity)
-		{ }
+		LaserOutputComponentInstance(EntityInstance& entity, Component& resource) : 
+			ComponentInstance(entity, resource)
+		{
+		}
 
 		// Init
-		virtual bool init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
-		// Update
+		/**
+		 *	Set the line to upload to the laser
+		 * @param line: a line mesh to resample and upload
+		 * @param xform: the line's global transform
+		 */
+		void setLine(PolyLine& line, const glm::mat4x4& xform);
+
+		/**
+		 *	Update will send the last converted line to the laser
+		 */
 		virtual void update(double deltaTime) override;
 
-		// Pointer to the dac
+		// Lines will be uploaded to this laser DAC
 		ObjectPtr<EtherDreamDac> mDac;
 
-		// Index to send
-		int mIndex = 0;
+		// Properties
+		LaserOutputProperties mProperties;
 
 	private:
 		// All the available shapes to draw
 		std::vector<LaserShapeComponentInstance*> mShapes;
 
+		// Populate Laser Buffer
+		void populateLaserBuffer(const std::vector<glm::vec3>& verts, const std::vector<glm::vec4>& colors, const glm::mat4x4& laserXform, const glm::mat4x4& lineXform);
+
+		// Converted laser points
+		std::vector<nap::EtherDreamPoint> mPoints;
 	};
 }

@@ -4,7 +4,7 @@
 
 namespace nap
 {
-	VAOKey::VAOKey(const Material& material, const Mesh& meshResource) :
+	VAOKey::VAOKey(const Material& material, const MeshInstance& meshResource) :
 		mMaterial(material),
 		mMeshResource(meshResource)
 	{

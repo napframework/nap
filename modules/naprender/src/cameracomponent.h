@@ -15,7 +15,7 @@ namespace nap
 		RTTI_ENABLE(ComponentInstance)
 	public:
 		// Default constructor
-		CameraComponentInstance(EntityInstance& entity);
+		CameraComponentInstance(EntityInstance& entity, Component& resource);
 
 		/**
 		* @return camera projection matrix

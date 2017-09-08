@@ -41,22 +41,21 @@
 static nap::ObjectPtr<nap::Image>				vinylLabelImg   = nullptr;
 static nap::ObjectPtr<nap::Image>				vinylCoverImg = nullptr;
 
-nap::RenderService*										renderService = nullptr;
-nap::ResourceManagerService*							resourceManagerService = nullptr;
-nap::SceneService*										sceneService = nullptr;
-nap::InputService*										inputService = nullptr;
+nap::RenderService*								renderService = nullptr;
+nap::ResourceManagerService*					resourceManagerService = nullptr;
+nap::SceneService*								sceneService = nullptr;
+nap::InputService*								inputService = nullptr;
 
 nap::ObjectPtr<nap::RenderWindow>				renderWindow;
-nap::ObjectPtr<nap::EntityInstance>						modelEntity = nullptr;
-nap::ObjectPtr<nap::EntityInstance>						cameraEntity = nullptr;
-nap::ObjectPtr<nap::EntityInstance>						backgroundEntity = nullptr;
+nap::ObjectPtr<nap::EntityInstance>				modelEntity = nullptr;
+nap::ObjectPtr<nap::EntityInstance>				cameraEntity = nullptr;
+nap::ObjectPtr<nap::EntityInstance>				backgroundEntity = nullptr;
 
 nap::DefaultInputRouter inputRouter;
 
 
 // predefines
 void runGame(nap::Core& core);
-
 
 /**
 * updates the background image to match the size of the output window
@@ -123,6 +122,7 @@ void onUpdate()
 // Called when the window is going to render
 void onRender()
 {
+
 	// Clear opengl context related resources that are not necessary any more
 	renderService->destroyGLContextResources({ renderWindow });
 
@@ -206,17 +206,18 @@ bool init(nap::Core& core)
 	//////////////////////////////////////////////////////////////////////////
 	sceneService = core.getOrCreateService<nap::SceneService>();
 
+
 	//////////////////////////////////////////////////////////////////////////
 	// Resources
 	//////////////////////////////////////////////////////////////////////////
-
+	
 	nap::utility::ErrorState errorState;
 	if (!resourceManagerService->loadFile("data/steef/objects.json", errorState))
 	{
 		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
 		
-		assert(false);
-		return false;  
+		assert(false); 
+		return false;   
 	}
 
 	// Extract loaded resources

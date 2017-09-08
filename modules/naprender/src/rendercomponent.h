@@ -24,8 +24,8 @@ namespace nap
 		RTTI_ENABLE(ComponentInstance)
 
 	public:
-		RenderableComponentInstance(EntityInstance& entity) :
-			ComponentInstance(entity)
+		RenderableComponentInstance(EntityInstance& entity, Component& resource) :
+			ComponentInstance(entity, resource)
 		{
 		}
 

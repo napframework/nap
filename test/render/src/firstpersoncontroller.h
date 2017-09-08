@@ -30,7 +30,7 @@ namespace nap
 		/**
 		 * Get the types of components on which this component depends
 		 */
-		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) 
+		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override
 		{
 			components.push_back(RTTI_OF(TransformComponent));
 			components.push_back(RTTI_OF(KeyInputComponent));
@@ -51,12 +51,12 @@ namespace nap
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
-		FirstPersonControllerInstance(EntityInstance& entity);
+		FirstPersonControllerInstance(EntityInstance& entity, Component& resource);
 
 		/**
 		 * Initialize this ComponentInstance
 		 */
-		virtual bool init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
 		/**
 		 * Update this ComponentInstance
@@ -75,8 +75,7 @@ namespace nap
 		void onKeyRelease(const KeyReleaseEvent& keyReleaseEvent);
 
 	private:
-		FirstPersonController*	mResource			= nullptr;		// The resource containing the movement properties
-		TransformComponentInstance*				mTransformComponent = nullptr;		// The transform component used to move the entity
+		TransformComponentInstance*		mTransformComponent = nullptr;		// The transform component used to move the entity
 		bool							mMoveForward		= false;		// Whether we're moving forward
 		bool							mMoveBackward		= false;		// Whether we're moving backwards
 		bool							mMoveLeft			= false;		// Whether we're moving left

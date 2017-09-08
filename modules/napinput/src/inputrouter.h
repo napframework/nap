@@ -65,8 +65,8 @@ namespace nap
 		RTTI_ENABLE(ComponentInstance)
 
 	public:
-		DefaultInputRouterComponentInstance(EntityInstance& entity) :
-			ComponentInstance(entity)
+		DefaultInputRouterComponentInstance(EntityInstance& entity, Component& resource) :
+			ComponentInstance(entity, resource)
 		{
 		}
 

@@ -4,6 +4,7 @@
 #include "nap/entity.h"
 #include "image.h"
 #include <glm/glm.hpp>
+#include <nap/entityptr.h>
 
 namespace nap
 {
@@ -40,18 +41,18 @@ namespace nap
 		RTTI_ENABLE(ComponentInstance)
 
 	public:
-		SlideShowComponentInstance(EntityInstance& entity);
+		SlideShowComponentInstance(EntityInstance& entity, Component& resource);
 
 		/**
 		 * Spawns left/center/right children, sets intial textures and positions.
 		 * @return false if prototype does not match requirements.
 		 */
-		virtual bool init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
 		/**
 		 * Updates animation.
 		 */
-		virtual void update(double deltaTime) override;
+		virtual void update(double deltaTime) override; 
 
 		/**
 		 * Cycles one element to the left. When reaching the beginning it will cycle to the end of the list.
@@ -70,7 +71,6 @@ namespace nap
 		void setVisible(nap::EntityInstance& entity, bool visible);
 
 	private:
-		ObjectPtr<SlideShowComponent>		mResource;				// Stati resource data
 		ObjectPtr<nap::EntityInstance>				mLeftChildInstance;		// Instance of left child
 		ObjectPtr<nap::EntityInstance>				mCenterChildInstance;	// Instance of center child
 		ObjectPtr<nap::EntityInstance>				mRightChildInstance;	// Instance of right child

@@ -40,6 +40,7 @@ def installDependenciesLinux():
     call('.', ['sudo', 'apt-get', '--assume-yes', 'install',
                'cmake',
                'build-essential',
+	       'python3-dev',
                'libsdl2-dev',
                'libglew-dev',
                'libassimp-dev',
@@ -59,7 +60,7 @@ def isBrewInstalled():
 
 def installDependenciesOSX():
     d = WORKING_DIR
-    for pack in ['cmake', 'sdl2', 'glew', 'glm', 'assimp', 'tclap', 'ffmpeg', 'portaudio', 'libvorbis', 'flac', 'libsndfile']:
+    for pack in ['cmake', 'sdl2', 'glew', 'glm', 'assimp', 'tclap', 'ffmpeg']:
         try:
             call(d, ['brew', 'install', pack])
         except:
@@ -103,7 +104,7 @@ def main(targets):
     build_targets = targets
 
     # add targets here
-    build_targets.append("mod_napaudio")
+    # build_targets.append("hello")
 
     for t in targets:
         # osc / linux

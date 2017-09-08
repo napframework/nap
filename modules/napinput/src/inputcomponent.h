@@ -19,8 +19,8 @@ namespace nap
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
-		InputComponentInstance(EntityInstance& entity) :
-			ComponentInstance(entity)
+		InputComponentInstance(EntityInstance& entity, Component& resource) :
+			ComponentInstance(entity, resource)
 		{
 		}
 
@@ -54,8 +54,8 @@ namespace nap
 		RTTI_ENABLE(InputComponentInstance)
 	
 	public:
-		KeyInputComponentInstance(EntityInstance& entity) :
-			InputComponentInstance(entity)
+		KeyInputComponentInstance(EntityInstance& entity, Component& resource) :
+			InputComponentInstance(entity, resource)
 		{
 		}
 
@@ -89,8 +89,8 @@ namespace nap
 		RTTI_ENABLE(InputComponentInstance)
 
 	public:
-		PointerInputComponentInstance(EntityInstance& entity) :
-			InputComponentInstance(entity)
+		PointerInputComponentInstance(EntityInstance& entity, Component& resource) :
+			InputComponentInstance(entity, resource)
 		{
 		}
 

@@ -6,8 +6,8 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	CameraComponentInstance::CameraComponentInstance(EntityInstance& entity) :
-		ComponentInstance(entity)
+	CameraComponentInstance::CameraComponentInstance(EntityInstance& entity, Component& resource) :
+		ComponentInstance(entity, resource)
 	{
 	}
 }
