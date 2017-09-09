@@ -117,6 +117,11 @@ namespace nap
 		 */
 		void add(osc::OutboundPacketStream& outPacket) const;
 
+		/**
+		 *	@return the size of the value type in bytes
+		 */
+		std::size_t size() const;
+
 	private:
 		OSCValuePtr mValue = nullptr;
 	};
@@ -139,7 +144,16 @@ namespace nap
 		 * @param outPacket the package to add the value to
 		 */
 	protected:
+		/**
+		 * Adds the managed value to the packet
+		 * @param outPacket the packet to add the value to
+		 */
 		virtual void add(osc::OutboundPacketStream& outPacket) const = 0;
+
+		/**
+		 * @return the size in bytes of the stored value type
+		 */
+		virtual std::size_t size() const = 0;
 	};
 
 
@@ -155,6 +169,7 @@ namespace nap
 		T mValue;
 	protected:
 		virtual void add(osc::OutboundPacketStream& outPacket) const override;
+		virtual std::size_t size() const override;
 	};
 
 	
@@ -169,6 +184,7 @@ namespace nap
 		std::string mString;
 	protected:
 		virtual void add(osc::OutboundPacketStream& outPacket) const override;
+		virtual std::size_t size() const override									{ return mString.length(); }
 	};
 
 
@@ -180,6 +196,7 @@ namespace nap
 		RTTI_ENABLE(OSCBaseValue)
 	protected:
 		virtual void add(osc::OutboundPacketStream& outPacket) const override	{ outPacket << osc::OscNil; }
+		virtual std::size_t size() const override									{ return sizeof(osc::OscNil); }
 	};
 
 
@@ -194,6 +211,7 @@ namespace nap
 		nap::uint64 mTimeTag;
 	protected:
 		virtual void add(osc::OutboundPacketStream& outPacket) const override	{ outPacket << osc::TimeTag(mTimeTag); }
+		virtual size_t size() const override									{ return sizeof(nap::uint64); }
 	};
 
 
@@ -230,6 +248,7 @@ namespace nap
 
 	protected:
 		virtual void add(osc::OutboundPacketStream& outPacket) const override;
+		virtual size_t size() const override									{ return mSize; }
 	};
 
 
@@ -244,6 +263,7 @@ namespace nap
 
 	protected:
 		virtual void add(osc::OutboundPacketStream& outPacket) const override;
+		virtual size_t size() const override									{ return sizeof(nap::uint32); }
 
 	private:
 		nap::uint32 mColor;
@@ -292,5 +312,12 @@ namespace nap
 	void nap::OSCValue<T>::add(osc::OutboundPacketStream& outPacket) const
 	{
 		outPacket << mValue;
+	}
+
+
+	template<typename T>
+	size_t nap::OSCValue<T>::size() const
+	{
+		return sizeof(T);
 	}
 }

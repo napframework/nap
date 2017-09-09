@@ -159,6 +159,12 @@ namespace nap
 	}
 
 
+	std::size_t OSCArgument::size() const
+	{
+		return mValue->size();
+	}
+
+
 	void OSCColor::add(osc::OutboundPacketStream& outPacket) const
 	{
 		outPacket << osc::RgbaColor(mColor);

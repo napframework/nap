@@ -54,7 +54,7 @@ namespace nap
 		/**
 		 * @return the number of arguments associated with this event
 		 */
-		int getSize() const													{ return static_cast<int>(mArguments.size()); }
+		int getCount() const													{ return static_cast<int>(mArguments.size()); }
 
 		/**
 		 *	@return the arguments of this osc event
@@ -72,6 +72,12 @@ namespace nap
 		 * @param index the index of the argument
 		 */
 		OSCArgument& getArgument(int index);
+
+		/**
+		 * @return the size of the osc event in bytes
+		 * This includes the size of the arguments together with the name of this event
+		 */
+		std::size_t getSize() const;
 
 		// Array subscript overloads
 		OSCArgument& operator[](std::size_t idx)							{ return getArgument(static_cast<int>(idx)); }

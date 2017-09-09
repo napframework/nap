@@ -33,4 +33,14 @@ namespace nap
 		return *(mArguments[index]);
 	}
 
+
+	std::size_t OSCEvent::getSize() const
+	{
+		std::size_t event_size(0);
+		for (const auto& arg : mArguments)
+		{
+			event_size += arg->size();
+		}
+		return event_size + mAddress.length();
+	}
 }

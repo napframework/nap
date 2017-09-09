@@ -84,9 +84,9 @@ void onUpdate()
 	sceneService->update();
 
 	// Send an osc message
-	// nap::OSCEventPtr new_event = std::make_unique<nap::OSCEvent>("/color/1");
-	// new_event->addValue<float>(1.0f);
-	// oscSender->send(*new_event);
+	nap::OSCEventPtr new_event = std::make_unique<nap::OSCEvent>("/color/1");
+	new_event->addValue<float>(1.0f);
+	oscSender->send(*new_event);
 }
 
 

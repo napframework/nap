@@ -12,7 +12,7 @@ RTTI_PROPERTY("Port", &nap::OSCSender::mPort, nap::rtti::EPropertyMetaData::Requ
 RTTI_END_CLASS
 
 // Max size in bytes of an OSC message
-static const size_t oscPackageCapacity(1536);
+static const size_t initialPacketCapacity(1536);
 
 namespace nap
 {
@@ -22,6 +22,9 @@ namespace nap
 
 	bool OSCSender::init(utility::ErrorState& errorState)
 	{
+		// Make the buffer
+		mBuffer = std::make_unique<OSCBuffer>(initialPacketCapacity);
+
 		// Construct host endpoint
 		IpEndpointName host(mIPAddress.c_str(), mPort);
 
@@ -39,9 +42,15 @@ namespace nap
 
 	bool OSCSender::send(const OSCEvent& oscEvent)
 	{
+		std::size_t buffer_size = oscEvent.getSize();
+		buffer_size += sizeof(osc::BeginMessage);
+		buffer_size += sizeof(osc::EndMessage);
+
+		// Grow the buffer based on the number of bytes that need allocation
+		mBuffer->reserve(buffer_size);
+
 		// Create packet
-		char buffer[oscPackageCapacity];
-		osc::OutboundPacketStream packet(buffer, oscPackageCapacity);
+		osc::OutboundPacketStream packet(mBuffer->mData, mBuffer->mSize);
 
 		// Clear and add event
 		packet.Clear();
@@ -49,12 +58,54 @@ namespace nap
 		if (!addEvent(oscEvent, packet, error))
 		{
 			nap::Logger::warn(error.toString());
-			return false;
+		}
+		else
+		{
+			mSocket->Send(packet.Data(), packet.Size());
 		}
 
 		// Send over
-		mSocket->Send(packet.Data(), packet.Size());
 		return true;
+	}
+
+
+	void OSCSender::send()
+	{
+		if (mEventQueue.empty())
+			return;
+
+		// Create the buffer
+		std::size_t buffer_size = mEventQueueDataSize;
+		buffer_size += sizeof(osc::BeginMessage)	* mEventQueue.size();
+		buffer_size += sizeof(osc::EndMessage)		* mEventQueue.size();
+		buffer_size += sizeof(osc::BundleInitiator);
+		buffer_size += sizeof(osc::BundleTerminator);
+
+		// Create packet, grow buffer if necessary
+		mBuffer->reserve(buffer_size);
+		osc::OutboundPacketStream packet(mBuffer->mData, initialPacketCapacity);
+		packet.Clear();
+
+		// Signal we're going to send a bundle
+		packet << osc::BeginBundle();
+
+		// Add all events
+		utility::ErrorState error;
+		while (!(mEventQueue.empty()))
+		{
+			if (!addEvent(*(mEventQueue.front().get()), packet, error))
+			{
+				nap::Logger::warn(error.toString().c_str());
+			}
+			mEventQueue.pop();
+		}
+
+		// Signal end of bundle and send
+		packet << osc::EndBundle;
+		mSocket->Send(packet.Data(), packet.Size());
+
+		// Delete the buffer and clear data
+		mEventQueueDataSize = 0;
 	}
 
 
@@ -73,7 +124,7 @@ namespace nap
 			return false;
 		}
 
-		if (!(error.check(oscEvent.getSize() > 0, "No OSC arguments specified")))
+		if (!(error.check(oscEvent.getCount() > 0, "No OSC arguments specified")))
 		{
 			assert(false);
 			return false;
@@ -92,4 +143,34 @@ namespace nap
 		outPacket << osc::EndMessage;
 		return true;
 	}
+
+
+	void OSCSender::addEvent(OSCEventPtr oscEvent)
+	{
+		mEventQueueDataSize += (oscEvent->getSize());
+		mEventQueue.emplace(std::move(oscEvent));
+	}
+
+
+	OSCBuffer::~OSCBuffer()
+	{
+		if (mData != nullptr)
+			delete[] mData;
+		mSize = 0;
+	}
+
+
+	void OSCBuffer::reserve(std::size_t elements)
+	{
+		assert(elements > 0);
+		if (elements <= mSize)
+			return;
+		
+		if (mData != nullptr)
+			delete[] mData;
+
+		mData = new char[elements];
+		mSize = elements;
+	}
+
 }
