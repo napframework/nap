@@ -9,6 +9,8 @@
 
 namespace nap
 {
+	using OSCArgumentList = std::vector<std::unique_ptr<OSCArgument>>;
+
 	/**
 	 * Generic OSC event
 	 * An OSC event has an address and a set of arguments associated with it
@@ -44,9 +46,20 @@ namespace nap
 		OSCArgument* addValue(Args&&... args);
 
 		/**
+		 * Adds an OSCArgument that holds a string
+		 * This is a utility function that wraps addArgument
+		 */
+		OSCArgument* addString(const std::string& string);
+
+		/**
 		 * @return the number of arguments associated with this event
 		 */
-		int getSize()											{ return static_cast<int>(mArguments.size()); }
+		int getSize() const													{ return static_cast<int>(mArguments.size()); }
+
+		/**
+		 *	@return the arguments of this osc event
+		 */
+		const OSCArgumentList& getArguments() const							{ return mArguments; }
 
 		/**
 		 * @return an argument based on @index
@@ -61,11 +74,11 @@ namespace nap
 		OSCArgument& getArgument(int index);
 
 		// Array subscript overloads
-		OSCArgument& operator[](std::size_t idx)				{ return getArgument(static_cast<int>(idx)); }
-		const OSCArgument& operator[](std::size_t idx) const	{ return getArgument(static_cast<int>(idx)); }
+		OSCArgument& operator[](std::size_t idx)							{ return getArgument(static_cast<int>(idx)); }
+		const OSCArgument& operator[](std::size_t idx) const				{ return getArgument(static_cast<int>(idx)); }
 
 	private:
-		std::vector<std::unique_ptr<OSCArgument>> mArguments;
+		OSCArgumentList mArguments;
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -86,6 +99,7 @@ namespace nap
 		mArguments.emplace_back(std::move(argument));
 		return mArguments.back().get();
 	}
+
 
 	template<typename T, typename... Args>
 	OSCArgument* nap::OSCEvent::addValue(Args&&... args)

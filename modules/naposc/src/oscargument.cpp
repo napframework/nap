@@ -59,10 +59,18 @@ namespace nap
 		return dest;
 	}
 
+
+	void OSCBlob::add(osc::OutboundPacketStream& outPacket) const
+	{
+		outPacket << osc::Blob(mData, mSize);
+	}
+
+
 	bool OSCArgument::isFloat() const
 	{
 		return this->mValue->get_type().is_derived_from(RTTI_OF(OSCFloat));
 	}
+
 
 	float OSCArgument::asFloat() const
 	{
@@ -70,11 +78,13 @@ namespace nap
 		return static_cast<const OSCValue<float>*>(this->mValue.get())->mValue;
 	}
 
+
 	int OSCArgument::asInt() const
 	{
 		assert(isInt());
 		return static_cast<const OSCValue<int>*>(this->mValue.get())->mValue;
 	}
+
 
 	bool OSCArgument::isInt() const
 	{
@@ -87,21 +97,25 @@ namespace nap
 		return static_cast<const OSCValue<bool>*>(this->mValue.get())->mValue;
 	}
 
+
 	bool OSCArgument::isBool() const
 	{
 		return this->mValue->get_type().is_derived_from(RTTI_OF(OSCBool));
 	}
 
-	std::string OSCArgument::asString() const
+
+	const std::string& OSCArgument::asString() const
 	{
 		assert(isString());
-		return static_cast<const OSCValue<std::string>*>(this->mValue.get())->mValue;
+		return static_cast<const OSCString*>(this->mValue.get())->mString;
 	}
+
 
 	bool OSCArgument::isString() const
 	{
 		return this->mValue->get_type().is_derived_from(RTTI_OF(OSCString));
 	}
+
 
 	double OSCArgument::asDouble() const
 	{
@@ -109,10 +123,12 @@ namespace nap
 		return static_cast<const OSCValue<double>*>(this->mValue.get())->mValue;
 	}
 
+
 	bool OSCArgument::isDouble() const
 	{
 		return this->mValue->get_type().is_derived_from(RTTI_OF(OSCDouble));
 	}
+
 
 	char OSCArgument::asChar() const
 	{
@@ -120,16 +136,71 @@ namespace nap
 		return static_cast<const OSCValue<char>*>(this->mValue.get())->mValue;
 	}
 
+
 	bool OSCArgument::isChar() const
 	{
 		return this->mValue->get_type().is_derived_from(RTTI_OF(OSCChar));
 	}
+
 
 	bool OSCArgument::isNil() const
 	{
 		return this->mValue->get_type().is_derived_from(RTTI_OF(OSCNil));
 	}
 
+
 	OSCArgument::OSCArgument(OSCValuePtr value) : mValue(std::move(value))
 	{	}
+
+
+	void OSCArgument::add(osc::OutboundPacketStream& outPacket) const
+	{
+		mValue->add(outPacket);
+	}
+
+
+	void OSCColor::add(osc::OutboundPacketStream& outPacket) const
+	{
+		outPacket << osc::RgbaColor(mColor);
+	}
+
+
+	// Specialization for osc value of type float
+	void nap::OSCValue<float>::add(osc::OutboundPacketStream& outPacket) const
+	{
+		outPacket << mValue;
+	}
+
+
+	// Specialization for osc value of type bool
+	void nap::OSCValue<bool>::add(osc::OutboundPacketStream& outPacket) const
+	{
+		outPacket << mValue;
+	}
+
+
+	// Specialization for osc value of type int
+	void nap::OSCValue<int>::add(osc::OutboundPacketStream& outPacket) const
+	{
+		outPacket << mValue;
+	}
+
+
+	// Specialization for osc value of type double
+	void nap::OSCValue<double>::add(osc::OutboundPacketStream& outPacket) const
+	{
+		outPacket << mValue;
+	}
+
+
+	// Specialization for osc value of type char
+	void nap::OSCValue<char>::add(osc::OutboundPacketStream& outPacket) const
+	{
+		outPacket << mValue;
+	}
+
+	void OSCString::add(osc::OutboundPacketStream& outPacket) const
+	{
+		outPacket << mString.c_str();
+	}
 }

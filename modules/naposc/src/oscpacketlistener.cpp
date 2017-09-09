@@ -49,7 +49,7 @@ namespace nap
 
 			if (arg->IsString())
 			{
-				event->addValue<std::string>((arg++)->AsStringUnchecked());
+				event->addString((arg++)->AsStringUnchecked());
 				continue;
 			}
 
@@ -67,7 +67,7 @@ namespace nap
 
 			if (arg->IsRgbaColor())
 			{
-				event->addArgument<OSCColor>((arg++)->AsRgbaColorUnchecked());
+				event->addArgument<OSCColor>(static_cast<nap::uint32>((arg++)->AsRgbaColorUnchecked()));
 				continue;
 			}
 
@@ -75,6 +75,12 @@ namespace nap
 			{
 				event->addArgument<OSCNil>();
 				arg++;
+				continue;
+			}
+
+			if (arg->IsTimeTag())
+			{
+				event->addArgument<OSCTimeTag>(static_cast<nap::uint64>((arg++)->AsTimeTag()));
 				continue;
 			}
 
@@ -86,7 +92,7 @@ namespace nap
 				(arg++)->AsBlobUnchecked(blob_data, size);
 
 				// Add blob
-				event->addArgument<OSCBlob>(blob_data, sizeof(osc::OSC_SIZEOF_INT32) * size);
+				event->addArgument<OSCBlob>(blob_data, size);
 				continue;
 			}
 

@@ -4,6 +4,7 @@
 #include <rtti/rtti.h>
 #include <utility/dllexport.h>
 #include <glm/glm.hpp>
+#include <osc/OscOutboundPacketStream.h>
 
 namespace nap
 {
@@ -72,7 +73,7 @@ namespace nap
 		/**
 		 *	@return this argument's value as a string
 		 */
-		std::string asString() const;
+		const std::string& asString() const;
 
 		/**
 		* @return if this argument's value is a string
@@ -110,6 +111,12 @@ namespace nap
 		OSCArgument(OSCArgument&) = delete;
 		OSCArgument& operator=(const OSCArgument&) = delete;
 
+		/**
+		 * Adds the value to an OSC packet that can be send over
+		 * @param outPacket the packet to add the value to
+		 */
+		void add(osc::OutboundPacketStream& outPacket) const;
+
 	private:
 		OSCValuePtr mValue = nullptr;
 	};
@@ -120,10 +127,19 @@ namespace nap
 	*/
 	class NAPAPI OSCBaseValue
 	{
+		friend OSCArgument;
 		RTTI_ENABLE()
 	public:
 		OSCBaseValue() = default;
 		virtual ~OSCBaseValue() = default;
+
+		/**
+		 * Every type needs to be able to add itself to an OSC package stream
+		 * This function is called externally when constructing a package to send over
+		 * @param outPacket the package to add the value to
+		 */
+	protected:
+		virtual void add(osc::OutboundPacketStream& outPacket) const = 0;
 	};
 
 
@@ -135,8 +151,24 @@ namespace nap
 	{
 		RTTI_ENABLE(OSCBaseValue)
 	public:
-		OSCValue(const T& value) : mValue(value)				{ }
+		OSCValue(const T& value) : mValue(value)								{ }
 		T mValue;
+	protected:
+		virtual void add(osc::OutboundPacketStream& outPacket) const override;
+	};
+
+	
+	/**
+	 *	Simple OSC String
+	 */
+	class NAPAPI OSCString : public OSCBaseValue
+	{
+		RTTI_ENABLE(OSCBaseValue)
+	public:
+		OSCString(const std::string& string) : mString(string)					{ }
+		std::string mString;
+	protected:
+		virtual void add(osc::OutboundPacketStream& outPacket) const override;
 	};
 
 
@@ -146,6 +178,8 @@ namespace nap
 	class NAPAPI OSCNil : public OSCBaseValue
 	{
 		RTTI_ENABLE(OSCBaseValue)
+	protected:
+		virtual void add(osc::OutboundPacketStream& outPacket) const override	{ outPacket << osc::OscNil; }
 	};
 
 
@@ -156,8 +190,10 @@ namespace nap
 	{
 		RTTI_ENABLE(OSCBaseValue)
 	public:
-		OSCTimeTag(uint64 timeTag) : mTimeTag(timeTag)	{ }
-		uint64 mTimeTag;
+		OSCTimeTag(nap::uint64 timeTag) : mTimeTag(timeTag)	{ }
+		nap::uint64 mTimeTag;
+	protected:
+		virtual void add(osc::OutboundPacketStream& outPacket) const override	{ outPacket << osc::TimeTag(mTimeTag); }
 	};
 
 
@@ -191,6 +227,9 @@ namespace nap
 
 		// Size of the blob in bytes
 		int mSize = 0;
+
+	protected:
+		virtual void add(osc::OutboundPacketStream& outPacket) const override;
 	};
 
 
@@ -201,10 +240,13 @@ namespace nap
 	{
 		RTTI_ENABLE(OSCBaseValue)
 	public:
-		OSCColor(uint32 color) : mColor(color)		{ }
+		OSCColor(nap::uint32 color) : mColor(color)		{ }
+
+	protected:
+		virtual void add(osc::OutboundPacketStream& outPacket) const override;
 
 	private:
-		uint32 mColor;
+		nap::uint32 mColor;
 	};
 
 
@@ -217,7 +259,6 @@ namespace nap
 	using OSCInt =		OSCValue<int>;
 	using OSCDouble =	OSCValue<double>;
 	using OSCChar =		OSCValue<char>;
-	using OSCString =	OSCValue<std::string>;
 
 	//////////////////////////////////////////////////////////////////////////
 	// Template definitions

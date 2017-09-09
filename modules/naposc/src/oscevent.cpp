@@ -13,11 +13,19 @@ namespace nap
 
 	}
 
+
+	nap::OSCArgument* OSCEvent::addString(const std::string& string)
+	{
+		return addArgument<nap::OSCString>(string);
+	}
+
+
 	const OSCArgument& OSCEvent::getArgument(int index) const
 	{
 		assert(index < mArguments.size() && index >= 0);
 		return *(mArguments[index]);
 	}
+
 
 	nap::OSCArgument& OSCEvent::getArgument(int index)
 	{

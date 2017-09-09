@@ -36,6 +36,7 @@
 #include <etherdreamdac.h>
 #include <perspcameracomponent.h>
 #include <mathutils.h>
+#include <oscsender.h>
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
@@ -54,6 +55,9 @@ nap::ObjectPtr<nap::RenderWindow> renderWindow = nullptr;
 
 // Laser DAC
 nap::ObjectPtr<nap::EntityInstance> laserPrototype = nullptr;
+
+// Holds the osc sender
+nap::ObjectPtr<nap::OSCSender> oscSender = nullptr;
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -78,7 +82,14 @@ void onUpdate()
 
 	// Update the scene
 	sceneService->update();
+
+	// Send an osc message
+	// nap::OSCEventPtr new_event = std::make_unique<nap::OSCEvent>("/color/1");
+	// new_event->addValue<float>(1.0f);
+	// oscSender->send(*new_event);
 }
+
+
 
 // Called when the window is going to render
 void onRender()
@@ -181,6 +192,9 @@ bool init(nap::Core& core)
 
 	// Store laser dacs
 	laserPrototype = resourceManagerService->findEntity("LaserPrototypeEntity");
+
+	// Store sender
+	oscSender = resourceManagerService->findObject<nap::OSCSender>("OscSender");
 
 	// Set render states
 	nap::RenderState& render_state = renderService->getRenderState();
