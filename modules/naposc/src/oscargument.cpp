@@ -165,40 +165,6 @@ namespace nap
 	}
 
 
-	// Specialization for osc value of type float
-	void nap::OSCValue<float>::add(osc::OutboundPacketStream& outPacket) const
-	{
-		outPacket << mValue;
-	}
-
-
-	// Specialization for osc value of type bool
-	void nap::OSCValue<bool>::add(osc::OutboundPacketStream& outPacket) const
-	{
-		outPacket << mValue;
-	}
-
-
-	// Specialization for osc value of type int
-	void nap::OSCValue<int>::add(osc::OutboundPacketStream& outPacket) const
-	{
-		outPacket << mValue;
-	}
-
-
-	// Specialization for osc value of type double
-	void nap::OSCValue<double>::add(osc::OutboundPacketStream& outPacket) const
-	{
-		outPacket << mValue;
-	}
-
-
-	// Specialization for osc value of type char
-	void nap::OSCValue<char>::add(osc::OutboundPacketStream& outPacket) const
-	{
-		outPacket << mValue;
-	}
-
 	void OSCString::add(osc::OutboundPacketStream& outPacket) const
 	{
 		outPacket << mString.c_str();

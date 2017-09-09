@@ -147,7 +147,7 @@ namespace nap
 	 * Simple OSC Value
 	 */
 	template<typename T>
-	class NAPAPI OSCValue : public OSCBaseValue
+	class OSCValue : public OSCBaseValue
 	{
 		RTTI_ENABLE(OSCBaseValue)
 	public:
@@ -285,5 +285,12 @@ namespace nap
 			return nullptr;
 		}
 		return static_cast<T*>(mValue.get());
+	}
+
+
+	template<typename T>
+	void nap::OSCValue<T>::add(osc::OutboundPacketStream& outPacket) const
+	{
+		outPacket << mValue;
 	}
 }
