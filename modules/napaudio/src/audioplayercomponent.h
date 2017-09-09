@@ -69,10 +69,10 @@ namespace nap {
             RTTI_ENABLE(nap::ComponentInstance)
             
         public:
-            AudioPlayerComponentInstance(EntityInstance& entity) : nap::ComponentInstance(entity) { }
+            AudioPlayerComponentInstance(EntityInstance& entity, Component& resource) : nap::ComponentInstance(entity, resource) { }
             
             // Initialize the component
-            bool init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+            bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
             
         private:
             // The playback nodes, one for mono two for stereo buffers
