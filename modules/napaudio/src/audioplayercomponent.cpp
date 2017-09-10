@@ -16,7 +16,7 @@ RTTI_BEGIN_CLASS(nap::audio::AudioPlayerComponent)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::AudioPlayerComponentInstance)
-    RTTI_CONSTRUCTOR(nap::EntityInstance&)
+    RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
 
@@ -27,9 +27,9 @@ namespace nap {
         /**
          * Initializes the audio node system to play back an audio buffer, either mono or stereo
          */
-        bool AudioPlayerComponentInstance::init(const ObjectPtr<Component>& resourcePtr, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+        bool AudioPlayerComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
         {
-            AudioPlayerComponent* resource = rtti_cast<AudioPlayerComponent>(resourcePtr.get());
+            AudioPlayerComponent* resource = rtti_cast<AudioPlayerComponent>(getComponent());
             
             // Mono mode
             if (resource->mAudioFile->getBuffer().getChannelCount() == 1)
