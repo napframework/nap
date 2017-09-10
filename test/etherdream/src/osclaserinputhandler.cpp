@@ -1,6 +1,7 @@
 #include "osclaserinputhandler.h"
 #include <nap/entity.h>
 #include <utility/stringutils.h>
+#include <mathutils.h>
 
 RTTI_BEGIN_CLASS(nap::OSCLaserInputHandler)
 RTTI_END_CLASS
@@ -33,6 +34,10 @@ namespace nap
 		if (!errorState.check(mInputComponent != nullptr, "missing osc input component"))
 			return false;
 
+		mSelectionComponent = getEntityInstance()->findComponent<nap::LineSelectionComponentInstance>();
+		if (!errorState.check(mSelectionComponent != nullptr, "missing line selection component"))
+			return false;
+
 		mInputComponent->messageReceived.connect(mMessageReceivedSlot);
 
 		return true;
@@ -62,6 +67,12 @@ namespace nap
 		if (utility::gStartsWith(oscEvent.mAddress, "/resetcolor"))
 		{
 			resetColor(oscEvent);
+			return;
+		}
+
+		if (utility::gStartsWith(oscEvent.mAddress, "/index"))
+		{
+			setIndex(oscEvent);
 			return;
 		}
 	}
@@ -168,11 +179,22 @@ namespace nap
 	}
 
 
+	void OSCLaserInputHandlerInstance::setIndex(const OSCEvent& event)
+	{
+		assert(event[0].isFloat());
+		float v = event[0].asFloat();
+
+		float count = static_cast<float>(mSelectionComponent->getCount());
+		int idx = math::min<int>(static_cast<int>(count * v), count - 1);
+		mSelectionComponent->setIndex(idx);
+	}
+
 	void OSCLaserInputHandler::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 	{
 		components.emplace_back(RTTI_OF(nap::RotateComponent));
 		components.emplace_back(RTTI_OF(nap::RenderableMeshComponent));
 		components.emplace_back(RTTI_OF(nap::OSCInputComponent));
+		components.emplace_back(RTTI_OF(nap::LineSelectionComponent));
 	}
 
 }

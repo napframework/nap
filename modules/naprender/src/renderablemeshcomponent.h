@@ -26,11 +26,13 @@ namespace nap
 
 	/**
 	 * Resource class for RenderableMeshResource. Hold static data as read from file.
+	 * The resource also holds a pointer to a mesh. this mesh is used by the instance of
+	 * this class for drawing.
 	 */
 	class NAPAPI RenderableMeshComponent : public RenderableComponentResource
 	{
+		friend class RenderableMeshComponentInstance;
 		RTTI_ENABLE(RenderableComponentResource)
-
 	public:
 		/**
 		 * RenderableMesh uses transform to position itself in the world.
@@ -47,14 +49,15 @@ namespace nap
 		{
 			return RTTI_OF(RenderableMeshComponentInstance);
 		}
+
 		/**
 		 * @return Mesh resource.
 		 */
-		IMesh& getMeshResource() { return *mMeshResource; }
+		IMesh& getMeshResource();
 
 	public:
-		ObjectPtr<IMesh>					mMeshResource;						///< Resource to render
-		MaterialInstanceResource			mMaterialInstanceResource;			///< MaterialInstance, which is used to override uniforms for this instance
+		ObjectPtr<IMesh>					mMesh = nullptr;					///< Resource to render
+		MaterialInstanceResource			mMaterialInstance;					///< MaterialInstance, which is used to override uniforms for this instance
 		Rect								mClipRect;							///< Clipping rectangle, in pixel coordinates
 	};
 
@@ -88,29 +91,45 @@ namespace nap
 		MaterialInstance& getMaterialInstance();
 
 		/**
-		 * @return MeshResource for the RenderableMeshComponent.
+		 * @return the MeshResource associated with this component for rendering.
 		 */
-		IMesh& getMesh() { return getComponent<RenderableMeshComponent>()->getMeshResource(); }
+		IMesh& getMesh();
 
 		/**
-		 * @return MeshInstance for the RenderableMeshComponent's Mesh.
+		 * Set the mesh resource for this component to render
+		 * @param mesh pointer to the mesh (resource) this component will render
+		 * @param error contains the error message if the mesh could not be set successfully
+		 * @param return if the mesh is set successfully
 		 */
-		MeshInstance& getMeshInstance() { return getComponent<RenderableMeshComponent>()->getMeshResource().getMeshInstance(); }
+		bool setMesh(nap::ObjectPtr<IMesh> mesh, utility::ErrorState& error);
+
+		/**
+		 * @return the mesh instance that is rendered to screen
+		 */
+		MeshInstance& getMeshInstance();
 
 		/**
 		 * Toggles visibility.
 		 */
-		void setVisible(bool visible) { mVisible = visible; }
+		void setVisible(bool visible)													{ mVisible = visible; }
 
 		/**
 		 * Sets clipping rectangle on this instance.
 		 * @param rect Rectangle in pixel coordinates.
 		 */
-		void setClipRect(const Rect& rect) { mClipRect = rect; }
+		void setClipRect(const Rect& rect)												{ mClipRect = rect; }
 
 	private:
 		void pushUniforms();
 		void setBlendMode();
+		
+		/**
+		 * Tries to get a VAO handle for the current mesh / material combination
+		 * @param mesh the mesh to acquire the handle for
+		 * @param error contains the error state if the VAO could not be acquired
+		 * @return unique ptr to the acquired VAO handle
+		 */
+		std::unique_ptr<nap::VAOHandle> acquireVertexArrayObject(nap::ObjectPtr<nap::IMesh> mesh, utility::ErrorState& error);
 
 	private:
 		TransformComponentInstance*					mTransformComponent;	// Cached pointer to transform
@@ -118,5 +137,7 @@ namespace nap
 		MaterialInstance							mMaterialInstance;		// MaterialInstance
 		bool										mVisible = true;		// Whether this instance is visible or not
 		Rect										mClipRect;				// Clipping rectangle for this instance, in pixel coordinates
+		nap::RenderableMeshComponent*				mResource = nullptr;	// Resource of this instance
+		nap::ObjectPtr<IMesh>						mMesh = nullptr;		// The mesh to render
 	};
 }

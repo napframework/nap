@@ -2,7 +2,6 @@
 
 // Local Includes
 #include "etherdreamdac.h"
-#include "lasershapecomponent.h"
 
 // External Includes
 #include <nap/component.h>
@@ -80,9 +79,6 @@ namespace nap
 		LaserOutputProperties mProperties;
 
 	private:
-		// All the available shapes to draw
-		std::vector<LaserShapeComponentInstance*> mShapes;
-
 		// Populate Laser Buffer
 		void populateLaserBuffer(const std::vector<glm::vec3>& verts, const std::vector<glm::vec4>& colors, const glm::mat4x4& laserXform, const glm::mat4x4& lineXform);
 

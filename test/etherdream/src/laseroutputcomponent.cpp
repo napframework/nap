@@ -1,4 +1,3 @@
-#include "lasershapecomponent.h"
 #include "laseroutputcomponent.h"
 
 #include <nap/entity.h>

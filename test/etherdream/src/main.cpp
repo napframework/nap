@@ -3,7 +3,6 @@
 
 // Local Includes
 #include "renderablemeshcomponent.h"
-#include "lasershapes.h"
 #include "laseroutputcomponent.h"
 
 // GLM
@@ -83,12 +82,12 @@ void onUpdate()
 	// Update the scene
 	sceneService->update();
 
+
 	// Send an osc message
 	nap::OSCEventPtr new_event = std::make_unique<nap::OSCEvent>("/color/1");
 	new_event->addValue<float>(1.0f);
-	oscSender->send(*new_event);
+	//oscSender->send(*new_event);
 }
-
 
 
 // Called when the window is going to render
@@ -179,6 +178,7 @@ bool init(nap::Core& core)
 		nap::Logger::fatal("unable to create osc service: %s", errorState.toString().c_str());
 		return false;
 	}
+
 
 	// Load scene
 	if (!resourceManagerService->loadFile("data/etherdream/etherdream.json", errorState))

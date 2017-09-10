@@ -2,6 +2,7 @@
 
 // Local Includes
 #include "oscevent.h"
+#include "lineselectioncomponent.h"
 
 // External Includes
 #include <nap/component.h>
@@ -52,11 +53,13 @@ namespace nap
 		nap::RotateComponentInstance* mRotateComponent = nullptr;
 		nap::RenderableMeshComponentInstance* mMeshComponent = nullptr;
 		nap::OSCInputComponentInstance* mInputComponent = nullptr;
+		nap::LineSelectionComponentInstance* mSelectionComponent = nullptr;
 
 		void updateColor(const OSCEvent& event);
 		void updateRotate(const OSCEvent& event);
 		void resetRotate(const OSCEvent& event);
 		void resetColor(const OSCEvent& event);
+		void setIndex(const OSCEvent& event);
 
 		NSLOT(mMessageReceivedSlot, const nap::OSCEvent&, handleMessageReceived)
 	};

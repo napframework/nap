@@ -82,7 +82,7 @@
 			"mID": "RectangleMesh",
 			"Properties": 
 			{
-				"Count" : 400,
+				"Count" : 500,
 				"Color" :
 				{
 					"x":1.0,
@@ -302,13 +302,27 @@
 			"Components" : 
 			[
 				{
+					"Type" : "nap::LineSelectionComponent",
+					"mID" : "LineSelectorOne",
+					"Lines" :
+					[
+						"LineMesh",
+						"RectangleMesh",
+						"CircleMesh",
+						"HexagonMesh",
+						"TriangleMesh"
+					],
+					"Index" : 0
+				},
+				{
 					"Type" : "nap::OSCInputComponent",
 					"Addresses" : 
 					[
 						"/color",
 						"/resetcolor",
 						"/rotate",
-						"/resetrotate"
+						"/resetrotate",
+						"/index"
 					]
 				},
 				{
@@ -356,7 +370,7 @@
 
 				{
 					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "HexagonMesh",
+					"Mesh" : "LineMesh",
 					"MaterialInstance" : 
 					{
 						"Material": "LineMaterial"
