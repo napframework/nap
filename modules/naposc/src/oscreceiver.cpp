@@ -73,7 +73,8 @@ namespace nap
 		outEvents.swap(mEvents);
 
 		// Clear current queue
-		mEvents.swap(std::queue<OSCEventPtr>());
+        std::queue<OSCEventPtr> empty_queue;;
+		mEvents.swap(empty_queue);
 	}
 
 

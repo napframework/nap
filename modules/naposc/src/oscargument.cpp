@@ -43,19 +43,20 @@ namespace nap
 {
 	OSCBlob::OSCBlob(const void* data, int size) : mSize(size)
 	{
+        mData = malloc(size);
 		memcpy(mData, data, size);
 	}
 
 
 	OSCBlob::~OSCBlob()
 	{
-		delete mData;
+        free(mData);
 	}
 
 	void* OSCBlob::getCopy()
 	{
-		void* dest = nullptr;
-		memcpy(dest, mData, mSize);
+        void* dest = malloc(mSize);
+        memcpy(dest, mData, mSize);
 		return dest;
 	}
 

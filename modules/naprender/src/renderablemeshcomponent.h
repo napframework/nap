@@ -43,7 +43,7 @@ namespace nap
 		/**
 		 * @return instance type to create for this resource.
 		 */
-		virtual const rtti::TypeInfo getInstanceType() const
+		virtual const rtti::TypeInfo getInstanceType() const override
 		{
 			return RTTI_OF(RenderableMeshComponentInstance);
 		}

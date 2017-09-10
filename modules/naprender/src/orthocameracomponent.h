@@ -37,7 +37,7 @@ namespace nap
 		/**
 		 * Returns instance type to create for this ComponentResource.
 		 */
-		virtual const rtti::TypeInfo getInstanceType() const { return RTTI_OF(OrthoCameraComponentInstance); }
+		virtual const rtti::TypeInfo getInstanceType() const override { return RTTI_OF(OrthoCameraComponentInstance); }
 
 	public:
 		OrthoCameraProperties mProperties;		// Properties of the camera

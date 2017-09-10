@@ -90,7 +90,8 @@ namespace nap
 		assert(idx > 0 && idx < 5);
 		ccolor[idx-1] = v;
 
-		color_attr.setData(std::vector<glm::vec4>(color_attr.getSize(), ccolor));
+        std::vector<glm::vec4> new_color(color_attr.getSize(), ccolor);
+		color_attr.setData(new_color);
 		nap::utility::ErrorState error;
 		if (!mesh.update(error))
 		{
@@ -155,7 +156,9 @@ namespace nap
 
 		nap::MeshInstance& mesh = mMeshComponent->getMeshInstance();
 		Vec4VertexAttribute& color_attr = mesh.GetAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0));
-		color_attr.setData(std::vector<glm::vec4>(color_attr.getSize(), { 1.0f, 1.0f, 1.0f, 1.0f }));
+		
+        std::vector<glm::vec4> new_color(color_attr.getSize(), { 1.0f, 1.0f, 1.0f, 1.0f });
+        color_attr.setData(new_color);
 		
 		nap::utility::ErrorState error;
 		if (!mesh.update(error))

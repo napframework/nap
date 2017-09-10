@@ -1,6 +1,7 @@
 #pragma once
 
 // External Includes
+#include <ip/UdpSocket.h>
 #include <rtti/rttiobject.h>
 #include <rtti/factory.h>
 #include <queue>

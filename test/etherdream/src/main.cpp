@@ -2,7 +2,7 @@
 //
 
 // Local Includes
-#include "RenderableMeshComponent.h"
+#include "renderablemeshcomponent.h"
 #include "lasershapes.h"
 #include "laseroutputcomponent.h"
 
@@ -261,7 +261,7 @@ void runGame(nap::Core& core)
 			else if (nap::isWindowEvent(event))
 			{
 				// Add input event for later processing
-				renderService->addEvent(std::move(nap::translateWindowEvent(event)));
+				renderService->addEvent(nap::translateWindowEvent(event));
 			}
 		}
 
