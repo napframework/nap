@@ -116,6 +116,40 @@
 		},
 
 		{
+			"Type" : "nap::Hexagon",
+			"mID": "HexagonMesh",
+			"Properties": 
+			{
+				"Count" : 500,
+				"Color" :
+				{
+					"x":1.0,
+					"y":1.0,
+					"z":1.0,
+					"w":1.0
+				}
+			},
+			"Radius":1.0
+		},
+
+		{
+			"Type" : "nap::Triangle",
+			"mID": "TriangleMesh",
+			"Properties": 
+			{
+				"Count" : 500,
+				"Color" :
+				{
+					"x":1.0,
+					"y":1.0,
+					"z":1.0,
+					"w":1.0
+				}
+			},
+			"Radius":1.0
+		},
+
+		{
 			"Type" : "nap::Material",
 			"mID": "LineMaterial",
 			"Shader": "LineShader",
@@ -322,7 +356,7 @@
 
 				{
 					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "CircleMesh",
+					"Mesh" : "HexagonMesh",
 					"MaterialInstance" : 
 					{
 						"Material": "LineMaterial"

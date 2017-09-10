@@ -135,4 +135,41 @@ namespace nap
 		*/
 		virtual bool init(utility::ErrorState& errorState) override;
 	};
+
+	
+	/**
+	 * Simple hexagon as a polygon line
+	 * The uv's are normalized 0-1, the normals point outwards from the center
+	 */
+	class NAPAPI Hexagon : public PolyLine
+	{
+		RTTI_ENABLE(PolyLine)
+	public:
+		float mRadius = 1.0f;						// Radius of the hexagon
+
+		/**
+		 * Creates the hexagon
+		 * @return if the hexagon was successfully created
+		 */
+		virtual bool init(utility::ErrorState& errorState) override;
+	};
+
+	
+	/**
+	 * Simple equal sided triangle
+	 * The uv's are normalized 0-1, the normals point outwards from the center
+	 */
+	class NAPAPI Triangle : public PolyLine
+	{
+		RTTI_ENABLE(PolyLine)
+	public:
+		float mRadius = 1.0f;							// Size of the triangle
+
+		/**
+		 * Creates the equal sided triangle
+		 * @return if the triangle mesh was created successfully
+		 */
+		virtual bool init(utility::ErrorState& errorState) override;
+	};
+
 }
