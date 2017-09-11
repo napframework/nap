@@ -16,13 +16,20 @@ RTTI_BEGIN_ENUM(nap::EWrapMode)
 	RTTI_ENUM_VALUE(nap::EWrapMode::ClampToBorder,	"ClampToBorder")
 RTTI_END_ENUM
 
-
 RTTI_BEGIN_CLASS(nap::TextureParameters)
 	RTTI_PROPERTY("MinFilter",			&nap::TextureParameters::mMinFilter,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("MaxFilter",			&nap::TextureParameters::mMaxFilter,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("WrapVertical",		&nap::TextureParameters::mWrapVertical,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("WrapHorizontal",		&nap::TextureParameters::mWrapHorizontal,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("MaxLodLevel",		&nap::TextureParameters::mMaxLodLevel,		nap::rtti::EPropertyMetaData::Required)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS(opengl::Texture2DSettings)
+	RTTI_PROPERTY("mInternalFormat", &opengl::Texture2DSettings::internalFormat, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("mWidth", &opengl::Texture2DSettings::width, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("mHeight", &opengl::Texture2DSettings::height, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("mFormat", &opengl::Texture2DSettings::format, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("mType", &opengl::Texture2DSettings::type, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Texture)

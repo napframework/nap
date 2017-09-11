@@ -28,6 +28,8 @@ namespace nap
         
 		/**
 		 * Constructor
+		 * @param entity instance the entity this component instance belongs to
+		 * @param resource the resource this component was created from
 		 */
 		ComponentInstance(EntityInstance& entity, Component& resource) : 
 			mEntityInstance(&entity),
@@ -37,11 +39,12 @@ namespace nap
 
 		/**
 		 * Update this component
+		 * @param deltaTime the time in between cooks in seconds
 		 */
 		virtual void update(double deltaTime) {}
 
 		/**
-		 * Get the entity this component belongs to
+		 * @ return the entity this component belongs to
 		 */
 		nap::EntityInstance* getEntityInstance() const
 		{
@@ -49,13 +52,17 @@ namespace nap
 		}
 
 		/**
-		 * Get the resource this component was created from
+		 * @return the resource this component was created from
 		 */
 		nap::Component* getComponent() const
 		{
 			return mResource;
 		}
 
+		/**
+		 * @return the resource this component was created from as type T
+		 * This will return a nullptr if the component is not derived from T
+		 */
 		template<typename T>
 		T* getComponent() const;
 
@@ -101,8 +108,9 @@ namespace nap
 	template<typename T>
 	T* ComponentInstance::getComponent() const
 	{
-		assert(mResource->get_type().is_derived_from(rtti::TypeInfo::get<T>()));
-		return static_cast<T*>(mResource);
+		T* comp = rtti_cast<T>(mResource);
+		assert(comp != nullptr);
+		return comp;
 	}
 
 }
