@@ -344,6 +344,27 @@
 					"Index" : 0
 				},
 				{
+					"Type" : "nap::LineSelectionComponent",
+					"mID" : "LineSelectorTwo",
+					"Lines" :
+					[
+						"LineMesh",
+						"RectangleMesh",
+						"CircleMesh",
+						"HexagonMesh",
+						"TriangleMesh"
+					],
+					"Index" : 2
+				},
+				{
+					"Type" : "nap::LineBlendComponent",
+					"mID" : "LineBlender",
+					"SelectionComponentOne" : "LineSelectorOne",
+					"SelectionComponentTwo" : "LineSelectorTwo",
+					"Line" : "LaserLineMesh",
+					"BlendValue" : 0.5
+				},
+				{
 					"Type" : "nap::OSCInputComponent",
 					"Addresses" : 
 					[
@@ -399,7 +420,7 @@
 
 				{
 					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "LineMesh",
+					"Mesh" : "LaserLineMesh",
 					"MaterialInstance" : 
 					{
 						"Material": "LineMaterial"

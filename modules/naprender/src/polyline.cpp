@@ -400,9 +400,9 @@ namespace nap
 	}
 
 
-	void PolyLine::getPosition(float location, glm::vec3& outPosition)
+	void PolyLine::getPosition(float location, glm::vec3& outPosition) const
 	{
-		PolyLine::getInterpolatedValue<glm::vec3>(*mPositions, location, isClosed(), outPosition);
+		PolyLine::getValueAlongLine<glm::vec3>(*mPositions, location, isClosed(), outPosition);
 	}
 
 
@@ -413,9 +413,9 @@ namespace nap
 	}
 
 
-	void PolyLine::getColor(float location, glm::vec4& outColor)
+	void PolyLine::getColor(float location, glm::vec4& outColor) const
 	{
-		PolyLine::getInterpolatedValue<glm::vec4>(*mColors, location, isClosed(), outColor);
+		PolyLine::getValueAlongLine<glm::vec4>(*mColors, location, isClosed(), outColor);
 	}
 
 
@@ -426,9 +426,9 @@ namespace nap
 	}
 
 
-	void PolyLine::getNormal(float location, glm::vec3& outNormal)
+	void PolyLine::getNormal(float location, glm::vec3& outNormal) const
 	{
-		PolyLine::getInterpolatedValue<glm::vec3>(*mNormals, location, isClosed(), outNormal);
+		PolyLine::getValueAlongLine<glm::vec3>(*mNormals, location, isClosed(), outNormal);
 	}
 
 
@@ -439,9 +439,9 @@ namespace nap
 	}
 
 
-	void PolyLine::getUv(float location, glm::vec3& outUv)
+	void PolyLine::getUv(float location, glm::vec3& outUv) const
 	{
-		PolyLine::getInterpolatedValue<glm::vec3>(*mUvs, location, isClosed(), outUv);
+		PolyLine::getValueAlongLine<glm::vec3>(*mUvs, location, isClosed(), outUv);
 	}
 
 

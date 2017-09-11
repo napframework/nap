@@ -50,7 +50,7 @@ namespace nap
 		 * @param parametric location (0-1) on the line to get the position for
 		 * @param outPosition the interpolated position based on @location
 		 */
-		void getPosition(float location, glm::vec3& outPosition);
+		void getPosition(float location, glm::vec3& outPosition) const;
 		
 		/**
 		 *	@return the color vertex data
@@ -62,7 +62,7 @@ namespace nap
 		* @param parametric location (0-1) on the line to get the color for
 		* @param outColor the interpolated color based on @location
 		*/
-		void getColor(float location, glm::vec4& outColor);
+		void getColor(float location, glm::vec4& outColor) const;
 		
 		/**
 		 *	@return the normal data
@@ -74,19 +74,19 @@ namespace nap
 		* @param parametric location (0-1) on the line to get the normal for
 		* @param outNormal the interpolated normal based on @location
 		*/
-		void getNormal(float location, glm::vec3& outNormal);
+		void getNormal(float location, glm::vec3& outNormal) const;
+		
+		/**
+		 *	@return the uv data
+		 */
+		Vec3VertexAttribute& getUvAttr();
 
 		/**
 		* @return the uv of a vertex along the line @location
 		* @param parametric location (0-1) on the line to get the uv for
 		* @param outUv the interpolated uv based on @location
 		*/
-		void getUv(float location, glm::vec3& outUv);
-		
-		/**
-		 *	@return the uv data
-		 */
-		Vec3VertexAttribute& getUvAttr();
+		void getUv(float location, glm::vec3& outUv) const;
 
 		/**
 		 *	@return if the line is closed or not
@@ -101,7 +101,7 @@ namespace nap
 		 * @param outValue the interpolated value
 		 */
 		template<typename T> 
-		static void getInterpolatedValue(const VertexAttribute<T>& attr, float location, bool closed, T& outValue);
+		static void getValueAlongLine(const VertexAttribute<T>& attr, float location, bool closed, T& outValue);
 		
 
 		// Properties associated with a line
@@ -226,7 +226,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	void nap::PolyLine::getInterpolatedValue(const VertexAttribute<T>& attr, float location, bool closed, T& outValue)
+	void nap::PolyLine::getValueAlongLine(const VertexAttribute<T>& attr, float location, bool closed, T& outValue)
 	{
 		// Get vertex range, when the line is closed it means that we want to
 		// include the first vertex as last

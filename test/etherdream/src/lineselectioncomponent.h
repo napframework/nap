@@ -5,6 +5,7 @@
 #include <nap/objectptr.h>
 #include <renderablemeshcomponent.h>
 #include <polyline.h>
+#include <transformcomponent.h>
 
 namespace nap
 {
@@ -80,8 +81,5 @@ namespace nap
 
 		// property: index
 		int mIndex = 0;
-
-		// Store pointer to transform, set during init
-		nap::RenderableMeshComponentInstance* mMeshComponentInstance;
 	};
 }

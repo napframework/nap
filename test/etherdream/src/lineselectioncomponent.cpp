@@ -2,7 +2,6 @@
 #include <mathutils.h>
 #include <nap/entity.h>
 #include <nap/logger.h>
-#include <transformcomponent.h>
 
 RTTI_BEGIN_CLASS(nap::LineSelectionComponent)
 	RTTI_PROPERTY("Lines", &nap::LineSelectionComponent::mLines, nap::rtti::EPropertyMetaData::Required)
@@ -27,11 +26,6 @@ namespace nap
 			return false;
 		}
 
-		// Get renderable mesh component
-		mMeshComponentInstance = getEntityInstance()->findComponent<RenderableMeshComponentInstance>();
-		if (!errorState.check(mMeshComponentInstance != nullptr, "missing renderable component"))
-			return false;
-
 		// Make sure index is in range
 		verifyIndex(getComponent<LineSelectionComponent>()->mIndex);
 
@@ -53,13 +47,7 @@ namespace nap
 
 
 	void LineSelectionComponentInstance::update(double deltaTime)
-	{
-		utility::ErrorState error;
-		if (!mMeshComponentInstance->setMesh(mLines[mIndex], error))
-		{
-			nap::Logger::warn(error.toString().c_str());
-		}
-	}
+	{	}
 
 
 	void LineSelectionComponentInstance::verifyIndex(int index)

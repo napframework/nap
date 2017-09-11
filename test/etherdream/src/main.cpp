@@ -130,7 +130,6 @@ void onRender()
 }
 
 
-
 /**
 * Initialize all the resources and instances used for drawing
 * slowly migrating all functionality to nap
@@ -182,7 +181,6 @@ bool init(nap::Core& core)
 		return false;
 	}
 
-
 	// Load scene
 	if (!resourceManagerService->loadFile("data/etherdream/etherdream.json", errorState))
 	{
@@ -190,6 +188,7 @@ bool init(nap::Core& core)
 		return false;        
 	}
 
+	
 	// Store all render windows
 	renderWindow = resourceManagerService->findObject<nap::RenderWindow>("Window");
 
