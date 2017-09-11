@@ -3,6 +3,10 @@
 // Std Includes
 #include <stdint.h>
 
+#define _USE_MATH_DEFINES
+#include <cmath>
+#include <math.h>
+
 // Windows defines it's own min max functions that we don't support
 // Use std::min / std::max to be used with nap
 #if defined(__WIN32__) || defined(_WIN32)
@@ -10,6 +14,7 @@
 #define NOMINMAX
 #endif
 #endif
+
 
 // Using
 namespace nap

@@ -17,7 +17,7 @@ RTTI_BEGIN_CLASS(nap::RotateComponent)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RotateComponentInstance)
-	RTTI_CONSTRUCTOR(nap::EntityInstance&)
+	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -26,17 +26,15 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	bool RotateComponentInstance::init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool RotateComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
-		assert(resource->get_type().is_derived_from<RotateComponent>());
-		
 		// Make sure we have a transform
-		mTransform = getEntity()->findComponent<TransformComponentInstance>(ETypeCheck::IS_DERIVED_FROM);
+		mTransform = getEntityInstance()->findComponent<TransformComponentInstance>(ETypeCheck::IS_DERIVED_FROM);
 		if (!errorState.check(mTransform != nullptr, "missing transform component"))
 			return false;
 		
 		// Copy over properties
-		mProperties = rtti_cast<RotateComponent>(resource.get())->mProperties;
+		mProperties = getComponent<RotateComponent>()->mProperties;
 
 		// Copy initial rotation
 		mInitialRotate = mTransform->getRotate();

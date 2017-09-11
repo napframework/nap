@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <iostream>
+#include <limits>
 
 extern "C"
 {
@@ -22,6 +23,10 @@ RTTI_END_CLASS
 
 namespace nap
 {
+
+	// Max video value, used as state check
+	const double Video::sVideoMax = std::numeric_limits<double>::max();
+
 
 	const std::string error_to_string(int err)
 	{
@@ -168,7 +173,7 @@ namespace nap
 		mPacketsFinished = false;
 		mFramesFinished = false;
 		mPlaying = true;
-		mVideoClockSecs = DBL_MAX;
+		mVideoClockSecs = sVideoMax;
 
 		seek(startTimeSecs);
 
@@ -230,7 +235,7 @@ namespace nap
 		}
 
 		// After clearing the frame queue, we also need to reset the video clock in order for playback to re-sync to possible new frames
-		mVideoClockSecs = DBL_MAX;
+		mVideoClockSecs = sVideoMax;
 	}
 
 
@@ -399,12 +404,12 @@ namespace nap
 			// We calculate when the next frame needs to be displayed. The videostream contains PTS information, but there are cases
 			// when there is no PTS available, we need to account for these cases.
 			Frame new_frame;
-			new_frame.mPTSSecs = DBL_MAX;
+			new_frame.mPTSSecs = sVideoMax;
 			if (frame->pts == AV_NOPTS_VALUE)
 			{
 				// In case there is no PTS we use the previous PTS time plus the frame time as a best prediction. However, if there is 
 				// no previous frame, we assume zero.
-				new_frame.mPTSSecs = mPrevPTSSecs == DBL_MAX ? 0.0 : mPrevPTSSecs + frame_duration;
+				new_frame.mPTSSecs = mPrevPTSSecs == sVideoMax ? 0.0 : mPrevPTSSecs + frame_duration;
 			}
 			else
 			{
@@ -451,10 +456,10 @@ namespace nap
 		// If the frametime spikes, make sure we re-sync to the first frame again, otherwise it may be possible that
 		// the main thread is trying to catch up, but it never really can catch up
  		if (deltaTime > 1.0)
- 			mVideoClockSecs = DBL_MAX;
+ 			mVideoClockSecs = sVideoMax;
 
 		// Update clock if it has been initialized
-		if (mVideoClockSecs != DBL_MAX)
+		if (mVideoClockSecs != sVideoMax)
 			mVideoClockSecs += deltaTime;
 
 		// Peek into the frame queue. If we have a frame and the PTS value of the first frame on
@@ -467,15 +472,14 @@ namespace nap
 
 			if (mFrameQueue.empty() && mFramesFinished)
 			{
-				// Call stop instead of directly setting mPlaying to make sure threads exit correctly
-				stop();
-				return errorState.check(mErrorString.empty(), mErrorString);
+				mPlaying = false;
+				return errorState.check(mErrorString.empty(), mErrorString.c_str());
 			}
 
 			std::unique_lock<std::mutex> lock(mFrameQueueMutex);
 
 			// Initialize the video clock to the first frame we see (if it has not been initialized yet)
-			if (!mFrameQueue.empty() && mVideoClockSecs == DBL_MAX)
+			if (!mFrameQueue.empty() && mVideoClockSecs == sVideoMax)
 			{
 				mVideoClockSecs = mFrameQueue.front().mPTSSecs;
 			}

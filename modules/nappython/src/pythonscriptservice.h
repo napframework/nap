@@ -18,8 +18,9 @@ namespace nap
 		using ModuleMap = std::unordered_map<std::string, pybind11::module>;
 		using SystemPathSet = std::unordered_set<std::string>;
 
-		ModuleMap mLoadedModules;
-		SystemPathSet mSystemPaths;
-		pybind11::scoped_interpreter mInterpreter;
+		pybind11::scoped_interpreter	mInterpreter;	// Note: must be first member to ensure it's destroyed last. Otherwise module destruction will crash.
+		ModuleMap						mLoadedModules;
+		SystemPathSet					mSystemPaths;
+		
 	};
 }

@@ -46,20 +46,6 @@ static unsigned int plane_indices[] =
 	0,3,2
 };
 
-static opengl::Mesh* createPlane()
-{
-	opengl::Mesh* plane_mesh = new opengl::Mesh(4, opengl::EDrawMode::TRIANGLES);
-	plane_mesh->addVertexAttribute<glm::vec3>(opengl::Mesh::VertexAttributeIDs::PositionVertexAttr, plane_vertices);
-	plane_mesh->addVertexAttribute<glm::vec3>(opengl::Mesh::VertexAttributeIDs::NormalVertexAttr, plane_normals);
-	plane_mesh->addVertexAttribute<glm::vec3>(nap::utility::stringFormat("%s%d", opengl::Mesh::VertexAttributeIDs::UVVertexAttr.c_str(), 0), plane_uvs);
-	plane_mesh->addVertexAttribute<glm::vec4>(nap::utility::stringFormat("%s%d", opengl::Mesh::VertexAttributeIDs::ColorVertexAttr.c_str(), 0), plane_colors);
-	plane_mesh->setIndices(6, plane_indices);
-
-	return plane_mesh;
-}
-
-//////////////////////////////////////////////////////////////////////////
-
 
 RTTI_BEGIN_CLASS(nap::PlaneMesh)
 RTTI_END_CLASS
@@ -68,7 +54,22 @@ namespace nap
 {
 	bool PlaneMesh::init(utility::ErrorState& errorState)
 	{
-		mMesh.reset(createPlane());		
-		return true;
+		mMeshInstance = std::make_unique<MeshInstance>();
+
+		int numVertices = 4;
+		mMeshInstance->setNumVertices(numVertices);
+		mMeshInstance->setDrawMode(opengl::EDrawMode::TRIANGLES);
+		Vec3VertexAttribute& position_attribute		= mMeshInstance->GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName());
+		Vec3VertexAttribute& normal_attribute		= mMeshInstance->GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::getNormalName());
+		Vec3VertexAttribute& uv_attribute			= mMeshInstance->GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetUVName(0));
+		Vec4VertexAttribute& color_attribute		= mMeshInstance->GetOrCreateAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0));
+
+		position_attribute.setData(plane_vertices, numVertices);
+		normal_attribute.setData(plane_normals, numVertices);
+		uv_attribute.setData(plane_uvs, numVertices);
+		color_attribute.setData(plane_colors, numVertices);
+		mMeshInstance->setIndices(plane_indices, 6);
+
+		return mMeshInstance->init(errorState);
 	}
 };

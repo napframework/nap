@@ -112,6 +112,7 @@
 			"Components" : 
 			[
 				{
+					"mID" : "UIInputRouterComponent",
 					"Type" : "nap::UIInputRouterComponent",
 					"CameraEntity" : "CameraEntity"
 				}
@@ -445,10 +446,8 @@
 						"Looks_03",
 						"Looks_04"
 					],
-					"EntityPrototype" : "LooksEntity"
-				},
-				{
-					"Type" : "nap::TransformComponent"
+					"EntityPrototype" : "LooksEntity",
+					"ComponentPointer" : "UIInputRouterComponent"
 				},
 				{
 					"Type" : "nap::FractionLayoutComponent",
@@ -464,6 +463,9 @@
 							"y": 1.0
 						}
 					}
+				},
+				{
+					"Type" : "nap::TransformComponent"
 				}
 			]
 		},

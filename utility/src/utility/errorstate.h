@@ -23,7 +23,7 @@ namespace nap
 			 * @param errorString The error message that belongs to the 'fail' state
 			 * @return Whether the condition evaluated to true (i.e. success) or not
 			 */
-			bool check(bool successCondition, const std::string& errorString)
+			bool check(bool successCondition, const char* errorString)
 			{
 				if (!successCondition)
 					mErrorList.push_back(errorString);
@@ -35,9 +35,12 @@ namespace nap
 			 * Same as non-templated check(), but here to allow for easy formatting of error messages
 			 */
 			template <typename... Args>
-			bool check(bool successCondition, const std::string& format, Args&&... args)
+			bool check(bool successCondition, const char* format, Args&&... args)
 			{
-				return check(successCondition, stringFormat(format, std::forward<Args>(args)...));
+				if (!successCondition)
+					mErrorList.push_back(stringFormat(format, std::forward<Args>(args)...));
+
+				return successCondition;
 			}
 
 			/**

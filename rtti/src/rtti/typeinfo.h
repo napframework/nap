@@ -167,7 +167,7 @@ namespace nap
 		 */
 		inline bool NAPAPI hasFlag(const rtti::Property& property, EPropertyMetaData flags)
 		{
-			rtti::Variant meta_data = property.get_metadata("flags");
+			const rtti::Variant& meta_data = property.get_metadata("flags");
 			if (!meta_data.is_valid())
 				return false;
 

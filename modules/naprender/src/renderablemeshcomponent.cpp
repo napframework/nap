@@ -25,7 +25,7 @@ RTTI_BEGIN_CLASS(nap::RenderableMeshComponent)
 	RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderableMeshComponentInstance)
-	RTTI_CONSTRUCTOR(nap::EntityInstance&)
+	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 	RTTI_FUNCTION("getMaterialInstance", &nap::RenderableMeshComponentInstance::getMaterialInstance)
 RTTI_END_CLASS
 
@@ -149,32 +149,31 @@ namespace nap
 	}
 
 
-	RenderableMeshComponentInstance::RenderableMeshComponentInstance(EntityInstance& entity) :
-		RenderableComponentInstance(entity)
+	RenderableMeshComponentInstance::RenderableMeshComponentInstance(EntityInstance& entity, Component& resource) :
+		RenderableComponentInstance(entity, resource)
 	{
 	}
 
 
-	bool RenderableMeshComponentInstance::init(const ObjectPtr<Component>& resource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool RenderableMeshComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
-		assert(resource->get_type().is_derived_from<RenderableMeshComponent>());
-		mResource = rtti_cast<RenderableMeshComponent>(resource.get());
+		RenderableMeshComponent* resource = getComponent<RenderableMeshComponent>();
 
-		if (!mMaterialInstance.init(mResource->mMaterialInstanceResource, errorState))
+		if (!mMaterialInstance.init(resource->mMaterialInstanceResource, errorState))
 			return false;
 
 		// Here we acquire a VAO from the render service. The service will try to reuse VAOs for similar Material-Mesh combinations
-		nap::RenderService* render_service = getEntity()->getCore()->getService<nap::RenderService>();
-		mVAOHandle = render_service->acquireVertexArrayObject(*mMaterialInstance.getMaterial(), *mResource->mMeshResource, errorState);
-		if (!errorState.check(mVAOHandle != nullptr, "Failed to acquire VAO for RenderableMeshComponent %s", mResource->mID.c_str()))
+		nap::RenderService* render_service = getEntityInstance()->getCore()->getService<nap::RenderService>();
+		mVAOHandle = render_service->acquireVertexArrayObject(*mMaterialInstance.getMaterial(), *resource->mMeshResource, errorState);
+		if (!errorState.check(mVAOHandle != nullptr, "Failed to acquire VAO for RenderableMeshComponent %s", resource->mID.c_str()))
 			return false;
 
-		mTransformComponent = getEntity()->findComponent<TransformComponentInstance>();
+		mTransformComponent = getEntityInstance()->findComponent<TransformComponentInstance>();
  		if (!errorState.check(mTransformComponent != nullptr, "Missing transform component"))
  			return false;
 
 		// Copy cliprect. Any modifications are done per instance
-		mClipRect = mResource->mClipRect;
+		mClipRect = resource->mClipRect;
 
 		return true;
 	}
@@ -210,12 +209,6 @@ namespace nap
 
 		mVAOHandle->mObject->bind();
 
-		// Gather draw info
-		const opengl::Mesh& mesh = mResource->mMeshResource->getMesh();
-		GLenum draw_mode = getGLMode(mesh.getDrawMode());
-		const opengl::IndexBuffer* index_buffer = mesh.getIndexBuffer();
-		GLsizei draw_count = static_cast<GLsizei>(index_buffer->getCount());
-
 		// If a cliprect was set, enable scissor and set correct values
 		if (mClipRect.mWidth > 0.0f && mClipRect.mHeight > 0.0f)
 		{
@@ -223,15 +216,24 @@ namespace nap
 			glScissor(mClipRect.mX, mClipRect.mY, mClipRect.mWidth, mClipRect.mHeight);
 		}
 
+		MeshInstance& mesh_instance = getMeshInstance();
+
+		// Gather draw info
+		const opengl::GPUMesh& mesh = mesh_instance.getGPUMesh();
+		GLenum draw_mode = getGLMode(mesh_instance.getDrawMode());
+		const opengl::IndexBuffer* index_buffer = mesh.getIndexBuffer();
+
 		// Draw with or without using indices
 		if (index_buffer == nullptr)
 		{
-			glDrawArrays(draw_mode, 0, draw_count);
+			glDrawArrays(draw_mode, 0, mesh_instance.getNumVertices());
 		}
 		else
 		{
+			GLsizei num_indices = static_cast<GLsizei>(index_buffer->getCount());
+
 			index_buffer->bind();
-			glDrawElements(draw_mode, draw_count, index_buffer->getType(), 0);
+			glDrawElements(draw_mode, num_indices, index_buffer->getType(), 0);
 			index_buffer->unbind();
 		}
 		comp_mat->unbind();
