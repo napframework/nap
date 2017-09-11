@@ -484,14 +484,26 @@ namespace nap
 	}
 
 
+	/**
+	 * This function resolves pointers in a ComponentResource of the types EntityPtr and ComponentPtr. Although the RTTI resource pointers in EntityPtr
+	 * and ComponentPtr have already been resolved by the regular RTTI pointer resolving step, this step is meant explicitly to resolve pointers
+	 * to instances that are stored internally in the ComponentPtr and EntityPtr.
+	 * The resolving step of entities and components is more difficult than regular objects, as the entity/component structure is mirrored into
+	 * a resource structure (the static objects from json) and instances (the runtime counterpart of the resources). EntityPtr and ComponentPtr
+	 * are pointers that live on the resource object as the resources need to specify what other resource they are pointing to. However, the
+	 * instantiated object often needs to point to other instantiated objects. In this function, we fill in the instance pointers in EntityPtr and 
+	 * ComponentPtr, so that the instance can get to the instance pointer through it's resource.
+	 */
 	bool ResourceManagerService::sResolveComponentPointers(EntityCreationParameters& entityCreationParams, std::unordered_map<Component*, ComponentInstance*>& newComponentInstances, utility::ErrorState& errorState)
 	{
-		// We go over all components and resolve all Entity & Component pointers
+		// We go over all component instances and resolve all Entity & Component pointers
 		for (auto kvp : newComponentInstances)
 		{
 			ComponentInstance* source_component_instance = kvp.second;
 			Component* source_component_resource = kvp.first;
 
+			// Iterate over all the pointers in the component resource. Note that findObjectLinks returns *all* types of pointers on the object, 
+			// but we're only interested in EntityPtrs and ComponentPtrs since other pointers will have been resolved during the load.
 			std::vector<rtti::ObjectLink> links;
 			rtti::findObjectLinks(*source_component_resource, links);
 
@@ -501,6 +513,7 @@ namespace nap
 				if (!errorState.check(link.mSourcePath.resolve(source_component_resource, resolved_path), "Encountered link from object %s that could not be resolved: %s", source_component_resource->mID.c_str(), link.mSourcePath.toString().c_str()))
 					return false;
 
+				// Resolve EntityPtr
 				if (resolved_path.getType() == RTTI_OF(EntityPtr))
 				{
 					EntityPtr entity_ptr = resolved_path.getValue().convert<EntityPtr>();
@@ -523,6 +536,7 @@ namespace nap
 				}
 				else if (resolved_path.getType() == RTTI_OF(ComponentPtr))
 				{
+					// Get the resource target
 					ComponentPtr component_ptr = resolved_path.getValue().convert<ComponentPtr>();
 					nap::Component* target_component_resource = component_ptr.getResource();
 
@@ -530,7 +544,9 @@ namespace nap
 					if (target_component_resource == nullptr)
 						continue;
 
-					// Find the entity resource of the target
+					// We have the component resource, now we need to find the entity resource. We do this so we can compare entities. If the target component has the same
+					// entity, the target component is a sibling of our component. The reason that we check this is because we can support pointers to sibling components
+					// regardless whether the entity is manually spawned or auto spawned.
 					EntityCreationParameters::ComponentToEntityMap::iterator target_entity_pos = entityCreationParams.mComponentToEntity.find(target_component_resource);
 					assert(target_entity_pos != entityCreationParams.mComponentToEntity.end());
 					const nap::Entity* target_component_entity = target_entity_pos->second;
@@ -539,7 +555,7 @@ namespace nap
 					EntityInstance* source_entity = source_component_instance->getEntityInstance();
 					if (source_entity->getEntity() == target_component_entity)
 					{
-						// Find ComponentInstance with matching resource
+						// Find ComponentInstance with matching component resource
 						for (ComponentInstance* target_component_instance : source_entity->getComponents())
 						{
 							if (target_component_instance->getComponent() == target_component_resource)
