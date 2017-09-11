@@ -78,6 +78,35 @@
 		},
 
 		{
+			"Type" : "nap::Line",
+			"mID": "LaserLineMesh",
+			"Properties": 
+			{
+				"Count" : 500,
+				"Color" :
+				{
+					"x":1.0,
+					"y":1.0,
+					"z":1.0,
+					"w":1.0
+				}
+			},
+			"Start" :
+			{
+				"x": -1.0,
+				"y": 0.0,
+				"z": 0.0
+			},
+			"End" :
+			{
+				"x": 1.0,
+				"y": 0.0,
+				"z": 0.0
+			},
+			"Closed" : false
+		},
+
+		{
 			"Type" : "nap::Rectangle",
 			"mID": "RectangleMesh",
 			"Properties": 

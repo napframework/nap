@@ -121,11 +121,14 @@ void onRender()
 	std::vector<nap::LaserOutputComponentInstance*> outputs;
 	laser_output_entity->getComponentsOfType<nap::LaserOutputComponentInstance>(outputs);
 	assert(line.getMesh().get_type().is_derived_from(RTTI_OF(nap::PolyLine)));
+	
+	nap::PolyLine& poly_line = static_cast<nap::PolyLine&>(line.getMesh());
 	for (const auto& output : outputs)
 	{
-		output->setLine(static_cast<nap::PolyLine&>(line.getMesh()), xform.getGlobalTransform());
+		output->setLine(poly_line, xform.getGlobalTransform());
 	}
 }
+
 
 
 /**

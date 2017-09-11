@@ -44,21 +44,65 @@ namespace nap
 		 *	@return the position vertex data
 		 */
 		Vec3VertexAttribute& getPositionAttr();
+
+		/**
+		 * @return the position of a vertex along the line @location
+		 * @param parametric location (0-1) on the line to get the position for
+		 * @param outPosition the interpolated position based on @location
+		 */
+		void getPosition(float location, glm::vec3& outPosition);
 		
 		/**
 		 *	@return the color vertex data
 		 */
 		Vec4VertexAttribute& getColorAttr();
+
+		/**
+		* @return the color of a vertex along the line @location
+		* @param parametric location (0-1) on the line to get the color for
+		* @param outColor the interpolated color based on @location
+		*/
+		void getColor(float location, glm::vec4& outColor);
 		
 		/**
 		 *	@return the normal data
 		 */
 		Vec3VertexAttribute& getNormalAttr();
+
+		/**
+		* @return the normal of a vertex along the line @location
+		* @param parametric location (0-1) on the line to get the normal for
+		* @param outNormal the interpolated normal based on @location
+		*/
+		void getNormal(float location, glm::vec3& outNormal);
+
+		/**
+		* @return the uv of a vertex along the line @location
+		* @param parametric location (0-1) on the line to get the uv for
+		* @param outUv the interpolated uv based on @location
+		*/
+		void getUv(float location, glm::vec3& outUv);
 		
 		/**
 		 *	@return the uv data
 		 */
 		Vec3VertexAttribute& getUvAttr();
+
+		/**
+		 *	@return if the line is closed or not
+		 */
+		bool isClosed() const;
+
+		/**
+		 * Returns an interpolated value of an attribute along the line based on @location
+		 * @param attr the polyline attribute to sample
+		 * @param parametric normalized location along the spline
+		 * @param if the line is closed or not
+		 * @param outValue the interpolated value
+		 */
+		template<typename T> 
+		static void getInterpolatedValue(const VertexAttribute<T>& attr, float location, bool closed, T& outValue);
+		
 
 		// Properties associated with a line
 		PolyLineProperties mLineProperties;
@@ -68,8 +112,12 @@ namespace nap
 
 		// Creates the default vertex line attributes, useful for easy access
 		void createVertexAttributes();
-	};
 
+		Vec3VertexAttribute* mPositions = nullptr;		// Vertex positions of the line
+		Vec4VertexAttribute* mColors = nullptr;			// Colors of the line
+		Vec3VertexAttribute* mNormals = nullptr;		// Normals of the line
+		Vec3VertexAttribute* mUvs = nullptr;			// Uvs of the line
+	};
 
 	//////////////////////////////////////////////////////////////////////////
 
@@ -171,5 +219,44 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Template definitions
+	//////////////////////////////////////////////////////////////////////////
+
+	template<typename T>
+	void nap::PolyLine::getInterpolatedValue(const VertexAttribute<T>& attr, float location, bool closed, T& outValue)
+	{
+		// Get vertex range, when the line is closed it means that we want to
+		// include the first vertex as last
+		int vert_count = static_cast<int>(attr.getSize());
+		assert(vert_count > 0);
+		int range = closed ? vert_count : vert_count - 1;
+
+		// Get interpolation location
+		float loc = location * static_cast<float>(range);
+
+		// Get min and max point bounds, wrap the last vertex if the line is closed
+		// ie: the last vertex is the first vertex
+		int min_vertex = static_cast<int>(math::floor<float>(loc));
+		int max_vertex = static_cast<int>(math::ceil<float>(loc));
+
+		min_vertex = min_vertex % vert_count;
+		max_vertex = max_vertex % vert_count;
+
+		// Get lerp value that sits in between min / max
+		float lerp_v = loc - static_cast<float>(static_cast<int>(loc));
+
+		// Ensure points are in bounds
+		assert(min_vertex <= vert_count-1);
+		assert(max_vertex <= vert_count-1);
+
+		// Lerp between min and max value
+		const T& min_p_value = attr.getData()[min_vertex];
+		const T& max_p_value = attr.getData()[max_vertex];
+
+		outValue = math::lerp<T>(min_p_value, max_p_value, lerp_v);
+	}
 
 }

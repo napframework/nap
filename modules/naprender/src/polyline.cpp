@@ -176,10 +176,10 @@ namespace nap
 	void nap::PolyLine::createVertexAttributes()
 	{
 		// Create attributes
-		mMeshInstance->GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName());
-		mMeshInstance->GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetUVName(0));
-		mMeshInstance->GetOrCreateAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0));
-		mMeshInstance->GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::getNormalName());
+		mPositions = &(mMeshInstance->GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName()));
+		mUvs = &(mMeshInstance->GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetUVName(0)));
+		mColors = &(mMeshInstance->GetOrCreateAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0)));
+		mNormals = &(mMeshInstance->GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::getNormalName()));
 	}
 
 
@@ -395,24 +395,61 @@ namespace nap
 
 	Vec3VertexAttribute& PolyLine::getPositionAttr()
 	{
-		return mMeshInstance->GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName());
+		assert(mPositions != nullptr);
+		return *mPositions;
+	}
+
+
+	void PolyLine::getPosition(float location, glm::vec3& outPosition)
+	{
+		PolyLine::getInterpolatedValue<glm::vec3>(*mPositions, location, isClosed(), outPosition);
 	}
 
 
 	Vec4VertexAttribute& PolyLine::getColorAttr()
 	{
-		return mMeshInstance->GetAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0));
+		assert(mColors != nullptr);
+		return *mColors;
+	}
+
+
+	void PolyLine::getColor(float location, glm::vec4& outColor)
+	{
+		PolyLine::getInterpolatedValue<glm::vec4>(*mColors, location, isClosed(), outColor);
 	}
 
 
 	Vec3VertexAttribute& PolyLine::getNormalAttr()
 	{
-		return mMeshInstance->GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::getNormalName());
+		assert(mNormals != nullptr);
+		return *mNormals;
+	}
+
+
+	void PolyLine::getNormal(float location, glm::vec3& outNormal)
+	{
+		PolyLine::getInterpolatedValue<glm::vec3>(*mNormals, location, isClosed(), outNormal);
 	}
 
 
 	Vec3VertexAttribute& PolyLine::getUvAttr()
 	{
-		return mMeshInstance->GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetUVName(0));
+		assert(mUvs != nullptr);
+		return *mUvs;
 	}
+
+
+	void PolyLine::getUv(float location, glm::vec3& outUv)
+	{
+		PolyLine::getInterpolatedValue<glm::vec3>(*mUvs, location, isClosed(), outUv);
+	}
+
+
+	bool PolyLine::isClosed() const
+	{
+		opengl::EDrawMode mode = mMeshInstance->getDrawMode();
+		assert(mode == opengl::EDrawMode::LINE_LOOP || mode == opengl::EDrawMode::LINE_STRIP);
+		return mode == opengl::EDrawMode::LINE_LOOP;
+	}
+
 }
