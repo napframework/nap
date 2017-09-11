@@ -6,6 +6,7 @@
 // External Includes
 #include <nap/event.h>
 #include <nap/configure.h>
+#include <utility/uniqueptrvectoriterator.h>
 
 namespace nap
 {
@@ -20,14 +21,18 @@ namespace nap
 	{
 		RTTI_ENABLE(Event)
 	public:
+		using ArgumentConstIterator = utility::UniquePtrConstVectorWrapper<OSCArgumentList, OSCArgument*>;
+
 		/**
 		 * OSCEvent constructor
 		 * @param address the address associated with this osc event
 		 */
 		OSCEvent(const std::string& address);
 
-		// The osc event address
-		std::string mAddress;
+		/**
+		 * @return this event's OSC address
+		 */
+		const std::string& getAddress() const								{ return mAddress; }
 
 		/**
 		 * Adds an OSCArgument to this event
@@ -54,12 +59,12 @@ namespace nap
 		/**
 		 * @return the number of arguments associated with this event
 		 */
-		int getCount() const													{ return static_cast<int>(mArguments.size()); }
+		int getCount() const												{ return static_cast<int>(mArguments.size()); }
 
 		/**
 		 *	@return the arguments of this osc event
 		 */
-		const OSCArgumentList& getArguments() const							{ return mArguments; }
+		const ArgumentConstIterator getArguments() const					{ return ArgumentConstIterator(mArguments); }
 
 		/**
 		 * @return an argument based on @index
@@ -84,7 +89,8 @@ namespace nap
 		const OSCArgument& operator[](std::size_t idx) const				{ return getArgument(static_cast<int>(idx)); }
 
 	private:
-		OSCArgumentList mArguments;
+		OSCArgumentList mArguments;							// All the arguments associated with the event
+		std::string mAddress;								// The osc event address
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -110,12 +116,6 @@ namespace nap
 	template<typename T, typename... Args>
 	OSCArgument* nap::OSCEvent::addValue(Args&&... args)
 	{
-		// Ensure that the value for the osc argument is valid
-		if(RTTI_OF(nap::OSCValue<T>).empty())
-		{
-			assert(false);
-			return nullptr;
-		}
 		return addArgument<nap::OSCValue<T>>(std::forward<Args>(args)...);
 	}
 

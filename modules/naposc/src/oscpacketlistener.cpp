@@ -96,7 +96,7 @@ namespace nap
 				continue;
 			}
 
-			nap::Logger::info("unknown argument in OSC message: %s", event->mAddress.c_str());
+			nap::Logger::info("unknown argument in OSC message: %s", event->getAddress().c_str());
 			arg++;
 		}
 

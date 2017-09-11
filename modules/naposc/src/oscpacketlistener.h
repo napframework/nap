@@ -22,10 +22,9 @@ namespace nap
 		OSCPacketListener(OSCReceiver& receiver);
 
 	protected:
-		virtual void ProcessMessage(const osc::ReceivedMessage& m, const IpEndpointName& remoteEndpoint) override;
+		virtual void ProcessMessage(const osc::ReceivedMessage& message, const IpEndpointName& remoteEndpoint) override;
 
 	private:
-		// Receiver that holds the message queue
-		OSCReceiver& mReceiver;
+		OSCReceiver& mReceiver;				// Receiver that holds the message queue
 	};
 }

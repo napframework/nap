@@ -14,7 +14,6 @@ class UdpTransmitSocket;
 namespace nap
 {
 	class OSCService;
-	class OSCBuffer;
 }
 namespace osc
 {
@@ -74,7 +73,7 @@ namespace nap
 		 * Sends all the osc events in the queue as a bundle
 		 * All events that were send are removed from the queue
 		 */
-		void send();
+		void sendQueuedEvents();
 
 	private:
 		// Socket used for sending messages
@@ -84,7 +83,7 @@ namespace nap
 		 * Adds an oscEvent to the package this is send
 		 * @param outPacket the packet to populate
 		 */
-		bool addEvent(const OSCEvent& oscEvent, osc::OutboundPacketStream& outPacket, utility::ErrorState& error);
+		void writeToPacket(const OSCEvent& oscEvent, osc::OutboundPacketStream& outPacket);
 
 		// Queue that holds all the events to be send over as a bundle
 		std::queue<OSCEventPtr> mEventQueue;
@@ -93,34 +92,6 @@ namespace nap
 		std::size_t	mEventQueueDataSize;
 
 		// Vector that holds osc data to be send over
-		std::unique_ptr<OSCBuffer> mBuffer;
-	};
-
-
-	/**
-	* Simple struct that is used by the sender to allocate OSC data
-	* The buffer grows based on the required elements (but never shrinks)
-	*/
-	class OSCBuffer final
-	{
-	public:
-		// Default constructor
-		OSCBuffer(std::size_t elements)					{ reserve(elements); }
-
-		// Clears the buffer if data was allocated
-		~OSCBuffer();
-
-		/**
-		* Reserves x number of elements for the buffer
-		* Note that if the number of elements is less or equal to the size of the buffer
-		* the buffer remains the same
-		*/
-		void reserve(std::size_t elements);
-
-		// Buffer data
-		char* mData = nullptr;
-
-		// Size of the buffer
-		std::size_t mSize = 0;
+		std::vector<char> mBuffer;
 	};
 }

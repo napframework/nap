@@ -14,6 +14,7 @@ namespace nap
 		Bind(IpEndpointName(IpEndpointName::ANY_ADDRESS, port));
 	}
 
+
 	OSCReceivingSocket::~OSCReceivingSocket()
 	{
 		mMultiplexer.DetachSocketListener(this, mListener);
@@ -32,7 +33,7 @@ namespace nap
 	}
 
 
-	void OSCReceivingSocket::asynchronousBreak()
+	void OSCReceivingSocket::stop()
 	{
 		mMultiplexer.AsynchronousBreak();
 	}

@@ -63,12 +63,6 @@ namespace nap
 		 */
 		void removeInputComponent(OSCInputComponentInstance& input);
 
-		/**
-		 * Recursively collects all input components currently available in the system
-		 * @param entity the entity to start iterating from
-		 */
-		void collectInputComponents(const EntityInstance& entity, std::vector<OSCInputComponentInstance*>& components);
-
 		// All the osc receivers currently registered in the system
 		std::vector<OSCReceiver*> mReceivers;
 

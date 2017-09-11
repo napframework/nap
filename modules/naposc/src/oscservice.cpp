@@ -47,16 +47,16 @@ namespace nap
 				for (const auto& input_comp : mInputs)
 				{
 					// Empty (no specified address) always receives the message
-					if (input_comp->mAddresses.empty())
+					if (input_comp->mAddressFilter.empty())
 					{
 						input_comp->trigger(osc_event);
 						continue;
 					}
 
 					// Try to match the address
-					for (const auto& address : input_comp->mAddresses)
+					for (const auto& address : input_comp->mAddressFilter)
 					{
-						if (nap::utility::gStartsWith(osc_event.mAddress, address))
+						if (nap::utility::gStartsWith(osc_event.getAddress(), address))
 						{
 							input_comp->trigger(osc_event);
 							break;
@@ -65,19 +65,6 @@ namespace nap
 				}
 				events.pop();
 			}
-		}
-	}
-
-
-	void OSCService::collectInputComponents(const EntityInstance& entity, std::vector<OSCInputComponentInstance*>& components)
-	{
-		// Add all possible input components
-		entity.getComponentsOfType<OSCInputComponentInstance>(components);
-		
-		// Sample children
-		for (const auto& child_entity : entity.getChildren())
-		{
-			collectInputComponents(*child_entity, components);
 		}
 	}
 

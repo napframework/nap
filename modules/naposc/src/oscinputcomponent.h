@@ -29,7 +29,7 @@ namespace nap
 
 		// Holds the allowed OSC addresses, when empty every osc event is valid to
 		// be received by this component, otherwise only the onces that specified by the filter
-		std::vector<std::string>		mAddresses;
+		std::vector<std::string>		mAddressFilter;
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -57,7 +57,7 @@ namespace nap
 
 		// Holds a set of OSC addresses, when empty every osc event is valid to
 		// be received by this component, otherwise only the ones that are present in this list
-		std::vector<std::string>		mAddresses;
+		std::vector<std::string>		mAddressFilter;
 
 		// Connect to this signal to receive osc events
 		Signal<const OSCEvent&>			messageReceived;
@@ -68,6 +68,9 @@ namespace nap
 		 * @param oscEvent the osc event that will be forwarded by this component
 		 */
 		void trigger(const nap::OSCEvent& oscEvent);
+
+	private:
+		OSCService* mService = nullptr;					// OSC Service set when initialized
 	};
 
 }

@@ -8,7 +8,7 @@
 #include <iostream>
 
 RTTI_BEGIN_CLASS(nap::OSCInputComponent)
-	RTTI_PROPERTY("Addresses", &nap::OSCInputComponent::mAddresses, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Addresses", &nap::OSCInputComponent::mAddressFilter, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::OSCInputComponentInstance)
@@ -19,21 +19,22 @@ namespace nap
 {
 	OSCInputComponentInstance::~OSCInputComponentInstance()
 	{
-		nap::OSCService* service = getEntityInstance()->getCore()->getService<OSCService>();
-		assert(service != nullptr);
-		service->removeInputComponent(*this);
+		if (mService != nullptr)
+		{
+			mService->removeInputComponent(*this);
+		}
 	}
 
 
 	bool OSCInputComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
 		// Copy addresses
-		mAddresses = getComponent<OSCInputComponent>()->mAddresses;
+		mAddressFilter = getComponent<OSCInputComponent>()->mAddressFilter;
 
 		// Get service and register
-		nap::OSCService* service = getEntityInstance()->getCore()->getService<OSCService>();
-		assert(service != nullptr);
-		service->registerInputComponent(*this);
+		mService = getEntityInstance()->getCore()->getService<OSCService>();
+		assert(mService != nullptr);
+		mService->registerInputComponent(*this);
 
 		return true;
 	}

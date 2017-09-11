@@ -47,9 +47,6 @@ namespace nap
 		// Property: the port to listen to for messages
 		int mPort = 7000;
 
-		// The listener used for handling messages
-		std::unique_ptr<OSCPacketListener>  mListener = nullptr;
-
 		/**
 		 * Adds an event to the queue
 		 * @param event the event to add, note that this receiver will take ownership of the event
@@ -57,17 +54,8 @@ namespace nap
 		void addEvent(OSCEventPtr event);
 
 	private:
-		// OSC service that manages all the osc receivers / senders
-		OSCService* mService = nullptr;
-
-		// The thread that receives and converts the messages
-		std::thread mEventThread;
-
 		// Runs in the background
 		void eventThread(int port);
-
-		// The socket used for receiving messages
-		std::unique_ptr<OSCReceivingSocket> mSocket = nullptr;
 
 		/**
 		* Consumes all received OSC events and moves them to outEvents
@@ -76,11 +64,23 @@ namespace nap
 		*/
 		void consumeEvents(std::queue<OSCEventPtr>& outEvents);
 
+		// The socket used for receiving messages
+		std::unique_ptr<OSCReceivingSocket> mSocket = nullptr;
+
 		// Queue that holds all the consumed events
 		std::queue<OSCEventPtr> mEvents;
 
 		// Mutex associated with setting / getting events
 		std::mutex	mEventMutex;
+
+		// The listener used for handling messages
+		std::unique_ptr<OSCPacketListener>  mListener = nullptr;
+
+		// OSC service that manages all the osc receivers / senders
+		OSCService* mService = nullptr;
+
+		// The thread that receives and converts the messages
+		std::thread mEventThread;
 	};
 
 	// Object creator used for constructing the the OSC receiver

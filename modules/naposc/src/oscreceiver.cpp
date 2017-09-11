@@ -28,7 +28,7 @@ namespace nap
 	{
 		if (mSocket != nullptr)
 		{
-			mSocket->asynchronousBreak();
+			mSocket->stop();
 			mEventThread.join();
 			mService->removeReceiver(*this);
 			nap::Logger::info("Stopped listening for OSC messages on port: %d", mPort);
@@ -79,9 +79,7 @@ namespace nap
 
 
 	/**
-	 * This thread creates OSC connection and listener
-	 * The reason why the socket is created in the thread is because the socket needs a listener
-	 * I did not want to expose the OSC interface so decided to let the thread handle object creation
+	 * Starts the connection that receives osc messages
 	 */
 	void OSCReceiver::eventThread(int port)
 	{

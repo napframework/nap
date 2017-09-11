@@ -42,10 +42,10 @@ namespace nap
 		/**
 		 * Signals the handler to exit the run state
 		 */
-		void asynchronousBreak();
+		void stop();
 
 	private:
-		SocketReceiveMultiplexer			mMultiplexer;
-		PacketListener*						mListener = nullptr;
+		SocketReceiveMultiplexer			mMultiplexer;				// Holds the port and allows for setting the listener
+		PacketListener*						mListener = nullptr;		// The listener that handles the incoming OSC messages
 	};
 }
