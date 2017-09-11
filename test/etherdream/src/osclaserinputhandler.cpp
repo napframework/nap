@@ -46,31 +46,31 @@ namespace nap
 
 	void OSCLaserInputHandlerInstance::handleMessageReceived(const nap::OSCEvent& oscEvent)
 	{
-		if (utility::gStartsWith(oscEvent.mAddress, "/color"))
+		if (utility::gStartsWith(oscEvent.getAddress(), "/color"))
 		{
 			updateColor(oscEvent);
 			return;
 		}
 
-		if (utility::gStartsWith(oscEvent.mAddress, "/rotate"))
+		if (utility::gStartsWith(oscEvent.getAddress(), "/rotate"))
 		{
 			updateRotate(oscEvent);
 			return;
 		}
 
-		if (utility::gStartsWith(oscEvent.mAddress, "/resetrotate"))
+		if (utility::gStartsWith(oscEvent.getAddress(), "/resetrotate"))
 		{
 			resetRotate(oscEvent);
 			return;
 		}
 
-		if (utility::gStartsWith(oscEvent.mAddress, "/resetcolor"))
+		if (utility::gStartsWith(oscEvent.getAddress(), "/resetcolor"))
 		{
 			resetColor(oscEvent);
 			return;
 		}
 
-		if (utility::gStartsWith(oscEvent.mAddress, "/index"))
+		if (utility::gStartsWith(oscEvent.getAddress(), "/index"))
 		{
 			setIndex(oscEvent);
 			return;
@@ -93,7 +93,7 @@ namespace nap
 
 		// Get index
 		std::vector<std::string> parts;
-		utility::gSplitString(oscEvent.mAddress, '/', parts);
+		utility::gSplitString(oscEvent.getAddress(), '/', parts);
 
 		// Get last
 		int idx = std::stoi(parts.back().c_str());
@@ -119,7 +119,7 @@ namespace nap
 		
 		// Get index
 		std::vector<std::string> parts;
-		utility::gSplitString(oscEvent.mAddress, '/', parts);
+		utility::gSplitString(oscEvent.getAddress(), '/', parts);
 		
 		// Get last
 		int idx = std::stoi(parts.back().c_str());
