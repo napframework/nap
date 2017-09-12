@@ -20,18 +20,19 @@ namespace nap
 	 */
 	struct VAOKey final
 	{
-		/**
-		 * ctor
-		 */
+		VAOKey() = default;
+		VAOKey(const VAOKey& rhs) = default;
 		VAOKey(const Material& material, const MeshInstance& meshResource);
+		
+		VAOKey& operator=(const VAOKey& rhs) = default;
 
 		/**
 		* Equality operator, for use in maps
 		*/
-		bool operator==(const VAOKey& rhs) const	{ return &mMaterial == &rhs.mMaterial && &mMeshResource == &rhs.mMeshResource; }
+		bool operator==(const VAOKey& rhs) const	{ return mMaterial == rhs.mMaterial && mMeshResource == rhs.mMeshResource; }
 
-		const Material&			mMaterial;
-		const MeshInstance&		mMeshResource;
+		const Material*			mMaterial = nullptr;
+		const MeshInstance*		mMeshResource = nullptr;
 	};
 
 
@@ -43,30 +44,32 @@ namespace nap
 	 */
 	class VAOHandle final
 	{
-    private:
-        RenderService& mRenderService;		///< Back pointer to RenderService, for removal on destruction
-        
 	public:
-		opengl::VertexArrayObject* mObject = nullptr;			///< The actual opengl object that can be used to bind and  unbind before drawing
-        ~VAOHandle();
+		VAOHandle() = default;
+		VAOHandle(const VAOHandle& other);
+		~VAOHandle();
+
+		VAOHandle& operator=(const VAOHandle& rhs);
+
+		VAOHandle(VAOHandle&& rhs);
+		VAOHandle& operator=(VAOHandle&& rhs);
         
+		bool isValid() const { return mObject != nullptr; }
+		opengl::VertexArrayObject& get() { assert(isValid()); return *mObject; }
+
 	private:
 		friend class RenderService;
 
 		/**
-		* Helper to create a handle.
-		*/
-		static std::unique_ptr<VAOHandle> create(RenderService& renderService, opengl::VertexArrayObject* object);
-
-		/**
 		* ctor, made private so that only RenderService can create it (through create)
 		*/
-		VAOHandle(RenderService& renderService, opengl::VertexArrayObject* object);
+		VAOHandle(RenderService& renderService, const VAOKey& key, opengl::VertexArrayObject* object);
 
-		VAOHandle(const VAOHandle& rhs)             = delete;
-		VAOHandle& operator=(const VAOHandle& rhs)  = delete;
- 		VAOHandle(VAOHandle&& rhs)                  = delete;
-		VAOHandle& operator=(VAOHandle&& ths)       = delete;
+
+	private:
+		RenderService* mRenderService = nullptr;			///< Back pointer to RenderService, for removal on destruction
+		VAOKey mKey;										///< The key for the VAO we have a handle to
+		opengl::VertexArrayObject* mObject = nullptr;		///< The actual opengl object that can be used to bind and  unbind before drawing
 	};
 }
 
@@ -80,8 +83,8 @@ namespace std
 	{
 		std::size_t operator()(const nap::VAOKey& key) const
 		{
-			std::size_t value1 = std::hash<nap::Material*>{}((nap::Material*)&key.mMaterial);
-			std::size_t value2 = std::hash<nap::MeshInstance*>{}((nap::MeshInstance*)&key.mMeshResource);
+			std::size_t value1 = std::hash<nap::Material*>{}((nap::Material*)key.mMaterial);
+			std::size_t value2 = std::hash<nap::MeshInstance*>{}((nap::MeshInstance*)key.mMeshResource);
 			return value1 ^ value2;
 		}
 	};

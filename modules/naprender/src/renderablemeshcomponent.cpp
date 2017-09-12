@@ -165,7 +165,8 @@ namespace nap
 		// Here we acquire a VAO from the render service. The service will try to reuse VAOs for similar Material-Mesh combinations
 		nap::RenderService* render_service = getEntityInstance()->getCore()->getService<nap::RenderService>();
 		mVAOHandle = render_service->acquireVertexArrayObject(*mMaterialInstance.getMaterial(), *resource->mMeshResource, errorState);
-		if (!errorState.check(mVAOHandle != nullptr, "Failed to acquire VAO for RenderableMeshComponent %s", resource->mID.c_str()))
+
+		if (!errorState.check(mVAOHandle.isValid(), "Failed to acquire VAO for RenderableMeshComponent %s", resource->mID.c_str()))
 			return false;
 
 		mTransformComponent = getEntityInstance()->findComponent<TransformComponentInstance>();
@@ -207,7 +208,7 @@ namespace nap
 		setBlendMode();
 		pushUniforms();
 
-		mVAOHandle->mObject->bind();
+		mVAOHandle.get().bind();
 
 		// If a cliprect was set, enable scissor and set correct values
 		if (mClipRect.mWidth > 0.0f && mClipRect.mHeight > 0.0f)
@@ -238,7 +239,7 @@ namespace nap
 		}
 		comp_mat->unbind();
 
-		mVAOHandle->mObject->unbind();
+		mVAOHandle.get().unbind();
 
 		glDisable(GL_SCISSOR_TEST);
 	}

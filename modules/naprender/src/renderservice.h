@@ -100,7 +100,7 @@ namespace nap
 		* @errorstate: in case it was not possible to create a VAO for this combination of material and mesh, this will hold error information.
 		* @return On success, this will hold a pointer to the handle, on failure this will return nullptr (check errorState for details).
 		*/
-		std::unique_ptr<VAOHandle> acquireVertexArrayObject(const Material& material, const IMesh& meshResource, utility::ErrorState& errorState);
+		VAOHandle acquireVertexArrayObject(const Material& material, const IMesh& meshResource, utility::ErrorState& errorState);
 
 		/**
 		 * Add a new window for the specified resource
@@ -151,12 +151,18 @@ namespace nap
     private:
 		friend class VAOHandle;
 
-	
 		/**
 		* Called by VAOHandle on destruction, decreases refcount and queues VAO for destruction
 		* if refcount hits zero.
 		*/
-		void releaseVertexArrayObject(opengl::VertexArrayObject* vao);
+		void incrementVAORefCount(const VAOKey& key);
+
+
+		/**
+		* Called by VAOHandle on destruction, decreases refcount and queues VAO for destruction
+		* if refcount hits zero.
+		*/
+		void decrementVAORefCount(const VAOKey& key);
 
 		/**
 		 * Holds the currently active renderer
@@ -182,7 +188,7 @@ namespace nap
 		struct RefCountedVAO final
 		{
 			std::unique_ptr<opengl::VertexArrayObject> mObject;
-			int mRefCount = 1;
+			int mRefCount = 0;
 		};
 
 		using VAOMap = std::unordered_map<VAOKey, RefCountedVAO>;

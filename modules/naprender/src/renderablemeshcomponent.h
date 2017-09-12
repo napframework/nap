@@ -114,7 +114,7 @@ namespace nap
 
 	private:
 		TransformComponentInstance*					mTransformComponent;	// Cached pointer to transform
-		std::unique_ptr<VAOHandle>					mVAOHandle;				// Handle to Vertex Array Object
+		VAOHandle									mVAOHandle;				// Handle to Vertex Array Object
 		MaterialInstance							mMaterialInstance;		// MaterialInstance
 		bool										mVisible = true;		// Whether this instance is visible or not
 		Rect										mClipRect;				// Clipping rectangle for this instance, in pixel coordinates
