@@ -215,7 +215,7 @@ namespace nap
 				if (resolved_path.getType() == RTTI_OF(EntityPtr))
 				{
 					EntityPtr entity_ptr = resolved_path.getValue().convert<EntityPtr>();
-					nap::Entity* target_entity_resource = entity_ptr.getResource();
+					nap::Entity* target_entity_resource = entity_ptr.getResource().get();
 
 					// Skip null targets
 					if (target_entity_resource == nullptr)
@@ -230,10 +230,10 @@ namespace nap
 						pointees.push_back(item);
 					}
 				}
-				else if (resolved_path.getType() == RTTI_OF(ComponentPtr))
+				else if (resolved_path.getType().is_derived_from(RTTI_OF(ComponentPtrBase)))
 				{
-					ComponentPtr component_ptr = resolved_path.getValue().convert<ComponentPtr>();
-					nap::Component* target_component_resource = component_ptr.getResource();
+					ComponentPtrBase component_ptr = resolved_path.getValue().convert<ComponentPtrBase>();
+					nap::Component* target_component_resource = rtti_cast<Component>(component_ptr.getResource().get());
 
 					// Skip null targets
 					if (target_component_resource == nullptr)
@@ -518,7 +518,7 @@ namespace nap
 				if (resolved_path.getType() == RTTI_OF(EntityPtr))
 				{
 					EntityPtr entity_ptr = resolved_path.getValue().convert<EntityPtr>();
-					nap::Entity* target_entity_resource = entity_ptr.getResource();
+					nap::Entity* target_entity_resource = entity_ptr.getResource().get();
 
 					// Skip null targets
 					if (target_entity_resource == nullptr)
@@ -535,11 +535,11 @@ namespace nap
 
 					resolved_path.setValue(entity_ptr);
 				}
-				else if (resolved_path.getType() == RTTI_OF(ComponentPtr))
+				else if (resolved_path.getType().is_derived_from(RTTI_OF(ComponentPtrBase)))
 				{
 					// Get the resource target
-					ComponentPtr component_ptr = resolved_path.getValue().convert<ComponentPtr>();
-					nap::Component* target_component_resource = component_ptr.getResource();
+					ComponentPtrBase component_ptr = resolved_path.getValue().convert<ComponentPtrBase>();
+					nap::Component* target_component_resource = rtti_cast<Component>(component_ptr.getResource().get());
 
 					// Skip null targets
 					if (target_component_resource == nullptr)

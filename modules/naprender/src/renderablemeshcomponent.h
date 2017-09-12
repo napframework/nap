@@ -27,9 +27,10 @@ namespace nap
 	/**
 	 * Resource class for RenderableMeshResource. Hold static data as read from file.
 	 */
-	class NAPAPI RenderableMeshComponent : public RenderableComponentResource
+	class NAPAPI RenderableMeshComponent : public RenderableComponent
 	{
-		RTTI_ENABLE(RenderableComponentResource)
+		RTTI_ENABLE(RenderableComponent)
+		DECLARE_COMPONENT(RenderableMeshComponent, RenderableMeshComponentInstance)
 
 	public:
 		/**
@@ -40,13 +41,6 @@ namespace nap
 			components.push_back(RTTI_OF(TransformComponent));
 		}
 
-		/**
-		 * @return instance type to create for this resource.
-		 */
-		virtual const rtti::TypeInfo getInstanceType() const
-		{
-			return RTTI_OF(RenderableMeshComponentInstance);
-		}
 		/**
 		 * @return Mesh resource.
 		 */

@@ -31,12 +31,9 @@ namespace nap
 	class LaserOutputComponent : public Component
 	{
 		RTTI_ENABLE(Component)
-	public:
-		virtual const rtti::TypeInfo getInstanceType() const override
-		{
-			return RTTI_OF(LaserOutputComponentInstance);
-		}
+		DECLARE_COMPONENT(LaserOutputComponent, LaserOutputComponentInstance)
 
+	public:
 		// Link to the DAC
 		ObjectPtr<EtherDreamDac> mDac;
 
@@ -51,6 +48,7 @@ namespace nap
 	class LaserOutputComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
+
 	public:
 		// Constructor
 		LaserOutputComponentInstance(EntityInstance& entity, Component& resource) : 

@@ -13,11 +13,7 @@ namespace nap
 	class LaserDotComponent : public LaserShapeComponent
 	{
 		RTTI_ENABLE(LaserShapeComponent)
-	public:
-		virtual const rtti::TypeInfo getInstanceType() const override
-		{
-			return RTTI_OF(LaserDotComponentInstance);
-		}
+		DECLARE_COMPONENT(LaserDotComponent, LaserDotComponentInstance)
 	};
 
 	class LaserDotComponentInstance : public LaserShapeComponentInstance
@@ -45,11 +41,7 @@ namespace nap
 	class LaserSquareComponent : public LaserShapeComponent
 	{
 		RTTI_ENABLE(LaserShapeComponent)
-	public:
-		virtual const rtti::TypeInfo getInstanceType() const override
-		{
-			return RTTI_OF(LaserSquareComponentInstance);
-		}
+		DECLARE_COMPONENT(LaserSquareComponent, LaserSquareComponentInstance)
 	};
 
 	class LaserSquareComponentInstance : public LaserShapeComponentInstance
@@ -80,12 +72,8 @@ namespace nap
 	class LaserCircleComponent : public LaserShapeComponent
 	{
 		RTTI_ENABLE(LaserShapeComponent)
+		DECLARE_COMPONENT(LaserCircleComponent, LaserCircleComponentInstance)
 	public:
-		virtual const rtti::TypeInfo getInstanceType() const override
-		{
-			return RTTI_OF(LaserCircleComponentInstance);
-		}
-
 		// Current circle index (property)
 		int mIndex = 0;
 	};

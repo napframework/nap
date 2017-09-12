@@ -28,12 +28,8 @@ namespace nap
 	class NAPAPI RotateComponent : public Component
 	{
 		RTTI_ENABLE(Component)
+		DECLARE_COMPONENT(RotateComponent, RotateComponentInstance)
 	public:
-		virtual const rtti::TypeInfo getInstanceType() const override
-		{
-			return RTTI_OF(RotateComponentInstance);
-		}
-
 		/**
 		* Uses transform to rotate itself in the world.
 		*/

@@ -34,9 +34,8 @@ namespace nap
 	class NAPAPI PythonScriptComponent : public Component
 	{
 		RTTI_ENABLE(Component)
+		DECLARE_COMPONENT(PythonScriptComponent, PythonScriptComponentInstance)
 	public:
-		virtual const rtti::TypeInfo getInstanceType() const { return RTTI_OF(PythonScriptComponentInstance); }
-
 		std::string mPath;
 	};
 }

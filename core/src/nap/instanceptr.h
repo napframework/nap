@@ -4,23 +4,89 @@
 
 namespace nap
 {
+	class NAPAPI InstancePtrBase
+	{
+		RTTI_ENABLE()
+
+	public:
+		/**
+		* @return RTTIObject pointer.
+		*/
+		ObjectPtr<rtti::RTTIObject>& getResource()
+		{
+			return mResource;
+		}
+
+		/**
+		* @return RTTIObject pointer.
+		*/
+		const ObjectPtr<rtti::RTTIObject>& getResource() const
+		{
+			return mResource;
+		}
+		
+	protected:
+		InstancePtrBase();
+
+		/**
+		* ctor taking direct pointer.
+		*/
+		InstancePtrBase(rtti::RTTIObject* resource) :
+			mResource(resource),
+			mInstance(nullptr)
+		{
+		}
+	
+		/**
+		* @return RTTIObject pointer.
+		*/
+		rtti::RTTIObject* get()
+		{
+			return mInstance;
+		}
+
+		/**
+		* @return RTTIObject pointer.
+		*/
+		const rtti::RTTIObject* get() const
+		{
+			return mInstance;
+		}
+
+	private:
+		template<typename RESOURCE_TYPE, typename INSTANCE_TYPE, typename BASE> friend class InstancePtr;
+		friend class ResourceManagerService;
+
+		ObjectPtr<rtti::RTTIObject> mResource;
+		rtti::RTTIObject*			mInstance;
+	};
+
 	/**
 	 * InstancePtr is used to access instances in the Entity system through their resource. Because instances are spawned at runtime, the file
 	 * objects (resources) have no knowledge of instances. To make sure that we can point to instances, InstancePtr
 	 * wraps both a pointer to a Resource and to an Instance. From an RTTI perspective, InstancePtr acts
 	 * like a pointer to another Resource, while at runtime, the pointer acts like a pointer to the corresponding Instance.
 	 */
-	template<typename RESOURCE_TYPE, typename INSTANCE_TYPE>
-	class InstancePtr
+	template<typename RESOURCE_TYPE, typename INSTANCE_TYPE, typename BASE>
+	class InstancePtr : public BASE
 	{
 	public:
-		using InstancePtrType = InstancePtr<RESOURCE_TYPE, INSTANCE_TYPE>;
+		//////////////////////////////////////////////////////////////////////////
+		// Note: these functions are normally defined by RTTI_ENABLE. However, because template arguments cannot be passed to macros (we derive from a template parameter), 
+		// we cannot use that macro here. To still be able to do is_derived_from checks on InstancePtrs, we've manually expanded the macro here.
+		virtual RTTR_INLINE rttr::type get_type() const { return rttr::detail::get_type_from_instance(this); }
+		virtual RTTR_INLINE void* get_ptr() { return reinterpret_cast<void*>(this); }
+		virtual RTTR_INLINE rttr::detail::derived_info get_derived_info() { return{ reinterpret_cast<void*>(this), rttr::detail::get_type_from_instance(this) }; }
+		using base_class_list = rttr::detail::type_list<BASE>;
+		//////////////////////////////////////////////////////////////////////////
+
+		using InstancePtrType = InstancePtr<RESOURCE_TYPE, INSTANCE_TYPE, BASE>;
 
 		InstancePtr() = default;
 
 		// Regular ptr Ctor
-		InstancePtr(RESOURCE_TYPE* ptr) :
-			mResource(ptr)
+		InstancePtr(RESOURCE_TYPE* resource) :
+			BASE(resource)
 		{
 		}
 
@@ -59,25 +125,25 @@ namespace nap
 		const INSTANCE_TYPE& operator*() const
 		{
 			assert(mInstance != nullptr);
-			return *mInstance;
+			return *static_cast<const INSTANCE_TYPE*>(mInstance);
 		}
 
 		INSTANCE_TYPE& operator*()
 		{
 			assert(mInstance != nullptr);
-			return *mInstance;
+			return *static_cast<INSTANCE_TYPE*>(mInstance);
 		}
 
 		INSTANCE_TYPE* operator->() const
 		{
 			assert(mInstance != nullptr);
-			return mInstance;
+			return static_cast<INSTANCE_TYPE*>(mInstance);
 		}
 
 		INSTANCE_TYPE* operator->()
 		{
 			assert(mInstance != nullptr);
-			return mInstance;
+			return static_cast<INSTANCE_TYPE*>(mInstance);
 		}
 
 		bool operator==(const InstancePtrType& other) const
@@ -125,24 +191,24 @@ namespace nap
 			return mInstance >= other.mInstance;
 		}
 
-		RESOURCE_TYPE* getResource()
+		ObjectPtr<RESOURCE_TYPE> getResource()
 		{
-			return mResource.get();
+			return ObjectPtr<RESOURCE_TYPE>(static_cast<RESOURCE_TYPE*>(mResource.get()));
 		}
 
-		RESOURCE_TYPE* getResource() const
+		const ObjectPtr<RESOURCE_TYPE> getResource() const
 		{
-			return mResource.get();
+			return ObjectPtr<RESOURCE_TYPE>(static_cast<RESOURCE_TYPE*>(mResource.get()));
 		}
 
 		INSTANCE_TYPE* get() const
 		{
-			return mInstance;
+			return static_cast<INSTANCE_TYPE*>(mInstance);
 		}
 
 		INSTANCE_TYPE* get()
 		{
-			return mInstance;
+			return static_cast<INSTANCE_TYPE*>(mInstance);
 		}
 
 	private:		
@@ -151,10 +217,5 @@ namespace nap
 			mResource = other.mResource;
 			mInstance = other.mInstance;
 		}
-
-	private:
-		friend class ResourceManagerService;
-		ObjectPtr<RESOURCE_TYPE> mResource;
-		INSTANCE_TYPE* mInstance = nullptr;
 	};
 }

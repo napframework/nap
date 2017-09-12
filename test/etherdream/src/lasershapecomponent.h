@@ -26,12 +26,7 @@ namespace nap
 	class LaserShapeComponent : public Component
 	{
 		RTTI_ENABLE(Component)
-	public:
-		// Type to instantiate
-		virtual const rtti::TypeInfo getInstanceType() const override				
-		{ 
-			return RTTI_OF(LaserShapeComponentInstance); 
-		}
+		DECLARE_COMPONENT(LaserShapeComponent, LaserShapeComponentInstance)
 
 	public:
 		// Properties associated with the laser shape
