@@ -19,8 +19,8 @@ RTTI_BEGIN_CLASS(nap::Rect)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::RenderableMeshComponent)
-	RTTI_PROPERTY("Mesh",				&nap::RenderableMeshComponent::mMesh,				nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("MaterialInstance",	&nap::RenderableMeshComponent::mMaterialInstance,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Mesh",				&nap::RenderableMeshComponent::mMeshResource,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MaterialInstance",	&nap::RenderableMeshComponent::mMaterialInstanceResource,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ClipRect",			&nap::RenderableMeshComponent::mClipRect,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_END_CLASS
 
@@ -31,16 +31,6 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	nap::IMesh& RenderableMeshComponent::getMeshResource()
-	{
-		assert(mMesh != nullptr);
-		return *mMesh;
-	}
-
-
-	//////////////////////////////////////////////////////////////////////////
-
-
 	// Upload all uniform variables to GPU
 	void RenderableMeshComponentInstance::pushUniforms()
 	{
@@ -159,47 +149,32 @@ namespace nap
 	}
 
 
-	std::unique_ptr<nap::VAOHandle> RenderableMeshComponentInstance::acquireVertexArrayObject(nap::ObjectPtr<nap::IMesh> mesh, utility::ErrorState& error)
-	{
-		// Get render service
-		nap::RenderService* render_service = getEntityInstance()->getCore()->getService<nap::RenderService>();
-		
-		// Here we acquire a VAO from the render service. The service will try to reuse VAOs for similar Material-Mesh combinations
-		std::unique_ptr<nap::VAOHandle> handle = render_service->acquireVertexArrayObject(*mMaterialInstance.getMaterial(), *mesh, error);
-
-		// Make sure we have a handle
-		if (!error.check(handle != nullptr, "Failed to acquire VAO for RenderableMeshComponent %s", mResource->mID.c_str()))
-			return nullptr;
-		return handle;
-	}
-
-
 	RenderableMeshComponentInstance::RenderableMeshComponentInstance(EntityInstance& entity, Component& resource) :
 		RenderableComponentInstance(entity, resource)
-	{	}
+	{
+	}
 
 
 	bool RenderableMeshComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
-		mResource = getComponent<RenderableMeshComponent>();
+		RenderableMeshComponent* resource = getComponent<RenderableMeshComponent>();
 
-		// Initialize material
-		if (!mMaterialInstance.init(mResource->mMaterialInstance, errorState))
+		if (!mMaterialInstance.init(resource->mMaterialInstanceResource, errorState))
 			return false;
 
-		// Ensure we have a transform, otherwise we can't compute this object's location in space
+		// Here we acquire a VAO from the render service. The service will try to reuse VAOs for similar Material-Mesh combinations
+		nap::RenderService* render_service = getEntityInstance()->getCore()->getService<nap::RenderService>();
+		mVAOHandle = render_service->acquireVertexArrayObject(*mMaterialInstance.getMaterial(), *resource->mMeshResource, errorState);
+		if (!errorState.check(mVAOHandle != nullptr, "Failed to acquire VAO for RenderableMeshComponent %s", resource->mID.c_str()))
+			return false;
+
 		mTransformComponent = getEntityInstance()->findComponent<TransformComponentInstance>();
-		if (!errorState.check(mTransformComponent != nullptr, "Missing transform component"))
-			return false;
+ 		if (!errorState.check(mTransformComponent != nullptr, "Missing transform component"))
+ 			return false;
 
-		// Set the mesh
-		if (!setMesh(mResource->mMesh, errorState))
-			return false;
+		// Copy cliprect. Any modifications are done per instance
+		mClipRect = resource->mClipRect;
 
-		// Copy clip rect. Any modifications are done per instance
-		mClipRect = mResource->mClipRect;
-
-		// Done
 		return true;
 	}
 
@@ -273,37 +248,4 @@ namespace nap
 	{
 		return mMaterialInstance;
 	}
-
-
-	nap::IMesh& RenderableMeshComponentInstance::getMesh()
-	{
-		return *mMesh;
-	}
-
-
-	bool RenderableMeshComponentInstance::setMesh(nap::ObjectPtr<nap::IMesh> mesh, utility::ErrorState& error)
-	{
-		if (mMesh == mesh)
-			return true;
-
-		// Get render service and acquire handle
-		std::unique_ptr<nap::VAOHandle> handle = acquireVertexArrayObject(mesh, error);
-		if (!(error.check(handle != nullptr, "Failed to acquire VAO for RenderableMeshComponent %s", mResource->mID.c_str())))
-			return false;
-	
-		// Store the handle
-		mVAOHandle = std::move(handle);
-
-		// set the new mesh that is used for rendering
-		mMesh = mesh;
-
-		return true;
-	}
-
-
-	nap::MeshInstance& RenderableMeshComponentInstance::getMeshInstance()
-	{
-		return mMesh->getMeshInstance();
-	}
 } 
-
