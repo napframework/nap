@@ -10,6 +10,7 @@ namespace nap
 	{
 	}
 
+
 	VAOHandle::VAOHandle(RenderService& renderService, const VAOKey& key, opengl::VertexArrayObject* object) :
 		mRenderService(&renderService),
 		mKey(key),
@@ -17,6 +18,7 @@ namespace nap
 	{
 		mRenderService->incrementVAORefCount(mKey);
 	}
+
 
 	VAOHandle::VAOHandle(const VAOHandle& rhs) :
 		mRenderService(rhs.mRenderService),
@@ -26,6 +28,9 @@ namespace nap
 		mRenderService->incrementVAORefCount(mKey);
 	}
 
+
+	// Note that the move copy ctor does not need to increment the refcount as it 'moves' 
+	// the refcount from the other object.
 	VAOHandle::VAOHandle(VAOHandle&& rhs) : 
 		mRenderService(rhs.mRenderService),
 		mKey(rhs.mKey),
@@ -36,11 +41,13 @@ namespace nap
 		rhs.mObject = nullptr;
 	}
 
+
 	VAOHandle& VAOHandle::operator=(const VAOHandle& rhs)
 	{
 		if (&rhs == this)
 			return *this;
 
+		// Make sure to inc refcount before decreasing it, to avoid reaching zero when mObject is the same
 		if (rhs.isValid())
 			rhs.mRenderService->incrementVAORefCount(rhs.mKey);
 
@@ -54,6 +61,10 @@ namespace nap
 		return *this;
 	}
 
+
+	// Note that the move copy assignment operator does not need to increment the refcount as it 'moves' 
+	// the refcount from the other object. We do need to decrement the refcount for whatever is currently
+	// in the handle.
 	VAOHandle& VAOHandle::operator=(VAOHandle&& rhs)
 	{
 		if (&rhs == this)

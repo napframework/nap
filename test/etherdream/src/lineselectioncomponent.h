@@ -46,9 +46,6 @@ namespace nap
 		// Init selection component
 		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
-		// Property: list of selectable poly-lines
-		std::vector<ObjectPtr<nap::PolyLine>> mLines;
-
 		/**
 		 * @return the currently selected line
 		 */
@@ -70,13 +67,11 @@ namespace nap
 		 */
 		int getCount() const					{ return static_cast<int>(mLines.size()); }
 
-		/**
-		 *	Sets the line to be drawn by the laser and to screen
-		 */
-		virtual void update(double deltaTime) override;
-
 	private:
 		void verifyIndex(int index);
+
+		// Property: list of selectable poly-lines
+		std::vector<RenderableMesh> mLines;
 
 		// property: index
 		int mIndex = 0;

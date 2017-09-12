@@ -242,11 +242,19 @@ namespace nap
 		mRenderer->shutdown();
 	}
 
-
-	VAOHandle RenderService::acquireVertexArrayObject(const Material& material, const IMesh& meshResource, utility::ErrorState& errorState)
+	/**
+	 * Two important things to notice in the internal structure for VAOs:
+	 *	1) Internally, a cache of opengl::VertexArrayObjects is created for each mesh-material combination. When retrieving a VAO
+	 *	   for an already known mesh-material combination, the VAO is retrieved from the cache.
+	 *	2) Ownership of the VAO's does not lie in the RenderService: instead it is shared by all clients. To accomplish this, handles
+	 *	   are returned to clients that perform refcounting into the internal RenderService cache. When there are no more references 
+	 *	   to a VAO, it is queued for destruction. An important detail to notice is that the RenderService does not store handles 
+	 *	   internally, it hands them out when pulling VAOs from the cache or when creating new VAOs.
+	 */
+	VAOHandle RenderService::acquireVertexArrayObject(const Material& material, const IMesh& mesh, utility::ErrorState& errorState)
 	{
 		/// Construct a key based on material-mesh, and see if we have a VAO for this combination
-		VAOKey key(material, meshResource.getMeshInstance());
+		VAOKey key(material, mesh.getMeshInstance());
 		VAOMap::iterator kvp = mVAOMap.find(key);
 		if (kvp != mVAOMap.end())
 			return VAOHandle(*this, key, kvp->second.mObject.get());
@@ -264,8 +272,8 @@ namespace nap
 			if (!errorState.check(material_binding != nullptr, "Unable to find binding %s for shader %s in material %s", kvp.first.c_str(), material.getShader()->mVertPath.c_str(), material.mID.c_str()))
 				return VAOHandle();
 
-			const opengl::VertexAttributeBuffer* vertex_buffer = meshResource.getMeshInstance().getGPUMesh().findVertexAttributeBuffer(material_binding->mMeshAttributeID);
-			if (!errorState.check(vertex_buffer != nullptr, "Unable to find vertex attribute %s in mesh %s", material_binding->mMeshAttributeID.c_str(), meshResource.mID.c_str()))
+			const opengl::VertexAttributeBuffer* vertex_buffer = mesh.getMeshInstance().getGPUMesh().findVertexAttributeBuffer(material_binding->mMeshAttributeID);
+			if (!errorState.check(vertex_buffer != nullptr, "Unable to find vertex attribute %s in mesh %s", material_binding->mMeshAttributeID.c_str(), mesh.mID.c_str()))
 				return VAOHandle();
 
 			ref_counted_vao.mObject->addVertexBuffer(shader_vertex_attribute->mLocation, *vertex_buffer);
@@ -276,6 +284,7 @@ namespace nap
 		return VAOHandle(*this, key, inserted.first->second.mObject.get());
 	}
 
+
 	void RenderService::incrementVAORefCount(const VAOKey& key)
 	{
 		VAOMap::iterator pos = mVAOMap.find(key);
@@ -283,6 +292,7 @@ namespace nap
 
 		++pos->second.mRefCount;
 	}
+
 
 	void RenderService::decrementVAORefCount(const VAOKey& key)
 	{

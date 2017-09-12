@@ -17,15 +17,24 @@ namespace nap
 {
 	bool LineSelectionComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
+		// Get renderable mesh component
+		mMeshComponentInstance = getEntityInstance()->findComponent<RenderableMeshComponentInstance>();
+		if (!errorState.check(mMeshComponentInstance != nullptr, "missing renderable component"))
+			return false;
+
 		// Copy over the list of lines to selection from
-		mLines = getComponent<LineSelectionComponent>()->mLines;
+		for (auto& line : getComponent<LineSelectionComponent>()->mLines)
+		{
+			RenderableMesh mesh = mMeshComponentInstance->createRenderableMesh(*line, errorState);
+			if (!errorState.check(mesh.isValid(), "Attempt to use a mesh in LineSelectionComponent which does not match the material in the RenderableMeshComponent"))
+				return false;
+
+			mLines.push_back(mesh);
+		}
 
 		// Ensure there are lines to choose from
 		if (!(errorState.check(mLines.size() > 0, "No lines to select from")))
-		{
-			assert(false);
 			return false;
-		}
 
 		// Get renderable mesh component
 		mMeshComponentInstance = getEntityInstance()->findComponent<RenderableMeshComponentInstance>();
@@ -35,30 +44,20 @@ namespace nap
 		// Make sure index is in range
 		verifyIndex(getComponent<LineSelectionComponent>()->mIndex);
 
-		// Done
 		return true;
 	}
 
 
 	const nap::PolyLine& LineSelectionComponentInstance::getLine() const
 	{
-		return *(mLines[mIndex]);
+		return(static_cast<const nap::PolyLine&>(mLines[mIndex].getMesh()));
 	}
 
 
 	void LineSelectionComponentInstance::setIndex(int index)
 	{
 		verifyIndex(index);
-	}
-
-
-	void LineSelectionComponentInstance::update(double deltaTime)
-	{
-		utility::ErrorState error;
-		if (!mMeshComponentInstance->setMesh(mLines[mIndex], error))
-		{
-			nap::Logger::warn(error.toString().c_str());
-		}
+		mMeshComponentInstance->setMesh(mLines[mIndex]);
 	}
 
 

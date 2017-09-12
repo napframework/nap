@@ -18,7 +18,7 @@ namespace nap
 	 * A vertex array object is identified by the combination of Material and MeshResource, as it
 	 * binds those two objects together.
 	 */
-	struct VAOKey final
+	struct NAPAPI VAOKey final
 	{
 		VAOKey() = default;
 		VAOKey(const VAOKey& rhs) = default;
@@ -38,23 +38,47 @@ namespace nap
 
 	/**
 	 * Handle to an OpenGL VertexArrayObject object, as it is acquired from the RenderService. This object does not own
-	 * the opengl VAO, it is still owned by the RenderService. On destruction of this handle, the RenderService is 
-	 * automatically notified of the removal. When no more objects are referencing this VAO, it will be queued for destruction 
-	 * in the RenderService.
+	 * the opengl VAO, it is still owned by the RenderService. Internally, the handle will increase and decrease refcounts
+	 * in the RenderService. When the refcount reaches zero, it will be queued for destruction.
 	 */
-	class VAOHandle final
+	class NAPAPI VAOHandle final
 	{
 	public:
 		VAOHandle() = default;
-		VAOHandle(const VAOHandle& other);
+
+		/**
+		 * dtor.
+		 */
 		~VAOHandle();
 
+		/**
+		 * Copy ctor.
+		 */
+		VAOHandle(const VAOHandle& other);
+
+		/**
+		 * Assigment operator.
+		 */
 		VAOHandle& operator=(const VAOHandle& rhs);
 
+		/**
+		 * Move copy ctor.
+		 */
 		VAOHandle(VAOHandle&& rhs);
+
+		/**
+		 * Move assigment operator.
+		 */
 		VAOHandle& operator=(VAOHandle&& rhs);
         
+		/**
+		 * @return Will return true if the object was successfully constructed. The object is successfully constructed when the mesh can be rendered with the material.
+		 */
 		bool isValid() const { return mObject != nullptr; }
+
+		/**
+		 * @return Will return a valid opengl VertexArrayObject.
+		 */
 		opengl::VertexArrayObject& get() { assert(isValid()); return *mObject; }
 
 	private:
@@ -64,7 +88,6 @@ namespace nap
 		* ctor, made private so that only RenderService can create it (through create)
 		*/
 		VAOHandle(RenderService& renderService, const VAOKey& key, opengl::VertexArrayObject* object);
-
 
 	private:
 		RenderService* mRenderService = nullptr;			///< Back pointer to RenderService, for removal on destruction
