@@ -29,9 +29,16 @@
 					"AudioFile": "MyAudioFile"
 				},
 				{
+					"Type": "nap::audio::StereoPannerComponent",
+					"mID": "MyPanner",
+					"AudioInterface": "MyAudioInterface",
+					"Input": "MyPlayer",
+					"Panner": "0.1"
+				},
+				{
 					"Type": "nap::audio::OutputComponent",
 					"AudioInterface": "MyAudioInterface",
-					"Input": "MyPlayer"
+					"Input": "MyPanner"
 				}
 			]
 		}
