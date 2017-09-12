@@ -56,6 +56,11 @@ namespace nap
 		const nap::PolyLine& getLine() const;
 
 		/**
+		 *	@return the currently selected line (non const)
+		 */
+		nap::PolyLine& getLine();
+
+		/**
 		 *	@return the current line index
 		 */
 		int getIndex() const					{ return mIndex; }

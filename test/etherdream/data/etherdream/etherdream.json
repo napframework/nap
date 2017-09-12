@@ -357,26 +357,21 @@
 					"Index" : 2
 				},
 				{
-					"Type" : "nap::LineBlendComponent",
-					"mID" : "LineBlender",
-					"SelectionComponentOne" : "LineSelectorOne",
-					"SelectionComponentTwo" : "LineSelectorTwo",
-					"Line" : "LaserLineMesh",
-					"BlendValue" : 0.5
-				},
-				{
 					"Type" : "nap::OSCInputComponent",
 					"Addresses" : 
 					[
 						"/color",
 						"/resetcolor",
-						"/rotate",
-						"/resetrotate",
-						"/index"
+						"/rotation",
+						"/resetrotation",
+						"/selection"
 					]
 				},
 				{
-					"Type" : "nap::OSCLaserInputHandler"
+					"Type" : "nap::OSCLaserInputHandler",
+					"mID" : "OSCLaserInputHandler",
+					"SelectionComponentOne" : "LineSelectorOne",
+					"SelectionComponentTwo" : "LineSelectorTwo"
 				},
 				{
 					"Type" : "nap::TransformComponent",
@@ -404,7 +399,14 @@
 						"UniformScale": 100.0						
 					}			
 				},
-
+				{
+					"Type" : "nap::LineBlendComponent",
+					"mID" : "LineBlender",
+					"SelectionComponentOne" : "LineSelectorOne",
+					"SelectionComponentTwo" : "LineSelectorTwo",
+					"Line" : "LaserLineMesh",
+					"BlendValue" : 0.5
+				},
 				{
 					"Type" : "nap::RotateComponent",
 					"Properties": {
@@ -417,7 +419,6 @@
 						"Offset": 2.0
 					}
 				},
-
 				{
 					"Type" : "nap::RenderableMeshComponent",
 					"Mesh" : "LaserLineMesh",

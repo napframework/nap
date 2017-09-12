@@ -57,14 +57,15 @@ namespace nap
 		// Update
 		virtual void update(double deltaTime) override;
 
-		LineSelectionComponentInstance* mSelectorOne = nullptr;		// First line selection component
-		LineSelectionComponentInstance* mSelectorTwo = nullptr;		// Second line selection component
-
 	private:
 		float mBlendValue = 0.0f;									// Blend value
 		nap::ObjectPtr<PolyLine> mLine = nullptr;					// Line that will hold the blended values
 
 		// Current time
 		float mCurrentTime = 0.0f;
+
+		LineSelectionComponentInstance* mSelectorOne = nullptr;		// First line selection component
+		LineSelectionComponentInstance* mSelectorTwo = nullptr;		// Second line selection component
+
 	};
 }

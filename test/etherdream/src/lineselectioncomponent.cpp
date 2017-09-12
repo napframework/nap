@@ -40,6 +40,12 @@ namespace nap
 	}
 
 
+	nap::PolyLine& LineSelectionComponentInstance::getLine()
+	{
+		return *(mLines[mIndex]);
+	}
+
+
 	void LineSelectionComponentInstance::setIndex(int index)
 	{
 		verifyIndex(index);
