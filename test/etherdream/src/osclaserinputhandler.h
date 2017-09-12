@@ -3,6 +3,7 @@
 // Local Includes
 #include "oscevent.h"
 #include "lineselectioncomponent.h"
+#include "lineblendcomponent.h"
 
 // External Includes
 #include <nap/component.h>
@@ -59,11 +60,13 @@ namespace nap
 
 		nap::RotateComponentInstance* mRotateComponent = nullptr;
 		nap::OSCInputComponentInstance* mInputComponent = nullptr;
+		nap::LineBlendComponentInstance* mBlendComponent = nullptr;
 
 		void updateColor(const OSCEvent& event, int index, int channel);
 		void updateRotate(const OSCEvent& event);
 		void resetRotate(const OSCEvent& event);
 		void setIndex(const OSCEvent& event, int index);
+		void setBlend(const OSCEvent& event, int index);
 
 		NSLOT(mMessageReceivedSlot, const nap::OSCEvent&, handleMessageReceived)
 

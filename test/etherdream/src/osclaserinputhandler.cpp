@@ -34,6 +34,10 @@ namespace nap
 		if (!errorState.check(mInputComponent != nullptr, "missing osc input component"))
 			return false;
 
+		mBlendComponent = getEntityInstance()->findComponent<nap::LineBlendComponentInstance>();
+		if (!errorState.check(mBlendComponent != nullptr, "missing line blend component"))
+			return false;
+
 		ComponentInstance* selection_one = getComponent<OSCLaserInputHandler>()->mSelectionComponentOne.get();
 		ComponentInstance* selection_two = getComponent<OSCLaserInputHandler>()->mSelectionComponentTwo.get();
 
@@ -97,6 +101,15 @@ namespace nap
 			int index = math::clamp<int>(std::stoi(out_values.back())-1, 0,1);
 			setIndex(oscEvent, index);
 			return;
+		}
+
+		if (utility::gStartsWith(oscEvent.getAddress(), "/blend"))
+		{
+			std::vector<std::string> out_values;
+			utility::gSplitString(oscEvent.getAddress(), '/', out_values);
+			assert(out_values.size() == 3);
+			int index = math::clamp<int>(std::stoi(out_values.back()) - 1, 0, 1);
+			setBlend(oscEvent, index);
 		}
 	}
 
@@ -192,10 +205,21 @@ namespace nap
 	}
 
 
+	void OSCLaserInputHandlerInstance::setBlend(const OSCEvent& event, int index)
+	{
+		assert(event[0].isFloat());
+		float v = event[0].asFloat();
+
+		float& value_to_set = index == 0 ? mBlendComponent->mBlendSpeed : mBlendComponent->mBlendValue;
+		value_to_set = v;
+	}
+
+
 	void OSCLaserInputHandler::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 	{
 		components.emplace_back(RTTI_OF(nap::RotateComponent));
 		components.emplace_back(RTTI_OF(nap::OSCInputComponent));
+		components.emplace_back(RTTI_OF(nap::LineBlendComponent));
 	}
 
 }

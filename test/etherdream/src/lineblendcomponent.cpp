@@ -8,6 +8,7 @@ RTTI_BEGIN_CLASS(nap::LineBlendComponent)
 	RTTI_PROPERTY("SelectionComponentTwo",	&nap::LineBlendComponent::mSelectionComponentTwo,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Line",					&nap::LineBlendComponent::mLine,					nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("BlendValue",				&nap::LineBlendComponent::mBlendValue,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("BlendSpeed",				&nap::LineBlendComponent::mBlendSpeed,				nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LineBlendComponentInstance)
@@ -33,6 +34,7 @@ namespace nap
 
 		// Set blend value
 		mBlendValue = getComponent<LineBlendComponent>()->mBlendValue;
+		mBlendSpeed = getComponent<LineBlendComponent>()->mBlendSpeed;
 
 		// Copy line
 		mLine = getComponent<LineBlendComponent>()->mLine;
@@ -43,8 +45,14 @@ namespace nap
 
 	void LineBlendComponentInstance::update(double deltaTime)
 	{
-		mCurrentTime += (deltaTime * 1.0f);
-		float b_value = (sin(mCurrentTime) + 1.0f) / 2.0f;
+		// Calculate current blend based on speed
+		mCurrentTime += (deltaTime * mBlendSpeed);
+
+		// Prep value for sin
+		float b_value = (mBlendValue*M_PI) + mCurrentTime;
+
+		// Get normalized blend value starting from 0
+		b_value = (sin(b_value-(M_PI / 2))+1) / 2.0f;
 
 		const nap::PolyLine& line_one = mSelectorOne->getLine();
 		const nap::PolyLine& line_two = mSelectorTwo->getLine();

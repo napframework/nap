@@ -364,7 +364,8 @@
 						"/resetcolor",
 						"/rotation",
 						"/resetrotation",
-						"/selection"
+						"/selection",
+						"/blend"
 					]
 				},
 				{
@@ -405,7 +406,8 @@
 					"SelectionComponentOne" : "LineSelectorOne",
 					"SelectionComponentTwo" : "LineSelectorTwo",
 					"Line" : "LaserLineMesh",
-					"BlendValue" : 0.5
+					"BlendValue" : 0.0,
+					"BlendSpeed" : 0.0
 				},
 				{
 					"Type" : "nap::RotateComponent",

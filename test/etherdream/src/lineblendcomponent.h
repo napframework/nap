@@ -29,6 +29,9 @@ namespace nap
 		// property: the amount to blend between two lines
 		float mBlendValue = 0.0f;
 
+		// property: the automatic blend speed
+		float mBlendSpeed = 0.0f;
+
 		// property: Link to selection component one
 		ComponentPtr mSelectionComponentOne;
 
@@ -57,8 +60,10 @@ namespace nap
 		// Update
 		virtual void update(double deltaTime) override;
 
-	private:
 		float mBlendValue = 0.0f;									// Blend value
+		float mBlendSpeed = 0.0f;									// Speed to blend between 2 lines
+
+	private:
 		nap::ObjectPtr<PolyLine> mLine = nullptr;					// Line that will hold the blended values
 
 		// Current time
