@@ -4,7 +4,7 @@
 #include <nap/logger.h>
 
 // Audio includes
-#include "audiodevice.h"
+#include "audioservice.h"
 
 // RTTI
 RTTI_BEGIN_CLASS(nap::audio::AudioInterface)

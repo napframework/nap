@@ -4,13 +4,13 @@
 #include <nap/component.h>
 
 // audio includes
-#include "audionode.h"
-#include "audionodemanager.h"
-#include "audiointerface.h"
-#include "audiofileresource.h"
-#include "nodes/bufferplayer.h"
-#include "nodes/gain.h"
-#include "nodes/stereopanner.h"
+#include <node/audionode.h>
+#include <node/audionodemanager.h>
+#include <device/audiointerface.h>
+#include <resource/audiobufferresource.h>
+#include <node/bufferplayer.h>
+#include <node/gain.h>
+#include <node/stereopanner.h>
 
 namespace nap {
     
@@ -19,7 +19,7 @@ namespace nap {
         // Forward declarations
         class AudioPlayerComponentInstance;
         
-        // TODO in the future this component will be split into a AudioPlayerComponent, AudioPannerComponent and OutputPinComponent that will point to one another using ComponentPtr.
+        // TODO in the future this component will be split into a AudioPlayerComponent, AudioPannerComponent and OutputComponent that will point to one another using ComponentPtr.
         
         /**
          * A component that plays back a mono or stereo audio buffer on first 2 channels (stereo) of the system.
@@ -47,7 +47,7 @@ namespace nap {
             /**
              * Pointer to the audio file that will be played
              */
-            ObjectPtr<AudioFileResource> mAudioFile;
+            ObjectPtr<AudioBufferResourceBase> mAudioBuffer;
             
             /**
              * Gain of the playback between 0 and 1.
@@ -70,6 +70,8 @@ namespace nap {
             
         public:
             AudioPlayerComponentInstance(EntityInstance& entity, Component& resource) : nap::ComponentInstance(entity, resource) { }
+            
+            virtual ~AudioPlayerComponentInstance() { }
             
             // Initialize the component
             bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;

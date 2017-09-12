@@ -10,7 +10,7 @@
 // RTTI
 RTTI_BEGIN_CLASS(nap::audio::AudioPlayerComponent)
     RTTI_PROPERTY("AudioInterface",	&nap::audio::AudioPlayerComponent::mAudioInterface, nap::rtti::EPropertyMetaData::Required)
-    RTTI_PROPERTY("AudioFile", &nap::audio::AudioPlayerComponent::mAudioFile, nap::rtti::EPropertyMetaData::Required)
+    RTTI_PROPERTY("AudioFile", &nap::audio::AudioPlayerComponent::mAudioBuffer, nap::rtti::EPropertyMetaData::Required)
     RTTI_PROPERTY("Panning", &nap::audio::AudioPlayerComponent::mPanning, nap::rtti::EPropertyMetaData::Default)
     RTTI_PROPERTY("Gain", &nap::audio::AudioPlayerComponent::mGain, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -32,11 +32,11 @@ namespace nap {
             AudioPlayerComponent* resource = rtti_cast<AudioPlayerComponent>(getComponent());
             
             // Mono mode
-            if (resource->mAudioFile->getBuffer().getChannelCount() == 1)
+            if (resource->mAudioBuffer->getBuffer().getChannelCount() == 1)
             {
                 // one player for the mono buffer
                 mPlayers.emplace_back(std::make_unique<BufferPlayer>(resource->mAudioInterface->getNodeManager()));
-                mPlayers[0]->play(resource->mAudioFile->getBuffer()[0], 0, resource->mAudioFile->getSampleRate() / resource->mAudioInterface->mSampleRate);
+                mPlayers[0]->play(resource->mAudioBuffer->getBuffer()[0], 0, resource->mAudioBuffer->getSampleRate() / resource->mAudioInterface->mSampleRate);
                 
                 // one gain
                 mGains.emplace_back(std::make_unique<Gain>(resource->mAudioInterface->getNodeManager()));
@@ -60,14 +60,14 @@ namespace nap {
             }
             
             // Stereo mode
-            else if (resource->mAudioFile->getChannelCount() > 1)
+            else if (resource->mAudioBuffer->getChannelCount() > 1)
             {
                 for (auto i = 0; i < 2; ++i)
                 {
                     // two players for stereo playback
                     mPlayers.emplace_back(std::make_unique<BufferPlayer>(resource->mAudioInterface->getNodeManager()));
                     
-                    mPlayers[i]->play(resource->mAudioFile->getBuffer()[i], 0, resource->mAudioFile->getSampleRate() / resource->mAudioInterface->mSampleRate);
+                    mPlayers[i]->play(resource->mAudioBuffer->getBuffer()[i], 0, resource->mAudioBuffer->getSampleRate() / resource->mAudioInterface->mSampleRate);
                     
                     // two gains to scale both channels
                     mGains.emplace_back(std::make_unique<Gain>(resource->mAudioInterface->getNodeManager()));

@@ -11,8 +11,8 @@
 #include <rtti/rttiobject.h>
 
 // audio includes
-#include "audiodevice.h"
-#include "audionodemanager.h"
+#include <device/audioservice.h>
+#include <node/audionodemanager.h>
 
 namespace nap {
     

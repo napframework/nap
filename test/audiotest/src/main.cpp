@@ -10,8 +10,8 @@
 #include <utility/dllexport.h>
 
 // Audio module includes
-#include <audiodevice.h>
-#include <audiotypes.h>
+#include <device/audioservice.h>
+#include <utility/audiotypes.h>
 
 nap::ResourceManagerService* resourceManagerService = nullptr;
 

@@ -5,7 +5,7 @@
 			"Type" : "nap::audio::AudioInterface",
 			"mID": "MyAudioInterface",
 			"UseDefaultDevice": "True",
-			"SampleRate": "44100",
+			"SampleRate": "48000",
 			"BufferSize": "256",
 			"AllowFailure": "False"
 		},
@@ -23,11 +23,15 @@
 			"Components" : 
 			[
 				{
-					"Type": "nap::audio::AudioPlayerComponent",
+					"Type": "nap::audio::PlayerComponent",
+					"mID": "MyPlayer",
 					"AudioInterface": "MyAudioInterface",
-					"AudioFile": "MyAudioFile",
-					"Panning": "0.1",
-					"Gain": "1.0"
+					"AudioFile": "MyAudioFile"
+				},
+				{
+					"Type": "nap::audio::OutputComponent",
+					"AudioInterface": "MyAudioInterface",
+					"Input": "MyPlayer"
 				}
 			]
 		}

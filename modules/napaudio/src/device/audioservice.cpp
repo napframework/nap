@@ -5,7 +5,7 @@
 #include <nap/logger.h>
 
 // Audio includes
-#include "audiodevice.h"
+#include "audioservice.h"
 #include "audiointerface.h"
 
 namespace nap {

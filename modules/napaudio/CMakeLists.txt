@@ -5,6 +5,12 @@ find_package(libsndfile REQUIRED)
 
 file(GLOB_RECURSE sources src/*.cpp src/*.h)
 
+source_group("component" src/component/*.*)
+source_group("device" src/device/*.*)
+source_group("node" src/node/*.*)
+source_group("resource" src/resource/*.*)
+source_group("utility" src/utility/*.*)
+
 if (APPLE)
     set(LIBRARIES napcore ${PORTAUDIO_LIBRARIES} ${LIBSNDFILE_LIBRARIES} "-framework CoreAudio" "-framework CoreServices" "-framework CoreFoundation" "-framework AudioUnit" "-framework AudioToolbox")
 else()

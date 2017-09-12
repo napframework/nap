@@ -7,7 +7,7 @@
 #include <nap/threading.h>
 
 // Audio includes
-#include "audiotypes.h"
+#include <utility/audiotypes.h>
 
 namespace nap {
     

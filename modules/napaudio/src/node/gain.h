@@ -1,6 +1,6 @@
 #pragma once
 
-#include <audionode.h>
+#include <node/audionode.h>
 
 namespace nap {
     
