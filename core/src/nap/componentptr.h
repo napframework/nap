@@ -7,7 +7,7 @@ namespace nap
 	class Component;
 	class ComponentInstance;
 
-	class ComponentPtrBase : public InstancePtrBase
+	class NAPAPI ComponentPtrBase : public InstancePtrBase
 	{
 		RTTI_ENABLE(InstancePtrBase)
 	public:

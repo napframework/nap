@@ -537,8 +537,15 @@ namespace nap
 				}
 				else if (resolved_path.getType().is_derived_from(RTTI_OF(ComponentPtrBase)))
 				{
-					// Get the resource target
-					ComponentPtrBase component_ptr = resolved_path.getValue().convert<ComponentPtrBase>();
+					// RTTR does not correctly support casting between base/derived types (in both directions), if one of the types is a 'wrapper' type (i.e. ComponentPtr) and the other is not (i.e. ComponentPtrBase)
+					// So, while we can get the value of the pointer as a ComponentPtrBase, RTTR can no longer convert back to the specific ComponentPtr<T> that is used in order to set the value on the property again.
+					//
+					// To work around this we use the get_value function on the rtti::Variant we get back from getValue. This function gives you back a *const ref* to the value stored *inside* of the variant (not the original memory location)
+					// So, if we can modify that const ref, we're *actually* modifying the value stored inside the variant, which means the variant always stays of the correct type (ComponentPtr<T>), which means we can
+					// re-use that same variant to call setValue again. However, since get_value returns a *const ref*, we need to cast the constness aways, since we want to fill in the instance pointer.
+					rtti::Variant value = resolved_path.getValue();
+					ComponentPtrBase& component_ptr = const_cast<ComponentPtrBase&>(value.get_value<ComponentPtrBase>());
+
 					nap::Component* target_component_resource = rtti_cast<Component>(component_ptr.getResource().get());
 
 					// Skip null targets
@@ -584,7 +591,7 @@ namespace nap
 					}
 
 					// Set value back to source
-					resolved_path.setValue(component_ptr);
+					resolved_path.setValue(value);
 				}
 			}
 		}
