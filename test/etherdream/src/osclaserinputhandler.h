@@ -4,6 +4,7 @@
 #include "oscevent.h"
 #include "lineselectioncomponent.h"
 #include "lineblendcomponent.h"
+#include "laseroutputcomponent.h"
 
 // External Includes
 #include <nap/component.h>
@@ -14,6 +15,7 @@
 #include <renderablemeshcomponent.h>
 #include <oscinputcomponent.h>
 #include <transformcomponent.h>
+
 
 namespace nap
 {
@@ -32,6 +34,9 @@ namespace nap
 
 		// property: Link to selection component two
 		ComponentPtr<LineSelectionComponent> mSelectionComponentTwo = nullptr;
+
+		// property: Link to laser output component
+		ComponentPtr<LaserOutputComponent> mLaserOutputComponent = nullptr;
 
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 	};
@@ -66,11 +71,13 @@ namespace nap
 		void setIndex(const OSCEvent& event, int index);
 		void setBlend(const OSCEvent& event, int index);
 		void setScale(const OSCEvent& event);
+		void setPosition(const OSCEvent& event);
 
 		NSLOT(mMessageReceivedSlot, const nap::OSCEvent&, handleMessageReceived)
 
 		LineSelectionComponentInstance* mSelectorOne = nullptr;		// First line selection component
 		LineSelectionComponentInstance* mSelectorTwo = nullptr;		// Second line selection component
+		LaserOutputComponentInstance* mLaserOutput = nullptr;		// Laser output component
 
 		float mInitialScale = 1.0f;									// Holds the initial scale of the laser spline entity
 	};

@@ -56,11 +56,22 @@ namespace nap
 		// Update
 		virtual void update(double deltaTime) override;
 
+		/**
+		* @return the interpolated line mesh
+		*/
+		const PolyLine& getLine() const								{ return *mTarget; }
+
+		/**
+		 * @return if the blended line is closed or open
+		 * The line is considered closed when both source lines are closed
+		 */
+		bool isClosed() const;
+
 		float mBlendValue = 0.0f;									// Blend value
 		float mBlendSpeed = 0.0f;									// Speed to blend between 2 lines
 
 	private:
-		PolyLine* mTarget = nullptr;					// Line that will hold the blended values
+		PolyLine* mTarget = nullptr;								// Line that will hold the blended values
 
 		// Current time
 		float mCurrentTime = 0.0f;

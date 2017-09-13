@@ -98,4 +98,10 @@ namespace nap
 		}
 	}
 
+
+	bool LineBlendComponentInstance::isClosed() const
+	{
+		return mSelectorOne->getLine().isClosed() && mSelectorTwo->getLine().isClosed();
+	}
+
 }

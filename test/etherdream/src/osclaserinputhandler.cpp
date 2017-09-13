@@ -8,6 +8,7 @@
 RTTI_BEGIN_CLASS(nap::OSCLaserInputHandler)
 	RTTI_PROPERTY("SelectionComponentOne", &nap::OSCLaserInputHandler::mSelectionComponentOne, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("SelectionComponentTwo", &nap::OSCLaserInputHandler::mSelectionComponentTwo, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("LaserOutputComponent",  &nap::OSCLaserInputHandler::mLaserOutputComponent,  nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::OSCLaserInputHandlerInstance)
@@ -45,6 +46,7 @@ namespace nap
 
 		mSelectorOne = getComponent<OSCLaserInputHandler>()->mSelectionComponentOne.get();
 		mSelectorTwo = getComponent<OSCLaserInputHandler>()->mSelectionComponentTwo.get();
+		mLaserOutput = getComponent<OSCLaserInputHandler>()->mLaserOutputComponent.get();
 
 		mInputComponent->messageReceived.connect(mMessageReceivedSlot);
 
@@ -109,6 +111,11 @@ namespace nap
 		else if (utility::gStartsWith(oscEvent.getAddress(), "/scale"))
 		{
 			setScale(oscEvent);
+		}
+
+		else if (utility::gStartsWith(oscEvent.getAddress(), "/position"))
+		{
+			setPosition(oscEvent);
 		}
 	}
 
@@ -197,7 +204,6 @@ namespace nap
 		// Get line to update
 		LineSelectionComponentInstance* selector = index == 0 ? mSelectorOne : mSelectorTwo;
 
-
 		// Map value to range
 		float count = static_cast<float>(selector->getCount());
 		int idx = math::min<int>(static_cast<int>(count * v), count - 1);
@@ -212,7 +218,7 @@ namespace nap
 
 		if (index == 0)
 		{
-			mBlendComponent->mBlendSpeed = math::power<float>(v, 1.5f);
+			mBlendComponent->mBlendSpeed = math::power<float>(v, 1.05f);
 			return;
 		}
 		mBlendComponent->mBlendValue = v;
@@ -226,6 +232,22 @@ namespace nap
 		mTransformComponent->setUniformScale(math::fit<float>(v, 0.0f, 1.0f, 0.0f, 3.0f) * mInitialScale);
 	}
 
+
+	void OSCLaserInputHandlerInstance::setPosition(const OSCEvent& event)
+	{
+		assert(event.getCount() == 2);
+		float pos_x = event[1].asFloat();
+		float pos_y = event[0].asFloat();
+
+		float fru_x = mLaserOutput->mProperties.mFrustrum.x / 2.0f;
+		float fru_y = mLaserOutput->mProperties.mFrustrum.y / 2.0f;
+
+		glm::vec3 current_xform = mTransformComponent->getTranslate();
+		current_xform.x = math::lerp<float>(fru_x*-1.0f, fru_x, pos_x);
+		current_xform.y = math::lerp<float>(fru_y*-1.0f, fru_y, pos_y);
+
+		mTransformComponent->setTranslate(current_xform);
+	}
 
 	void OSCLaserInputHandler::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 	{

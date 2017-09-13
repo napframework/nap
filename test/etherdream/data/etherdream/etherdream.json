@@ -297,7 +297,7 @@
 						"HexagonMesh",
 						"TriangleMesh"
 					],
-					"Index" : 0
+					"Index" : 2
 				},
 				{
 					"Type" : "nap::LineSelectionComponent",
@@ -310,7 +310,7 @@
 						"HexagonMesh",
 						"TriangleMesh"
 					],
-					"Index" : 2
+					"Index" : 0
 				},
 				{
 					"Type" : "nap::OSCInputComponent",
@@ -322,14 +322,16 @@
 						"/resetrotation",
 						"/selection",
 						"/blend",
-						"/scale"
+						"/scale",
+						"/position"
 					]
 				},
 				{
 					"Type" : "nap::OSCLaserInputHandler",
 					"mID" : "OSCLaserInputHandler",
 					"SelectionComponentOne" : "LineSelectorOne",
-					"SelectionComponentTwo" : "LineSelectorTwo"
+					"SelectionComponentTwo" : "LineSelectorTwo",
+					"LaserOutputComponent" : "LaserOutputComponentOne"
 				},
 				{
 					"Type" : "nap::TransformComponent",
@@ -369,13 +371,13 @@
 				{
 					"Type" : "nap::LineTraceComponent",
 					"mID" : "LineTracer",
-					"Source" : "LaserLineMesh",
+					"BlendComponent" : "LineBlender",
 					"Target" : "LaserTraceMesh",
 					"Properties" :
 					{
 						"Offset" : 0.0,
-						"Speed" : 0.0,
-						"Length" : 0.1
+						"Speed" : 0.1,
+						"Length" : 0.25
 					}
 				},
 				{
@@ -386,7 +388,7 @@
 							"y": 1.0,
 							"z": 0.4
 						},
-						"Speed": 0.1,
+						"Speed": 0.0,
 						"Offset": 2.0
 					}
 				},
@@ -435,6 +437,7 @@
 				},
 				{
 					"Type":"nap::LaserOutputComponent",
+					"mID" : "LaserOutputComponentOne",
 					"Properties" :
 					{
 						"Frustrum" :

@@ -63,6 +63,12 @@ namespace nap
 		template<typename T>
 		T power(T value, T exp);
 
+		/**
+		 * @return epsilon of T
+		 */
+		template<typename T>
+		T epsilon();
+
 
 		//////////////////////////////////////////////////////////////////////////
 		// Template definitions
@@ -105,6 +111,12 @@ namespace nap
 		T ceil(T value)
 		{
 			return glm::ceil(value);
+		}
+
+		template<typename T>
+		T epsilon()
+		{
+			return std::numeric_limits<T>::epsilon();
 		}
 
 

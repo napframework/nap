@@ -12,7 +12,7 @@ namespace nap
 		 */
 		float mOffset = 0.0f;		// the offset of the tracer along the line (0-1)
 		float mSpeed  = 0.0f;		// speed at which to move the tracer along the line
-		float mLength = 0.0f;		// length of the tracer relative to the source (1.0 = full length)
+		float mLength = 0.25f;		// length of the tracer relative to the source (1.0 = full length)
 	};
 
 	class LineTraceComponentInstance;
@@ -25,11 +25,11 @@ namespace nap
 		// Trace properties
 		TraceProperties mProperties;
 
-		// property: Link to the line blend component, this holds the line we want to apply the tracer on
-		ObjectPtr<nap::PolyLine> mSourceLine;
-
 		// property: Link to the tracer mesh that is computed by the instance of this component
 		ObjectPtr<nap::PolyLine> mTargetLine;
+
+		// property: Link to the line blend component that holds the line we want to trace
+		ComponentPtr<nap::LineBlendComponent> mBlendComponent = nullptr;
 	};
 
 
@@ -57,7 +57,8 @@ namespace nap
 		TraceProperties mProperties;
 
 	private:
-		nap::PolyLine*	mSourceLine = nullptr;		// Line that acts as a source for the tracer
-		nap::PolyLine*  mTargetLine = nullptr;		// Line that is the output of the trace computation
+		nap::LineBlendComponentInstance* mBlendComponent = nullptr;		// Line that acts as a source for the tracer
+		nap::PolyLine*  mTarget = nullptr;								// Line that is the output of the trace computation
+		float mCurrentTime = 0.0f;										// Current time
 	};
 }
