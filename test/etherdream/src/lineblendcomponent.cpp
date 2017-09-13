@@ -6,7 +6,7 @@
 RTTI_BEGIN_CLASS(nap::LineBlendComponent)
 	RTTI_PROPERTY("SelectionComponentOne",	&nap::LineBlendComponent::mSelectionComponentOne,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("SelectionComponentTwo",	&nap::LineBlendComponent::mSelectionComponentTwo,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Line",					&nap::LineBlendComponent::mLine,					nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Target",					&nap::LineBlendComponent::mTarget,					nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("BlendValue",				&nap::LineBlendComponent::mBlendValue,				nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("BlendSpeed",				&nap::LineBlendComponent::mBlendSpeed,				nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
@@ -28,7 +28,7 @@ namespace nap
 		mBlendSpeed = getComponent<LineBlendComponent>()->mBlendSpeed;
 
 		// Copy line
-		mLine = getComponent<LineBlendComponent>()->mLine;
+		mTarget = getComponent<LineBlendComponent>()->mTarget.get();
 
 		return true;
 	}
@@ -48,17 +48,17 @@ namespace nap
 		const nap::PolyLine& line_one = mSelectorOne->getLine();
 		const nap::PolyLine& line_two = mSelectorTwo->getLine();
 
-		std::vector<glm::vec3>& pos_data = mLine->getPositionAttr().getData();
-		std::vector<glm::vec3>& nor_data = mLine->getNormalAttr().getData();
-		std::vector<glm::vec3>& uvs_data = mLine->getUvAttr().getData();
-		std::vector<glm::vec4>& col_data = mLine->getColorAttr().getData();
+		std::vector<glm::vec3>& pos_data = mTarget->getPositionAttr().getData();
+		std::vector<glm::vec3>& nor_data = mTarget->getNormalAttr().getData();
+		std::vector<glm::vec3>& uvs_data = mTarget->getUvAttr().getData();
+		std::vector<glm::vec4>& col_data = mTarget->getColorAttr().getData();
 
 		glm::vec3 line_pos_one, line_pos_two;
 		glm::vec3 line_nor_one, line_nor_two;
 		glm::vec3 line_uvs_one, line_uvs_two;
 		glm::vec4 line_col_one, line_col_two;
 
-		int vertex_count = mLine->getMeshInstance().getNumVertices();
+		int vertex_count = mTarget->getMeshInstance().getNumVertices();
 		assert(vertex_count > 1);
 		float inc = 1.0f / static_cast<float>(vertex_count - 1);
 		for (int i = 0; i < vertex_count; i++)
@@ -92,7 +92,7 @@ namespace nap
 		}
 
 		nap::utility::ErrorState error;
-		if (!(mLine->getMeshInstance().update(error)))
+		if (!(mTarget->getMeshInstance().update(error)))
 		{
 			nap::Logger::warn(error.toString().c_str());
 		}

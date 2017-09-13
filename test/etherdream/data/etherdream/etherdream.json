@@ -53,43 +53,7 @@
 			"mID": "LineMesh",
 			"Properties": 
 			{
-				"Count" : 500,
-				"Color" :
-				{
-					"x":1.0,
-					"y":1.0,
-					"z":1.0,
-					"w":1.0
-				}
-			},
-			"Start" :
-			{
-				"x": -1.0,
-				"y": 0.0,
-				"z": 0.0
-			},
-			"End" :
-			{
-				"x": 1.0,
-				"y": 0.0,
-				"z": 0.0
-			},
-			"Closed" : false
-		},
-
-		{
-			"Type" : "nap::Line",
-			"mID": "LaserLineMesh",
-			"Properties": 
-			{
-				"Count" : 500,
-				"Color" :
-				{
-					"x":1.0,
-					"y":1.0,
-					"z":1.0,
-					"w":1.0
-				}
+				"Count" : 500
 			},
 			"Start" :
 			{
@@ -111,14 +75,7 @@
 			"mID": "RectangleMesh",
 			"Properties": 
 			{
-				"Count" : 500,
-				"Color" :
-				{
-					"x":1.0,
-					"y":0.0,
-					"z":1.0,
-					"w":1.0
-				}
+				"Count" : 500
 			},
 			"Dimensions":
 			{
@@ -132,14 +89,7 @@
 			"mID": "CircleMesh",
 			"Properties": 
 			{
-				"Count" : 500,
-				"Color" :
-				{
-					"x":1.0,
-					"y":1.0,
-					"z":1.0,
-					"w":1.0
-				}
+				"Count" : 500
 			},
 			"Radius":1.0
 		},
@@ -149,14 +99,7 @@
 			"mID": "HexagonMesh",
 			"Properties": 
 			{
-				"Count" : 500,
-				"Color" :
-				{
-					"x":1.0,
-					"y":1.0,
-					"z":1.0,
-					"w":1.0
-				}
+				"Count" : 500
 			},
 			"Radius":1.0
 		},
@@ -166,16 +109,29 @@
 			"mID": "TriangleMesh",
 			"Properties": 
 			{
-				"Count" : 500,
-				"Color" :
-				{
-					"x":1.0,
-					"y":1.0,
-					"z":1.0,
-					"w":1.0
-				}
+				"Count" : 500
 			},
 			"Radius":1.0
+		},
+
+		{
+			"Type" : "nap::Line",
+			"mID": "LaserLineMesh",
+			"Properties": 
+			{
+				"Count" : 500
+			},
+			"Closed" : false
+		},
+
+		{
+			"Type" : "nap::Line",
+			"mID": "LaserTraceMesh",
+			"Properties": 
+			{
+				"Count" : 500
+			},
+			"Closed" : false
 		},
 
 		{
@@ -365,7 +321,8 @@
 						"/rotation",
 						"/resetrotation",
 						"/selection",
-						"/blend"
+						"/blend",
+						"/scale"
 					]
 				},
 				{
@@ -405,9 +362,21 @@
 					"mID" : "LineBlender",
 					"SelectionComponentOne" : "LineSelectorOne",
 					"SelectionComponentTwo" : "LineSelectorTwo",
-					"Line" : "LaserLineMesh",
+					"Target" : "LaserLineMesh",
 					"BlendValue" : 0.0,
 					"BlendSpeed" : 0.0
+				},
+				{
+					"Type" : "nap::LineTraceComponent",
+					"mID" : "LineTracer",
+					"Source" : "LaserLineMesh",
+					"Target" : "LaserTraceMesh",
+					"Properties" :
+					{
+						"Offset" : 0.0,
+						"Speed" : 0.0,
+						"Length" : 0.1
+					}
 				},
 				{
 					"Type" : "nap::RotateComponent",

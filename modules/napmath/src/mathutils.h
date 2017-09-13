@@ -51,12 +51,17 @@ namespace nap
 		template<typename T>
 		T floor(T value);
 
-
 		/**
 		 *	Rounds up a value
 		 */
 		template<typename T>
 		T ceil(T value);
+
+		/**
+		 *	@return value raised to power of exponent
+		 */
+		template<typename T>
+		T power(T value, T exp);
 
 
 		//////////////////////////////////////////////////////////////////////////
@@ -96,7 +101,6 @@ namespace nap
 			return glm::floor(value);
 		}
 
-
 		template<typename T>
 		T ceil(T value)
 		{
@@ -122,5 +126,14 @@ namespace nap
 
 		template<>
 		extern NAPAPI glm::vec4 lerp<glm::vec4>(const glm::vec4& start, const glm::vec4& end, float percent);
+
+		template<>
+		extern NAPAPI float power<float>(float value, float exp);
+
+		template<>
+		extern NAPAPI double power<double>(double value, double exp);
+
+		template<>
+		extern NAPAPI int power<int>(int value, int exp);
 	}
 }

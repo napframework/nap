@@ -38,11 +38,15 @@ namespace nap
 		if (!errorState.check(mBlendComponent != nullptr, "missing line blend component"))
 			return false;
 
+		mTransformComponent = getEntityInstance()->findComponent<nap::TransformComponentInstance>();
+		if (!errorState.check(mTransformComponent != nullptr, "missing transform component"))
+			return false;
+		mInitialScale = mTransformComponent->getUniformScale();
+
 		mSelectorOne = getComponent<OSCLaserInputHandler>()->mSelectionComponentOne.get();
 		mSelectorTwo = getComponent<OSCLaserInputHandler>()->mSelectionComponentTwo.get();
 
 		mInputComponent->messageReceived.connect(mMessageReceivedSlot);
-
 
 		return true;
 	}
@@ -69,19 +73,19 @@ namespace nap
 			return;
 		}
 
-		if (utility::gStartsWith(oscEvent.getAddress(), "/rotation"))
+		else if (utility::gStartsWith(oscEvent.getAddress(), "/rotation"))
 		{
 			updateRotate(oscEvent);
 			return;
 		}
 
-		if (utility::gStartsWith(oscEvent.getAddress(), "/resetrotation"))
+		else if (utility::gStartsWith(oscEvent.getAddress(), "/resetrotation"))
 		{
 			resetRotate(oscEvent);
 			return;
 		}
 
-		if (utility::gStartsWith(oscEvent.getAddress(), "/selection"))
+		else if (utility::gStartsWith(oscEvent.getAddress(), "/selection"))
 		{
 			// Get index
 			std::vector<std::string> out_values;
@@ -93,13 +97,18 @@ namespace nap
 			return;
 		}
 
-		if (utility::gStartsWith(oscEvent.getAddress(), "/blend"))
+		else if (utility::gStartsWith(oscEvent.getAddress(), "/blend"))
 		{
 			std::vector<std::string> out_values;
 			utility::gSplitString(oscEvent.getAddress(), '/', out_values);
 			assert(out_values.size() == 3);
 			int index = math::clamp<int>(std::stoi(out_values.back()) - 1, 0, 1);
 			setBlend(oscEvent, index);
+		}
+
+		else if (utility::gStartsWith(oscEvent.getAddress(), "/scale"))
+		{
+			setScale(oscEvent);
 		}
 	}
 
@@ -159,7 +168,7 @@ namespace nap
 			mRotateComponent->mProperties.mAxis.z = v;
 			break;
 		case 4:
-			mRotateComponent->mProperties.mSpeed = v;
+			mRotateComponent->mProperties.mSpeed = math::power<float>(v, 4.0f);
 			break;
 		default:
 			assert(false);
@@ -197,12 +206,24 @@ namespace nap
 
 
 	void OSCLaserInputHandlerInstance::setBlend(const OSCEvent& event, int index)
-	{
+	{	
 		assert(event[0].isFloat());
 		float v = event[0].asFloat();
 
-		float& value_to_set = index == 0 ? mBlendComponent->mBlendSpeed : mBlendComponent->mBlendValue;
-		value_to_set = v;
+		if (index == 0)
+		{
+			mBlendComponent->mBlendSpeed = math::power<float>(v, 1.5f);
+			return;
+		}
+		mBlendComponent->mBlendValue = v;
+	}
+
+
+	void OSCLaserInputHandlerInstance::setScale(const OSCEvent& event)
+	{
+		assert(event[0].isFloat());
+		float v = event[0].asFloat();
+		mTransformComponent->setUniformScale(math::fit<float>(v, 0.0f, 1.0f, 0.0f, 3.0f) * mInitialScale);
 	}
 
 

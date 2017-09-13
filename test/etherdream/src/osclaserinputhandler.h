@@ -13,6 +13,7 @@
 #include <rotatecomponent.h>
 #include <renderablemeshcomponent.h>
 #include <oscinputcomponent.h>
+#include <transformcomponent.h>
 
 namespace nap
 {
@@ -57,17 +58,20 @@ namespace nap
 		nap::RotateComponentInstance* mRotateComponent = nullptr;
 		nap::OSCInputComponentInstance* mInputComponent = nullptr;
 		nap::LineBlendComponentInstance* mBlendComponent = nullptr;
+		nap::TransformComponentInstance* mTransformComponent = nullptr;
 
 		void updateColor(const OSCEvent& event, int index, int channel);
 		void updateRotate(const OSCEvent& event);
 		void resetRotate(const OSCEvent& event);
 		void setIndex(const OSCEvent& event, int index);
 		void setBlend(const OSCEvent& event, int index);
+		void setScale(const OSCEvent& event);
 
 		NSLOT(mMessageReceivedSlot, const nap::OSCEvent&, handleMessageReceived)
 
 		LineSelectionComponentInstance* mSelectorOne = nullptr;		// First line selection component
 		LineSelectionComponentInstance* mSelectorTwo = nullptr;		// Second line selection component
 
+		float mInitialScale = 1.0f;									// Holds the initial scale of the laser spline entity
 	};
 }

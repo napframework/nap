@@ -35,7 +35,7 @@ namespace nap
 		ComponentPtr<LineSelectionComponent> mSelectionComponentTwo;
 
 		// property: link to the mesh that we want to blend in between
-		ObjectPtr<nap::PolyLine> mLine;
+		ObjectPtr<nap::PolyLine> mTarget;
 	};
 
 
@@ -60,7 +60,7 @@ namespace nap
 		float mBlendSpeed = 0.0f;									// Speed to blend between 2 lines
 
 	private:
-		nap::ObjectPtr<PolyLine> mLine = nullptr;					// Line that will hold the blended values
+		PolyLine* mTarget = nullptr;					// Line that will hold the blended values
 
 		// Current time
 		float mCurrentTime = 0.0f;
