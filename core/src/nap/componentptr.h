@@ -7,6 +7,9 @@ namespace nap
 	class Component;
 	class ComponentInstance;
 
+	/**
+	 * Placeholder class with RTTI that enables us to check the type of the pointer. Also see comments in InstancePtr.
+	 */
 	class NAPAPI ComponentPtrBase : public InstancePtrBase
 	{
 		RTTI_ENABLE(InstancePtrBase)
@@ -17,6 +20,25 @@ namespace nap
 		ComponentPtrBase(Component* resource);
 	};
 
+	/**
+	 * Provides strongly typed interface for components. This class is derived from InstancePtr for two reasons:
+	 * 1) To mixin ComponentPtrBase as a generic base that we can filter on.
+	 * 2) To avoid the need for users to supply the InstanceType manually. The instance type is retrieved from the resource through
+	 *      the InstanceType typedef. This typedef is automatically generated when declaring a component using DECLARE_COMPONENT.
+	 *
+	 * As a summary, this is the entire hierarchy for ComponentPtr the class roles behind it:
+	 *
+	 *		InstancePtrBase											(generic ontyped instance/resource ptr)
+	 *		   	  ^
+	 *		      |
+	 *		ComponentPtrBase										(used for filtering component ptrs using rtti)
+	 *			  ^
+	 *		      |
+	 *		InstancePtr<Resource, Instance, ComponentPtrBase>		(Typed resource/instance interface)
+	 *			  ^
+	 *		      |
+	 *		ComponentPtr<Resource>									(Convenience to avoid instance type in ComponentPtr declarations)
+	 */
 	template<typename RESOURCE_TYPE>
 	class ComponentPtr : public InstancePtr<RESOURCE_TYPE, typename RESOURCE_TYPE::InstanceType, ComponentPtrBase>
 	{

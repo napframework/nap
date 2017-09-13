@@ -4,6 +4,16 @@
 
 namespace nap
 {
+	/**
+	* InstancePtr is used to access instances in the Entity system through their resource. Because instances are spawned at runtime, the file
+	* objects (resources) have no knowledge of instances. To make sure that we can point to instances, InstancePtr
+	* wraps both a pointer to a Resource and to an Instance. From an RTTI perspective, InstancePtr acts
+	* like a pointer to another Resource, while at runtime, the pointer acts like a pointer to the corresponding Instance. The instance pointer
+	* is filled in by the ResourceManager.
+	*
+	* InstancePtr is the untyped base that can be used generically to resolve pointers, derived classes are convenience classes
+	* to support typed versions the resource and instance pointers. 
+	*/
 	class NAPAPI InstancePtrBase
 	{
 		RTTI_ENABLE()
@@ -62,10 +72,10 @@ namespace nap
 	};
 
 	/**
-	 * InstancePtr is used to access instances in the Entity system through their resource. Because instances are spawned at runtime, the file
-	 * objects (resources) have no knowledge of instances. To make sure that we can point to instances, InstancePtr
-	 * wraps both a pointer to a Resource and to an Instance. From an RTTI perspective, InstancePtr acts
-	 * like a pointer to another Resource, while at runtime, the pointer acts like a pointer to the corresponding Instance.
+	 * Strongly typed version of InstancePtrBase.
+	 * As this is a template class we cannot provide RTTI in a generic way. To make sure we can still filter out for a specific kind of pointer, 
+	 * another base can be used as a 'mixin', also known as the Curiously Returning Template Pattern (CRTP). The base can then be used to check for 
+	 * the kind of pointer type.
 	 */
 	template<typename RESOURCE_TYPE, typename INSTANCE_TYPE, typename BASE>
 	class InstancePtr : public BASE
