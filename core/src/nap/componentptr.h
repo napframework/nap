@@ -45,7 +45,7 @@ namespace nap
 		using InstancePtrBase = InstancePtr<RESOURCE_TYPE, typename RESOURCE_TYPE::InstanceType, ComponentPtrBase>;
 		RTTI_ENABLE(InstancePtrBase)
 
-	public:		
+	public:
 		ComponentPtr() = default;
 
 		// Regular ptr Ctor
