@@ -22,7 +22,7 @@ namespace nap
 
 	/**
 	 * Provides strongly typed interface for components. This class is derived from InstancePtr for two reasons:
-	 * 1) To mixin ComponentPtrBase as a generic base that we can filter on.
+	 * 1) To mix in ComponentPtrBase as a generic base that we can filter on.
 	 * 2) To avoid the need for users to supply the InstanceType manually. The instance type is retrieved from the resource through
 	 *      the InstanceType typedef. This typedef is automatically generated when declaring a component using DECLARE_COMPONENT.
 	 *
