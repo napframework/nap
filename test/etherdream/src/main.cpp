@@ -2,8 +2,7 @@
 //
 
 // Local Includes
-#include "RenderableMeshComponent.h"
-#include "lasershapes.h"
+#include "renderablemeshcomponent.h"
 #include "laseroutputcomponent.h"
 
 // GLM
@@ -36,6 +35,8 @@
 #include <etherdreamdac.h>
 #include <perspcameracomponent.h>
 #include <mathutils.h>
+#include <oscsender.h>
+#include "lineselectioncomponent.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
@@ -55,6 +56,9 @@ nap::ObjectPtr<nap::RenderWindow> renderWindow = nullptr;
 // Laser DAC
 nap::ObjectPtr<nap::EntityInstance> laserPrototype = nullptr;
 
+// Holds the osc sender
+nap::ObjectPtr<nap::OSCSender> oscSender = nullptr;
+
 //////////////////////////////////////////////////////////////////////////
 
 // Some utilities
@@ -70,11 +74,20 @@ void onUpdate()
 	// Process events for all windows
 	renderService->processEvents();
 
+	// Process all events for osc
+	oscService->update();
+
 	// Update all resources
 	resourceManagerService->update();
 
 	// Update the scene
 	sceneService->update();
+
+
+	// Send an osc message
+	nap::OSCEventPtr new_event = std::make_unique<nap::OSCEvent>("/color/1");
+	new_event->addValue<float>(1.0f);
+	//oscSender->send(*new_event);
 }
 
 
@@ -114,6 +127,7 @@ void onRender()
 		output->setLine(static_cast<nap::PolyLine&>(line.getMesh()), xform.getGlobalTransform());
 	}
 }
+
 
 /**
 * Initialize all the resources and instances used for drawing
@@ -166,6 +180,7 @@ bool init(nap::Core& core)
 		return false;
 	}
 
+
 	// Load scene
 	if (!resourceManagerService->loadFile("data/etherdream/etherdream.json", errorState))
 	{
@@ -178,6 +193,9 @@ bool init(nap::Core& core)
 
 	// Store laser dacs
 	laserPrototype = resourceManagerService->findEntity("LaserPrototypeEntity");
+
+	// Store sender
+	oscSender = resourceManagerService->findObject<nap::OSCSender>("OscSender");
 
 	// Set render states
 	nap::RenderState& render_state = renderService->getRenderState();
@@ -233,6 +251,18 @@ void runGame(nap::Core& core)
 						resourceManagerService->findObject<nap::RenderWindow>("Window")->getWindow()->setFullScreen(fullscreen);
 						fullscreen = !fullscreen;
 					}
+					else if (press_event->mKey == nap::EKeyCode::KEY_LEFT)
+					{
+						nap::EntityInstance* spline_entity = laserPrototype->getChildren()[0];
+						nap::LineSelectionComponentInstance& line_selection = spline_entity->getComponent<nap::LineSelectionComponentInstance>();
+						line_selection.setIndex(line_selection.getIndex() - 1);
+					}
+					else if (press_event->mKey == nap::EKeyCode::KEY_RIGHT)
+					{
+						nap::EntityInstance* spline_entity = laserPrototype->getChildren()[0];
+						nap::LineSelectionComponentInstance& line_selection = spline_entity->getComponent<nap::LineSelectionComponentInstance>();
+						line_selection.setIndex(line_selection.getIndex() + 1);
+					}
 
 					if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
 						loop = false;
@@ -244,7 +274,7 @@ void runGame(nap::Core& core)
 			else if (nap::isWindowEvent(event))
 			{
 				// Add input event for later processing
-				renderService->addEvent(std::move(nap::translateWindowEvent(event)));
+				renderService->addEvent(nap::translateWindowEvent(event));
 			}
 		}
 

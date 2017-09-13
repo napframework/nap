@@ -1,4 +1,3 @@
-#include "lasershapecomponent.h"
 #include "laseroutputcomponent.h"
 
 #include <nap/entity.h>
@@ -91,10 +90,6 @@ namespace nap
 		float fr_width	= mProperties.mFrustrum.x;
 		float fr_height = mProperties.mFrustrum.y;
 
-		// Get frustrum bounds
-		float div_h = fr_height / 2.0f;
-		float div_w = fr_width / 2.0f;
-
 		glm::vec2 min_bounds(frustrum.x - (fr_width / 2.0f), frustrum.y - (fr_height / 2.0f));
 		glm::vec2 max_bounds(frustrum.x + (fr_width / 2.0f), frustrum.y + (fr_height / 2.0f));
 
@@ -116,9 +111,9 @@ namespace nap
 			// Sets
 			mPoints[i].X = sEtherInterpolate(cv.x, min_bounds.x, max_bounds.x, false);
 			mPoints[i].Y = sEtherInterpolate(cv.y, min_bounds.y, max_bounds.y, false);
-			mPoints[i].R = sEtherInterpolateColor(cc.r);
-			mPoints[i].G = sEtherInterpolateColor(cc.g);
-			mPoints[i].B = sEtherInterpolateColor(cc.b);
+			mPoints[i].R = sEtherInterpolateColor(cc.r * cc.a);
+			mPoints[i].G = sEtherInterpolateColor(cc.g * cc.a);
+			mPoints[i].B = sEtherInterpolateColor(cc.b * cc.a);
 			mPoints[i].I = sEtherInterpolateColor(cc.a);
 		}
 

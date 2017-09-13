@@ -28,17 +28,26 @@ namespace nap
 		// Virtual destructor because of virtual methods!
 		virtual ~Service();
 
-		// Returns the nap Core this service belongs to
+		/**
+		 *	@return the nap core this service belongs to
+		 */
 		Core& getCore();
 
-		// Service type name
-		const std::string getTypeName() const;;
+		/**
+		 *	@return the type name of the service
+		 */
+		const std::string getTypeName() const;
 
-		// Invoked when the service has been constructed and Core is available.
+		/**
+		 *	Invoked when the service has been constructed and Core is available.
+		 */
 		virtual void initialized() {}
 
 	protected:
-		// Registers all available object creation functions associated with a module
+		/**
+		 * Override this function to register specific object creators for classes associated with this module
+		 * @param factory the factory used by the resource manager to instantiate objects
+		 */
 		virtual void registerObjectCreators(rtti::Factory& factory) {}
 
 	private:

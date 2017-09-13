@@ -36,7 +36,7 @@ namespace nap
 		/**
 		 * Returns instance type to create for this ComponentResource.
 		 */
-		virtual const rtti::TypeInfo getInstanceType() const { return RTTI_OF(PerspCameraComponentInstance); }
+		virtual const rtti::TypeInfo getInstanceType() const override { return RTTI_OF(PerspCameraComponentInstance); }
 
 	public:
 		PerpCameraProperties mProperties;	// Properties of the camera
