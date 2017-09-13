@@ -203,22 +203,22 @@ namespace nap
 
 		ObjectPtr<RESOURCE_TYPE> getResource()
 		{
-			return ObjectPtr<RESOURCE_TYPE>(static_cast<RESOURCE_TYPE*>(mResource.get()));
+			return ObjectPtr<RESOURCE_TYPE>(static_cast<RESOURCE_TYPE*>(InstancePtrBase::mResource.get()));
 		}
 
 		const ObjectPtr<RESOURCE_TYPE> getResource() const
 		{
-			return ObjectPtr<RESOURCE_TYPE>(static_cast<RESOURCE_TYPE*>(mResource.get()));
+			return ObjectPtr<RESOURCE_TYPE>(static_cast<RESOURCE_TYPE*>(InstancePtrBase::mResource.get()));
 		}
 
 		INSTANCE_TYPE* get() const
 		{
-			return static_cast<INSTANCE_TYPE*>(mInstance);
+			return static_cast<INSTANCE_TYPE*>(InstancePtrBase::mInstance);
 		}
 
 		INSTANCE_TYPE* get()
 		{
-			return static_cast<INSTANCE_TYPE*>(mInstance);
+			return static_cast<INSTANCE_TYPE*>(InstancePtrBase::mInstance);
 		}
 
 	private:		
