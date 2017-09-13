@@ -1,5 +1,5 @@
 #include "stereopanner.h"
-#include <nap/configure.h>
+#include <cmath>
 
 namespace nap {
     
