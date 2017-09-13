@@ -222,7 +222,7 @@ namespace nap
 		}
 
 	private:		
-		void Assign(const InstancePtrType& other)
+		void Assign(const InstancePtrType& other) 
 		{
 			mResource = other.mResource;
 			mInstance = other.mInstance;
