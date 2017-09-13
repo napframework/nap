@@ -1,20 +1,21 @@
-#include "audiointerface.h"
+#include "audiodevice.h"
 
 // Nap includes
 #include <nap/logger.h>
 
 // Audio includes
-#include "audioservice.h"
+#include <service/audiodeviceservice.h>
+
 
 // RTTI
-RTTI_BEGIN_CLASS(nap::audio::AudioInterface)
-    RTTI_PROPERTY("UseDefaultDevice", &nap::audio::AudioInterface::mUseDefaultDevice, nap::rtti::EPropertyMetaData::Default)
-    RTTI_PROPERTY("InputDevice", &nap::audio::AudioInterface::mInputDevice, nap::rtti::EPropertyMetaData::Default)
-    RTTI_PROPERTY("OutputDevice", &nap::audio::AudioInterface::mOutputDevice, nap::rtti::EPropertyMetaData::Default)
-    RTTI_PROPERTY("InputChannelCount", &nap::audio::AudioInterface::mInputChannelCount, nap::rtti::EPropertyMetaData::Default)
-    RTTI_PROPERTY("OutputChannelCount", &nap::audio::AudioInterface::mOutputChannelCount, nap::rtti::EPropertyMetaData::Default)
-    RTTI_PROPERTY("SampleRate", &nap::audio::AudioInterface::mSampleRate, nap::rtti::EPropertyMetaData::Default)
-    RTTI_PROPERTY("BufferSize", &nap::audio::AudioInterface::mBufferSize, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::audio::AudioDevice)
+    RTTI_PROPERTY("UseDefaultDevice", &nap::audio::AudioDevice::mUseDefaultDevice, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("InputDevice", &nap::audio::AudioDevice::mInputDevice, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("OutputDevice", &nap::audio::AudioDevice::mOutputDevice, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("InputChannelCount", &nap::audio::AudioDevice::mInputChannelCount, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("OutputChannelCount", &nap::audio::AudioDevice::mOutputChannelCount, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("SampleRate", &nap::audio::AudioDevice::mSampleRate, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("BufferSize", &nap::audio::AudioDevice::mBufferSize, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 
@@ -43,7 +44,7 @@ namespace nap {
         }
         
         
-        AudioInterface::AudioInterface(AudioService& service) : mService(&service)
+        AudioDevice::AudioDevice(AudioDeviceService& service) : mService(&service)
         {
             
         }
@@ -52,7 +53,7 @@ namespace nap {
         /*
          * The destructor stops the audio stream if it is active.
          */
-        AudioInterface::~AudioInterface()
+        AudioDevice::~AudioDevice()
         {
             stop();
         }
@@ -61,13 +62,13 @@ namespace nap {
         /*
          * Starts the audio stream
          */
-        bool AudioInterface::init(utility::ErrorState& errorState)
+        bool AudioDevice::init(utility::ErrorState& errorState)
         {
             return start(errorState);
         }
         
         
-        bool AudioInterface::start(utility::ErrorState& errorState)
+        bool AudioDevice::start(utility::ErrorState& errorState)
         {
             if (isActive())
                 return true;
@@ -115,7 +116,7 @@ namespace nap {
         }
         
         
-        bool AudioInterface::startDefaultDevice(utility::ErrorState& errorState)
+        bool AudioDevice::startDefaultDevice(utility::ErrorState& errorState)
         {
             auto error = Pa_OpenDefaultStream(&mStream, mInputChannelCount, mOutputChannelCount, paFloat32 | paNonInterleaved, mSampleRate, mBufferSize, audioCallback, &mNodeManager);
             if (error != paNoError)
@@ -140,7 +141,7 @@ namespace nap {
         }
         
                 
-        void AudioInterface::stop()
+        void AudioDevice::stop()
         {
             if (isActive())
             {
@@ -152,7 +153,7 @@ namespace nap {
         }
         
         
-        bool AudioInterface::isActive()
+        bool AudioDevice::isActive()
         {
             return (mStream && Pa_IsStreamActive(mStream) == 1);
         }

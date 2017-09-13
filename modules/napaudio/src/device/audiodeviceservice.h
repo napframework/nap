@@ -59,6 +59,8 @@ namespace nap {
              */
             std::string getDeviceName(unsigned int deviceIndex);
             
+        private:
+            
         };
         
         

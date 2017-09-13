@@ -2,13 +2,14 @@
 
 // Nap includes
 #include <nap/entity.h>
+#include <nap/core.h>
 
 // Audio includes
+#include <service/audioservice.h>
 #include "audiocomponent.h"
 
 // RTTI
 RTTI_BEGIN_CLASS(nap::audio::OutputComponent)
-    RTTI_PROPERTY("AudioInterface", &nap::audio::OutputComponent::mAudioInterface, nap::rtti::EPropertyMetaData::Required)
     RTTI_PROPERTY("Input", &nap::audio::OutputComponent::mInput, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
@@ -28,11 +29,13 @@ namespace nap {
             if (!errorState.check(input, "Input is not an audio component"))
                 return false;
             
+            auto& nodeManager = getEntityInstance()->getCore()->getService<AudioService>()->getNodeManager();
+            
             for (auto channel = 0; channel < input->getChannelCount(); ++channel)
             {
-                mOutputs.emplace_back(std::make_unique<OutputNode>(resource->mAudioInterface->getNodeManager(), true));
+                mOutputs.emplace_back(std::make_unique<OutputNode>(nodeManager, true));
                 mOutputs[channel]->setOutputChannel(channel);
-                mOutputs[channel]->audioInput.connect(*input->getOutputForChannel(channel));
+                mOutputs[channel]->audioInput.connect(input->getOutputForChannel(channel));
             }
             
             return true;

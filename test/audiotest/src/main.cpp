@@ -10,7 +10,7 @@
 #include <utility/dllexport.h>
 
 // Audio module includes
-#include <device/audioservice.h>
+#include <service/audiodeviceservice.h>
 #include <utility/audiotypes.h>
 
 nap::ResourceManagerService* resourceManagerService = nullptr;
@@ -31,7 +31,7 @@ bool init(nap::Core& core)
     resourceManagerService = core.getOrCreateService<nap::ResourceManagerService>();
     
     
-    auto audioService = core.getOrCreateService<nap::audio::AudioService>();
+    auto audioService = core.getOrCreateService<nap::audio::AudioDeviceService>();
     if (!audioService->init(errorState))
     {
         nap::Logger::fatal(errorState.toString());

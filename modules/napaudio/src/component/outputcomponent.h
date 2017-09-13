@@ -6,7 +6,6 @@
 
 // Audio includes
 #include <node/audionode.h>
-#include <device/audiointerface.h>
 
 namespace nap {
     
@@ -15,6 +14,9 @@ namespace nap {
         class OutputComponentInstance;
         
         
+        /**
+         * Component that routs output from another audio component to the audio interface.
+         */
         class NAPAPI OutputComponent : public Component {
             RTTI_ENABLE(nap::Component)
         public:
@@ -26,17 +28,15 @@ namespace nap {
                 return RTTI_OF(OutputComponentInstance);
             }
             
-            /**
-             * Pointer to the audio interface the component runs on
-             */
-            ObjectPtr<AudioInterface> mAudioInterface;
-            
         public:
             // Properties
-            nap::ComponentPtr mInput;
+            nap::ComponentPtr mInput; /**<  The component whose audio output to rout to the interface */
         };
 
         
+        /**
+         * Instance of component that routs output from another audio component to the audio interface
+         */
         class NAPAPI OutputComponentInstance : public ComponentInstance {
             RTTI_ENABLE(nap::ComponentInstance)
         public:

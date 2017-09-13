@@ -11,7 +11,7 @@
 #include <rtti/rttiobject.h>
 
 // audio includes
-#include <device/audioservice.h>
+#include <device/audiodeviceservice.h>
 #include <node/audionodemanager.h>
 
 namespace nap {
@@ -32,7 +32,7 @@ namespace nap {
             /**
              * Constructor used by the object factory
              */
-            AudioInterface(AudioService& service);
+            AudioInterface(AudioDeviceService& service);
             
             /**
              * Destructor stops the audio stream 
@@ -115,10 +115,10 @@ namespace nap {
             
             PaStream* mStream = nullptr; // Pointer to the stream managed by portaudio.
             
-            AudioService* mService = nullptr; // The audio service
+            AudioDeviceService* mService = nullptr; // The audio service
         };
         
-        using AudioInterfaceCreator = rtti::ObjectCreator<AudioInterface, AudioService>;
+        using AudioInterfaceCreator = rtti::ObjectCreator<AudioInterface, AudioDeviceService>;
         
         
     }

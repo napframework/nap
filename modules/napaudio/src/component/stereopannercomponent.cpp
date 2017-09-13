@@ -3,6 +3,9 @@
 // Nap includes
 #include <nap/entity.h>
 
+// Audio includes
+#include <node/audionodemanager.h>
+
 // RTTI
 RTTI_BEGIN_CLASS(nap::audio::StereoPannerComponent)
     RTTI_PROPERTY("Input", &nap::audio::StereoPannerComponent::mInput, nap::rtti::EPropertyMetaData::Required)
@@ -25,35 +28,34 @@ namespace nap {
             if (!errorState.check(input, "Input is not an audio component"))
                 return false;
 
-            stereoPanner = std::make_unique<StereoPanner>(resource->mAudioInterface->getNodeManager());
+            auto& nodeManager = getNodeManager();
+            stereoPanner = std::make_unique<StereoPanner>(nodeManager);
             stereoPanner->setPanning(resource->mPanning);
             
             // mono input
             if (input->getChannelCount() == 1)
             {
-                stereoPanner->leftInput.connect(*input->getOutputForChannel(0));
-                stereoPanner->rightInput.connect(*input->getOutputForChannel(0));
+                stereoPanner->leftInput.connect(input->getOutputForChannel(0));
+                stereoPanner->rightInput.connect(input->getOutputForChannel(0));
             }
             
             // stereo input
             else if (input->getChannelCount() > 1)
             {
-                stereoPanner->leftInput.connect(*input->getOutputForChannel(0));
-                stereoPanner->rightInput.connect(*input->getOutputForChannel(1));                
+                stereoPanner->leftInput.connect(input->getOutputForChannel(0));
+                stereoPanner->rightInput.connect(input->getOutputForChannel(1));
             }
             
             return true;
         }
 
         
-        OutputPin* StereoPannerComponentInstance::getOutputForChannel(int channel)
+        OutputPin& StereoPannerComponentInstance::getOutputForChannel(int channel)
         {
             if (channel == 0)
-                return &stereoPanner->leftOutput;
-            else if (channel == 1)
-                return &stereoPanner->rightOutput;
+                return stereoPanner->leftOutput;
             else
-                return nullptr;
+                return stereoPanner->rightOutput;
         }
         
         
