@@ -2,7 +2,7 @@
 //
 
 // Local Includes
-#include "RenderableMeshComponent.h"
+#include "renderablemeshcomponent.h"
 #include "lasershapes.h"
 #include "laseroutputcomponent.h"
 
