@@ -10,5 +10,6 @@ out vec4 out_Color;
 
 void main() 
 {
-	out_Color = pass_Color;
+	vec3 color = pass_Color.rgb * pass_Color.a;
+	out_Color = vec4(color, 1.0);
 }

@@ -1,0 +1,323 @@
+#pragma once
+
+#include <nap/configure.h>
+#include <rtti/rtti.h>
+#include <utility/dllexport.h>
+#include <glm/glm.hpp>
+#include <osc/OscOutboundPacketStream.h>
+
+namespace nap
+{
+	class OSCBaseValue;
+	using OSCValuePtr = std::unique_ptr<OSCBaseValue>;
+
+	/**
+	 * The OSCArgument wraps an OSCValue.
+	 * This class offers some utility methods to quickly work with the most common OSC values
+	 * For other / more complex OSC Value types you can ask for the value using the get<T> function
+	 * Note that this argument owns the value.
+	 */
+	class NAPAPI OSCArgument
+	{
+		RTTI_ENABLE()
+	public:
+		// Default Constructor
+		OSCArgument(OSCValuePtr value);
+
+		// Default Destructor
+		virtual ~OSCArgument() = default;
+
+		/**
+		 * @return the value as type T, nullptr if the type doesn't match
+		 */
+		template<typename T>
+		const T* get() const;
+
+		/**
+		* @return the value as type T, nullptr if the type doesn't match
+		*/
+		template<typename T>
+		T* get();
+
+	public:
+		/**
+		 *	@return this argument's value as a float
+		 */
+		float asFloat() const;
+
+		/**
+		 *	@return if this argument's value is a float
+		 */
+		bool isFloat() const;
+
+		/**
+		 *	@return this argument's value as an int
+		 */
+		int asInt() const;
+
+		/**
+		 *	@return if this argument's value is an int
+		 */
+		bool isInt() const;
+
+		/**
+		 *	@return this argument's value as a bool
+		 */
+		bool asBool() const;
+
+		/**
+		*	@return if this argument's value is a bool
+		*/
+		bool isBool() const;
+
+		/**
+		 *	@return this argument's value as a string
+		 */
+		const std::string& asString() const;
+
+		/**
+		* @return if this argument's value is a string
+		*/
+		bool isString() const;
+
+		/**
+		 *	@return this argument's value as a double
+		 */
+		double asDouble() const;
+
+		/**
+		* @return if this argument's value is a double
+		*/
+		bool isDouble() const;
+
+		/**
+		 *	@return this argument's value as a char
+		 */
+		char asChar() const;
+
+		/**
+		* @return if this argument's value is a char
+		*/
+		bool isChar() const;
+
+		/**
+		 *	@return if this is a null message
+		 */
+		bool isNil() const;
+
+		/**
+		* Copy is not allowed
+		*/
+		OSCArgument(OSCArgument&) = delete;
+		OSCArgument& operator=(const OSCArgument&) = delete;
+
+		/**
+		 * Adds the value to an OSC packet that can be send over
+		 * @param outPacket the packet to add the value to
+		 */
+		void add(osc::OutboundPacketStream& outPacket) const;
+
+		/**
+		 *	@return the size of the value type in bytes
+		 */
+		std::size_t size() const;
+
+	private:
+		OSCValuePtr mValue = nullptr;
+	};
+
+
+	/**
+	* Base class for all known OSC types
+	*/
+	class NAPAPI OSCBaseValue
+	{
+		friend OSCArgument;
+		RTTI_ENABLE()
+	public:
+		OSCBaseValue() = default;
+		virtual ~OSCBaseValue() = default;
+
+		/**
+		 * Every type needs to be able to add itself to an OSC package stream
+		 * This function is called externally when constructing a package to send over
+		 * @param outPacket the package to add the value to
+		 */
+	protected:
+		/**
+		 * Adds the managed value to the packet
+		 * @param outPacket the packet to add the value to
+		 */
+		virtual void add(osc::OutboundPacketStream& outPacket) const = 0;
+
+		/**
+		 * @return the size in bytes of the stored value type
+		 */
+		virtual std::size_t size() const = 0;
+	};
+
+
+	/**
+	 * Simple OSC Value
+	 */
+	template<typename T>
+	class OSCValue : public OSCBaseValue
+	{
+		RTTI_ENABLE(OSCBaseValue)
+	public:
+		OSCValue(const T& value) : mValue(value)								{ }
+		T mValue;
+	protected:
+		virtual void add(osc::OutboundPacketStream& outPacket) const override;
+		virtual std::size_t size() const override;
+	};
+
+	
+	/**
+	 *	Simple OSC String
+	 */
+	class NAPAPI OSCString : public OSCBaseValue
+	{
+		RTTI_ENABLE(OSCBaseValue)
+	public:
+		OSCString(const std::string& string) : mString(string)					{ }
+		std::string mString;
+	protected:
+		virtual void add(osc::OutboundPacketStream& outPacket) const override;
+		virtual std::size_t size() const override									{ return mString.length(); }
+	};
+
+
+	/**
+	 *	Empty (null) OSC value
+	 */
+	class NAPAPI OSCNil : public OSCBaseValue
+	{
+		RTTI_ENABLE(OSCBaseValue)
+	protected:
+		virtual void add(osc::OutboundPacketStream& outPacket) const override	{ outPacket << osc::OscNil; }
+		virtual std::size_t size() const override									{ return sizeof(osc::OscNil); }
+	};
+
+
+	/**
+	 *	Time tag OSC value
+	 */
+	class NAPAPI OSCTimeTag : public OSCBaseValue
+	{
+		RTTI_ENABLE(OSCBaseValue)
+	public:
+		OSCTimeTag(nap::uint64 timeTag) : mTimeTag(timeTag)	{ }
+		nap::uint64 mTimeTag;
+	protected:
+		virtual void add(osc::OutboundPacketStream& outPacket) const override	{ outPacket << osc::TimeTag(mTimeTag); }
+		virtual size_t size() const override									{ return sizeof(nap::uint64); }
+	};
+
+
+	/**
+	 *	OSC value that holds a blob of data
+	 */
+	class NAPAPI OSCBlob : public OSCBaseValue
+	{
+		RTTI_ENABLE(OSCBaseValue)
+	public:
+		/**
+		 * Constructor copies the blob data block over in to mData
+		 * This object ones that data, on destruction the data is deleted
+		 * @param sourceData the osc data associated with the blob
+		 * @param size the size of the blob in bytes
+		 */
+		OSCBlob(const void* sourceData, int size);
+		
+		/**
+		 *	On Destruction the blob data is deleted
+		 */
+		virtual ~OSCBlob();
+
+		/**
+		 * @return an unmanaged copy of the data
+		 */
+		void* getCopy();
+
+		// Data associated with the blob
+		void* mData = nullptr;
+
+		// Size of the blob in bytes
+		int mSize = 0;
+
+	protected:
+		virtual void add(osc::OutboundPacketStream& outPacket) const override;
+		virtual size_t size() const override									{ return mSize; }
+	};
+
+
+	/**
+	 *	OSC value that holds an RGBA color as 4 8 bit values (1 uint 32 bit int)
+	 */
+	class NAPAPI OSCColor : public OSCBaseValue
+	{
+		RTTI_ENABLE(OSCBaseValue)
+	public:
+		OSCColor(nap::uint32 color) : mColor(color)		{ }
+
+	protected:
+		virtual void add(osc::OutboundPacketStream& outPacket) const override;
+		virtual size_t size() const override									{ return sizeof(nap::uint32); }
+
+	private:
+		nap::uint32 mColor;
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Type definitions for all supported OSC values
+	//////////////////////////////////////////////////////////////////////////
+
+	using OSCFloat =	OSCValue<float>;
+	using OSCBool  =	OSCValue<bool>;
+	using OSCInt =		OSCValue<int>;
+	using OSCDouble =	OSCValue<double>;
+	using OSCChar =		OSCValue<char>;
+
+	//////////////////////////////////////////////////////////////////////////
+	// Template definitions
+	//////////////////////////////////////////////////////////////////////////
+
+	template<typename T>
+	const T* nap::OSCArgument::get() const
+	{
+		if (!(mValue->get_type().is_derived_from(RTTI_OF(T))))
+		{
+			assert(false);
+			return nullptr;
+		}
+		return static_cast<const T*>(mValue.get());
+	}
+
+
+	template<typename T>
+	T* nap::OSCArgument::get()
+	{
+		if (!(mValue->get_type().is_derived_from(RTTI_OF(T))))
+		{
+			assert(false);
+			return nullptr;
+		}
+		return static_cast<T*>(mValue.get());
+	}
+
+
+	template<typename T>
+	void nap::OSCValue<T>::add(osc::OutboundPacketStream& outPacket) const
+	{
+		outPacket << mValue;
+	}
+
+
+	template<typename T>
+	size_t nap::OSCValue<T>::size() const
+	{
+		return sizeof(T);
+	}
+}

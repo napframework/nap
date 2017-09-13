@@ -12,6 +12,8 @@ namespace nap
 	class Entity;
 	class EntityInstance;	
 
+	using EntityList = std::vector<EntityInstance*>;
+
 	/**
 	 * Structure used to hold data necessary to create new instances during init
 	 */
