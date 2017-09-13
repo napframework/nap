@@ -2,10 +2,11 @@
 
 // Local Includes
 #include "rendercomponent.h"
-#include "vao.h"
+#include "renderablemesh.h"
 
 // External Includes
 #include <nap/objectptr.h>
+#include <transformcomponent.h>
 
 namespace nap
 {
@@ -18,71 +19,15 @@ namespace nap
 		float mHeight = 0.0f;
 	};
 
-	class IMesh;
-	class MaterialInstance;
-	class TransformComponentInstance;
-	class TransformComponent;
 	class RenderableMeshComponentInstance;
-
-	/**
-	 * Represent the coupling between a mesh and a material. Must be created through RenderableMeshComponentInstance.
-	 */
-	class NAPAPI RenderableMesh
-	{
-	public:
-		RenderableMesh() = default;
-
-		/**
-		 * @return whether the material and mesh form a valid combination. It is valid when the vertex attributes
-		 * of the mesh match with the vertex attributes of the shader that is applied on the material.
-		 */
-		bool isValid() const { return mVAOHandle.isValid(); }
-
-		/**
-		 * @return The IMesh object that was used to create this object.
-		 */
-		IMesh& getMesh() { return *mMesh; }
-
-		/**
-		 * @return The IMesh object that was used to create this object.
-		 */
-		const IMesh& getMesh() const { return *mMesh; }
-
-		/**
-		 * @return The MaterialInstance object that was used to create this object.
-		 */
-		MaterialInstance& getMaterialInstance() { return *mMaterialInstance; }
-
-		/**
-		 * @return The MaterialInstance object that was used to create this object.
-		 */
-		const MaterialInstance& getMaterialInstance() const { return *mMaterialInstance; }
-
-	private:
-		friend class RenderableMeshComponentInstance;
-
-		/**
-		 * Constructor.
-		 */
-		RenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, const VAOHandle& vaoHandle) :
-			mMesh(&mesh),
-			mMaterialInstance(&materialInstance),
-			mVAOHandle(vaoHandle)
-		{
-		}
-
-		MaterialInstance*	mMaterialInstance = nullptr;	///< Material instance
-		IMesh*				mMesh = nullptr;				///< Mesh
-		VAOHandle			mVAOHandle;						///< Vertex Array Object handle, acquired from the RenderService
-	};
-
+	
 	/**
 	* Resource class for RenderableMeshResource. Hold static data as read from file.
 	*/
-	class NAPAPI RenderableMeshComponent : public RenderableComponentResource
+	class NAPAPI RenderableMeshComponent : public RenderableComponent
 	{
-		RTTI_ENABLE(RenderableComponentResource)
-
+		RTTI_ENABLE(RenderableComponent)
+		DECLARE_COMPONENT(RenderableMeshComponent, RenderableMeshComponentInstance)
 	public:
 		/**
 		* RenderableMesh uses transform to position itself in the world.
@@ -93,23 +38,16 @@ namespace nap
 		}
 
 		/**
-		* @return instance type to create for this resource.
-		*/
-		virtual const rtti::TypeInfo getInstanceType() const override
-		{
-			return RTTI_OF(RenderableMeshComponentInstance);
-		}
-
-		/**
 		* @return Mesh resource.
 		*/
-		IMesh& getMeshResource() { return *mMesh; }
+		IMesh& getMeshResource()			{ return *mMesh; }
 
 	public:
 		ObjectPtr<IMesh>					mMesh;								///< Resource to render
 		MaterialInstanceResource			mMaterialInstanceResource;			///< MaterialInstance, which is used to override uniforms for this instance
 		Rect								mClipRect;							///< Clipping rectangle, in pixel coordinates
 	};
+
 
 	/**
 	 * Represents a renderable mesh that can be used as a component in an entity hierarchy.

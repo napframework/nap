@@ -18,15 +18,8 @@ namespace nap
 	class FirstPersonController : public Component
 	{
 		RTTI_ENABLE(Component)
+		DECLARE_COMPONENT(FirstPersonController, FirstPersonControllerInstance)
 	public:
-		/**
-		 * Get the type of ComponentInstance to create
-		 */
-		virtual const rtti::TypeInfo getInstanceType() const 
-		{
-			return RTTI_OF(FirstPersonControllerInstance); 
-		}
-
 		/**
 		 * Get the types of components on which this component depends
 		 */

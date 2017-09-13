@@ -51,14 +51,7 @@ namespace nap
 	class FractionLayoutComponent : public Component
 	{
 		RTTI_ENABLE(Component)
-
-		/**
-		 * Get the type of ComponentInstance to create
-		 */
-		virtual const rtti::TypeInfo getInstanceType() const 
-		{ 
-			return RTTI_OF(FractionLayoutComponentInstance); 
-		}
+		DECLARE_COMPONENT(FractionLayoutComponent, FractionLayoutComponentInstance)
 		
 		/**
 		 * Get the types of components on which this component depends

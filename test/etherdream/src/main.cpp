@@ -36,6 +36,7 @@
 #include <perspcameracomponent.h>
 #include <mathutils.h>
 #include <oscsender.h>
+#include <renderablemeshcomponent.h>
 #include "lineselectioncomponent.h"
 
 //////////////////////////////////////////////////////////////////////////

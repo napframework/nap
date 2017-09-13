@@ -39,8 +39,7 @@ namespace nap
 	class InputComponent : public Component
 	{
 		RTTI_ENABLE(Component)
-	public:
-		virtual const rtti::TypeInfo getInstanceType() const { return RTTI_OF(InputComponentInstance); }
+		DECLARE_COMPONENT(InputComponent, InputComponentInstance)
 	};
 
 
@@ -74,9 +73,7 @@ namespace nap
 	class NAPAPI KeyInputComponent : public InputComponent
 	{
 		RTTI_ENABLE(InputComponent)
-
-	public:
-		virtual const rtti::TypeInfo getInstanceType() const { return RTTI_OF(KeyInputComponentInstance); }
+		DECLARE_COMPONENT(KeyInputComponent, KeyInputComponentInstance)
 	};
 
 
@@ -110,9 +107,7 @@ namespace nap
 	class NAPAPI PointerInputComponent : public InputComponent
 	{
 		RTTI_ENABLE(InputComponent)
-
-	public:
-		virtual const rtti::TypeInfo getInstanceType() const { return RTTI_OF(PointerInputComponentInstance); }
+		DECLARE_COMPONENT(PointerInputComponent, PointerInputComponentInstance)
 	};
 
 }

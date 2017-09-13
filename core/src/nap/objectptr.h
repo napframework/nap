@@ -326,7 +326,7 @@ namespace rttr
 	template<typename T>
 	struct wrapper_mapper<nap::ObjectPtr<T>>
 	{
-		using wrapped_type = decltype(std::declval<nap::ObjectPtr<T>>().get());
+		using wrapped_type = T*;
 		using type = nap::ObjectPtr<T>;
 		
 		inline static wrapped_type get(const type& obj)
