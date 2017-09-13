@@ -19,18 +19,9 @@ namespace nap
 {
 	bool LineBlendComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
-		ComponentInstance* selection_one = getComponent<LineBlendComponent>()->mSelectionComponentOne.get();
-		ComponentInstance* selection_two = getComponent<LineBlendComponent>()->mSelectionComponentTwo.get();
-
-		if (!(selection_one->get_type().is_derived_from(RTTI_OF(LineSelectionComponentInstance))))
-			return errorState.check(false, "selection component one is not a line selection component");
-
-		if (!(selection_two->get_type().is_derived_from(RTTI_OF(LineSelectionComponentInstance))))
-			return errorState.check(false, "selection component two is not a line selection component");
-
 		// Set the two selector objects
-		mSelectorOne = static_cast<LineSelectionComponentInstance*>(selection_one);
-		mSelectorTwo = static_cast<LineSelectionComponentInstance*>(selection_two);
+		mSelectorOne = getComponent<LineBlendComponent>()->mSelectionComponentOne.get();
+		mSelectorTwo = getComponent<LineBlendComponent>()->mSelectionComponentTwo.get();
 
 		// Set blend value
 		mBlendValue = getComponent<LineBlendComponent>()->mBlendValue;

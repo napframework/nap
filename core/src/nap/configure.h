@@ -3,14 +3,6 @@
 // Std Includes
 #include <stdint.h>
 
-// Windows defines it's own min max functions that we don't support
-// Use std::min / std::max to be used with nap
-#if defined(__WIN32__) || defined(_WIN32)
-#ifndef __GNUC__
-#define NOMINMAX
-#endif
-#endif
-
 // Using
 namespace nap
 {

@@ -37,7 +37,7 @@ namespace nap
 		/**
 		 * @return Should return amount of element in the buffer.
 		 */
-		virtual int getSize() const = 0;
+		virtual int getCount() const = 0;
 
 		std::string			mAttributeID;		///< Name/ID of the attribute
 	};
@@ -118,7 +118,7 @@ namespace nap
 		/**
 		 * @return the number vertices in the buffer
 		 */
-		virtual int getSize() const override					{ return static_cast<int>(mData.size()); }
+		virtual int getCount() const override					{ return static_cast<int>(mData.size()); }
 
 		std::vector<ELEMENTTYPE>	mData;		///< Actual typed data of the attribute
 

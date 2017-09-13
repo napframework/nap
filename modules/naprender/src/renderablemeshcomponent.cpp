@@ -19,8 +19,8 @@ RTTI_BEGIN_CLASS(nap::Rect)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::RenderableMeshComponent)
-	RTTI_PROPERTY("Mesh",				&nap::RenderableMeshComponent::mMesh,				nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("MaterialInstance",	&nap::RenderableMeshComponent::mMaterialInstance,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Mesh",				&nap::RenderableMeshComponent::mMesh,						nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MaterialInstance",	&nap::RenderableMeshComponent::mMaterialInstanceResource,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ClipRect",			&nap::RenderableMeshComponent::mClipRect,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_END_CLASS
 
@@ -31,27 +31,18 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	nap::IMesh& RenderableMeshComponent::getMeshResource()
-	{
-		assert(mMesh != nullptr);
-		return *mMesh;
-	}
-
-
-	//////////////////////////////////////////////////////////////////////////
-
-
 	// Upload all uniform variables to GPU
 	void RenderableMeshComponentInstance::pushUniforms()
 	{
-		Material* comp_mat = mMaterialInstance.getMaterial();
+		MaterialInstance& material_instance = getMaterialInstance();
+		Material* material = material_instance.getMaterial();
 
 		// Keep track of which uniforms were set (i.e. overridden) by the material instance
 		std::unordered_set<std::string> instance_bindings;
 		int texture_unit = 0;
 
 		// Push all uniforms that are set (i.e. overridden) in the instance
-		const UniformTextureBindings& instance_texture_bindings = mMaterialInstance.getTextureBindings();
+		const UniformTextureBindings& instance_texture_bindings = material_instance.getTextureBindings();
 		for (auto& kvp : instance_texture_bindings)
 		{
 			nap::Uniform* uniform_tex = kvp.second.mUniform.get();
@@ -60,7 +51,7 @@ namespace nap
 			instance_bindings.insert(kvp.first);
 		}				
 
-		const UniformValueBindings& instance_value_bindings = mMaterialInstance.getValueBindings();
+		const UniformValueBindings& instance_value_bindings = material_instance.getValueBindings();
 		for (auto& kvp : instance_value_bindings)
 		{
 			nap::Uniform* uniform_tex = kvp.second.mUniform.get();
@@ -71,7 +62,7 @@ namespace nap
 
 		// Push all uniforms in the material that weren't overridden by the instance
 		// Note that the material contains mappings for all the possible uniforms in the shader
-		for (auto& kvp : comp_mat->getTextureBindings())
+		for (auto& kvp : material->getTextureBindings())
 		{
 			if (instance_bindings.find(kvp.first) == instance_bindings.end())
 			{
@@ -81,7 +72,7 @@ namespace nap
 			}
 
 		}
-		for (auto& kvp : comp_mat->getValueBindings())
+		for (auto& kvp : material->getValueBindings())
 		{
 			if (instance_bindings.find(kvp.first) == instance_bindings.end())
 			{
@@ -97,12 +88,12 @@ namespace nap
 
 	void RenderableMeshComponentInstance::setBlendMode()
 	{
-		EDepthMode depth_mode = mMaterialInstance.getDepthMode();
+		EDepthMode depth_mode = getMaterialInstance().getDepthMode();
 		
 		glDepthFunc(GL_LEQUAL);
 		glBlendEquation(GL_FUNC_ADD);
 
-		switch (mMaterialInstance.getBlendMode())
+		switch (getMaterialInstance().getBlendMode())
 		{
 		case EBlendMode::Opaque:
 			glDisable(GL_BLEND);
@@ -159,48 +150,56 @@ namespace nap
 	}
 
 
-	std::unique_ptr<nap::VAOHandle> RenderableMeshComponentInstance::acquireVertexArrayObject(nap::ObjectPtr<nap::IMesh> mesh, utility::ErrorState& error)
-	{
-		// Get render service
-		nap::RenderService* render_service = getEntityInstance()->getCore()->getService<nap::RenderService>();
-		
-		// Here we acquire a VAO from the render service. The service will try to reuse VAOs for similar Material-Mesh combinations
-		std::unique_ptr<nap::VAOHandle> handle = render_service->acquireVertexArrayObject(*mMaterialInstance.getMaterial(), *mesh, error);
-
-		// Make sure we have a handle
-		if (!error.check(handle != nullptr, "Failed to acquire VAO for RenderableMeshComponent %s", mResource->mID.c_str()))
-			return nullptr;
-		return handle;
-	}
-
-
 	RenderableMeshComponentInstance::RenderableMeshComponentInstance(EntityInstance& entity, Component& resource) :
 		RenderableComponentInstance(entity, resource)
-	{	}
+	{
+	}
 
 
 	bool RenderableMeshComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
-		mResource = getComponent<RenderableMeshComponent>();
+		RenderableMeshComponent* resource = getComponent<RenderableMeshComponent>();
 
-		// Initialize material
-		if (!mMaterialInstance.init(mResource->mMaterialInstance, errorState))
+		if (!mMaterialInstance.init(resource->mMaterialInstanceResource, errorState))
 			return false;
 
-		// Ensure we have a transform, otherwise we can't compute this object's location in space
+		mRenderableMesh = createRenderableMesh(*resource->mMesh, mMaterialInstance, errorState);
+		if (!errorState.check(mRenderableMesh.isValid(), "Unable to create renderable mesh"))
+			return false;
+
 		mTransformComponent = getEntityInstance()->findComponent<TransformComponentInstance>();
-		if (!errorState.check(mTransformComponent != nullptr, "Missing transform component"))
-			return false;
+ 		if (!errorState.check(mTransformComponent != nullptr, "Missing transform component"))
+ 			return false;
 
-		// Set the mesh
-		if (!setMesh(mResource->mMesh, errorState))
-			return false;
+		// Copy cliprect. Any modifications are done per instance
+		mClipRect = resource->mClipRect;
 
-		// Copy clip rect. Any modifications are done per instance
-		mClipRect = mResource->mClipRect;
-
-		// Done
 		return true;
+	}
+
+
+	RenderableMesh RenderableMeshComponentInstance::createRenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState)
+	{
+		nap::RenderService* render_service = getEntityInstance()->getCore()->getService<nap::RenderService>();
+		VAOHandle vao_handle = render_service->acquireVertexArrayObject(*materialInstance.getMaterial(), mesh, errorState);
+
+		if (!errorState.check(vao_handle.isValid(), "Failed to acquire VAO for RenderableMeshComponent %s", getComponent()->mID.c_str()))
+			return RenderableMesh();
+
+		return RenderableMesh(mesh, materialInstance, vao_handle);
+	}
+
+
+	RenderableMesh RenderableMeshComponentInstance::createRenderableMesh(IMesh& mesh, utility::ErrorState& errorState)
+	{
+		return createRenderableMesh(mesh, mMaterialInstance, errorState);
+	}
+
+
+	void RenderableMeshComponentInstance::setMesh(const RenderableMesh& mesh)
+	{
+		assert(mesh.isValid());
+		mRenderableMesh = mesh;
 	}
 
 
@@ -212,7 +211,7 @@ namespace nap
 
 		const glm::mat4x4& model_matrix = mTransformComponent->getGlobalTransform();
 
-		Material* comp_mat = mMaterialInstance.getMaterial();
+		Material* comp_mat = getMaterialInstance().getMaterial();
 
 		comp_mat->bind();
 
@@ -232,7 +231,7 @@ namespace nap
 		setBlendMode();
 		pushUniforms();
 
-		mVAOHandle->mObject->bind();
+		mRenderableMesh.mVAOHandle.get().bind();
 
 		// If a cliprect was set, enable scissor and set correct values
 		if (mClipRect.mWidth > 0.0f && mClipRect.mHeight > 0.0f)
@@ -263,7 +262,7 @@ namespace nap
 		}
 		comp_mat->unbind();
 
-		mVAOHandle->mObject->unbind();
+		mRenderableMesh.mVAOHandle.get().unbind();
 
 		glDisable(GL_SCISSOR_TEST);
 	}
@@ -271,39 +270,6 @@ namespace nap
 
 	MaterialInstance& RenderableMeshComponentInstance::getMaterialInstance()
 	{
-		return mMaterialInstance;
-	}
-
-
-	nap::IMesh& RenderableMeshComponentInstance::getMesh()
-	{
-		return *mMesh;
-	}
-
-
-	bool RenderableMeshComponentInstance::setMesh(nap::ObjectPtr<nap::IMesh> mesh, utility::ErrorState& error)
-	{
-		if (mMesh == mesh)
-			return true;
-
-		// Get render service and acquire handle
-		std::unique_ptr<nap::VAOHandle> handle = acquireVertexArrayObject(mesh, error);
-		if (!(error.check(handle != nullptr, "Failed to acquire VAO for RenderableMeshComponent %s", mResource->mID.c_str())))
-			return false;
-	
-		// Store the handle
-		mVAOHandle = std::move(handle);
-
-		// set the new mesh that is used for rendering
-		mMesh = mesh;
-
-		return true;
-	}
-
-
-	nap::MeshInstance& RenderableMeshComponentInstance::getMeshInstance()
-	{
-		return mMesh->getMeshInstance();
+		return *mRenderableMesh.mMaterialInstance;
 	}
 } 
-

@@ -17,17 +17,8 @@ namespace nap
 	class LineSelectionComponent : public Component
 	{
 		RTTI_ENABLE(Component)
+		DECLARE_COMPONENT(LineSelectionComponent, LineSelectionComponentInstance)
 	public:
-		virtual const rtti::TypeInfo getInstanceType() const override
-		{
-			return RTTI_OF(LineSelectionComponentInstance);
-		}
-
-		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override
-		{
-			components.emplace_back(RTTI_OF(RenderableMeshComponent));
-		}
-
 		// Property: list of selectable poly lines
 		std::vector<ObjectPtr<nap::PolyLine>> mLines;
 
@@ -76,13 +67,9 @@ namespace nap
 		 */
 		int getCount() const					{ return static_cast<int>(mLines.size()); }
 
-		/**
-		 *	Sets the line to be drawn by the laser and to screen
-		 */
-		virtual void update(double deltaTime) override;
-
 	private:
 		void verifyIndex(int index);
+
 
 		// property: index
 		int mIndex = 0;

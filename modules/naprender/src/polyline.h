@@ -230,7 +230,7 @@ namespace nap
 	{
 		// Get vertex range, when the line is closed it means that we want to
 		// include the first vertex as last
-		int vert_count = static_cast<int>(attr.getSize());
+		int vert_count = static_cast<int>(attr.getCount());
 		assert(vert_count > 0);
 		int range = closed ? vert_count : vert_count - 1;
 

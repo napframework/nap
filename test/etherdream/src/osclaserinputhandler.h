@@ -24,17 +24,13 @@ namespace nap
 	class OSCLaserInputHandler : public Component
 	{
 		RTTI_ENABLE(Component)
+		DECLARE_COMPONENT(OSCLaserInputHandler, OSCLaserInputHandlerInstance)
 	public:
-		virtual const rtti::TypeInfo getInstanceType() const override
-		{
-			return RTTI_OF(OSCLaserInputHandlerInstance);
-		}
-
 		// property: Link to selection component one
-		ComponentPtr mSelectionComponentOne = nullptr;
+		ComponentPtr<LineSelectionComponent> mSelectionComponentOne = nullptr;
 
 		// property: Link to selection component two
-		ComponentPtr mSelectionComponentTwo = nullptr;
+		ComponentPtr<LineSelectionComponent> mSelectionComponentTwo = nullptr;
 
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 	};

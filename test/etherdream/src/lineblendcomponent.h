@@ -20,12 +20,8 @@ namespace nap
 	class LineBlendComponent : public Component
 	{
 		RTTI_ENABLE(Component)
+		DECLARE_COMPONENT(LineBlendComponent, LineBlendComponentInstance)
 	public:
-		virtual const rtti::TypeInfo getInstanceType() const override
-		{
-			return RTTI_OF(LineBlendComponentInstance);
-		}
-
 		// property: the amount to blend between two lines
 		float mBlendValue = 0.0f;
 
@@ -33,10 +29,10 @@ namespace nap
 		float mBlendSpeed = 0.0f;
 
 		// property: Link to selection component one
-		ComponentPtr mSelectionComponentOne;
+		ComponentPtr<LineSelectionComponent> mSelectionComponentOne;
 
 		// property: Link to selection component two
-		ComponentPtr mSelectionComponentTwo;
+		ComponentPtr<LineSelectionComponent> mSelectionComponentTwo;
 
 		// property: link to the mesh that we want to blend in between
 		ObjectPtr<nap::PolyLine> mLine;

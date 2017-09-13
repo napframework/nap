@@ -21,15 +21,11 @@ namespace nap
 
 		// Ensure there are lines to choose from
 		if (!(errorState.check(mLines.size() > 0, "No lines to select from")))
-		{
-			assert(false);
 			return false;
-		}
 
 		// Make sure index is in range
 		verifyIndex(getComponent<LineSelectionComponent>()->mIndex);
 
-		// Done
 		return true;
 	}
 
@@ -50,10 +46,6 @@ namespace nap
 	{
 		verifyIndex(index);
 	}
-
-
-	void LineSelectionComponentInstance::update(double deltaTime)
-	{	}
 
 
 	void LineSelectionComponentInstance::verifyIndex(int index)

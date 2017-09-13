@@ -27,16 +27,12 @@ namespace nap
 	class NAPAPI PerspCameraComponent : public Component
 	{
 		RTTI_ENABLE(Component)
+		DECLARE_COMPONENT(PerspCameraComponent, PerspCameraComponentInstance)
 
 		/**
 		 * Camera is dependent on the transform component for calculating the view matrix.
 		 */
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override { components.push_back(RTTI_OF(TransformComponent)); }
-
-		/**
-		 * Returns instance type to create for this ComponentResource.
-		 */
-		virtual const rtti::TypeInfo getInstanceType() const override { return RTTI_OF(PerspCameraComponentInstance); }
 
 	public:
 		PerpCameraProperties mProperties;	// Properties of the camera

@@ -18,55 +18,81 @@ namespace nap
 	 * A vertex array object is identified by the combination of Material and MeshResource, as it
 	 * binds those two objects together.
 	 */
-	struct VAOKey final
+	struct NAPAPI VAOKey final
 	{
-		/**
-		 * ctor
-		 */
+		VAOKey() = default;
+		VAOKey(const VAOKey& rhs) = default;
 		VAOKey(const Material& material, const MeshInstance& meshResource);
+		
+		VAOKey& operator=(const VAOKey& rhs) = default;
 
 		/**
 		* Equality operator, for use in maps
 		*/
-		bool operator==(const VAOKey& rhs) const	{ return &mMaterial == &rhs.mMaterial && &mMeshResource == &rhs.mMeshResource; }
+		bool operator==(const VAOKey& rhs) const	{ return mMaterial == rhs.mMaterial && mMeshResource == rhs.mMeshResource; }
 
-		const Material&			mMaterial;
-		const MeshInstance&		mMeshResource;
+		const Material*			mMaterial = nullptr;
+		const MeshInstance*		mMeshResource = nullptr;
 	};
 
 
 	/**
 	 * Handle to an OpenGL VertexArrayObject object, as it is acquired from the RenderService. This object does not own
-	 * the opengl VAO, it is still owned by the RenderService. On destruction of this handle, the RenderService is 
-	 * automatically notified of the removal. When no more objects are referencing this VAO, it will be queued for destruction 
-	 * in the RenderService.
+	 * the opengl VAO, it is still owned by the RenderService. Internally, the handle will increase and decrease refcounts
+	 * in the RenderService. When the refcount reaches zero, it will be queued for destruction.
 	 */
-	class VAOHandle final
+	class NAPAPI VAOHandle final
 	{
-    private:
-        RenderService& mRenderService;		///< Back pointer to RenderService, for removal on destruction
-        
 	public:
-		opengl::VertexArrayObject* mObject = nullptr;			///< The actual opengl object that can be used to bind and  unbind before drawing
-        ~VAOHandle();
+		VAOHandle() = default;
+
+		/**
+		 * dtor.
+		 */
+		~VAOHandle();
+
+		/**
+		 * Copy ctor.
+		 */
+		VAOHandle(const VAOHandle& other);
+
+		/**
+		 * Assigment operator.
+		 */
+		VAOHandle& operator=(const VAOHandle& rhs);
+
+		/**
+		 * Move copy ctor.
+		 */
+		VAOHandle(VAOHandle&& rhs);
+
+		/**
+		 * Move assigment operator.
+		 */
+		VAOHandle& operator=(VAOHandle&& rhs);
         
+		/**
+		 * @return Will return true if the object was successfully constructed. The object is successfully constructed when the mesh can be rendered with the material.
+		 */
+		bool isValid() const { return mObject != nullptr; }
+
+		/**
+		 * @return Will return a valid opengl VertexArrayObject.
+		 */
+		opengl::VertexArrayObject& get() { assert(isValid()); return *mObject; }
+
 	private:
 		friend class RenderService;
 
 		/**
-		* Helper to create a handle.
-		*/
-		static std::unique_ptr<VAOHandle> create(RenderService& renderService, opengl::VertexArrayObject* object);
-
-		/**
 		* ctor, made private so that only RenderService can create it (through create)
 		*/
-		VAOHandle(RenderService& renderService, opengl::VertexArrayObject* object);
+		VAOHandle(RenderService& renderService, const VAOKey& key, opengl::VertexArrayObject* object);
 
-		VAOHandle(const VAOHandle& rhs)             = delete;
-		VAOHandle& operator=(const VAOHandle& rhs)  = delete;
- 		VAOHandle(VAOHandle&& rhs)                  = delete;
-		VAOHandle& operator=(VAOHandle&& ths)       = delete;
+	private:
+		RenderService* mRenderService = nullptr;			///< Back pointer to RenderService, for removal on destruction
+		VAOKey mKey;										///< The key for the VAO we have a handle to
+		opengl::VertexArrayObject* mObject = nullptr;		///< The actual opengl object that can be used to bind and  unbind before drawing
 	};
 }
 
@@ -80,8 +106,8 @@ namespace std
 	{
 		std::size_t operator()(const nap::VAOKey& key) const
 		{
-			std::size_t value1 = std::hash<nap::Material*>{}((nap::Material*)&key.mMaterial);
-			std::size_t value2 = std::hash<nap::MeshInstance*>{}((nap::MeshInstance*)&key.mMeshResource);
+			std::size_t value1 = std::hash<nap::Material*>{}((nap::Material*)key.mMaterial);
+			std::size_t value2 = std::hash<nap::MeshInstance*>{}((nap::MeshInstance*)key.mMeshResource);
 			return value1 ^ value2;
 		}
 	};

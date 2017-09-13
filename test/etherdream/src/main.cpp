@@ -36,6 +36,8 @@
 #include <perspcameracomponent.h>
 #include <mathutils.h>
 #include <oscsender.h>
+#include <renderablemeshcomponent.h>
+#include "lineselectioncomponent.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
@@ -250,6 +252,18 @@ void runGame(nap::Core& core)
 						static bool fullscreen = true;
 						resourceManagerService->findObject<nap::RenderWindow>("Window")->getWindow()->setFullScreen(fullscreen);
 						fullscreen = !fullscreen;
+					}
+					else if (press_event->mKey == nap::EKeyCode::KEY_LEFT)
+					{
+						nap::EntityInstance* spline_entity = laserPrototype->getChildren()[0];
+						nap::LineSelectionComponentInstance& line_selection = spline_entity->getComponent<nap::LineSelectionComponentInstance>();
+						line_selection.setIndex(line_selection.getIndex() - 1);
+					}
+					else if (press_event->mKey == nap::EKeyCode::KEY_RIGHT)
+					{
+						nap::EntityInstance* spline_entity = laserPrototype->getChildren()[0];
+						nap::LineSelectionComponentInstance& line_selection = spline_entity->getComponent<nap::LineSelectionComponentInstance>();
+						line_selection.setIndex(line_selection.getIndex() + 1);
 					}
 
 					if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)

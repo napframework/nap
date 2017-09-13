@@ -1,12 +1,14 @@
 #pragma once
 
+// Local Includes
+#include "vertexattribute.h"
+
+// External includes
 #include <ngpumesh.h>
 #include <memory>
 #include <utility/dllexport.h>
 #include <rtti/rttiobject.h>
 #include <nap/objectptr.h>
-#include <glm/glm.hpp>
-#include "vertexattribute.h"
 
 namespace nap
 {

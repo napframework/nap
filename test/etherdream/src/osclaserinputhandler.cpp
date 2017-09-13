@@ -38,18 +38,8 @@ namespace nap
 		if (!errorState.check(mBlendComponent != nullptr, "missing line blend component"))
 			return false;
 
-		ComponentInstance* selection_one = getComponent<OSCLaserInputHandler>()->mSelectionComponentOne.get();
-		ComponentInstance* selection_two = getComponent<OSCLaserInputHandler>()->mSelectionComponentTwo.get();
-
-		if (!(selection_one->get_type().is_derived_from(RTTI_OF(LineSelectionComponentInstance))))
-			return errorState.check(false, "selection component one is not a line selection component");
-
-		if (!(selection_two->get_type().is_derived_from(RTTI_OF(LineSelectionComponentInstance))))
-			return errorState.check(false, "selection component two is not a line selection component");
-
-		// Set the two selector objects
-		mSelectorOne = static_cast<LineSelectionComponentInstance*>(selection_one);
-		mSelectorTwo = static_cast<LineSelectionComponentInstance*>(selection_two);
+		mSelectorOne = getComponent<OSCLaserInputHandler>()->mSelectionComponentOne.get();
+		mSelectorTwo = getComponent<OSCLaserInputHandler>()->mSelectionComponentTwo.get();
 
 		mInputComponent->messageReceived.connect(mMessageReceivedSlot);
 
@@ -128,13 +118,13 @@ namespace nap
 		Vec4VertexAttribute& color_attr = mesh.getColorAttr();
 
 		// Get current color based on first vertex (dirty but ok for now)
-		assert(color_attr.getSize() > 0);
+		assert(color_attr.getCount() > 0);
 		glm::vec4 ccolor = color_attr.getData()[0];
 
 		// Set color to be new value
 		ccolor[channel] = v;
 
-        std::vector<glm::vec4> new_color(color_attr.getSize(), ccolor);
+        std::vector<glm::vec4> new_color(color_attr.getCount(), ccolor);
 		color_attr.setData(new_color);
 		nap::utility::ErrorState error;
 		if (!(mesh.getMeshInstance().update(error)))
@@ -197,6 +187,7 @@ namespace nap
 
 		// Get line to update
 		LineSelectionComponentInstance* selector = index == 0 ? mSelectorOne : mSelectorTwo;
+
 
 		// Map value to range
 		float count = static_cast<float>(selector->getCount());
