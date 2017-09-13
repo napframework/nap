@@ -28,7 +28,7 @@ namespace nap
 		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
 		// Update
-		virtual void update(double deltaTime);
+		virtual void update(double deltaTime) override;
 	};
 
 
@@ -56,7 +56,7 @@ namespace nap
 		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
 		// Update
-		virtual void update(double deltaTime);
+		virtual void update(double deltaTime) override;
 
 	private:
 		void fillSquare(float inLocX, float inLocY, float inBrightNess, float inSize);
@@ -90,7 +90,7 @@ namespace nap
 		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
 		// Update
-		virtual void update(double deltaTime);
+		virtual void update(double deltaTime) override;
 
 		// Current index
 		int mIndex = 0;
