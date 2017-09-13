@@ -134,71 +134,71 @@ namespace nap
 
 		const INSTANCE_TYPE& operator*() const
 		{
-			assert(mInstance != nullptr);
-			return *static_cast<const INSTANCE_TYPE*>(mInstance);
+			assert(InstancePtrBase::mInstance != nullptr);
+			return *static_cast<const INSTANCE_TYPE*>(InstancePtrBase::mInstance);
 		}
 
 		INSTANCE_TYPE& operator*()
 		{
-			assert(mInstance != nullptr);
-			return *static_cast<INSTANCE_TYPE*>(mInstance);
+			assert(InstancePtrBase::mInstance != nullptr);
+			return *static_cast<INSTANCE_TYPE*>(InstancePtrBase::mInstance);
 		}
 
 		INSTANCE_TYPE* operator->() const
 		{
-			assert(mInstance != nullptr);
-			return static_cast<INSTANCE_TYPE*>(mInstance);
+			assert(InstancePtrBase::mInstance != nullptr);
+			return static_cast<INSTANCE_TYPE*>(InstancePtrBase::mInstance);
 		}
 
 		INSTANCE_TYPE* operator->()
 		{
-			assert(mInstance != nullptr);
-			return static_cast<INSTANCE_TYPE*>(mInstance);
+			assert(InstancePtrBase::mInstance != nullptr);
+			return static_cast<INSTANCE_TYPE*>(InstancePtrBase::mInstance);
 		}
 
 		bool operator==(const InstancePtrType& other) const
 		{
-			return mResource == other.mResource && mInstance == other.mInstance;
+			return InstancePtrBase::mResource == other.mResource && InstancePtrBase::mInstance == other.mInstance;
 		}
 
 		bool operator==(const INSTANCE_TYPE* entityInstance) const
 		{
-			return mInstance == entityInstance;
+			return InstancePtrBase::mInstance == entityInstance;
 		}
 
 		bool operator!=(const INSTANCE_TYPE* entityInstance) const
 		{
-			return mInstance != entityInstance;
+			return InstancePtrBase::mInstance != entityInstance;
 		}
 
-		bool operator==(const RESOURCE_TYPE* Entity) const
+		bool operator==(const RESOURCE_TYPE* entity) const
 		{
-			return mResource == Entity;
+			return InstancePtrBase::mResource == entity;
 		}
 
-		bool operator!=(const RESOURCE_TYPE* Entity) const
+		bool operator!=(const RESOURCE_TYPE* entity) const
 		{
-			return mResource != Entity;
+			return InstancePtrBase::mResource != entity;
 		}
 
 		bool operator<(const InstancePtrType& other) const
 		{
-			return mInstance < other.mInstance;
+			return InstancePtrBase::mInstance < other.mInstance;
 		}
 
 		bool operator>(const InstancePtrType& other) const
 		{
-			return mInstance > other.mInstance;
+			return InstancePtrBase::mInstance > other.mInstance;
 		}
 
 		bool operator<=(const InstancePtrType& other) const
 		{
-			return mInstance <= other.mInstance;
+			return InstancePtrBase::mInstance <= other.mInstance;
 		}
 
 		bool operator>=(const InstancePtrType& other) const
 		{
-			return mInstance >= other.mInstance;
+			return InstancePtrBase::mInstance >= other.mInstance;
 		}
 
 		ObjectPtr<RESOURCE_TYPE> getResource()
@@ -224,8 +224,8 @@ namespace nap
 	private:		
 		void Assign(const InstancePtrType& other) 
 		{
-			mResource = other.mResource;
-			mInstance = other.mInstance;
+			InstancePtrBase::mResource = other.mResource;
+			InstancePtrBase::mInstance = other.mInstance;
 		}
 	};
 }
