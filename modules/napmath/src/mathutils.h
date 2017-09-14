@@ -125,27 +125,27 @@ namespace nap
 		//////////////////////////////////////////////////////////////////////////
 
 		template<>
-		extern NAPAPI float lerp<float>(const float& start, const float& end, float percent);
+		NAPAPI float lerp<float>(const float& start, const float& end, float percent);
 
 		template<>
-		extern NAPAPI double lerp<double>(const double& start, const double& end, float percent);
+		NAPAPI double lerp<double>(const double& start, const double& end, float percent);
 
 		template<>
-		extern NAPAPI glm::vec2 lerp<glm::vec2>(const glm::vec2& start, const glm::vec2& end, float percent);
+		NAPAPI glm::vec2 lerp<glm::vec2>(const glm::vec2& start, const glm::vec2& end, float percent);
 
 		template<>
-		extern NAPAPI glm::vec3 lerp<glm::vec3>(const glm::vec3& start, const glm::vec3& end, float percent);
+		NAPAPI glm::vec3 lerp<glm::vec3>(const glm::vec3& start, const glm::vec3& end, float percent);
 
 		template<>
-		extern NAPAPI glm::vec4 lerp<glm::vec4>(const glm::vec4& start, const glm::vec4& end, float percent);
+		NAPAPI glm::vec4 lerp<glm::vec4>(const glm::vec4& start, const glm::vec4& end, float percent);
 
 		template<>
-		extern NAPAPI float power<float>(float value, float exp);
+		NAPAPI float power<float>(float value, float exp);
 
 		template<>
-		extern NAPAPI double power<double>(double value, double exp);
+		NAPAPI double power<double>(double value, double exp);
 
 		template<>
-		extern NAPAPI int power<int>(int value, int exp);
+		NAPAPI int power<int>(int value, int exp);
 	}
 }
