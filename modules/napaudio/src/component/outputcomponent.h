@@ -31,6 +31,12 @@ namespace nap {
         public:
             // Properties
             nap::ComponentPtr mInput; /**<  The component whose audio output to rout to the interface */
+            
+            /**
+             * The size of this vector indicates the number of channels this component outputs.
+             * Each element of the vector indicates which channel from the input will be routed on the corresponding output channel.  
+             */
+            std::vector<int> mChannelRouting = { 0 };
         };
 
         

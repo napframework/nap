@@ -7,7 +7,7 @@
 // RTTI
 RTTI_BEGIN_CLASS(nap::audio::PlayerComponent)
     RTTI_PROPERTY("AudioBuffer", &nap::audio::PlayerComponent::mAudioBuffer, nap::rtti::EPropertyMetaData::Required)
-    RTTI_PROPERTY("Channels", &nap::audio::PlayerComponent::mChannelsToPlay, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("Routing", &nap::audio::PlayerComponent::mChannelsToPlay, nap::rtti::EPropertyMetaData::Default)
     RTTI_PROPERTY("Speed", &nap::audio::PlayerComponent::mSpeed, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 

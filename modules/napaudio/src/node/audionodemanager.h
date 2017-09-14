@@ -60,6 +60,8 @@ namespace nap {
              */
             float getSampleRate() const { return mSampleRate; }
             
+            float getSamplesPerMillisecond() const { return mSampleRate / 1000.f; }
+            
             /**
              * Returns the buffer size the node system is running on.
              * Beware: this can be smaller than the buffersize the audio device is running on.
