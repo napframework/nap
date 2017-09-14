@@ -139,11 +139,12 @@ void onRender()
 bool init(nap::Core& core)
 {
 	// Try to load an svg image
-	NSVGimage* g_image = nsvgParseFromFile("C:/naivi/thirdparty/nanosvg/example/23.svg", "px", 96.0f);
+	NSVGimage* g_image = nsvgParseFromFile("./data/etherdream/swirl.svg", "mm", 96.0f);
 	if(g_image != nullptr)
 		nsvgDelete(g_image);
 
 	core.initialize();
+
 
 	//////////////////////////////////////////////////////////////////////////
 	// GL Service + Window
