@@ -38,6 +38,7 @@
 #include <oscsender.h>
 #include <renderablemeshcomponent.h>
 #include "lineselectioncomponent.h"
+#include <nanosvg.h>
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
@@ -137,6 +138,10 @@ void onRender()
 */
 bool init(nap::Core& core)
 {
+	NSVGimage* g_image = nsvgParseFromFile("C:/naivi/thirdparty/nanosvg/example/23.svg", "px", 96.0f);
+	if(g_image != nullptr)
+		nsvgDelete(g_image);
+
 	core.initialize();
 
 	//////////////////////////////////////////////////////////////////////////

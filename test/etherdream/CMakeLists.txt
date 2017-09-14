@@ -12,12 +12,13 @@ source_group("headers" FILES ${HEADERS})
 source_group("sources" FILES ${SOURCES})
 source_group("shaders" FILES ${SHADERS})
 
-add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS})
+add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${NANOHEADERS} ${SHADERS})
 set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Test)
 add_dependencies(${PROJECT_NAME} fbxconverter)
 
-target_link_libraries(${PROJECT_NAME} mod_napetherdream mod_napinput mod_napsdlinput mod_napsdlwindow mod_naposc)
+# preprocessor
+target_link_libraries(${PROJECT_NAME} mod_napetherdream mod_napinput mod_napsdlinput mod_napsdlwindow mod_naposc mod_napsvg)
 add_dependencies(${PROJECT_NAME} fbxconverter)
 
 if (WIN32)
