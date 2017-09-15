@@ -81,10 +81,12 @@ static void extractPathVertices(float* pts, int npts, char closed, float tol, st
 		float* p = &pts[i * 2];
 		cubicBez(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], tol, 0, vertices);
 	}
+	/*
 	if (closed) 
 	{
 		vertices.emplace_back(glm::vec3(pts[0], pts[1], 0.0f));
 	}
+	*/
 }
 
 
