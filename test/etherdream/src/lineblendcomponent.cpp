@@ -45,8 +45,8 @@ namespace nap
 		// Get normalized blend value starting from 0
 		b_value = (sin(b_value-(M_PI / 2))+1) / 2.0f;
 
-		const nap::PolyLine& line_one = mSelectorOne->getLine();
-		const nap::PolyLine& line_two = mSelectorTwo->getLine();
+		nap::PolyLine& line_one = mSelectorOne->getLine();
+		nap::PolyLine& line_two = mSelectorTwo->getLine();
 
 		std::vector<glm::vec3>& pos_data = mTarget->getPositionAttr().getData();
 		std::vector<glm::vec3>& nor_data = mTarget->getNormalAttr().getData();
@@ -58,6 +58,19 @@ namespace nap
 		glm::vec3 line_uvs_one, line_uvs_two;
 		glm::vec4 line_col_one, line_col_two;
 
+		// Get vertex attributes
+		Vec3VertexAttribute& position_attr_one = line_one.getPositionAttr();
+		Vec3VertexAttribute& position_attr_two = line_two.getPositionAttr();
+
+		Vec3VertexAttribute& normal_attr_one = line_one.getNormalAttr();
+		Vec3VertexAttribute& normal_attr_two = line_two.getNormalAttr();
+
+		Vec3VertexAttribute& uv_attr_one = line_one.getUvAttr();
+		Vec3VertexAttribute& uv_attr_two = line_two.getUvAttr();
+
+		Vec4VertexAttribute& color_attr_one = line_one.getColorAttr();
+		Vec4VertexAttribute& color_attr_two = line_two.getColorAttr();
+
 		int vertex_count = mTarget->getMeshInstance().getNumVertices();
 		assert(vertex_count > 1);
 		float inc = 1.0f / static_cast<float>(vertex_count - 1);
@@ -67,26 +80,26 @@ namespace nap
 			float c_inc = static_cast<float>(i) * inc;
 			
 			// Get position data for both lines
-			line_one.getPosition(c_inc, line_pos_one);
-			line_two.getPosition(c_inc, line_pos_two);
+			line_one.getValueAlongLine<glm::vec3>(position_attr_one, c_inc, line_pos_one);
+			line_two.getValueAlongLine<glm::vec3>(position_attr_two, c_inc, line_pos_two);
 
 			// Interpolate position
 			pos_data[i] = math::lerp<glm::vec3>(line_pos_one, line_pos_two, b_value);
 
-			line_one.getNormal(c_inc, line_nor_one);
-			line_two.getNormal(c_inc, line_nor_two);
+			line_one.getValueAlongLine<glm::vec3>(normal_attr_one, c_inc, line_nor_one);
+			line_two.getValueAlongLine<glm::vec3>(normal_attr_two, c_inc, line_nor_two);
 
 			// Interpolate normal
 			nor_data[i] = math::lerp<glm::vec3>(line_nor_one, line_nor_two, b_value);
 
-			line_one.getColor(c_inc, line_col_one);
-			line_two.getColor(c_inc, line_col_two);
+			line_one.getValueAlongLine<glm::vec4>(color_attr_one, c_inc, line_col_one);
+			line_two.getValueAlongLine<glm::vec4>(color_attr_two, c_inc, line_col_two);
 
 			// Interpolate color
 			col_data[i] = math::lerp<glm::vec4>(line_col_one, line_col_two, b_value);
 
-			line_one.getUv(c_inc, line_uvs_one);
-			line_two.getUv(c_inc, line_uvs_two);
+			line_one.getValueAlongLine<glm::vec3>(uv_attr_one, c_inc, line_uvs_one);
+			line_two.getValueAlongLine<glm::vec3>(uv_attr_two, c_inc, line_uvs_two);
 
 			uvs_data[i] = math::lerp<glm::vec3>(line_uvs_one, line_uvs_two, b_value);
 		}

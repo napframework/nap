@@ -54,67 +54,6 @@ namespace nap
 		}
 	}
 
-	/**
-	 * Utility function to upsample a poly line to @segments
-	 * This function distributes the vertices equally among every segment, something that is not desirable with more uneven, complex lines
-	 * A weighted distribution method is preferred but for now this will do. 
-	 * @param vertices the original mesh verticese
-	 * @param buffer the buffer that will hold the resampled vertices
-	 * @param segments the amount of segments the poly line should have, a segment is the line between two vertices
-	 * @param closed if the line is closed or not, if a line is not closed it will contain one extra point to maintain the last vertex
-	 * @param isNormal if the attribute is a normal, in that case the interpolation will return a normalized value (copied from Houdini)
-	 * @return the total number of generated vertics
-	 */
-	static int resampleLine(std::vector<glm::vec3>& vertices, std::vector<glm::vec3>& buffer, int segments, bool closed, bool isNormal = false)
-	{
-		assert(segments > 0);
-		int vertex_count = static_cast<int>(vertices.size());
-
-		// If there not enough or an equal amount or less vertices, don't do anything
-		if (segments <= vertex_count || vertex_count < 2)
-		{
-			buffer = vertices;
-			return vertices.size();
-		}
-
-		// Figure out the amount of edges, closed lines have one extra edge (connecting first to last)
-		int edge_count = closed ? vertex_count : vertex_count - 1;
-
-		// Calculate the total amount of pointer for every side
-		int pps = segments / edge_count;
-
-		// Clear existing buffer data
-		buffer.clear();
-
-		// Reserve space for points to add
-		buffer.reserve(segments);
-
-		for (int i = 0; i < edge_count; i++)
-		{
-			// Get edge points
-			glm::vec3& point_one = vertices[i];
-			glm::vec3& point_two = i + 1 >= vertex_count ? vertices[0] : vertices[i + 1];
-
-			// Add edge vertices
-			for (int p = 0; p < pps; p++)
-			{
-				float inc = static_cast<float>(p) / static_cast<float>(pps);
-
-				float x = nap::math::lerp<float>(point_one.x, point_two.x, inc);
-				float y = nap::math::lerp<float>(point_one.y, point_two.y, inc);
-				float z = nap::math::lerp<float>(point_one.z, point_two.z, inc);
-				buffer.emplace_back(isNormal ? glm::normalize(glm::vec3(x, y, z)) : glm::vec3(x, y, z));
-			}
-		}
-
-		// If the line is open add an additional point
-		if (!closed)
-			buffer.emplace_back(vertices.back());
-
-		// Return total number of new points
-		return buffer.size();
-	}
-
 
 	/**
 	 * Creates a circle that consists out of @vertexCount vertices
@@ -173,13 +112,13 @@ namespace nap
 	}
 
 
-	void nap::PolyLine::createVertexAttributes()
+	void nap::PolyLine::createVertexAttributes(MeshInstance& instance)
 	{
 		// Create attributes
-		mPositions = &(mMeshInstance->GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName()));
-		mUvs = &(mMeshInstance->GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetUVName(0)));
-		mColors = &(mMeshInstance->GetOrCreateAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0)));
-		mNormals = &(mMeshInstance->GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::getNormalName()));
+		instance.GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName());
+		instance.GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetUVName(0));
+		instance.GetOrCreateAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0));
+		instance.GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::getNormalName());
 	}
 
 
@@ -190,7 +129,7 @@ namespace nap
 		mMeshInstance = std::make_unique<nap::MeshInstance>();
 
 		// Create attributes
-		createVertexAttributes();
+		createVertexAttributes(*mMeshInstance);
 
 		return true;
 	}
@@ -207,7 +146,7 @@ namespace nap
 		std::vector<glm::vec3> verts = { mStart, mEnd };
 
 		// Populate position buffer with data
-		int p_count = resampleLine(verts, getPositionAttr().getData(), mLineProperties.mVertices, mClosed);
+		int p_count = math::resampleLine<glm::vec3>(verts, getPositionAttr().getData(), mLineProperties.mVertices, mClosed);
 
 		// Set color buffer
 		std::vector<glm::vec4> colors(p_count, mLineProperties.mColor);
@@ -216,7 +155,7 @@ namespace nap
 		// Calculate normal
 		glm::vec3 n = glm::cross(glm::vec3(0.0f, 0.0f, 1.0f), glm::normalize(mEnd - mStart));
 		std::vector<glm::vec3> n_verts = { n, n };
-		resampleLine(n_verts, getNormalAttr().getData(), mLineProperties.mVertices, mClosed, true);
+		math::resampleLine<glm::vec3>(n_verts, getNormalAttr().getData(), mLineProperties.mVertices, mClosed);
 
 		// Set normalized uvs
 		glm::vec3 uv_end_offset = mEnd - mStart;
@@ -224,7 +163,7 @@ namespace nap
 		std::vector<glm::vec3> uv_coords = { { 0.0f,0.0f,0.0f }, d_n };
 
 		// Upsample line
-		resampleLine(uv_coords, getUvAttr().getData(), mLineProperties.mVertices, mClosed);
+		math::resampleLine<glm::vec3>(uv_coords, getUvAttr().getData(), mLineProperties.mVertices, mClosed);
 		mMeshInstance->setNumVertices(p_count);
 
 		// Set draw mode
@@ -253,7 +192,7 @@ namespace nap
 		p_verts[3] = { 0.0f - dx, 0.0f + dy, 0.0f };
 
 		// Set positions
-		int pos_count = resampleLine(p_verts, getPositionAttr().getData(), mLineProperties.mVertices, true);
+		int pos_count = math::resampleLine<glm::vec3>(p_verts, getPositionAttr().getData(), mLineProperties.mVertices, true);
 
 		// Calculate normalized UV coordinates
 		float sx, sy;
@@ -278,7 +217,7 @@ namespace nap
 		uv_verts[3] = { 0.5f - dsx, 0.5f + dsy, 0.0f };
 
 		// Set uv buffer based on normalized uv coordinates
-		resampleLine(uv_verts, getUvAttr().getData(), mLineProperties.mVertices, true);
+		math::resampleLine<glm::vec3>(uv_verts, getUvAttr().getData(), mLineProperties.mVertices, true);
 
 		// Set color buffer
 		std::vector<glm::vec4> colors(pos_count, mLineProperties.mColor);
@@ -287,7 +226,7 @@ namespace nap
 		// Set normal buffer
 		std::vector <glm::vec3> n_verts(4);
 		getCentroidNormals(p_verts, n_verts, { 0.0f,0.0f,0.0f });
-		resampleLine(n_verts, getNormalAttr().getData(), mLineProperties.mVertices, true, true);
+		math::resampleLine<glm::vec3>(n_verts, getNormalAttr().getData(), mLineProperties.mVertices, true);
 
 		// Update mesh vertex count
 		mMeshInstance->setNumVertices(pos_count);
@@ -338,13 +277,13 @@ namespace nap
 		createCircle(6, mRadius, mLineProperties.mColor, pos, normals, colors, uvs);
 
 		// Resample the circle to have equal amount of points
-		int vert_count = resampleLine(pos, getPositionAttr().getData(), mLineProperties.mVertices, true, false);
+		int vert_count = math::resampleLine<glm::vec3>(pos, getPositionAttr().getData(), mLineProperties.mVertices, true);
 
 		// Resample and set uvs
-		resampleLine(uvs, getUvAttr().getData(), mLineProperties.mVertices, true, false);
+		math::resampleLine<glm::vec3>(uvs, getUvAttr().getData(), mLineProperties.mVertices, true);
 
 		// Resample and set normals
-		resampleLine(normals, getNormalAttr().getData(), mLineProperties.mVertices, true, true);
+		math::resampleLine<glm::vec3>(normals, getNormalAttr().getData(), mLineProperties.mVertices, true);
 
 		// Set color buffer
 		std::vector<glm::vec4> vert_colors(vert_count, mLineProperties.mColor);
@@ -372,13 +311,13 @@ namespace nap
 		createCircle(3, mRadius, mLineProperties.mColor, pos, normals, colors, uvs);
 
 		// Resample the circle to have equal amount of points
-		int vert_count = resampleLine(pos, getPositionAttr().getData(), mLineProperties.mVertices, true, false);
+		int vert_count = math::resampleLine<glm::vec3>(pos, getPositionAttr().getData(), mLineProperties.mVertices, true);
 
 		// Resample and set uvs
-		resampleLine(uvs, getUvAttr().getData(), mLineProperties.mVertices, true, false);
+		math::resampleLine<glm::vec3>(uvs, getUvAttr().getData(), mLineProperties.mVertices, true);
 
 		// Resample and set normals
-		resampleLine(normals, getNormalAttr().getData(), mLineProperties.mVertices, true, true);
+		math::resampleLine<glm::vec3>(normals, getNormalAttr().getData(), mLineProperties.mVertices, true);
 
 		// Set color buffer
 		std::vector<glm::vec4> vert_colors(vert_count, mLineProperties.mColor);
@@ -395,59 +334,55 @@ namespace nap
 
 	Vec3VertexAttribute& PolyLine::getPositionAttr()
 	{
-		assert(mPositions != nullptr);
-		return *mPositions;
+		return getMeshInstance().GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName());
 	}
 
 
-	void PolyLine::getPosition(float location, glm::vec3& outPosition) const
+	const nap::Vec3VertexAttribute& PolyLine::getPositionAttr() const
 	{
-		PolyLine::getValueAlongLine<glm::vec3>(*mPositions, location, isClosed(), outPosition);
+		return getMeshInstance().GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName());
 	}
 
 
 	Vec4VertexAttribute& PolyLine::getColorAttr()
 	{
-		assert(mColors != nullptr);
-		return *mColors;
+		return getMeshInstance().GetAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0));
 	}
 
 
-	void PolyLine::getColor(float location, glm::vec4& outColor) const
+	const nap::Vec4VertexAttribute& PolyLine::getColorAttr() const
 	{
-		PolyLine::getValueAlongLine<glm::vec4>(*mColors, location, isClosed(), outColor);
+		return getMeshInstance().GetAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0));
 	}
 
 
 	Vec3VertexAttribute& PolyLine::getNormalAttr()
 	{
-		assert(mNormals != nullptr);
-		return *mNormals;
+		return getMeshInstance().GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::getNormalName());
 	}
 
 
-	void PolyLine::getNormal(float location, glm::vec3& outNormal) const
+	const nap::Vec3VertexAttribute& PolyLine::getNormalAttr() const
 	{
-		PolyLine::getValueAlongLine<glm::vec3>(*mNormals, location, isClosed(), outNormal);
+		return getMeshInstance().GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::getNormalName());
 	}
 
 
 	Vec3VertexAttribute& PolyLine::getUvAttr()
 	{
-		assert(mUvs != nullptr);
-		return *mUvs;
+		return getMeshInstance().GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetUVName(0));
 	}
 
 
-	void PolyLine::getUv(float location, glm::vec3& outUv) const
+	const nap::Vec3VertexAttribute& PolyLine::getUvAttr() const
 	{
-		PolyLine::getValueAlongLine<glm::vec3>(*mUvs, location, isClosed(), outUv);
+		return getMeshInstance().GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetUVName(0));
 	}
 
 
 	bool PolyLine::isClosed() const
 	{
-		opengl::EDrawMode mode = mMeshInstance->getDrawMode();
+		opengl::EDrawMode mode = getMeshInstance().getDrawMode();
 		assert(mode == opengl::EDrawMode::LINE_LOOP || mode == opengl::EDrawMode::LINE_STRIP);
 		return mode == opengl::EDrawMode::LINE_LOOP;
 	}

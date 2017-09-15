@@ -216,6 +216,7 @@ bool init(nap::Core& core)
 	return true;
 }
 
+
 // Main loop
 int main(int argc, char *argv[])
 {

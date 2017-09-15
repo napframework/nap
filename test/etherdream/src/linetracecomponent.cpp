@@ -41,7 +41,7 @@ namespace nap
 	void LineTraceComponentInstance::update(double deltaTime)
 	{
 		// Get line to trace
-		const nap::PolyLine& source = mBlendComponent->getLine();
+		nap::PolyLine& source = mBlendComponent->getLine();
 
 		// Calculate start position
 		mCurrentTime += (deltaTime * mProperties.mSpeed);
@@ -57,12 +57,17 @@ namespace nap
 		float inc = mProperties.mLength / (target_vert_count - 1);
 
 		// Get source line
-		const nap::PolyLine& source_line = mBlendComponent->getLine();
+		nap::PolyLine& source_line = mBlendComponent->getLine();
 
 		std::vector<glm::vec3>& pos_attr_data = mTarget->getPositionAttr().getData();
 		std::vector<glm::vec3>& nor_attr_data = mTarget->getNormalAttr().getData();
 		std::vector<glm::vec4>& col_attr_data = mTarget->getColorAttr().getData();
 		std::vector<glm::vec3>& uvs_attr_data = mTarget->getUvAttr().getData();
+
+		Vec3VertexAttribute& source_pos_attr = source_line.getPositionAttr();
+		Vec3VertexAttribute& source_uvs_attr = source_line.getUvAttr();
+		Vec4VertexAttribute& source_col_attr = source_line.getColorAttr();
+		Vec3VertexAttribute& source_nor_attr = source_line.getNormalAttr();
 
 		// Blend values
 		float current_pos = start_pos;
@@ -72,16 +77,16 @@ namespace nap
 			current_pos = fmod(current_pos, 1.0f);
 
 			// Set position
-			source_line.getPosition(current_pos, pos_attr_data[i]);
+			source_line.getValueAlongLine<glm::vec3>(source_pos_attr, current_pos, pos_attr_data[i]);
 
 			// Set color
-			source_line.getColor(current_pos, col_attr_data[i]);
+			source_line.getValueAlongLine<glm::vec4>(source_col_attr, current_pos, col_attr_data[i]);
 
 			// Set normal
-			source_line.getNormal(current_pos, nor_attr_data[i]);
+			source_line.getValueAlongLine<glm::vec3>(source_nor_attr, current_pos, nor_attr_data[i]);
 
 			// Set uv
-			source_line.getUv(current_pos, uvs_attr_data[i]);
+			source_line.getValueAlongLine<glm::vec3>(source_uvs_attr, current_pos, uvs_attr_data[i]);
 
 			// Increment position
 			current_pos += inc;

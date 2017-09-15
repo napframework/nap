@@ -59,7 +59,7 @@ namespace nap
 		/**
 		* @return the interpolated line mesh
 		*/
-		const PolyLine& getLine() const								{ return *mTarget; }
+		PolyLine& getLine() const									{ return *mTarget; }
 
 		/**
 		 * @return if the blended line is closed or open

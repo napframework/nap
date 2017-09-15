@@ -49,6 +49,17 @@
 		},
 
 		{
+			"Type" : "nap::LineFromFile",
+			"mID": "LineFromFileMesh",
+			"Properties": 
+			{
+				"Count" : 500
+			},
+			"File" : "./data/etherdream/swirl.svg",
+			"Tolerance" : 0.1
+		},
+
+		{
 			"Type" : "nap::Line",
 			"mID": "LineMesh",
 			"Properties": 
@@ -291,19 +302,21 @@
 					"mID" : "LineSelectorOne",
 					"Lines" :
 					[
+						"LineFromFileMesh",
 						"LineMesh",
 						"RectangleMesh",
 						"CircleMesh",
 						"HexagonMesh",
 						"TriangleMesh"
 					],
-					"Index" : 2
+					"Index" : 0
 				},
 				{
 					"Type" : "nap::LineSelectionComponent",
 					"mID" : "LineSelectorTwo",
 					"Lines" :
 					[
+						"LineFromFileMesh",
 						"LineMesh",
 						"RectangleMesh",
 						"CircleMesh",
