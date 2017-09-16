@@ -55,8 +55,13 @@
 			{
 				"Count" : 500
 			},
-			"File" : "./data/etherdream/swirl.svg",
-			"Tolerance" : 0.1
+			"File" : "./data/etherdream/nano.svg",
+			"Tolerance" : 0.1,
+			"Units" : "mm",
+			"Normalize" : true,
+			"Scale" : 1.0,
+			"FlipVertical" : true,
+			"LineIndex" : 0
 		},
 
 		{
@@ -408,6 +413,14 @@
 				{
 					"Type" : "nap::RenderableMeshComponent",
 					"Mesh" : "LaserLineMesh",
+					"MaterialInstance" : 
+					{
+						"Material": "LineMaterial"
+					}
+				},
+				{
+					"Type" : "nap::RenderableMeshComponent",
+					"Mesh" : "LineFromFileMesh",
 					"MaterialInstance" : 
 					{
 						"Material": "LineMaterial"

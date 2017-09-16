@@ -69,6 +69,17 @@ namespace nap
 		template<typename T>
 		T epsilon();
 
+		/**
+		 *	@return the maximum possible value of T
+		 */
+		template<typename T>
+		T max();
+		
+		/**
+		 *	@return the lowest possible value of T
+		 */
+		template<typename T>
+		T min();
 
 		//////////////////////////////////////////////////////////////////////////
 		// Template definitions
@@ -119,6 +130,17 @@ namespace nap
 			return std::numeric_limits<T>::epsilon();
 		}
 
+		template<typename T>
+		T max()
+		{
+			return std::numeric_limits<T>::max();
+		}
+
+		template<typename T>
+		T min()
+		{
+			return std::numeric_limits<T>::min();
+		}
 
 		//////////////////////////////////////////////////////////////////////////
 		// Forward declarations of templated lerp functions
