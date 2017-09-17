@@ -196,7 +196,6 @@ bool init(nap::Core& core)
 		return false;        
 	}
 
-
 	// Store all render windows
 	renderWindow = resourceManagerService->findObject<nap::RenderWindow>("Window");
 
@@ -213,9 +212,9 @@ bool init(nap::Core& core)
 	render_state.mPointSize = 2.0f;
 	render_state.mPolygonMode = opengl::PolygonMode::FILL;
 
+
 	return true;
 }
-
 
 // Main loop
 int main(int argc, char *argv[])

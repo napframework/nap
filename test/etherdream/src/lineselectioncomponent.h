@@ -6,6 +6,7 @@
 #include <renderablemeshcomponent.h>
 #include <polyline.h>
 #include <transformcomponent.h>
+#include <nap/signalslot.h>
 
 namespace nap
 {
@@ -67,9 +68,11 @@ namespace nap
 		 */
 		int getCount() const					{ return static_cast<int>(mLines.size()); }
 
+		// Signal that is emitted when the index changes
+		nap::Signal<const LineSelectionComponentInstance&> mIndexChanged;
+
 	private:
 		void verifyIndex(int index);
-
 
 		// property: index
 		int mIndex = 0;

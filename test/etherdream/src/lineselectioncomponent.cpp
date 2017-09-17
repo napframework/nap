@@ -51,6 +51,12 @@ namespace nap
 	void LineSelectionComponentInstance::verifyIndex(int index)
 	{
 		// Make sure the index is in range
-		mIndex = math::clamp<int>(index, 0, mLines.size() - 1);
+		int new_index = math::clamp<int>(index, 0, mLines.size() - 1);
+		if (new_index == mIndex)
+			return;
+
+		// Set and trigger
+		mIndex = index;
+		mIndexChanged.trigger(*this);
 	}
 }

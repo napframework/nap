@@ -44,6 +44,10 @@ namespace nap
 			return false;
 		mInitialScale = mTransformComponent->getUniformScale();
 
+		mColorComponent = getEntityInstance()->findComponent<nap::LineColorComponentInstance>();
+		if (!errorState.check(mColorComponent != nullptr, "missing color component"))
+			return false;
+
 		mSelectorOne = getComponent<OSCLaserInputHandler>()->mSelectionComponentOne.get();
 		mSelectorTwo = getComponent<OSCLaserInputHandler>()->mSelectionComponentTwo.get();
 		mLaserOutput = getComponent<OSCLaserInputHandler>()->mLaserOutputComponent.get();
@@ -61,17 +65,13 @@ namespace nap
 			// Get values
 			std::vector<std::string> out_values;
 			utility::gSplitString(oscEvent.getAddress(), '/', out_values);
-			
-			// Get index (of selection component)
-			assert(out_values.size() == 4);
-			int index = math::clamp<int>(std::stoi(out_values[2]) - 1, 0, 1);
 
 			// Get color channel 
 			int channel = std::stoi(out_values.back()) - 1;
 			assert(channel <= 4 && channel >= 0);
 
 			// Update color
-			updateColor(oscEvent, index, channel);
+			updateColor(oscEvent, channel);
 			return;
 		}
 
@@ -120,33 +120,14 @@ namespace nap
 	}
 
 
-	void OSCLaserInputHandlerInstance::updateColor(const OSCEvent& oscEvent, int index, int channel)
+	void OSCLaserInputHandlerInstance::updateColor(const OSCEvent& oscEvent, int channel)
 	{
 		// New value
 		assert(oscEvent[0].isFloat());
 		float v = oscEvent[0].asFloat();
 
-		// Get line to update
-		LineSelectionComponentInstance* selector = index == 0 ? mSelectorOne : mSelectorTwo;
-
-		// Get the vertex colors
-		nap::PolyLine& mesh = selector->getLine();
-		Vec4VertexAttribute& color_attr = mesh.getColorAttr();
-
-		// Get current color based on first vertex (dirty but ok for now)
-		assert(color_attr.getCount() > 0);
-		glm::vec4 ccolor = color_attr.getData()[0];
-
-		// Set color to be new value
-		ccolor[channel] = v;
-
-        std::vector<glm::vec4> new_color(color_attr.getCount(), ccolor);
-		color_attr.setData(new_color);
-		nap::utility::ErrorState error;
-		if (!(mesh.getMeshInstance().update(error)))
-		{
-			assert(false);
-		}
+		// Update color channel
+		mColorComponent->mColor[channel] = v;
 	}
 
 
@@ -249,11 +230,13 @@ namespace nap
 		mTransformComponent->setTranslate(current_xform);
 	}
 
+
 	void OSCLaserInputHandler::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 	{
 		components.emplace_back(RTTI_OF(nap::RotateComponent));
 		components.emplace_back(RTTI_OF(nap::OSCInputComponent));
 		components.emplace_back(RTTI_OF(nap::LineBlendComponent));
+		components.emplace_back(RTTI_OF(nap::LineColorComponent));
 	}
 
 }

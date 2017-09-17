@@ -34,7 +34,9 @@ namespace nap
 
 
 	/**
-	 *	Computes a line that moves along the path of a parent (source) line
+	 * Computes a line that moves along the path of a parent (source) line
+	 * The traced mesh is stored in the target and has a fixed amount of points
+	 * Only color and position and traced, other attributes are not interpolated
 	 */
 	class LineTraceComponentInstance : public ComponentInstance
 	{

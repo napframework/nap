@@ -3,6 +3,7 @@
 #include "mesh.h"
 #include <mathutils.h>
 #include <lineutils.h>
+#include <unordered_map>
 
 namespace nap
 {
@@ -11,7 +12,6 @@ namespace nap
 	 */
 	struct PolyLineProperties
 	{
-		int mVertices = 10;								// Total number of vertices that make up the line
 		glm::vec4 mColor = { 1.0f, 1.0f, 1.0f,1.0f };	// Color of the line
 	};
 
@@ -83,14 +83,39 @@ namespace nap
 		const Vec3VertexAttribute& getUvAttr() const;
 
 		/**
+		 * This call does not accurately interpolate the vertex attribute, therefore this 
+		 * function works best with equally distributed vertices
+		 * @param attr the attribute to get the value for
+		 * @param location the location on the line to get the value for, needs to be within the 0-1 range
+		 * @param outValue the interpolated output value
 		 * @return the interpolated value of an attribute along the line based on @location
 		 */
 		template<typename T>
-		void getValueAlongLine(const VertexAttribute<T>& attr, float location, T& outValue) const;
+		void getValue(const VertexAttribute<T>& attr, float location, T& outValue) const;
 
 		/**
-		 *	@return if the line is closed or not
+		 * @return the interpolated (accurate) value of an attribute along the line based on @location
+		 * This method is more accurate but requires a map that contains the distance along the line for every vertex
+		 * You can acquire this map by calling the @getDistancesAlongLine function
+		 * @param distanceMap map that contains the distance of every vertex along the line
+		 * @param attr the attribute to get the value for
+		 * @param location the location on the line to get the value for, needs to be within the 0-1 range
+		 * @param outValue the interpolated output value 
 		 */
+		template<typename T>
+		void getValue(const std::map<float, int>& distanceMap, const VertexAttribute<T>& attr, float location, T& outValue) const;
+
+		/**
+		 * Utility function that retrieves the distance along the line for every vertex
+		 * Note that this call is relatively heavy
+		 * @return the length of the line
+		 * @param outDistances a list of distances that will be populated with the length at every vertex
+		 */
+		float getDistances(std::map<float, int>& outDistances) const;
+
+		/**
+		*	@return if the line is closed or not
+		*/
 		bool isClosed() const;
 
 		// Properties associated with a line
@@ -125,6 +150,9 @@ namespace nap
 		 * @return if the line was successfully created
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
+
+		// Property: the amount of vertices of this line
+		int mVertexCount = 2;
 	};
 
 
@@ -166,6 +194,9 @@ namespace nap
 		* @return if the rectangle was successfully created
 		*/
 		virtual bool init(utility::ErrorState& errorState) override;
+
+		// property: the number of segments
+		int mSegments = 100;
 	};
 
 	
@@ -210,8 +241,16 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 	
 	template<typename T>
-	void nap::PolyLine::getValueAlongLine(const VertexAttribute<T>& attr, float location, T& outValue) const
+	void nap::PolyLine::getValue(const VertexAttribute<T>& attr, float location, T& outValue) const
 	{
 		return math::getValueAlongLine(attr.getData(), location, isClosed(), outValue);
 	}
+
+
+	template<typename T>
+	void nap::PolyLine::getValue(const std::map<float, int>& distanceMap, const VertexAttribute<T>& attr, float location, T& outValue) const
+	{
+		return math::getValueAlongLine(distanceMap, attr.getData(), location, outValue);
+	}
+
 }

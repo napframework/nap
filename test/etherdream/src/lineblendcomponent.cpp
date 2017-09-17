@@ -23,6 +23,9 @@ namespace nap
 		mSelectorOne = getComponent<LineBlendComponent>()->mSelectionComponentOne.get();
 		mSelectorTwo = getComponent<LineBlendComponent>()->mSelectionComponentTwo.get();
 
+		mSelectorOne->mIndexChanged.connect(mSelectionChangedSlot);
+		mSelectorTwo->mIndexChanged.connect(mSelectionChangedSlot);
+
 		// Set blend value
 		mBlendValue = getComponent<LineBlendComponent>()->mBlendValue;
 		mBlendSpeed = getComponent<LineBlendComponent>()->mBlendSpeed;
@@ -51,57 +54,25 @@ namespace nap
 		std::vector<glm::vec3>& pos_data = mTarget->getPositionAttr().getData();
 		std::vector<glm::vec3>& nor_data = mTarget->getNormalAttr().getData();
 		std::vector<glm::vec3>& uvs_data = mTarget->getUvAttr().getData();
-		std::vector<glm::vec4>& col_data = mTarget->getColorAttr().getData();
 
-		glm::vec3 line_pos_one, line_pos_two;
-		glm::vec3 line_nor_one, line_nor_two;
-		glm::vec3 line_uvs_one, line_uvs_two;
-		glm::vec4 line_col_one, line_col_two;
-
-		// Get vertex attributes
-		Vec3VertexAttribute& position_attr_one = line_one.getPositionAttr();
-		Vec3VertexAttribute& position_attr_two = line_two.getPositionAttr();
-
-		Vec3VertexAttribute& normal_attr_one = line_one.getNormalAttr();
-		Vec3VertexAttribute& normal_attr_two = line_two.getNormalAttr();
-
-		Vec3VertexAttribute& uv_attr_one = line_one.getUvAttr();
-		Vec3VertexAttribute& uv_attr_two = line_two.getUvAttr();
-
-		Vec4VertexAttribute& color_attr_one = line_one.getColorAttr();
-		Vec4VertexAttribute& color_attr_two = line_two.getColorAttr();
+		// Update distances when run for first time
+		if (mDistancesLineOne.empty())
+			cacheVertexAttributes(*mSelectorOne);
+		if (mDistancesLineTwo.empty())
+			cacheVertexAttributes(*mSelectorTwo);
 
 		int vertex_count = mTarget->getMeshInstance().getNumVertices();
 		assert(vertex_count > 1);
-		float inc = 1.0f / static_cast<float>(vertex_count - 1);
 		for (int i = 0; i < vertex_count; i++)
 		{
-			// Calculate inc value along line
-			float c_inc = static_cast<float>(i) * inc;
-			
-			// Get position data for both lines
-			line_one.getValueAlongLine<glm::vec3>(position_attr_one, c_inc, line_pos_one);
-			line_two.getValueAlongLine<glm::vec3>(position_attr_two, c_inc, line_pos_two);
-
 			// Interpolate position
-			pos_data[i] = math::lerp<glm::vec3>(line_pos_one, line_pos_two, b_value);
-
-			line_one.getValueAlongLine<glm::vec3>(normal_attr_one, c_inc, line_nor_one);
-			line_two.getValueAlongLine<glm::vec3>(normal_attr_two, c_inc, line_nor_two);
+			pos_data[i] = math::lerp<glm::vec3>(mPositionsLineOne[i], mPoistionsLineTwo[i], b_value);
 
 			// Interpolate normal
-			nor_data[i] = math::lerp<glm::vec3>(line_nor_one, line_nor_two, b_value);
+			nor_data[i] = math::lerp<glm::vec3>(mNormalsLineOne[i], mNormalsLineTwo[i], b_value);
 
-			line_one.getValueAlongLine<glm::vec4>(color_attr_one, c_inc, line_col_one);
-			line_two.getValueAlongLine<glm::vec4>(color_attr_two, c_inc, line_col_two);
-
-			// Interpolate color
-			col_data[i] = math::lerp<glm::vec4>(line_col_one, line_col_two, b_value);
-
-			line_one.getValueAlongLine<glm::vec3>(uv_attr_one, c_inc, line_uvs_one);
-			line_two.getValueAlongLine<glm::vec3>(uv_attr_two, c_inc, line_uvs_two);
-
-			uvs_data[i] = math::lerp<glm::vec3>(line_uvs_one, line_uvs_two, b_value);
+			// Interpolate uvs
+			uvs_data[i] = math::lerp<glm::vec3>(mUvsLineOne[i], mUVsLineTwo[i], b_value);
 		}
 
 		nap::utility::ErrorState error;
@@ -117,4 +88,51 @@ namespace nap
 		return mSelectorOne->getLine().isClosed() && mSelectorTwo->getLine().isClosed();
 	}
 
+
+	void LineBlendComponentInstance::cacheVertexAttributes(const LineSelectionComponentInstance& selector)
+	{
+		// Update distance sample map
+		std::map<float, int>& distances = &selector == mSelectorOne ? mDistancesLineOne : mDistancesLineTwo;
+		selector.getLine().getDistances(distances);
+
+		// Get vectors to cache
+		std::vector<glm::vec3>& positions = &selector == mSelectorOne ? mPositionsLineOne : mPoistionsLineTwo;
+		std::vector<glm::vec3>& normals = &selector == mSelectorOne ? mNormalsLineOne : mNormalsLineTwo;
+		std::vector<glm::vec3>& uvs = &selector == mSelectorOne ? mUvsLineOne : mUVsLineTwo;
+
+		const nap::PolyLine& current_line = selector.getLine();
+
+		// Get attributes to interpolate from
+		const nap::Vec3VertexAttribute& pos_attr = current_line.getPositionAttr();
+		const nap::Vec3VertexAttribute& nor_attr = current_line.getNormalAttr();
+		const nap::Vec3VertexAttribute& uvs_attr = current_line.getUvAttr();
+
+		// Get number of vertices to set
+		int vertex_count = mTarget->getMeshInstance().getNumVertices();
+		assert(vertex_count > 1);
+		
+		positions.resize(vertex_count);
+		normals.resize(vertex_count);
+		uvs.resize(vertex_count);
+
+		// Value used to blend
+		float inc = 1.0f / static_cast<float>(vertex_count - 1);
+
+		for (int i = 0; i < vertex_count; i++)
+		{
+			// Calculate inc value along line
+			float c_inc = static_cast<float>(i) * inc;
+
+			// Get interpolated data
+			current_line.getValue<glm::vec3>(distances, pos_attr, c_inc, positions[i]);
+			current_line.getValue<glm::vec3>(distances, nor_attr, c_inc, normals[i]);
+			current_line.getValue<glm::vec3>(distances, uvs_attr, c_inc, uvs[i]);
+		}
+	}
+
+
+	void LineBlendComponentInstance::onSelectionChanged(const LineSelectionComponentInstance& selectionComponent)
+	{
+		cacheVertexAttributes(selectionComponent);
+	}
 }

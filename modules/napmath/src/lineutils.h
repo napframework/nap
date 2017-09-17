@@ -5,6 +5,8 @@
 
 // External Includes
 #include <vector>
+#include <unordered_map>
+#include <map>
 
 namespace nap
 {
@@ -12,10 +14,11 @@ namespace nap
 	{
 		/**
 		* Returns an interpolated value along the line based on @location
-		* Note that this function works best with equally distributed vertices
-		* @param attr the polyline attribute to sample
-		* @param parametric normalized location along the spline
-		* @param if the line is closed or not
+		* Note that this function works best with equally distributed vertices, ie: segments of equal length. 
+		* For more accurate results use the @getDistancesAlongLine based on distance
+		* @param vertexData the polyline attribute to sample
+		* @param location parametric normalized location along the spline
+		* @param closed if the line is closed or not
 		* @param outValue the interpolated value
 		*/
 		template<typename T>
@@ -33,6 +36,27 @@ namespace nap
 		*/
 		template<typename T>
 		int resampleLine(std::vector<T>& vertices, std::vector<T>& buffer, int segments, bool closed);
+
+		/**
+		 * Utility function to retrieve distances along a line
+		 * This function will calculate the distance of a vertex along the line based on the total length of that line
+		 * The distance map allows you to easily retrieve the closest vertex associated with a certain distance
+		 * @return the total length of the line
+		 * @param positionVertexData the vertex positions
+		 * @param outDistances a map that has a distance entry for every vertex of the line
+		 * @param closed if the line is closed or not
+		 */
+		float NAPAPI getDistancesAlongLine(const std::vector<glm::vec3>& vertexPositions, std::map<float, int>& outDistances, bool closed);
+
+		/**
+		 * Utility function that returns an interpolated attribute value along a line
+		 * This function is more accurate but requires an extra step to perform the interpolation
+		 * @param distanceMap the per vertex line distance map that can be acquired using the @getDistancesAlongLine function
+		 * @param vertexData the polyline attribute to sample
+		 * @param parametric normalized location along the spline, this value needs to be within the 0-1 range
+		 */
+		template<typename T>
+		void getValueAlongLine(const std::map<float, int>& distanceMap, const std::vector<T>& vertexData, float location, T& outValue);
 
 
 		//////////////////////////////////////////////////////////////////////////
@@ -121,6 +145,36 @@ namespace nap
 
 			// Return total number of new points
 			return buffer.size();
+		}
+
+
+		template<typename T>
+		void getValueAlongLine(const std::map<float, int>& distances, const std::vector<T>& vertexData, float location, T& outValue)
+		{
+			// Make sure the sample location if less then or equal to 0
+			assert(location <= 1.0f && location >= 0.0f);
+
+			// Get distance to sample along line
+			float sample_distance = distances.rbegin()->first * location;
+
+			// Get lower and upper bounds (ie, vertices that hold the lower and upper bound
+			auto upper_it = distances.lower_bound(sample_distance);
+			assert(upper_it != distances.end());
+
+			// If the upper bound is the first vertex, wrap it
+			auto lower_it = upper_it;
+			if (lower_it == distances.begin())
+				lower_it = distances.end();
+			--lower_it;
+
+			// Get the interpolation value between the two vertices
+			float lerp_v = math::fit<float>(sample_distance, lower_it->first, upper_it->first, 0.0f, 1.0f);
+
+			// Get the values to interpolate
+			const T& lower_value = vertexData[lower_it->second];
+			const T& upper_value = vertexData[upper_it->second];
+
+			outValue = math::lerp<T>(lower_value, upper_value, lerp_v);
 		}
 	}
 }

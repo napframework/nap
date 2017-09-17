@@ -51,11 +51,7 @@
 		{
 			"Type" : "nap::LineFromFile",
 			"mID": "LineFromFileMesh",
-			"Properties": 
-			{
-				"Count" : 500
-			},
-			"File" : "./data/etherdream/nano.svg",
+			"File" : "./data/etherdream/swirl.svg",
 			"Tolerance" : 0.1,
 			"Units" : "mm",
 			"Normalize" : true,
@@ -67,10 +63,6 @@
 		{
 			"Type" : "nap::Line",
 			"mID": "LineMesh",
-			"Properties": 
-			{
-				"Count" : 500
-			},
 			"Start" :
 			{
 				"x": -1.0,
@@ -89,10 +81,6 @@
 		{
 			"Type" : "nap::Rectangle",
 			"mID": "RectangleMesh",
-			"Properties": 
-			{
-				"Count" : 500
-			},
 			"Dimensions":
 			{
 				"x":2,
@@ -103,50 +91,33 @@
 		{
 			"Type" : "nap::Circle",
 			"mID": "CircleMesh",
-			"Properties": 
-			{
-				"Count" : 500
-			},
-			"Radius":1.0
+			"Radius":1.0,
+			"Segments" : 200
 		},
 
 		{
 			"Type" : "nap::Hexagon",
 			"mID": "HexagonMesh",
-			"Properties": 
-			{
-				"Count" : 500
-			},
 			"Radius":1.0
 		},
 
 		{
 			"Type" : "nap::Triangle",
 			"mID": "TriangleMesh",
-			"Properties": 
-			{
-				"Count" : 500
-			},
 			"Radius":1.0
 		},
 
 		{
 			"Type" : "nap::Line",
 			"mID": "LaserLineMesh",
-			"Properties": 
-			{
-				"Count" : 500
-			},
+			"Vertices" : 500,
 			"Closed" : false
 		},
 
 		{
 			"Type" : "nap::Line",
 			"mID": "LaserTraceMesh",
-			"Properties": 
-			{
-				"Count" : 500
-			},
+			"Vertices" : 500,
 			"Closed" : false
 		},
 
@@ -387,6 +358,18 @@
 					"BlendSpeed" : 0.0
 				},
 				{
+					"Type" : "nap::LineColorComponent",
+					"mID" : "LineColorer",
+					"BlendComponent" : "LineBlender",
+					"Color" :
+					{
+						"x" : 1.0,
+						"y" : 1.0,
+						"z" : 1.0,
+						"w" : 1.0
+					}
+				},
+				{
 					"Type" : "nap::LineTraceComponent",
 					"mID" : "LineTracer",
 					"BlendComponent" : "LineBlender",
@@ -400,8 +383,10 @@
 				},
 				{
 					"Type" : "nap::RotateComponent",
-					"Properties": {
-						"Axis": {
+					"Properties": 
+					{
+						"Axis": 
+						{
 							"x": 0.2,
 							"y": 1.0,
 							"z": 0.4
@@ -412,15 +397,7 @@
 				},
 				{
 					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "LaserLineMesh",
-					"MaterialInstance" : 
-					{
-						"Material": "LineMaterial"
-					}
-				},
-				{
-					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "LineFromFileMesh",
+					"Mesh" : "LaserTraceMesh",
 					"MaterialInstance" : 
 					{
 						"Material": "LineMaterial"

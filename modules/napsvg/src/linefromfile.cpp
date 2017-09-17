@@ -259,8 +259,9 @@ namespace nap
 		Vec4VertexAttribute& col_attr = line.GetAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0));
 		Vec3VertexAttribute& nor_attr = line.GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::getNormalName());
 
-		// re-sample line to hit x amount of vertices
-		int vertex_count = math::resampleLine(pathVertices, pos_attr.getData(), mLineProperties.mVertices, closed);
+		int vertex_count = static_cast<int>(pathVertices.size());
+		// Set position buffer
+		pos_attr.setData(pathVertices);
 
 		// Set color buffer
 		std::vector<glm::vec4> vert_colors(vertex_count, mLineProperties.mColor);

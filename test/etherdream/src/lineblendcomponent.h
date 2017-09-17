@@ -9,6 +9,7 @@
 #include <nap/componentptr.h>
 #include <renderablemeshcomponent.h>
 #include <polyline.h>
+#include <nap/signalslot.h>
 
 namespace nap
 {
@@ -40,7 +41,8 @@ namespace nap
 
 
 	/**
-	 *	This component blends two lines based on the selection of two other components
+	 * This component blends two lines based on the selection of two other components
+	 * This component writes the result to another mesh. Only the position, uv's and normals are blended
 	 */
 	class LineBlendComponentInstance : public ComponentInstance
 	{
@@ -79,5 +81,33 @@ namespace nap
 		LineSelectionComponentInstance* mSelectorOne = nullptr;		// First line selection component
 		LineSelectionComponentInstance* mSelectorTwo = nullptr;		// Second line selection component
 
+		std::map<float, int>			mDistancesLineOne;			// Distance values associated with line 1
+		std::map<float, int>			mDistancesLineTwo;			// Distance values associated with line 2
+
+		std::vector<glm::vec3>			mPositionsLineOne;			// Interpolated positions of the first selected line
+		std::vector<glm::vec3>			mPoistionsLineTwo;			// Interpolated positions of the second selected line
+		
+		std::vector<glm::vec3>			mNormalsLineOne;			// Interpolated Normals associated with the first line
+		std::vector<glm::vec3>			mNormalsLineTwo;			// Interpolated Normals associated with the second line
+		
+		std::vector<glm::vec3>			mUvsLineOne;				// Interpolated Uvs associated with the first line
+		std::vector<glm::vec3>			mUVsLineTwo;				// Interpolated Uvs associated with the seconds line
+
+
+		/**
+		 * Updates the distance map and re-samples the currently selected curve
+		 * This call is necessary for performance reasons, otherwise the getValue<> along line
+		 * method is called every update loop, which slows down performance considerably.
+		 */
+		void cacheVertexAttributes(const LineSelectionComponentInstance& selector);
+
+		/**
+		 * Called when the selection of the component changes
+		 * Caches the interpolated values for the line currently selected by @selectionComponent
+		 */
+		void onSelectionChanged(const LineSelectionComponentInstance& selectionComponent);
+
+		// Slot that is called when the index of a selection component changes
+		NSLOT(mSelectionChangedSlot, const LineSelectionComponentInstance&, onSelectionChanged);
 	};
 }

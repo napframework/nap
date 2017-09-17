@@ -4,6 +4,7 @@
 #include "oscevent.h"
 #include "lineselectioncomponent.h"
 #include "lineblendcomponent.h"
+#include "linecolorcomponent.h"
 #include "laseroutputcomponent.h"
 
 // External Includes
@@ -65,7 +66,7 @@ namespace nap
 		nap::LineBlendComponentInstance* mBlendComponent = nullptr;
 		nap::TransformComponentInstance* mTransformComponent = nullptr;
 
-		void updateColor(const OSCEvent& event, int index, int channel);
+		void updateColor(const OSCEvent& event, int channel);
 		void updateRotate(const OSCEvent& event);
 		void resetRotate(const OSCEvent& event);
 		void setIndex(const OSCEvent& event, int index);
@@ -78,6 +79,7 @@ namespace nap
 		LineSelectionComponentInstance* mSelectorOne = nullptr;		// First line selection component
 		LineSelectionComponentInstance* mSelectorTwo = nullptr;		// Second line selection component
 		LaserOutputComponentInstance* mLaserOutput = nullptr;		// Laser output component
+		LineColorComponentInstance* mColorComponent = nullptr;		// Laser line color component
 
 		float mInitialScale = 1.0f;									// Holds the initial scale of the laser spline entity
 	};
