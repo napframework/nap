@@ -129,15 +129,15 @@ namespace nap
 			return false;
 
 		// Container that holds all extracted paths and if they're closed
-		std::vector<std::unique_ptr<std::vector<glm::vec3>>> extracted_paths;
-		std::vector<bool> closed;
+		SVGPaths extracted_paths;
+		SVGState states;
 
 		// Rectangle that is used to compute final image bounds
 		math::Rectangle svg_rect(glm::vec2(math::max<float>(), math::max<float>()), glm::vec2(math::min<float>(), math::min<float>()));
 
 		// Extract all paths
 		NSVGshape* current_shape = new_image->shapes;
-		while (current_shape != nullptr)
+		while (current_shape != nullptr) 
 		{
 			NSVGpath* current_path = current_shape->paths;
 			while (current_path != nullptr)
@@ -162,7 +162,7 @@ namespace nap
 				// Add path to container
 				extracted_paths.emplace_back(std::move(path_vertices));
 				bool is_closed = current_path->closed > 0;
-				closed.emplace_back(is_closed);
+				states.emplace_back(is_closed);
 
 				// Cycle to next one
 				current_path = current_path->next;
@@ -171,57 +171,9 @@ namespace nap
 			current_shape = current_shape->next;
 		}
 
-		// Compute ratio when we want to normalize the image
-		glm::vec2 ratio(1.0f, 1.0f);
-		if (svg_rect.getWidth() < svg_rect.getHeight())
-			ratio.x = svg_rect.getWidth() / svg_rect.getHeight();
-		else
-			ratio.y = svg_rect.getHeight() / svg_rect.getWidth();
-
-		// Create a set of mesh instances based on those paths
-		int count = 0;
-		for (auto& path : extracted_paths)
-		{
-			// If we want to normalize the path vertices, we compute the min / max value around zero on the x and y axis, both relative to the image ratio
-			if (mNormalize)
-			{
-				float x_min = mFlipX ? 0.5f : -0.5f;
-				float x_max = mFlipX ? -0.5f : 0.5f;
-				float y_min = mFlipY ? 0.5f : -0.5f;
-				float y_max = mFlipY ? -0.5f : 0.5f;
-
-				for (auto& vertex : *path)
-				{
-					vertex.x = nap::math::fit<float>(vertex.x, svg_rect.mMinPosition.x, svg_rect.mMaxPosition.x, x_min, x_max) * ratio.x * mScale;
-					vertex.y = nap::math::fit<float>(vertex.y, svg_rect.mMinPosition.y, svg_rect.mMaxPosition.y, y_min, y_max) * ratio.y * mScale;
-				}
-			}
-			// Otherwise we leave the vertices as is but we do want to scale them and apply the flip transformation
-			// To flip a not normalized set of vertices we simply fit the vertex based on the inverse of the bounds
-			else
-			{
-				float x_min = mFlipX ? svg_rect.mMaxPosition.x : svg_rect.mMinPosition.x;
-				float x_max = mFlipX ? svg_rect.mMinPosition.x : svg_rect.mMaxPosition.x;
-				float y_min = mFlipY ? svg_rect.mMaxPosition.y : svg_rect.mMinPosition.y;
-				float y_max = mFlipY ? svg_rect.mMinPosition.y : svg_rect.mMaxPosition.y;
-
-				for (auto& vertex : *path)
-				{
-					vertex.x = nap::math::fit<float>(vertex.x, svg_rect.mMinPosition.x, svg_rect.mMaxPosition.x, x_min, x_max) * mScale;
-					vertex.y = nap::math::fit<float>(vertex.y, svg_rect.mMinPosition.y, svg_rect.mMaxPosition.y, y_min, y_max) * mScale;
-				}
-			}
-
-			// Create and initialize new line based on sampled path vertices
-			std::unique_ptr<MeshInstance> new_line = std::make_unique<MeshInstance>();
-
-			if (!initLineFromPath(*new_line, *path, closed[count], errorState))
-				return false;
-			
-			// Add line and increment count
-			mLineInstances.emplace_back(std::move(new_line));
-			count++;
-		}
+		// Extract all the lines
+		if (!extractLinesFromPaths(extracted_paths, states, svg_rect, errorState))
+			return false;
 
 		// The the index to use
 		setLineIndex(mLineIndex);
@@ -247,6 +199,136 @@ namespace nap
 	void LineFromFile::setLineIndex(int index)
 	{
 		mLineIndex = nap::math::clamp<int>(index, 0, mLineInstances.size() - 1);
+	}
+
+
+	bool LineFromFile::extractLinesFromPaths(const SVGPaths& paths, const SVGState& states, const math::Rectangle& rect, utility::ErrorState& error)
+	{
+		// Calculate rectangle ratio
+		glm::vec2 ratio(1.0f, 1.0f);
+		if (rect.getWidth() < rect.getHeight())
+			ratio.x = rect.getWidth() / rect.getHeight();
+		else
+			ratio.y = rect.getHeight() / rect.getWidth();
+
+		// Calculate uv offset based on rectangle ratio in 0-1 space
+		glm::vec2 uvoff(0.0f, 0.0f);
+		uvoff.x = (1.0f - ratio.x) / 2.0f;
+		uvoff.y = (1.0f - ratio.y) / 2.0f;
+
+		// Calculate scale taking in to account the ratio
+		glm::vec2 scale(mScale, mScale);
+		if (mNormalize)
+		{
+			scale = ratio * scale;
+		}
+
+		// min - max values for the various buffers
+		float uv_x_min = mFlipX ? 1.0f - uvoff.x : 0.0f + uvoff.x;
+		float uv_x_max = mFlipX ? 0.0f + uvoff.x : 1.0f - uvoff.x;
+		float uv_y_min = mFlipY ? 1.0f - uvoff.y : 0.0f + uvoff.y;
+		float uv_y_max = mFlipY ? 0.0f + uvoff.y : 1.0f - uvoff.y;
+
+		// min -max values for the position, first we check if we need to flip, after that if we need to normalize
+		float pos_x_min = mFlipX ? mNormalize ? 0.5f  : rect.mMaxPosition.x : mNormalize ? -0.5f : rect.mMinPosition.x;
+		float pos_x_max = mFlipX ? mNormalize ? -0.5f : rect.mMinPosition.x : mNormalize ? 0.5f	 : rect.mMaxPosition.x;
+		float pos_y_min = mFlipY ? mNormalize ? 0.5f  : rect.mMaxPosition.y : mNormalize ? -0.5f : rect.mMinPosition.y;
+		float pos_y_max = mFlipY ? mNormalize ? -0.5f : rect.mMinPosition.y : mNormalize ? 0.5f	 : rect.mMaxPosition.y;
+
+		// Also create uv's and normals based on path vertices
+		std::vector<glm::vec3> uvs;
+		std::vector<glm::vec3> normals;
+		std::vector<glm::vec3> positions;
+
+		// Create a set of mesh instances based on those paths
+		int path_count = 0;
+		for (auto& path : paths)
+		{
+			uvs.clear();
+			normals.clear();
+			positions.clear();
+
+			// Resize
+			uvs.reserve(path->size());
+			normals.reserve(path->size());
+			positions.reserve(path->size());
+
+			// If this path is closed or not
+			bool is_closed = states[path_count];
+
+			// Calculate uv's first as they use the rect to figure out the normalized 0-1 coordinates
+			// After that compute the vertex position based on the scale 
+			glm::vec3* previous_point = nullptr;
+			for (auto& vertex : *path)
+			{
+				// Discard points that are exactly the same as the previous point
+				if (previous_point != nullptr && glm::distance(*previous_point, vertex) <= nap::math::epsilon<float>())
+					continue;
+
+				// calculate vertex uv
+				float uv_x = nap::math::fit<float>(vertex.x, rect.mMinPosition.x, rect.mMaxPosition.x, uv_x_min, uv_x_max);
+				float uv_y = nap::math::fit<float>(vertex.x, rect.mMinPosition.x, rect.mMaxPosition.x, uv_x_min, uv_x_max);
+				uvs.emplace_back(glm::vec3(uv_x, uv_y, 0.0f));
+
+				// calculate vertex position
+				float pos_x = nap::math::fit<float>(vertex.x, rect.mMinPosition.x, rect.mMaxPosition.x, pos_x_min, pos_x_max) * scale.x;
+				float pos_y = nap::math::fit<float>(vertex.y, rect.mMinPosition.y, rect.mMaxPosition.y, pos_y_min, pos_y_max) * scale.y;
+				positions.emplace_back(glm::vec3(pos_x, pos_y, 0.0f));
+
+				// Store previous point
+				previous_point = &vertex;
+			}
+
+			// If the shape is closed but the first and end points are the same, we can discard the last point
+			assert(positions.size() > 0);
+			if (is_closed && glm::distance(positions.front(), positions.back()) <= math::epsilon<float>())
+			{
+				positions.pop_back();
+				uvs.pop_back();
+			}
+
+			// Make sure there's enough vertices to create a segment
+			if (positions.size() < 2)
+			{
+				assert(false);
+				return(error.check(false, "not enough unique vertices in line from file: %s", mFile.c_str()));
+			}
+
+			// Now we have the final vertex positions of this line we can calculate their respective normals
+			glm::vec3 crossn(0.0f, 0.0f, 1.0f);
+			for (int i = 0; i < positions.size() - 1; i++)
+			{
+				// Get vector pointing to next vertex
+				glm::vec3 dnormal = glm::normalize(positions[i] - positions[i + 1]);
+
+				// Rotate around z using cross product
+				normals.emplace_back(glm::cross(dnormal, crossn));
+			}
+
+			// If the shape is closed the last normal can point to the first, otherwise we pick the previous one
+			if (is_closed)
+			{
+				glm::vec3& curr_pos = positions.back();
+				glm::vec3& next_pos = positions.front();
+				normals.emplace_back(glm::cross(glm::normalize(next_pos - curr_pos), crossn));
+			}
+			else
+			{
+				normals.emplace_back(positions.back());
+			}
+
+			// Create and initialize new line based on sampled path vertices
+			std::unique_ptr<MeshInstance> new_line = std::make_unique<MeshInstance>();
+
+			if (!initLineFromPath(*new_line, positions, is_closed, error))
+				return false;
+
+			// Add line and increment count
+			mLineInstances.emplace_back(std::move(new_line));
+			path_count++;
+		}
+
+		return true;
 	}
 
 

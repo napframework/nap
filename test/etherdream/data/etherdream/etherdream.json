@@ -51,13 +51,13 @@
 		{
 			"Type" : "nap::LineFromFile",
 			"mID": "LineFromFileMesh",
-			"File" : "./data/etherdream/swirl.svg",
+			"File" : "./data/etherdream/nano.svg",
 			"Tolerance" : 0.1,
 			"Units" : "mm",
 			"Normalize" : true,
 			"Scale" : 1.0,
 			"FlipVertical" : true,
-			"LineIndex" : 0
+			"LineIndex" : 1
 		},
 
 		{
@@ -397,7 +397,7 @@
 				},
 				{
 					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "LaserTraceMesh",
+					"Mesh" : "LaserLineMesh",
 					"MaterialInstance" : 
 					{
 						"Material": "LineMaterial"
