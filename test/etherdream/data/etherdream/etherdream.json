@@ -312,7 +312,8 @@
 						"/selection",
 						"/blend",
 						"/scale",
-						"/position"
+						"/position",
+						"/modulation"
 					]
 				},
 				{

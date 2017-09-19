@@ -6,6 +6,7 @@
 #include "lineblendcomponent.h"
 #include "linecolorcomponent.h"
 #include "laseroutputcomponent.h"
+#include "linemodulationcomponent.h"
 
 // External Includes
 #include <nap/component.h>
@@ -73,6 +74,7 @@ namespace nap
 		void setBlend(const OSCEvent& event, int index);
 		void setScale(const OSCEvent& event);
 		void setPosition(const OSCEvent& event);
+		void setModulation(const OSCEvent& event, int index);
 
 		NSLOT(mMessageReceivedSlot, const nap::OSCEvent&, handleMessageReceived)
 
@@ -80,6 +82,7 @@ namespace nap
 		LineSelectionComponentInstance* mSelectorTwo = nullptr;		// Second line selection component
 		LaserOutputComponentInstance* mLaserOutput = nullptr;		// Laser output component
 		LineColorComponentInstance* mColorComponent = nullptr;		// Laser line color component
+		LineModulationComponentInstance* mModulationComponent = nullptr;	// Laser modulation component
 
 		float mInitialScale = 1.0f;									// Holds the initial scale of the laser spline entity
 	};

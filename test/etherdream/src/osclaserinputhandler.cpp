@@ -48,6 +48,10 @@ namespace nap
 		if (!errorState.check(mColorComponent != nullptr, "missing color component"))
 			return false;
 
+		mModulationComponent = getEntityInstance()->findComponent<nap::LineModulationComponentInstance>();
+		if(!errorState.check(mModulationComponent != nullptr, "missing modulation component"))
+			return false;
+
 		mSelectorOne = getComponent<OSCLaserInputHandler>()->mSelectionComponentOne.get();
 		mSelectorTwo = getComponent<OSCLaserInputHandler>()->mSelectionComponentTwo.get();
 		mLaserOutput = getComponent<OSCLaserInputHandler>()->mLaserOutputComponent.get();
@@ -116,6 +120,18 @@ namespace nap
 		else if (utility::gStartsWith(oscEvent.getAddress(), "/position"))
 		{
 			setPosition(oscEvent);
+		}
+
+		else if (utility::gStartsWith(oscEvent.getAddress(), "/modulation"))
+		{
+			// Get values
+			std::vector<std::string> out_values;
+			utility::gSplitString(oscEvent.getAddress(), '/', out_values);
+
+			// Get index
+			int index = std::stoi(out_values.back()) - 1;
+			assert(index < 5 && index >= 0);
+			setModulation(oscEvent, index);
 		}
 	}
 
@@ -231,12 +247,45 @@ namespace nap
 	}
 
 
+	void OSCLaserInputHandlerInstance::setModulation(const OSCEvent& event, int index)
+	{
+		assert(event[0].isFloat());
+		float v = event[0].asFloat();
+
+		switch (index)
+		{
+		case 0:
+			mModulationComponent->mProperties.mFrequency = math::fit<float>(math::power<float>(v,3.0f), 0.0f, 1.0f, 1.0f, 20.0f);
+			break;
+		case 1:
+			mModulationComponent->mProperties.mSpeed = v;
+			break;
+		case 2:
+			mModulationComponent->mProperties.mOffset = v;
+			break;
+		case 3:
+			mModulationComponent->mProperties.mAmplitude = math::power<float>(v, 3.0f);
+			break;
+		case 4:
+		{
+			int idx = math::min<int>(static_cast<int>(4.0f * v), 3);
+			mModulationComponent->mProperties.mWaveform = static_cast<nap::math::EWaveform>(idx);
+			break;
+		}
+		default:
+			assert(false);
+			break;
+		}
+	}
+
+
 	void OSCLaserInputHandler::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 	{
 		components.emplace_back(RTTI_OF(nap::RotateComponent));
 		components.emplace_back(RTTI_OF(nap::OSCInputComponent));
 		components.emplace_back(RTTI_OF(nap::LineBlendComponent));
 		components.emplace_back(RTTI_OF(nap::LineColorComponent));
+		components.emplace_back(RTTI_OF(nap::LineModulationComponent));
 	}
 
 }
