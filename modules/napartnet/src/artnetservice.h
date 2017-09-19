@@ -6,36 +6,57 @@
 
 namespace nap
 {
-	using ArtnetNode = void*;
+	class ArtNetController;
 
 	/**
 	 * Main interface for rendering to various Etherdream Dacs
 	 * The service is responsible for opening / closing the general Etherdream library
 	 * and allows for rendering data to the available dacs
 	 */
-	class NAPAPI ArtnetService : public Service
+	class NAPAPI ArtNetService : public Service
 	{
 		RTTI_ENABLE(Service)
 
 	public:
+		using ByteChannelData = std::vector<uint8_t>;
+		using FloatChannelData = std::vector<float>;
+
 		// Default Constructor
-		ArtnetService() = default;
+		ArtNetService();
 
 		// Default Destructor
-		virtual ~ArtnetService();
+		virtual ~ArtNetService();
 
-		// Initialization
-		bool init(nap::utility::ErrorState& errorState);
+		ArtNetService(const ArtNetService& rhs) = delete;
+		ArtNetService& operator=(const ArtNetService& rhs) = delete;
+
+		bool addController(ArtNetController& node, utility::ErrorState& errorState);
+		void removeController(ArtNetController& node);
+
+		void send(ArtNetController& inNode, const FloatChannelData& channelData, int channelOffset = 0);
+		void send(ArtNetController& inNode, const ByteChannelData& channelData, int channelOffset = 0);
+
+		void update();
 
 		/**
-		 * @return the artnet node instance associated with this application
+		 *	Register specific object creators
 		 */
-		ArtnetNode getNode() const										{ return mNode; }
+		virtual void registerObjectCreators(rtti::Factory& factory) override;
 
 	private:
-		// The artnet node associated with this application instance
-		// The node is something we probably want as a resource, although I am not sure if we want
-		// Multiple nodes per running instance.
-		ArtnetNode mNode = nullptr;
+		struct ControllerData
+		{
+			ArtNetController*			mController;
+			ByteChannelData				mData;
+			double						mLastUpdateTime;
+			bool						mIsDirty;
+		};
+		using NodeKey = uint8_t;
+
+		using NodeMap = std::unordered_map<NodeKey, std::unique_ptr<ControllerData>>;
+		using DirtyNodeList = std::unordered_set<NodeKey>;
+
+		NodeMap			mControllers;
+		double			mUpdateFrequency = 1.0 / 44.0; // Update artnet channel data at 44 Hz (see http://art-net.org.uk/wordpress/?page_id=456 / Refresh Rate)
 	};
 }
