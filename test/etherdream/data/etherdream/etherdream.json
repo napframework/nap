@@ -11,6 +11,19 @@
 		},
 
 		{
+			"Type" : "nap::OSCReceiver",
+			"mID" : "OscReceiver",
+			"Port" : 7000
+		},
+
+		{
+			"Type" : "nap::OSCSender",
+			"mID" : "OscSender",
+			"IpAddress" : "192.168.0.19",
+			"Port" : 8000
+		},
+
+		{
 			"Type" : "nap::Shader",
 			"mID": "LineShader",
 			"mVertShader": "shaders/etherdream/line.vert",
@@ -69,7 +82,7 @@
 			"mID": "RectangleMesh",
 			"Properties": 
 			{
-				"Count" : 400,
+				"Count" : 500,
 				"Color" :
 				{
 					"x":1.0,
@@ -88,6 +101,40 @@
 		{
 			"Type" : "nap::Circle",
 			"mID": "CircleMesh",
+			"Properties": 
+			{
+				"Count" : 500,
+				"Color" :
+				{
+					"x":1.0,
+					"y":1.0,
+					"z":1.0,
+					"w":1.0
+				}
+			},
+			"Radius":1.0
+		},
+
+		{
+			"Type" : "nap::Hexagon",
+			"mID": "HexagonMesh",
+			"Properties": 
+			{
+				"Count" : 500,
+				"Color" :
+				{
+					"x":1.0,
+					"y":1.0,
+					"z":1.0,
+					"w":1.0
+				}
+			},
+			"Radius":1.0
+		},
+
+		{
+			"Type" : "nap::Triangle",
+			"mID": "TriangleMesh",
 			"Properties": 
 			{
 				"Count" : 500,
@@ -255,6 +302,33 @@
 			"Components" : 
 			[
 				{
+					"Type" : "nap::LineSelectionComponent",
+					"mID" : "LineSelectorOne",
+					"Lines" :
+					[
+						"LineMesh",
+						"RectangleMesh",
+						"CircleMesh",
+						"HexagonMesh",
+						"TriangleMesh"
+					],
+					"Index" : 0
+				},
+				{
+					"Type" : "nap::OSCInputComponent",
+					"Addresses" : 
+					[
+						"/color",
+						"/resetcolor",
+						"/rotate",
+						"/resetrotate",
+						"/index"
+					]
+				},
+				{
+					"Type" : "nap::OSCLaserInputHandler"
+				},
+				{
 					"Type" : "nap::TransformComponent",
 					"Properties": 
 					{
@@ -296,7 +370,7 @@
 
 				{
 					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "CircleMesh",
+					"Mesh" : "LineMesh",
 					"MaterialInstance" : 
 					{
 						"Material": "LineMaterial"

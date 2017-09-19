@@ -26,10 +26,7 @@ namespace nap {
         {
             OutputComponent* resource = rtti_cast<OutputComponent>(getComponent());
             
-            AudioComponentInstance* input = rtti_cast<AudioComponentInstance>(resource->mInput.get());
-            if (!errorState.check(input, "Input is not an audio component"))
-                return false;
-            
+            AudioComponentInstance* input = resource->mInput.get();
             auto& nodeManager = getEntityInstance()->getCore()->getService<AudioService>()->getNodeManager();
             
             auto channelCount = resource->mChannelRouting.size();

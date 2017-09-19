@@ -1,5 +1,6 @@
 #include "polyline.h"
 #include <mathutils.h>
+#include <glm/gtx/rotate_vector.hpp>
 
 RTTI_BEGIN_CLASS(nap::PolyLineProperties)
 	RTTI_PROPERTY("Count",		&nap::PolyLineProperties::mVertices,	nap::rtti::EPropertyMetaData::Required)
@@ -22,6 +23,14 @@ RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::Circle)
 	RTTI_PROPERTY("Radius",		&nap::Circle::mRadius,					nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS(nap::Hexagon)
+	RTTI_PROPERTY("Radius",		&nap::Hexagon::mRadius,					nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS(nap::Triangle)
+	RTTI_PROPERTY("Radius",		&nap::Triangle::mRadius,				nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -104,6 +113,63 @@ namespace nap
 
 		// Return total number of new points
 		return buffer.size();
+	}
+
+
+	/**
+	 * Creates a circle that consists out of @vertexCount vertices
+	 * The circle is considered close where the last vertex is the one before the start
+	 * @param vertexCount the number of circle vertices
+	 * @param radius the radius of the circle
+	 * @param color the color of the circle
+	 * @param out*& the buffers to fill based on the amount of vertices
+	 */
+	static void createCircle(int vertexCount, float radius, const glm::vec4& color, 
+		std::vector<glm::vec3>& outPos,
+		std::vector<glm::vec3>& outNormal,
+		std::vector<glm::vec4>& outColor,
+		std::vector<glm::vec3>& outUv)
+	{
+		//nap::VertexAttribute<glm::vec3>& pos_data = outMesh.getPositionAttr();
+		outPos.clear();
+		outPos.resize(vertexCount);
+		std::vector<glm::vec3>::iterator v = outPos.begin();
+
+		//nap::VertexAttribute<glm::vec3>& normal_data = outMesh.getNormalAttr();
+		outNormal.clear();
+		outNormal.resize(vertexCount);
+		std::vector<glm::vec3> ::iterator n = outNormal.begin();
+
+		//nap::VertexAttribute<glm::vec4>& color_data = outMesh.getColorAttr();
+		outColor.clear();
+		outColor.resize(vertexCount);
+		std::vector<glm::vec4>::iterator c = outColor.begin();
+
+		//nap::VertexAttribute<glm::vec3>& uv_data = outMesh.getUvAttr();
+		outUv.clear();
+		outUv.resize(vertexCount);
+		std::vector<glm::vec3>::iterator t = outUv.begin();
+
+		float const R = 1.0f / static_cast<float>(vertexCount);
+
+		// Sweep and fill
+		for (int r = 0; r < vertexCount; r++)
+		{
+			float const y = sin(2 * M_PI * r * R);
+			float const x = cos(2 * M_PI * r * R);
+
+			// Set texture coordinates
+			*t++ = { 1.0f - (r*R), r*R, 0.5f };
+
+			// Set vertex coordinates
+			*v++ = { x * radius, y * radius, 0.0f };
+
+			// Set normal coordinates
+			*n++ = { x, y, 0.0f };
+
+			// Set color coordinates
+			*c++ = color;
+		}
 	}
 
 
@@ -242,54 +308,88 @@ namespace nap
 		if (!PolyLine::init(errorState))
 			return false;
 
-		nap::VertexAttribute<glm::vec3>& pos_data = getPositionAttr();
-		pos_data.clear();
-		pos_data.resize(mLineProperties.mVertices);
-		std::vector<glm::vec3>::iterator v = pos_data.getData().begin();
+		// Create the circle
+		createCircle(mLineProperties.mVertices, mRadius, mLineProperties.mColor, 
+			getPositionAttr().getData(),
+			getNormalAttr().getData(),
+			getColorAttr().getData(),
+			getUvAttr().getData());
 
-		nap::VertexAttribute<glm::vec3>& normal_data = getNormalAttr();
-		normal_data.clear();
-		normal_data.resize(mLineProperties.mVertices);
-		std::vector<glm::vec3> ::iterator n = normal_data.getData().begin();
-
-		nap::VertexAttribute<glm::vec4>& color_data = getColorAttr();
-		color_data.clear();
-		color_data.resize(mLineProperties.mVertices);
-		std::vector<glm::vec4>::iterator c = color_data.getData().begin();
-
-		nap::VertexAttribute<glm::vec3>& uv_data = getUvAttr();
-		uv_data.clear();
-		uv_data.resize(mLineProperties.mVertices);
-		std::vector<glm::vec3>::iterator t = uv_data.getData().begin();
-
-		float const R = 1.0f / static_cast<float>(mLineProperties.mVertices - 1);
-
-		// Sweep and fill
-		for (int r = 0; r < mLineProperties.mVertices; r++)
-		{
-			float const y = sin(2 * M_PI * r * R);
-			float const x = cos(2 * M_PI * r * R);
-
-			// Set texture coordinates
-			*t++ = { 1.0f - (r*R), r*R, 0.5f };
-
-			// Set vertex coordinates
-			*v++ = { x * mRadius, y * mRadius, 0.0f };
-
-			// Set normal coordinates
-			*n++ = { x, y, 0.0f };
-
-			// Set color coordinates
-			*c++ = mLineProperties.mColor;
-		}
-
+		// Update
 		mMeshInstance->setNumVertices(mLineProperties.mVertices);
 		mMeshInstance->setDrawMode(opengl::EDrawMode::LINE_LOOP);
 
 		// Initialize line
 		return mMeshInstance->init(errorState);
+	}
 
-		return true;
+
+	bool Hexagon::init(utility::ErrorState& errorState)
+	{
+		if (!PolyLine::init(errorState))
+			return false;
+
+		std::vector<glm::vec3> pos;
+		std::vector<glm::vec3> normals;
+		std::vector<glm::vec4> colors;
+		std::vector<glm::vec3> uvs;
+		
+		// Create a circle that consists out of 6 vertices
+		createCircle(6, mRadius, mLineProperties.mColor, pos, normals, colors, uvs);
+
+		// Resample the circle to have equal amount of points
+		int vert_count = resampleLine(pos, getPositionAttr().getData(), mLineProperties.mVertices, true, false);
+
+		// Resample and set uvs
+		resampleLine(uvs, getUvAttr().getData(), mLineProperties.mVertices, true, false);
+
+		// Resample and set normals
+		resampleLine(normals, getNormalAttr().getData(), mLineProperties.mVertices, true, true);
+
+		// Set color buffer
+		std::vector<glm::vec4> vert_colors(vert_count, mLineProperties.mColor);
+		getColorAttr().setData(vert_colors);
+
+		// Update
+		mMeshInstance->setNumVertices(vert_count);
+		mMeshInstance->setDrawMode(opengl::EDrawMode::LINE_LOOP);
+
+		return mMeshInstance->init(errorState);
+	}
+
+
+	bool Triangle::init(utility::ErrorState& errorState)
+	{
+		if (!PolyLine::init(errorState))
+			return false;
+
+		std::vector<glm::vec3> pos;
+		std::vector<glm::vec3> normals;
+		std::vector<glm::vec4> colors;
+		std::vector<glm::vec3> uvs;
+
+		// Create a circle that consists out of 6 vertices
+		createCircle(3, mRadius, mLineProperties.mColor, pos, normals, colors, uvs);
+
+		// Resample the circle to have equal amount of points
+		int vert_count = resampleLine(pos, getPositionAttr().getData(), mLineProperties.mVertices, true, false);
+
+		// Resample and set uvs
+		resampleLine(uvs, getUvAttr().getData(), mLineProperties.mVertices, true, false);
+
+		// Resample and set normals
+		resampleLine(normals, getNormalAttr().getData(), mLineProperties.mVertices, true, true);
+
+		// Set color buffer
+		std::vector<glm::vec4> vert_colors(vert_count, mLineProperties.mColor);
+		getColorAttr().setData(vert_colors);
+
+		// Update
+		mMeshInstance->setNumVertices(vert_count);
+		mMeshInstance->setDrawMode(opengl::EDrawMode::LINE_LOOP);
+
+		return mMeshInstance->init(errorState);
+
 	}
 
 
@@ -315,5 +415,4 @@ namespace nap
 	{
 		return mMeshInstance->GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetUVName(0));
 	}
-
 }

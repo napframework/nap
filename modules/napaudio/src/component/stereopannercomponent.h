@@ -20,17 +20,13 @@ namespace nap {
          */
         class NAPAPI StereoPannerComponent : public AudioComponent {
             RTTI_ENABLE(nap::audio::AudioComponent)
+            DECLARE_COMPONENT(StereoPannerComponent, StereoPannerComponentInstance)
+            
         public:
             StereoPannerComponent() : AudioComponent() { }
             
-            // Type to instantiate
-            const rtti::TypeInfo getInstanceType() const override
-            {
-                return RTTI_OF(StereoPannerComponentInstance);
-            }
-            
         public:
-            ComponentPtr mInput; /**< The audio component to get the input signal to be panned from */
+            ComponentPtr<AudioComponent> mInput; /**< The audio component to get the input signal to be panned from */
             float mPanning = 0.5; /**< The panning value: 0 = far left, 1 = far right */
             
         };

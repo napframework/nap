@@ -40,13 +40,9 @@ namespace nap
 	class UIInputRouterComponent : public Component
 	{
 		RTTI_ENABLE(Component)
+		DECLARE_COMPONENT(UIInputRouterComponent, UIInputRouterComponentInstance)
 
 	public:
-		/**
-		 * @return Instance type to create for this resource.
-		 */
-		virtual const rtti::TypeInfo getInstanceType() const override	{ return RTTI_OF(UIInputRouterComponentInstance); }
-
 		EntityPtr mCameraEntity;		// Pointer to camera entity resource and instance
 	};
 

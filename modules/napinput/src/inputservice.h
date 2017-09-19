@@ -3,6 +3,7 @@
 // Nap Includes
 #include <nap/service.h>
 #include <utility/dllexport.h>
+#include <nap/entity.h>
 
 // Local Includes
 #include "inputevent.h"
@@ -22,8 +23,6 @@ namespace nap
 		RTTI_ENABLE(Service)
 
 	public:
-		using EntityList = std::vector<EntityInstance*>;
-
 		// Default constructor
 		InputService() = default;
 

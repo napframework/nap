@@ -6,6 +6,7 @@
 
 // Audio includes
 #include <node/audionode.h>
+#include <component/audiocomponent.h>
 
 namespace nap {
     
@@ -19,18 +20,14 @@ namespace nap {
          */
         class NAPAPI OutputComponent : public Component {
             RTTI_ENABLE(nap::Component)
+            DECLARE_COMPONENT(OutputComponent, OutputComponentInstance)
+            
         public:
             OutputComponent() : nap::Component() { }
             
-            // Type to instantiate
-            const rtti::TypeInfo getInstanceType() const override
-            {
-                return RTTI_OF(OutputComponentInstance);
-            }
-            
         public:
             // Properties
-            nap::ComponentPtr mInput; /**<  The component whose audio output to rout to the interface */
+            nap::ComponentPtr<AudioComponent> mInput; /**<  The component whose audio output to rout to the interface */
             
             /**
              * The size of this vector indicates the number of channels this component outputs.

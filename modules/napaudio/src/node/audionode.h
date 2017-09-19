@@ -56,7 +56,7 @@ namespace nap {
             /**
              * Checks wether the input is connected
              */
-            bool isConnected() const { return mInput; }
+            bool isConnected() const { return mInput != nullptr; }
             
         private:
             /*

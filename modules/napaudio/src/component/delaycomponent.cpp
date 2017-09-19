@@ -27,13 +27,7 @@ namespace nap {
         {
             DelayComponent* resource = rtti_cast<DelayComponent>(getComponent());
             
-            AudioComponentInstance* input = rtti_cast<AudioComponentInstance>(resource->mInput.get());
-            if (!input)
-            {
-                errorState.fail("%s: Input is not an audio component", resource->mID.c_str());
-                return false;
-            }
-            
+            AudioComponentInstance* input = resource->mInput.get();
             auto& nodeManager = getNodeManager();
             
             for (auto channel = 0; channel < resource->mInputRouting.size(); ++channel)

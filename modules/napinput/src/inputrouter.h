@@ -48,12 +48,7 @@ namespace nap
 	class NAPAPI DefaultInputRouterComponent : public Component
 	{
 		RTTI_ENABLE(Component)
-
-	public:
-		/**
-		 * @return Instance type to create for this resource.
-		 */
-		virtual const rtti::TypeInfo getInstanceType() const override	{ return RTTI_OF(DefaultInputRouterComponentInstance); }
+		DECLARE_COMPONENT(DefaultInputRouterComponent, DefaultInputRouterComponentInstance)
 	};
 
 

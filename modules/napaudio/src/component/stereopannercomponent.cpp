@@ -24,10 +24,7 @@ namespace nap {
         {
             StereoPannerComponent* resource = rtti_cast<StereoPannerComponent>(getComponent());
             
-            AudioComponentInstance* input = rtti_cast<AudioComponentInstance>(resource->mInput.get());
-            if (!errorState.check(input, "Input is not an audio component"))
-                return false;
-
+            AudioComponentInstance* input = resource->mInput.get();
             auto& nodeManager = getNodeManager();
             stereoPanner = std::make_unique<StereoPanner>(nodeManager);
             stereoPanner->setPanning(resource->mPanning);

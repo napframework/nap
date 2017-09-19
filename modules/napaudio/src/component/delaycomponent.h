@@ -16,29 +16,24 @@ namespace nap {
         
         class NAPAPI DelayComponent : public AudioComponent {
             RTTI_ENABLE(nap::audio::AudioComponent)
+            DECLARE_COMPONENT(DelayComponent, DelayComponentInstance)
+            
         public:
             DelayComponent() : AudioComponent() { }
             
-            // Type to instantiate
-            const rtti::TypeInfo getInstanceType() const override
-            {
-                return RTTI_OF(DelayComponentInstance);
-            }
-
         public:
             // Properties
-            
-            ComponentPtr mInput; /**< The audio component to get the input signal to be panned from */
+            ComponentPtr<AudioComponent> mInput; /**< The audio component to get the input signal to be panned from */
             std::vector<TimeValue> mTime = { 500 };
             ControllerValue mDryWet = 0.5;
             ControllerValue mFeedback = 0.2;
-            std::vector<int> mInputRouting = { 0 };
-            
+            std::vector<int> mInputRouting = { 0 };            
         };
 
         
         class NAPAPI DelayComponentInstance : public AudioComponentInstance {
             RTTI_ENABLE(nap::audio::AudioComponentInstance)
+            
         public:
             DelayComponentInstance(EntityInstance& entity, Component& resource) : AudioComponentInstance(entity, resource) { }
             
