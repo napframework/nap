@@ -96,7 +96,7 @@ namespace nap
 		/**
 		 * @return the interpolated (accurate) value of an attribute along the line based on @location
 		 * This method is more accurate but requires a map that contains the distance along the line for every vertex
-		 * You can acquire this map by calling the @getDistancesAlongLine function
+		 * You can acquire this map by calling the @getDistances function
 		 * @param distanceMap map that contains the distance of every vertex along the line
 		 * @param attr the attribute to get the value for
 		 * @param location the location on the line to get the value for, needs to be within the 0-1 range
@@ -104,6 +104,17 @@ namespace nap
 		 */
 		template<typename T>
 		void getValue(const std::map<float, int>& distanceMap, const VertexAttribute<T>& attr, float location, T& outValue) const;
+
+		/**
+		 * Returns the interpolated normal value along the line, where the normal is correctly interpolated (rotated) based on it's location along the line
+		 * This method is more accurate but requires a distance map that contains the distance of every vertex along the line
+		 * You can acquire this map by calling the @getDistances function
+		 * @param distanceMap the map that containst the distance of every vertex along the line
+		 * @param attr the normal attribute to get the interpolated (rotated) value for
+		 * @param location the location on the line to get the value for, needs to be within the 0-1 range
+		 * @param outValue the interpolated output normal
+		 */
+		void getNormal(const std::map<float, int>& distanceMap, const Vec3VertexAttribute& attr, float location, glm::vec3& outValue) const;
 
 		/**
 		 * Utility function that retrieves the distance along the line for every vertex

@@ -179,8 +179,7 @@ namespace nap
 		void setNumVertices(int numVertices)									{ mProperties.mNumVertices = numVertices; }
 
 		/**
-		 * Sets Draw mode for this mesh
-		 * @param drawMode: OpenGL draw mode.
+		 * @return the total number of vertices associated with this mesh
 		 */
 		int getNumVertices() const												{ return mProperties.mNumVertices; }
 

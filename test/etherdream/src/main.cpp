@@ -63,6 +63,7 @@ nap::ObjectPtr<nap::OSCSender> oscSender = nullptr;
 
 //////////////////////////////////////////////////////////////////////////
 
+
 // Some utilities
 void runGame(nap::Core& core);	
 
@@ -88,6 +89,7 @@ void onUpdate()
 	// Send an osc message
 	nap::OSCEventPtr new_event = std::make_unique<nap::OSCEvent>("/color/1");
 	new_event->addValue<float>(1.0f);
+
 	//oscSender->send(*new_event);
 }
 
@@ -181,6 +183,7 @@ bool init(nap::Core& core)
 		return false;
 	}
 
+
 	// Create osc service
 	oscService = core.getOrCreateService<nap::OSCService>();
 	if (!oscService->init(errorState))
@@ -211,7 +214,6 @@ bool init(nap::Core& core)
 	render_state.mLineWidth = 1.3f;
 	render_state.mPointSize = 2.0f;
 	render_state.mPolygonMode = opengl::PolygonMode::FILL;
-
 
 	return true;
 }

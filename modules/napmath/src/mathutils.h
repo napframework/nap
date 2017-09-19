@@ -81,6 +81,14 @@ namespace nap
 		template<typename T>
 		T min();
 
+		/**
+		 * @return the sign of @value, 1 for values > 0, -1 for values < 0, 0 for values of exactly 0
+		 * @param value the value to get the sign for
+		 */
+		template<typename T>
+		T sign(T value);
+
+
 		//////////////////////////////////////////////////////////////////////////
 		// Template definitions
 		//////////////////////////////////////////////////////////////////////////
@@ -140,6 +148,12 @@ namespace nap
 		T min()
 		{
 			return std::numeric_limits<T>::min();
+		}
+
+		template<typename T>
+		T sign(T value)
+		{
+			return static_cast<T>(value == 0 ? 0 : value > 0 ? 1 : -1);
 		}
 
 		//////////////////////////////////////////////////////////////////////////

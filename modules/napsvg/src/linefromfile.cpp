@@ -320,7 +320,7 @@ namespace nap
 			// Create and initialize new line based on sampled path vertices
 			std::unique_ptr<MeshInstance> new_line = std::make_unique<MeshInstance>();
 
-			if (!initLineFromPath(*new_line, positions, is_closed, error))
+			if (!initLineFromPath(*new_line, positions, normals, uvs, is_closed, error))
 				return false;
 
 			// Add line and increment count
@@ -332,7 +332,7 @@ namespace nap
 	}
 
 
-	bool LineFromFile::initLineFromPath(MeshInstance& line, std::vector<glm::vec3>& pathVertices, bool closed, utility::ErrorState& error)
+	bool LineFromFile::initLineFromPath(MeshInstance& line, std::vector<glm::vec3>& pathVertices, std::vector<glm::vec3>& pathNormals, std::vector<glm::vec3>& pathUvs, bool closed, utility::ErrorState& error)
 	{		
 		PolyLine::createVertexAttributes(line);
 
@@ -350,12 +350,10 @@ namespace nap
 		col_attr.setData(vert_colors);
 
 		// Set normal buffer (todo implement)
-		std::vector<glm::vec3> vert_normals(vertex_count, {0.0f, 0.0f, 0.0f});
-		nor_attr.setData(vert_normals);
+		nor_attr.setData(pathNormals);
 
 		// Set uv buffer (todo implement)
-		std::vector<glm::vec3> vert_uvs(vertex_count, { 0.0f, 0.0f, 0.0f });
-		uvs_attr.setData(vert_uvs);
+		uvs_attr.setData(pathUvs);
 
 		// Update
 		line.setNumVertices(vertex_count);

@@ -125,7 +125,7 @@ namespace nap
 
 			// Get interpolated data
 			current_line.getValue<glm::vec3>(distances, pos_attr, c_inc, positions[i]);
-			current_line.getValue<glm::vec3>(distances, nor_attr, c_inc, normals[i]);
+			current_line.getNormal(distances, nor_attr, c_inc, normals[i]);
 			current_line.getValue<glm::vec3>(distances, uvs_attr, c_inc, uvs[i]);
 		}
 	}

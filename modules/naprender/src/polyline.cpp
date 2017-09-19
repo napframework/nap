@@ -387,6 +387,12 @@ namespace nap
 	}
 
 
+	void PolyLine::getNormal(const std::map<float, int>& distanceMap, const Vec3VertexAttribute& attr, float location, glm::vec3& outValue) const
+	{
+		return math::getNormalAlongLine(distanceMap, attr.getData(), location, outValue);
+	}
+
+
 	float PolyLine::getDistances(std::map<float, int>& outDistances) const
 	{
 		return math::getDistancesAlongLine(getPositionAttr().getData(), outDistances, isClosed());

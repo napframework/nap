@@ -49,14 +49,35 @@ namespace nap
 		float NAPAPI getDistancesAlongLine(const std::vector<glm::vec3>& vertexPositions, std::map<float, int>& outDistances, bool closed);
 
 		/**
+		 * Utility function that returns a normalized blend value between two line vertices based on a position along the line
+		 * @param distanceMap the per vertex line distance map that can be acquired using the @getDistancesAlongLine function
+		 * @param location parametric normalized location along the spline, this value needs to be within the 0-1 range
+		 * @param outMinVertex the lower bound vertex id
+		 * @param outMaxVertex the upper bound vertex id
+		 * @return the blend value between the lower and upper vertex
+		 */
+		float NAPAPI getVertexLerpValue(const std::map<float, int>& distanceMap, float location, int& outMinVertex, int& outMaxVertex);
+
+		/**
 		 * Utility function that returns an interpolated attribute value along a line
 		 * This function is more accurate but requires an extra step to perform the interpolation
 		 * @param distanceMap the per vertex line distance map that can be acquired using the @getDistancesAlongLine function
 		 * @param vertexData the polyline attribute to sample
-		 * @param parametric normalized location along the spline, this value needs to be within the 0-1 range
+		 * @param location parametric normalized location along the spline, this value needs to be within the 0-1 range
 		 */
 		template<typename T>
 		void getValueAlongLine(const std::map<float, int>& distanceMap, const std::vector<T>& vertexData, float location, T& outValue);
+
+		/**
+		 * Utility function that returns the interpolated normal value along a line
+		 * This function accurately blends a normal based on the position of a vertex on the line
+		 * Note that normals with a length of 0 will result in an invalid normal as we can't rotate along a normal with no value
+		 * @param distanceMap the per vertex line distance map that can be acquired using the @getDistancesAlongLine function
+		 * @param vertexData the normal data associated with a line
+		 * @param location parametric normalized location along the spline, this value needs to be within the 0-1 range
+		 * @param outNormal the interpolated normal
+		 */
+		void NAPAPI getNormalAlongLine(const std::map<float, int>& distanceMap, const std::vector<glm::vec3>& vertexNormals, float location, glm::vec3& outNormal);
 
 
 		//////////////////////////////////////////////////////////////////////////
@@ -151,28 +172,12 @@ namespace nap
 		template<typename T>
 		void getValueAlongLine(const std::map<float, int>& distances, const std::vector<T>& vertexData, float location, T& outValue)
 		{
-			// Make sure the sample location if less then or equal to 0
-			assert(location <= 1.0f && location >= 0.0f);
-
-			// Get distance to sample along line
-			float sample_distance = distances.rbegin()->first * location;
-
-			// Get lower and upper bounds (ie, vertices that hold the lower and upper bound
-			auto upper_it = distances.lower_bound(sample_distance);
-			assert(upper_it != distances.end());
-
-			// If the upper bound is the first vertex, wrap it
-			auto lower_it = upper_it;
-			if (lower_it == distances.begin())
-				lower_it = distances.end();
-			--lower_it;
-
-			// Get the interpolation value between the two vertices
-			float lerp_v = math::fit<float>(sample_distance, lower_it->first, upper_it->first, 0.0f, 1.0f);
+			int vert_min, vert_max;
+			float lerp_v = getVertexLerpValue(distances, location, vert_min, vert_max);
 
 			// Get the values to interpolate
-			const T& lower_value = vertexData[lower_it->second];
-			const T& upper_value = vertexData[upper_it->second];
+			const T& lower_value = vertexData[vert_min];
+			const T& upper_value = vertexData[vert_max];
 
 			outValue = math::lerp<T>(lower_value, upper_value, lerp_v);
 		}

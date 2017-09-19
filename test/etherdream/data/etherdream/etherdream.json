@@ -51,13 +51,13 @@
 		{
 			"Type" : "nap::LineFromFile",
 			"mID": "LineFromFileMesh",
-			"File" : "./data/etherdream/nano.svg",
+			"File" : "./data/etherdream/swirl.svg",
 			"Tolerance" : 0.1,
 			"Units" : "mm",
 			"Normalize" : true,
-			"Scale" : 1.0,
+			"Scale" : 2.0,
 			"FlipVertical" : true,
-			"LineIndex" : 1
+			"LineIndex" : 0
 		},
 
 		{
@@ -285,7 +285,7 @@
 						"HexagonMesh",
 						"TriangleMesh"
 					],
-					"Index" : 0
+					"Index" : 1
 				},
 				{
 					"Type" : "nap::LineSelectionComponent",
@@ -299,7 +299,7 @@
 						"HexagonMesh",
 						"TriangleMesh"
 					],
-					"Index" : 0
+					"Index" : 1
 				},
 				{
 					"Type" : "nap::OSCInputComponent",
@@ -356,6 +356,19 @@
 					"Target" : "LaserLineMesh",
 					"BlendValue" : 0.0,
 					"BlendSpeed" : 0.0
+				},
+				{
+					"Type" : "nap::LineModulationComponent",
+					"mID" : "LineModulator",
+					"BlendComponent" : "LineBlender",
+					"Properties" : 
+					{
+						"Frequency" : 2.0,
+						"Speed" : 0.5,
+						"Offset" : 0.0,
+						"Amplitude" : 0.1,
+						"Waveform" : "Sine"
+					}
 				},
 				{
 					"Type" : "nap::LineColorComponent",
