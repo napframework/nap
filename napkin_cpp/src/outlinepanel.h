@@ -10,7 +10,8 @@ namespace nap { namespace rtti { class RTTIObject; }}
 
 class GroupItem : public QStandardItem {
 public:
-    GroupItem(const QString& name) : QStandardItem(name) {}
+    GroupItem(const QString& name) : QStandardItem(name)
+    {}
 };
 
 class ObjectItem : public QStandardItem {
@@ -19,7 +20,8 @@ public:
 
     void refresh();
 
-    nap::rtti::RTTIObject& object() const { return mObject; }
+    nap::rtti::RTTIObject& object() const
+    { return mObject; }
 
     virtual const QString name() const;
 
@@ -39,30 +41,32 @@ protected:
 
 class EntityItem : public ObjectItem {
 public:
-    EntityItem(nap::Entity& entity) : ObjectItem(entity) {}
+    EntityItem(nap::Entity& entity) : ObjectItem(entity)
+    {}
 
-    nap::Entity& entity() { return static_cast<nap::Entity&>(mObject); }
+    nap::Entity& entity()
+    { return static_cast<nap::Entity&>(mObject); }
 };
 
 class ComponentItem : public ObjectItem {
 public:
-    ComponentItem(nap::Component& comp) : ObjectItem(comp) {}
+    ComponentItem(nap::Component& comp) : ObjectItem(comp)
+    {}
 
-    nap::Component& component() { return static_cast<nap::Component&>(mObject); }
+    nap::Component& component()
+    { return static_cast<nap::Component&>(mObject); }
 };
 
 
 class OutlineModel : public QStandardItemModel {
 public:
     OutlineModel();
-
-
     void refresh();
 
 };
 
 class OutlinePanel : public QWidget {
-    Q_OBJECT
+Q_OBJECT
 public:
     OutlinePanel();
 
@@ -71,7 +75,9 @@ signals:
 
 private:
     void onFileOpened(const QString& filename);
-    void onSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
+
+    void onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
+
 private:
     QVBoxLayout mLayout;
     OutlineModel mModel;

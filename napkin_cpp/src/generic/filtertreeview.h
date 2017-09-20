@@ -17,21 +17,35 @@ class FilterTreeView : public QWidget {
 public:
     FilterTreeView();
 
-    void setModel(QStandardItemModel *model);
-    QStandardItemModel *model();
-    QTreeView& tree() { return treeView; }
-    QStandardItem *selectedItem();
-    QList<QStandardItem *> selectedItems();
-    QItemSelectionModel *selectionModel() { return treeView.selectionModel(); }
+    void setModel(QStandardItemModel* model);
+
+    QStandardItemModel* model();
+
+    QTreeView& tree()
+    { return treeView; }
+
+    QStandardItem* selectedItem();
+
+    QList<QStandardItem*> selectedItems();
+
+    QItemSelectionModel* selectionModel()
+    { return treeView.selectionModel(); }
+
     QList<QModelIndex> selectedIndexes();
 
 protected:
     void onFilterChanged(const QString& text);
-    void onExpandSelected();
-    void onCollapseSelected();
-    static void expandChildren(QTreeView *view, const QModelIndex& idx, bool expanded);
 
-private:
+    void onExpandSelected();
+
+    void onCollapseSelected();
+
+    /**
+     * @see QWidget::customContextMenuRequested
+     */
+    void onCustomContextMenuRequested(const QPoint& pos);
+
+    static void expandChildren(QTreeView* view, const QModelIndex& idx, bool expanded);
 
 private:
     QVBoxLayout layout;

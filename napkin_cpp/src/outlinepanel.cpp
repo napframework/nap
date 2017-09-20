@@ -70,7 +70,6 @@ OutlinePanel::OutlinePanel() {
     connect(&AppContext::get(), &AppContext::fileOpened, this, &OutlinePanel::onFileOpened);
     connect(mTreeView.selectionModel(), &QItemSelectionModel::selectionChanged, this,
             &OutlinePanel::onSelectionChanged);
-
 }
 
 void OutlinePanel::onFileOpened(const QString& filename) {

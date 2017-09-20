@@ -1,6 +1,6 @@
 #include "filtertreeview.h"
 #include <QTimer>
-#include <nap/logger.h>
+#include <QMenu>
 
 FilterTreeView::FilterTreeView() {
     layout.setContentsMargins(0, 0, 0, 0);
@@ -19,12 +19,8 @@ FilterTreeView::FilterTreeView() {
 
     layout.addWidget(&treeView);
 
-    setContextMenuPolicy(Qt::ActionsContextMenu);
-
-    actionExpandAll.setText("Expand All");
-    addAction(&actionExpandAll);
-    actionCollapseAll.setText("Collapse");
-    addAction(&actionCollapseAll);
+    setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(this, &QWidget::customContextMenuRequested, this, &FilterTreeView::onCustomContextMenuRequested);
 }
 
 void FilterTreeView::setModel(QStandardItemModel* model) {
@@ -83,5 +79,17 @@ void FilterTreeView::expandChildren(QTreeView* view, const QModelIndex& idx, boo
         view->expand(idx);
     else if (view->isExpanded(idx))
         view->collapse(idx);
+}
+
+void FilterTreeView::onCustomContextMenuRequested(const QPoint& pos)
+{
+    QMenu menu;
+
+    actionExpandAll.setText("Expand All");
+    menu.addAction(&actionExpandAll);
+    actionCollapseAll.setText("Collapse");
+    menu.addAction(&actionCollapseAll);
+
+    menu.exec(mapToGlobal(pos));
 }
 
