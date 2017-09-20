@@ -60,7 +60,7 @@ namespace nap
 	{
 		for (auto& component : mComponents)
 			if (isTypeMatch(component->get_type(), type, typeCheck))
-				components.push_back(component.get());
+				components.emplace_back(component.get());
 	}
 
 
@@ -92,7 +92,7 @@ namespace nap
 	{
 		assert(child.mParent == nullptr);
 		child.mParent = this;
-		mChildren.push_back(&child);
+		mChildren.emplace_back(&child);
 	}
 
 

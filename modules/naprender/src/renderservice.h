@@ -94,13 +94,14 @@ namespace nap
 
 		/**
 		* Creates a handle to a VertexArrayObject given a material-mesh combination. Internally the RenderService holds a map of VAOs for such
-		* combinations, and it hands out handles to the VAOs that are stored internally. The handle will release itself on destruction.
+		* combinations, and it hands out reference counted handles to the VAOs that are stored internally. When the refcount of the handle reaches 
+		* zero, the VAO is removed from the RenderService's map and it will be queued for destruction.
 		* @param material: Material to acquire the VAO for.
 		* @param meshResource: mesh to acquire the VAO for.
 		* @errorstate: in case it was not possible to create a VAO for this combination of material and mesh, this will hold error information.
 		* @return On success, this will hold a pointer to the handle, on failure this will return nullptr (check errorState for details).
 		*/
-		std::unique_ptr<VAOHandle> acquireVertexArrayObject(const Material& material, const IMesh& meshResource, utility::ErrorState& errorState);
+		VAOHandle acquireVertexArrayObject(const Material& material, const IMesh& mesh, utility::ErrorState& errorState);
 
 		/**
 		 * Add a new window for the specified resource
@@ -151,12 +152,16 @@ namespace nap
     private:
 		friend class VAOHandle;
 
-	
+		/**
+		 * Called by VAOHandle when copied/instantiated.
+		 */
+		void incrementVAORefCount(const VAOKey& key);
+
 		/**
 		* Called by VAOHandle on destruction, decreases refcount and queues VAO for destruction
 		* if refcount hits zero.
 		*/
-		void releaseVertexArrayObject(opengl::VertexArrayObject* vao);
+		void decrementVAORefCount(const VAOKey& key);
 
 		/**
 		 * Holds the currently active renderer
@@ -177,16 +182,16 @@ namespace nap
 		std::vector<std::unique_ptr<opengl::IGLContextResource>> mGLContextResourcesToDestroy;	///< Array of per-context GL resources scheduled for destruction
 
 		/**
-		* Helper struct to refcount opengl VAOs.
-		*/
+		 * Helper struct to refcount opengl VAOs.
+		 */
 		struct RefCountedVAO final
 		{
 			std::unique_ptr<opengl::VertexArrayObject> mObject;
-			int mRefCount = 1;
+			int mRefCount = 0;
 		};
 
 		using VAOMap = std::unordered_map<VAOKey, RefCountedVAO>;
-		VAOMap mVAOMap;												///< Map from material-mesh combiantion to opengl VAO
+		VAOMap mVAOMap;												///< Map from material-mesh combination to opengl VAO
 		
 		WindowList mWindows;
 	};

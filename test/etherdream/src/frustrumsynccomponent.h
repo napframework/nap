@@ -18,12 +18,9 @@ namespace nap
 	class FrustrumSyncComponent : public Component
 	{
 		RTTI_ENABLE(Component)
-	public:
-		virtual const rtti::TypeInfo getInstanceType() const override
-		{
-			return RTTI_OF(FrustrumSyncComponentInstance);
-		}
+		DECLARE_COMPONENT(FrustrumSyncComponent, FrustrumSyncComponentInstance)
 
+	public:
 		/**
 		* Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
 		*/

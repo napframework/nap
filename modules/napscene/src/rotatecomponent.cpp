@@ -56,4 +56,9 @@ namespace nap
 		mTransform->setRotate(new_ror);
 	}
 
+
+	void RotateComponentInstance::reset()
+	{
+		mElapsedTime = 0.0f;
+	}
 }

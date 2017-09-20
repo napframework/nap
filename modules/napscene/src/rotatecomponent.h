@@ -28,12 +28,8 @@ namespace nap
 	class NAPAPI RotateComponent : public Component
 	{
 		RTTI_ENABLE(Component)
+		DECLARE_COMPONENT(RotateComponent, RotateComponentInstance)
 	public:
-		virtual const rtti::TypeInfo getInstanceType() const override
-		{
-			return RTTI_OF(RotateComponentInstance);
-		}
-
 		/**
 		* Uses transform to rotate itself in the world.
 		*/
@@ -76,6 +72,11 @@ namespace nap
 		 * @param deltaTime time it took to complete last cook (seconds)
 		 */
 		virtual void update(double deltaTime) override;
+
+		/**
+		* Resets rotation to be 0
+		*/
+		void reset();
 
 		// Rotation properties
 		RotateProperties mProperties;

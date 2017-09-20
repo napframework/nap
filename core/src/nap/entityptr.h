@@ -7,7 +7,7 @@ namespace nap
 	class Entity;
 	class EntityInstance;
 
-	using EntityPtr = InstancePtr<Entity, EntityInstance>;
+	using EntityPtr = InstancePtr<Entity, EntityInstance, InstancePtrBase>;
 }
 
 /**
@@ -23,7 +23,7 @@ namespace rttr
 		
 		inline static wrapped_type get(const type& obj)
 		{
-			return obj.getResource();
+			return obj.getResource().get();
 		}
 
 		inline static type create(const wrapped_type& value)

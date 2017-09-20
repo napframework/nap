@@ -1,5 +1,5 @@
 #include "spheremesh.h"
-#include "math.h"
+#include <cmath>
 #include "mesh.h"
 #include "material.h"
 #include <glm/glm.hpp>

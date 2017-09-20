@@ -215,7 +215,7 @@ namespace nap
 				if (resolved_path.getType() == RTTI_OF(EntityPtr))
 				{
 					EntityPtr entity_ptr = resolved_path.getValue().convert<EntityPtr>();
-					nap::Entity* target_entity_resource = entity_ptr.getResource();
+					nap::Entity* target_entity_resource = entity_ptr.getResource().get();
 
 					// Skip null targets
 					if (target_entity_resource == nullptr)
@@ -230,10 +230,10 @@ namespace nap
 						pointees.push_back(item);
 					}
 				}
-				else if (resolved_path.getType() == RTTI_OF(ComponentPtr))
+				else if (resolved_path.getType().is_derived_from(RTTI_OF(ComponentPtrBase)))
 				{
-					ComponentPtr component_ptr = resolved_path.getValue().convert<ComponentPtr>();
-					nap::Component* target_component_resource = component_ptr.getResource();
+					ComponentPtrBase component_ptr = resolved_path.getValue().convert<ComponentPtrBase>();
+					nap::Component* target_component_resource = rtti_cast<Component>(component_ptr.getResource().get());
 
 					// Skip null targets
 					if (target_component_resource == nullptr)
@@ -485,14 +485,26 @@ namespace nap
 	}
 
 
+	/**
+	 * This function resolves pointers in a ComponentResource of the types EntityPtr and ComponentPtr. Although the RTTI resource pointers in EntityPtr
+	 * and ComponentPtr have already been resolved by the regular RTTI pointer resolving step, this step is meant explicitly to resolve pointers
+	 * to instances that are stored internally in the ComponentPtr and EntityPtr.
+	 * The resolving step of entities and components is more difficult than regular objects, as the entity/component structure is mirrored into
+	 * a resource structure (the static objects from json) and instances (the runtime counterpart of the resources). EntityPtr and ComponentPtr
+	 * are pointers that live on the resource object as the resources need to specify what other resource they are pointing to. However, the
+	 * instantiated object often needs to point to other instantiated objects. In this function, we fill in the instance pointers in EntityPtr and 
+	 * ComponentPtr, so that the instance can get to the instance pointer through it's resource.
+	 */
 	bool ResourceManagerService::sResolveComponentPointers(EntityCreationParameters& entityCreationParams, std::unordered_map<Component*, ComponentInstance*>& newComponentInstances, utility::ErrorState& errorState)
 	{
-		// We go over all components and resolve all Entity & Component pointers
+		// We go over all component instances and resolve all Entity & Component pointers
 		for (auto kvp : newComponentInstances)
 		{
 			ComponentInstance* source_component_instance = kvp.second;
 			Component* source_component_resource = kvp.first;
 
+			// Iterate over all the pointers in the component resource. Note that findObjectLinks returns *all* types of pointers on the object, 
+			// but we're only interested in EntityPtrs and ComponentPtrs since other pointers will have been resolved during the load.
 			std::vector<rtti::ObjectLink> links;
 			rtti::findObjectLinks(*source_component_resource, links);
 
@@ -502,10 +514,11 @@ namespace nap
 				if (!errorState.check(link.mSourcePath.resolve(source_component_resource, resolved_path), "Encountered link from object %s that could not be resolved: %s", source_component_resource->mID.c_str(), link.mSourcePath.toString().c_str()))
 					return false;
 
+				// Resolve EntityPtr
 				if (resolved_path.getType() == RTTI_OF(EntityPtr))
 				{
 					EntityPtr entity_ptr = resolved_path.getValue().convert<EntityPtr>();
-					nap::Entity* target_entity_resource = entity_ptr.getResource();
+					nap::Entity* target_entity_resource = entity_ptr.getResource().get();
 
 					// Skip null targets
 					if (target_entity_resource == nullptr)
@@ -522,16 +535,26 @@ namespace nap
 
 					resolved_path.setValue(entity_ptr);
 				}
-				else if (resolved_path.getType() == RTTI_OF(ComponentPtr))
+				else if (resolved_path.getType().is_derived_from(RTTI_OF(ComponentPtrBase)))
 				{
-					ComponentPtr component_ptr = resolved_path.getValue().convert<ComponentPtr>();
-					nap::Component* target_component_resource = component_ptr.getResource();
+					// RTTR does not correctly support casting between base/derived types (in both directions), if one of the types is a 'wrapper' type (i.e. ComponentPtr) and the other is not (i.e. ComponentPtrBase)
+					// So, while we can get the value of the pointer as a ComponentPtrBase, RTTR can no longer convert back to the specific ComponentPtr<T> that is used in order to set the value on the property again.
+					//
+					// To work around this we use the get_value function on the rtti::Variant we get back from getValue. This function gives you back a *const ref* to the value stored *inside* of the variant (not the original memory location)
+					// So, if we can modify that const ref, we're *actually* modifying the value stored inside the variant, which means the variant always stays of the correct type (ComponentPtr<T>), which means we can
+					// re-use that same variant to call setValue again. However, since get_value returns a *const ref*, we need to cast the constness aways, since we want to fill in the instance pointer.
+					rtti::Variant value = resolved_path.getValue();
+					ComponentPtrBase& component_ptr = const_cast<ComponentPtrBase&>(value.get_value<ComponentPtrBase>());
+
+					nap::Component* target_component_resource = rtti_cast<Component>(component_ptr.getResource().get());
 
 					// Skip null targets
 					if (target_component_resource == nullptr)
 						continue;
 
-					// Find the entity resource of the target
+					// We have the component resource, now we need to find the entity resource. We do this so we can compare entities. If the target component has the same
+					// entity, the target component is a sibling of our component. The reason that we check this is because we can support pointers to sibling components
+					// regardless whether the entity is manually spawned or auto spawned.
 					EntityCreationParameters::ComponentToEntityMap::iterator target_entity_pos = entityCreationParams.mComponentToEntity.find(target_component_resource);
 					assert(target_entity_pos != entityCreationParams.mComponentToEntity.end());
 					const nap::Entity* target_component_entity = target_entity_pos->second;
@@ -540,7 +563,7 @@ namespace nap
 					EntityInstance* source_entity = source_component_instance->getEntityInstance();
 					if (source_entity->getEntity() == target_component_entity)
 					{
-						// Find ComponentInstance with matching resource
+						// Find ComponentInstance with matching component resource
 						for (ComponentInstance* target_component_instance : source_entity->getComponents())
 						{
 							if (target_component_instance->getComponent() == target_component_resource)
@@ -568,7 +591,7 @@ namespace nap
 					}
 
 					// Set value back to source
-					resolved_path.setValue(component_ptr);
+					resolved_path.setValue(value);
 				}
 			}
 		}

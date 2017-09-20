@@ -7,9 +7,12 @@
 
 namespace nap
 {
-	class NAPAPI RenderableComponentResource : public Component
+	class RenderableComponentInstance;
+
+	class NAPAPI RenderableComponent : public Component
 	{
 		RTTI_ENABLE(Component)
+		DECLARE_COMPONENT(RenderableComponent, RenderableComponentInstance)
 	};
 
 	/**

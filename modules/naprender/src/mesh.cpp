@@ -90,8 +90,8 @@ namespace nap
 		// Check for mismatches in sizes
 		for (auto& mesh_attribute : mProperties.mAttributes)
 		{
-			if (!errorState.check(mesh_attribute->getNumElements() == mProperties.mNumVertices,
-					"Vertex attribute %s has a different amount of elements (%d) than the mesh (%d)", mesh_attribute->mAttributeID.c_str(), mesh_attribute->getNumElements(), mProperties.mNumVertices))
+			if (!errorState.check(mesh_attribute->getCount() == mProperties.mNumVertices,
+					"Vertex attribute %s has a different amount of elements (%d) than the mesh (%d)", mesh_attribute->mAttributeID.c_str(), mesh_attribute->getCount(), mProperties.mNumVertices))
 			{
 				return false;
 			}

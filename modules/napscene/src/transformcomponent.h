@@ -31,15 +31,7 @@ namespace nap
 	class NAPAPI TransformComponent : public Component
 	{
 		RTTI_ENABLE(Component)
-	
-	public:
-		/**
-		 * Get the type of ComponentInstance to create
-		 */
-		virtual const rtti::TypeInfo getInstanceType() const override
-		{ 
-			return RTTI_OF(TransformComponentInstance); 
-		}
+		DECLARE_COMPONENT(TransformComponent, TransformComponentInstance)
 
 	public:
 		TransformProperties mProperties;

@@ -16,14 +16,7 @@ namespace nap
 	class SlideShowComponent : public Component
 	{
 		RTTI_ENABLE(Component)
-
-		/**
-		 * @return Instance type to create for this resource.
-		 */
-		virtual const rtti::TypeInfo getInstanceType() const
-		{
-			return RTTI_OF(SlideShowComponentInstance);
-		}
+		DECLARE_COMPONENT(SlideShowComponent, SlideShowComponentInstance)
 
 	public:
  		std::vector<ObjectPtr<nap::Image>>		mImages;			///< Array of images to display in the slidesho2

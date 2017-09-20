@@ -16,6 +16,10 @@ if (MSVC)
 endif()
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
+if(MSVC)
+	target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX)
+endif()
+
 target_include_directories(${PROJECT_NAME} PUBLIC src)
 target_link_libraries(${PROJECT_NAME} naputility naprtti)
 

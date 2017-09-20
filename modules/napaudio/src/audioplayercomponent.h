@@ -26,17 +26,12 @@ namespace nap {
          */
         class NAPAPI AudioPlayerComponent : public nap::Component
         {
-            RTTI_ENABLE(nap::Component)
+			RTTI_ENABLE(Component)
+            DECLARE_COMPONENT(AudioPlayerComponent, AudioPlayerComponentInstance)
             
         public:
-            AudioPlayerComponent() : nap::Component() { }
-            
-            // Type to instantiate
-            const rtti::TypeInfo getInstanceType() const override
-            {
-                return RTTI_OF(AudioPlayerComponentInstance);
-            }
-            
+            AudioPlayerComponent() : nap::Component() { }            
+              
         public:
             // Properties
             /**
