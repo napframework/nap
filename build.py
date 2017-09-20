@@ -82,22 +82,20 @@ def main(targets):
     # install osx / linux specific dependendies
     installDependencies()
 
+    # clear build directory when a clean build is required
+    print(CLEAN_BUILD)
+    if CLEAN_BUILD and os.path.exists(BUILD_DIR):
+        shutil.rmtree(BUILD_DIR)
+
     # generate solutions
     if platform in ["linux", "linux2"]:
         call(WORKING_DIR, ['cmake', '-H.', '-B%s' % BUILD_DIR])
     elif platform == 'darwin':
         call(WORKING_DIR, ['cmake', '-H.', '-B%s' % BUILD_DIR, '-G', 'Xcode'])
     else:
-        bd = '%s/%s' % (WORKING_DIR, BUILD_DIR)
-
-        # clear build directory when a clean build is required
-        print(CLEAN_BUILD)
-        if CLEAN_BUILD and os.path.exists(bd):
-            shutil.rmtree(bd)
-
         # create dir if it doesn't exist
-        if not os.path.exists(bd):
-            os.makedirs(bd)
+        if not os.path.exists(BUILD_DIR):
+            os.makedirs(BUILD_DIR)
 
         # generate prject
         call(WORKING_DIR, ['cmake', '-H.','-B%s' % BUILD_DIR,'-G', 'Visual Studio 14 2015 Win64', '-DPYBIND11_PYTHON_VERSION=3.5'])
