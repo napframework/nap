@@ -131,20 +131,16 @@
 					"ShaderAttributeID": "in_UV1"
 				},
 				{
-					"MeshAttributeID": "Color0",
-					"ShaderAttributeID": "in_Color0"
-				},
-				{
 					"MeshAttributeID": "Normal",
 					"ShaderAttributeID": "in_Normals"
 				}
 			],
-			"Uniforms" : 
+			"Uniforms" :
 			[
 				{
 					"Type" : "nap::UniformVec3",
 					"Name" : "recordColor",
-					"Value" : 
+					"Value" :
 					{
 						"x" : 0.0,
 						"y" : 0.0,
@@ -226,18 +222,14 @@
 				{
 					"MeshAttributeID": "Normal",
 					"ShaderAttributeID": "in_Normals"
-				},
-				{
-					"MeshAttributeID": "Color0",
-					"ShaderAttributeID": "in_Color0"
 				}
 			],
-			"Uniforms" : 
+			"Uniforms" :
 			[
 				{
 					"Type" : "nap::UniformVec3",
 					"Name" : "lightPosition",
-					"Value" : 
+					"Value" :
 					{
 						"x" : 1.0,
 						"y" : 2.5,
@@ -354,13 +346,13 @@
 			[
 				"VinylEntity",
 				"CoverEntity"
-			] 
+			]
 		},
-		
+
 		{
 			"Type" : "nap::Entity",
 			"mID": "VinylEntity",
-			"Components" : 
+			"Components" :
 			[
 				{
 					"Type" : "nap::RenderableMeshComponent",
@@ -368,7 +360,7 @@
 					"MaterialInstance" : {
 						"Material": "VinylMaterial",
 						"BlendMode": "Opaque",
-						"Uniforms" : 
+						"Uniforms" :
 						[
 							{
 								"Type" : "nap::UniformTexture2D",
@@ -407,7 +399,7 @@
 							"z": 1.0
 						},
 						"UniformScale": 0.1
-					}	
+					}
 				},
 				{
 					"Type" : "nap::RotateComponent",
@@ -427,7 +419,7 @@
 		{
 			"Type" : "nap::Entity",
 			"mID": "CoverEntity",
-			"Components" : 
+			"Components" :
 			[
 				{
 					"Type" : "nap::RenderableMeshComponent",
@@ -435,7 +427,7 @@
 					"MaterialInstance" : {
 						"Material": "CoverMaterial",
 						"BlendMode": "Opaque",
-						"Uniforms" : 
+						"Uniforms" :
 						[
 							{
 								"Type" : "nap::UniformTexture2D",
@@ -465,14 +457,14 @@
 						},
 						"UniformScale": 0.1
 					}
-				}		
+				}
 			]
 		},
-		
+
 		{
 			"Type" : "nap::Entity",
 			"mID": "BackgroundEntity",
-			"Components" : 
+			"Components" :
 			[
 				{
 					"Type" : "nap::RenderableMeshComponent",
@@ -481,7 +473,7 @@
 						"Material": "BackgroundMaterial",
 						"BlendMode": "Opaque",
 						"DepthMode" : "ReadOnly",
-						"Uniforms" : 
+						"Uniforms" :
 						[
 							{
 								"Type" : "nap::UniformTexture2D",
@@ -494,7 +486,7 @@
 								"Value": 1.0
 							}
 						]
-					}		
+					}
 				},
 				{
 					"Type" : "nap::TransformComponent",
@@ -523,7 +515,7 @@
 		{
 			"Type" : "nap::Entity",
 			"mID": "CameraEntity",
-			"Components" : 
+			"Components" :
 			[
 				{
 					"Type" : "nap::PerspCameraComponent",
@@ -558,7 +550,7 @@
 							"y": 1.0,
 							"z": 1.0
 						},
-						"UniformScale": 1.0						
+						"UniformScale": 1.0
 					}
 				}
 			]

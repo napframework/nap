@@ -1,6 +1,5 @@
 #version 150 core
 
-in vec4 pass_Color;
 in vec3 pass_Uvs0;			// The global vinyl uvs
 in vec3 pass_Uvs1;			// The label uvs
 in vec3 pass_Normals;		// Normals
@@ -66,7 +65,7 @@ void main(void)
 	//attenuation based on light distance
     float distanceToLight = length(lightPosition - frag_position);
     float attenuation = 1.0 / (1.0 + attenuationScale * pow(distanceToLight, 2));
-	
+
 	//linear color (color before gamma correction)
     vec3 linearColor = ambient + attenuation*(diffuse + specular);
 
