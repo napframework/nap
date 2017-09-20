@@ -107,7 +107,7 @@ def main(targets):
     # build_targets.append("hello")
 
     for t in targets:
-        # osc / linux
+        # osx / linux
         if platform in ["linux", "linux2", "darwin"]:
             d = '%s/%s' % (WORKING_DIR, BUILD_DIR)
             call(d, ['make', t, '-j%s' % cpu_count()])
