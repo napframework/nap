@@ -83,11 +83,13 @@ def main(targets):
     installDependencies()
 
     # generate solutions
-    if platform in ["linux", "linux2", "darwin"]:
+    if platform in ["linux", "linux2"]:
         call(WORKING_DIR, ['cmake', '-H.', '-B%s' % BUILD_DIR])
+    elif platform == 'darwin':
+        call(WORKING_DIR, ['cmake', '-H.', '-B%s' % BUILD_DIR, '-G', 'Xcode'])
     else:
         bd = '%s/%s' % (WORKING_DIR, BUILD_DIR)
-        
+
         # clear build directory when a clean build is required
         print(CLEAN_BUILD)
         if CLEAN_BUILD and os.path.exists(bd):
@@ -108,9 +110,12 @@ def main(targets):
 
     for t in targets:
         # osx / linux
-        if platform in ["linux", "linux2", "darwin"]:
+        if platform in ["linux", "linux2"]:
             d = '%s/%s' % (WORKING_DIR, BUILD_DIR)
             call(d, ['make', t, '-j%s' % cpu_count()])
+        elif platform == 'darwin':
+            d = '%s/%s' % (WORKING_DIR, BUILD_DIR)
+            call(d, ['xcodebuild', '-project', 'Project.xcodeproj', '-target', t, '-configuration', 'Debug'])
         # windows
         else:
             d = WORKING_DIR

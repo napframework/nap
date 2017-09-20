@@ -175,9 +175,9 @@ macro(export_fbx SRCDIR)
     endif()
 
     add_custom_command(TARGET ${PROJECT_NAME}
-            POST_BUILD
-            COMMAND "$<TARGET_FILE_DIR:${PROJECT_NAME}>/${FBXCONVERTER_BIN}" -o ${SRCDIR} "${SRCDIR}/*.fbx"
-            COMMENT "Export FBX in '${SRCDIR}'")
+        POST_BUILD
+        COMMAND "$<TARGET_FILE_DIR:${PROJECT_NAME}>/${FBXCONVERTER_BIN}" -o ${SRCDIR} "${SRCDIR}/*.fbx"
+        COMMENT "Export FBX in '${SRCDIR}'")
 endmacro()
 
 macro(copy_dir_to_bin SRCDIR DSTDIR)
@@ -190,9 +190,9 @@ endmacro()
 macro(copy_files_to_bin)
     foreach(F ${ARGN})
         add_custom_command(TARGET ${PROJECT_NAME}
-                POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy "${F}" "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
-                COMMENT "Copy ${F} -> $<TARGET_FILE_DIR:${PROJECT_NAME}>")
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy "${F}" "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+            COMMENT "Copy ${F} -> $<TARGET_FILE_DIR:${PROJECT_NAME}>")
     endforeach()
 endmacro()
 
