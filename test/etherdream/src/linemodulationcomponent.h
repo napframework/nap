@@ -22,6 +22,7 @@ namespace nap
 		float mSpeed = 0.0f;								// Speed in seconds to move the waveform
 		float mOffset = 0.0f;								// Offset along the line
 		float mAmplitude = 1.0f;							// Amplitude of the modulation
+		bool  mNormalize = false;							// Normalizes modulation frequency along the spline (0-1)
 		math::EWaveform mWaveform = math::EWaveform::SINE;	// Type of modulation
 	};
 

@@ -11,6 +11,7 @@ RTTI_BEGIN_CLASS(nap::ModulationProperties)
 	RTTI_PROPERTY("Offset",				&nap::ModulationProperties::mOffset,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Amplitude",			&nap::ModulationProperties::mAmplitude,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Waveform",			&nap::ModulationProperties::mWaveform,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Normalize",			&nap::ModulationProperties::mNormalize,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::LineModulationComponent)
@@ -39,37 +40,32 @@ namespace nap
 
 	void LineModulationComponentInstance::update(double deltaTime)
 	{
-		mCurrentTime += (deltaTime * mProperties.mSpeed);
-
-		// Figure out final offset
-		float offset = 1.0f - fmod(mCurrentTime + math::clamp<float>(mProperties.mOffset, 0.0f, 1.0f), 1.0f);
+		mCurrentTime -= (deltaTime * mProperties.mSpeed);
 
 		// Fetch spline
 		PolyLine& spline = mBlendComponent->getLine();
-		int vert_count = spline.getMeshInstance().getNumVertices();
 
-		// Get current frequency
-		float curr_freq = mProperties.mFrequency;
-		float curr_ampl = mProperties.mAmplitude;
+		// Get distance of current line
+		std::map<float, int> distance_map;
+		float length = spline.getDistances(distance_map);
 
-		// Get the normals
+		// Get the normals and vertices to manipulate
 		const std::vector<glm::vec3>& normals = spline.getNormalAttr().getData();
 		std::vector<glm::vec3>& vertices = spline.getPositionAttr().getData();
 
-		for (int i = 0; i < vert_count; i++)
+		// Calculate offset value based on time and personal offset
+		float offset = mProperties.mNormalize ? mProperties.mOffset : length * mProperties.mOffset;
+		offset = offset + mCurrentTime;
+
+		for (auto& dist : distance_map)
 		{
-			// Get normal for point
-			const glm::vec3& normal = normals[i];
-			glm::vec3& vertex = vertices[i];
-
-			// Get floating point index
-			float sample_index = fmod((offset / curr_freq) + (static_cast<float>(i) / static_cast<float>(vert_count)), 1.0f);
-
-			// Get data based on lfo type
-			float wave_value = math::fit<float>(math::waveform(mProperties.mWaveform, sample_index, curr_freq), 0.0f, 1.0f, -1.0f, 1.0f) * curr_ampl;
-
-			// Displace vert along normal
-			vertex += (normal * wave_value);
+			// Get time (t) value for wave form. If the frequencies are normalized a frequency of 1 
+			// means 1 modulation over the entire spline, no matter how long the line is. Otherwise
+			// modulation frequency is based on the length of the line
+			float t = mProperties.mNormalize ? (dist.first / length) + offset : dist.first + offset;
+			float wave_value = math::waveform(mProperties.mWaveform, t, mProperties.mFrequency);
+			wave_value = math::fit<float>(wave_value, 0.0f, 1.0f, -1.0f, 1.0f) * mProperties.mAmplitude;
+			vertices[dist.second] += (normals[dist.second] * wave_value);
 		}
 	}
 

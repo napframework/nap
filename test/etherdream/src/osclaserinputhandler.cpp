@@ -255,7 +255,7 @@ namespace nap
 		switch (index)
 		{
 		case 0:
-			mModulationComponent->mProperties.mFrequency = math::fit<float>(math::power<float>(v,3.0f), 0.0f, 1.0f, 1.0f, 20.0f);
+			mModulationComponent->mProperties.mFrequency = math::fit<float>(math::power<float>(v,3.0f), 0.0f, 1.0f, 0.0f, 20.0f);
 			break;
 		case 1:
 			mModulationComponent->mProperties.mSpeed = v;

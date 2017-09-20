@@ -31,13 +31,13 @@ namespace nap
 
 		static float sawWave(float time, float frequency)
 		{
-			return fmod(time, (1.0f / frequency)) * (1.0f / (1.0f / frequency));
+			return fmod(abs(time), (1.0f / frequency)) * (1.0f / (1.0f / frequency));
 		}
 
 
 		float triangleWave(float time, float frequency)
 		{
-			return abs(fmod((time *  frequency * 2.0f), 2.0f) - 1.0f);
+			return abs(fmod((abs(time) *  frequency * 2.0f), 2.0f) - 1.0f);
 		}
 
 

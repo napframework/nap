@@ -329,7 +329,7 @@
 						"HexagonMesh",
 						"TriangleMesh"
 					],
-					"Index" : 1
+					"Index" : 3
 				},
 				{
 					"Type" : "nap::LineSelectionComponent",
@@ -343,7 +343,7 @@
 						"HexagonMesh",
 						"TriangleMesh"
 					],
-					"Index" : 1
+					"Index" : 0
 				},
 				{
 					"Type" : "nap::OSCInputComponent",
@@ -400,7 +400,7 @@
 					"SelectionComponentTwo" : "LineSelectorTwo",
 					"Target" : "LaserLineMesh",
 					"BlendValue" : 0.0,
-					"BlendSpeed" : 0.0
+					"BlendSpeed" : 0.15
 				},
 				{
 					"Type" : "nap::LineModulationComponent",
@@ -408,11 +408,12 @@
 					"BlendComponent" : "LineBlender",
 					"Properties" : 
 					{
-						"Frequency" : 2.0,
-						"Speed" : 0.5,
+						"Frequency" : 0.25,
+						"Speed" : 0.2,
 						"Offset" : 0.0,
-						"Amplitude" : 0.1,
-						"Waveform" : "Sine"
+						"Amplitude" : 0.2,
+						"Waveform" : "Sine",
+						"Normalize" : false
 					}
 				},
 				{

@@ -155,7 +155,6 @@ bool init(nap::Core& core)
 
 	core.initialize();
 
-
 	//////////////////////////////////////////////////////////////////////////
 	// GL Service + Window
 	//////////////////////////////////////////////////////////////////////////
@@ -172,7 +171,6 @@ bool init(nap::Core& core)
 		nap::Logger::fatal(error.toString());
 		return false;
 	}
-
 
 	// Collects all the errors
 	nap::utility::ErrorState errorState;
