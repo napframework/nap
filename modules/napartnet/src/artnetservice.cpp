@@ -15,65 +15,78 @@ static bool verbose = true;
 
 namespace nap
 {
+	// ctor delibarately in cpp for unique_ptr
 	ArtNetService::ArtNetService()
 	{
 	}
 
+
+	// dtor delibarately in cpp for unique_ptr
 	ArtNetService::~ArtNetService()
 	{
 	}
 
-	bool ArtNetService::addController(ArtNetController& node, utility::ErrorState& errorState)
+
+	bool ArtNetService::addController(ArtNetController& controller, utility::ErrorState& errorState)
 	{
-		if (!errorState.check(mControllers.find(node.getAddress()) == mControllers.end(), "Node %s has the same address as a node that has already been added"))
+		if (!errorState.check(mControllers.find(controller.getAddress()) == mControllers.end(), "Controller %s has the same address as a controller that has already been added"))
 			return false;
 
+		const int numChannelsInUniverse = 512;
+
 		std::unique_ptr<ControllerData> controller_data = std::make_unique<ControllerData>();
-		controller_data->mController = &node;
-		controller_data->mData.resize(512);
+		controller_data->mController = &controller;
+		controller_data->mData.resize(numChannelsInUniverse);
 		controller_data->mIsDirty = true;
 		controller_data->mLastUpdateTime = 0.0f;
 
-		mControllers.emplace(std::make_pair(node.getAddress(), std::move(controller_data)));
+		mControllers.emplace(std::make_pair(controller.getAddress(), std::move(controller_data)));
 		
 		return true;
 	}
 
-	void ArtNetService::removeController(ArtNetController& node)
+
+	void ArtNetService::removeController(ArtNetController& controller)
 	{
-		mControllers.erase(node.getAddress());
+		mControllers.erase(controller.getAddress());
 	}
 
-	void ArtNetService::send(ArtNetController& inNode, const FloatChannelData& channelData, int channelOffset)
+
+	void ArtNetService::send(ArtNetController& controller, const FloatChannelData& channelData, int channelOffset)
 	{
 		ByteChannelData data;
 		data.resize(channelData.size());
 
+		// Convert normalized float data to bytes
 		for (int index = 0; index < channelData.size(); ++index)
 		{
 			assert(channelData[index] >= 0.0f && channelData[index] <= 1.0f);
 			data[index] = (uint8_t)(channelData[index] * 255.0f);
 		}
 
-		send(inNode, data, channelOffset);
+		send(controller, data, channelOffset);
 	}
 
-	void ArtNetService::send(ArtNetController& inNode, const ByteChannelData& channelData, int channelOffset)
+
+	void ArtNetService::send(ArtNetController& controller, const ByteChannelData& channelData, int channelOffset)
 	{
-		NodeMap::iterator pos = mControllers.find(inNode.getAddress());
+		ControllerMap::iterator pos = mControllers.find(controller.getAddress());
 		assert(pos != mControllers.end());
 		
 		ByteChannelData& channel_data = pos->second->mData;
 		assert(channelOffset + channelData.size() <= channel_data.size());
 		
+		// Copy into internal buffer that is sent on update
 		std::memcpy(channel_data.data() + channelOffset, channelData.data(), channelData.size());
 		pos->second->mIsDirty = true;
 	}
+
 
 	void ArtNetService::registerObjectCreators(rtti::Factory& factory)
 	{
 		factory.addObjectCreator(std::make_unique<ArtNetNodeCreator>(*this));
 	}
+
 
 	void ArtNetService::update()
 	{
@@ -82,6 +95,9 @@ namespace nap
 		{
 			ControllerData* controller_data = controller.second.get();
 
+			// Controllers are updated when:
+			// - There's new data and the max frequency interval has passed
+			// - There's no new data, but four seconds have passed. This is required for ArtNet. Resend existing data in that case.
 			double time_since_last_update = current_time - controller_data->mLastUpdateTime;
 			if ((controller_data->mIsDirty && time_since_last_update >= mUpdateFrequency) || time_since_last_update >= 4.0)
 			{

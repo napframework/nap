@@ -17,6 +17,7 @@ namespace nap
 	{
 	}
 
+
 	ArtNetController::~ArtNetController()
 	{
 		if (mNode != nullptr)
@@ -25,6 +26,7 @@ namespace nap
 			artnet_destroy(mNode);			
 		}
 	}
+
 
 	bool ArtNetController::init(nap::utility::ErrorState& errorState)
 	{
@@ -51,10 +53,12 @@ namespace nap
 		return true;
 	}
 
+
 	void ArtNetController::send(const FloatChannelData& channelData, int channelOffset)
 	{
 		mService->send(*this, channelData, channelOffset);
 	}
+
 
 	void ArtNetController::send(const ByteChannelData& channelData, int channelOffset)
 	{
