@@ -38,6 +38,13 @@
 		},
 
 		{
+			"Type" : "nap::Shader",
+			"mID": "NormalsShader",
+			"mVertShader": "shaders/etherdream/normals.vert",
+			"mFragShader": "shaders/etherdream/normals.frag"
+		},
+
+		{
 			"Type" : "nap::Image",
 			"mID" : "CanvasImage",
 			"mImagePath" : "data/etherdream/laser_canvas.png"
@@ -122,6 +129,13 @@
 		},
 
 		{
+			"Type" : "nap::VisualizeNormalsMesh",
+			"mID" : "NormalsMesh",
+			"ReferenceMesh" : "LaserLineMesh",
+			"Length" : 0.1
+		},
+
+		{
 			"Type" : "nap::Material",
 			"mID": "LineMaterial",
 			"Shader": "LineShader",
@@ -143,6 +157,36 @@
 					"ShaderAttributeID": "in_Normals"
 				}
 			]			
+		},
+
+		{
+			"Type" : "nap::Material",
+			"mID": "NormalsMaterial",
+			"Shader": "NormalsShader",
+			"VertexAttributeBindings" : 
+			[
+				{
+					"MeshAttributeID": "Position",
+					"ShaderAttributeID": "in_Position"
+				},
+				{
+					"MeshAttributeID": "Color0",
+					"ShaderAttributeID": "in_Color0"
+				}
+			],
+			"Uniforms" : 
+			[
+				{
+					"Type" : "nap::UniformVec3",
+					"Name" : "mColor",
+					"Value" : 
+					{
+						"x" : 1.0,
+						"y" : 1.0,
+						"z" : 0.0
+					}
+				}
+			]		
 		},
 
 		{
@@ -415,6 +459,15 @@
 					"MaterialInstance" : 
 					{
 						"Material": "LineMaterial"
+					}
+				},
+				{
+					"Type" : "nap::RenderableMeshComponent",
+					"Mesh" : "NormalsMesh",
+					"MaterialInstance" : 
+					{
+						"Material": "NormalsMaterial",
+						"BlendMode" : "AlphaBlend"
 					}
 				}
 			]

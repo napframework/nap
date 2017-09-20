@@ -97,11 +97,11 @@ namespace nap
 		}
 
 		// Get the angle of max rotation
-		float dot_product = glm::dot(n_lower_value, n_higer_value);
+		float dot_product = glm::dot(n_higer_value, n_lower_value);
 		float angle = glm::acos(dot_product);
 
 		// Get the rotation vector
-		glm::vec3 cross_product = glm::cross(n_lower_value, n_higer_value);
+		glm::vec3 cross_product = glm::cross(n_higer_value, n_lower_value);
 
 		// Calculate the matrix
 		glm::mat3x3 rotation_matrix = glm::rotate(glm::mat4x4(), angle*lerp_v, cross_product);

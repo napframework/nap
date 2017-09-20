@@ -39,6 +39,7 @@
 #include <renderablemeshcomponent.h>
 #include "lineselectioncomponent.h"
 #include <nanosvg.h>
+#include <visualizenormalsmesh.h>
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
@@ -60,6 +61,9 @@ nap::ObjectPtr<nap::EntityInstance> laserPrototype = nullptr;
 
 // Holds the osc sender
 nap::ObjectPtr<nap::OSCSender> oscSender = nullptr;
+
+// Holds the normals mesh
+nap::ObjectPtr<nap::VisualizeNormalsMesh> normalsMesh = nullptr;
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -86,13 +90,16 @@ void onUpdate()
 	// Update the scene
 	sceneService->update();
 
+
 	// Send an osc message
 	nap::OSCEventPtr new_event = std::make_unique<nap::OSCEvent>("/color/1");
 	new_event->addValue<float>(1.0f);
 
 	//oscSender->send(*new_event);
-}
 
+	nap::utility::ErrorState error;
+	normalsMesh->updateNormals(error, true);
+}
 
 // Called when the window is going to render
 void onRender()
@@ -132,6 +139,7 @@ void onRender()
 		output->setLine(poly_line, xform.getGlobalTransform());
 	}
 }
+
 
 
 /**
@@ -207,6 +215,9 @@ bool init(nap::Core& core)
 
 	// Store sender
 	oscSender = resourceManagerService->findObject<nap::OSCSender>("OscSender");
+
+	// Store normals mesh
+	normalsMesh = resourceManagerService->findObject<nap::VisualizeNormalsMesh>("NormalsMesh");
 
 	// Set render states
 	nap::RenderState& render_state = renderService->getRenderState();
