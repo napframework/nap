@@ -4,6 +4,8 @@
 #include <QKeySequence>
 #include <QFileDialog>
 #include <QString>
+#include <QStandardItem>
+#include <QtCore/QSet>
 #include "appcontext.h"
 
 class OpenFileAction : public QAction {
@@ -45,6 +47,17 @@ public:
 
 private:
     void perform();
+};
+
+class ActionFactory {
+public:
+    QList<QAction*> actionsFor(QList<QStandardItem*> items) {
+        // TODO
+    }
+
+    QList<QAction*> actionsFor(QStandardItem* item) {
+        // TODO
+    }
 };
 
 //class DeleteAction : public QAction {
