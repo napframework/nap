@@ -206,6 +206,11 @@ macro(copy_base_windows_graphics_dlls)
     copy_files_to_bin(${FILES_TO_COPY})
 endmacro()
 
+macro(copy_windows_ffmpeg_dlls)
+    file(GLOB FFMPEGDLLS ${CMAKE_CURRENT_LIST_DIR}/../../../thirdparty/ffmpeg/bin/*.dll)
+    copy_files_to_bin(${FFMPEGDLLS})
+endmacro()
+
 # Helper function to filter out platform-specific files
 # The function outputs the following new variables with the platform-specific sources:
 # - WIN32_SOURCES
