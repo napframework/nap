@@ -169,49 +169,41 @@ endif()
 
 macro(export_fbx SRCDIR)
     if (MSVC)
-        add_custom_command(TARGET ${PROJECT_NAME}
-                POST_BUILD
-                COMMAND "$(OutDir)/fbxconverter.exe" -o ${SRCDIR} "${SRCDIR}/*.fbx"
-                COMMENT "Export FBX in '${SRCDIR}'")
-
+        set(FBXCONVERTER_BIN "fbxconverter.exe")
     else()
-        add_custom_command(TARGET ${PROJECT_NAME}
-                POST_BUILD
-				COMMAND "${BIN_DIR}/fbxconverter" -o ${SRCDIR} ${SRCDIR}/*.fbx
-                COMMENT "${BIN_DIR}/fbxconverter -o ${SRCDIR} ${SRCDIR}/*.fbx")
+        set(FBXCONVERTER_BIN "fbxconverter")
     endif()
+
+    add_custom_command(TARGET ${PROJECT_NAME}
+            POST_BUILD
+            COMMAND "$<TARGET_FILE_DIR:${PROJECT_NAME}>/${FBXCONVERTER_BIN}" -o ${SRCDIR} "${SRCDIR}/*.fbx"
+            COMMENT "Export FBX in '${SRCDIR}'")
 endmacro()
 
 macro(copy_dir_to_bin SRCDIR DSTDIR)
-    if (MSVC)
-        add_custom_command(TARGET ${PROJECT_NAME}
-                POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy_directory "${SRCDIR}" "$(OutDir)/${DSTDIR}"
-                COMMENT "Copy dir '${SRCDIR}' -> '$(OutDir)/${DSTDIR}'")
-
-    else()
-        add_custom_command(TARGET ${PROJECT_NAME}
-                POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy_directory "${SRCDIR}" "${BIN_DIR}/${DSTDIR}"
-                COMMENT "Copy dir '${SRCDIR}' -> '${BIN_DIR}/${DSTDIR}'")
-    endif()
+    add_custom_command(TARGET ${PROJECT_NAME}
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory "${SRCDIR}" "$<TARGET_FILE_DIR:${PROJECT_NAME}>/${DSTDIR}"
+        COMMENT "Copy dir '${SRCDIR}' -> '${DSTDIR}'")
 endmacro()
-
 
 macro(copy_files_to_bin)
     foreach(F ${ARGN})
-        if (MSVC)
-            add_custom_command(TARGET ${PROJECT_NAME}
-                    POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy "${F}" "$(OutDir)"
-                    COMMENT "Copy ${F} -> $(OutDir)")
-        else()
-            add_custom_command(TARGET ${PROJECT_NAME}
-                    POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy "${F}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
-                    COMMENT "Copy ${F} -> ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
-        endif()
+        add_custom_command(TARGET ${PROJECT_NAME}
+                POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy "${F}" "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+                COMMENT "Copy ${F} -> $<TARGET_FILE_DIR:${PROJECT_NAME}>")
     endforeach()
+endmacro()
+
+macro(copy_base_windows_graphics_dlls)
+    # Copy over some crap window dlls
+    set(FILES_TO_COPY
+            ../../../../thirdparty/sdl2/msvc/lib/x64/SDL2.dll
+            ../../../../thirdparty/glew/msvc/bin/Release/x64/glew32.dll
+            )
+    # copy nrender (hack)
+    copy_files_to_bin(${FILES_TO_COPY})
 endmacro()
 
 # Helper function to filter out platform-specific files
@@ -223,7 +215,7 @@ function(filter_platform_specific_files UNFILTERED_SOURCES)
 	set (LOCAL_WIN32_SOURCES)
 	set (LOCAL_OSX_SOURCES)
 	set (LOCAL_LINUX_SOURCES)
-	foreach (TMP_PATH ${${UNFILTERED_SOURCES}})	
+	foreach (TMP_PATH ${${UNFILTERED_SOURCES}})
 		string (FIND ${TMP_PATH} "/win32/" WIN32_EXCLUDE_DIR_FOUND)
 		if (NOT ${WIN32_EXCLUDE_DIR_FOUND} EQUAL -1)
 			MESSAGE(STATUS "Win32 File: " ${TMP_PATH} )
@@ -240,59 +232,59 @@ function(filter_platform_specific_files UNFILTERED_SOURCES)
 			endif ()
 		endif ()
 	endforeach(TMP_PATH)
-	
+
 	set (WIN32_SOURCES ${LOCAL_WIN32_SOURCES} PARENT_SCOPE)
 	set (OSX_SOURCES ${LOCAL_OSX_SOURCES} PARENT_SCOPE)
 	set (LINUX_SOURCES ${LOCAL_LINUX_SOURCES} PARENT_SCOPE)
 endfunction()
 
-# Helper macro to add platform-specific files to the correct directory and 
+# Helper macro to add platform-specific files to the correct directory and
 # to only compile the platform-specific files that match the current platform
 macro(add_platform_specific_files WIN32_SOURCES OSX_SOURCES LINUX_SOURCES)
-	
+
 	# Add to solution folders
 	if (MSVC)
 		# Sort header and cpps into solution folders for Win32
 		foreach (TMP_PATH ${WIN32_SOURCES})
-			string (FIND ${TMP_PATH} ".cpp" IS_CPP)	
+			string (FIND ${TMP_PATH} ".cpp" IS_CPP)
 			if (NOT ${IS_CPP} EQUAL -1)
 				source_group("Source Files\\Win32" FILES ${TMP_PATH})
 			else()
 				source_group("Header Files\\Win32" FILES ${TMP_PATH})
-			endif()			
+			endif()
 		endforeach()
-		
+
 		# Sort header and cpps into solution folders for OSX
 		foreach (TMP_PATH ${OSX_SOURCES})
-			string (FIND ${TMP_PATH} ".cpp" IS_CPP)	
+			string (FIND ${TMP_PATH} ".cpp" IS_CPP)
 			if (NOT ${IS_CPP} EQUAL -1)
 				source_group("Source Files\\OSX" FILES ${TMP_PATH})
 			else()
 				source_group("Header Files\\OSX" FILES ${TMP_PATH})
-			endif()			
+			endif()
 		endforeach()
-		
+
 		# Sort header and cpps into solution folders for Linux
 		foreach (TMP_PATH ${LINUX_SOURCES})
-			string (FIND ${TMP_PATH} ".cpp" IS_CPP)	
+			string (FIND ${TMP_PATH} ".cpp" IS_CPP)
 			if (NOT ${IS_CPP} EQUAL -1)
 				source_group("Source Files\\Linux" FILES ${TMP_PATH})
 			else()
 				source_group("Header Files\\Linux" FILES ${TMP_PATH})
-			endif()			
+			endif()
 		endforeach()
 	endif()
 
 	# Unfortunately, there's no clean way to add a file to the solution (for browsing purposes, etc) but
-	# exclude it from the build. The hacky way to do it is to treat the file as a 'header' (even though it's not)	
+	# exclude it from the build. The hacky way to do it is to treat the file as a 'header' (even though it's not)
 	if (NOT WIN32)
 		set_source_files_properties(${WIN32_SOURCES} PROPERTIES HEADER_FILE_ONLY TRUE)
 	endif()
-	
+
 	if (NOT APPLE)
 		set_source_files_properties(${OSX_SOURCES} PROPERTIES HEADER_FILE_ONLY TRUE)
 	endif()
-	
+
 	if (APPLE OR NOT UNIX)
 		set_source_files_properties(${LINUX_SOURCES} PROPERTIES HEADER_FILE_ONLY TRUE)
 	endif()
