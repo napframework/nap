@@ -67,7 +67,7 @@ namespace nap
 		nap::LineBlendComponentInstance* mBlendComponent = nullptr;
 		nap::TransformComponentInstance* mTransformComponent = nullptr;
 
-		void updateColor(const OSCEvent& event, int channel);
+		void updateColor(const OSCEvent& event, int position);
 		void updateRotate(const OSCEvent& event);
 		void resetRotate(const OSCEvent& event);
 		void setIndex(const OSCEvent& event, int index);

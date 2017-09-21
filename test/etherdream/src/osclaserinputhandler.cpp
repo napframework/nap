@@ -64,19 +64,20 @@ namespace nap
 
 	void OSCLaserInputHandlerInstance::handleMessageReceived(const nap::OSCEvent& oscEvent)
 	{
-		if (utility::gStartsWith(oscEvent.getAddress(), "/color"))
+		if (utility::gStartsWith(oscEvent.getAddress(), "/startposition"))
 		{
-			// Get values
-			std::vector<std::string> out_values;
-			utility::gSplitString(oscEvent.getAddress(), '/', out_values);
+			updateColor(oscEvent, 0);
+		}
 
-			// Get color channel 
-			int channel = std::stoi(out_values.back()) - 1;
-			assert(channel <= 4 && channel >= 0);
+		if (utility::gStartsWith(oscEvent.getAddress(), "/endposition"))
+		{
+			updateColor(oscEvent, 1);
+		}
 
-			// Update color
-			updateColor(oscEvent, channel);
-			return;
+		if (utility::gStartsWith(oscEvent.getAddress(), "/intensity"))
+		{
+			assert(oscEvent[0].isFloat());
+			mColorComponent->setIntensity(oscEvent[0].asFloat());
 		}
 
 		else if (utility::gStartsWith(oscEvent.getAddress(), "/rotation"))
@@ -136,14 +137,21 @@ namespace nap
 	}
 
 
-	void OSCLaserInputHandlerInstance::updateColor(const OSCEvent& oscEvent, int channel)
+	void OSCLaserInputHandlerInstance::updateColor(const OSCEvent& oscEvent, int position)
 	{
-		// New value
-		assert(oscEvent[0].isFloat());
-		float v = oscEvent[0].asFloat();
+		assert(oscEvent.getCount() == 2);
+		float pos_x = oscEvent[1].asFloat();
+		float pos_y = oscEvent[0].asFloat();
 
-		// Update color channel
-		mColorComponent->mColor[channel] = v;
+		if (position == 0)
+		{
+			mColorComponent->setStartPosition(glm::vec2(pos_x, pos_y));
+			return;
+		}
+		else
+		{
+			mColorComponent->setEndPosition(glm::vec2(pos_x, pos_y));
+		}
 	}
 
 
@@ -258,13 +266,13 @@ namespace nap
 			mModulationComponent->mProperties.mFrequency = math::fit<float>(math::power<float>(v,3.0f), 0.0f, 1.0f, 0.0f, 20.0f);
 			break;
 		case 1:
-			mModulationComponent->mProperties.mSpeed = v;
+			mModulationComponent->mProperties.mAmplitude = math::power<float>(v, 3.0f);
 			break;
 		case 2:
-			mModulationComponent->mProperties.mOffset = v;
+			mModulationComponent->mProperties.mSpeed = v;
 			break;
 		case 3:
-			mModulationComponent->mProperties.mAmplitude = math::power<float>(v, 3.0f);
+			mModulationComponent->mProperties.mOffset = v;
 			break;
 		case 4:
 		{

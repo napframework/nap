@@ -51,6 +51,12 @@
 		},
 
 		{
+			"Type" : "nap::Image",
+			"mID" : "ColorLookupImage",
+			"mImagePath" : "data/etherdream/color_gradient.png"
+		},
+
+		{
 			"Type" : "nap::PlaneMesh",
 			"mID" : "CanvasMesh"
 		},
@@ -177,13 +183,14 @@
 			"Uniforms" : 
 			[
 				{
-					"Type" : "nap::UniformVec3",
+					"Type" : "nap::UniformVec4",
 					"Name" : "mColor",
 					"Value" : 
 					{
 						"x" : 1.0,
 						"y" : 1.0,
-						"z" : 0.0
+						"z" : 0.0,
+						"w" : 0.25
 					}
 				}
 			]		
@@ -329,7 +336,7 @@
 						"HexagonMesh",
 						"TriangleMesh"
 					],
-					"Index" : 3
+					"Index" : 1
 				},
 				{
 					"Type" : "nap::LineSelectionComponent",
@@ -343,14 +350,15 @@
 						"HexagonMesh",
 						"TriangleMesh"
 					],
-					"Index" : 0
+					"Index" : 1
 				},
 				{
 					"Type" : "nap::OSCInputComponent",
 					"Addresses" : 
 					[
-						"/color",
-						"/resetcolor",
+						"/intensity",
+						"/startposition",
+						"/endposition",
 						"/rotation",
 						"/resetrotation",
 						"/selection",
@@ -400,7 +408,7 @@
 					"SelectionComponentTwo" : "LineSelectorTwo",
 					"Target" : "LaserLineMesh",
 					"BlendValue" : 0.0,
-					"BlendSpeed" : 0.15
+					"BlendSpeed" : 0.0
 				},
 				{
 					"Type" : "nap::LineModulationComponent",
@@ -408,10 +416,10 @@
 					"BlendComponent" : "LineBlender",
 					"Properties" : 
 					{
-						"Frequency" : 0.25,
+						"Frequency" : 1.0,
 						"Speed" : 0.2,
 						"Offset" : 0.0,
-						"Amplitude" : 0.2,
+						"Amplitude" : 0.0,
 						"Waveform" : "Sine",
 						"Normalize" : false
 					}
@@ -420,13 +428,19 @@
 					"Type" : "nap::LineColorComponent",
 					"mID" : "LineColorer",
 					"BlendComponent" : "LineBlender",
-					"Color" :
+					"StartPosition" : 
+					{
+						"x" : 0.0,
+						"y" : 0.0
+					},
+					"EndPosition" : 
 					{
 						"x" : 1.0,
-						"y" : 1.0,
-						"z" : 1.0,
-						"w" : 1.0
-					}
+						"y" : 1.0
+					},
+					"LookupImage" : "ColorLookupImage",
+					"Wrap" : true,
+					"WrapPower" : 1.0
 				},
 				{
 					"Type" : "nap::LineTraceComponent",

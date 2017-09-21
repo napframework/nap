@@ -88,6 +88,11 @@ namespace nap
 		template<typename T>
 		T sign(T value);
 
+		/**
+		 *	@return a bell shaped curve based on value t (0-1)
+		 */
+		NAPAPI float bell(float t, float inStrength);
+
 
 		//////////////////////////////////////////////////////////////////////////
 		// Template definitions

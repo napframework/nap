@@ -101,6 +101,7 @@ void onUpdate()
 	normalsMesh->updateNormals(error, true);
 }
 
+
 // Called when the window is going to render
 void onRender()
 {
@@ -139,7 +140,6 @@ void onRender()
 		output->setLine(poly_line, xform.getGlobalTransform());
 	}
 }
-
 
 
 /**
@@ -181,6 +181,7 @@ bool init(nap::Core& core)
 	// Create scene service
 	sceneService = core.getOrCreateService<nap::SceneService>();
 
+
 	// Create etherdream service
 	laserService = core.getOrCreateService<nap::EtherDreamService>();
 	if (!laserService->init(errorState))
@@ -188,7 +189,6 @@ bool init(nap::Core& core)
 		nap::Logger::fatal("unable to create laser service: %s", errorState.toString().c_str());
 		return false;
 	}
-
 
 	// Create osc service
 	oscService = core.getOrCreateService<nap::OSCService>();
