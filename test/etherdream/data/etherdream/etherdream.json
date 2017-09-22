@@ -17,13 +17,6 @@
 		},
 
 		{
-			"Type" : "nap::OSCSender",
-			"mID" : "OscSender",
-			"IpAddress" : "192.168.0.19",
-			"Port" : 8000
-		},
-
-		{
 			"Type" : "nap::Shader",
 			"mID": "LineShader",
 			"mVertShader": "shaders/etherdream/line.vert",
@@ -190,7 +183,7 @@
 						"x" : 1.0,
 						"y" : 1.0,
 						"z" : 0.0,
-						"w" : 0.25
+						"w" : 1.0
 					}
 				}
 			]		

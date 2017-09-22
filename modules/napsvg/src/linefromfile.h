@@ -20,7 +20,13 @@ namespace nap
 	};
 
 	/**
-	 *	Resource that specifies a line read from an svg file
+	 * Resource that loads a set of lines from an svg file
+	 * Every line is converted in a polyline. The line vertex reolution can be changed using a difference tolerance value.
+	 * A lower tolerance results in less vertices. The uv's of the lines are normalized based on the
+	 * total bounding box of the file, ie: all the lines in the file. The normals are perpendicular
+	 * to the tangent of the line, the line itself is loaded in the x, y plane.
+	 * When normalization is turned on the loaded lines will be placed relative to 0, with a default bounding box
+	 * in the x, y plane of -0.5 to 0.5. Changing the scale will change these bounds.
 	 */
 	class NAPAPI LineFromFile : public PolyLine
 	{

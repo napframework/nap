@@ -3,7 +3,9 @@
 
 // External Includes
 #include <nap/entity.h>
+#include <nap/logger.h>
 #include <mathutils.h>
+#include <glm/gtc/matrix_transform.hpp>
 
 RTTI_BEGIN_CLASS(nap::ModulationProperties)
 	RTTI_PROPERTY("Frequency",			&nap::ModulationProperties::mFrequency,			nap::rtti::EPropertyMetaData::Default)
@@ -50,7 +52,7 @@ namespace nap
 		float length = spline.getDistances(distance_map);
 
 		// Get the normals and vertices to manipulate
-		const std::vector<glm::vec3>& normals = spline.getNormalAttr().getData();
+		std::vector<glm::vec3>& normals = spline.getNormalAttr().getData();
 		std::vector<glm::vec3>& vertices = spline.getPositionAttr().getData();
 
 		// Calculate offset value based on time and personal offset
@@ -67,6 +69,36 @@ namespace nap
 			wave_value = math::fit<float>(wave_value, 0.0f, 1.0f, -1.0f, 1.0f) * mProperties.mAmplitude;
 			vertices[dist.second] += (normals[dist.second] * wave_value);
 		}
+
+		// Update the perpendicular normals based on the new position of the line
+		glm::vec3 crossn(0.0f, 0.0f, -1.0f);
+		for (int i = 0; i < vertices.size() - 1; i++)
+		{
+			// Get vector pointing to next vertex
+			glm::vec3 dnormal = glm::normalize(vertices[i+1] - vertices[i]);
+
+			// Rotate around z using cross product
+			normals[i] = glm::cross(dnormal, crossn);
+		}
+
+		// If the shape is closed the last normal can point to the first, otherwise we pick the previous one
+		if (spline.isClosed())
+		{
+			glm::vec3& curr_pos = vertices.back();
+			glm::vec3& next_pos = vertices.front();
+			normals.back() = glm::cross(glm::normalize(next_pos - curr_pos), crossn);
+		}
+		else
+		{
+			normals.back() = normals[normals.size()-2];
+		}
+
+		utility::ErrorState error;
+		if (!spline.getMeshInstance().update(error))
+		{
+			nap::Logger::warn(error.toString().c_str());
+		}
+		
 	}
 
 }

@@ -96,8 +96,8 @@ namespace nap
 		// Sweep and fill
 		for (int r = 0; r < vertexCount; r++)
 		{
-			float const y = sin(2 * M_PI * r * R);
-			float const x = cos(2 * M_PI * r * R);
+			float const y = cos(2 * M_PI * r * R);
+			float const x = sin(2 * M_PI * r * R);
 
 			// Set texture coordinates
 			*t++ = { 1.0f - (r*R), r*R, 0.5f };
@@ -188,10 +188,10 @@ namespace nap
 		float dy = mDimensions.y / 2.0f;
 
 		std::vector<glm::vec3> p_verts(4);
-		p_verts[0] = { 0.0f - dx, 0.0f - dy, 0.0f };
-		p_verts[1] = { 0.0f + dx, 0.0f - dy, 0.0f };
-		p_verts[2] = { 0.0f + dx, 0.0f + dy, 0.0f };
-		p_verts[3] = { 0.0f - dx, 0.0f + dy, 0.0f };
+		p_verts[0] = { 0.0f - dx, 0.0f + dy, 0.0f };
+		p_verts[1] = { 0.0f + dx, 0.0f + dy, 0.0f };
+		p_verts[2] = { 0.0f + dx, 0.0f - dy, 0.0f };
+		p_verts[3] = { 0.0f - dx, 0.0f - dy, 0.0f };
 
 		// Set positions
 		getPositionAttr().setData(p_verts);
@@ -213,10 +213,10 @@ namespace nap
 
 
 		std::vector<glm::vec3> uv_verts(4);
-		uv_verts[0] = { 0.5f - dsx, 0.5f - dsy, 0.0f };
-		uv_verts[1] = { 0.5f + dsx, 0.5f - dsy, 0.0f };
-		uv_verts[2] = { 0.5f + dsx, 0.5f + dsy, 0.0f };
-		uv_verts[3] = { 0.5f - dsx, 0.5f + dsy, 0.0f };
+		uv_verts[0] = { 0.5f - dsx, 0.5f + dsy, 0.0f };
+		uv_verts[1] = { 0.5f + dsx, 0.5f + dsy, 0.0f };
+		uv_verts[2] = { 0.5f + dsx, 0.5f - dsy, 0.0f };
+		uv_verts[3] = { 0.5f - dsx, 0.5f - dsy, 0.0f };
 
 		// Set uv buffer based on normalized uv coordinates
 		getUvAttr().setData(uv_verts);

@@ -35,7 +35,6 @@
 #include <etherdreamdac.h>
 #include <perspcameracomponent.h>
 #include <mathutils.h>
-#include <oscsender.h>
 #include <renderablemeshcomponent.h>
 #include "lineselectioncomponent.h"
 #include <nanosvg.h>
@@ -58,9 +57,6 @@ nap::ObjectPtr<nap::RenderWindow> renderWindow = nullptr;
 
 // Laser DAC
 nap::ObjectPtr<nap::EntityInstance> laserPrototype = nullptr;
-
-// Holds the osc sender
-nap::ObjectPtr<nap::OSCSender> oscSender = nullptr;
 
 // Holds the normals mesh
 nap::ObjectPtr<nap::VisualizeNormalsMesh> normalsMesh = nullptr;
@@ -94,8 +90,6 @@ void onUpdate()
 	// Send an osc message
 	nap::OSCEventPtr new_event = std::make_unique<nap::OSCEvent>("/color/1");
 	new_event->addValue<float>(1.0f);
-
-	//oscSender->send(*new_event);
 
 	nap::utility::ErrorState error;
 	normalsMesh->updateNormals(error, true);
@@ -205,14 +199,12 @@ bool init(nap::Core& core)
 		return false;        
 	}
 
+
 	// Store all render windows
 	renderWindow = resourceManagerService->findObject<nap::RenderWindow>("Window");
 
 	// Store laser dacs
 	laserPrototype = resourceManagerService->findEntity("LaserPrototypeEntity");
-
-	// Store sender
-	oscSender = resourceManagerService->findObject<nap::OSCSender>("OscSender");
 
 	// Store normals mesh
 	normalsMesh = resourceManagerService->findObject<nap::VisualizeNormalsMesh>("NormalsMesh");

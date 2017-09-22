@@ -295,11 +295,11 @@ namespace nap
 			}
 
 			// Now we have the final vertex positions of this line we can calculate their respective normals
-			glm::vec3 crossn(0.0f, 0.0f, 1.0f);
+			glm::vec3 crossn(0.0f, 0.0f, -1.0f);
 			for (int i = 0; i < positions.size() - 1; i++)
 			{
 				// Get vector pointing to next vertex
-				glm::vec3 dnormal = glm::normalize(positions[i] - positions[i + 1]);
+				glm::vec3 dnormal = glm::normalize(positions[i+1] - positions[i]);
 
 				// Rotate around z using cross product
 				normals.emplace_back(glm::cross(dnormal, crossn));
@@ -314,7 +314,7 @@ namespace nap
 			}
 			else
 			{
-				normals.emplace_back(positions.back());
+				normals.emplace_back(normals.back());
 			}
 
 			// Create and initialize new line based on sampled path vertices
