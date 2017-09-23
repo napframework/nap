@@ -267,7 +267,7 @@ namespace nap
 
 				// calculate vertex uv
 				float uv_x = nap::math::fit<float>(vertex.x, rect.mMinPosition.x, rect.mMaxPosition.x, uv_x_min, uv_x_max);
-				float uv_y = nap::math::fit<float>(vertex.x, rect.mMinPosition.x, rect.mMaxPosition.x, uv_x_min, uv_x_max);
+				float uv_y = nap::math::fit<float>(vertex.y, rect.mMinPosition.y, rect.mMaxPosition.y, uv_y_min, uv_y_max);
 				uvs.emplace_back(glm::vec3(uv_x, uv_y, 0.0f));
 
 				// calculate vertex position

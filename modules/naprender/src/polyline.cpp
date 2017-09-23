@@ -100,7 +100,7 @@ namespace nap
 			float const x = sin(2 * M_PI * r * R);
 
 			// Set texture coordinates
-			*t++ = { 1.0f - (r*R), r*R, 0.5f };
+			*t++ = {(x + 1.0f) / 2.0f, (y + 1.0) / 2.0f, 0.0f};
 
 			// Set vertex coordinates
 			*v++ = { x * radius, y * radius, 0.0f };
