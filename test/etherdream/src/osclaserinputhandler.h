@@ -7,6 +7,7 @@
 #include "linecolorcomponent.h"
 #include "laseroutputcomponent.h"
 #include "linemodulationcomponent.h"
+#include "linenoisecomponent.h"
 
 // External Includes
 #include <nap/component.h>
@@ -66,6 +67,7 @@ namespace nap
 		nap::OSCInputComponentInstance* mInputComponent = nullptr;
 		nap::LineBlendComponentInstance* mBlendComponent = nullptr;
 		nap::TransformComponentInstance* mTransformComponent = nullptr;
+		nap::LineNoiseComponentInstance* mNoiseComponent = nullptr;
 
 		void updateColor(const OSCEvent& event, int position);
 		void updateRotate(const OSCEvent& event);
@@ -75,6 +77,7 @@ namespace nap
 		void setScale(const OSCEvent& event);
 		void setPosition(const OSCEvent& event);
 		void setModulation(const OSCEvent& event, int index);
+		void setNoise(const OSCEvent& event, int index);
 
 		NSLOT(mMessageReceivedSlot, const nap::OSCEvent&, handleMessageReceived)
 

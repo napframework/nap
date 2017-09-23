@@ -358,7 +358,8 @@
 						"/blend",
 						"/scale",
 						"/position",
-						"/modulation"
+						"/modulation",
+						"/noise"
 					]
 				},
 				{

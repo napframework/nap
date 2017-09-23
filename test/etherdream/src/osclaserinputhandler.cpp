@@ -52,6 +52,10 @@ namespace nap
 		if(!errorState.check(mModulationComponent != nullptr, "missing modulation component"))
 			return false;
 
+		mNoiseComponent = getEntityInstance()->findComponent<nap::LineNoiseComponentInstance>();
+		if (!errorState.check(mNoiseComponent != nullptr, "missing noise component"))
+			return false;
+
 		mSelectorOne = getComponent<OSCLaserInputHandler>()->mSelectionComponentOne.get();
 		mSelectorTwo = getComponent<OSCLaserInputHandler>()->mSelectionComponentTwo.get();
 		mLaserOutput = getComponent<OSCLaserInputHandler>()->mLaserOutputComponent.get();
@@ -133,6 +137,18 @@ namespace nap
 			int index = std::stoi(out_values.back()) - 1;
 			assert(index < 5 && index >= 0);
 			setModulation(oscEvent, index);
+		}
+
+		else if (utility::gStartsWith(oscEvent.getAddress(), "/noise"))
+		{
+			// Get values
+			std::vector<std::string> out_values;
+			utility::gSplitString(oscEvent.getAddress(), '/', out_values);
+
+			// Get index
+			int index = std::stoi(out_values.back()) - 1;
+			assert(index < 4 && index >= 0);
+			setNoise(oscEvent, index);
 		}
 	}
 
@@ -263,7 +279,7 @@ namespace nap
 		switch (index)
 		{
 		case 0:
-			mModulationComponent->mProperties.mFrequency = math::fit<float>(math::power<float>(v,3.0f), 0.0f, 1.0f, 0.0f, 20.0f);
+			mModulationComponent->mProperties.mFrequency = math::fit<float>(math::power<float>(v,3.0f), 0.0f, 1.0f, 0.0f, 10.0f);
 			break;
 		case 1:
 			mModulationComponent->mProperties.mAmplitude = math::power<float>(v, 3.0f);
@@ -280,6 +296,32 @@ namespace nap
 			mModulationComponent->mProperties.mWaveform = static_cast<nap::math::EWaveform>(idx);
 			break;
 		}
+		default:
+			assert(false);
+			break;
+		}
+	}
+
+
+	void OSCLaserInputHandlerInstance::setNoise(const OSCEvent& event, int index)
+	{
+		assert(event[0].isFloat());
+		float v = event[0].asFloat();
+
+		switch (index)
+		{
+		case 0:
+			mNoiseComponent->mProperties.mFrequency = math::fit<float>(math::power<float>(v, 3.0f), 0.0f, 1.0f, 0.0f, 10.0f);
+			break;
+		case 1:
+			mNoiseComponent->mProperties.mAmplitude = math::power<float>(v, 3.0f);
+			break;
+		case 2:
+			mNoiseComponent->mProperties.mSpeed = v;
+			break;
+		case 3:
+			mNoiseComponent->mProperties.mOffset = v;
+			break;
 		default:
 			assert(false);
 			break;
