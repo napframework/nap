@@ -475,6 +475,7 @@
 				},
 				{
 					"Type" : "nap::RenderableMeshComponent",
+					"mID" : "RenderLaserLineComponent",
 					"Mesh" : "LaserLineMesh",
 					"MaterialInstance" : 
 					{
@@ -536,7 +537,8 @@
 							"y" : 512
 						}
 					},
-					"Dac" : "Laser1"
+					"Dac" : "Laser1",
+					"Line": "RenderLaserLineComponent"
 				},		
 				{
 					"Type":"nap::LaserOutputComponent",
@@ -548,7 +550,8 @@
 							"y" : 512
 						}
 					},
-					"Dac" : "Laser2"
+					"Dac" : "Laser2",
+					"Line": "RenderLaserLineComponent"
 				},
 				{
 					"Type":"nap::LaserOutputComponent",
@@ -560,7 +563,8 @@
 							"y" : 512
 						}
 					},
-					"Dac" : "Laser3"
+					"Dac" : "Laser3",
+					"Line": "RenderLaserLineComponent"
 				},
 				{
 					"Type":"nap::LaserOutputComponent",
@@ -572,7 +576,8 @@
 							"y" : 512
 						}
 					},
-					"Dac" : "Laser4"
+					"Dac" : "Laser4",
+					"Line": "RenderLaserLineComponent"
 				}			
 			],
 			"Children" :

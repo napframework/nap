@@ -7,6 +7,8 @@
 #include <nap/component.h>
 #include <polyline.h>
 #include <transformcomponent.h>
+#include <nap/componentptr.h>
+#include <renderablemeshcomponent.h>
 
 namespace nap
 {
@@ -36,6 +38,9 @@ namespace nap
 		// Link to the DAC
 		ObjectPtr<EtherDreamDac> mDac;
 
+		// Link to component that holds the line to send to the laser
+		ComponentPtr<RenderableMeshComponent> mLine;
+
 		// Output properties
 		LaserOutputProperties mProperties;
 	};
@@ -59,19 +64,15 @@ namespace nap
 		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
 		/**
-		 *	Set the line to upload to the laser
-		 * @param line: a line mesh to resample and upload
-		 * @param xform: the line's global transform
-		 */
-		void setLine(PolyLine& line, const glm::mat4x4& xform);
-
-		/**
 		 *	Update will send the last converted line to the laser
 		 */
 		virtual void update(double deltaTime) override;
 
 		// Lines will be uploaded to this laser DAC
-		ObjectPtr<EtherDreamDac> mDac;
+		EtherDreamDac* mDac = nullptr;
+
+		// Component that holds the lines to draw
+		RenderableMeshComponentInstance* mLine = nullptr;
 
 		// Properties
 		LaserOutputProperties mProperties;

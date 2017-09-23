@@ -34,6 +34,7 @@ namespace nap
 		return true;
 	}
 
+
 	void LineNoiseComponentInstance::update(double deltaTime)
 	{
 		nap::PolyLine& line = mBlendComponent->getLine();

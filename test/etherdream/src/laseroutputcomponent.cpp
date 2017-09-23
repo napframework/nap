@@ -16,6 +16,7 @@ RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::LaserOutputComponent)
 	RTTI_PROPERTY("Dac",		&nap::LaserOutputComponent::mDac,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Line",		&nap::LaserOutputComponent::mLine,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Properties",	&nap::LaserOutputComponent::mProperties,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
@@ -50,7 +51,10 @@ namespace nap
 	{
 		// Copy over link to the DAC
 		LaserOutputComponent* output_resource = getComponent<LaserOutputComponent>();
-		mDac = output_resource->mDac;
+		mDac = output_resource->mDac.get();
+
+		// Copy over mesh
+		mLine = getComponent<LaserOutputComponent>()->mLine.get();
 
 		// Copy over properties
 		mProperties = output_resource->mProperties;
@@ -58,21 +62,21 @@ namespace nap
 	}
 
 
-	// Sample line and convert to laser
-	void LaserOutputComponentInstance::setLine(PolyLine& line, const glm::mat4x4& xform)
+	void LaserOutputComponentInstance::update(double deltaTime)
 	{
-		VertexAttribute<glm::vec3>& position_data = line.getPositionAttr();
-		VertexAttribute<glm::vec4>& color_data = line.getColorAttr();
+		nap::PolyLine* line = rtti_cast<nap::PolyLine>(&(mLine->getMesh()));
+		assert(line != nullptr);
+
+		// Get attribute data
+		VertexAttribute<glm::vec3>& position_data = line->getPositionAttr();
+		VertexAttribute<glm::vec4>& color_data = line->getColorAttr();
+
+		// Get xfrom
+		nap::TransformComponentInstance& xform = mLine->getEntityInstance()->getComponent<nap::TransformComponentInstance>();
 
 		// Populate the laser buffer
 		nap::TransformComponentInstance& laser_xform = this->getEntityInstance()->getComponent<nap::TransformComponentInstance>();
-		populateLaserBuffer(position_data.getData(), color_data.getData(), laser_xform.getGlobalTransform(), xform);
-	}
-
-
-	void LaserOutputComponentInstance::update(double deltaTime)
-	{
-		mDac->setPoints(mPoints);
+		populateLaserBuffer(position_data.getData(), color_data.getData(), laser_xform.getGlobalTransform(), xform.getGlobalTransform());
 	}
 
 

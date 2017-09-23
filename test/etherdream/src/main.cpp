@@ -80,15 +80,11 @@ void onUpdate()
 	// Process all events for osc
 	oscService->update();
 
-	// Update all resources
-	resourceManagerService->update();
-
 	// Update the scene
 	sceneService->update();
 
-	// Send an osc message
-	nap::OSCEventPtr new_event = std::make_unique<nap::OSCEvent>("/color/1");
-	new_event->addValue<float>(1.0f);
+	// Update all resources
+	resourceManagerService->update();
 
 	nap::utility::ErrorState error;
 	normalsMesh->updateNormals(error, true);
@@ -118,20 +114,6 @@ void onRender()
 
 	// Swap back buffer
 	renderWindow->swap();
-
-	// Set the laser line to render
-	nap::RenderableMeshComponentInstance& line = spline_entity ->getComponent<nap::RenderableMeshComponentInstance>();
-	nap::TransformComponentInstance& xform = spline_entity->getComponent<nap::TransformComponentInstance>();
-
-	std::vector<nap::LaserOutputComponentInstance*> outputs;
-	laser_output_entity->getComponentsOfType<nap::LaserOutputComponentInstance>(outputs);
-	assert(line.getMesh().get_type().is_derived_from(RTTI_OF(nap::PolyLine)));
-	
-	nap::PolyLine& poly_line = static_cast<nap::PolyLine&>(line.getMesh());
-	for (const auto& output : outputs)
-	{
-		output->setLine(poly_line, xform.getGlobalTransform());
-	}
 }
 
 
