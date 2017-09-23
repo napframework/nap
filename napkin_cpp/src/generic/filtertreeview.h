@@ -7,9 +7,12 @@
 #include <QAction>
 #include <QStandardItem>
 #include <QItemSelectionModel>
-#include <QtWidgets/QAbstractItemView>
+#include <QAbstractItemView>
+#include <QMenu>
+#include <functional>
 
 #include "leaffilterproxymodel.h"
+
 
 
 class FilterTreeView : public QWidget {
@@ -19,25 +22,25 @@ public:
 
     void setModel(QStandardItemModel* model);
 
-    QStandardItemModel* model();
+    QStandardItemModel* model() const;
 
     QTreeView& tree()
     { return treeView; }
 
     QStandardItem* selectedItem();
 
-    QList<QStandardItem*> selectedItems();
+    QList<QStandardItem*> selectedItems() const;
 
-    QItemSelectionModel* selectionModel()
-    { return treeView.selectionModel(); }
+    QItemSelectionModel* selectionModel() const { return treeView.selectionModel(); }
 
-    QList<QModelIndex> selectedIndexes();
+    QList<QModelIndex> selectedIndexes() const;
+
+    using MenuHookFn = std::function<void(QMenu&)>;
+    void setMenuHook(MenuHookFn fn) { mMenuHookFn = fn; }
 
 protected:
     void onFilterChanged(const QString& text);
-
     void onExpandSelected();
-
     void onCollapseSelected();
 
     /**
@@ -52,6 +55,7 @@ private:
     QLineEdit leFilter;
     QTreeView treeView;
     LeafFilterProxyModel sortFilter;
+    MenuHookFn mMenuHookFn = nullptr;
 
     QAction actionExpandAll;
     QAction actionCollapseAll;

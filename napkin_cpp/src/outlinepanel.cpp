@@ -2,6 +2,8 @@
 #include "napgeneric.h"
 
 #include "globals.h"
+#include "actions.h"
+
 using namespace napkin;
 
 ObjectItem::ObjectItem(nap::rtti::RTTIObject& rttiObject) : mObject(rttiObject) {
@@ -70,6 +72,17 @@ OutlinePanel::OutlinePanel() {
     connect(&AppContext::get(), &AppContext::fileOpened, this, &OutlinePanel::onFileOpened);
     connect(mTreeView.selectionModel(), &QItemSelectionModel::selectionChanged, this,
             &OutlinePanel::onSelectionChanged);
+
+    mTreeView.setMenuHook(std::bind(&OutlinePanel::menuHook, this, std::placeholders::_1));
+}
+
+void OutlinePanel::menuHook(QMenu& menu)
+{
+    ObjectActionFactory actionFactory;
+    auto item = mTreeView.selectedItem();
+    if (item != nullptr)
+        for (QAction* action : actionFactory.actionsFor(item))
+            menu.addAction(action);
 }
 
 void OutlinePanel::onFileOpened(const QString& filename) {
@@ -88,4 +101,40 @@ void OutlinePanel::onSelectionChanged(const QItemSelection& selected, const QIte
     }
 
     selectionChanged(selectedObjects);
+}
+
+std::vector<rttr::instance> OutlinePanel::selectedInstances() const
+{
+    std::vector<rttr::instance> instances;
+    for (QStandardItem* item : mTreeView.selectedItems()) {
+        auto objItem = dynamic_cast<ObjectItem*>(item);
+        if (objItem == nullptr)
+            continue;
+        instances.emplace_back(objItem->object());
+    }
+    return instances;
+}
+
+QList<QAction*> ObjectActionFactory::actionsFor(QStandardItem* item)
+{
+    QList<QAction*> actions;
+
+    auto objItem = dynamic_cast<ObjectItem*>(item);
+    if (objItem != nullptr) {
+        rttr::instance instance = objItem->object();
+        if (instance.get_derived_type().is_derived_from(RTTI_OF(nap::Entity))) {
+            actions << new AddEntityAction(instance.try_convert<nap::Entity>());
+        }
+    }
+
+    auto groupItem = dynamic_cast<GroupItem*>(item);
+    if (groupItem != nullptr) {
+        // No way to tell a resource/instance apart. Go refactor this and behold why this is here.
+        if (groupItem->text() == TXT_LABEL_ENTITIES) {
+            actions << new AddEntityAction(nullptr);
+        }
+    }
+
+
+    return actions;
 }

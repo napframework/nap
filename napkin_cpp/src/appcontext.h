@@ -29,10 +29,13 @@ public:
     nap::rtti::OwnedObjectList& loadedObjects() { return mObjects; }
     const QString& currentFilename() { return mCurrentFilename; }
 
-signals:
+    QList<rttr::instance> selectedObjects() const;
 
+signals:
     void fileOpened(const QString& filename);
     void fileSaved(const QString& filename);
+
+    void selectionChanged();
 
 private:
     AppContext();

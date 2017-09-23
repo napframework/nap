@@ -27,7 +27,7 @@ void FilterTreeView::setModel(QStandardItemModel* model) {
     sortFilter.setSourceModel(model);
 }
 
-QStandardItemModel* FilterTreeView::model() {
+QStandardItemModel* FilterTreeView::model() const {
     return dynamic_cast<QStandardItemModel *>(sortFilter.sourceModel());
 }
 
@@ -38,14 +38,14 @@ QStandardItem* FilterTreeView::selectedItem() {
 }
 
 
-QList<QStandardItem*> FilterTreeView::selectedItems() {
+QList<QStandardItem*> FilterTreeView::selectedItems() const {
     QList<QStandardItem *> ret;
     for (auto idx : selectedIndexes())
         ret.append(model()->itemFromIndex(idx));
     return ret;
 }
 
-QList<QModelIndex> FilterTreeView::selectedIndexes() {
+QList<QModelIndex> FilterTreeView::selectedIndexes() const {
     QList<QModelIndex> ret;
     for (auto idx : selectionModel()->selectedRows())
         ret.append(sortFilter.mapToSource(idx));
@@ -84,6 +84,9 @@ void FilterTreeView::expandChildren(QTreeView* view, const QModelIndex& idx, boo
 void FilterTreeView::onCustomContextMenuRequested(const QPoint& pos)
 {
     QMenu menu;
+
+    if (mMenuHookFn != nullptr)
+        mMenuHookFn(menu);
 
     actionExpandAll.setText("Expand All");
     menu.addAction(&actionExpandAll);

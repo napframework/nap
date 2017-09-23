@@ -106,6 +106,11 @@ const QString AppContext::lastOpenedFilename()
     return settings.value(LAST_OPENED_FILE).toString();
 }
 
+QList<rttr::instance> AppContext::selectedObjects() const
+{
+
+}
+
 
 
 

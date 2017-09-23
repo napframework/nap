@@ -5,7 +5,11 @@
 #include <QFileDialog>
 #include <QString>
 #include <QStandardItem>
-#include <QtCore/QSet>
+#include <QSet>
+#include <QUndoCommand>
+#include <nap/entity.h>
+#include <nap/logger.h>
+
 #include "appcontext.h"
 
 class OpenFileAction : public QAction {
@@ -38,29 +42,34 @@ private:
 };
 
 
-class AddRTTIObject : public QAction {
+class AddEntityAction : public QAction {
 public:
-    AddRTTIObject(rttr::type type) : QAction()
+    AddEntityAction(nap::Entity* parent) : QAction(), mParent(parent)
     {
-        setText(QString("Add %1").arg(type.get_name().data()));
+        setText("Add Entity");
     }
 
 private:
-    void perform();
+    void perform() {
+
+//        mParent->mChildren.emplace_back(std::make_unique<nap::Entity>());
+    }
+
+    nap::Entity* mParent;
 };
 
-class ActionFactory {
+class AddComponentAction : public QAction {
 public:
-    QList<QAction*> actionsFor(QList<QStandardItem*> items) {
-        // TODO
+    AddComponentAction(nap::Entity& entity, nap::rtti::TypeInfo type) : QAction(), mEntity(entity), mComponentType(type) {}
+
+private:
+    void perform() {
+
     }
 
-    QList<QAction*> actionsFor(QStandardItem* item) {
-        // TODO
-    }
+private:
+    nap::Entity& mEntity;
+    nap::rtti::TypeInfo mComponentType;
 };
 
-//class DeleteAction : public QAction {
-//public:
-//    DeleteAction(QObject)
-//};
+
