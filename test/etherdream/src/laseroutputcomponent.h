@@ -15,13 +15,16 @@ namespace nap
 	class LaserOutputComponentInstance;
 
 	/**
-	 *	Laser output properties
+	 * Laser output properties
+	 * Note that the framerate controls the amount of points a single frame can have, together
+	 * with the point rate of the laser output DAC
 	 */
 	struct LaserOutputProperties
 	{
 		glm::vec2	mFrustrum = { 500.0f, 500.0f };		//< Frustrum of the laser in world space
 		bool		mFlipHorizontal = false;			//< If the output should be flipped horizontal
 		bool		mFlipVertical = false;				//< If the output should be flipped vertical
+		int			mFrameRate = 60;					//< Preferred framerate
 	};
 
 
@@ -79,9 +82,11 @@ namespace nap
 
 	private:
 		// Populate Laser Buffer
-		void populateLaserBuffer(const std::vector<glm::vec3>& verts, const std::vector<glm::vec4>& colors, const glm::mat4x4& laserXform, const glm::mat4x4& lineXform);
+		void populateLaserBuffer(const PolyLine& line, const glm::mat4x4& laserXform, const glm::mat4x4& lineXform);
 
 		// Converted laser points
 		std::vector<nap::EtherDreamPoint> mPoints;
+		std::vector<glm::vec3> mVerts;
+		std::vector<glm::vec4> mColors;
 	};
 }
