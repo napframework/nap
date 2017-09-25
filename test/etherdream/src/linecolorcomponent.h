@@ -47,6 +47,12 @@ namespace nap
 	};
 
 
+	/**
+	 * Colors a line based on a bitmap
+	 * The end and start vertices are given uv coordinates that are used to perform a bitmap color lookup
+	 * The remaining vertices are assigned uv's based on those boundary uv coordinates
+	 * This ensures the line only receives colors associated with a bitmap and no blended (interpolated) colors
+	 */
 	class LineColorComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)

@@ -17,7 +17,8 @@ namespace nap
 	/**
 	 * Laser output properties
 	 * Note that the framerate controls the amount of points a single frame can have, together
-	 * with the point rate of the laser output DAC
+	 * with the point rate of the laser output DAC. When a dac sends 30.000 points per second and the framerate
+	 * is 60, the total number of points per frame will be 500: 30000.0 / 60.0. 
 	 */
 	struct LaserOutputProperties
 	{
@@ -29,8 +30,7 @@ namespace nap
 
 
 	/**
-	 * Component that converts and sends data to the laser output DAC
-	 * Converts and outputs lines to a specific laser DAC
+	 * Component that converts and sends data to ether-dream laser DAC
 	 */
 	class LaserOutputComponent : public Component
 	{
@@ -50,7 +50,10 @@ namespace nap
 
 
 	/**
-	 *	Sends lines to an etherdream laser DAC
+	 * Converts and sends PolyLines to an ether-dream laser DAC
+	 * This component re-samples the polyline and creates additional points for gaps
+	 * between the beginning and ends of line segments. The final distribution
+	 * depends on the line to gap ratio of the line that is updated and sent.
 	 */
 	class LaserOutputComponentInstance : public ComponentInstance
 	{
@@ -85,8 +88,8 @@ namespace nap
 		void populateLaserBuffer(const PolyLine& line, const glm::mat4x4& laserXform, const glm::mat4x4& lineXform);
 
 		// Converted laser points
-		std::vector<nap::EtherDreamPoint> mPoints;
-		std::vector<glm::vec3> mVerts;
-		std::vector<glm::vec4> mColors;
+		std::vector<nap::EtherDreamPoint> mPoints;			//< DAC points
+		std::vector<glm::vec3> mVerts;						//< Converted vertex positions
+		std::vector<glm::vec4> mColors;						//< Converted vertex colors 		
 	};
 }

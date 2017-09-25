@@ -40,12 +40,14 @@ static int16_t sEtherInterpolate(float value, float min, float max, bool flip)
 }
 
 
+// Interpolate normalized color channel to min / max laser value 
 static int16_t sEtherInterpolateColor(float inValue)
 {
 	return static_cast<int16_t>(lerp<float>(0.0f, ehterMaxValueFloat, inValue));
 }
 
 
+// bi-cubic ease in / out utility that is used to close the gap between disconnected begin / end points
 static float gapEaseInOut(float p)
 {
 	if (p < 0.5) 
@@ -125,8 +127,8 @@ namespace nap
 		int line_points = ppf;
 		
 		// If there is a certain distance between the first and last vertex of the line we can redistribute the points
-		// otherwise the entire line is taken up by the initial line and there is no gap, ie: no point distribution
-		bool has_gap = gap_dist > math::epsilon<float>();
+		// otherwise the entire line is taken up by the initial line and there is no gap, ie: all points belong to the actual line
+		bool has_gap = gap_dist > math::epsilon<float>() && !(line.isClosed());
 		if (has_gap)
 		{
 			// Get complete line distance
@@ -141,7 +143,6 @@ namespace nap
 		}
 
 		// Populate re-interpolated line buffer based on line length
-		//float line_inc = 1.0f / static_cast<float>(math::max<int>(line_points, 1) - 1);
 		float line_inc = 1.0f / static_cast<float>(std::max(line_points - (has_gap ? 1 : 0),1));
 		for (int i = 0; i < line_points; i++)
 		{
@@ -174,9 +175,6 @@ namespace nap
 
 		// Reserve all the points
 		mPoints.resize(mVerts.size());
-
-		// Sample xform for object movement
-		const glm::mat4x4& global_xform = lineXform;
 
 		// Go over the curves and set data
 		for (uint32 i = 0; i < mVerts.size(); i++)

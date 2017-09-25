@@ -95,7 +95,7 @@ namespace nap
 		for (int i = 0; i < vert_count; i++)
 		{
 			float lerp_v = static_cast<float>(i) * inc;
-			lerp_v = mWrap ? math::bell(lerp_v, mPower) : lerp_v;
+			lerp_v = mWrap ? math::bell<float>(lerp_v, mPower) : lerp_v;
 
 			// Get interpolated uv coordinates
 			lerped_uv_coordinates = math::lerp<glm::vec2>(mStartPosition, mEndPosition, lerp_v);

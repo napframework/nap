@@ -6,12 +6,6 @@ namespace nap
 {
 	namespace math
 	{
-		float bell(float t, float inStrength)
-		{
-			return power<float>(4.0f, inStrength) * power<float>(t *(1.0f - t), inStrength);
-		}
-
-
 		template<>
 		float lerp<float>(const float& start, const float& end, float percent)
 		{

@@ -10,8 +10,8 @@ namespace nap
 	class LineNoiseComponentInstance;
 
 	/**
-	*	Properties associated with the line modulation component
-	*/
+	 * Properties associated with the line noise modulation component
+	 */
 	struct NoiseProperties
 	{
 		float mFrequency = 1.0f;							// Frequency of the waveform
@@ -55,6 +55,7 @@ namespace nap
 
 		/**
 		* Updates the line color
+		* @param deltaTime the time in between frames in seconds
 		*/
 		virtual void update(double deltaTime) override;
 

@@ -45,6 +45,9 @@ namespace nap
 	};
 
 
+	/**
+	 *	Helper component that translates received OSC events in to specific app actions
+	 */
 	class OSCLaserInputHandlerInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)

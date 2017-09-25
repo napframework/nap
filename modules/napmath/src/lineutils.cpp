@@ -108,10 +108,9 @@ namespace nap
 		outNormal = n_lower_value * rotation_matrix;
 
 		// Ensure the normal is valid
-#ifdef DEBUG
-		glm::tvec3<bool> nanvec = glm::isnan(outNormal);
-		assert(!(nanvec.x) && !(nanvec.y) && !(nanvec.z));
-#endif // DEBUG
+		assert(!(glm::isnan(outNormal).x));
+		assert(!(glm::isnan(outNormal).y));
+		assert(!(glm::isnan(outNormal).z));
 	}
 
 }

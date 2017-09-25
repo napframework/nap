@@ -89,9 +89,12 @@ namespace nap
 		T sign(T value);
 
 		/**
-		 *	@return a bell shaped curve based on value t (0-1)
+		 * @return a bell shaped curve based on value t (0-1)
+		 * @param time value in the range 0-1 to get value for
+		 * @param strength exponent of the bell curve
 		 */
-		NAPAPI float bell(float t, float inStrength);
+		template<typename T>
+		T bell(T time, T strength);
 
 
 		//////////////////////////////////////////////////////////////////////////
@@ -159,6 +162,12 @@ namespace nap
 		T sign(T value)
 		{
 			return static_cast<T>(value == 0 ? 0 : value > 0 ? 1 : -1);
+		}
+
+		template<typename T>
+		T bell(T t, T strength)
+		{
+			return power<T>(4.0f, strength) * power<T>(t *(1.0f - t), strength);
 		}
 
 		//////////////////////////////////////////////////////////////////////////

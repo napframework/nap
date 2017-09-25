@@ -9,7 +9,7 @@ namespace nap
 	namespace math
 	{
 		/**
-		 *	Simple 2D rectangle including utility functions
+		 *	Simple 2D rectangle
 		 */
 		class NAPAPI Rectangle final
 		{

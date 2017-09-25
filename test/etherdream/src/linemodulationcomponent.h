@@ -60,6 +60,7 @@ namespace nap
 
 		/**
 		* Updates the line color
+		* @param deltaTime the time in between frames in seconds
 		*/
 		virtual void update(double deltaTime) override;
 

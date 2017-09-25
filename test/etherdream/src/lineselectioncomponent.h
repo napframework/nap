@@ -13,7 +13,7 @@ namespace nap
 	class LineSelectionComponentInstance;
 
 	/**
-	 * LineSelectionComponent
+	 * LineSelectionComponent Resource
 	 */
 	class LineSelectionComponent : public Component
 	{
@@ -28,6 +28,10 @@ namespace nap
 	};
 
 
+	/**
+	 * Holds a set of lines that the user can select from
+	 * When a line index changes the mIndexChanged signal is emitted
+	 */
 	class LineSelectionComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
