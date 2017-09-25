@@ -1,6 +1,7 @@
 #pragma once
 
 #include <GL/glew.h>
+#include <vector>
 
 namespace opengl
 {
@@ -134,6 +135,9 @@ namespace opengl
 		 * Make sure that the data the pointer points at matches the size of the texture settings provided!
 		 */
 		void setData(void* data);
+
+		int getDataSize() const;
+		void getData(std::vector<uint8_t>& data);
 
 	private:
 		Texture2DSettings mSettings;
