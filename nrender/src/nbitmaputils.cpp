@@ -1,5 +1,6 @@
 #include "nbitmaputils.h"
 #include "nglutils.h"
+#include "utility/errorstate.h"
 #include <assert.h>
 #include <algorithm>
 
@@ -101,11 +102,11 @@ namespace opengl
 
 
 	// Loads bitmap from image file path
-	Bitmap* loadBitmap(const std::string& imgPath)
+	Bitmap* loadBitmap(const std::string& imgPath, nap::utility::ErrorState& errorState)
 	{
 		// Create a new bitmap
 		opengl::Bitmap* nbitmap = new Bitmap();
-		if (!loadBitmap(*nbitmap, imgPath))
+		if (!loadBitmap(*nbitmap, imgPath, errorState))
 		{
 			delete nbitmap;
 			return nullptr;
@@ -115,21 +116,17 @@ namespace opengl
 
 
 	// loads a bitmap from file
-	bool loadBitmap(Bitmap& bitmap, const std::string& imgPath)
+	bool loadBitmap(Bitmap& bitmap, const std::string& imgPath, nap::utility::ErrorState& errorState)
 	{
 		// Get format
 		FREE_IMAGE_FORMAT fi_img_format = FreeImage_GetFIFFromFilename(imgPath.c_str());
-		if (fi_img_format == FIF_UNKNOWN)
-		{
-			printMessage(MessageType::ERROR, "unable to determine image format of file: %s", imgPath.c_str());
+		if (!errorState.check(fi_img_format != FIF_UNKNOWN, "Unable to determine image format of file: %s", imgPath.c_str()))
 			return false;
-		}
 
 		// Load
 		FIBITMAP* fi_bitmap = FreeImage_Load(fi_img_format, imgPath.c_str());
-		if (fi_bitmap == nullptr)
+		if (!errorState.check(fi_bitmap != nullptr, "Unable to load bitmap: %s", imgPath.c_str()))
 		{
-			printMessage(MessageType::ERROR, "unable to load bitmap: %s", imgPath.c_str());
 			FreeImage_Unload(fi_bitmap);
 			return false;
 		}
@@ -137,9 +134,8 @@ namespace opengl
 		// Get associated bitmap type for free image type
 		FREE_IMAGE_TYPE fi_bitmap_type = FreeImage_GetImageType(fi_bitmap);
 		BitmapDataType bitmap_type = getBitmapType(fi_bitmap_type);
-		if (bitmap_type == BitmapDataType::UNKNOWN)
+		if (!errorState.check(bitmap_type != BitmapDataType::UNKNOWN, "Unable to find matching bitmap type for free image type: %d", static_cast<int>(fi_bitmap_type)))
 		{
-			printMessage(MessageType::ERROR, "Unable to find matching bitmap type for free image type: %d", static_cast<int>(fi_bitmap_type));
 			FreeImage_Unload(fi_bitmap);
 			return false;
 		}
@@ -147,9 +143,8 @@ namespace opengl
 		// Get color type
 		FREE_IMAGE_COLOR_TYPE fi_bitmap_color_type = FreeImage_GetColorType(fi_bitmap);
 		BitmapColorType bitmap_color = getColorType(fi_bitmap_color_type, fi_bitmap_type);
-		if (bitmap_color == BitmapColorType::UNKNOWN)
+		if (!errorState.check(bitmap_color != BitmapColorType::UNKNOWN, "Unable to find matching bitmap color type for free image type: %d", static_cast<int>(fi_bitmap_color_type)))
 		{
-			printMessage(MessageType::ERROR, "Unable to find matching bitmap color type for free image type: %d", static_cast<int>(fi_bitmap_color_type));
 			FreeImage_Unload(fi_bitmap);
 			return false;
 		}
@@ -170,7 +165,10 @@ namespace opengl
 		// Copy free image data in our own bitmap container
 		uint8_t* fi_data = FreeImage_GetBits(fi_bitmap);
 		assert(fi_data != nullptr);
+		
 		bool success = bitmap.copyData(fi_data);
+		assert(success);
+
 		FreeImage_Unload(fi_bitmap);
 		return success;
 	}

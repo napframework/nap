@@ -1,5 +1,7 @@
 #include "ntextureutils.h"
 #include "nglutils.h"
+#include "assert.h"
+#include "utility/errorstate.h"
 
 namespace opengl
 {
@@ -162,69 +164,32 @@ namespace opengl
 
 
 	// Populates a Texture2D object with settings matching the bitmap
-	bool setFromBitmap(Texture2D& texture, const BitmapBase& bitmap, bool compress)
+	bool getSettingsFromBitmap(const BitmapBase& bitmap, bool compress, Texture2DSettings& settings, nap::utility::ErrorState& errorState)
 	{
-		if (!checkBitmap(bitmap))
-			return false;
-
-		// Get texture settings
-		opengl::Texture2DSettings texture_settings;
+		assert(checkBitmap(bitmap));
 
 		// Fetch matching values
 		GLint internal_format = getGLInternalFormat(bitmap.getColorType(), compress);
-		if (internal_format == GL_INVALID_VALUE)
-		{
-			printMessage(MessageType::ERROR, "unable to set texture from bitmap, invalid internal format");
+		if (!errorState.check(internal_format != GL_INVALID_VALUE, "Unable to determine internal format from bitmap"))
 			return false;
-		}
 
 		GLenum format = getGLFormat(bitmap.getColorType());
-		if (format == GL_INVALID_ENUM)
-		{
-			printMessage(MessageType::ERROR, "unable to set texture from bitmap, invalid format");
+		if (!errorState.check(format != GL_INVALID_ENUM, "Unable to determine format from bitmap"))
 			return false;
-		}
 
 		GLenum type = getGLType(bitmap.getDataType());
-		if (type == GL_INVALID_ENUM)
-		{
-			printMessage(MessageType::ERROR, "unable to set texture from bitmap, invalid type");
+		if (!errorState.check(type != GL_INVALID_ENUM, "Unable to determine texture type from bitmap"))
 			return false;
-		}
 
 		// Populate settings with fetched values from bitmap
-		texture_settings.internalFormat = internal_format;
-		texture_settings.format = format;
-		texture_settings.type = type;
-		texture_settings.width = bitmap.getWidth();
-		texture_settings.height = bitmap.getHeight();
+		settings.internalFormat = internal_format;
+		settings.format = format;
+		settings.type = type;
+		settings.width = bitmap.getWidth();
+		settings.height = bitmap.getHeight();
 
-		// Set texture data
-		texture.setData(texture_settings, bitmap.getData());
 		return true;
 	}
-
-
-	//  Creates a new Texture2D object with settings derived from the bitmap
-	Texture2D* createFromBitmap(const BitmapBase& bitmap, bool compress)
-	{
-		if (!checkBitmap(bitmap))
-			return nullptr;
-
-		// Create and initialize, allocating the texture on the GPU
-		Texture2D* new_texture = new Texture2D();
-		new_texture->init();
-
-
-		// Set bitmap data, on fail delete and reset ptr
-		if (!setFromBitmap(*new_texture, bitmap, compress))
-		{
-			delete new_texture;
-			new_texture = nullptr;
-		}
-		return new_texture;
-	}
-
 
 	// Checks if the texture is compressed on the GPU and it's size on the GPU
 	bool isCompressed(BaseTexture& texture, GLint& size, GLint& type)

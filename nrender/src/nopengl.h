@@ -16,7 +16,6 @@
 #include "nbitmap.h"
 #include "nbitmaputils.h"
 #include "ntextureutils.h"
-#include "nimage.h"
 #include "nvertexarrayobject.h"
 #include "ngltypes.h"
 #include "nvertexbuffer.h"

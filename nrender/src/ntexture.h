@@ -36,7 +36,7 @@ namespace opengl
 		 *
 		 * Creates / Destroys associated OpenGL texture
 		 */
-		BaseTexture();
+		BaseTexture(GLenum inTargetType);
 		virtual ~BaseTexture();
 
 		/**
@@ -56,26 +56,15 @@ namespace opengl
 		void init();
 
 		/**
-		 * sets the parameters to be used when initializing the Texture
-		 * @param parameters the parameters to associate with this texture
-		 */
-		void setParameters(const opengl::TextureParameters& parameters);
-
-		/**
 		 * All future texture functions will modify this texture
 		 * Derived classes need to implement this for 2d or 3d textures
 		 */
-		bool bind();
+		void bind();
 		
 		/**
 		 * Unbind texture
 		 */
-		bool unbind();
-
-		/**
-		 * @return texture target type (2D, 3D, 2D array etc.)
-		 */
-		virtual GLenum getTargetType() const = 0;
+		void unbind();
 
 		/**
 		 * @Return current GPU texture location
@@ -89,24 +78,12 @@ namespace opengl
 		 */
 		void updateParameters(const TextureParameters& settings);
 
+		void setParameters(const TextureParameters& settings);
+
 		/**
 		 * @return currently used texture parameters
 		 */
 		const TextureParameters& getParameters() const		{ return mParameters; }
-
-		/**
-		 * @return if the texture object is generated and allocated on the GPU
-		 * The texture is allocated the moment init() is called
-		 */
-		bool isAllocated() const							{ return mTextureId != 0; }
-
-		/**
-		 * Uploads the data on the GPU for this texture object
-		 * This call is forwarded to onSetData after successfully binding the texture object
-		 * If the current parameters contain a mip map filter mip maps will be generated
-		 * @param pointer to the image data in memory, can be a nullptr if data is set externally using an FBO
-		 */
-		void setData(void* data);
 
 		/**
 		* Creates mip-maps for the texture on the GPU
@@ -116,73 +93,17 @@ namespace opengl
 		*/
 		void generateMipMaps();
 
+		GLenum getTargetType() const { return mTargetType; }
+
 	protected:
 		// Texture ID
-		GLuint				mTextureId = 0;			// Currently associated texture ID on GPU
+		GLuint				mTextureId;				// Currently associated texture ID on GPU
+		GLenum				mTargetType;
 		TextureParameters	mParameters;			// Texture specific 
-
-		/**
-		 * onSetData
-		 * 
-		 * called when data has to be uploaded to the GPU
-		 * uses the texture settings object as reference
-		 */
-		virtual void onSetData(void* data) = 0;
 	};
 
 
 	//////////////////////////////////////////////////////////////////////////
-
-
-	/**
-	 * Texture
-	 *
-	 * Defines a texture associated with a set of settings
-	 * Settings are used to upload data to the GPU for the specified target type
-	 * Using this interface settings are handled automatically before data is set
-	 */
-	template<typename S>
-	class Texture : public BaseTexture
-	{
-	public:
-		Texture() = default;
-
-		/**
-		 * getSettings / setSettings
-		 *
-		 * gets or sets texture specific texture settings
-		 * it's important to set settings before setting data
-		 * the settings are used to push data on to the GPU
-		 */
-		const S&	getSettings()						{ return mSettings; }
-		void		setSettings(const S& settings)		{ mSettings = settings; }
-
-		/**
-		 * setData
-		 *
-		 * Sets the data based on the settings provided
-		 * Note that settings need to match data size of data pointer!
-		 */
-		virtual void setData(const S& settings, void* data)
-		{
-			mSettings = settings;
-			BaseTexture::setData(data);
-		}
-
-		/**
-		 * Specifies a texture in GPU memory based on the provided settings
-		 * This call is similar to setData but without actually uploading any data from memory
-		 * Use this when data is provided externally, for example a framebuffer
-		 */
-		void allocate(const S& settings)
-		{
-			setData(settings, nullptr);
-		}
-
-	protected:
-		S mSettings;	//< Texture associated settings
-	};
-
 
 	/**
 	* Texture2Dsettings
@@ -199,24 +120,20 @@ namespace opengl
 		GLenum type = GL_UNSIGNED_BYTE;		//< Data type of the pixel data (GL_UNSIGNED_BYTE etc..)
 	};
 
-
 	/**
 	 * Texture2D
 	 *
 	 * Represents a 2 dimensional texture on the GPU
 	 */
-	class Texture2D : public Texture<Texture2DSettings>
+	class Texture2D : public BaseTexture
 	{
 	public:
 		// Default constructor
-		Texture2D() = default;
+		Texture2D();
 
-		/**
-		 * getTargetType
-		 * 
-		 * This texture's OpenGL target type is a GL_TEXTURE_2D
-		 */
-		GLenum getTargetType() const override		{ return GL_TEXTURE_2D; }
+		void init(const Texture2DSettings& textureSettings);
+
+		const Texture2DSettings& getSettings() const { return mSettings; }
 
 		/**
 		 * setData
@@ -224,6 +141,9 @@ namespace opengl
 		 * Uploads 2d pixel data to the GPU
 		 * Make sure that the data the pointer points at matches the size of the texture settings provided!
 		 */
-		void onSetData(void* data) override;
+		void setData(void* data);
+
+	private:
+		Texture2DSettings mSettings;
 	};
 } // opengl

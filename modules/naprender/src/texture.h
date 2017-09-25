@@ -82,13 +82,13 @@ namespace nap
 		* Binds the texture
 		* @return if the texture was bound successfully
 		*/
-		virtual bool bind();
+		virtual void bind();
 
 		/**
 		* Unbinds the texture
 		* @return if the texture wan unbound successfully
 		*/
-		virtual bool unbind();
+		virtual void unbind();
 
 		/**
 		*	Holds all the texture related parameters
@@ -126,8 +126,7 @@ namespace nap
 		opengl::Texture2DSettings mSettings;
 
 	private:
-		std::unique_ptr<opengl::Texture2D> mTexture;				// Texture as created during init
-		std::string mDisplayName = "MemoryTexture2D";				// Custom display name
+		opengl::Texture2D	mTexture;	// Internal opengl texture
 	};
 }
 

@@ -110,20 +110,35 @@ void nap::convertTextureParameters(const TextureParameters& input, opengl::Textu
 
 namespace nap
 {
+	// Non const getter, following:
+	opengl::BaseTexture& Texture::getTexture()
+	{
+		return const_cast<opengl::BaseTexture&>(static_cast<const Texture&>(*this).getTexture());
+	}
+
+	void Texture::bind()
+	{
+		getTexture().bind();
+	}
+
+
+	void Texture::unbind()
+	{
+		getTexture().unbind();
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+
+
 	// Initializes 2D texture. Additionally a custom display name can be provided.
 	bool MemoryTexture2D::init(utility::ErrorState& errorState)
 	{
-		// Create 2D texture
-		mTexture = std::make_unique<opengl::Texture2D>();
-
 		// Create the texture with the associated settings
 		opengl::TextureParameters gl_params;
 		convertTextureParameters(mParameters, gl_params);
-		mTexture->setParameters(gl_params);
-		mTexture->init();
-
-		// Allocate the texture with the associated 2D image settings
-		mTexture->allocate(mSettings);
+		mTexture.setParameters(gl_params);
+		mTexture.init(mSettings);
 
 		return true;
 	}
@@ -132,26 +147,13 @@ namespace nap
 	// Returns 2D texture object
 	const opengl::BaseTexture& MemoryTexture2D::getTexture() const
 	{
-		assert(mTexture != nullptr);
-		return *mTexture;
+		return mTexture;
 	}
 
 
 	const glm::vec2 MemoryTexture2D::getSize() const
 	{
-		return glm::vec2(mTexture->getSettings().width, mTexture->getSettings().height);
-	}
-
-
-	bool Texture::bind()
-	{
-		return getTexture().bind();
-	}
-
-
-	bool Texture::unbind()
-	{
-		return getTexture().unbind();
+		return glm::vec2(mTexture.getSettings().width, mTexture.getSettings().height);
 	}
 
 }

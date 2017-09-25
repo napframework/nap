@@ -20,19 +20,19 @@
 		{
 			"Type" : "nap::Image",
 			"mID" : "PigTexture",
-			"mImagePath" : "data/pig_head.jpg"
+			"ImagePath" : "data/pig_head.jpg"
 		},
 		
 		{
 			"Type" : "nap::Image",	
 			"mID" : "WorldTexture",
-			"mImagePath" : "data/world_texture.jpg"
+			"ImagePath" : "data/world_texture.jpg"
 		},
 
 		{
 			"Type" : "nap::Image",
 			"mID" : "TestTexture",
-			"mImagePath" : "data/test.jpg"
+			"ImagePath" : "data/test.jpg"
 		},
 
 		{

@@ -6,7 +6,6 @@
 // External Includes
 #include <rtti/rttiobject.h>
 #include <utility/dllexport.h>
-#include <nimage.h>
 #include <glm/glm.hpp>
 
 namespace nap
@@ -33,13 +32,6 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * @return opengl image + bitmap data
-		 * Note that this implicitly loads the image
-		 * Make sure that the image is loaded successfully
-		 */
-		const opengl::Image& getImage() const;
-
-		/**
 		 * @return opengl texture object
 		 * Note that this implicitly loads the image
 		 */
@@ -53,10 +45,11 @@ namespace nap
 	public:
 		// Path to img on disk
 		std::string				mImagePath;
+		bool					mStoreCompressed = false;
 
 	private:
 		// Opengl Image Object
-		std::unique_ptr<opengl::Image>	mImage = nullptr;
+		opengl::Texture2D		mTexture;				// OpenGL Texture
 	};
 
 }

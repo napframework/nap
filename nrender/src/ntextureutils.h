@@ -7,6 +7,14 @@
 // External Includes
 #include <GL/glew.h>
 
+namespace nap
+{
+	namespace utility
+	{
+		class ErrorState;
+	}
+}
+
 namespace opengl
 {
 	/**
@@ -47,18 +55,8 @@ namespace opengl
 	 * @param texture: the texture to populate based on @bitmap
 	 * @param compress: if the texture should be compressed when uploaded to the GPU  
 	 */
-	bool		setFromBitmap(Texture2D& texture, const BitmapBase& bitmap, bool compress = false);
+	bool		getSettingsFromBitmap(const BitmapBase& bitmap, bool compress, Texture2DSettings& settings, nap::utility::ErrorState& errorState);
 
-
-	/**
-	 * createFromBitmap
-	 *
-	 * Creates a new Texture2D object with settings derived from the bitmap
-	 * Similar to setFromBitmap, only returns a new Texture2D object
-	 * This call DOES initialize the texture 2D object, otherwise it can't be set
-	 * @param return: new 2D object or nullptr if not successful
-	 */
-	Texture2D*	createFromBitmap(const BitmapBase& bitmap, bool compress = false);
 
 	/**
 	 * isCompressed
