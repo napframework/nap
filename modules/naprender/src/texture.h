@@ -86,7 +86,16 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 	public:
-		opengl::Texture2DSettings	mSettings;
+		enum class EFormat
+		{
+			RGBA8,
+			RGB8,
+			Depth
+		};
+
+		int		mWidth;
+		int		mHeight;
+		EFormat	mFormat;
 	};
 }
 

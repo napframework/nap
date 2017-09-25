@@ -16,6 +16,12 @@ RTTI_BEGIN_ENUM(nap::EWrapMode)
 	RTTI_ENUM_VALUE(nap::EWrapMode::ClampToBorder,	"ClampToBorder")
 RTTI_END_ENUM
 
+RTTI_BEGIN_ENUM(nap::MemoryTexture2D::EFormat)
+	RTTI_ENUM_VALUE(nap::MemoryTexture2D::EFormat::RGBA8,	"RGBA8"),
+	RTTI_ENUM_VALUE(nap::MemoryTexture2D::EFormat::RGB8,	"RGB8"),
+	RTTI_ENUM_VALUE(nap::MemoryTexture2D::EFormat::Depth,	"Depth")
+RTTI_END_ENUM
+
 RTTI_BEGIN_CLASS(nap::TextureParameters)
 	RTTI_PROPERTY("MinFilter",			&nap::TextureParameters::mMinFilter,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("MaxFilter",			&nap::TextureParameters::mMaxFilter,		nap::rtti::EPropertyMetaData::Required)
@@ -24,20 +30,14 @@ RTTI_BEGIN_CLASS(nap::TextureParameters)
 	RTTI_PROPERTY("MaxLodLevel",		&nap::TextureParameters::mMaxLodLevel,		nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(opengl::Texture2DSettings)
-	RTTI_PROPERTY("mInternalFormat", &opengl::Texture2DSettings::internalFormat, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("mWidth", &opengl::Texture2DSettings::width, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("mHeight", &opengl::Texture2DSettings::height, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("mFormat", &opengl::Texture2DSettings::format, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("mType", &opengl::Texture2DSettings::type, nap::rtti::EPropertyMetaData::Required)
-RTTI_END_CLASS
-
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Texture2D)
 	RTTI_PROPERTY("mParameters", 		&nap::Texture2D::mParameters,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::MemoryTexture2D)
-	RTTI_PROPERTY("mSettings",			&nap::MemoryTexture2D::mSettings, 	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Width",	&nap::MemoryTexture2D::mWidth, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Height", &nap::MemoryTexture2D::mHeight, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Format", &nap::MemoryTexture2D::mFormat, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -141,7 +141,30 @@ namespace nap
 	// Initializes 2D texture. 
 	bool MemoryTexture2D::init(utility::ErrorState& errorState)
 	{
-		Texture2D::init(mSettings);
+		opengl::Texture2DSettings settings;
+		settings.width = mWidth;
+		settings.height = mHeight;
+
+		switch (mFormat)
+		{
+		case EFormat::RGBA8:
+			settings.format			= GL_RGBA;
+			settings.internalFormat = GL_RGBA8;
+			settings.type			= GL_UNSIGNED_BYTE;
+			break;
+		case EFormat::RGB8:
+			settings.format			= GL_RGB;
+			settings.internalFormat = GL_RGB8;
+			settings.type			= GL_UNSIGNED_BYTE;
+			break;
+		case EFormat::Depth:
+			settings.format			= GL_DEPTH_COMPONENT;
+			settings.internalFormat = GL_DEPTH_COMPONENT;
+			settings.type			= GL_FLOAT;
+			break;
+		}
+		
+		Texture2D::init(settings);
 		return true;
 	}
 

@@ -38,25 +38,17 @@
 		{
 			"Type" : "nap::MemoryTexture2D",
 			"mID" : "ColorTexture",
-			"mSettings" : {
-				"mWidth" : 640,
-				"mHeight" : 480,
-				"mInternalFormat" : 6408,
-				"mFormat" : 6408,
-				"mType" : 5121
-			}
+			"Width" : 640,
+			"Height" : 480,
+			"Format" : "RGBA8"
 		},
 		
 		{
 			"Type" : "nap::MemoryTexture2D",
 			"mID" : "DepthTexture",
-			"mSettings" : {
-				"mWidth" : 640,
-				"mHeight" : 480,
-				"mInternalFormat" : 6402,
-				"mFormat" : 6402,
-				"mType" : 5126
-			}
+			"Width" : 640,
+			"Height" : 480,
+			"Format" : "Depth"
 		},
 		
 		{
