@@ -1,6 +1,5 @@
 #version 150 core
 
-in vec4 pass_Color;			// Vertex colors
 in vec3 pass_Uvs0;			// The global cover uvs
 in vec3 pass_Normals;		// Normals
 in mat4 pass_ModelMatrix;	// Matrix
