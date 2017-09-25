@@ -19,7 +19,7 @@ namespace opengl
 	// Remove texture
 	BaseTexture::~BaseTexture()
 	{
-		if (mTextureId == -1)
+		if (isAllocated())
 			glDeleteTextures(1, &mTextureId);
 	}
 
@@ -27,7 +27,7 @@ namespace opengl
 	//  uploads current parameters to GPU
 	void BaseTexture::init()
 	{
-		assert(mTextureId == -1);
+		assert(!isAllocated());
 
 		// Generate textures
 		glGenTextures(1, &mTextureId);
@@ -40,7 +40,7 @@ namespace opengl
 	// Binds the texture
 	void BaseTexture::bind()
 	{
-		assert(mTextureId != -1);
+		assert(isAllocated());
 		glBindTexture(mTargetType, mTextureId);
 	}
 
@@ -48,7 +48,7 @@ namespace opengl
 	// Detach the texture from the current Texture Unit
 	void BaseTexture::unbind()
 	{
-		assert(mTextureId != -1);
+		assert(isAllocated());
 		glBindTexture(mTargetType, 0);
 	}
 

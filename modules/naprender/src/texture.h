@@ -53,80 +53,40 @@ namespace nap
 
 	//////////////////////////////////////////////////////////////////////////
 
-	/**
-	* Base class for texture resources
-	*/
-	class NAPAPI Texture : public rtti::RTTIObject
+
+	class NAPAPI Texture2D : public rtti::RTTIObject
 	{
 		RTTI_ENABLE(rtti::RTTIObject)
 	public:
-		/**
-		* Virtual override to be implemented by derived classes
-		* @return an opengl texture object
-		*/
-		virtual const opengl::BaseTexture& getTexture() const = 0;
+		void init(opengl::Texture2DSettings& settings);
 
-		/**
-		* Non const accessors
-		* @return an opengl texture object
-		*/
-		opengl::BaseTexture& getTexture();
+		const opengl::Texture2D& getTexture() const { return mTexture; }
+		opengl::Texture2D& getTexture() { return mTexture; }
+		const glm::vec2 getSize() const;
+		void bind();
+		void unbind();
 
-		/**
-		* Virtual override to get the resolution of the texture, to be implemented by derived classes
-		* @return the resolution of the texture
-		*/
-		virtual const glm::vec2 getSize() const = 0;
+		nap::TextureParameters		mParameters;
 
-		/**
-		* Binds the texture
-		* @return if the texture was bound successfully
-		*/
-		virtual void bind();
-
-		/**
-		* Unbinds the texture
-		* @return if the texture wan unbound successfully
-		*/
-		virtual void unbind();
-
-		/**
-		*	Holds all the texture related parameters
-		*/
-		nap::TextureParameters mParameters;
+	private:
+		opengl::Texture2D			mTexture;	// Internal opengl texture
 	};
-
 
 	/**
 	* 2D Texture resource that only has an in-memory representation.
 	*/
-	class NAPAPI MemoryTexture2D : public Texture
+	class NAPAPI MemoryTexture2D : public Texture2D
 	{
-		RTTI_ENABLE(Texture)
+		RTTI_ENABLE(Texture2D)
 	public:
-		using Texture::getTexture;
-
 		/**
 		* Creates internal texture resource.
 		* @return if the texture was created successfully
 		*/
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		/**
-		* @return the 2D texture object
-		*/
-		virtual const opengl::BaseTexture& getTexture() const override;
-
-		/**
-		* @return the resolution of the texture
-		*/
-		virtual const glm::vec2 getSize() const override;
-
 	public:
-		opengl::Texture2DSettings mSettings;
-
-	private:
-		opengl::Texture2D	mTexture;	// Internal opengl texture
+		opengl::Texture2DSettings	mSettings;
 	};
 }
 

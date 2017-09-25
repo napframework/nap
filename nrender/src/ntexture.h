@@ -95,6 +95,9 @@ namespace opengl
 
 		GLenum getTargetType() const { return mTargetType; }
 
+	private:
+		bool isAllocated() const { return mTextureId != -1; }
+
 	protected:
 		// Texture ID
 		GLuint				mTextureId;				// Currently associated texture ID on GPU

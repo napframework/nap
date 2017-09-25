@@ -32,8 +32,8 @@ RTTI_BEGIN_CLASS(opengl::Texture2DSettings)
 	RTTI_PROPERTY("mType", &opengl::Texture2DSettings::type, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Texture)
-	RTTI_PROPERTY("mParameters", 		&nap::Texture::mParameters,			nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Texture2D)
+	RTTI_PROPERTY("mParameters", 		&nap::Texture2D::mParameters,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::MemoryTexture2D)
@@ -110,50 +110,39 @@ void nap::convertTextureParameters(const TextureParameters& input, opengl::Textu
 
 namespace nap
 {
-	// Non const getter, following:
-	opengl::BaseTexture& Texture::getTexture()
-	{
-		return const_cast<opengl::BaseTexture&>(static_cast<const Texture&>(*this).getTexture());
-	}
 
-	void Texture::bind()
-	{
-		getTexture().bind();
-	}
-
-
-	void Texture::unbind()
-	{
-		getTexture().unbind();
-	}
-
-
-	//////////////////////////////////////////////////////////////////////////
-
-
-	// Initializes 2D texture. Additionally a custom display name can be provided.
-	bool MemoryTexture2D::init(utility::ErrorState& errorState)
+	void Texture2D::init(opengl::Texture2DSettings& settings)
 	{
 		// Create the texture with the associated settings
 		opengl::TextureParameters gl_params;
 		convertTextureParameters(mParameters, gl_params);
 		mTexture.setParameters(gl_params);
-		mTexture.init(mSettings);
-
-		return true;
+		mTexture.init(settings);
 	}
 
-
-	// Returns 2D texture object
-	const opengl::BaseTexture& MemoryTexture2D::getTexture() const
-	{
-		return mTexture;
-	}
-
-
-	const glm::vec2 MemoryTexture2D::getSize() const
+	const glm::vec2 Texture2D::getSize() const
 	{
 		return glm::vec2(mTexture.getSettings().width, mTexture.getSettings().height);
+	}
+
+	void Texture2D::bind()
+	{
+		mTexture.bind();
+	}
+
+	void Texture2D::unbind()
+	{
+		mTexture.unbind();
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+
+
+	// Initializes 2D texture. 
+	bool MemoryTexture2D::init(utility::ErrorState& errorState)
+	{
+		Texture2D::init(mSettings);
+		return true;
 	}
 
 }

@@ -20,13 +20,6 @@ namespace nap
 	Image::Image(const std::string& imgPath) { }
 
 
-	// Load image if required and extract texture
-	const opengl::BaseTexture& Image::getTexture() const
-	{
-		return mTexture;
-	}
-
-
 	bool Image::init(utility::ErrorState& errorState)
 	{
 		if (!errorState.check(!mImagePath.empty(), "Image path not set for ImageResource %s", mID.c_str()))
@@ -41,21 +34,10 @@ namespace nap
 		if (!errorState.check(opengl::getSettingsFromBitmap(bitmap, mStoreCompressed, settings, errorState), "Unable to determine texture settings from bitmap %s", mImagePath.c_str()))
 			return false;
 
-		mTexture.init(settings);
-		
-		// Convert and set texture parameters
-		opengl::TextureParameters gl_params;
-		convertTextureParameters(mParameters, gl_params);
+		Texture2D::init(settings);
 
-		mTexture.updateParameters(gl_params);
-
-		mTexture.setData(bitmap.getData());
+		getTexture().setData(bitmap.getData());
 
 		return true;
 	}
-
-	const glm::vec2 Image::getSize() const
-	{
-		return glm::vec2(mTexture.getSettings().width, mTexture.getSettings().height);
-	}	
 }
