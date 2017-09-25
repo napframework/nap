@@ -90,6 +90,7 @@ namespace nap
 		{
 			RGBA8,
 			RGB8,
+			R8,
 			Depth
 		};
 

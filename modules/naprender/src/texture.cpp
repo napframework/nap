@@ -116,8 +116,7 @@ namespace nap
 		// Create the texture with the associated settings
 		opengl::TextureParameters gl_params;
 		convertTextureParameters(mParameters, gl_params);
-		mTexture.setParameters(gl_params);
-		mTexture.init(settings);
+		mTexture.init(settings, gl_params);
 	}
 
 	const glm::vec2 Texture2D::getSize() const
@@ -155,6 +154,11 @@ namespace nap
 		case EFormat::RGB8:
 			settings.format			= GL_RGB;
 			settings.internalFormat = GL_RGB8;
+			settings.type			= GL_UNSIGNED_BYTE;
+			break;
+		case EFormat::R8:
+			settings.format			= GL_RED;
+			settings.internalFormat = GL_R8;
 			settings.type			= GL_UNSIGNED_BYTE;
 			break;
 		case EFormat::Depth:

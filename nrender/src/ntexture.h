@@ -9,11 +9,8 @@ namespace opengl
 	 *
 	 * Universal Texture parameters that can be applied to all texture types
 	 */
-	struct TextureParameters
+	struct TextureParameters final
 	{
-		TextureParameters()  =	default;
-		~TextureParameters() =	default;
-
 		GLint minFilter =		GL_LINEAR_MIPMAP_LINEAR;		//< Filter used when sampling down
 		GLint maxFilter =		GL_LINEAR;						//< Filter used when sampling up
 		GLint wrapVertical =	GL_CLAMP_TO_EDGE;				//< Method used for clamping texture vertically
@@ -45,7 +42,6 @@ namespace opengl
 		 * We can't copy a hardware texture from GPU space a to b
 		 * At least for now
 		 */
-		 // Copy is allowed
 		BaseTexture(const BaseTexture& other) = delete;
 		BaseTexture& operator=(const BaseTexture& other) = delete;
 
@@ -53,7 +49,7 @@ namespace opengl
 		 * init call uploads current parameters to GPU and creates a texture
 		 * make sure to call this function after creating the object!
 		 */
-		void init();
+		void init(const TextureParameters& parameters);
 
 		/**
 		 * All future texture functions will modify this texture
@@ -72,15 +68,6 @@ namespace opengl
 		GLuint getTextureId() const						{ return mTextureId; }
 
 		/**
-		 * Updates generic texture settings, pushes changes immediately to GPU
-		 * Note that when working with a mipmapped texture automatic mipmap generation is enabled
-		 * 
-		 */
-		void updateParameters(const TextureParameters& settings);
-
-		void setParameters(const TextureParameters& settings);
-
-		/**
 		 * @return currently used texture parameters
 		 */
 		const TextureParameters& getParameters() const		{ return mParameters; }
@@ -97,6 +84,8 @@ namespace opengl
 
 	private:
 		bool isAllocated() const { return mTextureId != -1; }
+
+		void setParameters(const TextureParameters& settings);
 
 	protected:
 		// Texture ID
@@ -134,7 +123,7 @@ namespace opengl
 		// Default constructor
 		Texture2D();
 
-		void init(const Texture2DSettings& textureSettings);
+		void init(const Texture2DSettings& textureSettings, const TextureParameters& parameters);
 
 		const Texture2DSettings& getSettings() const { return mSettings; }
 

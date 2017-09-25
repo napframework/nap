@@ -25,7 +25,7 @@ namespace opengl
 
 
 	//  uploads current parameters to GPU
-	void BaseTexture::init()
+	void BaseTexture::init(const TextureParameters& parameters)
 	{
 		assert(!isAllocated());
 
@@ -34,7 +34,8 @@ namespace opengl
 		glAssert();
 
 		// Upload texture parameters
-		updateParameters(mParameters);
+		mParameters = parameters;
+		setParameters(parameters);
 	}
 
 	// Binds the texture
@@ -53,13 +54,8 @@ namespace opengl
 	}
 
 
-	void BaseTexture::setParameters(const TextureParameters& parameters)
-	{
-		mParameters = parameters;
-	}
-
 	// Updates settings associated with this GPU texture
-	void BaseTexture::updateParameters(const TextureParameters& parameters)
+	void BaseTexture::setParameters(const TextureParameters& parameters)
 	{
 		bind();
 
@@ -96,10 +92,10 @@ namespace opengl
 	{
 	}
 
-	void Texture2D::init(const Texture2DSettings& settings)
+	void Texture2D::init(const Texture2DSettings& settings, const TextureParameters& parameters) 
 	{
 		mSettings = settings;
-		BaseTexture::init();
+		BaseTexture::init(parameters);
 		setData(nullptr);
 	}
 

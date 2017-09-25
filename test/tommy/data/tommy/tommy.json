@@ -12,55 +12,55 @@
 		{
 			"Type" : "nap::Image",
 			"mID" : "BackgroundImage",
-			"mImagePath" : "data/tommy/background.jpg"
+			"ImagePath" : "data/tommy/background.jpg"
 		},
 		
 		{
 			"Type" : "nap::Image",
 			"mID" : "Looks_01",
-			"mImagePath" : "data/tommy/01.png"
+			"ImagePath" : "data/tommy/01.png"
 		},
 
 		{
 			"Type" : "nap::Image",
 			"mID" : "Looks_02",
-			"mImagePath" : "data/tommy/02.png"
+			"ImagePath" : "data/tommy/02.png"
 		},
 
 		{
 			"Type" : "nap::Image",
 			"mID" : "Looks_03",
-			"mImagePath" : "data/tommy/03.png"
+			"ImagePath" : "data/tommy/03.png"
 		},
 
 		{
 			"Type" : "nap::Image",
 			"mID" : "Looks_04",
-			"mImagePath" : "data/tommy/04.png"
+			"ImagePath" : "data/tommy/04.png"
 		},
 
 		{
 			"Type" : "nap::Image",
 			"mID" : "ButtonLeft",
-			"mImagePath" : "data/tommy/prev.png"
+			"ImagePath" : "data/tommy/prev.png"
 		},
 
 		{
 			"Type" : "nap::Image",
 			"mID" : "ButtonRight",  
-			"mImagePath" : "data/tommy/next.png"
+			"ImagePath" : "data/tommy/next.png"
 		}, 
 
 		{
 			"Type" : "nap::Image",
 			"mID" : "Title",
-			"mImagePath" : "data/tommy/tommyxgigi.png" 
+			"ImagePath" : "data/tommy/tommyxgigi.png" 
 		},
 
 		{
 			"Type" : "nap::Image",
 			"mID" : "LooksTitle",
-			"mImagePath" : "data/tommy/looks.png"
+			"ImagePath" : "data/tommy/looks.png"
 		},
 		
 		{

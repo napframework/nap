@@ -40,7 +40,7 @@
 		{
 			"Type" : "nap::Image",
 			"mID" : "CanvasImage",
-			"mImagePath" : "data/etherdream/laser_canvas.png"
+			"ImagePath" : "data/etherdream/laser_canvas.png"
 		},
 
 		{
