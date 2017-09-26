@@ -119,10 +119,10 @@ void onUpdate()
 
 }
 
+
 // Called when the window is going to render
 void onRender()
 {
-
 	// Clear opengl context related resources that are not necessary any more
 	renderService->destroyGLContextResources({ renderWindow });
 
@@ -169,6 +169,7 @@ void handleWindowEvent(const nap::WindowEvent& windowEvent)
 	}
 }
 
+
 /**
 * Initialize all the resources and instances used for drawing
 * slowly migrating all functionality to nap
@@ -206,7 +207,6 @@ bool init(nap::Core& core)
 	//////////////////////////////////////////////////////////////////////////
 	sceneService = core.getOrCreateService<nap::SceneService>();
 
-
 	//////////////////////////////////////////////////////////////////////////
 	// Resources
 	//////////////////////////////////////////////////////////////////////////
@@ -219,6 +219,7 @@ bool init(nap::Core& core)
 		assert(false); 
 		return false;   
 	}
+
 
 	// Extract loaded resources
 	renderWindow = resourceManagerService->findObject<nap::RenderWindow>("Viewport");

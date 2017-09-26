@@ -2,7 +2,6 @@
 
 in vec4 pass_Color;
 in vec3 pass_Uvs0;			// The global vinyl uvs
-in vec3 pass_Uvs1;			// The label uvs
 in vec3 pass_Normals;		// Normals
 in mat4 pass_ModelMatrix;	// Matrix
 in vec3 pass_Vert;			// The vertex position
@@ -28,7 +27,7 @@ void main(void)
 	float mask_color = texture(vinylMask, pass_Uvs0.xy).r;
 
 	// Label color
-	vec3 label_color = texture(vinylLabel, pass_Uvs1.xy).rgb;
+	vec3 label_color = texture(vinylLabel, pass_Uvs0.xy).rgb;
 	vec3 color = mix(recordColor.rgb, label_color.rgb, mask_color);
 
 	vec3 groove_color = texture(grooveNormalMap, pass_Uvs0.xy).rgb;

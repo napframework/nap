@@ -67,7 +67,9 @@ namespace nap
 		struct VertexAttributeIDs
 		{
 			static const NAPAPI VertexAttributeID GetPositionName();	//< Default position vertex attribute name
-			static const NAPAPI VertexAttributeID getNormalName();	//< Default normal vertex attribute name
+			static const NAPAPI VertexAttributeID getNormalName();		//< Default normal vertex attribute name
+			static const NAPAPI VertexAttributeID getTangentName();		//< Default tangent vertex attribute name
+			static const NAPAPI VertexAttributeID getBitangentName();	//< Default bi-tangent vertex attribute name
 
 			/**
 			 * Returns the name of the vertex uv attribute based on the queried uv channel

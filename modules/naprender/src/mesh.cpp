@@ -19,8 +19,10 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	const MeshInstance::VertexAttributeID MeshInstance::VertexAttributeIDs::GetPositionName() { return "Position"; }
-	const MeshInstance::VertexAttributeID MeshInstance::VertexAttributeIDs::getNormalName()	{ return "Normal"; }
+	const MeshInstance::VertexAttributeID MeshInstance::VertexAttributeIDs::GetPositionName()	{ return "Position"; }
+	const MeshInstance::VertexAttributeID MeshInstance::VertexAttributeIDs::getNormalName()		{ return "Normal"; }
+	const MeshInstance::VertexAttributeID MeshInstance::VertexAttributeIDs::getTangentName()	{ return "Tangent"; }
+	const MeshInstance::VertexAttributeID MeshInstance::VertexAttributeIDs::getBitangentName()	{ return "Bitangent"; }
 
 	const MeshInstance::VertexAttributeID MeshInstance::VertexAttributeIDs::GetUVName(int uvChannel)
 	{
