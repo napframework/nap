@@ -41,6 +41,18 @@ namespace nap
 		ArtNetService& operator=(const ArtNetService& rhs) = delete;
 
 		/**
+		 * Makes sure that data that is sent using the various send functions is transmitted over the network.
+		 */
+		void update();
+
+	protected:
+		/**
+		 *	Register specific object creators
+		 */
+		virtual void registerObjectCreators(rtti::Factory& factory) override;
+
+	private:
+		/**
 		 * Adds a controller to the service. This should be called from init() and the return value should be tested to validate
 		 * that adding of the controller was succesful.
 		 * @param controller Controller to add.
@@ -93,17 +105,8 @@ namespace nap
 		 */
 		void send(ArtNetController& controller, uint8_t channelData, int channel);
 
-		/**
-		 * Makes sure that data that is sent using the various send functions is transmitted over the network.
-		 */
-		void update();
-
-		/**
-		 *	Register specific object creators
-		 */
-		virtual void registerObjectCreators(rtti::Factory& factory) override;
-
 	private:
+		friend class ArtNetController;
 		struct ControllerData
 		{
 			ArtNetController*			mController;			// ArtNet controller specifying target subnet and universe
