@@ -12,6 +12,9 @@
 // Audio module includes
 #include <service/audiodeviceservice.h>
 #include <utility/audiotypes.h>
+#include <utility/linearramper.h>
+#include <utility/exponentialramper.h>
+#include <utility/translator.h>
 
 nap::ResourceManagerService* resourceManagerService = nullptr;
 
@@ -51,20 +54,41 @@ bool init(nap::Core& core)
 // Main loop
 int main(int argc, char *argv[])
 {
+    
+//    auto stepCount = 10;
+//    float value = 0;
+//    nap::audio::LinearRamper<float> linearRamper(value);
+//    nap::audio::ExponentialRamper<float> exponentialRamper(value);
+//    nap::audio::EqualPowerTranslator<float> table(16);
+////    table.fill([](float x){ return x; });
+//
+//    linearRamper.ramp(1, stepCount);
+//    for (auto i = 0; i < stepCount; i++)
+//    {
+//        linearRamper.step();
+//        std::cout << " " << value << " " << table.translate(value) << std::endl;
+//    }
+//
+//    linearRamper.ramp(0, stepCount);
+//    for (auto i = 0; i < stepCount; i++)
+//    {
+//        linearRamper.step();
+//        std::cout << " " << value << " " << table.translate(value) << std::endl;
+//    }
+
     nap::Core core;
-    
-	if (!init(core))
-		return -1;
-    
+
+    if (!init(core))
+        return -1;
+
     while (true)
     {
         resourceManagerService->checkForFileChanges();
         resourceManagerService->update();
-//        std::this_thread::sleep_for(std::chrono::nanoseconds(1000));
     }
 
-//    std::cout << "Press return to quit" << std::endl;
-//    std::cin.get();
+    std::cout << "Press return to quit" << std::endl;
+    std::cin.get();
     
 	return 0;
 }

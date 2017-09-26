@@ -141,7 +141,7 @@ namespace nap {
         
         OutputNode::~OutputNode()
         {
-            mNodeManager->unregisterRootNode(*this);
+            getNodeManager().unregisterRootNode(*this);
         }
         
         
@@ -152,7 +152,7 @@ namespace nap {
             
             SampleBufferPtr buffer = audioInput.pull();
             if (buffer)
-                mNodeManager->provideOutputBufferForChannel(buffer, mOutputChannel);
+                getNodeManager().provideOutputBufferForChannel(buffer, mOutputChannel);
         }
         
         
@@ -160,7 +160,7 @@ namespace nap {
         {
             auto& buffer = getOutputBuffer(audioOutput);
             for (auto i = 0; i < buffer.size(); ++i)
-                buffer[i] = mNodeManager->getInputSample(mInputChannel, i);
+                buffer[i] = getNodeManager().getInputSample(mInputChannel, i);
         }
 
     }

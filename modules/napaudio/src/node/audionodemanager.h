@@ -60,7 +60,10 @@ namespace nap {
              */
             float getSampleRate() const { return mSampleRate; }
             
-            float getSamplesPerMillisecond() const { return mSampleRate / 1000.f; }
+            /**
+             * @return: the number of audio samples needed per millisecond (TimeValue unit)
+             */
+            float getSamplesPerMillisecond() const { return mSamplesPerMillisecond; }
             
             /**
              * Returns the buffer size the node system is running on.
@@ -134,6 +137,7 @@ namespace nap {
             int mInputChannelCount = 0;
             int mOutputChannelCount = 0;
             float mSampleRate = 0;
+            float mSamplesPerMillisecond = 0; // cached here for optimization purpose
             int mInternalBufferSize = 64;
             
             DiscreteTimeValue mSampleTime = 0;

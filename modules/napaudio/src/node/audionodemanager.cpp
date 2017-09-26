@@ -66,6 +66,7 @@ namespace nap {
         void NodeManager::setSampleRate(float sampleRate)
         {
             mSampleRate = sampleRate;
+            mSamplesPerMillisecond = sampleRate / 1000.;
             for (auto& node : mNodes)
                 node->setSampleRate(sampleRate);
         }

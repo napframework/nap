@@ -174,12 +174,12 @@ namespace nap {
              * @param: the output that the buffer is requested for
              */
             SampleBuffer& getOutputBuffer(OutputPin& output) { return output.mBuffer; }
-
-            /**
-             * The node manager that this node is processed on
-             */
-            NodeManager* mNodeManager = nullptr;
             
+            /**
+             * @return: The node manager that this node is processed on
+             */
+            NodeManager& getNodeManager() { return *mNodeManager; }
+
         private:
             /**
              * Override this method to do the actual audio processing and fill the buffers of this node's outputs with new audio data
@@ -213,6 +213,12 @@ namespace nap {
             
             // The time stamp of the latest calculated sample by this node
             DiscreteTimeValue mLastCalculatedSample = 0;
+            
+            /**
+             * The node manager that this node is processed on
+             */
+            NodeManager* mNodeManager = nullptr;
+            
         };
         
         
