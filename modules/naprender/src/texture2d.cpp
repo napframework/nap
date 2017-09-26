@@ -1,4 +1,4 @@
-#include "texture.h"
+#include "texture2d.h"
 
 RTTI_BEGIN_ENUM(nap::EFilterMode)
 	RTTI_ENUM_VALUE(nap::EFilterMode::Nearest, "Nearest"),

@@ -20,6 +20,6 @@
 #include "ngltypes.h"
 #include "nvertexbuffer.h"
 #include "ngpumesh.h"
-#include "nframebuffer.h"
+#include "nrendertarget.h"
 #include "ncamera.h"
 #include "nindexbuffer.h"

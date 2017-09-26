@@ -1,4 +1,4 @@
-#include "nframebuffer.h"
+#include "nrendertarget.h"
 #include "nglutils.h"
 
 // External Includes

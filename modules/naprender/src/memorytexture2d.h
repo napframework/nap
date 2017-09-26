@@ -1,7 +1,7 @@
 #pragma once
 
 // External Includes
-#include "texture.h"
+#include "texture2d.h"
 
 namespace nap
 {

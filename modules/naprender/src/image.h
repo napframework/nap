@@ -1,7 +1,7 @@
 #pragma once
 
 // Local Includes
-#include "texture.h"
+#include "texture2d.h"
 
 // External Includes
 #include <rtti/rttiobject.h>
