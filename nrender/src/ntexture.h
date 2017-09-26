@@ -81,17 +81,26 @@ namespace opengl
 		*/
 		void generateMipMaps();
 
+		/**
+		 * @return opengl texture type
+		 */
 		GLenum getTargetType() const { return mTargetType; }
 
 	private:
+		/**
+		 * @return wheter texture is allocated (which happens at init() time)
+		 */
 		bool isAllocated() const { return mTextureId != -1; }
 
+		/**
+		 * Updates texture parameters
+		 */
 		void setParameters(const TextureParameters& settings);
 
 	protected:
 		// Texture ID
 		GLuint				mTextureId;				// Currently associated texture ID on GPU
-		GLenum				mTargetType;
+		GLenum				mTargetType;			// Opengl type of texture
 		TextureParameters	mParameters;			// Texture specific 
 	};
 
@@ -126,6 +135,9 @@ namespace opengl
 
 		void init(const Texture2DSettings& textureSettings, const TextureParameters& parameters);
 
+		/**
+		 * @return Texture2D settings object
+		 */
 		const Texture2DSettings& getSettings() const { return mSettings; }
 
 		/**
@@ -136,10 +148,17 @@ namespace opengl
 		 */
 		void setData(void* data);
 
+		/**
+		 * @return The size of the texture when copied to/from CPU.
+		 */
 		int getDataSize() const;
+
+		/**
+		 * @return Texture2D settings object
+		 */
 		void getData(std::vector<uint8_t>& data);
 
 	private:
-		Texture2DSettings mSettings;
+		Texture2DSettings mSettings;		///< Settings object
 	};
 } // opengl

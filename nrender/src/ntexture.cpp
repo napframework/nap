@@ -9,6 +9,7 @@
 
 namespace opengl
 {
+	// Returns number of components each texel has in this format
 	static int getNumComponents(GLenum format)
 	{
 		switch (format)
@@ -45,6 +46,7 @@ namespace opengl
 		return -1;
 	}
 
+	// Returns What the size in bytes is of a component type
 	static int getComponentSize(GLenum type)
 	{
 		switch (type)
@@ -114,6 +116,7 @@ namespace opengl
 		setParameters(parameters);
 	}
 
+
 	// Binds the texture
 	void BaseTexture::bind()
 	{
@@ -168,12 +171,14 @@ namespace opengl
 	{
 	}
 
+
 	void Texture2D::init(const Texture2DSettings& settings, const TextureParameters& parameters) 
 	{
 		mSettings = settings;
 		BaseTexture::init(parameters);
 		setData(nullptr);
 	}
+
 
 	/**
 	 * Uploads the 2D texture data to the GPU
@@ -201,10 +206,12 @@ namespace opengl
 			generateMipMaps();
 	}
 
+
 	int Texture2D::getDataSize() const
 	{
 		return getNumComponents(mSettings.format) * getComponentSize(mSettings.type) * mSettings.width * mSettings.height;
 	}
+
 
 	void Texture2D::getData(std::vector<uint8_t>& data)
 	{

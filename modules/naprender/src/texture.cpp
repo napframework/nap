@@ -124,10 +124,12 @@ namespace nap
 		return glm::vec2(mTexture.getSettings().width, mTexture.getSettings().height);
 	}
 
+
 	void Texture2D::bind()
 	{
 		mTexture.bind();
 	}
+
 
 	void Texture2D::unbind()
 	{
