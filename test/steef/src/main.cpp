@@ -207,6 +207,7 @@ bool init(nap::Core& core)
 	//////////////////////////////////////////////////////////////////////////
 	sceneService = core.getOrCreateService<nap::SceneService>();
 
+
 	//////////////////////////////////////////////////////////////////////////
 	// Resources
 	//////////////////////////////////////////////////////////////////////////
@@ -219,7 +220,6 @@ bool init(nap::Core& core)
 		assert(false); 
 		return false;   
 	}
-
 
 	// Extract loaded resources
 	renderWindow = resourceManagerService->findObject<nap::RenderWindow>("Viewport");

@@ -8,11 +8,14 @@ in vec3	in_Position;
 in vec4	in_Color0;
 in vec3 in_Normals;
 in vec3	in_UV0;
+in vec3 in_Tangent;
+in vec3 in_Bitangent;
 
 out vec3 pass_Uvs0;
 out vec3 pass_Normals;
 out mat4 pass_ModelMatrix;
 out vec3 pass_Vert;
+out vec3 pass_Tangent;
 
 void main(void)
 {
@@ -24,4 +27,5 @@ void main(void)
 	pass_Normals = in_Normals;
 	pass_ModelMatrix = modelMatrix;
 	pass_Vert = in_Position;
+	pass_Tangent = in_Tangent;
 }

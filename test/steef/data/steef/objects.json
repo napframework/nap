@@ -133,24 +133,10 @@
 				{
 					"MeshAttributeID": "Tangent",
 					"ShaderAttributeID": "in_Tangent"
-				},
-				{
-					"MeshAttributeID": "Bitangent",
-					"ShaderAttributeID": "in_Bitangent"
 				}
 			],
 			"Uniforms" : 
 			[
-				{
-					"Type" : "nap::UniformVec3",
-					"Name" : "recordColor",
-					"Value" : 
-					{
-						"x" : 0.0,
-						"y" : 0.0,
-						"z" : 0.0
-					}
-				},
 				{
 					"Type" : "nap::UniformVec3",
 					"Name" : "lightPosition",
@@ -179,22 +165,22 @@
 				{
 					"Type" : "nap::UniformFloat",
 					"Name" : "shininess",
-					"Value" : 45
+					"Value" : 35
 				},
 				{
 					"Type" : "nap::UniformFloat",
 					"Name" : "specularIntensity",
-					"Value" : 0.4
+					"Value" : 0.45
 				},
 				{
 					"Type" : "nap::UniformFloat",
 					"Name" : "attenuationScale",
-					"Value" : 0.00001
+					"Value" : 0.0001
 				},
 				{
 					"Type" : "nap::UniformFloat",
 					"Name" : "grooveScale",
-					"Value" : 0.15
+					"Value" : 0.33
 				},
 				{
 					"Type" : "nap::UniformVec3",
@@ -326,7 +312,7 @@
 							"y": 1.0,
 							"z": 1.0
 						},
-						"UniformScale": 0.33
+						"UniformScale": 0.3
 					}
 				},
 				{
@@ -337,7 +323,7 @@
 							"y": 1.0,
 							"z": 0.0
 						},
-						"Speed": 0.125,
+						"Speed": 0.1,
 						"Offset": 2.0
 					}
 				}
