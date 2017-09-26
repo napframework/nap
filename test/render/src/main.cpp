@@ -14,7 +14,8 @@
 #include <transformcomponent.h>
 #include <perspcameracomponent.h>
 #include <mathutils.h>
-#include <rendertarget.h>
+#include <texturerendertarget2d.h>
+#include <ntexturerendertarget2d.h>
 #include <sdlinput.h>
 #include <sdlwindow.h>
 
@@ -51,8 +52,8 @@ nap::ResourceManagerService* resourceManagerService = nullptr;
 nap::SceneService* sceneService = nullptr;
 nap::InputService* inputService = nullptr;
 
-std::vector<nap::ObjectPtr<nap::RenderWindow>>	renderWindows;
-nap::ObjectPtr<nap::TextureRenderTarget2D>		textureRenderTarget;
+std::vector<nap::ObjectPtr<nap::RenderWindow>>			renderWindows;
+nap::ObjectPtr<nap::TextureRenderTarget2D>				textureRenderTarget;
 nap::ObjectPtr<nap::EntityInstance>						pigEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance>						rotatingPlaneEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance>						planeEntity = nullptr;

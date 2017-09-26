@@ -13,7 +13,6 @@
 #include <transformcomponent.h>
 #include <perspcameracomponent.h>
 #include <mathutils.h>
-#include <rendertarget.h>
 #include <sdlinput.h>
 #include <sdlwindow.h>
 
