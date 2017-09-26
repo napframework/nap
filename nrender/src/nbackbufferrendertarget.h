@@ -11,11 +11,6 @@ namespace opengl
 	{
 	public:
 		/**
-		Backbuffer is always valid. Returns true.
-		*/
-		virtual bool isValid() override { return true; }
-
-		/**
 		* Binds the framebuffer so it can be used by subsequent render calls
 		*/
 		virtual bool bind() override;

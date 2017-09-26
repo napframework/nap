@@ -3,6 +3,14 @@
 #include <GL/glew.h>
 #include "nrendertarget.h"
 
+namespace nap
+{
+	namespace utility
+	{
+		class ErrorState;
+	}
+}
+
 namespace opengl
 {
 	class Texture2D;
@@ -28,18 +36,7 @@ namespace opengl
 		* Creates the render target on the GPU and initializes
 		* This needs to be called first after construction otherwise subsequent calls will fail
 		*/
-		void init(opengl::Texture2D& colorTexture, opengl::Texture2D& depthTexture, const glm::vec4& clearColor);
-
-		/**
-		* @return if the render target is allocated (created) on the GPU
-		*/
-		bool isAllocated() const { return mFbo != 0; }
-
-		/**
-		* @return if the render target is allocated and valid for use
-		* ie, if attachments are valid and complete
-		*/
-		virtual bool isValid() override;
+		bool init(opengl::Texture2D& colorTexture, opengl::Texture2D& depthTexture, nap::utility::ErrorState& errorState);
 
 		/**
 		* Binds the render target so it can be used by subsequent render calls
@@ -69,9 +66,9 @@ namespace opengl
 
 	private:
 		/**
-		* Generates the OpenGL FBO object, attaches color and depth textures.
+		* @return if the render target is allocated (created) on the GPU
 		*/
-		void allocate(opengl::Texture2D& colorTexture, opengl::Texture2D& depthTexture);
+		bool isAllocated() const { return mFbo != 0; }
 
 	private:
 		GLuint						mFbo = 0;					// FBO GPU id

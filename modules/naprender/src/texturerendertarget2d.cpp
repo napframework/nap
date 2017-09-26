@@ -20,12 +20,12 @@ namespace nap
 		if (!errorState.check(mDepthTexture != nullptr, "Unable to create render target %s. Depth texture not set.", mID.c_str()))
 			return false;
 
-		mTextureRenderTarget = new opengl::TextureRenderTarget2D;
-
-		mTextureRenderTarget->init((opengl::Texture2D&)mColorTexture->getTexture(), (opengl::Texture2D&)mDepthTexture->getTexture(), mClearColor);
-		if (!errorState.check(mTextureRenderTarget->isValid(), "unable to validate frame buffer: %s", mID.c_str()))
+		mTextureRenderTarget = new opengl::TextureRenderTarget2D();
+		if (!errorState.check(mTextureRenderTarget->init(mColorTexture->getTexture(), mDepthTexture->getTexture(), errorState), "Unable to allocate texture render target"))
 			return false;
-		
+
+		mTextureRenderTarget->setClearColor(mClearColor);
+
 		return true;
 	}
 

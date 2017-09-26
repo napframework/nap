@@ -42,11 +42,6 @@ namespace opengl
 		RenderTarget& operator=(const RenderTarget&) = delete;
 
 		/**
-		* @return if the renderTarget is allocated and valid for use
-		*/
-		virtual bool isValid() = 0;
-
-		/**
 		* Binds the render target so it can be used by subsequent render calls
 		*/
 		virtual bool bind() = 0;
