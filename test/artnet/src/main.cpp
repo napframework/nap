@@ -19,6 +19,7 @@
 #include <nap/logger.h>
 #include <artnetservice.h>
 #include <nap/event.h>
+#include "artnetcontroller.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
@@ -29,7 +30,7 @@ nap::RenderService*				renderService = nullptr;
 nap::ResourceManagerService*	resourceManagerService = nullptr;
 nap::InputService*				inputService = nullptr;
 nap::SceneService*				sceneService = nullptr;
-nap::ArtnetService*				artnetService = nullptr;
+nap::ArtNetService*				artnetService = nullptr;
 
 // Holds all render windows
 std::vector<nap::ObjectPtr<nap::RenderWindow>> renderWindows;
@@ -57,8 +58,28 @@ void onUpdate()
 	// Update all resources
 	resourceManagerService->update();
 
+	float sine = sin(renderService->getCore().getElapsedTime() * (M_PI * 2));
+
+	std::vector<float> channel_data;
+	channel_data.resize(512);
+
+	for (int index = 0; index < channel_data.size(); ++index)
+	{
+		float offset = (sine + 1.0f) / 2.0f;
+		channel_data[index] = std::min((float)index / (float)channel_data.size() + offset, 1.0f);
+	}
+
+	nap::ObjectPtr<nap::ArtNetController> universe_0 = resourceManagerService->findObject("Universe0");
+	universe_0->send(channel_data);
+
+	nap::ObjectPtr<nap::ArtNetController> universe_1 = resourceManagerService->findObject("Universe1");
+	std::reverse(channel_data.begin(), channel_data.end());
+	universe_1->send(channel_data);
+
 	// Update the scene
 	sceneService->update();
+
+	artnetService->update();
 }
 
 
@@ -116,12 +137,7 @@ bool init(nap::Core& core)
 	sceneService = core.getOrCreateService<nap::SceneService>();
 
 	// Create artnet service
-	artnetService = core.getOrCreateService<nap::ArtnetService>();
-	if (!artnetService->init(errorState))
-	{
-		nap::Logger::fatal(errorState.toString());
-		return false;
-	}
+	artnetService = core.getOrCreateService<nap::ArtNetService>();
 
 	// Load scene
 	if (!resourceManagerService->loadFile("data/artnet/artnet.json", errorState))
