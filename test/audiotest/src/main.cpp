@@ -30,10 +30,6 @@ bool init(nap::Core& core)
     
     core.initialize();
     
-    // Get resource manager service
-    resourceManagerService = core.getOrCreateService<nap::ResourceManagerService>();
-    
-    
     auto audioService = core.getOrCreateService<nap::audio::AudioDeviceService>();
     if (!audioService->init(errorState))
     {
@@ -41,6 +37,9 @@ bool init(nap::Core& core)
         return false;
     }
     
+    // Get resource manager service
+    resourceManagerService = core.getOrCreateService<nap::ResourceManagerService>();
+        
     // Load scene
     if (!resourceManagerService->loadFile("data/audiotest/audiotest.json", errorState))
     {
@@ -87,8 +86,8 @@ int main(int argc, char *argv[])
         resourceManagerService->update();
     }
 
-    std::cout << "Press return to quit" << std::endl;
-    std::cin.get();
+//    std::cout << "Press return to quit" << std::endl;
+//    std::cin.get();
     
 	return 0;
 }

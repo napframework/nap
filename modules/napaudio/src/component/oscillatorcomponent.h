@@ -24,7 +24,7 @@ namespace nap
         public:
             OscillatorComponent() : AudioComponent() { }
             
-            ComponentPtr<AudioComponent> mFmInput; /**< The audio component to get the FM input signal from */
+            ComponentPtr<AudioComponent> mFmInput = nullptr; /**< The audio component to get the FM input signal from */
             
             std::vector<ControllerValue> mFrequency = { 220.f };
             std::vector<ControllerValue> mAmplitude = { 1.f };

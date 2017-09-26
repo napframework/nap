@@ -6,6 +6,7 @@
 
 // Audio includes
 #include <utility/audiotypes.h>
+#include <node/audiopin.h>
 
 namespace nap {
     
@@ -14,108 +15,6 @@ namespace nap {
         
         // Forward declarations
         class NodeManager;
-        class Node;
-        class OutputPin;
-        
-        
-        /**
-         * An audio input is used by audio node to connect it to other nodes.
-         * The input connects one channel (mono) audio.
-         */
-        class NAPAPI InputPin
-        {
-            friend class OutputPin;
-            
-        public:
-            InputPin() = default;
-            
-            /**
-             * Destructor. If the input is connected on destruction the connection will be broken first.
-             */
-            ~InputPin();
-            
-            /**
-             * This method can be used by the node to pull one sample buffer output from the connected audio output.
-             * @return If the InputPin is not connected or somewhere down the graph silence is being output nullptr can be returned.
-             */
-            SampleBufferPtr pull();
-            
-            /**
-             * Connects another node's @OutputPin to this input.
-             * If either this ipnut or the connected output is already connected it will be disconnected first.
-             * @param connection: The output that this @InputPin will be connected to.
-             */
-            void connect(OutputPin& input);
-            
-            
-            /**
-             * Disconnects this input from the connected output
-             */
-            void disconnect();
-            
-            /**
-             * Checks wether the input is connected
-             */
-            bool isConnected() const { return mInput != nullptr; }
-            
-        private:
-            /*
-             * The audio output connected to this input.
-             * When it is a nullptr this input is not connected.
-             */
-            OutputPin* mInput = nullptr;
-        };
-        
-        
-        /**
-         * An audio output is used by audio node to connect it to other nodes.
-         * The output connects one channel (mono) audio.
-         * It outputs a pointer to an owned @SampleBuffer.
-         * The PullFunction of this class calls a calculate function on the node it belongs to.
-         */
-        class NAPAPI OutputPin
-        {
-            friend class Node;
-            friend class InputPin;
-            
-        public:
-            /**
-             * @param parent: the owner node if this output
-             */
-            OutputPin(Node* node);
-            
-            ~OutputPin();            
-            
-            /**
-             * Disconnects the output from all connected inputs.
-             */
-            void disconnectAll();
-            
-            /**
-             * Checks wether the output is connected to any inputs
-             */
-            bool isConnected() const { return !mOutputs.empty(); }
-            
-        protected:
-            /**
-             * The buffer containing the latest output
-             */
-            SampleBuffer mBuffer;
-                        
-        private:
-            // Used by @InputPin to poll this output for a new buffer of output samples
-            SampleBufferPtr pull();
-            
-            // Used by the @NodeManager to resize the internal buffers when necessary
-            void setBufferSize(int bufferSize);
-
-            // The node that owns this output
-            Node* mNode = nullptr;
-            
-            // The inputs that this output is connected to
-            // This list is kept so the connections can be broken on destruction.
-            std::set<InputPin*> mOutputs;
-        };
         
         
         /**
@@ -173,7 +72,7 @@ namespace nap {
              * Use this function within descendants @process() implementation to access the buffers that need to be filled with output.
              * @param: the output that the buffer is requested for
              */
-            SampleBuffer& getOutputBuffer(OutputPin& output) { return output.mBuffer; }
+            SampleBuffer& getOutputBuffer(OutputPin& output);
             
             /**
              * @return: The node manager that this node is processed on

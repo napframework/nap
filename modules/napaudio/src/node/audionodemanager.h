@@ -2,6 +2,7 @@
 
 // Std includes
 #include <mutex>
+#include <iostream>
 
 // Nap includes
 #include <nap/threading.h>
@@ -35,6 +36,8 @@ namespace nap {
             
         public:
             NodeManager() = default;
+            
+            ~NodeManager() = default;
             
             /**
              * This function is typically called by an audio callback to perform all the audio processing.

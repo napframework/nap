@@ -8,6 +8,7 @@ RTTI_BEGIN_CLASS(nap::audio::OscillatorComponent)
     RTTI_PROPERTY("ChannelCount", &nap::audio::OscillatorComponent::mChannelCount, nap::rtti::EPropertyMetaData::Default)
     RTTI_PROPERTY("Amplitude", &nap::audio::OscillatorComponent::mAmplitude, nap::rtti::EPropertyMetaData::Default)
     RTTI_PROPERTY("Frequency", &nap::audio::OscillatorComponent::mFrequency, nap::rtti::EPropertyMetaData::Default)
+//    RTTI_PROPERTY("FmInput", &nap::audio::OscillatorComponent::mFmInput, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::OscillatorComponentInstance)
@@ -44,6 +45,8 @@ namespace nap
                 mOscillators.emplace_back(std::make_unique<Oscillator>(nodeManager, mWave));
                 mOscillators[channel]->setFrequency(resource->mFrequency[channel % resource->mFrequency.size()]);
                 mOscillators[channel]->setAmplitude(resource->mAmplitude[channel % resource->mAmplitude.size()]);
+                if (input)
+                    mOscillators[channel]->fmInput.connect(input->getOutputForChannel(channel % input->getChannelCount()));
             }
             
             return true;

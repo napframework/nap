@@ -17,7 +17,7 @@ namespace nap {
             /**
              * The input to be scaled
              */
-            InputPin audioInput;
+            MultiInputPin inputs;
             
             /**
              * Outputs the scaled signal

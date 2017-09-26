@@ -5,82 +5,7 @@
 namespace nap {
     
     namespace audio {
-        
-        
-        InputPin::~InputPin()
-        {
-            disconnect();
-        }
-        
-        
-        SampleBufferPtr InputPin::pull()
-        {
-            if (mInput)
-                return mInput->pull();
-            else
-                return nullptr;
-        }
-        
-        
-        void InputPin::connect(OutputPin& input)
-        {
-            // disconnect any existing connection
-            disconnect();
-            
-            // make the input and output point to one another
-            mInput = &input;
-            input.mOutputs.emplace(this);
-        }
-        
-        
-        void InputPin::disconnect()
-        {
-            if (mInput)
-            {
-                mInput->mOutputs.erase(this);
-                mInput = nullptr;
-            }
-        }
-
-        
-        OutputPin::OutputPin(Node* node)
-        {
-            node->mOutputs.emplace(this);
-            mNode = node;
-            setBufferSize(mNode->getBufferSize());
-        }
-
-        
-        OutputPin::~OutputPin()
-        {
-            mNode->mOutputs.erase(this);
-            disconnectAll();
-        }
-        
-        
-        void OutputPin::disconnectAll()
-        {
-            for (InputPin* output : mOutputs)
-            {
-                assert(output->mInput == this);
-                output->mInput = nullptr;
-            }
-            mOutputs.clear();            
-        }
-        
-        
-        SampleBufferPtr OutputPin::pull()
-        {
-            mNode->update();
-            return &mBuffer;
-        }
-        
-        
-        void OutputPin::setBufferSize(int bufferSize)
-        {
-            mBuffer.resize(bufferSize);
-        }
-        
+                        
         
         Node::Node(NodeManager& service)
         {
@@ -112,6 +37,9 @@ namespace nap {
             return mNodeManager->getSampleTime();
         }
         
+        
+        SampleBuffer& Node::getOutputBuffer(OutputPin& output) { return output.mBuffer; }
+
         
         void Node::update()
         {

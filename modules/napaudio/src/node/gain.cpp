@@ -6,11 +6,23 @@ namespace nap {
         
         void Gain::process()
         {
-            auto& buffer = getOutputBuffer(audioOutput);
-            SampleBuffer& inputBuffer = *audioInput.pull();
+            auto& outputBuffer = getOutputBuffer(audioOutput);
+            auto inputBuffers = inputs.pull();
             
-            for (auto i = 0; i < buffer.size(); ++i)
-                buffer[i] = inputBuffer[i] * mGain;
+            for (auto& inputBuffer : inputBuffers)
+                if (inputBuffer == nullptr)
+                {
+                    for (auto i = 0; i < outputBuffer.size(); ++i)
+                        outputBuffer[i] = 0;
+                    return;
+                }
+            
+            for (auto i = 0; i < outputBuffer.size(); ++i)
+            {
+                outputBuffer[i] = mGain;
+                for (auto& inputBuffer : inputBuffers)
+                    outputBuffer[i] *= (*inputBuffer)[i];
+            }
         }
         
     }
