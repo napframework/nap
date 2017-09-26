@@ -66,7 +66,7 @@ bool nap::EtherDreamInterface::connect(int number)
         nap::Logger::warn("can't connect to etherdream dac: %d, invalid dac number", number);
         return false;
     }
-    return etherdream_connect(dac);
+    return (etherdream_connect(dac) == 0);
 }
 
 
