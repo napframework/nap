@@ -24,8 +24,12 @@ namespace nap {
             {
                 for (auto& channelMapping : mOutputMapping)
                     channelMapping.clear();
-                for (auto& root : mRootNodes)
-                    root->process();
+                
+                {
+                    std::unique_lock<std::mutex> lock(mProcessingMutex);
+                    for (auto& root : mRootNodes)
+                        root->process();
+                }
                 
                 for (auto channel  = 0; channel < mOutputChannelCount; ++channel)
                 {
@@ -79,6 +83,26 @@ namespace nap {
             node.setBufferSize(mInternalBufferSize);
         }
         
+        
+        void NodeManager::unregisterNode(Node& node)
+        {
+            mNodes.erase(&node);
+        }
+        
+        
+        void NodeManager::registerRootNode(Node& rootNode)
+        {
+            std::unique_lock<std::mutex> lock(mProcessingMutex);
+            mRootNodes.emplace(&rootNode);
+        }
+
+        
+        void NodeManager::unregisterRootNode(Node& rootNode)
+        {
+            std::unique_lock<std::mutex> lock(mProcessingMutex);
+            mRootNodes.erase(&rootNode);
+        }
+
         
         void NodeManager::provideOutputBufferForChannel(SampleBufferPtr buffer, int channel)
         {

@@ -52,7 +52,7 @@ namespace nap {
             /**
              * Connects another node's @OutputPin to this input.
              * If either this ipnut or the connected output is already connected it will be disconnected first.
-             * @param connection: The output that this @InputPin will be connected to.
+             * @param input: The output that this @InputPin will be connected to.
              */
             void connect(OutputPin& input) override;
             

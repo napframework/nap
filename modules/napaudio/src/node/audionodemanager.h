@@ -2,7 +2,6 @@
 
 // Std includes
 #include <mutex>
-#include <iostream>
 
 // Nap includes
 #include <nap/threading.h>
@@ -106,19 +105,25 @@ namespace nap {
              * Enqueue a task to be executed within the process() method for thread safety
              */
             void execute(TaskQueue::Task task) { mAudioCallbackTaskQueue.enqueue(task); }
+
+            
+            /**
+             * @return: mutex that can be used to lock a section outside the audio processing
+             */
+            std::mutex& getProcessingMutex() { return mProcessingMutex; }
             
         private:
             // Used by the nodes to register themselves on construction
             void registerNode(Node& node);
             
             // Used by the nodes to unregister themselves on destrction
-            void unregisterNode(Node& node) { mNodes.erase(&node); }
+            void unregisterNode(Node& node);
             
             // Used by nodes to register themselves to be processed directly by the node manager
-            void registerRootNode(Node& rootNode) { mRootNodes.emplace(&rootNode); }
+            void registerRootNode(Node& rootNode);
             
             // Used by nodes to unregister themselves to be processed directly by the node manager
-            void unregisterRootNode(Node& rootNode) { mRootNodes.erase(&rootNode); }
+            void unregisterRootNode(Node& rootNode);
             
         private:
             /*
@@ -155,6 +160,7 @@ namespace nap {
             std::set<Node*> mRootNodes;
             
             nap::TaskQueue mAudioCallbackTaskQueue;
+            std::mutex mProcessingMutex;
         };
         
     }

@@ -26,6 +26,8 @@ namespace nap {
         {
             friend class NodeManager;
             friend class OutputPin;
+            friend class InputPin;
+            friend class MultiInputPin;
             
         public:
             /**

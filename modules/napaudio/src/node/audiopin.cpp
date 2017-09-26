@@ -5,6 +5,7 @@
 
 // Audio includes
 #include <node/audionode.h>
+#include <node/audionodemanager.h>
 
 namespace nap {
     
@@ -29,19 +30,23 @@ namespace nap {
         
         void InputPin::connect(OutputPin& input)
         {
-            // disconnect any existing connection
-            disconnectAll();
-            
+            // remove old connection
+            if (mInput)
+                mInput->mOutputs.erase(this);
+
             // make the input and output point to one another
             mInput = &input;
-            input.mOutputs.emplace(this);
+            mInput->mOutputs.emplace(this);
         }
         
         
         void InputPin::disconnect(OutputPin& input)
         {
             if (&input == mInput)
-                disconnectAll();
+            {
+                mInput->mOutputs.erase(this);
+                mInput = nullptr;
+            }
         }
 
         
@@ -84,7 +89,7 @@ namespace nap {
             for (auto& aInput : mInputs)
                 if (aInput == &input)
                 {
-                    input.mOutputs.erase(this);
+                    aInput->mOutputs.erase(this);
                     mInputs.erase(aInput);
                     break;
                 }
@@ -95,8 +100,9 @@ namespace nap {
         {
             while (!mInputs.empty())
             {
-                (*mInputs.begin())->mOutputs.erase(this);
-                mInputs.erase(mInputs.begin());
+                auto input = *mInputs.begin();
+                input->mOutputs.erase(this);
+                mInputs.erase(input);
             }
         }
         

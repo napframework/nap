@@ -41,6 +41,8 @@ namespace nap
 
             mEnvelopeGenerator = std::make_unique<EnvelopeGenerator>(nodeManager);
             mEnvelopeGenerator->trigger(resource->mSegments);
+            
+            return true;
         }
         
     }
