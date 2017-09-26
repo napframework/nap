@@ -26,7 +26,7 @@ namespace opengl
 	 * Acts as an abstract class for any type of texture
 	 * Manages GPU texture resource
 	 */
-	class BaseTexture
+	class Texture
 	{
 	public:
 		/**
@@ -34,8 +34,8 @@ namespace opengl
 		 *
 		 * Creates / Destroys associated OpenGL texture
 		 */
-		BaseTexture(GLenum inTargetType);
-		virtual ~BaseTexture();
+		Texture(GLenum inTargetType);
+		virtual ~Texture();
 
 		/**
 		 * Copy is not allowed
@@ -43,8 +43,8 @@ namespace opengl
 		 * We can't copy a hardware texture from GPU space a to b
 		 * At least for now
 		 */
-		BaseTexture(const BaseTexture& other) = delete;
-		BaseTexture& operator=(const BaseTexture& other) = delete;
+		Texture(const Texture& other) = delete;
+		Texture& operator=(const Texture& other) = delete;
 
 		/**
 		 * init call uploads current parameters to GPU and creates a texture
@@ -127,7 +127,7 @@ namespace opengl
 	 *
 	 * Represents a 2 dimensional texture on the GPU
 	 */
-	class Texture2D : public BaseTexture
+	class Texture2D : public Texture
 	{
 	public:
 		// Default constructor

@@ -88,14 +88,14 @@ namespace opengl
 
 
 	// Generates a texture on the GPU side
-	BaseTexture::BaseTexture(GLenum inTargetType) :
+	Texture::Texture(GLenum inTargetType) :
 		mTargetType(inTargetType),
 		mTextureId(-1)
 	{}
 
 
 	// Remove texture
-	BaseTexture::~BaseTexture()
+	Texture::~Texture()
 	{
 		if (isAllocated())
 			glDeleteTextures(1, &mTextureId);
@@ -103,7 +103,7 @@ namespace opengl
 
 
 	//  uploads current parameters to GPU
-	void BaseTexture::init(const TextureParameters& parameters)
+	void Texture::init(const TextureParameters& parameters)
 	{
 		assert(!isAllocated());
 
@@ -118,7 +118,7 @@ namespace opengl
 
 
 	// Binds the texture
-	void BaseTexture::bind()
+	void Texture::bind()
 	{
 		assert(isAllocated());
 		glBindTexture(mTargetType, mTextureId);
@@ -126,7 +126,7 @@ namespace opengl
 
 
 	// Detach the texture from the current Texture Unit
-	void BaseTexture::unbind()
+	void Texture::unbind()
 	{
 		assert(isAllocated());
 		glBindTexture(mTargetType, 0);
@@ -134,7 +134,7 @@ namespace opengl
 
 
 	// Updates settings associated with this GPU texture
-	void BaseTexture::setParameters(const TextureParameters& parameters)
+	void Texture::setParameters(const TextureParameters& parameters)
 	{
 		bind();
 
@@ -153,7 +153,7 @@ namespace opengl
 
 
 	// Creates mip maps for the texture on the GPU
-	void BaseTexture::generateMipMaps()
+	void Texture::generateMipMaps()
 	{
 		bind();
 
@@ -167,7 +167,7 @@ namespace opengl
 	/////////////////////////////////////////////////////////////////////////
 
 	Texture2D::Texture2D() :
-		BaseTexture(GL_TEXTURE_2D)
+		Texture(GL_TEXTURE_2D)
 	{
 	}
 
@@ -175,7 +175,7 @@ namespace opengl
 	void Texture2D::init(const Texture2DSettings& settings, const TextureParameters& parameters) 
 	{
 		mSettings = settings;
-		BaseTexture::init(parameters);
+		Texture::init(parameters);
 		setData(nullptr);
 	}
 

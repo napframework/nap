@@ -65,5 +65,5 @@ namespace opengl
 	 * @param: size, the size in bytes (I believe), if not compressed this will be 0
 	 * @param: type, the GPU compression type, will be invalid if texture isn't compressed
 	 */
-	bool isCompressed(BaseTexture& texture, GLint& size, GLint& type);
+	bool isCompressed(Texture& texture, GLint& size, GLint& type);
 }

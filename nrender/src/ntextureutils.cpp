@@ -192,7 +192,7 @@ namespace opengl
 	}
 
 	// Checks if the texture is compressed on the GPU and it's size on the GPU
-	bool isCompressed(BaseTexture& texture, GLint& size, GLint& type)
+	bool isCompressed(Texture& texture, GLint& size, GLint& type)
 	{
 		// Check compression
 		GLint is_compressed(0);

@@ -1,6 +1,6 @@
 #include "video.h"
 
-#include "texture2d.h"
+#include "memorytexture2d.h"
 #include "image.h"
 
 // external includes
