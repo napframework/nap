@@ -19,7 +19,7 @@
 			"Type" : "nap::Image",
 			"mID" : "LabelImage",
 			"ImagePath" : "data/steef/label.jpg",
-			"mParameters" : {
+			"Parameters" : {
 				"MaxFilter" : "Linear",		
 				"MinFilter" : "LinearMipmapLinear",		
 				"WrapVertical" : "ClampToEdge",	
@@ -32,7 +32,7 @@
 			"Type" : "nap::Image",
 			"mID" : "CoverImage",
 			"ImagePath" : "data/steef/cover.jpg",
-			"mParameters" : {
+			"Parameters" : {
 				"MaxFilter" : "Linear",		
 				"MinFilter" : "LinearMipmapLinear",		
 				"WrapVertical" : "ClampToEdge",	
@@ -45,7 +45,7 @@
 			"Type" : "nap::Image",
 			"mID" : "BackgroundImage",
 			"ImagePath" : "data/steef/background.jpg",
-			"mParameters" : {
+			"Parameters" : {
 				"MaxFilter" : "Linear",		
 				"MinFilter" : "LinearMipmapLinear",		
 				"WrapVertical" : "ClampToEdge",	
@@ -58,7 +58,7 @@
 			"Type" : "nap::Image",
 			"mID" : "MaskImage",
 			"ImagePath" : "data/steef/label_mask.jpg",
-			"mParameters" : {
+			"Parameters" : {
 				"MaxFilter" : "Linear",		
 				"MinFilter" : "LinearMipmapLinear",		
 				"WrapVertical" : "ClampToEdge",	
@@ -71,7 +71,7 @@
 			"Type" : "nap::Image",
 			"mID" : "GrooveNormalMap",
 			"ImagePath" : "data/steef/grooves.jpg",
-			"mParameters" : {
+			"Parameters" : {
 				"MaxFilter" : "Linear",		
 				"MinFilter" : "LinearMipmapLinear",		
 				"WrapVertical" : "ClampToEdge",	

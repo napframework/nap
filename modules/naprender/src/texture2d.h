@@ -85,7 +85,8 @@ namespace nap
 		 */
 		void unbind();
 
-		nap::TextureParameters		mParameters;		// RTTI texture parameters
+		nap::TextureParameters		mParameters;							// RTTI texture parameters
+		opengl::ETextureUsage		mUsage = opengl::ETextureUsage::Static;	// The usage of this texture
 
 	private:
 		opengl::Texture2D			mTexture;			// Internal opengl texture

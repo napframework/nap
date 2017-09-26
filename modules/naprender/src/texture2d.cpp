@@ -25,7 +25,8 @@ RTTI_BEGIN_CLASS(nap::TextureParameters)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Texture2D)
-	RTTI_PROPERTY("mParameters", 		&nap::Texture2D::mParameters,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Parameters", 	&nap::Texture2D::mParameters,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Usage", 			&nap::Texture2D::mUsage,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -104,7 +105,7 @@ namespace nap
 		// Create the texture with the associated settings
 		opengl::TextureParameters gl_params;
 		convertTextureParameters(mParameters, gl_params);
-		mTexture.init(settings, gl_params);
+		mTexture.init(settings, gl_params, mUsage);
 	}
 
 	const glm::vec2 Texture2D::getSize() const

@@ -1,11 +1,18 @@
 // Local Includes
 #include "ntexture.h"
 #include "nglutils.h"
+#include "rtti/typeinfo.h"
 
 // External Includes
 #include <iostream>
 #include <unordered_set>
 #include <assert.h>
+
+RTTI_BEGIN_ENUM(opengl::ETextureUsage)
+	RTTI_ENUM_VALUE(opengl::ETextureUsage::Static,			"Static"),
+	RTTI_ENUM_VALUE(opengl::ETextureUsage::DynamicRead,		"DynamicRead"),
+	RTTI_ENUM_VALUE(opengl::ETextureUsage::DynamicWrite,	"DynamicWrite")
+RTTI_END_ENUM
 
 namespace opengl
 {
@@ -37,6 +44,25 @@ namespace opengl
 		// Upload texture parameters
 		mParameters = parameters;
 		setParameters(parameters);
+	}
+
+
+	void Texture::initPBO(GLuint& pbo, ETextureUsage usage, int textureSizeInBytes)
+	{
+		if (usage == ETextureUsage::DynamicWrite)
+		{
+			glGenBuffers(1, &pbo);
+			glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+			glBufferData(GL_PIXEL_UNPACK_BUFFER, textureSizeInBytes, NULL, GL_DYNAMIC_DRAW);
+			glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+		}
+		else if (usage == ETextureUsage::DynamicRead)
+		{
+			glGenBuffers(1, &pbo);
+			glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo);
+			glBufferData(GL_PIXEL_PACK_BUFFER, textureSizeInBytes, NULL, GL_DYNAMIC_READ);
+			glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+		}
 	}
 
 

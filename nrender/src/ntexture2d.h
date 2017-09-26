@@ -30,7 +30,7 @@ namespace opengl
 		// Default constructor
 		Texture2D();
 
-		void init(const Texture2DSettings& textureSettings, const TextureParameters& parameters);
+		void init(const Texture2DSettings& textureSettings, const TextureParameters& parameters, ETextureUsage usage);
 
 		/**
 		 * @return Texture2D settings object
@@ -51,11 +51,27 @@ namespace opengl
 		int getDataSize() const;
 
 		/**
-		 * @return Texture2D settings object
+		 * Blocking call to retrieve GPU texture data. 
+		 * @param data Block of data that is filled with texture data. The vector is resized internally to the correct size.
 		 */
 		void getData(std::vector<uint8_t>& data);
 
+		/**
+		 * Starts a transfer of texture data from GPU to CPU. Use asyncEndGetData to block waiting for the async command to complete.
+		 * For performance, it is important to start a transfer as soon as possible after the texture is rendered. It is recommended
+		 * to use double or triple buffering to make sure that no stalls occur when calling asyncEndGetData().
+		 */
+		void asyncStartGetData();
+
+		/**
+		 * Finishes a transfer of texture data from GPU to CPU that was started with asyncStartGetData. See comment in asyncStartGetData for proper use.
+		 * @param data Block of data that is filled with texture data. The vector is resized internally to the correct size.
+		 */
+		void asyncEndGetData(std::vector<uint8_t>& data);
+
 	private:
-		Texture2DSettings mSettings;		///< Settings object
+		Texture2DSettings	mSettings;		// Settings object
+		GLuint				mPBO;			// Pixel buffer object used to read/write texture data if usage is DynamicRead or DynamicWrite
+		ETextureUsage		mUsage;			// Usage of the texture
 	};
 } // opengl

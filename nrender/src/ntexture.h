@@ -19,12 +19,23 @@ namespace opengl
 		GLint maxLodLevel = 20;								// Maximum number of lods
 	};
 
+	/**
+	 * Flag that determines how the texture is used at runtime.
+	 */
+	enum class ETextureUsage
+	{
+		Static,				// Texture does not change
+		DynamicRead,		// Texture is frequently read from GPU to CPU
+		DynamicWrite		// Texture is frequently updated from CPU to GPU
+	};
+
 
 	/**
 	 * Base OpengGL Texture
 	 *
 	 * Acts as an abstract class for any type of texture
-	 * Manages GPU texture resource
+	 * Manages GPU texture resource. Note that this class is purely a helper base class
+	 * and isn't intended to be used polymorphically.
 	 */
 	class Texture
 	{
@@ -85,6 +96,12 @@ namespace opengl
 		 * @return opengl texture type
 		 */
 		GLenum getTargetType() const { return mTargetType; }
+
+	protected:
+		/**
+		 * Initializes the PBO
+		 */
+		static void initPBO(GLuint& pbo, ETextureUsage usage, int textureSizeInBytes);
 
 	private:
 		/**

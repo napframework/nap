@@ -88,10 +88,14 @@ namespace opengl
 	}
 
 
-	void Texture2D::init(const Texture2DSettings& settings, const TextureParameters& parameters) 
+	void Texture2D::init(const Texture2DSettings& settings, const TextureParameters& parameters, ETextureUsage usage) 
 	{
 		mSettings = settings;
+		mUsage = usage;
+
 		Texture::init(parameters);
+		initPBO(mPBO, mUsage, getDataSize());
+
 		setData(nullptr);
 	}
 
@@ -101,25 +105,35 @@ namespace opengl
 	 */
 	void Texture2D::setData(void* data)
 	{
+		void* data_ptr = data;
+
+		// For dynamic write textures, memcpy into FBO and let GPU copy it from there asynchronously
+		if (mUsage == ETextureUsage::DynamicWrite)
+		{
+			data_ptr = 0;
+			glBindBuffer(GL_PIXEL_UNPACK_BUFFER, mPBO);
+			if (data != nullptr)
+			{
+				void* memory = glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
+				memcpy(memory, data, getDataSize());
+				glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+			}
+		}
+
 		bind();
+		glAssert();
 
 		// Upload texture data
-		glTexImage2D(GL_TEXTURE_2D,
-			0,
-			mSettings.internalFormat,
-			mSettings.width,
-			mSettings.height,
-			0,
-			mSettings.format,
-			mSettings.type ,
-			data);
+		glTexImage2D(GL_TEXTURE_2D, 0, mSettings.internalFormat, mSettings.width, mSettings.height, 0, mSettings.format, mSettings.type, data_ptr);
 		glAssert();
 
 		unbind();
 
-		// Auto generate mip maps if data is valid and we're dealing with a mip mapable type
+		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+
+		// Auto generate mipmaps if data is valid and we're dealing with a mipmappable type
 		if(isMipMap(mParameters.minFilter) && data != nullptr)
-			generateMipMaps();
+			generateMipMaps();		
 	}
 
 
@@ -136,6 +150,38 @@ namespace opengl
 		bind();
 		glGetTexImage(GL_TEXTURE_2D, 0, mSettings.format, mSettings.type, data.data());
 		unbind();
+	}
+
+
+	void Texture2D::asyncStartGetData()
+	{
+		assert(mUsage == ETextureUsage::DynamicRead);
+
+		glBindBuffer(GL_PIXEL_PACK_BUFFER, mPBO);
+		
+		bind();
+		glGetTexImage(GL_TEXTURE_2D, 0, mSettings.format, mSettings.type, 0);
+		unbind();
+
+		glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+		glAssert();
+	}
+
+
+	void Texture2D::asyncEndGetData(std::vector<uint8_t>& data)
+	{
+		assert(mUsage == ETextureUsage::DynamicRead);
+		data.resize(getDataSize());
+
+		glBindBuffer(GL_PIXEL_PACK_BUFFER, mPBO);
+		
+		void* buffer = glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
+		memcpy(data.data(), buffer, data.size());
+
+		glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
+		glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+
+		glAssert();
 	}
 
 } // opengl
