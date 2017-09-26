@@ -1,5 +1,7 @@
 // Local Includes
 #include "rendertarget.h"
+#include "texture.h"
+#include "nframebuffer.h"
 
 RTTI_BEGIN_CLASS(nap::TextureRenderTarget2D)
 	RTTI_PROPERTY("mColorTexture",	&nap::TextureRenderTarget2D::mColorTexture, nap::rtti::EPropertyMetaData::Required)
