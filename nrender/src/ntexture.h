@@ -12,11 +12,11 @@ namespace opengl
 	 */
 	struct TextureParameters final
 	{
-		GLint minFilter =		GL_LINEAR_MIPMAP_LINEAR;		//< Filter used when sampling down
-		GLint maxFilter =		GL_LINEAR;						//< Filter used when sampling up
-		GLint wrapVertical =	GL_CLAMP_TO_EDGE;				//< Method used for clamping texture vertically
-		GLint wrapHorizontal =	GL_CLAMP_TO_EDGE;				//< Method used for clamping texture horizontally
-		GLint maxLodLevel =		20;								// Maximum number of lods
+		GLint minFilter = GL_LINEAR_MIPMAP_LINEAR;		//< Filter used when sampling down
+		GLint maxFilter = GL_LINEAR;						//< Filter used when sampling up
+		GLint wrapVertical = GL_CLAMP_TO_EDGE;				//< Method used for clamping texture vertically
+		GLint wrapHorizontal = GL_CLAMP_TO_EDGE;				//< Method used for clamping texture horizontally
+		GLint maxLodLevel = 20;								// Maximum number of lods
 	};
 
 
@@ -57,7 +57,7 @@ namespace opengl
 		 * Derived classes need to implement this for 2d or 3d textures
 		 */
 		void bind();
-		
+
 		/**
 		 * Unbind texture
 		 */
@@ -66,16 +66,16 @@ namespace opengl
 		/**
 		 * @Return current GPU texture location
 		 */
-		GLuint getTextureId() const						{ return mTextureId; }
+		GLuint getTextureId() const { return mTextureId; }
 
 		/**
 		 * @return currently used texture parameters
 		 */
-		const TextureParameters& getParameters() const		{ return mParameters; }
+		const TextureParameters& getParameters() const { return mParameters; }
 
 		/**
 		* Creates mip-maps for the texture on the GPU
-		* This call will only work if data is available to the texture on the GPU 
+		* This call will only work if data is available to the texture on the GPU
 		* and the min min filter is of a MipMap enabled type. To check if a texture supports mip-mapping use
 		* opengl::isMipMap(x)
 		*/
@@ -103,62 +103,4 @@ namespace opengl
 		GLenum				mTargetType;			// Opengl type of texture
 		TextureParameters	mParameters;			// Texture specific 
 	};
-
-
-	//////////////////////////////////////////////////////////////////////////
-
-	/**
-	* Texture2Dsettings
-	*
-	* Data associated with a 2d texture
-	*/
-	struct Texture2DSettings
-	{
-	public:
-		GLint internalFormat = GL_RGB;		//< Specifies the number of color components in the texture
-		GLsizei width = 0;					//< Specifies the width of the texture
-		GLsizei height = 0;					//< Specifies the height of the texture
-		GLenum format = GL_BGR;				//< Specifies the format of the pixel data
-		GLenum type = GL_UNSIGNED_BYTE;		//< Data type of the pixel data (GL_UNSIGNED_BYTE etc..)
-	};
-
-	/**
-	 * Texture2D
-	 *
-	 * Represents a 2 dimensional texture on the GPU
-	 */
-	class Texture2D : public Texture
-	{
-	public:
-		// Default constructor
-		Texture2D();
-
-		void init(const Texture2DSettings& textureSettings, const TextureParameters& parameters);
-
-		/**
-		 * @return Texture2D settings object
-		 */
-		const Texture2DSettings& getSettings() const { return mSettings; }
-
-		/**
-		 * setData
-		 * 
-		 * Uploads 2d pixel data to the GPU
-		 * Make sure that the data the pointer points at matches the size of the texture settings provided!
-		 */
-		void setData(void* data);
-
-		/**
-		 * @return The size of the texture when copied to/from CPU.
-		 */
-		int getDataSize() const;
-
-		/**
-		 * @return Texture2D settings object
-		 */
-		void getData(std::vector<uint8_t>& data);
-
-	private:
-		Texture2DSettings mSettings;		///< Settings object
-	};
-} // opengl
+}

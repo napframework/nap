@@ -1,4 +1,5 @@
 #include "nrendertarget.h"
+#include "ntexture2d.h"
 #include "nglutils.h"
 
 // External Includes
@@ -45,6 +46,12 @@ namespace opengl
 		allocate(colorTexture, depthTexture);
 
 		setClearColor(clearColor);
+	}
+
+
+	const glm::ivec2 TextureRenderTarget2D::getSize() const 
+	{ 
+		return glm::ivec2(mColorTexture->getSettings().width, mColorTexture->getSettings().height); 
 	}
 
 

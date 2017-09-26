@@ -1,14 +1,13 @@
 #pragma once
 
-// Local Includes
-#include "ntexture.h"
-
 // External Includes
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 
 namespace opengl
 {
+	class Texture2D;
+
 	/**
 	* Flags used to choose what part of render target to clear
 	*/
@@ -132,7 +131,10 @@ namespace opengl
 		 */
 		opengl::Texture2D& getDepthTexture() 					{ assert(mDepthTexture != nullptr);  return *mDepthTexture; }
 
-		virtual const glm::ivec2 getSize() const override		{ return glm::ivec2(mColorTexture->getSettings().width, mColorTexture->getSettings().height); }
+		/**
+		 * @return Size of the rendertarget, in texels.
+		 */
+		virtual const glm::ivec2 getSize() const override;
 
 	private:
 		/**

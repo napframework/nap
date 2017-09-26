@@ -3,7 +3,7 @@
 // External Includes
 #include <rtti/rttiobject.h>
 #include <utility/dllexport.h>
-#include <ntexture.h>
+#include <ntexture2d.h>
 #include <glm/glm.hpp>
 
 namespace nap

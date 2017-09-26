@@ -1,7 +1,6 @@
 #pragma once
 
 // Local Includes
-#include "ntexture.h"
 #include "nbitmap.h"
 
 // External Includes
@@ -17,6 +16,9 @@ namespace nap
 
 namespace opengl
 {
+	struct Texture2DSettings;
+	class Texture;
+
 	/**
 	* getGLType
 	*

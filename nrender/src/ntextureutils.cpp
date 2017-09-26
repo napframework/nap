@@ -1,4 +1,5 @@
 #include "ntextureutils.h"
+#include "ntexture2d.h"
 #include "nglutils.h"
 #include "assert.h"
 #include "utility/errorstate.h"
