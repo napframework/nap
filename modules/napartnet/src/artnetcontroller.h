@@ -50,6 +50,14 @@ namespace nap
 		void send(const FloatChannelData& channelData, int channelOffset = 0);
 
 		/**
+		 * Sends normalized float channel data (ranging from 0.0 to 1.0) over the artnet network. Internally, the float data
+		 * is converted to bytes. The actual sending is deferred until the update, where data is sent when needed.
+		 * @param channelData Channel data in normalized floats (0.0 to 1.0)
+		 * @param channel The target channel where @channelData should be applied to. Must be between 0 and 512.
+		 */
+		void send(float channelData, int channel);
+
+		/**
 		 * Sends byte channel data over the artnet network. The actual sending is deferred until the update of the service, where data is sent when needed.
 		 * @param channelData Channel data in unsigned bytes (0 - 255)
 		 * @param channelOffset Channel offset, the target start channel where @channelData should be applied to. If the
@@ -57,6 +65,13 @@ namespace nap
 		 *                      universe (512), the function will assert.
 		 */
 		void send(const ByteChannelData& channelData, int channelOffset = 0);
+
+		/**
+		 * Sends byte channel data over the artnet network. The actual sending is deferred until the update, where data is sent when needed.
+		 * @param channelData Channel data in unsigned bytes (0 - 255)
+		 * @param channel The target channel where @channelData should be applied to. Must be between 0 and 512.
+		 */
+		void send(uint8_t channelData, int channel);
 
 		/**
 		 * @return Address where this controllers maps to. Upper 4 bits contain subnet, lower 4 bits contain universe.

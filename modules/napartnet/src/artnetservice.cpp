@@ -68,6 +68,14 @@ namespace nap
 	}
 
 
+	void ArtNetService::send(ArtNetController& controller, float channelData, int channel)
+	{
+		assert(channelData >= 0.0f && channelData <= 1.0f);
+		uint8_t byte_data = (uint8_t)(channelData * 255.0f);
+		send(controller, byte_data, channel);
+	}
+
+
 	void ArtNetService::send(ArtNetController& controller, const ByteChannelData& channelData, int channelOffset)
 	{
 		ControllerMap::iterator pos = mControllers.find(controller.getAddress());
@@ -79,6 +87,16 @@ namespace nap
 		// Copy into internal buffer that is sent on update
 		std::memcpy(channel_data.data() + channelOffset, channelData.data(), channelData.size());
 		pos->second->mIsDirty = true;
+	}
+
+
+	void ArtNetService::send(ArtNetController& controller, uint8_t channelData, int channel)
+	{
+		ControllerMap::iterator pos = mControllers.find(controller.getAddress());
+		assert(pos != mControllers.end());
+		assert(channel >= 0 && channel < pos->second->mData.size());
+
+		pos->second->mData[channel] = channelData;
 	}
 
 

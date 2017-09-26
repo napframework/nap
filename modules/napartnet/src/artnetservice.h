@@ -67,6 +67,15 @@ namespace nap
 		void send(ArtNetController& controller, const FloatChannelData& channelData, int channelOffset = 0);
 
 		/**
+		 * Sends normalized float channel data (ranging from 0.0 to 1.0) over the artnet network. Internally, the float data
+		 * is converted to bytes. The actual sending is deferred until the update, where data is sent when needed.
+		 * @param controller Controller to send from, which specifies subnet and universe.
+		 * @param channelData Channel data in normalized floats (0.0 to 1.0)
+		 * @param channel The target channel where @channelData should be applied to. Must be between 0 and 512.
+		 */
+		void send(ArtNetController& controller, float channelData, int channel);
+
+		/**
 		 * Sends byte channel data over the artnet network. The actual sending is deferred until the update, where data is sent when needed.
 		 * @param controller Controller to send from, which specifies subnet and universe.
 		 * @param channelData Channel data in unsigned bytes (0 - 255)
@@ -75,6 +84,14 @@ namespace nap
 		 *                      universe (512), the function will assert.
 		 */
 		void send(ArtNetController& controller, const ByteChannelData& channelData, int channelOffset = 0);
+
+		/**
+		 * Sends byte channel data over the artnet network. The actual sending is deferred until the update, where data is sent when needed.
+		 * @param controller Controller to send from, which specifies subnet and universe.
+		 * @param channelData Channel data in unsigned bytes (0 - 255)
+		 * @param channel The target channel where @channelData should be applied to. Must be between 0 and 512.
+		 */
+		void send(ArtNetController& controller, uint8_t channelData, int channel);
 
 		/**
 		 * Makes sure that data that is sent using the various send functions is transmitted over the network.

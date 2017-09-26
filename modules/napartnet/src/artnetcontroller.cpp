@@ -60,8 +60,20 @@ namespace nap
 	}
 
 
+	void ArtNetController::send(float channelData, int channel)
+	{
+		mService->send(*this, channelData, channel);
+	}
+
+
 	void ArtNetController::send(const ByteChannelData& channelData, int channelOffset)
 	{
 		mService->send(*this, channelData, channelOffset);
+	}
+
+
+	void ArtNetController::send(uint8_t channelData, int channel)
+	{
+		mService->send(*this, channelData, channel);
 	}
 }
