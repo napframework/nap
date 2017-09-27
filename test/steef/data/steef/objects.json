@@ -7,7 +7,7 @@
 			"Width" : 512,
 			"Height" : 512,
 			"Title" : "Viewport",
-			"Sync" : false
+			"Sync" : true
 		},
 
 		{
@@ -31,7 +31,7 @@
 		{
 			"Type" : "nap::Image",
 			"mID" : "CoverImage",
-			"mImagePath" : "data/steef/cover.jpg",
+			"mImagePath" : "data/steef/cover.png",
 			"mParameters" : {
 				"MaxFilter" : "Linear",		
 				"MinFilter" : "LinearMipmapLinear",		
@@ -70,7 +70,7 @@
 		{
 			"Type" : "nap::Image",
 			"mID" : "GrooveNormalMap",
-			"mImagePath" : "data/steef/grooves.jpg",
+			"mImagePath" : "data/steef/grooves.png",
 			"mParameters" : {
 				"MaxFilter" : "Linear",		
 				"MinFilter" : "LinearMipmapLinear",		
@@ -104,13 +104,13 @@
 		{
 			"Type" : "nap::MeshFromFile",
 			"mID": "CoverMesh",
-			"Path": "data/steef/vinyl_cover_LP12_S_Cover.mesh"
+			"Path": "data/steef/vinyl_cover_Cover.mesh"
 		},
 
 		{
 			"Type" : "nap::MeshFromFile",
 			"mID": "VinylMesh",
-			"Path": "data/steef/vinyl_cover_LP_12_.mesh"
+			"Path": "data/steef/vinyl_cover_Vinyl.mesh"
 		},
 		
 		{
@@ -127,26 +127,21 @@
 					"ShaderAttributeID": "in_UV0"
 				},
 				{
-					"MeshAttributeID" : "UV1",
-					"ShaderAttributeID": "in_UV1"
-				},
-				{
 					"MeshAttributeID": "Normal",
 					"ShaderAttributeID": "in_Normals"
-				}
-			],
-			"Uniforms" :
-			[
-				{
-					"Type" : "nap::UniformVec3",
-					"Name" : "recordColor",
-					"Value" :
-					{
-						"x" : 0.0,
-						"y" : 0.0,
-						"z" : 0.0
-					}
 				},
+				{
+					"MeshAttributeID": "Tangent",
+					"ShaderAttributeID": "in_Tangent"
+				},
+				{
+					"MeshAttributeID": "Bitangent",
+					"ShaderAttributeID": "in_Bitangent"
+				}
+
+			],
+			"Uniforms" : 
+			[
 				{
 					"Type" : "nap::UniformVec3",
 					"Name" : "lightPosition",
@@ -175,22 +170,22 @@
 				{
 					"Type" : "nap::UniformFloat",
 					"Name" : "shininess",
-					"Value" : 45
+					"Value" : 20
 				},
 				{
 					"Type" : "nap::UniformFloat",
 					"Name" : "specularIntensity",
-					"Value" : 0.4
+					"Value" : 0.2
 				},
 				{
 					"Type" : "nap::UniformFloat",
 					"Name" : "attenuationScale",
-					"Value" : 0.00001
+					"Value" : 0.0001
 				},
 				{
 					"Type" : "nap::UniformFloat",
 					"Name" : "grooveScale",
-					"Value" : 0.15
+					"Value" : 0.75
 				},
 				{
 					"Type" : "nap::UniformVec3",
@@ -224,12 +219,12 @@
 					"ShaderAttributeID": "in_Normals"
 				}
 			],
-			"Uniforms" :
+			"Uniforms" : 
 			[
 				{
 					"Type" : "nap::UniformVec3",
 					"Name" : "lightPosition",
-					"Value" :
+					"Value" : 
 					{
 						"x" : 1.0,
 						"y" : 2.5,
@@ -254,12 +249,12 @@
 				{
 					"Type" : "nap::UniformFloat",
 					"Name" : "shininess",
-					"Value" : 7.5
+					"Value" : 5.0
 				},
 				{
 					"Type" : "nap::UniformFloat",
 					"Name" : "specularIntensity",
-					"Value" : 0.25
+					"Value" : 0.1
 				},
 				{
 					"Type" : "nap::UniformFloat",
@@ -295,10 +290,6 @@
 				{
 					"MeshAttributeID": "Normal",
 					"ShaderAttributeID": "in_Normals"
-				},
-				{
-					"MeshAttributeID": "Color0",
-					"ShaderAttributeID": "in_Color0"
 				}
 			]			
 		},
@@ -326,7 +317,7 @@
 							"y": 1.0,
 							"z": 1.0
 						},
-						"UniformScale": 0.33
+						"UniformScale": 0.31
 					}
 				},
 				{
@@ -337,7 +328,7 @@
 							"y": 1.0,
 							"z": 0.0
 						},
-						"Speed": 0.125,
+						"Speed": 0.1,
 						"Offset": 2.0
 					}
 				}
@@ -346,13 +337,13 @@
 			[
 				"VinylEntity",
 				"CoverEntity"
-			]
+			] 
 		},
-
+		
 		{
 			"Type" : "nap::Entity",
 			"mID": "VinylEntity",
-			"Components" :
+			"Components" : 
 			[
 				{
 					"Type" : "nap::RenderableMeshComponent",
@@ -360,7 +351,7 @@
 					"MaterialInstance" : {
 						"Material": "VinylMaterial",
 						"BlendMode": "Opaque",
-						"Uniforms" :
+						"Uniforms" : 
 						[
 							{
 								"Type" : "nap::UniformTexture2D",
@@ -389,7 +380,7 @@
 							"z": 0.0
 						},
 						"Rotate": {
-							"x": -90.0,
+							"x": 0.0,
 							"y": 0.0,
 							"z": 0.0
 						},
@@ -398,18 +389,18 @@
 							"y": 1.0,
 							"z": 1.0
 						},
-						"UniformScale": 0.1
-					}
+						"UniformScale": 1.0
+					}	
 				},
 				{
 					"Type" : "nap::RotateComponent",
 					"Properties": {
 						"Axis": {
 							"x": 0.0,
-							"y": 1.0,
-							"z": 0.0
+							"y": 0.0,
+							"z": 1.0
 						},
-						"Speed": 0.6,
+						"Speed": -0.3,
 						"Offset": 2.0
 					}
 				}
@@ -419,7 +410,7 @@
 		{
 			"Type" : "nap::Entity",
 			"mID": "CoverEntity",
-			"Components" :
+			"Components" : 
 			[
 				{
 					"Type" : "nap::RenderableMeshComponent",
@@ -427,7 +418,7 @@
 					"MaterialInstance" : {
 						"Material": "CoverMaterial",
 						"BlendMode": "Opaque",
-						"Uniforms" :
+						"Uniforms" : 
 						[
 							{
 								"Type" : "nap::UniformTexture2D",
@@ -455,16 +446,16 @@
 							"y": 1.0,
 							"z": 1.0
 						},
-						"UniformScale": 0.1
+						"UniformScale": 1.0
 					}
-				}
+				}		
 			]
 		},
-
+		
 		{
 			"Type" : "nap::Entity",
 			"mID": "BackgroundEntity",
-			"Components" :
+			"Components" : 
 			[
 				{
 					"Type" : "nap::RenderableMeshComponent",
@@ -473,7 +464,7 @@
 						"Material": "BackgroundMaterial",
 						"BlendMode": "Opaque",
 						"DepthMode" : "ReadOnly",
-						"Uniforms" :
+						"Uniforms" : 
 						[
 							{
 								"Type" : "nap::UniformTexture2D",
@@ -486,7 +477,7 @@
 								"Value": 1.0
 							}
 						]
-					}
+					}		
 				},
 				{
 					"Type" : "nap::TransformComponent",
@@ -515,21 +506,21 @@
 		{
 			"Type" : "nap::Entity",
 			"mID": "CameraEntity",
-			"Components" :
+			"Components" : 
 			[
 				{
 					"Type" : "nap::PerspCameraComponent",
 					"Properties": {
 						"FieldOfView": 45.0,
-						"NearClippingPlane" : 0.01,
+						"NearClippingPlane" : 1,
 						"FarClippingPlane" : 1000.0
 					}
 				},
 				{
 					"Type" : "nap::OrthoCameraComponent",
 					"Properties": {
-						"NearClippingPlane" : 0.01,
-						"FarClippingPlane" : 10000.0
+						"NearClippingPlane" : 1,
+						"FarClippingPlane" : 1000.0
 					}
 				},
 				{
@@ -550,7 +541,7 @@
 							"y": 1.0,
 							"z": 1.0
 						},
-						"UniformScale": 1.0
+						"UniformScale": 1.0						
 					}
 				}
 			]

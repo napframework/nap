@@ -19,7 +19,7 @@ void main(void)
 	// Calculate position
     gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(in_Position, 1.0);
 
-	// Pass color and uv's
+	// Pass color and uv's 
 	pass_Uvs0 = in_UV0;
 	pass_Vert = in_Position;
 	pass_ModelMatrix = modelMatrix;
