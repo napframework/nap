@@ -175,7 +175,7 @@
 				{
 					"Type" : "nap::UniformFloat",
 					"Name" : "specularIntensity",
-					"Value" : 0.2
+					"Value" : 0.225
 				},
 				{
 					"Type" : "nap::UniformFloat",
@@ -254,7 +254,7 @@
 				{
 					"Type" : "nap::UniformFloat",
 					"Name" : "specularIntensity",
-					"Value" : 0.1
+					"Value" : 0.2
 				},
 				{
 					"Type" : "nap::UniformFloat",
