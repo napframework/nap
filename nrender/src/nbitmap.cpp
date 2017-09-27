@@ -110,16 +110,10 @@ namespace opengl
 	void* BitmapBase::getPixelData(unsigned int x, unsigned int y) const
 	{
 		if (!hasData())
-		{
-			assert(false);
 			return nullptr;
-		}
 
 		if (x >= mSettings.mWidth || y >= mSettings.mHeight)
-		{
-			assert(false);
 			return nullptr;
-		}
 
 		// Get size in bytes of data type
 		unsigned int data_size = static_cast<unsigned int>(getSizeOf(mSettings.mDataType));

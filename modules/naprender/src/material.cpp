@@ -121,10 +121,7 @@ namespace nap
 		{
 			opengl::UniformDeclarations::const_iterator declaration = uniform_declarations.find(uniform->mName);
 			if (declaration == uniform_declarations.end())
-			{
-				nap::Logger::warn("Unable to find uniform %s in shader %s for material %s", uniform->mName.c_str(), resource.mMaterial->getShader()->mID.c_str(), resource.mMaterial->mID.c_str());
 				continue;
-			}
 
 			if (!errorState.check(uniform->getGLSLType() == declaration->second->mGLSLType, "Uniform %s does not match the variable type in the shader %s", uniform->mName.c_str(), resource.mMaterial->getShader()->mID.c_str()))
 				return false;
@@ -215,17 +212,6 @@ namespace nap
 			}
 
 			AddUniform(std::move(new_uniform), declaration);
-		}
-		
-		// Verify that we don't have uniform mapping that do not exist in the shader
-		for (ObjectPtr<Uniform>& uniform : mUniforms)
-		{
-			opengl::UniformDeclarations::const_iterator declaration = uniform_declarations.find(uniform->mName);
-			if (declaration == uniform_declarations.end())
-			{
-				nap::Logger::warn("Unable to find uniform %s in shader %s", uniform->mName.c_str(), mShader->mID.c_str());
-				continue;
-			}
 		}
 
 		return true;
