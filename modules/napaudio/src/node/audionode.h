@@ -134,7 +134,7 @@ namespace nap {
              * @param manager: the node manager that this node will be registered to and processed by. This node provides audio output for the manager.
              * @param active: true if the node is active and being processed from the moment of creation. This can cause glitches if the node tree and it's parameters are still being build.
              */
-            OutputNode(NodeManager& manager, bool active = false);
+            OutputNode(NodeManager& manager, bool active = true);
             
             ~OutputNode();
             
@@ -170,7 +170,7 @@ namespace nap {
             
             int mOutputChannel = 0;
             
-            bool mActive = false;
+            bool mActive = true;
         };
         
         
