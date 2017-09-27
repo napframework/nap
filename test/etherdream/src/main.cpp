@@ -35,9 +35,10 @@
 #include <etherdreamdac.h>
 #include <perspcameracomponent.h>
 #include <mathutils.h>
-#include <oscsender.h>
 #include <renderablemeshcomponent.h>
 #include "lineselectioncomponent.h"
+#include <nanosvg.h>
+#include <visualizenormalsmesh.h>
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
@@ -57,10 +58,11 @@ nap::ObjectPtr<nap::RenderWindow> renderWindow = nullptr;
 // Laser DAC
 nap::ObjectPtr<nap::EntityInstance> laserPrototype = nullptr;
 
-// Holds the osc sender
-nap::ObjectPtr<nap::OSCSender> oscSender = nullptr;
+// Holds the normals mesh
+nap::ObjectPtr<nap::VisualizeNormalsMesh> normalsMesh = nullptr;
 
 //////////////////////////////////////////////////////////////////////////
+
 
 // Some utilities
 void runGame(nap::Core& core);	
@@ -78,17 +80,14 @@ void onUpdate()
 	// Process all events for osc
 	oscService->update();
 
-	// Update all resources
-	resourceManagerService->update();
-
 	// Update the scene
 	sceneService->update();
 
+	// Update all resources
+	resourceManagerService->update();
 
-	// Send an osc message
-	nap::OSCEventPtr new_event = std::make_unique<nap::OSCEvent>("/color/1");
-	new_event->addValue<float>(1.0f);
-	//oscSender->send(*new_event);
+	nap::utility::ErrorState error;
+	normalsMesh->updateNormals(error, true);
 }
 
 
@@ -115,18 +114,6 @@ void onRender()
 
 	// Swap back buffer
 	renderWindow->swap();
-
-	// Set the laser line to render
-	nap::RenderableMeshComponentInstance& line = spline_entity ->getComponent<nap::RenderableMeshComponentInstance>();
-	nap::TransformComponentInstance& xform = spline_entity->getComponent<nap::TransformComponentInstance>();
-
-	std::vector<nap::LaserOutputComponentInstance*> outputs;
-	laser_output_entity->getComponentsOfType<nap::LaserOutputComponentInstance>(outputs);
-	assert(line.getMesh().get_type().is_derived_from(RTTI_OF(nap::PolyLine)));
-	for (const auto& output : outputs)
-	{
-		output->setLine(static_cast<nap::PolyLine&>(line.getMesh()), xform.getGlobalTransform());
-	}
 }
 
 
@@ -136,6 +123,11 @@ void onRender()
 */
 bool init(nap::Core& core)
 {
+	// Try to load an svg image
+	NSVGimage* g_image = nsvgParseFromFile("./data/etherdream/swirl.svg", "mm", 96.0f);
+	if(g_image != nullptr)
+		nsvgDelete(g_image);
+
 	core.initialize();
 
 	//////////////////////////////////////////////////////////////////////////
@@ -155,7 +147,6 @@ bool init(nap::Core& core)
 		return false;
 	}
 
-
 	// Collects all the errors
 	nap::utility::ErrorState errorState;
 
@@ -164,6 +155,7 @@ bool init(nap::Core& core)
 
 	// Create scene service
 	sceneService = core.getOrCreateService<nap::SceneService>();
+
 
 	// Create etherdream service
 	laserService = core.getOrCreateService<nap::EtherDreamService>();
@@ -181,7 +173,6 @@ bool init(nap::Core& core)
 		return false;
 	}
 
-
 	// Load scene
 	if (!resourceManagerService->loadFile("data/etherdream/etherdream.json", errorState))
 	{
@@ -189,14 +180,15 @@ bool init(nap::Core& core)
 		return false;        
 	}
 
+
 	// Store all render windows
 	renderWindow = resourceManagerService->findObject<nap::RenderWindow>("Window");
 
 	// Store laser dacs
 	laserPrototype = resourceManagerService->findEntity("LaserPrototypeEntity");
 
-	// Store sender
-	oscSender = resourceManagerService->findObject<nap::OSCSender>("OscSender");
+	// Store normals mesh
+	normalsMesh = resourceManagerService->findObject<nap::VisualizeNormalsMesh>("NormalsMesh");
 
 	// Set render states
 	nap::RenderState& render_state = renderService->getRenderState();
@@ -204,7 +196,6 @@ bool init(nap::Core& core)
 	render_state.mLineWidth = 1.3f;
 	render_state.mPointSize = 2.0f;
 	render_state.mPolygonMode = opengl::PolygonMode::FILL;
-
 
 	return true;
 }

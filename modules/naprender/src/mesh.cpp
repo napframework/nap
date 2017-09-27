@@ -85,6 +85,13 @@ namespace nap
 	}
 
 
+	void MeshInstance::setIndices(uint32_t* indices, int numIndices)
+	{
+		mProperties.mIndices.resize(numIndices);
+		std::memcpy(mProperties.mIndices.data(), indices, numIndices * sizeof(uint32_t));
+	}
+
+
 	bool MeshInstance::update(utility::ErrorState& errorState)
 	{
 		// Check for mismatches in sizes

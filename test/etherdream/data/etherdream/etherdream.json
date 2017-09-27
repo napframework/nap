@@ -17,13 +17,6 @@
 		},
 
 		{
-			"Type" : "nap::OSCSender",
-			"mID" : "OscSender",
-			"IpAddress" : "192.168.0.19",
-			"Port" : 8000
-		},
-
-		{
 			"Type" : "nap::Shader",
 			"mID": "LineShader",
 			"mVertShader": "shaders/etherdream/line.vert",
@@ -38,9 +31,22 @@
 		},
 
 		{
+			"Type" : "nap::Shader",
+			"mID": "NormalsShader",
+			"mVertShader": "shaders/etherdream/normals.vert",
+			"mFragShader": "shaders/etherdream/normals.frag"
+		},
+
+		{
 			"Type" : "nap::Image",
 			"mID" : "CanvasImage",
 			"mImagePath" : "data/etherdream/laser_canvas.png"
+		},
+
+		{
+			"Type" : "nap::Image",
+			"mID" : "ColorLookupImage",
+			"mImagePath" : "data/etherdream/color_gradient.png"
 		},
 
 		{
@@ -49,19 +55,20 @@
 		},
 
 		{
+			"Type" : "nap::LineFromFile",
+			"mID": "LineFromFileMesh",
+			"File" : "./data/etherdream/swirl.svg",
+			"Tolerance" : 0.1,
+			"Units" : "mm",
+			"Normalize" : true,
+			"Scale" : 2.0,
+			"FlipVertical" : true,
+			"LineIndex" : 0
+		},
+
+		{
 			"Type" : "nap::Line",
 			"mID": "LineMesh",
-			"Properties": 
-			{
-				"Count" : 500,
-				"Color" :
-				{
-					"x":1.0,
-					"y":1.0,
-					"z":1.0,
-					"w":1.0
-				}
-			},
 			"Start" :
 			{
 				"x": -1.0,
@@ -80,17 +87,6 @@
 		{
 			"Type" : "nap::Rectangle",
 			"mID": "RectangleMesh",
-			"Properties": 
-			{
-				"Count" : 500,
-				"Color" :
-				{
-					"x":1.0,
-					"y":0.0,
-					"z":1.0,
-					"w":1.0
-				}
-			},
 			"Dimensions":
 			{
 				"x":2,
@@ -101,52 +97,41 @@
 		{
 			"Type" : "nap::Circle",
 			"mID": "CircleMesh",
-			"Properties": 
-			{
-				"Count" : 500,
-				"Color" :
-				{
-					"x":1.0,
-					"y":1.0,
-					"z":1.0,
-					"w":1.0
-				}
-			},
-			"Radius":1.0
+			"Radius":1.0,
+			"Segments" : 200
 		},
 
 		{
 			"Type" : "nap::Hexagon",
 			"mID": "HexagonMesh",
-			"Properties": 
-			{
-				"Count" : 500,
-				"Color" :
-				{
-					"x":1.0,
-					"y":1.0,
-					"z":1.0,
-					"w":1.0
-				}
-			},
 			"Radius":1.0
 		},
 
 		{
 			"Type" : "nap::Triangle",
 			"mID": "TriangleMesh",
-			"Properties": 
-			{
-				"Count" : 500,
-				"Color" :
-				{
-					"x":1.0,
-					"y":1.0,
-					"z":1.0,
-					"w":1.0
-				}
-			},
 			"Radius":1.0
+		},
+
+		{
+			"Type" : "nap::Line",
+			"mID": "LaserLineMesh",
+			"Vertices" : 500,
+			"Closed" : false
+		},
+
+		{
+			"Type" : "nap::Line",
+			"mID": "LaserTraceMesh",
+			"Vertices" : 500,
+			"Closed" : false
+		},
+
+		{
+			"Type" : "nap::VisualizeNormalsMesh",
+			"mID" : "NormalsMesh",
+			"ReferenceMesh" : "LaserLineMesh",
+			"Length" : 0.1
 		},
 
 		{
@@ -171,6 +156,37 @@
 					"ShaderAttributeID": "in_Normals"
 				}
 			]			
+		},
+
+		{
+			"Type" : "nap::Material",
+			"mID": "NormalsMaterial",
+			"Shader": "NormalsShader",
+			"VertexAttributeBindings" : 
+			[
+				{
+					"MeshAttributeID": "Position",
+					"ShaderAttributeID": "in_Position"
+				},
+				{
+					"MeshAttributeID": "Color0",
+					"ShaderAttributeID": "in_Color0"
+				}
+			],
+			"Uniforms" : 
+			[
+				{
+					"Type" : "nap::UniformVec4",
+					"Name" : "mColor",
+					"Value" : 
+					{
+						"x" : 1.0,
+						"y" : 1.0,
+						"z" : 0.0,
+						"w" : 1.0
+					}
+				}
+			]		
 		},
 
 		{
@@ -306,6 +322,7 @@
 					"mID" : "LineSelectorOne",
 					"Lines" :
 					[
+						"LineFromFileMesh",
 						"LineMesh",
 						"RectangleMesh",
 						"CircleMesh",
@@ -315,18 +332,42 @@
 					"Index" : 0
 				},
 				{
+					"Type" : "nap::LineSelectionComponent",
+					"mID" : "LineSelectorTwo",
+					"Lines" :
+					[
+						"LineFromFileMesh",
+						"LineMesh",
+						"RectangleMesh",
+						"CircleMesh",
+						"HexagonMesh",
+						"TriangleMesh"
+					],
+					"Index" : 3
+				},
+				{
 					"Type" : "nap::OSCInputComponent",
 					"Addresses" : 
 					[
-						"/color",
-						"/resetcolor",
-						"/rotate",
-						"/resetrotate",
-						"/index"
+						"/intensity",
+						"/startposition",
+						"/endposition",
+						"/rotation",
+						"/resetrotation",
+						"/selection",
+						"/blend",
+						"/scale",
+						"/position",
+						"/modulation",
+						"/noise"
 					]
 				},
 				{
-					"Type" : "nap::OSCLaserInputHandler"
+					"Type" : "nap::OSCLaserInputHandler",
+					"mID" : "OSCLaserInputHandler",
+					"SelectionComponentOne" : "LineSelectorOne",
+					"SelectionComponentTwo" : "LineSelectorTwo",
+					"LaserOutputComponent" : "LaserOutputComponentOne"
 				},
 				{
 					"Type" : "nap::TransformComponent",
@@ -354,26 +395,101 @@
 						"UniformScale": 100.0						
 					}			
 				},
-
+				{
+					"Type" : "nap::LineBlendComponent",
+					"mID" : "LineBlender",
+					"SelectionComponentOne" : "LineSelectorOne",
+					"SelectionComponentTwo" : "LineSelectorTwo",
+					"Target" : "LaserLineMesh",
+					"BlendValue" : 0.0,
+					"BlendSpeed" : 0.25
+				},
+				{
+					"Type" : "nap::LineModulationComponent",
+					"mID" : "LineModulator",
+					"BlendComponent" : "LineBlender",
+					"Properties" : 
+					{
+						"Frequency" : 1.0,
+						"Speed" : 0.2,
+						"Offset" : 0.0,
+						"Amplitude" : 0.0,
+						"Waveform" : "Sine",
+						"Normalize" : false
+					}
+				},
+				{
+					"Type" : "nap::LineNoiseComponent",
+					"mID" : "LineNoiseModulator",
+					"BlendComponent" : "LineBlender",
+					"Properties" : 
+					{
+						"Frequency" : 2.0,
+						"Speed" : 0.1,
+						"Offset" : 0.0,
+						"Amplitude" : 0.2
+					}
+				},
+				{
+					"Type" : "nap::LineColorComponent",
+					"mID" : "LineColorer",
+					"BlendComponent" : "LineBlender",
+					"StartPosition" : 
+					{
+						"x" : 0.0,
+						"y" : 0.0
+					},
+					"EndPosition" : 
+					{
+						"x" : 1.0,
+						"y" : 1.0
+					},
+					"LookupImage" : "ColorLookupImage",
+					"Wrap" : true,
+					"WrapPower" : 1.0
+				},
+				{
+					"Type" : "nap::LineTraceComponent",
+					"mID" : "LineTracer",
+					"BlendComponent" : "LineBlender",
+					"Target" : "LaserTraceMesh",
+					"Properties" :
+					{
+						"Offset" : 0.0,
+						"Speed" : 0.1,
+						"Length" : 0.25
+					}
+				},
 				{
 					"Type" : "nap::RotateComponent",
-					"Properties": {
-						"Axis": {
+					"Properties": 
+					{
+						"Axis": 
+						{
 							"x": 0.2,
 							"y": 1.0,
 							"z": 0.4
 						},
-						"Speed": 0.1,
+						"Speed": 0.0,
 						"Offset": 2.0
 					}
 				},
-
 				{
 					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "LineMesh",
+					"mID" : "RenderLaserLineComponent",
+					"Mesh" : "LaserLineMesh",
 					"MaterialInstance" : 
 					{
 						"Material": "LineMaterial"
+					}
+				},
+				{
+					"Type" : "nap::RenderableMeshComponent",
+					"Mesh" : "NormalsMesh",
+					"MaterialInstance" : 
+					{
+						"Material": "NormalsMaterial",
+						"BlendMode" : "AlphaBlend"
 					}
 				}
 			]
@@ -413,6 +529,7 @@
 				},
 				{
 					"Type":"nap::LaserOutputComponent",
+					"mID" : "LaserOutputComponentOne",
 					"Properties" :
 					{
 						"Frustrum" :
@@ -421,7 +538,8 @@
 							"y" : 512
 						}
 					},
-					"Dac" : "Laser1"
+					"Dac" : "Laser1",
+					"Line": "RenderLaserLineComponent"
 				},		
 				{
 					"Type":"nap::LaserOutputComponent",
@@ -433,7 +551,8 @@
 							"y" : 512
 						}
 					},
-					"Dac" : "Laser2"
+					"Dac" : "Laser2",
+					"Line": "RenderLaserLineComponent"
 				},
 				{
 					"Type":"nap::LaserOutputComponent",
@@ -445,7 +564,8 @@
 							"y" : 512
 						}
 					},
-					"Dac" : "Laser3"
+					"Dac" : "Laser3",
+					"Line": "RenderLaserLineComponent"
 				},
 				{
 					"Type":"nap::LaserOutputComponent",
@@ -457,7 +577,8 @@
 							"y" : 512
 						}
 					},
-					"Dac" : "Laser4"
+					"Dac" : "Laser4",
+					"Line": "RenderLaserLineComponent"
 				}			
 			],
 			"Children" :
