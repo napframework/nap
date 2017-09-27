@@ -10,7 +10,7 @@ namespace nap {
         }
         
         
-        void EnvelopeGenerator::trigger(Envelope &envelope, TimeValue totalDuration)
+        void EnvelopeGenerator::trigger(Envelope& envelope, TimeValue totalDuration)
         {
             trigger(envelope, 0, envelope.size() - 1, 0, totalDuration);
         }

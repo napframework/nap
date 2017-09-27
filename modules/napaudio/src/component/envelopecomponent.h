@@ -27,7 +27,7 @@ namespace nap
         public:
             EnvelopeComponent() : AudioComponent() { }
             
-            std::vector<EnvelopeGenerator::Segment> mSegments;
+            EnvelopeGenerator::Envelope mSegments;
         };
 
         

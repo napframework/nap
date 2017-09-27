@@ -25,6 +25,14 @@ namespace nap {
              */
             void ramp(const T& destination, int stepCount)
             {
+                // if there are zero steps we reach the destination of the ramp immediately
+                if (stepCount == 0)
+                {
+                    mStepCount = 0;
+                    mValue = destination;
+                    destinationReachedSignal(mValue);
+                }
+                
                 mDestination = destination;
                 mStepCount = stepCount;
                 mStepCounter = 0;
