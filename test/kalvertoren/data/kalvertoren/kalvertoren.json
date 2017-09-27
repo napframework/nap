@@ -1,0 +1,226 @@
+{
+	"Objects" : 
+	[
+		{
+			"Type" : "nap::RenderWindow",
+			"mID" : "Window0",
+			"Width" : 1024,
+			"Height" : 768,
+			"Title" : "Kalvertoren"
+		},
+
+		{
+			"Type" : "nap::PlaneMesh",
+			"mID": "PlaneMesh"
+		},
+		
+		{
+			"Type" : "nap::Image",
+			"mID" : "UVMap",
+			"ImagePath" : "data/kalvertoren/uvmap.jpg"
+		},
+
+		{
+			"Type" : "nap::MemoryTexture2D",
+			"mID" : "ColorTexture",
+			"Width" : 640,
+			"Height" : 480,
+			"Format" : "RGBA8",
+			"Usage" : "DynamicRead"
+		},
+		
+		{
+			"Type" : "nap::MemoryTexture2D",
+			"mID" : "DepthTexture",
+			"Width" : 640,
+			"Height" : 480,
+			"Format" : "Depth"
+		},
+		
+		{
+			"Type" : "nap::TextureRenderTarget2D",
+			"mID": "PlaneRenderTarget",
+			"mColorTexture": "ColorTexture",
+			"mDepthTexture": "DepthTexture",
+			"mClearColor" : {
+				"x" : 1.0,
+				"y" : 1.0,
+				"z" : 1.0,
+				"w" : 1.0
+			}
+		},
+
+		{
+			"Type" : "nap::Shader",
+			"mID": "VertexColorShader",
+			"mVertShader": "shaders/kalvertoren/vertexcolor.vert",
+			"mFragShader": "shaders/kalvertoren/vertexcolor.frag"
+		},
+	
+		{
+			"Type" : "nap::MeshFromFile",
+			"mID": "Kalvertoren",
+			"Path" : "data/kalvertoren/kalvertoren_0.mesh"
+		},
+						
+		{
+			"Type" : "nap::Material",
+			"mID": "VertexColorMaterial",
+			"Shader": "VertexColorShader",
+			"VertexAttributeBindings" : [
+				{
+					"MeshAttributeID": "Position",
+					"ShaderAttributeID": "in_Position"
+				},
+				{
+					"MeshAttributeID": "Color0",
+					"ShaderAttributeID": "in_Color0"
+				},
+				{
+					"MeshAttributeID": "UV0",
+					"ShaderAttributeID": "in_UV0"
+				}
+			]	
+		},
+				
+		{
+			"Type" : "nap::Shader",
+			"mID": "VideoShader",
+			"mVertShader": "shaders/kalvertoren/video.vert",
+			"mFragShader": "shaders/kalvertoren/video.frag"
+		},
+		
+		{
+			"Type" : "nap::Video",
+			"mID": "Video1",
+			"Path": "data/kalvertoren/video.mp4"
+		},
+		
+		{
+			"Type" : "nap::Material",
+			"mID": "VideoMaterial",
+			"Shader": "VideoShader",
+			"VertexAttributeBindings" : [
+				{
+					"MeshAttributeID": "Position",
+					"ShaderAttributeID": "in_Position"
+				},
+				{
+					"MeshAttributeID": "UV0",
+					"ShaderAttributeID": "in_UV0"
+				}
+			]
+		},
+		
+		{
+			"Type" : "nap::Entity",
+			"mID": "DefaultInputRouterEntity",		
+			"Components" : 
+			[
+				{
+					"Type" : "nap::DefaultInputRouterComponent"
+				}
+			]
+		},
+		
+		{
+			"Type" : "nap::Entity",
+			"mID": "KalvertorenEntity",
+			"Components" : 
+			[
+				{
+					"Type" : "nap::RenderableMeshComponent",
+					"Mesh" : "Kalvertoren",
+					"MaterialInstance" : {
+						"Material": "VertexColorMaterial"
+					}
+				},
+				{
+					"Type" : "nap::TransformComponent",
+					"Properties": {
+						"Translate": {
+							"x": 1.0,
+							"y": 0.0,
+							"z": 0.0
+						},
+						"Rotate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0
+						},
+						"Scale": {
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.0
+					}
+				}	
+			]
+		},
+		
+		{
+			"Type" : "nap::Entity",
+			"mID": "VideoEntity",
+			
+			"Components" : 
+			[
+				{
+					"Type" : "nap::RenderableMeshComponent",
+					"Mesh" : "PlaneMesh",
+					"MaterialInstance" : {
+						"Material": "VideoMaterial"
+					}
+				},
+				{
+					"Type" : "nap::TransformComponent"
+				}
+			]	
+		},
+		
+		{
+			"Type" : "nap::Entity",
+			"mID": "CameraEntity",
+			"Components" :  
+			[
+				{
+					"Type" : "nap::PerspCameraComponent",
+					"Properties": {
+						"FieldOfView": 45.0,
+						"NearClippingPlane" : 0.01,
+						"FarClippingPlane" : 1000.0
+					}
+				},
+				{
+					"Type" : "nap::KeyInputComponent"
+				},
+				{
+					"Type" : "nap::FirstPersonController",
+					"MovementSpeed": 3.0,
+					"RotateSpeed": 1.0
+				},
+				{
+					"Type" : "nap::TransformComponent",
+					"Properties": {
+						"Translate": {
+							"x": 0.0,
+							"y": 8.0,
+							"z": 25.0
+						},
+						"Rotate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0
+						},
+						"Scale": {
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.0						
+					}
+				}
+			]
+		}
+	]
+}

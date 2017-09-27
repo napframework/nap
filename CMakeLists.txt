@@ -69,6 +69,7 @@ add_subdirectory(test/serializationtest)
 add_subdirectory(test/etherdream)
 add_subdirectory(test/audiotest)
 add_subdirectory(test/artnet)
+add_subdirectory(test/kalvertoren)
 
 if (APPLE)
     set(GENERATE_XCODE_PROJECT_TARGET generateXcodeProject)
