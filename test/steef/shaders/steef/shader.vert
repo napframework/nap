@@ -16,6 +16,7 @@ out vec3 pass_Normals;
 out mat4 pass_ModelMatrix;
 out vec3 pass_Vert;
 out vec3 pass_Tangent;
+out vec3 pass_Bitangent;
 
 void main(void)
 {
@@ -28,4 +29,5 @@ void main(void)
 	pass_ModelMatrix = modelMatrix;
 	pass_Vert = in_Position;
 	pass_Tangent = in_Tangent;
+	pass_Bitangent = in_Bitangent;
 }

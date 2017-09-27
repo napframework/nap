@@ -6,6 +6,7 @@ in vec3 pass_Normals;		// Normals
 in mat4 pass_ModelMatrix;	// Matrix
 in vec3 pass_Vert;			// The vertex position
 in vec3 pass_Tangent;		// The tangent
+in vec3 pass_Bitangent;		// The bitangent
 
 out vec4 out_Color;
 

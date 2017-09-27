@@ -7,7 +7,7 @@
 			"Width" : 512,
 			"Height" : 512,
 			"Title" : "Viewport",
-			"Sync" : false
+			"Sync" : true
 		},
 
 		{
@@ -133,7 +133,12 @@
 				{
 					"MeshAttributeID": "Tangent",
 					"ShaderAttributeID": "in_Tangent"
+				},
+				{
+					"MeshAttributeID": "Bitangent",
+					"ShaderAttributeID": "in_Bitangent"
 				}
+
 			],
 			"Uniforms" : 
 			[
@@ -165,12 +170,12 @@
 				{
 					"Type" : "nap::UniformFloat",
 					"Name" : "shininess",
-					"Value" : 35
+					"Value" : 20
 				},
 				{
 					"Type" : "nap::UniformFloat",
 					"Name" : "specularIntensity",
-					"Value" : 0.45
+					"Value" : 0.2
 				},
 				{
 					"Type" : "nap::UniformFloat",
@@ -180,7 +185,7 @@
 				{
 					"Type" : "nap::UniformFloat",
 					"Name" : "grooveScale",
-					"Value" : 0.33
+					"Value" : 0.75
 				},
 				{
 					"Type" : "nap::UniformVec3",
@@ -244,12 +249,12 @@
 				{
 					"Type" : "nap::UniformFloat",
 					"Name" : "shininess",
-					"Value" : 7.5
+					"Value" : 5.0
 				},
 				{
 					"Type" : "nap::UniformFloat",
 					"Name" : "specularIntensity",
-					"Value" : 0.5
+					"Value" : 0.1
 				},
 				{
 					"Type" : "nap::UniformFloat",
@@ -312,7 +317,7 @@
 							"y": 1.0,
 							"z": 1.0
 						},
-						"UniformScale": 0.3
+						"UniformScale": 0.31
 					}
 				},
 				{
@@ -395,7 +400,7 @@
 							"y": 0.0,
 							"z": 1.0
 						},
-						"Speed": -0.6,
+						"Speed": -0.3,
 						"Offset": 2.0
 					}
 				}
@@ -507,7 +512,7 @@
 					"Type" : "nap::PerspCameraComponent",
 					"Properties": {
 						"FieldOfView": 45.0,
-						"NearClippingPlane" : 0.01,
+						"NearClippingPlane" : 1,
 						"FarClippingPlane" : 1000.0
 					}
 				},
