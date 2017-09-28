@@ -6,7 +6,7 @@
 // Audio includes
 #include <component/audiocomponent.h>
 #include <resource/audiobufferresource.h>
-#include <node/bufferplayer.h>
+#include <node/bufferplayernode.h>
 
 namespace nap {
     
@@ -57,7 +57,7 @@ namespace nap {
             int getChannelCount() const override final { return mPlayers.size(); }
             
         private:
-            std::vector<std::unique_ptr<BufferPlayer>> mPlayers;
+            std::vector<std::unique_ptr<BufferPlayerNode>> mPlayers;
         };
         
 

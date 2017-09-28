@@ -26,10 +26,10 @@ namespace nap
         };
 
         
-        class Oscillator : public Node
+        class OscillatorNode : public Node
         {
         public:
-            Oscillator(NodeManager& aManager, WaveTable& aWave);
+            OscillatorNode(NodeManager& aManager, WaveTable& aWave);
             
             void setFrequency(SampleValue frequency);
             void setAmplitude(ControllerValue amplitude);

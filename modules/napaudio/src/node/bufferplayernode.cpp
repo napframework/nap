@@ -1,4 +1,4 @@
-#include "bufferplayer.h"
+#include "bufferplayernode.h"
 
 // Std includes
 #include <cstring>
@@ -7,7 +7,7 @@ namespace nap {
     
     namespace audio {
         
-        void BufferPlayer::play(SampleBuffer& buffer, DiscreteTimeValue position, ControllerValue speed)
+        void BufferPlayerNode::play(SampleBuffer& buffer, DiscreteTimeValue position, ControllerValue speed)
         {
             mPlaying = true;
             mBuffer = &buffer;
@@ -16,13 +16,13 @@ namespace nap {
         }
         
         
-        void BufferPlayer::stop()
+        void BufferPlayerNode::stop()
         {
             mPlaying = false;
         }
         
         
-        void BufferPlayer::process()
+        void BufferPlayerNode::process()
         {
             auto& outputBuffer = getOutputBuffer(audioOutput);
             

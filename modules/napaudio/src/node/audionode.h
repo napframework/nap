@@ -53,6 +53,11 @@ namespace nap {
              */
             DiscreteTimeValue getSampleTime() const;
             
+            /**
+             * Returns all this node's outputs
+             */
+            const std::set<OutputPin*>& getOutputs() { return mOutputs; }
+            
         protected:
             /**
              * Called whenever the sample rate that the node system runs on changes.

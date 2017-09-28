@@ -74,6 +74,8 @@ int main(int argc, char *argv[])
 //        linearRamper.step();
 //        std::cout << " " << value << " " << table.translate(value) << std::endl;
 //    }
+    
+    
 
     nap::Core core;
 

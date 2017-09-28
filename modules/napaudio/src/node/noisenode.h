@@ -9,10 +9,10 @@ namespace nap {
         /**
          * White noise generator
          */
-        class NAPAPI Noise : public Node
+        class NAPAPI NoiseNode : public Node
         {
         public:
-            Noise(NodeManager& manager) : Node(manager) { }
+            NoiseNode(NodeManager& manager) : Node(manager) { }
         
             /**
              * Output signal containing the noise

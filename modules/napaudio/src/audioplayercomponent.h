@@ -71,7 +71,7 @@ namespace nap {
             
         private:
             // The playback nodes, one for mono two for stereo buffers
-            std::vector<std::unique_ptr<BufferPlayer>> mPlayers;
+            std::vector<std::unique_ptr<BufferPlayerNode>> mPlayers;
             
             // Nodes to do the scaling for gaining, one in case of mono, two in case of stereo
             std::vector<std::unique_ptr<Gain>> mGains;

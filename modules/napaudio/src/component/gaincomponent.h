@@ -6,7 +6,7 @@
 
 // Audio includes
 #include <component/audiocomponent.h>
-#include <node/gain.h>
+#include <node/gainnode.h>
 
 namespace nap
 {
@@ -43,7 +43,7 @@ namespace nap
             OutputPin& getOutputForChannel(int channel) override final { return mGains[channel]->audioOutput; }
             int getChannelCount() const override final { return mGains.size(); }
             
-            std::vector<std::unique_ptr<Gain>> mGains;
+            std::vector<std::unique_ptr<GainNode>> mGains;
         };
         
     }

@@ -42,7 +42,7 @@ namespace nap
                     return false;
                 }
                 
-                mOscillators.emplace_back(std::make_unique<Oscillator>(nodeManager, mWave));
+                mOscillators.emplace_back(std::make_unique<OscillatorNode>(nodeManager, mWave));
                 mOscillators[channel]->setFrequency(resource->mFrequency[channel % resource->mFrequency.size()]);
                 mOscillators[channel]->setAmplitude(resource->mAmplitude[channel % resource->mAmplitude.size()]);
                 if (input)

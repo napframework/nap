@@ -1,10 +1,10 @@
-#include "gain.h"
+#include "gainnode.h"
 
 namespace nap {
     
     namespace audio {
         
-        void Gain::process()
+        void GainNode::process()
         {
             auto& outputBuffer = getOutputBuffer(audioOutput);
             auto inputBuffers = inputs.pull();

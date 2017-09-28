@@ -6,6 +6,7 @@ find_package(libsndfile REQUIRED)
 file(GLOB_RECURSE sources src/*.cpp src/*.h)
 
 source_group("component" src/component/*.*)
+source_group("object" src/object/*.*)
 source_group("service" src/service/*.*)
 source_group("node" src/node/*.*)
 source_group("resource" src/resource/*.*)

@@ -1,4 +1,4 @@
-#include <node/oscillator.h>
+#include <node/oscillatornode.h>
 
 #include <math.h>
 
@@ -79,7 +79,7 @@ namespace nap {
         
 // --- Oscillator --- //
 
-        Oscillator::Oscillator(NodeManager& manager, WaveTable& aWave) :
+        OscillatorNode::OscillatorNode(NodeManager& manager, WaveTable& aWave) :
             Node(manager),
             mWave(aWave)
         {
@@ -88,7 +88,7 @@ namespace nap {
         }
 
         
-        void Oscillator::process()
+        void OscillatorNode::process()
         {
             auto& outputBuffer = getOutputBuffer(output);
             SampleBuffer* fmInputBuffer = fmInput.pull();
@@ -109,25 +109,25 @@ namespace nap {
             }
         }
 
-        void Oscillator::setAmplitude(SampleValue amplitude)
+        void OscillatorNode::setAmplitude(SampleValue amplitude)
         {
             mAmplitude = amplitude;
         }
 
-        void Oscillator::setFrequency(SampleValue frequency)
+        void OscillatorNode::setFrequency(SampleValue frequency)
         {
             mFrequency = frequency;
             mPhaseInc = mFrequency * mStep;
         }
         
-        void Oscillator::setWave(WaveTable& wave)
+        void OscillatorNode::setWave(WaveTable& wave)
         {
             mWave = wave;
             mStep = mWave.getSize() / getNodeManager().getSampleRate();
             mPhaseInc = mFrequency * mStep;
         }
         
-        void Oscillator::sampleRateChanged(float sampleRate)
+        void OscillatorNode::sampleRateChanged(float sampleRate)
         {
             mStep = mWave.getSize() / sampleRate;
         }

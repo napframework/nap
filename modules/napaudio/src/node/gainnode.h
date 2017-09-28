@@ -9,10 +9,10 @@ namespace nap {
         /**
          * Node to scale an audio signal
          */
-        class NAPAPI Gain : public Node
+        class NAPAPI GainNode : public Node
         {
         public:
-            Gain(NodeManager& manager) : Node(manager) { }
+            GainNode(NodeManager& manager) : Node(manager) { }
             
             /**
              * The input to be scaled

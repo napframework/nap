@@ -33,7 +33,7 @@ namespace nap
             
             for (auto channel = 0; channel < resource->mInputs[0]->getChannelCount(); ++channel)
             {
-                mGains.emplace_back(std::make_unique<Gain>(nodeManager));
+                mGains.emplace_back(std::make_unique<GainNode>(nodeManager));
                 mGains[channel]->setGain(resource->mGain[channel % resource->mGain.size()]);
             }
             

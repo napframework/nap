@@ -5,7 +5,7 @@
 
 // Audio includes
 #include <component/audiocomponent.h>
-#include <node/oscillator.h>
+#include <node/oscillatornode.h>
 
 namespace nap
 {
@@ -48,7 +48,7 @@ namespace nap
             OutputPin& getOutputForChannel(int channel) override final { return mOscillators[channel]->output; }
             int getChannelCount() const override final { return mOscillators.size(); }
             
-            std::vector<std::unique_ptr<Oscillator>> mOscillators;
+            std::vector<std::unique_ptr<OscillatorNode>> mOscillators;
             WaveTable mWave = { 2048 };
         };
         

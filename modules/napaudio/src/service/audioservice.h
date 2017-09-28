@@ -24,6 +24,11 @@ namespace nap {
         public:
             AudioService() : Service() { }
             
+            /**
+             * Register specific object creators
+             */
+            void registerObjectCreators(rtti::Factory& factory) override;
+            
             virtual NodeManager& getNodeManager() = 0;
         };
         

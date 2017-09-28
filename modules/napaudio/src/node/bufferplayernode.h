@@ -11,10 +11,10 @@ namespace nap {
         /**
          * Node to play back audio from a buffer
          */
-        class NAPAPI BufferPlayer : public Node
+        class NAPAPI BufferPlayerNode : public Node
         {
         public:
-            BufferPlayer(NodeManager& manager) : Node(manager) { }
+            BufferPlayerNode(NodeManager& manager) : Node(manager) { }
         
             /**
              * The output to connect to other nodes

@@ -33,7 +33,7 @@ namespace nap {
                     return false;
                 }
                 
-                mPlayers.emplace_back(std::make_unique<BufferPlayer>(nodeManager));
+                mPlayers.emplace_back(std::make_unique<BufferPlayerNode>(nodeManager));
                 mPlayers[i]->play(resource->mAudioBuffer->getBuffer()[resource->mChannelsToPlay[i]], 0, resource->mSpeed * resource->mAudioBuffer->getSampleRate() / nodeManager.getSampleRate());
             }
             
