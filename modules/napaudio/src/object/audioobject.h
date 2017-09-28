@@ -24,18 +24,13 @@ namespace nap {
             
         public:
             AudioObject() = default;
-            AudioObject(NodeManager& nodeManager) : rtti::RTTIObject(), mNodeManager(&nodeManager) { }
-          
-            AudioObjectInstance* getInstance() { return mInstance; }
-            std::unique_ptr<AudioObjectInstance> instantiate(utility::ErrorState& errorState);
             
-        protected:
-            NodeManager& getNodeManager() { return *mNodeManager; }
+            AudioObjectInstance* getInstance() { return mInstance; }
+            std::unique_ptr<AudioObjectInstance> instantiate(NodeManager& nodeManager, utility::ErrorState& errorState);
             
         private:
             virtual std::unique_ptr<AudioObjectInstance> createInstance() { return nullptr; }
             
-            NodeManager* mNodeManager = nullptr;
             AudioObjectInstance* mInstance = nullptr;
         };
         
@@ -49,7 +44,7 @@ namespace nap {
         public:
             AudioObjectInstance(AudioObject& resource) : mResource(resource) { }
             
-            virtual bool init(utility::ErrorState& errorState) { return true; }
+            virtual bool init(NodeManager& nodeManager, utility::ErrorState& errorState) { return true; }
             
             virtual OutputPin& getOutputForChannel(int channel) = 0;
             virtual int getChannelCount() const = 0;
@@ -71,12 +66,11 @@ namespace nap {
             
         public:
             MultiChannelObject() = default;
-            MultiChannelObject(NodeManager& nodeManager) : AudioObject(nodeManager) { }
             
             std::unique_ptr<AudioObjectInstance> createInstance() override;
             
         private:
-            virtual std::unique_ptr<Node> createNode(int channel) = 0;
+            virtual std::unique_ptr<Node> createNode(int channel, NodeManager& nodeManager) = 0;
             virtual int getChannelCount() const = 0;
         };
 
@@ -90,7 +84,7 @@ namespace nap {
         public:
             MultiChannelObjectInstance(MultiChannelObject& resource) : AudioObjectInstance(resource) { }
             
-            bool init(utility::ErrorState& errorState) override;
+            bool init(NodeManager& nodeManager, utility::ErrorState& errorState) override;
             
             OutputPin& getOutputForChannel(int channel) override { return *(*mNodes[channel]->getOutputs().begin()); }
             int getChannelCount() const override { return mNodes.size(); }
@@ -98,10 +92,7 @@ namespace nap {
         private:
             std::vector<std::unique_ptr<Node>> mNodes;
         };
-        
-        
-        using AudioObjectCreator = rtti::ObjectCreator<AudioObject, NodeManager>;
-
+                
     }
         
 }

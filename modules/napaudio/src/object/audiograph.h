@@ -31,9 +31,15 @@ namespace nap {
             RTTI_ENABLE(rtti::RTTIObject)
         public:
             Graph() = default;
+            Graph(NodeManager& nodeManager) : mNodeManager(&nodeManager)  { }
 
             std::vector<AudioObjectPtr> mObjects;
             AudioObjectPtr mOutput;
+            
+            NodeManager& getNodeManager() { return *mNodeManager; }
+            
+        private:
+            NodeManager* mNodeManager = nullptr;
         };
         
         
@@ -49,6 +55,9 @@ namespace nap {
             std::vector<std::unique_ptr<AudioObjectInstance>> mObjects;
             AudioObjectInstance* mOutput = nullptr;
         };
+        
+        
+        using GraphObjectCreator = rtti::ObjectCreator<Graph, NodeManager>;
         
     }
     

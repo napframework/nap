@@ -1,6 +1,5 @@
 #include "audioservice.h"
-#include <object/audioobject.h>
-#include <object/objects.h>
+#include <object/audiograph.h>
 
 namespace nap {
     
@@ -8,8 +7,7 @@ namespace nap {
         
         void AudioService::registerObjectCreators(rtti::Factory& factory)
         {
-            factory.addObjectCreator(std::make_unique<AudioObjectCreator>(getNodeManager()));
-//            factory.addObjectCreator(std::make_unique<OscillatorCreator>(getNodeManager()));
+            factory.addObjectCreator(std::make_unique<GraphObjectCreator>(getNodeManager()));
         }
         
     }

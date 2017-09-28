@@ -97,7 +97,7 @@ namespace nap {
             {
                 // Create instance and initialize
                 auto objectResource = node->mItem.mObject;
-                auto instance = objectResource->instantiate(errorState);
+                auto instance = objectResource->instantiate(resource.getNodeManager(), errorState);
                 
                 if (objectResource == resource.mOutput.get())
                     mOutput = instance.get();

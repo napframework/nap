@@ -16,7 +16,6 @@ namespace nap {
             
         public:
             Oscillator() = default;
-            Oscillator(NodeManager& nodeManager) : MultiChannelObject(nodeManager) { }
             
             int mChannelCount = 1;
             std::vector<ControllerValue> mFrequency = { 220.f };
@@ -24,9 +23,9 @@ namespace nap {
             ObjectPtr<AudioObject> mFmInput;
             
         private:
-            std::unique_ptr<Node> createNode(int channel) override
+            std::unique_ptr<Node> createNode(int channel, NodeManager& nodeManager) override
             {
-                auto node = std::make_unique<OscillatorNode>(getNodeManager(), mWaveTable);
+                auto node = std::make_unique<OscillatorNode>(nodeManager, mWaveTable);
                 node->setFrequency(mFrequency[channel % mFrequency.size()]);
                 node->setAmplitude(mAmplitude[channel % mAmplitude.size()]);
                 if (mFmInput != nullptr)
