@@ -1,4 +1,5 @@
 #include "renderstate.h"
+#include "assert.h"
 
 namespace nap
 {
@@ -7,6 +8,7 @@ namespace nap
 	{
 		opengl::enableMultiSampling(mEnableMultiSampling);
 		opengl::setLineWidth(mLineWidth);
+        glAssert(); // Catch attempts to set line width over system limit
 		opengl::setPointSize(mPointSize);
 		opengl::setPolygonMode(mPolygonMode);
 	}

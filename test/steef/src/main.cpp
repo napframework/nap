@@ -164,7 +164,6 @@ void handleWindowEvent(const nap::WindowEvent& windowEvent)
 	if (e_type.is_derived_from(RTTI_OF(nap::WindowResizedEvent)) ||
 		e_type.is_derived_from(RTTI_OF(nap::WindowShownEvent)))
 	{
-		nap::Logger::debug("window resized");
 		updateBackgroundImage();
 	}
 }
@@ -240,7 +239,6 @@ bool init(nap::Core& core)
 	// Set render states
 	nap::RenderState& render_state = renderService->getRenderState();
 	render_state.mEnableMultiSampling = true;
-	render_state.mLineWidth = 1.3f;
 	render_state.mPointSize = 2.0f;
 	render_state.mPolygonMode = opengl::PolygonMode::FILL;
 
