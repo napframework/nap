@@ -58,6 +58,10 @@ namespace nap
 		// Get reference normals and vertices
 		const std::vector<glm::vec3>& ref_normals  = reference_mesh.GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::getNormalName()).getData();
 		const std::vector<glm::vec3>& ref_vertices = reference_mesh.GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName()).getData();
+		
+		// Try to find a color attribute to pass along
+		const Vec4VertexAttribute* ref_color_attr = reference_mesh.FindAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0));
+		const std::vector<glm::vec4>* ref_colors = ref_color_attr != nullptr ? &(ref_color_attr->getData()) : nullptr;
 
 		// Get buffers to populate
 		std::vector<glm::vec3>& target_vertices = mPositionAttr->getData();
@@ -82,7 +86,16 @@ namespace nap
 			target_vertices[target_idx] = ref_vertex;
 			target_vertices[target_idx + 1] = ref_vertex + (glm::normalize(ref_normal) * mNormalLength);
 
-			// Set color
+			// Set the color based on the vert color, otherwise remains the same
+			bottom_color.r = ref_colors != nullptr ? (*ref_colors)[i].r : 1.0f;
+			bottom_color.g = ref_colors != nullptr ? (*ref_colors)[i].g : 1.0f;
+			bottom_color.b = ref_colors != nullptr ? (*ref_colors)[i].b : 1.0f;
+
+			// Set the top color to have the same color (saves a sample step)
+			top_color.r = bottom_color.r;
+			top_color.g = bottom_color.g;
+			top_color.b = bottom_color.b;
+
 			target_colors[target_idx] = top_color;
 			target_colors[target_idx + 1] = bottom_color;
 

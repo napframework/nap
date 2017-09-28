@@ -11,6 +11,6 @@ uniform vec4 mColor;
 
 void main() 
 {
-	vec3 line_color = mColor.rgb;
+	vec3 line_color = mColor.rgb * pass_Color.rgb;
 	out_Color = vec4(line_color, pass_Color.a * mColor.a);
 }

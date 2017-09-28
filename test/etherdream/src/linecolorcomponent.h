@@ -44,6 +44,9 @@ namespace nap
 
 		// property: wrap blend intensity
 		float mWrapPower = 1.0f;
+
+		// property: if the colors are linked, so point2 receives the color of point1
+		bool mLink = false;
 	};
 
 
@@ -88,6 +91,11 @@ namespace nap
 		 */
 		void setIntensity(float intensity);
 
+		/**
+		 *	If we want to link color 2 to color 1
+		 * @param value if we want to link the colors
+		 */
+		void link(bool value)										{ mLink = value; }
 
 	private:
 		LineBlendComponentInstance* mBlendComponent = nullptr;		// Holds the line we want to color
@@ -97,5 +105,6 @@ namespace nap
 		float mIntensity = 1.0f;									// Final intensity
 		bool mWrap = false;											// If the color values should be wrapped
 		float mPower = 1.0f;										// Amount of blend power when computing the wrap
+		bool mLink = false;											// If color 2 is linked to color one
 	};
 }

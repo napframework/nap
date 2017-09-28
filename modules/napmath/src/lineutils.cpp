@@ -99,6 +99,11 @@ namespace nap
 		// Get the angle of max rotation
 		float dot_product = glm::dot(n_higer_value, n_lower_value);
 		float angle = glm::acos(dot_product);
+		if (glm::isnan(angle))
+		{
+			outNormal = n_lower_value;
+			return;
+		}
 
 		// Get the rotation vector
 		glm::vec3 cross_product = glm::cross(n_higer_value, n_lower_value);

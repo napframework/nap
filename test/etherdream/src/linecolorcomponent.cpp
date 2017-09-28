@@ -14,6 +14,7 @@ RTTI_BEGIN_CLASS(nap::LineColorComponent)
 	RTTI_PROPERTY("Intensity",			&nap::LineColorComponent::mIntensity,		nap::rtti::EPropertyMetaData::Default)	
 	RTTI_PROPERTY("Wrap",				&nap::LineColorComponent::mWrap,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("WrapPower",			&nap::LineColorComponent::mWrapPower,		nap::rtti::EPropertyMetaData::Default)		
+	RTTI_PROPERTY("Link",				&nap::LineColorComponent::mLink,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LineColorComponentInstance)
@@ -48,6 +49,7 @@ namespace nap
 
 		mWrap = getComponent<LineColorComponent>()->mWrap;
 		mPower = getComponent<LineColorComponent>()->mWrapPower;
+		mLink = getComponent<LineColorComponent>()->mLink;
 
 		// Ensure the image is at least RGB
 		if (!(mLookupImage->getImage().getBitmap().getColorType() >=  opengl::BitmapColorType::RGB))
@@ -91,6 +93,9 @@ namespace nap
 
 		opengl::BitmapDataType data_type = bitmap.getDataType();
 
+		// End sample position, is the same as the beginning if linking is turned on
+		glm::vec2 end_pos = mLink ? mStartPosition : mEndPosition;
+
 		// Update color values along line
 		for (int i = 0; i < vert_count; i++)
 		{
@@ -98,7 +103,7 @@ namespace nap
 			lerp_v = mWrap ? math::bell<float>(lerp_v, mPower) : lerp_v;
 
 			// Get interpolated uv coordinates
-			lerped_uv_coordinates = math::lerp<glm::vec2>(mStartPosition, mEndPosition, lerp_v);
+			lerped_uv_coordinates = math::lerp<glm::vec2>(mStartPosition, end_pos, lerp_v);
 
 			// Convert to bitmap coordinates
 			bitmap_coordinates.x = static_cast<int>(lerped_uv_coordinates.x * max_width);

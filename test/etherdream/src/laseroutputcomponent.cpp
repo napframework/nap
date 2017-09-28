@@ -139,7 +139,7 @@ namespace nap
 			// The bigger the gap between the first and last vertex, the more gap points will be distributed
 			float lg_ratio = line_dist / gap_dist;
 			float lg_s = static_cast<float>(ppf + 1) / (lg_ratio + 1.0);
-			line_points = static_cast<int>(lg_ratio * lg_s);
+			line_points = math::min(static_cast<int>(lg_ratio * lg_s), ppf);
 		}
 
 		// Populate re-interpolated line buffer based on line length

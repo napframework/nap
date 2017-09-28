@@ -63,7 +63,6 @@ nap::ObjectPtr<nap::VisualizeNormalsMesh> normalsMesh = nullptr;
 
 //////////////////////////////////////////////////////////////////////////
 
-
 // Some utilities
 void runGame(nap::Core& core);	
 
@@ -117,17 +116,13 @@ void onRender()
 }
 
 
+
 /**
 * Initialize all the resources and instances used for drawing
 * slowly migrating all functionality to nap
 */
 bool init(nap::Core& core)
 {
-	// Try to load an svg image
-	NSVGimage* g_image = nsvgParseFromFile("./data/etherdream/swirl.svg", "mm", 96.0f);
-	if(g_image != nullptr)
-		nsvgDelete(g_image);
-
 	core.initialize();
 
 	//////////////////////////////////////////////////////////////////////////
@@ -180,7 +175,6 @@ bool init(nap::Core& core)
 		return false;        
 	}
 
-
 	// Store all render windows
 	renderWindow = resourceManagerService->findObject<nap::RenderWindow>("Window");
 
@@ -199,6 +193,7 @@ bool init(nap::Core& core)
 
 	return true;
 }
+
 
 // Main loop
 int main(int argc, char *argv[])

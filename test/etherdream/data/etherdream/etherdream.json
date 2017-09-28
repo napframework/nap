@@ -67,6 +67,138 @@
 		},
 
 		{
+			"Type" : "nap::LineFromFile",
+			"mID": "LineFromFile1",
+			"File" : "./data/etherdream/1.svg",
+			"Tolerance" : 0.05,
+			"Units" : "mm",
+			"Normalize" : true,
+			"Scale" : 2.0,
+			"FlipVertical" : true,
+			"LineIndex" : 0
+		},
+
+		{
+			"Type" : "nap::LineFromFile",
+			"mID": "LineFromFile2",
+			"File" : "./data/etherdream/2.svg",
+			"Tolerance" : 0.05,
+			"Units" : "mm",
+			"Normalize" : true,
+			"Scale" : 2.0,
+			"FlipVertical" : true,
+			"LineIndex" : 0
+		},
+
+		{
+			"Type" : "nap::LineFromFile",
+			"mID": "LineFromFile3",
+			"File" : "./data/etherdream/3.svg",
+			"Tolerance" : 0.05,
+			"Units" : "mm",
+			"Normalize" : true,
+			"Scale" : 2.0,
+			"FlipVertical" : true,
+			"LineIndex" : 0
+		},
+
+		{
+			"Type" : "nap::LineFromFile",
+			"mID": "LineFromFile4",
+			"File" : "./data/etherdream/4.svg",
+			"Tolerance" : 0.05,
+			"Units" : "mm",
+			"Normalize" : true,
+			"Scale" : 2.0,
+			"FlipVertical" : true,
+			"LineIndex" : 0
+		},
+
+		{
+			"Type" : "nap::LineFromFile",
+			"mID": "LineFromFile5",
+			"File" : "./data/etherdream/5.svg",
+			"Tolerance" : 0.05,
+			"Units" : "mm",
+			"Normalize" : true,
+			"Scale" : 2.0,
+			"FlipVertical" : true,
+			"LineIndex" : 0
+		},
+
+		{
+			"Type" : "nap::LineFromFile",
+			"mID": "LineFromFile6",
+			"File" : "./data/etherdream/6.svg",
+			"Tolerance" : 0.05,
+			"Units" : "mm",
+			"Normalize" : true,
+			"Scale" : 2.0,
+			"FlipVertical" : true,
+			"LineIndex" : 0
+		},
+
+		{
+			"Type" : "nap::LineFromFile",
+			"mID": "LineFromFile7",
+			"File" : "./data/etherdream/7.svg",
+			"Tolerance" : 0.05,
+			"Units" : "mm",
+			"Normalize" : true,
+			"Scale" : 2.0,
+			"FlipVertical" : true,
+			"LineIndex" : 0
+		},
+
+		{
+			"Type" : "nap::LineFromFile",
+			"mID": "LineFromFile8",
+			"File" : "./data/etherdream/8.svg",
+			"Tolerance" : 0.05,
+			"Units" : "mm",
+			"Normalize" : true,
+			"Scale" : 2.0,
+			"FlipVertical" : true,
+			"LineIndex" : 0
+		},
+
+		{
+			"Type" : "nap::LineFromFile",
+			"mID": "LineFromFile9",
+			"File" : "./data/etherdream/9.svg",
+			"Tolerance" : 0.05,
+			"Units" : "mm",
+			"Normalize" : true,
+			"Scale" : 2.0,
+			"FlipVertical" : true,
+			"LineIndex" : 0
+		},
+
+		{
+			"Type" : "nap::LineFromFile",
+			"mID": "LineFromFile10",
+			"File" : "./data/etherdream/10.svg",
+			"Tolerance" : 0.05,
+			"Units" : "mm",
+			"Normalize" : true,
+			"Scale" : 2.0,
+			"FlipVertical" : true,
+			"LineIndex" : 0
+		},
+
+		{
+			"Type" : "nap::LineFromFile",
+			"mID": "LineFromFile11",
+			"File" : "./data/etherdream/11.svg",
+			"Tolerance" : 0.05,
+			"Units" : "mm",
+			"Normalize" : true,
+			"Scale" : 2.0,
+			"FlipVertical" : true,
+			"LineIndex" : 0
+		},
+
+		{
 			"Type" : "nap::Line",
 			"mID": "LineMesh",
 			"Start" :
@@ -182,9 +314,9 @@
 					{
 						"x" : 1.0,
 						"y" : 1.0,
-						"z" : 0.0,
+						"z" : 1.0,
 						"w" : 1.0
-					}
+					},
 				}
 			]		
 		},
@@ -310,7 +442,6 @@
 				}
 			]
 		},
-
 		{
 			"Type" : "nap::Entity",
 			"mID": "SplineEntity",
@@ -322,20 +453,17 @@
 					"mID" : "LineSelectorOne",
 					"Lines" :
 					[
-						"LineFromFileMesh",
-						"LineMesh",
-						"RectangleMesh",
-						"CircleMesh",
-						"HexagonMesh",
-						"TriangleMesh"
-					],
-					"Index" : 0
-				},
-				{
-					"Type" : "nap::LineSelectionComponent",
-					"mID" : "LineSelectorTwo",
-					"Lines" :
-					[
+						"LineFromFile9",
+						"LineFromFile10",
+						"LineFromFile11",
+						"LineFromFile1",
+						"LineFromFile2",
+						"LineFromFile3",
+						"LineFromFile4",
+						"LineFromFile5",
+						"LineFromFile6",
+						"LineFromFile7",
+						"LineFromFile8",
 						"LineFromFileMesh",
 						"LineMesh",
 						"RectangleMesh",
@@ -344,6 +472,31 @@
 						"TriangleMesh"
 					],
 					"Index" : 3
+				},
+				{
+					"Type" : "nap::LineSelectionComponent",
+					"mID" : "LineSelectorTwo",
+					"Lines" :
+					[
+						"LineFromFile9",
+						"LineFromFile10",
+						"LineFromFile11",
+						"LineFromFile1",
+						"LineFromFile2",
+						"LineFromFile3",
+						"LineFromFile4",
+						"LineFromFile5",
+						"LineFromFile6",
+						"LineFromFile7",
+						"LineFromFile8",
+						"LineFromFileMesh",
+						"LineMesh",
+						"RectangleMesh",
+						"CircleMesh",
+						"HexagonMesh",
+						"TriangleMesh"
+					],
+					"Index" : 1
 				},
 				{
 					"Type" : "nap::OSCInputComponent",
@@ -359,7 +512,8 @@
 						"/scale",
 						"/position",
 						"/modulation",
-						"/noise"
+						"/noise",
+						"/synccolor"
 					]
 				},
 				{
@@ -446,7 +600,8 @@
 					},
 					"LookupImage" : "ColorLookupImage",
 					"Wrap" : true,
-					"WrapPower" : 1.0
+					"WrapPower" : 1.0,
+					"Link" : false
 				},
 				{
 					"Type" : "nap::LineTraceComponent",

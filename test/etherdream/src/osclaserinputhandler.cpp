@@ -150,6 +150,11 @@ namespace nap
 			assert(index < 4 && index >= 0);
 			setNoise(oscEvent, index);
 		}
+
+		else if (utility::gStartsWith(oscEvent.getAddress(), "/synccolor"))
+		{
+			setColorSync(oscEvent);
+		}
 	}
 
 
@@ -175,7 +180,7 @@ namespace nap
 	{
 		// New value
 		assert(oscEvent.getArgument(0).isFloat());
-		float v = oscEvent.getArgument(0).asFloat();
+		float v = math::max(oscEvent.getArgument(0).asFloat(), math::epsilon<float>());
 		
 		// Get index
 		std::vector<std::string> parts;
@@ -198,6 +203,9 @@ namespace nap
 		case 4:
 			mRotateComponent->mProperties.mSpeed = math::power<float>(v, 4.0f);
 			break;
+		case 5:
+			mRotateComponent->mProperties.mOffset = v;
+			break;
 		default:
 			assert(false);
 		}
@@ -214,6 +222,7 @@ namespace nap
 
 		mRotateComponent->reset();
 		mRotateComponent->mProperties.mSpeed = 0.0f;
+		mRotateComponent->mProperties.mOffset = 0.0f;
 	}
 
 
@@ -326,6 +335,14 @@ namespace nap
 			assert(false);
 			break;
 		}
+	}
+
+
+	void OSCLaserInputHandlerInstance::setColorSync(const OSCEvent& event)
+	{
+		assert(event[0].isFloat());
+		bool sync = event[0].asFloat() > math::epsilon<float>();
+		mColorComponent->link(sync);
 	}
 
 

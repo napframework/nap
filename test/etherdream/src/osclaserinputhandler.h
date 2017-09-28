@@ -81,6 +81,7 @@ namespace nap
 		void setPosition(const OSCEvent& event);
 		void setModulation(const OSCEvent& event, int index);
 		void setNoise(const OSCEvent& event, int index);
+		void setColorSync(const OSCEvent& event);
 
 		NSLOT(mMessageReceivedSlot, const nap::OSCEvent&, handleMessageReceived)
 
