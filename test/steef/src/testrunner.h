@@ -30,8 +30,8 @@ namespace nap
 		void onRender();
 
 		void handleWindowEvent(const WindowEvent& windowEvent);
-		void processWindowEvent(WindowEventPtr windowEvent);
-		void processInputEvent(InputEventPtr inEvent);
+		void registerWindowEvent(WindowEventPtr windowEvent);
+		void registerInputEvent(InputEventPtr inEvent);
 		void setWindowFullscreen(std::string windowIdentifier, bool fullscreen);
 		
 		void shutdown();

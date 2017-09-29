@@ -181,12 +181,12 @@ namespace nap {
 	}
 	
 	
-	void TestRunner::processWindowEvent(WindowEventPtr windowEvent) {
+	void TestRunner::registerWindowEvent(WindowEventPtr windowEvent) {
 		mRenderService->addEvent(std::move(windowEvent));
 	}
 	
 	
-	void TestRunner::processInputEvent(InputEventPtr inEvent) {
+	void TestRunner::registerInputEvent(InputEventPtr inEvent) {
 		mInputService->addEvent(std::move(inEvent));
 	}
 	

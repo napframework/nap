@@ -60,14 +60,14 @@ void runGame(nap::Core& core, nap::TestRunner* testRunner)
 				}
 
 				// Add event to input service for further processing
-                testRunner->addInputEvent(std::move(input_event));
+                testRunner->registerInputEvent(std::move(input_event));
 			}
 
 			// Check if we're dealing with a window event
 			else if (nap::isWindowEvent(event))
 			{
 				nap::WindowEventPtr nap_event = nap::translateWindowEvent(event);
-                testRunner->addWindowEvent(std::move(nap_event));
+                testRunner->registerWindowEvent(std::move(nap_event));
 			}
 		}
 
