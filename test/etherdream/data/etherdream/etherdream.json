@@ -38,6 +38,13 @@
 		},
 
 		{
+			"Type" : "nap::Shader",
+			"mID": "TracerShader",
+			"mVertShader": "shaders/etherdream/tracer.vert",
+			"mFragShader": "shaders/etherdream/tracer.frag"
+		},
+
+		{
 			"Type" : "nap::Image",
 			"mID" : "CanvasImage",
 			"mImagePath" : "data/etherdream/laser_canvas.png"
@@ -260,6 +267,12 @@
 		},
 
 		{
+			"Type" : "nap::SphereMesh",
+			"mID" : "TracerVisualizeMesh",
+			"Radius" : 0.07
+		},
+
+		{
 			"Type" : "nap::VisualizeNormalsMesh",
 			"mID" : "NormalsMesh",
 			"ReferenceMesh" : "LaserLineMesh",
@@ -316,6 +329,36 @@
 						"y" : 1.0,
 						"z" : 1.0,
 						"w" : 1.0
+					}
+				}
+			]		
+		},
+
+		{
+			"Type" : "nap::Material",
+			"mID": "TracerMaterial",
+			"Shader": "TracerShader",
+			"VertexAttributeBindings" : 
+			[
+				{
+					"MeshAttributeID": "Position",
+					"ShaderAttributeID": "in_Position"
+				},
+				{
+					"MeshAttributeID": "Normal",
+					"ShaderAttributeID" : "in_Normals"
+				}
+			],
+			"Uniforms" : 
+			[
+				{
+					"Type" : "nap::UniformVec3",
+					"Name" : "mColor",
+					"Value" : 
+					{
+						"x" : 1.0,
+						"y" : 1.0,
+						"z" : 1.0
 					}
 				}
 			]		
@@ -442,6 +485,28 @@
 				}
 			]
 		},
+
+		{
+			"Type" : "nap::Entity",
+			"mID" :  "TracerVisualizeEntity",
+			"AutoSpawn" : false,
+			"Components" : 
+			[
+				{
+					"Type" : "nap::TransformComponent"
+				},
+				{
+					"Type" : "nap::RenderableMeshComponent",
+					"mID" : "RenderTracerComponent",
+					"Mesh" : "TracerVisualizeMesh",
+					"MaterialInstance" : 
+					{
+						"Material": "TracerMaterial"
+					}
+				}
+			]
+		},
+
 		{
 			"Type" : "nap::Entity",
 			"mID": "SplineEntity",
@@ -608,6 +673,7 @@
 					"mID" : "LineTracer",
 					"BlendComponent" : "LineBlender",
 					"Target" : "LaserTraceMesh",
+					"VisualizeEntity" : "TracerVisualizeEntity",
 					"Properties" :
 					{
 						"Offset" : 0.0,
@@ -632,7 +698,7 @@
 				{
 					"Type" : "nap::RenderableMeshComponent",
 					"mID" : "RenderLaserLineComponent",
-					"Mesh" : "LaserLineMesh",
+					"Mesh" : "LaserTraceMesh",
 					"MaterialInstance" : 
 					{
 						"Material": "LineMaterial"

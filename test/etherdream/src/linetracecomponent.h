@@ -3,6 +3,9 @@
 // Local Includes
 #include "lineblendcomponent.h"
 
+// external includes
+#include <nap/entityptr.h>
+
 namespace nap
 {
 	struct TraceProperties
@@ -27,6 +30,9 @@ namespace nap
 
 		// property: Link to the tracer mesh that is computed by the instance of this component
 		ObjectPtr<nap::PolyLine> mTargetLine;
+
+		// property: Link to the trace visualizer we want to spawn on creation
+		ObjectPtr<nap::Entity> mVisualizeEntity;
 
 		// property: Link to the line blend component that holds the line we want to trace
 		ComponentPtr<nap::LineBlendComponent> mBlendComponent = nullptr;
@@ -62,5 +68,7 @@ namespace nap
 		nap::LineBlendComponentInstance* mBlendComponent = nullptr;		// Line that acts as a source for the tracer
 		nap::PolyLine*  mTarget = nullptr;								// Line that is the output of the trace computation
 		float mCurrentTime = 0.0f;										// Current time
+		nap::TransformComponentInstance* mStartXform = nullptr;			// Transform associated with beginning of trace component
+		nap::TransformComponentInstance* mEndXform = nullptr;			// Transform associated with end of trace component
 	};
 }

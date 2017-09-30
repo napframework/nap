@@ -58,10 +58,11 @@ nap::ObjectPtr<nap::RenderWindow> renderWindow = nullptr;
 // Laser DAC
 nap::ObjectPtr<nap::EntityInstance> laserPrototype = nullptr;
 
+
 // Holds the normals mesh
 nap::ObjectPtr<nap::VisualizeNormalsMesh> normalsMesh = nullptr;
 
-//////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////
 
 // Some utilities
 void runGame(nap::Core& core);	
@@ -87,6 +88,7 @@ void onUpdate()
 
 	nap::utility::ErrorState error;
 	normalsMesh->updateNormals(error, true);
+
 }
 
 

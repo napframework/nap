@@ -269,7 +269,6 @@ void runGame(nap::Core& core)
 	// Run function
 	bool loop = true;
 
-
 	// Loop
 	while (loop)
 	{

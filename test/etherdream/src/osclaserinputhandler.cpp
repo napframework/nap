@@ -21,7 +21,8 @@ namespace nap
 {
 	OSCLaserInputHandlerInstance::~OSCLaserInputHandlerInstance()
 	{
-		mInputComponent->messageReceived.disconnect(mMessageReceivedSlot);
+		if(mInputComponent != nullptr)
+			mInputComponent->messageReceived.disconnect(mMessageReceivedSlot);
 	}
 
 

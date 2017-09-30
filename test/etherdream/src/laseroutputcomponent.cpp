@@ -14,6 +14,7 @@ RTTI_BEGIN_CLASS(nap::LaserOutputProperties)
 	RTTI_PROPERTY("FlipVertical",	&nap::LaserOutputProperties::mFlipVertical,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("FlipHorizontal", &nap::LaserOutputProperties::mFlipHorizontal,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Framerate",		&nap::LaserOutputProperties::mFrameRate,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("GapThreshold",	&nap::LaserOutputProperties::mGapThreshold,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::LaserOutputComponent)
@@ -128,7 +129,7 @@ namespace nap
 		
 		// If there is a certain distance between the first and last vertex of the line we can redistribute the points
 		// otherwise the entire line is taken up by the initial line and there is no gap, ie: all points belong to the actual line
-		bool has_gap = gap_dist > math::epsilon<float>() && !(line.isClosed());
+		bool has_gap = gap_dist > mProperties.mGapThreshold && !(line.isClosed());
 		if (has_gap)
 		{
 			// Get complete line distance

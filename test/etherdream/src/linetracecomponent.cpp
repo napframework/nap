@@ -3,6 +3,8 @@
 #include <nap/entity.h>
 #include <mathutils.h>
 #include <nap/logger.h>
+#include <nap/core.h>
+#include <nap/resourcemanager.h>
 
 RTTI_BEGIN_CLASS(nap::TraceProperties)
 	RTTI_PROPERTY("Offset",	&nap::TraceProperties::mOffset,		nap::rtti::EPropertyMetaData::Required)
@@ -14,6 +16,7 @@ RTTI_BEGIN_CLASS(nap::LineTraceComponent)
 	RTTI_PROPERTY("Properties",			&nap::LineTraceComponent::mProperties,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("BlendComponent",		&nap::LineTraceComponent::mBlendComponent,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Target",				&nap::LineTraceComponent::mTargetLine,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("VisualizeEntity",	&nap::LineTraceComponent::mVisualizeEntity,	nap::rtti::EPropertyMetaData::Required)	
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LineTraceComponentInstance)
@@ -22,7 +25,6 @@ RTTI_END_CLASS
 
 namespace nap
 {
-
 	bool LineTraceComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
 		// Copy properties
@@ -33,6 +35,47 @@ namespace nap
 		// Set lines
 		mBlendComponent = getComponent<LineTraceComponent>()->mBlendComponent.get();
 		mTarget = getComponent<LineTraceComponent>()->mTargetLine.get();
+
+		// Create the trace visualize components
+		LineTraceComponent* resource = getComponent<LineTraceComponent>();		
+		ResourceManagerService& resource_manager = *getEntityInstance()->getCore()->getService<nap::ResourceManagerService>();
+
+		// Create start visualizer
+		auto start_vis_entity = resource_manager.createEntity(*(resource->mVisualizeEntity), entityCreationParams, errorState);
+		if (start_vis_entity == nullptr)
+			return false;
+		
+		mStartXform = start_vis_entity->findComponent<nap::TransformComponentInstance>();
+		if (!errorState.check(mStartXform != nullptr, "Trace visualizer has no transform component"))
+			return false;
+
+		auto start_render = start_vis_entity->findComponent<RenderableMeshComponentInstance>();
+		if (!errorState.check(start_render != nullptr, "Trace visualizer has no renderable component"))
+			return false;
+
+		UniformVec3& uniform = start_render->getMaterialInstance().getOrCreateUniform<UniformVec3>("mColor");
+		uniform.setValue(glm::vec3(1.0f, 0.0f, 0.0f));
+
+		// Create end visualizer
+		auto end_vis_entity = resource_manager.createEntity(*(resource->mVisualizeEntity), entityCreationParams, errorState);
+		if (end_vis_entity == nullptr)
+			return false;
+
+		mEndXform = end_vis_entity->findComponent<nap::TransformComponentInstance>();
+		if (!errorState.check(mEndXform != nullptr, "Trace visualizer has no transform component"))
+			return false;
+
+		auto end_render = end_vis_entity->findComponent<RenderableMeshComponentInstance>();
+		if (!errorState.check(end_render != nullptr, "Trace visualizer has no renderable component"))
+			return false;
+
+		UniformVec3& euniform = end_render->getMaterialInstance().getOrCreateUniform<UniformVec3>("mColor");
+		euniform.setValue(glm::vec3(0.0f, 1.0f, 0.0f));
+
+		// Add as children
+		getEntityInstance()->addChild(*start_vis_entity);
+		getEntityInstance()->addChild(*end_vis_entity);
+
 
 		return true;
 	}
@@ -91,6 +134,9 @@ namespace nap
 		{
 			nap::Logger::warn(error.toString().c_str());
 		}
-	}
 
+		// Update visualizer location
+		mStartXform->setTranslate(pos_attr_data.front());
+		mEndXform->setTranslate(pos_attr_data.back());
+	}
 }

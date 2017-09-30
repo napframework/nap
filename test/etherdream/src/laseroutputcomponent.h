@@ -26,6 +26,7 @@ namespace nap
 		bool		mFlipHorizontal = false;			//< If the output should be flipped horizontal
 		bool		mFlipVertical = false;				//< If the output should be flipped vertical
 		int			mFrameRate = 60;					//< Preferred framerate
+		float		mGapThreshold = 0.01f;				//< Threshold used to consider a gap between the begin and end vertex
 	};
 
 
