@@ -86,9 +86,8 @@ void onUpdate()
 	// Update all resources
 	resourceManagerService->update();
 
-	nap::utility::ErrorState error;
+	nap::utility::ErrorState error;	
 	normalsMesh->updateNormals(error, true);
-
 }
 
 
@@ -152,7 +151,6 @@ bool init(nap::Core& core)
 
 	// Create scene service
 	sceneService = core.getOrCreateService<nap::SceneService>();
-
 
 	// Create etherdream service
 	laserService = core.getOrCreateService<nap::EtherDreamService>();

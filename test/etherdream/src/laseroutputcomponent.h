@@ -8,6 +8,7 @@
 #include <polyline.h>
 #include <transformcomponent.h>
 #include <nap/componentptr.h>
+#include <nap/entityptr.h>
 #include <renderablemeshcomponent.h>
 
 namespace nap
@@ -43,7 +44,10 @@ namespace nap
 		ObjectPtr<EtherDreamDac> mDac;
 
 		// Link to component that holds the line to send to the laser
-		ComponentPtr<RenderableMeshComponent> mLine;
+		ObjectPtr<PolyLine> mLine;
+
+		// Link to transform that holds the line's global xform
+		ComponentPtr<TransformComponent> mTransform;
 
 		// Output properties
 		LaserOutputProperties mProperties;
@@ -79,7 +83,7 @@ namespace nap
 		EtherDreamDac* mDac = nullptr;
 
 		// Component that holds the lines to draw
-		RenderableMeshComponentInstance* mLine = nullptr;
+		PolyLine* mLine = nullptr;
 
 		// Properties
 		LaserOutputProperties mProperties;
@@ -88,9 +92,12 @@ namespace nap
 		// Populate Laser Buffer
 		void populateLaserBuffer(const PolyLine& line, const glm::mat4x4& laserXform, const glm::mat4x4& lineXform);
 
+		// Xform associated with the line
+		TransformComponentInstance* mLineXform = nullptr;
+
 		// Converted laser points
 		std::vector<nap::EtherDreamPoint> mPoints;			//< DAC points
 		std::vector<glm::vec3> mVerts;						//< Converted vertex positions
-		std::vector<glm::vec4> mColors;						//< Converted vertex colors 		
+		std::vector<glm::vec4> mColors;						//< Converted vertex colors 	
 	};
 }

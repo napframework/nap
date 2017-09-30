@@ -61,6 +61,11 @@ namespace nap
 		 */
 		virtual void update(double deltaTime) override;
 
+		/**
+		 *	Resets the tracer's time and therefore position
+		 */
+		void reset();
+
 		// Properties associated with this line
 		TraceProperties mProperties;
 

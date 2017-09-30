@@ -4,6 +4,7 @@
 #include <polyline.h>
 #include <utility/stringutils.h>
 #include <mathutils.h>
+#include <nap/logger.h>
 
 RTTI_BEGIN_CLASS(nap::OSCLaserInputHandler)
 	RTTI_PROPERTY("SelectionComponentOne", &nap::OSCLaserInputHandler::mSelectionComponentOne, nap::rtti::EPropertyMetaData::Required)
@@ -57,11 +58,31 @@ namespace nap
 		if (!errorState.check(mNoiseComponent != nullptr, "missing noise component"))
 			return false;
 
+		mTraceComponent = getEntityInstance()->findComponent<nap::LineTraceComponentInstance>();
+		if (!errorState.check(mTraceComponent != nullptr, "missing trace component"))
+			return false;
+
 		mSelectorOne = getComponent<OSCLaserInputHandler>()->mSelectionComponentOne.get();
 		mSelectorTwo = getComponent<OSCLaserInputHandler>()->mSelectionComponentTwo.get();
 		mLaserOutput = getComponent<OSCLaserInputHandler>()->mLaserOutputComponent.get();
 
 		mInputComponent->messageReceived.connect(mMessageReceivedSlot);
+
+		// Populate our map of callbacks
+		mLaserEventFuncs.emplace(std::make_pair("startposition", &OSCLaserInputHandlerInstance::updateStartColor));
+		mLaserEventFuncs.emplace(std::make_pair("endposition", &OSCLaserInputHandlerInstance::updateEndColor));
+		mLaserEventFuncs.emplace(std::make_pair("intensity", &OSCLaserInputHandlerInstance::setIntensity));
+		mLaserEventFuncs.emplace(std::make_pair("rotation", &OSCLaserInputHandlerInstance::updateRotate));
+		mLaserEventFuncs.emplace(std::make_pair("resetrotation", &OSCLaserInputHandlerInstance::resetRotate));
+		mLaserEventFuncs.emplace(std::make_pair("selection", &OSCLaserInputHandlerInstance::setIndex));
+		mLaserEventFuncs.emplace(std::make_pair("blend", &OSCLaserInputHandlerInstance::setBlend));
+		mLaserEventFuncs.emplace(std::make_pair("scale", &OSCLaserInputHandlerInstance::setScale));
+		mLaserEventFuncs.emplace(std::make_pair("position", &OSCLaserInputHandlerInstance::setPosition));
+		mLaserEventFuncs.emplace(std::make_pair("modulation", &OSCLaserInputHandlerInstance::setModulation));
+		mLaserEventFuncs.emplace(std::make_pair("noise", &OSCLaserInputHandlerInstance::setNoise));
+		mLaserEventFuncs.emplace(std::make_pair("synccolor", &OSCLaserInputHandlerInstance::setColorSync));
+		mLaserEventFuncs.emplace(std::make_pair("tracer", &OSCLaserInputHandlerInstance::updateTracer));
+		mLaserEventFuncs.emplace(std::make_pair("resettracer", &OSCLaserInputHandlerInstance::resetTracer));
 
 		return true;
 	}
@@ -69,93 +90,29 @@ namespace nap
 
 	void OSCLaserInputHandlerInstance::handleMessageReceived(const nap::OSCEvent& oscEvent)
 	{
-		if (utility::gStartsWith(oscEvent.getAddress(), "/startposition"))
+		std::vector<std::string> parts;
+		utility::gSplitString(oscEvent.getAddress(), '/', parts);
+		auto it = mLaserEventFuncs.find(parts[1]);
+		if (it == mLaserEventFuncs.end())
 		{
-			updateColor(oscEvent, 0);
-		}
-
-		if (utility::gStartsWith(oscEvent.getAddress(), "/endposition"))
-		{
-			updateColor(oscEvent, 1);
-		}
-
-		if (utility::gStartsWith(oscEvent.getAddress(), "/intensity"))
-		{
-			assert(oscEvent[0].isFloat());
-			mColorComponent->setIntensity(oscEvent[0].asFloat());
-		}
-
-		else if (utility::gStartsWith(oscEvent.getAddress(), "/rotation"))
-		{
-			updateRotate(oscEvent);
+			nap::Logger::warn("unknown osc event: %s", oscEvent.getAddress().c_str());
 			return;
 		}
 
-		else if (utility::gStartsWith(oscEvent.getAddress(), "/resetrotation"))
-		{
-			resetRotate(oscEvent);
-			return;
-		}
+		// Call found callback
+		(this->*(it->second))(oscEvent);
+	}
 
-		else if (utility::gStartsWith(oscEvent.getAddress(), "/selection"))
-		{
-			// Get index
-			std::vector<std::string> out_values;
-			utility::gSplitString(oscEvent.getAddress(), '/', out_values);
 
-			assert(out_values.size() == 3);
-			int index = math::clamp<int>(std::stoi(out_values.back())-1, 0,1);
-			setIndex(oscEvent, index);
-			return;
-		}
+	void OSCLaserInputHandlerInstance::updateStartColor(const OSCEvent& event)
+	{
+		updateColor(event, 0);
+	}
 
-		else if (utility::gStartsWith(oscEvent.getAddress(), "/blend"))
-		{
-			std::vector<std::string> out_values;
-			utility::gSplitString(oscEvent.getAddress(), '/', out_values);
-			assert(out_values.size() == 3);
-			int index = math::clamp<int>(std::stoi(out_values.back()) - 1, 0, 1);
-			setBlend(oscEvent, index);
-		}
 
-		else if (utility::gStartsWith(oscEvent.getAddress(), "/scale"))
-		{
-			setScale(oscEvent);
-		}
-
-		else if (utility::gStartsWith(oscEvent.getAddress(), "/position"))
-		{
-			setPosition(oscEvent);
-		}
-
-		else if (utility::gStartsWith(oscEvent.getAddress(), "/modulation"))
-		{
-			// Get values
-			std::vector<std::string> out_values;
-			utility::gSplitString(oscEvent.getAddress(), '/', out_values);
-
-			// Get index
-			int index = std::stoi(out_values.back()) - 1;
-			assert(index < 5 && index >= 0);
-			setModulation(oscEvent, index);
-		}
-
-		else if (utility::gStartsWith(oscEvent.getAddress(), "/noise"))
-		{
-			// Get values
-			std::vector<std::string> out_values;
-			utility::gSplitString(oscEvent.getAddress(), '/', out_values);
-
-			// Get index
-			int index = std::stoi(out_values.back()) - 1;
-			assert(index < 4 && index >= 0);
-			setNoise(oscEvent, index);
-		}
-
-		else if (utility::gStartsWith(oscEvent.getAddress(), "/synccolor"))
-		{
-			setColorSync(oscEvent);
-		}
+	void OSCLaserInputHandlerInstance::updateEndColor(const OSCEvent& event)
+	{
+		updateColor(event, 1);
 	}
 
 
@@ -227,8 +184,15 @@ namespace nap
 	}
 
 
-	void OSCLaserInputHandlerInstance::setIndex(const OSCEvent& event, int index)
+	void OSCLaserInputHandlerInstance::setIndex(const OSCEvent& event)
 	{
+		// Get index
+		std::vector<std::string> out_values;
+		utility::gSplitString(event.getAddress(), '/', out_values);
+
+		assert(out_values.size() == 3);
+		int index = math::clamp<int>(std::stoi(out_values.back()) - 1, 0, 1);
+
 		assert(event[0].isFloat());
 		float v = event[0].asFloat();
 
@@ -242,8 +206,13 @@ namespace nap
 	}
 
 
-	void OSCLaserInputHandlerInstance::setBlend(const OSCEvent& event, int index)
+	void OSCLaserInputHandlerInstance::setBlend(const OSCEvent& event)
 	{	
+		std::vector<std::string> out_values;
+		utility::gSplitString(event.getAddress(), '/', out_values);
+		assert(out_values.size() == 3);
+		int index = math::clamp<int>(std::stoi(out_values.back()) - 1, 0, 1);
+
 		assert(event[0].isFloat());
 		float v = event[0].asFloat();
 
@@ -260,7 +229,7 @@ namespace nap
 	{
 		assert(event[0].isFloat());
 		float v = event[0].asFloat();
-		mTransformComponent->setUniformScale(math::fit<float>(v, 0.0f, 1.0f, 0.0f, 3.0f) * mInitialScale);
+		mTransformComponent->setUniformScale(math::fit<float>(v, 0.0f, 1.0f, 0.1f, 3.0f) * mInitialScale);
 	}
 
 
@@ -281,8 +250,16 @@ namespace nap
 	}
 
 
-	void OSCLaserInputHandlerInstance::setModulation(const OSCEvent& event, int index)
+	void OSCLaserInputHandlerInstance::setModulation(const OSCEvent& event)
 	{
+		// Get values
+		std::vector<std::string> out_values;
+		utility::gSplitString(event.getAddress(), '/', out_values);
+
+		// Get index
+		int index = std::stoi(out_values.back()) - 1;
+		assert(index < 5 && index >= 0);
+
 		assert(event[0].isFloat());
 		float v = event[0].asFloat();
 
@@ -313,8 +290,16 @@ namespace nap
 	}
 
 
-	void OSCLaserInputHandlerInstance::setNoise(const OSCEvent& event, int index)
+	void OSCLaserInputHandlerInstance::setNoise(const OSCEvent& event)
 	{
+		// Get values
+		std::vector<std::string> out_values;
+		utility::gSplitString(event.getAddress(), '/', out_values);
+
+		// Get index
+		int index = std::stoi(out_values.back()) - 1;
+		assert(index < 4 && index >= 0);
+
 		assert(event[0].isFloat());
 		float v = event[0].asFloat();
 
@@ -346,6 +331,57 @@ namespace nap
 		mColorComponent->link(sync);
 	}
 
+
+	void OSCLaserInputHandlerInstance::updateTracer(const OSCEvent& event)
+	{
+		// Get values
+		std::vector<std::string> out_values;
+		utility::gSplitString(event.getAddress(), '/', out_values);
+
+		// Get index
+		int index = std::stoi(out_values.back()) - 1;
+		assert(index < 3 && index >= 0);
+
+		// Get value
+		assert(event[0].isFloat());
+		float v = event[0].asFloat();
+
+		switch (index)
+		{
+		case 0:
+			mTraceComponent->mProperties.mLength = math::fit<float>(v, 0.0f, 1.0f,0.1f, 1.0f);
+			break;
+		case 1:
+			mTraceComponent->mProperties.mSpeed = v;
+			break;
+		case 2:
+			mTraceComponent->mProperties.mOffset = v;
+			break;
+		default:
+			assert(false);
+			break;
+		}
+	}
+
+
+	void OSCLaserInputHandlerInstance::resetTracer(const OSCEvent& event)
+	{
+		assert(event[0].isFloat());
+		float v = event[0].asFloat();
+		if (v > math::epsilon<float>())
+		{
+			mTraceComponent->reset();
+			mTraceComponent->mProperties.mOffset = 0.0f;
+			mTraceComponent->mProperties.mSpeed = 0.0f;
+		}
+	}
+
+
+	void OSCLaserInputHandlerInstance::setIntensity(const OSCEvent& event)
+	{
+		assert(event[0].isFloat());
+		mColorComponent->setIntensity(event[0].asFloat());
+	}
 
 	void OSCLaserInputHandler::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 	{

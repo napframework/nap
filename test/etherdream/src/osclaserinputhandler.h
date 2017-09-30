@@ -8,6 +8,7 @@
 #include "laseroutputcomponent.h"
 #include "linemodulationcomponent.h"
 #include "linenoisecomponent.h"
+#include "linetracecomponent.h"
 
 // External Includes
 #include <nap/component.h>
@@ -71,17 +72,23 @@ namespace nap
 		nap::LineBlendComponentInstance* mBlendComponent = nullptr;
 		nap::TransformComponentInstance* mTransformComponent = nullptr;
 		nap::LineNoiseComponentInstance* mNoiseComponent = nullptr;
+		nap::LineTraceComponentInstance* mTraceComponent = nullptr;
 
-		void updateColor(const OSCEvent& event, int position);
+		void updateStartColor(const OSCEvent& event);
+		void updateEndColor(const OSCEvent& event);
 		void updateRotate(const OSCEvent& event);
 		void resetRotate(const OSCEvent& event);
-		void setIndex(const OSCEvent& event, int index);
-		void setBlend(const OSCEvent& event, int index);
+		void setIndex(const OSCEvent& event);
+		void setBlend(const OSCEvent& event);
 		void setScale(const OSCEvent& event);
 		void setPosition(const OSCEvent& event);
-		void setModulation(const OSCEvent& event, int index);
-		void setNoise(const OSCEvent& event, int index);
+		void setModulation(const OSCEvent& event);
+		void setNoise(const OSCEvent& event);
 		void setColorSync(const OSCEvent& event);
+		void updateTracer(const OSCEvent& event);
+		void resetTracer(const OSCEvent& event);
+		void setIntensity(const OSCEvent& event);
+		void updateColor(const OSCEvent& event, int position);
 
 		NSLOT(mMessageReceivedSlot, const nap::OSCEvent&, handleMessageReceived)
 
@@ -90,6 +97,10 @@ namespace nap
 		LaserOutputComponentInstance* mLaserOutput = nullptr;		// Laser output component
 		LineColorComponentInstance* mColorComponent = nullptr;		// Laser line color component
 		LineModulationComponentInstance* mModulationComponent = nullptr;	// Laser modulation component
+
+		// This map holds all the various callbacks based on id
+		typedef void (OSCLaserInputHandlerInstance::*LaserEventFunc)(const OSCEvent&);
+		std::unordered_map<std::string, LaserEventFunc> mLaserEventFuncs;
 
 		float mInitialScale = 1.0f;									// Holds the initial scale of the laser spline entity
 	};

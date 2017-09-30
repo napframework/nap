@@ -578,7 +578,9 @@
 						"/position",
 						"/modulation",
 						"/noise",
-						"/synccolor"
+						"/synccolor",
+						"/tracer",
+						"/resettracer"
 					]
 				},
 				{
@@ -590,6 +592,7 @@
 				},
 				{
 					"Type" : "nap::TransformComponent",
+					"mID" : "LineXFormComponent",
 					"Properties": 
 					{
 						"Translate": 
@@ -698,7 +701,7 @@
 				{
 					"Type" : "nap::RenderableMeshComponent",
 					"mID" : "RenderLaserLineComponent",
-					"Mesh" : "LaserTraceMesh",
+					"Mesh" : "LaserLineMesh",
 					"MaterialInstance" : 
 					{
 						"Material": "LineMaterial"
@@ -760,7 +763,8 @@
 						}
 					},
 					"Dac" : "Laser1",
-					"Line": "RenderLaserLineComponent"
+					"Line": "LaserTraceMesh",
+					"Transform" : "LineXFormComponent"
 				},		
 				{
 					"Type":"nap::LaserOutputComponent",
@@ -773,7 +777,8 @@
 						}
 					},
 					"Dac" : "Laser2",
-					"Line": "RenderLaserLineComponent"
+					"Line": "LaserTraceMesh",
+					"Transform" : "LineXFormComponent"
 				},
 				{
 					"Type":"nap::LaserOutputComponent",
@@ -786,7 +791,8 @@
 						}
 					},
 					"Dac" : "Laser3",
-					"Line": "RenderLaserLineComponent"
+					"Line": "LaserTraceMesh",
+					"Transform" : "LineXFormComponent"
 				},
 				{
 					"Type":"nap::LaserOutputComponent",
@@ -799,7 +805,8 @@
 						}
 					},
 					"Dac" : "Laser4",
-					"Line": "RenderLaserLineComponent"
+					"Line": "LaserTraceMesh",
+					"Transform" : "LineXFormComponent"
 				}			
 			],
 			"Children" :

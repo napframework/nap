@@ -139,4 +139,11 @@ namespace nap
 		mStartXform->setTranslate(pos_attr_data.front());
 		mEndXform->setTranslate(pos_attr_data.back());
 	}
+
+
+	void LineTraceComponentInstance::reset()
+	{
+		mCurrentTime = 0.0f;
+	}
+
 }
