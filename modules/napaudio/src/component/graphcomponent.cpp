@@ -4,7 +4,7 @@
 #include <nap/entity.h>
 
 // Audio includes
-#include <object/audioobject.h>
+#include <graph/audioobject.h>
 
 
 // RTTI

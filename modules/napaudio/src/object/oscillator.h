@@ -4,7 +4,7 @@
 #include <nap/objectptr.h>
 
 // Audio includes
-#include <object/audioobject.h>
+#include <graph/audioobject.h>
 #include <node/oscillatornode.h>
 
 namespace nap {
@@ -37,11 +37,10 @@ namespace nap {
             }
             
             int getChannelCount() const override { return mChannelCount; }
-            
             WaveTable mWaveTable  = { 2048 };
         };
         
-        using OscillatorCreator = rtti::ObjectCreator<Oscillator, NodeManager>;
+       
     }
     
 }

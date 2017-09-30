@@ -1,4 +1,4 @@
-#include "objects.h"
+#include "oscillator.h"
 
 
 RTTI_BEGIN_CLASS(nap::audio::Oscillator)
@@ -7,7 +7,6 @@ RTTI_BEGIN_CLASS(nap::audio::Oscillator)
     RTTI_PROPERTY("Amplitude", &nap::audio::Oscillator::mAmplitude, nap::rtti::EPropertyMetaData::Default)
     RTTI_PROPERTY("FmInput", &nap::audio::Oscillator::mFmInput, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
-
 
 namespace nap {
     

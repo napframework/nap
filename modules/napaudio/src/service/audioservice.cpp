@@ -1,5 +1,5 @@
 #include "audioservice.h"
-#include <object/audiograph.h>
+#include <graph/audiograph.h>
 
 namespace nap {
     

@@ -5,7 +5,7 @@
 
 // Audio includes
 #include <component/audiocomponent.h>
-#include <object/audiograph.h>
+#include <graph/audiograph.h>
 
 namespace nap
 {

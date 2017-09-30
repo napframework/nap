@@ -8,7 +8,7 @@
 #include <node/audionode.h>
 #include <node/audionodemanager.h>
 #include <service/audioservice.h>
-#include <object/audiograph.h>
+#include <graph/audiograph.h>
 
 namespace nap {
     
