@@ -106,9 +106,21 @@ const QString AppContext::lastOpenedFilename()
     return settings.value(LAST_OPENED_FILE).toString();
 }
 
-QList<rttr::instance> AppContext::selectedObjects() const
-{
 
+
+nap::Entity* AppContext::createEntity(nap::Entity* parent)
+{
+    auto e = std::make_unique<nap::Entity>();
+    e->mID = "New Entity";
+    auto ret = e.get();
+    mObjects.emplace_back(std::move(e));
+    if (parent != nullptr)
+        parent->mChildren.emplace_back(ret);
+
+    entityAdded(ret, parent);
+    dataChanged();
+
+    return ret;
 }
 
 

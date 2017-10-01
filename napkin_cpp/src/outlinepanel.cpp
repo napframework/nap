@@ -21,6 +21,7 @@ const QString ObjectItem::name() const {
 
 OutlineModel::OutlineModel() {
     setHorizontalHeaderLabels({TXT_LABEL_NAME, TXT_LABEL_TYPE});
+
 }
 
 
@@ -74,6 +75,8 @@ OutlinePanel::OutlinePanel() {
             &OutlinePanel::onSelectionChanged);
 
     mTreeView.setMenuHook(std::bind(&OutlinePanel::menuHook, this, std::placeholders::_1));
+    connect(&AppContext::get(), &AppContext::dataChanged, this, &OutlinePanel::refresh);
+
 }
 
 void OutlinePanel::menuHook(QMenu& menu)
@@ -86,8 +89,7 @@ void OutlinePanel::menuHook(QMenu& menu)
 }
 
 void OutlinePanel::onFileOpened(const QString& filename) {
-    mModel.refresh();
-    mTreeView.tree().expandAll();
+    refresh();
 }
 
 void OutlinePanel::onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected) {
@@ -113,6 +115,12 @@ std::vector<rttr::instance> OutlinePanel::selectedInstances() const
         instances.emplace_back(objItem->object());
     }
     return instances;
+}
+
+void OutlinePanel::refresh()
+{
+    mModel.refresh();
+    mTreeView.tree().expandAll();
 }
 
 QList<QAction*> ObjectActionFactory::actionsFor(QStandardItem* item)

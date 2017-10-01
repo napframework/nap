@@ -73,10 +73,13 @@ Q_OBJECT
 public:
     OutlinePanel();
 
+
 signals:
     void selectionChanged(QList<nap::rtti::RTTIObject*>& obj);
 
 private:
+    void refresh();
+
     void onFileOpened(const QString& filename);
 
     void onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);

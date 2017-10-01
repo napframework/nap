@@ -2,13 +2,20 @@
 
 #include <QApplication>
 
-
-OpenFileAction::OpenFileAction() : QAction("Open...") {
-    setShortcut(QKeySequence::Open);
-    connect(this, &QAction::triggered, this, &OpenFileAction::perform);
+Action::Action() : QAction()
+{
+    connect(this, &QAction::triggered, this, &Action::perform);
 }
 
-void OpenFileAction::perform() {
+
+OpenFileAction::OpenFileAction()
+{
+    setText("Open...");
+    setShortcut(QKeySequence::Open);
+}
+
+void OpenFileAction::perform()
+{
     auto lastFilename = AppContext::get().lastOpenedFilename();
     QString filename = QFileDialog::getOpenFileName(QApplication::topLevelWidgets()[0],
                                                     "Open NAP Data File",
@@ -20,12 +27,14 @@ void OpenFileAction::perform() {
     AppContext::get().loadFile(filename);
 }
 
-SaveFileAction::SaveFileAction() : QAction("Save") {
+SaveFileAction::SaveFileAction()
+{
+    setText("Save");
     setShortcut(QKeySequence::Save);
-    connect(this, &QAction::triggered, this, &SaveFileAction::perform);
 }
 
-void SaveFileAction::perform() {
+void SaveFileAction::perform()
+{
     if (AppContext::get().currentFilename().isNull()) {
         SaveFileAsAction().trigger();
         return;
@@ -33,12 +42,14 @@ void SaveFileAction::perform() {
     AppContext::get().saveFile();
 }
 
-SaveFileAsAction::SaveFileAsAction() : QAction("Save as...") {
+SaveFileAsAction::SaveFileAsAction()
+{
+    setText("Save as...");
     setShortcut(QKeySequence::SaveAs);
-    connect(this, &QAction::triggered, this, &SaveFileAsAction::perform);
 }
 
-void SaveFileAsAction::perform() {
+void SaveFileAsAction::perform()
+{
     auto& ctx = AppContext::get();
     auto prevFilename = ctx.currentFilename();
     if (prevFilename.isNull())

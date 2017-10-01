@@ -2,8 +2,8 @@
 
 #include <QObject>
 
-
 #include <nap/core.h>
+#include <nap/entity.h>
 #include <rtti/rttireader.h>
 
 #define WIN_GEO "windowGeometry"
@@ -21,21 +21,27 @@ public:
     void operator=(AppContext const&) = delete;
 
     ~AppContext() override {}
+
+    nap::Core& core() { return mCore; }
+
     void loadFile(const QString& filename);
     void saveFile();
     void saveFileAs(const QString& filename);
-    nap::Core& core() { return mCore; }
     const QString lastOpenedFilename();
-    nap::rtti::OwnedObjectList& loadedObjects() { return mObjects; }
     const QString& currentFilename() { return mCurrentFilename; }
 
-    QList<rttr::instance> selectedObjects() const;
+    nap::rtti::OwnedObjectList& loadedObjects() { return mObjects; }
+    nap::Entity* createEntity(nap::Entity* parent = nullptr);;
 
 signals:
     void fileOpened(const QString& filename);
     void fileSaved(const QString& filename);
 
     void selectionChanged();
+
+    // All data could have changed.
+    void dataChanged();
+    void entityAdded(nap::Entity* newEntity, nap::Entity* parent=nullptr);
 
 private:
     AppContext();

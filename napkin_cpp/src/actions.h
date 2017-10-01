@@ -12,58 +12,70 @@
 
 #include "appcontext.h"
 
-class OpenFileAction : public QAction {
+class Action : public QAction {
+public:
+    Action();
+
+protected:
+    virtual void perform() = 0;
+};
+
+class OpenFileAction : public Action {
 
 public:
     OpenFileAction();
 
 private:
-    void perform();
+    void perform() override;
 
 };
 
 
-class SaveFileAction : public QAction {
+class SaveFileAction : public Action {
 public:
     SaveFileAction();
 
 private:
-    void perform();
+    void perform() override;
 
 };
 
-class SaveFileAsAction : public QAction {
+class SaveFileAsAction : public Action {
 public:
     SaveFileAsAction();
 
 private:
-    void perform();
+    void perform() override;
 
 };
 
 
-class AddEntityAction : public QAction {
+class AddEntityAction : public Action {
 public:
-    AddEntityAction(nap::Entity* parent) : QAction(), mParent(parent)
+    AddEntityAction(nap::Entity* parent) : Action(), mParent(parent)
     {
         setText("Add Entity");
     }
 
 private:
-    void perform() {
-
-//        mParent->mChildren.emplace_back(std::make_unique<nap::Entity>());
+    void perform() override
+    {
+        AppContext::get().createEntity(mParent);
     }
 
     nap::Entity* mParent;
 };
 
-class AddComponentAction : public QAction {
+class AddComponentAction : public Action {
 public:
-    AddComponentAction(nap::Entity& entity, nap::rtti::TypeInfo type) : QAction(), mEntity(entity), mComponentType(type) {}
+    AddComponentAction(nap::Entity& entity, nap::rtti::TypeInfo type) : Action(), mEntity(entity), mComponentType(type)
+    {
+
+    }
 
 private:
-    void perform() {
+    void perform() override
+    {
 
     }
 
