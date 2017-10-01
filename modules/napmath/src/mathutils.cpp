@@ -1,11 +1,28 @@
 // Local Includes
 #include "mathutils.h"
 
+// External Inlcudes
+#include <memory>
+#include <random>
+
 // Specialization of lerping
 namespace nap
 {
 	namespace math
 	{
+		int random(int min, int max)
+		{
+			static std::unique_ptr<std::mt19937> generator = nullptr;
+			if (generator == nullptr)
+			{
+				std::random_device r;
+				generator = std::make_unique<std::mt19937>(r());
+			}
+			std::uniform_int_distribution<int> m_distribution(min, max);
+			return m_distribution(*generator);
+		}
+
+
 		template<>
 		float lerp<float>(const float& start, const float& end, float percent)
 		{

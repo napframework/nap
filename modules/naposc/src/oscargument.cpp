@@ -150,6 +150,12 @@ namespace nap
 	}
 
 
+	void OSCArgument::toString(std::string& outValue)
+	{
+		return mValue->toString(outValue);
+	}
+
+
 	OSCArgument::OSCArgument(OSCValuePtr value) : mValue(std::move(value))
 	{	}
 

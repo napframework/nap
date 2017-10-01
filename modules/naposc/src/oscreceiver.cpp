@@ -12,6 +12,7 @@
 
 RTTI_BEGIN_CLASS(nap::OSCReceiver)
 	RTTI_PROPERTY("Port",	&nap::OSCReceiver::mPort,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Print",	&nap::OSCReceiver::mPrint,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
@@ -49,6 +50,7 @@ namespace nap
 
 		// Create and set the listener
 		mListener = std::make_unique<OSCPacketListener>(*this);
+		mListener->debugPrint(mPrint);
 		mSocket->setListener(mListener.get());
 		nap::Logger::info("Started listening for OSC messages on port: %d", mPort);
 

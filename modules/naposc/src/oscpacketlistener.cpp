@@ -99,9 +99,26 @@ namespace nap
 			nap::Logger::info("unknown argument in OSC message: %s", event->getAddress().c_str());
 			arg++;
 		}
+		
+		if (mPrint)
+			displayMessage(*event);
 
 		// Add event to receiver
 		mReceiver.addEvent(std::move(event));
+	}
+
+
+	void OSCPacketListener::displayMessage(const OSCEvent& event)
+	{
+		std::ostringstream os;
+		os << event.getAddress() << ":";
+		std::string arg_str;
+		for (const auto& arg : event.getArguments())
+		{
+			arg->toString(arg_str);
+			os << " " << arg_str;
+		}
+		std::cout << os.str() << "\n";
 	}
 }
 

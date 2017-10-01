@@ -21,10 +21,22 @@ namespace nap
 	public:
 		OSCPacketListener(OSCReceiver& receiver);
 
+		/**
+		 *	@param value when set to true this listener will print all received messages
+		 */
+		void debugPrint(bool value)			{ mPrint = value; }
+
 	protected:
 		virtual void ProcessMessage(const osc::ReceivedMessage& message, const IpEndpointName& remoteEndpoint) override;
 
 	private:
 		OSCReceiver& mReceiver;				// Receiver that holds the message queue
+		bool mPrint = false;				// When set to true the listener will print all the received messages
+
+		/**
+		 * Utility that prints @event
+		 * @param event osc event to be debug printed
+		 */
+		static void displayMessage(const OSCEvent& event);
 	};
 }

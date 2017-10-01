@@ -47,6 +47,9 @@ namespace nap
 		// Property: the port to listen to for messages
 		int mPort = 7000;
 
+		// Property: if the receiver prints the received osc messages
+		bool mPrint = false;
+
 		/**
 		 * Adds an event to the queue
 		 * @param event the event to add, note that this receiver will take ownership of the event

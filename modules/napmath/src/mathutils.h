@@ -96,6 +96,12 @@ namespace nap
 		template<typename T>
 		T bell(T time, T strength);
 
+		/**
+		 * @return a random number in range
+		 * @param min min random number
+		 * @param max max random number
+		 */
+		int NAPAPI random(int min, int max);
 
 		//////////////////////////////////////////////////////////////////////////
 		// Template definitions
