@@ -138,7 +138,8 @@ namespace nap
 			else if (rtti::isPrimitive(wrapped_type))
 			{
 				// Write primitive type (float, string, etc)
-				if (!errorState.check(writer.writePrimitive(wrapped_type, is_wrapper ? value.extract_wrapped_value() : value), "Failed to write primitive"))
+                auto errmsg = utility::stringFormat("Failed to write primitive property '%s'", property.get_name().data());
+				if (!errorState.check(writer.writePrimitive(wrapped_type, is_wrapper ? value.extract_wrapped_value() : value), errmsg.data()))
 					return false;
 
 				return true;
