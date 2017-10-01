@@ -31,6 +31,8 @@ public:
     const QString& currentFilename() { return mCurrentFilename; }
 
     nap::rtti::OwnedObjectList& loadedObjects() { return mObjects; }
+
+    nap::Entity* getParent(const nap::Entity& entity);
     nap::Entity* createEntity(nap::Entity* parent = nullptr);;
 
 signals:

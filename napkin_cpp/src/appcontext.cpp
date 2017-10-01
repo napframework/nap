@@ -107,6 +107,23 @@ const QString AppContext::lastOpenedFilename()
 }
 
 
+nap::Entity* AppContext::getParent(const nap::Entity& child)
+{
+    for (const auto& o : loadedObjects()) {
+        if (!o->get_type().is_derived_from<nap::Entity>())
+            continue;
+
+        auto parent = dynamic_cast<nap::Entity*>(o.get());
+        auto it = std::find_if(parent->mChildren.begin(), parent->mChildren.end(), [&child](nap::ObjectPtr<nap::Entity> e) -> bool {
+            return &child == e.get();
+        });
+
+        if (it != parent->mChildren.end())
+            return parent;
+    }
+    return nullptr;
+}
+
 
 nap::Entity* AppContext::createEntity(nap::Entity* parent)
 {
@@ -114,15 +131,15 @@ nap::Entity* AppContext::createEntity(nap::Entity* parent)
     e->mID = "New Entity";
     auto ret = e.get();
     mObjects.emplace_back(std::move(e));
-    if (parent != nullptr)
+
+    if (parent != nullptr) {
         parent->mChildren.emplace_back(ret);
+    }
 
     entityAdded(ret, parent);
-    dataChanged();
+//    dataChanged();
 
     return ret;
 }
-
-
 
 

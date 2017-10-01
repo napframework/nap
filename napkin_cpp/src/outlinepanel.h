@@ -5,6 +5,7 @@
 #include "generic/filtertreeview.h"
 #include "appcontext.h"
 #include "actions.h"
+#include "napgeneric.h"
 
 namespace nap { namespace rtti { class RTTIObject; }}
 
@@ -44,7 +45,7 @@ protected:
 
 class EntityItem : public ObjectItem {
 public:
-    EntityItem(nap::Entity& entity) : ObjectItem(entity) {}
+    EntityItem(nap::Entity& entity);
     int type() const override { return QStandardItem::UserType + 4; }
 
     nap::Entity& entity()
@@ -65,7 +66,6 @@ class OutlineModel : public QStandardItemModel {
 public:
     OutlineModel();
     void refresh();
-
 };
 
 class OutlinePanel : public QWidget {
@@ -79,10 +79,11 @@ signals:
 
 private:
     void refresh();
-
+    void onEntityAdded(nap::Entity* newEntity, nap::Entity* parent);
     void onFileOpened(const QString& filename);
-
     void onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
+
+    ObjectItem* findItem(const nap::rtti::RTTIObject& obj);
 
     std::vector<rttr::instance> selectedInstances() const;
 
@@ -91,10 +92,4 @@ private:
     QVBoxLayout mLayout;
     OutlineModel mModel;
     FilterTreeView mTreeView;
-};
-
-class ObjectActionFactory {
-public:
-    QList<QAction*> actionsFor(QStandardItem* item);
-
 };

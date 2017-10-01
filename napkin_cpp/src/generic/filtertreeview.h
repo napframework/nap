@@ -23,9 +23,12 @@ public:
     void setModel(QStandardItemModel* model);
 
     QStandardItemModel* model() const;
+    const QSortFilterProxyModel& filterModel() const { return sortFilter; }
 
     QTreeView& tree()
     { return treeView; }
+
+    void selectAndReveal(QStandardItem* item);
 
     QStandardItem* selectedItem();
 

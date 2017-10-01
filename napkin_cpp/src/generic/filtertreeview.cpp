@@ -31,6 +31,16 @@ QStandardItemModel* FilterTreeView::model() const {
     return dynamic_cast<QStandardItemModel *>(sortFilter.sourceModel());
 }
 
+void FilterTreeView::selectAndReveal(QStandardItem* item)
+{
+    if (item == nullptr)
+        return;
+    auto idx = filterModel().mapFromSource(item->index());
+    tree().selectionModel()->select(idx, QItemSelectionModel::ClearAndSelect);
+    tree().scrollTo(idx);
+}
+
+
 QStandardItem* FilterTreeView::selectedItem() {
     for (auto idx : selectedIndexes())
         return model()->itemFromIndex(idx);
@@ -95,4 +105,5 @@ void FilterTreeView::onCustomContextMenuRequested(const QPoint& pos)
 
     menu.exec(mapToGlobal(pos));
 }
+
 
