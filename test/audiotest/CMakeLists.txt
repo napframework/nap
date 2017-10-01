@@ -18,13 +18,9 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 target_link_libraries(${PROJECT_NAME} napcore mod_napaudio)
 
 if (WIN32)
-    # Copy over some crap window dlls
-    set(FILES_TO_COPY
-            ../../../../thirdparty/sdl2/msvc/lib/x64/SDL2.dll
-            ../../../../thirdparty/portaudio/msvc64/portaudio_x64.dll
-            )
-    # copy nrender (hack)
-    copy_files_to_bin(${FILES_TO_COPY})
+    # Copy portaudio DLL
+    find_package(portaudio REQUIRED)
+    copy_portaudio_lib()
 endif()
 
 # create post build event

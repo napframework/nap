@@ -27,6 +27,7 @@ bool init(nap::Core& core)
     
     core.initialize();
     
+
     // Get resource manager service
     resourceManagerService = core.getOrCreateService<nap::ResourceManagerService>();
     

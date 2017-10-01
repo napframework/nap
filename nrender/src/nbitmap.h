@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <unordered_map>
 #include <vector>
+#include <assert.h>
 
 namespace opengl
 {
@@ -161,6 +162,25 @@ namespace opengl
 		size_t getLength();
 
 		/**
+		 * @return a pointer to the data at coordinate x, y
+		 * @param x the horizontal coordinate starting at 0
+		 * @param y the vertical coordinate starting at 0
+		 * @return pointer to the pixel, nullptr if invalid
+		 */
+		void* getPixelData(unsigned int x, unsigned int y) const;
+
+		/**
+		 * @return a pointer to the pixel data at coordinate x, y cast to type T
+		 * @param x the horizontal coordinate starting at 0
+		 * @param y the vertical coordinate starting at 0
+		 * @return pointer to the pixel, nullptr if invalid
+		 * Note that it will check of the size of type T is similar to the underlying data type
+		 * if not this function will return a nullptr
+		 */
+		template<typename T>
+		T* getPixel(unsigned int x, unsigned int y) const;
+
+		/**
 		 * getWidth
 		 *
 		 * Returns the amount of horizontal pixels
@@ -188,6 +208,11 @@ namespace opengl
 		 * Returns the bitmap's color type, UNKNOWN if not set
 		 */
 		BitmapColorType getColorType() const				{ return mSettings.mColorType; }
+
+		/**
+		 *	@return the number of channels associated with this image, 1 for R, 4 for RGBA etc
+		 */
+		unsigned int getNumberOfChannels() const;
 
 	protected:
 		void*			mData = nullptr;
@@ -332,6 +357,20 @@ namespace opengl
 	{
 		mSettings.mDataType = getDataType();
 	}
+
+
+	template<typename T>
+	T* opengl::BitmapBase::getPixel(unsigned int x, unsigned int y) const
+	{
+		if (sizeof(T) != getSizeOf(mSettings.mDataType))
+		{
+			assert(false);
+			return nullptr;
+		}
+
+		return (T*)(getPixelData(x, y));
+	}
+
 
 	//////////////////////////////////////////////////////////////////////////
 	// Typedefs

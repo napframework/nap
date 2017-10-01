@@ -19,8 +19,10 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	const MeshInstance::VertexAttributeID MeshInstance::VertexAttributeIDs::GetPositionName() { return "Position"; }
-	const MeshInstance::VertexAttributeID MeshInstance::VertexAttributeIDs::getNormalName()	{ return "Normal"; }
+	const MeshInstance::VertexAttributeID MeshInstance::VertexAttributeIDs::GetPositionName()	{ return "Position"; }
+	const MeshInstance::VertexAttributeID MeshInstance::VertexAttributeIDs::getNormalName()		{ return "Normal"; }
+	const MeshInstance::VertexAttributeID MeshInstance::VertexAttributeIDs::getTangentName()	{ return "Tangent"; }
+	const MeshInstance::VertexAttributeID MeshInstance::VertexAttributeIDs::getBitangentName()	{ return "Bitangent"; }
 
 	const MeshInstance::VertexAttributeID MeshInstance::VertexAttributeIDs::GetUVName(int uvChannel)
 	{
@@ -82,6 +84,13 @@ namespace nap
 		mProperties.mIndices = meshProperties.mIndices;
 
 		return initGPUData(errorState);
+	}
+
+
+	void MeshInstance::setIndices(uint32_t* indices, int numIndices)
+	{
+		mProperties.mIndices.resize(numIndices);
+		std::memcpy(mProperties.mIndices.data(), indices, numIndices * sizeof(uint32_t));
 	}
 
 

@@ -232,7 +232,8 @@ namespace nap
 				}
 				else if (resolved_path.getType().is_derived_from(RTTI_OF(ComponentPtrBase)))
 				{
-					ComponentPtrBase component_ptr = resolved_path.getValue().convert<ComponentPtrBase>();
+					rtti::Variant value = resolved_path.getValue();
+					const ComponentPtrBase& component_ptr = value.get_value<ComponentPtrBase>();
 					nap::Component* target_component_resource = rtti_cast<Component>(component_ptr.getResource().get());
 
 					// Skip null targets

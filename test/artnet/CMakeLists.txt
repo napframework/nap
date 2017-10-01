@@ -20,17 +20,16 @@ target_link_libraries(${PROJECT_NAME} mod_napartnet mod_napinput mod_napsdlinput
 add_dependencies(${PROJECT_NAME} fbxconverter)
 
 if (WIN32)
+	# Copy artnet DLL
 	find_package(artnet REQUIRED)
+	copy_artnet_dll()
+
+	# Copy freeimage DLL
+	find_package(freeimage REQUIRED)
+	copy_freeimage_dll()
 
     # Copy over some crap window dlls
-    set(FILES_TO_COPY
-            ${FREEIMAGE_DIR}/msvc/Dist/x64/FreeImage.dll
-            ../../../../thirdparty/sdl2/msvc/lib/x64/SDL2.dll
-            ../../../../thirdparty/glew/msvc/bin/Release/x64/glew32.dll
-            ${ARTNET_LIBS_DIR}/libartnet.dll
-            )
-    # copy nrender (hack)
-    copy_files_to_bin(${FILES_TO_COPY})
+	copy_base_windows_graphics_dlls()
 endif()
 
 # create post build event
