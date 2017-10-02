@@ -11,13 +11,13 @@ namespace nap
 		/**
 		 *	Simple 2D rectangle
 		 */
-		class NAPAPI Rectangle final
+		class NAPAPI Rect final
 		{
 		public:
 			/**
 			 *	Default constructor
 			 */
-			Rectangle() = default;
+			Rect() = default;
 
 			/**
 			 * Utility constructor
@@ -26,14 +26,14 @@ namespace nap
 			 * @param width the width of the rectangle
 			 * @param height the height of the triangle
 			 */
-			Rectangle(float x, float y, float width, float height);
+			Rect(float x, float y, float width, float height);
 
 			/**
 			 * Utility constructor
 			 * @param min: the min x, y position of the rectangle
 			 * @param max: the max x, y position of the rectangle
 			 */
-			Rectangle(glm::vec2 min, glm::vec2 max);
+			Rect(glm::vec2 min, glm::vec2 max);
 
 			/**
 			 *	@return the absolute width of the rectangle
@@ -46,9 +46,29 @@ namespace nap
 			float getHeight() const;
 
 			/**
+			 *	@return if the rect has a width associated with it
+			 */
+			bool hasWidth() const;
+
+			/**
+			 *	@return if the rect has a height associated with it
+			 */
+			bool hasHeight() const;
+
+			/**
 			 *	@return if a point is inside the rectangle, this excludes the exact edge
 			 */
 			bool inside(const glm::vec2& point) const;
+
+			/**
+			 *	@return the min rectangle coordinates
+			 */
+			const glm::vec2& getMin() const;
+
+			/**
+			 *	@return the max rectangle coordinates
+			 */
+			const glm::vec2& getMax() const;
 
 			glm::vec2 mMinPosition = { 0.0f, 0.0f };		// min x,y position
 			glm::vec2 mMaxPosition = { 0.0f, 0.0f };		// max x,y position

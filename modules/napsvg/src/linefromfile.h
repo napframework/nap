@@ -1,7 +1,7 @@
 #pragma once
 
 #include <polyline.h>
-#include <rectangle.h>
+#include <rect.h>
 
 namespace nap
 {
@@ -93,7 +93,7 @@ namespace nap
 		std::vector<std::unique_ptr<MeshInstance>> mLineInstances;
 
 		// Utility for extracting lines from all the paths
-		bool extractLinesFromPaths(const SVGPaths& paths, const SVGState& states, const math::Rectangle& rectangle, utility::ErrorState& error);
+		bool extractLinesFromPaths(const SVGPaths& paths, const SVGState& states, const math::Rect& rectangle, utility::ErrorState& error);
 
 		// Create a mesh instance out of curve sampled vertices
 		bool initLineFromPath(MeshInstance& line, std::vector<glm::vec3>& pathVertices, std::vector<glm::vec3>& pathNormals, std::vector<glm::vec3>& pathUvs, bool isClosed, utility::ErrorState& error);

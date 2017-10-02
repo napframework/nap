@@ -7,18 +7,10 @@
 // External Includes
 #include <nap/objectptr.h>
 #include <transformcomponent.h>
+#include <rect.h>
 
 namespace nap
 {
-	class Rect final
-	{
-	public:
-		float mX = 0.0f;
-		float mY = 0.0f;
-		float mWidth = 0.0f;
-		float mHeight = 0.0f;
-	};
-
 	class RenderableMeshComponentInstance;
 	
 	/**
@@ -45,7 +37,7 @@ namespace nap
 	public:
 		ObjectPtr<IMesh>					mMesh;								///< Resource to render
 		MaterialInstanceResource			mMaterialInstanceResource;			///< MaterialInstance, which is used to override uniforms for this instance
-		Rect								mClipRect;							///< Clipping rectangle, in pixel coordinates
+		math::Rect						mClipRect;							///< Clipping rectangle, in pixel coordinates
 	};
 
 
@@ -113,23 +105,23 @@ namespace nap
 		/**
 		* @return Currently active mesh.
 		*/
-		IMesh& getMesh() { return *mRenderableMesh.mMesh; }
+		IMesh& getMesh()										{ return *mRenderableMesh.mMesh; }
 
 		/**
 		* @return Currently active mesh instance.
 		*/
-		MeshInstance& getMeshInstance() { return getMesh().getMeshInstance(); }
+		MeshInstance& getMeshInstance()							{ return getMesh().getMeshInstance(); }
 
 		/**
 		* Toggles visibility.
 		*/
-		void setVisible(bool visible) { mVisible = visible; }
+		void setVisible(bool visible)							{ mVisible = visible; }
 
 		/**
 		* Sets clipping rectangle on this instance.
 		* @param rect Rectangle in pixel coordinates.
 		*/
-		void setClipRect(const Rect& rect) { mClipRect = rect; }
+		void setClipRect(const math::Rect& rect)			{ mClipRect = rect; }
 
 	private:
 		void pushUniforms();
@@ -139,7 +131,7 @@ namespace nap
 		TransformComponentInstance*					mTransformComponent;	// Cached pointer to transform
 		MaterialInstance							mMaterialInstance;		// The MaterialInstance as created from the resource. 
 		bool										mVisible = true;		// Whether this instance is visible or not
-		Rect										mClipRect;				// Clipping rectangle for this instance, in pixel coordinates
+		math::Rect								mClipRect;				// Clipping rectangle for this instance, in pixel coordinates
 		RenderableMesh								mRenderableMesh;		// The currently active renderable mesh, either set during init() or set by setMesh.
 	};
 }
