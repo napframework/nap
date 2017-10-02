@@ -7,7 +7,7 @@
 #include <nap/core.h>
 
 // predefines
-void runGame(nap::Core& core, nap::TestRunner* testRunner);
+void runGame(nap::Core& core, std::unique_ptr<nap::TestRunner>& testRunner);
 
 // Main loop
 int main(int argc, char *argv[])
@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 	// Create core
 	nap::Core core;
     
-    nap::TestRunner* testRunner = new nap::TestRunner();
+	std::unique_ptr<nap::TestRunner> testRunner = std::make_unique<nap::TestRunner>();
     
 	// Initialize render stuff
 	if (!testRunner->init(core))
@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-void runGame(nap::Core& core, nap::TestRunner* testRunner)
+void runGame(nap::Core& core, std::unique_ptr<nap::TestRunner>& testRunner)
 {
 	// Run function
 	bool loop = true;
@@ -84,7 +84,7 @@ void runGame(nap::Core& core, nap::TestRunner* testRunner)
 	testRunner->shutdown();
     
     // Delete TestRunner now so that its entities etc are cleaned up before ObjectPtrManager destruction
-    delete testRunner;
+    testRunner.reset();
 }
        
  
