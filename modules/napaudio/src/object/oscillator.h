@@ -22,6 +22,8 @@ namespace nap {
             std::vector<ControllerValue> mAmplitude = { 1.f };
             ObjectPtr<AudioObject> mFmInput;
             
+            Node* getNode(int channel);
+            
         private:
             std::unique_ptr<Node> createNode(int channel, NodeManager& nodeManager) override
             {

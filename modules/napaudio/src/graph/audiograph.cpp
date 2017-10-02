@@ -15,6 +15,9 @@ RTTI_BEGIN_CLASS(nap::audio::Graph)
     RTTI_PROPERTY("Output", &nap::audio::Graph::mOutput, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::GraphInstance)
+    RTTI_FUNCTION("getObject", &nap::audio::GraphInstance::getObject)
+RTTI_END_CLASS
 
 
 namespace nap {
@@ -82,6 +85,8 @@ namespace nap {
         
         bool GraphInstance::init(Graph& resource, utility::ErrorState& errorState)
         {
+            mResource = &resource;
+            
             // Build object graph as utility to sort all the audio object resources in dependency order
             std::vector<AudioObject*> objects;
             for (auto& object : resource.mObjects)
@@ -115,6 +120,20 @@ namespace nap {
             }
             
             return true;
+        }
+        
+        
+        AudioObjectInstance* GraphInstance::getObject(const std::string &mID)
+        {
+            auto it = std::find_if(mObjects.begin(), mObjects.end(), [mID](auto& object)
+            {
+                return object->getResource().mID == mID;
+            });
+            
+            if (it == mObjects.end())
+                return nullptr;
+            else
+                return it->get();
         }
         
     }

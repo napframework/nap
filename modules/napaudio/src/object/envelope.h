@@ -30,15 +30,25 @@ namespace nap {
         public:
             EnvelopeInstance(Envelope& resource) : AudioObjectInstance(resource) { }
             
-            virtual bool init(NodeManager& nodeManager, utility::ErrorState& errorState)
+            bool init(NodeManager& nodeManager, utility::ErrorState& errorState) override
             {
                 mEnvelopeGenerator = std::make_unique<EnvelopeGenerator>(nodeManager);
                 mEnvelopeGenerator->trigger(rtti_cast<Envelope>(&getResource())->mSegments);
                 return true;
+            }                        
+            
+            OutputPin& getOutputForChannel(int channel) override { return mEnvelopeGenerator->output; }
+            int getChannelCount() const override { return 1; }
+            
+            void trigger(TimeValue totalDuration = 0)
+            {
+                auto& envelope = rtti_cast<Envelope>(&getResource())->mSegments;
+                mEnvelopeGenerator->trigger(envelope, totalDuration);
             }
             
-            virtual OutputPin& getOutputForChannel(int channel) { return mEnvelopeGenerator->output; }
-            virtual int getChannelCount() const { return 1; }
+            void stop(TimeValue rampTime) { mEnvelopeGenerator->stop(rampTime); }
+            
+            nap::Signal<EnvelopeGenerator&>& getEnvelopeFinishedSignal() { return mEnvelopeGenerator->envelopeFinishedSignal; }
             
         private:
             std::unique_ptr<EnvelopeGenerator> mEnvelopeGenerator = nullptr;

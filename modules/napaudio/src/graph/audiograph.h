@@ -44,16 +44,25 @@ namespace nap {
         
         
         class NAPAPI GraphInstance {
+            RTTI_ENABLE()
         public:
             GraphInstance() = default;
             bool init(Graph& resource, utility::ErrorState& errorState);
             
+            Graph& getResource() { return *mResource; }
+            
             AudioObjectInstance& getOutput() { return *mOutput; }
             const AudioObjectInstance& getOutput() const { return *mOutput; }
+            
+            AudioObjectInstance* getObject(const std::string& mID);
+            
+        protected:
+            std::vector<std::unique_ptr<AudioObjectInstance>>& getObjects() { return mObjects; }
 
         private:
             std::vector<std::unique_ptr<AudioObjectInstance>> mObjects;
             AudioObjectInstance* mOutput = nullptr;
+            Graph* mResource = nullptr;
         };
         
         

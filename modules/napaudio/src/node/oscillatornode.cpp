@@ -2,11 +2,25 @@
 
 #include <math.h>
 
+// Rtti includes
+#include <rtti/rtti.h>
+
 // Audio includes
 #include <utility/audiofunctions.h>
 #include <node/audionodemanager.h>
 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::OscillatorNode)
+    RTTI_CONSTRUCTOR(nap::audio::NodeManager&, nap::audio::WaveTable&)
+    RTTI_FUNCTION("setFrequency", &nap::audio::OscillatorNode::setFrequency)
+    RTTI_FUNCTION("getFrequency", &nap::audio::OscillatorNode::getFrequency)
+    RTTI_FUNCTION("setAmplitude", &nap::audio::OscillatorNode::setAmplitude)
+    RTTI_FUNCTION("getAmplitude", &nap::audio::OscillatorNode::getAmplitude)
+    RTTI_FUNCTION("setPhaseOffset", &nap::audio::OscillatorNode::setPhaseOffset)
+    RTTI_FUNCTION("getPhaseOffset", &nap::audio::OscillatorNode::getPhaseOffset)
+RTTI_END_CLASS
+
 namespace nap {
+    
     namespace audio {
         
 // --- Wavetable --- //

@@ -4,6 +4,11 @@ RTTI_BEGIN_CLASS(nap::audio::Envelope)
     RTTI_PROPERTY("Envelope", &nap::audio::Envelope::mSegments, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::EnvelopeInstance)
+    RTTI_FUNCTION("trigger", &nap::audio::EnvelopeInstance::trigger)
+    RTTI_FUNCTION("stop", &nap::audio::EnvelopeInstance::stop)
+RTTI_END_CLASS
+
 namespace nap {
     
     namespace audio {

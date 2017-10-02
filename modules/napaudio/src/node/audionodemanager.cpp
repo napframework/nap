@@ -10,9 +10,6 @@ namespace nap {
 
         void NodeManager::process(float** inputBuffer, float** outputBuffer, unsigned long framesPerBuffer)
         {
-            // process tasks that are enqueued from outside the audio thread
-            mAudioCallbackTaskQueue.process();
-            
             // clean the output buffers
             for (auto channel = 0; channel < mOutputChannelCount; ++channel)
                 memset(outputBuffer[channel], 0, sizeof(float) * framesPerBuffer);
@@ -22,6 +19,9 @@ namespace nap {
             mInternalBufferOffset = 0;
             while (mInternalBufferOffset < framesPerBuffer)
             {
+                // process tasks that are enqueued from outside the audio thread
+                mAudioCallbackTaskQueue.process();
+                
                 for (auto& channelMapping : mOutputMapping)
                     channelMapping.clear();
                 

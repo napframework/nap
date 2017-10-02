@@ -10,7 +10,12 @@
 
 
 // RTTI
-RTTI_BEGIN_CLASS(nap::audio::AudioObject)
+RTTI_DEFINE_BASE(nap::audio::AudioObject)
+RTTI_DEFINE_BASE(nap::audio::AudioObjectInstance)
+RTTI_DEFINE_BASE(nap::audio::MultiChannelObject)
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::MultiChannelObjectInstance)
+    RTTI_FUNCTION("getNode", &nap::audio::MultiChannelObjectInstance::getNode)
 RTTI_END_CLASS
 
 
@@ -47,6 +52,16 @@ namespace nap {
             }
             return true;
         }
+
+        
+        Node* MultiChannelObjectInstance::getNode(int channel)
+        {
+            if (channel < mNodes.size())
+                return mNodes[channel].get();
+            else
+                return nullptr;
+        }
+
 
     
     }

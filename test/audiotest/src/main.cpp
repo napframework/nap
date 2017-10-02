@@ -16,6 +16,8 @@
 #include <utility/exponentialramper.h>
 #include <utility/translator.h>
 
+#include "test.h"
+
 nap::ResourceManagerService* resourceManagerService = nullptr;
 
 
@@ -54,29 +56,6 @@ bool init(nap::Core& core)
 int main(int argc, char *argv[])
 {
     
-//    auto stepCount = 10;
-//    float value = 0;
-//    nap::audio::LinearRamper<float> linearRamper(value);
-//    nap::audio::ExponentialRamper<float> exponentialRamper(value);
-//    nap::audio::EqualPowerTranslator<float> table(16);
-////    table.fill([](float x){ return x; });
-//
-//    linearRamper.ramp(1, stepCount);
-//    for (auto i = 0; i < stepCount; i++)
-//    {
-//        linearRamper.step();
-//        std::cout << " " << value << " " << table.translate(value) << std::endl;
-//    }
-//
-//    linearRamper.ramp(0, stepCount);
-//    for (auto i = 0; i < stepCount; i++)
-//    {
-//        linearRamper.step();
-//        std::cout << " " << value << " " << table.translate(value) << std::endl;
-//    }
-    
-    
-
     nap::Core core;
 
     if (!init(core))
@@ -86,6 +65,8 @@ int main(int argc, char *argv[])
     {
         resourceManagerService->checkForFileChanges();
         resourceManagerService->update();
+        int ns = 0.5 * 1000000;
+        std::this_thread::sleep_for(std::chrono::nanoseconds(ns));
     }
 
 //    std::cout << "Press return to quit" << std::endl;

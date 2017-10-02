@@ -4,6 +4,9 @@
 #include <functional>
 #include <set>
 
+// RTTI includes
+#include <rtti/rtti.h>
+
 // Audio includes
 #include <utility/audiotypes.h>
 #include <node/audiopin.h>
@@ -24,6 +27,8 @@ namespace nap {
          */
         class NAPAPI Node
         {
+            RTTI_ENABLE()
+            
             friend class NodeManager;
             friend class OutputPin;
             friend class InputPin;

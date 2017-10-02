@@ -1,5 +1,8 @@
 #pragma once
 
+// RTTI includes
+#include <rtti/rtti.h>
+
 // Audio includes
 #include <utility/linearramper.h>
 #include <utility/exponentialramper.h>
@@ -12,6 +15,8 @@ namespace nap {
     namespace audio {
         
         class NAPAPI ControlNode : public Node {
+            RTTI_ENABLE(Node)
+            
         public:
             enum class RampMode { LINEAR, EXPONENTIAL };
             

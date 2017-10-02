@@ -8,6 +8,7 @@ namespace nap {
     namespace audio {
         
         class NAPAPI EnvelopeGenerator : public ControlNode {
+            
         public:
             struct NAPAPI Segment
             {
@@ -23,6 +24,7 @@ namespace nap {
             
             void trigger(Envelope& envelope, TimeValue totalDuration = 0);
             void trigger(Envelope& envelope, int startSegment, int endSegment, ControllerValue startValue = 0, TimeValue totalDuration = 0);
+            void stop(TimeValue rampTime = 5);
             
             nap::Signal<EnvelopeGenerator&> envelopeFinishedSignal;
             

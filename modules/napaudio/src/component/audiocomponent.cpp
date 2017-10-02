@@ -10,8 +10,8 @@
 
 
 // RTTI
-RTTI_BEGIN_CLASS(nap::audio::AudioComponent)
-RTTI_END_CLASS
+RTTI_DEFINE_BASE(nap::audio::AudioComponent)
+RTTI_DEFINE_BASE(nap::audio::AudioComponentInstance)
 
 
 namespace nap {

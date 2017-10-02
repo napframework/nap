@@ -2,6 +2,7 @@
 
 // Std includes
 #include <set>
+#include <mutex>
 
 // Audio includes
 #include <utility/audiotypes.h>

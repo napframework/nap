@@ -3,6 +3,8 @@
 #include <graph/audiograph.h>
 #include <object/envelope.h>
 
+
+
 namespace nap {
     
     namespace audio {
@@ -23,16 +25,35 @@ namespace nap {
         
         class VoiceGraphInstance : public GraphInstance
         {
+            RTTI_ENABLE(GraphInstance)
+            
         public:
             bool init(VoiceGraph& resource, utility::ErrorState& errorState);
             
             EnvelopeInstance& getEnvelope() { return *mEnvelope; }
             const EnvelopeInstance& getEnvelope() const { return *mEnvelope; }
             
+            void setBusy(bool busy) { mBusy = busy; }
+            bool isBusy() const { return mBusy; }
+
+            void play(TimeValue duration = 0);
+            void stop(TimeValue rampTime = 0);
+            
+            DiscreteTimeValue getStartTime() const { return mStartTime; }
+            
+            nap::Signal<VoiceGraphInstance&> finishedSignal;
+            
         private:
+            void envelopeFinished(EnvelopeGenerator&);
+            
             EnvelopeInstance* mEnvelope = nullptr;
             bool mBusy = false;
+            DiscreteTimeValue mStartTime = 0;
         };
+        
+        
+        using VoiceGraphObjectCreator = rtti::ObjectCreator<VoiceGraph, NodeManager>;
+
         
     }
     

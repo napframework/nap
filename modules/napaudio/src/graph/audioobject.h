@@ -89,6 +89,8 @@ namespace nap {
             OutputPin& getOutputForChannel(int channel) override { return *(*mNodes[channel]->getOutputs().begin()); }
             int getChannelCount() const override { return mNodes.size(); }
             
+            Node* getNode(int channel);
+            
         private:
             std::vector<std::unique_ptr<Node>> mNodes;
         };

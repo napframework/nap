@@ -12,12 +12,10 @@ namespace nap {
     
     namespace audio {
         
-        
-        
         AudioDeviceService::AudioDeviceService() : mInterface(*this)
         {
         }
-        
+
         
         AudioDeviceService::~AudioDeviceService()
         {

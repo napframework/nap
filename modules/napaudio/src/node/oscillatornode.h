@@ -28,6 +28,8 @@ namespace nap
         
         class OscillatorNode : public Node
         {
+            RTTI_ENABLE(Node)
+            
         public:
             OscillatorNode(NodeManager& aManager, WaveTable& aWave);
             

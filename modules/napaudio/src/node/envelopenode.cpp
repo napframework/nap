@@ -1,5 +1,22 @@
 #include "envelopenode.h"
 
+// RTTI include
+#include <rtti/rtti.h>
+
+// RTTI
+RTTI_BEGIN_ENUM(nap::audio::ControlNode::RampMode)
+    RTTI_ENUM_VALUE(nap::audio::ControlNode::RampMode::LINEAR, "Linear"),
+    RTTI_ENUM_VALUE(nap::audio::ControlNode::RampMode::EXPONENTIAL, "Exponential")
+RTTI_END_ENUM
+
+RTTI_BEGIN_CLASS(nap::audio::EnvelopeGenerator::Segment)
+    RTTI_PROPERTY("Duration", &nap::audio::EnvelopeGenerator::Segment::duration, nap::rtti::EPropertyMetaData::Required)
+    RTTI_PROPERTY("Destination", &nap::audio::EnvelopeGenerator::Segment::destination, nap::rtti::EPropertyMetaData::Required)
+    RTTI_PROPERTY("DurationRelative", &nap::audio::EnvelopeGenerator::Segment::durationRelative, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("RampMode", &nap::audio::EnvelopeGenerator::Segment::mode, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
+
 namespace nap {
     
     namespace audio {
@@ -41,6 +58,13 @@ namespace nap {
         }
         
         
+        void EnvelopeGenerator::stop(TimeValue rampTime)
+        {
+            mCurrentSegment = mEndSegment;
+            ramp(0, rampTime);
+        }
+        
+        
         void EnvelopeGenerator::playSegment(int index)
         {
             assert(index < mEnvelope->size());
@@ -59,7 +83,8 @@ namespace nap {
             if (mCurrentSegment < mEndSegment)
                 playSegment(mCurrentSegment + 1);
             else {
-                envelopeFinishedSignal(*this);
+                if (getValue() == 0)
+                    envelopeFinishedSignal(*this);
             }
         }
 

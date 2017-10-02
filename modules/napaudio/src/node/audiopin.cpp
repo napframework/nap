@@ -81,18 +81,14 @@ namespace nap {
         void MultiInputPin::connect(OutputPin& input)
         {
             mInputs.emplace(&input);
+            input.mOutputs.emplace(this);
         }
 
         
         void MultiInputPin::disconnect(OutputPin& input)
         {
-            for (auto& aInput : mInputs)
-                if (aInput == &input)
-                {
-                    aInput->mOutputs.erase(this);
-                    mInputs.erase(aInput);
-                    break;
-                }
+            mInputs.erase(&input);
+            input.mOutputs.erase(this);
         }
         
         

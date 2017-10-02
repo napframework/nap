@@ -37,6 +37,8 @@ namespace nap
             // Initialize the component
             bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
             
+            AudioObjectInstance* getObject(const std::string& mID) { return mGraphInstance.getObject(mID); }
+            
         private:
             OutputPin& getOutputForChannel(int channel) override;
             int getChannelCount() const override;
