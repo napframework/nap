@@ -80,6 +80,7 @@ signals:
 private:
     void refresh();
     void onEntityAdded(nap::Entity* newEntity, nap::Entity* parent);
+    void onComponentAdded(nap::Component& comp, nap::Entity& owner);
     void onFileOpened(const QString& filename);
     void onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
 

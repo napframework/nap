@@ -31,9 +31,11 @@ public:
     const QString& currentFilename() { return mCurrentFilename; }
 
     nap::rtti::OwnedObjectList& loadedObjects() { return mObjects; }
+    nap::rtti::RTTIObject* getObject(const std::string& name);
 
     nap::Entity* getParent(const nap::Entity& entity);
-    nap::Entity* createEntity(nap::Entity* parent = nullptr);;
+    nap::Entity* createEntity(nap::Entity* parent = nullptr);
+    nap::Component* addComponent(nap::Entity& entity, rttr::type type);
 
 signals:
     void fileOpened(const QString& filename);
@@ -44,12 +46,12 @@ signals:
     // All data could have changed.
     void dataChanged();
     void entityAdded(nap::Entity* newEntity, nap::Entity* parent=nullptr);
-
+    void componentAdded(nap::Component& comp, nap::Entity& owner);
 private:
     AppContext();
+    std::string getUniqueName(const std::string& suggestedName);
 
-
-    nap::rtti::OwnedObjectList mObjects;
+    std::vector<std::unique_ptr<nap::rtti::RTTIObject>> mObjects;
     QString mCurrentFilename;
     nap::Core mCore;
 };

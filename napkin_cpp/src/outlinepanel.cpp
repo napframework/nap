@@ -81,6 +81,7 @@ OutlinePanel::OutlinePanel()
     mTreeView.setMenuHook(std::bind(&OutlinePanel::menuHook, this, std::placeholders::_1));
 //    connect(&AppContext::get(), &AppContext::dataChanged, this, &OutlinePanel::refresh);
     connect(&AppContext::get(), &AppContext::entityAdded, this, &OutlinePanel::onEntityAdded);
+    connect(&AppContext::get(), &AppContext::componentAdded, this, &OutlinePanel::onComponentAdded);
 }
 
 void OutlinePanel::menuHook(QMenu& menu)
@@ -91,17 +92,25 @@ void OutlinePanel::menuHook(QMenu& menu)
 
     auto objItem = dynamic_cast<ObjectItem*>(item);
     if (objItem != nullptr) {
+        auto entityItem = dynamic_cast<EntityItem*>(item);
         rttr::instance instance = objItem->object();
-        if (instance.get_derived_type().is_derived_from(RTTI_OF(nap::Entity))) {
+        if (entityItem != nullptr) {
             // Selected item is an Entity
+            menu.addAction(new AddEntityAction(&entityItem->entity()));
 
-            menu.addAction(new AddEntityAction(instance.try_convert<nap::Entity>()));
+            // Components
+
+            auto addComponentMenu = menu.addMenu("Add Component");
+            for (auto type : getComponentTypes()) {
+                addComponentMenu->addAction(new AddComponentAction(entityItem->entity(), type));
+            }
+
         }
     }
 
     auto groupItem = dynamic_cast<GroupItem*>(item);
     if (groupItem != nullptr) {
-        // No way to tell a resource/instance apart. Go refactor this and behold why this is here.
+        // FIXME: No way to tell a resource/instance apart. Go refactor this and behold why this is here.
         if (groupItem->text() == TXT_LABEL_ENTITIES) {
             menu.addAction(new AddEntityAction(nullptr));
         }
@@ -175,6 +184,13 @@ void OutlinePanel::onEntityAdded(nap::Entity* entity, nap::Entity* parent)
     mModel.refresh();
     mTreeView.tree().expandAll();
     mTreeView.selectAndReveal(findItem(*entity));
+}
+
+void OutlinePanel::onComponentAdded(nap::Component& comp, nap::Entity& owner)
+{
+    mModel.refresh();
+    mTreeView.tree().expandAll();
+    mTreeView.selectAndReveal(findItem(comp));
 }
 
 

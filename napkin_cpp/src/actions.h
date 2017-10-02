@@ -70,13 +70,13 @@ class AddComponentAction : public Action {
 public:
     AddComponentAction(nap::Entity& entity, nap::rtti::TypeInfo type) : Action(), mEntity(entity), mComponentType(type)
     {
-
+        setText(QString(type.get_name().data()));
     }
 
 private:
     void perform() override
     {
-
+        AppContext::get().addComponent(mEntity, mComponentType);
     }
 
 private:

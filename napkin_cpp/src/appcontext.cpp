@@ -128,7 +128,7 @@ nap::Entity* AppContext::getParent(const nap::Entity& child)
 nap::Entity* AppContext::createEntity(nap::Entity* parent)
 {
     auto e = std::make_unique<nap::Entity>();
-    e->mID = "New Entity";
+    e->mID = getUniqueName("New Entity");
     auto ret = e.get();
     mObjects.emplace_back(std::move(e));
 
@@ -140,6 +140,41 @@ nap::Entity* AppContext::createEntity(nap::Entity* parent)
 //    dataChanged();
 
     return ret;
+}
+
+nap::Component* AppContext::addComponent(nap::Entity& entity, rttr::type type)
+{
+    assert(type.can_create_instance());
+    assert(type.is_derived_from<nap::Component>());
+
+    auto compVariant = type.create();
+    auto comp = static_cast<nap::Component*>(compVariant.get_value<nap::Component*>());
+    comp->mID = getUniqueName(type.get_name().data());
+    mObjects.emplace_back(comp);
+    entity.mComponents.emplace_back(comp);
+
+    componentAdded(*comp, entity);
+
+    return comp;
+}
+
+std::string AppContext::getUniqueName(const std::string& suggestedName)
+{
+    std::string newName = suggestedName;
+    int i = 2;
+    while(getObject(newName))
+        newName = suggestedName + "_" + std::to_string(i++);
+    return newName;
+}
+
+nap::rtti::RTTIObject* AppContext::getObject(const std::string& name)
+{
+    auto it = std::find_if(mObjects.begin(), mObjects.end(), [&name](std::unique_ptr<nap::rtti::RTTIObject>& obj) {
+        return obj->mID == name;
+    });
+    if (it == mObjects.end())
+        return nullptr;
+    return it->get();
 }
 
 

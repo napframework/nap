@@ -71,3 +71,15 @@ static QModelIndex findItemInModel(const QAbstractItemModel& model, std::functio
     return foundIndex;
 }
 
+
+
+static std::vector<rttr::type> getComponentTypes()
+{
+    std::vector<rttr::type> ret;
+    nap::rtti::TypeInfo rootType = RTTI_OF(nap::Component);
+    for (const nap::rtti::TypeInfo& derived : rootType.get_derived_classes()) {
+        if (derived.can_create_instance())
+            ret.emplace_back(derived);
+    }
+    return ret;
+}
