@@ -1,8 +1,10 @@
 #include "filtertreeview.h"
 #include <QTimer>
 #include <QMenu>
+#include <assert.h>
 
-FilterTreeView::FilterTreeView() {
+FilterTreeView::FilterTreeView()
+{
     layout.setContentsMargins(0, 0, 0, 0);
     layout.setSpacing(0);
     setLayout(&layout);
@@ -23,12 +25,14 @@ FilterTreeView::FilterTreeView() {
     connect(this, &QWidget::customContextMenuRequested, this, &FilterTreeView::onCustomContextMenuRequested);
 }
 
-void FilterTreeView::setModel(QStandardItemModel* model) {
+void FilterTreeView::setModel(QStandardItemModel* model)
+{
     sortFilter.setSourceModel(model);
 }
 
-QStandardItemModel* FilterTreeView::model() const {
-    return dynamic_cast<QStandardItemModel *>(sortFilter.sourceModel());
+QStandardItemModel* FilterTreeView::model() const
+{
+    return dynamic_cast<QStandardItemModel*>(sortFilter.sourceModel());
 }
 
 void FilterTreeView::selectAndReveal(QStandardItem* item)
@@ -36,49 +40,59 @@ void FilterTreeView::selectAndReveal(QStandardItem* item)
     if (item == nullptr)
         return;
     auto idx = filterModel().mapFromSource(item->index());
-    tree().selectionModel()->select(idx, QItemSelectionModel::ClearAndSelect);
+    // We are going to select an entire row
+    auto topleft = idx;
+    auto botRight = filterModel().index(idx.row(), filterModel().columnCount(idx.parent())-1, idx.parent());
+    tree().selectionModel()->select(QItemSelection(idx, botRight), QItemSelectionModel::ClearAndSelect);
     tree().scrollTo(idx);
 }
 
 
-QStandardItem* FilterTreeView::selectedItem() {
+QStandardItem* FilterTreeView::selectedItem()
+{
     for (auto idx : selectedIndexes())
         return model()->itemFromIndex(idx);
     return nullptr;
 }
 
 
-QList<QStandardItem*> FilterTreeView::selectedItems() const {
-    QList<QStandardItem *> ret;
+QList<QStandardItem*> FilterTreeView::selectedItems() const
+{
+    QList<QStandardItem*> ret;
     for (auto idx : selectedIndexes())
         ret.append(model()->itemFromIndex(idx));
     return ret;
 }
 
-QList<QModelIndex> FilterTreeView::selectedIndexes() const {
+QList<QModelIndex> FilterTreeView::selectedIndexes() const
+{
     QList<QModelIndex> ret;
     for (auto idx : selectionModel()->selectedRows())
         ret.append(sortFilter.mapToSource(idx));
     return ret;
 }
 
-void FilterTreeView::onFilterChanged(const QString& text) {
+void FilterTreeView::onFilterChanged(const QString& text)
+{
     sortFilter.setFilterRegExp(text);
     treeView.expandAll();
 }
 
 
-void FilterTreeView::onExpandSelected() {
+void FilterTreeView::onExpandSelected()
+{
     for (auto& idx : selectedIndexes())
         expandChildren(&treeView, idx, true);
 }
 
-void FilterTreeView::onCollapseSelected() {
+void FilterTreeView::onCollapseSelected()
+{
     for (auto& idx : selectedIndexes())
         expandChildren(&treeView, idx, false);
 }
 
-void FilterTreeView::expandChildren(QTreeView* view, const QModelIndex& idx, bool expanded) {
+void FilterTreeView::expandChildren(QTreeView* view, const QModelIndex& idx, bool expanded)
+{
     if (!idx.isValid())
         return;
 
