@@ -30,7 +30,7 @@ public:
     const QString lastOpenedFilename();
     const QString& currentFilename() { return mCurrentFilename; }
 
-    nap::rtti::OwnedObjectList& loadedObjects() { return mObjects; }
+    nap::rtti::OwnedObjectList& objects() { return mObjects; }
     nap::rtti::RTTIObject* getObject(const std::string& name);
 
     nap::Entity* getParent(const nap::Entity& entity);

@@ -109,7 +109,7 @@ const QString AppContext::lastOpenedFilename()
 
 nap::Entity* AppContext::getParent(const nap::Entity& child)
 {
-    for (const auto& o : loadedObjects()) {
+    for (const auto& o : objects()) {
         if (!o->get_type().is_derived_from<nap::Entity>())
             continue;
 

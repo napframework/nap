@@ -41,7 +41,7 @@ void OutlineModel::refresh()
     appendRow(entitiesItem);
 
 
-    for (auto& ob : AppContext::get().loadedObjects()) {
+    for (auto& ob : AppContext::get().objects()) {
 
         auto typeItem = new TypeItem(ob->get_type());
 
