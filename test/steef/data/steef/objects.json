@@ -31,8 +31,8 @@
 		{
 			"Type" : "nap::Image",
 			"mID" : "CoverImage",
-			"mImagePath" : "data/steef/cover.png",
-			"mParameters" : {
+			"ImagePath" : "data/steef/cover.png",
+			"Parameters" : {
 				"MaxFilter" : "Linear",		
 				"MinFilter" : "LinearMipmapLinear",		
 				"WrapVertical" : "ClampToEdge",	
@@ -70,8 +70,8 @@
 		{
 			"Type" : "nap::Image",
 			"mID" : "GrooveNormalMap",
-			"mImagePath" : "data/steef/grooves.png",
-			"mParameters" : {
+			"ImagePath" : "data/steef/grooves.png",
+			"Parameters" : {
 				"MaxFilter" : "Linear",		
 				"MinFilter" : "LinearMipmapLinear",		
 				"WrapVertical" : "ClampToEdge",	
