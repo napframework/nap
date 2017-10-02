@@ -86,7 +86,6 @@ void updateShader()
 }
 
 
-
 // Called when the window is updating
 void onUpdate()
 {
@@ -118,10 +117,10 @@ void onUpdate()
 
 }
 
+
 // Called when the window is going to render
 void onRender()
 {
-
 	// Clear opengl context related resources that are not necessary any more
 	renderService->destroyGLContextResources({ renderWindow });
 
@@ -167,6 +166,7 @@ void handleWindowEvent(const nap::WindowEvent& windowEvent)
 		updateBackgroundImage();
 	}
 }
+
 
 /**
 * Initialize all the resources and instances used for drawing

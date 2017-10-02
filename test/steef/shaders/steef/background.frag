@@ -1,6 +1,4 @@
 #version 150 core
-
-in vec4 pass_Color;
 in vec3 pass_Uvs;
 
 out vec4 out_Color;

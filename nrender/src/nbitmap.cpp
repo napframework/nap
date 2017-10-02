@@ -107,6 +107,35 @@ namespace opengl
 	}
 
 
+	void* BitmapBase::getPixelData(unsigned int x, unsigned int y) const
+	{
+		if (!hasData())
+			return nullptr;
+
+		if (x >= mSettings.mWidth || y >= mSettings.mHeight)
+			return nullptr;
+
+		// Get size in bytes of data type
+		unsigned int data_size = static_cast<unsigned int>(getSizeOf(mSettings.mDataType));
+
+		// Get number of channels associated with this bitmap
+		unsigned int channel_count = static_cast<unsigned int>(getNumChannels(mSettings.mColorType));
+
+		// Get index in to array offset by number of channels (pixel level)
+		unsigned int offset = ((y * mSettings.mWidth) + x) * data_size * channel_count;
+
+		// Update offset (pixel * num_channels * data_size
+		unsigned char* data_ptr = (unsigned char*)(mData) + offset;
+		return (void*)(data_ptr);
+	}
+
+
+	unsigned int BitmapBase::getNumberOfChannels() const
+	{
+		return static_cast<unsigned int>(getNumChannels(mSettings.mColorType));
+	}
+
+
 	// If the bitmap settings are valid
 	bool BitmapSettings::isValid() const
 	{
