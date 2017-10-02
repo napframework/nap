@@ -85,3 +85,17 @@ private:
 };
 
 
+class DeleteObjectAction : public Action {
+public:
+    DeleteObjectAction(nap::rtti::RTTIObject& object) : Action(), mObject(object) {
+        setText("Delete");
+    }
+
+private:
+    void perform() override {
+        AppContext::get().deleteObject(mObject);
+    }
+
+private:
+    nap::rtti::RTTIObject& mObject;
+};

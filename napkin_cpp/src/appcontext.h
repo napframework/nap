@@ -34,8 +34,11 @@ public:
     nap::rtti::RTTIObject* getObject(const std::string& name);
 
     nap::Entity* getParent(const nap::Entity& entity);
+    nap::Entity* getOwner(const nap::Component& component);
     nap::Entity* createEntity(nap::Entity* parent = nullptr);
     nap::Component* addComponent(nap::Entity& entity, rttr::type type);
+
+    void deleteObject(nap::rtti::RTTIObject& object);
 
 signals:
     void fileOpened(const QString& filename);
@@ -47,6 +50,7 @@ signals:
     void dataChanged();
     void entityAdded(nap::Entity* newEntity, nap::Entity* parent=nullptr);
     void componentAdded(nap::Component& comp, nap::Entity& owner);
+    void objectRemoved(nap::rtti::RTTIObject& object);
 private:
     AppContext();
     std::string getUniqueName(const std::string& suggestedName);

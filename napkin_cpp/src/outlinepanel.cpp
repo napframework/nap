@@ -82,6 +82,7 @@ OutlinePanel::OutlinePanel()
 //    connect(&AppContext::get(), &AppContext::dataChanged, this, &OutlinePanel::refresh);
     connect(&AppContext::get(), &AppContext::entityAdded, this, &OutlinePanel::onEntityAdded);
     connect(&AppContext::get(), &AppContext::componentAdded, this, &OutlinePanel::onComponentAdded);
+    connect(&AppContext::get(), &AppContext::objectRemoved, this, &OutlinePanel::onObjectRemoved);
 }
 
 void OutlinePanel::menuHook(QMenu& menu)
@@ -106,6 +107,8 @@ void OutlinePanel::menuHook(QMenu& menu)
             }
 
         }
+
+        menu.addAction(new DeleteObjectAction(objItem->object()));
     }
 
     auto groupItem = dynamic_cast<GroupItem*>(item);
@@ -181,6 +184,7 @@ ObjectItem* OutlinePanel::findItem(const nap::rtti::RTTIObject& obj)
 
 void OutlinePanel::onEntityAdded(nap::Entity* entity, nap::Entity* parent)
 {
+    // TODO: Don't refresh the whole model
     mModel.refresh();
     mTreeView.tree().expandAll();
     mTreeView.selectAndReveal(findItem(*entity));
@@ -188,9 +192,17 @@ void OutlinePanel::onEntityAdded(nap::Entity* entity, nap::Entity* parent)
 
 void OutlinePanel::onComponentAdded(nap::Component& comp, nap::Entity& owner)
 {
+    // TODO: Don't refresh the whole model
     mModel.refresh();
     mTreeView.tree().expandAll();
     mTreeView.selectAndReveal(findItem(comp));
+}
+
+void OutlinePanel::onObjectRemoved(nap::rtti::RTTIObject& object)
+{
+    // TODO: Don't refresh the whole model
+    mModel.refresh();
+    mTreeView.tree().expandAll();
 }
 
 

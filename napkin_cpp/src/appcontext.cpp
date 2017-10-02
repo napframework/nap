@@ -114,12 +114,31 @@ nap::Entity* AppContext::getParent(const nap::Entity& child)
             continue;
 
         auto parent = dynamic_cast<nap::Entity*>(o.get());
-        auto it = std::find_if(parent->mChildren.begin(), parent->mChildren.end(), [&child](nap::ObjectPtr<nap::Entity> e) -> bool {
-            return &child == e.get();
-        });
+        auto it = std::find_if(parent->mChildren.begin(), parent->mChildren.end(),
+                               [&child](nap::ObjectPtr<nap::Entity> e) -> bool {
+                                   return &child == e.get();
+                               });
 
         if (it != parent->mChildren.end())
             return parent;
+    }
+    return nullptr;
+}
+
+nap::Entity* AppContext::getOwner(const nap::Component& component)
+{
+    for (const auto& o : objects()) {
+        if (!o->get_type().is_derived_from<nap::Entity>())
+            continue;
+
+        auto owner = dynamic_cast<nap::Entity*>(o.get());
+        auto it = std::find_if(owner->mComponents.begin(), owner->mComponents.end(),
+                               [&component](nap::ObjectPtr<nap::Component> comp) -> bool {
+                                   return &component == comp.get();
+                               });
+
+        if (it != owner->mComponents.end())
+            return owner;
     }
     return nullptr;
 }
@@ -137,8 +156,6 @@ nap::Entity* AppContext::createEntity(nap::Entity* parent)
     }
 
     entityAdded(ret, parent);
-//    dataChanged();
-
     return ret;
 }
 
@@ -162,7 +179,7 @@ std::string AppContext::getUniqueName(const std::string& suggestedName)
 {
     std::string newName = suggestedName;
     int i = 2;
-    while(getObject(newName))
+    while (getObject(newName))
         newName = suggestedName + "_" + std::to_string(i++);
     return newName;
 }
@@ -176,5 +193,26 @@ nap::rtti::RTTIObject* AppContext::getObject(const std::string& name)
         return nullptr;
     return it->get();
 }
+
+void AppContext::deleteObject(nap::rtti::RTTIObject& object)
+{
+    if (object.get_type().is_derived_from<nap::Entity>()) {
+        auto parent = getParent(dynamic_cast<nap::Entity&>(object));
+        if (parent)
+            parent->mChildren.erase(std::remove(parent->mChildren.begin(), parent->mChildren.end(), &object));
+    } else if (object.get_type().is_derived_from<nap::Component>()) {
+        auto owner = getOwner(dynamic_cast<nap::Component&>(object));
+        if (owner)
+            owner->mComponents.erase(std::remove(owner->mComponents.begin(), owner->mComponents.end(), &object));
+    }
+
+    mObjects.erase(std::remove_if(mObjects.begin(), mObjects.end(),
+                                  [&object](std::unique_ptr<nap::rtti::RTTIObject>& obj) {
+                                      return obj.get() == &object;
+                                  }), mObjects.end());
+
+    objectRemoved(object);
+}
+
 
 
