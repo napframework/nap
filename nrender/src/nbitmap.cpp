@@ -315,21 +315,18 @@ namespace opengl
 		if (dest_pitch == sourcePitch)
 		{
 			memcpy(mData, source, BitmapBase::getSize());
+			return true;
 		}
-		else
+
+		// If the pitch of the source & destination buffers are different, we need to copy the image data line by line (happens for weirdly-sized images)
+		uint8_t* source_line = (uint8_t*)source;
+		uint8_t* dest_line = (uint8_t*)mData;
+		for (int y = 0; y < height; ++y)
 		{
-			// If the pitch of the source & destination buffers are different, we need to copy the image data line by line (happens for weirdly-sized images)
-			uint8_t* source_line = (uint8_t*)source;
-			uint8_t* dest_line = (uint8_t*)mData;
-			for (int y = 0; y < height; ++y)
-			{
-				memcpy(dest_line, source_line, dest_pitch);
-
-				source_line += sourcePitch;
-				dest_line += dest_pitch;
-			}
+			memcpy(dest_line, source_line, dest_pitch);
+			source_line += sourcePitch;
+			dest_line += dest_pitch;
 		}
-
 		return true;
 	}
 }
