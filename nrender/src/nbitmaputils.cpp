@@ -148,25 +148,11 @@ namespace opengl
 			FreeImage_Unload(fi_bitmap);
 			return false;
 		}
-
-		// Create settings
-		opengl::BitmapSettings bitmap_settings;
-		bitmap_settings.mWidth = FreeImage_GetWidth(fi_bitmap);
-		bitmap_settings.mHeight = FreeImage_GetHeight(fi_bitmap);
-		bitmap_settings.mDataType = bitmap_type;
-		bitmap_settings.mColorType = bitmap_color;
-
-		// Clear existing bitmap data
-		bitmap.clear();
-
-		// Apply new settings
-		bitmap.setSettings(bitmap_settings);
-
-		// Copy free image data in our own bitmap container
-		uint8_t* fi_data = FreeImage_GetBits(fi_bitmap);
-		assert(fi_data != nullptr);
 		
-		bool success = bitmap.copyData(fi_data);
+		// Copy free image data in our own bitmap container
+		uint8_t* fi_data = FreeImage_GetBits(fi_bitmap);		
+		assert(fi_data != nullptr);		
+		bool success = bitmap.copyData(FreeImage_GetWidth(fi_bitmap), FreeImage_GetHeight(fi_bitmap), bitmap_type, bitmap_color, fi_data, FreeImage_GetPitch(fi_bitmap));
 		assert(success);
 
 		FreeImage_Unload(fi_bitmap);

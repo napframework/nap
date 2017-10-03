@@ -12,7 +12,7 @@ RTTI_END_ENUM
 RTTI_BEGIN_ENUM(nap::EWrapMode)
 	RTTI_ENUM_VALUE(nap::EWrapMode::Repeat,			"Repeat"),
 	RTTI_ENUM_VALUE(nap::EWrapMode::MirroredRepeat, "MirroredRepeat"),
-	RTTI_ENUM_VALUE(nap::EWrapMode::ClampToBorder,	"ClampToEdge"),
+	RTTI_ENUM_VALUE(nap::EWrapMode::ClampToEdge,	"ClampToEdge"),
 	RTTI_ENUM_VALUE(nap::EWrapMode::ClampToBorder,	"ClampToBorder")
 RTTI_END_ENUM
 

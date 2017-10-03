@@ -288,7 +288,7 @@ namespace opengl
 
 
 	// Copies data over in to this bitmap
-	bool Bitmap::copyData(unsigned int width, unsigned int height, BitmapDataType dataType, BitmapColorType colorType, void* source)
+	bool Bitmap::copyData(unsigned int width, unsigned int height, BitmapDataType dataType, BitmapColorType colorType, void* source, unsigned int sourcePitch)
 	{
 		BitmapSettings new_settings(width, height, dataType, colorType);
 		if (!new_settings.isValid())
@@ -300,7 +300,36 @@ namespace opengl
 		// Copy settings
 		mSettings = new_settings;
 
-		// Copy
-		return copyData(source);
+		// Clear associated data
+		if (BitmapBase::hasData())
+			clear();
+
+		// Allocate memory
+		allocateMemory();
+
+		// Determine destination pitch
+		unsigned int dest_pitch = width * getSizeOf(dataType) * getNumChannels(colorType);
+		assert(dest_pitch <= sourcePitch);
+
+		// If the dest & source pitches are the same, we can do a straight memcpy (most common/efficient case)
+		if (dest_pitch == sourcePitch)
+		{
+			memcpy(mData, source, BitmapBase::getSize());
+		}
+		else
+		{
+			// If the pitch of the source & destination buffers are different, we need to copy the image data line by line (happens for weirdly-sized images)
+			uint8_t* source_line = (uint8_t*)source;
+			uint8_t* dest_line = (uint8_t*)mData;
+			for (int y = 0; y < height; ++y)
+			{
+				memcpy(dest_line, source_line, dest_pitch);
+
+				source_line += sourcePitch;
+				dest_line += dest_pitch;
+			}
+		}
+
+		return true;
 	}
 }
