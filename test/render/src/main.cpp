@@ -65,7 +65,7 @@ nap::ObjectPtr<nap::EntityInstance>						splitCameraEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance>						defaultInputRouter = nullptr;
 
 // Some utilities
-void runGame(nap::Core& core);	
+void run(nap::Core& core);	
 
 namespace py = pybind11;
 
@@ -290,7 +290,6 @@ bool init(nap::Core& core)
 	// Set render states
 	nap::RenderState& render_state = renderService->getRenderState();
 	render_state.mEnableMultiSampling = true;
-	render_state.mLineWidth = 1.3f;
 	render_state.mPointSize = 2.0f;
 	render_state.mPolygonMode = opengl::PolygonMode::FILL;
 
@@ -308,12 +307,12 @@ int main(int argc, char *argv[])
 		return -1;
 
 	// Run Game
-	runGame(core);
+	run(core);
 
 	return 0;
 }
 
-void runGame(nap::Core& core)
+void run(nap::Core& core)
 {
 	// Run function
 	bool loop = true;
