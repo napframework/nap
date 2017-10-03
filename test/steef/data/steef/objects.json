@@ -463,7 +463,6 @@
 					"MaterialInstance" : {
 						"Material": "BackgroundMaterial",
 						"BlendMode": "Opaque",
-						"DepthMode" : "ReadOnly",
 						"Uniforms" : 
 						[
 							{
