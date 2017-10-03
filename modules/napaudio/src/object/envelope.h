@@ -48,6 +48,8 @@ namespace nap {
             
             void stop(TimeValue rampTime) { mEnvelopeGenerator->stop(rampTime); }
             
+            ControllerValue getValue() const { return mEnvelopeGenerator->getValue(); }
+            
             nap::Signal<EnvelopeGenerator&>& getEnvelopeFinishedSignal() { return mEnvelopeGenerator->envelopeFinishedSignal; }
             
         private:

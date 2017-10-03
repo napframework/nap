@@ -1,8 +1,9 @@
 #pragma once
 
+#include <atomic>
+
 #include <graph/audiograph.h>
 #include <object/envelope.h>
-
 
 
 namespace nap {
@@ -47,7 +48,7 @@ namespace nap {
             void envelopeFinished(EnvelopeGenerator&);
             
             EnvelopeInstance* mEnvelope = nullptr;
-            bool mBusy = false;
+            std::atomic<bool> mBusy = { false };
             DiscreteTimeValue mStartTime = 0;
         };
         

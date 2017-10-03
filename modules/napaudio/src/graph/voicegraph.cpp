@@ -38,7 +38,6 @@ namespace nap {
         
         void VoiceGraphInstance::play(TimeValue duration)
         {
-            auto resource = rtti_cast<VoiceGraph>(&getResource());
             mEnvelope->trigger(duration);
             mStartTime = getResource().getNodeManager().getSampleTime();
         }

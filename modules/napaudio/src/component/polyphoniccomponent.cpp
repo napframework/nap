@@ -45,6 +45,8 @@ namespace nap
         
         VoiceGraphInstance* PolyphonicComponentInstance::findFreeVoice()
         {
+            std::unique_lock<std::mutex> lock(getNodeManager().getProcessingMutex());
+            
             for (auto& voice : mVoices)
                 if (!voice->isBusy())
                 {
@@ -72,12 +74,15 @@ namespace nap
             if (!voice)
                 return;
             
+            std::unique_lock<std::mutex> lock(getNodeManager().getProcessingMutex());
+            
             voice->play();
             
-            getNodeManager().execute([&, voice](){
-                for (auto channel = 0; channel < std::min<int>(mMixNodes.size(), voice->getOutput().getChannelCount()); ++channel)
-                    mMixNodes[channel]->inputs.connect(voice->getOutput().getOutputForChannel(channel));
-            });
+            VoiceGraphInstance* voicePtr = voice;
+//            getNodeManager().execute([&, voicePtr](){
+                for (auto channel = 0; channel < std::min<int>(mMixNodes.size(), voicePtr->getOutput().getChannelCount()); ++channel)
+                    mMixNodes[channel]->inputs.connect(voicePtr->getOutput().getOutputForChannel(channel));
+//            });
         }
         
         
@@ -86,6 +91,7 @@ namespace nap
             if (!voice)
                 return;
             
+            std::unique_lock<std::mutex> lock(getNodeManager().getProcessingMutex());
             voice->stop();
         }
         
@@ -105,12 +111,14 @@ namespace nap
         
         void PolyphonicComponentInstance::voiceFinished(VoiceGraphInstance& voice)
         {
+//            std::unique_lock<std::mutex> lock(getNodeManager().getProcessingMutex());
             VoiceGraphInstance* voicePtr = &voice;
-            getNodeManager().execute([&, voicePtr](){
+//            getNodeManager().execute([&, voicePtr](){
+                assert(voicePtr->getEnvelope().getValue() == 0);
                 for (auto channel = 0; channel < std::min<int>(mMixNodes.size(), voicePtr->getOutput().getChannelCount()); ++channel)
                     mMixNodes[channel]->inputs.disconnect(voicePtr->getOutput().getOutputForChannel(channel));
                 voicePtr->setBusy(false);
-            });
+//            });
         }
 
 

@@ -27,6 +27,7 @@ namespace nap {
                 
                 {
                     std::unique_lock<std::mutex> lock(mProcessingMutex);
+                    
                     for (auto& root : mRootNodes)
                         root->process();
                 }

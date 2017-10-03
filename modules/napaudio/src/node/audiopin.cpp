@@ -72,8 +72,11 @@ namespace nap {
         std::vector<SampleBufferPtr> MultiInputPin::pull()
         {
             std::vector<SampleBufferPtr> result;
-            for (auto& input : mInputs)
+            
+            auto inputs = mInputs; // we make a copy of mInputs because its contents can be changed while traversing the loop!
+            for (auto& input : inputs)
                 result.emplace_back(input->pull());
+            
             return result;
         }
         
