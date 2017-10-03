@@ -46,7 +46,7 @@
 		{
 			"Type" : "nap::Image",
 			"mID" : "ColorLookupImage",
-			"mImagePath" : "data/etherdream/color_gradient.png"
+			"ImagePath" : "data/etherdream/color_gradient.png"
 		},
 
 		{

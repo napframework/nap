@@ -1,4 +1,4 @@
-#include "Rect.h"
+#include "rect.h"
 #include "mathutils.h"
 
 RTTI_BEGIN_CLASS(nap::math::Rect)

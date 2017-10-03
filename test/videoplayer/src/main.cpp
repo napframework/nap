@@ -27,7 +27,7 @@
 #include <video.h>
 #include "RenderableMeshComponent.h"
 #include "nap/logger.h"
-#include "memorytexture2d.h"
+#include "texture2d.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
