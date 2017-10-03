@@ -322,7 +322,7 @@ namespace nap
 		switch (index)
 		{
 		case 0:
-			mTraceComponent->mProperties.mLength = math::fit<float>(v, 0.0f, 1.0f,0.05f, 0.95f);
+			mTraceComponent->mProperties.mLength = math::fit<float>(v, 0.0f, 1.0f,0.05f, 1.0f);
 			break;
 		case 1:
 			mTraceComponent->mProperties.mSpeed = v;
