@@ -1,13 +1,13 @@
 // main.cpp : Defines the entry point for the console application.
 //
 // Local Includes
-#include "testrunner.h"
+#include "apprunner.h"
 
 // Nap includes
 #include <nap/core.h>
 
 // predefines
-void runGame(nap::Core& core, std::unique_ptr<nap::TestRunner>& testRunner);
+void run(nap::Core& core, std::unique_ptr<nap::AppRunner>& testRunner);
 
 // Main loop
 int main(int argc, char *argv[])
@@ -15,23 +15,23 @@ int main(int argc, char *argv[])
 	// Create core
 	nap::Core core;
     
-	std::unique_ptr<nap::TestRunner> testRunner = std::make_unique<nap::TestRunner>();
+	std::unique_ptr<nap::AppRunner> testRunner = std::make_unique<nap::AppRunner>();
     
 	// Initialize render stuff
 	if (!testRunner->init(core))
 		return -1;
 
 	// Run Gam
-	runGame(core, testRunner);
+	run(core, testRunner);
 
 	return 0;
 }
 
-void runGame(nap::Core& core, std::unique_ptr<nap::TestRunner>& testRunner)
+
+void run(nap::Core& core, std::unique_ptr<nap::AppRunner>& testRunner)
 {
 	// Run function
 	bool loop = true;
-
 
 	// Loop
 	while (loop)
@@ -58,9 +58,6 @@ void runGame(nap::Core& core, std::unique_ptr<nap::TestRunner>& testRunner)
 						fullscreen = !fullscreen;
 					}
 				}
-
-				// Add event to input service for further processing
-                testRunner->registerInputEvent(std::move(input_event));
 			}
 
 			// Check if we're dealing with a window event
@@ -74,10 +71,10 @@ void runGame(nap::Core& core, std::unique_ptr<nap::TestRunner>& testRunner)
 		//////////////////////////////////////////////////////////////////////////
 
 		// Update
-		testRunner->onUpdate();
+		testRunner->update();
 
 		// Render
-		testRunner->onRender();
+		testRunner->render();
 	}
     
     // Shutdown

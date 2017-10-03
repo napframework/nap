@@ -7,11 +7,15 @@ namespace nap
 	void RenderState::force()
 	{
 		opengl::enableMultiSampling(mEnableMultiSampling);
+		glAssert();
 		opengl::setLineWidth(mLineWidth);
-        glAssert(); // Catch attempts to set line width over system limit
+        glAssert(); 
 		opengl::setPointSize(mPointSize);
+		glAssert(); 
 		opengl::setPolygonMode(mPolygonMode);
+		glAssert(); 
 	}
+
 
 	// Switches all render states as set in @targetRenderState. Only the renderStates that are different
 	// will actually cause openGL calls.

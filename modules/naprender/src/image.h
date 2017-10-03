@@ -1,13 +1,13 @@
 #pragma once
 
 // Local Includes
-#include "texture.h"
+#include "basetexture2d.h"
 
 // External Includes
 #include <rtti/rttiobject.h>
 #include <utility/dllexport.h>
-#include <nimage.h>
 #include <glm/glm.hpp>
+#include <nbitmap.h>
 
 namespace nap
 {
@@ -16,9 +16,9 @@ namespace nap
 	 * An image holds both the cpu and gpu data associated
 	 * with a 2d image, resulting in a 2d texture (GPU) and bitmap data (CPU)
 	 */
-	class NAPAPI Image : public Texture
+	class NAPAPI Image : public BaseTexture2D
 	{
-		RTTI_ENABLE(Texture)
+		RTTI_ENABLE(BaseTexture2D)
 	public:
 		// Constructor
 		Image(const std::string& imgPath);
@@ -33,30 +33,15 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * @return opengl image + bitmap data
-		 * Note that this implicitly loads the image
-		 * Make sure that the image is loaded successfully
+		 * @return the bitmap associated with this image
 		 */
-		const opengl::Image& getImage() const;
-
-		/**
-		 * @return opengl texture object
-		 * Note that this implicitly loads the image
-		 */
-		virtual const opengl::BaseTexture& getTexture() const override;
-
-		/**
-		 * Get the size of the texture
-		 */
-		virtual const glm::vec2 getSize() const override;
+		const opengl::Bitmap& getBitmap() const							{ return mBitmap; }
 
 	public:
 		// Path to img on disk
 		std::string				mImagePath;
-
-	private:
-		// Opengl Image Object
-		std::unique_ptr<opengl::Image>	mImage = nullptr;
+		bool					mCompressed = false;
+		opengl::Bitmap			mBitmap;
 	};
 
 }

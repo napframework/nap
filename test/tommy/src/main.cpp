@@ -13,7 +13,6 @@
 #include <renderwindow.h>
 #include <transformcomponent.h>
 #include <orthocameracomponent.h>
-#include <rendertarget.h>
 #include "fractionlayoutcomponent.h"
 
 // Nap includes
@@ -49,7 +48,7 @@ nap::ObjectPtr<nap::EntityInstance> rootLayoutEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance>	uiInputRouter = nullptr;
 
 // Some utilities
-void runGame(nap::Core& core);	
+void run(nap::Core& core);	
 
 // Called when the window is updating
 void onUpdate()
@@ -230,13 +229,13 @@ int main(int argc, char *argv[])
 		return -1;
 
 	// Run Gam
-	runGame(core);
+	run(core);
 
 	return 0;
 }
 
 
-void runGame(nap::Core& core)
+void run(nap::Core& core)
 {
 	// Run function
 	bool loop = true;

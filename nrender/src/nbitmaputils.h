@@ -9,6 +9,14 @@
 #include <unordered_map>
 #include <FreeImage.h>
 
+namespace nap
+{
+	namespace utility
+	{
+		class ErrorState;
+	}
+}
+
 namespace opengl
 {
 	/**
@@ -34,7 +42,7 @@ namespace opengl
 	 * @return: a new bitmap, nullptr if unsuccessful
 	 * @param imgPath: full path to image to load
 	 */
-	Bitmap*			loadBitmap(const std::string& imgPath);
+	Bitmap*			loadBitmap(const std::string& imgPath, nap::utility::ErrorState& errorState);
 
 	/**
 	 * loadBitmap
@@ -45,7 +53,7 @@ namespace opengl
 	 * @param imgPath: full path to image to load
 	 * @return if the load was successful or not
 	 */
-	bool			loadBitmap(Bitmap& bitmap, const std::string& imgPath);
+	bool			loadBitmap(Bitmap& bitmap, const std::string& imgPath, nap::utility::ErrorState& errorState);
 }
 
 

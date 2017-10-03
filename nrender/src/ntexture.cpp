@@ -1,21 +1,31 @@
 // Local Includes
 #include "ntexture.h"
 #include "nglutils.h"
+#include "rtti/typeinfo.h"
 
 // External Includes
 #include <iostream>
 #include <unordered_set>
 #include <assert.h>
 
+RTTI_BEGIN_ENUM(opengl::ETextureUsage)
+	RTTI_ENUM_VALUE(opengl::ETextureUsage::Static,			"Static"),
+	RTTI_ENUM_VALUE(opengl::ETextureUsage::DynamicRead,		"DynamicRead"),
+	RTTI_ENUM_VALUE(opengl::ETextureUsage::DynamicWrite,	"DynamicWrite")
+RTTI_END_ENUM
+
 namespace opengl
 {
+
 	// Generates a texture on the GPU side
-	BaseTexture::BaseTexture()
+	Texture::Texture(GLenum inTargetType) :
+		mTargetType(inTargetType),
+		mTextureId(-1)
 	{}
 
 
 	// Remove texture
-	BaseTexture::~BaseTexture()
+	Texture::~Texture()
 	{
 		if (isAllocated())
 			glDeleteTextures(1, &mTextureId);
@@ -23,131 +33,86 @@ namespace opengl
 
 
 	//  uploads current parameters to GPU
-	void BaseTexture::init()
+	void Texture::init(const TextureParameters& parameters)
 	{
-		if (isAllocated())
-		{
-			printMessage(MessageType::WARNING, "texture already allocated");
-			printMessage(MessageType::WARNING, "old texture is invalidated");
-			glDeleteTextures(1, &mTextureId);
-		}
+		assert(!isAllocated());
 
 		// Generate textures
 		glGenTextures(1, &mTextureId);
 		glAssert();
 
 		// Upload texture parameters
-		updateParameters(mParameters);
+		mParameters = parameters;
+		setParameters(parameters);
 	}
 
-	void BaseTexture::setParameters(const opengl::TextureParameters& parameters)
+
+	void Texture::initPBO(GLuint& pbo, ETextureUsage usage, int textureSizeInBytes)
 	{
-		mParameters = parameters;
+		if (usage == ETextureUsage::DynamicWrite)
+		{
+			glGenBuffers(1, &pbo);
+			glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+			glBufferData(GL_PIXEL_UNPACK_BUFFER, textureSizeInBytes, NULL, GL_DYNAMIC_DRAW);
+			glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+		}
+		else if (usage == ETextureUsage::DynamicRead)
+		{
+			glGenBuffers(1, &pbo);
+			glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo);
+			glBufferData(GL_PIXEL_PACK_BUFFER, textureSizeInBytes, NULL, GL_DYNAMIC_READ);
+			glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+		}
 	}
+
 
 	// Binds the texture
-	bool BaseTexture::bind()
+	void Texture::bind()
 	{
-		if (!isAllocated())
-		{
-			printMessage(MessageType::ERROR, "unable to bind texture : texture is not allocated");
-			return false;
-		}
-		glBindTexture(getTargetType(), mTextureId);
-		return true;
+		assert(isAllocated());
+		glBindTexture(mTargetType, mTextureId);
 	}
 
 
 	// Detach the texture from the current Texture Unit
-	bool BaseTexture::unbind()
+	void Texture::unbind()
 	{
-		if (!isAllocated())
-		{
-			printMessage(MessageType::ERROR, "unable to unbind texture : texture is not allocated");
-			return false;
-		}
-		glBindTexture(getTargetType(), 0);
-		return true;
+		assert(isAllocated());
+		glBindTexture(mTargetType, 0);
 	}
 
 
 	// Updates settings associated with this GPU texture
-	void BaseTexture::updateParameters(const TextureParameters& settings)
+	void Texture::setParameters(const TextureParameters& parameters)
 	{
-		if (!bind())
-			return;
+		bind();
 
-		glTexParameteri(getTargetType(), GL_TEXTURE_MIN_FILTER, settings.minFilter);
-		glTexParameteri(getTargetType(), GL_TEXTURE_MAG_FILTER, settings.maxFilter);
-		glTexParameteri(getTargetType(), GL_TEXTURE_WRAP_S,		settings.wrapHorizontal);
-		glTexParameteri(getTargetType(), GL_TEXTURE_WRAP_T,		settings.wrapVertical);
-		glTexParameteri(getTargetType(), GL_TEXTURE_MAX_LEVEL,  settings.maxLodLevel);
+		glTexParameteri(mTargetType, GL_TEXTURE_MIN_FILTER, parameters.minFilter);
+		glTexParameteri(mTargetType, GL_TEXTURE_MAG_FILTER, parameters.maxFilter);
+		glTexParameteri(mTargetType, GL_TEXTURE_WRAP_S,		parameters.wrapHorizontal);
+		glTexParameteri(mTargetType, GL_TEXTURE_WRAP_T,		parameters.wrapVertical);
+		glTexParameteri(mTargetType, GL_TEXTURE_MAX_LEVEL,  parameters.maxLodLevel);
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		glPixelStorei(GL_PACK_ALIGNMENT, 1);
 
 		// Store settings
-		mParameters = settings;
+		mParameters = parameters;
 
 		// Unbind texture
 		unbind();
 	}
 
 
-	/**
-	 * setData
-	 * 
-	 * Binds the current texture to be the active texture object
-	 * Calls onSetData to actually upload data to GPU
-	 */
-	void BaseTexture::setData(void* data)
-	{
-		if (!bind())
-			return;
-		
-		// Upload texture specific data and generate mip maps
-		onSetData(data);
-		
-		// Unbind
-		unbind();
-
-		// Auto generate mip maps if data is valid and we're dealing with a mip mapable type
-		if(isMipMap(mParameters.minFilter) && data != nullptr)
-			generateMipMaps();
-	}
-
-
 	// Creates mip maps for the texture on the GPU
-	void BaseTexture::generateMipMaps()
+	void Texture::generateMipMaps()
 	{
-		if (!bind())
-			return;
+		bind();
 
 		// Generate and check for errors
-		glGenerateMipmap(getTargetType());
-
-		// Check if 
-		GLenum error_code = glGetError();
-		if (error_code != GL_NO_ERROR)
-			printMessage(MessageType::ERROR, "unable to generate mip-map for texture, unknown error");
+		glGenerateMipmap(mTargetType);
+		glAssert();
 
 		unbind();
 	}
 
-	/////////////////////////////////////////////////////////////////////////
-
-	/**
-	 * Uploads the 2D texture data to the GPU
-	 */
-	void Texture2D::onSetData(void* data)
-	{
-		// Upload texture data
-		glTexImage2D(getTargetType(),
-			0,
-			mSettings.internalFormat,
-			mSettings.width,
-			mSettings.height,
-			0,
-			mSettings.format,
-			mSettings.type ,
-			data);
-		glAssert();
-	}
 } // opengl

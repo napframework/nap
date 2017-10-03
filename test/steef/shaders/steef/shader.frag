@@ -1,10 +1,11 @@
 #version 150 core
 
 in vec3 pass_Uvs0;			// The global vinyl uvs
-in vec3 pass_Uvs1;			// The label uvs
 in vec3 pass_Normals;		// Normals
 in mat4 pass_ModelMatrix;	// Matrix
 in vec3 pass_Vert;			// The vertex position
+in vec3 pass_Tangent;		// The tangent
+in vec3 pass_Bitangent;		// The bitangent
 
 out vec4 out_Color;
 
@@ -27,16 +28,23 @@ void main(void)
 	float mask_color = texture(vinylMask, pass_Uvs0.xy).r;
 
 	// Label color
-	vec3 label_color = texture(vinylLabel, pass_Uvs1.xy).rgb;
+	vec3 label_color = texture(vinylLabel, pass_Uvs0.xy).rgb;
 	vec3 color = mix(recordColor.rgb, label_color.rgb, mask_color);
 
 	vec3 groove_color = texture(grooveNormalMap, pass_Uvs0.xy).rgb;
-	vec3 groove_normal_tangent_space = (groove_color *2.0 - 1.0) * grooveScale;
-	vec3 adjusted_vinyl_normal = pass_Normals + vec3(groove_normal_tangent_space.x,0.0, groove_normal_tangent_space.y);
+	vec3 groove_normal = (groove_color *2.0) - 1.0;
+	groove_normal.rg = groove_normal.rg * grooveScale;
 
-	//calculate normal in world coordinates
-    mat3 normal_matrix = transpose(inverse(mat3(pass_ModelMatrix)));
-    vec3 normal = normalize(normal_matrix * adjusted_vinyl_normal);
+	// Convert normals to world
+	vec3 normal_world = normalize(transpose(inverse(mat3(pass_ModelMatrix))) * pass_Normals);
+	vec3 tan_world = normalize(mat3(pass_ModelMatrix) * pass_Tangent);
+	vec3 bitan_world = cross(normal_world, tan_world) * 1.0;
+
+	// Get normal transform matrix
+	mat3 tbn_matrix = mat3(tan_world, bitan_world, normal_world);
+
+	// Get final normal
+    vec3 normal = normalize(tbn_matrix * groove_normal);
 
 	//calculate the location of this fragment (pixel) in world coordinates
     vec3 frag_position = vec3(pass_ModelMatrix * vec4(pass_Vert, 1));

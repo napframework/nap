@@ -1,0 +1,77 @@
+#pragma once
+
+#include "ntexture.h"
+
+namespace opengl
+{
+	/**
+	* Texture2Dsettings
+	*
+	* Data associated with a 2d texture
+	*/
+	struct Texture2DSettings
+	{
+	public:
+		GLint internalFormat = GL_RGB;		//< Specifies the number of color components in the texture
+		GLsizei width = 0;					//< Specifies the width of the texture
+		GLsizei height = 0;					//< Specifies the height of the texture
+		GLenum format = GL_BGR;				//< Specifies the format of the pixel data
+		GLenum type = GL_UNSIGNED_BYTE;		//< Data type of the pixel data (GL_UNSIGNED_BYTE etc..)
+	};
+
+	/**
+	 * Texture2D
+	 *
+	 * Represents a 2 dimensional texture on the GPU
+	 */
+	class Texture2D : public Texture
+	{
+	public:
+		// Default constructor
+		Texture2D();
+
+		void init(const Texture2DSettings& textureSettings, const TextureParameters& parameters, ETextureUsage usage);
+
+		/**
+		 * @return Texture2D settings object
+		 */
+		const Texture2DSettings& getSettings() const { return mSettings; }
+
+		/**
+		 * setData
+		 * 
+		 * Uploads 2d pixel data to the GPU
+		 * Make sure that the data the pointer points at matches the size of the texture settings provided!
+		 */
+		void setData(void* data);
+
+		/**
+		 * @return The size of the texture when copied to/from CPU.
+		 */
+		int getDataSize() const;
+
+		/**
+		 * Blocking call to retrieve GPU texture data. 
+		 * @param data Block of data that is filled with texture data. The vector is resized internally to the correct size.
+		 */
+		void getData(std::vector<uint8_t>& data);
+
+		/**
+		 * Starts a transfer of texture data from GPU to CPU. Use asyncEndGetData to block waiting for the async command to complete.
+		 * For performance, it is important to start a transfer as soon as possible after the texture is rendered. It is recommended
+		 * to use double or triple buffering to make sure that no stalls occur when calling asyncEndGetData().
+		 */
+		void asyncStartGetData();
+
+		/**
+		 * Finishes a transfer of texture data from GPU to CPU that was started with asyncStartGetData. See comment in asyncStartGetData for proper use.
+		 * @param data Block of data that is filled with texture data. The vector is resized internally to the correct size.
+		 */
+		void asyncEndGetData(std::vector<uint8_t>& data);
+
+	private:
+		Texture2DSettings	mSettings;		// Settings object
+		GLuint				mPBO;			// Pixel buffer object used to read/write texture data if usage is DynamicRead or DynamicWrite
+		ETextureUsage		mUsage;			// Usage of the texture
+	};
+} // opengl

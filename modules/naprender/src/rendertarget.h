@@ -1,20 +1,24 @@
 #pragma once
 
-// Local Includes
-#include "renderattributes.h"
-#include "image.h"
-
-// External Includes
+#include <rtti/rttiobject.h>
 #include <nap/objectptr.h>
-#include <nframebuffer.h>
+#include <glm/glm.hpp>
+#include <ntexturerendertarget2d.h>
+
+namespace opengl
+{
+	class RenderTarget;
+}
 
 namespace nap
 {
+	class BaseTexture2D;
+
 	/**
 	 * Frame buffer specialization of the render target resource
 	 * Wraps an opengl frame buffer (RGBA + DEPTH)
 	 */
-	class NAPAPI TextureRenderTarget2D : public rtti::RTTIObject
+	class NAPAPI RenderTarget : public rtti::RTTIObject
 	{
 		RTTI_ENABLE(rtti::RTTIObject)
 	public:
@@ -27,22 +31,22 @@ namespace nap
 		/**
 		* Sets color texture resource.
 		*/
-		void setColorTexture(MemoryTexture2D& colorTexture)			{ mColorTexture = &colorTexture; }
+		void setColorTexture(BaseTexture2D& colorTexture)				{ mColorTexture = &colorTexture; }
 
 		/**
 		* Sets depth texture resource
 		*/
-		void setDepthTexture(MemoryTexture2D& depthTexture)			{ mDepthTexture = &depthTexture; }
+		void setDepthTexture(BaseTexture2D& depthTexture)				{ mDepthTexture = &depthTexture; }
 
 		/**
 		* Returns color texture resource
 		*/
-		MemoryTexture2D& getColorTexture()							{ return *mColorTexture; }
+		BaseTexture2D& getColorTexture()								{ return *mColorTexture; }
 
 		/**
 		* Returns depth texture resource
 		*/
-		MemoryTexture2D& getDepthTexture()							{ return *mDepthTexture; }
+		BaseTexture2D& getDepthTexture()								{ return *mDepthTexture; }
 
 		/**
 		* @return opengl base frame buffer object
@@ -52,16 +56,12 @@ namespace nap
 
 	private:
 
-		// Framebuffer to draw to
-		opengl::TextureRenderTarget2D* mTextureRenderTarget = nullptr;
+		// Frame-buffer to draw to
+		std::unique_ptr<opengl::TextureRenderTarget2D> mTextureRenderTarget = nullptr;
 
 	public:
-		// Color texture to be used by the render target
-		nap::ObjectPtr<MemoryTexture2D> mColorTexture = nullptr;
-		
-		// Depth texture to be used by the render target
-		nap::ObjectPtr<MemoryTexture2D> mDepthTexture = nullptr;
-
-		glm::vec4 mClearColor;
+		nap::ObjectPtr<BaseTexture2D>	mColorTexture = nullptr;	// Color texture to be used by the render target
+		nap::ObjectPtr<BaseTexture2D>	mDepthTexture = nullptr;	// Depth texture to be used by the render target
+		glm::vec4						mClearColor;				// Color used when clearing the render target
 	};
 }

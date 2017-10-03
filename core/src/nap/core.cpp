@@ -34,8 +34,6 @@ namespace nap
 	{
 		// In order to ensure a correct order of destruction we want our entities, components, etc. to be deleted before other services are deleted.
 		// Because entities and components are managed and owned by the resource manager we explicitly delete this first.
-
-		// Find the resource manager service
 		auto type = RTTI_OF(ResourceManagerService);
 		const auto& resourceManagerService = std::find_if(mServices.begin(), mServices.end(), [&type](const auto& service)
 		{
@@ -43,8 +41,8 @@ namespace nap
 		});
 
 		// Erase it
-		if (resourceManagerService != mServices.end())
-			mServices.erase(resourceManagerService);
+		assert(resourceManagerService != mServices.end());
+		mServices.erase(resourceManagerService);
 	}
 	
     

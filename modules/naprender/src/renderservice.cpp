@@ -198,6 +198,7 @@ namespace nap
 		// responding to various changes in render target sizes.
 		camera.setRenderTargetSize(renderTarget.getSize());
 
+		// Make sure we update our render state associated with the current context
 		updateRenderState();
 
 		// Extract camera projection matrix
@@ -219,6 +220,14 @@ namespace nap
 	{
 		renderTarget.bind();
 		renderTarget.clear(flags);
+		renderTarget.unbind();
+	}
+
+
+	void RenderService::clearRenderTarget(opengl::RenderTarget& renderTarget)
+	{
+		renderTarget.bind();
+		renderTarget.clear(opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH | opengl::EClearFlags::STENCIL);
 		renderTarget.unbind();
 	}
 
