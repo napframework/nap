@@ -18,7 +18,6 @@
 #include <renderwindow.h>
 #include <transformcomponent.h>
 #include <orthocameracomponent.h>
-#include <rendertarget.h>
 
 // Nap includes
 #include <nap/core.h>
@@ -141,6 +140,7 @@ bool init(nap::Core& core)
 		nap::Logger::fatal(error.toString());
 		return false;
 	}
+
 
 	// Collects all the errors
 	nap::utility::ErrorState errorState;

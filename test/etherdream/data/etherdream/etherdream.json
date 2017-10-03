@@ -40,13 +40,13 @@
 		{
 			"Type" : "nap::Image",
 			"mID" : "CanvasImage",
-			"mImagePath" : "data/etherdream/laser_canvas.png"
+			"ImagePath" : "data/etherdream/laser_canvas.png"
 		},
 
 		{
 			"Type" : "nap::Image",
 			"mID" : "ColorLookupImage",
-			"mImagePath" : "data/etherdream/color_gradient.png"
+			"ImagePath" : "data/etherdream/color_gradient.png"
 		},
 
 		{

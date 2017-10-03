@@ -1,6 +1,6 @@
 #include "video.h"
 
-#include "ntexture.h"
+#include "texture2d.h"
 #include "image.h"
 
 // external includes
@@ -107,56 +107,56 @@ namespace nap
 		mHeight = mCodecContext->height;
 		mDuration = static_cast<double>(mFormatContext->duration / AV_TIME_BASE);
 
-		opengl::Texture2DSettings y_settings;
-		y_settings.format = GL_RED;
-		y_settings.internalFormat = GL_RED;
-		y_settings.width = mCodecContext->width;
-		y_settings.height = mCodecContext->height;
-
-		// The video is encoded in YUV format. The U and V texture are half the resolution of the Y texture
-		opengl::Texture2DSettings uv_settings = y_settings;
-		uv_settings.width *= 0.5f;
-		uv_settings.height *= 0.5f;
+		float yWidth = mCodecContext->width;
+		float yHeight = mCodecContext->height;
+		float uvWidth = mCodecContext->width * 0.5f;
+		float uvHeight = mCodecContext->height * 0.5f;
 
 		// YUV420p to RGB conversion uses an 'offset' value of (-0.0625, -0.5, -0.5) in the shader. 
 		// This means that initializing the YUV planes to zero does not actually result in black output.
 		// To fix this, we initialize the YUV planes to the negative of the offset
 		std::vector<uint8_t> y_default_data;
-		y_default_data.resize(y_settings.width * y_settings.height);
+		y_default_data.resize(yWidth * yHeight);
 		std::memset(y_default_data.data(), 16, y_default_data.size());
 
 		// Initialize UV planes
 		std::vector<uint8_t> uv_default_data;
-		uv_default_data.resize(uv_settings.width * uv_settings.height);
+		uv_default_data.resize(uvWidth * uvHeight);
 		std::memset(uv_default_data.data(), 127, uv_default_data.size());
 
 		// Disable mipmapping for video
-		opengl::TextureParameters parameters;
-		parameters.minFilter = GL_LINEAR;
-		parameters.maxFilter = GL_LINEAR;
+		nap::TextureParameters parameters;
+		parameters.mMinFilter = EFilterMode::Linear;
+		parameters.mMaxFilter = EFilterMode::Linear;
 
-		mYTexture = std::make_unique<MemoryTexture2D>();
-		mYTexture->mSettings = y_settings;
+		mYTexture = std::make_unique<Texture2D>();
+		mYTexture->mWidth = yWidth;
+		mYTexture->mHeight = yHeight;
+		mYTexture->mFormat = Texture2D::EFormat::R8;
+		mYTexture->mParameters = parameters;
 		if (!mYTexture->init(errorState))
 			return false;
 
-		mYTexture->getTexture().updateParameters(parameters);
 		mYTexture->getTexture().setData(y_default_data.data());
 
-		mUTexture = std::make_unique<MemoryTexture2D>();
-		mUTexture->mSettings = uv_settings;
+		mUTexture = std::make_unique<Texture2D>();
+		mUTexture->mWidth = uvWidth;
+		mUTexture->mHeight = uvHeight;
+		mUTexture->mFormat = Texture2D::EFormat::R8;
+		mUTexture->mParameters = parameters;
 		if (!mUTexture->init(errorState))
 			return false;
-
-		mUTexture->getTexture().updateParameters(parameters);
+				
 		mUTexture->getTexture().setData(uv_default_data.data());
 
-		mVTexture = std::make_unique<MemoryTexture2D>();
-		mVTexture->mSettings = uv_settings;
+		mVTexture = std::make_unique<Texture2D>();
+		mVTexture->mWidth = uvWidth;
+		mVTexture->mHeight = uvHeight;
+		mVTexture->mFormat = Texture2D::EFormat::R8;
+		mVTexture->mParameters = parameters;
 		if (!mVTexture->init(errorState))
 			return false;
 
-		mVTexture->getTexture().updateParameters(parameters);
 		mVTexture->getTexture().setData(uv_default_data.data());
 
 		return true;

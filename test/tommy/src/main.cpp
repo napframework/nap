@@ -13,7 +13,6 @@
 #include <renderwindow.h>
 #include <transformcomponent.h>
 #include <orthocameracomponent.h>
-#include <rendertarget.h>
 #include "fractionlayoutcomponent.h"
 
 // Nap includes

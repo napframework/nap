@@ -6,7 +6,7 @@
 #include <nanosvg.h>
 #include <utility/stringutils.h>
 #include <nap/configure.h>
-#include <rectangle.h>
+#include <rect.h>
 #include <limits>
 
 RTTI_BEGIN_ENUM(nap::ESVGUnits)
@@ -133,7 +133,7 @@ namespace nap
 		SVGState states;
 
 		// Rectangle that is used to compute final image bounds
-		math::Rectangle svg_rect(glm::vec2(math::max<float>(), math::max<float>()), glm::vec2(math::min<float>(), math::min<float>()));
+		math::Rect svg_rect(glm::vec2(math::max<float>(), math::max<float>()), glm::vec2(math::min<float>(), math::min<float>()));
 
 		// Extract all paths
 		NSVGshape* current_shape = new_image->shapes;
@@ -202,7 +202,7 @@ namespace nap
 	}
 
 
-	bool LineFromFile::extractLinesFromPaths(const SVGPaths& paths, const SVGState& states, const math::Rectangle& rect, utility::ErrorState& error)
+	bool LineFromFile::extractLinesFromPaths(const SVGPaths& paths, const SVGState& states, const math::Rect& rect, utility::ErrorState& error)
 	{
 		// Calculate rectangle ratio
 		glm::vec2 ratio(1.0f, 1.0f);

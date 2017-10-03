@@ -52,7 +52,7 @@ namespace nap
 		mLink = getComponent<LineColorComponent>()->mLink;
 
 		// Ensure the image is at least RGB
-		if (!(mLookupImage->getImage().getBitmap().getColorType() >=  opengl::BitmapColorType::RGB))
+		if (!(mLookupImage->getBitmap().getColorType() >=  opengl::BitmapColorType::RGB))
 			return errorState.check(false, "lookup image does not have 3 or more color channels");
 
 		return true;
@@ -65,7 +65,7 @@ namespace nap
 		nap::PolyLine& line = mBlendComponent->getLine();
 		nap::Vec4VertexAttribute& color_attr = line.getColorAttr();
 
-		const opengl::Bitmap& bitmap = mLookupImage->getImage().getBitmap();
+		const opengl::Bitmap& bitmap = mLookupImage->getBitmap();
 
 		// Convert start location to pixel coordinates
 		unsigned int bitmap_width  = bitmap.getWidth();
