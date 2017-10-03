@@ -1,12 +1,13 @@
 #pragma once
 
 // Local Includes
-#include "texture2d.h"
+#include "basetexture2d.h"
 
 // External Includes
 #include <rtti/rttiobject.h>
 #include <utility/dllexport.h>
 #include <glm/glm.hpp>
+#include <nbitmap.h>
 
 namespace nap
 {
@@ -15,9 +16,9 @@ namespace nap
 	 * An image holds both the cpu and gpu data associated
 	 * with a 2d image, resulting in a 2d texture (GPU) and bitmap data (CPU)
 	 */
-	class NAPAPI Image : public Texture2D
+	class NAPAPI Image : public BaseTexture2D
 	{
-		RTTI_ENABLE(Texture2D)
+		RTTI_ENABLE(BaseTexture2D)
 	public:
 		// Constructor
 		Image(const std::string& imgPath);
@@ -31,10 +32,16 @@ namespace nap
 		*/
 		virtual bool init(utility::ErrorState& errorState) override;
 
+		/**
+		 * @return the bitmap associated with this image
+		 */
+		const opengl::Bitmap& getBitmap() const							{ return mBitmap; }
+
 	public:
 		// Path to img on disk
 		std::string				mImagePath;
-		bool					mStoreCompressed = false;
+		bool					mCompressed = false;
+		opengl::Bitmap			mBitmap;
 	};
 
 }

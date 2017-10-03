@@ -193,6 +193,14 @@ namespace nap
 	}
 
 
+	void RenderService::clearRenderTarget(opengl::RenderTarget& renderTarget)
+	{
+		renderTarget.bind();
+		renderTarget.clear(opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH | opengl::EClearFlags::STENCIL);
+		renderTarget.unbind();
+	}
+
+
 	// Set the currently active renderer
 	bool RenderService::init(nap::utility::ErrorState& errorState)
 	{

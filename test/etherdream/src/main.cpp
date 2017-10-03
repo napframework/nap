@@ -141,6 +141,7 @@ bool init(nap::Core& core)
 		return false;
 	}
 
+
 	// Collects all the errors
 	nap::utility::ErrorState errorState;
 
