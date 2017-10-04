@@ -66,13 +66,14 @@ class OutlineModel : public QStandardItemModel {
 public:
     OutlineModel();
     void refresh();
+
+
 };
 
 class OutlinePanel : public QWidget {
 Q_OBJECT
 public:
     OutlinePanel();
-
 
 signals:
     void selectionChanged(QList<nap::rtti::RTTIObject*>& obj);

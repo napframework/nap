@@ -5,7 +5,7 @@
 #include "actions.h"
 #include "hierarchypanel.h"
 #include "appcontext.h"
-#include "proppanel.h"
+#include "inspectorpanel.h"
 
 class MainWindow : public BaseWindow {
     Q_OBJECT

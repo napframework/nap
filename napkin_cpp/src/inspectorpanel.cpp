@@ -1,7 +1,7 @@
 #include <QtWidgets/QApplication>
 #include <generic/utility.h>
 #include <generic/comboboxdelegate.h>
-#include "proppanel.h"
+#include "inspectorpanel.h"
 #include "typeconversion.h"
 #include "globals.h"
 
@@ -27,12 +27,12 @@ QList<QStandardItem*> createItemRow(rttr::type type, const QString& name,
             items << new TypeItem(type);
         } else {
             items << new PointerItem(name, object, path);
-            items << new PointerValueItem(object, path);
+            items << new PointerValueItem(object, path, type);
             items << new TypeItem(type);
         }
     } else if (nap::rtti::isPrimitive(type)) {
         items << new PropertyItem(name, object, path);
-        items << new PropertyValueItem(name, object, path);
+        items << new PropertyValueItem(name, object, path, type);
         items << new TypeItem(type);
     } else {
         items << new CompoundPropertyItem(name, object, path);
@@ -87,6 +87,8 @@ void InspectorModel::setObject(RTTIObject* object)
 InspectorModel::InspectorModel() : QStandardItemModel()
 {
     setHorizontalHeaderLabels({TXT_LABEL_NAME, TXT_LABEL_VALUE, TXT_LABEL_TYPE});
+
+
 }
 
 
@@ -97,7 +99,7 @@ InspectorPanel::InspectorPanel()
     mTreeView.setModel(&mModel);
     mTreeView.tree().setColumnWidth(0, 250);
     mTreeView.tree().setColumnWidth(1, 250);
-    mTreeView.tree().setItemDelegateForColumn(1, &mCustomDelegate);
+    mTreeView.tree().setItemDelegateForColumn(1, &mWidgetDelegate);
 }
 
 void InspectorPanel::setObject(RTTIObject* objects)
@@ -146,6 +148,18 @@ void InspectorModel::populateItems()
 
         appendRow(createItemRow(wrappedType, qName, mObject, path, prop, value));
     }
+}
+
+QVariant InspectorModel::data(const QModelIndex& index, int role) const
+{
+    if (role == Qt::UserRole) {
+        auto valueItem = dynamic_cast<PropertyValueItem*>(itemFromIndex(index));
+        if (valueItem) {
+            nap::Logger::info(valueItem->valueType().get_name().data());
+            return QVariant::fromValue(TypeWrapper(&valueItem->valueType()));
+        }
+    }
+    return QStandardItemModel::data(index, role);
 }
 
 void CompoundPropertyItem::populateChildren()

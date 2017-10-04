@@ -4,6 +4,7 @@
 
 #include "globals.h"
 #include "actions.h"
+#include "widgetdelegate.h"
 
 using namespace napkin;
 
