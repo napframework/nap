@@ -56,7 +56,7 @@ namespace nap
 			return;
 
 		// Set and trigger
-		mIndex = index;
+		mIndex = new_index;
 		mIndexChanged.trigger(*this);
 	}
 }

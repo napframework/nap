@@ -57,10 +57,11 @@ nap::ObjectPtr<nap::RenderWindow> renderWindow = nullptr;
 // Laser DAC
 nap::ObjectPtr<nap::EntityInstance> laserPrototype = nullptr;
 
+
 // Holds the normals mesh
 nap::ObjectPtr<nap::VisualizeNormalsMesh> normalsMesh = nullptr;
 
-//////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////
 
 // Some utilities
 void run(nap::Core& core);	
@@ -84,7 +85,7 @@ void onUpdate()
 	// Update all resources
 	resourceManagerService->update();
 
-	nap::utility::ErrorState error;
+	nap::utility::ErrorState error;	
 	normalsMesh->updateNormals(error, true);
 }
 
@@ -113,7 +114,6 @@ void onRender()
 	// Swap back buffer
 	renderWindow->swap();
 }
-
 
 
 /**
@@ -151,7 +151,6 @@ bool init(nap::Core& core)
 	// Create scene service
 	sceneService = core.getOrCreateService<nap::SceneService>();
 
-
 	// Create etherdream service
 	laserService = core.getOrCreateService<nap::EtherDreamService>();
 	if (!laserService->init(errorState))
@@ -174,6 +173,7 @@ bool init(nap::Core& core)
 		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
 		return false;        
 	}
+
 
 	// Store all render windows
 	renderWindow = resourceManagerService->findObject<nap::RenderWindow>("Window");

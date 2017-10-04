@@ -33,6 +33,10 @@ namespace nap
 		// Copy line
 		mTarget = getComponent<LineBlendComponent>()->mTarget.get();
 
+		// Cache current line attributes
+		cacheVertexAttributes(*mSelectorOne);
+		cacheVertexAttributes(*mSelectorTwo);
+
 		return true;
 	}
 
@@ -43,10 +47,10 @@ namespace nap
 		mCurrentTime += (deltaTime * mBlendSpeed);
 
 		// Prep value for sin
-		float b_value = (mBlendValue*M_PI) + mCurrentTime;
+		mCurrentBlendValue = (mBlendValue*M_PI) + mCurrentTime;
 
 		// Get normalized blend value starting from 0
-		b_value = (sin(b_value-(M_PI / 2))+1) / 2.0f;
+		mCurrentBlendValue = (sin(mCurrentBlendValue-(M_PI / 2))+1) / 2.0f;
 
 		nap::PolyLine& line_one = mSelectorOne->getLine();
 		nap::PolyLine& line_two = mSelectorTwo->getLine();
@@ -55,24 +59,18 @@ namespace nap
 		std::vector<glm::vec3>& nor_data = mTarget->getNormalAttr().getData();
 		std::vector<glm::vec3>& uvs_data = mTarget->getUvAttr().getData();
 
-		// Update distances when run for first time
-		if (mDistancesLineOne.empty())
-			cacheVertexAttributes(*mSelectorOne);
-		if (mDistancesLineTwo.empty())
-			cacheVertexAttributes(*mSelectorTwo);
-
 		int vertex_count = mTarget->getMeshInstance().getNumVertices();
 		assert(vertex_count > 1);
 		for (int i = 0; i < vertex_count; i++)
 		{
 			// Interpolate position
-			pos_data[i] = math::lerp<glm::vec3>(mPositionsLineOne[i], mPoistionsLineTwo[i], b_value);
+			pos_data[i] = math::lerp<glm::vec3>(mPositionsLineOne[i], mPoistionsLineTwo[i], mCurrentBlendValue);
 
 			// Interpolate normal
-			nor_data[i] = math::lerp<glm::vec3>(mNormalsLineOne[i], mNormalsLineTwo[i], b_value);
+			nor_data[i] = math::lerp<glm::vec3>(mNormalsLineOne[i], mNormalsLineTwo[i], mCurrentBlendValue);
 
 			// Interpolate uvs
-			uvs_data[i] = math::lerp<glm::vec3>(mUvsLineOne[i], mUVsLineTwo[i], b_value);
+			uvs_data[i] = math::lerp<glm::vec3>(mUvsLineOne[i], mUVsLineTwo[i], mCurrentBlendValue);
 		}
 
 		nap::utility::ErrorState error;
