@@ -176,7 +176,6 @@ bool init(nap::Core& core)
     
     glFlush();
 
-
 	// Store all render windows
 	renderWindow = resourceManagerService->findObject<nap::RenderWindow>("Window");
 

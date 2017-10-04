@@ -30,9 +30,24 @@ namespace nap
 	void getPixelColor(const opengl::Bitmap& bitmap, const glm::ivec2& pixelCoordinates, glm::vec3& color, float divider)
 	{
 		T* pixel_color = bitmap.getPixel<T>(pixelCoordinates.x, pixelCoordinates.y);
-		color.r = static_cast<float>(pixel_color[0]) / divider;
-		color.g = static_cast<float>(pixel_color[1]) / divider;
-		color.b = static_cast<float>(pixel_color[2]) / divider;
+		switch (bitmap.getColorType())
+		{
+		case opengl::BitmapColorType::RGB:
+		case opengl::BitmapColorType::RGBA:
+			color.r = static_cast<float>(pixel_color[0]) / divider;
+			color.g = static_cast<float>(pixel_color[1]) / divider;
+			color.b = static_cast<float>(pixel_color[2]) / divider;
+			break;
+		case opengl::BitmapColorType::BGR:
+		case opengl::BitmapColorType::BGRA:
+			color.r = static_cast<float>(pixel_color[2]) / divider;
+			color.g = static_cast<float>(pixel_color[1]) / divider;
+			color.b = static_cast<float>(pixel_color[0]) / divider;
+			break;
+		default:
+			assert(false);
+			break;
+		}
 	}
 
 

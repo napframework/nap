@@ -128,13 +128,12 @@ namespace nap
 	void OSCLaserInputHandlerInstance::updateColor(const OSCEvent& oscEvent, int position)
 	{
 		assert(oscEvent.getCount() == 2);
-		float pos_x = oscEvent[1].asFloat();
-		float pos_y = oscEvent[0].asFloat();
+		float pos_x = oscEvent[0].asFloat();
+		float pos_y = oscEvent[1].asFloat();
 
 		if (position == 0)
 		{
 			mColorComponent->setStartPosition(glm::vec2(pos_x, pos_y));
-			return;
 		}
 		else
 		{
@@ -221,8 +220,8 @@ namespace nap
 	void OSCLaserInputHandlerInstance::setPosition(const OSCEvent& event, const std::vector<std::string>& args)
 	{
 		assert(event.getCount() == 2);
-		float pos_x = event[1].asFloat();
-		float pos_y = event[0].asFloat();
+		float pos_x = event[0].asFloat();
+		float pos_y = event[1].asFloat();
 
 		float fru_x = mLaserOutput->mProperties.mFrustrum.x / 2.0f;
 		float fru_y = mLaserOutput->mProperties.mFrustrum.y / 2.0f;
