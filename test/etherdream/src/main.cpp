@@ -18,7 +18,6 @@
 #include <renderwindow.h>
 #include <transformcomponent.h>
 #include <orthocameracomponent.h>
-#include <rendertarget.h>
 
 // Nap includes
 #include <nap/core.h>
@@ -35,9 +34,10 @@
 #include <etherdreamdac.h>
 #include <perspcameracomponent.h>
 #include <mathutils.h>
-#include <oscsender.h>
 #include <renderablemeshcomponent.h>
 #include "lineselectioncomponent.h"
+#include <nanosvg.h>
+#include <visualizenormalsmesh.h>
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
@@ -57,13 +57,14 @@ nap::ObjectPtr<nap::RenderWindow> renderWindow = nullptr;
 // Laser DAC
 nap::ObjectPtr<nap::EntityInstance> laserPrototype = nullptr;
 
-// Holds the osc sender
-nap::ObjectPtr<nap::OSCSender> oscSender = nullptr;
 
-//////////////////////////////////////////////////////////////////////////
+// Holds the normals mesh
+nap::ObjectPtr<nap::VisualizeNormalsMesh> normalsMesh = nullptr;
+
+/////////////////////////////////////////////////////////////////////////
 
 // Some utilities
-void runGame(nap::Core& core);	
+void run(nap::Core& core);	
 
 // Called when the window is updating
 void onUpdate()
@@ -78,17 +79,14 @@ void onUpdate()
 	// Process all events for osc
 	oscService->update();
 
-	// Update all resources
-	resourceManagerService->update();
-
 	// Update the scene
 	sceneService->update();
 
+	// Update all resources
+	resourceManagerService->update();
 
-	// Send an osc message
-	nap::OSCEventPtr new_event = std::make_unique<nap::OSCEvent>("/color/1");
-	new_event->addValue<float>(1.0f);
-	//oscSender->send(*new_event);
+	nap::utility::ErrorState error;	
+	normalsMesh->updateNormals(error, true);
 }
 
 
@@ -115,18 +113,6 @@ void onRender()
 
 	// Swap back buffer
 	renderWindow->swap();
-
-	// Set the laser line to render
-	nap::RenderableMeshComponentInstance& line = spline_entity ->getComponent<nap::RenderableMeshComponentInstance>();
-	nap::TransformComponentInstance& xform = spline_entity->getComponent<nap::TransformComponentInstance>();
-
-	std::vector<nap::LaserOutputComponentInstance*> outputs;
-	laser_output_entity->getComponentsOfType<nap::LaserOutputComponentInstance>(outputs);
-	assert(line.getMesh().get_type().is_derived_from(RTTI_OF(nap::PolyLine)));
-	for (const auto& output : outputs)
-	{
-		output->setLine(static_cast<nap::PolyLine&>(line.getMesh()), xform.getGlobalTransform());
-	}
 }
 
 
@@ -181,13 +167,15 @@ bool init(nap::Core& core)
 		return false;
 	}
 
-
 	// Load scene
 	if (!resourceManagerService->loadFile("data/etherdream/etherdream.json", errorState))
 	{
 		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
 		return false;        
 	}
+    
+    glFlush();
+
 
 	// Store all render windows
 	renderWindow = resourceManagerService->findObject<nap::RenderWindow>("Window");
@@ -195,19 +183,18 @@ bool init(nap::Core& core)
 	// Store laser dacs
 	laserPrototype = resourceManagerService->findEntity("LaserPrototypeEntity");
 
-	// Store sender
-	oscSender = resourceManagerService->findObject<nap::OSCSender>("OscSender");
+	// Store normals mesh
+	normalsMesh = resourceManagerService->findObject<nap::VisualizeNormalsMesh>("NormalsMesh");
 
 	// Set render states
 	nap::RenderState& render_state = renderService->getRenderState();
 	render_state.mEnableMultiSampling = true;
-	render_state.mLineWidth = 1.3f;
 	render_state.mPointSize = 2.0f;
 	render_state.mPolygonMode = opengl::PolygonMode::FILL;
 
-
 	return true;
 }
+
 
 // Main loop
 int main(int argc, char *argv[])
@@ -220,11 +207,11 @@ int main(int argc, char *argv[])
 		return -1;
 
 	// Run Gam
-	runGame(core);
+	run(core);
 	return 0;
 }
 
-void runGame(nap::Core& core)
+void run(nap::Core& core)
 {
 	// Run function
 	bool loop = true;

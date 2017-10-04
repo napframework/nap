@@ -37,6 +37,7 @@ namespace nap
 	// ObjectPtr based mesh properties, used in serializable Mesh format (json/binary)
 	using RTTIMeshProperties = MeshProperties<ObjectPtr<BaseVertexAttribute>>;
 
+
 	/**
 	 * Represents a runtime version of a mesh. MeshInstance holds CPU data and can convert this data to 
 	 * an opengl::GPUMesh. 
@@ -66,7 +67,9 @@ namespace nap
 		struct VertexAttributeIDs
 		{
 			static const NAPAPI VertexAttributeID GetPositionName();	//< Default position vertex attribute name
-			static const NAPAPI VertexAttributeID getNormalName();	//< Default normal vertex attribute name
+			static const NAPAPI VertexAttributeID getNormalName();		//< Default normal vertex attribute name
+			static const NAPAPI VertexAttributeID getTangentName();		//< Default tangent vertex attribute name
+			static const NAPAPI VertexAttributeID getBitangentName();	//< Default bi-tangent vertex attribute name
 
 			/**
 			 * Returns the name of the vertex uv attribute based on the queried uv channel
@@ -115,14 +118,15 @@ namespace nap
 		 * @return Type safe vertex attribute if found, nullptr if not found or if there was a type mismatch.
 		 */
 		template<typename T>
-		VertexAttribute<T>* FindAttribute(const std::string& id)
-		{
-			for (auto& attribute : mProperties.mAttributes)
-				if (attribute->mAttributeID == id)
-					return rtti_cast<VertexAttribute<T>>(attribute.get());
+		VertexAttribute<T>* FindAttribute(const std::string& id);
 
-			return nullptr;
-		}
+		/**
+		* Finds vertex attribute.
+		* @param id The name of the vertex attribute. For predefined vertex attributions like position, color etc, use the various MeshInstance::VertexAttributeIDs.
+		* @return Type safe vertex attribute if found, nullptr if not found or if there was a type mismatch.
+		*/
+		template<typename T>
+		const VertexAttribute<T>* FindAttribute(const std::string& id) const;
 
 		/**
 		 * Gets vertex attribute.
@@ -130,12 +134,15 @@ namespace nap
 		 * @return Type safe vertex attribute. If not found or in case there is a type mismatch, the function asserts.
 		 */
 		template<typename T>
-		VertexAttribute<T>& GetAttribute(const std::string& id)
-		{
-			VertexAttribute<T>* attribute = FindAttribute<T>(id);
-			assert(attribute != nullptr);
-			return *attribute;
-		}
+		VertexAttribute<T>& GetAttribute(const std::string& id);
+
+		/**
+		* Gets vertex attribute.
+		* @param id The name of the vertex attribute. For predefined vertex attributions like position, color etc, use the various MeshInstance::VertexAttributeIDs.
+		* @return Type safe vertex attribute. If not found or in case there is a type mismatch, the function asserts.
+		*/
+		template<typename T>
+		const VertexAttribute<T>& GetAttribute(const std::string& id) const;
 
 		/**
 		 * Gets a vertex attribute or creates it if it does not exist. In case the attribute did exist, but with a different type, the function asserts.
@@ -143,38 +150,20 @@ namespace nap
 		 * @return Type safe vertex attribute. 
 		 */
 		template<typename T>
-		VertexAttribute<T>& GetOrCreateAttribute(const std::string& id)
-		{
-			for (auto& attribute : mProperties.mAttributes)
-			{
-				if (attribute->mAttributeID == id)
-				{
-					VertexAttribute<T>* result = rtti_cast<VertexAttribute<T>>(attribute.get());
-					assert(result != nullptr); // Attribute found, but has wrong type!
-					return *result;
-				}
-			}
-
-			std::unique_ptr<VertexAttribute<T>> new_attribute = std::make_unique<VertexAttribute<T>>();
-			new_attribute->mAttributeID = id;
-			VertexAttribute<T>* result = new_attribute.get();
-			mProperties.mAttributes.emplace_back(std::move(new_attribute));
-
-			return *result;
-		}
+		VertexAttribute<T>& GetOrCreateAttribute(const std::string& id);
 
 		/**
 		 * Reserves index CPU memory.
 		 * @param numIndices Amount of indices to reserve.
 		 */
-		void ReserveIndices(size_t numIndices)	{ mProperties.mIndices.reserve(numIndices); }
+		void ReserveIndices(size_t numIndices)									{ mProperties.mIndices.reserve(numIndices); }
 
 		/**
 		 * Adds a single index to the index CPU buffer. Use setIndices to add an entire list of indices.
 		 * Call either before init() or call update() to reflect the changes in the GPU buffer.
 		 * @param index Index to add.
 		 */
-		void AddIndex(int index) { mProperties.mIndices.push_back(index); }
+		void AddIndex(int index)												{ mProperties.mIndices.push_back(index); }
 
 		/**
 		 * Adds a list of indices to the index CPU buffer.
@@ -182,35 +171,30 @@ namespace nap
 		 * @param indices: array of indices to add.
 		 * @param numIndices: number of indices in @indices.
 		 */
-		void setIndices(uint32_t* indices, int numIndices)
-		{
-			mProperties.mIndices.resize(numIndices);
-			std::memcpy(mProperties.mIndices.data(), indices, numIndices * sizeof(uint32_t));
-		}
+		void setIndices(uint32_t* indices, int numIndices);
 
 		/**
 		 * Sets number of vertices. The amount of elements for each vertex buffer should be equal to
 		 * the amount of vertices in the mesh.
 		 * @param numVertices: amount of vertices in the mesh.
 		 */
-		void setNumVertices(int numVertices)			{ mProperties.mNumVertices = numVertices; }
+		void setNumVertices(int numVertices)									{ mProperties.mNumVertices = numVertices; }
+
+		/**
+		 * @return the total number of vertices associated with this mesh
+		 */
+		int getNumVertices() const												{ return mProperties.mNumVertices; }
 
 		/**
 		 * Sets Draw mode for this mesh
 		 * @param drawMode: OpenGL draw mode.
 		 */
-		int getNumVertices() const						{ return mProperties.mNumVertices; }
-
-		/**
-		 * Sets Draw mode for this mesh
-		 * @param drawMode: OpenGL draw mode.
-		 */
-		void setDrawMode(opengl::EDrawMode drawMode)	{ mProperties.mDrawMode = drawMode; }
+		void setDrawMode(opengl::EDrawMode drawMode)							{ mProperties.mDrawMode = drawMode; }
 
 		/**
 		 * @return Draw mode for this mesh.
 		 */
-		opengl::EDrawMode getDrawMode() const			{ return mProperties.mDrawMode; }
+		opengl::EDrawMode getDrawMode() const									{ return mProperties.mDrawMode; }
 
 		/**
 		 * Uses the CPU mesh data to update the GPU mesh. Note that update() is called during init(),
@@ -282,14 +266,7 @@ namespace nap
 		 * @return Type safe vertex attribute if found, nullptr if not found or if there was a type mismatch.
 		 */
 		template<typename T>
-		const VertexAttribute<T>* FindAttribute(const std::string& id) const
-		{
-			for (auto& attribute : mProperties.mAttributes)
-				if (attribute->mAttributeID == id)
-					return static_cast<VertexAttribute<T>*>(attribute.get());
-
-			return nullptr;
-		}
+		const VertexAttribute<T>* FindAttribute(const std::string& id) const;
 
 		/**
 		 * Gets vertex attribute.
@@ -309,6 +286,79 @@ namespace nap
 	private:
 		MeshInstance		mMeshInstance;		///< Runtime mesh instance
 	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Template definitions
+	//////////////////////////////////////////////////////////////////////////
+
+	template<typename T>
+	nap::VertexAttribute<T>* nap::MeshInstance::FindAttribute(const std::string& id)
+	{
+		for (auto& attribute : mProperties.mAttributes)
+			if (attribute->mAttributeID == id)
+				return rtti_cast<VertexAttribute<T>>(attribute.get());
+		return nullptr;
+	}
+
+	template<typename T>
+	const VertexAttribute<T>* nap::MeshInstance::FindAttribute(const std::string& id) const
+	{
+		for (auto& attribute : mProperties.mAttributes)
+			if (attribute->mAttributeID == id)
+			{
+				assert(attribute->get_type().is_derived_from(RTTI_OF(VertexAttribute<T>)));
+				return static_cast<VertexAttribute<T>*>(attribute.get());
+			}
+		return nullptr;
+	}
+
+	template<typename T>
+	nap::VertexAttribute<T>& nap::MeshInstance::GetAttribute(const std::string& id)
+	{
+		VertexAttribute<T>* attribute = FindAttribute<T>(id);
+		assert(attribute != nullptr);
+		return *attribute;
+	}
+
+	template<typename T>
+	const VertexAttribute<T>& nap::MeshInstance::GetAttribute(const std::string& id) const
+	{
+		const VertexAttribute<T>* attribute = FindAttribute<T>(id);
+		assert(attribute != nullptr);
+		return *attribute;
+	}
+
+	template<typename T>
+	nap::VertexAttribute<T>& nap::MeshInstance::GetOrCreateAttribute(const std::string& id)
+	{
+		for (auto& attribute : mProperties.mAttributes)
+		{
+			if (attribute->mAttributeID == id)
+			{
+				VertexAttribute<T>* result = rtti_cast<VertexAttribute<T>>(attribute.get());
+				assert(result != nullptr); // Attribute found, but has wrong type!
+				return *result;
+			}
+		}
+
+		std::unique_ptr<VertexAttribute<T>> new_attribute = std::make_unique<VertexAttribute<T>>();
+		new_attribute->mAttributeID = id;
+		VertexAttribute<T>* result = new_attribute.get();
+		mProperties.mAttributes.emplace_back(std::move(new_attribute));
+
+		return *result;
+	}
+
+	template<typename T>
+	const VertexAttribute<T>* nap::Mesh::FindAttribute(const std::string& id) const
+	{
+		for (auto& attribute : mProperties.mAttributes)
+			if (attribute->mAttributeID == id)
+				return static_cast<VertexAttribute<T>*>(attribute.get());
+
+		return nullptr;
+	}
 
 } // nap
 

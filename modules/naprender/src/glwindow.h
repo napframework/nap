@@ -1,6 +1,6 @@
 #pragma once
 
-#include "nframebuffer.h"
+#include "nbackbufferrendertarget.h"
 #include <rtti/rtti.h>
 
 // External Includes

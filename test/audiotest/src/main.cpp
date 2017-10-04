@@ -34,7 +34,7 @@ bool init(nap::Core& core)
     
     auto audioService = core.getOrCreateService<nap::audio::AudioDeviceService>();
     if (!audioService->init(errorState))
-    {
+    { 
         nap::Logger::fatal(errorState.toString());
         return false;
     }

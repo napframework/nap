@@ -35,7 +35,7 @@ namespace nap
 		/**
 		 * Destructor
 		 */
-        virtual ~Core();
+		virtual ~Core();
 
 		/**
 		* @return number of elapsed time in milliseconds after

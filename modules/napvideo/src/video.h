@@ -20,7 +20,7 @@ namespace opengl
 
 namespace nap
 {
-	class MemoryTexture2D;
+	class Texture2D;
 
 	/**
 	 * Video playback.
@@ -84,19 +84,19 @@ namespace nap
 		 * @return The Y texture as it is updated by update(). Initially, the texture is not initialized
 		 * to zero, but to the 'black' equivalent in YUV space. The size of the Y texture is width * height.
 		 */
-		MemoryTexture2D& getYTexture()			{ return *mYTexture; }
+		Texture2D& getYTexture()			{ return *mYTexture; }
 
 		/**
 		 * @return The U texture as it is updated by update(). Initially, the texture is not initialized
 		 * to zero, but to the 'black' equivalent in YUV space. The size of the Y texture is HALF the width * height.
 		 */
-		MemoryTexture2D& getUTexture()			{ return *mUTexture; }
+		Texture2D& getUTexture()			{ return *mUTexture; }
 
 		/**
 		 * @return The V texture as it is updated by update(). Initially, the texture is not initialized
 		 * to zero, but to the 'black' equivalent in YUV space. The size of the V texture is HALF the width * height.
 		 */
-		MemoryTexture2D& getVTexture()			{ return *mVTexture; }
+		Texture2D& getVTexture()			{ return *mVTexture; }
 
 		/**
 		 * @return Width of the video, in pixels.
@@ -152,9 +152,9 @@ namespace nap
 	private:
 		static const double		sVideoMax;
 
-		std::unique_ptr<MemoryTexture2D> mYTexture;
-		std::unique_ptr<MemoryTexture2D> mUTexture;
-		std::unique_ptr<MemoryTexture2D> mVTexture;
+		std::unique_ptr<Texture2D> mYTexture;
+		std::unique_ptr<Texture2D> mUTexture;
+		std::unique_ptr<Texture2D> mVTexture;
 
 		AVCodec*				mCodec = nullptr;
 		AVCodecContext*			mCodecContext = nullptr;

@@ -1,6 +1,9 @@
 #pragma once
 
 #include "mesh.h"
+#include <mathutils.h>
+#include <lineutils.h>
+#include <unordered_map>
 
 namespace nap
 {
@@ -9,7 +12,6 @@ namespace nap
 	 */
 	struct PolyLineProperties
 	{
-		int mVertices = 10;								// Total number of vertices that make up the line
 		glm::vec4 mColor = { 1.0f, 1.0f, 1.0f,1.0f };	// Color of the line
 	};
 
@@ -34,11 +36,11 @@ namespace nap
 		 *	@return the mesh associated with this poly line
 		 */
 		virtual MeshInstance& getMeshInstance() override						{ return *mMeshInstance; }
-		
+
 		/**
 		 *	@return const reference to the mesh associated with this poly line
 		 */
-		virtual const MeshInstance&	getMeshInstance() const override			{ return *mMeshInstance; }
+		virtual const MeshInstance&	getMeshInstance() const override 			{ return *mMeshInstance; }
 
 		/**
 		 *	@return the position vertex data
@@ -46,19 +48,86 @@ namespace nap
 		Vec3VertexAttribute& getPositionAttr();
 		
 		/**
+		*	@return the position vertex data
+		*/
+		const Vec3VertexAttribute& getPositionAttr() const;
+
+		/**
 		 *	@return the color vertex data
 		 */
 		Vec4VertexAttribute& getColorAttr();
+
+		/**
+		*	@return the color vertex data
+		*/
+		const Vec4VertexAttribute& getColorAttr() const;
 		
 		/**
 		 *	@return the normal data
 		 */
 		Vec3VertexAttribute& getNormalAttr();
+
+		/**
+		*	@return the normal data
+		*/
+		const Vec3VertexAttribute& getNormalAttr() const;
 		
 		/**
 		 *	@return the uv data
 		 */
 		Vec3VertexAttribute& getUvAttr();
+
+		/**
+		*	@return the uv data
+		*/
+		const Vec3VertexAttribute& getUvAttr() const;
+
+		/**
+		 * This call does not accurately interpolate the vertex attribute, therefore this 
+		 * function works best with equally distributed vertices
+		 * @param attr the attribute to get the value for
+		 * @param location the location on the line to get the value for, needs to be within the 0-1 range
+		 * @param outValue the interpolated output value
+		 * @return the interpolated value of an attribute along the line based on @location
+		 */
+		template<typename T>
+		void getValue(const VertexAttribute<T>& attr, float location, T& outValue) const;
+
+		/**
+		 * @return the interpolated (accurate) value of an attribute along the line based on @location
+		 * This method is more accurate but requires a map that contains the distance along the line for every vertex
+		 * You can acquire this map by calling the @getDistances function
+		 * @param distanceMap map that contains the distance of every vertex along the line
+		 * @param attr the attribute to get the value for
+		 * @param location the location on the line to get the value for, needs to be within the 0-1 range
+		 * @param outValue the interpolated output value 
+		 */
+		template<typename T>
+		void getValue(const std::map<float, int>& distanceMap, const VertexAttribute<T>& attr, float location, T& outValue) const;
+
+		/**
+		 * Returns the interpolated normal value along the line, where the normal is correctly interpolated (rotated) based on it's location along the line
+		 * This method is more accurate but requires a distance map that contains the distance of every vertex along the line
+		 * You can acquire this map by calling the @getDistances function
+		 * @param distanceMap the map that containst the distance of every vertex along the line
+		 * @param attr the normal attribute to get the interpolated (rotated) value for
+		 * @param location the location on the line to get the value for, needs to be within the 0-1 range
+		 * @param outValue the interpolated output normal
+		 */
+		void getNormal(const std::map<float, int>& distanceMap, const Vec3VertexAttribute& attr, float location, glm::vec3& outValue) const;
+
+		/**
+		 * Utility function that retrieves the distance along the line for every vertex
+		 * Note that this call is relatively heavy
+		 * @return the length of the line
+		 * @param outDistances a list of distances that will be populated with the length at every vertex
+		 */
+		float getDistances(std::map<float, int>& outDistances) const;
+
+		/**
+		*	@return if the line is closed or not
+		*/
+		bool isClosed() const;
 
 		// Properties associated with a line
 		PolyLineProperties mLineProperties;
@@ -67,9 +136,8 @@ namespace nap
 		std::unique_ptr<MeshInstance> mMeshInstance;
 
 		// Creates the default vertex line attributes, useful for easy access
-		void createVertexAttributes();
+		static void createVertexAttributes(MeshInstance& instance);
 	};
-
 
 	//////////////////////////////////////////////////////////////////////////
 
@@ -93,6 +161,9 @@ namespace nap
 		 * @return if the line was successfully created
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
+
+		// Property: the amount of vertices of this line
+		int mVertexCount = 2;
 	};
 
 
@@ -134,6 +205,9 @@ namespace nap
 		* @return if the rectangle was successfully created
 		*/
 		virtual bool init(utility::ErrorState& errorState) override;
+
+		// property: the number of segments
+		int mSegments = 100;
 	};
 
 	
@@ -171,5 +245,23 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Template definitions
+	//////////////////////////////////////////////////////////////////////////
+	
+	template<typename T>
+	void nap::PolyLine::getValue(const VertexAttribute<T>& attr, float location, T& outValue) const
+	{
+		return math::getValueAlongLine(attr.getData(), location, isClosed(), outValue);
+	}
+
+
+	template<typename T>
+	void nap::PolyLine::getValue(const std::map<float, int>& distanceMap, const VertexAttribute<T>& attr, float location, T& outValue) const
+	{
+		return math::getValueAlongLine(distanceMap, attr.getData(), location, outValue);
+	}
 
 }

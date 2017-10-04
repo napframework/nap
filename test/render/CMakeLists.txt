@@ -21,19 +21,16 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Test)
 add_dependencies(${PROJECT_NAME} fbxconverter mod_nappython)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${pybind11_INCLUDE_DIRS})
-target_link_libraries(${PROJECT_NAME} napcore mod_naprender nrender mod_napmath mod_napsdlinput mod_napsdlwindow)
+target_link_libraries(${PROJECT_NAME} napcore mod_naprender nrender mod_napmath mod_napsdlinput mod_napsdlwindow mod_nappython)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
 if (WIN32)
-    # Copy over some crap window dlls
-    set(FILES_TO_COPY
-            ${FREEIMAGE_DIR}/msvc/Dist/x64/FreeImage.dll
-            ../../../../thirdparty/sdl2/msvc/lib/x64/SDL2.dll
-            ../../../../thirdparty/glew/msvc/bin/Release/x64/glew32.dll
-            )
-    # copy nrender (hack)
+    # Copy freeimage DLL
+	find_package(freeimage REQUIRED)
+	copy_freeimage_dll()
 
-    copy_files_to_bin(${FILES_TO_COPY})
+    # Copy over some crap window dlls
+	copy_base_windows_graphics_dlls()
 endif()
 
 # create post build event

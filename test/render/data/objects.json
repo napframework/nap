@@ -20,47 +20,39 @@
 		{
 			"Type" : "nap::Image",
 			"mID" : "PigTexture",
-			"mImagePath" : "data/pig_head.jpg"
+			"ImagePath" : "data/pig_head.jpg"
 		},
 		
 		{
 			"Type" : "nap::Image",	
 			"mID" : "WorldTexture",
-			"mImagePath" : "data/world_texture.jpg"
+			"ImagePath" : "data/world_texture.jpg"
 		},
 
 		{
 			"Type" : "nap::Image",
 			"mID" : "TestTexture",
-			"mImagePath" : "data/test.jpg"
+			"ImagePath" : "data/test.jpg"
 		},
 
 		{
-			"Type" : "nap::MemoryTexture2D",
+			"Type" : "nap::Texture2D",
 			"mID" : "ColorTexture",
-			"mSettings" : {
-				"mWidth" : 640,
-				"mHeight" : 480,
-				"mInternalFormat" : 6408,
-				"mFormat" : 6408,
-				"mType" : 5121
-			}
+			"Width" : 640,
+			"Height" : 480,
+			"Format" : "RGBA8"
 		},
 		
 		{
-			"Type" : "nap::MemoryTexture2D",
+			"Type" : "nap::Texture2D",
 			"mID" : "DepthTexture",
-			"mSettings" : {
-				"mWidth" : 640,
-				"mHeight" : 480,
-				"mInternalFormat" : 6402,
-				"mFormat" : 6402,
-				"mType" : 5126
-			}
+			"Width" : 640,
+			"Height" : 480,
+			"Format" : "Depth"
 		},
 		
 		{
-			"Type" : "nap::TextureRenderTarget2D",
+			"Type" : "nap::RenderTarget",
 			"mID": "PlaneRenderTarget",
 			"mColorTexture": "ColorTexture",
 			"mDepthTexture": "DepthTexture",

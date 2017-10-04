@@ -7,7 +7,7 @@
 			"Width" : 512,
 			"Height" : 512,
 			"Title" : "Viewport",
-			"Sync" : false
+			"Sync" : true
 		},
 
 		{
@@ -18,8 +18,8 @@
 		{
 			"Type" : "nap::Image",
 			"mID" : "LabelImage",
-			"mImagePath" : "data/steef/label.jpg",
-			"mParameters" : {
+			"ImagePath" : "data/steef/label.jpg",
+			"Parameters" : {
 				"MaxFilter" : "Linear",		
 				"MinFilter" : "LinearMipmapLinear",		
 				"WrapVertical" : "ClampToEdge",	
@@ -31,8 +31,8 @@
 		{
 			"Type" : "nap::Image",
 			"mID" : "CoverImage",
-			"mImagePath" : "data/steef/cover.jpg",
-			"mParameters" : {
+			"ImagePath" : "data/steef/cover.png",
+			"Parameters" : {
 				"MaxFilter" : "Linear",		
 				"MinFilter" : "LinearMipmapLinear",		
 				"WrapVertical" : "ClampToEdge",	
@@ -44,8 +44,8 @@
 		{
 			"Type" : "nap::Image",
 			"mID" : "BackgroundImage",
-			"mImagePath" : "data/steef/background.jpg",
-			"mParameters" : {
+			"ImagePath" : "data/steef/background.jpg",
+			"Parameters" : {
 				"MaxFilter" : "Linear",		
 				"MinFilter" : "LinearMipmapLinear",		
 				"WrapVertical" : "ClampToEdge",	
@@ -57,8 +57,8 @@
 		{
 			"Type" : "nap::Image",
 			"mID" : "MaskImage",
-			"mImagePath" : "data/steef/label_mask.jpg",
-			"mParameters" : {
+			"ImagePath" : "data/steef/label_mask.jpg",
+			"Parameters" : {
 				"MaxFilter" : "Linear",		
 				"MinFilter" : "LinearMipmapLinear",		
 				"WrapVertical" : "ClampToEdge",	
@@ -70,8 +70,8 @@
 		{
 			"Type" : "nap::Image",
 			"mID" : "GrooveNormalMap",
-			"mImagePath" : "data/steef/grooves.jpg",
-			"mParameters" : {
+			"ImagePath" : "data/steef/grooves.png",
+			"Parameters" : {
 				"MaxFilter" : "Linear",		
 				"MinFilter" : "LinearMipmapLinear",		
 				"WrapVertical" : "ClampToEdge",	
@@ -104,13 +104,13 @@
 		{
 			"Type" : "nap::MeshFromFile",
 			"mID": "CoverMesh",
-			"Path": "data/steef/vinyl_cover_LP12_S_Cover.mesh"
+			"Path": "data/steef/vinyl_cover_Cover.mesh"
 		},
 
 		{
 			"Type" : "nap::MeshFromFile",
 			"mID": "VinylMesh",
-			"Path": "data/steef/vinyl_cover_LP_12_.mesh"
+			"Path": "data/steef/vinyl_cover_Vinyl.mesh"
 		},
 		
 		{
@@ -127,30 +127,21 @@
 					"ShaderAttributeID": "in_UV0"
 				},
 				{
-					"MeshAttributeID" : "UV1",
-					"ShaderAttributeID": "in_UV1"
-				},
-				{
-					"MeshAttributeID": "Color0",
-					"ShaderAttributeID": "in_Color0"
-				},
-				{
 					"MeshAttributeID": "Normal",
 					"ShaderAttributeID": "in_Normals"
+				},
+				{
+					"MeshAttributeID": "Tangent",
+					"ShaderAttributeID": "in_Tangent"
+				},
+				{
+					"MeshAttributeID": "Bitangent",
+					"ShaderAttributeID": "in_Bitangent"
 				}
+
 			],
 			"Uniforms" : 
 			[
-				{
-					"Type" : "nap::UniformVec3",
-					"Name" : "recordColor",
-					"Value" : 
-					{
-						"x" : 0.0,
-						"y" : 0.0,
-						"z" : 0.0
-					}
-				},
 				{
 					"Type" : "nap::UniformVec3",
 					"Name" : "lightPosition",
@@ -179,22 +170,22 @@
 				{
 					"Type" : "nap::UniformFloat",
 					"Name" : "shininess",
-					"Value" : 45
+					"Value" : 20
 				},
 				{
 					"Type" : "nap::UniformFloat",
 					"Name" : "specularIntensity",
-					"Value" : 0.4
+					"Value" : 0.225
 				},
 				{
 					"Type" : "nap::UniformFloat",
 					"Name" : "attenuationScale",
-					"Value" : 0.00001
+					"Value" : 0.0001
 				},
 				{
 					"Type" : "nap::UniformFloat",
 					"Name" : "grooveScale",
-					"Value" : 0.15
+					"Value" : 0.75
 				},
 				{
 					"Type" : "nap::UniformVec3",
@@ -226,10 +217,6 @@
 				{
 					"MeshAttributeID": "Normal",
 					"ShaderAttributeID": "in_Normals"
-				},
-				{
-					"MeshAttributeID": "Color0",
-					"ShaderAttributeID": "in_Color0"
 				}
 			],
 			"Uniforms" : 
@@ -262,12 +249,12 @@
 				{
 					"Type" : "nap::UniformFloat",
 					"Name" : "shininess",
-					"Value" : 7.5
+					"Value" : 5.0
 				},
 				{
 					"Type" : "nap::UniformFloat",
 					"Name" : "specularIntensity",
-					"Value" : 0.25
+					"Value" : 0.2
 				},
 				{
 					"Type" : "nap::UniformFloat",
@@ -303,10 +290,6 @@
 				{
 					"MeshAttributeID": "Normal",
 					"ShaderAttributeID": "in_Normals"
-				},
-				{
-					"MeshAttributeID": "Color0",
-					"ShaderAttributeID": "in_Color0"
 				}
 			]			
 		},
@@ -334,7 +317,7 @@
 							"y": 1.0,
 							"z": 1.0
 						},
-						"UniformScale": 0.33
+						"UniformScale": 0.31
 					}
 				},
 				{
@@ -345,7 +328,7 @@
 							"y": 1.0,
 							"z": 0.0
 						},
-						"Speed": 0.125,
+						"Speed": 0.1,
 						"Offset": 2.0
 					}
 				}
@@ -397,7 +380,7 @@
 							"z": 0.0
 						},
 						"Rotate": {
-							"x": -90.0,
+							"x": 0.0,
 							"y": 0.0,
 							"z": 0.0
 						},
@@ -406,7 +389,7 @@
 							"y": 1.0,
 							"z": 1.0
 						},
-						"UniformScale": 0.1
+						"UniformScale": 1.0
 					}	
 				},
 				{
@@ -414,10 +397,10 @@
 					"Properties": {
 						"Axis": {
 							"x": 0.0,
-							"y": 1.0,
-							"z": 0.0
+							"y": 0.0,
+							"z": 1.0
 						},
-						"Speed": 0.6,
+						"Speed": -0.3,
 						"Offset": 2.0
 					}
 				}
@@ -463,7 +446,7 @@
 							"y": 1.0,
 							"z": 1.0
 						},
-						"UniformScale": 0.1
+						"UniformScale": 1.0
 					}
 				}		
 			]
@@ -480,7 +463,6 @@
 					"MaterialInstance" : {
 						"Material": "BackgroundMaterial",
 						"BlendMode": "Opaque",
-						"DepthMode" : "ReadOnly",
 						"Uniforms" : 
 						[
 							{
@@ -529,15 +511,15 @@
 					"Type" : "nap::PerspCameraComponent",
 					"Properties": {
 						"FieldOfView": 45.0,
-						"NearClippingPlane" : 0.01,
+						"NearClippingPlane" : 1,
 						"FarClippingPlane" : 1000.0
 					}
 				},
 				{
 					"Type" : "nap::OrthoCameraComponent",
 					"Properties": {
-						"NearClippingPlane" : 0.01,
-						"FarClippingPlane" : 10000.0
+						"NearClippingPlane" : 1,
+						"FarClippingPlane" : 1000.0
 					}
 				},
 				{

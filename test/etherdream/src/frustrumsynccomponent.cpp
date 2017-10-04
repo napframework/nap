@@ -25,6 +25,9 @@ namespace nap
 		if (!errorState.check(mOutput != nullptr, "no laser output component attached to parent"))
 			return false;
 
+		// Move the frustrum back a bit so objects around 0 are sorted correctly
+		mTransform->setTranslate(glm::vec3(0.0f, 0.0f, -0.1f));
+
 		return true;
 	}
 

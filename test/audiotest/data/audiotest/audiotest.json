@@ -2,9 +2,53 @@
 	"Objects":
 	[
 		{
-			"Type": "nap::audio::AudioFileResource",
-			"mID": "audioFile",
-			"AudioFilePath": "data/audiotest/test.wav"
+			"Type": "nap::audio::VoiceGraph",
+			"mID": "graph",
+			"Objects":
+			[
+				{
+					"Type": "nap::audio::Oscillator",
+					"mID": "oscillatorA",
+					"Amplitude": [ 0.2 ],
+					"ChannelCount": 2
+				},
+
+				{
+					"Type": "nap::audio::Oscillator",
+					"mID": "oscillatorB",
+					"Amplitude": [ 0.5 ],
+					"ChannelCount": 2,
+					"FmInput": "oscillatorA"
+				},
+
+				{
+					"Type": "nap::audio::Envelope",
+					"mID": "envelope",
+					"Envelope":
+					[
+						{
+							"Duration": "5",
+							"Destination": "1"
+						},
+						{
+							"Duration": "1000",
+							"Destination": "0",
+							"RampMode": "Exponential"
+						}
+					]
+				},
+
+				{
+					"Type": "nap::audio::Gain",
+					"mID": "gain",
+					"Inputs": [ "oscillatorB", "envelope" ],
+					"Gain": [ 0.2 ],
+					"ChannelCount": 2
+				}
+			],
+
+			"Output": "gain",
+			"Envelope": "envelope"
 		},
 
 		{
@@ -12,102 +56,28 @@
 			"mID": "audioEntity",
 			"Components":
 			[
-				{
-					"Type": "nap::audio::PlayerComponent",
-					"mID": "player",
-					"AudioBuffer": "audioFile",
-					"Routing": [0, 1]
-				},
-
-				{
-					"Type": "nap::audio::EnvelopeComponent",
-					"mID": "envelope",
-					"Segments": 
-					[
-						{
-							"Duration": "10",
-							"Destination": "1"
-						},
-						{
-							"Duration": "1",
-							"Destination": "1",
-							"DurationRelative": "True"
-						},
-						{
-							"Duration": "10000",
-							"Destination": "0",
-							"RampMode": "Exponential"
-						}
-					]
-				},
-
-				{
-					"Type": "nap::audio::EnvelopeComponent",
-					"mID": "fmEnvelope",
-					"Segments": 
-					[
-						{
-							"Duration": "1000",
-							"Destination": "3"
-						},
-						{
-							"Duration": "500",
-							"Destination": "0",
-							"RampMode": "Exponential"
-						},
-						{
-							"Duration": "500",
-							"Destination": "3",
-							"RampMode": "Exponential"
-						},
-						{
-							"Duration": "1000",
-							"Destination": "0",
-							"RampMode": "Exponential"
-						}
-					]
-				},
-
-				{
-					"Type": "nap::audio::OscillatorComponent",
-					"mID": "modulator",
-					"ChannelCount": 2,
-					"Frequency" : [ 110, 220 ],
-					"Amplitude": [ 1, 1 ],
-					"FmInput": "player"
-				},
-
-
-				{
-					"Type": "nap::audio::GainComponent",
-					"mID": "fmIndex",
-					"Inputs": [ "modulator", "fmEnvelope" ],
-					"Gain": [ 1 ]
-				},
-
-
-				{
-					"Type": "nap::audio::OscillatorComponent",
-					"mID": "oscillator",
-					"ChannelCount": 2,
-					"Frequency" : [ 220, 330 ],
-					"Amplitude": [ 0.1, 0.1 ],
-					"FmInput": "fmIndex"
-				},
-
-
-				{
-					"Type": "nap::audio::GainComponent",
-					"mID": "gain",
-					"Inputs": [ "oscillator", "envelope" ],
-					"Gain": [ 1 ]
+				{					
+					"Type": "nap::audio::AudioComponent",
+					"mID": "audioComponent",
+					"Object":
+					{
+						"Type": "nap::audio::PolyphonicObject",
+						"Graph": "graph",
+						"VoiceCount": 32,
+						"VoiceStealing": "False"
+					}
 				},
 
 				{
 					"Type": "nap::audio::OutputComponent",
 					"mID": "output",
-					"Input": "gain",
-					"Routing": [0, 1]
+					"Routing": [ 0, 1 ],
+					"Input": "audioComponent"
+				},
+
+				{
+					"Type": "nap::PythonScriptComponent",
+					"Path": "data/audiotest/scripts/audiotest.py"
 				}
 			]
 		}
