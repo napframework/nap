@@ -173,6 +173,8 @@ bool init(nap::Core& core)
 		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
 		return false;        
 	}
+    
+    glFlush();
 
 
 	// Store all render windows
