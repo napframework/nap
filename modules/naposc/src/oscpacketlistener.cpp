@@ -100,7 +100,7 @@ namespace nap
 			arg++;
 		}
 		
-		if (mPrint)
+		if (mDebugOutput)
 			displayMessage(*event);
 
 		// Add event to receiver
@@ -115,6 +115,7 @@ namespace nap
 		std::string arg_str;
 		for (const auto& arg : event.getArguments())
 		{
+			os << " " << arg->getValueType().get_name();
 			arg->toString(arg_str);
 			os << " " << arg_str;
 		}

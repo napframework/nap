@@ -24,14 +24,14 @@ namespace nap
 		/**
 		 *	@param value when set to true this listener will print all received messages
 		 */
-		void debugPrint(bool value)			{ mPrint = value; }
+		void setDebugOutput(bool value)							{ mDebugOutput = value; }
 
 	protected:
 		virtual void ProcessMessage(const osc::ReceivedMessage& message, const IpEndpointName& remoteEndpoint) override;
 
 	private:
 		OSCReceiver& mReceiver;				// Receiver that holds the message queue
-		bool mPrint = false;				// When set to true the listener will print all the received messages
+		bool mDebugOutput = false;			// When set to true the listener will print all the received messages
 
 		/**
 		 * Utility that prints @event

@@ -73,6 +73,12 @@ namespace nap
 	}
 
 
+	nap::rtti::TypeInfo OSCArgument::getValueType()
+	{
+		return mValue->get_type().get_raw_type();
+	}
+
+
 	float OSCArgument::asFloat() const
 	{
 		assert(isFloat());

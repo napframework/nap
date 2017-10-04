@@ -14,7 +14,7 @@
 			"Type" : "nap::OSCReceiver",
 			"mID" : "OscReceiver",
 			"Port" : 7000,
-			"Print" : true
+			"EnableDebugOutput" : true
 		},
 
 		{
@@ -257,7 +257,7 @@
 			"Type" : "nap::Line",
 			"mID": "LaserLineMesh",
 			"Vertices" : 500,
-			"Closed" : false
+			"Closed" : true
 		},
 
 		{

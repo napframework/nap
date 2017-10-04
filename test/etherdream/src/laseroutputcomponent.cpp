@@ -77,8 +77,6 @@ namespace nap
 
 		// Copy over xform
 		mLineXform = getComponent<LaserOutputComponent>()->mTransform.get();
-		if (!(errorState.check(mLineXform != nullptr, "Entity associated with laser line does not have a transform")))
-			return false;
 
 		// Copy over properties
 		mProperties = output_resource->mProperties;

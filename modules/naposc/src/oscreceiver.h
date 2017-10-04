@@ -48,7 +48,7 @@ namespace nap
 		int mPort = 7000;
 
 		// Property: if the receiver prints the received osc messages
-		bool mPrint = false;
+		bool mDebugOutput = false;
 
 		/**
 		 * Adds an event to the queue

@@ -40,6 +40,11 @@ namespace nap
 		template<typename T>
 		T* get();
 
+		/**
+		 *	@return the type of the OSC value
+		 */
+		rtti::TypeInfo getValueType();
+
 	public:
 		/**
 		 *	@return this argument's value as a float
