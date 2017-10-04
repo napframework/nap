@@ -4,17 +4,17 @@
 #include <nap/entity.h>
 
 // RTTI
-RTTI_BEGIN_CLASS(nap::audio::PolyphonicComponent)
-    RTTI_PROPERTY("Graph", &nap::audio::PolyphonicComponent::mGraph, nap::rtti::EPropertyMetaData::Required)
-    RTTI_PROPERTY("VoiceCount", &nap::audio::PolyphonicComponent::mVoiceCount, nap::rtti::EPropertyMetaData::Default)
-    RTTI_PROPERTY("VoiceStealing", &nap::audio::PolyphonicComponent::mVoiceStealing, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::audio::PolyphonicObject)
+    RTTI_PROPERTY("Graph", &nap::audio::PolyphonicObject::mGraph, nap::rtti::EPropertyMetaData::Required)
+    RTTI_PROPERTY("VoiceCount", &nap::audio::PolyphonicObject::mVoiceCount, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("VoiceStealing", &nap::audio::PolyphonicObject::mVoiceStealing, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::PolyphonicComponentInstance)
-    RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
-    RTTI_FUNCTION("findFreeVoice", &nap::audio::PolyphonicComponentInstance::findFreeVoice)
-    RTTI_FUNCTION("play", &nap::audio::PolyphonicComponentInstance::play)
-    RTTI_FUNCTION("stop", &nap::audio::PolyphonicComponentInstance::stop)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::PolyphonicObjectInstance)
+    RTTI_CONSTRUCTOR(nap::audio::PolyphonicObject&)
+    RTTI_FUNCTION("findFreeVoice", &nap::audio::PolyphonicObjectInstance::findFreeVoice)
+    RTTI_FUNCTION("play", &nap::audio::PolyphonicObjectInstance::play)
+    RTTI_FUNCTION("stop", &nap::audio::PolyphonicObjectInstance::stop)
 RTTI_END_CLASS
 
 namespace nap
@@ -22,17 +22,24 @@ namespace nap
     
     namespace audio
     {
-    
-        bool PolyphonicComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+        
+        std::unique_ptr<AudioObjectInstance> PolyphonicObject::createInstance()
         {
-            auto resource = rtti_cast<PolyphonicComponent>(getComponent());
+            return std::make_unique<PolyphonicObjectInstance>(*this);
+        }
+
+    
+        bool PolyphonicObjectInstance::init(NodeManager& nodeManager, utility::ErrorState& errorState)
+        {
+            auto resource = rtti_cast<PolyphonicObject>(&getResource());
+            mNodeManager = &nodeManager;
             
             for (auto i = 0; i < resource->mVoiceCount; ++i)
             {
                 mVoices.emplace_back(std::make_unique<VoiceGraphInstance>());
                 if (!mVoices.back()->init(*resource->mGraph, errorState))
                     return false;
-                mVoices.back()->finishedSignal.connect(this, &PolyphonicComponentInstance::voiceFinished);
+                mVoices.back()->finishedSignal.connect(this, &PolyphonicObjectInstance::voiceFinished);
             }
             
             // Create the mix nodes to mix output of all the voices
@@ -43,9 +50,9 @@ namespace nap
         }
         
         
-        VoiceGraphInstance* PolyphonicComponentInstance::findFreeVoice()
+        VoiceGraphInstance* PolyphonicObjectInstance::findFreeVoice()
         {
-            std::unique_lock<std::mutex> lock(getNodeManager().getProcessingMutex());
+            std::unique_lock<std::mutex> lock(mNodeManager->getProcessingMutex());
             
             for (auto& voice : mVoices)
                 if (!voice->isBusy())
@@ -54,7 +61,7 @@ namespace nap
                     return voice.get();
                 }
             
-            if (rtti_cast<PolyphonicComponent>(getComponent())->mVoiceStealing)
+            if (rtti_cast<PolyphonicObject>(&getResource())->mVoiceStealing)
             {
                 DiscreteTimeValue time = mVoices[0]->getStartTime();
                 auto result = mVoices[0].get();
@@ -69,56 +76,49 @@ namespace nap
         }
         
         
-        void PolyphonicComponentInstance::play(VoiceGraphInstance* voice)
+        void PolyphonicObjectInstance::play(VoiceGraphInstance* voice)
         {
             if (!voice)
                 return;
             
-            std::unique_lock<std::mutex> lock(getNodeManager().getProcessingMutex());
+            std::unique_lock<std::mutex> lock(mNodeManager->getProcessingMutex());
             
             voice->play();
             
-            VoiceGraphInstance* voicePtr = voice;
-//            getNodeManager().execute([&, voicePtr](){
-                for (auto channel = 0; channel < std::min<int>(mMixNodes.size(), voicePtr->getOutput().getChannelCount()); ++channel)
-                    mMixNodes[channel]->inputs.connect(voicePtr->getOutput().getOutputForChannel(channel));
-//            });
+            for (auto channel = 0; channel < std::min<int>(mMixNodes.size(), voice->getOutput().getChannelCount()); ++channel)
+                mMixNodes[channel]->inputs.connect(voice->getOutput().getOutputForChannel(channel));
         }
         
         
-        void PolyphonicComponentInstance::stop(VoiceGraphInstance* voice)
+        void PolyphonicObjectInstance::stop(VoiceGraphInstance* voice)
         {
             if (!voice)
                 return;
             
-            std::unique_lock<std::mutex> lock(getNodeManager().getProcessingMutex());
+            std::unique_lock<std::mutex> lock(mNodeManager->getProcessingMutex());
             voice->stop();
         }
         
 
-        OutputPin& PolyphonicComponentInstance::getOutputForChannel(int channel)
+        OutputPin& PolyphonicObjectInstance::getOutputForChannel(int channel)
         {
             return mMixNodes[channel]->audioOutput;
             
         }
         
         
-        int PolyphonicComponentInstance::getChannelCount() const
+        int PolyphonicObjectInstance::getChannelCount() const
         {
             return mMixNodes.size();
         }
         
         
-        void PolyphonicComponentInstance::voiceFinished(VoiceGraphInstance& voice)
+        void PolyphonicObjectInstance::voiceFinished(VoiceGraphInstance& voice)
         {
-//            std::unique_lock<std::mutex> lock(getNodeManager().getProcessingMutex());
-            VoiceGraphInstance* voicePtr = &voice;
-//            getNodeManager().execute([&, voicePtr](){
-                assert(voicePtr->getEnvelope().getValue() == 0);
-                for (auto channel = 0; channel < std::min<int>(mMixNodes.size(), voicePtr->getOutput().getChannelCount()); ++channel)
-                    mMixNodes[channel]->inputs.disconnect(voicePtr->getOutput().getOutputForChannel(channel));
-                voicePtr->setBusy(false);
-//            });
+            assert(voice.getEnvelope().getValue() == 0);
+            for (auto channel = 0; channel < std::min<int>(mMixNodes.size(), voice.getOutput().getChannelCount()); ++channel)
+                mMixNodes[channel]->inputs.disconnect(voice.getOutput().getOutputForChannel(channel));
+            voice.setBusy(false);
         }
 
 

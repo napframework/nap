@@ -4,7 +4,7 @@
 #include <nap/component.h>
 
 // Audio includes
-#include <component/audiocomponent.h>
+#include <graph/audioobject.h>
 #include <graph/audiograph.h>
 
 namespace nap
@@ -16,26 +16,29 @@ namespace nap
         class GraphComponentInstance;
         
         
-        class NAPAPI GraphComponent : public AudioComponent
+        class NAPAPI GraphObject : public AudioObject
         {
-            RTTI_ENABLE(AudioComponent)
-            DECLARE_COMPONENT(GraphComponent, GraphComponentInstance)
+            RTTI_ENABLE(AudioObject)
             
         public:
-            GraphComponent() : AudioComponent() { }
+            GraphObject() : AudioObject() { }
             
             ObjectPtr<Graph> mGraph;
+            
+        private:
+            std::unique_ptr<AudioObjectInstance> createInstance() override;
         };
 
         
-        class NAPAPI GraphComponentInstance : public AudioComponentInstance
+        class NAPAPI GraphObjectInstance : public AudioObjectInstance
         {
-            RTTI_ENABLE(AudioComponentInstance)
+            RTTI_ENABLE(AudioObjectInstance)
+            
         public:
-            GraphComponentInstance(EntityInstance& entity, Component& resource) : AudioComponentInstance(entity, resource) { }
+            GraphObjectInstance(GraphObject& resource) : AudioObjectInstance(resource) { }
             
             // Initialize the component
-            bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+            bool init(NodeManager& nodeManager, utility::ErrorState& errorState) override;
             
             AudioObjectInstance* getObject(const std::string& mID) { return mGraphInstance.getObject(mID); }
             

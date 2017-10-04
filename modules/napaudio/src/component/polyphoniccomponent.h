@@ -1,11 +1,7 @@
 #pragma once
 
-// Nap includes
-#include <nap/component.h>
-#include <nap/objectptr.h>
-
 // Audio includes
-#include <component/audiocomponent.h>
+#include <graph/audioobject.h>
 #include <graph/voicegraph.h>
 #include <node/mixnode.h>
 
@@ -15,33 +11,34 @@ namespace nap
     namespace audio
     {
     
-        class PolyphonicComponentInstance;
+        class PolyphonicObjectInstance;
         
         
-        class NAPAPI PolyphonicComponent : public AudioComponent
+        class NAPAPI PolyphonicObject : public AudioObject
         {
-            RTTI_ENABLE(AudioComponent)
-            DECLARE_COMPONENT(PolyphonicComponent, PolyphonicComponentInstance)
+            RTTI_ENABLE(AudioObject)
             
         public:
-            PolyphonicComponent() : AudioComponent() { }
+            PolyphonicObject() : AudioObject() { }
             
             ObjectPtr<VoiceGraph> mGraph;
             int mVoiceCount = 1;
             bool mVoiceStealing = true;
             
         private:
+            std::unique_ptr<AudioObjectInstance> createInstance() override;
         };
 
         
-        class NAPAPI PolyphonicComponentInstance : public AudioComponentInstance
+        class NAPAPI PolyphonicObjectInstance : public AudioObjectInstance
         {
-            RTTI_ENABLE(AudioComponentInstance)
+            RTTI_ENABLE(AudioObjectInstance)
+            
         public:
-            PolyphonicComponentInstance(EntityInstance& entity, Component& resource) : AudioComponentInstance(entity, resource) { }
+            PolyphonicObjectInstance(PolyphonicObject& resource) : AudioObjectInstance(resource) { }
             
             // Initialize the component
-            bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+            bool init(NodeManager& nodeManager, utility::ErrorState& errorState) override;
             VoiceGraphInstance* findFreeVoice();
             void play(VoiceGraphInstance* voice);
             void stop(VoiceGraphInstance* voice);
@@ -54,6 +51,8 @@ namespace nap
             
             std::vector<std::unique_ptr<VoiceGraphInstance>> mVoices;
             std::vector<std::unique_ptr<MixNode>> mMixNodes;
+            
+            NodeManager* mNodeManager = nullptr;
         };
         
     }

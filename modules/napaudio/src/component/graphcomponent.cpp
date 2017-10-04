@@ -8,13 +8,13 @@
 
 
 // RTTI
-RTTI_BEGIN_CLASS(nap::audio::GraphComponent)
-    RTTI_PROPERTY("Graph", &nap::audio::GraphComponent::mGraph, nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::audio::GraphObject)
+    RTTI_PROPERTY("Graph", &nap::audio::GraphObject::mGraph, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::GraphComponentInstance)
-    RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
-    RTTI_FUNCTION("getObject", &nap::audio::GraphComponentInstance::getObject)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::GraphObjectInstance)
+    RTTI_CONSTRUCTOR(nap::audio::GraphObject&)
+    RTTI_FUNCTION("getObject", &nap::audio::GraphObjectInstance::getObject)
 RTTI_END_CLASS
 
 namespace nap
@@ -22,25 +22,29 @@ namespace nap
     
     namespace audio
     {
-    
-        bool GraphComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+        
+        std::unique_ptr<AudioObjectInstance> GraphObject::createInstance()
         {
-            auto resource = rtti_cast<GraphComponent>(getComponent());
+            return std::make_unique<GraphObjectInstance>(*this);
+        }
+        
+    
+        bool GraphObjectInstance::init(NodeManager& nodeManager, utility::ErrorState& errorState)
+        {
+            GraphObject* resource = rtti_cast<GraphObject>(&getResource());
             return mGraphInstance.init(*resource->mGraph, errorState);
         }
         
         
-        OutputPin& GraphComponentInstance::getOutputForChannel(int channel)
+        OutputPin& GraphObjectInstance::getOutputForChannel(int channel)
         {
             return mGraphInstance.getOutput().getOutputForChannel(channel);
-            
         }
         
         
-        int GraphComponentInstance::getChannelCount() const
+        int GraphObjectInstance::getChannelCount() const
         {
-            return mGraphInstance.getOutput().getChannelCount();
-            
+            return mGraphInstance.getOutput().getChannelCount();            
         }
 
     }

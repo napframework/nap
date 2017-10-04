@@ -32,7 +32,7 @@ namespace nap {
             auto channelCount = resource->mChannelRouting.size();
             for (auto channel = 0; channel < channelCount; ++channel)
             {
-                if (resource->mChannelRouting[channel] >= input->getChannelCount())
+                if (resource->mChannelRouting[channel] >= input->getObject()->getChannelCount())
                 {
                     errorState.fail("Trying to rout channel that is out of bounds.");
                     return false;
@@ -40,7 +40,7 @@ namespace nap {
                 
                 mOutputs.emplace_back(std::make_unique<OutputNode>(nodeManager));
                 mOutputs[channel]->setOutputChannel(channel);
-                mOutputs[channel]->audioInput.connect(input->getOutputForChannel(resource->mChannelRouting[channel]));
+                mOutputs[channel]->audioInput.connect(input->getObject()->getOutputForChannel(resource->mChannelRouting[channel]));
             }
             
             return true;
