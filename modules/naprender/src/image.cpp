@@ -10,7 +10,7 @@
 
 RTTI_BEGIN_CLASS(nap::Image)
 	RTTI_PROPERTY("ImagePath", 			&nap::Image::mImagePath, 		nap::rtti::EPropertyMetaData::FileLink | nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("StoreCompressed",	&nap::Image::mStoreCompressed,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Compressed",			&nap::Image::mCompressed,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
@@ -26,17 +26,19 @@ namespace nap
 			return false;
 
 		// Load pixel data in to bitmap
-		opengl::Bitmap bitmap;
-		if (!errorState.check(opengl::loadBitmap(bitmap, mImagePath, errorState), "Failed to load image %s; invalid bitmap", mImagePath.c_str()))
+		if (!errorState.check(opengl::loadBitmap(mBitmap, mImagePath, errorState), "Failed to load image %s; invalid bitmap", mImagePath.c_str()))
 			return false;
 		
+		// Get opengl settings from bitmap
 		opengl::Texture2DSettings settings;
-		if (!errorState.check(opengl::getSettingsFromBitmap(bitmap, mStoreCompressed, settings, errorState), "Unable to determine texture settings from bitmap %s", mImagePath.c_str()))
+		if (!errorState.check(opengl::getSettingsFromBitmap(mBitmap, mCompressed, settings, errorState), "Unable to determine texture settings from bitmap %s", mImagePath.c_str()))
 			return false;
 
-		Texture2D::init(settings);
+		// Initialize texture from bitmap
+		BaseTexture2D::init(settings);
 
-		getTexture().setData(bitmap.getData());
+		// Set data from bitmap
+		getTexture().setData(mBitmap.getData());
 
 		return true;
 	}

@@ -90,6 +90,7 @@ add_subdirectory(modules/napetherdream)
 add_subdirectory(modules/napaudio)
 add_subdirectory(modules/napartnet)
 add_subdirectory(modules/naposc)
+add_subdirectory(modules/napsvg)
 
 # Exe dependencies
 add_dependencies(rendertest mod_naprender)

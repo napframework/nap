@@ -73,6 +73,12 @@ namespace nap
 	}
 
 
+	nap::rtti::TypeInfo OSCArgument::getValueType()
+	{
+		return mValue->get_type().get_raw_type();
+	}
+
+
 	float OSCArgument::asFloat() const
 	{
 		assert(isFloat());
@@ -147,6 +153,12 @@ namespace nap
 	bool OSCArgument::isNil() const
 	{
 		return this->mValue->get_type().is_derived_from(RTTI_OF(OSCNil));
+	}
+
+
+	void OSCArgument::toString(std::string& outValue)
+	{
+		return mValue->toString(outValue);
 	}
 
 

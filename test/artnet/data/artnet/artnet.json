@@ -9,7 +9,21 @@
 			"Title" : "Artnet",
 			"Sync" : "false"
 		},
-
+		
+		{
+			"Type" 		: "nap::ArtnetController",
+			"mID" 		: "Universe0",
+			"Subnet" 	: 0,
+			"Universe" 	: 0
+		},
+		
+		{
+			"Type" 		: "nap::ArtnetController",
+			"mID" 		: "Universe1",
+			"Subnet" 	: 0,
+			"Universe" 	: 1
+		},
+		
 		{
 			"Type" : "nap::Entity",
 			"mID": "CameraEntity",

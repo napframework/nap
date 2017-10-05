@@ -20,18 +20,15 @@ add_dependencies(${PROJECT_NAME} fbxconverter)
 target_link_libraries(${PROJECT_NAME} napcore mod_naprender nrender mod_napmath mod_napinput mod_napsdlinput mod_napsdlwindow mod_napvideo)
 
 if (WIN32)
+    # Copy freeimage DLL
+	find_package(freeimage REQUIRED)
+	copy_freeimage_dll()
+
     # Copy over some crap window dlls
-    set(FILES_TO_COPY
-            ${FREEIMAGE_DIR}/msvc/Dist/x64/FreeImage.dll
-            ../../../../thirdparty/sdl2/msvc/lib/x64/SDL2.dll
-            ../../../../thirdparty/glew/msvc/bin/Release/x64/glew32.dll
-            )
-    # copy nrender (hack)
-    copy_files_to_bin(${FILES_TO_COPY})
-    
+	copy_base_windows_graphics_dlls()
+
 	# copy all ffmpeg dlls
-	file(GLOB FFMPEGDLLS ${CMAKE_CURRENT_LIST_DIR}/../../../thirdparty/ffmpeg/bin/*.dll)
-    copy_files_to_bin(${FFMPEGDLLS})
+    copy_windows_ffmpeg_dlls()
 endif()
 
 # create post build event

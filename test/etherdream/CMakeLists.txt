@@ -12,26 +12,26 @@ source_group("headers" FILES ${HEADERS})
 source_group("sources" FILES ${SOURCES})
 source_group("shaders" FILES ${SHADERS})
 
-add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS})
+add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${NANOHEADERS} ${SHADERS})
 set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Test)
 add_dependencies(${PROJECT_NAME} fbxconverter)
 
-target_link_libraries(${PROJECT_NAME} mod_napetherdream mod_napinput mod_napsdlinput mod_napsdlwindow mod_naposc)
+# preprocessor
+target_link_libraries(${PROJECT_NAME} mod_napetherdream mod_napinput mod_napsdlinput mod_napsdlwindow mod_naposc mod_napsvg)
 add_dependencies(${PROJECT_NAME} fbxconverter)
 
+# Copy etherdream DLL
+find_package(etherdream REQUIRED)
+copy_etherdream_dll()
+
 if (WIN32)
-	find_package(etherdream REQUIRED)
+	# Copy freeimage DLL
+	find_package(freeimage REQUIRED)
+	copy_freeimage_dll()
 
     # Copy over some crap window dlls
-    set(FILES_TO_COPY
-            ${FREEIMAGE_DIR}/msvc/Dist/x64/FreeImage.dll
-            ../../../../thirdparty/sdl2/msvc/lib/x64/SDL2.dll
-            ../../../../thirdparty/glew/msvc/bin/Release/x64/glew32.dll
-            ${ETHERDREAM_LIBS_DIR}/EtherDream.dll
-            )
-    # copy nrender (hack)
-    copy_files_to_bin(${FILES_TO_COPY})
+	copy_base_windows_graphics_dlls()
 endif()
 
 # create post build event

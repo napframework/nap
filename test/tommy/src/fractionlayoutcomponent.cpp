@@ -3,6 +3,7 @@
 #include "transformcomponent.h"
 #include "renderablemeshcomponent.h"
 #include "uniforms.h"
+#include <rect.h>
 
 RTTI_BEGIN_ENUM(nap::FractionLayoutProperties::ESizeBehaviour)
 	RTTI_ENUM_VALUE(nap::FractionLayoutProperties::ESizeBehaviour::Default,						"Default"),
@@ -67,11 +68,9 @@ namespace nap
 			RenderableMeshComponentInstance* child_renderable_mesh = child_entity->findComponent<RenderableMeshComponentInstance>();
 			if (child_renderable_mesh)
 			{
-				Rect clip_rect;
-				clip_rect.mX		= world_parent_pos.x - world_parent_size.x * 0.5f;
-				clip_rect.mY		= (windowSize.y - world_parent_pos.y) - world_parent_size.y * 0.5f;
-				clip_rect.mWidth	= world_parent_size.x;
-				clip_rect.mHeight	= world_parent_size.y;
+				float min_x = world_parent_pos.x - world_parent_size.x * 0.5f;
+				float min_y = (windowSize.y - world_parent_pos.y) - world_parent_size.y * 0.5f;
+				math::Rect clip_rect(min_x, min_y, world_parent_size.x , world_parent_size.y);
 				child_renderable_mesh->setClipRect(clip_rect);
 			}
 

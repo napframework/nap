@@ -155,19 +155,6 @@ namespace opengl
 		glLinkProgram(mShaderId);
 		std::string program_validation_message;
 
-		// Validate the shader program
-		EShaderValidationResult program_validation_result = validateShaderProgram(mShaderId, program_validation_message);
-		if (program_validation_result == EShaderValidationResult::ERROR)
-		{
-			printMessage(MessageType::ERROR, "Unable to validate shader program with vertex shader %s and fragment shader %s: %s", vsFile.c_str(), fsFile.c_str(), program_validation_message.c_str());
-			mState = State::LinkError;
-			return;
-		}
-		else if (program_validation_result == EShaderValidationResult::WARNING)
-		{
-			printMessage(MessageType::WARNING, "Validation of shader program (%s with %s) succeeded, but with warnings: %s", vsFile.c_str(), fsFile.c_str(), program_validation_message.c_str());
-		}
-
 		// Extract all program vertex attributes
 		printMessage(MessageType::INFO, "sampling shader program attributes: %s", vsFile.c_str());
 		extractShaderAttributes(mShaderId, mShaderAttributes);

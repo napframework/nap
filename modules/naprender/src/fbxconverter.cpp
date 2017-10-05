@@ -79,7 +79,8 @@ namespace nap
 			aiProcess_CalcTangentSpace |
 			aiProcess_Triangulate |
 			aiProcess_SortByPType |
-			aiProcess_JoinIdenticalVertices);
+			aiProcess_JoinIdenticalVertices |
+			aiProcess_CalcTangentSpace );
 
 		if (!errorState.check(scene != nullptr, "Unable to read %s", fbxPath.c_str()))
 			return false;
@@ -151,6 +152,24 @@ namespace nap
 				{
 					aiVector3D* current_id = &(fbx_mesh->mNormals[vertex]);
 					normal_attribute.add(glm::vec3(static_cast<float>(current_id->x), static_cast<float>(current_id->y), static_cast<float>(current_id->z)));
+				}
+			}
+
+			// Copy tangents
+			if (fbx_mesh->HasTangentsAndBitangents())
+			{
+				VertexAttribute<glm::vec3>& tangent_attribute = CreateAttribute<glm::vec3>(mesh_data, MeshInstance::VertexAttributeIDs::getTangentName(), vertex_attribute_storage);
+				VertexAttribute<glm::vec3>& bitangent_attribute = CreateAttribute<glm::vec3>(mesh_data, MeshInstance::VertexAttributeIDs::getBitangentName(), vertex_attribute_storage);
+				tangent_attribute.reserve(fbx_mesh->mNumVertices);
+				bitangent_attribute.reserve(fbx_mesh->mNumVertices);
+				
+				for (unsigned int vertex = 0; vertex < fbx_mesh->mNumVertices; vertex++)
+				{
+					aiVector3D* current_id_t = &(fbx_mesh->mTangents[vertex]);
+					tangent_attribute.add(glm::vec3(static_cast<float>(current_id_t->x), static_cast<float>(current_id_t->y), static_cast<float>(current_id_t->z)));
+					
+					aiVector3D* current_id_bt = &(fbx_mesh->mBitangents[vertex]);
+					bitangent_attribute.add(glm::vec3(static_cast<float>(current_id_bt->x), static_cast<float>(current_id_bt->y), static_cast<float>(current_id_bt->z)));
 				}
 			}
 

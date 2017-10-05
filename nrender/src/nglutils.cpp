@@ -183,7 +183,7 @@ namespace opengl
 		error_code = glGetError();
 		if (error_code != GL_NO_ERROR)
 		{
-			printMessage(MessageType::ERROR, "file: %s, line: %d, %s", file, line, glewGetErrorString(error_code));
+			printMessage(MessageType::ERROR, "file: %s, line: %d, %s (OpenGL error code: 0x%0x)", file, line, glewGetErrorString(error_code), error_code);
 #ifdef __APPLE__
             return false;
 #else
