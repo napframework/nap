@@ -60,7 +60,7 @@ QVariant PropertyValueItem::data(int role) const
 void PropertyValueItem::setData(const QVariant& value, int role)
 {
 
-    if (role == Qt::EditRole) {
+    if (role == Qt::EditRole || role == Qt::DisplayRole) {
         nap::rtti::ResolvedRTTIPath resolvedPath;
         assert(mPath.resolve(mObject, resolvedPath));
         bool ok;
@@ -155,11 +155,20 @@ QVariant InspectorModel::data(const QModelIndex& index, int role) const
     if (role == Qt::UserRole) {
         auto valueItem = dynamic_cast<PropertyValueItem*>(itemFromIndex(index));
         if (valueItem) {
-            nap::Logger::info(valueItem->valueType().get_name().data());
             return QVariant::fromValue(TypeWrapper(&valueItem->valueType()));
         }
     }
     return QStandardItemModel::data(index, role);
+}
+
+bool InspectorModel::setData(const QModelIndex& index, const QVariant& value, int role)
+{
+    if (role == Qt::EditRole) {
+        auto valueItem = dynamic_cast<PropertyValueItem*>(itemFromIndex(index));
+        valueItem->setData(value, Qt::EditRole);
+        return true;
+    }
+    return QStandardItemModel::setData(index, value, role);
 }
 
 void CompoundPropertyItem::populateChildren()

@@ -40,7 +40,7 @@ bool toQVariant(const nap::rtti::TypeInfo& type, const nap::rtti::Variant& value
             outValue.setValue(value_int);
             return true;
         } else {
-            return false;
+                return false;
         }
     } else if (type == rtti::TypeInfo::get<std::string>()) {
         outValue.setValue(QString::fromStdString(value.to_string()));

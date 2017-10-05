@@ -225,6 +225,8 @@ public:
 
     QVariant data(const QModelIndex& index, int role) const override;
 
+    bool setData(const QModelIndex& index, const QVariant& value, int role) override;
+
 private:
     void populateItems();
 
@@ -247,5 +249,5 @@ private:
     FilterTreeView mTreeView;
     QVBoxLayout mLayout;
 //    CustomDelegate mCustomDelegate;
-    WidgetDelegate mWidgetDelegate;
+    PropertyValueItemDelegate mWidgetDelegate;
 };

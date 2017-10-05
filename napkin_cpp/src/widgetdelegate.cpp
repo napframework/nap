@@ -1,48 +1,69 @@
+#include <QtWidgets/QComboBox>
 #include "widgetdelegate.h"
 #include "inspectorpanel.h"
 #include "typeconversion.h"
-#include <rtti/typeinfo.h>
-
-WidgetDelegate::WidgetDelegate()
-{
-    mDelegates.emplace_back(new TypedDelegateBool);
-}
 
 
-WidgetDelegate::~WidgetDelegate()
-{
-    mDelegates.clear();
-}
-
-
-void WidgetDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+void
+PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     auto type = typeFor(index);
-    auto delegate = delegateFor(type);
-    if (delegate) {
-        delegate->paint(painter, option, index, type);
-        return;
+    if (type.is_enumeration()) {
+
+        int val = index.model()->data(index, Qt::DisplayRole).toInt();
+        QStyleOptionViewItem op(option);
+        op.text = QString(type.get_enumeration().value_to_name(val).data());
+//    QStyleOptionComboBox styleOption;
+//    styleOption.rect = option.rect;
+//    styleOption.currentText = QString(type.get_enumeration().value_to_name(val).data());
+//    QApplication::style()->drawComplexControl(QStyle::CC_ComboBox, &styleOption, painter);
+//    QApplication::style()->drawControl(QStyle::CE_ComboBoxLabel, &styleOption, painter);
+        QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &op, painter);
+
+    } else if (type == rttr::type::get<bool>()) {
+
+        QStyleOptionButton styleOption;
+        styleOption.rect = option.rect;
+        if (index.data(Qt::DisplayRole).toBool()) {
+            styleOption.state |= QStyle::State_On;
+        } else {
+            styleOption.state |= QStyle::State_Off;
+        }
+        QApplication::style()->drawControl(QStyle::CE_CheckBox, &styleOption, painter);
+
+    } else {
+        QStyledItemDelegate::paint(painter, option, index);
     }
-    QStyledItemDelegate::paint(painter, option, index);
 
 }
 
-QSize WidgetDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
+QSize PropertyValueItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     return QStyledItemDelegate::sizeHint(option, index);
 }
 
-bool WidgetDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option,
-                                 const QModelIndex& index)
+bool
+PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option,
+                                       const QModelIndex& index)
 {
-    auto delegate = delegateFor(index);
-    if (delegate) {
-        delegate->editorEvent(event, model, option, index);
+
+    auto type = typeFor(index);
+    if (type.is_enumeration()) {
+        return false;
+    } else if (type == rttr::type::get<bool>()) {
+        if (event->type() == QEvent::MouseButtonPress) {
+            bool val = index.data(Qt::DisplayRole).toBool();
+            model->setData(index, !val, Qt::EditRole);
+        }
+        return true;
+    } else {
+        return QStyledItemDelegate::editorEvent(event, model, option, index);
     }
-    return QStyledItemDelegate::editorEvent(event, model, option, index);
+
+
 }
 
-rttr::type WidgetDelegate::typeFor(const QModelIndex& index) const
+rttr::type PropertyValueItemDelegate::typeFor(const QModelIndex& index) const
 {
     auto variant = index.data(Qt::UserRole);
     if (variant.canConvert<TypeWrapper>()) {
@@ -51,65 +72,53 @@ rttr::type WidgetDelegate::typeFor(const QModelIndex& index) const
     return rttr::detail::get_invalid_type();
 }
 
-TypedDelegate* WidgetDelegate::delegateFor(const QModelIndex& index) const
-{
-    return delegateFor(typeFor(index));
-}
 
-TypedDelegate* WidgetDelegate::delegateFor(rttr::type type) const
+QWidget*
+PropertyValueItemDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option,
+                                        const QModelIndex& index) const
 {
-    for (auto delegate : mDelegates) {
-        if (delegate->isValidFor(type))
-            return delegate;
+
+
+    auto type = typeFor(index);
+    if (type.is_enumeration()) {
+        int val = index.data(Qt::DisplayRole).toInt();
+        auto combo = new QComboBox(parent);
+        combo->setFocusPolicy(Qt::StrongFocus);
+        QStringList values;
+        for (const auto& name : type.get_enumeration().get_names()) {
+            values << name.data();
+        }
+        combo->addItems(values);
+        return combo;
     }
-    return nullptr;
+
+    return QStyledItemDelegate::createEditor(parent, option, index);
 }
 
-
-void TypedDelegateBool::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index,
-                              rttr::type type)
+void PropertyValueItemDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
-    // Draw bool
-    QStyleOptionButton styleOption;
-    styleOption.rect = option.rect;
-    if (index.data(Qt::DisplayRole).toBool()) {
-        styleOption.state |= QStyle::State_On;
+    auto type = typeFor(index);
+    if (type.is_enumeration()) {
+        auto combo = dynamic_cast<QComboBox*>(editor);
+        int value = index.data(Qt::EditRole).toInt();
+        combo->setCurrentIndex(value);
+
     } else {
-        styleOption.state |= QStyle::State_Off;
-    }
-    QApplication::style()->drawControl(QStyle::CE_CheckBox, &styleOption, painter);
-
-}
-
-bool TypedDelegateBool::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option,
-                                    const QModelIndex& index)
-{
-    if (event->type() == QEvent::MouseButtonPress) {
-        bool val = index.data(Qt::DisplayRole).toBool();
-        model->setData(index, !val, Qt::EditRole);
+        return QStyledItemDelegate::setEditorData(editor, index);
     }
 
-    return false;
 }
 
-bool TypedDelegateBool::isValidFor(rttr::type type)
+void PropertyValueItemDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
 {
-    return type == rttr::type::get<bool>();
-}
+    auto type = typeFor(index);
+    if (type.is_enumeration()) {
+        auto combo = dynamic_cast<QComboBox*>(editor);
+        int value = combo->currentIndex();
+        model->setData(index, value);
 
-void TypedDelegateEnum::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index,
-                              rttr::type type)
-{
+    } else {
+        QStyledItemDelegate::setModelData(editor, model, index);
+    }
 
-}
-
-bool TypedDelegateEnum::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option,
-                                    const QModelIndex& index)
-{
-    return false;
-}
-
-bool TypedDelegateEnum::isValidFor(rttr::type type)
-{
-    return type.is_enumeration();
 }
