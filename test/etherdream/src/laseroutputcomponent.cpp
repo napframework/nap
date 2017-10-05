@@ -14,11 +14,13 @@ RTTI_BEGIN_CLASS(nap::LaserOutputProperties)
 	RTTI_PROPERTY("FlipVertical",	&nap::LaserOutputProperties::mFlipVertical,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("FlipHorizontal", &nap::LaserOutputProperties::mFlipHorizontal,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Framerate",		&nap::LaserOutputProperties::mFrameRate,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("GapThreshold",	&nap::LaserOutputProperties::mGapThreshold,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::LaserOutputComponent)
 	RTTI_PROPERTY("Dac",		&nap::LaserOutputComponent::mDac,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Line",		&nap::LaserOutputComponent::mLine,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Transform",	&nap::LaserOutputComponent::mTransform,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Properties",	&nap::LaserOutputComponent::mProperties,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
@@ -73,6 +75,9 @@ namespace nap
 		// Copy over mesh
 		mLine = getComponent<LaserOutputComponent>()->mLine.get();
 
+		// Copy over xform
+		mLineXform = getComponent<LaserOutputComponent>()->mTransform.get();
+
 		// Copy over properties
 		mProperties = output_resource->mProperties;
 		return true;
@@ -81,21 +86,9 @@ namespace nap
 
 	void LaserOutputComponentInstance::update(double deltaTime)
 	{
-		// Get line
-		nap::PolyLine* line = rtti_cast<nap::PolyLine>(&(mLine->getMesh()));
-		if (line == nullptr)
-		{
-			assert(false);
-			nap::Logger::warn("unable to send mesh data to DAC: %s, mesh not a line", mDac->mDacName.c_str());
-			return;
-		}
-
-		// Get xfrom
-		nap::TransformComponentInstance& line_xform = mLine->getEntityInstance()->getComponent<nap::TransformComponentInstance>();
-
 		// Populate the laser buffer
 		nap::TransformComponentInstance& laser_xform = this->getEntityInstance()->getComponent<nap::TransformComponentInstance>();
-		populateLaserBuffer(*line, laser_xform.getGlobalTransform(), line_xform.getGlobalTransform());
+		populateLaserBuffer(*mLine, laser_xform.getGlobalTransform(), mLineXform->getGlobalTransform());
 	}
 
 
@@ -128,7 +121,7 @@ namespace nap
 		
 		// If there is a certain distance between the first and last vertex of the line we can redistribute the points
 		// otherwise the entire line is taken up by the initial line and there is no gap, ie: all points belong to the actual line
-		bool has_gap = gap_dist > math::epsilon<float>() && !(line.isClosed());
+		bool has_gap = gap_dist > mProperties.mGapThreshold && !(line.isClosed());
 		if (has_gap)
 		{
 			// Get complete line distance

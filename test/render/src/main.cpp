@@ -15,6 +15,7 @@
 #include <perspcameracomponent.h>
 #include <mathutils.h>
 #include <rendertarget.h>
+#include <ntexturerendertarget2d.h>
 #include <sdlinput.h>
 #include <sdlwindow.h>
 
@@ -51,8 +52,8 @@ nap::ResourceManagerService* resourceManagerService = nullptr;
 nap::SceneService* sceneService = nullptr;
 nap::InputService* inputService = nullptr;
 
-std::vector<nap::ObjectPtr<nap::RenderWindow>>	renderWindows;
-nap::ObjectPtr<nap::TextureRenderTarget2D>		textureRenderTarget;
+std::vector<nap::ObjectPtr<nap::RenderWindow>>			renderWindows;
+nap::ObjectPtr<nap::RenderTarget>						textureRenderTarget;
 nap::ObjectPtr<nap::EntityInstance>						pigEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance>						rotatingPlaneEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance>						planeEntity = nullptr;
@@ -64,7 +65,7 @@ nap::ObjectPtr<nap::EntityInstance>						splitCameraEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance>						defaultInputRouter = nullptr;
 
 // Some utilities
-void runGame(nap::Core& core);	
+void run(nap::Core& core);	
 
 namespace py = pybind11;
 
@@ -152,9 +153,10 @@ void onRender()
 		renderService->getPrimaryWindow().makeCurrent();
 
 		// Render entire scene to texture
-		renderService->clearRenderTarget(textureRenderTarget->getTarget(), opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH | opengl::EClearFlags::STENCIL);
+		renderService->clearRenderTarget(textureRenderTarget->getTarget());
 		renderService->renderObjects(textureRenderTarget->getTarget(), cameraEntityLeft->getComponent<nap::PerspCameraComponentInstance>());
 	}
+
 
 	// Render window 0
 	{
@@ -181,7 +183,7 @@ void onRender()
 
 		opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(render_window->getWindow()->getBackbuffer());
 		backbuffer.setClearColor(glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
-		renderService->clearRenderTarget(backbuffer, opengl::EClearFlags::COLOR|opengl::EClearFlags::DEPTH|opengl::EClearFlags::STENCIL);
+		renderService->clearRenderTarget(backbuffer);
 		renderService->renderObjects(backbuffer, cameraEntityLeft->getComponent<nap::PerspCameraComponentInstance>(), components_to_render);
 
 		// Render sphere using split camera with custom projection matrix
@@ -264,16 +266,16 @@ bool init(nap::Core& core)
 	if (!resourceManagerService->loadFile("data/objects.json", errorState))
 	{
 		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
-		return false;   
-	}   
-	 
+		return false;
+	}
+
 	renderWindows.push_back(resourceManagerService->findObject<nap::RenderWindow>("Window0"));
 	renderWindows.push_back(resourceManagerService->findObject<nap::RenderWindow>("Window1"));
 
 	pigTexture					= resourceManagerService->findObject<nap::Image>("PigTexture");
  	testTexture					= resourceManagerService->findObject<nap::Image>("TestTexture");
  	worldTexture				= resourceManagerService->findObject<nap::Image>("WorldTexture");
- 	textureRenderTarget			= resourceManagerService->findObject<nap::TextureRenderTarget2D>("PlaneRenderTarget");
+ 	textureRenderTarget			= resourceManagerService->findObject<nap::RenderTarget>("PlaneRenderTarget");
 
 	pigEntity					= resourceManagerService->findEntity("PigEntity");
 	rotatingPlaneEntity			= resourceManagerService->findEntity("RotatingPlaneEntity");
@@ -288,7 +290,6 @@ bool init(nap::Core& core)
 	// Set render states
 	nap::RenderState& render_state = renderService->getRenderState();
 	render_state.mEnableMultiSampling = true;
-	render_state.mLineWidth = 1.3f;
 	render_state.mPointSize = 2.0f;
 	render_state.mPolygonMode = opengl::PolygonMode::FILL;
 
@@ -306,12 +307,12 @@ int main(int argc, char *argv[])
 		return -1;
 
 	// Run Game
-	runGame(core);
+	run(core);
 
 	return 0;
 }
 
-void runGame(nap::Core& core)
+void run(nap::Core& core)
 {
 	// Run function
 	bool loop = true;

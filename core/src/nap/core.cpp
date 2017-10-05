@@ -29,8 +29,24 @@ namespace nap
 		// Add resource manager service
 		addService(RTTI_OF(ResourceManagerService));
 	}
+	
+    
+	Core::~Core()
+	{
+		// In order to ensure a correct order of destruction we want our entities, components, etc. to be deleted before other services are deleted.
+		// Because entities and components are managed and owned by the resource manager we explicitly delete this first.
+		auto type = RTTI_OF(ResourceManagerService);
+		const auto& resourceManagerService = std::find_if(mServices.begin(), mServices.end(), [&type](const auto& service)
+		{
+			return service->get_type().is_derived_from(type.get_raw_type());
+		});
 
-
+		// Erase it
+		assert(resourceManagerService != mServices.end());
+		mServices.erase(resourceManagerService);
+	}
+	
+    
 	void Core::initialize()
 	{ 
 		mModuleManager.loadModules();

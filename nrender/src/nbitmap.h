@@ -303,7 +303,7 @@ namespace opengl
 		* Note that before the copy this call will apply the settings and allocate a new set of memory
 		* This block of memory needs to match the total byte size of the source buffer
 		*/
-		bool copyData(unsigned int width, unsigned int height, BitmapDataType dataType, BitmapColorType colorType, void* source);
+		bool copyData(unsigned int width, unsigned int height, BitmapDataType dataType, BitmapColorType colorType, void* source, unsigned int sourcePitch);
 
 		/**
 		* clearData

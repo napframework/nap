@@ -18,7 +18,6 @@
 #include <renderwindow.h>
 #include <transformcomponent.h>
 #include <orthocameracomponent.h>
-#include <rendertarget.h>
 
 // Nap includes
 #include <nap/core.h>
@@ -58,13 +57,14 @@ nap::ObjectPtr<nap::RenderWindow> renderWindow = nullptr;
 // Laser DAC
 nap::ObjectPtr<nap::EntityInstance> laserPrototype = nullptr;
 
+
 // Holds the normals mesh
 nap::ObjectPtr<nap::VisualizeNormalsMesh> normalsMesh = nullptr;
 
-//////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////
 
 // Some utilities
-void runGame(nap::Core& core);	
+void run(nap::Core& core);	
 
 // Called when the window is updating
 void onUpdate()
@@ -85,7 +85,7 @@ void onUpdate()
 	// Update all resources
 	resourceManagerService->update();
 
-	nap::utility::ErrorState error;
+	nap::utility::ErrorState error;	
 	normalsMesh->updateNormals(error, true);
 }
 
@@ -116,7 +116,6 @@ void onRender()
 }
 
 
-
 /**
 * Initialize all the resources and instances used for drawing
 * slowly migrating all functionality to nap
@@ -142,6 +141,7 @@ bool init(nap::Core& core)
 		return false;
 	}
 
+
 	// Collects all the errors
 	nap::utility::ErrorState errorState;
 
@@ -150,7 +150,6 @@ bool init(nap::Core& core)
 
 	// Create scene service
 	sceneService = core.getOrCreateService<nap::SceneService>();
-
 
 	// Create etherdream service
 	laserService = core.getOrCreateService<nap::EtherDreamService>();
@@ -174,6 +173,8 @@ bool init(nap::Core& core)
 		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
 		return false;        
 	}
+    
+    glFlush();
 
 	// Store all render windows
 	renderWindow = resourceManagerService->findObject<nap::RenderWindow>("Window");
@@ -187,7 +188,6 @@ bool init(nap::Core& core)
 	// Set render states
 	nap::RenderState& render_state = renderService->getRenderState();
 	render_state.mEnableMultiSampling = true;
-	render_state.mLineWidth = 1.3f;
 	render_state.mPointSize = 2.0f;
 	render_state.mPolygonMode = opengl::PolygonMode::FILL;
 
@@ -206,11 +206,11 @@ int main(int argc, char *argv[])
 		return -1;
 
 	// Run Gam
-	runGame(core);
+	run(core);
 	return 0;
 }
 
-void runGame(nap::Core& core)
+void run(nap::Core& core)
 {
 	// Run function
 	bool loop = true;

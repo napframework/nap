@@ -30,9 +30,24 @@ namespace nap
 	void getPixelColor(const opengl::Bitmap& bitmap, const glm::ivec2& pixelCoordinates, glm::vec3& color, float divider)
 	{
 		T* pixel_color = bitmap.getPixel<T>(pixelCoordinates.x, pixelCoordinates.y);
-		color.r = static_cast<float>(pixel_color[0]) / divider;
-		color.g = static_cast<float>(pixel_color[1]) / divider;
-		color.b = static_cast<float>(pixel_color[2]) / divider;
+		switch (bitmap.getColorType())
+		{
+		case opengl::BitmapColorType::RGB:
+		case opengl::BitmapColorType::RGBA:
+			color.r = static_cast<float>(pixel_color[0]) / divider;
+			color.g = static_cast<float>(pixel_color[1]) / divider;
+			color.b = static_cast<float>(pixel_color[2]) / divider;
+			break;
+		case opengl::BitmapColorType::BGR:
+		case opengl::BitmapColorType::BGRA:
+			color.r = static_cast<float>(pixel_color[2]) / divider;
+			color.g = static_cast<float>(pixel_color[1]) / divider;
+			color.b = static_cast<float>(pixel_color[0]) / divider;
+			break;
+		default:
+			assert(false);
+			break;
+		}
 	}
 
 
@@ -52,7 +67,7 @@ namespace nap
 		mLink = getComponent<LineColorComponent>()->mLink;
 
 		// Ensure the image is at least RGB
-		if (!(mLookupImage->getImage().getBitmap().getColorType() >=  opengl::BitmapColorType::RGB))
+		if (!(mLookupImage->getBitmap().getColorType() >=  opengl::BitmapColorType::RGB))
 			return errorState.check(false, "lookup image does not have 3 or more color channels");
 
 		return true;
@@ -65,7 +80,7 @@ namespace nap
 		nap::PolyLine& line = mBlendComponent->getLine();
 		nap::Vec4VertexAttribute& color_attr = line.getColorAttr();
 
-		const opengl::Bitmap& bitmap = mLookupImage->getImage().getBitmap();
+		const opengl::Bitmap& bitmap = mLookupImage->getBitmap();
 
 		// Convert start location to pixel coordinates
 		unsigned int bitmap_width  = bitmap.getWidth();

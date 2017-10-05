@@ -1,12 +1,16 @@
 // Local Includes
 #include "image.h"
+#include "nbitmap.h"
+#include "nbitmaputils.h"
+#include "ntextureutils.h"
 
 // External Includes
 #include <nap/logger.h>
 #include <nap/fileutils.h>
 
 RTTI_BEGIN_CLASS(nap::Image)
-	RTTI_PROPERTY("mImagePath", 		&nap::Image::mImagePath, 			nap::rtti::EPropertyMetaData::FileLink | nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ImagePath", 			&nap::Image::mImagePath, 		nap::rtti::EPropertyMetaData::FileLink | nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Compressed",			&nap::Image::mCompressed,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
@@ -16,51 +20,26 @@ namespace nap
 	Image::Image(const std::string& imgPath) { }
 
 
-	// Load image if required and extract texture
-	const opengl::BaseTexture& Image::getTexture() const
-	{
-		return getImage().getTexture();
-	}
-
-
 	bool Image::init(utility::ErrorState& errorState)
 	{
 		if (!errorState.check(!mImagePath.empty(), "Image path not set for ImageResource %s", mID.c_str()))
 			return false;
 
-		// Make texture and set associated texture parameters
-		mImage = std::make_unique<opengl::Image>();
-		
-		// Convert and set texture parameters
-		opengl::TextureParameters gl_params;
-		convertTextureParameters(mParameters, gl_params);
-		mImage->setTextureParameters(gl_params);
-
-		// Load the texture using associated settings
-		if (!errorState.check(mImage->load(mImagePath), "Unable to load image from file %s for ImageResource %s", mImagePath.c_str(), mID.c_str()))
+		// Load pixel data in to bitmap
+		if (!errorState.check(opengl::loadBitmap(mBitmap, mImagePath, errorState), "Failed to load image %s; invalid bitmap", mImagePath.c_str()))
 			return false;
+		
+		// Get opengl settings from bitmap
+		opengl::Texture2DSettings settings;
+		if (!errorState.check(opengl::getSettingsFromBitmap(mBitmap, mCompressed, settings, errorState), "Unable to determine texture settings from bitmap %s", mImagePath.c_str()))
+			return false;
+
+		// Initialize texture from bitmap
+		BaseTexture2D::init(settings);
+
+		// Set data from bitmap
+		getTexture().setData(mBitmap.getData());
 
 		return true;
 	}
-
-
-	const opengl::Image& Image::getImage() const
-	{
-		assert(mImage != nullptr);
-		return *mImage;
-	}
-
-
-	const glm::vec2 Image::getSize() const
-	{
-		return glm::vec2(mImage->getWidth(), mImage->getHeight());
-	}
-
-	
-	// Non const getter, following:
-	opengl::BaseTexture& Texture::getTexture()
-	{
-		return const_cast<opengl::BaseTexture&>(static_cast<const Texture&>(*this).getTexture());
-	}
-	
 }

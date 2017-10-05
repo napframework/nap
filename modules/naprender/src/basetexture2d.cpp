@@ -1,4 +1,4 @@
-#include "texture.h"
+#include "basetexture2d.h"
 
 RTTI_BEGIN_ENUM(nap::EFilterMode)
 	RTTI_ENUM_VALUE(nap::EFilterMode::Nearest, "Nearest"),
@@ -12,7 +12,7 @@ RTTI_END_ENUM
 RTTI_BEGIN_ENUM(nap::EWrapMode)
 	RTTI_ENUM_VALUE(nap::EWrapMode::Repeat,			"Repeat"),
 	RTTI_ENUM_VALUE(nap::EWrapMode::MirroredRepeat, "MirroredRepeat"),
-	RTTI_ENUM_VALUE(nap::EWrapMode::ClampToBorder,	"ClampToEdge"),
+	RTTI_ENUM_VALUE(nap::EWrapMode::ClampToEdge,	"ClampToEdge"),
 	RTTI_ENUM_VALUE(nap::EWrapMode::ClampToBorder,	"ClampToBorder")
 RTTI_END_ENUM
 
@@ -24,20 +24,9 @@ RTTI_BEGIN_CLASS(nap::TextureParameters)
 	RTTI_PROPERTY("MaxLodLevel",		&nap::TextureParameters::mMaxLodLevel,		nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(opengl::Texture2DSettings)
-	RTTI_PROPERTY("mInternalFormat", &opengl::Texture2DSettings::internalFormat, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("mWidth", &opengl::Texture2DSettings::width, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("mHeight", &opengl::Texture2DSettings::height, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("mFormat", &opengl::Texture2DSettings::format, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("mType", &opengl::Texture2DSettings::type, nap::rtti::EPropertyMetaData::Required)
-RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Texture)
-	RTTI_PROPERTY("mParameters", 		&nap::Texture::mParameters,			nap::rtti::EPropertyMetaData::Default)
-RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS(nap::MemoryTexture2D)
-	RTTI_PROPERTY("mSettings",			&nap::MemoryTexture2D::mSettings, 	nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseTexture2D)
+	RTTI_PROPERTY("Parameters", 	&nap::BaseTexture2D::mParameters,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Usage", 			&nap::BaseTexture2D::mUsage,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -96,7 +85,7 @@ static GLint getGLWrapMode(nap::EWrapMode wrapmode)
 }
 
 
-void nap::convertTextureParameters(const TextureParameters& input, opengl::TextureParameters& output)
+static void convertTextureParameters(const nap::TextureParameters& input, opengl::TextureParameters& output)
 {
 	output.minFilter	=	getGLFilterMode(input.mMinFilter);
 	output.maxFilter	=	getGLFilterMode(input.mMaxFilter);
@@ -110,48 +99,30 @@ void nap::convertTextureParameters(const TextureParameters& input, opengl::Textu
 
 namespace nap
 {
-	// Initializes 2D texture. Additionally a custom display name can be provided.
-	bool MemoryTexture2D::init(utility::ErrorState& errorState)
-	{
-		// Create 2D texture
-		mTexture = std::make_unique<opengl::Texture2D>();
 
+	void BaseTexture2D::init(opengl::Texture2DSettings& settings)
+	{
 		// Create the texture with the associated settings
 		opengl::TextureParameters gl_params;
 		convertTextureParameters(mParameters, gl_params);
-		mTexture->setParameters(gl_params);
-		mTexture->init();
+		mTexture.init(settings, gl_params, mUsage);
+	}
 
-		// Allocate the texture with the associated 2D image settings
-		mTexture->allocate(mSettings);
-
-		return true;
+	const glm::vec2 BaseTexture2D::getSize() const
+	{
+		return glm::vec2(mTexture.getSettings().width, mTexture.getSettings().height);
 	}
 
 
-	// Returns 2D texture object
-	const opengl::BaseTexture& MemoryTexture2D::getTexture() const
+	void BaseTexture2D::bind()
 	{
-		assert(mTexture != nullptr);
-		return *mTexture;
+		mTexture.bind();
 	}
 
 
-	const glm::vec2 MemoryTexture2D::getSize() const
+	void BaseTexture2D::unbind()
 	{
-		return glm::vec2(mTexture->getSettings().width, mTexture->getSettings().height);
-	}
-
-
-	bool Texture::bind()
-	{
-		return getTexture().bind();
-	}
-
-
-	bool Texture::unbind()
-	{
-		return getTexture().unbind();
+		mTexture.unbind();
 	}
 
 }

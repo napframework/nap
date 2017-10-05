@@ -11,18 +11,11 @@
 #include <nap/entity.h>
 #include <nap/core.h>
 
-RTTI_BEGIN_CLASS(nap::Rect)
-	RTTI_PROPERTY("X",		&nap::Rect::mX,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Y",		&nap::Rect::mY,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Width",	&nap::Rect::mWidth,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Height", &nap::Rect::mHeight,	nap::rtti::EPropertyMetaData::Required)
-RTTI_END_CLASS
-
 RTTI_BEGIN_CLASS(nap::RenderableMeshComponent)
 	RTTI_PROPERTY("Mesh",				&nap::RenderableMeshComponent::mMesh,						nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("MaterialInstance",	&nap::RenderableMeshComponent::mMaterialInstanceResource,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ClipRect",			&nap::RenderableMeshComponent::mClipRect,					nap::rtti::EPropertyMetaData::Default)
-	RTTI_END_CLASS
+RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderableMeshComponentInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
@@ -234,10 +227,10 @@ namespace nap
 		mRenderableMesh.mVAOHandle.get().bind();
 
 		// If a cliprect was set, enable scissor and set correct values
-		if (mClipRect.mWidth > 0.0f && mClipRect.mHeight > 0.0f)
+		if (mClipRect.hasWidth() && mClipRect.hasHeight())
 		{
 			glEnable(GL_SCISSOR_TEST);
-			glScissor(mClipRect.mX, mClipRect.mY, mClipRect.mWidth, mClipRect.mHeight);
+			glScissor(mClipRect.getMin().x, mClipRect.getMin().y, mClipRect.getWidth(), mClipRect.getHeight());
 		}
 
 		MeshInstance& mesh_instance = getMeshInstance();

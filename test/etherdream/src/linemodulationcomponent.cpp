@@ -80,18 +80,7 @@ namespace nap
 			// Rotate around z using cross product
 			normals[i] = glm::cross(dnormal, crossn);
 		}
-
-		// If the shape is closed the last normal can point to the first, otherwise we pick the previous one
-		if (spline.isClosed())
-		{
-			glm::vec3& curr_pos = vertices.back();
-			glm::vec3& next_pos = vertices.front();
-			normals.back() = glm::cross(glm::normalize(next_pos - curr_pos), crossn);
-		}
-		else
-		{
-			normals.back() = normals[normals.size()-2];
-		}
+		normals.back() = normals[normals.size() - 2];
 
 		utility::ErrorState error;
 		if (!spline.getMeshInstance().update(error))

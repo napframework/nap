@@ -13,7 +13,6 @@
 #include <renderwindow.h>
 #include <transformcomponent.h>
 #include <orthocameracomponent.h>
-#include <rendertarget.h>
 
 // Nap includes
 #include <nap/core.h>
@@ -28,6 +27,7 @@
 #include <video.h>
 #include "RenderableMeshComponent.h"
 #include "nap/logger.h"
+#include "texture2d.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
@@ -48,7 +48,7 @@ nap::ObjectPtr<nap::EntityInstance> cameraEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance> videoEntity = nullptr;
 
 // Some utilities
-void runGame(nap::Core& core);	
+void run(nap::Core& core);	
 
 // Called when the window is updating
 void onUpdate()
@@ -194,7 +194,6 @@ bool init(nap::Core& core)
 	// Set render states
 	nap::RenderState& render_state = renderService->getRenderState();
 	render_state.mEnableMultiSampling = true;
-	render_state.mLineWidth = 1.3f;
 	render_state.mPointSize = 2.0f;
 	render_state.mPolygonMode = opengl::PolygonMode::FILL;
 
@@ -212,13 +211,13 @@ int main(int argc, char *argv[])
 		return -1;
 
 	// Run Gam
-	runGame(core);
+	run(core);
 
 	return 0;
 }
  
 
-void runGame(nap::Core& core)
+void run(nap::Core& core)
 {
 	// Run function
 	bool loop = true;

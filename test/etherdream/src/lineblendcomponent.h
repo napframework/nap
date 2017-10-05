@@ -69,6 +69,16 @@ namespace nap
 		 */
 		bool isClosed() const;
 
+		/**
+		 *	@return the current blend value
+		 */
+		float getCurrentBlendValue() const							{ return mCurrentBlendValue;  }
+
+		/**
+		 *	Resets the blend time
+		 */
+		void reset()												{ mCurrentTime = 0.0f; }
+
 		float mBlendValue = 0.0f;									// Blend value
 		float mBlendSpeed = 0.0f;									// Speed to blend between 2 lines
 
@@ -77,6 +87,9 @@ namespace nap
 
 		// Current time
 		float mCurrentTime = 0.0f;
+
+		// Current blend value
+		float mCurrentBlendValue = 0.0f;
 
 		LineSelectionComponentInstance* mSelectorOne = nullptr;		// First line selection component
 		LineSelectionComponentInstance* mSelectorTwo = nullptr;		// Second line selection component

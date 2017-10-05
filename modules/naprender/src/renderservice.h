@@ -61,9 +61,16 @@ namespace nap
 		void renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps);
 
 		/**
-		* Clears the renderTarget.
+		* Clears the renderTarget using @flags.
+		* @param renderTarget the opengl target to clear
 		*/
 		void clearRenderTarget(opengl::RenderTarget& renderTarget, opengl::EClearFlags flags);
+
+		/**
+		 * Clears all the renderTarget's associated flags (Color, Depth, Stencil)
+		 * @param renderTarget the opengl target to clear
+		 */
+		void clearRenderTarget(opengl::RenderTarget& renderTarget);
 
 		/**
 		 * Sets the renderer, the service will own the renderer
@@ -173,26 +180,23 @@ namespace nap
 		*/
 		void updateRenderState();
 
-		using ContextSpecificStateMap = std::unordered_map<opengl::GLContext, RenderState>;
-		using WindowList = std::vector<RenderWindow*>;
-
-		RenderState mRenderState;									//< The latest render state as set by the user
-		ContextSpecificStateMap	mContextSpecificState;				//< The per-context render state
-
-		std::vector<std::unique_ptr<opengl::IGLContextResource>> mGLContextResourcesToDestroy;	///< Array of per-context GL resources scheduled for destruction
-
 		/**
-		 * Helper struct to refcount opengl VAOs.
-		 */
+		* Helper struct to refcount opengl VAOs.
+		*/
 		struct RefCountedVAO final
 		{
 			std::unique_ptr<opengl::VertexArrayObject> mObject;
 			int mRefCount = 0;
 		};
 
+		using ContextSpecificStateMap = std::unordered_map<opengl::GLContext, RenderState>;
+		using WindowList = std::vector<RenderWindow*>;
 		using VAOMap = std::unordered_map<VAOKey, RefCountedVAO>;
-		VAOMap mVAOMap;												///< Map from material-mesh combination to opengl VAO
-		
+
+		RenderState	 mRenderState;																//< The latest render state as set by the user
+		ContextSpecificStateMap mContextSpecificState;											//< The per-context render state
+		std::vector<std::unique_ptr<opengl::IGLContextResource>> mGLContextResourcesToDestroy;	//< Array of per-context GL resources scheduled for destruction
+		VAOMap mVAOMap;																			//< Map from material-mesh combination to opengl VAO
 		WindowList mWindows;
 	};
 } // nap
