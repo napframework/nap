@@ -4,7 +4,7 @@
 #include <nap/service.h>
 
 // Audio includes
-#include <node/audionodemanager.h>
+#include <core/audionodemanager.h>
 
 namespace nap {
     

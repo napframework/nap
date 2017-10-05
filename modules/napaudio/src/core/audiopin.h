@@ -83,6 +83,7 @@ namespace nap {
         };
         
         
+        
         class NAPAPI MultiInputPin : public InputPinBase
         {
         public:
@@ -113,6 +114,7 @@ namespace nap {
         private:
             std::set<OutputPin*> mInputs;
         };
+        
         
         
         /**

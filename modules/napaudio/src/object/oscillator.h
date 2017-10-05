@@ -4,7 +4,7 @@
 #include <nap/objectptr.h>
 
 // Audio includes
-#include <graph/audioobject.h>
+#include <core/audioobject.h>
 #include <node/oscillatornode.h>
 
 namespace nap {

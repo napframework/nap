@@ -7,7 +7,7 @@
 
 // Audio includes
 #include <utility/audiofunctions.h>
-#include <node/audionodemanager.h>
+#include <core/audionodemanager.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::OscillatorNode)
     RTTI_CONSTRUCTOR(nap::audio::NodeManager&, nap::audio::WaveTable&)

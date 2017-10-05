@@ -6,8 +6,8 @@
 #include <nap/objectptr.h>
 
 // Audio includes
-#include <node/audionode.h>
-#include <graph/audioobject.h>
+#include <core/audionode.h>
+#include <core/audioobject.h>
 
 namespace nap {
     

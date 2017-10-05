@@ -2,8 +2,8 @@
 	"Objects":
 	[
 		{
-			"Type": "nap::audio::VoiceGraph",
-			"mID": "graph",
+			"Type": "nap::audio::Voice",
+			"mID": "voice",
 			"Objects":
 			[
 				{
@@ -62,7 +62,7 @@
 					"Object":
 					{
 						"Type": "nap::audio::PolyphonicObject",
-						"Graph": "graph",
+						"Graph": "voice",
 						"VoiceCount": 32,
 						"VoiceStealing": "False"
 					}

@@ -1,10 +1,10 @@
-#include "graphcomponent.h"
+#include "graphobject.h"
 
 // Nap includes
 #include <nap/entity.h>
 
 // Audio includes
-#include <graph/audioobject.h>
+#include <core/audioobject.h>
 
 
 // RTTI

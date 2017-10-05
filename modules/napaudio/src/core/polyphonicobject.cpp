@@ -1,11 +1,11 @@
-#include "polyphoniccomponent.h"
+#include "polyphonicobject.h"
 
 // Nap includes
 #include <nap/entity.h>
 
 // RTTI
 RTTI_BEGIN_CLASS(nap::audio::PolyphonicObject)
-    RTTI_PROPERTY("Graph", &nap::audio::PolyphonicObject::mGraph, nap::rtti::EPropertyMetaData::Required)
+    RTTI_PROPERTY("Voice", &nap::audio::PolyphonicObject::mVoice, nap::rtti::EPropertyMetaData::Required)
     RTTI_PROPERTY("VoiceCount", &nap::audio::PolyphonicObject::mVoiceCount, nap::rtti::EPropertyMetaData::Default)
     RTTI_PROPERTY("VoiceStealing", &nap::audio::PolyphonicObject::mVoiceStealing, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -36,21 +36,21 @@ namespace nap
             
             for (auto i = 0; i < resource->mVoiceCount; ++i)
             {
-                mVoices.emplace_back(std::make_unique<VoiceGraphInstance>());
-                if (!mVoices.back()->init(*resource->mGraph, errorState))
+                mVoices.emplace_back(std::make_unique<VoiceInstance>());
+                if (!mVoices.back()->init(*resource->mVoice, errorState))
                     return false;
                 mVoices.back()->finishedSignal.connect(this, &PolyphonicObjectInstance::voiceFinished);
             }
             
             // Create the mix nodes to mix output of all the voices
-            for (auto i = 0; i < resource->mGraph->mOutput->getInstance()->getChannelCount(); ++i)
-                mMixNodes.emplace_back(std::make_unique<MixNode>(resource->mGraph->getNodeManager()));
+            for (auto i = 0; i < resource->mVoice->mOutput->getInstance()->getChannelCount(); ++i)
+                mMixNodes.emplace_back(std::make_unique<MixNode>(resource->mVoice->getNodeManager()));
             
             return true;
         }
         
         
-        VoiceGraphInstance* PolyphonicObjectInstance::findFreeVoice()
+        VoiceInstance* PolyphonicObjectInstance::findFreeVoice()
         {
             std::unique_lock<std::mutex> lock(mNodeManager->getProcessingMutex());
             
@@ -76,7 +76,7 @@ namespace nap
         }
         
         
-        void PolyphonicObjectInstance::play(VoiceGraphInstance* voice)
+        void PolyphonicObjectInstance::play(VoiceInstance* voice)
         {
             if (!voice)
                 return;
@@ -90,7 +90,7 @@ namespace nap
         }
         
         
-        void PolyphonicObjectInstance::stop(VoiceGraphInstance* voice)
+        void PolyphonicObjectInstance::stop(VoiceInstance* voice)
         {
             if (!voice)
                 return;
@@ -113,7 +113,7 @@ namespace nap
         }
         
         
-        void PolyphonicObjectInstance::voiceFinished(VoiceGraphInstance& voice)
+        void PolyphonicObjectInstance::voiceFinished(VoiceInstance& voice)
         {
             assert(voice.getEnvelope().getValue() == 0);
             for (auto channel = 0; channel < std::min<int>(mMixNodes.size(), voice.getOutput().getChannelCount()); ++channel)

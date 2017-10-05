@@ -7,8 +7,8 @@
 #include <utility/linearramper.h>
 #include <utility/exponentialramper.h>
 #include <utility/translator.h>
-#include <node/audionode.h>
-#include <node/audionodemanager.h>
+#include <core/audionode.h>
+#include <core/audionodemanager.h>
 
 namespace nap {
     

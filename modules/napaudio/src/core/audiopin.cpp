@@ -4,8 +4,8 @@
 #include <cassert>
 
 // Audio includes
-#include <node/audionode.h>
-#include <node/audionodemanager.h>
+#include <core/audionode.h>
+#include <core/audionodemanager.h>
 
 namespace nap {
     

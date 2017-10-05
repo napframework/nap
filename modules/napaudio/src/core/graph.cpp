@@ -1,4 +1,4 @@
-#include "audiograph.h"
+#include "graph.h"
 
 
 // Nap includes
@@ -6,11 +6,12 @@
 #include <nap/objectgraph.h>
 
 // Audio includes
-#include <graph/audioobject.h>
+#include <core/audioobject.h>
 
 
 // RTTI
-RTTI_BEGIN_CLASS(nap::audio::Graph)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::Graph)
+    RTTI_CONSTRUCTOR(nap::audio::NodeManager&)
     RTTI_PROPERTY("Objects", &nap::audio::Graph::mObjects, nap::rtti::EPropertyMetaData::Embedded)
     RTTI_PROPERTY("Output", &nap::audio::Graph::mOutput, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS

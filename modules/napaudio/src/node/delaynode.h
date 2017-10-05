@@ -2,7 +2,7 @@
 
 
 // Audio includes
-#include <node/audionode.h>
+#include <core/audionode.h>
 #include <node/delay.h>
 
 namespace nap {

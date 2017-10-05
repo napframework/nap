@@ -9,7 +9,7 @@
 
 // Audio includes
 #include <utility/audiotypes.h>
-#include <node/audiopin.h>
+#include <core/audiopin.h>
 
 namespace nap {
     
@@ -21,7 +21,7 @@ namespace nap {
         
         
         /**
-         * An node does audio processing.
+         * A node performs audio processing and is the smallest unit of a DSP network.
          * The node can have an arbitrary number of inputs and outputs, used to connect streams of mono audio between different nodes.
          * Use this as a base class for custom nodes that generate audio output.
          */
