@@ -14,7 +14,7 @@
 #include <transformcomponent.h>
 #include <perspcameracomponent.h>
 #include <mathutils.h>
-#include <texturerendertarget2d.h>
+#include <rendertarget.h>
 #include <ntexturerendertarget2d.h>
 #include <sdlinput.h>
 #include <sdlwindow.h>
@@ -34,7 +34,7 @@
 #include <sceneservice.h>
 #include <videoservice.h>
 #include <video.h>
-#include <memorytexture2d.h>
+#include <texture2d.h>
 #include <mathutils.h>
 
 #include <pybind11/pybind11.h>
@@ -53,7 +53,7 @@ nap::VideoService*								videoService = nullptr;
 nap::InputService*								inputService = nullptr;
 
 nap::ObjectPtr<nap::RenderWindow>				renderWindow;
-nap::ObjectPtr<nap::TextureRenderTarget2D>		textureRenderTarget;
+nap::ObjectPtr<nap::RenderTarget>			textureRenderTarget;
 nap::ObjectPtr<nap::EntityInstance>				kalvertorenEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance>				cameraEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance>				defaultInputRouter = nullptr;
@@ -163,7 +163,6 @@ void onRender()
 {
 	renderService->destroyGLContextResources(std::vector<nap::ObjectPtr<nap::RenderWindow>>({ renderWindow }));
 
-
 	// Render offscreen surface(s)
 	{
 		renderService->getPrimaryWindow().makeCurrent();
@@ -252,11 +251,13 @@ bool init(nap::Core& core)
 	{ 
 		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
 		return false;        
-	}    
+	}
+
+	glFlush();
 	 
 	renderWindow			= resourceManagerService->findObject<nap::RenderWindow>("Window0");
- 	textureRenderTarget		= resourceManagerService->findObject<nap::TextureRenderTarget2D>("PlaneRenderTarget");
-	kalvertorenEntity	= resourceManagerService->findEntity("KalvertorenEntity");
+ 	textureRenderTarget		= resourceManagerService->findObject<nap::RenderTarget>("PlaneRenderTarget");
+	kalvertorenEntity		= resourceManagerService->findEntity("KalvertorenEntity");
 	cameraEntity			= resourceManagerService->findEntity("CameraEntity");
 	defaultInputRouter		= resourceManagerService->findEntity("DefaultInputRouterEntity");
 	videoEntity				= resourceManagerService->findEntity("VideoEntity"); 

@@ -21,7 +21,7 @@
 		},
 
 		{
-			"Type" : "nap::MemoryTexture2D",
+			"Type" : "nap::Texture2D",
 			"mID" : "ColorTexture",
 			"Width" : 640,
 			"Height" : 480,
@@ -30,7 +30,7 @@
 		},
 		
 		{
-			"Type" : "nap::MemoryTexture2D",
+			"Type" : "nap::Texture2D",
 			"mID" : "DepthTexture",
 			"Width" : 640,
 			"Height" : 480,
@@ -38,7 +38,7 @@
 		},
 		
 		{
-			"Type" : "nap::TextureRenderTarget2D",
+			"Type" : "nap::RenderTarget",
 			"mID": "PlaneRenderTarget",
 			"mColorTexture": "ColorTexture",
 			"mDepthTexture": "DepthTexture",
