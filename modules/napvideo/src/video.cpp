@@ -1,6 +1,6 @@
 #include "video.h"
 
-#include "memorytexture2d.h"
+#include "texture2d.h"
 #include "image.h"
 
 // external includes
@@ -129,30 +129,30 @@ namespace nap
 		parameters.mMinFilter = EFilterMode::Linear;
 		parameters.mMaxFilter = EFilterMode::Linear;
 
-		mYTexture = std::make_unique<MemoryTexture2D>();
+		mYTexture = std::make_unique<Texture2D>();
 		mYTexture->mWidth = yWidth;
 		mYTexture->mHeight = yHeight;
-		mYTexture->mFormat = MemoryTexture2D::EFormat::R8;
+		mYTexture->mFormat = Texture2D::EFormat::R8;
 		mYTexture->mParameters = parameters;
 		if (!mYTexture->init(errorState))
 			return false;
 
 		mYTexture->getTexture().setData(y_default_data.data());
 
-		mUTexture = std::make_unique<MemoryTexture2D>();
+		mUTexture = std::make_unique<Texture2D>();
 		mUTexture->mWidth = uvWidth;
 		mUTexture->mHeight = uvHeight;
-		mUTexture->mFormat = MemoryTexture2D::EFormat::R8;
+		mUTexture->mFormat = Texture2D::EFormat::R8;
 		mUTexture->mParameters = parameters;
 		if (!mUTexture->init(errorState))
 			return false;
 				
 		mUTexture->getTexture().setData(uv_default_data.data());
 
-		mVTexture = std::make_unique<MemoryTexture2D>();
+		mVTexture = std::make_unique<Texture2D>();
 		mVTexture->mWidth = uvWidth;
 		mVTexture->mHeight = uvHeight;
-		mVTexture->mFormat = MemoryTexture2D::EFormat::R8;
+		mVTexture->mFormat = Texture2D::EFormat::R8;
 		mVTexture->mParameters = parameters;
 		if (!mVTexture->init(errorState))
 			return false;

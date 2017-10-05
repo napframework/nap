@@ -5,28 +5,21 @@
 #include <nap/objectptr.h>
 #include <renderablemeshcomponent.h>
 #include <polyline.h>
+#include <transformcomponent.h>
+#include <nap/signalslot.h>
 
 namespace nap
 {
 	class LineSelectionComponentInstance;
 
 	/**
-	 * LineSelectionComponent
+	 * LineSelectionComponent Resource
 	 */
 	class LineSelectionComponent : public Component
 	{
 		RTTI_ENABLE(Component)
+		DECLARE_COMPONENT(LineSelectionComponent, LineSelectionComponentInstance)
 	public:
-		virtual const rtti::TypeInfo getInstanceType() const override
-		{
-			return RTTI_OF(LineSelectionComponentInstance);
-		}
-
-		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override
-		{
-			components.emplace_back(RTTI_OF(RenderableMeshComponent));
-		}
-
 		// Property: list of selectable poly lines
 		std::vector<ObjectPtr<nap::PolyLine>> mLines;
 
@@ -35,6 +28,10 @@ namespace nap
 	};
 
 
+	/**
+	 * Holds a set of lines that the user can select from
+	 * When a line index changes the mIndexChanged signal is emitted
+	 */
 	class LineSelectionComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
@@ -46,10 +43,18 @@ namespace nap
 		// Init selection component
 		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
+		// Property: list of selectable poly-lines
+		std::vector<ObjectPtr<nap::PolyLine>> mLines;
+
 		/**
 		 * @return the currently selected line
 		 */
 		const nap::PolyLine& getLine() const;
+
+		/**
+		 *	@return the currently selected line (non const)
+		 */
+		nap::PolyLine& getLine();
 
 		/**
 		 *	@return the current line index
@@ -67,16 +72,13 @@ namespace nap
 		 */
 		int getCount() const					{ return static_cast<int>(mLines.size()); }
 
+		// Signal that is emitted when the index changes
+		nap::Signal<const LineSelectionComponentInstance&> mIndexChanged;
+
 	private:
 		void verifyIndex(int index);
 
-		// Property: list of selectable poly-lines
-		std::vector<RenderableMesh> mLines;
-
 		// property: index
 		int mIndex = 0;
-
-		// Store pointer to transform, set during init
-		nap::RenderableMeshComponentInstance* mMeshComponentInstance;
 	};
 }
