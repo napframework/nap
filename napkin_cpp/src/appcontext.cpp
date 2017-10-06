@@ -42,6 +42,14 @@ AppContext& AppContext::get()
     return inst;
 }
 
+void AppContext::newFile()
+{
+    mCurrentFilename = "";
+    mObjects.clear();
+    newFileCreated();
+}
+
+
 void AppContext::loadFile(const QString& filename)
 {
     mCurrentFilename = filename;
@@ -165,7 +173,7 @@ nap::Component* AppContext::addComponent(nap::Entity& entity, rttr::type type)
     assert(type.is_derived_from<nap::Component>());
 
     auto compVariant = type.create();
-    auto comp = static_cast<nap::Component*>(compVariant.get_value<nap::Component*>());
+    auto comp = compVariant.get_value<nap::Component*>();
     comp->mID = getUniqueName(type.get_name().data());
     mObjects.emplace_back(comp);
     entity.mComponents.emplace_back(comp);
@@ -174,6 +182,23 @@ nap::Component* AppContext::addComponent(nap::Entity& entity, rttr::type type)
 
     return comp;
 }
+
+
+nap::rtti::RTTIObject* AppContext::addObject(rttr::type type)
+{
+    assert(type.can_create_instance());
+    assert(type.is_derived_from<nap::rtti::RTTIObject>());
+    auto variant = type.create();
+    auto obj = variant.get_value<nap::rtti::RTTIObject*>();
+    obj->mID = getUniqueName(type.get_name().data());
+    mObjects.emplace_back(obj);
+    objectAdded(*obj);
+    return obj;
+}
+
+
+
+
 
 std::string AppContext::getUniqueName(const std::string& suggestedName)
 {
@@ -213,6 +238,4 @@ void AppContext::deleteObject(nap::rtti::RTTIObject& object)
 
     objectRemoved(object);
 }
-
-
 

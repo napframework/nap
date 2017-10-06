@@ -75,7 +75,10 @@ OutlinePanel::OutlinePanel()
     mTreeView.setModel(&mModel);
     mTreeView.tree().setColumnWidth(0, 300);
     mTreeView.tree().setSortingEnabled(true);
+
     connect(&AppContext::get(), &AppContext::fileOpened, this, &OutlinePanel::onFileOpened);
+    connect(&AppContext::get(), &AppContext::newFileCreated, this, &OutlinePanel::onNewFile);
+
     connect(mTreeView.selectionModel(), &QItemSelectionModel::selectionChanged, this,
             &OutlinePanel::onSelectionChanged);
 
@@ -83,6 +86,7 @@ OutlinePanel::OutlinePanel()
 //    connect(&AppContext::get(), &AppContext::dataChanged, this, &OutlinePanel::refresh);
     connect(&AppContext::get(), &AppContext::entityAdded, this, &OutlinePanel::onEntityAdded);
     connect(&AppContext::get(), &AppContext::componentAdded, this, &OutlinePanel::onComponentAdded);
+    connect(&AppContext::get(), &AppContext::objectAdded, this, &OutlinePanel::onObjectAdded);
     connect(&AppContext::get(), &AppContext::objectRemoved, this, &OutlinePanel::onObjectRemoved);
 }
 
@@ -101,12 +105,10 @@ void OutlinePanel::menuHook(QMenu& menu)
             menu.addAction(new AddEntityAction(&entityItem->entity()));
 
             // Components
-
             auto addComponentMenu = menu.addMenu("Add Component");
-            for (auto type : getComponentTypes()) {
+            for (const auto& type : getComponentTypes()) {
                 addComponentMenu->addAction(new AddComponentAction(entityItem->entity(), type));
             }
-
         }
 
         menu.addAction(new DeleteObjectAction(objItem->object()));
@@ -114,13 +116,28 @@ void OutlinePanel::menuHook(QMenu& menu)
 
     auto groupItem = dynamic_cast<GroupItem*>(item);
     if (groupItem != nullptr) {
-        // FIXME: No way to tell a resource/instance apart. Go refactor this and behold why this is here.
+        // TODO: Use anything other than string comparison to filter this shit
+        // (necessary type chain is not usable at the time of writing)
         if (groupItem->text() == TXT_LABEL_ENTITIES) {
             menu.addAction(new AddEntityAction(nullptr));
+        } else if (groupItem->text() == TXT_LABEL_OBJECTS) {
+
+            // Resources
+            auto addObjectMenu = menu.addMenu("Add Object");
+            for (const auto& type : getResourceTypes()) {
+                addObjectMenu->addAction(new AddObjectAction(type));
+            }
+
         }
     }
 
 }
+
+void OutlinePanel::onNewFile()
+{
+    refresh();
+}
+
 
 void OutlinePanel::onFileOpened(const QString& filename)
 {
@@ -198,6 +215,15 @@ void OutlinePanel::onComponentAdded(nap::Component& comp, nap::Entity& owner)
     mTreeView.tree().expandAll();
     mTreeView.selectAndReveal(findItem(comp));
 }
+
+void OutlinePanel::onObjectAdded(nap::rtti::RTTIObject& obj)
+{
+    // TODO: Don't refresh the whole model
+    mModel.refresh();
+    mTreeView.tree().expandAll();
+    mTreeView.selectAndReveal(findItem(obj));
+}
+
 
 void OutlinePanel::onObjectRemoved(nap::rtti::RTTIObject& object)
 {

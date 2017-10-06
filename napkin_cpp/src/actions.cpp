@@ -7,6 +7,17 @@ Action::Action() : QAction()
     connect(this, &QAction::triggered, this, &Action::perform);
 }
 
+NewFileAction::NewFileAction()
+{
+    setText("New");
+    setShortcut(QKeySequence::New);
+}
+
+void NewFileAction::perform()
+{
+    AppContext::get().newFile();
+}
+
 
 OpenFileAction::OpenFileAction()
 {

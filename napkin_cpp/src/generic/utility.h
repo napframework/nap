@@ -83,3 +83,23 @@ static std::vector<rttr::type> getComponentTypes()
     }
     return ret;
 }
+
+static std::vector<rttr::type> getResourceTypes()
+{
+    // TODO: Find a proper way to retrieve 'resource types' via RTTI
+    std::vector<rttr::type> ret;
+    rttr::type rootType = RTTI_OF(nap::rtti::RTTIObject);
+    for (const rttr::type& derived : rootType.get_derived_classes()) {
+        if (derived.is_derived_from<nap::Component>())
+            continue;
+        if (derived.is_derived_from<nap::Entity>())
+            continue;
+        if (derived.is_derived_from<nap::ComponentInstance>())
+            continue;
+        if (!derived.can_create_instance())
+            continue;
+
+        ret.emplace_back(derived);
+    }
+    return ret;
+}

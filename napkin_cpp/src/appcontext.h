@@ -24,6 +24,7 @@ public:
 
     nap::Core& core() { return mCore; }
 
+    void newFile();
     void loadFile(const QString& filename);
     void saveFile();
     void saveFileAs(const QString& filename);
@@ -37,12 +38,14 @@ public:
     nap::Entity* getOwner(const nap::Component& component);
     nap::Entity* createEntity(nap::Entity* parent = nullptr);
     nap::Component* addComponent(nap::Entity& entity, rttr::type type);
+    nap::rtti::RTTIObject* addObject(rttr::type type);
 
     void deleteObject(nap::rtti::RTTIObject& object);
 
 signals:
     void fileOpened(const QString& filename);
     void fileSaved(const QString& filename);
+    void newFileCreated();
 
     void selectionChanged();
 
@@ -50,6 +53,7 @@ signals:
     void dataChanged();
     void entityAdded(nap::Entity* newEntity, nap::Entity* parent=nullptr);
     void componentAdded(nap::Component& comp, nap::Entity& owner);
+    void objectAdded(nap::rtti::RTTIObject& obj);
     void objectRemoved(nap::rtti::RTTIObject& object);
 private:
     AppContext();

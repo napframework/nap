@@ -28,6 +28,7 @@ private:
     void addMenu();
 
 private:
+    void onNewFile();
     void onFileOpened(const QString& filename);
     void onFileSaved(const QString& filename);
     void openRecentFile();

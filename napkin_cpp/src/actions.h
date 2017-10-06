@@ -20,6 +20,13 @@ protected:
     virtual void perform() = 0;
 };
 
+class NewFileAction : public Action {
+public:
+    NewFileAction();
+private:
+    void perform() override;
+};
+
 class OpenFileAction : public Action {
 
 public:
@@ -84,6 +91,19 @@ private:
     nap::rtti::TypeInfo mComponentType;
 };
 
+
+class AddObjectAction : public Action {
+public:
+    AddObjectAction(rttr::type type) : Action(), mType(type) {
+        setText(QString(type.get_name().data()));
+    }
+private:
+    void perform() override {
+        AppContext::get().addObject(mType);
+    }
+private:
+    rttr::type mType;
+};
 
 class DeleteObjectAction : public Action {
 public:

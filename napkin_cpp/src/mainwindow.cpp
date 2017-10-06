@@ -19,12 +19,16 @@ void MainWindow::showEvent(QShowEvent* event) {
 
 void MainWindow::addDocks() {
     addDock("Outline", &mOutlinePanel);
-    addDock("Types", &mHierarchyPanel);
+    addDock("Available Types", &mHierarchyPanel);
     addDock("Inspector", &mInspectorPanel);
 }
 
 void MainWindow::addMenu() {
     QMenu* filemenu = new QMenu("File", menuBar());
+
+    auto newFileAction = new NewFileAction();
+    addAction(newFileAction);
+    filemenu->addAction(newFileAction);
 
     auto openFileAction = new OpenFileAction();
     addAction(openFileAction);
@@ -41,6 +45,12 @@ void MainWindow::addMenu() {
     menuBar()->insertMenu(windowMenu()->menuAction(), filemenu);
 }
 
+void MainWindow::onNewFile()
+{
+    updateWindowTitle();
+}
+
+
 void MainWindow::onFileOpened(const QString& filename) {
     updateWindowTitle();
 }
@@ -54,12 +64,12 @@ void MainWindow::openRecentFile() {
     if (lastFilename.isNull())
         return;
     AppContext::get().loadFile(lastFilename);
-
 }
 
 
 void MainWindow::updateWindowTitle() {
     setWindowTitle(QString("%1 - %2").arg(QApplication::applicationName(), AppContext::get().currentFilename()));
 }
+
 
 
