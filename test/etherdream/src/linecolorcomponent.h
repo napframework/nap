@@ -97,6 +97,13 @@ namespace nap
 		 */
 		void link(bool value)										{ mLink = value; }
 
+		/**
+		 * @return the pixel color as vector 3 at uv position x,y
+		 * @param uvPos the uv position to get the color for
+		 * @param outColor the pixel color as normalized float
+		 */
+		void getColor(const glm::vec2& uvPos, glm::vec3& outColor);
+
 	private:
 		LineBlendComponentInstance* mBlendComponent = nullptr;		// Holds the line we want to color
 		Image* mLookupImage = nullptr;								// Image used for color lookup

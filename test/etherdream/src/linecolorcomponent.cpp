@@ -80,15 +80,6 @@ namespace nap
 		nap::PolyLine& line = mBlendComponent->getLine();
 		nap::Vec4VertexAttribute& color_attr = line.getColorAttr();
 
-		const opengl::Bitmap& bitmap = mLookupImage->getBitmap();
-
-		// Convert start location to pixel coordinates
-		unsigned int bitmap_width  = bitmap.getWidth();
-		unsigned int bitmap_height = bitmap.getHeight();
-
-		float max_width = static_cast<float>(bitmap_width - 1);
-		float max_height = static_cast<float>(bitmap_height - 1);
-
 		// Get data to set (interpolate)
 		int vert_count = color_attr.getCount();
 		assert(vert_count > 1);
@@ -103,11 +94,6 @@ namespace nap
 		// Will hold the interpolated uv coordinates
 		glm::vec2 lerped_uv_coordinates;
 
-		// Will hold the pixel coordinates to sample
-		glm::ivec2 bitmap_coordinates;
-
-		opengl::BitmapDataType data_type = bitmap.getDataType();
-
 		// End sample position, is the same as the beginning if linking is turned on
 		glm::vec2 end_pos = mLink ? mStartPosition : mEndPosition;
 
@@ -120,26 +106,10 @@ namespace nap
 			// Get interpolated uv coordinates
 			lerped_uv_coordinates = math::lerp<glm::vec2>(mStartPosition, end_pos, lerp_v);
 
-			// Convert to bitmap coordinates
-			bitmap_coordinates.x = static_cast<int>(lerped_uv_coordinates.x * max_width);
-			bitmap_coordinates.y = static_cast<int>(lerped_uv_coordinates.y * max_height);
-
-			// Get pixel color data for current lerped bitmap coordinate value
-			switch (data_type)
-			{
-			case opengl::BitmapDataType::BYTE:
-				getPixelColor<nap::uint8>(bitmap, bitmap_coordinates, lerp_color, math::max<nap::uint8>());
-				break;
-			case opengl::BitmapDataType::FLOAT:
-				getPixelColor<float>(bitmap, bitmap_coordinates, lerp_color, 1.0f);
-				break;
-			case opengl::BitmapDataType::USHORT:
-				getPixelColor<nap::uint16>(bitmap, bitmap_coordinates, lerp_color, math::max<nap::uint16>());
-				break;
-			default:
-				assert(false);
-				break;
-			}
+			// Get pixel color
+			getColor(lerped_uv_coordinates, lerp_color);
+			
+			// Set color
 			color_data[i] = glm::vec4(lerp_color, mIntensity);
 		}
 
@@ -169,6 +139,33 @@ namespace nap
 	void LineColorComponentInstance::setIntensity(float intensity)
 	{
 		mIntensity = math::clamp<float>(intensity, 0.0f, 1.0f);
+	}
+
+
+	void LineColorComponentInstance::getColor(const glm::vec2& uvPos, glm::vec3& outColor)
+	{
+		// Get max width and height in bitmap space
+		const opengl::Bitmap& bitmap = mLookupImage->getBitmap();
+		glm::ivec2 bitmap_coordinates;
+		bitmap_coordinates.x = static_cast<int>(static_cast<float>(bitmap.getWidth()  - 1) * uvPos.x);
+		bitmap_coordinates.y = static_cast<int>(static_cast<float>(bitmap.getHeight() - 1) * uvPos.y);
+
+		// Get pixel color data for current lerped bitmap coordinate value
+		switch (bitmap.getDataType())
+		{
+		case opengl::BitmapDataType::BYTE:
+			getPixelColor<nap::uint8>(bitmap, bitmap_coordinates, outColor, math::max<nap::uint8>());
+			break;
+		case opengl::BitmapDataType::FLOAT:
+			getPixelColor<float>(bitmap, bitmap_coordinates, outColor, 1.0f);
+			break;
+		case opengl::BitmapDataType::USHORT:
+			getPixelColor<nap::uint16>(bitmap, bitmap_coordinates, outColor, math::max<nap::uint16>());
+			break;
+		default:
+			assert(false);
+			break;
+		}
 	}
 
 }

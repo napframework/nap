@@ -7,9 +7,10 @@
 #include <nap/logger.h>
 
 RTTI_BEGIN_CLASS(nap::OSCLaserInputHandler)
-	RTTI_PROPERTY("SelectionComponentOne", &nap::OSCLaserInputHandler::mSelectionComponentOne, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("SelectionComponentTwo", &nap::OSCLaserInputHandler::mSelectionComponentTwo, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("LaserOutputComponent",  &nap::OSCLaserInputHandler::mLaserOutputComponent,  nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("SelectionComponentOne", &nap::OSCLaserInputHandler::mSelectionComponentOne,  nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("SelectionComponentTwo", &nap::OSCLaserInputHandler::mSelectionComponentTwo,  nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("LaserOutputComponent",  &nap::OSCLaserInputHandler::mLaserOutputComponent,   nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("PrintColor",			   &nap::OSCLaserInputHandler::mPrintColor,				nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::OSCLaserInputHandlerInstance)
@@ -67,6 +68,8 @@ namespace nap
 			return false;
 
 		mLaserOutput = getComponent<OSCLaserInputHandler>()->mLaserOutputComponent.get();
+
+		mPrintColor = getComponent<OSCLaserInputHandler>()->mPrintColor;
 
 		mInputComponent->messageReceived.connect(mMessageReceivedSlot);
 
@@ -128,16 +131,30 @@ namespace nap
 	void OSCLaserInputHandlerInstance::updateColor(const OSCEvent& oscEvent, int position)
 	{
 		assert(oscEvent.getCount() == 2);
-		float pos_x = oscEvent[0].asFloat();
-		float pos_y = oscEvent[1].asFloat();
+		float pos_x = math::clamp<float>(oscEvent[0].asFloat(),0.0f,1.0f);
+		float pos_y = math::clamp<float>(oscEvent[1].asFloat(),0.0f,1.0f);
+
+		glm::vec2 uv_pos(pos_x, pos_y);
+		glm::vec3 mp_clr;
 
 		if (position == 0)
 		{
 			mColorComponent->setStartPosition(glm::vec2(pos_x, pos_y));
+			mColorComponent->getColor(uv_pos, mp_clr);
 		}
 		else
 		{
 			mColorComponent->setEndPosition(glm::vec2(pos_x, pos_y));
+			mColorComponent->getColor(uv_pos, mp_clr);
+		}
+		
+		if (mPrintColor)
+		{
+			// Convert color to 8 bit value
+			int r = static_cast<int>(mp_clr.x * 255.0f);
+			int g = static_cast<int>(mp_clr.y * 255.0f);
+			int b = static_cast<int>(mp_clr.z * 255.0f);
+			std::cout << "Pixel Color: " << r << " " << g << " " << b << "\n";
 		}
 	}
 

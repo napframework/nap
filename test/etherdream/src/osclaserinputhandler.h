@@ -42,6 +42,9 @@ namespace nap
 		// property: Link to laser output component
 		ComponentPtr<LaserOutputComponent> mLaserOutputComponent = nullptr;
 
+		// property: If the pixel color should be printed
+		bool mPrintColor = false;
+
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 	};
 
@@ -99,6 +102,7 @@ namespace nap
 		LineModulationComponentInstance* mModulationComponent = nullptr;	// Laser modulation component
 		LineAutoSwitchComponentInstance* mSwitcher = nullptr;				// Switches lines
 		LineBlendComponentInstance* mBlender = nullptr;						// Blends between two lines
+		bool mPrintColor = false;											// If color should be printed
 
 		// This map holds all the various callbacks based on id
 		typedef void (OSCLaserInputHandlerInstance::*LaserEventFunc)(const OSCEvent&, const std::vector<std::string>& args);
