@@ -142,14 +142,15 @@ void onUpdate()
 			color.z = pixel[2] / 255.0f;
 			color.w = pixel[3] / 255.0f;
 		}
-		 
+		
+		/*
 		nap::utility::ErrorState errorState;
 		if (!mesh.update(errorState))
 		{
 			nap::Logger::fatal("Failed to update texture: %s", errorState.toString());
 		}
+		*/
 	}
-
 
 	resourceManagerService->getRootEntity().update(delta_time);
 
@@ -185,16 +186,17 @@ void onRender()
 
 		// Render output texture to plane
 		std::vector<nap::RenderableComponentInstance*> components_to_render;
-		components_to_render.push_back(&kalvertorenEntity->getComponent<nap::RenderableMeshComponentInstance>());
+		kalvertorenEntity->getComponentsOfType<nap::RenderableComponentInstance>(components_to_render);
 
 		opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(renderWindow->getWindow()->getBackbuffer());
-		backbuffer.setClearColor(glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
-		renderService->clearRenderTarget(backbuffer, opengl::EClearFlags::COLOR|opengl::EClearFlags::DEPTH|opengl::EClearFlags::STENCIL);
+		backbuffer.setClearColor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+		renderService->clearRenderTarget(backbuffer);
 		renderService->renderObjects(backbuffer, cameraEntity->getComponent<nap::PerspCameraComponentInstance>(), components_to_render);
 		 
 		renderWindow->swap();
 	}
 }
+
 
 /**
 * Initialize all the resources and instances used for drawing
@@ -220,6 +222,7 @@ bool init(nap::Core& core)
 		nap::Logger::fatal(error.toString());
 		return false;
 	}
+
 
 	nap::Logger::info("initialized render service: %s", renderService->getTypeName().c_str());
 
@@ -252,6 +255,7 @@ bool init(nap::Core& core)
 		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
 		return false;        
 	}
+
 
 	glFlush();
 	 

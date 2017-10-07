@@ -56,11 +56,24 @@
 			"mVertShader": "shaders/kalvertoren/vertexcolor.vert",
 			"mFragShader": "shaders/kalvertoren/vertexcolor.frag"
 		},
+
+		{
+			"Type" : "nap::Shader",
+			"mID": "FrameShader",
+			"mVertShader": "shaders/kalvertoren/frame.vert",
+			"mFragShader": "shaders/kalvertoren/frame.frag"
+		},
 	
 		{
 			"Type" : "nap::MeshFromFile",
-			"mID": "Kalvertoren",
-			"Path" : "data/kalvertoren/kalvertoren_0.mesh"
+			"mID": "HeiligewegMesh",
+			"Path" : "data/kalvertoren/heiligeweg_export_heiligeweg.mesh"
+		},
+
+		{
+			"Type" : "nap::MeshFromFile",
+			"mID": "HeiligewegFrameMesh",
+			"Path" : "data/kalvertoren/heiligeweg_export_heiligeweg_frame.mesh"
 		},
 						
 		{
@@ -81,6 +94,32 @@
 					"ShaderAttributeID": "in_UV0"
 				}
 			]	
+		},
+
+		{
+			"Type" : "nap::Material",
+			"mID": "FrameMaterial",
+			"Shader": "FrameShader",
+			"VertexAttributeBindings" : 
+			[
+				{
+					"MeshAttributeID": "Position",
+					"ShaderAttributeID": "in_Position"
+				}
+			],
+			"Uniforms" : 
+			[
+				{
+					"Type" : "nap::UniformVec3",
+					"Name" : "mFrameColor",
+					"Value" : 
+					{
+						"x" : 0.0,
+						"y" : 0.0,
+						"z" : 0.0
+					}
+				}
+			]
 		},
 				
 		{
@@ -130,16 +169,25 @@
 			[
 				{
 					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "Kalvertoren",
-					"MaterialInstance" : {
+					"Mesh" : "HeiligewegMesh",
+					"MaterialInstance" : 
+					{
 						"Material": "VertexColorMaterial"
+					}
+				},
+				{
+					"Type" : "nap::RenderableMeshComponent",
+					"Mesh" : "HeiligewegFrameMesh",
+					"MaterialInstance" : 
+					{
+						"Material": "FrameMaterial"
 					}
 				},
 				{
 					"Type" : "nap::TransformComponent",
 					"Properties": {
 						"Translate": {
-							"x": 1.0,
+							"x": 0.0,
 							"y": 0.0,
 							"z": 0.0
 						},
@@ -154,6 +202,18 @@
 							"z": 1.0
 						},
 						"UniformScale": 1.0
+					}
+				},
+				{
+					"Type" : "nap::RotateComponent",
+					"Properties": {
+						"Axis": {
+							"x": 0.0,
+							"y": 1.0,
+							"z": 0.0
+						},
+						"Speed": 0.2,
+						"Offset": 2.0
 					}
 				}	
 			]
@@ -204,8 +264,8 @@
 					"Properties": {
 						"Translate": {
 							"x": 0.0,
-							"y": 8.0,
-							"z": 25.0
+							"y": 0.0,
+							"z": 40.0
 						},
 						"Rotate": {
 							"x": 0.0,
