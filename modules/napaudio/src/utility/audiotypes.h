@@ -70,6 +70,26 @@ namespace nap {
                     channel.resize(size);
             }
             
+            /**
+             * Reserve capacity of the buffer in memory to prevent repeated memory allocation
+             * @param channelCount: new number of channels capacity
+             * @param size: new size in samples capacity
+             */
+            void reserve(size_t channelCount, size_t size)
+            {
+                channels.reserve(channelCount);
+                for (auto& channel : channels)
+                    channel.reserve(size);
+            }
+
+            /**
+             * Clear the content of the buffer.
+             */
+            void clear()
+            {
+                channels.clear();
+            }
+            
             std::vector<SampleBuffer> channels;
         };
         using MultiSampleBufferPtr = MultiSampleBuffer*;

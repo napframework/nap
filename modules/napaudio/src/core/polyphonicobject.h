@@ -60,10 +60,17 @@ namespace nap
             
             // Initialize the component
             bool init(NodeManager& nodeManager, utility::ErrorState& errorState) override;
+            
+            /**
+             * Returns the first voice in the pool that is not being used (Voice::isBusy() == false) for playback.
+             * Before a voice is returned by this method it will already be marked as busy.
+             * Once the envelope of the voice has been played and finished the voice will be freed again.
+             */
             VoiceInstance* findFreeVoice();
             
             /**
-             * Starts playing a voice by calling it's play() method and connecting it's output to this object's mixer
+             * Starts playing a voice by calling it's play() method and connecting it's output to this object's mixer.
+             * Before being passed to this method a voice has te be aqcuired and reserved for use using findFreeVoice().
              */
             void play(VoiceInstance* voice);
             

@@ -6,6 +6,7 @@ namespace nap
 {
     namespace audio
     {
+        
         class WaveTable
         {
         public:

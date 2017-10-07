@@ -2,6 +2,12 @@
 	"Objects":
 	[
 		{
+			"Type": "nap::audio::AudioFileResource",
+			"mID": "audioFile",
+			"AudioFilePath": "data/audiotest/hang.mp3"
+		},
+
+		{
 			"Type": "nap::audio::Voice",
 			"mID": "voice",
 			"Objects":
@@ -61,10 +67,9 @@
 					"mID": "audioComponent",
 					"Object":
 					{
-						"Type": "nap::audio::PolyphonicObject",
-						"Graph": "voice",
-						"VoiceCount": 32,
-						"VoiceStealing": "False"
+						"Type": "nap::audio::BufferPlayer",
+						"Buffer": "audioFile",
+						"ChannelCount": 2
 					}
 				},
 
@@ -73,12 +78,8 @@
 					"mID": "output",
 					"Routing": [ 0, 1 ],
 					"Input": "audioComponent"
-				},
-
-				{
-					"Type": "nap::PythonScriptComponent",
-					"Path": "data/audiotest/scripts/audiotest.py"
 				}
+
 			]
 		}
 	]

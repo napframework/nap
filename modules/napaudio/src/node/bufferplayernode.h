@@ -13,6 +13,8 @@ namespace nap {
          */
         class NAPAPI BufferPlayerNode : public Node
         {
+            RTTI_ENABLE(Node)
+            
         public:
             BufferPlayerNode(NodeManager& manager) : Node(manager) { }
         
