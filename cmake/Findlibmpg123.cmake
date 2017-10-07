@@ -19,7 +19,7 @@ if(WIN32)
 elseif(APPLE)
     set(LIBMPG123_LIB_DIR /usr/local/lib)
     set(LIBMPG123_LIBRARIES ${LIBMPG123_LIB_DIR}/libmpg123.dylib)
-    set(LIBMPG123_INCLUDE_DIR ${LIBMPG123_DIR}/src/libmpg123/)
+    set(LIBMPG123_INCLUDE_DIR /usr/local/include/)
 
 else()
 endif()
