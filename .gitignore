@@ -7,6 +7,8 @@ py/.idea/
 lib/Clang/
 build.sh
 xcode/*
+codeblocks/*
+cmake-build-debug/*
 core/Debug/
 vs/
 modules/napof/Debug/
