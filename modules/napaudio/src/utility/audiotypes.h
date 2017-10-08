@@ -40,30 +40,30 @@ namespace nap {
              * @param channelCount: number of channels in this buffer
              * @param size: size of the buffer in samples
              */
-            MultiSampleBuffer(size_t channelCount, size_t size) { resize(channelCount, size); }
+            MultiSampleBuffer(std::size_t channelCount, std::size_t size) { resize(channelCount, size); }
             
             /**
              * Used to access the samples in the buffer
              * example: myBuffer[channelNumber][sampleIndex]
              */
-            SampleBuffer& operator[](size_t index) { return channels[index]; }
+            SampleBuffer& operator[](std::size_t index) { return channels[index]; }
             
             /**
              * @return: number of channels in the buffer
              */
-            size_t getChannelCount() const { return channels.size(); }
+            std::size_t getChannelCount() const { return channels.size(); }
             
             /**
              * @return: the size of the buffer in samples
              */
-            size_t getSize() const { return channels.empty() ? 0 : channels.front().size();  }
+            std::size_t getSize() const { return channels.empty() ? 0 : channels.front().size();  }
             
             /**
              * Resize the buffer
              * @param channelCount: new number of channels
              * @param size: new size in samples
              */
-            void resize(size_t channelCount, size_t size)
+            void resize(std::size_t channelCount, std::size_t size)
             {
                 channels.resize(channelCount);
                 for (auto& channel : channels)
@@ -75,7 +75,7 @@ namespace nap {
              * @param channelCount: new number of channels capacity
              * @param size: new size in samples capacity
              */
-            void reserve(size_t channelCount, size_t size)
+            void reserve(std::size_t channelCount, std::size_t size)
             {
                 channels.reserve(channelCount);
                 for (auto& channel : channels)

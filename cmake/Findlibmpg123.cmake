@@ -8,7 +8,7 @@
 include(${CMAKE_CURRENT_LIST_DIR}/targetarch.cmake)
 target_architecture(ARCH)
 
-find_path(LIBMPG123_DIR src/libmpg123/mpg123.h
+find_path(LIBMPG123_DIR linux/src/libmpg123/mpg123.h
 HINTS
 ${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/mpg123
 ${CMAKE_CURRENT_LIST_DIR}/../../mpg123
@@ -22,6 +22,10 @@ elseif(APPLE)
     set(LIBMPG123_INCLUDE_DIR /usr/local/include/)
 
 else()
+    set(LIBMPG123_LIB_DIR ${LIBMPG123_DIR}/linux/bin)
+    set(LIBMPG123_LIBRARIES ${LIBMPG123_LIB_DIR}/libmpg123.so)
+    set(LIBMPG123_INCLUDE_DIR ${LIBMPG123_DIR}/linux/src/libmpg123)
+
 endif()
 
 
