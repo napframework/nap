@@ -90,6 +90,10 @@ namespace nap
 		mLaserEventFuncs.emplace(std::make_pair("nextline", &OSCLaserInputHandlerInstance::selectNextLine));
 		mLaserEventFuncs.emplace(std::make_pair("random", &OSCLaserInputHandlerInstance::toggleRandom));
 		mLaserEventFuncs.emplace(std::make_pair("resetblend", &OSCLaserInputHandlerInstance::resetBlend));
+		mLaserEventFuncs.emplace(std::make_pair("startxposition", &OSCLaserInputHandlerInstance::updateXStartColor));
+		mLaserEventFuncs.emplace(std::make_pair("startyposition", &OSCLaserInputHandlerInstance::updateYStartColor));
+		mLaserEventFuncs.emplace(std::make_pair("endxposition", &OSCLaserInputHandlerInstance::updateXEndColor));
+		mLaserEventFuncs.emplace(std::make_pair("endyposition", &OSCLaserInputHandlerInstance::updateYEndColor));
 		return true;
 	}
 
@@ -118,34 +122,75 @@ namespace nap
 
 	void OSCLaserInputHandlerInstance::updateStartColor(const OSCEvent& event, const std::vector<std::string>& args)
 	{
-		updateColor(event, 0);
+		assert(event.getCount() == 2);
+		glm::vec2 new_pos;
+		new_pos.x = math::clamp<float>(event[0].asFloat(), 0.0f, 1.0f);
+		new_pos.y = math::clamp<float>(event[1].asFloat(), 0.0f, 1.0f);
+		updateColor(new_pos, 0);
 	}
 
 
 	void OSCLaserInputHandlerInstance::updateEndColor(const OSCEvent& event, const std::vector<std::string>& args)
 	{
-		updateColor(event, 1);
+		assert(event.getCount() == 2);
+		glm::vec2 new_pos;
+		new_pos.x = math::clamp<float>(event[0].asFloat(), 0.0f, 1.0f);
+		new_pos.y = math::clamp<float>(event[1].asFloat(), 0.0f, 1.0f);
+		updateColor(new_pos, 1);
 	}
 
 
-	void OSCLaserInputHandlerInstance::updateColor(const OSCEvent& oscEvent, int position)
+	void OSCLaserInputHandlerInstance::updateXStartColor(const OSCEvent& event, const std::vector<std::string>& args)
 	{
-		assert(oscEvent.getCount() == 2);
-		float pos_x = math::clamp<float>(oscEvent[0].asFloat(),0.0f,1.0f);
-		float pos_y = math::clamp<float>(oscEvent[1].asFloat(),0.0f,1.0f);
+		assert(event.getCount() == 1);
+		glm::vec2 new_pos = mColorComponent->getStartPosition();
+		new_pos.x = math::clamp<float>(event[0].asFloat(), 0.0f, 1.0f);
+		updateColor(new_pos, 0);
+	}
 
-		glm::vec2 uv_pos(pos_x, pos_y);
+
+	void OSCLaserInputHandlerInstance::updateYStartColor(const OSCEvent& event, const std::vector<std::string>& args)
+	{
+		assert(event.getCount() == 1);
+		glm::vec2 new_pos = mColorComponent->getStartPosition();
+		new_pos.y = math::clamp<float>(event[0].asFloat(), 0.0f, 1.0f);
+		updateColor(new_pos, 0);
+	}
+
+
+	void OSCLaserInputHandlerInstance::updateXEndColor(const OSCEvent& event, const std::vector<std::string>& args)
+	{
+		assert(event.getCount() == 1);
+		glm::vec2 new_pos = mColorComponent->getEndPosition();
+		new_pos.x = math::clamp<float>(event[0].asFloat(), 0.0f, 1.0f);
+		updateColor(new_pos, 1);
+	}
+
+
+	void OSCLaserInputHandlerInstance::updateYEndColor(const OSCEvent& event, const std::vector<std::string>& args)
+	{
+		assert(event.getCount() == 1);
+		glm::vec2 new_pos = mColorComponent->getEndPosition();
+		new_pos.y = math::clamp<float>(event[0].asFloat(), 0.0f, 1.0f);
+		updateColor(new_pos, 1);
+	}
+
+
+	void OSCLaserInputHandlerInstance::updateColor(const glm::vec2& loc, int position)
+	{
+		// Will hold the pixel color
 		glm::vec3 mp_clr;
 
+		// Set start / end position based on uv coordinates
 		if (position == 0)
 		{
-			mColorComponent->setStartPosition(glm::vec2(pos_x, pos_y));
-			mColorComponent->getColor(uv_pos, mp_clr);
+			mColorComponent->setStartPosition(loc);
+			mColorComponent->getColor(loc, mp_clr);
 		}
 		else
 		{
-			mColorComponent->setEndPosition(glm::vec2(pos_x, pos_y));
-			mColorComponent->getColor(uv_pos, mp_clr);
+			mColorComponent->setEndPosition(loc);
+			mColorComponent->getColor(loc, mp_clr);
 		}
 		
 		if (mPrintColor)
