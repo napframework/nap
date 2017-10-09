@@ -27,6 +27,8 @@ def animalTree():
     return animal
 
 
+
+
 class MainTest(TestCase):
     def test_createObjectTree(self):
         obj = nap.Object()
@@ -139,3 +141,39 @@ class MainTest(TestCase):
                          'Expected "%s", got "%s"' % (
                              expectedGrandChildPath, grandChild.path()))
         self.assertEqual(grandChild.pathStr(), '/child/grandChild')
+
+
+    def test_createOperators(self):
+        patch = nap.Patch()
+        for opType in nap.operatorTypes():
+            patch.addOperator(opType)
+
+
+    def test_operator(self):
+        class TestOp(nap.Operator):
+            def __init__(self):
+                super(TestOp, self).__init__()
+                self.dataInlet = self.addDataInlet('myInlet', float, 0)
+                self.dataOutlet = self.addDataOutlet('myOutlet', int, self._getter)
+                self.addTriggerInlet('myInTrigger', self._myTrigger())
+
+            def _getter(self):
+                return None
+
+            def _myTrigger(self):
+                pass
+
+        patch = nap.Patch()
+        op = patch.addOperator(TestOp)
+        assert(isinstance(op, nap.Operator))
+        inlets = list(op.inlets())
+        assert(inlets)
+        assert(inlets[0].name() == 'myInlet')
+        assert(inlets[1].name() == 'myInTrigger')
+
+    def test_fileops(self):
+        fileoptype = nap.operatorType('SplitExt')
+        op = fileoptype()
+        print(list(op.outlets()))
+
+

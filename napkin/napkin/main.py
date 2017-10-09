@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import *
 
 from generic.basewindow import BaseWindow
 from napkin.views.patchpanel import PatchPanel
-from pynap_json.outlinepanel import OutlinePanel
+# from pynap_json.outlinepanel import OutlinePanel
 
 EXT = '.json'
 FILE_FILTER = "json (*%s)" % EXT
@@ -34,12 +34,12 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
 
     patchPanel = PatchPanel()
-    outline = OutlinePanel()
-    patchPanel.selectionChanged.connect(outline.setObjects)
+    # outline = OutlinePanel()
+    # patchPanel.selectionChanged.connect(outline.setObjects)
 
     win = BaseWindow()
     win.addDock('Patch', patchPanel)
-    win.addDock('Outline', outline)
+    # win.addDock('Outline', outline)
 
     def save():
         filename = getSaveFilename(win)
