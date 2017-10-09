@@ -130,6 +130,7 @@ namespace opengl
 		unbind();
 
 		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+		glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 
 		// Auto generate mipmaps if data is valid and we're dealing with a mipmappable type
 		if(isMipMap(mParameters.minFilter) && data != nullptr)
