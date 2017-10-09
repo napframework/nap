@@ -25,7 +25,7 @@ namespace nap
 	}
 
 
-	std::unique_ptr<GLWindow> RenderService::addWindow(RenderWindow& window, utility::ErrorState& errorState)
+	std::shared_ptr<GLWindow> RenderService::addWindow(RenderWindow& window, utility::ErrorState& errorState)
 	{
 		assert(mRenderer != nullptr);
 
@@ -38,7 +38,7 @@ namespace nap
 		window_settings.title		= window.mTitle;
 		window_settings.sync		= window.mSync;
 
-		std::unique_ptr<GLWindow> new_window = mRenderer->createRenderWindow(window_settings, errorState);
+		std::shared_ptr<GLWindow> new_window = mRenderer->createRenderWindow(window_settings, window.mID, errorState);
 		if (new_window == nullptr)
 			return nullptr;
 

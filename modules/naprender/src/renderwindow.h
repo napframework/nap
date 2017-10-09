@@ -24,7 +24,7 @@ namespace nap
 		RenderWindow() = default;
 		
 		// Destructor
-		~RenderWindow();
+		virtual ~RenderWindow() override;
 
 		/**
 		 * This constructor is called when creating the render window using the resource manager
@@ -76,7 +76,7 @@ namespace nap
 
 	private:
 		RenderService*							mRenderService	= nullptr;		// Render service
-		std::unique_ptr<GLWindow>				mWindow			= nullptr;		// Actual OpenGL hardware window
+		std::shared_ptr<GLWindow>				mWindow			= nullptr;		// Actual OpenGL hardware window
 	};
 
 

@@ -113,7 +113,7 @@ namespace nap
 		/**
 		 * Add a new window for the specified resource
 		 */
-		std::unique_ptr<GLWindow> addWindow(RenderWindow& window, utility::ErrorState& errorState);
+		std::shared_ptr<GLWindow> addWindow(RenderWindow& window, utility::ErrorState& errorState);
 
 		/**
 		 * Remove a window
