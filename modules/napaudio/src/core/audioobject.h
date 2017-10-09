@@ -8,47 +8,13 @@
 #include <core/audionode.h>
 #include <core/audionodemanager.h>
 #include <service/audioservice.h>
-#include <core/graph.h>
 
 namespace nap {
     
     namespace audio {
         
-        // Forward declares
-        class AudioObjectInstance;
-        class MultiChannelObjectInstance;
-        
-        
-        /**
-         * AudioObject is a base class for objects that generate single- or multichannel audio using one or more Nodes in a DSP system.
-         * AudioObjects can be linked together to build a more complex DSP system in a Graph.
-         * AudioObject is a resource that can be instantiated.
-         */
-        class AudioObject : public rtti::RTTIObject {
-            RTTI_ENABLE(rtti::RTTIObject)
-            
-        public:
-            AudioObject() = default;
-            
-            /**
-             * This method can be used during the initialization of a Graph of AudioObjects to acquire a pointer to the instance of this object in the graph.
-             */
-            AudioObjectInstance* getInstance() { return mInstance; }
-            
-            /**
-             * This method spawns an instance of this resource.
-             */
-            std::unique_ptr<AudioObjectInstance> instantiate(NodeManager& nodeManager, utility::ErrorState& errorState);
-            
-        private:
-            /**
-             * This methods need to be overwritten by all descendants to return an instance of this resource.
-             */
-            virtual std::unique_ptr<AudioObjectInstance> createInstance() { return nullptr; }
-            
-            AudioObjectInstance* mInstance = nullptr;
-        };
-        
+        // Forward delcarations
+        class AudioObject;
         
         
         /**
@@ -83,6 +49,38 @@ namespace nap {
             
         private:
             AudioObject& mResource;
+        };
+        
+        
+        
+        /**
+         * AudioObject is a base class for objects that generate single- or multichannel audio using one or more Nodes in a DSP system.
+         * AudioObjects can be linked together to build a more complex DSP system in a Graph.
+         * AudioObject is a resource that can be instantiated.
+         */
+        class AudioObject : public rtti::RTTIObject {
+            RTTI_ENABLE(rtti::RTTIObject)
+            
+        public:
+            AudioObject() = default;
+            
+            /**
+             * This method can be used during the initialization of a Graph of AudioObjects to acquire a pointer to the instance of this object in the graph.
+             */
+            AudioObjectInstance* getInstance() { return mInstance; }
+            
+            /**
+             * This method spawns an instance of this resource.
+             */
+            std::unique_ptr<AudioObjectInstance> instantiate(NodeManager& nodeManager, utility::ErrorState& errorState);
+            
+        private:
+            /**
+             * This methods need to be overwritten by all descendants to return an instance of this resource.
+             */
+            virtual std::unique_ptr<AudioObjectInstance> createInstance() { return nullptr; }
+            
+            AudioObjectInstance* mInstance = nullptr;
         };
         
     

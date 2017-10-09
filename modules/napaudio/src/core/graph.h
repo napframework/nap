@@ -13,16 +13,12 @@
 // Audio includes
 #include <core/audionode.h>
 #include <core/audionodemanager.h>
+#include <core/audioobject.h>
+
 
 namespace nap {
     
     namespace audio {
-        
-        // Forward declarations
-        class GraphInstance;
-        class AudioObject;
-        class AudioObjectInstance;
-        
         
         using AudioObjectPtr = ObjectPtr<AudioObject>;
         
@@ -33,7 +29,6 @@ namespace nap {
         class NAPAPI Graph : public rtti::RTTIObject {
             RTTI_ENABLE(rtti::RTTIObject)
         public:
-//            Graph() = default;
             Graph(NodeManager& nodeManager) : mNodeManager(&nodeManager)  { }
 
             /**

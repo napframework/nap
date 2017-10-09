@@ -5,8 +5,6 @@
 #include <rtti/rttiutilities.h>
 #include <nap/objectgraph.h>
 
-// Audio includes
-#include <core/audioobject.h>
 
 
 // RTTI

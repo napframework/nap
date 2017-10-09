@@ -13,9 +13,6 @@ namespace nap
     namespace audio
     {
     
-        class GraphComponentInstance;
-        
-        
         /**
          * Audio object that uses a graph to process it's output.
          */
