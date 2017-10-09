@@ -53,7 +53,7 @@ nap::VideoService*								videoService = nullptr;
 nap::InputService*								inputService = nullptr;
 
 nap::ObjectPtr<nap::RenderWindow>				renderWindow;
-nap::ObjectPtr<nap::RenderTarget>			textureRenderTarget;
+nap::ObjectPtr<nap::RenderTarget>				textureRenderTarget;
 nap::ObjectPtr<nap::EntityInstance>				kalvertorenEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance>				cameraEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance>				defaultInputRouter = nullptr;
@@ -192,10 +192,11 @@ void onRender()
 		backbuffer.setClearColor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 		renderService->clearRenderTarget(backbuffer);
 		renderService->renderObjects(backbuffer, cameraEntity->getComponent<nap::PerspCameraComponentInstance>(), components_to_render);
-		 
+
 		renderWindow->swap();
 	}
 }
+
 
 
 /**
@@ -255,7 +256,6 @@ bool init(nap::Core& core)
 		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
 		return false;        
 	}
-
 
 	glFlush();
 	 

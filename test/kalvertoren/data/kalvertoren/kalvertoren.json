@@ -23,8 +23,8 @@
 		{
 			"Type" : "nap::Texture2D",
 			"mID" : "ColorTexture",
-			"Width" : 640,
-			"Height" : 480,
+			"Width" : 1024,
+			"Height" : 1024,
 			"Format" : "RGBA8",
 			"Usage" : "DynamicRead"
 		},
@@ -32,8 +32,8 @@
 		{
 			"Type" : "nap::Texture2D",
 			"mID" : "DepthTexture",
-			"Width" : 640,
-			"Height" : 480,
+			"Width" : 1024,
+			"Height" : 1024,
 			"Format" : "Depth"
 		},
 		
@@ -93,7 +93,15 @@
 					"MeshAttributeID": "UV0",
 					"ShaderAttributeID": "in_UV0"
 				}
-			]	
+			],
+			"Uniforms" : 
+			[
+				{
+					"Type" : "nap::UniformTexture2D",
+					"Name" : "mVideoTexture",
+					"Texture" : "ColorTexture"
+				}
+			]
 		},
 
 		{
@@ -132,7 +140,7 @@
 		{
 			"Type" : "nap::Video",
 			"mID": "Video1",
-			"Path": "data/kalvertoren/video.mp4"
+			"Path": "data/kalvertoren/heiligeweg_demo.mp4"
 		},
 		
 		{
