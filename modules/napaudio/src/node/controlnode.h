@@ -14,6 +14,11 @@ namespace nap {
     
     namespace audio {
         
+        /**
+         * Used to generate a control signal by ramping between different values.
+         * Ramps can be either linear or exponential.
+         * Optionally a lookup table can be used to shape the output signal.
+         */
         class NAPAPI ControlNode : public Node {
             RTTI_ENABLE(Node)
             
@@ -23,19 +28,54 @@ namespace nap {
         public:
             ControlNode(NodeManager& manager);
             
+            /**
+             * The output signal pin
+             */
             OutputPin output = { this };
             
+            /**
+             * Set the output value immediately.
+             */
             void setValue(ControllerValue value);
+            
+            /**
+             * Return the output value, optionally shaped by the lookup translator.
+             */
             ControllerValue getValue() const;
+            
+            /**
+             * Return the output value bypassing the loopkup translator.
+             */
             ControllerValue getRawValue() const { return mValue; }
 
+            /**
+             * Start ramping to @destination over a period of @time, using mode to indicate the type of ramp.
+             */
             void ramp(ControllerValue destination, TimeValue time, RampMode mode = RampMode::LINEAR);
+            
+            /**
+             * @return: wether the object is currently ramping to a new value.
+             */
             bool isRamping() const;
+            
+            /**
+             * Stops the current ramp (if any) and stays on the current value.
+             */
             void stop();
             
+            /**
+             * Assign a translator to this node to shape the output value.
+             */
             void setTranslator(Translator<ControllerValue>& translator) { mTranslator = &translator; }
+            
+            /**
+             * @return: wether this node uses a translator lookup table to shape it's output values.
+             */
             bool hasTranslator() const { return mTranslator != nullptr; }
             
+            /**
+             * Signal that is emitted when the destination of a ramp has been reached.
+             */
             nap::Signal<ControlNode&> rampFinishedSignal;
             
         private:
