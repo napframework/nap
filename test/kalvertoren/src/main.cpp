@@ -3,6 +3,7 @@
 
 // Local Includes
 #include "firstpersoncontroller.h"
+#include "pointlightcomponent.h"
 
 // GLM
 #include <glm/glm.hpp>
@@ -59,7 +60,10 @@ nap::ObjectPtr<nap::EntityInstance>				cameraEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance>				defaultInputRouter = nullptr;
 nap::ObjectPtr<nap::EntityInstance>				videoEntity = nullptr;
 nap::ObjectPtr<nap::Video>						videoResource;
-
+nap::ObjectPtr<nap::EntityInstance>				lightEntity = nullptr;
+nap::ObjectPtr<nap::Material>					frameMaterial = nullptr;
+nap::ObjectPtr<nap::Material>					vertexMaterial = nullptr;
+		
 std::vector<uint8_t> videoPlaybackData;
 bool didStartAsyncRead = false;
 
@@ -67,6 +71,31 @@ bool didStartAsyncRead = false;
 void runGame(nap::Core& core);	
 
 namespace py = pybind11;
+
+
+// Updates the camera location for all the lights
+void updateCameraLocation()
+{
+	// Set cam location
+	const glm::mat4x4& cam_xform = cameraEntity->getComponent<nap::TransformComponentInstance>().getGlobalTransform();
+	glm::vec3 cam_pos(cam_xform[3][0], cam_xform[3][1], cam_xform[3][2]);
+
+	nap::UniformVec3& frame_cam_pos = frameMaterial->getUniform<nap::UniformVec3>("cameraLocation");
+	nap::UniformVec3& verte_cam_pos = vertexMaterial->getUniform<nap::UniformVec3>("cameraLocation");
+	frame_cam_pos.setValue(cam_pos);
+	verte_cam_pos.setValue(cam_pos);
+
+	// Set light location
+	const glm::mat4x4 light_xform = lightEntity->getComponent<nap::TransformComponentInstance>().getGlobalTransform();
+	glm::vec3 light_pos(light_xform[3][0], light_xform[3][1], light_xform[3][2]);
+
+	nap::UniformVec3& frame_light_pos = frameMaterial->getUniform<nap::UniformVec3>("lightPosition");
+	nap::UniformVec3& verte_light_pos = vertexMaterial->getUniform<nap::UniformVec3>("lightPosition");
+	frame_light_pos.setValue(light_pos);
+	verte_light_pos.setValue(light_pos);
+}
+
+
 
 // Called when the window is updating
 void onUpdate()
@@ -88,6 +117,15 @@ void onUpdate()
 	renderService->getPrimaryWindow().makeCurrent();
 	resourceManagerService->checkForFileChanges();
 
+	// Update all resources
+	resourceManagerService->update();
+
+	// Update all entities
+	sceneService->update();
+
+	// Update cam location for lights
+	updateCameraLocation();
+
 	// Update model transform
 	float elapsed_time = renderService->getCore().getElapsedTime();
 	static float prev_elapsed_time = elapsed_time;
@@ -97,20 +135,21 @@ void onUpdate()
 		delta_time = 0.01f;
 	}
 
-	if (videoEntity != nullptr)
+	// Set video to plane
+	nap::utility::ErrorState error_state;
+	if (!videoResource->update(delta_time, error_state))
 	{
-		nap::utility::ErrorState error_state;
-		if (!videoResource->update(delta_time, error_state))
-		{
-			nap::Logger::fatal(error_state.toString());
-		}
-
-		nap::MaterialInstance& plane_material = videoEntity->getComponent<nap::RenderableMeshComponentInstance>().getMaterialInstance();
-		plane_material.getOrCreateUniform<nap::UniformTexture2D>("yTexture").setTexture(videoResource->getYTexture());
-		plane_material.getOrCreateUniform<nap::UniformTexture2D>("uTexture").setTexture(videoResource->getUTexture());
-		plane_material.getOrCreateUniform<nap::UniformTexture2D>("vTexture").setTexture(videoResource->getVTexture());
+		nap::Logger::fatal(error_state.toString());
 	}
 
+	nap::MaterialInstance& plane_material = videoEntity->getComponent<nap::RenderableMeshComponentInstance>().getMaterialInstance();
+	plane_material.getOrCreateUniform<nap::UniformTexture2D>("yTexture").setTexture(videoResource->getYTexture());
+	plane_material.getOrCreateUniform<nap::UniformTexture2D>("uTexture").setTexture(videoResource->getUTexture());
+	plane_material.getOrCreateUniform<nap::UniformTexture2D>("vTexture").setTexture(videoResource->getVTexture());
+
+
+	// Update camera location for materials
+	/*
 	if (didStartAsyncRead)
 	{
 		textureRenderTarget->getTarget().getColorTexture().asyncEndGetData(videoPlaybackData);
@@ -142,20 +181,14 @@ void onUpdate()
 			color.z = pixel[2] / 255.0f;
 			color.w = pixel[3] / 255.0f;
 		}
-		
-		/*
+
 		nap::utility::ErrorState errorState;
 		if (!mesh.update(errorState))
 		{
 			nap::Logger::fatal("Failed to update texture: %s", errorState.toString());
 		}
-		*/
 	}
-
-	resourceManagerService->getRootEntity().update(delta_time);
-
-	// Update the scene
-	sceneService->update();
+	*/
 }
 
 
@@ -198,7 +231,6 @@ void onRender()
 }
 
 
-
 /**
 * Initialize all the resources and instances used for drawing
 * slowly migrating all functionality to nap
@@ -223,7 +255,6 @@ bool init(nap::Core& core)
 		nap::Logger::fatal(error.toString());
 		return false;
 	}
-
 
 	nap::Logger::info("initialized render service: %s", renderService->getTypeName().c_str());
 
@@ -265,6 +296,9 @@ bool init(nap::Core& core)
 	cameraEntity			= resourceManagerService->findEntity("CameraEntity");
 	defaultInputRouter		= resourceManagerService->findEntity("DefaultInputRouterEntity");
 	videoEntity				= resourceManagerService->findEntity("VideoEntity"); 
+	lightEntity				= resourceManagerService->findEntity("LightEntity");
+	vertexMaterial			= resourceManagerService->findObject<nap::Material>("VertexColorMaterial");
+	frameMaterial			= resourceManagerService->findObject<nap::Material>("FrameMaterial");
 
 	assert(videoEntity != nullptr);
 
@@ -283,6 +317,7 @@ bool init(nap::Core& core)
 	return true;
 }
  
+
 // Main loop
 int main(int argc, char *argv[])
 {
@@ -298,6 +333,7 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
+
 
 void runGame(nap::Core& core)
 {
@@ -321,6 +357,13 @@ void runGame(nap::Core& core)
 					nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(input_event.get());
 					if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
 						loop = false;
+
+					if (press_event->mKey == nap::EKeyCode::KEY_f)
+					{
+						static bool fullscreen = true;
+						resourceManagerService->findObject<nap::RenderWindow>("Window0")->getWindow()->setFullScreen(fullscreen);
+						fullscreen = !fullscreen;
+					}
 				}
 
 				// Add event to input service for further processing
