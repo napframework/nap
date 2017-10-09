@@ -35,3 +35,6 @@ def Equals(a: str = '', b: str = '') -> bool: return a == b
 def Split(s: str = '', delim: str = ',') -> list: return s.split(delim)
 
 
+# @nap.Operator
+# def MultiArgs(a: str = '', b: int = 3, c: bool = True,
+#               d: float = 0.3) -> None: return None

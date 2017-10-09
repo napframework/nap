@@ -13,10 +13,11 @@ from PyQt5.QtCore import QObject, pyqtSignal
 from napkin.models import modules
 
 
-
 class Object(QObject):
-    childAdded = pyqtSignal(object)
-    childRemoved = pyqtSignal(object)
+    childAdded = pyqtSignal(object) # child
+    childRemoved = pyqtSignal(object) # child
+    added = pyqtSignal(object) # parent
+    removed = pyqtSignal(object) # parent
 
     def __init__(self, name: str = None):
         super(Object, self).__init__()
@@ -58,7 +59,11 @@ class Object(QObject):
 
         objOrType.__parent = self
         self._children.append(objOrType)
+        objOrType.added.emit(self)
         return objOrType
+
+    def childrenByType(self, childType: type) -> Iterable:
+        return (c for c in self._children if isinstance(c, childType))
 
     def getChild(self, path):
         if not path: return None
@@ -184,6 +189,7 @@ class Inlet(Object):
 class DataOutlet(Outlet):
     def __init__(self, name: str, valueType: type, getter):
         super(DataOutlet, self).__init__(name)
+        assert (valueType)
         self.valueType = valueType
         self.__getter = getter
 
@@ -242,7 +248,7 @@ class TriggerOutlet(Outlet):
             self.__connection.target().function()
 
     def __call__(self):
-        if self.__connection:
+        if self.__connection and self.__connection.target():
             self.__connection.target().function()
 
     def isConnected(self):
@@ -275,24 +281,41 @@ class Operator(Object):
             def __init__(self):
                 super(type(self), self).__init__()
                 # Create data inlets from arguments
-                for arg, default in zip(reversed(spec.args),
-                                        reversed(spec.defaults)):
-                    self.addChild(DataInlet(arg, spec.annotations[arg], default))
+                if len(spec.args) > 0:
+                    if not spec.defaults:
+                        raise Exception(
+                            'Operator function "%s" has %s arguments, but no defaults' % (
+                                func.__name__, len(spec.args)))
+
+                    if len(spec.args) != len(spec.defaults):
+                        raise Exception(
+                            'Operator function "%s" has %s arguments, but %s defaults' % (
+                                func.__name__, len(spec.args),
+                                len(spec.defaults)))
+
+                for arg, default in zip(spec.args, spec.defaults):
+                    self.addChild(
+                        DataInlet(arg, spec.annotations[arg], default))
 
                 # Create data outlet as from return value
                 retypes = spec.annotations['return']
                 # support multiple return values
                 if not isinstance(retypes, Tuple):
+                    if retypes is None:
+                        raise Exception('Return type may not be None (%s)',
+                                        func.__name__)
                     retypes = [retypes]
                 for i, retype in enumerate(retypes):
                     if returnLabels and i < len(retypes):
                         label = returnLabels[i]
                     else:
-                        label = 're%s' % i
+                        if len(retypes) == 1:
+                            label = 'result'
+                        else:
+                            label = 'result %s' % i
                     self.addChild(DataOutlet(label, retype, func))
 
             cls = type(func.__name__, (Operator,), {'__init__': __init__})
-            cls.displayName = func.__name__
             return cls
 
         return super(Operator, cls).__new__(cls)
@@ -306,16 +329,17 @@ class Operator(Object):
     def displayName(cls):
         return cls.__name__
 
-    def addDataInlet(self, name:str, valueType:type, defaultValue) -> DataInlet:
+    def addDataInlet(self, name: str, valueType: type,
+                     defaultValue) -> DataInlet:
         return self.addChild(DataInlet(name, valueType, defaultValue))
 
-    def addDataOutlet(self, name:str, valueType:type, getter) -> DataOutlet:
+    def addDataOutlet(self, name: str, valueType: type, getter) -> DataOutlet:
         return self.addChild(DataOutlet(name, valueType, getter))
 
-    def addTriggerInlet(self, name:str, fn) -> TriggerInlet:
+    def addTriggerInlet(self, name: str, fn) -> TriggerInlet:
         return self.addChild(TriggerInlet(name, fn))
 
-    def addTriggerOutlet(self, name:str) -> TriggerOutlet:
+    def addTriggerOutlet(self, name: str) -> TriggerOutlet:
         return self.addChild(TriggerOutlet(name))
 
     def inlets(self) -> Iterable[Inlet]:
@@ -328,16 +352,25 @@ class Operator(Object):
 
 
 class Patch(Object):
+
+    started = pyqtSignal()
+
     def __init__(self, name: str = None):
         super(Patch, self).__init__(name)
 
+    def run(self):
+        self.started.emit()
+
     def addOperator(self, op: Union[Operator, type, str]):
-        assert (isinstance(op, Operator) or issubclass(op, Operator)) or isinstance(op, str)
+        assert (isinstance(op, Operator)
+                or issubclass(op, Operator)) or isinstance(op, str)
         if isinstance(op, str):
             op = operatorType(str)
             assert op
         return self.addChild(op)
 
+    def operators(self) -> Iterable[Operator]:
+        return self.childrenByType(Operator)
 
 def operatorsInModule(mod: types.ModuleType) -> Iterable[type]:
     moduleName = mod.__name__
@@ -372,14 +405,17 @@ def operatorTypes() -> Iterable[Operator]:
         for op in operatorsInModule(mod):
             yield op
 
-def operatorType(typename:str) -> Union[type, None]:
+
+def operatorType(typename: str) -> Union[type, None]:
     return next((t for t in operatorTypes() if t.__name__ == typename), None)
+
 
 def operatorFromFunction(func):
     spec = inspect.getfullargspec(func)
+
     def __init__(self):
         super(type(self), self).__init__()
-        for arg, default in zip(reversed(spec.args), reversed(spec.defaults)):
+        for arg, default in zip(spec.args, spec.defaults):
             self.addChild(DataInlet(arg, spec.annotations[arg], default))
 
         retype = spec.annotations['return']
@@ -388,4 +424,3 @@ def operatorFromFunction(func):
     cls = type(func.__name__, (Operator,), {'__init__': __init__})
     cls.displayName = func.__name__
     return cls
-

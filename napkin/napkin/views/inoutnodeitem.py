@@ -93,7 +93,7 @@ class InputOutputNodeItem(NodeItem):
         b = self.__operatorBorder
         return self.childrenBoundingRect().adjusted(-b, -b, b, b)
 
-    def paint(self, painter, option, widget=None):
+    def paint(self, painter: QPainter, option, widget=None):
         painter.setBrush(QApplication.palette().window())
         if self.isSelected():
             painter.setPen(QPen(QApplication.palette().highlight(), 0))

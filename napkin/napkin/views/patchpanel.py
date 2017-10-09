@@ -28,23 +28,23 @@ class OperatorItem(InputOutputNodeItem):
         super(OperatorItem, self).__init__(op.name())
         self.operator = op
 
-        for name, inlet in self.operator.inlets():
-            socket = self.addInlet(name)
+        for inlet in self.operator.inlets():
+            socket = self.addInlet(inlet.name())
             socket.inlet = inlet
             if isinstance(inlet, DataInlet):
-                socket.setToolTip('%s (%s)' % (name, inlet.valueType.__name__))
+                socket.setToolTip('%s (%s)' % (inlet.name(), inlet.valueType.__name__))
                 socket.setPinColor(randomTypeColor(inlet.valueType))
             elif isinstance(inlet, TriggerInlet):
-                socket.setToolTip('%s <trigger>' % name)
+                socket.setToolTip('%s <trigger>' % inlet.name())
 
-        for name, outlet in self.operator.outlets():
-            socket = self.addOutlet(name)
+        for outlet in self.operator.outlets():
+            socket = self.addOutlet(outlet.name())
             socket.outlet = outlet
             if isinstance(outlet, DataOutlet):
-                socket.setToolTip('%s (%s)' % (name, outlet.valueType.__name__))
+                socket.setToolTip('%s (%s)' % (outlet.name(), outlet.valueType.__name__))
                 socket.setPinColor(randomTypeColor(outlet.valueType))
             elif isinstance(outlet, TriggerOutlet):
-                socket.setToolTip('%s <trigger>' % name)
+                socket.setToolTip('%s <trigger>' % outlet.name())
 
 
 class PatchScene(GraphScene):
@@ -54,7 +54,9 @@ class PatchScene(GraphScene):
         self.addConnectCondition(haveConvertibleTypes)
 
     def createOperator(self, name, opType, pos):
+        assert opType
         op = opType()
+        assert op
         op.x(pos.x())
         op.y(pos.y())
         item = OperatorItem(op)
@@ -103,7 +105,7 @@ def createOperatorActions(parent, scene, scenePos):
     for opType in operatorTypes():
 
         def f(enabled, opt=opType, pos=scenePos):
-            scene.createOperator(opt.displayName, opt, pos)
+            scene.createOperator(opt.displayName(), opt, pos)
 
         action = QAction(opType.displayName(), parent)
         action.triggered.connect(f)
@@ -217,7 +219,7 @@ class PatchPanel(QWidget):
     def patchView(self) -> PatchView:
         return self.graphView
 
-    def patch(self):
+    def patch(self) -> Patch:
         return self.scene.patch
 
     def scene(self) -> PatchScene:

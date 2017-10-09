@@ -23,6 +23,8 @@ def getSaveFilename(parent):
     return filename
 
 
+
+
 if __name__ == '__main__':
     def __hook(type, value, traceback):
         raise value
@@ -33,6 +35,8 @@ if __name__ == '__main__':
 
     app = QApplication(sys.argv)
 
+
+
     patchPanel = PatchPanel()
     # outline = OutlinePanel()
     # patchPanel.selectionChanged.connect(outline.setObjects)
@@ -40,6 +44,9 @@ if __name__ == '__main__':
     win = BaseWindow()
     win.addDock('Patch', patchPanel)
     # win.addDock('Outline', outline)
+
+    toolbar = win.addToolBar('Actions')
+    toolbar.addAction('Run').triggered.connect(patchPanel.patch().run)
 
     def save():
         filename = getSaveFilename(win)

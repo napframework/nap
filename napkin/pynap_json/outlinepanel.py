@@ -5,12 +5,14 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 
+
+
 from generic.filtertreeview import FilterTreeView
-from pynap_json.napjsonwrap import *
+from napkin.models import nap
 
 
 class ObjectItem(QStandardItem):
-    def __init__(self, obj:NAPObject):
+    def __init__(self, obj:nap.Object):
         super(ObjectItem, self).__init__()
         self.object = obj
         self.object.changed.connect(self.refresh)

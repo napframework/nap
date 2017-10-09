@@ -42,8 +42,8 @@ class SocketItem(QGraphicsItem):
         return bool(self.edge())
 
     def edge(self):
-        from patch.edgeitem import EdgeItem
         for e in self.scene().edges():
+            from napkin.views.edgeitem import EdgeItem
             assert isinstance(e, EdgeItem)
             if e.srcSocket == self: return e
             if e.dstSocket == self: return e

@@ -1,3 +1,5 @@
+from typing import Tuple
+
 from napkin.models import nap
 
 
@@ -64,6 +66,3 @@ class ForEach(nap.Operator):
             self.iterate()
         self.done()
 
-
-@nap.Operator
-def eval(code: str = '') -> object: return eval(code)
