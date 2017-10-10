@@ -79,6 +79,10 @@ namespace nap
 
 		void updateStartColor(const OSCEvent& event, const std::vector<std::string>& args);
 		void updateEndColor(const OSCEvent& event, const std::vector<std::string>& args);
+		void updateXStartColor(const OSCEvent& event, const std::vector<std::string>& args);
+		void updateYStartColor(const OSCEvent& event, const std::vector<std::string>& args);
+		void updateXEndColor(const OSCEvent& event, const std::vector<std::string>& args);
+		void updateYEndColor(const OSCEvent& event, const std::vector<std::string>& args);
 		void updateRotate(const OSCEvent& event, const std::vector<std::string>& args);
 		void resetRotate(const OSCEvent& event, const std::vector<std::string>& args);
 		void setBlend(const OSCEvent& event, const std::vector<std::string>& args);
@@ -92,7 +96,7 @@ namespace nap
 		void setIntensity(const OSCEvent& event, const std::vector<std::string>& args);
 		void selectNextLine(const OSCEvent& event, const std::vector<std::string>& args);
 		void toggleRandom(const OSCEvent& event, const std::vector<std::string>& args);
-		void updateColor(const OSCEvent& event, int position);
+		void updateColor(const glm::vec2& loc, int position);
 		void resetBlend(const OSCEvent& event, const std::vector<std::string>& args);
 
 		NSLOT(mMessageReceivedSlot, const nap::OSCEvent&, handleMessageReceived)

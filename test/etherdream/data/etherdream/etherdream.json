@@ -581,7 +581,11 @@
 						"/0/resettracer",
 						"/0/nextline",
 						"/0/random",
-						"/0/resetblend"
+						"/0/resetblend",
+						"/0/startxposition",
+						"/0/startyposition",
+						"/0/endxposition",
+						"/0/endyposition"
 					]
 				},
 				{
