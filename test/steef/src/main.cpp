@@ -63,8 +63,9 @@ void run(nap::Core& core, std::unique_ptr<nap::AppRunner>& testRunner)
 			// Check if we're dealing with a window event
 			else if (nap::isWindowEvent(event))
 			{
-				nap::WindowEventPtr nap_event = nap::translateWindowEvent(event);
-                testRunner->registerWindowEvent(std::move(nap_event));
+				nap::WindowEventPtr window_event = nap::translateWindowEvent(event);
+				if (window_event != nullptr)
+					testRunner->registerWindowEvent(std::move(window_event));
 			}
 		}
 
