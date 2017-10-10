@@ -37,7 +37,6 @@
 #include <renderablemeshcomponent.h>
 #include "lineselectioncomponent.h"
 #include <nanosvg.h>
-#include <visualizenormalsmesh.h>
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
@@ -56,10 +55,6 @@ nap::ObjectPtr<nap::RenderWindow> renderWindow = nullptr;
 
 // Laser DAC
 nap::ObjectPtr<nap::EntityInstance> laserPrototype = nullptr;
-
-
-// Holds the normals mesh
-nap::ObjectPtr<nap::VisualizeNormalsMesh> normalsMesh = nullptr;
 
 /////////////////////////////////////////////////////////////////////////
 
@@ -84,9 +79,6 @@ void onUpdate()
 
 	// Update all resources
 	resourceManagerService->update();
-
-	nap::utility::ErrorState error;	
-	normalsMesh->updateNormals(error, true);
 }
 
 
@@ -173,7 +165,7 @@ bool init(nap::Core& core)
 		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
 		return false;        
 	}
-    
+
     glFlush();
 
 	// Store all render windows
@@ -181,9 +173,6 @@ bool init(nap::Core& core)
 
 	// Store laser dacs
 	laserPrototype = resourceManagerService->findEntity("LaserPrototypeEntity");
-
-	// Store normals mesh
-	normalsMesh = resourceManagerService->findObject<nap::VisualizeNormalsMesh>("NormalsMesh");
 
 	// Set render states
 	nap::RenderState& render_state = renderService->getRenderState();
@@ -193,6 +182,7 @@ bool init(nap::Core& core)
 
 	return true;
 }
+
 
 
 // Main loop

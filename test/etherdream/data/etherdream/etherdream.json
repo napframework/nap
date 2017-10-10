@@ -593,7 +593,7 @@
 					"mID" : "OSCLaserInputHandler",
 					"SelectionComponentOne" : "LineSelectorOne",
 					"SelectionComponentTwo" : "LineSelectorTwo",
-					"LaserOutputComponent" : "LaserOutputComponentOne",
+					"LaserOutputComponent" : "LaserOutputComponent",
 					"PrintColor" : true
 				},
 				{
@@ -713,6 +713,10 @@
 					}
 				},
 				{
+					"Type" : "nap::UpdateNormalsComponent",
+					"NormalMesh" : "NormalsMesh"
+				},
+				{
 					"Type" : "nap::RenderableMeshComponent",
 					"mID" : "RenderLaserLineComponent",
 					"Mesh" : "LaserLineMesh",
@@ -764,7 +768,7 @@
 				},
 				{
 					"Type":"nap::LaserOutputComponent",
-					"mID" : "LaserOutputComponentOne",
+					"mID" : "LaserOutputComponent",
 					"Properties" :
 					{
 						"Frustrum" :
@@ -780,50 +784,8 @@
 				{
 					"Type" : "nap::FrustrumSyncComponent",
 					"CanvasEntity" : "LaserCanvasEntity",
-					"LaserOutputComponent" : "LaserOutputComponentOne"
-				},
-				{
-					"Type":"nap::LaserOutputComponent",
-					"Properties" :
-					{
-						"Frustrum" :
-						{
-							"x" : 512,
-							"y" : 512
-						}
-					},
-					"Dac" : "Laser2",
-					"Line": "LaserTraceMesh",
-					"Transform" : "LineXFormComponent"
-				},
-				{
-					"Type":"nap::LaserOutputComponent",
-					"Properties" :
-					{
-						"Frustrum" :
-						{
-							"x" : 512,
-							"y" : 512
-						}
-					},
-					"Dac" : "Laser3",
-					"Line": "LaserTraceMesh",
-					"Transform" : "LineXFormComponent"
-				},
-				{
-					"Type":"nap::LaserOutputComponent",
-					"Properties" :
-					{
-						"Frustrum" :
-						{
-							"x" : 512,
-							"y" : 512
-						}
-					},
-					"Dac" : "Laser4",
-					"Line": "LaserTraceMesh",
-					"Transform" : "LineXFormComponent"
-				}			
+					"LaserOutputComponent" : "LaserOutputComponent"
+				}		
 			]
 		}
 	]
