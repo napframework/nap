@@ -46,9 +46,6 @@ namespace nap
 		// Link to component that holds the line to send to the laser
 		ObjectPtr<PolyLine> mLine;
 
-		// Link to transform that holds the line's global xform
-		ComponentPtr<TransformComponent> mTransform;
-
 		// Output properties
 		LaserOutputProperties mProperties;
 	};
@@ -88,12 +85,15 @@ namespace nap
 		// Properties
 		LaserOutputProperties mProperties;
 
+		// Sets the transform to use for the line
+		void setTransform(nap::EntityInstance& entity);
+
 	private:
 		// Populate Laser Buffer
 		void populateLaserBuffer(const PolyLine& line, const glm::mat4x4& laserXform, const glm::mat4x4& lineXform);
 
 		// Xform associated with the line
-		TransformComponentInstance* mLineXform = nullptr;
+		nap::TransformComponentInstance* mLineTransform = nullptr;
 
 		// Converted laser points
 		std::vector<nap::EtherDreamPoint> mPoints;			//< DAC points

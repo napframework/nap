@@ -39,9 +39,6 @@ namespace nap
 		// property: Link to selection component two
 		ComponentPtr<LineSelectionComponent> mSelectionComponentTwo = nullptr;
 
-		// property: Link to laser output component
-		ComponentPtr<LaserOutputComponent> mLaserOutputComponent = nullptr;
-
 		// property: If the pixel color should be printed
 		bool mPrintColor = false;
 
@@ -66,6 +63,11 @@ namespace nap
 		 *	Retrieve necessary components for osc input translation
 		 */
 		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+
+		/**
+		 *	Sets the entity to be used as the laser output
+		 */
+		void setLaserOutput(nap::EntityInstance& entity);
 
 	private:
 		void handleMessageReceived(const nap::OSCEvent& oscEvent);
@@ -105,7 +107,6 @@ namespace nap
 		LineColorComponentInstance* mColorComponent = nullptr;				// Laser line color component
 		LineModulationComponentInstance* mModulationComponent = nullptr;	// Laser modulation component
 		LineAutoSwitchComponentInstance* mSwitcher = nullptr;				// Switches lines
-		LineBlendComponentInstance* mBlender = nullptr;						// Blends between two lines
 		bool mPrintColor = false;											// If color should be printed
 
 		// This map holds all the various callbacks based on id

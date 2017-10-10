@@ -20,7 +20,6 @@ RTTI_END_CLASS
 RTTI_BEGIN_CLASS(nap::LaserOutputComponent)
 	RTTI_PROPERTY("Dac",		&nap::LaserOutputComponent::mDac,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Line",		&nap::LaserOutputComponent::mLine,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Transform",	&nap::LaserOutputComponent::mTransform,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Properties",	&nap::LaserOutputComponent::mProperties,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
@@ -75,9 +74,6 @@ namespace nap
 		// Copy over mesh
 		mLine = getComponent<LaserOutputComponent>()->mLine.get();
 
-		// Copy over xform
-		mLineXform = getComponent<LaserOutputComponent>()->mTransform.get();
-
 		// Copy over properties
 		mProperties = output_resource->mProperties;
 		return true;
@@ -88,7 +84,17 @@ namespace nap
 	{
 		// Populate the laser buffer
 		nap::TransformComponentInstance& laser_xform = this->getEntityInstance()->getComponent<nap::TransformComponentInstance>();
-		populateLaserBuffer(*mLine, laser_xform.getGlobalTransform(), mLineXform->getGlobalTransform());
+		
+		// Get xform of line
+		assert(mLineTransform != nullptr);
+		populateLaserBuffer(*mLine, laser_xform.getGlobalTransform(), mLineTransform->getGlobalTransform());
+	}
+
+
+	void LaserOutputComponentInstance::setTransform(nap::EntityInstance& entity)
+	{
+		mLineTransform = entity.findComponent<nap::TransformComponentInstance>();
+		assert(mLineTransform != nullptr);
 	}
 
 

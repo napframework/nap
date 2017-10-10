@@ -55,6 +55,7 @@ nap::ObjectPtr<nap::RenderWindow> renderWindow = nullptr;
 
 // Laser DAC
 nap::ObjectPtr<nap::EntityInstance> laserPrototype = nullptr;
+nap::ObjectPtr<nap::EntityInstance> camera = nullptr;
 
 /////////////////////////////////////////////////////////////////////////
 
@@ -93,15 +94,14 @@ void onRender()
 	// Clear back-buffer
 	opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(renderWindow->getWindow()->getBackbuffer());
 	backbuffer.setClearColor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-	renderService->clearRenderTarget(backbuffer, opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH | opengl::EClearFlags::STENCIL);
+	renderService->clearRenderTarget(backbuffer);
 
+	// Get spline entity
 	nap::EntityInstance* spline_entity = laserPrototype->getChildren()[0];
-	nap::EntityInstance* laser_output_entity = laserPrototype->getChildren()[1];
-	nap::EntityInstance* camera_entity = laserPrototype->getChildren()[2];
 
 	// Render spline
 	nap::RenderableMeshComponentInstance& line_mesh = spline_entity->getComponent<nap::RenderableMeshComponentInstance>();
-	renderService->renderObjects(backbuffer, camera_entity->getComponent<nap::PerspCameraComponentInstance>());
+	renderService->renderObjects(backbuffer, camera->getComponent<nap::PerspCameraComponentInstance>());
 
 	// Swap back buffer
 	renderWindow->swap();
@@ -150,7 +150,6 @@ bool init(nap::Core& core)
 		return false;
 	}
 
-
 	// Create osc service
 	oscService = core.getOrCreateService<nap::OSCService>();
 	if (!oscService->init(errorState))
@@ -166,13 +165,14 @@ bool init(nap::Core& core)
 		return false;        
 	}
 
-    glFlush();
-
 	// Store all render windows
 	renderWindow = resourceManagerService->findObject<nap::RenderWindow>("Window");
 
 	// Store laser dacs
 	laserPrototype = resourceManagerService->findEntity("LaserPrototypeEntity");
+
+	// Store camera
+	camera = resourceManagerService->findEntity("CameraEntity");
 
 	// Set render states
 	nap::RenderState& render_state = renderService->getRenderState();

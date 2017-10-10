@@ -435,18 +435,16 @@
 		{
 			"Type" : "nap::Entity",
 			"mID" : "LaserPrototypeEntity",
-
 			"Components" :
 			[
 				{
 					"Type" : "nap::TransformComponent"
+				},
+				{
+					"Type" : "nap::MakePrototypeComponent",
+					"SplineEntity" : "LaserSplineEntity",
+					"OutputEntity" : "LaserOutputEntity"
 				}
-			],
-			"Children" : 
-			[
-				"SplineEntity",
-				"LaserOutputEntity",
-				"CameraEntity"
 			]
 		},
 
@@ -510,8 +508,8 @@
 
 		{
 			"Type" : "nap::Entity",
-			"mID": "SplineEntity",
-
+			"mID": "LaserSplineEntity",
+			"AutoSpawn" : false,
 			"Components" : 
 			[
 				{
@@ -593,7 +591,6 @@
 					"mID" : "OSCLaserInputHandler",
 					"SelectionComponentOne" : "LineSelectorOne",
 					"SelectionComponentTwo" : "LineSelectorTwo",
-					"LaserOutputComponent" : "LaserOutputComponent",
 					"PrintColor" : true
 				},
 				{
@@ -740,6 +737,7 @@
 		{
 			"Type" : "nap::Entity",
 			"mID"  : "LaserCanvasEntity",
+			"AutoSpawn" : false,
 			"Components" :
 			[
 				{
@@ -760,7 +758,7 @@
 		{
 			"Type" : "nap::Entity",
 			"mID": "LaserOutputEntity",
-
+			"AutoSpawn" : false,
 			"Components" : 
 			[
 				{
@@ -777,7 +775,7 @@
 							"y" : 512
 						}
 					},
-					"Dac" : "Laser1",
+					"Dac" : "Laser2",
 					"Line": "LaserTraceMesh",
 					"Transform" : "LineXFormComponent"
 				},

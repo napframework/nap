@@ -27,6 +27,7 @@ namespace nap
 		auto laser_draw_entity = resource_manager.createEntity(*(resource->mCanvasEntity), entityCreationParams, errorState);
 		if (laser_draw_entity == nullptr)
 			return false;
+		getEntityInstance()->addChild(*laser_draw_entity);
 
 		// Make sure that visualizer has a transform
 		mCanvasTransform = laser_draw_entity->findComponent<TransformComponentInstance>(ETypeCheck::IS_DERIVED_FROM);
