@@ -9,6 +9,10 @@ namespace nap {
     
     namespace audio {
     
+        /**
+         * Delay line with feedback and dry/wet control.
+         *
+         */
         class NAPAPI DelayNode : public Node {
         public:
             DelayNode(NodeManager& manager) : Node(manager), mDelay(65536 * 8) { }
