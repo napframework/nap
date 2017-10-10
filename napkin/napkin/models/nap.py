@@ -2,6 +2,7 @@ import importlib
 import importlib.util
 import inspect
 import json
+import logging
 import os
 import types
 from collections import OrderedDict
@@ -12,26 +13,45 @@ from PyQt5.QtCore import QObject, pyqtSignal
 
 from napkin.models import modules
 
+LOGGER = logging.root
+
+NAP_MODULE_ID = 'nap'
+
+_KEY_TYPE = 'type'
+_KEY_NAME = 'name'
+_KEY_CHILDREN = 'children'
+_KEY_VALUE_TYPE = 'valueType'
+_KEY_DEFAULT_VALUE = 'defaultValue'
+_KEY_FUNCTION = 'function'
+_KEY_INPUTVALUES = 'inletValues'
+_KEY_CONNECTIONS = 'connections'
 
 class Object(QObject):
-    childAdded = pyqtSignal(object) # child
-    childRemoved = pyqtSignal(object) # child
-    added = pyqtSignal(object) # parent
-    removed = pyqtSignal(object) # parent
+    childAdded = pyqtSignal(object)  # child
+    childRemoved = pyqtSignal(object)  # child
+    added = pyqtSignal(object)  # parent
+    removed = pyqtSignal(object)  # parent
 
     def __init__(self, name: str = None):
         super(Object, self).__init__()
         self._parent = None
         self._children = []
         self._meta = None
+        self.__name = None
         if name:
             self.setName(name)
         else:
             self.setName(type(self).__name__)
 
+    @classmethod
+    def typeName(cls):
+        modulename = cls.__module__[cls.__module__.rfind('.') + 1:]
+        classname = cls.__name__
+        return '%s.%s' % (modulename, classname)
+
     def meta(self):
         if not self.__meta:
-            self.__meta = Meta()
+            self._meta = Meta()
         return self.__meta
 
     def addAttr(self, name, valueType, defaultValue):
@@ -40,27 +60,29 @@ class Object(QObject):
         return attr
 
     def name(self) -> str:
-        return self.objectName()
+        return self.__name
 
     def setName(self, name):
         assert (isinstance(name, str))
         if self.parent():
             name = self.__uniqueName(name)
-        self.setObjectName(name)
-
-    def setParent(self, p: QObject):
-        super(Object, self).setParent(p)
-        self.setName(self.name())
+        self.__name = name
 
     def addChild(self, objOrType):
+        assert self != objOrType
+        assert objOrType
         if isinstance(objOrType, type):
             assert issubclass(objOrType, Object)
             objOrType = objOrType()
 
-        objOrType.__parent = self
+        objOrType._parent = self
+        objOrType.setName(self.__uniqueName(objOrType.name()))
         self._children.append(objOrType)
         objOrType.added.emit(self)
         return objOrType
+
+    def children(self):
+        return self._children
 
     def childrenByType(self, childType: type) -> Iterable:
         return (c for c in self._children if isinstance(c, childType))
@@ -86,6 +108,9 @@ class Object(QObject):
                 return child.getChild(path)
             return child
 
+    def parent(self):
+        return self._parent
+
     def __uniqueName(self, name):
         if not self.parent():
             return name
@@ -98,9 +123,6 @@ class Object(QObject):
             newname = '%s%s' % (name, i)
             i += 1
         return newname
-
-    def __typeName(self):
-        return '%s.%s' % (self.__module__, self.__class__.__name__)
 
     def isRoot(self):
         return not bool(self.parent())
@@ -116,8 +138,12 @@ class Object(QObject):
         parentPath = [] if self.parent().isRoot() else self.parent().path()
         return parentPath + [self.name()]
 
-    def pathStr(self) -> str:
-        return '/' + '/'.join(self.path())
+    def pathStr(self, fromObject=None) -> str:
+        if fromObject:
+            path = fromObject.pathTo(self)
+        else:
+            path = self.path()
+        return '/' + '/'.join(path)
 
     def pathTo(self, other) -> list:
         up = []
@@ -131,10 +157,23 @@ class Object(QObject):
     def dict(self):
         # TODO: Link resolve
         dic = OrderedDict()
-        for k, v in self.children():
-            dic[k] = v.dict()
-        dic['__type'] = self.__typeName()
+        dic[_KEY_NAME] = self.name()
+        dic[_KEY_TYPE] = type(self).typeName()
+        dic[_KEY_CHILDREN] = [c.dict() for c in self.children()]
         return dic
+
+    @classmethod
+    def fromDict(cls, dic: dict):
+        t = typeFromString(dic[_KEY_TYPE])
+        o = t()
+        assert (isinstance(o, Object))
+        o.setName(dic[_KEY_NAME])
+        for c in dic[_KEY_CHILDREN]:
+            childType = typeFromString(c[_KEY_TYPE])
+            child = childType.fromDict(c)
+            o.addChild(child)
+
+        return o
 
     def __repr__(self):
         return '%s(%s)' % (super(Object, self).__repr__(), self.name())
@@ -189,7 +228,7 @@ class Inlet(Object):
 class DataOutlet(Outlet):
     def __init__(self, name: str, valueType: type, getter):
         super(DataOutlet, self).__init__(name)
-        assert (valueType)
+        assert valueType
         self.valueType = valueType
         self.__getter = getter
 
@@ -202,13 +241,25 @@ class DataInlet(Inlet):
         super(DataInlet, self).__init__(name)
         # assert not value is None
         self.valueType = valueType
-        self.value = value
+        self.__value = value
+        self.__defaultValue = value
         self.__connection = Link()
+
+    def defaultValue(self):
+        return self.__defaultValue
+
+    def value(self):
+        """Unevaludated value"""
+        return self.__value
+
+    def setValue(self, v):
+        assert(isinstance(v, self.valueType))
+        self.__value = v
 
     def __call__(self):
         if self.__connection.target():
             return self.__connection.target()()
-        return self.value
+        return self.value()
 
     def isConnected(self):
         return bool(self.__connection.target())
@@ -280,6 +331,7 @@ class Operator(Object):
 
             def __init__(self):
                 super(type(self), self).__init__()
+
                 # Create data inlets from arguments
                 if len(spec.args) > 0:
                     if not spec.defaults:
@@ -346,13 +398,49 @@ class Operator(Object):
         for inlet in (c for c in self._children if isinstance(c, Inlet)):
             yield inlet
 
+    def dataInlets(self) -> Iterable[DataInlet]:
+        return (n for n in self.inlets() if isinstance(n, DataInlet))
+
     def outlets(self) -> Iterable[Outlet]:
         for outlet in (c for c in self._children if isinstance(c, Outlet)):
             yield outlet
 
+    def triggerOutlets(self) -> Iterable[TriggerOutlet]:
+        return (t for t in self.outlets() if isinstance(t, TriggerOutlet))
+
+    def dict(self):
+        dic = OrderedDict()
+        dic[_KEY_NAME] = self.name()
+        dic[_KEY_TYPE] = type(self).typeName()
+
+        # values and connections
+        values = OrderedDict()
+        connections = OrderedDict()
+
+        for d in self.dataInlets():
+            if d.value() != d.defaultValue():
+                values[d.name()] = d.value()
+            if d.isConnected():
+                connections[d.name()] = d.connection().pathStr()
+
+        for t in self.triggerOutlets():
+            if t.isConnected():
+                connections[t.name()] = t.connection().pathStr()
+
+        if values:
+            dic[_KEY_INPUTVALUES] = values
+        if connections:
+            dic[_KEY_CONNECTIONS] = connections
+
+        return dic
+
+    @classmethod
+    def fromDict(cls, dic: dict):
+        t = typeFromString(dic[_KEY_TYPE])
+        op = t()
+        return op
 
 class Patch(Object):
-
     started = pyqtSignal()
 
     def __init__(self, name: str = None):
@@ -361,7 +449,7 @@ class Patch(Object):
     def run(self):
         self.started.emit()
 
-    def addOperator(self, op: Union[Operator, type, str]):
+    def addOperator(self, op: Union[Operator, type, str]) -> Operator:
         assert (isinstance(op, Operator)
                 or issubclass(op, Operator)) or isinstance(op, str)
         if isinstance(op, str):
@@ -371,6 +459,7 @@ class Patch(Object):
 
     def operators(self) -> Iterable[Operator]:
         return self.childrenByType(Operator)
+
 
 def operatorsInModule(mod: types.ModuleType) -> Iterable[type]:
     moduleName = mod.__name__
@@ -406,11 +495,26 @@ def operatorTypes() -> Iterable[Operator]:
             yield op
 
 
+def allTypes() -> Iterable[Object]:
+    types = set()
+    types.add(Object)
+    for t in operatorTypes():
+        types.add(t)
+    for t in Object.__subclasses__():
+        types.add(t)
+    return types
+
+
+def typeFromString(typename: str) -> Union[type, None]:
+    return next((t for t in allTypes() if t.typeName() == typename), None)
+
+
 def operatorType(typename: str) -> Union[type, None]:
-    return next((t for t in operatorTypes() if t.__name__ == typename), None)
+    return next((t for t in operatorTypes() if t.__qualname__ == typename),
+                None)
 
 
-def operatorFromFunction(func):
+def operatorFromFunction(func) -> type:
     spec = inspect.getfullargspec(func)
 
     def __init__(self):
@@ -424,3 +528,12 @@ def operatorFromFunction(func):
     cls = type(func.__name__, (Operator,), {'__init__': __init__})
     cls.displayName = func.__name__
     return cls
+
+
+def dumps(obj: Object):
+    return json.dumps(obj.dict(), indent=4)
+
+
+def loads(data: str):
+    data = json.loads(data)
+    return Object.fromDict(data)

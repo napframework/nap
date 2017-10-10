@@ -13,7 +13,6 @@ class GraphView(QGraphicsView):
      panning and zooming the view and connecting Operators.
      """
 
-
     def __init__(self):
         """
         @param ctx: The application context
@@ -235,6 +234,7 @@ class ConnectInteractMode(InteractMode):
 
     def init(self, view: GraphView):
         view.setDragMode(QGraphicsView.NoDrag)
+        self.updateConnector(view, view.mapFromGlobal(QCursor.pos()))
 
     def mousePressed(self, view: GraphView, evt: QMouseEvent):
         socket = view.socketAt(evt.pos())
@@ -242,12 +242,14 @@ class ConnectInteractMode(InteractMode):
         return False
 
     def mouseMoved(self, view: GraphView, evt: QMouseEvent):
-        srcSocket = view.scene().dragConnectionSource()
-        dstSocket = view.socketAt(evt.pos())
+        self.updateConnector(view, evt.pos())
 
-        # pos, vec = srcSocket.attachPosVec()
+    def updateConnector(self, view: GraphView, mousePos: QPoint):
+        srcSocket = view.scene().dragConnectionSource()
+        dstSocket = view.socketAt(mousePos)
+
         vec = QPointF()
-        pos = view.mapToScene(evt.pos())
+        pos = view.mapToScene(mousePos)
 
         if srcSocket and dstSocket:
             if view.scene().canConnect(srcSocket, dstSocket):
@@ -258,7 +260,7 @@ class ConnectInteractMode(InteractMode):
 
         view.scene().updateDragConnection(pos, vec)
 
-        self.__oldMousePos = evt.pos()
+        self.__oldMousePos = mousePos
         return False
 
     def mouseReleased(self, view: GraphView, evt: QMouseEvent):

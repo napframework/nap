@@ -1,5 +1,7 @@
 from typing import Tuple
 
+import time
+
 from napkin.models import nap
 
 
@@ -66,3 +68,30 @@ class ForEach(nap.Operator):
             self.iterate()
         self.done()
 
+class ForLoop(nap.Operator):
+
+    def __init__(self):
+        super(ForLoop, self).__init__()
+        self.do = self.addTriggerInlet('do', self.__iterate)
+        self.count = self.addDataInlet('count', int, 5)
+        self.index = self.addDataOutlet('index', int, lambda: self.__idx)
+        self.iterate = self.addTriggerOutlet('iterate')
+        self.done = self.addTriggerOutlet('done')
+        self.__idx = 0
+
+    def __iterate(self):
+        self.__idx = 0
+        count = self.count()
+        for i in range(count):
+            self.__idx = i
+            self.iterate()
+        self.done()
+
+
+class CurrentTime(nap.Operator):
+    def __init__(self):
+        super(CurrentTime, self).__init__()
+        self.time = self.addDataOutlet('time', float, self.__getTime)
+
+    def __getTime(self):
+        return time.time()

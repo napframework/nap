@@ -14,19 +14,53 @@ def animalTree():
     """
     animal = nap.Object('animal')
     mammal = nap.Object('mammal')
-    mammal.setParent(animal)
+    animal.addChild(mammal)
     cat = nap.Object('cat')
-    cat.setParent(mammal)
+    mammal.addChild(cat)
     lion = nap.Object('lion')
-    lion.setParent(cat)
+    cat.addChild(lion)
     dog = nap.Object('dog')
-    dog.setParent(mammal)
+    mammal.addChild(dog)
     reptile = nap.Object('reptile')
-    reptile.setParent(animal)
+    animal.addChild(reptile)
 
     return animal
 
 
+def testPatch() -> nap.Patch:
+    from napkin.models.modules import control, string
+    patch = nap.Patch()
+
+    start = control.StartOperator()
+    prnt = string.PrintOperator()
+    concat = string.Concat()
+
+    patch.addOperator(start)
+    patch.addOperator(prnt)
+    patch.addOperator(concat)
+
+    start.start.connect(prnt.print)
+
+    prnt.str.setValue('Foo')
+    concat.getChild('a').setValue('Hello, ')
+    concat.getChild('b').setValue('World!')
+    prnt.str.connect(concat.getChild('result'))
+
+    return patch
+
+
+class TestOperator(nap.Operator):
+    def __init__(self):
+        super(TestOperator, self).__init__()
+        self.dataInlet = self.addDataInlet('myInlet', float, 0)
+        self.dataOutlet = self.addDataOutlet('myOutlet', int, self._getter)
+        self.addTriggerInlet('myInTrigger', self._myTrigger())
+
+    def _getter(self):
+        return None
+
+    def _myTrigger(self):
+        pass
 
 
 class MainTest(TestCase):
@@ -56,15 +90,15 @@ class MainTest(TestCase):
     def test_parent(self):
         parent = nap.Object()
         child = nap.Object()
-        child.setParent(parent)
+        parent.addChild(child)
         self.assertIn(child, parent.children())
 
     def test_uniqueNameParented(self):
         parent = nap.Object()
         child1 = nap.Object()
-        child1.setParent(parent)
+        parent.addChild(child1)
         child2 = nap.Object()
-        child2.setParent(parent)
+        parent.addChild(child2)
         self.assertNotEqual(child1.name(), child2.name(),
                             'Objects "%s" should have a different name' % child1.name())
         child1.setName(child2.name())
@@ -81,7 +115,7 @@ class MainTest(TestCase):
         childName = 'child'
         parent = nap.Object()
         child = nap.Object(childName)
-        child.setParent(parent)
+        parent.addChild(child)
 
         self.assertEqual(child.name(), childName,
                          'Child was renamed from "%s" to "%s" upon parenting' % (
@@ -94,14 +128,14 @@ class MainTest(TestCase):
     def test_getChildByPath(self):
         tree = animalTree()
 
-        lion = tree.getChild('mammal/cat/lion')
-        self.assertIsNotNone(lion)
-
         reptile = tree.getChild('reptile')
         self.assertIsNotNone(reptile)
 
         cat = tree.getChild('mammal/cat')
         self.assertIsNotNone(cat)
+
+        lion = tree.getChild('mammal/cat/lion')
+        self.assertIsNotNone(lion)
 
         self.assertEqual(cat.getChild('/mammal'), tree.getChild('mammal'))
 
@@ -116,8 +150,6 @@ class MainTest(TestCase):
         self.assertEqual(cat,
                          reptile.getChild('../mammal/cat'))
 
-
-
     def test_path(self):
         expectedRootPath = []
         root = nap.Object('root')
@@ -128,7 +160,7 @@ class MainTest(TestCase):
 
         expectedChildPath = ['child']
         child = nap.Object('child')
-        child.setParent(root)
+        root.addChild(child)
         self.assertEqual(expectedChildPath, child.path(),
                          'Expected "%s", got "%s"' % (
                              expectedChildPath, child.path()))
@@ -136,12 +168,11 @@ class MainTest(TestCase):
 
         expectedGrandChildPath = ['child', 'grandChild']
         grandChild = nap.Object('grandChild')
-        grandChild.setParent(child)
+        child.addChild(grandChild)
         self.assertEqual(expectedGrandChildPath, grandChild.path(),
                          'Expected "%s", got "%s"' % (
                              expectedGrandChildPath, grandChild.path()))
         self.assertEqual(grandChild.pathStr(), '/child/grandChild')
-
 
     def test_createOperators(self):
         patch = nap.Patch()
@@ -149,31 +180,66 @@ class MainTest(TestCase):
             patch.addOperator(opType)
 
 
+class OperatorTests(TestCase):
     def test_operator(self):
-        class TestOp(nap.Operator):
-            def __init__(self):
-                super(TestOp, self).__init__()
-                self.dataInlet = self.addDataInlet('myInlet', float, 0)
-                self.dataOutlet = self.addDataOutlet('myOutlet', int, self._getter)
-                self.addTriggerInlet('myInTrigger', self._myTrigger())
-
-            def _getter(self):
-                return None
-
-            def _myTrigger(self):
-                pass
-
         patch = nap.Patch()
-        op = patch.addOperator(TestOp)
-        assert(isinstance(op, nap.Operator))
+        op = patch.addOperator(TestOperator)
+        self.assertTrue(isinstance(op, nap.Operator))
         inlets = list(op.inlets())
-        assert(inlets)
-        assert(inlets[0].name() == 'myInlet')
-        assert(inlets[1].name() == 'myInTrigger')
+        self.assertTrue(inlets)
+        self.assertEqual(inlets[0].name(), 'myInlet')
+        self.assertEqual(inlets[1].name(), 'myInTrigger')
 
     def test_fileops(self):
         fileoptype = nap.operatorType('SplitExt')
         op = fileoptype()
-        print(list(op.outlets()))
 
 
+class SerializerTests(TestCase):
+    def setUp(self):
+        self.maxDiff = None
+
+    def test_classname(self):
+        self.assertEqual(nap.Object.typeName(), 'nap.Object')
+        self.assertEqual(TestOperator.typeName(), 'tests.TestOperator')
+
+    def test_serializer(self):
+        obj = animalTree()
+        serialized = nap.dumps(obj)
+        self.assertIsNotNone(serialized)
+        obj2 = nap.loads(serialized)
+        self.assertIsNotNone(obj2)
+        serialized2 = nap.dumps(obj2)
+        self.assertEqual(serialized, serialized2)
+
+    def test_serializeAllOperators(self):
+        patch = nap.Patch()
+        for op in nap.operatorTypes():
+            patch.addOperator(op)
+
+        serialized = nap.dumps(patch)
+        self.assertIsNotNone(serialized)
+        obj2 = nap.loads(serialized)
+        self.assertIsNotNone(obj2)
+        serialized2 = nap.dumps(obj2)
+        self.assertEqual(serialized, serialized2)
+
+    def test_runPatch(self):
+        patch = testPatch()
+        self.assertTrue(isinstance(patch.getChild('Concat'), nap.Operator))
+        self.assertTrue(isinstance(patch.getChild('Concat/a'), nap.DataInlet))
+        self.assertTrue(isinstance(patch.getChild('Concat/b'), nap.DataInlet))
+        self.assertTrue(isinstance(patch.getChild('Concat/result'), nap.DataOutlet))
+        self.assertEqual(patch.getChild('Concat/a').value(), 'Hello, ')
+        self.assertEqual(patch.getChild('Concat/b').value(), 'World!')
+        self.assertEqual(patch.getChild('Concat/result')(), 'Hello, World!')
+
+    def test_serializePatch(self):
+        patch = testPatch()
+        serialized = nap.dumps(patch)
+        print(serialized)
+    #     self.assertIsNotNone(serialized)
+    #     obj2 = nap.loads(serialized)
+    #     self.assertIsNotNone(obj2)
+    #     serialized2 = nap.dumps(obj2)
+    #     self.assertEqual(serialized, serialized2)

@@ -9,8 +9,8 @@ from generic.basewindow import BaseWindow
 from napkin.views.patchpanel import PatchPanel
 # from pynap_json.outlinepanel import OutlinePanel
 
-EXT = '.json'
-FILE_FILTER = "json (*%s)" % EXT
+EXT = 'json'
+FILE_FILTER = "json (*.%s)" % EXT
 DOC_DIR = '~/Documents'
 
 SETTINGS = None
@@ -51,6 +51,8 @@ if __name__ == '__main__':
     def save():
         filename = getSaveFilename(win)
         if not filename: return
+        if not filename.lower().endswith('.%s' % EXT):
+            filename = '%s.%s' % (filename, EXT)
         with open(filename, 'w') as fh:
             dic = patchPanel.patch().dict()
             json.dump(dic, fh, indent=2)
