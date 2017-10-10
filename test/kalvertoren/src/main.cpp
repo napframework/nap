@@ -65,7 +65,6 @@ nap::ObjectPtr<nap::Material>					frameMaterial = nullptr;
 nap::ObjectPtr<nap::Material>					vertexMaterial = nullptr;
 		
 std::vector<uint8_t> videoPlaybackData;
-bool didStartAsyncRead = false;
 
 // Some utilities
 void runGame(nap::Core& core);	
@@ -150,43 +149,38 @@ void onUpdate()
 
 	// Update camera location for materials
 	/*
-	if (didStartAsyncRead)
+	nap::RenderableMeshComponentInstance& renderableMeshComponent = kalvertorenEntity->getComponent<nap::RenderableMeshComponentInstance>();
+	nap::MeshInstance& mesh = renderableMeshComponent.getMeshInstance();
+
+	nap::VertexAttribute<glm::vec4>& color_attr = mesh.GetAttribute<glm::vec4>(nap::MeshInstance::VertexAttributeIDs::GetColorName(0));
+	nap::VertexAttribute<glm::vec3>& uv_attr = mesh.GetAttribute<glm::vec3>(nap::MeshInstance::VertexAttributeIDs::GetUVName(0));
+
+	glm::vec2 renderTargetSize = textureRenderTarget->getColorTexture().getSize();
+	int stride = 4 * renderTargetSize.x;
+
+	for (int index = 0; index < color_attr.getCount(); ++index)
 	{
-		textureRenderTarget->getTarget().getColorTexture().asyncEndGetData(videoPlaybackData);
+		glm::vec4& color = color_attr.mData[index];
+		glm::vec3& uv = uv_attr.mData[index];
 
-		nap::RenderableMeshComponentInstance& renderableMeshComponent = kalvertorenEntity->getComponent<nap::RenderableMeshComponentInstance>();
-		nap::MeshInstance& mesh = renderableMeshComponent.getMeshInstance();
+		float u = std::min(std::max(uv.x, 0.0f), 1.0f);
+		float v = std::min(std::max(uv.y, 0.0f), 1.0f);
 
-		nap::VertexAttribute<glm::vec4>& color_attr = mesh.GetAttribute<glm::vec4>(nap::MeshInstance::VertexAttributeIDs::GetColorName(0));
-		nap::VertexAttribute<glm::vec3>& uv_attr = mesh.GetAttribute<glm::vec3>(nap::MeshInstance::VertexAttributeIDs::GetUVName(0));
+		int x_pos = (int)std::round(u * renderTargetSize.x);
+		int y_pos = (int)std::round(v * renderTargetSize.y);
 
-		glm::vec2 renderTargetSize = textureRenderTarget->getColorTexture().getSize();
-		int stride = 4 * renderTargetSize.x;
+		uint8_t* pixel = videoPlaybackData.data() + y_pos * stride + x_pos * 4;
 
-		for (int index = 0; index < color_attr.getCount(); ++index)
-		{
-			glm::vec4& color = color_attr.mData[index];
-			glm::vec3& uv = uv_attr.mData[index];
+		color.x = pixel[0] / 255.0f;
+		color.y = pixel[1] / 255.0f;
+		color.z = pixel[2] / 255.0f;
+		color.w = pixel[3] / 255.0f;
+	}
 
-			float u = std::min(std::max(uv.x, 0.0f), 1.0f);
-			float v = std::min(std::max(uv.y, 0.0f), 1.0f);
-
-			int x_pos = (int)std::round(u * renderTargetSize.x);
-			int y_pos = (int)std::round(v * renderTargetSize.y);
-
-			uint8_t* pixel = videoPlaybackData.data() + y_pos * stride + x_pos * 4;
-
-			color.x = pixel[0] / 255.0f;
-			color.y = pixel[1] / 255.0f;
-			color.z = pixel[2] / 255.0f;
-			color.w = pixel[3] / 255.0f;
-		}
-
-		nap::utility::ErrorState errorState;
-		if (!mesh.update(errorState))
-		{
-			nap::Logger::fatal("Failed to update texture: %s", errorState.toString());
-		}
+	nap::utility::ErrorState errorState;
+	if (!mesh.update(errorState))
+	{
+		nap::Logger::fatal("Failed to update texture: %s", errorState.toString());
 	}
 	*/
 }
@@ -209,8 +203,7 @@ void onRender()
 		renderService->clearRenderTarget(render_target, opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH);
 		renderService->renderObjects(render_target, cameraEntity->getComponent<nap::PerspCameraComponentInstance>(), components_to_render);
 
-		render_target.getColorTexture().asyncStartGetData();
-		didStartAsyncRead = true;
+		render_target.getColorTexture().getData(videoPlaybackData);
 	}
 
 	// Render window 0
