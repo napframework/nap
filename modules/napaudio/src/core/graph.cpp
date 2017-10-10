@@ -101,7 +101,7 @@ namespace nap {
             {
                 // Create instance and initialize
                 auto objectResource = node->mItem.mObject;
-                auto instance = objectResource->instantiate(resource.getNodeManager(), errorState);
+                auto instance = std::move(objectResource->instantiate(resource.getNodeManager(), errorState));
                 
                 if (objectResource == resource.mOutput.get())
                     mOutput = instance.get();
@@ -124,15 +124,10 @@ namespace nap {
         
         AudioObjectInstance* GraphInstance::getObject(const std::string &mID)
         {
-            auto it = std::find_if(mObjects.begin(), mObjects.end(), [mID](auto& object)
-            {
-                return object->getResource().mID == mID;
-            });
-            
-            if (it == mObjects.end())
-                return nullptr;
-            else
-                return it->get();
+            for (auto& object : mObjects)
+                if (object->getResource().mID == mID)
+                    return object.get();
+            return nullptr;
         }
         
     }

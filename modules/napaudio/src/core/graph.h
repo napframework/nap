@@ -83,7 +83,7 @@ namespace nap {
             /**
              * @return: all objects within the graph.
              */
-            std::vector<std::unique_ptr<AudioObjectInstance>>& getObjects() { return mObjects; }
+            const std::vector<std::unique_ptr<AudioObjectInstance>>& getObjects() const { return mObjects; }
 
         private:
             std::vector<std::unique_ptr<AudioObjectInstance>> mObjects;
