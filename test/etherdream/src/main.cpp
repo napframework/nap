@@ -141,7 +141,6 @@ bool init(nap::Core& core)
 		return false;
 	}
 
-
 	// Collects all the errors
 	nap::utility::ErrorState errorState;
 
@@ -158,6 +157,7 @@ bool init(nap::Core& core)
 		nap::Logger::fatal("unable to create laser service: %s", errorState.toString().c_str());
 		return false;
 	}
+
 
 	// Create osc service
 	oscService = core.getOrCreateService<nap::OSCService>();

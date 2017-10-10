@@ -735,12 +735,9 @@
 
 		{
 			"Type" : "nap::Entity",
-			"mID"  : "LaserDrawEntity",
+			"mID"  : "LaserCanvasEntity",
 			"Components" :
 			[
-				{
-					"Type" : "nap::FrustrumSyncComponent"
-				},
 				{
 					"Type" : "nap::TransformComponent"		
 				},
@@ -779,7 +776,12 @@
 					"Dac" : "Laser1",
 					"Line": "LaserTraceMesh",
 					"Transform" : "LineXFormComponent"
-				},		
+				},
+				{
+					"Type" : "nap::FrustrumSyncComponent",
+					"CanvasEntity" : "LaserCanvasEntity",
+					"LaserOutputComponent" : "LaserOutputComponentOne"
+				},
 				{
 					"Type":"nap::LaserOutputComponent",
 					"Properties" :
@@ -822,11 +824,7 @@
 					"Line": "LaserTraceMesh",
 					"Transform" : "LineXFormComponent"
 				}			
-			],
-			"Children" :
-			[
-				"LaserDrawEntity"
-			] 
+			]
 		}
 	]
 }
