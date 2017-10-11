@@ -278,7 +278,7 @@ namespace nap
 			ObjectList objects_to_write = getRootObjectsToSerialize(rootObjects, writer);
 
 			// Signal writer that we're starting
-			if (!errorState.check(writer.start(), "Failed to start writing"))
+			if (!errorState.check(writer.start(objects_to_write), "Failed to start writing"))
 				return false;
 
 			// Go through the array of objects to write. Note that we keep querying the length of the array because objects can be added during traversal
