@@ -50,7 +50,7 @@ namespace nap
 		void registerWindowEvent(WindowEventPtr windowEvent);
 		
 		/**
-		 *  Registers the received input event to the input service
+		 *  Forwards the received input event to the input service
 		 */
 		void registerInputEvent(InputEventPtr inputEvent);
 		

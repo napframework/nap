@@ -52,6 +52,11 @@ namespace nap
 		void registerWindowEvent(WindowEventPtr windowEvent);
 		
 		/**
+		 *  Forwards the received input event to the input service
+		 */
+		void registerInputEvent(InputEventPtr inputEvent);
+		
+		/**
 		 *	Toggles full screen
 		 */
 		void setWindowFullscreen(std::string windowIdentifier, bool fullscreen);

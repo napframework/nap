@@ -251,6 +251,12 @@ namespace nap {
 	{
 		mRenderService->addEvent(std::move(windowEvent));
 	}
+	
+	
+	void AppRunner::registerInputEvent(InputEventPtr inputEvent)
+	{
+		mInputService->addEvent(std::move(inputEvent));
+	}
 
 	
 	void AppRunner::setWindowFullscreen(std::string windowIdentifier, bool fullscreen) 

@@ -210,7 +210,8 @@ namespace nap {
 	}
 	
 	
-	void AppRunner::registerInputEvent(InputEventPtr inputEvent) {
+	void AppRunner::registerInputEvent(InputEventPtr inputEvent)
+	{
 		mInputService->addEvent(std::move(inputEvent));
 	}
 
