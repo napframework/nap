@@ -20,7 +20,7 @@ namespace nap {
         /**
          * Instance of a object that generates audio output for one or more channels
          */
-        class NAPAPI AudioObjectInstance {
+        class NAPAPI AudioObjectInstance : public rtti::RTTIObject {
             RTTI_ENABLE()
             
         public:

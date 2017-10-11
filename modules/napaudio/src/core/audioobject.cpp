@@ -26,7 +26,7 @@ namespace nap {
         
         std::unique_ptr<AudioObjectInstance> AudioObject::instantiate(NodeManager& nodeManager, utility::ErrorState& errorState)
         {
-            auto instance = std::move(createInstance());
+            auto instance = createInstance();
             mInstance = instance.get();
             if (!instance->init(nodeManager, errorState))
                 return nullptr;
@@ -46,7 +46,7 @@ namespace nap {
             auto resource = rtti_cast<MultiChannelObject>(&getResource());
             for (auto channel = 0; channel < resource->getChannelCount(); ++channel)
             {
-                auto node = std::move(resource->createNode(channel, nodeManager));
+                auto node = resource->createNode(channel, nodeManager);
                 assert(node->getOutputs().size() == 1);
                 mNodes.emplace_back(std::move(node));
             }

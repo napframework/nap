@@ -101,7 +101,7 @@ namespace nap {
             {
                 // Create instance and initialize
                 auto objectResource = node->mItem.mObject;
-                auto instance = std::move(objectResource->instantiate(resource.getNodeManager(), errorState));
+                auto instance = objectResource->instantiate(resource.getNodeManager(), errorState);
                 
                 if (objectResource == resource.mOutput.get())
                     mOutput = instance.get();
