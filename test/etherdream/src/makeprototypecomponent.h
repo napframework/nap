@@ -1,7 +1,16 @@
 #pragma once
 
+// Local Includes
+#include "lasercompound.h"
+#include "lineblendcomponent.h"
+#include "updatenormalscomponent.h"
+#include "linetracecomponent.h"
+#include "laseroutputcomponent.h"
+
+// External Includes
 #include <nap/component.h>
 #include <nap/entity.h>
+#include <renderablemeshcomponent.h>
 
 namespace nap
 {
@@ -48,11 +57,34 @@ namespace nap
 		 */
 		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
+		/**
+		 *	Called by the controller, sets up the laser resources based on the compound settings
+		 */
+		bool setup(LaserCompound& settings, nap::utility::ErrorState& error);
+
 	private:
 		// Holds the created spline entity
 		nap::EntityInstance* mSplineEntity = nullptr;
 
 		// Holds the created laser output entity
 		nap::EntityInstance* mLaserOutputEntity = nullptr;
+
+		// Holds the Line Blend Component
+		nap::LineBlendComponentInstance* mLineBlender = nullptr;
+
+		// Holds the line renderable mesh component
+		nap::RenderableMeshComponentInstance* mLineRenderer = nullptr;
+
+		// Holds the normals renderable mesh component
+		nap::RenderableMeshComponentInstance* mNormalsRenderer = nullptr;
+
+		// Holds the update normals component
+		nap::UpdateNormalsComponentInstance* mUpdateNormalsComponent = nullptr;
+
+		// Holds the line trace component
+		nap::LineTraceComponentInstance* mTraceComponent = nullptr;
+
+		// Holds the laser output component
+		nap::LaserOutputComponentInstance* mOutputComponent = nullptr;
 	};
 }

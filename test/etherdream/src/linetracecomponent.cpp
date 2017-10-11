@@ -146,4 +146,10 @@ namespace nap
 		mCurrentTime = 0.0f;
 	}
 
+	
+	void LineTraceComponentInstance::setPolyLine(nap::PolyLine& line)
+	{
+		mTarget = &line;
+	}
+
 }

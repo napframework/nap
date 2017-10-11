@@ -46,6 +46,37 @@ namespace nap
 			return false;
 		getEntityInstance()->addChild(*mLaserOutputEntity);
 
+		// Store some of the components we want to set up
+		mLineBlender = mSplineEntity->findComponent<LineBlendComponentInstance>();
+		if (!errorState.check(mLineBlender != nullptr, "unable to find line blend component"))
+			return false;
+
+		// Store components to render
+		std::vector<nap::RenderableMeshComponentInstance*> render_components;
+		mSplineEntity->getComponentsOfType<RenderableMeshComponentInstance>(render_components);
+		if (!errorState.check(render_components.size() >= 2, "not enough renderable components"))
+			return false;
+
+		assert(utility::gStartsWith(render_components[0]->getComponent<RenderableMeshComponent>()->mID, "RenderLaserLineComponent"));
+		assert(utility::gStartsWith(render_components[1]->getComponent<RenderableMeshComponent>()->mID, "RenderLaserNormalsComponent"));
+		mLineRenderer = render_components[0];
+		mNormalsRenderer = render_components[1];
+
+		// Store component that updates normals
+		mUpdateNormalsComponent = mSplineEntity->findComponent<UpdateNormalsComponentInstance>();
+		if (!errorState.check(mUpdateNormalsComponent != nullptr, "unable to find update normals component"))
+			return false;
+
+		// Store component that traces the line
+		mTraceComponent = mSplineEntity->findComponent<LineTraceComponentInstance>();
+		if (!errorState.check(mTraceComponent != nullptr, "unable to find trace component"))
+			return false;
+
+		// Store component that outputs a line to the laser
+		mOutputComponent = mLaserOutputEntity->findComponent<LaserOutputComponentInstance>();
+		if (!errorState.check(mOutputComponent != nullptr, "unable to find trace component"))
+			return false;
+
 		// Set-up relationships
 
 		// The laser output component needs to know where the line is relative to it's canvas, therefore we provide it with the line entity
@@ -59,4 +90,34 @@ namespace nap
 
 		return true;
 	}
+
+
+	bool MakePrototypeComponentInstance::setup(LaserCompound& settings, nap::utility::ErrorState& error)
+	{
+		// Set poly line the blender will blend to
+		mLineBlender->setPolyLine(*(settings.mLineMesh));
+
+		// Create and set renderable mesh for laser line renderable component
+		nap::RenderableMesh mesh = mLineRenderer->createRenderableMesh(*(settings.mLineMesh), error);
+		mLineRenderer->setMesh(mesh);
+
+		// Create and set renderable mesh for normals renderable component
+		nap::RenderableMesh normals_mesh = mNormalsRenderer->createRenderableMesh(*(settings.mNormalsMesh), error);
+		mNormalsRenderer->setMesh(normals_mesh);
+
+		// Set normals mesh to update
+		mUpdateNormalsComponent->setMesh(*(settings.mNormalsMesh));
+
+		// Set tracer mesh
+		mTraceComponent->setPolyLine(*(settings.mTraceMesh));
+
+		// Set laser output line
+		mOutputComponent->setPolyLine(*(settings.mTraceMesh));
+
+		// Set the output dac
+		mOutputComponent->setDac(*(settings.mDac));
+
+		return true;
+	}
+
 }

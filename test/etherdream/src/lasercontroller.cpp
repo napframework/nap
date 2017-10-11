@@ -55,6 +55,8 @@ namespace nap
 				return errorState.check(false, "laser with id %s already exists", compound->mLaserID);
 
 			// TODO: Populate with laser compound settings
+			if (!prototype_component->setup(*(compound), errorState))
+				return false;
 
 			// Store for future use
 			mLaserEntityMap.emplace(std::make_pair(compound->mLaserID, new_entity.get()));

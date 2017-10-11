@@ -69,6 +69,11 @@ namespace nap
 		// Properties associated with this line
 		TraceProperties mProperties;
 
+		/**
+		 *	Set the polyline that stores the trace result
+		 */
+		void setPolyLine(nap::PolyLine& line);
+
 	private:
 		nap::LineBlendComponentInstance* mBlendComponent = nullptr;		// Line that acts as a source for the tracer
 		nap::PolyLine*  mTarget = nullptr;								// Line that is the output of the trace computation

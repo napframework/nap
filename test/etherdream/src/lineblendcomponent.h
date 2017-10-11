@@ -79,6 +79,11 @@ namespace nap
 		 */
 		void reset()												{ mCurrentTime = 0.0f; }
 
+		/**
+		 *	@param line the polygon line used as target
+		 */
+		void setPolyLine(PolyLine& line)							{ mTarget = &line; }
+
 		float mBlendValue = 0.0f;									// Blend value
 		float mBlendSpeed = 0.0f;									// Speed to blend between 2 lines
 

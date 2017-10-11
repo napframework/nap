@@ -76,17 +76,17 @@ namespace nap
 		 */
 		virtual void update(double deltaTime) override;
 
-		// Lines will be uploaded to this laser DAC
-		EtherDreamDac* mDac = nullptr;
-
-		// Component that holds the lines to draw
-		PolyLine* mLine = nullptr;
-
 		// Properties
 		LaserOutputProperties mProperties;
 
 		// Sets the transform to use for the line
 		void setTransform(nap::EntityInstance& entity);
+
+		// Sets the line to send to the laser
+		void setPolyLine(nap::PolyLine& line)				{ mLine = &line; }
+
+		// Sets the dac to send to the laser
+		void setDac(nap::EtherDreamDac& dac)				{ mDac = &dac; }
 
 	private:
 		// Populate Laser Buffer
@@ -95,9 +95,15 @@ namespace nap
 		// Xform associated with the line
 		nap::TransformComponentInstance* mLineTransform = nullptr;
 
+		// Lines will be uploaded to this laser DAC
+		EtherDreamDac* mDac = nullptr;
+
+		// Component that holds the lines to draw
+		PolyLine* mLine = nullptr;
+
 		// Converted laser points
 		std::vector<nap::EtherDreamPoint> mPoints;			//< DAC points
 		std::vector<glm::vec3> mVerts;						//< Converted vertex positions
-		std::vector<glm::vec4> mColors;						//< Converted vertex colors 	
+		std::vector<glm::vec4> mColors;						//< Converted vertex colors
 	};
 }

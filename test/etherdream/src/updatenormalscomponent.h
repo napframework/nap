@@ -47,6 +47,11 @@ namespace nap
 		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
 		/**
+		 *	Set the mesh to use as visualization
+		 */
+		void setMesh(nap::VisualizeNormalsMesh& mesh)					{ mNormalMesh = &mesh; }
+
+		/**
 		 *	Updates the mesh, CPU and GPU
 		 */
 		virtual void update(double deltaTime) override;

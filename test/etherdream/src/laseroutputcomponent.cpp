@@ -195,5 +195,4 @@ namespace nap
 
 		mDac->setPoints(mPoints);
 	}
-
 }
