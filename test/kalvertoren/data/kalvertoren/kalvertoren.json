@@ -265,7 +265,7 @@
 						"Translate": {
 							"x": 0.0,
 							"y": 0.0,
-							"z": 0.0
+							"z": -30.0
 						},
 						"Rotate": {
 							"x": 0.0,
@@ -279,19 +279,7 @@
 						},
 						"UniformScale": 1.0
 					}
-				},
-				{
-					"Type" : "nap::RotateComponent",
-					"Properties": {
-						"Axis": {
-							"x": 0.0,
-							"y": 1.0,
-							"z": 0.0
-						},
-						"Speed": 0.1,
-						"Offset": 0.0
-					}
-				}	
+				}
 			]
 		},
 		
@@ -331,9 +319,20 @@
 					"Type" : "nap::KeyInputComponent"
 				},
 				{
+					"Type" : "nap::PointerInputComponent"
+				},
+				{
+					"Type" : "nap::CameraController"
+				},			
+				{
 					"Type" : "nap::FirstPersonController",
 					"MovementSpeed": 20.0,
-					"RotateSpeed": 0.5
+					"RotateSpeed": 0.005
+				},			
+				{
+					"Type" : "nap::OrbitController",
+					"MovementSpeed": 0.5,
+					"RotateSpeed": 0.005
 				},
 				{
 					"Type" : "nap::TransformComponent",
@@ -341,7 +340,7 @@
 						"Translate": {
 							"x": 0.0,
 							"y": 0.0,
-							"z": 40.0
+							"z": 100.0
 						},
 						"Rotate": {
 							"x": 0.0,

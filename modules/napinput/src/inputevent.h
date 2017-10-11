@@ -154,10 +154,15 @@ namespace nap
 	{
 		RTTI_ENABLE(PointerEvent)
 	public:
-		PointerMoveEvent(int inX, int inY, int window=0, int inId = 0) : 
-			PointerEvent(inX, inY, window, inId)
+		PointerMoveEvent(int relX, int relY, int inAbsX, int inAbsY, int window=0, int inId = 0) : 
+			PointerEvent(inAbsX, inAbsY, window, inId),
+			mRelX(relX),
+			mRelY(relY)
 		{
 		}
+
+		int mRelX;
+		int mRelY;
 	};
 
 	using InputEventPtr = std::unique_ptr<nap::InputEvent>;

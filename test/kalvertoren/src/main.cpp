@@ -41,6 +41,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/embed.h>
 #include "rtti/rtticast.h"
+#include "orbitcontroller.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
@@ -294,6 +295,9 @@ bool init(nap::Core& core)
 	frameMaterial			= resourceManagerService->findObject<nap::Material>("FrameMaterial");
 
 	assert(videoEntity != nullptr);
+	nap::OrbitControllerInstance& orbitController = cameraEntity->getComponent<nap::OrbitControllerInstance>();
+	nap::TransformComponentInstance& kalvertorenTransform = kalvertorenEntity->getComponent<nap::TransformComponentInstance>();
+	orbitController.setLookAtPos(kalvertorenTransform.getTranslate());
 
 	// Collect all video resources and play
 	videoResource = resourceManagerService->findObject<nap::Video>("Video1");
@@ -337,7 +341,7 @@ void runGame(nap::Core& core)
 	while (loop)
 	{
 		opengl::Event event;
-		if (opengl::pollEvent(event))
+		while (opengl::pollEvent(event))
 		{
 			// Check if we are dealing with an input event (mouse / keyboard)
 			if (nap::isInputEvent(event))

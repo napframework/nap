@@ -1,12 +1,16 @@
 #pragma once
 
 #include "nap/component.h"
+#include <glm/gtx/quaternion.hpp>
 
 namespace nap
 {
 	class FirstPersonControllerInstance;
 	class KeyPressEvent;
 	class KeyReleaseEvent;
+	class PointerMoveEvent;
+	class PointerPressEvent;
+	class PointerReleaseEvent;
 	class TransformComponentInstance;
 	class TransformComponent;
 	class KeyInputComponent;
@@ -56,6 +60,8 @@ namespace nap
 		 */
 		virtual void update(double deltaTime) override;
 
+		void enable(bool enabled) { mEnabled = enabled; }
+
 	private:
 		/**
 		 * Handler for key press events
@@ -67,16 +73,20 @@ namespace nap
 		 */
 		void onKeyRelease(const KeyReleaseEvent& keyReleaseEvent);
 
+		void onMouseDown(const PointerPressEvent& pointerPressEvent);
+		void onMouseUp(const PointerReleaseEvent& pointerReleaseEvent);
+		void onMouseMove(const PointerMoveEvent& pointerMoveEvent);
+
 	private:
 		TransformComponentInstance*		mTransformComponent = nullptr;		// The transform component used to move the entity
 		bool							mMoveForward		= false;		// Whether we're moving forward
 		bool							mMoveBackward		= false;		// Whether we're moving backwards
 		bool							mMoveLeft			= false;		// Whether we're moving left
 		bool							mMoveRight			= false;		// Whether we're moving right
-		bool							mLookUp				= false;		// Whether we're rotating up
-		bool							mLookDown			= false;		// Whether we're rotating down
-		bool							mLookLeft			= false;		// Whether we're rotating left
-		bool							mLookRight			= false;		// Whether we're rotating right
+		bool							mMoveUp				= false;		// Whether we're moving up
+		bool							mMoveDown			= false;		// Whether we're moving down
+		bool							mEnabled			= false;
+		bool							mMoving				= false;
 	};
 
 }
