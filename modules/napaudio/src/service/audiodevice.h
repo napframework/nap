@@ -86,13 +86,13 @@ namespace nap {
              */
             int mOutputDevice = 0;
             
-            /* 
+            /** 
              * The number of input channels in the stream. 
              * If the chosen device @mInputDevice does not support this amount of channels the stream will not start.
              */
-            int mInputChannelCount = 1;
+            int mInputChannelCount = 0;
 
-            /* 
+            /** 
              * The number of output channels in the stream. 
              * If the chosen device @mOutputDevice does not support this amount of channels the stream will not start.
              */
