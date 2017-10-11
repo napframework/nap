@@ -7,6 +7,9 @@
 #include <nap/component.h>
 #include <unordered_map>
 #include <nap/entity.h>
+#include <perspcameracomponent.h>
+#include <renderservice.h>
+#include <renderwindow.h>
 
 namespace nap
 {
@@ -32,6 +35,9 @@ namespace nap
 
 		// property: link to the entity that we want to create based on the compound
 		nap::ObjectPtr<Entity> mLaserPrototype;
+
+		// property: link to the laser frame that is position on screen
+		nap::ObjectPtr<Entity> mFrameEntity;
 	};
 
 
@@ -58,11 +64,27 @@ namespace nap
 		 */
 		nap::EntityInstance* getLaserEntity(int id);
 
+		/**
+		 *	Renders all available lasers to their respective buffers
+		 */
+		void renderToLaserBuffers(nap::PerspCameraComponentInstance& camera, RenderService& renderer);
+
+		/**
+		 *	Render the buffers on to their planes
+		 */
+		void renderFrames(nap::RenderWindow& window, nap::PerspCameraComponentInstance& camera, RenderService& renderer);
+
 	private:
 		// All the laser compounds associated with this controller
 		std::vector<ObjectPtr<nap::LaserCompound>> mLaserCompounds;
 
 		// All the instantiated laser prototypes
 		std::unordered_map<int, nap::EntityInstance*> mLaserEntityMap;
+
+		// All the laser compounds
+		std::unordered_map<int, nap::LaserCompound*> mLaserCompoundMap;
+
+		// All the laser frames
+		std::unordered_map<int, nap::EntityInstance*> mLaserFrameMap;
 	};
 }

@@ -3,6 +3,7 @@
 // External Includes
 #include <rtti/rttiobject.h>
 #include <nap/objectptr.h>
+#include <rendertarget.h>
 #include <polyline.h>
 #include <etherdreamdac.h>
 #include <visualizenormalsmesh.h>
@@ -35,6 +36,9 @@ namespace nap
 
 		// property: Etherdream output DAC
 		nap::ObjectPtr<EtherDreamDac> mDac = nullptr;
+
+		// property: Render Target
+		nap::ObjectPtr<RenderTarget> mTarget = nullptr;
 
 		// property: Laser id
 		int mLaserID = 0;

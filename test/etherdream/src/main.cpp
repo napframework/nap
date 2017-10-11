@@ -4,6 +4,7 @@
 // Local Includes
 #include "renderablemeshcomponent.h"
 #include "laseroutputcomponent.h"
+#include "lasercontroller.h"
 
 // GLM
 #include <glm/glm.hpp>
@@ -55,7 +56,8 @@ nap::ObjectPtr<nap::RenderWindow> renderWindow = nullptr;
 
 // Laser DAC
 nap::ObjectPtr<nap::EntityInstance> laserControllerEntity = nullptr;
-nap::ObjectPtr<nap::EntityInstance> camera = nullptr;
+nap::ObjectPtr<nap::EntityInstance> laserCamera = nullptr;
+nap::ObjectPtr<nap::EntityInstance> frameCamera = nullptr;
 
 /////////////////////////////////////////////////////////////////////////
 
@@ -86,27 +88,29 @@ void onUpdate()
 // Called when the window is going to render
 void onRender()
 {
+	// Get rid of unnecessary resources
 	renderService->destroyGLContextResources({ renderWindow });
 	
 	// Activate current window for drawing
 	renderWindow->makeActive();
 
-	// Clear back-buffer
-	opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(renderWindow->getWindow()->getBackbuffer());
+	// Render all lasers objects in to their respective back-buffer
+	nap::LaserControlInstanceComponent& laser_control_comp = laserControllerEntity->getComponent<nap::LaserControlInstanceComponent>();
+	nap::PerspCameraComponentInstance& laser_cam = laserCamera->getComponent<nap::PerspCameraComponentInstance>();
+	laser_control_comp.renderToLaserBuffers(laser_cam, *renderService);
+
+	// Clear window back-buffer
+	opengl::RenderTarget& backbuffer = *(renderWindow->getWindow()->getBackbuffer());
 	backbuffer.setClearColor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 	renderService->clearRenderTarget(backbuffer);
 
-	// Get spline entity
-	//nap::EntityInstance* spline_entity = laserControllerEntity->getEntity(0)->getChildren()[0];
-
-	// Render spline
-	//nap::RenderableMeshComponentInstance& line_mesh = spline_entity->getComponent<nap::RenderableMeshComponentInstance>();
-	renderService->renderObjects(backbuffer, camera->getComponent<nap::PerspCameraComponentInstance>());
+	// Render all laser frames to the window
+	nap::PerspCameraComponentInstance& frame_cam = frameCamera->getComponent<nap::PerspCameraComponentInstance>();
+	laser_control_comp.renderFrames(*renderWindow, frame_cam, *renderService);
 
 	// Swap back buffer
 	renderWindow->swap();
 }
-
 
 
 /**
@@ -166,6 +170,7 @@ bool init(nap::Core& core)
 		return false;        
 	}
 
+
 	// Store all render windows
 	renderWindow = resourceManagerService->findObject<nap::RenderWindow>("Window");
 
@@ -173,7 +178,12 @@ bool init(nap::Core& core)
 	laserControllerEntity = resourceManagerService->findEntity("LaserControllerEntity");
 
 	// Store camera
-	camera = resourceManagerService->findEntity("CameraEntity");
+	laserCamera = resourceManagerService->findEntity("LaserCameraEntity");
+	assert(laserCamera != nullptr);
+
+	// Store frame camera
+	frameCamera = resourceManagerService->findEntity("FrameCameraEntity");
+	assert(frameCamera != nullptr);
 
 	// Set render states
 	nap::RenderState& render_state = renderService->getRenderState();

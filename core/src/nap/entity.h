@@ -261,7 +261,7 @@ namespace nap
 		const rtti::TypeInfo type = rtti::TypeInfo::get<T>();
 		for (auto& component : mComponents)
 			if (isTypeMatch(component->get_type(), type, typeCheck))
-				components.push_back(rtti_cast<T>(component.get()));
+				components.emplace_back(rtti_cast<T>(component.get()));
 	}
 
 	template<class T>

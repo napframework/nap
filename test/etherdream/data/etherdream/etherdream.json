@@ -74,6 +74,13 @@
 		},
 
 		{
+			"Type" : "nap::Shader",
+			"mID": "FrameShader",
+			"mVertShader": "shaders/etherdream/laserframe.vert",
+			"mFragShader": "shaders/etherdream/laserframe.frag"
+		},
+
+		{
 			"Type" : "nap::Image",
 			"mID" : "CanvasImage",
 			"ImagePath" : "data/etherdream/laser_canvas.png"
@@ -88,6 +95,11 @@
 		{
 			"Type" : "nap::PlaneMesh",
 			"mID" : "CanvasMesh"
+		},
+
+		{
+			"Type" : "nap::PlaneMesh",
+			"mID" : "FrameMesh"
 		},
 
 		{
@@ -372,6 +384,122 @@
 		},
 
 		{
+			"Type" : "nap::Texture2D",
+			"mID" : "ColorTexture1",
+			"Width" : 1024,
+			"Height" : 1024,
+			"Format" : "RGBA8"
+		},
+
+		{
+			"Type" : "nap::Texture2D",
+			"mID" : "DepthTexture1",
+			"Width" : 1024,
+			"Height" : 1024,
+			"Format" : "Depth"
+		},
+
+		{
+			"Type" : "nap::Texture2D",
+			"mID" : "ColorTexture2",
+			"Width" : 1024,
+			"Height" : 1024,
+			"Format" : "RGBA8"
+		},
+
+		{
+			"Type" : "nap::Texture2D",
+			"mID" : "DepthTexture2",
+			"Width" : 1024,
+			"Height" : 1024,
+			"Format" : "Depth"
+		},
+
+		{
+			"Type" : "nap::Texture2D",
+			"mID" : "ColorTexture3",
+			"Width" : 1024,
+			"Height" : 1024,
+			"Format" : "RGBA8"
+		},
+
+		{
+			"Type" : "nap::Texture2D",
+			"mID" : "DepthTexture3",
+			"Width" : 1024,
+			"Height" : 1024,
+			"Format" : "Depth"
+		},
+
+		{
+			"Type" : "nap::Texture2D",
+			"mID" : "ColorTexture4",
+			"Width" : 1024,
+			"Height" : 1024,
+			"Format" : "RGBA8"
+		},
+
+		{
+			"Type" : "nap::Texture2D",
+			"mID" : "DepthTexture4",
+			"Width" : 1024,
+			"Height" : 1024,
+			"Format" : "Depth"
+		},
+
+		{
+			"Type" : "nap::RenderTarget",
+			"mID": "LaserRenderTarget1",
+			"mColorTexture": "ColorTexture1",
+			"mDepthTexture": "DepthTexture1",
+			"mClearColor" : {
+				"x" : 0.0,
+				"y" : 0.0,
+				"z" : 0.0,
+				"w" : 0.0
+			}
+		},
+
+		{
+			"Type" : "nap::RenderTarget",
+			"mID": "LaserRenderTarget2",
+			"mColorTexture": "ColorTexture2",
+			"mDepthTexture": "DepthTexture2",
+			"mClearColor" : {
+				"x" : 0.0,
+				"y" : 0.0,
+				"z" : 0.0,
+				"w" : 0.0
+			}
+		},
+
+		{
+			"Type" : "nap::RenderTarget",
+			"mID": "LaserRenderTarget3",
+			"mColorTexture": "ColorTexture3",
+			"mDepthTexture": "DepthTexture3",
+			"mClearColor" : {
+				"x" : 0.0,
+				"y" : 0.0,
+				"z" : 0.0,
+				"w" : 0.0
+			}
+		},
+
+		{
+			"Type" : "nap::RenderTarget",
+			"mID": "LaserRenderTarget4",
+			"mColorTexture": "ColorTexture4",
+			"mDepthTexture": "DepthTexture4",
+			"mClearColor" : {
+				"x" : 0.0,
+				"y" : 0.0,
+				"z" : 0.0,
+				"w" : 0.0
+			}
+		},
+
+		{
 			"Type" : "nap::Material",
 			"mID": "LineMaterial",
 			"Shader": "LineShader",
@@ -496,12 +624,38 @@
 		},
 
 		{
+			"Type" : "nap::Material",
+			"mID": "FrameMaterial",
+			"Shader": "FrameShader",
+			"VertexAttributeBindings" : 
+			[
+				{
+					"MeshAttributeID": "Position",
+					"ShaderAttributeID": "in_Position"
+				},
+				{
+					"MeshAttributeID": "UV0",
+					"ShaderAttributeID": "in_UV0"
+				}
+			],
+			"Uniforms" : 
+			[
+				{
+					"Type" : "nap::UniformTexture2D",
+					"Name" : "mCanvas",
+					"Texture" : "CanvasImage"
+				}
+			]
+		},
+
+		{
 			"Type" : "nap::LaserCompound",
 			"mID" : "LaserCompound1",
 			"LineMesh" : "LaserLineMesh1",
 			"Tracemesh" : "LaserTraceMesh1",
 			"NormalMesh" : "NormalsMesh1",
 			"Dac" : "Laser1",
+			"Target" : "LaserRenderTarget1",
 			"LaserID" : 0
 		},
 
@@ -512,6 +666,7 @@
 			"Tracemesh" : "LaserTraceMesh2",
 			"NormalMesh" : "NormalsMesh2",
 			"Dac" : "Laser2",
+			"Target" : "LaserRenderTarget2",
 			"LaserID" : 1
 		},
 
@@ -521,6 +676,7 @@
 			"LineMesh" : "LaserLineMesh3",
 			"Tracemesh" : "LaserTraceMesh3",
 			"NormalMesh" : "NormalsMesh3",
+			"Target" : "LaserRenderTarget3",
 			"Dac" : "Laser3",
 			"LaserID" : 2
 		},
@@ -531,6 +687,7 @@
 			"LineMesh" : "LaserLineMesh4",
 			"Tracemesh" : "LaserTraceMesh4",
 			"NormalMesh" : "NormalsMesh4",
+			"Target" : "LaserRenderTarget4",
 			"Dac" : "Laser4",
 			"LaserID" : 3
 		},
@@ -546,6 +703,7 @@
 				{
 					"Type" : "nap::LaserControlComponent",
 					"PrototypeEntity" : "LaserPrototypeEntity",
+					"FrameEntity" : "LaserFrameEntity",
 					"LaserCompounds" :
 					[
 						"LaserCompound1",
@@ -553,6 +711,31 @@
 						"LaserCompound3",
 						"LaserCompound4"
 					]
+				}
+			]
+		},
+
+		{
+			"Type" : "nap::Entity",
+			"mID" : "LaserFrameEntity",
+			"AutoSpawn" : false,
+			"Components" :
+			[
+				{
+					"Type" : "nap::TransformComponent",
+					"Properties": 
+					{
+						"UniformScale": 50.0						
+					}	
+				},
+				{
+					"Type" : "nap::RenderableMeshComponent",
+					"mID" : "RenderLaserFrame",
+					"Mesh" : "FrameMesh",
+					"MaterialInstance" : 
+					{
+						"Material": "FrameMaterial"
+					}
 				}
 			]
 		},
@@ -576,14 +759,14 @@
 
 		{
 			"Type" : "nap::Entity",
-			"mID": "CameraEntity",
+			"mID": "LaserCameraEntity",
 			"Components" : 
 			[
 				{
 					"Type" : "nap::PerspCameraComponent",
 					"Properties": {
 						"FieldOfView": 45.0,
-						"NearClippingPlane" : 0.01,
+						"NearClippingPlane" : 1.0,
 						"FarClippingPlane" : 10000.0
 					}
 				},
@@ -593,17 +776,34 @@
 						"Translate": {
 							"x": 0.0,
 							"y": 0.0,
-							"z": 675.0
+							"z": 625.0
 						},
-						"Rotate": {
+						"UniformScale": 1.0						
+					}
+				}
+			]
+		},
+
+		{
+			"Type" : "nap::Entity",
+			"mID": "FrameCameraEntity",
+			"Components" : 
+			[
+				{
+					"Type" : "nap::PerspCameraComponent",
+					"Properties": {
+						"FieldOfView": 45.0,
+						"NearClippingPlane" : 1.0,
+						"FarClippingPlane" : 10000.0
+					}
+				},
+				{
+					"Type" : "nap::TransformComponent",
+					"Properties": {
+						"Translate": {
 							"x": 0.0,
 							"y": 0.0,
-							"z": 0.0
-						},
-						"Scale": {
-							"x": 1.0,
-							"y": 1.0,
-							"z": 1.0
+							"z": 122.5
 						},
 						"UniformScale": 1.0						
 					}

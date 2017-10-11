@@ -58,9 +58,13 @@ namespace nap
 		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
 		/**
-		 *	Called by the controller, sets up the laser resources based on the compound settings
+		 * Called by the controller, sets up the laser resources based on the compound settings
 		 */
 		bool setup(LaserCompound& settings, nap::utility::ErrorState& error);
+
+		// Utilities
+		nap::RenderableComponentInstance& getLineRenderer()			{ return *mLineRenderer; }
+		nap::RenderableComponentInstance& getNormalRenderer()		{ return *mNormalsRenderer; }
 
 	private:
 		// Holds the created spline entity
