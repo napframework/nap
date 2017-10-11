@@ -145,8 +145,6 @@ namespace nap {
 
 	/**
 	 * Handles the window event
-	 * When the window size changes we want to update the background texture to reflect those changes, ie:
-	 * Scale to the right size
 	 */
 	void AppRunner::handleWindowEvent(const WindowEvent& windowEvent)
 	{
