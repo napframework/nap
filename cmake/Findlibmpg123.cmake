@@ -8,13 +8,16 @@
 include(${CMAKE_CURRENT_LIST_DIR}/targetarch.cmake)
 target_architecture(ARCH)
 
-find_path(LIBMPG123_DIR linux/src/libmpg123/mpg123.h
+find_path(LIBMPG123_DIR src/libmpg123/mpg123.h.in
 HINTS
 ${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/mpg123
 ${CMAKE_CURRENT_LIST_DIR}/../../mpg123
 )
 
 if(WIN32)
+    set(LIBMPG123_LIB_DIR ${LIBMPG123_DIR}/install/msvc)
+    set(LIBMPG123_LIBRARIES ${LIBMPG123_LIB_DIR}/libmpg123.lib)
+    set(LIBMPG123_INCLUDE_DIR ${LIBMPG123_DIR}/install/msvc)
 
 elseif(APPLE)
     set(LIBMPG123_LIB_DIR /usr/local/lib)
@@ -22,9 +25,9 @@ elseif(APPLE)
     set(LIBMPG123_INCLUDE_DIR /usr/local/include/)
 
 else()
-    set(LIBMPG123_LIB_DIR ${LIBMPG123_DIR}/linux/bin)
+    set(LIBMPG123_LIB_DIR ${LIBMPG123_DIR}/install/linux/bin)
     set(LIBMPG123_LIBRARIES ${LIBMPG123_LIB_DIR}/libmpg123.so)
-    set(LIBMPG123_INCLUDE_DIR ${LIBMPG123_DIR}/linux/src/libmpg123)
+    set(LIBMPG123_INCLUDE_DIR ${LIBMPG123_DIR}/install/linux/include)
 
 endif()
 
