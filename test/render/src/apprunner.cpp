@@ -57,7 +57,7 @@ namespace nap {
 		
 		utility::ErrorState errorState;
 		
-		if (!mResourceManagerService->loadFile("data/objects.json", errorState))
+		if (!mResourceManagerService->loadFile("data/rendertest/objects.json", errorState))
 		{
 			Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
 			return false;

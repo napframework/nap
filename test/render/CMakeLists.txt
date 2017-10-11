@@ -13,7 +13,7 @@ source_group("sources" FILES ${SOURCES})
 source_group("shaders" FILES ${SHADERS})
 
 set(pybind11_DIR "${CMAKE_CURRENT_LIST_DIR}/../../../thirdparty/pybind11/install/share/cmake/pybind11")
-find_package(pybind11) 
+find_package(pybind11)
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS})
 set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
@@ -34,6 +34,6 @@ if (WIN32)
 endif()
 
 # create post build event
-export_fbx(${CMAKE_CURRENT_LIST_DIR}/data)
+export_fbx(${CMAKE_CURRENT_LIST_DIR}/data/${PROJECT_NAME})
 copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/data data)
 copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/shaders shaders)
