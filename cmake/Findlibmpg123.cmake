@@ -25,10 +25,13 @@ elseif(APPLE)
     set(LIBMPG123_INCLUDE_DIR /usr/local/include/)
 
 else()
-    set(LIBMPG123_LIB_DIR ${LIBMPG123_DIR}/install/linux/bin)
+    if (${ARCH} STREQUAL "armv6")
+	set(LIBMPG123_LIB_DIR ${LIBMPG123_DIR}/install/linux/bin/arm)
+    else()
+	set(LIBMPG123_LIB_DIR ${LIBMPG123_DIR}/install/linux/bin/arm)
+    endif()
     set(LIBMPG123_LIBRARIES ${LIBMPG123_LIB_DIR}/libmpg123.so)
     set(LIBMPG123_INCLUDE_DIR ${LIBMPG123_DIR}/install/linux/include)
-
 endif()
 
 
