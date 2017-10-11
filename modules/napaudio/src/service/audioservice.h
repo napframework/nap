@@ -22,7 +22,8 @@ namespace nap {
             RTTI_ENABLE(nap::Service)
             
         public:
-            AudioService() : Service() { }
+            AudioService();
+            virtual ~AudioService();
             
             /**
              * Register specific object creators

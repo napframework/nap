@@ -30,7 +30,7 @@ namespace nap {
                 auto node = std::make_unique<BufferPlayerNode>(nodeManager);
                 if (mAutoPlay)
                     node->play(mBufferResource->getBuffer()[channel], 0, 1.);
-                return node;
+                return std::move(node);
             }
             
             int getChannelCount() const override { return mChannelCount; }

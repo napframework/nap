@@ -33,7 +33,7 @@ namespace nap {
                     node->fmInput.connect(mFmInput->getInstance()->getOutputForChannel(channel % mFmInput->getInstance()->getChannelCount()));
                 }
                 
-                return node;
+                return std::move(node);
             }
             
             int getChannelCount() const override { return mChannelCount; }

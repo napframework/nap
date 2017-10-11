@@ -32,7 +32,7 @@ namespace nap {
                         node->inputs.connect(input->getInstance()->getOutputForChannel(channel % input->getInstance()->getChannelCount()));
                     }
                 
-                return node;
+                return std::move(node);
             }
             
             int getChannelCount() const override { return mChannelCount; }
