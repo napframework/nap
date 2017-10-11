@@ -105,7 +105,11 @@ namespace nap
 		}
 		else if (mMode == EMode::Zooming)
 		{
-			float distance = pointerMoveEvent.mRelY * getComponent<OrbitController>()->mMovementSpeed;
+			int pointerMove = pointerMoveEvent.mRelX;
+			if (abs(pointerMoveEvent.mRelY) > abs(pointerMoveEvent.mRelX))
+				pointerMove = pointerMoveEvent.mRelY;
+
+			float distance = pointerMove * getComponent<OrbitController>()->mMovementSpeed;
 
 			const glm::vec3& direction = mTransformComponent->getLocalTransform()[2];
 			const glm::vec3& translate = mTransformComponent->getLocalTransform()[3];
