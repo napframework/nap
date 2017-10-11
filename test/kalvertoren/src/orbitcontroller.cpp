@@ -48,13 +48,17 @@ namespace nap
 	}
 
 
-	void OrbitControllerInstance::startDrag()
+	void OrbitControllerInstance::enable(bool enable)
 	{
-		glm::vec3 translate = mTransformComponent->getLocalTransform()[3];
-		glm::vec3 up(0.0f, 1.0f, 0.0f);
-		glm::mat4 rotation = glm::lookAt(translate, mLookAtPos, up);
-		rotation = glm::inverse(rotation);
-		mTransformComponent->setRotate(rotation);
+		if (enable && !mEnabled)
+		{
+			glm::vec3 translate = mTransformComponent->getLocalTransform()[3];
+			glm::vec3 up(0.0f, 1.0f, 0.0f);
+			glm::mat4 rotation = glm::lookAt(translate, mLookAtPos, up);
+			rotation = glm::inverse(rotation);
+			mTransformComponent->setRotate(rotation);
+		}
+		mEnabled = enable;
 	}
 
 
@@ -65,12 +69,10 @@ namespace nap
 
 		if (pointerPressEvent.mButton == EMouseButton::LEFT)
 		{
-			startDrag();
 			mMode = EMode::Rotating;
 		}
 		else if (pointerPressEvent.mButton == EMouseButton::RIGHT)
 		{
-			startDrag();
 			mMode = EMode::Zooming;
 		}
 	}

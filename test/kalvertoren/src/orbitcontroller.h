@@ -55,7 +55,7 @@ namespace nap
 		*/
 		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
-		void enable(bool enabled) { mEnabled = enabled; }
+		void enable(bool enabled);
 		void setLookAtPos(const glm::vec3& lookAtPos) { mLookAtPos = lookAtPos; }
 
 	private:
