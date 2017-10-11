@@ -490,7 +490,7 @@ namespace nap
 			 * @param path The resolved RTTI path
 			 * @return Whether the resolve succeeded or not
 			 */
-			bool resolve(rtti::RTTIObject* object, ResolvedRTTIPath& resolvedPath) const;
+			bool resolve(const rtti::RTTIObject* object, ResolvedRTTIPath& resolvedPath) const;
 
 		private:
 			static const int	RTTIPATH_MAX_LENGTH = 16;			// Maximum number of elements on an RTTIPath
@@ -526,6 +526,11 @@ namespace nap
 			 * @return The type of the value
 			 */
 			const rtti::TypeInfo getType() const;
+
+			/**
+			 * Get the property that's holding the value pointed to by this path
+			 */
+			const rtti::Property& getProperty() const;
 
 			/**
 			 * Check whether this resolved path is empty
