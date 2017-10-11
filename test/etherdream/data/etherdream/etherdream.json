@@ -18,6 +18,34 @@
 		},
 
 		{
+			"Type" : "nap::EtherDreamDac",
+			"mID": "Laser1",
+			"DacName": "dc3c10",
+			"PointRate": "30000"
+		},
+
+		{
+			"Type" : "nap::EtherDreamDac",
+			"mID": "Laser2",
+			"DacName": "dbf6d0",
+			"PointRate": "30000"
+		},
+
+		{
+			"Type" : "nap::EtherDreamDac",
+			"mID": "Laser3",
+			"DacName": "5a660f",
+			"PointRate": "30000"
+		},
+
+		{
+			"Type" : "nap::EtherDreamDac",
+			"mID": "Laser4",
+			"DacName": "593834",
+			"PointRate": "30000"
+		},
+
+		{
 			"Type" : "nap::Shader",
 			"mID": "LineShader",
 			"mVertShader": "shaders/etherdream/line.vert",
@@ -255,14 +283,14 @@
 
 		{
 			"Type" : "nap::Line",
-			"mID": "LaserLineMesh",
+			"mID": "LaserLineMesh1",
 			"Vertices" : 500,
 			"Closed" : true
 		},
 
 		{
 			"Type" : "nap::Line",
-			"mID": "LaserTraceMesh",
+			"mID": "LaserTraceMesh1",
 			"Vertices" : 500,
 			"Closed" : false
 		},
@@ -275,8 +303,8 @@
 
 		{
 			"Type" : "nap::VisualizeNormalsMesh",
-			"mID" : "NormalsMesh",
-			"ReferenceMesh" : "LaserLineMesh",
+			"mID" : "NormalsMesh1",
+			"ReferenceMesh" : "LaserLineMesh1",
 			"Length" : 0.1
 		},
 
@@ -405,36 +433,38 @@
 		},
 
 		{
-			"Type" : "nap::EtherDreamDac",
-			"mID": "Laser1",
-			"DacName": "dc3c10",
-			"PointRate": "30000"
+			"Type" : "nap::LaserCompound",
+			"mID" : "LaserCompound1",
+			"LineMesh" : "LaserLineMesh1",
+			"Tracemesh" : "LaserTraceMesh1",
+			"NormalMesh" : "NormalsMesh1",
+			"Dac" : "Laser1",
+			"LaserID" : 0
 		},
 
 		{
-			"Type" : "nap::EtherDreamDac",
-			"mID": "Laser2",
-			"DacName": "dbf6d0",
-			"PointRate": "30000"
-		},
-
-		{
-			"Type" : "nap::EtherDreamDac",
-			"mID": "Laser3",
-			"DacName": "5a660f",
-			"PointRate": "30000"
-		},
-
-		{
-			"Type" : "nap::EtherDreamDac",
-			"mID": "Laser4",
-			"DacName": "593834",
-			"PointRate": "30000"
+			"Type" : "nap::Entity",
+			"mID" : "LaserControllerEntity",
+			"Components" :
+			[
+				{
+					"Type" : "nap::TransformComponent"
+				},
+				{
+					"Type" : "nap::LaserControlComponent",
+					"PrototypeEntity" : "LaserPrototypeEntity",
+					"LaserCompounds" :
+					[
+						"LaserCompound1"
+					]
+				}
+			]
 		},
 
 		{
 			"Type" : "nap::Entity",
 			"mID" : "LaserPrototypeEntity",
+			"AutoSpawn" : false,
 			"Components" :
 			[
 				{
@@ -625,7 +655,7 @@
 					"mID" : "LineBlender",
 					"SelectionComponentOne" : "LineSelectorOne",
 					"SelectionComponentTwo" : "LineSelectorTwo",
-					"Target" : "LaserLineMesh",
+					"Target" : "LaserLineMesh1",
 					"BlendValue" : 0.0,
 					"BlendSpeed" : 0.125
 				},
@@ -686,7 +716,7 @@
 					"Type" : "nap::LineTraceComponent",
 					"mID" : "LineTracer",
 					"BlendComponent" : "LineBlender",
-					"Target" : "LaserTraceMesh",
+					"Target" : "LaserTraceMesh1",
 					"VisualizeEntity" : "TracerVisualizeEntity",
 					"Properties" :
 					{
@@ -711,12 +741,12 @@
 				},
 				{
 					"Type" : "nap::UpdateNormalsComponent",
-					"NormalMesh" : "NormalsMesh"
+					"NormalMesh" : "NormalsMesh1"
 				},
 				{
 					"Type" : "nap::RenderableMeshComponent",
 					"mID" : "RenderLaserLineComponent",
-					"Mesh" : "LaserLineMesh",
+					"Mesh" : "LaserLineMesh1",
 					"MaterialInstance" : 
 					{
 						"Material": "LineMaterial"
@@ -724,7 +754,7 @@
 				},
 				{
 					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "NormalsMesh",
+					"Mesh" : "NormalsMesh1",
 					"MaterialInstance" : 
 					{
 						"Material": "NormalsMaterial",
@@ -776,7 +806,7 @@
 						}
 					},
 					"Dac" : "Laser2",
-					"Line": "LaserTraceMesh",
+					"Line": "LaserTraceMesh1",
 					"Transform" : "LineXFormComponent"
 				},
 				{

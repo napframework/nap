@@ -54,7 +54,7 @@ nap::OSCService* oscService = nullptr;
 nap::ObjectPtr<nap::RenderWindow> renderWindow = nullptr;
 
 // Laser DAC
-nap::ObjectPtr<nap::EntityInstance> laserPrototype = nullptr;
+nap::ObjectPtr<nap::EntityInstance> laserControllerEntity = nullptr;
 nap::ObjectPtr<nap::EntityInstance> camera = nullptr;
 
 /////////////////////////////////////////////////////////////////////////
@@ -97,15 +97,16 @@ void onRender()
 	renderService->clearRenderTarget(backbuffer);
 
 	// Get spline entity
-	nap::EntityInstance* spline_entity = laserPrototype->getChildren()[0];
+	//nap::EntityInstance* spline_entity = laserControllerEntity->getEntity(0)->getChildren()[0];
 
 	// Render spline
-	nap::RenderableMeshComponentInstance& line_mesh = spline_entity->getComponent<nap::RenderableMeshComponentInstance>();
+	//nap::RenderableMeshComponentInstance& line_mesh = spline_entity->getComponent<nap::RenderableMeshComponentInstance>();
 	renderService->renderObjects(backbuffer, camera->getComponent<nap::PerspCameraComponentInstance>());
 
 	// Swap back buffer
 	renderWindow->swap();
 }
+
 
 
 /**
@@ -169,7 +170,7 @@ bool init(nap::Core& core)
 	renderWindow = resourceManagerService->findObject<nap::RenderWindow>("Window");
 
 	// Store laser dacs
-	laserPrototype = resourceManagerService->findEntity("LaserPrototypeEntity");
+	laserControllerEntity = resourceManagerService->findEntity("LaserControllerEntity");
 
 	// Store camera
 	camera = resourceManagerService->findEntity("CameraEntity");
@@ -228,21 +229,10 @@ void run(nap::Core& core)
 						resourceManagerService->findObject<nap::RenderWindow>("Window")->getWindow()->setFullScreen(fullscreen);
 						fullscreen = !fullscreen;
 					}
-					else if (press_event->mKey == nap::EKeyCode::KEY_LEFT)
+					else if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
 					{
-						nap::EntityInstance* spline_entity = laserPrototype->getChildren()[0];
-						nap::LineSelectionComponentInstance& line_selection = spline_entity->getComponent<nap::LineSelectionComponentInstance>();
-						line_selection.setIndex(line_selection.getIndex() - 1);
-					}
-					else if (press_event->mKey == nap::EKeyCode::KEY_RIGHT)
-					{
-						nap::EntityInstance* spline_entity = laserPrototype->getChildren()[0];
-						nap::LineSelectionComponentInstance& line_selection = spline_entity->getComponent<nap::LineSelectionComponentInstance>();
-						line_selection.setIndex(line_selection.getIndex() + 1);
-					}
-
-					if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
 						loop = false;
+					}
 				}
 				inputService->addEvent(std::move(input_event));
 			}
