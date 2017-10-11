@@ -10,7 +10,9 @@
 #include <nap/resourcemanager.h>
 #include <sceneservice.h>
 #include <inputservice.h>
-#include <inputrouter.h>
+#include <etherdreamservice.h>
+#include <oscservice.h>
+#include <visualizenormalsmesh.h>
 
 namespace nap
 {
@@ -64,19 +66,12 @@ namespace nap
 		 */
 		void shutdown();
 		
+		/** 
+		 * Change our line selection by the specified amount
+		 */
+		void changeLineSelectionIndex(int changeAmount);
 		
 	private:
-		/**
-		 *  Cycle-right button clicked
-		 */
-		void rightButtonClicked(const PointerPressEvent& evt);
-		
-		/**
-		 *  Cycle-left button clicked
-		 */
-		void leftButtonClicked(const PointerPressEvent& evt);
-		
-		
 		// Nap Services
 		RenderService* mRenderService = nullptr;					//< Render Service that handles render calls
 		ResourceManagerService* mResourceManagerService = nullptr;	//< Manages all the loaded resources
@@ -84,12 +79,13 @@ namespace nap
 		
 		InputService* mInputService = nullptr;						//< Input service for processing input
 		
-		std::vector<ObjectPtr<RenderWindow>> mRenderWindows;		//< Vector holding pointers to the spawned render windows
+		ObjectPtr<RenderWindow> mRenderWindow = nullptr;			//< Pointers to the render window
 		
-		ObjectPtr<EntityInstance> mCameraEntity = nullptr;			//< The entity that holds the camera
+		EtherDreamService* mLaserService = nullptr;					// < Laser service
+		OSCService* mOscService = nullptr;							// < Laser DAC
 		
-		ObjectPtr<EntityInstance> mRootLayoutEntity = nullptr;		//< Entity at the root of the layout
-		ObjectPtr<EntityInstance> mSlideShowEntity = nullptr;		//< The slideshow entity
-		ObjectPtr<EntityInstance> mUiInputRouter = nullptr;			//< Our UI input router entity
+		ObjectPtr<EntityInstance> mLaserPrototype = nullptr;		// < Laser DAC
+		
+		ObjectPtr<VisualizeNormalsMesh> mNormalsMesh = nullptr;		// < Holds the normals mesh
 	};
 }

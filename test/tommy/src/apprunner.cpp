@@ -84,11 +84,10 @@ namespace nap {
 		render_state.mPolygonMode = opengl::PolygonMode::FILL;
 		
 		return true;
-
 	}
 	
 	
-	// Cycle right button clicked
+	// Cycle-right button clicked
 	void AppRunner::rightButtonClicked(const PointerPressEvent& evt) {
 		if (mSlideShowEntity != nullptr && evt.mButton == EMouseButton::LEFT)
 		{
@@ -98,7 +97,7 @@ namespace nap {
 	}
 
 	
-	// Cycle left button clicked
+	// Cycle-left button clicked
 	void AppRunner::leftButtonClicked(const PointerPressEvent& evt) {
 		if (mSlideShowEntity != nullptr && evt.mButton == EMouseButton::LEFT)
 		{
