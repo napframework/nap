@@ -28,7 +28,7 @@ namespace nap
 			/**
 			 * Called when serialization starts, but before any objects have been written (i.e. start of 'document')
 			 */
-			bool start() override;
+			bool start(const ObjectList& rootObjects) override;
 
 			/**
 			 * Called when serialization is finished, after everything has been written (i.e. end of 'document')

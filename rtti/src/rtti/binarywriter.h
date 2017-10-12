@@ -27,7 +27,7 @@ namespace nap
 			/**
 			 * Called when serialization starts, but before any objects have been written (i.e. start of 'document')
 			 */
-			bool start() override;
+			bool start(const ObjectList& rootObjects) override;
 
 			/**
 			 * Called when serialization is finished, after everything has been written (i.e. end of 'document')
@@ -124,6 +124,27 @@ namespace nap
 			{
 				write(length);
 				write(string, length);
+			}
+
+
+			/**
+			 * Get the current position in the stream
+			 *
+			 * @return The position in the stream
+			 */
+			size_t getPosition() const
+			{
+				return mBuffer.empty() ? 0 : mWritePointer - mBuffer.data();
+			}
+
+
+			/**
+			 * Seek to the specified position in the stream
+			 */
+			void seek(size_t position)
+			{
+				assert(position <= mBuffer.size());
+				mWritePointer = mBuffer.data() + position;
 			}
 
 		private:
