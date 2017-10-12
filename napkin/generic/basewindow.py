@@ -16,7 +16,7 @@ class BaseWindow(QMainWindow):
 
     def windowMenu(self):
         if not self.__windowMenu:
-            self.__windowMenu = self.menuBar().addMenu('Window')
+            self.__windowMenu = self.menuBar().addMenu('&Window')
         return self.__windowMenu
 
     def addDock(self, name, widget, area=Qt.TopDockWidgetArea):

@@ -183,7 +183,6 @@ class PatchView(GraphView):
             self.__onCustomContextMenuRequested)
 
     def __onCustomContextMenuRequested(self, pos):
-        # self.showRegularMenu(pos)
         self.showOperatorDialog(pos)
 
     def showOperatorDialog(self, pos):

@@ -58,10 +58,14 @@ if __name__ == '__main__':
             json.dump(dic, fh, indent=2)
 
 
-    saveAction = QAction('Save')
+    saveAction = QAction('&Save')
     saveAction.setShortcut(QKeySequence.Save)
     saveAction.triggered.connect(save)
     win.addAction(saveAction)
+
+    fileMenu = QMenu('&File')
+    win.menuBar().insertMenu(win.windowMenu().menuAction(), fileMenu)
+    fileMenu.addAction(saveAction)
 
     def toggle():
         for n in patchPanel.scene.selectedNodes():
