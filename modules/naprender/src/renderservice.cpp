@@ -25,7 +25,7 @@ namespace nap
 	}
 
 
-	std::unique_ptr<GLWindow> RenderService::addWindow(RenderWindow& window, utility::ErrorState& errorState)
+	std::shared_ptr<GLWindow> RenderService::addWindow(RenderWindow& window, utility::ErrorState& errorState)
 	{
 		assert(mRenderer != nullptr);
 
@@ -38,7 +38,7 @@ namespace nap
 		window_settings.title		= window.mTitle;
 		window_settings.sync		= window.mSync;
 
-		std::unique_ptr<GLWindow> new_window = mRenderer->createRenderWindow(window_settings, errorState);
+		std::shared_ptr<GLWindow> new_window = mRenderer->createRenderWindow(window_settings, window.mID, errorState);
 		if (new_window == nullptr)
 			return nullptr;
 
@@ -87,34 +87,6 @@ namespace nap
 	void RenderService::addEvent(WindowEventPtr windowEvent)
 	{
         nap::ObjectPtr<nap::Window> window = getWindow(windowEvent->mWindow);
-        
-#ifdef __APPLE__
-		/** TODO Hacky temporary workaround for two macOS issues:
-		 * 1) When dropping out of fullscreen mode for the first time the hidden window becomes visible.  Here we force it back
-		 *    to visible.. but it still shows for a second.
-         * 2) We're sometimes receiving window events for the hidden window or another window (with a large id, eg. 143114480), 
-         *    which we then can't find in our getWindow lookup, producing a crash
-		 *
-		 * TODO: Fix macOS hidden window event issues cleanly. Removing logging when fixed.
-		 */
-        if (window == nullptr) {
-            // Check if events are from hidden window
-            if (windowEvent->mWindow == getPrimaryWindow().getNumber()) {
-                nap::rtti::TypeInfo e_type = windowEvent->get_type();
-                if (e_type.is_derived_from(RTTI_OF(nap::WindowShownEvent))) {
-                    Logger::info("Hidden/primary window (id %d) shown , hiding", windowEvent->mWindow);
-                    // Re-hide our hidden window
-                    SDL_HideWindow(getPrimaryWindow().getNativeWindow());
-                } else {
-                    Logger::warn("Receiving unexpected event for hidden/primary window (id %d), ignoring", windowEvent->mWindow);
-                }
-            } else {
-                Logger::warn("Received event for unfound window with id %d", windowEvent->mWindow);
-            }
-            return;
-        }
-#endif
-
 		assert (window != nullptr);
 		window->addEvent(std::move(windowEvent));
 	}

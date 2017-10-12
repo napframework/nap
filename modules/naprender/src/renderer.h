@@ -38,8 +38,9 @@ namespace nap
 		 * Create a window with associated render context
 		 * @return the new render window or nullptr if unsuccessful
 		 * @param settings the window settings used to create the window
+		 * @param windowID the ID of the window to create
 		 */
-		std::unique_ptr<GLWindow> createRenderWindow(const RenderWindowSettings& settings, utility::ErrorState& errorState);
+		std::shared_ptr<GLWindow> createRenderWindow(const RenderWindowSettings& settings, const std::string& windowID, utility::ErrorState& errorState);
 
 		/**
 		 * Initialize the renderer
@@ -57,6 +58,7 @@ namespace nap
 		GLWindow& getPrimaryWindow() { return *mPrimaryWindow; }
 
 	private:
-		std::unique_ptr<GLWindow> mPrimaryWindow;
+		std::shared_ptr<GLWindow>	mPrimaryWindow;			///< Primary Window. This always exists for as long as the Renderer exists.
+		std::string					mPrimaryWindowID;		///< When a RenderWindow is bound to the primary window, this contains the ID of the RenderWindow
 	};
 }

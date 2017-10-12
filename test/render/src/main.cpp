@@ -343,8 +343,9 @@ void run(nap::Core& core)
 			// Check if we're dealing with a window event
 			else if (nap::isWindowEvent(event))
 			{
-				nap::WindowEventPtr nap_event = nap::translateWindowEvent(event);
-				renderService->addEvent(std::move(nap_event));
+				nap::WindowEventPtr window_event = nap::translateWindowEvent(event);
+				if (window_event != nullptr)
+					renderService->addEvent(std::move(window_event));
 			}
 		}
 

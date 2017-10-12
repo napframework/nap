@@ -11,7 +11,7 @@ namespace nap
 	 *
 	 * @param sdlEvent The event to translate
 	 * @param windowID The window ID that the event is for (output)
-	 * @return Null if the sdlEvent is not a window event (or an unknown window event), the nap event otherwise
+	 * @return Null if the sdlEvent is not a window event or if the event is for a window that has already been destroyed. The nap event otherwise.
 	 */
 	nap::WindowEventPtr NAPAPI translateWindowEvent(SDL_Event& sdlEvent);
 
