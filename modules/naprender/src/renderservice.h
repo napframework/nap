@@ -51,14 +51,31 @@ namespace nap
 		virtual ~RenderService();
 
 		/**
-		 * Renders all available objects to a specific renderTarget.
+		 * Renders all available RenderableComponents in the scene to a specific renderTarget.
+		 * Note that this call sorts the objects
+		 * @param renderTarget the target to render to
+		 * @param camera the camera used for rendering all the available components
 		 */
 		void renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera);
 
 		/**
-		 * Renders a specific set of objects to a specific renderTarget.
+		 * Renders a specific set of objects to a specific renderTarget. Note that this call does not 
+		 * sort the objects, it's up to the user to provide the right rendering order
+		 * @param renderTarget the target to render to
+		 * @param camera the camera used for rendering all the available components
+		 * @param comps the components to render to @renderTarget
 		 */
 		void renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps);
+
+		/**
+		 * Sorts a set of renderable components based on distance to the camera, ie: depth
+		 * Note that when the object is of a type mesh it will use the material to sort based on opacity
+		 * If the renderable object is not a mesh the sorting will occur back to front regardless of it's type as we don't
+		 * know the way the object is rendered to screen
+		 * @param comps the renderable components to sort
+		 * @param camera the camera used for sorting based on distance
+		 */
+		void sortObjects(std::vector<RenderableComponentInstance*>& comps, const CameraComponentInstance& camera);
 
 		/**
 		* Clears the renderTarget using @flags.
@@ -74,6 +91,8 @@ namespace nap
 
 		/**
 		 * Sets the renderer, the service will own the renderer
+		 * @param errorState contains the error message if the service could not be initialized
+		 * @return if the service has been initialized successfully
 		 */
 		bool init(nap::utility::ErrorState& errorState);
 
@@ -85,7 +104,7 @@ namespace nap
 		/**
 		* Returns global render state. Use the fields in this objects to modify the renderstate.
 		*/
-		RenderState& getRenderState() { return mRenderState; }
+		RenderState& getRenderState()																{ return mRenderState; }
 
 		/**
 		 * Batches an OpenGL resource that is dependent on GLContext for destruction, to avoid many GL context switches during destruction.
@@ -112,17 +131,21 @@ namespace nap
 
 		/**
 		 * Add a new window for the specified resource
+		 * @param window the window to add as a valid render target
+		 * @param errorState contains the error message if the window could not be added
 		 */
 		std::shared_ptr<GLWindow> addWindow(RenderWindow& window, utility::ErrorState& errorState);
 
 		/**
 		 * Remove a window
+		 * @param window the window to remove from the render service
 		 */
 		void removeWindow(RenderWindow& window);
 
 		/**
 		 * Find a RenderWindowResource by its native handle
 		 * @param nativeWindow the native window handle (i.e. the SDL_Window pointer)
+		 * @return the render window associated with the native window
 		 */
 		RenderWindow* findWindow(void* nativeWindow) const;
 

@@ -11,6 +11,7 @@
 RTTI_BEGIN_CLASS(nap::MakePrototypeComponent)
 	RTTI_PROPERTY("SplineEntity", &nap::MakePrototypeComponent::mSplineEntity, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("OutputEntity", &nap::MakePrototypeComponent::mLaserOutputEntity, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("OSCAddresses", &nap::MakePrototypeComponent::mOSCAddresses, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::makeprototypecomponentInstance run time class definition 
@@ -77,6 +78,14 @@ namespace nap
 		if (!errorState.check(mOutputComponent != nullptr, "unable to find trace component"))
 			return false;
 
+		// Store component that receives incoming osc events
+		mOSCInputComponent = mSplineEntity->findComponent<OSCInputComponentInstance>();
+		if (!errorState.check(mOSCInputComponent != nullptr, "unable to find osc input component"))
+			return false;
+
+		// Store osc address pattern
+		mOSCAddressPattern = getComponent<MakePrototypeComponent>()->mOSCAddresses;
+
 		// Set-up relationships
 
 		// The laser output component needs to know where the line is relative to it's canvas, therefore we provide it with the line entity
@@ -116,6 +125,15 @@ namespace nap
 
 		// Set the output dac
 		mOutputComponent->setDac(*(settings.mDac));
+
+		// Modify the osc addresses and set to input component
+		mOSCInputComponent->mAddressFilter.clear();
+		
+		for (const auto& address : mOSCAddressPattern)
+		{
+			std::string new_address = utility::stringFormat("/%d/%s", settings.mLaserID, address.c_str());
+			mOSCInputComponent->mAddressFilter.emplace_back(new_address);
+		}
 
 		return true;
 	}

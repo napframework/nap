@@ -44,6 +44,7 @@ namespace nap
 		return findComponent(rtti::TypeInfo::get_by_name(type));
 	}
 
+
 	ComponentInstance* EntityInstance::findComponent(const rtti::TypeInfo& type, ETypeCheck typeCheck) const
 	{
 		ComponentList::const_iterator pos = std::find_if(mComponents.begin(), mComponents.end(), [&](auto& element) 
@@ -55,6 +56,7 @@ namespace nap
 
 		return pos->get();
 	}
+
 
 	void EntityInstance::getComponentsOfType(const rtti::TypeInfo& type, std::vector<ComponentInstance*>& components, ETypeCheck typeCheck) const
 	{

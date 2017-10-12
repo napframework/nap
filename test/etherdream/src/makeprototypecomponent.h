@@ -11,6 +11,7 @@
 #include <nap/component.h>
 #include <nap/entity.h>
 #include <renderablemeshcomponent.h>
+#include <oscinputcomponent.h>
 
 namespace nap
 {
@@ -36,6 +37,9 @@ namespace nap
 
 		// property: link to the output entity to spawn
 		nap::ObjectPtr<nap::Entity> mLaserOutputEntity = nullptr;
+
+		// property: all the osc messages associated with the laser entity
+		std::vector<std::string> mOSCAddresses;
 	};
 
 
@@ -90,5 +94,11 @@ namespace nap
 
 		// Holds the laser output component
 		nap::LaserOutputComponentInstance* mOutputComponent = nullptr;
+
+		// Holds the osc receiver
+		nap::OSCInputComponentInstance* mOSCInputComponent = nullptr;
+
+		// Holds the template osc address pattern
+		std::vector<std::string> mOSCAddressPattern;
 	};
 }

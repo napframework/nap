@@ -267,5 +267,3 @@ void run(nap::Core& core)
 
 	renderService->shutdown();
 }
-       
-     

@@ -116,16 +116,6 @@ namespace nap
 	}
 
 
-	static void getRenderableComponents(nap::EntityInstance& entity, std::vector<RenderableComponentInstance*>& outComponents)
-	{
-		entity.getComponentsOfType<RenderableComponentInstance>(outComponents);
-		for (auto& child : entity.getChildren())
-		{
-			getRenderableComponents(*child, outComponents);
-		}
-	}
-
-
 	void LaserControlInstanceComponent::renderToLaserBuffers(nap::PerspCameraComponentInstance& camera, RenderService& renderer)
 	{
 		// Make sure we're rendering offscreen surfaces to primary window
@@ -140,38 +130,20 @@ namespace nap
 			nap::EntityInstance* entity = it.second;
 			
 			// Get all components to render
-			getRenderableComponents(*entity, components_to_render);
-			
-			// Split into front to back and back to front meshes
-			std::vector<nap::RenderableComponentInstance*> front_to_back;
-			std::vector<nap::RenderableComponentInstance*> back_to_front;
-
-			for (nap::RenderableComponentInstance* component : components_to_render)
-			{
-				nap::RenderableMeshComponentInstance* renderable_mesh = rtti_cast<RenderableMeshComponentInstance>(component);
-				if (renderable_mesh != nullptr)
-				{
-					EBlendMode blend_mode = renderable_mesh->getMaterialInstance().getBlendMode();
-					if (blend_mode == EBlendMode::AlphaBlend)
-						back_to_front.push_back(component);
-					else
-						front_to_back.push_back(component);
-				}
-			}
+			entity->getComponentsOfTypeRecursive<RenderableComponentInstance>(components_to_render);
 
 			// Get compound and clear target we want to render to
 			LaserCompound* matching_compound = mLaserCompoundMap[it.first];
+
+			// Sort objects to render
+			//std::vector<nap::RenderableComponentInstance*> sorted_objects;
+			renderer.sortObjects(components_to_render, camera);
+
+			// Clear target
 			renderer.clearRenderTarget(matching_compound->mTarget->getTarget());
-
-			// Sort front to back and render those first
-			DepthSorter front_to_back_sorter(DepthSorter::EMode::FrontToBack, camera.getViewMatrix());
-			std::sort(front_to_back.begin(), front_to_back.end(), front_to_back_sorter);
-			renderer.renderObjects(matching_compound->mTarget->getTarget(), camera, front_to_back);
-
-			// Then sort back to front and render these
-			DepthSorter back_to_front_sorter(DepthSorter::EMode::BackToFront, camera.getViewMatrix());
-			std::sort(back_to_front.begin(), back_to_front.end(), back_to_front_sorter);
-			renderer.renderObjects(matching_compound->mTarget->getTarget(), camera, back_to_front);
+			
+			// Render to target
+			renderer.renderObjects(matching_compound->mTarget->getTarget(), camera, components_to_render);
 		}
 	}
 
@@ -197,7 +169,6 @@ namespace nap
 			// Add for rendering
 			components_to_render.emplace_back(&renderable_comp);
 		}
-
 
 		// Render all frames at once
 		renderer.renderObjects(*(window.getWindow()->getBackbuffer()), camera, components_to_render);
