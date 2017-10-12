@@ -1,8 +1,45 @@
 #include "typeconversion.h"
 
+#include <qdebug.h>
 using namespace nap;
 
-bool toQVariant(const nap::rtti::TypeInfo& type, const nap::rtti::Variant& value, QVariant& outValue) {
+// TODO: Not sure how rttr::enumeration::name_to_value works, so doing it like this for now
+
+uint64_t enumStringToIndex(rttr::enumeration enumer, const std::string& name, bool* ok)
+{
+    uint64_t i = 0;
+    for (auto nm : enumer.get_names()) {
+        if (std::string(nm.data()) == name) {
+            *ok = true;
+            return i;
+        }
+        i++;
+    }
+    *ok = false;
+    return 0;
+}
+
+QString enumIndexToQString(rttr::enumeration enumer, int index)
+{
+    return QString::fromStdString(enumIndexToStdString(enumer, index));
+}
+
+
+std::string enumIndexToStdString(rttr::enumeration enumer, int index)
+{
+    uint64_t i = 0;
+    for (auto nm : enumer.get_names()) {
+        if (i == index) {
+            return nm.data();
+        }
+        i++;
+    }
+    return std::string();
+}
+
+
+bool toQVariant(const nap::rtti::TypeInfo& type, const nap::rtti::Variant& value, QVariant& outValue)
+{
 
     if (type.is_arithmetic()) {
         if (type == rtti::TypeInfo::get<bool>())
@@ -33,15 +70,30 @@ bool toQVariant(const nap::rtti::TypeInfo& type, const nap::rtti::Variant& value
             return false;
         return true;
     } else if (type.is_enumeration()) {
-        // Try to convert the enum to uint64
+
+        // is string, convert to variant, then to int
         bool conversion_succeeded = false;
-        uint64_t value_int = value.to_uint64(&conversion_succeeded);
+        std::string val = value.to_string(&conversion_succeeded);
         if (conversion_succeeded) {
-            outValue.setValue(value_int);
-            return true;
-        } else {
+            uint64_t value_int = enumStringToIndex(type.get_enumeration(), val, &conversion_succeeded);
+            if (conversion_succeeded) {
+                outValue.setValue(value_int);
+                return true;
+            } else {
                 return false;
+            }
         }
+//        if (!conversion_succeeded)
+//            return false;
+//        } else {
+//            bool conversion_succeeded = false;
+//            value_int = value.to_uint64(&conversion_succeeded);
+//            if (!conversion_succeeded)
+//                return false;
+//        }
+//
+//        outValue.setValue(value_int);
+
     } else if (type == rtti::TypeInfo::get<std::string>()) {
         outValue.setValue(QString::fromStdString(value.to_string()));
         return true;
@@ -51,7 +103,8 @@ bool toQVariant(const nap::rtti::TypeInfo& type, const nap::rtti::Variant& value
 }
 
 
-rtti::Variant fromQVariant(const rtti::TypeInfo& type, const QVariant& variant, bool* ok) {
+rtti::Variant fromQVariant(const rtti::TypeInfo& type, const QVariant& variant, bool* ok)
+{
     *ok = true;
 
     if (type.is_arithmetic()) {
@@ -80,7 +133,10 @@ rtti::Variant fromQVariant(const rtti::TypeInfo& type, const QVariant& variant, 
         else if (type == rtti::TypeInfo::get<double>())
             return variant.toReal(ok);
     } else if (type.is_enumeration()) {
-        return variant.toUInt(ok);
+        auto stringvalue = enumIndexToStdString(type.get_enumeration(), variant.toInt());
+        if (stringvalue.length() == 0)
+            *ok = false;
+        return stringvalue;
     } else if (type == rtti::TypeInfo::get<std::string>()) {
         return variant.toString().toStdString();
     }
@@ -89,4 +145,6 @@ rtti::Variant fromQVariant(const rtti::TypeInfo& type, const QVariant& variant, 
     assert(false);
     return rtti::Variant();
 }
+
+
 

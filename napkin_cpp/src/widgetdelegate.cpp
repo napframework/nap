@@ -10,9 +10,10 @@ PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
     auto type = typeFor(index);
     if (type.is_enumeration()) {
 
-        int val = index.model()->data(index, Qt::DisplayRole).toInt();
+        uint val = index.model()->data(index, Qt::DisplayRole).toUInt();
         QStyleOptionViewItem op(option);
-        op.text = QString(type.get_enumeration().value_to_name(val).data());
+
+        op.text = enumIndexToQString(type.get_enumeration(), val);
 //    QStyleOptionComboBox styleOption;
 //    styleOption.rect = option.rect;
 //    styleOption.currentText = QString(type.get_enumeration().value_to_name(val).data());

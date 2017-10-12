@@ -15,6 +15,11 @@ public:
 
 Q_DECLARE_METATYPE(TypeWrapper)
 
+
+uint64_t enumStringToIndex(rttr::enumeration enumer, const std::string& name, bool* ok);
+QString enumIndexToQString(rttr::enumeration enumer, int index);
+std::string enumIndexToStdString(rttr::enumeration enumer, int index);
+
 bool toQVariant(const nap::rtti::TypeInfo& type,
                 const nap::rtti::Variant& value, QVariant& outValue);
 

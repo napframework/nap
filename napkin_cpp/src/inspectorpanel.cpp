@@ -49,8 +49,9 @@ QVariant PropertyValueItem::data(int role) const
         nap::rtti::ResolvedRTTIPath resolvedPath;
         assert(mPath.resolve(mObject, resolvedPath));
         QVariant variant;
-        if (toQVariant(resolvedPath.getType(), resolvedPath.getValue(), variant))
+        if (toQVariant(resolvedPath.getType(), resolvedPath.getValue(), variant)) {
             return variant;
+        }
 
         return TXT_UNCONVERTIBLE_TYPE;
     }
