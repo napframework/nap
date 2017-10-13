@@ -226,7 +226,7 @@ namespace nap
 	{
 		if (!(event[0].isInt()))
 		{
-			nap::Logger::warn("expected an int value associated with message: %s, got: %s instead", event.getAddress().c_str(), event[0].get_type().get_name().data());
+			nap::Logger::warn("expected an int value associated with message: %s, got: %s instead", event.getAddress().c_str(), event[0].getValueType().get_name().data());
 			return;
 		}
 
@@ -239,7 +239,7 @@ namespace nap
 	{
 		if (!(event[0].isInt()))
 		{
-			nap::Logger::warn("expected an int value associated with message: %s, got: %s instead", event.getAddress().c_str(), event[0].get_type().get_name().data());
+			nap::Logger::warn("expected an int value associated with message: %s, got: %s instead", event.getAddress().c_str(), event[0].getValueType().get_name().data());
 			return;
 		}
 
