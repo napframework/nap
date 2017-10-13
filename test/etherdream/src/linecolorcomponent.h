@@ -8,6 +8,7 @@
 #include <nap/objectptr.h>
 #include <image.h>
 #include <glm/glm.hpp>
+#include <smoothdamp.h>
 
 namespace nap
 {
@@ -35,6 +36,15 @@ namespace nap
 
 		// property: end lookup color for spline
 		glm::vec2 mEndPos = { 0.5f, 0.5f };
+
+		// property: smoothing speed for start point
+		glm::vec2 mStartSmoothTime = { 1.0f, 1.0f };
+
+		// property: smoothing speed for end point
+		glm::vec2 mEndSmoothTime = { 1.0f, 1.0f };
+
+		// property: smoothing speed for intensity
+		float mIntensitySmoothTime = 1.0f;
 
 		// property: intensity of the spline
 		float mIntensity = 1.0f;
@@ -102,6 +112,35 @@ namespace nap
 		void setIntensity(float intensity);
 
 		/**
+		 * Sets the smooth speed for the start point's x axis
+		 * @param speed the time it takes in seconds
+		 */
+		void setStartSmoothSpeedX(float speed)						{ mStartSmootherX.mSmoothTime = math::max<float>(speed, 0.0f); }
+
+		/**
+		 * Sets the smooth speed for the start point's y axis
+		 * @param speed the time it takes in seconds
+		 */
+		void setStartSmoothSpeedY(float speed)						{ mStartSmootherY.mSmoothTime = math::max<float>(speed, 0.0f); }
+
+		/**
+		 * Sets the smooth speed for end point's x axis
+		 * @param speed the time it takes in seconds
+		 */
+		void setEndSmoothSpeedX(float speed)						{ mEndSmootherX.mSmoothTime = math::max<float>(speed, 0.0f); }
+
+		/**
+		* Sets the smooth speed for end point's x axis
+		* @param speed the time it takes in seconds
+		*/
+		void setEndSmoothSpeedY(float speed)						{ mEndSmootherY.mSmoothTime = math::max<float>(speed, 0.0f); }
+
+		/**
+		 *	Sets the smooth speed for intensity
+		 */
+		void setIntensitySmoothSpeed(float speed)					{ mIntensitySmoother.mSmoothTime = math::max<float>(speed, 0.0f); }
+
+		/**
 		 *	If we want to link color 2 to color 1
 		 * @param value if we want to link the colors
 		 */
@@ -123,5 +162,17 @@ namespace nap
 		bool mWrap = false;											// If the color values should be wrapped
 		float mPower = 1.0f;										// Amount of blend power when computing the wrap
 		bool mLink = false;											// If color 2 is linked to color one
+
+		// Smooths the start point
+		math::SmoothOperator<float> mStartSmootherX					{ 0.5f, 1.0f };
+		math::SmoothOperator<float> mStartSmootherY					{ 0.5f, 1.0f };
+
+		// Smooths the end point
+		math::SmoothOperator<float> mEndSmootherX					{ 0.5f, 1.0f };
+		math::SmoothOperator<float> mEndSmootherY					{ 0.5f, 1.0f };
+
+		// Smooths intensity
+		math::SmoothOperator<float> mIntensitySmoother				{ 1.0f, 0.1f };
 	};
 }
+

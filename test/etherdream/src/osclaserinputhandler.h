@@ -100,6 +100,8 @@ namespace nap
 		void toggleRandom(const OSCEvent& event, const std::vector<std::string>& args);
 		void updateColor(const glm::vec2& loc, int position);
 		void resetBlend(const OSCEvent& event, const std::vector<std::string>& args);
+		void setColorSmoothX(const OSCEvent& event, const std::vector<std::string>& args);
+		void setColorSmoothY(const OSCEvent& event, const std::vector<std::string>& args);
 
 		NSLOT(mMessageReceivedSlot, const nap::OSCEvent&, handleMessageReceived)
 

@@ -5,6 +5,7 @@
 
 // external includes
 #include <nap/entityptr.h>
+#include <smoothdamp.h>
 
 namespace nap
 {
@@ -13,10 +14,14 @@ namespace nap
 		/**
 		 * Holds all the properties associated with the tracer
 		 */
-		float mOffset = 0.0f;		// the offset of the tracer along the line (0-1)
-		float mSpeed  = 0.0f;		// speed at which to move the tracer along the line
-		float mLength = 0.25f;		// length of the tracer relative to the source (1.0 = full length)
+		float mOffset = 0.0f;				// the offset of the tracer along the line (0-1)
+		float mOffsetSmoothTime = 0.1f;		// Offset smooth time 
+		float mSpeed  = 0.0f;				// speed at which to move the tracer along the line
+		float mSpeedSmoothTime = 0.1f;		// Speed smooth time
+		float mLength = 0.25f;				// length of the tracer relative to the source (1.0 = full length)
+		float mLengthSmoothTime = 0.1f;		// Length smooth time
 	};
+
 
 	class LineTraceComponentInstance;
 	
@@ -80,5 +85,14 @@ namespace nap
 		float mCurrentTime = 0.0f;										// Current time
 		nap::TransformComponentInstance* mStartXform = nullptr;			// Transform associated with beginning of trace component
 		nap::TransformComponentInstance* mEndXform = nullptr;			// Transform associated with end of trace component
+
+		// Smooths amplitude over time
+		math::SmoothOperator<float> mLengthSmoother{ 1.0f, 0.1f };
+
+		// Smooths Speed over time
+		math::SmoothOperator<float> mSpeedSmoother{ 0.0f, 0.1f };
+
+		// Smooths offset over time
+		math::SmoothOperator<float> mOffsetSmoother{ 0.0f, 0.1f };
 	};
 }

@@ -91,6 +91,8 @@ namespace nap
 		mLaserEventFuncs.emplace(std::make_pair("startyposition", &OSCLaserInputHandlerInstance::updateYStartColor));
 		mLaserEventFuncs.emplace(std::make_pair("endxposition", &OSCLaserInputHandlerInstance::updateXEndColor));
 		mLaserEventFuncs.emplace(std::make_pair("endyposition", &OSCLaserInputHandlerInstance::updateYEndColor));
+		mLaserEventFuncs.emplace(std::make_pair("smoothx", &OSCLaserInputHandlerInstance::setColorSmoothX));
+		mLaserEventFuncs.emplace(std::make_pair("smoothy", &OSCLaserInputHandlerInstance::setColorSmoothY));
 		return true;
 	}
 
@@ -218,6 +220,33 @@ namespace nap
 			mBlendComponent->mBlendValue = 0.0f;
 		}
 	}
+
+
+	void OSCLaserInputHandlerInstance::setColorSmoothX(const OSCEvent& event, const std::vector<std::string>& args)
+	{
+		if (!(event[0].isInt()))
+		{
+			nap::Logger::warn("expected an int value associated with message: %s, got: %s instead", event.getAddress().c_str(), event[0].get_type().get_name().data());
+			return;
+		}
+
+		float secs = static_cast<float>(event[0].asInt()) / 1000.0f;
+		mColorComponent->setStartSmoothSpeedX(secs);
+	}
+
+
+	void OSCLaserInputHandlerInstance::setColorSmoothY(const OSCEvent& event, const std::vector<std::string>& args)
+	{
+		if (!(event[0].isInt()))
+		{
+			nap::Logger::warn("expected an int value associated with message: %s, got: %s instead", event.getAddress().c_str(), event[0].get_type().get_name().data());
+			return;
+		}
+
+		float secs = static_cast<float>(event[0].asInt()) / 1000.0f;
+		mColorComponent->setStartSmoothSpeedY(secs);
+	}
+
 
 
 	void OSCLaserInputHandlerInstance::updateRotate(const OSCEvent& oscEvent, const std::vector<std::string>& args)

@@ -774,7 +774,9 @@
 						"startxposition",
 						"startyposition",
 						"endxposition",
-						"endyposition"
+						"endyposition",
+						"smoothx",
+						"smoothy"
 					]
 				}
 			]
@@ -970,9 +972,13 @@
 					"Properties" : 
 					{
 						"Frequency" : 1.0,
+						"FrequencySmoothTime" : 0.1,
 						"Speed" : 0.2,
+						"SpeedSmoothTime" : 0.1,
 						"Offset" : 0.0,
+						"OffsetSmoothTime" : 0.1,
 						"Amplitude" : 0.0,
+						"AmplitudeSmoothTime" : 0.1,
 						"Waveform" : "Sine",
 						"Normalize" : false
 					}
@@ -984,9 +990,13 @@
 					"Properties" : 
 					{
 						"Frequency" : 2.0,
+						"FrequencySmoothTime" : 0.1,
 						"Speed" : 0.1,
+						"SpeedSmoothTime" : 0.1,
 						"Offset" : 0.0,
-						"Amplitude" : 0.2
+						"OffsetSmoothTime" : 0.1,
+						"Amplitude" : 0.2,
+						"AmplitudeSmoothTime" : 0.1
 					}
 				},
 				{
@@ -1003,6 +1013,17 @@
 						"x" : 0.0,
 						"y" : 0.5
 					},
+					"StartSmoothTime" :
+					{
+						"x" : 0.0,
+						"y" : 0.0
+					},
+					"EndSmoothTime" :
+					{
+						"x" : 0.0,
+						"y" : 0.0
+					},
+					"IntensitySmoothTime" : 0.1,
 					"LookupImage" : "ColorLookupImage",
 					"Wrap" : true,
 					"WrapPower" : 1.0,
@@ -1017,8 +1038,11 @@
 					"Properties" :
 					{
 						"Offset" : 0.0,
+						"OffsetSmoothTime" : 0.1,
 						"Speed" : 0.1,
-						"Length" : 0.25
+						"SpeedSmoothTime" : 0.1,
+						"Length" : 0.25,
+						"LengthSmoothTime" : 0.1
 					}
 				},
 				{
