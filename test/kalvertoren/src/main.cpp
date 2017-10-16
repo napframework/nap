@@ -135,6 +135,11 @@ void onUpdate()
 		delta_time = 0.01f;
 	}
 
+	// If the video is not currently playing, start playing it again. This is needed for real time editing; 
+	// if the video resource is modified it will not automatically play again (playback is started during init), causing the output to be black
+	if (!videoResource->isPlaying())
+		videoResource->play();
+
 	// Set video to plane
 	nap::utility::ErrorState error_state;
 	if (!videoResource->update(delta_time, error_state))
@@ -301,7 +306,6 @@ bool init(nap::Core& core)
 
 	// Collect all video resources and play
 	videoResource = resourceManagerService->findObject<nap::Video>("Video1");
-	videoResource->mLoop = true;
 	videoResource->play();
 
 	// Set render states
