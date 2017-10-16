@@ -42,6 +42,8 @@
 #include <pybind11/embed.h>
 #include "rtti/rtticast.h"
 #include "orbitcontroller.h"
+#include "cameracomponent.h"
+#include "cameracontroller.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Globals
@@ -192,6 +194,8 @@ void onRender()
 {
 	renderService->destroyGLContextResources(std::vector<nap::ObjectPtr<nap::RenderWindow>>({ renderWindow }));
 
+	nap::CameraComponentInstance& cameraComponentInstance = cameraEntity->getComponent<nap::CameraControllerInstance>().getCameraComponent();
+
 	// Render offscreen surface(s)
 	{
 		renderService->getPrimaryWindow().makeCurrent();
@@ -202,7 +206,7 @@ void onRender()
 		opengl::TextureRenderTarget2D& render_target = textureRenderTarget->getTarget();
 		render_target.setClearColor(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
 		renderService->clearRenderTarget(render_target, opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH);
-		renderService->renderObjects(render_target, cameraEntity->getComponent<nap::PerspCameraComponentInstance>(), components_to_render);
+		renderService->renderObjects(render_target, cameraComponentInstance, components_to_render);
 
 		render_target.getColorTexture().getData(videoPlaybackData);
 	}
@@ -218,7 +222,7 @@ void onRender()
 		opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(renderWindow->getWindow()->getBackbuffer());
 		backbuffer.setClearColor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 		renderService->clearRenderTarget(backbuffer);
-		renderService->renderObjects(backbuffer, cameraEntity->getComponent<nap::PerspCameraComponentInstance>(), components_to_render);
+		renderService->renderObjects(backbuffer, cameraComponentInstance, components_to_render);
 
 		renderWindow->swap();
 	}
@@ -280,7 +284,7 @@ bool init(nap::Core& core)
 	{ 
 		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
 		return false;        
-	}
+	}  
 
 	glFlush();
 	 
@@ -295,9 +299,6 @@ bool init(nap::Core& core)
 	frameMaterial			= resourceManagerService->findObject<nap::Material>("FrameMaterial");
 
 	assert(videoEntity != nullptr);
-	nap::OrbitControllerInstance& orbitController = cameraEntity->getComponent<nap::OrbitControllerInstance>();
-	nap::TransformComponentInstance& kalvertorenTransform = kalvertorenEntity->getComponent<nap::TransformComponentInstance>();
-	orbitController.setLookAtPos(kalvertorenTransform.getTranslate());
 
 	// Collect all video resources and play
 	videoResource = resourceManagerService->findObject<nap::Video>("Video1");

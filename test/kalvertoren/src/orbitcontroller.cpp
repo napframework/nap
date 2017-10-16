@@ -13,9 +13,10 @@
 #include "glm/gtx/orthonormalize.hpp"
 
 RTTI_BEGIN_CLASS(nap::OrbitController)
-	RTTI_PROPERTY("MovementSpeed", &nap::OrbitController::mMovementSpeed, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("RotateSpeed", &nap::OrbitController::mRotateSpeed, nap::rtti::EPropertyMetaData::Default)
-RTTI_END_CLASS
+	RTTI_PROPERTY("MovementSpeed",			&nap::OrbitController::mMovementSpeed,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("RotateSpeed",			&nap::OrbitController::mRotateSpeed,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("PerspCameraComponent",	&nap::OrbitController::mPerspCameraComponent,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::OrbitControllerInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
@@ -47,18 +48,31 @@ namespace nap
 		return true;
 	}
 
-
-	void OrbitControllerInstance::enable(bool enable)
+	CameraComponentInstance& OrbitControllerInstance::getCameraComponent()
 	{
-		if (enable && !mEnabled)
+		return *getComponent<OrbitController>()->mPerspCameraComponent;
+	}
+
+	void OrbitControllerInstance::enable(const glm::vec3& cameraPos, const glm::vec3& lookAtPos)
+	{
+		if (!mEnabled)
 		{
-			glm::vec3 translate = mTransformComponent->getLocalTransform()[3];
 			glm::vec3 up(0.0f, 1.0f, 0.0f);
-			glm::mat4 rotation = glm::lookAt(translate, mLookAtPos, up);
+			glm::mat4 rotation = glm::lookAt(cameraPos, lookAtPos, up);
 			rotation = glm::inverse(rotation);
 			mTransformComponent->setRotate(rotation);
+			mLookAtPos = lookAtPos;
+			mEnabled = true;
 		}
-		mEnabled = enable;
+	}
+
+	void OrbitControllerInstance::enable(const glm::vec3& lookAtPos)
+	{
+		if (!mEnabled)
+		{
+			glm::vec3 translate = mTransformComponent->getLocalTransform()[3];
+			enable(translate, lookAtPos);
+		}
 	}
 
 

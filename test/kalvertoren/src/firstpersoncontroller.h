@@ -1,6 +1,8 @@
 #pragma once
 
 #include "nap/component.h"
+#include "nap/componentptr.h"
+#include "perspcameracomponent.h"
 #include <glm/gtx/quaternion.hpp>
 
 namespace nap
@@ -35,6 +37,8 @@ namespace nap
 
 		float mMovementSpeed	= 3.0f;		// The speed with which to move
 		float mRotateSpeed		= 1.0f;		// The speed with which to rotate
+
+		ComponentPtr<nap::PerspCameraComponent>	mPerspCameraComponent;
 	};
 
 
@@ -60,7 +64,12 @@ namespace nap
 		 */
 		virtual void update(double deltaTime) override;
 
-		void enable(bool enabled) { mEnabled = enabled; }
+		void enable(const glm::vec3& translate, const glm::quat& rotate);
+		void enable();
+
+		void disable() { mEnabled = false; }
+
+		CameraComponentInstance& getCameraComponent();
 
 	private:
 		/**

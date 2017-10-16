@@ -10,8 +10,9 @@
 #include <glm/gtx/transform.hpp>
 
 RTTI_BEGIN_CLASS(nap::FirstPersonController)
-	RTTI_PROPERTY("MovementSpeed",	&nap::FirstPersonController::mMovementSpeed,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("RotateSpeed",	&nap::FirstPersonController::mRotateSpeed,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("MovementSpeed",			&nap::FirstPersonController::mMovementSpeed,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("RotateSpeed",			&nap::FirstPersonController::mRotateSpeed,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("PerspCameraComponent",	&nap::FirstPersonController::mPerspCameraComponent,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS 
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::FirstPersonControllerInstance)
@@ -54,6 +55,25 @@ namespace nap
 		return true;
 	}
 
+	void FirstPersonControllerInstance::enable(const glm::vec3& translate, const glm::quat& rotate)
+	{
+		if (!mEnabled)
+		{
+			mTransformComponent->setTranslate(translate);
+			mTransformComponent->setRotate(rotate);
+			mEnabled = true;
+		}
+	}
+
+	void FirstPersonControllerInstance::enable()
+	{
+		mEnabled = true;
+	}
+
+	CameraComponentInstance& FirstPersonControllerInstance::getCameraComponent()
+	{
+		return *getComponent<FirstPersonController>()->mPerspCameraComponent;
+	}
 
 	void FirstPersonControllerInstance::update(double deltaTime)
 	{
@@ -110,14 +130,14 @@ namespace nap
 		if (!mEnabled)
 			return;
 
-		if (pointerPressEvent.mButton == EMouseButton::RIGHT)
+		if (pointerPressEvent.mButton == EMouseButton::LEFT)
 			mMoving = true;
 	}
 	
 
 	void FirstPersonControllerInstance::onMouseUp(const PointerReleaseEvent& pointerReleaseEvent)
 	{
-		if (pointerReleaseEvent.mButton == EMouseButton::RIGHT)
+		if (pointerReleaseEvent.mButton == EMouseButton::LEFT)
 			mMoving = false;
 	}
 

@@ -2,12 +2,12 @@
 
 #include "nap/component.h"
 #include "nap/componentptr.h"
-#include "perspcameracomponent.h"
+#include "orthocameracomponent.h"
 #include <glm/glm.hpp>
 
 namespace nap
 {
-	class OrbitControllerInstance;
+	class OrthoControllerInstance;
 	class KeyPressEvent;
 	class KeyReleaseEvent;
 	class PointerPressEvent;
@@ -21,10 +21,10 @@ namespace nap
 	/**
 	* Resource for the OrbitController
 	*/
-	class OrbitController : public Component
+	class OrthoController : public Component
 	{
 		RTTI_ENABLE(Component)
-			DECLARE_COMPONENT(OrbitController, OrbitControllerInstance)
+		DECLARE_COMPONENT(OrthoController, OrthoControllerInstance)
 	public:
 		/**
 		* Get the types of components on which this component depends
@@ -35,55 +35,50 @@ namespace nap
 			components.push_back(RTTI_OF(KeyInputComponent));
 		}
 
-		float mMovementSpeed = 0.5f;		// The speed with which to move
-		float mRotateSpeed = 0.005f;		// The speed with which to rotate
-
-		ComponentPtr<nap::PerspCameraComponent>	mPerspCameraComponent;
+		float										mMovementSpeed = 0.5f;		// The speed with which to move
+		ComponentPtr<nap::OrthoCameraComponent>		mOrthoCameraComponent;
 	};
 
 
 	/**
-	* The FirstPersonController is a component that implements first-person movement for the entity it is attached to.
-	* It uses the TransformComponent to move the entity and the InputComponent to receive input
 	*
-	* WASD to move, arrow keys to rotate
 	*/
-	class OrbitControllerInstance : public ComponentInstance
+	class OrthoControllerInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
-		OrbitControllerInstance(EntityInstance& entity, Component& resource);
+		OrthoControllerInstance(EntityInstance& entity, Component& resource);
 
 		/**
 		* Initialize this ComponentInstance
 		*/
 		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
-		void enable(const glm::vec3& cameraPos, const glm::vec3& lookAtPos);
-		void enable(const glm::vec3& lookAtPos);
+		void enable(const glm::vec3& cameraPos, const glm::quat& cameraRotate);
 		void disable() { mEnabled = false; }
 
 		CameraComponentInstance& getCameraComponent();
 
 	private:
 		void onMouseDown(const PointerPressEvent& pointerPressEvent);
-		void onMouseMove(const PointerMoveEvent& pointerMoveEvent);
 		void onMouseUp(const PointerReleaseEvent& pointerReleaseEvent);
-
-		void startDrag();
+		void onMouseMove(const PointerMoveEvent& pointerMoveEvent);
+		void updateCameraProperties();
 
 	private:
-		enum class EMode
+		enum EMode
 		{
-			Idle,
-			Rotating,
-			Zooming
+			None,
+			Pan,
+			Zoom
 		};
 
 		TransformComponentInstance*		mTransformComponent = nullptr;		// The transform component used to move the entity
-		EMode							mMode = EMode::Idle;
-		glm::vec3						mLookAtPos;
 		bool							mEnabled = false;
+		float							mCameraScale = 50.0f;
+		float							mCameraScaleAtClick = 0.0f;
+		EMode							mMode = EMode::None;
+		glm::vec2						mMousePosAtClick;
 	};
 
 }

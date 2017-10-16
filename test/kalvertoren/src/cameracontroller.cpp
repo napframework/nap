@@ -4,7 +4,11 @@
 #include "transformcomponent.h"
 #include <nap/entity.h>
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 RTTI_BEGIN_CLASS(nap::CameraController)
+	RTTI_PROPERTY("LookAtTarget",			&nap::CameraController::mLookAtTarget,			nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CameraControllerInstance)
@@ -34,10 +38,111 @@ namespace nap
 		if (!errorState.check(mFirstPersonComponent != nullptr, "Could not find FirstPersonControllerInstance"))
 			return false;
 
+		mOrthoComponent = getEntityInstance()->findComponent<OrthoControllerInstance>();
+		if (!errorState.check(mOrthoComponent != nullptr, "Could not find OrthoControllerInstance"))
+			return false;
+
 		key_component->pressed.connect(std::bind(&CameraControllerInstance::onKeyPress, this, std::placeholders::_1));
 		key_component->released.connect(std::bind(&CameraControllerInstance::onKeyRelease, this, std::placeholders::_1));
 
+		storeLastPerspTransform();
+		switchMode(ECameraMode::FirstPerson);
+
 		return true; 
+	}
+
+	CameraComponentInstance& CameraControllerInstance::getCameraComponent()
+	{
+		if (mMode == ECameraMode::FirstPerson)
+			return mFirstPersonComponent->getCameraComponent();
+		else if (mMode == ECameraMode::Orbit)
+			return mFirstPersonComponent->getCameraComponent();
+		else
+			return mOrthoComponent->getCameraComponent();
+	}
+
+	void CameraControllerInstance::storeLastPerspTransform()
+	{
+		TransformComponentInstance& transform = getEntityInstance()->getComponent<nap::TransformComponentInstance>();
+		mLastPerspPos = transform.getTranslate();
+		mLastPerspRotate = transform.getRotate();
+	}
+
+	void CameraControllerInstance::switchMode(ECameraMode targetMode)
+	{
+		if (targetMode == ECameraMode::FirstPerson)
+		{
+			if ((mMode & ECameraMode::Orthographic) != ECameraMode::None)
+				mFirstPersonComponent->enable(mLastPerspPos, mLastPerspRotate);
+			else
+				mFirstPersonComponent->enable();
+
+			mOrbitComponent->disable();
+			mOrthoComponent->disable();
+		}
+		else if (targetMode == ECameraMode::Orbit)
+		{
+			nap::TransformComponentInstance& lookAtTransform = getComponent<nap::CameraController>()->mLookAtTarget->getComponent<nap::TransformComponentInstance>();
+
+			if ((mMode & ECameraMode::Orthographic) != ECameraMode::None)
+				mOrbitComponent->enable(mLastPerspPos, lookAtTransform.getTranslate());
+			else
+				mOrbitComponent->enable(lookAtTransform.getTranslate());
+
+			mFirstPersonComponent->disable();
+			mOrthoComponent->disable();
+		}
+		else
+		{
+			if ((mMode & ECameraMode::Perspective) != ECameraMode::None)
+				storeLastPerspTransform();
+
+			glm::vec3 camera_translate_axis;
+			glm::quat rotation;
+			switch (targetMode)
+			{
+				case ECameraMode::OrthographicTop:
+					camera_translate_axis = glm::vec3(0.0f, -1.0f, 0.0f);
+					rotation = glm::angleAxis((float)-M_PI_2, glm::vec3(1.0f, 0.0f, 0.0f));
+					break;
+
+				case ECameraMode::OrthographicBottom:
+					camera_translate_axis = glm::vec3(0.0f, 1.0f, 0.0f);
+					rotation = glm::angleAxis((float)M_PI_2, glm::vec3(1.0f, 0.0f, 0.0f));
+					break;
+
+				case ECameraMode::OrthographicLeft:
+					camera_translate_axis = glm::vec3(1.0f, 0.0f, 0.0f);
+					rotation = glm::angleAxis((float)-M_PI_2, glm::vec3(0.0f, 1.0f, 0.0f));
+					break;
+
+				case ECameraMode::OrthographicRight:
+					camera_translate_axis = glm::vec3(-1.0f, 0.0f, 0.0f);
+					rotation = glm::angleAxis((float)M_PI_2, glm::vec3(0.0f, 1.0f, 0.0f));
+					break;
+
+				case ECameraMode::OrthographicFront:
+					camera_translate_axis = glm::vec3(0.0f, 0.0f, -1.0f);
+					rotation = glm::angleAxis((float)0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+					break;
+
+				case ECameraMode::OrthographicBack:
+					camera_translate_axis = glm::vec3(0.0f, 0.0f, 1.0f);
+					rotation = glm::angleAxis((float)M_PI, glm::vec3(0.0f, 1.0f, 0.0f));
+					break;
+			}
+			nap::TransformComponentInstance& lookAtTransform = getComponent<nap::CameraController>()->mLookAtTarget->getComponent<nap::TransformComponentInstance>();
+
+			glm::vec3 targetPos(lookAtTransform.getTranslate());
+			const float distance = 100.0f;
+			glm::vec3 camera_translate = targetPos - camera_translate_axis * distance;
+
+			mOrthoComponent->enable(camera_translate, rotation);
+
+			mFirstPersonComponent->disable();
+			mOrbitComponent->disable();
+		}
+		mMode = targetMode;
 	}
 
 	void CameraControllerInstance::onKeyPress(const KeyPressEvent& keyReleaseEvent)
@@ -45,9 +150,8 @@ namespace nap
 		switch (keyReleaseEvent.mKey)
 		{
 		case EKeyCode::KEY_LALT:
-			mFirstPersonComponent->enable(false);
-			mOrbitComponent->enable(true);
-			mMode = EMode::Orbit;
+			if ((mMode & ECameraMode::Perspective) != ECameraMode::None)
+				switchMode(ECameraMode::Orbit);
 		}
 	}
 
@@ -56,9 +160,36 @@ namespace nap
 		switch (keyReleaseEvent.mKey)
 		{
 		case EKeyCode::KEY_LALT:
-			mFirstPersonComponent->enable(true);
-			mOrbitComponent->enable(false);
-			mMode = EMode::FirstPerson;
+			if ((mMode & ECameraMode::Perspective) != ECameraMode::None)
+				switchMode(ECameraMode::FirstPerson);
+			break;
+
+		case EKeyCode::KEY_p:
+			switchMode(ECameraMode::FirstPerson);
+			break;
+
+		case EKeyCode::KEY_1:
+			switchMode(ECameraMode::OrthographicTop);
+			break;
+
+		case EKeyCode::KEY_2:
+			switchMode(ECameraMode::OrthographicBottom);
+			break;
+
+		case EKeyCode::KEY_3:
+			switchMode(ECameraMode::OrthographicLeft);
+			break;
+
+		case EKeyCode::KEY_4:
+			switchMode(ECameraMode::OrthographicRight);
+			break;
+
+		case EKeyCode::KEY_5:
+			switchMode(ECameraMode::OrthographicFront);
+			break;
+
+		case EKeyCode::KEY_6:
+			switchMode(ECameraMode::OrthographicBack);
 			break;
 		}
 	}

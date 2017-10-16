@@ -309,8 +309,17 @@
 			[
 				{
 					"Type" : "nap::PerspCameraComponent",
+					"mID" : "PerspCameraComponent",
 					"Properties": {
 						"FieldOfView": 40.0,
+						"NearClippingPlane" : 1,
+						"FarClippingPlane" : 1000.0
+					}
+				},
+				{
+					"Type" : "nap::OrthoCameraComponent",
+					"mID" : "OrthoCameraComponent",
+					"Properties": {
 						"NearClippingPlane" : 1,
 						"FarClippingPlane" : 1000.0
 					}
@@ -322,18 +331,27 @@
 					"Type" : "nap::PointerInputComponent"
 				},
 				{
-					"Type" : "nap::CameraController"
+					"Type" : "nap::CameraController",
+					"LookAtTarget" : "KalvertorenEntity"
 				},			
 				{
 					"Type" : "nap::FirstPersonController",
 					"MovementSpeed": 20.0,
-					"RotateSpeed": 0.005
+					"RotateSpeed": 0.005,
+					"PerspCameraComponent" : "PerspCameraComponent"
+
 				},			
 				{
 					"Type" : "nap::OrbitController",
 					"MovementSpeed": 0.5,
-					"RotateSpeed": 0.005
+					"RotateSpeed": 0.005,
+					"PerspCameraComponent" : "PerspCameraComponent"
 				},
+				{
+					"Type" : "nap::OrthoController",
+					"MovementSpeed": 0.5,
+					"OrthoCameraComponent" : "OrthoCameraComponent"
+				},			
 				{
 					"Type" : "nap::TransformComponent",
 					"Properties": {
