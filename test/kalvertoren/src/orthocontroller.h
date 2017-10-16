@@ -35,7 +35,7 @@ namespace nap
 			components.push_back(RTTI_OF(KeyInputComponent));
 		}
 
-		float										mMovementSpeed = 0.5f;		// The speed with which to move
+		float										mZoomSpeed = 0.5f;		// The speed with which to move
 		ComponentPtr<nap::OrthoCameraComponent>		mOrthoCameraComponent;
 	};
 
@@ -79,6 +79,7 @@ namespace nap
 		float							mCameraScaleAtClick = 0.0f;
 		EMode							mMode = EMode::None;
 		glm::vec2						mMousePosAtClick;
+		glm::vec3						mTranslateAtClick;
 	};
 
 }

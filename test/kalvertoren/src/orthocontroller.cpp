@@ -10,7 +10,7 @@
 
 
 RTTI_BEGIN_CLASS(nap::OrthoController)
-	RTTI_PROPERTY("MovementSpeed",			&nap::OrthoController::mMovementSpeed,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ZoomSpeed",				&nap::OrthoController::mZoomSpeed,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("OrthoCameraComponent",	&nap::OrthoController::mOrthoCameraComponent,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_END_CLASS
 
@@ -84,7 +84,9 @@ namespace nap
 		else if (pointerPressEvent.mButton == EMouseButton::RIGHT)
 		{
 			mMode = EMode::Zoom;
-			mMousePosAtClick = glm::vec2(pointerPressEvent.mX, pointerPressEvent.mY);
+			glm::ivec2 render_target_size = getComponent<OrthoController>()->mOrthoCameraComponent->getRenderTargetSize();
+			mMousePosAtClick = glm::vec2(pointerPressEvent.mX / (float)render_target_size.x, pointerPressEvent.mY / (float)render_target_size.y) * 2.0f - 1.0f;
+			mTranslateAtClick = mTransformComponent->getTranslate();
 			mCameraScaleAtClick = mCameraScale;
 		}
 	}
@@ -116,17 +118,24 @@ namespace nap
 			if (abs(pointerMoveEvent.mRelY) > abs(pointerMoveEvent.mRelX))
 				pointerMove = pointerMoveEvent.mRelY;
 
-			mCameraScale += (float)pointerMove;
+			glm::ivec2 render_target_size = getComponent<OrthoController>()->mOrthoCameraComponent->getRenderTargetSize();
+			float aspect_ratio = (float)render_target_size.y / (float)render_target_size.x;
+
+			mCameraScale += (float)pointerMove * getComponent<OrthoController>()->mZoomSpeed;
 			mCameraScale = glm::max(1.0f, mCameraScale);
 
-//			mCameraScaleAtClick - mCameraScale;
+			glm::vec2 aspect_correct_scale_at_click(mCameraScaleAtClick, mCameraScaleAtClick * aspect_ratio);
+			glm::vec2 aspect_correct_scale(mCameraScale, mCameraScale * aspect_ratio);
 
-// 			const glm::mat4& camera_transform = mTransformComponent->getGlobalTransform();
-// 			glm::vec3 right_translate = (float)-pointerMoveEvent.mRelX * mouse_scale.x * camera_transform[0];
-// 			glm::vec3 up_translate = (float)-pointerMoveEvent.mRelY * mouse_scale.y * camera_transform[1];
-// 
-// 			mTransformComponent->setTranslate(mTransformComponent->getTranslate() + right_translate + up_translate);
+			glm::vec2 translate_before_zoom = mMousePosAtClick * aspect_correct_scale_at_click * 0.5f;
+			glm::vec2 translate_after_zoom = mMousePosAtClick * aspect_correct_scale * 0.5f;
+			glm::vec2 delta = translate_before_zoom - translate_after_zoom;
 
+			const glm::mat4& camera_transform = mTransformComponent->getGlobalTransform();
+			glm::vec3 right_translate = (float)delta.x * camera_transform[0];
+			glm::vec3 up_translate = (float)delta.y * camera_transform[1];
+
+			mTransformComponent->setTranslate(mTranslateAtClick + right_translate + up_translate);
 
 			updateCameraProperties();
 		}

@@ -350,7 +350,7 @@
 				},
 				{
 					"Type" : "nap::OrthoController",
-					"MovementSpeed": 0.5,
+					"ZoomSpeed": 0.5,
 					"OrthoCameraComponent" : "OrthoCameraComponent"
 				},			
 				{
