@@ -496,19 +496,10 @@ namespace nap
 			mFrameQueueRoomAvailableCondition.notify_one();
 		}
 
-		// Copy data into texture, allowing for custom strides caused by ffmpeg architecture-dependent optimisations
-		
-		/**
-		 * TODO glPixelStorei stride calls are here temporarily until they find a better home.  Maybe Texture2D should support
-		 *		loading data with a custom stride? 
-		 */
-		
-		glPixelStorei(GL_UNPACK_ROW_LENGTH, cur_frame.mFrame->linesize[0]);
-		mYTexture->getTexture().setData(cur_frame.mFrame->data[0]);
-		glPixelStorei(GL_UNPACK_ROW_LENGTH, cur_frame.mFrame->linesize[1]);
-		mUTexture->getTexture().setData(cur_frame.mFrame->data[1]);
-		glPixelStorei(GL_UNPACK_ROW_LENGTH, cur_frame.mFrame->linesize[2]);
-		mVTexture->getTexture().setData(cur_frame.mFrame->data[2]);
+		// Copy data into texture
+		mYTexture->getTexture().setData(cur_frame.mFrame->data[0], cur_frame.mFrame->linesize[0]);
+		mUTexture->getTexture().setData(cur_frame.mFrame->data[1], cur_frame.mFrame->linesize[1]);
+		mVTexture->getTexture().setData(cur_frame.mFrame->data[2], cur_frame.mFrame->linesize[2]);
 
 		// Destroy frame that was allocated in the decode thread, after it has been processed
 		av_frame_unref(cur_frame.mFrame);
