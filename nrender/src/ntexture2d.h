@@ -42,8 +42,11 @@ namespace opengl
 		 * 
 		 * Uploads 2d pixel data to the GPU
 		 * Make sure that the data the pointer points at matches the size of the texture settings provided!
+		 *
+		 * @param data Pointer to the appropriately-sized buffer to copy to the texture
+		 * @param pitch The size (in bytes) of each row of pixels. The default of 0 means that it will use the internal opengl format to determine this.
 		 */
-		void setData(void* data);
+		void setData(void* data, int pitch = 0);
 
 		/**
 		 * @return The size of the texture when copied to/from CPU.
