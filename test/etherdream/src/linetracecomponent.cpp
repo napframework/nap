@@ -80,13 +80,13 @@ namespace nap
 		getEntityInstance()->addChild(*end_vis_entity);
 
 		// Set smooth timing values
-		mLengthSmoother.mSmoothTime = mProperties.mLengthSmoothTime;
+		mLengthSmoother.mSmoothTime = getComponent<LineTraceComponent>()->mProperties.mLengthSmoothTime;
 		mLengthSmoother.setValue(mProperties.mLength);
 
-		mOffsetSmoother.mSmoothTime = mProperties.mOffsetSmoothTime;
+		mOffsetSmoother.mSmoothTime = getComponent<LineTraceComponent>()->mProperties.mOffsetSmoothTime;
 		mOffsetSmoother.setValue(mProperties.mOffset);
 
-		mSpeedSmoother.mSmoothTime = mProperties.mSpeedSmoothTime;
+		mSpeedSmoother.mSmoothTime = getComponent<LineTraceComponent>()->mProperties.mSpeedSmoothTime;
 		mSpeedSmoother.setValue(mProperties.mSpeed);
 
 		return true;
