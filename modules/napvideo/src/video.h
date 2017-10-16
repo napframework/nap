@@ -65,6 +65,13 @@ namespace nap
 		void play(double startTimeSecs = 0.0);
 
 		/**
+		 * Check whether the video is currently playing
+		 *
+		 * @return True if the video is currently playing, false if not
+		 */
+		bool isPlaying() const { return mPlaying; }
+
+		/**
 		 * Stops playback of the video.
 		 */
 		void stop();
