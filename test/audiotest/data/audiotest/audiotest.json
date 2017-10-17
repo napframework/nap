@@ -8,6 +8,13 @@
 		},
 
 		{
+			"Type": "nap::OSCReceiver",
+			"mID": "oscReceiver",
+			"Port": 7000,
+			"EnableDebugOutput": "True"
+		},
+
+		{
 			"Type": "nap::audio::Voice",
 			"mID": "voice",
 			"Objects":
@@ -67,9 +74,9 @@
 					"mID": "audioComponent",
 					"Object":
 					{
-						"Type": "nap::audio::BufferPlayer",
-						"Buffer": "audioFile",
-						"ChannelCount": 2
+						"Type": "nap::audio::PolyphonicObject",
+						"Voice": "voice",
+						"VoiceCount": 32
 					}
 				},
 
@@ -78,6 +85,12 @@
 					"mID": "output",
 					"Routing": [ 0, 1 ],
 					"Input": "audioComponent"
+				},
+
+				{
+					"Type": "nap::PythonScriptComponent",
+					"mID": "script",
+					"Path": "data/audiotest/scripts/audiotest.py"
 				}
 
 			]

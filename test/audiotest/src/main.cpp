@@ -4,10 +4,12 @@
 #include <thread>
 
 // Nap includes
+#include <utility/dllexport.h>
 #include <nap/core.h>
 #include <nap/resourcemanager.h>
 #include <nap/logger.h>
-#include <utility/dllexport.h>
+
+#include <oscservice.h>
 
 // Audio module includes
 #include <service/audiodeviceservice.h>
@@ -31,6 +33,8 @@ bool init(nap::Core& core)
     nap::utility::ErrorState errorState;
     
     core.initialize();
+    
+    core.getOrCreateService<nap::OSCService>();
     
     auto audioService = core.getOrCreateService<nap::audio::AudioDeviceService>();
     if (!audioService->init(errorState))

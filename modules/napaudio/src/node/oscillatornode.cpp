@@ -15,8 +15,8 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::OscillatorNode)
     RTTI_FUNCTION("getFrequency", &nap::audio::OscillatorNode::getFrequency)
     RTTI_FUNCTION("setAmplitude", &nap::audio::OscillatorNode::setAmplitude)
     RTTI_FUNCTION("getAmplitude", &nap::audio::OscillatorNode::getAmplitude)
-    RTTI_FUNCTION("setPhaseOffset", &nap::audio::OscillatorNode::setPhaseOffset)
-    RTTI_FUNCTION("getPhaseOffset", &nap::audio::OscillatorNode::getPhaseOffset)
+    RTTI_FUNCTION("setPhaseOffset", &nap::audio::OscillatorNode::setPhase)
+    RTTI_FUNCTION("getPhaseOffset", &nap::audio::OscillatorNode::getPhase)
 RTTI_END_CLASS
 
 namespace nap {
@@ -123,10 +123,18 @@ namespace nap {
             }
         }
 
+        
         void OscillatorNode::setAmplitude(SampleValue amplitude)
         {
             mAmplitude = amplitude;
         }
+        
+        
+        void OscillatorNode::setPhase(ControllerValue phase)
+        {
+            mPhaseOffset = phase * mWave.getSize();
+        }
+
 
         void OscillatorNode::setFrequency(SampleValue frequency)
         {
@@ -134,12 +142,14 @@ namespace nap {
             mPhaseInc = mFrequency * mStep;
         }
         
+        
         void OscillatorNode::setWave(WaveTable& wave)
         {
             mWave = wave;
             mStep = mWave.getSize() / getNodeManager().getSampleRate();
             mPhaseInc = mFrequency * mStep;
         }
+        
         
         void OscillatorNode::sampleRateChanged(float sampleRate)
         {

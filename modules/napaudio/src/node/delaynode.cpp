@@ -1,21 +1,42 @@
 #include "delaynode.h"
 
 #include <utility/audiofunctions.h>
+#include <core/audionodemanager.h>
 
 namespace nap {
     
     namespace audio {
+        
+        void DelayNode::setTime(TimeValue value, TimeValue rampTime)
+        {
+            mTimeRamper.ramp(int(value * getNodeManager().getSamplesPerMillisecond()), rampTime * getNodeManager().getSamplesPerMillisecond());
+        }
+        
+        
+        void DelayNode::setDryWet(ControllerValue value, TimeValue rampTime)
+        {
+            mDryWetRamper.ramp(value, rampTime * getNodeManager().getSamplesPerMillisecond());
+        }
+
 
         void DelayNode::process()
         {
             auto& inputBuffer = *input.pull();
             auto& outputBuffer = getOutputBuffer(output);
+            SampleValue delayedSample = 0;
             
             for (auto i = 0; i < outputBuffer.size(); ++i)
             {
-                auto delaydSample = mDelay.read(mTime);
-                mDelay.write(inputBuffer[i] + delaydSample * mFeedback);
-                outputBuffer[i]  = lerp(inputBuffer[i], delaydSample, mDryWet);
+                if (mTimeRamper.isRamping())
+                    delayedSample = mDelay.readInterpolating(mTime);
+                else
+                    delayedSample = mDelay.read(mTime);
+                
+                mDelay.write(inputBuffer[i] + delayedSample * mFeedback);
+                outputBuffer[i] = lerp(inputBuffer[i], delayedSample, mDryWet);
+                
+                mTimeRamper.step();
+                mDryWetRamper.step();
             }
         }
 

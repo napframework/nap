@@ -20,8 +20,6 @@ namespace nap {
             
             int mChannelCount = 1;
             ObjectPtr<AudioBufferResourceBase> mBufferResource = nullptr;
-//            ControllerValue mSpeed = 1.;
-//            TimeValue mPosition = 0;
             bool mAutoPlay = true;
             
         private:
