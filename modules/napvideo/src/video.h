@@ -127,6 +127,7 @@ namespace nap
 			
 		std::string mPath;				///< Path to the video to playback
 		bool		mLoop = false;		///< If the video needs to loop
+		float		mSpeed = 1.0f;		///< Video playback speed
 
 	private:
 
