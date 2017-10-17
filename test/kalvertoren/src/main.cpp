@@ -225,7 +225,6 @@ void onRender()
 		kalvertorenEntity->getComponentsOfType<nap::RenderableComponentInstance>(components_to_render);
 
 		opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(renderWindow->getWindow()->getBackbuffer());
-		backbuffer.setClearColor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 		renderService->clearRenderTarget(backbuffer);
 		renderService->renderObjects(backbuffer, cameraComponentInstance, components_to_render);
 

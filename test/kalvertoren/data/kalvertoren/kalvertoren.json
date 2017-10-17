@@ -6,7 +6,15 @@
 			"mID" : "Window0",
 			"Width" : 1024,
 			"Height" : 768,
-			"Title" : "Kalvertoren"
+			"Title" : "Kalvertoren",
+			"Sync" : true,
+			"ClearColor" : 
+			{
+				"x" : 0.0,
+				"y" : 0.0,
+				"z" : 0.0,
+				"w" : 1.0
+			}
 		},
 
 		{
