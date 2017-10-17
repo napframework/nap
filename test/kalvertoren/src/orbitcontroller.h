@@ -19,16 +19,18 @@ namespace nap
 	class KeyInputComponent;
 
 	/**
-	* Resource for the OrbitController
-	*/
+	 * OrbitController is a camera controller for a perspective camera that rotates around a target point.
+	 * 
+	 * Left mouse button to rotate, right mouse button to zoom in and out on the target.
+	 */
 	class OrbitController : public Component
 	{
 		RTTI_ENABLE(Component)
-			DECLARE_COMPONENT(OrbitController, OrbitControllerInstance)
+		DECLARE_COMPONENT(OrbitController, OrbitControllerInstance)
 	public:
 		/**
-		* Get the types of components on which this component depends
-		*/
+		 * Get the types of components on which this component depends
+		 */
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override
 		{
 			components.push_back(RTTI_OF(TransformComponent));
@@ -38,16 +40,13 @@ namespace nap
 		float mMovementSpeed = 0.5f;		// The speed with which to move
 		float mRotateSpeed = 0.005f;		// The speed with which to rotate
 
-		ComponentPtr<nap::PerspCameraComponent>	mPerspCameraComponent;
+		ComponentPtr<nap::PerspCameraComponent>	mPerspCameraComponent;	// Perspective camera that we are controlling
 	};
 
 
 	/**
-	* The FirstPersonController is a component that implements first-person movement for the entity it is attached to.
-	* It uses the TransformComponent to move the entity and the InputComponent to receive input
-	*
-	* WASD to move, arrow keys to rotate
-	*/
+	 * ComponentInstance for the OrbitController.
+	 */
 	class OrbitControllerInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
@@ -55,35 +54,66 @@ namespace nap
 		OrbitControllerInstance(EntityInstance& entity, Component& resource);
 
 		/**
-		* Initialize this ComponentInstance
-		*/
+		 * Initialize this ComponentInstance
+		 */
 		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
+		/**
+		 * Enable responding to input for this controller, and set translate and lookat.
+		 * @param cameraPos Worldspace camera position to set.
+		 * @param lookAtPos Worldspace position to target.
+		 */
 		void enable(const glm::vec3& cameraPos, const glm::vec3& lookAtPos);
+
+		/**
+		 * Enable responding to input for this controller.
+		 */
 		void enable(const glm::vec3& lookAtPos);
+
+		/**
+		 * Disable responding to input for this controller.
+		 */
 		void disable() { mEnabled = false; }
 
+		/**
+		 * @return The perspective camera component that we are controlling.
+		 */
 		CameraComponentInstance& getCameraComponent();
 
 	private:
+		/**
+		 * Handler for mouse down events
+		 */
 		void onMouseDown(const PointerPressEvent& pointerPressEvent);
+
+		/**
+		 * Handler for mouse move events
+		 */
 		void onMouseMove(const PointerMoveEvent& pointerMoveEvent);
+
+		/**
+		 * Handler for mouse up events
+		 */
 		void onMouseUp(const PointerReleaseEvent& pointerReleaseEvent);
 
+		/**
+		 * Helper called when orbiting starts.
+		 */
 		void startDrag();
 
 	private:
+		// Camera mode
 		enum class EMode
 		{
 			Idle,
-			Rotating,
-			Zooming
+			Rotating,		// Rotate around target
+			Zooming			// Zoom into/out of target
 		};
 
 		TransformComponentInstance*		mTransformComponent = nullptr;		// The transform component used to move the entity
-		EMode							mMode = EMode::Idle;
-		glm::vec3						mLookAtPos;
-		bool							mEnabled = false;
+		EMode							mMode = EMode::Idle;				// Camera mode
+		glm::vec3						mLookAtPos;							// Target position to orbit around
+		bool							mEnabled = false;					// Enables responding to input
 	};
 
 }

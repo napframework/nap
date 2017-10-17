@@ -43,7 +43,7 @@ namespace nap
 		if (!errorState.check(mTransformComponent != nullptr, "Could not find transform component"))
 			return false;
 
-
+		// Connect mouse handlers
 		pointer_component->pressed.connect(std::bind(&FirstPersonControllerInstance::onMouseDown, this, std::placeholders::_1));
 		pointer_component->released.connect(std::bind(&FirstPersonControllerInstance::onMouseUp, this, std::placeholders::_1));
 		pointer_component->moved.connect(std::bind(&FirstPersonControllerInstance::onMouseMove, this, std::placeholders::_1));
@@ -55,6 +55,7 @@ namespace nap
 		return true;
 	}
 
+
 	void FirstPersonControllerInstance::enable(const glm::vec3& translate, const glm::quat& rotate)
 	{
 		if (!mEnabled)
@@ -65,15 +66,18 @@ namespace nap
 		}
 	}
 
+
 	void FirstPersonControllerInstance::enable()
 	{
 		mEnabled = true;
 	}
 
+
 	CameraComponentInstance& FirstPersonControllerInstance::getCameraComponent()
 	{
 		return *getComponent<FirstPersonController>()->mPerspCameraComponent;
 	}
+
 
 	void FirstPersonControllerInstance::update(double deltaTime)
 	{
@@ -83,8 +87,6 @@ namespace nap
 		FirstPersonController* resource = getComponent<FirstPersonController>();
 
 		float movement = resource->mMovementSpeed * deltaTime;
-		float rotate = resource->mRotateSpeed * deltaTime;
-		float rotate_rad = rotate;
 
 		glm::vec3 side(1.0, 0.0, 0.0);
 		glm::vec3 up(0.0, 1.0, 0.0);
@@ -130,6 +132,7 @@ namespace nap
 		if (!mEnabled)
 			return;
 
+		// Enable movement when lmb is pressed
 		if (pointerPressEvent.mButton == EMouseButton::LEFT)
 			mMoving = true;
 	}

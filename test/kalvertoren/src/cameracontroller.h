@@ -11,18 +11,21 @@ namespace nap
 	class CameraControllerInstance;
 	class KeyReleaseEvent;
 
+	/**
+	 * Mode that the CameraController is currently operating in. 
+	 */
 	enum class ECameraMode : uint8_t
 	{
 		None						= 0x00,
 
-		FirstPerson					= 0x01,
-		Orbit						= 0x02,
-		OrthographicTop				= 0x04,
-		OrthographicBottom			= 0x08,
-		OrthographicLeft			= 0x10,
-		OrthographicRight 			= 0x20,
-		OrthographicFront			= 0x40,
-		OrthographicBack			= 0x80,
+		FirstPerson					= 0x01,		// Perspective free camera
+		Orbit						= 0x02,		// Perspective orbit camera
+		OrthographicTop				= 0x04,		// Orthographic camera (top-view)
+		OrthographicBottom			= 0x08,		// Orthographic camera (bottom-view)
+		OrthographicLeft			= 0x10,		// Orthographic camera (left-view)
+		OrthographicRight 			= 0x20,		// Orthographic camera (right-view)
+		OrthographicFront			= 0x40,		// Orthographic camera (front-view)
+		OrthographicBack			= 0x80,		// Orthographic camera (back-view)
 
 		Perspective = FirstPerson | Orbit,
 		Orthographic = OrthographicTop | OrthographicBottom | OrthographicLeft | OrthographicRight | OrthographicFront | OrthographicBack
@@ -37,9 +40,11 @@ namespace nap
 		return static_cast<ECameraMode>(static_cast<uint8_t>(a) | static_cast<uint8_t>(b));
 	}
 
+
 	/**
-	* Resource for the OrbitController
-	*/
+	 * CameraController drives the FirstPersonController, OrbitController and OrthoController. It takes care of switching
+	 * between the camera controllers and it holds pointer to an entity to look at, for use in the OrbitController and the OrthoController.
+	 */
 	class CameraController : public Component
 	{
 		RTTI_ENABLE(Component)
@@ -54,12 +59,13 @@ namespace nap
 			components.push_back(RTTI_OF(FirstPersonController));
 		}
 
-		nap::EntityPtr	mLookAtTarget;
+		nap::EntityPtr	mLookAtTarget;		///< Object to look at, for orbit and ortho controller
 	};
 
+
 	/**
-	*
-	*/
+	 * ComponentInstance of CameraController. Use this class to retrieve the active camera component.
+	 */
 	class CameraControllerInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
@@ -67,10 +73,14 @@ namespace nap
 		CameraControllerInstance(EntityInstance& entity, Component& resource);
 
 		/**
-		* Initialize this ComponentInstance
-		*/
+		 * Initialize this ComponentInstance
+		 */
 		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
+		/**
+		 * @return either a perspective camera component or an orthographic camera component, depending on which 
+		 * one is currently active.
+		 */
 		CameraComponentInstance& getCameraComponent();
 
 	private:
@@ -82,12 +92,12 @@ namespace nap
 		void switchMode(ECameraMode targetMode);
 
 	private:
-		ECameraMode							mMode = ECameraMode::FirstPerson;
-		OrbitControllerInstance*			mOrbitComponent = nullptr;
-		FirstPersonControllerInstance*		mFirstPersonComponent = nullptr;
-		OrthoControllerInstance*			mOrthoComponent = nullptr;
-		glm::vec3							mLastPerspPos;
-		glm::quat							mLastPerspRotate;
+		ECameraMode							mMode = ECameraMode::FirstPerson;		///< Camera mode
+		OrbitControllerInstance*			mOrbitComponent = nullptr;				///< Orbit Controller
+		FirstPersonControllerInstance*		mFirstPersonComponent = nullptr;		///< FPS Controller
+		OrthoControllerInstance*			mOrthoComponent = nullptr;				///< Ortho controller
+		glm::vec3							mLastPerspPos;							///< Last perspective camera position
+		glm::quat							mLastPerspRotate;						///< Last perspective camera rotation
 	};
 
 }

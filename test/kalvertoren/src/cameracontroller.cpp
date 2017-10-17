@@ -8,7 +8,7 @@
 #include <math.h>
 
 RTTI_BEGIN_CLASS(nap::CameraController)
-	RTTI_PROPERTY("LookAtTarget",			&nap::CameraController::mLookAtTarget,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("LookAtTarget",	&nap::CameraController::mLookAtTarget,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CameraControllerInstance)
@@ -46,10 +46,11 @@ namespace nap
 		key_component->released.connect(std::bind(&CameraControllerInstance::onKeyRelease, this, std::placeholders::_1));
 
 		storeLastPerspTransform();
-		switchMode(ECameraMode::FirstPerson);
+		switchMode(mMode);
 
 		return true; 
 	}
+
 
 	CameraComponentInstance& CameraControllerInstance::getCameraComponent()
 	{
@@ -61,6 +62,11 @@ namespace nap
 			return mOrthoComponent->getCameraComponent();
 	}
 
+
+	/**
+	 * Stores the current perspective transform. This is done to restore the perspective transform when switching
+	 * back to perspective mode.
+	 */
 	void CameraControllerInstance::storeLastPerspTransform()
 	{
 		TransformComponentInstance& transform = getEntityInstance()->getComponent<nap::TransformComponentInstance>();
@@ -68,10 +74,15 @@ namespace nap
 		mLastPerspRotate = transform.getRotate();
 	}
 
+
+	/**
+	 * Helper to switch mode. Enables controllers, sets them in the correct state.
+	 */
 	void CameraControllerInstance::switchMode(ECameraMode targetMode)
 	{
 		if (targetMode == ECameraMode::FirstPerson)
 		{
+			// If we're switching back from orthographic camera, enable controller while resetting position to last know position
 			if ((mMode & ECameraMode::Orthographic) != ECameraMode::None)
 				mFirstPersonComponent->enable(mLastPerspPos, mLastPerspRotate);
 			else
@@ -84,6 +95,7 @@ namespace nap
 		{
 			nap::TransformComponentInstance& lookAtTransform = getComponent<nap::CameraController>()->mLookAtTarget->getComponent<nap::TransformComponentInstance>();
 
+			// If we're switching back from orthographic camera, enable controller while resetting position to last know position
 			if ((mMode & ECameraMode::Orthographic) != ECameraMode::None)
 				mOrbitComponent->enable(mLastPerspPos, lookAtTransform.getTranslate());
 			else
@@ -94,9 +106,11 @@ namespace nap
 		}
 		else
 		{
+			// Remember the current perspective transform before we alter the transform
 			if ((mMode & ECameraMode::Perspective) != ECameraMode::None)
 				storeLastPerspTransform();
 
+			// Depending on orthographic mode, make a rotation. 
 			glm::vec3 camera_translate_axis;
 			glm::quat rotation;
 			switch (targetMode)
@@ -131,29 +145,32 @@ namespace nap
 					rotation = glm::angleAxis((float)M_PI, glm::vec3(0.0f, 1.0f, 0.0f));
 					break;
 			}
-			nap::TransformComponentInstance& lookAtTransform = getComponent<nap::CameraController>()->mLookAtTarget->getComponent<nap::TransformComponentInstance>();
 
-			glm::vec3 targetPos(lookAtTransform.getTranslate());
+			// The translation is placed some distance from the lookat target
+			nap::TransformComponentInstance& lookat_transform = getComponent<nap::CameraController>()->mLookAtTarget->getComponent<nap::TransformComponentInstance>();
+			glm::vec3 target_pos(lookat_transform.getTranslate());
 			const float distance = 100.0f;
-			glm::vec3 camera_translate = targetPos - camera_translate_axis * distance;
+			glm::vec3 camera_translate = target_pos - camera_translate_axis * distance;
 
 			mOrthoComponent->enable(camera_translate, rotation);
-
 			mFirstPersonComponent->disable();
 			mOrbitComponent->disable();
 		}
 		mMode = targetMode;
 	}
 
+
 	void CameraControllerInstance::onKeyPress(const KeyPressEvent& keyReleaseEvent)
 	{
 		switch (keyReleaseEvent.mKey)
 		{
 		case EKeyCode::KEY_LALT:
+			// Only switch to orbit mode if we're already in perspective mode
 			if ((mMode & ECameraMode::Perspective) != ECameraMode::None)
 				switchMode(ECameraMode::Orbit);
 		}
 	}
+
 
 	void CameraControllerInstance::onKeyRelease(const KeyReleaseEvent& keyReleaseEvent)
 	{

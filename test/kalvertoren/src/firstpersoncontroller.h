@@ -38,7 +38,7 @@ namespace nap
 		float mMovementSpeed	= 3.0f;		// The speed with which to move
 		float mRotateSpeed		= 1.0f;		// The speed with which to rotate
 
-		ComponentPtr<nap::PerspCameraComponent>	mPerspCameraComponent;
+		ComponentPtr<nap::PerspCameraComponent>	mPerspCameraComponent;		// Camera that we're controlling
 	};
 
 
@@ -46,7 +46,7 @@ namespace nap
 	 * The FirstPersonController is a component that implements first-person movement for the entity it is attached to.
 	 * It uses the TransformComponent to move the entity and the InputComponent to receive input
 	 *
-	 * WASD to move, arrow keys to rotate
+	 * Hold left mouse to activate. WASD to move, QE to move up and down, mouse to rotate.
 	 */
 	class FirstPersonControllerInstance : public ComponentInstance
 	{
@@ -64,11 +64,26 @@ namespace nap
 		 */
 		virtual void update(double deltaTime) override;
 
+		/**
+		 * Enable the component while setting the transform.
+		 * @param translate Camera translation to set.
+		 * @param rotation Camera rotation to set.
+		 */
 		void enable(const glm::vec3& translate, const glm::quat& rotate);
+
+		/**
+		 * Enable the component, keeping the current transform.
+		 */
 		void enable();
 
+		/**
+		 * Disables the component.
+		 */
 		void disable() { mEnabled = false; }
 
+		/**
+		 * @return The perspective camera component that we're controlling.
+		 */
 		CameraComponentInstance& getCameraComponent();
 
 	private:
@@ -82,8 +97,19 @@ namespace nap
 		 */
 		void onKeyRelease(const KeyReleaseEvent& keyReleaseEvent);
 
+		/**
+		 * Handler for mouse down events
+		 */
 		void onMouseDown(const PointerPressEvent& pointerPressEvent);
+
+		/**
+		 * Handler for mouse up events
+		 */
 		void onMouseUp(const PointerReleaseEvent& pointerReleaseEvent);
+
+		/**
+		 * Handler for mouse move events
+		 */
 		void onMouseMove(const PointerMoveEvent& pointerMoveEvent);
 
 	private:
@@ -94,8 +120,8 @@ namespace nap
 		bool							mMoveRight			= false;		// Whether we're moving right
 		bool							mMoveUp				= false;		// Whether we're moving up
 		bool							mMoveDown			= false;		// Whether we're moving down
-		bool							mEnabled			= false;
-		bool							mMoving				= false;
+		bool							mEnabled			= false;		// Set if enable() is called
+		bool							mMoving				= false;		// Set if left mouse button is held
 	};
 
 }
