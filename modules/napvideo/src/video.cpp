@@ -17,8 +17,9 @@ extern "C"
 }
 
 RTTI_BEGIN_CLASS(nap::Video)
-	RTTI_PROPERTY("Path", &nap::Video::mPath, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Loop", &nap::Video::mLoop, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Path",	&nap::Video::mPath,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Loop",	&nap::Video::mLoop,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Speed",	&nap::Video::mSpeed,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
@@ -460,7 +461,7 @@ namespace nap
 
 		// Update clock if it has been initialized
 		if (mVideoClockSecs != sVideoMax)
-			mVideoClockSecs += deltaTime;
+			mVideoClockSecs += (deltaTime * mSpeed);
 
 		// Peek into the frame queue. If we have a frame and the PTS value of the first frame on
 		// the FIFO queue has expired, we pop it. If there is no frame or the frame has not expired,
