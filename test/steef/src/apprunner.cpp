@@ -56,6 +56,8 @@ namespace nap {
 			assert(false);
 			return false;
 		}
+        
+        glFlush();
 		
 		// Extract loaded resources
 		mRenderWindow = mResourceManagerService->findObject<nap::RenderWindow>("Viewport");

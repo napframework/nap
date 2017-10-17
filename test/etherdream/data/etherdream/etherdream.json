@@ -54,7 +54,7 @@
 		{
 			"Type" : "nap::Image",
 			"mID" : "ColorLookupImage",
-			"ImagePath" : "data/etherdream/color_gradient.png"
+			"ImagePath" : "data/etherdream/rgb.jpg"
 		},
 
 		{
@@ -581,7 +581,11 @@
 						"/0/resettracer",
 						"/0/nextline",
 						"/0/random",
-						"/0/resetblend"
+						"/0/resetblend",
+						"/0/startxposition",
+						"/0/startyposition",
+						"/0/endxposition",
+						"/0/endyposition"
 					]
 				},
 				{
@@ -589,7 +593,8 @@
 					"mID" : "OSCLaserInputHandler",
 					"SelectionComponentOne" : "LineSelectorOne",
 					"SelectionComponentTwo" : "LineSelectorTwo",
-					"LaserOutputComponent" : "LaserOutputComponentOne"
+					"LaserOutputComponent" : "LaserOutputComponentOne",
+					"PrintColor" : true
 				},
 				{
 					"Type" : "nap::TransformComponent",
@@ -667,13 +672,13 @@
 					"BlendComponent" : "LineBlender",
 					"StartPosition" : 
 					{
-						"x" : 0.0,
-						"y" : 0.0
+						"x" : 1.0,
+						"y" : 0.5
 					},
 					"EndPosition" : 
 					{
-						"x" : 1.0,
-						"y" : 1.0
+						"x" : 0.0,
+						"y" : 0.5
 					},
 					"LookupImage" : "ColorLookupImage",
 					"Wrap" : true,

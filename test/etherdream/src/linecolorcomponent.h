@@ -80,10 +80,20 @@ namespace nap
 		void setStartPosition(const glm::vec2& startPosition);
 
 		/**
+		 * @return the current start position in uv coordinates
+		 */
+		const glm::vec2& getStartPosition() const					{ return mStartPosition; }
+
+		/**
 		 * Sets the end uv coordinate of the line, will be clamped between 0-1
 		 * @param endPosition end position in uv space of the line
 		 */
 		void setEndPosition(const glm::vec2& endPosition);
+
+		/**
+		 *	@return the current end position in uv coordinates
+		 */
+		const glm::vec2& getEndPosition() const						{ return mEndPosition; }
 
 		/**
 		 * Sets the intensity of the line, this is a global multiplier
@@ -96,6 +106,13 @@ namespace nap
 		 * @param value if we want to link the colors
 		 */
 		void link(bool value)										{ mLink = value; }
+
+		/**
+		 * @return the pixel color as vector 3 at uv position x,y
+		 * @param uvPos the uv position to get the color for
+		 * @param outColor the pixel color as normalized float
+		 */
+		void getColor(const glm::vec2& uvPos, glm::vec3& outColor);
 
 	private:
 		LineBlendComponentInstance* mBlendComponent = nullptr;		// Holds the line we want to color
