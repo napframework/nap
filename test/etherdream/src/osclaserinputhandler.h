@@ -42,6 +42,9 @@ namespace nap
 		// property: Link to laser output component
 		ComponentPtr<LaserOutputComponent> mLaserOutputComponent = nullptr;
 
+		// property: If the pixel color should be printed
+		bool mPrintColor = false;
+
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 	};
 
@@ -76,6 +79,10 @@ namespace nap
 
 		void updateStartColor(const OSCEvent& event, const std::vector<std::string>& args);
 		void updateEndColor(const OSCEvent& event, const std::vector<std::string>& args);
+		void updateXStartColor(const OSCEvent& event, const std::vector<std::string>& args);
+		void updateYStartColor(const OSCEvent& event, const std::vector<std::string>& args);
+		void updateXEndColor(const OSCEvent& event, const std::vector<std::string>& args);
+		void updateYEndColor(const OSCEvent& event, const std::vector<std::string>& args);
 		void updateRotate(const OSCEvent& event, const std::vector<std::string>& args);
 		void resetRotate(const OSCEvent& event, const std::vector<std::string>& args);
 		void setBlend(const OSCEvent& event, const std::vector<std::string>& args);
@@ -89,7 +96,7 @@ namespace nap
 		void setIntensity(const OSCEvent& event, const std::vector<std::string>& args);
 		void selectNextLine(const OSCEvent& event, const std::vector<std::string>& args);
 		void toggleRandom(const OSCEvent& event, const std::vector<std::string>& args);
-		void updateColor(const OSCEvent& event, int position);
+		void updateColor(const glm::vec2& loc, int position);
 		void resetBlend(const OSCEvent& event, const std::vector<std::string>& args);
 
 		NSLOT(mMessageReceivedSlot, const nap::OSCEvent&, handleMessageReceived)
@@ -99,6 +106,7 @@ namespace nap
 		LineModulationComponentInstance* mModulationComponent = nullptr;	// Laser modulation component
 		LineAutoSwitchComponentInstance* mSwitcher = nullptr;				// Switches lines
 		LineBlendComponentInstance* mBlender = nullptr;						// Blends between two lines
+		bool mPrintColor = false;											// If color should be printed
 
 		// This map holds all the various callbacks based on id
 		typedef void (OSCLaserInputHandlerInstance::*LaserEventFunc)(const OSCEvent&, const std::vector<std::string>& args);

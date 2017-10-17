@@ -28,17 +28,19 @@ namespace nap
 		// Get the binding and create correct event
 		// If the event can't be located there's no valid event mapping 
 		auto window_it = SDLToWindowMapping.find(sdlEvent.window.event);
-		if (window_it == SDLToWindowMapping.end())
-			return nullptr;
+		assert(window_it != SDLToWindowMapping.end());
 
 		int window_id = static_cast<int>(sdlEvent.window.windowID);
+
+		// When destroying a window (for example, during real time editing), we still get events for the destroyed window, after it has already been destroyed
+		// We deal with this by checking if the window ID is still known by SDL itself; if not, we ignore the event.
+		if (SDL_GetWindowFromID(window_id) == nullptr)
+			return nullptr;
 
 		// If it's one of the two parameterized constructors, add the arguments
 		rtti::TypeInfo event_type = window_it->second;
 		if (event_type.is_derived_from(RTTI_OF(nap::ParameterizedWindowEvent)))
-		{
 			return WindowEventPtr(event_type.create<WindowEvent>({ sdlEvent.window.data1, sdlEvent.window.data2, window_id }));
-		}
 
 		// Create and return correct window event
 		return WindowEventPtr(event_type.create<nap::WindowEvent>({ window_id }));
