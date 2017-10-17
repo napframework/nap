@@ -27,6 +27,8 @@ namespace nap
 
 			/**
 			 * Called when serialization starts, but before any objects have been written (i.e. start of 'document')
+			 *
+			 * @param rootObjects The list of root objects that will be written to this writer
 			 */
 			bool start(const ObjectList& rootObjects) override;
 
