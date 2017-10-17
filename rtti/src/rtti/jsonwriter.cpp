@@ -16,7 +16,7 @@ namespace nap
 		}
 
 
-		bool JSONWriter::start()
+		bool JSONWriter::start(const ObjectList& rootObjects)
 		{
 			if (!mWriter.StartObject())
 				return false;

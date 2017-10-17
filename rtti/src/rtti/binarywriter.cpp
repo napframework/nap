@@ -6,11 +6,64 @@ namespace nap
 {
 	namespace rtti
 	{
-		bool BinaryWriter::start()
+		void BinaryWriter::writeString(const std::string& string)
 		{
+			writeString(string.data(), string.length());
+		}
+
+		void BinaryWriter::writeString(const char* string, size_t length)
+		{
+			write(length);
+			write(string, length);
+		}
+
+		size_t BinaryWriter::getPosition() const
+		{
+			return mBuffer.empty() ? 0 : mWritePointer - mBuffer.data();
+		}
+
+		void BinaryWriter::seek(size_t position)
+		{
+			assert(position <= mBuffer.size());
+			mWritePointer = mBuffer.data() + position;
+		}
+
+		bool BinaryWriter::start(const ObjectList& rootObjects)
+		{
+			// Gather all used types
+			std::unordered_set<rtti::TypeInfo> types;
+			for (RTTIObject* object : rootObjects)
+				types.insert(object->get_type());
+
+			// Write binary version
 			write(gRTTIBinaryVersion, strlen(gRTTIBinaryVersion));
+
+			// Write dummy size, which we'll update later
+			size_t version_size_position = getPosition();
+			write<size_t>(0);
+
+			size_t type_version_start = getPosition();
+
+			// Now write type info for all types
+			write(types.size());
+			for (const rtti::TypeInfo& type : types)
+			{
+				writeString(type.get_name().data(), type.get_name().length());
+				write(getRTTIVersion(type));
+			}
+
+			size_t cur_position = getPosition();			
+
+			// Seek back to header start and write the actual size
+			seek(version_size_position);
+			write<size_t>(cur_position - type_version_start);
+			
+			// Seek back to actual write position so we can continue writing other data
+			seek(cur_position);
+
 			return true;
 		}
+
 
 		bool BinaryWriter::startRootObject(const rtti::TypeInfo& type)
 		{
