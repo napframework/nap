@@ -33,6 +33,6 @@ find_package(artnet REQUIRED)
 copy_artnet_dll()
 
 # create post build event
-export_fbx(${CMAKE_CURRENT_LIST_DIR}/data)
 copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/data data)
 copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/shaders shaders)
+export_fbx(${CMAKE_CURRENT_LIST_DIR}/data)

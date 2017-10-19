@@ -168,12 +168,14 @@ else()
 endif()
 
 macro(export_fbx_in_place SRCDIR)
+    # Set the binary name
     if (MSVC)
         set(FBXCONVERTER_BIN "fbxconverter.exe")
     else()
         set(FBXCONVERTER_BIN "fbxconverter")
     endif()
 
+    # Do the export
     add_custom_command(TARGET ${PROJECT_NAME}
         POST_BUILD
         COMMAND "$<TARGET_FILE_DIR:${PROJECT_NAME}>/${FBXCONVERTER_BIN}" -o ${SRCDIR} "${SRCDIR}/*.fbx"
@@ -181,13 +183,23 @@ macro(export_fbx_in_place SRCDIR)
 endmacro()
 
 macro(export_fbx SRCDIR)
+    # Set the binary name
     if (MSVC)
         set(FBXCONVERTER_BIN "fbxconverter.exe")
     else()
         set(FBXCONVERTER_BIN "fbxconverter")
     endif()
+
+    # Set project data out path
     set(OUTDIR "$<TARGET_FILE_DIR:${PROJECT_NAME}>/data/${PROJECT_NAME}")
 
+    # Ensure data output directory for project exists
+    add_custom_command(TARGET ${PROJECT_NAME}
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${OUTDIR}
+        COMMENT "Ensure project output directory exists for fbxconverter")
+
+    # Do the export
     add_custom_command(TARGET ${PROJECT_NAME}
         POST_BUILD
         COMMAND "$<TARGET_FILE_DIR:${PROJECT_NAME}>/${FBXCONVERTER_BIN}" -o ${OUTDIR} "${SRCDIR}/*.fbx"
