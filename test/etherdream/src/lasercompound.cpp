@@ -8,6 +8,7 @@ RTTI_BEGIN_CLASS(nap::LaserCompound)
 	RTTI_PROPERTY("Dac",			&nap::LaserCompound::mDac,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Target",			&nap::LaserCompound::mTarget,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("LaserID",		&nap::LaserCompound::mLaserID,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Offset",			&nap::LaserCompound::mOffset,		nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////

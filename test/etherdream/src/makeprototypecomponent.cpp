@@ -83,6 +83,11 @@ namespace nap
 		if (!errorState.check(mOSCInputComponent != nullptr, "unable to find osc input component"))
 			return false;
 
+		// Store component that does the noise modulation
+		mNoiseComponent = mSplineEntity->findComponent<LineNoiseComponentInstance>();
+		if (!errorState.check(mNoiseComponent != nullptr, "unable to find noise component"))
+			return false;
+
 		// Store osc address pattern
 		mOSCAddressPattern = getComponent<MakePrototypeComponent>()->mOSCAddresses;
 
@@ -119,6 +124,12 @@ namespace nap
 
 		// Set tracer mesh
 		mTraceComponent->setPolyLine(*(settings.mTraceMesh));
+
+		// Set trace offset
+		mTraceComponent->mProperties.mOffset = settings.mOffset;
+
+		// Set noise offset
+		mNoiseComponent->mProperties.mOffset = fmod(settings.mOffset + 0.1f,1.0f);
 
 		// Set laser output line
 		mOutputComponent->setPolyLine(*(settings.mTraceMesh));

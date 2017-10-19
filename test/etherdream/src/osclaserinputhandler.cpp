@@ -66,6 +66,10 @@ namespace nap
 		if (!errorState.check(mSwitcher != nullptr, "missing trace component"))
 			return false;
 
+		mXformSmoother = getEntityInstance()->findComponent<nap::XformSmoothComponentInstance>();
+		if (!errorState.check(mXformSmoother != nullptr, "missing xform smoother"))
+			return false;
+
 		mPrintColor = getComponent<OSCLaserInputHandler>()->mPrintColor;
 
 		mInputComponent->messageReceived.connect(mMessageReceivedSlot);
@@ -78,7 +82,6 @@ namespace nap
 		mLaserEventFuncs.emplace(std::make_pair("resetrotation", &OSCLaserInputHandlerInstance::resetRotate));
 		mLaserEventFuncs.emplace(std::make_pair("blend", &OSCLaserInputHandlerInstance::setBlend));
 		mLaserEventFuncs.emplace(std::make_pair("scale", &OSCLaserInputHandlerInstance::setScale));
-		mLaserEventFuncs.emplace(std::make_pair("position", &OSCLaserInputHandlerInstance::setPosition));
 		mLaserEventFuncs.emplace(std::make_pair("modulation", &OSCLaserInputHandlerInstance::setModulation));
 		mLaserEventFuncs.emplace(std::make_pair("noise", &OSCLaserInputHandlerInstance::setNoise));
 		mLaserEventFuncs.emplace(std::make_pair("synccolor", &OSCLaserInputHandlerInstance::setColorSync));
@@ -93,6 +96,8 @@ namespace nap
 		mLaserEventFuncs.emplace(std::make_pair("endyposition", &OSCLaserInputHandlerInstance::updateYEndColor));
 		mLaserEventFuncs.emplace(std::make_pair("smoothx", &OSCLaserInputHandlerInstance::setColorSmoothX));
 		mLaserEventFuncs.emplace(std::make_pair("smoothy", &OSCLaserInputHandlerInstance::setColorSmoothY));
+		mLaserEventFuncs.emplace(std::make_pair("positionx", &OSCLaserInputHandlerInstance::setPositionX));
+		mLaserEventFuncs.emplace(std::make_pair("positiony", &OSCLaserInputHandlerInstance::setPositionY));
 		return true;
 	}
 
@@ -248,7 +253,6 @@ namespace nap
 	}
 
 
-
 	void OSCLaserInputHandlerInstance::updateRotate(const OSCEvent& oscEvent, const std::vector<std::string>& args)
 	{
 		// New value
@@ -270,8 +274,12 @@ namespace nap
 			mRotateComponent->mProperties.mAxis.z = v;
 			break;
 		case 4:
-			mRotateComponent->mProperties.mSpeed = math::power<float>(v, 4.0f);
+		{
+			float vs = math::power<float>(abs(v), 4.0f);
+			vs *= math::sign<float>(v);
+			mRotateComponent->mProperties.mSpeed = vs;
 			break;
+		}
 		case 5:
 			mRotateComponent->mProperties.mOffset = v;
 			break;
@@ -307,7 +315,8 @@ namespace nap
 	{
 		assert(event[0].isFloat());
 		float v = event[0].asFloat();
-		mTransformComponent->setUniformScale(math::fit<float>(v, 0.0f, 1.0f, 0.1f, 3.0f) * mInitialScale);
+		v = math::max<float>(v*2.0f, 0.05f) * mInitialScale;
+		mXformSmoother->setTargetScale(v);
 	}
 
 
@@ -321,11 +330,39 @@ namespace nap
 		float fru_x = mLaserOutput->mProperties.mFrustrum.x / 2.0f;
 		float fru_y = mLaserOutput->mProperties.mFrustrum.y / 2.0f;
 
-		glm::vec3 current_xform = mTransformComponent->getTranslate();
+		glm::vec3 current_xform = mXformSmoother->getTarget();
 		current_xform.x = math::lerp<float>(fru_x*-1.0f, fru_x, pos_x);
 		current_xform.y = math::lerp<float>(fru_y*-1.0f, fru_y, pos_y);
 
-		mTransformComponent->setTranslate(current_xform);
+		mXformSmoother->setTarget(current_xform);
+	}
+
+
+	void OSCLaserInputHandlerInstance::setPositionX(const OSCEvent& event, const std::vector<std::string>& args)
+	{
+		assert(event[0].isFloat());
+		float v = event[0].asFloat();
+
+		assert(mLaserOutput != nullptr);
+		float fru_x = mLaserOutput->mProperties.mFrustrum.x / 2.0f;
+
+		glm::vec3 current_xform = mXformSmoother->getTarget();
+		current_xform.x = math::lerp<float>(fru_x*-1.0f, fru_x, v);
+		mXformSmoother->setTarget(current_xform);
+	}
+
+
+	void OSCLaserInputHandlerInstance::setPositionY(const OSCEvent& event, const std::vector<std::string>& args)
+	{
+		assert(event[0].isFloat());
+		float v = event[0].asFloat();
+
+		assert(mLaserOutput != nullptr);
+		float fru_y = mLaserOutput->mProperties.mFrustrum.y / 2.0f;
+
+		glm::vec3 current_xform = mXformSmoother->getTarget();
+		current_xform.y = math::lerp<float>(fru_y*-1.0f, fru_y, v);
+		mXformSmoother->setTarget(current_xform);
 	}
 
 
@@ -475,6 +512,7 @@ namespace nap
 		components.emplace_back(RTTI_OF(nap::LineColorComponent));
 		components.emplace_back(RTTI_OF(nap::LineModulationComponent));
 		components.emplace_back(RTTI_OF(nap::LineAutoSwitchComponent));
+		components.emplace_back(RTTI_OF(nap::XformSmoothComponent));
 	}
 
 }

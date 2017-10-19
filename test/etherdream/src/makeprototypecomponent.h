@@ -6,6 +6,7 @@
 #include "updatenormalscomponent.h"
 #include "linetracecomponent.h"
 #include "laseroutputcomponent.h"
+#include "linenoisecomponent.h"
 
 // External Includes
 #include <nap/component.h>
@@ -97,6 +98,9 @@ namespace nap
 
 		// Holds the osc receiver
 		nap::OSCInputComponentInstance* mOSCInputComponent = nullptr;
+
+		// Holds the line noise component
+		nap::LineNoiseComponentInstance* mNoiseComponent = nullptr;
 
 		// Holds the template osc address pattern
 		std::vector<std::string> mOSCAddressPattern;

@@ -150,9 +150,9 @@ namespace nap
 		NAPAPI void nap::math::SmoothOperator<glm::vec2>::init();
 
 		template<>
-		NAPAPI void nap::math::SmoothOperator<glm::vec2>::init();
+		NAPAPI void nap::math::SmoothOperator<glm::vec3>::init();
 
 		template<>
-		NAPAPI void nap::math::SmoothOperator<glm::vec2>::init();
+		NAPAPI void nap::math::SmoothOperator<glm::vec4>::init();
 	}
 }

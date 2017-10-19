@@ -40,6 +40,9 @@ namespace nap
 		// property: Render Target
 		nap::ObjectPtr<RenderTarget> mTarget = nullptr;
 
+		// property: Offset
+		float mOffset = 0.0f;
+
 		// property: Laser id
 		int mLaserID = 0;
 	};

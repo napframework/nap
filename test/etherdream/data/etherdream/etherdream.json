@@ -89,7 +89,7 @@
 		{
 			"Type" : "nap::Image",
 			"mID" : "ColorLookupImage",
-			"ImagePath" : "data/etherdream/rgb.jpg"
+			"ImagePath" : "data/etherdream/kleurencirkel.png"
 		},
 
 		{
@@ -100,18 +100,6 @@
 		{
 			"Type" : "nap::PlaneMesh",
 			"mID" : "FrameMesh"
-		},
-
-		{
-			"Type" : "nap::LineFromFile",
-			"mID": "LineFromFileMesh",
-			"File" : "./data/etherdream/swirl.svg",
-			"Tolerance" : 0.1,
-			"Units" : "mm",
-			"Normalize" : true,
-			"Scale" : 2.0,
-			"FlipVertical" : true,
-			"LineIndex" : 0
 		},
 
 		{
@@ -166,78 +154,6 @@
 			"Type" : "nap::LineFromFile",
 			"mID": "LineFromFile5",
 			"File" : "./data/etherdream/5.svg",
-			"Tolerance" : 0.05,
-			"Units" : "mm",
-			"Normalize" : true,
-			"Scale" : 2.0,
-			"FlipVertical" : true,
-			"LineIndex" : 0
-		},
-
-		{
-			"Type" : "nap::LineFromFile",
-			"mID": "LineFromFile6",
-			"File" : "./data/etherdream/6.svg",
-			"Tolerance" : 0.05,
-			"Units" : "mm",
-			"Normalize" : true,
-			"Scale" : 2.0,
-			"FlipVertical" : true,
-			"LineIndex" : 0
-		},
-
-		{
-			"Type" : "nap::LineFromFile",
-			"mID": "LineFromFile7",
-			"File" : "./data/etherdream/7.svg",
-			"Tolerance" : 0.05,
-			"Units" : "mm",
-			"Normalize" : true,
-			"Scale" : 2.0,
-			"FlipVertical" : true,
-			"LineIndex" : 0
-		},
-
-		{
-			"Type" : "nap::LineFromFile",
-			"mID": "LineFromFile8",
-			"File" : "./data/etherdream/8.svg",
-			"Tolerance" : 0.05,
-			"Units" : "mm",
-			"Normalize" : true,
-			"Scale" : 2.0,
-			"FlipVertical" : true,
-			"LineIndex" : 0
-		},
-
-		{
-			"Type" : "nap::LineFromFile",
-			"mID": "LineFromFile9",
-			"File" : "./data/etherdream/9.svg",
-			"Tolerance" : 0.05,
-			"Units" : "mm",
-			"Normalize" : true,
-			"Scale" : 2.0,
-			"FlipVertical" : true,
-			"LineIndex" : 0
-		},
-
-		{
-			"Type" : "nap::LineFromFile",
-			"mID": "LineFromFile10",
-			"File" : "./data/etherdream/10.svg",
-			"Tolerance" : 0.05,
-			"Units" : "mm",
-			"Normalize" : true,
-			"Scale" : 2.0,
-			"FlipVertical" : true,
-			"LineIndex" : 0
-		},
-
-		{
-			"Type" : "nap::LineFromFile",
-			"mID": "LineFromFile11",
-			"File" : "./data/etherdream/11.svg",
 			"Tolerance" : 0.05,
 			"Units" : "mm",
 			"Normalize" : true,
@@ -656,7 +572,8 @@
 			"NormalMesh" : "NormalsMesh1",
 			"Dac" : "Laser1",
 			"Target" : "LaserRenderTarget1",
-			"LaserID" : 0
+			"LaserID" : 0,
+			"Offset" : 0.0
 		},
 
 		{
@@ -667,7 +584,8 @@
 			"NormalMesh" : "NormalsMesh2",
 			"Dac" : "Laser2",
 			"Target" : "LaserRenderTarget2",
-			"LaserID" : 1
+			"LaserID" : 1,
+			"Offset" : 0.25
 		},
 
 		{
@@ -678,7 +596,8 @@
 			"NormalMesh" : "NormalsMesh3",
 			"Target" : "LaserRenderTarget3",
 			"Dac" : "Laser3",
-			"LaserID" : 2
+			"LaserID" : 2,
+			"Offset" : 0.5
 		},
 
 		{
@@ -689,7 +608,8 @@
 			"NormalMesh" : "NormalsMesh4",
 			"Target" : "LaserRenderTarget4",
 			"Dac" : "Laser4",
-			"LaserID" : 3
+			"LaserID" : 3,
+			"Offset" : 0.75
 		},
 
 		{
@@ -762,7 +682,8 @@
 						"resetrotation",
 						"blend",
 						"scale",
-						"position",
+						"positionx",
+						"positiony",
 						"modulation",
 						"noise",
 						"synccolor",
@@ -868,20 +789,13 @@
 					"mID" : "LineSelectorOne",
 					"Lines" :
 					[
+						"CircleMesh",
 						"LineFromFile1",
 						"LineFromFile2",
 						"LineFromFile3",
 						"LineFromFile4",
 						"LineFromFile5",
-						"LineFromFile6",
-						"LineFromFile7",
-						"LineFromFile8",
-						"LineFromFile9",
-						"LineFromFile10",
-						"LineFromFile11",
-						"LineFromFileMesh",
 						"RectangleMesh",
-						"CircleMesh",
 						"HexagonMesh",
 						"TriangleMesh"
 					],
@@ -892,24 +806,17 @@
 					"mID" : "LineSelectorTwo",
 					"Lines" :
 					[
+						"CircleMesh",
 						"LineFromFile1",
 						"LineFromFile2",
 						"LineFromFile3",
 						"LineFromFile4",
 						"LineFromFile5",
-						"LineFromFile6",
-						"LineFromFile7",
-						"LineFromFile8",
-						"LineFromFile9",
-						"LineFromFile10",
-						"LineFromFile11",
-						"LineFromFileMesh",
 						"RectangleMesh",
-						"CircleMesh",
 						"HexagonMesh",
 						"TriangleMesh"
 					],
-					"Index" : 1
+					"Index" : 0
 				},
 				{
 					"Type" : "nap::OSCInputComponent"
@@ -949,6 +856,12 @@
 					}			
 				},
 				{
+					"Type" : "nap::XformSmoothComponent",
+					"mID" : "XformSmoother",
+					"TransformSmoothTime" : 0.3,
+					"ScaleSmoothTime" : 0.3
+				},
+				{
 					"Type" : "nap::LineBlendComponent",
 					"mID" : "LineBlender",
 					"SelectionComponentOne" : "LineSelectorOne",
@@ -963,7 +876,7 @@
 					"SelectionComponentOne" : "LineSelectorOne",
 					"SelectionComponentTwo" : "LineSelectorTwo",
 					"BlendComponent" : "LineBlender",
-					"Random" : true
+					"Random" : false
 				},
 				{
 					"Type" : "nap::LineModulationComponent",
@@ -971,9 +884,9 @@
 					"BlendComponent" : "LineBlender",
 					"Properties" : 
 					{
-						"Frequency" : 1.0,
+						"Frequency" : 0.0,
 						"FrequencySmoothTime" : 0.1,
-						"Speed" : 0.2,
+						"Speed" : 0.0,
 						"SpeedSmoothTime" : 0.1,
 						"Offset" : 0.0,
 						"OffsetSmoothTime" : 0.1,
@@ -989,14 +902,14 @@
 					"BlendComponent" : "LineBlender",
 					"Properties" : 
 					{
-						"Frequency" : 2.0,
+						"Frequency" : 0.51,
 						"FrequencySmoothTime" : 0.1,
-						"Speed" : 0.1,
-						"SpeedSmoothTime" : 0.1,
+						"Speed" : 0.2,
+						"SpeedSmoothTime" : 0.3,
 						"Offset" : 0.0,
 						"OffsetSmoothTime" : 0.1,
-						"Amplitude" : 0.2,
-						"AmplitudeSmoothTime" : 0.1
+						"Amplitude" : 0,
+						"AmplitudeSmoothTime" : 0.5
 					}
 				},
 				{
@@ -1015,19 +928,19 @@
 					},
 					"StartSmoothTime" :
 					{
-						"x" : 0.0,
-						"y" : 0.0
+						"x" : 1.0,
+						"y" : 1.0
 					},
 					"EndSmoothTime" :
 					{
-						"x" : 0.0,
-						"y" : 0.0
+						"x" : 1.0,
+						"y" : 1.0
 					},
 					"IntensitySmoothTime" : 0.1,
 					"LookupImage" : "ColorLookupImage",
 					"Wrap" : true,
 					"WrapPower" : 1.0,
-					"Link" : false
+					"Link" : true
 				},
 				{
 					"Type" : "nap::LineTraceComponent",
@@ -1039,10 +952,10 @@
 					{
 						"Offset" : 0.0,
 						"OffsetSmoothTime" : 0.1,
-						"Speed" : 0.1,
-						"SpeedSmoothTime" : 0.1,
-						"Length" : 0.25,
-						"LengthSmoothTime" : 0.1
+						"Speed" : 0.0,
+						"SpeedSmoothTime" : 0.2,
+						"Length" : 1.00,
+						"LengthSmoothTime" : 0.2
 					}
 				},
 				{
@@ -1051,12 +964,12 @@
 					{
 						"Axis": 
 						{
-							"x": 0.2,
-							"y": 1.0,
-							"z": 0.4
+							"x": 0.0,
+							"y": 0.0,
+							"z": 1.0
 						},
 						"Speed": 0.0,
-						"Offset": 2.0
+						"Offset": 0.0
 					}
 				},
 				{

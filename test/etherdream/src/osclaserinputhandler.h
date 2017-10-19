@@ -9,6 +9,7 @@
 #include "linenoisecomponent.h"
 #include "linetracecomponent.h"
 #include "lineautoswitchcomponent.h"
+#include "xformsmoothcomponent.h"
 
 // External Includes
 #include <nap/component.h>
@@ -78,6 +79,7 @@ namespace nap
 		nap::TransformComponentInstance*	mTransformComponent = nullptr;
 		nap::LineNoiseComponentInstance*	mNoiseComponent = nullptr;
 		nap::LineTraceComponentInstance*	mTraceComponent = nullptr;
+		nap::XformSmoothComponentInstance*	mXformSmoother = nullptr;
 
 		void updateStartColor(const OSCEvent& event, const std::vector<std::string>& args);
 		void updateEndColor(const OSCEvent& event, const std::vector<std::string>& args);
@@ -90,6 +92,8 @@ namespace nap
 		void setBlend(const OSCEvent& event, const std::vector<std::string>& args);
 		void setScale(const OSCEvent& event, const std::vector<std::string>& args);
 		void setPosition(const OSCEvent& event, const std::vector<std::string>& args);
+		void setPositionX(const OSCEvent& event, const std::vector<std::string>& args);
+		void setPositionY(const OSCEvent& event, const std::vector<std::string>& args);
 		void setModulation(const OSCEvent& event, const std::vector<std::string>& args);
 		void setNoise(const OSCEvent& event, const std::vector<std::string>& args);
 		void setColorSync(const OSCEvent& event, const std::vector<std::string>& args);

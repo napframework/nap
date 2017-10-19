@@ -170,7 +170,6 @@ bool init(nap::Core& core)
 		return false;        
 	}
 
-
 	// Store all render windows
 	renderWindow = resourceManagerService->findObject<nap::RenderWindow>("Window");
 
@@ -193,6 +192,7 @@ bool init(nap::Core& core)
 
 	return true;
 }
+
 
 
 // Main loop
