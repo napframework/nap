@@ -162,6 +162,54 @@
 			"LineIndex" : 0
 		},
 
+			{
+			"Type" : "nap::LineFromFile",
+			"mID": "LineFromFile6",
+			"File" : "./data/etherdream/6.svg",
+			"Tolerance" : 0.05,
+			"Units" : "mm",
+			"Normalize" : true,
+			"Scale" : 2.0,
+			"FlipVertical" : true,
+			"LineIndex" : 1
+		},
+
+			{
+			"Type" : "nap::LineFromFile",
+			"mID": "LineFromFile7",
+			"File" : "./data/etherdream/7.svg",
+			"Tolerance" : 0.05,
+			"Units" : "mm",
+			"Normalize" : true,
+			"Scale" : 2.0,
+			"FlipVertical" : true,
+			"LineIndex" : 1
+		},
+
+		{
+			"Type" : "nap::LineFromFile",
+			"mID": "LineFromFile8",
+			"File" : "./data/etherdream/8.svg",
+			"Tolerance" : 0.05,
+			"Units" : "mm",
+			"Normalize" : true,
+			"Scale" : 2.0,
+			"FlipVertical" : true,
+			"LineIndex" : 1
+		},
+
+			{
+			"Type" : "nap::LineFromFile",
+			"mID": "LineFromFile9",
+			"File" : "./data/etherdream/9.svg",
+			"Tolerance" : 0.05,
+			"Units" : "mm",
+			"Normalize" : true,
+			"Scale" : 2.0,
+			"FlipVertical" : true,
+			"LineIndex" : 0
+		},
+
 		{
 			"Type" : "nap::Line",
 			"mID": "LineMesh",
@@ -795,9 +843,10 @@
 						"LineFromFile3",
 						"LineFromFile4",
 						"LineFromFile5",
-						"RectangleMesh",
-						"HexagonMesh",
-						"TriangleMesh"
+						"LineFromFile6",
+						"LineFromFile7",
+						"LineFromFile8",
+						"LineFromFile9"
 					],
 					"Index" : 0
 				},
@@ -812,9 +861,10 @@
 						"LineFromFile3",
 						"LineFromFile4",
 						"LineFromFile5",
-						"RectangleMesh",
-						"HexagonMesh",
-						"TriangleMesh"
+						"LineFromFile6",
+						"LineFromFile7",
+						"LineFromFile8",
+						"LineFromFile9"
 					],
 					"Index" : 0
 				},
@@ -876,7 +926,7 @@
 					"SelectionComponentOne" : "LineSelectorOne",
 					"SelectionComponentTwo" : "LineSelectorTwo",
 					"BlendComponent" : "LineBlender",
-					"Random" : false
+					"Random" : true
 				},
 				{
 					"Type" : "nap::LineModulationComponent",
