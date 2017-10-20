@@ -3,17 +3,14 @@
 // Mod nap render includes
 #include <renderablemeshcomponent.h>
 #include <renderwindow.h>
-#include <perspcameracomponent.h>
 #include <sdlinput.h>
 #include <sdlwindow.h>
 
 // Nap includes
-#include <nap/core.h>
 #include <nap/resourcemanager.h>
 #include <sceneservice.h>
 #include <inputservice.h>
 #include <inputrouter.h>
-#include <orthocameracomponent.h>
 
 namespace nap
 {
@@ -67,23 +64,32 @@ namespace nap
 		 */
 		void shutdown();
 		
+		
 	private:
+		/**
+		 *  Cycle-right button clicked
+		 */
+		void rightButtonClicked(const PointerPressEvent& evt);
 		
-		void updateBackgroundImage();
-		void updateShader();
+		/**
+		 *  Cycle-left button clicked
+		 */
+		void leftButtonClicked(const PointerPressEvent& evt);
 		
-		ObjectPtr<Image> mVinylLabelImg = nullptr;						//< Vinyl Label Image Resource
-		ObjectPtr<Image> mVinylCoverImg = nullptr;						//< Vinyl Cover Image Resource
 		
-		RenderService* mRenderService = nullptr;						//< Render Service that handles render calls
-		ResourceManagerService*	mResourceManagerService = nullptr;		//< Manages all the loaded resources
-		SceneService* mSceneService = nullptr;							//< Manages all the objects in the scene
+		// Nap Services
+		RenderService* mRenderService = nullptr;					//< Render Service that handles render calls
+		ResourceManagerService* mResourceManagerService = nullptr;	//< Manages all the loaded resources
+		SceneService* mSceneService = nullptr;						//< Manages all the objects in the scene
 		
-		InputService* mInputService = nullptr;							//< Input service for processing input
+		InputService* mInputService = nullptr;						//< Input service for processing input
 		
-		ObjectPtr<RenderWindow>	mRenderWindow = nullptr;				//< Pointer to the spawned render window
-		ObjectPtr<EntityInstance> mModelEntity = nullptr;				//< Pointer to the entity that holds all the vinyl parts
-		ObjectPtr<EntityInstance> mCameraEntity = nullptr;				//< Pointer to the entity that holds the camera
-		ObjectPtr<EntityInstance> mBackgroundEntity = nullptr;			//< Pointer to the entity that holds the background image
+		std::vector<ObjectPtr<RenderWindow>> mRenderWindows;		//< Vector holding pointers to the spawned render windows
+		
+		ObjectPtr<EntityInstance> mCameraEntity = nullptr;			//< The entity that holds the camera
+		
+		ObjectPtr<EntityInstance> mRootLayoutEntity = nullptr;		//< Entity at the root of the layout
+		ObjectPtr<EntityInstance> mSlideShowEntity = nullptr;		//< The slideshow entity
+		ObjectPtr<EntityInstance> mUiInputRouter = nullptr;			//< Our UI input router entity
 	};
 }
