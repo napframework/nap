@@ -66,7 +66,7 @@ namespace nap
 		}
 
 
-		bool RTTIPath::resolve(rtti::RTTIObject* object, ResolvedRTTIPath& resolvedPath) const
+		bool RTTIPath::resolve(const rtti::RTTIObject* object, ResolvedRTTIPath& resolvedPath) const
 		{
 			// Can't resolve an empty path
 			if (mLength == 0)
@@ -231,6 +231,29 @@ namespace nap
 		const rtti::TypeInfo ResolvedRTTIPath::getType() const
 		{
 			return getValue().get_type();
+		}
+
+		
+		const rtti::Property& ResolvedRTTIPath::getProperty() const
+		{
+			const rtti::Property* property = nullptr;
+			for (int index = mLength - 1; index >= 0; --index)
+			{
+				if (mElements[index].mType == ResolvedRTTIPathElement::Type::ATTRIBUTE)
+				{
+					property = &mElements[index].Attribute.Property;
+				}
+				else if (mElements[index].mType == ResolvedRTTIPathElement::Type::ROOT)
+				{
+					property = &mElements[index].Root.Property;
+				}
+
+				if (property != nullptr)
+					break;
+			}
+
+			assert(property != nullptr);
+			return *property;
 		}
 	}
 }

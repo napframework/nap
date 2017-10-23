@@ -227,5 +227,7 @@ int main(int argc, char* argv[])
 // 			return -1;
 	}
 
+	Logger::info("Serialization test exiting cleanly");
+	
 	return 0;
 } 

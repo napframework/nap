@@ -20,19 +20,19 @@
 		{
 			"Type" : "nap::Image",
 			"mID" : "PigTexture",
-			"ImagePath" : "data/pig_head.jpg"
+			"ImagePath" : "data/rendertest/pig_head.jpg"
 		},
 		
 		{
 			"Type" : "nap::Image",	
 			"mID" : "WorldTexture",
-			"ImagePath" : "data/world_texture.jpg"
+			"ImagePath" : "data/rendertest/world_texture.jpg"
 		},
 
 		{
 			"Type" : "nap::Image",
 			"mID" : "TestTexture",
-			"ImagePath" : "data/test.jpg"
+			"ImagePath" : "data/rendertest/test.jpg"
 		},
 
 		{
@@ -67,27 +67,27 @@
 		{
 			"Type" : "nap::Shader",
 			"mID": "GeneralShader",
-			"mVertShader": "shaders/shader.vert",
-			"mFragShader": "shaders/shader.frag"
+			"mVertShader": "shaders/rendertest/shader.vert",
+			"mFragShader": "shaders/rendertest/shader.frag"
 		},
 
 		{
 			"Type" : "nap::Shader",
 			"mID": "OrientationShader",
-			"mVertShader": "shaders/orientation.vert",
-			"mFragShader": "shaders/orientation.frag"
+			"mVertShader": "shaders/rendertest/orientation.vert",
+			"mFragShader": "shaders/rendertest/orientation.frag"
 		},
 
 		{
 			"Type" : "nap::MeshFromFile",
 			"mID": "OrientationMesh",
-			"Path": "data/orientation.mesh"
+			"Path": "data/rendertest/orientation.mesh"
 		},
 
 		{
 			"Type" : "nap::MeshFromFile",
 			"mID": "PigMesh",
-			"Path": "data/pig_head_alpha_rotated.mesh"
+			"Path": "data/rendertest/pig_head_alpha_rotated.mesh"
 		},	
 		
 		{
@@ -300,7 +300,7 @@
 				},
 				{
 					"Type" : "nap::PythonScriptComponent",
-					"Path": "data/scripts/pig.py"
+					"Path": "data/rendertest/scripts/pig.py"
 				}
 			]
 		},
@@ -376,7 +376,7 @@
 				},
 				{
 					"Type" : "nap::PythonScriptComponent",
-					"Path": "data/scripts/plane.py"
+					"Path": "data/rendertest/scripts/plane.py"
 				}
 			]
 		},	
@@ -416,7 +416,7 @@
 				},
 				{
 					"Type" : "nap::PythonScriptComponent",
-					"Path": "data/scripts/rotating_plane.py"
+					"Path": "data/rendertest/scripts/rotating_plane.py"
 				}		
 			]
 		},	
@@ -475,7 +475,7 @@
 				},
 				{
 					"Type" : "nap::PythonScriptComponent",
-					"Path": "data/scripts/world.py"
+					"Path": "data/rendertest/scripts/world.py"
 				}			
 			]
 		},
