@@ -49,8 +49,15 @@ int main(int argc, char* argv[])
 		}
 		else
 		{
-			for (const std::string& converted_file : converted_files)
-				Logger::info("\t-> %s", converted_file.c_str());
+			if (converted_files.empty())
+			{
+				Logger::info("\t-> All files up to date");
+			}
+			else
+			{
+				for (const std::string& converted_file : converted_files)
+					Logger::info("\t-> %s", converted_file.c_str());
+			}
 		}
 	}
 

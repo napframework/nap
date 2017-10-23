@@ -119,7 +119,7 @@ namespace nap
 			bool output_exists = getFileModificationTime(output_file, output_mod_time);
 
 			// We want to convert the file if it does not exist, or if the source file is newer than the output file
-			bool should_convert = !output_exists || convertOptions == EFBXConversionOptions::CONVERT_ALWAYS || fbx_mod_time > output_mod_time;
+			bool should_convert = !output_exists || convertOptions == EFBXConversionOptions::CONVERT_ALWAYS || fbx_mod_time > output_mod_time || !rtti::checkBinaryVersion(output_file);
 			if (!should_convert)
 				continue;
 

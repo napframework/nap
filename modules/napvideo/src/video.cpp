@@ -54,7 +54,7 @@ namespace nap
 			return false;
 
 		int error = avformat_open_input(&mFormatContext, mPath.c_str(), nullptr, nullptr);
-		if (!errorState.check(error >= 0, "Error opening file: %s\n", error_to_string(error).c_str()))
+		if (!errorState.check(error >= 0, "Error opening file '%s': %s\n", mPath.c_str(), error_to_string(error).c_str()))
 			return false;
 
 		error = avformat_find_stream_info(mFormatContext, nullptr);
