@@ -10,8 +10,9 @@
 #include <glm/gtx/transform.hpp>
 
 RTTI_BEGIN_CLASS(nap::FirstPersonController)
-	RTTI_PROPERTY("MovementSpeed",	&nap::FirstPersonController::mMovementSpeed,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("RotateSpeed",	&nap::FirstPersonController::mRotateSpeed,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("MovementSpeed",			&nap::FirstPersonController::mMovementSpeed,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("RotateSpeed",			&nap::FirstPersonController::mRotateSpeed,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("PerspCameraComponent",	&nap::FirstPersonController::mPerspCameraComponent,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS 
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::FirstPersonControllerInstance)
@@ -28,6 +29,10 @@ namespace nap
 
 	bool FirstPersonControllerInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
+		PointerInputComponentInstance* pointer_component = getEntityInstance()->findComponent<PointerInputComponentInstance>();
+		if (!errorState.check(pointer_component != nullptr, "Could not find PointerInputComponent"))
+			return false;
+
 		// KeyInputComponent is required to receive input
 		KeyInputComponentInstance* key_component = getEntityInstance()->findComponent<KeyInputComponentInstance>();
 		if (!errorState.check(key_component != nullptr, "Could not find KeyInputComponent"))
@@ -38,6 +43,11 @@ namespace nap
 		if (!errorState.check(mTransformComponent != nullptr, "Could not find transform component"))
 			return false;
 
+		// Connect mouse handlers
+		pointer_component->pressed.connect(std::bind(&FirstPersonControllerInstance::onMouseDown, this, std::placeholders::_1));
+		pointer_component->released.connect(std::bind(&FirstPersonControllerInstance::onMouseUp, this, std::placeholders::_1));
+		pointer_component->moved.connect(std::bind(&FirstPersonControllerInstance::onMouseMove, this, std::placeholders::_1));
+
 		// Connect key handlers
 		key_component->pressed.connect(std::bind(&FirstPersonControllerInstance::onKeyPress, this, std::placeholders::_1));
 		key_component->released.connect(std::bind(&FirstPersonControllerInstance::onKeyRelease, this, std::placeholders::_1));
@@ -46,15 +56,40 @@ namespace nap
 	}
 
 
+	void FirstPersonControllerInstance::enable(const glm::vec3& translate, const glm::quat& rotate)
+	{
+		if (!mEnabled)
+		{
+			mTransformComponent->setTranslate(translate);
+			mTransformComponent->setRotate(rotate);
+			mEnabled = true;
+		}
+	}
+
+
+	void FirstPersonControllerInstance::enable()
+	{
+		mEnabled = true;
+	}
+
+
+	CameraComponentInstance& FirstPersonControllerInstance::getCameraComponent()
+	{
+		return *getComponent<FirstPersonController>()->mPerspCameraComponent;
+	}
+
+
 	void FirstPersonControllerInstance::update(double deltaTime)
 	{
+		if (!mEnabled || !mMoving)
+			return;
+
 		FirstPersonController* resource = getComponent<FirstPersonController>();
 
 		float movement = resource->mMovementSpeed * deltaTime;
-		float rotate = resource->mRotateSpeed * deltaTime;
-		float rotate_rad = rotate;
 
 		glm::vec3 side(1.0, 0.0, 0.0);
+		glm::vec3 up(0.0, 1.0, 0.0);
 		glm::vec3 forward(0.0, 0.0, 1.0);
 
 		glm::vec3 dir_forward = glm::rotate(mTransformComponent->getRotate(), forward);
@@ -62,6 +97,8 @@ namespace nap
 
 		glm::vec3 dir_sideways = glm::rotate(mTransformComponent->getRotate(), side);
 		glm::vec3 movement_sideways = dir_sideways * movement;
+
+		glm::vec3 movement_up = up * movement;
 
 		if (mMoveForward)
 		{
@@ -79,30 +116,49 @@ namespace nap
 		{
 			mTransformComponent->setTranslate(mTransformComponent->getTranslate() + movement_sideways);
 		}
-		if (mLookUp)
+		if (mMoveUp)
 		{
-			glm::quat r = mTransformComponent->getRotate();
-			glm::quat nr = glm::rotate(r, rotate_rad, glm::vec3(1.0, 0.0, 0.0));
-			mTransformComponent->setRotate(nr);
+			mTransformComponent->setTranslate(mTransformComponent->getTranslate() + movement_up);
 		}
-		if (mLookDown)
+		if (mMoveDown)
 		{
-			glm::quat r = mTransformComponent->getRotate();
-			glm::quat nr = glm::rotate(r, -1.0f * rotate_rad, glm::vec3(1.0, 0.0, 0.0));
-			mTransformComponent->setRotate(nr);
+			mTransformComponent->setTranslate(mTransformComponent->getTranslate() - movement_up);
 		}
-		if (mLookRight)
-		{
-			glm::quat r = mTransformComponent->getRotate();
-			glm::quat nr = glm::rotate(r, -1.0f*rotate_rad, glm::vec3(0.0, 1.0, 0.0));
-			mTransformComponent->setRotate(nr);
-		}
-		if (mLookLeft)
-		{
-			glm::quat r = mTransformComponent->getRotate();
-			glm::quat nr = glm::rotate(r, rotate_rad, glm::vec3(0.0, 1.0, 0.0));
-			mTransformComponent->setRotate(nr);
-		}
+	}
+
+
+	void FirstPersonControllerInstance::onMouseDown(const PointerPressEvent& pointerPressEvent)
+	{
+		if (!mEnabled)
+			return;
+
+		// Enable movement when lmb is pressed
+		if (pointerPressEvent.mButton == EMouseButton::LEFT)
+			mMoving = true;
+	}
+	
+
+	void FirstPersonControllerInstance::onMouseUp(const PointerReleaseEvent& pointerReleaseEvent)
+	{
+		if (pointerReleaseEvent.mButton == EMouseButton::LEFT)
+			mMoving = false;
+	}
+
+
+	void FirstPersonControllerInstance::onMouseMove(const PointerMoveEvent& pointerMoveEvent)
+	{
+		if (!mMoving)
+			return; 
+
+		float yaw = -(pointerMoveEvent.mRelX  * getComponent<FirstPersonController>()->mRotateSpeed);
+		float pitch = -(pointerMoveEvent.mRelY * getComponent<FirstPersonController>()->mRotateSpeed);
+
+		glm::mat4 yaw_rotation = glm::rotate(yaw, glm::vec3(0.0f, 1.0f, 0.0f));
+
+		glm::vec4 right = mTransformComponent->getLocalTransform()[0];
+		glm::mat4 pitch_rotation = glm::rotate(pitch, glm::vec3(right.x, right.y, right.z));
+
+		mTransformComponent->setRotate(yaw_rotation * pitch_rotation * glm::toMat4(mTransformComponent->getRotate()));
 	}
 
 
@@ -130,24 +186,14 @@ namespace nap
 				mMoveRight = true;
 				break;
 			}
-			case EKeyCode::KEY_UP:
+			case EKeyCode::KEY_q:
 			{
-				mLookUp = true;
+				mMoveDown = true;
 				break;
 			}
-			case EKeyCode::KEY_DOWN:
+			case EKeyCode::KEY_e:
 			{
-				mLookDown = true;
-				break;
-			}
-			case EKeyCode::KEY_LEFT:
-			{
-				mLookLeft = true;
-				break;
-			}
-			case EKeyCode::KEY_RIGHT:
-			{
-				mLookRight = true;
+				mMoveUp = true;
 				break;
 			}
 		}
@@ -178,24 +224,14 @@ namespace nap
 				mMoveRight = false;
 				break;
 			}
-			case EKeyCode::KEY_UP:
+			case EKeyCode::KEY_q:
 			{
-				mLookUp = false;
+				mMoveDown = false;
 				break;
 			}
-			case EKeyCode::KEY_DOWN:
+			case EKeyCode::KEY_e:
 			{
-				mLookDown = false;
-				break;
-			}
-			case EKeyCode::KEY_LEFT:
-			{
-				mLookLeft = false;
-				break;
-			}
-			case EKeyCode::KEY_RIGHT:
-			{
-				mLookRight = false;
+				mMoveUp = false;
 				break;
 			}
 		}
