@@ -135,10 +135,6 @@ namespace nap
 			// Get compound and clear target we want to render to
 			LaserCompound* matching_compound = mLaserCompoundMap[it.first];
 
-			// Sort objects to render
-			//std::vector<nap::RenderableComponentInstance*> sorted_objects;
-			renderer.sortObjects(components_to_render, camera);
-
 			// Clear target
 			renderer.clearRenderTarget(matching_compound->mTarget->getTarget());
 			

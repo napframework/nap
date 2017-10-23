@@ -33,6 +33,8 @@ namespace nap
 		RTTI_ENABLE(Service)
 
 	public:
+		using SortFunction = std::function<void(std::vector<RenderableComponentInstance*>&, const CameraComponentInstance&)>;
+
 		/**
 		 * Holds current render state 
 		 */
@@ -52,15 +54,26 @@ namespace nap
 
 		/**
 		 * Renders all available RenderableComponents in the scene to a specific renderTarget.
-		 * Note that this call sorts the objects
+		 * The objects to render are sorted using the default sort function (front-to-back for opaque objects, back-to-front for transparent objects).
+		 *
 		 * @param renderTarget the target to render to
 		 * @param camera the camera used for rendering all the available components
 		 */
 		void renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera);
 
 		/**
-		 * Renders a specific set of objects to a specific renderTarget. Note that this call does not 
-		 * sort the objects, it's up to the user to provide the right rendering order
+		* Renders all available RenderableComponents in the scene to a specific renderTarget.
+		*
+		* @param renderTarget the target to render to
+		* @param camera the camera used for rendering all the available components
+		* @param sortFunction The function used to sort the components to render
+		*/
+		void renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera, const SortFunction& sortFunction);
+
+		/**
+		 * Renders a specific set of objects to a specific renderTarget.
+		 * The objects to render are sorted using the default sort function (front-to-back for opaque objects, back-to-front for transparent objects)
+		 *
 		 * @param renderTarget the target to render to
 		 * @param camera the camera used for rendering all the available components
 		 * @param comps the components to render to @renderTarget
@@ -68,14 +81,14 @@ namespace nap
 		void renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps);
 
 		/**
-		 * Sorts a set of renderable components based on distance to the camera, ie: depth
-		 * Note that when the object is of a type mesh it will use the material to sort based on opacity
-		 * If the renderable object is not a mesh the sorting will occur back to front regardless of it's type as we don't
-		 * know the way the object is rendered to screen
-		 * @param comps the renderable components to sort
-		 * @param camera the camera used for sorting based on distance
-		 */
-		void sortObjects(std::vector<RenderableComponentInstance*>& comps, const CameraComponentInstance& camera);
+		* Renders a specific set of objects to a specific renderTarget.
+		*
+		* @param renderTarget the target to render to
+		* @param camera the camera used for rendering all the available components
+		* @param comps the components to render to @renderTarget
+		* @param sortFunction The function used to sort the components to render
+		*/
+		void renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction);
 
 		/**
 		* Clears the renderTarget using @flags.
@@ -202,6 +215,16 @@ namespace nap
 		* Updates the current context's render state by using the latest render state as set by the user.
 		*/
 		void updateRenderState();
+
+		/**
+		* Sorts a set of renderable components based on distance to the camera, ie: depth
+		* Note that when the object is of a type mesh it will use the material to sort based on opacity
+		* If the renderable object is not a mesh the sorting will occur front-to-back regardless of it's type as we don't
+		* know the way the object is rendered to screen
+		* @param comps the renderable components to sort
+		* @param camera the camera used for sorting based on distance
+		*/
+		void sortObjects(std::vector<RenderableComponentInstance*>& comps, const CameraComponentInstance& camera);
 
 		/**
 		* Helper struct to refcount opengl VAOs.

@@ -111,17 +111,21 @@ namespace nap
 	// Render all objects in scene graph using specified camera
 	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera)
 	{
+		renderObjects(renderTarget, camera, std::bind(&RenderService::sortObjects, this, std::placeholders::_1, std::placeholders::_2));
+	}
+
+
+	// Render all objects in scene graph using specified camera
+	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera, const SortFunction& sortFunction)
+	{
 		// Get all render components
- 		std::vector<nap::RenderableComponentInstance*> render_comps;
+		std::vector<nap::RenderableComponentInstance*> render_comps;
 
 		for (EntityInstance* entity : getCore().getService<ResourceManagerService>()->getEntities())
 			entity->getComponentsOfType<nap::RenderableComponentInstance>(render_comps);
 
-		// Sort all objects to be rendered
-		sortObjects(render_comps, camera);
-
 		// Render these objects
-		renderObjects(renderTarget, camera, render_comps);
+		renderObjects(renderTarget, camera, render_comps, sortFunction);
 	}
 
 
@@ -147,7 +151,7 @@ namespace nap
 			}
 			else
 			{
-				back_to_front.emplace_back(component);
+				front_to_back.emplace_back(component);
 			}
 		}
 
@@ -186,6 +190,16 @@ namespace nap
 	// Renders all available objects to a specific renderTarget.
 	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps)
 	{
+		renderObjects(renderTarget, camera, comps, std::bind(&RenderService::sortObjects, this, std::placeholders::_1, std::placeholders::_2));
+	}
+
+
+	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction)
+	{
+		// Sort objects to render
+		std::vector<RenderableComponentInstance*> components_to_render = comps;
+		sortFunction(components_to_render, camera);
+
 		renderTarget.bind();
 
 		// Before we render, we always set render target size. This avoids overly complex
@@ -202,7 +216,7 @@ namespace nap
 		glm::mat4x4 view_matrix = camera.getViewMatrix();
 
 		// Draw
-		for (auto& comp : comps)
+		for (auto& comp : components_to_render)
 			comp->draw(view_matrix, projection_matrix);
 
 		renderTarget.unbind();
