@@ -8,8 +8,10 @@
 #include "componentptr.h"
 #include "fileutils.h"
 #include "logger.h"
+#include "core.h"
 
-RTTI_BEGIN_CLASS(nap::ResourceManagerService)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ResourceManagerService)
+	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_FUNCTION("findEntity", &nap::ResourceManagerService::findEntity)
 	RTTI_FUNCTION("findObject", (const nap::ObjectPtr<nap::rtti::RTTIObject> (nap::ResourceManagerService::*)(const std::string&))&nap::ResourceManagerService::findObject)
 RTTI_END_CLASS
@@ -332,22 +334,19 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 
-	ResourceManagerService::ResourceManagerService() :
-		mDirectoryWatcher(std::make_unique<DirectoryWatcher>())
-	{ 
-	}
-
-
-	void ResourceManagerService::initialized()
+	ResourceManagerService::ResourceManagerService(nap::Core& core) :
+		mDirectoryWatcher(std::make_unique<DirectoryWatcher>()),
+		mFactory(std::make_unique<Factory>()),
+		mCore(core)
 	{
-		mLastTimeStamp = getCore().getElapsedTime();
-		mRootEntity = std::make_unique<EntityInstance>(getCore(), nullptr);
+		mLastTimeStamp = mCore.getElapsedTime();
+		mRootEntity = std::make_unique<EntityInstance>(mCore, nullptr);
 	}
 
 
 	void ResourceManagerService::update()
 	{
-		double new_time   = getCore().getElapsedTime();
+		double new_time   = mCore.getElapsedTime();
 		double delta_time = new_time - mLastTimeStamp;
 		mLastTimeStamp = new_time;
 		getRootEntity().update(delta_time);
@@ -651,7 +650,7 @@ namespace nap
 		// Create all entity instances and component instances
 		for (const nap::Entity* entity_resource : entityResources)
 		{
-			EntityInstance* entity_instance = new EntityInstance(getCore(), entity_resource);
+			EntityInstance* entity_instance = new EntityInstance(mCore, entity_resource);
 			entity_instance->mID = generateInstanceID(getInstanceID(entity_resource->mID), entityCreationParams);
 
 			entityCreationParams.mEntitiesByID.emplace(std::make_pair(entity_instance->mID, std::unique_ptr<EntityInstance>(entity_instance)));
@@ -965,7 +964,7 @@ namespace nap
 
 	nap::rtti::Factory& ResourceManagerService::getFactory()
 	{
-		return getCore().getFactory();
+		return *mFactory;
 	}
 
 

@@ -29,7 +29,7 @@ bool init(nap::Core& core)
     
 
     // Get resource manager service
-    resourceManagerService = core.getOrCreateService<nap::ResourceManagerService>();
+	resourceManagerService = core.getResourceManager();
     
     
     auto audioService = core.getOrCreateService<nap::audio::AudioService>();

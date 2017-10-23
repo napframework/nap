@@ -10,6 +10,7 @@ using namespace std;
 
 RTTI_BEGIN_CLASS(nap::Core)
 	RTTI_FUNCTION("getOrCreateService", (nap::Service* (nap::Core::*)(const std::string&))&nap::Core::getOrCreateService)
+	RTTI_FUNCTION("getResourceManager", &nap::Core::getResourceManager)
 RTTI_END_CLASS
 
 
@@ -20,13 +21,13 @@ namespace nap
 
 	Creates a default entity as the root
 	**/
-	Core::Core() : mFactory(std::make_unique<rtti::Factory>())
+	Core::Core()
 	{
 		// Initialize timer
 		mTimer.start();
 
 		// Add resource manager service
-		addService(RTTI_OF(ResourceManagerService));
+		mResourceManager = std::make_unique<ResourceManagerService>(*this);
 	}
 	
     
@@ -34,15 +35,8 @@ namespace nap
 	{
 		// In order to ensure a correct order of destruction we want our entities, components, etc. to be deleted before other services are deleted.
 		// Because entities and components are managed and owned by the resource manager we explicitly delete this first.
-		auto type = RTTI_OF(ResourceManagerService);
-		const auto& resourceManagerService = std::find_if(mServices.begin(), mServices.end(), [&type](const auto& service)
-		{
-			return service->get_type().is_derived_from(type.get_raw_type());
-		});
-
 		// Erase it
-		assert(resourceManagerService != mServices.end());
-		mServices.erase(resourceManagerService);
+		mResourceManager = nullptr;
 	}
 	
     
@@ -92,7 +86,7 @@ namespace nap
 		// Add service
 		Service* service = type.create<Service>();
 		service->mCore = this;
-		service->registerObjectCreators(*mFactory);
+		service->registerObjectCreators(mResourceManager->getFactory());
 
 		// Add service
 		mServices.emplace_back(std::unique_ptr<Service>(service));

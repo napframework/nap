@@ -28,6 +28,7 @@ int main(int argc, char *argv[])
 }
 
 
+
 void run(nap::Core& core, std::unique_ptr<nap::AppRunner>& appRunner)
 {
 	// Run function

@@ -2,20 +2,22 @@
 
 // Local Includes
 #include "rtti/rtti.h"
-#include "service.h"
 #include "objectptr.h"
 #include "utility/dllexport.h"
 #include "utility/uniqueptrmapiterator.h"
 #include "directorywatcher.h"
 #include "entity.h"
 #include "component.h"
+#include "configure.h"
 
 // External Includes
 #include <rtti/unresolvedpointer.h>
+#include <rtti/factory.h>
 #include <map>
 
 namespace nap
 {	
+	class Core;
 	class RTTIObjectGraphItem;
 	template<typename ITEM> class ObjectGraph;
 	using RTTIObjectGraph = ObjectGraph<RTTIObjectGraphItem>;
@@ -23,14 +25,14 @@ namespace nap
 	/**
 	 * Manager, owner of all objects, capable of loading and real-time updating of content.
 	 */
-	class NAPAPI ResourceManagerService : public Service
+	class NAPAPI ResourceManagerService
 	{
-		RTTI_ENABLE(Service)
+		RTTI_ENABLE()
 	public:
 		using EntityByIDMap = std::unordered_map<std::string, std::unique_ptr<EntityInstance>>;
 		using EntityIterator = utility::UniquePtrMapWrapper<EntityByIDMap, EntityInstance*>;
 
-		ResourceManagerService();
+		ResourceManagerService(nap::Core& core);
 
 		/**
 		* Helper that calls loadFile without additional modified objects. See loadFile comments for a full description.
@@ -122,11 +124,6 @@ namespace nap
 		EntityIterator getEntities() { return EntityIterator(mEntities); }
 
 		/**
-		* Occurs when the manager has been initialized, creates the root entity
-		*/
-		virtual void initialized();
-
-		/**
 		 * Forwards an update to all entities managed under the root
 		 */
 		virtual void update();
@@ -192,6 +189,8 @@ namespace nap
 		std::unique_ptr<DirectoryWatcher>	mDirectoryWatcher;				// File monitor, detects changes on files
 		double								mLastTimeStamp = 0;				// Last time stamp used for calculating delta time
 		ModifiedTimeMap						mFileModTimes;					// Cache for file modification times to avoid responding to too many file events
+		std::unique_ptr<rtti::Factory>		mFactory;						// Responsible for creating objects when de-serializing
+		Core&								mCore;							// Core
 	};
 
 

@@ -14,6 +14,7 @@
 #include "timer.h"
 #include "modulemanager.h"
 #include "utility/dllexport.h"
+#include "resourcemanager.h"
 
 namespace nap
 {
@@ -96,25 +97,29 @@ namespace nap
 		 */
 		void initialize();
 
+
 		/**
-		* @return object capable of creating objects with custom construction parameters.
-		*/
-		rtti::Factory& getFactory()									{ return *mFactory; }
+		 * @return the resource manager
+		 * The resource manager holds all the entities and components currently loaded by Core
+		 */
+		ResourceManagerService* getResourceManager()				{ return mResourceManager.get(); }
+
 
 	private:
 		// Typedef for a list of services
 		using ServiceList = std::vector<std::unique_ptr<Service>>;
 
-		ModuleManager mModuleManager;						// The module manager
+		// Manages all the loaded modules
+		ModuleManager mModuleManager;
+
+		// Manages all the objects in core
+		std::unique_ptr<ResourceManagerService>	mResourceManager;
 
 		// All the services associated with core
 		ServiceList mServices;
 
 		// Timer
 		SimpleTimer mTimer;
-
-		// Responsible for creating objects when de-serializing
-		std::unique_ptr<rtti::Factory>						mFactory;
 	};
 
 
@@ -140,7 +145,5 @@ namespace nap
 		nap::Service* service = getOrCreateService(RTTI_OF(T));
 		return service == nullptr ? nullptr : static_cast<T*>(service);
 	}
-
-
 }
 

@@ -37,9 +37,7 @@ namespace nap
 
 	void SceneService::update()
 	{
-		nap::ResourceManagerService* resource_manager = getCore().getOrCreateService<nap::ResourceManagerService>();
-		assert(resource_manager != nullptr);
-		updateTransformsRecursive(resource_manager->getRootEntity(), false, glm::mat4(1.0f));
+		updateTransformsRecursive(getCore().getResourceManager()->getRootEntity(), false, glm::mat4(1.0f));
 	}
 }
 

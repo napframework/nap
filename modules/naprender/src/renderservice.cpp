@@ -114,7 +114,7 @@ namespace nap
 		// Get all render components
  		std::vector<nap::RenderableComponentInstance*> render_comps;
 
-		for (EntityInstance* entity : getCore().getService<ResourceManagerService>()->getEntities())
+		for (EntityInstance* entity : getCore().getResourceManager()->getEntities())
 			entity->getComponentsOfType<nap::RenderableComponentInstance>(render_comps);
 
 		// Split into front to back and back to front meshes

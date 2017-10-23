@@ -34,7 +34,7 @@ namespace nap {
 		//////////////////////////////////////////////////////////////////////////
 		
 		// Get resource manager service
-		mResourceManagerService = core.getOrCreateService<ResourceManagerService>();
+		mResourceManagerService = core.getResourceManager();
 		
 		// Create render service
 		mRenderService = core.getOrCreateService<RenderService>();

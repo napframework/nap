@@ -25,8 +25,6 @@ namespace nap
 
 	bool OSCService::init(nap::utility::ErrorState& errorState)
 	{
-		ResourceManagerService* resource_manager = getCore().getService<ResourceManagerService>();
-		assert(resource_manager != nullptr);
 		return true;
 	}
 
