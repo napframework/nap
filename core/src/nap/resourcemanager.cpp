@@ -463,8 +463,10 @@ namespace nap
 	        else
 		        object = findObject(id).get();
 
-	        if (!object->init(errorState))
+			if (!object->init(errorState)) {
+				Logger::warn("Couldn't initialise object '%s'", id.c_str());
 		        return false;
+			}
         }
 
         return true;

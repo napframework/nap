@@ -173,6 +173,12 @@ namespace nap {
 	}
 
 	
+	void AppRunner::registerInputEvent(InputEventPtr inputEvent)
+	{
+		mInputService->addEvent(std::move(inputEvent));
+	}
+
+	
 	void AppRunner::setWindowFullscreen(std::string windowIdentifier, bool fullscreen) 
 	{
 		mResourceManagerService->findObject<nap::RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);

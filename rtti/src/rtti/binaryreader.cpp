@@ -49,12 +49,44 @@ namespace nap
 		{
 			// Determine length of header
 			int len = strlen(gRTTIBinaryVersion);
+			assert(len < 64);
 
 			// Read header from stream
 			char header[64] = { 0 };
 			stream.read(header, len);
 
+			// Check binary version
 			return strcmp(gRTTIBinaryVersion, header) == 0;
+		}
+
+
+		/**
+		 * Helper function to check if the specified stream starts with the RTTI binary version header
+		 */
+		bool readAndCheckTypeVersions(utility::MemoryStream& stream)
+		{
+			// Check type versions
+			size_t num_types = stream.read<size_t>();
+			for (int index = 0; index < num_types; ++index)
+			{
+				// Read typename
+				std::string type_name;
+				stream.readString(type_name);
+
+				// Read saved version
+				size_t version = stream.read<size_t>();
+
+				// Find type; if it's not found, the type has been removed and we can't deserialize this file
+				rtti::TypeInfo type = rtti::TypeInfo::get_by_name(type_name);
+				if (!type.is_valid())
+					return false;
+
+				// Check if version on disk matches current version
+				if (version != getRTTIVersion(type))
+					return false;
+			}
+
+			return true;
 		}
 
 
@@ -280,12 +312,59 @@ namespace nap
 			return true;
 		}
 
+		bool checkBinaryVersion(const std::string& path)
+		{
+			// Open the file
+			std::ifstream file(path, std::ios::in | std::ios::binary);
+			if (!file.good())
+				return false;
+
+			// Read and check binary version
+			{
+				// Determine length of header
+				int len = strlen(gRTTIBinaryVersion);
+				assert(len < 64);
+
+				char header[64] = { 0 };
+				file.read(header, len);
+				if (!file.good())
+					return false;
+
+				utility::MemoryStream header_stream((uint8_t*)header, len);
+				if (!readAndCheckRTTIBinaryVersion(header_stream))
+					return false;
+			}
+
+			// Read and check type version table
+			{
+				size_t version_table_size = 0;
+				file.read((char*)&version_table_size, sizeof(version_table_size));
+
+				std::vector<uint8_t> version_table_data;
+				version_table_data.resize(version_table_size);
+
+				file.read((char*)version_table_data.data(), version_table_data.size());
+				if (!file.good())
+					return false;
+
+				utility::MemoryStream version_table_stream(version_table_data.data(), version_table_data.size());
+				if (!readAndCheckTypeVersions(version_table_stream))
+					return false;
+			}
+
+			return true;
+		}
+
 		bool deserializeBinary(utility::MemoryStream& stream, Factory& factory, RTTIDeserializeResult& result, utility::ErrorState& errorState)
 		{
 			if (!errorState.check(!stream.isDone(), "Can't deserialize from empty stream"))
 				return false;
 
 			if (!errorState.check(readAndCheckRTTIBinaryVersion(stream), "Can't deserialize binary; RTTIBinaryVersion mismatch"))
+				return false;
+			
+			size_t type_version_table_size = stream.read<size_t>();
+			if (!errorState.check(readAndCheckTypeVersions(stream), "Can't deserialize binary; version of a type contained in the binary has changed"))
 				return false;
 
 			// Continue reading while there's data in the stream
@@ -328,20 +407,20 @@ namespace nap
 		bool readBinary(const std::string& path, Factory& factory, RTTIDeserializeResult& result, utility::ErrorState& errorState)
 		{
 			// Open the file
-			std::ifstream in(path, std::ios::in | std::ios::binary);
-			if (!errorState.check(in.good(), "Unable to open file %s", path.c_str()))
+			std::ifstream file(path, std::ios::in | std::ios::binary);
+			if (!errorState.check(file.good(), "Unable to open file %s", path.c_str()))
 				return false;
 
 			// Create buffer of appropriate size
-			in.seekg(0, std::ios::end);
-			size_t len = in.tellg();
+			file.seekg(0, std::ios::end);
+			size_t len = file.tellg();
 			std::vector<uint8_t> buffer;
 			buffer.resize(len);
 
 			// Read all data
-			in.seekg(0, std::ios::beg);
-			in.read((char*)buffer.data(), len);
-			in.close();
+			file.seekg(0, std::ios::beg);
+			file.read((char*)buffer.data(), len);
+			file.close();
 
 			utility::MemoryStream stream(buffer.data(), buffer.size());
 			if (!deserializeBinary(stream, factory, result, errorState))

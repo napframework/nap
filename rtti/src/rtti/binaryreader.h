@@ -26,6 +26,15 @@ namespace nap
 		class Factory;
 
 		/**
+		 * Check whether the binary file at the specified path matches the current binary version (i.e. is up-to-date)
+		 *
+		 * @param file The binary file to check
+		 *
+		 * @return True if the binary versions of the types in the file are up-to-date, false if not.
+		 */
+		bool NAPAPI checkBinaryVersion(const std::string& path);
+
+		/**
 		 * Deserialize a set of objects and their data from the specified stream
 		 *
 		 * @param stream The stream to deserialize from
