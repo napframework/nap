@@ -39,6 +39,10 @@ namespace nap
 		 */
 		virtual void setRenderTargetSize(glm::ivec2 size) { mRenderTargetSize = size; }
 
+
+		/**
+		 * @return RenderTarget size
+		 */
 		glm::ivec2 getRenderTargetSize() const { return mRenderTargetSize; }
 
 	private:
