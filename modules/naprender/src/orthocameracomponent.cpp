@@ -43,7 +43,6 @@ namespace nap
 	}
 
 
-	// Set camera aspect ratio derived from width and height
 	void OrthoCameraComponentInstance::setRenderTargetSize(glm::ivec2 size)
 	{
 		if (size != getRenderTargetSize())
@@ -53,11 +52,13 @@ namespace nap
 		}
 	}
 
+
 	void OrthoCameraComponentInstance::setProperties(const OrthoCameraProperties& properties)
 	{
 		mProperties = properties;
 		setDirty();
 	}
+
 
 	void OrthoCameraComponentInstance::setMode(EMode mode)
 	{
@@ -68,6 +69,7 @@ namespace nap
 		}
 	}
 
+
 	// Computes projection matrix if dirty, otherwise returns the
 	// cached version
 	const glm::mat4& OrthoCameraComponentInstance::getProjectionMatrix() const
@@ -76,11 +78,13 @@ namespace nap
 		{
 			if (mMode == EMode::PixelSpace)
 			{
+				// In this mode we use the rendertarget size to set the left/right/top/bottom planes.
 				glm::ivec2 render_target_size = getRenderTargetSize();
 				mProjectionMatrix = glm::ortho(0.0f, (float)render_target_size.x, (float)render_target_size.y, 0.0f, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
 			}
 			else if (mMode == EMode::CorrectAspectRatio)
 			{
+				// In this mode, we scale the top and bottom planes based on the aspect ratio
 				glm::ivec2 renderTargetSize = getRenderTargetSize();
 				float aspect_ratio = (float)renderTargetSize.y / (float)renderTargetSize.x;
 				float top_plane = mProperties.mTopPlane * aspect_ratio;
