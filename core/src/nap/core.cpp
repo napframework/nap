@@ -27,7 +27,7 @@ namespace nap
 		mTimer.start();
 
 		// Add resource manager service
-		mResourceManager = std::make_unique<ResourceManagerService>(*this);
+		mResourceManager = std::make_unique<ResourceManager>(*this);
 	}
 	
     

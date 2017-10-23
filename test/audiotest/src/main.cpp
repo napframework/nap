@@ -13,7 +13,7 @@
 #include <audiodevice.h>
 #include <audiotypes.h>
 
-nap::ResourceManagerService* resourceManagerService = nullptr;
+nap::ResourceManager* resourceManagerService = nullptr;
 
 
 /**

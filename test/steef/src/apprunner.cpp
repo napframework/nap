@@ -26,7 +26,7 @@ namespace nap {
 		//////////////////////////////////////////////////////////////////////////
 		
 		// Get resource manager service
-		mResourceManagerService = core.getResourceManager();
+		mResourceManager = core.getResourceManager();
 		
 		// Create render service
 		mRenderService = core.getOrCreateService<nap::RenderService>();
@@ -49,7 +49,7 @@ namespace nap {
 		//////////////////////////////////////////////////////////////////////////
 		
 		nap::utility::ErrorState errorState;
-		if (!mResourceManagerService->loadFile("data/steef/objects.json", errorState))
+		if (!mResourceManager->loadFile("data/steef/objects.json", errorState))
 		{
 			nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
 			
@@ -60,21 +60,21 @@ namespace nap {
         glFlush();
 		
 		// Extract loaded resources
-		mRenderWindow = mResourceManagerService->findObject<nap::RenderWindow>("Viewport");
+		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Viewport");
 		mRenderWindow->onWindowEvent.connect(std::bind(&AppRunner::handleWindowEvent, this, std::placeholders::_1));
 		
 		// Get vintl textures
-		mVinylLabelImg = mResourceManagerService->findObject<nap::Image>("LabelImage");
-		mVinylCoverImg = mResourceManagerService->findObject<nap::Image>("CoverImage");
+		mVinylLabelImg = mResourceManager->findObject<nap::Image>("LabelImage");
+		mVinylCoverImg = mResourceManager->findObject<nap::Image>("CoverImage");
 		
 		// Get entity that holds vinyl
-		mModelEntity = mResourceManagerService->findEntity("ModelEntity");
+		mModelEntity = mResourceManager->findEntity("ModelEntity");
 		
 		// Get entity that holds the background image
-		mBackgroundEntity = mResourceManagerService->findEntity("BackgroundEntity");
+		mBackgroundEntity = mResourceManager->findEntity("BackgroundEntity");
 		
 		// Get entity that holds the camera
-		mCameraEntity = mResourceManagerService->findEntity("CameraEntity");
+		mCameraEntity = mResourceManager->findEntity("CameraEntity");
 		
 		// Set render states
 		nap::RenderState& render_state = mRenderService->getRenderState();
@@ -100,10 +100,10 @@ namespace nap {
 		mRenderService->getPrimaryWindow().makeCurrent();
 		
 		// Reload all files if data changed
-		mResourceManagerService->checkForFileChanges();
+		mResourceManager->checkForFileChanges();
 		
 		// Tick for all components that are listening
-		mResourceManagerService->update();
+		mResourceManager->update();
 		
 		// Update the scene
 		mSceneService->update();
@@ -181,7 +181,7 @@ namespace nap {
 	
 	void AppRunner::setWindowFullscreen(std::string windowIdentifier, bool fullscreen) 
 	{
-		mResourceManagerService->findObject<nap::RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
+		mResourceManager->findObject<nap::RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
 	}
 
 	

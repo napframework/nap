@@ -34,7 +34,7 @@ namespace nap {
 		//////////////////////////////////////////////////////////////////////////
 		
 		// Get resource manager service
-		mResourceManagerService = core.getResourceManager();
+		mResourceManager = core.getResourceManager();
 		
 		// Create render service
 		mRenderService = core.getOrCreateService<RenderService>();
@@ -61,19 +61,19 @@ namespace nap {
 		//////////////////////////////////////////////////////////////////////////
 		
 		utility::ErrorState errorState;
-		if (!mResourceManagerService->loadFile("data/tommy/tommy.json", errorState))
+		if (!mResourceManager->loadFile("data/tommy/tommy.json", errorState))
 		{
 			Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
 			return false;
 		}
 		
 		
-		mUiInputRouter = mResourceManagerService->findEntity("UIInputRouterEntity");
-		mRenderWindows.push_back(mResourceManagerService->findObject<RenderWindow>("Window"));
+		mUiInputRouter = mResourceManager->findEntity("UIInputRouterEntity");
+		mRenderWindows.push_back(mResourceManager->findObject<RenderWindow>("Window"));
 
 		// Bind button clicks
-		ObjectPtr<EntityInstance> buttonRightEntity = mResourceManagerService->findEntity("ButtonRightEntity");
-		ObjectPtr<EntityInstance> buttonLeftEntity = mResourceManagerService->findEntity("ButtonLeftEntity");
+		ObjectPtr<EntityInstance> buttonRightEntity = mResourceManager->findEntity("ButtonRightEntity");
+		ObjectPtr<EntityInstance> buttonLeftEntity = mResourceManager->findEntity("ButtonLeftEntity");
 		buttonRightEntity->getComponent<PointerInputComponentInstance>().pressed.connect(std::bind(&AppRunner::rightButtonClicked, this, std::placeholders::_1));
 		buttonLeftEntity->getComponent<PointerInputComponentInstance>().pressed.connect(std::bind(&AppRunner::leftButtonClicked, this, std::placeholders::_1));
 		
@@ -112,23 +112,23 @@ namespace nap {
 	{
 		// If any changes are detected, and we are reloading, we need to do this on the correct context
 		mRenderService->getPrimaryWindow().makeCurrent();
-		mResourceManagerService->checkForFileChanges();
+		mResourceManager->checkForFileChanges();
 		
 		if (mCameraEntity == nullptr)
 		{
-			mCameraEntity = mResourceManagerService->findEntity("CameraEntity");
+			mCameraEntity = mResourceManager->findEntity("CameraEntity");
 		}
 		
 		if (mSlideShowEntity == nullptr)
-			mSlideShowEntity = mResourceManagerService->findEntity("SlideShowEntity");
+			mSlideShowEntity = mResourceManager->findEntity("SlideShowEntity");
 		
 		if (mRootLayoutEntity == nullptr)
-			mRootLayoutEntity = mResourceManagerService->findEntity("RootEntity");
+			mRootLayoutEntity = mResourceManager->findEntity("RootEntity");
 		
 		if (mCameraEntity != nullptr)
 		{
 			std::vector<EntityInstance*> entities;
-			entities.push_back(&mResourceManagerService->getRootEntity());
+			entities.push_back(&mResourceManager->getRootEntity());
 			
 			UIInputRouter& router = mUiInputRouter->getComponent<UIInputRouterComponentInstance>().mInputRouter;
 			mInputService->processEvents(*mRenderWindows[0], router, entities);
@@ -146,7 +146,7 @@ namespace nap {
 			delta_time = 0.0001f;
 		}
 		
-		mResourceManagerService->getRootEntity().update(delta_time);
+		mResourceManager->getRootEntity().update(delta_time);
 		
 		if (mRootLayoutEntity != nullptr)
 		{
@@ -218,7 +218,7 @@ namespace nap {
 	
 	void AppRunner::setWindowFullscreen(std::string windowIdentifier, bool fullscreen) 
 	{
-		mResourceManagerService->findObject<RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
+		mResourceManager->findObject<RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
 	}
 
 	

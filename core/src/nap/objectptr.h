@@ -113,7 +113,7 @@ namespace nap
 		}
 	private:
 		template<class T> friend class ObjectPtr;
-		friend class ResourceManagerService;
+		friend class ResourceManager;
 
 		rtti::RTTIObject* mPtr = nullptr;
 	};

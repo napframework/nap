@@ -29,7 +29,7 @@ namespace nap {
 		//////////////////////////////////////////////////////////////////////////
 		
 		// Get resource manager service
-		mResourceManagerService = core.getResourceManager();
+		mResourceManager = core.getResourceManager();
 		
 		// Create render service
 		mRenderService = core.getOrCreateService<RenderService>();
@@ -68,7 +68,7 @@ namespace nap {
 		}
 		
 		// Load scene
-		if (!mResourceManagerService->loadFile("data/etherdream/etherdream.json", errorState))
+		if (!mResourceManager->loadFile("data/etherdream/etherdream.json", errorState))
 		{
 			Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
 			return false;
@@ -77,13 +77,13 @@ namespace nap {
 		glFlush();
 		
 		// Store all render windows
-		mRenderWindow = mResourceManagerService->findObject<RenderWindow>("Window");
+		mRenderWindow = mResourceManager->findObject<RenderWindow>("Window");
 		
 		// Store laser dacs
-		mLaserPrototype = mResourceManagerService->findEntity("LaserPrototypeEntity");
+		mLaserPrototype = mResourceManager->findEntity("LaserPrototypeEntity");
 		
 		// Store normals mesh
-		mNormalsMesh = mResourceManagerService->template findObject<VisualizeNormalsMesh>("NormalsMesh");
+		mNormalsMesh = mResourceManager->template findObject<VisualizeNormalsMesh>("NormalsMesh");
 		
 		// Set render states
 		RenderState& render_state = mRenderService->getRenderState();
@@ -100,7 +100,7 @@ namespace nap {
 	{
 		// If any changes are detected, and we are reloading, we need to do this on the correct context
 		mRenderService->getPrimaryWindow().makeCurrent();
-		mResourceManagerService->checkForFileChanges();
+		mResourceManager->checkForFileChanges();
 		
 		// Process events for all windows
 		mRenderService->processEvents();
@@ -112,7 +112,7 @@ namespace nap {
 		mSceneService->update();
 		
 		// Update all resources
-		mResourceManagerService->update();
+		mResourceManager->update();
 		
 		utility::ErrorState error;
 		mNormalsMesh->updateNormals(error, true);
@@ -173,7 +173,7 @@ namespace nap {
 	
 	void AppRunner::setWindowFullscreen(std::string windowIdentifier, bool fullscreen) 
 	{
-		mResourceManagerService->findObject<RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
+		mResourceManager->findObject<RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
 	}
 
 	

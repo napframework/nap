@@ -26,7 +26,7 @@ namespace nap {
 		//////////////////////////////////////////////////////////////////////////
 		
 		// Get resource manager service
-		mResourceManagerService = core.getResourceManager();
+		mResourceManager = core.getResourceManager();
 		
 		// Create render service
 		mRenderService = core.getOrCreateService<RenderService>();
@@ -60,7 +60,7 @@ namespace nap {
 		//////////////////////////////////////////////////////////////////////////
 		
 		// Load scene
-		if (!mResourceManagerService->loadFile("data/artnet/artnet.json", errorState))
+		if (!mResourceManager->loadFile("data/artnet/artnet.json", errorState))
 		{
 			Logger::fatal("Unable to de-serialize resources: \n %s", errorState.toString().c_str());
 			return false;
@@ -69,11 +69,11 @@ namespace nap {
 		glFlush();
 		
 		// Get important entities
-		mCameraEntity = mResourceManagerService->findEntity("CameraEntity");
+		mCameraEntity = mResourceManager->findEntity("CameraEntity");
 		assert(mCameraEntity != nullptr);
 		
 		// Store all render windows
-		mRenderWindows.push_back(mResourceManagerService->findObject<RenderWindow>("Window"));
+		mRenderWindows.push_back(mResourceManager->findObject<RenderWindow>("Window"));
 		
 		// Set render states
 		RenderState& render_state = mRenderService->getRenderState();
@@ -90,13 +90,13 @@ namespace nap {
 	{
 		// If any changes are detected, and we are reloading, we need to do this on the correct context
 		mRenderService->getPrimaryWindow().makeCurrent();
-		mResourceManagerService->checkForFileChanges();
+		mResourceManager->checkForFileChanges();
 		
 		// Process events for all windows
 		mRenderService->processEvents();
 		
 		// Update all resources
-		mResourceManagerService->update();
+		mResourceManager->update();
 		
 		// Update and send our test data over ArtNET
 		float sine = sin(mRenderService->getCore().getElapsedTime() * (M_PI * 2));
@@ -110,10 +110,10 @@ namespace nap {
 			channel_data[index] = std::min((float)index / (float)channel_data.size() + offset, 1.0f);
 		}
 		
-		ObjectPtr<ArtNetController> universe_0 = mResourceManagerService->findObject("Universe0");
+		ObjectPtr<ArtNetController> universe_0 = mResourceManager->findObject("Universe0");
 		universe_0->send(channel_data);
 		
-		ObjectPtr<ArtNetController> universe_1 = mResourceManagerService->findObject("Universe1");
+		ObjectPtr<ArtNetController> universe_1 = mResourceManager->findObject("Universe1");
 		std::reverse(channel_data.begin(), channel_data.end());
 		universe_1->send(channel_data);
 		
@@ -160,7 +160,7 @@ namespace nap {
 	
 	void AppRunner::setWindowFullscreen(std::string windowIdentifier, bool fullscreen) 
 	{
-		mResourceManagerService->findObject<RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
+		mResourceManager->findObject<RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
 	}
 
 	

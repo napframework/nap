@@ -70,7 +70,7 @@ namespace nap
 		
 		// Nap Services
 		RenderService* mRenderService = nullptr;					//< Render Service that handles render calls
-		ResourceManagerService* mResourceManagerService = nullptr;	//< Manages all the loaded resources
+		ResourceManager* mResourceManager = nullptr;			//< Manages all the loaded resources
 		SceneService* mSceneService = nullptr;						//< Manages all the objects in the scene
 		InputService* mInputService = nullptr;						//< Input service for processing input
 		

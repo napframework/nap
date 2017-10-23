@@ -25,14 +25,14 @@ namespace nap
 	/**
 	 * Manager, owner of all objects, capable of loading and real-time updating of content.
 	 */
-	class NAPAPI ResourceManagerService
+	class NAPAPI ResourceManager
 	{
 		RTTI_ENABLE()
 	public:
 		using EntityByIDMap = std::unordered_map<std::string, std::unique_ptr<EntityInstance>>;
 		using EntityIterator = utility::UniquePtrMapWrapper<EntityByIDMap, EntityInstance*>;
 
-		ResourceManagerService(nap::Core& core);
+		ResourceManager(nap::Core& core);
 
 		/**
 		* Helper that calls loadFile without additional modified objects. See loadFile comments for a full description.
@@ -169,13 +169,13 @@ namespace nap
 		struct RollbackHelper
 		{
 		public:
-			RollbackHelper(ResourceManagerService& service);
+			RollbackHelper(ResourceManager& service);
 			~RollbackHelper();
 
 			void clear();
 
 		private:
-			ResourceManagerService& mService;
+			ResourceManager& mService;
 			bool mPatchObjects = true;
 		};
 
@@ -195,7 +195,7 @@ namespace nap
 
 
 	template<class OBJECTSBYIDMAP>
-	void ResourceManagerService::patchObjectPtrs(OBJECTSBYIDMAP& newTargetObjects)
+	void ResourceManager::patchObjectPtrs(OBJECTSBYIDMAP& newTargetObjects)
 	{
 		ObjectPtrManager::ObjectPtrSet& object_ptrs = ObjectPtrManager::get().GetObjectPointers();
 

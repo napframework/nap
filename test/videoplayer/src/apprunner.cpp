@@ -27,7 +27,7 @@ namespace nap {
 		//////////////////////////////////////////////////////////////////////////
 		
 		// Get resource manager service
-		mResourceManagerService = core.getResourceManager();
+		mResourceManager = core.getResourceManager();
 		
 		// Create render service
 		mRenderService = core.getOrCreateService<RenderService>();
@@ -50,24 +50,24 @@ namespace nap {
 			return false;
 		}
 		
-		if (!mResourceManagerService->loadFile("data/videoplayer/videoplayer.json", errorState))
+		if (!mResourceManager->loadFile("data/videoplayer/videoplayer.json", errorState))
 		{
 			Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
 			return false;
 		}
 		
 		// Get important entities
-		mCameraEntity = mResourceManagerService->findEntity("CameraEntity");
+		mCameraEntity = mResourceManager->findEntity("CameraEntity");
 		assert(mCameraEntity != nullptr);
 		
-		mVideoEntity = mResourceManagerService->findEntity("VideoEntity");
+		mVideoEntity = mResourceManager->findEntity("VideoEntity");
 		assert(mVideoEntity != nullptr);
 		
 		// Store all render windows
-		mRenderWindows.push_back(mResourceManagerService->template findObject<RenderWindow>("Window"));
+		mRenderWindows.push_back(mResourceManager->template findObject<RenderWindow>("Window"));
 		
 		// Collect all video resources and play
-		mVideoResources.push_back(mResourceManagerService->findObject<Video>("Video1"));
+		mVideoResources.push_back(mResourceManager->findObject<Video>("Video1"));
 		for (auto& videoResource : mVideoResources)
 		{
 			videoResource->mLoop = true;
@@ -89,13 +89,13 @@ namespace nap {
 	{
 		// If any changes are detected, and we are reloading, we need to do this on the correct context
 		mRenderService->getPrimaryWindow().makeCurrent();
-		mResourceManagerService->checkForFileChanges();
+		mResourceManager->checkForFileChanges();
 		
 		// Process events for all windows
 		mRenderService->processEvents();
 		
 		// Update all resources
-		mResourceManagerService->update();
+		mResourceManager->update();
 		
 		// Update model transform
 		float elapsed_time = mRenderService->getCore().getElapsedTime();
@@ -190,7 +190,7 @@ namespace nap {
 	
 	void AppRunner::setWindowFullscreen(std::string windowIdentifier, bool fullscreen) 
 	{
-		mResourceManagerService->findObject<RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
+		mResourceManager->findObject<RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
 	}
 
 	

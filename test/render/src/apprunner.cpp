@@ -26,7 +26,7 @@ namespace nap {
 		//////////////////////////////////////////////////////////////////////////
 		
 		// Get resource manager service
-		mResourceManagerService = core.getResourceManager();
+		mResourceManager = core.getResourceManager();
 		
 		// Create render service
 		mRenderService = core.getOrCreateService<RenderService>();
@@ -57,25 +57,25 @@ namespace nap {
 		
 		utility::ErrorState errorState;
 		
-		if (!mResourceManagerService->loadFile("data/rendertest/objects.json", errorState))
+		if (!mResourceManager->loadFile("data/rendertest/objects.json", errorState))
 		{
 			Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
 			return false;
 		}
 		
-		mRenderWindows.push_back(mResourceManagerService->findObject<RenderWindow>("Window0"));
-		mRenderWindows.push_back(mResourceManagerService->findObject<RenderWindow>("Window1"));
+		mRenderWindows.push_back(mResourceManager->findObject<RenderWindow>("Window0"));
+		mRenderWindows.push_back(mResourceManager->findObject<RenderWindow>("Window1"));
 		
-		mTextureRenderTarget		= mResourceManagerService->findObject<RenderTarget>("PlaneRenderTarget");
+		mTextureRenderTarget		= mResourceManager->findObject<RenderTarget>("PlaneRenderTarget");
 		
-		mPigEntity					= mResourceManagerService->findEntity("PigEntity");
-		mRotatingPlaneEntity		= mResourceManagerService->findEntity("RotatingPlaneEntity");
-		mPlaneEntity				= mResourceManagerService->findEntity("PlaneEntity");
-		mWorldEntity				= mResourceManagerService->findEntity("WorldEntity");
-		mCameraEntityLeft			= mResourceManagerService->findEntity("CameraEntityLeft");
-		mCameraEntityRight			= mResourceManagerService->findEntity("CameraEntityRight");
-		mSplitCameraEntity			= mResourceManagerService->findEntity("SplitCameraEntity");
-		mDefaultInputRouter			= mResourceManagerService->findEntity("DefaultInputRouterEntity");
+		mPigEntity					= mResourceManager->findEntity("PigEntity");
+		mRotatingPlaneEntity		= mResourceManager->findEntity("RotatingPlaneEntity");
+		mPlaneEntity				= mResourceManager->findEntity("PlaneEntity");
+		mWorldEntity				= mResourceManager->findEntity("WorldEntity");
+		mCameraEntityLeft			= mResourceManager->findEntity("CameraEntityLeft");
+		mCameraEntityRight			= mResourceManager->findEntity("CameraEntityRight");
+		mSplitCameraEntity			= mResourceManager->findEntity("SplitCameraEntity");
+		mDefaultInputRouter			= mResourceManager->findEntity("DefaultInputRouterEntity");
 		
 		// Set render states
 		nap::RenderState& render_state = mRenderService->getRenderState();
@@ -115,7 +115,7 @@ namespace nap {
 		
 		// Need to make primary window active before reloading files, as renderer resources need to be created in that context
 		mRenderService->getPrimaryWindow().makeCurrent();
-		mResourceManagerService->checkForFileChanges();
+		mResourceManager->checkForFileChanges();
 		
 		// Update model transform
 		float elapsed_time = mRenderService->getCore().getElapsedTime();
@@ -126,7 +126,7 @@ namespace nap {
 			delta_time = 0.01f;
 		}
 		
-		mResourceManagerService->getRootEntity().update(delta_time);
+		mResourceManager->getRootEntity().update(delta_time);
 		
 		// Retrieve source (resource) mesh data
 		nap::IMesh& mesh = mPlaneEntity->getComponent<RenderableMeshComponentInstance>().getMesh();
@@ -261,7 +261,7 @@ namespace nap {
 	
 	void AppRunner::setWindowFullscreen(std::string windowIdentifier, bool fullscreen) 
 	{
-		mResourceManagerService->findObject<RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
+		mResourceManager->findObject<RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
 	}
 
 	

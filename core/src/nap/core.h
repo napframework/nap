@@ -102,7 +102,7 @@ namespace nap
 		 * @return the resource manager
 		 * The resource manager holds all the entities and components currently loaded by Core
 		 */
-		ResourceManagerService* getResourceManager()				{ return mResourceManager.get(); }
+		ResourceManager* getResourceManager()				{ return mResourceManager.get(); }
 
 
 	private:
@@ -113,7 +113,7 @@ namespace nap
 		ModuleManager mModuleManager;
 
 		// Manages all the objects in core
-		std::unique_ptr<ResourceManagerService>	mResourceManager;
+		std::unique_ptr<ResourceManager>	mResourceManager;
 
 		// All the services associated with core
 		ServiceList mServices;
