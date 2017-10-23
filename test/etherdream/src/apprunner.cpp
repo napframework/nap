@@ -2,7 +2,7 @@
 
 // Local includes
 #include "lineselectioncomponent.h"
-#include "lasercontroller.h"
+#include "lasercontrolcomponent.h"
 
 // Nap includes
 #include <nap/core.h>
@@ -31,52 +31,53 @@ namespace nap
 		//////////////////////////////////////////////////////////////////////////
 
 		// Get resource manager service
-		mResourceManagerService = core.getOrCreateService<nap::ResourceManagerService>();
+		mResourceManagerService = core.getOrCreateService<ResourceManagerService>();
 
 		// Create render service
-		mRenderService = core.getOrCreateService<nap::RenderService>();
+		mRenderService = core.getOrCreateService<RenderService>();
 
-		nap::utility::ErrorState error;
+		utility::ErrorState error;
 		if (!mRenderService->init(error))
 		{
-			nap::Logger::fatal(error.toString());
+			Logger::fatal(error.toString());
 			return false;
 		}
 
 		// Collects all the errors
-		nap::utility::ErrorState errorState;
+		utility::ErrorState errorState;
 
 		// Create input service
-		mInputService = core.getOrCreateService<nap::InputService>();
+		mInputService = core.getOrCreateService<InputService>();
 
 		// Create scene service
-		mSceneService = core.getOrCreateService<nap::SceneService>();
+		mSceneService = core.getOrCreateService<SceneService>();
 
 		// Create etherdream service
-		mLaserService = core.getOrCreateService<nap::EtherDreamService>();
+		mLaserService = core.getOrCreateService<EtherDreamService>();
 		if (!mLaserService->init(errorState))
 		{
-			nap::Logger::fatal("unable to create laser service: %s", errorState.toString().c_str());
+			Logger::fatal("unable to create laser service: %s", errorState.toString().c_str());
 			return false;
 		}
 
 		// Create osc service
-		mOscService = core.getOrCreateService<nap::OSCService>();
+		mOscService = core.getOrCreateService<OSCService>();
 		if (!mOscService->init(errorState))
 		{
-			nap::Logger::fatal("unable to create osc service: %s", errorState.toString().c_str());
+			Logger::fatal("unable to create osc service: %s", errorState.toString().c_str());
 			return false;
 		}
 
 		// Load scene
 		if (!mResourceManagerService->loadFile("data/etherdream/etherdream.json", errorState))
 		{
-			nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
+			Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
 			return false;
 		}
+		glFlush();
 
 		// Store all render windows
-		mRenderWindow = mResourceManagerService->findObject<nap::RenderWindow>("Window");
+		mRenderWindow = mResourceManagerService->findObject<RenderWindow>("Window");
 
 		// Store laser dacs
 		mLaserController = mResourceManagerService->findEntity("LaserControllerEntity");
@@ -90,7 +91,7 @@ namespace nap
 		assert(mFrameCamera != nullptr);
 
 		// Set render states
-		nap::RenderState& render_state = mRenderService->getRenderState();
+		RenderState& render_state = mRenderService->getRenderState();
 		render_state.mEnableMultiSampling = true;
 		render_state.mPointSize = 2.0f;
 		render_state.mPolygonMode = opengl::PolygonMode::FILL;
@@ -130,8 +131,8 @@ namespace nap
 		mRenderWindow->makeActive();
 
 		// Render all lasers objects in to their respective back-buffer
-		nap::LaserControlInstanceComponent& laser_control_comp = mLaserController->getComponent<nap::LaserControlInstanceComponent>();
-		nap::PerspCameraComponentInstance& laser_cam = mLaserCamera->getComponent<nap::PerspCameraComponentInstance>();
+		LaserControlInstanceComponent& laser_control_comp = mLaserController->getComponent<LaserControlInstanceComponent>();
+		PerspCameraComponentInstance& laser_cam = mLaserCamera->getComponent<PerspCameraComponentInstance>();
 		laser_control_comp.renderToLaserBuffers(laser_cam, *mRenderService);
 
 		// Clear window back-buffer
@@ -140,7 +141,7 @@ namespace nap
 		mRenderService->clearRenderTarget(backbuffer);
 
 		// Render all laser frames to the window
-		nap::PerspCameraComponentInstance& frame_cam = mFrameCamera->getComponent<nap::PerspCameraComponentInstance>();
+		PerspCameraComponentInstance& frame_cam = mFrameCamera->getComponent<PerspCameraComponentInstance>();
 		laser_control_comp.renderFrames(*mRenderWindow, frame_cam, *mRenderService);
 
 		// Swap back buffer

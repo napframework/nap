@@ -23,7 +23,7 @@ namespace nap
 	 */
 	struct LaserOutputProperties
 	{
-		glm::vec2	mFrustrum = { 500.0f, 500.0f };		//< Frustrum of the laser in world space
+		glm::vec2	mFrustum = { 500.0f, 500.0f };		//< Frustrum of the laser in world space
 		bool		mFlipHorizontal = false;			//< If the output should be flipped horizontal
 		bool		mFlipVertical = false;				//< If the output should be flipped vertical
 		int			mFrameRate = 60;					//< Preferred framerate

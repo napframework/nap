@@ -1,4 +1,4 @@
-#include "frustrumsynccomponent.h"
+#include "frustumsynccomponent.h"
 #include <nap/core.h>
 #include <nap/resourcemanager.h>
 
@@ -6,20 +6,20 @@ namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
 
-	RTTI_BEGIN_CLASS(nap::FrustrumSyncComponent)
-		RTTI_PROPERTY("CanvasEntity", &nap::FrustrumSyncComponent::mCanvasEntity, nap::rtti::EPropertyMetaData::Required)
-		RTTI_PROPERTY("LaserOutputComponent", &nap::FrustrumSyncComponent::mLaserOutputComponent, nap::rtti::EPropertyMetaData::Required)
+	RTTI_BEGIN_CLASS(nap::FrustumSyncComponent)
+		RTTI_PROPERTY("CanvasEntity", &nap::FrustumSyncComponent::mCanvasEntity, nap::rtti::EPropertyMetaData::Required)
+		RTTI_PROPERTY("LaserOutputComponent", &nap::FrustumSyncComponent::mLaserOutputComponent, nap::rtti::EPropertyMetaData::Required)
 	RTTI_END_CLASS
 
-	RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::FrustrumSyncComponentInstance)
+	RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::FrustumSyncComponentInstance)
 		RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 	RTTI_END_CLASS
 
 	//////////////////////////////////////////////////////////////////////////
 
-	bool FrustrumSyncComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool FrustumSyncComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
-		FrustrumSyncComponent* resource = getComponent<FrustrumSyncComponent>();
+		FrustumSyncComponent* resource = getComponent<FrustumSyncComponent>();
 
 		ResourceManagerService& resource_manager = *getEntityInstance()->getCore()->getService<nap::ResourceManagerService>();
 		
@@ -44,14 +44,14 @@ namespace nap
 	}
 
 
-	void FrustrumSyncComponentInstance::update(double deltaTime)
+	void FrustumSyncComponentInstance::update(double deltaTime)
 	{
-		glm::vec2 laser_frustrum = mOutput->mProperties.mFrustrum;
+		glm::vec2 laser_frustrum = mOutput->mProperties.mFrustum;
 		mCanvasTransform->setScale(glm::vec3(laser_frustrum.x, laser_frustrum.y, 1.0));
 	}
 
 
-	void FrustrumSyncComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
+	void FrustumSyncComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 	{
 		components.emplace_back(RTTI_OF(nap::TransformComponent));
 	}
