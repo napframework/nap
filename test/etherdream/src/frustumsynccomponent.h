@@ -11,15 +11,15 @@
 
 namespace nap
 {
-	class FrustrumSyncComponentInstance;
+	class FrustumSyncComponentInstance;
 
 	/**
 	* This component syncs the size of the canvas to the frustrum of the laser
 	*/
-	class FrustrumSyncComponent : public Component
+	class FrustumSyncComponent : public Component
 	{
 		RTTI_ENABLE(Component)
-		DECLARE_COMPONENT(FrustrumSyncComponent, FrustrumSyncComponentInstance)
+		DECLARE_COMPONENT(FrustumSyncComponent, FrustumSyncComponentInstance)
 
 	public:
 		/**
@@ -38,12 +38,12 @@ namespace nap
 	/**
 	 *	When created this object spawns a laser canvas entity that is synced every update to the canvas of the laser
 	 */
-	class FrustrumSyncComponentInstance : public ComponentInstance
+	class FrustumSyncComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
 		// Constructor
-		FrustrumSyncComponentInstance(EntityInstance& entity, Component& resource) : ComponentInstance(entity, resource)	{ }
+		FrustumSyncComponentInstance(EntityInstance& entity, Component& resource) : ComponentInstance(entity, resource)	{ }
 
 		// Init
 		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;

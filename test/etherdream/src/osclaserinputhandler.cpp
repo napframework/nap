@@ -327,8 +327,8 @@ namespace nap
 		float pos_y = event[1].asFloat();
 
 		assert(mLaserOutput != nullptr);
-		float fru_x = mLaserOutput->mProperties.mFrustrum.x / 2.0f;
-		float fru_y = mLaserOutput->mProperties.mFrustrum.y / 2.0f;
+		float fru_x = mLaserOutput->mProperties.mFrustum.x / 2.0f;
+		float fru_y = mLaserOutput->mProperties.mFrustum.y / 2.0f;
 
 		glm::vec3 current_xform = mXformSmoother->getTarget();
 		current_xform.x = math::lerp<float>(fru_x*-1.0f, fru_x, pos_x);
@@ -344,7 +344,7 @@ namespace nap
 		float v = event[0].asFloat();
 
 		assert(mLaserOutput != nullptr);
-		float fru_x = mLaserOutput->mProperties.mFrustrum.x / 2.0f;
+		float fru_x = mLaserOutput->mProperties.mFrustum.x / 2.0f;
 
 		glm::vec3 current_xform = mXformSmoother->getTarget();
 		current_xform.x = math::lerp<float>(fru_x*-1.0f, fru_x, v);
@@ -358,7 +358,7 @@ namespace nap
 		float v = event[0].asFloat();
 
 		assert(mLaserOutput != nullptr);
-		float fru_y = mLaserOutput->mProperties.mFrustrum.y / 2.0f;
+		float fru_y = mLaserOutput->mProperties.mFrustum.y / 2.0f;
 
 		glm::vec3 current_xform = mXformSmoother->getTarget();
 		current_xform.y = math::lerp<float>(fru_y*-1.0f, fru_y, v);

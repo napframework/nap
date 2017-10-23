@@ -1083,7 +1083,7 @@
 					"mID" : "LaserOutputComponent",
 					"Properties" :
 					{
-						"Frustrum" :
+						"Frustum" :
 						{
 							"x" : 512,
 							"y" : 512
@@ -1094,7 +1094,7 @@
 					"Transform" : "LineXFormComponent"
 				},
 				{
-					"Type" : "nap::FrustrumSyncComponent",
+					"Type" : "nap::FrustumSyncComponent",
 					"CanvasEntity" : "LaserCanvasEntity",
 					"LaserOutputComponent" : "LaserOutputComponent"
 				}		

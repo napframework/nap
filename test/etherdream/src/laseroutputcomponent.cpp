@@ -10,7 +10,7 @@ using namespace nap::math;
 //////////////////////////////////////////////////////////////////////////
 
 RTTI_BEGIN_CLASS(nap::LaserOutputProperties)
-	RTTI_PROPERTY("Frustrum",		&nap::LaserOutputProperties::mFrustrum,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Frustum",		&nap::LaserOutputProperties::mFrustum,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("FlipVertical",	&nap::LaserOutputProperties::mFlipVertical,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("FlipHorizontal", &nap::LaserOutputProperties::mFlipHorizontal,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Framerate",		&nap::LaserOutputProperties::mFrameRate,		nap::rtti::EPropertyMetaData::Default)
@@ -162,15 +162,15 @@ namespace nap
 			mColors[i] = { 0.0f, 0.0f,0.0f,0.0f };
 		}
 
-		// Get frustrum dimensions and transform
-		glm::vec2 frustrum = { 0.0f, 0.0f };
+		// Get frustum dimensions and transform
+		glm::vec2 frustum = { 0.0f, 0.0f };
 
-		// Get frustrum dimensions
-		float fr_width	= mProperties.mFrustrum.x;
-		float fr_height = mProperties.mFrustrum.y;
+		// Get frustum dimensions
+		float fr_width	= mProperties.mFrustum.x;
+		float fr_height = mProperties.mFrustum.y;
 
-		glm::vec2 min_bounds(frustrum.x - (fr_width / 2.0f), frustrum.y - (fr_height / 2.0f));
-		glm::vec2 max_bounds(frustrum.x + (fr_width / 2.0f), frustrum.y + (fr_height / 2.0f));
+		glm::vec2 min_bounds(frustum.x - (fr_width / 2.0f), frustum.y - (fr_height / 2.0f));
+		glm::vec2 max_bounds(frustum.x + (fr_width / 2.0f), frustum.y + (fr_height / 2.0f));
 
 		// Reserve all the points
 		mPoints.resize(mVerts.size());

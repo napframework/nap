@@ -1,4 +1,4 @@
-#include "lasercontroller.h"
+#include "lasercontrolcomponent.h"
 
 // External Includes
 #include <nap/entity.h>
