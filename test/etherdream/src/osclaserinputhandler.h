@@ -9,6 +9,7 @@
 #include "linenoisecomponent.h"
 #include "linetracecomponent.h"
 #include "lineautoswitchcomponent.h"
+#include "xformsmoothcomponent.h"
 
 // External Includes
 #include <nap/component.h>
@@ -39,9 +40,6 @@ namespace nap
 		// property: Link to selection component two
 		ComponentPtr<LineSelectionComponent> mSelectionComponentTwo = nullptr;
 
-		// property: Link to laser output component
-		ComponentPtr<LaserOutputComponent> mLaserOutputComponent = nullptr;
-
 		// property: If the pixel color should be printed
 		bool mPrintColor = false;
 
@@ -67,6 +65,11 @@ namespace nap
 		 */
 		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
 
+		/**
+		 *	Sets the entity to be used as the laser output
+		 */
+		void setLaserOutput(nap::EntityInstance& entity);
+
 	private:
 		void handleMessageReceived(const nap::OSCEvent& oscEvent);
 
@@ -76,6 +79,7 @@ namespace nap
 		nap::TransformComponentInstance*	mTransformComponent = nullptr;
 		nap::LineNoiseComponentInstance*	mNoiseComponent = nullptr;
 		nap::LineTraceComponentInstance*	mTraceComponent = nullptr;
+		nap::XformSmoothComponentInstance*	mXformSmoother = nullptr;
 
 		void updateStartColor(const OSCEvent& event, const std::vector<std::string>& args);
 		void updateEndColor(const OSCEvent& event, const std::vector<std::string>& args);
@@ -88,6 +92,8 @@ namespace nap
 		void setBlend(const OSCEvent& event, const std::vector<std::string>& args);
 		void setScale(const OSCEvent& event, const std::vector<std::string>& args);
 		void setPosition(const OSCEvent& event, const std::vector<std::string>& args);
+		void setPositionX(const OSCEvent& event, const std::vector<std::string>& args);
+		void setPositionY(const OSCEvent& event, const std::vector<std::string>& args);
 		void setModulation(const OSCEvent& event, const std::vector<std::string>& args);
 		void setNoise(const OSCEvent& event, const std::vector<std::string>& args);
 		void setColorSync(const OSCEvent& event, const std::vector<std::string>& args);
@@ -98,6 +104,8 @@ namespace nap
 		void toggleRandom(const OSCEvent& event, const std::vector<std::string>& args);
 		void updateColor(const glm::vec2& loc, int position);
 		void resetBlend(const OSCEvent& event, const std::vector<std::string>& args);
+		void setColorSmoothX(const OSCEvent& event, const std::vector<std::string>& args);
+		void setColorSmoothY(const OSCEvent& event, const std::vector<std::string>& args);
 
 		NSLOT(mMessageReceivedSlot, const nap::OSCEvent&, handleMessageReceived)
 
@@ -105,7 +113,6 @@ namespace nap
 		LineColorComponentInstance* mColorComponent = nullptr;				// Laser line color component
 		LineModulationComponentInstance* mModulationComponent = nullptr;	// Laser modulation component
 		LineAutoSwitchComponentInstance* mSwitcher = nullptr;				// Switches lines
-		LineBlendComponentInstance* mBlender = nullptr;						// Blends between two lines
 		bool mPrintColor = false;											// If color should be printed
 
 		// This map holds all the various callbacks based on id

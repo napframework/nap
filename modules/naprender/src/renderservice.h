@@ -33,6 +33,8 @@ namespace nap
 		RTTI_ENABLE(Service)
 
 	public:
+		using SortFunction = std::function<void(std::vector<RenderableComponentInstance*>&, const CameraComponentInstance&)>;
+
 		/**
 		 * Holds current render state 
 		 */
@@ -51,14 +53,42 @@ namespace nap
 		virtual ~RenderService();
 
 		/**
-		 * Renders all available objects to a specific renderTarget.
+		 * Renders all available RenderableComponents in the scene to a specific renderTarget.
+		 * The objects to render are sorted using the default sort function (front-to-back for opaque objects, back-to-front for transparent objects).
+		 *
+		 * @param renderTarget the target to render to
+		 * @param camera the camera used for rendering all the available components
 		 */
 		void renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera);
 
 		/**
+		* Renders all available RenderableComponents in the scene to a specific renderTarget.
+		*
+		* @param renderTarget the target to render to
+		* @param camera the camera used for rendering all the available components
+		* @param sortFunction The function used to sort the components to render
+		*/
+		void renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera, const SortFunction& sortFunction);
+
+		/**
 		 * Renders a specific set of objects to a specific renderTarget.
+		 * The objects to render are sorted using the default sort function (front-to-back for opaque objects, back-to-front for transparent objects)
+		 *
+		 * @param renderTarget the target to render to
+		 * @param camera the camera used for rendering all the available components
+		 * @param comps the components to render to @renderTarget
 		 */
 		void renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps);
+
+		/**
+		* Renders a specific set of objects to a specific renderTarget.
+		*
+		* @param renderTarget the target to render to
+		* @param camera the camera used for rendering all the available components
+		* @param comps the components to render to @renderTarget
+		* @param sortFunction The function used to sort the components to render
+		*/
+		void renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction);
 
 		/**
 		* Clears the renderTarget using @flags.
@@ -74,6 +104,8 @@ namespace nap
 
 		/**
 		 * Sets the renderer, the service will own the renderer
+		 * @param errorState contains the error message if the service could not be initialized
+		 * @return if the service has been initialized successfully
 		 */
 		bool init(nap::utility::ErrorState& errorState);
 
@@ -85,7 +117,7 @@ namespace nap
 		/**
 		* Returns global render state. Use the fields in this objects to modify the renderstate.
 		*/
-		RenderState& getRenderState() { return mRenderState; }
+		RenderState& getRenderState()																{ return mRenderState; }
 
 		/**
 		 * Batches an OpenGL resource that is dependent on GLContext for destruction, to avoid many GL context switches during destruction.
@@ -112,17 +144,21 @@ namespace nap
 
 		/**
 		 * Add a new window for the specified resource
+		 * @param window the window to add as a valid render target
+		 * @param errorState contains the error message if the window could not be added
 		 */
 		std::shared_ptr<GLWindow> addWindow(RenderWindow& window, utility::ErrorState& errorState);
 
 		/**
 		 * Remove a window
+		 * @param window the window to remove from the render service
 		 */
 		void removeWindow(RenderWindow& window);
 
 		/**
 		 * Find a RenderWindowResource by its native handle
 		 * @param nativeWindow the native window handle (i.e. the SDL_Window pointer)
+		 * @return the render window associated with the native window
 		 */
 		RenderWindow* findWindow(void* nativeWindow) const;
 
@@ -179,6 +215,16 @@ namespace nap
 		* Updates the current context's render state by using the latest render state as set by the user.
 		*/
 		void updateRenderState();
+
+		/**
+		* Sorts a set of renderable components based on distance to the camera, ie: depth
+		* Note that when the object is of a type mesh it will use the material to sort based on opacity
+		* If the renderable object is not a mesh the sorting will occur front-to-back regardless of it's type as we don't
+		* know the way the object is rendered to screen
+		* @param comps the renderable components to sort
+		* @param camera the camera used for sorting based on distance
+		*/
+		void sortObjects(std::vector<RenderableComponentInstance*>& comps, const CameraComponentInstance& camera);
 
 		/**
 		* Helper struct to refcount opengl VAOs.
