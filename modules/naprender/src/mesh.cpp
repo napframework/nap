@@ -79,16 +79,6 @@ namespace nap
 			rtti::copyObject(*mesh_attribute, *owned_mesh_attribute);
 			mProperties.mAttributes.emplace_back(std::move(owned_mesh_attribute));
 		}
-
-		if (FindAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0)) == nullptr)
-		{
-			VertexAttribute<glm::vec4>& color_attr = GetOrCreateAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0));
-			color_attr.resize(meshProperties.mNumVertices);
-
-			for (glm::vec4& color : color_attr.mData)
-				color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-		}
-
 		mProperties.mNumVertices = meshProperties.mNumVertices;
 		mProperties.mDrawMode = meshProperties.mDrawMode;
 		mProperties.mIndices = meshProperties.mIndices;
