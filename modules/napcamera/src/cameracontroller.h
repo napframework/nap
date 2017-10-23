@@ -14,7 +14,7 @@ namespace nap
 	/**
 	 * Mode that the CameraController is currently operating in. 
 	 */
-	enum class ECameraMode : uint8_t
+	enum class NAPAPI ECameraMode : uint8_t
 	{
 		None						= 0x00,
 
@@ -45,7 +45,7 @@ namespace nap
 	 * CameraController drives the FirstPersonController, OrbitController and OrthoController. It takes care of switching
 	 * between the camera controllers and it holds pointer to an entity to look at, for use in the OrbitController and the OrthoController.
 	 */
-	class CameraController : public Component
+	class NAPAPI CameraController : public Component
 	{
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(CameraController, CameraControllerInstance)
@@ -66,7 +66,7 @@ namespace nap
 	/**
 	 * ComponentInstance of CameraController. Use this class to retrieve the active camera component.
 	 */
-	class CameraControllerInstance : public ComponentInstance
+	class NAPAPI CameraControllerInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:

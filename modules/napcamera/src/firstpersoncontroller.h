@@ -21,7 +21,7 @@ namespace nap
 	/**
 	 * Resource for the FirstPersonController
 	 */
-	class FirstPersonController : public Component
+	class NAPAPI FirstPersonController : public Component
 	{
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(FirstPersonController, FirstPersonControllerInstance)
@@ -48,7 +48,7 @@ namespace nap
 	 *
 	 * Hold left mouse to activate. WASD to move, QE to move up and down, mouse to rotate.
 	 */
-	class FirstPersonControllerInstance : public ComponentInstance
+	class NAPAPI FirstPersonControllerInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
@@ -120,7 +120,7 @@ namespace nap
 		bool							mMoveRight			= false;		// Whether we're moving right
 		bool							mMoveUp				= false;		// Whether we're moving up
 		bool							mMoveDown			= false;		// Whether we're moving down
-		bool							mEnabled			= false;		// Set if enable() is called
+		bool							mEnabled			= true;			// Set if enable() is called
 		bool							mMoving				= false;		// Set if left mouse button is held
 	};
 

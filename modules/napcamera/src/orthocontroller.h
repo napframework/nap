@@ -18,7 +18,7 @@ namespace nap
 	/**
 	* Resource for the OrbitController
 	*/
-	class OrthoController : public Component
+	class NAPAPI OrthoController : public Component
 	{
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(OrthoController, OrthoControllerInstance)
@@ -43,7 +43,7 @@ namespace nap
 	 *
 	 * Hold left mouse button to pan, right mouse button to zoom.
 	 */
-	class OrthoControllerInstance : public ComponentInstance
+	class NAPAPI OrthoControllerInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
@@ -102,7 +102,7 @@ namespace nap
 		};
 
 		TransformComponentInstance*		mTransformComponent = nullptr;		// The transform component used to move the entity
-		bool							mEnabled = false;					// Set if enabled for input
+		bool							mEnabled = true;					// Set if enabled for input
 		float							mCameraScale = 50.0f;				// Current scale, selects the width of the space you can see
 		float							mCameraScaleAtClick = 0.0f;			// Scale that was set when clicking with the mouse button
 		EMode							mMode = EMode::None;				// Pan/Zoom mode

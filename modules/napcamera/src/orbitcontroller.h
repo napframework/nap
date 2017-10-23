@@ -23,7 +23,7 @@ namespace nap
 	 * 
 	 * Left mouse button to rotate, right mouse button to zoom in and out on the target.
 	 */
-	class OrbitController : public Component
+	class NAPAPI OrbitController : public Component
 	{
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(OrbitController, OrbitControllerInstance)
@@ -47,7 +47,7 @@ namespace nap
 	/**
 	 * ComponentInstance for the OrbitController.
 	 */
-	class OrbitControllerInstance : public ComponentInstance
+	class NAPAPI OrbitControllerInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
@@ -113,7 +113,7 @@ namespace nap
 		TransformComponentInstance*		mTransformComponent = nullptr;		// The transform component used to move the entity
 		EMode							mMode = EMode::Idle;				// Camera mode
 		glm::vec3						mLookAtPos;							// Target position to orbit around
-		bool							mEnabled = false;					// Enables responding to input
+		bool							mEnabled = true;					// Enables responding to input
 	};
 
 }
