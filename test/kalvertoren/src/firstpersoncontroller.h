@@ -67,7 +67,7 @@ namespace nap
 		/**
 		 * Enable the component while setting the transform.
 		 * @param translate Camera translation to set.
-		 * @param rotation Camera rotation to set.
+		 * @param rotate Camera rotation to set.
 		 */
 		void enable(const glm::vec3& translate, const glm::quat& rotate);
 
