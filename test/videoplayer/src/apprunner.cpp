@@ -78,61 +78,38 @@ namespace nap {
 	
 	
 	// Called when the window is updating
-	void AppRunner::update()
-	{
-		// If any changes are detected, and we are reloading, we need to do this on the correct context
-		mRenderService->getPrimaryWindow().makeCurrent();
-		mResourceManager->checkForFileChanges();
-		
-		// Process events for all windows
-		mRenderService->processEvents();
-		
-		// Update all resources
-		mResourceManager->update();
-		
-		// Update model transform
-		float elapsed_time = mRenderService->getCore().getElapsedTime();
-		static float prev_elapsed_time = elapsed_time;
-		float delta_time = elapsed_time - prev_elapsed_time;
-		
-		if (mVideoEntity != nullptr)
+	void AppRunner::update(double deltaTime)
+	{				
+		glm::vec2 window_size = mRenderWindows[0]->getWindow()->getSize();
+
+		float new_window_height = -FLT_MAX;
+		for (auto& video_resource : mVideoResources)
 		{
-			glm::vec2 window_size = mRenderWindows[0]->getWindow()->getSize();
-			
-			float new_window_height = -FLT_MAX;
-			for (auto& video_resource : mVideoResources)
+			utility::ErrorState error_state;
+			if (!video_resource->update(deltaTime, error_state))
 			{
-				utility::ErrorState error_state;
-				if (!video_resource->update(delta_time, error_state))
-				{
-					Logger::fatal(error_state.toString());
-				}
-				
-				//std::cout << video_resource->getTimeStamp() << "\n";
-				
-				float aspect_ratio = (float)video_resource->getWidth() / (float)video_resource->getHeight();
-				new_window_height = std::max(new_window_height, window_size.x / aspect_ratio);
+				Logger::fatal(error_state.toString());
 			}
-			
-			window_size.y = new_window_height;
-			mRenderWindows[0]->getWindow()->setSize(window_size);
-			
-			MaterialInstance& plane_material = mVideoEntity->getComponent<RenderableMeshComponentInstance>().getMaterialInstance();
-			
-			plane_material.getOrCreateUniform<UniformTexture2D>("yTexture").setTexture(mVideoResources[0]->getYTexture());
-			plane_material.getOrCreateUniform<UniformTexture2D>("uTexture").setTexture(mVideoResources[0]->getUTexture());
-			plane_material.getOrCreateUniform<UniformTexture2D>("vTexture").setTexture(mVideoResources[0]->getVTexture());
-			
-			// We set the position/size of the root layout element to cover the full screen.
-			TransformComponentInstance& transform_component = mVideoEntity->getComponent<TransformComponentInstance>();
-			transform_component.setTranslate(glm::vec3(window_size.x*0.5, window_size.y*0.5, -1000.0f));
-			transform_component.setScale(glm::vec3(window_size.x, window_size.y, 1.0));
+
+			//std::cout << video_resource->getTimeStamp() << "\n";
+
+			float aspect_ratio = (float)video_resource->getWidth() / (float)video_resource->getHeight();
+			new_window_height = std::max(new_window_height, window_size.x / aspect_ratio);
 		}
-		
-		// Update the scene
-		mSceneService->update();
-		
-		prev_elapsed_time = elapsed_time;
+
+		window_size.y = new_window_height;
+		mRenderWindows[0]->getWindow()->setSize(window_size);
+
+		MaterialInstance& plane_material = mVideoEntity->getComponent<RenderableMeshComponentInstance>().getMaterialInstance();
+
+		plane_material.getOrCreateUniform<UniformTexture2D>("yTexture").setTexture(mVideoResources[0]->getYTexture());
+		plane_material.getOrCreateUniform<UniformTexture2D>("uTexture").setTexture(mVideoResources[0]->getUTexture());
+		plane_material.getOrCreateUniform<UniformTexture2D>("vTexture").setTexture(mVideoResources[0]->getVTexture());
+
+		// We set the position/size of the root layout element to cover the full screen.
+		TransformComponentInstance& transform_component = mVideoEntity->getComponent<TransformComponentInstance>();
+		transform_component.setTranslate(glm::vec3(window_size.x*0.5, window_size.y*0.5, -1000.0f));
+		transform_component.setScale(glm::vec3(window_size.x, window_size.y, 1.0));
 	}
 	
 	
@@ -140,22 +117,19 @@ namespace nap {
 	void AppRunner::render()
 	{
 		mRenderService->destroyGLContextResources(mRenderWindows);
+		RenderWindow* render_window = mRenderWindows[0].get();
 		
+		if (mCameraEntity != nullptr)
 		{
-			RenderWindow* render_window = mRenderWindows[0].get();
+			render_window->makeActive();
 			
-			if (mCameraEntity != nullptr)
-			{
-				render_window->makeActive();
-				
-				opengl::RenderTarget* render_target = (opengl::RenderTarget*)render_window->getWindow()->getBackbuffer();
-				render_target->setClearColor(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
-				mRenderService->clearRenderTarget(*render_target, opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH);
-				
-				mRenderService->renderObjects(*render_target, mCameraEntity->getComponent<OrthoCameraComponentInstance>());
-				
-				render_window->swap();
-			}
+			opengl::RenderTarget* render_target = (opengl::RenderTarget*)render_window->getWindow()->getBackbuffer();
+			render_target->setClearColor(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
+			mRenderService->clearRenderTarget(*render_target, opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH);
+			
+			mRenderService->renderObjects(*render_target, mCameraEntity->getComponent<OrthoCameraComponentInstance>());
+			
+			render_window->swap();
 		}
 	}
 	

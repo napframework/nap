@@ -259,7 +259,20 @@ namespace nap
 		return true;
 	}
 	
-	void RenderService::queueResourceForDestruction(std::unique_ptr<opengl::IGLContextResource> resource) 
+
+	void RenderService::preUpdate(double deltaTime)
+	{
+		getPrimaryWindow().makeCurrent();
+	}
+
+
+	void RenderService::update(double deltaTime)
+	{
+		processEvents();
+	}
+
+
+	void RenderService::queueResourceForDestruction(std::unique_ptr<opengl::IGLContextResource> resource)
 	{ 
 		if (resource != nullptr)
 			mGLContextResourcesToDestroy.emplace_back(std::move(resource)); 

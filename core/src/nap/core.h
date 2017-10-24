@@ -11,8 +11,6 @@
 
 // Core Includes
 #include "service.h"
-#include "serviceobjectgraphitem.h"
-#include "objectgraph.h"
 #include "timer.h"
 #include "modulemanager.h"
 #include "utility/dllexport.h"
@@ -114,6 +112,13 @@ namespace nap
 		 */
 		bool initializeServices(utility::ErrorState& error);
 
+		/**
+		 * Updates all services. This happens in 3 distinct steps.
+		 * First the resource file is reloaded. After that all services are updated, the last step is the 
+		 * the update of the entities and their respective components managed by the resource manager
+		 * @return deltaTime between update calls in seconds
+		 */
+		double update(std::function<void(double)>& updateFunction);
 
 	private:
 		// Typedef for a list of services
@@ -128,11 +133,16 @@ namespace nap
 		// All the services associated with core
 		ServiceList mServices;
 
-		// Graph used for prioritizing services
-		ObjectGraph<ServiceObjectGraphItem> mServiceGraph;
+		// Sorted service nodes, set after init
+		std::vector<Service*> mServicesSorted;
 
 		// Timer
 		SimpleTimer mTimer;
+		
+		// Last time stamp used for calculating delta time
+		double mLastTimeStamp = 0.0;
+
+		double mDeltaTime = 0.0;
 	};
 
 

@@ -48,23 +48,25 @@ bool init(nap::Core& core)
 }
 
 
+void update(double deltaTime)
+{
+
+}
+
+
 // Main loop
 int main(int argc, char *argv[])
 {
     nap::Core core;
     
+	// Pointer to function used inside update call by core
+	std::function<void(double)> update_call = std::bind(&update, std::placeholders::_1);
+
 	if (!init(core))
 		return -1;
     
     while (true)
-    {
-        resourceManager->checkForFileChanges();
-        resourceManager->update();
-//        std::this_thread::sleep_for(std::chrono::nanoseconds(1000));
-    }
-
-//    std::cout << "Press return to quit" << std::endl;
-//    std::cin.get();
+		core.update(update_call);
     
 	return 0;
 }

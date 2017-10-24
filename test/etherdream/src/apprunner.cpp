@@ -77,24 +77,8 @@ namespace nap
 	
 	
 	// Called when the window is updating
-	void AppRunner::update()
-	{
-		// If any changes are detected, and we are reloading, we need to do this on the correct context
-		mRenderService->getPrimaryWindow().makeCurrent();
-		mResourceManager->checkForFileChanges();
-
-		// Process events for all windows
-		mRenderService->processEvents();
-
-		// Process all events for osc
-		mOscService->update();
-
-		// Update the scene
-		mSceneService->update();
-
-		// Update all resources
-		mResourceManager->update();
-	}
+	void AppRunner::update(double deltaTime)
+	{ }
 	
 	
 	// Called when the window is going to render

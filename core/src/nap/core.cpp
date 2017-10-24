@@ -2,7 +2,8 @@
 #include "core.h"
 #include "resourcemanager.h"
 #include "logger.h"
-#include "service.h"
+#include "serviceobjectgraphitem.h"
+#include "objectgraph.h"
 
 // External Includes
 #include <rtti/pythonmodule.h>
@@ -64,8 +65,11 @@ namespace nap
 			objects.emplace_back(service.get());
 		}
 
+		// Create dependency graph
+		ObjectGraph<ServiceObjectGraphItem> graph;
+
 		// Build service dependency graph
-		bool success = mServiceGraph.build(objects, [=](Service* service) 
+		bool success = graph.build(objects, [=](Service* service) 
 		{
 			 return ServiceObjectGraphItem::create(service, this); 
 		}, error);
@@ -75,13 +79,52 @@ namespace nap
 			return false;
 
 		// Initialize all services
-		for (auto& node : mServiceGraph.getSortedNodes())
+		for (auto& node : graph.getSortedNodes())
 		{
 			nap::Service* service = node->mItem.mObject;
 			if (!service->init(error))
 				return false;
+			mServicesSorted.emplace_back(service);
 		}
 		return true;
+	}
+
+
+	double Core::update(std::function<void(double)>& updateFunction)
+	{
+		// Get delta time
+		double new_time = getElapsedTime();
+		mDeltaTime = new_time - mLastTimeStamp;
+		mLastTimeStamp = new_time;
+
+		// Perform update call before we check for file changes
+		for (auto& service : mServicesSorted)
+		{
+			service->preUpdate(mDeltaTime);
+		}
+
+		// Check for file changes
+		mResourceManager->checkForFileChanges();
+
+		// Update rest of the services
+		for (auto& service : mServicesSorted)
+		{
+			service->update(mDeltaTime);
+		}
+
+		// Update the resource manager, ie: all entities and their respective components
+		mResourceManager->update(mDeltaTime);
+
+		// Call update function
+		updateFunction(mDeltaTime);
+
+		// Update rest of the services
+		for (auto& service : mServicesSorted)
+		{
+			service->postUpdate(mDeltaTime);
+		}
+
+		return mDeltaTime;
 	}
 
 

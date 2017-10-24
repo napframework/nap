@@ -174,11 +174,6 @@ namespace nap
 		 */
 		void addEvent(WindowEventPtr windowEvent);
 
-		/**
-		 *	Processes all window related events for all available windows
-		 */
-		void processEvents();
-
 	protected:
 		/**
 		* Object creation registration
@@ -196,6 +191,17 @@ namespace nap
 		* @return if the service has been initialized successfully
 		*/
 		virtual bool init(nap::utility::ErrorState& errorState) override;
+
+		/**
+		 * Updates
+		 * @param time in between frames
+		 */
+		virtual void preUpdate(double deltaTime) override;
+
+		/**
+		 *	Process all received messages
+		 */
+		virtual void update(double deltaTime) override;
 
     private:
 		friend class VAOHandle;
@@ -230,6 +236,11 @@ namespace nap
 		* @param camera the camera used for sorting based on distance
 		*/
 		void sortObjects(std::vector<RenderableComponentInstance*>& comps, const CameraComponentInstance& camera);
+
+		/**
+		* Processes all window related events for all available windows
+		*/
+		void processEvents();
 
 		/**
 		* Helper struct to refcount opengl VAOs.
