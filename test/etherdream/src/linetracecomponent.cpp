@@ -7,9 +7,12 @@
 #include <nap/resourcemanager.h>
 
 RTTI_BEGIN_CLASS(nap::TraceProperties)
-	RTTI_PROPERTY("Offset",	&nap::TraceProperties::mOffset,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Speed",	&nap::TraceProperties::mSpeed,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Length",	&nap::TraceProperties::mLength,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Offset",				&nap::TraceProperties::mOffset,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("OffsetSmoothTime",	&nap::TraceProperties::mOffsetSmoothTime,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Speed",				&nap::TraceProperties::mSpeed,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("SpeedSmoothTime",	&nap::TraceProperties::mSpeedSmoothTime,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Length",				&nap::TraceProperties::mLength,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("LengthSmoothTime",	&nap::TraceProperties::mLengthSmoothTime,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::LineTraceComponent)
@@ -76,6 +79,15 @@ namespace nap
 		getEntityInstance()->addChild(*start_vis_entity);
 		getEntityInstance()->addChild(*end_vis_entity);
 
+		// Set smooth timing values
+		mLengthSmoother.mSmoothTime = getComponent<LineTraceComponent>()->mProperties.mLengthSmoothTime;
+		mLengthSmoother.setValue(mProperties.mLength);
+
+		mOffsetSmoother.mSmoothTime = getComponent<LineTraceComponent>()->mProperties.mOffsetSmoothTime;
+		mOffsetSmoother.setValue(mProperties.mOffset);
+
+		mSpeedSmoother.mSmoothTime = getComponent<LineTraceComponent>()->mProperties.mSpeedSmoothTime;
+		mSpeedSmoother.setValue(mProperties.mSpeed);
 
 		return true;
 	}
@@ -83,21 +95,25 @@ namespace nap
 
 	void LineTraceComponentInstance::update(double deltaTime)
 	{
+		mOffsetSmoother.update(mProperties.mOffset, deltaTime);
+		mSpeedSmoother.update(mProperties.mSpeed, deltaTime);
+		mLengthSmoother.update(mProperties.mLength, deltaTime);
+
 		// Get line to trace
 		nap::PolyLine& source = mBlendComponent->getLine();
 
 		// Calculate start position
-		mCurrentTime += (deltaTime * mProperties.mSpeed);
+		mCurrentTime += (deltaTime * mSpeedSmoother.getValue());
 
 		// Prep value for sin
-		float start_pos = fmod((mCurrentTime + mProperties.mOffset), 1.0f);
+		float start_pos = fmod((mCurrentTime + mOffsetSmoother.getValue()), 1.0f);
 
 		// Ensure our target mesh has more than 1 vertex (ie, is a line)
 		int target_vert_count = mTarget->getMeshInstance().getNumVertices();
 		assert(target_vert_count > 1);
 
 		// Get incremental value
-		float inc = mProperties.mLength / (target_vert_count - 1);
+		float inc = mLengthSmoother.getValue() / (target_vert_count - 1);
 
 		// Get source line
 		nap::PolyLine& source_line = mBlendComponent->getLine();
@@ -144,6 +160,12 @@ namespace nap
 	void LineTraceComponentInstance::reset()
 	{
 		mCurrentTime = 0.0f;
+	}
+
+	
+	void LineTraceComponentInstance::setPolyLine(nap::PolyLine& line)
+	{
+		mTarget = &line;
 	}
 
 }

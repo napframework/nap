@@ -73,7 +73,7 @@ namespace nap
 	}
 
 
-	nap::rtti::TypeInfo OSCArgument::getValueType()
+	nap::rtti::TypeInfo OSCArgument::getValueType() const
 	{
 		return mValue->get_type().get_raw_type();
 	}

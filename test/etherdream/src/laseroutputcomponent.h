@@ -23,7 +23,7 @@ namespace nap
 	 */
 	struct LaserOutputProperties
 	{
-		glm::vec2	mFrustrum = { 500.0f, 500.0f };		//< Frustrum of the laser in world space
+		glm::vec2	mFrustum = { 500.0f, 500.0f };		//< Frustrum of the laser in world space
 		bool		mFlipHorizontal = false;			//< If the output should be flipped horizontal
 		bool		mFlipVertical = false;				//< If the output should be flipped vertical
 		int			mFrameRate = 60;					//< Preferred framerate
@@ -45,9 +45,6 @@ namespace nap
 
 		// Link to component that holds the line to send to the laser
 		ObjectPtr<PolyLine> mLine;
-
-		// Link to transform that holds the line's global xform
-		ComponentPtr<TransformComponent> mTransform;
 
 		// Output properties
 		LaserOutputProperties mProperties;
@@ -79,25 +76,34 @@ namespace nap
 		 */
 		virtual void update(double deltaTime) override;
 
-		// Lines will be uploaded to this laser DAC
-		EtherDreamDac* mDac = nullptr;
-
-		// Component that holds the lines to draw
-		PolyLine* mLine = nullptr;
-
 		// Properties
 		LaserOutputProperties mProperties;
+
+		// Sets the transform to use for the line
+		void setTransform(nap::EntityInstance& entity);
+
+		// Sets the line to send to the laser
+		void setPolyLine(nap::PolyLine& line)				{ mLine = &line; }
+
+		// Sets the dac to send to the laser
+		void setDac(nap::EtherDreamDac& dac)				{ mDac = &dac; }
 
 	private:
 		// Populate Laser Buffer
 		void populateLaserBuffer(const PolyLine& line, const glm::mat4x4& laserXform, const glm::mat4x4& lineXform);
 
 		// Xform associated with the line
-		TransformComponentInstance* mLineXform = nullptr;
+		nap::TransformComponentInstance* mLineTransform = nullptr;
+
+		// Lines will be uploaded to this laser DAC
+		EtherDreamDac* mDac = nullptr;
+
+		// Component that holds the lines to draw
+		PolyLine* mLine = nullptr;
 
 		// Converted laser points
 		std::vector<nap::EtherDreamPoint> mPoints;			//< DAC points
 		std::vector<glm::vec3> mVerts;						//< Converted vertex positions
-		std::vector<glm::vec4> mColors;						//< Converted vertex colors 	
+		std::vector<glm::vec4> mColors;						//< Converted vertex colors
 	};
 }
