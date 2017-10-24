@@ -26,11 +26,6 @@ namespace nap
 		// Default Destructor
 		virtual ~EtherDreamService();
 
-		/**
-		 * Initializes the etherdream library.
-		 */
-		bool init(nap::utility::ErrorState& errorState);
-
 	protected:
 		/**
 		 * Adds a dac to the system, every dac is associated with a number.
@@ -49,6 +44,11 @@ namespace nap
 		 *	This service depends on scene and render
 		 */
 		virtual void getDependencies(std::vector<rtti::TypeInfo>& dependencies) override;
+
+		/**
+		* Initializes the etherdream library.
+		*/
+		virtual bool init(nap::utility::ErrorState& errorState) override;
 
 		/**
 		* @return the etherdream interface that manages all the DACs

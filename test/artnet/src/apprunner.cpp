@@ -19,47 +19,25 @@ namespace nap {
 	 */
 	bool AppRunner::init(Core& core)
 	{
-		core.initialize();
+		// Initialize engine -> loads all modules
+		core.initializeEngine();
 		
-		//////////////////////////////////////////////////////////////////////////
-		// GL Service + Window
-		//////////////////////////////////////////////////////////////////////////
-		
-		// Get resource manager service
-		mResourceManager = core.getResourceManager();
-		
-		// Create render service
+		// Create all services
 		mRenderService = core.getOrCreateService<RenderService>();
-		
-		utility::ErrorState error;
-		if (!mRenderService->init(error))
+		mInputService = core.getOrCreateService<InputService>();
+		mSceneService = core.getOrCreateService<SceneService>();
+		mArtnetService = core.getOrCreateService<ArtNetService>();
+
+		// Initialize all services
+		utility::ErrorState errorState;
+		if (!core.initializeServices(errorState))
 		{
-			Logger::fatal(error.toString());
+			Logger::fatal("unable to initialize services: %s", errorState.toString().c_str());
 			return false;
 		}
 		
-		// Collects all the errors
-		utility::ErrorState errorState;
-		
-		//////////////////////////////////////////////////////////////////////////
-		// Services
-		//////////////////////////////////////////////////////////////////////////
-		
-		// Create input service
-		mInputService = core.getOrCreateService<InputService>();
-		
-		// Create scene service
-		mSceneService = core.getOrCreateService<SceneService>();
-		
-		// Create artnet service
-		mArtnetService = core.getOrCreateService<ArtNetService>();
-
-		
-		//////////////////////////////////////////////////////////////////////////
-		// Resources
-		//////////////////////////////////////////////////////////////////////////
-		
 		// Load scene
+		mResourceManager = core.getResourceManager();
 		if (!mResourceManager->loadFile("data/artnet/artnet.json", errorState))
 		{
 			Logger::fatal("Unable to de-serialize resources: \n %s", errorState.toString().c_str());

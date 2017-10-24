@@ -103,13 +103,6 @@ namespace nap
 		void clearRenderTarget(opengl::RenderTarget& renderTarget);
 
 		/**
-		 * Sets the renderer, the service will own the renderer
-		 * @param errorState contains the error message if the service could not be initialized
-		 * @return if the service has been initialized successfully
-		 */
-		virtual bool init(nap::utility::ErrorState& errorState) override;
-
-		/**
 		 * Shuts down the managed renderer
 		 */
 		void shutdown();
@@ -196,6 +189,13 @@ namespace nap
 		 * Register dependencies, render module depends on scene
 		 */
 		virtual void getDependencies(std::vector<rtti::TypeInfo>& dependencies) override;
+
+		/**
+		* Sets the renderer, the service will own the renderer
+		* @param errorState contains the error message if the service could not be initialized
+		* @return if the service has been initialized successfully
+		*/
+		virtual bool init(nap::utility::ErrorState& errorState) override;
 
     private:
 		friend class VAOHandle;

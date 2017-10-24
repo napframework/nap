@@ -120,7 +120,7 @@ int main(int argc, char* argv[])
 	Logger::setLevel(Logger::debugLevel());
 
 	Core core;
-	core.initialize();
+	core.initializeEngine();
 
 	rtti::TypeInfo::get<std::vector<DataStruct>>();
 

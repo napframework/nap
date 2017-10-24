@@ -51,7 +51,7 @@
 
 // Nap Objects
 nap::RenderService*								renderService = nullptr;
-nap::ResourceManagerService*					resourceManagerService = nullptr;
+nap::ResourceManager*							resourceManager = nullptr;
 nap::SceneService*								sceneService = nullptr;
 nap::VideoService*								videoService = nullptr;
 nap::InputService*								inputService = nullptr;
@@ -117,10 +117,10 @@ void onUpdate()
 
 	// Need to make primary window active before reloading files, as renderer resources need to be created in that context
 	renderService->getPrimaryWindow().makeCurrent();
-	resourceManagerService->checkForFileChanges();
+	resourceManager->checkForFileChanges();
 
 	// Update all resources
-	resourceManagerService->update();
+	resourceManager->update();
 
 	// Update all entities
 	sceneService->update();
@@ -240,52 +240,26 @@ void onRender()
 */
 bool init(nap::Core& core)
 {
-	core.initialize();
+	// Initialize engine -> loads all the modules
+	core.initializeEngine();
 
-	//////////////////////////////////////////////////////////////////////////
-	// GL Service + Window
-	//////////////////////////////////////////////////////////////////////////
-
-	// Get resource manager service
-	resourceManagerService = core.getOrCreateService<nap::ResourceManagerService>();
-
-	// Create render service
+	// Create services
 	renderService = core.getOrCreateService<nap::RenderService>();
-	
-	nap::utility::ErrorState error;
-	if (!renderService->init(error))
-	{
-		nap::Logger::fatal(error.toString());
-		return false;
-	}
+	inputService  = core.getOrCreateService<nap::InputService>();
+	sceneService  = core.getOrCreateService<nap::SceneService>();
+	videoService  = core.getOrCreateService<nap::VideoService>();
 
-	nap::Logger::info("initialized render service: %s", renderService->getTypeName().c_str());
-
-	//////////////////////////////////////////////////////////////////////////
-	// Input
-	//////////////////////////////////////////////////////////////////////////
-
-	inputService = core.getOrCreateService<nap::InputService>();
-
-	//////////////////////////////////////////////////////////////////////////
-	// Scene
-	//////////////////////////////////////////////////////////////////////////
-	sceneService = core.getOrCreateService<nap::SceneService>();
-
-	//////////////////////////////////////////////////////////////////////////
-	// Resources
-	//////////////////////////////////////////////////////////////////////////
-
+	// Initialize all services
 	nap::utility::ErrorState errorState;
-
-	videoService = core.getOrCreateService<nap::VideoService>();
-	if (!videoService->init(errorState))
+	if (!core.initializeServices(errorState))
 	{
-		nap::Logger::fatal("Failed to init video service: \n %s", errorState.toString().c_str());
+		nap::Logger::fatal("unable to initialize services: %s", errorState.toString().c_str());
 		return false;
 	}
 
-	if (!resourceManagerService->loadFile("data/kalvertoren/kalvertoren.json", errorState))
+	// Get resource manager and load data
+	resourceManager = core.getResourceManager();
+	if (!resourceManager->loadFile("data/kalvertoren/kalvertoren.json", errorState))
 	{ 
 		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
 		return false;        
@@ -293,20 +267,20 @@ bool init(nap::Core& core)
 
 	glFlush();
 	 
-	renderWindow			= resourceManagerService->findObject<nap::RenderWindow>("Window0");
- 	textureRenderTarget		= resourceManagerService->findObject<nap::RenderTarget>("PlaneRenderTarget");
-	kalvertorenEntity		= resourceManagerService->findEntity("KalvertorenEntity");
-	cameraEntity			= resourceManagerService->findEntity("CameraEntity");
-	defaultInputRouter		= resourceManagerService->findEntity("DefaultInputRouterEntity");
-	videoEntity				= resourceManagerService->findEntity("VideoEntity"); 
-	lightEntity				= resourceManagerService->findEntity("LightEntity");
-	vertexMaterial			= resourceManagerService->findObject<nap::Material>("VertexColorMaterial");
-	frameMaterial			= resourceManagerService->findObject<nap::Material>("FrameMaterial");
+	renderWindow			= resourceManager->findObject<nap::RenderWindow>("Window0");
+ 	textureRenderTarget		= resourceManager->findObject<nap::RenderTarget>("PlaneRenderTarget");
+	kalvertorenEntity		= resourceManager->findEntity("KalvertorenEntity");
+	cameraEntity			= resourceManager->findEntity("CameraEntity");
+	defaultInputRouter		= resourceManager->findEntity("DefaultInputRouterEntity");
+	videoEntity				= resourceManager->findEntity("VideoEntity"); 
+	lightEntity				= resourceManager->findEntity("LightEntity");
+	vertexMaterial			= resourceManager->findObject<nap::Material>("VertexColorMaterial");
+	frameMaterial			= resourceManager->findObject<nap::Material>("FrameMaterial");
 
 	assert(videoEntity != nullptr);
 
 	// Collect all video resources and play
-	videoResource = resourceManagerService->findObject<nap::Video>("Video1");
+	videoResource = resourceManager->findObject<nap::Video>("Video1");
 	videoResource->play();
 
 	// Set render states
@@ -362,7 +336,7 @@ void runGame(nap::Core& core)
 					if (press_event->mKey == nap::EKeyCode::KEY_f)
 					{
 						static bool fullscreen = true;
-						resourceManagerService->findObject<nap::RenderWindow>("Window0")->getWindow()->setFullScreen(fullscreen);
+						resourceManager->findObject<nap::RenderWindow>("Window0")->getWindow()->setFullScreen(fullscreen);
 						fullscreen = !fullscreen;
 					}
 				}

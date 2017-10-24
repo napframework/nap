@@ -97,7 +97,7 @@ namespace nap
 		 * Loads all modules in to the core environment 
          * @modulesDir is a path relative to the working directory containing the modules
 		 */
-		void initialize();
+		void initializeEngine();
 
 		/**
 		 * @return the resource manager

@@ -24,49 +24,25 @@ namespace nap
 	 */
 	bool AppRunner::init(Core& core)
 	{
-		core.initialize();
-
-		//////////////////////////////////////////////////////////////////////////
-		// GL Service + Window
-		//////////////////////////////////////////////////////////////////////////
-
-		// Get resource manager service
-		mResourceManager = core.getResourceManager();
+		core.initializeEngine();
 
 		// Create render service
 		mRenderService = core.getOrCreateService<RenderService>();
-
-		utility::ErrorState error;
-		if (!mRenderService->init(error))
-		{
-			Logger::fatal(error.toString());
-			return false;
-		}
-
-		// Collects all the errors
-		utility::ErrorState errorState;
-
-		// Create input service
 		mInputService = core.getOrCreateService<InputService>();
-
-		// Create scene service
 		mSceneService = core.getOrCreateService<SceneService>();
-
-		// Create etherdream service
 		mLaserService = core.getOrCreateService<EtherDreamService>();
-		if (!mLaserService->init(errorState))
+		mOscService = core.getOrCreateService<OSCService>();
+
+		// Initialize all services
+		utility::ErrorState errorState;
+		if (!core.initializeServices(errorState))
 		{
-			Logger::fatal("unable to create laser service: %s", errorState.toString().c_str());
+			Logger::fatal("unable to initialize services: %s", errorState.toString().c_str());
 			return false;
 		}
 
-		// Create osc service
-		mOscService = core.getOrCreateService<OSCService>();
-		if (!mOscService->init(errorState))
-		{
-			Logger::fatal("unable to create osc service: %s", errorState.toString().c_str());
-			return false;
-		}
+		// Get resource manager service
+		mResourceManager = core.getResourceManager();
 
 		// Load scene
 		if (!mResourceManager->loadFile("data/etherdream/etherdream.json", errorState))

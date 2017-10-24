@@ -27,40 +27,27 @@ namespace nap {
 	 */
 	bool AppRunner::init(Core& core)
 	{
-		core.initialize();
+		core.initializeEngine();
 		
 		//////////////////////////////////////////////////////////////////////////
 		// GL Service + Window
 		//////////////////////////////////////////////////////////////////////////
 		
-		// Get resource manager service
-		mResourceManager = core.getResourceManager();
-		
 		// Create render service
 		mRenderService = core.getOrCreateService<RenderService>();
-		
-		utility::ErrorState error;
-		if (!mRenderService->init(error))
+		mInputService = core.getOrCreateService<InputService>();
+		mSceneService = core.getOrCreateService<SceneService>();
+
+		// Initialize all services
+		utility::ErrorState errorState;
+		if (!core.initializeServices(errorState))
 		{
-			Logger::fatal(error.toString());
+			Logger::fatal("unable to initialize services: %s", errorState.toString().c_str());
 			return false;
 		}
 		
-		//////////////////////////////////////////////////////////////////////////
-		// Input Service
-		mInputService = core.getOrCreateService<InputService>();
-		//////////////////////////////////////////////////////////////////////////
-		
-		//////////////////////////////////////////////////////////////////////////
-		// Scene service
-		//////////////////////////////////////////////////////////////////////////
-		mSceneService = core.getOrCreateService<SceneService>();
-		
-		//////////////////////////////////////////////////////////////////////////
-		// Resources
-		//////////////////////////////////////////////////////////////////////////
-		
-		utility::ErrorState errorState;
+		// Get resource manager service
+		mResourceManager = core.getResourceManager();
 		if (!mResourceManager->loadFile("data/tommy/tommy.json", errorState))
 		{
 			Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
