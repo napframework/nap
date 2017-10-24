@@ -96,11 +96,6 @@ namespace nap
 		 */
 		void onMouseUp(const PointerReleaseEvent& pointerReleaseEvent);
 
-		/**
-		 * Helper called when orbiting starts.
-		 */
-		void startDrag();
-
 	private:
 		// Camera mode
 		enum class EMode

@@ -43,7 +43,7 @@ namespace nap
 		/**
 		 * @return RenderTarget size
 		 */
-		glm::ivec2 getRenderTargetSize() const { return mRenderTargetSize; }
+		const glm::ivec2& getRenderTargetSize() const { return mRenderTargetSize; }
 
 	private:
 		glm::ivec2	mRenderTargetSize;			// The size of the render target we're rendering to

@@ -26,11 +26,7 @@ namespace nap
 		/**
  		 * Get the types of components on which this component depends
 		 */
-		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override
-		{
-			components.push_back(RTTI_OF(TransformComponent));
-			components.push_back(RTTI_OF(KeyInputComponent));
-		}
+		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
 		float										mZoomSpeed = 0.5f;		// The speed with which to move
 		ComponentPtr<nap::OrthoCameraComponent>		mOrthoCameraComponent;	// Camera that we're controlling
