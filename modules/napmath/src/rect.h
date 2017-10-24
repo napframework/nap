@@ -13,6 +13,7 @@ namespace nap
 		 */
 		class NAPAPI Rect final
 		{
+			RTTI_ENABLE()
 		public:
 			/**
 			 *	Default constructor

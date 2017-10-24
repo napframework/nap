@@ -37,7 +37,7 @@ void run(nap::Core& core, std::unique_ptr<nap::AppRunner>& appRunner)
 	while (loop)
 	{
 		opengl::Event event;
-		if (opengl::pollEvent(event))
+		while (opengl::pollEvent(event))
 		{
 			// Check if we are dealing with an input event (mouse / keyboard)
 			if (nap::isInputEvent(event))
@@ -58,6 +58,8 @@ void run(nap::Core& core, std::unique_ptr<nap::AppRunner>& appRunner)
 						fullscreen = !fullscreen;
 					}
 				}
+
+				appRunner->registerInputEvent(std::move(input_event));
 			}
 			
 			// Check if we're dealing with a window event

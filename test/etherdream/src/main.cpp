@@ -9,6 +9,7 @@
 // predefines
 void run(nap::Core& core, std::unique_ptr<nap::AppRunner>& appRunner);
 
+
 // Main loop
 int main(int argc, char *argv[])
 {
@@ -51,19 +52,11 @@ void run(nap::Core& core, std::unique_ptr<nap::AppRunner>& appRunner)
 					if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
 						loop = false;
 					
-					if (press_event->mKey == nap::EKeyCode::KEY_f)
+					else if (press_event->mKey == nap::EKeyCode::KEY_f)
 					{
 						static bool fullscreen = true;
 						appRunner->setWindowFullscreen("Window", fullscreen);
 						fullscreen = !fullscreen;
-					}
-					else if (press_event->mKey == nap::EKeyCode::KEY_LEFT)
-					{
-						appRunner->changeLineSelectionIndex(-1);
-					}
-					else if (press_event->mKey == nap::EKeyCode::KEY_RIGHT)
-					{
-						appRunner->changeLineSelectionIndex(1);
 					}
 				}
 				

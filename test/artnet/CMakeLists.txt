@@ -24,8 +24,9 @@ if (WIN32)
 	find_package(freeimage REQUIRED)
 	copy_freeimage_dll()
 
-    # Copy over some crap window dlls
+    	# Copy over some crap window dlls
 	copy_base_windows_graphics_dlls()
+	copy_windows_ffmpeg_dlls()
 endif()
 
 # Copy artnet DLL

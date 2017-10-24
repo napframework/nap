@@ -43,7 +43,7 @@ namespace nap
 		/**
 		 *	@return the type of the OSC value
 		 */
-		rtti::TypeInfo getValueType();
+		rtti::TypeInfo getValueType() const;
 
 	public:
 		/**

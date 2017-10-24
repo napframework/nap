@@ -7,10 +7,14 @@
 #include <nap/logger.h>
 
 RTTI_BEGIN_CLASS(nap::NoiseProperties)
-	RTTI_PROPERTY("Frequency",			&nap::NoiseProperties::mFrequency,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Speed",				&nap::NoiseProperties::mSpeed,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Offset",				&nap::NoiseProperties::mOffset,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Amplitude",			&nap::NoiseProperties::mAmplitude,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Frequency",				&nap::NoiseProperties::mFrequency,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FrequencySmoothTime",	&nap::NoiseProperties::mFrequencySmoothTime,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Speed",					&nap::NoiseProperties::mSpeed,					nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("SpeedSmoothTime",		&nap::NoiseProperties::mSpeedSmoothTime,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Offset",					&nap::NoiseProperties::mOffset,					nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("OffsetSmoothTime",		&nap::NoiseProperties::mOffsetSmoothTime,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Amplitude",				&nap::NoiseProperties::mAmplitude,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("AmplitudeSmoothTime",	&nap::NoiseProperties::mAmplitudeSmoothTime,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::LineNoiseComponent)
@@ -31,16 +35,35 @@ namespace nap
 		mBlendComponent = getComponent<LineNoiseComponent>()->mBlendComponent.get();
 		mProperties = getComponent<LineNoiseComponent>()->mProperties;
 
+		// Set smooth timing values
+		mAmpSmoother.mSmoothTime = mProperties.mAmplitudeSmoothTime;
+		mAmpSmoother.setValue(mProperties.mAmplitude);
+
+		mFreqSmoother.mSmoothTime = mProperties.mFrequencySmoothTime;
+		mFreqSmoother.setValue(mProperties.mFrequency);
+
+		mOffsetSmoother.mSmoothTime = mProperties.mOffsetSmoothTime;
+		mOffsetSmoother.setValue(mProperties.mOffset);
+
+		mSpeedSmoother.mSmoothTime = mProperties.mSpeedSmoothTime;
+		mSpeedSmoother.setValue(mProperties.mSpeed);
+
 		return true;
 	}
 
 
 	void LineNoiseComponentInstance::update(double deltaTime)
 	{
+		// Update smoothers
+		mSpeedSmoother.update(mProperties.mSpeed, deltaTime);
+		mFreqSmoother.update(mProperties.mFrequency, deltaTime);
+		mAmpSmoother.update(mProperties.mAmplitude, deltaTime);
+		mOffsetSmoother.update(mProperties.mOffset, deltaTime);
+
 		nap::PolyLine& line = mBlendComponent->getLine();
 
 		// Update current time
-		mCurrentTime += (deltaTime * mProperties.mSpeed);
+		mCurrentTime += (deltaTime * mSpeedSmoother.getValue());
 
 		// Get the normals and vertices to manipulate
 		std::vector<glm::vec3>& normals = line.getNormalAttr().getData();
@@ -52,10 +75,10 @@ namespace nap
 		for (int i = 0; i < vert_count; i++)
 		{
 			glm::vec2 current_uv = glm::vec2(uvs[i].x, uvs[i].y);
-			current_uv.x = (current_uv.x * mProperties.mFrequency) + (mCurrentTime + mProperties.mOffset);
-			current_uv.y = (current_uv.y * mProperties.mFrequency) + (mCurrentTime + mProperties.mOffset);
+			current_uv.x = (current_uv.x * mFreqSmoother.getValue()) + (mCurrentTime + mOffsetSmoother.getValue());
+			current_uv.y = (current_uv.y * mFreqSmoother.getValue()) + (mCurrentTime + mOffsetSmoother.getValue());
 
-			float v = glm::simplex(current_uv) * mProperties.mAmplitude;
+			float v = glm::simplex(current_uv) * mAmpSmoother.getValue();
 
 			vertices[i] += (normals[i] * v);
 		}
