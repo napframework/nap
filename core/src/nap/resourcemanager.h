@@ -16,10 +16,6 @@
 
 namespace nap
 {	
-	class RTTIObjectGraphItem;
-	template<typename ITEM> class ObjectGraph;
-	using RTTIObjectGraph = ObjectGraph<RTTIObjectGraphItem>;
-
 	/**
 	 * Manager, owner of all objects, capable of loading and real-time updating of content.
 	 */

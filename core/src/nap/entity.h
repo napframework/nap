@@ -14,6 +14,10 @@ namespace nap
 
 	using EntityList = std::vector<EntityInstance*>;
 
+	class RTTIObjectGraphItem;
+	template<typename ITEM> class ObjectGraph;
+	using RTTIObjectGraph = ObjectGraph<RTTIObjectGraphItem>;
+
 	/**
 	 * Structure used to hold data necessary to create new instances during init
 	 */
@@ -23,12 +27,17 @@ namespace nap
 		using InstanceByIDMap		= std::unordered_map<std::string, rtti::RTTIObject*>;
 		using ComponentToEntityMap	= std::unordered_map<Component*, const Entity*>;
 
-		virtual ~EntityCreationParameters() = default;
-		EntityCreationParameters() = default;
+		EntityCreationParameters(const RTTIObjectGraph& objectGraph) :
+			mObjectGraph(&objectGraph)
+		{
+		}
 
-		EntityByIDMap			mEntitiesByID;
-		InstanceByIDMap			mAllInstancesByID;
-		ComponentToEntityMap	mComponentToEntity;
+		virtual ~EntityCreationParameters() = default;
+
+		const RTTIObjectGraph*		mObjectGraph = nullptr;
+		EntityByIDMap				mEntitiesByID;
+		InstanceByIDMap				mAllInstancesByID;
+		ComponentToEntityMap		mComponentToEntity;
 	};
 
 
