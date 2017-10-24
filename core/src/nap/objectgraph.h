@@ -91,6 +91,17 @@ namespace nap
 			return true;
 		}
 
+		/*
+		 * Visit all nodes in the graph and call the visitor function
+		 *
+		 * @param visitor The visitor to be called for each node in the graph
+		 */
+		void visitNodes(const std::function<void(const Node&)>& visitor) const
+		{
+			std::vector<Node*> result;
+			for (auto& kvp : mNodes)
+				visitor(*kvp.second);
+		}
 
 		/*
 		 * Returns object graph node.
