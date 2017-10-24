@@ -487,6 +487,7 @@
 			[
 				{
 					"Type" : "nap::PerspCameraComponent",
+					"mID" : "PerspCameraComponentLeft",
 					"Properties": {
 						"FieldOfView": 45.0,
 						"NearClippingPlane" : 0.01,
@@ -497,10 +498,15 @@
 					"Type" : "nap::KeyInputComponent"
 				},
 				{
-					"Type" : "nap::FirstPersonController",
-					"MovementSpeed": 3.0,
-					"RotateSpeed": 1.0
+					"Type" : "nap::PointerInputComponent"
 				},
+				{
+					"Type" : "nap::FirstPersonController",
+					"MovementSpeed": 20.0,
+					"RotateSpeed": 0.005,
+					"PerspCameraComponent" : "PerspCameraComponentLeft"
+
+				},					
 				{
 					"Type" : "nap::TransformComponent",
 					"Properties": {
@@ -532,6 +538,7 @@
 			[
 				{
 					"Type" : "nap::PerspCameraComponent",
+					"mID" : "PerspCameraComponentRight",
 					"Properties": {
 						"FieldOfView": 45.0,
 						"NearClippingPlane" : 0.01,
@@ -540,12 +547,16 @@
 				},
 				{
 					"Type" : "nap::KeyInputComponent"
+				},				
+				{
+					"Type" : "nap::PointerInputComponent"
 				},
 				{
 					"Type" : "nap::FirstPersonController",
-					"MovementSpeed": 10.0,
-					"RotateSpeed": 2.0
-				},
+					"MovementSpeed": 20.0,
+					"RotateSpeed": 0.005,
+					"PerspCameraComponent" : "PerspCameraComponentRight"
+				},					
 				{
 					"Type" : "nap::TransformComponent",
 					"Properties": {

@@ -37,7 +37,7 @@ void run(nap::Core& core, std::unique_ptr<nap::AppRunner>& appRunner)
 	while (loop)
 	{
 		opengl::Event event;
-		if (opengl::pollEvent(event))
+		while (opengl::pollEvent(event))
 		{
 			// Check if we are dealing with an input event (mouse / keyboard)
 			if (nap::isInputEvent(event))
@@ -52,6 +52,8 @@ void run(nap::Core& core, std::unique_ptr<nap::AppRunner>& appRunner)
 						loop = false;
 
 				}
+				
+				appRunner->registerInputEvent(std::move(input_event));
 			}
 			
 			// Check if we're dealing with a window event
@@ -76,7 +78,7 @@ void run(nap::Core& core, std::unique_ptr<nap::AppRunner>& appRunner)
 	appRunner->shutdown();
 	
 	// Delete AppRunner now so that its entities etc are cleaned up before ObjectPtrManager destruction
-	appRunner.reset();
+	appRunner.reset(); 
 }
 
 

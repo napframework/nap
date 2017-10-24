@@ -67,12 +67,13 @@ namespace nap
 		void handleEvent(const Event& event);
 
 	public:
-		int										mWidth			= 512;			// Width of the window
-		int										mHeight			= 512;			// Height of the window
-		bool									mBorderless		= false;		// If the window is borderless
-		bool									mResizable		= true;			// If the window is resizable
-		bool									mSync			= true;			// If v-sync is turned on for the window
-		std::string								mTitle			= "";			// Name of the window
+		int										mWidth			= 512;							// Width of the window
+		int										mHeight			= 512;							// Height of the window
+		bool									mBorderless		= false;						// If the window is borderless
+		bool									mResizable		= true;							// If the window is resizable
+		bool									mSync			= true;							// If v-sync is turned on for the window
+		std::string								mTitle			= "";							// Name of the window
+		glm::vec4								mClearColor		= { 0.0f, 0.0f, 0.0f, 1.0f };	// Window backbuffer clear color
 
 	private:
 		RenderService*							mRenderService	= nullptr;		// Render service

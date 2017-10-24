@@ -37,7 +37,7 @@ void run(nap::Core& core, std::unique_ptr<nap::AppRunner>& appRunner)
 	while (loop)
 	{
 		opengl::Event event;
-		if (opengl::pollEvent(event))
+		while (opengl::pollEvent(event))
 		{
 			// Check if we are dealing with an input event (mouse / keyboard)
 			if (nap::isInputEvent(event))
