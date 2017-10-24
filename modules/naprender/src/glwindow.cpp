@@ -206,6 +206,7 @@ namespace nap
 		SDL_GL_SwapWindow(mWindow);
 	}
 
+
 	// Make this window's context current 
 	void GLWindow::makeCurrent()
 	{
@@ -216,6 +217,7 @@ namespace nap
 		// Make context current
 		SDL_GL_MakeCurrent(mWindow, mContext);
 	}
+
 
 	// The window number
 	nap::uint32 GLWindow::getNumber() const

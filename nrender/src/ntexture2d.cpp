@@ -103,7 +103,7 @@ namespace opengl
 	/**
 	 * Uploads the 2D texture data to the GPU
 	 */
-	void Texture2D::setData(void* data)
+	void Texture2D::setData(void* data, int pitch)
 	{
 		void* data_ptr = data;
 
@@ -122,6 +122,8 @@ namespace opengl
 
 		bind();
 		glAssert();
+
+		glPixelStorei(GL_UNPACK_ROW_LENGTH, pitch);
 
 		// Upload texture data
 		glTexImage2D(GL_TEXTURE_2D, 0, mSettings.internalFormat, mSettings.width, mSettings.height, 0, mSettings.format, mSettings.type, data_ptr);

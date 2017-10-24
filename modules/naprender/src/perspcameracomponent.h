@@ -92,12 +92,11 @@ namespace nap
 		void setDirty() { mDirty = true; }
 
 	private:
-		mutable glm::mat4x4		mProjectionMatrix;		// The composed projection matrix
+		mutable glm::mat4x4				mProjectionMatrix;		// The composed projection matrix
 
-		mutable bool			mDirty = true;			// If the projection matrix needs to be recalculated
-		glm::ivec2				mRenderTargetSize;		// The size of the render target we're rendering to
+		mutable bool					mDirty = true;			// If the projection matrix needs to be recalculated
 		
-		PerpCameraProperties	mProperties;			// These properties are copied from the resource to the instance. When these are changed, only the instance is affected
+		PerpCameraProperties			mProperties;			// These properties are copied from the resource to the instance. When these are changed, only the instance is affected
 		TransformComponentInstance*		mTransformComponent;	// Cached transform component
 	};
 }
