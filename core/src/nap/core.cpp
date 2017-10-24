@@ -2,9 +2,11 @@
 #include "core.h"
 #include "resourcemanager.h"
 #include "logger.h"
+#include "service.h"
 
 // External Includes
 #include <rtti/pythonmodule.h>
+#include <iostream>
 
 using namespace std;
 
@@ -54,6 +56,37 @@ namespace nap
 	}
 
 
+	bool Core::initializeServices(utility::ErrorState& error)
+	{
+		std::vector<Service*> objects;
+		for (const auto& service : mServices)
+		{
+			objects.emplace_back(service.get());
+		}
+
+		// Build service dependency graph
+		bool success = mServiceGraph.build(objects, [=](Service* service) 
+		{
+			 return ServiceObjectGraphItem::create(service, this); 
+		}, error);
+
+		// Make sure the graph was successfully build
+		if (!error.check(success, "unable to build service dependency graph"))
+			return false;
+
+		// Initialize all services
+		/*
+		for (auto& node : mServiceGraph.getSortedNodes())
+		{
+			nap::Service* service = node->mItem.mObject;
+			if (!service->init(error))
+				return false;
+		}
+		*/
+		return true;
+	}
+
+
 	// Returns service that matches @type
 	Service* Core::getService(const rtti::TypeInfo& type)
 	{
@@ -90,7 +123,7 @@ namespace nap
 
 		// Add service
 		mServices.emplace_back(std::unique_ptr<Service>(service));
-		service->initialized();
+		service->created();
 		return *service;
 	}
 

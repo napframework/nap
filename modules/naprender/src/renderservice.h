@@ -75,7 +75,7 @@ namespace nap
 		/**
 		 * Sets the renderer, the service will own the renderer
 		 */
-		bool init(nap::utility::ErrorState& errorState);
+		virtual bool init(nap::utility::ErrorState& errorState) override;
 
 		/**
 		 * Shuts down the managed renderer
@@ -155,6 +155,11 @@ namespace nap
 		* Object creation registration
 		*/
 		virtual void registerObjectCreators(rtti::Factory& factory) override;
+
+		/**
+		 * Register dependencies, render module depends on scene
+		 */
+		virtual void getDependencies(std::vector<rtti::TypeInfo>& dependencies) override;
 
     private:
 		friend class VAOHandle;

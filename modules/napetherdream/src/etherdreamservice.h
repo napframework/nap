@@ -31,11 +31,6 @@ namespace nap
 		 */
 		bool init(nap::utility::ErrorState& errorState);
 
-		/**
-		 *	Register specific object creators
-		 */
-		virtual void registerObjectCreators(rtti::Factory& factory) override;
-
 	protected:
 		/**
 		 * Adds a dac to the system, every dac is associated with a number.
@@ -44,6 +39,16 @@ namespace nap
 		 * @return if the dac has been found and added to the system
 		 */
 		bool allocateDAC(EtherDreamDac& dac);
+
+		/**
+		* Register specific object creators
+		*/
+		virtual void registerObjectCreators(rtti::Factory& factory) override;
+
+		/**
+		 *	This service depends on scene and render
+		 */
+		virtual void getDependencies(std::vector<rtti::TypeInfo>& dependencies) override;
 
 		/**
 		* @return the etherdream interface that manages all the DACs

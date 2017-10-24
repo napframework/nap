@@ -1,5 +1,9 @@
 /// local includes
-#include <videoservice.h>
+#include "videoservice.h"
+
+// External includes
+#include <sceneservice.h>
+#include <renderservice.h>
 
 extern "C"
 {
@@ -7,8 +11,7 @@ extern "C"
 	#include <libavformat/avformat.h>
 }
 
-RTTI_BEGIN_CLASS(nap::VideoService)
-RTTI_END_CLASS
+RTTI_DEFINE(nap::VideoService)
 
 namespace nap
 {
@@ -17,6 +20,13 @@ namespace nap
 		av_register_all();
 		avcodec_register_all();
 		return true;
+	}
+
+
+	void VideoService::getDependencies(std::vector<rtti::TypeInfo>& dependencies)
+	{
+		dependencies.emplace_back(RTTI_OF(SceneService));
+		dependencies.emplace_back(RTTI_OF(RenderService));
 	}
 }
 

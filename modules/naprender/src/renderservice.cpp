@@ -15,6 +15,7 @@
 #include <rtti/factory.h>
 #include <nap/resourcemanager.h>
 #include <nap/logger.h>
+#include <sceneservice.h>
 
 namespace nap
 {
@@ -22,6 +23,12 @@ namespace nap
 	void RenderService::registerObjectCreators(rtti::Factory& factory)
 	{
 		factory.addObjectCreator(std::make_unique<RenderWindowResourceCreator>(*this));
+	}
+
+
+	void RenderService::getDependencies(std::vector<rtti::TypeInfo>& dependencies)
+	{
+		dependencies.emplace_back(RTTI_OF(SceneService));
 	}
 
 

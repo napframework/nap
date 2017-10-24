@@ -6,6 +6,8 @@
 #include <nap/core.h>
 #include <nap/resourcemanager.h>
 #include <nap/logger.h>
+#include <sceneservice.h>
+#include <renderservice.h>
 
 namespace nap
 {
@@ -44,6 +46,13 @@ namespace nap
 	void EtherDreamService::registerObjectCreators(rtti::Factory& factory)
 	{		
 		factory.addObjectCreator(std::make_unique<DacObjectCreator>(*this));
+	}
+
+
+	void EtherDreamService::getDependencies(std::vector<rtti::TypeInfo>& dependencies)
+	{
+		dependencies.emplace_back(RTTI_OF(SceneService));
+		dependencies.emplace_back(RTTI_OF(RenderService));
 	}
 
 

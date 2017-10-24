@@ -11,6 +11,8 @@
 
 // Core Includes
 #include "service.h"
+#include "serviceobjectgraphitem.h"
+#include "objectgraph.h"
 #include "timer.h"
 #include "modulemanager.h"
 #include "utility/dllexport.h"
@@ -97,12 +99,20 @@ namespace nap
 		 */
 		void initialize();
 
-
 		/**
 		 * @return the resource manager
 		 * The resource manager holds all the entities and components currently loaded by Core
 		 */
 		ResourceManager* getResourceManager()				{ return mResourceManager.get(); }
+
+		/**
+		 * Initializes all registered services
+		 * Initialization occurs based on service dependencies, this means that if service B depends on Service A,
+		 * Service A is initialized before service B etc.
+		 * @param error contains the error message when initialization fails
+		 * @return if initialization failed or succeeded
+		 */
+		bool initializeServices(utility::ErrorState& error);
 
 
 	private:
@@ -117,6 +127,9 @@ namespace nap
 
 		// All the services associated with core
 		ServiceList mServices;
+
+		// Graph used for prioritizing services
+		ObjectGraph<ServiceObjectGraphItem> mServiceGraph;
 
 		// Timer
 		SimpleTimer mTimer;

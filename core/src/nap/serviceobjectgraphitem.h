@@ -1,0 +1,48 @@
+#pragma once
+
+#include "service.h"
+
+namespace nap
+{
+	/**
+	* Service item that can be used in an ObjectGraph
+	* This item wraps a service that points to another set of services
+	*/
+	class ServiceObjectGraphItem
+	{
+	public:
+		using Type = Service*;
+
+		// Default constructor
+		ServiceObjectGraphItem() = default;
+
+		// Default destructor
+		~ServiceObjectGraphItem() = default;
+
+		/**
+		 * Creates a new item that is used to build the graph
+		 * @param service: the service to create the item for
+		 */
+		static const ServiceObjectGraphItem create(Service* service, Core* core);
+
+		/**
+		 * @return the id associated with this graph item
+		 */
+		const std::string getID() const;
+
+		/**
+		 * Performs the traversal of services
+		 * Every service can reference another service, based on those dependencies the graph is constructed
+		 * @param pointees Output parameter, contains all objects and files this object points to.
+		 * @param errorState If false is returned, contains information about the error.
+		 * @return true is succeeded, false otherwise.
+		 */
+		bool getPointees(std::vector<ServiceObjectGraphItem>& pointees, utility::ErrorState& errorState);
+
+		// The service this item references
+		Service* mObject = nullptr;
+
+		// Core is used to resolve all pointers
+		Core* mCore = nullptr;
+	};
+}
