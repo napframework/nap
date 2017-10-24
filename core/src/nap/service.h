@@ -46,7 +46,7 @@ namespace nap
 		 * Override this function to register specific object creators for classes associated with this module
 		 * @param factory the factory used by the resource manager to instantiate objects
 		 */
-		virtual void registerObjectCreators(rtti::Factory& factory)					{}
+		virtual void registerObjectCreators(rtti::Factory& factory)						{ }
 
 		/**
 		 * Override this function to register service dependencies
@@ -54,7 +54,7 @@ namespace nap
 		 * This will ensure correct order of initialization and update calls
 		 * @param dependencies rtti information of the services this service depends on
 		 */
-		virtual void getDependencies(std::vector<rtti::TypeInfo>& dependencies)		{}
+		virtual void getDependencies(std::vector<rtti::TypeInfo>& dependencies)			{ }
 
 		/**
 		 * Invoked when the service has been constructed and Core is available.
@@ -66,7 +66,29 @@ namespace nap
 		 * Override this method to initialize your service.
 		 * @param error
 		 */
-		virtual bool init(utility::ErrorState& error)								{ return true; }
+		virtual bool init(utility::ErrorState& error)									{ return true; }
+
+		/**
+		 * Invoked by core in the app loop. Update order depends on service dependency.
+		 * This call is invoked before the resource manager checks for file changes and the app update call
+		 * If service B depends on A, A::update() is called before B::update()
+		 * @param deltaTime: the time in between calls
+		 */
+		virtual void preUpdate(double deltaTime)										{ }
+
+		/**
+		 * Invoked by core in the app loop. Update order depends on service dependency
+		 * This call is invoked after the resource manager has loaded any file changes but before
+		 * the app update call. If service B depends on A, A::update() is called before B::update()
+		 * @param deltaTime: the time in between calls
+		 */
+		virtual void update(double deltaTime)											{ }
+
+		/**
+		 * Invoked by core in the app loop. Update order depends on service dependency
+		 * This call is invoked after the application update call
+		 */
+		virtual void postUpdate(double deltaTime)										{ }
 
 	private:
 		// this variable will be set by the core when the service is added

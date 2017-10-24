@@ -64,18 +64,8 @@ namespace nap {
 	
 	
 	// Called when the window is updating
-	void AppRunner::update()
-	{
-		// If any changes are detected, and we are reloading, we need to do this on the correct context
-		mRenderService->getPrimaryWindow().makeCurrent();
-		mResourceManager->checkForFileChanges();
-		
-		// Process events for all windows
-		mRenderService->processEvents();
-		
-		// Update all resources
-		mResourceManager->update();
-		
+	void AppRunner::update(double deltaTime)
+	{		
 		// Update and send our test data over ArtNET
 		float sine = sin(mRenderService->getCore().getElapsedTime() * (M_PI * 2));
 		
@@ -94,12 +84,6 @@ namespace nap {
 		ObjectPtr<ArtNetController> universe_1 = mResourceManager->findObject("Universe1");
 		std::reverse(channel_data.begin(), channel_data.end());
 		universe_1->send(channel_data);
-		
-		// Update the scene
-		mSceneService->update();
-		
-		// Update ArtNET
-		mArtnetService->update();
 	}
 	
 	

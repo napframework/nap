@@ -339,17 +339,13 @@ namespace nap
 		mFactory(std::make_unique<Factory>()),
 		mCore(core)
 	{
-		mLastTimeStamp = mCore.getElapsedTime();
 		mRootEntity = std::make_unique<EntityInstance>(mCore, nullptr);
 	}
 
 
-	void ResourceManager::update()
+	void ResourceManager::update(double elapsedTime)
 	{
-		double new_time   = mCore.getElapsedTime();
-		double delta_time = new_time - mLastTimeStamp;
-		mLastTimeStamp = new_time;
-		getRootEntity().update(delta_time);
+		getRootEntity().update(elapsedTime);
 	}
 
 

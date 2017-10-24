@@ -27,11 +27,6 @@ namespace nap
 		// Default Destructor
 		virtual ~OSCService();
 
-		/**
-		 * Processes all OSC received events
-		 */
-		void update();
-
 	protected:
 		/**
 		 * Registers all objects that need a specific way of construction
@@ -41,6 +36,11 @@ namespace nap
 
 		// Initialization
 		virtual bool init(nap::utility::ErrorState& errorState) override;
+
+		/**
+		* Processes all OSC received events
+		*/
+		virtual void update(double deltaTime) override;
 
 	private:
 		/**

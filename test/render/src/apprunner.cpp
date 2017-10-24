@@ -68,7 +68,7 @@ namespace nap {
 	
 	
 	// Called when the window is updating
-	void AppRunner::update()
+	void AppRunner::update(double deltaTime)
 	{
 		DefaultInputRouter& input_router = mDefaultInputRouter->getComponent<DefaultInputRouterComponentInstance>().mInputRouter;
 		
@@ -90,24 +90,6 @@ namespace nap {
 			mInputService->processEvents(*window, input_router, entities);
 		}
 		
-		// Process events for all windows
-		mRenderService->processEvents();
-		
-		// Need to make primary window active before reloading files, as renderer resources need to be created in that context
-		mRenderService->getPrimaryWindow().makeCurrent();
-		mResourceManager->checkForFileChanges();
-		
-		// Update model transform
-		float elapsed_time = mRenderService->getCore().getElapsedTime();
-		static float prev_elapsed_time = elapsed_time;
-		float delta_time = prev_elapsed_time - elapsed_time;
-		if (delta_time < 0.01f)
-		{
-			delta_time = 0.01f;
-		}
-		
-		mResourceManager->getRootEntity().update(delta_time);
-		
 		// Retrieve source (resource) mesh data
 		nap::IMesh& mesh = mPlaneEntity->getComponent<RenderableMeshComponentInstance>().getMesh();
 		nap::Mesh* rtti_mesh = rtti_cast<Mesh>(&mesh);
@@ -123,7 +105,7 @@ namespace nap {
 		// Sine wave over our quad
 		for (int index = 0; index != src_positions.size() - 1; ++index)
 		{
-			float s = sin(elapsed_time + (float)index * 0.2f);
+			float s = sin(mRenderService->getCore().getElapsedTime() + (float)index * 0.2f);
 			dst_positions[index] = src_positions[index] * glm::vec3(s,s,s);
 		}
 		
@@ -134,9 +116,6 @@ namespace nap {
 		{
 			Logger::fatal(errorState.toString());
 		}
-		
-		// Update the scene
-		mSceneService->update();
 	}
 	
 	

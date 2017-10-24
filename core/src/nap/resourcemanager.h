@@ -126,7 +126,7 @@ namespace nap
 		/**
 		 * Forwards an update to all entities managed under the root
 		 */
-		virtual void update();
+		void update(double deltaTime);
 
 	private:
 		using InstanceByIDMap	= std::unordered_map<std::string, rtti::RTTIObject*>;					// Map from object ID to object (non-owned)
@@ -187,7 +187,6 @@ namespace nap
 		std::set<std::string>				mFilesToWatch;					// Files currently loaded, used for watching changes on the files
 		FileLinkMap							mFileLinkMap;					// Map containing links from target to source file, for updating source files if the file monitor sees changes
 		std::unique_ptr<DirectoryWatcher>	mDirectoryWatcher;				// File monitor, detects changes on files
-		double								mLastTimeStamp = 0;				// Last time stamp used for calculating delta time
 		ModifiedTimeMap						mFileModTimes;					// Cache for file modification times to avoid responding to too many file events
 		std::unique_ptr<rtti::Factory>		mFactory;						// Responsible for creating objects when de-serializing
 		Core&								mCore;							// Core

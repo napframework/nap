@@ -29,7 +29,7 @@ namespace nap
 	}
 
 
-	void OSCService::update()
+	void OSCService::update(double deltaTime)
 	{
 		std::queue<OSCEventPtr> events;
 

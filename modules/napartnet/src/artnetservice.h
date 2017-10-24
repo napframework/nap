@@ -40,16 +40,16 @@ namespace nap
 		ArtNetService(const ArtNetService& rhs) = delete;
 		ArtNetService& operator=(const ArtNetService& rhs) = delete;
 
-		/**
-		 * Makes sure that data that is sent using the various send functions is transmitted over the network.
-		 */
-		void update();
-
 	protected:
 		/**
 		 *	Register specific object creators
 		 */
 		virtual void registerObjectCreators(rtti::Factory& factory) override;
+
+		/**
+		* Makes sure that data that is sent using the various send functions is transmitted over the network.
+		*/
+		virtual void update(double deltaTime);
 
 	private:
 		/**

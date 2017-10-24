@@ -100,42 +100,17 @@ void updateCameraLocation()
 
 
 // Called when the window is updating
-void onUpdate()
+void onUpdate(double deltaTime)
 {
 	nap::DefaultInputRouter& input_router = defaultInputRouter->getComponent<nap::DefaultInputRouterComponentInstance>().mInputRouter;
 
-	{
-		// Update input for first window
-		std::vector<nap::EntityInstance*> entities;
-		entities.push_back(cameraEntity.get());
-
-		inputService->processEvents(*renderWindow, input_router, entities);
-	}
-	
-	// Process events for all windows
-	renderService->processEvents(); 
-
-	// Need to make primary window active before reloading files, as renderer resources need to be created in that context
-	renderService->getPrimaryWindow().makeCurrent();
-	resourceManager->checkForFileChanges();
-
-	// Update all resources
-	resourceManager->update();
-
-	// Update all entities
-	sceneService->update();
+	// Update input for first window
+	std::vector<nap::EntityInstance*> entities;
+	entities.push_back(cameraEntity.get());
+	inputService->processEvents(*renderWindow, input_router, entities);
 
 	// Update cam location for lights
 	updateCameraLocation();
-
-	// Update model transform
-	float elapsed_time = renderService->getCore().getElapsedTime();
-	static float prev_elapsed_time = elapsed_time;
-	float delta_time = prev_elapsed_time - elapsed_time;
-	if (delta_time < 0.01f)
-	{
-		delta_time = 0.01f;
-	}
 
 	// If the video is not currently playing, start playing it again. This is needed for real time editing; 
 	// if the video resource is modified it will not automatically play again (playback is started during init), causing the output to be black
@@ -144,7 +119,7 @@ void onUpdate()
 
 	// Set video to plane
 	nap::utility::ErrorState error_state;
-	if (!videoResource->update(delta_time, error_state))
+	if (!videoResource->update(nap::math::max<float>(deltaTime, 0.01f), error_state))
 	{
 		nap::Logger::fatal(error_state.toString());
 	}
@@ -315,6 +290,9 @@ void runGame(nap::Core& core)
 	// Run function
 	bool loop = true;
 
+	// Pointer to function used inside update call by core
+	std::function<void(double)> update_call = std::bind(&onUpdate, std::placeholders::_1);
+
 	// Loop
 	while (loop)
 	{
@@ -356,7 +334,7 @@ void runGame(nap::Core& core)
 		//////////////////////////////////////////////////////////////////////////
 
 		// Update
-		onUpdate();
+		core.update(update_call);
 
 		// Render
 		onRender();

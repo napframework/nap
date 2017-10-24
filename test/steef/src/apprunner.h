@@ -35,7 +35,7 @@ namespace nap
 		/**
 		 *	Update is called before render, performs all the app logic
 		 */
-		void update();
+		void update(double deltaTime);
 
 		/**
 		 *	Render is called after update, pushes all renderable objects to the GPU

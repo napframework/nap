@@ -25,7 +25,8 @@ namespace nap {
 		// Create services
 		mRenderService = core.getOrCreateService<nap::RenderService>();
 		mSceneService = core.getOrCreateService<nap::SceneService>();		
-		
+		mInputService = core.getOrCreateService<nap::InputService>();
+
 		// Initialize all services
 		utility::ErrorState errorState;
 		if (!core.initializeServices(errorState))
@@ -74,27 +75,8 @@ namespace nap {
 	
 	
 	// Called when the window is updating
-	void AppRunner::update()
-	{
-		// Update input for first window
-		std::vector<nap::EntityInstance*> entities;
-		entities.push_back(mCameraEntity.get());
-		
-		// Process events for all windows
-		mRenderService->processEvents();
-		
-		// Need to make primary window active before reloading files, as renderer resources need to be created in that context
-		mRenderService->getPrimaryWindow().makeCurrent();
-		
-		// Reload all files if data changed
-		mResourceManager->checkForFileChanges();
-		
-		// Tick for all components that are listening
-		mResourceManager->update();
-		
-		// Update the scene
-		mSceneService->update();
-		
+	void AppRunner::update(double deltaTime)
+	{							
 		// Make sure background image matches window size
 		updateBackgroundImage();
 		

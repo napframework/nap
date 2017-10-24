@@ -33,6 +33,9 @@ void run(nap::Core& core, std::unique_ptr<nap::AppRunner>& appRunner)
 	// Run function
 	bool loop = true;
 
+	// Pointer to function used inside update call by core
+	std::function<void(double)> update_call = std::bind(&nap::AppRunner::update, appRunner.get(), std::placeholders::_1);
+
 	// Loop
 	while (loop)
 	{
@@ -73,8 +76,8 @@ void run(nap::Core& core, std::unique_ptr<nap::AppRunner>& appRunner)
 
 		//////////////////////////////////////////////////////////////////////////
 
-		// Update
-		appRunner->update();
+		// Update all services and signal update
+		core.update(update_call);
 
 		// Render
 		appRunner->render();
