@@ -1,4 +1,4 @@
-project(mod_napcamera)
+project(mod_napcameracontrol)
 
 # add all cpp files to SOURCES
 file(GLOB SOURCES src/*.cpp)

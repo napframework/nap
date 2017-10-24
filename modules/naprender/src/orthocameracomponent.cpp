@@ -76,25 +76,29 @@ namespace nap
 	{
 		if (mDirty)
 		{
-			if (mMode == EMode::PixelSpace)
+			switch (mMode)
 			{
-				// In this mode we use the rendertarget size to set the left/right/top/bottom planes.
-				glm::ivec2 render_target_size = getRenderTargetSize();
-				mProjectionMatrix = glm::ortho(0.0f, (float)render_target_size.x, (float)render_target_size.y, 0.0f, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
-			}
-			else if (mMode == EMode::CorrectAspectRatio)
-			{
-				// In this mode, we scale the top and bottom planes based on the aspect ratio
-				glm::ivec2 renderTargetSize = getRenderTargetSize();
-				float aspect_ratio = (float)renderTargetSize.y / (float)renderTargetSize.x;
-				float top_plane = mProperties.mTopPlane * aspect_ratio;
-				float bottom_plane = mProperties.mBottomPlane * aspect_ratio;
+				case EMode::PixelSpace:
+				{
+					// In this mode we use the rendertarget size to set the left/right/top/bottom planes.
+					glm::ivec2 render_target_size = getRenderTargetSize();
+					mProjectionMatrix = glm::ortho(0.0f, (float)render_target_size.x, (float)render_target_size.y, 0.0f, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
+					break;
+				}
+				case EMode::CorrectAspectRatio:
+				{
+					// In this mode, we scale the top and bottom planes based on the aspect ratio
+					glm::ivec2 renderTargetSize = getRenderTargetSize();
+					float aspect_ratio = (float)renderTargetSize.y / (float)renderTargetSize.x;
+					float top_plane = mProperties.mTopPlane * aspect_ratio;
+					float bottom_plane = mProperties.mBottomPlane * aspect_ratio;
 
-				mProjectionMatrix = glm::ortho(mProperties.mLeftPlane, mProperties.mRightPlane, bottom_plane, top_plane, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
-			}
-			else
-			{
-				mProjectionMatrix = glm::ortho(mProperties.mLeftPlane, mProperties.mRightPlane, mProperties.mBottomPlane, mProperties.mTopPlane, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
+					mProjectionMatrix = glm::ortho(mProperties.mLeftPlane, mProperties.mRightPlane, bottom_plane, top_plane, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
+				}
+				case EMode::Custom:
+				{
+					mProjectionMatrix = glm::ortho(mProperties.mLeftPlane, mProperties.mRightPlane, mProperties.mBottomPlane, mProperties.mTopPlane, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
+				}
 			}
 
 			mDirty = false;

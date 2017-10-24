@@ -20,6 +20,14 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	void OrthoController::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
+	{
+		components.push_back(RTTI_OF(TransformComponent));
+		components.push_back(RTTI_OF(KeyInputComponent));
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+
 	OrthoControllerInstance::OrthoControllerInstance(EntityInstance& entity, Component& resource) :
 		ComponentInstance(entity, resource)
 	{
