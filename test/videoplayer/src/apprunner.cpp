@@ -20,7 +20,7 @@ namespace nap {
 	 */
 	bool AppRunner::init(Core& core)
 	{
-		core.initialize();
+		core.initializeEngine();
 		
 		//////////////////////////////////////////////////////////////////////////
 		// GL Service + Window
@@ -31,22 +31,15 @@ namespace nap {
 		
 		// Create render service
 		mRenderService = core.getOrCreateService<RenderService>();
-		
-		utility::ErrorState error;
-		if (!mRenderService->init(error))
-		{
-			Logger::fatal(error.toString());
-			return false;
-		}
-		
 		mInputService = core.getOrCreateService<InputService>();
 		mSceneService = core.getOrCreateService<SceneService>();
 		mVideoService = core.getOrCreateService<VideoService>();
-		
+
+		// Initialize all services
 		utility::ErrorState errorState;
-		if (!mVideoService->init(errorState))
+		if (!core.initializeServices(errorState))
 		{
-			Logger::fatal("Failed to init video service: \n %s", errorState.toString().c_str());
+			Logger::fatal("unable to initialize services: %s", errorState.toString().c_str());
 			return false;
 		}
 		

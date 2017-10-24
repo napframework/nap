@@ -42,7 +42,7 @@ namespace nap
 	}
 	
     
-	void Core::initialize()
+	void Core::initializeEngine()
 	{ 
 		mModuleManager.loadModules();
 
@@ -75,14 +75,12 @@ namespace nap
 			return false;
 
 		// Initialize all services
-		/*
 		for (auto& node : mServiceGraph.getSortedNodes())
 		{
 			nap::Service* service = node->mItem.mObject;
 			if (!service->init(error))
 				return false;
 		}
-		*/
 		return true;
 	}
 

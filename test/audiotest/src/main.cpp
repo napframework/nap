@@ -13,7 +13,7 @@
 #include <audiodevice.h>
 #include <audiotypes.h>
 
-nap::ResourceManager* resourceManagerService = nullptr;
+nap::ResourceManager* resourceManager = nullptr;
 
 
 /**
@@ -21,26 +21,24 @@ nap::ResourceManager* resourceManagerService = nullptr;
 * slowly migrating all functionality to nap
 */
 bool init(nap::Core& core)
-{
-    // Collects all the errors
-    nap::utility::ErrorState errorState;
+{    
+	// Initialize the engine -> loads all modules
+    core.initializeEngine();
     
-    core.initialize();
-    
-
-    // Get resource manager service
-	resourceManagerService = core.getResourceManager();
-    
-    
+	// Create services
     auto audioService = core.getOrCreateService<nap::audio::AudioService>();
-    if (!audioService->init(errorState))
-    {
-        nap::Logger::fatal(errorState.toString());
-        return false;
-    }
-    
+ 
+	// Initialize all services
+	nap::utility::ErrorState errorState;
+	if (!core.initializeServices(errorState))
+	{
+		nap::Logger::fatal("unable to initialize services: %s", errorState.toString().c_str());
+		return false;
+	}
+
     // Load scene
-    if (!resourceManagerService->loadFile("data/audiotest/audiotest.json", errorState))
+	resourceManager = core.getResourceManager();
+	if (!resourceManager->loadFile("data/audiotest/audiotest.json", errorState))
     {
         nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
         return false;
@@ -48,6 +46,7 @@ bool init(nap::Core& core)
 
 	return true;
 }
+
 
 // Main loop
 int main(int argc, char *argv[])
@@ -59,8 +58,8 @@ int main(int argc, char *argv[])
     
     while (true)
     {
-        resourceManagerService->checkForFileChanges();
-        resourceManagerService->update();
+        resourceManager->checkForFileChanges();
+        resourceManager->update();
 //        std::this_thread::sleep_for(std::chrono::nanoseconds(1000));
     }
 

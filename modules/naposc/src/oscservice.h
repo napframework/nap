@@ -27,9 +27,6 @@ namespace nap
 		// Default Destructor
 		virtual ~OSCService();
 
-		// Initialization
-		bool init(nap::utility::ErrorState& errorState);
-
 		/**
 		 * Processes all OSC received events
 		 */
@@ -41,6 +38,9 @@ namespace nap
 		 * @param factory the factory to register the object creators with
 		 */
 		virtual void registerObjectCreators(rtti::Factory& factory) override;
+
+		// Initialization
+		virtual bool init(nap::utility::ErrorState& errorState) override;
 
 	private:
 		/**

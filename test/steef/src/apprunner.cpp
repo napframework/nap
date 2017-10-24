@@ -19,36 +19,23 @@ namespace nap {
 	 */
 	bool AppRunner::init(nap::Core& core)
 	{
-		core.initialize();
+		// Initialize engine -> loads all modules
+		core.initializeEngine();
 		
-		//////////////////////////////////////////////////////////////////////////
-		// GL Service + Window
-		//////////////////////////////////////////////////////////////////////////
-		
-		// Get resource manager service
-		mResourceManager = core.getResourceManager();
-		
-		// Create render service
+		// Create services
 		mRenderService = core.getOrCreateService<nap::RenderService>();
-		
-		nap::utility::ErrorState error;
-		if (!mRenderService->init(error))
-		{
-			nap::Logger::fatal(error.toString());
-			return false;
-		}
-		nap::Logger::info("initialized render service: %s", mRenderService->getTypeName().c_str());
-
-		//////////////////////////////////////////////////////////////////////////
-		// Scene
-		//////////////////////////////////////////////////////////////////////////
 		mSceneService = core.getOrCreateService<nap::SceneService>();		
 		
-		//////////////////////////////////////////////////////////////////////////
-		// Resources
-		//////////////////////////////////////////////////////////////////////////
-		
-		nap::utility::ErrorState errorState;
+		// Initialize all services
+		utility::ErrorState errorState;
+		if (!core.initializeServices(errorState))
+		{
+			Logger::fatal("unable to initialize services: %s", errorState.toString().c_str());
+			return false;
+		}
+
+		// Get resource manager and load
+		mResourceManager = core.getResourceManager();
 		if (!mResourceManager->loadFile("data/steef/objects.json", errorState))
 		{
 			nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
