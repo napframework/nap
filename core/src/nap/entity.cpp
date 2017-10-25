@@ -1,6 +1,7 @@
 #include <rtti/pythonmodule.h>
 #include "entity.h"
-#include "core.h"
+#include <nap/core.h>
+#include <nap/resourcemanager.h>
 
 using namespace std;
 
@@ -20,6 +21,18 @@ namespace nap
 	EntityInstance::EntityInstance(Core& core, const Entity* entity) :
 		mCore(&core), mResource(entity)
 	{
+	}
+
+
+	bool EntityInstance::init(ResourceManagerService& resourceManager, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	{
+		for (auto& child_entity : mResource->mChildren)
+		{
+			ObjectPtr<EntityInstance> child_entity_instance = resourceManager.createEntity(*child_entity, entityCreationParams, errorState);
+			addChild(*child_entity_instance);
+		}
+
+		return true;
 	}
 
 
