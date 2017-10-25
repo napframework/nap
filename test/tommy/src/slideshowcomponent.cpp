@@ -7,7 +7,6 @@
 
 RTTI_BEGIN_CLASS(nap::SlideShowComponent)
 	RTTI_PROPERTY("Images",				&nap::SlideShowComponent::mImages,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("EntityPrototype",	&nap::SlideShowComponent::mEntityPrototype, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SlideShowComponentInstance)
@@ -30,31 +29,24 @@ namespace nap
 
  		SlideShowComponent* resource = getComponent<SlideShowComponent>();
 
-		// Prototype needs RenderableMeshComponent
-		if (!errorState.check(resource->mEntityPrototype->hasComponent<RenderableMeshComponent>(), "Entity prototype is missing RenderableMeshComponent"))
+		const EntityInstance::ChildList& child_entities = getEntityInstance()->getChildren();
+		if (!errorState.check(child_entities.size() == 3, "SlideShowComponent must have 3 child entities"))
 			return false;
 
-		// Prototype needs TransformComponent
-		if (!errorState.check(resource->mEntityPrototype->hasComponent<TransformComponent>(), "Entity prototype is missing TransformComponent"))
-			return false;
+		for (EntityInstance* child : child_entities)
+		{
+			// Child needs RenderableMeshComponent
+			if (!errorState.check(child->hasComponent<RenderableMeshComponentInstance>(), "Entity %s is missing RenderableMeshComponent", child->mID.c_str()))
+				return false;
 
-		// Spawn left child
-		mLeftChildInstance = resource_manager.createEntity(*resource->mEntityPrototype, entityCreationParams, errorState);
-		if (mLeftChildInstance == nullptr)
-			return false;
-		getEntityInstance()->addChild(*mLeftChildInstance);
+			// Child needs TransformComponent
+			if (!errorState.check(child->hasComponent<TransformComponentInstance>(), "Entity %s is missing TransformComponent", child->mID.c_str()))
+				return false;
+		}
 
-		// Spawn center child
- 		mCenterChildInstance = resource_manager.createEntity(*resource->mEntityPrototype, entityCreationParams, errorState);
- 		if (mCenterChildInstance == nullptr)
- 			return false;
-		getEntityInstance()->addChild(*mCenterChildInstance);
-
-		// Spawn right child
-		mRightChildInstance = resource_manager.createEntity(*resource->mEntityPrototype, entityCreationParams, errorState);
-		if (mRightChildInstance == nullptr)
-			return false;
-		getEntityInstance()->addChild(*mRightChildInstance);
+		mLeftChildInstance		= child_entities[0];
+		mCenterChildInstance	= child_entities[1];
+		mRightChildInstance		= child_entities[2];
 
 		// Perform initial switch to set all textures and positions correctly
 		Switch();
