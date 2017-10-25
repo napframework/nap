@@ -11,6 +11,7 @@ namespace nap
 	class Component;
 	class Entity;
 	class EntityInstance;	
+	class ResourceManagerService;
 
 	using EntityList = std::vector<EntityInstance*>;
 
@@ -82,6 +83,14 @@ namespace nap
 		 * when there is no resource associated with the instance, for example: the root entity
 		 */
 		EntityInstance(Core& core, const Entity* entity);
+
+		/**
+		* Initialize this entity
+		*
+		* @param entityCreationParams Parameters required to create new entity instances during init
+		* @param errorState The error object
+		*/
+		virtual bool init(ResourceManagerService& resourceManager, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
 
 		/**
 		 * Update this entity hierarchy

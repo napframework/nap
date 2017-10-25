@@ -546,8 +546,17 @@ namespace nap
 	{
 		std::unordered_map<Component*, ComponentInstance*> new_component_instances;
 
-		// Create all entity instances and component instances
+		std::unordered_set<const Entity*> rootEntityResources;
+		rootEntityResources.insert(entityResources.begin(), entityResources.end());
+
 		for (const nap::Entity* entity_resource : entityResources)
+		{
+			for (auto& child : entity_resource->mChildren)
+				rootEntityResources.erase(child.get());
+		}
+
+		// Create all entity instances and component instances
+		for (const nap::Entity* entity_resource : rootEntityResources)
 		{
 			EntityInstance* entity_instance = new EntityInstance(getCore(), entity_resource);
 			entity_instance->mID = generateInstanceID(getInstanceID(entity_resource->mID), entityCreationParams);
@@ -571,21 +580,9 @@ namespace nap
 				entityCreationParams.mAllInstancesByID.insert(std::make_pair(component_instance->mID, component_instance.get()));
 				entity_instance->addComponent(std::move(component_instance));
 			}
-		}
 
-		
-		// Now that all entities are created, make sure that parent-child relations are set correctly
-		for (const nap::Entity* entity_resource : entityResources)
-		{
-			EntityByIDMap::iterator entity_instance = entityCreationParams.mEntitiesByID.find(getInstanceID(entity_resource->mID));
-			assert(entity_instance != entityCreationParams.mEntitiesByID.end());
-
-			for (const ObjectPtr<Entity>& child_entity_resource : entity_resource->mChildren)
-			{
-				EntityByIDMap::iterator child_entity_instance = entityCreationParams.mEntitiesByID.find(getInstanceID(child_entity_resource->mID));
-				assert(child_entity_instance != entityCreationParams.mEntitiesByID.end());
-				entity_instance->second->addChild(*child_entity_instance->second);
-			}
+			if (!entity_instance->init(*this, entityCreationParams, errorState))
+				return false;
 		}
 
 		if (!errorState.check(sResolveComponentPointers(entityCreationParams, new_component_instances, errorState), "Unable to resolve pointers in components"))
