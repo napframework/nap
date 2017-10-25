@@ -7,7 +7,6 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	RTTI_BEGIN_CLASS(nap::FrustumSyncComponent)
-		RTTI_PROPERTY("CanvasEntity", &nap::FrustumSyncComponent::mCanvasEntity, nap::rtti::EPropertyMetaData::Required)
 		RTTI_PROPERTY("LaserOutputComponent", &nap::FrustumSyncComponent::mLaserOutputComponent, nap::rtti::EPropertyMetaData::Required)
 	RTTI_END_CLASS
 
@@ -23,11 +22,10 @@ namespace nap
 
 		ResourceManagerService& resource_manager = *getEntityInstance()->getCore()->getService<nap::ResourceManagerService>();
 		
-		// Create frustrum visualizer
-		auto laser_draw_entity = resource_manager.createEntity(*(resource->mCanvasEntity), entityCreationParams, errorState);
-		if (laser_draw_entity == nullptr)
+		if (!errorState.check(getEntityInstance()->getChildren().size() == 1, "Expected one child"))
 			return false;
-		getEntityInstance()->addChild(*laser_draw_entity);
+
+		EntityInstance* laser_draw_entity = getEntityInstance()->getChildren()[0];
 
 		// Make sure that visualizer has a transform
 		mCanvasTransform = laser_draw_entity->findComponent<TransformComponentInstance>(ETypeCheck::IS_DERIVED_FROM);

@@ -19,7 +19,6 @@ RTTI_BEGIN_CLASS(nap::LineTraceComponent)
 	RTTI_PROPERTY("Properties",			&nap::LineTraceComponent::mProperties,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("BlendComponent",		&nap::LineTraceComponent::mBlendComponent,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Target",				&nap::LineTraceComponent::mTargetLine,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("VisualizeEntity",	&nap::LineTraceComponent::mVisualizeEntity,	nap::rtti::EPropertyMetaData::Required)	
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LineTraceComponentInstance)
@@ -43,11 +42,12 @@ namespace nap
 		LineTraceComponent* resource = getComponent<LineTraceComponent>();		
 		ResourceManagerService& resource_manager = *getEntityInstance()->getCore()->getService<nap::ResourceManagerService>();
 
-		// Create start visualizer
-		auto start_vis_entity = resource_manager.createEntity(*(resource->mVisualizeEntity), entityCreationParams, errorState);
-		if (start_vis_entity == nullptr)
+		if (!errorState.check(getEntityInstance()->getChildren().size() == 2, "Expected one child"))
 			return false;
-		
+
+		EntityInstance* start_vis_entity = getEntityInstance()->getChildren()[0];
+		EntityInstance* end_vis_entity = getEntityInstance()->getChildren()[1];
+
 		mStartXform = start_vis_entity->findComponent<nap::TransformComponentInstance>();
 		if (!errorState.check(mStartXform != nullptr, "Trace visualizer has no transform component"))
 			return false;
@@ -59,11 +59,6 @@ namespace nap
 		UniformVec3& uniform = start_render->getMaterialInstance().getOrCreateUniform<UniformVec3>("mColor");
 		uniform.setValue(glm::vec3(1.0f, 0.0f, 0.0f));
 
-		// Create end visualizer
-		auto end_vis_entity = resource_manager.createEntity(*(resource->mVisualizeEntity), entityCreationParams, errorState);
-		if (end_vis_entity == nullptr)
-			return false;
-
 		mEndXform = end_vis_entity->findComponent<nap::TransformComponentInstance>();
 		if (!errorState.check(mEndXform != nullptr, "Trace visualizer has no transform component"))
 			return false;
@@ -74,10 +69,6 @@ namespace nap
 
 		UniformVec3& euniform = end_render->getMaterialInstance().getOrCreateUniform<UniformVec3>("mColor");
 		euniform.setValue(glm::vec3(0.0f, 1.0f, 0.0f));
-
-		// Add as children
-		getEntityInstance()->addChild(*start_vis_entity);
-		getEntityInstance()->addChild(*end_vis_entity);
 
 		// Set smooth timing values
 		mLengthSmoother.mSmoothTime = getComponent<LineTraceComponent>()->mProperties.mLengthSmoothTime;

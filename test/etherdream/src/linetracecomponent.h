@@ -36,9 +36,6 @@ namespace nap
 		// property: Link to the tracer mesh that is computed by the instance of this component
 		ObjectPtr<nap::PolyLine> mTargetLine;
 
-		// property: Link to the trace visualizer we want to spawn on creation
-		ObjectPtr<nap::Entity> mVisualizeEntity;
-
 		// property: Link to the line blend component that holds the line we want to trace
 		ComponentPtr<nap::LineBlendComponent> mBlendComponent = nullptr;
 	};

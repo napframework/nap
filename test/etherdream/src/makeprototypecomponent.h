@@ -33,12 +33,6 @@ namespace nap
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		// property: link to the spline entity to spawn
-		nap::ObjectPtr<nap::Entity> mSplineEntity = nullptr;
-
-		// property: link to the output entity to spawn
-		nap::ObjectPtr<nap::Entity> mLaserOutputEntity = nullptr;
-
 		// property: all the osc messages associated with the laser entity
 		std::vector<std::string> mOSCAddresses;
 	};
