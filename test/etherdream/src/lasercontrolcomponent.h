@@ -32,12 +32,6 @@ namespace nap
 
 		// property: holds all the compounds, creates a laser instance for every compound
 		std::vector<ObjectPtr<nap::LaserCompound>> mLaserCompounds;
-
-		// property: link to the entity that we want to create based on the compound
-		nap::ObjectPtr<Entity> mLaserPrototype;
-
-		// property: link to the laser frame that is position on screen
-		nap::ObjectPtr<Entity> mFrameEntity;
 	};
 
 

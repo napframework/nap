@@ -670,8 +670,6 @@
 				},
 				{
 					"Type" : "nap::LaserControlComponent",
-					"PrototypeEntity" : "LaserPrototypeEntity",
-					"FrameEntity" : "LaserFrameEntity",
 					"LaserCompounds" :
 					[
 						"LaserCompound1",
@@ -680,6 +678,17 @@
 						"LaserCompound4"
 					]
 				}
+			],
+			"Children" :
+			[
+				 "LaserPrototypeEntity",
+				 "LaserFrameEntity",
+				 "LaserPrototypeEntity",
+				 "LaserFrameEntity",
+				 "LaserPrototypeEntity",
+				 "LaserFrameEntity",
+				 "LaserPrototypeEntity",
+				 "LaserFrameEntity"
 			]
 		},
 
@@ -719,8 +728,6 @@
 				},
 				{
 					"Type" : "nap::MakePrototypeComponent",
-					"SplineEntity" : "LaserSplineEntity",
-					"OutputEntity" : "LaserOutputEntity",
 					"OSCAddresses" : 
 					[
 						"intensity",
@@ -748,6 +755,11 @@
 						"smoothy"
 					]
 				}
+			],
+			"Children" :
+			[
+				"LaserSplineEntity",
+				"LaserOutputEntity"
 			]
 		},
 
@@ -997,7 +1009,6 @@
 					"mID" : "LineTracer",
 					"BlendComponent" : "LineBlender",
 					"Target" : "LaserTraceMesh1",
-					"VisualizeEntity" : "TracerVisualizeEntity",
 					"Properties" :
 					{
 						"Offset" : 0.0,
@@ -1045,6 +1056,11 @@
 						"BlendMode" : "AlphaBlend"
 					}
 				}
+			],
+			"Children" : 
+			[
+				"TracerVisualizeEntity",
+				"TracerVisualizeEntity"
 			]
 		},
 
@@ -1095,9 +1111,12 @@
 				},
 				{
 					"Type" : "nap::FrustumSyncComponent",
-					"CanvasEntity" : "LaserCanvasEntity",
 					"LaserOutputComponent" : "LaserOutputComponent"
 				}		
+			],
+			"Children" :
+			[
+				"LaserCanvasEntity"
 			]
 		}
 	]
