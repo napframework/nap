@@ -24,9 +24,10 @@ namespace nap
 	 */
 	struct EntityCreationParameters
 	{
-		using EntityByIDMap			= std::unordered_map<std::string, std::unique_ptr<EntityInstance>>;
+		using EntityInstanceByIDMap = std::unordered_map<std::string, std::unique_ptr<EntityInstance>>;
 		using InstanceByIDMap		= std::unordered_map<std::string, rtti::RTTIObject*>;
 		using ComponentToEntityMap	= std::unordered_map<Component*, const Entity*>;
+		using ComponentInstanceMap = std::unordered_map<Component*, std::vector<ComponentInstance*>>;
 
 		EntityCreationParameters(const RTTIObjectGraph& objectGraph) :
 			mObjectGraph(&objectGraph)
@@ -36,8 +37,9 @@ namespace nap
 		virtual ~EntityCreationParameters() = default;
 
 		const RTTIObjectGraph*		mObjectGraph = nullptr;
-		EntityByIDMap				mEntitiesByID;
+		EntityInstanceByIDMap		mEntityInstancesByID;
 		InstanceByIDMap				mAllInstancesByID;
+		ComponentInstanceMap		mComponentInstanceMap;
 		ComponentToEntityMap		mComponentToEntity;
 	};
 
