@@ -446,7 +446,6 @@
 						"Looks_03",
 						"Looks_04"
 					],
-					"EntityPrototype" : "LooksEntity",
 					"ComponentPointer" : "UIInputRouterComponent"
 				},
 				{
@@ -467,13 +466,19 @@
 				{
 					"Type" : "nap::TransformComponent"
 				}
-			]
+            ],            
+            "Children" : 
+            [
+                "LooksEntity",
+                "LooksEntity",
+                "LooksEntity"
+            ]
 		},
 		
 		{
 			"Type" : "nap::Entity",
 			"mID": "LooksEntity",
-			"AutoSpawn" : "false",
+			"AutoSpawn" : "true",
 			
 			"Components" : 
 			[
