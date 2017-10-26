@@ -139,7 +139,7 @@ namespace nap
 
 	void Core::shutdown()
 	{
-		for (auto& it = mServices.rbegin(); it != mServices.rend(); it++)
+		for (auto it = mServices.rbegin(); it != mServices.rend(); it++)
 		{
 			Service& service = **it;
 			nap::Logger::info("shutting down service: %s", service.getTypeName().c_str());
