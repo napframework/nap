@@ -72,7 +72,7 @@ namespace nap
              * Starts playing a voice by calling it's play() method and connecting it's output to this object's mixer.
              * Before being passed to this method a voice has te be aqcuired and reserved for use using findFreeVoice().
              */
-            void play(VoiceInstance* voice);
+            void play(VoiceInstance* voice, TimeValue duration = 0);
             
             /**
              * Stops playing the voice by telling it to fade out it's envelope

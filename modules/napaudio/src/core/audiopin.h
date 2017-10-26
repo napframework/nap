@@ -29,8 +29,8 @@ namespace nap {
         
         
         /**
-         * An audio input is used by audio node to connect it to other nodes.
-         * The input connects one channel (mono) audio.
+         * An input pin is used by audio node to connect it to other nodes.
+         * The pin connects one channel (mono) audio.
          */
         class NAPAPI InputPin : public InputPinBase
         {
@@ -83,7 +83,11 @@ namespace nap {
         };
         
         
-        
+        /**
+         * An input pin is used by audio node to connect to other nodes.
+         * This pin can be connected to an arbitrary number of output pins belonging to different nodes.
+         * This is useful for example to build a mixing node that mixes any amount of input signals.
+         */
         class NAPAPI MultiInputPin : public InputPinBase
         {
         public:

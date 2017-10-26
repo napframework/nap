@@ -25,4 +25,4 @@ def makeNote(entity, index, len, fac):
 	oscA.getChannel(1).setFrequency(330 * 1.01 * seq[index % len] * fac);
 	oscB.getChannel(0).setFrequency(660 * seq[index % len] * fac);
 	oscB.getChannel(1).setFrequency(660 * 1.01 * seq[index % len] * fac);
-	instrument.play(voice)
+	instrument.play(voice, 0)

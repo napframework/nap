@@ -68,6 +68,7 @@ add_subdirectory(test/videoplayer)
 add_subdirectory(test/serializationtest)
 add_subdirectory(test/etherdream)
 add_subdirectory(test/audiotest)
+add_subdirectory(test/sonify)
 add_subdirectory(test/artnet)
 
 if (APPLE)

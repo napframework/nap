@@ -1,6 +1,8 @@
 #pragma once
 
+// Audio includes
 #include <core/audionode.h>
+#include <core/audionodemanager.h>
 
 namespace nap {
     

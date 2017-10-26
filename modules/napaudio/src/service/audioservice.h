@@ -30,6 +30,9 @@ namespace nap {
              */
             void registerObjectCreators(rtti::Factory& factory) override;
             
+            /**
+             * This method has to be overwritten by descendants to provede a node manager owned by the service.
+             */
             virtual NodeManager& getNodeManager() = 0;
         };
         

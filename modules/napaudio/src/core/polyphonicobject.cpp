@@ -76,14 +76,14 @@ namespace nap
         }
         
         
-        void PolyphonicObjectInstance::play(VoiceInstance* voice)
+        void PolyphonicObjectInstance::play(VoiceInstance* voice, TimeValue duration)
         {
             if (!voice)
                 return;
             
             std::unique_lock<std::mutex> lock(mNodeManager->getProcessingMutex());
             
-            voice->play();
+            voice->play(duration);
             
             for (auto channel = 0; channel < std::min<int>(mMixNodes.size(), voice->getOutput().getChannelCount()); ++channel)
                 mMixNodes[channel]->inputs.connect(voice->getOutput().getOutputForChannel(channel));

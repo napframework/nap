@@ -57,13 +57,22 @@ namespace nap {
                 }
             }
             
+            /**
+             * Stop the current ramp
+             */
             void stop()
             {
                 mStepCount = 0;
             }
             
+            /**
+             * Returns true when currently playing a ramp
+             */
             bool isRamping() const { return mStepCount > 0; }
             
+            /**
+             * Signal emitted when the destination of a ramp has been reached.
+             */
             nap::Signal<T> destinationReachedSignal;
             
         private:

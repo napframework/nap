@@ -1,5 +1,12 @@
 #include "gainnode.h"
 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::GainNode)
+    RTTI_CONSTRUCTOR(nap::audio::NodeManager&)
+    RTTI_FUNCTION("setGain", &nap::audio::GainNode::setGain)
+    RTTI_FUNCTION("getGain", &nap::audio::GainNode::getGain)
+RTTI_END_CLASS
+
+
 namespace nap {
     
     namespace audio {
