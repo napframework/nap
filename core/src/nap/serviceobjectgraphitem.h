@@ -23,7 +23,7 @@ namespace nap
 		 * Creates a new item that is used to build the graph
 		 * @param service: the service to create the item for
 		 */
-		static const ServiceObjectGraphItem create(Service* service, Core* core);
+		static const ServiceObjectGraphItem create(Service* service, std::vector<Service*>* services);
 
 		/**
 		 * @return the id associated with this graph item
@@ -43,6 +43,6 @@ namespace nap
 		Service* mObject = nullptr;
 
 		// Core is used to resolve all pointers
-		Core* mCore = nullptr;
+		std::vector<Service*>* mServices = nullptr;
 	};
 }

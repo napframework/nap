@@ -18,34 +18,19 @@ namespace nap {
 	 * Initialize all the resources and instances used for drawing
 	 * slowly migrating all functionality to nap
 	 */
-	bool AppRunner::init(Core& core)
-	{
-		core.initializeEngine();
-		
-		//////////////////////////////////////////////////////////////////////////
-		// GL Service + Window
-		//////////////////////////////////////////////////////////////////////////
-		
+	bool AppRunner::init(Core& core, utility::ErrorState& error)
+	{	
 		// Get resource manager service
 		mResourceManager = core.getResourceManager();
 		
 		// Create render service
-		mRenderService = core.getOrCreateService<RenderService>();
-		mInputService = core.getOrCreateService<InputService>();
-		mSceneService = core.getOrCreateService<SceneService>();
-		mVideoService = core.getOrCreateService<VideoService>();
-
-		// Initialize all services
-		utility::ErrorState errorState;
-		if (!core.initializeServices(errorState))
-		{
-			Logger::fatal("unable to initialize services: %s", errorState.toString().c_str());
-			return false;
-		}
+		mRenderService = core.getService<RenderService>();
+		mInputService  = core.getService<InputService>();
+		mSceneService  = core.getService<SceneService>();
+		mVideoService  = core.getService<VideoService>();
 		
-		if (!mResourceManager->loadFile("data/videoplayer/videoplayer.json", errorState))
+		if (!mResourceManager->loadFile("data/videoplayer/videoplayer.json", error))
 		{
-			Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
 			return false;
 		}
 		
@@ -163,6 +148,6 @@ namespace nap {
 	
 	void AppRunner::shutdown() 
 	{
-		mRenderService->shutdown();
+
 	}
 }

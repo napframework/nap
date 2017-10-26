@@ -1,18 +1,26 @@
 #pragma once
 
 #include "utility/module.h"
+#include "rtti/typeinfo.h"
 #include <string>
 #include <vector>
 
 namespace nap
 {
+	// Forward Declares
+	class Core;
+
 	/**
 	 * Responsible for dynamically loading additional nap modules
 	 */
-	class NAPAPI ModuleManager
+	class NAPAPI ModuleManager final
 	{
+		friend class Core;
 	public:
+		// Constructor
 		ModuleManager();
+
+		// Destructor
 		~ModuleManager();
 
 		/**
@@ -23,12 +31,13 @@ namespace nap
 
 	private:
 		/**
-		 * Data for a loaded module
-		 */
+		* Data for a loaded module
+		*/
 		struct Module
 		{
-			ModuleDescriptor*	mDescriptor;	// The descriptor that belongs to the module
-			void*				mHandle;		// Handle to native module
+			ModuleDescriptor*	mDescriptor;							// The descriptor that belongs to the module
+			void*				mHandle;								// Handle to native module
+			rtti::TypeInfo		mService = rtti::TypeInfo::empty();		// Service associated with the module
 		};
 
 		using ModuleList = std::vector<Module>;

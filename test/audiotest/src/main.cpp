@@ -20,27 +20,20 @@ nap::ResourceManager* resourceManager = nullptr;
 * Initialize all the resources and instances
 * slowly migrating all functionality to nap
 */
-bool init(nap::Core& core)
+bool init(nap::Core& core, nap::utility::ErrorState& error)
 {    
 	// Initialize the engine -> loads all modules
-    core.initializeEngine();
-    
-	// Create services
-    auto audioService = core.getOrCreateService<nap::audio::AudioService>();
- 
-	// Initialize all services
-	nap::utility::ErrorState errorState;
-	if (!core.initializeServices(errorState))
+	if (!core.initializeEngine(error))
 	{
-		nap::Logger::fatal("unable to initialize services: %s", errorState.toString().c_str());
+		nap::Logger::fatal("Unable to initialize engine: %s", error.toString().c_str());
 		return false;
 	}
 
     // Load scene
 	resourceManager = core.getResourceManager();
-	if (!resourceManager->loadFile("data/audiotest/audiotest.json", errorState))
+	if (!resourceManager->loadFile("data/audiotest/audiotest.json", error))
     {
-        nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
+        nap::Logger::fatal("Unable to deserialize resources: \n %s", error.toString().c_str());
         return false;
     } 
 
@@ -62,12 +55,19 @@ int main(int argc, char *argv[])
 	// Pointer to function used inside update call by core
 	std::function<void(double)> update_call = std::bind(&update, std::placeholders::_1);
 
-	if (!init(core))
+	nap::utility::ErrorState error;
+	if (!init(core, error))
 		return -1;
     
+	// Signal Start
+	core.start();
+
     while (true)
 		core.update(update_call);
     
+	// Shutdown core
+	core.shutdown();
+
 	return 0;
 }
 

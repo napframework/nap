@@ -3,11 +3,11 @@
 
 namespace nap
 {
-	const nap::ServiceObjectGraphItem ServiceObjectGraphItem::create(Service* service, Core* core)
+	const nap::ServiceObjectGraphItem ServiceObjectGraphItem::create(Service* service, std::vector<Service*>* services)
 	{
 		ServiceObjectGraphItem item;
 		item.mObject = service;
-		item.mCore = core;
+		item.mServices = services;
 		return item;
 	}
 
@@ -25,13 +25,20 @@ namespace nap
 
 			// Create item
 			ServiceObjectGraphItem item;
-			item.mObject = mCore->getOrCreateService(link);
-			
-			if (!errorState.check(item.mObject != nullptr, "unable to retrieve service: %s", link.get_name().data()))
+
+			// Get service it points to
+			const auto& found_service = std::find_if((*mServices).begin(), (*mServices).end(), [&link](const auto& service)
+			{
+				return service->get_type() == link.get_raw_type();
+			});
+
+			// Make sure that service exists
+			if (!errorState.check(found_service != (*mServices).end(), "unable to retrieve service: %s", link.get_name().data()))
 				return false;
-			
-			// Copy over core
-			item.mCore = mCore;
+
+			// Copy data for pointee item
+			item.mObject = *found_service;
+			item.mServices = mServices;
 			pointees.push_back(item);
 		}
 

@@ -29,7 +29,7 @@ namespace nap
 		/**
 		 *	Initialize all the services and app specific data structures
 		 */
-		bool init(Core& core);
+		bool init(Core& core, utility::ErrorState& error);
 		
 		/**
 		 *	Update is called before render, performs all the app logic

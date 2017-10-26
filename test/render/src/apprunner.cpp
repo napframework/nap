@@ -17,29 +17,18 @@ namespace nap {
 	 * Initialize all the resources and instances used for drawing
 	 * slowly migrating all functionality to nap
 	 */
-	bool AppRunner::init(Core& core)
-	{
-		// Initialize engine -> loads all modules
-		core.initializeEngine();
-		
+	bool AppRunner::init(Core& core, utility::ErrorState& error)
+	{		
 		// Create render service
-		mRenderService = core.getOrCreateService<RenderService>();		
-		mInputService  = core.getOrCreateService<InputService>();
-		mSceneService  = core.getOrCreateService<SceneService>();
-		
-		// Initialize all services
-		utility::ErrorState errorState;
-		if (!core.initializeServices(errorState))
-		{
-			Logger::fatal("unable to initialize services: %s", errorState.toString().c_str());
-			return false;
-		}
+		mRenderService = core.getService<RenderService>();		
+		mInputService  = core.getService<InputService>();
+		mSceneService  = core.getService<SceneService>();
 
 		// Get resource manager and load
 		mResourceManager = core.getResourceManager();
-		if (!mResourceManager->loadFile("data/rendertest/objects.json", errorState))
+		if (!mResourceManager->loadFile("data/rendertest/objects.json", error))
 		{
-			Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
+			Logger::fatal("Unable to deserialize resources: \n %s", error.toString().c_str());
 			return false;
 		}
 		
@@ -226,6 +215,5 @@ namespace nap {
 	
 	void AppRunner::shutdown() 
 	{
-		mRenderService->shutdown();
 	}
 }

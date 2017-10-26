@@ -19,10 +19,19 @@
 namespace nap
 {
 	/**
-	 * Core is the class that manages entities and services.
-	 * Only Core can make entities, as this objects manages entity relationships
-	 * Use Core to register a service, start services and stop services.
-	 * Allowing for the application to run.
+	 * Core manages the object graph, modules and services
+	 * Core is required in every NAP application and should be the first object that is created and 
+	 * initialized. There should only be only 1 instance of Core in your application
+	 * 
+	 * After creation, initialize the core engine by invoking initializeEngine(). This will
+	 * load all the available modules and their dependencies including services. 
+	 * When all modules are loaded all available services are initialized.
+	 * Initialization occurs based on the Service dependency tree. So when Service B points to A,
+	 * Service A is initialized before B. After initialization all module specific resources and their 
+	 * contexts are available for object creation using the ResourceManager.
+	 * 
+	 * Call update inside your app loop to update all available services. When exiting the application
+	 * invoke shutdown. This will close all operating services in the reverse order of their dependency tree
 	 */
 	class NAPAPI Core
 	{
@@ -39,78 +48,16 @@ namespace nap
 		virtual ~Core();
 
 		/**
-		* @return number of elapsed time in milliseconds after
-		* creation of core
-		*/
-		uint32 getTicks() const;
-
-		/**
-		* @return number of elapsed seconds after creation of core
-		*/
-		double getElapsedTime() const;
-
-		/**
-		 * @return start time point
+		 * Loads all modules in to the core environment and initializes them in the right order
+         * @error contains the error code when initialization fails
 		 */
-		TimePoint getStartTime() const;
+		bool initializeEngine(utility::ErrorState& error);
 
 		/**
-		 * @return a new or already existing service of @type, nullptr if service can't be created or found
-		 * @param type the type name of service to get or create
+		 * Starts core, call this after initializing the engine, just before starting
+		 * the application loop. This call will start the core timer
 		 */
-		Service* getOrCreateService(const std::string& type);
-
-		/**
-		 * @return a new or already existing service of @type, nullptr if service can't be created or found
-		 * @param type the type of service to get or create
-		 */
-        Service* getOrCreateService(const rtti::TypeInfo& type);
-
-		/**
-		 * @return a new or already existing service of type T
-		 */
-		template<typename T>
-		T* getOrCreateService();
-
-		/**
-		 * Adds a new service of type @type
-		 * @param type the type of service to add
-		 * @return the newly added service
-		 */
-        Service& addService(const rtti::TypeInfo& type);
-
-		/**
-		 * @return an already registered service of @type
-		 * @param type the type of service to get
-		 */
-		Service* getService(const rtti::TypeInfo& type);
-
-		/**
-		 *  @return a service of type T, returns nullptr if that service can't be found
-		 */
-		template <typename T>
-		T* getService();
-
-		/**
-		 * Loads all modules in to the core environment 
-         * @modulesDir is a path relative to the working directory containing the modules
-		 */
-		void initializeEngine();
-
-		/**
-		 * @return the resource manager
-		 * The resource manager holds all the entities and components currently loaded by Core
-		 */
-		ResourceManager* getResourceManager()				{ return mResourceManager.get(); }
-
-		/**
-		 * Initializes all registered services
-		 * Initialization occurs based on service dependencies, this means that if service B depends on Service A,
-		 * Service A is initialized before service B etc.
-		 * @param error contains the error message when initialization fails
-		 * @return if initialization failed or succeeded
-		 */
-		bool initializeServices(utility::ErrorState& error);
+		void start();
 
 		/**
 		 * Updates all services. This happens in 3 distinct steps.
@@ -119,6 +66,52 @@ namespace nap
 		 * @return deltaTime between update calls in seconds
 		 */
 		double update(std::function<void(double)>& updateFunction);
+
+		/**
+		 * Shuts down all registered services in the right order
+		 */
+		void shutdown();
+
+		/**
+		* The resource manager holds all the entities and components currently loaded by Core
+		* @return the resource manager
+		*/
+		ResourceManager* getResourceManager()								{ return mResourceManager.get(); }
+
+		/**
+		* @return number of elapsed time in milliseconds after invoking start
+		*/
+		uint32 getTicks() const;
+
+		/**
+		* @return number of elapsed seconds after invoking start
+		*/
+		double getElapsedTime() const;
+
+		/**
+		* @return start time point
+		*/
+		TimePoint getStartTime() const;
+
+		/**
+		* @return an already registered service of @type
+		* @param type the type of service to get
+		* @return the service if found, otherwise nullptr
+		*/
+		Service* getService(const rtti::TypeInfo& type);
+
+		/**
+		 * @return an already registered service based on it's type name
+		 * @param type the type of the service as a string
+		 * @return the service if found, otherwise nullptr
+		 */
+		Service* getService(const std::string& type);
+
+		/**
+		 *  @return a service of type T, returns nullptr if that service can't be found
+		 */
+		template <typename T>
+		T* getService();
 
 	private:
 		// Typedef for a list of services
@@ -130,11 +123,8 @@ namespace nap
 		// Manages all the objects in core
 		std::unique_ptr<ResourceManager>	mResourceManager;
 
-		// All the services associated with core
-		ServiceList mServices;
-
 		// Sorted service nodes, set after init
-		std::vector<Service*> mServicesSorted;
+		ServiceList mServices;
 
 		// Timer
 		SimpleTimer mTimer;
@@ -142,7 +132,40 @@ namespace nap
 		// Last time stamp used for calculating delta time
 		double mLastTimeStamp = 0.0;
 
+		// Time it took to complete last cycle in seconds
 		double mDeltaTime = 0.0;
+
+		/**
+		 * Helper function that creates all the services that are found in the various modules
+		 * Note that a module does not need to define a service, only if it has been defined
+		 * this call will try to create it. 
+		 */
+		bool createServices(utility::ErrorState& error);
+
+		/**
+		* Adds a new service of type @type to @outServices
+		* @param type the type of service to add
+		* @return the newly added service
+		*/
+		bool addService(const rtti::TypeInfo& type, std::vector<Service*>& outServices, utility::ErrorState& error);
+
+		/**
+		* Initializes all registered services
+		* Initialization occurs based on service dependencies, this means that if service B depends on Service A,
+		* Service A is initialized before service B etc.
+		* @param error contains the error message when initialization fails
+		* @return if initialization failed or succeeded
+		*/
+		bool initializeServices(utility::ErrorState& error);
+
+		/**
+		 * Occurs when a file has been successfully loaded by the resource manager
+		 * Forwards the call to all interested services
+		 * @param file the currently loaded resource file
+		 */
+		void resourceFileChanged(const std::string& file);
+
+		nap::Slot<const std::string&> mFileLoadedSlot = { [&](const std::string& inValue) -> void { resourceFileChanged(inValue); } };
 	};
 
 
@@ -152,21 +175,12 @@ namespace nap
 
 
 	// Searches for a service of type T in the services and returns it,
-	// resturns nullptr if none found
+	// returns nullptr if none found
 	template <typename T>
 	T* Core::getService()
 	{
 		Service* new_service = getService(RTTI_OF(T));
 		return new_service == nullptr ? nullptr : static_cast<T*>(new_service);
-	}
-
-
-	// Returns an already existing service or creates a new one using @type
-	template <typename T>
-	T* Core::getOrCreateService()
-	{
-		nap::Service* service = getOrCreateService(RTTI_OF(T));
-		return service == nullptr ? nullptr : static_cast<T*>(service);
 	}
 }
 

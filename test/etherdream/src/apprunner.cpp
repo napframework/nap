@@ -22,35 +22,23 @@ namespace nap
 	 * Initialize all the resources and instances used for drawing
 	 * slowly migrating all functionality to nap
 	 */
-	bool AppRunner::init(Core& core)
+	bool AppRunner::init(Core& core, utility::ErrorState& error)
 	{
-		core.initializeEngine();
-
 		// Create render service
-		mRenderService = core.getOrCreateService<RenderService>();
-		mInputService = core.getOrCreateService<InputService>();
-		mSceneService = core.getOrCreateService<SceneService>();
-		mLaserService = core.getOrCreateService<EtherDreamService>();
-		mOscService = core.getOrCreateService<OSCService>();
+		mRenderService = core.getService<RenderService>();
+		mInputService  = core.getService<InputService>();
+		mSceneService  = core.getService<SceneService>();
+		mLaserService  = core.getService<EtherDreamService>();
+		mOscService	   = core.getService<OSCService>();
 
 		// Initialize all services
-		utility::ErrorState errorState;
-		if (!core.initializeServices(errorState))
-		{
-			Logger::fatal("unable to initialize services: %s", errorState.toString().c_str());
-			return false;
-		}
 
 		// Get resource manager service
 		mResourceManager = core.getResourceManager();
 
 		// Load scene
-		if (!mResourceManager->loadFile("data/etherdream/etherdream.json", errorState))
-		{
-			Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
+		if (!mResourceManager->loadFile("data/etherdream/etherdream.json", error))
 			return false;
-		}
-		glFlush();
 
 		// Store all render windows
 		mRenderWindow = mResourceManager->findObject<RenderWindow>("Window");
@@ -138,6 +126,6 @@ namespace nap
 	
 	void AppRunner::shutdown() 
 	{
-		mRenderService->shutdown();
+
 	}
 }

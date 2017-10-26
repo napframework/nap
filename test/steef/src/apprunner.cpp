@@ -17,35 +17,20 @@ namespace nap {
 	 * Initialize all the resources and instances used for drawing
 	 * slowly migrating all functionality to nap
 	 */
-	bool AppRunner::init(nap::Core& core)
-	{
-		// Initialize engine -> loads all modules
-		core.initializeEngine();
-		
+	bool AppRunner::init(nap::Core& core, utility::ErrorState& error)
+	{		
 		// Create services
-		mRenderService = core.getOrCreateService<nap::RenderService>();
-		mSceneService = core.getOrCreateService<nap::SceneService>();		
-		mInputService = core.getOrCreateService<nap::InputService>();
-
-		// Initialize all services
-		utility::ErrorState errorState;
-		if (!core.initializeServices(errorState))
-		{
-			Logger::fatal("unable to initialize services: %s", errorState.toString().c_str());
-			return false;
-		}
+		mRenderService = core.getService<nap::RenderService>();
+		mSceneService  = core.getService<nap::SceneService>();
+		mInputService  = core.getService<nap::InputService>();
 
 		// Get resource manager and load
 		mResourceManager = core.getResourceManager();
-		if (!mResourceManager->loadFile("data/steef/objects.json", errorState))
+		if (!mResourceManager->loadFile("data/steef/objects.json", error))
 		{
-			nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
-			
 			assert(false);
 			return false;
 		}
-        
-        glFlush();
 		
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Viewport");
@@ -156,7 +141,6 @@ namespace nap {
 	
 	void AppRunner::shutdown() 
 	{
-		mRenderService->shutdown();
 	}
 	
 	

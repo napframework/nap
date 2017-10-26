@@ -1,6 +1,7 @@
 #include "modulemanager.h"
 #include "fileutils.h"
 #include "logger.h"
+#include "service.h"
 
 #ifdef _WIN32
 	#define WIN32_LEAN_AND_MEAN
@@ -131,6 +132,8 @@ namespace nap
 
 		for (const auto& filename : files_in_directory)
 		{
+			rtti::TypeInfo service = rtti::TypeInfo::empty();
+
 			// Ignore directories
 			if (dirExists(filename))
 				continue;
@@ -140,7 +143,7 @@ namespace nap
 				continue;
 
 			std::string module_path = getAbsolutePath(filename);
-			
+
 			// Try to load the module
 			std::string error_string;
 			void* module_handle = LoadModule(module_path, error_string);
@@ -162,15 +165,30 @@ namespace nap
 			if (descriptor->mAPIVersion != ModuleDescriptor::ModuleAPIVersion)
 			{
 				Logger::info("Module %s was built against a different version of nap (found %d, expected %d); skipping.", module_path.c_str(), descriptor->mAPIVersion, ModuleDescriptor::ModuleAPIVersion);
-				UnloadModule(module_handle);				
+				UnloadModule(module_handle);
 				continue;
+			}
+
+			// Try to load service if one is defined
+			if (descriptor->mService != nullptr)
+			{
+				rtti::TypeInfo stype = rtti::TypeInfo::get_by_name(rttr::string_view(descriptor->mService));
+				if (!stype.is_derived_from(RTTI_OF(Service)))
+				{
+					Logger::info("Module %s service descriptor %s is not a service; skipping", module_path.c_str(), descriptor->mService);
+					UnloadModule(module_handle);
+					continue;
+				}
+				service = stype;
 			}
 
 			Logger::info("Loaded module %s v%s", descriptor->mID, descriptor->mVersion);
 
+			// Construct module based on found module information
 			Module module;
 			module.mDescriptor = descriptor;
 			module.mHandle = module_handle;
+			module.mService = service;
 
 			mModules.push_back(module);
 		}

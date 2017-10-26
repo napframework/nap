@@ -105,7 +105,7 @@ namespace nap
 		/**
 		 * Shuts down the managed renderer
 		 */
-		void shutdown();
+		virtual void shutdown() override;
 
 		/**
 		* Returns global render state. Use the fields in this objects to modify the renderstate.
@@ -202,6 +202,11 @@ namespace nap
 		 *	Process all received messages
 		 */
 		virtual void update(double deltaTime) override;
+
+		/**
+		 *	Performs a flush to ensure all recent opengl commands are processed
+		 */
+		virtual void resourcesLoaded() override;
 
     private:
 		friend class VAOHandle;

@@ -870,6 +870,9 @@ namespace nap
 		// Everything was successful, don't rollback any changes that were made
 		rollback_helper.clear();
 
+		// Notify listeners
+		mFileLoadedSignal.trigger(filename);
+
 		return true;
 	}
 

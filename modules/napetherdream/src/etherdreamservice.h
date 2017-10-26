@@ -23,9 +23,6 @@ namespace nap
 		// Default Constructor
 		EtherDreamService();
 
-		// Default Destructor
-		virtual ~EtherDreamService();
-
 	protected:
 		/**
 		 * Adds a dac to the system, every dac is associated with a number.
@@ -49,6 +46,11 @@ namespace nap
 		* Initializes the etherdream library.
 		*/
 		virtual bool init(nap::utility::ErrorState& errorState) override;
+
+		/**
+		 *	Shutdown the etherdream library
+		 */
+		virtual void shutdown() override;
 
 		/**
 		* @return the etherdream interface that manages all the DACs
