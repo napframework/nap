@@ -25,34 +25,17 @@ namespace nap {
 	 * Initialize all the resources and instances used for drawing
 	 * slowly migrating all functionality to nap
 	 */
-	bool AppRunner::init(Core& core)
+	bool AppRunner::init(Core& core, utility::ErrorState& error)
 	{
-		core.initializeEngine();
-		
-		//////////////////////////////////////////////////////////////////////////
-		// GL Service + Window
-		//////////////////////////////////////////////////////////////////////////
-		
 		// Create render service
-		mRenderService = core.getOrCreateService<RenderService>();
-		mInputService = core.getOrCreateService<InputService>();
-		mSceneService = core.getOrCreateService<SceneService>();
-
-		// Initialize all services
-		utility::ErrorState errorState;
-		if (!core.initializeServices(errorState))
-		{
-			Logger::fatal("unable to initialize services: %s", errorState.toString().c_str());
-			return false;
-		}
+		mRenderService = core.getService<RenderService>();
+		mInputService = core.getService<InputService>();
+		mSceneService = core.getService<SceneService>();
 		
 		// Get resource manager service
 		mResourceManager = core.getResourceManager();
-		if (!mResourceManager->loadFile("data/tommy/tommy.json", errorState))
-		{
-			Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
+		if (!mResourceManager->loadFile("data/tommy/tommy.json", error))
 			return false;
-		}
 		
 		mCameraEntity = mResourceManager->findEntity("CameraEntity");
 		mSlideShowEntity = mResourceManager->findEntity("SlideShowEntity");
@@ -173,6 +156,6 @@ namespace nap {
 	
 	void AppRunner::shutdown() 
 	{
-		mRenderService->shutdown();
+
 	}
 }

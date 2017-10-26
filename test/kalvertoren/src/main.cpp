@@ -213,34 +213,20 @@ void onRender()
 * Initialize all the resources and instances used for drawing
 * slowly migrating all functionality to nap
 */
-bool init(nap::Core& core)
+bool init(nap::Core& core, nap::utility::ErrorState& error)
 {
-	// Initialize engine -> loads all the modules
-	core.initializeEngine();
-
 	// Create services
-	renderService = core.getOrCreateService<nap::RenderService>();
-	inputService  = core.getOrCreateService<nap::InputService>();
-	sceneService  = core.getOrCreateService<nap::SceneService>();
-	videoService  = core.getOrCreateService<nap::VideoService>();
-
-	// Initialize all services
-	nap::utility::ErrorState errorState;
-	if (!core.initializeServices(errorState))
-	{
-		nap::Logger::fatal("unable to initialize services: %s", errorState.toString().c_str());
-		return false;
-	}
+	renderService = core.getService<nap::RenderService>();
+	inputService  = core.getService<nap::InputService>();
+	sceneService  = core.getService<nap::SceneService>();
+	videoService  = core.getService<nap::VideoService>();
 
 	// Get resource manager and load data
 	resourceManager = core.getResourceManager();
-	if (!resourceManager->loadFile("data/kalvertoren/kalvertoren.json", errorState))
-	{ 
-		nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
-		return false;        
-	}  
-
-	glFlush();
+	if (!resourceManager->loadFile("data/kalvertoren/kalvertoren.json", error))
+	{
+		return false;
+	}
 	 
 	renderWindow			= resourceManager->findObject<nap::RenderWindow>("Window0");
  	textureRenderTarget		= resourceManager->findObject<nap::RenderTarget>("PlaneRenderTarget");
@@ -274,9 +260,20 @@ int main(int argc, char *argv[])
 	// Create core
 	nap::Core core;
 
-	// Initialize render stuff
-	if (!init(core))
+	// Initialize engine -> loads all the modules
+	nap::utility::ErrorState error;
+	if (!core.initializeEngine(error))
+	{
+		nap::Logger::fatal("Unable to initialize engine: %s", error.toString().c_str());
 		return -1;
+	}
+
+	// Initialize render stuff
+	if (!init(core, error))
+	{
+		nap::Logger::fatal("Unable to initialize app: %s", error.toString().c_str());
+		return -1;
+	}
 
 	// Run Game
 	runGame(core);
@@ -292,6 +289,9 @@ void runGame(nap::Core& core)
 
 	// Pointer to function used inside update call by core
 	std::function<void(double)> update_call = std::bind(&onUpdate, std::placeholders::_1);
+
+	// Signal Start
+	core.start();
 
 	// Loop
 	while (loop)
@@ -340,7 +340,7 @@ void runGame(nap::Core& core)
 		onRender();
 	}
 
-	renderService->shutdown();   
+	core.shutdown();
 }
        
        

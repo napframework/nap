@@ -9,6 +9,7 @@
 #include "entity.h"
 #include "component.h"
 #include "configure.h"
+#include "signalslot.h"
 
 // External Includes
 #include <rtti/unresolvedpointer.h>
@@ -127,6 +128,11 @@ namespace nap
 		 * Forwards an update to all entities managed under the root
 		 */
 		void update(double deltaTime);
+
+		/**
+		 *	Signal that is emitted when a file has been successfully loaded
+		 */
+		nap::Signal<const std::string&> mFileLoadedSignal;
 
 	private:
 		using InstanceByIDMap	= std::unordered_map<std::string, rtti::RTTIObject*>;					// Map from object ID to object (non-owned)

@@ -12,7 +12,7 @@
 using namespace std;
 
 RTTI_BEGIN_CLASS(nap::Core)
-	RTTI_FUNCTION("getOrCreateService", (nap::Service* (nap::Core::*)(const std::string&))&nap::Core::getOrCreateService)
+	RTTI_FUNCTION("getService", (nap::Service* (nap::Core::*)(const std::string&))&nap::Core::getService)
 	RTTI_FUNCTION("getResourceManager", &nap::Core::getResourceManager)
 RTTI_END_CLASS
 
@@ -27,25 +27,37 @@ namespace nap
 	Core::Core()
 	{
 		// Initialize timer
-		mTimer.start();
+		mTimer.reset();
 
-		// Add resource manager service
+		// Add resource manager service and listen to file changes
 		mResourceManager = std::make_unique<ResourceManager>(*this);
+		mResourceManager->mFileLoadedSignal.connect(mFileLoadedSlot);
 	}
-	
+
     
 	Core::~Core()
 	{
+		mResourceManager->mFileLoadedSignal.disconnect(mFileLoadedSlot);
+
 		// In order to ensure a correct order of destruction we want our entities, components, etc. to be deleted before other services are deleted.
 		// Because entities and components are managed and owned by the resource manager we explicitly delete this first.
 		// Erase it
-		mResourceManager = nullptr;
+		mResourceManager.reset();
 	}
 	
     
-	void Core::initializeEngine()
+	bool Core::initializeEngine(utility::ErrorState& error)
 	{ 
+		// Load all modules
 		mModuleManager.loadModules();
+
+		// Create the various services based on their dependencies
+		if (!createServices(error))
+			return false;
+
+		// Initialize the various services
+		if (!initializeServices(error))
+			return false;
 
 		// Here we register a callback that is called when the nap python module is imported.
 		// We register a 'core' attribute so that we can write nap.core.<function>() in python
@@ -54,6 +66,8 @@ namespace nap
 		{
 			module.attr("core") = this;
 		});
+
+		return true;
 	}
 
 
@@ -62,31 +76,26 @@ namespace nap
 		std::vector<Service*> objects;
 		for (const auto& service : mServices)
 		{
-			objects.emplace_back(service.get());
-		}
-
-		// Create dependency graph
-		ObjectGraph<ServiceObjectGraphItem> graph;
-
-		// Build service dependency graph
-		bool success = graph.build(objects, [=](Service* service) 
-		{
-			 return ServiceObjectGraphItem::create(service, this); 
-		}, error);
-
-		// Make sure the graph was successfully build
-		if (!error.check(success, "unable to build service dependency graph"))
-			return false;
-
-		// Initialize all services
-		for (auto& node : graph.getSortedNodes())
-		{
-			nap::Service* service = node->mItem.mObject;
+			nap::Logger::info("initializing service: %s", service->getTypeName().c_str());
 			if (!service->init(error))
 				return false;
-			mServicesSorted.emplace_back(service);
 		}
 		return true;
+	}
+
+
+	void Core::resourceFileChanged(const std::string& file)
+	{
+		for (auto& service : mServices)
+		{
+			service->resourcesLoaded();
+		}
+	}
+
+
+	void Core::start()
+	{
+		mTimer.reset();
 	}
 
 
@@ -98,7 +107,7 @@ namespace nap
 		mLastTimeStamp = new_time;
 
 		// Perform update call before we check for file changes
-		for (auto& service : mServicesSorted)
+		for (auto& service : mServices)
 		{
 			service->preUpdate(mDeltaTime);
 		}
@@ -107,7 +116,7 @@ namespace nap
 		mResourceManager->checkForFileChanges();
 
 		// Update rest of the services
-		for (auto& service : mServicesSorted)
+		for (auto& service : mServices)
 		{
 			service->update(mDeltaTime);
 		}
@@ -119,12 +128,60 @@ namespace nap
 		updateFunction(mDeltaTime);
 
 		// Update rest of the services
-		for (auto& service : mServicesSorted)
+		for (auto& service : mServices)
 		{
 			service->postUpdate(mDeltaTime);
 		}
 
 		return mDeltaTime;
+	}
+
+
+	void Core::shutdown()
+	{
+		for (auto& it = mServices.rbegin(); it != mServices.rend(); it++)
+		{
+			Service& service = **it;
+			nap::Logger::info("shutting down service: %s", service.getTypeName().c_str());
+			service.shutdown();
+		}
+	}
+
+
+	bool Core::createServices(utility::ErrorState& error)
+	{
+		// First create and add all the services (unsorted)
+		std::vector<Service*> services;
+		for (auto& service : mModuleManager.mModules)
+		{
+			if (service.mService == rtti::TypeInfo::empty())
+				continue;
+
+			// Create the service
+			if (!addService(service.mService, services, error))
+				return false;
+		}
+
+		// Create dependency graph
+		ObjectGraph<ServiceObjectGraphItem> graph;
+
+		// Build service dependency graph
+		bool success = graph.build(services, [&](Service* service)
+		{
+			return ServiceObjectGraphItem::create(service, &services);
+		}, error);
+
+		// Make sure the graph was successfully build
+		if (!error.check(success, "unable to build service dependency graph"))
+			return false;
+
+		// Add services in right order
+		for (auto& node : graph.getSortedNodes())
+		{
+			nap::Service* service = node->mItem.mObject;
+			mServices.emplace_back(std::unique_ptr<nap::Service>(service));
+		}
+		return true;
 	}
 
 
@@ -134,7 +191,7 @@ namespace nap
 		// Find service of type 
 		const auto& found_service = std::find_if(mServices.begin(), mServices.end(), [&type](const auto& service)
 		{
-			return service->get_type().is_derived_from(type.get_raw_type());
+			return service->get_type() == type.get_raw_type();
 		});
 
 		// Check if found
@@ -142,58 +199,41 @@ namespace nap
 	}
 
 
+	nap::Service* Core::getService(const std::string& type)
+	{
+		rtti::TypeInfo stype = rtti::TypeInfo::get_by_name(type.c_str());
+		return getService(stype);
+	}
+
+
 	// Add a new service
-	Service& Core::addService(const rtti::TypeInfo& type)
+	bool Core::addService(const rtti::TypeInfo& type, std::vector<Service*>& outServices, utility::ErrorState& error)
 	{
         assert(type.is_valid());
 		assert(type.can_create_instance());
 		assert(type.is_derived_from<Service>());
 
 		// Check if service doesn't already exist
-		nap::Service* existing_service = getService(type);
-		if (existing_service != nullptr)
+		const auto& found_service = std::find_if(outServices.begin(), outServices.end(), [&type](const auto& service)
 		{
-			nap::Logger::warn("can't add service of type: %s, service already exists", type.get_name().data());
-			return *existing_service;
-		}
+			return service->get_type() == type.get_raw_type();
+		});
+
+		bool new_service = found_service == outServices.end();
+		if (!error.check(new_service, "can't add service of type: %s, service already exists", type.get_name().data()))
+			return false;
 
 		// Add service
 		Service* service = type.create<Service>();
 		service->mCore = this;
 		service->registerObjectCreators(mResourceManager->getFactory());
 
-		// Add service
-		mServices.emplace_back(std::unique_ptr<Service>(service));
+		// Signal creation
 		service->created();
-		return *service;
-	}
-
-
-	Service* Core::getOrCreateService(const std::string& type)
-	{
-		return getOrCreateService(rtti::TypeInfo::get_by_name(type));
-	}
-
-
-	// Creates a new service of type @type if doesn't exist yet
-	Service* Core::getOrCreateService(const rtti::TypeInfo& type)
-	{
-		// Otherwise add
-		if (!type.is_derived_from(RTTI_OF(nap::Service)))
-		{
-			nap::Logger::fatal("can't add service, service not of type: %s", RTTI_OF(Service).get_name().data());
-			return nullptr;
-		}
-
-		// Find registered service
-		Service* found_service = getService(type);
-		if (found_service != nullptr)
-		{
-			return found_service;
-		}
-
-		// Add new service of type
-        return &addService(type);
+		
+		// Add
+		outServices.emplace_back(service);
+		return true;
 	}
 
 

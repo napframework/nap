@@ -49,7 +49,7 @@ namespace nap
 		/**
 		* Makes sure that data that is sent using the various send functions is transmitted over the network.
 		*/
-		virtual void update(double deltaTime);
+		virtual void update(double deltaTime) override;
 
 	private:
 		/**

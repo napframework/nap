@@ -17,34 +17,20 @@ namespace nap {
 	 * Initialize all the resources and instances used for drawing
 	 * slowly migrating all functionality to nap
 	 */
-	bool AppRunner::init(Core& core)
+	bool AppRunner::init(Core& core, utility::ErrorState& error)
 	{
-		// Initialize engine -> loads all modules
-		core.initializeEngine();
-		
 		// Create all services
-		mRenderService = core.getOrCreateService<RenderService>();
-		mInputService = core.getOrCreateService<InputService>();
-		mSceneService = core.getOrCreateService<SceneService>();
-		mArtnetService = core.getOrCreateService<ArtNetService>();
-
-		// Initialize all services
-		utility::ErrorState errorState;
-		if (!core.initializeServices(errorState))
-		{
-			Logger::fatal("unable to initialize services: %s", errorState.toString().c_str());
-			return false;
-		}
+		mRenderService = core.getService<RenderService>();
+		mInputService  = core.getService<InputService>();
+		mSceneService  = core.getService<SceneService>();
+		mArtnetService = core.getService<ArtNetService>();
 		
 		// Load scene
 		mResourceManager = core.getResourceManager();
-		if (!mResourceManager->loadFile("data/artnet/artnet.json", errorState))
-		{
-			Logger::fatal("Unable to de-serialize resources: \n %s", errorState.toString().c_str());
+		if (!mResourceManager->loadFile("data/artnet/artnet.json", error))
 			return false;
-		}
 		
-		glFlush();
+		opengl::flush();
 		
 		// Get important entities
 		mCameraEntity = mResourceManager->findEntity("CameraEntity");
@@ -134,6 +120,5 @@ namespace nap {
 	
 	void AppRunner::shutdown() 
 	{
-		mRenderService->shutdown();
 	}
 }

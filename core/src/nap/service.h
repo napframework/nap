@@ -18,8 +18,12 @@ namespace nap
 
 	/**
 	 @brief Service
-	 A Service is a process within the core that cooperates with certain components in the system, this is the base
-	 class for all services
+	 A Service is a process within core that cooperates with certain components in the system, this is the base
+	 class for all services. Often services are used to load a driver, set up a connection or manage global module
+	 specific state. All services are automatically loaded and managed by Core. This ensures the right order of
+	 app initialization, runtime state and closing. When designing a module using a service make sure to export the
+	 service using the NAP_SERVICE_MODULE #define in a source file exactly once. This will ensure that core automatically loads,
+	 creates and initializes the service when loading the available system modules
 	 **/
 
 	class NAPAPI Service
@@ -58,11 +62,13 @@ namespace nap
 
 		/**
 		 * Invoked when the service has been constructed and Core is available.
+		 * This occurs before service initialization
 		 */
-		virtual void created() {}
+		virtual void created()															{}
 
 		/**
-		 * Invoked by core after creation. When called all modules this service depends on have been initialized
+		 * Invoked by core after initializing the core engine. 
+		 * When called all modules this service depends on have been initialized
 		 * Override this method to initialize your service.
 		 * @param error
 		 */
@@ -72,23 +78,36 @@ namespace nap
 		 * Invoked by core in the app loop. Update order depends on service dependency.
 		 * This call is invoked before the resource manager checks for file changes and the app update call
 		 * If service B depends on A, A::update() is called before B::update()
-		 * @param deltaTime: the time in between calls
+		 * @param deltaTime: the time in seconds between calls
 		 */
 		virtual void preUpdate(double deltaTime)										{ }
 
 		/**
 		 * Invoked by core in the app loop. Update order depends on service dependency
 		 * This call is invoked after the resource manager has loaded any file changes but before
-		 * the app update call. If service B depends on A, A::update() is called before B::update()
-		 * @param deltaTime: the time in between calls
+		 * the app update call. If service B depends on A, A:s:update() is called before B::update()
+		 * @param deltaTime: the time in seconds between calls
 		 */
 		virtual void update(double deltaTime)											{ }
 
 		/**
 		 * Invoked by core in the app loop. Update order depends on service dependency
 		 * This call is invoked after the application update call
+		 * @param deltaTime: the time in seconds between calls
 		 */
 		virtual void postUpdate(double deltaTime)										{ }
+
+		/**
+		 * Invoked when exiting the main loop, after app shutdown is called
+		 * Use this function to close service specific handles, drivers or devices
+		 * When service B depends on A, Service B is shutdown before A
+		 */
+		virtual void shutdown()															{ }
+
+		/**
+		 * Invoked after the resource manager successfully loaded a resource file
+		 */
+		virtual void resourcesLoaded()													{ }
 
 	private:
 		// this variable will be set by the core when the service is added

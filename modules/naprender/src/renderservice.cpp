@@ -272,6 +272,12 @@ namespace nap
 	}
 
 
+	void RenderService::resourcesLoaded()
+	{
+		opengl::flush();
+	}
+
+
 	void RenderService::queueResourceForDestruction(std::unique_ptr<opengl::IGLContextResource> resource)
 	{ 
 		if (resource != nullptr)

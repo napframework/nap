@@ -18,12 +18,6 @@ namespace nap
 	}
 
 
-	EtherDreamService::~EtherDreamService()
-	{
-		mInterface->close();
-	}
-
-
 	bool EtherDreamService::init(nap::utility::ErrorState& errorState)
 	{
 		// Initialize
@@ -40,6 +34,12 @@ namespace nap
 		}
 
 		return true;
+	}
+
+
+	void EtherDreamService::shutdown()
+	{
+		mInterface->close();
 	}
 
 
