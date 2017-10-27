@@ -9,9 +9,13 @@
 
 RTTI_BEGIN_CLASS(nap::ModulationProperties)
 	RTTI_PROPERTY("Frequency",			&nap::ModulationProperties::mFrequency,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FrequencySmoothTime",&nap::ModulationProperties::mFrequencySmoothTime, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Speed",				&nap::ModulationProperties::mSpeed,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("SpeedSmoothTime",	&nap::ModulationProperties::mSpeedSmoothTime,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Offset",				&nap::ModulationProperties::mOffset,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("OffsetSmoothTime",	&nap::ModulationProperties::mOffsetSmoothTime,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Amplitude",			&nap::ModulationProperties::mAmplitude,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("AmplitudeSmoothTime",&nap::ModulationProperties::mAmplitudeSmoothTime, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Waveform",			&nap::ModulationProperties::mWaveform,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Normalize",			&nap::ModulationProperties::mNormalize,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -36,13 +40,32 @@ namespace nap
 		// Get the blend component we want to apply the modulation on to
 		mBlendComponent = getComponent<LineModulationComponent>()->mBlendComponent.get();
 
+		// Set smooth timing values
+		mAmpSmoother.mSmoothTime = mProperties.mAmplitudeSmoothTime;
+		mAmpSmoother.setValue(mProperties.mAmplitude);
+
+		mFreqSmoother.mSmoothTime = mProperties.mFrequencySmoothTime;
+		mFreqSmoother.setValue(mProperties.mFrequency);
+
+		mOffsetSmoother.mSmoothTime = mProperties.mOffsetSmoothTime;
+		mOffsetSmoother.setValue(mProperties.mOffset);
+
+		mSpeedSmoother.mSmoothTime = mProperties.mSpeedSmoothTime;
+		mSpeedSmoother.setValue(mProperties.mSpeed);
+
 		return true;
 	}
 
 
 	void LineModulationComponentInstance::update(double deltaTime)
 	{
-		mCurrentTime -= (deltaTime * mProperties.mSpeed);
+		// Update smoothers
+		mSpeedSmoother.update(mProperties.mSpeed, deltaTime);
+		mFreqSmoother.update(mProperties.mFrequency, deltaTime);
+		mAmpSmoother.update(mProperties.mAmplitude, deltaTime);
+		mOffsetSmoother.update(mProperties.mOffset, deltaTime);
+
+		mCurrentTime -= (deltaTime * mSpeedSmoother.getValue());
 
 		// Fetch spline
 		PolyLine& spline = mBlendComponent->getLine();
@@ -56,7 +79,7 @@ namespace nap
 		std::vector<glm::vec3>& vertices = spline.getPositionAttr().getData();
 
 		// Calculate offset value based on time and personal offset
-		float offset = mProperties.mNormalize ? mProperties.mOffset : length * mProperties.mOffset;
+		float offset = mProperties.mNormalize ? mOffsetSmoother.getValue() : length * mOffsetSmoother.getValue();
 		offset = offset + mCurrentTime;
 
 		for (auto& dist : distance_map)
@@ -65,8 +88,8 @@ namespace nap
 			// means 1 modulation over the entire spline, no matter how long the line is. Otherwise
 			// modulation frequency is based on the length of the line
 			float t = mProperties.mNormalize ? (dist.first / length) + offset : dist.first + offset;
-			float wave_value = math::waveform(mProperties.mWaveform, t, mProperties.mFrequency);
-			wave_value = math::fit<float>(wave_value, 0.0f, 1.0f, -1.0f, 1.0f) * mProperties.mAmplitude;
+			float wave_value = math::waveform(mProperties.mWaveform, t, mFreqSmoother.getValue());
+			wave_value = math::fit<float>(wave_value, 0.0f, 1.0f, -1.0f, 1.0f) * mAmpSmoother.getValue();
 			vertices[dist.second] += (normals[dist.second] * wave_value);
 		}
 
@@ -86,8 +109,6 @@ namespace nap
 		if (!spline.getMeshInstance().update(error))
 		{
 			nap::Logger::warn(error.toString().c_str());
-		}
-		
+		}	
 	}
-
 }

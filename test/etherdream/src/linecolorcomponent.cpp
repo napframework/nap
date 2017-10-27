@@ -7,14 +7,17 @@
 #include <nap/configure.h>
 
 RTTI_BEGIN_CLASS(nap::LineColorComponent)
-	RTTI_PROPERTY("BlendComponent",		&nap::LineColorComponent::mBlendComponent,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("LookupImage",		&nap::LineColorComponent::mLookupImage,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("StartPosition",		&nap::LineColorComponent::mStartPos,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("EndPosition",		&nap::LineColorComponent::mEndPos,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Intensity",			&nap::LineColorComponent::mIntensity,		nap::rtti::EPropertyMetaData::Default)	
-	RTTI_PROPERTY("Wrap",				&nap::LineColorComponent::mWrap,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("WrapPower",			&nap::LineColorComponent::mWrapPower,		nap::rtti::EPropertyMetaData::Default)		
-	RTTI_PROPERTY("Link",				&nap::LineColorComponent::mLink,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("BlendComponent",			&nap::LineColorComponent::mBlendComponent,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("LookupImage",			&nap::LineColorComponent::mLookupImage,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("StartPosition",			&nap::LineColorComponent::mStartPos,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("StartSmoothTime",		&nap::LineColorComponent::mStartSmoothTime,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("EndPosition",			&nap::LineColorComponent::mEndPos,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("EndSmoothTime",			&nap::LineColorComponent::mEndSmoothTime,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Intensity",				&nap::LineColorComponent::mIntensity,		nap::rtti::EPropertyMetaData::Default)	
+	RTTI_PROPERTY("IntensitySmoothTime",	&nap::LineColorComponent::mIntensitySmoothTime,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Wrap",					&nap::LineColorComponent::mWrap,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("WrapPower",				&nap::LineColorComponent::mWrapPower,		nap::rtti::EPropertyMetaData::Default)		
+	RTTI_PROPERTY("Link",					&nap::LineColorComponent::mLink,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LineColorComponentInstance)
@@ -30,9 +33,24 @@ namespace nap
 	void getPixelColor(const opengl::Bitmap& bitmap, const glm::ivec2& pixelCoordinates, glm::vec3& color, float divider)
 	{
 		T* pixel_color = bitmap.getPixel<T>(pixelCoordinates.x, pixelCoordinates.y);
-		color.r = static_cast<float>(pixel_color[0]) / divider;
-		color.g = static_cast<float>(pixel_color[1]) / divider;
-		color.b = static_cast<float>(pixel_color[2]) / divider;
+		switch (bitmap.getColorType())
+		{
+		case opengl::BitmapColorType::RGB:
+		case opengl::BitmapColorType::RGBA:
+			color.r = static_cast<float>(pixel_color[0]) / divider;
+			color.g = static_cast<float>(pixel_color[1]) / divider;
+			color.b = static_cast<float>(pixel_color[2]) / divider;
+			break;
+		case opengl::BitmapColorType::BGR:
+		case opengl::BitmapColorType::BGRA:
+			color.r = static_cast<float>(pixel_color[2]) / divider;
+			color.g = static_cast<float>(pixel_color[1]) / divider;
+			color.b = static_cast<float>(pixel_color[0]) / divider;
+			break;
+		default:
+			assert(false);
+			break;
+		}
 	}
 
 
@@ -51,6 +69,23 @@ namespace nap
 		mPower = getComponent<LineColorComponent>()->mWrapPower;
 		mLink = getComponent<LineColorComponent>()->mLink;
 
+		// Copy over start smooth times
+		mStartSmootherX.mSmoothTime = getComponent<LineColorComponent>()->mStartSmoothTime.x;
+		mStartSmootherX.setValue(getComponent<LineColorComponent>()->mStartPos.x);
+
+		mStartSmootherY.mSmoothTime = getComponent<LineColorComponent>()->mStartSmoothTime.y;
+		mStartSmootherY.setValue(getComponent<LineColorComponent>()->mStartPos.y);
+
+		// Copy over end smooth times
+		mEndSmootherX.mSmoothTime = getComponent<LineColorComponent>()->mEndSmoothTime.x;
+		mEndSmootherX.setValue(getComponent<LineColorComponent>()->mEndPos.x);
+
+		mEndSmootherY.mSmoothTime = getComponent<LineColorComponent>()->mEndSmoothTime.y;
+		mEndSmootherY.setValue(getComponent<LineColorComponent>()->mEndPos.y);
+
+		// Copy over intensity smooth time
+		mIntensitySmoother.mSmoothTime = getComponent<LineColorComponent>()->mIntensitySmoothTime;
+
 		// Ensure the image is at least RGB
 		if (!(mLookupImage->getBitmap().getColorType() >=  opengl::BitmapColorType::RGB))
 			return errorState.check(false, "lookup image does not have 3 or more color channels");
@@ -61,18 +96,20 @@ namespace nap
 
 	void LineColorComponentInstance::update(double deltaTime)
 	{
+		// Update start smoothing operator
+		mStartSmootherX.update(mStartPosition.x, deltaTime);
+		mStartSmootherY.update(mStartPosition.y, deltaTime);
+
+		// Update end smoothing operator
+		mEndSmootherX.update(mEndPosition.x, deltaTime);
+		mEndSmootherY.update(mEndPosition.y, deltaTime);
+
+		// Update intensity smooth operator
+		mIntensitySmoother.update(mIntensity, deltaTime);
+
 		// Get the line and color attribute we want to update
 		nap::PolyLine& line = mBlendComponent->getLine();
 		nap::Vec4VertexAttribute& color_attr = line.getColorAttr();
-
-		const opengl::Bitmap& bitmap = mLookupImage->getBitmap();
-
-		// Convert start location to pixel coordinates
-		unsigned int bitmap_width  = bitmap.getWidth();
-		unsigned int bitmap_height = bitmap.getHeight();
-
-		float max_width = static_cast<float>(bitmap_width - 1);
-		float max_height = static_cast<float>(bitmap_height - 1);
 
 		// Get data to set (interpolate)
 		int vert_count = color_attr.getCount();
@@ -88,13 +125,15 @@ namespace nap
 		// Will hold the interpolated uv coordinates
 		glm::vec2 lerped_uv_coordinates;
 
-		// Will hold the pixel coordinates to sample
-		glm::ivec2 bitmap_coordinates;
-
-		opengl::BitmapDataType data_type = bitmap.getDataType();
-
 		// End sample position, is the same as the beginning if linking is turned on
-		glm::vec2 end_pos = mLink ? mStartPosition : mEndPosition;
+		glm::vec2 end_pos = mLink ? glm::vec2(mStartSmootherX.getValue(), mStartSmootherY.getValue()) : glm::vec2(mEndSmootherX.getValue(), mEndSmootherY.getValue());
+		end_pos.x = math::clamp<float>(end_pos.x, 0.0f, 1.0f);
+		end_pos.y = math::clamp<float>(end_pos.y, 0.0f, 1.0f);
+
+		// Get start position
+		glm::vec2 sta_pos = {mStartSmootherX.getValue(), mStartSmootherY.getValue()};
+		sta_pos.x = math::clamp<float>(sta_pos.x, 0.0f, 1.0f);
+		sta_pos.y = math::clamp<float>(sta_pos.y, 0.0f, 1.0f);
 
 		// Update color values along line
 		for (int i = 0; i < vert_count; i++)
@@ -103,29 +142,13 @@ namespace nap
 			lerp_v = mWrap ? math::bell<float>(lerp_v, mPower) : lerp_v;
 
 			// Get interpolated uv coordinates
-			lerped_uv_coordinates = math::lerp<glm::vec2>(mStartPosition, end_pos, lerp_v);
+			lerped_uv_coordinates = math::lerp<glm::vec2>(sta_pos, end_pos, lerp_v);
 
-			// Convert to bitmap coordinates
-			bitmap_coordinates.x = static_cast<int>(lerped_uv_coordinates.x * max_width);
-			bitmap_coordinates.y = static_cast<int>(lerped_uv_coordinates.y * max_height);
-
-			// Get pixel color data for current lerped bitmap coordinate value
-			switch (data_type)
-			{
-			case opengl::BitmapDataType::BYTE:
-				getPixelColor<nap::uint8>(bitmap, bitmap_coordinates, lerp_color, math::max<nap::uint8>());
-				break;
-			case opengl::BitmapDataType::FLOAT:
-				getPixelColor<float>(bitmap, bitmap_coordinates, lerp_color, 1.0f);
-				break;
-			case opengl::BitmapDataType::USHORT:
-				getPixelColor<nap::uint16>(bitmap, bitmap_coordinates, lerp_color, math::max<nap::uint16>());
-				break;
-			default:
-				assert(false);
-				break;
-			}
-			color_data[i] = glm::vec4(lerp_color, mIntensity);
+			// Get pixel color
+			getColor(lerped_uv_coordinates, lerp_color);
+			
+			// Set color
+			color_data[i] = glm::vec4(lerp_color, mIntensitySmoother.getValue());
 		}
 
 		// Update line
@@ -154,6 +177,33 @@ namespace nap
 	void LineColorComponentInstance::setIntensity(float intensity)
 	{
 		mIntensity = math::clamp<float>(intensity, 0.0f, 1.0f);
+	}
+
+
+	void LineColorComponentInstance::getColor(const glm::vec2& uvPos, glm::vec3& outColor)
+	{
+		// Get max width and height in bitmap space
+		const opengl::Bitmap& bitmap = mLookupImage->getBitmap();
+		glm::ivec2 bitmap_coordinates;
+		bitmap_coordinates.x = static_cast<int>(static_cast<float>(bitmap.getWidth()  - 1) * uvPos.x);
+		bitmap_coordinates.y = static_cast<int>(static_cast<float>(bitmap.getHeight() - 1) * uvPos.y);
+
+		// Get pixel color data for current lerped bitmap coordinate value
+		switch (bitmap.getDataType())
+		{
+		case opengl::BitmapDataType::BYTE:
+			getPixelColor<nap::uint8>(bitmap, bitmap_coordinates, outColor, math::max<nap::uint8>());
+			break;
+		case opengl::BitmapDataType::FLOAT:
+			getPixelColor<float>(bitmap, bitmap_coordinates, outColor, 1.0f);
+			break;
+		case opengl::BitmapDataType::USHORT:
+			getPixelColor<nap::uint16>(bitmap, bitmap_coordinates, outColor, math::max<nap::uint16>());
+			break;
+		default:
+			assert(false);
+			break;
+		}
 	}
 
 }

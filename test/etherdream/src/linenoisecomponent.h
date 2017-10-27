@@ -4,6 +4,7 @@
 
 #include <nap/component.h>
 #include <nap/componentptr.h>
+#include <smoothdamp.h>
 
 namespace nap
 {
@@ -15,9 +16,13 @@ namespace nap
 	struct NoiseProperties
 	{
 		float mFrequency = 1.0f;							// Frequency of the waveform
+		float mFrequencySmoothTime = 0.1f;					// Freq smooth time
 		float mSpeed = 0.0f;								// Speed in seconds to move the waveform
+		float mSpeedSmoothTime = 0.1f;						// Speed smooth time
 		float mOffset = 0.0f;								// Offset along the line
+		float mOffsetSmoothTime = 0.1f;						// Offset smooth time
 		float mAmplitude = 1.0f;							// Amplitude of the modulation
+		float mAmplitudeSmoothTime = 0.1f;					// Amplitude smooth time
 	};
 
 
@@ -62,7 +67,19 @@ namespace nap
 		NoiseProperties mProperties;
 
 	private:
-		LineBlendComponentInstance* mBlendComponent = nullptr;
-		float mCurrentTime = 0.0f;
+		LineBlendComponentInstance* mBlendComponent = nullptr;		// Component that holds the line we want to modulate
+		float mCurrentTime = 0.0f;									// Current update time associated with this component
+
+		// Smooths frequency over time
+		math::SmoothOperator<float> mFreqSmoother					{ 1.0f, 0.1f };
+
+		// Smooths amplitude over time
+		math::SmoothOperator<float> mAmpSmoother					{ 1.0f, 0.1f };
+
+		// Smooths Speed over time
+		math::SmoothOperator<float> mSpeedSmoother					{ 0.0f, 0.1f };
+
+		// Smooths offset over time
+		math::SmoothOperator<float> mOffsetSmoother					{ 0.0f, 0.1f };
 	};
 }

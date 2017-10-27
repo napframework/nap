@@ -25,7 +25,7 @@ namespace nap
 	}
 
 
-	std::unique_ptr<GLWindow> RenderService::addWindow(RenderWindow& window, utility::ErrorState& errorState)
+	std::shared_ptr<GLWindow> RenderService::addWindow(RenderWindow& window, utility::ErrorState& errorState)
 	{
 		assert(mRenderer != nullptr);
 
@@ -38,7 +38,7 @@ namespace nap
 		window_settings.title		= window.mTitle;
 		window_settings.sync		= window.mSync;
 
-		std::unique_ptr<GLWindow> new_window = mRenderer->createRenderWindow(window_settings, errorState);
+		std::shared_ptr<GLWindow> new_window = mRenderer->createRenderWindow(window_settings, window.mID, errorState);
 		if (new_window == nullptr)
 			return nullptr;
 
@@ -87,34 +87,6 @@ namespace nap
 	void RenderService::addEvent(WindowEventPtr windowEvent)
 	{
         nap::ObjectPtr<nap::Window> window = getWindow(windowEvent->mWindow);
-        
-#ifdef __APPLE__
-		/** TODO Hacky temporary workaround for two macOS issues:
-		 * 1) When dropping out of fullscreen mode for the first time the hidden window becomes visible.  Here we force it back
-		 *    to visible.. but it still shows for a second.
-         * 2) We're sometimes receiving window events for the hidden window or another window (with a large id, eg. 143114480), 
-         *    which we then can't find in our getWindow lookup, producing a crash
-		 *
-		 * TODO: Fix macOS hidden window event issues cleanly. Removing logging when fixed.
-		 */
-        if (window == nullptr) {
-            // Check if events are from hidden window
-            if (windowEvent->mWindow == getPrimaryWindow().getNumber()) {
-                nap::rtti::TypeInfo e_type = windowEvent->get_type();
-                if (e_type.is_derived_from(RTTI_OF(nap::WindowShownEvent))) {
-                    Logger::info("Hidden/primary window (id %d) shown , hiding", windowEvent->mWindow);
-                    // Re-hide our hidden window
-                    SDL_HideWindow(getPrimaryWindow().getNativeWindow());
-                } else {
-                    Logger::warn("Receiving unexpected event for hidden/primary window (id %d), ignoring", windowEvent->mWindow);
-                }
-            } else {
-                Logger::warn("Received event for unfound window with id %d", windowEvent->mWindow);
-            }
-            return;
-        }
-#endif
-
 		assert (window != nullptr);
 		window->addEvent(std::move(windowEvent));
 	}
@@ -139,39 +111,64 @@ namespace nap
 	// Render all objects in scene graph using specified camera
 	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera)
 	{
+		renderObjects(renderTarget, camera, std::bind(&RenderService::sortObjects, this, std::placeholders::_1, std::placeholders::_2));
+	}
+
+
+	// Render all objects in scene graph using specified camera
+	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera, const SortFunction& sortFunction)
+	{
 		// Get all render components
- 		std::vector<nap::RenderableComponentInstance*> render_comps;
+		std::vector<nap::RenderableComponentInstance*> render_comps;
 
 		for (EntityInstance* entity : getCore().getService<ResourceManagerService>()->getEntities())
 			entity->getComponentsOfType<nap::RenderableComponentInstance>(render_comps);
 
+		// Render these objects
+		renderObjects(renderTarget, camera, render_comps, sortFunction);
+	}
+
+
+	void RenderService::sortObjects(std::vector<RenderableComponentInstance*>& comps, const CameraComponentInstance& camera)
+	{
 		// Split into front to back and back to front meshes
 		std::vector<nap::RenderableComponentInstance*> front_to_back;
+		front_to_back.reserve(comps.size());
 		std::vector<nap::RenderableComponentInstance*> back_to_front;
+		back_to_front.reserve(comps.size());
 
-		for (nap::RenderableComponentInstance* component : render_comps)
+		for (nap::RenderableComponentInstance* component : comps)
 		{
 			nap::RenderableMeshComponentInstance* renderable_mesh = rtti_cast<RenderableMeshComponentInstance>(component);
 			if (renderable_mesh != nullptr)
 			{
-				EBlendMode blend_mode = renderable_mesh->getMaterialInstance().getBlendMode();
+				nap::RenderableMeshComponentInstance* renderable_mesh = static_cast<RenderableMeshComponentInstance*>(component);
+				EBlendMode blend_mode = renderable_mesh->getMaterialInstance().getBlendMode();	
 				if (blend_mode == EBlendMode::AlphaBlend)
-					back_to_front.push_back(component);
+					back_to_front.emplace_back(component);
 				else
-					front_to_back.push_back(component);
+					front_to_back.emplace_back(component);
+			}
+			else
+			{
+				front_to_back.emplace_back(component);
 			}
 		}
-		
+
 		// Sort front to back and render those first
 		DepthSorter front_to_back_sorter(DepthSorter::EMode::FrontToBack, camera.getViewMatrix());
 		std::sort(front_to_back.begin(), front_to_back.end(), front_to_back_sorter);
-		renderObjects(renderTarget, camera, front_to_back);
 
 		// Then sort back to front and render these
 		DepthSorter back_to_front_sorter(DepthSorter::EMode::BackToFront, camera.getViewMatrix());
 		std::sort(back_to_front.begin(), back_to_front.end(), back_to_front_sorter);
-		renderObjects(renderTarget, camera, back_to_front);
+
+		// concatinate both in to the output
+		comps.clear();
+		comps.insert(comps.end(), std::make_move_iterator(front_to_back.begin()), std::make_move_iterator(front_to_back.end()));
+		comps.insert(comps.end(), std::make_move_iterator(back_to_front.begin()), std::make_move_iterator(back_to_front.end()));
 	}
+
 
 	// Updates the current context's render state by using the latest render state as set by the user.
 	void RenderService::updateRenderState()
@@ -189,12 +186,23 @@ namespace nap
 		}
 	}
 
+
 	// Renders all available objects to a specific renderTarget.
 	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps)
 	{
+		renderObjects(renderTarget, camera, comps, std::bind(&RenderService::sortObjects, this, std::placeholders::_1, std::placeholders::_2));
+	}
+
+
+	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction)
+	{
+		// Sort objects to render
+		std::vector<RenderableComponentInstance*> components_to_render = comps;
+		sortFunction(components_to_render, camera);
+
 		renderTarget.bind();
 
-		// Before we render, we always set render target size. This avoids overly complex
+		// Before we render, we always set aspect ratio. This avoids overly complex
 		// responding to various changes in render target sizes.
 		camera.setRenderTargetSize(renderTarget.getSize());
 
@@ -208,7 +216,7 @@ namespace nap
 		glm::mat4x4 view_matrix = camera.getViewMatrix();
 
 		// Draw
-		for (auto& comp : comps)
+		for (auto& comp : components_to_render)
 			comp->draw(view_matrix, projection_matrix);
 
 		renderTarget.unbind();

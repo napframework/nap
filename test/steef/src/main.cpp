@@ -7,7 +7,7 @@
 #include <nap/core.h>
 
 // predefines
-void run(nap::Core& core, std::unique_ptr<nap::AppRunner>& testRunner);
+void run(nap::Core& core, std::unique_ptr<nap::AppRunner>& appRunner);
 
 // Main loop
 int main(int argc, char *argv[])
@@ -15,20 +15,20 @@ int main(int argc, char *argv[])
 	// Create core
 	nap::Core core;
     
-	std::unique_ptr<nap::AppRunner> testRunner = std::make_unique<nap::AppRunner>();
+	std::unique_ptr<nap::AppRunner> appRunner = std::make_unique<nap::AppRunner>();
     
 	// Initialize render stuff
-	if (!testRunner->init(core))
+	if (!appRunner->init(core))
 		return -1;
 
 	// Run Gam
-	run(core, testRunner);
+	run(core, appRunner);
 
 	return 0;
 }
 
 
-void run(nap::Core& core, std::unique_ptr<nap::AppRunner>& testRunner)
+void run(nap::Core& core, std::unique_ptr<nap::AppRunner>& appRunner)
 {
 	// Run function
 	bool loop = true;
@@ -37,7 +37,7 @@ void run(nap::Core& core, std::unique_ptr<nap::AppRunner>& testRunner)
 	while (loop)
 	{
 		opengl::Event event;
-		if (opengl::pollEvent(event))
+		while (opengl::pollEvent(event))
 		{
 			// Check if we are dealing with an input event (mouse / keyboard)
 			if (nap::isInputEvent(event))
@@ -54,34 +54,37 @@ void run(nap::Core& core, std::unique_ptr<nap::AppRunner>& testRunner)
 					if (press_event->mKey == nap::EKeyCode::KEY_f)
 					{
 						static bool fullscreen = true;
-                        testRunner->setWindowFullscreen("Viewport", fullscreen);
+                        appRunner->setWindowFullscreen("Viewport", fullscreen);
 						fullscreen = !fullscreen;
 					}
 				}
+
+				appRunner->registerInputEvent(std::move(input_event));
 			}
 
 			// Check if we're dealing with a window event
 			else if (nap::isWindowEvent(event))
 			{
-				nap::WindowEventPtr nap_event = nap::translateWindowEvent(event);
-                testRunner->registerWindowEvent(std::move(nap_event));
+				nap::WindowEventPtr window_event = nap::translateWindowEvent(event);
+				if (window_event != nullptr)
+					appRunner->registerWindowEvent(std::move(window_event));
 			}
 		}
 
 		//////////////////////////////////////////////////////////////////////////
 
 		// Update
-		testRunner->update();
+		appRunner->update();
 
 		// Render
-		testRunner->render();
+		appRunner->render();
 	}
     
     // Shutdown
-	testRunner->shutdown();
+	appRunner->shutdown();
     
-    // Delete TestRunner now so that its entities etc are cleaned up before ObjectPtrManager destruction
-    testRunner.reset();
+    // Delete AppRunner now so that its entities etc are cleaned up before ObjectPtrManager destruction
+    appRunner.reset();
 }
        
  

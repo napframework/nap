@@ -11,14 +11,14 @@
 		},
 		
 		{
-			"Type" 		: "nap::ArtnetController",
+			"Type" 		: "nap::ArtNetController",
 			"mID" 		: "Universe0",
 			"Subnet" 	: 0,
 			"Universe" 	: 0
 		},
 		
 		{
-			"Type" 		: "nap::ArtnetController",
+			"Type" 		: "nap::ArtNetController",
 			"mID" 		: "Universe1",
 			"Subnet" 	: 0,
 			"Universe" 	: 1

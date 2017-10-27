@@ -53,6 +53,11 @@ namespace nap
 		void registerWindowEvent(WindowEventPtr windowEvent);
 		
 		/**
+		 *  Forwards the received input event to the input service
+		 */
+		void registerInputEvent(InputEventPtr inputEvent);
+		
+		/**
 		 *	Toggles full screen
 		 */
 		void setWindowFullscreen(std::string windowIdentifier, bool fullscreen);
@@ -73,6 +78,8 @@ namespace nap
 		RenderService* mRenderService = nullptr;						//< Render Service that handles render calls
 		ResourceManagerService*	mResourceManagerService = nullptr;		//< Manages all the loaded resources
 		SceneService* mSceneService = nullptr;							//< Manages all the objects in the scene
+		
+		InputService* mInputService = nullptr;							//< Input service for processing input
 		
 		ObjectPtr<RenderWindow>	mRenderWindow = nullptr;				//< Pointer to the spawned render window
 		ObjectPtr<EntityInstance> mModelEntity = nullptr;				//< Pointer to the entity that holds all the vinyl parts

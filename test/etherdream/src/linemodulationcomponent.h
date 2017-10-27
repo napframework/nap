@@ -8,6 +8,7 @@
 #include <nap/objectptr.h>
 #include <glm/glm.hpp>
 #include <waveform.h>
+#include <smoothdamp.h>
 
 namespace nap
 {
@@ -19,9 +20,13 @@ namespace nap
 	struct ModulationProperties
 	{
 		float mFrequency = 1.0f;							// Frequency of the waveform
+		float mFrequencySmoothTime = 0.1f;					// Freq smooth time
 		float mSpeed = 0.0f;								// Speed in seconds to move the waveform
+		float mSpeedSmoothTime = 0.1f;						// Speed smooth time
 		float mOffset = 0.0f;								// Offset along the line
+		float mOffsetSmoothTime = 0.1f;						// Offset smooth time
 		float mAmplitude = 1.0f;							// Amplitude of the modulation
+		float mAmplitudeSmoothTime = 0.1f;					// Amplitude smooth time
 		bool  mNormalize = false;							// Normalizes modulation frequency along the spline (0-1)
 		math::EWaveform mWaveform = math::EWaveform::SINE;	// Type of modulation
 	};
@@ -67,7 +72,20 @@ namespace nap
 		ModulationProperties mProperties;
 
 	private:
-		LineBlendComponentInstance* mBlendComponent = nullptr;
-		float mCurrentTime = 0.0f;
+		LineBlendComponentInstance* mBlendComponent = nullptr;	// Component that blends the lines
+		float mCurrentTime = 0.0f;								// Current time
+		
+		// Smooths frequency over time
+		math::SmoothOperator<float> mFreqSmoother				{ 1.0f, 0.1f };
+
+		// Smooths amplitude over time
+		math::SmoothOperator<float> mAmpSmoother				{ 1.0f, 0.1f };
+
+		// Smooths Speed over time
+		math::SmoothOperator<float> mSpeedSmoother				{ 0.0f, 0.1f };
+
+		// Smooths offset over time
+		math::SmoothOperator<float> mOffsetSmoother				{ 0.0f, 0.1f };
+
 	};
 }

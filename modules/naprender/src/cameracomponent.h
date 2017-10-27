@@ -34,9 +34,19 @@ namespace nap
 		/**
 		 * This is used by derived classes for extracting information like aspect ratio
 		 * or the the size of the screen, in case of orthographic camera's (where pixels coordinates
-		 * are used).
+		 * can be used).
 		 * @param size: size of the render target in pixels.
 		 */
-		virtual void setRenderTargetSize(glm::ivec2 size) = 0;
+		virtual void setRenderTargetSize(glm::ivec2 size) { mRenderTargetSize = size; }
+
+
+		/**
+		 * @return RenderTarget size
+		 */
+		const glm::ivec2& getRenderTargetSize() const { return mRenderTargetSize; }
+
+	private:
+		glm::ivec2	mRenderTargetSize;			// The size of the render target we're rendering to
+
 	};
 }
