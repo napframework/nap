@@ -10,6 +10,7 @@
 #include <nap/logger.h>
 
 #include <oscservice.h>
+#include <midiservice.h>
 
 // Audio module includes
 #include <service/audiodeviceservice.h>
@@ -34,8 +35,15 @@ bool init(nap::Core& core)
     
     core.initialize();
     
-    core.getOrCreateService<nap::OSCService>();
+    auto midiService = core.getOrCreateService<nap::MidiService>();
+    if (!midiService->init(errorState))
+    {
+        nap::Logger::fatal(errorState.toString());
+        return false;
+    }
     
+    core.getOrCreateService<nap::OSCService>();
+
     auto audioService = core.getOrCreateService<nap::audio::AudioDeviceService>();
     if (!audioService->init(errorState))
     { 

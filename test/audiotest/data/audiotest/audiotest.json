@@ -15,6 +15,12 @@
 		},
 
 		{
+			"Type": "nap::MidiInputPort",
+			"mID": "irisMidi",
+			"Port": 1
+		},
+
+		{
 			"Type": "nap::audio::Voice",
 			"mID": "voice",
 			"Objects":
