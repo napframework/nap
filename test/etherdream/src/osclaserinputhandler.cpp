@@ -7,9 +7,9 @@
 #include <nap/logger.h>
 
 RTTI_BEGIN_CLASS(nap::OSCLaserInputHandler)
-	RTTI_PROPERTY("SelectionComponentOne", &nap::OSCLaserInputHandler::mSelectionComponentOne, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("SelectionComponentTwo", &nap::OSCLaserInputHandler::mSelectionComponentTwo, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("LaserOutputComponent",  &nap::OSCLaserInputHandler::mLaserOutputComponent,  nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("SelectionComponentOne", &nap::OSCLaserInputHandler::mSelectionComponentOne,  nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("SelectionComponentTwo", &nap::OSCLaserInputHandler::mSelectionComponentTwo,  nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("PrintColor",			   &nap::OSCLaserInputHandler::mPrintColor,				nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::OSCLaserInputHandlerInstance)
@@ -66,7 +66,11 @@ namespace nap
 		if (!errorState.check(mSwitcher != nullptr, "missing trace component"))
 			return false;
 
-		mLaserOutput = getComponent<OSCLaserInputHandler>()->mLaserOutputComponent.get();
+		mXformSmoother = getEntityInstance()->findComponent<nap::XformSmoothComponentInstance>();
+		if (!errorState.check(mXformSmoother != nullptr, "missing xform smoother"))
+			return false;
+
+		mPrintColor = getComponent<OSCLaserInputHandler>()->mPrintColor;
 
 		mInputComponent->messageReceived.connect(mMessageReceivedSlot);
 
@@ -78,7 +82,6 @@ namespace nap
 		mLaserEventFuncs.emplace(std::make_pair("resetrotation", &OSCLaserInputHandlerInstance::resetRotate));
 		mLaserEventFuncs.emplace(std::make_pair("blend", &OSCLaserInputHandlerInstance::setBlend));
 		mLaserEventFuncs.emplace(std::make_pair("scale", &OSCLaserInputHandlerInstance::setScale));
-		mLaserEventFuncs.emplace(std::make_pair("position", &OSCLaserInputHandlerInstance::setPosition));
 		mLaserEventFuncs.emplace(std::make_pair("modulation", &OSCLaserInputHandlerInstance::setModulation));
 		mLaserEventFuncs.emplace(std::make_pair("noise", &OSCLaserInputHandlerInstance::setNoise));
 		mLaserEventFuncs.emplace(std::make_pair("synccolor", &OSCLaserInputHandlerInstance::setColorSync));
@@ -87,9 +90,23 @@ namespace nap
 		mLaserEventFuncs.emplace(std::make_pair("nextline", &OSCLaserInputHandlerInstance::selectNextLine));
 		mLaserEventFuncs.emplace(std::make_pair("random", &OSCLaserInputHandlerInstance::toggleRandom));
 		mLaserEventFuncs.emplace(std::make_pair("resetblend", &OSCLaserInputHandlerInstance::resetBlend));
+		mLaserEventFuncs.emplace(std::make_pair("startxposition", &OSCLaserInputHandlerInstance::updateXStartColor));
+		mLaserEventFuncs.emplace(std::make_pair("startyposition", &OSCLaserInputHandlerInstance::updateYStartColor));
+		mLaserEventFuncs.emplace(std::make_pair("endxposition", &OSCLaserInputHandlerInstance::updateXEndColor));
+		mLaserEventFuncs.emplace(std::make_pair("endyposition", &OSCLaserInputHandlerInstance::updateYEndColor));
+		mLaserEventFuncs.emplace(std::make_pair("smoothx", &OSCLaserInputHandlerInstance::setColorSmoothX));
+		mLaserEventFuncs.emplace(std::make_pair("smoothy", &OSCLaserInputHandlerInstance::setColorSmoothY));
+		mLaserEventFuncs.emplace(std::make_pair("positionx", &OSCLaserInputHandlerInstance::setPositionX));
+		mLaserEventFuncs.emplace(std::make_pair("positiony", &OSCLaserInputHandlerInstance::setPositionY));
 		return true;
 	}
 
+
+	void OSCLaserInputHandlerInstance::setLaserOutput(nap::EntityInstance& entity)
+	{
+		mLaserOutput = entity.findComponent<nap::LaserOutputComponentInstance>();
+		assert(mLaserOutput != nullptr);
+	}
 
 	void OSCLaserInputHandlerInstance::handleMessageReceived(const nap::OSCEvent& oscEvent)
 	{
@@ -115,30 +132,84 @@ namespace nap
 
 	void OSCLaserInputHandlerInstance::updateStartColor(const OSCEvent& event, const std::vector<std::string>& args)
 	{
-		updateColor(event, 0);
+		assert(event.getCount() == 2);
+		glm::vec2 new_pos;
+		new_pos.x = math::clamp<float>(event[0].asFloat(), 0.0f, 1.0f);
+		new_pos.y = math::clamp<float>(event[1].asFloat(), 0.0f, 1.0f);
+		updateColor(new_pos, 0);
 	}
 
 
 	void OSCLaserInputHandlerInstance::updateEndColor(const OSCEvent& event, const std::vector<std::string>& args)
 	{
-		updateColor(event, 1);
+		assert(event.getCount() == 2);
+		glm::vec2 new_pos;
+		new_pos.x = math::clamp<float>(event[0].asFloat(), 0.0f, 1.0f);
+		new_pos.y = math::clamp<float>(event[1].asFloat(), 0.0f, 1.0f);
+		updateColor(new_pos, 1);
 	}
 
 
-	void OSCLaserInputHandlerInstance::updateColor(const OSCEvent& oscEvent, int position)
+	void OSCLaserInputHandlerInstance::updateXStartColor(const OSCEvent& event, const std::vector<std::string>& args)
 	{
-		assert(oscEvent.getCount() == 2);
-		float pos_x = oscEvent[1].asFloat();
-		float pos_y = oscEvent[0].asFloat();
+		assert(event.getCount() == 1);
+		glm::vec2 new_pos = mColorComponent->getStartPosition();
+		new_pos.x = math::clamp<float>(event[0].asFloat(), 0.0f, 1.0f);
+		updateColor(new_pos, 0);
+	}
 
+
+	void OSCLaserInputHandlerInstance::updateYStartColor(const OSCEvent& event, const std::vector<std::string>& args)
+	{
+		assert(event.getCount() == 1);
+		glm::vec2 new_pos = mColorComponent->getStartPosition();
+		new_pos.y = math::clamp<float>(event[0].asFloat(), 0.0f, 1.0f);
+		updateColor(new_pos, 0);
+	}
+
+
+	void OSCLaserInputHandlerInstance::updateXEndColor(const OSCEvent& event, const std::vector<std::string>& args)
+	{
+		assert(event.getCount() == 1);
+		glm::vec2 new_pos = mColorComponent->getEndPosition();
+		new_pos.x = math::clamp<float>(event[0].asFloat(), 0.0f, 1.0f);
+		updateColor(new_pos, 1);
+	}
+
+
+	void OSCLaserInputHandlerInstance::updateYEndColor(const OSCEvent& event, const std::vector<std::string>& args)
+	{
+		assert(event.getCount() == 1);
+		glm::vec2 new_pos = mColorComponent->getEndPosition();
+		new_pos.y = math::clamp<float>(event[0].asFloat(), 0.0f, 1.0f);
+		updateColor(new_pos, 1);
+	}
+
+
+	void OSCLaserInputHandlerInstance::updateColor(const glm::vec2& loc, int position)
+	{
+		// Will hold the pixel color
+		glm::vec3 mp_clr;
+
+		// Set start / end position based on uv coordinates
 		if (position == 0)
 		{
-			mColorComponent->setStartPosition(glm::vec2(pos_x, pos_y));
-			return;
+			mColorComponent->setStartPosition(loc);
+			mColorComponent->getColor(loc, mp_clr);
 		}
 		else
 		{
-			mColorComponent->setEndPosition(glm::vec2(pos_x, pos_y));
+			mColorComponent->setEndPosition(loc);
+			mColorComponent->getColor(loc, mp_clr);
+		}
+		
+		if (mPrintColor)
+		{
+			// Convert color to 8 bit value
+			int r = static_cast<int>(mp_clr.x * 255.0f);
+			int g = static_cast<int>(mp_clr.y * 255.0f);
+			int b = static_cast<int>(mp_clr.z * 255.0f);
+			std::cout << "Pixel Color: " << r << " " << g << " " << b << "\n";
 		}
 	}
 
@@ -153,6 +224,32 @@ namespace nap
 			mBlendComponent->mBlendSpeed = 0.0f;
 			mBlendComponent->mBlendValue = 0.0f;
 		}
+	}
+
+
+	void OSCLaserInputHandlerInstance::setColorSmoothX(const OSCEvent& event, const std::vector<std::string>& args)
+	{
+		if (!(event[0].isInt()))
+		{
+			nap::Logger::warn("expected an int value associated with message: %s, got: %s instead", event.getAddress().c_str(), event[0].getValueType().get_name().data());
+			return;
+		}
+
+		float secs = static_cast<float>(event[0].asInt()) / 1000.0f;
+		mColorComponent->setStartSmoothSpeedX(secs);
+	}
+
+
+	void OSCLaserInputHandlerInstance::setColorSmoothY(const OSCEvent& event, const std::vector<std::string>& args)
+	{
+		if (!(event[0].isInt()))
+		{
+			nap::Logger::warn("expected an int value associated with message: %s, got: %s instead", event.getAddress().c_str(), event[0].getValueType().get_name().data());
+			return;
+		}
+
+		float secs = static_cast<float>(event[0].asInt()) / 1000.0f;
+		mColorComponent->setStartSmoothSpeedY(secs);
 	}
 
 
@@ -177,8 +274,12 @@ namespace nap
 			mRotateComponent->mProperties.mAxis.z = v;
 			break;
 		case 4:
-			mRotateComponent->mProperties.mSpeed = math::power<float>(v, 4.0f);
+		{
+			float vs = math::power<float>(abs(v), 4.0f);
+			vs *= math::sign<float>(v);
+			mRotateComponent->mProperties.mSpeed = vs;
 			break;
+		}
 		case 5:
 			mRotateComponent->mProperties.mOffset = v;
 			break;
@@ -214,24 +315,54 @@ namespace nap
 	{
 		assert(event[0].isFloat());
 		float v = event[0].asFloat();
-		mTransformComponent->setUniformScale(math::fit<float>(v, 0.0f, 1.0f, 0.1f, 3.0f) * mInitialScale);
+		v = math::max<float>(v*2.0f, 0.05f) * mInitialScale;
+		mXformSmoother->setTargetScale(v);
 	}
 
 
 	void OSCLaserInputHandlerInstance::setPosition(const OSCEvent& event, const std::vector<std::string>& args)
 	{
 		assert(event.getCount() == 2);
-		float pos_x = event[1].asFloat();
-		float pos_y = event[0].asFloat();
+		float pos_x = event[0].asFloat();
+		float pos_y = event[1].asFloat();
 
-		float fru_x = mLaserOutput->mProperties.mFrustrum.x / 2.0f;
-		float fru_y = mLaserOutput->mProperties.mFrustrum.y / 2.0f;
+		assert(mLaserOutput != nullptr);
+		float fru_x = mLaserOutput->mProperties.mFrustum.x / 2.0f;
+		float fru_y = mLaserOutput->mProperties.mFrustum.y / 2.0f;
 
-		glm::vec3 current_xform = mTransformComponent->getTranslate();
+		glm::vec3 current_xform = mXformSmoother->getTarget();
 		current_xform.x = math::lerp<float>(fru_x*-1.0f, fru_x, pos_x);
 		current_xform.y = math::lerp<float>(fru_y*-1.0f, fru_y, pos_y);
 
-		mTransformComponent->setTranslate(current_xform);
+		mXformSmoother->setTarget(current_xform);
+	}
+
+
+	void OSCLaserInputHandlerInstance::setPositionX(const OSCEvent& event, const std::vector<std::string>& args)
+	{
+		assert(event[0].isFloat());
+		float v = event[0].asFloat();
+
+		assert(mLaserOutput != nullptr);
+		float fru_x = mLaserOutput->mProperties.mFrustum.x / 2.0f;
+
+		glm::vec3 current_xform = mXformSmoother->getTarget();
+		current_xform.x = math::lerp<float>(fru_x*-1.0f, fru_x, v);
+		mXformSmoother->setTarget(current_xform);
+	}
+
+
+	void OSCLaserInputHandlerInstance::setPositionY(const OSCEvent& event, const std::vector<std::string>& args)
+	{
+		assert(event[0].isFloat());
+		float v = event[0].asFloat();
+
+		assert(mLaserOutput != nullptr);
+		float fru_y = mLaserOutput->mProperties.mFrustum.y / 2.0f;
+
+		glm::vec3 current_xform = mXformSmoother->getTarget();
+		current_xform.y = math::lerp<float>(fru_y*-1.0f, fru_y, v);
+		mXformSmoother->setTarget(current_xform);
 	}
 
 
@@ -381,6 +512,7 @@ namespace nap
 		components.emplace_back(RTTI_OF(nap::LineColorComponent));
 		components.emplace_back(RTTI_OF(nap::LineModulationComponent));
 		components.emplace_back(RTTI_OF(nap::LineAutoSwitchComponent));
+		components.emplace_back(RTTI_OF(nap::XformSmoothComponent));
 	}
 
 }

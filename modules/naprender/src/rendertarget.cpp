@@ -1,6 +1,5 @@
 // Local Includes
 #include "rendertarget.h"
-#include "basetexture2d.h"
 #include "ntexturerendertarget2d.h"
 
 RTTI_BEGIN_CLASS(nap::RenderTarget)

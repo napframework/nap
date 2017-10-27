@@ -50,7 +50,33 @@ std::string	nap::EtherDreamInterface::getName(int number) const
     {
         return "";
     }
-    return std::to_string(etherdream_get_id(dac));
+
+	/**
+	 * The *nix drivers for Etherdream don't provide the same getName method as in the Windows driver.
+	 * getName on Windows just returns the last three parts of the MAC address as hex, whereas etherdream_get_id
+	 * returns the same section of the MAC but bitshifted into a long.  
+	 *
+	 * Here we do some convert from the bitshifted version of the MAC address to the hex format.
+	 */
+	
+	// Grab the bitshifted id
+	unsigned long bitwiseEtherdreamMac = etherdream_get_id(dac);
+	
+	// Decode first segment and re-shift for later calculations
+	unsigned long firstSegment = bitwiseEtherdreamMac >> 16;
+	unsigned long firstSegmentShifted = firstSegment << 16;
+	
+	// Decode second segment and re-shift for final calculation
+	unsigned long secondSegment = (bitwiseEtherdreamMac - firstSegmentShifted) >> 8;
+	unsigned long secondSegmentShifted = secondSegment << 8;
+	
+	// Subtract previous shifted values from original for third segment
+	unsigned long thirdSegment = bitwiseEtherdreamMac - firstSegmentShifted - secondSegmentShifted;
+
+	// Convert to hex
+	std::stringstream stream;
+	stream << std::hex << firstSegment << secondSegment << thirdSegment;
+	return stream.str();
 }
 
 
@@ -74,7 +100,7 @@ bool nap::EtherDreamInterface::stop(int number)
         nap::Logger::warn("can't stop etherdream dac: %d, invalid dac number", number);
         return false;
     }
-    return etherdream_stop(dac);
+    return (etherdream_stop(dac) == 0);
 }
 
 
@@ -123,6 +149,6 @@ bool nap::EtherDreamInterface::writeFrame(int number, const EtherDreamPoint* dat
     etherdream_point* point_data = (etherdream_point*)(data);
     
     // Write frame
-    return etherdream_write(dac, point_data, static_cast<int>(npoints), static_cast<int>(pps), static_cast<int>(repeatCount));
+    return (etherdream_write(dac, point_data, static_cast<int>(npoints), static_cast<int>(pps), static_cast<int>(repeatCount)) == 0);
 }
 

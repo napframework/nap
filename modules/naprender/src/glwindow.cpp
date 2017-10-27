@@ -51,6 +51,21 @@ namespace nap
 	}
 
 
+	void GLWindow::applySettings(const RenderWindowSettings& settings)
+	{
+		opengl::setVSync(settings.sync);
+		setSize(glm::vec2(settings.width, settings.height));
+		if (settings.visible)
+			showWindow();
+		else
+			hideWindow();
+
+		SDL_SetWindowResizable(mWindow, (SDL_bool)settings.resizable);
+		SDL_SetWindowBordered(mWindow, (SDL_bool)!settings.borderless);
+		SDL_SetWindowTitle(mWindow, settings.title.c_str());
+	}
+
+
 	// Creates a window with an associated OpenGL context
 	bool GLWindow::init(const RenderWindowSettings& settings, GLWindow* sharedWindow, nap::utility::ErrorState& errorState)
 	{
@@ -191,6 +206,7 @@ namespace nap
 		SDL_GL_SwapWindow(mWindow);
 	}
 
+
 	// Make this window's context current 
 	void GLWindow::makeCurrent()
 	{
@@ -201,6 +217,7 @@ namespace nap
 		// Make context current
 		SDL_GL_MakeCurrent(mWindow, mContext);
 	}
+
 
 	// The window number
 	nap::uint32 GLWindow::getNumber() const

@@ -27,7 +27,7 @@ namespace nap
 			/**
 			 * Called when serialization starts, but before any objects have been written (i.e. start of 'document')
 			 */
-			bool start() override;
+			bool start(const ObjectList& rootObjects) override;
 
 			/**
 			 * Called when serialization is finished, after everything has been written (i.e. end of 'document')
@@ -109,10 +109,7 @@ namespace nap
 			 *
 			 * @param string The string to write
 			 */
-			void writeString(const std::string& string)
-			{
-				writeString(string.data(), string.length());
-			}
+			void writeString(const std::string& string);
 
 			/**
 			 * Write the string to the buffer
@@ -120,11 +117,20 @@ namespace nap
 			 * @param string The string to write
 			 * @param length The length of the string
 			 */
-			void writeString(const char* string, size_t length)
-			{
-				write(length);
-				write(string, length);
-			}
+			void writeString(const char* string, size_t length);
+
+			/**
+			 * Get the current position in the stream
+			 *
+			 * @return The position in the stream
+			 */
+			size_t getPosition() const;
+
+
+			/**
+			 * Seek to the specified position in the stream
+			 */
+			void seek(size_t position);
 
 		private:
 			std::vector<uint8_t>	mBuffer;

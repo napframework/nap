@@ -17,8 +17,9 @@ extern "C"
 }
 
 RTTI_BEGIN_CLASS(nap::Video)
-	RTTI_PROPERTY("Path", &nap::Video::mPath, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Loop", &nap::Video::mLoop, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Path",	&nap::Video::mPath,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Loop",	&nap::Video::mLoop,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Speed",	&nap::Video::mSpeed,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
@@ -54,7 +55,7 @@ namespace nap
 			return false;
 
 		int error = avformat_open_input(&mFormatContext, mPath.c_str(), nullptr, nullptr);
-		if (!errorState.check(error >= 0, "Error opening file: %s\n", error_to_string(error).c_str()))
+		if (!errorState.check(error >= 0, "Error opening file '%s': %s\n", mPath.c_str(), error_to_string(error).c_str()))
 			return false;
 
 		error = avformat_find_stream_info(mFormatContext, nullptr);
@@ -460,7 +461,7 @@ namespace nap
 
 		// Update clock if it has been initialized
 		if (mVideoClockSecs != sVideoMax)
-			mVideoClockSecs += deltaTime;
+			mVideoClockSecs += (deltaTime * mSpeed);
 
 		// Peek into the frame queue. If we have a frame and the PTS value of the first frame on
 		// the FIFO queue has expired, we pop it. If there is no frame or the frame has not expired,
@@ -496,14 +497,10 @@ namespace nap
 			mFrameQueueRoomAvailableCondition.notify_one();
 		}
 
-		assert(cur_frame.mFrame->linesize[0] == cur_frame.mFrame->width);
-		assert(cur_frame.mFrame->linesize[1] == cur_frame.mFrame->width / 2);
-		assert(cur_frame.mFrame->linesize[2] == cur_frame.mFrame->width / 2);
-
 		// Copy data into texture
-		mYTexture->getTexture().setData(cur_frame.mFrame->data[0]);
-		mUTexture->getTexture().setData(cur_frame.mFrame->data[1]);
-		mVTexture->getTexture().setData(cur_frame.mFrame->data[2]);
+		mYTexture->getTexture().setData(cur_frame.mFrame->data[0], cur_frame.mFrame->linesize[0]);
+		mUTexture->getTexture().setData(cur_frame.mFrame->data[1], cur_frame.mFrame->linesize[1]);
+		mVTexture->getTexture().setData(cur_frame.mFrame->data[2], cur_frame.mFrame->linesize[2]);
 
 		// Destroy frame that was allocated in the decode thread, after it has been processed
 		av_frame_unref(cur_frame.mFrame);

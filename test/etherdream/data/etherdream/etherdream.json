@@ -18,6 +18,34 @@
 		},
 
 		{
+			"Type" : "nap::EtherDreamDac",
+			"mID": "Laser1",
+			"DacName": "dc3c10",
+			"PointRate": "30000"
+		},
+
+		{
+			"Type" : "nap::EtherDreamDac",
+			"mID": "Laser2",
+			"DacName": "dbf6d0",
+			"PointRate": "30000"
+		},
+
+		{
+			"Type" : "nap::EtherDreamDac",
+			"mID": "Laser3",
+			"DacName": "5a660f",
+			"PointRate": "30000"
+		},
+
+		{
+			"Type" : "nap::EtherDreamDac",
+			"mID": "Laser4",
+			"DacName": "593834",
+			"PointRate": "30000"
+		},
+
+		{
 			"Type" : "nap::Shader",
 			"mID": "LineShader",
 			"mVertShader": "shaders/etherdream/line.vert",
@@ -46,6 +74,13 @@
 		},
 
 		{
+			"Type" : "nap::Shader",
+			"mID": "FrameShader",
+			"mVertShader": "shaders/etherdream/laserframe.vert",
+			"mFragShader": "shaders/etherdream/laserframe.frag"
+		},
+
+		{
 			"Type" : "nap::Image",
 			"mID" : "CanvasImage",
 			"ImagePath" : "data/etherdream/laser_canvas.png"
@@ -54,7 +89,7 @@
 		{
 			"Type" : "nap::Image",
 			"mID" : "ColorLookupImage",
-			"ImagePath" : "data/etherdream/color_gradient.png"
+			"ImagePath" : "data/etherdream/kleurencirkel.png"
 		},
 
 		{
@@ -63,15 +98,8 @@
 		},
 
 		{
-			"Type" : "nap::LineFromFile",
-			"mID": "LineFromFileMesh",
-			"File" : "./data/etherdream/swirl.svg",
-			"Tolerance" : 0.1,
-			"Units" : "mm",
-			"Normalize" : true,
-			"Scale" : 2.0,
-			"FlipVertical" : true,
-			"LineIndex" : 0
+			"Type" : "nap::PlaneMesh",
+			"mID" : "FrameMesh"
 		},
 
 		{
@@ -134,7 +162,7 @@
 			"LineIndex" : 0
 		},
 
-		{
+			{
 			"Type" : "nap::LineFromFile",
 			"mID": "LineFromFile6",
 			"File" : "./data/etherdream/6.svg",
@@ -143,10 +171,10 @@
 			"Normalize" : true,
 			"Scale" : 2.0,
 			"FlipVertical" : true,
-			"LineIndex" : 0
+			"LineIndex" : 1
 		},
 
-		{
+			{
 			"Type" : "nap::LineFromFile",
 			"mID": "LineFromFile7",
 			"File" : "./data/etherdream/7.svg",
@@ -155,7 +183,7 @@
 			"Normalize" : true,
 			"Scale" : 2.0,
 			"FlipVertical" : true,
-			"LineIndex" : 0
+			"LineIndex" : 1
 		},
 
 		{
@@ -167,37 +195,13 @@
 			"Normalize" : true,
 			"Scale" : 2.0,
 			"FlipVertical" : true,
-			"LineIndex" : 0
+			"LineIndex" : 1
 		},
 
-		{
+			{
 			"Type" : "nap::LineFromFile",
 			"mID": "LineFromFile9",
 			"File" : "./data/etherdream/9.svg",
-			"Tolerance" : 0.05,
-			"Units" : "mm",
-			"Normalize" : true,
-			"Scale" : 2.0,
-			"FlipVertical" : true,
-			"LineIndex" : 0
-		},
-
-		{
-			"Type" : "nap::LineFromFile",
-			"mID": "LineFromFile10",
-			"File" : "./data/etherdream/10.svg",
-			"Tolerance" : 0.05,
-			"Units" : "mm",
-			"Normalize" : true,
-			"Scale" : 2.0,
-			"FlipVertical" : true,
-			"LineIndex" : 0
-		},
-
-		{
-			"Type" : "nap::LineFromFile",
-			"mID": "LineFromFile11",
-			"File" : "./data/etherdream/11.svg",
 			"Tolerance" : 0.05,
 			"Units" : "mm",
 			"Normalize" : true,
@@ -254,30 +258,209 @@
 		},
 
 		{
-			"Type" : "nap::Line",
-			"mID": "LaserLineMesh",
-			"Vertices" : 500,
-			"Closed" : true
-		},
-
-		{
-			"Type" : "nap::Line",
-			"mID": "LaserTraceMesh",
-			"Vertices" : 500,
-			"Closed" : false
-		},
-
-		{
 			"Type" : "nap::SphereMesh",
 			"mID" : "TracerVisualizeMesh",
 			"Radius" : 0.07
 		},
 
 		{
+			"Type" : "nap::Line",
+			"mID": "LaserLineMesh1",
+			"Vertices" : 500,
+			"Closed" : true
+		},
+
+		{
+			"Type" : "nap::Line",
+			"mID": "LaserLineMesh2",
+			"Vertices" : 500,
+			"Closed" : true
+		},
+
+		{
+			"Type" : "nap::Line",
+			"mID": "LaserLineMesh3",
+			"Vertices" : 500,
+			"Closed" : true
+		},
+
+		{
+			"Type" : "nap::Line",
+			"mID": "LaserLineMesh4",
+			"Vertices" : 500,
+			"Closed" : true
+		},
+
+		{
+			"Type" : "nap::Line",
+			"mID": "LaserTraceMesh1",
+			"Vertices" : 500,
+			"Closed" : false
+		},
+
+		{
+			"Type" : "nap::Line",
+			"mID": "LaserTraceMesh2",
+			"Vertices" : 500,
+			"Closed" : false
+		},
+
+		{
+			"Type" : "nap::Line",
+			"mID": "LaserTraceMesh3",
+			"Vertices" : 500,
+			"Closed" : false
+		},
+
+		{
+			"Type" : "nap::Line",
+			"mID": "LaserTraceMesh4",
+			"Vertices" : 500,
+			"Closed" : false
+		},
+
+		{
 			"Type" : "nap::VisualizeNormalsMesh",
-			"mID" : "NormalsMesh",
-			"ReferenceMesh" : "LaserLineMesh",
+			"mID" : "NormalsMesh1",
+			"ReferenceMesh" : "LaserLineMesh1",
 			"Length" : 0.1
+		},
+
+		{
+			"Type" : "nap::VisualizeNormalsMesh",
+			"mID" : "NormalsMesh2",
+			"ReferenceMesh" : "LaserLineMesh2",
+			"Length" : 0.1
+		},
+
+		{
+			"Type" : "nap::VisualizeNormalsMesh",
+			"mID" : "NormalsMesh3",
+			"ReferenceMesh" : "LaserLineMesh3",
+			"Length" : 0.1
+		},
+
+		{
+			"Type" : "nap::VisualizeNormalsMesh",
+			"mID" : "NormalsMesh4",
+			"ReferenceMesh" : "LaserLineMesh4",
+			"Length" : 0.1
+		},
+
+		{
+			"Type" : "nap::Texture2D",
+			"mID" : "ColorTexture1",
+			"Width" : 1024,
+			"Height" : 1024,
+			"Format" : "RGBA8"
+		},
+
+		{
+			"Type" : "nap::Texture2D",
+			"mID" : "DepthTexture1",
+			"Width" : 1024,
+			"Height" : 1024,
+			"Format" : "Depth"
+		},
+
+		{
+			"Type" : "nap::Texture2D",
+			"mID" : "ColorTexture2",
+			"Width" : 1024,
+			"Height" : 1024,
+			"Format" : "RGBA8"
+		},
+
+		{
+			"Type" : "nap::Texture2D",
+			"mID" : "DepthTexture2",
+			"Width" : 1024,
+			"Height" : 1024,
+			"Format" : "Depth"
+		},
+
+		{
+			"Type" : "nap::Texture2D",
+			"mID" : "ColorTexture3",
+			"Width" : 1024,
+			"Height" : 1024,
+			"Format" : "RGBA8"
+		},
+
+		{
+			"Type" : "nap::Texture2D",
+			"mID" : "DepthTexture3",
+			"Width" : 1024,
+			"Height" : 1024,
+			"Format" : "Depth"
+		},
+
+		{
+			"Type" : "nap::Texture2D",
+			"mID" : "ColorTexture4",
+			"Width" : 1024,
+			"Height" : 1024,
+			"Format" : "RGBA8"
+		},
+
+		{
+			"Type" : "nap::Texture2D",
+			"mID" : "DepthTexture4",
+			"Width" : 1024,
+			"Height" : 1024,
+			"Format" : "Depth"
+		},
+
+		{
+			"Type" : "nap::RenderTarget",
+			"mID": "LaserRenderTarget1",
+			"mColorTexture": "ColorTexture1",
+			"mDepthTexture": "DepthTexture1",
+			"mClearColor" : {
+				"x" : 0.0,
+				"y" : 0.0,
+				"z" : 0.0,
+				"w" : 0.0
+			}
+		},
+
+		{
+			"Type" : "nap::RenderTarget",
+			"mID": "LaserRenderTarget2",
+			"mColorTexture": "ColorTexture2",
+			"mDepthTexture": "DepthTexture2",
+			"mClearColor" : {
+				"x" : 0.0,
+				"y" : 0.0,
+				"z" : 0.0,
+				"w" : 0.0
+			}
+		},
+
+		{
+			"Type" : "nap::RenderTarget",
+			"mID": "LaserRenderTarget3",
+			"mColorTexture": "ColorTexture3",
+			"mDepthTexture": "DepthTexture3",
+			"mClearColor" : {
+				"x" : 0.0,
+				"y" : 0.0,
+				"z" : 0.0,
+				"w" : 0.0
+			}
+		},
+
+		{
+			"Type" : "nap::RenderTarget",
+			"mID": "LaserRenderTarget4",
+			"mColorTexture": "ColorTexture4",
+			"mDepthTexture": "DepthTexture4",
+			"mClearColor" : {
+				"x" : 0.0,
+				"y" : 0.0,
+				"z" : 0.0,
+				"w" : 0.0
+			}
 		},
 
 		{
@@ -396,70 +579,188 @@
 					"Name" : "mColor",
 					"Value" : 
 					{
-						"x" : 0.0,
+						"x" : 1.0,
 						"y" : 1.0,
-						"z" : 0.0
+						"z" : 1.0
 					}
 				}
 			]
 		},
 
 		{
-			"Type" : "nap::EtherDreamDac",
-			"mID": "Laser1",
-			"DacName": "dc3c10",
-			"PointRate": "30000"
+			"Type" : "nap::Material",
+			"mID": "FrameMaterial",
+			"Shader": "FrameShader",
+			"VertexAttributeBindings" : 
+			[
+				{
+					"MeshAttributeID": "Position",
+					"ShaderAttributeID": "in_Position"
+				},
+				{
+					"MeshAttributeID": "UV0",
+					"ShaderAttributeID": "in_UV0"
+				}
+			],
+			"Uniforms" : 
+			[
+				{
+					"Type" : "nap::UniformTexture2D",
+					"Name" : "mCanvas",
+					"Texture" : "CanvasImage"
+				}
+			]
 		},
 
 		{
-			"Type" : "nap::EtherDreamDac",
-			"mID": "Laser2",
-			"DacName": "dbf6d0",
-			"PointRate": "30000"
+			"Type" : "nap::LaserCompound",
+			"mID" : "LaserCompound1",
+			"LineMesh" : "LaserLineMesh1",
+			"Tracemesh" : "LaserTraceMesh1",
+			"NormalMesh" : "NormalsMesh1",
+			"Dac" : "Laser1",
+			"Target" : "LaserRenderTarget1",
+			"LaserID" : 0,
+			"Offset" : 0.0
 		},
 
 		{
-			"Type" : "nap::EtherDreamDac",
-			"mID": "Laser3",
-			"DacName": "5a660f",
-			"PointRate": "30000"
+			"Type" : "nap::LaserCompound",
+			"mID" : "LaserCompound2",
+			"LineMesh" : "LaserLineMesh2",
+			"Tracemesh" : "LaserTraceMesh2",
+			"NormalMesh" : "NormalsMesh2",
+			"Dac" : "Laser2",
+			"Target" : "LaserRenderTarget2",
+			"LaserID" : 1,
+			"Offset" : 0.25
 		},
 
 		{
-			"Type" : "nap::EtherDreamDac",
-			"mID": "Laser4",
-			"DacName": "593834",
-			"PointRate": "30000"
+			"Type" : "nap::LaserCompound",
+			"mID" : "LaserCompound3",
+			"LineMesh" : "LaserLineMesh3",
+			"Tracemesh" : "LaserTraceMesh3",
+			"NormalMesh" : "NormalsMesh3",
+			"Target" : "LaserRenderTarget3",
+			"Dac" : "Laser3",
+			"LaserID" : 2,
+			"Offset" : 0.5
+		},
+
+		{
+			"Type" : "nap::LaserCompound",
+			"mID" : "LaserCompound4",
+			"LineMesh" : "LaserLineMesh4",
+			"Tracemesh" : "LaserTraceMesh4",
+			"NormalMesh" : "NormalsMesh4",
+			"Target" : "LaserRenderTarget4",
+			"Dac" : "Laser4",
+			"LaserID" : 3,
+			"Offset" : 0.75
 		},
 
 		{
 			"Type" : "nap::Entity",
-			"mID" : "LaserPrototypeEntity",
-
+			"mID" : "LaserControllerEntity",
 			"Components" :
 			[
 				{
 					"Type" : "nap::TransformComponent"
+				},
+				{
+					"Type" : "nap::LaserControlComponent",
+					"PrototypeEntity" : "LaserPrototypeEntity",
+					"FrameEntity" : "LaserFrameEntity",
+					"LaserCompounds" :
+					[
+						"LaserCompound1",
+						"LaserCompound2",
+						"LaserCompound3",
+						"LaserCompound4"
+					]
 				}
-			],
-			"Children" : 
-			[
-				"SplineEntity",
-				"LaserOutputEntity",
-				"CameraEntity"
 			]
 		},
 
 		{
 			"Type" : "nap::Entity",
-			"mID": "CameraEntity",
+			"mID" : "LaserFrameEntity",
+			"AutoSpawn" : false,
+			"Components" :
+			[
+				{
+					"Type" : "nap::TransformComponent",
+					"Properties": 
+					{
+						"UniformScale": 50.0						
+					}	
+				},
+				{
+					"Type" : "nap::RenderableMeshComponent",
+					"mID" : "RenderLaserFrame",
+					"Mesh" : "FrameMesh",
+					"MaterialInstance" : 
+					{
+						"Material": "FrameMaterial"
+					}
+				}
+			]
+		},
+
+		{
+			"Type" : "nap::Entity",
+			"mID" : "LaserPrototypeEntity",
+			"AutoSpawn" : false,
+			"Components" :
+			[
+				{
+					"Type" : "nap::TransformComponent"
+				},
+				{
+					"Type" : "nap::MakePrototypeComponent",
+					"SplineEntity" : "LaserSplineEntity",
+					"OutputEntity" : "LaserOutputEntity",
+					"OSCAddresses" : 
+					[
+						"intensity",
+						"startposition",
+						"endposition",
+						"rotation",
+						"resetrotation",
+						"blend",
+						"scale",
+						"positionx",
+						"positiony",
+						"modulation",
+						"noise",
+						"synccolor",
+						"tracer",
+						"resettracer",
+						"nextline",
+						"random",
+						"resetblend",
+						"startxposition",
+						"startyposition",
+						"endxposition",
+						"endyposition",
+						"smoothx",
+						"smoothy"
+					]
+				}
+			]
+		},
+
+		{
+			"Type" : "nap::Entity",
+			"mID": "LaserCameraEntity",
 			"Components" : 
 			[
 				{
 					"Type" : "nap::PerspCameraComponent",
 					"Properties": {
 						"FieldOfView": 45.0,
-						"NearClippingPlane" : 0.01,
+						"NearClippingPlane" : 1.0,
 						"FarClippingPlane" : 10000.0
 					}
 				},
@@ -469,17 +770,34 @@
 						"Translate": {
 							"x": 0.0,
 							"y": 0.0,
-							"z": 675.0
+							"z": 625.0
 						},
-						"Rotate": {
+						"UniformScale": 1.0						
+					}
+				}
+			]
+		},
+
+		{
+			"Type" : "nap::Entity",
+			"mID": "FrameCameraEntity",
+			"Components" : 
+			[
+				{
+					"Type" : "nap::PerspCameraComponent",
+					"Properties": {
+						"FieldOfView": 45.0,
+						"NearClippingPlane" : 1.0,
+						"FarClippingPlane" : 10000.0
+					}
+				},
+				{
+					"Type" : "nap::TransformComponent",
+					"Properties": {
+						"Translate": {
 							"x": 0.0,
 							"y": 0.0,
-							"z": 0.0
-						},
-						"Scale": {
-							"x": 1.0,
-							"y": 1.0,
-							"z": 1.0
+							"z": 122.5
 						},
 						"UniformScale": 1.0						
 					}
@@ -510,8 +828,8 @@
 
 		{
 			"Type" : "nap::Entity",
-			"mID": "SplineEntity",
-
+			"mID": "LaserSplineEntity",
+			"AutoSpawn" : false,
 			"Components" : 
 			[
 				{
@@ -519,6 +837,7 @@
 					"mID" : "LineSelectorOne",
 					"Lines" :
 					[
+						"CircleMesh",
 						"LineFromFile1",
 						"LineFromFile2",
 						"LineFromFile3",
@@ -527,14 +846,7 @@
 						"LineFromFile6",
 						"LineFromFile7",
 						"LineFromFile8",
-						"LineFromFile9",
-						"LineFromFile10",
-						"LineFromFile11",
-						"LineFromFileMesh",
-						"RectangleMesh",
-						"CircleMesh",
-						"HexagonMesh",
-						"TriangleMesh"
+						"LineFromFile9"
 					],
 					"Index" : 0
 				},
@@ -543,6 +855,7 @@
 					"mID" : "LineSelectorTwo",
 					"Lines" :
 					[
+						"CircleMesh",
 						"LineFromFile1",
 						"LineFromFile2",
 						"LineFromFile3",
@@ -551,45 +864,19 @@
 						"LineFromFile6",
 						"LineFromFile7",
 						"LineFromFile8",
-						"LineFromFile9",
-						"LineFromFile10",
-						"LineFromFile11",
-						"LineFromFileMesh",
-						"RectangleMesh",
-						"CircleMesh",
-						"HexagonMesh",
-						"TriangleMesh"
+						"LineFromFile9"
 					],
-					"Index" : 1
+					"Index" : 0
 				},
 				{
-					"Type" : "nap::OSCInputComponent",
-					"Addresses" : 
-					[
-						"/0/intensity",
-						"/0/startposition",
-						"/0/endposition",
-						"/0/rotation",
-						"/0/resetrotation",
-						"/0/blend",
-						"/0/scale",
-						"/0/position",
-						"/0/modulation",
-						"/0/noise",
-						"/0/synccolor",
-						"/0/tracer",
-						"/0/resettracer",
-						"/0/nextline",
-						"/0/random",
-						"/0/resetblend"
-					]
+					"Type" : "nap::OSCInputComponent"
 				},
 				{
 					"Type" : "nap::OSCLaserInputHandler",
 					"mID" : "OSCLaserInputHandler",
 					"SelectionComponentOne" : "LineSelectorOne",
 					"SelectionComponentTwo" : "LineSelectorTwo",
-					"LaserOutputComponent" : "LaserOutputComponentOne"
+					"PrintColor" : true
 				},
 				{
 					"Type" : "nap::TransformComponent",
@@ -619,11 +906,17 @@
 					}			
 				},
 				{
+					"Type" : "nap::XformSmoothComponent",
+					"mID" : "XformSmoother",
+					"TransformSmoothTime" : 0.3,
+					"ScaleSmoothTime" : 0.3
+				},
+				{
 					"Type" : "nap::LineBlendComponent",
 					"mID" : "LineBlender",
 					"SelectionComponentOne" : "LineSelectorOne",
 					"SelectionComponentTwo" : "LineSelectorTwo",
-					"Target" : "LaserLineMesh",
+					"Target" : "LaserLineMesh1",
 					"BlendValue" : 0.0,
 					"BlendSpeed" : 0.125
 				},
@@ -641,10 +934,14 @@
 					"BlendComponent" : "LineBlender",
 					"Properties" : 
 					{
-						"Frequency" : 1.0,
-						"Speed" : 0.2,
+						"Frequency" : 0.0,
+						"FrequencySmoothTime" : 0.1,
+						"Speed" : 0.0,
+						"SpeedSmoothTime" : 0.1,
 						"Offset" : 0.0,
+						"OffsetSmoothTime" : 0.1,
 						"Amplitude" : 0.0,
+						"AmplitudeSmoothTime" : 0.1,
 						"Waveform" : "Sine",
 						"Normalize" : false
 					}
@@ -655,10 +952,14 @@
 					"BlendComponent" : "LineBlender",
 					"Properties" : 
 					{
-						"Frequency" : 2.0,
-						"Speed" : 0.1,
+						"Frequency" : 0.51,
+						"FrequencySmoothTime" : 0.1,
+						"Speed" : 0.2,
+						"SpeedSmoothTime" : 0.3,
 						"Offset" : 0.0,
-						"Amplitude" : 0.2
+						"OffsetSmoothTime" : 0.1,
+						"Amplitude" : 0,
+						"AmplitudeSmoothTime" : 0.5
 					}
 				},
 				{
@@ -667,30 +968,44 @@
 					"BlendComponent" : "LineBlender",
 					"StartPosition" : 
 					{
-						"x" : 0.0,
-						"y" : 0.0
+						"x" : 1.0,
+						"y" : 0.5
 					},
 					"EndPosition" : 
+					{
+						"x" : 0.0,
+						"y" : 0.5
+					},
+					"StartSmoothTime" :
 					{
 						"x" : 1.0,
 						"y" : 1.0
 					},
+					"EndSmoothTime" :
+					{
+						"x" : 1.0,
+						"y" : 1.0
+					},
+					"IntensitySmoothTime" : 0.1,
 					"LookupImage" : "ColorLookupImage",
 					"Wrap" : true,
 					"WrapPower" : 1.0,
-					"Link" : false
+					"Link" : true
 				},
 				{
 					"Type" : "nap::LineTraceComponent",
 					"mID" : "LineTracer",
 					"BlendComponent" : "LineBlender",
-					"Target" : "LaserTraceMesh",
+					"Target" : "LaserTraceMesh1",
 					"VisualizeEntity" : "TracerVisualizeEntity",
 					"Properties" :
 					{
 						"Offset" : 0.0,
-						"Speed" : 0.1,
-						"Length" : 0.25
+						"OffsetSmoothTime" : 0.1,
+						"Speed" : 0.0,
+						"SpeedSmoothTime" : 0.2,
+						"Length" : 1.00,
+						"LengthSmoothTime" : 0.2
 					}
 				},
 				{
@@ -699,18 +1014,22 @@
 					{
 						"Axis": 
 						{
-							"x": 0.2,
-							"y": 1.0,
-							"z": 0.4
+							"x": 0.0,
+							"y": 0.0,
+							"z": 1.0
 						},
 						"Speed": 0.0,
-						"Offset": 2.0
+						"Offset": 0.0
 					}
+				},
+				{
+					"Type" : "nap::UpdateNormalsComponent",
+					"NormalMesh" : "NormalsMesh1"
 				},
 				{
 					"Type" : "nap::RenderableMeshComponent",
 					"mID" : "RenderLaserLineComponent",
-					"Mesh" : "LaserLineMesh",
+					"Mesh" : "LaserLineMesh1",
 					"MaterialInstance" : 
 					{
 						"Material": "LineMaterial"
@@ -718,7 +1037,8 @@
 				},
 				{
 					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "NormalsMesh",
+					"mID" : "RenderLaserNormalsComponent",
+					"Mesh" : "NormalsMesh1",
 					"MaterialInstance" : 
 					{
 						"Material": "NormalsMaterial",
@@ -730,12 +1050,10 @@
 
 		{
 			"Type" : "nap::Entity",
-			"mID"  : "LaserDrawEntity",
+			"mID"  : "LaserCanvasEntity",
+			"AutoSpawn" : false,
 			"Components" :
 			[
-				{
-					"Type" : "nap::FrustrumSyncComponent"
-				},
 				{
 					"Type" : "nap::TransformComponent"		
 				},
@@ -754,7 +1072,7 @@
 		{
 			"Type" : "nap::Entity",
 			"mID": "LaserOutputEntity",
-
+			"AutoSpawn" : false,
 			"Components" : 
 			[
 				{
@@ -762,66 +1080,25 @@
 				},
 				{
 					"Type":"nap::LaserOutputComponent",
-					"mID" : "LaserOutputComponentOne",
+					"mID" : "LaserOutputComponent",
 					"Properties" :
 					{
-						"Frustrum" :
-						{
-							"x" : 512,
-							"y" : 512
-						}
-					},
-					"Dac" : "Laser1",
-					"Line": "LaserTraceMesh",
-					"Transform" : "LineXFormComponent"
-				},		
-				{
-					"Type":"nap::LaserOutputComponent",
-					"Properties" :
-					{
-						"Frustrum" :
+						"Frustum" :
 						{
 							"x" : 512,
 							"y" : 512
 						}
 					},
 					"Dac" : "Laser2",
-					"Line": "LaserTraceMesh",
+					"Line": "LaserTraceMesh1",
 					"Transform" : "LineXFormComponent"
 				},
 				{
-					"Type":"nap::LaserOutputComponent",
-					"Properties" :
-					{
-						"Frustrum" :
-						{
-							"x" : 512,
-							"y" : 512
-						}
-					},
-					"Dac" : "Laser3",
-					"Line": "LaserTraceMesh",
-					"Transform" : "LineXFormComponent"
-				},
-				{
-					"Type":"nap::LaserOutputComponent",
-					"Properties" :
-					{
-						"Frustrum" :
-						{
-							"x" : 512,
-							"y" : 512
-						}
-					},
-					"Dac" : "Laser4",
-					"Line": "LaserTraceMesh",
-					"Transform" : "LineXFormComponent"
-				}			
-			],
-			"Children" :
-			[
-				"LaserDrawEntity"
-			] 
+					"Type" : "nap::FrustumSyncComponent",
+					"CanvasEntity" : "LaserCanvasEntity",
+					"LaserOutputComponent" : "LaserOutputComponent"
+				}		
+			]
 		}
 	]
 }
