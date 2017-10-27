@@ -113,6 +113,9 @@ namespace nap
 	template<typename APP, typename HANDLER>
 	bool nap::AppRunner<APP, HANDLER>::startRunning(utility::ErrorState& error)
 	{
+		nap::BaseApp& app = getApp();
+		nap::BaseAppEventHandler& app_event_handler = getHandler();
+
 		// Initialize engine
 		if (!mCore.initializeEngine(error))
 		{
@@ -122,7 +125,7 @@ namespace nap
 		}
 
 		// Initialize application
-		if (!getApp().init(error))
+		if (!app.init(error))
 		{
 			error.fail("unable to initialize application");
 			return false;
@@ -131,24 +134,22 @@ namespace nap
 		// Pointer to function used inside update call by core
 		std::function<void(double)> update_call = std::bind(&APP::update, mApp.get(), std::placeholders::_1);
 
-		nap::BaseApp& running_app = getApp();
-
 		// Start core and begin running
 		mCore.start();
-		while (!running_app.shouldQuit() && !mStop)
+		while (!app.shouldQuit() && !mStop)
 		{
 			// Process app specific messages
-			getHandler().process();
+			app_event_handler.process();
 
 			// update
 			mCore.update(update_call);
 
 			// render
-			getApp().render();
+			app.render();
 		}
 
 		// Shutdown
-		getApp().shutdown();
+		app.shutdown();
 
 		// Shutdown core
 		mCore.shutdown();
