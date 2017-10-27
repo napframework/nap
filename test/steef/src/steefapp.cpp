@@ -1,31 +1,26 @@
-#include "apprunner.h"
+#include "steefapp.h"
 
 // Nap includes
 #include <nap/core.h>
 #include <nap/logger.h>
+#include <renderwindow.h>
 
 
-namespace nap {
-	
-	/**
-	 * Constructor
-	 */
-	AppRunner::AppRunner() { }
-	
-
+namespace nap
+{	
 	/**
 	 * Initialize all the resources and instances used for drawing
 	 * slowly migrating all functionality to nap
 	 */
-	bool AppRunner::init(nap::Core& core, utility::ErrorState& error)
+	bool SteefApp::init(utility::ErrorState& error)
 	{		
 		// Create services
-		mRenderService = core.getService<nap::RenderService>();
-		mSceneService  = core.getService<nap::SceneService>();
-		mInputService  = core.getService<nap::InputService>();
+		mRenderService = mCore.getService<nap::RenderService>();
+		mSceneService  = mCore.getService<nap::SceneService>();
+		mInputService  = mCore.getService<nap::InputService>();
 
 		// Get resource manager and load
-		mResourceManager = core.getResourceManager();
+		mResourceManager = mCore.getResourceManager();
 		if (!mResourceManager->loadFile("data/steef/objects.json", error))
 		{
 			assert(false);
@@ -34,7 +29,7 @@ namespace nap {
 		
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Viewport");
-		mRenderWindow->onWindowEvent.connect(std::bind(&AppRunner::handleWindowEvent, this, std::placeholders::_1));
+		mRenderWindow->onWindowEvent.connect(std::bind(&SteefApp::handleWindowEvent, this, std::placeholders::_1));
 		
 		// Get vintl textures
 		mVinylLabelImg = mResourceManager->findObject<nap::Image>("LabelImage");
@@ -60,7 +55,7 @@ namespace nap {
 	
 	
 	// Called when the window is updating
-	void AppRunner::update(double deltaTime)
+	void SteefApp::update(double deltaTime)
 	{							
 		// Make sure background image matches window size
 		updateBackgroundImage();
@@ -72,7 +67,7 @@ namespace nap {
 	
 	
 	// Called when the window is going to render
-	void AppRunner::render()
+	void SteefApp::render()
 	{
 		
 		// Clear opengl context related resources that are not necessary any more
@@ -110,7 +105,7 @@ namespace nap {
 	 * When the window size changes we want to update the background texture to reflect those changes, ie:
 	 * Scale to the right size
 	 */
-	void AppRunner::handleWindowEvent(const nap::WindowEvent& windowEvent)
+	void SteefApp::handleWindowEvent(const nap::WindowEvent& windowEvent)
 	{
 		nap::rtti::TypeInfo e_type = windowEvent.get_type();
 		if (e_type.is_derived_from(RTTI_OF(nap::WindowResizedEvent)) ||
@@ -120,34 +115,53 @@ namespace nap {
 		}
 	}
 	
-	
-	void AppRunner::registerWindowEvent(WindowEventPtr windowEvent) 
+
+	// Forward the window message to the render service
+	void SteefApp::windowMessageReceived(WindowEventPtr windowEvent) 
 	{
 		mRenderService->addEvent(std::move(windowEvent));
 	}
 
 	
-	void AppRunner::registerInputEvent(InputEventPtr inputEvent)
+	// Forward the input message to the input service
+	void SteefApp::inputMessageReceived(InputEventPtr inputEvent)
 	{
+		// If we pressed escape, quit the loop
+		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
+		{
+			nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(inputEvent.get());
+			if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
+				quit();
+
+			if (press_event->mKey == nap::EKeyCode::KEY_f)
+			{
+				static bool fullscreen = true;
+				setWindowFullscreen("Viewport", fullscreen);
+				fullscreen = !fullscreen;
+			}
+		}
+
 		mInputService->addEvent(std::move(inputEvent));
 	}
 
 	
-	void AppRunner::setWindowFullscreen(std::string windowIdentifier, bool fullscreen) 
+	// Make window fullscreen
+	void SteefApp::setWindowFullscreen(std::string windowIdentifier, bool fullscreen) 
 	{
 		mResourceManager->findObject<nap::RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
 	}
 
 	
-	void AppRunner::shutdown() 
+	void SteefApp::shutdown() 
 	{
+
 	}
 	
 	
 	/**
 	 * updates the background image to match the size of the output window
 	 */
-	void AppRunner::updateBackgroundImage()
+	void SteefApp::updateBackgroundImage()
 	{
 		// Get size
 		glm::ivec2 window_size = mRenderWindow->getWindow()->getSize();
@@ -159,7 +173,7 @@ namespace nap {
 	}
 	
 	
-	void AppRunner::updateShader()
+	void SteefApp::updateShader()
 	{
 		nap::TransformComponentInstance& cam_xform = mCameraEntity->getComponent<nap::TransformComponentInstance>();
 		// Set camera location on shader, used for rendering highlights

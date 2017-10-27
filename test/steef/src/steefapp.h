@@ -4,68 +4,66 @@
 #include <renderablemeshcomponent.h>
 #include <renderwindow.h>
 #include <perspcameracomponent.h>
-#include <sdlinput.h>
-#include <sdlwindow.h>
 
 // Nap includes
-#include <nap/core.h>
 #include <nap/resourcemanager.h>
 #include <sceneservice.h>
 #include <inputservice.h>
 #include <inputrouter.h>
 #include <orthocameracomponent.h>
+#include <app.h>
+#include <nap/core.h>
 
 namespace nap
 {
 	/**
 	 * Main application that is called from within the main loop
 	 */
-	class AppRunner
+	class SteefApp : public nap::App
 	{
 		
 	public:
-		AppRunner();
-		~AppRunner() = default;
+		SteefApp(nap::Core& core) : nap::App(core)								{ }
 		
 		/**
 		 *	Initialize all the services and app specific data structures
 		 */
-		bool init(Core& core, utility::ErrorState& error);
+		virtual bool init(utility::ErrorState& error) override;
 		
 		/**
 		 *	Update is called before render, performs all the app logic
 		 */
-		void update(double deltaTime);
+		virtual void update(double deltaTime) override;
 
 		/**
 		 *	Render is called after update, pushes all renderable objects to the GPU
 		 */
-		void render();
-
-		/**
-		 *	Called when a window event is received
-		 */
-		void handleWindowEvent(const WindowEvent& windowEvent);
+		virtual void render() override;
 
 		/**
 		 *	Forwards the received window event to the render service
 		 */
-		void registerWindowEvent(WindowEventPtr windowEvent);
+		virtual void windowMessageReceived(WindowEventPtr windowEvent) override;
 		
 		/**
 		 *  Forwards the received input event to the input service
 		 */
-		void registerInputEvent(InputEventPtr inputEvent);
-		
-		/**
-		 *	Toggles full screen
-		 */
-		void setWindowFullscreen(std::string windowIdentifier, bool fullscreen);
+		virtual void inputMessageReceived(InputEventPtr inputEvent) override;
 		
 		/**
 		 *	Called when loop finishes
 		 */
-		void shutdown();
+		virtual void shutdown() override;
+
+		/**
+		*	Toggles full screen
+		*/
+		void setWindowFullscreen(std::string windowIdentifier, bool fullscreen);
+
+		/**
+		*	Called when a window event is received
+		*/
+		void handleWindowEvent(const WindowEvent& windowEvent);
 		
 	private:
 		
