@@ -1,4 +1,4 @@
-#include "apprunner.h"
+#include "tommyapp.h"
 
 // Nap includes
 #include <nap/core.h>
@@ -6,34 +6,32 @@
 #include <inputcomponent.h>
 
 // Mod nap render includes
-#include "fractionlayoutcomponent.h"
 #include <orthocameracomponent.h>
 
 // Local includes
 #include "uiinputrouter.h"
 #include "slideshowcomponent.h"
+#include "fractionlayoutcomponent.h"
 
-namespace nap {
-	
-	/**
-	 * Constructor
-	 */
-	AppRunner::AppRunner() { }
-	
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TommyApp)
+	RTTI_CONSTRUCTOR(nap::Core&)
+RTTI_END_CLASS
 
+namespace nap 
+{
 	/**
 	 * Initialize all the resources and instances used for drawing
 	 * slowly migrating all functionality to nap
 	 */
-	bool AppRunner::init(Core& core, utility::ErrorState& error)
+	bool TommyApp::init(utility::ErrorState& error)
 	{
 		// Create render service
-		mRenderService = core.getService<RenderService>();
-		mInputService = core.getService<InputService>();
-		mSceneService = core.getService<SceneService>();
+		mRenderService = getCore().getService<RenderService>();
+		mInputService  = getCore().getService<InputService>();
+		mSceneService  = getCore().getService<SceneService>();
 		
 		// Get resource manager service
-		mResourceManager = core.getResourceManager();
+		mResourceManager = getCore().getResourceManager();
 		if (!mResourceManager->loadFile("data/tommy/tommy.json", error))
 			return false;
 		
@@ -47,8 +45,8 @@ namespace nap {
 		// Bind button clicks
 		ObjectPtr<EntityInstance> buttonRightEntity = mResourceManager->findEntity("ButtonRightEntity");
 		ObjectPtr<EntityInstance> buttonLeftEntity = mResourceManager->findEntity("ButtonLeftEntity");
-		buttonRightEntity->getComponent<PointerInputComponentInstance>().pressed.connect(std::bind(&AppRunner::rightButtonClicked, this, std::placeholders::_1));
-		buttonLeftEntity->getComponent<PointerInputComponentInstance>().pressed.connect(std::bind(&AppRunner::leftButtonClicked, this, std::placeholders::_1));
+		buttonRightEntity->getComponent<PointerInputComponentInstance>().pressed.connect(std::bind(&TommyApp::rightButtonClicked, this, std::placeholders::_1));
+		buttonLeftEntity->getComponent<PointerInputComponentInstance>().pressed.connect(std::bind(&TommyApp::leftButtonClicked, this, std::placeholders::_1));
 
 		// Set render states
 		RenderState& render_state = mRenderService->getRenderState();
@@ -61,7 +59,7 @@ namespace nap {
 	
 	
 	// Cycle-right button clicked
-	void AppRunner::rightButtonClicked(const PointerPressEvent& evt) {
+	void TommyApp::rightButtonClicked(const PointerPressEvent& evt) {
 		if (mSlideShowEntity != nullptr && evt.mButton == EMouseButton::LEFT)
 		{
 			SlideShowComponentInstance& component = mSlideShowEntity->getComponent<SlideShowComponentInstance>();
@@ -71,7 +69,7 @@ namespace nap {
 
 	
 	// Cycle-left button clicked
-	void AppRunner::leftButtonClicked(const PointerPressEvent& evt) {
+	void TommyApp::leftButtonClicked(const PointerPressEvent& evt) {
 		if (mSlideShowEntity != nullptr && evt.mButton == EMouseButton::LEFT)
 		{
 			SlideShowComponentInstance& component = mSlideShowEntity->getComponent<SlideShowComponentInstance>();
@@ -81,7 +79,7 @@ namespace nap {
 
 	
 	// Called when the window is updating
-	void AppRunner::update(double deltaTime)
+	void TommyApp::update(double deltaTime)
 	{
 		// If any changes are detected, and we are reloading, we need to do this on the correct context
 		mRenderService->getPrimaryWindow().makeCurrent();
@@ -108,7 +106,7 @@ namespace nap {
 	
 	
 	// Called when the window is going to render
-	void AppRunner::render()
+	void TommyApp::render()
 	{
 		// Make render window active
 		mRenderService->destroyGLContextResources(mRenderWindows);
@@ -130,31 +128,39 @@ namespace nap {
 	/**
 	 * Handles the window event
 	 */
-	void AppRunner::handleWindowEvent(const WindowEvent& windowEvent)
+	void TommyApp::handleWindowEvent(const WindowEvent& windowEvent)
 	{
 		
 	}
 	
 	
-	void AppRunner::registerWindowEvent(WindowEventPtr windowEvent) 
+	void TommyApp::windowMessageReceived(WindowEventPtr windowEvent) 
 	{
 		mRenderService->addEvent(std::move(windowEvent));
 	}
 	
 	
-	void AppRunner::registerInputEvent(InputEventPtr inputEvent)
+	void TommyApp::inputMessageReceived(InputEventPtr inputEvent)
 	{
+		// If we pressed escape, quit the loop
+		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
+		{
+			nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(inputEvent.get());
+			if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
+				quit(0);
+		}
+
 		mInputService->addEvent(std::move(inputEvent));
 	}
 
 	
-	void AppRunner::setWindowFullscreen(std::string windowIdentifier, bool fullscreen) 
+	void TommyApp::setWindowFullscreen(std::string windowIdentifier, bool fullscreen) 
 	{
 		mResourceManager->findObject<RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
 	}
 
 	
-	void AppRunner::shutdown() 
+	void TommyApp::shutdown() 
 	{
 
 	}

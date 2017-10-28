@@ -5,6 +5,9 @@
 #include <nap/logger.h>
 #include <renderwindow.h>
 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SteefApp)
+	RTTI_CONSTRUCTOR(nap::Core&)
+RTTI_END_CLASS
 
 namespace nap
 {	
@@ -15,12 +18,12 @@ namespace nap
 	bool SteefApp::init(utility::ErrorState& error)
 	{		
 		// Create services
-		mRenderService = mCore.getService<nap::RenderService>();
-		mSceneService  = mCore.getService<nap::SceneService>();
-		mInputService  = mCore.getService<nap::InputService>();
+		mRenderService = getCore().getService<nap::RenderService>();
+		mSceneService  = getCore().getService<nap::SceneService>();
+		mInputService  = getCore().getService<nap::InputService>();
 
 		// Get resource manager and load
-		mResourceManager = mCore.getResourceManager();
+		mResourceManager = getCore().getResourceManager();
 		if (!mResourceManager->loadFile("data/steef/objects.json", error))
 		{
 			assert(false);
@@ -131,7 +134,7 @@ namespace nap
 		{
 			nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(inputEvent.get());
 			if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
-				quit();
+				quit(0);
 
 			if (press_event->mKey == nap::EKeyCode::KEY_f)
 			{

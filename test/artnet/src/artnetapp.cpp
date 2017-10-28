@@ -1,36 +1,31 @@
-#include "apprunner.h"
+#include "artnetapp.h"
 
 // Nap includes
 #include <nap/core.h>
 #include <nap/logger.h>
 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ArtnetApp)
+	RTTI_CONSTRUCTOR(nap::Core&)
+RTTI_END_CLASS
 
-namespace nap {
-	
-	/**
-	 * Constructor
-	 */
-	AppRunner::AppRunner() { }
-	
-
+namespace nap 
+{
 	/**
 	 * Initialize all the resources and instances used for drawing
 	 * slowly migrating all functionality to nap
 	 */
-	bool AppRunner::init(Core& core, utility::ErrorState& error)
+	bool ArtnetApp::init(utility::ErrorState& error)
 	{
 		// Create all services
-		mRenderService = core.getService<RenderService>();
-		mInputService  = core.getService<InputService>();
-		mSceneService  = core.getService<SceneService>();
-		mArtnetService = core.getService<ArtNetService>();
+		mRenderService = getCore().getService<RenderService>();
+		mInputService  = getCore().getService<InputService>();
+		mSceneService  = getCore().getService<SceneService>();
+		mArtnetService = getCore().getService<ArtNetService>();
 		
 		// Load scene
-		mResourceManager = core.getResourceManager();
+		mResourceManager = getCore().getResourceManager();
 		if (!mResourceManager->loadFile("data/artnet/artnet.json", error))
 			return false;
-		
-		opengl::flush();
 		
 		// Get important entities
 		mCameraEntity = mResourceManager->findEntity("CameraEntity");
@@ -50,7 +45,7 @@ namespace nap {
 	
 	
 	// Called when the window is updating
-	void AppRunner::update(double deltaTime)
+	void ArtnetApp::update(double deltaTime)
 	{		
 		// Update and send our test data over ArtNET
 		float sine = sin(mRenderService->getCore().getElapsedTime() * (M_PI * 2));
@@ -74,7 +69,7 @@ namespace nap {
 	
 	
 	// Called when the window is going to render
-	void AppRunner::render()
+	void ArtnetApp::render()
 	{
 		mRenderService->destroyGLContextResources(mRenderWindows);
 		
@@ -94,31 +89,39 @@ namespace nap {
 	/**
 	 * Handles the window event
 	 */
-	void AppRunner::handleWindowEvent(const WindowEvent& windowEvent)
+	void ArtnetApp::handleWindowEvent(const WindowEvent& windowEvent)
 	{
 		
 	}
 	
 	
-	void AppRunner::registerWindowEvent(WindowEventPtr windowEvent) 
+	void ArtnetApp::windowMessageReceived(WindowEventPtr windowEvent) 
 	{
 		mRenderService->addEvent(std::move(windowEvent));
 	}
 
 
-	void AppRunner::registerInputEvent(InputEventPtr inputEvent) 
+	void ArtnetApp::inputMessageReceived(InputEventPtr inputEvent) 
 	{
+		// If we pressed escape, quit the loop
+		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
+		{
+			nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(inputEvent.get());
+			if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
+				quit(0);
+		}
+
 		mInputService->addEvent(std::move(inputEvent));
 	}
 
 	
-	void AppRunner::setWindowFullscreen(std::string windowIdentifier, bool fullscreen) 
+	void ArtnetApp::setWindowFullscreen(std::string windowIdentifier, bool fullscreen) 
 	{
 		mResourceManager->findObject<RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
 	}
 
 	
-	void AppRunner::shutdown() 
+	void ArtnetApp::shutdown() 
 	{
 	}
 }

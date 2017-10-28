@@ -5,7 +5,10 @@
 #include <sdlinput.h>
 #include <sdlwindow.h>
 
-RTTI_DEFINE_BASE(nap::BaseAppEventHandler)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseAppEventHandler)
+	RTTI_CONSTRUCTOR(nap::BaseApp&)
+RTTI_END_CLASS	
+
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::AppEventHandler)
 	RTTI_CONSTRUCTOR(nap::App&)
 RTTI_END_CLASS
@@ -22,25 +25,25 @@ namespace nap
 
 	void AppEventHandler::process()
 	{
-		if (!opengl::pollEvent(mEvent))
-			return;
-		
-		// Check if we are dealing with an input event (mouse / keyboard)
-		if (nap::isInputEvent(mEvent))
+		while (opengl::pollEvent(mEvent))
 		{
-			nap::InputEventPtr input_event = nap::translateInputEvent(mEvent);
-
-			// Register our input event with the appRunner
-			getApp<App>().inputMessageReceived(std::move(input_event));
-		}
-
-		// Check if we're dealing with a window event
-		else if (nap::isWindowEvent(mEvent))
-		{
-			nap::WindowEventPtr window_event = nap::translateWindowEvent(mEvent);
-			if (window_event != nullptr)
+			// Check if we are dealing with an input event (mouse / keyboard)
+			if (nap::isInputEvent(mEvent))
 			{
-				getApp<App>().windowMessageReceived(std::move(window_event));
+				nap::InputEventPtr input_event = nap::translateInputEvent(mEvent);
+
+				// Register our input event with the appRunner
+				getApp<App>().inputMessageReceived(std::move(input_event));
+			}
+
+			// Check if we're dealing with a window event
+			else if (nap::isWindowEvent(mEvent))
+			{
+				nap::WindowEventPtr window_event = nap::translateWindowEvent(mEvent);
+				if (window_event != nullptr)
+				{
+					getApp<App>().windowMessageReceived(std::move(window_event));
+				}
 			}
 		}
 	}

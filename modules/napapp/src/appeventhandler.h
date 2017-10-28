@@ -12,7 +12,7 @@ namespace nap
 	/**
 	 * Helper object that allows for custom app processing behavior inside the AppRunner update loop
 	 */
-	class BaseAppEventHandler
+	class NAPAPI BaseAppEventHandler
 	{
 		RTTI_ENABLE()
 	public:
@@ -43,7 +43,7 @@ namespace nap
 		 * you might want to check for window or input messages and forward those to the application
 		 * This function is invoked at the beginning of the app loop
 		 */
-		virtual void process() = 0;
+		virtual void process()				{ }
 
 		/**
 		 *	Returns the application as an object of type T

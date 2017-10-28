@@ -19,9 +19,9 @@ namespace nap
 	/**
 	 * Main application that is called from within the main loop
 	 */
-	class SteefApp : public nap::App
+	class SteefApp : public App
 	{
-		
+		RTTI_ENABLE(App)
 	public:
 		SteefApp(nap::Core& core) : nap::App(core)								{ }
 		

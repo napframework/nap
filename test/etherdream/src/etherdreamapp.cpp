@@ -1,4 +1,4 @@
-#include "apprunner.h"
+#include "etherdreamapp.h"
 
 // Local includes
 #include "lineselectioncomponent.h"
@@ -9,32 +9,29 @@
 #include <nap/logger.h>
 #include <perspcameracomponent.h>
 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::EtherdreamApp)
+	RTTI_CONSTRUCTOR(nap::Core&)
+RTTI_END_CLASS
+
 namespace nap 
 {
-	
-	/**
-	 * Constructor
-	 */
-	AppRunner::AppRunner() { }
-	
-
 	/**
 	 * Initialize all the resources and instances used for drawing
 	 * slowly migrating all functionality to nap
 	 */
-	bool AppRunner::init(Core& core, utility::ErrorState& error)
+	bool EtherdreamApp::init(utility::ErrorState& error)
 	{
 		// Create render service
-		mRenderService = core.getService<RenderService>();
-		mInputService  = core.getService<InputService>();
-		mSceneService  = core.getService<SceneService>();
-		mLaserService  = core.getService<EtherDreamService>();
-		mOscService	   = core.getService<OSCService>();
+		mRenderService = getCore().getService<RenderService>();
+		mInputService  = getCore().getService<InputService>();
+		mSceneService  = getCore().getService<SceneService>();
+		mLaserService  = getCore().getService<EtherDreamService>();
+		mOscService	   = getCore().getService<OSCService>();
 
 		// Initialize all services
 
 		// Get resource manager service
-		mResourceManager = core.getResourceManager();
+		mResourceManager = getCore().getResourceManager();
 
 		// Load scene
 		if (!mResourceManager->loadFile("data/etherdream/etherdream.json", error))
@@ -64,13 +61,8 @@ namespace nap
 	}
 	
 	
-	// Called when the window is updating
-	void AppRunner::update(double deltaTime)
-	{ }
-	
-	
 	// Called when the window is going to render
-	void AppRunner::render()
+	void EtherdreamApp::render()
 	{
 		// Get rid of unnecessary resources
 		mRenderService->destroyGLContextResources({ mRenderWindow });
@@ -96,35 +88,41 @@ namespace nap
 		mRenderWindow->swap();
 	}
 	
-
-	/**
-	 * Handles the window event
-	 */
-	void AppRunner::handleWindowEvent(const WindowEvent& windowEvent)
-	{
-		
-	}
 	
-	
-	void AppRunner::registerWindowEvent(WindowEventPtr windowEvent) 
+	void EtherdreamApp::windowMessageReceived(WindowEventPtr windowEvent) 
 	{
 		mRenderService->addEvent(std::move(windowEvent));
 	}
 	
 	
-	void AppRunner::registerInputEvent(InputEventPtr inputEvent) 
+	void EtherdreamApp::inputMessageReceived(InputEventPtr inputEvent) 
 	{
+		// If we pressed escape, quit the loop
+		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
+		{
+			nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(inputEvent.get());
+			if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
+				quit(0);
+
+			if (press_event->mKey == nap::EKeyCode::KEY_f)
+			{
+				static bool fullscreen = true;
+				setWindowFullscreen("Window", fullscreen);
+				fullscreen = !fullscreen;
+			}
+		}
+
 		mInputService->addEvent(std::move(inputEvent));
 	}
 
 	
-	void AppRunner::setWindowFullscreen(std::string windowIdentifier, bool fullscreen) 
+	void EtherdreamApp::setWindowFullscreen(std::string windowIdentifier, bool fullscreen) 
 	{
 		mResourceManager->findObject<RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
 	}
 
 	
-	void AppRunner::shutdown() 
+	void EtherdreamApp::shutdown()
 	{
 
 	}
