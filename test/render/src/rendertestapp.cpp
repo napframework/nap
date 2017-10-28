@@ -1,31 +1,29 @@
-#include "apprunner.h"
+#include "rendertestapp.h"
 
 // Nap includes
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <perspcameracomponent.h>
 
-namespace nap {
-	
-	/**
-	 * Constructor
-	 */
-	AppRunner::AppRunner() { }
-	
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTestApp)
+	RTTI_CONSTRUCTOR(nap::Core&)
+RTTI_END_CLASS
 
+namespace nap 
+{
 	/**
 	 * Initialize all the resources and instances used for drawing
 	 * slowly migrating all functionality to nap
 	 */
-	bool AppRunner::init(Core& core, utility::ErrorState& error)
+	bool RenderTestApp::init(utility::ErrorState& error)
 	{		
 		// Create render service
-		mRenderService = core.getService<RenderService>();		
-		mInputService  = core.getService<InputService>();
-		mSceneService  = core.getService<SceneService>();
+		mRenderService = getCore().getService<RenderService>();		
+		mInputService  = getCore().getService<InputService>();
+		mSceneService  = getCore().getService<SceneService>();
 
 		// Get resource manager and load
-		mResourceManager = core.getResourceManager();
+		mResourceManager = getCore().getResourceManager();
 		if (!mResourceManager->loadFile("data/rendertest/objects.json", error))
 		{
 			Logger::fatal("Unable to deserialize resources: \n %s", error.toString().c_str());
@@ -57,7 +55,7 @@ namespace nap {
 	
 	
 	// Called when the window is updating
-	void AppRunner::update(double deltaTime)
+	void RenderTestApp::update(double deltaTime)
 	{
 		DefaultInputRouter& input_router = mDefaultInputRouter->getComponent<DefaultInputRouterComponentInstance>().mInputRouter;
 		
@@ -109,10 +107,9 @@ namespace nap {
 	
 	
 	// Called when the window is going to render
-	void AppRunner::render()
+	void RenderTestApp::render()
 	{
 		mRenderService->destroyGLContextResources(mRenderWindows);
-		
 		
 		// Render offscreen surface(s)
 		{
@@ -189,31 +186,39 @@ namespace nap {
 	/**
 	 * Handles the window event
 	 */
-	void AppRunner::handleWindowEvent(const WindowEvent& windowEvent)
+	void RenderTestApp::handleWindowEvent(const WindowEvent& windowEvent)
 	{
 		
 	}
 	
 	
-	void AppRunner::registerWindowEvent(WindowEventPtr windowEvent) 
+	void RenderTestApp::windowMessageReceived(WindowEventPtr windowEvent)
 	{
 		mRenderService->addEvent(std::move(windowEvent));
 	}
 	
 	
-	void AppRunner::registerInputEvent(InputEventPtr inputEvent)
+	void RenderTestApp::inputMessageReceived(InputEventPtr inputEvent)
 	{
+		// If we pressed escape, quit the loop
+		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
+		{
+			nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(inputEvent.get());
+			if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
+				quit(0);
+
+		}
 		mInputService->addEvent(std::move(inputEvent));
 	}
 
 	
-	void AppRunner::setWindowFullscreen(std::string windowIdentifier, bool fullscreen) 
+	void RenderTestApp::setWindowFullscreen(std::string windowIdentifier, bool fullscreen) 
 	{
 		mResourceManager->findObject<RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
 	}
 
 	
-	void AppRunner::shutdown() 
+	void RenderTestApp::shutdown() 
 	{
 	}
 }

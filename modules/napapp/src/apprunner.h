@@ -10,14 +10,15 @@
 
 namespace nap
 {
+
 	/**
 	 * Utility class that runs a nap::BaseApp until BaseApp::quit() is called or
-	 * AppRunner::stopRunning(). The APP template argumentshould be derived from
-	 * nap::BaseApp, HANDLER should be derived from nap::BaseAppEventHandler()
+	 * AppRunner::stop(). The APP template argumentshould be derived from
+	 * nap::BaseApp, HANDLER should be of type nap::BaseAppEventHandler()
 	 * 
 	 * When creating an AppRunner with those two template arguments the app is created
 	 * and invoked at the right time based on core and it's associated services.
-	 * Note that the AppRunner owns the app and handler
+	 * Note that the AppRunner owns the app and handler.
 	 */
 	template<typename APP, typename HANDLER>
 	class AppRunner
@@ -48,26 +49,34 @@ namespace nap
 		AppRunner& operator=(AppRunner&&) = delete;
 
 		/**
-		 * Starts the loop, if the loop could not start for some reason
-		 * the error contains the message
+		 * Starts the app loop, if the loop could not start for some reason
+		 * the error contains the reason. This call will initialize core
+		 * and the application and run the application loop until AppRunner::stop()
+		 * or BaseApp::quit() is invoked.
 		 * @param error the error message if the loop couldn't be started
+		 * @return if the app loop has successfully started
 		 */
-		bool startRunning(utility::ErrorState& error);
+		bool start(utility::ErrorState& error);
 
 		/**
-		 *	Stops the loop and exits the application
+		 * Stops the loop and exits the application
 		 */
-		void stopRunning();
+		void stop();
 
 		/**
-		 *	@return the app
+		 * @return the app
 		 */
-		BaseApp& getApp();
+		APP& getApp();
 
 		/**
-		 *	@return the app handler
+		 * @return the app handler
 		 */
-		BaseAppEventHandler& getHandler();
+		HANDLER& getHandler();
+
+		/**
+		 * @return the application exit code
+		 */
+		int exitCode() const								{ return mApp->getExitCode(); }
 
 	private:
 		nap::Core&					mCore;					// Core
@@ -82,16 +91,16 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename APP, typename HANDLER>
-	BaseApp& nap::AppRunner<APP, HANDLER>::getApp()
+	APP& nap::AppRunner<APP, HANDLER>::getApp()
 	{
-		return static_cast<BaseApp&>(*mApp);
+		return *mApp;
 	}
 
 
 	template<typename APP, typename HANDLER>
-	BaseAppEventHandler& nap::AppRunner<APP, HANDLER>::getHandler()
+	HANDLER& nap::AppRunner<APP, HANDLER>::getHandler()
 	{
-		return static_cast<AppEventHandler&>(*mHandler);
+		return *mHandler;
 	}
 
 
@@ -111,7 +120,7 @@ namespace nap
 
 
 	template<typename APP, typename HANDLER>
-	bool nap::AppRunner<APP, HANDLER>::startRunning(utility::ErrorState& error)
+	bool nap::AppRunner<APP, HANDLER>::start(utility::ErrorState& error)
 	{
 		nap::BaseApp& app = getApp();
 		nap::BaseAppEventHandler& app_event_handler = getHandler();
@@ -160,7 +169,7 @@ namespace nap
 
 
 	template<typename APP, typename HANDLER>
-	void nap::AppRunner<APP, HANDLER>::stopRunning()
+	void nap::AppRunner<APP, HANDLER>::stop()
 	{
 		mStop = true;
 	}

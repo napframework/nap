@@ -21,7 +21,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Test)
 add_dependencies(${PROJECT_NAME} fbxconverter mod_nappython)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${pybind11_INCLUDE_DIRS})
-target_link_libraries(${PROJECT_NAME} napcore mod_naprender nrender mod_napmath mod_napsdlinput mod_napsdlwindow mod_napvideo mod_napcameracontrol)
+target_link_libraries(${PROJECT_NAME} napcore mod_naprender nrender mod_napmath mod_napsdlinput mod_napsdlwindow mod_napvideo mod_napcameracontrol mod_napapp)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
 if (WIN32)

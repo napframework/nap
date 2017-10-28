@@ -65,21 +65,32 @@ namespace nap
 		 * Call this to quit the running application and
 		 * exit the main loop.
 		 */
-		void quit()														{ mQuit = true; }
+		void quit(int errorCode = 0)									{ mQuit = true; }
 
 		/**
 		 *	If the application should quit running
 		 */
 		bool shouldQuit() const											{ return mQuit; }
 
-	protected:
 		/**
-		 *	Core associated with the running app
+		 *	@return the application exit code when quit
 		 */
-		nap::Core& mCore;
+		int getExitCode() const											{ return mExitCode;  }
+
+		/**
+		 *	@return nap Core const
+		 */
+		const nap::Core& getCore() const								{ return mCore; }
+
+		/**
+		 *	@return nap Core
+		 */
+		nap::Core& getCore()											{ return mCore; }
 
 	private:
 		bool mQuit = false;												// When set to true the application will exit
+		int mExitCode = 0;												// Exit code when quit
+		nap::Core& mCore;												// Core
 	};
 
 

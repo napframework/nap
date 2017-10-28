@@ -11,35 +11,33 @@
 #include <sceneservice.h>
 #include <inputservice.h>
 #include <inputrouter.h>
-#include <rendertarget.h>
-
+#include <app.h>
 
 namespace nap
 {
 	/**
 	 * Main application that is called from within the main loop
 	 */
-	class AppRunner
+	class TommyApp : public App
 	{
-		
+		RTTI_ENABLE(App)
 	public:
-		AppRunner();
-		~AppRunner() = default;
+		TommyApp(nap::Core& core) : App(core) { }
 		
 		/**
 		 *	Initialize all the services and app specific data structures
 		 */
-		bool init(Core& core, utility::ErrorState& error);
+		bool init(utility::ErrorState& error) override;
 		
 		/**
 		 *	Update is called before render, performs all the app logic
 		 */
-		void update(double deltaTime);
+		void update(double deltaTime) override;
 
 		/**
 		 *	Render is called after update, pushes all renderable objects to the GPU
 		 */
-		void render();
+		void render() override;
 
 		/**
 		 *	Called when a window event is received
@@ -49,12 +47,12 @@ namespace nap
 		/**
 		 *	Forwards the received window event to the render service
 		 */
-		void registerWindowEvent(WindowEventPtr windowEvent);
+		void windowMessageReceived(WindowEventPtr windowEvent) override;
 		
 		/**
 		 *  Forwards the received input event to the input service
 		 */
-		void registerInputEvent(InputEventPtr inputEvent);
+		void inputMessageReceived(InputEventPtr inputEvent) override;
 		
 		/**
 		 *	Toggles full screen
@@ -64,30 +62,34 @@ namespace nap
 		/**
 		 *	Called when loop finishes
 		 */
-		void shutdown();
+		void shutdown() override;
+		
 		
 	private:
+		/**
+		 *  Cycle-right button clicked
+		 */
+		void rightButtonClicked(const PointerPressEvent& evt);
+		
+		/**
+		 *  Cycle-left button clicked
+		 */
+		void leftButtonClicked(const PointerPressEvent& evt);
+		
 		
 		// Nap Services
 		RenderService* mRenderService = nullptr;					//< Render Service that handles render calls
-		ResourceManager* mResourceManager = nullptr;	//< Manages all the loaded resources
+		ResourceManager* mResourceManager = nullptr;				//< Manages all the loaded resources
 		SceneService* mSceneService = nullptr;						//< Manages all the objects in the scene
 		
 		InputService* mInputService = nullptr;						//< Input service for processing input
 		
 		std::vector<ObjectPtr<RenderWindow>> mRenderWindows;		//< Vector holding pointers to the spawned render windows
-
-		ObjectPtr<EntityInstance> mDefaultInputRouter = nullptr;	//< Default input router entity for processing input
 		
-		ObjectPtr<EntityInstance> mCameraEntity = nullptr;			//< Entity that holds the camera
-		ObjectPtr<EntityInstance> mCameraEntityLeft = nullptr;		//< Camera entity for first/left window
-		ObjectPtr<EntityInstance> mCameraEntityRight = nullptr;		//< Camera entity for second/right window
-		ObjectPtr<EntityInstance> mSplitCameraEntity = nullptr;		//< Split camera entity for world globe moving between windows
+		ObjectPtr<EntityInstance> mCameraEntity = nullptr;			//< The entity that holds the camera
 		
-		ObjectPtr<RenderTarget> mTextureRenderTarget;				//< Render target for first window rotating plane
-		ObjectPtr<EntityInstance> mPigEntity = nullptr;				//< Pig entity
-		ObjectPtr<EntityInstance> mRotatingPlaneEntity = nullptr;	//< Rotating render target entity
-		ObjectPtr<EntityInstance> mPlaneEntity = nullptr;			//< Warping custom line entity
-		ObjectPtr<EntityInstance> mWorldEntity = nullptr;			//< World globe entity
+		ObjectPtr<EntityInstance> mRootLayoutEntity = nullptr;		//< Entity at the root of the layout
+		ObjectPtr<EntityInstance> mSlideShowEntity = nullptr;		//< The slideshow entity
+		ObjectPtr<EntityInstance> mUiInputRouter = nullptr;			//< Our UI input router entity
 	};
 }

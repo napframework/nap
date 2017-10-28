@@ -1,33 +1,31 @@
-#include "apprunner.h"
+#include "videoapp.h"
 
 // Nap includes
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <orthocameracomponent.h>
-#include "texture2d.h"
+#include <texture2d.h>
 
-namespace nap {
-	
-	/**
-	 * Constructor
-	 */
-	AppRunner::AppRunner() { }
-	
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VideoApp)
+	RTTI_CONSTRUCTOR(nap::Core&)
+RTTI_END_CLASS
 
+namespace nap 
+{
 	/**
 	 * Initialize all the resources and instances used for drawing
 	 * slowly migrating all functionality to nap
 	 */
-	bool AppRunner::init(Core& core, utility::ErrorState& error)
+	bool VideoApp::init(utility::ErrorState& error)
 	{	
 		// Get resource manager service
-		mResourceManager = core.getResourceManager();
+		mResourceManager = getCore().getResourceManager();
 		
 		// Create render service
-		mRenderService = core.getService<RenderService>();
-		mInputService  = core.getService<InputService>();
-		mSceneService  = core.getService<SceneService>();
-		mVideoService  = core.getService<VideoService>();
+		mRenderService = getCore().getService<RenderService>();
+		mInputService  = getCore().getService<InputService>();
+		mSceneService  = getCore().getService<SceneService>();
+		mVideoService  = getCore().getService<VideoService>();
 		
 		if (!mResourceManager->loadFile("data/videoplayer/videoplayer.json", error))
 		{
@@ -63,7 +61,7 @@ namespace nap {
 	
 	
 	// Called when the window is updating
-	void AppRunner::update(double deltaTime)
+	void VideoApp::update(double deltaTime)
 	{				
 		glm::vec2 window_size = mRenderWindows[0]->getWindow()->getSize();
 
@@ -99,54 +97,70 @@ namespace nap {
 	
 	
 	// Called when the window is going to render
-	void AppRunner::render()
+	void VideoApp::render()
 	{
 		mRenderService->destroyGLContextResources(mRenderWindows);
+
+		// Make render window active for drawing
 		RenderWindow* render_window = mRenderWindows[0].get();
-		
-		if (mCameraEntity != nullptr)
-		{
-			render_window->makeActive();
-			
-			opengl::RenderTarget* render_target = (opengl::RenderTarget*)render_window->getWindow()->getBackbuffer();
-			render_target->setClearColor(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
-			mRenderService->clearRenderTarget(*render_target, opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH);
-			
-			mRenderService->renderObjects(*render_target, mCameraEntity->getComponent<OrthoCameraComponentInstance>());
-			
-			render_window->swap();
-		}
+		render_window->makeActive();
+
+		// Clear target
+		opengl::RenderTarget* render_target = render_window->getWindow()->getBackbuffer();
+		render_target->setClearColor(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
+		mRenderService->clearRenderTarget(*render_target, opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH);
+
+		// Render necessary objects
+		mRenderService->renderObjects(*render_target, mCameraEntity->getComponent<OrthoCameraComponentInstance>());
+
+		// Swap GPU buffers
+		render_window->swap();
 	}
 	
 
 	/**
 	 * Handles the window event
 	 */
-	void AppRunner::handleWindowEvent(const WindowEvent& windowEvent)
+	void VideoApp::handleWindowEvent(const WindowEvent& windowEvent)
 	{
 		
 	}
 	
 	
-	void AppRunner::registerWindowEvent(WindowEventPtr windowEvent) 
+	void VideoApp::windowMessageReceived(WindowEventPtr windowEvent) 
 	{
 		mRenderService->addEvent(std::move(windowEvent));
 	}
 
 	
-	void AppRunner::registerInputEvent(InputEventPtr inputEvent)
+	void VideoApp::inputMessageReceived(InputEventPtr inputEvent)
 	{
+		// If we pressed escape, quit the loop
+		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
+		{
+			nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(inputEvent.get());
+			if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
+				quit(0);
+
+			if (press_event->mKey == nap::EKeyCode::KEY_f)
+			{
+				static bool fullscreen = true;
+				setWindowFullscreen("Window", fullscreen);
+				fullscreen = !fullscreen;
+			}
+		}
+
 		mInputService->addEvent(std::move(inputEvent));
 	}
 
 	
-	void AppRunner::setWindowFullscreen(std::string windowIdentifier, bool fullscreen) 
+	void VideoApp::setWindowFullscreen(std::string windowIdentifier, bool fullscreen) 
 	{
 		mResourceManager->findObject<RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
 	}
 
 	
-	void AppRunner::shutdown() 
+	void VideoApp::shutdown() 
 	{
 
 	}

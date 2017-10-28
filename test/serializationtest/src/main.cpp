@@ -120,7 +120,12 @@ int main(int argc, char* argv[])
 	Logger::setLevel(Logger::debugLevel());
 
 	Core core;
-	core.initializeEngine();
+	nap::utility::ErrorState error;
+	if (!core.initializeEngine(error))
+	{
+		nap::Logger::fatal(error.toString().c_str());
+		return -1;
+	}
 
 	rtti::TypeInfo::get<std::vector<DataStruct>>();
 

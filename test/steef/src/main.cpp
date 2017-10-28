@@ -19,13 +19,14 @@ int main(int argc, char *argv[])
 
 	// Start
 	nap::utility::ErrorState error;
-	if (!app_runner.startRunning(error))
+	if (!app_runner.start(error))
 	{
 		nap::Logger::fatal("error: %s", error.toString().c_str());
 		return -1;
 	}
 
-	return 0;
+	// Return if the app ran successfully
+	return app_runner.exitCode();
 }
        
  
