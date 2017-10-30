@@ -35,10 +35,10 @@ namespace nap
 		DECLARE_COMPONENT(OSCLaserInputHandler, OSCLaserInputHandlerInstance)
 	public:
 		// property: Link to selection component one
-		ComponentPtr<LineSelectionComponent> mSelectionComponentOne = nullptr;
+		ObjectPtr<LineSelectionComponent> mSelectionComponentOne = nullptr;
 
 		// property: Link to selection component two
-		ComponentPtr<LineSelectionComponent> mSelectionComponentTwo = nullptr;
+		ObjectPtr<LineSelectionComponent> mSelectionComponentTwo = nullptr;
 
 		// property: If the pixel color should be printed
 		bool mPrintColor = false;

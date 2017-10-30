@@ -40,7 +40,7 @@ namespace nap
 		ObjectPtr<nap::Entity> mVisualizeEntity;
 
 		// property: Link to the line blend component that holds the line we want to trace
-		ComponentPtr<nap::LineBlendComponent> mBlendComponent = nullptr;
+		ObjectPtr<nap::LineBlendComponent> mBlendComponent = nullptr;
 	};
 
 
@@ -80,7 +80,7 @@ namespace nap
 		void setPolyLine(nap::PolyLine& line);
 
 	private:
-		nap::LineBlendComponentInstance* mBlendComponent = nullptr;		// Line that acts as a source for the tracer
+		ComponentPtr<LineBlendComponent>	mBlendComponent = { this, &LineTraceComponent::mBlendComponent };		// Component that holds the line we want to modulate
 		nap::PolyLine*  mTarget = nullptr;								// Line that is the output of the trace computation
 		float mCurrentTime = 0.0f;										// Current time
 		nap::TransformComponentInstance* mStartXform = nullptr;			// Transform associated with beginning of trace component

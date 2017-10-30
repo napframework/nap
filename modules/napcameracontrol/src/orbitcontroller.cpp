@@ -51,7 +51,7 @@ namespace nap
 
 	CameraComponentInstance& OrbitControllerInstance::getCameraComponent()
 	{
-		return *getComponent<OrbitController>()->mPerspCameraComponent;
+		return *mPerspCameraComponent;
 	}
 
 

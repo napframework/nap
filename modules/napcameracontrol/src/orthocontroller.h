@@ -28,8 +28,8 @@ namespace nap
 		 */
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		float										mZoomSpeed = 0.5f;		// The speed with which to move
-		ComponentPtr<nap::OrthoCameraComponent>		mOrthoCameraComponent;	// Camera that we're controlling
+		float								mZoomSpeed = 0.5f;		// The speed with which to move
+		ObjectPtr<OrthoCameraComponent>		mOrthoCameraComponent;	// Camera that we're controlling
 	};
 
 
@@ -97,13 +97,14 @@ namespace nap
 			Zoom		// Currently zooming
 		};
 
-		TransformComponentInstance*		mTransformComponent = nullptr;		// The transform component used to move the entity
-		bool							mEnabled = true;					// Set if enabled for input
-		float							mCameraScale = 50.0f;				// Current scale, selects the width of the space you can see
-		float							mCameraScaleAtClick = 0.0f;			// Scale that was set when clicking with the mouse button
-		EMode							mMode = EMode::None;				// Pan/Zoom mode
-		glm::vec2						mMousePosAtClick;					// Mouse position that was set when clicking with the mouse button
-		glm::vec3						mTranslateAtClick;					// Camera translation that was set when clicking with the mouse button
+		ComponentPtr<OrthoCameraComponent>		mOrthoCameraComponent = { this, &OrthoController::mOrthoCameraComponent };
+		TransformComponentInstance*				mTransformComponent = nullptr;		// The transform component used to move the entity
+		bool									mEnabled = true;					// Set if enabled for input
+		float									mCameraScale = 50.0f;				// Current scale, selects the width of the space you can see
+		float									mCameraScaleAtClick = 0.0f;			// Scale that was set when clicking with the mouse button
+		EMode									mMode = EMode::None;				// Pan/Zoom mode
+		glm::vec2								mMousePosAtClick;					// Mouse position that was set when clicking with the mouse button
+		glm::vec3								mTranslateAtClick;					// Camera translation that was set when clicking with the mouse button
 	};
 
 }

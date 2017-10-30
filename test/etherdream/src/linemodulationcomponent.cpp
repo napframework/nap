@@ -37,9 +37,6 @@ namespace nap
 		// Copy properties
 		mProperties = getComponent<LineModulationComponent>()->mProperties;
 
-		// Get the blend component we want to apply the modulation on to
-		mBlendComponent = getComponent<LineModulationComponent>()->mBlendComponent.get();
-
 		// Set smooth timing values
 		mAmpSmoother.mSmoothTime = mProperties.mAmplitudeSmoothTime;
 		mAmpSmoother.setValue(mProperties.mAmplitude);

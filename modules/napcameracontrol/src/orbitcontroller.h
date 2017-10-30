@@ -40,7 +40,7 @@ namespace nap
 		float mMovementSpeed = 0.5f;		// The speed with which to move
 		float mRotateSpeed = 0.005f;		// The speed with which to rotate
 
-		ComponentPtr<nap::PerspCameraComponent>	mPerspCameraComponent;	// Perspective camera that we are controlling
+		ObjectPtr<PerspCameraComponent>	mPerspCameraComponent;	// Perspective camera that we are controlling
 	};
 
 
@@ -105,10 +105,11 @@ namespace nap
 			Zooming			// Zoom into/out of target
 		};
 
-		TransformComponentInstance*		mTransformComponent = nullptr;		// The transform component used to move the entity
-		EMode							mMode = EMode::Idle;				// Camera mode
-		glm::vec3						mLookAtPos;							// Target position to orbit around
-		bool							mEnabled = true;					// Enables responding to input
+		ComponentPtr<PerspCameraComponent>		mPerspCameraComponent = { this, &OrbitController::mPerspCameraComponent };
+		TransformComponentInstance*				mTransformComponent = nullptr;		// The transform component used to move the entity
+		EMode									mMode = EMode::Idle;				// Camera mode
+		glm::vec3								mLookAtPos;							// Target position to orbit around
+		bool									mEnabled = true;					// Enables responding to input
 	};
 
 }

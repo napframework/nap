@@ -34,9 +34,6 @@ namespace nap
 		if (!errorState.check(mCanvasTransform != nullptr, "missing transform component"))
 			return false;
 
-		// Get the output
-		mOutput = resource->mLaserOutputComponent.get();
-
 		// Move the frustrum back a bit so objects around 0 are sorted correctly
 		mCanvasTransform->setTranslate(glm::vec3(0.0f, 0.0f, -0.1f));
 
