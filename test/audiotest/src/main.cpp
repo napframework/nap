@@ -11,6 +11,7 @@
 
 #include <oscservice.h>
 #include <midiservice.h>
+#include <midioutputport.h>
 
 // Audio module includes
 #include <service/audiodeviceservice.h>
@@ -22,7 +23,8 @@
 #include "test.h"
 
 nap::ResourceManagerService* resourceManagerService = nullptr;
-
+nap::MidiService* midiService = nullptr;
+nap::OSCService* oscService  = nullptr;
 
 /**
 * Initialize all the resources and instances
@@ -35,14 +37,14 @@ bool init(nap::Core& core)
     
     core.initialize();
     
-    auto midiService = core.getOrCreateService<nap::MidiService>();
+    midiService = core.getOrCreateService<nap::MidiService>();
     if (!midiService->init(errorState))
     {
         nap::Logger::fatal(errorState.toString());
         return false;
     }
     
-    core.getOrCreateService<nap::OSCService>();
+    oscService = core.getOrCreateService<nap::OSCService>();
 
     auto audioService = core.getOrCreateService<nap::audio::AudioDeviceService>();
     if (!audioService->init(errorState))
@@ -67,16 +69,18 @@ bool init(nap::Core& core)
 // Main loop
 int main(int argc, char *argv[])
 {
-    
     nap::Core core;
 
     if (!init(core))
         return -1;
-
+    
     while (true)
     {
         resourceManagerService->checkForFileChanges();
         resourceManagerService->update();
+        midiService->update();
+        oscService->update();
+        
         int ns = 0.5 * 1000000;
         std::this_thread::sleep_for(std::chrono::nanoseconds(ns));
     }

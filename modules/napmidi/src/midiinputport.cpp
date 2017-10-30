@@ -1,5 +1,9 @@
 #include "midiinputport.h"
 
+#include "midievent.h"
+
+#include <nap/logger.h>
+
 RTTI_BEGIN_CLASS(nap::MidiInputPort)
     RTTI_PROPERTY("Port", &nap::MidiInputPort::mPortNumber, nap::rtti::EPropertyMetaData::Required)
     RTTI_PROPERTY("EnableDebugOutput", &nap::MidiInputPort::mDebugOutput, nap::rtti::EPropertyMetaData::Default)
@@ -7,13 +11,14 @@ RTTI_END_CLASS
 
 namespace nap {
     
+    
     void midiCallback(double deltatime, std::vector<unsigned char> *message, void *userData)
     {
-        unsigned int nBytes = message->size();
-        for ( unsigned int i=0; i<nBytes; i++ )
-            std::cout << "Byte " << i << " = " << (int)message->at(i) << ", ";
-        if ( nBytes > 0 )
-            std::cout << "stamp = " << deltatime << std::endl;
+        auto inputPort = static_cast<MidiInputPort*>(userData);
+        auto event = std::make_unique<MidiEvent>(*message, inputPort->mPortNumber);
+        if (inputPort->mDebugOutput)
+            nap::Logger::info(event->getText());
+        inputPort->receiveEvent(std::move(event));
     }
     
     
