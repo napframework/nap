@@ -28,10 +28,10 @@ namespace nap
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
 		// Property: The entity this component creates and keeps in check based on the bounds
-		nap::ObjectPtr<nap::Entity> mCanvasEntity = nullptr;
+		nap::ObjectPtr<Entity> mCanvasEntity = nullptr;
 
 		// Property: The output component this component uses to resolve the canvas size
-		nap::ComponentPtr<nap::LaserOutputComponent> mLaserOutputComponent = nullptr;
+		nap::ObjectPtr<LaserOutputComponent> mLaserOutputComponent;
 	};
 
 
@@ -53,7 +53,7 @@ namespace nap
 
 	private:
 		// Object pointer to laser
-		LaserOutputComponentInstance* mOutput = nullptr;
+		ComponentPtr<LaserOutputComponent> mOutput = { this, &FrustumSyncComponent::mLaserOutputComponent };
 
 		// Object pointer to transform of visualizer
 		TransformComponentInstance* mCanvasTransform;

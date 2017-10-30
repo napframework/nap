@@ -36,7 +36,6 @@ namespace nap
 		mProperties.mSpeed  = getComponent<LineTraceComponent>()->mProperties.mSpeed;
 
 		// Set lines
-		mBlendComponent = getComponent<LineTraceComponent>()->mBlendComponent.get();
 		mTarget = getComponent<LineTraceComponent>()->mTargetLine.get();
 
 		// Create the trace visualize components

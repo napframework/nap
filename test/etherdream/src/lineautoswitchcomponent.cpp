@@ -28,9 +28,6 @@ namespace nap
 
 	bool LineAutoSwitchComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
-		mSelectorOne = getComponent<LineAutoSwitchComponent>()->mSelectionComponentOne.get();
-		mSelectorTwo = getComponent<LineAutoSwitchComponent>()->mSelectionComponentTwo.get();
-		mLineBlender = getComponent<LineAutoSwitchComponent>()->mBlendComponent.get();
 		mRandom = getComponent<LineAutoSwitchComponent>()->mRandom;
 		mPrevBlendValue = mLineBlender->getCurrentBlendValue();
 		return true;

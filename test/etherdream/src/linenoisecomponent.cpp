@@ -32,7 +32,6 @@ namespace nap
 	bool LineNoiseComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
 		// Copy over properties and link to blend component
-		mBlendComponent = getComponent<LineNoiseComponent>()->mBlendComponent.get();
 		mProperties = getComponent<LineNoiseComponent>()->mProperties;
 
 		// Set smooth timing values

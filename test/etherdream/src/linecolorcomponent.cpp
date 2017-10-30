@@ -57,7 +57,6 @@ namespace nap
 	bool LineColorComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
 		// Get necessary objects
-		mBlendComponent = getComponent<LineColorComponent>()->mBlendComponent.get();
 		mLookupImage	= getComponent<LineColorComponent>()->mLookupImage.get();
 
 		// Set start and end uv sample position

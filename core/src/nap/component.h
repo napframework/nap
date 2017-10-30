@@ -76,6 +76,17 @@ namespace nap
         virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
 
 	private:
+		template<class TargetComponentType> friend class ComponentPtr;
+		friend class ResourceManagerService;
+		
+		void addToLinkMap(Component* targetResource, ComponentInstance** targetInstancePtr)
+		{
+			mLinkMap[targetResource].push_back(targetInstancePtr);
+		}
+
+	private:
+		using LinkMap = std::unordered_map<Component*, std::vector<ComponentInstance**>>;
+		LinkMap			mLinkMap;
 		EntityInstance* mEntityInstance;	// The entity this component belongs to
 		Component*		mResource;			// The resource this instance was created from
 	};

@@ -23,13 +23,13 @@ namespace nap
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 		
 		// Property: first selection component
-		ComponentPtr<LineSelectionComponent> mSelectionComponentOne = nullptr;
+		ObjectPtr<LineSelectionComponent> mSelectionComponentOne;
 
 		// Property: second selection component
-		ComponentPtr<LineSelectionComponent> mSelectionComponentTwo = nullptr;
+		ObjectPtr<LineSelectionComponent> mSelectionComponentTwo;
 
 		// Property: blend component
-		ComponentPtr<LineBlendComponent> mBlendComponent = nullptr;
+		ObjectPtr<LineBlendComponent> mBlendComponent;
 
 		// Property: if the line switching is random
 		bool mRandom = false;
@@ -79,9 +79,9 @@ namespace nap
 			Stationary	= 2
 		};
 
-		LineSelectionComponentInstance* mSelectorOne = nullptr;		// First line selection component
-		LineSelectionComponentInstance* mSelectorTwo = nullptr;		// Second line selection component
-		LineBlendComponentInstance* mLineBlender = nullptr;			// Line Blender
+		ComponentPtr<LineSelectionComponent> mSelectorOne	= { this, &LineAutoSwitchComponent::mSelectionComponentOne };		// First line selection component
+		ComponentPtr<LineSelectionComponent> mSelectorTwo	= { this, &LineAutoSwitchComponent::mSelectionComponentTwo };		// Second line selection component
+		ComponentPtr<LineBlendComponent>	mLineBlender	= { this, &LineAutoSwitchComponent::mBlendComponent };				// Line Blender
 		bool mRandom = false;										// If this component randomly picks another line
 		int mNextLine = 0;											// The next line to select (if random is turned off)
 

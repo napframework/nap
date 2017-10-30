@@ -75,7 +75,7 @@ namespace nap
 
 	CameraComponentInstance& FirstPersonControllerInstance::getCameraComponent()
 	{
-		return *getComponent<FirstPersonController>()->mPerspCameraComponent;
+		return *mPerspCameraComponent;
 	}
 
 

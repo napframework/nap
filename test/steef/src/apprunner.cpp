@@ -25,6 +25,8 @@ namespace nap {
 		// GL Service + Window
 		//////////////////////////////////////////////////////////////////////////
 		
+		mInputService = core.getOrCreateService<InputService>();
+
 		// Get resource manager service
 		mResourceManagerService = core.getOrCreateService<nap::ResourceManagerService>();
 		

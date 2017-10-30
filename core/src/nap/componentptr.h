@@ -1,6 +1,6 @@
 #pragma once
 
-#include "instanceptr.h"
+#include "nap/objectptr.h"
 
 namespace nap
 {
@@ -8,74 +8,128 @@ namespace nap
 	class ComponentInstance;
 
 	/**
-	 * Placeholder class with RTTI that enables us to check the type of the pointer. Also see comments in InstancePtr.
-	 */
-	class NAPAPI ComponentPtrBase : public InstancePtrBase
+	* ComponentPtr is used in ComponentInstance classes to point to other ComponentInstance objects directly. ComponentInstances are spawned
+	* from Components at runtime. The ComponentInstance class makes sure that the internal pointer is mapped to the other spawned object.
+	*
+	* The Component of a ComponentInstance must hold a regular ObjectPtr to another Component. when an ComponentPtr is contructed, the user
+	* should provide the mapping to the ObjectPtr in the Component, by providing the pointer to the member. Example:
+	* 
+	* 		class SomeComponent : public Component
+	*		{
+	*			ObjectPtr<OtherComponent> mOtherComponent;
+	*		};
+	*
+	*		class SomeComponentInstance : public ComponentInstance
+	*		{
+	*			ComponentPtr<OtherComponent> mOtherComponent{ this, &SomeComponent::mOtherComponent };
+	*		};
+	*
+	* In the example above, SomeComponentInstance::mOtherComponent will point the instance that is being pointed to by SomeComponent::mOtherComponent.
+	*/
+	template<class TargetComponentType>
+	class ComponentPtr
 	{
-		RTTI_ENABLE(InstancePtrBase)
 	public:
-		ComponentPtrBase() = default;
+		using TargetComponentInstanceType = typename TargetComponentType::InstanceType;
 
-	protected:
-		ComponentPtrBase(Component* resource);
-	};
-
-	/**
-	 * Provides strongly typed interface for components. This class is derived from InstancePtr for two reasons:
-	 * 1) To mix in ComponentPtrBase as a generic base that we can filter on.
-	 * 2) To avoid the need for users to supply the InstanceType manually. The instance type is retrieved from the resource through
-	 *      the InstanceType typedef. This typedef is automatically generated when declaring a component using DECLARE_COMPONENT.
-	 *
-	 * As a summary, this is the entire hierarchy for ComponentPtr the class roles behind it:
-	 *
-	 *		InstancePtrBase											(generic ontyped instance/resource ptr)
-	 *		   	  ^
-	 *		      |
-	 *		ComponentPtrBase										(used for filtering component ptrs using rtti)
-	 *			  ^
-	 *		      |
-	 *		InstancePtr<Resource, Instance, ComponentPtrBase>		(Typed resource/instance interface)
-	 *			  ^
-	 *		      |
-	 *		ComponentPtr<Resource>									(Convenience to avoid instance type in ComponentPtr declarations)
-	 */
-	template<typename RESOURCE_TYPE>
-	class ComponentPtr : public InstancePtr<RESOURCE_TYPE, typename RESOURCE_TYPE::InstanceType, ComponentPtrBase>
-	{
-		using InstancePtrBase = InstancePtr<RESOURCE_TYPE, typename RESOURCE_TYPE::InstanceType, ComponentPtrBase>;
-		RTTI_ENABLE(InstancePtrBase)
-
-	public:
-		ComponentPtr() = default;
-
-		// Regular ptr Ctor
-		ComponentPtr(RESOURCE_TYPE* resource) :
-			InstancePtrBase(resource)
+		template<class SourceComponentType>
+		ComponentPtr(ComponentInstance* sourceComponentInstance, ObjectPtr<TargetComponentType>(SourceComponentType::*componentMemberPointer))
 		{
-		}
-	};
-}
+			SourceComponentType* resource = sourceComponentInstance->getComponent<SourceComponentType>();
+			ObjectPtr<TargetComponentType>& target_component_resource = resource->*componentMemberPointer;
 
-
-/**
- * The following construct is required to support ComponentPtr in RTTR as a regular pointer.
- */
-namespace rttr
-{
-	template<typename T>
-	struct wrapper_mapper<nap::ComponentPtr<T>>
-	{
-		using wrapped_type = T*;
-		using type = nap::ComponentPtr<T>;
-
-		inline static wrapped_type get(const type& obj)
-		{
-			return obj.getResource().get();
+			sourceComponentInstance->addToLinkMap(target_component_resource.get(), (ComponentInstance**)&mInstance);
 		}
 
-		inline static type create(const wrapped_type& value)
+		const TargetComponentInstanceType& operator*() const
 		{
-			return type(value);
+			assert(mInstance != nullptr);
+			return *mInstance;
 		}
+
+		TargetComponentInstanceType& operator*()
+		{
+			assert(mInstance != nullptr);
+			return *mInstance;
+		}
+
+		TargetComponentInstanceType* operator->() const
+		{
+			assert(mInstance != nullptr);
+			return mInstance;
+		}
+
+		TargetComponentInstanceType* operator->()
+		{
+			assert(mInstance != nullptr);
+			return mInstance;
+		}
+
+		bool operator==(const ComponentPtr<TargetComponentType>& other) const
+		{
+			return mInstance == other.mPtr;
+		}
+
+		template<typename OTHER>
+		bool operator==(const ComponentPtr<OTHER>& other) const
+		{
+			return mInstance == other.mPtr;
+		}
+
+		template<typename OTHER>
+		bool operator==(const OTHER* ptr) const
+		{
+			return mInstance == ptr;
+		}
+
+		bool operator!=(const ComponentPtr<TargetComponentType>& other) const
+		{
+			return mInstance != other.mPtr;
+		}
+
+		template<typename OTHER>
+		bool operator!=(const ComponentPtr<OTHER>& other) const
+		{
+			return mInstance != other.mPtr;
+		}
+
+		template<typename OTHER>
+		bool operator!=(const OTHER* ptr) const
+		{
+			return mInstance != ptr;
+		}
+
+		bool operator<(const ComponentPtr<TargetComponentType>& other) const
+		{
+			return mInstance < other.mInstance;
+		}
+
+		bool operator>(const ComponentPtr<TargetComponentType>& other) const
+		{
+			return mInstance > other.mInstance;
+		}
+
+		bool operator<=(const ComponentPtr<TargetComponentType>& other) const
+		{
+			return mInstance <= other.mInstance;
+		}
+
+		bool operator>=(const ComponentPtr<TargetComponentType>& other) const
+		{
+			return mInstance >= other.mInstance;
+		}
+
+		TargetComponentType* get() const
+		{
+			return mInstance;
+		}
+
+		TargetComponentType* get()
+		{
+			return mInstance;
+		}
+
+	private:
+		TargetComponentInstanceType* mInstance = nullptr;
 	};
 }

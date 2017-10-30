@@ -41,7 +41,7 @@ namespace nap
 		DECLARE_COMPONENT(LineModulationComponent, LineModulationComponentInstance)
 	public:
 		// property: link to the component that holds the mesh that we want to color
-		ComponentPtr<nap::LineBlendComponent> mBlendComponent;
+		ObjectPtr<nap::LineBlendComponent> mBlendComponent;
 
 		// property: all modulation settings
 		ModulationProperties mProperties;
@@ -72,7 +72,7 @@ namespace nap
 		ModulationProperties mProperties;
 
 	private:
-		LineBlendComponentInstance* mBlendComponent = nullptr;	// Component that blends the lines
+		ComponentPtr<LineBlendComponent> mBlendComponent = { this, &LineModulationComponent::mBlendComponent }; // Component that blends the lines
 		float mCurrentTime = 0.0f;								// Current time
 		
 		// Smooths frequency over time
