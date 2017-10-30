@@ -15,9 +15,10 @@
 		},
 
 		{
-			"Type": "nap::MidiInputPort",
 			"mID": "irisMidi",
-			"Port": 1
+			"Type": "nap::MidiInputPort",
+			"Port": 2,
+			"EnableDebugOutput": "True"
 		},
 
 		{
@@ -94,10 +95,13 @@
 				},
 
 				{
-					"Type": "nap::PythonScriptComponent",
-					"mID": "script",
-					"Path": "data/audiotest/scripts/audiotest.py"
+					"Type": "nap::MidiInputComponent",
+					"mID": "midiIn",
+					"Channels": [ 0 ],
+					"Ports": [ 1, 2 ],
+					"Types": [ "noteOff", "noteOn" ]
 				}
+
 
 			]
 		}

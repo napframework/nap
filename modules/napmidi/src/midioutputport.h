@@ -9,29 +9,29 @@
 
 namespace nap {
     
-    class NAPAPI MidiInputPort : public rtti::RTTIObject {
+    class NAPAPI MidiOutputPort : public rtti::RTTIObject {
         RTTI_ENABLE(rtti::RTTIObject)
         
     public:
-        MidiInputPort() = default;
-        MidiInputPort(MidiService& service);
-        virtual ~MidiInputPort();
+        MidiOutputPort() = default;
+        MidiOutputPort(MidiService& service);
+        virtual ~MidiOutputPort() = default;
         
         bool init(utility::ErrorState& errorState) override;
         
         MidiService& getService() { return *mService; }
         
         int mPortNumber = 0;
-        bool mDebugOutput = false;
         
-        void receiveEvent(std::unique_ptr<MidiEvent> event) { mService->enqueueEvent(std::move(event)); }
+        void sendEvent(const MidiEvent& event);
         
     private:
-        RtMidiIn midiIn;
+        RtMidiOut midiOut;
         MidiService* mService = nullptr;
+        std::vector<unsigned char> outputData;
     };
     
     // Object creator used for constructing the the OSC receiver
-    using MidiInputPortObjectCreator = rtti::ObjectCreator<MidiInputPort, MidiService>;
+    using MidiOutputPortObjectCreator = rtti::ObjectCreator<MidiOutputPort, MidiService>;
     
 }

@@ -13,7 +13,7 @@ ${CMAKE_CURRENT_LIST_DIR}/../../rtmidi
 set(RTMIDI_INCLUDE_DIR ${RTMIDI_DIR})
 
 if(WIN32)
-    set(RTMIDI_LIBRARIES ${RTMIDI_DIR}/bin/msvc/librtmidi.lib)
+    set(RTMIDI_LIBRARIES ${RTMIDI_DIR}/bin/msvc/rtmidi.lib)
 elseif(APPLE)
     set(RTMIDI_LIBRARIES ${RTMIDI_DIR}/bin/osx/librtmidi.a)
 else()
