@@ -79,10 +79,7 @@ namespace nap
 		template<class TargetComponentType> friend class ComponentPtr;
 		friend class ResourceManagerService;
 		
-		void addToLinkMap(Component* targetResource, ComponentInstance** targetInstancePtr)
-		{
-			mLinkMap[targetResource].push_back(targetInstancePtr);
-		}
+		void addToLinkMap(Component* targetResource, ComponentInstance** targetInstancePtr);
 
 	private:
 		using LinkMap = std::unordered_map<Component*, std::vector<ComponentInstance**>>;
