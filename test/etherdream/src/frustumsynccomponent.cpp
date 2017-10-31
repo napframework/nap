@@ -21,7 +21,7 @@ namespace nap
 	{
 		FrustumSyncComponent* resource = getComponent<FrustumSyncComponent>();
 
-		ResourceManagerService& resource_manager = *getEntityInstance()->getCore()->getService<nap::ResourceManagerService>();
+		ResourceManager& resource_manager = *getEntityInstance()->getCore()->getResourceManager();
 		
 		// Create frustrum visualizer
 		auto laser_draw_entity = resource_manager.createEntity(*(resource->mCanvasEntity), entityCreationParams, errorState);

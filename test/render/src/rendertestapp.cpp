@@ -1,81 +1,48 @@
-#include "apprunner.h"
+#include "rendertestapp.h"
 
 // Nap includes
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <perspcameracomponent.h>
 
-namespace nap {
-	
-	/**
-	 * Constructor
-	 */
-	AppRunner::AppRunner() { }
-	
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTestApp)
+	RTTI_CONSTRUCTOR(nap::Core&)
+RTTI_END_CLASS
 
+namespace nap 
+{
 	/**
 	 * Initialize all the resources and instances used for drawing
 	 * slowly migrating all functionality to nap
 	 */
-	bool AppRunner::init(Core& core)
-	{
-		core.initialize();
-		
-		//////////////////////////////////////////////////////////////////////////
-		// GL Service + Window
-		//////////////////////////////////////////////////////////////////////////
-		
-		// Get resource manager service
-		mResourceManagerService = core.getOrCreateService<ResourceManagerService>();
-		
+	bool RenderTestApp::init(utility::ErrorState& error)
+	{		
 		// Create render service
-		mRenderService = core.getOrCreateService<RenderService>();
-		
-		utility::ErrorState error;
-		if (!mRenderService->init(error))
+		mRenderService = getCore().getService<RenderService>();		
+		mInputService  = getCore().getService<InputService>();
+		mSceneService  = getCore().getService<SceneService>();
+
+		// Get resource manager and load
+		mResourceManager = getCore().getResourceManager();
+		if (!mResourceManager->loadFile("data/rendertest/objects.json", error))
 		{
-			Logger::fatal(error.toString());
+			Logger::fatal("Unable to deserialize resources: \n %s", error.toString().c_str());
 			return false;
 		}
 		
-		Logger::info("initialized render service: %s", mRenderService->getTypeName().c_str());
+		mRenderWindows.push_back(mResourceManager->findObject<RenderWindow>("Window0"));
+		mRenderWindows.push_back(mResourceManager->findObject<RenderWindow>("Window1"));
 		
-		//////////////////////////////////////////////////////////////////////////
-		// Input
-		//////////////////////////////////////////////////////////////////////////
+		mTextureRenderTarget		= mResourceManager->findObject<RenderTarget>("PlaneRenderTarget");
 		
-		mInputService = core.getOrCreateService<InputService>();
-		
-		//////////////////////////////////////////////////////////////////////////
-		// Scene
-		//////////////////////////////////////////////////////////////////////////
-		mSceneService = core.getOrCreateService<SceneService>();
-		
-		//////////////////////////////////////////////////////////////////////////
-		// Resources
-		//////////////////////////////////////////////////////////////////////////
-		
-		utility::ErrorState errorState;
-		
-		if (!mResourceManagerService->loadFile("data/rendertest/objects.json", errorState))
-		{
-			Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
-			return false;
-		}
-		
-		mRenderWindows.push_back(mResourceManagerService->findObject<RenderWindow>("Window0"));
-		mRenderWindows.push_back(mResourceManagerService->findObject<RenderWindow>("Window1"));
-		
-		mTextureRenderTarget		= mResourceManagerService->findObject<RenderTarget>("PlaneRenderTarget");
-		
-		mPigEntity					= mResourceManagerService->findEntity("PigEntity");
-		mRotatingPlaneEntity		= mResourceManagerService->findEntity("RotatingPlaneEntity");
-		mPlaneEntity				= mResourceManagerService->findEntity("PlaneEntity");
-		mWorldEntity				= mResourceManagerService->findEntity("WorldEntity");
-		mCameraEntityLeft			= mResourceManagerService->findEntity("CameraEntityLeft");
-		mCameraEntityRight			= mResourceManagerService->findEntity("CameraEntityRight");
-		mSplitCameraEntity			= mResourceManagerService->findEntity("SplitCameraEntity");
-		mDefaultInputRouter			= mResourceManagerService->findEntity("DefaultInputRouterEntity");
+		mPigEntity					= mResourceManager->findEntity("PigEntity");
+		mRotatingPlaneEntity		= mResourceManager->findEntity("RotatingPlaneEntity");
+		mPlaneEntity				= mResourceManager->findEntity("PlaneEntity");
+		mWorldEntity				= mResourceManager->findEntity("WorldEntity");
+		mCameraEntityLeft			= mResourceManager->findEntity("CameraEntityLeft");
+		mCameraEntityRight			= mResourceManager->findEntity("CameraEntityRight");
+		mSplitCameraEntity			= mResourceManager->findEntity("SplitCameraEntity");
+		mDefaultInputRouter			= mResourceManager->findEntity("DefaultInputRouterEntity");
 		
 		// Set render states
 		nap::RenderState& render_state = mRenderService->getRenderState();
@@ -88,7 +55,7 @@ namespace nap {
 	
 	
 	// Called when the window is updating
-	void AppRunner::update()
+	void RenderTestApp::update(double deltaTime)
 	{
 		DefaultInputRouter& input_router = mDefaultInputRouter->getComponent<DefaultInputRouterComponentInstance>().mInputRouter;
 		
@@ -110,24 +77,6 @@ namespace nap {
 			mInputService->processEvents(*window, input_router, entities);
 		}
 		
-		// Process events for all windows
-		mRenderService->processEvents();
-		
-		// Need to make primary window active before reloading files, as renderer resources need to be created in that context
-		mRenderService->getPrimaryWindow().makeCurrent();
-		mResourceManagerService->checkForFileChanges();
-		
-		// Update model transform
-		float elapsed_time = mRenderService->getCore().getElapsedTime();
-		static float prev_elapsed_time = elapsed_time;
-		float delta_time = prev_elapsed_time - elapsed_time;
-		if (delta_time < 0.01f)
-		{
-			delta_time = 0.01f;
-		}
-		
-		mResourceManagerService->getRootEntity().update(delta_time);
-		
 		// Retrieve source (resource) mesh data
 		nap::IMesh& mesh = mPlaneEntity->getComponent<RenderableMeshComponentInstance>().getMesh();
 		nap::Mesh* rtti_mesh = rtti_cast<Mesh>(&mesh);
@@ -143,7 +92,7 @@ namespace nap {
 		// Sine wave over our quad
 		for (int index = 0; index != src_positions.size() - 1; ++index)
 		{
-			float s = sin(elapsed_time + (float)index * 0.2f);
+			float s = sin(mRenderService->getCore().getElapsedTime() + (float)index * 0.2f);
 			dst_positions[index] = src_positions[index] * glm::vec3(s,s,s);
 		}
 		
@@ -154,17 +103,13 @@ namespace nap {
 		{
 			Logger::fatal(errorState.toString());
 		}
-		
-		// Update the scene
-		mSceneService->update();
 	}
 	
 	
 	// Called when the window is going to render
-	void AppRunner::render()
+	void RenderTestApp::render()
 	{
 		mRenderService->destroyGLContextResources(mRenderWindows);
-		
 		
 		// Render offscreen surface(s)
 		{
@@ -241,32 +186,39 @@ namespace nap {
 	/**
 	 * Handles the window event
 	 */
-	void AppRunner::handleWindowEvent(const WindowEvent& windowEvent)
+	void RenderTestApp::handleWindowEvent(const WindowEvent& windowEvent)
 	{
 		
 	}
 	
 	
-	void AppRunner::registerWindowEvent(WindowEventPtr windowEvent) 
+	void RenderTestApp::windowMessageReceived(WindowEventPtr windowEvent)
 	{
 		mRenderService->addEvent(std::move(windowEvent));
 	}
 	
 	
-	void AppRunner::registerInputEvent(InputEventPtr inputEvent)
+	void RenderTestApp::inputMessageReceived(InputEventPtr inputEvent)
 	{
+		// If we pressed escape, quit the loop
+		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
+		{
+			nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(inputEvent.get());
+			if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
+				quit(0);
+
+		}
 		mInputService->addEvent(std::move(inputEvent));
 	}
 
 	
-	void AppRunner::setWindowFullscreen(std::string windowIdentifier, bool fullscreen) 
+	void RenderTestApp::setWindowFullscreen(std::string windowIdentifier, bool fullscreen) 
 	{
-		mResourceManagerService->findObject<RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
+		mResourceManager->findObject<RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
 	}
 
 	
-	void AppRunner::shutdown() 
+	void RenderTestApp::shutdown() 
 	{
-		mRenderService->shutdown();
 	}
 }
