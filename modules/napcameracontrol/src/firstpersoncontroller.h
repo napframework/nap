@@ -38,7 +38,7 @@ namespace nap
 		float mMovementSpeed	= 3.0f;		// The speed with which to move
 		float mRotateSpeed		= 1.0f;		// The speed with which to rotate
 
-		ObjectPtr<nap::PerspCameraComponent>	mPerspCameraComponent;		// Camera that we're controlling
+		ComponentPtr<nap::PerspCameraComponent>	mPerspCameraComponent;		// Camera that we're controlling
 	};
 
 
@@ -113,7 +113,7 @@ namespace nap
 		void onMouseMove(const PointerMoveEvent& pointerMoveEvent);
 
 	private:
-		ComponentPtr<PerspCameraComponent> mPerspCameraComponent = { this, &FirstPersonController::mPerspCameraComponent };
+		ComponentInstancePtr<PerspCameraComponent> mPerspCameraComponent = { this, &FirstPersonController::mPerspCameraComponent };
 
 		TransformComponentInstance*		mTransformComponent = nullptr;		// The transform component used to move the entity
 		bool							mMoveForward		= false;		// Whether we're moving forward

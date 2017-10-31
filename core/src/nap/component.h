@@ -76,7 +76,7 @@ namespace nap
         virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
 
 	private:
-		template<class TargetComponentType> friend class ComponentPtr;
+		template<class TargetComponentType> friend class ComponentInstancePtr;
 		friend class ResourceManagerService;
 		
 		void addToLinkMap(Component* targetResource, ComponentInstance** targetInstancePtr);

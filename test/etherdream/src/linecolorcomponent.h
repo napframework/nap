@@ -26,7 +26,7 @@ namespace nap
 		glm::vec4 mColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 		// property: link to the component that holds the mesh that we want to color
-		ObjectPtr<nap::LineBlendComponent> mBlendComponent;
+		ComponentPtr<nap::LineBlendComponent> mBlendComponent;
 
 		// property: link to the image component that holds the lookup image
 		ObjectPtr<nap::Image> mLookupImage;
@@ -154,7 +154,7 @@ namespace nap
 		void getColor(const glm::vec2& uvPos, glm::vec3& outColor);
 
 	private:
-		ComponentPtr<LineBlendComponent> mBlendComponent = { this, &LineColorComponent::mBlendComponent };		// Holds the line we want to color
+		ComponentInstancePtr<LineBlendComponent> mBlendComponent = { this, &LineColorComponent::mBlendComponent };		// Holds the line we want to color
 		Image* mLookupImage = nullptr;								// Image used for color lookup
 		glm::vec2 mStartPosition = { 0.5f, 0.5f };					// Start point lookup in uv space
 		glm::vec2 mEndPosition = { 0.5f, 0.5f };					// End point lookup in uv space

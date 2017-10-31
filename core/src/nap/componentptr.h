@@ -7,11 +7,58 @@ namespace nap
 	class Component;
 	class ComponentInstance;
 
+	class ComponentPtrBase
+	{
+		RTTI_ENABLE();
+
+	public:
+		static std::string translateTargetID(const std::string& targetID);
+		virtual void setValue(const std::string& path, rtti::RTTIObject* pointer) = 0;
+
+	protected:
+
+	};
+
+	template<class ComponentType>
+	class ComponentPtr : public ComponentPtrBase
+	{
+		RTTI_ENABLE(ComponentPtrBase)
+
+	public:
+		ComponentPtr() = default;
+
+		ComponentPtr(ComponentType* component) :
+			mComponentPtr(component)
+		{
+		}
+
+		ComponentType* get()
+		{
+			return mComponentPtr.get();
+		}
+
+		ComponentType* get() const
+		{
+			return mComponentPtr.get();
+		}
+
+		virtual void setValue(const std::string& path, rtti::RTTIObject* pointer) override
+		{
+			mPath = path;
+			mComponentPtr = rtti_cast<ComponentType>(pointer);
+		}
+
+	private:
+		ObjectPtr<ComponentType>	mComponentPtr;
+		std::string					mPath;
+	};
+
+
 	/**
 	* ComponentPtr is used in ComponentInstance classes to point to other ComponentInstance objects directly. ComponentInstances are spawned
 	* from Components at runtime. The ComponentInstance class makes sure that the internal pointer is mapped to the other spawned object.
 	*
-	* The Component of a ComponentInstance must hold a regular ObjectPtr to another Component. when an ComponentPtr is contructed, the user
+	* The Component of a ComponentInstance must hold a regular ObjectPtr to another Component. when an ComponentPtr is constructed, the user
 	* should provide the mapping to the ObjectPtr in the Component, by providing the pointer to the member. Example:
 	* 
 	* 		class SomeComponent : public Component
@@ -27,16 +74,16 @@ namespace nap
 	* In the example above, SomeComponentInstance::mOtherComponent will point the instance that is being pointed to by SomeComponent::mOtherComponent.
 	*/
 	template<class TargetComponentType>
-	class ComponentPtr
+	class ComponentInstancePtr
 	{
 	public:
 		using TargetComponentInstanceType = typename TargetComponentType::InstanceType;
 
 		template<class SourceComponentType>
-		ComponentPtr(ComponentInstance* sourceComponentInstance, ObjectPtr<TargetComponentType>(SourceComponentType::*componentMemberPointer))
+		ComponentInstancePtr(ComponentInstance* sourceComponentInstance, ComponentPtr<TargetComponentType>(SourceComponentType::*componentMemberPointer))
 		{
 			SourceComponentType* resource = sourceComponentInstance->getComponent<SourceComponentType>();
-			ObjectPtr<TargetComponentType>& target_component_resource = resource->*componentMemberPointer;
+			ComponentPtr<TargetComponentType>& target_component_resource = resource->*componentMemberPointer;
 
 			sourceComponentInstance->addToLinkMap(target_component_resource.get(), (ComponentInstance**)&mInstance);
 		}
@@ -65,13 +112,13 @@ namespace nap
 			return mInstance;
 		}
 
-		bool operator==(const ComponentPtr<TargetComponentType>& other) const
+		bool operator==(const ComponentInstancePtr<TargetComponentType>& other) const
 		{
 			return mInstance == other.mPtr;
 		}
 
 		template<typename OTHER>
-		bool operator==(const ComponentPtr<OTHER>& other) const
+		bool operator==(const ComponentInstancePtr<OTHER>& other) const
 		{
 			return mInstance == other.mPtr;
 		}
@@ -82,13 +129,13 @@ namespace nap
 			return mInstance == ptr;
 		}
 
-		bool operator!=(const ComponentPtr<TargetComponentType>& other) const
+		bool operator!=(const ComponentInstancePtr<TargetComponentType>& other) const
 		{
 			return mInstance != other.mPtr;
 		}
 
 		template<typename OTHER>
-		bool operator!=(const ComponentPtr<OTHER>& other) const
+		bool operator!=(const ComponentInstancePtr<OTHER>& other) const
 		{
 			return mInstance != other.mPtr;
 		}
@@ -99,22 +146,22 @@ namespace nap
 			return mInstance != ptr;
 		}
 
-		bool operator<(const ComponentPtr<TargetComponentType>& other) const
+		bool operator<(const ComponentInstancePtr<TargetComponentType>& other) const
 		{
 			return mInstance < other.mInstance;
 		}
 
-		bool operator>(const ComponentPtr<TargetComponentType>& other) const
+		bool operator>(const ComponentInstancePtr<TargetComponentType>& other) const
 		{
 			return mInstance > other.mInstance;
 		}
 
-		bool operator<=(const ComponentPtr<TargetComponentType>& other) const
+		bool operator<=(const ComponentInstancePtr<TargetComponentType>& other) const
 		{
 			return mInstance <= other.mInstance;
 		}
 
-		bool operator>=(const ComponentPtr<TargetComponentType>& other) const
+		bool operator>=(const ComponentInstancePtr<TargetComponentType>& other) const
 		{
 			return mInstance >= other.mInstance;
 		}
@@ -131,5 +178,28 @@ namespace nap
 
 	private:
 		TargetComponentInstanceType* mInstance = nullptr;
+	};
+}
+
+/**
+ * The following construct is required to support EntityPtr in RTTR as a regular pointer.
+ */
+namespace rttr
+{
+	template<typename T>
+	struct wrapper_mapper<nap::ComponentPtr<T>>
+	{
+		using wrapped_type = T*;
+		using type = nap::ComponentPtr<T>;
+
+		inline static wrapped_type get(const type& obj)
+		{
+			return obj.get();
+		}
+
+		inline static type create(const wrapped_type& value)
+		{
+			return nap::ComponentPtr<T>(value);
+		}
 	};
 }

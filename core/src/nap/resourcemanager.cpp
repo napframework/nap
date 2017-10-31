@@ -243,7 +243,7 @@ namespace nap
 
 	ResourceManagerService::ResourceManagerService() :
 		mDirectoryWatcher(std::make_unique<DirectoryWatcher>())
-	{ 
+	{
 	}
 
 
@@ -328,19 +328,23 @@ namespace nap
 	{
 		for (const UnresolvedPointer& unresolved_pointer : unresolvedPointers)
 		{
+			rtti::ResolvedRTTIPath resolved_path;
+			if (!errorState.check(unresolved_pointer.mRTTIPath.resolve(unresolved_pointer.mObject, resolved_path), "Failed to resolve RTTIPath %s", unresolved_pointer.mRTTIPath.toString().c_str()))
+				return false;
+
+			std::string target_id = unresolved_pointer.mTargetID;			
+			if (resolved_path.getType().is_derived_from(RTTI_OF(ComponentPtrBase)))
+				target_id = ComponentPtrBase::translateTargetID(target_id);
+
 			// Objects in objectsToUpdate have preference over the manager's objects
 			RTTIObject* target_object = nullptr;
-            auto object_to_update = objectsToUpdate.find(unresolved_pointer.mTargetID);
+            auto object_to_update = objectsToUpdate.find(target_id);
 			if (object_to_update == objectsToUpdate.end())
-				target_object = findObject(unresolved_pointer.mTargetID).get();
+				target_object = findObject(target_id).get();
 			else
 				target_object = object_to_update->second.get();
 
-			if (!errorState.check(target_object != nullptr, "Unable to resolve link to object %s from attribute %s", unresolved_pointer.mTargetID.c_str(), unresolved_pointer.mRTTIPath.toString().c_str()))
-				return false;
-
-			rtti::ResolvedRTTIPath resolved_path;
-			if (!errorState.check(unresolved_pointer.mRTTIPath.resolve(unresolved_pointer.mObject, resolved_path), "Failed to resolve RTTIPath %s", unresolved_pointer.mRTTIPath.toString().c_str()))
+			if (!errorState.check(target_object != nullptr, "Unable to resolve link to object %s from attribute %s", target_id.c_str(), unresolved_pointer.mRTTIPath.toString().c_str()))
 				return false;
 
 			rtti::TypeInfo resolved_path_type = resolved_path.getType();
@@ -353,7 +357,22 @@ namespace nap
 			}
 
 			assert(actual_type.is_pointer());
-			bool succeeded = resolved_path.setValue(target_object);
+
+			rtti::Variant target_value = target_object;
+			if (resolved_path.getType().is_derived_from(RTTI_OF(ComponentPtrBase)))
+			{
+				// RTTR does not correctly support casting between base/derived types (in both directions), if one of the types is a 'wrapper' type (i.e. ComponentPtr) and the other is not (i.e. ComponentPtrBase)
+				// So, while we can get the value of the pointer as a ComponentPtrBase, RTTR can no longer convert back to the specific ComponentPtr<T> that is used in order to set the value on the property again.
+				//
+				// To work around this we use the get_value function on the rtti::Variant we get back from getValue. This function gives you back a *const ref* to the value stored *inside* of the variant (not the original memory location)
+				// So, if we can modify that const ref, we're *actually* modifying the value stored inside the variant, which means the variant always stays of the correct type (ComponentPtr<T>), which means we can
+				// re-use that same variant to call setValue again. However, since get_value returns a *const ref*, we need to cast the constness aways, since we want to fill in the instance pointer.
+				target_value = resolved_path.getValue();
+				ComponentPtrBase& component_ptr = const_cast<ComponentPtrBase&>(target_value.get_value<ComponentPtrBase>());
+				component_ptr.setValue(unresolved_pointer.mTargetID, target_object);
+			}
+
+			bool succeeded = resolved_path.setValue(target_value);
 			if (!errorState.check(succeeded, "Failed to resolve pointer for: %s", target_object->mID.c_str()))
 				return false;
 		}
