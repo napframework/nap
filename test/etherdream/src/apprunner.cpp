@@ -72,7 +72,7 @@ namespace nap
 		if (!mResourceManagerService->loadFile("data/etherdream/etherdream.json", errorState))
 		{
 			Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
-			return false;
+			return false; 
 		}
 		glFlush();
 

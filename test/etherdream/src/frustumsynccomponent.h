@@ -27,9 +27,6 @@ namespace nap
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		// Property: The entity this component creates and keeps in check based on the bounds
-		nap::ObjectPtr<Entity> mCanvasEntity = nullptr;
-
 		// Property: The output component this component uses to resolve the canvas size
 		nap::ObjectPtr<LaserOutputComponent> mLaserOutputComponent;
 	};
