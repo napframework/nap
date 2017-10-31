@@ -45,7 +45,7 @@ namespace nap
 		DECLARE_COMPONENT(UIInputRouterComponent, UIInputRouterComponentInstance)
 
 	public:
-		ObjectPtr<OrthoCameraComponent> mCameraComponent;		// Pointer to camera entity resource and instance
+		ComponentPtr<OrthoCameraComponent> mCameraComponent;		// Pointer to camera entity resource and instance
 	};
 
 	/**
@@ -69,7 +69,7 @@ namespace nap
 		{
 		}
 		
-		ComponentPtr<OrthoCameraComponent> mCameraComponent { this, &UIInputRouterComponent::mCameraComponent };
+		ComponentInstancePtr<OrthoCameraComponent> mCameraComponent { this, &UIInputRouterComponent::mCameraComponent };
 		UIInputRouter mInputRouter;		// UI input router
 	};
 }

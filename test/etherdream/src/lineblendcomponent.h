@@ -30,10 +30,10 @@ namespace nap
 		float mBlendSpeed = 0.0f;
 
 		// property: Link to selection component one
-		ObjectPtr<LineSelectionComponent> mSelectionComponentOne;
+		ComponentPtr<LineSelectionComponent> mSelectionComponentOne;
 
 		// property: Link to selection component two
-		ObjectPtr<LineSelectionComponent> mSelectionComponentTwo;
+		ComponentPtr<LineSelectionComponent> mSelectionComponentTwo;
 
 		// property: link to the mesh that we want to blend in between
 		ObjectPtr<nap::PolyLine> mTarget;
@@ -96,8 +96,8 @@ namespace nap
 		// Current blend value
 		float mCurrentBlendValue = 0.0f;
 
-		ComponentPtr<LineSelectionComponent> mSelectorOne = { this, &LineBlendComponent::mSelectionComponentOne };		// First line selection component
-		ComponentPtr<LineSelectionComponent>	mSelectorTwo = { this, &LineBlendComponent::mSelectionComponentTwo };		// Second line selection component
+		ComponentInstancePtr<LineSelectionComponent> mSelectorOne = { this, &LineBlendComponent::mSelectionComponentOne };		// First line selection component
+		ComponentInstancePtr<LineSelectionComponent>	mSelectorTwo = { this, &LineBlendComponent::mSelectionComponentTwo };		// Second line selection component
 
 		std::map<float, int>			mDistancesLineOne;			// Distance values associated with line 1
 		std::map<float, int>			mDistancesLineTwo;			// Distance values associated with line 2
