@@ -71,9 +71,6 @@ namespace nap
 		 * in nap events and forwards those to the default nap application
 		 */
 		virtual void process() override;
-
-	private:
-		opengl::Event mEvent;
 	};
 
 

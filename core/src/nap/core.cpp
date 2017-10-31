@@ -71,13 +71,13 @@ namespace nap
 	}
 
 
-	bool Core::initializeServices(utility::ErrorState& error)
+	bool Core::initializeServices(utility::ErrorState& errorState)
 	{
 		std::vector<Service*> objects;
 		for (const auto& service : mServices)
 		{
 			nap::Logger::info("initializing service: %s", service->getTypeName().c_str());
-			if (!service->init(error))
+			if (!service->init(errorState))
 				return false;
 		}
 		return true;
@@ -148,7 +148,7 @@ namespace nap
 	}
 
 
-	bool Core::createServices(utility::ErrorState& error)
+	bool Core::createServices(utility::ErrorState& errorState)
 	{
 		// First create and add all the services (unsorted)
 		std::vector<Service*> services;
@@ -158,7 +158,7 @@ namespace nap
 				continue;
 
 			// Create the service
-			if (!addService(service.mService, services, error))
+			if (!addService(service.mService, services, errorState))
 				return false;
 		}
 
@@ -169,10 +169,10 @@ namespace nap
 		bool success = graph.build(services, [&](Service* service)
 		{
 			return ServiceObjectGraphItem::create(service, &services);
-		}, error);
+		}, errorState);
 
 		// Make sure the graph was successfully build
-		if (!error.check(success, "unable to build service dependency graph"))
+		if (!errorState.check(success, "unable to build service dependency graph"))
 			return false;
 
 		// Add services in right order
@@ -207,7 +207,7 @@ namespace nap
 
 
 	// Add a new service
-	bool Core::addService(const rtti::TypeInfo& type, std::vector<Service*>& outServices, utility::ErrorState& error)
+	bool Core::addService(const rtti::TypeInfo& type, std::vector<Service*>& outServices, utility::ErrorState& errorState)
 	{
         assert(type.is_valid());
 		assert(type.can_create_instance());
@@ -220,7 +220,7 @@ namespace nap
 		});
 
 		bool new_service = found_service == outServices.end();
-		if (!error.check(new_service, "can't add service of type: %s, service already exists", type.get_name().data()))
+		if (!errorState.check(new_service, "can't add service of type: %s, service already exists", type.get_name().data()))
 			return false;
 
 		// Add service

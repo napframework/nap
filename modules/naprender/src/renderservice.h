@@ -183,7 +183,7 @@ namespace nap
 		/**
 		 * Register dependencies, render module depends on scene
 		 */
-		virtual void getDependencies(std::vector<rtti::TypeInfo>& dependencies) override;
+		virtual void getDependentServices(std::vector<rtti::TypeInfo>& dependencies) override;
 
 		/**
 		* Sets the renderer, the service will own the renderer

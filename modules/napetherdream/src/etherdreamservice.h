@@ -40,7 +40,7 @@ namespace nap
 		/**
 		 *	This service depends on scene and render
 		 */
-		virtual void getDependencies(std::vector<rtti::TypeInfo>& dependencies) override;
+		virtual void getDependentServices(std::vector<rtti::TypeInfo>& dependencies) override;
 
 		/**
 		* Initializes the etherdream library.

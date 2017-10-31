@@ -55,10 +55,10 @@ namespace nap
 		/**
 		 * Override this function to register service dependencies
 		 * A service that depends on another service is initialized after all it's associated dependencies
-		 * This will ensure correct order of initialization and update calls
+		 * This will ensure correct order of initialization, update calls and shutdown of all services
 		 * @param dependencies rtti information of the services this service depends on
 		 */
-		virtual void getDependencies(std::vector<rtti::TypeInfo>& dependencies)			{ }
+		virtual void getDependentServices(std::vector<rtti::TypeInfo>& dependencies)			{ }
 
 		/**
 		 * Invoked when the service has been constructed and Core is available.

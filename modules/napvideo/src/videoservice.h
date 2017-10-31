@@ -23,7 +23,7 @@ namespace nap
 
 	protected:
 		// This service depends on render and scene
-		virtual void getDependencies(std::vector<rtti::TypeInfo>& dependencies) override;
+		virtual void getDependentServices(std::vector<rtti::TypeInfo>& dependencies) override;
 
 		/**
 		* Initializes the video service

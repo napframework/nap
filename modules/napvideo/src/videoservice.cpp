@@ -23,7 +23,7 @@ namespace nap
 	}
 
 
-	void VideoService::getDependencies(std::vector<rtti::TypeInfo>& dependencies)
+	void VideoService::getDependentServices(std::vector<rtti::TypeInfo>& dependencies)
 	{
 		dependencies.emplace_back(RTTI_OF(SceneService));
 		dependencies.emplace_back(RTTI_OF(RenderService));

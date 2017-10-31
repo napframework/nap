@@ -49,7 +49,7 @@ namespace nap
 	}
 
 
-	void EtherDreamService::getDependencies(std::vector<rtti::TypeInfo>& dependencies)
+	void EtherDreamService::getDependentServices(std::vector<rtti::TypeInfo>& dependencies)
 	{
 		dependencies.emplace_back(RTTI_OF(SceneService));
 		dependencies.emplace_back(RTTI_OF(RenderService));
