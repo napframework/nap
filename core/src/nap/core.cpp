@@ -4,6 +4,7 @@
 #include "logger.h"
 #include "serviceobjectgraphitem.h"
 #include "objectgraph.h"
+#include "fileutils.h"
 
 // External Includes
 #include <rtti/pythonmodule.h>
@@ -49,7 +50,14 @@ namespace nap
 	bool Core::initializeEngine(utility::ErrorState& error)
 	{ 
 		// Load all modules
-		mModuleManager.loadModules();
+		// TODO: This should be correctly resolved, ie: the dll's should always
+		// be in the executable directory
+#ifdef _WIN32
+		mModuleManager.loadModules(nap::getExecutableDir());
+#else
+		std::string exe_dir = "../../lib/" + nap::getFileName(nap::getExecutableDir());
+		mModuleManager.loadModules(exe_dir);
+#endif // _WIN32
 
 		// Create the various services based on their dependencies
 		if (!createServices(error))
