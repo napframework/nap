@@ -11,12 +11,11 @@ namespace nap
 	{
 		RTTI_ENABLE();
 
-	public:
+	private:
+		friend class ResourceManagerService;
+
 		static std::string translateTargetID(const std::string& targetID);
 		virtual void setValue(const std::string& path, rtti::RTTIObject* pointer) = 0;
-
-	protected:
-
 	};
 
 	template<class ComponentType>
@@ -28,28 +27,118 @@ namespace nap
 		ComponentPtr() = default;
 
 		ComponentPtr(ComponentType* component) :
-			mComponentPtr(component)
+			mResource(component)
 		{
 		}
 
-		ComponentType* get()
-		{
-			return mComponentPtr.get();
-		}
-
-		ComponentType* get() const
-		{
-			return mComponentPtr.get();
-		}
+		const std::string& getInstancePath() const { return mPath; }
 
 		virtual void setValue(const std::string& path, rtti::RTTIObject* pointer) override
 		{
 			mPath = path;
-			mComponentPtr = rtti_cast<ComponentType>(pointer);
+			mResource = rtti_cast<ComponentType>(pointer);
+		}
+
+		const ComponentType& operator*() const
+		{
+			assert(mResource != nullptr);
+			return *mResource;
+		}
+
+		ComponentType& operator*()
+		{
+			assert(mResource != nullptr);
+			return *mResource;
+		}
+
+		ComponentType* operator->() const
+		{
+			assert(mResource != nullptr);
+			return mResource;
+		}
+
+		ComponentType* operator->()
+		{
+			assert(mResource != nullptr);
+			return mResource;
+		}
+
+		bool operator==(const ComponentPtr<ComponentType>& other) const
+		{
+			return mResource == other.mResource;
+		}
+
+		template<typename OTHER>
+		bool operator==(const ComponentPtr<OTHER>& other) const
+		{
+			return mResource == other.mResource;
+		}
+
+		template<typename OTHER>
+		bool operator==(const OTHER* ptr) const
+		{
+			return mResource == ptr;
+		}
+
+		bool operator==(std::nullptr_t) const
+		{
+			return mResource == nullptr;
+		}
+
+		bool operator!=(const ComponentPtr<ComponentType>& other) const
+		{
+			return mResource != other.mResource;
+		}
+
+		template<typename OTHER>
+		bool operator!=(const ComponentPtr<OTHER>& other) const
+		{
+			return mResource != other.mResource;
+		}
+
+		template<typename OTHER>
+		bool operator!=(const OTHER* ptr) const
+		{
+			return mResource != ptr;
+		}
+
+		bool operator!=(std::nullptr_t) const
+		{
+			return mResource != nullptr;
+		}
+
+		bool operator<(const ComponentPtr<ComponentType>& other) const
+		{
+			return mResource < other.mResource;
+		}
+
+		bool operator>(const ComponentPtr<ComponentType>& other) const
+		{
+			return mResource > other.mResource;
+		}
+
+		bool operator<=(const ComponentPtr<ComponentType>& other) const
+		{
+			return mResource <= other.mResource;
+		}
+
+		bool operator>=(const ComponentPtr<ComponentType>& other) const
+		{
+			return mResource >= other.mResource;
+		}
+
+		ComponentType* get() const
+		{
+			return mResource.get();
+		}
+
+		ComponentType* get()
+		{
+			return mResource.get();
 		}
 
 	private:
-		ObjectPtr<ComponentType>	mComponentPtr;
+		ObjectPtr<ComponentType>	mResource;
 		std::string					mPath;
 	};
 
@@ -85,7 +174,7 @@ namespace nap
 			SourceComponentType* resource = sourceComponentInstance->getComponent<SourceComponentType>();
 			ComponentPtr<TargetComponentType>& target_component_resource = resource->*componentMemberPointer;
 
-			sourceComponentInstance->addToLinkMap(target_component_resource.get(), (ComponentInstance**)&mInstance);
+			sourceComponentInstance->addToLinkMap(target_component_resource.get(), target_component_resource.getInstancePath(), (ComponentInstance**)&mInstance);
 		}
 
 		const TargetComponentInstanceType& operator*() const
@@ -129,6 +218,11 @@ namespace nap
 			return mInstance == ptr;
 		}
 
+		bool operator==(std::nullptr_t) const
+		{
+			return mInstance == nullptr;
+		}
+
 		bool operator!=(const ComponentInstancePtr<TargetComponentType>& other) const
 		{
 			return mInstance != other.mPtr;
@@ -144,6 +238,11 @@ namespace nap
 		bool operator!=(const OTHER* ptr) const
 		{
 			return mInstance != ptr;
+		}
+
+		bool operator!=(std::nullptr_t) const
+		{
+			return mInstance != nullptr;
 		}
 
 		bool operator<(const ComponentInstancePtr<TargetComponentType>& other) const

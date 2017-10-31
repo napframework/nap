@@ -79,10 +79,16 @@ namespace nap
 		template<class TargetComponentType> friend class ComponentInstancePtr;
 		friend class ResourceManagerService;
 		
-		void addToLinkMap(Component* targetResource, ComponentInstance** targetInstancePtr);
+		void addToLinkMap(Component* targetResource, const std::string& instancePath, ComponentInstance** targetInstancePtr);
 
 	private:
-		using LinkMap = std::unordered_map<Component*, std::vector<ComponentInstance**>>;
+		struct TargetComponentLink
+		{
+			ComponentInstance**		mTargetPtr;
+			std::string				mInstancePath;
+		};
+
+		using LinkMap = std::unordered_map<Component*, std::vector<TargetComponentLink>>;
 		LinkMap			mLinkMap;
 		EntityInstance* mEntityInstance;	// The entity this component belongs to
 		Component*		mResource;			// The resource this instance was created from

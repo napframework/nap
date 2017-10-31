@@ -886,8 +886,7 @@
 				{
 					"Type" : "nap::OSCLaserInputHandler",
 					"mID" : "OSCLaserInputHandler",
-					"SelectionComponentOne" : "LineSelectorOne",
-					"SelectionComponentTwo" : "LineSelectorTwo",
+					"LaserOutputComponent" : "../LaserOutputEntity/LaserOutputComponent",
 					"PrintColor" : true
 				},
 				{
@@ -926,8 +925,8 @@
 				{
 					"Type" : "nap::LineBlendComponent",
 					"mID" : "LineBlender",
-					"SelectionComponentOne" : "LineSelectorOne",
-					"SelectionComponentTwo" : "LineSelectorTwo",
+					"SelectionComponentOne" : "./LineSelectorOne",
+					"SelectionComponentTwo" : "./LineSelectorTwo",
 					"Target" : "LaserLineMesh1",
 					"BlendValue" : 0.0,
 					"BlendSpeed" : 0.125
@@ -935,15 +934,15 @@
 				{
 					"Type" : "nap::LineAutoSwitchComponent",
 					"mID" : "LineSwitcher",
-					"SelectionComponentOne" : "LineSelectorOne",
-					"SelectionComponentTwo" : "LineSelectorTwo",
-					"BlendComponent" : "LineBlender",
+					"SelectionComponentOne" : "./LineSelectorOne",
+					"SelectionComponentTwo" : "./LineSelectorTwo",
+					"BlendComponent" : "./LineBlender",
 					"Random" : true
 				},
 				{
 					"Type" : "nap::LineModulationComponent",
 					"mID" : "LineModulator",
-					"BlendComponent" : "LineBlender",
+					"BlendComponent" : "./LineBlender",
 					"Properties" : 
 					{
 						"Frequency" : 0.0,
@@ -961,7 +960,7 @@
 				{
 					"Type" : "nap::LineNoiseComponent",
 					"mID" : "LineNoiseModulator",
-					"BlendComponent" : "LineBlender",
+					"BlendComponent" : "./LineBlender",
 					"Properties" : 
 					{
 						"Frequency" : 0.51,
@@ -977,7 +976,7 @@
 				{
 					"Type" : "nap::LineColorComponent",
 					"mID" : "LineColorer",
-					"BlendComponent" : "LineBlender",
+					"BlendComponent" : "./LineBlender",
 					"StartPosition" : 
 					{
 						"x" : 1.0,
@@ -1007,7 +1006,7 @@
 				{
 					"Type" : "nap::LineTraceComponent",
 					"mID" : "LineTracer",
-					"BlendComponent" : "LineBlender",
+					"BlendComponent" : "./LineBlender",
 					"Target" : "LaserTraceMesh1",
 					"Properties" :
 					{
@@ -1107,11 +1106,11 @@
 					},
 					"Dac" : "Laser2",
 					"Line": "LaserTraceMesh1",
-					"Transform" : "LineXFormComponent"
+					"Transform" : "../LaserSplineEntity/LineXFormComponent"
 				},
 				{
 					"Type" : "nap::FrustumSyncComponent",
-					"LaserOutputComponent" : "LaserOutputComponent"
+					"LaserOutputComponent" : "./LaserOutputComponent"
 				}		
 			],
 			"Children" :

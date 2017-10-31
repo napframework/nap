@@ -84,17 +84,6 @@ namespace nap
 		// Store osc address pattern
 		mOSCAddressPattern = getComponent<MakePrototypeComponent>()->mOSCAddresses;
 
-		// Set-up relationships
-
-		// The laser output component needs to know where the line is relative to it's canvas, therefore we provide it with the line entity
-		nap::LaserOutputComponentInstance* laser_output_comp = mLaserOutputEntity->findComponent<nap::LaserOutputComponentInstance>();
-		assert(laser_output_comp != nullptr);
-		laser_output_comp->setTransform(*mSplineEntity);
-
-		// The OSC Input handler needs a reference to the laser output component entity to figure out where it can place the line (bounds)
-		nap::OSCLaserInputHandlerInstance* osc_handler = mSplineEntity->findComponent<OSCLaserInputHandlerInstance>();
-		osc_handler->setLaserOutput(*mLaserOutputEntity);
-
 		return true;
 	}
 
