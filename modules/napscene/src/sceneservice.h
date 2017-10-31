@@ -23,10 +23,11 @@ namespace nap
 		*/
 		void update(EntityInstance& instance);
 
+	protected:
 		/**
 		* Recursively updates the transform hierarchy from the root. The entity hierarchy is traversed. For any TransformComponent
 		* the world transform is updated.
 		*/
-		void update();
+		virtual void postUpdate(double deltaTime) override;
 	};
 }

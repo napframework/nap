@@ -8,6 +8,8 @@
 #include "audiodeviceservice.h"
 #include "audiodevice.h"
 
+RTTI_DEFINE(nap::audio::AudioDeviceService)
+
 namespace nap {
     
     namespace audio {

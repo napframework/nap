@@ -14,6 +14,7 @@
 		#include <tchar.h>
 		#include <io.h>
 		#include <fstream>
+		#include <windows.h>
 	#else
 		#include <fileapi.h>
 		#include <dirent.h>
@@ -27,12 +28,14 @@
     #include <dirent.h>
     #include <fstream>
 	#include <unistd.h>
+	#include <mach-o/dyld.h>
 #else
     #include <zconf.h>
     #include <sys/stat.h>
     #include <dirent.h>
     #include <fstream>
 	#include <unistd.h>
+	#include <sstream>
 #endif
 
 // clang-format on
@@ -219,4 +222,47 @@ namespace nap
 		modTime = result.st_mtime;
 		return true;
 	}
+
+
+	std::string getExecutablePath()
+	{
+		std::string out_path;
+		unsigned int bufferSize = 512;
+		std::vector<char> buffer(bufferSize + 1);
+
+#if defined(_WIN32)
+		::GetModuleFileName(NULL, &buffer[0], bufferSize);
+
+#elif defined(__linux__)
+		// Construct a path to the symbolic link pointing to the process executable.
+		// This is at /proc/<pid>/exe on Linux systems (we hope).
+		int pid = getpid();
+		std::ostringstream oss;
+		oss << "/proc/" << pid << "/exe";
+		std::string link = oss.str();
+
+		// Read the contents of the link.
+		int count = readlink(link.c_str(), &buffer[0], bufferSize);
+		if (count == -1) throw std::runtime_error("Could not read symbolic link");
+		buffer[count] = '\0';
+
+#elif defined(__APPLE__)
+		if (_NSGetExecutablePath(&buffer[0], &bufferSize))
+		{
+			buffer.resize(bufferSize);
+			_NSGetExecutablePath(&buffer[0], &bufferSize);
+		}
+#else
+	#error Cannot yet find the executable on this platform
+#endif
+		out_path = &buffer[0];
+		return out_path;
+	}
+
+
+	std::string getExecutableDir()
+	{
+		return getFileDir(getExecutablePath());
+	}
+
 }

@@ -1,80 +1,51 @@
-#include "apprunner.h"
+#include "steefapp.h"
 
 // Nap includes
 #include <nap/core.h>
 #include <nap/logger.h>
+#include <renderwindow.h>
 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SteefApp)
+	RTTI_CONSTRUCTOR(nap::Core&)
+RTTI_END_CLASS
 
-namespace nap {
-	
-	/**
-	 * Constructor
-	 */
-	AppRunner::AppRunner() { }
-	
-
+namespace nap
+{	
 	/**
 	 * Initialize all the resources and instances used for drawing
 	 * slowly migrating all functionality to nap
 	 */
-	bool AppRunner::init(nap::Core& core)
-	{
-		core.initialize();
-		
-		//////////////////////////////////////////////////////////////////////////
-		// GL Service + Window
-		//////////////////////////////////////////////////////////////////////////
-		
-		// Get resource manager service
-		mResourceManagerService = core.getOrCreateService<nap::ResourceManagerService>();
-		
-		// Create render service
-		mRenderService = core.getOrCreateService<nap::RenderService>();
-		
-		nap::utility::ErrorState error;
-		if (!mRenderService->init(error))
-		{
-			nap::Logger::fatal(error.toString());
-			return false;
-		}
-		nap::Logger::info("initialized render service: %s", mRenderService->getTypeName().c_str());
+	bool SteefApp::init(utility::ErrorState& error)
+	{		
+		// Create services
+		mRenderService = getCore().getService<nap::RenderService>();
+		mSceneService  = getCore().getService<nap::SceneService>();
+		mInputService  = getCore().getService<nap::InputService>();
 
-		//////////////////////////////////////////////////////////////////////////
-		// Scene
-		//////////////////////////////////////////////////////////////////////////
-		mSceneService = core.getOrCreateService<nap::SceneService>();		
-		
-		//////////////////////////////////////////////////////////////////////////
-		// Resources
-		//////////////////////////////////////////////////////////////////////////
-		
-		nap::utility::ErrorState errorState;
-		if (!mResourceManagerService->loadFile("data/steef/objects.json", errorState))
+		// Get resource manager and load
+		mResourceManager = getCore().getResourceManager();
+		if (!mResourceManager->loadFile("data/steef/objects.json", error))
 		{
-			nap::Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
-			
 			assert(false);
 			return false;
 		}
-        
-        glFlush();
 		
 		// Extract loaded resources
-		mRenderWindow = mResourceManagerService->findObject<nap::RenderWindow>("Viewport");
-		mRenderWindow->onWindowEvent.connect(std::bind(&AppRunner::handleWindowEvent, this, std::placeholders::_1));
+		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Viewport");
+		mRenderWindow->onWindowEvent.connect(std::bind(&SteefApp::handleWindowEvent, this, std::placeholders::_1));
 		
 		// Get vintl textures
-		mVinylLabelImg = mResourceManagerService->findObject<nap::Image>("LabelImage");
-		mVinylCoverImg = mResourceManagerService->findObject<nap::Image>("CoverImage");
+		mVinylLabelImg = mResourceManager->findObject<nap::Image>("LabelImage");
+		mVinylCoverImg = mResourceManager->findObject<nap::Image>("CoverImage");
 		
 		// Get entity that holds vinyl
-		mModelEntity = mResourceManagerService->findEntity("ModelEntity");
+		mModelEntity = mResourceManager->findEntity("ModelEntity");
 		
 		// Get entity that holds the background image
-		mBackgroundEntity = mResourceManagerService->findEntity("BackgroundEntity");
+		mBackgroundEntity = mResourceManager->findEntity("BackgroundEntity");
 		
 		// Get entity that holds the camera
-		mCameraEntity = mResourceManagerService->findEntity("CameraEntity");
+		mCameraEntity = mResourceManager->findEntity("CameraEntity");
 		
 		// Set render states
 		nap::RenderState& render_state = mRenderService->getRenderState();
@@ -87,27 +58,8 @@ namespace nap {
 	
 	
 	// Called when the window is updating
-	void AppRunner::update()
-	{
-		// Update input for first window
-		std::vector<nap::EntityInstance*> entities;
-		entities.push_back(mCameraEntity.get());
-		
-		// Process events for all windows
-		mRenderService->processEvents();
-		
-		// Need to make primary window active before reloading files, as renderer resources need to be created in that context
-		mRenderService->getPrimaryWindow().makeCurrent();
-		
-		// Reload all files if data changed
-		mResourceManagerService->checkForFileChanges();
-		
-		// Tick for all components that are listening
-		mResourceManagerService->update();
-		
-		// Update the scene
-		mSceneService->update();
-		
+	void SteefApp::update(double deltaTime)
+	{							
 		// Make sure background image matches window size
 		updateBackgroundImage();
 		
@@ -118,7 +70,7 @@ namespace nap {
 	
 	
 	// Called when the window is going to render
-	void AppRunner::render()
+	void SteefApp::render()
 	{
 		
 		// Clear opengl context related resources that are not necessary any more
@@ -156,7 +108,7 @@ namespace nap {
 	 * When the window size changes we want to update the background texture to reflect those changes, ie:
 	 * Scale to the right size
 	 */
-	void AppRunner::handleWindowEvent(const nap::WindowEvent& windowEvent)
+	void SteefApp::handleWindowEvent(const nap::WindowEvent& windowEvent)
 	{
 		nap::rtti::TypeInfo e_type = windowEvent.get_type();
 		if (e_type.is_derived_from(RTTI_OF(nap::WindowResizedEvent)) ||
@@ -166,35 +118,53 @@ namespace nap {
 		}
 	}
 	
-	
-	void AppRunner::registerWindowEvent(WindowEventPtr windowEvent) 
+
+	// Forward the window message to the render service
+	void SteefApp::windowMessageReceived(WindowEventPtr windowEvent) 
 	{
 		mRenderService->addEvent(std::move(windowEvent));
 	}
 
 	
-	void AppRunner::registerInputEvent(InputEventPtr inputEvent)
+	// Forward the input message to the input service
+	void SteefApp::inputMessageReceived(InputEventPtr inputEvent)
 	{
+		// If we pressed escape, quit the loop
+		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
+		{
+			nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(inputEvent.get());
+			if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
+				quit(0);
+
+			if (press_event->mKey == nap::EKeyCode::KEY_f)
+			{
+				static bool fullscreen = true;
+				setWindowFullscreen("Viewport", fullscreen);
+				fullscreen = !fullscreen;
+			}
+		}
+
 		mInputService->addEvent(std::move(inputEvent));
 	}
 
 	
-	void AppRunner::setWindowFullscreen(std::string windowIdentifier, bool fullscreen) 
+	// Make window fullscreen
+	void SteefApp::setWindowFullscreen(std::string windowIdentifier, bool fullscreen) 
 	{
-		mResourceManagerService->findObject<nap::RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
+		mResourceManager->findObject<nap::RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
 	}
 
 	
-	void AppRunner::shutdown() 
+	void SteefApp::shutdown() 
 	{
-		mRenderService->shutdown();
+
 	}
 	
 	
 	/**
 	 * updates the background image to match the size of the output window
 	 */
-	void AppRunner::updateBackgroundImage()
+	void SteefApp::updateBackgroundImage()
 	{
 		// Get size
 		glm::ivec2 window_size = mRenderWindow->getWindow()->getSize();
@@ -206,7 +176,7 @@ namespace nap {
 	}
 	
 	
-	void AppRunner::updateShader()
+	void SteefApp::updateShader()
 	{
 		nap::TransformComponentInstance& cam_xform = mCameraEntity->getComponent<nap::TransformComponentInstance>();
 		// Set camera location on shader, used for rendering highlights

@@ -47,13 +47,6 @@ namespace nap
 		*/
 		bool build(const ItemList& objectList, std::function<ITEM(typename ITEM::Type)> creationFunction, utility::ErrorState& errorState)
 		{
-			using ObjectMap = std::map<std::string, ITEM>;
-			ObjectMap object_map;
-
-			// Build map from ID => object
-			for (typename ITEM::Type object : objectList)
-				object_map.insert({ object->mID, creationFunction(object) });
-
 			// Traverse graph and build nodes and edges
 			for (typename ITEM::Type object : objectList)
 			{
