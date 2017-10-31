@@ -20,7 +20,6 @@ namespace nap
 
 	public:
  		std::vector<ObjectPtr<nap::Image>>		mImages;			///< Array of images to display in the slidesho2
-		ObjectPtr<nap::Entity>					mEntityPrototype;	///< Prototype of entity to instantiate during Instance::init
 	};
 
 	/**

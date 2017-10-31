@@ -16,10 +16,6 @@
 
 namespace nap
 {	
-	class RTTIObjectGraphItem;
-	template<typename ITEM> class ObjectGraph;
-	using RTTIObjectGraph = ObjectGraph<RTTIObjectGraphItem>;
-
 	/**
 	 * Manager, owner of all objects, capable of loading and real-time updating of content.
 	 */
@@ -152,7 +148,7 @@ namespace nap
 		bool initObjects(const std::vector<std::string>& objectsToInit, const ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState);
 		bool initEntities(const RTTIObjectGraph& objectGraph, const ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState);
 		bool createEntities(const std::vector<const Entity*>& entityResources, EntityCreationParameters& entityCreationParams, std::vector<std::string>& generatedEntityIDs, utility::ErrorState& errorState);
-		static bool sResolveComponentPointers(EntityCreationParameters& entityCreationParams, std::unordered_map<Component*, ComponentInstance*>& newComponentInstances, utility::ErrorState& errorState);
+		static bool sResolveComponentPointers(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
 		bool buildObjectGraph(const ObjectByIDMap& objectsToUpdate, RTTIObjectGraph& objectGraph, utility::ErrorState& errorState);
 		EFileModified isFileModified(const std::string& modifiedFile);
 
