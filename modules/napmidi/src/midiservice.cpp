@@ -69,7 +69,7 @@ namespace nap {
     }
     
     
-    void MidiService::update()
+    void MidiService::update(double deltaTime)
     {
         std::unique_ptr<MidiEvent> event = nullptr;
         while (mEventQueue.try_dequeue(event))

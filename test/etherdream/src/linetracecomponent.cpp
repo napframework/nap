@@ -41,7 +41,7 @@ namespace nap
 
 		// Create the trace visualize components
 		LineTraceComponent* resource = getComponent<LineTraceComponent>();		
-		ResourceManagerService& resource_manager = *getEntityInstance()->getCore()->getService<nap::ResourceManagerService>();
+		ResourceManager& resource_manager = *getEntityInstance()->getCore()->getResourceManager();
 
 		// Create start visualizer
 		auto start_vis_entity = resource_manager.createEntity(*(resource->mVisualizeEntity), entityCreationParams, errorState);

@@ -63,7 +63,7 @@ namespace nap {
         /**
          * Processes all received midi events
          */
-        void update();
+        void update(double deltaTime) override;
         
     protected:
         void registerObjectCreators(rtti::Factory& factory) override final;

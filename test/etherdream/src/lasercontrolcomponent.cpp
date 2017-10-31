@@ -39,7 +39,7 @@ namespace nap
 		mLaserCompounds = resource->mLaserCompounds;
 		
 		// Get resource manager that is used to spawn the new entity
-		ResourceManagerService& resource_manager = *getEntityInstance()->getCore()->getService<nap::ResourceManagerService>();
+		ResourceManager& resource_manager = *getEntityInstance()->getCore()->getResourceManager();
 
 		// Get total number of lasers to create
 		int laser_count = static_cast<int>(mLaserCompounds.size());

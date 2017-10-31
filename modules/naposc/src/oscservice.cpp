@@ -25,13 +25,11 @@ namespace nap
 
 	bool OSCService::init(nap::utility::ErrorState& errorState)
 	{
-		ResourceManagerService* resource_manager = getCore().getService<ResourceManagerService>();
-		assert(resource_manager != nullptr);
 		return true;
 	}
 
 
-	void OSCService::update()
+	void OSCService::update(double deltaTime)
 	{
 		std::queue<OSCEventPtr> events;
 
