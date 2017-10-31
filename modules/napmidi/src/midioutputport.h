@@ -9,6 +9,9 @@
 
 namespace nap {
     
+    /**
+     * Opens and manages a midi output port that midi messages can be sent to.
+     */
     class NAPAPI MidiOutputPort : public rtti::RTTIObject {
         RTTI_ENABLE(rtti::RTTIObject)
         
@@ -21,8 +24,11 @@ namespace nap {
         
         MidiService& getService() { return *mService; }
         
-        int mPortNumber = 0;
+        int mPortNumber = 0; /**< The port number that midi message will be sent through by this object */
         
+        /**
+         * Sends a midi event through this output port.
+         */
         void sendEvent(const MidiEvent& event);
         
     private:

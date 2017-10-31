@@ -49,7 +49,7 @@ namespace nap {
                 (b.mNumber == mNumber || b.mNumber == MIDI_NUMBER_OMNI || mNumber == MIDI_NUMBER_OMNI) &&
                 (b.mValue == mValue || b.mValue == MIDI_VALUE_OMNI || mValue == MIDI_VALUE_OMNI) &&
                 (b.mChannel == mChannel || b.mChannel == MIDI_CHANNEL_OMNI || mChannel == MIDI_CHANNEL_OMNI) &&
-                (b.mPort == mPort || b.mPort == MIDI_DEVICE_OMNI || mPort == MIDI_DEVICE_OMNI));
+                (b.mPort == mPort || b.mPort == MIDI_PORT_OMNI || mPort == MIDI_PORT_OMNI));
     }
     
     

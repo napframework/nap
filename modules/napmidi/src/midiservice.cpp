@@ -3,6 +3,7 @@
 #include <nap/logger.h>
 
 #include "midiinputport.h"
+#include "midioutputport.h"
 #include "midiinputcomponent.h"
 
 RTTI_DEFINE(nap::MidiService)
@@ -28,6 +29,7 @@ namespace nap {
     void MidiService::registerObjectCreators(rtti::Factory& factory)
     {
         factory.addObjectCreator(std::make_unique<MidiInputPortObjectCreator>(*this));
+        factory.addObjectCreator(std::make_unique<MidiOutputPortObjectCreator>(*this));
     }
 
     
