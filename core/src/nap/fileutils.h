@@ -83,7 +83,7 @@ namespace nap
     NAPAPI bool fileExists(const std::string& filename);
 
 	/**
-	 * Check wheter a folder exists or not
+	 * Check if a folder exists or not
 	 */
 	NAPAPI bool dirExists(const std::string& dirName);
 
@@ -117,5 +117,15 @@ namespace nap
 	* @param modTime The modification time of the file
 	* @return Whether file modification time was successfully retrieved
 	*/
-	NAPAPI bool getFileModificationTime(const std::string& path, uint64_t& modTime);	
+	NAPAPI bool getFileModificationTime(const std::string& path, uint64_t& modTime);
+
+	/**
+	 * @param outPath the full path to the executable including the application name
+	 */
+	NAPAPI std::string getExecutablePath();
+
+	/**
+	 * @param outDir the full path to the executable directory
+	 */
+	NAPAPI std::string getExecutableDir();
 }

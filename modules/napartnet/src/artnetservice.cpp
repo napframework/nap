@@ -106,7 +106,7 @@ namespace nap
 	}
 
 
-	void ArtNetService::update()
+	void ArtNetService::update(double deltaTime)
 	{
 		double current_time = getCore().getElapsedTime();
 		for (auto& controller : mControllers)

@@ -34,7 +34,7 @@ namespace nap
 	{
 		// Get resource and manager
 		MakePrototypeComponent* resource = getComponent<MakePrototypeComponent>();
-		ResourceManagerService& resource_manager = *getEntityInstance()->getCore()->getService<nap::ResourceManagerService>();
+		ResourceManager& resource_manager = *getEntityInstance()->getCore()->getResourceManager();
 
 		// Create the entities
 		mSplineEntity = resource_manager.createEntity(*(resource->mSplineEntity), entityCreationParams, errorState).get();
