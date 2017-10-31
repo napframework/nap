@@ -9,6 +9,11 @@
 
 namespace nap {
     
+    
+    /**
+     * Opens and manages a midi input port that will be listened to for incoming midi messages.
+     * Messages will be parsed and passed on to the midi service for processing.
+     */
     class NAPAPI MidiInputPort : public rtti::RTTIObject {
         RTTI_ENABLE(rtti::RTTIObject)
         
@@ -19,11 +24,17 @@ namespace nap {
         
         bool init(utility::ErrorState& errorState) override;
         
+        /**
+         * @return: the midi service that this input port is registered to
+         */
         MidiService& getService() { return *mService; }
         
-        int mPortNumber = 0;
-        bool mDebugOutput = false;
+        int mPortNumber = 0; /**< The port number that will be listened to for incoming messages */
+        bool mDebugOutput = false; /**< If true, incoming messages will be logged for debugging purposes */
         
+        /**
+         * Called internally by the midi callback.
+         */
         void receiveEvent(std::unique_ptr<MidiEvent> event) { mService->enqueueEvent(std::move(event)); }
         
     private:
