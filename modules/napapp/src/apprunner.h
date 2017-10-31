@@ -134,11 +134,8 @@ namespace nap
 		}
 
 		// Initialize application
-		if (!app.init(error))
-		{
-			error.fail("unable to initialize application");
+		if(!error.check(app.init(error), "unable to initialize application"))
 			return false;
-		}
 
 		// Pointer to function used inside update call by core
 		std::function<void(double)> update_call = std::bind(&APP::update, mApp.get(), std::placeholders::_1);

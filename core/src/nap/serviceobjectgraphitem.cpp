@@ -15,7 +15,7 @@ namespace nap
 	bool ServiceObjectGraphItem::getPointees(std::vector<ServiceObjectGraphItem>& pointees, utility::ErrorState& errorState)
 	{
 		std::vector<rtti::TypeInfo> service_links;
-		mObject->getDependencies(service_links);
+		mObject->getDependentServices(service_links);
 
 		for (const auto& link : service_links)
 		{

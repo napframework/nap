@@ -25,21 +25,22 @@ namespace nap
 
 	void AppEventHandler::process()
 	{
-		while (opengl::pollEvent(mEvent))
+		opengl::Event event;
+		while (opengl::pollEvent(event))
 		{
 			// Check if we are dealing with an input event (mouse / keyboard)
-			if (nap::isInputEvent(mEvent))
+			if (nap::isInputEvent(event))
 			{
-				nap::InputEventPtr input_event = nap::translateInputEvent(mEvent);
+				nap::InputEventPtr input_event = nap::translateInputEvent(event);
 
 				// Register our input event with the appRunner
 				getApp<App>().inputMessageReceived(std::move(input_event));
 			}
 
 			// Check if we're dealing with a window event
-			else if (nap::isWindowEvent(mEvent))
+			else if (nap::isWindowEvent(event))
 			{
-				nap::WindowEventPtr window_event = nap::translateWindowEvent(mEvent);
+				nap::WindowEventPtr window_event = nap::translateWindowEvent(event);
 				if (window_event != nullptr)
 				{
 					getApp<App>().windowMessageReceived(std::move(window_event));

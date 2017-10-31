@@ -63,6 +63,7 @@ namespace nap
 		 * Updates all services. This happens in 3 distinct steps.
 		 * First the resource file is reloaded. After that all services are updated, the last step is the 
 		 * the update of the entities and their respective components managed by the resource manager
+		 * @param updateFunction application callback that is invoked after updating all the services but before render. Input parameter is deltaTime
 		 * @return deltaTime between update calls in seconds
 		 */
 		double update(std::function<void(double)>& updateFunction);
@@ -114,6 +115,40 @@ namespace nap
 		T* getService();
 
 	private:
+		/**
+		* Helper function that creates all the services that are found in the various modules
+		* Note that a module does not need to define a service, only if it has been defined
+		* this call will try to create it.
+		* @param error contains the error if the services could not be added
+		* @return if the services are created successfully
+		*/
+		bool createServices(utility::ErrorState& errorState);
+
+		/**
+		* Adds a new service of type @type to @outServices
+		* @param type the type of service to add
+		* @param outServices the list of services the service of @type will be added to
+		* @param error in case of a duplicate, contains the error message if the service could not be added
+		* @return if the service was added successfully
+		*/
+		bool addService(const rtti::TypeInfo& type, std::vector<Service*>& outServices, utility::ErrorState& errorState);
+
+		/**
+		* Initializes all registered services
+		* Initialization occurs based on service dependencies, this means that if service B depends on Service A,
+		* Service A is initialized before service B etc.
+		* @param error contains the error message when initialization fails
+		* @return if initialization failed or succeeded
+		*/
+		bool initializeServices(utility::ErrorState& errorState);
+
+		/**
+		* Occurs when a file has been successfully loaded by the resource manager
+		* Forwards the call to all interested services
+		* @param file the currently loaded resource file
+		*/
+		void resourceFileChanged(const std::string& file);
+
 		// Typedef for a list of services
 		using ServiceList = std::vector<std::unique_ptr<Service>>;
 
@@ -134,36 +169,6 @@ namespace nap
 
 		// Time it took to complete last cycle in seconds
 		double mDeltaTime = 0.0;
-
-		/**
-		 * Helper function that creates all the services that are found in the various modules
-		 * Note that a module does not need to define a service, only if it has been defined
-		 * this call will try to create it. 
-		 */
-		bool createServices(utility::ErrorState& error);
-
-		/**
-		* Adds a new service of type @type to @outServices
-		* @param type the type of service to add
-		* @return the newly added service
-		*/
-		bool addService(const rtti::TypeInfo& type, std::vector<Service*>& outServices, utility::ErrorState& error);
-
-		/**
-		* Initializes all registered services
-		* Initialization occurs based on service dependencies, this means that if service B depends on Service A,
-		* Service A is initialized before service B etc.
-		* @param error contains the error message when initialization fails
-		* @return if initialization failed or succeeded
-		*/
-		bool initializeServices(utility::ErrorState& error);
-
-		/**
-		 * Occurs when a file has been successfully loaded by the resource manager
-		 * Forwards the call to all interested services
-		 * @param file the currently loaded resource file
-		 */
-		void resourceFileChanged(const std::string& file);
 
 		nap::Slot<const std::string&> mFileLoadedSlot = { [&](const std::string& inValue) -> void { resourceFileChanged(inValue); } };
 	};

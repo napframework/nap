@@ -26,7 +26,7 @@ namespace nap
 	}
 
 
-	void RenderService::getDependencies(std::vector<rtti::TypeInfo>& dependencies)
+	void RenderService::getDependentServices(std::vector<rtti::TypeInfo>& dependencies)
 	{
 		dependencies.emplace_back(RTTI_OF(SceneService));
 	}

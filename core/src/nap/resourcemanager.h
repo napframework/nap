@@ -28,6 +28,7 @@ namespace nap
 	 */
 	class NAPAPI ResourceManager
 	{
+		friend class Core;
 		RTTI_ENABLE()
 	public:
 		using EntityByIDMap = std::unordered_map<std::string, std::unique_ptr<EntityInstance>>;
@@ -129,11 +130,6 @@ namespace nap
 		 */
 		void update(double deltaTime);
 
-		/**
-		 *	Signal that is emitted when a file has been successfully loaded
-		 */
-		nap::Signal<const std::string&> mFileLoadedSignal;
-
 	private:
 		using InstanceByIDMap	= std::unordered_map<std::string, rtti::RTTIObject*>;					// Map from object ID to object (non-owned)
 		using ObjectByIDMap		= std::unordered_map<std::string, std::unique_ptr<rtti::RTTIObject>>;	// Map from object ID to object (owned)
@@ -196,6 +192,11 @@ namespace nap
 		ModifiedTimeMap						mFileModTimes;					// Cache for file modification times to avoid responding to too many file events
 		std::unique_ptr<rtti::Factory>		mFactory;						// Responsible for creating objects when de-serializing
 		Core&								mCore;							// Core
+
+		/**
+		 *	Signal that is emitted when a file has been successfully loaded
+		 */
+		nap::Signal<const std::string&> mFileLoadedSignal;
 	};
 
 
