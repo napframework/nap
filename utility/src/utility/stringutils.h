@@ -66,5 +66,22 @@ namespace nap
 		 * @return A modified type name such as "nap::MyType<float>"
 		 */
 		std::string replaceTemplateType(const std::string& typeName, const std::string& templateTypeName);
+
+		/**
+		 * Replace all instances of search string with replacement
+		 * @param inString The input string to search in
+		 * @param find The search string
+		 * @param replace The replacement string
+		 */
+		void replaceAllInstances(std::string& inString, const std::string& find, const std::string& replace);
+		
+		/**
+		 * Replace all instances of search string with replacement string, in a copy
+		 * @param inString The input string to search in
+		 * @param find The search string
+		 * @param replace The replacement string
+		 * @return A copy of the input string with all instances of the search term replaced
+		 */
+		std::string replaceAllInstances(const std::string& inString, const std::string& find, const std::string& replace);
 	}
 }
