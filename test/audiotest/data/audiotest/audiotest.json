@@ -17,7 +17,7 @@
 		{
 			"mID": "irisMidi",
 			"Type": "nap::MidiInputPort",
-			"Port": 1,
+			"Port": 0,
 			"EnableDebugOutput": "True"
 		},
 
