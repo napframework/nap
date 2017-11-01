@@ -17,11 +17,11 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
 target_link_libraries(${PROJECT_NAME} napcore mod_napaudio mod_napapp mod_nappython mod_naposc mod_napmidi)
 
-if (WIN32)
-    # Copy portaudio DLL
-    find_package(portaudio REQUIRED)
-    copy_portaudio_lib()
-endif()
+# if (WIN32)
+#    # Copy portaudio DLL
+#    find_package(portaudio REQUIRED)
+#   copy_portaudio_lib()
+# endif()
 
 # create post build event
 copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/data data)

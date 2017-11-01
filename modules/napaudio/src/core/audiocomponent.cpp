@@ -43,7 +43,7 @@ namespace nap {
     
         NodeManager& AudioComponentInstance::getNodeManager()
         {
-            return getEntityInstance()->getCore()->getService<AudioService>()->getNodeManager();
+            return getEntityInstance()->getCore()->getService<AudioService>(ETypeCheck::IS_DERIVED_FROM)->getNodeManager();
         }
         
     }
