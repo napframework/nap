@@ -107,7 +107,12 @@ namespace nap
     std::string getFileDir(const std::string& file)
     {
         std::string name = file;
-        const size_t last_slash_idx = name.find_last_of("\\/");
+
+		// Replace any references to self in the path, ie. "/./" on Unix.  This fixes an issue when trying
+		// to get the current dir running from command line on OSX.
+		utility::replaceAllInstances(name, "/./", "/");
+		
+        const size_t last_slash_idx = name.find_last_of("/");
         if (last_slash_idx != std::string::npos)
             name = name.erase(last_slash_idx, name.size() - last_slash_idx);
         return name;        
@@ -256,6 +261,12 @@ namespace nap
 	#error Cannot yet find the executable on this platform
 #endif
 		out_path = &buffer[0];
+		
+#if defined(_WIN32)
+		// Replace any Windows-style backslashes with forward slashes
+		utility::replaceAllInstances(out_path, "\\", "/");
+#endif
+		
 		return out_path;
 	}
 
@@ -264,5 +275,4 @@ namespace nap
 	{
 		return getFileDir(getExecutablePath());
 	}
-
 }

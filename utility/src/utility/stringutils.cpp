@@ -144,6 +144,35 @@ namespace nap
 			size_t bracketIndex = typeName.find('<');
 			return typeName.substr(0, bracketIndex) + "<" + templateTypeName + ">";
 		}
-
+		
+		// Replace all instances of search string with replacement
+		void replaceAllInstances(std::string& inString, const std::string& find, const std::string& replace)
+		{
+			if (inString.empty())
+				return;
+			
+			for(std::string::size_type i = 0; (i = inString.find(find, i)) != std::string::npos;)
+			{
+				inString.replace(i, find.length(), replace);
+				i += replace.length();
+			}
+		}
+		
+		// Replace all instances of search string with replacement, in a copy
+		std::string replaceAllInstances(const std::string& inString, const std::string& find, const std::string& replace)
+		{
+			if (inString.empty())
+				return "";
+			
+			std::string outString = inString;
+			
+			for(std::string::size_type i = 0; (i = outString.find(find, i)) != std::string::npos;)
+			{
+				outString.replace(i, find.length(), replace);
+				i += replace.length();
+			}
+			return outString;
+		}
 	}
+
 }
