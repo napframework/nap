@@ -2,7 +2,8 @@
 # Once done this will define
 # RTMIDI_FOUND - System has RTMIDI
 # RTMIDI_INCLUDE_DIRS - The RTMIDI include directories
-# RTMIDI_LIBRARIES - The libraries needed to use RTMIDI
+# RTMIDI_LIBRARIES_DEBUG - The libraries needed to use RTMIDI in debug mode
+# RTMIDI_LIBRARIES_RELEASE - The libraries needed to use RTMIDI in release mode
 
 find_path(RTMIDI_DIR RtMidi.h
 HINTS
@@ -13,18 +14,21 @@ ${CMAKE_CURRENT_LIST_DIR}/../../rtmidi
 set(RTMIDI_INCLUDE_DIR ${RTMIDI_DIR})
 
 if(WIN32)
-    set(RTMIDI_LIBRARIES ${RTMIDI_DIR}/bin/msvc/rtmidi.lib)
+    set(RTMIDI_LIBRARIES_RELEASE ${RTMIDI_DIR}/bin/msvc/rtmidi.lib winmm)
+    set(RTMIDI_LIBRARIES_DEBUG ${RTMIDI_DIR}/bin/msvc/rtmidid.lib winmm)
 elseif(APPLE)
-    set(RTMIDI_LIBRARIES ${RTMIDI_DIR}/bin/osx/librtmidi.a)
+    set(RTMIDI_LIBRARIES_RELEASE ${RTMIDI_DIR}/bin/osx/librtmidi.a)
+    set(RTMIDI_LIBRARIES_DEBUG ${RTMIDI_DIR}/bin/osx/librtmidi.a)
 else()
-    set(RTMIDI_LIBRARIES ${RTMIDI_DIR}/bin/linux/librtmidi.so)
+    set(RTMIDI_LIBRARIES_RELEASE ${RTMIDI_DIR}/bin/linux/librtmidi.so)
+    set(RTMIDI_LIBRARIES_DEBUG ${RTMIDI_DIR}/bin/linux/librtmidi.so)
 endif()
 
 
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set RTMIDI_FOUND to TRUE
 # if all listed variables are TRUE
-find_package_handle_standard_args(RTMIDI DEFAULT_MSG RTMIDI_INCLUDE_DIR RTMIDI_LIBRARIES)
+find_package_handle_standard_args(RTMIDI DEFAULT_MSG RTMIDI_INCLUDE_DIR RTMIDI_LIBRARIES_RELEASE RTMIDI_LIBRARIES_DEBUG)
 
 
 
