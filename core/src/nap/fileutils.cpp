@@ -158,7 +158,7 @@ namespace nap
 	// Check if the file has an extension of type extension
 	bool hasExtension(const std::string& file, const std::string& extension)
 	{
-		return utility::gToLower(getFileExtension(file)) == utility::gToLower(extension);
+		return utility::toLower(getFileExtension(file)) == utility::toLower(extension);
 	}
 
 

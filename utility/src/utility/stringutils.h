@@ -17,25 +17,63 @@ namespace nap
 
 	namespace utility
 	{
+		/*
+		 * Splits a string based on @inDelim, populates @ioParts
+		 * @param string the sequence to split
+		 * @param delim the delimiter used to split the string
+		 * @param ioParts list of individual split parts
+		 */
+		void splitString(const std::string string, char delim, std::vector<std::string>& ioParts);
+
 		/**
-		@brief Splits a string based on @inDelim, populates @ioParts
-		**/
-		void gSplitString(const std::string inString, char inDelim, std::vector<std::string>& ioParts);
+		 * Writes a string to an output stream
+		 * @param stream the output stream to write to
+		 * @param text the string to write
+		 */
+		void writeString(std::ostream& stream, const std::string& text);
 
-		void gWriteString(std::ostream& stream, const std::string& text);
+		/**
+		 * Reads a string form an input stream
+		 * @param stream the stream to read the string from
+		 * @return the string read from the input stream
+		 */
+		std::string readString(std::istream& stream);
 
-		std::string gReadString(std::istream& stream);
+		/**
+		 * Converts all upper case characters in @ioString to lower case characters
+		 * @param ioString the input string that is converted to a lower case string
+		 */
+		void toLower(std::string& ioString);
 
-		void gToLower(std::string& ioString);
+		/**
+		 * Converts all upper case characters in @ioString to lower case characters
+		 * @param string the input string that is converted
+		 * @return the lower case version of @string
+		 */
+		std::string toLower(const std::string& string);
 
-		std::string gToLower(const std::string& inString);
+		/**
+		 * Strips all name space related identifiers from @str
+		 * @param str the string to remove the namespace from
+		 * @return the stripped string
+		 */
+		std::string stripNamespace(const std::string& str);
 
-		std::string gStripNamespace(const std::string& str);
+		/**
+		 * Tokenize @str in to @tokens
+		 * @param str the string to tokenize
+		 * @param delims the delimiters used for the the tokenization process
+		 * @param omitTokens if the tokens are discarded from the result
+		 */
+		void tokenize(const std::string& str, std::list<std::string>& tokens, const std::string& delims, bool omitTokens = false);
 
-		void gTokenize(const std::string& str, std::list<std::string>& tokens, const std::string& delims,
-			bool omitTokens = false);
-
-		bool gStartsWith(const std::string& inString, const std::string& inSubString, bool caseSensitive = true);
+		/**
+		 * Checks if @string starts with @subString
+		 * @param string the string to check
+		 * @param subString the part of the string to check for
+		 * @param caseSensitive if the check should take in to account
+		 */
+		bool startsWith(const std::string& string, const std::string& subString, bool caseSensitive = true);
 
 		bool gContains(const std::string& inString, const std::string& inSubString, bool caseSensitive = true);
 

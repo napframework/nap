@@ -128,9 +128,4 @@ namespace nap
 	 * @param outDir the full path to the executable directory
 	 */
 	NAPAPI std::string getExecutableDir();
-	
-	/**
-	 * @return The operating system path separator
-	 */
-	NAPAPI std::string getPathSeparator();
 }
