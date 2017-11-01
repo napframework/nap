@@ -17,6 +17,7 @@ ${CMAKE_CURRENT_LIST_DIR}/../../mpg123
 if(WIN32)
     set(LIBMPG123_LIB_DIR ${LIBMPG123_DIR}/install/msvc)
     set(LIBMPG123_LIBRARIES ${LIBMPG123_LIB_DIR}/libmpg123.lib)
+    set(LIBMPG123_LIBS_RELEASE_DLL ${LIBMPG123_LIB_DIR}/libmpg123.dll)
     set(LIBMPG123_INCLUDE_DIR ${LIBMPG123_DIR}/install/msvc)
 
 elseif(APPLE)
@@ -40,5 +41,24 @@ include(FindPackageHandleStandardArgs)
 # if all listed variables are TRUE
 find_package_handle_standard_args(LIBMPG123 DEFAULT_MSG LIBMPG123_LIBRARIES LIBMPG123_INCLUDE_DIR)
 
+# Copy the portaudio dynamic linked lib into the build directory
+macro(copy_mpg123_lib)
+    if(WIN32)
+        add_library(mpg123lib SHARED IMPORTED)
+        set_target_properties(mpg123lib PROPERTIES
+            IMPORTED_CONFIGURATIONS "Debug;Release;MinSizeRel;RelWithDebInfo"
+            IMPORTED_LOCATION_RELEASE ${LIBMPG123_LIBS_RELEASE_DLL}
+            IMPORTED_LOCATION_DEBUG ${LIBMPG123_LIBS_RELEASE_DLL}
+            IMPORTED_LOCATION_MINSIZEREL ${LIBMPG123_LIBS_RELEASE_DLL}
+            IMPORTED_LOCATION_RELWITHDEBINFO ${LIBMPG123_LIBS_RELEASE_DLL}
+        )
+
+        add_custom_command(
+            TARGET ${PROJECT_NAME}
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:mpg123lib> $<TARGET_FILE_DIR:${PROJECT_NAME}>/$<TARGET_FILE_NAME:mpg123lib>
+        )
+    endif()
+endmacro()
 
 

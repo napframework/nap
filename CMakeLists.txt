@@ -68,7 +68,6 @@ add_subdirectory(test/videoplayer)
 add_subdirectory(test/serializationtest)
 add_subdirectory(test/etherdream)
 add_subdirectory(test/audiotest)
-add_subdirectory(test/sonify)
 add_subdirectory(test/artnet)
 
 if (APPLE)
@@ -93,6 +92,7 @@ add_subdirectory(modules/naposc)
 add_subdirectory(modules/napsvg)
 add_subdirectory(modules/napmidi)
 add_subdirectory(modules/napapp)
+add_subdirectory(modules/napcameracontrol)
 
 # Exe dependencies
 add_dependencies(rendertest mod_naprender)

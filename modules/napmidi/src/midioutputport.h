@@ -24,7 +24,7 @@ namespace nap {
         
         MidiService& getService() { return *mService; }
         
-        int mPortNumber = 0; /**< The port number that midi message will be sent through by this object */
+        int mPortNumber = 0; /**< The port number that midi messages will be sent through by this object */
         
         /**
          * Sends a midi event through this output port.

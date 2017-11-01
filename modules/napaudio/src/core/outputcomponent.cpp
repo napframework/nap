@@ -27,7 +27,7 @@ namespace nap {
             OutputComponent* resource = rtti_cast<OutputComponent>(getComponent());
             
             AudioComponentInstance* input = resource->mInput.get();
-            auto& nodeManager = getEntityInstance()->getCore()->getService<AudioService>()->getNodeManager();
+            auto& nodeManager = getEntityInstance()->getCore()->getService<AudioService>(ETypeCheck::IS_DERIVED_FROM)->getNodeManager();
             
             auto channelCount = resource->mChannelRouting.size();
             for (auto channel = 0; channel < channelCount; ++channel)
