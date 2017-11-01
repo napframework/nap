@@ -54,7 +54,7 @@ namespace nap
 					// Try to match the address
 					for (const auto& address : input_comp->mAddressFilter)
 					{
-						if (nap::utility::gStartsWith(osc_event.getAddress(), address))
+						if (nap::utility::startsWith(osc_event.getAddress(), address))
 						{
 							input_comp->trigger(osc_event);
 							break;
