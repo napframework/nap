@@ -199,11 +199,15 @@ namespace nap
 		// Find service of type 
 		const auto& found_service = std::find_if(mServices.begin(), mServices.end(), [&type, typeCheck](const auto& service)
 		{
-            switch (typeCheck) {
+            switch (typeCheck) 
+			{
                 case ETypeCheck::IS_DERIVED_FROM:
                     return service->get_type().is_derived_from(type);
                 case ETypeCheck::EXACT_MATCH:
                     return service->get_type() == type;
+				default:
+					assert(false);
+					return false;
             }
 		});
 

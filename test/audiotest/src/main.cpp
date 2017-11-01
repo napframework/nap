@@ -5,6 +5,7 @@
 
 // Local includes
 #include "audiotestapp.h"
+#include "audioappeventhandler.h"
 
 // Nap includes
 #include <utility/dllexport.h>
@@ -21,7 +22,7 @@ int main(int argc, char *argv[])
 	nap::Core core;
 
 	// Create app runner
-	nap::AppRunner<nap::AudioTestApp, nap::BaseAppEventHandler> app_runner(core);
+	nap::AppRunner<nap::AudioTestApp, nap::AudioAppEventHandler> app_runner(core);
 
 	// Start
 	nap::utility::ErrorState error;
