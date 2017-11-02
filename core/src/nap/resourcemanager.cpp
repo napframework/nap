@@ -6,7 +6,7 @@
 #include "objectgraph.h"
 #include "entityptr.h"
 #include "componentptr.h"
-#include "fileutils.h"
+#include <utility/fileutils.h>
 #include "logger.h"
 #include "core.h"
 
@@ -769,7 +769,7 @@ namespace nap
 	bool ResourceManager::loadFile(const std::string& filename, const std::string& externalChangedFile, utility::ErrorState& errorState)
 	{
 		// ExternalChangedFile should only be used if it's different from the file being reloaded
-		assert(toComparableFilename(filename) != toComparableFilename(externalChangedFile));
+		assert(utility::toComparableFilename(filename) != utility::toComparableFilename(externalChangedFile));
 
 		// Read objects from disk
 		RTTIDeserializeResult read_result;
@@ -865,7 +865,7 @@ namespace nap
 		for (const FileLink& file_link : read_result.mFileLinks)
 			addFileLink(filename, file_link.mTargetFile);
 
-		mFilesToWatch.insert(toComparableFilename(filename));
+		mFilesToWatch.insert(utility::toComparableFilename(filename));
 		
 		// Everything was successful, don't rollback any changes that were made
 		rollback_helper.clear();
@@ -880,11 +880,11 @@ namespace nap
 	{
 		// Get file time
 		uint64 mod_time;
-		bool can_get_mod_time = getFileModificationTime(modifiedFile, mod_time);
+		bool can_get_mod_time = utility::getFileModificationTime(modifiedFile, mod_time);
 		if (!can_get_mod_time)
 			return EFileModified::Error;
 		
-		std::string comparableFilename = toComparableFilename(modifiedFile);
+		std::string comparableFilename = utility::toComparableFilename(modifiedFile);
 
 		// Check if filetime is in the cache
 		ModifiedTimeMap::iterator pos = mFileModTimes.find(comparableFilename);
@@ -923,7 +923,7 @@ namespace nap
 				if (file_modified == EFileModified::Error || file_modified == EFileModified::No)
 					continue;
 
-				modified_file = toComparableFilename(modified_file);
+				modified_file = utility::toComparableFilename(modified_file);
 				std::set<std::string> files_to_reload;
 
 				// Is our modified file a json file that was loaded by the manager?
@@ -994,8 +994,8 @@ namespace nap
 
 	void ResourceManager::addFileLink(const std::string& sourceFile, const std::string& targetFile)
 	{
-		std::string source_file = toComparableFilename(sourceFile);
-		std::string target_file = toComparableFilename(targetFile);
+		std::string source_file = utility::toComparableFilename(sourceFile);
+		std::string target_file = utility::toComparableFilename(targetFile);
 		
 		FileLinkMap::iterator existing = mFileLinkMap.find(targetFile);
 		if (existing == mFileLinkMap.end())

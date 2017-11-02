@@ -4,11 +4,11 @@
 #include "logger.h"
 #include "serviceobjectgraphitem.h"
 #include "objectgraph.h"
-#include "fileutils.h"
 
 // External Includes
 #include <rtti/pythonmodule.h>
 #include <iostream>
+#include <utility/fileutils.h>
 
 using namespace std;
 
@@ -53,9 +53,9 @@ namespace nap
 		// TODO: This should be correctly resolved, ie: the dll's should always
 		// be in the executable directory
 #ifdef _WIN32
-		mModuleManager.loadModules(nap::getExecutableDir());
+		mModuleManager.loadModules(utility::getExecutableDir());
 #else
-		std::string exe_dir = "../../lib/" + nap::getFileName(nap::getExecutableDir());
+		std::string exe_dir = "../../lib/" + utility::getFileName(utility::getExecutableDir());
 		mModuleManager.loadModules(exe_dir);
 #endif // _WIN32
 

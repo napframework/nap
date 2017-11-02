@@ -58,8 +58,8 @@ namespace nap
 		if (!errorState.check(render_components.size() >= 2, "not enough renderable components"))
 			return false;
 
-		assert(utility::gStartsWith(render_components[0]->getComponent<RenderableMeshComponent>()->mID, "RenderLaserLineComponent"));
-		assert(utility::gStartsWith(render_components[1]->getComponent<RenderableMeshComponent>()->mID, "RenderLaserNormalsComponent"));
+		assert(utility::startsWith(render_components[0]->getComponent<RenderableMeshComponent>()->mID, "RenderLaserLineComponent"));
+		assert(utility::startsWith(render_components[1]->getComponent<RenderableMeshComponent>()->mID, "RenderLaserNormalsComponent"));
 		mLineRenderer = render_components[0];
 		mNormalsRenderer = render_components[1];
 
