@@ -14,7 +14,7 @@ namespace nap
 	void Window::processEvents()
 	{
 		for (auto& event : mWindowEvents)
-			onWindowEvent(*event);
+			mWindowEvent(*event);
 
 		mWindowEvents.clear();
 	}

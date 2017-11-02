@@ -74,6 +74,11 @@ namespace nap
 		void send(uint8_t channelData, int channel);
 
 		/**
+		 *	Clears all the data associated with this controller, ie: sets their values to 0
+		 */
+		void clear();
+
+		/**
 		 * @return Address where this controllers maps to. Upper 4 bits contain subnet, lower 4 bits contain universe.
 		 */
 		Address getAddress() const { return (mSubnet << 4) | mUniverse; }
@@ -93,7 +98,7 @@ namespace nap
 		friend class ArtNetService;
 
 		ArtNetService*		mService = nullptr;		// ArtNetService
-		ArtNetNode			mNode;					// libArtNet node for sending data
+		ArtNetNode			mNode = nullptr;		// libArtNet node for sending data
 	};
 
 	using ArtNetNodeCreator = rtti::ObjectCreator<ArtNetController, ArtNetService>;
