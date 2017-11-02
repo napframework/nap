@@ -100,6 +100,14 @@ namespace nap
 	}
 
 
+	void ArtNetService::clear(ArtNetController& controller)
+	{
+		ControllerMap::iterator pos = mControllers.find(controller.getAddress());
+		assert(pos != mControllers.end());
+		std::fill(pos->second->mData.begin(), pos->second->mData.end(), 0);
+	}
+
+
 	void ArtNetService::registerObjectCreators(rtti::Factory& factory)
 	{
 		factory.addObjectCreator(std::make_unique<ArtNetNodeCreator>(*this));

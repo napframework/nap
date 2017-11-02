@@ -6,22 +6,98 @@
 			"mID" : "Window",
 			"Width" : 512,
 			"Height" : 512,
-			"Title" : "Artnet",
+			"Title" : "ArtnetColor",
 			"Sync" : "false"
 		},
 		
 		{
 			"Type" 		: "nap::ArtNetController",
 			"mID" 		: "Universe0",
-			"Subnet" 	: 0,
-			"Universe" 	: 0
+			"Subnet" 	: 3,
+			"Universe" 	: 8
 		},
-		
+
 		{
-			"Type" 		: "nap::ArtNetController",
-			"mID" 		: "Universe1",
-			"Subnet" 	: 0,
-			"Universe" 	: 1
+			"Type" : "nap::Shader",
+			"mID": "PlaneShader",
+			"mVertShader": "shaders/artnetcolor/plane.vert",
+			"mFragShader": "shaders/artnetcolor/plane.frag"
+		},
+
+		{
+			"Type" : "nap::Material",
+			"mID": "PlaneMaterial",
+			"Shader": "PlaneShader",
+			"VertexAttributeBindings" : 
+			[
+				{
+					"MeshAttributeID": "Position",
+					"ShaderAttributeID": "in_Position"
+				}
+			]
+		},
+
+		{
+			"Type"		: "nap::PlaneMesh",
+			"mID" 		: "PlaneMesh",
+			"Size"		: 
+			{
+				"x" : 1.0,
+				"y" : 1.0
+			}
+		},
+
+		{
+			"Type" : "nap::Entity",
+			"mID"  : "PlaneEntity",
+			"Components" : 
+			[
+				{
+					"Type" : "nap::TransformComponent",
+					"Properties": 
+					{
+						"Translate": 
+						{
+							"x": 256.0,
+							"y": 256.0,
+							"z": 0.0
+						},
+						"Rotate": 
+						{
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0,
+							"w": 1.0
+						},
+						"Scale": 
+						{
+							"x": 512.0,
+							"y": 512.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.0						
+					}			
+				},
+				{
+					"Type" : "nap::RenderableMeshComponent",
+					"mID" : "RenderPlane",
+					"Mesh" : "PlaneMesh",
+					"MaterialInstance" : 
+					{
+						"Material": "PlaneMaterial"
+					}
+				},
+				{
+					"Type" : "nap::SelectColorComponent",
+					"Controller" : "Universe0",
+					"Mesh" : "RenderPlane",
+					"Channel" : 0,
+					"Red" : 128,
+					"Green" : 64,
+					"Blue" : 255,
+					"White" : 64
+				}
+			]
 		},
 		
 		{
@@ -33,7 +109,7 @@
 					"Type" : "nap::OrthoCameraComponent",
 					"Properties": 
 					{
-						"NearClippingPlane" : 0.01,
+						"NearClippingPlane" : 1.0,
 						"FarClippingPlane" : 10000.0
 					}
 				},
@@ -45,7 +121,7 @@
 						{
 							"x": 0.0,
 							"y": 0.0,
-							"z": 0.0
+							"z": 2.0
 						},
 						"Rotate": 
 						{

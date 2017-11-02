@@ -3,6 +3,8 @@
 // Nap includes
 #include <nap/core.h>
 #include <nap/logger.h>
+#include <renderablemeshcomponent.h>
+#include <orthocameracomponent.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ArtnetColorApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -31,9 +33,16 @@ namespace nap
 		mCameraEntity = mResourceManager->findEntity("CameraEntity");
 		assert(mCameraEntity != nullptr);
 		
+		mPlaneEntity = mResourceManager->findEntity("PlaneEntity");
+		assert(mPlaneEntity != nullptr);
+
+		// Get artnet controller
+		mArtnetController = mResourceManager->findObject("Universe0");
+
 		// Store all render windows
-		mRenderWindows.push_back(mResourceManager->findObject<RenderWindow>("Window"));
-		
+		mRenderWindow = mResourceManager->findObject<RenderWindow>("Window");
+		mRenderWindow->mWindowEvent.connect(mWindowEventSlot);
+
 		// Set render states
 		RenderState& render_state = mRenderService->getRenderState();
 		render_state.mEnableMultiSampling = true;
@@ -47,6 +56,7 @@ namespace nap
 	// Called when the window is updating
 	void ArtnetColorApp::update(double deltaTime)
 	{		
+		/*
 		// Update and send our test data over ArtNET
 		float sine = sin(mRenderService->getCore().getElapsedTime() * (M_PI * 2));
 		
@@ -59,30 +69,31 @@ namespace nap
 			channel_data[index] = std::min((float)index / (float)channel_data.size() + offset, 1.0f);
 		}
 		
-		ObjectPtr<ArtNetController> universe_0 = mResourceManager->findObject("Universe0");
-		universe_0->send(channel_data);
-		
-		ObjectPtr<ArtNetController> universe_1 = mResourceManager->findObject("Universe1");
-		std::reverse(channel_data.begin(), channel_data.end());
-		universe_1->send(channel_data);
+		mArtnetController->send(channel_data);
+		*/
 	}
 	
+
 	
 	// Called when the window is going to render
 	void ArtnetColorApp::render()
 	{
-		mRenderService->destroyGLContextResources(mRenderWindows);
+		mRenderService->destroyGLContextResources({mRenderWindow});
 		
 		// Activate current window for drawing
-		mRenderWindows[0]->makeActive();
+		mRenderWindow->makeActive();
 		
 		// Clear back-buffer
-		opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(mRenderWindows[0]->getWindow()->getBackbuffer());
+		opengl::RenderTarget& backbuffer = *mRenderWindow->getWindow()->getBackbuffer();
 		backbuffer.setClearColor(glm::vec4(0.0705f, 0.49f, 0.5647f, 1.0f));
-		mRenderService->clearRenderTarget(backbuffer, opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH | opengl::EClearFlags::STENCIL);
+		mRenderService->clearRenderTarget(backbuffer);
 		
+		// Render objects
+		OrthoCameraComponentInstance& ortho_cam_comp = mCameraEntity->getComponent<nap::OrthoCameraComponentInstance>();
+		mRenderService->renderObjects(backbuffer, ortho_cam_comp);
+
 		// Swap backbuffer
-		mRenderWindows[0]->swap();
+		mRenderWindow->swap();
 	}
 	
 
@@ -91,7 +102,13 @@ namespace nap
 	 */
 	void ArtnetColorApp::handleWindowEvent(const WindowEvent& windowEvent)
 	{
-		
+		if (windowEvent.get_type().is_derived_from(RTTI_OF(WindowResizedEvent)))
+		{
+			const WindowResizedEvent& res_event = static_cast<const WindowResizedEvent&>(windowEvent);
+			nap::TransformComponentInstance& trans_comp = mPlaneEntity->getComponent<nap::TransformComponentInstance>();
+			trans_comp.setScale({ res_event.mX, res_event.mY, 1.0 });
+			trans_comp.setTranslate({ res_event.mX / 2.0f, res_event.mY / 2.0f, 0.0f });
+		}
 	}
 	
 	
@@ -121,7 +138,9 @@ namespace nap
 	}
 
 	
+
 	void ArtnetColorApp::shutdown()
 	{
+		mRenderWindow->mWindowEvent.disconnect(mWindowEventSlot);
 	}
 }

@@ -76,4 +76,11 @@ namespace nap
 	{
 		mService->send(*this, channelData, channel);
 	}
+
+
+	void ArtNetController::clear()
+	{
+		mService->clear(*this);
+	}
+
 }

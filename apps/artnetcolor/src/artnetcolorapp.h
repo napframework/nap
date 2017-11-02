@@ -5,6 +5,7 @@
 #include <renderwindow.h>
 #include <sdlinput.h>
 #include <sdlwindow.h>
+#include <nap/signalslot.h>
 
 // Nap includes
 #include <nap/resourcemanager.h>
@@ -42,11 +43,6 @@ namespace nap
 		void render() override;
 
 		/**
-		 *	Called when a window event is received
-		 */
-		void handleWindowEvent(const WindowEvent& windowEvent);
-
-		/**
 		 *	Forwards the received window event to the render service
 		 */
 		void windowMessageReceived(WindowEventPtr windowEvent) override;
@@ -66,18 +62,24 @@ namespace nap
 		 */
 		void shutdown() override;
 		
+
 	private:
 		
 		// Nap Services
-		RenderService* mRenderService = nullptr;					//< Render Service that handles render calls
-		ResourceManager* mResourceManager = nullptr;	//< Manages all the loaded resources
-		SceneService* mSceneService = nullptr;						//< Manages all the objects in the scene
-		
-		InputService* mInputService = nullptr;						//< Input service for processing input
-		ArtNetService* mArtnetService = nullptr;					//< Manages ArtNET communication
-		
-		std::vector<ObjectPtr<RenderWindow>> mRenderWindows;		//< Vector holding pointers to the spawned render windows
+		RenderService*		mRenderService = nullptr;				//< Render Service that handles render calls
+		ResourceManager*	mResourceManager = nullptr;				//< Manages all the loaded resources
+		SceneService*		mSceneService = nullptr;				//< Manages all the objects in the scene
+		InputService*		mInputService = nullptr;				//< Input service for processing input
+		ArtNetService*		mArtnetService = nullptr;				//< Manages ArtNET communication
+
+		ObjectPtr<RenderWindow> mRenderWindow;						//< Vector holding pointers to the spawned render windows
 		
 		ObjectPtr<EntityInstance> mCameraEntity = nullptr;			//< Pointer to the entity that holds the camera
+		ObjectPtr<EntityInstance> mPlaneEntity = nullptr;			//< Pointer to the entity that holds the plane
+		ObjectPtr<ArtNetController> mArtnetController = nullptr;	//< The art-net controller
+
+		// Window event handling
+		void handleWindowEvent(const WindowEvent& windowEvent);
+		NSLOT(mWindowEventSlot, const nap::WindowEvent&, handleWindowEvent)
 	};
 }
