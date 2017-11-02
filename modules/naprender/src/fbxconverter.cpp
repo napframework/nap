@@ -15,7 +15,7 @@
 #include <assimp/scene.h>
 #include <utility/stringutils.h>
 #include <rtti/binarywriter.h>
-#include <nap/fileutils.h>
+#include <utility/fileutils.h>
 #include <utility/errorstate.h>
 #include <rtti/binaryreader.h>
 
@@ -89,7 +89,7 @@ namespace nap
 			return false;
 
 		uint64_t fbx_mod_time;
-		if (!errorState.check(getFileModificationTime(fbxPath, fbx_mod_time), "Failed to retrieve modification time from %s", fbxPath.c_str()))
+		if (!errorState.check(utility::getFileModificationTime(fbxPath, fbx_mod_time), "Failed to retrieve modification time from %s", fbxPath.c_str()))
 			return false;
 
 		// Create meshes for every contained mesh
@@ -102,21 +102,21 @@ namespace nap
 			std::string converted_name;
 			if (scene->mNumMeshes == 1)
 			{
-				converted_name = getFileNameWithoutExtension(fbxPath);
+				converted_name = utility::getFileNameWithoutExtension(fbxPath);
 			}				
 			else
 			{
 				if (fbx_mesh->mName.length != 0)
-					converted_name = utility::stringFormat("%s_%s", getFileNameWithoutExtension(fbxPath).c_str(), fbx_mesh->mName.C_Str());
+					converted_name = utility::stringFormat("%s_%s", utility::getFileNameWithoutExtension(fbxPath).c_str(), fbx_mesh->mName.C_Str());
 				else
-					converted_name = utility::stringFormat("%s_%d", getFileNameWithoutExtension(fbxPath).c_str(), i);			
+					converted_name = utility::stringFormat("%s_%d", utility::getFileNameWithoutExtension(fbxPath).c_str(), i);			
 			}				
 
-			std::string output_file = getAbsolutePath(utility::stringFormat("%s/%s.mesh", outputDirectory.c_str(), converted_name.c_str()));
+			std::string output_file = utility::getAbsolutePath(utility::stringFormat("%s/%s.mesh", outputDirectory.c_str(), converted_name.c_str()));
 
 			// Determine whether the output file exists and if it does, its modification time
 			uint64_t output_mod_time;
-			bool output_exists = getFileModificationTime(output_file, output_mod_time);
+			bool output_exists = utility::getFileModificationTime(output_file, output_mod_time);
 
 			// We want to convert the file if it does not exist, or if the source file is newer than the output file
 			bool should_convert = !output_exists || convertOptions == EFBXConversionOptions::CONVERT_ALWAYS || fbx_mod_time > output_mod_time || !rtti::checkBinaryVersion(output_file);

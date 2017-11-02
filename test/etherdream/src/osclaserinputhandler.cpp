@@ -111,7 +111,7 @@ namespace nap
 	void OSCLaserInputHandlerInstance::handleMessageReceived(const nap::OSCEvent& oscEvent)
 	{
 		std::vector<std::string> parts;
-		utility::gSplitString(oscEvent.getAddress(), '/', parts);
+		utility::splitString(oscEvent.getAddress(), '/', parts);
 		assert(parts.size() > 2);
 
 		// Erase the first 2 entries
