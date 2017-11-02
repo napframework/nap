@@ -114,7 +114,7 @@ namespace nap
 		}
 
 
-		bool gContains(const std::string& inString, const std::string& inSubString, bool caseSensitive)
+		bool contains(const std::string& inString, const std::string& inSubString, bool caseSensitive)
 		{
 			// case sensitive
 			if (caseSensitive)
