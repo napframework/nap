@@ -71,14 +71,32 @@ namespace nap
 		 * Checks if @string starts with @subString
 		 * @param string the string to check
 		 * @param subString the part of the string to check for
-		 * @param caseSensitive if the check should take in to account
+		 * @param caseSensitive if the lookup is case sensitive or not
+		 * @return if @string starts with @subString
 		 */
 		bool startsWith(const std::string& string, const std::string& subString, bool caseSensitive = true);
 
-		bool gContains(const std::string& inString, const std::string& inSubString, bool caseSensitive = true);
+		/**
+		 * Checks if @subString is present in @string
+		 * @param string the full string that could contain @substring
+		 * @param subString part of the string that could be present in @string
+		 * @param caseSensitive if the lookup is case sensitive or not
+		 * @return if @string contains @subString
+		 */
+		bool contains(const std::string& string, const std::string& subString, bool caseSensitive = true);
 
-		std::string trim(const std::string& s);
+		/**
+		 * Strips white space characters from a string
+		 * @param string the string to remove white space characters from
+		 * @return the string without white space characters
+		 */
+		std::string trim(const std::string& string);
 
+		/**
+		 * Converts @T in to a string
+		 * @param thing the object to convert in to a string
+		 * @return the object as a string
+		 */
 		template <typename T>
 		inline std::string addresStr(T thing)
 		{
@@ -88,6 +106,13 @@ namespace nap
 			return ss.str();
 		}
 
+		/**
+		 * Formats a string based on the incoming arguments
+		 * example: "%s contains %d number of items", object.name().c_str(), i
+		 * @param format the string to format
+		 * @param Args... the arguments to replace in @format
+		 * @return the formatted string
+		 */
 		template <typename... Args>
 		static std::string stringFormat(const std::string& format, Args... args)
 		{

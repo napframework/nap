@@ -3,7 +3,7 @@
 #include "material.h"
 
 // External Includes
-#include <nap/fileutils.h>
+#include <utility/fileutils.h>
 #include <nap/logger.h>
 
 RTTI_BEGIN_CLASS(nap::Shader)
@@ -23,7 +23,7 @@ namespace nap
 			return false;
 
 		// Set display name
-		mDisplayName = getFileNameWithoutExtension(mVertPath);
+		mDisplayName = utility::getFileNameWithoutExtension(mVertPath);
 
 		mShader = std::make_unique<opengl::Shader>();
 

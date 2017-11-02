@@ -1,5 +1,5 @@
+// Local Includes
 #include "modulemanager.h"
-#include "fileutils.h"
 #include "logger.h"
 #include "service.h"
 
@@ -9,6 +9,9 @@
 #else
 	#include <dlfcn.h> // Posix shared object loading
 #endif
+
+// External Includes
+#include <utility/fileutils.h>
 
 namespace
 {
@@ -128,21 +131,21 @@ namespace nap
 	{
 		// Find all files in the specified directory
 		std::vector<std::string> files_in_directory;
-		nap::listDir(directory.c_str(), files_in_directory);
+		utility::listDir(directory.c_str(), files_in_directory);
 
 		for (const auto& filename : files_in_directory)
 		{
 			rtti::TypeInfo service = rtti::TypeInfo::empty();
 
 			// Ignore directories
-			if (dirExists(filename))
+			if (utility::dirExists(filename))
 				continue;
 
 			// Ignore non-shared libraries
-			if (getFileExtension(filename) != moduleExtension)
+			if (utility::getFileExtension(filename) != moduleExtension)
 				continue;
 
-			std::string module_path = getAbsolutePath(filename);
+			std::string module_path = utility::getAbsolutePath(filename);
 
 			// Try to load the module
 			std::string error_string;
