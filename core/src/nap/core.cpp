@@ -51,7 +51,7 @@ namespace nap
 	{
 		// Ensure our current working directory is where the executable is.  Works around issues with the current working directory not being set as
 		// expected when apps are launched directly from Finder and probably other things too.
-		chdir(nap::utility::getExecutableDir().c_str());
+		nap::utility::changeDir(nap::utility::getExecutableDir());
 		
 		// Load all modules
 		// TODO: This should be correctly resolved, ie: the dll's should always
