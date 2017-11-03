@@ -32,7 +32,7 @@ namespace nap
 		
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Viewport");
-		mRenderWindow->onWindowEvent.connect(std::bind(&SteefApp::handleWindowEvent, this, std::placeholders::_1));
+		mRenderWindow->mWindowEvent.connect(std::bind(&SteefApp::handleWindowEvent, this, std::placeholders::_1));
 		
 		// Get vintl textures
 		mVinylLabelImg = mResourceManager->findObject<nap::Image>("LabelImage");
