@@ -28,4 +28,3 @@ int main(int argc, char *argv[])
 	// Return if the app ran successfully
 	return app_runner.exitCode();
 }
-
