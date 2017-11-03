@@ -83,4 +83,35 @@ namespace nap
 		ucolor.setValue({ fr, fg, fb });
 		uwhite.setValue(fw);
 	}
+
+
+	void SelectColorComponentInstance::setColor(const glm::vec3& color)
+	{
+		mRed	= static_cast<uint8>(math::clamp<float>(color.r, 0.0f, 1.0f) * nap::math::max<uint8>());
+		mGreen	= static_cast<uint8>(math::clamp<float>(color.g, 0.0f, 1.0f) * nap::math::max<uint8>());
+		mBlue	= static_cast<uint8>(math::clamp<float>(color.b, 0.0f, 1.0f) * nap::math::max<uint8>());
+	}
+
+
+	void SelectColorComponentInstance::setWhite(float white)
+	{
+		mWhite = static_cast<uint8>(math::clamp<float>(white, 0.0f, 1.0f) * nap::math::max<uint8>());
+	}
+
+
+	glm::vec3 SelectColorComponentInstance::getColor() const
+	{
+		glm::vec3 color;
+		color.r = static_cast<float>(mRed)   / static_cast<float>(nap::math::max<uint8>());
+		color.g = static_cast<float>(mGreen) / static_cast<float>(nap::math::max<uint8>());
+		color.b = static_cast<float>(mBlue)  / static_cast<float>(nap::math::max<uint8>());
+		return color;
+	}
+
+
+	float SelectColorComponentInstance::getWhite() const
+	{
+		return static_cast<float>(mWhite) / static_cast<float>(nap::math::max<uint8>());
+	}
+
 }

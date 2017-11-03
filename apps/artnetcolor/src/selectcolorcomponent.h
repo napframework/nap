@@ -64,6 +64,27 @@ namespace nap
 		 */
 		virtual void update(double deltaTime) override;
 
+		/**
+		 * Set the color using a set of floats
+		 * @param color the new color in the 0-1 float range
+		 */
+		void setColor(const glm::vec3& color);
+
+		/**
+		 * Set the level of white
+		 */
+		void setWhite(float white);
+
+		/**
+		 * @return the color as a vec3 in the range of 0-1
+		 */
+		glm::vec3 getColor() const;
+
+		/**
+		 * @return the value of white as a float
+		 */
+		float getWhite() const;
+
 	private:
 		int					mStartChannel = 0;
 		ArtNetController*	mArtnetController = nullptr;

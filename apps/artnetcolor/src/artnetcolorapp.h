@@ -78,6 +78,9 @@ namespace nap
 		ObjectPtr<EntityInstance> mPlaneEntity = nullptr;			//< Pointer to the entity that holds the plane
 		ObjectPtr<ArtNetController> mArtnetController = nullptr;	//< The art-net controller
 
+		glm::vec3 mColor = { 0.0,0.0,0.0 };							//< Current Color
+		int mWhite = 0;												//< Current white level
+
 		// Window event handling
 		void handleWindowEvent(const WindowEvent& windowEvent);
 		NSLOT(mWindowEventSlot, const nap::WindowEvent&, handleWindowEvent)

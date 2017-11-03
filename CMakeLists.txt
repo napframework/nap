@@ -95,6 +95,7 @@ add_subdirectory(modules/napartnet)
 add_subdirectory(modules/naposc)
 add_subdirectory(modules/napsvg)
 add_subdirectory(modules/napapp)
+add_subdirectory(modules/napimgui)
 
 # Exe dependencies
 add_dependencies(rendertest mod_naprender)
