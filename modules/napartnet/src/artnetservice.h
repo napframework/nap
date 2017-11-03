@@ -105,6 +105,12 @@ namespace nap
 		 */
 		void send(ArtNetController& controller, uint8_t channelData, int channel);
 
+		/**
+		 * Clears all data associated with a specific controller, ie: sets the controller buffer to 0
+		 * @param controller the dmx controller to clear the values for
+		 */
+		void clear(ArtNetController& controller);
+
 	private:
 		friend class ArtNetController;
 		struct ControllerData
