@@ -51,6 +51,11 @@ namespace nap {
             std::vector<const PaHostApiInfo*> getHostApis();
             
             /**
+             * @return: name of the specified host API
+             */
+            std::string getHostApiName(unsigned int hostApiIndex);
+            
+            /**
              * @return: the number of all available audio devices, the total number contains both input and output devices separately.
              */
             unsigned int getDeviceCount();

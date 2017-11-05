@@ -75,6 +75,13 @@ namespace nap {
         }
         
         
+        std::string AudioDeviceService::getHostApiName(unsigned int hostApiIndex)
+        {
+            assert(hostApiIndex < getHostApiCount());
+            return getHostApiInfo(hostApiIndex).name;
+        }
+        
+        
         unsigned int AudioDeviceService::getDeviceCount()
         {
             return Pa_GetDeviceCount();
