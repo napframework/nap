@@ -135,8 +135,12 @@ namespace nap {
                 errorState.fail("Portaudio error: " + std::string(Pa_GetErrorText(error)));
                 return false;
             }
-            
-            Logger::info("Portaudio default stream started: %i inputs, %i outputs, samplerate %i, buffersize %i", mInputChannelCount, mOutputChannelCount, int(mSampleRate), mBufferSize);
+
+			auto hostApi = mService->getHostApiName(Pa_GetDefaultHostApi());
+			auto inputDevice = mService->getDeviceName(Pa_GetDefaultInputDevice());
+			auto outputDevice = mService->getDeviceName(Pa_GetDefaultOutputDevice());
+
+            Logger::info("Portaudio default stream started: %s - %s, %s, %i inputs, %i outputs, samplerate %i, buffersize %i", hostApi.c_str(), inputDevice.c_str(), outputDevice.c_str(), mInputChannelCount, mOutputChannelCount, int(mSampleRate), mBufferSize);
             return true;
         }
         
