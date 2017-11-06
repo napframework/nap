@@ -3,6 +3,7 @@
 
 // Nap includes
 #include <nap/logger.h>
+#include <utility/stringutils.h>
 
 // Audio includes
 #include "audiodeviceservice.h"
@@ -82,24 +83,24 @@ namespace nap {
         }
         
         
-        unsigned int AudioDeviceService::getDeviceCount()
+        unsigned int AudioDeviceService::getDeviceCount(unsigned int hostApiIndex)
         {
-            return Pa_GetDeviceCount();
+            return getHostApiInfo(hostApiIndex).deviceCount;
         }
         
         
-        const PaDeviceInfo& AudioDeviceService::getDeviceInfo(unsigned int deviceIndex)
+        const PaDeviceInfo& AudioDeviceService::getDeviceInfo(unsigned int hostApiIndex, unsigned int deviceIndex)
         {
-            return *Pa_GetDeviceInfo(deviceIndex);
+            return *Pa_GetDeviceInfo(Pa_HostApiDeviceIndexToDeviceIndex(hostApiIndex, deviceIndex));
         }
         
         
-        std::vector<const PaDeviceInfo*> AudioDeviceService::getDevices()
+        std::vector<const PaDeviceInfo*> AudioDeviceService::getDevices(unsigned int hostApiIndex)
         {
             std::vector<const PaDeviceInfo*> result;
-            for (auto i = 0; i < Pa_GetDeviceCount(); ++i)
+            for (auto i = 0; i < getHostApiInfo(hostApiIndex).deviceCount; ++i)
             {
-                result.emplace_back(&getDeviceInfo(i));
+                result.emplace_back(&getDeviceInfo(hostApiIndex, i));
             }
             return result;
         }
@@ -111,21 +112,43 @@ namespace nap {
             for (auto hostApi = 0; hostApi < Pa_GetHostApiCount(); ++hostApi)
             {
                 const PaHostApiInfo& hostApiInfo = *Pa_GetHostApiInfo(hostApi);
+                nap::Logger::info("%s:", hostApiInfo.name);
                 for (auto device = 0; device < hostApiInfo.deviceCount; ++device)
                 {
                     auto index = Pa_HostApiDeviceIndexToDeviceIndex(hostApi, device);
                     const PaDeviceInfo& info = *Pa_GetDeviceInfo(index);
-                    nap::Logger::info("%i: %s %s %i inputs %i outputs", index, hostApiInfo.name, info.name, info.maxInputChannels, info.maxOutputChannels);
+                    nap::Logger::info("%i: %s %i inputs %i outputs", device, info.name, info.maxInputChannels, info.maxOutputChannels);
                 }
             }
         }
         
         
-        std::string AudioDeviceService::getDeviceName(unsigned int deviceIndex)
+        std::string AudioDeviceService::getDeviceName(unsigned int hostApiIndex, unsigned int deviceIndex)
         {
-            assert(deviceIndex < getDeviceCount());
-            return getDeviceInfo(deviceIndex).name;
+            assert(hostApiIndex < getHostApiCount());
+            assert(deviceIndex < getDeviceCount(hostApiIndex));
+            return getDeviceInfo(hostApiIndex, deviceIndex).name;
         }
+        
+        
+        int AudioDeviceService::getDeviceIndex(const std::string& hostApi, const std::string& device)
+        {
+            for (auto hostApiIndex = 0; hostApiIndex < getHostApiCount(); ++hostApiIndex)
+            {
+                auto hostApiInfo = getHostApiInfo(hostApiIndex);
+                if (nap::utility::gToLower(hostApi) == nap::utility::gToLower(hostApiInfo.name))
+                {
+                    for (auto deviceIndex = 0; deviceIndex < hostApiInfo.deviceCount; ++deviceIndex)
+                    {
+                        auto deviceInfo = getDeviceInfo(hostApiIndex, deviceIndex);
+                        if (nap::utility::gToLower(device) == nap::utility::gToLower(deviceInfo.name))
+                            return Pa_HostApiDeviceIndexToDeviceIndex(hostApiIndex, deviceIndex);
+                    }
+                }
+            }
+            return -1;
+        }
+
         
     }
 }
