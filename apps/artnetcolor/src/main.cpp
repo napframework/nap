@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
 	nap::Core core;
 
 	// Create app runner
-	nap::AppRunner<nap::ArtnetColorApp, nap::AppEventHandler> app_runner(core);
+	nap::AppRunner<nap::ArtnetColorApp, nap::GUIAppEventHandler> app_runner(core);
 
 	// Start
 	nap::utility::ErrorState error;

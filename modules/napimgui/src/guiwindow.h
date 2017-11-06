@@ -2,6 +2,7 @@
 
 // Local includes
 #include "imguiservice.h"
+#include "imgui/imgui.h"
 
 // External Includes
 #include <rtti/rttiobject.h>
@@ -11,22 +12,22 @@ namespace nap
 {
 	/**
 	 * This object associates a set of GUI objects with a window
-	 * The Gui Service uses this link to set up the correct gui calls
+	 * The Gui Service uses this link to set up the correct GUI calls
 	 * and makes sure all events are forwarded correctly. 
 	 */
-	class GuiContainer : public rtti::RTTIObject
+	class NAPAPI GuiWindow : public rtti::RTTIObject
 	{
 		RTTI_ENABLE(rtti::RTTIObject)
 	public:
 		/**
 		 *	Constructor
 		 */
-		GuiContainer(nap::IMGuiService& service);
+		GuiWindow(nap::IMGuiService& service);
 		
 		/**
 		 *	Destructor
 		 */
-		virtual ~GuiContainer();
+		virtual ~GuiWindow();
 
 		/**
 		* Initialize this object after de-serialization
@@ -39,8 +40,9 @@ namespace nap
 
 	private:
 		IMGuiService& mService;
+		bool mInitialized = false;
 	};
 
 	// Object creator used for constructing the gui container
-	using GuiContainerObjectCreator = rtti::ObjectCreator<GuiContainer, IMGuiService>;
+	using GuiWindowObjectCreator = rtti::ObjectCreator<GuiWindow, IMGuiService>;
 }
