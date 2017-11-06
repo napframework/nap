@@ -55,8 +55,6 @@ namespace nap
 		
 		// Initialize colors
 		nap::SelectColorComponentInstance& color_comp = mPlaneEntity->getComponent<nap::SelectColorComponentInstance>();
-
-
 		mColor = color_comp.getColor();
 		mWhite = color_comp.getWhite() * nap::math::max<uint8>();
 
