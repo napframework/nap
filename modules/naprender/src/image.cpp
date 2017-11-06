@@ -6,7 +6,6 @@
 
 // External Includes
 #include <nap/logger.h>
-#include <nap/fileutils.h>
 
 RTTI_BEGIN_CLASS(nap::Image)
 	RTTI_PROPERTY("ImagePath", 			&nap::Image::mImagePath, 		nap::rtti::EPropertyMetaData::FileLink | nap::rtti::EPropertyMetaData::Required)

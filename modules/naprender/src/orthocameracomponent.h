@@ -18,6 +18,10 @@ namespace nap
 	 */
 	struct NAPAPI OrthoCameraProperties
 	{
+		float mLeftPlane = 0.0f;
+		float mRightPlane = 100.0f;
+		float mTopPlane = 0.0f;
+		float mBottomPlane = 100.0f;
 		float mNearClippingPlane = 1.0f;
 		float mFarClippingPlane = 1000.0f;
 	};
@@ -40,14 +44,22 @@ namespace nap
 	};
 
 	/**
-	 * An orthographic camera. The space that the camera is operating in is in pixel coordinates.
-	 * Be sure to call setRenderTargetSize so that the camera's space is updated correctly.
+	 * An orthographic camera. The space that the camera is operating depends on the mode that is set. By default, it is operating in pixel space.
+	 * Use setMode to change the space that the camera is operating in.
 	 * The transform to calculate the view matrix is retrieved from the transform component.
 	 */
 	class NAPAPI OrthoCameraComponentInstance : public CameraComponentInstance
 	{
 		RTTI_ENABLE(CameraComponentInstance)
 	public:
+
+		enum EMode
+		{
+			PixelSpace,				// left/right/top/bottom planes are scaled automatically to pixel coordinates. Near/far is retrieved from properties.
+			CorrectAspectRatio,		// User provides all planes, but height is recalculated for correct aspect ratio
+			Custom					// All planes are retrieved from properties
+		};
+
 		// Default constructor
 		OrthoCameraComponentInstance(EntityInstance& entity, Component& resource);
 
@@ -78,6 +90,23 @@ namespace nap
 		 */
 		virtual const glm::mat4 getViewMatrix() const override;
 
+		/**
+		* @return The planes for this orthographic camera.
+		*/
+		const OrthoCameraProperties& getProperties() { return mProperties; }
+
+		/**
+		* Sets the orthographic camera planes.
+		* @param properties The camera planes to set.
+		*/
+		void setProperties(const OrthoCameraProperties& properties);
+
+		/**
+		* Sets the mode (the physical space) in which the orthographic camera is operating.
+		* @param mode The mode to set.
+		*/
+		void setMode(EMode mode);
+
 	private:
 
 		/**
@@ -87,13 +116,10 @@ namespace nap
 		void setDirty() { mDirty = true; }
 
 	private:
-
-		mutable glm::mat4x4		mProjectionMatrix;		// The composed projection matrix
-
-		mutable bool			mDirty = true;			// If the projection matrix needs to be recalculated
-		glm::ivec2				mRenderTargetSize;		// The size of the rendertarget we're rendering to
-		
-		OrthoCameraProperties	mProperties;			// These properties are copied from the resource to the instance. When these are changed, only the instance is affected
-		TransformComponentInstance*		mTransformComponent;	// Cached transform component
+		EMode							mMode = EMode::PixelSpace;	// By default we map to pixel space
+		mutable glm::mat4x4				mProjectionMatrix;			// The composed projection matrix
+		mutable bool					mDirty = true;				// If the projection matrix needs to be recalculated
+		OrthoCameraProperties			mProperties;				// These properties are copied from the resource to the instance. When these are changed, only the instance is affected
+		TransformComponentInstance*		mTransformComponent;		// Cached transform component
 	};
 }

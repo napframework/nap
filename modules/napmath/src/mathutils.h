@@ -103,6 +103,31 @@ namespace nap
 		 */
 		int NAPAPI random(int min, int max);
 
+		/**
+		 * Interpolates a value over time to a @target using a dampening model
+		 * @param currentValue the current blend value, often the @return value
+		 * @param targetValue the value to blend to
+		 * @param currentVelocity the current velocity used to blend to @target
+		 * @param time in seconds between cooks
+		 * @param smoothTime approximately the time it will take to reach the target. A smaller value will reach the target faster.
+		 * @param maxSpeed allows you to clamp the maximum speed
+		 * @return the blended current value
+		 */
+		float NAPAPI smoothDamp(float currentValue, float targetValue, float& currentVelocity, float deltaTime, float smoothTime, float maxSpeed = 1000.0f);
+
+		/**
+		* Smoothly interpolates a value over time to a @target using a dampening model
+		* @param currentValue the current blend value, will be updated after calling
+		* @param targetValue the value to blend to
+		* @param currentVelocity the current velocity used to blend to @target
+		* @param time in seconds between cooks
+		* @param smoothTime approximately the time it will take to reach the target. A smaller value will reach the target faster.
+		* @param maxSpeed allows you to clamp the maximum speed
+		* @return the blended current value
+		*/
+		template<typename T>
+		void smooth(T& currentValue, const T& targetValue, T& currentVelocity, float deltaTime, float smoothTime, float maxSpeed);
+
 		//////////////////////////////////////////////////////////////////////////
 		// Template definitions
 		//////////////////////////////////////////////////////////////////////////
@@ -203,5 +228,17 @@ namespace nap
 
 		template<>
 		NAPAPI int power<int>(int value, int exp);
+
+		template<>
+		NAPAPI void smooth(float& currentValue, const float& targetValue, float& currentVelocity, float deltaTime, float smoothTime, float maxSpeed);
+
+		template<>
+		NAPAPI void smooth(glm::vec2& currentValue, const glm::vec2& targetValue, glm::vec2& currentVelocity, float deltaTime, float smoothTime, float maxSpeed);
+
+		template<>
+		NAPAPI void smooth(glm::vec3& currentValue, const glm::vec3& targetValue, glm::vec3& currentVelocity, float deltaTime, float smoothTime, float maxSpeed);
+
+		template<>
+		NAPAPI void smooth(glm::vec4& currentValue, const glm::vec4& targetValue, glm::vec4& currentVelocity, float deltaTime, float smoothTime, float maxSpeed);
 	}
 }

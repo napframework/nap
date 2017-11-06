@@ -10,11 +10,12 @@ namespace nap
 	 */
 	struct ModuleDescriptor
 	{
-        static const int	ModuleAPIVersion = 1; // Current version of the module API version
+		static const int	ModuleAPIVersion = 1; // Current version of the module API version
 
 		int					mAPIVersion;	// The version of the module API this module was built against. Must be the first member.
 		const char*			mID;			// The ID (name) of the module
 		const char*			mVersion;		// The version of the module
+		const char*			mService;		// The service associated with the module
 	};
 
 	/**
@@ -27,8 +28,23 @@ namespace nap
 			{																			\
 				nap::ModuleDescriptor::ModuleAPIVersion,								\
 				moduleID,																\
-				moduleVersion															\
+				moduleVersion,															\
+				nullptr																	\
 			};																			\
 		}
-}
 
+	/**
+	 * Macro used to define (and on windows, export) the descriptor for a particular module with a service. Should appear exactly once in the source for a module, in a cpp.
+	 */
+	#define NAP_SERVICE_MODULE(moduleID, moduleVersion, moduleService)						\
+			extern "C"																		\
+			{																				\
+				NAPAPI nap::ModuleDescriptor descriptor =									\
+				{																			\
+					nap::ModuleDescriptor::ModuleAPIVersion,								\
+					moduleID,																\
+					moduleVersion,															\
+					moduleService															\
+				};																			\
+			}
+}

@@ -23,19 +23,6 @@ namespace nap
 		// Default Constructor
 		EtherDreamService();
 
-		// Default Destructor
-		virtual ~EtherDreamService();
-
-		/**
-		 * Initializes the etherdream library.
-		 */
-		bool init(nap::utility::ErrorState& errorState);
-
-		/**
-		 *	Register specific object creators
-		 */
-		virtual void registerObjectCreators(rtti::Factory& factory) override;
-
 	protected:
 		/**
 		 * Adds a dac to the system, every dac is associated with a number.
@@ -44,6 +31,26 @@ namespace nap
 		 * @return if the dac has been found and added to the system
 		 */
 		bool allocateDAC(EtherDreamDac& dac);
+
+		/**
+		* Register specific object creators
+		*/
+		virtual void registerObjectCreators(rtti::Factory& factory) override;
+
+		/**
+		 *	This service depends on scene and render
+		 */
+		virtual void getDependentServices(std::vector<rtti::TypeInfo>& dependencies) override;
+
+		/**
+		* Initializes the etherdream library.
+		*/
+		virtual bool init(nap::utility::ErrorState& errorState) override;
+
+		/**
+		 *	Shutdown the etherdream library
+		 */
+		virtual void shutdown() override;
 
 		/**
 		* @return the etherdream interface that manages all the DACs

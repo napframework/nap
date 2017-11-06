@@ -316,7 +316,7 @@ namespace nap
 			PointerEvent* pointer_event = nullptr;
 			if (inp_it->second == RTTI_OF(nap::PointerMoveEvent))
 			{
-				pointer_event = inp_it->second.create<PointerEvent>({ sdlEvent.motion.x, sdlEvent.motion.y, window_id, 0 });
+				pointer_event = inp_it->second.create<PointerEvent>({ sdlEvent.motion.xrel, sdlEvent.motion.yrel, sdlEvent.motion.x, sdlEvent.motion.y, window_id, 0 });
 			}
 			else
 			{

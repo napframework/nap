@@ -529,6 +529,8 @@ namespace nap
 
 			/**
 			 * Get the property that's holding the value pointed to by this path
+			 *
+			 * @return The property that this path is pointing to
 			 */
 			const rtti::Property& getProperty() const;
 

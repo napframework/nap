@@ -1,5 +1,9 @@
 #pragma once
 
+// Local Includes
+#include "basetexture2d.h"
+
+// External Includes
 #include <rtti/rttiobject.h>
 #include <nap/objectptr.h>
 #include <glm/glm.hpp>
@@ -12,8 +16,6 @@ namespace opengl
 
 namespace nap
 {
-	class BaseTexture2D;
-
 	/**
 	 * Frame buffer specialization of the render target resource
 	 * Wraps an opengl frame buffer (RGBA + DEPTH)
