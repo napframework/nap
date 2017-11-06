@@ -7,8 +7,6 @@
 #include "entityptr.h"
 #include "componentptr.h"
 #include <utility/fileutils.h>
-#include "logger.h"
-#include "core.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ResourceManager)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -1055,5 +1053,13 @@ namespace nap
 
 		return pos->second.get();
 	}
+
+    std::vector<nap::ObjectPtr<rtti::RTTIObject>> ResourceManager::getObjects()
+    {
+        std::vector<nap::ObjectPtr<rtti::RTTIObject>> result;
+        for (auto& ob : mObjects)
+            result.emplace_back(ob.second.get());
+        return result;
+    }
 
 }

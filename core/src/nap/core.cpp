@@ -15,8 +15,6 @@ using namespace std;
 RTTI_BEGIN_CLASS(nap::Core)
 	RTTI_FUNCTION("getService", (nap::Service* (nap::Core::*)(const std::string&))&nap::Core::getService)
 	RTTI_FUNCTION("getResourceManager", &nap::Core::getResourceManager)
-    RTTI_FUNCTION("getServices", (std::vector<nap::Service*> (nap::Core::*)(void))&nap::Core::getServices)
-
 RTTI_END_CLASS
 
 
@@ -207,14 +205,6 @@ namespace nap
 		// Check if found
 		return found_service == mServices.end() ? nullptr : (*found_service).get();
 	}
-
-    vector<Service*> Core::getServices() {
-        std::vector<Service*> ret;
-        for (auto& s : mServices)
-            ret.emplace_back(s.get());
-        return ret;
-    }
-
 
 	nap::Service* Core::getService(const std::string& type)
 	{
