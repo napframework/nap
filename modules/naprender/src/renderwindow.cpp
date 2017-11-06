@@ -8,6 +8,7 @@ RTTI_BEGIN_CLASS(nap::RenderWindow)
 	RTTI_PROPERTY("Resizable",		&nap::RenderWindow::mResizable,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Title",			&nap::RenderWindow::mTitle,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Sync",			&nap::RenderWindow::mSync,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ClearColor",		&nap::RenderWindow::mClearColor,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
@@ -31,8 +32,11 @@ namespace nap
 		if (!errorState.check(mWindow != nullptr, "Failed to create window"))
 			return false;
 
+		// Set color to clear
+		mWindow->getBackbuffer()->setClearColor(mClearColor);
+
 		// We want to respond to resize events for this window
-		onWindowEvent.connect(std::bind(&RenderWindow::handleEvent, this, std::placeholders::_1));
+		mWindowEvent.connect(std::bind(&RenderWindow::handleEvent, this, std::placeholders::_1));
 		return true;
 	}
 

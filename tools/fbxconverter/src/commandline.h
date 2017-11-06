@@ -1,6 +1,6 @@
 #pragma once
 
-#include <nap/fileutils.h>
+#include <utility/fileutils.h>
 #undef HAVE_LONG_LONG
 #include "tclap/CmdLine.h"
 
@@ -35,7 +35,7 @@ public:
 
 			command.parse(argc, argv);
 
-			commandLine.mOutputDirectory = nap::getAbsolutePath(output_directory.getValue());
+			commandLine.mOutputDirectory = nap::utility::getAbsolutePath(output_directory.getValue());
 			commandLine.mFilesToConvert = files.getValue();
 			commandLine.mForceConvert = force_convert.getValue();
 		}

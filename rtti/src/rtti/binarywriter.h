@@ -109,10 +109,7 @@ namespace nap
 			 *
 			 * @param string The string to write
 			 */
-			void writeString(const std::string& string)
-			{
-				writeString(string.data(), string.length());
-			}
+			void writeString(const std::string& string);
 
 			/**
 			 * Write the string to the buffer
@@ -120,32 +117,20 @@ namespace nap
 			 * @param string The string to write
 			 * @param length The length of the string
 			 */
-			void writeString(const char* string, size_t length)
-			{
-				write(length);
-				write(string, length);
-			}
-
+			void writeString(const char* string, size_t length);
 
 			/**
 			 * Get the current position in the stream
 			 *
 			 * @return The position in the stream
 			 */
-			size_t getPosition() const
-			{
-				return mBuffer.empty() ? 0 : mWritePointer - mBuffer.data();
-			}
+			size_t getPosition() const;
 
 
 			/**
 			 * Seek to the specified position in the stream
 			 */
-			void seek(size_t position)
-			{
-				assert(position <= mBuffer.size());
-				mWritePointer = mBuffer.data() + position;
-			}
+			void seek(size_t position);
 
 		private:
 			std::vector<uint8_t>	mBuffer;

@@ -6,6 +6,28 @@ namespace nap
 {
 	namespace rtti
 	{
+		void BinaryWriter::writeString(const std::string& string)
+		{
+			writeString(string.data(), string.length());
+		}
+
+		void BinaryWriter::writeString(const char* string, size_t length)
+		{
+			write(length);
+			write(string, length);
+		}
+
+		size_t BinaryWriter::getPosition() const
+		{
+			return mBuffer.empty() ? 0 : mWritePointer - mBuffer.data();
+		}
+
+		void BinaryWriter::seek(size_t position)
+		{
+			assert(position <= mBuffer.size());
+			mWritePointer = mBuffer.data() + position;
+		}
+
 		bool BinaryWriter::start(const ObjectList& rootObjects)
 		{
 			// Gather all used types

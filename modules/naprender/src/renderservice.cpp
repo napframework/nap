@@ -15,6 +15,7 @@
 #include <rtti/factory.h>
 #include <nap/resourcemanager.h>
 #include <nap/logger.h>
+#include <sceneservice.h>
 
 namespace nap
 {
@@ -22,6 +23,12 @@ namespace nap
 	void RenderService::registerObjectCreators(rtti::Factory& factory)
 	{
 		factory.addObjectCreator(std::make_unique<RenderWindowResourceCreator>(*this));
+	}
+
+
+	void RenderService::getDependentServices(std::vector<rtti::TypeInfo>& dependencies)
+	{
+		dependencies.emplace_back(RTTI_OF(SceneService));
 	}
 
 
@@ -111,39 +118,64 @@ namespace nap
 	// Render all objects in scene graph using specified camera
 	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera)
 	{
-		// Get all render components
- 		std::vector<nap::RenderableComponentInstance*> render_comps;
+		renderObjects(renderTarget, camera, std::bind(&RenderService::sortObjects, this, std::placeholders::_1, std::placeholders::_2));
+	}
 
-		for (EntityInstance* entity : getCore().getService<ResourceManagerService>()->getEntities())
+
+	// Render all objects in scene graph using specified camera
+	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera, const SortFunction& sortFunction)
+	{
+		// Get all render components
+		std::vector<nap::RenderableComponentInstance*> render_comps;
+
+		for (EntityInstance* entity : getCore().getResourceManager()->getEntities())
 			entity->getComponentsOfType<nap::RenderableComponentInstance>(render_comps);
 
+		// Render these objects
+		renderObjects(renderTarget, camera, render_comps, sortFunction);
+	}
+
+
+	void RenderService::sortObjects(std::vector<RenderableComponentInstance*>& comps, const CameraComponentInstance& camera)
+	{
 		// Split into front to back and back to front meshes
 		std::vector<nap::RenderableComponentInstance*> front_to_back;
+		front_to_back.reserve(comps.size());
 		std::vector<nap::RenderableComponentInstance*> back_to_front;
+		back_to_front.reserve(comps.size());
 
-		for (nap::RenderableComponentInstance* component : render_comps)
+		for (nap::RenderableComponentInstance* component : comps)
 		{
 			nap::RenderableMeshComponentInstance* renderable_mesh = rtti_cast<RenderableMeshComponentInstance>(component);
 			if (renderable_mesh != nullptr)
 			{
-				EBlendMode blend_mode = renderable_mesh->getMaterialInstance().getBlendMode();
+				nap::RenderableMeshComponentInstance* renderable_mesh = static_cast<RenderableMeshComponentInstance*>(component);
+				EBlendMode blend_mode = renderable_mesh->getMaterialInstance().getBlendMode();	
 				if (blend_mode == EBlendMode::AlphaBlend)
-					back_to_front.push_back(component);
+					back_to_front.emplace_back(component);
 				else
-					front_to_back.push_back(component);
+					front_to_back.emplace_back(component);
+			}
+			else
+			{
+				front_to_back.emplace_back(component);
 			}
 		}
-		
+
 		// Sort front to back and render those first
 		DepthSorter front_to_back_sorter(DepthSorter::EMode::FrontToBack, camera.getViewMatrix());
 		std::sort(front_to_back.begin(), front_to_back.end(), front_to_back_sorter);
-		renderObjects(renderTarget, camera, front_to_back);
 
 		// Then sort back to front and render these
 		DepthSorter back_to_front_sorter(DepthSorter::EMode::BackToFront, camera.getViewMatrix());
 		std::sort(back_to_front.begin(), back_to_front.end(), back_to_front_sorter);
-		renderObjects(renderTarget, camera, back_to_front);
+
+		// concatinate both in to the output
+		comps.clear();
+		comps.insert(comps.end(), std::make_move_iterator(front_to_back.begin()), std::make_move_iterator(front_to_back.end()));
+		comps.insert(comps.end(), std::make_move_iterator(back_to_front.begin()), std::make_move_iterator(back_to_front.end()));
 	}
+
 
 	// Updates the current context's render state by using the latest render state as set by the user.
 	void RenderService::updateRenderState()
@@ -161,12 +193,23 @@ namespace nap
 		}
 	}
 
+
 	// Renders all available objects to a specific renderTarget.
 	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps)
 	{
+		renderObjects(renderTarget, camera, comps, std::bind(&RenderService::sortObjects, this, std::placeholders::_1, std::placeholders::_2));
+	}
+
+
+	void RenderService::renderObjects(opengl::RenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction)
+	{
+		// Sort objects to render
+		std::vector<RenderableComponentInstance*> components_to_render = comps;
+		sortFunction(components_to_render, camera);
+
 		renderTarget.bind();
 
-		// Before we render, we always set render target size. This avoids overly complex
+		// Before we render, we always set aspect ratio. This avoids overly complex
 		// responding to various changes in render target sizes.
 		camera.setRenderTargetSize(renderTarget.getSize());
 
@@ -180,7 +223,7 @@ namespace nap
 		glm::mat4x4 view_matrix = camera.getViewMatrix();
 
 		// Draw
-		for (auto& comp : comps)
+		for (auto& comp : components_to_render)
 			comp->draw(view_matrix, projection_matrix);
 
 		renderTarget.unbind();
@@ -216,7 +259,26 @@ namespace nap
 		return true;
 	}
 	
-	void RenderService::queueResourceForDestruction(std::unique_ptr<opengl::IGLContextResource> resource) 
+
+	void RenderService::preUpdate(double deltaTime)
+	{
+		getPrimaryWindow().makeCurrent();
+	}
+
+
+	void RenderService::update(double deltaTime)
+	{
+		processEvents();
+	}
+
+
+	void RenderService::resourcesLoaded()
+	{
+		opengl::flush();
+	}
+
+
+	void RenderService::queueResourceForDestruction(std::unique_ptr<opengl::IGLContextResource> resource)
 	{ 
 		if (resource != nullptr)
 			mGLContextResourcesToDestroy.emplace_back(std::move(resource)); 

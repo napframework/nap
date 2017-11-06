@@ -7,6 +7,10 @@
 #include "transformcomponent.h"
 
 RTTI_BEGIN_CLASS(nap::OrthoCameraProperties)
+	RTTI_PROPERTY("LeftPlane",			&nap::OrthoCameraProperties::mLeftPlane,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("RightPlane",			&nap::OrthoCameraProperties::mRightPlane,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("TopPlane",			&nap::OrthoCameraProperties::mTopPlane,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("BottomPlane",		&nap::OrthoCameraProperties::mBottomPlane,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("NearClippingPlane",	&nap::OrthoCameraProperties::mNearClippingPlane,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("FarClippingPlane",	&nap::OrthoCameraProperties::mFarClippingPlane,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -39,12 +43,28 @@ namespace nap
 	}
 
 
-	// Set camera aspect ratio derived from width and height
 	void OrthoCameraComponentInstance::setRenderTargetSize(glm::ivec2 size)
 	{
-		if (mRenderTargetSize != size)
+		if (size != getRenderTargetSize())
 		{
-			mRenderTargetSize = size;
+			CameraComponentInstance::setRenderTargetSize(size);
+			setDirty();
+		}
+	}
+
+
+	void OrthoCameraComponentInstance::setProperties(const OrthoCameraProperties& properties)
+	{
+		mProperties = properties;
+		setDirty();
+	}
+
+
+	void OrthoCameraComponentInstance::setMode(EMode mode)
+	{
+		if (mMode != mode)
+		{
+			mMode = mode;
 			setDirty();
 		}
 	}
@@ -56,7 +76,31 @@ namespace nap
 	{
 		if (mDirty)
 		{
-			mProjectionMatrix = glm::ortho(0.0f, (float)mRenderTargetSize.x, (float)mRenderTargetSize.y, 0.0f, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
+			switch (mMode)
+			{
+				case EMode::PixelSpace:
+				{
+					// In this mode we use the rendertarget size to set the left/right/top/bottom planes.
+					glm::ivec2 render_target_size = getRenderTargetSize();
+					mProjectionMatrix = glm::ortho(0.0f, (float)render_target_size.x, (float)render_target_size.y, 0.0f, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
+					break;
+				}
+				case EMode::CorrectAspectRatio:
+				{
+					// In this mode, we scale the top and bottom planes based on the aspect ratio
+					glm::ivec2 renderTargetSize = getRenderTargetSize();
+					float aspect_ratio = (float)renderTargetSize.y / (float)renderTargetSize.x;
+					float top_plane = mProperties.mTopPlane * aspect_ratio;
+					float bottom_plane = mProperties.mBottomPlane * aspect_ratio;
+
+					mProjectionMatrix = glm::ortho(mProperties.mLeftPlane, mProperties.mRightPlane, bottom_plane, top_plane, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
+				}
+				case EMode::Custom:
+				{
+					mProjectionMatrix = glm::ortho(mProperties.mLeftPlane, mProperties.mRightPlane, mProperties.mBottomPlane, mProperties.mTopPlane, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
+				}
+			}
+
 			mDirty = false;
 		}
 

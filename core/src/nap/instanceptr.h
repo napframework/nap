@@ -65,7 +65,7 @@ namespace nap
 
 	private:
 		template<typename RESOURCE_TYPE, typename INSTANCE_TYPE, typename BASE> friend class InstancePtr;
-		friend class ResourceManagerService;
+		friend class ResourceManager;
 
 		ObjectPtr<rtti::RTTIObject> mResource;
 		rtti::RTTIObject*			mInstance;

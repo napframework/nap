@@ -17,7 +17,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Test)
 add_dependencies(${PROJECT_NAME} fbxconverter)
 
-target_link_libraries(${PROJECT_NAME} napcore mod_naprender nrender mod_napmath mod_napinput mod_napsdlinput mod_napsdlwindow mod_napvideo)
+target_link_libraries(${PROJECT_NAME} napcore mod_naprender nrender mod_napmath mod_napinput mod_napsdlinput mod_napsdlwindow mod_napvideo mod_napapp)
 
 if (WIN32)
     # Copy freeimage DLL
@@ -32,6 +32,6 @@ if (WIN32)
 endif()
 
 # create post build event
-export_fbx(${CMAKE_CURRENT_LIST_DIR}/data)
 copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/data data)
 copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/shaders shaders)
+export_fbx(${CMAKE_CURRENT_LIST_DIR}/data)
