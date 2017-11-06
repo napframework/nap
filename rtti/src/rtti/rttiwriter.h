@@ -14,11 +14,12 @@ namespace nap
 	namespace rtti
 	{
 		class RTTIObject;
-		typedef std::vector<RTTIObject*> ObjectList;
+		using ObjectList = std::vector<RTTIObject*>;
+		using ObjectSet = std::unordered_set<RTTIObject*>;
 
 		/**
 		 * This is the interface used by serializeObjects to serialize RTTI objects.
-		 * Having this interface allows the object hierarchy traversal logic to remain seperate from the actual writing logic.
+		 * Having this interface allows the object hierarchy traversal logic to remain separate from the actual writing logic.
 		 * This in turn means that the same interface (serializeObjects) can be used to write to a variety of formats (JSON, binary, BSON, etc).
 		 */
 		class NAPAPI RTTIWriter
