@@ -21,6 +21,7 @@ else()
             RTTR_DIR
             NAMES rttr-config.cmake
             HINTS
+            ${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/rttr/install/cmake
             ${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/rttr/linux/install/cmake
     )
 endif()
