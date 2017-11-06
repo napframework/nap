@@ -4,10 +4,15 @@
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <perspcameracomponent.h>
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_sdl_gl3.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTestApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
+
+glm::vec3 mColor{0.0f,0.0f,0.0f};
+int mWhite(0);
 
 namespace nap 
 {
@@ -49,7 +54,8 @@ namespace nap
 		render_state.mEnableMultiSampling = true;
 		render_state.mPointSize = 2.0f;
 		render_state.mPolygonMode = opengl::PolygonMode::FILL;
-		
+
+		ImGui_ImplSdlGL3_Init(mRenderWindows[1]->getWindow()->getNativeWindow());
 		return true;
 	}
 	
@@ -57,8 +63,10 @@ namespace nap
 	// Called when the window is updating
 	void RenderTestApp::update(double deltaTime)
 	{
+		mRenderWindows[1]->getWindow()->makeCurrent();
+		ImGui_ImplSdlGL3_NewFrame(mRenderWindows[1]->getWindow()->getNativeWindow());
+
 		DefaultInputRouter& input_router = mDefaultInputRouter->getComponent<DefaultInputRouterComponentInstance>().mInputRouter;
-		
 		{
 			// Update input for first window
 			std::vector<nap::EntityInstance*> entities;
@@ -102,6 +110,22 @@ namespace nap
 		if (!mesh_instance.update(errorState))
 		{
 			Logger::fatal(errorState.toString());
+		}
+
+		// 1. Show a simple window.
+		// Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets appears in a window automatically called "Debug".
+		{
+			static float f = 0.0f;
+			ImGui::Text("Hello Sigrid!");
+			if (ImGui::ColorEdit3("LED Color", (float*)&mColor.r))
+			{
+				std::cout << "hello\n";
+			}
+			if (ImGui::SliderInt("White", &mWhite, 0, 255))
+			{
+				std::cout << "world\n";
+			}
+			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		}
 	}
 	
@@ -154,7 +178,7 @@ namespace nap
 			components_to_render.clear();
 			components_to_render.push_back(&mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>());
 			mRenderService->renderObjects(backbuffer, mSplitCameraEntity->getComponent<PerspCameraComponentInstance>(), components_to_render);
-			
+
 			render_window->swap();
 		}
 	 
@@ -177,7 +201,9 @@ namespace nap
 			components_to_render.clear();
 			components_to_render.push_back(&mWorldEntity->getComponent<RenderableMeshComponentInstance>());
 			mRenderService->renderObjects(backbuffer, mSplitCameraEntity->getComponent<PerspCameraComponentInstance>(), components_to_render);
-			
+
+			ImGui::Render();
+
 			render_window->swap(); 
 		}
 	}
