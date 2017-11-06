@@ -1,9 +1,9 @@
 #include "appcontext.h"
 #include <QSettings>
-#include <nap/resourcemanager.h>
 #include <rtti/jsonreader.h>
 #include <rtti/jsonwriter.h>
 #include <fstream>
+#include <QtWidgets/QMessageBox>
 
 using namespace nap::rtti;
 using namespace nap::utility;
@@ -32,7 +32,11 @@ bool ResolveLinks(const OwnedObjectList& objects, const UnresolvedPointerList& u
 
 AppContext::AppContext()
 {
-    mCore.initialize();
+    ErrorState err;
+    if (!mCore.initializeEngine(err))
+    {
+        QMessageBox::critical(nullptr, "NAP Failed to Initialize", QString::fromStdString(err.toString()));
+    }
 }
 
 
@@ -56,7 +60,7 @@ void AppContext::loadFile(const QString& filename)
     QSettings settings;
     settings.setValue(LAST_OPENED_FILE, filename);
 
-    auto& factory = core().getOrCreateService<nap::ResourceManagerService>()->getFactory();
+    auto& factory = core().getResourceManager()->getFactory();
     ErrorState err;
     nap::rtti::RTTIDeserializeResult result;
     if (!readJSONFile(filename.toStdString(), factory, result, err)) {
