@@ -4,6 +4,7 @@
 #include "inspectorpanel.h"
 #include "typeconversion.h"
 #include "globals.h"
+#include "commands.h"
 
 using namespace nap::rtti;
 using namespace napkin;
@@ -60,8 +61,12 @@ QVariant PropertyValueItem::data(int role) const
 
 void PropertyValueItem::setData(const QVariant& value, int role)
 {
+    if (role == Qt::EditRole) {
+        auto undoCommand = new SetValueCommand(mObject, mPath, value);
+        AppContext::get().undoStack().push(undoCommand);
+    }
 
-    if (role == Qt::EditRole || role == Qt::DisplayRole) {
+    if (role == Qt::DisplayRole) {
         nap::rtti::ResolvedRTTIPath resolvedPath;
         assert(mPath.resolve(mObject, resolvedPath));
         bool ok;

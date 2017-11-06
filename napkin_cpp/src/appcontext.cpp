@@ -239,3 +239,8 @@ void AppContext::deleteObject(nap::rtti::RTTIObject& object)
     objectRemoved(object);
 }
 
+void AppContext::executeCommand(QUndoCommand* cmd)
+{
+    mUndoStack.push(cmd);
+}
+

@@ -21,6 +21,7 @@ void MainWindow::addDocks() {
     addDock("Outline", &mOutlinePanel);
     addDock("Available Types", &mHierarchyPanel);
     addDock("Inspector", &mInspectorPanel);
+    addDock("History", &mHistoryPanel);
 }
 
 void MainWindow::addMenu() {

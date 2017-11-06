@@ -11,8 +11,8 @@
                 {
                     "Type": "nap::OrthoCameraComponent",
                     "Properties": {
-                        "NearClippingPlane": 1.0,
-                        "FarClippingPlane": 1000.0
+                        "NearClippingPlane": 2.0,
+                        "FarClippingPlane": 500.0
                     }
                 },
                 {
@@ -39,6 +39,13 @@
             ],
             "Children": [],
             "AutoSpawn": true
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "New Entity_2",
+            "Components": [],
+            "Children": [],
+            "AutoSpawn": false
         },
         {
             "Type": "nap::Mesh",

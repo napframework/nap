@@ -8,3 +8,9 @@ class Action(QAction):
 class SaveAction(Action):
     def __init__(self):
         super(SaveAction, self).__init__('Save')
+
+class CopyAction(Action):
+    def __init__(self):
+        super(CopyAction, self).__init__()
+
+

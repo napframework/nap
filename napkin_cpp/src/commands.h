@@ -1,39 +1,85 @@
 #pragma once
 
 #include <QUndoCommand>
+#include <rtti/rttipath.h>
+#include <QtCore/QVariant>
+#include <nap/objectptr.h>
+#include "typeconversion.h"
 
 class Command : public QUndoCommand {
+public:
 
 };
 
 
-class AddObjectCommand : Command {
+class AddObjectCommand : public Command {
 public:
-    void undo() override {
+    void undo() override
+    {
 
     }
-    void redo() override {
+
+    void redo() override
+    {
 
     }
 };
 
-class DeleteObjectCommand : Command {
+class DeleteObjectCommand : public Command {
 public:
-    void undo() override {
+    void undo() override
+    {
 
     }
-    void redo() override {
+
+    void redo() override
+    {
 
     }
 };
 
-class SetValueCommand : Command {
+class SetValueCommand : public QUndoCommand {
 public:
-    void undo() override {
+    SetValueCommand(nap::rtti::RTTIObject* ptr, nap::rtti::RTTIPath path, QVariant newValue)
+            : mObject(ptr), mPath(path), mNewValue(newValue)
+    {
+        setText("Set value on: " + QString::fromStdString(path.toString()));
+    }
+
+    void undo() override
+    {
+        // resolve path
+        nap::rtti::ResolvedRTTIPath resolvedPath;
+        mPath.resolve(mObject, resolvedPath);
+        assert(resolvedPath.isValid());
+
+        // set new value
+        bool ok;
+        rttr::variant variant = fromQVariant(resolvedPath.getType(), mOldValue, &ok);
+        assert(ok);
+        resolvedPath.setValue(variant);
 
     }
-    void redo() override {
 
+    void redo() override
+    {
+        // retrieve and store current value
+        nap::rtti::ResolvedRTTIPath resolvedPath;
+        mPath.resolve(mObject, resolvedPath);
+        assert(resolvedPath.isValid());
+        rttr::variant oldValueVariant = resolvedPath.getValue();
+        assert(toQVariant(resolvedPath.getType(), oldValueVariant, mOldValue));
+
+        // set new value
+        bool ok;
+        rttr::variant variant = fromQVariant(resolvedPath.getType(), mNewValue, &ok);
+        assert(ok);
+        resolvedPath.setValue(variant);
     }
 
+private:
+    nap::rtti::RTTIObject* mObject;
+    nap::rtti::RTTIPath mPath;
+    QVariant mNewValue;
+    QVariant mOldValue;
 };

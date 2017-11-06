@@ -5,6 +5,7 @@
 #include <nap/core.h>
 #include <nap/entity.h>
 #include <rtti/rttireader.h>
+#include <QtWidgets/QUndoCommand>
 
 #define WIN_GEO "windowGeometry"
 #define WIN_STATE "windowState"
@@ -34,13 +35,17 @@ public:
     nap::rtti::OwnedObjectList& objects() { return mObjects; }
     nap::rtti::RTTIObject* getObject(const std::string& name);
 
+    // TODO: Data structure operations should be accessed on the objects themselves
     nap::Entity* getParent(const nap::Entity& entity);
     nap::Entity* getOwner(const nap::Component& component);
     nap::Entity* createEntity(nap::Entity* parent = nullptr);
     nap::Component* addComponent(nap::Entity& entity, rttr::type type);
     nap::rtti::RTTIObject* addObject(rttr::type type);
-
     void deleteObject(nap::rtti::RTTIObject& object);
+
+    void executeCommand(QUndoCommand* cmd);
+
+    QUndoStack& undoStack() { return mUndoStack; }
 
 signals:
     void fileOpened(const QString& filename);
@@ -50,7 +55,6 @@ signals:
     void selectionChanged();
 
     // All data could have changed.
-    void dataChanged();
     void entityAdded(nap::Entity* newEntity, nap::Entity* parent=nullptr);
     void componentAdded(nap::Component& comp, nap::Entity& owner);
     void objectAdded(nap::rtti::RTTIObject& obj);
@@ -60,6 +64,8 @@ private:
     std::string getUniqueName(const std::string& suggestedName);
 
     std::vector<std::unique_ptr<nap::rtti::RTTIObject>> mObjects;
+    QUndoStack mUndoStack;
     QString mCurrentFilename;
     nap::Core mCore;
+
 };

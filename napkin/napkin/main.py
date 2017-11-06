@@ -23,6 +23,14 @@ def getSaveFilename(parent):
     return filename
 
 
+class MainWindow(BaseWindow):
+    def __init__(self):
+        super(MainWindow, self).__init__()
+
+        self.patchPanel = PatchPanel()
+        self.addDock('Patch', patchPanel);
+
+
 
 
 if __name__ == '__main__':
