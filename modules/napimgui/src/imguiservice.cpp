@@ -36,14 +36,15 @@ namespace nap
 
 	void IMGuiService::resourcesLoaded()
 	{
-		ImGui_ImplSdlGL3_Init(mRenderer->getPrimaryWindow().getNativeWindow());
+		nap::GLWindow& window = mRenderer->getPrimaryWindow();
+		//ImGui_ImplSdlGL3_Init(mRenderer->getPrimaryWindow().getNativeWindow());
 	}
 
 
 	void IMGuiService::update(double deltaTime)
 	{
-		mRenderer->getPrimaryWindow().makeCurrent();
-		ImGui_ImplSdlGL3_NewFrame(mRenderer->getPrimaryWindow().getNativeWindow());
+		//mRenderer->getPrimaryWindow().makeCurrent();
+		//ImGui_ImplSdlGL3_NewFrame(mRenderer->getPrimaryWindow().getNativeWindow());
 	}
 
 
