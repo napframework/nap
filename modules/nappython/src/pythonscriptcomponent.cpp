@@ -1,7 +1,7 @@
 #include <pythonscriptcomponent.h>
 #include <nap/entity.h>
 #include <rtti/pythonmodule.h>
-#include "nap/fileutils.h"
+#include <utility/fileutils.h>
 #include "nap/core.h"
 #include "pythonscriptservice.h"
 #include "nap/logger.h"
@@ -32,7 +32,8 @@ namespace nap
 	{
 		PythonScriptComponent* script_component = getComponent<PythonScriptComponent>();
 
-		PythonScriptService* script_service = getEntityInstance()->getCore()->getOrCreateService<PythonScriptService>();
+		PythonScriptService* script_service = getEntityInstance()->getCore()->getService<PythonScriptService>();
+		assert(script_service != nullptr);
 		if (!errorState.check(script_service->TryLoad(script_component->mPath, mScript, errorState), "Failed to load %s", script_component->mPath.c_str()))
 			return false;
 		

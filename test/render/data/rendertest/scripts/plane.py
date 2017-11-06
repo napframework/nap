@@ -4,7 +4,7 @@ import math
 def update(entity, currentTime, deltaTime):
 	transform = entity.findComponent("nap::TransformComponentInstance")
 
-	resource_manager = nap.core.getOrCreateService("nap::ResourceManagerService")
+	resource_manager = nap.core.getResourceManager()
 	test_texture = resource_manager.findObject("TestTexture")
 
 	material_instance = entity.findComponent("nap::RenderableMeshComponentInstance").getMaterialInstance()

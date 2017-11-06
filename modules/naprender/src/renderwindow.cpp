@@ -36,7 +36,7 @@ namespace nap
 		mWindow->getBackbuffer()->setClearColor(mClearColor);
 
 		// We want to respond to resize events for this window
-		onWindowEvent.connect(std::bind(&RenderWindow::handleEvent, this, std::placeholders::_1));
+		mWindowEvent.connect(std::bind(&RenderWindow::handleEvent, this, std::placeholders::_1));
 		return true;
 	}
 

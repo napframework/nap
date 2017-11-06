@@ -24,7 +24,7 @@ namespace nap
 	}
 
 
-	bool EntityInstance::init(ResourceManagerService& resourceManager, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool EntityInstance::init(ResourceManager& resourceManager, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
 		for (auto& child_entity : mResource->mChildren)
 		{

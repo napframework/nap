@@ -1,13 +1,14 @@
 #pragma once
 
-#include "nap/component.h"
-#include "nap/componentptr.h"
-#include "orthocameracomponent.h"
+// External Includes
+#include <nap/component.h>
+#include <nap/componentptr.h>
+#include <inputcomponent.h>
+#include <orthocameracomponent.h>
 #include <glm/glm.hpp>
 
 namespace nap
 {
-	class KeyInputComponent;
 	class OrthoControllerInstance;
 	class PointerPressEvent;
 	class PointerMoveEvent;

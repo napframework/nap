@@ -103,16 +103,9 @@ namespace nap
 		void clearRenderTarget(opengl::RenderTarget& renderTarget);
 
 		/**
-		 * Sets the renderer, the service will own the renderer
-		 * @param errorState contains the error message if the service could not be initialized
-		 * @return if the service has been initialized successfully
-		 */
-		bool init(nap::utility::ErrorState& errorState);
-
-		/**
 		 * Shuts down the managed renderer
 		 */
-		void shutdown();
+		virtual void shutdown() override;
 
 		/**
 		* Returns global render state. Use the fields in this objects to modify the renderstate.
@@ -181,16 +174,39 @@ namespace nap
 		 */
 		void addEvent(WindowEventPtr windowEvent);
 
-		/**
-		 *	Processes all window related events for all available windows
-		 */
-		void processEvents();
-
 	protected:
 		/**
 		* Object creation registration
 		*/
 		virtual void registerObjectCreators(rtti::Factory& factory) override;
+
+		/**
+		 * Register dependencies, render module depends on scene
+		 */
+		virtual void getDependentServices(std::vector<rtti::TypeInfo>& dependencies) override;
+
+		/**
+		* Sets the renderer, the service will own the renderer
+		* @param errorState contains the error message if the service could not be initialized
+		* @return if the service has been initialized successfully
+		*/
+		virtual bool init(nap::utility::ErrorState& errorState) override;
+
+		/**
+		 * Updates
+		 * @param time in between frames
+		 */
+		virtual void preUpdate(double deltaTime) override;
+
+		/**
+		 *	Process all received messages
+		 */
+		virtual void update(double deltaTime) override;
+
+		/**
+		 *	Performs a flush to ensure all recent opengl commands are processed
+		 */
+		virtual void resourcesLoaded() override;
 
     private:
 		friend class VAOHandle;
@@ -225,6 +241,11 @@ namespace nap
 		* @param camera the camera used for sorting based on distance
 		*/
 		void sortObjects(std::vector<RenderableComponentInstance*>& comps, const CameraComponentInstance& camera);
+
+		/**
+		* Processes all window related events for all available windows
+		*/
+		void processEvents();
 
 		/**
 		* Helper struct to refcount opengl VAOs.

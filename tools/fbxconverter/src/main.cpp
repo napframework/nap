@@ -22,13 +22,13 @@ int main(int argc, char* argv[])
 	std::vector<std::string> files_to_convert;
 	for (const std::string& file : commandLine.mFilesToConvert)
 	{
-		if (getFileExtension(file) != "fbx")
+		if (utility::getFileExtension(file) != "fbx")
 		{
 			Logger::fatal("Input files %s is not a FBX file", file.c_str());
 			return -1;
 		}
 		
-		if (getFileName(file) != "*.fbx")
+		if (utility::getFileName(file) != "*.fbx")
 			files_to_convert.push_back(file);
 	}
 

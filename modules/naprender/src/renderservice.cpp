@@ -15,6 +15,7 @@
 #include <rtti/factory.h>
 #include <nap/resourcemanager.h>
 #include <nap/logger.h>
+#include <sceneservice.h>
 
 namespace nap
 {
@@ -22,6 +23,12 @@ namespace nap
 	void RenderService::registerObjectCreators(rtti::Factory& factory)
 	{
 		factory.addObjectCreator(std::make_unique<RenderWindowResourceCreator>(*this));
+	}
+
+
+	void RenderService::getDependentServices(std::vector<rtti::TypeInfo>& dependencies)
+	{
+		dependencies.emplace_back(RTTI_OF(SceneService));
 	}
 
 
@@ -121,7 +128,7 @@ namespace nap
 		// Get all render components
 		std::vector<nap::RenderableComponentInstance*> render_comps;
 
-		for (EntityInstance* entity : getCore().getService<ResourceManagerService>()->getEntities())
+		for (EntityInstance* entity : getCore().getResourceManager()->getEntities())
 			entity->getComponentsOfType<nap::RenderableComponentInstance>(render_comps);
 
 		// Render these objects
@@ -252,7 +259,26 @@ namespace nap
 		return true;
 	}
 	
-	void RenderService::queueResourceForDestruction(std::unique_ptr<opengl::IGLContextResource> resource) 
+
+	void RenderService::preUpdate(double deltaTime)
+	{
+		getPrimaryWindow().makeCurrent();
+	}
+
+
+	void RenderService::update(double deltaTime)
+	{
+		processEvents();
+	}
+
+
+	void RenderService::resourcesLoaded()
+	{
+		opengl::flush();
+	}
+
+
+	void RenderService::queueResourceForDestruction(std::unique_ptr<opengl::IGLContextResource> resource)
 	{ 
 		if (resource != nullptr)
 			mGLContextResourcesToDestroy.emplace_back(std::move(resource)); 

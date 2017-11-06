@@ -20,7 +20,16 @@ namespace nap
 		// Disable copy
 		VideoService(const VideoService& that) = delete;
 		VideoService& operator=(const VideoService&) = delete;
-	
-		bool init(nap::utility::ErrorState& errorState);
+
+	protected:
+		// This service depends on render and scene
+		virtual void getDependentServices(std::vector<rtti::TypeInfo>& dependencies) override;
+
+		/**
+		* Initializes the video service
+		* @param errorState contains the error message on failure
+		* @return if the video service was initialized correctly
+		*/
+		virtual bool init(nap::utility::ErrorState& errorState) override;
 	};
 }
