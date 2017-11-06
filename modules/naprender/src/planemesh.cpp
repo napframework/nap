@@ -3,15 +3,6 @@
 #include "material.h"
 #include <glm/glm.hpp>
 
-// All the plane vertices
-static glm::vec3 plane_vertices[] =
-{
-	{ -0.5,	-0.5f,	0.0f },
-	{ 0.5f,	-0.5f,	0.0f },
-	{ -0.5f,	0.5f,	0.0f },
-	{ 0.5f,	0.5f,	0.0f },
-};
-
 // All the plane uvs
 static glm::vec3 plane_uvs[] =
 {
