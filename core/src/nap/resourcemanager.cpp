@@ -414,34 +414,7 @@ namespace nap
 		return entityCreationParams.mEntityInstancesByID.find(generated_ids[0])->second.get();
 	}
 
-	/**
-	 * When pointing to other other components through ComponentPtrs, you can do so using a 'path' to the target component. This path can be of two forms:
-	 * - A single element, meaning the ComponentPtr is pointing directly to a specific component.
-	 * - Multiple elements, separated by a '/', which means the path points to a specific component located at that path.
-	 *
-	 * Paths consisting out of multiple elements can be either relative or absolute and come in three forms:
-	 * - /RootEntityID/ComponentID - An absolute path that starts in the root entity with the specified ID
-	 * - ./ChildEntityID/ComponentID - A relative path that starts in the entity that the ComponentPtr is in
-	 * - ../ChildEntityID/ComponentID - A relative path that starts in the parent of the entity that the ComponentPtr is in	 
-	 *
-	 * When there are ChildEntityIDs on the path, it's possible for the ChildEntityID to be ambiguous (for example, when an entity has multiple children with the same ID).
-	 * For example, consider the following entity hierarchy:
-	 *
-	 * CarEntity
-	 *	-> WheelEntity
-	 *	    -> TransformComponent
-	 *	-> WheelEntity
-	 *	    -> TransformComponent
-	 *	-> WheelEntity
-	 *	    -> TransformComponent
-	 *	-> WheelEntity
-	 *	    -> TransformComponent
-	 *
-	 * Pointing directly to one of these TransformComponents using a component path is not possible, because it would be ambiguous.
-	 * To disambiguate which specific child entity is meant, the user can append a ':<child_index>' to the ChildEntityID on the path. 
-	 *
-	 * In this case, to point to the TransformComponent of the second wheel, the user would use the following path: './WheelEntity:1/TransformComponent'
-	 */
+
 	ComponentInstance* ResourceManager::sResolveComponentInstancePath(ComponentInstance* sourceComponentInstance, const std::string& targetComponentInstancePath, Component* targetComponentResource,
 		const ResourceManager::RootEntityInstanceMap& rootEntityInstances, const EntityCreationParameters::ComponentInstanceMap& componentInstances, utility::ErrorState& errorState)
 	{
@@ -645,8 +618,8 @@ namespace nap
 
 					resolved_path.setValue(entity_ptr);
 				}
-						}
-					}
+			}
+		}
 
 		return true;
 	}

@@ -7,6 +7,10 @@ namespace nap
 	class Component;
 	class ComponentInstance;
 
+	/**
+	 * This class serves as the base for typed ComponentPtrs and is only here so that we can check whether a pointer is a ComponentPtr through RTTI. 
+	 * The reason we can't do that with ComponentPtr itself is because ComponentPtr is a template class and RTTI has difficulties dealing with that.
+	 */
 	class ComponentPtrBase
 	{
 		RTTI_ENABLE();
@@ -34,6 +38,36 @@ namespace nap
 		virtual void assign(const std::string& targetID, rtti::RTTIObject& targetObject) = 0;
 	};
 
+	/**
+	 * Typed version of ComponentPtrBase. ComponentPtr stores the path and the pointer to the target resource. 
+	 *
+	 * When pointing to other other components through ComponentPtrs, you can do so using a 'path' to the target component. This path can be of two forms:
+	 * - A single element, meaning the ComponentPtr is pointing directly to a specific component.
+	 * - Multiple elements, separated by a '/', which means the path points to a specific component located at that path.
+	 *
+	 * Paths consisting out of multiple elements can be either relative or absolute and come in three forms:
+	 * - /RootEntityID/ComponentID - An absolute path that starts in the root entity with the specified ID
+	 * - ./ChildEntityID/ComponentID - A relative path that starts in the entity that the ComponentPtr is in
+	 * - ../ChildEntityID/ComponentID - A relative path that starts in the parent of the entity that the ComponentPtr is in
+	 *
+	 * When there are ChildEntityIDs on the path, it's possible for the ChildEntityID to be ambiguous (for example, when an entity has multiple children with the same ID).
+	 * For example, consider the following entity hierarchy:
+	 *
+	 * CarEntity
+	 *	-> WheelEntity
+	 *	    -> TransformComponent
+	 *	-> WheelEntity
+	 *	    -> TransformComponent
+	 *	-> WheelEntity
+	 *	    -> TransformComponent
+	 *	-> WheelEntity
+	 *	    -> TransformComponent
+	 *
+	 * Pointing directly to one of these TransformComponents using a component path is not possible, because it would be ambiguous.
+	 * To disambiguate which specific child entity is meant, the user can append a ':<child_index>' to the ChildEntityID on the path.
+	 *
+	 * In this case, to point to the TransformComponent of the second wheel, the user would use the following path: './WheelEntity:1/TransformComponent'
+	 */
 	template<class ComponentType>
 	class ComponentPtr : public ComponentPtrBase
 	{
@@ -159,26 +193,26 @@ namespace nap
 		}
 
 	private:
-		ObjectPtr<ComponentType>	mResource;
-		std::string					mPath;
+		ObjectPtr<ComponentType>	mResource;		///< Pointer to the target resource
+		std::string					mPath;			///< Path in the entity hierarchy, either relative or absolute
 	};
 
 
 	/**
-	* ComponentPtr is used in ComponentInstance classes to point to other ComponentInstance objects directly. ComponentInstances are spawned
-	* from Components at runtime. The ComponentInstance class makes sure that the internal pointer is mapped to the other spawned object.
+	* ComponentInstancePtr is used in ComponentInstance classes to point to other ComponentInstance objects directly. ComponentInstances are spawned
+	* from Components at runtime. The ComponentInstancePtr class makes sure that the internal pointer is mapped to spawned ComponentInstance target object.
 	*
-	* The Component of a ComponentInstance must hold a regular ObjectPtr to another Component. when an ComponentPtr is constructed, the user
-	* should provide the mapping to the ObjectPtr in the Component, by providing the pointer to the member. Example:
+	* The Component of a ComponentInstance must hold a ComponentPtr to another Component. When an ComponentInstancePtr is constructed, the user
+	* should provide the mapping to the ComponentPtr in the Component, by providing the pointer to the member. Example:
 	* 
 	* 		class SomeComponent : public Component
 	*		{
-	*			ObjectPtr<OtherComponent> mOtherComponent;
+	*			ComponentPtr<OtherComponent> mOtherComponent;
 	*		};
 	*
 	*		class SomeComponentInstance : public ComponentInstance
 	*		{
-	*			ComponentPtr<OtherComponent> mOtherComponent{ this, &SomeComponent::mOtherComponent };
+	*			ComponentInstancePtr<OtherComponent> mOtherComponent{ this, &SomeComponent::mOtherComponent };
 	*		};
 	*
 	* In the example above, SomeComponentInstance::mOtherComponent will point the instance that is being pointed to by SomeComponent::mOtherComponent.
