@@ -62,7 +62,7 @@ namespace nap
 		 * @param resource UIInputRouterComponentResource
 		 * @return true on success, other false.
 		 */
-		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		UIInputRouterComponentInstance(EntityInstance& entity, Component& resource) :
 			ComponentInstance(entity, resource)

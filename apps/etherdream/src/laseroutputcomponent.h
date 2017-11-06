@@ -71,7 +71,7 @@ namespace nap
 		}
 
 		// Init
-		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		 *	Update will send the last converted line to the laser

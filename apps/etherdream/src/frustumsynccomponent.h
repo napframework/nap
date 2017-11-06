@@ -43,7 +43,7 @@ namespace nap
 		FrustumSyncComponentInstance(EntityInstance& entity, Component& resource) : ComponentInstance(entity, resource)	{ }
 
 		// Init
-		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		// Update the size of the transform based on the laser frustrum
 		virtual void update(double deltaTime) override;

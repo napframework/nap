@@ -60,7 +60,7 @@ namespace nap
 		/**
 		 *	Retrieve necessary components for osc input translation
 		 */
-		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 	private:
 		void handleMessageReceived(const nap::OSCEvent& oscEvent);

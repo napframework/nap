@@ -56,7 +56,7 @@ namespace nap
 		/**
 		 * Initialize this ComponentInstance
 		 */
-		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		 * Enable responding to input for this controller, and set translate and lookat.

@@ -30,7 +30,7 @@ namespace nap
 	}
 
 
-	bool LaserControlInstanceComponent::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool LaserControlInstanceComponent::init(utility::ErrorState& errorState)
 	{
 		// Get all compounds to use and create laser prototypes from
 		nap::LaserControlComponent* resource = getComponent<LaserControlComponent>();

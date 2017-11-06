@@ -53,7 +53,7 @@ namespace nap
 		{}
 
 		// Init
-		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		// Update
 		virtual void update(double deltaTime) override;

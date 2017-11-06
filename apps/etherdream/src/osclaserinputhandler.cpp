@@ -26,7 +26,7 @@ namespace nap
 	}
 
 
-	bool OSCLaserInputHandlerInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool OSCLaserInputHandlerInstance::init(utility::ErrorState& errorState)
 	{
 		mRotateComponent = getEntityInstance()->findComponent<nap::RotateComponentInstance>();
 		if (!errorState.check(mRotateComponent != nullptr, "missing rotate component"))

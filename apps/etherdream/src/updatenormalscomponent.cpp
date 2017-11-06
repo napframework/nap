@@ -25,7 +25,7 @@ namespace nap
 	}
 
 
-	bool UpdateNormalsComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool UpdateNormalsComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// Copy mesh
 		mNormalMesh = getComponent<UpdateNormalsComponent>()->mNormalMesh.get();

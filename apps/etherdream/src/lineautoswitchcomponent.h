@@ -51,7 +51,7 @@ namespace nap
 		/**
 		 *	Initializes the switcher
 		 */
-		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		 *	Checks if the blend threshold is close to 0 or 1 and switches lines accordingly

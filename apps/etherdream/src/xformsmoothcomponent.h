@@ -47,7 +47,7 @@ namespace nap
 		 * @param errorState should hold the error message when initialization fails
 		 * @return if the xformsmoothcomponentInstance is initialized successfully
 		 */
-		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		 *	Update

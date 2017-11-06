@@ -16,7 +16,7 @@ namespace nap
 
 	//////////////////////////////////////////////////////////////////////////
 
-	bool FrustumSyncComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool FrustumSyncComponentInstance::init(utility::ErrorState& errorState)
 	{
 		FrustumSyncComponent* resource = getComponent<FrustumSyncComponent>();
 

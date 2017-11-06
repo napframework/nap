@@ -56,7 +56,7 @@ namespace nap
 		/**
 		* Initializes this component
 		*/
-		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		* Updates the line color

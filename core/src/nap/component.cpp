@@ -11,7 +11,7 @@ RTTI_END_CLASS
 
 namespace nap
 {
-    bool ComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+    bool ComponentInstance::init(utility::ErrorState& errorState)
     {
         return true;
     }

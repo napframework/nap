@@ -68,7 +68,7 @@ namespace nap
 	}
 
 
-	bool UIInputRouterComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool UIInputRouterComponentInstance::init(utility::ErrorState& errorState)
 	{
 		if (!mInputRouter.init(*mCameraComponent, errorState))
 			return false;

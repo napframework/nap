@@ -17,7 +17,7 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	bool LineBlendComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool LineBlendComponentInstance::init(utility::ErrorState& errorState)
 	{
 		mSelectorOne->mIndexChanged.connect(mSelectionChangedSlot);
 		mSelectorTwo->mIndexChanged.connect(mSelectionChangedSlot);

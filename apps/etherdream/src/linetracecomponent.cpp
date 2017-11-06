@@ -27,7 +27,7 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	bool LineTraceComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool LineTraceComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// Copy properties
 		mProperties.mSpeed  = math::clamp<float>(getComponent<LineTraceComponent>()->mProperties.mSpeed, 0.0f,1.0f);

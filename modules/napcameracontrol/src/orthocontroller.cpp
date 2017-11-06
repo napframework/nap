@@ -34,7 +34,7 @@ namespace nap
 	}
 
 
-	bool OrthoControllerInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool OrthoControllerInstance::init(utility::ErrorState& errorState)
 	{
 		// TransformComponent is required to move the entity
 		mTransformComponent = getEntityInstance()->findComponent<TransformComponentInstance>();

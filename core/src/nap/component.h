@@ -73,7 +73,7 @@ namespace nap
 		 * @param entityCreationParams Parameters required to create new entity instances during init
 		 * @param errorState The error object
 		 */
-        virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
+        virtual bool init(utility::ErrorState& errorState);
 
 	private:
 		template<class TargetComponentType> friend class ComponentInstancePtr;
