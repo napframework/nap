@@ -58,7 +58,7 @@ namespace nap
 
 
 		mColor = color_comp.getColor();
-		mWhite = color_comp.getWhite();
+		mWhite = color_comp.getWhite() * nap::math::max<uint8>();
 
 		return true;
 	}
