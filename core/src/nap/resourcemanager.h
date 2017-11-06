@@ -80,9 +80,7 @@ namespace nap
 		*/
 		const ObjectPtr<rtti::RTTIObject> createObject(const rtti::TypeInfo& type);
 
-        const ObjectPtr<rtti::RTTIObject> createObject(const std::string& typeName);
-
-		/**
+        /**
 		* Instantiates an Entity.
 		*/
 		const ObjectPtr<EntityInstance> createEntity(const Entity& Entity, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
@@ -135,11 +133,6 @@ namespace nap
          */
         std::vector<nap::ObjectPtr<rtti::RTTIObject>> getObjects();
 
-
-        /**
-		* Occurs when the manager has been initialized, creates the root entity
-		*/
-		virtual void initialized();
 
 		/**
 		 * Forwards an update to all entities managed under the root

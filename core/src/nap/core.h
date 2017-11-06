@@ -155,9 +155,6 @@ namespace nap
 		*/
 		void resourceFileChanged(const std::string& file);
 
-		// Typedef for a list of services
-		using ServiceList = std::vector<std::unique_ptr<Service>>;
-
 		// Manages all the loaded modules
 		ModuleManager mModuleManager;
 
