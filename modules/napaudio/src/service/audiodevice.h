@@ -77,14 +77,19 @@ namespace nap {
             bool mUseDefaultDevice = true;
             
             /**
-             * The number of the input device being used. Use @AudioService to poll for available devices.
+             * Name of the host API (or driver type) used for this audio stream.
              */
-            int mInputDevice = 0;
+            std::string mHostApi = "";
+            
+            /**
+             * Name of the input device being used. Use @AudioService to poll for available devices.
+             */
+            std::string mInputDevice = "";
 
             /** 
-             * The number of the output device being used. Use @AudioService to poll for available devices.
+             * Name of the output device being used. Use @AudioService to poll for available devices.
              */
-            int mOutputDevice = 0;
+            std::string mOutputDevice = "";
             
             /** 
              * The number of input channels in the stream. 

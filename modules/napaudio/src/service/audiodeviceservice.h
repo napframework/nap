@@ -56,20 +56,23 @@ namespace nap {
             std::string getHostApiName(unsigned int hostApiIndex);
             
             /**
-             * @return: the number of all available audio devices, the total number contains both input and output devices separately.
+             * @param hostApiIndex: the number of the host api
+             * @return: the number of all available audio devices for a certain host api, the total number contains both input and output devices separately.
              */
-            unsigned int getDeviceCount();
+            unsigned int getDeviceCount(unsigned int hostApiIndex);
             
             /**
              * Returns information of an audio device in a PaDeviceInfo struct defined by portaudio.
+             * @param hostApiIndex: the number of the host api
              * @param deviceIndex: the number of the device
              */
-            const PaDeviceInfo& getDeviceInfo(unsigned int deviceIndex);
+            const PaDeviceInfo& getDeviceInfo(unsigned int hostApiIndex, unsigned int deviceIndex);
             
             /** 
              * Returns information on all the available devices
+             * @param hostApiIndex: the number of the host api
              */
-            std::vector<const PaDeviceInfo*> getDevices();
+            std::vector<const PaDeviceInfo*> getDevices(unsigned int hostApiIndex);
             
             /** 
              * Prints the number and name of all available audio devices to the console
@@ -77,10 +80,18 @@ namespace nap {
             void printDevices();
             
             /** 
-             * @return the name of an available device specified by number
+             * @return the name of an available device specified by host api and device number
+             * @param hostApiIndex: the number of the host api
              * @param deviceIndex: the number of the devie
              */
-            std::string getDeviceName(unsigned int deviceIndex);
+            std::string getDeviceName(unsigned int hostApiIndex, unsigned int deviceIndex);
+            
+            /**
+             * Returns the device index for a device for a certain host API specified both by name.
+             * Uses case insensitive search.
+             * Returns -1 if the device specified was not found.
+             */
+            int getDeviceIndex(const std::string& hostApi, const std::string& device);
             
             
             AudioDevice mInterface;

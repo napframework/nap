@@ -76,15 +76,29 @@ namespace nap {
             if (mUseDefaultDevice)
                 return startDefaultDevice(errorState);
             
+            auto inputDeviceIndex = mService->getDeviceIndex(mHostApi, mInputDevice);
+            if (inputDeviceIndex < 0)
+            {
+                errorState.fail("Audio input device not found");
+                return false;
+            }
+            
+            auto outputDeviceIndex = mService->getDeviceIndex(mHostApi, mOutputDevice);
+            if (outputDeviceIndex < 0)
+            {
+                errorState.fail("Audio output device not found");
+                return false;
+            }
+            
             PaStreamParameters inputParameters;
-            inputParameters.device = mInputDevice;
+            inputParameters.device = inputDeviceIndex;
             inputParameters.channelCount = mInputChannelCount;
             inputParameters.sampleFormat = paFloat32 | paNonInterleaved;
             inputParameters.suggestedLatency = 0;
             inputParameters.hostApiSpecificStreamInfo = nullptr;
             
             PaStreamParameters outputParameters;
-            outputParameters.device = mOutputDevice;
+            outputParameters.device = outputDeviceIndex;
             outputParameters.channelCount = mOutputChannelCount;
             outputParameters.sampleFormat = paFloat32 | paNonInterleaved;
             outputParameters.suggestedLatency = 0;
@@ -108,9 +122,7 @@ namespace nap {
                 return false;
             }
             
-            PaDeviceInfo inputInfo = mService->getDeviceInfo(mInputDevice);
-            PaDeviceInfo outputInfo = mService->getDeviceInfo(mOutputDevice);
-            Logger::info("Portaudio stream started: %s, %s, %i inputs, %i outputs, samplerate %i, buffersize %i", inputInfo.name, outputInfo.name, mInputChannelCount, mOutputChannelCount, mSampleRate, mBufferSize);
+            Logger::info("Portaudio stream started: %s, %s, %i inputs, %i outputs, samplerate %i, buffersize %i", mInputDevice.c_str(), mOutputDevice.c_str(), mInputChannelCount, mOutputChannelCount, mSampleRate, mBufferSize);
             
             return true;
         }
@@ -137,10 +149,10 @@ namespace nap {
             }
 
 			auto hostApi = mService->getHostApiName(Pa_GetDefaultHostApi());
-			auto inputDevice = mService->getDeviceName(Pa_GetDefaultInputDevice());
-			auto outputDevice = mService->getDeviceName(Pa_GetDefaultOutputDevice());
+			auto inputDevice = mService->getDeviceInfo(Pa_GetDefaultHostApi(), Pa_GetDefaultInputDevice()).name;
+            auto outputDevice = mService->getDeviceInfo(Pa_GetDefaultHostApi(), Pa_GetDefaultOutputDevice()).name;
 
-            Logger::info("Portaudio default stream started: %s - %s, %s, %i inputs, %i outputs, samplerate %i, buffersize %i", hostApi.c_str(), inputDevice.c_str(), outputDevice.c_str(), mInputChannelCount, mOutputChannelCount, int(mSampleRate), mBufferSize);
+            Logger::info("Portaudio default stream started: %s - %s, %s, %i inputs, %i outputs, samplerate %i, buffersize %i", hostApi.c_str(), inputDevice, outputDevice, mInputChannelCount, mOutputChannelCount, int(mSampleRate), mBufferSize);
             return true;
         }
         
