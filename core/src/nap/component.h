@@ -77,7 +77,7 @@ namespace nap
 
 	private:
 		template<class TargetComponentType> friend class ComponentInstancePtr;
-		friend class ResourceManagerService;
+		friend class ResourceManager;
 		
 		void addToLinkMap(Component* targetResource, const std::string& instancePath, ComponentInstance** targetInstancePtr);
 

@@ -1,3 +1,3 @@
 #include "utility/module.h"
 
-NAP_MODULE("mod_nappython", "1.0")
+NAP_SERVICE_MODULE("mod_nappython", "1.0", "nap::PythonScriptService")

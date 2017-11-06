@@ -52,7 +52,7 @@ namespace nap
 		/*
 		* Subscribe to this signal to respond to any events broad-casted by processEvents.
 		*/
-		Signal<const WindowEvent&> onWindowEvent;	
+		Signal<const WindowEvent&> mWindowEvent;	
 
 	private:		
 		WindowEventPtrList mWindowEvents;			// Queue of all the events added by addEvent

@@ -6,13 +6,15 @@
 #include "objectgraph.h"
 #include "entityptr.h"
 #include "componentptr.h"
-#include "fileutils.h"
+#include <utility/fileutils.h>
 #include "logger.h"
+#include "core.h"
 #include "utility/stringutils.h"
 
-RTTI_BEGIN_CLASS(nap::ResourceManagerService)
-	RTTI_FUNCTION("findEntity", &nap::ResourceManagerService::findEntity)
-	RTTI_FUNCTION("findObject", (const nap::ObjectPtr<nap::rtti::RTTIObject> (nap::ResourceManagerService::*)(const std::string&))&nap::ResourceManagerService::findObject)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ResourceManager)
+	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_FUNCTION("findEntity", &nap::ResourceManager::findEntity)
+	RTTI_FUNCTION("findObject", (const nap::ObjectPtr<nap::rtti::RTTIObject> (nap::ResourceManager::*)(const std::string&))&nap::ResourceManager::findObject)
 RTTI_END_CLASS
 
 namespace nap
@@ -21,24 +23,24 @@ namespace nap
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// ResourceManagerService::RollbackHelper
+	// ResourceManager::RollbackHelper
 	//////////////////////////////////////////////////////////////////////////
 
 
-	ResourceManagerService::RollbackHelper::RollbackHelper(ResourceManagerService& service) :
+	ResourceManager::RollbackHelper::RollbackHelper(ResourceManager& service) :
 		mService(service)
 	{
 	}
 
 
-	ResourceManagerService::RollbackHelper::~RollbackHelper()
+	ResourceManager::RollbackHelper::~RollbackHelper()
 	{
 		if (mPatchObjects)
 			mService.patchObjectPtrs(mService.mObjects);
 	}
 
 
-	void ResourceManagerService::RollbackHelper::clear()
+	void ResourceManager::RollbackHelper::clear()
 	{
 		mPatchObjects = false;
 	}
@@ -238,36 +240,29 @@ namespace nap
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// ResourceManagerService
+	// ResourceManager
 	//////////////////////////////////////////////////////////////////////////
 
 
-	ResourceManagerService::ResourceManagerService() :
-		mDirectoryWatcher(std::make_unique<DirectoryWatcher>())
-	{
+	ResourceManager::ResourceManager(nap::Core& core) :
+		mDirectoryWatcher(std::make_unique<DirectoryWatcher>()),
+		mFactory(std::make_unique<Factory>()),
+		mCore(core)
+	{ 
+		mRootEntity = std::make_unique<EntityInstance>(mCore, nullptr);
 	}
 
 
-	void ResourceManagerService::initialized()
+	void ResourceManager::update(double elapsedTime)
 	{
-		mLastTimeStamp = getCore().getElapsedTime();
-		mRootEntity = std::make_unique<EntityInstance>(getCore(), nullptr);
-	}
-
-
-	void ResourceManagerService::update()
-	{
-		double new_time   = getCore().getElapsedTime();
-		double delta_time = new_time - mLastTimeStamp;
-		mLastTimeStamp = new_time;
-		getRootEntity().update(delta_time);
+		getRootEntity().update(elapsedTime);
 	}
 
 
 	/**
 	 * Add all objects from the resource manager into an object graph, overlayed by @param objectsToUpdate.
  	 */
-	bool ResourceManagerService::buildObjectGraph(const ObjectByIDMap& objectsToUpdate, RTTIObjectGraph& objectGraph, utility::ErrorState& errorState)
+	bool ResourceManager::buildObjectGraph(const ObjectByIDMap& objectsToUpdate, RTTIObjectGraph& objectGraph, utility::ErrorState& errorState)
 	{
 		// Build an object graph of all objects in the ResourceMgr. If any object is in the objectsToUpdate list,
 		// that object is added instead. This makes objectsToUpdate and 'overlay'.
@@ -302,7 +297,7 @@ namespace nap
 	 * From all objects that are effectively changed or added, traverses the object graph to find the minimum set of objects that requires an init. 
 	 * The list of objects is sorted on object graph depth so that the init() order is correct.
 	 */
-	void ResourceManagerService::determineObjectsToInit(const RTTIObjectGraph& objectGraph, const ObjectByIDMap& objectsToUpdate, const std::string& externalChangedFile, std::vector<std::string>& objectsToInit)
+	void ResourceManager::determineObjectsToInit(const RTTIObjectGraph& objectGraph, const ObjectByIDMap& objectsToUpdate, const std::string& externalChangedFile, std::vector<std::string>& objectsToInit)
 	{
 		// Mark all the objects to update as 'dirty', we need to init() those and 
 		// all the objects that point to them (recursively)
@@ -319,13 +314,13 @@ namespace nap
 	}
 
 
-	bool ResourceManagerService::loadFile(const std::string& filename, utility::ErrorState& errorState)
+	bool ResourceManager::loadFile(const std::string& filename, utility::ErrorState& errorState)
 	{
 		return loadFile(filename, std::string(), errorState);
 	}
 
 
-	bool ResourceManagerService::resolvePointers(ObjectByIDMap& objectsToUpdate, const UnresolvedPointerList& unresolvedPointers, utility::ErrorState& errorState)
+	bool ResourceManager::resolvePointers(ObjectByIDMap& objectsToUpdate, const UnresolvedPointerList& unresolvedPointers, utility::ErrorState& errorState)
 	{
 		for (const UnresolvedPointer& unresolved_pointer : unresolvedPointers)
 		{
@@ -383,7 +378,7 @@ namespace nap
 
 
 	// inits all objects 
-	bool ResourceManagerService::initObjects(const std::vector<std::string>& objectsToInit, const ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState)
+	bool ResourceManager::initObjects(const std::vector<std::string>& objectsToInit, const ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState)
 	{
         // Init all objects in the correct order
         for (const std::string& id : objectsToInit)
@@ -407,7 +402,7 @@ namespace nap
 	}
 
 
-	const ObjectPtr<EntityInstance> ResourceManagerService::createEntity(const nap::Entity& Entity, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	const ObjectPtr<EntityInstance> ResourceManager::createEntity(const nap::Entity& Entity, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
 		// Create a single entity
 		std::vector<std::string> generated_ids;
@@ -449,14 +444,14 @@ namespace nap
 	 *
 	 * In this case, to point to the TransformComponent of the second wheel, the user would use the following path: './WheelEntity:1/TransformComponent'
 	 */
-	ComponentInstance* ResourceManagerService::sResolveComponentInstancePath(ComponentInstance* sourceComponentInstance, const std::string& targetComponentInstancePath, Component* targetComponentResource,
-		const ResourceManagerService::RootEntityInstanceMap& rootEntityInstances, const EntityCreationParameters::ComponentInstanceMap& componentInstances, utility::ErrorState& errorState)
+	ComponentInstance* ResourceManager::sResolveComponentInstancePath(ComponentInstance* sourceComponentInstance, const std::string& targetComponentInstancePath, Component* targetComponentResource,
+		const ResourceManager::RootEntityInstanceMap& rootEntityInstances, const EntityCreationParameters::ComponentInstanceMap& componentInstances, utility::ErrorState& errorState)
 	{
 		ComponentInstance* target_component_instance = nullptr;
 
 		// Split the path into its components
 		std::vector<std::string> path_components;
-		utility::gSplitString(targetComponentInstancePath, '/', path_components);
+		utility::splitString(targetComponentInstancePath, '/', path_components);
 
 		// If the path consists out of a single element, we're linking directly to a specific component so we can just use that
 		if (path_components.size()  == 1)
@@ -518,7 +513,7 @@ namespace nap
 
 					// Split the child specifier on ':'. Note that the ':' is optional and is only used to disambguate between multiple children
 					std::vector<std::string> element_parts;
-					utility::gSplitString(part, ':', element_parts);
+					utility::splitString(part, ':', element_parts);
 					if (!errorState.check(element_parts.size() <= 2, "Error resolving ComponentPtr with path %s: path contains a child specifier with an invalid format (multiple colons found)", targetComponentInstancePath.c_str()))
 						return false;
 
@@ -582,7 +577,7 @@ namespace nap
 	 * instantiated object often needs to point to other instantiated objects. In this function, we fill in the instance pointers in EntityPtr and 
 	 * ComponentInstancePtr, so that the instance can get to the instance pointer through it's resource.
 	 */
-	bool ResourceManagerService::sResolveComponentPointers(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool ResourceManager::sResolveComponentPointers(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
 		RootEntityInstanceMap root_entity_instances;
 		for (auto& kvp : entityCreationParams.mEntityInstancesByID)
@@ -652,8 +647,8 @@ namespace nap
 
 					resolved_path.setValue(entity_ptr);
 				}
-			}
-		}
+						}
+					}
 
 		return true;
 	}
@@ -685,7 +680,7 @@ namespace nap
 	}
 
 
-	bool ResourceManagerService::createEntities(const std::vector<const nap::Entity*>& entityResources, EntityCreationParameters& entityCreationParams, std::vector<std::string>& generatedEntityIDs, utility::ErrorState& errorState)
+	bool ResourceManager::createEntities(const std::vector<const nap::Entity*>& entityResources, EntityCreationParameters& entityCreationParams, std::vector<std::string>& generatedEntityIDs, utility::ErrorState& errorState)
 	{
 		std::unordered_set<const Entity*> rootEntityResources;
 		rootEntityResources.insert(entityResources.begin(), entityResources.end());
@@ -699,7 +694,7 @@ namespace nap
 		// Create all entity instances and component instances
 		for (const nap::Entity* entity_resource : rootEntityResources)
 		{
-			EntityInstance* entity_instance = new EntityInstance(getCore(), entity_resource);
+			EntityInstance* entity_instance = new EntityInstance(mCore, entity_resource);
 			entity_instance->mID = generateInstanceID(getInstanceID(entity_resource->mID), entityCreationParams);
 
 			entityCreationParams.mEntityInstancesByID.emplace(std::make_pair(entity_instance->mID, std::unique_ptr<EntityInstance>(entity_instance)));
@@ -730,7 +725,7 @@ namespace nap
 	}
 
 
-	bool ResourceManagerService::initEntities(const RTTIObjectGraph& objectGraph, const ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState)
+	bool ResourceManager::initEntities(const RTTIObjectGraph& objectGraph, const ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState)
 	{
 		std::vector<const Entity*> entities_to_spawn;			
 		objectGraph.visitNodes([&entities_to_spawn](const RTTIObjectGraph::Node& node) 
@@ -768,10 +763,10 @@ namespace nap
 	}
 
 
-	bool ResourceManagerService::loadFile(const std::string& filename, const std::string& externalChangedFile, utility::ErrorState& errorState)
+	bool ResourceManager::loadFile(const std::string& filename, const std::string& externalChangedFile, utility::ErrorState& errorState)
 	{
 		// ExternalChangedFile should only be used if it's different from the file being reloaded
-		assert(toComparableFilename(filename) != toComparableFilename(externalChangedFile));
+		assert(utility::toComparableFilename(filename) != utility::toComparableFilename(externalChangedFile));
 
 		// Read objects from disk
 		RTTIDeserializeResult read_result;
@@ -867,23 +862,26 @@ namespace nap
 		for (const FileLink& file_link : read_result.mFileLinks)
 			addFileLink(filename, file_link.mTargetFile);
 
-		mFilesToWatch.insert(toComparableFilename(filename));
+		mFilesToWatch.insert(utility::toComparableFilename(filename));
 		
 		// Everything was successful, don't rollback any changes that were made
 		rollback_helper.clear();
 
+		// Notify listeners
+		mFileLoadedSignal.trigger(filename);
+
 		return true;
 	}
 
-	ResourceManagerService::EFileModified ResourceManagerService::isFileModified(const std::string& modifiedFile)
+	ResourceManager::EFileModified ResourceManager::isFileModified(const std::string& modifiedFile)
 	{
 		// Get file time
 		uint64 mod_time;
-		bool can_get_mod_time = getFileModificationTime(modifiedFile, mod_time);
+		bool can_get_mod_time = utility::getFileModificationTime(modifiedFile, mod_time);
 		if (!can_get_mod_time)
 			return EFileModified::Error;
 		
-		std::string comparableFilename = toComparableFilename(modifiedFile);
+		std::string comparableFilename = utility::toComparableFilename(modifiedFile);
 
 		// Check if filetime is in the cache
 		ModifiedTimeMap::iterator pos = mFileModTimes.find(comparableFilename);
@@ -905,7 +903,7 @@ namespace nap
 		return EFileModified::No;
 	}
 
-	void ResourceManagerService::checkForFileChanges()
+	void ResourceManager::checkForFileChanges()
 	{
 		std::vector<std::string> modified_files;
 		if (mDirectoryWatcher->update(modified_files))
@@ -922,7 +920,7 @@ namespace nap
 				if (file_modified == EFileModified::Error || file_modified == EFileModified::No)
 					continue;
 
-				modified_file = toComparableFilename(modified_file);
+				modified_file = utility::toComparableFilename(modified_file);
 				std::set<std::string> files_to_reload;
 
 				// Is our modified file a json file that was loaded by the manager?
@@ -960,13 +958,13 @@ namespace nap
 	}
 
 
-	nap::rtti::Factory& ResourceManagerService::getFactory()
+	nap::rtti::Factory& ResourceManager::getFactory()
 	{
-		return getCore().getFactory();
+		return *mFactory;
 	}
 
 
-	const ObjectPtr<RTTIObject> ResourceManagerService::findObject(const std::string& id)
+	const ObjectPtr<RTTIObject> ResourceManager::findObject(const std::string& id)
 	{
 		const auto& it = mObjects.find(id);
 		
@@ -977,24 +975,24 @@ namespace nap
 	}
 
 
-	void ResourceManagerService::addObject(const std::string& id, std::unique_ptr<RTTIObject> object)
+	void ResourceManager::addObject(const std::string& id, std::unique_ptr<RTTIObject> object)
 	{
 		assert(mObjects.find(id) == mObjects.end());
 		mObjects.emplace(id, std::move(object));
 	}
 
 
-	void ResourceManagerService::removeObject(const std::string& id)
+	void ResourceManager::removeObject(const std::string& id)
 	{
 		assert(mObjects.find(id) != mObjects.end());
 		mObjects.erase(mObjects.find(id));
 	}
 
 
-	void ResourceManagerService::addFileLink(const std::string& sourceFile, const std::string& targetFile)
+	void ResourceManager::addFileLink(const std::string& sourceFile, const std::string& targetFile)
 	{
-		std::string source_file = toComparableFilename(sourceFile);
-		std::string target_file = toComparableFilename(targetFile);
+		std::string source_file = utility::toComparableFilename(sourceFile);
+		std::string target_file = utility::toComparableFilename(targetFile);
 		
 		FileLinkMap::iterator existing = mFileLinkMap.find(targetFile);
 		if (existing == mFileLinkMap.end())
@@ -1011,7 +1009,7 @@ namespace nap
 	}
 
 
-	const ObjectPtr<RTTIObject> ResourceManagerService::createObject(const rtti::TypeInfo& type)
+	const ObjectPtr<RTTIObject> ResourceManager::createObject(const rtti::TypeInfo& type)
 	{
 		if (!type.is_derived_from(RTTI_OF(RTTIObject)))
 		{
@@ -1046,7 +1044,7 @@ namespace nap
 	}
 
 
-	const ObjectPtr<EntityInstance> ResourceManagerService::findEntity(const std::string& inID) const
+	const ObjectPtr<EntityInstance> ResourceManager::findEntity(const std::string& inID) const
 	{
 		EntityByIDMap::const_iterator pos = mEntities.find(getInstanceID(inID));
 		if (pos == mEntities.end())

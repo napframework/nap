@@ -11,7 +11,7 @@ namespace nap
 	class Component;
 	class Entity;
 	class EntityInstance;	
-	class ResourceManagerService;
+	class ResourceManager;
 
 	using EntityList = std::vector<EntityInstance*>;
 
@@ -92,7 +92,7 @@ namespace nap
 		* @param entityCreationParams Parameters required to create new entity instances during init
 		* @param errorState The error object
 		*/
-		virtual bool init(ResourceManagerService& resourceManager, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
+		virtual bool init(ResourceManager& resourceManager, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
 
 		/**
 		 * Update this entity hierarchy

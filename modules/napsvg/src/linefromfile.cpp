@@ -107,7 +107,7 @@ namespace nap
 	{
 		// Append . before trying to load relative paths
 		std::string img_path = mFile;
-		if (utility::gStartsWith(img_path, "/"))
+		if (utility::startsWith(img_path, "/"))
 			img_path = utility::stringFormat(".%s", img_path.c_str());
 
 		// Convert the enum to a string for loading

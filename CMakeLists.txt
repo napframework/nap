@@ -63,13 +63,15 @@ add_subdirectory(tools/fbxconverter)
 # executable targets
 add_subdirectory(test/render)
 add_subdirectory(test/tommy)
-add_subdirectory(test/steef)
 add_subdirectory(test/videoplayer)
 add_subdirectory(test/serializationtest)
-add_subdirectory(test/etherdream)
 add_subdirectory(test/audiotest)
-add_subdirectory(test/artnet)
-add_subdirectory(test/kalvertoren)
+
+# app targets
+add_subdirectory(apps/kalvertoren)
+add_subdirectory(apps/etherdream)
+add_subdirectory(apps/artnetcolor)
+add_subdirectory(apps/steef)
 
 if (APPLE)
     set(GENERATE_XCODE_PROJECT_TARGET generateXcodeProject)
@@ -92,6 +94,7 @@ add_subdirectory(modules/napaudio)
 add_subdirectory(modules/napartnet)
 add_subdirectory(modules/naposc)
 add_subdirectory(modules/napsvg)
+add_subdirectory(modules/napapp)
 
 # Exe dependencies
 add_dependencies(rendertest mod_naprender)

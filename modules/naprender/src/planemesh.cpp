@@ -48,6 +48,7 @@ static unsigned int plane_indices[] =
 
 
 RTTI_BEGIN_CLASS(nap::PlaneMesh)
+	RTTI_PROPERTY("Size", &nap::PlaneMesh::mSize, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
@@ -59,6 +60,22 @@ namespace nap
 		int numVertices = 4;
 		mMeshInstance->setNumVertices(numVertices);
 		mMeshInstance->setDrawMode(opengl::EDrawMode::TRIANGLES);
+		
+		// Create the position vertices
+		float dsizex = 0.0f - (mSize.x / 2.0f);
+		float dsizey = 0.0f - (mSize.y / 2.0f);
+		math::Rect rect(dsizex, dsizey, mSize.x, mSize.y);
+		
+		// All the plane vertices
+		glm::vec3 plane_vertices[] =
+		{
+			{ rect.getMin().x,	rect.getMin().y, 0.0f },
+			{ rect.getMax().x,	rect.getMin().y, 0.0f },
+			{ rect.getMin().x,	rect.getMax().y, 0.0f },
+			{ rect.getMax().x,	rect.getMax().y, 0.0f },
+		};
+		mRect = rect;
+
 		Vec3VertexAttribute& position_attribute		= mMeshInstance->GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName());
 		Vec3VertexAttribute& normal_attribute		= mMeshInstance->GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::getNormalName());
 		Vec3VertexAttribute& uv_attribute			= mMeshInstance->GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetUVName(0));

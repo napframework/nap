@@ -10,7 +10,7 @@ def update(entity, currentTime, deltaTime):
 	rotation = nap.rotate(nap.quat(), rot_angle_radians, nap.vec3(0.0, 1.0, 0.0))
 	transform.setRotate(rotation)
 
-	resource_manager = nap.core.getOrCreateService("nap::ResourceManagerService")
+	resource_manager = nap.core.getResourceManager()
 	test_texture = resource_manager.findObject("TestTexture")
 
 	material_instance = entity.findComponent("nap::RenderableMeshComponentInstance").getMaterialInstance()

@@ -12,7 +12,7 @@ namespace nap
 		RTTI_ENABLE();
 
 	private:
-		friend class ResourceManagerService;
+		friend class ResourceManager;
 
 		static std::string translateTargetID(const std::string& targetID);
 		virtual void setValue(const std::string& path, rtti::RTTIObject* pointer) = 0;

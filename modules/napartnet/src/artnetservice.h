@@ -40,16 +40,16 @@ namespace nap
 		ArtNetService(const ArtNetService& rhs) = delete;
 		ArtNetService& operator=(const ArtNetService& rhs) = delete;
 
-		/**
-		 * Makes sure that data that is sent using the various send functions is transmitted over the network.
-		 */
-		void update();
-
 	protected:
 		/**
 		 *	Register specific object creators
 		 */
 		virtual void registerObjectCreators(rtti::Factory& factory) override;
+
+		/**
+		* Makes sure that data that is sent using the various send functions is transmitted over the network.
+		*/
+		virtual void update(double deltaTime) override;
 
 	private:
 		/**
@@ -104,6 +104,12 @@ namespace nap
 		 * @param channel The target channel where @channelData should be applied to. Must be between 0 and 512.
 		 */
 		void send(ArtNetController& controller, uint8_t channelData, int channel);
+
+		/**
+		 * Clears all data associated with a specific controller, ie: sets the controller buffer to 0
+		 * @param controller the dmx controller to clear the values for
+		 */
+		void clear(ArtNetController& controller);
 
 	private:
 		friend class ArtNetController;
