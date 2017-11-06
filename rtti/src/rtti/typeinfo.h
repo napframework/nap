@@ -174,6 +174,22 @@ namespace nap
 			uint8_t current_flags = meta_data.convert<uint8_t>();
 			return (current_flags & (uint8_t)flags) != 0;
 		}
+
+		/**
+		 * Finds method recursively in class and its base classes. Note: this should normally work through the regular rttr::get_method function,
+		 * but this does not seem to work properly. This function is used as a workaround until we solve the issue.
+		 */
+		inline rttr::method findMethodRecursive(const rtti::TypeInfo& type, const std::string& methodName)
+		{
+			for (rtti::TypeInfo base : type.get_base_classes())
+			{
+				rttr::method result = findMethodRecursive(base, methodName);
+				if (result.is_valid())
+					return result;
+			}
+			return type.get_method(methodName);
+		}
+
 	}
 
 	namespace detail

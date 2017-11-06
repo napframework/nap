@@ -319,7 +319,6 @@ namespace nap
 		return loadFile(filename, std::string(), errorState);
 	}
 
-
 	bool ResourceManager::resolvePointers(ObjectByIDMap& objectsToUpdate, const UnresolvedPointerList& unresolvedPointers, utility::ErrorState& errorState)
 	{
 		for (const UnresolvedPointer& unresolved_pointer : unresolvedPointers)
@@ -329,8 +328,13 @@ namespace nap
 				return false;
 
 			std::string target_id = unresolved_pointer.mTargetID;			
-			if (resolved_path.getType().is_derived_from(RTTI_OF(ComponentPtrBase)))
-				target_id = ComponentPtrBase::translateTargetID(target_id);
+
+			rttr::method translate_string_method = rtti::findMethodRecursive(resolved_path.getType(), "translateTargetID");
+			if (translate_string_method.is_valid())
+			{
+				rttr::variant translate_result = translate_string_method.invoke(rttr::instance(), target_id);
+				target_id = translate_result.to_string();
+			}
 
 			// Objects in objectsToUpdate have preference over the manager's objects
 			RTTIObject* target_object = nullptr;
@@ -355,17 +359,11 @@ namespace nap
 			assert(actual_type.is_pointer());
 
 			rtti::Variant target_value = target_object;
-			if (resolved_path.getType().is_derived_from(RTTI_OF(ComponentPtrBase)))
+			rttr::method assign_method = rtti::findMethodRecursive(resolved_path.getType(), "assign");
+			if (assign_method.is_valid())
 			{
-				// RTTR does not correctly support casting between base/derived types (in both directions), if one of the types is a 'wrapper' type (i.e. ComponentPtr) and the other is not (i.e. ComponentPtrBase)
-				// So, while we can get the value of the pointer as a ComponentPtrBase, RTTR can no longer convert back to the specific ComponentPtr<T> that is used in order to set the value on the property again.
-				//
-				// To work around this we use the get_value function on the rtti::Variant we get back from getValue. This function gives you back a *const ref* to the value stored *inside* of the variant (not the original memory location)
-				// So, if we can modify that const ref, we're *actually* modifying the value stored inside the variant, which means the variant always stays of the correct type (ComponentPtr<T>), which means we can
-				// re-use that same variant to call setValue again. However, since get_value returns a *const ref*, we need to cast the constness aways, since we want to fill in the instance pointer.
 				target_value = resolved_path.getValue();
-				ComponentPtrBase& component_ptr = const_cast<ComponentPtrBase&>(target_value.get_value<ComponentPtrBase>());
-				component_ptr.setValue(unresolved_pointer.mTargetID, target_object);
+				assign_method.invoke(target_value, unresolved_pointer.mTargetID, *target_object);
 			}
 
 			bool succeeded = resolved_path.setValue(target_value);

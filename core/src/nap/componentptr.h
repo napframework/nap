@@ -11,11 +11,27 @@ namespace nap
 	{
 		RTTI_ENABLE();
 
-	private:
-		friend class ResourceManager;
-
+	public:
+		/**
+		 * Convert the full target ID as specified to an ID that can be resolved to an object
+		 *
+		 * @param targetID The target ID to translate
+		 * @return The translated ID
+		 */
 		static std::string translateTargetID(const std::string& targetID);
-		virtual void setValue(const std::string& path, rtti::RTTIObject* pointer) = 0;
+
+		/**
+		 * Convert the pointer to a string for serialization
+		 * @return The string representation of this object
+		 */
+		virtual std::string toString() const = 0;
+
+		/**
+		 * Assign the target ID & object to this pointer. Used for pointer resolving by the ResourceManager, should not be called manually (is only public so that we can register it in RTTI)
+		 * @param targetID The ID of the target
+		 * @param targetObject The pointer to be assigned
+		 */
+		virtual void assign(const std::string& targetID, rtti::RTTIObject& targetObject) = 0;
 	};
 
 	template<class ComponentType>
@@ -33,10 +49,15 @@ namespace nap
 
 		const std::string& getInstancePath() const { return mPath; }
 
-		virtual void setValue(const std::string& path, rtti::RTTIObject* pointer) override
+		virtual std::string toString() const
 		{
-			mPath = path;
-			mResource = rtti_cast<ComponentType>(pointer);
+			return mPath;
+		}
+
+		virtual void assign(const std::string& targetID, rtti::RTTIObject& targetObject) override
+		{
+			mPath = targetID;
+			mResource = rtti_cast<ComponentType>(&targetObject);
 		}
 
 		const ComponentType& operator*() const
