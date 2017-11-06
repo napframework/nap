@@ -32,11 +32,6 @@ bool ResolveLinks(const OwnedObjectList& objects, const UnresolvedPointerList& u
 
 AppContext::AppContext()
 {
-    ErrorState err;
-    if (!mCore.initializeEngine(err))
-    {
-        QMessageBox::critical(nullptr, "NAP Failed to Initialize", QString::fromStdString(err.toString()));
-    }
 }
 
 
