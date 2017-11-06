@@ -432,7 +432,7 @@ namespace nap
 			{
 				// If we're linking directly to a specific component, ensure there is no ambiguity
 				if (!errorState.check(pos->second.size() == 1, "Encountered ambiguous component pointer"))
-					return false;
+					return nullptr;
 
 				target_component_instance = pos->second[0];
 			}
@@ -454,14 +454,14 @@ namespace nap
 				// Part starts with a double period; start at the parent of the entity that the source component is in
 				current_entity = sourceComponentInstance->getEntityInstance()->getParent();
 				if (!errorState.check(current_entity != nullptr, "Error resolving ComponentPtr with path %s: path starts with '..' but source entity has no parent", targetComponentInstancePath.c_str()))
-					return false;
+					return nullptr;
 			}
 			else
 			{
 				// No relative path components: the first element on the path represents the ID of a root entity. We find it here.
 				RootEntityInstanceMap::const_iterator pos = rootEntityInstances.find(root_element);
 				if (!errorState.check(pos != rootEntityInstances.end(), "Error resolving ComponentPtr with path %s: root entity '%s' not found", targetComponentInstancePath.c_str(), root_element.c_str()))
-					return false;
+					return nullptr;
 
 				current_entity = pos->second;
 			}
@@ -476,7 +476,7 @@ namespace nap
 				{
 					current_entity = current_entity->getParent();
 					if (!errorState.check(current_entity != nullptr, "Error resolving ComponentPtr with path %s: path contains a '..' at a point where there are no more parents", targetComponentInstancePath.c_str()))
-						return false;
+						return nullptr;
 				}
 				else if (part != ".")
 				{
@@ -486,7 +486,7 @@ namespace nap
 					std::vector<std::string> element_parts;
 					utility::splitString(part, ':', element_parts);
 					if (!errorState.check(element_parts.size() <= 2, "Error resolving ComponentPtr with path %s: path contains a child specifier with an invalid format (multiple colons found)", targetComponentInstancePath.c_str()))
-						return false;
+						return nullptr;
 
 					// Find all child entities matching the ID
 					std::vector<EntityInstance*> matching_children;
@@ -496,13 +496,13 @@ namespace nap
 
 					// There must be at least one match
 					if (!errorState.check(matching_children.size() != 0, "Error resolving ComponentPtr with path %s: child with ID '%s' not found in entity with ID '%s'", targetComponentInstancePath.c_str(), element_parts[0].c_str(), current_entity->getEntity()->mID.c_str()))
-						return false;
+						return nullptr;
 
 					// If the child specifier was a single ID, there must be only a single match and we set that entity as the new current entity
 					if (element_parts.size() == 1)
 					{
 						if (!errorState.check(matching_children.size() == 1, "Error resolving ComponentPtr with path %s: path is ambiguous; found %d children with ID '%s' in entity with ID '%s'. Use the child specifier syntax 'child_id:child_index' to disambiguate.", targetComponentInstancePath.c_str(), matching_children.size(), element_parts[0].c_str(), current_entity->getEntity()->mID.c_str()))
-							return false;
+							return nullptr;
 
 						current_entity = matching_children[0];
 					}
@@ -511,10 +511,10 @@ namespace nap
 						// The child specifier contained an index to disambiguate between multiple children with the same ID; parse the index
 						int array_index;
 						if (!errorState.check(sscanf(element_parts[1].c_str(), "%d", &array_index) == 1, "Error resolving ComponentPtr with path %s: path contains a child specifier with an invalid format (unable to parse int from %s)", targetComponentInstancePath.c_str(), element_parts[1].c_str()))
-							return false;
+							return nullptr;
 
 						if (!errorState.check(array_index < matching_children.size(), "Error resolving ComponentPtr with path %s: path contains an invalid child specifier; found %d eligible children but index %d is out of range", targetComponentInstancePath.c_str(), matching_children.size(), array_index))
-							return false;
+							return nullptr;
 
 						// Use the child with the specified index as current entity
 						current_entity = matching_children[array_index];
