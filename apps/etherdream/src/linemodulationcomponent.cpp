@@ -32,7 +32,7 @@ RTTI_END_CLASS
 namespace nap
 {
 
-	bool LineModulationComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool LineModulationComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// Copy properties
 		mProperties = getComponent<LineModulationComponent>()->mProperties;

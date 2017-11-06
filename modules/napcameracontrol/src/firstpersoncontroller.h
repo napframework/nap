@@ -57,7 +57,7 @@ namespace nap
 		/**
 		 * Initialize this ComponentInstance
 		 */
-		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		 * Update this ComponentInstance

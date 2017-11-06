@@ -66,7 +66,7 @@ static float gapEaseInOut(float p)
 
 namespace nap
 {
-	bool LaserOutputComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool LaserOutputComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// Copy over link to the DAC
 		LaserOutputComponent* output_resource = getComponent<LaserOutputComponent>();

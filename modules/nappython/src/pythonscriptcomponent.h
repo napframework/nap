@@ -21,7 +21,7 @@ namespace nap
 		}
 
 		virtual void update(double deltaTime) override;
-		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 	private:
 		pybind11::module mScript;

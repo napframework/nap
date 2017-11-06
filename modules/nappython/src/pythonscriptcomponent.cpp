@@ -28,7 +28,7 @@ namespace nap
 		}
 	}
 
-	bool PythonScriptComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool PythonScriptComponentInstance::init(utility::ErrorState& errorState)
 	{
 		PythonScriptComponent* script_component = getComponent<PythonScriptComponent>();
 

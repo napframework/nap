@@ -23,7 +23,7 @@ namespace nap
 	}
 
 
-	bool SlideShowComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool SlideShowComponentInstance::init(utility::ErrorState& errorState)
 	{
 		ResourceManager& resource_manager = *getEntityInstance()->getCore()->getResourceManager();
 

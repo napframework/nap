@@ -15,7 +15,7 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	bool PointlightComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool PointlightComponentInstance::init(utility::ErrorState& errorState)
 	{
 		mIntensity = getComponent<PointlightComponent>()->mIntensity;
 		mAttenuation = getComponent<PointlightComponent>()->mAttenuation;

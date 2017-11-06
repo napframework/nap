@@ -142,7 +142,7 @@ namespace nap
 	}
 
 
-	bool PerspCameraComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool PerspCameraComponentInstance::init(utility::ErrorState& errorState)
 	{
 		mProperties = getComponent<PerspCameraComponent>()->mProperties;
 		mTransformComponent = getEntityInstance()->findComponent<TransformComponentInstance>();

@@ -49,7 +49,7 @@ namespace nap
 		/**
 		 * Initialize this ComponentInstance
 		 */
-		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		 * Enables controlling of the camera while setting the position and rotation.

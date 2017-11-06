@@ -28,7 +28,7 @@ namespace nap
 	}
 
 
-	bool MakePrototypeComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool MakePrototypeComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// Get resource and manager
 		MakePrototypeComponent* resource = getComponent<MakePrototypeComponent>();

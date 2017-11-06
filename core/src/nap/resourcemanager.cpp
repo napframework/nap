@@ -643,7 +643,7 @@ namespace nap
 				continue;
 
 			for (ComponentInstance* component_instance : pos->second)
-				if (!component_instance->init(entityCreationParams, errorState))
+				if (!component_instance->init(errorState))
 				return false;
 		}
 

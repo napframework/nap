@@ -32,7 +32,7 @@ namespace nap
 	}
 
 
-	bool SelectColorComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool SelectColorComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// Get the resource we are instantiated from
 		nap::SelectColorComponent* resource = getComponent<SelectColorComponent>();
