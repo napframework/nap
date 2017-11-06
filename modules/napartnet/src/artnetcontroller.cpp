@@ -6,8 +6,10 @@
 #include "artnetservice.h"
 
 RTTI_BEGIN_CLASS(nap::ArtNetController)
-	RTTI_PROPERTY("Subnet",		&nap::ArtNetController::mSubnet,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Universe",	&nap::ArtNetController::mUniverse,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Subnet",		&nap::ArtNetController::mSubnet,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Universe",	&nap::ArtNetController::mUniverse,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("WaitTime",	&nap::ArtNetController::mWaitTime,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Frequency",	&nap::ArtNetController::mUpdateFrequency,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap

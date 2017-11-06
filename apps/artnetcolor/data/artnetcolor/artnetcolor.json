@@ -13,8 +13,11 @@
 		{
 			"Type" 		: "nap::ArtNetController",
 			"mID" 		: "Universe0",
-			"Subnet" 	: 3,
-			"Universe" 	: 8
+			"Subnet" 	: 0,
+			"Universe" 	: 0,
+			"Frequency" : 44,
+			"WaitTime"	: 2.0
+
 		},
 
 		{

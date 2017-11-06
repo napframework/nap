@@ -93,5 +93,6 @@ namespace nap
 		nap::uint8			mGreen = 0;
 		nap::uint8			mBlue = 0;
 		nap::uint8			mWhite = 0;
+		bool				mDirty = true;
 	};
 }

@@ -64,7 +64,6 @@ namespace nap
 		
 
 	private:
-		
 		// Nap Services
 		RenderService*		mRenderService = nullptr;				//< Render Service that handles render calls
 		ResourceManager*	mResourceManager = nullptr;				//< Manages all the loaded resources

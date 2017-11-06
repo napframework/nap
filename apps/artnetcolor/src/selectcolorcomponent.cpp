@@ -58,18 +58,22 @@ namespace nap
 
 	void SelectColorComponentInstance::update(double deltaTime)
 	{
-		// Clear buffer
-		mArtnetController->clear();
-
-		// Send dmx values
-		std::vector<uint8> data
+		if (mDirty)
 		{
-			mRed,
-			mGreen,
-			mBlue,
-			mWhite
-		};
-		mArtnetController->send(data, mStartChannel);
+			// Clear buffer
+			mArtnetController->clear();
+
+			// Send dmx values
+			std::vector<uint8> data
+			{
+				mRed,
+				mGreen,
+				mBlue,
+				mWhite
+			};
+			mArtnetController->send(data, mStartChannel);
+			mDirty = false;
+		}
 
 		// Update material values
 		float fr = static_cast<float>(mRed)	 / static_cast<float>(math::max<nap::uint8>());
@@ -90,12 +94,14 @@ namespace nap
 		mRed	= static_cast<uint8>(math::clamp<float>(color.r, 0.0f, 1.0f) * nap::math::max<uint8>());
 		mGreen	= static_cast<uint8>(math::clamp<float>(color.g, 0.0f, 1.0f) * nap::math::max<uint8>());
 		mBlue	= static_cast<uint8>(math::clamp<float>(color.b, 0.0f, 1.0f) * nap::math::max<uint8>());
+		mDirty  = true;
 	}
 
 
 	void SelectColorComponentInstance::setWhite(float white)
 	{
 		mWhite = static_cast<uint8>(math::clamp<float>(white, 0.0f, 1.0f) * nap::math::max<uint8>());
+		mDirty = true;
 	}
 
 
