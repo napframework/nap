@@ -29,7 +29,7 @@ namespace nap {
          */
         MidiService& getService() { return *mService; }
         
-        int mPortNumber = 0; /**< The port number that will be listened to for incoming messages */
+        std::string mPortName = ""; /**< The name of the port that will be listened to for incoming messages */
         bool mDebugOutput = false; /**< If true, incoming messages will be logged for debugging purposes */
         
         /**
@@ -37,9 +37,15 @@ namespace nap {
          */
         void receiveEvent(std::unique_ptr<MidiEvent> event) { mService->enqueueEvent(std::move(event)); }
         
+        /**
+         * @return: The midi port number thas this object is listening to
+         */
+        int getPortNumber() const { return mPortNumber; }
+        
     private:
         RtMidiIn midiIn;
         MidiService* mService = nullptr;
+        int mPortNumber = -1;
     };
     
     // Object creator used for constructing the the OSC receiver

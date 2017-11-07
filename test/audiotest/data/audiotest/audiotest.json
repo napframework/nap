@@ -14,6 +14,12 @@
 			"EnableDebugOutput": "True"
 		},
 
+		{
+			"Type": "nap::MidiInputPort",
+			"mID": "midiInputPort",
+			"Port": "IAC Driver Bus 1",
+			"EnableDebugOutput": "True"
+		},
 
 		{
 			"Type": "nap::audio::Voice",
