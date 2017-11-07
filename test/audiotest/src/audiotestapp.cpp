@@ -28,7 +28,6 @@ namespace nap
 
 	void AudioTestApp::update(double deltaTime)
 	{
-        int ns = 0.5 * 1000000;
         std::this_thread::sleep_for(std::chrono::nanoseconds(ns));
 	}
 

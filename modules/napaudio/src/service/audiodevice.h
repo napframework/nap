@@ -113,6 +113,13 @@ namespace nap {
              */
             int mBufferSize = 256;
 
+			/**
+			 * The buffer size that is used internally by the node system to peform processing.
+			 * This can be lower than mBufferSize but has to it within mBufferSize a discrete amount of times.
+			 * Lowering this can improve timing precision when the node manager performs internal event scheduling.
+			 */
+			int mInternalBufferSize = 256;
+
         private:
             /*
              * Start the audio stream using the default audio devices available on the system.

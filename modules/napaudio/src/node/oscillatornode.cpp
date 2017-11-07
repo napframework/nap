@@ -98,7 +98,7 @@ namespace nap {
             mWave(aWave)
         {
             mStep = mWave.getSize() / getNodeManager().getSampleRate();
-            setFrequency(220);
+            setFrequency(440);
         }
 
         

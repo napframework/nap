@@ -11,7 +11,7 @@ namespace nap
          * A wavetable that can be used as waveform data for an oscillator.
          * Contains a buffer with one cycle of samples for a periodic waveform.
          */
-        class WaveTable
+        class NAPAPI WaveTable
         {
         public:
             /**
@@ -53,7 +53,7 @@ namespace nap
         /**
          * Oscillator that generates an audio signal from a periodic waveform and a frequency
          */
-        class OscillatorNode : public Node
+        class NAPAPI OscillatorNode : public Node
         {
             RTTI_ENABLE(Node)
             

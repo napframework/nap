@@ -14,12 +14,6 @@
 			"EnableDebugOutput": "True"
 		},
 
-		{
-			"mID": "irisMidi",
-			"Type": "nap::MidiInputPort",
-			"Port": 0,
-			"EnableDebugOutput": "True"
-		},
 
 		{
 			"Type": "nap::audio::Voice",
@@ -94,14 +88,7 @@
 					"Input": "audioComponent"
 				},
 
-				{
-					"Type": "nap::MidiInputComponent",
-					"mID": "midiIn",
-					"Channels": [ 0 ],
-					"Ports": [ 1, 2 ],
-					"Types": [ "noteOff", "noteOn" ]
-				},
-
+			
 				{
 					"Type": "nap::PythonScriptComponent",
 					"mID": "pythonScript",

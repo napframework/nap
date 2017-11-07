@@ -34,8 +34,7 @@ namespace nap {
                                  void *userData )
         {
             float** out = (float**)outputBuffer;
-            float** in = (float**)inputBuffer;
-            
+            float** in = (float**)inputBuffer;            
             
             NodeManager* nodeManager = reinterpret_cast<NodeManager*>(userData);
             nodeManager->process(in, out, framesPerBuffer);
@@ -72,6 +71,12 @@ namespace nap {
         {
             if (isActive())
                 return true;
+
+			if (mInternalBufferSize % mBufferSize != 0)
+			{
+				errorState.fail("Internal buffer size does not fit device buffer size");
+				return false;
+			}
             
             if (mUseDefaultDevice)
                 return startDefaultDevice(errorState);
@@ -114,6 +119,7 @@ namespace nap {
             mNodeManager.setInputChannelCount(mInputChannelCount);
             mNodeManager.setOutputChannelCount(mOutputChannelCount);
             mNodeManager.setSampleRate(mSampleRate);
+			mNodeManager.setInternalBufferSize(mInternalBufferSize);
             
             error = Pa_StartStream(mStream);
             if (error != paNoError)
