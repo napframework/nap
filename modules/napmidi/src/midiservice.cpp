@@ -1,6 +1,7 @@
 #include "midiservice.h"
 
 #include <nap/logger.h>
+#include <utility/stringutils.h>
 
 #include "midiinputport.h"
 #include "midioutputport.h"
@@ -45,6 +46,15 @@ namespace nap {
     }
     
     
+    int MidiService::getInputPortNumber(const std::string& portName)
+    {
+        for (auto i = 0; i < mMidiIn->getPortCount(); ++i)
+            if (utility::gToLower(portName) == utility::gToLower(mMidiIn->getPortName(i)))
+                return i;
+        return -1;
+    }
+    
+    
     int MidiService::getOutputPortCount()
     {
         return mMidiOut->getPortCount();
@@ -57,15 +67,24 @@ namespace nap {
     }
     
     
+    int MidiService::getOutputPortNumber(const std::string& portName)
+    {
+        for (auto i = 0; i < mMidiOut->getPortCount(); ++i)
+            if (utility::gToLower(portName) == utility::gToLower(mMidiOut->getPortName(i)))
+                return i;
+        return -1;
+    }
+    
+    
     void MidiService::printPorts()
     {
         Logger::info("Available midi input ports:");
         for (auto i = 0; i < getInputPortCount(); ++i)
-            nap::Logger::info("%i: %s", i, getInputPortName(i).c_str());
+            nap::Logger::info("%s", getInputPortName(i).c_str());
 
         Logger::info("Available midi output ports:");
         for (auto i = 0; i < getOutputPortCount(); ++i)
-            nap::Logger::info("%i: %s", i, getOutputPortName(i).c_str());
+            nap::Logger::info("%s", getOutputPortName(i).c_str());
     }
     
     

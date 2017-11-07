@@ -46,6 +46,12 @@ namespace nap {
         std::string getInputPortName(int portNumber);
         
         /**
+         * Returns the number of an input port with the given name.
+         * Returns -1 when no port with this name has been found.
+         */
+        int getInputPortNumber(const std::string& portName);
+        
+        /**
          * Returns the number of available midi output ports on the system.
          */
         int getOutputPortCount();
@@ -55,6 +61,12 @@ namespace nap {
          */
         std::string getOutputPortName(int portNumber);
 
+        /**
+         * Returns the number of an output port with the given name.
+         * Returns -1 when no port with this name has been found.
+         */
+        int getOutputPortNumber(const std::string& portName);
+        
         /**
          * Logs a list of all available midi input and output ports on this system.
          */
