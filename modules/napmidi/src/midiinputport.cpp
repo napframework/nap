@@ -17,7 +17,7 @@ namespace nap {
         auto inputPort = static_cast<MidiInputPort*>(userData);
         auto event = std::make_unique<MidiEvent>(*message, inputPort->getPortNumber());
         if (inputPort->mDebugOutput)
-            nap::Logger::info(event->getText());
+            nap::Logger::info("midi input on " + inputPort->mPortName + ": " + event->getText());
         inputPort->receiveEvent(std::move(event));
     }
     
