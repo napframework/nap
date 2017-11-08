@@ -1,15 +1,15 @@
-#include <rtti/pythonmodule.h>
 #include "resourcemanager.h"
-#include "rtti/rttiutilities.h"
-#include "rtti/jsonreader.h"
-#include "nap/core.h"
 #include "objectgraph.h"
 #include "entityptr.h"
 #include "componentptr.h"
-#include <utility/fileutils.h>
 #include "logger.h"
 #include "core.h"
-#include "utility/stringutils.h"
+#include <utility/fileutils.h>
+#include <utility/stringutils.h>
+#include <rtti/rttiutilities.h>
+#include <rtti/jsonreader.h>
+#include <rtti/pythonmodule.h>
+#include <nap/core.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ResourceManager)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -284,7 +284,7 @@ namespace nap
 		// Build map of objects per type, this is used for tracking type dependencies while building the graph
 		RTTIObjectGraphItem::ObjectsByTypeMap objects_by_type;
 		for (rtti::RTTIObject* object : all_objects)
-			objects_by_type[object->get_type()].push_back(object);
+			objects_by_type[object->get_type()].emplace_back(object);
 
 		if (!objectGraph.build(all_objects, [&objects_by_type](rtti::RTTIObject* object) { return RTTIObjectGraphItem::create(object, objects_by_type); }, errorState))
 			return false;
@@ -319,6 +319,11 @@ namespace nap
 		return loadFile(filename, std::string(), errorState);
 	}
 
+
+	// Resolves all the pointers in @unresolvedPointers against both the ResourceManager's objects and the @objectsToUpdate map. The @objectsToUpdate array
+	// functions as an overlay on top of the ResourceManager.
+	// Custom pointers are supported through exposed RTTI functions on pointer objects: a static function 'translateTargetID' will convert any ID to a target ID
+	// and the member function 'assign' will assign the pointer value to the pointer object.
 	bool ResourceManager::resolvePointers(ObjectByIDMap& objectsToUpdate, const UnresolvedPointerList& unresolvedPointers, utility::ErrorState& errorState)
 	{
 		for (const UnresolvedPointer& unresolved_pointer : unresolvedPointers)
@@ -329,6 +334,8 @@ namespace nap
 
 			std::string target_id = unresolved_pointer.mTargetID;			
 
+			// If the type that we're processing has a function to translate the ID read from json into a different ID, we call it and use that ID.
+			// This is used for pointers that have a different format in json.
 			rttr::method translate_string_method = rtti::findMethodRecursive(resolved_path.getType(), "translateTargetID");
 			if (translate_string_method.is_valid())
 			{
@@ -336,7 +343,7 @@ namespace nap
 				target_id = translate_result.to_string();
 			}
 
-			// Objects in objectsToUpdate have preference over the manager's objects
+			// Objects in objectsToUpdate have preference over the manager's objects. 
 			RTTIObject* target_object = nullptr;
             auto object_to_update = objectsToUpdate.find(target_id);
 			if (object_to_update == objectsToUpdate.end())
@@ -358,6 +365,7 @@ namespace nap
 
 			assert(actual_type.is_pointer());
 
+			// If the type that we're processing has a function to assign the pointer value, we use it.
 			rtti::Variant target_value = target_object;
 			rttr::method assign_method = rtti::findMethodRecursive(resolved_path.getType(), "assign");
 			if (assign_method.is_valid())
@@ -482,7 +490,7 @@ namespace nap
 				{
 					// If we encountered a non-relative component, we need to look for a child entity of the current entity that matches the child specifier
 
-					// Split the child specifier on ':'. Note that the ':' is optional and is only used to disambguate between multiple children
+					// Split the child specifier on ':'. Note that the ':' is optional and is only used to disambiguate between multiple children
 					std::vector<std::string> element_parts;
 					utility::splitString(part, ':', element_parts);
 					if (!errorState.check(element_parts.size() <= 2, "Error resolving ComponentPtr with path %s: path contains a child specifier with an invalid format (multiple colons found)", targetComponentInstancePath.c_str()))
