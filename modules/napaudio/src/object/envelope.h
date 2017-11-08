@@ -20,6 +20,8 @@ namespace nap {
             
             EnvelopeGenerator::Envelope mSegments;
             
+            bool mAutoTrigger = false;
+            
         private:
             std::unique_ptr<AudioObjectInstance> createInstance();
         };
@@ -33,7 +35,9 @@ namespace nap {
             bool init(NodeManager& nodeManager, utility::ErrorState& errorState) override
             {
                 mEnvelopeGenerator = std::make_unique<EnvelopeGenerator>(nodeManager);
-                mEnvelopeGenerator->trigger(rtti_cast<Envelope>(&getResource())->mSegments);
+                auto resource = rtti_cast<Envelope>(&getResource());
+                if (resource->mAutoTrigger)
+                    mEnvelopeGenerator->trigger(resource->mSegments);
                 return true;
             }                        
             
