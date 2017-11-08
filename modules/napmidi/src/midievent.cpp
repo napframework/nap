@@ -29,8 +29,9 @@ namespace nap {
     
     MidiEvent::MidiEvent(const std::vector<unsigned char>& data, MidiValue port) : mPort(port)
     {
-        // We need 4 bytes to contain a midi message
-        assert(data.size() >= 3);
+        // We only process 3 byte messages for now, midi transport and clock events are not supported yet        
+        if (data.size() < 3)
+            return;
         
         // extract the type from the first 4 bit of the first byte
         mType = static_cast<Type>((data[0] >> 4) << 4);

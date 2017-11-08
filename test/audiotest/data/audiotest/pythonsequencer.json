@@ -8,20 +8,6 @@
 		},
 
 		{
-			"Type": "nap::OSCReceiver",
-			"mID": "oscReceiver",
-			"Port": 7000,
-			"EnableDebugOutput": "True"
-		},
-
-		{
-			"Type": "nap::MidiInputPort",
-			"mID": "midiInputPort",
-			"Port": "IAC Driver Bus 1",
-			"EnableDebugOutput": "True"
-		},
-
-		{
 			"Type": "nap::audio::Voice",
 			"mID": "voice",
 			"Objects":
@@ -98,7 +84,7 @@
 				{
 					"Type": "nap::PythonScriptComponent",
 					"mID": "pythonScript",
-					"Path": "data/audiotest/scripts/audiotest.py"
+					"Path": "data/audiotest/scripts/pythonsequencer.py"
 				}
 
 

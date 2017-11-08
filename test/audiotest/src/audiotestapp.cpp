@@ -17,7 +17,7 @@ namespace nap
 	{
 		// Load scene
 		nap::ResourceManager* resourceManager = getCore().getResourceManager();
-		if (!resourceManager->loadFile("data/audiotest/audiotest.json", error))
+		if (!resourceManager->loadFile(mJsonFile, error))
 		{
 			error.fail("Unable to deserialize resources: \n %s", error.toString().c_str());
 			return false;

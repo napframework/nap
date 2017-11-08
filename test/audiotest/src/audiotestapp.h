@@ -26,5 +26,9 @@ namespace nap
 		 *	Shutdown app
 		 */
 		virtual void shutdown() override;
+        
+    private:
+        std::string mJsonFile = "data/audiotest/pythonsequencer.json";
+        
 	}; 
 }
