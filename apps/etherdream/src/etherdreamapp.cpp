@@ -35,7 +35,7 @@ namespace nap
 
 		// Load scene
 		if (!mResourceManager->loadFile("data/etherdream/etherdream.json", error))
-			return false;
+			return false;   
 
 		// Store all render windows
 		mRenderWindow = mResourceManager->findObject<RenderWindow>("Window");

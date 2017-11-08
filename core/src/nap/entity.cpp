@@ -5,9 +5,15 @@
 
 using namespace std;
 
+RTTI_BEGIN_CLASS(nap::InstanceProperty)
+	RTTI_PROPERTY("TargetComponent", &nap::InstanceProperty::mTargetComponent, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("TargetAttribute", &nap::InstanceProperty::mTargetAttribute, nap::rtti::EPropertyMetaData::Required)
+RTTI_END_CLASS
+
 RTTI_BEGIN_CLASS(nap::Entity)
 	RTTI_PROPERTY("Components", &nap::Entity::mComponents, nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Children", &nap::Entity::mChildren, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("InstanceProperties", &nap::Entity::mInstanceProperties, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("AutoSpawn", &nap::Entity::mAutoSpawn, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -26,9 +32,9 @@ namespace nap
 
 	bool EntityInstance::init(ResourceManager& resourceManager, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
-		for (auto& child_entity : mResource->mChildren)
+		for (int index = 0; index < mResource->mChildren.size(); ++index)
 		{
-			ObjectPtr<EntityInstance> child_entity_instance = resourceManager.createEntity(*child_entity, entityCreationParams, errorState);
+			ObjectPtr<EntityInstance> child_entity_instance = resourceManager.createChildEntityInstance(*mResource->mChildren[index], index, entityCreationParams, errorState);
 			addChild(*child_entity_instance);
 		}
 
