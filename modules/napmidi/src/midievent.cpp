@@ -109,7 +109,7 @@ namespace nap {
                 break;
         }
         
-        result = "port: " + std::to_string(mPort) + " channel: " + std::to_string(mChannel) + " " + result;
+        result = result + " channel: " + std::to_string(mChannel);
         return result;
     }
 
