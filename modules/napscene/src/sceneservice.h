@@ -10,18 +10,11 @@ namespace nap
 		RTTI_ENABLE(Service)
 
 	public:
-		// Default Constructor
+        // Default Constructor
 		SceneService() = default;
 
 		// Default Destructor
 		virtual ~SceneService() = default;
-
-		/**
-		* Recursively updates the transform hierarchy. The entity hierarchy is traversed. For any TransformComponent
-		* the world transform is updated.
-		* @param instance: the entity whose transform hierarchy should be updated
-		*/
-		void update(EntityInstance& instance);
 
 	protected:
 		/**

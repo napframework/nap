@@ -57,7 +57,7 @@ namespace nap
 		/**
 		 * Initialize this ComponentInstance
 		 */
-		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		 * Update this ComponentInstance
@@ -113,6 +113,8 @@ namespace nap
 		void onMouseMove(const PointerMoveEvent& pointerMoveEvent);
 
 	private:
+		ComponentInstancePtr<PerspCameraComponent> mPerspCameraComponent = { this, &FirstPersonController::mPerspCameraComponent };
+
 		TransformComponentInstance*		mTransformComponent = nullptr;		// The transform component used to move the entity
 		bool							mMoveForward		= false;		// Whether we're moving forward
 		bool							mMoveBackward		= false;		// Whether we're moving backwards

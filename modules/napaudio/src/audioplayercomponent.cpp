@@ -27,7 +27,7 @@ namespace nap {
         /**
          * Initializes the audio node system to play back an audio buffer, either mono or stereo
          */
-        bool AudioPlayerComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+        bool AudioPlayerComponentInstance::init(utility::ErrorState& errorState)
         {
             AudioPlayerComponent* resource = rtti_cast<AudioPlayerComponent>(getComponent());
             

@@ -52,7 +52,7 @@ namespace nap
 		/**
 		 * Checks whether a transform component is available.
 		 */
-		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		 * This implementation extracts the size in pixels of the render target to make sure that the orthographic

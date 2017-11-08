@@ -27,7 +27,7 @@ namespace nap
 	}
 
 
-	bool FirstPersonControllerInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool FirstPersonControllerInstance::init(utility::ErrorState& errorState)
 	{
 		PointerInputComponentInstance* pointer_component = getEntityInstance()->findComponent<PointerInputComponentInstance>();
 		if (!errorState.check(pointer_component != nullptr, "Could not find PointerInputComponent"))
@@ -75,7 +75,7 @@ namespace nap
 
 	CameraComponentInstance& FirstPersonControllerInstance::getCameraComponent()
 	{
-		return *getComponent<FirstPersonController>()->mPerspCameraComponent;
+		return *mPerspCameraComponent;
 	}
 
 

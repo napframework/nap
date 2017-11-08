@@ -83,7 +83,7 @@ namespace nap
 		/**
 		 * Init this object after deserialization
 		 */
-		bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
+		bool init(utility::ErrorState& errorState);
 
 		/** 
 		 * Update the layout for this entity

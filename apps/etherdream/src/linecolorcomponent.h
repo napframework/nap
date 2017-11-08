@@ -76,7 +76,7 @@ namespace nap
 	   /**
 		* Initializes this component
 		*/
-		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 	   /**
 		* Updates the line color
@@ -154,7 +154,7 @@ namespace nap
 		void getColor(const glm::vec2& uvPos, glm::vec3& outColor);
 
 	private:
-		LineBlendComponentInstance* mBlendComponent = nullptr;		// Holds the line we want to color
+		ComponentInstancePtr<LineBlendComponent> mBlendComponent = { this, &LineColorComponent::mBlendComponent };		// Holds the line we want to color
 		Image* mLookupImage = nullptr;								// Image used for color lookup
 		glm::vec2 mStartPosition = { 0.5f, 0.5f };					// Start point lookup in uv space
 		glm::vec2 mEndPosition = { 0.5f, 0.5f };					// End point lookup in uv space

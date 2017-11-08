@@ -53,7 +53,7 @@ namespace nap
 		/**
 		 *	Initializes the component and copies over the osc addresses
 		 */
-		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		// Holds a set of OSC addresses, when empty every osc event is valid to
 		// be received by this component, otherwise only the ones that are present in this list
