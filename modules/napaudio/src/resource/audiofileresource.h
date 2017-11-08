@@ -9,9 +9,9 @@ namespace nap {
         /**
          * An audio file from disk loaded into memory.
          */
-        class NAPAPI AudioFileResource : public AudioBufferResourceBase
+        class NAPAPI AudioFileResource : public AudioBufferResource
         {
-            RTTI_ENABLE(AudioBufferResourceBase)
+            RTTI_ENABLE(AudioBufferResource)
         public:
             AudioFileResource() = default;
             bool init(utility::ErrorState& errorState) override;
