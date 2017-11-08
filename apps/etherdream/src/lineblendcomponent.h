@@ -53,7 +53,7 @@ namespace nap
 		{}
 
 		// Init
-		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		// Update
 		virtual void update(double deltaTime) override;
@@ -96,8 +96,8 @@ namespace nap
 		// Current blend value
 		float mCurrentBlendValue = 0.0f;
 
-		LineSelectionComponentInstance* mSelectorOne = nullptr;		// First line selection component
-		LineSelectionComponentInstance* mSelectorTwo = nullptr;		// Second line selection component
+		ComponentInstancePtr<LineSelectionComponent> mSelectorOne = { this, &LineBlendComponent::mSelectionComponentOne };		// First line selection component
+		ComponentInstancePtr<LineSelectionComponent>	mSelectorTwo = { this, &LineBlendComponent::mSelectionComponentTwo };		// Second line selection component
 
 		std::map<float, int>			mDistancesLineOne;			// Distance values associated with line 1
 		std::map<float, int>			mDistancesLineTwo;			// Distance values associated with line 2

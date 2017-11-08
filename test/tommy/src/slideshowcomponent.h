@@ -20,7 +20,6 @@ namespace nap
 
 	public:
  		std::vector<ObjectPtr<nap::Image>>		mImages;			///< Array of images to display in the slidesho2
-		ObjectPtr<nap::Entity>					mEntityPrototype;	///< Prototype of entity to instantiate during Instance::init
 	};
 
 	/**
@@ -40,7 +39,7 @@ namespace nap
 		 * Spawns left/center/right children, sets intial textures and positions.
 		 * @return false if prototype does not match requirements.
 		 */
-		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		 * Updates animation.

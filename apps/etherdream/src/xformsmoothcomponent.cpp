@@ -26,7 +26,7 @@ namespace nap
 	}
 
 
-	bool XformSmoothComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool XformSmoothComponentInstance::init(utility::ErrorState& errorState)
 	{
 		mTransform = getEntityInstance()->findComponent<TransformComponentInstance>();
 		if (!errorState.check(mTransform != nullptr, "Missing transform component"))

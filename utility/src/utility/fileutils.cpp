@@ -23,6 +23,7 @@
 		#include <sys/stat.h>
 		#include <fstream>
 	#endif
+	#include <direct.h>
 #elif __APPLE__
     #include <stdlib.h>
     #include <zconf.h>
@@ -279,5 +280,16 @@ namespace nap
 		{
 			return getFileDir(getExecutablePath());
 		}
+
+
+		void changeDir(std::string newDir) 
+		{
+#if defined(_WIN32)
+			_chdir(newDir.c_str());
+#else
+			chdir(newDir.c_str());
+#endif
+		}
+
 		}
 }

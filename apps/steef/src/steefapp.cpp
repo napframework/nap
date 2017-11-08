@@ -16,12 +16,12 @@ namespace nap
 	 * slowly migrating all functionality to nap
 	 */
 	bool SteefApp::init(utility::ErrorState& error)
-	{		
+	{
 		// Create services
 		mRenderService = getCore().getService<nap::RenderService>();
 		mSceneService  = getCore().getService<nap::SceneService>();
 		mInputService  = getCore().getService<nap::InputService>();
-
+		
 		// Get resource manager and load
 		mResourceManager = getCore().getResourceManager();
 		if (!mResourceManager->loadFile("data/steef/objects.json", error))
@@ -29,7 +29,7 @@ namespace nap
 			assert(false);
 			return false;
 		}
-		
+        
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Viewport");
 		mRenderWindow->mWindowEvent.connect(std::bind(&SteefApp::handleWindowEvent, this, std::placeholders::_1));
@@ -59,7 +59,7 @@ namespace nap
 	
 	// Called when the window is updating
 	void SteefApp::update(double deltaTime)
-	{							
+	{
 		// Make sure background image matches window size
 		updateBackgroundImage();
 		
@@ -118,7 +118,7 @@ namespace nap
 		}
 	}
 	
-
+	
 	// Forward the window message to the render service
 	void SteefApp::windowMessageReceived(WindowEventPtr windowEvent) 
 	{
