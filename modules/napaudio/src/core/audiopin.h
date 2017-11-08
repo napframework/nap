@@ -151,6 +151,9 @@ namespace nap {
              */
             bool isConnected() const { return !mOutputs.empty(); }
             
+            // Used by @InputPin to poll this output for a new buffer of output samples
+            SampleBufferPtr pull();
+            
         protected:
             /**
              * The buffer containing the latest output
@@ -158,9 +161,6 @@ namespace nap {
             SampleBuffer mBuffer;
             
         private:
-            // Used by @InputPin to poll this output for a new buffer of output samples
-            SampleBufferPtr pull();
-            
             // Used by the @NodeManager to resize the internal buffers when necessary
             void setBufferSize(int bufferSize);
             
