@@ -36,7 +36,7 @@ namespace nap
 		* @param object: the object to copy rtti attributes from.
 		*/
 		template<typename T>
-		std::unique_ptr<T> cloneObject(T& object, rtti::Factory& factory)
+		std::unique_ptr<T> cloneObject(const T& object, rtti::Factory& factory)
 		{
 			T* copy = static_cast<T*>(factory.create(object.get_type()));
 			copyObject(object, *copy);

@@ -10,6 +10,7 @@
 #include "component.h"
 #include "configure.h"
 #include "signalslot.h"
+#include "entitycreationparameters.h"
 
 // External Includes
 #include <rtti/unresolvedpointer.h>
@@ -76,7 +77,7 @@ namespace nap
 		/**
 		* Instantiates an Entity.
 		*/
-		const ObjectPtr<EntityInstance> createEntity(const Entity& Entity, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
+		const ObjectPtr<EntityInstance> createChildEntityInstance(const Entity& Entity, int childIndex, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
 
 		/**
 		* Creates an object and adds it to the manager.
@@ -130,6 +131,8 @@ namespace nap
 		using InstanceByIDMap	= std::unordered_map<std::string, rtti::RTTIObject*>;					// Map from object ID to object (non-owned)
 		using ObjectByIDMap		= std::unordered_map<std::string, std::unique_ptr<rtti::RTTIObject>>;	// Map from object ID to object (owned)
 		using FileLinkMap		= std::unordered_map<std::string, std::vector<std::string>>;			// Map from target file to multiple source files
+		using ClonedResourceMap = std::unordered_map<rtti::RTTIObject*, std::vector<rtti::RTTIObject*>>;
+		using ObjectsByTypeMap = std::unordered_map<rtti::TypeInfo, std::vector<rtti::RTTIObject*>>;
 
 		enum class EFileModified : uint8_t
 		{
@@ -145,15 +148,15 @@ namespace nap
 		void determineObjectsToInit(const RTTIObjectGraph& objectGraph, const ObjectByIDMap& objectsToUpdate, const std::string& externalChangedFile, std::vector<std::string>& objectsToInit);
 		bool resolvePointers(ObjectByIDMap& objectsToUpdate, const rtti::UnresolvedPointerList& unresolvedPointers, utility::ErrorState& errorState);
 		bool initObjects(const std::vector<std::string>& objectsToInit, const ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState);
-		bool initEntities(const RTTIObjectGraph& objectGraph, const ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState);
-		bool createEntities(const std::vector<const Entity*>& entityResources, EntityCreationParameters& entityCreationParams, std::vector<std::string>& generatedEntityIDs, utility::ErrorState& errorState);
+		bool initEntityInstances(RTTIObjectGraph& objectGraph, const ObjectByIDMap& objectsToUpdate, ObjectsByTypeMap& objectsByType, ClonedResourceMap& clonedResourceMap, utility::ErrorState& errorState);
+		EntityInstance* createEntityInstance(const Entity& entityResource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
 		
 		using RootEntityInstanceMap = std::unordered_map<std::string, EntityInstance*>;
 		static bool sResolveComponentPointers(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
 		static ComponentInstance* sResolveComponentInstancePath(ComponentInstance* sourceComponentInstance, const std::string& targetComponentInstancePath, Component* targetComponentResource,
 			const RootEntityInstanceMap& rootEntityInstances, const EntityCreationParameters::ComponentInstanceMap& componentInstances, utility::ErrorState& errorState);
 
-		bool buildObjectGraph(const ObjectByIDMap& objectsToUpdate, RTTIObjectGraph& objectGraph, utility::ErrorState& errorState);
+		bool buildObjectGraph(const ObjectByIDMap& objectsToUpdate, RTTIObjectGraph& objectGraph, ObjectsByTypeMap& objectsByType, ClonedResourceMap& clonedResourceMap, utility::ErrorState& errorState);
 		EFileModified isFileModified(const std::string& modifiedFile);
 
 		/** 
@@ -187,6 +190,7 @@ namespace nap
 		std::unique_ptr<EntityInstance>		mRootEntity;					// Root entity, owned and created by the system
 		ObjectByIDMap						mObjects;						// Holds all objects
 		EntityByIDMap						mEntities;						// Holds all entitites
+		ClonedComponentByEntityMap			mClonedComponentsByEntity;		// All cloned components, stored by entity. This map owns the cloned resources.
 		std::set<std::string>				mFilesToWatch;					// Files currently loaded, used for watching changes on the files
 		FileLinkMap							mFileLinkMap;					// Map containing links from target to source file, for updating source files if the file monitor sees changes
 		std::unique_ptr<DirectoryWatcher>	mDirectoryWatcher;				// File monitor, detects changes on files

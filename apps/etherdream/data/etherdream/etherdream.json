@@ -689,6 +689,16 @@
 				 "LaserFrameEntity",
 				 "LaserPrototypeEntity",
 				 "LaserFrameEntity"
+			],
+			"InstanceProperties" : [
+		 		{
+			 		"TargetComponent" : "./LaserPrototypeEntity:0/LaserSplineEntity/RenderLaserLineComponent",
+			 		"TargetAttribute" : "Mesh"
+				},
+				{
+			 		"TargetComponent" : "./LaserPrototypeEntity:0/LaserSplineEntity/RenderLaserNormalsComponent",
+			 		"TargetAttribute" : "Mesh"
+				}
 			]
 		},
 

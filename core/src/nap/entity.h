@@ -3,6 +3,7 @@
 // Local Includes
 #include "utility/uniqueptrvectoriterator.h"
 #include "objectptr.h"
+#include "componentptr.h"
 #include "component.h"
 
 namespace nap
@@ -14,34 +15,6 @@ namespace nap
 	class ResourceManager;
 
 	using EntityList = std::vector<EntityInstance*>;
-
-	class RTTIObjectGraphItem;
-	template<typename ITEM> class ObjectGraph;
-	using RTTIObjectGraph = ObjectGraph<RTTIObjectGraphItem>;
-
-	/**
-	 * Structure used to hold data necessary to create new instances during init
-	 */
-	struct EntityCreationParameters
-	{
-		using EntityInstanceByIDMap = std::unordered_map<std::string, std::unique_ptr<EntityInstance>>;
-		using InstanceByIDMap		= std::unordered_map<std::string, rtti::RTTIObject*>;
-		using ComponentToEntityMap	= std::unordered_map<Component*, const Entity*>;
-		using ComponentInstanceMap = std::unordered_map<Component*, std::vector<ComponentInstance*>>;
-
-		EntityCreationParameters(const RTTIObjectGraph& objectGraph) :
-			mObjectGraph(&objectGraph)
-		{
-		}
-
-		virtual ~EntityCreationParameters() = default;
-
-		const RTTIObjectGraph*		mObjectGraph = nullptr;
-		EntityInstanceByIDMap		mEntityInstancesByID;
-		InstanceByIDMap				mAllInstancesByID;
-		ComponentInstanceMap		mComponentInstanceMap;
-		ComponentToEntityMap		mComponentToEntity;
-	};
 
 
 	/**
@@ -62,6 +35,13 @@ namespace nap
 	{
 		return typeCheck == ETypeCheck::EXACT_MATCH ? typeA == typeB : typeA.is_derived_from(typeB);
 	}
+
+	class InstanceProperty
+	{
+	public:
+		ComponentPtr<Component> mTargetComponent;
+		std::string				mTargetAttribute;
+	};
 
 
 	/**
@@ -287,6 +267,7 @@ namespace nap
 		ComponentList	mComponents;			// The components of this entity
 		EntityList		mChildren;				// The children of this entity
 		bool			mAutoSpawn = true;		// Whether this entity should be automatically instantiated after deserialization
+		std::vector<InstanceProperty> mInstanceProperties;
 	};
 
 	//////////////////////////////////////////////////////////////////////////

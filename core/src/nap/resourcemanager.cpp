@@ -9,6 +9,7 @@
 #include <utility/fileutils.h>
 #include "logger.h"
 #include "core.h"
+#include "rttiobjectgraph.h"
 #include "utility/stringutils.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ResourceManager)
@@ -45,144 +46,31 @@ namespace nap
 		mPatchObjects = false;
 	}
 
-
-	//////////////////////////////////////////////////////////////////////////
-	// RTTIObjectGraphItem
-	//////////////////////////////////////////////////////////////////////////
-
-	/**
-	 * Item class for ObjectGraph usage.
-	 * Wraps both an RTTIObject and a File object (by filename).
-	 * Uses RTTI traversal to scan pointers to other objects and pointers to files.
-	 */
-	class RTTIObjectGraphItem
-	{
-	public:
-		using Type = rtti::RTTIObject*;
-		using ObjectsByTypeMap = std::unordered_map<rtti::TypeInfo, std::vector<RTTIObject*>>;
-
-		enum class EType : uint8_t
-		{
-			Object,
-			File
-		};
-
-		/**
-		 * Creates a graph item.
-		 * @param object Object to wrap in the item that is created.
-		 */
-		static const RTTIObjectGraphItem create(rtti::RTTIObject* object, const ObjectsByTypeMap& objectsByType)
-		{
-			RTTIObjectGraphItem item;
-			item.mType = EType::Object;
-			item.mObject = object;
-			item.mObjectsByType = &objectsByType;
-			
-			return item;
-		}
-
-		/**
-		 * @return ID of the item. For objects, the ID is the object ID, for files, it is the filename.
-		 */
-		const std::string getID() const
-		{
-			assert(mType == EType::File || mType == EType::Object);
-
-			if (mType == EType::File)
-				return mFilename;
-			else 
-				return mObject->mID;
-		}
-
-		/**
-		 * @return EType of the type (file or object).
-		 */
-		uint8_t getType() const { return (uint8_t)mType; }
-
-
-		/**
-		 * Performs rtti traversal of pointers to both files and objects.
-		 * @param pointees Output parameter, contains all objects and files this object points to.
-		 * @param errorState If false is returned, contains information about the error.
-		 * @return true is succeeded, false otherwise.
-		 */
-		bool getPointees(std::vector<RTTIObjectGraphItem>& pointees, utility::ErrorState& errorState) const
-		{
-			Component* component = rtti_cast<Component>(mObject);
-			if (component != nullptr)
-			{
-				std::vector<rtti::TypeInfo> dependent_types;
-				component->getDependentComponents(dependent_types);
-
-				for (rtti::TypeInfo& type : dependent_types)
-				{
-					ObjectsByTypeMap::const_iterator dependent_component = mObjectsByType->find(type);
-					if (!errorState.check(dependent_component != mObjectsByType->end(), "Component %s was unable to find dependent component of type %s", getID().c_str(), type.get_name().data()))
-						return false;
-
-					const std::vector<RTTIObject*> components = dependent_component->second;
-					for (RTTIObject* component : components)
-					{
-						RTTIObjectGraphItem item;
-						item.mType = EType::Object;
-						item.mObject = component;
-						item.mObjectsByType = mObjectsByType;
-						pointees.push_back(item);
-					}
-				}
-			}
-
-			std::vector<rtti::ObjectLink> object_links;
-			rtti::findObjectLinks(*mObject, object_links);
-
-			for (const rtti::ObjectLink& link : object_links)
-			{
-				if (link.mTarget == nullptr)
-					continue;
-
-				RTTIObjectGraphItem item;
-				item.mType = EType::Object;
-				item.mObject = link.mTarget;
-				item.mObjectsByType = mObjectsByType;
-				pointees.push_back(item);
-			}
-
-			std::vector<std::string> file_links;
-			rtti::findFileLinks(*mObject, file_links);
-
-			for (std::string& filename : file_links)
-			{
-				RTTIObjectGraphItem item;
-				item.mType = EType::File;
-				item.mFilename = filename;
-				item.mObjectsByType = mObjectsByType;
-				pointees.push_back(item);
-			}
-			
-			return true;
-		}
-		
-		EType				mType;					// Type: file or object
-		std::string			mFilename;				// If type is file, contains filename
-		rtti::RTTIObject*	mObject = nullptr;		// If type is object, contains object pointer
-		const ObjectsByTypeMap*		mObjectsByType = nullptr;	// All objects sorted by type
-	};
-
-
-	using RTTIObjectGraph = ObjectGraph<RTTIObjectGraphItem>;
-
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
 	 * Helper function to generate a unique ID for an entity or component instance, based on instances already created
 	 */
-	static const std::string generateInstanceID(const std::string& baseID, EntityCreationParameters& entityCreationParams)
+	static std::string generateInstanceID(const std::string& baseID, EntityCreationParameters& entityCreationParams)
 	{
 		std::string result = baseID;
 
 		int index = 0;
 		while (entityCreationParams.mAllInstancesByID.find(result) != entityCreationParams.mAllInstancesByID.end())
 			result = utility::stringFormat("%s_%d", baseID.c_str(), index++);
+
+		return result;
+	}
+
+	static std::string generateUniqueID(const std::string& baseID, std::unordered_set<std::string>& allIDs)
+	{
+		std::string result = baseID;
+
+		int index = 0;
+		while (allIDs.find(result) != allIDs.end())
+			result = utility::stringFormat("%s_%d", baseID.c_str(), index++);
+
+		allIDs.insert(result);
 
 		return result;
 	}
@@ -262,7 +150,7 @@ namespace nap
 	/**
 	 * Add all objects from the resource manager into an object graph, overlayed by @param objectsToUpdate.
  	 */
-	bool ResourceManager::buildObjectGraph(const ObjectByIDMap& objectsToUpdate, RTTIObjectGraph& objectGraph, utility::ErrorState& errorState)
+	bool ResourceManager::buildObjectGraph(const ObjectByIDMap& objectsToUpdate, RTTIObjectGraph& objectGraph, ObjectsByTypeMap& objectsByType, ClonedResourceMap& clonedResourceMap, utility::ErrorState& errorState)
 	{
 		// Build an object graph of all objects in the ResourceMgr. If any object is in the objectsToUpdate list,
 		// that object is added instead. This makes objectsToUpdate and 'overlay'.
@@ -282,11 +170,10 @@ namespace nap
 				all_objects.push_back(kvp.second.get());
 
 		// Build map of objects per type, this is used for tracking type dependencies while building the graph
-		RTTIObjectGraphItem::ObjectsByTypeMap objects_by_type;
 		for (rtti::RTTIObject* object : all_objects)
-			objects_by_type[object->get_type()].push_back(object);
+			objectsByType[object->get_type()].push_back(object);
 
-		if (!objectGraph.build(all_objects, [&objects_by_type](rtti::RTTIObject* object) { return RTTIObjectGraphItem::create(object, objects_by_type); }, errorState))
+		if (!objectGraph.build(all_objects, [&objectsByType, &clonedResourceMap](rtti::RTTIObject* object) { return RTTIObjectGraphItem::create(object, objectsByType, clonedResourceMap); }, errorState))
 			return false;
 
 		return true;
@@ -400,18 +287,16 @@ namespace nap
 	}
 
 
-	const ObjectPtr<EntityInstance> ResourceManager::createEntity(const nap::Entity& Entity, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	const ObjectPtr<EntityInstance> ResourceManager::createChildEntityInstance(const nap::Entity& entity, int childIndex, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
-		// Create a single entity
-		std::vector<std::string> generated_ids;
-		std::vector<const nap::Entity*> entityResources;
-		entityResources.push_back(&Entity);
-		bool result = createEntities(entityResources, entityCreationParams, generated_ids, errorState);
-		if (!result)
+		entityCreationParams.mCurrentEntityPath.push(childIndex);
+		EntityInstance* entity_instance = createEntityInstance(entity, entityCreationParams, errorState);
+		entityCreationParams.mCurrentEntityPath.pop();
+
+		if (!errorState.check(entity_instance != nullptr, "Failed to create child entity"))
 			return nullptr;
 
-		assert(generated_ids.size() == 1);
-		return entityCreationParams.mEntityInstancesByID.find(generated_ids[0])->second.get();
+		return entity_instance;
 	}
 
 
@@ -644,60 +529,72 @@ namespace nap
 
 			for (ComponentInstance* component_instance : pos->second)
 				if (!component_instance->init(errorState))
-				return false;
+					return false;
 		}
 
 		return true;
 	}
 
-
-	bool ResourceManager::createEntities(const std::vector<const nap::Entity*>& entityResources, EntityCreationParameters& entityCreationParams, std::vector<std::string>& generatedEntityIDs, utility::ErrorState& errorState)
+	static Component* findClonedComponent(const ComponentResourcePath& entityResourcePath, const ClonedComponentResourceList* clonedComponents)
 	{
-		std::unordered_set<const Entity*> rootEntityResources;
-		rootEntityResources.insert(entityResources.begin(), entityResources.end());
+		if (clonedComponents == nullptr)
+			return nullptr;
 
-		for (const nap::Entity* entity_resource : entityResources)
+		for (const ClonedComponentResource& clonedComponent : *clonedComponents)
 		{
-			for (auto& child : entity_resource->mChildren)
-				rootEntityResources.erase(child.get());
+			ComponentResourcePath resolved_path;
+			utility::ErrorState error_state;
+			if (ComponentResourcePath::fromString(entityResourcePath.getRoot(), clonedComponent.mPath, resolved_path, error_state))
+				if (resolved_path == entityResourcePath)
+					return clonedComponent.mResource.get();
+		}
+		
+		return nullptr;
+	}
+
+	EntityInstance* ResourceManager::createEntityInstance(const nap::Entity& entity, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	{
+		EntityInstance* entity_instance = new EntityInstance(mCore, &entity);
+		entity_instance->mID = generateInstanceID(getInstanceID(entity.mID), entityCreationParams);
+
+		entityCreationParams.mEntityInstancesByID.emplace(std::make_pair(entity_instance->mID, std::unique_ptr<EntityInstance>(entity_instance)));
+		entityCreationParams.mAllInstancesByID.insert(std::make_pair(entity_instance->mID, entity_instance));
+
+		for (auto& original_component_resource : entity.mComponents)
+		{
+			entityCreationParams.mCurrentEntityPath.pushComponent(original_component_resource->mID);
+
+			Component* cloned_component_resource = findClonedComponent(entityCreationParams.mCurrentEntityPath, entityCreationParams.mCurrentEntityClonedComponents);
+
+			Component* component_resource = cloned_component_resource != nullptr ? cloned_component_resource : original_component_resource.get();
+
+			const rtti::TypeInfo& instance_type = component_resource->getInstanceType();
+			assert(instance_type.can_create_instance());
+
+			entityCreationParams.mComponentToEntity.insert(std::make_pair(component_resource, &entity));
+
+			std::unique_ptr<ComponentInstance> component_instance(instance_type.create<ComponentInstance>({ *entity_instance, *component_resource }));
+			assert(component_instance);
+			component_instance->mID = generateInstanceID(getInstanceID(component_resource->mID), entityCreationParams);
+
+			entityCreationParams.mComponentInstanceMap[component_resource].push_back(component_instance.get());
+			entityCreationParams.mAllInstancesByID.insert(std::make_pair(component_instance->mID, component_instance.get()));
+			entity_instance->addComponent(std::move(component_instance));
+
+			entityCreationParams.mCurrentEntityPath.popComponent();
 		}
 
-		// Create all entity instances and component instances
-		for (const nap::Entity* entity_resource : rootEntityResources)
-		{
-			EntityInstance* entity_instance = new EntityInstance(mCore, entity_resource);
-			entity_instance->mID = generateInstanceID(getInstanceID(entity_resource->mID), entityCreationParams);
+		if (!entity_instance->init(*this, entityCreationParams, errorState))
+			return nullptr;
 
-			entityCreationParams.mEntityInstancesByID.emplace(std::make_pair(entity_instance->mID, std::unique_ptr<EntityInstance>(entity_instance)));
-			entityCreationParams.mAllInstancesByID.insert(std::make_pair(entity_instance->mID, entity_instance));
-			generatedEntityIDs.push_back(entity_instance->mID);
-
-			for (auto& component_resource : entity_resource->mComponents)
-			{
-				const rtti::TypeInfo& instance_type = component_resource->getInstanceType();
-				assert(instance_type.can_create_instance());
-
-				entityCreationParams.mComponentToEntity.insert(std::make_pair(component_resource.get(), entity_resource));
-
-				std::unique_ptr<ComponentInstance> component_instance(instance_type.create<ComponentInstance>({ *entity_instance, *component_resource.get() }));
-				assert(component_instance);
-				component_instance->mID = generateInstanceID(getInstanceID(component_resource->mID), entityCreationParams);
-
-				entityCreationParams.mComponentInstanceMap[component_resource.get()].push_back(component_instance.get());
-				entityCreationParams.mAllInstancesByID.insert(std::make_pair(component_instance->mID, component_instance.get()));
-				entity_instance->addComponent(std::move(component_instance));
-			}
-
-			if (!entity_instance->init(*this, entityCreationParams, errorState))
-				return false;
-		}
-
-		return true;
+		return entity_instance;
 	}
 
 
-	bool ResourceManager::initEntities(const RTTIObjectGraph& objectGraph, const ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState)
+	bool ResourceManager::initEntityInstances(RTTIObjectGraph& objectGraph, const ObjectByIDMap& objectsToUpdate, ObjectsByTypeMap& objectsByType, ClonedResourceMap& clonedResourceMap, utility::ErrorState& errorState)
 	{
+		// First gather all AutoSpawn entities. This may include children if the AutoSpawn property was filled in incorrectly.
+		// We could error on that, but we'll probably remove the AutoSpawn stuff altogether, so we keep it as is for now.
 		std::vector<const Entity*> entities_to_spawn;			
 		objectGraph.visitNodes([&entities_to_spawn](const RTTIObjectGraph::Node& node) 
 		{
@@ -706,11 +603,65 @@ namespace nap
 				entities_to_spawn.emplace_back(entity);			
 		});
 
-		EntityCreationParameters entityCreationParams(objectGraph);
-		std::vector<std::string> generated_ids;
-		if (!createEntities(entities_to_spawn, entityCreationParams, generated_ids, errorState))
-			return false;
+		// Now that we have all entities, gather any actual *root* entities (meaning, entities that do not have a parent)
+		std::unordered_set<const Entity*> root_entity_resources;
+		root_entity_resources.insert(entities_to_spawn.begin(), entities_to_spawn.end());
+		for (const nap::Entity* root_entity_resource : entities_to_spawn)
+		{
+			for (auto& child : root_entity_resource->mChildren)
+				root_entity_resources.erase(child.get());
+		}
 
+		ClonedComponentByEntityMap		cloned_components_by_entity;	// Map owning the cloned component resource, is moved later to mClonedComponentsByEntity on success
+		std::unordered_set<std::string>	cloned_component_ids;			// Set used to generate unique IDs for all cloned components
+
+		EntityCreationParameters entityCreationParams(objectGraph);
+
+		// Create clones of all Components in all entities that have InstanceProperties set for them.
+		// Note that while InstanceProperties can only be set on the root Entity, they can still target Components in child entities
+		for (const Entity* entity : root_entity_resources)
+		{
+			if (entity->mInstanceProperties.empty())
+				continue;
+
+			ClonedComponentResourceList& clonedComponents = cloned_components_by_entity[entity];
+			for (const InstanceProperty& instance_property : entity->mInstanceProperties)
+			{
+				// Clone target component. The cloned resources are not going into the regular resource manager resource lists, 
+				// but into a special map of cloned resources that is thrown away whenever something changes
+				// Note: We have to generate a unique ID for it because the ObjectGraph expects IDs to be unique
+				std::unique_ptr<Component> cloned_target_component = rtti::cloneObject<Component>(*instance_property.mTargetComponent, getFactory());
+				cloned_target_component->mID = generateUniqueID(cloned_target_component->mID + "_instanceproperties", cloned_component_ids);
+
+				// Update the objects by type and cloned resource maps, used by RTTIGraphObjectItem and required to rebuild the ObjectGraph later
+				objectsByType[cloned_target_component->get_type()].push_back(cloned_target_component.get());
+				clonedResourceMap[static_cast<rtti::RTTIObject*>(instance_property.mTargetComponent.get())].push_back(cloned_target_component.get());
+
+				clonedComponents.emplace_back(ClonedComponentResource(instance_property.mTargetComponent.getInstancePath(), std::move(cloned_target_component)));				
+			}
+		}
+
+		// After cloning all relevant resources, we need to rebuild the object graph, in order to incorporate the newly cloned nodes and their incoming/outgoing links
+		// Otherwise, the depth of some nodes may be wrong, leading to the wrong init order
+		if (!objectGraph.rebuild(errorState))
+			return false;		
+
+		// Create all entity instances and component instances
+		for (const nap::Entity* root_entity_resource : root_entity_resources)
+		{
+			// Here we spawn a single entity hierarchy. Set up the path for this entity
+			entityCreationParams.mCurrentEntityPath = ComponentResourcePath(*root_entity_resource);
+			
+			// Store the cloned components used for this entity
+			ClonedComponentByEntityMap::iterator clonedListPos = cloned_components_by_entity.find(root_entity_resource);
+			entityCreationParams.mCurrentEntityClonedComponents = clonedListPos != cloned_components_by_entity.end() ? &clonedListPos->second : nullptr;
+
+			// Spawn the entity hierarchy
+			if (!errorState.check(createEntityInstance(*root_entity_resource, entityCreationParams, errorState) != nullptr, "Failed to create entity instance"))
+				return false;
+		}
+
+		// After all entity hierarchies and their components are created, the component pointers are resolved in the correct order, and then initted.
 		if (!errorState.check(sResolveComponentPointers(entityCreationParams, errorState), "Unable to resolve pointers in components"))
 			return false;
 
@@ -729,7 +680,7 @@ namespace nap
 
 		// Replace entities currently in the resource manager with the new set
 		mEntities = std::move(entityCreationParams.mEntityInstancesByID);
-		
+		mClonedComponentsByEntity = std::move(cloned_components_by_entity);
 		return true;
 	}
 
@@ -789,7 +740,9 @@ namespace nap
 		// Build object graph of all the objects in the manager, overlayed by the objects we want to update. Later, we will
 		// performs queries against this graph to determine init order for both resources and entities.
 		RTTIObjectGraph object_graph;
-		if (!buildObjectGraph(objects_to_update, object_graph, errorState))
+		ObjectsByTypeMap objects_by_type;			// Used by RTTIObjectGraphItem to find dependencies between types. Is updated later as more objects are added.
+		ClonedResourceMap cloned_resource_map;		// Used by RTTIObjectGraphItem to add edges to cloned resources. Is updated later as more objects are added.
+		if (!buildObjectGraph(objects_to_update, object_graph, objects_by_type, cloned_resource_map, errorState))
 			return false;
 
 		// Find out what objects to init and in what order to init them
@@ -819,7 +772,7 @@ namespace nap
 			return false;
 
 		// Init all entities
-		if (!initEntities(object_graph, objects_to_update, errorState))
+		if (!initEntityInstances(object_graph, objects_to_update, objects_by_type, cloned_resource_map, errorState))
 			return false;
 
 		// In case all init() operations were successful, we can now replace the objects
