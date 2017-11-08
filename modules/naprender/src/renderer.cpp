@@ -106,7 +106,7 @@ namespace nap
 		// Create primary window
 		mPrimaryWindow = std::make_shared<GLWindow>();
 		if (!mPrimaryWindow->init(settings, nullptr, errorState))
-			return nullptr;
+			return false;
 
 		// Make sure initialization of that window succeeded
 		if (!errorState.check(opengl::init(), "Failed to init OpenGL"))
