@@ -9,18 +9,23 @@
 
 /*
 Test application to compare portaudio performance between different builds, platforms and architectures.
-Plays a number of oscillators in the audio callback.
+Plays a specified number of oscillators in the audio callback for profiling purposes.
+You should hear a clear test tone if the system can handle the amount of oscillators specified.
+ 
+Fill in the constants below:
 */
-
 constexpr float sampleRate = 44100;
 constexpr int bufferSize = 512;
-constexpr int oscillatorAmount = 1500;
+constexpr int oscillatorAmount = 256;
 
+// User data passed to the audio callback
 struct CallbackData {
 	std::vector<std::unique_ptr<nap::audio::OscillatorNode>> oscillators;
 	nap::audio::NodeManager* nodeManager;
 };
 
+
+// The audio callback
 static int audioCallback(const void *inputBuffer, void *outputBuffer,
 	unsigned long framesPerBuffer,
 	const PaStreamCallbackTimeInfo* timeInfo,
@@ -31,32 +36,26 @@ static int audioCallback(const void *inputBuffer, void *outputBuffer,
 	float** in = (float**)inputBuffer;
 
 	auto data = reinterpret_cast<CallbackData*>(userData);
-	data->nodeManager->process(in, out, framesPerBuffer);
+	data->nodeManager->process(in, out, framesPerBuffer); // this is a dummy call and just proceeds the clock by one buffer
 	for (auto channel = 0; channel < 2; channel++)
 	{
-
+        // Clear output buffer
 		for (auto i = 0; i < framesPerBuffer; ++i)
 			out[channel][i] = 0;
 
+        // Process all the oscillators directly in order to by-pass the node system
 		for (auto& osc : data->oscillators)
 		{
+            // Add one oscillator's output to the output buffer
 			auto oscOutput = osc->output.pull();
 			for (auto i = 0; i < framesPerBuffer; ++i)
-			{
 				out[channel][i] += (*oscOutput)[i] / float(data->oscillators.size());
-			}
 		}
 	}
 
 	return 0;
 }
 
-/*
-* This routine is called by portaudio when playback is done.
-*/
-static void StreamFinished(void* userData)
-{
-}
 
 // Main loop
 int main(int argc, char *argv[])
@@ -65,12 +64,16 @@ int main(int argc, char *argv[])
 	PaStream *stream;
 	PaError err;
 
-	nap::audio::WaveTable waveTable(2048);
-	nap::audio::NodeManager nodeManager;
+    
+    nap::audio::NodeManager nodeManager; // we need a dummy node manager to provide global settings and a clock
+	nap::audio::WaveTable waveTable(2048); // a sinewave table for the oscillators
 	nodeManager.setSampleRate(sampleRate);
 	nodeManager.setInternalBufferSize(bufferSize);
+    
 	CallbackData data;
 	data.nodeManager = &nodeManager;
+    
+    // allocate and init the oscillators
 	for (auto i = 0; i < oscillatorAmount; ++i)
 		data.oscillators.emplace_back(std::make_unique<nap::audio::OscillatorNode>(nodeManager, waveTable));
 
@@ -82,8 +85,8 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "Error: No default output device.\n");
 		goto error;
 	}
-	outputParameters.channelCount = 2; /* stereo */
-	outputParameters.sampleFormat = paFloat32 | paNonInterleaved; /* 32 bit floating point output */
+	outputParameters.channelCount = 2; // Stereo
+	outputParameters.sampleFormat = paFloat32 | paNonInterleaved;
 	outputParameters.suggestedLatency = Pa_GetDeviceInfo(outputParameters.device)->defaultLowOutputLatency;
 	outputParameters.hostApiSpecificStreamInfo = NULL;
 
@@ -96,9 +99,6 @@ int main(int argc, char *argv[])
 		paClipOff,      /* we won't output out of range samples so don't bother clipping them */
 		audioCallback,
 		&data);
-	if (err != paNoError) goto error;
-
-	err = Pa_SetStreamFinishedCallback(stream, &StreamFinished);
 	if (err != paNoError) goto error;
 
 	err = Pa_StartStream(stream);
