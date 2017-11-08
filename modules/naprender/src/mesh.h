@@ -100,12 +100,13 @@ namespace nap
 		bool init(utility::ErrorState& errorState);
 
 		/**
-		 * Clones the RTTI based data and builds a GPU mesh from it. The cloned data is owned by MeshInstance.
+		 * Clones the RTTI based data but does not build a GPU mesh from it. Call init to upload
+		 * the cloned data to the GPU. The cloned data is owned by MeshInstance
 		 * @param meshProperties The RTTI mesh properties to clone into the mesh instance.
 		 * @param errorState Contains error information if an error occurred.
 		 * @return True if succeeded, false on error.
 		 */
-		bool init(RTTIMeshProperties& meshProperties, utility::ErrorState& errorState);
+		void copyMeshProperties(RTTIMeshProperties& meshProperties);
 
 		/**
 		 * @return the opengl mesh that can be drawn to screen or buffer
@@ -240,7 +241,6 @@ namespace nap
 	class Mesh : public IMesh
 	{
 		RTTI_ENABLE(IMesh)
-
 	public:
 
 		/**

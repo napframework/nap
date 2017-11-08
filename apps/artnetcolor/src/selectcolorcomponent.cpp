@@ -32,7 +32,7 @@ namespace nap
 	}
 
 
-	bool SelectColorComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool SelectColorComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// Get the resource we are instantiated from
 		nap::SelectColorComponent* resource = getComponent<SelectColorComponent>();
@@ -41,7 +41,7 @@ namespace nap
 		mArtnetController = resource->mController.get();
 		
 		// Get the renderable mesh material we use to update the color values for
-		mMaterial = &resource->mMesh->getMaterialInstance();
+		mMaterial = &mRenderableMeshComponent->getMaterialInstance();
 
 		// Start channel needs to be a modulo of 4 (rgbw)
 		mStartChannel = (math::min<int>(resource->mStartChannel,511) / 4) * 4;

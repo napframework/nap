@@ -32,13 +32,10 @@ RTTI_END_CLASS
 namespace nap
 {
 
-	bool LineModulationComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool LineModulationComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// Copy properties
 		mProperties = getComponent<LineModulationComponent>()->mProperties;
-
-		// Get the blend component we want to apply the modulation on to
-		mBlendComponent = getComponent<LineModulationComponent>()->mBlendComponent.get();
 
 		// Set smooth timing values
 		mAmpSmoother.mSmoothTime = mProperties.mAmplitudeSmoothTime;

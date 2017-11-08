@@ -12,8 +12,6 @@
 // nap::lasercontroller run time class definition 
 RTTI_BEGIN_CLASS(nap::LaserControlComponent)
 	RTTI_PROPERTY("LaserCompounds",		&nap::LaserControlComponent::mLaserCompounds,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("PrototypeEntity",	&nap::LaserControlComponent::mLaserPrototype,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("FrameEntity",		&nap::LaserControlComponent::mFrameEntity,		nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::lasercontrollerInstance run time class definition 
@@ -32,53 +30,46 @@ namespace nap
 	}
 
 
-	bool LaserControlInstanceComponent::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool LaserControlInstanceComponent::init(utility::ErrorState& errorState)
 	{
 		// Get all compounds to use and create laser prototypes from
 		nap::LaserControlComponent* resource = getComponent<LaserControlComponent>();
 		mLaserCompounds = resource->mLaserCompounds;
-		
+
 		// Get resource manager that is used to spawn the new entity
 		ResourceManager& resource_manager = *getEntityInstance()->getCore()->getResourceManager();
+
+		if (!errorState.check(mLaserCompounds.size() * 2 == getEntityInstance()->getEntity()->mChildren.size(), "Number of laser compounds does not match the laser entity children"))
+			return false;
 
 		// Get total number of lasers to create
 		int laser_count = static_cast<int>(mLaserCompounds.size());
 		int current_count(0);
 		int cols(2);
 		int rows = laser_count / cols;
-
-		for (auto& compound : mLaserCompounds)
+		
+		for (int index = 0; index < mLaserCompounds.size(); ++index)
 		{
-			auto new_entity = resource_manager.createEntity(*(resource->mLaserPrototype), entityCreationParams, errorState);
-			if (new_entity == nullptr)
-				return false;
-			getEntityInstance()->addChild(*new_entity);
+			auto& compound = mLaserCompounds[index];
+			EntityInstance* laser_entity = getEntityInstance()->getChildren()[index * 2];
+			EntityInstance* frame_entity = getEntityInstance()->getChildren()[index * 2 + 1];
+
+			// Store for future use
+			mLaserEntityMap.emplace(std::make_pair(compound->mLaserID, laser_entity));
+			mLaserCompoundMap.emplace(std::make_pair(compound->mLaserID, compound.get()));
+			mLaserFrameMap.emplace(std::make_pair(compound->mLaserID, frame_entity));
 
 			// Find make prototype component instance
-			MakePrototypeComponentInstance* prototype_component = new_entity->findComponent<MakePrototypeComponentInstance>();
+			MakePrototypeComponentInstance* prototype_component = laser_entity->findComponent<MakePrototypeComponentInstance>();
 			if (!errorState.check(prototype_component != nullptr, "laser entity doesn't have a make prototype component"))
 				return false;
-
-			// Make sure we don't have one with the same id
-			if (mLaserEntityMap.find(compound->mLaserID) != mLaserEntityMap.end())
-				return errorState.check(false, "laser with id %s already exists", compound->mLaserID);
 
 			// Populate with laser compound settings
 			if (!prototype_component->setup(*(compound), errorState))
 				return false;
 
-			// Store for future use
-			mLaserEntityMap.emplace(std::make_pair(compound->mLaserID, new_entity.get()));
-			mLaserCompoundMap.emplace(std::make_pair(compound->mLaserID, compound.get()));
-
-			// Create the laser frame that will show the renderer laser canvas
-			auto new_frame_entity = resource_manager.createEntity(*(resource->mFrameEntity), entityCreationParams, errorState);
-			if (new_frame_entity == nullptr)
-				return false;
-			getEntityInstance()->addChild(*new_frame_entity);
-
 			// Get transform
-			TransformComponentInstance* frame_xform = new_frame_entity->findComponent<TransformComponentInstance>();
+			TransformComponentInstance* frame_xform = frame_entity->findComponent<TransformComponentInstance>();
 			if (!errorState.check(frame_xform != nullptr, "frame entity doesn't have a transform component"))
 				return false;
 
@@ -96,10 +87,6 @@ namespace nap
 
 			frame_xform->setTranslate(glm::vec3(tx, ty, 0.0f));
 
-			// Store for future use
-			mLaserFrameMap.emplace(std::make_pair(compound->mLaserID, new_frame_entity.get()));
-
-			// Increment count
 			current_count++;
 		}
 

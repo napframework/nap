@@ -311,8 +311,9 @@ namespace nap
 	// Shut down renderer
 	void RenderService::shutdown()
 	{
-		assert(mRenderer != nullptr);
-		mRenderer->shutdown();
+        // If initializing the renderer failed, mRenderer will be null
+        if (mRenderer != nullptr)
+		    mRenderer->shutdown();
 	}
 
 	/**

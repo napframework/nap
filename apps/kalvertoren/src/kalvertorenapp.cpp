@@ -12,6 +12,7 @@ RTTI_END_CLASS
 
 namespace nap
 {
+
 	bool KalvertorenApp::init(utility::ErrorState& error)
 	{
 		// Create services
@@ -49,7 +50,6 @@ namespace nap
 
 		return true;
 	}
-
 
 	void KalvertorenApp::update(double deltaTime)
 	{

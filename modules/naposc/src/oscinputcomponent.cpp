@@ -26,7 +26,7 @@ namespace nap
 	}
 
 
-	bool OSCInputComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool OSCInputComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// Copy addresses
 		mAddressFilter = getComponent<OSCInputComponent>()->mAddressFilter;

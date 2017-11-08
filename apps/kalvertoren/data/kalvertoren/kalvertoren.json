@@ -73,7 +73,7 @@
 		},
 	
 		{
-			"Type" : "nap::MeshFromFile",
+			"Type" : "nap::ArtnetMeshFromFile",
 			"mID": "HeiligewegMesh",
 			"Path" : "data/kalvertoren/heiligeweg_export_heiligeweg.mesh"
 		},
@@ -104,6 +104,18 @@
 				{
 					"MeshAttributeID": "Normal",
 					"ShaderAttributeID": "in_Normals"
+				},
+				{
+					"MeshAttributeID": "channel",
+					"ShaderAttributeID": "in_Channels"
+				},
+				{
+					"MeshAttributeID": "subnet",
+					"ShaderAttributeID": "in_Subnets"
+				},
+				{
+					"MeshAttributeID": "universe",
+					"ShaderAttributeID": "in_Universes"
 				}
 			],
 			"Uniforms" : 
@@ -126,17 +138,17 @@
 				{
 					"Type" : "nap::UniformFloat",
 					"Name" : "ambientIntensity",
-					"Value" : 0.75
+					"Value" : 1.0
 				},
 				{
 					"Type" : "nap::UniformFloat",
 					"Name" : "shininess",
-					"Value" : 7.5
+					"Value" : 0.25
 				},
 				{
 					"Type" : "nap::UniformFloat",
 					"Name" : "specularIntensity",
-					"Value" : 0.5
+					"Value" : 1.0
 				},
 				{
 					"Type" : "nap::UniformFloat",
@@ -279,7 +291,7 @@
 						},
 						"Rotate": {
 							"x": 0.0,
-							"y": 0.0,
+							"y": 180.0,
 							"z": 0.0
 						},
 						"Scale": {

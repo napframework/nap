@@ -57,8 +57,6 @@ namespace nap
 		render_state.mPointSize = 2.0f;
 		render_state.mPolygonMode = opengl::PolygonMode::FILL;
 
-		mRenderWindow->mWindowEvent
-
 		return true;
 	}
 	

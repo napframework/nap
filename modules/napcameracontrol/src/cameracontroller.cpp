@@ -23,7 +23,7 @@ namespace nap
 	}
 
 
-	bool CameraControllerInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool CameraControllerInstance::init(utility::ErrorState& errorState)
 	{
 		// KeyInputComponent is required to receive input
 		KeyInputComponentInstance* key_component = getEntityInstance()->findComponent<KeyInputComponentInstance>();
