@@ -14,7 +14,7 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	bool LineSelectionComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool LineSelectionComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// Copy over the list of lines to selection from
 		mLines = getComponent<LineSelectionComponent>()->mLines;

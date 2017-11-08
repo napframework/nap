@@ -65,7 +65,7 @@ namespace nap
 		 * @param used for creating new entity instances
 		 * @param errorState the error object
 		 */
-		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		 * Rotates the component every tick based on the speed and exis

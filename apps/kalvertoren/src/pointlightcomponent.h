@@ -32,7 +32,7 @@ namespace nap
 		/**
 		 *	Initialize this component based on the resource
 		 */
-		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		float mIntensity = 1.0f;
 		float mAttenuation = 0.0001f;

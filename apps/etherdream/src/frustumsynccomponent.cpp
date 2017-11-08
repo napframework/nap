@@ -7,7 +7,6 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	RTTI_BEGIN_CLASS(nap::FrustumSyncComponent)
-		RTTI_PROPERTY("CanvasEntity", &nap::FrustumSyncComponent::mCanvasEntity, nap::rtti::EPropertyMetaData::Required)
 		RTTI_PROPERTY("LaserOutputComponent", &nap::FrustumSyncComponent::mLaserOutputComponent, nap::rtti::EPropertyMetaData::Required)
 	RTTI_END_CLASS
 
@@ -17,25 +16,21 @@ namespace nap
 
 	//////////////////////////////////////////////////////////////////////////
 
-	bool FrustumSyncComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool FrustumSyncComponentInstance::init(utility::ErrorState& errorState)
 	{
 		FrustumSyncComponent* resource = getComponent<FrustumSyncComponent>();
 
 		ResourceManager& resource_manager = *getEntityInstance()->getCore()->getResourceManager();
 		
-		// Create frustrum visualizer
-		auto laser_draw_entity = resource_manager.createEntity(*(resource->mCanvasEntity), entityCreationParams, errorState);
-		if (laser_draw_entity == nullptr)
+		if (!errorState.check(getEntityInstance()->getChildren().size() == 1, "Expected one child"))
 			return false;
-		getEntityInstance()->addChild(*laser_draw_entity);
+
+		EntityInstance* laser_draw_entity = getEntityInstance()->getChildren()[0];
 
 		// Make sure that visualizer has a transform
 		mCanvasTransform = laser_draw_entity->findComponent<TransformComponentInstance>(ETypeCheck::IS_DERIVED_FROM);
 		if (!errorState.check(mCanvasTransform != nullptr, "missing transform component"))
 			return false;
-
-		// Get the output
-		mOutput = resource->mLaserOutputComponent.get();
 
 		// Move the frustrum back a bit so objects around 0 are sorted correctly
 		mCanvasTransform->setTranslate(glm::vec3(0.0f, 0.0f, -0.1f));

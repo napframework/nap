@@ -34,7 +34,7 @@ namespace nap
 	}
 
 
-	bool OrthoControllerInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool OrthoControllerInstance::init(utility::ErrorState& errorState)
 	{
 		// TransformComponent is required to move the entity
 		mTransformComponent = getEntityInstance()->findComponent<TransformComponentInstance>();
@@ -50,7 +50,7 @@ namespace nap
 		pointer_component->released.connect(std::bind(&OrthoControllerInstance::onMouseUp, this, std::placeholders::_1));
 
 		// The CorrectAspectRatio mode will correct the height based on the aspect ratio
-		getComponent<OrthoController>()->mOrthoCameraComponent->setMode(OrthoCameraComponentInstance::EMode::CorrectAspectRatio);
+		mOrthoCameraComponent->setMode(OrthoCameraComponentInstance::EMode::CorrectAspectRatio);
 
 		return true;
 	}
@@ -58,7 +58,7 @@ namespace nap
 
 	CameraComponentInstance& OrthoControllerInstance::getCameraComponent()
 	{
-		return *getComponent<OrthoController>()->mOrthoCameraComponent;
+		return *mOrthoCameraComponent;
 	}
 
 
@@ -66,13 +66,13 @@ namespace nap
 	{
 		// In this code we assume a uniform scale for the width and height. In the 'CorrectAspectRatio' mode,
 		// the camera itself will correct the height based on the aspect ratio
-		nap::OrthoCameraProperties camera_properties = getComponent<OrthoController>()->mOrthoCameraComponent->getProperties();
+		nap::OrthoCameraProperties camera_properties = mOrthoCameraComponent->getProperties();
 		float half_scale = mCameraScale * 0.5f;
 		camera_properties.mLeftPlane = -half_scale;
 		camera_properties.mRightPlane = half_scale;
 		camera_properties.mTopPlane = -half_scale;
 		camera_properties.mBottomPlane = half_scale;
-		getComponent<OrthoController>()->mOrthoCameraComponent->setProperties(camera_properties);
+		mOrthoCameraComponent->setProperties(camera_properties);
 	}
 
 
@@ -101,7 +101,7 @@ namespace nap
 			mMode = EMode::Zoom;
 
 			// Transform mouse pos into normalized coords (-1..1)
-			glm::ivec2 render_target_size = getComponent<OrthoController>()->mOrthoCameraComponent->getRenderTargetSize();
+			glm::ivec2 render_target_size = mOrthoCameraComponent->getRenderTargetSize();
 			mMousePosAtClick = glm::vec2(pointerPressEvent.mX / (float)render_target_size.x, pointerPressEvent.mY / (float)render_target_size.y) * 2.0f - 1.0f;
 
 			// Store camera translation and scale
@@ -122,7 +122,7 @@ namespace nap
 		if (mMode == EMode::Pan)
 		{
 			// Calculate aspect correct scale based on uniform mCameraScale
-			glm::ivec2 render_target_size = getComponent<OrthoController>()->mOrthoCameraComponent->getRenderTargetSize();
+			glm::ivec2 render_target_size = mOrthoCameraComponent->getRenderTargetSize();
 			float aspect_ratio = (float)render_target_size.y / (float)render_target_size.x;
 			glm::vec2 aspect_correct_scale = glm::vec2(mCameraScale / (float)render_target_size.x, (mCameraScale * aspect_ratio) / (float)render_target_size.y);
 
@@ -149,7 +149,7 @@ namespace nap
 			// achieve 'zoom around cursor'
 
 			// Calculate the aspect correct scale for both the 'scale on click' and the new scale.
-			glm::ivec2 render_target_size = getComponent<OrthoController>()->mOrthoCameraComponent->getRenderTargetSize();
+			glm::ivec2 render_target_size = mOrthoCameraComponent->getRenderTargetSize();
 			float aspect_ratio = (float)render_target_size.y / (float)render_target_size.x;
 			glm::vec2 aspect_correct_scale_at_click(mCameraScaleAtClick, mCameraScaleAtClick * aspect_ratio);
 			glm::vec2 aspect_correct_scale(mCameraScale, mCameraScale * aspect_ratio);

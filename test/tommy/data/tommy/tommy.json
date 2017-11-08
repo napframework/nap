@@ -114,7 +114,7 @@
 				{
 					"mID" : "UIInputRouterComponent",
 					"Type" : "nap::UIInputRouterComponent",
-					"CameraEntity" : "CameraEntity"
+					"CameraComponent" : "OrthoCameraComponent"
 				}
 			]
 		},
@@ -127,6 +127,7 @@
 			[
 				{
 					"Type" : "nap::OrthoCameraComponent",
+					"mID" : "OrthoCameraComponent",
 					"Properties": {
 						"NearClippingPlane" : 0.01,
 						"FarClippingPlane" : 10000.0
@@ -445,9 +446,7 @@
 						"Looks_02",
 						"Looks_03",
 						"Looks_04"
-					],
-					"EntityPrototype" : "LooksEntity",
-					"ComponentPointer" : "UIInputRouterComponent"
+					]
 				},
 				{
 					"Type" : "nap::FractionLayoutComponent",
@@ -467,13 +466,19 @@
 				{
 					"Type" : "nap::TransformComponent"
 				}
+            ],            
+            "Children" : 
+            [
+                "LooksEntity",
+                "LooksEntity",
+                "LooksEntity"
 			]
 		},
 		
 		{
 			"Type" : "nap::Entity",
 			"mID": "LooksEntity",
-			"AutoSpawn" : "false",
+			"AutoSpawn" : "true",
 			
 			"Components" : 
 			[

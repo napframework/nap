@@ -363,7 +363,8 @@ namespace nap
 			if (!errorState.check(readAndCheckRTTIBinaryVersion(stream), "Can't deserialize binary; RTTIBinaryVersion mismatch"))
 				return false;
 			
-			size_t type_version_table_size = stream.read<size_t>();
+            // We need to read the version table size here, even if we don't use it to make sure we can correctly read the type versions next
+			stream.read<size_t>();
 			if (!errorState.check(readAndCheckTypeVersions(stream), "Can't deserialize binary; version of a type contained in the binary has changed"))
 				return false;
 

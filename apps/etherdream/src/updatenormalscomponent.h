@@ -44,7 +44,7 @@ namespace nap
 		 * @param errorState should hold the error message when initialization fails
 		 * @return if the updatenormalscomponentInstance is initialized successfully
 		 */
-		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		 *	Set the mesh to use as visualization

@@ -29,12 +29,6 @@ namespace nap
 	}
 
 
-	void SceneService::update(EntityInstance& instance)
-	{
-		updateTransformsRecursive(instance, false, glm::mat4(1.0f));
-	}
-
-
 	void SceneService::postUpdate(double deltaTime)
 	{
 		updateTransformsRecursive(getCore().getResourceManager()->getRootEntity(), false, glm::mat4(1.0f));
