@@ -15,7 +15,8 @@ namespace nap {
     namespace audio {
         
         /**
-         * This class provided static methods to poll the current system for available audio devices using portaudio.
+         * Service that provides audio input and output processing directly for hardware audio devices.
+         * Provides static methods to poll the current system for available audio devices using portaudio.
          */
         class NAPAPI AudioDeviceService : public AudioService
         {

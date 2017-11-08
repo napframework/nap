@@ -72,22 +72,23 @@ namespace nap {
             // PROPERTIES
             
             /** 
-             * If true, the default audio input and output device on this system are being used
+             * If true, the default host API, audio input and output device on this system are being used
              */
             bool mUseDefaultDevice = true;
             
             /**
-             * Name of the host API (or driver type) used for this audio stream.
+             * Name of the host API (or driver type) used for this audio stream. Use @AudioService to poll for available host APIs
+             * The host API is an audio driver API like Windows MME, ASIO, CoreAudio, Jack, etc.
              */
             std::string mHostApi = "";
             
             /**
-             * Name of the input device being used. Use @AudioService to poll for available devices.
+             * Name of the input device being used. Use @AudioService to poll for available devices for a certain host API.
              */
             std::string mInputDevice = "";
 
             /** 
-             * Name of the output device being used. Use @AudioService to poll for available devices.
+             * Name of the output device being used. Use @AudioService to poll for available devices for a certain host API.
              */
             std::string mOutputDevice = "";
             
@@ -115,8 +116,8 @@ namespace nap {
 
 			/**
 			 * The buffer size that is used internally by the node system to peform processing.
-			 * This can be lower than mBufferSize but has to it within mBufferSize a discrete amount of times.
-			 * Lowering this can improve timing precision when the node manager performs internal event scheduling.
+			 * This can be lower than mBufferSize but has to fit within mBufferSize a discrete amount of times.
+			 * Lowering this can improve timing precision in the case that the node manager performs internal event scheduling, however will increase performance load.
 			 */
 			int mInternalBufferSize = 256;
 

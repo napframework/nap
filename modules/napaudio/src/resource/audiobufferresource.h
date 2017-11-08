@@ -11,14 +11,13 @@ namespace nap {
     namespace audio {
         
         /**
-         * A base class for a buffer of multichannel audio data in memory
-         * Base class for AudioFileResource and AudioBufferResource
+         * A buffer of multichannel audio data in memory.
          */
-        class AudioBufferResourceBase : public rtti::RTTIObject
+        class AudioBufferResource : public rtti::RTTIObject
         {
             RTTI_ENABLE(rtti::RTTIObject)
         public:
-            AudioBufferResourceBase() = default;
+            AudioBufferResource() = default;
             
             /**
              * @return: sample rate at which the audio material in the buffer was sampled.

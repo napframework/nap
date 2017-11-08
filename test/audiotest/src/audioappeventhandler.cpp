@@ -6,10 +6,9 @@ namespace nap
 {
 	void AudioAppEventHandler::process()
 	{
-		{
-			int ns = 0.5 * 1000000;
-			std::this_thread::sleep_for(std::chrono::nanoseconds(ns));
-		}
+        // sleep for 1 ms
+        int ns = 1000000;
+        std::this_thread::sleep_for(std::chrono::nanoseconds(ns));
 	}
 
 }
