@@ -149,7 +149,7 @@ namespace nap
 	}
 
 
-	bool RenderableMeshComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool RenderableMeshComponentInstance::init(utility::ErrorState& errorState)
 	{
 		RenderableMeshComponent* resource = getComponent<RenderableMeshComponent>();
 

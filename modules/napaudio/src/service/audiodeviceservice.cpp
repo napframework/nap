@@ -136,12 +136,12 @@ namespace nap {
             for (auto hostApiIndex = 0; hostApiIndex < getHostApiCount(); ++hostApiIndex)
             {
                 auto hostApiInfo = getHostApiInfo(hostApiIndex);
-                if (nap::utility::gToLower(hostApi) == nap::utility::gToLower(hostApiInfo.name))
+                if (nap::utility::toLower(hostApi) == nap::utility::toLower(hostApiInfo.name))
                 {
                     for (auto deviceIndex = 0; deviceIndex < hostApiInfo.deviceCount; ++deviceIndex)
                     {
                         auto deviceInfo = getDeviceInfo(hostApiIndex, deviceIndex);
-                        if (nap::utility::gToLower(device) == nap::utility::gToLower(deviceInfo.name))
+                        if (nap::utility::toLower(device) == nap::utility::toLower(deviceInfo.name))
                             return Pa_HostApiDeviceIndexToDeviceIndex(hostApiIndex, deviceIndex);
                     }
                 }

@@ -55,6 +55,8 @@ namespace nap
 	{
 		RTTI_ENABLE(rtti::RTTIObject)
 	public:
+        using rtti::RTTIObject::init;
+        
 		/**
 		 * Initializes opengl texture using the parameters from RTTI and @settings.
 		 */

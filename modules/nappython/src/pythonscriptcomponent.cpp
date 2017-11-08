@@ -1,7 +1,7 @@
 #include <pythonscriptcomponent.h>
 #include <nap/entity.h>
 #include <rtti/pythonmodule.h>
-#include "nap/fileutils.h"
+#include <utility/fileutils.h>
 #include "nap/core.h"
 #include "pythonscriptservice.h"
 #include "nap/logger.h"
@@ -28,7 +28,7 @@ namespace nap
 		}
 	}
 
-	bool PythonScriptComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool PythonScriptComponentInstance::init(utility::ErrorState& errorState)
 	{
 		PythonScriptComponent* script_component = getComponent<PythonScriptComponent>();
 

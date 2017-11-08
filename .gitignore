@@ -47,3 +47,5 @@ arch.c
 modules/.vs/Project/v14/.suo
 .DS_Store
 test/**/*.mesh
+nap.sublime-project
+nap.sublime-workspace

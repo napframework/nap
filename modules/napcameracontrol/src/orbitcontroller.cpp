@@ -30,7 +30,7 @@ namespace nap
 	}
 
 
-	bool OrbitControllerInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool OrbitControllerInstance::init(utility::ErrorState& errorState)
 	{
 		PointerInputComponentInstance* pointer_component = getEntityInstance()->findComponent<PointerInputComponentInstance>();
 		if (!errorState.check(pointer_component != nullptr, "Could not find PointerInputComponent"))
@@ -51,7 +51,7 @@ namespace nap
 
 	CameraComponentInstance& OrbitControllerInstance::getCameraComponent()
 	{
-		return *getComponent<OrbitController>()->mPerspCameraComponent;
+		return *mPerspCameraComponent;
 	}
 
 

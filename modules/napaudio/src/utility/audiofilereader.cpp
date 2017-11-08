@@ -10,7 +10,7 @@
 
 // Nap include
 #include <nap/logger.h>
-#include <nap/fileutils.h>
+#include <utility/fileutils.h>
 #include <utility/stringutils.h>
 
 using namespace std;
@@ -160,7 +160,7 @@ namespace nap {
         
         bool readAudioFile(const std::string& fileName, MultiSampleBuffer& output, float& outSampleRate, nap::utility::ErrorState& errorState)
         {
-            if (utility::gToLower(getFileExtension(fileName)) == "mp3")
+            if (utility::toLower(utility::getFileExtension(fileName)) == "mp3")
                 return readMp3File(fileName, output, outSampleRate, errorState);
             
             return readLibSndFile(fileName, output, outSampleRate, errorState);

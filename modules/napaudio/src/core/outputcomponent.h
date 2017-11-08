@@ -46,10 +46,11 @@ namespace nap {
             OutputComponentInstance(EntityInstance& entity, Component& resource) : nap::ComponentInstance(entity, resource) { }
             
             // Initialize the component
-            bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+            bool init(utility::ErrorState& errorState) override;
             
         private:
             std::vector<std::unique_ptr<OutputNode>> mOutputs;
+            nap::ComponentInstancePtr<AudioComponent> mInput = { this, &OutputComponent::mInput };
         };
 
     }

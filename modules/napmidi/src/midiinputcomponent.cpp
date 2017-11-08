@@ -22,7 +22,7 @@ RTTI_END_CLASS
 namespace nap
 {
     
-    bool MidiInputComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+    bool MidiInputComponentInstance::init(utility::ErrorState& errorState)
     {
         // Get service and register
         mService = getEntityInstance()->getCore()->getService<MidiService>();

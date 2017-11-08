@@ -1,0 +1,145 @@
+{
+	"Objects":
+	[
+		{
+			"Type" : "nap::RenderWindow",
+			"mID" : "Window",
+			"Width" : 512,
+			"Height" : 512,
+			"Title" : "ArtnetColor",
+			"Sync" : "false"
+		},
+		
+		{
+			"Type" 		: "nap::ArtNetController",
+			"mID" 		: "Universe0",
+			"Subnet" 	: 0,
+			"Universe" 	: 0
+		},
+
+		{
+			"Type" : "nap::Shader",
+			"mID": "PlaneShader",
+			"mVertShader": "shaders/artnetcolor/plane.vert",
+			"mFragShader": "shaders/artnetcolor/plane.frag"
+		},
+
+		{
+			"Type" : "nap::Material",
+			"mID": "PlaneMaterial",
+			"Shader": "PlaneShader",
+			"VertexAttributeBindings" : 
+			[
+				{
+					"MeshAttributeID": "Position",
+					"ShaderAttributeID": "in_Position"
+				}
+			]
+		},
+
+		{
+			"Type"		: "nap::PlaneMesh",
+			"mID" 		: "PlaneMesh",
+			"Size"		: 
+			{
+				"x" : 1.0,
+				"y" : 1.0
+			}
+		},
+
+		{
+			"Type" : "nap::Entity",
+			"mID"  : "PlaneEntity",
+			"Components" : 
+			[
+				{
+					"Type" : "nap::TransformComponent",
+					"Properties": 
+					{
+						"Translate": 
+						{
+							"x": 256.0,
+							"y": 256.0,
+							"z": 0.0
+						},
+						"Rotate": 
+						{
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0,
+							"w": 1.0
+						},
+						"Scale": 
+						{
+							"x": 512.0,
+							"y": 512.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.0						
+					}			
+				},
+				{
+					"Type" : "nap::RenderableMeshComponent",
+					"mID" : "RenderPlane",
+					"Mesh" : "PlaneMesh",
+					"MaterialInstance" : 
+					{
+						"Material": "PlaneMaterial"
+					}
+				},
+				{
+					"Type" : "nap::SelectColorComponent",
+					"Controller" : "Universe0",
+					"Mesh" : "RenderPlane",
+					"Channel" : 0,
+					"Red" : 128,
+					"Green" : 64,
+					"Blue" : 255,
+					"White" : 64
+				}
+			]
+		},
+		
+		{
+			"Type" : "nap::Entity",
+			"mID": "CameraEntity",
+			"Components" : 
+			[
+				{
+					"Type" : "nap::OrthoCameraComponent",
+					"Properties": 
+					{
+						"NearClippingPlane" : 1.0,
+						"FarClippingPlane" : 10000.0
+					}
+				},
+				{
+					"Type" : "nap::TransformComponent",
+					"Properties": 
+					{
+						"Translate": 
+						{
+							"x": 0.0,
+							"y": 0.0,
+							"z": 2.0
+						},
+						"Rotate": 
+						{
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0,
+							"w": 1.0
+						},
+						"Scale": 
+						{
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.0						
+					}			
+				}
+			]
+		}
+	]
+}

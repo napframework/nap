@@ -49,7 +49,7 @@ namespace nap {
     int MidiService::getInputPortNumber(const std::string& portName)
     {
         for (auto i = 0; i < mMidiIn->getPortCount(); ++i)
-            if (utility::gToLower(portName) == utility::gToLower(mMidiIn->getPortName(i)))
+            if (utility::toLower(portName) == utility::toLower(mMidiIn->getPortName(i)))
                 return i;
         return -1;
     }
@@ -70,7 +70,7 @@ namespace nap {
     int MidiService::getOutputPortNumber(const std::string& portName)
     {
         for (auto i = 0; i < mMidiOut->getPortCount(); ++i)
-            if (utility::gToLower(portName) == utility::gToLower(mMidiOut->getPortName(i)))
+            if (utility::toLower(portName) == utility::toLower(mMidiOut->getPortName(i)))
                 return i;
         return -1;
     }
