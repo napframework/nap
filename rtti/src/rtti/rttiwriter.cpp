@@ -104,6 +104,8 @@ namespace nap
 					{
 						// Check that the ID of the pointer is not empty (we can't point to objects without an ID)
 						std::string pointee_id = pointee->mID;
+
+						// If the pointer is an RTTI object containing the "toString" function, we call it to serialize the returned value
 						rttr::method to_string_method = findMethodRecursive(value_type, "toString");
 						if (to_string_method.is_valid())
 						{

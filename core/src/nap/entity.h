@@ -29,10 +29,7 @@ namespace nap
 		using ComponentToEntityMap	= std::unordered_map<Component*, const Entity*>;
 		using ComponentInstanceMap = std::unordered_map<Component*, std::vector<ComponentInstance*>>;
 
-		EntityCreationParameters(const RTTIObjectGraph& objectGraph) :
-			mObjectGraph(&objectGraph)
-		{
-		}
+		EntityCreationParameters(const RTTIObjectGraph& objectGraph) : mObjectGraph(&objectGraph) {}
 
 		virtual ~EntityCreationParameters() = default;
 
