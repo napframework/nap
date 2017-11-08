@@ -70,6 +70,8 @@ namespace nap
 		RTTI_ENABLE(rtti::RTTIObject)
 
 	public:
+        using rtti::RTTIObject::init;
+        
 		using ComponentList = std::vector<std::unique_ptr<ComponentInstance>>;
 		using ChildList = std::vector<EntityInstance*>;
 		using ComponentIterator = utility::UniquePtrVectorWrapper<ComponentList, ComponentInstance*>;
@@ -89,7 +91,7 @@ namespace nap
 		* @param entityCreationParams Parameters required to create new entity instances during init
 		* @param errorState The error object
 		*/
-		virtual bool init(ResourceManager& resourceManager, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
+		bool init(ResourceManager& resourceManager, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
 
 		/**
 		 * Update this entity hierarchy

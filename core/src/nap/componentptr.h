@@ -1,12 +1,10 @@
 #pragma once
 
 #include "nap/objectptr.h"
+#include "component.h"
 
 namespace nap
 {
-	class Component;
-	class ComponentInstance;
-
 	/**
 	 * This class serves as the base for typed ComponentPtrs and is only here so that we can check whether a pointer is a ComponentPtr through RTTI. 
 	 * The reason we can't do that with ComponentPtr itself is because ComponentPtr is a template class and RTTI has difficulties dealing with that.
