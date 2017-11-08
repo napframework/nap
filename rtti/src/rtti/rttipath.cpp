@@ -45,7 +45,7 @@ namespace nap
 
 			// Split string on path seperator
 			std::list<std::string> parts;
-			utility::gTokenize(path, parts, ":", true);
+			utility::tokenize(path, parts, ":", true);
 
 			for (const std::string& part : parts)
 			{

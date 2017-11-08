@@ -19,8 +19,8 @@ namespace opengl
 
 	// Generates a texture on the GPU side
 	Texture::Texture(GLenum inTargetType) :
-		mTargetType(inTargetType),
-		mTextureId(-1)
+		mTextureId(-1),
+        mTargetType(inTargetType)
 	{}
 
 

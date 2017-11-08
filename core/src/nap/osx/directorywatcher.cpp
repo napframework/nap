@@ -1,6 +1,6 @@
 #include "../directorywatcher.h"
 
-#include <nap/fileutils.h>
+#include <utility/fileutils.h>
 
 #include "assert.h"
 #include <CoreServices/CoreServices.h>
@@ -94,7 +94,7 @@ namespace nap {
             std::vector<char> buffer;
             buffer.resize(size);
             _NSGetExecutablePath(buffer.data(), &size);
-            mPImpl->executablePath = getFileDir(std::string(buffer.data()));
+            mPImpl->executablePath = utility::getFileDir(std::string(buffer.data()));
             
             std::string dirToWatch = mPImpl->executablePath;
             CFStringRef pathToWatchCF = CFStringCreateWithCString(NULL, dirToWatch.c_str(), kCFStringEncodingUTF8);
@@ -146,11 +146,11 @@ namespace nap {
             if (mPImpl->callbackInfo.modifiedFiles.empty())
                 return false;
             
-            std::string comparable_executable_path = toComparableFilename(mPImpl->executablePath);
+            std::string comparable_executable_path = utility::toComparableFilename(mPImpl->executablePath);
             
             for (auto& modified_file : mPImpl->callbackInfo.modifiedFiles)
             {
-                std::string comparable_modified_file = toComparableFilename(modified_file);
+                std::string comparable_modified_file = utility::toComparableFilename(modified_file);
                 
                 // check if the executable path is found at the start if the modifiel file's path
                 auto pos = comparable_modified_file.find(comparable_executable_path + "/");

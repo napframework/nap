@@ -45,7 +45,7 @@ namespace nap
         MidiInputComponentInstance(EntityInstance& entity, Component& resource) : nap::ComponentInstance(entity, resource) { }
         
         // Initialize the component
-        bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+        bool init(utility::ErrorState& errorState) override;
         
         virtual ~MidiInputComponentInstance();
         

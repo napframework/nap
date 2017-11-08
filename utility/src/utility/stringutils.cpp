@@ -14,7 +14,7 @@ namespace nap
 	{
 
 		// Splits a string based on @inDelim
-		void gSplitString(const std::string inString, char inDelim, std::vector<std::string>& ioParts)
+		void splitString(const std::string inString, char inDelim, std::vector<std::string>& ioParts)
 		{
 			// Clear
 			ioParts.clear();
@@ -30,7 +30,7 @@ namespace nap
 
 
 		// Write a string to ostream (binary)
-		void gWriteString(std::ostream& stream, const std::string& text)
+		void writeString(std::ostream& stream, const std::string& text)
 		{
 			uint32_t size = text.size();
 
@@ -40,7 +40,7 @@ namespace nap
 
 
 		// Read a string from istream (binary)
-		std::string gReadString(std::istream& stream)
+		std::string readString(std::istream& stream)
 		{
 			uint32_t size;
 			stream.read(reinterpret_cast<char*>(&size), sizeof(size));
@@ -53,21 +53,21 @@ namespace nap
 
 
 		// Converts a string to lower case characters
-		void gToLower(std::string& ioString)
+		void toLower(std::string& ioString)
 		{
 			std::transform(ioString.begin(), ioString.end(), ioString.begin(), ::tolower);
 		}
 
 
 		// Converts @ioString to lower case characters, returns a copy
-		std::string gToLower(const std::string& ioString)
+		std::string toLower(const std::string& ioString)
 		{
 			std::string out_string = ioString;
 			std::transform(out_string.begin(), out_string.end(), out_string.begin(), ::tolower);
 			return out_string;
 		}
 
-		void gTokenize(const std::string& str, std::list<std::string>& tokens, const std::string& delims, bool omitTokens)
+		void tokenize(const std::string& str, std::list<std::string>& tokens, const std::string& delims, bool omitTokens)
 		{
 			if (omitTokens) {
 				std::regex re("([^" + delims + "]+)");
@@ -92,7 +92,7 @@ namespace nap
 		}
 
 
-		std::string gStripNamespace(const std::string& str) {
+		std::string stripNamespace(const std::string& str) {
 			std::regex re("([^:]+)$");
 			std::regex_iterator<std::string::const_iterator> rit(str.begin(), str.end(), re);
 			std::regex_iterator<std::string::const_iterator> rend;
@@ -102,7 +102,7 @@ namespace nap
 		}
 
 
-		bool gStartsWith(const std::string& inString, const std::string& inSubString, bool caseSensitive)
+		bool startsWith(const std::string& inString, const std::string& inSubString, bool caseSensitive)
 		{
 			int(*compare_func)(const char*, const char*, size_t);
 #ifdef _WIN32
@@ -114,7 +114,7 @@ namespace nap
 		}
 
 
-		bool gContains(const std::string& inString, const std::string& inSubString, bool caseSensitive)
+		bool contains(const std::string& inString, const std::string& inSubString, bool caseSensitive)
 		{
 			// case sensitive
 			if (caseSensitive)
@@ -144,6 +144,35 @@ namespace nap
 			size_t bracketIndex = typeName.find('<');
 			return typeName.substr(0, bracketIndex) + "<" + templateTypeName + ">";
 		}
-
+		
+		// Replace all instances of search string with replacement
+		void replaceAllInstances(std::string& inString, const std::string& find, const std::string& replace)
+		{
+			if (inString.empty())
+				return;
+			
+			for(std::string::size_type i = 0; (i = inString.find(find, i)) != std::string::npos;)
+			{
+				inString.replace(i, find.length(), replace);
+				i += replace.length();
+			}
+		}
+		
+		// Replace all instances of search string with replacement, in a copy
+		std::string replaceAllInstances(const std::string& inString, const std::string& find, const std::string& replace)
+		{
+			if (inString.empty())
+				return "";
+			
+			std::string outString = inString;
+			
+			for(std::string::size_type i = 0; (i = outString.find(find, i)) != std::string::npos;)
+			{
+				outString.replace(i, find.length(), replace);
+				i += replace.length();
+			}
+			return outString;
+		}
 	}
+
 }
