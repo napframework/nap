@@ -90,3 +90,6 @@ if (MSVC)
     GENERATE_EXPORT_HEADER(${PROJECT_NAME})
 endif()
 
+# Package into release build
+install(DIRECTORY "src/" DESTINATION "include/nap/nrender/"
+        FILES_MATCHING PATTERN "*.h")

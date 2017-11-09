@@ -37,3 +37,7 @@ endif()
 copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/data data)
 copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/shaders shaders)
 export_fbx(${CMAKE_CURRENT_LIST_DIR}/data/${PROJECT_NAME})
+
+# Package into release build
+install(DIRECTORY . DESTINATION "examples/${PROJECT_NAME}"
+		PATTERN "CMakeLists.txt" EXCLUDE)

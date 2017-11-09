@@ -26,3 +26,12 @@ if(APPLE)
 elseif(UNIX)
     target_link_libraries(${PROJECT_NAME} dl pthread)
 endif ()
+
+# Package into release build
+install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
+install(DIRECTORY "src/nap/" DESTINATION "include/nap/napcore/"
+        FILES_MATCHING PATTERN "*.h"
+        PATTERN "linux" EXCLUDE
+        PATTERN "osx" EXCLUDE
+        PATTERN "win32" EXCLUDE
+)

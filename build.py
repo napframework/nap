@@ -40,7 +40,7 @@ def installDependenciesLinux():
     call('.', ['sudo', 'apt-get', '--assume-yes', 'install',
                'cmake',
                'build-essential',
-	       'python3-dev',
+               'python3-dev',
                'libsdl2-dev',
                'libglew-dev',
                'libassimp-dev',
@@ -107,10 +107,11 @@ def main(targets):
     # build_targets.append("hello")
 
     for t in targets:
-        # osx / linux
+        # linux
         if platform in ["linux", "linux2"]:
             d = '%s/%s' % (WORKING_DIR, BUILD_DIR)
             call(d, ['make', t, '-j%s' % cpu_count()])
+        # osx
         elif platform == 'darwin':
             d = '%s/%s' % (WORKING_DIR, BUILD_DIR)
             call(d, ['xcodebuild', '-project', 'Project.xcodeproj', '-target', t, '-configuration', 'Debug'])
