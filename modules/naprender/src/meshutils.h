@@ -40,12 +40,17 @@ namespace nap
 	 */
 	void NAPAPI getTriangleIndices(const nap::MeshInstance& mesh, int number, glm::ivec3& indices);
 
+	// Holds a copy of vertex data associated with a triangle in a mesh
 	template<typename T>
 	using TriangleData = std::array<T, 3>;
 
+	// Holds 3 pointers to the vertices associated with a triangle in the mesh
+	template<typename T>
+	using TriangleDataPointer = std::array <T*, 3>;
+
 	/**
-	 * Returns the attribute data associated with a triangle in a mesh. The vertex data associated with the mesh 
-	 * is given as a separate vector because of performance considerations. Vertex attribute lookups are rather expensive
+	 * Returns the attribute data associated with a triangle in a mesh. This call performs a copy of the vertex data to @outTriangle
+	 * is given as a separate vector because of performance considerations.
 	 * This call asserts when the triangle number is out of bounds.
 	 * @param mesh the mesh that holds @vertexData. It's important that the @vertexData source is the @mesh
 	 * @param number the triangle number to query
@@ -53,7 +58,44 @@ namespace nap
 	 * @param outTriangle the array (containing 3 elements) that is filled with the vertex data
 	 */
 	template<typename T>
-	void getTriangleValue(const nap::MeshInstance& mesh, int number, const std::vector<T>& vertexData, TriangleData<T>& outTriangle);
+	void getTriangleValues(const nap::MeshInstance& mesh, int number, const std::vector<T>& vertexData, TriangleData<T>& outTriangle);
+
+	/**
+	* Returns the attribute data associated with a triangle as a set of pointers in to the vertex data of a mesh. 
+	* Use this function to change attributes associated with a triangle
+	* This call asserts when the triangle number is out of bounds.
+	* @param mesh the mesh that holds @vertexData. It's important that the @vertexData source is the @mesh
+	* @param number the triangle number to query
+	* @param vertexData the mesh attribute data to sample from
+	* @param outTriangle the array (containing 3 elements) that is filled with the vertex data
+	*/
+	template<typename T>
+	void getTriangleValues(const nap::MeshInstance& mesh, int number, std::vector<T>& vertexData, TriangleDataPointer<T>& outTriangle);
+
+	/**
+	* Returns the attribute data associated with a triangle in a mesh. This call performs a copy of the vertex data to @outTriangle
+	* is given as a separate vector because of performance considerations.
+	* This call asserts when the triangle number is out of bounds.
+	* @param mesh the mesh that holds @vertexData. It's important that the @vertexData source is the @mesh
+	* @param number the triangle number to query
+	* @param vertexData the mesh attribute data to sample from
+	* @param outTriangle the array (containing 3 elements) that is filled with the vertex data
+	*/
+	template<typename T>
+	void getTriangleValues(const nap::MeshInstance& mesh, int number, const VertexAttribute<T>& vertexAttribute, TriangleData<T>& outTriangle);
+
+	/**
+	* Returns the attribute data associated with a triangle as a set of pointers in to the vertex data of a mesh.
+	* Use this function to change attributes associated with a triangle
+	* This call asserts when the triangle number is out of bounds.
+	* @param mesh the mesh that holds @vertexData. It's important that the @vertexData source is the @mesh
+	* @param number the triangle number to query
+	* @param vertexAttribute the mesh attribute to sample from
+	* @param outTriangle the array (containing 3 elements) that is filled with the vertex data
+	*/
+	template<typename T>
+	void getTriangleValues(const nap::MeshInstance& mesh, int number, VertexAttribute<T>& vertexAttribute, TriangleDataPointer<T>& outTriangle);
+
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -61,7 +103,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	void getTriangleValue(const MeshInstance& mesh, int number, const std::vector<T>& vertexData, TriangleData<T>& outVertexData)
+	void getTriangleValues(const MeshInstance& mesh, int number, const std::vector<T>& vertexData, TriangleData<T>& outVertexData)
 	{
 		// Assert when the triangle is out of bounds or when it's not a triangle mesh
 		assert(number < getTriangleCount(mesh));
@@ -71,9 +113,9 @@ namespace nap
 		{
 			glm::ivec3 triangle_indices = { 0.0,0.0,0.0 };
 			getTriangleIndices(mesh, number, triangle_indices);
-			outVertexData[0] = vertexData[triangle_indices.r];
-			outVertexData[1] = vertexData[triangle_indices.g];
-			outVertexData[2] = vertexData[triangle_indices.b];
+			outVertexData[0] = vertexData[triangle_indices.x];
+			outVertexData[1] = vertexData[triangle_indices.y];
+			outVertexData[2] = vertexData[triangle_indices.z];
 			return;
 		}
 
@@ -108,6 +150,72 @@ namespace nap
 			assert(false);
 			break;
 		}
+	}
+
+
+	template<typename T>
+	void getTriangleValues(const MeshInstance& mesh, int number, const VertexAttribute<T>& vertexAttribute, TriangleData<T>& outTriangle)
+	{
+		return getTriangleValues<T>(mesh, number, vertexAttribute.getData(), outTriangle);
+	}
+	
+
+	template<typename T>
+	void getTriangleValues(const MeshInstance& mesh, int number, std::vector<T>& vertexData, TriangleDataPointer<T>& outTriangle)
+	{
+		// Assert when the triangle is out of bounds or when it's not a triangle mesh
+		assert(number < getTriangleCount(mesh));
+
+		// Take in to consideration if the mesh is drawn using indices, if so query data based on that
+		if (mesh.hasIndices())
+		{
+			glm::ivec3 triangle_indices = { 0.0,0.0,0.0 };
+			getTriangleIndices(mesh, number, triangle_indices);
+			T* id = vertexData.data();
+			outTriangle[0] = id + triangle_indices.x;
+			outTriangle[1] = id + triangle_indices.y;
+			outTriangle[2] = id + triangle_indices.z;
+			return;
+		}
+
+		// Get triangle values for non indexed meshes
+		switch (mesh.getDrawMode())
+		{
+		case opengl::EDrawMode::TRIANGLE_FAN:
+		{
+			T* id = vertexData.data();
+			outTriangle[0] = id;
+			outTriangle[1] = id + number + 1;
+			outTriangle[2] = id + number + 2;
+			break;
+		}
+		case opengl::EDrawMode::TRIANGLE_STRIP:
+		{
+			T* id = vertexData.data() + number;
+			outTriangle[0] = id + 0;
+			outTriangle[1] = id + 1;
+			outTriangle[2] = id + 2;
+			break;
+		}
+		case opengl::EDrawMode::TRIANGLES:
+		{
+			T* id = vertexData.data() + (number * 3);
+			outTriangle[0] = id + 0;
+			outTriangle[1] = id + 1;
+			outTriangle[2] = id + 2;
+			break;
+		}
+		default:
+			assert(false);
+			break;
+		}
+	}
+
+
+	template<typename T>
+	void getTriangleValues(const MeshInstance& mesh, int number, VertexAttribute<T>& vertexAttribute, TriangleDataPointer<T>& outTriangle)
+	{
+		return getTriangleValues<T>(mesh, number, vertexAttribute.getData(), outTriangle);
 	}
 
 }

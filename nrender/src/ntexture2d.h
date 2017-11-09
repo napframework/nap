@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ntexture.h"
+#include "nbitmap.h"
 
 namespace opengl
 {
@@ -60,6 +61,17 @@ namespace opengl
 		void getData(std::vector<uint8_t>& data);
 
 		/**
+		 * Blocking call to retrieve GPU texture data that is stored in the bitmap
+		 * When the bitmap is empty (has no data associated with it) this call will try
+		 * to initialize the bitmap using the settings associated with this texture. This call will assert
+		 * if it can't initialize the bitmap based on the  provided settings or when the internal settings do not match
+		 * Note that if the bitmap's settings don't match with the texture settings the result is uncertain
+		 * To find valid bitmap settings based on this texture use: opengl::getBitmapType and opengl::getColorType
+		 * @param bitmap the bitmap that is filled with texture data
+		 */
+		void getData(opengl::Bitmap& bitmap);
+
+		/**
 		 * Starts a transfer of texture data from GPU to CPU. Use asyncEndGetData to block waiting for the async command to complete.
 		 * For performance, it is important to start a transfer as soon as possible after the texture is rendered. It is recommended
 		 * to use double or triple buffering to make sure that no stalls occur when calling asyncEndGetData().
@@ -71,6 +83,12 @@ namespace opengl
 		 * @param data Block of data that is filled with texture data. The vector is resized internally to the correct size.
 		 */
 		void asyncEndGetData(std::vector<uint8_t>& data);
+
+		/**
+		 * Finishes a transfer of texture data from GPU to CPU that was started with asyncStartGetData. See comment in asyncStartGetData for proper use.
+		 * @param bitmap the bitmap that is filled with texture data, see getData() for more documentation
+		 */
+		void asyncEndGetData(opengl::Bitmap& bitmap);
 
 	private:
 		Texture2DSettings	mSettings;		// Settings object
