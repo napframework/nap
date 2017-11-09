@@ -9,6 +9,7 @@
 #include <utility/dllexport.h>
 #include <rtti/rttiobject.h>
 #include <nap/objectptr.h>
+#include <nap/configure.h>
 
 namespace nap
 {
@@ -198,6 +199,17 @@ namespace nap
 		opengl::EDrawMode getDrawMode() const									{ return mProperties.mDrawMode; }
 
 		/**
+		 * @return if the mesh has indices associated with it
+		 */
+		bool hasIndices() const													{ return !(mProperties.mIndices.empty()); }
+
+		/**
+		 * @return the indices associated with this mesh. This array is empty
+		 * if this mesh has no indices
+		 */
+		const std::vector<uint>& getIndices() const						{ return mProperties.mIndices; }
+
+		/**
 		 * Uses the CPU mesh data to update the GPU mesh. Note that update() is called during init(),
 		 * so this is only required if CPU data is modified after init().
 		 * If there is a mismatch between vertex buffer, an error will be returned.
@@ -211,7 +223,7 @@ namespace nap
 
 	private:
 		MeshProperties<std::unique_ptr<BaseVertexAttribute>>	mProperties;		///< CPU mesh data
-		std::unique_ptr<opengl::GPUMesh>					mGPUMesh;			///< GPU mesh
+		std::unique_ptr<opengl::GPUMesh>						mGPUMesh;			///< GPU mesh
 	};
 
 
