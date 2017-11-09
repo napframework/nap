@@ -1,5 +1,6 @@
 #include "artnetmeshfromfile.h"
 #include "fbxconverter.h"
+#include "meshutils.h"
 
 // nap::artnetmeshfromfile run time class definition 
 RTTI_BEGIN_CLASS(nap::ArtnetMeshFromFile)
@@ -35,19 +36,43 @@ namespace nap
 		std::vector<int> subnet_data(mColorAttribute->getCount(), 0);
 		std::vector<int> universe_data(mColorAttribute->getCount(), 0);
 
+		// Set extracted art net attributes from color
 		int count = 0;
 		for (const auto& color : mColorAttribute->getData())
 		{
-			channel_data[count] = static_cast<int>(color.r * 511.0f);
+			channel_data[count]  = static_cast<int>(color.r * 511.0f);
 			universe_data[count] = static_cast<int>(color.g * 15.0f);
-			subnet_data[count] = static_cast<int>(color.b * 15.0f);
+			subnet_data[count]   = static_cast<int>(color.b * 15.0f);
 			count++;
 		}
-
 		mChannelAttribute->setData(channel_data);
 		mUniverseAttribute->setData(universe_data);
 		mSubnetAttribute->setData(subnet_data);
 
+		// Verify that our triangles all have the same channels as vertex attributes
+		int tri_count = getTriangleCount(*mMeshInstance);
+		TriangleData<int> tri_channels = { 0,0,0 };
+		for (int i = 0; i < tri_count; i++)
+		{
+			getTriangleValues<int>(*mMeshInstance, i, *mChannelAttribute, tri_channels);
+			if (tri_channels[0] != tri_channels[1] || tri_channels[1] != tri_channels[2])
+			{
+				return errorState.check(false, "mesh: %s triangle: %d has inconsistent art net channel attribute", mPath.c_str(), i);
+			}
+
+			getTriangleValues<int>(*mMeshInstance, i, *mUniverseAttribute, tri_channels);
+			if (tri_channels[0] != tri_channels[1] || tri_channels[1] != tri_channels[2])
+			{
+				return errorState.check(false, "mesh: %s triangle: %d has inconsistent art net universe attribute", mPath.c_str(), i);
+			}
+
+			getTriangleValues<int>(*mMeshInstance, i, *mSubnetAttribute, tri_channels);
+			if (tri_channels[0] != tri_channels[1] || tri_channels[1] != tri_channels[2])
+			{
+				return errorState.check(false, "mesh: %s triangle: %d has inconsistent art net subnet attribute", mPath.c_str(), i);
+			}
+		}
+		
 		// Initialize the mesh
 		if (!errorState.check(mMeshInstance->init(errorState), "Unable to initialize mesh %s for resource %d", mPath.c_str(), mID.c_str()))
 			return false;

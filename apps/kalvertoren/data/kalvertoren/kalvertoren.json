@@ -314,19 +314,70 @@
 				{
 					"Type" : "nap::RenderableMeshComponent",
 					"Mesh" : "PlaneMesh",
-					"MaterialInstance" : {
+					"MaterialInstance" : 
+					{
 						"Material": "VideoMaterial"
 					}
 				},
 				{
-					"Type" : "nap::TransformComponent"
+					"Type" : "nap::TransformComponent",
+					"Properties": 
+					{
+						"Translate": 
+						{
+							"x": 512.0,
+							"y": 512.0,
+							"z": 0.0
+						},
+						"Rotate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0
+						},
+						"Scale": 
+						{
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1024.0						
+					}
 				}
 			]	
+		},
+
+		{
+			"Type" : "nap::Entity",
+			"mID" : "VideoCameraEntity",
+			"Components" : 
+			[	
+				{
+					"Type" : "nap::OrthoCameraComponent",
+					"mID" : "VideoOrthoCameraComponent",
+					"Properties": 
+					{
+						"NearClippingPlane" : 1,
+						"FarClippingPlane" : 1000.0
+					}
+				},
+				{
+					"Type" : "nap::TransformComponent",
+					"Properties": 
+					{
+						"Translate": 
+						{
+							"x": 0.0,
+							"y": 0.0,
+							"z": 10.0
+						}				
+					}
+				}
+			]
 		},
 		
 		{
 			"Type" : "nap::Entity",
-			"mID": "CameraEntity",
+			"mID": "SceneCameraEntity",
 			"Components" :  
 			[
 				{

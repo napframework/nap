@@ -27,7 +27,7 @@ void main(void)
 	// Get video color
 	vec2 uvs = vec2(pass_Uvs.x, pass_Uvs.y);
 	//vec3 color = texture(videoTexture, uvs).rgb;
-	vec3 color = pass_Artnet;
+	vec3 color = pass_Color.rgb;
 
 	//calculate normal in world coordinates
     mat3 normal_matrix = transpose(inverse(mat3(pass_ModelMatrix)));

@@ -6,6 +6,7 @@
 #include "orbitcontroller.h"
 #include "cameracomponent.h"
 #include "cameracontroller.h"
+#include "artnetmeshfromfile.h"
 
 // External Includes
 #include <app.h>
@@ -70,17 +71,20 @@ namespace nap
 		nap::InputService*								inputService = nullptr;
 
 		nap::ObjectPtr<nap::RenderWindow>				renderWindow;
-		nap::ObjectPtr<nap::RenderTarget>				textureRenderTarget;
+		nap::ObjectPtr<nap::RenderTarget>				videoTextureTarget;
 		nap::ObjectPtr<nap::EntityInstance>				kalvertorenEntity = nullptr;
-		nap::ObjectPtr<nap::EntityInstance>				cameraEntity = nullptr;
+		nap::ObjectPtr<nap::EntityInstance>				sceneCameraEntity = nullptr;
+		nap::ObjectPtr<nap::EntityInstance>				videoCameraEntity = nullptr;
 		nap::ObjectPtr<nap::EntityInstance>				defaultInputRouter = nullptr;
 		nap::ObjectPtr<nap::EntityInstance>				videoEntity = nullptr;
 		nap::ObjectPtr<nap::Video>						videoResource;
 		nap::ObjectPtr<nap::EntityInstance>				lightEntity = nullptr;
 		nap::ObjectPtr<nap::Material>					frameMaterial = nullptr;
 		nap::ObjectPtr<nap::Material>					vertexMaterial = nullptr;
+		nap::ObjectPtr<nap::ArtnetMeshFromFile>			heiligeWegMesh = nullptr;
 
-		std::vector<uint8_t> videoPlaybackData;
+		// video data
+		opengl::Bitmap									mVideoBitmap;
 
 		void updateCameraLocation();
 	};

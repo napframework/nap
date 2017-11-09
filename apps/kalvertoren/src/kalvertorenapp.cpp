@@ -5,6 +5,7 @@
 #include <mathutils.h>
 #include <basetexture2d.h>
 #include <texture2d.h>
+#include <meshutils.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::KalvertorenApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -26,17 +27,24 @@ namespace nap
 		if (!resourceManager->loadFile("data/kalvertoren/kalvertoren.json", error))
 			return false;
 
+		// Render window and texture target
 		renderWindow = resourceManager->findObject<nap::RenderWindow>("Window0");
-		textureRenderTarget = resourceManager->findObject<nap::RenderTarget>("PlaneRenderTarget");
+		videoTextureTarget = resourceManager->findObject<nap::RenderTarget>("PlaneRenderTarget");
+		
+		// All of our entities
 		kalvertorenEntity = resourceManager->findEntity("KalvertorenEntity");
-		cameraEntity = resourceManager->findEntity("CameraEntity");
+		sceneCameraEntity = resourceManager->findEntity("SceneCameraEntity");
+		videoCameraEntity = resourceManager->findEntity("VideoCameraEntity");
 		defaultInputRouter = resourceManager->findEntity("DefaultInputRouterEntity");
 		videoEntity = resourceManager->findEntity("VideoEntity");
 		lightEntity = resourceManager->findEntity("LightEntity");
+
+		// Mesh associated with heiligeweg
+		heiligeWegMesh = resourceManager->findObject<nap::ArtnetMeshFromFile>("HeiligewegMesh");
+
+		// Materials
 		vertexMaterial = resourceManager->findObject<nap::Material>("VertexColorMaterial");
 		frameMaterial = resourceManager->findObject<nap::Material>("FrameMaterial");
-
-		assert(videoEntity != nullptr);
 
 		// Collect all video resources and play
 		videoResource = resourceManager->findObject<nap::Video>("Video1");
@@ -57,7 +65,7 @@ namespace nap
 
 		// Update input for first window
 		std::vector<nap::EntityInstance*> entities;
-		entities.push_back(cameraEntity.get());
+		entities.push_back(sceneCameraEntity.get());
 		inputService->processEvents(*renderWindow, input_router, entities);
 
 		// Update cam location for lights
@@ -75,10 +83,67 @@ namespace nap
 			nap::Logger::fatal(error_state.toString());
 		}
 
+		// Set the video texture on the material used by the plane
 		nap::MaterialInstance& plane_material = videoEntity->getComponent<nap::RenderableMeshComponentInstance>().getMaterialInstance();
 		plane_material.getOrCreateUniform<nap::UniformTexture2D>("yTexture").setTexture(videoResource->getYTexture());
 		plane_material.getOrCreateUniform<nap::UniformTexture2D>("uTexture").setTexture(videoResource->getUTexture());
 		plane_material.getOrCreateUniform<nap::UniformTexture2D>("vTexture").setTexture(videoResource->getVTexture());
+
+		if (mVideoBitmap.hasData())
+		{
+			// Copy pixel data over
+			nap::MeshInstance& mesh = heiligeWegMesh->getMeshInstance();
+
+			// UV attribute we use to sample
+			nap::VertexAttribute<glm::vec3>& uv_attr = mesh.GetAttribute<glm::vec3>(nap::MeshInstance::VertexAttributeIDs::GetUVName(0));
+
+			// Color attribute we use to sample
+			nap::VertexAttribute<glm::vec4>& color_attr = mesh.GetAttribute<glm::vec4>(nap::MeshInstance::VertexAttributeIDs::GetColorName(0));
+
+			// Total amount of triangles
+			int tri_count = getTriangleCount(mesh);
+			TriangleDataPointer<glm::vec3> tri_uv_data;
+			TriangleDataPointer<glm::vec4> tri_co_data;
+			for (int i=0; i < tri_count; i++)
+			{
+				// Get uv coordinates for that triangle
+				getTriangleValues<glm::vec3>(mesh, i, uv_attr, tri_uv_data);
+
+				// Average uv values
+				glm::vec2 uv_avg{ 0.0,0.0 };
+				for (const auto& uv_vertex : tri_uv_data)
+				{
+					uv_avg.x += uv_vertex->x;
+					uv_avg.y += uv_vertex->y;
+				}
+				uv_avg.x = uv_avg.x / 3.0f;
+				uv_avg.y = uv_avg.y / 3.0f;
+
+				// Convert to pixel coordinates
+				int x_pixel = static_cast<float>(mVideoBitmap.getWidth() - 1) * uv_avg.x;
+				int y_pixel = static_cast<float>(mVideoBitmap.getWidth() - 1) * uv_avg.y;
+
+				// retrieve pixel value
+				uint8* pixel_pointer = mVideoBitmap.getPixel<uint8>(x_pixel, y_pixel);
+
+				// Set as vertex color value for all verts
+				getTriangleValues<glm::vec4>(mesh, i, color_attr.getData(), tri_co_data);
+				for (auto& color_vertex : tri_co_data)
+				{
+					color_vertex->r = static_cast<float>(pixel_pointer[0] / 255.0f);
+					color_vertex->g = static_cast<float>(pixel_pointer[1] / 255.0f);
+					color_vertex->b = static_cast<float>(pixel_pointer[2] / 255.0f);
+				}
+			}
+
+			nap::utility::ErrorState error;
+			if (!mesh.update(error))
+			{
+				assert(false);
+			}
+		}
+
+
 
 
 		// Update camera location for materials
@@ -124,26 +189,31 @@ namespace nap
 	{
 		renderService->destroyGLContextResources(std::vector<nap::ObjectPtr<nap::RenderWindow>>({ renderWindow }));
 
-		nap::CameraComponentInstance& cameraComponentInstance = cameraEntity->getComponent<nap::CameraControllerInstance>().getCameraComponent();
-
 		// Render offscreen surface(s)
 		{
 			renderService->getPrimaryWindow().makeCurrent();
 
+			// Video camera
+			nap::CameraComponentInstance& video_cam = videoCameraEntity->getComponent<nap::OrthoCameraComponentInstance>();
+
+			// Get plane to render video to
 			std::vector<nap::RenderableComponentInstance*> components_to_render;
 			components_to_render.push_back(&videoEntity->getComponent<nap::RenderableMeshComponentInstance>());
 
-			opengl::TextureRenderTarget2D& render_target = textureRenderTarget->getTarget();
+			// render target
+			opengl::TextureRenderTarget2D& render_target = videoTextureTarget->getTarget();
 			render_target.setClearColor(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
 			renderService->clearRenderTarget(render_target, opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH);
-			renderService->renderObjects(render_target, cameraComponentInstance, components_to_render);
+			renderService->renderObjects(render_target, video_cam, components_to_render);
 
-			render_target.getColorTexture().getData(videoPlaybackData);
+			render_target.getColorTexture().getData(mVideoBitmap);
 		}
 
 		// Render window 0
 		{
 			renderWindow->makeActive();
+
+			nap::CameraComponentInstance& sceneCamera = sceneCameraEntity->getComponent<nap::CameraControllerInstance>().getCameraComponent();
 
 			// Render output texture to plane
 			std::vector<nap::RenderableComponentInstance*> components_to_render;
@@ -151,7 +221,7 @@ namespace nap
 
 			opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(renderWindow->getWindow()->getBackbuffer());
 			renderService->clearRenderTarget(backbuffer);
-			renderService->renderObjects(backbuffer, cameraComponentInstance, components_to_render);
+			renderService->renderObjects(backbuffer, sceneCamera, components_to_render);
 
 			renderWindow->swap();
 		}
@@ -162,6 +232,7 @@ namespace nap
 	{
 
 	}
+
 
 
 	void KalvertorenApp::windowMessageReceived(WindowEventPtr windowEvent)
@@ -199,7 +270,7 @@ namespace nap
 	void KalvertorenApp::updateCameraLocation()
 	{
 		// Set cam location
-		const glm::mat4x4& cam_xform = cameraEntity->getComponent<nap::TransformComponentInstance>().getGlobalTransform();
+		const glm::mat4x4& cam_xform = sceneCameraEntity->getComponent<nap::TransformComponentInstance>().getGlobalTransform();
 		glm::vec3 cam_pos(cam_xform[3][0], cam_xform[3][1], cam_xform[3][2]);
 
 		nap::UniformVec3& frame_cam_pos = frameMaterial->getUniform<nap::UniformVec3>("cameraLocation");
