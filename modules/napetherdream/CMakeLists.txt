@@ -28,3 +28,8 @@ if (WIN32)
 
     copy_files_to_bin(${FILES_TO_COPY})
 endif()
+
+# Package into release build
+install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION "modules/${PROJECT_NAME}/lib")
+install(DIRECTORY "src/" DESTINATION "modules/${PROJECT_NAME}/include"
+        FILES_MATCHING PATTERN "*.h")

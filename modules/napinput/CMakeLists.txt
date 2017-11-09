@@ -15,3 +15,8 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
 target_link_libraries(${PROJECT_NAME} napcore)
+
+# Package into release build
+install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION "modules/${PROJECT_NAME}/lib")
+install(DIRECTORY "src/" DESTINATION "modules/${PROJECT_NAME}/include"
+        FILES_MATCHING PATTERN "*.h")

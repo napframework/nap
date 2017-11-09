@@ -14,3 +14,7 @@ endif()
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME} PUBLIC src)
+
+# Package into release build
+install(DIRECTORY "src/utility/" DESTINATION "include/nap/utility/"
+        FILES_MATCHING PATTERN "*.h")

@@ -21,3 +21,8 @@ if(NOT WIN32)
 endif()
 
 target_link_libraries(${PROJECT_NAME} napcore mod_naprender mod_napsdlinput mod_napsdlwindow ${ARTNET_LIBS})
+
+# Package into release build
+install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION "modules/${PROJECT_NAME}/lib")
+install(DIRECTORY "src/" DESTINATION "modules/${PROJECT_NAME}/include"
+        FILES_MATCHING PATTERN "*.h")

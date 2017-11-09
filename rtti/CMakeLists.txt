@@ -63,3 +63,8 @@ if (WIN32)
     set(FILES_TO_COPY $<TARGET_FILE:RTTR::Core>)
     copy_files_to_bin(${FILES_TO_COPY})
 endif()
+
+# Package into release build
+install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
+install(DIRECTORY "src/rtti/" DESTINATION "include/nap/rtti/"
+        FILES_MATCHING PATTERN "*.h")

@@ -20,3 +20,8 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
 # link with external libs
 target_link_libraries(${PROJECT_NAME} napcore mod_naprender mod_napinput)
+
+# Package into release build
+install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION "modules/${PROJECT_NAME}/lib")
+install(DIRECTORY "src/" DESTINATION "modules/${PROJECT_NAME}/include"
+        FILES_MATCHING PATTERN "*.h")

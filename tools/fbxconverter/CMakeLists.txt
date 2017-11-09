@@ -49,3 +49,6 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 #add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 #        COMMAND ctest -C $<CONFIGURATION> --output-on-failure
 #        DEPENDS always_rebuild)
+
+# Package into release build
+install(TARGETS ${PROJECT_NAME} DESTINATION tools)
