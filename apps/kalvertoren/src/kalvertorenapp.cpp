@@ -76,13 +76,6 @@ namespace nap
 		if (!videoResource->isPlaying())
 			videoResource->play();
 
-		// Set video to plane
-		nap::utility::ErrorState error_state;
-		if (!videoResource->update(nap::math::max<float>(deltaTime, 0.01f), error_state))
-		{
-			nap::Logger::fatal(error_state.toString());
-		}
-
 		// Set the video texture on the material used by the plane
 		nap::MaterialInstance& plane_material = videoEntity->getComponent<nap::RenderableMeshComponentInstance>().getMaterialInstance();
 		plane_material.getOrCreateUniform<nap::UniformTexture2D>("yTexture").setTexture(videoResource->getYTexture());
@@ -103,7 +96,7 @@ namespace nap
 			// Total amount of triangles
 			int tri_count = getTriangleCount(mesh);
 			TriangleDataPointer<glm::vec3> tri_uv_data;
-			TriangleDataPointer<glm::vec4> tri_co_data;
+			TriangleData<glm::vec4> new_triangle_color;
 			for (int i=0; i < tri_count; i++)
 			{
 				// Get uv coordinates for that triangle
@@ -126,14 +119,16 @@ namespace nap
 				// retrieve pixel value
 				uint8* pixel_pointer = mVideoBitmap.getPixel<uint8>(x_pixel, y_pixel);
 
-				// Set as vertex color value for all verts
-				getTriangleValues<glm::vec4>(mesh, i, color_attr.getData(), tri_co_data);
-				for (auto& color_vertex : tri_co_data)
+				// iterate over every vertex in the triangle and set the color
+				for (auto& vert_color : new_triangle_color)
 				{
-					color_vertex->r = static_cast<float>(pixel_pointer[0] / 255.0f);
-					color_vertex->g = static_cast<float>(pixel_pointer[1] / 255.0f);
-					color_vertex->b = static_cast<float>(pixel_pointer[2] / 255.0f);
+					vert_color.r = static_cast<float>(pixel_pointer[0] / 255.0f);
+					vert_color.g = static_cast<float>(pixel_pointer[1] / 255.0f);
+					vert_color.b = static_cast<float>(pixel_pointer[2] / 255.0f);
+					vert_color.a = 1.0f;
 				}
+
+				setTriangleValues<glm::vec4>(mesh, i, color_attr, new_triangle_color);
 			}
 
 			nap::utility::ErrorState error;
@@ -142,46 +137,6 @@ namespace nap
 				assert(false);
 			}
 		}
-
-
-
-
-		// Update camera location for materials
-		/*
-		nap::RenderableMeshComponentInstance& renderableMeshComponent = kalvertorenEntity->getComponent<nap::RenderableMeshComponentInstance>();
-		nap::MeshInstance& mesh = renderableMeshComponent.getMeshInstance();
-
-		nap::VertexAttribute<glm::vec4>& color_attr = mesh.GetAttribute<glm::vec4>(nap::MeshInstance::VertexAttributeIDs::GetColorName(0));
-		nap::VertexAttribute<glm::vec3>& uv_attr = mesh.GetAttribute<glm::vec3>(nap::MeshInstance::VertexAttributeIDs::GetUVName(0));
-
-		glm::vec2 renderTargetSize = textureRenderTarget->getColorTexture().getSize();
-		int stride = 4 * renderTargetSize.x;
-
-		for (int index = 0; index < color_attr.getCount(); ++index)
-		{
-		glm::vec4& color = color_attr.mData[index];
-		glm::vec3& uv = uv_attr.mData[index];
-
-		float u = std::min(std::max(uv.x, 0.0f), 1.0f);
-		float v = std::min(std::max(uv.y, 0.0f), 1.0f);
-
-		int x_pos = (int)std::round(u * renderTargetSize.x);
-		int y_pos = (int)std::round(v * renderTargetSize.y);
-
-		uint8_t* pixel = videoPlaybackData.data() + y_pos * stride + x_pos * 4;
-
-		color.x = pixel[0] / 255.0f;
-		color.y = pixel[1] / 255.0f;
-		color.z = pixel[2] / 255.0f;
-		color.w = pixel[3] / 255.0f;
-		}
-
-		nap::utility::ErrorState errorState;
-		if (!mesh.update(errorState))
-		{
-		nap::Logger::fatal("Failed to update texture: %s", errorState.toString());
-		}
-		*/
 	}
 
 

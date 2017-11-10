@@ -230,7 +230,7 @@
 			"mID": "Video1",
 			"Path": "data/kalvertoren/heiligeweg_demo.mp4",
 			"Loop" : true,
-			"Speed" : 5.0
+			"Speed" : 1.0
 		},
 		
 		{
