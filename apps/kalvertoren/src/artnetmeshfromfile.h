@@ -44,6 +44,26 @@ namespace nap
 
 		std::string		mPath;
 
+		/**
+		 * @return the color attribute
+		 */
+		nap::VertexAttribute<glm::vec4>& getColorAttribute()			{ return *mColorAttribute; }
+
+		/**
+		 *	@return the channel attribute
+		 */
+		nap::VertexAttribute<int>& getChannelAttribute()				{ return *mChannelAttribute; }
+		
+		/**
+		 *	@return the universe attribute
+		 */
+		nap::VertexAttribute<int>& getUniverseAttribute()				{ return *mUniverseAttribute; }
+
+		/**
+		 *	@return the subnet attribute
+		 */
+		nap::VertexAttribute<int>& getSubnetAttribute()					{ return *mSubnetAttribute; }
+
 	private:
 		std::unique_ptr<MeshInstance>		mMeshInstance;
 

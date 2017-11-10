@@ -23,6 +23,7 @@
 #include <inputrouter.h>
 #include <nap/entity.h>
 #include <video.h>
+#include <artnetcontroller.h>
 
 namespace nap
 {
@@ -82,6 +83,7 @@ namespace nap
 		nap::ObjectPtr<nap::Material>					frameMaterial = nullptr;
 		nap::ObjectPtr<nap::Material>					vertexMaterial = nullptr;
 		nap::ObjectPtr<nap::ArtnetMeshFromFile>			heiligeWegMesh = nullptr;
+		nap::ObjectPtr<nap::ArtNetController>			artnetController = nullptr;
 
 		// video data
 		opengl::Bitmap									mVideoBitmap;

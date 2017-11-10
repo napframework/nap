@@ -50,6 +50,9 @@ namespace nap
 		videoResource = resourceManager->findObject<nap::Video>("Video1");
 		videoResource->play();
 
+		// Get universe 5 as controller
+		artnetController = resourceManager->findObject<nap::ArtNetController>("Universe5");
+
 		// Set render states
 		nap::RenderState& render_state = renderService->getRenderState();
 		render_state.mEnableMultiSampling = true;
@@ -82,16 +85,16 @@ namespace nap
 		plane_material.getOrCreateUniform<nap::UniformTexture2D>("uTexture").setTexture(videoResource->getUTexture());
 		plane_material.getOrCreateUniform<nap::UniformTexture2D>("vTexture").setTexture(videoResource->getVTexture());
 
+		// Copy pixel data over
+		nap::MeshInstance& mesh = heiligeWegMesh->getMeshInstance();
+
 		if (mVideoBitmap.hasData())
 		{
-			// Copy pixel data over
-			nap::MeshInstance& mesh = heiligeWegMesh->getMeshInstance();
-
 			// UV attribute we use to sample
 			nap::VertexAttribute<glm::vec3>& uv_attr = mesh.GetAttribute<glm::vec3>(nap::MeshInstance::VertexAttributeIDs::GetUVName(0));
 
 			// Color attribute we use to sample
-			nap::VertexAttribute<glm::vec4>& color_attr = mesh.GetAttribute<glm::vec4>(nap::MeshInstance::VertexAttributeIDs::GetColorName(0));
+			nap::VertexAttribute<glm::vec4>& color_attr = heiligeWegMesh->getColorAttribute();
 
 			// Total amount of triangles
 			int tri_count = getTriangleCount(mesh);
@@ -135,6 +138,48 @@ namespace nap
 			if (!mesh.update(error))
 			{
 				assert(false);
+			}
+		}
+
+		// Send the current colors to the led device
+		{
+			int tri_count = getTriangleCount(mesh);
+
+			TriangleDataPointer<glm::vec4> tri_color;
+			TriangleDataPointer<int> tri_channel; 
+			TriangleDataPointer<int> tri_universe;
+
+			// Color attribute we use to sample
+			nap::VertexAttribute<glm::vec4>& color_attr = heiligeWegMesh->getColorAttribute();
+			nap::VertexAttribute<int>& channel_attr = heiligeWegMesh->getChannelAttribute();
+			nap::VertexAttribute<int>& universe_attr = heiligeWegMesh->getUniverseAttribute();
+
+			for (int i = 0; i < tri_count; i++)
+			{
+				// Fetch attributes
+				getTriangleValues(mesh, i, color_attr, tri_color);
+				getTriangleValues(mesh, i, universe_attr, tri_universe);
+				getTriangleValues(mesh, i, channel_attr, tri_channel);
+
+				int universe = *(tri_universe[0]);
+				int channel = *(tri_channel[0]);
+				glm::vec4 color = *(tri_color[0]);
+
+				// Make sure universe is valid
+				if(universe != artnetController->mUniverse)
+					continue;
+
+				// Send dmx values
+				std::vector<uint8> data
+				{
+					static_cast<uint8>(pow(color.r,2.0) * 255.0f),
+					static_cast<uint8>(pow(color.g,2.0) * 255.0f),
+					static_cast<uint8>(pow(color.b,2.0) * 255.0f),
+					0
+				};
+
+				// Send to controller
+				artnetController->send(data, channel);
 			}
 		}
 	}

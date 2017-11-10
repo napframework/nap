@@ -18,6 +18,14 @@
 		},
 
 		{
+			"Type" 		: "nap::ArtNetController",
+			"mID" 		: "Universe5",
+			"Subnet" 	: 0,
+			"Universe" 	: 5,
+			"WaitTime"	: 2.0
+		},
+
+		{
 			"Type" : "nap::PlaneMesh",
 			"mID": "PlaneMesh"
 		},
