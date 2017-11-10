@@ -81,7 +81,14 @@ namespace nap
 		/**
 		 * @return Address where this controllers maps to. Upper 4 bits contain subnet, lower 4 bits contain universe.
 		 */
-		Address getAddress() const { return (mSubnet << 4) | mUniverse; }
+		Address getAddress() const											{ return createAddress(mSubnet, mUniverse); }
+		
+		/**
+		 * Creates a unique artnet address based on a subnet and universe
+		 * @param subnet the artnet subnet address
+		 * @param universe the artnet universe address
+		 */
+		static Address createAddress(uint8_t subnet, uint8_t universe);
 
 	private:
 

@@ -19,9 +19,25 @@
 
 		{
 			"Type" 		: "nap::ArtNetController",
+			"mID" 		: "Universe4",
+			"Subnet" 	: 0,
+			"Universe" 	: 4,
+			"WaitTime"	: 2.0
+		},
+
+		{
+			"Type" 		: "nap::ArtNetController",
 			"mID" 		: "Universe5",
 			"Subnet" 	: 0,
 			"Universe" 	: 5,
+			"WaitTime"	: 2.0
+		},
+
+		{
+			"Type" 		: "nap::ArtNetController",
+			"mID" 		: "Universe8",
+			"Subnet" 	: 0,
+			"Universe" 	: 8,
 			"WaitTime"	: 2.0
 		},
 
@@ -238,7 +254,7 @@
 			"mID": "Video1",
 			"Path": "data/kalvertoren/heiligeweg_demo.mp4",
 			"Loop" : true,
-			"Speed" : 1.0
+			"Speed" : 10.0
 		},
 		
 		{
@@ -309,6 +325,16 @@
 						},
 						"UniformScale": 1.0
 					}
+				},
+				{
+					"Type" : "nap::MeshToArtnetComponent",
+					"Mesh" : "HeiligewegMesh",
+					"Controllers" :
+					[
+						"Universe4",
+						"Universe5",
+						"Universe8"
+					]
 				}
 			]
 		},

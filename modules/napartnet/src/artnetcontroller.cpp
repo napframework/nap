@@ -93,4 +93,10 @@ namespace nap
 		mService->clear(*this);
 	}
 
+
+	nap::ArtNetController::Address ArtNetController::createAddress(uint8_t subnet, uint8_t universe)
+	{
+		return (subnet << 4) | universe;
+	}
+
 }

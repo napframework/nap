@@ -50,8 +50,11 @@ namespace nap
 		mSubnetAttribute->setData(subnet_data);
 
 		// Verify that our triangles all have the same channels as vertex attributes
+		// Also store all the available artnet addresses this mesh hosts
 		int tri_count = getTriangleCount(*mMeshInstance);
 		TriangleData<int> tri_channels = { 0,0,0 };
+		TriangleData<int> tri_subnets = { 0,0,0 };
+		TriangleData<int> tri_universes = { 0,0,0 };
 		for (int i = 0; i < tri_count; i++)
 		{
 			getTriangleValues<int>(*mMeshInstance, i, *mChannelAttribute, tri_channels);
@@ -60,17 +63,19 @@ namespace nap
 				return errorState.check(false, "mesh: %s triangle: %d has inconsistent art net channel attribute", mPath.c_str(), i);
 			}
 
-			getTriangleValues<int>(*mMeshInstance, i, *mUniverseAttribute, tri_channels);
-			if (tri_channels[0] != tri_channels[1] || tri_channels[1] != tri_channels[2])
+			getTriangleValues<int>(*mMeshInstance, i, *mUniverseAttribute, tri_universes);
+			if (tri_universes[0] != tri_universes[1] || tri_universes[1] != tri_universes[2])
 			{
 				return errorState.check(false, "mesh: %s triangle: %d has inconsistent art net universe attribute", mPath.c_str(), i);
 			}
 
-			getTriangleValues<int>(*mMeshInstance, i, *mSubnetAttribute, tri_channels);
-			if (tri_channels[0] != tri_channels[1] || tri_channels[1] != tri_channels[2])
+			getTriangleValues<int>(*mMeshInstance, i, *mSubnetAttribute, tri_subnets);
+			if (tri_subnets[0] != tri_subnets[1] || tri_subnets[1] != tri_subnets[2])
 			{
 				return errorState.check(false, "mesh: %s triangle: %d has inconsistent art net subnet attribute", mPath.c_str(), i);
 			}
+
+			mAddresses.emplace(ArtNetController::createAddress(tri_subnets[0], tri_universes[0]));
 		}
 		
 		// Initialize the mesh

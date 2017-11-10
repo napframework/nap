@@ -140,48 +140,6 @@ namespace nap
 				assert(false);
 			}
 		}
-
-		// Send the current colors to the led device
-		{
-			int tri_count = getTriangleCount(mesh);
-
-			TriangleDataPointer<glm::vec4> tri_color;
-			TriangleDataPointer<int> tri_channel; 
-			TriangleDataPointer<int> tri_universe;
-
-			// Color attribute we use to sample
-			nap::VertexAttribute<glm::vec4>& color_attr = heiligeWegMesh->getColorAttribute();
-			nap::VertexAttribute<int>& channel_attr = heiligeWegMesh->getChannelAttribute();
-			nap::VertexAttribute<int>& universe_attr = heiligeWegMesh->getUniverseAttribute();
-
-			for (int i = 0; i < tri_count; i++)
-			{
-				// Fetch attributes
-				getTriangleValues(mesh, i, color_attr, tri_color);
-				getTriangleValues(mesh, i, universe_attr, tri_universe);
-				getTriangleValues(mesh, i, channel_attr, tri_channel);
-
-				int universe = *(tri_universe[0]);
-				int channel = *(tri_channel[0]);
-				glm::vec4 color = *(tri_color[0]);
-
-				// Make sure universe is valid
-				if(universe != artnetController->mUniverse)
-					continue;
-
-				// Send dmx values
-				std::vector<uint8> data
-				{
-					static_cast<uint8>(pow(color.r,2.0) * 255.0f),
-					static_cast<uint8>(pow(color.g,2.0) * 255.0f),
-					static_cast<uint8>(pow(color.b,2.0) * 255.0f),
-					0
-				};
-
-				// Send to controller
-				artnetController->send(data, channel);
-			}
-		}
 	}
 
 

@@ -3,6 +3,7 @@
 // External Includes
 #include <rtti/rttiobject.h>
 #include <mesh.h>
+#include <artnetcontroller.h>
 
 namespace nap
 {
@@ -47,22 +48,32 @@ namespace nap
 		/**
 		 * @return the color attribute
 		 */
-		nap::VertexAttribute<glm::vec4>& getColorAttribute()			{ return *mColorAttribute; }
+		nap::VertexAttribute<glm::vec4>& getColorAttribute()						{ return *mColorAttribute; }
 
 		/**
 		 *	@return the channel attribute
 		 */
-		nap::VertexAttribute<int>& getChannelAttribute()				{ return *mChannelAttribute; }
+		nap::VertexAttribute<int>& getChannelAttribute()							{ return *mChannelAttribute; }
 		
 		/**
 		 *	@return the universe attribute
 		 */
-		nap::VertexAttribute<int>& getUniverseAttribute()				{ return *mUniverseAttribute; }
+		nap::VertexAttribute<int>& getUniverseAttribute()							{ return *mUniverseAttribute; }
 
 		/**
 		 *	@return the subnet attribute
 		 */
-		nap::VertexAttribute<int>& getSubnetAttribute()					{ return *mSubnetAttribute; }
+		nap::VertexAttribute<int>& getSubnetAttribute()								{ return *mSubnetAttribute; }
+
+		/**
+		 *	@return if an artnet address is associated with this mesh
+		 */
+		bool hasAddress(ArtNetController::Address address) const					{ return mAddresses.find(address) != mAddresses.end(); }
+
+		/**
+		 * @return all the artnet addresses associated with this mesh
+		 */
+		const std::unordered_set<ArtNetController::Address>& getAddresses() const	{ return mAddresses; }
 
 	private:
 		std::unique_ptr<MeshInstance>		mMeshInstance;
@@ -71,5 +82,7 @@ namespace nap
 		nap::VertexAttribute<int>*			mChannelAttribute = nullptr;
 		nap::VertexAttribute<int>*			mUniverseAttribute = nullptr;
 		nap::VertexAttribute<int>*			mSubnetAttribute = nullptr;
+
+		std::unordered_set<ArtNetController::Address> mAddresses;				///< Contains all the artnet addresses associated with this mesh;
 	};
 }
