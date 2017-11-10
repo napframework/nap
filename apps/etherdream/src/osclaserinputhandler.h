@@ -34,11 +34,8 @@ namespace nap
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(OSCLaserInputHandler, OSCLaserInputHandlerInstance)
 	public:
-		// property: Link to selection component one
-		ComponentPtr<LineSelectionComponent> mSelectionComponentOne = nullptr;
-
-		// property: Link to selection component two
-		ComponentPtr<LineSelectionComponent> mSelectionComponentTwo = nullptr;
+		// property: Link to laser output component
+		ComponentPtr<LaserOutputComponent> mLaserOutputComponent;
 
 		// property: If the pixel color should be printed
 		bool mPrintColor = false;
@@ -63,12 +60,7 @@ namespace nap
 		/**
 		 *	Retrieve necessary components for osc input translation
 		 */
-		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
-
-		/**
-		 *	Sets the entity to be used as the laser output
-		 */
-		void setLaserOutput(nap::EntityInstance& entity);
+		virtual bool init(utility::ErrorState& errorState) override;
 
 	private:
 		void handleMessageReceived(const nap::OSCEvent& oscEvent);
@@ -109,7 +101,7 @@ namespace nap
 
 		NSLOT(mMessageReceivedSlot, const nap::OSCEvent&, handleMessageReceived)
 
-		LaserOutputComponentInstance* mLaserOutput = nullptr;				// Laser output component
+		ComponentInstancePtr<LaserOutputComponent> mLaserOutput = { this, &OSCLaserInputHandler::mLaserOutputComponent };				// Laser output component
 		LineColorComponentInstance* mColorComponent = nullptr;				// Laser line color component
 		LineModulationComponentInstance* mModulationComponent = nullptr;	// Laser modulation component
 		LineAutoSwitchComponentInstance* mSwitcher = nullptr;				// Switches lines

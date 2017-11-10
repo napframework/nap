@@ -17,12 +17,8 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	bool LineBlendComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool LineBlendComponentInstance::init(utility::ErrorState& errorState)
 	{
-		// Set the two selector objects
-		mSelectorOne = getComponent<LineBlendComponent>()->mSelectionComponentOne.get();
-		mSelectorTwo = getComponent<LineBlendComponent>()->mSelectionComponentTwo.get();
-
 		mSelectorOne->mIndexChanged.connect(mSelectionChangedSlot);
 		mSelectorTwo->mIndexChanged.connect(mSelectionChangedSlot);
 
@@ -90,13 +86,13 @@ namespace nap
 	void LineBlendComponentInstance::cacheVertexAttributes(const LineSelectionComponentInstance& selector)
 	{
 		// Update distance sample map
-		std::map<float, int>& distances = &selector == mSelectorOne ? mDistancesLineOne : mDistancesLineTwo;
+		std::map<float, int>& distances = mSelectorOne == &selector ? mDistancesLineOne : mDistancesLineTwo;
 		selector.getLine().getDistances(distances);
 
 		// Get vectors to cache
-		std::vector<glm::vec3>& positions = &selector == mSelectorOne ? mPositionsLineOne : mPoistionsLineTwo;
-		std::vector<glm::vec3>& normals = &selector == mSelectorOne ? mNormalsLineOne : mNormalsLineTwo;
-		std::vector<glm::vec3>& uvs = &selector == mSelectorOne ? mUvsLineOne : mUVsLineTwo;
+		std::vector<glm::vec3>& positions = mSelectorOne == &selector ? mPositionsLineOne : mPoistionsLineTwo;
+		std::vector<glm::vec3>& normals = mSelectorOne == &selector ? mNormalsLineOne : mNormalsLineTwo;
+		std::vector<glm::vec3>& uvs = mSelectorOne == &selector ? mUvsLineOne : mUVsLineTwo;
 
 		const nap::PolyLine& current_line = selector.getLine();
 

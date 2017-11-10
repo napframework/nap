@@ -73,9 +73,33 @@ namespace nap
 		 * @param entityCreationParams Parameters required to create new entity instances during init
 		 * @param errorState The error object
 		 */
-        virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
+        virtual bool init(utility::ErrorState& errorState);
 
 	private:
+		template<class TargetComponentType> friend class ComponentInstancePtr;
+		friend class ResourceManager;
+		
+		/**
+		 * Called by ComponentInstancePtr on construction. Adds the ComponentPtrInstance to the internal link map. The link map is
+		 * used later by the ResourceManager for resolve pointers to component instances.
+		 * @param targetResource The component resource that is being pointed to.
+		 * @param instancePath The entity path in the hierarchy that is being pointed to.
+		 * @param targetInstancePtr The address of the pointer that needs to be filled in during resolve.
+		 */
+		void addToLinkMap(Component* targetResource, const std::string& instancePath, ComponentInstance** targetInstancePtr);
+
+	private:
+		/**
+		 * Holds information needed to resolve component instance pointers.
+		 */
+		struct TargetComponentLink
+		{
+			ComponentInstance**		mTargetPtr;		///< The address of the pointer that needs to be filled in during resolve.
+			std::string				mInstancePath;	///< The entity path in the hierarchy that is being pointed to.
+		};
+
+		using LinkMap = std::unordered_map<Component*, std::vector<TargetComponentLink>>;
+		LinkMap			mLinkMap;			// Map containing component instance link information that is used to resolve pointers
 		EntityInstance* mEntityInstance;	// The entity this component belongs to
 		Component*		mResource;			// The resource this instance was created from
 	};

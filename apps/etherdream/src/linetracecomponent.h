@@ -36,9 +36,6 @@ namespace nap
 		// property: Link to the tracer mesh that is computed by the instance of this component
 		ObjectPtr<nap::PolyLine> mTargetLine;
 
-		// property: Link to the trace visualizer we want to spawn on creation
-		ObjectPtr<nap::Entity> mVisualizeEntity;
-
 		// property: Link to the line blend component that holds the line we want to trace
 		ComponentPtr<nap::LineBlendComponent> mBlendComponent = nullptr;
 	};
@@ -59,7 +56,7 @@ namespace nap
 		/**
 		 *	Initializes this component
 		 */
-		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		 *	Updates the tracer's vertices along the line
@@ -80,7 +77,7 @@ namespace nap
 		void setPolyLine(nap::PolyLine& line);
 
 	private:
-		nap::LineBlendComponentInstance* mBlendComponent = nullptr;		// Line that acts as a source for the tracer
+		ComponentInstancePtr<LineBlendComponent>	mBlendComponent = { this, &LineTraceComponent::mBlendComponent };		// Component that holds the line we want to modulate
 		nap::PolyLine*  mTarget = nullptr;								// Line that is the output of the trace computation
 		float mCurrentTime = 0.0f;										// Current time
 		nap::TransformComponentInstance* mStartXform = nullptr;			// Transform associated with beginning of trace component

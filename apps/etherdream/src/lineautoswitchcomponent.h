@@ -23,13 +23,13 @@ namespace nap
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 		
 		// Property: first selection component
-		ComponentPtr<LineSelectionComponent> mSelectionComponentOne = nullptr;
+		ComponentPtr<LineSelectionComponent> mSelectionComponentOne;
 
 		// Property: second selection component
-		ComponentPtr<LineSelectionComponent> mSelectionComponentTwo = nullptr;
+		ComponentPtr<LineSelectionComponent> mSelectionComponentTwo;
 
 		// Property: blend component
-		ComponentPtr<LineBlendComponent> mBlendComponent = nullptr;
+		ComponentPtr<LineBlendComponent> mBlendComponent;
 
 		// Property: if the line switching is random
 		bool mRandom = false;
@@ -51,7 +51,7 @@ namespace nap
 		/**
 		 *	Initializes the switcher
 		 */
-		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		 *	Checks if the blend threshold is close to 0 or 1 and switches lines accordingly
@@ -79,9 +79,9 @@ namespace nap
 			Stationary	= 2
 		};
 
-		LineSelectionComponentInstance* mSelectorOne = nullptr;		// First line selection component
-		LineSelectionComponentInstance* mSelectorTwo = nullptr;		// Second line selection component
-		LineBlendComponentInstance* mLineBlender = nullptr;			// Line Blender
+		ComponentInstancePtr<LineSelectionComponent> mSelectorOne	= { this, &LineAutoSwitchComponent::mSelectionComponentOne };		// First line selection component
+		ComponentInstancePtr<LineSelectionComponent> mSelectorTwo	= { this, &LineAutoSwitchComponent::mSelectionComponentTwo };		// Second line selection component
+		ComponentInstancePtr<LineBlendComponent>	mLineBlender	= { this, &LineAutoSwitchComponent::mBlendComponent };				// Line Blender
 		bool mRandom = false;										// If this component randomly picks another line
 		int mNextLine = 0;											// The next line to select (if random is turned off)
 

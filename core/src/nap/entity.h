@@ -11,24 +11,33 @@ namespace nap
 	class Component;
 	class Entity;
 	class EntityInstance;	
+	class ResourceManager;
 
 	using EntityList = std::vector<EntityInstance*>;
+
+	class RTTIObjectGraphItem;
+	template<typename ITEM> class ObjectGraph;
+	using RTTIObjectGraph = ObjectGraph<RTTIObjectGraphItem>;
 
 	/**
 	 * Structure used to hold data necessary to create new instances during init
 	 */
 	struct EntityCreationParameters
 	{
-		using EntityByIDMap			= std::unordered_map<std::string, std::unique_ptr<EntityInstance>>;
+		using EntityInstanceByIDMap = std::unordered_map<std::string, std::unique_ptr<EntityInstance>>;
 		using InstanceByIDMap		= std::unordered_map<std::string, rtti::RTTIObject*>;
 		using ComponentToEntityMap	= std::unordered_map<Component*, const Entity*>;
+		using ComponentInstanceMap = std::unordered_map<Component*, std::vector<ComponentInstance*>>;
+
+		EntityCreationParameters(const RTTIObjectGraph& objectGraph) : mObjectGraph(&objectGraph) {}
 
 		virtual ~EntityCreationParameters() = default;
-		EntityCreationParameters() = default;
 
-		EntityByIDMap			mEntitiesByID;
-		InstanceByIDMap			mAllInstancesByID;
-		ComponentToEntityMap	mComponentToEntity;
+		const RTTIObjectGraph*		mObjectGraph = nullptr;
+		EntityInstanceByIDMap		mEntityInstancesByID;
+		InstanceByIDMap				mAllInstancesByID;
+		ComponentInstanceMap		mComponentInstanceMap;
+		ComponentToEntityMap		mComponentToEntity;
 	};
 
 
@@ -61,6 +70,8 @@ namespace nap
 		RTTI_ENABLE(rtti::RTTIObject)
 
 	public:
+        using rtti::RTTIObject::init;
+        
 		using ComponentList = std::vector<std::unique_ptr<ComponentInstance>>;
 		using ChildList = std::vector<EntityInstance*>;
 		using ComponentIterator = utility::UniquePtrVectorWrapper<ComponentList, ComponentInstance*>;
@@ -73,6 +84,14 @@ namespace nap
 		 * when there is no resource associated with the instance, for example: the root entity
 		 */
 		EntityInstance(Core& core, const Entity* entity);
+
+		/**
+		* Initialize this entity
+		*
+		* @param entityCreationParams Parameters required to create new entity instances during init
+		* @param errorState The error object
+		*/
+		bool init(ResourceManager& resourceManager, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
 
 		/**
 		 * Update this entity hierarchy

@@ -35,7 +35,7 @@ namespace nap
 		DECLARE_COMPONENT(LineNoiseComponent, LineNoiseComponentInstance)
 	public:
 		// property: link to the component that holds the mesh that we want to color
-		ComponentPtr<nap::LineBlendComponent> mBlendComponent;
+		ComponentPtr<LineBlendComponent> mBlendComponent;
 
 		// property: all modulation settings
 		NoiseProperties mProperties;
@@ -56,7 +56,7 @@ namespace nap
 		/**
 		* Initializes this component
 		*/
-		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		* Updates the line color
@@ -67,7 +67,7 @@ namespace nap
 		NoiseProperties mProperties;
 
 	private:
-		LineBlendComponentInstance* mBlendComponent = nullptr;		// Component that holds the line we want to modulate
+		ComponentInstancePtr<LineBlendComponent>	mBlendComponent = { this, &LineNoiseComponent::mBlendComponent };		// Component that holds the line we want to modulate
 		float mCurrentTime = 0.0f;									// Current update time associated with this component
 
 		// Smooths frequency over time

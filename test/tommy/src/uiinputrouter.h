@@ -1,12 +1,14 @@
 #pragma once
 
 #include "inputrouter.h"
-#include "nap/component.h"
-#include "nap/entityptr.h"
+#include "orthocameracomponent.h"
+#include "cameracomponent.h"
+#include <nap/component.h>
+#include <nap/entityptr.h>
+#include <nap/componentptr.h>
 
 namespace nap
 {
-	class CameraComponentInstance;
 	class UIInputRouterComponentInstance;
 
 	/**
@@ -43,9 +45,8 @@ namespace nap
 		DECLARE_COMPONENT(UIInputRouterComponent, UIInputRouterComponentInstance)
 
 	public:
-		EntityPtr mCameraEntity;		// Pointer to camera entity resource and instance
+		ComponentPtr<OrthoCameraComponent> mCameraComponent;		// Pointer to camera entity resource
 	};
-
 
 	/**
 	 * Wrapper for a UIInputRouter. Retrieves the camera entity and it's camera component to initialize
@@ -61,13 +62,14 @@ namespace nap
 		 * @param resource UIInputRouterComponentResource
 		 * @return true on success, other false.
 		 */
-		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		UIInputRouterComponentInstance(EntityInstance& entity, Component& resource) :
 			ComponentInstance(entity, resource)
 		{
 		}
-
+		
+		ComponentInstancePtr<OrthoCameraComponent> mCameraComponent { this, &UIInputRouterComponent::mCameraComponent };
 		UIInputRouter mInputRouter;		// UI input router
 	};
 }
