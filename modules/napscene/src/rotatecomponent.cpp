@@ -26,7 +26,7 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	bool RotateComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool RotateComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// Make sure we have a transform
 		mTransform = getEntityInstance()->findComponent<TransformComponentInstance>(ETypeCheck::IS_DERIVED_FROM);

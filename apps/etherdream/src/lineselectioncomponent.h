@@ -41,7 +41,7 @@ namespace nap
 		{}
 
 		// Init selection component
-		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		// Property: list of selectable poly-lines
 		std::vector<ObjectPtr<nap::PolyLine>> mLines;

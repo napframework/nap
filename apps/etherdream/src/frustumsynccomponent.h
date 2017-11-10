@@ -27,11 +27,8 @@ namespace nap
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		// Property: The entity this component creates and keeps in check based on the bounds
-		nap::ObjectPtr<nap::Entity> mCanvasEntity = nullptr;
-
 		// Property: The output component this component uses to resolve the canvas size
-		nap::ComponentPtr<nap::LaserOutputComponent> mLaserOutputComponent = nullptr;
+		nap::ComponentPtr<LaserOutputComponent> mLaserOutputComponent;
 	};
 
 
@@ -46,14 +43,14 @@ namespace nap
 		FrustumSyncComponentInstance(EntityInstance& entity, Component& resource) : ComponentInstance(entity, resource)	{ }
 
 		// Init
-		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		// Update the size of the transform based on the laser frustrum
 		virtual void update(double deltaTime) override;
 
 	private:
 		// Object pointer to laser
-		LaserOutputComponentInstance* mOutput = nullptr;
+		ComponentInstancePtr<LaserOutputComponent> mOutput = { this, &FrustumSyncComponent::mLaserOutputComponent };
 
 		// Object pointer to transform of visualizer
 		TransformComponentInstance* mCanvasTransform;

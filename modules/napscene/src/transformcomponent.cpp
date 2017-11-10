@@ -39,7 +39,7 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	bool TransformComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool TransformComponentInstance::init(utility::ErrorState& errorState)
 	{
 		TransformComponent* xform_resource = getComponent<TransformComponent>();
 		mTranslate = xform_resource->mProperties.mTranslate;

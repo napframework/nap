@@ -32,7 +32,7 @@ namespace nap
 	}
 
 
-	bool OrthoCameraComponentInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool OrthoCameraComponentInstance::init(utility::ErrorState& errorState)
 	{
 		mProperties = getComponent<OrthoCameraComponent>()->mProperties;
 		mTransformComponent =	getEntityInstance()->findComponent<TransformComponentInstance>();

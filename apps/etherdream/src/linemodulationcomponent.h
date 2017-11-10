@@ -61,7 +61,7 @@ namespace nap
 		/**
 		* Initializes this component
 		*/
-		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		* Updates the line color
@@ -72,7 +72,7 @@ namespace nap
 		ModulationProperties mProperties;
 
 	private:
-		LineBlendComponentInstance* mBlendComponent = nullptr;	// Component that blends the lines
+		ComponentInstancePtr<LineBlendComponent> mBlendComponent = { this, &LineModulationComponent::mBlendComponent }; // Component that blends the lines
 		float mCurrentTime = 0.0f;								// Current time
 		
 		// Smooths frequency over time

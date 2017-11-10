@@ -33,12 +33,6 @@ namespace nap
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		// property: link to the spline entity to spawn
-		nap::ObjectPtr<nap::Entity> mSplineEntity = nullptr;
-
-		// property: link to the output entity to spawn
-		nap::ObjectPtr<nap::Entity> mLaserOutputEntity = nullptr;
-
 		// property: all the osc messages associated with the laser entity
 		std::vector<std::string> mOSCAddresses;
 	};
@@ -60,7 +54,7 @@ namespace nap
 		 * @param errorState should hold the error message when initialization fails
 		 * @return if the makeprototypecomponentInstance is initialized successfully
 		 */
-		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		 * Called by the controller, sets up the laser resources based on the compound settings

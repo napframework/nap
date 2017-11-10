@@ -7,8 +7,7 @@
 #include <nap/logger.h>
 
 RTTI_BEGIN_CLASS(nap::OSCLaserInputHandler)
-	RTTI_PROPERTY("SelectionComponentOne", &nap::OSCLaserInputHandler::mSelectionComponentOne,  nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("SelectionComponentTwo", &nap::OSCLaserInputHandler::mSelectionComponentTwo,  nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("LaserOutputComponent",  &nap::OSCLaserInputHandler::mLaserOutputComponent,  nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("PrintColor",			   &nap::OSCLaserInputHandler::mPrintColor,				nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -27,7 +26,7 @@ namespace nap
 	}
 
 
-	bool OSCLaserInputHandlerInstance::init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool OSCLaserInputHandlerInstance::init(utility::ErrorState& errorState)
 	{
 		mRotateComponent = getEntityInstance()->findComponent<nap::RotateComponentInstance>();
 		if (!errorState.check(mRotateComponent != nullptr, "missing rotate component"))
@@ -101,12 +100,6 @@ namespace nap
 		return true;
 	}
 
-
-	void OSCLaserInputHandlerInstance::setLaserOutput(nap::EntityInstance& entity)
-	{
-		mLaserOutput = entity.findComponent<nap::LaserOutputComponentInstance>();
-		assert(mLaserOutput != nullptr);
-	}
 
 	void OSCLaserInputHandlerInstance::handleMessageReceived(const nap::OSCEvent& oscEvent)
 	{

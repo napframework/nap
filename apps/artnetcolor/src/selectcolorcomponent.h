@@ -57,7 +57,7 @@ namespace nap
 		 * @param errorState should hold the error message when initialization fails
 		 * @return if the selectcolorcomponentInstance is initialized successfully
 		 */
-		virtual bool init(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		 *	Send the color values to the dmx output
@@ -65,12 +65,13 @@ namespace nap
 		virtual void update(double deltaTime) override;
 
 	private:
-		int					mStartChannel = 0;
-		ArtNetController*	mArtnetController = nullptr;
-		MaterialInstance*	mMaterial = nullptr;
-		nap::uint8			mRed = 0;
-		nap::uint8			mGreen = 0;
-		nap::uint8			mBlue = 0;
-		nap::uint8			mWhite = 0;
+		ComponentInstancePtr<RenderableMeshComponent>	mRenderableMeshComponent = { this, &SelectColorComponent::mMesh };
+		int												mStartChannel = 0;
+		ArtNetController*								mArtnetController = nullptr;
+		MaterialInstance*								mMaterial = nullptr;
+		nap::uint8										mRed = 0;
+		nap::uint8										mGreen = 0;
+		nap::uint8										mBlue = 0;
+		nap::uint8										mWhite = 0;
 	};
 }
