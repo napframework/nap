@@ -6,6 +6,8 @@
 #include <basetexture2d.h>
 #include <texture2d.h>
 #include <meshutils.h>
+#include <imgui/imgui.h>
+#include <imguiservice.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::KalvertorenApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -13,7 +15,6 @@ RTTI_END_CLASS
 
 namespace nap
 {
-
 	bool KalvertorenApp::init(utility::ErrorState& error)
 	{
 		// Create services
@@ -140,6 +141,11 @@ namespace nap
 				assert(false);
 			}
 		}
+
+		// Gui
+		ImGui::Begin("Video Settings");
+		ImGui::SliderFloat("Speed", &(videoResource->mSpeed), 0.0f, 20.0f);
+		ImGui::End();
 	}
 
 
@@ -180,6 +186,9 @@ namespace nap
 			opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(renderWindow->getWindow()->getBackbuffer());
 			renderService->clearRenderTarget(backbuffer);
 			renderService->renderObjects(backbuffer, sceneCamera, components_to_render);
+
+			// Render our gui
+			getCore().getService<IMGuiService>()->render();
 
 			renderWindow->swap();
 		}
