@@ -96,6 +96,26 @@ namespace nap
 	template<typename T>
 	void getTriangleValues(const nap::MeshInstance& mesh, int number, VertexAttribute<T>& vertexAttribute, TriangleDataPointer<T>& outTriangle);
 
+	/**
+	 * Sets the vertex attribute values for a specific triangle in a mesh
+	 * @param mesh the mesh that holds @vertexData. It's important that @vertexData is from @mesh
+	 * @param number the triangle to apply the new values
+	 * @param vertexData the mesh attribute data that receives @triangleData
+	 * @param triangleValues the new vertex values for the triangle.
+	 */
+	template<typename T>
+	void setTriangleValues(const nap::MeshInstance& mesh, int number, std::vector<T>& vertexData, const TriangleData<T>& triangleValues);
+
+	/**
+	* Sets the vertex attribute values for a specific triangle in a mesh
+	* @param mesh the mesh that holds @vertexData. It's important that @vertexData is from @mesh
+	* @param number the triangle to apply the new values
+	* @param vertexData the mesh attribute that receives @triangleData
+	* @param triangleValues the new vertex values for the triangle.
+	*/
+	template<typename T>
+	void setTriangleValues(const nap::MeshInstance& mesh, int number, VertexAttribute<T>& vertexData, const TriangleData<T>& triangleValues);
+
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -216,6 +236,24 @@ namespace nap
 	void getTriangleValues(const MeshInstance& mesh, int number, VertexAttribute<T>& vertexAttribute, TriangleDataPointer<T>& outTriangle)
 	{
 		return getTriangleValues<T>(mesh, number, vertexAttribute.getData(), outTriangle);
+	}
+
+
+	template<typename T>
+	void setTriangleValues(const MeshInstance& mesh, int number, std::vector<T>& vertexData, const TriangleData<T>& triangleData)
+	{
+		TriangleDataPointer<T> pointer;
+		getTriangleValues(mesh, number, vertexData, pointer);
+		*(pointer[0]) = triangleData[0];
+		*(pointer[1]) = triangleData[1];
+		*(pointer[2]) = triangleData[2];
+	}
+
+
+	template<typename T>
+	void setTriangleValues(const MeshInstance& mesh, int number, VertexAttribute<T>& vertexData, const TriangleData<T>& triangleData)
+	{
+		setTriangleValues<T>(mesh, number, vertexData.getData(), triangleData);
 	}
 
 }
