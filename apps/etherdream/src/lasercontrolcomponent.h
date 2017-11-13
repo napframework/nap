@@ -1,8 +1,5 @@
 #pragma once
 
-// Local Includes
-#include "lasercompound.h"
-
 // External Includes
 #include <nap/component.h>
 #include <unordered_map>
@@ -10,10 +7,25 @@
 #include <perspcameracomponent.h>
 #include <renderservice.h>
 #include <renderwindow.h>
+#include <rendertarget.h>
 
 namespace nap
 {
 	class LaserControlInstanceComponent;
+
+	/**
+	 * Holds laser specific configuration
+	 */
+	class LaserConfiguration
+	{
+	public:
+		// property: Render Target
+		nap::ObjectPtr<RenderTarget> mTarget = nullptr;
+
+		// property: Laser id
+		int mLaserID = 0;
+	};
+
 
 	/**
 	 *	lasercontroller
@@ -30,8 +42,8 @@ namespace nap
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		// property: holds all the compounds, creates a laser instance for every compound
-		std::vector<ObjectPtr<nap::LaserCompound>> mLaserCompounds;
+		// property: holds all the laser configurations, creates a laser instance for every compound
+		std::vector<LaserConfiguration> mLaserConfigurations;
 	};
 
 
@@ -70,13 +82,13 @@ namespace nap
 
 	private:
 		// All the laser compounds associated with this controller
-		std::vector<ObjectPtr<nap::LaserCompound>> mLaserCompounds;
+		std::vector<LaserConfiguration> mLaserConfigurations;
 
 		// All the instantiated laser prototypes
 		std::unordered_map<int, nap::EntityInstance*> mLaserEntityMap;
 
 		// All the laser compounds
-		std::unordered_map<int, nap::LaserCompound*> mLaserCompoundMap;
+		std::unordered_map<int, nap::LaserConfiguration> mLaserConfigurationMap;
 
 		// All the laser frames
 		std::unordered_map<int, nap::EntityInstance*> mLaserFrameMap;
