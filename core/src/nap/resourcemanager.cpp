@@ -411,7 +411,9 @@ namespace nap
 			assert(current_entity != nullptr);
 			for (ComponentInstance* component : current_entity->getComponents())
 			{
-				if (component->getComponent()->mID == path_components.back())
+				// If this ComponentInstance's resource is a clone (for instance properties), we need to check the ID of the original object, 
+				// since the clone will have a generated ID, which will never match any path.
+				if (component->getComponent()->getOriginalID() == path_components.back())
 				{
 					target_component_instance = component;
 					break;
@@ -620,13 +622,14 @@ namespace nap
 				continue;
 
 			ClonedComponentResourceList& clonedComponents = cloned_components_by_entity[entity];
-			for (const InstanceProperty& instance_property : entity->mInstanceProperties)
+			for (const ComponentInstanceProperties& instance_property : entity->mInstanceProperties)
 			{
 				// Clone target component. The cloned resources are not going into the regular resource manager resource lists, 
 				// but into a special map of cloned resources that is thrown away whenever something changes
 				// Note: We have to generate a unique ID for it because the ObjectGraph expects IDs to be unique
 				std::unique_ptr<Component> cloned_target_component = rtti::cloneObject<Component>(*instance_property.mTargetComponent, getFactory());
 				cloned_target_component->mID = generateUniqueID(cloned_target_component->mID + "_instanceproperties", cloned_component_ids);
+				cloned_target_component->mOriginalComponent = instance_property.mTargetComponent.get();
 
 				// Update the objects by type and cloned resource maps, used by RTTIGraphObjectItem and required to rebuild the ObjectGraph later
 				objectsByType[cloned_target_component->get_type()].push_back(cloned_target_component.get());
@@ -635,6 +638,11 @@ namespace nap
 				ComponentResourcePath resolved_component_path;
 				if (!errorState.check(ComponentResourcePath::fromString(*entity, instance_property.mTargetComponent.getInstancePath(), resolved_component_path, errorState), "Failed to apply instance property for entity %s: invalid component path %s", entity->mID.c_str(), instance_property.mTargetComponent.getInstancePath().c_str()))
 					return false;				
+
+				// Apply instance properties to the cloned object
+				for (const TargetAttribute& attribute : instance_property.mTargetAttributes)
+					if (!errorState.check(attribute.apply(*cloned_target_component, errorState), "Failed to apply instance properties for entity %s", entity->mID.c_str()))
+						return false;
 
 				clonedComponents.emplace_back(ClonedComponentResource(resolved_component_path, std::move(cloned_target_component)));				
 			}

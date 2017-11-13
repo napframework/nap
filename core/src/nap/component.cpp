@@ -24,4 +24,12 @@ namespace nap
 		mLinkMap[targetResource].push_back({ targetInstancePtr, instancePath } );
 	}
 
+
+	const std::string& Component::getOriginalID() const
+	{
+		if (mOriginalComponent != nullptr)
+			return mOriginalComponent->mID;
+
+		return mID;
+	}
 }
