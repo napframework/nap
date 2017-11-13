@@ -422,6 +422,9 @@ namespace nap
 
 			// Create new instance of the object
 			RTTIObject* object = readState.mFactory.create(type_info);
+			if (!errorState.check(object != nullptr, "Failed to instantiate object of type %s.", typeName))
+				return nullptr;
+
 			readState.mResult.mReadObjects.push_back(std::unique_ptr<RTTIObject>(object));
 
 			// Recursively read properties, nested compounds, etc

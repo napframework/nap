@@ -157,6 +157,7 @@ namespace nap
 			const RootEntityInstanceMap& rootEntityInstances, const EntityCreationParameters::ComponentInstanceMap& componentInstances, utility::ErrorState& errorState);
 
 		bool buildObjectGraph(const ObjectByIDMap& objectsToUpdate, RTTIObjectGraph& objectGraph, ObjectsByTypeMap& objectsByType, ClonedResourceMap& clonedResourceMap, utility::ErrorState& errorState);
+		static void ResourceManager::sRecursiveAddToObjectsByType(rtti::RTTIObject& object, const rtti::TypeInfo& type, ObjectsByTypeMap& objectsByType);
 		EFileModified isFileModified(const std::string& modifiedFile);
 
 		/** 
