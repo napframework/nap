@@ -7,9 +7,14 @@
 #include <nap/resourcemanager.h>
 #include <depthsorter.h>
 
+RTTI_BEGIN_CLASS(nap::LaserConfiguration)
+	RTTI_PROPERTY("Target",		&nap::LaserConfiguration::mTarget,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("LaserID",	&nap::LaserConfiguration::mLaserID,	nap::rtti::EPropertyMetaData::Required)
+RTTI_END_CLASS
+
 // nap::lasercontroller run time class definition 
 RTTI_BEGIN_CLASS(nap::LaserControlComponent)
-	RTTI_PROPERTY("LaserCompounds",		&nap::LaserControlComponent::mLaserCompounds,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Lasers",		&nap::LaserControlComponent::mLaserConfigurations,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::lasercontrollerInstance run time class definition 
@@ -32,30 +37,30 @@ namespace nap
 	{
 		// Get all compounds to use and create laser prototypes from
 		nap::LaserControlComponent* resource = getComponent<LaserControlComponent>();
-		mLaserCompounds = resource->mLaserCompounds;
+		mLaserConfigurations = resource->mLaserConfigurations;
 
 		// Get resource manager that is used to spawn the new entity
 		ResourceManager& resource_manager = *getEntityInstance()->getCore()->getResourceManager();
 
-		if (!errorState.check(mLaserCompounds.size() * 2 == getEntityInstance()->getEntity()->mChildren.size(), "Number of laser compounds does not match the laser entity children"))
+		if (!errorState.check(mLaserConfigurations.size() * 2 == getEntityInstance()->getEntity()->mChildren.size(), "Number of laser compounds does not match the laser entity children"))
 			return false;
 
 		// Get total number of lasers to create
-		int laser_count = static_cast<int>(mLaserCompounds.size());
+		int laser_count = static_cast<int>(mLaserConfigurations.size());
 		int current_count(0);
 		int cols(2);
 		int rows = laser_count / cols;
 		
-		for (int index = 0; index < mLaserCompounds.size(); ++index)
+		for (int index = 0; index < mLaserConfigurations.size(); ++index)
 		{
-			auto& compound = mLaserCompounds[index];
+			auto& configuration = mLaserConfigurations[index];
 			EntityInstance* laser_entity = getEntityInstance()->getChildren()[index * 2];
 			EntityInstance* frame_entity = getEntityInstance()->getChildren()[index * 2 + 1];
 
 			// Store for future use
-			mLaserEntityMap.emplace(std::make_pair(compound->mLaserID, laser_entity));
-			mLaserCompoundMap.emplace(std::make_pair(compound->mLaserID, compound.get()));
-			mLaserFrameMap.emplace(std::make_pair(compound->mLaserID, frame_entity));
+			mLaserEntityMap.emplace(std::make_pair(configuration.mLaserID, laser_entity));
+			mLaserConfigurationMap.emplace(std::make_pair(configuration.mLaserID, configuration));
+			mLaserFrameMap.emplace(std::make_pair(configuration.mLaserID, frame_entity));
 
 			// Get transform
 			TransformComponentInstance* frame_xform = frame_entity->findComponent<TransformComponentInstance>();
@@ -109,13 +114,13 @@ namespace nap
 			entity->getComponentsOfTypeRecursive<RenderableComponentInstance>(components_to_render);
 
 			// Get compound and clear target we want to render to
-			LaserCompound* matching_compound = mLaserCompoundMap[it.first];
+			const LaserConfiguration& configuration = mLaserConfigurationMap[it.first];
 
 			// Clear target
-			renderer.clearRenderTarget(matching_compound->mTarget->getTarget());
+			renderer.clearRenderTarget(configuration.mTarget->getTarget());
 			
 			// Render to target
-			renderer.renderObjects(matching_compound->mTarget->getTarget(), camera, components_to_render);
+			renderer.renderObjects(configuration.mTarget->getTarget(), camera, components_to_render);
 		}
 	}
 
@@ -132,7 +137,7 @@ namespace nap
 			RenderableMeshComponentInstance& renderable_comp = entity->getComponent<RenderableMeshComponentInstance>();
 
 			// Get texture from previously rendered backbuffer
-			nap::BaseTexture2D& tex = mLaserCompoundMap[it.first]->mTarget->getColorTexture();
+			nap::BaseTexture2D& tex = mLaserConfigurationMap[it.first].mTarget->getColorTexture();
 
 			// Set it to frame uniform
 			nap::UniformTexture2D& frame_tex = renderable_comp.getMaterialInstance().getOrCreateUniform<nap::UniformTexture2D>("mFrame");

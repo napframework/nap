@@ -612,53 +612,6 @@
 			]
 		},
 
-		{
-			"Type" : "nap::LaserCompound",
-			"mID" : "LaserCompound1",
-			"LineMesh" : "LaserLineMesh1",
-			"Tracemesh" : "LaserTraceMesh1",
-			"NormalMesh" : "NormalsMesh1",
-			"Dac" : "Laser1",
-			"Target" : "LaserRenderTarget1",
-			"LaserID" : 0,
-			"Offset" : 0.0
-		},
-
-		{
-			"Type" : "nap::LaserCompound",
-			"mID" : "LaserCompound2",
-			"LineMesh" : "LaserLineMesh2",
-			"Tracemesh" : "LaserTraceMesh2",
-			"NormalMesh" : "NormalsMesh2",
-			"Dac" : "Laser2",
-			"Target" : "LaserRenderTarget2",
-			"LaserID" : 1,
-			"Offset" : 0.25
-		},
-
-		{
-			"Type" : "nap::LaserCompound",
-			"mID" : "LaserCompound3",
-			"LineMesh" : "LaserLineMesh3",
-			"Tracemesh" : "LaserTraceMesh3",
-			"NormalMesh" : "NormalsMesh3",
-			"Target" : "LaserRenderTarget3",
-			"Dac" : "Laser3",
-			"LaserID" : 2,
-			"Offset" : 0.5
-		},
-
-		{
-			"Type" : "nap::LaserCompound",
-			"mID" : "LaserCompound4",
-			"LineMesh" : "LaserLineMesh4",
-			"Tracemesh" : "LaserTraceMesh4",
-			"NormalMesh" : "NormalsMesh4",
-			"Target" : "LaserRenderTarget4",
-			"Dac" : "Laser4",
-			"LaserID" : 3,
-			"Offset" : 0.75
-		},
 
 		{
 			"Type" : "nap::Entity",
@@ -670,12 +623,24 @@
 				},
 				{
 					"Type" : "nap::LaserControlComponent",
-					"LaserCompounds" :
+					"Lasers" :
 					[
-						"LaserCompound1",
-						"LaserCompound2",
-						"LaserCompound3",
-						"LaserCompound4"
+						{
+							"Target" : "LaserRenderTarget1",
+							"LaserID" : 0
+						},
+						{
+							"Target" : "LaserRenderTarget2",
+							"LaserID" : 1
+						},
+						{
+							"Target" : "LaserRenderTarget3",
+							"LaserID" : 2
+						},
+						{
+							"Target" : "LaserRenderTarget4",
+							"LaserID" : 3
+						}
 					]
 				}
 			],
@@ -701,7 +666,7 @@
 			 					"Value": "LaserLineMesh1"
 			 				}
 			 			}
-			 		]			 		
+			 		]
 				},
 		 		{
 			 		"TargetComponent" : "./LaserPrototypeEntity:0/LaserSplineEntity/RenderLaserLineComponent",
