@@ -2,6 +2,7 @@
 
 #include <utility/dllexport.h>
 #include <mesh.h>
+#include <box.h>
 
 namespace nap
 {
@@ -115,6 +116,24 @@ namespace nap
 	*/
 	template<typename T>
 	void setTriangleValues(const nap::MeshInstance& mesh, int number, VertexAttribute<T>& vertexData, const TriangleData<T>& triangleValues);
+
+	/**
+	 * Computes the bounding box of a mesh using it's associated position data
+	 * Note that indices are not considered. This call loops over all available
+	 * points regardless of whether if they're drawn or not
+	 * @param mesh the mesh to get the bounding box for
+	 * @param outBox the computed bounding box
+	 */
+	void NAPAPI getBoundingBox(const nap::MeshInstance& mesh, nap::math::Box& outBox);
+
+	/**
+	 * Computes the bounding box of a mesh using it's associated position data
+	 * Note that indices are not considered. This call loops over all available
+	 * points regardless of whether they're drawn or not
+	 * @param mesh the mesh to get the bounding box for
+	 * @return the computed bounding box
+	 */
+	math::Box NAPAPI getBoundingBox(const nap::MeshInstance& mesh);
 
 
 
