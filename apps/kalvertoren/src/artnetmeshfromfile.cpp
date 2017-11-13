@@ -24,8 +24,12 @@ namespace nap
 
 		// Now check for the color attribute
 		mColorAttribute = mMeshInstance->FindAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0));
-		if (!errorState.check(mColorAttribute != nullptr, "unable to find color attribute: %s on mesh: %s", MeshInstance::VertexAttributeIDs::GetColorName(0), mPath.c_str()))
+		if (!errorState.check(mColorAttribute != nullptr, "unable to find color attribute: %s on mesh: %s", MeshInstance::VertexAttributeIDs::GetColorName(0).c_str(), mPath.c_str()))
 			return false;
+
+		// Get position
+		mPositionAttribute = mMeshInstance->FindAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName());
+		assert(mPositionAttribute != nullptr);
 
 		// Extract the channels from the color where R = channel, G = universe and B = subnet
 		mChannelAttribute = &mMeshInstance->GetOrCreateAttribute<int>("channel");
@@ -77,6 +81,9 @@ namespace nap
 
 			mAddresses.emplace(ArtNetController::createAddress(tri_subnets[0], tri_universes[0]));
 		}
+
+		// Get mesh bounding box
+		nap::getBoundingBox(*mMeshInstance, mBoundingBox);
 		
 		// Initialize the mesh
 		if (!errorState.check(mMeshInstance->init(errorState), "Unable to initialize mesh %s for resource %d", mPath.c_str(), mID.c_str()))

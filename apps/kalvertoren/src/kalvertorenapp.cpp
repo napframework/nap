@@ -1,5 +1,6 @@
 // Local Includes
 #include "kalvertorenapp.h"
+#include "selectledmeshcomponent.h"
 
 // External Includes
 #include <mathutils.h>
@@ -34,6 +35,7 @@ namespace nap
 		
 		// All of our entities
 		kalvertorenEntity = resourceManager->findEntity("KalvertorenEntity");
+		modelsEntity = resourceManager->findEntity("ModelsEntity");
 		sceneCameraEntity = resourceManager->findEntity("SceneCameraEntity");
 		videoCameraEntity = resourceManager->findEntity("VideoCameraEntity");
 		defaultInputRouter = resourceManager->findEntity("DefaultInputRouterEntity");
@@ -51,8 +53,12 @@ namespace nap
 		videoResource = resourceManager->findObject<nap::Video>("Video1");
 		videoResource->play();
 
-		// Get universe 5 as controller
-		artnetController = resourceManager->findObject<nap::ArtNetController>("Universe5");
+		SelectLedMeshComponentInstance& selector = modelsEntity->getComponent<SelectLedMeshComponentInstance>();
+		for (auto& mesh : selector.getLedMeshes())
+		{
+			colorBasedOnBounds(*(mesh->mTriangleMesh));
+		}
+		mCurrentSelection = selector.getIndex();
 
 		// Set render states
 		nap::RenderState& render_state = renderService->getRenderState();
@@ -72,9 +78,6 @@ namespace nap
 		entities.push_back(sceneCameraEntity.get());
 		inputService->processEvents(*renderWindow, input_router, entities);
 
-		// Update cam location for lights
-		updateCameraLocation();
-
 		// If the video is not currently playing, start playing it again. This is needed for real time editing; 
 		// if the video resource is modified it will not automatically play again (playback is started during init), causing the output to be black
 		if (!videoResource->isPlaying())
@@ -86,65 +89,25 @@ namespace nap
 		plane_material.getOrCreateUniform<nap::UniformTexture2D>("uTexture").setTexture(videoResource->getUTexture());
 		plane_material.getOrCreateUniform<nap::UniformTexture2D>("vTexture").setTexture(videoResource->getVTexture());
 
-		// Copy pixel data over
-		nap::MeshInstance& mesh = heiligeWegMesh->getMeshInstance();
-
-		if (mVideoBitmap.hasData())
-		{
-			// UV attribute we use to sample
-			nap::VertexAttribute<glm::vec3>& uv_attr = mesh.GetAttribute<glm::vec3>(nap::MeshInstance::VertexAttributeIDs::GetUVName(0));
-
-			// Color attribute we use to sample
-			nap::VertexAttribute<glm::vec4>& color_attr = heiligeWegMesh->getColorAttribute();
-
-			// Total amount of triangles
-			int tri_count = getTriangleCount(mesh);
-			TriangleDataPointer<glm::vec3> tri_uv_data;
-			TriangleData<glm::vec4> new_triangle_color;
-			for (int i=0; i < tri_count; i++)
-			{
-				// Get uv coordinates for that triangle
-				getTriangleValues<glm::vec3>(mesh, i, uv_attr, tri_uv_data);
-
-				// Average uv values
-				glm::vec2 uv_avg{ 0.0,0.0 };
-				for (const auto& uv_vertex : tri_uv_data)
-				{
-					uv_avg.x += uv_vertex->x;
-					uv_avg.y += uv_vertex->y;
-				}
-				uv_avg.x = uv_avg.x / 3.0f;
-				uv_avg.y = uv_avg.y / 3.0f;
-
-				// Convert to pixel coordinates
-				int x_pixel = static_cast<float>(mVideoBitmap.getWidth() - 1) * uv_avg.x;
-				int y_pixel = static_cast<float>(mVideoBitmap.getWidth() - 1) * uv_avg.y;
-
-				// retrieve pixel value
-				uint8* pixel_pointer = mVideoBitmap.getPixel<uint8>(x_pixel, y_pixel);
-
-				// iterate over every vertex in the triangle and set the color
-				for (auto& vert_color : new_triangle_color)
-				{
-					vert_color.r = static_cast<float>(pixel_pointer[0] / 255.0f);
-					vert_color.g = static_cast<float>(pixel_pointer[1] / 255.0f);
-					vert_color.b = static_cast<float>(pixel_pointer[2] / 255.0f);
-					vert_color.a = 1.0f;
-				}
-
-				setTriangleValues<glm::vec4>(mesh, i, color_attr, new_triangle_color);
-			}
-
-			nap::utility::ErrorState error;
-			if (!mesh.update(error))
-			{
-				assert(false);
-			}
-		}
+		// Copy video texture data over
+		if (mVideoBitmap.hasData() && mShowVideo)
+			applyVideoTexture();
 
 		// Gui
-		ImGui::Begin("Video Settings");
+		SelectLedMeshComponentInstance& selector = modelsEntity->getComponent<SelectLedMeshComponentInstance>();
+		ImGui::Begin("Settings");
+		if (ImGui::Checkbox("Show Video", &mShowVideo))
+		{
+			if (!mShowVideo)
+			{
+				colorBasedOnBounds(*(selector.getLedMeshes()[0]->mTriangleMesh));
+			}
+		}
 		ImGui::SliderFloat("Speed", &(videoResource->mSpeed), 0.0f, 20.0f);
+		if (ImGui::SliderInt("Selection", &mCurrentSelection, 0, selector.getCount()-1))
+		{
+			selector.select(mCurrentSelection);
+		}
 		ImGui::End();
 	}
 
@@ -173,6 +136,7 @@ namespace nap
 			render_target.getColorTexture().getData(mVideoBitmap);
 		}
 
+
 		// Render window 0
 		{
 			renderWindow->makeActive();
@@ -181,7 +145,7 @@ namespace nap
 
 			// Render output texture to plane
 			std::vector<nap::RenderableComponentInstance*> components_to_render;
-			kalvertorenEntity->getComponentsOfType<nap::RenderableComponentInstance>(components_to_render);
+			modelsEntity->getComponentsOfType<nap::RenderableComponentInstance>(components_to_render);
 
 			opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(renderWindow->getWindow()->getBackbuffer());
 			renderService->clearRenderTarget(backbuffer);
@@ -199,7 +163,6 @@ namespace nap
 	{
 
 	}
-
 
 
 	void KalvertorenApp::windowMessageReceived(WindowEventPtr windowEvent)
@@ -234,24 +197,107 @@ namespace nap
 	}
 
 
-	void KalvertorenApp::updateCameraLocation()
+	void KalvertorenApp::colorBasedOnBounds(ArtnetMeshFromFile& mesh)
 	{
-		// Set cam location
-		const glm::mat4x4& cam_xform = sceneCameraEntity->getComponent<nap::TransformComponentInstance>().getGlobalTransform();
-		glm::vec3 cam_pos(cam_xform[3][0], cam_xform[3][1], cam_xform[3][2]);
+		const math::Box& box = mesh.getBoundingBox();
 
-		nap::UniformVec3& frame_cam_pos = frameMaterial->getUniform<nap::UniformVec3>("cameraLocation");
-		nap::UniformVec3& verte_cam_pos = vertexMaterial->getUniform<nap::UniformVec3>("cameraLocation");
-		frame_cam_pos.setValue(cam_pos);
-		verte_cam_pos.setValue(cam_pos);
+		// Get attributes necessary to color based on bounds
+		nap::VertexAttribute<glm::vec4>& color_attr = mesh.getColorAttribute();
+		nap::VertexAttribute<glm::vec3>& position_attr = mesh.getPositionAttribute();
+		
+		int triangle_count = getTriangleCount(mesh.getMeshInstance());
 
-		// Set light location
-		const glm::mat4x4 light_xform = lightEntity->getComponent<nap::TransformComponentInstance>().getGlobalTransform();
-		glm::vec3 light_pos(light_xform[3][0], light_xform[3][1], light_xform[3][2]);
+		nap::TriangleDataPointer<glm::vec4> tri_color_data;
+		nap::TriangleDataPointer<glm::vec3> tri_posit_data;
 
-		nap::UniformVec3& frame_light_pos = frameMaterial->getUniform<nap::UniformVec3>("lightPosition");
-		nap::UniformVec3& verte_light_pos = vertexMaterial->getUniform<nap::UniformVec3>("lightPosition");
-		frame_light_pos.setValue(light_pos);
-		verte_light_pos.setValue(light_pos);
+		for (int triangle=0; triangle < triangle_count; triangle++)
+		{
+			// Get current cd values
+			getTriangleValues(mesh.getMeshInstance(), triangle, color_attr, tri_color_data);
+
+			// Get current position values
+			getTriangleValues(mesh.getMeshInstance(), triangle, position_attr, tri_posit_data);
+
+			// Get avg position value
+			glm::vec3 avg_pos(0.0f,0.0f,0.0f);
+			for(auto& pos : tri_posit_data)
+			{
+				avg_pos += *pos;
+			}
+			avg_pos /= 3;
+
+			float r = math::fit<float>(avg_pos.x, box.getMin().x, box.getMax().x, 0.0f, 1.0f);
+			float g = math::fit<float>(avg_pos.y, box.getMin().y, box.getMax().y, 0.0f, 1.0f);
+			float b = math::fit<float>(avg_pos.z, box.getMin().z, box.getMax().z, 0.0f, 1.0f);
+
+			// Set vertex colors
+			for (auto& col : tri_color_data)
+			{
+				col->r = pow(r,2.0);
+				col->g = pow(g,2.0);
+				col->b = pow(b,2.0);
+			}
+		}
+
+		nap::utility::ErrorState error;
+		if (!mesh.getMeshInstance().update(error))
+			assert(false);
 	}
+
+
+	void KalvertorenApp::applyVideoTexture()
+	{		// Copy pixel data over
+		nap::MeshInstance& mesh = heiligeWegMesh->getMeshInstance();
+
+		// UV attribute we use to sample
+		nap::VertexAttribute<glm::vec3>& uv_attr = mesh.GetAttribute<glm::vec3>(nap::MeshInstance::VertexAttributeIDs::GetUVName(0));
+
+		// Color attribute we use to sample
+		nap::VertexAttribute<glm::vec4>& color_attr = heiligeWegMesh->getColorAttribute();
+
+		// Total amount of triangles
+		int tri_count = getTriangleCount(mesh);
+		TriangleDataPointer<glm::vec3> tri_uv_data;
+		TriangleData<glm::vec4> new_triangle_color;
+		for (int i = 0; i < tri_count; i++)
+		{
+			// Get uv coordinates for that triangle
+			getTriangleValues<glm::vec3>(mesh, i, uv_attr, tri_uv_data);
+
+			// Average uv values
+			glm::vec2 uv_avg{ 0.0,0.0 };
+			for (const auto& uv_vertex : tri_uv_data)
+			{
+				uv_avg.x += uv_vertex->x;
+				uv_avg.y += uv_vertex->y;
+			}
+			uv_avg.x = uv_avg.x / 3.0f;
+			uv_avg.y = uv_avg.y / 3.0f;
+
+			// Convert to pixel coordinates
+			int x_pixel = static_cast<float>(mVideoBitmap.getWidth() - 1) * uv_avg.x;
+			int y_pixel = static_cast<float>(mVideoBitmap.getWidth() - 1) * uv_avg.y;
+
+			// retrieve pixel value
+			uint8* pixel_pointer = mVideoBitmap.getPixel<uint8>(x_pixel, y_pixel);
+
+			// iterate over every vertex in the triangle and set the color
+			for (auto& vert_color : new_triangle_color)
+			{
+				vert_color.r = static_cast<float>(pixel_pointer[0] / 255.0f);
+				vert_color.g = static_cast<float>(pixel_pointer[1] / 255.0f);
+				vert_color.b = static_cast<float>(pixel_pointer[2] / 255.0f);
+				vert_color.a = 1.0f;
+			}
+
+			setTriangleValues<glm::vec4>(mesh, i, color_attr, new_triangle_color);
+		}
+
+		nap::utility::ErrorState error;
+		if (!mesh.update(error))
+		{
+			assert(false);
+		}
+	}
+
 }

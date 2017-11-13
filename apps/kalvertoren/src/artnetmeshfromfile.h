@@ -4,6 +4,7 @@
 #include <rtti/rttiobject.h>
 #include <mesh.h>
 #include <artnetcontroller.h>
+#include <box.h>
 
 namespace nap
 {
@@ -51,6 +52,11 @@ namespace nap
 		nap::VertexAttribute<glm::vec4>& getColorAttribute()						{ return *mColorAttribute; }
 
 		/**
+		 *	@return the position attribute
+		 */
+		nap::VertexAttribute<glm::vec3>& getPositionAttribute()						{ return *mPositionAttribute; }
+
+		/**
 		 *	@return the channel attribute
 		 */
 		nap::VertexAttribute<int>& getChannelAttribute()							{ return *mChannelAttribute; }
@@ -75,6 +81,11 @@ namespace nap
 		 */
 		const std::unordered_set<ArtNetController::Address>& getAddresses() const	{ return mAddresses; }
 
+		/**
+		 * @return the led mesh bounding box
+		 */
+		const math::Box& getBoundingBox() const										{ return mBoundingBox; }
+
 	private:
 		std::unique_ptr<MeshInstance>		mMeshInstance;
 
@@ -82,7 +93,10 @@ namespace nap
 		nap::VertexAttribute<int>*			mChannelAttribute = nullptr;
 		nap::VertexAttribute<int>*			mUniverseAttribute = nullptr;
 		nap::VertexAttribute<int>*			mSubnetAttribute = nullptr;
+		nap::VertexAttribute<glm::vec3>*	mPositionAttribute = nullptr;
 
 		std::unordered_set<ArtNetController::Address> mAddresses;				///< Contains all the artnet addresses associated with this mesh;
+
+		math::Box							mBoundingBox;
 	};
 }

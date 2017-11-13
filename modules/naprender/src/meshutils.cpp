@@ -111,4 +111,33 @@ namespace nap
 			break;
 		}
 	}
+
+
+	void getBoundingBox(const MeshInstance& mesh, math::Box& outBox)
+	{
+		glm::vec3 min = { nap::math::max<float>(), nap::math::max<float>(), nap::math::max<float>() };
+		glm::vec3 max = { nap::math::min<float>(), nap::math::min<float>(), nap::math::min<float>() };
+
+		const nap::VertexAttribute<glm::vec3>& positions = mesh.GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName());
+		for (const auto& point : positions.getData())
+		{
+			if (point.x < min.x) { min.x = point.x; }
+			if (point.x > max.x) { max.x = point.x; }
+			if (point.y < min.y) { min.y = point.y; }
+			if (point.y > max.y) { max.y = point.y; }
+			if (point.z < min.z) { min.z = point.z; }
+			if (point.z > max.z) { max.z = point.z; }
+		}
+		outBox.mMinCoordinates = min;
+		outBox.mMaxCoordinates = max;
+	}
+
+
+	nap::math::Box getBoundingBox(const MeshInstance& mesh)
+	{
+		math::Box box;
+		getBoundingBox(mesh, box);
+		return box;
+	}
+
 }

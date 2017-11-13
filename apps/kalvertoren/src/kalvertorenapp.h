@@ -63,6 +63,16 @@ namespace nap
 		 */
 		virtual void inputMessageReceived(InputEventPtr inputEvent) override;
 
+		/**
+		 *	Uses the bounding box to color the vertices
+		 */
+		void colorBasedOnBounds(ArtnetMeshFromFile& mesh);
+
+		/**
+		 *	Applies the rendered video texture to the vertices as color
+		 */
+		void applyVideoTexture();
+
 	private:
 		// Nap Objects
 		nap::RenderService*								renderService = nullptr;
@@ -83,11 +93,11 @@ namespace nap
 		nap::ObjectPtr<nap::Material>					frameMaterial = nullptr;
 		nap::ObjectPtr<nap::Material>					vertexMaterial = nullptr;
 		nap::ObjectPtr<nap::ArtnetMeshFromFile>			heiligeWegMesh = nullptr;
-		nap::ObjectPtr<nap::ArtNetController>			artnetController = nullptr;
+		nap::ObjectPtr<nap::EntityInstance>				modelsEntity = nullptr;
 
 		// video data
 		opengl::Bitmap									mVideoBitmap;
-
-		void updateCameraLocation();
+		int												mCurrentSelection = 0;
+		bool											mShowVideo = false;
 	};
 }

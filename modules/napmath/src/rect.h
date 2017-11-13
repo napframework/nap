@@ -34,7 +34,7 @@ namespace nap
 			 * @param min: the min x, y position of the rectangle
 			 * @param max: the max x, y position of the rectangle
 			 */
-			Rect(glm::vec2 min, glm::vec2 max);
+			Rect(const glm::vec2& min, const glm::vec2& max);
 
 			/**
 			 *	@return the absolute width of the rectangle

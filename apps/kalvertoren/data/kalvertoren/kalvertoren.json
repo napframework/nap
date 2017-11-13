@@ -42,6 +42,46 @@
 		},
 
 		{
+			"Type" 		: "nap::ArtNetController",
+			"mID" 		: "Universe2",
+			"Subnet" 	: 0,
+			"Universe" 	: 2,
+			"WaitTime"	: 2.0
+		},
+
+		{
+			"Type" 		: "nap::ArtNetController",
+			"mID" 		: "Universe3",
+			"Subnet" 	: 0,
+			"Universe" 	: 3,
+			"WaitTime"	: 2.0
+		},
+
+		{
+			"Type" 		: "nap::ArtNetController",
+			"mID" 		: "Universe6",
+			"Subnet" 	: 0,
+			"Universe" 	: 6,
+			"WaitTime"	: 2.0
+		},
+
+		{
+			"Type" 		: "nap::ArtNetController",
+			"mID" 		: "Universe0",
+			"Subnet" 	: 0,
+			"Universe" 	: 0,
+			"WaitTime"	: 2.0
+		},
+
+		{
+			"Type" 		: "nap::ArtNetController",
+			"mID" 		: "Universe1",
+			"Subnet" 	: 0,
+			"Universe" 	: 1,
+			"WaitTime"	: 2.0
+		},
+
+		{
 			"Type" : "nap::PlaneMesh",
 			"mID": "PlaneMesh"
 		},
@@ -107,6 +147,51 @@
 			"mID": "HeiligewegFrameMesh",
 			"Path" : "data/kalvertoren/heiligeweg_export_heiligeweg_frame.mesh"
 		},
+
+		{
+			"Type" : "nap::LedMesh",
+			"mID" : "HeiligewegLedMesh",
+			"TriangleMesh" : "HeiligewegMesh",
+			"FrameMesh" : "HeiligewegFrameMesh"
+		},
+		
+		{
+			"Type" : "nap::ArtnetMeshFromFile",
+			"mID": "KalverMesh",
+			"Path" : "data/kalvertoren/kalver_export_kalver.mesh"
+		},
+
+		{
+			"Type" : "nap::MeshFromFile",
+			"mID": "KalverFrameMesh",
+			"Path" : "data/kalvertoren/kalver_export_kalver_frame.mesh"
+		},
+
+		{
+			"Type" : "nap::LedMesh",
+			"mID" : "KalverLedMesh",
+			"TriangleMesh" : "KalverMesh",
+			"FrameMesh" : "KalverFrameMesh"
+		},
+
+		{
+			"Type" : "nap::ArtnetMeshFromFile",
+			"mID": "SingelMesh",
+			"Path" : "data/kalvertoren/singel_export_singel.mesh"
+		},
+
+		{
+			"Type" : "nap::MeshFromFile",
+			"mID": "SingelFrameMesh",
+			"Path" : "data/kalvertoren/singel_export_singel_frame.mesh"
+		},
+
+		{
+			"Type" : "nap::LedMesh",
+			"mID" : "SingelLedMesh",
+			"TriangleMesh" : "SingelMesh",
+			"FrameMesh" : "SingelFrameMesh"
+		},
 						
 		{
 			"Type" : "nap::Material",
@@ -145,11 +230,6 @@
 			"Uniforms" : 
 			[
 				{
-					"Type" : "nap::UniformTexture2D",
-					"Name" : "videoTexture",
-					"Texture" : "ColorTexture"
-				},
-				{
 					"Type" : "nap::UniformVec3",
 					"Name" : "lightIntensity",
 					"Value" : 
@@ -167,7 +247,7 @@
 				{
 					"Type" : "nap::UniformFloat",
 					"Name" : "shininess",
-					"Value" : 0.25
+					"Value" : 10.0
 				},
 				{
 					"Type" : "nap::UniformFloat",
@@ -254,7 +334,7 @@
 			"mID": "Video1",
 			"Path": "data/kalvertoren/heiligeweg_demo.mp4",
 			"Loop" : true,
-			"Speed" : 10.0
+			"Speed" : 1
 		},
 		
 		{
@@ -283,42 +363,30 @@
 				}
 			]
 		},
-		
+
 		{
 			"Type" : "nap::Entity",
-			"mID": "KalvertorenEntity",
-			"Components" : 
+			"mID" : "ModelsEntity",
+			"Components" :
 			[
 				{
-					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "HeiligewegMesh",
-					"MaterialInstance" : 
-					{
-						"Material": "VertexColorMaterial"
-					}
-				},
-				{
-					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "HeiligewegFrameMesh",
-					"MaterialInstance" : 
-					{
-						"Material": "FrameMaterial"
-					}
-				},
-				{
 					"Type" : "nap::TransformComponent",
-					"Properties": {
-						"Translate": {
+					"Properties": 
+						{
+						"Translate": 
+						{
 							"x": 0.0,
 							"y": 0.0,
-							"z": -30.0
+							"z": 0.0
 						},
-						"Rotate": {
+						"Rotate": 
+						{
 							"x": 0.0,
 							"y": 180.0,
 							"z": 0.0
 						},
-						"Scale": {
+						"Scale": 
+						{
 							"x": 1.0,
 							"y": 1.0,
 							"z": 1.0
@@ -326,6 +394,73 @@
 						"UniformScale": 1.0
 					}
 				},
+				{
+					"Type" : "nap::SelectLedMeshComponent",
+					"mID" : "SelectLedMeshComponent",
+					"TriangleComponent" : "./RenderableTriangleLedMeshComponent",
+					"FrameComponent" : "./RenderableFrameLedMeshComponent",
+					"Index" : 0,
+					"Meshes" :
+					[
+						"HeiligewegLedMesh",
+						"KalverLedMesh",
+						"SingelLedMesh"
+					]
+				},
+				{
+					"Type" : "nap::SyncLedMaterialComponent",
+					"mID" : "SyncLedComponent",
+					"Pointlight" : "PointlightComponent",
+					"PointlightTransform" : "PointlightTransformComponent",
+					"CameraTransform" : "ScenecameraTransformComponent",
+					"SelectMeshComponent" : "./SelectLedMeshComponent"
+				},
+				{
+					"Type" : "nap::RenderableMeshComponent",
+					"Mesh" : "KalverMesh",
+					"mID" : "RenderableTriangleLedMeshComponent",
+					"MaterialInstance" : 
+					{
+						"Material": "VertexColorMaterial"
+					}
+				},
+				{
+					"Type" : "nap::RenderableMeshComponent",
+					"Mesh" : "KalverFrameMesh",
+					"mID" : "RenderableFrameLedMeshComponent",
+					"MaterialInstance" : 
+					{
+						"Material": "FrameMaterial"
+					}
+				}
+			]
+		},
+
+		{
+			"Type" : "nap::Entity",
+			"mID": "KalvertorenEntity",
+			"Components" : 
+			[
+				{
+					"Type" : "nap::MeshToArtnetComponent",
+					"Mesh" : "KalverMesh",
+					"Controllers" :
+					[
+						"Universe2",
+						"Universe3",
+						"Universe6",
+						"Universe0",
+						"Universe1"
+					]
+				}
+			]
+		},
+		
+		{
+			"Type" : "nap::Entity",
+			"mID": "HeiligewegEntity",
+			"Components" : 
+			[
 				{
 					"Type" : "nap::MeshToArtnetComponent",
 					"Mesh" : "HeiligewegMesh",
@@ -439,7 +574,7 @@
 				},
 				{
 					"Type" : "nap::CameraController",
-					"LookAtTarget" : "KalvertorenEntity"
+					"LookAtTarget" : "ModelsEntity"
 				},			
 				{
 					"Type" : "nap::FirstPersonController",
@@ -456,11 +591,12 @@
 				},
 				{
 					"Type" : "nap::OrthoController",
-					"ZoomSpeed": 0.5,
+					"ZoomSpeed": 0.25,
 					"OrthoCameraComponent" : "OrthoCameraComponent"
 				},			
 				{
 					"Type" : "nap::TransformComponent",
+					"mID" : "ScenecameraTransformComponent",
 					"Properties": {
 						"Translate": {
 							"x": 0.0,
@@ -489,15 +625,17 @@
 			[
 				{
 					"Type" : "nap::PointlightComponent",
+					"mID" : "PointlightComponent",
 					"Intensity" : 1.0
 				},
 				{
 					"Type" : "nap::TransformComponent",
+					"mID" : "PointlightTransformComponent",
 					"Properties": {
 						"Translate": {
-							"x": 0.0,
-							"y": -20.0,
-							"z": 20.0
+							"x": 10.0,
+							"y": 40.0,
+							"z": -10.0
 						},
 						"Rotate": {
 							"x": 0.0,
