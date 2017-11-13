@@ -133,7 +133,7 @@ namespace nap
 	}
 
 
-	bool ComponentResourcePath::operator==(const ComponentResourcePath& other)
+	bool ComponentResourcePath::operator==(const ComponentResourcePath& other) const
 	{
 		if (mRoot != other.mRoot || mPath.size() != other.mPath.size() || mCurrentComponent != other.mCurrentComponent)
 			return false;

@@ -3,7 +3,7 @@
 
 namespace nap
 {
-	ClonedComponentResource::ClonedComponentResource(const std::string& path, std::unique_ptr<Component> resource) :
+	ClonedComponentResource::ClonedComponentResource(const ComponentResourcePath& path, std::unique_ptr<Component> resource) :
 		mPath(path),
 		mResource(std::move(resource))
 	{
