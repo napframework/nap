@@ -5,11 +5,6 @@
 
 using namespace std;
 
-RTTI_BEGIN_CLASS(nap::InstanceProperty)
-	RTTI_PROPERTY("TargetComponent", &nap::InstanceProperty::mTargetComponent, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("TargetAttribute", &nap::InstanceProperty::mTargetAttribute, nap::rtti::EPropertyMetaData::Required)
-RTTI_END_CLASS
-
 RTTI_BEGIN_CLASS(nap::Entity)
 	RTTI_PROPERTY("Components", &nap::Entity::mComponents, nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Children", &nap::Entity::mChildren, nap::rtti::EPropertyMetaData::Default)

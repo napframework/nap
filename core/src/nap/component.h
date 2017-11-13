@@ -125,6 +125,16 @@ namespace nap
 		 * Get the type of ComponentInstance that should be created from this Component
 		 */
 		virtual const rtti::TypeInfo getInstanceType() const = 0;
+	
+	private:
+		/**
+		 * @return If this Component was cloned from another Component (for instance properties), this returns the ID of the Component it was cloned from. Otherwise, just the regular ID.
+		 */
+		const std::string& getOriginalID() const;
+
+	private:
+		friend class ResourceManager;
+		Component* mOriginalComponent = nullptr;	// If this Component was cloned from another component (for instance properties), this property holds the Component it was cloned from
 	};
 
 	//////////////////////////////////////////////////////////////////////////
