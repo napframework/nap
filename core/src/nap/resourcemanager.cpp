@@ -146,6 +146,13 @@ namespace nap
 		getRootEntity().update(elapsedTime);
 	}
 
+	void ResourceManager::sRecursiveAddToObjectsByType(rtti::RTTIObject& object, const rtti::TypeInfo& type, ObjectsByTypeMap& objectsByType)
+	{
+		objectsByType[type].push_back(&object);
+		for (const rtti::TypeInfo& base : type.get_base_classes())
+			sRecursiveAddToObjectsByType(object, base, objectsByType);
+	}
+
 
 	/**
 	 * Add all objects from the resource manager into an object graph, overlayed by @param objectsToUpdate.
@@ -171,7 +178,7 @@ namespace nap
 
 		// Build map of objects per type, this is used for tracking type dependencies while building the graph
 		for (rtti::RTTIObject* object : all_objects)
-			objectsByType[object->get_type()].push_back(object);
+			sRecursiveAddToObjectsByType(*object, object->get_type(), objectsByType);
 
 		if (!objectGraph.build(all_objects, [&objectsByType, &clonedResourceMap](rtti::RTTIObject* object) { return RTTIObjectGraphItem::create(object, objectsByType, clonedResourceMap); }, errorState))
 			return false;
@@ -632,7 +639,7 @@ namespace nap
 				cloned_target_component->mOriginalComponent = instance_property.mTargetComponent.get();
 
 				// Update the objects by type and cloned resource maps, used by RTTIGraphObjectItem and required to rebuild the ObjectGraph later
-				objectsByType[cloned_target_component->get_type()].push_back(cloned_target_component.get());
+				sRecursiveAddToObjectsByType(*cloned_target_component, cloned_target_component->get_type(), objectsByType);
 				clonedResourceMap[instance_property.mTargetComponent.get()].push_back(cloned_target_component.get());
 
 				ComponentResourcePath resolved_component_path;
