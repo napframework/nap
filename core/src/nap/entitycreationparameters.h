@@ -28,9 +28,9 @@ namespace nap
 	{
 	public:
 		ClonedComponentResource() = default;
-		ClonedComponentResource(const std::string& path, std::unique_ptr<Component> resource);
+		ClonedComponentResource(const ComponentResourcePath& path, std::unique_ptr<Component> resource);
 
-		std::string					mPath;			///< The path (from the root entity) to the original component that was cloned
+		ComponentResourcePath		mPath;			///< The path (from the root entity) to the original component that was cloned
 		std::unique_ptr<Component>	mResource;		///< The cloned component resource
 	};
 	using ClonedComponentResourceList = std::vector<ClonedComponentResource>;

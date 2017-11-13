@@ -541,13 +541,8 @@ namespace nap
 			return nullptr;
 
 		for (const ClonedComponentResource& clonedComponent : *clonedComponents)
-		{
-			ComponentResourcePath resolved_path;
-			utility::ErrorState error_state;
-			if (ComponentResourcePath::fromString(entityResourcePath.getRoot(), clonedComponent.mPath, resolved_path, error_state))
-				if (resolved_path == entityResourcePath)
+			if (clonedComponent.mPath == entityResourcePath)
 					return clonedComponent.mResource.get();
-		}
 		
 		return nullptr;
 	}
@@ -635,9 +630,13 @@ namespace nap
 
 				// Update the objects by type and cloned resource maps, used by RTTIGraphObjectItem and required to rebuild the ObjectGraph later
 				objectsByType[cloned_target_component->get_type()].push_back(cloned_target_component.get());
-				clonedResourceMap[static_cast<rtti::RTTIObject*>(instance_property.mTargetComponent.get())].push_back(cloned_target_component.get());
+				clonedResourceMap[instance_property.mTargetComponent.get()].push_back(cloned_target_component.get());
 
-				clonedComponents.emplace_back(ClonedComponentResource(instance_property.mTargetComponent.getInstancePath(), std::move(cloned_target_component)));				
+				ComponentResourcePath resolved_component_path;
+				if (!errorState.check(ComponentResourcePath::fromString(*entity, instance_property.mTargetComponent.getInstancePath(), resolved_component_path, errorState), "Failed to apply instance property for entity %s: invalid component path %s", entity->mID.c_str(), instance_property.mTargetComponent.getInstancePath().c_str()))
+					return false;				
+
+				clonedComponents.emplace_back(ClonedComponentResource(resolved_component_path, std::move(cloned_target_component)));				
 			}
 		}
 

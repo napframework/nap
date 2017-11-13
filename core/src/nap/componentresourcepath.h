@@ -59,7 +59,7 @@ namespace nap
 		 * Compares on EntityResourcePath to another.
 		 * @return True when equal, false otherwise.
 		 */
-		bool operator==(const ComponentResourcePath& other);
+		bool operator==(const ComponentResourcePath& other) const;
 
 	private:
 		const Entity*		mRoot = nullptr;		///< Root entity
