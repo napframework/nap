@@ -1,6 +1,7 @@
 #pragma once
 
 #include "lineblendcomponent.h"
+#include "linetracecomponent.h"
 
 #include <nap/component.h>
 #include <nap/componentptr.h>
@@ -37,6 +38,9 @@ namespace nap
 		// property: link to the component that holds the mesh that we want to color
 		ComponentPtr<LineBlendComponent> mBlendComponent;
 
+		// property: link to the component that holds the line tracer
+		ComponentPtr<LineTraceComponent> mTraceComponent;
+
 		// property: all modulation settings
 		NoiseProperties mProperties;
 	};
@@ -68,6 +72,8 @@ namespace nap
 
 	private:
 		ComponentInstancePtr<LineBlendComponent>	mBlendComponent = { this, &LineNoiseComponent::mBlendComponent };		// Component that holds the line we want to modulate
+		ComponentInstancePtr<LineTraceComponent>	mTraceComponent = { this, &LineNoiseComponent::mTraceComponent };		// Component that holds the line tracer
+
 		float mCurrentTime = 0.0f;									// Current update time associated with this component
 
 		// Smooths frequency over time
