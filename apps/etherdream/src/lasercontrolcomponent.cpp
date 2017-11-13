@@ -1,13 +1,11 @@
 #include "lasercontrolcomponent.h"
+#include "renderablemeshcomponent.h"
 
 // External Includes
 #include <nap/entity.h>
 #include <nap/core.h>
 #include <nap/resourcemanager.h>
 #include <depthsorter.h>
-
-// Local Includes
-#include "makeprototypecomponent.h"
 
 // nap::lasercontroller run time class definition 
 RTTI_BEGIN_CLASS(nap::LaserControlComponent)
@@ -58,15 +56,6 @@ namespace nap
 			mLaserEntityMap.emplace(std::make_pair(compound->mLaserID, laser_entity));
 			mLaserCompoundMap.emplace(std::make_pair(compound->mLaserID, compound.get()));
 			mLaserFrameMap.emplace(std::make_pair(compound->mLaserID, frame_entity));
-
-			// Find make prototype component instance
-			MakePrototypeComponentInstance* prototype_component = laser_entity->findComponent<MakePrototypeComponentInstance>();
-			if (!errorState.check(prototype_component != nullptr, "laser entity doesn't have a make prototype component"))
-				return false;
-
-			// Populate with laser compound settings
-			if (!prototype_component->setup(*(compound), errorState))
-				return false;
 
 			// Get transform
 			TransformComponentInstance* frame_xform = frame_entity->findComponent<TransformComponentInstance>();

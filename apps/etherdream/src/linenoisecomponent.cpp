@@ -20,6 +20,7 @@ RTTI_END_CLASS
 RTTI_BEGIN_CLASS(nap::LineNoiseComponent)
 	RTTI_PROPERTY("Properties",			&nap::LineNoiseComponent::mProperties,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("BlendComponent",		&nap::LineNoiseComponent::mBlendComponent,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("TraceComponent",		&nap::LineNoiseComponent::mTraceComponent,		nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LineNoiseComponentInstance)
@@ -33,6 +34,9 @@ namespace nap
 	{
 		// Copy over properties and link to blend component
 		mProperties = getComponent<LineNoiseComponent>()->mProperties;
+
+		// Offset of noise component is always based on offset of trace component
+		mProperties.mOffset = fmod(mTraceComponent->mProperties.mOffset + 0.1f, 1.0f);
 
 		// Set smooth timing values
 		mAmpSmoother.mSmoothTime = mProperties.mAmplitudeSmoothTime;
