@@ -715,7 +715,7 @@
 			 				}
 			 			},
 			 			{
-			 				"Path" : "Properties:Offset",
+			 				"Path" : "Properties/Offset",
 			 				"Value" : {
 			 					"Type" : "nap::FloatInstancePropertyValue",
 			 					"Value": 0.0
@@ -808,7 +808,7 @@
 			 				}
 			 			},
 			 			{
-			 				"Path" : "Properties:Offset",
+			 				"Path" : "Properties/Offset",
 			 				"Value" : {
 			 					"Type" : "nap::FloatInstancePropertyValue",
 			 					"Value": 0.25
@@ -907,7 +907,7 @@
 			 				}
 			 			},
 			 			{
-			 				"Path" : "Properties:Offset",
+			 				"Path" : "Properties/Offset",
 			 				"Value" : {
 			 					"Type" : "nap::FloatInstancePropertyValue",
 			 					"Value": 0.5
@@ -1005,7 +1005,7 @@
 			 				}
 			 			},
 			 			{
-			 				"Path" : "Properties:Offset",
+			 				"Path" : "Properties/Offset",
 			 				"Value" : {
 			 					"Type" : "nap::FloatInstancePropertyValue",
 			 					"Value": 0.75
