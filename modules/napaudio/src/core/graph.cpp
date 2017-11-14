@@ -94,7 +94,11 @@ namespace nap
                 objects.emplace_back(object.get());
             
             ObjectGraph<AudioGraphItem> graph;
-            graph.build(objects, [](AudioObject* object) { return AudioGraphItem::create(object); }, errorState);
+            if (!graph.build(objects, [](AudioObject* object) { return AudioGraphItem::create(object); }, errorState))
+            {
+                errorState.fail("Failed to build audio graph %s", resource.mID.c_str());
+                return false;
+            }
             
             // Sort in order of depenedency
             auto sortedNodes = graph.getSortedNodes();
@@ -105,13 +109,15 @@ namespace nap
                 auto objectResource = node->mItem.mObject;
                 auto instance = objectResource->instantiate(resource.getNodeManager(), errorState);
                 
+                if (instance == nullptr)
+                {
+                    errorState.fail("Failed to instantiate graph %s", resource.mID.c_str());
+                    return false;
+                }
+                
                 if (objectResource == resource.mOutput.get())
                     mOutput = instance.get();
-                    
-                if (instance != nullptr)
-                    mObjects.emplace_back(std::move(instance));
-                else
-                    return false;
+                mObjects.emplace_back(std::move(instance));
             }
             
             if (mOutput == nullptr)
