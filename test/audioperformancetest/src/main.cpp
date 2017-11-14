@@ -5,7 +5,7 @@
 
 #include <node/oscillatornode.h>
 #include <portaudio.h>
-#include <service/audiodeviceservice.h>
+#include <service/AudioService.h>
 
 /*
 Test application to compare portaudio performance between different builds, platforms and architectures.

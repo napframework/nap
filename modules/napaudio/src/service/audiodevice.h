@@ -20,7 +20,7 @@ namespace nap
     {
         
         // Forward declares
-        class AudioDeviceService;
+        class AudioService;
         
         
         /*
@@ -37,7 +37,7 @@ namespace nap
             /**
              * Constructor used by the object factory
              */
-            AudioDevice(AudioDeviceService& service);
+            AudioDevice(AudioService& service);
             
             /**
              * Destructor stops the audio stream 
@@ -133,11 +133,11 @@ namespace nap
             
             PaStream* mStream = nullptr; // Pointer to the stream managed by portaudio.
             
-            AudioDeviceService* mService = nullptr; // The audio service
+            AudioService* mService = nullptr; // The audio service
         };
         
         
-//        using AudioDeviceCreator = rtti::ObjectCreator<AudioDevice, AudioDeviceService>;
+//        using AudioDeviceCreator = rtti::ObjectCreator<AudioDevice, AudioService>;
         
     }
     
