@@ -23,7 +23,8 @@ namespace nap {
     /**
      * Service keeping tracking of opened midi input ports and processing incoming messages.
      */
-    class NAPAPI MidiService : public nap::Service {
+    class NAPAPI MidiService : public nap::Service
+    {
         RTTI_ENABLE(nap::Service)
         
         friend class MidiInputPort;

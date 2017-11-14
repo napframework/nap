@@ -18,9 +18,11 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::OutputComponentInstance)
     RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
     
         bool audio::OutputComponentInstance::init(utility::ErrorState& errorState)
         {

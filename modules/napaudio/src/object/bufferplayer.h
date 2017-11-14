@@ -8,11 +8,14 @@
 #include <node/bufferplayernode.h>
 #include <resource/audiobufferresource.h>
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
         
-        class BufferPlayer : public MultiChannelObject {
+        class BufferPlayer : public MultiChannelObject
+        {
             RTTI_ENABLE(MultiChannelObject)
             
         public:

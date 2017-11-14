@@ -8,9 +8,11 @@
 #include <core/audionode.h>
 #include <core/audiocomponent.h>
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
     
         class OutputComponentInstance;
         
@@ -18,7 +20,8 @@ namespace nap {
         /**
          * Component that routs output from another audio component to the audio interface.
          */
-        class NAPAPI OutputComponent : public Component {
+        class NAPAPI OutputComponent : public Component
+        {
             RTTI_ENABLE(nap::Component)
             DECLARE_COMPONENT(OutputComponent, OutputComponentInstance)
             
@@ -40,7 +43,8 @@ namespace nap {
         /**
          * Instance of component that routs output from another audio component to the audio interface
          */
-        class NAPAPI OutputComponentInstance : public ComponentInstance {
+        class NAPAPI OutputComponentInstance : public ComponentInstance
+        {
             RTTI_ENABLE(nap::ComponentInstance)
         public:
             OutputComponentInstance(EntityInstance& entity, Component& resource) : nap::ComponentInstance(entity, resource) { }

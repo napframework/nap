@@ -3,9 +3,11 @@
 #include <utility/audiofunctions.h>
 #include <core/audionodemanager.h>
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
         
         void DelayNode::setTime(TimeValue value, TimeValue rampTime)
         {

@@ -11,9 +11,11 @@
 #include <utility/audiotypes.h>
 #include <core/audiopin.h>
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
     
         
         // Forward declarations

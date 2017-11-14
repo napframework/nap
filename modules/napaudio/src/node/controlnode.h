@@ -10,16 +10,19 @@
 #include <core/audionode.h>
 #include <core/audionodemanager.h>
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
         
         /**
          * Used to generate a control signal by ramping between different values.
          * Ramps can be either linear or exponential.
          * Optionally a lookup table can be used to shape the output signal.
          */
-        class NAPAPI ControlNode : public Node {
+        class NAPAPI ControlNode : public Node
+        {
             RTTI_ENABLE(Node)
             
         public:

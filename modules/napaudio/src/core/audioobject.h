@@ -9,9 +9,11 @@
 #include <core/audionodemanager.h>
 #include <service/audioservice.h>
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
         
         // Forward delcarations
         class AudioObject;
@@ -20,7 +22,8 @@ namespace nap {
         /**
          * Instance of a object that generates audio output for one or more channels
          */
-        class NAPAPI AudioObjectInstance : public rtti::RTTIObject {
+        class NAPAPI AudioObjectInstance : public rtti::RTTIObject
+        {
             RTTI_ENABLE()
             
         public:
@@ -58,7 +61,8 @@ namespace nap {
          * AudioObjects can be linked together to build a more complex DSP system in a Graph.
          * AudioObject is a resource that can be instantiated.
          */
-        class AudioObject : public rtti::RTTIObject {
+        class AudioObject : public rtti::RTTIObject
+        {
             RTTI_ENABLE(rtti::RTTIObject)
             
         public:
@@ -88,7 +92,8 @@ namespace nap {
         /**
          * Base class for audio objects that contain a number of nodes of the same type, typically for performing multichannel processing.
          */
-        class NAPAPI MultiChannelObject : public AudioObject {
+        class NAPAPI MultiChannelObject : public AudioObject
+        {
             RTTI_ENABLE(AudioObject)
             
             friend class MultiChannelObjectInstance;
@@ -115,7 +120,8 @@ namespace nap {
         /**
          * Instance of a MultiChannelObject. In most cases only the MultiChannelObject has to be overwritten to create your own MultiChannelObject type while this instance class can be left untouched.
          */
-        class NAPAPI MultiChannelObjectInstance : public AudioObjectInstance {
+        class NAPAPI MultiChannelObjectInstance : public AudioObjectInstance
+        {
             RTTI_ENABLE(AudioObjectInstance)
             
         public:

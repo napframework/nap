@@ -3,9 +3,11 @@
 // Std includes
 #include <cstring>
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
         
         void BufferPlayerNode::play(SampleBuffer& buffer, DiscreteTimeValue position, ControllerValue speed)
         {

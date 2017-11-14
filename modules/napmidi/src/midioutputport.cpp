@@ -8,7 +8,8 @@ RTTI_BEGIN_CLASS(nap::MidiOutputPort)
     RTTI_PROPERTY("Port", &nap::MidiOutputPort::mPortName, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-namespace nap {
+namespace nap
+{
     
     
     MidiOutputPort::MidiOutputPort(MidiService& service) : rtti::RTTIObject(), mService(&service)

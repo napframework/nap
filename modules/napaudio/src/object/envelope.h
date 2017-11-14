@@ -7,13 +7,16 @@
 #include <core/audioobject.h>
 #include <node/envelopenode.h>
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
         
         class EnvelopeInstance;
         
-        class Envelope : public AudioObject {
+        class Envelope : public AudioObject
+        {
             RTTI_ENABLE(AudioObject)
         public:
             Envelope() = default;
@@ -27,7 +30,8 @@ namespace nap {
         };
         
         
-        class EnvelopeInstance : public AudioObjectInstance {
+        class EnvelopeInstance : public AudioObjectInstance
+        {
             RTTI_ENABLE(AudioObjectInstance)
         public:
             EnvelopeInstance(Envelope& resource) : AudioObjectInstance(resource) { }

@@ -19,9 +19,11 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::GraphInstance)
 RTTI_END_CLASS
 
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
         
         
         /**

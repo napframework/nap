@@ -11,9 +11,11 @@
 
 RTTI_DEFINE(nap::audio::AudioDeviceService)
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
         
         AudioDeviceService::AudioDeviceService() : mInterface(*this)
         {

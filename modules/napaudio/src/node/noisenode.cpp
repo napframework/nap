@@ -3,9 +3,11 @@
 // Std includes
 #include <stdlib.h>
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
         
         void NoiseNode::process()
         {

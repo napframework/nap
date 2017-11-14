@@ -12,7 +12,8 @@ RTTI_BEGIN_ENUM(nap::MidiEvent::Type)
     RTTI_ENUM_VALUE(nap::MidiEvent::Type::noteOff, "pitchBend")
 RTTI_END_ENUM
 
-namespace nap {
+namespace nap
+{
     
     constexpr int noPitchBend = 8192;
     

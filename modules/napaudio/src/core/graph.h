@@ -16,9 +16,11 @@
 #include <core/audioobject.h>
 
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
         
         using AudioObjectPtr = ObjectPtr<AudioObject>;
         
@@ -26,7 +28,8 @@ namespace nap {
         /**
          * The Graph manages a number of different audio objects that are connected together to represent a DSP network to perform a specific task of mono or multichannel audio processing.
          */
-        class NAPAPI Graph : public rtti::RTTIObject {
+        class NAPAPI Graph : public rtti::RTTIObject
+        {
             RTTI_ENABLE(rtti::RTTIObject)
         public:
             Graph(NodeManager& nodeManager) : mNodeManager(&nodeManager)  { }
@@ -55,7 +58,8 @@ namespace nap {
         /**
          * Instance of Graph that manages a number of different audio objects, connected together to represent a DSP network to perform a specific task of mono or multichannel audio processing.
          */
-        class NAPAPI GraphInstance : rtti::RTTIObject {
+        class NAPAPI GraphInstance : rtti::RTTIObject
+        {
             RTTI_ENABLE()
         public:
             GraphInstance() = default;

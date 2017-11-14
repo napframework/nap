@@ -10,9 +10,11 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::EnvelopeInstance)
     RTTI_FUNCTION("stop", &nap::audio::EnvelopeInstance::stop)
 RTTI_END_CLASS
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
          
         std::unique_ptr<AudioObjectInstance> Envelope::createInstance()
         {

@@ -7,9 +7,11 @@
 #include <utility/audiotypes.h>
 #include <utility/errorstate.h>
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
 
         /**
          * Utility to read an audio file from disk

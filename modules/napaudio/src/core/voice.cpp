@@ -15,9 +15,11 @@ RTTI_BEGIN_CLASS(nap::audio::VoiceInstance)
 RTTI_END_CLASS
 
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
         
         bool VoiceInstance::init(Voice& resource, utility::ErrorState& errorState)
         {

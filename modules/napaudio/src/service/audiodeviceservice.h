@@ -10,9 +10,11 @@
 #include "audioservice.h"
 #include "audiodevice.h"
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
         
         /**
          * Service that provides audio input and output processing directly for hardware audio devices.

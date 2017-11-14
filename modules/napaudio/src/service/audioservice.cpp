@@ -9,9 +9,11 @@
 
 RTTI_DEFINE_BASE(nap::audio::AudioService)
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
         
         AudioService::AudioService() : Service()
         {

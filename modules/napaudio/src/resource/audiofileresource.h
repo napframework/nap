@@ -2,9 +2,11 @@
 
 #include "audiobufferresource.h"
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
         
         /**
          * An audio file from disk loaded into memory.

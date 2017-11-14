@@ -13,9 +13,11 @@
 // audio includes
 #include <core/audionodemanager.h>
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
         
         // Forward declares
         class AudioDeviceService;

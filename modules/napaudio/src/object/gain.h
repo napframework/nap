@@ -7,11 +7,14 @@
 #include <core/audioobject.h>
 #include <node/gainnode.h>
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
         
-        class Gain : public MultiChannelObject {
+        class Gain : public MultiChannelObject
+        {
             RTTI_ENABLE(MultiChannelObject)
             
         public:

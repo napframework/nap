@@ -9,7 +9,8 @@
 
 RTTI_DEFINE(nap::MidiService)
 
-namespace nap {
+namespace nap
+{
     
     bool MidiService::init(nap::utility::ErrorState& errorState)
     {

@@ -6,9 +6,11 @@
 // Audo includes
 #include <utility/audiotypes.h>
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
         
         /**
          * Used to make linear ramps up and down of a value in steps

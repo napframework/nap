@@ -1,9 +1,11 @@
 #include "stereopanner.h"
 #include <cmath>
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
         
         StereoPanner::StereoPanner(NodeManager& manager) : Node(manager)
         {

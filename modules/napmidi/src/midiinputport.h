@@ -14,7 +14,8 @@ namespace nap {
      * Opens and manages a midi input port that will be listened to for incoming midi messages.
      * Messages will be parsed and passed on to the midi service for processing.
      */
-    class NAPAPI MidiInputPort : public rtti::RTTIObject {
+    class NAPAPI MidiInputPort : public rtti::RTTIObject
+    {
         RTTI_ENABLE(rtti::RTTIObject)
         
     public:
