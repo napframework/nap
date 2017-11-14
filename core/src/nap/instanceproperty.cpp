@@ -6,29 +6,28 @@ RTTI_BEGIN_CLASS(nap::ComponentInstanceProperties)
 	RTTI_PROPERTY("TargetAttributes",	&nap::ComponentInstanceProperties::mTargetAttributes,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::InstancePropertyValue)
-RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS(nap::PointerInstancePropertyValue)
-	RTTI_PROPERTY("Value",	&nap::PointerInstancePropertyValue::mValue,	nap::rtti::EPropertyMetaData::Required)
-RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS(nap::ComponentPtrInstancePropertyValue)
-	RTTI_PROPERTY("Value", &nap::ComponentPtrInstancePropertyValue::mValue, nap::rtti::EPropertyMetaData::Required)
-RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS(nap::IntInstancePropertyValue)
-	RTTI_PROPERTY("Value", &nap::IntInstancePropertyValue::mValue, nap::rtti::EPropertyMetaData::Required)
-RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS(nap::FloatInstancePropertyValue)
-	RTTI_PROPERTY("Value", &nap::FloatInstancePropertyValue::mValue, nap::rtti::EPropertyMetaData::Required)
-RTTI_END_CLASS
-
 RTTI_BEGIN_CLASS(nap::TargetAttribute)
 	RTTI_PROPERTY("Path", &nap::TargetAttribute::mPath, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Value", &nap::TargetAttribute::mValue, nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::InstancePropertyValue)
+RTTI_END_CLASS
+
+RTTI_DEFINE_INSTANCE_PROPERTY_VALUE(nap::PointerInstancePropertyValue)
+RTTI_DEFINE_INSTANCE_PROPERTY_VALUE(nap::ComponentPtrInstancePropertyValue)
+RTTI_DEFINE_INSTANCE_PROPERTY_VALUE(nap::BoolInstancePropertyValue)
+RTTI_DEFINE_INSTANCE_PROPERTY_VALUE(nap::CharInstancePropertyValue)
+RTTI_DEFINE_INSTANCE_PROPERTY_VALUE(nap::Int8InstancePropertyValue)
+RTTI_DEFINE_INSTANCE_PROPERTY_VALUE(nap::Int16InstancePropertyValue)
+RTTI_DEFINE_INSTANCE_PROPERTY_VALUE(nap::Int32InstancePropertyValue)
+RTTI_DEFINE_INSTANCE_PROPERTY_VALUE(nap::Int64InstancePropertyValue)
+RTTI_DEFINE_INSTANCE_PROPERTY_VALUE(nap::UInt8InstancePropertyValue)
+RTTI_DEFINE_INSTANCE_PROPERTY_VALUE(nap::UInt16InstancePropertyValue)
+RTTI_DEFINE_INSTANCE_PROPERTY_VALUE(nap::UInt32InstancePropertyValue)
+RTTI_DEFINE_INSTANCE_PROPERTY_VALUE(nap::UInt64InstancePropertyValue)
+RTTI_DEFINE_INSTANCE_PROPERTY_VALUE(nap::FloatInstancePropertyValue)
+RTTI_DEFINE_INSTANCE_PROPERTY_VALUE(nap::DoubleInstancePropertyValue)
 
 namespace nap
 {
