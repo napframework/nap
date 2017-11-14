@@ -28,7 +28,7 @@ namespace nap
         
         bool AudioComponentInstance::init(utility::ErrorState& errorState)
         {
-            AudioComponent* resource = rtti_cast<AudioComponent>(getComponent());
+            AudioComponent* resource = getComponent<AudioComponent>();
             mObject = std::move(resource->mObject->instantiate(getNodeManager(), errorState));
             if (!mObject)
                 return false;

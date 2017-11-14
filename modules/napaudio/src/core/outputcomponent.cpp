@@ -26,7 +26,7 @@ namespace nap
     
         bool audio::OutputComponentInstance::init(utility::ErrorState& errorState)
         {
-            OutputComponent* resource = rtti_cast<OutputComponent>(getComponent());
+            OutputComponent* resource = getComponent<OutputComponent>();
             
             auto& nodeManager = getEntityInstance()->getCore()->getService<AudioService>(ETypeCheck::IS_DERIVED_FROM)->getNodeManager();
             
