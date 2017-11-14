@@ -52,14 +52,9 @@ namespace nap
         
         VoiceInstance* PolyphonicObjectInstance::findFreeVoice()
         {
-            std::unique_lock<std::mutex> lock(mNodeManager->getProcessingMutex());
-            
             for (auto& voice : mVoices)
-                if (!voice->isBusy())
-                {
-                    voice->setBusy(true);
+                if (voice->try_use())
                     return voice.get();
-                }
             
             if (rtti_cast<PolyphonicObject>(&getResource())->mVoiceStealing)
             {
@@ -81,12 +76,12 @@ namespace nap
             if (!voice)
                 return;
             
-            std::unique_lock<std::mutex> lock(mNodeManager->getProcessingMutex());
-            
             voice->play(duration);
             
-            for (auto channel = 0; channel < std::min<int>(mMixNodes.size(), voice->getOutput().getChannelCount()); ++channel)
-                mMixNodes[channel]->inputs.connect(voice->getOutput().getOutputForChannel(channel));
+            mNodeManager->execute([&, voice](){
+                for (auto channel = 0; channel < std::min<int>(mMixNodes.size(), voice->getOutput().getChannelCount()); ++channel)
+                    mMixNodes[channel]->inputs.connect(voice->getOutput().getOutputForChannel(channel));
+            });
         }
         
         
@@ -95,15 +90,13 @@ namespace nap
             if (!voice)
                 return;
             
-            std::unique_lock<std::mutex> lock(mNodeManager->getProcessingMutex());
-            voice->stop();
+            mNodeManager->execute([&](){ voice->stop(); });
         }
         
 
         OutputPin& PolyphonicObjectInstance::getOutputForChannel(int channel)
         {
-            return mMixNodes[channel]->audioOutput;
-            
+            return mMixNodes[channel]->audioOutput;            
         }
         
         
@@ -116,9 +109,13 @@ namespace nap
         void PolyphonicObjectInstance::voiceFinished(VoiceInstance& voice)
         {
             assert(voice.getEnvelope().getValue() == 0);
+            
             for (auto channel = 0; channel < std::min<int>(mMixNodes.size(), voice.getOutput().getChannelCount()); ++channel)
+            {
+                // this function is called from the audio thread, so we don't have to call NodeManager::execute() to schedule disconnection on the audio thread
                 mMixNodes[channel]->inputs.disconnect(voice.getOutput().getOutputForChannel(channel));
-            voice.setBusy(false);
+            }
+            voice.free();
         }
 
 

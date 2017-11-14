@@ -53,6 +53,20 @@ namespace nap {
         }
         
         
+        bool VoiceInstance::try_use()
+        {
+            bool expected = false;
+            return (mBusy.compare_exchange_strong(expected, true));
+        }
+        
+        
+        void VoiceInstance::free()
+        {
+            bool expected = true;
+            while (!mBusy.compare_exchange_weak(expected, false)) { }
+        }
+
+        
         void VoiceInstance::envelopeFinished(EnvelopeGenerator&)
         {
             finishedSignal(*this);
