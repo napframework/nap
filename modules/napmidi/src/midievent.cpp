@@ -78,31 +78,31 @@ namespace nap
         std::string result;
         
         switch (mType) {
-            case noteOn:
+            case Type::noteOn:
                 result = "note on: " + std::to_string(mNumber) + " velocity: " + std::to_string(mValue);
                 break;
                 
-            case noteOff:
+            case Type::noteOff:
                 result = "note off: " + std::to_string(mNumber) + " velocity: " + std::to_string(mValue);
                 break;
                 
-            case afterTouch:
+            case Type::afterTouch:
                 result = "aftertouch: " + std::to_string(mNumber) + " touch: " + std::to_string(mValue);
                 break;
 
-            case controlChange:
+            case Type::controlChange:
                 result = "cc: " + std::to_string(mNumber) + " value: " + std::to_string(mValue);
                 break;
 
-            case programChange:
+            case Type::programChange:
                 result = "program change: " + std::to_string(mNumber);
                 break;
 
-            case channelPressure:
+            case Type::channelPressure:
                 result = "channel pressure: " + std::to_string(mNumber);
                 break;
                 
-            case pitchBend:
+            case Type::pitchBend:
                 result = "pitch bend: " + std::to_string(pitchBendValue());
                 break;
                 
