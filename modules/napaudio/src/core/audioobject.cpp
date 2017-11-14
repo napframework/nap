@@ -30,10 +30,10 @@ namespace nap
         {
             auto instance = createInstance();
             mInstance = instance.get();
-            if (!instance->init(nodeManager, errorState))
-                return nullptr;
-            else
+            if (errorState.check(instance->init(nodeManager, errorState), "Failed to instantiate object %s", mID.c_str()))
                 return instance;
+            else
+                return nullptr;
         }
 
         
