@@ -18,7 +18,8 @@ namespace nap
              * The buffer size has to be a power of 2
              */
             Delay(unsigned int bufferSize);
-            ~Delay();
+            
+            ~Delay() = default;
 
             /**
              * Write a sample to the delay line at the current write position
