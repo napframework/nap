@@ -112,5 +112,7 @@ namespace nap
 		float											mChannelSpeed = 1.0f;
 		int												mCurrentChannel = 0;
 		std::array<int, 3>								mCurrentChannels = {0,0,0};
+		int												mSelectChannel = 0;
+		bool											mManualSelect = false;
 	};
 }

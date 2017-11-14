@@ -262,15 +262,18 @@ namespace nap
 
 	void KalvertorenApp::colorBasedOnChannel(ArtnetMeshFromFile& mesh, double deltaTime, int id)
 	{
+		// Increment time
 		mChannelTime += (deltaTime*mChannelSpeed);
-		mCurrentChannel = static_cast<int>(mChannelTime) % 512;
+		
+		// Get channel, if manual selection is turned on use the actual selected channel, otherwise time based value
+		int selected_channel = mManualSelect ? mCurrentChannel : static_cast<int>(mChannelTime) % 512;
 
 		// This is the channel we want to compare against, makes sure that the we take
 		// in to account the offset of channels associated with a mesh, so:
 		// no offset means starting at 0 where 1 2 and 3 are considered to be part of the
 		// same triangle. With an offset of 1, 2 3 and 4 are considered to be part of the
 		// same triangle. 
-		mCurrentChannels[id] = mCurrentChannel - ((mCurrentChannel - mesh.mChannelOffset) % 4);
+		mCurrentChannels[id] = selected_channel - ((selected_channel - mesh.mChannelOffset) % 4);
 
 		// Color attribute we use to sample
 		nap::VertexAttribute<glm::vec4>& color_attr = mesh.getColorAttribute();
@@ -382,8 +385,16 @@ namespace nap
 			selector.select(mCurrentSelection);
 		}
 		ImGui::SliderFloat("Video Speed", &(videoResource->mSpeed), 0.0f, 20.0f);
-		ImGui::SliderFloat("Channel Speed", &(mChannelSpeed), 0.0f, 20.0f);
-		
+		if (ImGui::SliderFloat("Channel Speed", &(mChannelSpeed), 0.0f, 20.0f))
+		{
+			mManualSelect = false;
+		}
+		if (ImGui::InputInt("Select Channel", &mSelectChannel, 1))
+		{
+			mCurrentChannel = nap::math::min<int>(mSelectChannel, 511);
+			mManualSelect = true;
+		}
+
 		int id = 0;
 		for(auto& i : mCurrentChannels)
 		{
