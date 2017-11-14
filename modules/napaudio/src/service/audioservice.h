@@ -6,9 +6,11 @@
 // Audio includes
 #include <core/audionodemanager.h>
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio  {
+    namespace audio
+    {
         
         
         /**
@@ -18,7 +20,8 @@ namespace nap {
          * - An AudioPluginService that manages input and output of an audio plugin like VST or AudioUnit
          * Every audio service has to expose a node manager to the outside world that audio components can add nodes to in order to perform the audio processing.
          */
-        class NAPAPI AudioService : public Service {
+        class NAPAPI AudioService : public Service
+        {
             RTTI_ENABLE(nap::Service)
             
         public:

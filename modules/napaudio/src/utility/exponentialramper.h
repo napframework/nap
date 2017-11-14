@@ -6,9 +6,11 @@
 // Audio includes
 #include <utility/audiotypes.h>
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
         
         /**
          * Used to ramp a value up and down in steps according to the formula destinationValue = startValue^stepCount

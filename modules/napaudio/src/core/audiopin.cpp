@@ -7,9 +7,11 @@
 #include <core/audionode.h>
 #include <core/audionodemanager.h>
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
         
         // --- InputPin --- //
         

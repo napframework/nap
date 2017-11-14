@@ -3,9 +3,11 @@
 
 RTTI_DEFINE_BASE(nap::audio::Node)
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
                         
         
         Node::Node(NodeManager& service)

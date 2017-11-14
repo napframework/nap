@@ -6,9 +6,11 @@
 // nap includes
 #include <utility/dllexport.h>
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
         
         // Note: in this files typedefs are being used instead of a using statement
         // This is because the using statement cannot be used in combination with the NAPAPI macro

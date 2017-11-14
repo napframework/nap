@@ -17,9 +17,11 @@ RTTI_BEGIN_CLASS(nap::audio::EnvelopeGenerator::Segment)
 RTTI_END_CLASS
 
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
         
         EnvelopeGenerator::EnvelopeGenerator(NodeManager& manager) : ControlNode(manager)
         {

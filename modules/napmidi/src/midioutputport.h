@@ -12,7 +12,8 @@ namespace nap {
     /**
      * Opens and manages a midi output port that midi messages can be sent to.
      */
-    class NAPAPI MidiOutputPort : public rtti::RTTIObject {
+    class NAPAPI MidiOutputPort : public rtti::RTTIObject
+    {
         RTTI_ENABLE(rtti::RTTIObject)
         
     public:

@@ -6,14 +6,17 @@
 #include <node/delay.h>
 #include <utility/linearramper.h>
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
     
         /**
          * Delay line with feedback and dry/wet control.
          */
-        class NAPAPI DelayNode : public Node {
+        class NAPAPI DelayNode : public Node
+        {
         public:
             DelayNode(NodeManager& manager, int delayLineSize = 65536 * 8) : Node(manager), mDelay(delayLineSize) { }
             

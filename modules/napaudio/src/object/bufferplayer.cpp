@@ -6,9 +6,11 @@ RTTI_BEGIN_CLASS(nap::audio::BufferPlayer)
     RTTI_PROPERTY("Buffer", &nap::audio::BufferPlayer::mBufferResource, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
         
     }
     

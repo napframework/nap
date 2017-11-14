@@ -2,67 +2,67 @@
 
 #include <utility/audiofunctions.h>
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
         
         Delay::Delay(unsigned int bufferSize) :
-            bufferSize(bufferSize)
+            mBufferSize(bufferSize)
         {
-            buffer = new SampleValue[bufferSize];
-            writeIndex = 0;
+            mBuffer = new SampleValue[bufferSize];
+            mWriteIndex = 0;
             
             clear();
         }
         
         Delay::~Delay()
         {
-            delete[] buffer;
+            delete[] mBuffer;
         }
 
 
         void Delay::write(SampleValue sample)
         {
-            buffer[writeIndex++] = sample;
-            writeIndex = wrap(writeIndex, bufferSize);
+            mBuffer[mWriteIndex++] = sample;
+            mWriteIndex = wrap(mWriteIndex, mBufferSize);
         }
 
 
         SampleValue Delay::readInterpolating(float time)
         {
             // Update the read index
-            SampleValue readIndex = writeIndex - time - 1;
-            while (readIndex < 0) readIndex += bufferSize;
+            SampleValue readIndex = mWriteIndex - time - 1;
+            while (readIndex < 0) readIndex += mBufferSize;
             
             unsigned int floorReadIndex = (unsigned int)readIndex;
-            unsigned int integerIndex = wrap(floorReadIndex, bufferSize);
-            unsigned int nextIntegerIndex = wrap(integerIndex+1, bufferSize);
+            unsigned int integerIndex = wrap(floorReadIndex, mBufferSize);
+            unsigned int nextIntegerIndex = wrap(integerIndex+1, mBufferSize);
             
             SampleValue frac = readIndex - floorReadIndex;
             
-            return lerp(buffer[integerIndex], buffer[nextIntegerIndex], frac);
+            return lerp(mBuffer[integerIndex], mBuffer[nextIntegerIndex], frac);
         }
         
         
         SampleValue Delay::read(unsigned int time)
         {
             // Update the read index
-            int readIndex = writeIndex - time - 1;
-            while (readIndex < 0) readIndex += bufferSize;            
+            int readIndex = mWriteIndex - time - 1;
+            while (readIndex < 0) readIndex += mBufferSize;
             
-            unsigned int integerIndex = wrap(readIndex, bufferSize);
+            unsigned int integerIndex = wrap(readIndex, mBufferSize);
             
-            return buffer[integerIndex];
+            return mBuffer[integerIndex];
         }
         
         
         void Delay::clear()
         {
-//            memset(buffer, 0, bufferSize * sizeof(SampleValue));
-            
-            for (unsigned int i = 0; i < bufferSize; i++)
+            for (unsigned int i = 0; i < mBufferSize; i++)
             {
-                buffer[i] = 0.0;
+                mBuffer[i] = 0.0;
             }            
         }
 

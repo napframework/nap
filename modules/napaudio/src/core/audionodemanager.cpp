@@ -4,9 +4,11 @@
 #include <nap/logger.h>
 #include <nap/core.h>
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
 
         void NodeManager::process(float** inputBuffer, float** outputBuffer, unsigned long framesPerBuffer)
         {

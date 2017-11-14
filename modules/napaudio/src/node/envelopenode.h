@@ -3,9 +3,11 @@
 // Audio includes
 #include <node/controlnode.h>
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
         
         /**
          * Envelope generator that can trigger envelopes to generate a control signal.
@@ -54,7 +56,7 @@ namespace nap {
             void stop(TimeValue rampTime = 5);
             
             /**
-             * This signal is emitted whenever an envelope is finishes playing and the output signal has reached zero.
+             * This signal is emitted whenever an envelope finishes playing and the output signal has reached zero.
              */
             nap::Signal<EnvelopeGenerator&> envelopeFinishedSignal;
             

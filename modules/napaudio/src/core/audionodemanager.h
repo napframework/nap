@@ -9,9 +9,11 @@
 // Audio includes
 #include <utility/audiotypes.h>
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
     
         // Forward declarations
         class Node;

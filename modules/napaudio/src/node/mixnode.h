@@ -2,9 +2,11 @@
 
 #include <core/audionode.h>
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
         
         /**
          * Node to scale an audio signal

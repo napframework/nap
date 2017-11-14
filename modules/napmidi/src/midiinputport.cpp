@@ -9,7 +9,8 @@ RTTI_BEGIN_CLASS(nap::MidiInputPort)
     RTTI_PROPERTY("EnableDebugOutput", &nap::MidiInputPort::mDebugOutput, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-namespace nap {
+namespace nap
+{
     
     
     void midiCallback(double deltatime, std::vector<unsigned char> *message, void *userData)

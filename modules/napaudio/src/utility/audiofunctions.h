@@ -1,6 +1,8 @@
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
         
         static unsigned int wrap(unsigned int inc, unsigned int bufferSize)
         {

@@ -2,7 +2,8 @@
 
 #include <nap/event.h>
 
-namespace nap {
+namespace nap
+{
     
     /**
      * a midi value between 0 an 128
@@ -14,7 +15,8 @@ namespace nap {
      * Event representation of a midi message
      * Storing a readable representation of the raw midi message and optionally the port number through which it is sent.
      */
-    class NAPAPI MidiEvent : public nap::Event {
+    class NAPAPI MidiEvent : public nap::Event
+    {
     public:
         static constexpr MidiValue MIDI_MAX_VALUE = 127;                /**< Maximum value of a midi byte */
         static constexpr MidiValue MIDI_CONTROLLER_SUSTAIN = 64;        /**< CC number for sustain pedal */

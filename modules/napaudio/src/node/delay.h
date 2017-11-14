@@ -44,7 +44,7 @@ namespace nap
             /**
              * @return: return the maximum delay. (equalling the size of the buffer)
              */
-            unsigned int getMaxDelay() { return bufferSize; }
+            unsigned int getMaxDelay() { return mBufferSize; }
             
             /**
              * Operator to read from the delay line without interpolation at @index before the write position
@@ -56,9 +56,9 @@ namespace nap
             
         private:
             
-            SampleValue* buffer = nullptr;
-            unsigned int bufferSize = 0;
-            unsigned int writeIndex = 0;
+            SampleValue* mBuffer = nullptr;
+            unsigned int mBufferSize = 0;
+            unsigned int mWriteIndex = 0;
         };
                 
     }

@@ -6,9 +6,11 @@
 // audio includes
 #include <utility/audiotypes.h>
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
         
         /**
          * A buffer of multichannel audio data in memory.

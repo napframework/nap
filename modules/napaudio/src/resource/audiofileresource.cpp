@@ -8,9 +8,11 @@ RTTI_BEGIN_CLASS(nap::audio::AudioFileResource)
     RTTI_PROPERTY("AudioFilePath", &nap::audio::AudioFileResource::mAudioFilePath, nap::rtti::EPropertyMetaData::FileLink)
 RTTI_END_CLASS
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
         
         bool AudioFileResource::init(utility::ErrorState& errorState)
         {

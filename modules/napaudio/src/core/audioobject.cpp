@@ -19,9 +19,11 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::MultiChannelObjectInstance)
 RTTI_END_CLASS
 
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
         
         
         std::unique_ptr<AudioObjectInstance> AudioObject::instantiate(NodeManager& nodeManager, utility::ErrorState& errorState)

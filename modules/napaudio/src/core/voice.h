@@ -6,9 +6,11 @@
 #include <object/envelope.h>
 
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
         
         // Forward declarations
         class PolyphonicObjectInstance;

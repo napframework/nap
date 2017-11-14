@@ -1,8 +1,10 @@
 #include "controlnode.h"
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
         
         ControlNode::ControlNode(NodeManager& manager) : Node(manager)
         {

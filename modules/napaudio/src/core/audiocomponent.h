@@ -9,9 +9,11 @@
 #include <core/audionode.h>
 #include <core/audioobject.h>
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
     
         class AudioComponentInstance;
         
@@ -19,7 +21,8 @@ namespace nap {
         /**
          * Component that wraps an audio object that generates audio output for one or more channels.
          */
-        class NAPAPI AudioComponent : public Component {
+        class NAPAPI AudioComponent : public Component
+        {
             RTTI_ENABLE(nap::Component)
             DECLARE_COMPONENT(AudioComponent, AudioComponentInstance)
             
@@ -38,7 +41,8 @@ namespace nap {
         /**
          * Instance of a component that wraps an audio object that generates audio output for one or more channels
          */
-        class NAPAPI AudioComponentInstance : public ComponentInstance {
+        class NAPAPI AudioComponentInstance : public ComponentInstance
+        {
             RTTI_ENABLE(nap::ComponentInstance)
             
         public:

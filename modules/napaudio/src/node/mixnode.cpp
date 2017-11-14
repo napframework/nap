@@ -1,8 +1,10 @@
 #include "mixnode.h"
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
         
         void MixNode::process()
         {

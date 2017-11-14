@@ -7,11 +7,14 @@
 #include <core/audioobject.h>
 #include <node/oscillatornode.h>
 
-namespace nap {
+namespace nap
+{
     
-    namespace audio {
+    namespace audio
+    {
         
-        class Oscillator : public MultiChannelObject {
+        class Oscillator : public MultiChannelObject
+        {
             RTTI_ENABLE(MultiChannelObject)
             
         public:
