@@ -4,7 +4,7 @@
 #include <nap/logger.h>
 
 // Audio includes
-#include <service/audiodeviceservice.h>
+#include <service/AudioService.h>
 
 
 // RTTI
@@ -45,7 +45,7 @@ namespace nap
         }
         
         
-        AudioDevice::AudioDevice(AudioDeviceService& service) : mService(&service)
+        AudioDevice::AudioDevice(AudioService& service) : mService(&service)
         {
             
         }
