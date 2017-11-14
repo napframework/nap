@@ -4,7 +4,7 @@ namespace nap
     namespace audio
     {
         
-        static unsigned int wrap(unsigned int inc, unsigned int bufferSize)
+        inline unsigned int wrap(unsigned int inc, unsigned int bufferSize)
         {
             unsigned int bitMask = bufferSize - 1;
             return inc & bitMask;
