@@ -77,8 +77,9 @@ namespace nap {
             DiscreteTimeValue getStartTime() const { return mStartTime; }
             
         private:
-            // Used internally by PolyphincObjectInstance to reserve the voice for usage
-            void setBusy(bool busy) { mBusy = busy; }
+            // Used internally by PolyphincObjectInstance to try to reserve the voice for usage
+            bool try_use();
+            void free();
             
             // Responds to the signal emitted by the envelope generator of the main envelope by emitting the finishedSignal.
             void envelopeFinished(EnvelopeGenerator&);

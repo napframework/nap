@@ -105,12 +105,6 @@ namespace nap {
              * Enqueue a task to be executed within the process() method for thread safety
              */
             void execute(TaskQueue::Task task) { mAudioCallbackTaskQueue.enqueue(task); }
-
-            
-            /**
-             * @return: mutex that can be used to lock a section outside the audio processing
-             */
-            std::mutex& getProcessingMutex() { return mProcessingMutex; }
             
         private:
             // Used by the nodes to register themselves on construction
@@ -160,7 +154,6 @@ namespace nap {
             std::set<Node*> mRootNodes;
             
             nap::TaskQueue mAudioCallbackTaskQueue;
-            std::mutex mProcessingMutex;
         };
         
     }

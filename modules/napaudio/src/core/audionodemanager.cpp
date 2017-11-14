@@ -26,8 +26,6 @@ namespace nap {
                     channelMapping.clear();
                 
                 {
-                    std::unique_lock<std::mutex> lock(mProcessingMutex);
-                    
                     for (auto& root : mRootNodes)
                         root->process();
                 }
@@ -93,15 +91,15 @@ namespace nap {
         
         void NodeManager::registerRootNode(Node& rootNode)
         {
-            std::unique_lock<std::mutex> lock(mProcessingMutex);
-            mRootNodes.emplace(&rootNode);
+            auto rootNodePtr = &rootNode;
+            execute([&, rootNodePtr](){ mRootNodes.emplace(rootNodePtr); });
         }
 
         
         void NodeManager::unregisterRootNode(Node& rootNode)
         {
-            std::unique_lock<std::mutex> lock(mProcessingMutex);
-            mRootNodes.erase(&rootNode);
+            auto rootNodePtr = &rootNode;
+            execute([&, rootNodePtr](){ mRootNodes.erase(rootNodePtr); });
         }
 
         
