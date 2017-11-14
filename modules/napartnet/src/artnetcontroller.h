@@ -90,6 +90,14 @@ namespace nap
 		 */
 		static Address createAddress(uint8_t subnet, uint8_t universe);
 
+		/**
+		 * Converts a nap artnet address in to a subnet and universe
+		 * @param address the artnet address to convert
+		 * @param subnet the subnet part of the address
+		 * @param universe the universe part of the address;
+		 */
+		static void convertAddress(Address address, uint8_t& subnet, uint8_t& universe);
+
 	private:
 
 		/**
