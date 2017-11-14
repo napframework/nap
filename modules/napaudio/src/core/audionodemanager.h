@@ -25,7 +25,7 @@ namespace nap
          * A connection represents a mono audio signal.
          * Does not own the nodes but maintains a list of existing nodes that is updated from the node's constructor end destructors.
          */
-        class NAPAPI NodeManager
+        class NAPAPI NodeManager final
         {
             friend class Node;
             friend class AudioTrigger;

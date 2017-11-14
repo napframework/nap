@@ -23,6 +23,7 @@ namespace nap
         class NAPAPI InputPinBase
         {
         public:
+            virtual ~InputPinBase() = default;
             virtual void connect(OutputPin& input) = 0;
             virtual void disconnect(OutputPin& input) = 0;
             virtual void disconnectAll() = 0;
@@ -34,7 +35,7 @@ namespace nap
          * An input pin is used by audio node to connect it to other nodes.
          * The pin connects one channel (mono) audio.
          */
-        class NAPAPI InputPin : public InputPinBase
+        class NAPAPI InputPin final : public InputPinBase
         {
             friend class OutputPin;
             
@@ -44,7 +45,7 @@ namespace nap
             /**
              * Destructor. If the input is connected on destruction the connection will be broken first.
              */
-            virtual ~InputPin();
+            virtual ~InputPin() override;
             
             /**
              * This method can be used by the node to pull one sample buffer output from the connected audio output.
@@ -90,12 +91,12 @@ namespace nap
          * This pin can be connected to an arbitrary number of output pins belonging to different nodes.
          * This is useful for example to build a mixing node that mixes any amount of input signals.
          */
-        class NAPAPI MultiInputPin : public InputPinBase
+        class NAPAPI MultiInputPin final : public InputPinBase
         {
         public:
             MultiInputPin() = default;
             
-            virtual ~MultiInputPin();
+            virtual ~MultiInputPin() override;
             
             /**
              * This method can be used by the node to pull a buffer of samples for every connected output pin.
@@ -129,7 +130,7 @@ namespace nap
          * It outputs a pointer to an owned @SampleBuffer.
          * The PullFunction of this class calls a calculate function on the node it belongs to.
          */
-        class NAPAPI OutputPin
+        class NAPAPI OutputPin final
         {
             friend class Node;
             friend class InputPin;

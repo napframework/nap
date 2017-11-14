@@ -41,7 +41,7 @@ namespace nap
              * @param manager: the node manager that this node will be registered to and processed by. The node receives it's buffersize and samplerate from the manager.
              */
             Node(NodeManager& manager);
-            ~Node();
+            virtual ~Node();
             
             /**
              * Returns the internal buffersize of the node system that this node belongs to. 
@@ -139,7 +139,7 @@ namespace nap
          * Node to provide audio output for the node manager's audio processing, typically sent to an audio interface.
          * The OutputNode is a root node that will be directly processed by the node manager.
          */
-        class NAPAPI OutputNode : public Node
+        class NAPAPI OutputNode final : public Node
         {
         public:
             /**
@@ -148,7 +148,7 @@ namespace nap
              */
             OutputNode(NodeManager& manager, bool active = true);
             
-            ~OutputNode();
+            ~OutputNode() override final;
             
             /**
              * Through this input the node receives buffers of audio samples that will be presented to the node manager as output for its audio processing.
@@ -190,7 +190,7 @@ namespace nap
          * This node outputs the audio input that is received from the node system's external input, typically an audio interface.
          * Input from channel @inputChannel can be pulled from @audioOutput plug.
          */
-        class NAPAPI InputNode : public Node
+        class NAPAPI InputNode final : public Node
         {
             friend class NodeManager;
             
