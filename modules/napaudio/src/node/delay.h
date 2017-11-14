@@ -11,7 +11,7 @@ namespace nap
          * Utility class representing a single delay that can be written and read from.
          * Supports interpolation between samples while reading.
          */
-        class Delay
+        class Delay final
         {
         public:
             /**
@@ -44,7 +44,7 @@ namespace nap
             /**
              * @return: return the maximum delay. (equalling the size of the buffer)
              */
-            unsigned int getMaxDelay() { return mBufferSize; }
+            unsigned int getMaxDelay() { return mBuffer.size(); }
             
             /**
              * Operator to read from the delay line without interpolation at @index before the write position
@@ -56,8 +56,7 @@ namespace nap
             
         private:
             
-            SampleValue* mBuffer = nullptr;
-            unsigned int mBufferSize = 0;
+            SampleBuffer mBuffer;
             unsigned int mWriteIndex = 0;
         };
                 

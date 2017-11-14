@@ -8,25 +8,19 @@ namespace nap
     namespace audio
     {
         
-        Delay::Delay(unsigned int bufferSize) :
-            mBufferSize(bufferSize)
+        Delay::Delay(unsigned int bufferSize)
         {
-            mBuffer = new SampleValue[bufferSize];
+            mBuffer.resize(bufferSize);
             mWriteIndex = 0;
             
             clear();
         }
+
         
-        Delay::~Delay()
-        {
-            delete[] mBuffer;
-        }
-
-
         void Delay::write(SampleValue sample)
         {
             mBuffer[mWriteIndex++] = sample;
-            mWriteIndex = wrap(mWriteIndex, mBufferSize);
+            mWriteIndex = wrap(mWriteIndex, mBuffer.size());
         }
 
 
@@ -34,11 +28,11 @@ namespace nap
         {
             // Update the read index
             SampleValue readIndex = mWriteIndex - time - 1;
-            while (readIndex < 0) readIndex += mBufferSize;
+            while (readIndex < 0) readIndex += mBuffer.size();
             
             unsigned int floorReadIndex = (unsigned int)readIndex;
-            unsigned int integerIndex = wrap(floorReadIndex, mBufferSize);
-            unsigned int nextIntegerIndex = wrap(integerIndex+1, mBufferSize);
+            unsigned int integerIndex = wrap(floorReadIndex, mBuffer.size());
+            unsigned int nextIntegerIndex = wrap(integerIndex+1, mBuffer.size());
             
             SampleValue frac = readIndex - floorReadIndex;
             
@@ -50,9 +44,9 @@ namespace nap
         {
             // Update the read index
             int readIndex = mWriteIndex - time - 1;
-            while (readIndex < 0) readIndex += mBufferSize;
+            while (readIndex < 0) readIndex += mBuffer.size();
             
-            unsigned int integerIndex = wrap(readIndex, mBufferSize);
+            unsigned int integerIndex = wrap(readIndex, mBuffer.size());
             
             return mBuffer[integerIndex];
         }
@@ -60,7 +54,7 @@ namespace nap
         
         void Delay::clear()
         {
-            for (unsigned int i = 0; i < mBufferSize; i++)
+            for (unsigned int i = 0; i < mBuffer.size(); i++)
             {
                 mBuffer[i] = 0.0;
             }            
