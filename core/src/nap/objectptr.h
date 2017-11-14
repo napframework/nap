@@ -77,6 +77,8 @@ namespace nap
 	 */
 	class NAPAPI ObjectPtrBase
 	{
+		RTTI_ENABLE()
+
 	private:
 		ObjectPtrBase() = default;
 
@@ -128,6 +130,8 @@ namespace nap
 	template<typename T>
 	class ObjectPtr : public ObjectPtrBase
 	{
+		RTTI_ENABLE(ObjectPtrBase)
+
 	public:
 		ObjectPtr() = default;
 

@@ -36,8 +36,8 @@ namespace nap
 	bool PointerInstancePropertyValue::setValue(rtti::ResolvedRTTIPath& resolvedTargetPath, utility::ErrorState& errorState) const
 	{
  		rtti::TypeInfo target_type = resolvedTargetPath.getType();
-// 		if (!errorState.check(target_type.is_derived_from(RTTI_OF(ObjectPtrBase)), "Target pointer is not an ObjectPtr"))
-// 			return false;
+ 		if (!errorState.check(target_type.is_derived_from(RTTI_OF(ObjectPtrBase)), "Target pointer is not an ObjectPtr"))
+ 			return false;
 
 		rtti::TypeInfo actual_type = target_type.is_wrapper() ? target_type.get_wrapped_type() : target_type;
 		if (!errorState.check(mValue->get_type().is_derived_from(actual_type), "Target is of the wrong type (found '%s', expected '%s')", mValue->get_type().get_name().data(), actual_type.get_raw_type().get_name().data()))
