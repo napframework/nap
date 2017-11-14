@@ -107,9 +107,6 @@ namespace nap
                 if (!component->mNumbers.empty())
                     if (std::find(component->mNumbers.begin(), component->mNumbers.end(), event->mNumber) == component->mNumbers.end())
                         continue;
-                if (!component->mNumbers.empty())
-                    if (std::find(component->mNumbers.begin(), component->mNumbers.end(), event->mNumber) == component->mNumbers.end())
-                        continue;
                 component->trigger(*event);
             }
     }
