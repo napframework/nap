@@ -9,6 +9,11 @@
 
 namespace nap
 {	
+	#define RTTI_DEFINE_INSTANCE_PROPERTY_VALUE(InstancePropertyValueType)											\
+		RTTI_BEGIN_CLASS(InstancePropertyValueType)																	\
+			RTTI_PROPERTY("Value", &InstancePropertyValueType::mValue, nap::rtti::EPropertyMetaData::Required)		\
+		RTTI_END_CLASS
+
 	namespace rtti
 	{
 		class ResolvedRTTIPath;
@@ -85,6 +90,16 @@ namespace nap
 		TargetAttributeList			mTargetAttributes;
 	};
 
-	using IntInstancePropertyValue = TypedInstancePropertyValue<int>;
+	using BoolInstancePropertyValue = TypedInstancePropertyValue<bool>;
+	using CharInstancePropertyValue = TypedInstancePropertyValue<char>;
+	using Int8InstancePropertyValue = TypedInstancePropertyValue<int8_t>;
+	using Int16InstancePropertyValue = TypedInstancePropertyValue<int16_t>;
+	using Int32InstancePropertyValue = TypedInstancePropertyValue<int32_t>;
+	using Int64InstancePropertyValue = TypedInstancePropertyValue<int64_t>;
+	using UInt8InstancePropertyValue = TypedInstancePropertyValue<uint8_t>;
+	using UInt16InstancePropertyValue = TypedInstancePropertyValue<uint16_t>;
+	using UInt32InstancePropertyValue = TypedInstancePropertyValue<uint32_t>;
+	using UInt64InstancePropertyValue = TypedInstancePropertyValue<uint64_t>;
 	using FloatInstancePropertyValue = TypedInstancePropertyValue<float>;
+	using DoubleInstancePropertyValue = TypedInstancePropertyValue<double>;
 }

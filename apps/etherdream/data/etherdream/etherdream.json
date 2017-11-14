@@ -741,7 +741,7 @@
 			 			{
 			 				"Path" : "LaserID",
 			 				"Value" : {
-			 					"Type" : "nap::IntInstancePropertyValue",
+			 					"Type" : "nap::Int32InstancePropertyValue",
 			 					"Value": 0
 			 				}
 			 			}
@@ -839,7 +839,7 @@
 			 			{
 			 				"Path" : "LaserID",
 			 				"Value" : {
-			 					"Type" : "nap::IntInstancePropertyValue",
+			 					"Type" : "nap::Int32InstancePropertyValue",
 			 					"Value": 1
 			 				}
 			 			}
@@ -938,7 +938,7 @@
 			 			{
 			 				"Path" : "LaserID",
 			 				"Value" : {
-			 					"Type" : "nap::IntInstancePropertyValue",
+			 					"Type" : "nap::Int32InstancePropertyValue",
 			 					"Value": 2
 			 				}
 			 			}
@@ -1036,7 +1036,7 @@
 			 			{
 			 				"Path" : "LaserID",
 			 				"Value" : {
-			 					"Type" : "nap::IntInstancePropertyValue",
+			 					"Type" : "nap::Int32InstancePropertyValue",
 			 					"Value": 3
 			 				}
 			 			}

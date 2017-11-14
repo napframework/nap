@@ -2,7 +2,6 @@
 
 // Local Includes
 #include "renderservice.h"
-#include "renderattributes.h"
 
 // External Includes
 #include <nap/windowresource.h>
