@@ -29,7 +29,7 @@ namespace nap
         /**
          * Different kinds of midi events
          */
-        enum Type { noteOff = 0x80, noteOn = 0x90, afterTouch = 0xA0, controlChange = 0xB0, programChange = 0xC0, channelPressure = 0xD0, pitchBend = 0xE0};
+        enum class Type { noteOff = 0x80, noteOn = 0x90, afterTouch = 0xA0, controlChange = 0xB0, programChange = 0xC0, channelPressure = 0xD0, pitchBend = 0xE0};
 
         MidiEvent() = default;
         
