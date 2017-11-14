@@ -10,10 +10,10 @@ RTTI_BEGIN_ENUM(nap::audio::ControlNode::RampMode)
 RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS(nap::audio::EnvelopeGenerator::Segment)
-    RTTI_PROPERTY("Duration", &nap::audio::EnvelopeGenerator::Segment::duration, nap::rtti::EPropertyMetaData::Required)
-    RTTI_PROPERTY("Destination", &nap::audio::EnvelopeGenerator::Segment::destination, nap::rtti::EPropertyMetaData::Required)
-    RTTI_PROPERTY("DurationRelative", &nap::audio::EnvelopeGenerator::Segment::durationRelative, nap::rtti::EPropertyMetaData::Default)
-    RTTI_PROPERTY("RampMode", &nap::audio::EnvelopeGenerator::Segment::mode, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("Duration", &nap::audio::EnvelopeGenerator::Segment::mDuration, nap::rtti::EPropertyMetaData::Required)
+    RTTI_PROPERTY("Destination", &nap::audio::EnvelopeGenerator::Segment::mDestination, nap::rtti::EPropertyMetaData::Required)
+    RTTI_PROPERTY("DurationRelative", &nap::audio::EnvelopeGenerator::Segment::mDurationRelative, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("RampMode", &nap::audio::EnvelopeGenerator::Segment::mMode, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 
@@ -46,10 +46,10 @@ namespace nap
             for (auto i = startSegment; i < endSegment; ++i)
             {
                 auto& segment = envelope[i];
-                if (!segment.durationRelative)
-                    absoluteDuration += segment.duration;
+                if (!segment.mDurationRelative)
+                    absoluteDuration += segment.mDuration;
                 else
-                    relativeDuration += segment.duration;
+                    relativeDuration += segment.mDuration;
             }
             
             mTotalRelativeDuration = (totalDuration - absoluteDuration) / relativeDuration;
@@ -73,10 +73,10 @@ namespace nap
             mCurrentSegment = index;
             auto& segment = (*mEnvelope)[index];
             
-            if (segment.durationRelative)
-                ramp(segment.destination, segment.duration * mTotalRelativeDuration, segment.mode);
+            if (segment.mDurationRelative)
+                ramp(segment.mDestination, segment.mDuration * mTotalRelativeDuration, segment.mMode);
             else
-                ramp(segment.destination, segment.duration, segment.mode);
+                ramp(segment.mDestination, segment.mDuration, segment.mMode);
         }
         
         

@@ -22,10 +22,10 @@ namespace nap
              */
             struct NAPAPI Segment
             {
-                TimeValue duration = 0;
-                ControllerValue destination = 0;
-                bool durationRelative = false; //** this indicates wether the duration of this segment is relative to the total duration of the envelope.
-                ControlNode::RampMode mode = ControlNode::RampMode::LINEAR; //** This indicates the line shape of the segment
+                TimeValue mDuration = 0;
+                ControllerValue mDestination = 0;
+                bool mDurationRelative = false; //** this indicates wether the duration of this segment is relative to the total duration of the envelope.
+                ControlNode::RampMode mMode = ControlNode::RampMode::LINEAR; //** This indicates the line shape of the segment
             };
             using Envelope = std::vector<Segment>;
 
