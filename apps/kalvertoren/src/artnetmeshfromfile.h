@@ -57,6 +57,11 @@ namespace nap
 		nap::VertexAttribute<glm::vec3>& getPositionAttribute()						{ return *mPositionAttribute; }
 
 		/**
+		 *	@return the uv attribute
+		 */
+		nap::VertexAttribute<glm::vec3>& getUVAttribute()							{ return *mUVAttribute; }
+
+		/**
 		 *	@return the channel attribute
 		 */
 		nap::VertexAttribute<int>& getChannelAttribute()							{ return *mChannelAttribute; }
@@ -86,6 +91,10 @@ namespace nap
 		 */
 		const math::Box& getBoundingBox() const										{ return mBoundingBox; }
 
+		bool								mOverrideSubnet = false;			///< If we want to override the mesh subnet address
+		int									mSubnetAddress = 0;					///< What the subnet address should be
+		int									mChannelOffset = 0;					///< Channel offset for every triangle
+
 	private:
 		std::unique_ptr<MeshInstance>		mMeshInstance;
 
@@ -94,6 +103,7 @@ namespace nap
 		nap::VertexAttribute<int>*			mUniverseAttribute = nullptr;
 		nap::VertexAttribute<int>*			mSubnetAttribute = nullptr;
 		nap::VertexAttribute<glm::vec3>*	mPositionAttribute = nullptr;
+		nap::VertexAttribute<glm::vec3>*	mUVAttribute = nullptr;
 
 		std::unordered_set<ArtNetController::Address> mAddresses;				///< Contains all the artnet addresses associated with this mesh;
 

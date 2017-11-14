@@ -85,9 +85,9 @@ namespace nap
 			glm::vec4 color = *(tri_color[0]);
 			std::vector<uint8> data
 			{
-				static_cast<uint8>(pow(color.r,3.0) * 255.0f),
-				static_cast<uint8>(pow(color.g,3.0) * 255.0f),
-				static_cast<uint8>(pow(color.b,3.0) * 255.0f),
+				static_cast<uint8>(pow(color.r,1.0) * 255.0f),
+				static_cast<uint8>(pow(color.g,1.0) * 255.0f),
+				static_cast<uint8>(pow(color.b,1.0) * 255.0f),
 				0
 			};
 

@@ -69,9 +69,19 @@ namespace nap
 		void colorBasedOnBounds(ArtnetMeshFromFile& mesh);
 
 		/**
+		 *	Colors the vertices based on the active channel
+		 */
+		void colorBasedOnChannel(ArtnetMeshFromFile& mesh, double deltaTime, int id);
+
+		/**
 		 *	Applies the rendered video texture to the vertices as color
 		 */
-		void applyVideoTexture();
+		void applyVideoTexture(ArtnetMeshFromFile& mesh);
+
+		/**
+		 *	Updates the gui
+		 */
+		void updateGui();
 
 	private:
 		// Nap Objects
@@ -92,12 +102,15 @@ namespace nap
 		nap::ObjectPtr<nap::EntityInstance>				lightEntity = nullptr;
 		nap::ObjectPtr<nap::Material>					frameMaterial = nullptr;
 		nap::ObjectPtr<nap::Material>					vertexMaterial = nullptr;
-		nap::ObjectPtr<nap::ArtnetMeshFromFile>			heiligeWegMesh = nullptr;
 		nap::ObjectPtr<nap::EntityInstance>				modelsEntity = nullptr;
 
 		// video data
 		opengl::Bitmap									mVideoBitmap;
 		int												mCurrentSelection = 0;
-		bool											mShowVideo = false;
+		int												mDisplayMode = 0;
+		double											mChannelTime = 0.0f;
+		float											mChannelSpeed = 1.0f;
+		int												mCurrentChannel = 0;
+		std::array<int, 3>								mCurrentChannels = {0,0,0};
 	};
 }

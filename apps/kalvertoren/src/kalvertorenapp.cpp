@@ -9,6 +9,7 @@
 #include <meshutils.h>
 #include <imgui/imgui.h>
 #include <imguiservice.h>
+#include <utility/stringutils.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::KalvertorenApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -41,9 +42,6 @@ namespace nap
 		defaultInputRouter = resourceManager->findEntity("DefaultInputRouterEntity");
 		videoEntity = resourceManager->findEntity("VideoEntity");
 		lightEntity = resourceManager->findEntity("LightEntity");
-
-		// Mesh associated with heiligeweg
-		heiligeWegMesh = resourceManager->findObject<nap::ArtnetMeshFromFile>("HeiligewegMesh");
 
 		// Materials
 		vertexMaterial = resourceManager->findObject<nap::Material>("VertexColorMaterial");
@@ -89,26 +87,43 @@ namespace nap
 		plane_material.getOrCreateUniform<nap::UniformTexture2D>("uTexture").setTexture(videoResource->getUTexture());
 		plane_material.getOrCreateUniform<nap::UniformTexture2D>("vTexture").setTexture(videoResource->getVTexture());
 
-		// Copy video texture data over
-		if (mVideoBitmap.hasData() && mShowVideo)
-			applyVideoTexture();
+		// Update our gui
+		updateGui();
 
-		// Gui
+		// Update vertex colors
 		SelectLedMeshComponentInstance& selector = modelsEntity->getComponent<SelectLedMeshComponentInstance>();
-		ImGui::Begin("Settings");
-		if (ImGui::Checkbox("Show Video", &mShowVideo))
+		switch (mDisplayMode)
 		{
-			if (!mShowVideo)
+			case 0:
 			{
-				colorBasedOnBounds(*(selector.getLedMeshes()[0]->mTriangleMesh));
+				for (auto& mesh : selector.getLedMeshes())
+				{
+					colorBasedOnBounds(*(mesh->mTriangleMesh));
+				}
+				break;
+			}
+			case 1:
+			{
+				int i = 0;
+				for (auto& mesh : selector.getLedMeshes())
+				{
+					colorBasedOnChannel(*(mesh->mTriangleMesh), deltaTime, i);
+					i++;
+				}
+				break;
+			}
+			case 2:
+			{
+				for (auto& mesh : selector.getLedMeshes())
+				{
+					if (mVideoBitmap.hasData())
+					{
+						applyVideoTexture(*(mesh->mTriangleMesh));
+					}
+				}
+				break;
 			}
 		}
-		ImGui::SliderFloat("Speed", &(videoResource->mSpeed), 0.0f, 20.0f);
-		if (ImGui::SliderInt("Selection", &mCurrentSelection, 0, selector.getCount()-1))
-		{
-			selector.select(mCurrentSelection);
-		}
-		ImGui::End();
 	}
 
 
@@ -245,15 +260,63 @@ namespace nap
 	}
 
 
-	void KalvertorenApp::applyVideoTexture()
-	{		// Copy pixel data over
-		nap::MeshInstance& mesh = heiligeWegMesh->getMeshInstance();
+	void KalvertorenApp::colorBasedOnChannel(ArtnetMeshFromFile& mesh, double deltaTime, int id)
+	{
+		mChannelTime += (deltaTime*mChannelSpeed);
+		mCurrentChannel = static_cast<int>(mChannelTime) % 512;
 
-		// UV attribute we use to sample
-		nap::VertexAttribute<glm::vec3>& uv_attr = mesh.GetAttribute<glm::vec3>(nap::MeshInstance::VertexAttributeIDs::GetUVName(0));
+		// This is the channel we want to compare against, makes sure that the we take
+		// in to account the offset of channels associated with a mesh, so:
+		// no offset means starting at 0 where 1 2 and 3 are considered to be part of the
+		// same triangle. With an offset of 1, 2 3 and 4 are considered to be part of the
+		// same triangle. 
+		mCurrentChannels[id] = mCurrentChannel - ((mCurrentChannel - mesh.mChannelOffset) % 4);
 
 		// Color attribute we use to sample
-		nap::VertexAttribute<glm::vec4>& color_attr = heiligeWegMesh->getColorAttribute();
+		nap::VertexAttribute<glm::vec4>& color_attr = mesh.getColorAttribute();
+		nap::VertexAttribute<int>& channel_attr = mesh.getChannelAttribute();
+
+		// Get amount of mesh triangles
+		int tri_count = getTriangleCount(mesh.getMeshInstance());
+
+		std::vector<glm::vec4> color_data(color_attr.getCount(), { 0.0f,0.0f,0.0f,0.0f });
+		color_attr.setData(color_data);
+
+		// Find the triangle that has the channel attribute
+		TriangleDataPointer<int> tri_channel;
+		TriangleDataPointer<glm::vec4> tri_color;
+		for (int i = 0; i < tri_count; i++)
+		{
+			getTriangleValues<int>(mesh.getMeshInstance(), i, channel_attr, tri_channel);
+			int channel_number = *(tri_channel[0]);
+
+			if (channel_number == mCurrentChannels[id])
+			{
+				getTriangleValues<glm::vec4>(mesh.getMeshInstance(), i, color_attr, tri_color);
+				*(tri_color[0]) = { 1.0f, 1.0f, 1.0f, 1.0f };
+				*(tri_color[1]) = { 1.0f, 1.0f, 1.0f, 1.0f };
+				*(tri_color[2]) = { 1.0f, 1.0f, 1.0f, 1.0f };
+			}
+		}
+
+		nap::utility::ErrorState error;
+		if (!mesh.getMeshInstance().update(error))
+		{
+			assert(false);
+		}
+	}
+
+
+	void KalvertorenApp::applyVideoTexture(ArtnetMeshFromFile& artnetmesh)
+	{	
+		// Copy pixel data over
+		nap::MeshInstance& mesh = artnetmesh.getMeshInstance();
+
+		// UV attribute we use to sample
+		nap::VertexAttribute<glm::vec3>& uv_attr = artnetmesh.getUVAttribute();
+
+		// Color attribute we use to sample
+		nap::VertexAttribute<glm::vec4>& color_attr = artnetmesh.getColorAttribute();
 
 		// Total amount of triangles
 		int tri_count = getTriangleCount(mesh);
@@ -300,4 +363,49 @@ namespace nap
 		}
 	}
 
+
+	void KalvertorenApp::updateGui()
+	{
+		// Gui
+		SelectLedMeshComponentInstance& selector = modelsEntity->getComponent<SelectLedMeshComponentInstance>();
+		ImGui::Begin("Settings");
+		if (ImGui::Button("Reset Walker"))
+		{
+			mChannelTime = 0.0f;
+		}
+		if (ImGui::Combo("Mode", &mDisplayMode, "Bounding Box\0Channel Walker\0Video\0\0"))
+		{
+			mChannelTime = 0.0f;
+		}
+		if (ImGui::SliderInt("Mesh Selection", &mCurrentSelection, 0, selector.getCount() - 1))
+		{
+			selector.select(mCurrentSelection);
+		}
+		ImGui::SliderFloat("Video Speed", &(videoResource->mSpeed), 0.0f, 20.0f);
+		ImGui::SliderFloat("Channel Speed", &(mChannelSpeed), 0.0f, 20.0f);
+		
+		int id = 0;
+		for(auto& i : mCurrentChannels)
+		{
+			std::vector<std::string> parts;
+			utility::splitString(selector.getLedMeshes()[id]->mTriangleMesh->mPath, '/', parts);
+			
+			ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), parts.back().c_str());
+			ImGui::Text(utility::stringFormat("Channel: %d", i).c_str());
+			const std::unordered_set<ArtNetController::Address>& addresses = selector.getLedMeshes()[id]->mTriangleMesh->getAddresses();
+			
+			std::string universes = "Addresses:";
+			for (auto& address : addresses)
+			{
+				uint8 sub(0), uni(0);
+				ArtNetController::convertAddress(address, sub, uni);
+				universes += utility::stringFormat(" %d:%d", sub, uni);
+			}
+			
+			ImGui::Text(universes.c_str());
+			id++;
+		}
+		ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),"%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		ImGui::End();
+	}
 }

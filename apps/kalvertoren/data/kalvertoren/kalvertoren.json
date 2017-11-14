@@ -163,7 +163,10 @@
 		{
 			"Type" : "nap::ArtnetMeshFromFile",
 			"mID": "HeiligewegMesh",
-			"Path" : "data/kalvertoren/heiligeweg_export_heiligeweg.mesh"
+			"Path" : "data/kalvertoren/heiligeweg_export_heiligeweg.mesh",
+			"OverrideSubnet" : false,
+			"Subnet" : 0,
+			"ChannelOffset" : 0
 		},
 
 		{
@@ -182,7 +185,10 @@
 		{
 			"Type" : "nap::ArtnetMeshFromFile",
 			"mID": "KalverMesh",
-			"Path" : "data/kalvertoren/kalver_export_kalver.mesh"
+			"Path" : "data/kalvertoren/kalver_export_kalver.mesh",
+			"OverrideSubnet" : false,
+			"Subnet" : 0,
+			"ChannelOffset" : 0
 		},
 
 		{
@@ -201,7 +207,10 @@
 		{
 			"Type" : "nap::ArtnetMeshFromFile",
 			"mID": "SingelMesh",
-			"Path" : "data/kalvertoren/singel_export_singel.mesh"
+			"Path" : "data/kalvertoren/singel_export_singel.mesh",
+			"OverrideSubnet" : false,
+			"Subnet" : 1,
+			"ChannelOffset" : 0
 		},
 
 		{

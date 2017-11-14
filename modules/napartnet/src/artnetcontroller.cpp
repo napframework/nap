@@ -99,4 +99,10 @@ namespace nap
 		return (subnet << 4) | universe;
 	}
 
+
+	void ArtNetController::convertAddress(Address address, uint8_t& subnet, uint8_t& universe)
+	{
+		subnet = address >> 4;
+		universe = address & 0xF;
+	}
 }
