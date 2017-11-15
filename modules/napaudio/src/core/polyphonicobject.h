@@ -1,5 +1,8 @@
 #pragma once
 
+// Std includes
+#include <mutex>
+
 // Audio includes
 #include <core/audioobject.h>
 #include <core/voice.h>
@@ -88,6 +91,7 @@ namespace nap
             
             std::vector<std::unique_ptr<VoiceInstance>> mVoices;
             std::vector<std::unique_ptr<MixNode>> mMixNodes;
+            std::mutex mMixNodesMutex; /**< To protect mMixNodes */
             
             NodeManager* mNodeManager = nullptr;
         };
