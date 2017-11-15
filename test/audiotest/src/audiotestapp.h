@@ -3,15 +3,22 @@
 // Local Includes
 #include <app.h>
 
-// External Includes
-#include <audiodevice.h>
-#include <audiotypes.h>
+
+/*
+ * Select your serialized json audio demo app here:
+ */
+//const std::string appJson = "data/audiotest/audiofileplay.json";
+const std::string appJson = "data/audiotest/pythonsequencer.json";
+//const std::string appJson = "data/audiotest/ambientdrone.json";
+//const std::string appJson = "data/audiotest/midilogging.json"; // Edit the midi input device in this json file!
+
 
 namespace nap
 {
 	class AudioTestApp : public BaseApp
 	{
 		RTTI_ENABLE(BaseApp)
+        
 	public:
 		AudioTestApp(Core& core) : BaseApp(core)	{ }
 
@@ -29,5 +36,9 @@ namespace nap
 		 *	Shutdown app
 		 */
 		virtual void shutdown() override;
+        
+    private:
+        std::string mJsonFile = appJson;
+        
 	}; 
 }
