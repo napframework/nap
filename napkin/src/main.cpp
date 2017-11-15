@@ -4,7 +4,6 @@
 #include "mainwindow.h"
 
 
-void apply
 
 int main(int argc, char* argv[]) {
 
