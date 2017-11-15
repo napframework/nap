@@ -4,6 +4,8 @@
 #include "mainwindow.h"
 
 
+void apply
+
 int main(int argc, char* argv[]) {
 
     // nap::Core is declared in AppContext
