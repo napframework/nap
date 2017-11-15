@@ -83,25 +83,9 @@
 
 		{
 			"Type" 		: "nap::ArtNetController",
-			"mID" 		: "Universe8Singel1",
-			"Subnet" 	: 1,
-			"Universe" 	: 8,
-			"WaitTime"	: 2.0
-		},
-
-		{
-			"Type" 		: "nap::ArtNetController",
-			"mID" 		: "Universe8Singel2",
-			"Subnet" 	: 2,
-			"Universe" 	: 8,
-			"WaitTime"	: 2.0
-		},
-
-		{
-			"Type" 		: "nap::ArtNetController",
-			"mID" 		: "Universe8Singel3",
-			"Subnet" 	: 3,
-			"Universe" 	: 8,
+			"mID" 		: "Universe7",
+			"Subnet" 	: 0,
+			"Universe" 	: 7,
 			"WaitTime"	: 2.0
 		},
 
@@ -517,9 +501,7 @@
 					"Mesh" : "SingelMesh",
 					"Controllers" :
 					[
-						"Universe8Singel1",
-						"Universe8Singel2",
-						"Universe8Singel3"
+						"Universe7"
 					]
 				}
 			]
