@@ -79,6 +79,7 @@ namespace nap
             voice->play(duration);
             
             mNodeManager->execute([&, voice](){
+                std::lock_guard<std::mutex> lock(mMixNodesMutex);
                 for (auto channel = 0; channel < std::min<int>(mMixNodes.size(), voice->getOutput().getChannelCount()); ++channel)
                     mMixNodes[channel]->inputs.connect(voice->getOutput().getOutputForChannel(channel));
             });
@@ -109,6 +110,8 @@ namespace nap
         void PolyphonicObjectInstance::voiceFinished(VoiceInstance& voice)
         {
             assert(voice.getEnvelope().getValue() == 0);
+            
+            std::lock_guard<std::mutex> lock(mMixNodesMutex);
             
             for (auto channel = 0; channel < std::min<int>(mMixNodes.size(), voice.getOutput().getChannelCount()); ++channel)
             {
