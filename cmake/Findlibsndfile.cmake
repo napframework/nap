@@ -23,9 +23,13 @@ elseif(APPLE)
     set(LIBSNDFILE_LIBRARIES ${LIBSNDFILE_LIB_DIR}/libsndfile.a)
 
 else()
-    set(LIBSNDFILE_LIB_DIR ${LIBSNDFILE_DIR}/linux)
-    set(LIBSNDFILE_LIBRARIES ${LIBSNDFILE_LIB_DIR}/libsndfile.so)
-
+    if(${ARCH} STREQUAL "armv6")
+        set(LIBSNDFILE_LIB_DIR ${LIBSNDFILE_DIR}/linux/arm)
+        set(LIBSNDFILE_LIBRARIES ${LIBSNDFILE_LIB_DIR}/libsndfile.so)
+    else()
+        set(LIBSNDFILE_LIB_DIR ${LIBSNDFILE_DIR}/linux)
+        set(LIBSNDFILE_LIBRARIES ${LIBSNDFILE_LIB_DIR}/libsndfile.so)
+    endif()
 endif()
 
 set(LIBSNDFILE_INCLUDE_DIR ${LIBSNDFILE_DIR}/src)
