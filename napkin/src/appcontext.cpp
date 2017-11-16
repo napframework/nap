@@ -4,6 +4,8 @@
 #include <rtti/jsonwriter.h>
 #include <fstream>
 #include <QtWidgets/QMessageBox>
+#include <QtCore/QDir>
+#include <QtCore/QTextStream>
 
 using namespace nap::rtti;
 using namespace nap::utility;
@@ -196,9 +198,6 @@ nap::rtti::RTTIObject* AppContext::addObject(rttr::type type)
 }
 
 
-
-
-
 std::string AppContext::getUniqueName(const std::string& suggestedName)
 {
     std::string newName = suggestedName;
@@ -241,5 +240,40 @@ void AppContext::deleteObject(nap::rtti::RTTIObject& object)
 void AppContext::executeCommand(QUndoCommand* cmd)
 {
     mUndoStack.push(cmd);
+}
+
+void AppContext::setTheme(const QString& themeName)
+{
+    if (themeName.isEmpty()) {
+        qApplication()->setStyleSheet(nullptr);
+    } else {
+        auto themeFile = QString("%1/%2.qss").arg(themeDir(), themeName);
+        QFile f(themeFile);
+        if (!f.open(QFile::ReadOnly | QFile::Text)) {
+            nap::Logger::warn("Could not load file: %s", themeFile.toStdString().c_str());
+            return;
+        }
+        QTextStream in(&f);
+        auto styleSheet = in.readAll();
+        f.close();
+
+        qApplication()->setStyleSheet(styleSheet);
+    }
+}
+
+QStringList AppContext::availableThemes()
+{
+    QStringList names;
+
+    for (auto filename : QDir(themeDir()).entryInfoList()) {
+        if (filename.suffix() == "qss")
+            names << filename.baseName();
+    }
+    return names;
+}
+
+QString AppContext::themeDir()
+{
+    return QString("%1/resources/themes").arg(QCoreApplication::applicationDirPath());
 }
 

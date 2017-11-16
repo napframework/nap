@@ -7,6 +7,7 @@
 #include "appcontext.h"
 #include "inspectorpanel.h"
 #include "historypanel.h"
+#include "logpanel.h"
 
 class MainWindow : public BaseWindow {
     Q_OBJECT
@@ -40,5 +41,6 @@ private:
     HierarchyPanel mHierarchyPanel;
     InspectorPanel mInspectorPanel;
     HistoryPanel mHistoryPanel;
+    LogPanel mLogPanel;
 };
 

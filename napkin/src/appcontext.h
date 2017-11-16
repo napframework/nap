@@ -6,6 +6,7 @@
 #include <nap/entity.h>
 #include <rtti/rttireader.h>
 #include <QtWidgets/QUndoCommand>
+#include <QtWidgets/QApplication>
 
 #define WIN_GEO "windowGeometry"
 #define WIN_STATE "windowState"
@@ -43,7 +44,12 @@ public:
     nap::rtti::RTTIObject* addObject(rttr::type type);
     void deleteObject(nap::rtti::RTTIObject& object);
 
+    QStringList availableThemes();
+    void setTheme(const QString& themeName);
+    QString themeDir();
+
     void executeCommand(QUndoCommand* cmd);
+    QApplication* qApplication() { return dynamic_cast<QApplication*>(qGuiApp);}
 
     QUndoStack& undoStack() { return mUndoStack; }
 

@@ -29,7 +29,7 @@ public:
     HierarchyPanel();
 
 private:
-    QVBoxLayout layout;
-    FilterTreeView treeView;
-    TypeModel model;
+    QVBoxLayout mLayout;
+    FilterTreeView mTreeView;
+    TypeModel mModel;
 };
