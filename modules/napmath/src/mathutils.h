@@ -5,12 +5,16 @@
 #include <limits>
 #include <utility/dllexport.h>
 #include <algorithm>
-#include <cmath>
 
 namespace nap
 {
 	namespace math
 	{
+		/**
+		 * PI as defined by cmath
+		 */
+		double NAPAPI pi();
+
 		/**
 		* Maps @inValue to new range defined by parameters
 		* @return interpolated value
