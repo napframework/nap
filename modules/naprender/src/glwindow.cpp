@@ -2,10 +2,8 @@
 #include "glwindow.h"
 
 // External includes
-#include <nsdlgl.h>
-#include <nglutils.h>
 #include <utility/errorstate.h>
-#include <SDL.h>
+#include <nglutils.h>
 
 namespace nap
 {
@@ -47,10 +45,10 @@ namespace nap
 	GLWindow::~GLWindow()
 	{
 		if (mContext != nullptr)
-			SDL_GL_DeleteContext(mContext);
-
+			opengl::deleteContext(mContext);
+			
 		if (mWindow != nullptr)
-			SDL_DestroyWindow(mWindow);
+			opengl::deleteWindow(mWindow);
 	}
 
 
@@ -63,9 +61,9 @@ namespace nap
 		else
 			hideWindow();
 
-		SDL_SetWindowResizable(mWindow, (SDL_bool)settings.resizable);
-		SDL_SetWindowBordered(mWindow, (SDL_bool)!settings.borderless);
-		SDL_SetWindowTitle(mWindow, settings.title.c_str());
+		opengl::setWindowResizable(mWindow, settings.resizable);
+		opengl::setWindowBordered(mWindow, !settings.borderless);
+		opengl::setWindowTitle(mWindow, settings.title);
 	}
 
 
