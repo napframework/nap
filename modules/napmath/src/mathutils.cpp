@@ -4,12 +4,19 @@
 // External Inlcudes
 #include <memory>
 #include <random>
+#include <cmath>
 
 // Specialization of lerping
 namespace nap
 {
 	namespace math
 	{
+		double pi()
+		{
+			return M_PI;
+		}
+
+
 		int random(int min, int max)
 		{
 			static std::unique_ptr<std::mt19937> generator = nullptr;
