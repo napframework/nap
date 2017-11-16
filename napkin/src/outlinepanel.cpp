@@ -71,6 +71,7 @@ void OutlineModel::refresh()
 OutlinePanel::OutlinePanel()
 {
     setLayout(&mLayout);
+    layout()->setContentsMargins(0, 0, 0, 0);
     mLayout.addWidget(&mTreeView);
     mTreeView.setModel(&mModel);
     mTreeView.tree().setColumnWidth(0, 300);
@@ -202,7 +203,7 @@ ObjectItem* OutlinePanel::findItem(const nap::rtti::RTTIObject& obj)
 
 void OutlinePanel::onEntityAdded(nap::Entity* entity, nap::Entity* parent)
 {
-    // TODO: Don't refresh the whole model
+    // TODO: Don't refresh the whole mModel
     mModel.refresh();
     mTreeView.tree().expandAll();
     mTreeView.selectAndReveal(findItem(*entity));
@@ -210,7 +211,7 @@ void OutlinePanel::onEntityAdded(nap::Entity* entity, nap::Entity* parent)
 
 void OutlinePanel::onComponentAdded(nap::Component& comp, nap::Entity& owner)
 {
-    // TODO: Don't refresh the whole model
+    // TODO: Don't refresh the whole mModel
     mModel.refresh();
     mTreeView.tree().expandAll();
     mTreeView.selectAndReveal(findItem(comp));
@@ -218,7 +219,7 @@ void OutlinePanel::onComponentAdded(nap::Component& comp, nap::Entity& owner)
 
 void OutlinePanel::onObjectAdded(nap::rtti::RTTIObject& obj)
 {
-    // TODO: Don't refresh the whole model
+    // TODO: Don't refresh the whole mModel
     mModel.refresh();
     mTreeView.tree().expandAll();
     mTreeView.selectAndReveal(findItem(obj));
@@ -227,7 +228,7 @@ void OutlinePanel::onObjectAdded(nap::rtti::RTTIObject& obj)
 
 void OutlinePanel::onObjectRemoved(nap::rtti::RTTIObject& object)
 {
-    // TODO: Don't refresh the whole model
+    // TODO: Don't refresh the whole mModel
     mModel.refresh();
     mTreeView.tree().expandAll();
 }

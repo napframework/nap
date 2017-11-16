@@ -101,6 +101,7 @@ InspectorModel::InspectorModel() : QStandardItemModel()
 InspectorPanel::InspectorPanel()
 {
     setLayout(&mLayout);
+    layout()->setContentsMargins(0,0,0,0);
     mLayout.addWidget(&mTreeView);
     mTreeView.setModel(&mModel);
     mTreeView.tree().setColumnWidth(0, 250);

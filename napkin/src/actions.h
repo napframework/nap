@@ -23,6 +23,7 @@ protected:
 class NewFileAction : public Action {
 public:
     NewFileAction();
+
 private:
     void perform() override;
 };
@@ -94,28 +95,51 @@ private:
 
 class AddObjectAction : public Action {
 public:
-    AddObjectAction(rttr::type type) : Action(), mType(type) {
+    AddObjectAction(rttr::type type) : Action(), mType(type)
+    {
         setText(QString(type.get_name().data()));
     }
+
 private:
-    void perform() override {
+    void perform() override
+    {
         AppContext::get().addObject(mType);
     }
+
 private:
     rttr::type mType;
 };
 
 class DeleteObjectAction : public Action {
 public:
-    DeleteObjectAction(nap::rtti::RTTIObject& object) : Action(), mObject(object) {
+    DeleteObjectAction(nap::rtti::RTTIObject& object) : Action(), mObject(object)
+    {
         setText("Delete");
     }
 
 private:
-    void perform() override {
+    void perform() override
+    {
         AppContext::get().deleteObject(mObject);
     }
 
 private:
     nap::rtti::RTTIObject& mObject;
+};
+
+
+class SetThemeAction : public Action {
+public:
+    SetThemeAction(const QString& themeName) : Action(), mTheme(themeName)
+    {
+        setText(themeName.isEmpty() ? "Native" : themeName);
+    }
+
+private:
+    void perform() override
+    {
+        AppContext::get().setTheme(mTheme);
+    }
+
+    QString mTheme;
 };

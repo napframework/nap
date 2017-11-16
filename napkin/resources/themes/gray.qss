@@ -1,0 +1,120 @@
+QWidget
+{
+    color: #000;
+    background-color: #888;
+
+    selection-background-color:#D84;
+    /*selection-color: #eff0f1;*/
+    /*background-clip: border;*/
+    /*border-image: none;*/
+    /*border: 0px transparent black;*/
+    /*outline: 0;*/
+
+}
+
+QAbstractScrollArea {
+    color: #222;
+    background: #999;
+    border: 0;
+}
+
+QHeaderView:section {
+    color: #333;
+    background-color: #888;
+    border: 0;
+}
+
+QGroupBox {
+    border: 0;
+    margin-top: 22px;
+    background-color: #999;
+}
+
+QGroupBox:title {
+    color: #444;
+    background-color: #999;
+}
+
+QDockWidget {
+    color: #CCC;
+    border: 1px solid #444;
+
+    /*padding: 10px;*/
+}
+
+QLineEdit {
+    color: #000;
+    background: #AAA;
+}
+
+QLineEdit:focus {
+    background: #CCC;
+}
+
+QDockWidget::title {
+    text-align: left;
+    background: #333;
+    padding: 1px;
+    /*border-top-left-radius: 8px;*/
+    /*border-top-right-radius: 8px;*/
+}
+
+QScrollBar:horizontal,
+QScrollBar:vertical {
+    background: #555;
+}
+
+QScrollBar::handle:horizontal,
+QScrollBar::handle:vertical {
+    background: #888;
+    border-radius: 4px;
+}
+QScrollBar::handle:horizontal:hover,
+QScrollBar::handle:vertical:hover {
+    background: #AAA;
+    border-radius: 4px;
+}
+
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal,
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    border: none;
+    background: none;
+}
+
+QPushButton {
+    color: #DDD;
+    background: #555;
+    border-radius: 4px;
+    border: 0;
+}
+
+QPushButton:hover {
+    background: #444;
+}
+QPushButton:pressed {
+    background: #222;
+}
+
+QTabBar:tab {
+    padding: 2px 6px 2px 6px;
+    color: #DDD;
+    background: #555;
+    border: 0;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+}
+
+QTabBar:tab::!selected {
+    color: #222;
+    background: #777;
+}
+
+QStatusBar {
+    color: #AAA;
+    background: #555;
+}
+
+QGraphicsView {
+    background: #555;
+}
+

@@ -9,7 +9,7 @@ if (MSVC)
             ${CMAKE_CURRENT_LIST_DIR}/../../Qt/5.9.1/msvc2015_64
             )
     set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QT_DIR})
-endif()
+endif ()
 
 if (APPLE)
     find_path(QT_DIR lib/cmake/Qt5/Qt5Config.cmake
@@ -17,7 +17,7 @@ if (APPLE)
             ~/Qt/5.8/clang_64
             )
     set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QT_DIR})
-endif()
+endif ()
 
 
 find_package(Qt5Core REQUIRED)
@@ -39,13 +39,21 @@ target_include_directories(${PROJECT_NAME} PUBLIC src)
 qt5_use_modules(${PROJECT_NAME} Core Widgets Gui)
 
 target_link_libraries(${PROJECT_NAME} napcore Qt5::Widgets Qt5::Core Qt5::Gui
-        mod_naprender mod_napinput mod_napscene mod_nappython ) # rendertest
+        mod_naprender mod_napinput mod_napscene mod_nappython) # rendertest
+
+
+if (WIN32)
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_FILE:Qt5::Widgets>
+            $<TARGET_FILE:Qt5::Core>
+            $<TARGET_FILE:Qt5::Gui>
+            $<TARGET_FILE_DIR:${PROJECT_NAME}>
+            COMMENT "Copy Qt DLLs")
+endif()
 
 add_custom_command(
         TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        $<TARGET_FILE:Qt5::Widgets>
-        $<TARGET_FILE:Qt5::Core>
-        $<TARGET_FILE:Qt5::Gui>
-        $<TARGET_FILE_DIR:${PROJECT_NAME}>
-)
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_CURRENT_LIST_DIR}/resources
+        $<TARGET_FILE_DIR:${PROJECT_NAME}>/resources
+        COMMENT "Copy Resources")

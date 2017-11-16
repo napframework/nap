@@ -22,28 +22,44 @@ void MainWindow::addDocks() {
     addDock("Available Types", &mHierarchyPanel);
     addDock("Inspector", &mInspectorPanel);
     addDock("History", &mHistoryPanel);
+    addDock("Log", &mLogPanel);
 }
 
 void MainWindow::addMenu() {
-    QMenu* filemenu = new QMenu("File", menuBar());
+    auto filemenu = new QMenu("File", menuBar());
+    {
+        auto newFileAction = new NewFileAction();
+        addAction(newFileAction);
+        filemenu->addAction(newFileAction);
 
-    auto newFileAction = new NewFileAction();
-    addAction(newFileAction);
-    filemenu->addAction(newFileAction);
+        auto openFileAction = new OpenFileAction();
+        addAction(openFileAction);
+        filemenu->addAction(openFileAction);
 
-    auto openFileAction = new OpenFileAction();
-    addAction(openFileAction);
-    filemenu->addAction(openFileAction);
+        auto saveFileAction = new SaveFileAction();
+        addAction(saveFileAction);
+        filemenu->addAction(saveFileAction);
 
-    auto saveFileAction = new SaveFileAction();
-    addAction(saveFileAction);
-    filemenu->addAction(saveFileAction);
-
-    auto saveFileAsAction = new SaveFileAsAction();
-    addAction(saveFileAction);
-    filemenu->addAction(saveFileAsAction);
-
+        auto saveFileAsAction = new SaveFileAsAction();
+        addAction(saveFileAction);
+        filemenu->addAction(saveFileAsAction);
+    }
     menuBar()->insertMenu(windowMenu()->menuAction(), filemenu);
+
+    auto optionsMenu = new QMenu("Options", menuBar());
+    {
+        auto themeMenu = new QMenu("Theme", optionsMenu);
+        {
+            auto defaultThemeAction = new SetThemeAction(nullptr);
+            themeMenu->addAction(defaultThemeAction);
+
+            for (auto theme : AppContext::get().availableThemes())
+                themeMenu->addAction(new SetThemeAction(theme));
+        }
+        optionsMenu->addMenu(themeMenu);
+
+    }
+    menuBar()->insertMenu(windowMenu()->menuAction(), optionsMenu);
 }
 
 void MainWindow::onNewFile()

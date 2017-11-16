@@ -18,7 +18,8 @@ void TypeModel::refresh() {
 }
 
 HierarchyPanel::HierarchyPanel() {
-    setLayout(&layout);
-    layout.addWidget(&treeView);
-    treeView.setModel(&model);
+    setLayout(&mLayout);
+    layout()->setContentsMargins(0,0,0,0);
+    mLayout.addWidget(&mTreeView);
+    mTreeView.setModel(&mModel);
 }
