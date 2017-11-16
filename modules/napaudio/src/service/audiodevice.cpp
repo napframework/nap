@@ -4,7 +4,7 @@
 #include <nap/logger.h>
 
 // Audio includes
-#include <service/AudioService.h>
+#include "audioservice.h"
 
 
 // RTTI
