@@ -1,8 +1,11 @@
 // Local includes
 #include "glwindow.h"
-#include "nsdlgl.h"
-#include "nglutils.h"
-#include "utility/errorstate.h"
+
+// External includes
+#include <nsdlgl.h>
+#include <nglutils.h>
+#include <utility/errorstate.h>
+#include <SDL.h>
 
 namespace nap
 {
