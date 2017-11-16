@@ -16,7 +16,6 @@ namespace opengl
 	 */
 	void setVSync(bool value);
 
-
 	/**
 	 * initVideo
 	 *
@@ -27,7 +26,6 @@ namespace opengl
 	 */
 	bool initVideo();
 
-
 	/**
 	 * initOpenGL
 	 *
@@ -36,6 +34,38 @@ namespace opengl
 	 */
 	bool init();
 
+	/**
+	 * Deletes an SDL context
+	 * @param context the context to delete
+	 */
+	void deleteContext(SDL_GLContext context);
+
+	/**
+	 * sDeletes an SDL window
+	 * @param window the window to delete
+	 */
+	void deleteWindow(SDL_Window* window);
+
+	/**
+	 * Sets if the window is resizable or not
+	 * @param window the window that should be resizable
+	 * @param resize if the window is resizable
+	 */
+	void setWindowResizable(SDL_Window* window, bool resizable);
+
+	/**
+	 * Controls if the window has any borders
+	 * @param window the window to set
+	 * @param hasBorders if the window should have borders
+	 */
+	void setWindowBordered(SDL_Window* window, bool hasBorders);
+
+	/**
+	 * Sets the window title
+	 * @param window the window to set the title for
+	 * @param name the new window name
+	 */
+	void setWindowTitle(SDL_Window* window, const std::string& name);
 
 	/**
 	 * quit
@@ -44,7 +74,6 @@ namespace opengl
 	 * TODO: Should go in to a separate sdl header in a different project
 	 */
 	void shutdown();
-
 
 	/**
 	 * getSDLError

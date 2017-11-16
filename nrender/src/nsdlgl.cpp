@@ -131,6 +131,35 @@ namespace opengl
 	}
 
 
+	void deleteContext(SDL_GLContext context)
+	{
+		SDL_GL_DeleteContext(context);
+	}
+
+
+	void deleteWindow(SDL_Window* window)
+	{
+		SDL_DestroyWindow(window);
+	}
+
+
+	void setWindowResizable(SDL_Window* window, bool resizable)
+	{
+		SDL_SetWindowResizable(window, (SDL_bool)resizable);
+	}
+
+
+	void setWindowBordered(SDL_Window* window, bool hasBorders)
+	{
+		SDL_SetWindowBordered(window, (SDL_bool)hasBorders);
+	}
+
+
+	void setWindowTitle(SDL_Window* window, const std::string& name)
+	{
+		SDL_SetWindowTitle(window, name.c_str());
+	}
+
 	// Shuts down SDL, make sure to 
 	void shutdown()
 	{

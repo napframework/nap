@@ -6,7 +6,7 @@
 // External Includes
 #include <string.h>
 #include <glm/glm.hpp>
-#include <SDL_video.h>
+#include <nsdlgl.h>
 #include <nap/configure.h>
 #include <utility/dllexport.h>
 
