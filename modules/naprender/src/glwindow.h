@@ -84,7 +84,11 @@ namespace nap
 		SDL_GLContext getContext() const;
 
 		/**
-		 *@return the backbuffer
+		 * The back buffer for an OpenGL window isn't an actual frame buffer
+		 * but allows for handling windows and render targets inside the framework
+		 * in a similar way. Associating a back buffer with a window also ensures, in this case,
+		 * that the opengl viewport always matches the window dimensions
+		 * @return the back buffer associated with this window
 		 */
 		opengl::BackbufferRenderTarget* getBackbuffer() const;
 
@@ -101,13 +105,18 @@ namespace nap
 		void setPosition(const glm::ivec2& position);
 
 		/**
+		 *	@return the window position in pixel coordinates
+		 */
+		glm::ivec2 getPosition();
+
+		/**
 		 * Set the window size
 		 * @param size the new window size in pixels
 		 */
 		void setSize(const glm::ivec2& size);
 
 		/**
-		 * Get the window size
+		 * @ the window size in pixels
 		 */
 		const glm::ivec2 getSize() const;
 
@@ -128,7 +137,9 @@ namespace nap
 		void hideWindow();
 
 		/**
-		 * Swap buffers
+		 * Swap the OpenGL buffers for a window, if double-buffering is supported
+		 * This call also ensures all the previously made OpenGL calls are pushed
+		 * and processed on the GPU before swapping buffers
 		 */
 		void swap();
 

@@ -10,7 +10,7 @@
 namespace opengl
 {
 	// Turn v-sync on / off
-	void setVSync(bool value)
+	void enableVSync(bool value)
 	{
 		SDL_GL_SetSwapInterval(static_cast<int>(value));
 	}
@@ -145,7 +145,10 @@ namespace opengl
 
 	void setWindowResizable(SDL_Window* window, bool resizable)
 	{
-		SDL_SetWindowResizable(window, (SDL_bool)resizable);
+		// TODO: This isn't supported on < SDL 2.05 versions
+		// Either we decide to only support those versions of SDL
+		// But that will exclude the current Ubuntu 16.04 version
+		// SDL_SetWindowResizable(window, (SDL_bool)resizable);
 	}
 
 
@@ -159,6 +162,102 @@ namespace opengl
 	{
 		SDL_SetWindowTitle(window, name.c_str());
 	}
+
+
+	SDL_GLContext getCurrentContext()
+	{
+		return SDL_GL_GetCurrentContext();
+	}
+
+
+	void swap(SDL_Window* window)
+	{
+		SDL_GL_SwapWindow(window);
+	}
+
+
+	void showWindow(SDL_Window* window, bool show)
+	{
+		if (show)
+		{
+			SDL_ShowWindow(window);
+			return;
+		}
+		SDL_HideWindow(window);
+	}
+
+
+	void setFullscreen(SDL_Window* window, bool value)
+	{
+		// Otherwise set
+		std::uint32_t full_screen_flag = SDL_WINDOW_FULLSCREEN_DESKTOP;
+		std::uint32_t flag = value ? full_screen_flag : 0;
+		SDL_SetWindowFullscreen(window, flag);
+	}
+
+
+	void makeCurrent(SDL_Window* window, SDL_GLContext context)
+	{
+		SDL_GL_MakeCurrent(window, context);
+	}
+
+
+	void setAttribute(SDL_GLattr attribute, int value)
+	{
+		SDL_GL_SetAttribute(attribute, value);
+	}
+
+
+	int getAttribute(SDL_GLattr attribute)
+	{
+		int v(0);
+		SDL_GL_GetAttribute(attribute, &v);
+		return v;
+	}
+
+
+	SDL_GLContext createContext(SDL_Window* window)
+	{
+		return SDL_GL_CreateContext(window);
+	}
+
+
+	glm::ivec2 getWindowSize(SDL_Window* window)
+	{
+		int x, y;
+		SDL_GetWindowSize(window, &x, &y);
+		return glm::ivec2(x, y);
+	}
+
+
+	void setWindowSize(SDL_Window* window, const glm::ivec2& size)
+	{
+		// Ensure sizes are not the same
+		glm::ivec2 wsize = opengl::getWindowSize(window);
+		if (wsize == size)
+			return;
+		SDL_SetWindowSize(window, size.x, size.y);
+	}
+
+
+	glm::ivec2 getWindowPosition(SDL_Window* window)
+	{
+		int x, y;
+		SDL_GetWindowPosition(window, &x, &y);
+		return glm::ivec2(x, y);
+	}
+
+
+	void setWindowPosition(SDL_Window* window, const glm::ivec2& position)
+	{
+		// Ensure position is not the same
+		glm::ivec2 wpos = opengl::getWindowPosition(window);
+		if (position == wpos)
+			return;
+		// Update position
+		SDL_SetWindowPosition(window, position.x, position.y);
+	}
+
 
 	// Shuts down SDL, make sure to 
 	void shutdown()
