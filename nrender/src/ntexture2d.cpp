@@ -1,7 +1,9 @@
 // Local Includes
 #include "ntexture2d.h"
 #include "nglutils.h"
+
 #include <assert.h>
+#include <cstring>
 
 namespace opengl
 {
