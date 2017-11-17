@@ -1,1 +1,0 @@
- pyinstaller.exe --paths C:\Python35\Lib\site-packages\PyQt5\Qt\bin;C:\Python35\Lib\site-packages\zmq c:\Workspace\nap\py\napkin.py
