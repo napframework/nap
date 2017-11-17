@@ -17,7 +17,6 @@ class TypeModel : public QStandardItemModel {
 public:
     TypeModel();
 
-
 private:
     void refresh();
 

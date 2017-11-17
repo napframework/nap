@@ -7,6 +7,7 @@ if (MSVC)
     find_path(QT_DIR lib/cmake/Qt5/Qt5Config.cmake
             HINTS
             ${CMAKE_CURRENT_LIST_DIR}/../../Qt/5.9.1/msvc2015_64
+            ${CMAKE_CURRENT_LIST_DIR}/../../Qt/5.9.2/msvc2015_64
             )
     set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QT_DIR})
 endif ()

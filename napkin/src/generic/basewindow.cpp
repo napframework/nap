@@ -15,6 +15,9 @@ QDockWidget* BaseWindow::addDock(const QString& name, QWidget* widget, Qt::DockW
     dock->setWidget(widget);
     dock->setWindowTitle(name);
 
+    if (widget->objectName().isEmpty())
+        widget->setObjectName(QString("%1_Widget").arg(name));
+
     auto action = mWindowMenu->addAction(name);
     action->setCheckable(true);
     action->setChecked(true);
