@@ -19,8 +19,7 @@ public:
         setHorizontalHeaderLabels({"Level", "Message"});
     }
 
-signals:
-
+Q_SIGNALS:
     void napLogged(nap::LogMessage msg);
 
 private:

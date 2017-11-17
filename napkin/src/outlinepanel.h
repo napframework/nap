@@ -75,7 +75,7 @@ Q_OBJECT
 public:
     OutlinePanel();
 
-signals:
+Q_SIGNALS:
     void selectionChanged(QList<nap::rtti::RTTIObject*>& obj);
 
 private:

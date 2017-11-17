@@ -1,12 +1,13 @@
 #pragma once
 
-#include <QObject>
 
 #include <nap/core.h>
 #include <nap/entity.h>
 #include <rtti/rttireader.h>
-#include <QtWidgets/QUndoCommand>
-#include <QtWidgets/QApplication>
+
+#include <QUndoCommand>
+#include <QApplication>
+#include <QObject>
 
 #define WIN_GEO "windowGeometry"
 #define WIN_STATE "windowState"
@@ -53,7 +54,7 @@ public:
 
     QUndoStack& undoStack() { return mUndoStack; }
 
-signals:
+Q_SIGNALS:
     void fileOpened(const QString& filename);
     void fileSaved(const QString& filename);
     void newFileCreated();
@@ -65,6 +66,7 @@ signals:
     void componentAdded(nap::Component& comp, nap::Entity& owner);
     void objectAdded(nap::rtti::RTTIObject& obj);
     void objectRemoved(nap::rtti::RTTIObject& object);
+
 private:
     AppContext();
     std::string getUniqueName(const std::string& suggestedName);
