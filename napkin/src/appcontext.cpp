@@ -53,9 +53,11 @@ void AppContext::newFile()
 
 void AppContext::loadFile(const QString& filename)
 {
+    nap::Logger::info("Loading '%s'", filename.toStdString().c_str());
+
     mCurrentFilename = filename;
-    QSettings settings;
-    settings.setValue(LAST_OPENED_FILE, filename);
+
+    QSettings().setValue(LAST_OPENED_FILE, filename);
 
     auto& factory = core().getResourceManager()->getFactory();
     ErrorState err;
@@ -104,6 +106,8 @@ void AppContext::saveFileAs(const QString& filename)
 
     mCurrentFilename = filename;
     nap::Logger::info("Written file: " + filename.toStdString());
+
+    QSettings().setValue(LAST_OPENED_FILE, filename);
 
     fileSaved(mCurrentFilename);
 }

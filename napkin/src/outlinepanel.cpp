@@ -1,10 +1,5 @@
 #include <generic/utility.h>
-#include "outlinepanel.h"
-#include "napgeneric.h"
-
 #include "globals.h"
-#include "actions.h"
-#include "widgetdelegate.h"
 
 using namespace napkin;
 
@@ -100,7 +95,7 @@ void OutlinePanel::menuHook(QMenu& menu)
     auto objItem = dynamic_cast<ObjectItem*>(item);
     if (objItem != nullptr) {
         auto entityItem = dynamic_cast<EntityItem*>(item);
-        rttr::instance instance = objItem->object();
+
         if (entityItem != nullptr) {
             // Selected item is an Entity
             menu.addAction(new AddEntityAction(&entityItem->entity()));

@@ -1,8 +1,7 @@
 #include "mainwindow.h"
 
-#include <QApplication>
-
-void MainWindow::bindSignals() {
+void MainWindow::bindSignals()
+{
     connect(&AppContext::get(), &AppContext::fileOpened, this, &MainWindow::onFileOpened);
     connect(&AppContext::get(), &AppContext::fileSaved, this, &MainWindow::onFileSaved);
 
@@ -11,21 +10,25 @@ void MainWindow::bindSignals() {
     });
 }
 
-void MainWindow::showEvent(QShowEvent* event) {
+void MainWindow::showEvent(QShowEvent* event)
+{
     BaseWindow::showEvent(event);
     openRecentFile();
 }
 
 
-void MainWindow::addDocks() {
+void MainWindow::addDocks()
+{
     addDock("Outline", &mOutlinePanel);
     addDock("Available Types", &mHierarchyPanel);
     addDock("Inspector", &mInspectorPanel);
     addDock("History", &mHistoryPanel);
     addDock("Log", &mLogPanel);
+    addDock("AppRunner", &mAppRunnerPanel);
 }
 
-void MainWindow::addMenu() {
+void MainWindow::addMenu()
+{
     auto filemenu = new QMenu("File", menuBar());
     {
         auto newFileAction = new NewFileAction();
@@ -68,15 +71,18 @@ void MainWindow::onNewFile()
 }
 
 
-void MainWindow::onFileOpened(const QString& filename) {
+void MainWindow::onFileOpened(const QString& filename)
+{
     updateWindowTitle();
 }
 
-void MainWindow::onFileSaved(const QString& filename) {
+void MainWindow::onFileSaved(const QString& filename)
+{
     updateWindowTitle();
 }
 
-void MainWindow::openRecentFile() {
+void MainWindow::openRecentFile()
+{
     auto lastFilename = AppContext::get().lastOpenedFilename();
     if (lastFilename.isNull())
         return;
@@ -84,7 +90,8 @@ void MainWindow::openRecentFile() {
 }
 
 
-void MainWindow::updateWindowTitle() {
+void MainWindow::updateWindowTitle()
+{
     setWindowTitle(QString("%1 - %2").arg(QApplication::applicationName(), AppContext::get().currentFilename()));
 }
 

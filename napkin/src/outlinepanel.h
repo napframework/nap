@@ -34,7 +34,7 @@ protected:
 
 class ObjectTypeItem : public QStandardItem {
 public:
-    ObjectTypeItem(nap::rtti::RTTIObject& o);
+    explicit ObjectTypeItem(nap::rtti::RTTIObject& o);
     int type() const override { return QStandardItem::UserType + 3; }
 
     const QString name() const;

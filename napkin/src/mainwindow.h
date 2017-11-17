@@ -8,6 +8,7 @@
 #include "inspectorpanel.h"
 #include "historypanel.h"
 #include "logpanel.h"
+#include "apprunnerpanel.h"
 
 class MainWindow : public BaseWindow {
     Q_OBJECT
@@ -42,5 +43,6 @@ private:
     InspectorPanel mInspectorPanel;
     HistoryPanel mHistoryPanel;
     LogPanel mLogPanel;
+    AppRunnerPanel mAppRunnerPanel;
 };
 

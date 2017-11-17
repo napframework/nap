@@ -5,6 +5,7 @@
 #include <QPalette>
 #include <QAbstractItemModel>
 #include <QtGui/QStandardItemModel>
+#include <QMetaEnum>
 #include <functional>
 #include <outlinepanel.h>
 
@@ -102,4 +103,10 @@ static std::vector<rttr::type> getResourceTypes()
         ret.emplace_back(derived);
     }
     return ret;
+}
+
+template<typename QEnum>
+static QString QEnumToString (const QEnum value)
+{
+    return QMetaEnum::fromType<QEnum>().valueToKey(value);
 }
