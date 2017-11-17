@@ -1,0 +1,94 @@
+{
+	"Objects":
+	[
+		{
+			"Type": "nap::audio::AudioFileResource",
+			"mID": "audioFile",
+			"AudioFilePath": "data/audiotest/hang.mp3"
+		},
+
+		{
+			"Type": "nap::audio::Voice",
+			"mID": "voice",
+			"Objects":
+			[
+				{
+					"Type": "nap::audio::Oscillator",
+					"mID": "oscillatorA",
+					"Amplitude": [ 0.2 ],
+					"ChannelCount": 2
+				},
+
+				{
+					"Type": "nap::audio::Oscillator",
+					"mID": "oscillatorB",
+					"Amplitude": [ 0.5 ],
+					"ChannelCount": 2,
+					"FmInput": "oscillatorA"
+				},
+
+				{
+					"Type": "nap::audio::Envelope",
+					"mID": "envelope",
+					"Envelope":
+					[
+						{
+							"Duration": "5",
+							"Destination": "1"
+						},
+						{
+							"Duration": "1000",
+							"Destination": "0",
+							"RampMode": "Exponential"
+						}
+					]
+				},
+
+				{
+					"Type": "nap::audio::Gain",
+					"mID": "gain",
+					"Inputs": [ "oscillatorB", "envelope" ],
+					"Gain": [ 0.2 ],
+					"ChannelCount": 2
+				}
+			],
+
+			"Output": "gain",
+			"Envelope": "envelope"
+		},
+
+		{
+			"Type": "nap::Entity",
+			"mID": "audioEntity",
+			"Components":
+			[
+				{					
+					"Type": "nap::audio::AudioComponent",
+					"mID": "audioComponent",
+					"Object":
+					{
+						"Type": "nap::audio::PolyphonicObject",
+						"Voice": "voice",
+						"VoiceCount": 32
+					}
+				},
+
+				{
+					"Type": "nap::audio::OutputComponent",
+					"mID": "output",
+					"Routing": [ 0, 1 ],
+					"Input": "audioComponent"
+				},
+
+			
+				{
+					"Type": "nap::PythonScriptComponent",
+					"mID": "pythonScript",
+					"Path": "data/audiotest/scripts/pythonsequencer.py"
+				}
+
+
+			]
+		}
+	]
+}
