@@ -73,6 +73,7 @@ add_subdirectory(apps/kalvertoren)
 add_subdirectory(apps/etherdream)
 add_subdirectory(apps/artnetcolor)
 add_subdirectory(apps/steef)
+add_subdirectory(apps/skeleton)
 
 if (APPLE)
     set(GENERATE_XCODE_PROJECT_TARGET generateXcodeProject)
