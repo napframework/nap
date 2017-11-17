@@ -35,7 +35,7 @@ namespace nap
 		/**
 		 *	Loads the svg file and extracts the line
 		 */
-		virtual bool init(utility::ErrorState& errorState);
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		 *	@return the line read from file
