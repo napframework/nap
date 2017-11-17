@@ -15,12 +15,15 @@ set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Test)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
-target_link_libraries(${PROJECT_NAME} napcore mod_napaudio mod_napapp)
+target_link_libraries(${PROJECT_NAME} napcore mod_napaudio mod_napapp mod_nappython mod_naposc mod_napmidi)
 
 if (WIN32)
-    # Copy portaudio DLL
-    find_package(portaudio REQUIRED)
-    copy_portaudio_lib()
+    # Copy freeimage DLL
+	find_package(freeimage REQUIRED)
+	copy_freeimage_dll()
+
+    # Copy over some crap window dlls
+	copy_base_windows_graphics_dlls()
 endif()
 
 # create post build event

@@ -320,23 +320,3 @@ macro(add_platform_specific_files WIN32_SOURCES OSX_SOURCES LINUX_SOURCES)
 		set_source_files_properties(${LINUX_SOURCES} PROPERTIES HEADER_FILE_ONLY TRUE)
 	endif()
 endmacro()
-
-
-# Installation macros
-
-# define install dir
-set(NAP_INSTALL_DIR ${CMAKE_CURRENT_LIST_DIR}/install/${BUILD_CONF})
-
-macro(nap_install_lib PROJECT_NAME)
-    install(TARGETS ${PROJECT_NAME}
-            PUBLIC_HEADER DESTINATION ${NAP_INSTALL_DIR}/include
-            ARCHIVE DESTINATION ${NAP_INSTALL_DIR}/lib
-            LIBRARY DESTINATION ${NAP_INSTALL_DIR}/lib
-            )
-
-    add_custom_target(${PROJECT_NAME}_install
-            $(MAKE) install
-            DEPENDS ${PROJECT_NAME}
-            COMMENT "Installing ${PROJECT_NAME}")
-endmacro()
-

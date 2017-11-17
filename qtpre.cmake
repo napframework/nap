@@ -1,0 +1,10 @@
+# Some shared Qt configuration that should go in before add_library or add_executable
+set(CMAKE_AUTOMOC ON)
+find_package(Qt5Widgets REQUIRED)
+find_package(Qt5Xml REQUIRED)
+find_package(Qt5Multimedia REQUIRED)
+#find_package(Qt53DCore REQUIRED)
+#find_package(Qt53DInput REQUIRED)
+#find_package(Qt53DLogic REQUIRED)
+#find_package(Qt53DRender REQUIRED)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)

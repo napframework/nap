@@ -45,11 +45,6 @@ public:
 			return false;
 		}
 
-
-        if (commandLine.mFilesToConvert.size() == 0) {
-            std::cerr << "error: No files to convert.";
-        }
-
 		return true;
 	}
 
