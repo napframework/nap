@@ -1,9 +1,12 @@
 #pragma once
 
-#include <QUndoCommand>
+
 #include <rtti/rttipath.h>
-#include <QtCore/QVariant>
 #include <nap/objectptr.h>
+
+#include <QtCore/QVariant>
+#include <QUndoCommand>
+
 #include "typeconversion.h"
 
 class Command : public QUndoCommand {

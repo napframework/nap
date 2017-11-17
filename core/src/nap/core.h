@@ -105,12 +105,12 @@ namespace nap
 		* @param type the type of service to get
 		* @return the service if found, otherwise nullptr
 		*/
-		Service* getService(const rtti::TypeInfo& type);
+		Service* getService(const rtti::TypeInfo& type, ETypeCheck typeCheck = ETypeCheck::EXACT_MATCH);
 
 		/**
-		 * @return an already registered service based on it's type name
+         * Searches for a service based on type name, searches for an exact match.
+		 * @return an already registered service based on it's type name, nullptr if not found
 		 * @param type the type of the service as a string
-		 * @return the service if found, otherwise nullptr
 		 */
 		Service* getService(const std::string& type);
 
@@ -118,7 +118,7 @@ namespace nap
 		 *  @return a service of type T, returns nullptr if that service can't be found
 		 */
 		template <typename T>
-		T* getService();
+		T* getService(ETypeCheck typeCheck = ETypeCheck::EXACT_MATCH);
 
 	private:
 		/**
@@ -176,19 +176,19 @@ namespace nap
 		nap::Slot<const std::string&> mFileLoadedSlot = { [&](const std::string& inValue) -> void { resourceFileChanged(inValue); } };
 	};
 
-
-	//////////////////////////////////////////////////////////////////////////
-	// Template definitions
-	//////////////////////////////////////////////////////////////////////////
+}
 
 
-	// Searches for a service of type T in the services and returns it,
-	// returns nullptr if none found
-	template <typename T>
-	T* Core::getService()
-	{
-		Service* new_service = getService(RTTI_OF(T));
-		return new_service == nullptr ? nullptr : static_cast<T*>(new_service);
-	}
+//////////////////////////////////////////////////////////////////////////
+// Template definitions
+//////////////////////////////////////////////////////////////////////////
+
+// Searches for a service of type T in the services and returns it,
+// returns nullptr if none found
+template <typename T>
+T* nap::Core::getService(ETypeCheck typeCheck)
+{
+    Service* new_service = getService(RTTI_OF(T), typeCheck);
+    return new_service == nullptr ? nullptr : static_cast<T*>(new_service);
 }
 
