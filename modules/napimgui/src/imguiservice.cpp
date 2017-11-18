@@ -1,7 +1,6 @@
 // Local Includes
 #include "imguiservice.h"
 #include "imgui/imgui_impl_sdl_gl3.h"
-#include "guiwindow.h"
 
 // External Includes
 #include <sceneservice.h>
@@ -55,11 +54,5 @@ namespace nap
 	void IMGuiService::shutdown()
 	{
 		ImGui_ImplSdlGL3_Shutdown();
-	}
-
-
-	void IMGuiService::registerObjectCreators(rtti::Factory& factory)
-	{
-		factory.addObjectCreator(std::make_unique<GuiWindowObjectCreator>(*this));
 	}
 }

@@ -1,5 +1,5 @@
 #include "nvertexarrayobject.h"
-#include "nglutils.h"
+#include <nsdlgl.h>
 #include <assert.h>
 
 namespace opengl
