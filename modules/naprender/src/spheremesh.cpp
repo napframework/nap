@@ -1,9 +1,11 @@
+// Local Includes
 #include "spheremesh.h"
-#include <cmath>
 #include "mesh.h"
 #include "material.h"
-#include <glm/glm.hpp>
 
+// External Includes
+#include <glm/glm.hpp>
+#include <cmath>
 
 RTTI_BEGIN_CLASS(nap::SphereMesh)
 	RTTI_PROPERTY("Radius",		&nap::SphereMesh::mRadius,	nap::rtti::EPropertyMetaData::Default)

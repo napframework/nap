@@ -3,7 +3,10 @@
 #include "nglutils.h"
 #include "ntextureutils.h"
 #include "nbitmaputils.h"
+
+// External Includes
 #include <assert.h>
+#include <cstring>
 
 namespace opengl
 {
