@@ -100,3 +100,4 @@ add_subdirectory(modules/napapp)
 
 # Exe dependencies
 add_dependencies(rendertest mod_naprender)
+add_dependencies(napkin skeleton)
