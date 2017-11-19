@@ -98,6 +98,8 @@ add_subdirectory(modules/naposc)
 add_subdirectory(modules/napsvg)
 add_subdirectory(modules/napapp)
 
+add_subdirectory(modules/napsandbox)
+
 # Exe dependencies
 add_dependencies(rendertest mod_naprender)
 add_dependencies(napkin skeleton)
