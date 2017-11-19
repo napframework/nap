@@ -927,7 +927,7 @@ namespace nap
 						utility::ErrorState errorState;
 						if (!loadFile(source_file, source_file == modified_file ? std::string() : modified_file, errorState))
 						{
-							nap::Logger::warn("Failed to reload %s", source_file.c_str(), errorState.toString().c_str());
+							nap::Logger::warn("Failed to reload %s (%s)", source_file.c_str(), errorState.toString().c_str());
 							break;
 						}
 					}
