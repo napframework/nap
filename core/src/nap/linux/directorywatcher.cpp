@@ -12,12 +12,19 @@ namespace nap {
         void handleFileAction(FW::WatchID watchid, const FW::String& dir, const FW::String& filename,
                               FW::Action action) override
         {
-            if (action == FW::Actions::Add || action == FW::Actions::Modified) {
-
-                auto fname = dir + "/" + filename;
-
-                nap::Logger::info("File changed: %s", fname.c_str());
-                modifiedFiles.push_back(fname);
+            auto fname = dir + "/" + filename;
+            switch (action) {
+                case FW::Actions::Delete:
+                    nap::Logger::info("DEL %s", fname.c_str());
+                    break;
+                case FW::Actions::Add:
+                    nap::Logger::info("ADD %s", fname.c_str());
+                    modifiedFiles.push_back(fname);
+                    break;
+                case FW::Actions::Modified:
+                    nap::Logger::info("MOD %s", fname.c_str());
+                    modifiedFiles.push_back(fname);
+                    break;
             }
         }
 
@@ -36,8 +43,9 @@ namespace nap {
         // PImpl instantiation using unique_ptr because we only want a unique snowflake
         mPImpl = std::unique_ptr<PImpl, PImpl_deleter>(new PImpl);
 
-        std::string path = utility::getAbsolutePath(".");
-        nap::Logger::info("Watching: %s", path.c_str());
+
+        std::string path = utility::getFileDir(utility::getExecutablePath());
+        nap::Logger::info("Watching directory: %s", path.c_str());
         mPImpl->watchID = mPImpl->fileWatcher.addWatch(path, &(*mPImpl), true);
 
     }
@@ -60,7 +68,10 @@ namespace nap {
         if (mPImpl->modifiedFiles.empty())
             return false;
 
-        modifiedFiles.insert(modifiedFiles.end(), mPImpl->modifiedFiles.begin(), mPImpl->modifiedFiles.end());
+        for (auto filename : mPImpl->modifiedFiles) {
+            if (utility::fileExists(filename))
+                modifiedFiles.push_back(filename);
+        }
 
         mPImpl->modifiedFiles.clear();
 
