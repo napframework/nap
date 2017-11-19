@@ -102,4 +102,5 @@ add_subdirectory(modules/napsandbox)
 
 # Exe dependencies
 add_dependencies(rendertest mod_naprender)
-add_dependencies(napkin skeleton)
+# Extra deps for napkin in order to let them automatically build with napkin
+add_dependencies(napkin skeleton tommy)
