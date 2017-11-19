@@ -1,6 +1,8 @@
 #include "basewindow.h"
 #include <QSettings>
-#include <QApplication>
+#include "napkinglobals.h"
+
+using namespace napkin;
 
 BaseWindow::BaseWindow()  {
     setWindowTitle(QApplication::applicationName());
@@ -31,13 +33,13 @@ QDockWidget* BaseWindow::addDock(const QString& name, QWidget* widget, Qt::DockW
 void BaseWindow::showEvent(QShowEvent* event) {
     QWidget::showEvent(event);
     QSettings s;
-    restoreGeometry(s.value(WIN_GEO).toByteArray());
-    restoreState(s.value(WIN_STATE).toByteArray());
+    restoreGeometry(s.value(settingsKey::WIN_GEO).toByteArray());
+    restoreState(s.value(settingsKey::WIN_STATE).toByteArray());
 }
 
 void BaseWindow::closeEvent(QCloseEvent* event) {
     QSettings s;
-    s.setValue(WIN_STATE, saveState());
-    s.setValue(WIN_GEO, saveGeometry());
+    s.setValue(settingsKey::WIN_STATE, saveState());
+    s.setValue(settingsKey::WIN_GEO, saveGeometry());
     QWidget::closeEvent(event);
 }

@@ -1,5 +1,5 @@
 #include <generic/utility.h>
-#include "globals.h"
+#include "napkinglobals.h"
 
 using namespace napkin;
 

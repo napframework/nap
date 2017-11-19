@@ -1,6 +1,6 @@
 #include "actions.h"
 
-#include <QApplication>
+using namespace napkin;
 
 Action::Action() : QAction()
 {
@@ -31,7 +31,7 @@ void OpenFileAction::perform()
     QString filename = QFileDialog::getOpenFileName(QApplication::topLevelWidgets()[0],
                                                     "Open NAP Data File",
                                                     lastFilename,
-                                                    NAP_FILE_FILTER);
+                                                    JSON_FILE_FILTER);
     if (filename.isNull())
         return;
 
@@ -67,7 +67,7 @@ void SaveFileAsAction::perform()
         prevFilename = ctx.lastOpenedFilename();
 
     QString filename = QFileDialog::getSaveFileName(QApplication::topLevelWidgets()[0],
-                                                    "Save NAP Data File", prevFilename, NAP_FILE_FILTER);
+                                                    "Save NAP Data File", prevFilename, JSON_FILE_FILTER);
 
     if (filename.isNull())
         return;
