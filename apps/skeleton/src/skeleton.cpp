@@ -1,3 +1,4 @@
+#include <utility/fileutils.h>
 #include "skeleton.h"
 
 namespace nap {
@@ -8,7 +9,8 @@ namespace nap {
     bool CoreApp::init(utility::ErrorState& error)
     {
         mResourceManager = getCore().getResourceManager();
-
+        auto abspath = utility::getAbsolutePath(mFilename);
+        nap::Logger::info("Loading: %s", abspath.c_str());
         if (!mResourceManager->loadFile(mFilename, error))
             return false;
 
@@ -35,5 +37,10 @@ namespace nap {
     void CoreApp::shutdown()
     {
 
+    }
+
+    void CoreApp::update(double deltaTime)
+    {
+        mResourceManager->checkForFileChanges();
     }
 }

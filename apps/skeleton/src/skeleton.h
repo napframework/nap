@@ -28,6 +28,13 @@ namespace nap {
         void render() override;
 
         /**
+         *
+         *
+         * @param deltaTime
+         */
+        void update(double deltaTime) override;
+
+        /**
          *	Forwards the received window event to the render service
          */
         void windowMessageReceived(WindowEventPtr windowEvent) override;
