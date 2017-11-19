@@ -3,7 +3,7 @@
 #include <generic/comboboxdelegate.h>
 #include "inspectorpanel.h"
 #include "typeconversion.h"
-#include "globals.h"
+#include "napkinglobals.h"
 #include "commands.h"
 
 using namespace nap::rtti;

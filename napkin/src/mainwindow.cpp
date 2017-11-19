@@ -13,7 +13,7 @@ void MainWindow::bindSignals()
 void MainWindow::showEvent(QShowEvent* event)
 {
     BaseWindow::showEvent(event);
-    openRecentFile();
+    AppContext::get().restoreUI();
 }
 
 
@@ -51,16 +51,7 @@ void MainWindow::addMenu()
 
     auto optionsMenu = new QMenu("Options", menuBar());
     {
-        auto themeMenu = new QMenu("Theme", optionsMenu);
-        {
-            auto defaultThemeAction = new SetThemeAction(nullptr);
-            themeMenu->addAction(defaultThemeAction);
-
-            for (auto theme : AppContext::get().availableThemes())
-                themeMenu->addAction(new SetThemeAction(theme));
-        }
-        optionsMenu->addMenu(themeMenu);
-
+        optionsMenu->addMenu(&mThemeMenu);
     }
     menuBar()->insertMenu(windowMenu()->menuAction(), optionsMenu);
 }
@@ -81,13 +72,6 @@ void MainWindow::onFileSaved(const QString& filename)
     updateWindowTitle();
 }
 
-void MainWindow::openRecentFile()
-{
-    auto lastFilename = AppContext::get().lastOpenedFilename();
-    if (lastFilename.isNull())
-        return;
-    AppContext::get().loadFile(lastFilename);
-}
 
 
 void MainWindow::updateWindowTitle()

@@ -9,6 +9,7 @@
 #include "historypanel.h"
 #include "logpanel.h"
 #include "apprunnerpanel.h"
+#include "themeselectionmenu.h"
 
 class MainWindow : public BaseWindow {
     Q_OBJECT
@@ -34,7 +35,6 @@ private:
     void onNewFile();
     void onFileOpened(const QString& filename);
     void onFileSaved(const QString& filename);
-    void openRecentFile();
     void updateWindowTitle();
 
 private:
@@ -44,5 +44,7 @@ private:
     HistoryPanel mHistoryPanel;
     LogPanel mLogPanel;
     AppRunnerPanel mAppRunnerPanel;
+
+    ThemeSelectionMenu mThemeMenu;
 };
 

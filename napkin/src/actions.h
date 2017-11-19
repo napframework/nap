@@ -11,6 +11,7 @@
 #include <nap/logger.h>
 
 #include "appcontext.h"
+#include "napkinglobals.h"
 
 class Action : public QAction {
 public:
@@ -132,13 +133,14 @@ class SetThemeAction : public Action {
 public:
     SetThemeAction(const QString& themeName) : Action(), mTheme(themeName)
     {
-        setText(themeName.isEmpty() ? "Native" : themeName);
+        setText(themeName.isEmpty() ? napkin::TXT_DEFAULT_THEME : themeName);
+        setCheckable(true);
     }
 
 private:
     void perform() override
     {
-        AppContext::get().setTheme(mTheme);
+        AppContext::get().themeManager().setTheme(mTheme);
     }
 
     QString mTheme;
