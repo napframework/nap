@@ -30,6 +30,12 @@ AppRunnerPanel::AppRunnerPanel() : QWidget()
 
 }
 
+AppRunnerPanel::~AppRunnerPanel()
+{
+    onStopApp();
+}
+
+
 void AppRunnerPanel::showEvent(QShowEvent* event)
 {
     QWidget::showEvent(event);
@@ -102,3 +108,4 @@ void AppRunnerPanel::onAppFinished(int exitCode)
     mStartButton.setEnabled(true);
     mStopButton.setEnabled(false);
 }
+

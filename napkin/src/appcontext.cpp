@@ -6,6 +6,7 @@
 #include <QtWidgets/QMessageBox>
 #include <QtCore/QDir>
 #include <QtCore/QTextStream>
+#include <utility/fileutils.h>
 
 using namespace nap::rtti;
 using namespace nap::utility;
@@ -53,7 +54,8 @@ void AppContext::newFile()
 
 void AppContext::loadFile(const QString& filename)
 {
-    nap::Logger::info("Loading '%s'", filename.toStdString().c_str());
+    auto abspath = getAbsolutePath(filename.toStdString());
+    nap::Logger::info("Loading '%s'", abspath.c_str());
 
     mCurrentFilename = filename;
 

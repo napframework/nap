@@ -19,7 +19,7 @@ class AppRunnerPanel : public QWidget {
 Q_OBJECT
 public:
     AppRunnerPanel();
-
+    ~AppRunnerPanel();
 protected:
     void showEvent(QShowEvent* event) override;
 
