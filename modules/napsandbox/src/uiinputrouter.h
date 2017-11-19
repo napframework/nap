@@ -1,8 +1,8 @@
 #pragma once
 
 #include "inputrouter.h"
-#include "orthocameracomponent.h"
-#include "cameracomponent.h"
+#include <cameracomponent.h>
+#include <orthocameracomponent.h>
 #include <nap/component.h>
 #include <nap/entityptr.h>
 #include <nap/componentptr.h>
