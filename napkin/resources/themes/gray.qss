@@ -86,6 +86,7 @@ QPushButton {
     background: #555;
     border-radius: 4px;
     border: 0;
+    padding: 3px 10px 3px 10px;
 }
 
 QPushButton:hover {
@@ -93,6 +94,9 @@ QPushButton:hover {
 }
 QPushButton:pressed {
     background: #222;
+}
+QPushButton:!enabled {
+    color: #888;
 }
 
 QTabBar:tab {
