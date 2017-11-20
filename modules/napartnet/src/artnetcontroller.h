@@ -106,10 +106,11 @@ namespace nap
 		ArtNetNode getNode() const { return mNode; }
 
 	public:
-		uint8_t				mSubnet = 0;					///< Subnet, in range from 0x0..0xF
-		uint8_t				mUniverse = 0;					///< Universe, in range from 0x0..0xF
-		int					mUpdateFrequency = 44;			///< Update artnet channel data at default 44 Hz (see http://art-net.org.uk/wordpress/?page_id=456 / Refresh Rate)
-		float				mWaitTime = 2.0f;				///< Number of seconds before the control data is send regardless of changes
+		static const int	mMaxUpdateFrequency;						///< 44hz, see http ://art-net.org.uk/wordpress/?page_id=456 / Refresh Rate)
+		uint8_t				mSubnet = 0;								///< Subnet, in range from 0x0..0xF
+		uint8_t				mUniverse = 0;								///< Universe, in range from 0x0..0xF
+		int					mUpdateFrequency = mMaxUpdateFrequency;		///< Update artnet refresh rate, the default is the maximum refresh rate
+		float				mWaitTime = 2.0f;							///< Number of seconds before the control data is send regardless of changes
 
 	private:
 		friend class ArtNetService;

@@ -81,6 +81,15 @@ namespace nap
 		glm::vec3 getColor() const;
 
 		/**
+		 * @return the color as a 8bit unsigned int
+		 * @param red the color red
+		 * @param green the color green
+		 * @param blue the color blue
+		 * @param white the color white
+		 */
+		void getColor(uint8& red, uint8& green, uint8& blue, uint8& white);
+
+		/**
 		 * @return the value of white as a float
 		 */
 		float getWhite() const;

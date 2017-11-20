@@ -72,25 +72,28 @@ namespace nap
 			getTriangleValues<int>(*mMeshInstance, i, *mChannelAttribute, tri_channels);
 			if (tri_channels[0] != tri_channels[1] || tri_channels[1] != tri_channels[2])
 			{
-				return errorState.check(false, "mesh: %s triangle: %d has inconsistent art net channel attribute", mPath.c_str(), i);
+				errorState.fail("mesh: %s triangle: %d has inconsistent art net channel attribute", mPath.c_str(), i);
+				return false;
 			}
 
 			getTriangleValues<int>(*mMeshInstance, i, *mUniverseAttribute, tri_universes);
 			if (tri_universes[0] != tri_universes[1] || tri_universes[1] != tri_universes[2])
 			{
-				return errorState.check(false, "mesh: %s triangle: %d has inconsistent art net universe attribute", mPath.c_str(), i);
+				errorState.fail(false, "mesh: %s triangle: %d has inconsistent art net universe attribute", mPath.c_str(), i);
+				return false;
 			}
 
 			getTriangleValues<int>(*mMeshInstance, i, *mSubnetAttribute, tri_subnets);
 			if (tri_subnets[0] != tri_subnets[1] || tri_subnets[1] != tri_subnets[2])
 			{
-				return errorState.check(false, "mesh: %s triangle: %d has inconsistent art net subnet attribute", mPath.c_str(), i);
+				errorState.fail(false, "mesh: %s triangle: %d has inconsistent art net subnet attribute", mPath.c_str(), i);
+				return false;
 			}
 			mAddresses.emplace(ArtNetController::createAddress(tri_subnets[0], tri_universes[0]));
 		}
 
 		// Get mesh bounding box
-		nap::getBoundingBox(*mMeshInstance, mBoundingBox);
+		nap::computeBoundingBox(*mMeshInstance, mBoundingBox);
 		
 		// Initialize the mesh
 		if (!errorState.check(mMeshInstance->init(errorState), "Unable to initialize mesh %s for resource %d", mPath.c_str(), mID.c_str()))

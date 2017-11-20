@@ -68,11 +68,11 @@ namespace nap
 		// 1. Show a simple window.
 		// Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets appears in a window automatically called "Debug".
 		{
+			nap::SelectColorComponentInstance& color_comp = mPlaneEntity->getComponent<nap::SelectColorComponentInstance>();
 			static float f = 0.0f;
 			ImGui::Text("Hello Sigrid!");
 			if (ImGui::ColorEdit3("LED Color", (float*)&mColor.r))
 			{
-				nap::SelectColorComponentInstance& color_comp = mPlaneEntity->getComponent<nap::SelectColorComponentInstance>();
 				color_comp.setColor(mColor);
 			}
 			if (ImGui::SliderInt("White", &mWhite, 0, nap::math::max<uint8>()))
@@ -80,6 +80,11 @@ namespace nap
 				nap::SelectColorComponentInstance& color_comp = mPlaneEntity->getComponent<nap::SelectColorComponentInstance>();
 				color_comp.setWhite(static_cast<float>(mWhite) / static_cast<float>(nap::math::max<uint8>()));
 			}
+			uint8 r, g, b, w;
+			color_comp.getColor(r, g, b, w);
+			char ccolor[128];
+			snprintf(ccolor, 128, "%d %d %d %d", r, g, b, w);
+			ImGui::InputText("LED Color", ccolor, 128, ImGuiInputTextFlags_ReadOnly);
 			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		}
 	}

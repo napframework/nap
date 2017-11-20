@@ -115,6 +115,15 @@ namespace nap
 	}
 
 
+	void SelectColorComponentInstance::getColor(uint8& red, uint8& green, uint8& blue, uint8& white)
+	{
+		red = mRed;
+		green = mGreen;
+		blue = mBlue;
+		white = mWhite;
+	}
+
+
 	float SelectColorComponentInstance::getWhite() const
 	{
 		return static_cast<float>(mWhite) / static_cast<float>(nap::math::max<uint8>());

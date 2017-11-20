@@ -14,6 +14,8 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	const int ArtNetController::mMaxUpdateFrequency = 44;
+
 	ArtNetController::ArtNetController(ArtNetService& service) :
 		mService(&service)
 	{

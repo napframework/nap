@@ -163,22 +163,12 @@ namespace opengl
 	void Texture2D::getData(opengl::Bitmap& bitmap)
 	{
 		if (!bitmap.hasData())
-		{
-			opengl::BitmapSettings settings
-			(
-				mSettings.width,
-				mSettings.height,
-				getBitmapType(mSettings.type),
-				getColorType(mSettings.format)
-			);
-
-			assert(settings.isValid());
-			bitmap.setSettings(settings);
-			bitmap.allocateMemory();
-		}
+			initBitmap(bitmap);
 
 		// Make sure settings match
 		assert(bitmap.getSize() == getDataSize());
+		assert(getGLType(bitmap.getDataType()) == mSettings.type);
+		assert(getGLFormat(bitmap.getColorType()) == mSettings.format);
 
 		bind();
 		glGetTexImage(GL_TEXTURE_2D, 0, mSettings.format, mSettings.type, bitmap.getData());
@@ -223,22 +213,12 @@ namespace opengl
 		assert(mUsage == ETextureUsage::DynamicRead);
 
 		if (!bitmap.hasData())
-		{
-			opengl::BitmapSettings settings
-			(
-				mSettings.width,
-				mSettings.height,
-				getBitmapType(mSettings.type),
-				getColorType(mSettings.format)
-			);
-
-			assert(settings.isValid());
-			bitmap.setSettings(settings);
-			bitmap.allocateMemory();
-		}
+			initBitmap(bitmap);
 
 		// Make sure settings match
 		assert(bitmap.getSize() == getDataSize());
+		assert(getGLType(bitmap.getDataType()) == mSettings.type);
+		assert(getGLFormat(bitmap.getColorType()) == mSettings.format);
 
 		glBindBuffer(GL_PIXEL_PACK_BUFFER, mPBO);
 
@@ -249,6 +229,23 @@ namespace opengl
 		glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 
 		glAssert();
+	}
+
+
+	void Texture2D::initBitmap(opengl::Bitmap& bitmap)
+	{
+		assert(!(bitmap.hasData()));
+		opengl::BitmapSettings settings
+		(
+			mSettings.width,
+			mSettings.height,
+			getBitmapType(mSettings.type),
+			getColorType(mSettings.format)
+		);
+
+		assert(settings.isValid());
+		bitmap.setSettings(settings);
+		bitmap.allocateMemory();
 	}
 
 } // opengl

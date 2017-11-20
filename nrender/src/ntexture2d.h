@@ -65,7 +65,6 @@ namespace opengl
 		 * When the bitmap is empty (has no data associated with it) this call will try
 		 * to initialize the bitmap using the settings associated with this texture. This call will assert
 		 * if it can't initialize the bitmap based on the  provided settings or when the internal settings do not match
-		 * Note that if the bitmap's settings don't match with the texture settings the result is uncertain
 		 * To find valid bitmap settings based on this texture use: opengl::getBitmapType and opengl::getColorType
 		 * @param bitmap the bitmap that is filled with texture data
 		 */
@@ -94,5 +93,12 @@ namespace opengl
 		Texture2DSettings	mSettings;		// Settings object
 		GLuint				mPBO;			// Pixel buffer object used to read/write texture data if usage is DynamicRead or DynamicWrite
 		ETextureUsage		mUsage;			// Usage of the texture
+
+		/**
+		 * Initializes a bitmap based on the settings associated with this texture
+		 * @param bitmap the bitmap to initialize
+		 */
+		void initBitmap(opengl::Bitmap& bitmap);
+		
 	};
 } // opengl
