@@ -80,7 +80,6 @@ namespace opengl
 	 *
 	 * Maps bitmap color types to supported GL formats
 	 */
-	using OpenGLFormatMap = std::unordered_map<BitmapColorType, GLenum>;
 	static const OpenGLFormatMap openGLFormatMap = 
 	{
 		{ BitmapColorType::GREYSCALE,	GL_RED  },
@@ -98,8 +97,7 @@ namespace opengl
 	*
 	* Maps bitmap types to opengl types
 	*/
-	using OpenGLlTypeMap = std::unordered_map<BitmapDataType, GLenum>;
-	static const OpenGLlTypeMap openGLTypeMap =
+	static const OpenGLTypeMap openGLTypeMap =
 	{
 		{ BitmapDataType::BYTE,		GL_UNSIGNED_BYTE },
 		{ BitmapDataType::FLOAT,	GL_FLOAT },
@@ -203,6 +201,18 @@ namespace opengl
 		glGetTexLevelParameteriv(texture.getTargetType(), 0, GL_TEXTURE_COMPRESSED_IMAGE_SIZE_ARB, &size);
 		texture.unbind();
 		return is_compressed > 0;
+	}
+
+
+	const opengl::OpenGLTypeMap& getGLTypeMap()
+	{
+		return openGLTypeMap;
+	}
+
+
+	const opengl::OpenGLFormatMap& getGLFormatMap()
+	{
+		return openGLFormatMap;
 	}
 
 } // opengl

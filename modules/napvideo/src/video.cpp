@@ -1,9 +1,9 @@
 #include "video.h"
-
-#include "texture2d.h"
-#include "image.h"
+#include "videoservice.h"
 
 // external includes
+#include <texture2d.h>
+#include <image.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,7 +16,8 @@ extern "C"
 	#include <libavformat/avformat.h>
 }
 
-RTTI_BEGIN_CLASS(nap::Video)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Video)
+	RTTI_CONSTRUCTOR(nap::VideoService&)
 	RTTI_PROPERTY("Path",	&nap::Video::mPath,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Loop",	&nap::Video::mLoop,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Speed",	&nap::Video::mSpeed,	nap::rtti::EPropertyMetaData::Default)
@@ -29,6 +30,9 @@ namespace nap
 	const double Video::sVideoMax = std::numeric_limits<double>::max();
 
 
+	Video::Video(VideoService& service) : mService(service) { }
+
+
 	const std::string error_to_string(int err)
 	{
 		char error_buf[256];
@@ -39,8 +43,9 @@ namespace nap
 
 	Video::~Video()
 	{
+		if (mFormatContext != nullptr)
+			mService.removeVideoPlayer(*this);
 		stop();
-
 		avcodec_close(mCodecContext);
 		avcodec_free_context(&mCodecContext);
 		avformat_close_input(&mFormatContext);
@@ -159,6 +164,9 @@ namespace nap
 			return false;
 
 		mVTexture->getTexture().setData(uv_default_data.data());
+
+		// Register with service
+		mService.registerVideoPlayer(*this);
 
 		return true;
 	}

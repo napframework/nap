@@ -70,7 +70,7 @@ namespace nap
 	}
 
 
-	bool MeshInstance::init(RTTIMeshProperties& meshProperties, utility::ErrorState& errorState)
+	void MeshInstance::copyMeshProperties(RTTIMeshProperties& meshProperties)
 	{
 		mProperties.mAttributes.reserve(meshProperties.mAttributes.size());
 		for (auto& mesh_attribute : meshProperties.mAttributes)
@@ -83,9 +83,8 @@ namespace nap
 		mProperties.mDrawMode = meshProperties.mDrawMode;
 		mProperties.mIndices = meshProperties.mIndices;
 
-		return initGPUData(errorState);
 	}
-
+	
 
 	void MeshInstance::setIndices(uint32_t* indices, int numIndices)
 	{
@@ -121,6 +120,7 @@ namespace nap
 
 	bool Mesh::init(utility::ErrorState& errorState)
 	{
-		return mMeshInstance.init(mProperties, errorState);
+		mMeshInstance.copyMeshProperties(mProperties);
+		return mMeshInstance.init(errorState);
 	}
 }

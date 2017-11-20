@@ -19,6 +19,7 @@ add_dependencies(${PROJECT_NAME} fbxconverter)
 
 # preprocessor
 target_link_libraries(${PROJECT_NAME} mod_napetherdream mod_napinput mod_napsdlinput mod_napsdlwindow mod_naposc mod_napsvg mod_napapp)
+target_compile_definitions(${PROJECT_NAME} PRIVATE _USE_MATH_DEFINES)
 add_dependencies(${PROJECT_NAME} fbxconverter)
 
 # Copy etherdream DLL
