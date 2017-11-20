@@ -3,12 +3,6 @@
 
 namespace nap
 {
-	bool NAPAPI hasIndices(const MeshInstance& mesh)
-	{
-		return mesh.hasIndices();
-	}
-
-
 	bool NAPAPI isTriangleMesh(const MeshInstance& mesh)
 	{
 		switch (mesh.getDrawMode())
@@ -113,7 +107,7 @@ namespace nap
 	}
 
 
-	void getBoundingBox(const MeshInstance& mesh, math::Box& outBox)
+	void computeBoundingBox(const MeshInstance& mesh, math::Box& outBox)
 	{
 		glm::vec3 min = { nap::math::max<float>(), nap::math::max<float>(), nap::math::max<float>() };
 		glm::vec3 max = { nap::math::min<float>(), nap::math::min<float>(), nap::math::min<float>() };
@@ -133,10 +127,10 @@ namespace nap
 	}
 
 
-	nap::math::Box getBoundingBox(const MeshInstance& mesh)
+	nap::math::Box computeBoundingBox(const MeshInstance& mesh)
 	{
 		math::Box box;
-		getBoundingBox(mesh, box);
+		computeBoundingBox(mesh, box);
 		return box;
 	}
 

@@ -7,15 +7,6 @@
 namespace nap
 {
 	/**
-	 * Check if the mesh has any indices associated with it. Indices are used
-	 * as a lookup for generating triangles on the GPU and save memory because
-	 * the user doesn't have to specify duplicate vertices
-	 * @param mesh the mesh to check for indices
-	 * @return if the mesh has any indices associated with it
-	 */
-	bool NAPAPI hasIndices(const nap::MeshInstance& mesh);
-
-	/**
 	 * @param mesh the mesh to check
 	 * @return if the mesh contains triangles, is of type: TRIANGLES, TRIANGLE_STRIP or TRIANGLE_FAN
 	 */
@@ -124,7 +115,7 @@ namespace nap
 	 * @param mesh the mesh to get the bounding box for
 	 * @param outBox the computed bounding box
 	 */
-	void NAPAPI getBoundingBox(const nap::MeshInstance& mesh, nap::math::Box& outBox);
+	void NAPAPI computeBoundingBox(const nap::MeshInstance& mesh, nap::math::Box& outBox);
 
 	/**
 	 * Computes the bounding box of a mesh using it's associated position data
@@ -133,7 +124,7 @@ namespace nap
 	 * @param mesh the mesh to get the bounding box for
 	 * @return the computed bounding box
 	 */
-	math::Box NAPAPI getBoundingBox(const nap::MeshInstance& mesh);
+	math::Box NAPAPI computeBoundingBox(const nap::MeshInstance& mesh);
 
 
 
