@@ -31,7 +31,6 @@ namespace nap
 
 	}
 
-
 	bool SelectColorComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// Get the resource we are instantiated from
@@ -72,20 +71,21 @@ namespace nap
 				mWhite
 			};
 			mArtnetController->send(data, mStartChannel);
+
+			// Update material values
+			float fr = static_cast<float>(mRed) / static_cast<float>(math::max<nap::uint8>());
+			float fg = static_cast<float>(mGreen) / static_cast<float>(math::max<nap::uint8>());
+			float fb = static_cast<float>(mBlue) / static_cast<float>(math::max<nap::uint8>());
+			float fw = static_cast<float>(mWhite) / static_cast<float>(math::max<nap::uint8>());
+
+			nap::UniformVec3&  ucolor = mMaterial->getOrCreateUniform<nap::UniformVec3>("mColor");
+			nap::UniformFloat& uwhite = mMaterial->getOrCreateUniform<nap::UniformFloat>("mWhite");
+
+			ucolor.setValue({ fr, fg, fb });
+			uwhite.setValue(fw);
+
 			mDirty = false;
 		}
-
-		// Update material values
-		float fr = static_cast<float>(mRed)	 / static_cast<float>(math::max<nap::uint8>());
-		float fg = static_cast<float>(mGreen)/ static_cast<float>(math::max<nap::uint8>());
-		float fb = static_cast<float>(mBlue) / static_cast<float>(math::max<nap::uint8>());
-		float fw = static_cast<float>(mWhite)/ static_cast<float>(math::max<nap::uint8>());
-
-		nap::UniformVec3&  ucolor = mMaterial->getOrCreateUniform<nap::UniformVec3>("mColor");
-		nap::UniformFloat& uwhite = mMaterial->getOrCreateUniform<nap::UniformFloat>("mWhite");
-
-		ucolor.setValue({ fr, fg, fb });
-		uwhite.setValue(fw);
 	}
 
 

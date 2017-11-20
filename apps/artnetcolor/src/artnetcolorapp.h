@@ -61,7 +61,6 @@ namespace nap
 		 *	Called when loop finishes
 		 */
 		void shutdown() override;
-		
 
 	private:
 		// Nap Services
@@ -77,8 +76,8 @@ namespace nap
 		ObjectPtr<EntityInstance> mPlaneEntity = nullptr;			//< Pointer to the entity that holds the plane
 		ObjectPtr<ArtNetController> mArtnetController = nullptr;	//< The art-net controller
 
-		glm::vec3 mColor = { 0.0,0.0,0.0 };							//< Current Color
-		int mWhite = 0;												//< Current white level
+		std::vector<glm::vec3> mColor;								//< Current Color for every selection component
+		std::vector<int> mWhite;									//< Current white level for every selection component
 
 		// Window event handling
 		void handleWindowEvent(const WindowEvent& windowEvent);

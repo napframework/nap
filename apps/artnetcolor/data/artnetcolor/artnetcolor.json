@@ -16,7 +16,25 @@
 			"Subnet" 	: 0,
 			"Universe" 	: 0,
 			"Frequency" : 44,
-			"WaitTime"	: 2.0
+			"WaitTime"	: 0.5
+		},
+
+		{
+			"Type" 		: "nap::ArtNetController",
+			"mID" 		: "Universe1",
+			"Subnet" 	: 0,
+			"Universe" 	: 1,
+			"Frequency" : 44,
+			"WaitTime"	: 0.5
+		},
+
+		{
+			"Type" 		: "nap::ArtNetController",
+			"mID" 		: "Universe2",
+			"Subnet" 	: 0,
+			"Universe" 	: 2,
+			"Frequency" : 44,
+			"WaitTime"	: 0.5
 		},
 
 		{
@@ -94,10 +112,30 @@
 					"Controller" : "Universe0",
 					"Mesh" : "RenderPlane",
 					"Channel" : 0,
-					"Red" : 128,
-					"Green" : 64,
+					"Red" : 255,
+					"Green" : 0,
+					"Blue" : 0,
+					"White" : 0
+				},
+				{
+					"Type" : "nap::SelectColorComponent",
+					"Controller" : "Universe1",
+					"Mesh" : "RenderPlane",
+					"Channel" : 0,
+					"Red" : 0,
+					"Green" : 255,
+					"Blue" : 0,
+					"White" : 0
+				},
+				{
+					"Type" : "nap::SelectColorComponent",
+					"Controller" : "Universe2",
+					"Mesh" : "RenderPlane",
+					"Channel" : 0,
+					"Red" : 0,
+					"Green" : 0,
 					"Blue" : 255,
-					"White" : 64
+					"White" : 0
 				}
 			]
 		},
