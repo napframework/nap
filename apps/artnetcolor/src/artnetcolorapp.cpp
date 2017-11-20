@@ -80,11 +80,22 @@ namespace nap
 				nap::SelectColorComponentInstance& color_comp = mPlaneEntity->getComponent<nap::SelectColorComponentInstance>();
 				color_comp.setWhite(static_cast<float>(mWhite) / static_cast<float>(nap::math::max<uint8>()));
 			}
+			
+			// show led output colors
 			uint8 r, g, b, w;
 			color_comp.getColor(r, g, b, w);
 			char ccolor[128];
 			snprintf(ccolor, 128, "%d %d %d %d", r, g, b, w);
 			ImGui::InputText("LED Color", ccolor, 128, ImGuiInputTextFlags_ReadOnly);
+
+			// show RGB output colors as a combination
+			int pr = math::clamp<int>(r + w, 0, math::max<uint8>());
+			int pg = math::clamp<int>(g + w, 0, math::max<uint8>());
+			int pb = math::clamp<int>(b + w, 0, math::max<uint8>());
+
+			char pxcolor[128];
+			snprintf(pxcolor, 128, "%d %d %d", pr, pg, pb);
+			ImGui::InputText("Pixel Color", pxcolor, 128, ImGuiInputTextFlags_ReadOnly);
 			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		}
 	}
