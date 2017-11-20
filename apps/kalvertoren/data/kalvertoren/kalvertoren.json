@@ -18,6 +18,78 @@
 		},
 
 		{
+			"Type" 		: "nap::ArtNetController",
+			"mID" 		: "Universe4",
+			"Subnet" 	: 0,
+			"Universe" 	: 4,
+			"WaitTime"	: 2.0
+		},
+
+		{
+			"Type" 		: "nap::ArtNetController",
+			"mID" 		: "Universe5",
+			"Subnet" 	: 0,
+			"Universe" 	: 5,
+			"WaitTime"	: 2.0
+		},
+
+		{
+			"Type" 		: "nap::ArtNetController",
+			"mID" 		: "Universe8",
+			"Subnet" 	: 0,
+			"Universe" 	: 8,
+			"WaitTime"	: 2.0
+		},
+
+		{
+			"Type" 		: "nap::ArtNetController",
+			"mID" 		: "Universe2",
+			"Subnet" 	: 0,
+			"Universe" 	: 2,
+			"WaitTime"	: 2.0
+		},
+
+		{
+			"Type" 		: "nap::ArtNetController",
+			"mID" 		: "Universe3",
+			"Subnet" 	: 0,
+			"Universe" 	: 3,
+			"WaitTime"	: 2.0
+		},
+
+		{
+			"Type" 		: "nap::ArtNetController",
+			"mID" 		: "Universe6",
+			"Subnet" 	: 0,
+			"Universe" 	: 6,
+			"WaitTime"	: 2.0
+		},
+
+		{
+			"Type" 		: "nap::ArtNetController",
+			"mID" 		: "Universe0",
+			"Subnet" 	: 0,
+			"Universe" 	: 0,
+			"WaitTime"	: 2.0
+		},
+
+		{
+			"Type" 		: "nap::ArtNetController",
+			"mID" 		: "Universe1",
+			"Subnet" 	: 0,
+			"Universe" 	: 1,
+			"WaitTime"	: 2.0
+		},
+
+		{
+			"Type" 		: "nap::ArtNetController",
+			"mID" 		: "Universe7",
+			"Subnet" 	: 0,
+			"Universe" 	: 7,
+			"WaitTime"	: 2.0
+		},
+
+		{
 			"Type" : "nap::PlaneMesh",
 			"mID": "PlaneMesh"
 		},
@@ -73,15 +145,69 @@
 		},
 	
 		{
-			"Type" : "nap::MeshFromFile",
+			"Type" : "nap::ArtnetMeshFromFile",
 			"mID": "HeiligewegMesh",
-			"Path" : "data/kalvertoren/heiligeweg_export_heiligeweg.mesh"
+			"Path" : "data/kalvertoren/heiligeweg_export_heiligeweg.mesh",
+			"OverrideSubnet" : false,
+			"Subnet" : 0,
+			"ChannelOffset" : 0
 		},
 
 		{
 			"Type" : "nap::MeshFromFile",
 			"mID": "HeiligewegFrameMesh",
 			"Path" : "data/kalvertoren/heiligeweg_export_heiligeweg_frame.mesh"
+		},
+
+		{
+			"Type" : "nap::LedMesh",
+			"mID" : "HeiligewegLedMesh",
+			"TriangleMesh" : "HeiligewegMesh",
+			"FrameMesh" : "HeiligewegFrameMesh"
+		},
+		
+		{
+			"Type" : "nap::ArtnetMeshFromFile",
+			"mID": "KalverMesh",
+			"Path" : "data/kalvertoren/kalver_export_kalver.mesh",
+			"OverrideSubnet" : false,
+			"Subnet" : 0,
+			"ChannelOffset" : 0
+		},
+
+		{
+			"Type" : "nap::MeshFromFile",
+			"mID": "KalverFrameMesh",
+			"Path" : "data/kalvertoren/kalver_export_kalver_frame.mesh"
+		},
+
+		{
+			"Type" : "nap::LedMesh",
+			"mID" : "KalverLedMesh",
+			"TriangleMesh" : "KalverMesh",
+			"FrameMesh" : "KalverFrameMesh"
+		},
+
+		{
+			"Type" : "nap::ArtnetMeshFromFile",
+			"mID": "SingelMesh",
+			"Path" : "data/kalvertoren/singel_export_singel.mesh",
+			"OverrideSubnet" : false,
+			"Subnet" : 1,
+			"ChannelOffset" : 0
+		},
+
+		{
+			"Type" : "nap::MeshFromFile",
+			"mID": "SingelFrameMesh",
+			"Path" : "data/kalvertoren/singel_export_singel_frame.mesh"
+		},
+
+		{
+			"Type" : "nap::LedMesh",
+			"mID" : "SingelLedMesh",
+			"TriangleMesh" : "SingelMesh",
+			"FrameMesh" : "SingelFrameMesh"
 		},
 						
 		{
@@ -104,15 +230,22 @@
 				{
 					"MeshAttributeID": "Normal",
 					"ShaderAttributeID": "in_Normals"
+				},
+				{
+					"MeshAttributeID": "channel",
+					"ShaderAttributeID": "in_Channels"
+				},
+				{
+					"MeshAttributeID": "subnet",
+					"ShaderAttributeID": "in_Subnets"
+				},
+				{
+					"MeshAttributeID": "universe",
+					"ShaderAttributeID": "in_Universes"
 				}
 			],
 			"Uniforms" : 
 			[
-				{
-					"Type" : "nap::UniformTexture2D",
-					"Name" : "videoTexture",
-					"Texture" : "ColorTexture"
-				},
 				{
 					"Type" : "nap::UniformVec3",
 					"Name" : "lightIntensity",
@@ -126,17 +259,17 @@
 				{
 					"Type" : "nap::UniformFloat",
 					"Name" : "ambientIntensity",
-					"Value" : 0.75
+					"Value" : 1.0
 				},
 				{
 					"Type" : "nap::UniformFloat",
 					"Name" : "shininess",
-					"Value" : 7.5
+					"Value" : 10.0
 				},
 				{
 					"Type" : "nap::UniformFloat",
 					"Name" : "specularIntensity",
-					"Value" : 0.5
+					"Value" : 1.0
 				},
 				{
 					"Type" : "nap::UniformFloat",
@@ -218,7 +351,7 @@
 			"mID": "Video1",
 			"Path": "data/kalvertoren/heiligeweg_demo.mp4",
 			"Loop" : true,
-			"Speed" : 5.0
+			"Speed" : 1
 		},
 		
 		{
@@ -247,15 +380,62 @@
 				}
 			]
 		},
-		
+
 		{
 			"Type" : "nap::Entity",
-			"mID": "KalvertorenEntity",
-			"Components" : 
+			"mID" : "ModelsEntity",
+			"Components" :
 			[
 				{
+					"Type" : "nap::TransformComponent",
+					"Properties": 
+						{
+						"Translate": 
+						{
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0
+						},
+						"Rotate": 
+						{
+							"x": 0.0,
+							"y": 180.0,
+							"z": 0.0
+						},
+						"Scale": 
+						{
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.0
+					}
+				},
+				{
+					"Type" : "nap::SelectLedMeshComponent",
+					"mID" : "SelectLedMeshComponent",
+					"TriangleComponent" : "./RenderableTriangleLedMeshComponent",
+					"FrameComponent" : "./RenderableFrameLedMeshComponent",
+					"Index" : 0,
+					"Meshes" :
+					[
+						"HeiligewegLedMesh",
+						"KalverLedMesh",
+						"SingelLedMesh"
+					]
+				},
+				{
+					"Type" : "nap::SyncLedMaterialComponent",
+					"mID" : "SyncLedComponent",
+					"Pointlight" : "PointlightComponent",
+					"PointlightTransform" : "PointlightTransformComponent",
+					"CameraTransform" : "ScenecameraTransformComponent",
+					"SelectMeshComponent" : "./SelectLedMeshComponent"
+				},
+				{
 					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "HeiligewegMesh",
+					"Mesh" : "KalverMesh",
+					"mID" : "RenderableTriangleLedMeshComponent",
 					"MaterialInstance" : 
 					{
 						"Material": "VertexColorMaterial"
@@ -263,32 +443,66 @@
 				},
 				{
 					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "HeiligewegFrameMesh",
+					"Mesh" : "KalverFrameMesh",
+					"mID" : "RenderableFrameLedMeshComponent",
 					"MaterialInstance" : 
 					{
 						"Material": "FrameMaterial"
 					}
-				},
+				}
+			]
+		},
+
+		{
+			"Type" : "nap::Entity",
+			"mID": "KalvertorenEntity",
+			"Components" : 
+			[
 				{
-					"Type" : "nap::TransformComponent",
-					"Properties": {
-						"Translate": {
-							"x": 0.0,
-							"y": 0.0,
-							"z": -30.0
-						},
-						"Rotate": {
-							"x": 0.0,
-							"y": 0.0,
-							"z": 0.0
-						},
-						"Scale": {
-							"x": 1.0,
-							"y": 1.0,
-							"z": 1.0
-						},
-						"UniformScale": 1.0
-					}
+					"Type" : "nap::MeshToArtnetComponent",
+					"Mesh" : "KalverMesh",
+					"Controllers" :
+					[
+						"Universe2",
+						"Universe3",
+						"Universe6",
+						"Universe0",
+						"Universe1"
+					]
+				}
+			]
+		},
+		
+		{
+			"Type" : "nap::Entity",
+			"mID": "HeiligewegEntity",
+			"Components" : 
+			[
+				{
+					"Type" : "nap::MeshToArtnetComponent",
+					"Mesh" : "HeiligewegMesh",
+					"Controllers" :
+					[
+						"Universe4",
+						"Universe5",
+						"Universe8"
+					]
+				}
+			]
+		},
+
+		{
+			"Type" : "nap::Entity",
+			"mID": "SingelEntity",
+			"Components" : 
+			[
+				{
+					"Type" : "nap::MeshToArtnetComponent",
+					"Mesh" : "SingelMesh",
+					"Controllers" :
+					[
+						"Universe7"
+					]
 				}
 			]
 		},
@@ -302,19 +516,70 @@
 				{
 					"Type" : "nap::RenderableMeshComponent",
 					"Mesh" : "PlaneMesh",
-					"MaterialInstance" : {
+					"MaterialInstance" : 
+					{
 						"Material": "VideoMaterial"
 					}
 				},
 				{
-					"Type" : "nap::TransformComponent"
+					"Type" : "nap::TransformComponent",
+					"Properties": 
+					{
+						"Translate": 
+						{
+							"x": 512.0,
+							"y": 512.0,
+							"z": 0.0
+						},
+						"Rotate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0
+						},
+						"Scale": 
+						{
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1024.0						
+					}
 				}
 			]	
+		},
+
+		{
+			"Type" : "nap::Entity",
+			"mID" : "VideoCameraEntity",
+			"Components" : 
+			[	
+				{
+					"Type" : "nap::OrthoCameraComponent",
+					"mID" : "VideoOrthoCameraComponent",
+					"Properties": 
+					{
+						"NearClippingPlane" : 1,
+						"FarClippingPlane" : 1000.0
+					}
+				},
+				{
+					"Type" : "nap::TransformComponent",
+					"Properties": 
+					{
+						"Translate": 
+						{
+							"x": 0.0,
+							"y": 0.0,
+							"z": 10.0
+						}				
+					}
+				}
+			]
 		},
 		
 		{
 			"Type" : "nap::Entity",
-			"mID": "CameraEntity",
+			"mID": "SceneCameraEntity",
 			"Components" :  
 			[
 				{
@@ -342,7 +607,7 @@
 				},
 				{
 					"Type" : "nap::CameraController",
-					"LookAtTarget" : "KalvertorenEntity"
+					"LookAtTarget" : "ModelsEntity"
 				},			
 				{
 					"Type" : "nap::FirstPersonController",
@@ -359,11 +624,12 @@
 				},
 				{
 					"Type" : "nap::OrthoController",
-					"ZoomSpeed": 0.5,
+					"ZoomSpeed": 0.25,
 					"OrthoCameraComponent" : "OrthoCameraComponent"
 				},			
 				{
 					"Type" : "nap::TransformComponent",
+					"mID" : "ScenecameraTransformComponent",
 					"Properties": {
 						"Translate": {
 							"x": 0.0,
@@ -392,15 +658,17 @@
 			[
 				{
 					"Type" : "nap::PointlightComponent",
+					"mID" : "PointlightComponent",
 					"Intensity" : 1.0
 				},
 				{
 					"Type" : "nap::TransformComponent",
+					"mID" : "PointlightTransformComponent",
 					"Properties": {
 						"Translate": {
-							"x": 0.0,
-							"y": -20.0,
-							"z": 20.0
+							"x": 10.0,
+							"y": 40.0,
+							"z": -10.0
 						},
 						"Rotate": {
 							"x": 0.0,

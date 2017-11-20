@@ -64,6 +64,36 @@ namespace nap
 		 */
 		virtual void update(double deltaTime) override;
 
+		/**
+		 * Set the color using a set of floats
+		 * @param color the new color in the 0-1 float range
+		 */
+		void setColor(const glm::vec3& color);
+
+		/**
+		 * Set the level of white
+		 */
+		void setWhite(float white);
+
+		/**
+		 * @return the color as a vec3 in the range of 0-1
+		 */
+		glm::vec3 getColor() const;
+
+		/**
+		 * @return the color as a 8bit unsigned int
+		 * @param red the color red
+		 * @param green the color green
+		 * @param blue the color blue
+		 * @param white the color white
+		 */
+		void getColor(uint8& red, uint8& green, uint8& blue, uint8& white);
+
+		/**
+		 * @return the value of white as a float
+		 */
+		float getWhite() const;
+
 	private:
 		ComponentInstancePtr<RenderableMeshComponent>	mRenderableMeshComponent = { this, &SelectColorComponent::mMesh };
 		int												mStartChannel = 0;
@@ -73,5 +103,6 @@ namespace nap
 		nap::uint8										mGreen = 0;
 		nap::uint8										mBlue = 0;
 		nap::uint8										mWhite = 0;
+		bool											mDirty = true;
 	};
 }

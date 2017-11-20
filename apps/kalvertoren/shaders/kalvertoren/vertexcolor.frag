@@ -6,6 +6,7 @@ in vec4 pass_Color;						// Color
 in vec3 pass_Normals;					// Normals
 in mat4 pass_ModelMatrix;				// Matrix
 in vec3 pass_Vert;						// The vertex position
+in vec3 pass_Artnet;					// The artnet color value
 
 // Light Uniforms
 uniform vec3		lightPosition;		// World position of the light
@@ -25,8 +26,8 @@ void main(void)
 {
 	// Get video color
 	vec2 uvs = vec2(pass_Uvs.x, pass_Uvs.y);
-	vec3 color = texture(videoTexture, uvs).rgb;
-	//vec3 color = vec3(1.0,0.0,0.0);
+	//vec3 color = texture(videoTexture, uvs).rgb;
+	vec3 color = pass_Color.rgb;
 
 	//calculate normal in world coordinates
     mat3 normal_matrix = transpose(inverse(mat3(pass_ModelMatrix)));

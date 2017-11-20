@@ -97,7 +97,8 @@ add_subdirectory(modules/napartnet)
 add_subdirectory(modules/naposc)
 add_subdirectory(modules/napsvg)
 add_subdirectory(modules/napapp)
-
+add_subdirectory(modules/napimgui)
+# Leftover components can go here for now
 add_subdirectory(modules/napsandbox)
 
 # Exe dependencies
