@@ -55,7 +55,16 @@ namespace nap
 		if (!errorState.check(mValue->get_type().is_derived_from(actual_type), "Target is of the wrong type (found '%s', expected '%s')", mValue->get_type().get_name().data(), actual_type.get_raw_type().get_name().data()))
 			return false;
 
-		return errorState.check(resolvedTargetPath.setValue(mValue), "Failed to set pointer to target %s", mValue->mID.c_str());
+		// ResolvedRTTIPath cannot deal with this specific case. We are trying to set a ComponentPtr<Component> to a ComponentPtr<targetType>. Because these types are not the same,
+		// it will convert the ComponentPtr by using their wrapped types, but in this specific case we will lose the Component instance path that was on the object (it will only deal 
+		// with the internal wrapped type and copy that data only).
+		// So instead, we make sure that the types are fully matched by first getting the ComponentPtr<targetType>, then assigning the path to it; setValue will then not decide to use convert 
+		// and will assign the value directly, without losing information.
+		rtti::Variant new_value = resolvedTargetPath.getValue();
+		ComponentPtrBase& new_component_ptr = const_cast<ComponentPtrBase&>(new_value.get_value<ComponentPtrBase>());
+		new_component_ptr.assign(mValue.getInstancePath(), *mValue.get());
+
+		return errorState.check(resolvedTargetPath.setValue(new_value), "Failed to set pointer to target %s", mValue->mID.c_str());
 	}
 
 	bool TargetAttribute::apply(rtti::RTTIObject& target, utility::ErrorState& errorState) const
