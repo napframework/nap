@@ -74,6 +74,28 @@ namespace nap
 	};
 
 
+	/**
+	 * App event handler associated with gui applications
+	 * When working with an application that hosts a GUI you often don't
+	 * want to forward events when the gui is active and used
+	 * This app handler checks if the user is interacting with a gui, if so
+	 * no events are forwarded to the application
+	 */
+	class NAPAPI GUIAppEventHandler : public BaseAppEventHandler
+	{
+		RTTI_ENABLE(BaseAppEventHandler)
+	public:
+		GUIAppEventHandler(App& app);
+
+		/**
+		 * This call polls the various SDL messages and filters them
+		 * based on GUI activity. If the gui is actively used the events
+		 * are not forwarded to the running app
+		 */
+		virtual void process() override;
+	};
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// Template definitions
 	//////////////////////////////////////////////////////////////////////////

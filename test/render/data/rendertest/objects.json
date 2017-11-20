@@ -16,6 +16,12 @@
 			"Height" : 512,
 			"Title" : "Window 2"
 		},
+
+		{
+			"Type" : "nap::GuiWindow",
+			"mID" : "GuiWindowOne",
+			"Window" : "Window0"
+		},
 			
 		{
 			"Type" : "nap::Image",

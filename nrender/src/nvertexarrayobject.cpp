@@ -43,7 +43,26 @@ namespace opengl
 
 				buffer.bind();
 				glEnableVertexAttribArray(binding.first);
-				glVertexAttribPointer(binding.first, buffer.getNumComponents(), buffer.getType(), GL_FALSE, 0, 0);
+				switch (buffer.getType())
+				{
+					case GL_BYTE:
+					case GL_UNSIGNED_BYTE:
+					case GL_INT:
+					case GL_UNSIGNED_INT:
+					case GL_SHORT:
+					case GL_UNSIGNED_SHORT:
+					{
+						glVertexAttribIPointer(binding.first, buffer.getNumComponents(), buffer.getType(), 0, 0);
+						break;
+					}
+					default:
+					{
+						glVertexAttribPointer(binding.first, buffer.getNumComponents(), buffer.getType(), GL_FALSE, 0, 0);
+						break;
+					}
+
+
+				}
 				buffer.unbind();
 			}
 		}
