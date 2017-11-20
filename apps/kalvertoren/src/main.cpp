@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
 	nap::Core core;
 
 	// Create app runner
-	nap::AppRunner<nap::KalvertorenApp, nap::AppEventHandler> app_runner(core);
+	nap::AppRunner<nap::KalvertorenApp, nap::GUIAppEventHandler> app_runner(core);
 
 	// Start
 	nap::utility::ErrorState error;

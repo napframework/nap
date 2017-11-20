@@ -61,10 +61,8 @@ namespace nap
 		 *	Called when loop finishes
 		 */
 		void shutdown() override;
-		
 
 	private:
-		
 		// Nap Services
 		RenderService*		mRenderService = nullptr;				//< Render Service that handles render calls
 		ResourceManager*	mResourceManager = nullptr;				//< Manages all the loaded resources
@@ -77,6 +75,9 @@ namespace nap
 		ObjectPtr<EntityInstance> mCameraEntity = nullptr;			//< Pointer to the entity that holds the camera
 		ObjectPtr<EntityInstance> mPlaneEntity = nullptr;			//< Pointer to the entity that holds the plane
 		ObjectPtr<ArtNetController> mArtnetController = nullptr;	//< The art-net controller
+
+		std::vector<glm::vec3> mColor;								//< Current Color for every selection component
+		std::vector<int> mWhite;									//< Current white level for every selection component
 
 		// Window event handling
 		void handleWindowEvent(const WindowEvent& windowEvent);
