@@ -129,6 +129,7 @@ namespace nap
 		virtual void* getRawData() override;
 	};
 
+
 	//////////////////////////////////////////////////////////////////////////
 	// Type definitions for all supported vertex attribute types
 	//////////////////////////////////////////////////////////////////////////
@@ -159,5 +160,53 @@ namespace nap
 	{
 		return static_cast<void*>(mData.data());
 	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Forward declarations of templated functions
+	//////////////////////////////////////////////////////////////////////////
+
+	template<>
+	NAPAPI GLenum FloatVertexAttribute::getType() const;
+
+	template<>
+	NAPAPI int FloatVertexAttribute::getNumComponents() const;
+
+	template<>
+	NAPAPI GLenum IntVertexAttribute::getType() const;
+
+	template<>
+	NAPAPI int IntVertexAttribute::getNumComponents() const;
+
+	template<>
+	NAPAPI GLenum ByteVertexAttribute::getType() const;
+
+	template<>
+	NAPAPI int ByteVertexAttribute::getNumComponents() const;
+
+	template<>
+	NAPAPI GLenum DoubleVertexAttribute::getType() const;
+
+	template<>
+	NAPAPI int DoubleVertexAttribute::getNumComponents() const;
+
+	template<>
+	NAPAPI GLenum Vec2VertexAttribute::getType() const;
+
+	template<>
+	NAPAPI int Vec2VertexAttribute::getNumComponents() const;
+
+	template<>
+	NAPAPI GLenum Vec3VertexAttribute::getType() const;
+
+	template<>
+	NAPAPI int Vec3VertexAttribute::getNumComponents() const;
+
+	template<>
+	NAPAPI GLenum Vec4VertexAttribute::getType() const;
+
+	template<>
+	NAPAPI int Vec4VertexAttribute::getNumComponents() const;
+
 } // nap
 

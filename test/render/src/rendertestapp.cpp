@@ -4,10 +4,16 @@
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <perspcameracomponent.h>
+#include <imguiservice.h>
+#include <imgui/imgui.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTestApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
+
+glm::vec3 mColor{0.0f,0.0f,0.0f};
+int mWhite(0);
+bool mShow = true;
 
 namespace nap 
 {
@@ -49,7 +55,9 @@ namespace nap
 		render_state.mEnableMultiSampling = true;
 		render_state.mPointSize = 2.0f;
 		render_state.mPolygonMode = opengl::PolygonMode::FILL;
-		
+
+		nap::ObjectPtr<RenderWindow> window = mRenderService->getWindow(1);
+
 		return true;
 	}
 	
@@ -58,7 +66,6 @@ namespace nap
 	void RenderTestApp::update(double deltaTime)
 	{
 		DefaultInputRouter& input_router = mDefaultInputRouter->getComponent<DefaultInputRouterComponentInstance>().mInputRouter;
-		
 		{
 			// Update input for first window
 			std::vector<nap::EntityInstance*> entities;
@@ -102,6 +109,12 @@ namespace nap
 		if (!mesh_instance.update(errorState))
 		{
 			Logger::fatal(errorState.toString());
+		}
+
+		// 1. Show a simple window.
+		// Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets appears in a window automatically called "Debug".
+		{
+			ImGui::ShowTestWindow(&mShow);
 		}
 	}
 	
@@ -154,7 +167,9 @@ namespace nap
 			components_to_render.clear();
 			components_to_render.push_back(&mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>());
 			mRenderService->renderObjects(backbuffer, mSplitCameraEntity->getComponent<PerspCameraComponentInstance>(), components_to_render);
-			
+
+			getCore().getService<IMGuiService>()->render();
+
 			render_window->swap();
 		}
 	 
@@ -177,7 +192,7 @@ namespace nap
 			components_to_render.clear();
 			components_to_render.push_back(&mWorldEntity->getComponent<RenderableMeshComponentInstance>());
 			mRenderService->renderObjects(backbuffer, mSplitCameraEntity->getComponent<PerspCameraComponentInstance>(), components_to_render);
-			
+
 			render_window->swap(); 
 		}
 	}

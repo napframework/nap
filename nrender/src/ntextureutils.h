@@ -21,11 +21,9 @@ namespace opengl
 
 	/**
 	* getGLType
-	*
 	* @return: the associated OpenGL system type based on the Bitmap's data type, GL_INVALID_ENUM if not found
 	*/
 	GLenum		getGLType(BitmapDataType type);
-
 
 	/**
 	 * getGLInternalFormat
@@ -37,7 +35,6 @@ namespace opengl
 	 */
 	GLint		getGLInternalFormat(BitmapColorType type, bool compressed = false);
 
-
 	/**
 	 * getGLFormat
 	 * @return: the GL associated format associated with the bitmap's color type
@@ -45,7 +42,6 @@ namespace opengl
 	 * The format determines the composition of each element in the texture
 	 */
 	GLenum		getGLFormat(BitmapColorType type);
-
 
 	/**
 	 * setFromBitmap
@@ -59,7 +55,6 @@ namespace opengl
 	 */
 	bool		getSettingsFromBitmap(const BitmapBase& bitmap, bool compress, Texture2DSettings& settings, nap::utility::ErrorState& errorState);
 
-
 	/**
 	 * isCompressed
 	 *
@@ -68,4 +63,18 @@ namespace opengl
 	 * @param: type, the GPU compression type, will be invalid if texture isn't compressed
 	 */
 	bool isCompressed(Texture& texture, GLint& size, GLint& type);
+
+	// using directives
+	using OpenGLTypeMap = std::unordered_map<BitmapDataType, GLenum>;
+	using OpenGLFormatMap = std::unordered_map<BitmapColorType, GLenum>;
+
+	/**
+	* @return a map that binds bitmap data types to opengl data types
+	*/
+	const OpenGLTypeMap& getGLTypeMap();
+
+	/**
+	*	@return a map that binds bitmap color types to opengl formats
+	*/
+	const OpenGLFormatMap& getGLFormatMap();
 }

@@ -815,7 +815,14 @@ namespace nap
 				assert(object);
 
 				std::unique_ptr<RTTIObject> cloned_object = rtti::cloneObject(*object, getFactory());
-				objects_to_update.emplace(std::make_pair(cloned_object->mID, std::move(cloned_object)));
+				
+				// TEMP HACK: Replace original object in object graph with the cloned version. This fixes problems when real-time editing components. 
+				// This should be replaced with a rebuild of the object graph, but that change is on another branch
+				RTTIObjectGraph::Node* originalObjectNode = object_graph.findNode(object->mID);
+				assert(originalObjectNode && originalObjectNode->mItem.mType == RTTIObjectGraphItem::EType::Object);
+
+				originalObjectNode->mItem.mObject = cloned_object.get();
+				objects_to_update.emplace(std::make_pair(cloned_object->mID, std::move(cloned_object)));				
 			}
 		}
 
