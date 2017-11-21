@@ -20,7 +20,7 @@ namespace nap
 		RTTI_ENABLE(BaseTexture2D)
 	public:
 		// Color associated with an index
-		using IndexColor = RGBColor<uint8>;
+		using IndexColor = RGBColor8;
 
 		virtual ~IndexMap();
 

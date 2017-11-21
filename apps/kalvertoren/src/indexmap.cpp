@@ -87,18 +87,18 @@ namespace nap
 		for (int i = 0; i < mBitmap.getWidth(); i++)
 		{
 			uint8* pix_color = mBitmap.getPixel<uint8>(i, 0);
-			IndexColor current_color = { 0,0,0 };
+			IndexColor current_color;
 			switch (mBitmap.getColorType())
 			{
 			case opengl::BitmapColorType::BGR:
-				current_color.mValues[0] = *(pix_color + 2);
-				current_color.mValues[1] = *(pix_color + 1);
-				current_color.mValues[2] = *(pix_color + 0);
+				current_color.setValue(EColorChannel::Red,		*(pix_color + 2));
+				current_color.setValue(EColorChannel::Green,	*(pix_color + 1));
+				current_color.setValue(EColorChannel::Blue,		*(pix_color + 0));
 				break;
 			case opengl::BitmapColorType::RGB:
-				current_color.mValues[0] = *(pix_color + 0);
-				current_color.mValues[1] = *(pix_color + 1);
-				current_color.mValues[2] = *(pix_color + 2);
+				current_color.setValue(EColorChannel::Red,		*(pix_color + 0));
+				current_color.setValue(EColorChannel::Green,	*(pix_color + 1));
+				current_color.setValue(EColorChannel::Blue,		*(pix_color + 2));
 				break;
 			default:
 				assert(false);

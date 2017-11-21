@@ -5,7 +5,19 @@
 
 namespace nap
 {
-	class Color
+	enum class EColorChannel : int
+	{
+		Red		= 0,
+		Green	= 1,
+		Blue	= 2,
+		Alpha	= 3
+	};
+
+
+	/**
+	 * Base class for all types of color
+	 */
+	class BaseColor
 	{
 		RTTI_ENABLE()
 	public:
@@ -14,10 +26,10 @@ namespace nap
 		* @param channels the number of channels of the color
 		* @param size the size in bytes of a single color channel
 		*/
-		Color(int channels, int size) : mChannels(channels), mValueSize(size) { }
+		BaseColor(int channels, int size) : mChannels(channels), mValueSize(size) { }
 
-		bool operator==(const Color& rhs) = delete;
-		bool operator!=(const Color& rhs) = delete;
+		bool operator==(const BaseColor& rhs) = delete;
+		bool operator!=(const BaseColor& rhs) = delete;
 
 		/**
 		 *	@return the number of channels associated with this color
@@ -30,7 +42,7 @@ namespace nap
 		int valueSize() const													{ return mValueSize; }
 
 		/**
-		 *	@return the type of the color value
+		 *	@return the color value data type
 		 */
 		virtual rtti::TypeInfo getValueType() const = 0;
 
@@ -46,117 +58,69 @@ namespace nap
 
 
 	/**
-	 *	Color made up out of a Red, Green and Blue component
+	 * Specific type of color where T defines the value type of the color
+	 * and CHANNELS the number of channels associated with a color
+	 * Colors are always packed in the following order RGBA. This class
+	 * can also be used to store pointers to colors and can therefore act
+	 * as a convenient wrapper around bitmap color values. Certain color types
+	 * can also be used as a hash for a map
 	 */
-	template<typename T>
-	class RGBColor : public Color
+	template<typename T, typename int CHANNELS>
+	class Color : public BaseColor
 	{
-		RTTI_ENABLE(Color)
+		RTTI_ENABLE(BaseColor)
 	public:
-		/**
-		*	Constructor that creates a color based on red, green and blue
-		*/
-		RGBColor(T red, T green, T blue) : Color(3, sizeof(T))					{ mValues = { red, green, blue }; }
-
 		/**
 		*	Constructor that simply creates a 0 initialized color
 		*/
-		RGBColor() : Color(3, sizeof(T)) { }
+		Color() : BaseColor(CHANNELS, sizeof(T))							{ mValues.fill(0); }
 
 		/**
-		 *	@return the red color
+		 * Constructor that creates a color based on a set number of values
+		 * Note that the number of values needs to match the number of channels
+		 * The order is important: RGBA
 		 */
-		T getRed() const														{ return mValues[0]; }
-		
-		/**
-		 *	@return the green color
-		 */
-		T getGreen() const														{ return mValues[1]; }
-		
-		/**
-		 *	@return the blue color
-		 */
-		T getBlue() const														{ return mValues[2]; }
+		Color(const std::array<T, CHANNELS>& colors) : 
+			BaseColor(CHANNELS, sizeof(T))									{ mValues = colors; }
 
 		/**
 		 *	@return the type of the value
 		 */
-		rtti::TypeInfo getValueType() const override							{ return RTTI_OF(T); }
+		rtti::TypeInfo getValueType() const override						{ return RTTI_OF(T); }
+
+		/**
+		* @return the color value associated with @channel
+		* This call asserts when the channel is not available
+		*/
+		T getValue(EColorChannel channel) const;
+
+		/** 
+		 * @return reference to the color value associated with @channel
+		 * This call asserts when the channel is not available
+		 */
+		T& getValue(EColorChannel channel);
+
+		/**
+		 * Sets the color value for @channel
+		 * This call asserts when the channel is not available
+		 */
+		void setValue(EColorChannel channel, T value);
 
 		/**
 		 *	@return if two color values are not similar
 		 */
-		bool operator== (const RGBColor<T>& rhs) const;
+		bool operator== (const Color<T, CHANNELS>& rhs) const;
 
 		/**
 		 * @return if two color values are not similar
 		 */
-		bool operator!=(const RGBColor<T>& rhs) const							{ !(rhs == mValues); }
-
-		/**
-		*	Color values associated with this color
-		*/
-		std::array<T, 3> mValues = { 0,0,0 };
-	};
-
-
-	/**
-	* Color made up out of a Red, Green, Blue and Alpha component
-	*/
-	template<typename T>
-	class RGBAColor : public Color
-	{
-		RTTI_ENABLE(Color)
-	public:
-		/**
-		*	Constructor that creates a color based on red, green and blue
-		*/
-		RGBAColor(T red, T green, T blue, T alpha) : Color(4, sizeof(T))		{ mValues = { red, green, blue, alpha }; }
-
-		/**
-		*	Constructor that simply creates a 0 initialized color
-		*/
-		RGBAColor() : Color(4, sizeof(T)) { }
-
-		/**
-		*	@return the red color
-		*/
-		T getRed() const														{ return mValues[0]; }
-
-		/**
-		*	@return the green color
-		*/
-		T getGreen() const														{ return mValues[1]; }
-
-		/**
-		*	@return the blue color
-		*/
-		T getBlue() const														{ return mValues[2]; }
-
-		/**
-		 *	@return the alpha value
-		 */
-		T getAlpha() const														{ return mValues[4]; }
-
-		/**
-		 *	@return the type of the value
-		 */
-		rtti::TypeInfo getValueType() const override							{ return RTTI_OF(T); }
-
-		/**
-		 * @return if two RGBA colors are similar
-		 */
-		bool operator== (const RGBAColor<T>& rhs) const;
-
-		/**
-		 *	@return if two color values are not similar
-		 */
-		bool operator!=(const RGBColor<T>& rhs) const							{ !(rhs == mValues); }
-
+		bool operator!=(const Color<T, CHANNELS>& rhs) const				{ !(rhs == mValues); }
+		
+	protected:
 		/**
 		 *	Color values associated with this color
 		 */
-		std::array<T, 4> mValues = { 0,0,0,0 };
+		std::array<T, CHANNELS> mValues;
 	};
 
 
@@ -164,31 +128,51 @@ namespace nap
 	// Type definitions for all supported vertex attribute types
 	//////////////////////////////////////////////////////////////////////////
 
-	using RGBColor8  = RGBColor<uint8>;
-	using RGBAColor8 = RGBAColor<uint8>;
+	using RGBColor8			= Color<uint8,  3>;
+	using RGBColor16		= Color<uint16, 3>;
+	using RGBColorFloat		= Color<float,  3>;
+	using RGBAColor8		= Color<uint8,  4>;
+	using RGBAColor16		= Color<uint16, 4>;
+	using RGBAColorFloat	= Color<float,  4>;
 
 
 	//////////////////////////////////////////////////////////////////////////
 	// Template Definitions
 	//////////////////////////////////////////////////////////////////////////
 
-	template<typename T>
-	bool nap::RGBColor<T>::operator==(const RGBColor<T>& rhs) const
+	template<typename T, typename int CHANNELS>
+	bool nap::Color<T, CHANNELS>::operator==(const Color<T, CHANNELS>& rhs) const
 	{
-		return (
-			mValues[0] == rhs.mValues[0] &&
-			mValues[1] == rhs.mValues[1] &&
-			mValues[2] == rhs.mValues[2]);
+		for (auto i = 0; i < mValues.size(); i++)
+		{
+			if (mValues[i] != rhs.mValues[i])
+				return false;
+		}
+		return true;		
 	}
 
-	template<typename T>
-	bool nap::RGBAColor<T>::operator==(const RGBAColor<T>& rhs) const
+	template<typename T, typename int CHANNELS>
+	T& nap::Color<T, CHANNELS>::getValue(EColorChannel channel)
 	{
-		return (
-			mValues[0] == rhs.mValues[0] &&
-			mValues[1] == rhs.mValues[1] &&
-			mValues[2] == rhs.mValues[2] &&
-			mValues[3] == rhs.mValues[3]);
+		int idx = static_cast<int>(channel);
+		assert(idx < this->numberOfChannels());
+		return mValues[idx];
+	}
+
+	template<typename T, typename int CHANNELS>
+	T nap::Color<T, CHANNELS>::getValue(EColorChannel channel) const
+	{
+		int idx = static_cast<int>(channel);
+		assert(idx < this->numberOfChannels());
+		return mValues[idx];
+	}
+
+	template<typename T, typename int CHANNELS>
+	void nap::Color<T, CHANNELS>::setValue(EColorChannel channel, T value)
+	{
+		int idx = static_cast<int>(channel);
+		assert(idx < this->numberOfChannels());
+		mValues[idx] = value;
 	}
 }
 
@@ -200,20 +184,27 @@ namespace nap
 namespace std
 {
 	template <>
-	struct hash<nap::RGBColor<nap::uint8>>
+	struct hash<nap::Color<nap::uint8, 3>>
 	{
-		size_t operator()(const nap::RGBColor<nap::uint8>& v) const
+		size_t operator()(const nap::Color<nap::uint8, 3>& v) const
 		{
-			return nap::uint32((v.getRed() << 16 | v.getGreen() << 8 | v.getBlue()));
+			return nap::uint32((
+				v.getValue(nap::EColorChannel::Red) << 16	| 
+				v.getValue(nap::EColorChannel::Green) << 8  | 
+				v.getValue(nap::EColorChannel::Blue)));
 		}
 	};
 
 	template <>
-	struct hash<nap::RGBAColor<nap::uint8>>
+	struct hash<nap::Color<nap::uint8, 4>>
 	{
-		size_t operator()(const nap::RGBAColor<nap::uint8>& v) const
+		size_t operator()(const nap::Color<nap::uint8, 4>& v) const
 		{
-			return nap::uint32((v.getRed() << 24 | v.getGreen() << 16 | v.getBlue() << 8 | v.getAlpha()));
+			return nap::uint32((
+				v.getValue(nap::EColorChannel::Red) << 24	| 
+				v.getValue(nap::EColorChannel::Green) << 16 | 
+				v.getValue(nap::EColorChannel::Blue) << 8	| 
+				v.getValue(nap::EColorChannel::Alpha)));
 		}
 	};
 }
