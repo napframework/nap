@@ -38,4 +38,6 @@ export_fbx(${CMAKE_CURRENT_LIST_DIR}/data)
 
 # Package into release build
 install(DIRECTORY . DESTINATION "examples/${PROJECT_NAME}"
-		PATTERN "CMakeLists.txt" EXCLUDE)
+		PATTERN "CMakeLists.txt" EXCLUDE
+		PATTERN "dist" EXCLUDE)
+install(FILES dist/CMakeLists.txt DESTINATION "examples/${PROJECT_NAME}/")
