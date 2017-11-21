@@ -56,7 +56,7 @@ namespace nap
 		 * @param error the error message if the loop couldn't be started
 		 * @return if the app loop has successfully started
 		 */
-		bool start(utility::ErrorState& error);
+		bool start(std::vector<std::string>& tempModuleSearchDirectories, utility::ErrorState& error);
 
 		/**
 		 * Stops the loop and exits the application
@@ -120,13 +120,13 @@ namespace nap
 
 
 	template<typename APP, typename HANDLER>
-	bool nap::AppRunner<APP, HANDLER>::start(utility::ErrorState& error)
+	bool nap::AppRunner<APP, HANDLER>::start(std::vector<std::string>& tempModuleSearchDirectories, utility::ErrorState& error)
 	{
 		nap::BaseApp& app = getApp();
 		nap::BaseAppEventHandler& app_event_handler = getHandler();
 
 		// Initialize engine
-		if (!mCore.initializeEngine(error))
+		if (!mCore.initializeEngine(tempModuleSearchDirectories, error))
 		{
 			mCore.shutdown();
 			error.fail("unable to initialize engine");

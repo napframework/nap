@@ -127,73 +127,83 @@ namespace nap
 		*/
 	}
 
-	void ModuleManager::loadModules(const std::string& directory)
+	void ModuleManager::loadModules(const std::vector<std::string>& directories)
 	{
-		// Find all files in the specified directory
-		std::vector<std::string> files_in_directory;
-		utility::listDir(directory.c_str(), files_in_directory);
-
-		for (const auto& filename : files_in_directory)
-		{
-			rtti::TypeInfo service = rtti::TypeInfo::empty();
-
-			// Ignore directories
-			if (utility::dirExists(filename))
+		// Iterate each directory
+		
+		// TODO iterating module paths like this is very likely temporary behaviour as we work through the
+		// build/release/etc structure
+		for (const auto& directory : directories) {
+			// Skip directory if it doesn't exist
+			if (!utility::dirExists(directory))
 				continue;
 
-			// Ignore non-shared libraries
-			if (utility::getFileExtension(filename) != moduleExtension)
-				continue;
+			// Find all files in the specified directory
+			std::vector<std::string> files_in_directory;
+			utility::listDir(directory.c_str(), files_in_directory);
 
-			std::string module_path = utility::getAbsolutePath(filename);
-
-			// Try to load the module
-			std::string error_string;
-			void* module_handle = LoadModule(module_path, error_string);
-			if (!module_handle)
+			for (const auto& filename : files_in_directory)
 			{
-				Logger::info("Failed to load module %s: %s", module_path.c_str(), error_string.c_str());
-				continue;
-			}
+				rtti::TypeInfo service = rtti::TypeInfo::empty();
 
-			// Find descriptor. If the descriptor wasn't found in the dll, assume it's not actually a nap module and unload it again.
-			ModuleDescriptor* descriptor = (ModuleDescriptor*)FindSymbol(module_handle, "descriptor");
-			if (descriptor == nullptr)
-			{
-				UnloadModule(module_handle);
-				continue;
-			}
+				// Ignore directories
+				if (utility::dirExists(filename))
+					continue;
 
-			// Check that the module version matches, skip otherwise.
-			if (descriptor->mAPIVersion != ModuleDescriptor::ModuleAPIVersion)
-			{
-				Logger::info("Module %s was built against a different version of nap (found %d, expected %d); skipping.", module_path.c_str(), descriptor->mAPIVersion, ModuleDescriptor::ModuleAPIVersion);
-				UnloadModule(module_handle);
-				continue;
-			}
+				// Ignore non-shared libraries
+				if (utility::getFileExtension(filename) != moduleExtension)
+					continue;
 
-			// Try to load service if one is defined
-			if (descriptor->mService != nullptr)
-			{
-				rtti::TypeInfo stype = rtti::TypeInfo::get_by_name(rttr::string_view(descriptor->mService));
-				if (!stype.is_derived_from(RTTI_OF(Service)))
+				std::string module_path = utility::getAbsolutePath(filename);
+
+				// Try to load the module
+				std::string error_string;
+				void* module_handle = LoadModule(module_path, error_string);
+				if (!module_handle)
 				{
-					Logger::info("Module %s service descriptor %s is not a service; skipping", module_path.c_str(), descriptor->mService);
+					Logger::info("Failed to load module %s: %s", module_path.c_str(), error_string.c_str());
+					continue;
+				}
+
+				// Find descriptor. If the descriptor wasn't found in the dll, assume it's not actually a nap module and unload it again.
+				ModuleDescriptor* descriptor = (ModuleDescriptor*)FindSymbol(module_handle, "descriptor");
+				if (descriptor == nullptr)
+				{
 					UnloadModule(module_handle);
 					continue;
 				}
-				service = stype;
+
+				// Check that the module version matches, skip otherwise.
+				if (descriptor->mAPIVersion != ModuleDescriptor::ModuleAPIVersion)
+				{
+					Logger::info("Module %s was built against a different version of nap (found %d, expected %d); skipping.", module_path.c_str(), descriptor->mAPIVersion, ModuleDescriptor::ModuleAPIVersion);
+					UnloadModule(module_handle);
+					continue;
+				}
+
+				// Try to load service if one is defined
+				if (descriptor->mService != nullptr)
+				{
+					rtti::TypeInfo stype = rtti::TypeInfo::get_by_name(rttr::string_view(descriptor->mService));
+					if (!stype.is_derived_from(RTTI_OF(Service)))
+					{
+						Logger::info("Module %s service descriptor %s is not a service; skipping", module_path.c_str(), descriptor->mService);
+						UnloadModule(module_handle);
+						continue;
+					}
+					service = stype;
+				}
+
+				Logger::info("Loaded module %s v%s", descriptor->mID, descriptor->mVersion);
+
+				// Construct module based on found module information
+				Module module;
+				module.mDescriptor = descriptor;
+				module.mHandle = module_handle;
+				module.mService = service;
+
+				mModules.push_back(module);
 			}
-
-			Logger::info("Loaded module %s v%s", descriptor->mID, descriptor->mVersion);
-
-			// Construct module based on found module information
-			Module module;
-			module.mDescriptor = descriptor;
-			module.mHandle = module_handle;
-			module.mService = service;
-
-			mModules.push_back(module);
 		}
 	}
 }
