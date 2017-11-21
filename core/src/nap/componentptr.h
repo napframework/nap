@@ -81,7 +81,7 @@ namespace nap
 
 		const std::string& getInstancePath() const { return mPath; }
 
-		virtual std::string toString() const
+		virtual std::string toString() const override
 		{
 			return mPath;
 		}

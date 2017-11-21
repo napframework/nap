@@ -4,6 +4,7 @@
 #include "objectptr.h"
 #include "componentptr.h"
 #include "rtti/rttiobject.h"
+#include "rtti/rttipath.h"
 
 // External Includes
 
