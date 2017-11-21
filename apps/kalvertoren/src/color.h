@@ -86,7 +86,7 @@ namespace nap
 		/**
 		 *	@return the type of the value
 		 */
-		rtti::TypeInfo getValueType() const override						{ return RTTI_OF(T); }
+		rtti::TypeInfo getValueType() const override						{ return RTTI_OF(T).get_raw_type(); }
 
 		/**
 		* @return the color value associated with @channel

@@ -82,6 +82,8 @@ namespace nap
 	{
 
 		std::unordered_set<IndexColor> unique_index_colors;
+		RGBColor<float*> color;
+		rtti::TypeInfo type = color.getValueType();
 
 		// Check the amount of available colors
 		for (int i = 0; i < mBitmap.getWidth(); i++)
