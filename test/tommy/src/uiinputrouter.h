@@ -3,9 +3,9 @@
 #include "inputrouter.h"
 #include "orthocameracomponent.h"
 #include "cameracomponent.h"
-#include "nap/component.h"
-#include "nap/entityptr.h"
-#include "nap/componentptr.h"
+#include <nap/component.h>
+#include <nap/entityptr.h>
+#include <nap/componentptr.h>
 
 namespace nap
 {
@@ -45,7 +45,7 @@ namespace nap
 		DECLARE_COMPONENT(UIInputRouterComponent, UIInputRouterComponentInstance)
 
 	public:
-		ComponentPtr<OrthoCameraComponent> mCameraComponent;		// Pointer to camera entity resource and instance
+		ComponentPtr<OrthoCameraComponent> mCameraComponent;		// Pointer to camera entity resource
 	};
 
 	/**

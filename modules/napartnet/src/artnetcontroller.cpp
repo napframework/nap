@@ -6,12 +6,16 @@
 #include "artnetservice.h"
 
 RTTI_BEGIN_CLASS(nap::ArtNetController)
-	RTTI_PROPERTY("Subnet",		&nap::ArtNetController::mSubnet,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Universe",	&nap::ArtNetController::mUniverse,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Subnet",		&nap::ArtNetController::mSubnet,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Universe",	&nap::ArtNetController::mUniverse,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("WaitTime",	&nap::ArtNetController::mWaitTime,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Frequency",	&nap::ArtNetController::mUpdateFrequency,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
 {
+	const int ArtNetController::mMaxUpdateFrequency = 44;
+
 	ArtNetController::ArtNetController(ArtNetService& service) :
 		mService(&service)
 	{
@@ -91,4 +95,16 @@ namespace nap
 		mService->clear(*this);
 	}
 
+
+	nap::ArtNetController::Address ArtNetController::createAddress(uint8_t subnet, uint8_t universe)
+	{
+		return (subnet << 4) | universe;
+	}
+
+
+	void ArtNetController::convertAddress(Address address, uint8_t& subnet, uint8_t& universe)
+	{
+		subnet = address >> 4;
+		universe = address & 0xF;
+	}
 }

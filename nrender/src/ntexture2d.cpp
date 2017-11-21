@@ -1,7 +1,12 @@
 // Local Includes
 #include "ntexture2d.h"
 #include "nglutils.h"
+#include "ntextureutils.h"
+#include "nbitmaputils.h"
+
+// External Includes
 #include <assert.h>
+#include <cstring>
 
 namespace opengl
 {
@@ -155,6 +160,22 @@ namespace opengl
 	}
 
 
+	void Texture2D::getData(opengl::Bitmap& bitmap)
+	{
+		if (!bitmap.hasData())
+			initBitmap(bitmap);
+
+		// Make sure settings match
+		assert(bitmap.getSize() == getDataSize());
+		assert(getGLType(bitmap.getDataType()) == mSettings.type);
+		assert(getGLFormat(bitmap.getColorType()) == mSettings.format);
+
+		bind();
+		glGetTexImage(GL_TEXTURE_2D, 0, mSettings.format, mSettings.type, bitmap.getData());
+		unbind();
+	}
+
+
 	void Texture2D::asyncStartGetData()
 	{
 		assert(mUsage == ETextureUsage::DynamicRead);
@@ -184,6 +205,47 @@ namespace opengl
 		glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 
 		glAssert();
+	}
+
+
+	void Texture2D::asyncEndGetData(opengl::Bitmap& bitmap)
+	{
+		assert(mUsage == ETextureUsage::DynamicRead);
+
+		if (!bitmap.hasData())
+			initBitmap(bitmap);
+
+		// Make sure settings match
+		assert(bitmap.getSize() == getDataSize());
+		assert(getGLType(bitmap.getDataType()) == mSettings.type);
+		assert(getGLFormat(bitmap.getColorType()) == mSettings.format);
+
+		glBindBuffer(GL_PIXEL_PACK_BUFFER, mPBO);
+
+		void* buffer = glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
+		memcpy(bitmap.getData(), buffer, bitmap.getSize());
+
+		glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
+		glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+
+		glAssert();
+	}
+
+
+	void Texture2D::initBitmap(opengl::Bitmap& bitmap)
+	{
+		assert(!(bitmap.hasData()));
+		opengl::BitmapSettings settings
+		(
+			mSettings.width,
+			mSettings.height,
+			getBitmapType(mSettings.type),
+			getColorType(mSettings.format)
+		);
+
+		assert(settings.isValid());
+		bitmap.setSettings(settings);
+		bitmap.allocateMemory();
 	}
 
 } // opengl

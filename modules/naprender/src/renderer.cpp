@@ -37,7 +37,7 @@ namespace nap
 	{
 		// Set our OpenGL version.
 		// SDL_GL_CONTEXT_CORE gives us only the newer version, deprecated functions are disabled
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+		opengl::setAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
 		// 3.2 is part of the modern versions of OpenGL, but most video cards whould be able to run it
 		// 4.1 is the highest available number on most OSX devices
@@ -56,24 +56,24 @@ namespace nap
 		}
 
 		// Set settings
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, cur_major);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, cur_minor);
+		opengl::setAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, cur_major);
+		opengl::setAttribute(SDL_GL_CONTEXT_MINOR_VERSION, cur_minor);
 
 		// Set double buffering
 		int double_buffer = static_cast<int>(attributes.doubleBuffer);
-		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, double_buffer);
+		opengl::setAttribute(SDL_GL_DOUBLEBUFFER, double_buffer);
 
 		// Set multi sample parameters
 		if (attributes.enableMultiSampling)
 		{
-			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, attributes.multiSampleSamples);
+			opengl::setAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+			opengl::setAttribute(SDL_GL_MULTISAMPLESAMPLES, attributes.multiSampleSamples);
 		}
 
 		// Enable debug
 		if (attributes.debug)
 		{
-			SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+			opengl::setAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 		}
 	}
 
@@ -106,7 +106,7 @@ namespace nap
 		// Create primary window
 		mPrimaryWindow = std::make_shared<GLWindow>();
 		if (!mPrimaryWindow->init(settings, nullptr, errorState))
-			return nullptr;
+			return false;
 
 		// Make sure initialization of that window succeeded
 		if (!errorState.check(opengl::init(), "Failed to init OpenGL"))

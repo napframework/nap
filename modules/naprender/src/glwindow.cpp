@@ -1,8 +1,9 @@
 // Local includes
 #include "glwindow.h"
-#include "nsdlgl.h"
-#include "nglutils.h"
-#include "utility/errorstate.h"
+
+// External includes
+#include <utility/errorstate.h>
+#include <nglutils.h>
 
 namespace nap
 {
@@ -27,7 +28,7 @@ namespace nap
 													settings.height,
 													options);
 
-		if (!errorState.check(new_window != nullptr, "Failed to create window: %s", SDL_GetError()))
+		if (!errorState.check(new_window != nullptr, "Failed to create window: %s", opengl::getSDLError().c_str()))
 			return nullptr;
 
 		return new_window;
@@ -44,25 +45,25 @@ namespace nap
 	GLWindow::~GLWindow()
 	{
 		if (mContext != nullptr)
-			SDL_GL_DeleteContext(mContext);
-
+			opengl::deleteContext(mContext);
+			
 		if (mWindow != nullptr)
-			SDL_DestroyWindow(mWindow);
+			opengl::deleteWindow(mWindow);
 	}
 
 
 	void GLWindow::applySettings(const RenderWindowSettings& settings)
 	{
-		opengl::setVSync(settings.sync);
+		opengl::enableVSync(settings.sync);
 		setSize(glm::vec2(settings.width, settings.height));
 		if (settings.visible)
 			showWindow();
 		else
 			hideWindow();
 
-		SDL_SetWindowResizable(mWindow, (SDL_bool)settings.resizable);
-		SDL_SetWindowBordered(mWindow, (SDL_bool)!settings.borderless);
-		SDL_SetWindowTitle(mWindow, settings.title.c_str());
+		opengl::setWindowResizable(mWindow, settings.resizable);
+		opengl::setWindowBordered(mWindow, !settings.borderless);
+		opengl::setWindowTitle(mWindow, settings.title);
 	}
 
 
@@ -78,29 +79,29 @@ namespace nap
 		if (sharedWindow != nullptr)
 		{
 			// Activate context if necessary
-			if (SDL_GL_GetCurrentContext() != sharedWindow->getContext())
+			if (opengl::getCurrentContext() != sharedWindow->getContext())
 			{
-				SDL_GL_MakeCurrent(sharedWindow->getNativeWindow(), sharedWindow->getContext());
+				opengl::makeCurrent(sharedWindow->getNativeWindow(), sharedWindow->getContext());
 			}
 
 			// Enable sharing
-			SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
+			opengl::setAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
 		}
 		else
 		{
-			SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 0);
+			opengl::setAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 0);
 		}
 
-		mContext = SDL_GL_CreateContext(mWindow);
+		mContext = opengl::createContext(mWindow);
 		if (!errorState.check(mContext != nullptr, "Failed to create OpenGL Context: %s", SDL_GetError()))
 		{
-			SDL_DestroyWindow(mWindow);
+			opengl::deleteWindow(mWindow);
 			mWindow = nullptr;
 			return false;
 		}
 
 		// Disable / Enable v-sync
-		opengl::setVSync(settings.sync);
+		opengl::enableVSync(settings.sync);
 
 		setSize(glm::vec2(settings.width, settings.height));
 		return true;
@@ -131,79 +132,61 @@ namespace nap
 	// Set window title
 	void GLWindow::setTitle(const std::string& title)
 	{
-		SDL_SetWindowTitle(mWindow, title.c_str());
+		opengl::setWindowTitle(mWindow, title);
 	}
 
 
 	// Set opengl window position
 	void GLWindow::setPosition(const glm::ivec2& position)
 	{
-		// Ensure position is not the same
-		int x, y;
-		SDL_GetWindowPosition(mWindow, &x, &y);
-		if (x == position.x && y == position.y)
-			return;
-
-		// Update position
-		SDL_SetWindowPosition(mWindow, position.x, position.y);
+		opengl::setWindowPosition(mWindow, position);
 	}
 
 
 	// Set opengl window size 
 	void GLWindow::setSize(const glm::ivec2& size)
 	{
+		// Set size of associated back buffer
 		mBackbuffer->setSize(size);
 
-		// Ensure sizes are not the same
-		int width, height;
-		SDL_GetWindowSize(mWindow, &width, &height);
-		if (width == size.x && height == size.y)
-			return;
-
-		// Otherwise set
-		SDL_SetWindowSize(mWindow, size.x, size.y);
+		// Set set of window
+		opengl::setWindowSize(mWindow, size);
 	}
 
 
 	// Get the window size
 	const glm::ivec2 GLWindow::getSize() const
 	{
-		int width, height;
-		SDL_GetWindowSize(mWindow, &width, &height);
-
-		return glm::ivec2(width, height);
+		return opengl::getWindowSize(mWindow);
 	}
 
 
 	// Makes the window go full screen
 	void GLWindow::setFullScreen(bool value)
 	{
-		// Otherwise set
-		nap::uint32 full_screen_flag = SDL_WINDOW_FULLSCREEN_DESKTOP;
-		nap::uint32 flag = value ? full_screen_flag : 0;
-		SDL_SetWindowFullscreen(mWindow, flag);
+		opengl::setFullscreen(mWindow, value);
 	}
 
 
 	// Show opengl window
 	void GLWindow::showWindow()
 	{
-		SDL_ShowWindow(mWindow);
+		opengl::showWindow(mWindow, true);
 	}
 
 
 	// Hide opengl window
 	void GLWindow::hideWindow()
 	{
-		SDL_HideWindow(mWindow);
+		opengl::showWindow(mWindow, false);
 	}
 
 
 	// Swap OpenGL buffers
 	void GLWindow::swap()
 	{
-		glFlush();
-		SDL_GL_SwapWindow(mWindow);
+		opengl::flush();
+		opengl::swap(mWindow);
 	}
 
 
@@ -211,11 +194,11 @@ namespace nap
 	void GLWindow::makeCurrent()
 	{
 		// Don't trigger change if context is currently active
-		if (SDL_GL_GetCurrentContext() == mContext)
+		if (opengl::getCurrentContext() == mContext)
 			return;
 
 		// Make context current
-		SDL_GL_MakeCurrent(mWindow, mContext);
+		opengl::makeCurrent(mWindow, mContext);
 	}
 
 
@@ -224,6 +207,13 @@ namespace nap
 	{
 		return opengl::getWindowId(getNativeWindow());
 	}
+
+
+	glm::ivec2 GLWindow::getPosition()
+	{
+		return opengl::getWindowPosition(mWindow);
+	}
+
 }
 
 RTTI_DEFINE_BASE(nap::GLWindow)

@@ -5,6 +5,7 @@
 // External Includes
 #include <assert.h>
 #include <iostream>
+#include <cstring>
 
 namespace opengl
 {

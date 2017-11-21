@@ -42,6 +42,10 @@ namespace opengl
 	 * 
 	 * This object does not own the buffers it organizes!
 	 * For more information: https://www.opengl.org/wiki/Tutorial2:_VAOs,_VBOs,_Vertex_and_Fragment_Shaders_(C_/_SDL)
+	 * 
+	 * Vertex data is bound to a specific GLSL type based on it's internal data type. When dealing with:
+	 * GL_BYTE, GL_UNSIGNED_BYTE, GL_SHORT, GL_UNSIGNED_SHORT, GL_INT, and GL_UNSIGNED_INT buffers
+	 * the associated GLSL type is int, otherwise it's always float. Float values are NEVER normalized
 	 */
 	class VertexArrayObject : public IGLContextResource
 	{

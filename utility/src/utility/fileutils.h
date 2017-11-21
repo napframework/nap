@@ -130,5 +130,12 @@ namespace nap
 		* @param outDir the full path to the executable directory
 		*/
 		std::string getExecutableDir();
+
+		/**
+		* Change current working directory
+		*
+		* @param newDir The directory to change to
+		*/
+		void changeDir(std::string newDir);
 	}
 }
