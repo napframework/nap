@@ -14,6 +14,7 @@ RTTI_END_CLASS
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::InstancePropertyValue)
 RTTI_END_CLASS
 
+// RTTI for instance properties for POD types
 RTTI_DEFINE_INSTANCE_PROPERTY_VALUE(nap::PointerInstancePropertyValue)
 RTTI_DEFINE_INSTANCE_PROPERTY_VALUE(nap::ComponentPtrInstancePropertyValue)
 RTTI_DEFINE_INSTANCE_PROPERTY_VALUE(nap::BoolInstancePropertyValue)
@@ -34,10 +35,12 @@ namespace nap
 
 	bool PointerInstancePropertyValue::setValue(rtti::ResolvedRTTIPath& resolvedTargetPath, utility::ErrorState& errorState) const
 	{
+		// Check if target attribute is of correct type
  		rtti::TypeInfo target_type = resolvedTargetPath.getType();
  		if (!errorState.check(target_type.is_derived_from(RTTI_OF(ObjectPtrBase)), "Target pointer is not an ObjectPtr"))
  			return false;
 
+		// Check if the internal (wrapped) type is of the correct type
 		rtti::TypeInfo actual_type = target_type.is_wrapper() ? target_type.get_wrapped_type() : target_type;
 		if (!errorState.check(mValue->get_type().is_derived_from(actual_type), "Target is of the wrong type (found '%s', expected '%s')", mValue->get_type().get_name().data(), actual_type.get_raw_type().get_name().data()))
 			return false;
@@ -45,12 +48,16 @@ namespace nap
 		return errorState.check(resolvedTargetPath.setValue(mValue), "Failed to set pointer to target %s", mValue->mID.c_str());
 	}
 
+	//////////////////////////////////////////////////////////////////////////
+
 	bool ComponentPtrInstancePropertyValue::setValue(rtti::ResolvedRTTIPath& resolvedTargetPath, utility::ErrorState& errorState) const
 	{
+		// Check if target attribute is of correct type
 		rtti::TypeInfo target_type = resolvedTargetPath.getType();
 		if (!errorState.check(target_type.is_derived_from(RTTI_OF(ComponentPtrBase)), "Target pointer is not a ComponentPtr"))
 			return false;
 
+		// Check if the internal (wrapped) type is of the correct type
 		rtti::TypeInfo actual_type = target_type.is_wrapper() ? target_type.get_wrapped_type() : target_type;
 		if (!errorState.check(mValue->get_type().is_derived_from(actual_type), "Target is of the wrong type (found '%s', expected '%s')", mValue->get_type().get_name().data(), actual_type.get_raw_type().get_name().data()))
 			return false;
@@ -66,6 +73,8 @@ namespace nap
 
 		return errorState.check(resolvedTargetPath.setValue(new_value), "Failed to set pointer to target %s", mValue->mID.c_str());
 	}
+
+	//////////////////////////////////////////////////////////////////////////
 
 	bool TargetAttribute::apply(rtti::RTTIObject& target, utility::ErrorState& errorState) const
 	{

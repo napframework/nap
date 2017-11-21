@@ -37,6 +37,7 @@ namespace nap
 		return typeCheck == ETypeCheck::EXACT_MATCH ? typeA == typeB : typeA.is_derived_from(typeB);
 	}
 
+
 	/**
 	 * An EntityInstance is the runtime-instance of an Entity, which is read from json.
 	 * It contains a list of ComponentInstances and functionality to query these components

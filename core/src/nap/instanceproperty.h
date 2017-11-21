@@ -26,40 +26,80 @@ namespace nap
 
 	class Component;
 
+	/**
+	 * Base class for all typed instance property values. This represents the value that is applied on a certain property.
+	 */
 	class InstancePropertyValue : public rtti::RTTIObject
 	{
 		RTTI_ENABLE(rtti::RTTIObject)
 	public:
+
+		/**
+		 * Applies an instance property value to the target path. The value itself should be stored on the derived typed class.
+		 * @param resolvedTargetPath Path to the property to modify. The Path is constructed from both the ComponentPtr and the RTTIPath.
+		 * @param errorState If function returns false, contains error information if an error occurs, like types that do not match.
+		 * @return True on success, otherwise false.
+		 */
 		virtual bool setValue(rtti::ResolvedRTTIPath& resolvedTargetPath, utility::ErrorState& errorState) const = 0;
 	};
 
+	/**
+	 * Instance property value for pointer type.
+	 */
 	class PointerInstancePropertyValue : public InstancePropertyValue
 	{
 		RTTI_ENABLE(InstancePropertyValue)
 
 	public:
+		/**
+		 * Sets pointer value.
+		 * @param resolvedTargetPath Path to the property to modify. The Path is constructed from both the ComponentPtr and the RTTIPath.
+		 * @param errorState If function returns false, contains error information if an error occurs, like types that do not match.
+		 * @return True on success, otherwise false.
+		 */
 		virtual bool setValue(rtti::ResolvedRTTIPath& resolvedTargetPath, utility::ErrorState& errorState) const override;
 
 	public:
-		ObjectPtr<RTTIObject>		mValue;
+		ObjectPtr<RTTIObject>		mValue;		// Pointer override value
 	};
 
+	/**
+	 * Instance property value a ComponentPtr type. The value contains a path as if it was present on the original attribute. So, any
+	 * relative paths are relative to the original location of the property.
+	 */
 	class ComponentPtrInstancePropertyValue : public InstancePropertyValue
 	{
 		RTTI_ENABLE(InstancePropertyValue)
 	public:
+
+		/**
+		 * Sets component pointer value.
+		 * @param resolvedTargetPath Path to the property to modify. The Path is constructed from both the ComponentPtr and the RTTIPath.
+		 * @param errorState If function returns false, contains error information if an error occurs, like types that do not match.
+		 * @return True on success, otherwise false.
+		 */
 		virtual bool setValue(rtti::ResolvedRTTIPath& resolvedTargetPath, utility::ErrorState& errorState) const override;
 
 	public:
-		ComponentPtr<Component>		mValue;
+		ComponentPtr<Component>		mValue;		// Component pointer override value
 	};
 
+	/**
+	 * Template class for instance property value for POD-like types. A number of 'usings' are used to create specific types
+	 * for int, float etc, so that RTTI can be created for all these types.
+	 */
 	template<class T>
 	class TypedInstancePropertyValue : public InstancePropertyValue
 	{
 		RTTI_ENABLE(InstancePropertyValue)
 
 	public:
+		/**
+		 * Sets value.
+		 * @param resolvedTargetPath Path to the property to modify. The Path is constructed from both the ComponentPtr and the RTTIPath.
+		 * @param errorState If function returns false, contains error information if an error occurs, like types that do not match.
+		 * @return True on success, otherwise false.
+		 */
 		virtual bool setValue(rtti::ResolvedRTTIPath& resolvedTargetPath, utility::ErrorState& errorState) const override
 		{
 			rtti::TypeInfo target_type = resolvedTargetPath.getType();
@@ -70,26 +110,42 @@ namespace nap
 		}
 
 	public:
-		T mValue;
+		T	mValue;	// Override value
 	};
 
+	/**
+	 * Represents both the path to an attribute as well as the value to override. Together with the target object that must be given 
+	 * in apply(), this can be used to override a property.
+	 */
 	class TargetAttribute
 	{
 	public:
+		/**
+		 * Applies the stored override value @mValue on target @target and attribute path @mPath.
+		 * @param target The object that holds the attribute.
+		 * @param errorState If function returns false, contains error information if an error occurs.
+		 * @return True on success, otherwise false.
+		 */
 		bool apply(rtti::RTTIObject& target, utility::ErrorState& errorState) const;
 
-		std::string							mPath;
-		ObjectPtr<InstancePropertyValue>	mValue;
+		std::string							mPath;			///< RTTI path to the property
+		ObjectPtr<InstancePropertyValue>	mValue;			///< Value to override
 	};
 
+	/**
+	 * Represents all the properties that are overridden van a single component.
+	 */
 	class ComponentInstanceProperties
 	{
 	public:
 		using TargetAttributeList = std::vector<TargetAttribute>;
-		ComponentPtr<Component>		mTargetComponent;
-		TargetAttributeList			mTargetAttributes;
+		ComponentPtr<Component>		mTargetComponent;		///< Component to override properties from
+		TargetAttributeList			mTargetAttributes;		///< List of values that are overridden
 	};
 
+	/**
+	 * Instance property types for all the POD types
+	 */
 	using BoolInstancePropertyValue = TypedInstancePropertyValue<bool>;
 	using CharInstancePropertyValue = TypedInstancePropertyValue<char>;
 	using Int8InstancePropertyValue = TypedInstancePropertyValue<int8_t>;
