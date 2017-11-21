@@ -1,4 +1,5 @@
 #include <pybind11/pybind11.h>
+#include <pybind11/functional.h>
 #include "rttiobject.h"
 #include "pythonmodule.h"
 

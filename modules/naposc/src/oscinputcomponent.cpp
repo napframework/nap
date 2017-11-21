@@ -13,6 +13,7 @@ RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::OSCInputComponentInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
+    RTTI_FUNCTION("getMessageReceived", &nap::OSCInputComponentInstance::getMessageReceived)
 RTTI_END_CLASS
 
 namespace nap
@@ -40,7 +41,7 @@ namespace nap
 	}
 
 
-	void OSCInputComponentInstance::trigger(const nap::OSCEvent& oscEvent)
+	void OSCInputComponentInstance::trigger(nap::OSCEvent& oscEvent)
 	{
 		messageReceived(oscEvent);
 	}

@@ -32,7 +32,7 @@ namespace nap
 		void disconnect(Slot<Args...>& slot);
 
 		// Connect a raw function object. Lifelong connection only, disconnection not possible.
-		void connect(Function inFunction);
+		void connect(const Function& inFunction);
 
 		// Convenience method for lifelong connection in case of single parameter events
 		template <typename U, typename F>
@@ -248,7 +248,7 @@ namespace nap
     
     
 	template <typename... Args>
-	void Signal<Args...>::connect(Function inFunction)
+	void Signal<Args...>::connect(const Function& inFunction)
 	{
 		if (!mFunctionEffects)
 			mFunctionEffects = std::make_unique<std::vector<Function>>();

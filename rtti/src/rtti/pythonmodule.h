@@ -6,6 +6,7 @@
 
 #include "pybind11/pybind11.h"
 #include "pybind11/embed.h"
+#include "pybind11/functional.h"
 
 // Note: including rttr headers directly here instead of going through typeinfo.h to avoid circular dependencies between the two headers
 #include "rttr/detail/misc/misc_type_traits.h"
