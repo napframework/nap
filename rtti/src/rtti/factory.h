@@ -84,6 +84,8 @@ namespace nap
 			 */
 			RTTIObject* create(rtti::TypeInfo typeInfo);
 
+			bool canCreate(rtti::TypeInfo typeInfo) const;
+
 		private:
 			using CreatorMap = std::unordered_map<rtti::TypeInfo, std::unique_ptr<IObjectCreator>>;
 			CreatorMap mCreators;

@@ -152,7 +152,7 @@ namespace nap
 		}
 
 	private:
-		friend class ResourceManager;
+		friend class Scene;
 		ObjectPtr<Entity> mResource;
 		EntityInstance* mInstance = nullptr;
 	};

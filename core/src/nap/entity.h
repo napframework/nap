@@ -13,7 +13,7 @@ namespace nap
 	class Component;
 	class Entity;
 	class EntityInstance;	
-	class ResourceManager;
+	class Scene;
 
 	using EntityList = std::vector<EntityInstance*>;
 
@@ -68,7 +68,7 @@ namespace nap
 		* @param entityCreationParams Parameters required to create new entity instances during init
 		* @param errorState The error object
 		*/
-		bool init(ResourceManager& resourceManager, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
+		bool init(Scene& scene, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
 
 		/**
 		 * Update this entity hierarchy
@@ -261,7 +261,6 @@ namespace nap
 		ComponentList	mComponents;			// The components of this entity
 		EntityList		mChildren;				// The children of this entity
 		bool			mAutoSpawn = true;		// Whether this entity should be automatically instantiated after deserialization
-		std::vector<ComponentInstanceProperties>	mInstanceProperties;	// The instance properties for this entity
 	};
 
 	//////////////////////////////////////////////////////////////////////////

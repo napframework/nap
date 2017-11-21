@@ -6,6 +6,7 @@
 #include <glm/glm.hpp>
 #include <nap/core.h>
 #include <nap/resourcemanager.h>
+#include "nap/scene.h"
 
 namespace nap
 {
@@ -28,10 +29,18 @@ namespace nap
 		}
 	}
 
+	void SceneService::update(double deltaTime)
+	{
+		std::vector<Scene*> scenes = getCore().getResourceManager()->getObjectsOfType<Scene>();
+		for (Scene* scene : scenes)
+			scene->update(deltaTime);
+	}
 
 	void SceneService::postUpdate(double deltaTime)
 	{
-		updateTransformsRecursive(getCore().getResourceManager()->getRootEntity(), false, glm::mat4(1.0f));
+		std::vector<Scene*> scenes = getCore().getResourceManager()->getObjectsOfType<Scene>();
+		for (Scene* scene : scenes)
+			updateTransformsRecursive(scene->getRootEntity(), false, glm::mat4(1.0f));
 	}
 }
 

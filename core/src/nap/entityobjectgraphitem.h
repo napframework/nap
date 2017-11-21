@@ -17,7 +17,7 @@ namespace nap
 	 * Wraps both an RTTIObject and a File object (by filename).
 	 * Uses RTTI traversal to scan pointers to other objects and pointers to files.
 	 */
-	class RTTIObjectGraphItem
+	class EntityObjectGraphItem
 	{
 	public:
 		using Type = rtti::RTTIObject*;
@@ -34,7 +34,7 @@ namespace nap
 		 * Creates a graph item.
 		 * @param object Object to wrap in the item that is created.
 		 */
-		static const RTTIObjectGraphItem create(rtti::RTTIObject* object, const ObjectsByTypeMap& objectsByType, const ClonedResourceMap& clonedResourceMap);
+		static const EntityObjectGraphItem create(rtti::RTTIObject* object, const ObjectsByTypeMap& objectsByType, const ClonedResourceMap& clonedResourceMap);
 
 		/**
 		 * @return ID of the item. For objects, the ID is the object ID, for files, it is the filename.
@@ -53,7 +53,7 @@ namespace nap
 		 * @param errorState If false is returned, contains information about the error.
 		 * @return true is succeeded, false otherwise.
 		 */
-		bool getPointees(std::vector<RTTIObjectGraphItem>& pointees, utility::ErrorState& errorState) const;
+		bool getPointees(std::vector<EntityObjectGraphItem>& pointees, utility::ErrorState& errorState) const;
 		
 		EType						mType;							// Type: file or object
 		std::string					mFilename;						// If type is file, contains filename
@@ -63,5 +63,5 @@ namespace nap
 	};
 
 	template<typename ITEM> class ObjectGraph;
-	using RTTIObjectGraph = ObjectGraph<RTTIObjectGraphItem>;
+	using EntityObjectGraph = ObjectGraph<EntityObjectGraphItem>;
 }
