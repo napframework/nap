@@ -30,7 +30,7 @@ cmake_policy(SET CMP0043 NEW)
 # Allow extra Find{project}.cmake files to be found by projects
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
-include(configure.cmake)
+include(cmake/configure.cmake)
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/packaging)
 
@@ -98,25 +98,7 @@ add_subdirectory(modules/naposc)
 add_subdirectory(modules/napsvg)
 add_subdirectory(modules/napapp)
 
-# Exe dependencies
-add_dependencies(rendertest mod_naprender)
 
 # Packaging
-set(CPACK_PACKAGE_NAME "NAP")
-set(CPACK_PACKAGE_VERSION "0.1.0") # TODO pull from file
-if (APPLE)
-    set(CPACK_SYSTEM_NAME "macOS")
-    set(CPACK_GENERATOR "ZIP")
-elseif (UNIX)
-    set(CPACK_SYSTEM_NAME "Linux")
-    set(CPACK_GENERATOR "TBZ2")
-else()
-    set(CPACK_SYSTEM_NAME "Windows")
-    set(CPACK_GENERATOR "ZIP")
-endif()
-
-# TODO suffix build with git revision
-string(TIMESTAMP TS "%d%m%YT%H%M%S")
-set(CPACK_PACKAGE_FILE_NAME ${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_SYSTEM_NAME}-${TS})
-
-include(CPack)
+install(DIRECTORY dist/cmake/ DESTINATION cmake)
+install(PROGRAMS dist/projectscripts/regenerateProject.py DESTINATION tools/)
