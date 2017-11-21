@@ -47,29 +47,17 @@ namespace nap
 	}
 	
     
-	bool Core::initializeEngine(utility::ErrorState& error)
+	bool Core::initializeEngine(std::vector<std::string>& tempModuleSearchDirectories, utility::ErrorState& error)
 	{
 		// Ensure our current working directory is where the executable is.  Works around issues with the current working directory not being set as
 		// expected when apps are launched directly from Finder and probably other things too.
 		nap::utility::changeDir(nap::utility::getExecutableDir());
 		
 		// Load all modules
-		// TODO: This should be correctly resolved, ie: the dll's should always
-		// be in the executable directory
-#ifdef _WIN32
-		mModuleManager.loadModules(".");
-#else
-		// If we have a local lib dir let's presume that's where our modules are meant to be, for now.  Otherwise go hunting higher up where they'll be
-		// normally be built
-		std::string module_dir;
-		if (nap::utility::dirExists("lib"))
-			module_dir = "lib";
-		else
-			module_dir = "../../lib/" + utility::getFileName(utility::getExecutableDir());
-	
-		mModuleManager.loadModules(module_dir);
-#endif // _WIN32
-
+		// TODO: Passing through our temporary module search paths for now, this is temporary until we lock down our
+		//		 release behaviour
+		mModuleManager.loadModules(tempModuleSearchDirectories);
+		
 		// Create the various services based on their dependencies
 		if (!createServices(error))
 			return false;

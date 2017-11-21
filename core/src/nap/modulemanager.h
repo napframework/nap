@@ -24,10 +24,11 @@ namespace nap
 		~ModuleManager();
 
 		/**
-		 * Load all modules in the specified directory
-		 * @param directory The directory to load modules from (relative to current working directory). Defaults to current working directory.
+		 * Load all modules in the specified directories
+		 * @param directories The directories to load modules from (relative to current working directory)
 		 */
-		void loadModules(const std::string& directory = ".");
+		void loadModules(const std::vector<std::string>& directories);
+		
 
 	private:
 		/**
