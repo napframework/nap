@@ -18,16 +18,10 @@ namespace nap
 {
 	void PythonScriptComponentInstance::update(double deltaTime)
 	{
-		try
-		{
-			mScript.attr("update")(getEntityInstance(), getEntityInstance()->getCore()->getElapsedTime(), deltaTime);
-		}
-		catch (const pybind11::error_already_set& err)
-		{
-			nap::Logger::info("Runtime python error while executing %s: %s", getComponent<PythonScriptComponent>()->mPath.c_str(), err.what());
-		}
+        call("update", getEntityInstance(), getEntityInstance()->getCore()->getElapsedTime(), deltaTime);
 	}
 
+    
 	bool PythonScriptComponentInstance::init(utility::ErrorState& errorState)
 	{
 		PythonScriptComponent* script_component = getComponent<PythonScriptComponent>();
@@ -36,6 +30,8 @@ namespace nap
 		assert(script_service != nullptr);
 		if (!errorState.check(script_service->TryLoad(script_component->mPath, mScript, errorState), "Failed to load %s", script_component->mPath.c_str()))
 			return false;
+        
+        call("init", getEntityInstance());
 		
 		return true;
 	}

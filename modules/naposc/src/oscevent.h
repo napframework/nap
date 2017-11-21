@@ -23,6 +23,8 @@ namespace nap
 	public:
 		using ArgumentConstIterator = utility::UniquePtrConstVectorWrapper<OSCArgumentList, OSCArgument*>;
 
+        OSCEvent() = default;
+        
 		/**
 		 * OSCEvent constructor
 		 * @param address the address associated with this osc event

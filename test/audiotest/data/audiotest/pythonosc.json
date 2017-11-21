@@ -1,0 +1,74 @@
+{
+	"Objects" : 
+	[
+		{
+			"Type": "nap::OSCReceiver",
+			"mID": "oscReceiver",
+			"Port": 7000,
+			"EnableDebugOutput": "True"
+		},
+
+
+		{
+			"Type" : "nap::Entity",
+			"mID": "modelEntity",
+			"Components" : 
+			[
+				{
+					"Type": "nap::OSCInputComponent",
+					"mID": "oscInput"
+				},
+
+				{
+					"Type": "nap::PythonScriptComponent",
+					"mID": "pythonScript",
+					"Path": "data/audiotest/scripts/oscscript.py"
+				}				
+			]
+		},
+		
+		{
+			"Type" : "nap::Entity",
+			"mID": "cameraEntity",
+			"Components" : 
+			[
+				{
+					"Type" : "nap::PerspCameraComponent",
+					"Properties": {
+						"FieldOfView": 45.0,
+						"NearClippingPlane" : 1,
+						"FarClippingPlane" : 1000.0
+					}
+				},
+				{
+					"Type" : "nap::OrthoCameraComponent",
+					"Properties": {
+						"NearClippingPlane" : 1,
+						"FarClippingPlane" : 1000.0
+					}
+				},
+				{
+					"Type" : "nap::TransformComponent",
+					"Properties": {
+						"Translate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 5.0
+						},
+						"Rotate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0
+						},
+						"Scale": {
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.0						
+					}
+				}
+			]
+		}
+	]
+}
