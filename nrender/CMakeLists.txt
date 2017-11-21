@@ -93,3 +93,18 @@ endif()
 # Package into release build
 install(DIRECTORY "src/" DESTINATION "include/nap/nrender/"
         FILES_MATCHING PATTERN "*.h")
+
+# Package dependent includes TODO discuss moving elsewhere??
+if (MSVC)
+    install(FILES "../../thirdparty/FreeImage/msvc/Dist/x64/FreeImage.h" DESTINATION "include/thirdparty/")
+elseif(APPLE)
+    install(FILES "../../thirdparty/FreeImage/osx/include/FreeImage.h" DESTINATION "include/thirdparty/")
+endif()
+
+install(DIRECTORY "../../thirdparty/glm/glm/" DESTINATION "include/thirdparty/glm")
+
+if (MSVC)
+    install(DIRECTORY "../../thirdparty/glew/msvc/include/GL/" DESTINATION "include/thirdparty/GL")
+elseif(APPLE)
+    install(DIRECTORY "../../thirdparty/glew/osx/include/GL/" DESTINATION "include/thirdparty/GL")
+endif()
