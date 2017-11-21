@@ -124,16 +124,57 @@ namespace nap
 	};
 
 
+	/**
+	 *	Utility class that provides a useful constructor for an RGB color
+	 */
+	template<typename T>
+	class RGBColor : public Color<T, 3>
+	{
+		RTTI_ENABLE(Color)
+	public:
+		/**
+		 *	Constructor that creates an RGB color based on the given values
+		 */
+		RGBColor(T red, T green, T blue) : Color<T,3>({red, green, blue})		{ }
+
+		/**
+		 *	Default constructor
+		 */
+		RGBColor() : Color<T,3>()												{ }
+	};
+
+
+	/**
+	*	Utility class that provides a useful constructor for an RGBA color
+	*/
+	template<typename T>
+	class RGBAColor : public Color<T, 4>
+	{
+		RTTI_ENABLE(Color)
+	public:
+		/**
+		*	Constructor that creates an RGB color based on the given values
+		*/
+		RGBAColor(T red, T green, T blue, T alpha) : 
+			Color<T, 4>({ red, green, blue, alpha })							{ }
+
+		/**
+		*	Default constructor
+		*/
+		RGBAColor() : Color<T, 4>()												{ }
+	};
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// Type definitions for all supported vertex attribute types
 	//////////////////////////////////////////////////////////////////////////
 
-	using RGBColor8			= Color<uint8,  3>;
-	using RGBColor16		= Color<uint16, 3>;
-	using RGBColorFloat		= Color<float,  3>;
-	using RGBAColor8		= Color<uint8,  4>;
-	using RGBAColor16		= Color<uint16, 4>;
-	using RGBAColorFloat	= Color<float,  4>;
+	using RGBColor8			= RGBColor<uint8>;
+	using RGBColor16		= RGBColor<uint16>;
+	using RGBColorFloat		= RGBColor<float>;
+	using RGBAColor8		= RGBAColor<uint8>;
+	using RGBAColor16		= RGBAColor<uint16>;
+	using RGBAColorFloat	= RGBAColor<float>;
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -205,6 +246,25 @@ namespace std
 				v.getValue(nap::EColorChannel::Green) << 16 | 
 				v.getValue(nap::EColorChannel::Blue) << 8	| 
 				v.getValue(nap::EColorChannel::Alpha)));
+		}
+	};
+
+	template <>
+	struct hash<nap::RGBColor<nap::uint8>>
+	{
+		size_t operator()(const nap::RGBColor<nap::uint8>& v) const
+		{
+			return hash<nap::Color<nap::uint8, 3>>()(static_cast<nap::Color<nap::uint8,3>>(v));
+		}
+		
+	};
+
+	template <>
+	struct hash<nap::RGBAColor<nap::uint8>>
+	{
+		size_t operator()(const nap::RGBAColor<nap::uint8>& v) const
+		{
+			return hash<nap::Color<nap::uint8, 4>>()(static_cast<nap::Color<nap::uint8, 4>>(v));
 		}
 	};
 }
