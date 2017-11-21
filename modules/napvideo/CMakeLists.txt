@@ -18,6 +18,6 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 target_link_libraries(${PROJECT_NAME} napcore mod_naprender ${FFMPEG_LIBRARIES})
 
 # Package into release build
-install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION "modules/${PROJECT_NAME}/lib")
+install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION "modules/${PROJECT_NAME}/lib/$<CONFIG>")
 install(DIRECTORY "src/" DESTINATION "modules/${PROJECT_NAME}/include"
         FILES_MATCHING PATTERN "*.h")

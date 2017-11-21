@@ -28,8 +28,8 @@ elseif(UNIX)
 endif ()
 
 # Package into release build
-install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
-install(DIRECTORY "src/nap/" DESTINATION "include/nap/napcore/"
+install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/nap/$<CONFIG>)
+install(DIRECTORY "src/nap/" DESTINATION "include/nap/nap/"
         FILES_MATCHING PATTERN "*.h"
         PATTERN "linux" EXCLUDE
         PATTERN "osx" EXCLUDE

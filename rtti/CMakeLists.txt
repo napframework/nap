@@ -65,6 +65,21 @@ if (WIN32)
 endif()
 
 # Package into release build
-install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
+install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/nap/$<CONFIG>)
 install(DIRECTORY "src/rtti/" DESTINATION "include/nap/rtti/"
         FILES_MATCHING PATTERN "*.h")
+
+# Package dependent includes TODO discuss moving elsewhere??
+install(DIRECTORY "../../thirdparty/pybind11/install/include/pybind11/" DESTINATION "include/thirdparty/pybind11")
+
+if (MSVC)
+    install(DIRECTORY "../../thirdparty/rttr/msvc64/install/include/rttr/" DESTINATION "include/thirdparty/rttr")
+elseif(APPLE)
+    install(DIRECTORY "../../thirdparty/rttr/xcode/install/include/rttr/" DESTINATION "include/thirdparty/rttr")
+    install(DIRECTORY "../../thirdparty/rttr/xcode/install/bin/" DESTINATION "lib/thirdparty/Release"
+            FILES_MATCHING PATTERN "*core.*dylib")
+    install(DIRECTORY "../../thirdparty/rttr/xcode/install/bin/" DESTINATION "lib/thirdparty/Debug"
+            FILES_MATCHING PATTERN "*_d.*dylib")
+elseif(UNIX)
+    install(DIRECTORY "../../thirdparty/rttr/linux/install/include/rttr/" DESTINATION "include/thirdparty/rttr")
+endif()
