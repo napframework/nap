@@ -25,6 +25,11 @@ endif()
 target_link_libraries(${PROJECT_NAME} mod_naprender)
 
 # Package into release build
-install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION "modules/${PROJECT_NAME}/lib/$<CONFIG>")
+if (WIN32)
+	install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION "modules/${PROJECT_NAME}/lib/$<CONFIG>")
+else()
+	install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION "modules/${PROJECT_NAME}/lib/$<CONFIG>")
+endif()
+
 install(DIRECTORY "src/" DESTINATION "modules/${PROJECT_NAME}/include"
         FILES_MATCHING PATTERN "*.h")

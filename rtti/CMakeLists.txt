@@ -65,7 +65,12 @@ if (WIN32)
 endif()
 
 # Package into release build
-install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/nap/$<CONFIG>)
+if (WIN32)
+    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION lib/nap/$<CONFIG>)
+else()
+    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/nap/$<CONFIG>)
+endif()
+
 install(DIRECTORY "src/rtti/" DESTINATION "include/nap/rtti/"
         FILES_MATCHING PATTERN "*.h")
 
