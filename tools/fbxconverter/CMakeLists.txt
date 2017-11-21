@@ -51,4 +51,6 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 #        DEPENDS always_rebuild)
 
 # Package into release build
-install(TARGETS ${PROJECT_NAME} DESTINATION tools)
+install(TARGETS ${PROJECT_NAME} DESTINATION tools
+        CONFIGURATIONS Release)
+# install(CODE "execute_process(COMMAND python ../dist/osx/dylibpathfix.py fbxconverter_pathfix\nWORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/packaging)")
