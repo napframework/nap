@@ -557,13 +557,14 @@ namespace nap
 	}
 
 
-	static Component* findClonedComponent(const ComponentResourcePath& entityResourcePath, const ClonedComponentResourceList* clonedComponents)
+	// Searches for a cloned component with path @componentResourcePath
+	static Component* findClonedComponent(const ComponentResourcePath& componentResourcePath, const ClonedComponentResourceList* clonedComponents)
 	{
 		if (clonedComponents == nullptr)
 			return nullptr;
 
 		for (const ClonedComponentResource& clonedComponent : *clonedComponents)
-			if (clonedComponent.mPath == entityResourcePath)
+			if (clonedComponent.mPath == componentResourcePath)
 					return clonedComponent.mResource.get();
 		
 		return nullptr;
