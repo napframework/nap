@@ -1,14 +1,13 @@
 #include <rtti/pythonmodule.h>
 #include "entity.h"
 #include <nap/core.h>
-#include <nap/resourcemanager.h>
+#include "scene.h"
 
 using namespace std;
 
 RTTI_BEGIN_CLASS(nap::Entity)
 	RTTI_PROPERTY("Components", &nap::Entity::mComponents, nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Children", &nap::Entity::mChildren, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("InstanceProperties", &nap::Entity::mInstanceProperties, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("AutoSpawn", &nap::Entity::mAutoSpawn, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -25,11 +24,14 @@ namespace nap
 	}
 
 
-	bool EntityInstance::init(ResourceManager& resourceManager, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool EntityInstance::init(Scene& scene, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
 		for (int index = 0; index < mResource->mChildren.size(); ++index)
 		{
-			ObjectPtr<EntityInstance> child_entity_instance = resourceManager.createChildEntityInstance(*mResource->mChildren[index], index, entityCreationParams, errorState);
+			EntityInstance* child_entity_instance = scene.createChildEntityInstance(*mResource->mChildren[index], index, entityCreationParams, errorState);
+			if (!errorState.check(child_entity_instance != nullptr, "Failed to spawn child entity %s for entity %s", mResource->mChildren[index]->mID.c_str(), mID.c_str()))
+				return false; 
+
 			addChild(*child_entity_instance);
 		}
 

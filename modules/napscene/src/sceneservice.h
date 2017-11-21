@@ -17,6 +17,8 @@ namespace nap
 		virtual ~SceneService() = default;
 
 	protected:
+		virtual void update(double deltaTime) override;
+
 		/**
 		* Recursively updates the transform hierarchy from the root. The entity hierarchy is traversed. For any TransformComponent
 		* the world transform is updated.

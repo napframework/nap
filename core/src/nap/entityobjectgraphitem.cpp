@@ -1,4 +1,4 @@
-#include "rttiobjectgraph.h"
+#include "entityobjectgraphitem.h"
 #include "component.h"
 #include "rtti/rttiutilities.h"
 #include "rtti/rttiobject.h"
@@ -9,9 +9,9 @@ namespace nap
 	 * Creates a graph item.
 	 * @param object Object to wrap in the item that is created.
 	 */
-	const RTTIObjectGraphItem RTTIObjectGraphItem::create(rtti::RTTIObject* object, const ObjectsByTypeMap& objectsByType, const ClonedResourceMap& clonedResourceMap)
+	const EntityObjectGraphItem EntityObjectGraphItem::create(rtti::RTTIObject* object, const ObjectsByTypeMap& objectsByType, const ClonedResourceMap& clonedResourceMap)
 	{
-		RTTIObjectGraphItem item;
+		EntityObjectGraphItem item;
 		item.mType = EType::Object;
 		item.mObject = object;
 		item.mObjectsByType = &objectsByType;
@@ -24,7 +24,7 @@ namespace nap
 	/**
 	 * @return ID of the item. For objects, the ID is the object ID, for files, it is the filename.
 	 */
-	const std::string RTTIObjectGraphItem::getID() const
+	const std::string EntityObjectGraphItem::getID() const
 	{
 		assert(mType == EType::File || mType == EType::Object);
 
@@ -41,7 +41,7 @@ namespace nap
 	 * @param errorState If false is returned, contains information about the error.
 	 * @return true is succeeded, false otherwise.
 	 */
-	bool RTTIObjectGraphItem::getPointees(std::vector<RTTIObjectGraphItem>& pointees, utility::ErrorState& errorState) const
+	bool EntityObjectGraphItem::getPointees(std::vector<EntityObjectGraphItem>& pointees, utility::ErrorState& errorState) const
 	{
 		Component* component = rtti_cast<Component>(mObject);
 		if (component != nullptr)
@@ -58,7 +58,7 @@ namespace nap
 				const std::vector<rtti::RTTIObject*> components = dependent_component->second;
 				for (rtti::RTTIObject* component : components)
 				{
-					RTTIObjectGraphItem item;
+					EntityObjectGraphItem item;
 					item.mType				= EType::Object;
 					item.mObject			= component;
 					item.mObjectsByType		= mObjectsByType;
@@ -76,7 +76,7 @@ namespace nap
 			if (link.mTarget == nullptr)
 				continue;
 
-			RTTIObjectGraphItem item;
+			EntityObjectGraphItem item;
 			item.mType				= EType::Object;
 			item.mObject			= link.mTarget;
 			item.mObjectsByType		= mObjectsByType;
@@ -89,7 +89,7 @@ namespace nap
 
 		for (std::string& filename : file_links)
 		{
-			RTTIObjectGraphItem item;
+			EntityObjectGraphItem item;
 			item.mType					= EType::File;
 			item.mFilename				= filename;
 			item.mObjectsByType			= mObjectsByType;
@@ -100,7 +100,7 @@ namespace nap
 		size_t pointees_size = pointees.size();
 		for (int i = 0; i != pointees_size; ++i)
 		{
-			RTTIObjectGraphItem& item = pointees[i];
+			EntityObjectGraphItem& item = pointees[i];
 			if (item.mType == EType::Object)
 			{
 				ClonedResourceMap::const_iterator pos = mClonedResourceMap->find(item.mObject);
@@ -108,7 +108,7 @@ namespace nap
 				{
 					for (rtti::RTTIObject* clonedResource : pos->second)
 					{
-						RTTIObjectGraphItem cloned_item;
+						EntityObjectGraphItem cloned_item;
 						cloned_item.mType				= EType::Object;
 						cloned_item.mObject				= clonedResource;
 						cloned_item.mObjectsByType		= mObjectsByType;

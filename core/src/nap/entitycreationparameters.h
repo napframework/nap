@@ -17,9 +17,9 @@ namespace nap
 	class Entity;
 	class EntityInstance;	
 
-	class RTTIObjectGraphItem;
+	class EntityObjectGraphItem;
 	template<typename ITEM> class ObjectGraph;
-	using RTTIObjectGraph = ObjectGraph<RTTIObjectGraphItem>;
+	using EntityObjectGraph = ObjectGraph<EntityObjectGraphItem>;
 
 	/**
 	 * Structure used to hold the data necessary to uniquely identify and store a cloned ComponentResource.
@@ -46,10 +46,10 @@ namespace nap
 		using ComponentToEntityMap			= std::unordered_map<Component*, const Entity*>;
 		using ComponentInstanceMap			= std::unordered_map<Component*, std::vector<ComponentInstance*>>;
 
-		EntityCreationParameters(const RTTIObjectGraph& objectGraph);
+		EntityCreationParameters(const EntityObjectGraph& objectGraph);
 		~EntityCreationParameters();
 
-		const RTTIObjectGraph*			mObjectGraph = nullptr;
+		const EntityObjectGraph*		mObjectGraph = nullptr;
 		EntityInstanceByIDMap			mEntityInstancesByID;
 		InstanceByIDMap					mAllInstancesByID;
 		ComponentInstanceMap			mComponentInstanceMap;

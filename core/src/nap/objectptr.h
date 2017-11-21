@@ -38,13 +38,25 @@ namespace nap
 		*/
 		static ObjectPtrManager& get();
 
-
 		/**
-		* @return the set of ObjectPtrs in the system.
-		*/
-		ObjectPtrSet& GetObjectPointers()
+ 		 * Patches pointers in the ObjectPtrManager to objects in the newTargetObjects map. The pointers are matched by comparing IDs of the objects being pointed to. 
+		 * This function is a template so we can deal with different kinds of values in the map; the key must always be a string, but the value may be a smart pointer or raw pointer.
+		 * @param newTargetObjects Map from string ID to RTTIObject pointer (either raw or smart pointer, as long as it can be dereferenced).
+		 */
+		template<class OBJECTSBYIDMAP>
+		void patchPointers(OBJECTSBYIDMAP& newTargetObjects)
 		{
-			return mObjectPointers;
+			for (ObjectPtrBase* ptr : mObjectPointers)
+			{
+				rtti::RTTIObject* target = ptr->get();
+				if (target == nullptr)
+					continue;
+
+				std::string& target_id = target->mID;
+				typename OBJECTSBYIDMAP::iterator new_target = newTargetObjects.find(target_id);
+				if (new_target != newTargetObjects.end())
+					ptr->set(&*(new_target->second));
+			}
 		}
 
 	private:
@@ -115,7 +127,7 @@ namespace nap
 		}
 	private:
 		template<class T> friend class ObjectPtr;
-		friend class ResourceManager;
+		friend class ObjectPtrManager;
 
 		rtti::RTTIObject* mPtr = nullptr;
 	};

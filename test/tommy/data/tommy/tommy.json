@@ -106,6 +106,24 @@
 		},
 		
 		{
+			"Type" : "nap::Scene",
+			"mID": "Scene",
+			
+			"Entities" : 
+			[
+				{
+					"Entity" : "UIInputRouterEntity"
+				},
+				{
+					"Entity" : "CameraEntity"
+				},
+				{
+					"Entity" : "RootEntity"
+				}				
+			]
+		},
+
+		{
 			"Type" : "nap::Entity",
 			"mID": "UIInputRouterEntity",
 			

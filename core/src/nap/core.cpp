@@ -140,9 +140,6 @@ namespace nap
 			service->update(mDeltaTime);
 		}
 
-		// Update the resource manager, ie: all entities and their respective components
-		mResourceManager->update(mDeltaTime);
-
 		// Call update function
 		updateFunction(mDeltaTime);
 

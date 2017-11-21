@@ -77,6 +77,8 @@ namespace nap
 		*/
 		int NAPAPI findUnresolvedPointer(const UnresolvedPointerList& unresolvedPointers, const RTTIObject* object, const rtti::RTTIPath& path);
 
+		void NAPAPI getPointeesRecursive(const rtti::RTTIObject& object, std::vector<rtti::RTTIObject*>& pointees);
+
 		/**
 		* Calculate the version number of the specified type
 		*

@@ -9,7 +9,7 @@ namespace nap
 	{
 	}
 
-	EntityCreationParameters::EntityCreationParameters(const RTTIObjectGraph& objectGraph) :
+	EntityCreationParameters::EntityCreationParameters(const EntityObjectGraph& objectGraph) :
 		mObjectGraph(&objectGraph)
 	{
 	}
