@@ -90,6 +90,13 @@
 		},
 
 		{
+			"Type" : "nap::IndexMap",
+			"mID" : "IndexMap",
+			"Path" : "data/kalvertoren/index_map/index_map.bmp",
+			"ColorCount" : 5
+		},
+
+		{
 			"Type" : "nap::PlaneMesh",
 			"mID": "PlaneMesh"
 		},
