@@ -48,15 +48,26 @@ namespace nap
 	
     
 	bool Core::initializeEngine(utility::ErrorState& error)
-	{ 
+	{
+		// Ensure our current working directory is where the executable is.  Works around issues with the current working directory not being set as
+		// expected when apps are launched directly from Finder and probably other things too.
+		nap::utility::changeDir(nap::utility::getExecutableDir());
+		
 		// Load all modules
 		// TODO: This should be correctly resolved, ie: the dll's should always
 		// be in the executable directory
 #ifdef _WIN32
-		mModuleManager.loadModules(utility::getExecutableDir());
+		mModuleManager.loadModules(".");
 #else
-		std::string exe_dir = "../../lib/" + utility::getFileName(utility::getExecutableDir());
-		mModuleManager.loadModules(exe_dir);
+		// If we have a local lib dir let's presume that's where our modules are meant to be, for now.  Otherwise go hunting higher up where they'll be
+		// normally be built
+		std::string module_dir;
+		if (nap::utility::dirExists("lib"))
+			module_dir = "lib";
+		else
+			module_dir = "../../lib/" + utility::getFileName(utility::getExecutableDir());
+	
+		mModuleManager.loadModules(module_dir);
 #endif // _WIN32
 
 		// Create the various services based on their dependencies
@@ -194,12 +205,21 @@ namespace nap
 
 
 	// Returns service that matches @type
-	Service* Core::getService(const rtti::TypeInfo& type)
+	Service* Core::getService(const rtti::TypeInfo& type, ETypeCheck typeCheck)
 	{
 		// Find service of type 
-		const auto& found_service = std::find_if(mServices.begin(), mServices.end(), [&type](const auto& service)
+		const auto& found_service = std::find_if(mServices.begin(), mServices.end(), [&type, typeCheck](const auto& service)
 		{
-			return service->get_type() == type.get_raw_type();
+            switch (typeCheck) 
+			{
+                case ETypeCheck::IS_DERIVED_FROM:
+                    return service->get_type().is_derived_from(type);
+                case ETypeCheck::EXACT_MATCH:
+                    return service->get_type() == type;
+				default:
+					assert(false);
+					return false;
+            }
 		});
 
 		// Check if found
@@ -210,7 +230,7 @@ namespace nap
 	nap::Service* Core::getService(const std::string& type)
 	{
 		rtti::TypeInfo stype = rtti::TypeInfo::get_by_name(type.c_str());
-		return getService(stype);
+        return getService(stype, ETypeCheck::EXACT_MATCH);
 	}
 
 

@@ -60,7 +60,7 @@ def isBrewInstalled():
 
 def installDependenciesOSX():
     d = WORKING_DIR
-    for pack in ['cmake', 'sdl2', 'glew', 'glm', 'assimp', 'tclap', 'ffmpeg']:
+    for pack in ['cmake', 'sdl2', 'glew', 'glm', 'assimp', 'tclap', 'ffmpeg', 'mpg123']:
         try:
             call(d, ['brew', 'install', pack])
         except:

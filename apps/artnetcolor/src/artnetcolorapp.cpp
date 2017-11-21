@@ -1,10 +1,14 @@
 #include "artnetcolorapp.h"
+#include "selectcolorcomponent.h"
 
 // Nap includes
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <renderablemeshcomponent.h>
 #include <orthocameracomponent.h>
+#include <imguiservice.h>
+#include <imgui/imgui.h>
+#include <mathutils.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ArtnetColorApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -49,30 +53,67 @@ namespace nap
 		render_state.mPointSize = 2.0f;
 		render_state.mPolygonMode = opengl::PolygonMode::FILL;
 		
+		// Initialize colors
+		std::vector<nap::SelectColorComponentInstance*> comps;
+		mPlaneEntity->getComponentsOfType<nap::SelectColorComponentInstance>(comps);
+		for (auto& comp : comps)
+		{
+			mColor.emplace_back(comp->getColor());
+			mWhite.emplace_back(comp->getWhite());
+		}
+
 		return true;
 	}
 	
 	
 	// Called when the window is updating
 	void ArtnetColorApp::update(double deltaTime)
-	{		
-		/*
-		// Update and send our test data over ArtNET
-		float sine = sin(mRenderService->getCore().getElapsedTime() * (M_PI * 2));
-		
-		std::vector<float> channel_data;
-		channel_data.resize(512);
-		
-		for (int index = 0; index < channel_data.size(); ++index)
+	{
+		// 1. Show a simple window.
+		// Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets appears in a window automatically called "Debug".
 		{
-			float offset = (sine + 1.0f) / 2.0f;
-			channel_data[index] = std::min((float)index / (float)channel_data.size() + offset, 1.0f);
+			ImGui::Text("Hello Sigrid!");
+			std::vector<nap::SelectColorComponentInstance*> comps;
+			mPlaneEntity->getComponentsOfType<nap::SelectColorComponentInstance>(comps);
+			int idx(0);
+			for (auto& selector : comps)
+			{
+				std::string led_color_label = utility::stringFormat("Color %d", idx);
+				if (ImGui::ColorEdit3(led_color_label.c_str(), (float*)&mColor[idx].r))
+				{
+					selector->setColor(mColor[idx]);
+				}
+
+				std::string white_color_label = utility::stringFormat("White %d", idx);
+				if (ImGui::SliderInt(white_color_label.c_str(), &mWhite[idx], 0, nap::math::max<uint8>()))
+				{
+					selector->setWhite(static_cast<float>(mWhite[idx]) / static_cast<float>(nap::math::max<uint8>()));
+				}
+
+				// show led output colors
+				uint8 r, g, b, w;
+				selector->getColor(r, g, b, w);
+				char ccolor[128];
+				snprintf(ccolor, 128, "%d %d %d %d", r, g, b, w);
+				std::string dmx_name = utility::stringFormat("LED Color %d", idx);
+				ImGui::InputText(dmx_name.c_str(), ccolor, 128, ImGuiInputTextFlags_ReadOnly);
+
+				// show RGB output colors as a combination
+				int pr = math::clamp<int>(r + w, 0, math::max<uint8>());
+				int pg = math::clamp<int>(g + w, 0, math::max<uint8>());
+				int pb = math::clamp<int>(b + w, 0, math::max<uint8>());
+
+				char pxcolor[128];
+				snprintf(pxcolor, 128, "%d %d %d", pr, pg, pb);
+				std::string pixel_name = utility::stringFormat("Pixel Color %d", idx);
+				ImGui::InputText(pixel_name.c_str(), pxcolor, 128, ImGuiInputTextFlags_ReadOnly);
+
+				idx++;
+			}
+			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		}
-		
-		mArtnetController->send(channel_data);
-		*/
 	}
-	
+
 
 	
 	// Called when the window is going to render
@@ -86,11 +127,14 @@ namespace nap
 		// Clear back-buffer
 		opengl::RenderTarget& backbuffer = *mRenderWindow->getWindow()->getBackbuffer();
 		backbuffer.setClearColor(glm::vec4(0.0705f, 0.49f, 0.5647f, 1.0f));
-		mRenderService->clearRenderTarget(backbuffer);
+		mRenderService->clearRenderTarget(backbuffer);	
 		
 		// Render objects
 		OrthoCameraComponentInstance& ortho_cam_comp = mCameraEntity->getComponent<nap::OrthoCameraComponentInstance>();
 		mRenderService->renderObjects(backbuffer, ortho_cam_comp);
+
+		// Render gui after last gui call
+		getCore().getService<IMGuiService>()->render();
 
 		// Swap backbuffer
 		mRenderWindow->swap();

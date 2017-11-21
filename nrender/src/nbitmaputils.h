@@ -36,6 +36,18 @@ namespace opengl
 	BitmapColorType getColorType(FREE_IMAGE_COLOR_TYPE colorType, FREE_IMAGE_TYPE dataType);
 
 	/**
+	 * @param type the opengl enum to get the associated bitmap type for
+	 * @return the associated bitmap type for the queried opengl type, UNKNOWN if there is no valid conversion
+	 */
+	BitmapDataType getBitmapType(GLenum type);
+
+	/**
+	 * @param format the opengl texture format to get the associated color type for
+	 * @return the associated bitmap color type for the queried opengl format
+	 */
+	BitmapColorType getColorType(GLenum format);
+
+	/**
 	 * loadBitmap
 	 *
 	 * Creates a bitmap from file, this bitmap owns the pixel data

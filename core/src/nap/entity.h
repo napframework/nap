@@ -258,9 +258,9 @@ namespace nap
 		bool hasComponent(ETypeCheck typeCheck = ETypeCheck::EXACT_MATCH) const;
 
 	public:
-		ComponentList								mComponents;			// The components of this entity
-		EntityList									mChildren;				// The children of this entity
-		bool										mAutoSpawn = true;		// Whether this entity should be automatically instantiated after deserialization
+		ComponentList	mComponents;			// The components of this entity
+		EntityList		mChildren;				// The children of this entity
+		bool			mAutoSpawn = true;		// Whether this entity should be automatically instantiated after deserialization
 		std::vector<ComponentInstanceProperties>	mInstanceProperties;	// The instance properties for this entity
 	};
 

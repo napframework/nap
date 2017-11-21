@@ -81,7 +81,22 @@ namespace nap
 		/**
 		 * @return Address where this controllers maps to. Upper 4 bits contain subnet, lower 4 bits contain universe.
 		 */
-		Address getAddress() const { return (mSubnet << 4) | mUniverse; }
+		Address getAddress() const											{ return createAddress(mSubnet, mUniverse); }
+		
+		/**
+		 * Creates a unique artnet address based on a subnet and universe
+		 * @param subnet the artnet subnet address
+		 * @param universe the artnet universe address
+		 */
+		static Address createAddress(uint8_t subnet, uint8_t universe);
+
+		/**
+		 * Converts a nap artnet address in to a subnet and universe
+		 * @param address the artnet address to convert
+		 * @param subnet the subnet part of the address
+		 * @param universe the universe part of the address;
+		 */
+		static void convertAddress(Address address, uint8_t& subnet, uint8_t& universe);
 
 	private:
 
@@ -91,8 +106,11 @@ namespace nap
 		ArtNetNode getNode() const { return mNode; }
 
 	public:
-		uint8_t				mSubnet = 0;			///< Subnet, in range from 0x0..0xF
-		uint8_t				mUniverse = 0;			///< Universe, in range from 0x0..0xF
+		static const int	mMaxUpdateFrequency;						///< 44hz, see http ://art-net.org.uk/wordpress/?page_id=456 / Refresh Rate)
+		uint8_t				mSubnet = 0;								///< Subnet, in range from 0x0..0xF
+		uint8_t				mUniverse = 0;								///< Universe, in range from 0x0..0xF
+		int					mUpdateFrequency = mMaxUpdateFrequency;		///< Update artnet refresh rate, the default is the maximum refresh rate
+		float				mWaitTime = 2.0f;							///< Number of seconds before the control data is send regardless of changes
 
 	private:
 		friend class ArtNetService;

@@ -1,16 +1,16 @@
-#include <rtti/pythonmodule.h>
 #include "resourcemanager.h"
-#include "rtti/rttiutilities.h"
-#include "rtti/jsonreader.h"
-#include "nap/core.h"
 #include "objectgraph.h"
 #include "entityptr.h"
 #include "componentptr.h"
-#include <utility/fileutils.h>
 #include "logger.h"
 #include "core.h"
 #include "rttiobjectgraph.h"
-#include "utility/stringutils.h"
+#include <utility/fileutils.h>
+#include <utility/stringutils.h>
+#include <rtti/rttiutilities.h>
+#include <rtti/jsonreader.h>
+#include <rtti/pythonmodule.h>
+#include <nap/core.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ResourceManager)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -60,10 +60,10 @@ namespace nap
 			result = utility::stringFormat("%s_%d", baseID.c_str(), index++);
 
 		return result;
-	}
+		}
 
 	static std::string generateUniqueID(const std::string& baseID, std::unordered_set<std::string>& allIDs)
-	{
+		{
 		std::string result = baseID;
 
 		int index = 0;
@@ -386,7 +386,7 @@ namespace nap
 				{
 					// If we encountered a non-relative component, we need to look for a child entity of the current entity that matches the child specifier
 
-					// Split the child specifier on ':'. Note that the ':' is optional and is only used to disambguate between multiple children
+					// Split the child specifier on ':'. Note that the ':' is optional and is only used to disambiguate between multiple children
 					std::vector<std::string> element_parts;
 					utility::splitString(part, ':', element_parts);
 					if (!errorState.check(element_parts.size() <= 2, "Error resolving ComponentPtr with path %s: path contains a child specifier with an invalid format (multiple colons found)", targetComponentInstancePath.c_str()))
@@ -550,7 +550,7 @@ namespace nap
 
 			for (ComponentInstance* component_instance : pos->second)
 				if (!component_instance->init(errorState))
-					return false;
+				return false;
 		}
 
 		return true;
@@ -566,43 +566,43 @@ namespace nap
 		for (const ClonedComponentResource& clonedComponent : *clonedComponents)
 			if (clonedComponent.mPath == componentResourcePath)
 					return clonedComponent.mResource.get();
-		
+
 		return nullptr;
-	}
+		}
 
 
 	EntityInstance* ResourceManager::createEntityInstance(const nap::Entity& entity, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
-	{
+		{
 		EntityInstance* entity_instance = new EntityInstance(mCore, &entity);
 		entity_instance->mID = generateInstanceID(getInstanceID(entity.mID), entityCreationParams);
 
-		entityCreationParams.mEntityInstancesByID.emplace(std::make_pair(entity_instance->mID, std::unique_ptr<EntityInstance>(entity_instance)));
-		entityCreationParams.mAllInstancesByID.insert(std::make_pair(entity_instance->mID, entity_instance));
+			entityCreationParams.mEntityInstancesByID.emplace(std::make_pair(entity_instance->mID, std::unique_ptr<EntityInstance>(entity_instance)));
+			entityCreationParams.mAllInstancesByID.insert(std::make_pair(entity_instance->mID, entity_instance));
 
 		for (auto& original_component_resource : entity.mComponents)
-		{
+			{
 			entityCreationParams.mCurrentEntityPath.pushComponent(original_component_resource->mID);
 
 			Component* cloned_component_resource = findClonedComponent(entityCreationParams.mCurrentEntityPath, entityCreationParams.mCurrentEntityClonedComponents);
 			Component* component_resource = cloned_component_resource != nullptr ? cloned_component_resource : original_component_resource.get();
 
-			const rtti::TypeInfo& instance_type = component_resource->getInstanceType();
-			assert(instance_type.can_create_instance());
+				const rtti::TypeInfo& instance_type = component_resource->getInstanceType();
+				assert(instance_type.can_create_instance());
 
 			entityCreationParams.mComponentToEntity.insert(std::make_pair(component_resource, &entity));
 
 			std::unique_ptr<ComponentInstance> component_instance(instance_type.create<ComponentInstance>({ *entity_instance, *component_resource }));
-			assert(component_instance);
-			component_instance->mID = generateInstanceID(getInstanceID(component_resource->mID), entityCreationParams);
+				assert(component_instance);
+				component_instance->mID = generateInstanceID(getInstanceID(component_resource->mID), entityCreationParams);
 
 			entityCreationParams.mComponentInstanceMap[component_resource].push_back(component_instance.get());
-			entityCreationParams.mAllInstancesByID.insert(std::make_pair(component_instance->mID, component_instance.get()));
-			entity_instance->addComponent(std::move(component_instance));
+				entityCreationParams.mAllInstancesByID.insert(std::make_pair(component_instance->mID, component_instance.get()));
+				entity_instance->addComponent(std::move(component_instance));
 
 			entityCreationParams.mCurrentEntityPath.popComponent();
-		}
+			}
 
-		if (!entity_instance->init(*this, entityCreationParams, errorState))
+			if (!entity_instance->init(*this, entityCreationParams, errorState))
 			return nullptr;
 
 		return entity_instance;
@@ -686,7 +686,7 @@ namespace nap
 
 			// Spawn the entity hierarchy
 			if (!errorState.check(createEntityInstance(*root_entity_resource, entityCreationParams, errorState) != nullptr, "Failed to create entity instance"))
-				return false;
+			return false;
 		}
 
 		// After all entity hierarchies and their components are created, the component pointers are resolved in the correct order, and then initted.
@@ -788,6 +788,13 @@ namespace nap
 				assert(object);
 
 				std::unique_ptr<RTTIObject> cloned_object = rtti::cloneObject(*object, getFactory());
+				
+				// TEMP HACK: Replace original object in object graph with the cloned version. This fixes problems when real-time editing components. 
+				// This should be replaced with a rebuild of the object graph, but that change is on another branch
+				RTTIObjectGraph::Node* originalObjectNode = object_graph.findNode(object->mID);
+				assert(originalObjectNode && originalObjectNode->mItem.mType == RTTIObjectGraphItem::EType::Object);
+
+				originalObjectNode->mItem.mObject = cloned_object.get();
 				objects_to_update.emplace(std::make_pair(cloned_object->mID, std::move(cloned_object)));
 			}
 		}
