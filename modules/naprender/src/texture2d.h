@@ -29,8 +29,8 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		int		mWidth;			// Width of the texture, in texels
-		int		mHeight;		// Height of the texture, in texels
-		EFormat	mFormat;		// Format of the texture
+		int		mWidth  = 0;					///< Width of the texture, in texels
+		int		mHeight = 0;					///< Height of the texture, in texels
+		EFormat	mFormat = EFormat::RGB8;		///< Format of the texture
 	};
 }
