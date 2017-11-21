@@ -313,51 +313,10 @@ namespace opengl
 		virtual void clear() override;
 	};
 
-	/**
-	 * TypedBitmap
-	 *
-	 * Bitmap that carries a type
-	 * This bitmap manages it's own set of memory, see Bitmap for more information
-	 * If you want an memory unmanaged bitmap, use BitmapBase
-	 */
-	template <typename T>
-	class TypedBitmap : public Bitmap
-	{
-	public:
-		// Constructor
-		TypedBitmap();
-		TypedBitmap(const BitmapSettings& settings) : Bitmap::Bitmap(settings)	{ }
-
-		/**
-		 * getDataType
-		 *
-		 * Returns associated data type
-		 * Every TypedBitmap needs to have a data type associated with it
-		 * Otherwise other objects would not know how to convert a bitmap in to a hardware texture
-		 * Every specialized TypedBitmap needs to implement this function!
-		 */
-		BitmapDataType getDataType() const override;
-
-		/**
-		 * getData
-		 *
-		 * Fetch typed data associated with bitmap
-		 */
-		T* getData()				{ return static_cast<T*>(mData); }
-	};
-
 
 	//////////////////////////////////////////////////////////////////////////
 	// Template Implementations
 	//////////////////////////////////////////////////////////////////////////
-
-	// Constructor
-	template <typename T>
-	opengl::TypedBitmap<T>::TypedBitmap()
-	{
-		mSettings.mDataType = getDataType();
-	}
-
 
 	template<typename T>
 	T* opengl::BitmapBase::getPixel(unsigned int x, unsigned int y) const
@@ -367,17 +326,8 @@ namespace opengl
 			assert(false);
 			return nullptr;
 		}
-
 		return (T*)(getPixelData(x, y));
 	}
-
-
-	//////////////////////////////////////////////////////////////////////////
-	// Typedefs
-	//////////////////////////////////////////////////////////////////////////
-	using ByteBitmap  = TypedBitmap<uint8_t>;
-	using FloatBitmap = TypedBitmap<float>;
-	using ShortBitmap = TypedBitmap<uint16_t>;
 
 } // opengl
 

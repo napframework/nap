@@ -56,11 +56,6 @@ namespace nap
 		RTTI_ENABLE(rtti::RTTIObject)
 	public:
         using rtti::RTTIObject::init;
-        
-		/**
-		 * Initializes opengl texture using the parameters from RTTI and @settings.
-		 */
-		void init(opengl::Texture2DSettings& settings);
 
 		/**
 		 * @return OpenGL Texture2D.
@@ -89,6 +84,12 @@ namespace nap
 
 		nap::TextureParameters		mParameters;							// RTTI texture parameters
 		opengl::ETextureUsage		mUsage = opengl::ETextureUsage::Static;	// The usage of this texture
+
+	protected:
+		/**
+		* Initializes opengl texture using the parameters from RTTI and @settings.
+		*/
+		void init(opengl::Texture2DSettings& settings);
 
 	private:
 		opengl::Texture2D			mTexture;			// Internal opengl texture

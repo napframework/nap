@@ -4,6 +4,7 @@
 #include <nbitmaputils.h>
 #include <ntextureutils.h>
 #include <utility/fileutils.h>
+#include <texture2d.h>
 
 // nap::indexmap run time class definition 
 RTTI_BEGIN_CLASS(nap::IndexMap)
@@ -80,10 +81,7 @@ namespace nap
 
 	void IndexMap::findUniqueColors()
 	{
-
 		std::unordered_set<IndexColor> unique_index_colors;
-		RGBColor<float*> color;
-		rtti::TypeInfo type = color.getValueType();
 
 		// Check the amount of available colors
 		for (int i = 0; i < mBitmap.getWidth(); i++)

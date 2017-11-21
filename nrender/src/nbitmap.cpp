@@ -145,26 +145,6 @@ namespace opengl
 			mColorType != BitmapColorType::UNKNOWN;
 	}
 
-	//////////////////////////////////////////////////////////////////////////
-	// Template specializations
-	//////////////////////////////////////////////////////////////////////////
-	template<>
-    BitmapDataType TypedBitmap<unsigned char>::getDataType() const
-	{
-		return BitmapDataType::BYTE;
-	}
-
-    template<>
-	BitmapDataType TypedBitmap<uint16_t>::getDataType() const
-	{
-		return BitmapDataType::USHORT;
-	}
-
-    template<>
-	BitmapDataType TypedBitmap<float>::getDataType() const
-	{
-		return BitmapDataType::FLOAT;
-	}
 
 	//////////////////////////////////////////////////////////////////////////
 	// Bitmap
