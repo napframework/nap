@@ -72,7 +72,7 @@ namespace nap
 			{
 				std::vector<ITEM> pointees;
 				if (!kvp.second->mItem.getPointees(pointees, errorState))
-					return nullptr;
+					return false;
 
 				for (ITEM& pointee_node : pointees)
 				{
