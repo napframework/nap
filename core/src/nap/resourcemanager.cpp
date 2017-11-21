@@ -146,6 +146,10 @@ namespace nap
 		getRootEntity().update(elapsedTime);
 	}
 
+
+	/**
+	 * Adds object to the type map. It will add itself and all its base types to the map so that the map contains the entire inheritance hierarchy
+ 	 */
 	void ResourceManager::sRecursiveAddToObjectsByType(rtti::RTTIObject& object, const rtti::TypeInfo& type, ObjectsByTypeMap& objectsByType)
 	{
 		objectsByType[type].push_back(&object);
@@ -213,6 +217,11 @@ namespace nap
 		return loadFile(filename, std::string(), errorState);
 	}
 
+
+	// Resolves all the pointers in @unresolvedPointers against both the ResourceManager's objects and the @objectsToUpdate map. The @objectsToUpdate array
+	// functions as an overlay on top of the ResourceManager.
+	// Custom pointers are supported through exposed RTTI functions on pointer objects: a static function 'translateTargetID' will convert any ID to a target ID
+	// and the member function 'assign' will assign the pointer value to the pointer object.
 	bool ResourceManager::resolvePointers(ObjectByIDMap& objectsToUpdate, const UnresolvedPointerList& unresolvedPointers, utility::ErrorState& errorState)
 	{
 		for (const UnresolvedPointer& unresolved_pointer : unresolvedPointers)
@@ -223,6 +232,8 @@ namespace nap
 
 			std::string target_id = unresolved_pointer.mTargetID;			
 
+			// If the type that we're processing has a function to translate the ID read from json into a different ID, we call it and use that ID.
+			// This is used for pointers that have a different format in json.
 			rttr::method translate_string_method = rtti::findMethodRecursive(resolved_path.getType(), "translateTargetID");
 			if (translate_string_method.is_valid())
 			{
@@ -230,7 +241,7 @@ namespace nap
 				target_id = translate_result.to_string();
 			}
 
-			// Objects in objectsToUpdate have preference over the manager's objects
+			// Objects in objectsToUpdate have preference over the manager's objects. 
 			RTTIObject* target_object = nullptr;
             auto object_to_update = objectsToUpdate.find(target_id);
 			if (object_to_update == objectsToUpdate.end())
@@ -252,6 +263,7 @@ namespace nap
 
 			assert(actual_type.is_pointer());
 
+			// If the type that we're processing has a function to assign the pointer value, we use it.
 			rtti::Variant target_value = target_object;
 			rttr::method assign_method = rtti::findMethodRecursive(resolved_path.getType(), "assign");
 			if (assign_method.is_valid())
@@ -544,6 +556,7 @@ namespace nap
 		return true;
 	}
 
+
 	static Component* findClonedComponent(const ComponentResourcePath& entityResourcePath, const ClonedComponentResourceList* clonedComponents)
 	{
 		if (clonedComponents == nullptr)
@@ -555,6 +568,7 @@ namespace nap
 		
 		return nullptr;
 	}
+
 
 	EntityInstance* ResourceManager::createEntityInstance(const nap::Entity& entity, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
@@ -569,7 +583,6 @@ namespace nap
 			entityCreationParams.mCurrentEntityPath.pushComponent(original_component_resource->mID);
 
 			Component* cloned_component_resource = findClonedComponent(entityCreationParams.mCurrentEntityPath, entityCreationParams.mCurrentEntityClonedComponents);
-
 			Component* component_resource = cloned_component_resource != nullptr ? cloned_component_resource : original_component_resource.get();
 
 			const rtti::TypeInfo& instance_type = component_resource->getInstanceType();

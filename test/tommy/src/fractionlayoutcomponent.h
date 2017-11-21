@@ -4,9 +4,6 @@
 #include <nap/component.h>
 #include <glm/glm.hpp>
 
-// Local Includes
-#include "renderattributes.h"
-
 namespace nap
 {
 	class FractionLayoutComponentInstance;

@@ -9,6 +9,7 @@
 
 namespace nap
 {	
+	// Helper macro to register RTTI for instance properties for POD types
 	#define RTTI_DEFINE_INSTANCE_PROPERTY_VALUE(InstancePropertyValueType)											\
 		RTTI_BEGIN_CLASS(InstancePropertyValueType)																	\
 			RTTI_PROPERTY("Value", &InstancePropertyValueType::mValue, nap::rtti::EPropertyMetaData::Required)		\
