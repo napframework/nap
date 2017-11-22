@@ -22,7 +22,7 @@ if(NOT WIN32)
 	target_compile_definitions(${PROJECT_NAME} PUBLIC HAVE_CONFIG_H)
 endif()
 
-target_link_libraries(${PROJECT_NAME} napcore mod_napmath ${ARTNET_LIBS})
+target_link_libraries(${PROJECT_NAME} napcore mod_napmath mod_napscene ${ARTNET_LIBS})
 
 if (WIN32)
     set(FILES_TO_COPY

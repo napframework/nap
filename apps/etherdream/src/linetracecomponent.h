@@ -4,7 +4,7 @@
 #include "lineblendcomponent.h"
 
 // external includes
-#include <nap/entityptr.h>
+#include <entityptr.h>
 #include <smoothdamp.h>
 
 namespace nap
@@ -37,7 +37,13 @@ namespace nap
 		ObjectPtr<nap::PolyLine> mTargetLine;
 
 		// property: Link to the line blend component that holds the line we want to trace
-		ComponentPtr<nap::LineBlendComponent> mBlendComponent = nullptr;
+		ComponentPtr<nap::LineBlendComponent>		mBlendComponent;
+
+		ComponentPtr<nap::TransformComponent>		mStartXformComponent;
+		ComponentPtr<nap::RenderableMeshComponent>	mStartRenderableComponent;
+		ComponentPtr<nap::TransformComponent>		mEndXformComponent;
+		ComponentPtr<nap::RenderableMeshComponent>	mEndRenderableComponent;
+
 	};
 
 
@@ -77,12 +83,15 @@ namespace nap
 		void setPolyLine(nap::PolyLine& line);
 
 	private:
-		ComponentInstancePtr<LineBlendComponent>	mBlendComponent = { this, &LineTraceComponent::mBlendComponent };		// Component that holds the line we want to modulate
+		ComponentInstancePtr<LineBlendComponent>		mBlendComponent			= { this, &LineTraceComponent::mBlendComponent };			// Component that holds the line we want to modulate
+		ComponentInstancePtr<TransformComponent>		mStartXform				= { this, &LineTraceComponent::mStartXformComponent };		// Transform associated with beginning of trace component
+		ComponentInstancePtr<RenderableMeshComponent>	mStartRenderableMesh	= { this, &LineTraceComponent::mStartRenderableComponent};	// Transform associated with beginning of trace component
+		ComponentInstancePtr<TransformComponent>		mEndXform				= { this, &LineTraceComponent::mEndXformComponent };		// Transform associated with end of trace component
+		ComponentInstancePtr<RenderableMeshComponent>	mEndRenderableMesh		= { this, &LineTraceComponent::mEndRenderableComponent};	// Transform associated with beginning of trace component
+
 		nap::PolyLine*  mTarget = nullptr;								// Line that is the output of the trace computation
 		float mCurrentTime = 0.0f;										// Current time
-		nap::TransformComponentInstance* mStartXform = nullptr;			// Transform associated with beginning of trace component
-		nap::TransformComponentInstance* mEndXform = nullptr;			// Transform associated with end of trace component
-
+		
 		// Smooths amplitude over time
 		math::SmoothOperator<float> mLengthSmoother{ 1.0f, 0.1f };
 

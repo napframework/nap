@@ -28,7 +28,7 @@ namespace nap
 		EntityInstance* laser_draw_entity = getEntityInstance()->getChildren()[0];
 
 		// Make sure that visualizer has a transform
-		mCanvasTransform = laser_draw_entity->findComponent<TransformComponentInstance>(ETypeCheck::IS_DERIVED_FROM);
+		mCanvasTransform = laser_draw_entity->findComponent<TransformComponentInstance>(rtti::ETypeCheck::IS_DERIVED_FROM);
 		if (!errorState.check(mCanvasTransform != nullptr, "missing transform component"))
 			return false;
 
