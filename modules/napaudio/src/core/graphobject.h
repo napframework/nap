@@ -1,7 +1,7 @@
 #pragma once
 
 // Nap includes
-#include "component.h"
+#include <component.h>
 
 // Audio includes
 #include <core/audioobject.h>

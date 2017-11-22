@@ -12,7 +12,7 @@
 #include <inputservice.h>
 #include <inputrouter.h>
 #include <app.h>
-#include "scene.h"
+#include <scene.h>
 
 namespace nap
 {

@@ -5,8 +5,8 @@
 #include "lineselectioncomponent.h"
 
 // External Includes
-#include "componentptr.h"
-#include "component.h"
+#include <componentptr.h>
+#include <component.h>
 
 namespace nap
 {

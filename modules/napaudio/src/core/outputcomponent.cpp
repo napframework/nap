@@ -1,7 +1,7 @@
 #include "outputcomponent.h"
 
 // Nap includes
-#include "entity.h"
+#include <entity.h>
 #include <nap/core.h>
 
 // Audio includes

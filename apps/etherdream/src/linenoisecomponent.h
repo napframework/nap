@@ -3,8 +3,8 @@
 #include "lineblendcomponent.h"
 #include "linetracecomponent.h"
 
-#include "component.h"
-#include "componentptr.h"
+#include <component.h>
+#include <componentptr.h>
 #include <smoothdamp.h>
 
 namespace nap

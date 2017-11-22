@@ -2,7 +2,7 @@
 
 // External Includes
 #include <nap/service.h>
-#include "entity.h"
+#include <entity.h>
 
 namespace nap
 {

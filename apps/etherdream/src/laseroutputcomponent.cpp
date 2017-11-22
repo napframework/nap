@@ -1,6 +1,6 @@
 #include "laseroutputcomponent.h"
 
-#include "entity.h"
+#include <entity.h>
 #include <nap/logger.h>
 #include <mathutils.h>
 #include <lineutils.h>

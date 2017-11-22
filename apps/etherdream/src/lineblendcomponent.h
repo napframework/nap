@@ -4,9 +4,9 @@
 #include "lineselectioncomponent.h"
 
 // External includes
-#include "component.h"
+#include <component.h>
 #include <nap/objectptr.h>
-#include "componentptr.h"
+#include <componentptr.h>
 #include <renderablemeshcomponent.h>
 #include <polyline.h>
 #include <nap/signalslot.h>

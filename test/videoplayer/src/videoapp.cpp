@@ -5,7 +5,7 @@
 #include <nap/logger.h>
 #include <orthocameracomponent.h>
 #include <texture2d.h>
-#include "scene.h"
+#include <scene.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VideoApp)
 	RTTI_CONSTRUCTOR(nap::Core&)

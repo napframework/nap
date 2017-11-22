@@ -3,9 +3,9 @@
 #include "inputrouter.h"
 #include "orthocameracomponent.h"
 #include "cameracomponent.h"
-#include "component.h"
-#include "entityptr.h"
-#include "componentptr.h"
+#include <component.h>
+#include <entityptr.h>
+#include <componentptr.h>
 
 namespace nap
 {

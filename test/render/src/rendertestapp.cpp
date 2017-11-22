@@ -6,7 +6,7 @@
 #include <perspcameracomponent.h>
 #include <imguiservice.h>
 #include <imgui/imgui.h>
-#include "scene.h"
+#include <scene.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTestApp)
 	RTTI_CONSTRUCTOR(nap::Core&)

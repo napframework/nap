@@ -1,7 +1,7 @@
 #pragma once
 
-#include "component.h"
-#include "entityptr.h"
+#include <component.h>
+#include <entityptr.h>
 #include "orbitcontroller.h"
 #include "firstpersoncontroller.h"
 #include "orthocontroller.h"

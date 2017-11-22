@@ -4,7 +4,7 @@
 #include "oscinputcomponent.h"
 
 // External Includes
-#include "component.h"
+#include <component.h>
 #include <utility/dllexport.h>
 #include <nap/signalslot.h>
 
