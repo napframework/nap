@@ -6,6 +6,7 @@
 #include <nap/core.h>
 #include <rtti/rttiutilities.h>
 #include <nap/objectgraph.h>
+#include "sceneservice.h"
 
 RTTI_BEGIN_CLASS(nap::RootEntity)
 	RTTI_PROPERTY("Entity",				&nap::RootEntity::mEntity,				nap::rtti::EPropertyMetaData::Required)
@@ -109,7 +110,14 @@ namespace nap
 	Scene::Scene(Core& core) :
 		mCore(&core)
 	{
+		mCore->getService<SceneService>()->registerScene(*this);
+
 		mRootEntity = std::make_unique<EntityInstance>(*mCore, nullptr);
+	}
+
+	Scene::~Scene()
+	{
+		mCore->getService<SceneService>()->unregisterScene(*this);
 	}
 
 	void Scene::update(double deltaTime)
