@@ -37,8 +37,7 @@ namespace nap
 		virtual void update(double deltaTime) override;
 
 		/**
-		 * Recursively updates the transform hierarchy from the root. The entity hierarchy is traversed. For any TransformComponent
-		 * the world transform is updated.
+		 * Recursively updates the transform hierarchy for all scenes
 		 */
 		virtual void postUpdate(double deltaTime) override;
 

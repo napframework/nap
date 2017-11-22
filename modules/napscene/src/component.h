@@ -77,7 +77,7 @@ namespace nap
 
 	private:
 		template<class TargetComponentType> friend class ComponentInstancePtr;
-		friend class Scene;
+		friend class SceneInstantiation;
 		
 		/**
 		 * Called by ComponentInstancePtr on construction. Adds the ComponentPtrInstance to the internal link map. The link map is
@@ -134,6 +134,7 @@ namespace nap
 
 	private:
 		friend class Scene;
+		friend class SceneInstantiation;
 		Component* mOriginalComponent = nullptr;	// If this Component was cloned from another component (for instance properties), this property holds the Component it was cloned from
 	};
 

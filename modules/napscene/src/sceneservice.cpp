@@ -10,23 +10,6 @@
 
 namespace nap
 {
-	void updateTransformsRecursive(EntityInstance& entity, bool parentDirty, const glm::mat4& parentTransform)
-	{
-		glm::mat4 new_transform = parentTransform;
-
-		bool is_dirty = parentDirty;
-		TransformComponentInstance* transform = entity.findComponent<TransformComponentInstance>();
-		if (transform && (transform->isDirty() || parentDirty))
-		{
-			is_dirty = true;
-			transform->update(parentTransform);
-			new_transform = transform->getGlobalTransform();
-		}
-
-		for (EntityInstance* child : entity.getChildren())
-			updateTransformsRecursive(*child, is_dirty, new_transform);
-	}
-
 	//////////////////////////////////////////////////////////////////////////
 
 	bool SceneService::init(utility::ErrorState& error)
@@ -46,7 +29,7 @@ namespace nap
 	void SceneService::postUpdate(double deltaTime)
 	{
 		for (Scene* scene : mScenes)
-			updateTransformsRecursive(scene->getRootEntity(), false, glm::mat4(1.0f));
+			scene->updateTransforms(deltaTime);
 	}
 
 	void SceneService::registerScene(Scene& scene)
