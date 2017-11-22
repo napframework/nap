@@ -16,6 +16,7 @@
 #include <nap/resourcemanager.h>
 #include <nap/logger.h>
 #include <sceneservice.h>
+#include <scene.h>
 
 namespace nap
 {
@@ -128,8 +129,10 @@ namespace nap
 		// Get all render components
 		std::vector<nap::RenderableComponentInstance*> render_comps;
 
-		for (EntityInstance* entity : getCore().getResourceManager()->getEntities())
-			entity->getComponentsOfType<nap::RenderableComponentInstance>(render_comps);
+		SceneService* scene_service = getCore().getService<SceneService>();
+		for (Scene* scene : scene_service->getScenes())
+			for (EntityInstance* entity : scene->getEntities())
+				entity->getComponentsOfType<nap::RenderableComponentInstance>(render_comps);
 
 		// Render these objects
 		renderObjects(renderTarget, camera, render_comps, sortFunction);
