@@ -427,8 +427,6 @@ namespace nap
 			const rtti::TypeInfo& instance_type = component_resource->getInstanceType();
 			assert(instance_type.can_create_instance());
 
-			entityCreationParams.mComponentToEntity.insert(std::make_pair(component_resource, &entity));
-
 			std::unique_ptr<ComponentInstance> component_instance(instance_type.create<ComponentInstance>({ *entity_instance, *component_resource }));
 			assert(component_instance);
 			component_instance->mID = SceneInstantiation::sGenerateInstanceID(SceneInstantiation::sGetInstanceID(component_resource->mID), entityCreationParams);
