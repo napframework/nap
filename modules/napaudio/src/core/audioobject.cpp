@@ -2,7 +2,7 @@
 
 
 // Nap includes
-#include <nap/entity.h>
+#include <entity.h>
 #include <nap/core.h>
 
 // Audio includes

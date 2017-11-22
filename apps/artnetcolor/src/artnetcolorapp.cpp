@@ -9,6 +9,7 @@
 #include <imguiservice.h>
 #include <imgui/imgui.h>
 #include <mathutils.h>
+#include <scene.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ArtnetColorApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -31,13 +32,14 @@ namespace nap
 		// Load scene
 		mResourceManager = getCore().getResourceManager();
 		if (!mResourceManager->loadFile("data/artnetcolor/artnetcolor.json", error))
-			return false;
+			return false; 
 		
 		// Get important entities
-		mCameraEntity = mResourceManager->findEntity("CameraEntity");
+		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
+		mCameraEntity = scene->findEntity("CameraEntity");
 		assert(mCameraEntity != nullptr);
 		
-		mPlaneEntity = mResourceManager->findEntity("PlaneEntity");
+		mPlaneEntity = scene->findEntity("PlaneEntity");
 		assert(mPlaneEntity != nullptr);
 
 		// Get artnet controller

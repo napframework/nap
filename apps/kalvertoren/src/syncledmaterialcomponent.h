@@ -3,8 +3,8 @@
 #include "pointlightcomponent.h"
 #include "selectledmeshcomponent.h"
 
-#include <nap/component.h>
-#include <nap/componentptr.h>
+#include <component.h>
+#include <componentptr.h>
 #include <transformcomponent.h>
 #include <renderablemeshcomponent.h>
 
