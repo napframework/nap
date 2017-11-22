@@ -3,7 +3,7 @@
 
 // External Includes
 #include <nap/logger.h>
-#include "entity.h"
+#include <entity.h>
 #include <nap/configure.h>
 
 RTTI_BEGIN_CLASS(nap::LineColorComponent)

@@ -3,7 +3,7 @@
 #include "oscservice.h"
 
 // External includes
-#include "entity.h"
+#include <entity.h>
 #include <nap/core.h>
 #include <iostream>
 

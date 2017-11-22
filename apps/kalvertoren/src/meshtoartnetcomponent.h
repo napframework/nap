@@ -4,7 +4,7 @@
 #include "artnetmeshfromfile.h"
 
 // External includes
-#include "component.h"
+#include <component.h>
 #include <artnetcontroller.h>
 
 namespace nap

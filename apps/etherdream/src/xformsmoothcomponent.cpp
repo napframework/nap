@@ -1,7 +1,7 @@
 #include "xformsmoothcomponent.h"
 
 // External Includes
-#include "entity.h"
+#include <entity.h>
 #include <transformcomponent.h>
 
 // nap::xformsmoothcomponent run time class definition 

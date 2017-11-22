@@ -1,10 +1,10 @@
 #pragma once
 
-#include "component.h"
-#include "entity.h"
+#include <component.h>
+#include <entity.h>
 #include "image.h"
 #include <glm/glm.hpp>
-#include "entityptr.h"
+#include <entityptr.h>
 
 namespace nap
 {

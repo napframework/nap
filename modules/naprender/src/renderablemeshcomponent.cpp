@@ -8,7 +8,7 @@
 #include "renderservice.h"
 
 // External Includes
-#include "entity.h"
+#include <entity.h>
 #include <nap/core.h>
 
 RTTI_BEGIN_CLASS(nap::RenderableMeshComponent)

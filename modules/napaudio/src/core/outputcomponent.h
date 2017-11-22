@@ -1,8 +1,8 @@
 #pragma once
 
 // Nap includes
-#include "component.h"
-#include "componentptr.h"
+#include <component.h>
+#include <componentptr.h>
 
 // Audio includes
 #include <core/audionode.h>

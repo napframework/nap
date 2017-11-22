@@ -1,6 +1,6 @@
 #include "osclaserinputhandler.h"
 
-#include "entity.h"
+#include <entity.h>
 #include <polyline.h>
 #include <utility/stringutils.h>
 #include <mathutils.h>

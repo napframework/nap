@@ -1,7 +1,7 @@
 #include "syncledmaterialcomponent.h"
 
 // External Includes
-#include "entity.h"
+#include <entity.h>
 #include <material.h>
 
 // nap::updatematerialcomponent run time class definition 

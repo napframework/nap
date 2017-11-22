@@ -2,7 +2,7 @@
 #include "inputevent.h"
 #include "inputcomponent.h"
 #include "transformcomponent.h"
-#include "entity.h"
+#include <entity.h>
 
 #include <glm/glm.hpp>
 #include <glm/matrix.hpp>

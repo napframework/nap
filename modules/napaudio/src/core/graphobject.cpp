@@ -1,7 +1,7 @@
 #include "graphobject.h"
 
 // Nap includes
-#include "entity.h"
+#include <entity.h>
 
 // Audio includes
 #include <core/audioobject.h>

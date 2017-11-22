@@ -10,7 +10,7 @@
 #include <imgui/imgui.h>
 #include <imguiservice.h>
 #include <utility/stringutils.h>
-#include "scene.h"
+#include <scene.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::KalvertorenApp)
 	RTTI_CONSTRUCTOR(nap::Core&)

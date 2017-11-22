@@ -1,7 +1,7 @@
 #pragma once
 
-#include "component.h"
-#include "componentptr.h"
+#include <component.h>
+#include <componentptr.h>
 #include "perspcameracomponent.h"
 #include <glm/gtx/quaternion.hpp>
 

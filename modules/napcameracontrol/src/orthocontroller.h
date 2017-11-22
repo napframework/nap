@@ -1,8 +1,8 @@
 #pragma once
 
 // External Includes
-#include "component.h"
-#include "componentptr.h"
+#include <component.h>
+#include <componentptr.h>
 #include <inputcomponent.h>
 #include <orthocameracomponent.h>
 #include <glm/glm.hpp>

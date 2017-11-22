@@ -8,7 +8,7 @@
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <perspcameracomponent.h>
-#include "scene.h"
+#include <scene.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::EtherdreamApp)
 	RTTI_CONSTRUCTOR(nap::Core&)

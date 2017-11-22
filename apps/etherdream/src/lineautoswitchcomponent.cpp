@@ -2,7 +2,7 @@
 #include "lineautoswitchcomponent.h"
 
 // External Includes
-#include "entity.h"
+#include <entity.h>
 #include <mathutils.h>
 #include <random>
 #include <functional>

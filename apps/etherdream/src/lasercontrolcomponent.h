@@ -1,9 +1,9 @@
 #pragma once
 
 // External Includes
-#include "component.h"
+#include <component.h>
 #include <unordered_map>
-#include "entity.h"
+#include <entity.h>
 #include <perspcameracomponent.h>
 #include <renderservice.h>
 #include <renderwindow.h>

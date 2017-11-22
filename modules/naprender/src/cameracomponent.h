@@ -2,7 +2,7 @@
 
 // External Includes
 #include <glm/glm.hpp>
-#include "component.h"
+#include <component.h>
 #include <utility/dllexport.h>
 
 namespace nap

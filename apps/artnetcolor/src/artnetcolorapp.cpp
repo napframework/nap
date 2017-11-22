@@ -9,7 +9,7 @@
 #include <imguiservice.h>
 #include <imgui/imgui.h>
 #include <mathutils.h>
-#include "scene.h"
+#include <scene.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ArtnetColorApp)
 	RTTI_CONSTRUCTOR(nap::Core&)

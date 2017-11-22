@@ -1,6 +1,6 @@
 #include "linetracecomponent.h"
 
-#include "entity.h"
+#include <entity.h>
 #include <mathutils.h>
 #include <nap/logger.h>
 #include <nap/core.h>

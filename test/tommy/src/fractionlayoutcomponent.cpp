@@ -1,5 +1,5 @@
 #include "fractionlayoutcomponent.h"
-#include "entity.h"
+#include <entity.h>
 #include "transformcomponent.h"
 #include "renderablemeshcomponent.h"
 #include "uniforms.h"

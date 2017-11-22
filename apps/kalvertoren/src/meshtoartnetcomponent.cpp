@@ -1,7 +1,7 @@
 #include "meshtoartnetcomponent.h"
 
 // External Includes
-#include "entity.h"
+#include <entity.h>
 #include <meshutils.h>
 
 // nap::meshtoartnetcomponent run time class definition 

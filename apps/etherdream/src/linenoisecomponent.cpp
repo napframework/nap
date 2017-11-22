@@ -2,7 +2,7 @@
 #include "linenoisecomponent.h"
 
 // External Includes
-#include "entity.h"
+#include <entity.h>
 #include <glm/gtc/noise.hpp>
 #include <nap/logger.h>
 

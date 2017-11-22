@@ -12,9 +12,9 @@
 #include "xformsmoothcomponent.h"
 
 // External Includes
-#include "component.h"
+#include <component.h>
 #include <nap/signalslot.h>
-#include "componentptr.h"
+#include <componentptr.h>
 
 #include <rotatecomponent.h>
 #include <renderablemeshcomponent.h>

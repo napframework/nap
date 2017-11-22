@@ -1,7 +1,7 @@
 #include "selectledmeshcomponent.h"
 
 // External Includes
-#include "entity.h"
+#include <entity.h>
 #include <renderablemeshcomponent.h>
 #include <mathutils.h>
 

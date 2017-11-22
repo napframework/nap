@@ -2,8 +2,8 @@
 
 #include "ledmesh.h"
 
-#include "component.h"
-#include "componentptr.h"
+#include <component.h>
+#include <componentptr.h>
 #include <renderablemeshcomponent.h>
 
 namespace nap

@@ -5,9 +5,9 @@
 #include "polyline.h"
 
 // External Includes
-#include "component.h"
+#include <component.h>
 #include <transformcomponent.h>
-#include "entity.h"
+#include <entity.h>
 
 namespace nap
 {
