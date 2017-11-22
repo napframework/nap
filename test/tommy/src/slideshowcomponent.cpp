@@ -1,7 +1,7 @@
 #include "slideshowcomponent.h"
 #include "nap/core.h"
 #include "nap/resourcemanager.h"
-#include <nap/entity.h>
+#include <entity.h>
 #include "renderablemeshcomponent.h"
 #include "transformcomponent.h"
 

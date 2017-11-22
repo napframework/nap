@@ -5,7 +5,7 @@
 #include "midiservice.h"
 
 // Nap includes
-#include <nap/component.h>
+#include <component.h>
 #include <nap/signalslot.h>
 
 

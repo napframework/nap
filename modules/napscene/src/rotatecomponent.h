@@ -1,7 +1,9 @@
 #pragma once
 
+// Local includes
+#include "component.h"
+
 // External includes
-#include <nap/component.h>
 #include <utility/dllexport.h>
 
 // Local includes

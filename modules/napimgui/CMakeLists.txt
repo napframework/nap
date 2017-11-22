@@ -20,4 +20,4 @@ target_include_directories(${PROJECT_NAME} PUBLIC src)
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 
 # link libs
-target_link_libraries(${PROJECT_NAME} mod_naprender mod_napinput)
+target_link_libraries(${PROJECT_NAME} mod_naprender mod_napinput mod_napscene)
