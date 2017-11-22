@@ -24,9 +24,11 @@ target_link_libraries(${PROJECT_NAME} napcore mod_naprender mod_napsdlinput mod_
 
 # Package into release build
 if (WIN32)
-	install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION "modules/${PROJECT_NAME}/lib/$<CONFIG>")
+	install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>
+                                    LIBRARY DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>
+                                    ARCHIVE DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>)
 else()
-	install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION "modules/${PROJECT_NAME}/lib/$<CONFIG>")
+    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>)  
 endif()
 
 install(DIRECTORY "src/" DESTINATION "modules/${PROJECT_NAME}/include"

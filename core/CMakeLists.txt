@@ -29,12 +29,18 @@ endif ()
 
 # Package into release build
 if (WIN32)
-	install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION lib/nap/$<CONFIG>)
+	install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION lib/$<CONFIG>
+                                    LIBRARY DESTINATION lib/$<CONFIG>
+                                    ARCHIVE DESTINATION lib/$<CONFIG>)
+
+    # Install for fbxconverter
+    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION tools/
+            CONFIGURATIONS Release)
 else()
-	install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/nap/$<CONFIG>)
+    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/$<CONFIG>)  
 endif()
 
-install(DIRECTORY "src/nap/" DESTINATION "include/nap/nap/"
+install(DIRECTORY "src/nap/" DESTINATION "include/nap/"
         FILES_MATCHING PATTERN "*.h"
         PATTERN "linux" EXCLUDE
         PATTERN "osx" EXCLUDE

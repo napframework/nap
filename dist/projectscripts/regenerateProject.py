@@ -6,6 +6,8 @@ import subprocess
 
 if sys.platform == 'darwin':
     BUILD_DIR = 'xcode'
+elif sys.platform == 'win32':
+    BUILD_DIR = 'msvc64'
 else:
     BUILD_DIR = 'build'
 
@@ -50,16 +52,17 @@ def update_project(project_name):
         call(project_path, ['cmake', '-H.', '-B%s' % BUILD_DIR, '-G', 'Xcode'])
     else:
         # create dir if it doesn't exist
-        if not os.path.exists(BUILD_DIR):
-            os.makedirs(BUILD_DIR)
+        full_build_dir = os.path.join(project_path, BUILD_DIR)
+        if not os.path.exists(full_build_dir):
+            os.makedirs(full_build_dir)
 
         # generate prject
-        call(WORKING_DIR, ['cmake', '-H.','-B%s' % BUILD_DIR,'-G', 'Visual Studio 14 2015 Win64', '-DPYBIND11_PYTHON_VERSION=3.5'])
+        call(project_path, ['cmake', '-H.','-B%s' % BUILD_DIR,'-G', 'Visual Studio 14 2015 Win64', '-DPYBIND11_PYTHON_VERSION=3.5'])
 
 if __name__ == '__main__':
     # TODO update, use option parser or similar
     if len(sys.argv) < 2:
-        print 'usage: python updateProject.py PROJECT_NAME'
+        print ("usage: python updateProject.py PROJECT_NAME")
         sys.exit(1)
 
     project_name = sys.argv[1]

@@ -1,17 +1,18 @@
-
 if (WIN32)
     find_path(
         NAPCORE_LIBS_DIR
-        NAMES Release/libnapcore.dll
-        HINTS ${CMAKE_CURRENT_LIST_DIR}/../lib/nap
+        NAMES Release/napcore.lib
+        HINTS ${CMAKE_CURRENT_LIST_DIR}/../lib/
     )
-    set(NAPCORE_LIBS_RELEASE_DLL ${NAPCORE_LIBS_DIR}/Release/libnapcore.dll)
-    set(NAPCORE_LIBS_DEBUG_DLL ${NAPCORE_LIBS_DIR}/Debug/libnapcore.dll)
+    set(NAPCORE_LIBS_RELEASE_DLL ${NAPCORE_LIBS_DIR}/Release/napcore.dll)
+    set(NAPCORE_LIBS_DEBUG_DLL ${NAPCORE_LIBS_DIR}/Debug/napcore.dll)
+    set(NAPCORE_LIBS_IMPLIB_DEBUG ${NAPCORE_LIBS_DIR}/Debug/napcore.lib)
+    set(NAPCORE_LIBS_IMPLIB_RELEASE ${NAPCORE_LIBS_DIR}/Release/napcore.lib)
 elseif (APPLE)
     find_path(
         NAPCORE_LIBS_DIR
         NAMES Release/libnapcore.dylib
-        HINTS ${CMAKE_CURRENT_LIST_DIR}/../lib/nap
+        HINTS ${CMAKE_CURRENT_LIST_DIR}/../lib/
     )
     set(NAPCORE_LIBS_RELEASE_DLL ${NAPCORE_LIBS_DIR}/Release/libnapcore.dylib)
     set(NAPCORE_LIBS_DEBUG_DLL ${NAPCORE_LIBS_DIR}/Debug/libnapcore.dylib)
@@ -19,7 +20,7 @@ elseif (UNIX)
     find_path(
         NAPCORE_LIBS_DIR
         NAMES Release/libnapcore.so
-        HINTS ${CMAKE_CURRENT_LIST_DIR}/../lib/nap
+        HINTS ${CMAKE_CURRENT_LIST_DIR}/../lib/
     )
     set(NAPCORE_LIBS_RELEASE_DLL ${NAPCORE_LIBS_DIR}/Release/libnapcore.so)
     set(NAPCORE_LIBS_DEBUG_DLL ${NAPCORE_LIBS_DIR}/Debug/libnapcore.so)
@@ -27,12 +28,21 @@ endif()
 
 add_library(napcore SHARED IMPORTED)
 set_target_properties(napcore PROPERTIES
-  IMPORTED_CONFIGURATIONS "Debug;Release;MinSizeRel;RelWithDebInfo"
-  IMPORTED_LOCATION_RELEASE ${NAPCORE_LIBS_RELEASE_DLL}
-  IMPORTED_LOCATION_DEBUG ${NAPCORE_LIBS_DEBUG_DLL}
-  IMPORTED_LOCATION_MINSIZEREL ${NAPCORE_LIBS_RELEASE_DLL}
-  IMPORTED_LOCATION_RELWITHDEBINFO ${NAPCORE_LIBS_RELEASE_DLL}
+    IMPORTED_CONFIGURATIONS "Debug;Release;MinSizeRel;RelWithDebInfo"
+    IMPORTED_LOCATION_RELEASE ${NAPCORE_LIBS_RELEASE_DLL}
+    IMPORTED_LOCATION_DEBUG ${NAPCORE_LIBS_DEBUG_DLL}
+    IMPORTED_LOCATION_MINSIZEREL ${NAPCORE_LIBS_RELEASE_DLL}
+    IMPORTED_LOCATION_RELWITHDEBINFO ${NAPCORE_LIBS_RELEASE_DLL}
 )
+
+if (WIN32)
+  set_target_properties(napcore PROPERTIES
+    IMPORTED_IMPLIB_RELEASE ${NAPCORE_LIBS_IMPLIB_RELEASE}
+    IMPORTED_IMPLIB_DEBUG ${NAPCORE_LIBS_IMPLIB_DEBUG}
+    IMPORTED_IMPLIB_MINSIZEREL ${NAPCORE_LIBS_IMPLIB_RELEASE}
+    IMPORTED_IMPLIB_RELWITHDEBINFO ${NAPCORE_LIBS_IMPLIB_RELEASE}
+  )
+endif()
 
 # TODO later: Fix CMake approach and use config-style package files
 

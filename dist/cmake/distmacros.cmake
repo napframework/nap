@@ -1,5 +1,5 @@
 macro(dist_project_template)
-    set(NAP_ROOT "../../")
+    set(NAP_ROOT "${CMAKE_SOURCE_DIR}/../../")
     include(${NAP_ROOT}/cmake/targetarch.cmake)
 
     set(CMAKE_CXX_STANDARD 14)
@@ -43,7 +43,6 @@ macro(dist_project_template)
                 file(COPY ${_LIB} DESTINATION ${BIN_DIR})
                 unset(_LIB CACHE)
             endforeach ()
-
         endif()
     endif()
 
@@ -52,17 +51,12 @@ macro(dist_project_template)
         add_custom_target(generateXcodeProject cmake -H. -Bxcode -G Xcode -DCMAKE_BUILD_TYPE=Debug ../)
     endif()
 
-    include_directories(${NAP_ROOT}/include/nap/)
-    include_directories(${NAP_ROOT}/include/thirdparty/)
+    include_directories(${NAP_ROOT}/include/)
 
     foreach (NAP_MODULE ${NAP_MODULES})
         message("Adding include for ${NAP_MODULE}")
     	include_directories(${NAP_ROOT}/modules/${NAP_MODULE}/include/)
     endforeach()
-
-    if ("mod_naprender" IN_LIST NAP_MODULES)
-    	include_directories(${NAP_ROOT}/include/nap/nrender)
-    endif()
 
     # Find each module, in a temporary way
     foreach(NAP_MODULE ${NAP_MODULES})
@@ -85,31 +79,43 @@ macro(dist_project_template)
     target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
     # Pull in core
+
+    # TODO support other platforms ala rtti CMakeLists.txt
+    set(RTTR_DIR "${NAP_ROOT}/thirdparty/rttr/cmake")
+    find_package(RTTR CONFIG REQUIRED Core)
+
     find_package(napcore REQUIRED)
     find_package(naprtti REQUIRED)
-    find_package(rttr REQUIRED)
+
+    if (WIN32)
+        find_package(naputility REQUIRED)
+        target_link_libraries(${PROJECT_NAME} naputility)
+    endif()
+
+    if ("mod_naprender" IN_LIST NAP_MODULES)
+        include_directories(${NAP_ROOT}/include/nrender)
+        find_package(glm REQUIRED)
+        target_include_directories(${PROJECT_NAME} PUBLIC ${GLM_INCLUDE_DIRS})
+        find_package(glew REQUIRED)
+        target_include_directories(${PROJECT_NAME} PUBLIC ${GLEW_INCLUDE_DIRS})
+        find_package(freeimage REQUIRED)
+        target_include_directories(${PROJECT_NAME} PUBLIC ${FREEIMAGE_INCLUDE_DIRS})
+    endif()
 
     # It seems RTTI pulls python in so we need it by default
-    set(pybind11_DIR "${NAP_ROOT}/cmake/pybind11")
+    set(pybind11_DIR "${NAP_ROOT}/thirdparty/pybind11/share/cmake/pybind11")
     find_package(pybind11 REQUIRED)
     target_include_directories(${PROJECT_NAME} PUBLIC ${pybind11_INCLUDE_DIRS})
 
     # Pull in SDL as required
     if ("mod_napsdlinput" IN_LIST NAP_MODULES OR "mod_napsdlwindow" IN_LIST NAP_MODULES)
+    	set(ENV{SDL2DIR} ${NAP_ROOT}/thirdparty/SDL2/)
         find_package(SDL2 REQUIRED)
-    	target_include_directories(${PROJECT_NAME} PUBLIC ${SDL2_INCLUDE_DIR} ${SDL2_INCLUDE_DIRS})
+    	target_include_directories(${PROJECT_NAME} PUBLIC ${SDL2_INCLUDE_DIR})
     endif()
 
-    target_link_libraries(${PROJECT_NAME} napcore naprtti rttr ${NAP_MODULES} ${PYTHON_LIBRARIES})
-
-    if (WIN32)
-        # Copy freeimage DLL
-    	find_package(freeimage REQUIRED)
-    	copy_freeimage_dll()
-
-        # Copy over some crap window dlls
-    	copy_base_windows_graphics_dlls()
-    endif()
+    target_link_libraries(${PROJECT_NAME} napcore naprtti ${NAP_MODULES} ${PYTHON_LIBRARIES} ${SDL2_LIBRARY})
+    target_link_libraries(${PROJECT_NAME} RTTR::Core)
 
     # Copy data to bin post-build
     copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/data data)
@@ -124,10 +130,11 @@ macro(find_module_temp MODULE_NAME)
     add_library(${MODULE_NAME} SHARED IMPORTED)
 
     message("Adding lib path for ${MODULE_NAME}")
-    link_directories(${NAP_ROOT}/modules/${NAP_MODULE}/lib/Debug/)
     if (WIN32)
-        set(MOD_RELEASE_DLL ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Release/lib${MODULE_NAME}.dll)
-        set(MOD_DEBUG_DLL ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Debug/lib${MODULE_NAME}.dll)
+        set(MOD_RELEASE_DLL ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Release/${MODULE_NAME}.dll)
+        set(MOD_DEBUG_DLL ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Debug/${MODULE_NAME}.dll)
+        set(MOD_IMPLIB_DEBUG ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Debug/${MODULE_NAME}.lib)
+        set(MOD_IMPLIB_RELEASE ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Release/${MODULE_NAME}.lib)
     elseif (APPLE)
         set(MOD_RELEASE_DLL ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Release/lib${MODULE_NAME}.dylib)
         set(MOD_DEBUG_DLL ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Debug/lib${MODULE_NAME}.dylib)
@@ -137,14 +144,23 @@ macro(find_module_temp MODULE_NAME)
     endif()
 
     set_target_properties(${MODULE_NAME} PROPERTIES
-      IMPORTED_CONFIGURATIONS "Debug;Release;MinSizeRel;RelWithDebInfo"
-      IMPORTED_LOCATION_RELEASE ${MOD_RELEASE_DLL}
-      IMPORTED_LOCATION_DEBUG ${MOD_DEBUG_DLL}
-      IMPORTED_LOCATION_MINSIZEREL ${MOD_RELEASE_DLL}
-      IMPORTED_LOCATION_RELWITHDEBINFO ${MOD_RELEASE_DLL}
+        IMPORTED_CONFIGURATIONS "Debug;Release;MinSizeRel;RelWithDebInfo"
+        IMPORTED_LOCATION_RELEASE ${MOD_RELEASE_DLL}
+        IMPORTED_LOCATION_DEBUG ${MOD_DEBUG_DLL}
+        IMPORTED_LOCATION_MINSIZEREL ${MOD_RELEASE_DLL}
+        IMPORTED_LOCATION_RELWITHDEBINFO ${MOD_RELEASE_DLL}
     )
-endmacro()
 
+    # TODO test test test
+    if (WIN32)
+        set_target_properties(${MODULE_NAME} PROPERTIES
+            IMPORTED_IMPLIB_RELEASE ${MOD_IMPLIB_RELEASE}
+            IMPORTED_IMPLIB_DEBUG ${MOD_IMPLIB_DEBUG}
+            IMPORTED_IMPLIB_MINSIZEREL ${MOD_IMPLIB_RELEASE}
+            IMPORTED_IMPLIB_RELWITHDEBINFO ${MOD_IMPLIB_RELEASE}
+        )
+    endif()
+endmacro()
 
 macro(dist_export_fbx SRCDIR)
     set(TOOLS_DIR "${CMAKE_CURRENT_LIST_DIR}/../../tools/")

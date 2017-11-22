@@ -54,3 +54,14 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 install(TARGETS ${PROJECT_NAME} DESTINATION tools
         CONFIGURATIONS Release)
 # install(CODE "execute_process(COMMAND python ../dist/osx/dylibpathfix.py fbxconverter_pathfix\nWORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/packaging)")
+
+if (WIN32)
+        # TODO use get_prerequisites to make this a whole load less terrible
+        #install(CODE "include(../cmake/configure.cmake)\ninstall_binary_requisites(${CMAKE_SOURCE_DIR}/packaging/tools/fbxconverter.exe ${CMAKE_SOURCE_DIR}/packaging/tools)")
+
+        install(FILES "../../../thirdparty/assimp/msvc64/install/bin/assimp-vc140-mt.dll" DESTINATION "tools/")
+        install(FILES "../../../thirdparty/FreeImage/msvc/Dist/x64/FreeImage.dll" DESTINATION "tools/")
+        install(FILES "../../../thirdparty/glew/msvc/bin/Release/x64/glew32.dll" DESTINATION "tools/")
+        install(FILES "../../../thirdparty/rttr/msvc64/install/bin/rttr_core.dll" DESTINATION "tools/")
+        install(FILES "../../../thirdparty/SDL2/msvc/lib/x64/SDL2.dll" DESTINATION "tools/")
+endif()
