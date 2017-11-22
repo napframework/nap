@@ -496,7 +496,7 @@
 		{
 			"Type" : "nap::Entity",
 			"mID": "LooksEntity",
-			"AutoSpawn" : "true",
+			
 			
 			"Components" : 
 			[
