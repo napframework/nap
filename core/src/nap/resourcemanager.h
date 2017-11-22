@@ -68,9 +68,6 @@ namespace nap
 		template<class T>
 		const ObjectPtr<T> findObject(const std::string& id) { return ObjectPtr<T>(findObject(id)); }
 
-		template<class T>
-		std::vector<T*> getObjectsOfType() const;
-
 		/**
 		* Creates an object and adds it to the manager.
 		*/
@@ -150,16 +147,4 @@ namespace nap
 		 */
 		nap::Signal<const std::string&> mFileLoadedSignal;
 	};
-
-	template<typename T>
-	std::vector<T*> ResourceManager::getObjectsOfType() const
-	{
-		std::vector<T*> result;
-
-		for (auto& kvp : mObjects)
-			if (kvp.second->get_type().is_derived_from(RTTI_OF(T)))
-				result.push_back((T*)kvp.second.get());
-
-		return result;
-	}
 }

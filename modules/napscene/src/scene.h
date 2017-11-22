@@ -12,17 +12,17 @@ namespace nap
 	class Core;
 
 	/**
-	 *
+	 * Represent a root entity in a scene, along with its instance properties.
 	 */
 	class RootEntity final
 	{
 	public:
 		ObjectPtr<Entity>							mEntity;				///< Root entity to spawn
-		std::vector<ComponentInstanceProperties>	mInstanceProperties;	// The instance properties for this entity
+		std::vector<ComponentInstanceProperties>	mInstanceProperties;	//< The instance properties for this entity (and all of its children)
 	};
 
 	/**
-	 * 
+	 * Container for entities. The Scene is responsible for instantiating all of the entities.
 	 */
 	class NAPAPI Scene : public rtti::RTTIObject
 	{
@@ -33,24 +33,27 @@ namespace nap
 		using EntityIterator = utility::UniquePtrMapWrapper<EntityByIDMap, EntityInstance*>;
 
 		Scene(Core& core);
-
 		virtual ~Scene() override;
 
 		/**
-		 *
+		 * Initialize the scene. Will spawn all entities contained in this scene.
 		 */
         virtual bool init(utility::ErrorState& errorState);
 
-
 		/**
-		 *
+		 * Update all entities contained in this scene
 		 */
 		void update(double deltaTime);
 
 		/**
+		 * Update the transform hierarchy of the entities contained in this scene. For any TransformComponent the world transform is updated.
+		 */
+		void updateTransforms(double deltaTime);
+
+		/**
 		* @return Iterator to all entities in this scene.
 		*/
-		EntityIterator getEntities() { return EntityIterator(mEntityInstances); }
+		EntityIterator getEntities() { return EntityIterator(mEntityInstancesByID); }
 
 		/**
 		* @return EntityInstance in this scene.
@@ -58,12 +61,12 @@ namespace nap
 		const ObjectPtr<EntityInstance> findEntity(const std::string& inID) const;
 
 		/**
-		* @return The root entity as created by the system, which is the root parent of all entities.
+		* @return The root entity of this scene
 		*/
 		const EntityInstance& getRootEntity() const		{ return *mRootEntity;}
 
 		/**
-		* @return The root entity as created by the system, which is the root parent of all entities.
+		* @return The root entity of this scene
 		*/
 		EntityInstance& getRootEntity()		{ return *mRootEntity;}
 
@@ -75,11 +78,6 @@ namespace nap
 		*/
 		EntityInstance* createChildEntityInstance(const Entity& Entity, int childIndex, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
 
-		using RootEntityInstanceMap = std::unordered_map<std::string, EntityInstance*>;
-		static bool sResolveComponentPointers(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
-		static ComponentInstance* sResolveComponentInstancePath(ComponentInstance* sourceComponentInstance, const std::string& targetComponentInstancePath, Component* targetComponentResource,
-																const RootEntityInstanceMap& rootEntityInstances, const EntityCreationParameters::ComponentInstanceMap& componentInstances, utility::ErrorState& errorState);
-
 	public:
 		using RootEntityList = std::vector<RootEntity>;
 		RootEntityList mEntities;
@@ -88,8 +86,8 @@ namespace nap
 		friend class EntityInstance;
 
 		Core*								mCore;
-		std::unique_ptr<EntityInstance>		mRootEntity;					// Root entity, owned and created by the system
-		EntityByIDMap						mEntityInstances;				// Holds all spawned entities
+		std::unique_ptr<EntityInstance>		mRootEntity;					// Root entity, owned and created by this scene
+		EntityByIDMap						mEntityInstancesByID;			// Holds all spawned entities
 		ClonedComponentByEntityMap			mClonedComponentsByEntity;		// All cloned components, stored by entity. This map owns the cloned resources.
 	};
 
