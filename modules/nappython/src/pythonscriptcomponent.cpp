@@ -1,5 +1,5 @@
 #include <pythonscriptcomponent.h>
-#include <nap/entity.h>
+#include "entity.h"
 #include <rtti/pythonmodule.h>
 #include <utility/fileutils.h>
 #include "nap/core.h"

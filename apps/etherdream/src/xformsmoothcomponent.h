@@ -1,6 +1,6 @@
 #pragma once
 
-#include <nap/component.h>
+#include "component.h"
 #include <smoothdamp.h>
 #include <transformcomponent.h>
 

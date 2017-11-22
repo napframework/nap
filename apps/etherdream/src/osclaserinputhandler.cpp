@@ -1,6 +1,6 @@
 #include "osclaserinputhandler.h"
 
-#include <nap/entity.h>
+#include "entity.h"
 #include <polyline.h>
 #include <utility/stringutils.h>
 #include <mathutils.h>
@@ -32,7 +32,7 @@ namespace nap
 		if (!errorState.check(mRotateComponent != nullptr, "missing rotate component"))
 			return false;
 
-		mInputComponent = getEntityInstance()->findComponent<nap::OSCInputComponentInstance>(ETypeCheck::IS_DERIVED_FROM);
+		mInputComponent = getEntityInstance()->findComponent<nap::OSCInputComponentInstance>(rtti::ETypeCheck::IS_DERIVED_FROM);
 		if (!errorState.check(mInputComponent != nullptr, "missing osc input component"))
 			return false;
 

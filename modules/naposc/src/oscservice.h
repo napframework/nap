@@ -4,7 +4,7 @@
 
 // External Includes
 #include <nap/service.h>
-#include <nap/entity.h>
+#include "entity.h"
 #include <nap/timer.h>
 
 namespace nap

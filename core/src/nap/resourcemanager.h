@@ -4,13 +4,9 @@
 #include "rtti/rtti.h"
 #include "objectptr.h"
 #include "utility/dllexport.h"
-#include "utility/uniqueptrmapiterator.h"
 #include "directorywatcher.h"
-#include "entity.h"
-#include "component.h"
 #include "configure.h"
 #include "signalslot.h"
-#include "entitycreationparameters.h"
 
 // External Includes
 #include <rtti/unresolvedpointer.h>

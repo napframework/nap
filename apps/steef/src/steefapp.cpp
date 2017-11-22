@@ -4,6 +4,7 @@
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <renderwindow.h>
+#include "scene.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SteefApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -38,14 +39,16 @@ namespace nap
 		mVinylLabelImg = mResourceManager->findObject<nap::Image>("LabelImage");
 		mVinylCoverImg = mResourceManager->findObject<nap::Image>("CoverImage");
 		
+		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
+
 		// Get entity that holds vinyl
-		mModelEntity = mResourceManager->findEntity("ModelEntity");
+		mModelEntity = scene->findEntity("ModelEntity");
 		
 		// Get entity that holds the background image
-		mBackgroundEntity = mResourceManager->findEntity("BackgroundEntity");
+		mBackgroundEntity = scene->findEntity("BackgroundEntity");
 		
 		// Get entity that holds the camera
-		mCameraEntity = mResourceManager->findEntity("CameraEntity");
+		mCameraEntity = scene->findEntity("CameraEntity");
 		
 		// Set render states
 		nap::RenderState& render_state = mRenderService->getRenderState();

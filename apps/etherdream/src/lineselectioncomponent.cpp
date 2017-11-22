@@ -1,6 +1,6 @@
 #include "lineselectioncomponent.h"
 #include <mathutils.h>
-#include <nap/entity.h>
+#include "entity.h"
 #include <nap/logger.h>
 
 RTTI_BEGIN_CLASS(nap::LineSelectionComponent)

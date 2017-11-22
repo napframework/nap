@@ -1,11 +1,11 @@
 #include "scene.h"
 #include "entity.h"
-#include "rtti/rttiutilities.h"
-#include "objectgraph.h"
 #include "entityobjectgraphitem.h"
 #include "entitycreationparameters.h"
 #include "entityptr.h"
-#include "core.h"
+#include <nap/core.h>
+#include <rtti/rttiutilities.h>
+#include <nap/objectgraph.h>
 
 RTTI_BEGIN_CLASS(nap::RootEntity)
 	RTTI_PROPERTY("Entity",				&nap::RootEntity::mEntity,				nap::rtti::EPropertyMetaData::Required)

@@ -1,7 +1,7 @@
 #include "midiinputcomponent.h"
 
 // Nap includes
-#include <nap/entity.h>
+#include "entity.h"
 #include <nap/core.h>
 
 // Midi includes

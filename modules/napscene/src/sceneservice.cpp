@@ -1,12 +1,12 @@
 // Local Includes
 #include "sceneservice.h"
 #include "transformcomponent.h"
+#include "scene.h"
 
 // External Includes
 #include <glm/glm.hpp>
 #include <nap/core.h>
 #include <nap/resourcemanager.h>
-#include "nap/scene.h"
 
 namespace nap
 {
@@ -27,6 +27,16 @@ namespace nap
 		{
 			updateTransformsRecursive(*child, is_dirty, new_transform);
 		}
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+
+	bool SceneService::init(utility::ErrorState& error)
+	{
+		Core& core = getCore();
+		core.getResourceManager()->getFactory().addObjectCreator(std::make_unique<SceneCreator>(core));
+
+		return true;
 	}
 
 	void SceneService::update(double deltaTime)

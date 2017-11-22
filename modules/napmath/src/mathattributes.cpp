@@ -1,7 +1,7 @@
 // Local Includes
 #include <rtti/rtti.h>
 #include <rtti/rttipath.h>
-#include <nap/instanceproperty.h>
+#include "instanceproperty.h"
 
 #include <glm/glm.hpp>
 #include <glm/fwd.hpp>

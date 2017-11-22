@@ -4,7 +4,7 @@
 #include "lineblendcomponent.h"
 
 // External includes
-#include <nap/component.h>
+#include "component.h"
 #include <nap/objectptr.h>
 #include <glm/glm.hpp>
 #include <waveform.h>

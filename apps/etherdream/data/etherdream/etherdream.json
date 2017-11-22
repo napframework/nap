@@ -706,18 +706,6 @@
 					 		]			 		
 						},
 		 				{
-					 		"TargetComponent" : "./LaserPrototypeEntity:0/LaserOutputEntity/LaserFrustumComponent",
-					 		"TargetAttributes" : [
-					 			{
-					 				"Path" : "LaserOutputComponent",
-					 				"Value" : {
-					 					"Type" : "nap::ComponentPtrInstancePropertyValue",
-					 					"Value": "./LaserOutputComponent2"
-					 				}
-					 			}
-					 		]			 		
-						},
-		 				{
 					 		"TargetComponent" : "./LaserPrototypeEntity:0/LaserSplineEntity/OSCInputComponent",
 					 		"TargetAttributes" : [
 					 			{
@@ -1489,21 +1477,6 @@
 						{
 							"x" : 512,
 							"y" : 512
-						}
-					},
-					"Dac" : "Laser2",
-					"Line": "LaserTraceMesh1",
-					"Transform" : "../LaserSplineEntity/LineXFormComponent"
-				},
-				{
-					"Type":"nap::LaserOutputComponent",
-					"mID" : "LaserOutputComponent2",
-					"Properties" :
-					{
-						"Frustum" :
-						{
-							"x" : 256,
-							"y" : 256
 						}
 					},
 					"Dac" : "Laser2",

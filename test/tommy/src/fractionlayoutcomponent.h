@@ -1,7 +1,7 @@
 #pragma once
 
 // External Includes
-#include <nap/component.h>
+#include "component.h"
 #include <glm/glm.hpp>
 
 namespace nap
