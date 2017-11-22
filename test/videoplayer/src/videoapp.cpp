@@ -5,6 +5,7 @@
 #include <nap/logger.h>
 #include <orthocameracomponent.h>
 #include <texture2d.h>
+#include "scene.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VideoApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -31,10 +32,11 @@ namespace nap
 			return false;
 		
 		// Get important entities
-		mCameraEntity = mResourceManager->findEntity("CameraEntity");
+		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
+		mCameraEntity = scene->findEntity("CameraEntity");
 		assert(mCameraEntity != nullptr);
 		
-		mVideoEntity = mResourceManager->findEntity("VideoEntity");
+		mVideoEntity = scene->findEntity("VideoEntity");
 		assert(mVideoEntity != nullptr);
 		
 		// Store all render windows
