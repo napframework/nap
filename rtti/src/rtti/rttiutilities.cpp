@@ -355,7 +355,8 @@ namespace nap
 
 				for (const ObjectLink& link : object_links)
 				{
-					if (objects_to_visit_set.find(link.mTarget) == objects_to_visit_set.end())
+					// Check if we already processed this pointer. We don't return nullptrs.
+					if (link.mTarget != nullptr && objects_to_visit_set.find(link.mTarget) == objects_to_visit_set.end())
 					{
 						objects_to_visit_set.insert(link.mTarget);
 						objects_to_visit.push_back(link.mTarget);
