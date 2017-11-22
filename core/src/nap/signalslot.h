@@ -5,6 +5,8 @@
 #include <vector>
 #include <memory>
 
+#include "pybind11/pybind11.h"
+
 namespace nap
 {
 	template<typename... Args> class Slot;
@@ -33,6 +35,17 @@ namespace nap
 
 		// Connect a raw function object. Lifelong connection only, disconnection not possible.
 		void connect(const Function& inFunction);
+        
+        // Connect a python function. Lifelong connection only, disconnection not possible.
+        void connect(const pybind11::function pythonFunction)
+        {
+            Function func = [pythonFunction](Args... args)
+            {
+                pythonFunction(pybind11::cast(std::forward<Args>(args)..., std::is_lvalue_reference<Args>::value
+                                        ? pybind11::return_value_policy::reference : pybind11::return_value_policy::automatic_reference)...);
+            };
+            connect(func);
+        }
 
 		// Convenience method for lifelong connection in case of single parameter events
 		template <typename U, typename F>

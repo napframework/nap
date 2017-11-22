@@ -60,16 +60,16 @@ namespace nap
 		std::vector<std::string>		mAddressFilter;
 
 		// Connect to this signal to receive osc events
-		Signal<OSCEvent&>			messageReceived;
+		Signal<const OSCEvent&>			messageReceived;
         
-        Signal<OSCEvent&>* getMessageReceived() { return &messageReceived; }
+        Signal<const OSCEvent&>* getMessageReceived() { return &messageReceived; }
 
 	protected:
 		/**
 		 * This is triggered by the service when a new osc message is received
 		 * @param oscEvent the osc event that will be forwarded by this component
 		 */
-		void trigger(nap::OSCEvent& oscEvent);
+		void trigger(const nap::OSCEvent& oscEvent);
 
 	private:
 		OSCService* mService = nullptr;					// OSC Service set when initialized
