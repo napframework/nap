@@ -88,13 +88,7 @@ install(DIRECTORY "../../thirdparty/pybind11/install/" DESTINATION "thirdparty/p
 if (MSVC)
     install(DIRECTORY "../../thirdparty/rttr/msvc64/install/" DESTINATION "thirdparty/rttr")
 elseif(APPLE)
-    install(DIRECTORY "../../thirdparty/rttr/xcode/install/include/rttr/" DESTINATION "include/thirdparty/rttr")
-    install(DIRECTORY "../../thirdparty/rttr/xcode/install/bin/" DESTINATION "lib/thirdparty/Release"
-            FILES_MATCHING PATTERN "*core.*dylib")
-    install(DIRECTORY "../../thirdparty/rttr/xcode/install/bin/" DESTINATION "lib/thirdparty/Debug"
-            FILES_MATCHING PATTERN "*_d.*dylib")
+    install(DIRECTORY "../../thirdparty/rttr/xcode/install/" DESTINATION "thirdparty/rttr")
 elseif(UNIX)
-    install(DIRECTORY "../../thirdparty/rttr/linux/install/include/rttr/" DESTINATION "include/thirdparty/rttr")
-    install(DIRECTORY "../../thirdparty/rttr/linux/install/bin/" DESTINATION "lib/thirdparty/Release")
-    install(DIRECTORY "../../thirdparty/rttr/linux/install/bin/" DESTINATION "lib/thirdparty/Debug")
+    install(DIRECTORY "../../thirdparty/rttr/linux/install/" DESTINATION "thirdparty/rttr")
 endif()
