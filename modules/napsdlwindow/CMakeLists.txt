@@ -31,10 +31,22 @@ target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARY} napcore)
 
 # Package into release build
 if (WIN32)
-	install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION "modules/${PROJECT_NAME}/lib/$<CONFIG>")
+    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>
+                                    LIBRARY DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>
+                                    ARCHIVE DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>)
 else()
-	install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION "modules/${PROJECT_NAME}/lib/$<CONFIG>")
+    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>)  
 endif()
 
 install(DIRECTORY "src/" DESTINATION "modules/${PROJECT_NAME}/include"
         FILES_MATCHING PATTERN "*.h")
+
+# Package dependent includes 
+# TODO discuss moving elsewhere, the idea here was that the object using the dependencies installs them
+
+# SDL2
+if (WIN32)
+    install(DIRECTORY "../../../thirdparty/SDL2/msvc/" DESTINATION "thirdparty/SDL2"
+            PATTERN "lib" EXCLUDE)
+    install(DIRECTORY "../../../thirdparty/SDL2/msvc/lib/x64/" DESTINATION "thirdparty/SDL2/lib")
+endif()

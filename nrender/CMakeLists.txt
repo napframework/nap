@@ -91,20 +91,35 @@ if (MSVC)
 endif()
 
 # Package into release build
-install(DIRECTORY "src/" DESTINATION "include/nap/nrender/"
+install(DIRECTORY "src/" DESTINATION "include/nrender/"
         FILES_MATCHING PATTERN "*.h")
 
-# Package dependent includes TODO discuss moving elsewhere??
+# Package dependent includes 
+# TODO discuss moving elsewhere, the idea here was that the object using the dependencies installs them
+
+# Assimp
 if (MSVC)
-    install(FILES "../../thirdparty/FreeImage/msvc/Dist/x64/FreeImage.h" DESTINATION "include/thirdparty/")
-elseif(APPLE)
-    install(FILES "../../thirdparty/FreeImage/osx/include/FreeImage.h" DESTINATION "include/thirdparty/")
+    install(DIRECTORY ../../thirdparty/assimp/msvc64/install/ DESTINATION thirdparty/assimp/)
 endif()
 
-install(DIRECTORY "../../thirdparty/glm/glm/" DESTINATION "include/thirdparty/glm")
-
+# FreeImage
 if (MSVC)
-    install(DIRECTORY "../../thirdparty/glew/msvc/include/GL/" DESTINATION "include/thirdparty/GL")
+    install(FILES "../../thirdparty/FreeImage/msvc/Dist/x64/FreeImage.h" DESTINATION "thirdparty/FreeImage/include")
+    install(FILES "../../thirdparty/FreeImage/msvc/Dist/x64/FreeImage.lib" DESTINATION "thirdparty/FreeImage/lib")
+    install(FILES "../../thirdparty/FreeImage/msvc/Dist/x64/FreeImage.dll" DESTINATION "thirdparty/FreeImage/bin")
 elseif(APPLE)
-    install(DIRECTORY "../../thirdparty/glew/osx/include/GL/" DESTINATION "include/thirdparty/GL")
+    install(FILES "../../thirdparty/FreeImage/osx/include/FreeImage.h" DESTINATION "thirdparty/FreeImage/include")
+endif()
+
+# GLM
+install(DIRECTORY "../../thirdparty/glm/glm/" DESTINATION "thirdparty/glm")
+
+# GLEW
+if (MSVC)
+    install(DIRECTORY "../../thirdparty/glew/msvc/" DESTINATION "thirdparty/glew"
+            PATTERN "lib" EXCLUDE
+            PATTERN "bin" EXCLUDE)
+    install(DIRECTORY "../../thirdparty/glew/msvc/bin/Release/x64/" DESTINATION "thirdparty/glew/bin")
+elseif(APPLE)
+    install(DIRECTORY "../../thirdparty/glew/osx/include" DESTINATION "thirdparty/glew/include")
 endif()

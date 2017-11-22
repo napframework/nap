@@ -16,5 +16,11 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME} PUBLIC src)
 
 # Package into release build
-install(DIRECTORY "src/utility/" DESTINATION "include/nap/utility/"
+if (WIN32)
+	install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/$<CONFIG>
+		                            ARCHIVE DESTINATION lib/$<CONFIG>)
+	# TODO remove our archive destination
+endif()
+
+install(DIRECTORY "src/utility/" DESTINATION "include/utility/"
         FILES_MATCHING PATTERN "*.h")

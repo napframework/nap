@@ -66,19 +66,27 @@ endif()
 
 # Package into release build
 if (WIN32)
-    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION lib/nap/$<CONFIG>)
+    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION lib/$<CONFIG>
+                                    LIBRARY DESTINATION lib/$<CONFIG>
+                                    ARCHIVE DESTINATION lib/$<CONFIG>)
+
+    # Install for fbxconverter
+    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION tools/
+            CONFIGURATIONS Release)
 else()
-    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/nap/$<CONFIG>)
+    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/$<CONFIG>)  
 endif()
 
-install(DIRECTORY "src/rtti/" DESTINATION "include/nap/rtti/"
+install(DIRECTORY "src/rtti/" DESTINATION "include/rtti/"
         FILES_MATCHING PATTERN "*.h")
 
-# Package dependent includes TODO discuss moving elsewhere??
-install(DIRECTORY "../../thirdparty/pybind11/install/include/pybind11/" DESTINATION "include/thirdparty/pybind11")
+# Package dependent includes 
+# TODO discuss moving elsewhere, the idea here was that the object using the dependencies installs them
+
+install(DIRECTORY "../../thirdparty/pybind11/install/" DESTINATION "thirdparty/pybind11")
 
 if (MSVC)
-    install(DIRECTORY "../../thirdparty/rttr/msvc64/install/include/rttr/" DESTINATION "include/thirdparty/rttr")
+    install(DIRECTORY "../../thirdparty/rttr/msvc64/install/" DESTINATION "thirdparty/rttr")
 elseif(APPLE)
     install(DIRECTORY "../../thirdparty/rttr/xcode/install/include/rttr/" DESTINATION "include/thirdparty/rttr")
     install(DIRECTORY "../../thirdparty/rttr/xcode/install/bin/" DESTINATION "lib/thirdparty/Release"
@@ -87,4 +95,6 @@ elseif(APPLE)
             FILES_MATCHING PATTERN "*_d.*dylib")
 elseif(UNIX)
     install(DIRECTORY "../../thirdparty/rttr/linux/install/include/rttr/" DESTINATION "include/thirdparty/rttr")
+    install(DIRECTORY "../../thirdparty/rttr/linux/install/bin/" DESTINATION "lib/thirdparty/Release")
+    install(DIRECTORY "../../thirdparty/rttr/linux/install/bin/" DESTINATION "lib/thirdparty/Debug")
 endif()
