@@ -6,6 +6,7 @@
 #include <perspcameracomponent.h>
 #include <imguiservice.h>
 #include <imgui/imgui.h>
+#include "scene.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTestApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -41,14 +42,15 @@ namespace nap
 		
 		mTextureRenderTarget		= mResourceManager->findObject<RenderTarget>("PlaneRenderTarget");
 		
-		mPigEntity					= mResourceManager->findEntity("PigEntity");
-		mRotatingPlaneEntity		= mResourceManager->findEntity("RotatingPlaneEntity");
-		mPlaneEntity				= mResourceManager->findEntity("PlaneEntity");
-		mWorldEntity				= mResourceManager->findEntity("WorldEntity");
-		mCameraEntityLeft			= mResourceManager->findEntity("CameraEntityLeft");
-		mCameraEntityRight			= mResourceManager->findEntity("CameraEntityRight");
-		mSplitCameraEntity			= mResourceManager->findEntity("SplitCameraEntity");
-		mDefaultInputRouter			= mResourceManager->findEntity("DefaultInputRouterEntity");
+		ObjectPtr<Scene> scene		= mResourceManager->findObject<Scene>("Scene");
+		mPigEntity					= scene->findEntity("PigEntity");
+		mRotatingPlaneEntity		= scene->findEntity("RotatingPlaneEntity");
+		mPlaneEntity				= scene->findEntity("PlaneEntity");
+		mWorldEntity				= scene->findEntity("WorldEntity");
+		mCameraEntityLeft			= scene->findEntity("CameraEntityLeft");
+		mCameraEntityRight			= scene->findEntity("CameraEntityRight");
+		mSplitCameraEntity			= scene->findEntity("SplitCameraEntity");
+		mDefaultInputRouter			= scene->findEntity("DefaultInputRouterEntity");
 		
 		// Set render states
 		nap::RenderState& render_state = mRenderService->getRenderState();
