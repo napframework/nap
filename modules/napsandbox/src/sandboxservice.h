@@ -3,7 +3,6 @@
 // Nap Includes
 #include <nap/service.h>
 #include <utility/dllexport.h>
-#include <nap/entity.h>
 
 namespace nap
 {
