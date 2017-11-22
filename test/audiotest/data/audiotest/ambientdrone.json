@@ -68,6 +68,16 @@
 			"Output": "oscillatorB"
 		},
 
+		{
+			"Type" : "nap::Scene",
+			"mID": "Scene",		
+			"Entities" : 
+			[
+				{
+					"Entity" : "audioEntity"
+				}
+			]
+		},
 
 		{
 			"Type": "nap::Entity",

@@ -4,7 +4,7 @@
 #include "oscevent.h"
 
 // External Includes
-#include <nap/component.h>
+#include <component.h>
 #include <utility/dllexport.h>
 #include <nap/signalslot.h>
 
