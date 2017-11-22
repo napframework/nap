@@ -3,7 +3,7 @@
 #include "instanceproperty.h"
 #include "entitycreationparameters.h"
 #include <rtti/rttiobject.h>
-#include <utility/UniquePtrMapIterator.h>
+#include <utility/uniqueptrmapiterator.h>
 #include <rtti/factory.h>
 
 namespace nap
