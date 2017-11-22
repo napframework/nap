@@ -104,16 +104,16 @@ namespace nap
 			return *mResource;
 		}
 
-		ComponentType* operator->() const
+		const ComponentType* operator->() const
 		{
 			assert(mResource != nullptr);
-			return mResource;
+			return mResource.get();
 		}
 
 		ComponentType* operator->()
 		{
 			assert(mResource != nullptr);
-			return mResource;
+			return mResource.get();
 		}
 
 		bool operator==(const ComponentPtr<ComponentType>& other) const

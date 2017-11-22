@@ -340,6 +340,33 @@ namespace nap
 		}
 
 
+		void getPointeesRecursive(const rtti::RTTIObject& object, std::vector<rtti::RTTIObject*>& pointees)
+		{
+			std::unordered_set<const rtti::RTTIObject*> objects_to_visit_set;
+			std::vector<const rtti::RTTIObject*> objects_to_visit;
+
+			objects_to_visit_set.insert(&object);
+			objects_to_visit.push_back(&object);
+
+			std::vector<ObjectLink> object_links;
+			for (int index = 0; index < objects_to_visit.size(); ++index)
+			{
+				findObjectLinks(*objects_to_visit[index], object_links);
+
+				for (const ObjectLink& link : object_links)
+				{
+					// Check if we already processed this pointer. We don't return nullptrs.
+					if (link.mTarget != nullptr && objects_to_visit_set.find(link.mTarget) == objects_to_visit_set.end())
+					{
+						objects_to_visit_set.insert(link.mTarget);
+						objects_to_visit.push_back(link.mTarget);
+						pointees.push_back(link.mTarget);
+					}
+				}
+			}
+		}
+
+
 		/**
 		 * Helper function to recursively build a type version string for a given RTTI type
 		 */

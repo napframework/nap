@@ -4,10 +4,7 @@
 #include "rtti/rtti.h"
 #include "objectptr.h"
 #include "utility/dllexport.h"
-#include "utility/uniqueptrmapiterator.h"
 #include "directorywatcher.h"
-#include "entity.h"
-#include "component.h"
 #include "configure.h"
 #include "signalslot.h"
 #include "logger.h"
@@ -20,6 +17,12 @@
 namespace nap
 {	
 	class Core;
+	class Scene;
+
+	class RTTIObjectGraphItem;
+	template<typename ITEM> class ObjectGraph;
+	using RTTIObjectGraph = ObjectGraph<RTTIObjectGraphItem>;
+
 	/**
 	 * Manager, owner of all objects, capable of loading and real-time updating of content.
 	 */
@@ -28,9 +31,6 @@ namespace nap
 		friend class Core;
 		RTTI_ENABLE()
 	public:
-		using EntityByIDMap = std::unordered_map<std::string, std::unique_ptr<EntityInstance>>;
-		using EntityIterator = utility::UniquePtrMapWrapper<EntityByIDMap, EntityInstance*>;
-
 		ResourceManager(nap::Core& core);
 
 		/**
@@ -76,11 +76,6 @@ namespace nap
 		*/
 		const ObjectPtr<rtti::RTTIObject> createObject(const rtti::TypeInfo& type);
 
-        /**
-		* Instantiates an Entity.
-		*/
-		const ObjectPtr<EntityInstance> createEntity(const Entity& Entity, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
-
 		/**
 		* Creates an object and adds it to the manager.
 		*/
@@ -97,43 +92,6 @@ namespace nap
 		* @return object capable of creating objects with custom construction parameters.
 		*/
 		rtti::Factory& getFactory();
-
-		/**
-		* @return EntityInstance.
-		*/
-		const ObjectPtr<EntityInstance> findEntity(const std::string& inID) const;
-
-		/**
-		* @return The root entity as created by the system, which is the root parent of all entities.
-		*/
-		const EntityInstance& getRootEntity() const
-		{
-			return *mRootEntity;
-		}
-
-		/**
-		* @return The root entity as created by the system, which is the root parent of all entities.
-		*/
-		EntityInstance& getRootEntity()
-		{
-			return *mRootEntity;
-		}
-
-		/**
-		* @return Iterator to all entities in the system.
-		*/
-		EntityIterator getEntities() { return EntityIterator(mEntities); }
-
-        /**
-         * @return A vector of all objects in the ResourceManager
-         */
-        std::vector<nap::ObjectPtr<rtti::RTTIObject>> getObjects();
-
-
-		/**
-		 * Forwards an update to all entities managed under the root
-		 */
-		void update(double deltaTime);
 
 	private:
 		using InstanceByIDMap	= std::unordered_map<std::string, rtti::RTTIObject*>;					// Map from object ID to object (non-owned)
@@ -154,23 +112,9 @@ namespace nap
 		void determineObjectsToInit(const RTTIObjectGraph& objectGraph, const ObjectByIDMap& objectsToUpdate, const std::string& externalChangedFile, std::vector<std::string>& objectsToInit);
 		bool resolvePointers(ObjectByIDMap& objectsToUpdate, const rtti::UnresolvedPointerList& unresolvedPointers, utility::ErrorState& errorState);
 		bool initObjects(const std::vector<std::string>& objectsToInit, const ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState);
-		bool initEntities(const RTTIObjectGraph& objectGraph, const ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState);
-		bool createEntities(const std::vector<const Entity*>& entityResources, EntityCreationParameters& entityCreationParams, std::vector<std::string>& generatedEntityIDs, utility::ErrorState& errorState);
-		
-		using RootEntityInstanceMap = std::unordered_map<std::string, EntityInstance*>;
-		static bool sResolveComponentPointers(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
-		static ComponentInstance* sResolveComponentInstancePath(ComponentInstance* sourceComponentInstance, const std::string& targetComponentInstancePath, Component* targetComponentResource,
-			const RootEntityInstanceMap& rootEntityInstances, const EntityCreationParameters::ComponentInstanceMap& componentInstances, utility::ErrorState& errorState);
 
 		bool buildObjectGraph(const ObjectByIDMap& objectsToUpdate, RTTIObjectGraph& objectGraph, utility::ErrorState& errorState);
 		EFileModified isFileModified(const std::string& modifiedFile);
-
-		/** 
-		* Traverses all pointers in ObjectPtrManager and, for each target, replaces the target with the one in the map that is passed.
-		* @param container The container holding an ID -> pointer mapping with the pointer to patch to.
-		*/
-		template<class OBJECTSBYIDMAP> 
-		void patchObjectPtrs(OBJECTSBYIDMAP& newTargetObjects);
 
 	private:
 
@@ -193,9 +137,7 @@ namespace nap
 
 		using ModifiedTimeMap = std::unordered_map<std::string, uint64>;
 
-		std::unique_ptr<EntityInstance>		mRootEntity;					// Root entity, owned and created by the system
 		ObjectByIDMap						mObjects;						// Holds all objects
-		EntityByIDMap						mEntities;						// Holds all entitites
 		std::set<std::string>				mFilesToWatch;					// Files currently loaded, used for watching changes on the files
 		FileLinkMap							mFileLinkMap;					// Map containing links from target to source file, for updating source files if the file monitor sees changes
 		std::unique_ptr<DirectoryWatcher>	mDirectoryWatcher;				// File monitor, detects changes on files
@@ -208,23 +150,4 @@ namespace nap
 		 */
 		nap::Signal<const std::string&> mFileLoadedSignal;
 	};
-
-
-	template<class OBJECTSBYIDMAP>
-	void ResourceManager::patchObjectPtrs(OBJECTSBYIDMAP& newTargetObjects)
-	{
-		ObjectPtrManager::ObjectPtrSet& object_ptrs = ObjectPtrManager::get().GetObjectPointers();
-
-		for (ObjectPtrBase* ptr : object_ptrs)
-		{
-			rtti::RTTIObject* target = ptr->get();
-			if (target == nullptr)
-				continue;
-
-			std::string& target_id = target->mID;
-			typename OBJECTSBYIDMAP::iterator new_target = newTargetObjects.find(target_id);
-			if (new_target != newTargetObjects.end())
-				ptr->set(&*(new_target->second));
-		}
-	}
 }

@@ -1,14 +1,13 @@
 #include <rtti/pythonmodule.h>
 #include "entity.h"
 #include <nap/core.h>
-#include <nap/resourcemanager.h>
+#include "scene.h"
 
 using namespace std;
 
 RTTI_BEGIN_CLASS(nap::Entity)
 	RTTI_PROPERTY("Components", &nap::Entity::mComponents, nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Children", &nap::Entity::mChildren, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("AutoSpawn", &nap::Entity::mAutoSpawn, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::EntityInstance)
@@ -24,11 +23,14 @@ namespace nap
 	}
 
 
-	bool EntityInstance::init(ResourceManager& resourceManager, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+	bool EntityInstance::init(Scene& scene, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 	{
-		for (auto& child_entity : mResource->mChildren)
+		for (int index = 0; index < mResource->mChildren.size(); ++index)
 		{
-			ObjectPtr<EntityInstance> child_entity_instance = resourceManager.createEntity(*child_entity, entityCreationParams, errorState);
+			EntityInstance* child_entity_instance = scene.createChildEntityInstance(*mResource->mChildren[index], index, entityCreationParams, errorState);
+			if (!errorState.check(child_entity_instance != nullptr, "Failed to spawn child entity %s for entity %s", mResource->mChildren[index]->mID.c_str(), mID.c_str()))
+				return false; 
+
 			addChild(*child_entity_instance);
 		}
 
@@ -58,11 +60,11 @@ namespace nap
 	}
 
 
-	ComponentInstance* EntityInstance::findComponent(const rtti::TypeInfo& type, ETypeCheck typeCheck) const
+	ComponentInstance* EntityInstance::findComponent(const rtti::TypeInfo& type, rtti::ETypeCheck typeCheck) const
 	{
 		ComponentList::const_iterator pos = std::find_if(mComponents.begin(), mComponents.end(), [&](auto& element) 
 		{ 
-			return isTypeMatch(element->get_type(), type, typeCheck); 
+			return rtti::isTypeMatch(element->get_type(), type, typeCheck);
 		});
 		if (pos == mComponents.end())
 			return nullptr;
@@ -71,31 +73,31 @@ namespace nap
 	}
 
 
-	void EntityInstance::getComponentsOfType(const rtti::TypeInfo& type, std::vector<ComponentInstance*>& components, ETypeCheck typeCheck) const
+	void EntityInstance::getComponentsOfType(const rtti::TypeInfo& type, std::vector<ComponentInstance*>& components, rtti::ETypeCheck typeCheck) const
 	{
 		for (auto& component : mComponents)
-			if (isTypeMatch(component->get_type(), type, typeCheck))
+			if (rtti::isTypeMatch(component->get_type(), type, typeCheck))
 				components.emplace_back(component.get());
 	}
 
 
-	bool EntityInstance::hasComponentsOfType(const rtti::TypeInfo& type, ETypeCheck typeCheck) const
+	bool EntityInstance::hasComponentsOfType(const rtti::TypeInfo& type, rtti::ETypeCheck typeCheck) const
 	{
 		for (auto& component : mComponents)
-			if (isTypeMatch(component->get_type(), type, typeCheck))
+			if (rtti::isTypeMatch(component->get_type(), type, typeCheck))
 				return true;
 
 		return false;
 	}
 
 
-	bool EntityInstance::hasComponent(const rtti::TypeInfo& type, ETypeCheck typeCheck) const
+	bool EntityInstance::hasComponent(const rtti::TypeInfo& type, rtti::ETypeCheck typeCheck) const
 	{
 		return findComponent(type, typeCheck) != nullptr;
 	}
 
 
-	ComponentInstance& EntityInstance::getComponent(const rtti::TypeInfo& type, ETypeCheck typeCheck) const
+	ComponentInstance& EntityInstance::getComponent(const rtti::TypeInfo& type, rtti::ETypeCheck typeCheck) const
 	{
 		ComponentInstance* result = findComponent(type, typeCheck);
 		assert(result != nullptr);
@@ -145,7 +147,7 @@ namespace nap
 
 	//////////////////////////////////////////////////////////////////////////
 
-	ObjectPtr<Component> Entity::findComponent(const rtti::TypeInfo& type, ETypeCheck typeCheck) const
+	ObjectPtr<Component> Entity::findComponent(const rtti::TypeInfo& type, rtti::ETypeCheck typeCheck) const
 	{
 		ComponentList::const_iterator pos = std::find_if(mComponents.begin(), mComponents.end(), [&](auto& element) { return isTypeMatch(element->get_type(), type, typeCheck); });
 		if (pos == mComponents.end())
@@ -155,7 +157,7 @@ namespace nap
 	}
 
 
-	bool Entity::hasComponent(const rtti::TypeInfo& type, ETypeCheck typeCheck) const
+	bool Entity::hasComponent(const rtti::TypeInfo& type, rtti::ETypeCheck typeCheck) const
 	{
 		return findComponent(type, typeCheck) != nullptr;
 	}

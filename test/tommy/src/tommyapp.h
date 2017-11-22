@@ -13,6 +13,7 @@
 #include <inputservice.h>
 #include <inputrouter.h>
 #include <app.h>
+#include <scene.h>
 
 namespace nap
 {
@@ -87,10 +88,12 @@ namespace nap
 		
 		std::vector<ObjectPtr<RenderWindow>> mRenderWindows;		//< Vector holding pointers to the spawned render windows
 		
-		ObjectPtr<EntityInstance> mCameraEntity = nullptr;			//< The entity that holds the camera
+		ObjectPtr<EntityInstance> mCameraEntity;					//< The entity that holds the camera
 		
-		ObjectPtr<EntityInstance> mRootLayoutEntity = nullptr;		//< Entity at the root of the layout
-		ObjectPtr<EntityInstance> mSlideShowEntity = nullptr;		//< The slideshow entity
-		ObjectPtr<EntityInstance> mUiInputRouter = nullptr;			//< Our UI input router entity
+		ObjectPtr<EntityInstance> mRootLayoutEntity;				//< Entity at the root of the layout
+		ObjectPtr<EntityInstance> mSlideShowEntity;					//< The slideshow entity
+		ObjectPtr<EntityInstance> mUiInputRouter;					//< Our UI input router entity
+
+		ObjectPtr<Scene>		mScene;								//< Scene in json file
 	};
 }

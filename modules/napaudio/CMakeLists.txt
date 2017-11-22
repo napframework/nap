@@ -25,7 +25,7 @@ add_library(${PROJECT_NAME} SHARED ${sources})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDES})
-target_link_libraries(${PROJECT_NAME} ${LIBRARIES} mod_napmath)
+target_link_libraries(${PROJECT_NAME} ${LIBRARIES} mod_napmath mod_napscene)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 target_compile_definitions(${PROJECT_NAME} PRIVATE _USE_MATH_DEFINES)
