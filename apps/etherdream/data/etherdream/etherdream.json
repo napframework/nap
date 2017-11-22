@@ -1064,7 +1064,7 @@
 		{
 			"Type" : "nap::Entity",
 			"mID" : "LaserFrameEntity",
-			"AutoSpawn" : false,
+			
 			"Components" :
 			[
 				{
@@ -1089,7 +1089,7 @@
 		{
 			"Type" : "nap::Entity",
 			"mID" : "LaserPrototypeEntity",
-			"AutoSpawn" : false,
+			
 			"Components" :
 			[
 				{
@@ -1160,7 +1160,7 @@
 		{
 			"Type" : "nap::Entity",
 			"mID" :  "TracerVisualizeEntity",
-			"AutoSpawn" : false,
+			
 			"Components" : 
 			[
 				{
@@ -1182,7 +1182,7 @@
 		{
 			"Type" : "nap::Entity",
 			"mID": "LaserSplineEntity",
-			"AutoSpawn" : false,
+			
 			"Components" : 
 			[
 				{
@@ -1441,7 +1441,7 @@
 		{
 			"Type" : "nap::Entity",
 			"mID"  : "LaserCanvasEntity",
-			"AutoSpawn" : false,
+			
 			"Components" :
 			[
 				{
@@ -1462,7 +1462,7 @@
 		{
 			"Type" : "nap::Entity",
 			"mID": "LaserOutputEntity",
-			"AutoSpawn" : false,
+			
 			"Components" : 
 			[
 				{

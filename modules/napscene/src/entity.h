@@ -239,7 +239,6 @@ namespace nap
 	public:
 		ComponentList	mComponents;			// The components of this entity
 		EntityList		mChildren;				// The children of this entity
-		bool			mAutoSpawn = true;		// Whether this entity should be automatically instantiated after deserialization
 	};
 
 	//////////////////////////////////////////////////////////////////////////

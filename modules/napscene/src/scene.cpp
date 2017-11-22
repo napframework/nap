@@ -333,10 +333,6 @@ namespace nap
 						if (target_entity_resource == nullptr)
 							continue;
 
-						// Only AutoSpawn resources have a one-to-one relationship between resource and instance. We do not support pointers to non-AutoSpawn objects
-						if (!errorState.check(target_entity_resource->mAutoSpawn, "Encountered pointer from {%s}:%s to non-AutoSpawn entity %s. This is not supported.", source_component_resource->mID.c_str(), link.mSourcePath.toString().c_str(), target_entity_resource->mID.c_str()))
-							return false;
-
 						// Find the EntityInstance and fill it in in the EntityPtr.mInstance
 						Scene::EntityByIDMap::iterator target_entity_instance = entityCreationParams.mEntityInstancesByID.find(sGetInstanceID(target_entity_resource->mID));
 						assert(target_entity_instance != entityCreationParams.mEntityInstancesByID.end());
