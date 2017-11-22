@@ -20,13 +20,12 @@ namespace nap
 
 	bool IndexMap::init(utility::ErrorState& errorState)
 	{
-		if (!errorState.check(!mImagePath.empty(), "Image path not set for ImageResource %s", mID.c_str()))
+		if (!errorState.check(!mImagePath.empty(), "Image path not set for index map %s", mID.c_str()))
 			return false;
 
 		// Make sure it's a .bmp file
 		if (!errorState.check(utility::getFileExtension(mImagePath) == "bmp", "Image is not a bitmap: %s", mImagePath.c_str()))
 			return false;
-
 
 		// Load pixel data in to bitmap
 		if (!errorState.check(opengl::loadBitmap(mBitmap, mImagePath, errorState), "Failed to load index map %s; invalid bitmap", mImagePath.c_str()))

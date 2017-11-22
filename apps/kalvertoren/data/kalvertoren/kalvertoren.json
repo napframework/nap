@@ -97,6 +97,75 @@
 		},
 
 		{
+			"Type" : "nap::LedColorPalette",
+			"mID" : "Palette1",
+			"Path" : "data/kalvertoren/palettes/palette_1.bmp",
+			"LedColors" : 
+			[
+     			{
+					"Values" : 
+					[58,71,26,0]
+				},
+				{
+					"Values" : 
+					[209,7,25,0]
+				},
+				{
+					"Values" : 
+					[167,25,26,0]
+				},
+				{
+					"Values" : 
+					[87,59,26,0]
+				},
+				{
+					"Values" : 
+					[16,89,27,0]
+				}
+			]
+		},
+
+		{
+			"Type" : "nap::LedColorPalette",
+			"mID" : "Palette2",
+			"Path" : "data/kalvertoren/palettes/palette_2.bmp",
+			"LedColors" : 
+			[
+     			{
+					"Values" : 
+					[231,120,8,0]
+				},
+				{
+					"Values" : 
+					[226,197,18,0]
+				},
+				{
+					"Values" : 
+					[119,40,101,0]
+				},
+				{
+					"Values" : 
+					[245,110,11,0]
+				},
+				{
+					"Values" : 
+					[41,54,97,0]
+				}
+			]
+		},
+
+		{
+			"Type" : "nap::LedColorContainer",
+			"mID" : "LedColorContainer",
+			"IndexMap" : "IndexMap",
+			"Palettes" :
+			[
+				"Palette1",
+				"Palette2"
+			] 
+		},
+
+		{
 			"Type" : "nap::PlaneMesh",
 			"mID": "PlaneMesh"
 		},
