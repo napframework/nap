@@ -24,9 +24,7 @@ namespace nap
 		}
 
 		for (EntityInstance* child : entity.getChildren())
-		{
 			updateTransformsRecursive(*child, is_dirty, new_transform);
-		}
 	}
 
 	//////////////////////////////////////////////////////////////////////////
@@ -41,17 +39,26 @@ namespace nap
 
 	void SceneService::update(double deltaTime)
 	{
-		std::vector<Scene*> scenes = getCore().getResourceManager()->getObjectsOfType<Scene>();
-		for (Scene* scene : scenes)
+		for (Scene* scene : mScenes)
 			scene->update(deltaTime);
 	}
 
 	void SceneService::postUpdate(double deltaTime)
 	{
-		std::vector<Scene*> scenes = getCore().getResourceManager()->getObjectsOfType<Scene>();
-		for (Scene* scene : scenes)
+		for (Scene* scene : mScenes)
 			updateTransformsRecursive(scene->getRootEntity(), false, glm::mat4(1.0f));
 	}
+
+	void SceneService::registerScene(Scene& scene)
+	{
+		mScenes.insert(&scene);
+	}
+
+	void SceneService::unregisterScene(Scene& scene)
+	{
+		mScenes.erase(&scene);
+	}
+
 }
 
 RTTI_DEFINE(nap::SceneService)

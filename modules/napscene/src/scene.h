@@ -34,6 +34,8 @@ namespace nap
 
 		Scene(Core& core);
 
+		virtual ~Scene() override;
+
 		/**
 		 *
 		 */
