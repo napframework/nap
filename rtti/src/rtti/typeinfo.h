@@ -190,6 +190,24 @@ namespace nap
 			return type.get_method(methodName);
 		}
 
+		/**
+		* Selects whether the type check should be an exact type match or whether
+		* the type should be derived from the given type.
+		*/
+		enum class NAPAPI ETypeCheck : uint8_t
+		{
+			EXACT_MATCH,
+			IS_DERIVED_FROM
+		};
+
+
+		/**
+		* Helper function to check whether two types match, based on a comparison mode
+		*/
+		static inline bool isTypeMatch(const rtti::TypeInfo& typeA, const rtti::TypeInfo& typeB, ETypeCheck typeCheck)
+		{
+			return typeCheck == ETypeCheck::EXACT_MATCH ? typeA == typeB : typeA.is_derived_from(typeB);
+		}
 	}
 
 	namespace detail

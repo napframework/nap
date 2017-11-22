@@ -2,7 +2,7 @@
 
 
 // Nap includes
-#include <nap/entity.h>
+#include "entity.h"
 #include <nap/core.h>
 
 // Audio includes
@@ -45,7 +45,7 @@ namespace nap
     
         NodeManager& AudioComponentInstance::getNodeManager()
         {
-            return getEntityInstance()->getCore()->getService<AudioService>(ETypeCheck::IS_DERIVED_FROM)->getNodeManager();
+            return getEntityInstance()->getCore()->getService<AudioService>(rtti::ETypeCheck::IS_DERIVED_FROM)->getNodeManager();
         }
         
     }

@@ -1,7 +1,7 @@
 #include "selectcolorcomponent.h"
 
 // External Includes
-#include <nap/entity.h>
+#include "entity.h"
 #include <mathutils.h>
 
 // nap::selectcolorcomponent run time class definition 

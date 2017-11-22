@@ -1,7 +1,7 @@
 #pragma once
 
 // External includes
-#include <nap/component.h>
+#include "component.h"
 #include <nap/objectptr.h>
 #include <renderablemeshcomponent.h>
 #include <polyline.h>

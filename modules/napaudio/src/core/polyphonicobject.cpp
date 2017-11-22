@@ -1,7 +1,7 @@
 #include "polyphonicobject.h"
 
 // Nap includes
-#include <nap/entity.h>
+#include "entity.h"
 
 // RTTI
 RTTI_BEGIN_CLASS(nap::audio::PolyphonicObject)

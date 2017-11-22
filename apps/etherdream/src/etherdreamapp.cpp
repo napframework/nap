@@ -8,7 +8,7 @@
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <perspcameracomponent.h>
-#include "nap/scene.h"
+#include "scene.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::EtherdreamApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -35,7 +35,7 @@ namespace nap
 		mResourceManager = getCore().getResourceManager();
 
 		// Load scene
-		if (!mResourceManager->loadFile("data/etherdream/etherdream.json", error))
+		if (!mResourceManager->loadFile("data/etherdream/etherdream.json", error)) 
 			return false;    
 
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");

@@ -1,5 +1,5 @@
 #include <inputcomponent.h>
-#include <nap/entity.h>
+#include "entity.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::InputComponent)
 RTTI_END_CLASS

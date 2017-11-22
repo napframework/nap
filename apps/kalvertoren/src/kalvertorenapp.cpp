@@ -10,6 +10,7 @@
 #include <imgui/imgui.h>
 #include <imguiservice.h>
 #include <utility/stringutils.h>
+#include "scene.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::KalvertorenApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -35,13 +36,15 @@ namespace nap
 		videoTextureTarget = resourceManager->findObject<nap::RenderTarget>("PlaneRenderTarget");
 		
 		// All of our entities
-		kalvertorenEntity = resourceManager->findEntity("KalvertorenEntity");
-		modelsEntity = resourceManager->findEntity("ModelsEntity");
-		sceneCameraEntity = resourceManager->findEntity("SceneCameraEntity");
-		videoCameraEntity = resourceManager->findEntity("VideoCameraEntity");
-		defaultInputRouter = resourceManager->findEntity("DefaultInputRouterEntity");
-		videoEntity = resourceManager->findEntity("VideoEntity");
-		lightEntity = resourceManager->findEntity("LightEntity");
+		ObjectPtr<Scene> scene = resourceManager->findObject<Scene>("Scene");
+
+		kalvertorenEntity = scene->findEntity("KalvertorenEntity");
+		modelsEntity = scene->findEntity("ModelsEntity");
+		sceneCameraEntity = scene->findEntity("SceneCameraEntity");
+		videoCameraEntity = scene->findEntity("VideoCameraEntity");
+		defaultInputRouter = scene->findEntity("DefaultInputRouterEntity");
+		videoEntity = scene->findEntity("VideoEntity");
+		lightEntity = scene->findEntity("LightEntity");
 
 		// Materials
 		vertexMaterial = resourceManager->findObject<nap::Material>("VertexColorMaterial");

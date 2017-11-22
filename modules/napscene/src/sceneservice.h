@@ -1,7 +1,7 @@
 #pragma once
 
+#include "entity.h"
 #include <nap/service.h>
-#include <nap/entity.h>
 
 namespace nap
 {
@@ -15,6 +15,11 @@ namespace nap
 
 		// Default Destructor
 		virtual ~SceneService() = default;
+
+		/**
+		 * 
+		 */
+		bool init(utility::ErrorState& error);
 
 	protected:
 		virtual void update(double deltaTime) override;

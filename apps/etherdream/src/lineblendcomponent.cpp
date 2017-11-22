@@ -1,5 +1,5 @@
 #include "lineblendcomponent.h"
-#include <nap/entity.h>
+#include "entity.h"
 #include <mathutils.h>
 #include <nap/logger.h>
 

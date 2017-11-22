@@ -1,10 +1,10 @@
 #pragma once
 
-#include <nap/component.h>
+#include "component.h"
 #include <nap/objectptr.h>
 #include <artnetcontroller.h>
 #include <nap/configure.h>
-#include <nap/componentptr.h>
+#include "componentptr.h"
 #include <renderablemeshcomponent.h>
 
 namespace nap

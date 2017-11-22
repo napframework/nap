@@ -2,7 +2,7 @@
 #include "renderablemeshcomponent.h"
 
 // External Includes
-#include <nap/entity.h>
+#include "entity.h"
 #include <nap/core.h>
 #include <nap/resourcemanager.h>
 #include <depthsorter.h>

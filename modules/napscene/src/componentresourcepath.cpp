@@ -1,5 +1,5 @@
 #include "componentresourcepath.h"
-#include "nap/entity.h"
+#include "entity.h"
 
 namespace nap
 {

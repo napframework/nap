@@ -21,7 +21,7 @@
 #include <perspcameracomponent.h>
 #include <nap/windowresource.h>
 #include <inputrouter.h>
-#include <nap/entity.h>
+#include "entity.h"
 #include <video.h>
 #include <artnetcontroller.h>
 

@@ -16,7 +16,7 @@
 #include <nap/resourcemanager.h>
 #include <nap/logger.h>
 #include <sceneservice.h>
-#include "nap/scene.h"
+#include "scene.h"
 
 namespace nap
 {

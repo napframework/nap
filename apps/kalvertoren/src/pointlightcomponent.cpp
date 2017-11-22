@@ -1,7 +1,7 @@
 #include "pointlightcomponent.h"
 
 // External Includes
-#include <nap/entity.h>
+#include "entity.h"
 
 RTTI_BEGIN_CLASS(nap::PointlightComponent)
 	RTTI_PROPERTY("Intensity", &nap::PointlightComponent::mIntensity, nap::rtti::EPropertyMetaData::Required)

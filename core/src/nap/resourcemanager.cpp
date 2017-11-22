@@ -1,18 +1,14 @@
 #include "resourcemanager.h"
 #include "objectgraph.h"
-#include "entityptr.h"
-#include "componentptr.h"
 #include "logger.h"
 #include "core.h"
 #include "rttiobjectgraphitem.h"
-#include "entityobjectgraphitem.h"
 #include <utility/fileutils.h>
 #include <utility/stringutils.h>
 #include <rtti/rttiutilities.h>
 #include <rtti/jsonreader.h>
 #include <rtti/pythonmodule.h>
 #include <nap/core.h>
-#include "scene.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ResourceManager)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -93,7 +89,6 @@ namespace nap
 		mFactory(std::make_unique<Factory>()),
 		mCore(core)
 	{ 
-		mFactory->addObjectCreator(std::make_unique<SceneCreator>(core));
 	}
 
 

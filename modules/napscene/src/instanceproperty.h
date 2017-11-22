@@ -1,10 +1,10 @@
 #pragma once
 
 // Local Includes
-#include "objectptr.h"
 #include "componentptr.h"
-#include "rtti/rttiobject.h"
-#include "rtti/rttipath.h"
+#include <rtti/rttiobject.h>
+#include <rtti/rttipath.h>
+#include <nap/objectptr.h>
 
 // External Includes
 

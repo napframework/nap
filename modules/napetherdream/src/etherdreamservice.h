@@ -2,7 +2,7 @@
 
 // External Includes
 #include <nap/service.h>
-#include <nap/entity.h>
+#include "entity.h"
 
 // Local Includes
 #include "etherdreamdac.h"

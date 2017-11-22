@@ -1,11 +1,11 @@
 #pragma once
 
 // Local Includes
-#include "utility/uniqueptrvectoriterator.h"
-#include "objectptr.h"
 #include "componentptr.h"
 #include "component.h"
 #include "instanceproperty.h"
+#include <utility/uniqueptrvectoriterator.h>
+#include <nap/objectptr.h>
 
 namespace nap
 {
@@ -16,27 +16,6 @@ namespace nap
 	class Scene;
 
 	using EntityList = std::vector<EntityInstance*>;
-
-
-	/**
-	* Selects whether the type check should be an exact type match or whether
-	* the type should be derived from the given type.
-	*/
-	enum class NAPAPI ETypeCheck : uint8_t
-	{
-		EXACT_MATCH,
-		IS_DERIVED_FROM
-	};
-
-
-	/**
-	* Helper function to check whether two types match, based on a comparison mode
-	*/
-	static inline bool isTypeMatch(const rtti::TypeInfo& typeA, const rtti::TypeInfo& typeB, ETypeCheck typeCheck)
-	{
-		return typeCheck == ETypeCheck::EXACT_MATCH ? typeA == typeB : typeA.is_derived_from(typeB);
-	}
-
 
 	/**
 	 * An EntityInstance is the runtime-instance of an Entity, which is read from json.
@@ -93,35 +72,35 @@ namespace nap
 		* @param type The type of the component to find.
 		* @return The found component. Null if not found.
 		*/
-		ComponentInstance* findComponent(const rtti::TypeInfo& type, ETypeCheck typeCheck = ETypeCheck::EXACT_MATCH) const;
+		ComponentInstance* findComponent(const rtti::TypeInfo& type, rtti::ETypeCheck typeCheck = rtti::ETypeCheck::EXACT_MATCH) const;
 
 		/**
 		* Convenience template function to find the first component of the specified type 
 		* @param typeCheck if the the component of type T is derived from or a direct match
 		*/
 		template<class T>
-		T* findComponent(ETypeCheck typeCheck = ETypeCheck::EXACT_MATCH) const;
+		T* findComponent(rtti::ETypeCheck typeCheck = rtti::ETypeCheck::EXACT_MATCH) const;
 
 		/**
 		* Check whether this entity has a component of the specified type
 		* @param type The type of component to search for
 		* @param typeCheck if the the component of @type is derived from or a direct match
 		*/
-		bool hasComponent(const rtti::TypeInfo& type, ETypeCheck typeCheck = ETypeCheck::EXACT_MATCH) const;
+		bool hasComponent(const rtti::TypeInfo& type, rtti::ETypeCheck typeCheck = rtti::ETypeCheck::EXACT_MATCH) const;
 
 		/**
 		* Convenience function to check whether this entity has a component of the specified type
 		* @param typeCheck if the the component of type T is derived from or a direct match
 		*/
 		template<class T>
-		bool hasComponent(ETypeCheck typeCheck = ETypeCheck::EXACT_MATCH) const;
+		bool hasComponent(rtti::ETypeCheck typeCheck = rtti::ETypeCheck::EXACT_MATCH) const;
 
 		/**
 		* Get a component of the specified type. Asserts if not found. If multiple components of the matching type exist the first one is returned
 		* @param type The type of component to get
 		* @return The component
 		*/
-		ComponentInstance& getComponent(const rtti::TypeInfo& type, ETypeCheck typeCheck = ETypeCheck::EXACT_MATCH) const;
+		ComponentInstance& getComponent(const rtti::TypeInfo& type, rtti::ETypeCheck typeCheck = rtti::ETypeCheck::EXACT_MATCH) const;
 
 		/**
 		* Convenience function to get a component of the specified type. If multiple components of the matching type exist the first one is returned
@@ -130,7 +109,7 @@ namespace nap
 		* @return the found component
 		*/
 		template<class T>
-		T& getComponent(ETypeCheck typeCheck = ETypeCheck::EXACT_MATCH) const;
+		T& getComponent(rtti::ETypeCheck typeCheck = rtti::ETypeCheck::EXACT_MATCH) const;
 
 		/**
 		 * Get all direct entity components of the specified type. 
@@ -138,7 +117,7 @@ namespace nap
 		 * @param components The list of components found
 		 * @param typeCheck if the the component of type T is derived from or a direct match
 		 */
-		void getComponentsOfType(const rtti::TypeInfo& type, std::vector<ComponentInstance*>& components, ETypeCheck typeCheck = ETypeCheck::IS_DERIVED_FROM) const;
+		void getComponentsOfType(const rtti::TypeInfo& type, std::vector<ComponentInstance*>& components, rtti::ETypeCheck typeCheck = rtti::ETypeCheck::IS_DERIVED_FROM) const;
 
 		/**
 		 * Convenience template function to get all direct child components of the specified type T
@@ -146,7 +125,7 @@ namespace nap
 		 * @param typeCheck if the child is of the exact type or derived from type T
 		 */
 		template<class T>
-		void getComponentsOfType(std::vector<T*>& outComponents, ETypeCheck typeCheck = ETypeCheck::IS_DERIVED_FROM) const;
+		void getComponentsOfType(std::vector<T*>& outComponents, rtti::ETypeCheck typeCheck = rtti::ETypeCheck::IS_DERIVED_FROM) const;
 
 		/**
 		 * Convenience function that returns all components of the specified type in the entity structure recursively
@@ -154,21 +133,21 @@ namespace nap
 		 * @param typeCheck if the child is of the exact type or derived from type T
 		 */
 		template<class T>
-		void getComponentsOfTypeRecursive(std::vector<T*>& outComponents, ETypeCheck typeCheck = ETypeCheck::IS_DERIVED_FROM);
+		void getComponentsOfTypeRecursive(std::vector<T*>& outComponents, rtti::ETypeCheck typeCheck = rtti::ETypeCheck::IS_DERIVED_FROM);
 
 		/**
 		 * Check whether this entity has any of components of the specified type.
 		 * @param type The type of component to check for
 		 * @param typeCheck if the child is of the exact type or derived from @type
 		 */
-		bool hasComponentsOfType(const rtti::TypeInfo& type, ETypeCheck typeCheck = ETypeCheck::IS_DERIVED_FROM) const;
+		bool hasComponentsOfType(const rtti::TypeInfo& type, rtti::ETypeCheck typeCheck = rtti::ETypeCheck::IS_DERIVED_FROM) const;
 
 		/**
 		 * Convenience template function to check whether this entity has any component of the specified type
 		 * typeCheckif the child is of the exact type or derived from type T
 		 */
 		template<class T>
-		bool hasComponentsOfType(ETypeCheck typeCheck = ETypeCheck::IS_DERIVED_FROM) const;
+		bool hasComponentsOfType(rtti::ETypeCheck typeCheck = rtti::ETypeCheck::IS_DERIVED_FROM) const;
 
 		/**
 		 * Add a child entity to this entity. Ownership is not transfered to this entity.
@@ -242,20 +221,20 @@ namespace nap
 		 * @param type The type of component to find
 		 * @return The found component. Null if not found
 		 */
-		ObjectPtr<Component> findComponent(const rtti::TypeInfo& type, ETypeCheck typeCheck = ETypeCheck::EXACT_MATCH) const;
+		ObjectPtr<Component> findComponent(const rtti::TypeInfo& type, rtti::ETypeCheck typeCheck = rtti::ETypeCheck::EXACT_MATCH) const;
 
 		/**
 		 * Check whether this Entity has a component of the specified type
 		 *
 		 * @param type The type of component to check for
 		 */
-		bool hasComponent(const rtti::TypeInfo& type, ETypeCheck typeCheck = ETypeCheck::EXACT_MATCH) const;
+		bool hasComponent(const rtti::TypeInfo& type, rtti::ETypeCheck typeCheck = rtti::ETypeCheck::EXACT_MATCH) const;
 
 		/** 
 		 * Convenience function to check whether this entity has a component of the specified type
 		 */
 		template<class T>
-		bool hasComponent(ETypeCheck typeCheck = ETypeCheck::EXACT_MATCH) const;
+		bool hasComponent(rtti::ETypeCheck typeCheck = rtti::ETypeCheck::EXACT_MATCH) const;
 
 	public:
 		ComponentList	mComponents;			// The components of this entity
@@ -266,17 +245,17 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<class T>
-	void EntityInstance::getComponentsOfType(std::vector<T*>& components, ETypeCheck typeCheck) const
+	void EntityInstance::getComponentsOfType(std::vector<T*>& components, rtti::ETypeCheck typeCheck) const
 	{
 		const rtti::TypeInfo type = rtti::TypeInfo::get<T>();
 		for (auto& component : mComponents)
-			if (isTypeMatch(component->get_type(), type, typeCheck))
+			if (rtti::isTypeMatch(component->get_type(), type, typeCheck))
 				components.emplace_back(rtti_cast<T>(component.get()));
 	}
 
 
 	template<typename T>
-	void getComponentsOfTypeRecursive(nap::EntityInstance& entity, std::vector<T*>& outComponents, ETypeCheck typeCheck /*= ETypeCheck::IS_DERIVED_FROM*/)
+	void getComponentsOfTypeRecursive(nap::EntityInstance& entity, std::vector<T*>& outComponents, rtti::ETypeCheck typeCheck /*= ETypeCheck::IS_DERIVED_FROM*/)
 	{
 		entity.getComponentsOfType<T>(outComponents, typeCheck);
 		for (auto& child : entity.getChildren())
@@ -287,32 +266,32 @@ namespace nap
 
 
 	template<class T>
-	void EntityInstance::getComponentsOfTypeRecursive(std::vector<T*>& outComponents, ETypeCheck typeCheck /*= ETypeCheck::IS_DERIVED_FROM*/)
+	void EntityInstance::getComponentsOfTypeRecursive(std::vector<T*>& outComponents, rtti::ETypeCheck typeCheck /*= ETypeCheck::IS_DERIVED_FROM*/)
 	{
 		nap::getComponentsOfTypeRecursive<T>(*this, outComponents, typeCheck);
 	}
 
 
 	template<class T>
-	bool EntityInstance::hasComponentsOfType(ETypeCheck typeCheck) const
+	bool EntityInstance::hasComponentsOfType(rtti::ETypeCheck typeCheck) const
 	{
 		return hasComponentsOfType(rtti::TypeInfo::get<T>(), typeCheck);
 	}
 
 	template<class T>
-	T* EntityInstance::findComponent(ETypeCheck typeCheck) const
+	T* EntityInstance::findComponent(rtti::ETypeCheck typeCheck) const
 	{
 		return rtti_cast<T>(findComponent(rtti::TypeInfo::get<T>(), typeCheck));
 	}
 
 	template<class T>
-	bool EntityInstance::hasComponent(ETypeCheck typeCheck) const
+	bool EntityInstance::hasComponent(rtti::ETypeCheck typeCheck) const
 	{
 		return hasComponent(rtti::TypeInfo::get<T>(), typeCheck);
 	}
 
 	template<class T>
-	T& EntityInstance::getComponent(ETypeCheck typeCheck) const
+	T& EntityInstance::getComponent(rtti::ETypeCheck typeCheck) const
 	{
 		return *rtti_cast<T>(&getComponent(rtti::TypeInfo::get<T>(), typeCheck));
 	}
@@ -320,7 +299,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<class T>
-	bool Entity::hasComponent(ETypeCheck typeCheck) const
+	bool Entity::hasComponent(rtti::ETypeCheck typeCheck) const
 	{
 		return hasComponent(rtti::TypeInfo::get<T>(), typeCheck);
 	}

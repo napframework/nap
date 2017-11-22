@@ -2,7 +2,7 @@
 #include "linemodulationcomponent.h"
 
 // External Includes
-#include <nap/entity.h>
+#include "entity.h"
 #include <nap/logger.h>
 #include <mathutils.h>
 #include <glm/gtc/matrix_transform.hpp>
