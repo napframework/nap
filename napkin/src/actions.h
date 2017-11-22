@@ -7,8 +7,8 @@
 #include <QStandardItem>
 #include <QSet>
 #include <QUndoCommand>
-#include <nap/entity.h>
 #include <nap/logger.h>
+#include <entity.h>
 
 #include "appcontext.h"
 #include "napkinglobals.h"

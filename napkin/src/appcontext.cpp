@@ -37,6 +37,10 @@ bool ResolveLinks(const OwnedObjectList& objects, const UnresolvedPointerList& u
 
 AppContext::AppContext()
 {
+    ErrorState err;
+    if (!core().initializeEngine(err)) {
+        nap::Logger::fatal("Failed to initialize engine");
+    }
 }
 
 
@@ -63,8 +67,8 @@ void AppContext::loadFile(const QString& filename)
 
     QSettings().setValue(settingsKey::LAST_OPENED_FILE, filename);
 
-    auto& factory = core().getResourceManager()->getFactory();
     ErrorState err;
+    auto& factory = core().getResourceManager()->getFactory();
     nap::rtti::RTTIDeserializeResult result;
     if (!readJSONFile(filename.toStdString(), factory, result, err)) {
         nap::Logger::fatal(err.toString());

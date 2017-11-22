@@ -23,7 +23,7 @@ namespace nap
 		 * @error If function returns false, contains error information.
 		 * @return True on success, otherwise failure.
 		 */
-		bool init(utility::ErrorState& error);
+		bool init(utility::ErrorState& error) override;
 
 		/**
 		 * @return All scenes that are loaded.

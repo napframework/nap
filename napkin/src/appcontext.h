@@ -2,7 +2,7 @@
 
 
 #include <nap/core.h>
-#include <nap/entity.h>
+#include <entity.h>
 #include <rtti/rttireader.h>
 
 #include <QUndoCommand>
