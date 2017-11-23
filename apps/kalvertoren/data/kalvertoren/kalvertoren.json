@@ -446,6 +446,42 @@
 			]
 		},
 		
+
+		{
+			"Type" : "nap::Scene",
+			"mID": "Scene",		
+			"Entities" : 
+			[
+				{
+					"Entity" : "DefaultInputRouterEntity"
+				},
+				{
+					"Entity" : "ModelsEntity"
+				},
+				{
+					"Entity" : "KalvertorenEntity"
+				},
+				{
+					"Entity" : "HeiligewegEntity"
+				},
+				{
+					"Entity" : "SingelEntity"
+				},
+				{
+					"Entity" : "VideoEntity"
+				},
+				{
+					"Entity" : "VideoCameraEntity"
+				},
+				{
+					"Entity" : "SceneCameraEntity"
+				},
+				{
+					"Entity" : "LightEntity"
+				}
+			]
+		},
+
 		{
 			"Type" : "nap::Entity",
 			"mID": "DefaultInputRouterEntity",		

@@ -613,51 +613,408 @@
 		},
 
 		{
-			"Type" : "nap::LaserCompound",
-			"mID" : "LaserCompound1",
-			"LineMesh" : "LaserLineMesh1",
-			"Tracemesh" : "LaserTraceMesh1",
-			"NormalMesh" : "NormalsMesh1",
-			"Dac" : "Laser1",
-			"Target" : "LaserRenderTarget1",
-			"LaserID" : 0,
-			"Offset" : 0.0
-		},
+			"Type" : "nap::Scene",
+			"mID" : "Scene",
+			"Entities" :
+			[
+				{
+					"Entity" : "LaserCameraEntity"
+				},
+				{
+					"Entity" : "FrameCameraEntity"
+				},
+				{
+					"Entity" : "LaserControllerEntity",
+					"InstanceProperties" : [
+						{
+					 		"TargetComponent" : "./LaserPrototypeEntity:0/LaserSplineEntity/LineBlender",
+					 		"TargetAttributes" : [
+					 			{
+					 				"Path" : "Target",
+					 				"Value" : {
+					 					"Type" : "nap::PointerInstancePropertyValue",
+					 					"Value": "LaserLineMesh1"
+					 				}
+					 			}
+					 		]
+						},
+				 		{
+					 		"TargetComponent" : "./LaserPrototypeEntity:0/LaserSplineEntity/RenderLaserLineComponent",
+					 		"TargetAttributes" : [
+					 			{
+					 				"Path" : "Mesh",
+					 				"Value" : {
+					 					"Type" : "nap::PointerInstancePropertyValue",
+					 					"Value": "LaserLineMesh1"
+					 				}
+					 			}
+					 		]			 		
+						},
+			 			{
+					 		"TargetComponent" : "./LaserPrototypeEntity:0/LaserSplineEntity/RenderLaserNormalsComponent",
+					 		"TargetAttributes" : [
+					 			{
+					 				"Path" : "Mesh",
+					 				"Value" : {
+					 					"Type" : "nap::PointerInstancePropertyValue",
+					 					"Value": "NormalsMesh1"
+					 				}
+					 			}
+					 		]			 		
+						},
+			 			{
+					 		"TargetComponent" : "./LaserPrototypeEntity:0/LaserSplineEntity/UpdateLaserNormalsComponent",
+					 		"TargetAttributes" : [
+					 			{
+					 				"Path" : "NormalMesh",
+					 				"Value" : {
+					 					"Type" : "nap::PointerInstancePropertyValue",
+					 					"Value": "NormalsMesh1"
+					 				}
+					 			}
+					 		]			 		
+						},
+			 			{
+					 		"TargetComponent" : "./LaserPrototypeEntity:0/LaserSplineEntity/LineTracer",
+					 		"TargetAttributes" : [
+					 			{
+					 				"Path" : "Target",
+					 				"Value" : {
+					 					"Type" : "nap::PointerInstancePropertyValue",
+					 					"Value": "LaserTraceMesh1"
+					 				}
+					 			},
+					 			{
+					 				"Path" : "Properties/Offset",
+					 				"Value" : {
+					 					"Type" : "nap::FloatInstancePropertyValue",
+					 					"Value": 0.0
+					 				}
+					 			}
+					 		]			 		
+						},
+		 				{
+					 		"TargetComponent" : "./LaserPrototypeEntity:0/LaserOutputEntity/LaserOutputComponent",
+					 		"TargetAttributes" : [
+					 			{
+					 				"Path" : "Line",
+					 				"Value" : {
+					 					"Type" : "nap::PointerInstancePropertyValue",
+					 					"Value": "LaserTraceMesh1"
+					 				}
+					 			}
+					 		]			 		
+						},
+		 				{
+					 		"TargetComponent" : "./LaserPrototypeEntity:0/LaserSplineEntity/OSCInputComponent",
+					 		"TargetAttributes" : [
+					 			{
+					 				"Path" : "LaserID",
+					 				"Value" : {
+					 					"Type" : "nap::Int32InstancePropertyValue",
+					 					"Value": 0
+					 				}
+					 			}
+					 		]			 		
+						},
 
-		{
-			"Type" : "nap::LaserCompound",
-			"mID" : "LaserCompound2",
-			"LineMesh" : "LaserLineMesh2",
-			"Tracemesh" : "LaserTraceMesh2",
-			"NormalMesh" : "NormalsMesh2",
-			"Dac" : "Laser2",
-			"Target" : "LaserRenderTarget2",
-			"LaserID" : 1,
-			"Offset" : 0.25
-		},
 
-		{
-			"Type" : "nap::LaserCompound",
-			"mID" : "LaserCompound3",
-			"LineMesh" : "LaserLineMesh3",
-			"Tracemesh" : "LaserTraceMesh3",
-			"NormalMesh" : "NormalsMesh3",
-			"Target" : "LaserRenderTarget3",
-			"Dac" : "Laser3",
-			"LaserID" : 2,
-			"Offset" : 0.5
-		},
+						{
+					 		"TargetComponent" : "./LaserPrototypeEntity:1/LaserSplineEntity/LineBlender",
+					 		"TargetAttributes" : [
+					 			{
+					 				"Path" : "Target",
+					 				"Value" : {
+					 					"Type" : "nap::PointerInstancePropertyValue",
+					 					"Value": "LaserLineMesh2"
+					 				}
+					 			}
+					 		]			 		
+						},
+						{
+					 		"TargetComponent" : "./LaserPrototypeEntity:1/LaserSplineEntity/RenderLaserLineComponent",
+					 		"TargetAttributes" : [
+					 			{
+					 				"Path" : "Mesh",
+					 				"Value" : {
+					 					"Type" : "nap::PointerInstancePropertyValue",
+					 					"Value": "LaserLineMesh2"
+					 				}
+					 			}
+					 		]			 		
+						},
+			 			{
+					 		"TargetComponent" : "./LaserPrototypeEntity:1/LaserSplineEntity/RenderLaserNormalsComponent",
+					 		"TargetAttributes" : [
+					 			{
+					 				"Path" : "Mesh",
+					 				"Value" : {
+					 					"Type" : "nap::PointerInstancePropertyValue",
+					 					"Value": "NormalsMesh2"
+					 				}
+					 			}
+					 		]			 		
+						},
+			 			{
+					 		"TargetComponent" : "./LaserPrototypeEntity:1/LaserSplineEntity/UpdateLaserNormalsComponent",
+					 		"TargetAttributes" : [
+					 			{
+					 				"Path" : "NormalMesh",
+					 				"Value" : {
+					 					"Type" : "nap::PointerInstancePropertyValue",
+					 					"Value": "NormalsMesh2"
+					 				}
+					 			}
+					 		]			 		
+						},
+			 			{
+					 		"TargetComponent" : "./LaserPrototypeEntity:1/LaserSplineEntity/LineTracer",
+					 		"TargetAttributes" : [
+					 			{
+					 				"Path" : "Target",
+					 				"Value" : {
+					 					"Type" : "nap::PointerInstancePropertyValue",
+					 					"Value": "LaserTraceMesh2"
+					 				}
+					 			},
+					 			{
+					 				"Path" : "Properties/Offset",
+					 				"Value" : {
+					 					"Type" : "nap::FloatInstancePropertyValue",
+					 					"Value": 0.25
+					 				}
+					 			}
+					 		]			 		
+						},
+						{
+					 		"TargetComponent" : "./LaserPrototypeEntity:1/LaserOutputEntity/LaserOutputComponent",
+					 		"TargetAttributes" : [
+					 			{
+					 				"Path" : "Line",
+					 				"Value" : {
+					 					"Type" : "nap::PointerInstancePropertyValue",
+					 					"Value": "LaserTraceMesh2"
+					 				},
+					 				"Path" : "DAC",
+					 				"Value" : {
+					 					"Type" : "nap::PointerInstancePropertyValue",
+					 					"Value": "Laser2"
+					 				}
+					 			}
+					 		]			 		
+						},
+		 				{
+					 		"TargetComponent" : "./LaserPrototypeEntity:1/LaserSplineEntity/OSCInputComponent",
+					 		"TargetAttributes" : [
+					 			{
+					 				"Path" : "LaserID",
+					 				"Value" : {
+					 					"Type" : "nap::Int32InstancePropertyValue",
+					 					"Value": 1
+					 				}
+					 			}
+					 		]			 		
+						},
 
-		{
-			"Type" : "nap::LaserCompound",
-			"mID" : "LaserCompound4",
-			"LineMesh" : "LaserLineMesh4",
-			"Tracemesh" : "LaserTraceMesh4",
-			"NormalMesh" : "NormalsMesh4",
-			"Target" : "LaserRenderTarget4",
-			"Dac" : "Laser4",
-			"LaserID" : 3,
-			"Offset" : 0.75
+
+
+						{
+					 		"TargetComponent" : "./LaserPrototypeEntity:2/LaserSplineEntity/LineBlender",
+					 		"TargetAttributes" : [
+					 			{
+					 				"Path" : "Target",
+					 				"Value" : {
+					 					"Type" : "nap::PointerInstancePropertyValue",
+					 					"Value": "LaserLineMesh3"
+					 				}
+					 			}
+					 		]			 		
+						},
+						{
+					 		"TargetComponent" : "./LaserPrototypeEntity:2/LaserSplineEntity/RenderLaserLineComponent",
+					 		"TargetAttributes" : [
+					 			{
+					 				"Path" : "Mesh",
+					 				"Value" : {
+					 					"Type" : "nap::PointerInstancePropertyValue",
+					 					"Value": "LaserLineMesh3"
+					 				}
+					 			}
+					 		]			 		
+						},
+			 			{
+					 		"TargetComponent" : "./LaserPrototypeEntity:2/LaserSplineEntity/RenderLaserNormalsComponent",
+					 		"TargetAttributes" : [
+					 			{
+					 				"Path" : "Mesh",
+					 				"Value" : {
+					 					"Type" : "nap::PointerInstancePropertyValue",
+					 					"Value": "NormalsMesh3"
+					 				}
+					 			}
+					 		]			 		
+						},
+			 			{
+					 		"TargetComponent" : "./LaserPrototypeEntity:2/LaserSplineEntity/UpdateLaserNormalsComponent",
+					 		"TargetAttributes" : [
+					 			{
+					 				"Path" : "NormalMesh",
+					 				"Value" : {
+					 					"Type" : "nap::PointerInstancePropertyValue",
+					 					"Value": "NormalsMesh3"
+					 				}
+					 			}
+					 		]			 		
+						},
+			 			{
+					 		"TargetComponent" : "./LaserPrototypeEntity:2/LaserSplineEntity/LineTracer",
+					 		"TargetAttributes" : [
+					 			{
+					 				"Path" : "Target",
+					 				"Value" : {
+					 					"Type" : "nap::PointerInstancePropertyValue",
+					 					"Value": "LaserTraceMesh3"
+					 				}
+					 			},
+					 			{
+					 				"Path" : "Properties/Offset",
+					 				"Value" : {
+					 					"Type" : "nap::FloatInstancePropertyValue",
+					 					"Value": 0.5
+					 				}
+					 			}
+					 		]			 		
+						},
+			 			{
+					 		"TargetComponent" : "./LaserPrototypeEntity:2/LaserOutputEntity/LaserOutputComponent",
+					 		"TargetAttributes" : [
+					 			{
+					 				"Path" : "Line",
+					 				"Value" : {
+					 					"Type" : "nap::PointerInstancePropertyValue",
+					 					"Value": "LaserTraceMesh3"
+					 				},
+					 				"Path" : "DAC",
+					 				"Value" : {
+					 					"Type" : "nap::PointerInstancePropertyValue",
+					 					"Value": "Laser3"
+					 				}
+					 			}
+					 		]			 		
+						},
+		 				{
+					 		"TargetComponent" : "./LaserPrototypeEntity:2/LaserSplineEntity/OSCInputComponent",
+					 		"TargetAttributes" : [
+					 			{
+					 				"Path" : "LaserID",
+					 				"Value" : {
+					 					"Type" : "nap::Int32InstancePropertyValue",
+					 					"Value": 2
+					 				}
+					 			}
+					 		]			 		
+						},
+
+
+						{
+					 		"TargetComponent" : "./LaserPrototypeEntity:3/LaserSplineEntity/LineBlender",
+					 		"TargetAttributes" : [
+					 			{
+					 				"Path" : "Target",
+					 				"Value" : {
+					 					"Type" : "nap::PointerInstancePropertyValue",
+					 					"Value": "LaserLineMesh4"
+					 				}
+					 			}
+					 		]			 		
+						},
+						{
+					 		"TargetComponent" : "./LaserPrototypeEntity:3/LaserSplineEntity/RenderLaserLineComponent",
+					 		"TargetAttributes" : [
+					 			{
+					 				"Path" : "Mesh",
+					 				"Value" : {
+					 					"Type" : "nap::PointerInstancePropertyValue",
+					 					"Value": "LaserLineMesh4"
+					 				}
+					 			}
+					 		]			 		
+						},
+			 			{
+					 		"TargetComponent" : "./LaserPrototypeEntity:3/LaserSplineEntity/RenderLaserNormalsComponent",
+					 		"TargetAttributes" : [
+					 			{
+					 				"Path" : "Mesh",
+					 				"Value" : {
+					 					"Type" : "nap::PointerInstancePropertyValue",
+					 					"Value": "NormalsMesh4"
+					 				}
+					 			}
+					 		]			 		
+						},
+			 			{
+					 		"TargetComponent" : "./LaserPrototypeEntity:3/LaserSplineEntity/UpdateLaserNormalsComponent",
+					 		"TargetAttributes" : [
+					 			{
+					 				"Path" : "NormalMesh",
+					 				"Value" : {
+					 					"Type" : "nap::PointerInstancePropertyValue",
+					 					"Value": "NormalsMesh4"
+					 				}
+					 			}
+					 		]			 		
+						},
+			 			{
+					 		"TargetComponent" : "./LaserPrototypeEntity:3/LaserSplineEntity/LineTracer",
+					 		"TargetAttributes" : [
+					 			{
+					 				"Path" : "Target",
+					 				"Value" : {
+					 					"Type" : "nap::PointerInstancePropertyValue",
+					 					"Value": "LaserTraceMesh4"
+					 				}
+					 			},
+					 			{
+					 				"Path" : "Properties/Offset",
+					 				"Value" : {
+					 					"Type" : "nap::FloatInstancePropertyValue",
+					 					"Value": 0.75
+					 				}
+					 			}
+					 		]			 		
+						},
+			 			{
+					 		"TargetComponent" : "./LaserPrototypeEntity:3/LaserOutputEntity/LaserOutputComponent",
+					 		"TargetAttributes" : [
+					 			{
+					 				"Path" : "Line",
+					 				"Value" : {
+					 					"Type" : "nap::PointerInstancePropertyValue",
+					 					"Value": "LaserTraceMesh4"
+					 				},
+					 				"Path" : "DAC",
+					 				"Value" : {
+					 					"Type" : "nap::PointerInstancePropertyValue",
+					 					"Value": "Laser4"
+					 				}
+					 			}
+					 		]			 		
+						},
+		 				{
+					 		"TargetComponent" : "./LaserPrototypeEntity:3/LaserSplineEntity/OSCInputComponent",
+					 		"TargetAttributes" : [
+					 			{
+					 				"Path" : "LaserID",
+					 				"Value" : {
+					 					"Type" : "nap::Int32InstancePropertyValue",
+					 					"Value": 3
+					 				}
+					 			}
+					 		]			 		
+						}
+					]
+				}
+			]
 		},
 
 		{
@@ -670,12 +1027,24 @@
 				},
 				{
 					"Type" : "nap::LaserControlComponent",
-					"LaserCompounds" :
+					"Lasers" :
 					[
-						"LaserCompound1",
-						"LaserCompound2",
-						"LaserCompound3",
-						"LaserCompound4"
+						{
+							"Target" : "LaserRenderTarget1",
+							"LaserID" : 0
+						},
+						{
+							"Target" : "LaserRenderTarget2",
+							"LaserID" : 1
+						},
+						{
+							"Target" : "LaserRenderTarget3",
+							"LaserID" : 2
+						},
+						{
+							"Target" : "LaserRenderTarget4",
+							"LaserID" : 3
+						}
 					]
 				}
 			],
@@ -695,7 +1064,7 @@
 		{
 			"Type" : "nap::Entity",
 			"mID" : "LaserFrameEntity",
-			"AutoSpawn" : false,
+			
 			"Components" :
 			[
 				{
@@ -720,40 +1089,11 @@
 		{
 			"Type" : "nap::Entity",
 			"mID" : "LaserPrototypeEntity",
-			"AutoSpawn" : false,
+			
 			"Components" :
 			[
 				{
 					"Type" : "nap::TransformComponent"
-				},
-				{
-					"Type" : "nap::MakePrototypeComponent",
-					"OSCAddresses" : 
-					[
-						"intensity",
-						"startposition",
-						"endposition",
-						"rotation",
-						"resetrotation",
-						"blend",
-						"scale",
-						"positionx",
-						"positiony",
-						"modulation",
-						"noise",
-						"synccolor",
-						"tracer",
-						"resettracer",
-						"nextline",
-						"random",
-						"resetblend",
-						"startxposition",
-						"startyposition",
-						"endxposition",
-						"endyposition",
-						"smoothx",
-						"smoothy"
-					]
 				}
 			],
 			"Children" :
@@ -820,15 +1160,16 @@
 		{
 			"Type" : "nap::Entity",
 			"mID" :  "TracerVisualizeEntity",
-			"AutoSpawn" : false,
+			
 			"Components" : 
 			[
 				{
-					"Type" : "nap::TransformComponent"
+					"Type" : "nap::TransformComponent",
+					"mID" : "TracerTransformComponent"
 				},
 				{
 					"Type" : "nap::RenderableMeshComponent",
-					"mID" : "RenderTracerComponent",
+					"mID" : "TracerRendererComponent",
 					"Mesh" : "TracerVisualizeMesh",
 					"MaterialInstance" : 
 					{
@@ -841,7 +1182,7 @@
 		{
 			"Type" : "nap::Entity",
 			"mID": "LaserSplineEntity",
-			"AutoSpawn" : false,
+			
 			"Components" : 
 			[
 				{
@@ -881,7 +1222,35 @@
 					"Index" : 0
 				},
 				{
-					"Type" : "nap::OSCInputComponent"
+					"Type" : "nap::LaserOSCInputComponent",
+					"mID" : "OSCInputComponent",
+					"LaserID": 0,
+					"Addresses" : 
+					[
+						"intensity",
+						"startposition",
+						"endposition",
+						"rotation",
+						"resetrotation",
+						"blend",
+						"scale",
+						"positionx",
+						"positiony",
+						"modulation",
+						"noise",
+						"synccolor",
+						"tracer",
+						"resettracer",
+						"nextline",
+						"random",
+						"resetblend",
+						"startxposition",
+						"startyposition",
+						"endxposition",
+						"endyposition",
+						"smoothx",
+						"smoothy"
+					]
 				},
 				{
 					"Type" : "nap::OSCLaserInputHandler",
@@ -961,6 +1330,7 @@
 					"Type" : "nap::LineNoiseComponent",
 					"mID" : "LineNoiseModulator",
 					"BlendComponent" : "./LineBlender",
+					"TraceComponent" : "./LineTracer",
 					"Properties" : 
 					{
 						"Frequency" : 0.51,
@@ -1007,6 +1377,10 @@
 					"Type" : "nap::LineTraceComponent",
 					"mID" : "LineTracer",
 					"BlendComponent" : "./LineBlender",
+					"StartXform" : "./TracerVisualizeEntity:0/TracerTransformComponent",
+					"StartRenderable" : "./TracerVisualizeEntity:0/TracerRendererComponent",
+					"EndXform" : "./TracerVisualizeEntity:1/TracerTransformComponent",
+					"EndRenderable" : "./TracerVisualizeEntity:1/TracerRendererComponent",
 					"Target" : "LaserTraceMesh1",
 					"Properties" :
 					{
@@ -1034,6 +1408,7 @@
 				},
 				{
 					"Type" : "nap::UpdateNormalsComponent",
+					"mID" : "UpdateLaserNormalsComponent",
 					"NormalMesh" : "NormalsMesh1"
 				},
 				{
@@ -1066,7 +1441,7 @@
 		{
 			"Type" : "nap::Entity",
 			"mID"  : "LaserCanvasEntity",
-			"AutoSpawn" : false,
+			
 			"Components" :
 			[
 				{
@@ -1087,7 +1462,7 @@
 		{
 			"Type" : "nap::Entity",
 			"mID": "LaserOutputEntity",
-			"AutoSpawn" : false,
+			
 			"Components" : 
 			[
 				{
@@ -1110,6 +1485,7 @@
 				},
 				{
 					"Type" : "nap::FrustumSyncComponent",
+					"mID" : "LaserFrustumComponent",
 					"LaserOutputComponent" : "./LaserOutputComponent"
 				}		
 			],
