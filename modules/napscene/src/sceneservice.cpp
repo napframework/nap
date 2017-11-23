@@ -10,14 +10,10 @@
 
 namespace nap
 {
-	//////////////////////////////////////////////////////////////////////////
 
-	bool SceneService::init(utility::ErrorState& error)
+	void SceneService::registerObjectCreators(rtti::Factory& factory)
 	{
-		Core& core = getCore();
-		core.getResourceManager()->getFactory().addObjectCreator(std::make_unique<SceneCreator>(core));
-
-		return true;
+		factory.addObjectCreator(std::make_unique<SceneCreator>(getCore()));
 	}
 
 	void SceneService::update(double deltaTime)

@@ -19,18 +19,17 @@ namespace nap
 		virtual ~SceneService() = default;
 
 		/**
-		 * Registers SceneCreator into factory.
-		 * @error If function returns false, contains error information.
-		 * @return True on success, otherwise failure.
-		 */
-		bool init(utility::ErrorState& error) override;
-
-		/**
 		 * @return All scenes that are loaded.
 		 */
 		const SceneSet& getScenes() const { return mScenes; }
 
 	protected:
+
+		/**
+		* Object creation registration
+		*/
+		virtual void registerObjectCreators(rtti::Factory& factory) override;
+
 		/**
 		 * Updates all scenes.
 		 */
