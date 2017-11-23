@@ -3,6 +3,7 @@
 RTTI_BEGIN_ENUM(nap::Texture2D::EFormat)
 	RTTI_ENUM_VALUE(nap::Texture2D::EFormat::RGBA8,	"RGBA8"),
 	RTTI_ENUM_VALUE(nap::Texture2D::EFormat::RGB8,	"RGB8"),
+	RTTI_ENUM_VALUE(nap::Texture2D::EFormat::R8,	"R8"),	
 	RTTI_ENUM_VALUE(nap::Texture2D::EFormat::Depth,	"Depth")
 RTTI_END_ENUM
 

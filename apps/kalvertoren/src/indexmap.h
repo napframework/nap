@@ -5,6 +5,7 @@
 #include <basetexture2d.h>
 #include <nap/configure.h>
 #include <color.h>
+#include <pixmap.h>
 
 namespace nap
 {
@@ -52,7 +53,7 @@ namespace nap
 
 	private:
 		// Bitmap associated with this index map
-		opengl::Bitmap			mBitmap;
+		nap::Pixmap				mPixmap;
 
 		// All the available indexed colors
 		std::vector<IndexColor> mIndexColors;

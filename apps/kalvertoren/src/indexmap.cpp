@@ -28,15 +28,15 @@ namespace nap
 			return false;
 
 		// Load pixel data in to bitmap
-		if (!errorState.check(opengl::loadBitmap(mBitmap, mImagePath, errorState), "Failed to load index map %s; invalid bitmap", mImagePath.c_str()))
+		if (!mPixmap.initFromFile(mImagePath, errorState))
 			return false;
 
 		// Make sure the amount of channels is > 3
-		if (!errorState.check(mBitmap.getNumberOfChannels() >= 3, "Index map: %s does not have 3 channels", mImagePath.c_str()))
+		if (!errorState.check(mPixmap.getBitmap().getNumberOfChannels() >= 3, "Index map: %s does not have 3 channels", mImagePath.c_str()))
 			return false;
 
 		// Make sure it's a 24 bit map
-		if (!errorState.check(mBitmap.getDataType() == opengl::BitmapDataType::BYTE, "Index map is not 8bit per channel", mImagePath.c_str()))
+		if (!errorState.check(mPixmap.mType == Pixmap::EDataType::BYTE, "Index map is not 8bit per channel", mImagePath.c_str()))
 			return false;
 
 		// Get all unique colors from the map
@@ -48,7 +48,7 @@ namespace nap
 
 		// Get opengl settings from bitmap
 		opengl::Texture2DSettings settings;
-		if (!errorState.check(opengl::getSettingsFromBitmap(mBitmap, false, settings, errorState), "Unable to determine texture settings from bitmap %s", mImagePath.c_str()))
+		if (!errorState.check(opengl::getSettingsFromBitmap(mPixmap.getBitmap(), false, settings, errorState), "Unable to determine texture settings from bitmap %s", mImagePath.c_str()))
 			return false;
 		
 		// Force parameters
@@ -59,7 +59,7 @@ namespace nap
 		BaseTexture2D::init(settings);
 
 		// Set data from bitmap
-		getTexture().setData(mBitmap.getData());
+		getTexture().setData(mPixmap.getBitmap().getData());
 
 		return true;
 	}
@@ -83,33 +83,18 @@ namespace nap
 		std::unordered_set<IndexColor> unique_index_colors;
 
 		// Check the amount of available colors
-		for (int i = 0; i < mBitmap.getWidth(); i++)
+		for (int i = 0; i < mPixmap.mWidth; i++)
 		{
-			uint8* pix_color = mBitmap.getPixel<uint8>(i, 0);
-			IndexColor current_color;
-			switch (mBitmap.getColorType())
-			{
-			case opengl::BitmapColorType::BGR:
-				current_color.setValue(EColorChannel::Red,		*(pix_color + 2));
-				current_color.setValue(EColorChannel::Green,	*(pix_color + 1));
-				current_color.setValue(EColorChannel::Blue,		*(pix_color + 0));
-				break;
-			case opengl::BitmapColorType::RGB:
-				current_color.setValue(EColorChannel::Red,		*(pix_color + 0));
-				current_color.setValue(EColorChannel::Green,	*(pix_color + 1));
-				current_color.setValue(EColorChannel::Blue,		*(pix_color + 2));
-				break;
-			default:
-				assert(false);
-				break;
-			}
+			// Get color value at pixel and compare
+			RGBColor8 current_color;
+			mPixmap.getColor<uint8>(i, 0, current_color);
 
 			auto& it = unique_index_colors.find(current_color);
-			if (it == unique_index_colors.end())
-			{
-				unique_index_colors.emplace(current_color);
-				mIndexColors.emplace_back(current_color);
-			}
+			if (it != unique_index_colors.end())
+				continue;
+
+			unique_index_colors.emplace(current_color);
+			mIndexColors.emplace_back(current_color);
 		}
 	}
 

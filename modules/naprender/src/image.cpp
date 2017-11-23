@@ -25,19 +25,19 @@ namespace nap
 			return false;
 
 		// Load pixel data in to bitmap
-		if (!errorState.check(opengl::loadBitmap(mBitmap, mImagePath, errorState), "Failed to load image %s; invalid bitmap", mImagePath.c_str()))
+		if (!mPixmap.initFromFile(mImagePath, errorState))
 			return false;
-		
+
 		// Get opengl settings from bitmap
 		opengl::Texture2DSettings settings;
-		if (!errorState.check(opengl::getSettingsFromBitmap(mBitmap, mCompressed, settings, errorState), "Unable to determine texture settings from bitmap %s", mImagePath.c_str()))
+		if (!errorState.check(opengl::getSettingsFromBitmap(mPixmap.getBitmap(), mCompressed, settings, errorState), "Unable to determine texture settings from bitmap %s", mImagePath.c_str()))
 			return false;
 
 		// Initialize texture from bitmap
 		BaseTexture2D::init(settings);
 
 		// Set data from bitmap
-		getTexture().setData(mBitmap.getData());
+		getTexture().setData(mPixmap.getBitmap().getData());
 
 		return true;
 	}

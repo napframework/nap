@@ -35,7 +35,7 @@ namespace nap
 		/**
 		 *	@return the number of channels associated with this color
 		 */
-		int numberOfChannels() const											{ return mChannels; }
+		int getNumberOfChannels() const											{ return mChannels; }
 
 		/**
 		 *	@return the size of a single channel in bytes
@@ -199,7 +199,7 @@ namespace nap
 	T& nap::Color<T, CHANNELS>::getValue(EColorChannel channel)
 	{
 		int idx = static_cast<int>(channel);
-		assert(idx < this->numberOfChannels());
+		assert(idx < this->getNumberOfChannels());
 		return mValues[idx];
 	}
 
@@ -207,7 +207,7 @@ namespace nap
 	T nap::Color<T, CHANNELS>::getValue(EColorChannel channel) const
 	{
 		int idx = static_cast<int>(channel);
-		assert(idx < this->numberOfChannels());
+		assert(idx < this->getNumberOfChannels());
 		return mValues[idx];
 	}
 
@@ -215,7 +215,7 @@ namespace nap
 	void nap::Color<T, CHANNELS>::setValue(EColorChannel channel, T value)
 	{
 		int idx = static_cast<int>(channel);
-		assert(idx < this->numberOfChannels());
+		assert(idx < this->getNumberOfChannels());
 		mValues[idx] = value;
 	}
 }
