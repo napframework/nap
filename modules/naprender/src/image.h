@@ -2,12 +2,12 @@
 
 // Local Includes
 #include "basetexture2d.h"
+#include "pixmap.h"
 
 // External Includes
 #include <rtti/rttiobject.h>
 #include <utility/dllexport.h>
 #include <glm/glm.hpp>
-#include <nbitmap.h>
 
 namespace nap
 {
@@ -35,15 +35,15 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * @return the bitmap associated with this image
+		 * @return the pixmap associated with this image
 		 */
-		const opengl::Bitmap& getBitmap() const							{ return mBitmap; }
+		const nap::Pixmap& getPixmap() const							{ return mPixmap; }
 
 	public:
 		// Path to img on disk
 		std::string				mImagePath;								///< Path to the image on disk to load
 		bool					mCompressed = false;					///< If the image on the GPU is compressed
-		opengl::Bitmap			mBitmap;								///< The CPU image representation
+		nap::Pixmap				mPixmap;								///< The CPU image representation
 	};
 
 }
