@@ -67,6 +67,7 @@ add_subdirectory(test/tommy)
 add_subdirectory(test/videoplayer)
 add_subdirectory(test/serializationtest)
 add_subdirectory(test/audiotest)
+add_subdirectory(test/unittest)
 
 # app targets
 add_subdirectory(apps/kalvertoren)
