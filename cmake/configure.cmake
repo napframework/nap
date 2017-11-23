@@ -320,3 +320,21 @@ macro(add_platform_specific_files WIN32_SOURCES OSX_SOURCES LINUX_SOURCES)
 		set_source_files_properties(${LINUX_SOURCES} PROPERTIES HEADER_FILE_ONLY TRUE)
 	endif()
 endmacro()
+
+# Package module into platform release
+macro(package_module)
+    install(DIRECTORY "src/" DESTINATION "modules/${PROJECT_NAME}/include"
+            FILES_MATCHING PATTERN "*.h")
+
+    if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/dist/cmake)
+        install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dist/cmake/ DESTINATION modules/${PROJECT_NAME}/)
+    endif()
+
+    if (WIN32)
+        install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>
+                                        LIBRARY DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>
+                                        ARCHIVE DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>)
+    else()
+        install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>)  
+    endif()
+endmacro()

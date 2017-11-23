@@ -1,3 +1,11 @@
+# Find RTTR
+set(RTTR_DIR "${NAP_ROOT}/thirdparty/rttr/cmake")
+find_package(RTTR CONFIG REQUIRED Core)
+
+# Find Python
+set(pybind11_DIR "${NAP_ROOT}/thirdparty/pybind11/share/cmake/pybind11")
+find_package(pybind11 REQUIRED)
+target_include_directories(${PROJECT_NAME} PUBLIC ${pybind11_INCLUDE_DIRS})
 
 if (WIN32)
     find_path(
@@ -52,3 +60,20 @@ endif()
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(naprtti REQUIRED_VARS NAPRTTI_LIBS_RELEASE_DLL NAPRTTI_LIBS_DIR)
+
+
+if (WIN32)
+    # Copy over DLLs post-build
+    add_custom_command(
+        TARGET ${PROJECT_NAME}
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:naprtti> $<TARGET_FILE_DIR:${PROJECT_NAME}>/
+    )
+
+    add_custom_command(
+        TARGET ${PROJECT_NAME}
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:RTTR::Core> $<TARGET_FILE_DIR:${PROJECT_NAME}>/
+    )
+endif()
+

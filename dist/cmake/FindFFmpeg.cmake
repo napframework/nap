@@ -15,7 +15,6 @@
 # Redistribution and use is allowed according to the terms of the New
 # BSD license.
 #
-
 if (FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
 	# in cache already
 	set(FFMPEG_FOUND TRUE)
@@ -31,22 +30,22 @@ else (FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
 
 	find_path(FFMPEG_AVCODEC_INCLUDE_DIR
 		NAMES libavcodec/avcodec.h
-		HINTS ${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/ffmpeg/include
+		HINTS ${CMAKE_CURRENT_LIST_DIR}/../thirdparty/ffmpeg/include
 	)
 
 	find_library(FFMPEG_LIBAVCODEC
 		NAMES avcodec
-		PATHS ${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/ffmpeg/lib
+		PATHS ${CMAKE_CURRENT_LIST_DIR}/../thirdparty/ffmpeg/lib
 	)
 
 	find_library(FFMPEG_LIBAVFORMAT
 		NAMES avformat
-		PATHS ${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/ffmpeg/lib
+		PATHS ${CMAKE_CURRENT_LIST_DIR}/../thirdparty/ffmpeg/lib
 	)
 
 	find_library(FFMPEG_LIBAVUTIL
 		NAMES avutil
-		PATHS ${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/ffmpeg/lib
+		PATHS ${CMAKE_CURRENT_LIST_DIR}/../thirdparty/ffmpeg/lib
 	)
 
 	if (FFMPEG_LIBAVCODEC AND FFMPEG_LIBAVFORMAT)
@@ -71,6 +70,9 @@ else (FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
 		if (FFMPEG_FIND_REQUIRED)
 			message(FATAL_ERROR "Could not find libavcodec or libavformat or libavutil")
 		endif (FFMPEG_FIND_REQUIRED)
+		if (${FFMPEG_FIND_REQUIRED})
+			message(FATAL_ERROR "Could not find libavcodec or libavformat or libavutil")
+		endif()
 	endif (FFMPEG_FOUND)
 
 endif (FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
