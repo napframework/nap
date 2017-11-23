@@ -1,12 +1,10 @@
 #pragma once
 
-// Local Includes
-#include "color.h"
-
 // External Includes
 #include <rtti/rttiobject.h>
 #include <basetexture2d.h>
 #include <nap/configure.h>
+#include <color.h>
 
 namespace nap
 {
