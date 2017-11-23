@@ -1,7 +1,7 @@
 #include "updatenormalscomponent.h"
 
 // External Includes
-#include <nap/entity.h>
+#include <entity.h>
 #include <nap/logger.h>
 
 // nap::updatenormalscomponent run time class definition 

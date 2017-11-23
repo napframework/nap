@@ -8,6 +8,7 @@
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <perspcameracomponent.h>
+#include <scene.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::EtherdreamApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -22,7 +23,7 @@ namespace nap
 	bool EtherdreamApp::init(utility::ErrorState& error)
 	{
 		// Create render service
-		mRenderService = getCore().getService<RenderService>();
+		mRenderService = getCore().getService<RenderService>(); 
 		mInputService  = getCore().getService<InputService>();
 		mSceneService  = getCore().getService<SceneService>();
 		mLaserService  = getCore().getService<EtherDreamService>();
@@ -34,21 +35,23 @@ namespace nap
 		mResourceManager = getCore().getResourceManager();
 
 		// Load scene
-		if (!mResourceManager->loadFile("data/etherdream/etherdream.json", error))
-			return false;
+		if (!mResourceManager->loadFile("data/etherdream/etherdream.json", error)) 
+			return false;    
+
+		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 
 		// Store all render windows
 		mRenderWindow = mResourceManager->findObject<RenderWindow>("Window");
 
 		// Store laser dacs
-		mLaserController = mResourceManager->findEntity("LaserControllerEntity");
+		mLaserController = scene->findEntity("LaserControllerEntity");
 
 		// Store camera
-		mLaserCamera = mResourceManager->findEntity("LaserCameraEntity");
+		mLaserCamera = scene->findEntity("LaserCameraEntity");
 		assert(mLaserCamera != nullptr);
 
 		// Store frame camera
-		mFrameCamera = mResourceManager->findEntity("FrameCameraEntity");
+		mFrameCamera = scene->findEntity("FrameCameraEntity");
 		assert(mFrameCamera != nullptr);
 
 		// Set render states
@@ -127,3 +130,4 @@ namespace nap
 
 	}
 }
+ 
