@@ -4,6 +4,7 @@
 #include <rtti/rttiobject.h>
 #include <basetexture2d.h>
 #include <color.h>
+#include <pixmap.h>
 
 namespace nap
 {
@@ -44,7 +45,7 @@ namespace nap
 
 	private:
 		std::vector<RGBColor8>	mPaletteColors;		///< All the colors extracted from the palette (RGB 8 bit)
-		opengl::Bitmap			mBitmap;			///< Bitmap associated with this led color palette
+		nap::Pixmap				mPixmap;			///< Bitmap associated with this led color palette
 
 		void findPaletteColors();					///< Retrieves all the index colors from the map
 	};
