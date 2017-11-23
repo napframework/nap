@@ -1,0 +1,8 @@
+target_include_directories(${PROJECT_NAME} PUBLIC ${NAP_ROOT}/include/nrender)
+find_package(glm REQUIRED)
+target_include_directories(${PROJECT_NAME} PUBLIC ${GLM_INCLUDE_DIRS})
+find_package(glew REQUIRED)
+target_include_directories(${PROJECT_NAME} PUBLIC ${GLEW_INCLUDE_DIRS})
+find_package(freeimage REQUIRED)
+target_include_directories(${PROJECT_NAME} PUBLIC ${FREEIMAGE_INCLUDE_DIRS})
+find_package(assimp REQUIRED)

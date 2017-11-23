@@ -14,18 +14,11 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
 target_link_libraries(${PROJECT_NAME} napcore)
 
-# Package into release build
-if (WIN32)
-	install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>
-                                    LIBRARY DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>
-                                    ARCHIVE DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>)
+# Package into platform release
+package_module()
 
+if (WIN32)
     # Install for fbxconverter
     install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION tools/
     		CONFIGURATIONS Release)
-else()
-    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>)  
 endif()
-
-install(DIRECTORY "src/" DESTINATION "modules/${PROJECT_NAME}/include"
-        FILES_MATCHING PATTERN "*.h")

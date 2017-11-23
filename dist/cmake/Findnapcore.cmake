@@ -48,3 +48,16 @@ endif()
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(napcore REQUIRED_VARS NAPCORE_LIBS_RELEASE_DLL NAPCORE_LIBS_DIR)
+
+if (WIN32)
+    # Find our naputility import lib
+    find_package(naputility REQUIRED)
+    target_link_libraries(${PROJECT_NAME} naputility)
+
+    # Copy over DLL post-build
+    add_custom_command(
+        TARGET ${PROJECT_NAME}
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:napcore> $<TARGET_FILE_DIR:${PROJECT_NAME}>/
+    )
+endif()

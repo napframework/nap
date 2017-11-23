@@ -10,9 +10,11 @@ if (WIN32)
 
     add_library(naputility SHARED IMPORTED)
     set_target_properties(naputility PROPERTIES
-      IMPORTED_CONFIGURATIONS "Debug;Release"
+      IMPORTED_CONFIGURATIONS "Debug;Release;MinSizeRel;RelWithDebInfo"
       IMPORTED_IMPLIB_DEBUG ${NAPUTILITY_DEBUG_LIBS_IMPLIB}
       IMPORTED_IMPLIB_RELEASE ${NAPUTILITY_RELEASE_LIBS_IMPLIB}
+      IMPORTED_IMPLIB_MINSIZEREL ${NAPUTILITY_RELEASE_LIBS_IMPLIB}
+      IMPORTED_IMPLIB_RELWITHDEBINFO ${NAPUTILITY_RELEASE_LIBS_IMPLIB}
     )
 
     # TODO later: Fix CMake approach and use config-style package files

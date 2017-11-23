@@ -27,6 +27,8 @@ int main(int argc, char *argv[])
 
 	std::vector<std::string> moduleSearchDirectories;
 	moduleSearchDirectories.push_back("."); // Packaged Win64 apps
+
+#ifndef _WIN32
 	moduleSearchDirectories.push_back("lib"); // Packaged MacOS & Linux apps
 	
 	// MacOS & Linux apps in NAP internal source
@@ -49,10 +51,11 @@ int main(int argc, char *argv[])
 	modulePathConfigSuffix = "Release";
 #else
 	modulePathConfigSuffix = "Debug";
-#endif
+#endif // _NDEBUG
 	for (std::string& module : modules) {
 		moduleSearchDirectories.push_back("../../../../modules/" + module + "/lib/" + modulePathConfigSuffix);
 	}
+#endif // _WIN32
 	
 	// ------------------------------------------------------------------------------------------------------------------------------
 	

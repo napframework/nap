@@ -53,16 +53,6 @@ macro(dist_project_template)
 
     include_directories(${NAP_ROOT}/include/)
 
-    foreach (NAP_MODULE ${NAP_MODULES})
-        message("Adding include for ${NAP_MODULE}")
-    	include_directories(${NAP_ROOT}/modules/${NAP_MODULE}/include/)
-    endforeach()
-
-    # Find each module, in a temporary way
-    foreach(NAP_MODULE ${NAP_MODULES})
-        find_module_temp(${NAP_MODULE})
-    endforeach()
-
     #add all cpp files to SOURCES
     file(GLOB SOURCES src/*.cpp)
     file(GLOB HEADERS src/*.h)
@@ -75,47 +65,25 @@ macro(dist_project_template)
     source_group("shaders" FILES ${SHADERS})
 
     add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS})
-    set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
+    if (WIN32)
+        set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
+        if (${CMAKE_VERSION} VERSION_GREATER "3.6.0") 
+            # Set project as startup project in Visual Studio
+            set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
+        endif()
+    endif()
     target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
-    # Pull in core
-
-    # TODO support other platforms ala rtti CMakeLists.txt
-    set(RTTR_DIR "${NAP_ROOT}/thirdparty/rttr/cmake")
-    find_package(RTTR CONFIG REQUIRED Core)
-
+    # Pull in NAP core
     find_package(napcore REQUIRED)
     find_package(naprtti REQUIRED)
 
-    if (WIN32)
-        find_package(naputility REQUIRED)
-        target_link_libraries(${PROJECT_NAME} naputility)
-    endif()
+    # Find each NAP module
+    foreach(NAP_MODULE ${NAP_MODULES})
+        find_nap_module(${NAP_MODULE})
+    endforeach()
 
-    if ("mod_naprender" IN_LIST NAP_MODULES)
-        include_directories(${NAP_ROOT}/include/nrender)
-        find_package(glm REQUIRED)
-        target_include_directories(${PROJECT_NAME} PUBLIC ${GLM_INCLUDE_DIRS})
-        find_package(glew REQUIRED)
-        target_include_directories(${PROJECT_NAME} PUBLIC ${GLEW_INCLUDE_DIRS})
-        find_package(freeimage REQUIRED)
-        target_include_directories(${PROJECT_NAME} PUBLIC ${FREEIMAGE_INCLUDE_DIRS})
-    endif()
-
-    # It seems RTTI pulls python in so we need it by default
-    set(pybind11_DIR "${NAP_ROOT}/thirdparty/pybind11/share/cmake/pybind11")
-    find_package(pybind11 REQUIRED)
-    target_include_directories(${PROJECT_NAME} PUBLIC ${pybind11_INCLUDE_DIRS})
-
-    # Pull in SDL as required
-    if ("mod_napsdlinput" IN_LIST NAP_MODULES OR "mod_napsdlwindow" IN_LIST NAP_MODULES)
-    	set(ENV{SDL2DIR} ${NAP_ROOT}/thirdparty/SDL2/)
-        find_package(SDL2 REQUIRED)
-    	target_include_directories(${PROJECT_NAME} PUBLIC ${SDL2_INCLUDE_DIR})
-    endif()
-
-    target_link_libraries(${PROJECT_NAME} napcore naprtti ${NAP_MODULES} ${PYTHON_LIBRARIES} ${SDL2_LIBRARY})
-    target_link_libraries(${PROJECT_NAME} RTTR::Core)
+    target_link_libraries(${PROJECT_NAME} napcore naprtti RTTR::Core ${NAP_MODULES} ${PYTHON_LIBRARIES} ${SDL2_LIBRARY})
 
     # Copy data to bin post-build
     copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/data data)
@@ -123,10 +91,10 @@ macro(dist_project_template)
     dist_export_fbx(${CMAKE_CURRENT_LIST_DIR}/data/${PROJECT_NAME})
 endmacro()
 
-# Temporary generic way to import each module for different configurations.  I think we'll need find package files for
+# Somewhat temporary generic way to import each module for different configurations.  I think we'll need make proper package files for
 # each module in the long run
-# TODO let's avoid per-module find package cmake files for now.. but probably need to re-address later
-macro(find_module_temp MODULE_NAME)
+# TODO let's avoid per-module cmake package files for now.. but probably need to re-address later
+macro(find_nap_module MODULE_NAME)
     add_library(${MODULE_NAME} SHARED IMPORTED)
 
     message("Adding lib path for ${MODULE_NAME}")
@@ -151,14 +119,32 @@ macro(find_module_temp MODULE_NAME)
         IMPORTED_LOCATION_RELWITHDEBINFO ${MOD_RELEASE_DLL}
     )
 
-    # TODO test test test
+    # Add module includes
+    message("Adding include for ${NAP_MODULE}")
+    target_include_directories(${PROJECT_NAME} PUBLIC ${NAP_ROOT}/modules/${NAP_MODULE}/include/)
+
     if (WIN32)
+        # Set Windows .lib locations
+        # TODO test test test
         set_target_properties(${MODULE_NAME} PROPERTIES
             IMPORTED_IMPLIB_RELEASE ${MOD_IMPLIB_RELEASE}
             IMPORTED_IMPLIB_DEBUG ${MOD_IMPLIB_DEBUG}
             IMPORTED_IMPLIB_MINSIZEREL ${MOD_IMPLIB_RELEASE}
             IMPORTED_IMPLIB_RELWITHDEBINFO ${MOD_IMPLIB_RELEASE}
         )
+
+        # Copy over module DLLs post-build
+        add_custom_command(
+            TARGET ${PROJECT_NAME}
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${MODULE_NAME}> $<TARGET_FILE_DIR:${PROJECT_NAME}>/
+        )
+    endif()
+
+    # Bring in any additional module requirements
+    set(MODULE_EXTRA_CMAKE_PATH ${NAP_ROOT}/modules/${MODULE_NAME}/moduleExtra.cmake)
+    if (EXISTS ${MODULE_EXTRA_CMAKE_PATH})
+        include (${MODULE_EXTRA_CMAKE_PATH})
     endif()
 endmacro()
 
