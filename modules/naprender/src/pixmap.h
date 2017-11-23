@@ -9,15 +9,12 @@
 namespace nap
 {
 	/**
-	 * CPU 2D image resource that is initially empty
-	 * There is no GPU data associated with this object
-	 * When initialized this object holds a set of 2D mapped
-	 * pixels where every pixel value can have multiple channels
+	 * 2D image resource that is initially empty, there is no GPU data associated with this object
+	 * When initialized this object holds a set of 2D mapped pixels where every pixel value can have multiple channels
 	 * This object can be declared as a resource using one of the available data and color types
 	 * Every pixmap needs to have a width and height associated with it
 	 * When no settings are provided the pixmap contains: 512x512, RGB8 bit pixels
-	 * This object wraps an opengl::Bitmap and allocates the 
-	 * bitmap resource on init(). 
+	 * This object wraps a Bitmap and allocates the bitmap resource on init(). 
 	 */
 	class NAPAPI Pixmap : public rtti::RTTIObject
 	{
@@ -75,11 +72,49 @@ namespace nap
 		 */
 		const opengl::Bitmap& getBitmap() const		{ return mBitmap; }
 
+		/**
+		 * Populates @outColor with the RGB values of a pixel. 
+		 * This call asserts when the bitmap doesn't have 3 channels
+		 * This call does not convert incompatible types and asserts when the data types do not match
+		 * @param x the horizontal coordinate of the pixel
+		 * @param y the vertical coordinate of the pixel
+		 * @param outColor the RGB color values of the pixel at the requested coordinates
+		 */
 		template<typename Type>
-		void getColor(int x, int y, RGBColor<Type>& outColor) const;
+		void getRGBColor(int x, int y, RGBColor<Type>& outColor) const;
 
+		/**
+		* Returns the RGB values of a pixel as a color
+		* This call asserts when the bitmap doesn't have 3 channels
+		* This call does not convert incompatible types and asserts when the data types do not match
+		* @param x the horizontal coordinate of the pixel
+		* @param y the vertical coordinate of the pixel
+		* @return the RGB values of a pixel as a color
+		*/
 		template<typename Type>
-		void getColor(int x, int y, RGBAColor<Type>& outColor) const;
+		RGBColor<Type> getRGBColor(int x, int y) const;
+
+		/**
+		* Populates @outColor with the RGBA values of a pixel. 
+		* This call asserts when the bitmap doesn't have 4 channels
+		* This call does not convert incompatible types and asserts when the data types don't match
+		* @param x the horizontal coordinate of the pixel
+		* @param y the vertical coordinate of the pixel
+		* @param outColor the RGBA color values of the pixel at the requested coordinates
+		*/
+		template<typename Type>
+		void getRGBAColor(int x, int y, RGBAColor<Type>& outColor) const;
+
+		/**
+		* Returns the RGBA values of a pixel as a color.
+		* This call asserts when the bitmap doesn't have 4 channels
+		* This call does not convert incompatible types and asserts when the data types don't match
+		* @param x the horizontal coordinate of the pixel
+		* @param y the vertical coordinate of the pixel
+		* @return the RGBA color values of the pixel at the requested coordinates
+		*/
+		template<typename Type>
+		RGBAColor<Type> getRGBAColor(int x, int y);
 
 		int mWidth			= 512;					///< property: width of the bitmap in pixels
 		int mHeight			= 512;					///< property: height of the bitmap in pixels
@@ -116,7 +151,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename Type>
-	void nap::Pixmap::getColor(int x, int y, RGBAColor<Type>& outColor) const
+	void nap::Pixmap::getRGBAColor(int x, int y, RGBAColor<Type>& outColor) const
 	{
 		assert(mBitmap.getNumberOfChannels() >= outColor.getNumberOfChannels());
 		Type* pixel_data = mBitmap.getPixel<Type>(x, y);
@@ -130,7 +165,7 @@ namespace nap
 		}
 		case opengl::BitmapColorType::RGBA:
 		{
-			outColor.setValue(EColorChannel::Red, *(pixel_data + 0));
+			outColor.setValue(EColorChannel::Red,  *(pixel_data + 0));
 			outColor.setValue(EColorChannel::Blue, *(pixel_data + 2));
 			break;
 		}
@@ -143,7 +178,7 @@ namespace nap
 
 
 	template<typename Type>
-	void nap::Pixmap::getColor(int x, int y, RGBColor<Type>& outColor) const
+	void nap::Pixmap::getRGBColor(int x, int y, RGBColor<Type>& outColor) const
 	{
 		assert(mBitmap.getNumberOfChannels() >= outColor.getNumberOfChannels());
 		Type* pixel_data = mBitmap.getPixel<Type>(x, y);
@@ -167,5 +202,23 @@ namespace nap
 			assert(false);
 		}
 		outColor.setValue(EColorChannel::Green, *(pixel_data + 1));
+	}
+
+
+	template<typename Type>
+	RGBColor<Type> nap::Pixmap::getRGBColor(int x, int y) const
+	{
+		RGBColor<Type> color;
+		getRGBColor<Type>(x, y, color);
+		return color;
+	}
+
+
+	template<typename Type>
+	RGBAColor<Type> nap::Pixmap::getRGBAColor(int x, int y)
+	{
+		RGBAColor<Type> color;
+		getRGBAColor<Type>(x, y, color);
+		return color;
 	}
 }

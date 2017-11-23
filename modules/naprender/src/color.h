@@ -48,6 +48,12 @@ namespace nap
 		virtual rtti::TypeInfo getValueType() const = 0;
 
 		/**
+		 * Converts the values associated with this color
+		 * in to the compatible @color values.
+		 */
+		virtual void convert(BaseColor& color) const							{ assert(false); }
+
+		/**
 		 * @return the total size in bytes of the color
 		 */
 		int size() const														{ return mChannels * mValueSize; }

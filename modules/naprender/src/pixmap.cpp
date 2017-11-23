@@ -65,19 +65,6 @@ static const BitmapDataTypeMap bitmapDataTypeMap =
 };
 
 
-using BitmapValueTypeMap = std::unordered_map<opengl::BitmapDataType, nap::rtti::TypeInfo>;
-static BitmapValueTypeMap& getBitmapValueTypeMap()
-{
-	static BitmapValueTypeMap map;
-	if (map.empty())
-	{
-		map.emplace(std::make_pair(opengl::BitmapDataType::BYTE,	RTTI_OF(nap::uint8)));
-		map.emplace(std::make_pair(opengl::BitmapDataType::USHORT,	RTTI_OF(nap::uint16)));
-		map.emplace(std::make_pair(opengl::BitmapDataType::FLOAT,	RTTI_OF(float)));
-	}
-	return map;
-}
-
 static opengl::BitmapDataType getBitmapType(nap::Pixmap::EDataType dataType)
 {
 	auto it = bitmapDataTypeMap.find(dataType);
