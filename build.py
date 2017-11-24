@@ -5,6 +5,7 @@ from sys import platform
 import sys
 import shutil
 import datetime
+import json
 
 WORKING_DIR = '.'
 
@@ -15,6 +16,9 @@ NAP_URL = 'https://ae53bb936bc44bbffbac2dbd1f37101838603903@github.com/naivisoft
 NAP_BRANCH = 'build'
 BUILD_DIR = 'build'
 PACKAGING_DIR = 'packaging'
+ARCHIVING_DIR = 'archiving'
+BUILDINFO_FILE = 'cmake/buildinfo.json'
+PACKAGED_BUILDINFO_FILE = '%s/cmake/buildinfo.json' % PACKAGING_DIR
 CLEAN_BUILD = False
 PACKAGE = False
 
@@ -28,10 +32,13 @@ def isLocalGitRepo(d):
     return True
 
 
-def call(cwd, cmd):
+def call(cwd, cmd, capture_output=False):
     print('dir: %s' % cwd)
     print('cmd: %s' % cmd)
-    proc = subprocess.Popen(cmd, cwd=cwd)
+    if capture_output:
+        proc = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE)
+    else:
+        proc = subprocess.Popen(cmd, cwd=cwd)
     out, err = proc.communicate()
     if proc.returncode != 0:
         raise Exception(proc.returncode)
@@ -104,7 +111,10 @@ def main(targets):
         call(WORKING_DIR, ['cmake', '-H.','-B%s' % BUILD_DIR,'-G', 'Visual Studio 14 2015 Win64', '-DPYBIND11_PYTHON_VERSION=3.5'])
 
     if PACKAGE:
-        sys.exit(packageBuild())
+        # Package our build
+        packaging_success = packageBuild()
+        # TODO improve error propogation behaviour
+        sys.exit(0 if packaging_success else 1)
 
     #copy targets
     build_targets = targets
@@ -130,11 +140,14 @@ def main(targets):
 def packageBuild():
     print("Packaging..")
 
+    # Note: Packaging directly from Python for now.  CPack was investigated but it was looking difficult to make it work when
+    # wanting to build multiple configurations at the same time.  If there was a reasonable CPack solution it feels like that 
+    # would be cleaner than this.
+
     # Build package name
-    # TODO finish the CPack solution
-    timestamp = datetime.datetime.now().strftime('%d%m%YT%H%M%S')
-    version = '0.1.0' # TODO pull from file
-    # TODO add git revision
+    timestamp = datetime.datetime.now().strftime('%Y.%m.%dT%H.%M.%S')
+    # Update our JSON build info file and get the current version
+    version = processBuildInfo()
     package_filename = "NAP-%s-%%s-%s" % (version, timestamp)
 
     # Remove old packaging path if it exists
@@ -167,20 +180,75 @@ def packageBuild():
         d = '%s/%s' % (WORKING_DIR, PACKAGING_DIR)
         call(d, ['python', '../dist/osx/dylibpathfix.py', 'fbxconverter_pathfix'])
 
-        # TODO change back to CPack
         # TODO remove unwanted files (eg. .DS_Store)
         package_filename = package_filename % ('macOS')
         shutil.move(PACKAGING_DIR, package_filename)
-        package_filename_with_ext =  '%s.%s' % (package_filename, 'zip')
+
+        # Archive
+        package_filename_with_ext = '%s.%s' % (package_filename, 'zip')
+        print("Archiving to %s" % package_filename_with_ext)
         call(WORKING_DIR, ['zip', '-yr', package_filename_with_ext, package_filename])
+
+        # Cleanup
         shutil.move(package_filename, PACKAGING_DIR)
-        print("Packaged to %s" % package_filename_with_ext)
+        print("Done.")
     # windows
     else:
-        package_filename = package_filename % ('Win64') + '.zip'
         call(WORKING_DIR, ['cmake', '--build', BUILD_DIR, '--target', 'install', '--config', 'Debug'])
         call(WORKING_DIR, ['cmake', '--build', BUILD_DIR, '--target', 'install', '--config', 'Release'])
+        package_filename = package_filename % ('Win64')
 
+        # Rename our packaging dir to match the release
+        shutil.move(PACKAGING_DIR, package_filename)
+
+        # Create our archive dir, used to create a copy level folder within the archive
+        if os.path.exists(ARCHIVING_DIR):
+            shutil.rmtree(ARCHIVING_DIR, True)
+        os.makedirs(ARCHIVING_DIR)
+        archive_path = os.path.join(ARCHIVING_DIR, package_filename)
+        shutil.move(package_filename, archive_path)
+
+        # Create archive
+        # package_filename_with_ext = '%s.%s' % (package_filename, 'zip')
+        print("Archiving to %s.zip" % package_filename)
+        shutil.make_archive(package_filename, 'zip', ARCHIVING_DIR)
+
+        # Cleanup
+        shutil.move(archive_path, PACKAGING_DIR)
+        shutil.rmtree(ARCHIVING_DIR)
+        print("Done.")
+
+    return True
+
+def processBuildInfo():
+    # Write build info back out with bumped build number
+    with open(BUILDINFO_FILE) as json_file:
+        build_info = json.load(json_file)
+
+    # TODO add validation
+
+    # Read our version
+    version = build_info['version']
+
+    # Bump build number
+    if not 'buildNumber' in build_info:
+        build_info['buildNumber'] = 0
+    build_info['buildNumber'] += 1
+
+    # Write build info back out with bumped build number
+    with open(BUILDINFO_FILE, 'w') as outfile:
+        json.dump(build_info, outfile, sort_keys=True, indent=2)
+
+    # Add git revision to build info and bundle into package
+    # TODO add ability to not have git revision in release build
+    git_revision = call(WORKING_DIR, ['git', 'rev-parse', 'HEAD'], True)
+    build_info['gitRevision'] = git_revision.decode('ascii', 'ignore').strip()
+    with open(PACKAGED_BUILDINFO_FILE, 'w') as outfile:
+        json.dump(build_info, outfile, sort_keys=True, indent=2)
+
+    # Return version for population into package name
+    return version
+    
 # Extracts all targets from the command line input arguments, syntax is: target:project, ie: target:napcore
 def extractTargets():
     targets = []
