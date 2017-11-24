@@ -23,20 +23,12 @@ namespace nap
 		if (!errorState.check(!mImagePath.empty(), "Image path not set for color palette %s", mID.c_str()))
 			return false;
 
-		// Make sure it's a .bmp file
-		if (!errorState.check(utility::getFileExtension(mImagePath) == "bmp", "Image is not a bitmap: %s", mImagePath.c_str()))
-			return false;
-
 		// Load pixel data in to bitmap
 		if (!mPixmap.initFromFile(mImagePath, errorState))
 			return false;
 
 		// Make sure the amount of channels is > 3
 		if (!errorState.check(mPixmap.getBitmap().getNumberOfChannels() >= 3, "color palette map: %s does not have 3 channels", mImagePath.c_str()))
-			return false;
-
-		// Make sure it's a 24 bit map
-		if (!errorState.check(mPixmap.mType == Pixmap::EDataType::BYTE, "color palette is not 8bit per channel", mImagePath.c_str()))
 			return false;
 
 		// Now find all the available palette colors
@@ -86,7 +78,8 @@ namespace nap
 		// Check the amount of available colors
 		for (int i = 0; i < mPixmap.mWidth; i++)
 		{
-			RGBColor8 current_color = mPixmap.getRGBColor<uint8>(i, 0);
+			RGBColor8 current_color;
+			mPixmap.getColor(i, 0, current_color);
 			auto& it = unique_index_colors.find(current_color);
 			if (it == unique_index_colors.end())
 			{
