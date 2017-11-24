@@ -51,18 +51,38 @@ namespace nap
 		 * Converts the values associated with this color
 		 * in to the compatible @color values.
 		 */
-		virtual void convert(BaseColor& color) const							{ assert(false); }
+		void convert(BaseColor& color) const;
+
+		/**
+		 * @return the data associated with the channel @index
+		 */
+		virtual const void* getData(int channel) const = 0;
+
+		/**
+		 *	@return the data associated with the channel @index
+		 */
+		virtual void* getData(int channel) = 0;
+
+		/**
+		 * @return the data associated with the channel @index at type T
+		 */
+		template<typename T>
+		T getValue(int channel) const;
 
 		/**
 		 * @return the total size in bytes of the color
 		 */
 		int size() const														{ return mChannels * mValueSize; }
 
+		/**
+		 * Converts the color values in @from to @to
+		 */
+		static void convertColor(const BaseColor& from, BaseColor& to);
+
 	private:
 		int mChannels = 0;
 		int mValueSize = 0;
 	};
-
 
 	/**
 	 * Specific type of color where T defines the value type of the color
@@ -115,6 +135,16 @@ namespace nap
 		void setValue(EColorChannel channel, T value);
 
 		/**
+		 *	@return the data associated with the channel @index
+		 */
+		const void* getData(int channel) const override;
+
+		/**
+		*	@return the data associated with the channel @index
+		*/
+		void* getData(int channel) override;
+
+		/**
 		 *	@return if two color values are not similar
 		 */
 		bool operator== (const Color<T, CHANNELS>& rhs) const;
@@ -129,7 +159,6 @@ namespace nap
 		*/
 		std::array<T, CHANNELS> mValues;
 	};
-
 
 	/**
 	 *	Utility class that provides a useful constructor for an RGB color
@@ -223,6 +252,27 @@ namespace nap
 		int idx = static_cast<int>(channel);
 		assert(idx < this->getNumberOfChannels());
 		mValues[idx] = value;
+	}
+
+	template<typename T, typename int CHANNELS>
+	const void* nap::Color<T, CHANNELS>::getData(int channel) const
+	{
+		assert(channel < this->getNumberOfChannels());
+		return &(mValues[channel]);
+	}
+
+	template<typename T, typename int CHANNELS>
+	void* nap::Color<T, CHANNELS>::getData(int channel)
+	{
+		assert(channel < this->getNumberOfChannels());
+		return &(mValues[channel]);
+	}
+
+	template<typename T>
+	T nap::BaseColor::getValue(int channel) const
+	{
+		assert(RTTI_OF(T) == this->getValueType());
+		return *(static_cast<const T*>(this->getData(channel)));
 	}
 }
 
