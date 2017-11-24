@@ -308,11 +308,20 @@ namespace nap
 
 //////////////////////////////////////////////////////////////////////////
 // Hash functions for 8 and 16 bit integer colors
-// No has support for floating point colors
+// Float colors are also hashable but something you probably should not do
 //////////////////////////////////////////////////////////////////////////
 
 namespace std
 {
+	template<>
+	struct hash<nap::Color<nap::uint8, 1>>
+	{
+		size_t operator()(const nap::Color<nap::uint8, 1>& v) const
+		{
+			return hash<nap::uint8>()(v.getValue(nap::EColorChannel::Red));
+		}
+	};
+
 	template <>
 	struct hash<nap::Color<nap::uint8, 3>>
 	{
@@ -338,6 +347,15 @@ namespace std
 		}
 	};
 
+	template<>
+	struct hash<nap::Color<nap::uint16, 1>>
+	{
+		size_t operator()(const nap::Color<nap::uint16, 1>& v) const
+		{
+			return hash<nap::uint16>()(v.getValue(nap::EColorChannel::Red));
+		}
+	};
+
 	template <>
 	struct hash<nap::Color<nap::uint16, 3>>
 	{
@@ -360,6 +378,15 @@ namespace std
 				(nap::uint64)v.getValue(nap::EColorChannel::Green) << 32	|
 				(nap::uint64)v.getValue(nap::EColorChannel::Blue) << 16		|
 				(nap::uint64)v.getValue(nap::EColorChannel::Alpha)));
+		}
+	};
+
+	template<>
+	struct hash<nap::Color<float, 1>>
+	{
+		size_t operator()(const nap::Color<float, 1>& v) const
+		{
+			return std::hash<float>{}(v.getValue(nap::EColorChannel::Red));
 		}
 	};
 
@@ -389,6 +416,15 @@ namespace std
 	};
 
 	template <>
+	struct hash<nap::RColor<nap::uint8>>
+	{
+		size_t operator()(const nap::RColor<nap::uint8>& v) const
+		{
+			return hash<nap::Color<nap::uint8, 1>>()(static_cast<nap::Color<nap::uint8, 1>>(v));
+		}
+	};
+
+	template <>
 	struct hash<nap::RGBColor<nap::uint8>>
 	{
 		size_t operator()(const nap::RGBColor<nap::uint8>& v) const
@@ -408,6 +444,16 @@ namespace std
 	};
 
 	template <>
+	struct hash<nap::RColor<nap::uint16>>
+	{
+		size_t operator()(const nap::RColor<nap::uint16>& v) const
+		{
+			return hash<nap::Color<nap::uint16, 1>>()(static_cast<nap::Color<nap::uint16, 1>>(v));
+		}
+
+	};
+
+	template <>
 	struct hash<nap::RGBColor<nap::uint16>>
 	{
 		size_t operator()(const nap::RGBColor<nap::uint16>& v) const
@@ -424,6 +470,16 @@ namespace std
 		{
 			return hash<nap::Color<nap::uint16, 4>>()(static_cast<nap::Color<nap::uint16, 4>>(v));
 		}
+	};
+
+	template <>
+	struct hash<nap::RColor<float>>
+	{
+		size_t operator()(const nap::RColor<float>& v) const
+		{
+			return hash<nap::Color<float, 1>>()(static_cast<nap::Color<float, 1>>(v));
+		}
+
 	};
 
 	template <>
