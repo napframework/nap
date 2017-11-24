@@ -40,6 +40,22 @@ RTTI_BEGIN_CLASS(nap::RGBAColorFloat)
 	RTTI_PROPERTY("Values", &nap::RGBAColorFloat::mValues, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS(nap::RColor8)
+	RTTI_CONSTRUCTOR(nap::uint8)
+	RTTI_PROPERTY("Values", &nap::RColor8::mValues, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS(nap::RColor16)
+	RTTI_CONSTRUCTOR(nap::uint16)
+	RTTI_PROPERTY("Values", &nap::RColor16::mValues, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS(nap::RColorFloat)
+	RTTI_CONSTRUCTOR(float)
+	RTTI_PROPERTY("Values", &nap::RColorFloat::mValues, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
+
 namespace nap
 {
 	static void floatToByte(const BaseColor& inColor, BaseColor& outColor, int channel)
@@ -177,7 +193,7 @@ void nap::BaseColor::convertColor(const BaseColor& from, BaseColor& to)
 
 	// Perform conversion
 	assert(convert_func != nullptr);
-	for (int i = 0; i < from.getNumberOfChannels(); i++)
+	for (int i = 0; i < to.getNumberOfChannels(); i++)
 		convert_func(from, to, i);
 }
 

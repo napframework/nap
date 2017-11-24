@@ -73,6 +73,22 @@ namespace nap
 		const opengl::Bitmap& getBitmap() const		{ return mBitmap; }
 
 		/**
+		* @return the color of a pixel at the x and y pixel coordinates
+		* The color contains a copy of the pixel values in the bitmap
+		* @param x the horizontal pixel coordinate
+		* @param y the vertical pixel coordinate
+		*/
+		std::unique_ptr<BaseColor> getColor(int x, int y) const;
+
+		/**
+		* Populates @color with the color values of a pixel.
+		* This call converts the pixel data if necessary
+		* @param x the horizontal coordinate of the pixel
+		* @param y the vertical coordinate of the pixel
+		*/
+		void getColor(int x, int y, BaseColor& color) const;
+
+		/**
 		 * Populates @outColor with the RGB values of a pixel. 
 		 * This call asserts when the bitmap doesn't have 3 channels
 		 * This call does not convert incompatible types and asserts when the data types do not match
@@ -114,7 +130,17 @@ namespace nap
 		* @return the RGBA color values of the pixel at the requested coordinates
 		*/
 		template<typename Type>
-		RGBAColor<Type> getRGBAColor(int x, int y);
+		RGBAColor<Type> getRGBAColor(int x, int y) const;
+
+		/**
+		 * Returns the R value (first channel) of a pixel as a color
+		 * This call does not convert incompatible types and asserts when the underlying data types don't match
+		 * @param x the horizontal coordinate of the pixel
+		 * @param y the vertical coordinate of the pixel
+		 * @param outValue the populated single channel color value 
+		 */
+		template<typename Type>
+		void getRValue(int x, int y, RColor<Type>& outValue) const;
 
 		int mWidth			= 512;					///< property: width of the bitmap in pixels
 		int mHeight			= 512;					///< property: height of the bitmap in pixels
@@ -124,6 +150,7 @@ namespace nap
 	protected:
 		opengl::Bitmap mBitmap;
 	};
+
 
 	/**
 	 * A pixmap resource that is loaded from file
@@ -154,6 +181,8 @@ namespace nap
 	void nap::Pixmap::getRGBAColor(int x, int y, RGBAColor<Type>& outColor) const
 	{
 		assert(mBitmap.getNumberOfChannels() >= outColor.getNumberOfChannels());
+		assert(outColor.getValueType() == RTTI_OF(Type));
+		
 		Type* pixel_data = mBitmap.getPixel<Type>(x, y);
 		switch (mBitmap.getColorType())
 		{
@@ -181,6 +210,8 @@ namespace nap
 	void nap::Pixmap::getRGBColor(int x, int y, RGBColor<Type>& outColor) const
 	{
 		assert(mBitmap.getNumberOfChannels() >= outColor.getNumberOfChannels());
+		assert(outColor.getValueType() == RTTI_OF(Type));
+		
 		Type* pixel_data = mBitmap.getPixel<Type>(x, y);
 		switch (mBitmap.getColorType())
 		{
@@ -206,6 +237,15 @@ namespace nap
 
 
 	template<typename Type>
+	void nap::Pixmap::getRValue(int x, int y, RColor<Type>& outValue) const
+	{
+		assert(outValue.getValueType() == RTTI_OF(Type));
+		Type* pixel_data = mBitmap.getPixel<Type>(x, y);
+		outValue.setValue(EColorChannel::Red, *pixel_data);
+	}
+
+
+	template<typename Type>
 	RGBColor<Type> nap::Pixmap::getRGBColor(int x, int y) const
 	{
 		RGBColor<Type> color;
@@ -215,7 +255,7 @@ namespace nap
 
 
 	template<typename Type>
-	RGBAColor<Type> nap::Pixmap::getRGBAColor(int x, int y)
+	RGBAColor<Type> nap::Pixmap::getRGBAColor(int x, int y) const
 	{
 		RGBAColor<Type> color;
 		getRGBAColor<Type>(x, y, color);

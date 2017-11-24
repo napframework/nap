@@ -131,6 +131,110 @@ namespace nap
 
 		return true;
 	}
+
+
+	void Pixmap::getColor(int x, int y, BaseColor& color) const
+	{
+		std::unique_ptr<BaseColor> pixmap_color = getColor(x, y);
+		pixmap_color->convert(color);
+	}
+
+
+	std::unique_ptr<nap::BaseColor> Pixmap::getColor(int x, int y) const
+	{
+		BaseColor* rvalue = nullptr;
+		if (mBitmap.getNumberOfChannels() == 3)
+		{
+			switch (mBitmap.getDataType())
+			{
+				case opengl::BitmapDataType::BYTE:
+				{
+					RGBColor<uint8>* color = new RGBColor<uint8>();
+					getRGBColor<uint8>(x, y, *color);
+					rvalue = color;
+					break;
+				}
+				case opengl::BitmapDataType::USHORT:
+				{
+					RGBColor<uint16>* color = new RGBColor<uint16>();
+					getRGBColor<uint16>(x, y, *color);
+					rvalue = color;
+					break;
+				}
+				case opengl::BitmapDataType::FLOAT:
+				{
+					RGBColor<float>* color = new RGBColor<float>();
+					getRGBColor<float>(x, y, *color);
+					rvalue = color;
+					break;
+				}
+				default:
+					assert(false);
+					break;
+			}
+		}
+		else if (mBitmap.getNumberOfChannels() == 4)
+		{
+			switch (mBitmap.getDataType())
+			{
+				case opengl::BitmapDataType::BYTE:
+				{
+					RGBAColor<uint8>* color = new RGBAColor<uint8>();
+					getRGBAColor<uint8>(x, y, *color);
+					rvalue = color;
+					break;
+				}
+				case opengl::BitmapDataType::USHORT:
+				{
+					RGBAColor<uint16>* color = new RGBAColor<uint16>();
+					getRGBAColor<uint16>(x, y, *color);
+					rvalue = color;
+					break;
+				}
+				case opengl::BitmapDataType::FLOAT:
+				{
+					RGBAColor<float>* color = new RGBAColor<float>();
+					getRGBAColor<float>(x, y, *color);
+					rvalue = color;
+					break;
+				}
+				default:
+					assert(false);
+					break;
+			}
+		}
+		else if (mBitmap.getNumberOfChannels() == 1)
+		{
+			switch (mBitmap.getDataType())
+			{
+				case opengl::BitmapDataType::BYTE:
+				{
+					RColor<uint8>* color = new RColor<uint8>();
+					this->getRValue<uint8>(x, y, *color);
+					rvalue = color;
+					break;
+				}
+				case opengl::BitmapDataType::USHORT:
+				{
+					RColor<uint16>* color = new RColor<uint16>();
+					this->getRValue<uint16>(x, y, *color);
+					rvalue = color;
+					break;
+				}
+				case opengl::BitmapDataType::FLOAT:
+				{
+					RColor<float>* color = new RColor<float>();
+					this->getRValue<float>(x, y, *color);
+					rvalue = color;
+					break;
+				}
+				default:
+					assert(false);
+			}
+		}
+		assert(rvalue != nullptr);
+		return std::unique_ptr<BaseColor>(rvalue);
+	}
 }
 
 

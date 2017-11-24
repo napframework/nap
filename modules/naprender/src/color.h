@@ -48,8 +48,14 @@ namespace nap
 		virtual rtti::TypeInfo getValueType() const = 0;
 
 		/**
-		 * Converts the values associated with this color
-		 * in to the compatible @color values.
+		 * Converts the values associated with this color in to the compatible @color values.
+		 * It's required that this color has an equal or higher amount of color channels
+		 * Therefore this conversion is valid: RGBA8 to RGBFloat, but not: RGB8 to RGBAFloat
+		 * This call asserts if the conversion can't be performed.
+		 * When converting to and from float colors, normalized color values are used.
+		 * Float values that do not fall within the 0-1 range are clamped
+		 * @param from the color to convert
+		 * @param to holds the converted color values
 		 */
 		void convert(BaseColor& color) const;
 
@@ -69,7 +75,14 @@ namespace nap
 		int size() const														{ return mChannels * mValueSize; }
 
 		/**
-		 * Converts the color values in @from to @to
+		 * Converts the color values in @from Color to @to Color
+		 * It's required that the from color has an equal or higher amount of color channels
+		 * Therefore this conversion is valid: RGBA8 to RGBFloat, but not: RGB8 to RGBAFloat
+		 * This call asserts if the conversion can't be performed.
+		 * When converting to and from float colors, normalized color values are used.
+		 * Float values that do not fall within the 0-1 range are clamped
+		 * @param from the color to convert
+		 * @param to holds the converted color values
 		 */
 		static void convertColor(const BaseColor& from, BaseColor& to);
 
@@ -129,6 +142,11 @@ namespace nap
 		void setValue(EColorChannel channel, T value);
 
 		/**
+		 *	@return all the values associated with this color
+		 */
+		const std::array<T, CHANNELS>& getValues() const					{ return mValues; }
+
+		/**
 		 *	@return the data associated with the channel @index
 		 */
 		const void* getData(int channel) const override;
@@ -153,6 +171,7 @@ namespace nap
 		*/
 		std::array<T, CHANNELS> mValues;
 	};
+
 
 	/**
 	 *	Utility class that provides a useful constructor for an RGB color
@@ -195,6 +214,26 @@ namespace nap
 	};
 
 
+	/**
+	*	Utility class that provides a useful constructor for a single value color
+	*/
+	template<typename T>
+	class RColor : public Color<T, 1>
+	{
+		RTTI_ENABLE(Color)
+	public:
+		/**
+		* Constructor that creates an R color based on the given value
+		*/
+		RColor(T value) : Color<T, 1>({ value }) { }
+
+		/**
+		 *	Default constructor
+		 */
+		RColor() : Color<T,1>()													{ }
+	};
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// Type definitions for all supported color types
 	// These color types can be used as a resource
@@ -207,6 +246,9 @@ namespace nap
 	using RGBAColor8		= RGBAColor<uint8>;
 	using RGBAColor16		= RGBAColor<uint16>;
 	using RGBAColorFloat	= RGBAColor<float>;
+	using RColor8			= RColor<uint8>;
+	using RColor16			= RColor<uint16>;
+	using RColorFloat		= RColor<float>;
 
 
 	//////////////////////////////////////////////////////////////////////////
