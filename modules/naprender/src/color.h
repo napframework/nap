@@ -64,12 +64,6 @@ namespace nap
 		virtual void* getData(int channel) = 0;
 
 		/**
-		 * @return the data associated with the channel @index at type T
-		 */
-		template<typename T>
-		T getValue(int channel) const;
-
-		/**
 		 * @return the total size in bytes of the color
 		 */
 		int size() const														{ return mChannels * mValueSize; }
@@ -266,13 +260,6 @@ namespace nap
 	{
 		assert(channel < this->getNumberOfChannels());
 		return &(mValues[channel]);
-	}
-
-	template<typename T>
-	T nap::BaseColor::getValue(int channel) const
-	{
-		assert(RTTI_OF(T) == this->getValueType());
-		return *(static_cast<const T*>(this->getData(channel)));
 	}
 }
 
