@@ -144,15 +144,12 @@ def packageBuild():
     # wanting to build multiple configurations at the same time.  If there was a reasonable CPack solution it feels like that 
     # would be cleaner than this.
 
-    # Build package name
-    timestamp = datetime.datetime.now().strftime('%Y.%m.%dT%H.%M.%S')
-    # Update our JSON build info file and get the current version
-    version = processBuildInfo()
-    package_filename = "NAP-%s-%%s-%s" % (version, timestamp)
-
     # Remove old packaging path if it exists
     if os.path.exists(PACKAGING_DIR):
         shutil.rmtree(PACKAGING_DIR, True)
+    os.makedirs(PACKAGING_DIR)
+
+    # Build package name
 
     if platform in ["linux", "linux2"]:
         # TODO
@@ -181,7 +178,8 @@ def packageBuild():
         call(d, ['python', '../dist/osx/dylibpathfix.py', 'fbxconverter_pathfix'])
 
         # TODO remove unwanted files (eg. .DS_Store)
-        package_filename = package_filename % ('macOS')
+        
+        package_filename = buildPackageFilenameAndBuildInfo('macOS')
         shutil.move(PACKAGING_DIR, package_filename)
 
         # Archive
@@ -196,7 +194,8 @@ def packageBuild():
     else:
         call(WORKING_DIR, ['cmake', '--build', BUILD_DIR, '--target', 'install', '--config', 'Debug'])
         call(WORKING_DIR, ['cmake', '--build', BUILD_DIR, '--target', 'install', '--config', 'Release'])
-        package_filename = package_filename % ('Win64')
+
+        package_filename = buildPackageFilenameAndBuildInfo('Win64')
 
         # Rename our packaging dir to match the release
         shutil.move(PACKAGING_DIR, package_filename)
@@ -220,7 +219,14 @@ def packageBuild():
 
     return True
 
-def processBuildInfo():
+def buildPackageFilenameAndBuildInfo(platform):
+    timestamp = datetime.datetime.now().strftime('%Y.%m.%dT%H.%M')
+    # Update our JSON build info file and get the current version
+    version = processBuildInfo(timestamp)
+    package_filename = "NAP-%s-%s-%s" % (version, platform, timestamp)
+    return package_filename
+
+def processBuildInfo(timestamp):
     # Write build info back out with bumped build number
     with open(BUILDINFO_FILE) as json_file:
         build_info = json.load(json_file)
@@ -239,10 +245,11 @@ def processBuildInfo():
     with open(BUILDINFO_FILE, 'w') as outfile:
         json.dump(build_info, outfile, sort_keys=True, indent=2)
 
-    # Add git revision to build info and bundle into package
+    # Add git revision and timestamp to build info and bundle into package
     # TODO add ability to not have git revision in release build
     git_revision = call(WORKING_DIR, ['git', 'rev-parse', 'HEAD'], True)
     build_info['gitRevision'] = git_revision.decode('ascii', 'ignore').strip()
+    build_info['timestamp'] = timestamp
     with open(PACKAGED_BUILDINFO_FILE, 'w') as outfile:
         json.dump(build_info, outfile, sort_keys=True, indent=2)
 
