@@ -229,7 +229,7 @@ namespace nap
 		* Sets the red channel to @value
 		* @param value red color value
 		*/
-		T getRed() const														{ getValue(EColorChannel::Red); }
+		T getRed() const														{ return getValue(EColorChannel::Red); }
 
 		/**
 		* Sets the green channel to @value
@@ -241,7 +241,7 @@ namespace nap
 		* Sets the green channel to @value
 		* @param value green color value
 		*/
-		T getGreen() const														{ getValue(EColorChannel::Green); }
+		T getGreen() const														{ return getValue(EColorChannel::Green); }
 
 		/**
 		* Sets the blue channel to @value
@@ -253,7 +253,7 @@ namespace nap
 		* Sets the blue channel to @value
 		* @param blue color value
 		*/
-		T getBlue() const														{ getValue(EColorChannel::Blue); }
+		T getBlue() const														{ return getValue(EColorChannel::Blue); }
 	};
 
 
@@ -286,7 +286,7 @@ namespace nap
 		* Sets the red channel to @value
 		* @param value red color value
 		*/
-		T getRed() const														{ getValue(EColorChannel::Red); }
+		T getRed() const														{ return getValue(EColorChannel::Red); }
 
 		/**
 		* Sets the green channel to @value
@@ -298,7 +298,7 @@ namespace nap
 		* Sets the green channel to @value
 		* @param value green color value
 		*/
-		T getGreen() const														{ getValue(EColorChannel::Green); }
+		T getGreen() const														{ return getValue(EColorChannel::Green); }
 
 		/**
 		* Sets the blue channel to @value
@@ -310,7 +310,7 @@ namespace nap
 		* Sets the blue channel to @value
 		* @param blue color value
 		*/
-		T getBlue() const														{ getValue(EColorChannel::Blue); }
+		T getBlue() const														{ return getValue(EColorChannel::Blue); }
 
 		/**
 		* Sets the alpha channel to @value
@@ -322,7 +322,7 @@ namespace nap
 		* Sets the alpha channel to @value
 		* @param value alpha color value
 		*/
-		T getAlpha() const														{ getValue(EColorChannel::Alpha); }
+		T getAlpha() const														{ return getValue(EColorChannel::Alpha); }
 	};
 
 
@@ -354,7 +354,7 @@ namespace nap
 		* Sets the red channel to @value
 		* @param value red color value
 		*/
-		T getRed() const														{ getValue(EColorChannel::Red); }
+		T getRed() const														{ return getValue(EColorChannel::Red); }
 	};
 
 
