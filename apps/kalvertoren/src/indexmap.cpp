@@ -72,10 +72,6 @@ namespace nap
 
 	void IndexMap::findUniqueColors()
 	{
-		RGBColorFloat floatcolor;
-		RGBColor8 bytecolor(255, 128, 0);
-		bytecolor.convert(floatcolor);
-
 		std::unordered_set<IndexColor> unique_index_colors;
 
 		// Check the amount of available colors

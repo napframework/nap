@@ -72,6 +72,84 @@ static opengl::BitmapDataType getBitmapType(nap::Pixmap::EDataType dataType)
 	return it->second;
 }
 
+//////////////////////////////////////////////////////////////////////////
+// Color creation functions
+//////////////////////////////////////////////////////////////////////////
+
+/**
+ * Helper function that creates a color and fills it with pixel data
+ * @param map the pixmap to get the color values from
+ * @param x the x pixel coordinate value
+ * @param y the y pixel coordinate value
+ */
+template<typename T>
+static nap::BaseColor* createColor(const nap::Pixmap& map, int x, int y)
+{
+	switch (map.getBitmap().getNumberOfChannels())
+	{
+	case 1:
+	{
+		nap::RColor<T>* color = new nap::RColor<T>();
+		map.getColorValue<T>(x, y, nap::EColorChannel::Red, *color);
+		return color;
+	}
+	case 3:
+	{
+		nap::RGBColor<T>* color = new nap::RGBColor<T>();
+		map.getRGBColor<T>(x, y, *color);
+		return color;
+	}
+	case 4:
+	{
+		nap::RGBAColor<T>* color = new nap::RGBAColor<T>();
+		map.getRGBAColor<T>(x, y, *color);
+		return color;
+	}
+	default:
+		assert(false);
+	}
+	return nullptr;
+}
+
+
+/**
+* Helper function that creates a color that stores the location of
+* the color values
+* @param map the pixmap to get the color values from
+* @param x the x pixel coordinate value
+* @param y the y pixel coordinate value
+*/
+template<typename T>
+static nap::BaseColor* createColorData(const nap::Pixmap& map, int x, int y)
+{
+	switch (map.getBitmap().getNumberOfChannels())
+	{
+	case 1:
+	{
+		nap::RColor<T*>* color = new nap::RColor<T*>();
+		map.getColorValueData<T>(x, y, nap::EColorChannel::Red, *color);
+		return color;
+	}
+	case 3:
+	{
+		nap::RGBColor<T*>* color = new nap::RGBColor<T*>();
+		map.getRGBColorData<T>(x, y, *color);
+		return color;
+	}
+	case 4:
+	{
+		nap::RGBAColor<T*>* color = new nap::RGBAColor<T*>();
+		map.getRGBAColorData<T>(x, y, *color);
+		return color;
+	}
+	default:
+		assert(false);
+	}
+	return nullptr;
+}
+
+using ColorCreationMap = std::unordered_map<opengl::BitmapDataType, std::function<nap::BaseColor*(nap::Pixmap&)>>;
+
 
 static void convertPixmapSettings(const nap::Pixmap& resource, opengl::BitmapSettings& settings)
 {
@@ -143,98 +221,60 @@ namespace nap
 	std::unique_ptr<nap::BaseColor> Pixmap::getColor(int x, int y) const
 	{
 		BaseColor* rvalue = nullptr;
-		if (mBitmap.getNumberOfChannels() == 3)
+		switch (mBitmap.getDataType())
 		{
-			switch (mBitmap.getDataType())
-			{
-				case opengl::BitmapDataType::BYTE:
-				{
-					RGBColor<uint8>* color = new RGBColor<uint8>();
-					getRGBColor<uint8>(x, y, *color);
-					rvalue = color;
-					break;
-				}
-				case opengl::BitmapDataType::USHORT:
-				{
-					RGBColor<uint16>* color = new RGBColor<uint16>();
-					getRGBColor<uint16>(x, y, *color);
-					rvalue = color;
-					break;
-				}
-				case opengl::BitmapDataType::FLOAT:
-				{
-					RGBColor<float>* color = new RGBColor<float>();
-					getRGBColor<float>(x, y, *color);
-					rvalue = color;
-					break;
-				}
-				default:
-					assert(false);
-					break;
-			}
+		case opengl::BitmapDataType::BYTE:
+		{
+			rvalue = createColor<uint8>(*this, x, y);
+			break;
 		}
-		else if (mBitmap.getNumberOfChannels() == 4)
+		case opengl::BitmapDataType::FLOAT:
 		{
-			switch (mBitmap.getDataType())
-			{
-				case opengl::BitmapDataType::BYTE:
-				{
-					RGBAColor<uint8>* color = new RGBAColor<uint8>();
-					getRGBAColor<uint8>(x, y, *color);
-					rvalue = color;
-					break;
-				}
-				case opengl::BitmapDataType::USHORT:
-				{
-					RGBAColor<uint16>* color = new RGBAColor<uint16>();
-					getRGBAColor<uint16>(x, y, *color);
-					rvalue = color;
-					break;
-				}
-				case opengl::BitmapDataType::FLOAT:
-				{
-					RGBAColor<float>* color = new RGBAColor<float>();
-					getRGBAColor<float>(x, y, *color);
-					rvalue = color;
-					break;
-				}
-				default:
-					assert(false);
-					break;
-			}
+			rvalue = createColor<float>(*this, x, y);
+			break;
 		}
-		else if (mBitmap.getNumberOfChannels() == 1)
+		case opengl::BitmapDataType::USHORT:
 		{
-			switch (mBitmap.getDataType())
-			{
-				case opengl::BitmapDataType::BYTE:
-				{
-					RColor<uint8>* color = new RColor<uint8>();
-					this->getRValue<uint8>(x, y, *color);
-					rvalue = color;
-					break;
-				}
-				case opengl::BitmapDataType::USHORT:
-				{
-					RColor<uint16>* color = new RColor<uint16>();
-					this->getRValue<uint16>(x, y, *color);
-					rvalue = color;
-					break;
-				}
-				case opengl::BitmapDataType::FLOAT:
-				{
-					RColor<float>* color = new RColor<float>();
-					this->getRValue<float>(x, y, *color);
-					rvalue = color;
-					break;
-				}
-				default:
-					assert(false);
-			}
+			rvalue = createColor<uint16>(*this, x, y);
+			break;
+		}
+		default:
+			assert(false);
+			break;
 		}
 		assert(rvalue != nullptr);
 		return std::unique_ptr<BaseColor>(rvalue);
 	}
+
+
+	std::unique_ptr<nap::BaseColor> Pixmap::getColorData(int x, int y)
+	{
+		BaseColor* rvalue = nullptr;
+		switch (mBitmap.getDataType())
+		{
+		case opengl::BitmapDataType::BYTE:
+		{
+			rvalue = createColorData<uint8>(*this, x, y);
+			break;
+		}
+		case opengl::BitmapDataType::FLOAT:
+		{
+			rvalue = createColorData<float>(*this, x, y);
+			break;
+		}
+		case opengl::BitmapDataType::USHORT:
+		{
+			rvalue = createColorData<uint16>(*this, x, y);
+			break;
+		}
+		default:
+			assert(false);
+			break;
+		}
+		assert(rvalue != nullptr);
+		return std::unique_ptr<BaseColor>(rvalue);
+	}
+
 }
 
 
