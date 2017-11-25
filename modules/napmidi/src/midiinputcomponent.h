@@ -26,7 +26,7 @@ namespace nap
     public:
         MidiInputComponent() : nap::Component() { }
         
-        std::vector<MidiValue> mPorts; /**< Filter specifying input ports that will be listened to. Empty means all ports. */
+        std::vector<std::string> mPorts; /**< Filter specifying input ports that will be listened to. Empty means all ports. */
         std::vector<MidiValue> mChannels; /**< Filter specifying what midi channels to listen to. Empty means all channels. */
         std::vector<MidiValue> mNumbers; /**< Filter specifying what number bytes (like cc numbers) to listen to. Empty means all numbers. */
         std::vector<MidiEvent::Type> mTypes; /**< Filter specifying what event types to listen to. Empty means all types. */
@@ -54,10 +54,12 @@ namespace nap
          */
         nap::Signal<const MidiEvent&> messageReceived;
         
-        std::vector<MidiValue> mPorts; /**< Filter specifying input ports that will be listened to. Empty means all ports. */
+        std::vector<std::string> mPorts; /**< Filter specifying input ports that will be listened to. Empty means all ports. */
         std::vector<MidiValue> mChannels; /**< Filter specifying what midi channels to listen to. Empty means all channels. */
         std::vector<MidiValue> mNumbers; /**< Filter specifying what number bytes (like cc numbers) to listen to. Empty means all numbers. */
         std::vector<MidiEvent::Type> mTypes; /**< Filter specifying what event types to listen to. Empty means all types. */
+        
+        nap::Signal<const MidiEvent&>* getMessageReceived() { return &messageReceived; }
 
     protected:
         /**

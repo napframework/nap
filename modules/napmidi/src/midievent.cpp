@@ -1,6 +1,10 @@
 #include "midievent.h"
 
+// Std includes
 #include <iostream>
+
+// Nap includes
+#include <nap/signalslot.h>
 
 RTTI_BEGIN_ENUM(nap::MidiEvent::Type)
     RTTI_ENUM_VALUE(nap::MidiEvent::Type::noteOff, "noteOff"),
@@ -12,13 +16,30 @@ RTTI_BEGIN_ENUM(nap::MidiEvent::Type)
     RTTI_ENUM_VALUE(nap::MidiEvent::Type::noteOff, "pitchBend")
 RTTI_END_ENUM
 
+RTTI_BEGIN_CLASS(nap::MidiEvent)
+    RTTI_FUNCTION("getType", &nap::MidiEvent::getType)
+    RTTI_FUNCTION("getNoteNumber", &nap::MidiEvent::getNoteNumber)
+    RTTI_FUNCTION("getVelocity", &nap::MidiEvent::getVelocity)
+    RTTI_FUNCTION("getCCNumber", &nap::MidiEvent::getCCNumber)
+    RTTI_FUNCTION("getCCValue", &nap::MidiEvent::getCCValue)
+    RTTI_FUNCTION("getPitchBendValue", &nap::MidiEvent::getPitchBendValue)
+    RTTI_FUNCTION("getPort", &nap::MidiEvent::getPort)
+    RTTI_FUNCTION("getChannel", &nap::MidiEvent::getChannel)
+    RTTI_FUNCTION("toString", &nap::MidiEvent::toString)
+RTTI_END_CLASS
+
+using MidiEventSignal = nap::Signal<const nap::MidiEvent&>;
+RTTI_BEGIN_CLASS(MidiEventSignal)
+RTTI_FUNCTION("connect", (void(MidiEventSignal::*)(const pybind11::function))&MidiEventSignal::connect)
+RTTI_END_CLASS
+
 namespace nap
 {
     
     constexpr int noPitchBend = 8192;
     
     
-    MidiEvent::MidiEvent(Type aType, MidiValue aNumber, MidiValue aValue, MidiValue aChannel, MidiValue aPort) :
+    MidiEvent::MidiEvent(Type aType, MidiValue aNumber, MidiValue aValue, MidiValue aChannel, const std::string& aPort) :
     mType(aType),
     mNumber(aNumber),
     mValue(aValue),
@@ -28,7 +49,7 @@ namespace nap
     }
     
     
-    MidiEvent::MidiEvent(const std::vector<unsigned char>& data, MidiValue port) : mPort(port)
+    MidiEvent::MidiEvent(const std::vector<unsigned char>& data, const std::string& port) : mPort(port)
     {
         // We only process 3 byte messages for now, midi transport and clock events are not supported yet        
         if (data.size() < 3)
@@ -51,7 +72,7 @@ namespace nap
                 (b.mNumber == mNumber || b.mNumber == MIDI_NUMBER_OMNI || mNumber == MIDI_NUMBER_OMNI) &&
                 (b.mValue == mValue || b.mValue == MIDI_VALUE_OMNI || mValue == MIDI_VALUE_OMNI) &&
                 (b.mChannel == mChannel || b.mChannel == MIDI_CHANNEL_OMNI || mChannel == MIDI_CHANNEL_OMNI) &&
-                (b.mPort == mPort || b.mPort == MIDI_PORT_OMNI || mPort == MIDI_PORT_OMNI));
+                (b.mPort == mPort || b.mPort == "" || mPort == ""));
     }
     
     
@@ -65,7 +86,7 @@ namespace nap
     }
     
     
-    float MidiEvent::pitchBendValue() const
+    float MidiEvent::getPitchBendValue() const
     {
         auto x = (mValue << 7) + mNumber;
         
@@ -73,7 +94,7 @@ namespace nap
     }
     
     
-    std::string MidiEvent::getText() const
+    std::string MidiEvent::toString() const
     {
         std::string result;
         
@@ -103,7 +124,7 @@ namespace nap
                 break;
                 
             case Type::pitchBend:
-                result = "pitch bend: " + std::to_string(pitchBendValue());
+                result = "pitch bend: " + std::to_string(getPitchBendValue());
                 break;
                 
             default:

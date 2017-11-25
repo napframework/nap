@@ -21,8 +21,8 @@ def makeNote(entity, index, len, fac):
 	voice = instrument.findFreeVoice()
 	oscA = voice.getObject("oscillatorA")
 	oscB = voice.getObject("oscillatorB")
-	oscA.getChannel(0).setFrequency(330 * seq[index % len] * fac);
-	oscA.getChannel(1).setFrequency(330 * 1.01 * seq[index % len] * fac);
-	oscB.getChannel(0).setFrequency(660 * seq[index % len] * fac);
-	oscB.getChannel(1).setFrequency(660 * 1.01 * seq[index % len] * fac);
+	oscA.getChannel(0).setFrequency(330 * seq[index % len] * fac, 0);
+	oscA.getChannel(1).setFrequency(330 * 1.01 * seq[index % len] * fac, 0);
+	oscB.getChannel(0).setFrequency(660 * seq[index % len] * fac, 0);
+	oscB.getChannel(1).setFrequency(660 * 1.01 * seq[index % len] * fac, 0);
 	instrument.play(voice, 0)

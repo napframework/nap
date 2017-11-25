@@ -1,0 +1,127 @@
+{
+	"Objects" : 
+	[
+		{
+			"Type": "nap::MidiInputPort",
+			"mID": "midiPort",
+			"Port": "EWI-USB",
+			"EnableDebugOutput": "False"
+		},
+
+		{
+			"Type": "nap::audio::Graph",
+			"mID": "synth",
+			"Objects":
+			[
+				{
+					"Type": "nap::audio::Oscillator",
+					"mID": "oscA",
+					"Amplitude": [ 0 ],
+					"ChannelCount": 1
+				},
+				{
+					"Type": "nap::audio::Oscillator",
+					"mID": "oscB",
+					"Amplitude": [ 0 ],
+					"ChannelCount": 1,
+					"FmInput": "oscA"
+				}
+			],
+			"Output": "oscB"
+		},
+
+
+		{
+			"Type" : "nap::Entity",
+			"mID": "modelEntity",
+			"Components" : 
+			[
+				{
+					"Type": "nap::PythonScriptComponent",
+					"mID": "pythonScript",
+					"Path": "data/audiotest/scripts/midiscript.py"
+				},
+				
+				{
+					"Type": "nap::MidiInputComponent",
+					"mID": "noteOn",
+					"Types": [ "noteOn" ] 
+				},
+
+				{
+					"Type": "nap::MidiInputComponent",
+					"mID": "noteOff",
+					"Types": [ "noteOff" ] 
+				},
+
+				{
+					"Type": "nap::MidiInputComponent",
+					"mID": "controlChange",
+					"Types": [ "controlChange" ],
+					"Numbers": [ 1 ] 
+				},
+
+				{
+					"Type": "nap::audio::AudioComponent",
+					"mID": "audioComponent",
+					"Object":
+					{
+						"Type": "nap::audio::GraphObject",
+						"Graph": "synth"
+					}
+				},
+
+				{
+					"Type": "nap::audio::OutputComponent",
+					"Input": "audioComponent",
+					"Routing": [ 0, 0 ]
+				}
+
+			]
+		},
+		
+		{
+			"Type" : "nap::Entity",
+			"mID": "cameraEntity",
+			"Components" : 
+			[
+				{
+					"Type" : "nap::PerspCameraComponent",
+					"Properties": {
+						"FieldOfView": 45.0,
+						"NearClippingPlane" : 1,
+						"FarClippingPlane" : 1000.0
+					}
+				},
+				{
+					"Type" : "nap::OrthoCameraComponent",
+					"Properties": {
+						"NearClippingPlane" : 1,
+						"FarClippingPlane" : 1000.0
+					}
+				},
+				{
+					"Type" : "nap::TransformComponent",
+					"Properties": {
+						"Translate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 5.0
+						},
+						"Rotate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0
+						},
+						"Scale": {
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.0						
+					}
+				}
+			]
+		}
+	]
+}

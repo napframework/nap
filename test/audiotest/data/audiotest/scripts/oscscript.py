@@ -1,8 +1,8 @@
 import nap
 
 def handleOSC(event):
-	print("osc python")
-	print(event.getAddress())
+	print(event.getArgument(0).toString())
+
 
 def init(entity):
 	print("init")

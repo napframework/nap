@@ -6,6 +6,8 @@
 RTTI_BEGIN_CLASS(nap::OSCEvent)
 	RTTI_CONSTRUCTOR(const std::string&)
     RTTI_FUNCTION("getAddress", &nap::OSCEvent::getAddress)
+    RTTI_FUNCTION("getArgument", (const nap::OSCArgument*(nap::OSCEvent::*)(int)const)&nap::OSCEvent::getArgument)
+    RTTI_FUNCTION("getArgumentCount", &nap::OSCEvent::getCount)
 RTTI_END_CLASS
 
 using OSCEventSignal = nap::Signal<const nap::OSCEvent&>;
@@ -28,17 +30,17 @@ namespace nap
 	}
 
 
-	const OSCArgument& OSCEvent::getArgument(int index) const
+	const OSCArgument* OSCEvent::getArgument(int index) const
 	{
 		assert(index < mArguments.size() && index >= 0);
-		return *(mArguments[index]);
+		return mArguments[index].get();
 	}
 
 
-	nap::OSCArgument& OSCEvent::getArgument(int index)
+	nap::OSCArgument* OSCEvent::getArgument(int index)
 	{
 		assert(index < mArguments.size() && index >= 0);
-		return *(mArguments[index]);
+		return mArguments[index].get();
 	}
 
 

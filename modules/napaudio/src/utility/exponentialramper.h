@@ -3,6 +3,9 @@
 // Std includes
 #include <math.h>
 
+// Nap includes
+#include <nap/signalslot.h>
+
 // Audio includes
 #include <utility/audiotypes.h>
 

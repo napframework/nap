@@ -16,9 +16,9 @@ namespace nap
     void midiCallback(double deltatime, std::vector<unsigned char> *message, void *userData)
     {
         auto inputPort = static_cast<MidiInputPort*>(userData);
-        auto event = std::make_unique<MidiEvent>(*message, inputPort->getPortNumber());
+        auto event = std::make_unique<MidiEvent>(*message, inputPort->mID);
         if (inputPort->mDebugOutput)
-            nap::Logger::info("midi input on " + inputPort->mPortName + ": " + event->getText());
+            nap::Logger::info("midi input on " + inputPort->mPortName + ": " + event->toString());
         inputPort->receiveEvent(std::move(event));
     }
     
