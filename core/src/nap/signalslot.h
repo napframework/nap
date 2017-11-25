@@ -11,12 +11,10 @@ namespace nap
 {
 	template<typename... Args> class Slot;
 
-	/**
-	Manages a function object.
-	Every event needs to be initialized with a function that can be called by other events
-	The variable types specify the function arguments.
-	Other events can be connected/disconnected to an event.
-	**/
+    /**
+     * A callable signal to which slots, functions or other signals can be connected to provide loose coupling.
+     * The signal variadic template arguments to be able to work with different sets of arguments.
+     */
 	template <typename... Args>
 	class Signal final
 	{
@@ -27,40 +25,53 @@ namespace nap
 		~Signal();
 
 		// Connection
-		void connect(Signal<Args...>& signal);
-		void disconnect(Signal<Args...>& signal);
-
-		void connect(Slot<Args...>& slot);
-		void disconnect(Slot<Args...>& slot);
-
-		// Connect a raw function object. Lifelong connection only, disconnection not possible.
-		void connect(const Function& inFunction);
         
-        // Connect a python function. Lifelong connection only, disconnection not possible.
-        void connect(const pybind11::function pythonFunction)
-        {
-            Function func = [pythonFunction](Args... args)
-            {
-                pythonFunction(pybind11::cast(std::forward<Args>(args)..., std::is_lvalue_reference<Args>::value
-                                        ? pybind11::return_value_policy::reference : pybind11::return_value_policy::automatic_reference)...);
-            };
-            connect(func);
-        }
+        /**
+         * Connect to another signal that can call other functions, slots or signals in turn
+         */
+		void connect(Signal<Args...>& signal);
+		void disconnect(Signal<Args...>& signal); /**< Disconnect from another signal */
 
-		// Convenience method for lifelong connection in case of single parameter events
+        /**
+         * Connect to a slot with similar signature. A slot is an object managing a function to be called.
+         * Advantages of connecting to a slot instead of a raw function:
+         * - the slot disconnects itself on destruction, so it's still safe to call the signal afterwards
+         * - the slot can be disconnected from the signal
+         */
+		void connect(Slot<Args...>& slot);
+		void disconnect(Slot<Args...>& slot); /**< Disconnect from a slot */
+
+        /**
+         * Connect a raw function object.
+         * Note that when any captured data in a connected function is deleted this signal will be unsafe to call.
+         * Also disconnecting a raw function is not possible.
+         * Connecting a function is mainly only good practice when the scope of the signal is the same as the function's.
+         */
+		void connect(const Function& inFunction);
+
+        /**
+         * Connect a function from a pybind11 python module. Internally the python function is wrapped in a function object.
+         */
+        void connect(const pybind11::function pythonFunction);
+
+        /**
+         * Convenience method to connect a member function with one argument.
+         */
 		template <typename U, typename F>
 		void connect(U* object, F memberFunction)
 		{
 			connect(std::bind(memberFunction, object, std::placeholders::_1));
 		}
 
+        /**
+         * Call operator to trigger the signal to be emitted.
+         */
 		inline void operator()(Args... args) 
 		{ 
 			trigger(std::forward<Args>(args)...); 
 		}
 
-		// Trigger the event
-		void trigger(Args... args);
+		void trigger(Args... args); /**< Trigger the signal to be emitted */
 
 	private:
 		void addCause(Signal<Args...>& event);
@@ -268,6 +279,18 @@ namespace nap
 
 		mFunctionEffects->emplace_back(inFunction);
 	}
+    
+    
+    template <typename... Args>
+    void Signal<Args...>::connect(const pybind11::function pythonFunction)
+    {
+        Function func = [pythonFunction](Args... args)
+        {
+            pythonFunction(pybind11::cast(std::forward<Args>(args)..., std::is_lvalue_reference<Args>::value
+                                          ? pybind11::return_value_policy::reference : pybind11::return_value_policy::automatic_reference)...);
+        };
+        connect(func);
+    }
     
     
 	template <typename... Args>
