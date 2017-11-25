@@ -56,14 +56,62 @@ RTTI_BEGIN_CLASS(nap::RColorFloat)
 RTTI_END_CLASS
 
 
+RTTI_DEFINE_BASE(nap::RGBColorData8)
+RTTI_DEFINE_BASE(nap::RGBAColorData8)
+RTTI_DEFINE_BASE(nap::RColorData8)
+RTTI_DEFINE_BASE(nap::RGBColorData16)
+RTTI_DEFINE_BASE(nap::RGBAColorData16)
+RTTI_DEFINE_BASE(nap::RColorData16)
+RTTI_DEFINE_BASE(nap::RGBColorDataFloat)
+RTTI_DEFINE_BASE(nap::RGBAColorDataFloat)
+RTTI_DEFINE_BASE(nap::RColorDataFloat)
+
+
 namespace nap
 {
+	/**
+	 * Fetches the input and output colors that are used for color conversion
+	 * This call works with colors that point to data in memory, ie: do not manage their own color data
+	 * As well as for colors that do manage their own data
+	 * @param inColor the input color to extract the input value from
+	 * @param outColor the color to extract the output value from as a pointer
+	 * @param channel the color channel to extract the data from
+	 * @param out will hold the pointer to the location in memory that will receive the new color value
+	 * @return the input color value @channel
+	 */
+	template<typename I, typename O>
+	static I getColorIO(const BaseColor& inColor, BaseColor& outColor, int channel, O*& out)
+	{
+		I in(0);
+		if (inColor.isPointer())
+		{
+			in = **((const I**)(inColor.getData(channel)));
+		}
+		else
+		{
+			in = *(static_cast<const I*>(inColor.getData(channel)));
+		}
+
+		O* outptr(nullptr);
+		if (outColor.isPointer())
+		{
+			outptr = *((O**)(outColor.getData(channel)));
+		}
+		else
+		{
+			outptr = static_cast<O*>(outColor.getData(channel));
+		}
+		out = outptr;
+		return in;
+	}
+
 	static void floatToByte(const BaseColor& inColor, BaseColor& outColor, int channel)
 	{
 		assert(inColor.getValueType()  == RTTI_OF(float));
 		assert(outColor.getValueType() == RTTI_OF(nap::uint8));
-		float in = *(static_cast<const float*>(inColor.getData(channel)));
-		uint8* out = static_cast<uint8*>(outColor.getData(channel));
+		
+		uint8* out(nullptr);
+		float in = getColorIO<float, uint8>(inColor, outColor, channel, out);
 		*out = static_cast<uint8>(math::clamp<float>(in, 0.0f, 1.0f) * static_cast<float>(math::max<uint8>()));
 	}
 
@@ -71,8 +119,9 @@ namespace nap
 	{
 		assert(inColor.getValueType()  == RTTI_OF(float));
 		assert(outColor.getValueType() == RTTI_OF(nap::uint16));
-		float in = *(static_cast<const float*>(inColor.getData(channel)));
-		uint16* out = static_cast<uint16*>(outColor.getData(channel));
+		
+		uint16* out(nullptr);
+		float in = getColorIO<float, uint16>(inColor, outColor, channel, out);
 		*out = static_cast<uint16>(math::clamp<float>(in, 0.0f, 1.0f) * static_cast<float>(math::max<uint16>()));
 	}
 
@@ -80,8 +129,8 @@ namespace nap
 	{
 		assert(inColor.getValueType()  == RTTI_OF(float));
 		assert(outColor.getValueType() == RTTI_OF(float));
-		float in = *(static_cast<const float*>(inColor.getData(channel)));
-		float* out = static_cast<float*>(outColor.getData(channel));
+		float* out(nullptr);
+		float in = getColorIO<float, float>(inColor, outColor, channel, out);
 		*out = in;
 	}
 
@@ -89,8 +138,9 @@ namespace nap
 	{
 		assert(inColor.getValueType()  == RTTI_OF(uint8));
 		assert(outColor.getValueType() == RTTI_OF(float));
-		uint8 in = *(static_cast<const uint8*>(inColor.getData(channel)));
-		float* out = static_cast<float*>(outColor.getData(channel));
+
+		float* out(nullptr);
+		uint8 in = getColorIO<uint8, float>(inColor, outColor, channel, out);
 		*out = static_cast<float>(in) / static_cast<float>(math::max<uint8>());
 	}
 
@@ -98,8 +148,9 @@ namespace nap
 	{
 		assert(inColor.getValueType()  == RTTI_OF(uint8));
 		assert(outColor.getValueType() == RTTI_OF(uint16));
-		uint8 in = *(static_cast<const uint8*>(inColor.getData(channel)));
-		uint16* out = static_cast<uint16*>(outColor.getData(channel));
+
+		uint16* out(nullptr);
+		uint8 in = getColorIO<uint8, uint16>(inColor, outColor, channel, out);
 		*out = static_cast<uint16>(in) * (math::max<uint16>() / (uint16)math::max<uint8>());
 	}
 
@@ -107,8 +158,9 @@ namespace nap
 	{
 		assert(inColor.getValueType()  == RTTI_OF(uint8));
 		assert(outColor.getValueType() == RTTI_OF(uint8));
-		uint8 in = *(static_cast<const uint8*>(inColor.getData(channel)));
-		uint8* out = static_cast<uint8*>(outColor.getData(channel));
+		
+		uint8* out(nullptr);
+		uint8 in = getColorIO<uint8, uint8>(inColor, outColor, channel, out);
 		*out = in;
 	}
 
@@ -116,8 +168,9 @@ namespace nap
 	{
 		assert(inColor.getValueType() == RTTI_OF(uint16));
 		assert(outColor.getValueType() == RTTI_OF(float));
-		uint16 in = *(static_cast<const uint16*>(inColor.getData(channel)));
-		float* out = static_cast<float*>(outColor.getData(channel));
+		
+		float* out(nullptr);
+		uint16 in = getColorIO<uint16, float>(inColor, outColor, channel, out);
 		*out = static_cast<float>(in) / static_cast<float>(math::max<uint16>());
 	}
 
@@ -125,8 +178,9 @@ namespace nap
 	{
 		assert(inColor.getValueType() == RTTI_OF(uint16));
 		assert(outColor.getValueType() == RTTI_OF(uint8));
-		uint16 in = *(static_cast<const uint16*>(inColor.getData(channel)));
-		uint8* out = static_cast<uint8*>(outColor.getData(channel));
+
+		uint8* out(nullptr);
+		uint16 in = getColorIO<uint16, uint8>(inColor, outColor, channel, out);
 		*out = static_cast<uint8>(in / (math::max<uint16>() / (uint16)math::max<uint8>()));
 	}
 
@@ -134,58 +188,59 @@ namespace nap
 	{
 		assert(inColor.getValueType() == RTTI_OF(uint16));
 		assert(outColor.getValueType() == RTTI_OF(uint16));
-		uint16 in = *(static_cast<const uint16*>(inColor.getData(channel)));
-		uint16* out = static_cast<uint16*>(outColor.getData(channel));
+
+		uint16* out(nullptr);
+		uint16 in = getColorIO<uint16, uint16>(inColor, outColor, channel, out);
 		*out = in;
 	}
 }
 
-void nap::BaseColor::convertColor(const BaseColor& from, BaseColor& to)
+void nap::BaseColor::convertColor(const BaseColor& source, BaseColor& target)
 {
-	assert(from.getNumberOfChannels() >= to.getNumberOfChannels());
+	assert(source.getNumberOfChannels() >= target.getNumberOfChannels());
 	std::function<void(const BaseColor&, BaseColor&, int)> convert_func = nullptr;
 	
-	if (from.getValueType() == RTTI_OF(uint8))
+	if (source.getValueType() == RTTI_OF(uint8))
 	{
-		if (to.getValueType() == RTTI_OF(float))
+		if (target.getValueType() == RTTI_OF(float))
 		{
 			convert_func = &byteToFLoat;
 		}
-		else if (to.getValueType() == RTTI_OF(uint16))
+		else if (target.getValueType() == RTTI_OF(uint16))
 		{
 			convert_func = &byteToShort;
 		}
-		else if (to.getValueType() == RTTI_OF(uint8))
+		else if (target.getValueType() == RTTI_OF(uint8))
 		{
 			convert_func = &byteToByte;
 		}
 	}
-	else if (from.getValueType() == RTTI_OF(float))
+	else if (source.getValueType() == RTTI_OF(float))
 	{
-		if (to.getValueType() == RTTI_OF(uint8))
+		if (target.getValueType() == RTTI_OF(uint8))
 		{
 			convert_func = &floatToByte;
 		}
-		else if (to.getValueType() == RTTI_OF(uint16))
+		else if (target.getValueType() == RTTI_OF(uint16))
 		{
 			convert_func = &floatToFloat;
 		}
-		else if (to.getValueType() == RTTI_OF(float))
+		else if (target.getValueType() == RTTI_OF(float))
 		{
 			convert_func = &floatToFloat;
 		}
 	}
-	else if (from.getValueType() == RTTI_OF(uint16))
+	else if (source.getValueType() == RTTI_OF(uint16))
 	{
-		if (to.getValueType() == RTTI_OF(uint8))
+		if (target.getValueType() == RTTI_OF(uint8))
 		{
 			convert_func = &shortToByte;
 		}
-		else if (to.getValueType() == RTTI_OF(float))
+		else if (target.getValueType() == RTTI_OF(float))
 		{
 			convert_func = &shortToFLoat;
 		}
-		else if(to.getValueType() == RTTI_OF(uint16))
+		else if(target.getValueType() == RTTI_OF(uint16))
 		{
 			convert_func = shortToShort;
 		}
@@ -193,11 +248,11 @@ void nap::BaseColor::convertColor(const BaseColor& from, BaseColor& to)
 
 	// Perform conversion
 	assert(convert_func != nullptr);
-	for (int i = 0; i < to.getNumberOfChannels(); i++)
-		convert_func(from, to, i);
+	for (int i = 0; i < target.getNumberOfChannels(); i++)
+		convert_func(source, target, i);
 }
 
-void nap::BaseColor::convert(BaseColor& color) const
+void nap::BaseColor::convert(BaseColor& target) const
 {
-	BaseColor::convertColor(*this, color);
+	BaseColor::convertColor(*this, target);
 }
