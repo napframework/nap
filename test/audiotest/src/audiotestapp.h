@@ -7,12 +7,12 @@
 /*
  * Select your serialized json audio demo app here:
  */
-const std::string appJson = "data/audiotest/audiofileplay.json";
+//const std::string appJson = "data/audiotest/audiofileplay.json";
 //const std::string appJson = "data/audiotest/pythonsequencer.json";
 //const std::string appJson = "data/audiotest/ambientdrone.json";
 //const std::string appJson = "data/audiotest/midilogging.json"; // Edit the midi input device in this json file!
 //const std::string appJson = "data/audiotest/pythonosc.json";
-//const std::string appJson = "data/audiotest/pythonmidi.json";
+const std::string appJson = "data/audiotest/pythonmidi.json";
 
 
 namespace nap

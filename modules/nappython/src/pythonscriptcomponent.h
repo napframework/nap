@@ -27,7 +27,7 @@ namespace nap
         
 	private:
 		pybind11::module mScript;
-        std::vector<ComponentInstance*> mComponentVariables;
+        std::vector<ObjectPtr<ComponentInstance>> mComponentVariables;
 	};
 
 
