@@ -96,16 +96,16 @@ namespace nap
             for (auto component : mInputComponents)
             {
                 if (!component->mPorts.empty())
-                    if (std::find(component->mPorts.begin(), component->mPorts.end(), event->mPort) == component->mPorts.end())
+                    if (std::find(component->mPorts.begin(), component->mPorts.end(), event->getPort()) == component->mPorts.end())
                         continue;
                 if (!component->mTypes.empty())
-                    if (std::find(component->mTypes.begin(), component->mTypes.end(), event->mType) == component->mTypes.end())
+                    if (std::find(component->mTypes.begin(), component->mTypes.end(), event->getType()) == component->mTypes.end())
                         continue;
                 if (!component->mChannels.empty())
-                    if (std::find(component->mChannels.begin(), component->mChannels.end(), event->mChannel) == component->mChannels.end())
+                    if (std::find(component->mChannels.begin(), component->mChannels.end(), event->getChannel()) == component->mChannels.end())
                         continue;
                 if (!component->mNumbers.empty())
-                    if (std::find(component->mNumbers.begin(), component->mNumbers.end(), event->mNumber) == component->mNumbers.end())
+                    if (std::find(component->mNumbers.begin(), component->mNumbers.end(), event->getNumber()) == component->mNumbers.end())
                         continue;
                 component->trigger(*event);
             }

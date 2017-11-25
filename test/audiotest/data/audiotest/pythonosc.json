@@ -5,7 +5,7 @@
 			"Type": "nap::OSCReceiver",
 			"mID": "oscReceiver",
 			"Port": 7000,
-			"EnableDebugOutput": "True"
+			"EnableDebugOutput": "False"
 		},
 
 

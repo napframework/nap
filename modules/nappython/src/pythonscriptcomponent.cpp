@@ -16,6 +16,13 @@ RTTI_END_CLASS
 
 namespace nap
 {
+    
+    
+    PythonScriptComponentInstance::PythonScriptComponentInstance(EntityInstance& entity, Component& resource) :
+        ComponentInstance(entity, resource)
+    {
+    }
+
 	void PythonScriptComponentInstance::update(double deltaTime)
 	{
         call("update", getEntityInstance(), getEntityInstance()->getCore()->getElapsedTime(), deltaTime);
@@ -26,11 +33,17 @@ namespace nap
 	{
 		PythonScriptComponent* script_component = getComponent<PythonScriptComponent>();
 
+        // Load the script
 		PythonScriptService* script_service = getEntityInstance()->getCore()->getService<PythonScriptService>();
 		assert(script_service != nullptr);
 		if (!errorState.check(script_service->TryLoad(script_component->mPath, mScript, errorState), "Failed to load %s", script_component->mPath.c_str()))
 			return false;
         
+        // Add all sibling components as identifiers in the script
+        for (auto sibling : getEntityInstance()->getComponents())
+            mScript.attr(sibling->getComponent()->mID.c_str())  = sibling;
+        
+        // Call ths script's init callback
         call("init", getEntityInstance());
 		
 		return true;

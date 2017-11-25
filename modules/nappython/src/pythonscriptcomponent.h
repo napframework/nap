@@ -3,6 +3,7 @@
 #include <rtti/rtti.h>
 #include <nap/signalslot.h>
 #include <nap/component.h>
+#include <nap/componentptr.h>
 #include <nap/logger.h>
 #include <utility/dllexport.h>
 #include <pybind11/pybind11.h>
@@ -16,10 +17,7 @@ namespace nap
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
-		PythonScriptComponentInstance(EntityInstance& entity, Component& resource) :
-			ComponentInstance(entity, resource)
-		{
-		}
+        PythonScriptComponentInstance(EntityInstance& entity, Component& resource);
 
 		virtual void update(double deltaTime) override;
 		virtual bool init(utility::ErrorState& errorState) override;
@@ -29,6 +27,7 @@ namespace nap
         
 	private:
 		pybind11::module mScript;
+        std::vector<ComponentInstance*> mComponentVariables;
 	};
 
 
