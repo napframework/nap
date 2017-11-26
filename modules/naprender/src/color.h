@@ -139,7 +139,7 @@ namespace nap
 	 * colors you should use one of the explicitly defined successive color types, ie:
 	 * RGBA8, R8, RGBFloat etc.
 	 */
-	template<typename T, typename int CHANNELS>
+	template<typename T, int CHANNELS>
 	class Color : public BaseColor
 	{
 		RTTI_ENABLE(BaseColor)
