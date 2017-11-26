@@ -211,14 +211,7 @@ namespace nap
 	}
 
 
-	void Pixmap::getColor(int x, int y, BaseColor& color) const
-	{
-		std::unique_ptr<BaseColor> pixmap_color = getColor(x, y);
-		pixmap_color->convert(color);
-	}
-
-
-	std::unique_ptr<nap::BaseColor> Pixmap::getColor(int x, int y) const
+	std::unique_ptr<nap::BaseColor> Pixmap::getPixel(int x, int y) const
 	{
 		BaseColor* rvalue = nullptr;
 		switch (mBitmap.getDataType())
@@ -247,7 +240,7 @@ namespace nap
 	}
 
 
-	std::unique_ptr<nap::BaseColor> Pixmap::getColorData(int x, int y)
+	std::unique_ptr<nap::BaseColor> Pixmap::getPixelData(int x, int y) const
 	{
 		BaseColor* rvalue = nullptr;
 		switch (mBitmap.getDataType())

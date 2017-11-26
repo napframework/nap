@@ -79,27 +79,30 @@ namespace nap
 		* @param x the horizontal pixel coordinate
 		* @param y the vertical pixel coordinate
 		*/
-		std::unique_ptr<BaseColor> getColor(int x, int y) const;
+		std::unique_ptr<BaseColor> getPixel(int x, int y) const;
 
 		/**
-		* Populates @color with the color values of a pixel.
-		* This call converts the pixel data if necessary.
-		* @outColor can be both a color that manages it's own color data or a color that points to data in memory
-		* Conversion will succeed for both types of Colors, managed and unmanaged
-		* Use this call to get a copy of the color values in the desired color format
+		* return a color of type T with the color values of a pixel.
+		* This call converts the pixel data if necessary. 
+		* Note that this call can be slow when iterating over the bitmap
+		* Use this call to get a copy of the color values in the desired color format T
+		* T can not be of be a color that points to external value, ie: RGBColorData8 etc.
+		* Valid values for T are RGBColor8, RColorFloat etc.
 		* @param x the horizontal coordinate of the pixel
 		* @param y the vertical coordinate of the pixel
 		* @param outColor holds the converted pixel colors
 		*/
-		void getColor(int x, int y, BaseColor& outColor) const;
+		template<typename T>
+		T getColor(int x, int y) const;
 
 		/**
 		 * @return a color that contains memory addresses of the pixel's colors at the x and y pixel coordinates
-		 * The return type of the color matches the bitmap data type
+		 * The type of the color matches the bitmap data type.
+		 * Note that this call is relatively slow because it creates a new Color that wraps a set of pointers
 		 * @param x the horizontal pixel coordinate
 		 * @param y the vertical pixel coordinate
 		 */
-		std::unique_ptr<BaseColor> getColorData(int x, int y);
+		std::unique_ptr<BaseColor> getPixelData(int x, int y) const;
 
 		/**
 		 * Populates @outColor with the RGB values of a pixel. 
@@ -245,7 +248,6 @@ namespace nap
 	protected:
 		opengl::Bitmap mBitmap;
 	};
-
 
 	/**
 	 * A pixmap resource that is loaded from file
@@ -443,5 +445,21 @@ namespace nap
 		RColor<Type*> rvalue;
 		getColorValueData(x, y, channel, rvalue);
 		return rvalue;
+	}
+
+
+	template<typename T>
+	T nap::Pixmap::getColor(int x, int y) const
+	{
+		// Get the colors associated with the pixel
+		std::unique_ptr<BaseColor> pixel_color = getPixel(x, y);
+
+		// If they are of the same type it's safe to cast and return
+		if (pixel_color->get_type().is_derived_from(RTTI_OF(T)))
+		{
+			return *(static_cast<T*>(pixel_color.get()));
+		}
+		// Otherwise we need to convert
+		return pixel_color->convert<T>();
 	}
 }
