@@ -139,7 +139,7 @@ namespace nap
 	 * colors you should use one of the explicitly defined successive color types, ie:
 	 * RGBA8, R8, RGBFloat etc.
 	 */
-	template<typename T>
+	template<typename T, typename int CHANNELS>
 	class Color : public BaseColor
 	{
 		RTTI_ENABLE(BaseColor)
@@ -147,15 +147,15 @@ namespace nap
 		/**
 		* Constructor that simply creates a 0 initialized color
 		*/
-		Color(int channels) : BaseColor(channels, sizeof(T))							{ mValues.resize(channels, 0); }
+		Color() : BaseColor(CHANNELS, sizeof(T))										{ mValues.fill(0); }
 
 		/**
 		 * Constructor that creates a color based on a set number of values
 		 * Note that the number of values needs to match the number of channels
 		 * The order is important: RGBA
 		 */
-		Color(const std::vector<T>& colors) : 
-			BaseColor(colors.size(), sizeof(T)), mValues(colors)						{ }
+		Color(const std::array<T, CHANNELS>& colors) : 
+			BaseColor(CHANNELS, sizeof(T)), mValues(colors)								{ }
 
 		/**
 		 *	@return the type of the value
@@ -203,17 +203,17 @@ namespace nap
 		/**
 		 *	@return if two color values are not similar
 		 */
-		bool operator== (const Color<T>& rhs) const;
+		bool operator== (const Color<T, CHANNELS>& rhs) const;
 
 		/**
 		 * @return if two color values are not similar
 		 */
-		bool operator!=(const Color<T>& rhs) const										{ !(rhs == mValues); }
+		bool operator!=(const Color<T, CHANNELS>& rhs) const							{ !(rhs == mValues); }
 		
 		/**
 		*	Color values associated with this color
 		*/
-		std::vector<T> mValues;
+		std::array<T, CHANNELS> mValues;
 	};
 
 
@@ -221,19 +221,19 @@ namespace nap
 	 *	Utility class that provides a useful constructor and accessors
 	 */
 	template<typename T>
-	class RGBColor : public Color<T>
+	class RGBColor : public Color<T, 3>
 	{
 		RTTI_ENABLE(Color)
 	public:
 		/**
 		 *	Constructor that creates an RGB color based on the given values
 		 */
-		RGBColor(T red, T green, T blue) : Color<T>({red, green, blue})			{ }
+		RGBColor(T red, T green, T blue) : Color<T, 3>({red, green, blue})		{ }
 
 		/**
 		 *	Default constructor
 		 */
-		RGBColor() : Color<T>(3)												{ }
+		RGBColor() : Color<T, 3>()												{ }
 
 		/**
 		* Sets the red channel to @value
@@ -277,20 +277,20 @@ namespace nap
 	*	Utility class that provides a useful constructor and accessors
 	*/
 	template<typename T>
-	class RGBAColor : public Color<T>
+	class RGBAColor : public Color<T, 4>
 	{
 		RTTI_ENABLE(Color)
 	public:
 		/**
 		*	Constructor that creates an RGB color based on the given values
 		*/
-		RGBAColor(T red, T green, T blue, T alpha) : 
-			Color<T>({ red, green, blue, alpha })								{ }
+		RGBAColor(T red, T green, T blue, T alpha) :
+			Color<T, 4>({ red, green, blue, alpha }) { }
 
 		/**
-		 *	Default constructor
-		 */
-		RGBAColor() : Color<T>(4)												{ }
+		*	Default constructor
+		*/
+		RGBAColor() : Color<T, 4>()												{ }
 
 		/**
 		 * Sets the red channel to @value
@@ -346,19 +346,19 @@ namespace nap
 	*	Utility class that provides a useful constructor for a single value color
 	*/
 	template<typename T>
-	class RColor : public Color<T>
+	class RColor : public Color<T, 1>
 	{
 		RTTI_ENABLE(Color)
 	public:
 		/**
 		* Constructor that creates an R color based on the given value
 		*/
-		RColor(T value) : Color<T>(std::vector<T>(1, value))					{ }
+		RColor(T value) : Color<T, 1>({ value }) { }
 
 		/**
-		 *	Default constructor
-		 */
-		RColor() : Color<T>(1)													{ }
+		*	Default constructor
+		*/
+		RColor() : Color<T, 1>() { }
 
 		/**
 		* Sets the red channel to @value
@@ -413,8 +413,8 @@ namespace nap
 	// Template Definitions
 	//////////////////////////////////////////////////////////////////////////
 
-	template<typename T>
-	bool nap::Color<T>::operator==(const Color<T>& rhs) const
+	template<typename T, int CHANNELS>
+	bool nap::Color<T, CHANNELS>::operator==(const Color<T, CHANNELS>& rhs) const
 	{
 		for (auto i = 0; i < mValues.size(); i++)
 		{
@@ -424,46 +424,46 @@ namespace nap
 		return true;		
 	}
 
-	template<typename T>
-	T& nap::Color<T>::getValue(EColorChannel channel)
+	template<typename T, int CHANNELS>
+	T& nap::Color<T, CHANNELS>::getValue(EColorChannel channel)
 	{
 		int idx = static_cast<int>(channel);
-		assert(idx < this->getNumberOfChannels());
+		assert(idx < CHANNELS);
 		return mValues[idx];
 	}
 
-	template<typename T>
-	T nap::Color<T>::getValue(EColorChannel channel) const
+	template<typename T, int CHANNELS>
+	T nap::Color<T, CHANNELS>::getValue(EColorChannel channel) const
 	{
 		int idx = static_cast<int>(channel);
-		assert(idx < this->getNumberOfChannels());
+		assert(idx < CHANNELS);
 		return mValues[idx];
 	}
 
-	template<typename T>
-	void nap::Color<T>::setValue(EColorChannel channel, T value)
+	template<typename T, int CHANNELS>
+	void nap::Color<T, CHANNELS>::setValue(EColorChannel channel, T value)
 	{
 		int idx = static_cast<int>(channel);
-		assert(idx < this->getNumberOfChannels());
+		assert(idx < CHANNELS);
 		mValues[idx] = value;
 	}
 
-	template<typename T>
-	const void* nap::Color<T>::getData(int channel) const
+	template<typename T, int CHANNELS>
+	const void* nap::Color<T, CHANNELS>::getData(int channel) const
 	{
-		assert(channel < this->getNumberOfChannels());
+		assert(channel < CHANNELS);
 		return &(mValues[channel]);
 	}
 
-	template<typename T>
-	void* nap::Color<T>::getData(int channel)
+	template<typename T, int CHANNELS>
+	void* nap::Color<T, CHANNELS>::getData(int channel)
 	{
-		assert(channel < this->getNumberOfChannels());
+		assert(channel < CHANNELS);
 		return &(mValues[channel]);
 	}
 
-	template<typename T>
-	bool nap::Color<T>::isPointer() const
+	template<typename T, int CHANNELS>
+	bool nap::Color<T, CHANNELS>::isPointer() const
 	{
 		return std::is_pointer<T>();
 	}
