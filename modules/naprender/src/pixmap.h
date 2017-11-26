@@ -23,7 +23,7 @@ namespace nap
 		/**
 		 *	Supported bitmap data types
 		 */
-		enum class EDataType
+		enum class EDataType : int
 		{
 			BYTE	= 0,		//< name: Byte
 			USHORT	= 2,		//< name: Short
@@ -33,7 +33,7 @@ namespace nap
 		/**
 		 *	Supported bitmap color types
 		 */
-		enum class EChannels
+		enum class EChannels : int
 		{
 			R			= 1,	//< name: R
 			RGB			= 2,	//< name: RGB
@@ -462,4 +462,26 @@ namespace nap
 		// Otherwise we need to convert
 		return pixel_color->convert<T>();
 	}
+}
+
+namespace std
+{
+	template <>
+	struct hash<nap::Pixmap::EChannels>
+	{
+		size_t operator()(const nap::Pixmap::EChannels& v) const
+		{
+			return hash<int>()(static_cast<int>(v));
+		}
+	};
+
+
+	template <>
+	struct hash<nap::Pixmap::EDataType>
+	{
+		size_t operator()(const nap::Pixmap::EDataType& v) const
+		{
+			return hash<int>()(static_cast<int>(v));
+		}
+	};
 }
