@@ -223,7 +223,7 @@ void nap::BaseColor::convertColor(const BaseColor& source, BaseColor& target)
 		}
 		else if (target.getValueType() == RTTI_OF(uint16))
 		{
-			convert_func = &floatToFloat;
+			convert_func = &floatToShort;
 		}
 		else if (target.getValueType() == RTTI_OF(float))
 		{

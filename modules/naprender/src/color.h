@@ -216,14 +216,22 @@ namespace nap
 		std::array<T, CHANNELS> mValues;
 	};
 
-
+    template<typename T>
+    using RGBColorBase  = Color<T,3>;
+    
+    template<typename T>
+    using RGBAColorBase = Color<T,4>;
+   
+    template<typename T>
+    using RColorBase    = Color<T,1>;
+        
 	/**
 	 *	Utility class that provides a useful constructor and accessors
 	 */
 	template<typename T>
 	class RGBColor : public Color<T, 3>
 	{
-		RTTI_ENABLE(Color)
+		RTTI_ENABLE(Color<T, 3>)
 	public:
 		/**
 		 *	Constructor that creates an RGB color based on the given values
@@ -245,7 +253,7 @@ namespace nap
 		* Sets the red channel to @value
 		* @param value red color value
 		*/
-		T getRed() const														{ return getValue(EColorChannel::Red); }
+        T getRed() const														{ return Color<T,3>::getValue(EColorChannel::Red); }
 
 		/**
 		* Sets the green channel to @value
@@ -257,7 +265,7 @@ namespace nap
 		* Sets the green channel to @value
 		* @param value green color value
 		*/
-		T getGreen() const														{ return getValue(EColorChannel::Green); }
+		T getGreen() const														{ return Color<T,3>::getValue(EColorChannel::Green); }
 
 		/**
 		* Sets the blue channel to @value
@@ -269,7 +277,7 @@ namespace nap
 		* Sets the blue channel to @value
 		* @param blue color value
 		*/
-		T getBlue() const														{ return getValue(EColorChannel::Blue); }
+		T getBlue() const														{ return Color<T,3>::getValue(EColorChannel::Blue); }
 	};
 
 
@@ -277,9 +285,9 @@ namespace nap
 	*	Utility class that provides a useful constructor and accessors
 	*/
 	template<typename T>
-	class RGBAColor : public Color<T, 4>
+	class RGBAColor : public Color<T,4>
 	{
-		RTTI_ENABLE(Color)
+		RTTI_ENABLE(Color<T,4>)
 	public:
 		/**
 		*	Constructor that creates an RGB color based on the given values
@@ -302,7 +310,7 @@ namespace nap
 		* Sets the red channel to @value
 		* @param value red color value
 		*/
-		T getRed() const														{ return getValue(EColorChannel::Red); }
+		T getRed() const														{ return Color<T,4>::getValue(EColorChannel::Red); }
 
 		/**
 		* Sets the green channel to @value
@@ -314,7 +322,7 @@ namespace nap
 		* Sets the green channel to @value
 		* @param value green color value
 		*/
-		T getGreen() const														{ return getValue(EColorChannel::Green); }
+		T getGreen() const														{ return Color<T,4>::getValue(EColorChannel::Green); }
 
 		/**
 		* Sets the blue channel to @value
@@ -326,7 +334,7 @@ namespace nap
 		* Sets the blue channel to @value
 		* @param blue color value
 		*/
-		T getBlue() const														{ return getValue(EColorChannel::Blue); }
+		T getBlue() const														{ return Color<T,4>::getValue(EColorChannel::Blue); }
 
 		/**
 		* Sets the alpha channel to @value
@@ -338,7 +346,7 @@ namespace nap
 		* Sets the alpha channel to @value
 		* @param value alpha color value
 		*/
-		T getAlpha() const														{ return getValue(EColorChannel::Alpha); }
+		T getAlpha() const														{ return Color<T,4>::getValue(EColorChannel::Alpha); }
 	};
 
 
@@ -346,9 +354,9 @@ namespace nap
 	*	Utility class that provides a useful constructor for a single value color
 	*/
 	template<typename T>
-	class RColor : public Color<T, 1>
+	class RColor : public Color<T,1>
 	{
-		RTTI_ENABLE(Color)
+		RTTI_ENABLE(Color<T,1>)
 	public:
 		/**
 		* Constructor that creates an R color based on the given value
@@ -370,7 +378,7 @@ namespace nap
 		* Sets the red channel to @value
 		* @param value red color value
 		*/
-		T getRed() const														{ return getValue(EColorChannel::Red); }
+		T getRed() const														{ return Color<T,1>::getValue(EColorChannel::Red); }
 	};
 
 
