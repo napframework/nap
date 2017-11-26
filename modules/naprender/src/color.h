@@ -155,7 +155,7 @@ namespace nap
 		 * The order is important: RGBA
 		 */
 		Color(const std::vector<T>& colors) : 
-			BaseColor(colors.size(), sizeof(T))											{ mValues = colors; }
+			BaseColor(colors.size(), sizeof(T)), mValues(colors)						{ }
 
 		/**
 		 *	@return the type of the value
