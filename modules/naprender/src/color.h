@@ -600,4 +600,13 @@ namespace std
 			return value1 ^ value2 ^ value3 ^ value4;
 		}
 	};
+
+	template <>
+	struct hash<nap::EColorChannel>
+	{
+		size_t operator()(const nap::EColorChannel& v) const
+		{
+			return hash<int>()(static_cast<int>(v));
+		}
+	};
 }
