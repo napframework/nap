@@ -34,19 +34,19 @@ namespace nap
 
 		float Box::getWidth() const
 		{
-			return abs(mMaxCoordinates.x - mMinCoordinates.x);
+			return fabs(mMaxCoordinates.x - mMinCoordinates.x);
 		}
 
 
 		float Box::getHeight() const
 		{
-			return abs(mMaxCoordinates.y - mMinCoordinates.y);
+			return fabs(mMaxCoordinates.y - mMinCoordinates.y);
 		}
 
 
 		float Box::getDepth() const
 		{
-			return abs(mMaxCoordinates.z - mMinCoordinates.z);
+			return fabs(mMaxCoordinates.z - mMinCoordinates.z);
 		}
 
 
