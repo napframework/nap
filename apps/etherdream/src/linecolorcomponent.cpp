@@ -156,9 +156,13 @@ namespace nap
 		int x = static_cast<int>(static_cast<float>(bitmap.getWidth()  - 1) * uvPos.x);
 		int y = static_cast<int>(static_cast<float>(bitmap.getHeight() - 1) * uvPos.y);
 
-		// Get and set color
-		RGBColorFloat rcolor;
-		mLookupImage->getPixmap().getColor(x, y, rcolor);
+		// Get bitmap values, ie: where
+		RGBColorData8 bitmap_color = mLookupImage->getPixmap().getRGBColorData<uint8>(x, y);
+		
+		// Convert to float
+		RGBColorFloat rcolor = bitmap_color.convert<RGBColorFloat>();
+
+		// Set color
 		outColor = glm::vec3(rcolor.getRed(), rcolor.getGreen(), rcolor.getBlue());
 	}
 }

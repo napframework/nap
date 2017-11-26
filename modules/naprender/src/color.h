@@ -61,19 +61,34 @@ namespace nap
 		virtual bool isPointer() const = 0;
 
 		/**
-		 * Converts and copies the values associated with this color in to @color.
-		 * It's required that this color has an equal or higher amount of color channels
+		 * Converts and copies the values associated with this color in to @target.
+		 * It's required that the source has an equal or higher amount of color channels compared to target
 		 * Therefore this conversion is valid: RGBA8 to RGBFloat, but not: RGB8 to RGBAFloat
 		 * This call asserts if the conversion can't be performed.
 		 * When converting to and from float colors, normalized color values are used.
 		 * Float values that do not fall within the 0-1 range are clamped
 		 * When the target does not manage it's own color values, ie:
-		 * holds pointers to color values in memory, the values that are pointed to are overridden.
+		 * holds pointers to color values in memory, the values that are pointed to in target are overridden.
 		 * This makes it possible (for example) to write colors directly in to a bitmap without having
 		 * to copy them over. 
+		 * This is therefore valid (source)RGBAColorData8 -> (target)RGBColor8, the target will have a copy of the values pointed to by it's source
+		 * The following is also valid: (source)RGBColor8 -> (target)RGBColorData8, the target will have the values it points to replaced by the converted color value
 		 * @param target the converted color value
 		 */
-		void convert(BaseColor& color) const;
+		void convert(BaseColor& target) const;
+
+		/**
+		* returns a (converted) color of type T
+		* It's required that the color that is returned has a lower amount of color channels
+		* Therefore this conversion is valid: RGBA8 to RGBFloat, but not: RGB8 to RGBAFloat
+		* This call asserts if the conversion can't be performed.
+		* When converting to and from float colors, normalized color values are used.
+		* Float values that do not fall within the 0-1 range are clamped
+		* This call won't work with colors that point to values in memory! Valid options for T are: RGBColor8, RColor8, RGBColorFloat etc.
+		* @return the converted color
+		*/
+		template<typename T>
+		T convert() const;
 
 		/**
 		 * @return the data associated with the channel @index
@@ -111,6 +126,7 @@ namespace nap
 		int mChannels = 0;
 		int mValueSize = 0;
 	};
+
 
 	/**
 	 * Specific type of color where T defines the value type of the color.
@@ -450,6 +466,15 @@ namespace nap
 	bool nap::Color<T>::isPointer() const
 	{
 		return std::is_pointer<T>();
+	}
+
+	template<typename T>
+	T nap::BaseColor::convert() const
+	{
+		T color;
+		assert(!(color.isPointer()));
+		BaseColor::convertColor(*this, color);
+		return color;
 	}
 }
 

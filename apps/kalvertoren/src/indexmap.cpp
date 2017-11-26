@@ -78,8 +78,7 @@ namespace nap
 		for (int i = 0; i < mPixmap.mWidth; i++)
 		{
 			// Get color value at pixel and compare
-			RGBColor8 current_color;
-			mPixmap.getColor(i, 0, current_color);
+			RGBColor8 current_color = mPixmap.getColor<RGBColor8>(i, 0);
 
 			auto& it = unique_index_colors.find(current_color);
 			if (it != unique_index_colors.end())
