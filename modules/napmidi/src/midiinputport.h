@@ -7,7 +7,8 @@
 
 #include "midiservice.h"
 
-namespace nap {
+namespace nap
+{
     
     
     /**
@@ -34,7 +35,8 @@ namespace nap {
          * The name of the ports that will be listened to for incoming messages.
          * If left empty all available ports will be opened and listened to.
          */
-        std::vector<std::string> mPortNames; /**<  */
+        std::vector<std::string> mPortNames;
+        
         bool mDebugOutput = false; /**< If true, incoming messages will be logged for debugging purposes */
         
         /**

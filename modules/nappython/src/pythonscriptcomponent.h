@@ -45,7 +45,8 @@ namespace nap
     template <typename ...Args>
     void PythonScriptComponentInstance::call(const std::string& identifier, Args... args)
     {
-        try {
+        try
+        {
             mScript.attr(identifier.c_str())(args...);
         }
         catch (const pybind11::error_already_set& err)
