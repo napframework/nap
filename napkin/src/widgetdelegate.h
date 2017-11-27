@@ -1,13 +1,12 @@
 #pragma once
 
-
 #include <QStyledItemDelegate>
 #include <QStandardItemModel>
 #include <rttr/type>
 
 
 /**
- *
+ * This delegate enables an QAbstractItemView to display custom editors for NAP types.
  */
 class PropertyValueItemDelegate : public QStyledItemDelegate {
 public:

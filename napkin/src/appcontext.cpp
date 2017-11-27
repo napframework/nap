@@ -91,6 +91,11 @@ void AppContext::loadFile(const QString& filename)
 
 void AppContext::saveFile()
 {
+    if (mCurrentFilename.isEmpty())
+    {
+        nap::Logger::fatal("Cannot save file, no filename has been set.");
+        return;
+    }
     saveFileAs(mCurrentFilename);
 }
 

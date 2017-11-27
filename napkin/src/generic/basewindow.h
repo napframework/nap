@@ -6,7 +6,9 @@
 #include <QMenuBar>
 #include "appcontext.h"
 
-
+/**
+ * Extension of QMainWindow, automatically saves and restores many windowsettings.
+ */
 class BaseWindow : public QMainWindow {
 //    Q_OBJECT
 public:

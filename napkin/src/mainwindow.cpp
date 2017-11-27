@@ -5,7 +5,7 @@ void MainWindow::bindSignals()
     connect(&AppContext::get(), &AppContext::fileOpened, this, &MainWindow::onFileOpened);
     connect(&AppContext::get(), &AppContext::fileSaved, this, &MainWindow::onFileSaved);
 
-    connect(&mOutlinePanel, &OutlinePanel::selectionChanged, [&](QList<nap::rtti::RTTIObject*>& objects) {
+    connect(&mOutlinePanel, &ResourcePanel::selectionChanged, [&](QList<nap::rtti::RTTIObject*>& objects) {
         mInspectorPanel.setObject(objects.isEmpty() ? nullptr : objects.first());
     });
 }
@@ -19,7 +19,7 @@ void MainWindow::showEvent(QShowEvent* event)
 
 void MainWindow::addDocks()
 {
-    addDock("Outline", &mOutlinePanel);
+    addDock("Resources", &mOutlinePanel);
     addDock("Available Types", &mHierarchyPanel);
     addDock("Inspector", &mInspectorPanel);
     addDock("History", &mHistoryPanel);

@@ -3,10 +3,10 @@
 #include <qdebug.h>
 using namespace nap;
 
-// TODO: Not sure how rttr::enumeration::name_to_value works, so doing it like this for now
 
 uint64_t enumStringToIndex(rttr::enumeration enumer, const std::string& name, bool* ok)
 {
+    // TODO: Not sure how rttr::enumeration::name_to_value works, so doing it like this for now
     uint64_t i = 0;
     for (auto nm : enumer.get_names()) {
         if (std::string(nm.data()) == name) {
@@ -28,7 +28,7 @@ QString enumIndexToQString(rttr::enumeration enumer, int index)
 std::string enumIndexToStdString(rttr::enumeration enumer, int index)
 {
     uint64_t i = 0;
-    for (auto nm : enumer.get_names()) {
+    for (const auto& nm : enumer.get_names()) {
         if (i == index) {
             return nm.data();
         }
@@ -83,6 +83,8 @@ bool toQVariant(const nap::rtti::TypeInfo& type, const nap::rtti::Variant& value
                 return false;
             }
         }
+
+        // TODO: is this necessary?
 //        if (!conversion_succeeded)
 //            return false;
 //        } else {

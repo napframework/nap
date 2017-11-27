@@ -18,27 +18,27 @@ QList<QStandardItem*> createItemRow(rttr::type type, const QString& name,
     if (type.is_array()) {
         items << new ArrayPropertyItem(name, object, path, prop, value.create_array_view());
         items << new EmptyItem();
-        items << new TypeItem(type);
+        items << new RTTITypeItem(type);
     } else if (type.is_associative_container()) {
         assert(false);
     } else if (type.is_pointer()) {
         if (nap::rtti::hasFlag(prop, nap::rtti::EPropertyMetaData::Embedded)) {
             items << new EmbeddedPointerItem(name, object, path);
             items << new EmptyItem();
-            items << new TypeItem(type);
+            items << new RTTITypeItem(type);
         } else {
             items << new PointerItem(name, object, path);
             items << new PointerValueItem(object, path, type);
-            items << new TypeItem(type);
+            items << new RTTITypeItem(type);
         }
     } else if (nap::rtti::isPrimitive(type)) {
         items << new PropertyItem(name, object, path);
         items << new PropertyValueItem(name, object, path, type);
-        items << new TypeItem(type);
+        items << new RTTITypeItem(type);
     } else {
         items << new CompoundPropertyItem(name, object, path);
         items << new EmptyItem();
-        items << new TypeItem(prop.get_type());
+        items << new RTTITypeItem(prop.get_type());
     }
     return items;
 }
@@ -140,7 +140,7 @@ void InspectorModel::populateItems()
     for (auto prop : mObject->get_type().get_properties()) {
         if (!prop.is_valid()
             || prop.is_static()
-            || prop.get_name() == PROP_CHILDLREN
+            || prop.get_name() == PROP_CHILDREN
             || prop.get_name() == PROP_COMPONENTS)
             continue;
 

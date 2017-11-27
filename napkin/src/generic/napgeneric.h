@@ -3,11 +3,13 @@
 #include <QStandardItem>
 #include <rtti/rtti.h>
 
-
-class TypeItem : public QStandardItem {
+/**
+ * An item displaying an RTTI Type
+ */
+class RTTITypeItem : public QStandardItem {
 
 public:
-    TypeItem(const nap::rtti::TypeInfo& type);
+    RTTITypeItem(const nap::rtti::TypeInfo& type);
 
 
 private:

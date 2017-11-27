@@ -10,7 +10,7 @@
 #include <nap/objectptr.h>
 #include <rtti/rttipath.h>
 #include "generic/utility.h"
-#include "napgeneric.h"
+#include "generic/napgeneric.h"
 #include "widgetdelegate.h"
 
 

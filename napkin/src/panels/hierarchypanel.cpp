@@ -1,5 +1,5 @@
 #include "hierarchypanel.h"
-#include "napgeneric.h"
+#include "generic/napgeneric.h"
 
 
 TypeModel::TypeModel() {
@@ -13,7 +13,7 @@ void TypeModel::refresh() {
 
     nap::rtti::TypeInfo rootType = RTTI_OF(nap::rtti::RTTIObject);
     for (const nap::rtti::TypeInfo& derived : rootType.get_derived_classes()) {
-        appendRow(new TypeItem(derived));
+        appendRow(new RTTITypeItem(derived));
     }
 }
 
