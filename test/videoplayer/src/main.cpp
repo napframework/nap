@@ -41,6 +41,7 @@ int main(int argc, char *argv[])
 		"mod_napsdlwindow",
 		"mod_napvideo",
 		"mod_napapp",
+		"mod_napimgui",
 		"mod_napscene"
 	};
 

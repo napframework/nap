@@ -38,6 +38,7 @@ int main(int argc, char *argv[])
 		"mod_napsdlinput",
 		"mod_napsdlwindow",
 		"mod_napapp",
+		"mod_napimgui",
 		"mod_nappython",
 		"mod_napcameracontrol",
 		"mod_napscene"
