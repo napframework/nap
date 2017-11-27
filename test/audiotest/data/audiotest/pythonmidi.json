@@ -29,10 +29,20 @@
 			"Output": "oscB"
 		},
 
+		{
+			"Type" : "nap::Scene",
+			"mID": "Scene",		
+			"Entities" : 
+			[
+				{
+					"Entity" : "audioEntity"
+				}
+			]
+		},
 
 		{
 			"Type" : "nap::Entity",
-			"mID": "modelEntity",
+			"mID": "audioEntity",
 			"Components" : 
 			[
 				{
@@ -76,50 +86,6 @@
 					"Routing": [ 0, 0 ]
 				}
 
-			]
-		},
-		
-		{
-			"Type" : "nap::Entity",
-			"mID": "cameraEntity",
-			"Components" : 
-			[
-				{
-					"Type" : "nap::PerspCameraComponent",
-					"Properties": {
-						"FieldOfView": 45.0,
-						"NearClippingPlane" : 1,
-						"FarClippingPlane" : 1000.0
-					}
-				},
-				{
-					"Type" : "nap::OrthoCameraComponent",
-					"Properties": {
-						"NearClippingPlane" : 1,
-						"FarClippingPlane" : 1000.0
-					}
-				},
-				{
-					"Type" : "nap::TransformComponent",
-					"Properties": {
-						"Translate": {
-							"x": 0.0,
-							"y": 0.0,
-							"z": 5.0
-						},
-						"Rotate": {
-							"x": 0.0,
-							"y": 0.0,
-							"z": 0.0
-						},
-						"Scale": {
-							"x": 1.0,
-							"y": 1.0,
-							"z": 1.0
-						},
-						"UniformScale": 1.0						
-					}
-				}
 			]
 		}
 	]
