@@ -2,7 +2,7 @@
 
 // External Includes
 #include <nap/service.h>
-#include <nap/entity.h>
+#include <entity.h>
 
 namespace nap
 {
@@ -126,6 +126,5 @@ namespace nap
 		using DirtyNodeList = std::unordered_set<ControllerKey>;
 
 		ControllerMap	mControllers;							// Controller map that maps an absolute controller address to a controller
-		double			mUpdateFrequency = 1.0 / 44.0;			// Update artnet channel data at 44 Hz (see http://art-net.org.uk/wordpress/?page_id=456 / Refresh Rate)
 	};
 }

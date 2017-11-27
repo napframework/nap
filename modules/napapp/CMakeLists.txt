@@ -20,7 +20,7 @@ if(NOT WIN32)
 	target_compile_definitions(${PROJECT_NAME} PUBLIC HAVE_CONFIG_H)
 endif()
 
-target_link_libraries(${PROJECT_NAME} napcore mod_naprender mod_napsdlinput mod_napsdlwindow ${ARTNET_LIBS})
+target_link_libraries(${PROJECT_NAME} napcore mod_naprender mod_napsdlinput mod_napsdlwindow mod_napimgui) 
 
 # Package into platform release
 package_module()

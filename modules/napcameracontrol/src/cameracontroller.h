@@ -1,7 +1,7 @@
 #pragma once
 
-#include "nap/component.h"
-#include "nap/entityptr.h"
+#include <component.h>
+#include <entityptr.h>
 #include "orbitcontroller.h"
 #include "firstpersoncontroller.h"
 #include "orthocontroller.h"

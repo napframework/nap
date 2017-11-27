@@ -19,6 +19,7 @@ namespace nap
 		struct Node;
 
 		using ItemList = std::vector<typename ITEM::Type>;
+		using ItemCreationFunction = std::function<ITEM(typename ITEM::Type)>;
 
 		/**
 		* Represent an 'edge' in the ObjectGraph. This is a link from an object to either a file or another object.
@@ -41,26 +42,43 @@ namespace nap
 		};
 
 		/*
-		* Builds the object graph. If building fails, return false. 
-		* @param objectList : list of objects to build the graph from.
-		* @param errorState: if false is returned, contains error information.
-		*/
-		bool build(const ItemList& objectList, std::function<ITEM(typename ITEM::Type)> creationFunction, utility::ErrorState& errorState)
+		 * Rebuilds the object graph. If building fails, return false. If the object graph was previously built, this will also clear the previous state 
+		 * @param objectList : list of objects to build the graph from.
+		 * @param errorState: if false is returned, contains error information.
+		 */
+		bool build(const ItemList& objectList, const ItemCreationFunction& creationFunction, utility::ErrorState& errorState)
 		{
 			// Traverse graph and build nodes and edges
 			for (typename ITEM::Type object : objectList)
-			{
-				Node* source_node = getOrCreateItemNode(creationFunction(object));
-
-				std::vector<ITEM> pointees;
-				if (!source_node->mItem.getPointees(pointees, errorState))
+				if (getOrCreateItemNode(creationFunction(object)) == nullptr)
 					return false;
 
-				for (ITEM& item : pointees)
+			return rebuild(errorState);
+		}
+
+		/*
+		* Rebuilds the object graph. If building fails, return false. If the object graph was previously built, this will not clear the previous state.
+		*/
+		bool rebuild(utility::ErrorState& errorState)
+		{
+			mEdges.clear();
+			for (auto& kvp : mNodes)
+			{
+				kvp.second->mIncomingEdges.clear();
+				kvp.second->mOutgoingEdges.clear();
+			}
+
+			for (auto& kvp : mNodes)
+			{
+				std::vector<ITEM> pointees;
+				if (!kvp.second->mItem.getPointees(pointees, errorState))
+					return false;
+
+				for (ITEM& pointee_node : pointees)
 				{
 					Edge* edge = new Edge();
-					edge->mSource = source_node;
-					edge->mDest = getOrCreateItemNode(item);;
+					edge->mSource = kvp.second.get();
+					edge->mDest = getOrCreateItemNode(pointee_node);
 					edge->mDest->mIncomingEdges.push_back(edge);
 					edge->mSource->mOutgoingEdges.push_back(edge);
 					mEdges.push_back(std::unique_ptr<Edge>(edge));
@@ -72,14 +90,13 @@ namespace nap
 			for (auto& kvp : mNodes)
 			{
 				Node* node = kvp.second.get();
+				node->mDepth = -1;
 				if (node->mIncomingEdges.empty())
 					root_nodes.push_back(node);
 			}
 
 			for (Node* root_node : root_nodes)
-			{
 				assignDepthRecursive(root_node, 0);
-			}
 
 			return true;
 		}
@@ -122,6 +139,7 @@ namespace nap
 
 			return sorted_nodes;
 		}
+
 
 		/**
 		 * Walks object graph by traversing incoming edges and pushing the results in an array.

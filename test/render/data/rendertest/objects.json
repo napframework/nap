@@ -16,7 +16,7 @@
 			"Height" : 512,
 			"Title" : "Window 2"
 		},
-			
+
 		{
 			"Type" : "nap::Image",
 			"mID" : "PigTexture",
@@ -235,6 +235,41 @@
 			]			
 		},
 		
+		{
+			"Type" : "nap::Scene",
+			"mID": "Scene",		
+			"Entities" : 
+			[
+				{
+					"Entity" : "DefaultInputRouterEntity"
+				},
+				{
+					"Entity" : "PigEntity"
+				},
+				{
+					"Entity" : "OrientationEntity"
+				},
+				{
+					"Entity" : "PlaneEntity"
+				},
+				{
+					"Entity" : "RotatingPlaneEntity"
+				},
+				{
+					"Entity" : "WorldEntity"
+				},
+				{
+					"Entity" : "CameraEntityLeft"
+				},
+				{
+					"Entity" : "CameraEntityRight"
+				},
+				{
+					"Entity" : "SplitCameraEntity"
+				}
+			]
+		},
+
 		{
 			"Type" : "nap::Entity",
 			"mID": "DefaultInputRouterEntity",		
