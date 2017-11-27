@@ -19,14 +19,14 @@ const QString ObjectItem::name() const
 }
 
 
-OutlineModel::OutlineModel()
+ResourceModel::ResourceModel()
 {
     setHorizontalHeaderLabels({TXT_LABEL_NAME, TXT_LABEL_TYPE});
 
 }
 
 
-void OutlineModel::refresh()
+void ResourceModel::refresh()
 {
     while (rowCount() > 0)
         removeRow(0);
@@ -39,7 +39,7 @@ void OutlineModel::refresh()
 
     for (auto& ob : AppContext::get().objects()) {
 
-        auto typeItem = new TypeItem(ob->get_type());
+        auto typeItem = new RTTITypeItem(ob->get_type());
 
         // All objects are in this flat list, filter here
 
@@ -63,7 +63,7 @@ void OutlineModel::refresh()
 }
 
 
-OutlinePanel::OutlinePanel()
+ResourcePanel::ResourcePanel()
 {
     setLayout(&mLayout);
     layout()->setContentsMargins(0, 0, 0, 0);
@@ -72,21 +72,21 @@ OutlinePanel::OutlinePanel()
     mTreeView.tree().setColumnWidth(0, 300);
     mTreeView.tree().setSortingEnabled(true);
 
-    connect(&AppContext::get(), &AppContext::fileOpened, this, &OutlinePanel::onFileOpened);
-    connect(&AppContext::get(), &AppContext::newFileCreated, this, &OutlinePanel::onNewFile);
+    connect(&AppContext::get(), &AppContext::fileOpened, this, &ResourcePanel::onFileOpened);
+    connect(&AppContext::get(), &AppContext::newFileCreated, this, &ResourcePanel::onNewFile);
 
     connect(mTreeView.selectionModel(), &QItemSelectionModel::selectionChanged, this,
-            &OutlinePanel::onSelectionChanged);
+            &ResourcePanel::onSelectionChanged);
 
-    mTreeView.setMenuHook(std::bind(&OutlinePanel::menuHook, this, std::placeholders::_1));
-//    connect(&AppContext::get(), &AppContext::dataChanged, this, &OutlinePanel::refresh);
-    connect(&AppContext::get(), &AppContext::entityAdded, this, &OutlinePanel::onEntityAdded);
-    connect(&AppContext::get(), &AppContext::componentAdded, this, &OutlinePanel::onComponentAdded);
-    connect(&AppContext::get(), &AppContext::objectAdded, this, &OutlinePanel::onObjectAdded);
-    connect(&AppContext::get(), &AppContext::objectRemoved, this, &OutlinePanel::onObjectRemoved);
+    mTreeView.setMenuHook(std::bind(&ResourcePanel::menuHook, this, std::placeholders::_1));
+//    connect(&AppContext::get(), &AppContext::dataChanged, this, &ResourcePanel::refresh);
+    connect(&AppContext::get(), &AppContext::entityAdded, this, &ResourcePanel::onEntityAdded);
+    connect(&AppContext::get(), &AppContext::componentAdded, this, &ResourcePanel::onComponentAdded);
+    connect(&AppContext::get(), &AppContext::objectAdded, this, &ResourcePanel::onObjectAdded);
+    connect(&AppContext::get(), &AppContext::objectRemoved, this, &ResourcePanel::onObjectRemoved);
 }
 
-void OutlinePanel::menuHook(QMenu& menu)
+void ResourcePanel::menuHook(QMenu& menu)
 {
     auto item = mTreeView.selectedItem();
     if (item == nullptr)
@@ -129,18 +129,18 @@ void OutlinePanel::menuHook(QMenu& menu)
 
 }
 
-void OutlinePanel::onNewFile()
+void ResourcePanel::onNewFile()
 {
     refresh();
 }
 
 
-void OutlinePanel::onFileOpened(const QString& filename)
+void ResourcePanel::onFileOpened(const QString& filename)
 {
     refresh();
 }
 
-void OutlinePanel::onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
+void ResourcePanel::onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
 {
     // Grab selected nap objects
     QList<nap::rtti::RTTIObject*> selectedObjects;
@@ -154,7 +154,7 @@ void OutlinePanel::onSelectionChanged(const QItemSelection& selected, const QIte
     selectionChanged(selectedObjects);
 }
 
-std::vector<rttr::instance> OutlinePanel::selectedInstances() const
+std::vector<rttr::instance> ResourcePanel::selectedInstances() const
 {
     std::vector<rttr::instance> instances;
     for (QStandardItem* item : mTreeView.selectedItems()) {
@@ -166,13 +166,13 @@ std::vector<rttr::instance> OutlinePanel::selectedInstances() const
     return instances;
 }
 
-void OutlinePanel::refresh()
+void ResourcePanel::refresh()
 {
     mModel.refresh();
     mTreeView.tree().expandAll();
 }
 
-ObjectItem* OutlinePanel::findItem(const nap::rtti::RTTIObject& obj)
+ObjectItem* ResourcePanel::findItem(const nap::rtti::RTTIObject& obj)
 {
     ObjectItem* foundItem = nullptr;
 
@@ -196,7 +196,7 @@ ObjectItem* OutlinePanel::findItem(const nap::rtti::RTTIObject& obj)
     return foundItem;
 }
 
-void OutlinePanel::onEntityAdded(nap::Entity* entity, nap::Entity* parent)
+void ResourcePanel::onEntityAdded(nap::Entity* entity, nap::Entity* parent)
 {
     // TODO: Don't refresh the whole mModel
     mModel.refresh();
@@ -204,7 +204,7 @@ void OutlinePanel::onEntityAdded(nap::Entity* entity, nap::Entity* parent)
     mTreeView.selectAndReveal(findItem(*entity));
 }
 
-void OutlinePanel::onComponentAdded(nap::Component& comp, nap::Entity& owner)
+void ResourcePanel::onComponentAdded(nap::Component& comp, nap::Entity& owner)
 {
     // TODO: Don't refresh the whole mModel
     mModel.refresh();
@@ -212,7 +212,7 @@ void OutlinePanel::onComponentAdded(nap::Component& comp, nap::Entity& owner)
     mTreeView.selectAndReveal(findItem(comp));
 }
 
-void OutlinePanel::onObjectAdded(nap::rtti::RTTIObject& obj)
+void ResourcePanel::onObjectAdded(nap::rtti::RTTIObject& obj)
 {
     // TODO: Don't refresh the whole mModel
     mModel.refresh();
@@ -221,7 +221,7 @@ void OutlinePanel::onObjectAdded(nap::rtti::RTTIObject& obj)
 }
 
 
-void OutlinePanel::onObjectRemoved(nap::rtti::RTTIObject& object)
+void ResourcePanel::onObjectRemoved(nap::rtti::RTTIObject& object)
 {
     // TODO: Don't refresh the whole mModel
     mModel.refresh();
@@ -233,12 +233,12 @@ EntityItem::EntityItem(nap::Entity& entity) : ObjectItem(entity)
 {
 
     for (auto& child : entity.mChildren) {
-        appendRow({new EntityItem(*child), new TypeItem(child->get_type())});
+        appendRow({new EntityItem(*child), new RTTITypeItem(child->get_type())});
     }
 
     for (auto& comp : entity.mComponents) {
         auto compItem = new ComponentItem(*comp);
-        auto compTypeItem = new TypeItem(comp->get_type());
+        auto compTypeItem = new RTTITypeItem(comp->get_type());
         appendRow({compItem, compTypeItem});
     }
 }

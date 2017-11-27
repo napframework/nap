@@ -9,13 +9,7 @@
 
 #include "typeconversion.h"
 
-class Command : public QUndoCommand {
-public:
-
-};
-
-
-class AddObjectCommand : public Command {
+class AddObjectCommand : public QUndoCommand {
 public:
     void undo() override
     {
@@ -28,7 +22,7 @@ public:
     }
 };
 
-class DeleteObjectCommand : public Command {
+class DeleteObjectCommand : public QUndoCommand {
 public:
     void undo() override
     {

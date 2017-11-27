@@ -7,6 +7,10 @@
 #include <nap/logger.h>
 #include <generic/filtertreeview.h>
 
+
+/**
+ * Captures log messages and provides the LogPanel with the currently cached log messages.
+ */
 class LogModel : public QStandardItemModel {
 Q_OBJECT
 public:

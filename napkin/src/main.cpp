@@ -3,9 +3,11 @@
 #include "generic/filtertreeview.h"
 #include "mainwindow.h"
 
-
-
-int main(int argc, char* argv[]) {
+/**
+ * Initialize the application and spawn its window
+ */
+int main(int argc, char* argv[])
+{
 
     // nap::Core is declared in AppContext
 

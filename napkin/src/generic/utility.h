@@ -7,7 +7,7 @@
 #include <QtGui/QStandardItemModel>
 #include <QMetaEnum>
 #include <functional>
-#include <outlinepanel.h>
+#include <panels/resourcepanel.h>
 
 static qreal lerp(const qreal& a, const qreal& b, qreal p)
 {

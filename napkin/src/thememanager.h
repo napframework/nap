@@ -2,6 +2,9 @@
 
 #include <QObject>
 
+/**
+ * Keep track of and allow changing the visual style of the application.
+ */
 class ThemeManager : public QObject {
     Q_OBJECT
 public:

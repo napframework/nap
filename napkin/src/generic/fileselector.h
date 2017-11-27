@@ -6,58 +6,42 @@
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QHBoxLayout>
 
-class FileSelector : public QWidget {
+/**
+ * A widget displaying and allowing to change a filename using a textfield and a browse button.
+ */
+class FileSelector : public QWidget
+{
 Q_OBJECT
 public:
-    FileSelector() : QWidget()
-    {
-        setLayout(&mLayout);
-        mLayout.setContentsMargins(0, 0, 0, 0);
-        mLayout.setSpacing(2);
+    FileSelector();
 
-        mLayout.addWidget(&mLineEdit);
-        mLayout.addWidget(&mBrowseButton);
+    /**
+     * Set the file filter to be used in the file selection dialog.
+     * @param filter The file filter in the format Qt accepts.
+     */
+    void setFileFilter(const QString& filter);
 
-        mBrowseButton.setText("...");
+    /**
+     * Set the currently displayed filename, but don't send a signal
+     * @param filename The absolute or relative filename
+     */
+    void setFilename(const QString& filename);
 
-        connect(&mLineEdit, &QLineEdit::editingFinished, this, &FileSelector::onEditingFinished);
-        connect(&mBrowseButton, &QToolButton::clicked, this, &FileSelector::onBrowseButtonClicked);
-    }
-
-    void setFileFilter(const QString& filter)
-    { mFileFilter = filter; }
-
-    void setFilename(const QString& filename)
-    {
-        mLineEdit.setText(filename);
-    }
-
-    const QString filename()
-    {
-        return mLineEdit.text().trimmed();
-    }
+    /**
+     * @return The currently displayed filename
+     */
+    const QString filename();
 
 Q_SIGNALS:
-
+    /**
+     * Emit when the user has changed the filename by manually editing or using the file open dialog.
+     * @param filename The newly set filename.
+     */
     void filenameChanged(const QString& filename);
 
 private:
-    void onEditingFinished()
-    {
-        filenameChanged(filename());
-    }
-
-    void onBrowseButtonClicked()
-    {
-        QString dir = filename().isEmpty() ? "." : QFileInfo(filename()).path();
-
-        auto f = QFileDialog::getOpenFileName(this, "Select File", dir, mFileFilter);
-        if (f.isEmpty())
-            return;
-
-        mLineEdit.setText(f);
-        filenameChanged(filename());
-    }
+    void onEditingFinished();
+    void onBrowseButtonClicked();
 
     QHBoxLayout mLayout;
     QLineEdit mLineEdit;

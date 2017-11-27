@@ -1,11 +1,12 @@
 #include <QtWidgets/QComboBox>
 #include "widgetdelegate.h"
-#include "inspectorpanel.h"
+#include "panels/inspectorpanel.h"
 #include "typeconversion.h"
 
 
-void
-PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+void PropertyValueItemDelegate::paint(QPainter* painter,
+                                      const QStyleOptionViewItem& option,
+                                      const QModelIndex& index) const
 {
     auto type = typeFor(index);
     if (type.is_enumeration()) {
@@ -14,11 +15,7 @@ PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
         QStyleOptionViewItem op(option);
 
         op.text = enumIndexToQString(type.get_enumeration(), val);
-//    QStyleOptionComboBox styleOption;
-//    styleOption.rect = option.rect;
-//    styleOption.currentText = QString(type.get_enumeration().value_to_name(val).data());
-//    QApplication::style()->drawComplexControl(QStyle::CC_ComboBox, &styleOption, painter);
-//    QApplication::style()->drawControl(QStyle::CE_ComboBoxLabel, &styleOption, painter);
+
         QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &op, painter);
 
     } else if (type == rttr::type::get<bool>()) {
@@ -43,9 +40,9 @@ QSize PropertyValueItemDelegate::sizeHint(const QStyleOptionViewItem& option, co
     return QStyledItemDelegate::sizeHint(option, index);
 }
 
-bool
-PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option,
-                                       const QModelIndex& index)
+bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* model,
+                                            const QStyleOptionViewItem& option,
+                                            const QModelIndex& index)
 {
 
     auto type = typeFor(index);
@@ -75,11 +72,10 @@ rttr::type PropertyValueItemDelegate::typeFor(const QModelIndex& index) const
 
 
 QWidget*
-PropertyValueItemDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option,
+PropertyValueItemDelegate::createEditor(QWidget* parent,
+                                        const QStyleOptionViewItem& option,
                                         const QModelIndex& index) const
 {
-
-
     auto type = typeFor(index);
     if (type.is_enumeration()) {
         int val = index.data(Qt::DisplayRole).toInt();
@@ -96,7 +92,8 @@ PropertyValueItemDelegate::createEditor(QWidget* parent, const QStyleOptionViewI
     return QStyledItemDelegate::createEditor(parent, option, index);
 }
 
-void PropertyValueItemDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
+void PropertyValueItemDelegate::setEditorData(QWidget* editor,
+                                              const QModelIndex& index) const
 {
     auto type = typeFor(index);
     if (type.is_enumeration()) {
