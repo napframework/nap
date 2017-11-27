@@ -93,7 +93,7 @@ namespace nap
 		}
 		else if (targetMode == ECameraMode::Orbit)
 		{
-			nap::TransformComponentInstance& lookAtTransform = getComponent<nap::CameraController>()->mLookAtTarget->getComponent<nap::TransformComponentInstance>();
+			nap::TransformComponentInstance& lookAtTransform = mLookAtTarget->getComponent<nap::TransformComponentInstance>();
 
 			// If we're switching back from orthographic camera, enable controller while resetting position to last know position
 			if ((mMode & ECameraMode::Orthographic) != ECameraMode::None)
@@ -147,7 +147,7 @@ namespace nap
 			}
 
 			// The translation is placed some distance from the lookat target
-			nap::TransformComponentInstance& lookat_transform = getComponent<nap::CameraController>()->mLookAtTarget->getComponent<nap::TransformComponentInstance>();
+			nap::TransformComponentInstance& lookat_transform = mLookAtTarget->getComponent<nap::TransformComponentInstance>();
 			glm::vec3 target_pos(lookat_transform.getTranslate());
 			const float distance = 100.0f;
 			glm::vec3 camera_translate = target_pos - camera_translate_axis * distance;
