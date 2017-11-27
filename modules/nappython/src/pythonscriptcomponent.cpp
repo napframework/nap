@@ -42,9 +42,7 @@ namespace nap
         // Add all sibling components as identifiers in the script
         for (auto sibling : getEntityInstance()->getComponents())
         {
-            mComponentVariables.emplace_back(ObjectPtr<ComponentInstance>(sibling));
-            mScript.attr(sibling->getComponent()->mID.c_str())  = mComponentVariables.back();
-//            mScript.attr(sibling->getComponent()->mID.c_str())  = sibling;
+            mScript.attr(sibling->getComponent()->mID.c_str())  = sibling;
         }
         
         // Call ths script's init callback
