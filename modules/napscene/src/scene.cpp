@@ -129,6 +129,143 @@ namespace nap
 			return nullptr;
 		}
 
+		/**
+		* Helper to find the target entity that a EntityInstance or ComponentInstnace path should be resolved to. 
+		* Cannot deal with single-element (i.e. direct target ID) paths; that should be dealt with in the calling code.
+		*
+		* @param sourceComponentInstance The component containing the path. If the path is relative, the path will be interpreted relative to this component
+		* @param targetEntityInstancePath The path (absolute or relative) to the target EntityInstance
+		* @param rootEntityInstances All root entities. Used to resolve absolute EntityInstance paths
+		* @param errorState The error state
+		* @return Pointer to the resolved EntityInstance. Null if the path failed to resolve (in which case errorState will contain more information)
+		*/
+		static EntityInstance* sResolveEntityInstancePath(ComponentInstance* sourceComponentInstance, const std::string& targetEntityInstancePath,	const RootEntityInstanceMap& rootEntityInstances, 
+			utility::ErrorState& errorState)
+		{
+			// Split the path into its components
+			std::vector<std::string> path_components;
+			utility::splitString(targetEntityInstancePath, '/', path_components);
+
+			assert(!path_components.empty());
+
+			// The path consists out of multiple elements, indicating either a relative or absolute path to a component instance.
+			// We need to determine the entity that the path 'starts' at so that we can resolve the rest
+			nap::EntityInstance* current_entity = nullptr;
+			const std::string& root_element = path_components[0];
+
+			// If the part starts with a period, it means we should start in the entity that the source component is in
+			if (root_element == ".")
+			{
+				current_entity = sourceComponentInstance->getEntityInstance();
+			}
+			else if (root_element == "..")
+			{
+				// Part starts with a double period; start at the parent of the entity that the source component is in
+				current_entity = sourceComponentInstance->getEntityInstance()->getParent();
+				if (!errorState.check(current_entity != nullptr, "Error resolving entity path %s: path starts with '..' but source entity has no parent", targetEntityInstancePath.c_str()))
+					return nullptr;
+			}
+			else
+			{
+				// No relative path components: the first element on the path represents the ID of a root entity. We find it here.
+				RootEntityInstanceMap::const_iterator pos = rootEntityInstances.find(root_element);
+				if (!errorState.check(pos != rootEntityInstances.end(), "Error resolving entity path %s: root entity '%s' not found", targetEntityInstancePath.c_str(), root_element.c_str()))
+					return nullptr;
+
+				current_entity = pos->second;
+			}
+
+			// Now resolve the rest of the path. Note that we iterate from the second element (because we've already processed the root) to the second-to-last element (because the last element specifies the component we're looking for )
+			for (int index = 1; index < path_components.size(); ++index)
+			{
+				const std::string& part = path_components[index];
+
+				// If we encounter a double period, go up another level
+				if (part == "..")
+				{
+					current_entity = current_entity->getParent();
+					if (!errorState.check(current_entity != nullptr, "Error resolving entity path %s: path contains a '..' at a point where there are no more parents", targetEntityInstancePath.c_str()))
+						return nullptr;
+				}
+				else if (part != ".")
+				{
+					// If we encountered a non-relative component, we need to look for a child entity of the current entity that matches the child specifier
+
+					// Split the child specifier on ':'. Note that the ':' is optional and is only used to disambiguate between multiple children
+					std::vector<std::string> element_parts;
+					utility::splitString(part, ':', element_parts);
+					if (!errorState.check(element_parts.size() <= 2, "Error resolving entity path %s: path contains a child specifier with an invalid format (multiple colons found)", targetEntityInstancePath.c_str()))
+						return nullptr;
+
+					// Find all child entities matching the ID
+					std::vector<EntityInstance*> matching_children;
+					for (EntityInstance* entity_instance : current_entity->getChildren())
+						if (entity_instance->getEntity()->mID == element_parts[0])
+							matching_children.push_back(entity_instance);
+
+					// There must be at least one match
+					if (!errorState.check(matching_children.size() != 0, "Error resolving entity path %s: child with ID '%s' not found in entity with ID '%s'", targetEntityInstancePath.c_str(), element_parts[0].c_str(), current_entity->getEntity()->mID.c_str()))
+						return nullptr;
+
+					// If the child specifier was a single ID, there must be only a single match and we set that entity as the new current entity
+					if (element_parts.size() == 1)
+					{
+						if (!errorState.check(matching_children.size() == 1, "Error resolving entity path %s: path is ambiguous; found %d children with ID '%s' in entity with ID '%s'. Use the child specifier syntax 'child_id:child_index' to disambiguate.", targetEntityInstancePath.c_str(), matching_children.size(), element_parts[0].c_str(), current_entity->getEntity()->mID.c_str()))
+							return nullptr;
+
+						current_entity = matching_children[0];
+					}
+					else
+					{
+						// The child specifier contained an index to disambiguate between multiple children with the same ID; parse the index
+						int array_index;
+						if (!errorState.check(sscanf(element_parts[1].c_str(), "%d", &array_index) == 1, "Error resolving entity path %s: path contains a child specifier with an invalid format (unable to parse int from %s)", targetEntityInstancePath.c_str(), element_parts[1].c_str()))
+							return nullptr;
+
+						if (!errorState.check(array_index < matching_children.size(), "Error resolving entity path %s: path contains an invalid child specifier; found %d eligible children but index %d is out of range", targetEntityInstancePath.c_str(), matching_children.size(), array_index))
+							return nullptr;
+
+						// Use the child with the specified index as current entity
+						current_entity = matching_children[array_index];
+					}
+				}
+			}
+
+			return current_entity;
+		}
+
+		/**
+		* Resolves a path to an entity instance to an actual EntityInstance.
+		* @param sourceComponentInstance The component containing the path. If the path is relative, the path will be interpreted relative to this component
+		* @param targetEntityInstancePath The path (absolute or relative) to the target EntityInstance
+		* @param rootEntityInstances All root entities. Used to resolve absolute EntityInstance paths
+		* @param entityInstances All ComponentInstances. Used to resolve single-element (i.e. direct target ID) paths
+		* @param errorState The error state
+		* @return Pointer to the resolved EntityInstance. Null if the path failed to resolve (in which case errorState will contain more information)
+		*/
+		static EntityInstance* sResolveEntityInstancePath(ComponentInstance* sourceComponentInstance, const std::string& targetEntityInstancePath, Entity* targetEntityResource,
+			const RootEntityInstanceMap& rootEntityInstances, const EntityCreationParameters::EntityInstanceMap& entityInstances, utility::ErrorState& errorState)
+		{
+			// Split the path into its components
+			std::vector<std::string> path_components;
+			utility::splitString(targetEntityInstancePath, '/', path_components);
+
+			// If the path consists out of a single element, we're linking directly to a specific entity so we can just look that up
+			if (path_components.size() == 1)
+			{
+				EntityCreationParameters::EntityInstanceMap::const_iterator pos = entityInstances.find(targetEntityResource);
+				if (!errorState.check(pos != entityInstances.end(), "Error resolving entity path %s: target entity not found", targetEntityInstancePath.c_str()))
+					return nullptr;
+
+				// If we're linking directly to a specific component, ensure there is no ambiguity
+				if (!errorState.check(pos->second.size() == 1, "Error resolving entity path %s: target entity is ambiguous because there are %d instances. Use a relative or absolute path to fix.", targetEntityInstancePath.c_str(), pos->second.size()))
+					return nullptr;
+
+				return pos->second[0];
+			}
+
+			return sResolveEntityInstancePath(sourceComponentInstance, targetEntityInstancePath, rootEntityInstances, errorState);
+		}
 
 		/**
 		 * Resolves a path to a component instance to an actual ComponentInstance.
@@ -142,8 +279,6 @@ namespace nap
 		static ComponentInstance* sResolveComponentInstancePath(ComponentInstance* sourceComponentInstance, const std::string& targetComponentInstancePath, Component* targetComponentResource,
 			const RootEntityInstanceMap& rootEntityInstances, const EntityCreationParameters::ComponentInstanceMap& componentInstances, utility::ErrorState& errorState)
 		{
-			ComponentInstance* target_component_instance = nullptr;
-
 			// Split the path into its components
 			std::vector<std::string> path_components;
 			utility::splitString(targetComponentInstancePath, '/', path_components);
@@ -152,129 +287,49 @@ namespace nap
 			if (path_components.size() == 1)
 			{
 				EntityCreationParameters::ComponentInstanceMap::const_iterator pos = componentInstances.find(targetComponentResource);
-				if (pos != componentInstances.end())
-				{
-					// If we're linking directly to a specific component, ensure there is no ambiguity
-					if (!errorState.check(pos->second.size() == 1, "Encountered ambiguous component pointer"))
-						return nullptr;
+				if (!errorState.check(pos != componentInstances.end(), "Error resolving component path %s: taret component not found", targetComponentInstancePath.c_str()))
+					return nullptr;
 
-					target_component_instance = pos->second[0];
-				}
+				// If we're linking directly to a specific component, ensure there is no ambiguity
+				if (!errorState.check(pos->second.size() == 1, "Encountered ambiguous component pointer"))
+					return nullptr;
+
+				return pos->second[0];
 			}
-			else
+
+			assert(!path_components.empty());
+
+			std::string entityInstancePath = targetComponentInstancePath.substr(0, targetComponentInstancePath.find_last_of('/'));
+			nap::EntityInstance* target_entity = sResolveEntityInstancePath(sourceComponentInstance, entityInstancePath, rootEntityInstances, errorState);
+			if (!errorState.check(target_entity != nullptr, "Error resolving ComponentPtr with path %s: target entity instance for %s not found", targetComponentInstancePath.c_str(), entityInstancePath.c_str()))
+				return false;
+
+			// Now that we've gone through the path, we know the entity must contain a component with an ID equal to the last element on the path. We look for it here.
+			assert(target_entity != nullptr);
+			for (ComponentInstance* component : target_entity->getComponents())
 			{
-				// The path consists out of multiple elements, indicating either a relative or absolute path to a component instance.
-				// We need to determine the entity that the path 'starts' at so that we can resolve the rest
-				nap::EntityInstance* current_entity = nullptr;
-				const std::string& root_element = path_components[0];
-
-				// If the part starts with a period, it means we should start in the entity that the source component is in
-				if (root_element == ".")
-				{
-					current_entity = sourceComponentInstance->getEntityInstance();
-				}
-				else if (root_element == "..")
-				{
-					// Part starts with a double period; start at the parent of the entity that the source component is in
-					current_entity = sourceComponentInstance->getEntityInstance()->getParent();
-					if (!errorState.check(current_entity != nullptr, "Error resolving ComponentPtr with path %s: path starts with '..' but source entity has no parent", targetComponentInstancePath.c_str()))
-						return nullptr;
-				}
-				else
-				{
-					// No relative path components: the first element on the path represents the ID of a root entity. We find it here.
-					RootEntityInstanceMap::const_iterator pos = rootEntityInstances.find(root_element);
-					if (!errorState.check(pos != rootEntityInstances.end(), "Error resolving ComponentPtr with path %s: root entity '%s' not found", targetComponentInstancePath.c_str(), root_element.c_str()))
-						return nullptr;
-
-					current_entity = pos->second;
-				}
-
-				// Now resolve the rest of the path. Note that we iterate from the second element (because we've already processed the root) to the second-to-last element (because the last element specifies the component we're looking for )
-				for (int index = 1; index < path_components.size() - 1; ++index)
-				{
-					const std::string& part = path_components[index];
-
-					// If we encounter a double period, go up another level
-					if (part == "..")
-					{
-						current_entity = current_entity->getParent();
-						if (!errorState.check(current_entity != nullptr, "Error resolving ComponentPtr with path %s: path contains a '..' at a point where there are no more parents", targetComponentInstancePath.c_str()))
-							return nullptr;
-					}
-					else if (part != ".")
-					{
-						// If we encountered a non-relative component, we need to look for a child entity of the current entity that matches the child specifier
-
-						// Split the child specifier on ':'. Note that the ':' is optional and is only used to disambiguate between multiple children
-						std::vector<std::string> element_parts;
-						utility::splitString(part, ':', element_parts);
-						if (!errorState.check(element_parts.size() <= 2, "Error resolving ComponentPtr with path %s: path contains a child specifier with an invalid format (multiple colons found)", targetComponentInstancePath.c_str()))
-							return nullptr;
-
-						// Find all child entities matching the ID
-						std::vector<EntityInstance*> matching_children;
-						for (EntityInstance* entity_instance : current_entity->getChildren())
-							if (entity_instance->getEntity()->mID == element_parts[0])
-								matching_children.push_back(entity_instance);
-
-						// There must be at least one match
-						if (!errorState.check(matching_children.size() != 0, "Error resolving ComponentPtr with path %s: child with ID '%s' not found in entity with ID '%s'", targetComponentInstancePath.c_str(), element_parts[0].c_str(), current_entity->getEntity()->mID.c_str()))
-							return nullptr;
-
-						// If the child specifier was a single ID, there must be only a single match and we set that entity as the new current entity
-						if (element_parts.size() == 1)
-						{
-							if (!errorState.check(matching_children.size() == 1, "Error resolving ComponentPtr with path %s: path is ambiguous; found %d children with ID '%s' in entity with ID '%s'. Use the child specifier syntax 'child_id:child_index' to disambiguate.", targetComponentInstancePath.c_str(), matching_children.size(), element_parts[0].c_str(), current_entity->getEntity()->mID.c_str()))
-								return nullptr;
-
-							current_entity = matching_children[0];
-						}
-						else
-						{
-							// The child specifier contained an index to disambiguate between multiple children with the same ID; parse the index
-							int array_index;
-							if (!errorState.check(sscanf(element_parts[1].c_str(), "%d", &array_index) == 1, "Error resolving ComponentPtr with path %s: path contains a child specifier with an invalid format (unable to parse int from %s)", targetComponentInstancePath.c_str(), element_parts[1].c_str()))
-								return nullptr;
-
-							if (!errorState.check(array_index < matching_children.size(), "Error resolving ComponentPtr with path %s: path contains an invalid child specifier; found %d eligible children but index %d is out of range", targetComponentInstancePath.c_str(), matching_children.size(), array_index))
-								return nullptr;
-
-							// Use the child with the specified index as current entity
-							current_entity = matching_children[array_index];
-						}
-					}
-				}
-
-				// Now that we've gone through the path, we know the current entity must contain a component with an ID equal to the last element on the path. We look for it here.
-				assert(current_entity != nullptr);
-				for (ComponentInstance* component : current_entity->getComponents())
-				{
-					// If this ComponentInstance's resource is a clone (for instance properties), we need to check the ID of the original object, 
-					// since the clone will have a generated ID, which will never match any path.
-					if (component->getComponent()->getOriginalID() == path_components.back())
-					{
-						target_component_instance = component;
-						break;
-					}
-				}
+				// If this ComponentInstance's resource is a clone (for instance properties), we need to check the ID of the original object, 
+				// since the clone will have a generated ID, which will never match any path.
+				if (component->getComponent()->getOriginalID() == path_components.back())
+					return component;
 			}
 
-			return target_component_instance;
+			errorState.fail("Error resolving ComponentPtr with path %s: component not found on entity %s", targetComponentInstancePath.c_str(), target_entity->getEntity()->mID.c_str());
+			return nullptr;
 		}
 
 
 		/**
-		* This function resolves pointers in a ComponentResource of the types EntityPtr and ComponentInstancePtr. Although the RTTI resource pointers in EntityPtr
-		* and ComponentInstancePtr have already been resolved by the regular RTTI pointer resolving step, this step is meant explicitly to resolve pointers
-		* to instances that are stored internally in the ComponentInstancePtr and EntityPtr.
+		* This function resolves pointers in a ComponentResource of the types EntityInstancePtr and ComponentInstancePtr. Although the RTTI resource pointers in EntityPtr
+		* and ComponentPtr have already been resolved by the regular RTTI pointer resolving step, this step is meant explicitly to resolve pointers
+		* to instances that are stored internally in the ComponentInstancePtr and EntityInstancePtr.
 		* The resolving step of entities and components is more difficult than regular objects, as the entity/component structure is mirrored into
-		* a resource structure (the static objects from json) and instances (the runtime counterpart of the resources). EntityPtr and ComponentInstancePtr
+		* a resource structure (the static objects from json) and instances (the runtime counterpart of the resources). EntityPtr and ComponentPtr
 		* are pointers that live on the resource object as the resources need to specify what other resource they are pointing to. However, the
-		* instantiated object often needs to point to other instantiated objects. In this function, we fill in the instance pointers in EntityPtr and
-		* ComponentInstancePtr, so that the instance can get to the instance pointer through it's resource.
+		* instantiated object often needs to point to other instantiated objects. In this function, we fill in the instance pointers in EntityInstancePtr and
+		* ComponentInstancePtr.
 		*/
-		static bool sResolveComponentPointers(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
+		static bool sResolveInstancePointers(EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
 		{
 			RootEntityInstanceMap root_entity_instances;
 			for (auto& kvp : entityCreationParams.mEntityInstancesByID)
@@ -284,7 +339,7 @@ namespace nap
 					root_entity_instances.emplace(std::make_pair(kvp.first, entity_instance));
 			}
 
-			// We go over all component instances and resolve all Entity & Component pointers
+			// We go over all component instances and resolve all Entity & Component instance pointers
 			for (auto& kvp : entityCreationParams.mComponentInstanceMap)
 			{
 				Component* source_component_resource = kvp.first;
@@ -292,9 +347,9 @@ namespace nap
 				// Resolve the component pointers for all instances of this component resource
 				for (ComponentInstance* source_component_instance : kvp.second)
 				{
-					// Resolve all links for this instance
-					ComponentInstance::LinkMap& linkmap = source_component_instance->mLinkMap;
-					for (auto& link : linkmap)
+					// Resolve all component links for this instance
+					ComponentInstance::ComponentLinkMap& componentLinkmap = source_component_instance->mComponentLinkMap;
+					for (auto& link : componentLinkmap)
 					{
 						nap::Component* target_component_resource = link.first;
 
@@ -310,35 +365,24 @@ namespace nap
 							*target_component_link.mTargetPtr = target_component_instance;
 						}
 					}
-				}
 
-				// Iterate over all the pointers in the component resource. Note that findObjectLinks returns *all* types of pointers on the object, 
-				// but we're only interested in EntityPtrs since other pointers will have been resolved during the load.
-				std::vector<rtti::ObjectLink> links;
-				rtti::findObjectLinks(*source_component_resource, links);
-
-				for (rtti::ObjectLink& link : links)
-				{
-					rtti::ResolvedRTTIPath resolved_path;
-					if (!errorState.check(link.mSourcePath.resolve(source_component_resource, resolved_path), "Encountered link from object %s that could not be resolved: %s", source_component_resource->mID.c_str(), link.mSourcePath.toString().c_str()))
-						return false;
-
-					// Resolve EntityPtr
-					if (resolved_path.getType() == RTTI_OF(EntityPtr))
+					// Resolve all entity links for this instance
+					ComponentInstance::EntityLinkMap& entityLinkmap = source_component_instance->mEntityLinkMap;
+					for (auto& link : entityLinkmap)
 					{
-						EntityPtr entity_ptr = resolved_path.getValue().convert<EntityPtr>();
-						nap::Entity* target_entity_resource = entity_ptr.getResource();
+						nap::Entity* target_entity_resource = link.first;
 
-						// Skip null targets
-						if (target_entity_resource == nullptr)
-							continue;
+						// It's possible for the same ComponentInstance to link to a particular component multiple times, so we need to resolve all those links individually (the paths might be different)
+						for (ComponentInstance::TargetEntityLink& target_entity_link : link.second)
+						{
+							// Resolve the path to the target ComponentInstance
+							nap::EntityInstance* target_entity_instance = sResolveEntityInstancePath(source_component_instance, target_entity_link.mInstancePath, target_entity_resource, root_entity_instances, entityCreationParams.mEntityInstanceMap, errorState);
+							if (!errorState.check(target_entity_instance != nullptr, "Unable to resolve entity pointer to %s from %s; target not found", target_entity_link.mInstancePath.c_str(), source_component_instance->getComponent()->mID.c_str()))
+								return false;
 
-						// Find the EntityInstance and fill it in in the EntityPtr.mInstance
-						Scene::EntityByIDMap::iterator target_entity_instance = entityCreationParams.mEntityInstancesByID.find(sGetInstanceID(target_entity_resource->mID));
-						assert(target_entity_instance != entityCreationParams.mEntityInstancesByID.end());
-						entity_ptr.mInstance = target_entity_instance->second.get();
-
-						resolved_path.setValue(entity_ptr);
+							// Update the EntityInstancePtr
+							*target_entity_link.mTargetPtr = target_entity_instance;
+						}
 					}
 				}
 			}
@@ -416,6 +460,7 @@ namespace nap
 
 		entityCreationParams.mEntityInstancesByID.emplace(std::make_pair(entity_instance->mID, std::unique_ptr<EntityInstance>(entity_instance)));
 		entityCreationParams.mAllInstancesByID.insert(std::make_pair(entity_instance->mID, entity_instance));
+		entityCreationParams.mEntityInstanceMap[const_cast<Entity*>(&entity)].push_back(entity_instance);
 
 		for (auto& original_component_resource : entity.mComponents)
 		{
@@ -525,8 +570,8 @@ namespace nap
 				return false;
 		}
 
-		// After all entity hierarchies and their components are created, the component pointers are resolved in the correct order, and then initted.
-		if (!errorState.check(SceneInstantiation::sResolveComponentPointers(entityCreationParams, errorState), "Unable to resolve pointers in components"))
+		// After all entity hierarchies and their components are created, the component & entity pointers are resolved and then initted in the correct order.
+		if (!errorState.check(SceneInstantiation::sResolveInstancePointers(entityCreationParams, errorState), "Unable to resolve pointers in components"))
 			return false;
 
 		if (!errorState.check(SceneInstantiation::sInitComponents(entityCreationParams, errorState), "Unable to init components!"))

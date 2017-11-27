@@ -8,7 +8,6 @@
 #include <polyline.h>
 #include <transformcomponent.h>
 #include <componentptr.h>
-#include <entityptr.h>
 #include <renderablemeshcomponent.h>
 
 namespace nap
