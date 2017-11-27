@@ -17,7 +17,7 @@ namespace nap
 	 * or less amount of colors then the index map. Every color in the color palette
 	 * must have a led color associated with it
 	 */
-	class LedColorContainer : public rtti::RTTIObject
+	class NAPAPI LedColorContainer : public rtti::RTTIObject
 	{
 		RTTI_ENABLE(rtti::RTTIObject)
 	public:

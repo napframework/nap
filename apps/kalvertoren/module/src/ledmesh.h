@@ -12,7 +12,7 @@ namespace nap
 	/**
 	 * Holds pointers to two meshes that together make up an led mesh
 	 */
-	class LedMesh : public rtti::RTTIObject
+	class NAPAPI LedMesh : public rtti::RTTIObject
 	{
 		RTTI_ENABLE(rtti::RTTIObject)
 	public:

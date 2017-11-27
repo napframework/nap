@@ -25,7 +25,7 @@ namespace nap
 	 * per triangle are detected, ie: the 3 attributes that make up the triangle
 	 * are not the same
 	 */
-	class ArtnetMeshFromFile : public IMesh
+	class NAPAPI ArtnetMeshFromFile : public IMesh
 	{
 		RTTI_ENABLE(IMesh)
 	public:

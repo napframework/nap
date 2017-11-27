@@ -9,7 +9,7 @@ namespace nap
 	/**
 	 *	spotlightcomponent
 	 */
-	class PointlightComponent : public Component
+	class NAPAPI PointlightComponent : public Component
 	{
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(PointlightComponent, PointlightComponentInstance)
@@ -22,7 +22,7 @@ namespace nap
 	/**
 	 * spotlightcomponentInstance	
 	 */
-	class PointlightComponentInstance : public ComponentInstance
+	class NAPAPI PointlightComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:

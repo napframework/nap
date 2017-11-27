@@ -14,7 +14,7 @@ namespace nap
 	/**
 	 *	meshtoartnetcomponent
 	 */
-	class MeshToArtnetComponent : public Component
+	class NAPAPI MeshToArtnetComponent : public Component
 	{
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(MeshToArtnetComponent, MeshToArtnetComponentInstance)

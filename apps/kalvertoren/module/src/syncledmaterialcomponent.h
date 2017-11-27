@@ -15,7 +15,7 @@ namespace nap
 	/**
 	 *	updatematerialcomponent
 	 */
-	class SyncLedMaterialComponent : public Component
+	class NAPAPI SyncLedMaterialComponent : public Component
 	{
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(SyncLedMaterialComponent, SyncLedMaterialComponentInstance)
@@ -37,7 +37,7 @@ namespace nap
 	/**
 	 * updatematerialcomponentInstance	
 	 */
-	class SyncLedMaterialComponentInstance : public ComponentInstance
+	class NAPAPI SyncLedMaterialComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:

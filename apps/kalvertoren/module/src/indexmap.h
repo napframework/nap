@@ -13,7 +13,7 @@ namespace nap
 	 * Type of image that contains a selection of colors that can be used as a lookup.
 	 * This index map is always of a type RGB and stored uncompressed
 	 */
-	class IndexMap : public BaseTexture2D
+	class NAPAPI IndexMap : public BaseTexture2D
 	{
 		RTTI_ENABLE(BaseTexture2D)
 	public:

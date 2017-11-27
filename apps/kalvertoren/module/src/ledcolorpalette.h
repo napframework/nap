@@ -13,7 +13,7 @@ namespace nap
 	 * The amount of colors extracted from the bitmap need to match
 	 * the amount of declared LED colors
 	 */
-	class LedColorPalette : public BaseTexture2D
+	class NAPAPI LedColorPalette : public BaseTexture2D
 	{
 		RTTI_ENABLE(BaseTexture2D)
 	public:

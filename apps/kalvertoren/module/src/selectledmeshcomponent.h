@@ -13,7 +13,7 @@ namespace nap
 	/**
 	 *	selectledmeshcomponent
 	 */
-	class SelectLedMeshComponent : public Component
+	class NAPAPI SelectLedMeshComponent : public Component
 	{
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(SelectLedMeshComponent, SelectLedMeshComponentInstance)
@@ -40,7 +40,7 @@ namespace nap
 	/**
 	 * selectledmeshcomponentInstance	
 	 */
-	class SelectLedMeshComponentInstance : public ComponentInstance
+	class NAPAPI SelectLedMeshComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:

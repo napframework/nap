@@ -99,5 +99,8 @@ add_subdirectory(modules/napapp)
 add_subdirectory(modules/napimgui)
 add_subdirectory(modules/napcameracontrol)
 
+# app modules
+add_subdirectory(apps/kalvertoren/module)
+
 # Exe dependencies
 add_dependencies(rendertest mod_naprender)
