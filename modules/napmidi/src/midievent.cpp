@@ -30,7 +30,7 @@ RTTI_END_CLASS
 
 using MidiEventSignal = nap::Signal<const nap::MidiEvent&>;
 RTTI_BEGIN_CLASS(MidiEventSignal)
-RTTI_FUNCTION("connect", (void(MidiEventSignal::*)(const pybind11::function))&MidiEventSignal::connect)
+    RTTI_FUNCTION("connect", (void(MidiEventSignal::*)(const pybind11::function))&MidiEventSignal::connect)
 RTTI_END_CLASS
 
 namespace nap

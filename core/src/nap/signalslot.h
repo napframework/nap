@@ -30,7 +30,11 @@ namespace nap
          * Connect to another signal that can call other functions, slots or signals in turn
          */
 		void connect(Signal<Args...>& signal);
-		void disconnect(Signal<Args...>& signal); /**< Disconnect from another signal */
+        
+        /**
+         * Disconnect from another signal
+         */
+		void disconnect(Signal<Args...>& signal);
 
         /**
          * Connect to a slot with similar signature. A slot is an object managing a function to be called.
@@ -39,7 +43,11 @@ namespace nap
          * - the slot can be disconnected from the signal
          */
 		void connect(Slot<Args...>& slot);
-		void disconnect(Slot<Args...>& slot); /**< Disconnect from a slot */
+        
+        /**
+         * Disconnect from a slot
+         */
+		void disconnect(Slot<Args...>& slot);
 
         /**
          * Connect a raw function object.
@@ -71,7 +79,10 @@ namespace nap
 			trigger(std::forward<Args>(args)...); 
 		}
 
-		void trigger(Args... args); /**< Trigger the signal to be emitted */
+        /**
+         * Trigger the signal to be emitted
+         */
+		void trigger(Args... args);
 
 	private:
 		void addCause(Signal<Args...>& event);
