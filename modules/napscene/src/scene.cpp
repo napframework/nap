@@ -302,7 +302,7 @@ namespace nap
 			std::string entityInstancePath = targetComponentInstancePath.substr(0, targetComponentInstancePath.find_last_of('/'));
 			nap::EntityInstance* target_entity = sResolveEntityInstancePath(sourceComponentInstance, entityInstancePath, rootEntityInstances, errorState);
 			if (!errorState.check(target_entity != nullptr, "Error resolving ComponentPtr with path %s: target entity instance for %s not found", targetComponentInstancePath.c_str(), entityInstancePath.c_str()))
-				return false;
+				return nullptr;
 
 			// Now that we've gone through the path, we know the entity must contain a component with an ID equal to the last element on the path. We look for it here.
 			assert(target_entity != nullptr);

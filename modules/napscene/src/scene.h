@@ -38,7 +38,7 @@ namespace nap
 		/**
 		 * Initialize the scene. Will spawn all entities contained in this scene.
 		 */
-        virtual bool init(utility::ErrorState& errorState);
+        virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		 * Update all entities contained in this scene
