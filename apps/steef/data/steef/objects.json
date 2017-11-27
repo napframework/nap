@@ -295,6 +295,23 @@
 		},
 
 		{
+			"Type" : "nap::Scene",
+			"mID": "Scene",
+			"Entities" : 
+			[
+				{
+					"Entity" : "ModelEntity"
+				},
+				{
+					"Entity" : "BackgroundEntity"
+				},
+				{
+					"Entity" : "CameraEntity"
+				}
+			]
+		},
+
+		{
 			"Type" : "nap::Entity",
 			"mID": "ModelEntity",
 			"Components" : 

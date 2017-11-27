@@ -1,10 +1,12 @@
 #pragma once
 
+#include <condition_variable>
 #include <queue>
 #include <thread>
 #include <mutex>
 #include <limits>
-#include "rtti/rttiobject.h"
+#include <rtti/rttiobject.h>
+#include <rtti/factory.h>
 
 struct AVPacket;
 struct AVCodec;
@@ -21,6 +23,7 @@ namespace opengl
 namespace nap
 {
 	class Texture2D;
+	class VideoService;
 
 	/**
 	 * Video playback.
@@ -39,6 +42,11 @@ namespace nap
 		RTTI_ENABLE(rtti::RTTIObject)
 
 	public:
+		/**
+		 *	Constructor
+		 */
+		Video(VideoService& service);
+
 		/**
 		 * destructor
 		 */
@@ -205,5 +213,10 @@ namespace nap
 		bool					mFramesFinished = false;			///< If this boolean is set, the decode thread has no more frames to decode, either due to an error or due to an end of stream.
 
 		int64_t					mSeekTarget = -1;					///< Seek target, in internal stream units (not secs)
+
+		VideoService&			mService;							///< Video service that this object is registered with
 	};
+
+	// Object creator used for constructing the the OSC receiver
+	using VideoObjectCreator = rtti::ObjectCreator<Video, VideoService>;
 }

@@ -69,6 +69,7 @@ add_subdirectory(test/videoplayer)
 # Temporarily disabled projects while I temporarily have some ugly module search logic in project space
 #add_subdirectory(test/serializationtest)
 #add_subdirectory(test/audiotest)
+#add_subdirectory(test/audioperformancetest)
 
 # app targets
 #add_subdirectory(apps/kalvertoren)
@@ -89,7 +90,6 @@ add_subdirectory(modules/napmath)
 add_subdirectory(modules/napsdlinput)
 add_subdirectory(modules/napsdlwindow)
 add_subdirectory(modules/napscene)
-add_subdirectory(modules/napcameracontrol)
 add_subdirectory(modules/nappython)
 add_subdirectory(modules/napvideo)
 add_subdirectory(modules/napetherdream)
@@ -97,7 +97,10 @@ add_subdirectory(modules/napaudio)
 add_subdirectory(modules/napartnet)
 add_subdirectory(modules/naposc)
 add_subdirectory(modules/napsvg)
+add_subdirectory(modules/napmidi)
 add_subdirectory(modules/napapp)
+add_subdirectory(modules/napimgui)
+add_subdirectory(modules/napcameracontrol)
 
 
 # Packaging

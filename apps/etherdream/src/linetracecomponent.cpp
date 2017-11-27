@@ -1,6 +1,6 @@
 #include "linetracecomponent.h"
 
-#include <nap/entity.h>
+#include <entity.h>
 #include <mathutils.h>
 #include <nap/logger.h>
 #include <nap/core.h>
@@ -16,9 +16,13 @@ RTTI_BEGIN_CLASS(nap::TraceProperties)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::LineTraceComponent)
-	RTTI_PROPERTY("Properties",			&nap::LineTraceComponent::mProperties,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("BlendComponent",		&nap::LineTraceComponent::mBlendComponent,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Target",				&nap::LineTraceComponent::mTargetLine,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Properties",			&nap::LineTraceComponent::mProperties,					nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("BlendComponent",		&nap::LineTraceComponent::mBlendComponent,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("StartXform",			&nap::LineTraceComponent::mStartXformComponent,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("StartRenderable",	&nap::LineTraceComponent::mStartRenderableComponent,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("EndXform",			&nap::LineTraceComponent::mEndXformComponent,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("EndRenderable",		&nap::LineTraceComponent::mEndRenderableComponent,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Target",				&nap::LineTraceComponent::mTargetLine,					nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LineTraceComponentInstance)
@@ -29,54 +33,32 @@ namespace nap
 {
 	bool LineTraceComponentInstance::init(utility::ErrorState& errorState)
 	{
+		// Create the trace visualize components
+		LineTraceComponent* resource = getComponent<LineTraceComponent>();
+
 		// Copy properties
-		mProperties.mSpeed  = math::clamp<float>(getComponent<LineTraceComponent>()->mProperties.mSpeed, 0.0f,1.0f);
-		mProperties.mLength = math::clamp<float>(getComponent<LineTraceComponent>()->mProperties.mLength, 0.0f, 1.0f);
-		mProperties.mSpeed  = getComponent<LineTraceComponent>()->mProperties.mSpeed;
+		mProperties.mSpeed  = math::clamp<float>(resource->mProperties.mSpeed, 0.0f,1.0f);
+		mProperties.mLength = math::clamp<float>(resource->mProperties.mLength, 0.0f, 1.0f);
+		mProperties.mSpeed  = resource->mProperties.mSpeed;
+		mProperties.mOffset = resource->mProperties.mOffset;
 
 		// Set lines
-		mTarget = getComponent<LineTraceComponent>()->mTargetLine.get();
+		mTarget = resource->mTargetLine.get();
 
-		// Create the trace visualize components
-		LineTraceComponent* resource = getComponent<LineTraceComponent>();		
-		ResourceManager& resource_manager = *getEntityInstance()->getCore()->getResourceManager();
-
-		if (!errorState.check(getEntityInstance()->getChildren().size() == 2, "Expected one child"))
-			return false;
-
-		EntityInstance* start_vis_entity = getEntityInstance()->getChildren()[0];
-		EntityInstance* end_vis_entity = getEntityInstance()->getChildren()[1];
-
-		mStartXform = start_vis_entity->findComponent<nap::TransformComponentInstance>();
-		if (!errorState.check(mStartXform != nullptr, "Trace visualizer has no transform component"))
-			return false;
-
-		auto start_render = start_vis_entity->findComponent<RenderableMeshComponentInstance>();
-		if (!errorState.check(start_render != nullptr, "Trace visualizer has no renderable component"))
-			return false;
-
-		UniformVec3& uniform = start_render->getMaterialInstance().getOrCreateUniform<UniformVec3>("mColor");
+		UniformVec3& uniform = mStartRenderableMesh->getMaterialInstance().getOrCreateUniform<UniformVec3>("mColor");
 		uniform.setValue(glm::vec3(1.0f, 0.0f, 0.0f));
 
-		mEndXform = end_vis_entity->findComponent<nap::TransformComponentInstance>();
-		if (!errorState.check(mEndXform != nullptr, "Trace visualizer has no transform component"))
-			return false;
-
-		auto end_render = end_vis_entity->findComponent<RenderableMeshComponentInstance>();
-		if (!errorState.check(end_render != nullptr, "Trace visualizer has no renderable component"))
-			return false;
-
-		UniformVec3& euniform = end_render->getMaterialInstance().getOrCreateUniform<UniformVec3>("mColor");
+		UniformVec3& euniform = mEndRenderableMesh->getMaterialInstance().getOrCreateUniform<UniformVec3>("mColor");
 		euniform.setValue(glm::vec3(0.0f, 1.0f, 0.0f));
 
 		// Set smooth timing values
-		mLengthSmoother.mSmoothTime = getComponent<LineTraceComponent>()->mProperties.mLengthSmoothTime;
+		mLengthSmoother.mSmoothTime = resource->mProperties.mLengthSmoothTime;
 		mLengthSmoother.setValue(mProperties.mLength);
 
-		mOffsetSmoother.mSmoothTime = getComponent<LineTraceComponent>()->mProperties.mOffsetSmoothTime;
+		mOffsetSmoother.mSmoothTime = resource->mProperties.mOffsetSmoothTime;
 		mOffsetSmoother.setValue(mProperties.mOffset);
 
-		mSpeedSmoother.mSmoothTime = getComponent<LineTraceComponent>()->mProperties.mSpeedSmoothTime;
+		mSpeedSmoother.mSmoothTime = resource->mProperties.mSpeedSmoothTime;
 		mSpeedSmoother.setValue(mProperties.mSpeed);
 
 		return true;

@@ -2,7 +2,7 @@
 #include "inputevent.h"
 #include "inputcomponent.h"
 #include "transformcomponent.h"
-#include <nap/entity.h>
+#include <entity.h>
 
 #define _USE_MATH_DEFINES
 #include <math.h>

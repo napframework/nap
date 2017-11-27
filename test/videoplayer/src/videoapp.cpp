@@ -5,6 +5,7 @@
 #include <nap/logger.h>
 #include <orthocameracomponent.h>
 #include <texture2d.h>
+#include <scene.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VideoApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -28,27 +29,24 @@ namespace nap
 		mVideoService  = getCore().getService<VideoService>();
 		
 		if (!mResourceManager->loadFile("data/videoplayer/videoplayer.json", error))
-		{
 			return false;
-		}
 		
 		// Get important entities
-		mCameraEntity = mResourceManager->findEntity("CameraEntity");
+		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
+		mCameraEntity = scene->findEntity("CameraEntity");
 		assert(mCameraEntity != nullptr);
 		
-		mVideoEntity = mResourceManager->findEntity("VideoEntity");
+		mVideoEntity = scene->findEntity("VideoEntity");
 		assert(mVideoEntity != nullptr);
 		
 		// Store all render windows
 		mRenderWindows.push_back(mResourceManager->template findObject<RenderWindow>("Window"));
 		
 		// Collect all video resources and play
-		mVideoResources.push_back(mResourceManager->findObject<Video>("Video1"));
-		for (auto& videoResource : mVideoResources)
-		{
-			videoResource->mLoop = true;
-			videoResource->play();
-		}
+		mVideoResource = mResourceManager->findObject<Video>("Video1");
+		assert(mVideoResource != nullptr);
+		mVideoResource->mLoop = true;
+		mVideoResource->play();
 		
 		// Set render states
 		RenderState& render_state = mRenderService->getRenderState();
@@ -65,29 +63,20 @@ namespace nap
 	{				
 		glm::vec2 window_size = mRenderWindows[0]->getWindow()->getSize();
 
+		// Fix window width / height
 		float new_window_height = -FLT_MAX;
-		for (auto& video_resource : mVideoResources)
-		{
-			utility::ErrorState error_state;
-			if (!video_resource->update(deltaTime, error_state))
-			{
-				Logger::fatal(error_state.toString());
-			}
 
-			//std::cout << video_resource->getTimeStamp() << "\n";
-
-			float aspect_ratio = (float)video_resource->getWidth() / (float)video_resource->getHeight();
-			new_window_height = std::max(new_window_height, window_size.x / aspect_ratio);
-		}
+		float aspect_ratio = (float)mVideoResource->getWidth() / (float)mVideoResource->getHeight();
+		new_window_height = std::max(new_window_height, window_size.x / aspect_ratio);
 
 		window_size.y = new_window_height;
 		mRenderWindows[0]->getWindow()->setSize(window_size);
 
 		MaterialInstance& plane_material = mVideoEntity->getComponent<RenderableMeshComponentInstance>().getMaterialInstance();
 
-		plane_material.getOrCreateUniform<UniformTexture2D>("yTexture").setTexture(mVideoResources[0]->getYTexture());
-		plane_material.getOrCreateUniform<UniformTexture2D>("uTexture").setTexture(mVideoResources[0]->getUTexture());
-		plane_material.getOrCreateUniform<UniformTexture2D>("vTexture").setTexture(mVideoResources[0]->getVTexture());
+		plane_material.getOrCreateUniform<UniformTexture2D>("yTexture").setTexture(mVideoResource->getYTexture());
+		plane_material.getOrCreateUniform<UniformTexture2D>("uTexture").setTexture(mVideoResource->getUTexture());
+		plane_material.getOrCreateUniform<UniformTexture2D>("vTexture").setTexture(mVideoResource->getVTexture());
 
 		// We set the position/size of the root layout element to cover the full screen.
 		TransformComponentInstance& transform_component = mVideoEntity->getComponent<TransformComponentInstance>();

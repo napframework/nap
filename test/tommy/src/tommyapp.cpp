@@ -35,16 +35,17 @@ namespace nap
 		if (!mResourceManager->loadFile("data/tommy/tommy.json", error))
 			return false;
 		
-		mCameraEntity = mResourceManager->findEntity("CameraEntity");
-		mSlideShowEntity = mResourceManager->findEntity("SlideShowEntity");
-		mRootLayoutEntity = mResourceManager->findEntity("RootEntity");
+		mScene = mResourceManager->findObject<Scene>("Scene");
+		mCameraEntity = mScene->findEntity("CameraEntity");
+		mSlideShowEntity = mScene->findEntity("SlideShowEntity");
+		mRootLayoutEntity = mScene->findEntity("RootEntity");
 
-		mUiInputRouter = mResourceManager->findEntity("UIInputRouterEntity");
+		mUiInputRouter = mScene->findEntity("UIInputRouterEntity");
 		mRenderWindows.push_back(mResourceManager->findObject<RenderWindow>("Window"));
 
 		// Bind button clicks
-		ObjectPtr<EntityInstance> buttonRightEntity = mResourceManager->findEntity("ButtonRightEntity");
-		ObjectPtr<EntityInstance> buttonLeftEntity = mResourceManager->findEntity("ButtonLeftEntity");
+		ObjectPtr<EntityInstance> buttonRightEntity = mScene->findEntity("ButtonRightEntity");
+		ObjectPtr<EntityInstance> buttonLeftEntity = mScene->findEntity("ButtonLeftEntity");
 		buttonRightEntity->getComponent<PointerInputComponentInstance>().pressed.connect(std::bind(&TommyApp::rightButtonClicked, this, std::placeholders::_1));
 		buttonLeftEntity->getComponent<PointerInputComponentInstance>().pressed.connect(std::bind(&TommyApp::leftButtonClicked, this, std::placeholders::_1));
 
@@ -86,7 +87,7 @@ namespace nap
 		mResourceManager->checkForFileChanges();
 		
 		std::vector<EntityInstance*> entities;
-		entities.push_back(&mResourceManager->getRootEntity());
+		entities.push_back(&mScene->getRootEntity());
 			
 		UIInputRouter& router = mUiInputRouter->getComponent<UIInputRouterComponentInstance>().mInputRouter;
 		mInputService->processEvents(*mRenderWindows[0], router, entities);

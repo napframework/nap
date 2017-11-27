@@ -1,7 +1,6 @@
 #pragma once
 
 // External Includes
-#include <SDL.h>
 #include <GL/glew.h>
 #include <stdint.h>
 #include <string>
@@ -93,12 +92,6 @@ namespace opengl
 	 * @param value: the line width of rasterized lines
 	 */
 	void setLineWidth(float value);
-
-
-	/**
-	 * Get the currently active OpenGL Context
-	 */
-	GLContext getCurrentContext();
 
 
 	/**

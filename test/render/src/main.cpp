@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
 	nap::Core core;
 
 	// Create app runner
-	nap::AppRunner<nap::RenderTestApp, nap::AppEventHandler> app_runner(core);
+	nap::AppRunner<nap::RenderTestApp, nap::GUIAppEventHandler> app_runner(core);
 
 	// TODO this is very much work(arounds) in progress.. nothing to see here -------------------------------------------------------
 	

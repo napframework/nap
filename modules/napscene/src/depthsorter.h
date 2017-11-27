@@ -1,7 +1,7 @@
 #pragma once
 
-#include "nap/entity.h"
-#include "nap/component.h"
+#include "entity.h"
+#include "component.h"
 #include "transformcomponent.h"
 
 namespace nap

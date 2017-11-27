@@ -99,12 +99,12 @@ namespace nap
 		* @param type the type of service to get
 		* @return the service if found, otherwise nullptr
 		*/
-		Service* getService(const rtti::TypeInfo& type);
+		Service* getService(const rtti::TypeInfo& type, rtti::ETypeCheck typeCheck = rtti::ETypeCheck::EXACT_MATCH);
 
 		/**
-		 * @return an already registered service based on it's type name
+         * Searches for a service based on type name, searches for an exact match.
+		 * @return an already registered service based on it's type name, nullptr if not found
 		 * @param type the type of the service as a string
-		 * @return the service if found, otherwise nullptr
 		 */
 		Service* getService(const std::string& type);
 
@@ -112,7 +112,7 @@ namespace nap
 		 *  @return a service of type T, returns nullptr if that service can't be found
 		 */
 		template <typename T>
-		T* getService();
+		T* getService(rtti::ETypeCheck typeCheck = rtti::ETypeCheck::EXACT_MATCH);
 
 	private:
 		/**
@@ -182,9 +182,9 @@ namespace nap
 	// Searches for a service of type T in the services and returns it,
 	// returns nullptr if none found
 	template <typename T>
-	T* Core::getService()
+	T* Core::getService(rtti::ETypeCheck typeCheck)
 	{
-		Service* new_service = getService(RTTI_OF(T));
+		Service* new_service = getService(RTTI_OF(T), typeCheck);
 		return new_service == nullptr ? nullptr : static_cast<T*>(new_service);
 	}
 }

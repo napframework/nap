@@ -128,9 +128,6 @@ namespace nap
 			service->update(mDeltaTime);
 		}
 
-		// Update the resource manager, ie: all entities and their respective components
-		mResourceManager->update(mDeltaTime);
-
 		// Call update function
 		updateFunction(mDeltaTime);
 
@@ -193,12 +190,12 @@ namespace nap
 
 
 	// Returns service that matches @type
-	Service* Core::getService(const rtti::TypeInfo& type)
+	Service* Core::getService(const rtti::TypeInfo& type, rtti::ETypeCheck typeCheck)
 	{
 		// Find service of type 
-		const auto& found_service = std::find_if(mServices.begin(), mServices.end(), [&type](const auto& service)
+		const auto& found_service = std::find_if(mServices.begin(), mServices.end(), [&type, typeCheck](const auto& service)
 		{
-			return service->get_type() == type.get_raw_type();
+			return rtti::isTypeMatch(service->get_type(), type, typeCheck);
 		});
 
 		// Check if found
@@ -209,7 +206,7 @@ namespace nap
 	nap::Service* Core::getService(const std::string& type)
 	{
 		rtti::TypeInfo stype = rtti::TypeInfo::get_by_name(type.c_str());
-		return getService(stype);
+        return getService(stype, rtti::ETypeCheck::EXACT_MATCH);
 	}
 
 

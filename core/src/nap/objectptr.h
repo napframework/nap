@@ -10,9 +10,56 @@
 
 namespace nap
 {
-
-	class ObjectPtrBase;
-	
+    /**
+     * Abstract class that contains storage for an RTTIObject pointer. This separation is necessary
+     * so that ObjectPtrManager can contain a set of pointers with a known base type (RTTIObject), while the
+     * clients use derived pointers that are strongly typed.
+     */
+    class NAPAPI ObjectPtrBase
+    {
+        RTTI_ENABLE()
+        
+    private:
+        ObjectPtrBase() = default;
+        
+        /**
+         * ctor taking direct pointer.
+         */
+        ObjectPtrBase(rtti::RTTIObject* ptr) :
+        mPtr(ptr)
+        {
+        }
+        
+        /**
+         * @return RTTIObject pointer.
+         */
+        rtti::RTTIObject* get()
+        {
+            return mPtr;
+        }
+        
+        /**
+         * @return RTTIObject pointer.
+         */
+        const rtti::RTTIObject* get() const
+        {
+            return mPtr;
+        }
+        
+        /**
+         * @param ptr new pointer to set.
+         */
+        void set(rtti::RTTIObject* ptr)
+        {
+            mPtr = ptr;
+        }
+    private:
+        template<class T> friend class ObjectPtr;
+        friend class ObjectPtrManager;
+        
+        rtti::RTTIObject* mPtr = nullptr;
+    };
+    
 	/**
 	 * Holds a set of all ObjectPtrs in the application. The purpose of the manager is to be able to
 	 * retarget ObjectPtrs if objects get replaced by another object in the real-time updating system.
@@ -38,13 +85,25 @@ namespace nap
 		*/
 		static ObjectPtrManager& get();
 
-
 		/**
-		* @return the set of ObjectPtrs in the system.
-		*/
-		ObjectPtrSet& GetObjectPointers()
+ 		 * Patches pointers in the ObjectPtrManager to objects in the newTargetObjects map. The pointers are matched by comparing IDs of the objects being pointed to. 
+		 * This function is a template so we can deal with different kinds of values in the map; the key must always be a string, but the value may be a smart pointer or raw pointer.
+		 * @param newTargetObjects Map from string ID to RTTIObject pointer (either raw or smart pointer, as long as it can be dereferenced).
+		 */
+		template<class OBJECTSBYIDMAP>
+		void patchPointers(OBJECTSBYIDMAP& newTargetObjects)
 		{
-			return mObjectPointers;
+			for (ObjectPtrBase* ptr : mObjectPointers)
+			{
+				rtti::RTTIObject* target = ptr->get();
+				if (target == nullptr)
+					continue;
+
+				std::string& target_id = target->mID;
+				typename OBJECTSBYIDMAP::iterator new_target = newTargetObjects.find(target_id);
+				if (new_target != newTargetObjects.end())
+					ptr->set(&*(new_target->second));
+			}
 		}
 
 	private:
@@ -69,56 +128,6 @@ namespace nap
 		ObjectPtrSet mObjectPointers;		///< Set of all pointers in the manager
 	};
 
-
-	/**
-	 * Abstract class that contains storage for an RTTIObject pointer. This separation is necessary
-	 * so that ObjectPtrManager can contain a set of pointers with a known base type (RTTIObject), while the 
-	 * clients use derived pointers that are strongly typed.
-	 */
-	class NAPAPI ObjectPtrBase
-	{
-	private:
-		ObjectPtrBase() = default;
-
-		/**
-		* ctor taking direct pointer.
-		*/
-		ObjectPtrBase(rtti::RTTIObject* ptr) :
-			mPtr(ptr)
-		{
-		}
-
-		/**
-		* @return RTTIObject pointer.
-		*/
-		rtti::RTTIObject* get()
-		{
-			return mPtr;
-		}
-
-		/**
-		* @return RTTIObject pointer.
-		*/
-		const rtti::RTTIObject* get() const
-		{
-			return mPtr;
-		}
-
-		/**
-		* @param ptr new pointer to set.
-		*/
-		void set(rtti::RTTIObject* ptr)
-		{
-			mPtr = ptr;
-		}
-	private:
-		template<class T> friend class ObjectPtr;
-		friend class ResourceManager;
-
-		rtti::RTTIObject* mPtr = nullptr;
-	};
-
-
 	/**
 	 * Acts like a regular pointer. Accessing the pointer does not have different performance characteristics than accessing a regular
 	 * pointer. Moving/copying an ObjectPtr has a small overhead, as it removes/adds itself from the ObjectPtrManager in such cases.
@@ -128,6 +137,8 @@ namespace nap
 	template<typename T>
 	class ObjectPtr : public ObjectPtrBase
 	{
+		RTTI_ENABLE(ObjectPtrBase)
+
 	public:
 		ObjectPtr() = default;
 
