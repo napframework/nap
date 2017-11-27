@@ -1,7 +1,7 @@
 #include "outputcomponent.h"
 
 // Nap includes
-#include <nap/entity.h>
+#include <entity.h>
 #include <nap/core.h>
 
 // Audio includes
@@ -28,7 +28,7 @@ namespace nap
         {
             OutputComponent* resource = getComponent<OutputComponent>();
             
-            auto& nodeManager = getEntityInstance()->getCore()->getService<AudioService>(ETypeCheck::IS_DERIVED_FROM)->getNodeManager();
+            auto& nodeManager = getEntityInstance()->getCore()->getService<AudioService>(rtti::ETypeCheck::IS_DERIVED_FROM)->getNodeManager();
             
             auto channelCount = resource->mChannelRouting.size();
             for (auto channel = 0; channel < channelCount; ++channel)

@@ -19,7 +19,7 @@ namespace nap
 					if (result.empty())
 						result += element.Attribute.Name;
 					else
-						result += utility::stringFormat(":%s", element.Attribute.Name);
+						result += utility::stringFormat("/%s", element.Attribute.Name);
 
 					break;
 				}
@@ -27,9 +27,9 @@ namespace nap
 				case RTTIPathElement::Type::ARRAY_ELEMENT:
 				{
 					if (result.empty())
-						result += utility::stringFormat("[%d]", element.ArrayElement.Index);
+						result += utility::stringFormat("%d", element.ArrayElement.Index);
 					else
-						result += utility::stringFormat(":[%d]", element.ArrayElement.Index);
+						result += utility::stringFormat("/%d", element.ArrayElement.Index);
 					break;
 				}
 				}
@@ -45,13 +45,13 @@ namespace nap
 
 			// Split string on path seperator
 			std::list<std::string> parts;
-			utility::tokenize(path, parts, ":", true);
+			utility::tokenize(path, parts, "/", true);
 
 			for (const std::string& part : parts)
 			{
 				// Try to extract array index
 				int array_index = 0;
-				if (sscanf(part.c_str(), "[%d]", &array_index) == 1)
+				if (sscanf(part.c_str(), "%d", &array_index) == 1)
 				{
 					result.pushArrayElement(array_index);
 				}

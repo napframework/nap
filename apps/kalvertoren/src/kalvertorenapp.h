@@ -6,6 +6,7 @@
 #include "orbitcontroller.h"
 #include "cameracomponent.h"
 #include "cameracontroller.h"
+#include "artnetmeshfromfile.h"
 
 // External Includes
 #include <app.h>
@@ -20,8 +21,9 @@
 #include <perspcameracomponent.h>
 #include <nap/windowresource.h>
 #include <inputrouter.h>
-#include <nap/entity.h>
+#include <entity.h>
 #include <video.h>
+#include <artnetcontroller.h>
 
 namespace nap
 {
@@ -61,6 +63,26 @@ namespace nap
 		 */
 		virtual void inputMessageReceived(InputEventPtr inputEvent) override;
 
+		/**
+		 *	Uses the bounding box to color the vertices
+		 */
+		void colorBasedOnBounds(ArtnetMeshFromFile& mesh);
+
+		/**
+		 *	Colors the vertices based on the active channel
+		 */
+		void colorBasedOnChannel(ArtnetMeshFromFile& mesh, double deltaTime, int id);
+
+		/**
+		 *	Applies the rendered video texture to the vertices as color
+		 */
+		void applyVideoTexture(ArtnetMeshFromFile& mesh);
+
+		/**
+		 *	Updates the gui
+		 */
+		void updateGui();
+
 	private:
 		// Nap Objects
 		nap::RenderService*								renderService = nullptr;
@@ -70,18 +92,27 @@ namespace nap
 		nap::InputService*								inputService = nullptr;
 
 		nap::ObjectPtr<nap::RenderWindow>				renderWindow;
-		nap::ObjectPtr<nap::RenderTarget>				textureRenderTarget;
+		nap::ObjectPtr<nap::RenderTarget>				videoTextureTarget;
 		nap::ObjectPtr<nap::EntityInstance>				kalvertorenEntity = nullptr;
-		nap::ObjectPtr<nap::EntityInstance>				cameraEntity = nullptr;
+		nap::ObjectPtr<nap::EntityInstance>				sceneCameraEntity = nullptr;
+		nap::ObjectPtr<nap::EntityInstance>				videoCameraEntity = nullptr;
 		nap::ObjectPtr<nap::EntityInstance>				defaultInputRouter = nullptr;
 		nap::ObjectPtr<nap::EntityInstance>				videoEntity = nullptr;
 		nap::ObjectPtr<nap::Video>						videoResource;
 		nap::ObjectPtr<nap::EntityInstance>				lightEntity = nullptr;
 		nap::ObjectPtr<nap::Material>					frameMaterial = nullptr;
 		nap::ObjectPtr<nap::Material>					vertexMaterial = nullptr;
+		nap::ObjectPtr<nap::EntityInstance>				modelsEntity = nullptr;
 
-		std::vector<uint8_t> videoPlaybackData;
-
-		void updateCameraLocation();
+		// video data
+		opengl::Bitmap									mVideoBitmap;
+		int												mCurrentSelection = 0;
+		int												mDisplayMode = 0;
+		double											mChannelTime = 0.0f;
+		float											mChannelSpeed = 1.0f;
+		int												mCurrentChannel = 0;
+		std::array<int, 3>								mCurrentChannels = {0,0,0};
+		int												mSelectChannel = 0;
+		bool											mManualSelect = false;
 	};
 }

@@ -80,6 +80,6 @@ namespace nap
 		ObjectPtr<EntityInstance> mCameraEntity = nullptr;			//< The entity that holds the camera
 		ObjectPtr<EntityInstance> mVideoEntity = nullptr;			//< The video that holds the camera
 
-		std::vector<ObjectPtr<Video>> mVideoResources;				//< Our individual video resources
+		ObjectPtr<Video> mVideoResource = nullptr;					//< Our video resource
 	};
 }

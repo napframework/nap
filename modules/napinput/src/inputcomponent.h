@@ -2,7 +2,7 @@
 
 #include <rtti/rtti.h>
 #include <nap/signalslot.h>
-#include <nap/component.h>
+#include <component.h>
 #include <inputevent.h>
 #include <utility/dllexport.h>
 

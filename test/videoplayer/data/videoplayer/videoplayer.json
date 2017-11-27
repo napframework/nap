@@ -44,6 +44,20 @@
 		},
 		
 		{
+			"Type" : "nap::Scene",
+			"mID": "Scene",		
+			"Entities" : 
+			[
+				{
+					"Entity" : "CameraEntity"
+				},
+				{
+					"Entity" : "VideoEntity"
+				}
+			]
+		},
+
+		{
 			"Type" : "nap::Entity",
 			"mID": "CameraEntity",
 			

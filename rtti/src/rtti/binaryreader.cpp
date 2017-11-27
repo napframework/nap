@@ -380,7 +380,7 @@ namespace nap
 					return false;
 
 				// Check whether this is a type that can actually be instantiated
-				if (!errorState.check(type_info.can_create_instance(), "Unable to instantiate object of type %s.", object_type.c_str()))
+				if (!errorState.check(factory.canCreate(type_info), "Unable to instantiate object of type %s.", object_type.c_str()))
 					return false;
 
 				// We only support root-level objects that derive from rtti::RTTIObject (compounds, etc can be of any type)

@@ -8,6 +8,7 @@
 #include <nap/logger.h>
 #include <artnet/artnet.h>
 #include <iostream>
+#include <mathutils.h>
 
 RTTI_DEFINE(nap::ArtNetService)
 
@@ -105,6 +106,7 @@ namespace nap
 		ControllerMap::iterator pos = mControllers.find(controller.getAddress());
 		assert(pos != mControllers.end());
 		std::fill(pos->second->mData.begin(), pos->second->mData.end(), 0);
+		pos->second->mIsDirty = true;
 	}
 
 
@@ -125,7 +127,14 @@ namespace nap
 			// - There's new data and the max frequency interval has passed
 			// - There's no new data, but four seconds have passed. This is required for ArtNet. Resend existing data in that case.
 			double time_since_last_update = current_time - controller_data->mLastUpdateTime;
-			if ((controller_data->mIsDirty && time_since_last_update >= mUpdateFrequency) || time_since_last_update >= 4.0)
+			
+			// Get the amount of seconds to use for auto refresh
+			float controller_wait_time = controller_data->mController->mWaitTime;
+
+			// Calculate update frequency
+			double update_freq = 1.0 / static_cast<double>(math::clamp<int>(controller_data->mController->mUpdateFrequency, 1, 44));
+
+			if ((controller_data->mIsDirty && time_since_last_update >= update_freq) || time_since_last_update >= controller_wait_time)
 			{
 				ArtNetNode node = controller.second->mController->getNode();
 

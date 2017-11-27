@@ -1,10 +1,10 @@
 // Local Includes
 #include "orthocameracomponent.h"
-#include <nap/entity.h>
 
 // External Includes
 #include <glm/gtc/matrix_transform.hpp> 
 #include "transformcomponent.h"
+#include <entity.h>
 
 RTTI_BEGIN_CLASS(nap::OrthoCameraProperties)
 	RTTI_PROPERTY("LeftPlane",			&nap::OrthoCameraProperties::mLeftPlane,			nap::rtti::EPropertyMetaData::Default)

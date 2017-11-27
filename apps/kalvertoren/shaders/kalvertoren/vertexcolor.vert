@@ -8,12 +8,16 @@ in vec3	in_Position;		// Vertex Positions
 in vec4	in_Color0;			// Vertex Color
 in vec3	in_UV0;				// Vertex Uvs
 in vec3 in_Normals;			// Vertex Normals
+in int  in_Channels;		// Artnet Channels
+in int  in_Universes;		// Artnet Universes
+in int  in_Subnets;			// Artnet Subnets
 
 out vec4 pass_Color;
 out vec3 pass_Uvs;
 out vec3 pass_Normals;
 out vec3 pass_Vert;
 out mat4 pass_ModelMatrix;
+out vec3 pass_Artnet;
 
 void main(void)
 {
@@ -32,4 +36,10 @@ void main(void)
 
 	// Pass along normals for light calculations
 	pass_Normals = in_Normals;
+
+	// Pass along artnet addresses as rgb values
+	float r = float(in_Channels)  / 511.0;
+	float g = float(in_Universes) / 15.0;
+	float b = float(in_Subnets)   / 15.0;
+	pass_Artnet = vec3(r,g,b);
 }
