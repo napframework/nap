@@ -71,8 +71,7 @@ namespace nap
         return ((b.mType == mType) &&
                 (b.mNumber == mNumber || b.mNumber == MIDI_NUMBER_OMNI || mNumber == MIDI_NUMBER_OMNI) &&
                 (b.mValue == mValue || b.mValue == MIDI_VALUE_OMNI || mValue == MIDI_VALUE_OMNI) &&
-                (b.mChannel == mChannel || b.mChannel == MIDI_CHANNEL_OMNI || mChannel == MIDI_CHANNEL_OMNI) &&
-                (b.mPort == mPort || b.mPort == "" || mPort == ""));
+                (b.mChannel == mChannel || b.mChannel == MIDI_CHANNEL_OMNI || mChannel ==  MIDI_CHANNEL_OMNI));
     }
     
     
@@ -81,8 +80,7 @@ namespace nap
         return ((rhs.mType == mType) &&
                 (rhs.mNumber == mNumber) &&
                 (rhs.mValue == mValue) &&
-                (rhs.mChannel == mChannel) &&
-                (rhs.mPort == mPort));
+                (rhs.mChannel == mChannel));
     }
     
     

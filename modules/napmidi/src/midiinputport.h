@@ -11,7 +11,7 @@ namespace nap {
     
     
     /**
-     * Opens and manages a midi input port that will be listened to for incoming midi messages.
+     * Opens and manages one or more midi input ports that will be listened to for incoming midi messages.
      * Messages will be parsed and passed on to the midi service for processing.
      */
     class NAPAPI MidiInputPort : public rtti::RTTIObject
@@ -30,7 +30,11 @@ namespace nap {
          */
         MidiService& getService() { return *mService; }
         
-        std::string mPortName = ""; /**< The name of the port that will be listened to for incoming messages */
+        /**
+         * The name of the ports that will be listened to for incoming messages.
+         * If left empty all available ports will be opened and listened to.
+         */
+        std::vector<std::string> mPortNames; /**<  */
         bool mDebugOutput = false; /**< If true, incoming messages will be logged for debugging purposes */
         
         /**
@@ -41,12 +45,17 @@ namespace nap {
         /**
          * @return: The midi port number thas this object is listening to
          */
-        int getPortNumber() const { return mPortNumber; }
+        const std::vector<int> getPortNumbers() const { return mPortNumbers; }
+        
+        /**
+         * @return: A string summing up all ports listened to separated by ,
+         */
+        std::string getPortNames() const;
         
     private:
-        RtMidiIn midiIn;
+        std::vector<std::unique_ptr<RtMidiIn>> midiIns;
         MidiService* mService = nullptr;
-        int mPortNumber = -1;
+        std::vector<int> mPortNumbers;
     };
     
     // Object creator used for constructing the the OSC receiver

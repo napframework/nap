@@ -4,7 +4,6 @@
 		{
 			"Type": "nap::MidiInputPort",
 			"mID": "midiPort",
-			"Port": "EWI-USB",
 			"EnableDebugOutput": "False"
 		},
 
