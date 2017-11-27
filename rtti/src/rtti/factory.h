@@ -84,6 +84,12 @@ namespace nap
 			 */
 			RTTIObject* create(rtti::TypeInfo typeInfo);
 
+			/**
+			 * @return If the type in @typeInfo is registered into the Factory, returns true. If the type is not 
+			 * registered, the RTTI system is queried if it can be created.
+			 */
+			bool canCreate(rtti::TypeInfo typeInfo) const;
+
 		private:
 			using CreatorMap = std::unordered_map<rtti::TypeInfo, std::unique_ptr<IObjectCreator>>;
 			CreatorMap mCreators;

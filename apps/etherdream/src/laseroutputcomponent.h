@@ -4,11 +4,11 @@
 #include "etherdreamdac.h"
 
 // External Includes
-#include <nap/component.h>
+#include <component.h>
 #include <polyline.h>
 #include <transformcomponent.h>
-#include <nap/componentptr.h>
-#include <nap/entityptr.h>
+#include <componentptr.h>
+#include <entityptr.h>
 #include <renderablemeshcomponent.h>
 
 namespace nap

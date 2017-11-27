@@ -36,7 +36,8 @@ namespace nap
 
 	/**
 	 * Load a mesh from the specified mesh. The mesh is expected to be our own mesh format as converted by convertFBX
-	 *
+	 * The mesh is not yet initialized. Call init() to upload all the mesh data to the GPU. This gives the user
+	 * the option to add additional vertex attributes
 	 * @param meshPath Path to the .mesh file to load
 	 * @param errorState The error state if the function fails
 	 * @return The loaded mesh if successful, nullptr on failure

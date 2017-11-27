@@ -1,7 +1,7 @@
 #pragma once
 
 // External include
-#include <nap/component.h>
+#include <component.h>
 #include <visualizenormalsmesh.h>
 
 namespace nap

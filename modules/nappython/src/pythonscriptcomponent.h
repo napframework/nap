@@ -2,8 +2,7 @@
 
 #include <rtti/rtti.h>
 #include <nap/signalslot.h>
-#include <nap/component.h>
-#include <nap/componentptr.h>
+#include <componentptr.h>
 #include <nap/logger.h>
 #include <utility/dllexport.h>
 #include <pybind11/pybind11.h>

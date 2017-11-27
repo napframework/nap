@@ -1,11 +1,8 @@
 #pragma once
 
 // External Includes
-#include <nap/component.h>
+#include <component.h>
 #include <glm/glm.hpp>
-
-// Local Includes
-#include "renderattributes.h"
 
 namespace nap
 {

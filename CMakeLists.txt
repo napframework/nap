@@ -96,6 +96,7 @@ add_subdirectory(modules/naposc)
 add_subdirectory(modules/napsvg)
 add_subdirectory(modules/napmidi)
 add_subdirectory(modules/napapp)
+add_subdirectory(modules/napimgui)
 add_subdirectory(modules/napcameracontrol)
 
 # Exe dependencies

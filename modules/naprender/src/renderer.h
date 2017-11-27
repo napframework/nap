@@ -5,7 +5,6 @@
 
 // External Includes
 #include <rtti/rtti.h>
-#include <renderattributes.h>
 #include <utility/dllexport.h>
 
 namespace nap

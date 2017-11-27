@@ -1,4 +1,5 @@
 #include "nbitmaputils.h"
+#include "ntextureutils.h"
 #include "nglutils.h"
 #include "utility/errorstate.h"
 #include <assert.h>
@@ -55,6 +56,28 @@ namespace opengl
 			return found;
 		});
 		return found_it == freeImageTypeMap.end() ? BitmapDataType::UNKNOWN : (*found_it).first;
+	}
+
+
+	opengl::BitmapDataType getBitmapType(GLenum gltype)
+	{
+		for (const auto& type : getGLTypeMap())
+		{
+			if (type.second == gltype)
+				return type.first;
+		}
+		return BitmapDataType::UNKNOWN;
+	}
+
+
+	opengl::BitmapColorType getColorType(GLenum format)
+	{
+		for (const auto& colorformat : getGLFormatMap())
+		{
+			if (colorformat.second == format)
+				return colorformat.first;
+		}
+		return BitmapColorType::UNKNOWN;
 	}
 
 
