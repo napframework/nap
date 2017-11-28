@@ -12,6 +12,7 @@ namespace nap
 		class ErrorState;
 	}
 
+	class Entity;
 	class EntityInstance;
 	class Component;
 	struct EntityCreationParameters;
@@ -77,31 +78,48 @@ namespace nap
 
 	private:
 		template<class TargetComponentType> friend class ComponentInstancePtr;
+		friend class EntityInstancePtr;
 		friend class SceneInstantiation;
 		
 		/**
 		 * Called by ComponentInstancePtr on construction. Adds the ComponentPtrInstance to the internal link map. The link map is
-		 * used later by the ResourceManager for resolve pointers to component instances.
+		 * used later by the Scene for resolve pointers to component instances.
 		 * @param targetResource The component resource that is being pointed to.
 		 * @param instancePath The entity path in the hierarchy that is being pointed to.
 		 * @param targetInstancePtr The address of the pointer that needs to be filled in during resolve.
 		 */
-		void addToLinkMap(Component* targetResource, const std::string& instancePath, ComponentInstance** targetInstancePtr);
+		void addToComponentLinkMap(Component* targetResource, const std::string& instancePath, ComponentInstance** targetInstancePtr);
+
+		/**
+		* Called by EntityInstancePtr on construction. Adds the EntityPtrInstance to the internal link map. The link map is
+		* used later by the Scene for resolve pointers to entity instances.
+		* @param targetResource The entity resource that is being pointed to.
+		* @param instancePath The entity path in the hierarchy that is being pointed to.
+		* @param targetInstancePtr The address of the pointer that needs to be filled in during resolve.
+		*/
+		void addToEntityLinkMap(Entity* targetResource, const std::string& instancePath, EntityInstance** targetInstancePtr);
 
 	private:
 		/**
-		 * Holds information needed to resolve component instance pointers.
+		 * Holds information needed to resolve instance pointers.
 		 */
-		struct TargetComponentLink
+		template<class INSTANCETYPE>
+		struct TargetInstanceLink
 		{
-			ComponentInstance**		mTargetPtr;		///< The address of the pointer that needs to be filled in during resolve.
-			std::string				mInstancePath;	///< The entity path in the hierarchy that is being pointed to.
+			INSTANCETYPE**		mTargetPtr;		///< The address of the pointer that needs to be filled in during resolve.
+			std::string			mInstancePath;	///< The entity path in the hierarchy that is being pointed to.
 		};
 
-		using LinkMap = std::unordered_map<Component*, std::vector<TargetComponentLink>>;
-		LinkMap			mLinkMap;			// Map containing component instance link information that is used to resolve pointers
-		EntityInstance* mEntityInstance;	// The entity this component belongs to
-		Component*		mResource;			// The resource this instance was created from
+		using TargetComponentLink = TargetInstanceLink<ComponentInstance>;
+		using TargetEntityLink = TargetInstanceLink<EntityInstance>;
+
+		using ComponentLinkMap	= std::unordered_map<Component*, std::vector<TargetComponentLink>>;
+		using EntityLinkMap		= std::unordered_map<Entity*, std::vector<TargetEntityLink>>;
+
+		ComponentLinkMap	mComponentLinkMap;	// Map containing component instance link information that is used to resolve pointers
+		EntityLinkMap		mEntityLinkMap;		// Map containing entity instance link information that is used to resolve pointers
+		EntityInstance*		mEntityInstance;	// The entity this component belongs to
+		Component*			mResource;			// The resource this instance was created from
 	};
 
 	///////////////////////////////////////////////////////////////////////////

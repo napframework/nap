@@ -8,7 +8,7 @@
 // RTTI includes
 #include <rtti/rtti.h>
 #include <rtti/rttipath.h>
-#include <rtti/rttireader.h>
+#include <rtti/rttideserializeresult.h>
 
 // STL includes
 #include <string>
