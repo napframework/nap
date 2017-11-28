@@ -43,6 +43,7 @@ namespace nap
 	{
 		using EntityInstanceByIDMap			= std::unordered_map<std::string, std::unique_ptr<EntityInstance>>;
 		using InstanceByIDMap				= std::unordered_map<std::string, rtti::RTTIObject*>;
+		using EntityInstanceMap				= std::unordered_map<Entity*, std::vector<EntityInstance*>>;
 		using ComponentInstanceMap			= std::unordered_map<Component*, std::vector<ComponentInstance*>>;
 
 		EntityCreationParameters(const EntityObjectGraph& objectGraph);
@@ -51,6 +52,7 @@ namespace nap
 		const EntityObjectGraph*		mObjectGraph = nullptr;						///< Object graph of a single root entity and its entire subgraph
 		EntityInstanceByIDMap			mEntityInstancesByID;						///< Map containing all created entity instances and their generated instance ID
 		InstanceByIDMap					mAllInstancesByID;							///< Map of both Entity and Component instances and their generated instance ID
+		EntityInstanceMap				mEntityInstanceMap;							///< Map from Entity resource to a list of instantiated EntityInstances
 		ComponentInstanceMap			mComponentInstanceMap;						///< Map from Component resource to a list of instantiated ComponentInstances
 		ClonedComponentResourceList*	mCurrentEntityClonedComponents = nullptr;	///< List of cloned components for the current root entity being created
 		ComponentResourcePath			mCurrentEntityPath;							///< Path in current entity being created
