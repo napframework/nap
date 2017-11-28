@@ -1,15 +1,16 @@
 project(napcore)
 
 file(GLOB_RECURSE SOURCES src/ *.cpp *.h)
-file(GLOB FILEWATCHER_SOURCES external/*.cpp)
+file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 filter_platform_specific_files(SOURCES)
 
 add_platform_specific_files("${WIN32_SOURCES}" "${OSX_SOURCES}" "${LINUX_SOURCES}")
 
 if (UNIX)
-    add_library(${PROJECT_NAME} SHARED ${SOURCES})
-else()
+    file(GLOB_RECURSE FILEWATCHER_SOURCES external/*.cpp)
     add_library(${PROJECT_NAME} SHARED ${SOURCES} ${FILEWATCHER_SOURCES})
+else()
+    add_library(${PROJECT_NAME} SHARED ${SOURCES})
 endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Core)
