@@ -161,12 +161,12 @@ def archive_to_linux_tar_xz():
     shutil.move(PACKAGING_DIR, package_filename)
 
     package_filename_with_ext = '%s.%s' % (package_filename, 'tar.xz')
-    print("Archiving to %s" % package_filename_with_ext)
+    print("Archiving to %s.." % package_filename_with_ext)
     call(WORKING_DIR, ['tar', '-cJvf', package_filename_with_ext, package_filename])
 
     # Cleanup
     shutil.move(package_filename, PACKAGING_DIR)
-    print("Packaged to: %s" % package_filename_with_ext)  
+    print("Packaged to %s" % package_filename_with_ext)  
 
 # Create build archive to zip on macOS
 def archive_to_macos_zip():
@@ -177,16 +177,17 @@ def archive_to_macos_zip():
 
     # Archive
     package_filename_with_ext = '%s.%s' % (package_filename, 'zip')
-    print("Archiving to %s" % package_filename_with_ext)
+    print("Archiving to %s.." % package_filename_with_ext)
     call(WORKING_DIR, ['zip', '-yr', package_filename_with_ext, package_filename])
 
     # Cleanup
     shutil.move(package_filename, PACKAGING_DIR)
-    print("Packaged to: %s" % package_filename_with_ext)  
+    print("Packaged to %s" % package_filename_with_ext)  
 
 # Create build archive to zip on Win64
 def archive_to_win64_zip():
     package_filename = build_package_filename_and_build_info('Win64')
+    package_filename_with_ext = '%s.%s' % (package_filename, 'zip')
 
     # Rename our packaging dir to match the release
     shutil.move(PACKAGING_DIR, package_filename)
@@ -199,15 +200,14 @@ def archive_to_win64_zip():
     shutil.move(package_filename, archive_path)
 
     # Create archive
-    # package_filename_with_ext = '%s.%s' % (package_filename, 'zip')
-    print("Archiving to %s.zip" % package_filename)
+    print("Archiving to %s.." % package_filename_with_ext)
     shutil.make_archive(package_filename, 'zip', ARCHIVING_DIR)
 
     # Cleanup
     shutil.move(archive_path, PACKAGING_DIR)
     shutil.rmtree(ARCHIVING_DIR)
 
-    print("Packaged to: %s" % package_filename_with_ext)  
+    print("Packaged to %s" % package_filename_with_ext)  
 
 # Build the name of our package and populate our JSON build info file
 def build_package_filename_and_build_info(platform):
