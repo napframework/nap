@@ -1,23 +1,32 @@
 project(napkin)
 
-# First, let cmake know where the Qt library path is, we go from there.
-if (MSVC)
+
+## First, let cmake know where the Qt library path is, we go from there.
+if (MSVC OR APPLE)
+    # Pick up QT_DIR environment variable
+    if (DEFINED ENV{QT_DIR})
+        set(QTDIR $ENV{QT_DIR})
+        message(STATUS "Using QT_DIR environment variable: ${QTDIR}")
+    endif()
+
     # Add possible Qt installation paths to the HINTS section
     # The version probably doesn't have to match exactly (5.8.? is probably fine)
     find_path(QT_DIR lib/cmake/Qt5/Qt5Config.cmake
             HINTS
+            ${QTDIR}
             ${CMAKE_CURRENT_LIST_DIR}/../../Qt/5.9.1/msvc2015_64
             ${CMAKE_CURRENT_LIST_DIR}/../../Qt/5.9.2/msvc2015_64
-            )
-    set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QT_DIR})
-endif ()
-
-if (APPLE)
-    find_path(QT_DIR lib/cmake/Qt5/Qt5Config.cmake
-            HINTS
             ~/Qt/5.8/clang_64
             )
+    # Find_package for Qt5 will pick up the Qt installation from CMAKE_PREFIX_PATH
     set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QT_DIR})
+
+    if (NOT DEFINED QT_DIR)
+        message(WARNING
+                "The QT5 Directory could not be found, "
+                "consider setting the QT_DIR environment variable "
+                "to something like: \"C:/dev/Qt/5.9.1/msvc2015_64\"")
+    endif()
 endif ()
 
 
