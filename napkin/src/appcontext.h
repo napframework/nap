@@ -8,6 +8,7 @@
 #include <QUndoCommand>
 #include <QApplication>
 #include <QObject>
+#include <rtti/rttiutilities.h>
 #include "thememanager.h"
 
 
@@ -101,6 +102,11 @@ public:
      * @return All the objects (resources?) that are currently loaded.
      */
     nap::rtti::OwnedObjectList& objects() { return mObjects; }
+
+    /**
+     * @return All the objects (resources?) that are currently loaded.
+     */
+    nap::rtti::ObjectList objectPointers();
 
     /**
      * Retrieve an (data) object by name/id

@@ -199,12 +199,19 @@ namespace nap
 		}
 
 		/**
-		 * Given a set of objects, determine which objects need to be written as root objects and potentially expand the set with pointees
+		 * Given a set of objects, determine which objects need to be written as root objects
+		 * and potentially expand the set with pointees
 		 *
-		 * @param objects The hierarchy of objects that should be examined for pointees that should also be serialized. This may be a subset of all the objects that need to be serialized
+		 * @param objects The hierarchy of objects that should be examined for pointees that should also be serialized.
+		 *                  This may be a subset of all the objects that need to be serialized
+		 *
 		 * @param writer The writer to write to
-		 * @param allObjects The expanded set of *all* objects that will be written to the document. Contains both the non-embedded and embedded objects.
-		 * @param objectsToSerialize The set of objects that should actually be serialized at the top level of the document; contains only the non-embedded objects
+		 *
+		 * @param allObjects The expanded set of *all* objects that will be written to the document.
+		 * Contains both the non-embedded and embedded objects.
+		 *
+		 * @param objectsToSerialize The set of objects that should actually be serialized at
+		 * the top level of the document; contains only the non-embedded objects
 		 */
 		void getObjectsToSerialize(const ObjectList& objects, RTTIWriter& writer, ObjectSet& allObjects, ObjectList& objectsToSerialize)
 		{

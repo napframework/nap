@@ -67,7 +67,7 @@ void AppContext::loadFile(const QString& filename)
 		return;
 	}
 
-	if (!ResolveLinks(result.mReadObjects, result.mUnresolvedPointers))
+	if (!resolveLinks(result.mReadObjects, result.mUnresolvedPointers))
 	{
 		nap::Logger::fatal("Failed to resolve links");
 		return;
@@ -228,6 +228,15 @@ nap::rtti::RTTIObject* AppContext::getObject(const std::string& name)
 	return it->get();
 }
 
+nap::rtti::ObjectList AppContext::objectPointers()
+{
+    ObjectList ret;
+    for (auto& ob : objects())
+        ret.emplace_back(ob.get());
+    return ret;
+}
+
+
 void AppContext::deleteObject(nap::rtti::RTTIObject& object)
 {
 	if (object.get_type().is_derived_from<nap::Entity>())
@@ -261,3 +270,4 @@ void AppContext::restoreUI()
 
 	openRecentFile();
 }
+

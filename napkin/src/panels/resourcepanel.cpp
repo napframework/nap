@@ -23,14 +23,14 @@ void ResourceModel::refresh()
 	auto entitiesItem = new GroupItem(TXT_LABEL_ENTITIES);
 	appendRow(entitiesItem);
 
-
-	for (auto& ob : AppContext::get().objects())
+	for (auto& ob : topLevelObjects(AppContext::get().objectPointers()))
 	{
 
 		auto typeItem = new RTTITypeItem(ob->get_type());
 
-		// All objects are in this flat list, filter here
 
+
+		// All objects are in this flat list, filter here
 		if (ob->get_type().is_derived_from<nap::Entity>())
 		{
 			// Grab entities and stuff them in a group
