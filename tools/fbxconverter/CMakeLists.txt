@@ -18,7 +18,8 @@ if (MSVC)
 	set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "setargv.obj")
 endif()
 
-target_link_libraries(${PROJECT_NAME} napcore mod_naprender nrender mod_napmath)
+set(DEPENDENT_NAP_MODULES mod_naprender mod_napmath)
+target_link_libraries(${PROJECT_NAME} napcore nrender ${DEPENDENT_NAP_MODULES})
 
 
 # ======================= UNIT TESTS
@@ -51,12 +52,19 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 #        DEPENDS always_rebuild)
 
 # Package into release build
-install(TARGETS ${PROJECT_NAME} DESTINATION tools
-        CONFIGURATIONS Release)
+# TODO for now use debug build for Linux due to release build crash issues 28-11-17
+if (WIN32 OR APPLE)
+    install(TARGETS ${PROJECT_NAME} DESTINATION tools
+            CONFIGURATIONS Release)
+else()
+    install(TARGETS ${PROJECT_NAME} DESTINATION tools
+            CONFIGURATIONS Debug)
+endif()
+
 # install(CODE "execute_process(COMMAND python ../dist/osx/dylibpathfix.py fbxconverter_pathfix\nWORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/packaging)")
 
 if (WIN32)
-        # TODO use get_prerequisites to make this a whole load less terrible
+        # TODO use get_prerequisites or find_package to make this a whole load less terrible
         #install(CODE "include(../cmake/configure.cmake)\ninstall_binary_requisites(${CMAKE_SOURCE_DIR}/packaging/tools/fbxconverter.exe ${CMAKE_SOURCE_DIR}/packaging/tools)")
 
         install(FILES "../../../thirdparty/assimp/msvc64/install/bin/assimp-vc140-mt.dll" DESTINATION "tools/")
@@ -64,4 +72,13 @@ if (WIN32)
         install(FILES "../../../thirdparty/glew/msvc/bin/Release/x64/glew32.dll" DESTINATION "tools/")
         install(FILES "../../../thirdparty/rttr/msvc64/install/bin/rttr_core.dll" DESTINATION "tools/")
         install(FILES "../../../thirdparty/SDL2/msvc/lib/x64/SDL2.dll" DESTINATION "tools/")
+elseif(UNIX AND NOT APPLE)
+    set_installed_linux_object_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} "..")
+
+    # TODO use get_prerequisites or find_package to make this a whole load less terrible
+
+    # Add RTTR
+    get_target_property(BUILT_RPATH ${PROJECT_NAME} INSTALL_RPATH)
+    set(BUILT_RPATH "${BUILT_RPATH}:$ORIGIN/../thirdparty/rttr/bin/")
+    set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${BUILT_RPATH}")
 endif()

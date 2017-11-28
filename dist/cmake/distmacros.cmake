@@ -2,6 +2,9 @@ macro(dist_project_template)
     set(NAP_ROOT "${CMAKE_SOURCE_DIR}/../../")
     include(${NAP_ROOT}/cmake/targetarch.cmake)
 
+    # Set our default build type if we haven't specified one (Linux)
+	set_default_build_type()
+
     set(CMAKE_CXX_STANDARD 14)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
     set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -90,6 +93,15 @@ macro(dist_project_template)
     copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/shaders shaders)
     dist_export_fbx(${CMAKE_CURRENT_LIST_DIR}/data/${PROJECT_NAME})
 endmacro()
+
+# Set a default build type if none was specified (single-configuration generators only, ie. Linux)
+macro(set_default_build_type)
+	if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+	    message(STATUS "Setting build type to 'Debug' as none was specified.")
+	    set(CMAKE_BUILD_TYPE "Debug")
+	endif()
+endmacro()
+
 
 # Somewhat temporary generic way to import each module for different configurations.  I think we'll need make proper package files for
 # each module in the long run

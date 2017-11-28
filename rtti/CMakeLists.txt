@@ -73,8 +73,10 @@ if (WIN32)
     # Install for fbxconverter
     install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION tools/
             CONFIGURATIONS Release)
-else()
+elseif(APPLE)
     install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/$<CONFIG>)  
+else()
+    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/${CMAKE_BUILD_TYPE})   
 endif()
 
 install(DIRECTORY "src/rtti/" DESTINATION "include/rtti/"
