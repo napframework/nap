@@ -166,6 +166,121 @@
 		},
 
 		{
+			"Type" : "nap::ImageLayer",
+			"mID" : "HelloLayer1",
+			"Path" :"data/kalvertoren/compositions/hello/layer1/layer_1.BMP"
+		},
+
+		{
+			"Type" : "nap::ImageLayer",
+			"mID" : "HelloLayer2",
+			"Path" :"data/kalvertoren/compositions/hello/layer2/layer_2.BMP"
+		},
+
+		{
+			"Type" : "nap::ImageLayer",
+			"mID" : "HelloLayer3",
+			"Path" :"data/kalvertoren/compositions/hello/layer3/layer_3.png"
+		},
+
+		{
+			"Type" : "nap::Composition",
+			"mID"  : "TestComposition",
+			"Layers" :
+			[
+				"HelloLayer1",
+				"HelloLayer2",
+				"HelloLayer3"
+			] 
+		},
+
+		{
+			"Type" : "nap::Texture2D",
+			"mID" : "CompositionTextureA",
+			"Width" : 512,
+			"Height" : 512,
+			"Format" : "RGBA8",
+			"Usage" : "DynamicRead",
+			"Parameters" :
+			{		
+				"MinFilter" : "Nearest",
+				"MaxFilter" : "Nearest",
+				"MaxLodLevel" : 0
+			}
+		},
+		
+		{
+			"Type" : "nap::Texture2D",
+			"mID" : "CompositionDepthTextureA",
+			"Width" : 512,
+			"Height" : 512,
+			"Format" : "Depth",
+			"Parameters" :
+			{		
+				"MinFilter" : "Nearest",
+				"MaxFilter" : "Nearest",
+				"MaxLodLevel" : 0
+			}
+		},
+
+		{
+			"Type" : "nap::Texture2D",
+			"mID" : "CompositionTextureB",
+			"Width" : 512,
+			"Height" : 512,
+			"Format" : "RGBA8",
+			"Usage" : "DynamicRead",
+			"Parameters" :
+			{		
+				"MinFilter" : "Nearest",
+				"MaxFilter" : "Nearest",
+				"MaxLodLevel" : 0
+			}
+		},
+		
+		{
+			"Type" : "nap::Texture2D",
+			"mID" : "CompositionDepthTextureB",
+			"Width" : 512,
+			"Height" : 512,
+			"Format" : "Depth",
+			"Parameters" :
+			{		
+				"MinFilter" : "Nearest",
+				"MaxFilter" : "Nearest",
+				"MaxLodLevel" : 0
+			}
+		},
+
+		{
+			"Type" : "nap::RenderTarget",
+			"mID": "CompositionRenderTargetA",
+			"mColorTexture": "CompositionTextureA",
+			"mDepthTexture": "CompositionDepthTextureA",
+			"mClearColor" : 
+			{
+				"x" : 1.0,
+				"y" : 1.0,
+				"z" : 1.0,
+				"w" : 1.0
+			}
+		},
+		
+		{
+			"Type" : "nap::RenderTarget",
+			"mID": "CompositionRenderTargetB",
+			"mColorTexture": "CompositionTextureB",
+			"mDepthTexture": "CompositionDepthTextureB",
+			"mClearColor" : 
+			{
+				"x" : 1.0,
+				"y" : 1.0,
+				"z" : 1.0,
+				"w" : 1.0
+			}
+		},
+
+		{
 			"Type" : "nap::PlaneMesh",
 			"mID": "PlaneMesh"
 		},
@@ -456,17 +571,11 @@
 					"Entity" : "DefaultInputRouterEntity"
 				},
 				{
-					"Entity" : "ModelsEntity"
+					"Entity" : "DisplayEntity"
 				},
 				{
-					"Entity" : "KalvertorenEntity"
-				},
-				{
-					"Entity" : "HeiligewegEntity"
-				},
-				{
-					"Entity" : "SingelEntity"
-				},
+					"Entity" : "LedEntity"
+				}, 
 				{
 					"Entity" : "VideoEntity"
 				},
@@ -495,7 +604,7 @@
 
 		{
 			"Type" : "nap::Entity",
-			"mID" : "ModelsEntity",
+			"mID" : "DisplayEntity",
 			"Components" :
 			[
 				{
@@ -567,9 +676,34 @@
 
 		{
 			"Type" : "nap::Entity",
+			"mID" : "LedEntity",
+			"Children" :
+			[
+				"KalvertorenEntity",
+				"SingelEntity",
+				"HeiligewegEntity"
+			]
+		},
+
+		{
+			"Type" : "nap::Entity",
 			"mID": "KalvertorenEntity",
 			"Components" : 
 			[
+				{
+					"Type" : "nap::SelectColorMethodComponent",
+					"mID" : "ColorMethodSelectorKalver"
+				},
+				{
+					"Type" : "nap::ApplyBBColorComponent",
+					"Mesh" : "KalverMesh",
+					"Selector" : "./ColorMethodSelectorKalver"
+				},
+				{
+					"Type" : "nap::ApplyTracerColorComponent",
+					"Mesh" : "KalverMesh",
+					"Selector" : "./ColorMethodSelectorKalver"
+				},
 				{
 					"Type" : "nap::MeshToArtnetComponent",
 					"Mesh" : "KalverMesh",
@@ -591,6 +725,20 @@
 			"Components" : 
 			[
 				{
+					"Type" : "nap::SelectColorMethodComponent",
+					"mID" : "ColorMethodSelectorHeiligeweg"
+				},
+				{
+					"Type" : "nap::ApplyBBColorComponent",
+					"Mesh" : "HeiligewegMesh",
+					"Selector" : "./ColorMethodSelectorHeiligeweg"
+				},
+				{
+					"Type" : "nap::ApplyTracerColorComponent",
+					"Mesh" : "HeiligewegMesh",
+					"Selector" : "./ColorMethodSelectorHeiligeweg"
+				},
+				{
 					"Type" : "nap::MeshToArtnetComponent",
 					"Mesh" : "HeiligewegMesh",
 					"Controllers" :
@@ -608,6 +756,20 @@
 			"mID": "SingelEntity",
 			"Components" : 
 			[
+				{
+					"Type" : "nap::SelectColorMethodComponent",
+					"mID" : "ColorMethodSelectorSingel"
+				},
+				{
+					"Type" : "nap::ApplyBBColorComponent",
+					"Mesh" : "SingelMesh",
+					"Selector" : "./ColorMethodSelectorSingel"
+				},
+				{
+					"Type" : "nap::ApplyTracerColorComponent",
+					"Mesh" : "SingelMesh",
+					"Selector" : "./ColorMethodSelectorSingel"
+				},
 				{
 					"Type" : "nap::MeshToArtnetComponent",
 					"Mesh" : "SingelMesh",
@@ -719,7 +881,7 @@
 				},
 				{
 					"Type" : "nap::CameraController",
-					"LookAtTarget" : "ModelsEntity"
+					"LookAtTarget" : "DisplayEntity"
 				},			
 				{
 					"Type" : "nap::FirstPersonController",

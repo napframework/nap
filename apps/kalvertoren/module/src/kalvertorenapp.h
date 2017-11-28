@@ -64,16 +64,6 @@ namespace nap
 		virtual void inputMessageReceived(InputEventPtr inputEvent) override;
 
 		/**
-		 *	Uses the bounding box to color the vertices
-		 */
-		void colorBasedOnBounds(ArtnetMeshFromFile& mesh);
-
-		/**
-		 *	Colors the vertices based on the active channel
-		 */
-		void colorBasedOnChannel(ArtnetMeshFromFile& mesh, double deltaTime, int id);
-
-		/**
 		 *	Applies the rendered video texture to the vertices as color
 		 */
 		void applyVideoTexture(ArtnetMeshFromFile& mesh);
@@ -93,26 +83,25 @@ namespace nap
 
 		nap::ObjectPtr<nap::RenderWindow>				renderWindow;
 		nap::ObjectPtr<nap::RenderTarget>				videoTextureTarget;
-		nap::ObjectPtr<nap::EntityInstance>				kalvertorenEntity = nullptr;
+		nap::ObjectPtr<nap::EntityInstance>				ledEntity = nullptr;
 		nap::ObjectPtr<nap::EntityInstance>				sceneCameraEntity = nullptr;
 		nap::ObjectPtr<nap::EntityInstance>				videoCameraEntity = nullptr;
 		nap::ObjectPtr<nap::EntityInstance>				defaultInputRouter = nullptr;
 		nap::ObjectPtr<nap::EntityInstance>				videoEntity = nullptr;
-		nap::ObjectPtr<nap::Video>						videoResource;
+		nap::ObjectPtr<nap::Video>						videoResource = nullptr;
 		nap::ObjectPtr<nap::EntityInstance>				lightEntity = nullptr;
 		nap::ObjectPtr<nap::Material>					frameMaterial = nullptr;
 		nap::ObjectPtr<nap::Material>					vertexMaterial = nullptr;
-		nap::ObjectPtr<nap::EntityInstance>				modelsEntity = nullptr;
+		nap::ObjectPtr<nap::EntityInstance>				displayEntity = nullptr;
 
 		// video data
 		opengl::Bitmap									mVideoBitmap;
-		int												mCurrentSelection = 0;
-		int												mDisplayMode = 0;
-		double											mChannelTime = 0.0f;
-		float											mChannelSpeed = 1.0f;
-		int												mCurrentChannel = 0;
-		std::array<int, 3>								mCurrentChannels = {0,0,0};
+
+		// GUI
+		int												mMeshSelection = 0;
+		int												mPaintMode = 0;
 		int												mSelectChannel = 0;
-		bool											mManualSelect = false;
+		float											mChannelSpeed = 1.0f;
+		bool											mFirst = true;
 	};
 }

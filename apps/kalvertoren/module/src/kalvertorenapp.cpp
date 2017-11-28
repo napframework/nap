@@ -1,6 +1,9 @@
 // Local Includes
 #include "kalvertorenapp.h"
 #include "selectledmeshcomponent.h"
+#include "selectcolormethodcomponent.h"
+#include "applytracercolorcomponent.h"
+#include "applybbcolorcomponent.h"
 
 // External Includes
 #include <mathutils.h>
@@ -38,8 +41,8 @@ namespace nap
 		// All of our entities
 		ObjectPtr<Scene> scene = resourceManager->findObject<Scene>("Scene");
 
-		kalvertorenEntity = scene->findEntity("KalvertorenEntity");
-		modelsEntity = scene->findEntity("ModelsEntity");
+		ledEntity = scene->findEntity("LedEntity");
+		displayEntity = scene->findEntity("DisplayEntity");
 		sceneCameraEntity = scene->findEntity("SceneCameraEntity");
 		videoCameraEntity = scene->findEntity("VideoCameraEntity");
 		defaultInputRouter = scene->findEntity("DefaultInputRouterEntity");
@@ -54,12 +57,8 @@ namespace nap
 		videoResource = resourceManager->findObject<nap::Video>("Video1");
 		videoResource->play();
 
-		SelectLedMeshComponentInstance& selector = modelsEntity->getComponent<SelectLedMeshComponentInstance>();
-		for (auto& mesh : selector.getLedMeshes())
-		{
-			colorBasedOnBounds(*(mesh->mTriangleMesh));
-		}
-		mCurrentSelection = selector.getIndex();
+		SelectLedMeshComponentInstance& selector = displayEntity->getComponent<SelectLedMeshComponentInstance>();
+		mMeshSelection = selector.getIndex();
 
 		// Set render states
 		nap::RenderState& render_state = renderService->getRenderState();
@@ -92,41 +91,6 @@ namespace nap
 
 		// Update our gui
 		updateGui();
-
-		// Update vertex colors
-		SelectLedMeshComponentInstance& selector = modelsEntity->getComponent<SelectLedMeshComponentInstance>();
-		switch (mDisplayMode)
-		{
-			case 0:
-			{
-				for (auto& mesh : selector.getLedMeshes())
-				{
-					colorBasedOnBounds(*(mesh->mTriangleMesh));
-				}
-				break;
-			}
-			case 1:
-			{
-				int i = 0;
-				for (auto& mesh : selector.getLedMeshes())
-				{
-					colorBasedOnChannel(*(mesh->mTriangleMesh), deltaTime, i);
-					i++;
-				}
-				break;
-			}
-			case 2:
-			{
-				for (auto& mesh : selector.getLedMeshes())
-				{
-					if (mVideoBitmap.hasData())
-					{
-						applyVideoTexture(*(mesh->mTriangleMesh));
-					}
-				}
-				break;
-			}
-		}
 	}
 
 
@@ -163,7 +127,7 @@ namespace nap
 
 			// Render output texture to plane
 			std::vector<nap::RenderableComponentInstance*> components_to_render;
-			modelsEntity->getComponentsOfType<nap::RenderableComponentInstance>(components_to_render);
+			displayEntity->getComponentsOfType<nap::RenderableComponentInstance>(components_to_render);
 
 			opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(renderWindow->getWindow()->getBackbuffer());
 			renderService->clearRenderTarget(backbuffer);
@@ -212,104 +176,6 @@ namespace nap
 
 		// Add event to input service for further processing
 		inputService->addEvent(std::move(inputEvent));
-	}
-
-
-	void KalvertorenApp::colorBasedOnBounds(ArtnetMeshFromFile& mesh)
-	{
-		const math::Box& box = mesh.getBoundingBox();
-
-		// Get attributes necessary to color based on bounds
-		nap::VertexAttribute<glm::vec4>& color_attr = mesh.getColorAttribute();
-		nap::VertexAttribute<glm::vec3>& position_attr = mesh.getPositionAttribute();
-		
-		int triangle_count = getTriangleCount(mesh.getMeshInstance());
-
-		nap::TriangleDataPointer<glm::vec4> tri_color_data;
-		nap::TriangleDataPointer<glm::vec3> tri_posit_data;
-
-		for (int triangle=0; triangle < triangle_count; triangle++)
-		{
-			// Get current cd values
-			getTriangleValues(mesh.getMeshInstance(), triangle, color_attr, tri_color_data);
-
-			// Get current position values
-			getTriangleValues(mesh.getMeshInstance(), triangle, position_attr, tri_posit_data);
-
-			// Get avg position value
-			glm::vec3 avg_pos(0.0f,0.0f,0.0f);
-			for(auto& pos : tri_posit_data)
-			{
-				avg_pos += *pos;
-			}
-			avg_pos /= 3;
-
-			float r = math::fit<float>(avg_pos.x, box.getMin().x, box.getMax().x, 0.0f, 1.0f);
-			float g = math::fit<float>(avg_pos.y, box.getMin().y, box.getMax().y, 0.0f, 1.0f);
-			float b = math::fit<float>(avg_pos.z, box.getMin().z, box.getMax().z, 0.0f, 1.0f);
-
-			// Set vertex colors
-			for (auto& col : tri_color_data)
-			{
-				col->r = pow(r,2.0);
-				col->g = pow(g,2.0);
-				col->b = pow(b,2.0);
-			}
-		}
-
-		nap::utility::ErrorState error;
-		if (!mesh.getMeshInstance().update(error))
-			assert(false);
-	}
-
-
-	void KalvertorenApp::colorBasedOnChannel(ArtnetMeshFromFile& mesh, double deltaTime, int id)
-	{
-		// Increment time
-		mChannelTime += (deltaTime*mChannelSpeed);
-		
-		// Get channel, if manual selection is turned on use the actual selected channel, otherwise time based value
-		int selected_channel = mManualSelect ? mCurrentChannel : static_cast<int>(mChannelTime) % 512;
-
-		// This is the channel we want to compare against, makes sure that the we take
-		// in to account the offset of channels associated with a mesh, so:
-		// no offset means starting at 0 where 1 2 and 3 are considered to be part of the
-		// same triangle. With an offset of 1, 2 3 and 4 are considered to be part of the
-		// same triangle. 
-		mCurrentChannels[id] = selected_channel - ((selected_channel - mesh.mChannelOffset) % 4);
-
-		// Color attribute we use to sample
-		nap::VertexAttribute<glm::vec4>& color_attr = mesh.getColorAttribute();
-		nap::VertexAttribute<int>& channel_attr = mesh.getChannelAttribute();
-
-		// Get amount of mesh triangles
-		int tri_count = getTriangleCount(mesh.getMeshInstance());
-
-		std::vector<glm::vec4> color_data(color_attr.getCount(), { 0.0f,0.0f,0.0f,0.0f });
-		color_attr.setData(color_data);
-
-		// Find the triangle that has the channel attribute
-		TriangleDataPointer<int> tri_channel;
-		TriangleDataPointer<glm::vec4> tri_color;
-		for (int i = 0; i < tri_count; i++)
-		{
-			getTriangleValues<int>(mesh.getMeshInstance(), i, channel_attr, tri_channel);
-			int channel_number = *(tri_channel[0]);
-
-			if (channel_number == mCurrentChannels[id])
-			{
-				getTriangleValues<glm::vec4>(mesh.getMeshInstance(), i, color_attr, tri_color);
-				*(tri_color[0]) = { 1.0f, 1.0f, 1.0f, 1.0f };
-				*(tri_color[1]) = { 1.0f, 1.0f, 1.0f, 1.0f };
-				*(tri_color[2]) = { 1.0f, 1.0f, 1.0f, 1.0f };
-			}
-		}
-
-		nap::utility::ErrorState error;
-		if (!mesh.getMeshInstance().update(error))
-		{
-			assert(false);
-		}
 	}
 
 
@@ -372,41 +238,86 @@ namespace nap
 
 	void KalvertorenApp::updateGui()
 	{
-		// Gui
-		SelectLedMeshComponentInstance& selector = modelsEntity->getComponent<SelectLedMeshComponentInstance>();
-		ImGui::Begin("Settings");
-		if (ImGui::Button("Reset Walker"))
+		// Get all the color selection components
+		std::vector<SelectColorMethodComponentInstance*> color_methods;
+		std::vector<ApplyTracerColorComponentInstance*>  tracer_painters;
+
+		for (auto& entity : ledEntity->getChildren())
 		{
-			mChannelTime = 0.0f;
-		}
-		if (ImGui::Combo("Mode", &mDisplayMode, "Bounding Box\0Channel Walker\0Video\0\0"))
-		{
-			mChannelTime = 0.0f;
-		}
-		if (ImGui::SliderInt("Mesh Selection", &mCurrentSelection, 0, selector.getCount() - 1))
-		{
-			selector.select(mCurrentSelection);
-		}
-		ImGui::SliderFloat("Video Speed", &(videoResource->mSpeed), 0.0f, 20.0f);
-		if (ImGui::SliderFloat("Channel Speed", &(mChannelSpeed), 0.0f, 20.0f))
-		{
-			mManualSelect = false;
-		}
-		if (ImGui::InputInt("Select Channel", &mSelectChannel, 1))
-		{
-			mCurrentChannel = nap::math::min<int>(mSelectChannel, 511);
-			mManualSelect = true;
+			SelectColorMethodComponentInstance* color_method = &(entity->getComponent<SelectColorMethodComponentInstance>());
+			color_methods.emplace_back(color_method);
+
+			ApplyTracerColorComponentInstance* tracer_painter = &(entity->getComponent<ApplyTracerColorComponentInstance>());
+			tracer_painters.emplace_back(tracer_painter);
 		}
 
-		int id = 0;
-		for(auto& i : mCurrentChannels)
+		// Gui
+		SelectLedMeshComponentInstance& selector = displayEntity->getComponent<SelectLedMeshComponentInstance>();
+		ImGui::Begin("Settings");
+		
+		// Resets all the tracers
+		if (ImGui::Button("Reset Walker"))
+		{
+			for (auto& tracer : tracer_painters)
+			{
+				tracer->reset();
+			}
+		}
+
+		// Changes the mesh paint mode
+		if (ImGui::Combo("Mode", &mPaintMode, "Channel Walker\0Bounding Box\0\0") || mFirst)
+		{
+			for (auto& color_method : color_methods)
+			{
+				switch (mPaintMode)
+				{
+				case 0:
+					color_method->select(RTTI_OF(nap::ApplyTracerColorComponentInstance));
+					break;
+				case 1:
+					color_method->select(RTTI_OF(nap::ApplyBBColorComponentInstance));
+					break;
+				default:
+					assert(false);
+					break;
+				}
+			}
+			mFirst = false;
+		}
+
+		// Changes the display mesh
+		if (ImGui::SliderInt("Mesh Selection", &mMeshSelection, 0, selector.getCount() - 1))
+		{
+			selector.select(mMeshSelection);
+		}
+		
+		// Change tracer walk speed
+		if (ImGui::SliderFloat("Channel Speed", &(mChannelSpeed), 0.0f, 20.0f))
+		{
+			for (auto& tracer : tracer_painters)
+			{
+				tracer->setSpeed(mChannelSpeed);
+			}
+		}
+		
+		// Allows the user to select a channel to display on the tracer
+		if (ImGui::InputInt("Select Channel", &mSelectChannel, 1))
+		{
+			for (auto& tracer : tracer_painters)
+			{
+				tracer->selectChannel(mSelectChannel);
+			}
+		}
+
+		// Show some additional info
+		for(int i = 0; i<selector.getLedMeshes().size(); i++)
 		{
 			std::vector<std::string> parts;
-			utility::splitString(selector.getLedMeshes()[id]->mTriangleMesh->mPath, '/', parts);
+			utility::splitString(selector.getLedMeshes()[i]->mTriangleMesh->mPath, '/', parts);
 			
 			ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), parts.back().c_str());
 			ImGui::Text(utility::stringFormat("Channel: %d", i).c_str());
-			const std::unordered_set<ArtNetController::Address>& addresses = selector.getLedMeshes()[id]->mTriangleMesh->getAddresses();
+			const std::unordered_set<ArtNetController::Address>& addresses = selector.getLedMeshes()[i]->mTriangleMesh->getAddresses();
 			
 			std::string universes = "Addresses:";
 			for (auto& address : addresses)
@@ -417,7 +328,6 @@ namespace nap
 			}
 			
 			ImGui::Text(universes.c_str());
-			id++;
 		}
 		ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),"%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::End();

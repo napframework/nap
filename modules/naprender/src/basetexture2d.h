@@ -58,6 +58,12 @@ namespace nap
         using rtti::RTTIObject::init;
 
 		/**
+		 * Initializes opengl texture using the associated parameters and @settings.
+		 * @param settings the texture specific settings associated with this texture
+		 */
+		void init(opengl::Texture2DSettings& settings);
+
+		/**
 		 * @return OpenGL Texture2D.
 		 */
 		const opengl::Texture2D& getTexture() const { return mTexture; }
@@ -84,12 +90,6 @@ namespace nap
 
 		nap::TextureParameters		mParameters;							// RTTI texture parameters
 		opengl::ETextureUsage		mUsage = opengl::ETextureUsage::Static;	// The usage of this texture
-
-	protected:
-		/**
-		* Initializes opengl texture using the parameters from RTTI and @settings.
-		*/
-		void init(opengl::Texture2DSettings& settings);
 
 	private:
 		opengl::Texture2D			mTexture;			// Internal opengl texture

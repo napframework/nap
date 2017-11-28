@@ -29,7 +29,6 @@ namespace nap
 	}
 
 
-
 	bool SelectLedMeshComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// Copy our meshes
@@ -61,7 +60,6 @@ namespace nap
 	}
 
 
-
 	void SelectLedMeshComponentInstance::select(int index)
 	{
 		assert(mLedMeshes.size() > 0);
@@ -69,5 +67,4 @@ namespace nap
 		mTriangleRenderableMeshComponent->setMesh(mDrawableTriangleMeshes[mIndex]);
 		mFrameRenderableMeshComponent->setMesh(mDrawableFrameMeshes[mIndex]);
 	}
-
 }
