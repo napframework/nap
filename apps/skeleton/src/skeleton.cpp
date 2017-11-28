@@ -1,4 +1,5 @@
 #include <utility/fileutils.h>
+#include <nap/logger.h>
 #include "skeleton.h"
 
 namespace nap {

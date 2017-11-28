@@ -4,11 +4,8 @@
 #include "core.h"
 #include "rttiobjectgraphitem.h"
 #include <utility/fileutils.h>
-#include <utility/stringutils.h>
 #include <rtti/rttiutilities.h>
 #include <rtti/jsonreader.h>
-#include <rtti/pythonmodule.h>
-#include <nap/core.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ResourceManager)
 	RTTI_CONSTRUCTOR(nap::Core&)
