@@ -60,7 +60,7 @@ def update_project(project_name, build_type):
         call(project_path, ['cmake', '-H.','-B%s' % BUILD_DIR,'-G', 'Visual Studio 14 2015 Win64', '-DPYBIND11_PYTHON_VERSION=3.5'])
 
 if __name__ == '__main__':
-    # TODO update, use option parser or similar
+    # TODO update to use argparse
 
     if len(sys.argv) < 2:
         if sys.platform in ["linux", "linux2"]:
