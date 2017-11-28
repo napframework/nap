@@ -16,6 +16,7 @@
 // local
 #include <generic/napgeneric.h>
 #include <utility/fileutils.h>
+#include <nap/logger.h>
 
 using namespace nap::rtti;
 using namespace nap::utility;

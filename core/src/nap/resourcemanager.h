@@ -7,7 +7,6 @@
 #include "directorywatcher.h"
 #include "configure.h"
 #include "signalslot.h"
-#include "logger.h"
 
 // External Includes
 #include <rtti/unresolvedpointer.h>

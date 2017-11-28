@@ -2,9 +2,9 @@
 #include "appcontext.h"
 #include "napkinglobals.h"
 #include <QtCore/QDir>
-#include <QtCore/QFile>
 #include <QtCore/QSettings>
 #include <QtCore/QTextStream>
+#include <nap/logger.h>
 
 using namespace napkin;
 
