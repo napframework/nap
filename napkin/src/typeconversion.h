@@ -1,9 +1,9 @@
 #pragma once
 
 #include <QVariant>
-#include <rttr/type.h>
 #include <mutex>
 #include <rtti/typeinfo.h>
+#include <rttr/type.h>
 
 /**
  * This wrapper allows rttr types to be used in QVariant
@@ -11,20 +11,18 @@
 class TypeWrapper
 {
 public:
-    TypeWrapper()
-    {}
+	TypeWrapper() {}
 
-    TypeWrapper(rttr::type* t) : type(t)
-    {}
+	TypeWrapper(rttr::type* t) : type(t) {}
 
-    // The wrapped type.
-    rttr::type* type;
+	// The wrapped type.
+	rttr::type* type;
 };
 
 Q_DECLARE_METATYPE(TypeWrapper)
 
 /**
- * Attempt to convert an enum string value into its integer counterpart. 
+ * Attempt to convert an enum string value into its integer counterpart.
  * @param enumer The enumeration to use while converting
  * @param name The name of the enum value
  * @param ok Will be set to true if all was dandy, false if it failed.
@@ -33,7 +31,7 @@ Q_DECLARE_METATYPE(TypeWrapper)
 uint64_t enumStringToIndex(rttr::enumeration enumer, const std::string& name, bool* ok);
 
 /**
- * Convert an integer enum value into a QString.  
+ * Convert an integer enum value into a QString.
  * @param enumer The enumation to use while converting.
  * @param index The enum value as integer.
  * @return The enum value as a QString.
@@ -41,7 +39,7 @@ uint64_t enumStringToIndex(rttr::enumeration enumer, const std::string& name, bo
 QString enumIndexToQString(rttr::enumeration enumer, int index);
 
 /**
- * Convert an integer enum value into an std::string.  
+ * Convert an integer enum value into an std::string.
  * @param enumer The enumation to use while converting.
  * @param index The enum value as integer.
  * @return The enum value as a std::string.
@@ -49,7 +47,7 @@ QString enumIndexToQString(rttr::enumeration enumer, int index);
 std::string enumIndexToStdString(rttr::enumeration enumer, int index);
 
 /**
- * Convert an rttr::variant into a QVariant. 
+ * Convert an rttr::variant into a QVariant.
  * @param type The type of the value.
  * @param value The value to convert.
  * @param outValue The resulting QVariant

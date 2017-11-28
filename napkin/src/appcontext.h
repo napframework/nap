@@ -34,9 +34,7 @@ public:
 
     AppContext(AppContext const&) = delete;
     void operator=(AppContext const&) = delete;
-    ~AppContext() override {
-
-    }
+    ~AppContext() override;
 
     /**
      * @return The single nap::Core instance held by this AppContext

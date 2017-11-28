@@ -1,14 +1,14 @@
 #pragma once
 
-#include <QTreeView>
-#include <QWidget>
-#include <QVBoxLayout>
-#include <QLineEdit>
-#include <QAction>
-#include <QStandardItem>
-#include <QItemSelectionModel>
 #include <QAbstractItemView>
+#include <QAction>
+#include <QItemSelectionModel>
+#include <QLineEdit>
 #include <QMenu>
+#include <QStandardItem>
+#include <QTreeView>
+#include <QVBoxLayout>
+#include <QWidget>
 #include <functional>
 
 #include "leaffilterproxymodel.h"
@@ -23,86 +23,81 @@ class FilterTreeView : public QWidget
 {
 
 public:
-    FilterTreeView();
+	FilterTreeView();
 
-    /**
-     * @param model
-     */
-    void setModel(QStandardItemModel* model);
+	/**
+	 * @param model
+	 */
+	void setModel(QStandardItemModel* model);
 
-    /**
-     * @return The model set using setModel()
-     */
-    QStandardItemModel* model() const;
+	/**
+	 * @return The model set using setModel()
+	 */
+	QStandardItemModel* model() const;
 
-    /**
-     * @return The sort/filter model that sits between the user model and the view.
-     */
-    const QSortFilterProxyModel& filterModel() const
-    { return sortFilter; }
+	/**
+	 * @return The sort/filter model that sits between the user model and the view.
+	 */
+	const QSortFilterProxyModel& filterModel() const { return sortFilter; }
 
-    /**
-     * @return The actual QTreeView used by this widget.
-     */
-    QTreeView& tree()
-    { return treeView; }
+	/**
+	 * @return The actual QTreeView used by this widget.
+	 */
+	QTreeView& tree() { return treeView; }
 
-    /**
-     * Select and item and make sure it's visible on screen by scrolling if needed.
-     * @param item
-     */
-    void selectAndReveal(QStandardItem* item);
+	/**
+	 * Select and item and make sure it's visible on screen by scrolling if needed.
+	 * @param item
+	 */
+	void selectAndReveal(QStandardItem* item);
 
-    /**
-     * @return The first currently selected item.
-     */
-    QStandardItem* selectedItem();
+	/**
+	 * @return The first currently selected item.
+	 */
+	QStandardItem* selectedItem();
 
-    /**
-     * @return The currently selected items in the view.
-     */
-    QList<QStandardItem*> selectedItems() const;
+	/**
+	 * @return The currently selected items in the view.
+	 */
+	QList<QStandardItem*> selectedItems() const;
 
-    /**
-     * @return The selection model used by the tree view.
-     */
-    QItemSelectionModel* selectionModel() const
-    { return treeView.selectionModel(); }
+	/**
+	 * @return The selection model used by the tree view.
+	 */
+	QItemSelectionModel* selectionModel() const { return treeView.selectionModel(); }
 
-    /**
-     * @return The currently selected indexes from the model set by setModel().
-     */
-    QList<QModelIndex> selectedIndexes() const;
+	/**
+	 * @return The currently selected indexes from the model set by setModel().
+	 */
+	QList<QModelIndex> selectedIndexes() const;
 
-    /**
-     * When the menu is about to be shown, invoke the provided method to allow a client to insert items into it.
-     * @param fn
-     */
-    void setMenuHook(std::function<void(QMenu&)> fn)
-    { mMenuHookFn = fn; }
+	/**
+	 * When the menu is about to be shown, invoke the provided method to allow a client to insert items into it.
+	 * @param fn
+	 */
+	void setMenuHook(std::function<void(QMenu&)> fn) { mMenuHookFn = fn; }
 
 protected:
-    void onFilterChanged(const QString& text);
+	void onFilterChanged(const QString& text);
 
-    void onExpandSelected();
+	void onExpandSelected();
 
-    void onCollapseSelected();
+	void onCollapseSelected();
 
-    /**
-     * @see QWidget::customContextMenuRequested
-     */
-    void onCustomContextMenuRequested(const QPoint& pos);
+	/**
+	 * @see QWidget::customContextMenuRequested
+	 */
+	void onCustomContextMenuRequested(const QPoint& pos);
 
-    static void expandChildren(QTreeView* view, const QModelIndex& idx, bool expanded);
+	static void expandChildren(QTreeView* view, const QModelIndex& idx, bool expanded);
 
 private:
-    QVBoxLayout layout;
-    QLineEdit leFilter;
-    QTreeView treeView;
-    LeafFilterProxyModel sortFilter;
-    std::function<void(QMenu&)> mMenuHookFn = nullptr;
+	QVBoxLayout layout;
+	QLineEdit leFilter;
+	QTreeView treeView;
+	LeafFilterProxyModel sortFilter;
+	std::function<void(QMenu&)> mMenuHookFn = nullptr;
 
-    QAction actionExpandAll;
-    QAction actionCollapseAll;
-
+	QAction actionExpandAll;
+	QAction actionCollapseAll;
 };

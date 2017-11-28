@@ -1,22 +1,17 @@
 #pragma once
 
-#include <QWidget>
-#include <QUndoView>
-#include <QtWidgets/QVBoxLayout>
 #include "appcontext.h"
+#include <QUndoView>
+#include <QWidget>
+#include <QtWidgets/QVBoxLayout>
 
-class HistoryPanel : public QWidget {
-Q_OBJECT
+class HistoryPanel : public QWidget
+{
+	Q_OBJECT
 public:
-    HistoryPanel() : QWidget()
-    {
-        mUndoView.setStack(&AppContext::get().undoStack());
-        setLayout(&mLayout);
-        layout()->setContentsMargins(0, 0, 0, 0);
-        mLayout.addWidget(&mUndoView);
-    }
+	HistoryPanel();
 
 private:
-    QVBoxLayout mLayout;
-    QUndoView mUndoView;
+	QVBoxLayout mLayout;
+	QUndoView mUndoView;
 };

@@ -2,33 +2,30 @@
 
 ThemeSelectionMenu::ThemeSelectionMenu() : QMenu("Theme")
 {
-    refresh();
-    connect(&AppContext::get().themeManager(), &ThemeManager::themeChanged,
-            this, &ThemeSelectionMenu::onThemeChanged);
+	refresh();
+	connect(&AppContext::get().themeManager(), &ThemeManager::themeChanged, this, &ThemeSelectionMenu::onThemeChanged);
 }
 
 void ThemeSelectionMenu::refresh()
 {
-    clear();
-    auto defaultThemeAction = new SetThemeAction(nullptr);
-    addAction(defaultThemeAction);
+	clear();
+	auto defaultThemeAction = new SetThemeAction(nullptr);
+	addAction(defaultThemeAction);
 
-    for (auto theme : AppContext::get().themeManager().availableThemes()) {
-        auto action = new SetThemeAction(theme);
-        addAction(action);
-    }
+	for (auto theme : AppContext::get().themeManager().availableThemes())
+	{
+		auto action = new SetThemeAction(theme);
+		addAction(action);
+	}
 
-    checkCurrentTheme();
+	checkCurrentTheme();
 }
 
-void ThemeSelectionMenu::onThemeChanged(const QString& theme)
-{
-    checkCurrentTheme();
-}
+void ThemeSelectionMenu::onThemeChanged(const QString& theme) { checkCurrentTheme(); }
 
 void ThemeSelectionMenu::checkCurrentTheme()
 {
-    const QString& theme = AppContext::get().themeManager().currentTheme();
-    for (auto action : actions())
-        action->setChecked(action->text() == theme);
+	const QString& theme = AppContext::get().themeManager().currentTheme();
+	for (auto action : actions())
+		action->setChecked(action->text() == theme);
 }

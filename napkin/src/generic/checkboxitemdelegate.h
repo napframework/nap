@@ -2,7 +2,7 @@
 
 #include <QItemDelegate>
 
-class CheckBoxItemDelegate : public QItemDelegate {
+class CheckBoxItemDelegate : public QItemDelegate
+{
 public:
-
 };

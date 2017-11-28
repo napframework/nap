@@ -1,18 +1,18 @@
 #pragma once
 
-#include <QMenu>
 #include "actions.h"
+#include <QMenu>
 
-class ThemeSelectionMenu : public QMenu {
-Q_OBJECT
+class ThemeSelectionMenu : public QMenu
+{
+	Q_OBJECT
 public:
-    ThemeSelectionMenu();
+	ThemeSelectionMenu();
 
-    void refresh();
+	void refresh();
 
 private:
-    void onThemeChanged(const QString& theme);
+	void onThemeChanged(const QString& theme);
 
-    void checkCurrentTheme();
-
+	void checkCurrentTheme();
 };
