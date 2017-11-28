@@ -1,34 +1,30 @@
 #pragma once
 
-
-// Qt's slots keyword overlaps with Python's
-
 #include <rtti/rtti.h>
 #include <rtti/rttiobject.h>
 
-#include <QWidget>
-#include <QVBoxLayout>
-#include <QStandardItemModel>
 #include "generic/filtertreeview.h"
+#include <QStandardItemModel>
+#include <QVBoxLayout>
+#include <QWidget>
 
-
-
-class TypeModel : public QStandardItemModel {
+class TypeModel : public QStandardItemModel
+{
 public:
-    TypeModel();
+	TypeModel();
 
 private:
-    void refresh();
-
+	void refresh();
 };
 
 
-class HierarchyPanel : public QWidget {
+class HierarchyPanel : public QWidget
+{
 public:
-    HierarchyPanel();
+	HierarchyPanel();
 
 private:
-    QVBoxLayout mLayout;
-    FilterTreeView mTreeView;
-    TypeModel mModel;
+	QVBoxLayout mLayout;
+	FilterTreeView mTreeView;
+	TypeModel mModel;
 };
