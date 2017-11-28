@@ -118,7 +118,7 @@ def package():
             call(WORKING_DIR, ['cmake', '-H.', '-B%s' % build_dir_for_type, '-DCMAKE_BUILD_TYPE=%s' % build_type])
 
             d = '%s/%s' % (WORKING_DIR, build_dir_for_type)
-                call(d, ['make', 'all', 'install', '-j%s' % cpu_count()])
+            call(d, ['make', 'all', 'install', '-j%s' % cpu_count()])
 
         # Create archive
         archive_to_linux_tar_xz()
