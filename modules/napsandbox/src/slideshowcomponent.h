@@ -13,7 +13,7 @@ namespace nap
 	/**
 	 * Resource for SlideShowComponent, holds static data from file.
 	 */
-	class SlideShowComponent : public Component
+    class NAPAPI SlideShowComponent : public Component
 	{
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(SlideShowComponent, SlideShowComponentInstance)
@@ -28,7 +28,7 @@ namespace nap
 	 * MaterialInstance properties.
 	 * It is assumed that any clipping that is required is done a different system, for instance, the layout system.
 	 */
-	class SlideShowComponentInstance : public ComponentInstance
+	class NAPAPI SlideShowComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 

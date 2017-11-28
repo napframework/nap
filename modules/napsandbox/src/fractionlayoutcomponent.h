@@ -45,7 +45,7 @@ namespace nap
 	/**
 	 * The Resource for the FractionLayoutComponent (i.e. what the user specifies in json)
 	 */
-	class FractionLayoutComponent : public Component
+	class NAPAPI FractionLayoutComponent : public Component
 	{
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(FractionLayoutComponent, FractionLayoutComponentInstance)
@@ -67,7 +67,7 @@ namespace nap
 	 * The FractionLayoutComponent (runtime instance). This component is used to position and size an entity, relative to its parent (i.e. in fractions)
 	 * It is assumed that an orthographic camera is used, with pixel-space coordinates
 	 */
-	class FractionLayoutComponentInstance : public ComponentInstance
+	class NAPAPI FractionLayoutComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 
