@@ -1,7 +1,7 @@
 project(mod_napsvg)
 
 # add all cpp files to SOURCES
-file(GLOB_RECURSE SOURCES src/ *.cpp *.h)
+file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 
 find_package(nanosvg REQUIRED)
 
