@@ -18,6 +18,8 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${NRENDER_INCLUDE_DIRS} src)
 # link with external libs
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY _USE_MATH_DEFINES)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
+
+set(DEPENDENT_NAP_MODULES mod_napmath mod_napscene)
 target_link_libraries(${PROJECT_NAME} nrender mod_napmath mod_napscene)
 
 if (WIN32)
@@ -35,4 +37,9 @@ if (WIN32)
     # Install for fbxconverter
     install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION tools/
     		CONFIGURATIONS Release)
+endif()
+
+# Set packaged Linux RPATH 
+if (UNIX AND NOT APPLE)
+	set_installed_linux_module_rpath_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME})
 endif()

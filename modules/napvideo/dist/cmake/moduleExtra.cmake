@@ -1,4 +1,4 @@
-find_package(FFMPEG REQUIRED)
+find_package(FFmpeg REQUIRED)
 
 if (WIN32)
     # Copy over DLLs post-build

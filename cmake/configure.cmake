@@ -334,7 +334,36 @@ macro(package_module)
         install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>
                                         LIBRARY DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>
                                         ARCHIVE DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>)
-    else()
+    elseif(APPLE)
         install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>)  
+    else()
+        install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION modules/${PROJECT_NAME}/lib/${CMAKE_BUILD_TYPE})
     endif()
+endmacro()
+
+# Set the packaged RPATH of a module for its dependent modules.
+# Currently Linux-only
+macro(set_installed_linux_module_rpath_for_dependent_modules DEPENDENT_NAP_MODULES TARGET_NAME)
+    set(NAP_ROOT_LOCATION_TO_ORIGIN "../../../..")
+    set_installed_linux_object_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${TARGET_NAME} ${NAP_ROOT_LOCATION_TO_ORIGIN})
+endmacro()
+
+# Set the packaged RPATH of a Linux binary object for its dependent modules
+macro(set_installed_linux_object_for_dependent_modules DEPENDENT_NAP_MODULES TARGET_NAME NAP_ROOT_LOCATION_TO_ORIGIN)
+    # Add our core lib path first
+    set(BUILT_RPATH "$ORIGIN/${NAP_ROOT_LOCATION_TO_ORIGIN}/lib/${CMAKE_BUILD_TYPE}")
+
+    # Iterate over each module and append to path
+    foreach(module ${DEPENDENT_NAP_MODULES})
+        # if (NOT BUILT_RPATH STREQUAL "")
+        #     set(BUILT_RPATH "${BUILT_RPATH}:")
+        # endif()
+
+        set(THIS_MODULE_PATH "$ORIGIN/${NAP_ROOT_LOCATION_TO_ORIGIN}/modules/${module}/lib/${CMAKE_BUILD_TYPE}")
+        # message("Adding ${module} as ${THIS_MODULE_PATH}")
+        set(BUILT_RPATH "${BUILT_RPATH}:${THIS_MODULE_PATH}")
+    endforeach(module)
+    # message("Built rpath: ${BUILT_RPATH}")
+    set_target_properties(${TARGET_NAME} PROPERTIES SKIP_BUILD_RPATH FALSE
+                                                    INSTALL_RPATH ${BUILT_RPATH})
 endmacro()
