@@ -1,6 +1,6 @@
 project(naprtti)
 
-file(GLOB_RECURSE SOURCES src/ *.cpp *.h)
+file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 filter_platform_specific_files(SOURCES)
 
 if (WIN32)

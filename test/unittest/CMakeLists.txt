@@ -4,7 +4,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include_directories(src)
-file(GLOB_RECURSE SOURCES src/ *.cpp *.h)
+file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Test)
