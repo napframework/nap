@@ -66,6 +66,13 @@ namespace nap
 		* @return The found component. Null if not found.
 		*/
 		ComponentInstance* findComponent(const std::string& type) const;
+        
+        /**
+         * Finds the first component with the specified ID.
+         * @param type The type name of the component to find.
+         * @return The found component. Null if not found.
+         */
+        ComponentInstance* findComponentByID(const std::string& mID) const;
 
 		/**
 		* Finds the first component of the specified type. 

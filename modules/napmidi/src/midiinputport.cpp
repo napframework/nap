@@ -5,20 +5,20 @@
 #include <nap/logger.h>
 
 RTTI_BEGIN_CLASS(nap::MidiInputPort)
-    RTTI_PROPERTY("Port", &nap::MidiInputPort::mPortName, nap::rtti::EPropertyMetaData::Required)
+    RTTI_PROPERTY("Ports", &nap::MidiInputPort::mPortNames, nap::rtti::EPropertyMetaData::Default)
     RTTI_PROPERTY("EnableDebugOutput", &nap::MidiInputPort::mDebugOutput, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
 {
     
-    
     void midiCallback(double deltatime, std::vector<unsigned char> *message, void *userData)
     {
         auto inputPort = static_cast<MidiInputPort*>(userData);
-        auto event = std::make_unique<MidiEvent>(*message, inputPort->getPortNumber());
+        auto portNames = inputPort->getPortNames();
+        auto event = std::make_unique<MidiEvent>(*message, inputPort->mID);
         if (inputPort->mDebugOutput)
-            nap::Logger::info("midi input on " + inputPort->mPortName + ": " + event->getText());
+            nap::Logger::info("midi input on " + portNames + ": " + event->toString());
         inputPort->receiveEvent(std::move(event));
     }
     
@@ -38,14 +38,42 @@ namespace nap
     bool MidiInputPort::init(utility::ErrorState& errorState)
     {
         try {
-            mPortNumber = mService->getInputPortNumber(mPortName);
-            if (mPortNumber < 0)
+            if (mPortNames.empty())
             {
-                errorState.fail("Midi input port not found: " + mPortName);
-                return false;
+                for (auto portNumber = 0; portNumber < mService->getInputPortCount(); ++portNumber)
+                {
+                    mPortNumbers.emplace_back(portNumber);
+                    mPortNames.emplace_back(mService->getInputPortName(portNumber));
+                }
             }
-            midiIn.openPort(mPortNumber);
-            midiIn.setCallback(&midiCallback, this);
+            else {
+                for (auto& portName : mPortNames)
+                {
+                    auto portNumber = mService->getInputPortNumber(portName);
+                    if (portNumber < 0)
+                    {
+                        errorState.fail("Midi input port not found: " + portName);
+                        return false;
+                    }
+                    mPortNumbers.emplace_back(portNumber);
+                }
+            }
+                
+            for (auto& portName : mPortNames)
+            {
+                auto portNumber = mService->getInputPortNumber(portName);
+                if (portNumber < 0)
+                {
+                    errorState.fail("Midi input port not found: " + portName);
+                    return false;
+                }
+                mPortNumbers.emplace_back(portNumber);
+                auto midiIn = std::make_unique<RtMidiIn>();
+                midiIn->openPort(portNumber);
+                midiIn->setCallback(&midiCallback, this);
+                midiIns.emplace_back(std::move(midiIn));
+            }
+            
             mService->registerInputPort(*this);
             return true;
         }
@@ -53,6 +81,20 @@ namespace nap
             errorState.fail(error.getMessage());
             return false;
         }
-    }    
+    }
+    
+    
+    std::string MidiInputPort::getPortNames() const
+    {
+        std::string result;
+        for (auto& portName : mPortNames)
+        {
+            result.append(portName);
+            if (portName != mPortNames.back())
+                result.append(", ");
+        }
+        return result;
+    }
+
     
 }

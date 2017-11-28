@@ -41,7 +41,7 @@ namespace nap
 			// Keep forwarding events until the queue runs out
 			while (!(events.empty()))
 			{
-				const OSCEvent& osc_event = *(events.front());
+				OSCEvent& osc_event = *(events.front());
 				for (const auto& input_comp : mInputs)
 				{
 					// Empty (no specified address) always receives the message
