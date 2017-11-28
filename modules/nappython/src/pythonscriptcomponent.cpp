@@ -39,12 +39,6 @@ namespace nap
 		if (!errorState.check(script_service->TryLoad(script_component->mPath, mScript, errorState), "Failed to load %s", script_component->mPath.c_str()))
 			return false;
         
-        // Add all sibling components as identifiers in the script
-        for (auto sibling : getEntityInstance()->getComponents())
-        {
-            mScript.attr(sibling->getComponent()->mID.c_str())  = sibling;
-        }
-        
         // Call ths script's init callback
         call("init", getEntityInstance());
 		

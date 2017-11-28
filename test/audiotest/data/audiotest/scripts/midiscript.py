@@ -1,6 +1,7 @@
 import nap
 import math
 
+
 def handleNoteOn(event):
 	if event.getVelocity() == 0:
 		return
@@ -19,7 +20,7 @@ def handleNoteOff(event):
 	oscB = graph.getObject("oscB")
 	oscB.getChannel(0).setAmplitude(0, 10)
 
-def handleCC(event):
+def handleCC(event): 
 	graph = audioComponent.getObject()
 	oscA = graph.getObject("oscA")
 	oscB = graph.getObject("oscB")
@@ -29,9 +30,10 @@ def handleCC(event):
 
 def init(e):
 	print("init")
-	controlChange.getMessageReceived().connect(handleCC)
-	noteOn.getMessageReceived().connect(handleNoteOn)
-	noteOff.getMessageReceived().connect(handleNoteOff)
+	e.findComponentByID("controlChange").getMessageReceived().connect(handleCC)
+	e.findComponentByID("noteOn").getMessageReceived().connect(handleNoteOn)
+	e.findComponentByID("noteOff").getMessageReceived().connect(handleNoteOff)
+	audioComponent = e.findComponentByID("audioComponent")
 
 def update(e, currentTime, deltaTime):
     pass
