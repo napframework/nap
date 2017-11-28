@@ -11,7 +11,7 @@ using namespace nap;
 using namespace nap::rtti;
 using namespace nap::utility;
 
-bool ResolveLinks(const OwnedObjectList& objects, const UnresolvedPointerList& unresolvedPointers)
+bool resolveLinks(const OwnedObjectList& objects, const UnresolvedPointerList& unresolvedPointers)
 {
     std::map<std::string, RTTIObject*> objects_by_id;
     for (auto& object : objects)
@@ -51,7 +51,7 @@ void loadAndSaveFile(const std::string& filename)
         return;
     }
 
-    if (!ResolveLinks(result.mReadObjects, result.mUnresolvedPointers)) {
+    if (!resolveLinks(result.mReadObjects, result.mUnresolvedPointers)) {
         nap::Logger::fatal("Failed to resolve links");
         return;
     }

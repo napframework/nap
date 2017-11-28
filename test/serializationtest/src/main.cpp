@@ -56,7 +56,7 @@ rtti::Variant createVariant(T value)
 	return ObjectPtr<T>(value);
 }
 
-bool ResolveLinks(const OwnedObjectList& objects, const UnresolvedPointerList& unresolvedPointers)
+bool resolveLinks(const OwnedObjectList& objects, const UnresolvedPointerList& unresolvedPointers)
 {
 	std::map<std::string, RTTIObject*> objects_by_id;
 	for (auto& object : objects)
@@ -183,7 +183,7 @@ int main(int argc, char* argv[])
 			return -1;
 
 		// Resolve links
-		if (!ResolveLinks(read_result.mReadObjects, read_result.mUnresolvedPointers))
+		if (!resolveLinks(read_result.mReadObjects, read_result.mUnresolvedPointers))
 			return -1;
 
 		// Sort read objects into id mapping
@@ -215,7 +215,7 @@ int main(int argc, char* argv[])
 			return -1;
 
 		// Resolve links
-		if (!ResolveLinks(read_result.mReadObjects, read_result.mUnresolvedPointers))
+		if (!resolveLinks(read_result.mReadObjects, read_result.mUnresolvedPointers))
 			return -1;
 
 		// Sort read objects into id mapping
