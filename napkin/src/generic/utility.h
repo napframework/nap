@@ -21,17 +21,17 @@ static qreal lerp(const qreal& a, const qreal& b, qreal p);
  * @param p The weight value [0-1]
  * @return The mixed color.
  */
-static QColor lerpCol(const QColor& a, const QColor& b, qreal p);
+QColor lerpCol(const QColor& a, const QColor& b, qreal p);
 
 /**
  * @return A dimmed foreground color based on the current QApplication style
  */
-static const QColor& softForeground();
+const QColor& softForeground();
 
 /**
  * @return A dimmed background color based on the current QApplication style
  */
-static const QColor& softBackground();
+const QColor& softBackground();
 
 /**
  * Recursively traverse the provided model and invoke the provided visitor for every item.
@@ -40,7 +40,7 @@ static const QColor& softBackground();
  * @param visitor The function to invoke on every item, return true if the traversal should continue
  * @return false if the the visitor has decided to stop traversal
  */
-static bool traverse(const QAbstractItemModel& model, std::function<bool(const QModelIndex&)> visitor,
+bool traverse(const QAbstractItemModel& model, std::function<bool(const QModelIndex&)> visitor,
                      QModelIndex parent = QModelIndex());
 
 /**
@@ -49,19 +49,19 @@ static bool traverse(const QAbstractItemModel& model, std::function<bool(const Q
  * @param condition The filter function that when it returns true, the traversal will stop and return the current index.
  * @return The model index representing the item to be found.
  */
-static QModelIndex findItemInModel(const QAbstractItemModel& model,
+QModelIndex findItemInModel(const QAbstractItemModel& model,
                                    std::function<bool(const QModelIndex& idx)> condition);
 
 
 /**
  * @return All nap component types in the rtti system
  */
-static std::vector<rttr::type> getComponentTypes();
+std::vector<rttr::type> getComponentTypes();
 
 /**
  * @return All nap resource types in the rtti system
  */
-static std::vector<rttr::type> getResourceTypes();
+std::vector<rttr::type> getResourceTypes();
 
 /**
  * @tparam QEnum The enum type to use
