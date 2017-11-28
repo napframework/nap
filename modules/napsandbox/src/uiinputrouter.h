@@ -14,7 +14,7 @@ namespace nap
 	/**
 	 * Implementation of InputRouter that knows how to route input events to the correct UI element, based on its screen-space position/size
 	 */
-	class UIInputRouter : public InputRouter
+	class NAPAPI UIInputRouter : public InputRouter
 	{
 	public:
 		/**
@@ -39,7 +39,7 @@ namespace nap
 	 * This component holds a pointer to the camera entity so that the instance can 
 	 * access the camera entity to initialize it's camera.
 	 */
-	class UIInputRouterComponent : public Component
+	class NAPAPI UIInputRouterComponent : public Component
 	{
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(UIInputRouterComponent, UIInputRouterComponentInstance)
@@ -52,7 +52,7 @@ namespace nap
 	 * Wrapper for a UIInputRouter. Retrieves the camera entity and it's camera component to initialize
 	 * the input router.
 	 */
-	class UIInputRouterComponentInstance : public ComponentInstance
+	class NAPAPI UIInputRouterComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 
