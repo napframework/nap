@@ -382,7 +382,6 @@ QVariant napkin::PointerValueItem::data(int role) const
 		nap::rtti::ResolvedRTTIPath resolvedPath;
 		assert(mPath.resolve(mObject, resolvedPath));
 		auto value = resolvedPath.getValue();
-
 		auto value_type = value.get_type();
 		auto wrapped_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
 		bool is_wrapper = wrapped_type != value_type;

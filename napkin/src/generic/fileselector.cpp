@@ -41,7 +41,7 @@ void napkin::FileSelector::onBrowseButtonClicked()
 {
 	QString dir = getFilename().isEmpty() ? "." : QFileInfo(getFilename()).path();
 
-	auto f = QFileDialog::getOpenFileName(this, "Select File", dir, mFileFilter);
+	QString f = QFileDialog::getOpenFileName(this, "Select File", dir, mFileFilter);
 	if (f.isEmpty())
 		return;
 

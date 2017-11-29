@@ -14,7 +14,7 @@ napkin::BaseWindow::BaseWindow()
 
 QDockWidget* napkin::BaseWindow::addDock(const QString& name, QWidget* widget, Qt::DockWidgetArea area)
 {
-	auto dock = new QDockWidget(this);
+	QDockWidget* dock = new QDockWidget(this);
 	dock->setObjectName(name);
 	dock->setWidget(widget);
 	dock->setWindowTitle(name);
@@ -22,7 +22,7 @@ QDockWidget* napkin::BaseWindow::addDock(const QString& name, QWidget* widget, Q
 	if (widget->objectName().isEmpty())
 		widget->setObjectName(QString("%1_Widget").arg(name));
 
-	auto action = mWindowMenu->addAction(name);
+	QAction* action = mWindowMenu->addAction(name);
 	action->setCheckable(true);
 	action->setChecked(true);
 	connect(action, &QAction::triggered, [dock, action]() { dock->setVisible(action->isChecked()); });
