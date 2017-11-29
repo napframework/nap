@@ -1,58 +1,141 @@
 #pragma once
 
+#include "nap/objectptr.h"
+#include "entity.h"
+
 namespace nap
 {
-	class Entity;
-	class EntityInstance;
-
-	/**
-	* EntityPtr is used to access EntityInstance object. Because EntityInstances are spawned at runtime, the file
-	* objects have no knowledge of instances. To make sure that we can point to EntityInstances, EntityPtr
-	* wraps both a pointer to an Entity and to an EntityInstance. From an RTTI perspective, EntityPtr acts
-	* like a pointer to another Entity, while at runtime, the pointer acts like a pointer to an EntityInstance.
-	*/
 	class EntityPtr
 	{
 	public:
 		EntityPtr() = default;
 
-		// Regular ptr Ctor
-		EntityPtr(Entity* ptr) :
-			mResource(ptr)
+		EntityPtr(Entity* entity) :
+			mResource(entity)
 		{
 		}
 
-		// Copy ctor
-		EntityPtr(const EntityPtr& other)
+		const std::string& getInstancePath() const { return mPath; }
+
+		/**
+		 * Convert the pointer to a string for serialization
+		 * @return The string representation of this object
+		 */
+		std::string toString() const
 		{
-			Assign(other);
+			return mPath;
 		}
 
-		// Move ctor
-		EntityPtr(EntityPtr&& other)
+		/**
+		 * Convert the full target ID as specified to an ID that can be resolved to an object
+		 *
+		 * @param targetID The target ID to translate
+		 * @return The translated ID
+		 */
+		static std::string translateTargetID(const std::string& targetID);
+
+		/**
+		 * Assign the target ID & object to this pointer. Used for pointer resolving by the ResourceManager, should not be called manually (is only public so that we can register it in RTTI)
+		 * @param targetID The ID of the target
+		 * @param targetObject The pointer to be assigned
+		 */
+		void assign(const std::string& targetID, rtti::RTTIObject& targetObject)
 		{
-			Assign(other);
-			other.mResource = nullptr;
-			other.mInstance = nullptr;
+			mPath = targetID;
+			mResource = rtti_cast<Entity>(&targetObject);
 		}
 
-		// Assignment operator
-		EntityPtr& operator=(const EntityPtr& other)
+		const Entity& operator*() const
 		{
-			Assign(other);
-			return *this;
+			assert(mResource != nullptr);
+			return *mResource;
 		}
 
-		// Move assignment operator
-		EntityPtr& operator=(EntityPtr&& other)
+		Entity& operator*()
 		{
-			Assign(other);
-			other.mResource = nullptr;
-			other.mInstance = nullptr;
-			return *this;
+			assert(mResource != nullptr);
+			return *mResource;
 		}
 
-		//////////////////////////////////////////////////////////////////////////
+		const Entity* operator->() const
+		{
+			assert(mResource != nullptr);
+			return mResource.get();
+		}
+
+		Entity* operator->()
+		{
+			assert(mResource != nullptr);
+			return mResource.get();
+		}
+
+		bool operator==(const EntityPtr& other) const
+		{
+			return mResource == other.mResource;
+		}
+
+		bool operator==(std::nullptr_t) const
+		{
+			return mResource == nullptr;
+		}
+
+		bool operator!=(const EntityPtr& other) const
+		{
+			return mResource != other.mResource;
+		}
+
+		bool operator!=(std::nullptr_t) const
+		{
+			return mResource != nullptr;
+		}
+
+		bool operator<(const EntityPtr& other) const
+		{
+			return mResource < other.mResource;
+		}
+
+		bool operator>(const EntityPtr& other) const
+		{
+			return mResource > other.mResource;
+		}
+
+		bool operator<=(const EntityPtr& other) const
+		{
+			return mResource <= other.mResource;
+		}
+
+		bool operator>=(const EntityPtr& other) const
+		{
+			return mResource >= other.mResource;
+		}
+
+		Entity* get() const
+		{
+			return mResource.get();
+		}
+
+		Entity* get()
+		{
+			return mResource.get();
+		}
+
+	private:
+		ObjectPtr<Entity>	mResource;		///< Pointer to the target resource
+		std::string			mPath;			///< Path in the entity hierarchy, either relative or absolute
+	};
+
+
+	class EntityInstancePtr
+	{
+	public:
+		template<class SourceComponentType>
+		EntityInstancePtr(ComponentInstance* sourceComponentInstance, EntityPtr(SourceComponentType::*entityMemberPointer))
+		{
+			SourceComponentType* resource = sourceComponentInstance->getComponent<SourceComponentType>();
+			EntityPtr& target_entity_resource = resource->*entityMemberPointer;
+
+			sourceComponentInstance->addToEntityLinkMap(target_entity_resource.get(), target_entity_resource.getInstancePath(), &mInstance);
+		}
 
 		const EntityInstance& operator*() const
 		{
@@ -78,59 +161,44 @@ namespace nap
 			return mInstance;
 		}
 
-		bool operator==(const EntityPtr& other) const
+		bool operator==(const EntityInstancePtr& other) const
 		{
-			return mResource == other.mResource && mInstance == other.mInstance;
+			return mInstance == other.mInstance;
 		}
 
-		bool operator==(const EntityInstance* entityInstance) const
+		bool operator==(std::nullptr_t) const
 		{
-			return mInstance == entityInstance;
+			return mInstance == nullptr;
 		}
 
-		bool operator!=(const EntityInstance* entityInstance) const
+		bool operator!=(const EntityInstancePtr& other) const
 		{
-			return mInstance != entityInstance;
+			return mInstance != other.mInstance;
 		}
 
-		bool operator==(const Entity* Entity) const
+		bool operator!=(std::nullptr_t) const
 		{
-			return mResource == Entity;
+			return mInstance != nullptr;
 		}
 
-		bool operator!=(const Entity* Entity) const
-		{
-			return mResource != Entity;
-		}
-
-		bool operator<(const EntityPtr& other) const
+		bool operator<(const EntityInstancePtr& other) const
 		{
 			return mInstance < other.mInstance;
 		}
 
-		bool operator>(const EntityPtr& other) const
+		bool operator>(const EntityInstancePtr& other) const
 		{
 			return mInstance > other.mInstance;
 		}
 
-		bool operator<=(const EntityPtr& other) const
+		bool operator<=(const EntityInstancePtr& other) const
 		{
 			return mInstance <= other.mInstance;
 		}
 
-		bool operator>=(const EntityPtr& other) const
+		bool operator>=(const EntityInstancePtr& other) const
 		{
 			return mInstance >= other.mInstance;
-		}
-
-		Entity* getResource()
-		{
-			return mResource.get();
-		}
-
-		Entity* getResource() const
-		{
-			return mResource.get();
 		}
 
 		EntityInstance* get() const
@@ -144,23 +212,13 @@ namespace nap
 		}
 
 	private:
-
-		void Assign(const EntityPtr& other)
-		{
-			mResource = other.mResource;
-			mInstance = other.mInstance;
-		}
-
-	private:
-		friend class SceneInstantiation;
-		ObjectPtr<Entity> mResource;
 		EntityInstance* mInstance = nullptr;
 	};
 }
 
 /**
- * The following construct is required to support EntityPtr in RTTR as a regular pointer.
- */
+* The following construct is required to support EntityPtr in RTTR as a regular pointer.
+*/
 namespace rttr
 {
 	template<>
@@ -171,7 +229,7 @@ namespace rttr
 
 		inline static wrapped_type get(const type& obj)
 		{
-			return obj.getResource();
+			return obj.get();
 		}
 
 		inline static type create(const wrapped_type& value)

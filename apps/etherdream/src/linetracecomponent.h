@@ -4,7 +4,6 @@
 #include "lineblendcomponent.h"
 
 // external includes
-#include <entityptr.h>
 #include <smoothdamp.h>
 
 namespace nap

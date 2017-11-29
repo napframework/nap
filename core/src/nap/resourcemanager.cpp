@@ -4,8 +4,12 @@
 #include "core.h"
 #include "rttiobjectgraphitem.h"
 #include <utility/fileutils.h>
+#include <utility/stringutils.h>
 #include <rtti/rttiutilities.h>
 #include <rtti/jsonreader.h>
+#include <rtti/pythonmodule.h>
+#include <rtti/linkresolver.h>
+#include <nap/core.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ResourceManager)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -16,6 +20,39 @@ namespace nap
 {
 	using namespace rtti;
 
+	//////////////////////////////////////////////////////////////////////////
+	// ResourceManager::LinkResolver
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Implementation of LinkResolver that resolves UnresolvedPointers against the combination of the ResourceManager's objects and the ObjectsToUpdate map.
+	 * The ObjectsToUpdate map functions as an overlay on top of the ResourceManager.
+	 */
+	class ResourceManager::OverlayLinkResolver : public LinkResolver
+	{
+	public:
+		OverlayLinkResolver(ResourceManager& resourceManager, ObjectByIDMap& objectsToUpdate) :
+			mResourceManager(&resourceManager),
+			mObjectsToUpdate(&objectsToUpdate)
+		{
+		}
+
+	private:
+		virtual RTTIObject* findTarget(const std::string& targetID) override
+		{
+			// Objects in objectsToUpdate have preference over the manager's objects. 
+			RTTIObject* target_object = nullptr;
+			auto object_to_update = mObjectsToUpdate->find(targetID);
+			if (object_to_update == mObjectsToUpdate->end())
+				return mResourceManager->findObject(targetID).get();
+
+			return object_to_update->second.get();
+		}
+
+	private:
+		ResourceManager*	mResourceManager;
+		ObjectByIDMap*		mObjectsToUpdate;
+	};
 
 	//////////////////////////////////////////////////////////////////////////
 	// ResourceManager::RollbackHelper
@@ -145,69 +182,6 @@ namespace nap
 	}
 
 
-	// Resolves all the pointers in @unresolvedPointers against both the ResourceManager's objects and the @objectsToUpdate map. The @objectsToUpdate array
-	// functions as an overlay on top of the ResourceManager.
-	// Custom pointers are supported through exposed RTTI functions on pointer objects: a static function 'translateTargetID' will convert any ID to a target ID
-	// and the member function 'assign' will assign the pointer value to the pointer object.
-	bool ResourceManager::resolvePointers(ObjectByIDMap& objectsToUpdate, const UnresolvedPointerList& unresolvedPointers, utility::ErrorState& errorState)
-	{
-		for (const UnresolvedPointer& unresolved_pointer : unresolvedPointers)
-		{
-			rtti::ResolvedRTTIPath resolved_path;
-			if (!errorState.check(unresolved_pointer.mRTTIPath.resolve(unresolved_pointer.mObject, resolved_path), "Failed to resolve RTTIPath %s", unresolved_pointer.mRTTIPath.toString().c_str()))
-				return false;
-
-			std::string target_id = unresolved_pointer.mTargetID;			
-
-			// If the type that we're processing has a function to translate the ID read from json into a different ID, we call it and use that ID.
-			// This is used for pointers that have a different format in json.
-			rttr::method translate_string_method = rtti::findMethodRecursive(resolved_path.getType(), "translateTargetID");
-			if (translate_string_method.is_valid())
-			{
-				rttr::variant translate_result = translate_string_method.invoke(rttr::instance(), target_id);
-				target_id = translate_result.to_string();
-			}
-
-			// Objects in objectsToUpdate have preference over the manager's objects. 
-			RTTIObject* target_object = nullptr;
-            auto object_to_update = objectsToUpdate.find(target_id);
-			if (object_to_update == objectsToUpdate.end())
-				target_object = findObject(target_id).get();
-			else
-				target_object = object_to_update->second.get();
-
-			if (!errorState.check(target_object != nullptr, "Unable to resolve link to object %s from attribute %s", target_id.c_str(), unresolved_pointer.mRTTIPath.toString().c_str()))
-				return false;
-
-			rtti::TypeInfo resolved_path_type = resolved_path.getType();
-			rtti::TypeInfo actual_type = resolved_path_type.is_wrapper() ? resolved_path_type.get_wrapped_type() : resolved_path_type;
-
-			if (!errorState.check(target_object->get_type().is_derived_from(actual_type), "Failed to resolve pointer: target of pointer {%s}:%s is of the wrong type (found '%s', expected '%s')",
-				unresolved_pointer.mObject->mID.c_str(), unresolved_pointer.mRTTIPath.toString().c_str(), target_object->get_type().get_name().data(), actual_type.get_raw_type().get_name().data()))
-			{
-				return false;
-			}
-
-			assert(actual_type.is_pointer());
-
-			// If the type that we're processing has a function to assign the pointer value, we use it.
-			rtti::Variant target_value = target_object;
-			rttr::method assign_method = rtti::findMethodRecursive(resolved_path.getType(), "assign");
-			if (assign_method.is_valid())
-			{
-				target_value = resolved_path.getValue();
-				assign_method.invoke(target_value, unresolved_pointer.mTargetID, *target_object);
-			}
-
-			bool succeeded = resolved_path.setValue(target_value);
-			if (!errorState.check(succeeded, "Failed to resolve pointer for: %s", target_object->mID.c_str()))
-				return false;
-		}
-
-		return true;
-	}
-
-
 	// inits all objects 
 	bool ResourceManager::initObjects(const std::vector<std::string>& objectsToInit, const ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState)
 	{
@@ -272,7 +246,8 @@ namespace nap
 		// Resolve all unresolved pointers. The set of objects to resolve against are the objects in the ResourceManager, with the new/dirty
 		// objects acting as an overlay on the existing objects. In other words, when resolving, objects read from the json file have 
 		// preference over objects in the resource manager as these are the ones that will eventually be (re)placed in the manager.
-		if (!resolvePointers(objects_to_update, read_result.mUnresolvedPointers, errorState))
+		OverlayLinkResolver resolver(*this, objects_to_update);
+		if (!resolver.resolveLinks(read_result.mUnresolvedPointers, errorState))
 			return false;
 
 		// We instantiate a helper that will perform a rollback of any pointer patching that we have done.
