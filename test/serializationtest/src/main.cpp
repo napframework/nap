@@ -11,6 +11,7 @@
 #include <utility/memorystream.h>
 #include <utility/stringutils.h>
 #include <rtti/rttipath.h>
+#include <rtti/defaultlinkresolver.h>
 #include <iostream>
 
 using namespace nap;
@@ -54,29 +55,6 @@ template<typename T>
 rtti::Variant createVariant(T value)
 {
 	return ObjectPtr<T>(value);
-}
-
-bool ResolveLinks(const OwnedObjectList& objects, const UnresolvedPointerList& unresolvedPointers)
-{
-	std::map<std::string, RTTIObject*> objects_by_id;
-	for (auto& object : objects)
-		objects_by_id.insert({ object->mID, object.get() });
-	
-	for (const UnresolvedPointer& unresolvedPointer : unresolvedPointers)
-	{
-		rtti::ResolvedRTTIPath resolved_path;			
-		if (!unresolvedPointer.mRTTIPath.resolve(unresolvedPointer.mObject, resolved_path))
-			return false;
-
-		std::map<std::string, RTTIObject*>::iterator pos = objects_by_id.find(unresolvedPointer.mTargetID);
-		if (pos == objects_by_id.end())
-			return false;
-
-		if (!resolved_path.setValue(pos->second))
-			return false;
-	}
-
-	return true;
 }
 
 void testObjectPtr()
@@ -183,7 +161,7 @@ int main(int argc, char* argv[])
 			return -1;
 
 		// Resolve links
-		if (!ResolveLinks(read_result.mReadObjects, read_result.mUnresolvedPointers))
+		if (!DefaultLinkResolver::sResolveLinks(read_result.mReadObjects, read_result.mUnresolvedPointers, error_state))
 			return -1;
 
 		// Sort read objects into id mapping
@@ -215,7 +193,7 @@ int main(int argc, char* argv[])
 			return -1;
 
 		// Resolve links
-		if (!ResolveLinks(read_result.mReadObjects, read_result.mUnresolvedPointers))
+		if (!DefaultLinkResolver::sResolveLinks(read_result.mReadObjects, read_result.mUnresolvedPointers, error_state))
 			return -1;
 
 		// Sort read objects into id mapping

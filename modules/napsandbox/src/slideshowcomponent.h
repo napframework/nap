@@ -4,7 +4,6 @@
 #include <entity.h>
 #include "image.h"
 #include <glm/glm.hpp>
-#include <entityptr.h>
 
 namespace nap
 {

@@ -18,6 +18,8 @@ namespace nap
             return v0 + t * (v1 - v0);
         }                                
         
+        
+        
     }
     
 }

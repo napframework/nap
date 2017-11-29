@@ -1,6 +1,22 @@
 #include "oscargument.h"
 
-RTTI_DEFINE_BASE(nap::OSCArgument)
+RTTI_BEGIN_CLASS(nap::OSCArgument)
+    RTTI_FUNCTION("isFloat", &nap::OSCArgument::isFloat)
+    RTTI_FUNCTION("asFloat", &nap::OSCArgument::asFloat)
+    RTTI_FUNCTION("isInt", &nap::OSCArgument::isInt)
+    RTTI_FUNCTION("asInt", &nap::OSCArgument::asInt)
+    RTTI_FUNCTION("isBool", &nap::OSCArgument::isBool)
+    RTTI_FUNCTION("asBool", &nap::OSCArgument::asBool)
+    RTTI_FUNCTION("isString", &nap::OSCArgument::isString)
+    RTTI_FUNCTION("asString", &nap::OSCArgument::asString)
+    RTTI_FUNCTION("isDouble", &nap::OSCArgument::isDouble)
+    RTTI_FUNCTION("asDouble", &nap::OSCArgument::asDouble)
+    RTTI_FUNCTION("isChar", &nap::OSCArgument::isChar)
+    RTTI_FUNCTION("asChar", &nap::OSCArgument::asChar)
+    RTTI_FUNCTION("isNukt", &nap::OSCArgument::isNil)
+    RTTI_FUNCTION("toString", &nap::OSCArgument::toString)
+RTTI_END_CLASS
+
 RTTI_DEFINE_BASE(nap::OSCBaseValue)
 
 
@@ -156,9 +172,9 @@ namespace nap
 	}
 
 
-	void OSCArgument::toString(std::string& outValue)
+    std::string OSCArgument::toString()
 	{
-		return mValue->toString(outValue);
+		return mValue->toString();
 	}
 
 

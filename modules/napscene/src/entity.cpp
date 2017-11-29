@@ -13,6 +13,7 @@ RTTI_END_CLASS
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::EntityInstance)
 	RTTI_CONSTRUCTOR(nap::Core&, const nap::Entity*)
 	RTTI_FUNCTION("findComponent", (nap::ComponentInstance* (nap::EntityInstance::*)(const std::string &) const) &nap::EntityInstance::findComponent)
+    RTTI_FUNCTION("findComponentByID", (nap::ComponentInstance* (nap::EntityInstance::*)(const std::string &) const) &nap::EntityInstance::findComponentByID)
 RTTI_END_CLASS
 
 namespace nap
@@ -60,6 +61,19 @@ namespace nap
 	}
 
 
+    ComponentInstance* EntityInstance::findComponentByID(const std::string& ID) const
+    {
+        ComponentList::const_iterator pos = std::find_if(mComponents.begin(), mComponents.end(), [&, ID](auto& element)
+        {
+            return element->getComponent()->mID == ID;
+        });
+        if (pos == mComponents.end())
+            return nullptr;
+        
+        return pos->get();
+    }
+    
+    
 	ComponentInstance* EntityInstance::findComponent(const rtti::TypeInfo& type, rtti::ETypeCheck typeCheck) const
 	{
 		ComponentList::const_iterator pos = std::find_if(mComponents.begin(), mComponents.end(), [&](auto& element) 

@@ -227,7 +227,7 @@ namespace nap
 			SourceComponentType* resource = sourceComponentInstance->getComponent<SourceComponentType>();
 			ComponentPtr<TargetComponentType>& target_component_resource = resource->*componentMemberPointer;
 
-			sourceComponentInstance->addToLinkMap(target_component_resource.get(), target_component_resource.getInstancePath(), (ComponentInstance**)&mInstance);
+			sourceComponentInstance->addToComponentLinkMap(target_component_resource.get(), target_component_resource.getInstancePath(), (ComponentInstance**)&mInstance);
 		}
 
 		const TargetComponentInstanceType& operator*() const
@@ -334,7 +334,7 @@ namespace nap
 }
 
 /**
- * The following construct is required to support EntityPtr in RTTR as a regular pointer.
+ * The following construct is required to support ComponentPtr in RTTR as a regular pointer.
  */
 namespace rttr
 {

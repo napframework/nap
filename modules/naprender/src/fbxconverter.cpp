@@ -18,38 +18,13 @@
 #include <utility/fileutils.h>
 #include <utility/errorstate.h>
 #include <rtti/binaryreader.h>
+#include <rtti/defaultlinkresolver.h>
 
 // Local Includes
 #include "mesh.h"
 
 namespace nap
 {
-	// Resolves all links in @objects.
-	static bool resolveLinks(const rtti::OwnedObjectList& objects, const rtti::UnresolvedPointerList& unresolvedPointers)
-	{
-		using ObjectsByIDMap = std::unordered_map<std::string, rtti::RTTIObject*>;
-		ObjectsByIDMap objects_by_id;
-		for (auto& object : objects)
-			objects_by_id.insert({ object->mID, object.get() });
-
-		for (const rtti::UnresolvedPointer& unresolvedPointer : unresolvedPointers)
-		{
-			rtti::ResolvedRTTIPath resolved_path;
-			if (!unresolvedPointer.mRTTIPath.resolve(unresolvedPointer.mObject, resolved_path))
-				return false;
-
-			ObjectsByIDMap::iterator pos = objects_by_id.find(unresolvedPointer.mTargetID);
-			if (pos == objects_by_id.end())
-				return false;
-
-			if (!resolved_path.setValue(pos->second))
-				return false;
-		}
-
-		return true;
-	}
-
-
 	/**
 	 * Creates a vertex attribute in the Mesh. Because the Mesh is used ObjectPtrs to refer to attributes, a storage object is used that
 	 * has ownership over the objects. The storage object should live at least as long than the Mesh.
@@ -245,7 +220,7 @@ namespace nap
 		if (!errorState.check(readBinary(meshPath, factory, deserialize_result, errorState), "Failed to load mesh from %s", meshPath.c_str()))
 			return nullptr;
 
-		if (!errorState.check(resolveLinks(deserialize_result.mReadObjects, deserialize_result.mUnresolvedPointers), "Failed to resolve pointers"))
+		if (!errorState.check(rtti::DefaultLinkResolver::sResolveLinks(deserialize_result.mReadObjects, deserialize_result.mUnresolvedPointers, errorState), "Failed to resolve pointers"))
 			return nullptr;
 		
 		// Find mesh(es) in the file
