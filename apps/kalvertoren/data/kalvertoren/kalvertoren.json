@@ -442,7 +442,7 @@
 				{
 					"Type" : "nap::UniformFloat",
 					"Name" : "ambientIntensity",
-					"Value" : 1.0
+					"Value" : 0.5
 				},
 				{
 					"Type" : "nap::UniformFloat",
@@ -452,7 +452,7 @@
 				{
 					"Type" : "nap::UniformFloat",
 					"Name" : "specularIntensity",
-					"Value" : 1.0
+					"Value" : 0.65
 				},
 				{
 					"Type" : "nap::UniformFloat",
@@ -566,7 +566,7 @@
 					"Entity" : "DisplayEntity"
 				},
 				{
-					"Entity" : "LedEntity"
+					"Entity" : "CompositionEntity"
 				}, 
 				{
 					"Entity" : "VideoEntity"
@@ -668,7 +668,18 @@
 
 		{
 			"Type" : "nap::Entity",
-			"mID" : "LedEntity",
+			"mID" : "CompositionEntity",
+			"Components" :
+			[
+				{
+					"Type" : "nap::CompositionComponent",
+					"mID" : "CompositionComponent",
+					"Compositions" :
+					[
+						"TestComposition"
+					]
+				}
+			],
 			"Children" :
 			[
 				"KalvertorenEntity",
@@ -695,6 +706,12 @@
 					"Type" : "nap::ApplyTracerColorComponent",
 					"Mesh" : "KalverMesh",
 					"Selector" : "./ColorMethodSelectorKalver"
+				},
+				{
+					"Type" : "nap::ApplyCompositionComponent",
+					"Mesh" : "KalverMesh",
+					"Selector" : "./ColorMethodSelectorKalver",
+					"CompositionComponent" : "../CompositionComponent"
 				},
 				{
 					"Type" : "nap::MeshToArtnetComponent",
@@ -731,6 +748,12 @@
 					"Selector" : "./ColorMethodSelectorHeiligeweg"
 				},
 				{
+					"Type" : "nap::ApplyCompositionComponent",
+					"Mesh" : "HeiligewegMesh",
+					"Selector" : "./ColorMethodSelectorHeiligeweg",
+					"CompositionComponent" : "../CompositionComponent"
+				},
+				{
 					"Type" : "nap::MeshToArtnetComponent",
 					"Mesh" : "HeiligewegMesh",
 					"Controllers" :
@@ -761,6 +784,12 @@
 					"Type" : "nap::ApplyTracerColorComponent",
 					"Mesh" : "SingelMesh",
 					"Selector" : "./ColorMethodSelectorSingel"
+				},
+				{
+					"Type" : "nap::ApplyCompositionComponent",
+					"Mesh" : "SingelMesh",
+					"Selector" : "./ColorMethodSelectorSingel",
+					"CompositionComponent" : "../CompositionComponent"
 				},
 				{
 					"Type" : "nap::MeshToArtnetComponent",

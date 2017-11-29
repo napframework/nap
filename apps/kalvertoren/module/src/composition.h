@@ -25,6 +25,10 @@ namespace nap
 		*/
 		virtual bool init(utility::ErrorState& errorState) override;
 
+		/**
+		 * @return the GPU texture that contains the rendered composition
+		 */
+		nap::BaseTexture2D& getTexture();
 
 		std::vector<nap::ObjectPtr<Layer>> mLayers;				///< All the layers this composition works with
 	};

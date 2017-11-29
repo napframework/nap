@@ -83,7 +83,7 @@ namespace nap
 
 		nap::ObjectPtr<nap::RenderWindow>				renderWindow;
 		nap::ObjectPtr<nap::RenderTarget>				videoTextureTarget;
-		nap::ObjectPtr<nap::EntityInstance>				ledEntity = nullptr;
+		nap::ObjectPtr<nap::EntityInstance>				compositionEntity = nullptr;
 		nap::ObjectPtr<nap::EntityInstance>				sceneCameraEntity = nullptr;
 		nap::ObjectPtr<nap::EntityInstance>				videoCameraEntity = nullptr;
 		nap::ObjectPtr<nap::EntityInstance>				defaultInputRouter = nullptr;

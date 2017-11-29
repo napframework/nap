@@ -17,4 +17,11 @@ namespace nap
 	{
 		return true;
 	}
+
+
+	nap::BaseTexture2D& Composition::getTexture()
+	{
+		assert(mLayers.size() > 0);
+		return mLayers[0]->getTexture();
+	}
 }

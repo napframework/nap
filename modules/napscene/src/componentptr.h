@@ -331,6 +331,22 @@ namespace nap
 	private:
 		TargetComponentInstanceType* mInstance = nullptr;
 	};
+
+	/**
+	 * Creates a component resource pointer
+	 * @param NAME the variable name of the pointer
+	 * @param TYPE the type of the component that it points to
+	 */
+	#define COMPONENT_POINTER(NAME, TYPE)  ComponentPtr<TYPE> NAME;
+
+	/**
+	 * Creates a component instance pointer. This pointer is resolved when creating objects from resources
+	 * @param NAME the variable name of the pointer
+	 * @param TYPE the type of the component this points to. Needs to be the resource type
+	 * @param RESOURCE the component resource that contains the original COMPONENT_POINTER
+	 * @param ATTRIBUTE the attribute NAME of the COMPONENT_POINTER
+	 */
+	#define COMPONENT_INSTANCE_POINTER(NAME, TYPE, RESOURCE, ATTRIBUTE) ComponentInstancePtr<TYPE>	NAME = { this, &RESOURCE::ATTRIBUTE};
 }
 
 /**

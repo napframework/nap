@@ -8,6 +8,8 @@
 
 namespace nap
 {
+	class Pixmap;
+
 	/**
 	 *	Texture min filter
 	 */
@@ -77,6 +79,24 @@ namespace nap
 		 * @return size of the texture, in texels.
 		 */
 		const glm::vec2 getSize() const;
+
+		/**
+		 *	@return width of the texture, in texels
+		 */
+		int getWidth() const;
+
+		/**
+		 *	@return height of the texture, in texels
+		 */
+		int getHeight() const;
+
+		/**
+		 * Blocking call to retrieve GPU texture data that is stored in this texture
+		 * When the pixmap is empty it will be initialized based on the settings associated with this texture
+		 * This call asserts if the bitmap can't be initialized or, when initialized, the bitmap settings don't match
+		 * @param pixmap the pixmap that is filled with the data in this texture
+		 */
+		void getData(Pixmap& pixmap);
 
 		/**
 		 * Activates this texture for rendering.

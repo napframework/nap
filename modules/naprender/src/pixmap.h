@@ -8,13 +8,16 @@
 
 namespace nap
 {
+	class BaseTexture2D;
+
 	/**
 	 * 2D image resource that is initially empty, there is no GPU data associated with this object
 	 * When initialized this object holds a set of 2D mapped pixels where every pixel value can have multiple channels
 	 * This object can be declared as a resource using one of the available data and color types
 	 * Every pixmap needs to have a width and height associated with it
 	 * When no settings are provided the pixmap contains: 512x512, RGB8 bit pixels
-	 * This object wraps a Bitmap and allocates the bitmap resource on init(). 
+	 * This object wraps a Bitmap and allocates the bitmap resource on init()
+	 * The properties associated with the pixmap are set when initialized from texture or file
 	 */
 	class NAPAPI Pixmap : public rtti::RTTIObject
 	{
@@ -55,7 +58,8 @@ namespace nap
 		/**
 		 * Initializes this bitmap from file. The settings associated with
 		 * this bitmap will match the settings loaded from file. If you want
-		 * to manually allocate pixel data call init() without a path
+		 * to manually allocate pixel data call init() without a path.
+		 * The pixel data associated with the image @path is copied over
 		 * @param path the path to the image on disk to load
 		 * @param errorState contains the error if the image could not be loaded
 		 * @return if the bitmap loaded successfully
@@ -63,14 +67,38 @@ namespace nap
 		virtual bool initFromFile(const std::string& path, nap::utility::ErrorState& errorState);
 
 		/**
+		 * Initializes this bitmap from a 2D texture. 
+		 * The settings associated with this bitmap will match the settings of the 2D texture.
+		 * Memory is allocated but the GPU pixel data is NOT copied over
+		 * @param texture the GPU texture to initialize this pixmap from
+		 */
+		void initFromTexture(const nap::BaseTexture2D& texture);
+
+		/**
+		 * @return if the pixmap is empty
+		 * This is the case when the bitmap has not been initialized
+		 */
+		bool empty() const													{ return !(mBitmap.hasData()); }
+
+		/**
+		 * @return the width of the pixmap, 0 when not initialized
+		 */
+		int getWidth() const												{ return mBitmap.getWidth(); }
+
+		/**
+		 *	@return the height of the pixmap, 0 when not initialized
+		 */
+		int getHeight() const												{ return mBitmap.getHeight(); }
+ 
+		/**
 		 * @return the bitmap associated with this resource
 		 */
-		opengl::Bitmap& getBitmap()					{ return mBitmap; }
+		opengl::Bitmap& getBitmap()											{ return mBitmap; }
 
 		/**
 		 *	@return the bitmap associated with this resource
 		 */
-		const opengl::Bitmap& getBitmap() const		{ return mBitmap; }
+		const opengl::Bitmap& getBitmap() const								{ return mBitmap; }
 
 		/**
 		* @return the color of a pixel at the x and y pixel coordinates
@@ -240,6 +268,10 @@ namespace nap
 		template<typename Type>
 		RColor<Type*> getColorValueData(int x, int y, nap::EColorChannel channel) const;
 
+		/**
+		 * These properties are read when initializing the pixmap as a resource
+		 * These properties are set  when initializing the pixmap from file or texture
+		 */
 		int mWidth			= 512;					///< property: width of the bitmap in pixels
 		int mHeight			= 512;					///< property: height of the bitmap in pixels
 		EDataType mType		= EDataType::BYTE;		///< property Type: data type of the pixels in the bitmap
@@ -247,6 +279,12 @@ namespace nap
 
 	protected:
 		opengl::Bitmap mBitmap;
+
+	private:
+		/**
+		 * Helper function that ensures the pixmap settings are in sync with the settings associated with it's bitmap;
+		 */
+		void applySettingsFromBitmap();
 	};
 
 	/**

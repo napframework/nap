@@ -4,6 +4,7 @@
 #include "selectcolormethodcomponent.h"
 #include "applytracercolorcomponent.h"
 #include "applybbcolorcomponent.h"
+#include "applycompositioncomponent.h"
 
 // External Includes
 #include <mathutils.h>
@@ -41,7 +42,7 @@ namespace nap
 		// All of our entities
 		ObjectPtr<Scene> scene = resourceManager->findObject<Scene>("Scene");
 
-		ledEntity = scene->findEntity("LedEntity");
+		compositionEntity = scene->findEntity("CompositionEntity");
 		displayEntity = scene->findEntity("DisplayEntity");
 		sceneCameraEntity = scene->findEntity("SceneCameraEntity");
 		videoCameraEntity = scene->findEntity("VideoCameraEntity");
@@ -242,7 +243,7 @@ namespace nap
 		std::vector<SelectColorMethodComponentInstance*> color_methods;
 		std::vector<ApplyTracerColorComponentInstance*>  tracer_painters;
 
-		for (auto& entity : ledEntity->getChildren())
+		for (auto& entity : compositionEntity->getChildren())
 		{
 			SelectColorMethodComponentInstance* color_method = &(entity->getComponent<SelectColorMethodComponentInstance>());
 			color_methods.emplace_back(color_method);
@@ -265,7 +266,7 @@ namespace nap
 		}
 
 		// Changes the mesh paint mode
-		if (ImGui::Combo("Mode", &mPaintMode, "Channel Walker\0Bounding Box\0\0") || mFirst)
+		if (ImGui::Combo("Mode", &mPaintMode, "Channel Walker\0Bounding Box\0Composition\0\0") || mFirst)
 		{
 			for (auto& color_method : color_methods)
 			{
@@ -276,6 +277,9 @@ namespace nap
 					break;
 				case 1:
 					color_method->select(RTTI_OF(nap::ApplyBBColorComponentInstance));
+					break;
+				case 2:
+					color_method->select(RTTI_OF(nap::ApplyCompositionComponentInstance));
 					break;
 				default:
 					assert(false);
