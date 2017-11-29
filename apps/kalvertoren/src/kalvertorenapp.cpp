@@ -16,7 +16,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::KalvertorenApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
-namespace nap
+namespace nap 
 {
 	bool KalvertorenApp::init(utility::ErrorState& error)
 	{

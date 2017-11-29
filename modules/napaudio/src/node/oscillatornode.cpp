@@ -117,18 +117,22 @@ namespace nap
                 if (fmInputBuffer)
                     mPhase += ((*fmInputBuffer)[i] + 1) * mFrequency * mStep;      //   calculate new phase
                 else
-                    mPhase += mPhaseInc;
+                    mPhase += mFrequency * mStep;
                 
-                mPhase = wrap(mPhase, waveSize);
+                if (mPhase > waveSize)
+                    mPhase -= waveSize;
                 
                 outputBuffer[i] = val;
+                
+                mFrequencyRamper.step();
+                mAmplitudeRamper.step();
             }
         }
 
         
-        void OscillatorNode::setAmplitude(SampleValue amplitude)
+        void OscillatorNode::setAmplitude(ControllerValue amplitude, TimeValue rampTime)
         {
-            mAmplitude = amplitude;
+            mAmplitudeRamper.ramp(amplitude, getNodeManager().getSamplesPerMillisecond() * rampTime);
         }
         
         
@@ -138,10 +142,9 @@ namespace nap
         }
 
 
-        void OscillatorNode::setFrequency(SampleValue frequency)
+        void OscillatorNode::setFrequency(SampleValue frequency, TimeValue rampTime)
         {
-            mFrequency = frequency;
-            mPhaseInc = mFrequency * mStep;
+            mFrequencyRamper.ramp(frequency, getNodeManager().getSamplesPerMillisecond() * rampTime);
         }
         
         
@@ -149,7 +152,6 @@ namespace nap
         {
             mWave = wave;
             mStep = mWave.getSize() / getNodeManager().getSampleRate();
-            mPhaseInc = mFrequency * mStep;
         }
         
         

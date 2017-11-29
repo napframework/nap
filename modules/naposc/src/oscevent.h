@@ -23,6 +23,8 @@ namespace nap
 	public:
 		using ArgumentConstIterator = utility::UniquePtrConstVectorWrapper<OSCArgumentList, OSCArgument*>;
 
+        OSCEvent() = default;
+        
 		/**
 		 * OSCEvent constructor
 		 * @param address the address associated with this osc event
@@ -70,14 +72,14 @@ namespace nap
 		 * @return an argument based on @index
 		 * @param index the index of the argument, will throw an exception when out of bounds
 		 */
-		const OSCArgument& getArgument(int index) const;
+		const OSCArgument* getArgument(int index) const;
 
 		/**
 		 * @return an argument based on @index
 		 * @param index the index of the argument
 		 */
-		OSCArgument& getArgument(int index);
-
+		OSCArgument* getArgument(int index);
+        
 		/**
 		 * @return the size of the osc event in bytes
 		 * This includes the size of the arguments together with the name of this event
@@ -85,8 +87,8 @@ namespace nap
 		std::size_t getSize() const;
 
 		// Array subscript overloads
-		OSCArgument& operator[](std::size_t idx)							{ return getArgument(static_cast<int>(idx)); }
-		const OSCArgument& operator[](std::size_t idx) const				{ return getArgument(static_cast<int>(idx)); }
+		OSCArgument& operator[](std::size_t idx)							{ return *getArgument(static_cast<int>(idx)); }
+		const OSCArgument& operator[](std::size_t idx) const				{ return *getArgument(static_cast<int>(idx)); }
 
 	private:
 		OSCArgumentList mArguments;							// All the arguments associated with the event
