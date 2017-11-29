@@ -27,7 +27,7 @@
 
 namespace nap
 {
-	class NAPAPI KalvertorenApp : public App
+	class KalvertorenApp : public App
 	{
 		RTTI_ENABLE(App)
 	public:

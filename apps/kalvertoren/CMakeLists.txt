@@ -20,7 +20,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Apps)
 add_dependencies(${PROJECT_NAME} fbxconverter mod_nappython)
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${pybind11_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PUBLIC ${pybind11_INCLUDE_DIRS} src)
 target_link_libraries(${PROJECT_NAME} mod_napkalvertoren)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
