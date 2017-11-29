@@ -105,4 +105,6 @@ add_subdirectory(modules/napcameracontrol)
 
 # Packaging
 install(DIRECTORY dist/cmake/ DESTINATION cmake)
+# TODO glob and move this somewhere else
 install(PROGRAMS dist/projectscripts/regenerateProject.py DESTINATION tools/)
+install(PROGRAMS dist/projectscripts/createProject.py DESTINATION tools/)
