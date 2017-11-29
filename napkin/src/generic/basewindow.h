@@ -6,35 +6,56 @@
 #include <QMenu>
 #include <QMenuBar>
 
-/**
- * Extension of QMainWindow, automatically saves and restores many windowsettings.
- */
-class BaseWindow : public QMainWindow
+namespace napkin
 {
-	//    Q_OBJECT
-public:
-	BaseWindow();
-	virtual ~BaseWindow() {}
 
 	/**
-	 * @return The QMenu that contains the list of available windows
+	 * Extension of QMainWindow, automatically saves and restores many windowsettings.
 	 */
-	QMenu* windowMenu() { return mWindowMenu; }
+	class BaseWindow : public QMainWindow
+	{
+	public:
+		/**
+		 * Constructor
+		 */
+		BaseWindow();
 
-	/**
-	 * Add a QWidget to this window, display it as a dockwidget and add a toggle menuitem to the menubar
-	 * @param name The name and title of the specified widget.
-	 * @param widget The widget to be added as a dockwidget.
-	 * @param area The initial area to stick the the dock into.
-	 */
-	QDockWidget* addDock(const QString& name, QWidget* widget, Qt::DockWidgetArea area = Qt::TopDockWidgetArea);
+		/**
+		 * Destructor
+		 */
+		virtual ~BaseWindow()
+		{
+		}
 
-protected:
-	void showEvent(QShowEvent* event) override;
+		/**
+		 * @return The QMenu that contains the list of available windows
+		 */
+		QMenu* windowMenu()
+		{
+			return mWindowMenu;
+		}
 
-	void closeEvent(QCloseEvent* event) override;
+		/**
+		 * Add a QWidget to this window, display it as a dockwidget and add a toggle menuitem to the menubar
+		 * @param name The name and title of the specified widget.
+		 * @param widget The widget to be added as a dockwidget.
+		 * @param area The initial area to stick the the dock into.
+		 */
+		QDockWidget* addDock(const QString& name, QWidget* widget, Qt::DockWidgetArea area = Qt::TopDockWidgetArea);
+
+	protected:
+		/**
+		 * Override from QMainWindow
+		 */
+		void showEvent(QShowEvent* event) override;
+
+		/**
+		 * Override from QMainWindow
+		 */
+		void closeEvent(QCloseEvent* event) override;
 
 
-private:
-	QMenu* mWindowMenu;
+	private:
+		QMenu* mWindowMenu;
+	};
 };

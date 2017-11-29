@@ -5,13 +5,19 @@
 #include <QWidget>
 #include <QtWidgets/QVBoxLayout>
 
-class HistoryPanel : public QWidget
+namespace napkin
 {
-	Q_OBJECT
-public:
-	HistoryPanel();
+	/**
+	 * Panel showing the undostack and allow the user to move up and down in it.
+	 */
+	class HistoryPanel : public QWidget
+	{
+		Q_OBJECT
+	public:
+		HistoryPanel();
 
-private:
-	QVBoxLayout mLayout;
-	QUndoView mUndoView;
+	private:
+		QVBoxLayout mLayout; // The main layout
+		QUndoView mUndoView; // The actual undo list
+	};
 };

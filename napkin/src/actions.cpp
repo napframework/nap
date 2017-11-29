@@ -67,3 +67,55 @@ void SaveFileAsAction::perform()
 
 	ctx.saveFileAs(filename);
 }
+
+AddObjectAction::AddObjectAction(rttr::type type) : Action(), mType(type)
+{
+    setText(QString(type.get_name().data()));
+}
+
+void AddObjectAction::perform()
+{
+    AppContext::get().addObject(mType);
+}
+
+DeleteObjectAction::DeleteObjectAction(nap::rtti::RTTIObject& object) : Action(), mObject(object)
+{
+    setText("Delete");
+}
+
+void DeleteObjectAction::perform()
+{
+    AppContext::get().deleteObject(mObject);
+}
+
+SetThemeAction::SetThemeAction(const QString& themeName) : Action(), mTheme(themeName)
+{
+    setText(themeName.isEmpty() ? napkin::TXT_DEFAULT_THEME : themeName);
+    setCheckable(true);
+}
+
+void SetThemeAction::perform()
+{
+    AppContext::get().themeManager().setTheme(mTheme);
+}
+
+void AddComponentAction::perform()
+{
+    AppContext::get().addComponent(mEntity, mComponentType);
+}
+
+AddComponentAction::AddComponentAction(nap::Entity& entity, nap::rtti::TypeInfo type)
+        : Action(), mEntity(entity), mComponentType(type)
+{
+    setText(QString(type.get_name().data()));
+}
+
+void AddEntityAction::perform()
+{
+    AppContext::get().createEntity(mParent);
+}
+
+AddEntityAction::AddEntityAction(nap::Entity* parent) : Action(), mParent(parent)
+{
+    setText("Add Entity");
+}

@@ -1,5 +1,7 @@
 #include "themeselectionmenu.h"
 
+using namespace napkin;
+
 ThemeSelectionMenu::ThemeSelectionMenu() : QMenu("Theme")
 {
 	refresh();

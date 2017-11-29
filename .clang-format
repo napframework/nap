@@ -2,6 +2,7 @@
 
 BreakBeforeBraces: Custom
 BraceWrapping:
+#  SplitEmptyFunctionBody: false
   AfterEnum: true
   AfterStruct: true
   AfterClass: true
@@ -12,7 +13,7 @@ BraceWrapping:
   AfterNamespace: true
   AfterStruct: true
   AfterUnion: true
-#  AfterExternBlock: true
+  AfterFunction: true
   BeforeCatch: true
   BeforeElse: true
 
@@ -27,7 +28,7 @@ ColumnLimit: 120
 IndentCaseLabels: false
 MaxEmptyLinesToKeep: 3
 #AllowShortIfStatementsOnASingleLine: true
-#AllowShortFunctionsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: false
 Cpp11BracedListStyle: true
 AlignEscapedNewlinesLeft: true
 AlignAfterOpenBracket: Align

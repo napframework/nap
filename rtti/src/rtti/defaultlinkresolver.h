@@ -1,5 +1,7 @@
 #pragma once
 
+#include "rttiutilities.h"
+#include <unordered_map>
 #include "linkresolver.h"
 #include "rttideserializeresult.h"
 

@@ -13,233 +13,371 @@
 #include <rtti/rttiobject.h>
 #include <rtti/rttipath.h>
 
-
-QList<QStandardItem*> createItemRow(const QString& name, rttr::property prop, rttr::instance inst);
-
-class EmptyItem : public QStandardItem
+namespace napkin
 {
-public:
-	int type() const override { return QStandardItem::UserType + 10; }
-
-	EmptyItem() : QStandardItem() { setEditable(false); }
-};
-
-class InvalidItem : public QStandardItem
-{
-public:
-	int type() const override { return QStandardItem::UserType + 11; }
-
-	InvalidItem(const QString& name) : QStandardItem(name)
+	enum InspectorPanelStandardItemTypeID
 	{
-		setForeground(Qt::red);
-		setEditable(false);
-	}
-};
+		EmptyItemTypeID = 10,
+		InvalidItemTypeID = 11,
+		BaseItemTypeID = 12,
+		PropertyItemTypeID = 13,
+		PropertyValueItemTypeID = 14,
+		EmbeddedPointerItemTypeID = 15,
+		CompoundPropertyItemTypeID = 16,
+		ArrayPropertyItemTypeID = 17,
+		PointerItemTypeID = 18,
+		PointerValueItemTypeID = 19,
+	};
 
+	/**
+	 * Create a row of items where each item sits in its own column
+	 * @param type The type of the item
+	 * @param name The name of the item
+	 * @param object The object owning the property this item row represents
+	 * @param path The path to the property this row represents
+	 * @param prop The property this item row represents
+	 * @param value The value of the property in this row
+	 * @return a row of items where each item sits in its own column
+	 */
+	QList<QStandardItem*> createItemRow(rttr::type type, const QString& name, nap::rtti::RTTIObject* object,
+										const nap::rtti::RTTIPath& path, rttr::property prop, rttr::variant value);
 
-class BaseItem : public QStandardItem
-{
-public:
-	int type() const override { return QStandardItem::UserType + 12; }
-
-	BaseItem(const QString& name, nap::rtti::RTTIObject* object, const nap::rtti::RTTIPath path)
-		: QStandardItem(name), mObject(object), mPath(path)
+		/**
+		 * An empty item.
+		 */
+		class EmptyItem : public QStandardItem
 	{
-		nap::rtti::ResolvedRTTIPath resolved;
-		assert(path.resolve(object, resolved));
-		assert(mObject);
-	}
+	public:
+		/**
+		 * QStandardItem is not a QObject, so regular QObject polymorphism doesn't work.
+		 * This function is supposed to solve that.
+		 * See: http://doc.qt.io/qt-5/qstandarditem.html#type
+		 */
+		int type() const override;
 
-protected:
-	nap::rtti::ResolvedRTTIPath resolvePath()
+		/**
+		 * Constructor
+		 */
+		EmptyItem();
+	};
+
+	/**
+	 * An item representing invalid data
+	 */
+	class InvalidItem : public QStandardItem
 	{
-		nap::rtti::ResolvedRTTIPath resolvedPath;
-		assert(mPath.resolve(mObject, resolvedPath));
-		return resolvedPath;
-	}
+	public:
+		/**
+		 * QStandardItem is not a QObject, so regular QObject polymorphism doesn't work.
+		 * This function is supposed to solve that.
+		 * See: http://doc.qt.io/qt-5/qstandarditem.html#type
+		 */
+		int type() const override;
 
-	nap::rtti::RTTIObject* mObject;
-	const nap::rtti::RTTIPath mPath;
-};
+		/**
+		 * @param name Text to be displayed
+		 */
+		explicit InvalidItem(const QString& name);
+	};
 
-/**
- * This item shows the name of an object's property
- */
-class PropertyItem : public BaseItem
-{
-public:
-	int type() const override { return QStandardItem::UserType + 13; }
-
-	PropertyItem(const QString& name, nap::rtti::RTTIObject* object, const nap::rtti::RTTIPath& path)
-		: BaseItem(name, object, path)
+	/**
+	 * The base for items that represent a nap::rtti::RTTIObject
+	 */
+	class BaseItem : public QStandardItem
 	{
-		setEditable(false);
-		setForeground(softForeground());
-	}
-};
+	public:
+		/**
+		 * QStandardItem is not a QObject, so regular QObject polymorphism doesn't work.
+		 * This function is supposed to solve that.
+		 * See: http://doc.qt.io/qt-5/qstandarditem.html#type
+		 */
+		int type() const override;
 
-/**
- * The property is has child properties
- */
-class CompoundPropertyItem : public BaseItem
-{
-public:
-	int type() const override { return QStandardItem::UserType + 14; }
+		/**
+		 * @param name Text on the item.
+		 * @param object The object to keep track of.
+		 * @param path The path to the property on the object
+		 */
+		BaseItem(const QString& name, nap::rtti::RTTIObject* object, const nap::rtti::RTTIPath& path);
 
-	CompoundPropertyItem(const QString& name, nap::rtti::RTTIObject* object, const nap::rtti::RTTIPath& path)
-		: BaseItem(name, object, path)
+	protected:
+		/**
+		 * Resolve a path to get a resolved path.
+		 * @return A resolved path
+		 */
+		nap::rtti::ResolvedRTTIPath resolvePath();
+
+		nap::rtti::RTTIObject* mObject;  // The object we're keeping track of
+		const nap::rtti::RTTIPath mPath; // The path to the property on the object
+	};
+
+	/**
+	 * This item shows the name of an object's property
+	 */
+	class PropertyItem : public BaseItem
 	{
-		setForeground(softForeground());
-		populateChildren();
-	}
+	public:
+		/**
+		 * QStandardItem is not a QObject, so regular QObject polymorphism doesn't work.
+		 * This function is supposed to solve that.
+		 * See: http://doc.qt.io/qt-5/qstandarditem.html#type
+		 */
+		int type() const override;
 
-private:
-	void populateChildren();
-};
+		/**
+		 * @param name Text to display.
+		 * @param object The object to keep track of.
+		 * @param path The path to the property.
+		 */
+		PropertyItem(const QString& name, nap::rtti::RTTIObject* object, const nap::rtti::RTTIPath& path);
+	};
 
-/**
- * The property is an editable list of child properties
- */
-class ArrayPropertyItem : public BaseItem
-{
-public:
-	int type() const override { return QStandardItem::UserType + 15; }
-
-	ArrayPropertyItem(const QString& name, nap::rtti::RTTIObject* object, const nap::rtti::RTTIPath& path,
-					  rttr::property prop, rttr::variant_array_view array)
-		: BaseItem(name, object, path), mProperty(prop), mArray(array)
+	/**
+	 * This property is has child properties
+	 */
+	class CompoundPropertyItem : public BaseItem
 	{
-		std::string pathStr = path.toString();
-		populateChildren();
-		setForeground(softForeground());
-	}
+	public:
+		/**
+		 * QStandardItem is not a QObject, so regular QObject polymorphism doesn't work.
+		 * This function is supposed to solve that.
+		 * See: http://doc.qt.io/qt-5/qstandarditem.html#type
+		 */
+		int type() const override;
 
-private:
-	void populateChildren();
+		/**
+		 * @param name Text to display.
+		 * @param object The object to keep track of.
+		 * @param path The path to the property.
+		 */
+		CompoundPropertyItem(const QString& name, nap::rtti::RTTIObject* object, const nap::rtti::RTTIPath& path);
 
-	rttr::property mProperty;
-	rttr::variant_array_view mArray;
-};
+	private:
+		void populateChildren();
+	};
 
-class PointerItem : public BaseItem
-{
-public:
-	int type() const override { return QStandardItem::UserType + 16; }
-
-	PointerItem(const QString& name, nap::rtti::RTTIObject* object, const nap::rtti::RTTIPath path)
-		: BaseItem(name, object, path)
+	/**
+	 * The property is an editable list of child properties
+	 */
+	class ArrayPropertyItem : public BaseItem
 	{
-		setForeground(softForeground());
-	}
+	public:
+		/**
+		 * QStandardItem is not a QObject, so regular QObject polymorphism doesn't work.
+		 * This function is supposed to solve that.
+		 * See: http://doc.qt.io/qt-5/qstandarditem.html#type
+		 */
+		int type() const override;
 
-private:
-};
+		/**
+		 * @param name Text to display.
+		 * @param object The object to keep track of.
+		 * @param path The path to the property.
+		 * @param prop The property the path is pointing to.
+		 * @param array Because the property is an array, provide a view into the array.
+		 */
+		ArrayPropertyItem(const QString& name, nap::rtti::RTTIObject* object, const nap::rtti::RTTIPath& path,
+						  rttr::property prop, rttr::variant_array_view array);
 
+	private:
+		void populateChildren();
 
-class PointerValueItem : public QStandardItem
-{
-public:
-	int type() const override { return QStandardItem::UserType + 17; }
+		rttr::property mProperty;
+		rttr::variant_array_view mArray;
+	};
 
-	PointerValueItem(nap::rtti::RTTIObject* object, const nap::rtti::RTTIPath path, rttr::type valueType)
-		: QStandardItem(), mObject(object), mPath(path), mValueType(valueType)
+	/**
+	 * This item shows
+	 */
+	class PointerItem : public BaseItem
 	{
-		setForeground(Qt::darkCyan);
-		nap::rtti::ResolvedRTTIPath resolved;
-		assert(path.resolve(object, resolved));
+	public:
+		/**
+		 * QStandardItem is not a QObject, so regular QObject polymorphism doesn't work.
+		 * This function is supposed to solve that.
+		 * See: http://doc.qt.io/qt-5/qstandarditem.html#type
+		 */
+		int type() const override;
 
-		////    setIcon(QIcon(":/icons/link.svg"));
-	}
-
-	QVariant data(int role) const override;
-
-	void setData(const QVariant& value, int role) override { QStandardItem::setData(value, role); }
-
-	rttr::type valueType() { return mValueType; }
-
-private:
-	nap::rtti::RTTIObject* mObject;
-	nap::rtti::RTTIPath mPath;
-	rttr::type mValueType;
-};
+		/**
+		 * @param name Text to display.
+		 * @param object The object to keep track of.
+		 * @param path The path to the property, pointer.
+		 */
+		PointerItem(const QString& name, nap::rtti::RTTIObject* object, const nap::rtti::RTTIPath path);
+	};
 
 
-class EmbeddedPointerItem : public BaseItem
-{
-public:
-	int type() const override { return QStandardItem::UserType + 18; }
-
-	EmbeddedPointerItem(const QString& name, nap::rtti::RTTIObject* object, nap::rtti::RTTIPath path)
-		: BaseItem(name, object, path)
+	class PointerValueItem : public QStandardItem
 	{
-		populateChildren();
-	}
+	public:
+		/**
+		 * QStandardItem is not a QObject, so regular QObject polymorphism doesn't work.
+		 * This function is supposed to solve that.
+		 * See: http://doc.qt.io/qt-5/qstandarditem.html#type
+		 */
+		int type() const override;
 
-private:
-	void populateChildren();
-};
+		/**
+		 * @param name Text to display.
+		 * @param object The object to keep track of.
+		 * @param path The path to the property, pointer.
+		 */
+		PointerValueItem(nap::rtti::RTTIObject* object, const nap::rtti::RTTIPath path, rttr::type valueType);
 
-/**
- * This item displays the value of an object property and allows the user to change it
- */
-class PropertyValueItem : public BaseItem
-{
-public:
-	int type() const override { return QStandardItem::UserType + 19; }
+		/**
+		 * Reimplemented from QStandardItem
+		 */
+		QVariant data(int role) const override;
 
-	PropertyValueItem(const QString& name, nap::rtti::RTTIObject* object, nap::rtti::RTTIPath path,
-					  rttr::type valueType)
-		: BaseItem(name, object, path), mValueType(valueType)
+		/**
+		 * Reimplemented from QStandardItem
+		 */
+		void setData(const QVariant& value, int role) override;
+
+		/**
+		 * @return The type of the value represented by the pointer.
+		 */
+		rttr::type valueType();
+
+	private:
+		nap::rtti::RTTIObject* mObject; // The object to keep track of
+		nap::rtti::RTTIPath mPath;		// The path to the property
+		rttr::type mValueType;			// The type of the value represented by the pointer
+	};
+
+	/**
+	 * Creates children, data under the embedded pointer
+	 */
+	class EmbeddedPointerItem : public BaseItem
 	{
-	}
+	public:
+		/**
+		 * QStandardItem is not a QObject, so regular QObject polymorphism doesn't work.
+		 * This function is supposed to solve that.
+		 * See: http://doc.qt.io/qt-5/qstandarditem.html#type
+		 */
+		int type() const override;
 
-	QVariant data(int role) const override;
+		/**
+		 * @param name Text to display.
+		 * @param object The object to keep track of.
+		 * @param path The path to the property, pointer.
+		 */
+		EmbeddedPointerItem(const QString& name, nap::rtti::RTTIObject* object, nap::rtti::RTTIPath path);
 
-	void setData(const QVariant& value, int role) override;
+	private:
+		/**
+		 * Populate child items
+		 */
+		void populateChildren();
+	};
 
-	rttr::type& valueType() { return mValueType; }
-private:
-	rttr::type mValueType;
-};
+	/**
+	 * This item displays the value of an object property and allows the user to change it
+	 */
+	class PropertyValueItem : public BaseItem
+	{
+	public:
+		/**
+		 * QStandardItem is not a QObject, so regular QObject polymorphism doesn't work.
+		 * This function is supposed to solve that.
+		 * See: http://doc.qt.io/qt-5/qstandarditem.html#type
+		 */
+		int type() const override;
 
-/**
- * Data model backing the inspector panel tree view
- */
-class InspectorModel : public QStandardItemModel
-{
-public:
-	InspectorModel();
+		/**
+		 * @param name Text to display.
+		 * @param object The object to keep track of.
+		 * @param path The path to the property, pointer.
+		 * @param valueType The type of the value
+		 */
+		PropertyValueItem(const QString& name, nap::rtti::RTTIObject* object, nap::rtti::RTTIPath path,
+						  rttr::type valueType);
 
-	void setObject(nap::rtti::RTTIObject* object);
+		/**
+		 * Reimplemented from QStandardItem
+		 */
+		QVariant data(int role) const override;
 
-	nap::rtti::RTTIObject* object() { return mObject; }
+		/**
+		 * Reimplemented from QStandardItem
+		 */
+		void setData(const QVariant& value, int role) override;
 
-	QVariant data(const QModelIndex& index, int role) const override;
+		/**
+		 * @return The type of the value held by the property.
+		 */
+		rttr::type& valueType();
 
-	bool setData(const QModelIndex& index, const QVariant& value, int role) override;
+	private:
+		rttr::type mValueType; // The type of the value held by the property.
+	};
 
-private:
-	void populateItems();
+	/**
+	 * Data model backing the inspector panel tree view
+	 */
+	class InspectorModel : public QStandardItemModel
+	{
+	public:
+		/**
+		 * This is a constructor
+		 */
+		InspectorModel();
 
-	nap::rtti::RTTIObject* mObject = nullptr;
-};
+		/**
+		 * Set the
+		 * @param object
+		 */
+		void setObject(nap::rtti::RTTIObject* object);
 
-/**
- * The inspector panel allows for inspection and changing of object properties using a tree view
- */
-class InspectorPanel : public QWidget
-{
-	Q_OBJECT
-public:
-	InspectorPanel();
+		/**
+		 * @return The object currently displayed/edited by this model
+		 */
+		nap::rtti::RTTIObject* object();
 
-	void setObject(nap::rtti::RTTIObject* object);
+		/**
+		 * http://doc.qt.io/qt-4.8/qabstractitemmodel.html#data
+		 */
+		QVariant data(const QModelIndex& index, int role) const override;
+
+		/**
+		 * http://doc.qt.io/qt-4.8/qabstractitemmodel.html#setData
+		 */
+		bool setData(const QModelIndex& index, const QVariant& value, int role) override;
+
+	private:
+		/**
+		 * Run through the object's properties and create items for them
+		 */
+		void populateItems();
+
+		nap::rtti::RTTIObject* mObject = nullptr; // The object currently used by this model
+	};
+
+	/**
+	 * The inspector panel allows for inspection and changing of object properties using a tree view
+	 */
+	class InspectorPanel : public QWidget
+	{
+		Q_OBJECT
+	public:
+		/**
+		 * Constructor!
+		 */
+		InspectorPanel();
+
+		/**
+		 * Show this object in the inspector.
+		 * @param object The object shown in the inspector.
+		 */
+		void setObject(nap::rtti::RTTIObject* object);
 
 
-private:
-	InspectorModel mModel;
-	FilterTreeView mTreeView;
-	QVBoxLayout mLayout;
-	//    CustomDelegate mCustomDelegate;
-	PropertyValueItemDelegate mWidgetDelegate;
+	private:
+		InspectorModel mModel;					   // The model for the view
+		FilterTreeView mTreeView;				   // A tree view
+		QVBoxLayout mLayout;					   // The main layout
+		PropertyValueItemDelegate mWidgetDelegate; // Display a different editor based on the property type
+	};
 };

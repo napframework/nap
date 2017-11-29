@@ -3,7 +3,8 @@
 #include <QTimer>
 #include <assert.h>
 
-FilterTreeView::FilterTreeView()
+
+napkin::FilterTreeView::FilterTreeView()
 {
 	layout.setContentsMargins(0, 0, 0, 0);
 	layout.setSpacing(0);
@@ -25,27 +26,26 @@ FilterTreeView::FilterTreeView()
 	connect(this, &QWidget::customContextMenuRequested, this, &FilterTreeView::onCustomContextMenuRequested);
 }
 
-void FilterTreeView::setModel(QStandardItemModel* model) { sortFilter.setSourceModel(model); }
+void napkin::FilterTreeView::setModel(QStandardItemModel* model) { sortFilter.setSourceModel(model); }
 
-QStandardItemModel* FilterTreeView::model() const
+QStandardItemModel* napkin::FilterTreeView::model() const
 {
 	return dynamic_cast<QStandardItemModel*>(sortFilter.sourceModel());
 }
 
-void FilterTreeView::selectAndReveal(QStandardItem* item)
+void napkin::FilterTreeView::selectAndReveal(QStandardItem* item)
 {
 	if (item == nullptr)
 		return;
 	auto idx = filterModel().mapFromSource(item->index());
 	// We are going to select an entire row
-	auto topleft = idx;
 	auto botRight = filterModel().index(idx.row(), filterModel().columnCount(idx.parent()) - 1, idx.parent());
 	tree().selectionModel()->select(QItemSelection(idx, botRight), QItemSelectionModel::ClearAndSelect);
 	tree().scrollTo(idx);
 }
 
 
-QStandardItem* FilterTreeView::selectedItem()
+QStandardItem* napkin::FilterTreeView::selectedItem()
 {
 	for (auto idx : selectedIndexes())
 		return model()->itemFromIndex(idx);
@@ -53,7 +53,7 @@ QStandardItem* FilterTreeView::selectedItem()
 }
 
 
-QList<QStandardItem*> FilterTreeView::selectedItems() const
+QList<QStandardItem*> napkin::FilterTreeView::selectedItems() const
 {
 	QList<QStandardItem*> ret;
 	for (auto idx : selectedIndexes())
@@ -61,7 +61,7 @@ QList<QStandardItem*> FilterTreeView::selectedItems() const
 	return ret;
 }
 
-QList<QModelIndex> FilterTreeView::selectedIndexes() const
+QList<QModelIndex> napkin::FilterTreeView::selectedIndexes() const
 {
 	QList<QModelIndex> ret;
 	for (auto idx : selectionModel()->selectedRows())
@@ -69,26 +69,26 @@ QList<QModelIndex> FilterTreeView::selectedIndexes() const
 	return ret;
 }
 
-void FilterTreeView::onFilterChanged(const QString& text)
+void napkin::FilterTreeView::onFilterChanged(const QString& text)
 {
 	sortFilter.setFilterRegExp(text);
 	treeView.expandAll();
 }
 
 
-void FilterTreeView::onExpandSelected()
+void napkin::FilterTreeView::onExpandSelected()
 {
 	for (auto& idx : selectedIndexes())
 		expandChildren(&treeView, idx, true);
 }
 
-void FilterTreeView::onCollapseSelected()
+void napkin::FilterTreeView::onCollapseSelected()
 {
 	for (auto& idx : selectedIndexes())
 		expandChildren(&treeView, idx, false);
 }
 
-void FilterTreeView::expandChildren(QTreeView* view, const QModelIndex& idx, bool expanded)
+void napkin::FilterTreeView::expandChildren(QTreeView* view, const QModelIndex& idx, bool expanded)
 {
 	if (!idx.isValid())
 		return;
@@ -102,7 +102,7 @@ void FilterTreeView::expandChildren(QTreeView* view, const QModelIndex& idx, boo
 		view->collapse(idx);
 }
 
-void FilterTreeView::onCustomContextMenuRequested(const QPoint& pos)
+void napkin::FilterTreeView::onCustomContextMenuRequested(const QPoint& pos)
 {
 	QMenu menu;
 

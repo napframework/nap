@@ -1,6 +1,6 @@
 #include "historypanel.h"
 
-HistoryPanel::HistoryPanel() : QWidget()
+napkin::HistoryPanel::HistoryPanel() : QWidget()
 {
 	mUndoView.setStack(&AppContext::get().undoStack());
 	setLayout(&mLayout);
