@@ -67,6 +67,8 @@ namespace nap
 		render_state.mPointSize = 2.0f;
 		render_state.mPolygonMode = opengl::PolygonMode::FILL;
 
+		selectPaintMethod();
+
 		return true;
 	}
 
@@ -180,63 +182,6 @@ namespace nap
 	}
 
 
-	void KalvertorenApp::applyVideoTexture(ArtnetMeshFromFile& artnetmesh)
-	{	
-		// Copy pixel data over
-		nap::MeshInstance& mesh = artnetmesh.getMeshInstance();
-
-		// UV attribute we use to sample
-		nap::VertexAttribute<glm::vec3>& uv_attr = artnetmesh.getUVAttribute();
-
-		// Color attribute we use to sample
-		nap::VertexAttribute<glm::vec4>& color_attr = artnetmesh.getColorAttribute();
-
-		// Total amount of triangles
-		int tri_count = getTriangleCount(mesh);
-		TriangleDataPointer<glm::vec3> tri_uv_data;
-		TriangleData<glm::vec4> new_triangle_color;
-		for (int i = 0; i < tri_count; i++)
-		{
-			// Get uv coordinates for that triangle
-			getTriangleValues<glm::vec3>(mesh, i, uv_attr, tri_uv_data);
-
-			// Average uv values
-			glm::vec2 uv_avg{ 0.0,0.0 };
-			for (const auto& uv_vertex : tri_uv_data)
-			{
-				uv_avg.x += uv_vertex->x;
-				uv_avg.y += uv_vertex->y;
-			}
-			uv_avg.x = uv_avg.x / 3.0f;
-			uv_avg.y = uv_avg.y / 3.0f;
-
-			// Convert to pixel coordinates
-			int x_pixel = static_cast<float>(mVideoBitmap.getWidth() - 1) * uv_avg.x;
-			int y_pixel = static_cast<float>(mVideoBitmap.getWidth() - 1) * uv_avg.y;
-
-			// retrieve pixel value
-			uint8* pixel_pointer = mVideoBitmap.getPixel<uint8>(x_pixel, y_pixel);
-
-			// iterate over every vertex in the triangle and set the color
-			for (auto& vert_color : new_triangle_color)
-			{
-				vert_color.r = static_cast<float>(pixel_pointer[0] / 255.0f);
-				vert_color.g = static_cast<float>(pixel_pointer[1] / 255.0f);
-				vert_color.b = static_cast<float>(pixel_pointer[2] / 255.0f);
-				vert_color.a = 1.0f;
-			}
-
-			setTriangleValues<glm::vec4>(mesh, i, color_attr, new_triangle_color);
-		}
-
-		nap::utility::ErrorState error;
-		if (!mesh.update(error))
-		{
-			assert(false);
-		}
-	}
-
-
 	void KalvertorenApp::updateGui()
 	{
 		// Get all the color selection components
@@ -266,27 +211,9 @@ namespace nap
 		}
 
 		// Changes the mesh paint mode
-		if (ImGui::Combo("Mode", &mPaintMode, "Channel Walker\0Bounding Box\0Composition\0\0") || mFirst)
+		if (ImGui::Combo("Mode", &mPaintMode, "Channel Walker\0Bounding Box\0Composition\0\0"))
 		{
-			for (auto& color_method : color_methods)
-			{
-				switch (mPaintMode)
-				{
-				case 0:
-					color_method->select(RTTI_OF(nap::ApplyTracerColorComponentInstance));
-					break;
-				case 1:
-					color_method->select(RTTI_OF(nap::ApplyBBColorComponentInstance));
-					break;
-				case 2:
-					color_method->select(RTTI_OF(nap::ApplyCompositionComponentInstance));
-					break;
-				default:
-					assert(false);
-					break;
-				}
-			}
-			mFirst = false;
+			selectPaintMethod();
 		}
 
 		// Changes the display mesh
@@ -336,4 +263,37 @@ namespace nap
 		ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),"%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::End();
 	}
+
+
+	void KalvertorenApp::selectPaintMethod()
+	{
+		// Get all the color selection components
+		std::vector<SelectColorMethodComponentInstance*> color_methods;
+
+		for (auto& entity : compositionEntity->getChildren())
+		{
+			SelectColorMethodComponentInstance* color_method = &(entity->getComponent<SelectColorMethodComponentInstance>());
+			color_methods.emplace_back(color_method);
+		}
+
+		for (auto& color_method : color_methods)
+		{
+			switch (mPaintMode)
+			{
+			case 0:
+				color_method->select(RTTI_OF(nap::ApplyTracerColorComponentInstance));
+				break;
+			case 1:
+				color_method->select(RTTI_OF(nap::ApplyBBColorComponentInstance));
+				break;
+			case 2:
+				color_method->select(RTTI_OF(nap::ApplyCompositionComponentInstance));
+				break;
+			default:
+				assert(false);
+				break;
+			}
+		}
+	}
+
 }

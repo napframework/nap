@@ -64,14 +64,14 @@ namespace nap
 		virtual void inputMessageReceived(InputEventPtr inputEvent) override;
 
 		/**
-		 *	Applies the rendered video texture to the vertices as color
-		 */
-		void applyVideoTexture(ArtnetMeshFromFile& mesh);
-
-		/**
 		 *	Updates the gui
 		 */
 		void updateGui();
+
+		/**
+		 *	Sets the current paint method
+		 */
+		void selectPaintMethod();
 
 	private:
 		// Nap Objects
@@ -102,6 +102,5 @@ namespace nap
 		int												mPaintMode = 0;
 		int												mSelectChannel = 0;
 		float											mChannelSpeed = 1.0f;
-		bool											mFirst = true;
 	};
 }
