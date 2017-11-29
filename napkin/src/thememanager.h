@@ -12,19 +12,35 @@ namespace napkin
 	public:
 		ThemeManager();
 
-		QStringList availableThemes();
+        /**
+         * @return A list of available theme names
+         */
+		QStringList getAvailableThemes();
 
+        /**
+         * Set apply the specified theme by name.
+         * @param themeName The name of the theme
+         */
 		void setTheme(const QString& themeName);
 
-		const QString& currentTheme() const;
+        /**
+         * @return The name of the currently set theme
+         */
+		const QString& getCurrentTheme() const;
 
-		QString themeDir();
+        /**
+         * @return The directory containing the themes
+         */
+		QString getThemeDir();
 
 	Q_SIGNALS:
-
-		void themeChanged(const QString& theme);
+        /**
+         * Will be fired when the theme has changed
+         * @param theme The name of the theme
+         */
+        void themeChanged(const QString& theme);
 
 	private:
-		QString mCurrentTheme;
+		QString mCurrentTheme; // The currently set theme
 	};
 };

@@ -33,7 +33,7 @@ namespace napkin
 		 */
 		void onLog(nap::LogMessage log);
 
-		int maxRows = 1000; // The maximum number of rows to show in the log
+		int mMaxRows = 1000; // The maximum number of rows to show in the log
 	};
 
 	/**

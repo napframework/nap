@@ -11,14 +11,14 @@ QColor napkin::lerpCol(const QColor& a, const QColor& b, qreal p)
 	return c;
 }
 
-const QColor& napkin::softForeground()
+const QColor& napkin::getSoftForeground()
 {
 	static QColor c = lerpCol(QApplication::palette().color(QPalette::Normal, QPalette::WindowText),
 							  QApplication::palette().color(QPalette::Disabled, QPalette::WindowText), 0.5);
 	return c;
 }
 
-const QColor& napkin::softBackground()
+const QColor& napkin::getSoftBackground()
 {
 	static QColor c = QApplication::palette().color(QPalette::Normal, QPalette::Window).darker(102);
 	return c;

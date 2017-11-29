@@ -1,17 +1,12 @@
 #pragma once
 
-#include "generic/napgeneric.h"
-#include "generic/utility.h"
-#include "widgetdelegate.h"
-#include <QList>
-#include <QStandardItemModel>
-#include <QWidget>
-#include <generic/customdelegate.h>
+#include <QtGui/QStandardItem>
+#include <QtWidgets/QVBoxLayout>
 #include <generic/filtertreeview.h>
-#include <nap/logger.h>
-#include <nap/objectptr.h>
 #include <rtti/rttiobject.h>
 #include <rtti/rttipath.h>
+#include <rttr/type.h>
+#include <widgetdelegate.h>
 
 namespace napkin
 {
@@ -42,10 +37,10 @@ namespace napkin
 	QList<QStandardItem*> createItemRow(rttr::type type, const QString& name, nap::rtti::RTTIObject* object,
 										const nap::rtti::RTTIPath& path, rttr::property prop, rttr::variant value);
 
-		/**
-		 * An empty item.
-		 */
-		class EmptyItem : public QStandardItem
+	/**
+	 * An empty item.
+	 */
+	class EmptyItem : public QStandardItem
 	{
 	public:
 		/**
@@ -238,7 +233,7 @@ namespace napkin
 		/**
 		 * @return The type of the value represented by the pointer.
 		 */
-		rttr::type valueType();
+		rttr::type getValueType();
 
 	private:
 		nap::rtti::RTTIObject* mObject; // The object to keep track of
@@ -308,7 +303,7 @@ namespace napkin
 		/**
 		 * @return The type of the value held by the property.
 		 */
-		rttr::type& valueType();
+		rttr::type& getValueType();
 
 	private:
 		rttr::type mValueType; // The type of the value held by the property.
@@ -334,7 +329,7 @@ namespace napkin
 		/**
 		 * @return The object currently displayed/edited by this model
 		 */
-		nap::rtti::RTTIObject* object();
+		nap::rtti::RTTIObject* getObject();
 
 		/**
 		 * http://doc.qt.io/qt-4.8/qabstractitemmodel.html#data

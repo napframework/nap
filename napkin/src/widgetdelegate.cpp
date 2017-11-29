@@ -2,13 +2,14 @@
 #include "panels/inspectorpanel.h"
 #include "typeconversion.h"
 #include <QtWidgets/QComboBox>
+#include <QtWidgets/QApplication>
 
 using namespace napkin;
 
 void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option,
 									  const QModelIndex& index) const
 {
-	auto type = typeFor(index);
+	auto type = getTypeFromModelIndex(index);
 	if (type.is_enumeration())
 	{
 
@@ -49,7 +50,7 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 											const QStyleOptionViewItem& option, const QModelIndex& index)
 {
 
-	auto type = typeFor(index);
+	auto type = getTypeFromModelIndex(index);
 	if (type.is_enumeration())
 	{
 		return false;
@@ -69,7 +70,7 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 	}
 }
 
-rttr::type PropertyValueItemDelegate::typeFor(const QModelIndex& index) const
+rttr::type PropertyValueItemDelegate::getTypeFromModelIndex(const QModelIndex& index) const
 {
 	auto variant = index.data(Qt::UserRole);
 	if (variant.canConvert<TypeWrapper>())
@@ -83,7 +84,7 @@ rttr::type PropertyValueItemDelegate::typeFor(const QModelIndex& index) const
 QWidget* PropertyValueItemDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option,
 												 const QModelIndex& index) const
 {
-	auto type = typeFor(index);
+	auto type = getTypeFromModelIndex(index);
 	if (type.is_enumeration())
 	{
 		int val = index.data(Qt::DisplayRole).toInt();
@@ -103,7 +104,7 @@ QWidget* PropertyValueItemDelegate::createEditor(QWidget* parent, const QStyleOp
 
 void PropertyValueItemDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
-	auto type = typeFor(index);
+	auto type = getTypeFromModelIndex(index);
 	if (type.is_enumeration())
 	{
 		auto combo = dynamic_cast<QComboBox*>(editor);
@@ -118,7 +119,7 @@ void PropertyValueItemDelegate::setEditorData(QWidget* editor, const QModelIndex
 
 void PropertyValueItemDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
 {
-	auto type = typeFor(index);
+	auto type = getTypeFromModelIndex(index);
 	if (type.is_enumeration())
 	{
 		auto combo = dynamic_cast<QComboBox*>(editor);

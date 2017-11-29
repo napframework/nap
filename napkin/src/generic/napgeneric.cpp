@@ -8,8 +8,8 @@ napkin::RTTITypeItem::RTTITypeItem(const nap::rtti::TypeInfo& type) : type(type)
 {
 	setText(type.get_name().data());
 	setEditable(false);
-	//    setForeground(softForeground());
-	//    setBackground(softBackground());
+	//    setForeground(getSoftForeground());
+	//    setBackground(getSoftBackground());
 	refresh();
 }
 

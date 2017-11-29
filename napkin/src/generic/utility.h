@@ -22,12 +22,12 @@ namespace napkin
 	/**
 	 * @return A dimmed foreground color based on the current QApplication style
 	 */
-	const QColor& softForeground();
+	const QColor& getSoftForeground();
 
 	/**
 	 * @return A dimmed background color based on the current QApplication style
 	 */
-	const QColor& softBackground();
+	const QColor& getSoftBackground();
 
 	/**
 	 * Recursively traverse the provided model and invoke the provided visitor for every item.

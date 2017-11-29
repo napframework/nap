@@ -7,6 +7,7 @@
 #include <QtCore/QVariant>
 
 #include "typeconversion.h"
+
 namespace napkin
 {
     /**

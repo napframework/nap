@@ -71,12 +71,12 @@ namespace napkin
 		/**
 		 * @return The object held by this item
 		 */
-		nap::rtti::RTTIObject& object() const;
+		nap::rtti::RTTIObject& getObject() const;
 
 		/**
 		 * @return The name of the object.
 		 */
-		virtual const QString name() const;
+		virtual const QString getName() const;
 
 	protected:
 		nap::rtti::RTTIObject& mObject; // THe object held by this item
@@ -100,7 +100,7 @@ namespace napkin
 		/**
 		 * @return The entity held by this item
 		 */
-		nap::Entity& entity();
+		nap::Entity& getEntity();
 	};
 
 	/**
@@ -121,7 +121,7 @@ namespace napkin
 		/**
 		 * @return The component held by this item.
 		 */
-		nap::Component& component();
+		nap::Component& getComponent();
 	};
 
 	/**
@@ -212,7 +212,7 @@ namespace napkin
 		/**
 		 * @return The instances currently selected in the view.
 		 */
-		std::vector<rttr::instance> selectedInstances() const;
+		std::vector<rttr::instance> getSelectedInstances() const;
 
 		/**
 		 * Used to provide this view with custom menu items

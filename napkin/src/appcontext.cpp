@@ -25,7 +25,7 @@ using namespace napkin;
 AppContext::AppContext()
 {
 	ErrorState err;
-	if (!core().initializeEngine(err))
+	if (!getCore().initializeEngine(err))
 	{
 		nap::Logger::fatal("Failed to initialize engine");
 	}
@@ -60,7 +60,7 @@ void AppContext::loadFile(const QString& filename)
 	QSettings().setValue(settingsKey::LAST_OPENED_FILE, filename);
 
 	ErrorState err;
-	auto& factory = core().getResourceManager()->getFactory();
+	auto& factory = getCore().getResourceManager()->getFactory();
 	nap::rtti::RTTIDeserializeResult result;
 	if (!readJSONFile(filename.toStdString(), factory, result, err))
 	{
@@ -124,25 +124,25 @@ void AppContext::saveFileAs(const QString& filename)
 
 void AppContext::openRecentFile()
 {
-	auto lastFilename = AppContext::get().lastOpenedFilename();
+	auto lastFilename = AppContext::get().getLastOpenedFilename();
 	if (lastFilename.isNull())
 		return;
 	AppContext::get().loadFile(lastFilename);
 }
 
-const QString AppContext::lastOpenedFilename()
+const QString AppContext::getLastOpenedFilename()
 {
 	return QSettings().value(settingsKey::LAST_OPENED_FILE).toString();
 }
 
 nap::Entity* AppContext::getParent(const nap::Entity& child)
 {
-	for (const auto& o : objects())
+	for (const auto& o : getObjectPointers())
 	{
 		if (!o->get_type().is_derived_from<nap::Entity>())
 			continue;
 
-		auto parent = dynamic_cast<nap::Entity*>(o.get());
+		nap::Entity* parent = rtti_cast<nap::Entity>(o);
 		auto it = std::find_if(parent->mChildren.begin(), parent->mChildren.end(),
 							   [&child](nap::ObjectPtr<nap::Entity> e) -> bool { return &child == e.get(); });
 
@@ -154,12 +154,12 @@ nap::Entity* AppContext::getParent(const nap::Entity& child)
 
 nap::Entity* AppContext::getOwner(const nap::Component& component)
 {
-	for (const auto& o : objects())
+	for (const auto& o : getObjects())
 	{
 		if (!o->get_type().is_derived_from<nap::Entity>())
 			continue;
 
-		auto owner = dynamic_cast<nap::Entity*>(o.get());
+		auto& owner = *rtti_cast<nap::Entity*>(o.get());
 		auto it = std::find_if(
 			owner->mComponents.begin(), owner->mComponents.end(),
 			[&component](nap::ObjectPtr<nap::Component> comp) -> bool { return &component == comp.get(); });
@@ -232,10 +232,10 @@ nap::rtti::RTTIObject* AppContext::getObject(const std::string& name)
 	return it->get();
 }
 
-nap::rtti::ObjectList AppContext::objectPointers()
+nap::rtti::ObjectList AppContext::getObjectPointers()
 {
 	ObjectList ret;
-	for (auto& ob : objects())
+	for (auto& ob : getObjects())
 		ret.emplace_back(ob.get());
 	return ret;
 }
@@ -245,13 +245,15 @@ void AppContext::deleteObject(nap::rtti::RTTIObject& object)
 {
 	if (object.get_type().is_derived_from<nap::Entity>())
 	{
-		auto parent = getParent(dynamic_cast<nap::Entity&>(object));
+        auto entity = *rtti_cast<nap::Entity*>(&object);
+		auto parent = getParent(*entity);
 		if (parent)
 			parent->mChildren.erase(std::remove(parent->mChildren.begin(), parent->mChildren.end(), &object));
 	}
 	else if (object.get_type().is_derived_from<nap::Component>())
 	{
-		auto owner = getOwner(dynamic_cast<nap::Component&>(object));
+        auto component = *rtti_cast<nap::Component*>(&object);
+		auto owner = getOwner(*component);
 		if (owner)
 			owner->mComponents.erase(std::remove(owner->mComponents.begin(), owner->mComponents.end(), &object));
 	}
@@ -273,7 +275,7 @@ void AppContext::restoreUI()
 {
 	// Restore theme
 	const auto& recentTheme = QSettings().value(settingsKey::LAST_THEME, napkin::TXT_DEFAULT_THEME).toString();
-	themeManager().setTheme(recentTheme);
+	getThemeManager().setTheme(recentTheme);
 
 	openRecentFile();
 }

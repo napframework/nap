@@ -30,7 +30,7 @@ namespace napkin
 		/**
 		 * @return The QMenu that contains the list of available windows
 		 */
-		QMenu* windowMenu()
+		QMenu* getWindowMenu()
 		{
 			return mWindowMenu;
 		}

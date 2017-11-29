@@ -8,19 +8,21 @@
 
 using namespace napkin;
 
-ThemeManager::ThemeManager() : mCurrentTheme(TXT_DEFAULT_THEME) {}
+ThemeManager::ThemeManager() : mCurrentTheme(TXT_DEFAULT_THEME)
+{
+}
 
 
 void ThemeManager::setTheme(const QString& themeName)
 {
 	if (themeName.isEmpty())
 	{
-		AppContext::get().qApplication()->setStyleSheet(nullptr);
+		AppContext::get().getQApplication()->setStyleSheet(nullptr);
 		mCurrentTheme = napkin::TXT_DEFAULT_THEME;
 	}
 	else
 	{
-		auto themeFile = QString("%1/%2.qss").arg(themeDir(), themeName);
+		auto themeFile = QString("%1/%2.qss").arg(getThemeDir(), themeName);
 		QFile f(themeFile);
 		if (!f.open(QFile::ReadOnly | QFile::Text))
 		{
@@ -31,7 +33,7 @@ void ThemeManager::setTheme(const QString& themeName)
 		auto styleSheet = in.readAll();
 		f.close();
 
-		AppContext::get().qApplication()->setStyleSheet(styleSheet);
+		AppContext::get().getQApplication()->setStyleSheet(styleSheet);
 		mCurrentTheme = themeName;
 	}
 	QSettings().setValue(settingsKey::LAST_THEME, mCurrentTheme);
@@ -39,13 +41,16 @@ void ThemeManager::setTheme(const QString& themeName)
 	themeChanged(mCurrentTheme);
 }
 
-const QString& ThemeManager::currentTheme() const { return mCurrentTheme; }
+const QString& ThemeManager::getCurrentTheme() const
+{
+	return mCurrentTheme;
+}
 
-QStringList ThemeManager::availableThemes()
+QStringList ThemeManager::getAvailableThemes()
 {
 	QStringList names;
 
-	for (const auto& filename : QDir(themeDir()).entryInfoList())
+	for (const auto& filename : QDir(getThemeDir()).entryInfoList())
 	{
 		if (filename.suffix() == "qss")
 			names << filename.baseName();
@@ -53,7 +58,7 @@ QStringList ThemeManager::availableThemes()
 	return names;
 }
 
-QString ThemeManager::themeDir()
+QString ThemeManager::getThemeDir()
 {
 	// TODO: This probably needs to be configurable
 	return QString("%1/resources/themes").arg(QCoreApplication::applicationDirPath());

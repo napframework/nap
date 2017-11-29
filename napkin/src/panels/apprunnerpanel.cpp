@@ -49,7 +49,7 @@ void napkin::AppRunnerPanel::onAppChanged(const QString& filename)
 
 void napkin::AppRunnerPanel::onStartApp()
 {
-	QString executable = mFileSelector.filename();
+	QString executable = mFileSelector.getFilename();
 
 	if (!QFileInfo::exists(executable))
 	{
@@ -58,7 +58,7 @@ void napkin::AppRunnerPanel::onStartApp()
 	}
 
 	QStringList args;
-	args << AppContext::get().currentFilename();
+	args << AppContext::get().getCurrentFilename();
 
 	nap::Logger::info("Running: \"%s %s\"", executable.toStdString().c_str(), args.join(" ").toStdString().c_str());
 

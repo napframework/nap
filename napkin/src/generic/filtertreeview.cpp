@@ -6,100 +6,100 @@
 
 napkin::FilterTreeView::FilterTreeView()
 {
-	layout.setContentsMargins(0, 0, 0, 0);
-	layout.setSpacing(0);
-	setLayout(&layout);
+	mLayout.setContentsMargins(0, 0, 0, 0);
+	mLayout.setSpacing(0);
+	setLayout(&mLayout);
 
-	sortFilter.setFilterCaseSensitivity(Qt::CaseInsensitive);
-	sortFilter.setFilterKeyColumn(-1); // Filter all columns
+	mSortFilter.setFilterCaseSensitivity(Qt::CaseInsensitive);
+	mSortFilter.setFilterKeyColumn(-1); // Filter all columns
 
-	leFilter.setPlaceholderText("filter");
-	leFilter.setClearButtonEnabled(true);
-	connect(&leFilter, &QLineEdit::textChanged, this, &FilterTreeView::onFilterChanged);
-	layout.addWidget(&leFilter);
+	mLineEditFilter.setPlaceholderText("filter");
+	mLineEditFilter.setClearButtonEnabled(true);
+	connect(&mLineEditFilter, &QLineEdit::textChanged, this, &FilterTreeView::onFilterChanged);
+	mLayout.addWidget(&mLineEditFilter);
 
-	treeView.setModel(&sortFilter);
+	mTreeView.setModel(&mSortFilter);
 
-	layout.addWidget(&treeView);
+	mLayout.addWidget(&mTreeView);
 
 	setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(this, &QWidget::customContextMenuRequested, this, &FilterTreeView::onCustomContextMenuRequested);
 }
 
-void napkin::FilterTreeView::setModel(QStandardItemModel* model) { sortFilter.setSourceModel(model); }
+void napkin::FilterTreeView::setModel(QStandardItemModel* model) { mSortFilter.setSourceModel(model); }
 
-QStandardItemModel* napkin::FilterTreeView::model() const
+QStandardItemModel* napkin::FilterTreeView::getModel() const
 {
-	return dynamic_cast<QStandardItemModel*>(sortFilter.sourceModel());
+	return dynamic_cast<QStandardItemModel*>(mSortFilter.sourceModel());
 }
 
 void napkin::FilterTreeView::selectAndReveal(QStandardItem* item)
 {
 	if (item == nullptr)
 		return;
-	auto idx = filterModel().mapFromSource(item->index());
+	auto idx = getFilterModel().mapFromSource(item->index());
 	// We are going to select an entire row
-	auto botRight = filterModel().index(idx.row(), filterModel().columnCount(idx.parent()) - 1, idx.parent());
-	tree().selectionModel()->select(QItemSelection(idx, botRight), QItemSelectionModel::ClearAndSelect);
-	tree().scrollTo(idx);
+	auto botRight = getFilterModel().index(idx.row(), getFilterModel().columnCount(idx.parent()) - 1, idx.parent());
+    getTreeView().selectionModel()->select(QItemSelection(idx, botRight), QItemSelectionModel::ClearAndSelect);
+    getTreeView().scrollTo(idx);
 }
 
 
-QStandardItem* napkin::FilterTreeView::selectedItem()
+QStandardItem* napkin::FilterTreeView::getSelectedItem()
 {
-	for (auto idx : selectedIndexes())
-		return model()->itemFromIndex(idx);
+	for (auto idx : getSelectedIndexes())
+		return getModel()->itemFromIndex(idx);
 	return nullptr;
 }
 
 
-QList<QStandardItem*> napkin::FilterTreeView::selectedItems() const
+QList<QStandardItem*> napkin::FilterTreeView::getSelectedItems() const
 {
 	QList<QStandardItem*> ret;
-	for (auto idx : selectedIndexes())
-		ret.append(model()->itemFromIndex(idx));
+	for (auto idx : getSelectedIndexes())
+		ret.append(getModel()->itemFromIndex(idx));
 	return ret;
 }
 
-QList<QModelIndex> napkin::FilterTreeView::selectedIndexes() const
+QList<QModelIndex> napkin::FilterTreeView::getSelectedIndexes() const
 {
 	QList<QModelIndex> ret;
-	for (auto idx : selectionModel()->selectedRows())
-		ret.append(sortFilter.mapToSource(idx));
+	for (auto idx : getSelectionModel()->selectedRows())
+		ret.append(mSortFilter.mapToSource(idx));
 	return ret;
 }
 
 void napkin::FilterTreeView::onFilterChanged(const QString& text)
 {
-	sortFilter.setFilterRegExp(text);
-	treeView.expandAll();
+	mSortFilter.setFilterRegExp(text);
+	mTreeView.expandAll();
 }
 
 
 void napkin::FilterTreeView::onExpandSelected()
 {
-	for (auto& idx : selectedIndexes())
-		expandChildren(&treeView, idx, true);
+	for (auto& idx : getSelectedIndexes())
+		expandChildren(&mTreeView, idx, true);
 }
 
 void napkin::FilterTreeView::onCollapseSelected()
 {
-	for (auto& idx : selectedIndexes())
-		expandChildren(&treeView, idx, false);
+	for (auto& idx : getSelectedIndexes())
+		expandChildren(&mTreeView, idx, false);
 }
 
-void napkin::FilterTreeView::expandChildren(QTreeView* view, const QModelIndex& idx, bool expanded)
+void napkin::FilterTreeView::expandChildren(QTreeView* view, const QModelIndex& index, bool expanded)
 {
-	if (!idx.isValid())
+	if (!index.isValid())
 		return;
 
-	for (int i = 0, len = idx.model()->rowCount(idx); i < len; i++)
-		expandChildren(view, idx.child(i, 0), expanded);
+	for (int i = 0, len = index.model()->rowCount(index); i < len; i++)
+		expandChildren(view, index.child(i, 0), expanded);
 
-	if (expanded && !view->isExpanded(idx))
-		view->expand(idx);
-	else if (view->isExpanded(idx))
-		view->collapse(idx);
+	if (expanded && !view->isExpanded(index))
+		view->expand(index);
+	else if (view->isExpanded(index))
+		view->collapse(index);
 }
 
 void napkin::FilterTreeView::onCustomContextMenuRequested(const QPoint& pos)
@@ -109,10 +109,10 @@ void napkin::FilterTreeView::onCustomContextMenuRequested(const QPoint& pos)
 	if (mMenuHookFn != nullptr)
 		mMenuHookFn(menu);
 
-	actionExpandAll.setText("Expand All");
-	menu.addAction(&actionExpandAll);
-	actionCollapseAll.setText("Collapse");
-	menu.addAction(&actionCollapseAll);
+	mActionExpandAll.setText("Expand All");
+	menu.addAction(&mActionExpandAll);
+	mActionCollapseAll.setText("Collapse");
+	menu.addAction(&mActionCollapseAll);
 
 	menu.exec(mapToGlobal(pos));
 }

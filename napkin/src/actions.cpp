@@ -21,7 +21,7 @@ OpenFileAction::OpenFileAction()
 
 void OpenFileAction::perform()
 {
-	auto lastFilename = AppContext::get().lastOpenedFilename();
+	auto lastFilename = AppContext::get().getLastOpenedFilename();
 	QString filename = QFileDialog::getOpenFileName(QApplication::topLevelWidgets()[0], "Open NAP Data File",
 													lastFilename, JSON_FILE_FILTER);
 	if (filename.isNull())
@@ -38,7 +38,7 @@ SaveFileAction::SaveFileAction()
 
 void SaveFileAction::perform()
 {
-	if (AppContext::get().currentFilename().isNull())
+	if (AppContext::get().getCurrentFilename().isNull())
 	{
 		SaveFileAsAction().trigger();
 		return;
@@ -55,9 +55,9 @@ SaveFileAsAction::SaveFileAsAction()
 void SaveFileAsAction::perform()
 {
 	auto& ctx = AppContext::get();
-	auto prevFilename = ctx.currentFilename();
+	auto prevFilename = ctx.getCurrentFilename();
 	if (prevFilename.isNull())
-		prevFilename = ctx.lastOpenedFilename();
+		prevFilename = ctx.getLastOpenedFilename();
 
 	QString filename = QFileDialog::getSaveFileName(QApplication::topLevelWidgets()[0], "Save NAP Data File",
 													prevFilename, JSON_FILE_FILTER);
@@ -96,7 +96,7 @@ SetThemeAction::SetThemeAction(const QString& themeName) : Action(), mTheme(them
 
 void SetThemeAction::perform()
 {
-    AppContext::get().themeManager().setTheme(mTheme);
+    AppContext::get().getThemeManager().setTheme(mTheme);
 }
 
 void AddComponentAction::perform()
