@@ -46,8 +46,15 @@ if __name__ == '__main__':
     cmake_template_dir = os.path.abspath(os.path.join(nap_root, 'cmake/projectCreator'))
     project_path = os.path.abspath(os.path.join(nap_root, 'projects/%s' % project_name.lower()))
 
+    # Check for existing project with same name
     if os.path.exists(project_path):
         print("Error: Project with name %s already exists" % project_name)
+        sys.exit(ERROR_EXISTING_PROJECT)
+
+    # Check for existing example with same name
+    dupe_project_path = os.path.abspath(os.path.join(nap_root, 'examples/%s' % project_name.lower()))
+    if os.path.exists(dupe_project_path):
+        print("Error: Example exists with same name '%s'" % project_name)
         sys.exit(ERROR_EXISTING_PROJECT)
 
     # Create project from template
