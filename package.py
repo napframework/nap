@@ -66,8 +66,9 @@ def is_linux_apt_package_installed(package_name):
     (out, err) = call(WORKING_DIR, ['dpkg', '--get-selections', package_name], True)
     installed = not 'no packages' in err
     print("Package '%s' installed? %s" % (package_name, installed))
-    return installed  
+    return installed
 
+# Check if brew is installed
 def is_osx_brew_installed():
     try:
         brew_path = call(WORKING_DIR, ['which', 'brew'], True)[0].strip()
@@ -75,13 +76,44 @@ def is_osx_brew_installed():
     except:
         return False
 
+# Check if we have a package installed with homebrew
+def is_osx_brew_package_installed(package_name):
+    # TODO Running brew list once without the packagename and searching the results would be faster
+    (out, err) = call(WORKING_DIR, ['brew', 'list', package_name], True)
+    installed = not 'Error: No such keg' in err
+    print("Package '%s' installed? %s" % (package_name, installed))
+    return installed
+
+# Install dependencies for macOS via homebrew, checking if we have them first
 def install_dependencies_osx():
+    dependencies = [
+        'cmake',
+        'sdl2',
+        'glew',
+        'glm',
+        'assimp',
+        'tclap',
+        'ffmpeg',
+        'mpg123'
+    ]
+
     if not is_osx_brew_installed():
         print("Not installing macOS dependencies as homebrew was not found")
         # TODO potentially fail here in future if we have a hard homebrew dependency
         return
 
-    for pack in ['cmake', 'sdl2', 'glew', 'glm', 'assimp', 'tclap', 'ffmpeg', 'mpg123']:
+    # Create a list of packages we need to install
+    packages_to_install = []
+    for d in dependencies:
+        if not is_osx_brew_package_installed(d):
+            packages_to_install.append(d)
+
+    # Return if all already installed
+    if len(packages_to_install) == 0:
+        print("All dependencies already installed")
+        return
+
+    for pack in packages_to_install:
         try:
             call(WORKING_DIR, ['brew', 'install', pack])
         except:
