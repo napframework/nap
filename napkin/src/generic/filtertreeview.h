@@ -34,22 +34,22 @@ namespace napkin
 		/**
 		 * @return The model set using setModel()
 		 */
-		QStandardItemModel* model() const;
+		QStandardItemModel* getModel() const;
 
 		/**
 		 * @return The sort/filter model that sits between the user model and the view.
 		 */
-		const QSortFilterProxyModel& filterModel() const
+		const QSortFilterProxyModel& getFilterModel() const
 		{
-			return sortFilter;
+			return mSortFilter;
 		}
 
 		/**
 		 * @return The actual QTreeView used by this widget.
 		 */
-		QTreeView& tree()
+		QTreeView& getTreeView()
 		{
-			return treeView;
+			return mTreeView;
 		}
 
 		/**
@@ -61,25 +61,25 @@ namespace napkin
 		/**
 		 * @return The first currently selected item.
 		 */
-		QStandardItem* selectedItem();
+		QStandardItem* getSelectedItem();
 
 		/**
 		 * @return The currently selected items in the view.
 		 */
-		QList<QStandardItem*> selectedItems() const;
+		QList<QStandardItem*> getSelectedItems() const;
 
 		/**
 		 * @return The selection model used by the tree view.
 		 */
-		QItemSelectionModel* selectionModel() const
+		QItemSelectionModel* getSelectionModel() const
 		{
-			return treeView.selectionModel();
+			return mTreeView.selectionModel();
 		}
 
 		/**
 		 * @return The currently selected indexes from the model set by setModel().
 		 */
-		QList<QModelIndex> selectedIndexes() const;
+		QList<QModelIndex> getSelectedIndexes() const;
 
 		/**
 		 * When the menu is about to be shown, invoke the provided method to allow a client to insert items into it.
@@ -91,11 +91,20 @@ namespace napkin
 		}
 
 	protected:
+        /**
+         * Invoked when the filter has changed
+         * @param text The filter text
+         */
 		void onFilterChanged(const QString& text);
 
-
+        /**
+         * invoked when the user wants to expand the selection
+         */
 		void onExpandSelected();
 
+        /**
+         * invoked when the user wants to collapse the selection
+         */
 		void onCollapseSelected();
 
 		/**
@@ -103,16 +112,22 @@ namespace napkin
 		 */
 		void onCustomContextMenuRequested(const QPoint& pos);
 
-		static void expandChildren(QTreeView* view, const QModelIndex& idx, bool expanded);
+        /**
+         * Recursively expand the children of the specified treeview, starting with index
+         * @param view The view in which to expand the children
+         * @param index The index at which to start expansion
+         * @param expanded True for expansion, false for collapse
+         */
+		static void expandChildren(QTreeView* view, const QModelIndex& index, bool expanded);
 
 	private:
-		QVBoxLayout layout;
-		QLineEdit leFilter;
-		QTreeView treeView;
-		LeafFilterProxyModel sortFilter;
+		QVBoxLayout mLayout;
+		QLineEdit mLineEditFilter;
+		QTreeView mTreeView;
+		LeafFilterProxyModel mSortFilter;
 		std::function<void(QMenu&)> mMenuHookFn = nullptr;
 
-		QAction actionExpandAll;
-		QAction actionCollapseAll;
+		QAction mActionExpandAll;
+		QAction mActionCollapseAll;
 	};
 };

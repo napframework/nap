@@ -31,7 +31,7 @@ namespace napkin
 		/**
 		 * @return The currently displayed filename
 		 */
-		const QString filename();
+		const QString getFilename();
 
 	Q_SIGNALS:
 

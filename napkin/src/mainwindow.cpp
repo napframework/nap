@@ -50,13 +50,13 @@ void MainWindow::addMenu()
 		addAction(saveFileAction);
 		filemenu->addAction(saveFileAsAction);
 	}
-	menuBar()->insertMenu(windowMenu()->menuAction(), filemenu);
+	menuBar()->insertMenu(getWindowMenu()->menuAction(), filemenu);
 
 	auto optionsMenu = new QMenu("Options", menuBar());
 	{
 		optionsMenu->addMenu(&mThemeMenu);
 	}
-	menuBar()->insertMenu(windowMenu()->menuAction(), optionsMenu);
+	menuBar()->insertMenu(getWindowMenu()->menuAction(), optionsMenu);
 }
 
 
@@ -80,7 +80,7 @@ void MainWindow::onFileSaved(const QString& filename)
 
 void MainWindow::updateWindowTitle()
 {
-	setWindowTitle(QString("%1 - %2").arg(QApplication::applicationName(), AppContext::get().currentFilename()));
+	setWindowTitle(QString("%1 - %2").arg(QApplication::applicationName(), AppContext::get().getCurrentFilename()));
 }
 
 MainWindow::MainWindow()

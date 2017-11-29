@@ -97,7 +97,7 @@ napkin::PropertyItem::PropertyItem(const QString& name, nap::rtti::RTTIObject* o
 	: napkin::BaseItem(name, object, path)
 {
 	setEditable(false);
-	setForeground(softForeground());
+	setForeground(getSoftForeground());
 }
 
 int napkin::PropertyItem::type() const
@@ -129,7 +129,7 @@ void napkin::PropertyValueItem::setData(const QVariant& value, int role)
 	if (role == Qt::EditRole)
 	{
 		auto undoCommand = new SetValueCommand(mObject, mPath, value);
-		AppContext::get().undoStack().push(undoCommand);
+        AppContext::get().getUndoStack().push(undoCommand);
 	}
 
 	if (role == Qt::DisplayRole)
@@ -155,7 +155,7 @@ int napkin::PropertyValueItem::type() const
 	return QStandardItem::UserType + InspectorPanelStandardItemTypeID::PropertyValueItemTypeID;
 }
 
-rttr::type& napkin::PropertyValueItem::valueType()
+rttr::type& napkin::PropertyValueItem::getValueType()
 {
 	return mValueType;
 }
@@ -185,15 +185,15 @@ napkin::InspectorPanel::InspectorPanel()
 	layout()->setContentsMargins(0, 0, 0, 0);
 	mLayout.addWidget(&mTreeView);
 	mTreeView.setModel(&mModel);
-	mTreeView.tree().setColumnWidth(0, 250);
-	mTreeView.tree().setColumnWidth(1, 250);
-	mTreeView.tree().setItemDelegateForColumn(1, &mWidgetDelegate);
+    mTreeView.getTreeView().setColumnWidth(0, 250);
+    mTreeView.getTreeView().setColumnWidth(1, 250);
+    mTreeView.getTreeView().setItemDelegateForColumn(1, &mWidgetDelegate);
 }
 
 void napkin::InspectorPanel::setObject(RTTIObject* objects)
 {
 	mModel.setObject(objects);
-	mTreeView.tree().expandAll();
+    mTreeView.getTreeView().expandAll();
 }
 
 
@@ -224,7 +224,7 @@ napkin::ArrayPropertyItem::ArrayPropertyItem(const QString& name, nap::rtti::RTT
 {
 	std::string pathStr = path.toString();
 	populateChildren();
-	setForeground(softForeground());
+	setForeground(getSoftForeground());
 }
 
 int napkin::ArrayPropertyItem::type() const
@@ -257,10 +257,10 @@ QVariant napkin::InspectorModel::data(const QModelIndex& index, int role) const
 {
 	if (role == Qt::UserRole)
 	{
-		auto valueItem = dynamic_cast<class PropertyValueItem*>(itemFromIndex(index));
+		auto valueItem = dynamic_cast<PropertyValueItem*>(itemFromIndex(index));
 		if (valueItem)
 		{
-			return QVariant::fromValue(TypeWrapper(&valueItem->valueType()));
+			return QVariant::fromValue(TypeWrapper(&valueItem->getValueType()));
 		}
 	}
 	return QStandardItemModel::data(index, role);
@@ -270,14 +270,14 @@ bool napkin::InspectorModel::setData(const QModelIndex& index, const QVariant& v
 {
 	if (role == Qt::EditRole)
 	{
-		auto valueItem = dynamic_cast<class PropertyValueItem*>(itemFromIndex(index));
+		auto valueItem = dynamic_cast<PropertyValueItem*>(itemFromIndex(index));
 		valueItem->setData(value, Qt::EditRole);
 		return true;
 	}
 	return QStandardItemModel::setData(index, value, role);
 }
 
-nap::rtti::RTTIObject* napkin::InspectorModel::object()
+nap::rtti::RTTIObject* napkin::InspectorModel::getObject()
 {
 	return mObject;
 }
@@ -305,7 +305,7 @@ napkin::CompoundPropertyItem::CompoundPropertyItem(const QString& name, nap::rtt
 										   const nap::rtti::RTTIPath& path)
 	: napkin::BaseItem(name, object, path)
 {
-	setForeground(softForeground());
+	setForeground(getSoftForeground());
 	populateChildren();
 }
 
@@ -317,7 +317,7 @@ int napkin::CompoundPropertyItem::type() const
 napkin::PointerItem::PointerItem(const QString& name, nap::rtti::RTTIObject* object, const nap::rtti::RTTIPath path)
 	: napkin::BaseItem(name, object, path)
 {
-	setForeground(softForeground());
+	setForeground(getSoftForeground());
 }
 
 int napkin::PointerItem::type() const
@@ -405,7 +405,7 @@ napkin::PointerValueItem::PointerValueItem(nap::rtti::RTTIObject* object, const 
 	assert(path.resolve(object, resolved));
 }
 
-rttr::type napkin::PointerValueItem::valueType()
+rttr::type napkin::PointerValueItem::getValueType()
 {
 	return mValueType;
 }

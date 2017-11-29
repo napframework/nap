@@ -10,9 +10,7 @@ using namespace napkin;
  */
 int main(int argc, char* argv[])
 {
-
 	// nap::Core is declared in AppContext
-
 	QApplication::setOrganizationName("NaiviSoftware");
 	QApplication::setApplicationName("Napkin");
 

@@ -17,7 +17,7 @@ void LogModel::onLog(nap::LogMessage log)
 			   new QStandardItem(QString::fromStdString(log.text()))});
 
 	// Keep maximum amount of rows
-	while (rowCount() > maxRows)
+	while (rowCount() > mMaxRows)
 		removeRow(0);
 }
 

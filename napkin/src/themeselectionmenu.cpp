@@ -5,7 +5,8 @@ using namespace napkin;
 ThemeSelectionMenu::ThemeSelectionMenu() : QMenu("Theme")
 {
 	refresh();
-	connect(&AppContext::get().themeManager(), &ThemeManager::themeChanged, this, &ThemeSelectionMenu::onThemeChanged);
+	connect(&AppContext::get().getThemeManager(), &ThemeManager::themeChanged, this,
+			&ThemeSelectionMenu::onThemeChanged);
 }
 
 void ThemeSelectionMenu::refresh()
@@ -14,7 +15,7 @@ void ThemeSelectionMenu::refresh()
 	auto defaultThemeAction = new SetThemeAction(nullptr);
 	addAction(defaultThemeAction);
 
-	for (auto theme : AppContext::get().themeManager().availableThemes())
+	for (auto theme : AppContext::get().getThemeManager().getAvailableThemes())
 	{
 		auto action = new SetThemeAction(theme);
 		addAction(action);
@@ -23,11 +24,14 @@ void ThemeSelectionMenu::refresh()
 	checkCurrentTheme();
 }
 
-void ThemeSelectionMenu::onThemeChanged(const QString& theme) { checkCurrentTheme(); }
+void ThemeSelectionMenu::onThemeChanged(const QString& theme)
+{
+	checkCurrentTheme();
+}
 
 void ThemeSelectionMenu::checkCurrentTheme()
 {
-	const QString& theme = AppContext::get().themeManager().currentTheme();
+	const QString& theme = AppContext::get().getThemeManager().getCurrentTheme();
 	for (auto action : actions())
 		action->setChecked(action->text() == theme);
 }

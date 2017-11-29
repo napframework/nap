@@ -46,7 +46,7 @@ namespace napkin
 		/**
 		 * @return The single nap::Core instance held by this AppContext
 		 */
-		nap::Core& core()
+		nap::Core& getCore()
 		{
 			return mCore;
 		}
@@ -92,13 +92,13 @@ namespace napkin
 		/**
 		 * @return The path of the file that was opened last.
 		 */
-		const QString lastOpenedFilename();
+		const QString getLastOpenedFilename();
 
 		/**
 		 * @return The name of the currently opened file
 		 * or an empty string if no file is open or the data hasn't been saved yet.
 		 */
-		const QString& currentFilename()
+		const QString& getCurrentFilename()
 		{
 			return mCurrentFilename;
 		}
@@ -112,7 +112,7 @@ namespace napkin
 		/**
 		 * @return All the objects (resources?) that are currently loaded.
 		 */
-		nap::rtti::OwnedObjectList& objects()
+		nap::rtti::OwnedObjectList& getObjects()
 		{
 			return mObjects;
 		}
@@ -120,7 +120,7 @@ namespace napkin
 		/**
 		 * @return All the objects (resources?) that are currently loaded.
 		 */
-		nap::rtti::ObjectList objectPointers();
+		nap::rtti::ObjectList getObjectPointers();
 
 		/**
 		 * Retrieve an (data) object by name/id
@@ -182,7 +182,7 @@ namespace napkin
 		 * Convenience method to retrieve this QApplication's instance.
 		 * @return The QApplication singleton.
 		 */
-		QApplication* qApplication()
+		QApplication* getQApplication()
 		{
 			return dynamic_cast<QApplication*>(qGuiApp);
 		}
@@ -190,7 +190,7 @@ namespace napkin
 		/**
 		 * @return The currently used undostack, @see QUndoStack
 		 */
-		QUndoStack& undoStack()
+		QUndoStack& getUndoStack()
 		{
 			return mUndoStack;
 		}
@@ -198,7 +198,7 @@ namespace napkin
 		/**
 		 * @return Access to the current application's ThemeManage
 		 */
-		ThemeManager& themeManager()
+		ThemeManager& getThemeManager()
 		{
 			return mThemeManager;
 		}

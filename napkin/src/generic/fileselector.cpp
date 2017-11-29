@@ -27,24 +27,24 @@ void napkin::FileSelector::setFilename(const QString& filename)
 	mLineEdit.setText(filename);
 }
 
-const QString napkin::FileSelector::filename()
+const QString napkin::FileSelector::getFilename()
 {
 	return mLineEdit.text().trimmed();
 }
 
 void napkin::FileSelector::onEditingFinished()
 {
-	filenameChanged(filename());
+	filenameChanged(getFilename());
 }
 
 void napkin::FileSelector::onBrowseButtonClicked()
 {
-	QString dir = filename().isEmpty() ? "." : QFileInfo(filename()).path();
+	QString dir = getFilename().isEmpty() ? "." : QFileInfo(getFilename()).path();
 
 	auto f = QFileDialog::getOpenFileName(this, "Select File", dir, mFileFilter);
 	if (f.isEmpty())
 		return;
 
 	mLineEdit.setText(f);
-	filenameChanged(filename());
+	filenameChanged(getFilename());
 }

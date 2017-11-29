@@ -13,22 +13,44 @@ namespace napkin
 	class PropertyValueItemDelegate : public QStyledItemDelegate
 	{
 	public:
-		rttr::type typeFor(const QModelIndex& idx) const;
+		/**
+		 * Get the type this modelindex represents
+		 * @param idx The model index that 'points' to an object with that type
+		 * @return The type represented by the index
+		 */
+		rttr::type getTypeFromModelIndex(const QModelIndex& idx) const;
 
+		/**
+		 * Override from QStyledItemDelegate
+		 */
 		QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option,
 							  const QModelIndex& index) const override;
 
+		/**
+		 * Override from QStyledItemDelegate
+		 */
 		void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
+		/**
+		 * Override from QStyledItemDelegate
+		 */
 		void setEditorData(QWidget* editor, const QModelIndex& index) const override;
 
+		/**
+		 * Override from QStyledItemDelegate
+		 */
 		void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
 
+		/**
+		 * Override from QStyledItemDelegate
+		 */
+		QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+
 	protected:
+		/**
+		 * Override from QStyledItemDelegate
+		 */
 		bool editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option,
 						 const QModelIndex& index) override;
-
-	public:
-		QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 	};
 };
