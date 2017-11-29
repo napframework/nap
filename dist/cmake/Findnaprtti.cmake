@@ -30,7 +30,7 @@ elseif (APPLE)
 elseif (UNIX)
     find_path(
         NAPRTTI_LIBS_DIR
-        NAMES Release/libnaprtti.so
+	NAMES Debug/libnaprtti.so
         HINTS
             ${CMAKE_CURRENT_LIST_DIR}/../lib/
     )

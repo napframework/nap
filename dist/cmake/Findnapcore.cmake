@@ -19,7 +19,7 @@ elseif (APPLE)
 elseif (UNIX)
     find_path(
         NAPCORE_LIBS_DIR
-        NAMES Release/libnapcore.so
+	NAMES Debug/libnapcore.so
         HINTS ${CMAKE_CURRENT_LIST_DIR}/../lib/
     )
     set(NAPCORE_LIBS_RELEASE_DLL ${NAPCORE_LIBS_DIR}/Release/libnapcore.so)
