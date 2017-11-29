@@ -60,9 +60,9 @@ void AppContext::loadFile(const QString& filename)
 	QSettings().setValue(settingsKey::LAST_OPENED_FILE, filename);
 
 	ErrorState err;
-	auto& factory = getCore().getResourceManager()->getFactory();
+
 	nap::rtti::RTTIDeserializeResult result;
-	if (!readJSONFile(filename.toStdString(), factory, result, err))
+	if (!readJSONFile(filename.toStdString(), getCore().getResourceManager()->getFactory(), result, err))
 	{
 		nap::Logger::fatal(err.toString());
 		return;
@@ -159,7 +159,7 @@ nap::Entity* AppContext::getOwner(const nap::Component& component)
 		if (!o->get_type().is_derived_from<nap::Entity>())
 			continue;
 
-		auto& owner = *rtti_cast<nap::Entity*>(o.get());
+		nap::Entity* owner = *rtti_cast<nap::Entity*>(o.get());
 		auto it = std::find_if(
 			owner->mComponents.begin(), owner->mComponents.end(),
 			[&component](nap::ObjectPtr<nap::Component> comp) -> bool { return &component == comp.get(); });
@@ -206,8 +206,8 @@ nap::rtti::RTTIObject* AppContext::addObject(rttr::type type)
 {
 	assert(type.can_create_instance());
 	assert(type.is_derived_from<nap::rtti::RTTIObject>());
-	auto variant = type.create();
-	auto obj = variant.get_value<nap::rtti::RTTIObject*>();
+	rttr::variant variant = type.create();
+	nap::rtti::RTTIObject* obj = variant.get_value<nap::rtti::RTTIObject*>();
 	obj->mID = getUniqueName(type.get_name().data());
 	mObjects.emplace_back(obj);
 	objectAdded(*obj);
@@ -245,15 +245,15 @@ void AppContext::deleteObject(nap::rtti::RTTIObject& object)
 {
 	if (object.get_type().is_derived_from<nap::Entity>())
 	{
-        auto entity = *rtti_cast<nap::Entity*>(&object);
-		auto parent = getParent(*entity);
+        nap::Entity* entity = *rtti_cast<nap::Entity*>(&object);
+		nap::Entity* parent = getParent(*entity);
 		if (parent)
 			parent->mChildren.erase(std::remove(parent->mChildren.begin(), parent->mChildren.end(), &object));
 	}
 	else if (object.get_type().is_derived_from<nap::Component>())
 	{
-        auto component = *rtti_cast<nap::Component*>(&object);
-		auto owner = getOwner(*component);
+        nap::Component* component = *rtti_cast<nap::Component*>(&object);
+		nap::Entity* owner = getOwner(*component);
 		if (owner)
 			owner->mComponents.erase(std::remove(owner->mComponents.begin(), owner->mComponents.end(), &object));
 	}
@@ -274,7 +274,7 @@ void AppContext::executeCommand(QUndoCommand* cmd)
 void AppContext::restoreUI()
 {
 	// Restore theme
-	const auto& recentTheme = QSettings().value(settingsKey::LAST_THEME, napkin::TXT_DEFAULT_THEME).toString();
+	const QString& recentTheme = QSettings().value(settingsKey::LAST_THEME, napkin::TXT_DEFAULT_THEME).toString();
 	getThemeManager().setTheme(recentTheme);
 
 	openRecentFile();

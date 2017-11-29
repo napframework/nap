@@ -24,7 +24,7 @@ void napkin::RTTITypeItem::refresh()
 bool napkin::resolveLinks(const OwnedObjectList& objects, const UnresolvedPointerList& unresolvedPointers)
 {
 	std::map<std::string, RTTIObject*> objects_by_id;
-	for (auto& object : objects)
+	for (std::unique_ptr<nap::rtti::RTTIObject>& object : objects)
 		objects_by_id.insert({object->mID, object.get()});
 
 	for (const UnresolvedPointer& unresolvedPointer : unresolvedPointers)

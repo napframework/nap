@@ -37,7 +37,7 @@ void napkin::FilterTreeView::selectAndReveal(QStandardItem* item)
 {
 	if (item == nullptr)
 		return;
-	auto idx = getFilterModel().mapFromSource(item->index());
+	QModelIndex idx = getFilterModel().mapFromSource(item->index());
 	// We are going to select an entire row
 	auto botRight = getFilterModel().index(idx.row(), getFilterModel().columnCount(idx.parent()) - 1, idx.parent());
     getTreeView().selectionModel()->select(QItemSelection(idx, botRight), QItemSelectionModel::ClearAndSelect);

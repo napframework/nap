@@ -12,7 +12,7 @@ bool napkin::LeafFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelI
 
 bool napkin::LeafFilterProxyModel::acceptsAnyChild(int sourceRow, QModelIndex sourceParent) const
 {
-	auto childIndex = sourceModel()->index(sourceRow, 0, sourceParent);
+	QModelIndex childIndex = sourceModel()->index(sourceRow, 0, sourceParent);
 
 	for (int r = 0, len = sourceModel()->rowCount(childIndex); r < len; r++)
 	{
