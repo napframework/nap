@@ -11,42 +11,70 @@
 #include "panels/resourcepanel.h"
 #include "themeselectionmenu.h"
 
-/**
- * The main application window. It will spawn and keep all the application's panels.
- * Our application's data is managed by AppContext.
- */
-class MainWindow : public BaseWindow
+namespace napkin
 {
-	Q_OBJECT
-public:
-	MainWindow()
+	/**
+	 * The main application window. It will spawn and keep all the application's panels.
+	 * Our application's data is managed by AppContext.
+	 */
+	class MainWindow : public BaseWindow
 	{
-		addDocks();
-		addMenu();
-		bindSignals();
-	}
+		Q_OBJECT
+	public:
+		MainWindow();
+		virtual ~MainWindow();
 
-	virtual ~MainWindow() {}
+	protected:
+        /**
+         * Override...
+         */
+		void showEvent(QShowEvent* event) override;
 
-protected:
-	void showEvent(QShowEvent* event) override;
+	private:
+        /**
+         * BInd signals
+         */
+		void bindSignals();
 
-private:
-	void bindSignals();
-	void addDocks();
-	void addMenu();
-	void updateWindowTitle();
+        /**
+         * Add all the docks/panels
+         */
+		void addDocks();
 
-	void onNewFile();
-	void onFileOpened(const QString& filename);
-	void onFileSaved(const QString& filename);
+        /**
+         * Add the menu
+         */
+		void addMenu();
 
-private:
-	ResourcePanel mOutlinePanel;
-	HierarchyPanel mHierarchyPanel;
-	InspectorPanel mInspectorPanel;
-	HistoryPanel mHistoryPanel;
-	LogPanel mLogPanel;
-	AppRunnerPanel mAppRunnerPanel;
-	ThemeSelectionMenu mThemeMenu;
+        /**
+         * Makes the window title up to date
+         */
+		void updateWindowTitle();
+
+        /**
+         * Called when a new file has been created.
+         */
+		void onNewFile();
+
+        /**
+         * Called when a file has been opened
+         * @param filename The file that has been opened
+         */
+		void onFileOpened(const QString& filename);
+
+        /**
+         * Called when a file has been saved
+         * @param filename The file that has been saved
+         */
+		void onFileSaved(const QString& filename);
+
+	private:
+		ResourcePanel mOutlinePanel;	// ResourcePanel
+		HierarchyPanel mHierarchyPanel; // HierarchyPanel
+		InspectorPanel mInspectorPanel; // InspectorPanel
+		HistoryPanel mHistoryPanel;		// HistoryPanel
+		LogPanel mLogPanel;				// LogPanel
+		AppRunnerPanel mAppRunnerPanel; // AppRunnerPanel
+		ThemeSelectionMenu mThemeMenu;  // ThemeSelectionMenu
+	};
 };

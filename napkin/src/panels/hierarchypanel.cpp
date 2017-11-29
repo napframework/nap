@@ -1,10 +1,12 @@
 #include "hierarchypanel.h"
 #include "generic/napgeneric.h"
 
+napkin::TypeModel::TypeModel()
+{
+	refresh();
+}
 
-TypeModel::TypeModel() { refresh(); }
-
-void TypeModel::refresh()
+void napkin::TypeModel::refresh()
 {
 	// Clear existing items first
 	while (rowCount() > 0)
@@ -17,7 +19,7 @@ void TypeModel::refresh()
 	}
 }
 
-HierarchyPanel::HierarchyPanel()
+napkin::HierarchyPanel::HierarchyPanel()
 {
 	setLayout(&mLayout);
 	layout()->setContentsMargins(0, 0, 0, 0);

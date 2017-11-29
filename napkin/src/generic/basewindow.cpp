@@ -2,9 +2,9 @@
 #include "napkinglobals.h"
 #include <QSettings>
 
-using namespace napkin;
 
-BaseWindow::BaseWindow()
+
+napkin::BaseWindow::BaseWindow()
 {
 	setWindowTitle(QApplication::applicationName());
 	setDockNestingEnabled(true);
@@ -12,7 +12,7 @@ BaseWindow::BaseWindow()
 	menuBar()->addMenu(mWindowMenu);
 }
 
-QDockWidget* BaseWindow::addDock(const QString& name, QWidget* widget, Qt::DockWidgetArea area)
+QDockWidget* napkin::BaseWindow::addDock(const QString& name, QWidget* widget, Qt::DockWidgetArea area)
 {
 	auto dock = new QDockWidget(this);
 	dock->setObjectName(name);
@@ -30,7 +30,7 @@ QDockWidget* BaseWindow::addDock(const QString& name, QWidget* widget, Qt::DockW
 	return dock;
 }
 
-void BaseWindow::showEvent(QShowEvent* event)
+void napkin::BaseWindow::showEvent(QShowEvent* event)
 {
 	QWidget::showEvent(event);
 	QSettings s;
@@ -38,7 +38,7 @@ void BaseWindow::showEvent(QShowEvent* event)
 	restoreState(s.value(settingsKey::WIN_STATE).toByteArray());
 }
 
-void BaseWindow::closeEvent(QCloseEvent* event)
+void napkin::BaseWindow::closeEvent(QCloseEvent* event)
 {
 	QSettings s;
 	s.setValue(settingsKey::WIN_STATE, saveState());

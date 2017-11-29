@@ -2,6 +2,8 @@
 
 // RTTI Includes
 #include <rtti/rtti.h>
+#include <vector>
+#include <unordered_set>
 #include "rttipath.h"
 #include "factory.h"
 #include "unresolvedpointer.h"

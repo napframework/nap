@@ -1,6 +1,7 @@
 #include "apprunnerpanel.h"
 
-AppRunnerPanel::AppRunnerPanel() : QWidget()
+
+napkin::AppRunnerPanel::AppRunnerPanel() : QWidget()
 {
 	setLayout(&mLayout);
 	layout()->setContentsMargins(0, 0, 0, 0);
@@ -29,18 +30,24 @@ AppRunnerPanel::AppRunnerPanel() : QWidget()
 	connect(&mProcess, (void (QProcess::*)(int)) & QProcess::finished, this, &AppRunnerPanel::onAppFinished);
 }
 
-AppRunnerPanel::~AppRunnerPanel() { onStopApp(); }
+napkin::AppRunnerPanel::~AppRunnerPanel()
+{
+	onStopApp();
+}
 
 
-void AppRunnerPanel::showEvent(QShowEvent* event)
+void napkin::AppRunnerPanel::showEvent(QShowEvent* event)
 {
 	QWidget::showEvent(event);
 	mFileSelector.setFilename(QSettings().value(LAST_CORE_APP).toString());
 }
 
-void AppRunnerPanel::onAppChanged(const QString& filename) { QSettings().setValue(LAST_CORE_APP, filename); }
+void napkin::AppRunnerPanel::onAppChanged(const QString& filename)
+{
+	QSettings().setValue(LAST_CORE_APP, filename);
+}
 
-void AppRunnerPanel::onStartApp()
+void napkin::AppRunnerPanel::onStartApp()
 {
 	QString executable = mFileSelector.filename();
 
@@ -60,37 +67,43 @@ void AppRunnerPanel::onStartApp()
 	mProcess.start(executable, args);
 }
 
-void AppRunnerPanel::onStopApp() { mProcess.close(); }
+void napkin::AppRunnerPanel::onStopApp()
+{
+	mProcess.close();
+}
 
-void AppRunnerPanel::onReadOut()
+void napkin::AppRunnerPanel::onReadOut()
 {
 	QString out = mProcess.readAllStandardOutput().trimmed();
 	for (auto line : out.split("\n"))
 		nap::Logger::info(QString("[NAP] %1").arg(line).toStdString());
 }
 
-void AppRunnerPanel::onReadErr()
+void napkin::AppRunnerPanel::onReadErr()
 {
 	QString err = mProcess.readAllStandardError().trimmed();
 	for (auto line : err.split("\n"))
 		nap::Logger::fatal(QString("[NAP] %1").arg(line).toStdString());
 }
 
-void AppRunnerPanel::onAppStarted() { mStopButton.setEnabled(true); }
+void napkin::AppRunnerPanel::onAppStarted()
+{
+	mStopButton.setEnabled(true);
+}
 
-void AppRunnerPanel::onAppError(QProcess::ProcessError error)
+void napkin::AppRunnerPanel::onAppError(QProcess::ProcessError error)
 {
 	nap::Logger::fatal(QEnumToString(error).toStdString());
 	mStartButton.setEnabled(true);
 	mStopButton.setEnabled(false);
 }
 
-void AppRunnerPanel::onAppState(QProcess::ProcessState state)
+void napkin::AppRunnerPanel::onAppState(QProcess::ProcessState state)
 {
 	nap::Logger::info("App State Changed: %s", QEnumToString(state).toStdString().c_str());
 }
 
-void AppRunnerPanel::onAppFinished(int exitCode)
+void napkin::AppRunnerPanel::onAppFinished(int exitCode)
 {
 	nap::Logger::info(QString("App Exit with code %1").arg(exitCode).toStdString());
 	mStartButton.setEnabled(true);

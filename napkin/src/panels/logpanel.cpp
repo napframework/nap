@@ -1,5 +1,7 @@
 #include "logpanel.h"
 
+using namespace napkin;
+
 LogModel::LogModel() : QStandardItemModel()
 {
 	// Register with nap::Logger, call the Qt signal in order to let the signal arrive on the Qt UI thread

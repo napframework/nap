@@ -1,11 +1,10 @@
 #include "napgeneric.h"
-
 #include <generic/utility.h>
 
 using namespace nap::rtti;
 using namespace nap::utility;
 
-RTTITypeItem::RTTITypeItem(const nap::rtti::TypeInfo& type) : type(type)
+napkin::RTTITypeItem::RTTITypeItem(const nap::rtti::TypeInfo& type) : type(type)
 {
 	setText(type.get_name().data());
 	setEditable(false);
@@ -14,7 +13,7 @@ RTTITypeItem::RTTITypeItem(const nap::rtti::TypeInfo& type) : type(type)
 	refresh();
 }
 
-void RTTITypeItem::refresh()
+void napkin::RTTITypeItem::refresh()
 {
 	for (const nap::rtti::TypeInfo& derived : type.get_derived_classes())
 	{
@@ -22,7 +21,7 @@ void RTTITypeItem::refresh()
 	}
 }
 
-bool resolveLinks(const OwnedObjectList& objects, const UnresolvedPointerList& unresolvedPointers)
+bool napkin::resolveLinks(const OwnedObjectList& objects, const UnresolvedPointerList& unresolvedPointers)
 {
 	std::map<std::string, RTTIObject*> objects_by_id;
 	for (auto& object : objects)
@@ -45,7 +44,7 @@ bool resolveLinks(const OwnedObjectList& objects, const UnresolvedPointerList& u
 	return true;
 }
 
-nap::rtti::ObjectList topLevelObjects(const ObjectList& objects)
+nap::rtti::ObjectList napkin::topLevelObjects(const ObjectList& objects)
 {
 	// Pass 1: determine the set of all potential root objects
 	std::vector<ObjectLink> all_object_links;

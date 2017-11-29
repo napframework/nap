@@ -15,8 +15,8 @@
 
 // local
 #include <generic/napgeneric.h>
-#include <utility/fileutils.h>
 #include <nap/logger.h>
+#include <utility/fileutils.h>
 
 using namespace nap::rtti;
 using namespace nap::utility;
@@ -130,7 +130,10 @@ void AppContext::openRecentFile()
 	AppContext::get().loadFile(lastFilename);
 }
 
-const QString AppContext::lastOpenedFilename() { return QSettings().value(settingsKey::LAST_OPENED_FILE).toString(); }
+const QString AppContext::lastOpenedFilename()
+{
+	return QSettings().value(settingsKey::LAST_OPENED_FILE).toString();
+}
 
 nap::Entity* AppContext::getParent(const nap::Entity& child)
 {
@@ -231,10 +234,10 @@ nap::rtti::RTTIObject* AppContext::getObject(const std::string& name)
 
 nap::rtti::ObjectList AppContext::objectPointers()
 {
-    ObjectList ret;
-    for (auto& ob : objects())
-        ret.emplace_back(ob.get());
-    return ret;
+	ObjectList ret;
+	for (auto& ob : objects())
+		ret.emplace_back(ob.get());
+	return ret;
 }
 
 
@@ -261,7 +264,10 @@ void AppContext::deleteObject(nap::rtti::RTTIObject& object)
 	objectRemoved(object);
 }
 
-void AppContext::executeCommand(QUndoCommand* cmd) { mUndoStack.push(cmd); }
+void AppContext::executeCommand(QUndoCommand* cmd)
+{
+	mUndoStack.push(cmd);
+}
 
 void AppContext::restoreUI()
 {
@@ -271,4 +277,3 @@ void AppContext::restoreUI()
 
 	openRecentFile();
 }
-

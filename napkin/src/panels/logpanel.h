@@ -7,32 +7,45 @@
 #include <generic/filtertreeview.h>
 #include <nap/logger.h>
 
-
-/**
- * Captures log messages and provides the LogPanel with the currently cached log messages.
- */
-class LogModel : public QStandardItemModel
+namespace napkin
 {
-	Q_OBJECT
-public:
-	LogModel();
+	/**
+	 * Captures log messages and provides the LogPanel with the currently cached log messages.
+	 */
+	class LogModel : public QStandardItemModel
+	{
+		Q_OBJECT
+	public:
+		LogModel();
 
-Q_SIGNALS:
-	void napLogged(nap::LogMessage msg);
+	Q_SIGNALS:
 
-private:
-	void onLog(nap::LogMessage log);
+		/**
+		 * Will be used to relay thread-unsafe nap::Logger calls onto the Qt UI thread
+		 * @param msg The log message being handled
+		 */
+		void napLogged(nap::LogMessage msg);
 
-	int maxRows = 1000;
-};
+	private:
+		/**
+		 * Signals from napLogged() will arrive on this handler.
+		 * @param log The log mesage
+		 */
+		void onLog(nap::LogMessage log);
 
+		int maxRows = 1000; // The maximum number of rows to show in the log
+	};
 
-class LogPanel : public QWidget
-{
-public:
-	explicit LogPanel();
+	/**
+	 * A panel showing all log messages in the system.
+	 */
+	class LogPanel : public QWidget
+	{
+	public:
+		explicit LogPanel();
 
-private:
-	FilterTreeView mTreeView;
-	LogModel mLogModel;
+	private:
+		FilterTreeView mTreeView; // Treeview with log entries
+		LogModel mLogModel;		  // The model containing the log entries
+	};
 };

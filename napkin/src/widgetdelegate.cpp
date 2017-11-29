@@ -3,6 +3,7 @@
 #include "typeconversion.h"
 #include <QtWidgets/QComboBox>
 
+using namespace napkin;
 
 void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option,
 									  const QModelIndex& index) const

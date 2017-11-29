@@ -3,16 +3,20 @@
 #include "actions.h"
 #include <QMenu>
 
-class ThemeSelectionMenu : public QMenu
-{
-	Q_OBJECT
-public:
-	ThemeSelectionMenu();
+namespace napkin {
 
-	void refresh();
+    class ThemeSelectionMenu : public QMenu
+    {
+    Q_OBJECT
+    public:
+        ThemeSelectionMenu();
 
-private:
-	void onThemeChanged(const QString& theme);
+        void refresh();
 
-	void checkCurrentTheme();
+    private:
+        void onThemeChanged(const QString& theme);
+
+        void checkCurrentTheme();
+    };
+
 };

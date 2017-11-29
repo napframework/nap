@@ -1,5 +1,7 @@
 #include "mainwindow.h"
 
+using namespace napkin;
+
 void MainWindow::bindSignals()
 {
 	connect(&AppContext::get(), &AppContext::fileOpened, this, &MainWindow::onFileOpened);
@@ -26,6 +28,7 @@ void MainWindow::addDocks()
 	addDock("Log", &mLogPanel);
 	addDock("AppRunner", &mAppRunnerPanel);
 }
+
 
 void MainWindow::addMenu()
 {
@@ -56,16 +59,37 @@ void MainWindow::addMenu()
 	menuBar()->insertMenu(windowMenu()->menuAction(), optionsMenu);
 }
 
-void MainWindow::onNewFile() { updateWindowTitle(); }
+
+void MainWindow::onNewFile()
+{
+	updateWindowTitle();
+}
 
 
-void MainWindow::onFileOpened(const QString& filename) { updateWindowTitle(); }
+void MainWindow::onFileOpened(const QString& filename)
+{
+	updateWindowTitle();
+}
 
-void MainWindow::onFileSaved(const QString& filename) { updateWindowTitle(); }
 
+void MainWindow::onFileSaved(const QString& filename)
+{
+	updateWindowTitle();
+}
 
 
 void MainWindow::updateWindowTitle()
 {
 	setWindowTitle(QString("%1 - %2").arg(QApplication::applicationName(), AppContext::get().currentFilename()));
+}
+
+MainWindow::MainWindow()
+{
+	addDocks();
+	addMenu();
+	bindSignals();
+}
+
+MainWindow::~MainWindow()
+{
 }

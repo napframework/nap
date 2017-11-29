@@ -2,12 +2,13 @@
 
 // RTTI includes
 #include <rtti/rtti.h>
+#include <rtti/rttiutilities.h>
 #include "rttipath.h"
 #include "utility/dllexport.h"
+#include "unresolvedpointer.h"
 
 // STL includes
 #include <string>
-#include "unresolvedpointer.h"
 
 namespace nap
 {

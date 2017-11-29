@@ -7,24 +7,38 @@
 #include <QStandardItemModel>
 #include <QVBoxLayout>
 #include <QWidget>
-
-class TypeModel : public QStandardItemModel
+namespace napkin
 {
-public:
-	TypeModel();
 
-private:
-	void refresh();
-};
+	/**
+	 * Model holding type meta data for all types in the system
+	 * @deprecated Not really useful for the end-user
+	 */
+	class TypeModel : public QStandardItemModel
+	{
+	public:
+		TypeModel();
+
+	private:
+        /**
+         * Refresh
+         */
+		void refresh();
+	};
 
 
-class HierarchyPanel : public QWidget
-{
-public:
-	HierarchyPanel();
+	/**
+	 * Show all types loaded in the system
+	 * @deprecated Not really useful for the end-user
+	 */
+	class HierarchyPanel : public QWidget
+	{
+	public:
+		HierarchyPanel();
 
-private:
-	QVBoxLayout mLayout;
-	FilterTreeView mTreeView;
-	TypeModel mModel;
+	private:
+		QVBoxLayout mLayout;	  // Layout
+		FilterTreeView mTreeView; // TreeView
+		TypeModel mModel;		  // The model
+	};
 };

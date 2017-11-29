@@ -3,58 +3,110 @@
 #include "napkinglobals.h"
 #include "typeconversion.h"
 #include <QtWidgets/QApplication>
-#include <generic/comboboxdelegate.h>
 #include <generic/utility.h>
 
 using namespace nap::rtti;
-using namespace napkin;
 
-
-QList<QStandardItem*> createItemRow(rttr::type type, const QString& name, nap::rtti::RTTIObject* object,
-									const nap::rtti::RTTIPath& path, rttr::property prop, rttr::variant value)
+QList<QStandardItem*> napkin::createItemRow(rttr::type type, const QString& name, nap::rtti::RTTIObject* object,
+                                            const nap::rtti::RTTIPath& path, rttr::property prop, rttr::variant value)
 {
-	QList<QStandardItem*> items;
-	if (type.is_array())
-	{
-		items << new ArrayPropertyItem(name, object, path, prop, value.create_array_view());
-		items << new EmptyItem();
-		items << new RTTITypeItem(type);
-	}
-	else if (type.is_associative_container())
-	{
-		assert(false);
-	}
-	else if (type.is_pointer())
-	{
-		if (nap::rtti::hasFlag(prop, nap::rtti::EPropertyMetaData::Embedded))
-		{
-			items << new EmbeddedPointerItem(name, object, path);
-			items << new EmptyItem();
-			items << new RTTITypeItem(type);
-		}
-		else
-		{
-			items << new PointerItem(name, object, path);
-			items << new PointerValueItem(object, path, type);
-			items << new RTTITypeItem(type);
-		}
-	}
-	else if (nap::rtti::isPrimitive(type))
-	{
-		items << new PropertyItem(name, object, path);
-		items << new PropertyValueItem(name, object, path, type);
-		items << new RTTITypeItem(type);
-	}
-	else
-	{
-		items << new CompoundPropertyItem(name, object, path);
-		items << new EmptyItem();
-		items << new RTTITypeItem(prop.get_type());
-	}
-	return items;
+    QList<QStandardItem*> items;
+    if (type.is_array())
+    {
+        items << new ArrayPropertyItem(name, object, path, prop, value.create_array_view());
+        items << new EmptyItem();
+        items << new RTTITypeItem(type);
+    }
+    else if (type.is_associative_container())
+    {
+        assert(false);
+    }
+    else if (type.is_pointer())
+    {
+        if (nap::rtti::hasFlag(prop, nap::rtti::EPropertyMetaData::Embedded))
+        {
+            items << new EmbeddedPointerItem(name, object, path);
+            items << new EmptyItem();
+            items << new RTTITypeItem(type);
+        }
+        else
+        {
+            items << new PointerItem(name, object, path);
+            items << new PointerValueItem(object, path, type);
+            items << new RTTITypeItem(type);
+        }
+    }
+    else if (nap::rtti::isPrimitive(type))
+    {
+        items << new PropertyItem(name, object, path);
+        items << new PropertyValueItem(name, object, path, type);
+        items << new RTTITypeItem(type);
+    }
+    else
+    {
+        items << new CompoundPropertyItem(name, object, path);
+        items << new EmptyItem();
+        items << new RTTITypeItem(prop.get_type());
+    }
+    return items;
 }
 
-QVariant PropertyValueItem::data(int role) const
+
+napkin::EmptyItem::EmptyItem() : QStandardItem()
+{
+	setEditable(false);
+}
+
+int napkin::EmptyItem::type() const
+{
+	return QStandardItem::UserType + InspectorPanelStandardItemTypeID::EmptyItemTypeID;
+}
+
+napkin::InvalidItem::InvalidItem(const QString& name) : QStandardItem(name)
+{
+	setForeground(Qt::red);
+	setEditable(false);
+}
+
+int napkin::InvalidItem::type() const
+{
+	return QStandardItem::UserType + InspectorPanelStandardItemTypeID::InvalidItemTypeID;
+}
+
+napkin::BaseItem::BaseItem(const QString& name, nap::rtti::RTTIObject* object, const RTTIPath& path)
+	: QStandardItem(name), mObject(object), mPath(path)
+{
+	nap::rtti::ResolvedRTTIPath resolved;
+	assert(path.resolve(object, resolved));
+	assert(mObject);
+}
+
+nap::rtti::ResolvedRTTIPath napkin::BaseItem::resolvePath()
+{
+	nap::rtti::ResolvedRTTIPath resolvedPath;
+	assert(mPath.resolve(mObject, resolvedPath));
+	return resolvedPath;
+}
+
+int napkin::BaseItem::type() const
+{
+	return QStandardItem::UserType + InspectorPanelStandardItemTypeID::BaseItemTypeID;
+}
+
+napkin::PropertyItem::PropertyItem(const QString& name, nap::rtti::RTTIObject* object, const nap::rtti::RTTIPath& path)
+	: napkin::BaseItem(name, object, path)
+{
+	setEditable(false);
+	setForeground(softForeground());
+}
+
+int napkin::PropertyItem::type() const
+{
+	return QStandardItem::UserType + InspectorPanelStandardItemTypeID::PropertyItemTypeID;
+}
+
+
+QVariant napkin::PropertyValueItem::data(int role) const
 {
 
 	if (role == Qt::DisplayRole || role == Qt::EditRole)
@@ -72,7 +124,7 @@ QVariant PropertyValueItem::data(int role) const
 	return QStandardItem::data(role);
 }
 
-void PropertyValueItem::setData(const QVariant& value, int role)
+void napkin::PropertyValueItem::setData(const QVariant& value, int role)
 {
 	if (role == Qt::EditRole)
 	{
@@ -92,8 +144,24 @@ void PropertyValueItem::setData(const QVariant& value, int role)
 	QStandardItem::setData(value, role);
 }
 
+napkin::PropertyValueItem::PropertyValueItem(const QString& name, nap::rtti::RTTIObject* object, nap::rtti::RTTIPath path,
+									 rttr::type valueType)
+	: BaseItem(name, object, path), mValueType(valueType)
+{
+}
 
-void InspectorModel::setObject(RTTIObject* object)
+int napkin::PropertyValueItem::type() const
+{
+	return QStandardItem::UserType + InspectorPanelStandardItemTypeID::PropertyValueItemTypeID;
+}
+
+rttr::type& napkin::PropertyValueItem::valueType()
+{
+	return mValueType;
+}
+
+
+void napkin::InspectorModel::setObject(RTTIObject* object)
 {
 	while (rowCount() > 0)
 		removeRow(0);
@@ -105,13 +173,13 @@ void InspectorModel::setObject(RTTIObject* object)
 }
 
 
-InspectorModel::InspectorModel() : QStandardItemModel()
+napkin::InspectorModel::InspectorModel() : QStandardItemModel()
 {
 	setHorizontalHeaderLabels({TXT_LABEL_NAME, TXT_LABEL_VALUE, TXT_LABEL_TYPE});
 }
 
 
-InspectorPanel::InspectorPanel()
+napkin::InspectorPanel::InspectorPanel()
 {
 	setLayout(&mLayout);
 	layout()->setContentsMargins(0, 0, 0, 0);
@@ -122,14 +190,14 @@ InspectorPanel::InspectorPanel()
 	mTreeView.tree().setItemDelegateForColumn(1, &mWidgetDelegate);
 }
 
-void InspectorPanel::setObject(RTTIObject* objects)
+void napkin::InspectorPanel::setObject(RTTIObject* objects)
 {
 	mModel.setObject(objects);
 	mTreeView.tree().expandAll();
 }
 
 
-void ArrayPropertyItem::populateChildren()
+void napkin::ArrayPropertyItem::populateChildren()
 {
 	auto array = mArray;
 
@@ -149,7 +217,22 @@ void ArrayPropertyItem::populateChildren()
 	}
 }
 
-void InspectorModel::populateItems()
+napkin::ArrayPropertyItem::ArrayPropertyItem(const QString& name, nap::rtti::RTTIObject* object,
+									 const nap::rtti::RTTIPath& path, rttr::property prop,
+									 rttr::variant_array_view array)
+	: BaseItem(name, object, path), mProperty(prop), mArray(array)
+{
+	std::string pathStr = path.toString();
+	populateChildren();
+	setForeground(softForeground());
+}
+
+int napkin::ArrayPropertyItem::type() const
+{
+	return QStandardItem::UserType + InspectorPanelStandardItemTypeID::ArrayPropertyItemTypeID;
+}
+
+void napkin::InspectorModel::populateItems()
 {
 	for (auto prop : mObject->get_type().get_properties())
 	{
@@ -170,11 +253,11 @@ void InspectorModel::populateItems()
 	}
 }
 
-QVariant InspectorModel::data(const QModelIndex& index, int role) const
+QVariant napkin::InspectorModel::data(const QModelIndex& index, int role) const
 {
 	if (role == Qt::UserRole)
 	{
-		auto valueItem = dynamic_cast<PropertyValueItem*>(itemFromIndex(index));
+		auto valueItem = dynamic_cast<class PropertyValueItem*>(itemFromIndex(index));
 		if (valueItem)
 		{
 			return QVariant::fromValue(TypeWrapper(&valueItem->valueType()));
@@ -183,18 +266,23 @@ QVariant InspectorModel::data(const QModelIndex& index, int role) const
 	return QStandardItemModel::data(index, role);
 }
 
-bool InspectorModel::setData(const QModelIndex& index, const QVariant& value, int role)
+bool napkin::InspectorModel::setData(const QModelIndex& index, const QVariant& value, int role)
 {
 	if (role == Qt::EditRole)
 	{
-		auto valueItem = dynamic_cast<PropertyValueItem*>(itemFromIndex(index));
+		auto valueItem = dynamic_cast<class PropertyValueItem*>(itemFromIndex(index));
 		valueItem->setData(value, Qt::EditRole);
 		return true;
 	}
 	return QStandardItemModel::setData(index, value, role);
 }
 
-void CompoundPropertyItem::populateChildren()
+nap::rtti::RTTIObject* napkin::InspectorModel::object()
+{
+	return mObject;
+}
+
+void napkin::CompoundPropertyItem::populateChildren()
 {
 	auto resolved = resolvePath();
 	auto compound = resolved.getValue();
@@ -213,7 +301,31 @@ void CompoundPropertyItem::populateChildren()
 	}
 }
 
-void EmbeddedPointerItem::populateChildren()
+napkin::CompoundPropertyItem::CompoundPropertyItem(const QString& name, nap::rtti::RTTIObject* object,
+										   const nap::rtti::RTTIPath& path)
+	: napkin::BaseItem(name, object, path)
+{
+	setForeground(softForeground());
+	populateChildren();
+}
+
+int napkin::CompoundPropertyItem::type() const
+{
+	return QStandardItem::UserType + InspectorPanelStandardItemTypeID::CompoundPropertyItemTypeID;
+}
+
+napkin::PointerItem::PointerItem(const QString& name, nap::rtti::RTTIObject* object, const nap::rtti::RTTIPath path)
+	: napkin::BaseItem(name, object, path)
+{
+	setForeground(softForeground());
+}
+
+int napkin::PointerItem::type() const
+{
+	return QStandardItem::UserType + InspectorPanelStandardItemTypeID::PointerItemTypeID;
+}
+
+void napkin::EmbeddedPointerItem::populateChildren()
 {
 	// First resolve the pointee, after that behave like compound
 	nap::rtti::ResolvedRTTIPath resolvedPath;
@@ -251,8 +363,19 @@ void EmbeddedPointerItem::populateChildren()
 	}
 }
 
+napkin::EmbeddedPointerItem::EmbeddedPointerItem(const QString& name, nap::rtti::RTTIObject* object, nap::rtti::RTTIPath path)
+	: napkin::BaseItem(name, object, path)
+{
+	populateChildren();
+}
 
-QVariant PointerValueItem::data(int role) const
+int napkin::EmbeddedPointerItem::type() const
+{
+	return QStandardItem::UserType + InspectorPanelStandardItemTypeID::EmbeddedPointerItemTypeID;
+}
+
+
+QVariant napkin::PointerValueItem::data(int role) const
 {
 	if (role == Qt::DisplayRole || role == Qt::EditRole)
 	{
@@ -272,4 +395,27 @@ QVariant PointerValueItem::data(int role) const
 			return "NULL";
 	}
 	return QStandardItem::data(role);
+}
+
+napkin::PointerValueItem::PointerValueItem(nap::rtti::RTTIObject* object, const nap::rtti::RTTIPath path, rttr::type valueType)
+	: QStandardItem(), mObject(object), mPath(path), mValueType(valueType)
+{
+	setForeground(Qt::darkCyan);
+	nap::rtti::ResolvedRTTIPath resolved;
+	assert(path.resolve(object, resolved));
+}
+
+rttr::type napkin::PointerValueItem::valueType()
+{
+	return mValueType;
+}
+
+int napkin::PointerValueItem::type() const
+{
+	return QStandardItem::UserType + InspectorPanelStandardItemTypeID::PointerValueItemTypeID;
+}
+
+void napkin::PointerValueItem::setData(const QVariant& value, int role)
+{
+	QStandardItem::setData(value, role);
 }

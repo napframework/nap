@@ -1,6 +1,8 @@
 #include "fileselector.h"
 
-FileSelector::FileSelector() : QWidget()
+
+
+napkin::FileSelector::FileSelector() : QWidget()
 {
 	setLayout(&mLayout);
 	mLayout.setContentsMargins(0, 0, 0, 0);
@@ -15,15 +17,27 @@ FileSelector::FileSelector() : QWidget()
 	connect(&mBrowseButton, &QToolButton::clicked, this, &FileSelector::onBrowseButtonClicked);
 }
 
-void FileSelector::setFileFilter(const QString& filter) { mFileFilter = filter; }
+void napkin::FileSelector::setFileFilter(const QString& filter)
+{
+	mFileFilter = filter;
+}
 
-void FileSelector::setFilename(const QString& filename) { mLineEdit.setText(filename); }
+void napkin::FileSelector::setFilename(const QString& filename)
+{
+	mLineEdit.setText(filename);
+}
 
-const QString FileSelector::filename() { return mLineEdit.text().trimmed(); }
+const QString napkin::FileSelector::filename()
+{
+	return mLineEdit.text().trimmed();
+}
 
-void FileSelector::onEditingFinished() { filenameChanged(filename()); }
+void napkin::FileSelector::onEditingFinished()
+{
+	filenameChanged(filename());
+}
 
-void FileSelector::onBrowseButtonClicked()
+void napkin::FileSelector::onBrowseButtonClicked()
 {
 	QString dir = filename().isEmpty() ? "." : QFileInfo(filename()).path();
 

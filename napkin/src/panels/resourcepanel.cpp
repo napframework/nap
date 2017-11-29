@@ -1,26 +1,49 @@
 #include "napkinglobals.h"
 #include <generic/utility.h>
 
-using namespace napkin;
-
-ObjectItem::ObjectItem(nap::rtti::RTTIObject& rttiObject) : mObject(rttiObject) { refresh(); }
-
-void ObjectItem::refresh() { setText(name()); }
-
-const QString ObjectItem::name() const { return QString::fromStdString(mObject.mID); }
 
 
-ResourceModel::ResourceModel() { setHorizontalHeaderLabels({TXT_LABEL_NAME, TXT_LABEL_TYPE}); }
+
+napkin::ObjectItem::ObjectItem(nap::rtti::RTTIObject& rttiObject) : mObject(rttiObject)
+{
+	refresh();
+}
+
+void napkin::ObjectItem::refresh()
+{
+	setText(name());
+}
+
+const QString napkin::ObjectItem::name() const
+{
+	return QString::fromStdString(mObject.mID);
+}
+
+int napkin::ObjectItem::type() const
+{
+	return QStandardItem::UserType + ResourcePanelPanelStandardItemTypeID::ObjectItemTypeID;
+}
+
+nap::rtti::RTTIObject& napkin::ObjectItem::object() const
+{
+	return mObject;
+}
 
 
-void ResourceModel::refresh()
+napkin::ResourceModel::ResourceModel()
+{
+	setHorizontalHeaderLabels({TXT_LABEL_NAME, TXT_LABEL_TYPE});
+}
+
+
+void napkin::ResourceModel::refresh()
 {
 	while (rowCount() > 0)
 		removeRow(0);
 
-	auto objectsItem = new GroupItem(TXT_LABEL_OBJECTS);
+	auto objectsItem = new class GroupItem(TXT_LABEL_OBJECTS);
 	appendRow(objectsItem);
-	auto entitiesItem = new GroupItem(TXT_LABEL_ENTITIES);
+	auto entitiesItem = new class GroupItem(TXT_LABEL_ENTITIES);
 	appendRow(entitiesItem);
 
 	for (auto& ob : topLevelObjects(AppContext::get().objectPointers()))
@@ -51,7 +74,7 @@ void ResourceModel::refresh()
 }
 
 
-ResourcePanel::ResourcePanel()
+napkin::ResourcePanel::ResourcePanel()
 {
 	setLayout(&mLayout);
 	layout()->setContentsMargins(0, 0, 0, 0);
@@ -74,7 +97,7 @@ ResourcePanel::ResourcePanel()
 	connect(&AppContext::get(), &AppContext::objectRemoved, this, &ResourcePanel::onObjectRemoved);
 }
 
-void ResourcePanel::menuHook(QMenu& menu)
+void napkin::ResourcePanel::menuHook(QMenu& menu)
 {
 	auto item = mTreeView.selectedItem();
 	if (item == nullptr)
@@ -123,12 +146,18 @@ void ResourcePanel::menuHook(QMenu& menu)
 	}
 }
 
-void ResourcePanel::onNewFile() { refresh(); }
+void napkin::ResourcePanel::onNewFile()
+{
+	refresh();
+}
 
 
-void ResourcePanel::onFileOpened(const QString& filename) { refresh(); }
+void napkin::ResourcePanel::onFileOpened(const QString& filename)
+{
+	refresh();
+}
 
-void ResourcePanel::onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
+void napkin::ResourcePanel::onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
 {
 	// Grab selected nap objects
 	QList<nap::rtti::RTTIObject*> selectedObjects;
@@ -143,7 +172,7 @@ void ResourcePanel::onSelectionChanged(const QItemSelection& selected, const QIt
 	selectionChanged(selectedObjects);
 }
 
-std::vector<rttr::instance> ResourcePanel::selectedInstances() const
+std::vector<rttr::instance> napkin::ResourcePanel::selectedInstances() const
 {
 	std::vector<rttr::instance> instances;
 	for (QStandardItem* item : mTreeView.selectedItems())
@@ -156,13 +185,13 @@ std::vector<rttr::instance> ResourcePanel::selectedInstances() const
 	return instances;
 }
 
-void ResourcePanel::refresh()
+void napkin::ResourcePanel::refresh()
 {
 	mModel.refresh();
 	mTreeView.tree().expandAll();
 }
 
-ObjectItem* ResourcePanel::findItem(const nap::rtti::RTTIObject& obj)
+napkin::ObjectItem* napkin::ResourcePanel::findItem(const nap::rtti::RTTIObject& obj)
 {
 	ObjectItem* foundItem = nullptr;
 
@@ -187,7 +216,7 @@ ObjectItem* ResourcePanel::findItem(const nap::rtti::RTTIObject& obj)
 	return foundItem;
 }
 
-void ResourcePanel::onEntityAdded(nap::Entity* entity, nap::Entity* parent)
+void napkin::ResourcePanel::onEntityAdded(nap::Entity* entity, nap::Entity* parent)
 {
 	// TODO: Don't refresh the whole mModel
 	mModel.refresh();
@@ -195,7 +224,7 @@ void ResourcePanel::onEntityAdded(nap::Entity* entity, nap::Entity* parent)
 	mTreeView.selectAndReveal(findItem(*entity));
 }
 
-void ResourcePanel::onComponentAdded(nap::Component& comp, nap::Entity& owner)
+void napkin::ResourcePanel::onComponentAdded(nap::Component& comp, nap::Entity& owner)
 {
 	// TODO: Don't refresh the whole mModel
 	mModel.refresh();
@@ -203,7 +232,7 @@ void ResourcePanel::onComponentAdded(nap::Component& comp, nap::Entity& owner)
 	mTreeView.selectAndReveal(findItem(comp));
 }
 
-void ResourcePanel::onObjectAdded(nap::rtti::RTTIObject& obj)
+void napkin::ResourcePanel::onObjectAdded(nap::rtti::RTTIObject& obj)
 {
 	// TODO: Don't refresh the whole mModel
 	mModel.refresh();
@@ -212,7 +241,7 @@ void ResourcePanel::onObjectAdded(nap::rtti::RTTIObject& obj)
 }
 
 
-void ResourcePanel::onObjectRemoved(nap::rtti::RTTIObject& object)
+void napkin::ResourcePanel::onObjectRemoved(nap::rtti::RTTIObject& object)
 {
 	// TODO: Don't refresh the whole mModel
 	mModel.refresh();
@@ -220,7 +249,7 @@ void ResourcePanel::onObjectRemoved(nap::rtti::RTTIObject& object)
 }
 
 
-EntityItem::EntityItem(nap::Entity& entity) : ObjectItem(entity)
+napkin::EntityItem::EntityItem(nap::Entity& entity) : napkin::ObjectItem(entity)
 {
 
 	for (auto& child : entity.mChildren)
@@ -234,4 +263,37 @@ EntityItem::EntityItem(nap::Entity& entity) : ObjectItem(entity)
 		auto compTypeItem = new RTTITypeItem(comp->get_type());
 		appendRow({compItem, compTypeItem});
 	}
+}
+
+int napkin::EntityItem::type() const
+{
+	return QStandardItem::UserType + ResourcePanelPanelStandardItemTypeID::EntityItemTypeID;
+}
+
+nap::Entity& napkin::EntityItem::entity()
+{
+	return dynamic_cast<nap::Entity&>(mObject);
+}
+
+napkin::ComponentItem::ComponentItem(nap::Component& comp) : napkin::ObjectItem(comp)
+{
+}
+
+int napkin::ComponentItem::type() const
+{
+	return QStandardItem::UserType + ResourcePanelPanelStandardItemTypeID::ComponentItemTypeID;
+}
+
+nap::Component& napkin::ComponentItem::component()
+{
+	return dynamic_cast<nap::Component&>(mObject);
+}
+
+napkin::GroupItem::GroupItem(const QString& name) : QStandardItem(name)
+{
+}
+
+int napkin::GroupItem::type() const
+{
+	return QStandardItem::UserType + ResourcePanelPanelStandardItemTypeID::GroupItemTypeID;
 }

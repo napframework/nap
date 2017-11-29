@@ -1,5 +1,7 @@
 #include "commands.h"
 
+using namespace napkin;
+
 void SetValueCommand::undo()
 {
 	// resolve path
@@ -28,4 +30,26 @@ void SetValueCommand::redo()
 	rttr::variant variant = fromQVariant(resolvedPath.getType(), mNewValue, &ok);
 	assert(ok);
 	resolvedPath.setValue(variant);
+}
+
+SetValueCommand::SetValueCommand(nap::rtti::RTTIObject* ptr, nap::rtti::RTTIPath path, QVariant newValue)
+        : mObject(ptr), mPath(path), mNewValue(newValue)
+{
+    setText("Set value on: " + QString::fromStdString(path.toString()));
+}
+
+void AddObjectCommand::undo()
+{
+}
+
+void AddObjectCommand::redo()
+{
+}
+
+void DeleteObjectCommand::undo()
+{
+}
+
+void DeleteObjectCommand::redo()
+{
 }

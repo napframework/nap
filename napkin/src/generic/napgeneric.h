@@ -2,37 +2,41 @@
 
 #include <QStandardItem>
 #include <rtti/rtti.h>
-#include <rtti/rttireader.h>
+#include <rtti/rttideserializeresult.h>
 #include <rtti/rttiutilities.h>
 
-/**
- * An item displaying an RTTI Type
- */
-class RTTITypeItem : public QStandardItem
+namespace napkin
 {
 
-public:
-	RTTITypeItem(const nap::rtti::TypeInfo& type);
+	/**
+	 * An item displaying an RTTI Type
+	 */
+	class RTTITypeItem : public QStandardItem
+	{
 
-private:
-	void refresh();
+	public:
+		RTTITypeItem(const nap::rtti::TypeInfo& type);
 
-private:
-	const nap::rtti::TypeInfo& type;
-};
+	private:
+		void refresh();
 
-/**
- * Given a complete list of objects, attempt to resolve the provided unresolved pointers
- * @param objects The full list of objects to find the pointees in.
- * @param unresolvedPointers The pointers to resolve
- * @return True if the operation was successful, false otherwise.
- */
-bool resolveLinks(const nap::rtti::OwnedObjectList& objects,
-				  const nap::rtti::UnresolvedPointerList& unresolvedPointers);
+	private:
+		const nap::rtti::TypeInfo& type;
+	};
 
-/**
- * Filter the provided list of objects
- * @param objects
- * @param topLevelObjects
- */
-nap::rtti::ObjectList topLevelObjects(const nap::rtti::ObjectList& objects);
+	/**
+	 * Given a complete list of objects, attempt to resolve the provided unresolved pointers
+	 * @param objects The full list of objects to find the pointees in.
+	 * @param unresolvedPointers The pointers to resolve
+	 * @return True if the operation was successful, false otherwise.
+	 */
+	bool resolveLinks(const nap::rtti::OwnedObjectList& objects,
+					  const nap::rtti::UnresolvedPointerList& unresolvedPointers);
+
+	/**
+	 * Filter the provided list of objects
+	 * @param objects
+	 * @param topLevelObjects
+	 */
+	nap::rtti::ObjectList topLevelObjects(const nap::rtti::ObjectList& objects);
+}

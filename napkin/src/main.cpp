@@ -3,6 +3,8 @@
 #include "mainwindow.h"
 #include <QApplication>
 
+using namespace napkin;
+
 /**
  * Initialize the application and spawn its window
  */
