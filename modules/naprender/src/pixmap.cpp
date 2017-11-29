@@ -4,6 +4,7 @@
 #include <nbitmaputils.h>
 #include <utility/fileutils.h>
 #include <rtti/typeinfo.h>
+#include <basetexture2d.h>
 
 RTTI_BEGIN_ENUM(nap::Pixmap::EChannels)
 	RTTI_ENUM_VALUE(nap::Pixmap::EChannels::R,			"R"),
@@ -187,27 +188,33 @@ namespace nap
 		if (!errorState.check(opengl::loadBitmap(mBitmap, path, errorState), "Failed to load image %s, invalid bitmap", path.c_str()))
 			return false;
 
-		// Extract the width, height, channels and type
-		opengl::BitmapDataType bitmap_data_type = mBitmap.getDataType();
-		auto found_it = std::find_if(bitmapDataTypeMap.begin(), bitmapDataTypeMap.end(), [&](const auto& value)
-		{
-			return value.second == bitmap_data_type;
-		});
-		assert(found_it != bitmapDataTypeMap.end());
-		mType = found_it->first;
-
-		opengl::BitmapColorType bitmap_color_type = mBitmap.getColorType();
-		auto found_type = std::find_if(bitmapChannelMap.begin(), bitmapChannelMap.end(), [&](const auto& value)
-		{
-			return value.second == bitmap_color_type;
-		});
-		assert(found_type != bitmapChannelMap.end());
-		mChannels = found_type->first;
-		
-		mWidth  = mBitmap.getWidth();
-		mHeight = mBitmap.getHeight();
+		// Sync
+		applySettingsFromBitmap();
 
 		return true;
+	}
+
+
+	void Pixmap::initFromTexture(const nap::BaseTexture2D& texture)
+	{
+		const opengl::Texture2DSettings& settings = texture.getTexture().getSettings();
+
+		// Get bitmap data type
+		opengl::BitmapDataType  bitmap_type = opengl::getBitmapType(settings.type);
+		assert(bitmap_type != opengl::BitmapDataType::UNKNOWN);
+
+		// Get bitmap color type
+		opengl::BitmapColorType color_type = opengl::getColorType(settings.format);
+		assert(color_type != opengl::BitmapColorType::UNKNOWN);
+
+		// Apply new settings
+		mBitmap.setSettings(opengl::BitmapSettings(texture.getWidth(), texture.getHeight(), bitmap_type, color_type));
+
+		// Sync
+		applySettingsFromBitmap();
+
+		// Now allocate
+		mBitmap.allocateMemory();
 	}
 
 
@@ -268,6 +275,26 @@ namespace nap
 		return std::unique_ptr<BaseColor>(rvalue);
 	}
 
+
+	void Pixmap::applySettingsFromBitmap()
+	{
+		auto found_it = std::find_if(bitmapDataTypeMap.begin(), bitmapDataTypeMap.end(), [&](const auto& value)
+		{
+			return value.second == mBitmap.getDataType();
+		});
+		assert(found_it != bitmapDataTypeMap.end());
+		mType = found_it->first;
+
+		auto found_type = std::find_if(bitmapChannelMap.begin(), bitmapChannelMap.end(), [&](const auto& value)
+		{
+			return value.second == mBitmap.getColorType();
+		});
+		assert(found_type != bitmapChannelMap.end());
+		mChannels = found_type->first;
+
+		mWidth  = mBitmap.getWidth();
+		mHeight = mBitmap.getHeight();
+	}
 }
 
 
