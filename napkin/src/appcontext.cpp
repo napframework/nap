@@ -34,8 +34,8 @@ AppContext::AppContext()
 
 AppContext::~AppContext()
 {
-	// Clear all objects before going down.
-	mObjects.clear();
+    mObjects.clear();
+    mCore.shutdown();
 }
 
 AppContext& AppContext::get()
@@ -71,7 +71,7 @@ void AppContext::loadFile(const QString& filename)
 
 	if (!nap::rtti::DefaultLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, err))
 	{
-		nap::Logger::fatal("Failed to resolve links");
+		nap::Logger::fatal("Failed to resolve links: %s", err.toString().c_str());
 		return;
 	}
 
