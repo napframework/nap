@@ -26,7 +26,7 @@ PointerAlignment: Left
 Standard: Cpp11
 ColumnLimit: 120
 IndentCaseLabels: false
-MaxEmptyLinesToKeep: 3
+MaxEmptyLinesToKeep: 2
 #AllowShortIfStatementsOnASingleLine: true
 AllowShortFunctionsOnASingleLine: false
 Cpp11BracedListStyle: true
