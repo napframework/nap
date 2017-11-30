@@ -24,14 +24,6 @@ namespace napkin
 		const nap::rtti::TypeInfo& type;
 	};
 
-	/**
-	 * Given a complete list of objects, attempt to resolve the provided unresolved pointers
-	 * @param objects The full list of objects to find the pointees in.
-	 * @param unresolvedPointers The pointers to resolve
-	 * @return True if the operation was successful, false otherwise.
-	 */
-	bool resolveLinks(const nap::rtti::OwnedObjectList& objects,
-					  const nap::rtti::UnresolvedPointerList& unresolvedPointers);
 
 	/**
 	 * Filter the provided list of objects

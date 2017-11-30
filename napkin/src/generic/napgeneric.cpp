@@ -21,29 +21,6 @@ void napkin::RTTITypeItem::refresh()
 	}
 }
 
-bool napkin::resolveLinks(const OwnedObjectList& objects, const UnresolvedPointerList& unresolvedPointers)
-{
-	std::map<std::string, RTTIObject*> objects_by_id;
-	for (std::unique_ptr<nap::rtti::RTTIObject>& object : objects)
-		objects_by_id.insert({object->mID, object.get()});
-
-	for (const UnresolvedPointer& unresolvedPointer : unresolvedPointers)
-	{
-		ResolvedRTTIPath resolved_path;
-		if (!unresolvedPointer.mRTTIPath.resolve(unresolvedPointer.mObject, resolved_path))
-			return false;
-
-		auto pos = objects_by_id.find(unresolvedPointer.mTargetID);
-		if (pos == objects_by_id.end())
-			return false;
-
-		if (!resolved_path.setValue(pos->second))
-			return false;
-	}
-
-	return true;
-}
-
 nap::rtti::ObjectList napkin::topLevelObjects(const ObjectList& objects)
 {
 	// Pass 1: determine the set of all potential root objects
