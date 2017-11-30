@@ -29,7 +29,7 @@ namespace napkin
     public:
         EntityInstanceItem(nap::EntityInstance& e);
     private:
-        EntityInstanceItem
+        nap::EntityInstance& mEntityInstance;
     };
 
 	/**
