@@ -249,8 +249,8 @@ namespace nap
 	void OSCLaserInputHandlerInstance::updateRotate(const OSCEvent& oscEvent, const std::vector<std::string>& args)
 	{
 		// New value
-		assert(oscEvent.getArgument(0).isFloat());
-		float v = math::max(oscEvent.getArgument(0).asFloat(), math::epsilon<float>());
+		assert(oscEvent.getArgument(0)->isFloat());
+		float v = math::max(oscEvent.getArgument(0)->asFloat(), math::epsilon<float>());
 		
 		// Get last
 		int idx = std::stoi(args[0]);
