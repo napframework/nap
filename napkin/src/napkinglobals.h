@@ -46,6 +46,8 @@ namespace napkin
 		ObjectItemID	    = QStandardItem::UserType + 21,
 		EntityItemID	    = QStandardItem::UserType + 22,
 		ComponentItemID	    = QStandardItem::UserType + 23,
+        SceneItemID         = QStandardItem::UserType + 24,
+        EntityInstanceID    = QStandardItem::UserType + 25,
 
         // RTTIPath items
 		RTTIPathID		    = QStandardItem::UserType + 50,
