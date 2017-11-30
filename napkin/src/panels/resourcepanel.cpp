@@ -2,33 +2,6 @@
 #include <generic/utility.h>
 
 
-
-napkin::ObjectItem::ObjectItem(nap::rtti::RTTIObject& rttiObject) : mObject(rttiObject)
-{
-	refresh();
-}
-
-void napkin::ObjectItem::refresh()
-{
-	setText(getName());
-}
-
-const QString napkin::ObjectItem::getName() const
-{
-	return QString::fromStdString(mObject.mID);
-}
-
-int napkin::ObjectItem::type() const
-{
-	return QStandardItem::UserType + ResourcePanelPanelStandardItemTypeID::ObjectItemTypeID;
-}
-
-nap::rtti::RTTIObject& napkin::ObjectItem::getObject() const
-{
-	return mObject;
-}
-
-
 napkin::ResourceModel::ResourceModel()
 {
 	setHorizontalHeaderLabels({TXT_LABEL_NAME, TXT_LABEL_TYPE});
@@ -190,7 +163,7 @@ void napkin::ResourcePanel::refresh()
 	mTreeView.getTreeView().expandAll();
 }
 
-napkin::ObjectItem* napkin::ResourcePanel::findItem(const nap::rtti::RTTIObject& obj)
+::napkin::ObjectItem* napkin::ResourcePanel::findItem(const nap::rtti::RTTIObject& obj)
 {
 	ObjectItem* foundItem = nullptr;
 
@@ -248,53 +221,3 @@ void napkin::ResourcePanel::onObjectRemoved(nap::rtti::RTTIObject& object)
 }
 
 
-napkin::EntityItem::EntityItem(nap::Entity& entity) : napkin::ObjectItem(entity)
-{
-
-	for (auto& child : entity.mChildren)
-	{
-		appendRow({new EntityItem(*child), new RTTITypeItem(child->get_type())});
-	}
-
-	for (auto& comp : entity.mComponents)
-	{
-		auto compItem = new ComponentItem(*comp);
-		auto compTypeItem = new RTTITypeItem(comp->get_type());
-		appendRow({compItem, compTypeItem});
-	}
-}
-
-int napkin::EntityItem::type() const
-{
-	return QStandardItem::UserType + ResourcePanelPanelStandardItemTypeID::EntityItemTypeID;
-}
-
-nap::Entity& napkin::EntityItem::getEntity()
-{
-	auto& e = *rtti_cast<nap::Entity*>(&mObject);
-    return *e;
-}
-
-napkin::ComponentItem::ComponentItem(nap::Component& comp) : napkin::ObjectItem(comp)
-{
-}
-
-int napkin::ComponentItem::type() const
-{
-	return QStandardItem::UserType + ResourcePanelPanelStandardItemTypeID::ComponentItemTypeID;
-}
-
-nap::Component& napkin::ComponentItem::getComponent()
-{
-    auto& o = *rtti_cast<nap::Component*>(&mObject);
-	return *o;
-}
-
-napkin::GroupItem::GroupItem(const QString& name) : QStandardItem(name)
-{
-}
-
-int napkin::GroupItem::type() const
-{
-	return QStandardItem::UserType + ResourcePanelPanelStandardItemTypeID::GroupItemTypeID;
-}
