@@ -2,15 +2,11 @@
 
 #include "actions.h"
 #include "generic/filtertreeview.h"
+#include <scene.h>
+
+
 namespace napkin
 {
-	enum ResourcePanelPanelStandardItemTypeID
-	{
-		GroupItemTypeID = 1,
-		ObjectItemTypeID = 2,
-		EntityItemTypeID = 3,
-		ComponentItemTypeID = 4
-	};
 
 	/**
 	 * An empty item for grouping purposes.
@@ -110,4 +106,28 @@ namespace napkin
 		nap::Component& getComponent();
 	};
 
-} // napkin
+	/**
+	 * An item representing one scene
+	 */
+	class SceneItem : public QStandardItem
+	{
+	public:
+		SceneItem(nap::Scene& scene);
+
+	private:
+		nap::Scene& mScene; //< The scene this item keeps
+	};
+
+	/**
+	 * An item that displays an entity instance
+	 */
+	class EntityInstanceItem : public QStandardItem
+	{
+	public:
+		EntityInstanceItem(nap::EntityInstance& e);
+
+	private:
+		nap::EntityInstance& mEntityInstance;
+	};
+
+} // namespace napkin

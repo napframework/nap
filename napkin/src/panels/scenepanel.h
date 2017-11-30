@@ -9,30 +9,8 @@
 namespace napkin
 {
 
-	/**
-	 * An item representing one scene
-	 */
-	class SceneItem : public QStandardItem
-	{
-	public:
-		SceneItem(nap::Scene& scene);
-    private:
-        nap::Scene& mScene; //< The scene this item keeps
-	};
-
 
     /**
-     * An item that displays an entity instance
-     */
-    class EntityInstanceItem : public QStandardItem
-    {
-    public:
-        EntityInstanceItem(nap::EntityInstance& e);
-    private:
-        nap::EntityInstance& mEntityInstance;
-    };
-
-	/**
 	 * Provides the view with scene data
 	 */
 	class SceneModel : public QStandardItemModel

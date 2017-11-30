@@ -34,6 +34,6 @@ AlignEscapedNewlinesLeft: true
 AlignAfterOpenBracket: Align
 #AlignTrailingComments: true
 #AlignConsecutiveDeclarations: true
-#AlignConsecutiveAssignments: true
+AlignConsecutiveAssignments: true
 AlwaysBreakTemplateDeclarations: true
 NamespaceIndentation: All

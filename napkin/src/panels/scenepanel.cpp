@@ -1,6 +1,7 @@
 #include "scenepanel.h"
 #include <appcontext.h>
 #include <sceneservice.h>
+#include <standarditemsobject.h>
 
 
 /**
@@ -9,12 +10,6 @@
 nap::SceneService::SceneSet getScenes()
 {
 	return napkin::AppContext::get().getCore().getService<nap::SceneService>()->getScenes();
-}
-
-napkin::SceneItem::SceneItem(nap::Scene& scene) : mScene(scene)
-{
-	setText(QString::fromStdString(scene.mID));
-    mScene.getRootEntity();
 }
 
 

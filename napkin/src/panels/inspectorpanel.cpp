@@ -1,10 +1,9 @@
 #include "inspectorpanel.h"
 #include "commands.h"
 #include "napkinglobals.h"
-#include "typeconversion.h"
 #include <QtWidgets/QApplication>
+#include <standarditemsproperty.h>
 #include <generic/utility.h>
-#include <generic/propertyitems.h>
 
 using namespace nap::rtti;
 
@@ -33,15 +32,15 @@ napkin::InspectorPanel::InspectorPanel()
 	layout()->setContentsMargins(0, 0, 0, 0);
 	mLayout.addWidget(&mTreeView);
 	mTreeView.setModel(&mModel);
-    mTreeView.getTreeView().setColumnWidth(0, 250);
-    mTreeView.getTreeView().setColumnWidth(1, 250);
-    mTreeView.getTreeView().setItemDelegateForColumn(1, &mWidgetDelegate);
+	mTreeView.getTreeView().setColumnWidth(0, 250);
+	mTreeView.getTreeView().setColumnWidth(1, 250);
+	mTreeView.getTreeView().setItemDelegateForColumn(1, &mWidgetDelegate);
 }
 
 void napkin::InspectorPanel::setObject(RTTIObject* objects)
 {
 	mModel.setObject(objects);
-    mTreeView.getTreeView().expandAll();
+	mTreeView.getTreeView().expandAll();
 }
 
 
@@ -94,5 +93,3 @@ nap::rtti::RTTIObject* napkin::InspectorModel::getObject()
 {
 	return mObject;
 }
-
-
