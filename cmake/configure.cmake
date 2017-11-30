@@ -167,31 +167,22 @@ else()
     set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
 endif()
 
-macro(export_fbx_in_place SRCDIR)
-    # Set the binary name
-    if (MSVC)
-        set(FBXCONVERTER_BIN "fbxconverter.exe")
-    else()
-        set(FBXCONVERTER_BIN "fbxconverter")
-    endif()
-
-    # Do the export
-    add_custom_command(TARGET ${PROJECT_NAME}
-        POST_BUILD
-        COMMAND "$<TARGET_FILE_DIR:${PROJECT_NAME}>/${FBXCONVERTER_BIN}" -o ${SRCDIR} "${SRCDIR}/*.fbx"
-        COMMENT "Export FBX in '${SRCDIR}'")
-endmacro()
-
 macro(export_fbx SRCDIR)
-    # Set the binary name
-    if (MSVC)
-        set(FBXCONVERTER_BIN "fbxconverter.exe")
+    if (MSVC OR APPLE)
+        set(BUILD_CONF "${CMAKE_CXX_COMPILER_ID}-${ARCH}-$<CONFIG>")
     else()
-        set(FBXCONVERTER_BIN "fbxconverter")
+        set(BUILD_CONF "${CMAKE_CXX_COMPILER_ID}-${CMAKE_BUILD_TYPE}-${ARCH}")
     endif()
+
+    set(FBXCONV_DIR "${CMAKE_SOURCE_DIR}/bin/${BUILD_CONF}")
+    # TODO Output fbxconverter to tools dir at some point? Maybe.. This doesn't impact packaged location.
+    # set(FBXCONV_DIR "${CMAKE_SOURCE_DIR}/bin/${BUILD_CONF}/tools")
 
     # Set project data out path
     set(OUTDIR "$<TARGET_FILE_DIR:${PROJECT_NAME}>/data/${PROJECT_NAME}")
+    # TODO For now output to a project subfolder under the project data.  Left this way for Now
+    # to make transition easier.
+    # set(OUTDIR "$<TARGET_FILE_DIR:${PROJECT_NAME}>/data")
 
     # Ensure data output directory for project exists
     add_custom_command(TARGET ${PROJECT_NAME}
@@ -200,10 +191,18 @@ macro(export_fbx SRCDIR)
         COMMENT "Ensure project output directory exists for fbxconverter")
 
     # Do the export
-    add_custom_command(TARGET ${PROJECT_NAME}
-        POST_BUILD
-        COMMAND "$<TARGET_FILE_DIR:${PROJECT_NAME}>/${FBXCONVERTER_BIN}" -o ${OUTDIR} "${SRCDIR}/*.fbx"
-        COMMENT "Export FBX in '${SRCDIR}'")
+    if (MSVC)
+	    add_custom_command(TARGET ${PROJECT_NAME}
+	        POST_BUILD
+	        COMMAND set "PATH=${FBXCONV_DIR}/..;%PATH%"
+	        COMMAND "${FBXCONV_DIR}/fbxconverter" -o ${OUTDIR} "${SRCDIR}/*.fbx"
+	        COMMENT "Export FBX in '${SRCDIR}'")
+    else()
+	    add_custom_command(TARGET ${PROJECT_NAME}
+	        POST_BUILD
+	        COMMAND "${FBXCONV_DIR}/fbxconverter" -o ${OUTDIR} "${SRCDIR}/*.fbx"
+	        COMMENT "Export FBX in '${SRCDIR}'")
+    endif()
 endmacro()
 
 macro(copy_dir_to_bin SRCDIR DSTDIR)
@@ -217,8 +216,8 @@ macro(copy_files_to_bin)
     foreach(F ${ARGN})
         add_custom_command(TARGET ${PROJECT_NAME}
             POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy "${F}" "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
-            COMMENT "Copy ${F} -> $<TARGET_FILE_DIR:${PROJECT_NAME}>")
+            COMMAND ${CMAKE_COMMAND} -E copy "${F}" "$<TARGET_FILE_DIR:${PROJECT_NAME}>/"
+            COMMENT "Copy ${F} -> $<TARGET_FILE_DIR:${PROJECT_NAME}>/")
     endforeach()
 endmacro()
 
@@ -228,13 +227,22 @@ macro(copy_base_windows_graphics_dlls)
             ../../../../thirdparty/sdl2/msvc/lib/x64/SDL2.dll
             ../../../../thirdparty/glew/msvc/bin/Release/x64/glew32.dll
             )
-    # copy nrender (hack)
     copy_files_to_bin(${FILES_TO_COPY})
 endmacro()
 
 macro(copy_windows_ffmpeg_dlls)
     file(GLOB FFMPEGDLLS ${CMAKE_CURRENT_LIST_DIR}/../../../thirdparty/ffmpeg/bin/*.dll)
     copy_files_to_bin(${FFMPEGDLLS})
+endmacro()
+
+# Copy all of our Windows DLLs that have build in bin into project dir
+# TODO this is NOT a clean solution, but if we're mainly releasing projects build against packaged releases of the
+#      framework maybe this is OK?
+macro(bulk_copy_windows_dlls_to_bin)
+    add_custom_command(TARGET ${PROJECT_NAME}
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -DCOPIER_IN_PATH=$<TARGET_FILE_DIR:${PROJECT_NAME}>/../*.dll -DCOPIER_OUTPUT_PATH=$<TARGET_FILE_DIR:${PROJECT_NAME}>/ -P ${CMAKE_SOURCE_DIR}/cmake/windowsdllcopier.cmake
+        COMMENT "Bulk copying Windows library DLLs -> $<TARGET_FILE_DIR:${PROJECT_NAME}>/")
 endmacro()
 
 # Helper function to filter out platform-specific files
@@ -335,7 +343,7 @@ macro(package_module)
                                         LIBRARY DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>
                                         ARCHIVE DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>)
     elseif(APPLE)
-        install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>)  
+        install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>)
     else()
         install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION modules/${PROJECT_NAME}/lib/${CMAKE_BUILD_TYPE})
     endif()
@@ -366,4 +374,22 @@ macro(set_installed_linux_object_for_dependent_modules DEPENDENT_NAP_MODULES TAR
     # message("Built rpath: ${BUILT_RPATH}")
     set_target_properties(${TARGET_NAME} PROPERTIES SKIP_BUILD_RPATH FALSE
                                                     INSTALL_RPATH ${BUILT_RPATH})
+endmacro()
+
+# Change our project output directories (when building against NAP source)
+macro(set_output_directories)
+    if (MSVC OR APPLE)
+        # Loop over each configuration for multi-configuration systems
+        foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
+            set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}-${ARCH}-${OUTPUTCONFIG})
+    		set(BIN_DIR ${CMAKE_SOURCE_DIR}/bin/${BUILD_CONF}/${PROJECT_NAME})
+            string(TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG)
+            set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${BIN_DIR})
+        endforeach()
+    else()
+        # Single built type, for Linux
+        set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}-${CMAKE_BUILD_TYPE}-${ARCH})
+        set(BIN_DIR ${CMAKE_SOURCE_DIR}/bin/${BUILD_CONF}/${PROJECT_NAME})
+        set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR})
+    endif()
 endmacro()

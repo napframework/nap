@@ -24,10 +24,10 @@ namespace nap
 		~ModuleManager();
 
 		/**
-		 * Load all modules in the specified directories
-		 * @param directories The directories to load modules from (relative to current working directory)
+		 * Load all modules in the specified list
+		 * @param moduleNames The list of modules to load (temporary?)
 		 */
-		void loadModules(const std::vector<std::string>& directories);
+		void loadModules(std::vector<std::string>& moduleNames);
 		
 
 	private:
@@ -40,6 +40,13 @@ namespace nap
 			void*				mHandle;								// Handle to native module
 			rtti::TypeInfo		mService = rtti::TypeInfo::empty();		// Service associated with the module
 		};
+
+		/**
+		 * Build directories to search in for specified modules
+		 * @param moduleNames The names of the modules in use in the project
+		 * @param outSearchDirectories The directories to search for the provided modules
+		 */
+		void buildModuleSearchDirectories(std::vector<std::string>& moduleNames, std::vector<std::string>& outSearchDirectories);
 
 		using ModuleList = std::vector<Module>;
 		ModuleList mModules;	// The loaded modules

@@ -127,8 +127,12 @@ namespace nap
 		*/
 	}
 
-	void ModuleManager::loadModules(const std::vector<std::string>& directories)
+	void ModuleManager::loadModules(std::vector<std::string>& moduleNames)
 	{
+		// Build a list of directories to search for modules
+		std::vector<std::string> directories;
+		buildModuleSearchDirectories(moduleNames, directories);
+		
 		// Iterate each directory
 		
 		// TODO iterating module paths like this is very likely temporary behaviour as we work through the
@@ -205,5 +209,36 @@ namespace nap
 				mModules.push_back(module);
 			}
 		}
+	}
+	
+	void ModuleManager::buildModuleSearchDirectories(std::vector<std::string>& moduleNames, std::vector<std::string>& outSearchDirectories)
+	{
+		
+#ifdef _WIN32
+		// Windows
+		outSearchDirectories.push_back(".");
+#else
+		// Packaged MacOS & Linux apps
+		outSearchDirectories.push_back("lib");
+		
+		// Non-packaged MacOS & Linux apps against released framework
+	#ifdef NDEBUG
+		const std::string modulePathConfigSuffix = "Release";
+	#else
+		const std::string modulePathConfigSuffix = "Debug";
+	#endif  // NDEBUG
+		for (const std::string& module : moduleNames) {
+			outSearchDirectories.push_back("../../../modules/" + module + "/lib/" + modulePathConfigSuffix);
+		}
+		
+		// MacOS & Linux apps in NAP internal source
+
+		// Get our configuration name from the directory name that our project sits in.  Clunky but true.
+		std::string exeDir = utility::getExecutableDir();
+		std::vector<std::string> dirParts;
+		utility::splitString(exeDir, '/', dirParts);
+		std::string configuration_name = dirParts.end()[-2];
+		outSearchDirectories.push_back("../../../lib/" + configuration_name);
+#endif // _WIN32
 	}
 }
