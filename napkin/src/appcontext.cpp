@@ -12,6 +12,7 @@
 // nap
 #include <rtti/jsonreader.h>
 #include <rtti/jsonwriter.h>
+#include <rtti/defaultlinkresolver.h>
 
 // local
 #include <generic/napgeneric.h>
@@ -68,7 +69,7 @@ void AppContext::loadFile(const QString& filename)
 		return;
 	}
 
-	if (!resolveLinks(result.mReadObjects, result.mUnresolvedPointers))
+	if (!nap::rtti::DefaultLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, err))
 	{
 		nap::Logger::fatal("Failed to resolve links");
 		return;
