@@ -5,7 +5,6 @@
 #include <nap/logger.h>
 #include <nap/core.h>
 #include <entity.h>
-#include <rtti/rttireader.h>
 
 using namespace nap;
 using namespace nap::rtti;
