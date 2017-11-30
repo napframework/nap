@@ -2,6 +2,7 @@
 
 #include "applycolorcomponent.h"
 #include "compositioncomponent.h"
+#include "colorpalettecomponent.h"
 
 #include <component.h>
 #include <componentptr.h>
@@ -25,7 +26,8 @@ namespace nap
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		ComponentPtr<CompositionComponent> mCompositionComponent;			///< property: link to the composition component
+		ComponentPtr<CompositionComponent>  mCompositionComponent;			///< property: link to the composition component
+		ComponentPtr<ColorPaletteComponent> mColorPaletteComponent;			///< property: link to the color palette component
 	};
 
 
@@ -53,7 +55,10 @@ namespace nap
 		virtual void applyColor(double deltaTime) override;
 
 		// pointer to the component that manages all the compositions
-		COMPONENT_INSTANCE_POINTER(mCompositionComponent, CompositionComponent, ApplyCompositionComponent, mCompositionComponent)
+		COMPONENT_INSTANCE_POINTER(mCompositionComponent, CompositionComponent, ApplyCompositionComponent)
+
+		// pointer to the component that manages the color palettes
+		COMPONENT_INSTANCE_POINTER(mColorPaletteComponent, ColorPaletteComponent, ApplyCompositionComponent)
 
 	private:
 		nap::Pixmap mPixmap;

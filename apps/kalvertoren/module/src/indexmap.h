@@ -41,6 +41,11 @@ namespace nap
 		const IndexColor& getColor(int index) const;
 
 		/**
+		 *	@return all the index colors
+		 */
+		const std::vector<IndexColor>& getColors() const								{ return mIndexColors; }
+
+		/**
 		 *	@return the total number of unique index colors
 		 */
 		int getCount() const;

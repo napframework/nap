@@ -29,6 +29,11 @@ namespace nap
 		*/
 		virtual bool init(utility::ErrorState& errorState) override;
 
+		/**
+		 *	@return the total number of available led color palettes
+		 */
+		int getCount() const														{ return mColorPalettes.size(); }
+
 		nap::ObjectPtr<IndexMap> mIndexMap;											///< The index map to use
 		std::vector<nap::ObjectPtr<LedColorPalette>> mColorPalettes;				///< All the available color palettes
 	};

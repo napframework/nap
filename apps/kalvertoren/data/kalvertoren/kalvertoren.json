@@ -7,7 +7,7 @@
 			"Width" : 1024,
 			"Height" : 768,
 			"Title" : "Kalvertoren",
-			"Sync" : true,
+			"Sync" : false,
 			"ClearColor" : 
 			{
 				"x" : 0.0,
@@ -678,6 +678,11 @@
 					[
 						"TestComposition"
 					]
+				},
+				{
+					"Type" : "nap::ColorPaletteComponent",
+					"mID" : "ColorPaletteComponent",
+					"Colors" : "LedColorContainer"
 				}
 			],
 			"Children" :
@@ -711,7 +716,8 @@
 					"Type" : "nap::ApplyCompositionComponent",
 					"Mesh" : "KalverMesh",
 					"Selector" : "./ColorMethodSelectorKalver",
-					"CompositionComponent" : "../CompositionComponent"
+					"CompositionComponent" : "../CompositionComponent",
+					"ColorPaletteComponent" : "../ColorPaletteComponent"
 				},
 				{
 					"Type" : "nap::MeshToArtnetComponent",
@@ -751,7 +757,8 @@
 					"Type" : "nap::ApplyCompositionComponent",
 					"Mesh" : "HeiligewegMesh",
 					"Selector" : "./ColorMethodSelectorHeiligeweg",
-					"CompositionComponent" : "../CompositionComponent"
+					"CompositionComponent" : "../CompositionComponent",
+					"ColorPaletteComponent" : "../ColorPaletteComponent"
 				},
 				{
 					"Type" : "nap::MeshToArtnetComponent",
@@ -789,7 +796,8 @@
 					"Type" : "nap::ApplyCompositionComponent",
 					"Mesh" : "SingelMesh",
 					"Selector" : "./ColorMethodSelectorSingel",
-					"CompositionComponent" : "../CompositionComponent"
+					"CompositionComponent" : "../CompositionComponent",
+					"ColorPaletteComponent" : "../ColorPaletteComponent"
 				},
 				{
 					"Type" : "nap::MeshToArtnetComponent",

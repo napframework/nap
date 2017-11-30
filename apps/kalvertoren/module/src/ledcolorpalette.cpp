@@ -38,6 +38,14 @@ namespace nap
 		if (!errorState.check(mLedColors.size() == mPaletteColors.size(), "mismatch detected in led and palette colors, found led colors: %d, found palette colors: %d", mLedColors.size(), mPaletteColors.size()))
 			return false;
 
+		// Create the palette to led mapping
+		int i = 0;
+		for (auto& color : mPaletteColors)
+		{
+			mColorMap.emplace(std::make_pair(color, mLedColors[i]));
+			i++;
+		}
+
 		// Get opengl settings from bitmap
 		opengl::Texture2DSettings settings;
 		if (!errorState.check(opengl::getSettingsFromBitmap(mPixmap.getBitmap(), false, settings, errorState), "Unable to determine texture settings from bitmap %s", mImagePath.c_str()))

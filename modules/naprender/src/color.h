@@ -147,7 +147,7 @@ namespace nap
 		/**
 		* Constructor that simply creates a 0 initialized color
 		*/
-		Color() : BaseColor(CHANNELS, sizeof(T))										{ mValues.fill(0); }
+		Color() : BaseColor(CHANNELS, sizeof(std::remove_pointer<T>::type))				{ mValues.fill(0); }
 
 		/**
 		 * Constructor that creates a color based on a set number of values
@@ -201,7 +201,9 @@ namespace nap
 		void* getData(int channel) override;
 
 		/**
-		 *	@return if two color values are not similar
+		 * @return if two color values are similar.
+		 * Performs a value comparison when the color is not a pointer
+		 * Otherwise a pointer comparison
 		 */
 		bool operator== (const Color<T, CHANNELS>& rhs) const;
 
@@ -210,6 +212,30 @@ namespace nap
 		 */
 		bool operator!=(const Color<T, CHANNELS>& rhs) const							{ !(rhs == mValues); }
 		
+		/**
+		 * @return if the color value is less than @rhs
+		 * Won't work when the color is a pointer
+		 */
+		bool operator<(const Color<T, CHANNELS>& rhs) const;
+
+		/**
+		 * @return if the color value higher than @rhs
+		 * Won't work when the color is a pointer
+		 */
+		bool operator>(const Color<T, CHANNELS>& rhs) const								{ rhs < *this; }
+
+		/**
+		 * @return if the color value is less or equal to @rhs
+		 * Won't work when the color is a pointer
+		 */
+		bool operator<=(const Color<T, CHANNELS>& rhs) const							{ return !(*this > rhs); }
+
+		/**
+		 * @return if the color value is higher or equal to @rhs
+		 * Won't work when the color is a pointer
+		 */
+		bool operator>=(const Color<T, CHANNELS>& rhs) const							{ return !(*this < rhs); }
+
 		/**
 		*	Color values associated with this color
 		*/
@@ -433,6 +459,15 @@ namespace nap
 	}
 
 	template<typename T, int CHANNELS>
+	bool nap::Color<T, CHANNELS>::operator<(const Color<T, CHANNELS>& rhs) const
+	{
+		std::hash<Color<T, CHANNELS>> lhs_hash;
+		std::hash<Color<T, CHANNELS>> rhs_hash;
+
+		return lhs_hash(*this) < rhs_hash(rhs);
+	}
+
+	template<typename T, int CHANNELS>
 	T& nap::Color<T, CHANNELS>::getValue(EColorChannel channel)
 	{
 		int idx = static_cast<int>(channel);
@@ -494,32 +529,54 @@ namespace nap
 
 namespace std
 {
+	template<>
+	struct hash <nap::Color<nap::uint8, 1>>
+	{
+		size_t operator()(const nap::Color<nap::uint8, 1>& v) const
+		{
+			return hash<nap::uint8>()(v.getValue(nap::EColorChannel::Red));
+		}
+	};
+
+
 	template <>
 	struct hash<nap::RColor<nap::uint8>>
 	{
 		size_t operator()(const nap::RColor<nap::uint8>& v) const
 		{
-			return hash<nap::uint8>()(v.getValue(nap::EColorChannel::Red));
+			return hash<nap::Color<nap::uint8, 1>>()(static_cast<nap::Color<nap::uint8, 1>>(v));
 		}
 	};
+
+
+	template <>
+	struct hash<nap::Color<nap::uint8, 3>>
+	{
+		size_t operator()(const nap::Color<nap::uint8, 3>& v) const
+		{
+			return nap::uint32((
+				v.getValue(nap::EColorChannel::Red) << 16 |
+				v.getValue(nap::EColorChannel::Green) << 8 |
+				v.getValue(nap::EColorChannel::Blue)));
+		}
+
+	};
+
 
 	template <>
 	struct hash<nap::RGBColor<nap::uint8>>
 	{
 		size_t operator()(const nap::RGBColor<nap::uint8>& v) const
 		{
-			return nap::uint32((
-				v.getValue(nap::EColorChannel::Red) << 16  |
-				v.getValue(nap::EColorChannel::Green) << 8 |
-				v.getValue(nap::EColorChannel::Blue)));
+			return hash<nap::Color<nap::uint8, 3>>()(static_cast<nap::Color<nap::uint8, 3>>(v));
 		}
-		
 	};
 
+
 	template <>
-	struct hash<nap::RGBAColor<nap::uint8>>
+	struct hash<nap::Color<nap::uint8, 4>>
 	{
-		size_t operator()(const nap::RGBAColor<nap::uint8>& v) const
+		size_t operator()(const nap::Color<nap::uint8, 4>& v) const
 		{
 			return nap::uint32((
 				v.getValue(nap::EColorChannel::Red) << 24	|
@@ -530,11 +587,43 @@ namespace std
 	};
 
 	template <>
+	struct hash<nap::RGBAColor<nap::uint8>>
+	{
+		size_t operator()(const nap::RGBAColor<nap::uint8>& v) const
+		{
+			return hash<nap::Color<nap::uint8, 4>>()(static_cast<nap::Color<nap::uint8, 4>>(v));
+		}
+	};
+
+	template <>
+	struct hash<nap::Color<nap::uint16, 1>>
+	{
+		size_t operator()(const nap::Color<nap::uint16, 1>& v) const
+		{
+			return hash<nap::uint16>()(v.getValue(nap::EColorChannel::Red));
+		}
+
+	};
+
+	template <>
 	struct hash<nap::RColor<nap::uint16>>
 	{
 		size_t operator()(const nap::RColor<nap::uint16>& v) const
 		{
-			return hash<nap::uint16>()(v.getValue(nap::EColorChannel::Red));
+			return hash<nap::Color<nap::uint16, 1>>()(static_cast<nap::Color<nap::uint16, 1>>(v));
+		}
+
+	};
+
+	template <>
+	struct hash<nap::Color<nap::uint16, 3>>
+	{
+		size_t operator()(const nap::Color<nap::uint16, 3>& v) const
+		{
+			return nap::uint64((
+				(nap::uint64)v.getValue(nap::EColorChannel::Red) << 32 |
+				(nap::uint64)v.getValue(nap::EColorChannel::Green) << 16 |
+				(nap::uint64)v.getValue(nap::EColorChannel::Blue)));
 		}
 
 	};
@@ -544,18 +633,15 @@ namespace std
 	{
 		size_t operator()(const nap::RGBColor<nap::uint16>& v) const
 		{
-			return nap::uint64((
-				(nap::uint64)v.getValue(nap::EColorChannel::Red) << 32	 |
-				(nap::uint64)v.getValue(nap::EColorChannel::Green) << 16 |
-				(nap::uint64)v.getValue(nap::EColorChannel::Blue)));
+			return hash<nap::Color<nap::uint16, 3>>()(static_cast<nap::Color<nap::uint16, 3>>(v));
 		}
 
 	};
 
 	template <>
-	struct hash<nap::RGBAColor<nap::uint16>>
+	struct hash<nap::Color<nap::uint16, 4>>
 	{
-		size_t operator()(const nap::RGBAColor<nap::uint16>& v) const
+		size_t operator()(const nap::Color<nap::uint16, 4>& v) const
 		{
 			return nap::uint64((
 				(nap::uint64)v.getValue(nap::EColorChannel::Red) << 48		|
@@ -566,9 +652,18 @@ namespace std
 	};
 
 	template <>
-	struct hash<nap::RColor<float>>
+	struct hash<nap::RGBAColor<nap::uint16>>
 	{
-		size_t operator()(const nap::RColor<float>& v) const
+		size_t operator()(const nap::RGBAColor<nap::uint16>& v) const
+		{
+			return hash<nap::Color<nap::uint16, 4>>()(static_cast<nap::Color<nap::uint16, 4>>(v));
+		}
+	};
+
+	template <>
+	struct hash<nap::Color<float, 1>>
+	{
+		size_t operator()(const nap::Color<float, 1>& v) const
 		{
 			return std::hash<float>{}(v.getValue(nap::EColorChannel::Red));
 		}
@@ -576,9 +671,19 @@ namespace std
 	};
 
 	template <>
-	struct hash<nap::RGBColor<float>>
+	struct hash<nap::RColor<float>>
 	{
-		size_t operator()(const nap::RGBColor<float>& v) const
+		size_t operator()(const nap::RColor<float>& v) const
+		{
+			return hash<nap::Color<float, 1>>()(static_cast<nap::Color<float, 1>>(v));
+		}
+
+	};
+
+	template <>
+	struct hash<nap::Color<float, 3>>
+	{
+		size_t operator()(const nap::Color<float, 3>& v) const
 		{
 			std::size_t value1 = std::hash<float>{}(v.getValue(nap::EColorChannel::Red));
 			std::size_t value2 = std::hash<float>{}(v.getValue(nap::EColorChannel::Green));
@@ -589,15 +694,34 @@ namespace std
 	};
 
 	template <>
-	struct hash<nap::RGBAColor<float>>
+	struct hash<nap::RGBColor<float>>
 	{
-		size_t operator()(const nap::RGBAColor<float>& v) const
+		size_t operator()(const nap::RGBColor<float>& v) const
+		{
+			return hash<nap::Color<float, 3>>()(static_cast<nap::Color<float, 3>>(v));
+		}
+
+	};
+
+	template <>
+	struct hash<nap::Color<float, 4>>
+	{
+		size_t operator()(const nap::Color<float, 4>& v) const
 		{
 			std::size_t value1 = std::hash<float>{}(v.getValue(nap::EColorChannel::Red));
 			std::size_t value2 = std::hash<float>{}(v.getValue(nap::EColorChannel::Green));
 			std::size_t value3 = std::hash<float>{}(v.getValue(nap::EColorChannel::Blue));
 			std::size_t value4 = std::hash<float>{}(v.getValue(nap::EColorChannel::Alpha));
 			return value1 ^ value2 ^ value3 ^ value4;
+		}
+	};
+
+	template <>
+	struct hash<nap::RGBAColor<float>>
+	{
+		size_t operator()(const nap::RGBAColor<float>& v) const
+		{
+			return hash<nap::Color<float, 4>>()(static_cast<nap::Color<float, 4>>(v));
 		}
 	};
 

@@ -5,6 +5,7 @@
 #include <basetexture2d.h>
 #include <color.h>
 #include <pixmap.h>
+#include <unordered_map>
 
 namespace nap
 {
@@ -40,12 +41,13 @@ namespace nap
 		 */
 		const RGBAColor8& getLEDColor(int index) const;
 
-		std::string				mImagePath;			///< Path to the palette image on disk
-		std::vector<RGBAColor8> mLedColors;			///< All the LED colors associated with this palette (RGBA 8 bit)
+		std::string				mImagePath;						///< Path to the palette image on disk
+		std::vector<RGBAColor8> mLedColors;						///< All the LED colors associated with this palette (RGBA 8 bit)
 
 	private:
-		std::vector<RGBColor8>	mPaletteColors;		///< All the colors extracted from the palette (RGB 8 bit)
-		nap::Pixmap				mPixmap;			///< Bitmap associated with this led color palette
+		std::vector<RGBColor8>	mPaletteColors;					///< All the colors extracted from the palette (RGB 8 bit)
+		nap::Pixmap				mPixmap;						///< Bitmap associated with this led color palette
+		std::unordered_map<RGBColor8, RGBAColor8> mColorMap;	///< Maps a color in the palette to a led color
 
 		void findPaletteColors();					///< Retrieves all the index colors from the map
 	};

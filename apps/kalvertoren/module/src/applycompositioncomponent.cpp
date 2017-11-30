@@ -6,7 +6,8 @@
 
 // nap::applycompositioncomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::ApplyCompositionComponent)
-	RTTI_PROPERTY("CompositionComponent", &nap::ApplyCompositionComponent::mCompositionComponent, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("CompositionComponent",	&nap::ApplyCompositionComponent::mCompositionComponent,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ColorPaletteComponent",	&nap::ApplyCompositionComponent::mColorPaletteComponent,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::applycompositioncomponentInstance run time class definition 
@@ -45,6 +46,9 @@ namespace nap
 		// Get the model we want to color
 		nap::ArtnetMeshFromFile& mesh = getMesh();
 
+		// Get the instance
+		nap::MeshInstance& mesh_instance = mesh.getMeshInstance();
+
 		// UV attribute we use to sample
 		nap::VertexAttribute<glm::vec3>& uv_attr = mesh.getUVAttribute();
 
@@ -58,12 +62,14 @@ namespace nap
 
 		// Will hold the rgb colors applied to the mesh
 		RGBColorFloat rgb_color;
-		assert(mPixmap.getPixel(0, 0)->getValueType() == RTTI_OF(uint8));
+		RGBColor8 rgb_index_color;
+
+		assert(mPixmap.mType == Pixmap::EDataType::BYTE);
 
 		for (int i = 0; i < tri_count; i++)
 		{
 			// Get uv coordinates for that triangle
-			getTriangleValues<glm::vec3>(mesh.getMeshInstance(), i, uv_attr, tri_uv_data);
+			getTriangleValues<glm::vec3>(mesh_instance, i, uv_attr, tri_uv_data);
 
 			// Average uv values
 			glm::vec2 uv_avg{ 0.0,0.0 };
@@ -80,7 +86,13 @@ namespace nap
 			int y_pixel = static_cast<float>(mPixmap.getHeight() - 1) * uv_avg.y;
 
 			// retrieve pixel value
-			mPixmap.getRGBColorData<uint8>(x_pixel, y_pixel).convert(rgb_color);
+			mPixmap.getRGBColor<uint8>(x_pixel, y_pixel, rgb_index_color);
+			
+			// Get the corresponding color palette value
+			const nap::RGBColor8& palette_color = mColorPaletteComponent->getPaletteColor(rgb_index_color);
+			
+			// Convert to our rgb float value
+			palette_color.convert(rgb_color);
 
 			// iterate over every vertex in the triangle and set the color
 			for (auto& vert_color : new_triangle_color)
@@ -91,11 +103,11 @@ namespace nap
 				vert_color.a = 1.0f;
 			}
 
-			setTriangleValues<glm::vec4>(mesh.getMeshInstance(), i, color_attr, new_triangle_color);
+			setTriangleValues<glm::vec4>(mesh_instance, i, color_attr, new_triangle_color);
 		}
 
 		nap::utility::ErrorState error;
-		if (!mesh.getMeshInstance().update(error))
+		if (!mesh_instance.update(error))
 		{
 			assert(false);
 		}
