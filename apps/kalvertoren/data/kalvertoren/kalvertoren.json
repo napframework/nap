@@ -221,6 +221,27 @@
 		},
 
 		{
+			"Type" : "nap::ImageLayer",
+			"mID" : "GreenLayer1",
+			"Path" :"data/kalvertoren/compositions/green/layer1/layer_1.BMP"
+		},
+
+		{
+			"Type" : "nap::ImageLayer",
+			"mID" : "GreenLayer2",
+			"Path" :"data/kalvertoren/compositions/green/layer2/layer_2.0004.png"
+		},
+
+		{
+			"Type" : "nap::Composition",
+			"mID"  : "GreenComposition",
+			"Layers" :
+			[
+				"GreenLayer1"
+			] 
+		},
+
+		{
 			"Type" : "nap::Texture2D",
 			"mID" : "CompositionTextureA",
 			"Width" : 512,
@@ -710,7 +731,8 @@
 					"mID" : "CompositionComponent",
 					"Compositions" :
 					[
-						"TestComposition"
+						"TestComposition",
+						"GreenComposition"
 					]
 				},
 				{

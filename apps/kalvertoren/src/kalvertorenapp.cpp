@@ -200,8 +200,9 @@ namespace nap
 		// Gui
 		SelectLedMeshComponentInstance& mesh_selector = displayEntity->getComponent<SelectLedMeshComponentInstance>();
 		ColorPaletteComponentInstance& palette_selector =  compositionEntity->getComponent<ColorPaletteComponentInstance>();
-		
-		ImGui::Begin("Settings");
+		CompositionComponentInstance& composition_selector = compositionEntity->getComponent<CompositionComponentInstance>();
+
+		ImGui::Begin("Display Settings");
 		
 		// Resets all the tracers
 		if (ImGui::Button("Reset Walker"))
@@ -222,12 +223,6 @@ namespace nap
 		if (ImGui::SliderInt("Mesh Selection", &mMeshSelection, 0, mesh_selector.getCount() - 1))
 		{
 			mesh_selector.select(mMeshSelection);
-		}
-
-		// Changes the color palette
-		if (ImGui::SliderInt("Palette Selection", &mPaletteSelection, 0, palette_selector.getCount() - 1))
-		{
-			palette_selector.select(mPaletteSelection);
 		}
 		
 		// Change tracer walk speed
@@ -270,6 +265,24 @@ namespace nap
 		}
 		ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),"%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::End();
+
+		// Composition settings
+		ImGui::Begin("Composition Settings");
+
+		// Changes the color palette
+		if (ImGui::SliderInt("Composition", &mCompositionSelection, 0, composition_selector.getCount() - 1))
+		{
+			composition_selector.select(mCompositionSelection);
+		}
+
+		// Changes the color palette
+		if (ImGui::SliderInt("Color Palette", &mPaletteSelection, 0, palette_selector.getCount() - 1))
+		{
+			palette_selector.select(mPaletteSelection);
+		}
+
+		ImGui::End();
+
 	}
 
 
@@ -304,4 +317,3 @@ namespace nap
 		}
 	}
 }
-
