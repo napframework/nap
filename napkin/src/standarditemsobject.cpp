@@ -1,15 +1,10 @@
-#include <sceneservice.h>
-#include <appcontext.h>
 #include "standarditemsobject.h"
+#include <appcontext.h>
 #include <generic/utility.h>
+#include <sceneservice.h>
 
 napkin::GroupItem::GroupItem(const QString& name) : QStandardItem(name)
 {
-}
-
-int napkin::GroupItem::type() const
-{
-	return QStandardItem::UserType + StandardItemTypeID::GroupItemID;
 }
 
 napkin::ObjectItem::ObjectItem(nap::rtti::RTTIObject& rttiObject) : mObject(rttiObject)
@@ -27,11 +22,6 @@ const QString napkin::ObjectItem::getName() const
 	return QString::fromStdString(mObject.mID);
 }
 
-int napkin::ObjectItem::type() const
-{
-	return QStandardItem::UserType + StandardItemTypeID::ObjectItemID;
-}
-
 nap::rtti::RTTIObject& napkin::ObjectItem::getObject() const
 {
 	return mObject;
@@ -47,15 +37,10 @@ napkin::EntityItem::EntityItem(nap::Entity& entity) : ObjectItem(entity)
 
 	for (auto& comp : entity.mComponents)
 	{
-		auto compItem = new ComponentItem(*comp);
+		auto compItem	 = new ComponentItem(*comp);
 		auto compTypeItem = new napkin::RTTITypeItem(comp->get_type());
 		appendRow({compItem, compTypeItem});
 	}
-}
-
-int napkin::EntityItem::type() const
-{
-	return QStandardItem::UserType + StandardItemTypeID::EntityItemID;
 }
 
 nap::Entity& napkin::EntityItem::getEntity()
@@ -68,11 +53,6 @@ napkin::ComponentItem::ComponentItem(nap::Component& comp) : ObjectItem(comp)
 {
 }
 
-int napkin::ComponentItem::type() const
-{
-	return QStandardItem::UserType + StandardItemTypeID::ComponentItemID;
-}
-
 nap::Component& napkin::ComponentItem::getComponent()
 {
 	auto& o = *rtti_cast<nap::Component*>(&mObject);
@@ -82,5 +62,23 @@ nap::Component& napkin::ComponentItem::getComponent()
 napkin::SceneItem::SceneItem(nap::Scene& scene) : mScene(scene)
 {
 	setText(QString::fromStdString(scene.mID));
-    mScene.getRootEntity();
+	appendRow(new EntityInstanceItem(scene.getRootEntity()));
+}
+
+napkin::EntityInstanceItem::EntityInstanceItem(nap::EntityInstance& e) : mEntityInstance(e)
+{
+	auto name = QString::fromStdString(e.mID);
+	if (name.isEmpty())
+		name = "Unnamed";
+
+	// TODO: This crashes
+	//    auto entityName = QString::fromStdString(e.getEntity()->mID);
+
+	//	name = QString("%1 (%2)").arg(name, entityName);
+	setText(name);
+
+	for (auto e : mEntityInstance.getChildren())
+	{
+		appendRow(new EntityInstanceItem(*e));
+	}
 }

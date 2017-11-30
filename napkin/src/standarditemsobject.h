@@ -24,7 +24,7 @@ namespace napkin
 		 * This function is supposed to solve that.
 		 * See: http://doc.qt.io/qt-5/qstandarditem.html#type
 		 */
-		int type() const override;
+		int type() const override { return StandardItemTypeID::GroupItemID; }
 	};
 
 	/**
@@ -43,7 +43,7 @@ namespace napkin
 		 * This function is supposed to solve that.
 		 * See: http://doc.qt.io/qt-5/qstandarditem.html#type
 		 */
-		int type() const override;
+		int type() const override { return StandardItemTypeID::ObjectItemID; };
 
 		/**
 		 * Refresh
@@ -77,7 +77,7 @@ namespace napkin
 		 * This function is supposed to solve that.
 		 * See: http://doc.qt.io/qt-5/qstandarditem.html#type
 		 */
-		int type() const override;
+		int type() const override { return StandardItemTypeID::EntityItemID; }
 
 		/**
 		 * @return The entity held by this item
@@ -98,7 +98,7 @@ namespace napkin
 		 * This function is supposed to solve that.
 		 * See: http://doc.qt.io/qt-5/qstandarditem.html#type
 		 */
-		int type() const override;
+		int type() const override { return StandardItemTypeID::ComponentItemID; }
 
 		/**
 		 * @return The component held by this item.
@@ -112,7 +112,14 @@ namespace napkin
 	class SceneItem : public QStandardItem
 	{
 	public:
-		SceneItem(nap::Scene& scene);
+		explicit SceneItem(nap::Scene& scene);
+
+        /**
+         * QStandardItem is not a QObject, so regular QObject polymorphism doesn't work.
+         * This function is supposed to solve that.
+         * See: http://doc.qt.io/qt-5/qstandarditem.html#type
+         */
+        int type() const override { return StandardItemTypeID::SceneItemID; }
 
 	private:
 		nap::Scene& mScene; //< The scene this item keeps
@@ -124,7 +131,14 @@ namespace napkin
 	class EntityInstanceItem : public QStandardItem
 	{
 	public:
-		EntityInstanceItem(nap::EntityInstance& e);
+		explicit EntityInstanceItem(nap::EntityInstance& e);
+
+        /**
+         * QStandardItem is not a QObject, so regular QObject polymorphism doesn't work.
+         * This function is supposed to solve that.
+         * See: http://doc.qt.io/qt-5/qstandarditem.html#type
+         */
+        int type() const override { return StandardItemTypeID::EntityInstanceID; }
 
 	private:
 		nap::EntityInstance& mEntityInstance;
