@@ -27,6 +27,7 @@ void MainWindow::addDocks()
 	addDock("History", &mHistoryPanel);
 	addDock("Log", &mLogPanel);
 	addDock("AppRunner", &mAppRunnerPanel);
+    addDock("Scene", &mScenePanel);
 }
 
 

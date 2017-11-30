@@ -10,6 +10,7 @@
 #include "panels/logpanel.h"
 #include "panels/resourcepanel.h"
 #include "themeselectionmenu.h"
+#include <panels/scenepanel.h>
 
 namespace napkin
 {
@@ -25,47 +26,47 @@ namespace napkin
 		virtual ~MainWindow();
 
 	protected:
-        /**
-         * Override...
-         */
+		/**
+		 * Override...
+		 */
 		void showEvent(QShowEvent* event) override;
 
 	private:
-        /**
-         * BInd signals
-         */
+		/**
+		 * BInd signals
+		 */
 		void bindSignals();
 
-        /**
-         * Add all the docks/panels
-         */
+		/**
+		 * Add all the docks/panels
+		 */
 		void addDocks();
 
-        /**
-         * Add the menu
-         */
+		/**
+		 * Add the menu
+		 */
 		void addMenu();
 
-        /**
-         * Makes the window title up to date
-         */
+		/**
+		 * Makes the window title up to date
+		 */
 		void updateWindowTitle();
 
-        /**
-         * Called when a new file has been created.
-         */
+		/**
+		 * Called when a new file has been created.
+		 */
 		void onNewFile();
 
-        /**
-         * Called when a file has been opened
-         * @param filename The file that has been opened
-         */
+		/**
+		 * Called when a file has been opened
+		 * @param filename The file that has been opened
+		 */
 		void onFileOpened(const QString& filename);
 
-        /**
-         * Called when a file has been saved
-         * @param filename The file that has been saved
-         */
+		/**
+		 * Called when a file has been saved
+		 * @param filename The file that has been saved
+		 */
 		void onFileSaved(const QString& filename);
 
 	private:
@@ -76,5 +77,6 @@ namespace napkin
 		LogPanel mLogPanel;				// LogPanel
 		AppRunnerPanel mAppRunnerPanel; // AppRunnerPanel
 		ThemeSelectionMenu mThemeMenu;  // ThemeSelectionMenu
+		ScenePanel mScenePanel;			// ScenePanel
 	};
 };
