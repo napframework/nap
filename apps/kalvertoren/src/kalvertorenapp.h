@@ -102,5 +102,6 @@ namespace nap
 		int												mPaintMode = 0;
 		int												mSelectChannel = 0;
 		float											mChannelSpeed = 1.0f;
+		int												mPaletteSelection = 0;
 	};
 }

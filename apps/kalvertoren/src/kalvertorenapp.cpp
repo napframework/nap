@@ -198,7 +198,9 @@ namespace nap
 		}
 
 		// Gui
-		SelectLedMeshComponentInstance& selector = displayEntity->getComponent<SelectLedMeshComponentInstance>();
+		SelectLedMeshComponentInstance& mesh_selector = displayEntity->getComponent<SelectLedMeshComponentInstance>();
+		ColorPaletteComponentInstance& palette_selector =  compositionEntity->getComponent<ColorPaletteComponentInstance>();
+		
 		ImGui::Begin("Settings");
 		
 		// Resets all the tracers
@@ -217,9 +219,15 @@ namespace nap
 		}
 
 		// Changes the display mesh
-		if (ImGui::SliderInt("Mesh Selection", &mMeshSelection, 0, selector.getCount() - 1))
+		if (ImGui::SliderInt("Mesh Selection", &mMeshSelection, 0, mesh_selector.getCount() - 1))
 		{
-			selector.select(mMeshSelection);
+			mesh_selector.select(mMeshSelection);
+		}
+
+		// Changes the color palette
+		if (ImGui::SliderInt("Palette Selection", &mPaletteSelection, 0, palette_selector.getCount() - 1))
+		{
+			palette_selector.select(mPaletteSelection);
 		}
 		
 		// Change tracer walk speed
@@ -241,14 +249,14 @@ namespace nap
 		}
 
 		// Show some additional info
-		for(int i = 0; i<selector.getLedMeshes().size(); i++)
+		for(int i = 0; i<mesh_selector.getLedMeshes().size(); i++)
 		{
 			std::vector<std::string> parts;
-			utility::splitString(selector.getLedMeshes()[i]->mTriangleMesh->mPath, '/', parts);
+			utility::splitString(mesh_selector.getLedMeshes()[i]->mTriangleMesh->mPath, '/', parts);
 			
 			ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), parts.back().c_str());
 			ImGui::Text(utility::stringFormat("Channel: %d", i).c_str());
-			const std::unordered_set<ArtNetController::Address>& addresses = selector.getLedMeshes()[i]->mTriangleMesh->getAddresses();
+			const std::unordered_set<ArtNetController::Address>& addresses = mesh_selector.getLedMeshes()[i]->mTriangleMesh->getAddresses();
 			
 			std::string universes = "Addresses:";
 			for (auto& address : addresses)

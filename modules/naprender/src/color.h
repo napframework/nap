@@ -210,7 +210,7 @@ namespace nap
 		/**
 		 * @return if two color values are not similar
 		 */
-		bool operator!=(const Color<T, CHANNELS>& rhs) const							{ !(rhs == mValues); }
+		bool operator!=(const Color<T, CHANNELS>& rhs) const							{ return !(rhs == mValues); }
 		
 		/**
 		 * @return if the color value is less than @rhs

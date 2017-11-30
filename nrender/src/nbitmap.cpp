@@ -289,11 +289,11 @@ namespace opengl
 		allocateMemory();
 
 		// Determine destination pitch
-		unsigned int dest_pitch = width * getSizeOf(dataType) * getNumChannels(colorType);
-		assert(dest_pitch <= sourcePitch);
+		unsigned int target_pitch = width * getSizeOf(dataType) * getNumChannels(colorType);
+		assert(target_pitch <= sourcePitch);
 
 		// If the dest & source pitches are the same, we can do a straight memcpy (most common/efficient case)
-		if (dest_pitch == sourcePitch)
+		if (target_pitch == sourcePitch)
 		{
 			memcpy(mData, source, BitmapBase::getSize());
 			return true;
@@ -301,12 +301,26 @@ namespace opengl
 
 		// If the pitch of the source & destination buffers are different, we need to copy the image data line by line (happens for weirdly-sized images)
 		uint8_t* source_line = (uint8_t*)source;
-		uint8_t* dest_line = (uint8_t*)mData;
+		uint8_t* target_line = (uint8_t*)mData;
+
+		// Get the amount of bytes every pixel occupies
+		int source_stride = sourcePitch / width;
+		int target_stride = target_pitch / width;
+
 		for (int y = 0; y < height; ++y)
 		{
-			memcpy(dest_line, source_line, dest_pitch);
+			uint8_t* source_loc = source_line;
+			uint8_t* target_loc = target_line;
+			for (int x = 0; x < width; ++x)
+			{
+				memcpy(target_loc, source_loc, target_stride);
+				target_loc += target_stride;
+				source_loc += source_stride;
+			}
+
+			//memcpy(dest_line, source_line, dest_pitch);
 			source_line += sourcePitch;
-			dest_line += dest_pitch;
+			target_line += target_pitch;
 		}
 		return true;
 	}

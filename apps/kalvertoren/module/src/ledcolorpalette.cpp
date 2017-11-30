@@ -35,7 +35,7 @@ namespace nap
 		findPaletteColors();
 
 		// Ensure that the amount of extracted colors matches the available laser colors
-		if (!errorState.check(mLedColors.size() == mPaletteColors.size(), "mismatch detected in led and palette colors, found led colors: %d, found palette colors: %d", mLedColors.size(), mPaletteColors.size()))
+		if (!errorState.check(mLedColors.size() == mPaletteColors.size(), "mismatch detected in led and palette colors: %s, found led colors: %d, found palette colors: %d", mID.c_str(), mLedColors.size(), mPaletteColors.size()))
 			return false;
 
 		// Create the palette to led mapping
@@ -81,16 +81,11 @@ namespace nap
 	
 	void LedColorPalette::findPaletteColors()
 	{
-		std::unordered_set<RGBColor8> unique_index_colors;
-
-		// Check the amount of available colors
 		for (int i = 0; i < mPixmap.mWidth; i++)
 		{
 			RGBColor8 current_color = mPixmap.getColor<RGBColor8>(i, 0);
-			auto& it = unique_index_colors.find(current_color);
-			if (it == unique_index_colors.end())
+			if (mPaletteColors.empty() || mPaletteColors.back() != current_color)
 			{
-				unique_index_colors.emplace(current_color);
 				mPaletteColors.emplace_back(current_color);
 			}
 		}
