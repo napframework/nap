@@ -147,7 +147,7 @@ namespace nap
 		/**
 		* Constructor that simply creates a 0 initialized color
 		*/
-		Color() : BaseColor(CHANNELS, sizeof(std::remove_pointer<T>::type))				{ mValues.fill(0); }
+		Color() : BaseColor(CHANNELS, sizeof(std::remove_pointer<typename T>::type))				{ mValues.fill(0); }
 
 		/**
 		 * Constructor that creates a color based on a set number of values
