@@ -51,7 +51,7 @@ namespace nap
 		 * Loads all modules in to the core environment and initializes them in the right order
          * @error contains the error code when initialization fails
 		 */
-		bool initializeEngine(std::vector<std::string>& tempModuleSearchDirectories, utility::ErrorState& error);
+		bool initializeEngine(utility::ErrorState& error);
 
 		/**
 		 * Starts core, call this after initializing the engine, just before starting

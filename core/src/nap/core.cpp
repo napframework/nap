@@ -4,6 +4,7 @@
 #include "logger.h"
 #include "serviceobjectgraphitem.h"
 #include "objectgraph.h"
+#include "projectinfomanager.h"
 
 // External Includes
 #include <rtti/pythonmodule.h>
@@ -47,16 +48,21 @@ namespace nap
 	}
 	
     
-	bool Core::initializeEngine(std::vector<std::string>& tempModuleSearchDirectories, utility::ErrorState& error)
+	bool Core::initializeEngine(utility::ErrorState& error)
 	{
 		// Ensure our current working directory is where the executable is.  Works around issues with the current working directory not being set as
 		// expected when apps are launched directly from Finder and probably other things too.
 		nap::utility::changeDir(nap::utility::getExecutableDir());
 		
+		// Load our module names from the project info
+		ProjectInfo projectInfo;
+		if (!loadProjectInfoFromJSON(projectInfo, error))
+			return false;
+		
 		// Load all modules
-		// TODO: Passing through our temporary module search paths for now, this is temporary until we lock down our
+		// TODO: Passing through our temporary modules list for now, this is temporary until we lock down our
 		//		 release behaviour
-		mModuleManager.loadModules(tempModuleSearchDirectories);
+		mModuleManager.loadModules(projectInfo.mModules);
 		
 		// Create the various services based on their dependencies
 		if (!createServices(error))
