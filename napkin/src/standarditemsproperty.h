@@ -8,17 +8,7 @@
 
 namespace napkin
 {
-	enum InspectorPanelStandardItemTypeID
-	{
-		BaseItemTypeID = 12,
-		PropertyItemTypeID = 13,
-		PropertyValueItemTypeID = 14,
-		EmbeddedPointerItemTypeID = 15,
-		CompoundPropertyItemTypeID = 16,
-		ArrayPropertyItemTypeID = 17,
-		PointerItemTypeID = 18,
-		PointerValueItemTypeID = 19,
-	};
+
 
 	/**
 	 * Create a row of items where each item sits in its own column
@@ -37,7 +27,7 @@ namespace napkin
 	/**
 	 * The base for items that represent a nap::rtti::RTTIObject
 	 */
-	class BaseItem : public QStandardItem
+	class BaseRTTIPathItem : public QStandardItem
 	{
 	public:
 		/**
@@ -52,7 +42,7 @@ namespace napkin
 		 * @param object The object to keep track of.
 		 * @param path The path to the property on the object
 		 */
-		BaseItem(const QString& name, nap::rtti::RTTIObject* object, const nap::rtti::RTTIPath& path);
+		BaseRTTIPathItem(const QString& name, nap::rtti::RTTIObject* object, const nap::rtti::RTTIPath& path);
 
 	protected:
 		/**
@@ -68,7 +58,7 @@ namespace napkin
 	/**
 	 * This item shows the name of an object's property
 	 */
-	class PropertyItem : public BaseItem
+	class PropertyItem : public BaseRTTIPathItem
 	{
 	public:
 		/**
@@ -89,7 +79,7 @@ namespace napkin
 	/**
 	 * This property is has child properties
 	 */
-	class CompoundPropertyItem : public BaseItem
+	class CompoundPropertyItem : public BaseRTTIPathItem
 	{
 	public:
 		/**
@@ -107,13 +97,16 @@ namespace napkin
 		CompoundPropertyItem(const QString& name, nap::rtti::RTTIObject* object, const nap::rtti::RTTIPath& path);
 
 	private:
+        /**
+         * Generate child items
+         */
 		void populateChildren();
 	};
 
 	/**
 	 * The property is an editable list of child properties
 	 */
-	class ArrayPropertyItem : public BaseItem
+	class ArrayPropertyItem : public BaseRTTIPathItem
 	{
 	public:
 		/**
@@ -134,6 +127,9 @@ namespace napkin
 						  rttr::property prop, rttr::variant_array_view array);
 
 	private:
+        /**
+         * Generate child items
+         */
 		void populateChildren();
 
 		rttr::property mProperty;
@@ -141,9 +137,9 @@ namespace napkin
 	};
 
 	/**
-	 * This item shows
+	 * This item shows an object pointer
 	 */
-	class PointerItem : public BaseItem
+	class PointerItem : public BaseRTTIPathItem
 	{
 	public:
 		/**
@@ -161,6 +157,9 @@ namespace napkin
 		PointerItem(const QString& name, nap::rtti::RTTIObject* object, const nap::rtti::RTTIPath path);
 	};
 
+    /**
+     * This item allows for editing a pointer value
+     */
 	class PointerValueItem : public QStandardItem
 	{
 	public:
@@ -202,7 +201,7 @@ namespace napkin
 	/**
 	 * Creates children, data under the embedded pointer
 	 */
-	class EmbeddedPointerItem : public BaseItem
+	class EmbeddedPointerItem : public BaseRTTIPathItem
 	{
 	public:
 		/**
@@ -229,7 +228,7 @@ namespace napkin
 	/**
 	 * This item displays the value of an object property and allows the user to change it
 	 */
-	class PropertyValueItem : public BaseItem
+	class PropertyValueItem : public BaseRTTIPathItem
 	{
 	public:
 		/**

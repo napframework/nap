@@ -1,5 +1,6 @@
-#include "objectitems.h"
-#include "napkinglobals.h"
+#include <sceneservice.h>
+#include <appcontext.h>
+#include "standarditemsobject.h"
 #include <generic/utility.h>
 
 napkin::GroupItem::GroupItem(const QString& name) : QStandardItem(name)
@@ -8,7 +9,7 @@ napkin::GroupItem::GroupItem(const QString& name) : QStandardItem(name)
 
 int napkin::GroupItem::type() const
 {
-	return QStandardItem::UserType + ResourcePanelPanelStandardItemTypeID::GroupItemTypeID;
+	return QStandardItem::UserType + StandardItemTypeID::GroupItemID;
 }
 
 napkin::ObjectItem::ObjectItem(nap::rtti::RTTIObject& rttiObject) : mObject(rttiObject)
@@ -28,7 +29,7 @@ const QString napkin::ObjectItem::getName() const
 
 int napkin::ObjectItem::type() const
 {
-	return QStandardItem::UserType + ResourcePanelPanelStandardItemTypeID::ObjectItemTypeID;
+	return QStandardItem::UserType + StandardItemTypeID::ObjectItemID;
 }
 
 nap::rtti::RTTIObject& napkin::ObjectItem::getObject() const
@@ -54,7 +55,7 @@ napkin::EntityItem::EntityItem(nap::Entity& entity) : ObjectItem(entity)
 
 int napkin::EntityItem::type() const
 {
-	return QStandardItem::UserType + ResourcePanelPanelStandardItemTypeID::EntityItemTypeID;
+	return QStandardItem::UserType + StandardItemTypeID::EntityItemID;
 }
 
 nap::Entity& napkin::EntityItem::getEntity()
@@ -69,11 +70,17 @@ napkin::ComponentItem::ComponentItem(nap::Component& comp) : ObjectItem(comp)
 
 int napkin::ComponentItem::type() const
 {
-	return QStandardItem::UserType + ResourcePanelPanelStandardItemTypeID::ComponentItemTypeID;
+	return QStandardItem::UserType + StandardItemTypeID::ComponentItemID;
 }
 
 nap::Component& napkin::ComponentItem::getComponent()
 {
 	auto& o = *rtti_cast<nap::Component*>(&mObject);
 	return *o;
+}
+
+napkin::SceneItem::SceneItem(nap::Scene& scene) : mScene(scene)
+{
+	setText(QString::fromStdString(scene.mID));
+    mScene.getRootEntity();
 }

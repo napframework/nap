@@ -4,12 +4,6 @@
 
 namespace napkin
 {
-	enum GenericStandardItemTypeID
-	{
-		EmptyItemTypeID = 10,
-		InvalidItemTypeID = 11,
-	};
-
 
 	/**
 	 * An empty item.

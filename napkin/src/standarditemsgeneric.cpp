@@ -1,4 +1,5 @@
-#include "genericitems.h"
+#include "standarditemsgeneric.h"
+#include "napkinglobals.h"
 
 
 napkin::EmptyItem::EmptyItem() : QStandardItem()
@@ -8,7 +9,7 @@ napkin::EmptyItem::EmptyItem() : QStandardItem()
 
 int napkin::EmptyItem::type() const
 {
-	return QStandardItem::UserType + GenericStandardItemTypeID::EmptyItemTypeID;
+	return QStandardItem::UserType + StandardItemTypeID::EmptyID;
 }
 
 napkin::InvalidItem::InvalidItem(const QString& name) : QStandardItem(name)
@@ -19,5 +20,5 @@ napkin::InvalidItem::InvalidItem(const QString& name) : QStandardItem(name)
 
 int napkin::InvalidItem::type() const
 {
-	return QStandardItem::UserType + GenericStandardItemTypeID::InvalidItemTypeID;
+	return QStandardItem::UserType + StandardItemTypeID::InvalidID;
 }

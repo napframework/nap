@@ -4,7 +4,7 @@
 #include "appcontext.h"
 #include "generic/filtertreeview.h"
 #include "generic/napgeneric.h"
-#include "generic/objectitems.h"
+#include "standarditemsobject.h"
 #include <QStandardItemModel>
 #include <nap/resourcemanager.h>
 
