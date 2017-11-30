@@ -21,6 +21,14 @@ endif()
 set(DEPENDENT_NAP_MODULES mod_naprender mod_napmath)
 target_link_libraries(${PROJECT_NAME} napcore nrender ${DEPENDENT_NAP_MODULES})
 
+if (WIN32)
+    # Copy freeimage DLL
+    find_package(freeimage REQUIRED)
+    copy_freeimage_dll()
+
+    # Copy over some crap window dlls
+    copy_base_windows_graphics_dlls()
+endif()
 
 # ======================= UNIT TESTS
 enable_testing()
