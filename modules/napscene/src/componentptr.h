@@ -341,12 +341,11 @@ namespace nap
 
 	/**
 	 * Creates a component instance pointer. This pointer is resolved when creating objects from resources
-	 * @param NAME the variable name of the pointer
+	 * @param ATTRIBUTE the attribute NAME of the COMPONENT_POINTER, this will also be the name of the member variable
 	 * @param TYPE the type of the component this points to. Needs to be the resource type
 	 * @param RESOURCE the component resource that contains the original COMPONENT_POINTER
-	 * @param ATTRIBUTE the attribute NAME of the COMPONENT_POINTER
 	 */
-	#define COMPONENT_INSTANCE_POINTER(NAME, TYPE, RESOURCE, ATTRIBUTE) ComponentInstancePtr<TYPE>	NAME = { this, &RESOURCE::ATTRIBUTE};
+	#define COMPONENT_INSTANCE_POINTER(ATTRIBUTE, TYPE, RESOURCE) ComponentInstancePtr<TYPE>	ATTRIBUTE = { this, &RESOURCE::ATTRIBUTE};
 }
 
 /**
