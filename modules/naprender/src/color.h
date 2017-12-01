@@ -147,7 +147,7 @@ namespace nap
 		/**
 		* Constructor that simply creates a 0 initialized color
 		*/
-		Color() : BaseColor(CHANNELS, sizeof(std::remove_pointer<typename T>::type))				{ mValues.fill(0); }
+		Color() : BaseColor(CHANNELS, sizeof(T))										{ mValues.fill(0); }
 
 		/**
 		 * Constructor that creates a color based on a set number of values
@@ -191,14 +191,23 @@ namespace nap
 		const std::vector<T>& getValues() const											{ return mValues; }
 
 		/**
-		 *	@return the data associated with the channel @index
+		 *	@return pointer to the beginning of the data
 		 */
-		const void* getData(int channel) const override;
+		T* getData()																	{ return mValues.data(); }
 
 		/**
-		*	@return the data associated with the channel @index
-		*/
-		void* getData(int channel) override;
+		 *	@return pointer to the begging of the data
+		 */
+		const T* getData() const														{ return mValues.data(); }
+
+		/**
+		 * Set the color data associated with this color
+		 * This call assumes the data is of the right size and length.
+		 * When this color points to a location in memory, that memory location is copied
+		 * Otherwise the actual values are copied over.
+		 * @param data the color data to copy, behind the scenes a memcopy is performed
+		 */
+		void setData(T* data);
 
 		/**
 		 * @return if two color values are similar.
@@ -240,6 +249,17 @@ namespace nap
 		*	Color values associated with this color
 		*/
 		std::array<T, CHANNELS> mValues;
+
+	private:
+		/**
+		 *	@return the data associated with the channel @index
+		 */
+		const void* getData(int channel) const override;
+
+		/**
+		 *	@return the data associated with the channel @index
+		 */
+		void* getData(int channel) override;
 	};
 
     template<typename T>
@@ -518,6 +538,12 @@ namespace nap
 		assert(!(color.isPointer()));
 		BaseColor::convertColor(*this, color);
 		return color;
+	}
+
+	template<typename T, int CHANNELS>
+	void nap::Color<T, CHANNELS>::setData(T* data)
+	{
+		memcpy(mValues.data(), data, sizeof(T) * CHANNELS);
 	}
 }
 
