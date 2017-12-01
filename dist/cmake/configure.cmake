@@ -138,50 +138,6 @@ endfunction()
 
 target_architecture(ARCH)
 
-
-if (MSVC OR APPLE)
-    foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
-        set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}-${ARCH}-${OUTPUTCONFIG})
-
-        set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/bin/${BUILD_CONF})
-        set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/${BUILD_CONF})
-
-        string(TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG)
-        set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${BIN_DIR})
-        set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${LIB_DIR})
-        set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${LIB_DIR})
-
-    endforeach(OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES)
-
-else()
-    set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}-${CMAKE_BUILD_TYPE}-${ARCH})
-
-    # Override binary directories
-    set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/bin/${BUILD_CONF})
-    file(MAKE_DIRECTORY ${BIN_DIR})
-    set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/${BUILD_CONF})
-    file(MAKE_DIRECTORY ${LIB_DIR})
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${LIB_DIR})
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR})
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${LIB_DIR})
-    set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
-endif()
-
-macro(export_fbx_in_place SRCDIR)
-    # Set the binary name
-    if (MSVC)
-        set(FBXCONVERTER_BIN "fbxconverter.exe")
-    else()
-        set(FBXCONVERTER_BIN "fbxconverter")
-    endif()
-
-    # Do the export
-    add_custom_command(TARGET ${PROJECT_NAME}
-        POST_BUILD
-        COMMAND "$<TARGET_FILE_DIR:${PROJECT_NAME}>/${FBXCONVERTER_BIN}" -o ${SRCDIR} "${SRCDIR}/*.fbx"
-        COMMENT "Export FBX in '${SRCDIR}'")
-endmacro()
-
 macro(export_fbx SRCDIR)
     # Set project data out path
     set(OUTDIR "$<TARGET_FILE_DIR:${PROJECT_NAME}>/data/${PROJECT_NAME}")
