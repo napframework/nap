@@ -1,6 +1,14 @@
 macro(dist_project_template)
+    get_filename_component(project_name_from_dir ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+    project(${project_name_from_dir})
+
     set(NAP_ROOT "${CMAKE_SOURCE_DIR}/../../")
     include(${NAP_ROOT}/cmake/targetarch.cmake)
+
+    # Parse our project.json and import it
+    # TODO Make changes to project.json automatically trigger CMake
+    execute_process(COMMAND python ${NAP_ROOT}/tools/projectInfoParseToCMake.py ${PROJECT_NAME})
+    include(cached_project_json.cmake)
 
     # Set our default build type if we haven't specified one (Linux)
 	set_default_build_type()
@@ -47,11 +55,6 @@ macro(dist_project_template)
                 unset(_LIB CACHE)
             endforeach ()
         endif()
-    endif()
-
-    if (APPLE)
-        set(GENERATE_XCODE_PROJECT_TARGET generateXcodeProject)
-        add_custom_target(generateXcodeProject cmake -H. -Bxcode -G Xcode -DCMAKE_BUILD_TYPE=Debug ../)
     endif()
 
     include_directories(${NAP_ROOT}/include/)
