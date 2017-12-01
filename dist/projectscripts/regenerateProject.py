@@ -20,6 +20,7 @@ def call(cwd, cmd):
         raise Exception(proc.returncode)
     return out
 
+# TODO share with projectInfoParseToCMake
 def find_project(project_name):
     script_path = os.path.realpath(__file__)
     # TODO clean up, use absolute path

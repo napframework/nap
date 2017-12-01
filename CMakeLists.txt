@@ -77,12 +77,6 @@ add_subdirectory(test/videoplayer)
 #add_subdirectory(apps/artnetcolor)
 #add_subdirectory(apps/steef)
 
-if (APPLE)
-    set(GENERATE_XCODE_PROJECT_TARGET generateXcodeProject)
-    add_custom_target(generateXcodeProject cmake -H. -Bxcode -G Xcode -DCMAKE_BUILD_TYPE=Debug ../)
-endif()
-#add_dependencies(${PROJECT_NAME} ${GENERATE_XCODE_PROJECT_TARGET})
-
 # Modules
 add_subdirectory(modules/napinput)
 add_subdirectory(modules/naprender)
@@ -108,3 +102,4 @@ install(DIRECTORY dist/cmake/ DESTINATION cmake)
 # TODO glob and move this somewhere else
 install(PROGRAMS dist/projectscripts/regenerateProject.py DESTINATION tools/)
 install(PROGRAMS dist/projectscripts/createProject.py DESTINATION tools/)
+install(PROGRAMS dist/projectscripts/projectInfoParseToCMake.py DESTINATION tools/)
