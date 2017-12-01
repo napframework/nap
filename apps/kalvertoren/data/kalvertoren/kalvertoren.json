@@ -263,7 +263,7 @@
 		{
 			"Type" : "nap::ImageLayer",
 			"mID" : "GreenLayer2",
-			"Path" :"data/kalvertoren/compositions/green/layer2/layer_2.0004.png"
+			"Path" :"data/kalvertoren/compositions/green/layer2/layer_2.0004.bmp"
 		},
 
 		{
@@ -755,6 +755,16 @@
 					"Type" : "nap::TransformComponent"
 				},
 				{
+					"Type" : "nap::RenderableMeshComponent",
+					"mID" : "RenderCompositionComponent",
+					"Mesh" : "PlaneMesh",
+					"MaterialInstance" :
+					{
+						"Material" : "CompositionMaterial",
+						"BlendMode" : "Opaque"
+					}
+				},
+				{
 					"Type" : "nap::CompositionComponent",
 					"mID" : "CompositionComponent",
 					"Compositions" :
@@ -767,16 +777,6 @@
 					"Type" : "nap::ColorPaletteComponent",
 					"mID" : "ColorPaletteComponent",
 					"Colors" : "LedColorContainer"
-				},
-				{
-					"Type" : "nap::RenderableMeshComponent",
-					"mID" : "RenderCompositionComponent",
-					"Mesh" : "PlaneMesh",
-					"MaterialInstance" :
-					{
-						"Material" : "CompositionMaterial",
-						"BlendMode" : "Opaque"
-					}
 				}
 			],
 			"Children" :

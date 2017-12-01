@@ -88,7 +88,6 @@ namespace nap
 				*(tri_artne[0]) = { 1.0f, 1.0f, 1.0f, 1.0f };
 				*(tri_artne[1]) = { 1.0f, 1.0f, 1.0f, 1.0f };
 				*(tri_artne[2]) = { 1.0f, 1.0f, 1.0f, 1.0f };
-				*(tri_artne[3]) = { 1.0f, 1.0f, 1.0f, 1.0f };
 			}
 		}
 
