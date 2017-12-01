@@ -227,8 +227,9 @@ namespace nap
 	#else
 		const std::string modulePathConfigSuffix = "Debug";
 	#endif  // NDEBUG
+		// TODO clean up search path by finding NAP root then building modules from there
 		for (const std::string& module : moduleNames) {
-			outSearchDirectories.push_back("../../../modules/" + module + "/lib/" + modulePathConfigSuffix);
+			outSearchDirectories.push_back("../../../../modules/" + module + "/lib/" + modulePathConfigSuffix);
 		}
 		
 		// MacOS & Linux apps in NAP internal source
