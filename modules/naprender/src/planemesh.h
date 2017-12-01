@@ -39,7 +39,8 @@ namespace nap
 		const math::Rect& getRect()										{ return mRect; }
 
 		// property: the size of the plane
-		glm::vec2 mSize = { 1.0, 1.0 };
+		glm::vec2 mSize = { 1.0, 1.0 };									///< Property: Size the size of the plane in units
+		glm::vec2 mPosition = { 0.0,0.0 };								///< Property: Position where the plane is positioned in object space
 
 	private:
 		std::unique_ptr<MeshInstance> mMeshInstance;

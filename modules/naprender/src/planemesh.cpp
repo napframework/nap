@@ -39,7 +39,8 @@ static unsigned int plane_indices[] =
 
 
 RTTI_BEGIN_CLASS(nap::PlaneMesh)
-	RTTI_PROPERTY("Size", &nap::PlaneMesh::mSize, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Size",		&nap::PlaneMesh::mSize,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Position",	&nap::PlaneMesh::mPosition, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
@@ -53,8 +54,8 @@ namespace nap
 		mMeshInstance->setDrawMode(opengl::EDrawMode::TRIANGLES);
 		
 		// Create the position vertices
-		float dsizex = 0.0f - (mSize.x / 2.0f);
-		float dsizey = 0.0f - (mSize.y / 2.0f);
+		float dsizex = (0.0f - (mSize.x / 2.0f)) + mPosition.x;
+		float dsizey = (0.0f - (mSize.y / 2.0f)) + mPosition.y;
 		math::Rect rect(dsizex, dsizey, mSize.x, mSize.y);
 		
 		// All the plane vertices
