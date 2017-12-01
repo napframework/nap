@@ -53,17 +53,24 @@ namespace nap
 
 		// Color attribute we use to sample
 		nap::VertexAttribute<glm::vec4>& color_attr = mesh.getColorAttribute();
+		nap::VertexAttribute<glm::vec4>& artne_attr = mesh.getArtnetColorAttribute();
 		nap::VertexAttribute<int>& channel_attr = mesh.getChannelAttribute();
 
 		// Get amount of mesh triangles
 		int tri_count = getTriangleCount(mesh.getMeshInstance());
 
+		// Clear both color and artnet
 		std::vector<glm::vec4> color_data(color_attr.getCount(), { 0.0f,0.0f,0.0f,0.0f });
 		color_attr.setData(color_data);
+
+		std::vector<glm::vec4> artn_data(artne_attr.getCount(), { 0.0f,0.0f,0.0f,0.0f });
+		artne_attr.setData(artn_data);
 
 		// Find the triangle that has the channel attribute
 		TriangleDataPointer<int> tri_channel;
 		TriangleDataPointer<glm::vec4> tri_color;
+		TriangleDataPointer<glm::vec4> tri_artne;
+
 		for (int i = 0; i < tri_count; i++)
 		{
 			getTriangleValues<int>(mesh.getMeshInstance(), i, channel_attr, tri_channel);
@@ -72,9 +79,16 @@ namespace nap
 			if (channel_number == mCurrentChannel)
 			{
 				getTriangleValues<glm::vec4>(mesh.getMeshInstance(), i, color_attr, tri_color);
+				getTriangleValues<glm::vec4>(mesh.getMeshInstance(), i, artne_attr, tri_artne);
+
 				*(tri_color[0]) = { 1.0f, 1.0f, 1.0f, 1.0f };
 				*(tri_color[1]) = { 1.0f, 1.0f, 1.0f, 1.0f };
 				*(tri_color[2]) = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+				*(tri_artne[0]) = { 1.0f, 1.0f, 1.0f, 1.0f };
+				*(tri_artne[1]) = { 1.0f, 1.0f, 1.0f, 1.0f };
+				*(tri_artne[2]) = { 1.0f, 1.0f, 1.0f, 1.0f };
+				*(tri_artne[3]) = { 1.0f, 1.0f, 1.0f, 1.0f };
 			}
 		}
 

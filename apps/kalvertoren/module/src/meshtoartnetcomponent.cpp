@@ -3,6 +3,7 @@
 // External Includes
 #include <entity.h>
 #include <meshutils.h>
+#include <color.h>
 
 // nap::meshtoartnetcomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::MeshToArtnetComponent)
@@ -61,15 +62,18 @@ namespace nap
 		TriangleDataPointer<int> tri_subnet;
 
 		// Color attribute we use to sample
-		nap::VertexAttribute<glm::vec4>& color_attr = mMesh->getColorAttribute();
+		nap::VertexAttribute<glm::vec4>& artnet_attr = mMesh->getArtnetColorAttribute();
 		nap::VertexAttribute<int>& channel_attr = mMesh->getChannelAttribute();
 		nap::VertexAttribute<int>& universe_attr = mMesh->getUniverseAttribute();
 		nap::VertexAttribute<int>& subnet_attr = mMesh->getSubnetAttribute();
 
+		RGBAColorFloat float_color_data;
+		RGBAColor8 byte_color_data;
+
 		for (int i = 0; i < tri_count; i++)
 		{
 			// Fetch attributes
-			getTriangleValues(mMesh->getMeshInstance(), i, color_attr, tri_color);
+			getTriangleValues(mMesh->getMeshInstance(), i, artnet_attr, tri_color);
 			getTriangleValues(mMesh->getMeshInstance(), i, universe_attr, tri_universe);
 			getTriangleValues(mMesh->getMeshInstance(), i, channel_attr, tri_channel);
 			getTriangleValues(mMesh->getMeshInstance(), i, subnet_attr, tri_subnet);
@@ -81,14 +85,17 @@ namespace nap
 			// Find matching controller
 			nap::ArtNetController*& controller = mControllers[ArtNetController::createAddress(subnet, universe)];
 
-			// Send dmx values
-			glm::vec4 color = *(tri_color[0]);
+			// Convert
+			float_color_data.setData(&(tri_color[0]->r));
+			float_color_data.convert(byte_color_data);
+			
+			// Construct data container
 			std::vector<uint8> data
 			{
-				static_cast<uint8>(pow(color.r,1.0) * 255.0f),
-				static_cast<uint8>(pow(color.g,1.0) * 255.0f),
-				static_cast<uint8>(pow(color.b,1.0) * 255.0f),
-				0
+				byte_color_data.getRed(),
+				byte_color_data.getGreen(),
+				byte_color_data.getBlue(),
+				byte_color_data.getAlpha()
 			};
 
 			// Send to controller

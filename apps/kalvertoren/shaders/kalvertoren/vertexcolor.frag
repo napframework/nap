@@ -16,6 +16,7 @@ uniform float		shininess;			// Specular angle shininess
 uniform float		specularIntensity;	// Amount of added specular
 uniform float		attenuationScale;	// Light Falloff
 uniform vec3		cameraLocation;		// World Space location of the camera
+uniform int			useIndexColor;		// If the index color is used for display
 
 // Video Texture
 uniform sampler2D	videoTexture;		// Lookup texture from video
@@ -26,7 +27,6 @@ void main(void)
 {
 	// Get video color
 	vec2 uvs = vec2(pass_Uvs.x, pass_Uvs.y);
-	//vec3 color = texture(videoTexture, uvs).rgb;
 	vec3 color = pass_Color.rgb;
 
 	//calculate normal in world coordinates
@@ -36,7 +36,7 @@ void main(void)
 	//calculate the location of this fragment (pixel) in world coordinates
     vec3 frag_position = vec3(pass_ModelMatrix * vec4(pass_Vert, 1));
 
-		//calculate the vector from this pixels surface to the light source
+	//calculate the vector from this pixels surface to the light source
 	vec3 surfaceToLight = normalize(lightPosition - frag_position);
 
 	// calculate vector that defines the distance from camera to the surface

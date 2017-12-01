@@ -28,6 +28,7 @@ namespace nap
 
 		ComponentPtr<CompositionComponent>  mCompositionComponent;			///< property: link to the composition component
 		ComponentPtr<ColorPaletteComponent> mColorPaletteComponent;			///< property: link to the color palette component
+		bool mShowIndexColors = false;										///< property: if the index colors should be shown
 	};
 
 
@@ -50,9 +51,15 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 *	Applies bounding box colors to the mesh
+		 * Applies bounding box colors to the mesh
 		 */
 		virtual void applyColor(double deltaTime) override;
+
+		/**
+		 * Debug helper method that allows the display of the index colors instead of the composition colors
+		 * Handy when trying to figure out if the index colors look correct on the mesh
+		 */
+		void showIndexColors(bool value)							{ mShowIndexColors = value; }
 
 		// pointer to the component that manages all the compositions
 		COMPONENT_INSTANCE_POINTER(mCompositionComponent, CompositionComponent, ApplyCompositionComponent)
@@ -62,5 +69,6 @@ namespace nap
 
 	private:
 		nap::Pixmap mPixmap;
+		bool mShowIndexColors = false;
 	};
 }

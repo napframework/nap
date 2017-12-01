@@ -47,9 +47,14 @@ namespace nap
 		std::string		mPath;
 
 		/**
-		 * @return the color attribute
+		 *	@return the led color attribute
 		 */
 		nap::VertexAttribute<glm::vec4>& getColorAttribute()						{ return *mColorAttribute; }
+
+		/**
+		 *	@return the artnet color attribute
+		 */
+		nap::VertexAttribute<glm::vec4>& getArtnetColorAttribute()					{ return *mArtnetColorAttribute; }
 
 		/**
 		 *	@return the position attribute
@@ -98,12 +103,14 @@ namespace nap
 	private:
 		std::unique_ptr<MeshInstance>		mMeshInstance;
 
+		nap::VertexAttribute<glm::vec4>*	mMeshColorAttribute = nullptr;
 		nap::VertexAttribute<glm::vec4>*	mColorAttribute = nullptr;
 		nap::VertexAttribute<int>*			mChannelAttribute = nullptr;
 		nap::VertexAttribute<int>*			mUniverseAttribute = nullptr;
 		nap::VertexAttribute<int>*			mSubnetAttribute = nullptr;
 		nap::VertexAttribute<glm::vec3>*	mPositionAttribute = nullptr;
 		nap::VertexAttribute<glm::vec3>*	mUVAttribute = nullptr;
+		nap::VertexAttribute<glm::vec4>*	mArtnetColorAttribute = nullptr;
 
 		std::unordered_set<ArtNetController::Address> mAddresses;				///< Contains all the artnet addresses associated with this mesh;
 

@@ -104,5 +104,6 @@ namespace nap
 		float											mChannelSpeed = 1.0f;
 		int												mPaletteSelection = 0;
 		int												mCompositionSelection = 0;
+		bool											mShowIndexColors = false;
 	};
 }

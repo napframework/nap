@@ -187,6 +187,7 @@ namespace nap
 		// Get all the color selection components
 		std::vector<SelectColorMethodComponentInstance*> color_methods;
 		std::vector<ApplyTracerColorComponentInstance*>  tracer_painters;
+		std::vector<ApplyCompositionComponentInstance*> composition_painters;
 
 		for (auto& entity : compositionEntity->getChildren())
 		{
@@ -195,6 +196,9 @@ namespace nap
 
 			ApplyTracerColorComponentInstance* tracer_painter = &(entity->getComponent<ApplyTracerColorComponentInstance>());
 			tracer_painters.emplace_back(tracer_painter);
+
+			ApplyCompositionComponentInstance* comp_painter = &(entity->getComponent<ApplyCompositionComponentInstance>());
+			composition_painters.emplace_back(comp_painter);
 		}
 
 		// Gui
@@ -268,6 +272,14 @@ namespace nap
 
 		// Composition settings
 		ImGui::Begin("Composition Settings");
+
+		if (ImGui::Checkbox("Show Index Colors", &mShowIndexColors))
+		{
+			for (auto& comp_painter : composition_painters)
+			{
+				comp_painter->showIndexColors(mShowIndexColors);
+			}
+		}
 
 		// Changes the color palette
 		if (ImGui::SliderInt("Composition", &mCompositionSelection, 0, composition_selector.getCount() - 1))

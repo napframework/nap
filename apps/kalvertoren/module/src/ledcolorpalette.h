@@ -41,6 +41,11 @@ namespace nap
 		 */
 		const RGBAColor8& getLEDColor(int index) const;
 
+		/**
+		 * @return the led color associated with the @paletteColor
+		 */
+		const RGBAColor8& getLEDColor(const RGBColor8& paletteColor) const;
+
 		std::string				mImagePath;						///< Path to the palette image on disk
 		std::vector<RGBAColor8> mLedColors;						///< All the LED colors associated with this palette (RGBA 8 bit)
 

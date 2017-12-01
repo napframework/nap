@@ -178,6 +178,39 @@
 				}
 			]
 		},
+		
+		{
+			"Type" : "nap::LedColorPalette",
+			"mID" : "Palette4",
+			"Path" : "data/kalvertoren/palettes/palette_4.png",
+			"LedColors" : 
+			[
+     			{
+					"Values" : 
+					[255, 254, 254, 255]
+				},
+				{
+					"Values" : 
+					[255, 247, 0, 228]
+				},
+				{
+					"Values" : 
+					[0, 0, 0, 0]
+				},
+				{
+					"Values" : 
+					[0, 255, 255, 1]
+				},
+				{
+					"Values" : 
+					[109, 251, 78, 35]
+				},
+				{
+					"Values" : 
+					[255, 210, 0, 0]
+				}
+			]
+		},
 
 		{
 			"Type" : "nap::LedColorContainer",
@@ -187,7 +220,8 @@
 			[
 				"Palette1",
 				"Palette2",
-				"Palette3"
+				"Palette3",
+				"Palette4"
 			] 
 		},
 
@@ -458,8 +492,8 @@
 					"ShaderAttributeID": "in_Position"
 				},
 				{
-					"MeshAttributeID": "Color0",
-					"ShaderAttributeID": "in_Color0"
+					"MeshAttributeID": "Color",
+					"ShaderAttributeID": "in_Color"
 				},
 				{
 					"MeshAttributeID": "UV0",
@@ -513,6 +547,11 @@
 					"Type" : "nap::UniformFloat",
 					"Name" : "attenuationScale",
 					"Value" : 0.0001
+				},
+				{
+					"Type" : "nap::UniformInt",
+					"Name" : "useIndexColor",
+					"Value": 0
 				}
 			]
 		},

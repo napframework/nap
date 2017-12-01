@@ -8,6 +8,7 @@
 RTTI_BEGIN_CLASS(nap::ApplyCompositionComponent)
 	RTTI_PROPERTY("CompositionComponent",	&nap::ApplyCompositionComponent::mCompositionComponent,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ColorPaletteComponent",	&nap::ApplyCompositionComponent::mColorPaletteComponent,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ShowIndexColors",		&nap::ApplyCompositionComponent::mShowIndexColors,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::applycompositioncomponentInstance run time class definition 
@@ -30,6 +31,9 @@ namespace nap
 	{
 		if (!ApplyColorComponentInstance::init(errorState))
 			return false;
+
+		// Copy if we want to show index colors
+		mShowIndexColors = getComponent<ApplyCompositionComponent>()->mShowIndexColors;
 		return true;
 	}
 
@@ -54,14 +58,17 @@ namespace nap
 
 		// Color attribute we use to sample
 		nap::VertexAttribute<glm::vec4>& color_attr = mesh.getColorAttribute();
+		nap::VertexAttribute<glm::vec4>& artnet_attr = mesh.getArtnetColorAttribute();
 
 		// Total amount of triangles
 		int tri_count = getTriangleCount(mesh.getMeshInstance());
 		TriangleDataPointer<glm::vec3> tri_uv_data;
-		TriangleData<glm::vec4> new_triangle_color;
+		TriangleDataPointer<glm::vec4> triangle_mesh_color;
+		TriangleDataPointer<glm::vec4> triangle_artn_color;
 
 		// Will hold the rgb colors applied to the mesh
-		RGBColorFloat rgb_color;
+		RGBColorFloat rgb_colorf;
+		RGBAColorFloat led_colorf;
 		RGBColor8 rgb_index_color;
 
 		assert(mPixmap.mType == Pixmap::EDataType::BYTE);
@@ -90,20 +97,31 @@ namespace nap
 			
 			// Get the corresponding color palette value
 			const nap::RGBColor8& palette_color = mColorPaletteComponent->getPaletteColor(rgb_index_color);
-			
-			// Convert to our rgb float value
-			palette_color.convert(rgb_color);
 
-			// iterate over every vertex in the triangle and set the color
-			for (auto& vert_color : new_triangle_color)
+			// Get the color we want to display on the mesh
+			const RGBColor8& color_to_convert = mShowIndexColors ? rgb_index_color : palette_color;
+			color_to_convert.convert(rgb_colorf);
+
+			// Get the associated LED color
+			const RGBAColor8& led_color = mColorPaletteComponent->getLedColor(palette_color);
+			led_color.convert(led_colorf);
+
+			getTriangleValues<glm::vec4>(mesh_instance, i, color_attr, triangle_mesh_color);
+			getTriangleValues<glm::vec4>(mesh_instance, i, artnet_attr, triangle_artn_color);
+
+			// iterate over every vertex in the triangle and set the colors
+			for (int ti = 0; ti < triangle_mesh_color.size(); ti++)
 			{
-				vert_color.r = rgb_color.getRed();
-				vert_color.g = rgb_color.getGreen();
-				vert_color.b = rgb_color.getBlue();
-				vert_color.a = 1.0f;
-			}
+				triangle_mesh_color[ti]->r = rgb_colorf.getRed();
+				triangle_mesh_color[ti]->g = rgb_colorf.getGreen();
+				triangle_mesh_color[ti]->b = rgb_colorf.getBlue();
+				triangle_mesh_color[ti]->a = 1.0;
 
-			setTriangleValues<glm::vec4>(mesh_instance, i, color_attr, new_triangle_color);
+				triangle_artn_color[ti]->r = led_colorf.getRed();
+				triangle_artn_color[ti]->g = led_colorf.getGreen();
+				triangle_artn_color[ti]->b = led_colorf.getBlue();
+				triangle_artn_color[ti]->a = led_colorf.getAlpha();
+			}
 		}
 
 		nap::utility::ErrorState error;

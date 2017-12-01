@@ -80,6 +80,12 @@ namespace nap
 	}
 
 
+	const nap::RGBAColor8& ColorPaletteComponentInstance::getLedColor(const RGBColor8& paletteColor) const
+	{
+		return mSelection->getLEDColor(paletteColor);
+	}
+
+
 	void ColorPaletteComponentInstance::buildMap()
 	{
 		// Build a map that maps the index colors to palette colors

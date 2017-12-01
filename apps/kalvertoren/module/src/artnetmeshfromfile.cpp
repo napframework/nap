@@ -26,8 +26,8 @@ namespace nap
 		mMeshInstance = std::move(mesh_instance);
 
 		// Now check for the color attribute
-		mColorAttribute = mMeshInstance->FindAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0));
-		if (!errorState.check(mColorAttribute != nullptr, "unable to find color attribute: %s on mesh: %s", MeshInstance::VertexAttributeIDs::GetColorName(0).c_str(), mPath.c_str()))
+		mMeshColorAttribute = mMeshInstance->FindAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0));
+		if (!errorState.check(mMeshColorAttribute != nullptr, "unable to find color attribute: %s on mesh: %s", MeshInstance::VertexAttributeIDs::GetColorName(0).c_str(), mPath.c_str()))
 			return false;
 
 		// Get position
@@ -39,18 +39,27 @@ namespace nap
 		if (!errorState.check(mUVAttribute != nullptr, "unable to find uv attribute: %s on mesh: %s", MeshInstance::VertexAttributeIDs::GetUVName(0).c_str(), mPath.c_str()))
 			return false;
 
+		// Create the color attributes
+		mColorAttribute = &mMeshInstance->GetOrCreateAttribute<glm::vec4>("Color");
+		std::vector<glm::vec4> empty_color_data(mMeshColorAttribute->getCount(), {0.0,0.0,0.0,1.0});
+		mColorAttribute->setData(empty_color_data);
+
+		mArtnetColorAttribute = &mMeshInstance->GetOrCreateAttribute<glm::vec4>("ArtnetColor");
+		std::vector<glm::vec4> empty_artnet_data(mMeshInstance->getNumVertices(), { 0.0,0.0,0.0,0.0 });
+		mArtnetColorAttribute->setData(empty_artnet_data);
+
 		// Extract the channels from the color where R = channel, G = universe and B = subnet
 		mChannelAttribute = &mMeshInstance->GetOrCreateAttribute<int>("channel");
 		mSubnetAttribute = &mMeshInstance->GetOrCreateAttribute<int>("subnet");
 		mUniverseAttribute = &mMeshInstance->GetOrCreateAttribute<int>("universe");
 
-		std::vector<int> channel_data(mColorAttribute->getCount(), 0);
-		std::vector<int> subnet_data(mColorAttribute->getCount(), 0);
-		std::vector<int> universe_data(mColorAttribute->getCount(), 0);
+		std::vector<int> channel_data(mMeshColorAttribute->getCount(), 0);
+		std::vector<int> subnet_data(mMeshColorAttribute->getCount(), 0);
+		std::vector<int> universe_data(mMeshColorAttribute->getCount(), 0);
 
 		// Set extracted art net attributes from color
 		int count = 0;
-		for (const auto& color : mColorAttribute->getData())
+		for (const auto& color : mMeshColorAttribute->getData())
 		{
 			channel_data[count]  = math::min<int>(static_cast<int>(color.r * 511.0f) + mChannelOffset, 511);
 			universe_data[count] = static_cast<int>(color.g * 15.0f);

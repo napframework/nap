@@ -84,10 +84,15 @@ namespace nap
 		IndexMap& getIndexMap();
 
 		/**
-		 * @param indexColor
+		 * @param indexColor the color to get the associated palette color for
 		 * @return the palette color associated with a certain index map color
 		 */
 		const RGBColor8& getPaletteColor(const IndexMap::IndexColor& indexColor) const;
+
+		/**
+		 *	@return the led color associated with @paletteColor
+		 */
+		const RGBAColor8& getLedColor(const RGBColor8& paletteColor) const;
 
 	private:
 		/**
