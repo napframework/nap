@@ -22,38 +22,7 @@ int main(int argc, char *argv[])
 
 	// Start
 	nap::utility::ErrorState error;
-	
-	// TODO this is very much work(arounds) in progress.. nothing to see here -------------------------------------------------------
-
-	std::vector<std::string> moduleSearchDirectories;
-	moduleSearchDirectories.push_back("."); // Packaged Win64 apps
-
-#ifndef _WIN32
-	moduleSearchDirectories.push_back("lib"); // Packaged MacOS & Linux apps
-	
-	// MacOS & Linux apps in NAP internal source
-	moduleSearchDirectories.push_back("../../lib/" + nap::utility::getFileName(nap::utility::getExecutableDir()));
-	
-	// TODO load from project JSON
-	static std::vector<std::string> modules = {
-		@MODULE_LIST_SUB_JSON@
-	};
-	
-	// Building against NAP release
-	std::string modulePathConfigSuffix;
-#ifdef NDEBUG
-	modulePathConfigSuffix = "Release";
-#else
-	modulePathConfigSuffix = "Debug";
-#endif // _NDEBUG
-	for (std::string& module : modules) {
-		moduleSearchDirectories.push_back("../../../../modules/" + module + "/lib/" + modulePathConfigSuffix);
-	}
-#endif // _WIN32
-	
-	// ------------------------------------------------------------------------------------------------------------------------------
-	
-	if (!app_runner.start(moduleSearchDirectories, error))
+	if (!app_runner.start(error))
 	{
 		nap::Logger::fatal("error: %s", error.toString().c_str());
 		return -1;
