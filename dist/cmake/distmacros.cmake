@@ -89,6 +89,7 @@ macro(dist_project_template)
     target_link_libraries(${PROJECT_NAME} napcore naprtti RTTR::Core ${NAP_MODULES} ${PYTHON_LIBRARIES} ${SDL2_LIBRARY})
 
     # Copy data to bin post-build
+    copy_files_to_bin(${CMAKE_CURRENT_LIST_DIR}/project.json)
     copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/data data)
     copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/shaders shaders)
     dist_export_fbx(${CMAKE_CURRENT_LIST_DIR}/data/${PROJECT_NAME})
