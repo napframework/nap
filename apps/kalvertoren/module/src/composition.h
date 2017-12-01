@@ -30,6 +30,17 @@ namespace nap
 		 */
 		nap::BaseTexture2D& getTexture();
 
+		/**
+		 * @return the layer @index
+		 * @param index index of the layer to fetch
+		 */
+		Layer& getLayer(int index);
+
+		/**
+		 * @return the total number of layers
+		 */
+		int getLayerCount() const								{ return mLayers.size(); }
+
 		std::vector<nap::ObjectPtr<Layer>> mLayers;				///< All the layers this composition works with
 	};
 }

@@ -278,9 +278,9 @@
 		{
 			"Type" : "nap::Texture2D",
 			"mID" : "CompositionTextureA",
-			"Width" : 512,
-			"Height" : 512,
-			"Format" : "RGBA8",
+			"Width" : 1024,
+			"Height" : 1024,
+			"Format" : "RGB8",
 			"Usage" : "DynamicRead",
 			"Parameters" :
 			{		
@@ -293,8 +293,8 @@
 		{
 			"Type" : "nap::Texture2D",
 			"mID" : "CompositionDepthTextureA",
-			"Width" : 512,
-			"Height" : 512,
+			"Width" : 1024,
+			"Height" : 1024,
 			"Format" : "Depth",
 			"Parameters" :
 			{		
@@ -307,9 +307,9 @@
 		{
 			"Type" : "nap::Texture2D",
 			"mID" : "CompositionTextureB",
-			"Width" : 512,
-			"Height" : 512,
-			"Format" : "RGBA8",
+			"Width" : 1024,
+			"Height" : 1024,
+			"Format" : "RGB8",
 			"Usage" : "DynamicRead",
 			"Parameters" :
 			{		
@@ -322,8 +322,8 @@
 		{
 			"Type" : "nap::Texture2D",
 			"mID" : "CompositionDepthTextureB",
-			"Width" : 512,
-			"Height" : 512,
+			"Width" : 1024,
+			"Height" : 1024,
 			"Format" : "Depth",
 			"Parameters" :
 			{		
@@ -755,8 +755,17 @@
 					"Type" : "nap::TransformComponent"
 				},
 				{
-					"Type" : "nap::RenderableMeshComponent",
+					"Type" : "nap::RenderCompositionComponent",
 					"mID" : "RenderCompositionComponent",
+					"TargetOne" : "CompositionRenderTargetA",
+					"TargetTwo" : "CompositionRenderTargetB",
+					"CompositionComponent" : "./CompositionComponent",
+					"RenderComponent" : "./RenderableMeshComponent",
+					"CameraComponent" : "CompositionCamera"
+				},
+				{
+					"Type" : "nap::RenderableMeshComponent",
+					"mID" : "RenderableMeshComponent",
 					"Mesh" : "PlaneMesh",
 					"MaterialInstance" :
 					{
