@@ -37,7 +37,6 @@ namespace nap
 
 		// Render window and texture target
 		renderWindow = resourceManager->findObject<nap::RenderWindow>("Window0");
-		videoTextureTarget = resourceManager->findObject<nap::RenderTarget>("PlaneRenderTarget");
 		
 		// All of our entities
 		ObjectPtr<Scene> scene = resourceManager->findObject<Scene>("Scene");
@@ -45,18 +44,13 @@ namespace nap
 		compositionEntity = scene->findEntity("CompositionEntity");
 		displayEntity = scene->findEntity("DisplayEntity");
 		sceneCameraEntity = scene->findEntity("SceneCameraEntity");
-		videoCameraEntity = scene->findEntity("VideoCameraEntity");
+		compositionCameraEntity = scene->findEntity("CompositionEntity");
 		defaultInputRouter = scene->findEntity("DefaultInputRouterEntity");
-		videoEntity = scene->findEntity("VideoEntity");
 		lightEntity = scene->findEntity("LightEntity");
 
 		// Materials
 		vertexMaterial = resourceManager->findObject<nap::Material>("VertexColorMaterial");
 		frameMaterial = resourceManager->findObject<nap::Material>("FrameMaterial");
-
-		// Collect all video resources and play
-		videoResource = resourceManager->findObject<nap::Video>("Video1");
-		videoResource->play();
 
 		SelectLedMeshComponentInstance& selector = displayEntity->getComponent<SelectLedMeshComponentInstance>();
 		mMeshSelection = selector.getIndex();
@@ -81,17 +75,6 @@ namespace nap
 		entities.push_back(sceneCameraEntity.get());
 		inputService->processEvents(*renderWindow, input_router, entities);
 
-		// If the video is not currently playing, start playing it again. This is needed for real time editing; 
-		// if the video resource is modified it will not automatically play again (playback is started during init), causing the output to be black
-		if (!videoResource->isPlaying())
-			videoResource->play();
-
-		// Set the video texture on the material used by the plane
-		nap::MaterialInstance& plane_material = videoEntity->getComponent<nap::RenderableMeshComponentInstance>().getMaterialInstance();
-		plane_material.getOrCreateUniform<nap::UniformTexture2D>("yTexture").setTexture(videoResource->getYTexture());
-		plane_material.getOrCreateUniform<nap::UniformTexture2D>("uTexture").setTexture(videoResource->getUTexture());
-		plane_material.getOrCreateUniform<nap::UniformTexture2D>("vTexture").setTexture(videoResource->getVTexture());
-
 		// Update our gui
 		updateGui();
 	}
@@ -103,22 +86,6 @@ namespace nap
 
 		// Render offscreen surface(s)
 		{
-			renderService->getPrimaryWindow().makeCurrent();
-
-			// Video camera
-			nap::CameraComponentInstance& video_cam = videoCameraEntity->getComponent<nap::OrthoCameraComponentInstance>();
-
-			// Get plane to render video to
-			std::vector<nap::RenderableComponentInstance*> components_to_render;
-			components_to_render.push_back(&videoEntity->getComponent<nap::RenderableMeshComponentInstance>());
-
-			// render target
-			opengl::TextureRenderTarget2D& render_target = videoTextureTarget->getTarget();
-			render_target.setClearColor(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
-			renderService->clearRenderTarget(render_target, opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH);
-			renderService->renderObjects(render_target, video_cam, components_to_render);
-
-			render_target.getColorTexture().getData(mVideoBitmap);
 		}
 
 

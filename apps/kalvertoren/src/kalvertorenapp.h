@@ -82,20 +82,14 @@ namespace nap
 		nap::InputService*								inputService = nullptr;
 
 		nap::ObjectPtr<nap::RenderWindow>				renderWindow;
-		nap::ObjectPtr<nap::RenderTarget>				videoTextureTarget;
 		nap::ObjectPtr<nap::EntityInstance>				compositionEntity = nullptr;
 		nap::ObjectPtr<nap::EntityInstance>				sceneCameraEntity = nullptr;
-		nap::ObjectPtr<nap::EntityInstance>				videoCameraEntity = nullptr;
+		nap::ObjectPtr<nap::EntityInstance>				compositionCameraEntity = nullptr;
 		nap::ObjectPtr<nap::EntityInstance>				defaultInputRouter = nullptr;
-		nap::ObjectPtr<nap::EntityInstance>				videoEntity = nullptr;
-		nap::ObjectPtr<nap::Video>						videoResource = nullptr;
 		nap::ObjectPtr<nap::EntityInstance>				lightEntity = nullptr;
 		nap::ObjectPtr<nap::Material>					frameMaterial = nullptr;
 		nap::ObjectPtr<nap::Material>					vertexMaterial = nullptr;
 		nap::ObjectPtr<nap::EntityInstance>				displayEntity = nullptr;
-
-		// video data
-		opengl::Bitmap									mVideoBitmap;
 
 		// GUI
 		int												mMeshSelection = 0;

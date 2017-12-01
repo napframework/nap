@@ -12,7 +12,7 @@ namespace nap
 	class ApplyCompositionComponentInstance;
 
 	/**
-	 *	applycompositioncomponent
+	 *	Applies the rendered compoisition to the mesh
 	 */
 	class NAPAPI ApplyCompositionComponent : public ApplyColorComponent
 	{
@@ -33,7 +33,7 @@ namespace nap
 
 
 	/**
-	 * applycompositioncomponentInstance	
+	 * Applies a rendered composition to the assigned mesh
 	 */
 	class NAPAPI ApplyCompositionComponentInstance : public ApplyColorComponentInstance
 	{

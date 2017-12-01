@@ -363,43 +363,23 @@
 
 		{
 			"Type" : "nap::PlaneMesh",
-			"mID": "PlaneMesh"
+			"mID": "PlaneMesh",
+			"Position" : 
+			{
+				"x" : 256,
+				"y" : 256
+			},
+			"Size" :
+			{
+				"x" : 512,
+				"y" : 512
+			}
 		},
 		
 		{
 			"Type" : "nap::Image",
 			"mID" : "UVMap",
 			"ImagePath" : "data/kalvertoren/uvmap.jpg"
-		},
-
-		{
-			"Type" : "nap::Texture2D",
-			"mID" : "ColorTexture",
-			"Width" : 1024,
-			"Height" : 1024,
-			"Format" : "RGBA8",
-			"Usage" : "DynamicRead"
-		},
-		
-		{
-			"Type" : "nap::Texture2D",
-			"mID" : "DepthTexture",
-			"Width" : 1024,
-			"Height" : 1024,
-			"Format" : "Depth"
-		},
-		
-		{
-			"Type" : "nap::RenderTarget",
-			"mID": "PlaneRenderTarget",
-			"mColorTexture": "ColorTexture",
-			"mDepthTexture": "DepthTexture",
-			"mClearColor" : {
-				"x" : 1.0,
-				"y" : 1.0,
-				"z" : 1.0,
-				"w" : 1.0
-			}
 		},
 
 		{
@@ -414,6 +394,13 @@
 			"mID": "FrameShader",
 			"mVertShader": "shaders/kalvertoren/frame.vert",
 			"mFragShader": "shaders/kalvertoren/frame.frag"
+		},
+
+		{
+			"Type" : "nap::Shader",
+			"mID" : "CompositionShader",
+			"mVertShader": "shaders/kalvertoren/composition.vert",
+			"mFragShader": "shaders/kalvertoren/composition.frag"
 		},
 	
 		{
@@ -615,38 +602,40 @@
 				}
 			]
 		},
-				
-		{
-			"Type" : "nap::Shader",
-			"mID": "VideoShader",
-			"mVertShader": "shaders/kalvertoren/video.vert",
-			"mFragShader": "shaders/kalvertoren/video.frag"
-		},
-		
-		{
-			"Type" : "nap::Video",
-			"mID": "Video1",
-			"Path": "data/kalvertoren/heiligeweg_demo.mp4",
-			"Loop" : true,
-			"Speed" : 1
-		},
-		
+
 		{
 			"Type" : "nap::Material",
-			"mID": "VideoMaterial",
-			"Shader": "VideoShader",
-			"VertexAttributeBindings" : [
+			"mID": "CompositionMaterial",
+			"Shader": "CompositionShader",
+			"VertexAttributeBindings" : 
+			[
 				{
 					"MeshAttributeID": "Position",
 					"ShaderAttributeID": "in_Position"
 				},
 				{
+					"MeshAttributeID": "Normal",
+					"ShaderAttributeID": "in_Normals"
+				},
+				{
 					"MeshAttributeID": "UV0",
 					"ShaderAttributeID": "in_UV0"
 				}
+			],
+			"Uniforms" : 
+			[
+				{
+					"Type" : "nap::UniformTexture2D",
+					"Name" : "LayerOne",
+					"Texture" : "CompositionTextureA"
+				},
+				{
+					"Type" : "nap::UniformTexture2D",
+					"Name" : "LayerTwo",
+					"Texture" : "CompositionTextureB"
+				}
 			]
 		},
-		
 
 		{
 			"Type" : "nap::Scene",
@@ -663,10 +652,7 @@
 					"Entity" : "CompositionEntity"
 				}, 
 				{
-					"Entity" : "VideoEntity"
-				},
-				{
-					"Entity" : "VideoCameraEntity"
+					"Entity" : "CompositionCameraEntity"
 				},
 				{
 					"Entity" : "SceneCameraEntity"
@@ -766,6 +752,9 @@
 			"Components" :
 			[
 				{
+					"Type" : "nap::TransformComponent"
+				},
+				{
 					"Type" : "nap::CompositionComponent",
 					"mID" : "CompositionComponent",
 					"Compositions" :
@@ -778,6 +767,16 @@
 					"Type" : "nap::ColorPaletteComponent",
 					"mID" : "ColorPaletteComponent",
 					"Colors" : "LedColorContainer"
+				},
+				{
+					"Type" : "nap::RenderableMeshComponent",
+					"mID" : "RenderCompositionComponent",
+					"Mesh" : "PlaneMesh",
+					"MaterialInstance" :
+					{
+						"Material" : "CompositionMaterial",
+						"BlendMode" : "Opaque"
+					}
 				}
 			],
 			"Children" :
@@ -904,56 +903,15 @@
 				}
 			]
 		},
-		
-		{
-			"Type" : "nap::Entity",
-			"mID": "VideoEntity",
-			
-			"Components" : 
-			[
-				{
-					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "PlaneMesh",
-					"MaterialInstance" : 
-					{
-						"Material": "VideoMaterial"
-					}
-				},
-				{
-					"Type" : "nap::TransformComponent",
-					"Properties": 
-					{
-						"Translate": 
-						{
-							"x": 512.0,
-							"y": 512.0,
-							"z": 0.0
-						},
-						"Rotate": {
-							"x": 0.0,
-							"y": 0.0,
-							"z": 0.0
-						},
-						"Scale": 
-						{
-							"x": 1.0,
-							"y": 1.0,
-							"z": 1.0
-						},
-						"UniformScale": 1024.0						
-					}
-				}
-			]	
-		},
 
 		{
 			"Type" : "nap::Entity",
-			"mID" : "VideoCameraEntity",
+			"mID" : "CompositionCameraEntity",
 			"Components" : 
 			[	
 				{
 					"Type" : "nap::OrthoCameraComponent",
-					"mID" : "VideoOrthoCameraComponent",
+					"mID" : "CompositionCamera",
 					"Properties": 
 					{
 						"NearClippingPlane" : 1,
