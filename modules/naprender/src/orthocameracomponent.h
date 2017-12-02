@@ -20,8 +20,8 @@ namespace nap
 	{
 		float mLeftPlane = 0.0f;
 		float mRightPlane = 100.0f;
-		float mTopPlane = 0.0f;
-		float mBottomPlane = 100.0f;
+		float mTopPlane = 100.0f;
+		float mBottomPlane = 0.0f;
 		float mNearClippingPlane = 1.0f;
 		float mFarClippingPlane = 1000.0f;
 	};
