@@ -105,4 +105,3 @@ namespace nap
 		bool											mShowIndexColors = false;
 	};                                                                               
 }
-
