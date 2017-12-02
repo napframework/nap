@@ -288,8 +288,17 @@
 			"mID" : "CompositionTextureA",
 			"Width" : 1024,
 			"Height" : 1024,
-			"Format" : "RGBA8",
-			"Usage" : "DynamicRead"
+			"Format" : "RGB8",
+			"Usage" : "DynamicRead",
+			"Parameters" : 
+			{
+				"MinFilter" : "Nearest",
+				"MaxFilter" : "Nearest",
+				"WrapVertical" : "Repeat",
+				"WrapHorizontal" : "Repeat",
+				"MaxLodLevel" : 0
+
+			}
 		},
 		
 		{
@@ -305,8 +314,18 @@
 			"mID" : "CompositionTextureB",
 			"Width" : 1024,
 			"Height" : 1024,
-			"Format" : "RGBA8",
-			"Usage" : "DynamicRead"
+			"Format" : "RGB8",
+			"Usage" : "DynamicRead",
+			"Parameters" : 
+			{
+				"MinFilter" : "Nearest",
+				"MaxFilter" : "Nearest",
+				"WrapVertical" : "Repeat",
+				"WrapHorizontal" : "Repeat",
+				"MaxLodLevel" : 0
+
+			}
+
 		},
 		
 		{
