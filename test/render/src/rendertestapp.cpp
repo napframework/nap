@@ -159,7 +159,7 @@ namespace nap
 			rotating_plane_material.getOrCreateUniform<UniformInt>("mTextureIndex").setValue(0);
 			rotating_plane_material.getOrCreateUniform<UniformVec4>("mColor").setValue({ 1.0f, 1.0f, 1.0f, 1.0f });
 			
-			opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(render_window->getWindow()->getBackbuffer());
+			opengl::RenderTarget& backbuffer = render_window->getBackbuffer();
 			backbuffer.setClearColor(glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
 			mRenderService->clearRenderTarget(backbuffer);
 			mRenderService->renderObjects(backbuffer, mCameraEntityLeft->getComponent<nap::PerspCameraComponentInstance>(), components_to_render);
@@ -185,7 +185,7 @@ namespace nap
 			std::vector<RenderableComponentInstance*> components_to_render;
 			components_to_render.push_back(&mPigEntity->getComponent<nap::RenderableMeshComponentInstance>());
 			
-			opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(render_window->getWindow()->getBackbuffer());
+			opengl::RenderTarget& backbuffer = render_window->getBackbuffer();
 			mRenderService->clearRenderTarget(backbuffer, opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH | opengl::EClearFlags::STENCIL);
 			mRenderService->renderObjects(backbuffer, mCameraEntityRight->getComponent<nap::PerspCameraComponentInstance>(), components_to_render);
 			
