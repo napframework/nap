@@ -92,8 +92,6 @@ namespace nap
 		nap::ObjectPtr<nap::Material>					frameMaterial = nullptr;
 		nap::ObjectPtr<nap::Material>					vertexMaterial = nullptr;
 		nap::ObjectPtr<nap::EntityInstance>				displayEntity = nullptr;
-		nap::ObjectPtr<nap::RenderTarget>				renderTargetA = nullptr;
-		nap::ObjectPtr<nap::RenderTarget>				renderTargetB = nullptr;
 
 		// GUI
 		int												mMeshSelection = 0;
@@ -103,5 +101,20 @@ namespace nap
 		int												mPaletteSelection = 0;
 		int												mCompositionSelection = 0;
 		bool											mShowIndexColors = false;
+
+		/**
+		 *	Renders debug views to screen
+		 */
+		void renderDebugViews();
+
+		/**
+		 * Called when a window event is received
+		 */
+		void handleWindowEvent(const WindowEvent& windowEvent);
+
+		/**
+		 *	Updates the position of the debug views
+		 */
+		void positionDebugViews();
 	};                                                                               
 }

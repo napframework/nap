@@ -244,13 +244,20 @@
 		},
 
 		{
+			"Type" : "nap::ImageLayer",
+			"mID" : "HelloLayer4",
+			"Path" :"data/kalvertoren/compositions/hello/layer4/coen.png"
+		},
+
+		{
 			"Type" : "nap::Composition",
 			"mID"  : "TestComposition",
 			"Layers" :
 			[
 				"HelloLayer1",
 				"HelloLayer2",
-				"HelloLayer3"
+				"HelloLayer3",
+				"HelloLayer4"
 			] 
 		},
 

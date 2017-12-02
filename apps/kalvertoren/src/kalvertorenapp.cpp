@@ -39,9 +39,13 @@ namespace nap
 		// Render window and texture target
 		renderWindow = resourceManager->findObject<nap::RenderWindow>("Window0");
 		
+		// Callback when window event is received
+		renderWindow->mWindowEvent.connect(std::bind(&KalvertorenApp::handleWindowEvent, this, std::placeholders::_1));
+
 		// All of our entities
 		ObjectPtr<Scene> scene = resourceManager->findObject<Scene>("Scene");
 
+		// Entities
 		compositionEntity = scene->findEntity("CompositionEntity");
 		renderCompositionEntity = scene->findEntity("RenderCompositionEntity");
 		displayEntity = scene->findEntity("DisplayEntity");
@@ -50,10 +54,6 @@ namespace nap
 		defaultInputRouter = scene->findEntity("DefaultInputRouterEntity");
 		lightEntity = scene->findEntity("LightEntity");
 		debugDisplayEntity = scene->findEntity("DebugDisplayEntity");
-
-		// Render target
-		renderTargetA = resourceManager->findObject("CompositionRenderTargetA");
-		renderTargetB = resourceManager->findObject("CompositionRenderTargetB");
 
 		// Materials
 		vertexMaterial = resourceManager->findObject<nap::Material>("VertexColorMaterial");
@@ -68,7 +68,11 @@ namespace nap
 		render_state.mPointSize = 2.0f;
 		render_state.mPolygonMode = opengl::PolygonMode::FILL;
 
+		// Force paint method
 		selectPaintMethod();
+
+		// Position our debug windows
+		positionDebugViews();
 
 		return true;
 	}
@@ -104,9 +108,12 @@ namespace nap
 			renderWindow->makeActive();
 
 			// Clear backbuffer of window
-			opengl::RenderTarget& backbuffer = *(renderWindow->getWindow()->getBackbuffer());
+			opengl::RenderTarget& backbuffer = renderWindow->getBackbuffer();
 			renderService->clearRenderTarget(backbuffer);
 			
+			// Render debug views to screen
+			renderDebugViews();
+
 			// Render meshes
 			std::vector<nap::RenderableComponentInstance*> components_to_render;
 			displayEntity->getComponentsOfType<nap::RenderableComponentInstance>(components_to_render);
@@ -117,18 +124,6 @@ namespace nap
 			// Render meshes
 			renderService->renderObjects(backbuffer, sceneCamera, components_to_render);
 
-			// Render our composition previs
-			RenderableMeshComponentInstance& render_plane = debugDisplayEntity->getComponent<RenderableMeshComponentInstance>();
-			nap::TransformComponentInstance& xform = render_plane.getEntityInstance()->getComponent<nap::TransformComponentInstance>();
-			glm::ivec2 window_size = renderWindow->getWindow()->getSize();
-			int posx = window_size.x - (xform.getUniformScale() / 2.0f);
-			int posy = (xform.getUniformScale() / 2.0f);
-			xform.setTranslate({ posx, posy, 0.0f });
-
-			OrthoCameraComponentInstance& ortho_cam = compositionCameraEntity->getComponent<OrthoCameraComponentInstance>();
-			std::vector<nap::RenderableComponentInstance*> debug_objects = { &render_plane };
-			renderService->renderObjects(backbuffer, ortho_cam, debug_objects);
-
 			// Render our gui
 			getCore().getService<IMGuiService>()->render();
 
@@ -136,6 +131,42 @@ namespace nap
 		}
 	}
 
+
+	void KalvertorenApp::renderDebugViews()
+	{
+		// Render our composition previs
+		RenderableMeshComponentInstance& render_plane = debugDisplayEntity->getComponent<RenderableMeshComponentInstance>();
+		OrthoCameraComponentInstance& ortho_cam = compositionCameraEntity->getComponent<OrthoCameraComponentInstance>();
+		std::vector<nap::RenderableComponentInstance*> debug_objects = { &render_plane };
+
+		// Set active texture
+		UniformTexture2D& uniform = render_plane.getMaterialInstance().getOrCreateUniform<UniformTexture2D>("debugImage");
+		RenderCompositionComponentInstance& render_comp = renderCompositionEntity->getComponent<RenderCompositionComponentInstance>();
+		uniform.setTexture(render_comp.getTexture());
+
+		renderService->renderObjects(renderWindow->getBackbuffer(), ortho_cam, debug_objects);
+	}
+
+
+	void KalvertorenApp::handleWindowEvent(const WindowEvent& windowEvent)
+	{
+		nap::rtti::TypeInfo e_type = windowEvent.get_type();
+		if (e_type.is_derived_from(RTTI_OF(nap::WindowResizedEvent)) ||
+			e_type.is_derived_from(RTTI_OF(nap::WindowShownEvent)))
+		{
+			positionDebugViews();
+		}
+	}
+
+
+	void KalvertorenApp::positionDebugViews()
+	{
+		RenderableMeshComponentInstance& render_plane = debugDisplayEntity->getComponent<RenderableMeshComponentInstance>();
+		nap::TransformComponentInstance& xform = render_plane.getEntityInstance()->getComponent<nap::TransformComponentInstance>();
+		int posx = renderWindow->getWidth()  - (xform.getUniformScale() / 2.0f);
+		int posy = renderWindow->getHeight() - (xform.getUniformScale() / 2.0f);
+		xform.setTranslate({ posx, posy, 0.0f });
+	}
 
 
 	void KalvertorenApp::shutdown()

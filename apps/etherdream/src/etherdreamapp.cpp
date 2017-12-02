@@ -79,7 +79,7 @@ namespace nap
 		laser_control_comp.renderToLaserBuffers(laser_cam, *mRenderService);
 
 		// Clear window back-buffer
-		opengl::RenderTarget& backbuffer = *(mRenderWindow->getWindow()->getBackbuffer());
+		opengl::RenderTarget& backbuffer = mRenderWindow->getBackbuffer();
 		backbuffer.setClearColor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 		mRenderService->clearRenderTarget(backbuffer);
 

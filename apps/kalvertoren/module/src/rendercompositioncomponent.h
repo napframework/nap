@@ -76,5 +76,18 @@ namespace nap
 		RenderTarget* mTargetB = nullptr;
 
 		RenderService* mRenderService = nullptr;
+
+		BaseTexture2D*	inputA = nullptr;
+		BaseTexture2D*	inputB = nullptr;
+		RenderTarget*	activeTarget = nullptr;
+		RenderTarget*	nextTarget = nullptr;
+
+		/**
+		 *	Renders a single pass 
+		 * @param inputA the base input texture
+		 * @param inputB the top input texture
+		 * @param target the render target to render to
+		 */
+		void renderPass(BaseTexture2D& inputA, BaseTexture2D& inputB, RenderTarget& target);
 	};
 }

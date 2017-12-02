@@ -26,11 +26,6 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * @return the GPU texture that contains the rendered composition
-		 */
-		nap::BaseTexture2D& getTexture();
-
-		/**
 		 * @return the layer @index
 		 * @param index index of the layer to fetch
 		 */

@@ -127,7 +127,7 @@ namespace nap
 		mRenderWindow->makeActive();
 		
 		// Clear back-buffer
-		opengl::RenderTarget& backbuffer = *mRenderWindow->getWindow()->getBackbuffer();
+		opengl::RenderTarget& backbuffer = mRenderWindow->getBackbuffer();
 		backbuffer.setClearColor(glm::vec4(0.0705f, 0.49f, 0.5647f, 1.0f));
 		mRenderService->clearRenderTarget(backbuffer);	
 		

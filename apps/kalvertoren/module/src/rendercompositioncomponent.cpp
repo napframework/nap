@@ -45,33 +45,62 @@ namespace nap
 
 	void RenderCompositionComponentInstance::render()
 	{
-		RenderCompositionComponentInstance& comp_render = getEntityInstance()->getComponent<RenderCompositionComponentInstance>();
-
-		// Clear target A
-		mRenderService->clearRenderTarget(mTargetA->getTarget(), opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH);
-
-		// Get plane to render
-		RenderableMeshComponentInstance& render_plane = *mRenderableComponent;
-
-		UniformTexture2D& texa = render_plane.getMaterialInstance().getOrCreateUniform<UniformTexture2D>("imageA");
-		UniformTexture2D& texb = render_plane.getMaterialInstance().getOrCreateUniform<UniformTexture2D>("imageB");
-
 		nap::Composition& comp = mCompositionComponent->getSelection();
+		
+		// Assign inputs for first pass
+		assert(comp.getLayerCount() > 0);
+		inputA = &(comp.getLayer(0).getTexture());
+		inputB = comp.getLayerCount() > 1 ? &(comp.getLayer(1).getTexture()) : inputA;
 
-		texa.setTexture(comp.getLayer(0).getTexture());
-		texb.setTexture(comp.getLayer(1).getTexture());
+		// Set the active target
+		activeTarget = mTargetA;
+		nextTarget = mTargetB;
 
-		// Get camera to render
-		OrthoCameraComponentInstance& ortho_cam = *mCameraComponent;
+		// Render first pass to target a
+		renderPass(*inputA, *inputB, *activeTarget);
 
-		// Render offscreen surface
-		std::vector<nap::RenderableComponentInstance*> blaat;
-		blaat.emplace_back(&render_plane);
-		mRenderService->renderObjects(mTargetA->getTarget(), ortho_cam, blaat);
+		// Ping pong successive render layers
+		for (int i = 2; i < comp.getLayerCount(); i++)
+		{
+			// The texture of the current active target is the base layer of the next render pass
+			inputA = &(activeTarget->getColorTexture());
+			inputB = &(comp.getLayer(i).getTexture());
+
+			// Swap targets, currently active target is the one we labeled next
+			RenderTarget* active_placeholder = activeTarget;
+			activeTarget = nextTarget;
+
+			// Now render
+			renderPass(*inputA, *inputB, *activeTarget);
+
+			// Assign target for next round to be placeholder
+			nextTarget = active_placeholder;
+		}
 	}
 
 	nap::BaseTexture2D& RenderCompositionComponentInstance::getTexture()
 	{
-		return mTargetA->getColorTexture();
+		return activeTarget->getColorTexture();
 	}
+
+
+	void RenderCompositionComponentInstance::renderPass(BaseTexture2D& inputA, BaseTexture2D& inputB, RenderTarget& target)
+	{
+		// Get plane to render
+		RenderableMeshComponentInstance& render_plane = *mRenderableComponent;
+
+		// Uniform texture inputs
+		UniformTexture2D& texa = render_plane.getMaterialInstance().getOrCreateUniform<UniformTexture2D>("imageA");
+		UniformTexture2D& texb = render_plane.getMaterialInstance().getOrCreateUniform<UniformTexture2D>("imageB");
+		texa.setTexture(inputA);
+		texb.setTexture(inputB);
+
+		// Clear target we want to render in to
+		mRenderService->clearRenderTarget(target.getTarget(), opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH);
+
+		// Render off screen surface
+		std::vector<nap::RenderableComponentInstance*> obj_to_render = { &render_plane };
+		mRenderService->renderObjects(target.getTarget(), *mCameraComponent, obj_to_render);
+	}
+
 }
