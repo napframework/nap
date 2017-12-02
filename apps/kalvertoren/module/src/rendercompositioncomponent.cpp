@@ -45,7 +45,33 @@ namespace nap
 
 	void RenderCompositionComponentInstance::render()
 	{
-		nap::Composition& selection = mCompositionComponent->getSelection();
+		RenderCompositionComponentInstance& comp_render = getEntityInstance()->getComponent<RenderCompositionComponentInstance>();
+
+		// Clear target A
+		mRenderService->clearRenderTarget(mTargetA->getTarget(), opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH);
+
+		// Get plane to render
+		RenderableMeshComponentInstance& render_plane = *mRenderableComponent;
+
+		UniformTexture2D& texa = render_plane.getMaterialInstance().getOrCreateUniform<UniformTexture2D>("imageA");
+		UniformTexture2D& texb = render_plane.getMaterialInstance().getOrCreateUniform<UniformTexture2D>("imageB");
+
+		nap::Composition& comp = mCompositionComponent->getSelection();
+
+		texa.setTexture(comp.getLayer(0).getTexture());
+		texb.setTexture(comp.getLayer(1).getTexture());
+
+		// Get camera to render
+		OrthoCameraComponentInstance& ortho_cam = *mCameraComponent;
+
+		// Render offscreen surface
+		std::vector<nap::RenderableComponentInstance*> blaat;
+		blaat.emplace_back(&render_plane);
+		mRenderService->renderObjects(mTargetA->getTarget(), ortho_cam, blaat);
 	}
 
+	nap::BaseTexture2D& RenderCompositionComponentInstance::getTexture()
+	{
+		return mTargetA->getColorTexture();
+	}
 }

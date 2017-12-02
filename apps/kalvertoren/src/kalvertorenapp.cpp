@@ -5,6 +5,7 @@
 #include "applytracercolorcomponent.h"
 #include "applybbcolorcomponent.h"
 #include "applycompositioncomponent.h"
+#include "rendercompositioncomponent.h"
 
 // External Includes
 #include <mathutils.h>
@@ -42,11 +43,17 @@ namespace nap
 		ObjectPtr<Scene> scene = resourceManager->findObject<Scene>("Scene");
 
 		compositionEntity = scene->findEntity("CompositionEntity");
+		renderCompositionEntity = scene->findEntity("RenderCompositionEntity");
 		displayEntity = scene->findEntity("DisplayEntity");
 		sceneCameraEntity = scene->findEntity("SceneCameraEntity");
-		compositionCameraEntity = scene->findEntity("CompositionEntity");
+		compositionCameraEntity = scene->findEntity("CompositionCameraEntity");
 		defaultInputRouter = scene->findEntity("DefaultInputRouterEntity");
 		lightEntity = scene->findEntity("LightEntity");
+		debugDisplayEntity = scene->findEntity("DebugDisplayEntity");
+
+		// Render target
+		renderTargetA = resourceManager->findObject("CompositionRenderTargetA");
+		renderTargetB = resourceManager->findObject("CompositionRenderTargetB");
 
 		// Materials
 		vertexMaterial = resourceManager->findObject<nap::Material>("VertexColorMaterial");
@@ -86,6 +93,9 @@ namespace nap
 
 		// Render offscreen surface(s)
 		{
+			renderService->getPrimaryWindow().makeCurrent();
+			RenderCompositionComponentInstance& comp_render = renderCompositionEntity->getComponent<RenderCompositionComponentInstance>();
+			comp_render.render();
 		}
 
 
@@ -93,15 +103,31 @@ namespace nap
 		{
 			renderWindow->makeActive();
 
-			nap::CameraComponentInstance& sceneCamera = sceneCameraEntity->getComponent<nap::CameraControllerInstance>().getCameraComponent();
-
-			// Render output texture to plane
+			// Clear backbuffer of window
+			opengl::RenderTarget& backbuffer = *(renderWindow->getWindow()->getBackbuffer());
+			renderService->clearRenderTarget(backbuffer);
+			
+			// Render meshes
 			std::vector<nap::RenderableComponentInstance*> components_to_render;
 			displayEntity->getComponentsOfType<nap::RenderableComponentInstance>(components_to_render);
 
-			opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(renderWindow->getWindow()->getBackbuffer());
-			renderService->clearRenderTarget(backbuffer);
+			// Get camera
+			nap::CameraComponentInstance& sceneCamera = sceneCameraEntity->getComponent<nap::CameraControllerInstance>().getCameraComponent();
+
+			// Render meshes
 			renderService->renderObjects(backbuffer, sceneCamera, components_to_render);
+
+			// Render our composition previs
+			RenderableMeshComponentInstance& render_plane = debugDisplayEntity->getComponent<RenderableMeshComponentInstance>();
+			nap::TransformComponentInstance& xform = render_plane.getEntityInstance()->getComponent<nap::TransformComponentInstance>();
+			glm::ivec2 window_size = renderWindow->getWindow()->getSize();
+			int posx = window_size.x - (xform.getUniformScale() / 2.0f);
+			int posy = (xform.getUniformScale() / 2.0f);
+			xform.setTranslate({ posx, posy, 0.0f });
+
+			OrthoCameraComponentInstance& ortho_cam = compositionCameraEntity->getComponent<OrthoCameraComponentInstance>();
+			std::vector<nap::RenderableComponentInstance*> debug_objects = { &render_plane };
+			renderService->renderObjects(backbuffer, ortho_cam, debug_objects);
 
 			// Render our gui
 			getCore().getService<IMGuiService>()->render();
@@ -109,6 +135,7 @@ namespace nap
 			renderWindow->swap();
 		}
 	}
+
 
 
 	void KalvertorenApp::shutdown()
@@ -296,3 +323,4 @@ namespace nap
 		}
 	}
 }
+

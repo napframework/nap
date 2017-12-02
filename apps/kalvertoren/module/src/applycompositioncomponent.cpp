@@ -6,7 +6,7 @@
 
 // nap::applycompositioncomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::ApplyCompositionComponent)
-	RTTI_PROPERTY("CompositionComponent",	&nap::ApplyCompositionComponent::mCompositionComponent,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("CompositionRenderer",	&nap::ApplyCompositionComponent::mCompositionRenderer,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ColorPaletteComponent",	&nap::ApplyCompositionComponent::mColorPaletteComponent,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ShowIndexColors",		&nap::ApplyCompositionComponent::mShowIndexColors,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -41,8 +41,7 @@ namespace nap
 	void ApplyCompositionComponentInstance::applyColor(double deltaTime)
 	{
 		// Get texture from active composition
-		nap::Composition& comp = mCompositionComponent->getSelection();
-		nap::BaseTexture2D& tex = comp.getTexture();
+		nap::BaseTexture2D& tex = mCompositionRenderer->getTexture();
 
 		// Populate the pixmap with the texture data
 		tex.getData(mPixmap);

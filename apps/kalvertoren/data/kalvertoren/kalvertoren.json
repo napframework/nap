@@ -271,7 +271,8 @@
 			"mID"  : "GreenComposition",
 			"Layers" :
 			[
-				"GreenLayer1"
+				"GreenLayer1",
+				"GreenLayer2"
 			] 
 		},
 
@@ -280,14 +281,8 @@
 			"mID" : "CompositionTextureA",
 			"Width" : 1024,
 			"Height" : 1024,
-			"Format" : "RGB8",
-			"Usage" : "DynamicRead",
-			"Parameters" :
-			{		
-				"MinFilter" : "Nearest",
-				"MaxFilter" : "Nearest",
-				"MaxLodLevel" : 0
-			}
+			"Format" : "RGBA8",
+			"Usage" : "DynamicRead"
 		},
 		
 		{
@@ -295,13 +290,7 @@
 			"mID" : "CompositionDepthTextureA",
 			"Width" : 1024,
 			"Height" : 1024,
-			"Format" : "Depth",
-			"Parameters" :
-			{		
-				"MinFilter" : "Nearest",
-				"MaxFilter" : "Nearest",
-				"MaxLodLevel" : 0
-			}
+			"Format" : "Depth"
 		},
 
 		{
@@ -309,14 +298,8 @@
 			"mID" : "CompositionTextureB",
 			"Width" : 1024,
 			"Height" : 1024,
-			"Format" : "RGB8",
-			"Usage" : "DynamicRead",
-			"Parameters" :
-			{		
-				"MinFilter" : "Nearest",
-				"MaxFilter" : "Nearest",
-				"MaxLodLevel" : 0
-			}
+			"Format" : "RGBA8",
+			"Usage" : "DynamicRead"
 		},
 		
 		{
@@ -324,13 +307,7 @@
 			"mID" : "CompositionDepthTextureB",
 			"Width" : 1024,
 			"Height" : 1024,
-			"Format" : "Depth",
-			"Parameters" :
-			{		
-				"MinFilter" : "Nearest",
-				"MaxFilter" : "Nearest",
-				"MaxLodLevel" : 0
-			}
+			"Format" : "Depth"
 		},
 
 		{
@@ -341,8 +318,8 @@
 			"mClearColor" : 
 			{
 				"x" : 1.0,
-				"y" : 1.0,
-				"z" : 1.0,
+				"y" : 0.0,
+				"z" : 0.0,
 				"w" : 1.0
 			}
 		},
@@ -355,25 +332,15 @@
 			"mClearColor" : 
 			{
 				"x" : 1.0,
-				"y" : 1.0,
-				"z" : 1.0,
+				"y" : 0.0,
+				"z" : 0.0,
 				"w" : 1.0
 			}
 		},
 
 		{
 			"Type" : "nap::PlaneMesh",
-			"mID": "PlaneMesh",
-			"Position" : 
-			{
-				"x" : 256,
-				"y" : 256
-			},
-			"Size" :
-			{
-				"x" : 512,
-				"y" : 512
-			}
+			"mID": "PlaneMesh"
 		},
 		
 		{
@@ -401,6 +368,13 @@
 			"mID" : "CompositionShader",
 			"mVertShader": "shaders/kalvertoren/composition.vert",
 			"mFragShader": "shaders/kalvertoren/composition.frag"
+		},
+
+		{
+			"Type" : "nap::Shader",
+			"mID" : "DebugShader",
+			"mVertShader": "shaders/kalvertoren/debug.vert",
+			"mFragShader": "shaders/kalvertoren/debug.frag"
 		},
 	
 		{
@@ -620,19 +594,48 @@
 				{
 					"MeshAttributeID": "UV0",
 					"ShaderAttributeID": "in_UV0"
+				},
+				{
+					"MeshAttributeID": "Color0",
+					"ShaderAttributeID": "in_Color0"
 				}
 			],
 			"Uniforms" : 
 			[
 				{
 					"Type" : "nap::UniformTexture2D",
-					"Name" : "LayerOne",
+					"Name" : "imageA",
 					"Texture" : "CompositionTextureA"
 				},
 				{
 					"Type" : "nap::UniformTexture2D",
-					"Name" : "LayerTwo",
+					"Name" : "imageB",
 					"Texture" : "CompositionTextureB"
+				}
+			]
+		},
+
+		{
+			"Type" : "nap::Material",
+			"mID": "DebugMaterial",
+			"Shader": "DebugShader",
+			"VertexAttributeBindings" : 
+			[
+				{
+					"MeshAttributeID": "Position",
+					"ShaderAttributeID": "in_Position"
+				},
+				{
+					"MeshAttributeID": "Normal",
+					"ShaderAttributeID": "in_Normals"
+				},
+				{
+					"MeshAttributeID": "UV0",
+					"ShaderAttributeID": "in_UV0"
+				},
+				{
+					"MeshAttributeID": "Color0",
+					"ShaderAttributeID": "in_Color0"
 				}
 			]
 		},
@@ -658,7 +661,13 @@
 					"Entity" : "SceneCameraEntity"
 				},
 				{
+					"Entity" : "RenderCompositionEntity"
+				},
+				{
 					"Entity" : "LightEntity"
+				},
+				{
+					"Entity" : "DebugDisplayEntity"
 				}
 			]
 		},
@@ -670,6 +679,108 @@
 			[
 				{
 					"Type" : "nap::DefaultInputRouterComponent"
+				}
+			]
+		},
+
+		{
+			"Type" : "nap::Entity",
+			"mID" : "DebugDisplayEntity",
+			"Components" :
+			[
+				{
+					"Type" : "nap::TransformComponent",
+					"Properties": 
+					{
+						"Translate": 
+						{
+							"x": 192.0,
+							"y": 192.0,
+							"z": 0.0
+						},
+						"Rotate": 
+						{
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0
+						},
+						"Scale": 
+						{
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 384.0
+					}
+				},
+				{
+					"Type" : "nap::RenderableMeshComponent",
+					"mID" : "RenderableDebugMeshComponent",
+					"Mesh" : "PlaneMesh",
+					"MaterialInstance" :
+					{
+						"Material" : "DebugMaterial",
+						"DepthMode" : "NoReadWrite",
+						"Uniforms" : 
+						[
+							{
+								"Type" : "nap::UniformTexture2D",
+								"Name" : "debugImage",
+								"Texture" : "CompositionTextureA"
+							}
+						]
+					}
+				}
+			]
+		},
+
+		{
+			"Type" : "nap::Entity",
+			"mID" : "RenderCompositionEntity",
+			"Components" :
+			[
+				{
+					"Type" : "nap::TransformComponent",
+					"Properties": 
+					{
+						"Translate": 
+						{
+							"x": 512.0,
+							"y": 512.0,
+							"z": 0.0
+						},
+						"Rotate": 
+						{
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0
+						},
+						"Scale": 
+						{
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1024.0
+					}
+				},
+				{
+					"Type" : "nap::RenderCompositionComponent",
+					"mID" : "RenderCompositionComponent",
+					"TargetOne" : "CompositionRenderTargetA",
+					"TargetTwo" : "CompositionRenderTargetB",
+					"CompositionComponent" : "CompositionComponent",
+					"RenderComponent" : "./RenderablePlaneMeshComponent",
+					"CameraComponent" : "CompositionCamera"
+				},
+				{
+					"Type" : "nap::RenderableMeshComponent",
+					"mID" : "RenderablePlaneMeshComponent",
+					"Mesh" : "PlaneMesh",
+					"MaterialInstance" :
+					{
+						"Material" : "CompositionMaterial"
+					}
 				}
 			]
 		},
@@ -752,28 +863,6 @@
 			"Components" :
 			[
 				{
-					"Type" : "nap::TransformComponent"
-				},
-				{
-					"Type" : "nap::RenderCompositionComponent",
-					"mID" : "RenderCompositionComponent",
-					"TargetOne" : "CompositionRenderTargetA",
-					"TargetTwo" : "CompositionRenderTargetB",
-					"CompositionComponent" : "./CompositionComponent",
-					"RenderComponent" : "./RenderableMeshComponent",
-					"CameraComponent" : "CompositionCamera"
-				},
-				{
-					"Type" : "nap::RenderableMeshComponent",
-					"mID" : "RenderableMeshComponent",
-					"Mesh" : "PlaneMesh",
-					"MaterialInstance" :
-					{
-						"Material" : "CompositionMaterial",
-						"BlendMode" : "Opaque"
-					}
-				},
-				{
 					"Type" : "nap::CompositionComponent",
 					"mID" : "CompositionComponent",
 					"Compositions" :
@@ -819,7 +908,7 @@
 					"Type" : "nap::ApplyCompositionComponent",
 					"Mesh" : "KalverMesh",
 					"Selector" : "./ColorMethodSelectorKalver",
-					"CompositionComponent" : "../CompositionComponent",
+					"CompositionRenderer" : "RenderCompositionComponent",
 					"ColorPaletteComponent" : "../ColorPaletteComponent"
 				},
 				{
@@ -860,7 +949,7 @@
 					"Type" : "nap::ApplyCompositionComponent",
 					"Mesh" : "HeiligewegMesh",
 					"Selector" : "./ColorMethodSelectorHeiligeweg",
-					"CompositionComponent" : "../CompositionComponent",
+					"CompositionRenderer" : "RenderCompositionComponent",
 					"ColorPaletteComponent" : "../ColorPaletteComponent"
 				},
 				{
@@ -899,7 +988,7 @@
 					"Type" : "nap::ApplyCompositionComponent",
 					"Mesh" : "SingelMesh",
 					"Selector" : "./ColorMethodSelectorSingel",
-					"CompositionComponent" : "../CompositionComponent",
+					"CompositionRenderer" : "RenderCompositionComponent",
 					"ColorPaletteComponent" : "../ColorPaletteComponent"
 				},
 				{
@@ -923,7 +1012,16 @@
 					"mID" : "CompositionCamera",
 					"Properties": 
 					{
-						"NearClippingPlane" : 1,
+						"NearClippingPlane" : 0.1,
+						"FarClippingPlane" : 1000.0
+					}
+				},
+				{
+					"Type" : "nap::PerspCameraComponent",
+					"mID" : "PerspCompositionCameraComponent",
+					"Properties": {
+						"FieldOfView": 40.0,
+						"NearClippingPlane" : 0.1,
 						"FarClippingPlane" : 1000.0
 					}
 				},
@@ -936,7 +1034,20 @@
 							"x": 0.0,
 							"y": 0.0,
 							"z": 10.0
-						}				
+						},
+						"Rotate": 
+						{
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0
+						},
+						"Scale": 
+						{
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.0				
 					}
 				}
 			]

@@ -61,6 +61,10 @@ namespace nap
 		 */
 		void render();
 
+		/**
+		 *	@return the output texture
+		 */
+		nap::BaseTexture2D& getTexture();
 
 		// Points to the composition component we want to render
 		COMPONENT_INSTANCE_POINTER(mCompositionComponent, CompositionComponent, RenderCompositionComponent)

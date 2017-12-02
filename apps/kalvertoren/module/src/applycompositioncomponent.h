@@ -3,6 +3,7 @@
 #include "applycolorcomponent.h"
 #include "compositioncomponent.h"
 #include "colorpalettecomponent.h"
+#include "rendercompositioncomponent.h"
 
 #include <component.h>
 #include <componentptr.h>
@@ -26,8 +27,8 @@ namespace nap
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		ComponentPtr<CompositionComponent>  mCompositionComponent;			///< property: link to the composition component
-		ComponentPtr<ColorPaletteComponent> mColorPaletteComponent;			///< property: link to the color palette component
+		ComponentPtr<RenderCompositionComponent>	mCompositionRenderer;			///< property: link to the composition component
+		ComponentPtr<ColorPaletteComponent>			mColorPaletteComponent;			///< property: link to the color palette component
 		bool mShowIndexColors = false;										///< property: if the index colors should be shown
 	};
 
@@ -62,7 +63,7 @@ namespace nap
 		void showIndexColors(bool value)							{ mShowIndexColors = value; }
 
 		// pointer to the component that manages all the compositions
-		COMPONENT_INSTANCE_POINTER(mCompositionComponent, CompositionComponent, ApplyCompositionComponent)
+		COMPONENT_INSTANCE_POINTER(mCompositionRenderer, RenderCompositionComponent, ApplyCompositionComponent)
 
 		// pointer to the component that manages the color palettes
 		COMPONENT_INSTANCE_POINTER(mColorPaletteComponent, ColorPaletteComponent, ApplyCompositionComponent)

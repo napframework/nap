@@ -13,7 +13,7 @@ namespace nap
 	/**
 	 * A composition consists out of a set of layers that are blended on top of each other
 	 */
-	class Composition : public rtti::RTTIObject
+	class NAPAPI Composition : public rtti::RTTIObject
 	{
 		RTTI_ENABLE(rtti::RTTIObject)
 	public:

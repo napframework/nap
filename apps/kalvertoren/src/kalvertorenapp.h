@@ -85,11 +85,15 @@ namespace nap
 		nap::ObjectPtr<nap::EntityInstance>				compositionEntity = nullptr;
 		nap::ObjectPtr<nap::EntityInstance>				sceneCameraEntity = nullptr;
 		nap::ObjectPtr<nap::EntityInstance>				compositionCameraEntity = nullptr;
+		nap::ObjectPtr<nap::EntityInstance>				renderCompositionEntity = nullptr;
+		nap::ObjectPtr<nap::EntityInstance>				debugDisplayEntity = nullptr;
 		nap::ObjectPtr<nap::EntityInstance>				defaultInputRouter = nullptr;
 		nap::ObjectPtr<nap::EntityInstance>				lightEntity = nullptr;
 		nap::ObjectPtr<nap::Material>					frameMaterial = nullptr;
 		nap::ObjectPtr<nap::Material>					vertexMaterial = nullptr;
 		nap::ObjectPtr<nap::EntityInstance>				displayEntity = nullptr;
+		nap::ObjectPtr<nap::RenderTarget>				renderTargetA = nullptr;
+		nap::ObjectPtr<nap::RenderTarget>				renderTargetB = nullptr;
 
 		// GUI
 		int												mMeshSelection = 0;
@@ -99,5 +103,6 @@ namespace nap
 		int												mPaletteSelection = 0;
 		int												mCompositionSelection = 0;
 		bool											mShowIndexColors = false;
-	};
+	};                                                                               
 }
+
