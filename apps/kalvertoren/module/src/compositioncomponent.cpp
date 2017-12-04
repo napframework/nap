@@ -48,7 +48,8 @@ namespace nap
 
 	void CompositionComponentInstance::update(double deltaTime)
 	{
-
+		if (mCompositionInstance != nullptr)
+			mCompositionInstance->update(deltaTime);
 	}
 
 
@@ -56,5 +57,7 @@ namespace nap
 	{
 		int sindex = math::clamp<int>(index, 0, mCompositions.size()-1);
 		mSelection = mCompositions[sindex];
+
+		mCompositionInstance = std::make_unique<CompositionInstance>(*mSelection);
 	}
 }

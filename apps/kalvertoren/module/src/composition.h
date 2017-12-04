@@ -20,22 +20,48 @@ namespace nap
 		virtual ~Composition();
 
 		/**
-		* Initialize this object after de-serialization
-		* @param errorState contains the error message when initialization fails
-		*/
+		 * Initialize this object after de-serialization
+		 * @param errorState contains the error message when initialization fails
+		 */
 		virtual bool init(utility::ErrorState& errorState) override;
+
+		std::vector<nap::ObjectPtr<Layer>> mLayers;				///< All the layers this composition works with
+	};
+
+
+	/**
+	 * Instance of a Composition. Creates and owns LayerInstance objects for each layer in the composition.
+	 * Updates the instances in update().
+	 */
+	class NAPAPI CompositionInstance
+	{
+	public:
+		CompositionInstance(Composition& composition);
+
+		/**
+		 * Updates all LayerInstances.
+		 */
+		void update(double deltaTime);
 
 		/**
 		 * @return the layer @index
 		 * @param index index of the layer to fetch
 		 */
-		Layer& getLayer(int index);
+		LayerInstance& getLayer(int index);
 
 		/**
 		 * @return the total number of layers
 		 */
-		int getLayerCount() const								{ return mLayers.size(); }
+		int getLayerCount() const { return mLayerInstances.size(); }
 
-		std::vector<nap::ObjectPtr<Layer>> mLayers;				///< All the layers this composition works with
+		CompositionInstance(const CompositionInstance&) = delete;
+		CompositionInstance& operator=(const CompositionInstance&) = delete;
+
+
+	private:
+		using LayerInstances = std::vector<std::unique_ptr<LayerInstance>>;
+		Composition*		mComposition;			///< Back pointer to Composition resource
+		LayerInstances		mLayerInstances;		///< All created LayerInstances, owned by this object
 	};
+
 }

@@ -57,6 +57,11 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
+		 *	Updates targets
+		 */
+		virtual void update(double deltaTime) override;
+
+		/**
 		 *	Renders all the layers associated with the currently active composition to the render targets
 		 */
 		void render();

@@ -22,12 +22,25 @@ namespace nap
 		return true;
 	}
 
+	//////////////////////////////////////////////////////////////////////////
 
-	nap::Layer& Composition::getLayer(int index)
+	CompositionInstance::CompositionInstance(Composition& composition) :
+		mComposition(&composition)
+	{
+		for (auto& layer : composition.mLayers)
+			mLayerInstances.emplace_back(layer->createInstance());
+	}
+
+	void CompositionInstance::update(double deltaTime)
+	{
+		for (auto& layer_instance : mLayerInstances)
+			layer_instance->update(deltaTime);
+	}
+
+	LayerInstance& CompositionInstance::getLayer(int index)
 	{
 		assert(index < getLayerCount());
 		int idx = math::clamp<int>(index, 0, getLayerCount() - 1);
-		return *(mLayers[idx]);
+		return *(mLayerInstances[idx]);
 	}
-
 }

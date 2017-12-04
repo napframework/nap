@@ -7,7 +7,7 @@
 			"Width" : 1024,
 			"Height" : 768,
 			"Title" : "Kalvertoren",
-			"Sync" : false,
+			"Sync" : true,
 			"ClearColor" : 
 			{
 				"x" : 0.0,
@@ -244,9 +244,24 @@
 		},
 
 		{
-			"Type" : "nap::ImageLayer",
+			"Type" : "nap::ImageSequenceLayer",
 			"mID" : "HelloLayer4",
-			"Path" :"data/kalvertoren/compositions/hello/layer4/coen.png"
+			"FPS" : 6,
+			"Images" : 
+			[
+				{
+					"Type" : "nap::Image",
+					"ImagePath" : "data/kalvertoren/compositions/hello/layer4/1.png"
+				},
+				{
+					"Type" : "nap::Image",
+					"ImagePath" : "data/kalvertoren/compositions/hello/layer4/2.png"
+				},
+				{
+					"Type" : "nap::Image",
+					"ImagePath" : "data/kalvertoren/compositions/hello/layer4/3.png"
+				}
+			]
 		},
 
 		{

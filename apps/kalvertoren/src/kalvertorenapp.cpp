@@ -34,7 +34,7 @@ namespace nap
 		// Get resource manager and load data
 		resourceManager = getCore().getResourceManager();
 		if (!resourceManager->loadFile("data/kalvertoren/kalvertoren.json", error))
-			return false;
+			return false;    
 
 		// Render window and texture target
 		renderWindow = resourceManager->findObject<nap::RenderWindow>("Window0");
@@ -85,6 +85,8 @@ namespace nap
 		std::vector<nap::EntityInstance*> entities;
 		entities.push_back(sceneCameraEntity.get());
 		inputService->processEvents(*renderWindow, input_router, entities);
+
+		positionDebugViews();
 
 		// Update our gui
 		updateGui();

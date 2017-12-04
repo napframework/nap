@@ -65,17 +65,18 @@ namespace nap
 		void select(int index);
 
 		/**
-		 * @return the currently selected composition
+		 * @return the currently selected composition instance
 		 */
-		Composition& getSelection()												{ return *mSelection; }
+		CompositionInstance& getSelection()										{ return *mCompositionInstance; }
 
 		/**
-		 *	@return the currently selected composition
+		 *	@return the currently selected composition instance
 		 */
-		const Composition& getSelection() const									{ return *mSelection; }
+		const CompositionInstance& getSelection() const							{ return *mCompositionInstance; }
 
 	private:
-		std::vector<Composition*> mCompositions;								///< List of all available compositions
-		Composition* mSelection = nullptr;										///< Currently selected composition
+		std::vector<Composition*>	mCompositions;								///< List of all available compositions
+		Composition*				mSelection = nullptr;						///< Currently selected composition
+		std::unique_ptr<CompositionInstance> mCompositionInstance;				///< CompositionInstance created when switching compositions
 	};
 }

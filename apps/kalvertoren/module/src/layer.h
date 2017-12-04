@@ -4,23 +4,21 @@
 #include <rtti/rttiobject.h>
 #include <image.h>
 #include <texture2d.h>
+#include "nap/ObjectPtr.h"
 
 namespace nap
 {
 	/**
-	 * Base layer
+	 * Base class for instance of Layer. Is created through Layer::createInstance. Can be updated and returns 'current' texture.
 	 */
-	class NAPAPI Layer : public rtti::RTTIObject
+	class NAPAPI LayerInstance
 	{
-		RTTI_ENABLE(rtti::RTTIObject)
 	public:
-		virtual ~Layer();
-
 		/**
-		* Initialize this object after de-serialization
-		* @param errorState contains the error message when initialization fails
-		*/
-		virtual bool init(utility::ErrorState& errorState) override;
+		 * Updates the LayerInstance.
+		 * @param deltaTime Time between frames.
+		 */
+		virtual void update(double deltaTime) {}
 
 		/**
 		 * @return the texture associated with this layer
@@ -37,30 +35,23 @@ namespace nap
 
 
 	/**
-	 * Loads an image from disk that can be used as a layer
-	 * This object discards the pixel data after load to save memory
+	 * Base layer
 	 */
-	class NAPAPI ImageLayer : public Layer
+	class NAPAPI Layer : public rtti::RTTIObject
 	{
-		RTTI_ENABLE(Layer)
+		RTTI_ENABLE(rtti::RTTIObject)
 	public:
+		virtual ~Layer();
+
+		/**
+		 * Initialize this object after de-serialization
+		 * @param errorState contains the error message when initialization fails
+		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 *	@return the texture associated with this layer
+		 * @return Instance object for this layer.
 		 */
-		virtual nap::BaseTexture2D&			getTexture() override					{ return mTexture; }
-
-		/**
-		 *	@return const texture associated with this layer
-		 */
-		virtual const nap::BaseTexture2D&	getTexture() const override				{ return mTexture; }
-
-
-		std::string mImagePath;														///< Path to the image on disk
-
-	private:
-		nap::BaseTexture2D mTexture;												///< GPU texture from CPU
-		nap::Pixmap mPixmap;														///< CPU Pixel representation
+		virtual std::unique_ptr<LayerInstance> createInstance() = 0;
 	};
 }
