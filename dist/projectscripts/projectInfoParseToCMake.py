@@ -21,7 +21,7 @@ def update_project_info_to_cmake(project_name):
 
     with open(os.path.join(project_path, PROJECT_INFO_FILENAME)) as json_file:
         json_dict = json.load(json_file)
-        if not json_dict.has_key('modules'):
+        if not 'modules' in json_dict:
             print("Missing element 'modules' in %s" % PROJECT_INFO_FILENAME)
             return False
 
