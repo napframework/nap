@@ -1,222 +1,199 @@
 #pragma once
 
-#include "actionstore.h"
+#include <QAction>
+#include <QFileDialog>
 #include <QKeySequence>
+#include <QSet>
+#include <QStandardItem>
 #include <QString>
-#include <nap/attributeobject.h>
-#include <nap/object.h>
+#include <QUndoCommand>
+#include <entity.h>
+#include <nap/logger.h>
 
+#include "appcontext.h"
+#include "napkinglobals.h"
 
-
-class DuplicateAction : public Action
+namespace napkin
 {
-public:
-	DuplicateAction() : Action("Duplicate") { setCategory("Edit"); }
-	virtual void perform() const override {}
-};
-
-
-
-class NewAction : public Action
-{
-public:
-	NewAction() : Action("&New")
+	/**
+	 * Base class for actions. Each subclass must implement the perform() method in which the actual work will be done.
+	 * In many cases perform() will create an instance of an appropriate command and execute it.
+	 */
+	class Action : public QAction
 	{
-		setShortcut(QKeySequence::New);
-		setShortcutContext(Qt::ApplicationShortcut);
-		setCategory("File");
-	}
-	QString iconName() override { return "page_white"; }
-	virtual void perform() const;
-};
+	public:
+		Action();
 
+	protected:
+		/**
+		 * This method will be called if the action is triggered
+		 */
+		virtual void perform() = 0;
+	};
 
-
-class OpenAction : public Action
-{
-public:
-	OpenAction() : Action("Open...")
+	/**
+	 * Create a new file.
+	 */
+	class NewFileAction : public Action
 	{
-		//		setShortcut(QKeySequence::Open);
-		setShortcut(QKeySequence::Open);
-		setShortcutContext(Qt::ApplicationShortcut);
-		setCategory("File");
-	}
-	virtual QString iconName() override { return "folder_page"; }
-	virtual void perform() const;
-};
+	public:
+		NewFileAction();
 
+	private:
+		/**
+		 * Implemented from Action
+		 */
+		void perform() override;
+	};
 
-
-class SaveAsAction : public Action
-{
-public:
-	SaveAsAction() : Action("Save as...")
+	/**
+	 * Display a file open dialog and open the file if confirmed.
+	 */
+	class OpenFileAction : public Action
 	{
-		setShortcut(QKeySequence::SaveAs);
-		setShortcutContext(Qt::ApplicationShortcut);
-		setCategory("File");
-	}
-	virtual QString iconName() override { return "disk"; }
-	virtual void perform() const;
-};
 
+	public:
+		OpenFileAction();
 
+	private:
+		/**
+		 * Implemented from Action
+		 */
+		void perform() override;
+	};
 
-class SaveAction : public Action
-{
-public:
-	SaveAction() : Action("Save")
+	/**
+	 * Save the currently open file, show a save file dialog if the file wasn't saved before.
+	 */
+	class SaveFileAction : public Action
 	{
-		setShortcut(QKeySequence::Save);
-		setShortcutContext(Qt::ApplicationShortcut);
-		setCategory("File");
-		//    setIcon(ICON(disk));
-	}
-	virtual QString iconName() override { return "disk"; }
-	virtual void perform() const;
-};
+	public:
+		SaveFileAction();
 
+	private:
+		/**
+		 * Implemented from Action
+		 */
+		void perform() override;
+	};
 
-class CutAction : public Action
-{
-public:
-	CutAction() : Action("Cut")
+	/**
+	 * Present a save file dialog and store the file if confirmed.
+	 */
+	class SaveFileAsAction : public Action
 	{
-		setShortcut(QKeySequence::Cut);
-		setShortcutContext(Qt::ApplicationShortcut);
-		setCategory("Edit");
-	}
-	bool canActOn(const nap::Object& obj) const override { return true; }
-	bool isAvailable();
-	virtual QString iconName() override { return "cut_red"; }
-	virtual void perform() const;
-};
+	public:
+		SaveFileAsAction();
 
+	private:
+		/**
+		 * Implemented from Action
+		 */
+		void perform() override;
+	};
 
-class CopyAction : public Action
-{
-public:
-	CopyAction() : Action("Copy")
+	/**
+	 * Add an entity to the provided parent.
+	 */
+	class AddEntityAction : public Action
 	{
-		setShortcut(QKeySequence::Copy);
-		setShortcutContext(Qt::ApplicationShortcut);
-		setCategory("Edit");
-	}
-	bool canActOn(const nap::Object& obj) const override { return true; }
-	bool isAvailable();
-	virtual QString iconName() override { return "page_copy"; }
-	virtual void perform() const;
-};
+	public:
+        /**
+         * @param parent The parent to add the new entity to
+         */
+		explicit AddEntityAction(nap::Entity* parent);
 
-class PasteAction : public Action
-{
-public:
-	PasteAction() : Action("Paste")
+	private:
+		/**
+		 * Implemented from Action
+		 */
+		void perform() override;
+
+		nap::Entity* mParent; // The parent to add the entity to
+	};
+
+	/**
+	 * Add a component of the specified type to the provided Entity.
+	 */
+	class AddComponentAction : public Action
 	{
-		setShortcut(QKeySequence::Paste);
-		setShortcutContext(Qt::ApplicationShortcut);
-		setCategory("Edit");
-	}
-	virtual QString iconName() override { return "page_paste"; }
+	public:
+        /**
+         * @param entity The entity to add the component to
+         * @param type The type of the component
+         */
+		AddComponentAction(nap::Entity& entity, nap::rtti::TypeInfo type);
 
-	bool canActOn(const nap::Object& obj) const override { return true; }
-	virtual void perform() const;
-};
+	private:
+		/**
+		 * Implemented from Action
+		 */
+		void perform() override;
 
-class DeleteAction : public Action
-{
-public:
-	DeleteAction() : Action("Delete")
+	private:
+		nap::Entity& mEntity;
+		nap::rtti::TypeInfo mComponentType;
+	};
+
+	/**
+	 * Add an object of the specified type to the ResourceManager.
+	 */
+	class AddObjectAction : public Action
 	{
-		setShortcut(QKeySequence::Delete);
-		setShortcutContext(Qt::ApplicationShortcut);
-		setCategory("Edit");
-	}
-	virtual QString iconName() override { return "delete"; }
-	virtual bool canActOn(const nap::Object& obj) const override { return obj.getParentObject() != nullptr; }
+	public:
+        /**
+         * @param type The type of object to add
+         */
+        explicit AddObjectAction(rttr::type type);
 
-	bool isAvailable();
-	void perform() const;
-};
+	private:
+		/**
+		 * Implemented from Action
+		 */
+		void perform() override;
 
+	private:
+		rttr::type mType; // The type of object to add
+	};
 
-class QuitAction : public Action
-{
-public:
-	QuitAction() : Action("Quit")
+	/**
+	 * Delete a set of objects
+	 */
+	class DeleteObjectAction : public Action
 	{
-		setShortcut(QKeySequence::Quit);
-		setShortcutContext(Qt::ApplicationShortcut);
-		setCategory("File");
-	}
-	virtual void perform() const;
-};
+	public:
+        /**
+         * @param object The object to delete
+         */
+		explicit DeleteObjectAction(nap::rtti::RTTIObject& object);
 
-class UndoAction : public Action
-{
-public:
-	UndoAction() : Action("Undo")
+	private:
+		/**
+		 * Implemented from Action
+		 */
+		void perform() override;
+
+	private:
+		nap::rtti::RTTIObject& mObject;
+	};
+
+	/**
+	 * Change the current theme. The name must match a theme name defined in the ThemeManager
+	 */
+	class SetThemeAction : public Action
 	{
-		setShortcut(QKeySequence::Undo);
-		setCategory("Edit");
-	}
-	bool isAvailable();
-	virtual QString iconName() override { return "arrow_undo"; }
-	virtual void perform() const;
-};
+	public:
+        /**
+         * @param themeName The theme to set
+         */
+        explicit SetThemeAction(const QString& themeName);
 
-class RedoAction : public Action
-{
-public:
-	RedoAction() : Action("Redo")
-	{
-		setShortcut(QKeySequence::Redo);
-		setCategory("Edit");
-	}
-	bool isAvailable();
-	virtual QString iconName() override { return "arrow_redo"; }
-	virtual void perform() const;
-};
+	private:
+		/**
+		 * Implemented from Action
+		 */
+		void perform() override;
 
-
-class AddAttributeAction : public Action
-{
-public:
-	AddAttributeAction() : Action("Add Attribute") { setCategory("Edit"); }
-	bool isAvailable();
-	virtual bool canActOn(const nap::Object& obj) const override
-	{
-		return obj.getTypeInfo().isKindOf<nap::AttributeObject>();
-	}
-	virtual void perform() const;
-};
-
-class CreateEntityAction : public Action
-{
-public:
-	CreateEntityAction() : Action("Create Entity") { setCategory("Edit"); }
-	bool isAvailable();
-	bool canActOn(const nap::Object& obj) const override { return obj.getTypeInfo().isKindOf<nap::Entity>(); }
-	virtual void perform() const;
-};
-
-class CreateOperatorAction : public Action
-{
-public:
-	CreateOperatorAction() : Action("Create Operator...") { setCategory("Edit"); }
-	virtual bool canActOn(const nap::Object& obj) const override
-	{
-		return obj.getTypeInfo().isKindOf<nap::Patch>();
-	}
-	virtual void perform() const;
-};
-
-class CreateComponentAction : public Action
-{
-public:
-	CreateComponentAction() : Action("Create Component...") { setCategory("Edit"); }
-	bool isAvailable();
-	bool canActOn(const nap::Object& obj) const override { return obj.getTypeInfo().isKindOf<nap::Entity>(); }
-	void perform() const;
-};
+		QString mTheme; // The theme to set
+	};
+}

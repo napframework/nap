@@ -122,7 +122,7 @@ namespace nap
 		mDirectoryWatcher(std::make_unique<DirectoryWatcher>()),
 		mFactory(std::make_unique<Factory>()),
 		mCore(core)
-	{ 
+	{
 	}
 
 
@@ -396,7 +396,7 @@ namespace nap
 						utility::ErrorState errorState;
 						if (!loadFile(source_file, source_file == modified_file ? std::string() : modified_file, errorState))
 						{
-							nap::Logger::warn("Failed to reload %s:\n %s. \n\n See log for more information.", source_file.c_str(), errorState.toString().c_str());
+							nap::Logger::warn("Failed to reload %s (%s)", source_file.c_str(), errorState.toString().c_str());
 							break;
 						}
 					}

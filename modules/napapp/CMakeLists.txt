@@ -1,7 +1,7 @@
 project(mod_napapp)
 
 # add all cpp files to SOURCES
-file(GLOB_RECURSE SOURCES src/ *.cpp *.h)
+file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 
 # LIBRARY
 

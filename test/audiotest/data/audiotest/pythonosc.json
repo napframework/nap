@@ -1,0 +1,43 @@
+{
+	"Objects" : 
+	[
+		{
+			"Type": "nap::OSCReceiver",
+			"mID": "oscReceiver",
+			"Port": 7000,
+			"EnableDebugOutput": "False"
+		},
+
+
+		{
+			"Type" : "nap::Scene",
+			"mID": "Scene",		
+			"Entities" : 
+			[
+				{
+					"Entity" : "oscEntity"
+				}
+			]
+		},
+
+		{
+			"Type" : "nap::Entity",
+			"mID": "oscEntity",
+			"Components" : 
+			[
+				{
+					"Type": "nap::OSCInputComponent",
+					"mID": "oscInput"
+				},
+
+				{
+					"Type": "nap::PythonScriptComponent",
+					"mID": "pythonScript",
+					"Path": "data/audiotest/scripts/oscscript.py"
+				}				
+			]
+		}
+		
+
+	]
+}

@@ -44,7 +44,7 @@ namespace nap
 		/**
 		 *	Object creators associated with video module
 		 */
-		virtual void registerObjectCreators(rtti::Factory& factory);
+		virtual void registerObjectCreators(rtti::Factory& factory) override;
 
 	private:
 		/**
