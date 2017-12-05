@@ -108,5 +108,4 @@ add_subdirectory(apps/kalvertoren/module)
 
 # Exe dependencies
 add_dependencies(rendertest mod_naprender)
-# Extra deps for napkin in order to let them automatically build with napkin
 add_dependencies(napkin skeleton tommy)

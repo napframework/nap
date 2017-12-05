@@ -11,7 +11,6 @@
 // External Includes
 #include <app.h>
 #include <sceneservice.h>
-#include <videoservice.h>
 #include <renderservice.h>
 #include <inputservice.h>
 #include <nap/logger.h>
@@ -22,7 +21,6 @@
 #include <nap/windowresource.h>
 #include <inputrouter.h>
 #include <entity.h>
-#include <video.h>
 #include <artnetcontroller.h>
 
 namespace nap
@@ -78,7 +76,6 @@ namespace nap
 		nap::RenderService*								renderService = nullptr;
 		nap::ResourceManager*							resourceManager = nullptr;
 		nap::SceneService*								sceneService = nullptr;
-		nap::VideoService*								videoService = nullptr;
 		nap::InputService*								inputService = nullptr;
 
 		nap::ObjectPtr<nap::RenderWindow>				renderWindow;

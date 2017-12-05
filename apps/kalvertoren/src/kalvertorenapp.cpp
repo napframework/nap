@@ -29,7 +29,6 @@ namespace nap
 		renderService = getCore().getService<nap::RenderService>();
 		inputService =  getCore().getService<nap::InputService>();
 		sceneService =  getCore().getService<nap::SceneService>();
-		videoService =  getCore().getService<nap::VideoService>();
 
 		// Get resource manager and load data
 		resourceManager = getCore().getResourceManager();
