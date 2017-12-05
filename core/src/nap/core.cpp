@@ -64,6 +64,7 @@ namespace nap
 		return true;
 	}
 
+
 	bool Core::loadModules(utility::ErrorState& error)
 	{
 		// Load all modules
@@ -97,6 +98,7 @@ namespace nap
 		});
 		return true;
 	}
+
 
 	bool Core::initializeServices(utility::ErrorState& errorState)
 	{
