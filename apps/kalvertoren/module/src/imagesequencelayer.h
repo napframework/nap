@@ -15,19 +15,24 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 *	@return the texture associated with this layer
+		 *	@return The pixmap associated with this layer at the specified index
 		 */
-		nap::BaseTexture2D&			getTexture(int index) { return *mImages[index]; }
+		nap::Pixmap& getPixmap(int index) { return *mPixmaps[index]; }
 
 		/**
-		 *	@return const texture associated with this layer
+		 *	@return Const pixmap associated with this layer at the specified index
 		 */
-		const nap::BaseTexture2D&	getTexture(int index) const { return *mImages[index]; }
+		const nap::Pixmap&	getPixmap(int index) const { return *mPixmaps[index]; }
 
 		/**
-		* @return number of images in this sequence
+		* @return Number of pixmaps in this sequence
 		*/
-		int getNumImages() const { return (int)mImages.size(); }
+		int getNumPixmaps() const { return (int)mPixmaps.size(); }
+
+		/**
+		* @return The settings that should be used to create the texture used to display the images in this sequence
+		*/
+		const opengl::Texture2DSettings& getTextureSettings() const { return mTextureSettings; }
 
 	protected:
 		/**
@@ -36,11 +41,12 @@ namespace nap
 		virtual std::unique_ptr<LayerInstance> createInstance() override;
 
 	public:
-		std::string			mBaseFilename;				///< The base filename used to find all images for this sequence. Must contain %[0#]d format specifier
-		int					mFPS = 30;					///< Playback framerate for this sequence
+		std::string								mBaseFilename;		///< The base filename used to find all images for this sequence. Must contain %[0#]d format specifier
+		int										mFPS = 30;			///< Playback framerate for this sequence
 
 	private:
-		std::vector<std::unique_ptr<Image>>	mImages;	///< The images created from the files found on disk
+		std::vector<std::unique_ptr<Pixmap>>	mPixmaps;			///< The images created from the files found on disk
+		opengl::Texture2DSettings				mTextureSettings;	///< The texture settings used create the texture. Inferred from the pixmaps in this sequence
 	};
 
 	/**
@@ -57,19 +63,20 @@ namespace nap
 		virtual void update(double deltaTime) override;
 
 		/**
-		 *	@return the texture associated with this layer
+		 *	@return The texture associated with this layer
 		 */
-		virtual nap::BaseTexture2D&			getTexture() override { return mLayer->getTexture(mCurrentIndex); }
+		virtual nap::BaseTexture2D&			getTexture() override { return *mCurrentFrameTexture; }
 
 		/**
-		 *	@return const texture associated with this layer
+		 *	@return Const texture associated with this layer
 		 */
-		virtual const nap::BaseTexture2D&	getTexture() const override { return mLayer->getTexture(mCurrentIndex); }
+		virtual const nap::BaseTexture2D&	getTexture() const override { return *mCurrentFrameTexture; }
 
 
 	private:
-		ImageSequenceLayer* mLayer = nullptr;			///< Back pointer to the Layer resource
-		double				mCurrentTime = 0.0;			///< Current playback time
-		int					mCurrentIndex = 0;			///< Current playing frame index
+		ImageSequenceLayer*				mLayer = nullptr;			///< Back pointer to the Layer resource
+		double							mCurrentTime = 0.0;			///< Current playback time
+		int								mCurrentFrameIndex = -1;	///< Current playing frame index
+		std::unique_ptr<BaseTexture2D>	mCurrentFrameTexture;		///< Current GPU texture (updated whenever the frame changes)
 	};
 }

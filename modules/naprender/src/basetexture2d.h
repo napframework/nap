@@ -63,7 +63,7 @@ namespace nap
 		 * Initializes opengl texture using the associated parameters and @settings.
 		 * @param settings the texture specific settings associated with this texture
 		 */
-		void init(opengl::Texture2DSettings& settings);
+		void init(const opengl::Texture2DSettings& settings);
 
 		/**
 		 * @return OpenGL Texture2D.

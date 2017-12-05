@@ -200,11 +200,11 @@ namespace nap
 		const opengl::Texture2DSettings& settings = texture.getTexture().getSettings();
 
 		// Get bitmap data type
-		opengl::BitmapDataType  bitmap_type = opengl::getBitmapType(settings.type);
+		opengl::BitmapDataType  bitmap_type = opengl::getBitmapType(settings.mType);
 		assert(bitmap_type != opengl::BitmapDataType::UNKNOWN);
 
 		// Get bitmap color type
-		opengl::BitmapColorType color_type = opengl::getColorType(settings.format);
+		opengl::BitmapColorType color_type = opengl::getColorType(settings.mFormat);
 		assert(color_type != opengl::BitmapColorType::UNKNOWN);
 
 		// Apply new settings
