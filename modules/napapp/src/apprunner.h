@@ -132,6 +132,16 @@ namespace nap
 			error.fail("unable to initialize engine");
 			return false;
 		}
+		// Initialize the various services
+		if (!mCore.initializeServices(error))
+		{
+			mCore.shutdown();
+			error.fail("Failed to initialize services");
+			return false;
+		}
+
+		if (!mCore.initializePython(error))
+			return false;
 
 		// Initialize application
 		if(!error.check(app.init(error), "unable to initialize application"))
