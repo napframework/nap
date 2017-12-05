@@ -41,17 +41,17 @@ namespace nap
 		/**
 		 *	Update the kalvertoren app's resources
 		 */
-		virtual void update(double deltaTime);
+		virtual void update(double deltaTime) override;
 
 		/**
 		 *	Render stuff to screen
 		 */
-		virtual void render();
+		virtual void render() override;
 
 		/**
 		 *	Shut down the application
 		 */
-		virtual void shutdown();
+		virtual void shutdown() override;
 
 		/**
 		 *	Register input events

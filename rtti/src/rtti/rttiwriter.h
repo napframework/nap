@@ -3,6 +3,7 @@
 #include "rtti/typeinfo.h"
 #include <vector>
 #include "utility/dllexport.h"
+#include "rttiutilities.h"
 
 namespace nap
 {
@@ -14,8 +15,6 @@ namespace nap
 	namespace rtti
 	{
 		class RTTIObject;
-		using ObjectList = std::vector<RTTIObject*>;
-		using ObjectSet = std::unordered_set<RTTIObject*>;
 
 		/**
 		 * This is the interface used by serializeObjects to serialize RTTI objects.

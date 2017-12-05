@@ -1,6 +1,7 @@
 #pragma once
 
 #include <core/audionode.h>
+#include <utility/linearramper.h>
 
 namespace nap
 {
@@ -66,12 +67,12 @@ namespace nap
             /**
              * Set the frequency in Hz
              */
-            void setFrequency(SampleValue frequency);
+            void setFrequency(ControllerValue frequency, TimeValue rampTime = 0);
             
             /**
              * Set the amplitude of the generated wave
              */
-            void setAmplitude(ControllerValue amplitude);
+            void setAmplitude(ControllerValue amplitude, TimeValue rampTime = 0);
             
             /**
              * Sets the phase of the oscillator as a value between 0 and 1
@@ -96,11 +97,12 @@ namespace nap
 
             WaveTable& mWave;
 
-            ControllerValue mFrequency = 0;
-            ControllerValue mAmplitude = 1.f;
+            ControllerValue mFrequency = { 0 };
+            ControllerValue mAmplitude = { 1.f };
+            LinearRamper<ControllerValue> mFrequencyRamper = { mFrequency };
+            LinearRamper<ControllerValue> mAmplitudeRamper = { mAmplitude };
             ControllerValue mStep = 0;
             ControllerValue mPhase = 0;
-            ControllerValue mPhaseInc = 0;
             ControllerValue mPhaseOffset = 0;
         };
     }
