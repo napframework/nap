@@ -1,33 +1,82 @@
 #pragma once
 
-#include "ui_mainwindow.h"
-#include <QMainWindow>
-#include <QtCore/QFileSystemWatcher>
-#include <QtWidgets/QDockWidget>
+#include "actions.h"
+#include "appcontext.h"
+#include "generic/basewindow.h"
+#include "panels/apprunnerpanel.h"
+#include "panels/hierarchypanel.h"
+#include "panels/historypanel.h"
+#include "panels/inspectorpanel.h"
+#include "panels/logpanel.h"
+#include "panels/resourcepanel.h"
+#include "themeselectionmenu.h"
+#include <panels/scenepanel.h>
 
-class MainWindow : public QMainWindow
+namespace napkin
 {
-	Q_OBJECT
-public:
-	MainWindow(QWidget* parent = 0);
-	~MainWindow();
-	void restoreGUI();
-	void closeEvent(QCloseEvent* event) override;
+	/**
+	 * The main application window. It will spawn and keep all the application's panels.
+	 * Our application's data is managed by AppContext.
+	 */
+	class MainWindow : public BaseWindow
+	{
+		Q_OBJECT
+	public:
+		MainWindow();
+		virtual ~MainWindow();
 
-protected:
-    void showEvent(QShowEvent* event) override;
+	protected:
+		/**
+		 * Override...
+		 */
+		void showEvent(QShowEvent* event) override;
 
-private slots:
-    void onSceneChanged();
+	private:
+		/**
+		 * BInd signals
+		 */
+		void bindSignals();
 
-private:
-    void initPanels();
-    void initMenu();
-    void loadStyleSheet();
-    void updateWindowTitle();
-    QMenu* getOrCreateMenu(QString name);
-	void initPanel(QDockWidget* panel, Qt::DockWidgetArea area, const QIcon* icon = nullptr);
+		/**
+		 * Add all the docks/panels
+		 */
+		void addDocks();
 
-	Ui::MainWindowClass ui;
-	QFileSystemWatcher mResourceWatcher;
+		/**
+		 * Add the menu
+		 */
+		void addMenu();
+
+		/**
+		 * Makes the window title up to date
+		 */
+		void updateWindowTitle();
+
+		/**
+		 * Called when a new file has been created.
+		 */
+		void onNewFile();
+
+		/**
+		 * Called when a file has been opened
+		 * @param filename The file that has been opened
+		 */
+		void onFileOpened(const QString& filename);
+
+		/**
+		 * Called when a file has been saved
+		 * @param filename The file that has been saved
+		 */
+		void onFileSaved(const QString& filename);
+
+	private:
+		ResourcePanel mResourcePanel;	// ResourcePanel
+		HierarchyPanel mHierarchyPanel; // HierarchyPanel
+		InspectorPanel mInspectorPanel; // InspectorPanel
+		HistoryPanel mHistoryPanel;		// HistoryPanel
+		LogPanel mLogPanel;				// LogPanel
+		AppRunnerPanel mAppRunnerPanel; // AppRunnerPanel
+		ThemeSelectionMenu mThemeMenu;  // ThemeSelectionMenu
+		ScenePanel mScenePanel;			// ScenePanel
+	};
 };
