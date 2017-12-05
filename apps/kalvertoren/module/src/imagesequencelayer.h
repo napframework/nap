@@ -24,6 +24,11 @@ namespace nap
 		 */
 		const nap::BaseTexture2D&	getTexture(int index) const { return *mImages[index]; }
 
+		/**
+		* @return number of images in this sequence
+		*/
+		int getNumImages() const { return (int)mImages.size(); }
+
 	protected:
 		/**
 		 *	@return Instance object for this ImageSequenceLayer
@@ -31,8 +36,11 @@ namespace nap
 		virtual std::unique_ptr<LayerInstance> createInstance() override;
 
 	public:
-		std::vector<ObjectPtr<Image>>	mImages;		///< Images in this sequence
-		int								mFPS = 30;		///< Playback framerate for this sequence
+		std::string			mBaseFilename;				///< The base filename used to find all images for this sequence. Must contain %[0#]d format specifier
+		int					mFPS = 30;					///< Playback framerate for this sequence
+
+	private:
+		std::vector<std::unique_ptr<Image>>	mImages;	///< The images created from the files found on disk
 	};
 
 	/**

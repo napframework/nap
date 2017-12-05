@@ -247,21 +247,7 @@
 			"Type" : "nap::ImageSequenceLayer",
 			"mID" : "HelloLayer4",
 			"FPS" : 6,
-			"Images" : 
-			[
-				{
-					"Type" : "nap::Image",
-					"ImagePath" : "data/kalvertoren/compositions/hello/layer4/1.png"
-				},
-				{
-					"Type" : "nap::Image",
-					"ImagePath" : "data/kalvertoren/compositions/hello/layer4/2.png"
-				},
-				{
-					"Type" : "nap::Image",
-					"ImagePath" : "data/kalvertoren/compositions/hello/layer4/3.png"
-				}
-			]
+			"BaseFilename" : "data/kalvertoren/compositions/hello/layer4/%d.png"
 		},
 
 		{

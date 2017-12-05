@@ -16,7 +16,10 @@ namespace nap
 {
 
 	// Constructor
-	Image::Image(const std::string& imgPath) { }
+	Image::Image(const std::string& imgPath) :
+		mImagePath(imgPath)
+	{
+	}
 
 
 	bool Image::init(utility::ErrorState& errorState)
