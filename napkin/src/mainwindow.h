@@ -70,7 +70,7 @@ namespace napkin
 		void onFileSaved(const QString& filename);
 
 	private:
-		ResourcePanel mOutlinePanel;	// ResourcePanel
+		ResourcePanel mResourcePanel;	// ResourcePanel
 		HierarchyPanel mHierarchyPanel; // HierarchyPanel
 		InspectorPanel mInspectorPanel; // InspectorPanel
 		HistoryPanel mHistoryPanel;		// HistoryPanel
