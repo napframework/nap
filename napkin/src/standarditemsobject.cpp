@@ -62,7 +62,10 @@ nap::Component& napkin::ComponentItem::getComponent()
 napkin::SceneItem::SceneItem(nap::Scene& scene) : mScene(scene)
 {
 	setText(QString::fromStdString(scene.mID));
-	appendRow(new EntityInstanceItem(scene.getRootEntity()));
+    for (auto entity : scene.getEntityResources())
+    {
+        appendRow(new EntityItem(*entity.mEntity));
+    }
 }
 
 napkin::EntityInstanceItem::EntityInstanceItem(nap::EntityInstance& e) : mEntityInstance(e)
