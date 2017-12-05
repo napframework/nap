@@ -48,10 +48,25 @@ namespace nap
 		virtual ~Core();
 
 		/**
-		 * Loads all modules in to the core environment and initializes them in the right order
-		 * @error contains the error code when initialization fails
+		 * Loads all modules in to the core environment and creates all the associated services
+		 * @param error contains the error code when initialization fails
+		 * @return if initialization succeeded
 		 */
 		bool initializeEngine(utility::ErrorState& error);
+		
+		/**
+		* Initializes all registered services
+		* Initialization occurs based on service dependencies, this means that if service B depends on Service A,
+		* Service A is initialized before service B etc.
+		* @param error contains the error message when initialization fails
+		* @return if initialization failed or succeeded
+		*/
+		bool initializeServices(utility::ErrorState& errorState);
+
+		/**
+		 * Initialize python interpreter so we can have components running python scripts
+		 */
+		bool initializePython(utility::ErrorState& error);
 
 		/**
 		 * Starts core, call this after initializing the engine, just before starting
@@ -114,20 +129,6 @@ namespace nap
 		 */
 		template <typename T>
 		T* getService(rtti::ETypeCheck typeCheck = rtti::ETypeCheck::EXACT_MATCH);
-
-		/**
-		* Initializes all registered services
-		* Initialization occurs based on service dependencies, this means that if service B depends on Service A,
-		* Service A is initialized before service B etc.
-		* @param error contains the error message when initialization fails
-		* @return if initialization failed or succeeded
-		*/
-		bool initializeServices(utility::ErrorState& errorState);
-
-		/**
-		 * Initialize python interpreter so we can have components running python scripts
-		 */
-		bool initializePython(utility::ErrorState& error);
 
 	private:
 		/**
