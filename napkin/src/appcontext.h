@@ -8,9 +8,11 @@
 #include <QApplication>
 #include <QObject>
 #include <QUndoCommand>
+#include <generic/resourcefactory.h>
 #include <rtti/rttideserializeresult.h>
 #include <rtti/rttiutilities.h>
 #include <vector>
+
 namespace napkin
 {
 
@@ -206,6 +208,11 @@ namespace napkin
 		// To be invoked after the application has shown
 		void restoreUI();
 
+		/**
+		 * The resource factory can be used to grab icons per object type for example
+		 */
+		const ResourceFactory& getResourceFactory() const { return mResourceFactory; }
+
 	Q_SIGNALS:
 		/**
 		 * Qt Signal
@@ -274,5 +281,6 @@ namespace napkin
 		QString mCurrentFilename;			 // The current filename
 		nap::Core mCore;					 // The nap::Core
 		ThemeManager mThemeManager;			 // The theme manager
+		ResourceFactory mResourceFactory;	// Le resource factory
 	};
 };

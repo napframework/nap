@@ -2,6 +2,7 @@
 #include <appcontext.h>
 #include <generic/utility.h>
 #include <sceneservice.h>
+#include <generic/resourcefactory.h>
 
 napkin::GroupItem::GroupItem(const QString& name) : QStandardItem(name)
 {
@@ -10,6 +11,8 @@ napkin::GroupItem::GroupItem(const QString& name) : QStandardItem(name)
 napkin::ObjectItem::ObjectItem(nap::rtti::RTTIObject& rttiObject) : mObject(rttiObject)
 {
 	refresh();
+
+    setIcon(AppContext::get().getResourceFactory().iconFor(rttiObject));
 }
 
 void napkin::ObjectItem::refresh()

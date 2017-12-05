@@ -1,5 +1,7 @@
 <RCC>
     <qresource>
         <file>icons/link.svg</file>
+        <file>icons/folder.png</file>
+        <file>icons/bullet_white.png</file>
     </qresource>
 </RCC>
