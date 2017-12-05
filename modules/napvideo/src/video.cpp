@@ -227,7 +227,7 @@ namespace nap
 		{
 			AVPacket* packet = mPacketQueue.front();
 			mPacketQueue.pop();
-			av_packet_unref(packet);
+			av_free_packet(packet);
 		}
 	}
 
@@ -253,7 +253,7 @@ namespace nap
 		// Helper to free packet when it goes out of scope
 		struct PacketWrapper
 		{
-			~PacketWrapper() { av_packet_unref(mPacket); }
+			~PacketWrapper() { av_free_packet(mPacket); }
 			AVPacket* mPacket = av_packet_alloc();
 		};
 
@@ -375,7 +375,7 @@ namespace nap
 				int result = avcodec_decode_video2(mCodecContext, &frame, &frame_finished, packet);
 
 				// Free the packet that was allocated by av_read_frame in the IO thread
-				av_packet_unref(packet);
+				av_free_packet(packet);
 
 				if (result < 0)
 				{
