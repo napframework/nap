@@ -50,7 +50,7 @@ namespace nap
 			rtti::TypeInfo getTypeToCreate() const override		{ return RTTI_OF(Object); }
 
 			/**
-			* @return Creates the object with the
+			* @return Creates the object with the (...yes?)
 			*/
 			virtual rtti::RTTIObject* create() override			{ return new Object(mArgument); }
 
