@@ -104,7 +104,7 @@ namespace nap
 
 		/**
 		 * Searches for a service based on type name, searches for an exact match.
-		 * @return an already registered service based on it's type name, nullptr if not found
+		 * @return an already registered service based on its type name, nullptr if not found
 		 * @param type the type of the service as a string
 		 */
 		Service* getService(const std::string& type);
@@ -114,6 +114,20 @@ namespace nap
 		 */
 		template <typename T>
 		T* getService(rtti::ETypeCheck typeCheck = rtti::ETypeCheck::EXACT_MATCH);
+
+		/**
+		* Initializes all registered services
+		* Initialization occurs based on service dependencies, this means that if service B depends on Service A,
+		* Service A is initialized before service B etc.
+		* @param error contains the error message when initialization fails
+		* @return if initialization failed or succeeded
+		*/
+		bool initializeServices(utility::ErrorState& errorState);
+
+		/**
+		 * Initialize python interpreter so we can have components running python scripts
+		 */
+		bool initializePython(utility::ErrorState& error);
 
 	private:
 		/**
@@ -136,13 +150,9 @@ namespace nap
 						utility::ErrorState& errorState);
 
 		/**
-		* Initializes all registered services
-		* Initialization occurs based on service dependencies, this means that if service B depends on Service A,
-		* Service A is initialized before service B etc.
-		* @param error contains the error message when initialization fails
-		* @return if initialization failed or succeeded
-		*/
-		bool initializeServices(utility::ErrorState& errorState);
+		 * Load all available modules
+		 */
+		bool loadModules(utility::ErrorState& error);
 
 		/**
 		* Occurs when a file has been successfully loaded by the resource manager
