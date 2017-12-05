@@ -94,7 +94,7 @@ void napkin::CompoundPropertyItem::populateChildren()
 	for (auto childprop : compound.get_type().get_properties())
 	{
 		auto value = childprop.get_value(compound);
-		std::__cxx11::string name = childprop.get_name().data();
+		std::string name = childprop.get_name().data();
 		QString qName = QString::fromStdString(name);
 
 		nap::rtti::RTTIPath path = mPath;
@@ -144,7 +144,7 @@ napkin::ArrayPropertyItem::ArrayPropertyItem(const QString& name, nap::rtti::RTT
 											 rttr::variant_array_view array)
 	: BaseRTTIPathItem(name, object, path), mProperty(prop), mArray(array)
 {
-	std::__cxx11::string pathStr = path.toString();
+	std::string pathStr = path.toString();
 	populateChildren();
 	setForeground(napkin::getSoftForeground());
 }
@@ -234,7 +234,7 @@ void napkin::EmbeddedPointerItem::populateChildren()
 	for (auto childprop : object->get_type().get_properties())
 	{
 		auto childValue = childprop.get_value(object);
-		std::__cxx11::string name = childprop.get_name().data();
+		std::string name = childprop.get_name().data();
 		QString qName = QString::fromStdString(name);
 
 		nap::rtti::RTTIPath path;
