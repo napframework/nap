@@ -3,6 +3,7 @@
 // External Includes
 #include <entity.h>
 #include <mathutils.h>
+#include <nap/logger.h>
 
 // nap::colorpalettecomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::ColorPaletteComponent)
@@ -74,9 +75,25 @@ namespace nap
 
 	const nap::RGBColor8& ColorPaletteComponentInstance::getPaletteColor(const IndexMap::IndexColor& indexColor) const
 	{
-		auto it = mIndexToPaletteMap.lower_bound(indexColor);
-		assert(it != mIndexToPaletteMap.end());
-		return it->second;
+		// Perfom a direct lookup (fastest)
+		auto it = mIndexToPaletteMap.find(indexColor);
+		if (it != mIndexToPaletteMap.end())
+			return it->second;
+
+		// If the color can't be found we need to look for the upper and lower bounds of the wrapping colors
+		auto upper_it = mIndexToPaletteMap.lower_bound(indexColor);
+		assert(upper_it != mIndexToPaletteMap.end());
+
+		// Get lower bound
+		auto lower_it = upper_it == mIndexToPaletteMap.begin() ? mIndexToPaletteMap.end() : upper_it;
+		--lower_it;
+
+		// Get distance from index to both bounds
+		float d_lower = lower_it->second.getDistance(indexColor);
+		float d_highr = upper_it->second.getDistance(indexColor);
+
+		// Select closest
+		return d_lower < d_highr ? lower_it->second : upper_it->second;
 	}
 
 

@@ -81,7 +81,7 @@ namespace nap
 	
 	const nap::RGBAColor8& LedColorPalette::getLEDColor(const RGBColor8& paletteColor) const
 	{
-		auto it = mColorMap.lower_bound(paletteColor);
+		auto it = mColorMap.find(paletteColor);
 		assert(it != mColorMap.end());
 		return it->second;
 	}

@@ -160,6 +160,7 @@ namespace nap
 	}
 
 
+
 	void KalvertorenApp::positionDebugViews()
 	{
 		RenderableMeshComponentInstance& render_plane = debugDisplayEntity->getComponent<RenderableMeshComponentInstance>();

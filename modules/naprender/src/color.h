@@ -210,6 +210,14 @@ namespace nap
 		void setData(T* data);
 
 		/**
+		 * Computes the distance between this and another color in Euclidean space
+		 * The result is not squared
+		 * @param other the color to compare against
+		 * @return the non squared distance between this and another color
+		 */
+		float getDistance(const Color<T, CHANNELS>& other) const;
+
+		/**
 		 * @return if two color values are similar.
 		 * Performs a value comparison when the color is not a pointer
 		 * Otherwise a pointer comparison
@@ -544,6 +552,18 @@ namespace nap
 	void nap::Color<T, CHANNELS>::setData(T* data)
 	{
 		memcpy(mValues.data(), data, sizeof(T) * CHANNELS);
+	}
+
+	template<typename T, int CHANNELS>
+	float nap::Color<T, CHANNELS>::getDistance(const Color<T, CHANNELS>& other) const
+	{
+		float dist(0);
+		for (int i = 0; i < CHANNELS; i++)
+		{
+			float diff = (float)(this->mValues[i]) - (float)(other.mValues[i]);
+			dist += pow(diff,2);
+		}
+		return dist;
 	}
 }
 
