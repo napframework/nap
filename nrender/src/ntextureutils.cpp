@@ -145,7 +145,7 @@ namespace opengl
 
 	
 	// Helper function to check bitmap validity
-	bool checkBitmap(const BitmapBase& bitmap)
+	bool checkBitmap(const Bitmap& bitmap)
 	{
 		if (!bitmap.hasValidSettings())
 		{
@@ -163,7 +163,7 @@ namespace opengl
 
 
 	// Populates a Texture2D object with settings matching the bitmap
-	bool getSettingsFromBitmap(const BitmapBase& bitmap, bool compress, Texture2DSettings& settings, nap::utility::ErrorState& errorState)
+	bool getSettingsFromBitmap(const Bitmap& bitmap, bool compress, Texture2DSettings& settings, nap::utility::ErrorState& errorState)
 	{
 		assert(checkBitmap(bitmap));
 
