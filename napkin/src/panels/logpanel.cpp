@@ -5,7 +5,7 @@ using namespace napkin;
 LogModel::LogModel() : QStandardItemModel()
 {
 	// Register with nap::Logger, call the Qt signal in order to let the signal arrive on the Qt UI thread
-	nap::Logger::instance().log.connect([&](nap::LogMessage msg) { napLogged(msg); });
+	nap::Logger::instance().log.connect(mLogHandler);
 	connect(this, &LogModel::napLogged, this, &LogModel::onLog);
 
 	setHorizontalHeaderLabels({"Level", "Message"});
