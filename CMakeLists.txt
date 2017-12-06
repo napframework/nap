@@ -105,7 +105,3 @@ add_subdirectory(modules/napsandbox)
 
 # app modules
 add_subdirectory(apps/kalvertoren/module)
-
-# Exe dependencies
-add_dependencies(rendertest mod_naprender)
-add_dependencies(napkin skeleton tommy)
