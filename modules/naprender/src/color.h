@@ -478,7 +478,7 @@ namespace nap
 	template<typename T, int CHANNELS>
 	bool nap::Color<T, CHANNELS>::operator==(const Color<T, CHANNELS>& rhs) const
 	{
-		for (auto i = 0; i < mValues.size(); i++)
+		for (auto i = 0; i < CHANNELS; i++)
 		{
 			if (mValues[i] != rhs.mValues[i])
 				return false;
