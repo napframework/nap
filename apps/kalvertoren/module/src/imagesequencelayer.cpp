@@ -40,7 +40,7 @@ namespace nap
 			mPixmaps.emplace_back(std::move(pixmap));
 		}
 
-		if (!errorState.check(!mPixmaps.empty(), "Image sequence %s has no images", mID))
+		if (!errorState.check(!mPixmaps.empty(), "Image sequence %s has no images", mID.c_str()))
 			return false;
 
 		return true;
