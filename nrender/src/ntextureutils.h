@@ -53,7 +53,7 @@ namespace opengl
 	 * @param texture: the texture to populate based on @bitmap
 	 * @param compress: if the texture should be compressed when uploaded to the GPU  
 	 */
-	bool		getSettingsFromBitmap(const BitmapBase& bitmap, bool compress, Texture2DSettings& settings, nap::utility::ErrorState& errorState);
+	bool		getSettingsFromBitmap(const Bitmap& bitmap, bool compress, Texture2DSettings& settings, nap::utility::ErrorState& errorState);
 
 	/**
 	 * isCompressed

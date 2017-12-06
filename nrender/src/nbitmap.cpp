@@ -67,48 +67,37 @@ namespace opengl
 
 	//////////////////////////////////////////////////////////////////////////
 
-	// BitmapBase copy constructor
-	BitmapBase::BitmapBase(const BitmapBase& other)
+	// Copy Constructor
+	Bitmap::Bitmap(const Bitmap& other)
 	{
-		// Copy over settings and data ptr
-		this->setSettings(other.getSettings());
-		this->setData(other.getData());
+		setSettings(other.getSettings());
+		copyData(other.getData());
 	}
 
 
-	// Copy assignment operator
-	BitmapBase& BitmapBase::operator=(const BitmapBase& other)
+	// Copy operator
+	Bitmap& Bitmap::operator=(const Bitmap& other)
 	{
-		// Copy over settings and data ptr
-		this->setSettings(other.getSettings());
-		this->setData(other.getData());
+		setSettings(other.getSettings());
+		copyData(other.getData());
 		return *this;
 	}
 
-
-	// Sets data associated with this bitmap, object does not own it!
-	void BitmapBase::setData(const BitmapSettings& settings, void* data)
-	{
-		mSettings = settings;
-		mData = data;
-	}
-
-
 	// Returns the total number of bytes associated with this image
-	size_t BitmapBase::getSize()
+	size_t Bitmap::getSize()
 	{
 		return mSettings.mWidth * mSettings.mHeight * getSizeOf(mSettings.mDataType) * getNumChannels(mSettings.mColorType);
 	}
 
 
 	// Returns the total length of the pixel array, not scaled by type size
-	size_t BitmapBase::getLength()
+	size_t Bitmap::getLength()
 	{
 		return mSettings.mWidth * mSettings.mHeight * getNumChannels(mSettings.mColorType);
 	}
 
 
-	void* BitmapBase::getPixelData(unsigned int x, unsigned int y) const
+	void* Bitmap::getPixelData(unsigned int x, unsigned int y) const
 	{
 		if (!hasData())
 			return nullptr;
@@ -131,7 +120,7 @@ namespace opengl
 	}
 
 
-	unsigned int BitmapBase::getNumberOfChannels() const
+	unsigned int Bitmap::getNumberOfChannels() const
 	{
 		return static_cast<unsigned int>(getNumChannels(mSettings.mColorType));
 	}
@@ -146,51 +135,6 @@ namespace opengl
 	}
 
 
-	//////////////////////////////////////////////////////////////////////////
-	// Bitmap
-	//////////////////////////////////////////////////////////////////////////
-
-	// Bitmap Constructor
-	Bitmap::Bitmap()
-	{}
-
-
-	// Copy Constructor
-	Bitmap::Bitmap(const Bitmap& other) : BitmapBase(other)
-	{
-		// Make sure data is not available
-		// Otherwise copy will try to clear it
-		BitmapBase::clear();
-
-		// Copy all data from other
-		if(other.hasData())
-			copyData(other.getData());
-	}
-
-
-	// Copy operator
-	Bitmap& Bitmap::operator=(const Bitmap& other)
-	{
-		// Copy base
-		BitmapBase::operator=(other);
-
-		// Clear existing data
-		BitmapBase::clear();
-
-		// Copy data
-		if(other.hasData())
-			copyData(other.getData());
-		return *this;
-	}
-
-
-	// Bitmap Destructor
-	Bitmap::~Bitmap()
-	{
-		clear();
-	}
-
-
 	// Allocates a block of memory to be associated with this bitmap
 	bool Bitmap::allocateMemory()
 	{
@@ -202,14 +146,14 @@ namespace opengl
 		}
 
 		// Clear existing allocated memory
-		if (BitmapBase::hasData())
+		if (hasData())
 		{
 			printMessage(MessageType::WARNING, "bitmap already has memory allocated, clearing...");
 			clear();
 		}
 
 		// Allocate new memory
-		mData = malloc(BitmapBase::getSize());
+		mData = malloc(getSize());
 		return true;
 	}
 
@@ -241,7 +185,7 @@ namespace opengl
 
 		// Free data block and call base
 		free(mData);
-		BitmapBase::clear();
+		mData = nullptr;
 	}
 
 
@@ -256,14 +200,14 @@ namespace opengl
 		}
 
 		// Clear associated data
-		if (BitmapBase::hasData())
+		if (hasData())
 			clear();
 
 		// Allocate memory
 		allocateMemory();
 
 		// Copy
-		memcpy(mData, source, BitmapBase::getSize());
+		memcpy(mData, source, Bitmap::getSize());
 		return true;
 	}
 
@@ -282,7 +226,7 @@ namespace opengl
 		mSettings = new_settings;
 
 		// Clear associated data
-		if (BitmapBase::hasData())
+		if (hasData())
 			clear();
 
 		// Allocate memory
@@ -295,7 +239,7 @@ namespace opengl
 		// If the dest & source pitches are the same, we can do a straight memcpy (most common/efficient case)
 		if (target_pitch == sourcePitch)
 		{
-			memcpy(mData, source, BitmapBase::getSize());
+			memcpy(mData, source, getSize());
 			return true;
 		}
 
