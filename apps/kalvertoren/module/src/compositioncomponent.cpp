@@ -48,16 +48,41 @@ namespace nap
 
 	void CompositionComponentInstance::update(double deltaTime)
 	{
+		// Select a new composition
+		if (mSwitch)
+		{
+			select(math::random(0, mCompositions.size() - 1));
+			mSwitch = false;
+		}
+
+		// Update the current one
 		if (mCompositionInstance != nullptr)
+		{
 			mCompositionInstance->update(deltaTime);
+		}
 	}
 
 
 	void CompositionComponentInstance::select(int index)
 	{
-		int sindex = math::clamp<int>(index, 0, mCompositions.size()-1);
+		int sindex = math::clamp<int>(index, 0, mCompositions.size() - 1);
 		mSelection = mCompositions[sindex];
 
+		// Disconnect from a composition if not null
+		if (mCompositionInstance != nullptr)
+			mCompositionInstance->finished.disconnect(mCompositionFinishedSlot);
+
+		// Create new composition (destructing old one
 		mCompositionInstance = std::make_unique<CompositionInstance>(*mSelection);
+
+		// Connect to finished signal
+		mCompositionInstance->finished.connect(mCompositionFinishedSlot);
 	}
+
+
+	void CompositionComponentInstance::compositionFinised(CompositionInstance& composition)
+	{
+		mSwitch = true;
+	}
+
 }
