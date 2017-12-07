@@ -20,19 +20,19 @@ void loadAndSaveFile(const std::string& filename)
 	ErrorState err;
 
 	nap::Core core;
-	nap::Logger::info("Initializing Engine");
+
 	if (!core.initializeEngine(err)) {
-		FAIL(err.toString());
+		FAIL("Failed to initialize engine: " + err.toString());
 	}
 	auto& factory = core.getResourceManager()->getFactory();
 	nap::rtti::RTTIDeserializeResult result;
 	if (!readJSONFile(filename, factory, result, err)) {
-		FAIL(err.toString());
+		FAIL("Failed to read JSON file '" + filename + "': " + err.toString());
 	}
 
 
 	if (!DefaultLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, err)) {
-		FAIL("Failed to resolve links");
+		FAIL("Failed to resolve links: " + err.toString());
 	}
 
 	// Save File
