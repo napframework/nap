@@ -376,7 +376,8 @@
 				"Background1",
 				"Shape1",
 				"Shape5"
-			] 
+			],
+			"Length" : 2.0
 		},
 
 		{
@@ -387,7 +388,8 @@
 				"Background2",
 				"Shape2",
 				"Shape3"
-			] 
+			],
+			"Length" : 2.5
 		},
 
 		{
@@ -397,7 +399,8 @@
 			[
 				"Background3",
 				"Shape3"
-			] 
+			],
+			"Length" : 1.0
 		},
 
 		{
@@ -407,7 +410,8 @@
 			[
 				"Background4",
 				"Shape4"
-			] 
+			],
+			"Length" : 3.0
 		},
 
 		{
@@ -417,7 +421,8 @@
 			[
 				"Background5",
 				"Shape5"
-			] 
+			],
+			"Length" : 1.5
 		},
 
 		{
@@ -436,7 +441,8 @@
 			[
 				"Background7",
 				"TestSequence"
-			] 
+			],
+			"Length" : 2.0
 		},
 
 		{
@@ -446,7 +452,8 @@
 			[
 				"Background8",
 				"Shape6"
-			] 
+			],
+			"Length" : 0.5
 		},
 
 		{
