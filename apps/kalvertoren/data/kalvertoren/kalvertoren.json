@@ -246,7 +246,7 @@
 		{
 			"Type" : "nap::ImageSequenceLayer",
 			"mID" : "HelloLayer4",
-			"FPS" : 6,
+			"FPS" : 1,
 			"BaseFilename" : "data/kalvertoren/compositions/hello/layer4/%d.png"
 		},
 
@@ -293,8 +293,8 @@
 			"Usage" : "DynamicRead",
 			"Parameters" : 
 			{
-				"MinFilter" : "Nearest",
-				"MaxFilter" : "Nearest",
+				"MinFilter" : "Linear",
+				"MaxFilter" : "Linear",
 				"WrapVertical" : "Repeat",
 				"WrapHorizontal" : "Repeat",
 				"MaxLodLevel" : 0
@@ -319,8 +319,8 @@
 			"Usage" : "DynamicRead",
 			"Parameters" : 
 			{
-				"MinFilter" : "Nearest",
-				"MaxFilter" : "Nearest",
+				"MinFilter" : "Linear",
+				"MaxFilter" : "Linear",
 				"WrapVertical" : "Repeat",
 				"WrapHorizontal" : "Repeat",
 				"MaxLodLevel" : 0
@@ -367,7 +367,37 @@
 
 		{
 			"Type" : "nap::PlaneMesh",
-			"mID": "PlaneMesh"
+			"mID": "PlaneMesh",
+			"Size" :
+			{
+				"x" : 1024,
+				"y" : 1024
+			},
+			"Position" :
+			{
+				"x" : 512,
+				"y" : 512
+			}
+		},
+
+		{
+			"Type" : "nap::PlaneMesh",
+			"mID": "CompositionDebugMesh",
+			"Size" :
+			{
+				"x" : 240,
+				"y" : 240
+			}
+		},
+
+		{
+			"Type" : "nap::PlaneMesh",
+			"mID": "ColorDebugMesh",
+			"Size" :
+			{
+				"x" : 240,
+				"y" : 25
+			}
 		},
 		
 		{
@@ -712,38 +742,16 @@
 
 		{
 			"Type" : "nap::Entity",
-			"mID" : "DebugDisplayEntity",
+			"mID" : "CompositionDebugDisplayEntity",
 			"Components" :
 			[
 				{
-					"Type" : "nap::TransformComponent",
-					"Properties": 
-					{
-						"Translate": 
-						{
-							"x": 192.0,
-							"y": 192.0,
-							"z": 0.0
-						},
-						"Rotate": 
-						{
-							"x": 0.0,
-							"y": 0.0,
-							"z": 0.0
-						},
-						"Scale": 
-						{
-							"x": 1.0,
-							"y": 1.0,
-							"z": 1.0
-						},
-						"UniformScale": 384.0
-					}
+					"Type" : "nap::TransformComponent"
 				},
 				{
 					"Type" : "nap::RenderableMeshComponent",
-					"mID" : "RenderableDebugMeshComponent",
-					"Mesh" : "PlaneMesh",
+					"mID" : "RenderableCompositionDebugMeshComponent",
+					"Mesh" : "CompositionDebugMesh",
 					"MaterialInstance" :
 					{
 						"Material" : "DebugMaterial",
@@ -763,33 +771,86 @@
 
 		{
 			"Type" : "nap::Entity",
+			"mID" : "IndexDebugDisplayEntity",
+			"Components" :
+			[
+				{
+					"Type" : "nap::TransformComponent"
+				},
+				{
+					"Type" : "nap::RenderableMeshComponent",
+					"mID" : "RenderableIndexDebugMeshComponent",
+					"Mesh" : "ColorDebugMesh",
+					"MaterialInstance" :
+					{
+						"Material" : "DebugMaterial",
+						"DepthMode" : "NoReadWrite",
+						"Uniforms" : 
+						[
+							{
+								"Type" : "nap::UniformTexture2D",
+								"Name" : "debugImage",
+								"Texture" : "IndexMap"
+							}
+						]
+					}
+				}
+			]
+		},
+
+		{
+			"Type" : "nap::Entity",
+			"mID" : "PaletteDebugDisplayEntity",
+			"Components" :
+			[
+				{
+					"Type" : "nap::TransformComponent"
+				},
+				{
+					"Type" : "nap::RenderableMeshComponent",
+					"mID" : "RenderablePaletteDebugMeshComponent",
+					"Mesh" : "ColorDebugMesh",
+					"MaterialInstance" :
+					{
+						"Material" : "DebugMaterial",
+						"DepthMode" : "NoReadWrite",
+						"Uniforms" : 
+						[
+							{
+								"Type" : "nap::UniformTexture2D",
+								"Name" : "debugImage",
+								"Texture" : "IndexMap"
+							}
+						]
+					}
+				}
+			]
+		},
+
+		{
+			"Type" : "nap::Entity",
+			"mID" : "DebugDisplayEntity",
+			"Components" :
+			[
+				{
+					"Type" : "nap::TransformComponent"
+				}
+			],
+			"Children" :
+			[
+				"CompositionDebugDisplayEntity",
+				"IndexDebugDisplayEntity",
+				"PaletteDebugDisplayEntity"
+			]
+		},
+
+		{
+			"Type" : "nap::Entity",
 			"mID" : "RenderCompositionEntity",
 			"Components" :
 			[
 				{
-					"Type" : "nap::TransformComponent",
-					"Properties": 
-					{
-						"Translate": 
-						{
-							"x": 512.0,
-							"y": 512.0,
-							"z": 0.0
-						},
-						"Rotate": 
-						{
-							"x": 0.0,
-							"y": 0.0,
-							"z": 0.0
-						},
-						"Scale": 
-						{
-							"x": 1.0,
-							"y": 1.0,
-							"z": 1.0
-						},
-						"UniformScale": 1024.0
-					}
+					"Type" : "nap::TransformComponent"
 				},
 				{
 					"Type" : "nap::RenderCompositionComponent",

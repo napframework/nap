@@ -73,31 +73,31 @@ namespace nap
 
 	private:
 		// Nap Objects
-		nap::RenderService*								renderService = nullptr;
-		nap::ResourceManager*							resourceManager = nullptr;
-		nap::SceneService*								sceneService = nullptr;
-		nap::InputService*								inputService = nullptr;
+		nap::RenderService*									renderService = nullptr;
+		nap::ResourceManager*								resourceManager = nullptr;
+		nap::SceneService*									sceneService = nullptr;
+		nap::InputService*									inputService = nullptr;
 
-		nap::ObjectPtr<nap::RenderWindow>				renderWindow;
-		nap::ObjectPtr<nap::EntityInstance>				compositionEntity = nullptr;
-		nap::ObjectPtr<nap::EntityInstance>				sceneCameraEntity = nullptr;
-		nap::ObjectPtr<nap::EntityInstance>				compositionCameraEntity = nullptr;
-		nap::ObjectPtr<nap::EntityInstance>				renderCompositionEntity = nullptr;
-		nap::ObjectPtr<nap::EntityInstance>				debugDisplayEntity = nullptr;
-		nap::ObjectPtr<nap::EntityInstance>				defaultInputRouter = nullptr;
-		nap::ObjectPtr<nap::EntityInstance>				lightEntity = nullptr;
-		nap::ObjectPtr<nap::Material>					frameMaterial = nullptr;
-		nap::ObjectPtr<nap::Material>					vertexMaterial = nullptr;
-		nap::ObjectPtr<nap::EntityInstance>				displayEntity = nullptr;
+		nap::ObjectPtr<nap::RenderWindow>					renderWindow;
+		nap::ObjectPtr<nap::EntityInstance>					compositionEntity = nullptr;
+		nap::ObjectPtr<nap::EntityInstance>					sceneCameraEntity = nullptr;
+		nap::ObjectPtr<nap::EntityInstance>					compositionCameraEntity = nullptr;
+		nap::ObjectPtr<nap::EntityInstance>					renderCompositionEntity = nullptr;
+		nap::ObjectPtr<nap::EntityInstance>					debugDisplayEntity = nullptr;
+		nap::ObjectPtr<nap::EntityInstance>					defaultInputRouter = nullptr;
+		nap::ObjectPtr<nap::EntityInstance>					lightEntity = nullptr;
+		nap::ObjectPtr<nap::Material>						frameMaterial = nullptr;
+		nap::ObjectPtr<nap::Material>						vertexMaterial = nullptr;
+		nap::ObjectPtr<nap::EntityInstance>					displayEntity = nullptr;
 
 		// GUI
-		int												mMeshSelection = 0;
-		int												mPaintMode = 0;
-		int												mSelectChannel = 0;
-		float											mChannelSpeed = 1.0f;
-		int												mPaletteSelection = 0;
-		int												mCompositionSelection = 0;
-		bool											mShowIndexColors = false;
+		int													mMeshSelection = 0;
+		int													mPaintMode = 0;
+		int													mSelectChannel = 0;
+		float												mChannelSpeed = 1.0f;
+		int													mPaletteSelection = 0;
+		int													mCompositionSelection = 0;
+		bool												mShowIndexColors = false;
 
 		/**
 		 *	Renders debug views to screen
