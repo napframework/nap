@@ -93,7 +93,7 @@
 			"Type" : "nap::IndexMap",
 			"mID" : "IndexMap",
 			"Path" : "data/kalvertoren/index_map/index_map.png",
-			"ColorCount" : 12
+			"ColorCount" : 13
 		},
 
 		{
@@ -104,27 +104,19 @@
 			[
      			{
 					"Values" : 
-					[255, 254, 254, 255]
+					[0,0,0,0]
 				},
 				{
 					"Values" : 
-					[255, 247, 0, 228]
+					[255,255,255,200]
 				},
 				{
 					"Values" : 
-					[251, 0, 44, 0]
+					[255,255,20,0]
 				},
 				{
 					"Values" : 
-					[0, 255, 255, 1]
-				},
-				{
-					"Values" : 
-					[109, 251, 78, 35]
-				},
-				{
-					"Values" : 
-					[255, 210, 0, 0]
+					[120,255,155,0]
 				}
 			]
 		},
@@ -137,11 +129,19 @@
 			[
      			{
 					"Values" : 
-					[230, 64, 64, 0]
+					[255, 255, 255, 255]
 				},
 				{
 					"Values" : 
-					[255, 1, 98, 0]
+					[253, 87, 122, 0]
+				},
+				{
+					"Values" : 
+					[255,9,9,0]
+				},
+				{
+					"Values" : 
+					[50,255,255,0]
 				}
 			]
 		},
@@ -154,27 +154,19 @@
 			[
      			{
 					"Values" : 
-					[255, 254, 254, 255]
+					[12,0,2,0]
 				},
 				{
 					"Values" : 
-					[255, 247, 0, 228]
+					[225,255,255,0]
 				},
 				{
 					"Values" : 
-					[251, 0, 44, 0]
+					[50,10,0,0]
 				},
 				{
 					"Values" : 
-					[0, 255, 255, 1]
-				},
-				{
-					"Values" : 
-					[109, 251, 78, 35]
-				},
-				{
-					"Values" : 
-					[255, 210, 0, 0]
+					[0,30,8,0]
 				}
 			]
 		},
@@ -187,11 +179,19 @@
 			[
      			{
 					"Values" : 
-					[255, 254, 254, 255]
+					[0, 0, 0, 0]
 				},
 				{
 					"Values" : 
-					[255, 247, 0, 228]
+					[255,255,255,50]
+				},
+				{
+					"Values" : 
+					[150,150,0,0]
+				},
+				{
+					"Values" : 
+					[252,14,14,0]
 				},
 				{
 					"Values" : 
@@ -199,15 +199,65 @@
 				},
 				{
 					"Values" : 
-					[0, 255, 255, 1]
+					[0, 0, 0, 0]
 				},
 				{
 					"Values" : 
-					[109, 251, 78, 35]
+					[0, 0, 0, 0]
 				},
 				{
 					"Values" : 
-					[255, 210, 0, 0]
+					[0, 0, 0, 0]
+				},
+				{
+					"Values" : 
+					[0, 0, 0, 0]
+				},
+				{
+					"Values" : 
+					[0, 0, 0, 0]
+				},
+				{
+					"Values" : 
+					[253, 87, 122, 0]
+				},
+				{
+					"Values" : 
+					[0, 20, 5, 0]
+				}
+			]
+		},
+
+		{
+			"Type" : "nap::LedColorPalette",
+			"mID" : "Palette5",
+			"Path" : "data/kalvertoren/palettes/palette_5.png",
+			"LedColors" : 
+			[
+     			{
+					"Values" : 
+					[0, 0, 255, 0]
+				},
+				{
+					"Values" : 
+					[255, 255, 255, 255]
+				}
+			]
+		},
+
+		{
+			"Type" : "nap::LedColorPalette",
+			"mID" : "Palette6",
+			"Path" : "data/kalvertoren/palettes/palette_6.png",
+			"LedColors" : 
+			[
+     			{
+					"Values" : 
+					[255, 255, 255, 25]
+				},
+				{
+					"Values" : 
+					[255, 46, 91, 0]
 				}
 			]
 		},
@@ -221,66 +271,181 @@
 				"Palette1",
 				"Palette2",
 				"Palette3",
-				"Palette4"
+				"Palette4",
+				"Palette5",
+				"Palette6"
 			] 
 		},
 
 		{
 			"Type" : "nap::ImageLayer",
-			"mID" : "HelloLayer1",
-			"Path" :"data/kalvertoren/compositions/hello/layer1/layer_1.BMP"
+			"mID" : "Background1",
+			"Path" :"data/kalvertoren/backgrounds/background_1.png"
 		},
 
 		{
 			"Type" : "nap::ImageLayer",
-			"mID" : "HelloLayer2",
-			"Path" :"data/kalvertoren/compositions/hello/layer2/layer_2.BMP"
+			"mID" : "Background2",
+			"Path" :"data/kalvertoren/backgrounds/background_2.png"
 		},
 
 		{
 			"Type" : "nap::ImageLayer",
-			"mID" : "HelloLayer3",
-			"Path" :"data/kalvertoren/compositions/hello/layer3/layer_3.png"
+			"mID" : "Background3",
+			"Path" :"data/kalvertoren/backgrounds/background_3.png"
+		},
+
+		{
+			"Type" : "nap::ImageLayer",
+			"mID" : "Background4",
+			"Path" :"data/kalvertoren/backgrounds/background_4.png"
+		},
+
+		{
+			"Type" : "nap::ImageLayer",
+			"mID" : "Background5",
+			"Path" :"data/kalvertoren/backgrounds/background_5.png"
+		},
+
+		{
+			"Type" : "nap::ImageLayer",
+			"mID" : "Background6",
+			"Path" :"data/kalvertoren/backgrounds/background_6.png"
+		},
+
+		{
+			"Type" : "nap::ImageLayer",
+			"mID" : "Background7",
+			"Path" :"data/kalvertoren/backgrounds/background_7.png"
+		},
+
+		{
+			"Type" : "nap::ImageLayer",
+			"mID" : "Background8",
+			"Path" :"data/kalvertoren/backgrounds/background_8.png"
+		},
+
+		{
+			"Type" : "nap::ImageLayer",
+			"mID" : "Shape1",
+			"Path" :"data/kalvertoren/shapes/shape_1.png"
+		},
+
+		{
+			"Type" : "nap::ImageLayer",
+			"mID" : "Shape2",
+			"Path" :"data/kalvertoren/shapes/shape_2.png"
+		},
+
+		{
+			"Type" : "nap::ImageLayer",
+			"mID" : "Shape3",
+			"Path" :"data/kalvertoren/shapes/shape_3.png"
+		},
+
+		{
+			"Type" : "nap::ImageLayer",
+			"mID" : "Shape4",
+			"Path" :"data/kalvertoren/shapes/shape_4.png"
+		},
+
+		{
+			"Type" : "nap::ImageLayer",
+			"mID" : "Shape5",
+			"Path" :"data/kalvertoren/shapes/shape_5.png"
+		},
+
+		{
+			"Type" : "nap::ImageLayer",
+			"mID" : "Shape6",
+			"Path" :"data/kalvertoren/shapes/shape_6.png"
 		},
 
 		{
 			"Type" : "nap::ImageSequenceLayer",
-			"mID" : "HelloLayer4",
+			"mID" : "TestSequence",
 			"FPS" : 1,
-			"BaseFilename" : "data/kalvertoren/compositions/hello/layer4/%d.png"
+			"BaseFilename" : "data/kalvertoren/sequences/test/%d.png"
 		},
 
 		{
 			"Type" : "nap::Composition",
-			"mID"  : "TestComposition",
+			"mID"  : "Composition1",
 			"Layers" :
 			[
-				"HelloLayer1",
-				"HelloLayer2",
-				"HelloLayer3",
-				"HelloLayer4"
+				"Background1",
+				"Shape1",
+				"Shape5"
 			] 
 		},
 
 		{
-			"Type" : "nap::ImageLayer",
-			"mID" : "GreenLayer1",
-			"Path" :"data/kalvertoren/compositions/green/layer1/layer_1.BMP"
-		},
-
-		{
-			"Type" : "nap::ImageLayer",
-			"mID" : "GreenLayer2",
-			"Path" :"data/kalvertoren/compositions/green/layer2/layer_2.0004.bmp"
+			"Type" : "nap::Composition",
+			"mID"  : "Composition2",
+			"Layers" :
+			[
+				"Background2",
+				"Shape2",
+				"Shape3"
+			] 
 		},
 
 		{
 			"Type" : "nap::Composition",
-			"mID"  : "GreenComposition",
+			"mID"  : "Composition3",
 			"Layers" :
 			[
-				"GreenLayer1",
-				"GreenLayer2"
+				"Background3",
+				"Shape3"
+			] 
+		},
+
+		{
+			"Type" : "nap::Composition",
+			"mID"  : "Composition4",
+			"Layers" :
+			[
+				"Background4",
+				"Shape4"
+			] 
+		},
+
+		{
+			"Type" : "nap::Composition",
+			"mID"  : "Composition5",
+			"Layers" :
+			[
+				"Background5",
+				"Shape5"
+			] 
+		},
+
+		{
+			"Type" : "nap::Composition",
+			"mID"  : "Composition6",
+			"Layers" :
+			[
+				"Background6"
+			] 
+		},
+
+		{
+			"Type" : "nap::Composition",
+			"mID"  : "Composition7",
+			"Layers" :
+			[
+				"Background7",
+				"TestSequence"
+			] 
+		},
+
+		{
+			"Type" : "nap::Composition",
+			"mID"  : "Composition8",
+			"Layers" :
+			[
+				"Background8",
+				"Shape6"
 			] 
 		},
 
@@ -549,7 +714,7 @@
 				{
 					"Type" : "nap::UniformFloat",
 					"Name" : "ambientIntensity",
-					"Value" : 0.5
+					"Value" : 1.0
 				},
 				{
 					"Type" : "nap::UniformFloat",
@@ -559,17 +724,7 @@
 				{
 					"Type" : "nap::UniformFloat",
 					"Name" : "specularIntensity",
-					"Value" : 0.65
-				},
-				{
-					"Type" : "nap::UniformFloat",
-					"Name" : "attenuationScale",
-					"Value" : 0.0001
-				},
-				{
-					"Type" : "nap::UniformInt",
-					"Name" : "useIndexColor",
-					"Value": 0
+					"Value" : 0.3
 				}
 			]
 		},
@@ -955,8 +1110,14 @@
 					"mID" : "CompositionComponent",
 					"Compositions" :
 					[
-						"TestComposition",
-						"GreenComposition"
+						"Composition1",
+						"Composition2",
+						"Composition3",
+						"Composition4",
+						"Composition5",
+						"Composition6",
+						"Composition7",
+						"Composition8"
 					]
 				},
 				{

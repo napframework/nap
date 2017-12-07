@@ -43,9 +43,9 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 *	Update this component, only when it's active
+		 *	Apply colors to the associated mesh, only when active
 		 */
-		virtual void update(double deltaTime) override final;
+		void apply(double deltaTime);
 
 		/**
 		 *	@return if this color component is active

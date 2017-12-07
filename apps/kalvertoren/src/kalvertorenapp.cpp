@@ -86,10 +86,14 @@ namespace nap
 		entities.push_back(sceneCameraEntity.get());
 		inputService->processEvents(*renderWindow, input_router, entities);
 
+		// Position the debug views
 		positionDebugViews();
 
 		// Update our gui
 		updateGui();
+
+		// Set deltatime
+		mDeltaTime = deltaTime;
 	}
 
 
@@ -112,13 +116,25 @@ namespace nap
 			// Clear backbuffer of window
 			opengl::RenderTarget& backbuffer = renderWindow->getBackbuffer();
 			renderService->clearRenderTarget(backbuffer);
-			
-			// Render debug views to screen
-			renderDebugViews();
 
 			// Render meshes
 			std::vector<nap::RenderableComponentInstance*> components_to_render;
 			displayEntity->getComponentsOfType<nap::RenderableComponentInstance>(components_to_render);
+
+			// Apply color to the meshes based on the current selection
+			std::vector<ApplyColorComponentInstance*> paint_comps;
+			for (auto& child : compositionEntity->getChildren())
+			{
+				paint_comps.clear();
+				child->getComponentsOfType<ApplyColorComponentInstance>(paint_comps);
+				for (auto& paint_comp : paint_comps)
+				{
+					paint_comp->apply(mDeltaTime);
+				}
+			}
+
+			// Render debug views to screen
+			renderDebugViews();
 
 			// Get camera
 			nap::CameraComponentInstance& sceneCamera = sceneCameraEntity->getComponent<nap::CameraControllerInstance>().getCameraComponent();

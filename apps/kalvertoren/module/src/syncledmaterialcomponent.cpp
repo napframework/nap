@@ -70,9 +70,6 @@ namespace nap
 
 			nap::UniformVec3& triangle_light_pos = triangle_material.getOrCreateUniform<nap::UniformVec3>("lightPosition");
 			triangle_light_pos.setValue(light_pos);
-
-			nap::UniformVec3& triangle_light_intensity = triangle_material.getOrCreateUniform<nap::UniformVec3>("lightIntensity");
-			triangle_light_intensity.setValue(intensity);
 		}
 	}
 }

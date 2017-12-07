@@ -98,6 +98,7 @@ namespace nap
 		int													mPaletteSelection = 0;
 		int													mCompositionSelection = 0;
 		bool												mShowIndexColors = false;
+		double												mDeltaTime = 0.0;
 
 		/**
 		 *	Renders debug views to screen
