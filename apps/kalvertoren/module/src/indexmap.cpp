@@ -80,7 +80,7 @@ namespace nap
 			// Get color value at pixel and compare
 			RGBColor8 current_color = mPixmap.getColor<RGBColor8>(i, 0);
 
-			auto& it = unique_index_colors.find(current_color);
+			auto it = unique_index_colors.find(current_color);
 			if (it != unique_index_colors.end())
 				continue;
 
