@@ -4,7 +4,7 @@
 #include <rtti/rttiobject.h>
 #include <image.h>
 #include <texture2d.h>
-#include "nap/ObjectPtr.h"
+#include <nap/ObjectPtr.h>
 
 namespace nap
 {

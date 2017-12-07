@@ -210,7 +210,6 @@ namespace nap
 			if (utility::startsWith(child->mID, "PaletteDebugDisplayEntity"))
 			{
 				ColorPaletteComponentInstance& palette_comp = compositionEntity->getComponent<ColorPaletteComponentInstance>();
-				CompositionComponentInstance& render_comp = compositionEntity->getComponent<CompositionComponentInstance>();
 
 				int color_palette_count = palette_comp.getSelection().getCount();
 				int index_palette_count = palette_comp.getIndexMap().getCount();
