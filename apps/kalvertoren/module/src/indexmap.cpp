@@ -35,7 +35,7 @@ namespace nap
 		findUniqueColors();
 
 		// Make sure the amount of colors matches the amount of expected colors to find
-		if (!errorState.check(mColorCount == mIndexColors.size(), "Expected to find %d colors, got %d instead: %s", mColorCount, mIndexColors.size(), mImagePath.size()))
+		if (!errorState.check(mColorCount == mIndexColors.size(), "Expected to find %d colors, got %d instead: %s", mColorCount, mIndexColors.size(), mImagePath.c_str()))
 			return false;
 
 		// Get opengl settings from bitmap

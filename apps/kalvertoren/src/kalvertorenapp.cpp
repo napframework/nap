@@ -16,6 +16,7 @@
 #include <imguiservice.h>
 #include <utility/stringutils.h>
 #include <scene.h>
+#include <planemesh.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::KalvertorenApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -85,10 +86,14 @@ namespace nap
 		entities.push_back(sceneCameraEntity.get());
 		inputService->processEvents(*renderWindow, input_router, entities);
 
+		// Position the debug views
 		positionDebugViews();
 
 		// Update our gui
 		updateGui();
+
+		// Set deltatime
+		mDeltaTime = deltaTime;
 	}
 
 
@@ -111,13 +116,25 @@ namespace nap
 			// Clear backbuffer of window
 			opengl::RenderTarget& backbuffer = renderWindow->getBackbuffer();
 			renderService->clearRenderTarget(backbuffer);
-			
-			// Render debug views to screen
-			renderDebugViews();
 
 			// Render meshes
 			std::vector<nap::RenderableComponentInstance*> components_to_render;
 			displayEntity->getComponentsOfType<nap::RenderableComponentInstance>(components_to_render);
+
+			// Apply color to the meshes based on the current selection
+			std::vector<ApplyColorComponentInstance*> paint_comps;
+			for (auto& child : compositionEntity->getChildren())
+			{
+				paint_comps.clear();
+				child->getComponentsOfType<ApplyColorComponentInstance>(paint_comps);
+				for (auto& paint_comp : paint_comps)
+				{
+					paint_comp->apply(mDeltaTime);
+				}
+			}
+
+			// Render debug views to screen
+			renderDebugViews();
 
 			// Get camera
 			nap::CameraComponentInstance& sceneCamera = sceneCameraEntity->getComponent<nap::CameraControllerInstance>().getCameraComponent();
@@ -135,17 +152,30 @@ namespace nap
 
 	void KalvertorenApp::renderDebugViews()
 	{
-		// Render our composition previs
-		RenderableMeshComponentInstance& render_plane = debugDisplayEntity->getComponent<RenderableMeshComponentInstance>();
-		OrthoCameraComponentInstance& ortho_cam = compositionCameraEntity->getComponent<OrthoCameraComponentInstance>();
-		std::vector<nap::RenderableComponentInstance*> debug_objects = { &render_plane };
+		for (auto& child : debugDisplayEntity->getChildren())
+		{
+			// Render our composition previs
+			RenderableMeshComponentInstance& render_plane = child->getComponent<RenderableMeshComponentInstance>();
+			OrthoCameraComponentInstance& ortho_cam = compositionCameraEntity->getComponent<OrthoCameraComponentInstance>();
+			std::vector<nap::RenderableComponentInstance*> debug_objects = { &render_plane };
 
-		// Set active texture
-		UniformTexture2D& uniform = render_plane.getMaterialInstance().getOrCreateUniform<UniformTexture2D>("debugImage");
-		RenderCompositionComponentInstance& render_comp = renderCompositionEntity->getComponent<RenderCompositionComponentInstance>();
-		uniform.setTexture(render_comp.getTexture());
+			// Get uniform to set
+			UniformTexture2D& uniform = render_plane.getMaterialInstance().getOrCreateUniform<UniformTexture2D>("debugImage");
 
-		renderService->renderObjects(renderWindow->getBackbuffer(), ortho_cam, debug_objects);
+			// Set active texture
+			if (utility::startsWith(child->mID, "CompositionDebugDisplayEntity"))
+			{
+				RenderCompositionComponentInstance& render_comp = renderCompositionEntity->getComponent<RenderCompositionComponentInstance>();
+				uniform.setTexture(render_comp.getTexture());
+			}
+			else if (utility::startsWith(child->mID, "PaletteDebugDisplayEntity"))
+			{
+				ColorPaletteComponentInstance& palette_comp = compositionEntity->getComponent<ColorPaletteComponentInstance>();
+				uniform.setTexture(palette_comp.getSelection());
+			}
+
+			renderService->renderObjects(renderWindow->getBackbuffer(), ortho_cam, debug_objects);
+		}
 	}
 
 
@@ -160,14 +190,41 @@ namespace nap
 	}
 
 
-
+	// TODO: Possibly move these calls to seperate components
 	void KalvertorenApp::positionDebugViews()
 	{
-		RenderableMeshComponentInstance& render_plane = debugDisplayEntity->getComponent<RenderableMeshComponentInstance>();
-		nap::TransformComponentInstance& xform = render_plane.getEntityInstance()->getComponent<nap::TransformComponentInstance>();
-		int posx = renderWindow->getWidth()  - (xform.getUniformScale() / 2.0f);
-		int posy = renderWindow->getHeight() - (xform.getUniformScale() / 2.0f);
-		xform.setTranslate({ posx, posy, 0.0f });
+		int y_loc = renderWindow->getHeight();
+		for (auto& child : debugDisplayEntity->getChildren())
+		{
+			RenderableMeshComponentInstance& render_plane = child->getComponent<RenderableMeshComponentInstance>();
+			assert(render_plane.getMesh().get_type().is_derived_from(RTTI_OF(nap::PlaneMesh)));
+			nap::PlaneMesh& plane = static_cast<nap::PlaneMesh&>(render_plane.getMesh());
+
+			nap::TransformComponentInstance& xform = render_plane.getEntityInstance()->getComponent<nap::TransformComponentInstance>();
+			
+			// We scale the palette based on the relative difference between the amount of available colors
+			// in the index map
+			int posy = y_loc - (plane.getRect().getHeight() / 2.0f);
+			int posx = renderWindow->getWidth() - (plane.getRect().getWidth() / 2.0f);
+			
+			if (utility::startsWith(child->mID, "PaletteDebugDisplayEntity"))
+			{
+				ColorPaletteComponentInstance& palette_comp = compositionEntity->getComponent<ColorPaletteComponentInstance>();
+
+				int color_palette_count = palette_comp.getSelection().getCount();
+				int index_palette_count = palette_comp.getIndexMap().getCount();
+
+				float div = (float)color_palette_count / (float)index_palette_count;
+				xform.setScale({ div, 1.0f, 1.0f });
+
+				float plane_width = plane.getRect().getWidth();
+				posx -= ((plane_width/2.0) * (1.0-div));
+			}
+
+			// Set transform
+			xform.setTranslate({ posx, posy, 0.0f });
+			y_loc -= (plane.getRect().getHeight() + 10);
+		}
 	}
 
 
