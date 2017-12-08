@@ -67,7 +67,6 @@ add_subdirectory(test/tommy)
 add_subdirectory(test/videoplayer)
 add_subdirectory(test/serializationtest)
 add_subdirectory(test/audiotest)
-add_subdirectory(test/unittest)
 
 # app targets
 add_subdirectory(apps/kalvertoren)
@@ -75,6 +74,8 @@ add_subdirectory(apps/etherdream)
 add_subdirectory(apps/artnetcolor)
 add_subdirectory(apps/steef)
 add_subdirectory(apps/skeleton)
+
+add_subdirectory(unittests)
 
 if (APPLE)
     set(GENERATE_XCODE_PROJECT_TARGET generateXcodeProject)
