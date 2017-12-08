@@ -349,6 +349,12 @@ namespace nap
 			}
 		}
 
+		// Turn color cycling on / off
+		if (ImGui::Checkbox("Cycle Color", &mCycleColors))
+		{
+			palette_selector.setCycle(mCycleColors);
+		}
+
 		// Changes the color palette
 		if (ImGui::SliderInt("Composition", &mCompositionSelection, 0, composition_selector.getCount() - 1))
 		{
@@ -374,6 +380,12 @@ namespace nap
 		if (ImGui::SliderFloat("Time Scale", &mDurationScale, 0.0f, 10.0f))
 		{
 			composition_selector.setDurationScale(mDurationScale);
+		}
+
+		// Changes the time at which a new color palette is selected
+		if (ImGui::SliderFloat("Cycle Time", &mCycleTime, 0.0f, 10.0f))
+		{
+			palette_selector.setCycleSpeed(mCycleTime);
 		}
 
 		ImGui::End();

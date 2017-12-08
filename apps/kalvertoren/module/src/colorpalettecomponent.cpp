@@ -7,8 +7,10 @@
 
 // nap::colorpalettecomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::ColorPaletteComponent)
-	RTTI_PROPERTY("Colors", &nap::ColorPaletteComponent::mColors, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Index", &nap::ColorPaletteComponent::mIndex, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Colors", &nap::ColorPaletteComponent::mColors,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Index",	&nap::ColorPaletteComponent::mIndex,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Cycle",	&nap::ColorPaletteComponent::mCycle,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Speed",	&nap::ColorPaletteComponent::mCycleSpeed,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::colorpalettecomponentInstance run time class definition 
@@ -34,6 +36,9 @@ namespace nap
 		if (!errorState.check(mContainer->getCount() > 0, "No color palettes specified: %s", mContainer->mID.c_str()))
 			return false;
 
+		mCycle = getComponent<ColorPaletteComponent>()->mCycle;
+		mCycleSpeed = getComponent<ColorPaletteComponent>()->mCycleSpeed;
+
 		// Select current palette based on loaded index
 		select(getComponent<ColorPaletteComponent>()->mIndex);
 
@@ -43,7 +48,14 @@ namespace nap
 
 	void ColorPaletteComponentInstance::update(double deltaTime)
 	{
+		if (!mCycle)
+			return;
 
+		if (mTime >= mCycleSpeed)
+		{
+			select(nap::math::random(0, mContainer->getCount() - 1));
+		}
+		mTime += deltaTime;
 	}
 
 
@@ -57,6 +69,7 @@ namespace nap
 	{
 		int sidx = nap::math::clamp<int>(index, 0, mContainer->getCount() - 1);
 		mSelection = mContainer->mColorPalettes[sidx].get();
+		mTime = 0.0;
 		buildMap();
 	}
 

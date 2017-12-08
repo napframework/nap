@@ -100,6 +100,8 @@ namespace nap
 		float												mIntensity = 1.0f;
 		bool												mShowIndexColors = false;
 		float												mDurationScale = 1.0f;
+		bool												mCycleColors = false;
+		float												mCycleTime = 1.0f;
 
 		/**
 		 *	Renders debug views to screen
