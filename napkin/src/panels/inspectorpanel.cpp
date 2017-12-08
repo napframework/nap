@@ -82,8 +82,22 @@ bool napkin::InspectorModel::setData(const QModelIndex& index, const QVariant& v
 {
 	if (role == Qt::EditRole)
 	{
-		auto valueItem = dynamic_cast<PropertyValueItem*>(itemFromIndex(index));
-		valueItem->setData(value, Qt::EditRole);
+		auto item = itemFromIndex(index);
+
+		{
+			auto valueItem = dynamic_cast<PropertyValueItem*>(item);
+			if (valueItem!= nullptr) {
+				valueItem->setData(value, Qt::EditRole);
+				return true;
+			}
+		}
+		{
+			// TODO: this is just a passthrough until we get drag & drop
+			auto valueItem = dynamic_cast<PointerValueItem*>(item);
+			if (valueItem == nullptr) {
+				valueItem->setData(value, Qt::EditRole);
+			}
+		}
 		return true;
 	}
 	return QStandardItemModel::setData(index, value, role);
