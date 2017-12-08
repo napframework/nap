@@ -1,60 +1,105 @@
-
-
 #include "catch.hpp"
 
-#include <nap/resourcemanager.h>
+#include <fstream>
+#include <nap/core.h>
+#include <nap/logger.h>
+#include <rtti/defaultlinkresolver.h>
 #include <rtti/jsonreader.h>
 #include <rtti/jsonwriter.h>
-#include <nap/logger.h>
-#include <nap/core.h>
-#include <rtti/defaultlinkresolver.h>
+#include <utility/fileutils.h>
 
+using namespace nap;
 using namespace nap::rtti;
 using namespace nap::utility;
 
 
-void loadAndSaveFile(const std::string& filename)
+std::string readJSONData(const std::string& filename)
 {
-	// Load File
-
 	ErrorState err;
 
-	nap::Core core;
+	std::string jsonData;
+	if (!readFileToString(filename, jsonData, err))
+		FAIL("Failed to load file: " + filename + ": " + err.toString());
 
-	if (!core.initializeEngine(err)) {
-		FAIL("Failed to initialize engine: " + err.toString());
-	}
+	return jsonData;
+}
+
+void deserialize(Core& core, const std::string& jsonData, OwnedObjectList& outObjects) {
+	ErrorState err;
+
 	auto& factory = core.getResourceManager()->getFactory();
+
 	nap::rtti::RTTIDeserializeResult result;
-	if (!readJSONFile(filename, factory, result, err)) {
-		FAIL("Failed to read JSON file '" + filename + "': " + err.toString());
-	}
+	if (!deserializeJSON(jsonData, factory, result, err))
+		FAIL("Failed to deserialize json data: " + err.toString());
 
-
-	if (!DefaultLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, err)) {
+	if (!DefaultLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, err))
 		FAIL("Failed to resolve links: " + err.toString());
-	}
 
-	// Save File
-	ObjectList objects;
-	for (auto& ob : result.mReadObjects) {
-		objects.emplace_back(ob.get());
-	}
+	// Transfer ownership to given vector
+	for (auto& ob : result.mReadObjects)
+		outObjects.emplace_back(std::move(ob));
+}
 
+std::string serialize(const OwnedObjectList& objects) {
+	// Got raw pointers?
+	ObjectList objPointers;
+	for (auto& ob : objects)
+		objPointers.emplace_back(ob.get());
+
+	// Dump objects into tree
+	ErrorState err;
 	JSONWriter writer;
-	if (!serializeObjects(objects, writer, err)) {
-		nap::Logger::fatal(err.toString());
-		return;
+	if (!serializeObjects(objPointers, writer, err))
+		FAIL("Failed to serialize objects: " + err.toString());
+	return writer.GetJSON();
+}
+
+void serializeDeserializeTest(const std::string& filename)
+{
+	// Read our test data
+	std::string jsonTestData = readJSONData(filename);
+	REQUIRE(!jsonTestData.empty());
+
+	// Initialize core engine
+	nap::Core core;
+	{
+		ErrorState err;
+		if (!core.initializeEngine(err))
+			FAIL("Failed to initialize engine: " + err.toString());
 	}
 
-//	std::ofstream out(filename);
-//	out << writer.GetJSON();
-//	out.close();
+	// A. deserialize the loaded test data
+	OwnedObjectList readObjectsA;
+	deserialize(core, jsonTestData, readObjectsA);
+
+	// Now serialize again
+	std::string engineSerializedA = serialize(readObjectsA);
+
+	// B. deserialize again so we can compare strings later
+	OwnedObjectList readObjectsB;
+	deserialize(core, engineSerializedA, readObjectsB);
+
+	// TODO: Compare both object lists here
+
+	// Serialize for the second time and compare
+	std::string engineSerializedB = serialize(readObjectsB);
+
+	// Serializing the same data twice in a row must yield the same result
+	REQUIRE(engineSerializedA == engineSerializedB);
 }
 
-TEST_CASE("Check JSON serialization", "[jsonserialize]")
+// TODO: Add more fine-grained tests to spot problems quicker
+// (The ones below are fairly large for testing purposes)
+
+TEST_CASE("JSON serialization (Tommy)", "[serialization]")
 {
-	std::string filename ="data/tommy.json";
-	loadAndSaveFile(filename);
+	Logger::setLevel(Logger::infoLevel()); //< Hide some debug data
+	serializeDeserializeTest("data/tommy.json");
 }
 
+TEST_CASE("JSON serialization (Kalvertoren)", "[serialization]")
+{
+	Logger::setLevel(Logger::infoLevel()); //< Hide some debug data
+	serializeDeserializeTest("data/kalvertoren.json");
+}
