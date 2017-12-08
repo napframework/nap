@@ -49,7 +49,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC src)
 
 qt5_use_modules(${PROJECT_NAME} Core Widgets Gui)
 
-target_link_libraries(${PROJECT_NAME} napcore Qt5::Widgets Qt5::Core Qt5::Gui mod_napscene mod_nappython mod_napmath)
+target_link_libraries(${PROJECT_NAME} napcore Qt5::Widgets Qt5::Core Qt5::Gui mod_napscene mod_nappython mod_napmath mod_napartnet)
 
 
 if (WIN32)
