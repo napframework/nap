@@ -36,10 +36,10 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		std::vector<nap::ObjectPtr<Layer>> mLayers;						///< All the layers this composition works with
-		CompositionPlayMode mMode = CompositionPlayMode::Length;		///< Property: controls the composition playback mode
-		float mLength = 1.0f;											///< Length of the sequence
-		int mLoopCount = 1;												///< Amount of times the sequences it allowed to loop
+		std::vector<nap::ObjectPtr<Layer>>	mLayers;									///< All the layers this composition works with
+		CompositionPlayMode					mMode = CompositionPlayMode::Length;		///< Property: controls the composition playback mode
+		float								mLength = 1.0f;								///< Length of the sequence
+		int									mLoopCount = 1;								///< Amount of times the sequences it allowed to loop
 	};
 
 
@@ -69,6 +69,12 @@ namespace nap
 		int getLayerCount() const { return mLayerInstances.size(); }
 
 		/**
+		 * Sets the duration
+		 * @param scale the scale applied to the time associated with this composition
+		 */
+		void setDurationScale(float scale);
+
+		/**
 		 *	Signal that is emitted when the composition finished playback
 		 */
 		nap::Signal<CompositionInstance&> finished;
@@ -82,6 +88,7 @@ namespace nap
 		LayerInstances		mLayerInstances;						///< All created LayerInstances, owned by this object
 		double				mTime = 0.0;							///< Current playback time
 		CompositionPlayMode	mMode = CompositionPlayMode::Length;	///< Composition playback mode
+		float				mDurationScale = 1.0f;					///< Influences time and therefore how long this composition lasts
 	};
 
 }

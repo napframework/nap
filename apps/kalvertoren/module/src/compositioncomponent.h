@@ -26,6 +26,7 @@ namespace nap
 
 		std::vector<nap::ObjectPtr<Composition>> mCompositions;		///< Property: All compositions available to the system
 		int mIndex = 0;												///< Property: The currently selected composition
+		float mDurationScale = 1.0f;								///< Property: Acts as a scale on the duration of the composition
 	};
 
 
@@ -74,6 +75,12 @@ namespace nap
 		 */
 		const CompositionInstance& getSelection() const							{ return *mCompositionInstance; }
 
+		/**
+		 * Changes the duration
+		 * @param scale the scale applied to the time associated with all the compositions
+		 */
+		void setDurationScale(float scale);
+
 	private:
 		std::vector<Composition*>	mCompositions;								///< List of all available compositions
 		Composition*				mSelection = nullptr;						///< Currently selected composition
@@ -88,5 +95,6 @@ namespace nap
 		NSLOT(mCompositionFinishedSlot, CompositionInstance&, compositionFinised)
 
 		bool mSwitch = false;													///< Set to true when a composition finishes playback
+		float mDurationScale = 1.0f;											///< Scales the length of a composition
 	};
 }

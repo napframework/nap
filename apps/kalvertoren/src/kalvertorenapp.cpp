@@ -91,9 +91,6 @@ namespace nap
 
 		// Update our gui
 		updateGui();
-
-		// Set deltatime
-		mDeltaTime = deltaTime;
 	}
 
 
@@ -117,22 +114,6 @@ namespace nap
 			opengl::RenderTarget& backbuffer = renderWindow->getBackbuffer();
 			renderService->clearRenderTarget(backbuffer);
 
-			// Render meshes
-			std::vector<nap::RenderableComponentInstance*> components_to_render;
-			displayEntity->getComponentsOfType<nap::RenderableComponentInstance>(components_to_render);
-
-			// Apply color to the meshes based on the current selection
-			std::vector<ApplyColorComponentInstance*> paint_comps;
-			for (auto& child : compositionEntity->getChildren())
-			{
-				paint_comps.clear();
-				child->getComponentsOfType<ApplyColorComponentInstance>(paint_comps);
-				for (auto& paint_comp : paint_comps)
-				{
-					paint_comp->apply(mDeltaTime);
-				}
-			}
-
 			// Render debug views to screen
 			renderDebugViews();
 
@@ -140,6 +121,9 @@ namespace nap
 			nap::CameraComponentInstance& sceneCamera = sceneCameraEntity->getComponent<nap::CameraControllerInstance>().getCameraComponent();
 
 			// Render meshes
+			std::vector<nap::RenderableComponentInstance*> components_to_render;
+			displayEntity->getComponentsOfType<nap::RenderableComponentInstance>(components_to_render);
+
 			renderService->renderObjects(backbuffer, sceneCamera, components_to_render);
 
 			// Render our gui
@@ -285,7 +269,7 @@ namespace nap
 			composition_painters.emplace_back(comp_painter);
 		}
 
-		// Gui
+		// Some extra comps
 		SelectLedMeshComponentInstance& mesh_selector = displayEntity->getComponent<SelectLedMeshComponentInstance>();
 		ColorPaletteComponentInstance& palette_selector =  compositionEntity->getComponent<ColorPaletteComponentInstance>();
 		CompositionComponentInstance& composition_selector = compositionEntity->getComponent<CompositionComponentInstance>();
@@ -375,6 +359,21 @@ namespace nap
 		if (ImGui::SliderInt("Color Palette", &mPaletteSelection, 0, palette_selector.getCount() - 1))
 		{
 			palette_selector.select(mPaletteSelection);
+		}
+
+		// Changes the intensity
+		if (ImGui::SliderFloat("Intensity", &mIntensity, 0.0f, 1.0f))
+		{
+			for (auto& comp_painter : composition_painters)
+			{
+				comp_painter->setIntensity(mIntensity);
+			}
+		}
+
+		// Changes the duration
+		if (ImGui::SliderFloat("Time Scale", &mDurationScale, 0.0f, 10.0f))
+		{
+			composition_selector.setDurationScale(mDurationScale);
 		}
 
 		ImGui::End();

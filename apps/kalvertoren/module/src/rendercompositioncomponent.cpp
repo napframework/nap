@@ -45,6 +45,12 @@ namespace nap
 
 	void RenderCompositionComponentInstance::update(double deltaTime)
 	{
+
+	}
+
+
+	void RenderCompositionComponentInstance::render()
+	{
 		nap::CompositionInstance& comp = mCompositionComponent->getSelection();
 
 		// Assign inputs for first pass
@@ -52,15 +58,9 @@ namespace nap
 		inputA = &(comp.getLayer(0).getTexture());
 		inputB = comp.getLayerCount() > 1 ? &(comp.getLayer(1).getTexture()) : inputA;
 
-		// Set the active target
+		// Set the active and next target
 		activeTarget = mTargetA;
-		nextTarget = mTargetB;
-	}
-
-
-	void RenderCompositionComponentInstance::render()
-	{
-		nap::CompositionInstance& comp = mCompositionComponent->getSelection();
+		nextTarget   = mTargetB;
 		
 		// Render first pass to target a
 		renderPass(*inputA, *inputB, *activeTarget);

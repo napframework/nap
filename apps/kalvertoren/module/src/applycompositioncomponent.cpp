@@ -9,6 +9,7 @@ RTTI_BEGIN_CLASS(nap::ApplyCompositionComponent)
 	RTTI_PROPERTY("CompositionRenderer",	&nap::ApplyCompositionComponent::mCompositionRenderer,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ColorPaletteComponent",	&nap::ApplyCompositionComponent::mColorPaletteComponent,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ShowIndexColors",		&nap::ApplyCompositionComponent::mShowIndexColors,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Intensity",				&nap::ApplyCompositionComponent::mIntensity,				nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::applycompositioncomponentInstance run time class definition 
@@ -34,6 +35,10 @@ namespace nap
 
 		// Copy if we want to show index colors
 		mShowIndexColors = getComponent<ApplyCompositionComponent>()->mShowIndexColors;
+
+		// Copy intensity
+		mIntensity = getComponent<ApplyCompositionComponent>()->mIntensity;
+
 		return true;
 	}
 
@@ -71,6 +76,7 @@ namespace nap
 		RGBColor8 rgb_index_color;
 
 		assert(mPixmap.mType == Pixmap::EDataType::BYTE);
+		float mesh_intensity = mShowIndexColors ? 1.0f : mIntensity;
 
 		for (int i = 0; i < tri_count; i++)
 		{
@@ -111,15 +117,15 @@ namespace nap
 			// iterate over every vertex in the triangle and set the colors
 			for (int ti = 0; ti < triangle_mesh_color.size(); ti++)
 			{
-				triangle_mesh_color[ti]->r = rgb_colorf.getRed();
-				triangle_mesh_color[ti]->g = rgb_colorf.getGreen();
-				triangle_mesh_color[ti]->b = rgb_colorf.getBlue();
+				triangle_mesh_color[ti]->r = rgb_colorf.getRed()	* mesh_intensity;
+				triangle_mesh_color[ti]->g = rgb_colorf.getGreen()	* mesh_intensity;
+				triangle_mesh_color[ti]->b = rgb_colorf.getBlue()	* mesh_intensity;
 				triangle_mesh_color[ti]->a = 1.0;
 
-				triangle_artn_color[ti]->r = led_colorf.getRed();
-				triangle_artn_color[ti]->g = led_colorf.getGreen();
-				triangle_artn_color[ti]->b = led_colorf.getBlue();
-				triangle_artn_color[ti]->a = led_colorf.getAlpha();
+				triangle_artn_color[ti]->r = led_colorf.getRed()	* mIntensity;
+				triangle_artn_color[ti]->g = led_colorf.getGreen()	* mIntensity;
+				triangle_artn_color[ti]->b = led_colorf.getBlue()	* mIntensity;
+				triangle_artn_color[ti]->a = led_colorf.getAlpha()	* mIntensity;
 			}
 		}
 

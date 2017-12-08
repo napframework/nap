@@ -29,7 +29,8 @@ namespace nap
 
 		ComponentPtr<RenderCompositionComponent>	mCompositionRenderer;			///< property: link to the composition component
 		ComponentPtr<ColorPaletteComponent>			mColorPaletteComponent;			///< property: link to the color palette component
-		bool mShowIndexColors = false;										///< property: if the index colors should be shown
+		bool										mShowIndexColors = false;		///< property: if the index colors should be shown
+		float										mIntensity = 1.0f;				///< property: intensity
 	};
 
 
@@ -62,6 +63,11 @@ namespace nap
 		 */
 		void showIndexColors(bool value)							{ mShowIndexColors = value; }
 
+		/**
+		 *	Sets the intensity of the colors applied to the mesh
+		 */
+		void setIntensity(float value)								{ mIntensity = value; }
+
 		// pointer to the component that manages all the compositions
 		COMPONENT_INSTANCE_POINTER(mCompositionRenderer, RenderCompositionComponent, ApplyCompositionComponent)
 
@@ -71,5 +77,6 @@ namespace nap
 	private:
 		nap::Pixmap mPixmap;
 		bool mShowIndexColors = false;
+		float mIntensity = 1.0f;
 	};
 }

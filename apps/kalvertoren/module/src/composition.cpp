@@ -44,6 +44,7 @@ namespace nap
 		mMode = CompositionPlayMode::Length;
 	}
 
+
 	void CompositionInstance::update(double deltaTime)
 	{
 		// Update all associated layers 
@@ -55,13 +56,20 @@ namespace nap
 			finished(*this);
 
 		// Increment time
-		mTime += deltaTime;
+		mTime += (deltaTime * mDurationScale);
 	}
+
 
 	LayerInstance& CompositionInstance::getLayer(int index)
 	{
 		assert(index < getLayerCount());
 		int idx = math::clamp<int>(index, 0, getLayerCount() - 1);
 		return *(mLayerInstances[idx]);
+	}
+
+
+	void CompositionInstance::setDurationScale(float scale)
+	{
+		mDurationScale = scale;
 	}
 }

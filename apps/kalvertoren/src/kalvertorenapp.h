@@ -97,8 +97,9 @@ namespace nap
 		float												mChannelSpeed = 1.0f;
 		int													mPaletteSelection = 0;
 		int													mCompositionSelection = 0;
+		float												mIntensity = 1.0f;
 		bool												mShowIndexColors = false;
-		double												mDeltaTime = 0.0;
+		float												mDurationScale = 1.0f;
 
 		/**
 		 *	Renders debug views to screen

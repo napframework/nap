@@ -80,22 +80,6 @@ namespace nap
 		if (it != mIndexToPaletteMap.end())
 			return it->second;
 
-		/*
-		float dist = nap::math::max<float>();
-		const nap::RGBColor8* found_color = nullptr;
-
-		for (auto& color : mIndexToPaletteMap)
-		{
-			float cdist = color.second.getDistance(indexColor);
-			if (cdist < dist)
-			{
-				dist = cdist;
-				found_color = &(color.second);
-			}
-		}
-		return *found_color;
-		*/
-
 		// If the color can't be found we need to look for the upper and lower bounds of the wrapping colors
 		auto upper_it = mIndexToPaletteMap.lower_bound(indexColor);
 		assert(upper_it != mIndexToPaletteMap.end());

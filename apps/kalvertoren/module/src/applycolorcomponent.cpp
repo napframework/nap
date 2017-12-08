@@ -30,7 +30,7 @@ namespace nap
 	}
 
 
-	void ApplyColorComponentInstance::apply(double deltaTime)
+	void ApplyColorComponentInstance::update(double deltaTime)
 	{
 		if (!mActive)
 			return;

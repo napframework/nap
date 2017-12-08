@@ -8,6 +8,7 @@
 RTTI_BEGIN_CLASS(nap::CompositionComponent)
 	RTTI_PROPERTY("Compositions",	&nap::CompositionComponent::mCompositions,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Index",			&nap::CompositionComponent::mIndex,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DurationScale",	&nap::CompositionComponent::mDurationScale,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::compositioncomponentInstance run time class definition 
@@ -35,12 +36,13 @@ namespace nap
 		
 		// Copy 'm over
 		mCompositions.reserve(resource->mCompositions.size());
-
 		for (auto& comp : resource->mCompositions)
-		{
 			mCompositions.emplace_back(comp.get());
-		}
 
+		// Copy duration scale
+		mDurationScale = resource->mDurationScale;
+
+		// Select composition associated with index
 		select(resource->mIndex);
 		return true;
 	}
@@ -74,9 +76,18 @@ namespace nap
 
 		// Create new composition (destructing old one
 		mCompositionInstance = std::make_unique<CompositionInstance>(*mSelection);
+		mCompositionInstance->setDurationScale(mDurationScale);
 
 		// Connect to finished signal
 		mCompositionInstance->finished.connect(mCompositionFinishedSlot);
+	}
+
+
+	void CompositionComponentInstance::setDurationScale(float scale)
+	{
+		mDurationScale = scale;
+		assert(mCompositionInstance != nullptr);
+		mCompositionInstance->setDurationScale(mDurationScale);
 	}
 
 
