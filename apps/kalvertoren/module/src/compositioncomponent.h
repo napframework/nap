@@ -78,5 +78,15 @@ namespace nap
 		std::vector<Composition*>	mCompositions;								///< List of all available compositions
 		Composition*				mSelection = nullptr;						///< Currently selected composition
 		std::unique_ptr<CompositionInstance> mCompositionInstance;				///< CompositionInstance created when switching compositions
+
+		/**
+		 * Occurs when a composition finishes execution
+		 * This causes a new composition to be selected and watched
+		 * @param composition the composition that finished playback
+		 */
+		void compositionFinised(CompositionInstance& composition);
+		NSLOT(mCompositionFinishedSlot, CompositionInstance&, compositionFinised)
+
+		bool mSwitch = false;													///< Set to true when a composition finishes playback
 	};
 }
