@@ -57,10 +57,6 @@ std::string serialize(const OwnedObjectList& objects) {
 
 void serializeDeserializeTest(const std::string& filename)
 {
-	// Read our test data
-	std::string jsonTestData = readJSONData(filename);
-	REQUIRE(!jsonTestData.empty());
-
 	// Initialize core engine
 	nap::Core core;
 	{
@@ -68,6 +64,10 @@ void serializeDeserializeTest(const std::string& filename)
 		if (!core.initializeEngine(err))
 			FAIL("Failed to initialize engine: " + err.toString());
 	}
+
+	// Read our test data
+	std::string jsonTestData = readJSONData(filename);
+	REQUIRE(!jsonTestData.empty());
 
 	// A. deserialize the loaded test data
 	OwnedObjectList readObjectsA;
@@ -95,7 +95,7 @@ void serializeDeserializeTest(const std::string& filename)
 TEST_CASE("JSON serialization (Tommy)", "[serialization]")
 {
 	Logger::setLevel(Logger::infoLevel()); //< Hide some debug data
-	serializeDeserializeTest("data/tommy.json");
+	serializeDeserializeTest("data/objects.json");
 }
 
 TEST_CASE("JSON serialization (Kalvertoren)", "[serialization]")

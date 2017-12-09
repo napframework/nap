@@ -101,6 +101,11 @@ namespace napkin
 		void onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
 
 		/**
+		 * Called when an object name has changed
+		 */
+		void onPropertyValueChanged(const nap::rtti::RTTIObject& obj, const nap::rtti::RTTIPath& path);
+
+		/**
 		 * Finds a model item that keeps track of the specified object
 		 * @param obj The object to look for in the model items
 		 * @return The model item or nullptr if no such item was found

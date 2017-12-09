@@ -44,6 +44,16 @@ namespace napkin
 		 */
 		BaseRTTIPathItem(const QString& name, nap::rtti::RTTIObject* object, const nap::rtti::RTTIPath& path);
 
+		/**
+		 * The object held by this item
+		 */
+		nap::rtti::RTTIObject* getObject() { return mObject; }
+
+		/**
+		 * The path held by this item
+		 */
+		const nap::rtti::RTTIPath& getPath() { return mPath; }
+
 	protected:
 		/**
 		 * Resolve a path to get a resolved path.

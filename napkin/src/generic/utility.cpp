@@ -24,12 +24,13 @@ const QColor& napkin::getSoftBackground()
 	return c;
 }
 
-bool napkin::traverse(const QAbstractItemModel& model, std::function<bool(const QModelIndex&)> visitor, QModelIndex parent)
+bool napkin::traverse(const QAbstractItemModel& model, ModelIndexFilter visitor, QModelIndex parent, int column)
 {
 	for (int r = 0; r < model.rowCount(parent); r++)
 	{
 		auto index = model.index(r, 0, parent);
-		if (!visitor(index))
+		auto colindex = model.index(r, column, parent);
+		if (!visitor(colindex))
 			return false;
 		if (model.hasChildren(index))
 			if (!traverse(model, visitor, index))
@@ -38,7 +39,22 @@ bool napkin::traverse(const QAbstractItemModel& model, std::function<bool(const 
 	return true;
 }
 
-QModelIndex napkin::findItemInModel(const QAbstractItemModel& model, std::function<bool(const QModelIndex& idx)> condition)
+bool napkin::traverse(const QStandardItemModel& model, ModelItemFilter visitor, QModelIndex parent, int column)
+{
+	for (int r = 0; r < model.rowCount(parent); r++)
+	{
+		auto index = model.index(r, 0, parent);
+		auto colindex = model.index(r, column, parent);
+		if (!visitor(model.itemFromIndex(colindex)))
+			return false;
+		if (model.hasChildren(index))
+			if (!traverse(model, visitor, index))
+				return false;
+	}
+	return true;
+}
+
+QModelIndex napkin::findIndexInModel(const QAbstractItemModel& model, ModelIndexFilter condition, int column)
 {
 	QModelIndex foundIndex;
 
@@ -49,9 +65,26 @@ QModelIndex napkin::findItemInModel(const QAbstractItemModel& model, std::functi
 			return false;
 		}
 		return true;
-	});
+	}, QModelIndex(), column);
 
 	return foundIndex;
+}
+
+
+QStandardItem* napkin::findItemInModel(const QStandardItemModel& model, ModelItemFilter condition, int column)
+{
+	QStandardItem* foundItem = nullptr;
+
+	traverse(model, [&foundItem, condition](QStandardItem* item) -> bool {
+		if (condition(item))
+		{
+			foundItem = item;
+			return false;
+		}
+		return true;
+	}, QModelIndex(), column);
+
+	return foundItem;
 }
 
 std::vector<rttr::type> napkin::getComponentTypes()
@@ -86,3 +119,12 @@ std::vector<rttr::type> napkin::getResourceTypes()
 	}
 	return ret;
 }
+
+nap::rtti::ResolvedRTTIPath napkin::resolve(const nap::rtti::RTTIObject& obj, nap::rtti::RTTIPath path)
+{
+	nap::rtti::ResolvedRTTIPath resolvedPath;
+	path.resolve(&obj, resolvedPath);
+	assert(resolvedPath.isValid());
+	return resolvedPath;
+}
+

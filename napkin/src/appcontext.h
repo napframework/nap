@@ -271,6 +271,14 @@ namespace napkin
 		 */
 		void objectRemoved(nap::rtti::RTTIObject& object);
 
+		/**
+		 * Qt Signal
+		 * Invoked just after a property's value has changed
+		 * @param object The object that has the changed property
+		 * @param path The path to the property that has changed
+		 */
+		void propertyValueChanged(nap::rtti::RTTIObject& object, const nap::rtti::RTTIPath& path);
+
 	private:
 		AppContext();
 
