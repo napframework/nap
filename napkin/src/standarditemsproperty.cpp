@@ -169,14 +169,7 @@ QVariant napkin::PointerValueItem::data(int role) const
 {
 	if (role == Qt::DisplayRole || role == Qt::EditRole)
 	{
-		nap::rtti::ResolvedRTTIPath resolvedPath;
-		assert(mPath.resolve(mObject, resolvedPath));
-		auto value = resolvedPath.getValue();
-		auto value_type = value.get_type();
-		auto wrapped_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
-		bool is_wrapper = wrapped_type != value_type;
-		nap::rtti::RTTIObject* pointee = is_wrapper ? value.extract_wrapped_value().get_value<nap::rtti::RTTIObject*>()
-													: value.get_value<nap::rtti::RTTIObject*>();
+		nap::rtti::RTTIObject* pointee = getPointee(*mObject, mPath);
 
 		if (nullptr != pointee)
 			return QString::fromStdString(pointee->mID);
@@ -184,6 +177,15 @@ QVariant napkin::PointerValueItem::data(int role) const
 			return "NULL";
 	}
 	return QStandardItem::data(role);
+}
+
+void napkin::PointerValueItem::setData(const QVariant& value, int role)
+{
+	if (role == Qt::EditRole) {
+		napkin::AppContext::get().executeCommand(new SetValueCommand(mObject, mPath, value));
+	} else {
+		QStandardItem::setData(value, role);
+	}
 }
 
 napkin::PointerValueItem::PointerValueItem(nap::rtti::RTTIObject* object, const nap::rtti::RTTIPath path,
@@ -205,11 +207,6 @@ int napkin::PointerValueItem::type() const
 	return UserType + StandardItemTypeID::PointerValueID;
 }
 
-void napkin::PointerValueItem::setData(const QVariant& value, int role)
-{
-	QStandardItem::setData(value, role);
-}
-
 void napkin::EmbeddedPointerItem::populateChildren()
 {
 	// First resolve the pointee, after that behave like compound
@@ -227,7 +224,6 @@ void napkin::EmbeddedPointerItem::populateChildren()
 		assert(false); // Embedded pointer always has a target?
 		return;
 	}
-
 
 	auto object = pointee;
 
