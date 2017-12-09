@@ -12,15 +12,11 @@ source_group("headers" FILES ${HEADERS})
 source_group("sources" FILES ${SOURCES})
 source_group("shaders" FILES ${SHADERS})
 
-set(pybind11_DIR "${CMAKE_CURRENT_LIST_DIR}/../../../thirdparty/pybind11/install/share/cmake/pybind11")
-find_package(pybind11) 
-
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS})
 set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Apps)
-add_dependencies(${PROJECT_NAME} fbxconverter mod_nappython)
+add_dependencies(${PROJECT_NAME} fbxconverter)
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${pybind11_INCLUDE_DIRS} src)
 target_link_libraries(${PROJECT_NAME} mod_napkalvertoren)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
