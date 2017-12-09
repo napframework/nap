@@ -87,7 +87,6 @@ QWidget* PropertyValueItemDelegate::createEditor(QWidget* parent, const QStyleOp
 	auto type = getTypeFromModelIndex(index);
 	if (type.is_enumeration())
 	{
-		int val = index.data(Qt::DisplayRole).toInt();
 		auto combo = new QComboBox(parent);
 		combo->setFocusPolicy(Qt::StrongFocus);
 		QStringList values;

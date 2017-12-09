@@ -121,6 +121,16 @@ namespace napkin
 	std::vector<rttr::type> getResourceTypes();
 
 	/**
+	 * Given a Pointer Property (or how do you call them), find the object it's pointing to
+	 */
+	nap::rtti::RTTIObject* getPointee(const nap::rtti::RTTIObject& obj, const nap::rtti::RTTIPath& path);
+
+	/**
+	 * Given a Pointer Property (i like this name), set its pointee using a string.
+	 */
+	bool setPointee(const nap::rtti::RTTIObject& obj, const nap::rtti::RTTIPath& path, const std::string& target);
+
+	/**
 	 * @tparam QEnum The enum type to use
 	 * @param value The enum value to get the string from.
 	 * @return A string representing the enum value
