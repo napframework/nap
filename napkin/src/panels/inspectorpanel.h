@@ -51,6 +51,13 @@ namespace napkin
 		 */
 		void populateItems();
 
+		/**
+		 * Invoked when an object's property's value has changed
+		 * @param object The object owning the property
+		 * @param path The path to the property
+		 */
+		void onPropertyValueChanged(nap::rtti::RTTIObject& object, const nap::rtti::RTTIPath& path);
+
 		nap::rtti::RTTIObject* mObject = nullptr; // The object currently used by this model
 	};
 

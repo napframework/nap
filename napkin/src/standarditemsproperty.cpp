@@ -280,16 +280,16 @@ QVariant napkin::PropertyValueItem::data(int role) const
 
 void napkin::PropertyValueItem::setData(const QVariant& value, int role)
 {
+	nap::rtti::ResolvedRTTIPath resolvedPath;
+	assert(mPath.resolve(mObject, resolvedPath));
+
 	if (role == Qt::EditRole)
 	{
-		auto undoCommand = new napkin::SetValueCommand(mObject, mPath, value);
-		napkin::AppContext::get().getUndoStack().push(undoCommand);
+		napkin::AppContext::get().executeCommand(new SetValueCommand(mObject, mPath, value));
 	}
 
 	if (role == Qt::DisplayRole)
 	{
-		nap::rtti::ResolvedRTTIPath resolvedPath;
-		assert(mPath.resolve(mObject, resolvedPath));
 		bool ok;
 		auto resultValue = napkin::fromQVariant(resolvedPath.getType(), value, &ok);
 		if (ok)

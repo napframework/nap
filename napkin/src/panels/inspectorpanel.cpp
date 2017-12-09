@@ -2,8 +2,8 @@
 #include "commands.h"
 #include "napkinglobals.h"
 #include <QtWidgets/QApplication>
-#include <standarditemsproperty.h>
 #include <generic/utility.h>
+#include <standarditemsproperty.h>
 
 using namespace nap::rtti;
 
@@ -23,6 +23,8 @@ void napkin::InspectorModel::setObject(RTTIObject* object)
 napkin::InspectorModel::InspectorModel() : QStandardItemModel()
 {
 	setHorizontalHeaderLabels({TXT_LABEL_NAME, TXT_LABEL_VALUE, TXT_LABEL_TYPE});
+	connect(&AppContext::get(), &AppContext::propertyValueChanged,
+			this, &InspectorModel::onPropertyValueChanged);
 }
 
 
@@ -80,30 +82,50 @@ QVariant napkin::InspectorModel::data(const QModelIndex& index, int role) const
 
 bool napkin::InspectorModel::setData(const QModelIndex& index, const QVariant& value, int role)
 {
-	if (role == Qt::EditRole)
-	{
-		auto item = itemFromIndex(index);
-
-		{
-			auto valueItem = dynamic_cast<PropertyValueItem*>(item);
-			if (valueItem!= nullptr) {
-				valueItem->setData(value, Qt::EditRole);
-				return true;
-			}
-		}
-		{
-			// TODO: this is just a passthrough until we get drag & drop
-			auto valueItem = dynamic_cast<PointerValueItem*>(item);
-			if (valueItem == nullptr) {
-				valueItem->setData(value, Qt::EditRole);
-			}
-		}
-		return true;
-	}
 	return QStandardItemModel::setData(index, value, role);
+//	if (role == Qt::EditRole)
+//	{
+//		auto valueItem = dynamic_cast<PropertyValueItem*>(itemFromIndex(index));
+//		if (valueItem != nullptr)
+//		{
+//			valueItem->setData(value, Qt::EditRole);
+//			AppContext::get().executeCommand(new SetValueCommand(value.))
+//			return true;
+//		}
+//	}
 }
 
 nap::rtti::RTTIObject* napkin::InspectorModel::getObject()
 {
 	return mObject;
+}
+
+
+void napkin::InspectorModel::onPropertyValueChanged(RTTIObject& object, const RTTIPath& path)
+{
+	auto resolvedPath = resolve(object, path);
+
+	ModelItemFilter filter = [&](QStandardItem* item) -> bool
+	{
+		if (item == nullptr)
+			return false;
+
+		auto objItem = dynamic_cast<PropertyValueItem*>(item);
+		if (objItem == nullptr)
+			return false;
+
+		if (objItem->getObject() != &object)
+			return false;
+
+		auto resolvedItemPath = resolve(*objItem->getObject(), objItem->getPath());
+		if (resolvedItemPath.getProperty() != resolvedPath.getProperty())
+			return false;
+
+		return true;
+	};
+
+	auto foundItem = findItemInModel(*this, filter, 1);
+
+	if (foundItem != nullptr)
+		foundItem->setText(QString::fromStdString(object.mID));
 }

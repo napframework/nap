@@ -1,6 +1,15 @@
+#include <nap/logger.h>
+#include <generic/utility.h>
 #include "commands.h"
+#include "appcontext.h"
 
 using namespace napkin;
+
+SetValueCommand::SetValueCommand(nap::rtti::RTTIObject* ptr, nap::rtti::RTTIPath path, QVariant newValue)
+		: mObject(ptr), mPath(path), mNewValue(newValue)
+{
+	setText("Set value on: " + QString::fromStdString(path.toString()));
+}
 
 void SetValueCommand::undo()
 {
@@ -14,14 +23,14 @@ void SetValueCommand::undo()
 	rttr::variant variant = fromQVariant(resolvedPath.getType(), mOldValue, &ok);
 	assert(ok);
 	resolvedPath.setValue(variant);
+
+	AppContext::get().propertyValueChanged(*mObject, mPath);
 }
 
 void SetValueCommand::redo()
 {
 	// retrieve and store current value
-	nap::rtti::ResolvedRTTIPath resolvedPath;
-	mPath.resolve(mObject, resolvedPath);
-	assert(resolvedPath.isValid());
+	auto resolvedPath = resolve(*mObject, mPath);
 	rttr::variant oldValueVariant = resolvedPath.getValue();
 	assert(toQVariant(resolvedPath.getType(), oldValueVariant, mOldValue));
 
@@ -30,21 +39,19 @@ void SetValueCommand::redo()
 	rttr::variant variant = fromQVariant(resolvedPath.getType(), mNewValue, &ok);
 	assert(ok);
 	resolvedPath.setValue(variant);
+
+	AppContext::get().propertyValueChanged(*mObject, mPath);
 }
 
-SetValueCommand::SetValueCommand(nap::rtti::RTTIObject* ptr, nap::rtti::RTTIPath path, QVariant newValue)
-        : mObject(ptr), mPath(path), mNewValue(newValue)
+
+void AddObjectCommand::redo()
 {
-    setText("Set value on: " + QString::fromStdString(path.toString()));
-}
 
+}
 void AddObjectCommand::undo()
 {
 }
 
-void AddObjectCommand::redo()
-{
-}
 
 void DeleteObjectCommand::undo()
 {

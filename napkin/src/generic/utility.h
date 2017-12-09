@@ -36,8 +36,21 @@ namespace napkin
 	 * @param visitor The function to invoke on every item, return true if the traversal should continue
 	 * @return false if the the visitor has decided to stop traversal
 	 */
-	bool traverse(const QAbstractItemModel& model, std::function<bool(const QModelIndex&)> visitor,
-				  QModelIndex parent = QModelIndex());
+	using ModelIndexFilter = std::function<bool(const QModelIndex&)>;
+	bool traverse(const QAbstractItemModel& model, ModelIndexFilter visitor,
+				  QModelIndex parent = QModelIndex(), int column = 0);
+
+	/**
+	 * Recursively traverse the provided model and invoke the provided visitor for every item.
+	 * @param model The mod
+	 * @param parent The root index to start at
+	 * @param visitor The function to invoke on every item, return true if the traversal should continue
+	 * @return false if the the visitor has decided to stop traversal
+	 */
+	using ModelItemFilter = std::function<bool(QStandardItem*)>;
+	bool traverse(const QStandardItemModel& model, ModelItemFilter filter,
+					   QModelIndex parent = QModelIndex(), int column = 0);
+
 
 	/**
 	 * Traverse a model and using the given filter function, return the first index.
@@ -46,8 +59,56 @@ namespace napkin
 	 * index.
 	 * @return The model index representing the item to be found.
 	 */
-	QModelIndex findItemInModel(const QAbstractItemModel& model, std::function<bool(const QModelIndex& idx)> condition);
+	QModelIndex findIndexInModel(const QAbstractItemModel& model, ModelIndexFilter condition, int column = 0);
 
+	/**
+	 * Traverse a model and using the given filter function, return the first index.
+	 * @param model The model to search
+	 * @param condition The filter function that when it returns true, the traversal will stop and return the current
+	 * index.
+	 * @return The model index representing the item to be found.
+	 */
+	QStandardItem* findItemInModel(const QStandardItemModel& model, ModelItemFilter condition, int column = 0);
+
+
+	/**
+	 * Traverse a model and find the QStandardItem subclass representing the specified object
+	 * @param model The model to search
+	 * @param condition The filter function that when it returns true, the traversal will stop and return the current
+	 * index.
+	 * @return The model index representing the item to be found.
+	 */
+	template<typename T>
+	T* findInModel(const QStandardItemModel& model, const nap::rtti::RTTIObject& obj, int column = 0)
+	{
+		T* foundItem = nullptr;
+
+		findIndexInModel(model, [&model, &foundItem, &obj](const QModelIndex& idx) -> bool {
+			QStandardItem* item = model.itemFromIndex(idx);
+			if (item == nullptr)
+				return false;
+
+			auto objItem = dynamic_cast<T*>(item);
+			if (objItem == nullptr)
+				return false;
+
+			if (objItem->getObject() == &obj)
+			{
+				foundItem = objItem;
+				return true;
+			}
+
+			return false;
+		}, column);
+
+		return foundItem;
+
+	}
+
+	/**
+	 * Resolve a property path
+	 */
+	nap::rtti::ResolvedRTTIPath resolve(const nap::rtti::RTTIObject& obj, nap::rtti::RTTIPath path);
 
 	/**
 	 * @return All nap component types in the rtti system
@@ -70,3 +131,4 @@ namespace napkin
 		return QMetaEnum::fromType<QEnum>().valueToKey(value);
 	}
 }
+

@@ -17,14 +17,14 @@ namespace napkin
 	{
 	public:
         /**
-         * Undo
-         */
-		void undo() override;
-
-        /**
          * Redo
          */
 		void redo() override;
+
+		/**
+		 * Undo
+		 */
+		void undo() override;
 	};
 
     /**
@@ -74,4 +74,5 @@ namespace napkin
 		QVariant mNewValue; // The new value
 		QVariant mOldValue; // The old value
 	};
+
 };

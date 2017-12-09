@@ -1,4 +1,5 @@
 #include "standarditemsobject.h"
+#include "commands.h"
 #include <appcontext.h>
 #include <generic/utility.h>
 #include <sceneservice.h>
@@ -8,11 +9,11 @@ napkin::GroupItem::GroupItem(const QString& name) : QStandardItem(name)
 {
 }
 
-napkin::ObjectItem::ObjectItem(nap::rtti::RTTIObject& rttiObject) : mObject(rttiObject)
+napkin::ObjectItem::ObjectItem(nap::rtti::RTTIObject* rttiObject) : mObject(rttiObject)
 {
 	refresh();
 
-    setIcon(AppContext::get().getResourceFactory().iconFor(rttiObject));
+    setIcon(AppContext::get().getResourceFactory().iconFor(*rttiObject));
 }
 
 void napkin::ObjectItem::refresh()
@@ -22,15 +23,27 @@ void napkin::ObjectItem::refresh()
 
 const QString napkin::ObjectItem::getName() const
 {
-	return QString::fromStdString(mObject.mID);
+	return QString::fromStdString(mObject->mID);
 }
 
-nap::rtti::RTTIObject& napkin::ObjectItem::getObject() const
+nap::rtti::RTTIObject* napkin::ObjectItem::getObject() const
 {
 	return mObject;
 }
 
-napkin::EntityItem::EntityItem(nap::Entity& entity) : ObjectItem(entity)
+void napkin::ObjectItem::setData(const QVariant& value, int role)
+{
+	if (role == Qt::EditRole)
+	{
+		nap::rtti::RTTIPath path;
+		path.pushAttribute("mID");
+		AppContext::get().executeCommand(new SetValueCommand(mObject, path, value.toString()));
+		return;
+	}
+	QStandardItem::setData(value, role);
+}
+
+napkin::EntityItem::EntityItem(nap::Entity& entity) : ObjectItem(&entity)
 {
 
 	for (auto& child : entity.mChildren)
@@ -48,17 +61,17 @@ napkin::EntityItem::EntityItem(nap::Entity& entity) : ObjectItem(entity)
 
 nap::Entity& napkin::EntityItem::getEntity()
 {
-	auto& e = *rtti_cast<nap::Entity*>(&mObject);
+	auto& e = *rtti_cast<nap::Entity*>(mObject);
 	return *e;
 }
 
-napkin::ComponentItem::ComponentItem(nap::Component& comp) : ObjectItem(comp)
+napkin::ComponentItem::ComponentItem(nap::Component& comp) : ObjectItem(&comp)
 {
 }
 
 nap::Component& napkin::ComponentItem::getComponent()
 {
-	auto& o = *rtti_cast<nap::Component*>(&mObject);
+	auto& o = *rtti_cast<nap::Component*>(mObject);
 	return *o;
 }
 
