@@ -65,7 +65,8 @@ napkin::BaseRTTIPathItem::BaseRTTIPathItem(const QString& name, nap::rtti::RTTIO
 nap::rtti::ResolvedRTTIPath napkin::BaseRTTIPathItem::resolvePath()
 {
 	nap::rtti::ResolvedRTTIPath resolvedPath;
-	assert(mPath.resolve(mObject, resolvedPath));
+	bool success = mPath.resolve(mObject, resolvedPath);
+	assert(success);
 	return resolvedPath;
 }
 
