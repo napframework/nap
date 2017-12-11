@@ -60,6 +60,7 @@ namespace nap
 			{
 				case ColorPaletteCycleMode::Off:
 					break;
+					mTime = 0.0;
 				case ColorPaletteCycleMode::Random:
 				{
 					int new_idx = mCurrentIndex;
@@ -75,7 +76,6 @@ namespace nap
 					break;
 				}
 			}
-			mTime = 0.0;
 		}
 		mTime += deltaTime;
 	}
