@@ -75,4 +75,31 @@ namespace napkin
 		QVariant mOldValue; // The old value
 	};
 
+	class SetPointerValueCommand : public QUndoCommand
+	{
+	public:
+        /**
+         * @param ptr The pointer to the object
+         * @param path The path to the property
+         * @param newValue The new value of the property
+         */
+		SetPointerValueCommand(nap::rtti::RTTIObject* ptr, nap::rtti::RTTIPath path, nap::rtti::RTTIObject* newValue);
+
+        /**
+         * Undo
+         */
+        void undo() override;
+
+        /**
+         * Redo
+         */
+        void redo() override;
+
+	private:
+		nap::rtti::RTTIObject*	mObject;	// The object that has the property
+		nap::rtti::RTTIPath		mPath;		// The path to the property
+		nap::rtti::RTTIObject*	mNewValue;	// The new value
+		nap::rtti::RTTIObject*	mOldValue;	// The old value
+	};
+
 };

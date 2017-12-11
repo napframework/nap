@@ -181,9 +181,16 @@ QVariant napkin::PointerValueItem::data(int role) const
 
 void napkin::PointerValueItem::setData(const QVariant& value, int role)
 {
-	if (role == Qt::EditRole) {
-		napkin::AppContext::get().executeCommand(new SetValueCommand(mObject, mPath, value));
-	} else {
+	if (role == Qt::EditRole) 
+	{
+		nap::rtti::RTTIObject* new_target = AppContext::get().getObject(value.toString().toStdString());
+		if (new_target == nullptr)
+			return;
+
+		napkin::AppContext::get().executeCommand(new SetPointerValueCommand(mObject, mPath, new_target));
+	} 
+	else 
+	{
 		QStandardItem::setData(value, role);
 	}
 }
