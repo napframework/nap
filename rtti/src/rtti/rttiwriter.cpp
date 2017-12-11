@@ -181,11 +181,6 @@ namespace nap
 			// Write all properties
 			for (const rtti::Property& property : actual_object.get_derived_type().get_properties())
 			{
-				// Don't write the ID for embedded objects (if the writer supports it)
-				bool is_id = RTTIObject::isIDProperty(actual_object, property);
-				if (is_id && isEmbeddedObject && writer.supportsEmbeddedPointers())
-					continue;
-
 				// Get the value of the property
 				rtti::Variant prop_value = property.get_value(actual_object);
 				assert(prop_value.is_valid());
