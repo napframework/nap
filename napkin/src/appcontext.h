@@ -132,6 +132,13 @@ namespace napkin
 		nap::rtti::RTTIObject* getObject(const std::string& name);
 
 		/**
+		 * Get all objects of the specified type 
+		 * @param type The type of objects to get
+		 * @return All objects of the specified type, including derived types
+		 */
+		std::vector<nap::rtti::RTTIObject*> getObjectsOfType(const nap::rtti::TypeInfo& type) const;
+
+		/**
 		 * Retrieve the parent of the specified Entity
 		 * @param entity The entity to find the parent from.
 		 * @return The provided Entity's parent or nullptr if the Entity has no parent.
@@ -164,9 +171,10 @@ namespace napkin
 		/**
 		 * Add an object of the specified type.
 		 * @param type The type of the desired object.
+		 * @param selectNewObject Whether the newly created object should be selected in any views watching for object addition
 		 * @return The newly created object
 		 */
-		nap::rtti::RTTIObject* addObject(rttr::type type);
+		nap::rtti::RTTIObject* addObject(rttr::type type, bool selectNewObject);
 
 		/**
 		 * Obliterate the specified object
@@ -261,8 +269,9 @@ namespace napkin
 		 * Qt Signal
 		 * Invoked when after any object has been added (this includes Entities)
 		 * @param obj The newly added object
+		 * @param selectNewObject Whether the newly created object should be selected in any views watching for object addition
 		 */
-		void objectAdded(nap::rtti::RTTIObject& obj);
+		void objectAdded(nap::rtti::RTTIObject& obj, bool selectNewObject);
 
 		/**
 		 * Qt Signal

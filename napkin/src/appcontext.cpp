@@ -203,15 +203,24 @@ nap::Component* AppContext::addComponent(nap::Entity& entity, rttr::type type)
 	return comp;
 }
 
-nap::rtti::RTTIObject* AppContext::addObject(rttr::type type)
+nap::rtti::RTTIObject* AppContext::addObject(rttr::type type, bool selectNewObject)
 {
-	assert(type.can_create_instance());
+	nap::rtti::Factory& factory = getCore().getResourceManager()->getFactory();
+	assert(factory.canCreate(type));
 	assert(type.is_derived_from<nap::rtti::RTTIObject>());
-	rttr::variant variant = type.create();
-	nap::rtti::RTTIObject* obj = variant.get_value<nap::rtti::RTTIObject*>();
-	obj->mID = getUniqueName(type.get_name().data());
+
+	// Strip off namespace prefixes when creating new objects
+	std::string base_name = type.get_name().data();
+	size_t last_colon = base_name.find_last_of(':');
+	if (last_colon != std::string::npos)
+		base_name = base_name.substr(last_colon + 1);
+
+	nap::rtti::RTTIObject* obj = factory.create(type);
+	obj->mID = getUniqueName(base_name);
+
 	mObjects.emplace_back(obj);
-	objectAdded(*obj);
+	objectAdded(*obj, selectNewObject);
+
 	return obj;
 }
 
@@ -231,6 +240,16 @@ nap::rtti::RTTIObject* AppContext::getObject(const std::string& name)
 	if (it == mObjects.end())
 		return nullptr;
 	return it->get();
+}
+
+std::vector<nap::rtti::RTTIObject*> AppContext::getObjectsOfType(const nap::rtti::TypeInfo& type) const
+{
+	std::vector<nap::rtti::RTTIObject*> result;
+	for (auto& object : mObjects)
+		if (object->get_type().is_derived_from(type))
+			result.push_back(object.get());
+
+	return result;
 }
 
 nap::rtti::ObjectList AppContext::getObjectPointers()
