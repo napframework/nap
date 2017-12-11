@@ -10,6 +10,17 @@ namespace nap
 	class CompositionComponentInstance;
 
 	/**
+	 *	Determines how the compositioncomponent cycles through the available compositions
+	 */
+	enum class CompositionCycleMode : int
+	{
+		Off			= 0,			///< Composition does not cycle automatically
+		Random		= 1,			///< A new composition is chosen when the active one finishes
+		Sequence	= 2				///< Plays through all the compositions one by one
+	};
+
+
+	/**
 	 *	compositioncomponent
 	 */
 	class NAPAPI CompositionComponent : public Component
@@ -24,9 +35,10 @@ namespace nap
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		std::vector<nap::ObjectPtr<Composition>> mCompositions;		///< Property: All compositions available to the system
-		int mIndex = 0;												///< Property: The currently selected composition
-		float mDurationScale = 1.0f;								///< Property: Acts as a scale on the duration of the composition
+		std::vector<nap::ObjectPtr<Composition>>	mCompositions;								///< Property: All compositions available to the system
+		int											mIndex = 0;									///< Property: The currently selected composition
+		float										mDurationScale = 1.0f;						///< Property: Acts as a scale on the duration of the composition
+		CompositionCycleMode						mCycleMode = CompositionCycleMode::Off;		///< Property: How the component cycles through all the available sequences
 	};
 
 
@@ -81,20 +93,33 @@ namespace nap
 		 */
 		void setDurationScale(float scale);
 
-	private:
-		std::vector<Composition*>	mCompositions;								///< List of all available compositions
-		Composition*				mSelection = nullptr;						///< Currently selected composition
-		std::unique_ptr<CompositionInstance> mCompositionInstance;				///< CompositionInstance created when switching compositions
+		/**
+		 * Sets the current cycle mode
+		 * @param mode the new cycle mode
+		 */
+		void setCycleMode(CompositionCycleMode mode)							{ mCycleMode = mode; }
 
 		/**
-		 * Occurs when a composition finishes execution
-		 * This causes a new composition to be selected and watched
-		 * @param composition the composition that finished playback
+		 *	@return the current composition cycle mode
 		 */
+		CompositionCycleMode getCycleMode() const								{ return mCycleMode; }
+
+	private:
+		std::vector<Composition*>				mCompositions;								///< List of all available compositions
+		Composition*							mSelection = nullptr;						///< Currently selected composition
+		int										mCurrentIndex = -1;							///< Currently selected composition @index
+		std::unique_ptr<CompositionInstance>	mCompositionInstance;						///< CompositionInstance created when switching compositions
+		CompositionCycleMode					mCycleMode = CompositionCycleMode::Off;		///< How this component cycles through the various available compositions
+		bool									mSwitch = false;							///< Set to true when a composition finishes playback
+		float									mDurationScale = 1.0f;						///< Scales the length of a composition
+
+		/**
+		* Occurs when a composition finishes execution
+		* This causes a new composition to be selected and watched
+		* @param composition the composition that finished playback
+		*/
 		void compositionFinised(CompositionInstance& composition);
 		NSLOT(mCompositionFinishedSlot, CompositionInstance&, compositionFinised)
 
-		bool mSwitch = false;													///< Set to true when a composition finishes playback
-		float mDurationScale = 1.0f;											///< Scales the length of a composition
 	};
 }

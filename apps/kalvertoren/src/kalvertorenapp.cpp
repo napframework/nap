@@ -71,6 +71,10 @@ namespace nap
 		// Force paint method
 		selectPaintMethod();
 
+		// Force cycle modes
+		selectCompositionCycleMode();
+		selectPaletteCycleMode();
+
 		// Position our debug windows
 		positionDebugViews();
 
@@ -274,16 +278,11 @@ namespace nap
 		ColorPaletteComponentInstance& palette_selector =  compositionEntity->getComponent<ColorPaletteComponentInstance>();
 		CompositionComponentInstance& composition_selector = compositionEntity->getComponent<CompositionComponentInstance>();
 
-		ImGui::Begin("Display Settings");
-		
 		// Resets all the tracers
-		if (ImGui::Button("Reset Walker"))
-		{
-			for (auto& tracer : tracer_painters)
-			{
-				tracer->reset();
-			}
-		}
+		ImGui::Begin("Kalvertoren");
+		ImGui::BeginChild("Display Settings", ImVec2(0,110), true, ImGuiWindowFlags_AlwaysAutoResize);
+		ImGui::AlignTextToFramePadding();
+		ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Display Settings");
 
 		// Changes the mesh paint mode
 		if (ImGui::Combo("Mode", &mPaintMode, "Channel Walker\0Bounding Box\0Composition\0\0"))
@@ -296,51 +295,38 @@ namespace nap
 		{
 			mesh_selector.select(mMeshSelection);
 		}
-		
-		// Change tracer walk speed
-		if (ImGui::SliderFloat("Channel Speed", &(mChannelSpeed), 0.0f, 20.0f))
-		{
-			for (auto& tracer : tracer_painters)
-			{
-				tracer->setSpeed(mChannelSpeed);
-			}
-		}
-		
-		// Allows the user to select a channel to display on the tracer
-		if (ImGui::InputInt("Select Channel", &mSelectChannel, 1))
-		{
-			for (auto& tracer : tracer_painters)
-			{
-				tracer->selectChannel(mSelectChannel);
-			}
-		}
-
-		// Show some additional info
-		for(int i = 0; i<mesh_selector.getLedMeshes().size(); i++)
-		{
-			std::vector<std::string> parts;
-			utility::splitString(mesh_selector.getLedMeshes()[i]->mTriangleMesh->mPath, '/', parts);
-			
-			ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), parts.back().c_str());
-			ImGui::Text(utility::stringFormat("Channel: %d", i).c_str());
-			const std::unordered_set<ArtNetController::Address>& addresses = mesh_selector.getLedMeshes()[i]->mTriangleMesh->getAddresses();
-			
-			std::string universes = "Addresses:";
-			for (auto& address : addresses)
-			{
-				uint8 sub(0), uni(0);
-				ArtNetController::convertAddress(address, sub, uni);
-				universes += utility::stringFormat(" %d:%d", sub, uni);
-			}
-			
-			ImGui::Text(universes.c_str());
-		}
-		ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),"%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-		ImGui::End();
+		ImGui::EndChild();
 
 		// Composition settings
-		ImGui::Begin("Composition Settings");
+		ImGui::BeginChild("Composition Settings", ImVec2(ImGui::GetWindowContentRegionWidth() * 1.0, 110), true);
+		ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Composition Settings");
+		ImGui::AlignTextToFramePadding();
 
+		// Changes the mesh paint mode
+		if (ImGui::Combo("Cycle Mode", &mCompositionCycleMode, "Off\0Random\0List\0\0"))
+		{
+			selectCompositionCycleMode();
+		}
+
+		// Changes the color palette
+		if (ImGui::SliderInt("Select", &mCompositionSelection, 0, composition_selector.getCount() - 1))
+		{
+			composition_selector.select(mCompositionSelection);
+		}
+
+		// Changes the duration
+		if (ImGui::SliderFloat("Cycle Speed", &mDurationScale, 0.0f, 10.0f))
+		{
+			composition_selector.setDurationScale(mDurationScale);
+		}
+		ImGui::EndChild();
+
+		// COlor Settings
+		ImGui::BeginChild("Color Settings", ImVec2(ImGui::GetWindowContentRegionWidth() * 1.0, 150), true);
+		ImGui::AlignTextToFramePadding();
+		ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Color Settings");
+
+		// If index colors are drawn
 		if (ImGui::Checkbox("Show Index Colors", &mShowIndexColors))
 		{
 			for (auto& comp_painter : composition_painters)
@@ -350,19 +336,13 @@ namespace nap
 		}
 
 		// Turn color cycling on / off
-		if (ImGui::Checkbox("Cycle Color", &mCycleColors))
+		if (ImGui::Combo("Cycle Mode", &mColorPaletteCycleMode, "Off\0Random\0List\0\0"))
 		{
-			palette_selector.setCycle(mCycleColors);
+			selectPaletteCycleMode();
 		}
 
 		// Changes the color palette
-		if (ImGui::SliderInt("Composition", &mCompositionSelection, 0, composition_selector.getCount() - 1))
-		{
-			composition_selector.select(mCompositionSelection);
-		}
-
-		// Changes the color palette
-		if (ImGui::SliderInt("Color Palette", &mPaletteSelection, 0, palette_selector.getCount() - 1))
+		if (ImGui::SliderInt("Select Palette", &mPaletteSelection, 0, palette_selector.getCount() - 1))
 		{
 			palette_selector.select(mPaletteSelection);
 		}
@@ -376,18 +356,69 @@ namespace nap
 			}
 		}
 
-		// Changes the duration
-		if (ImGui::SliderFloat("Time Scale", &mDurationScale, 0.0f, 10.0f))
-		{
-			composition_selector.setDurationScale(mDurationScale);
-		}
-
 		// Changes the time at which a new color palette is selected
-		if (ImGui::SliderFloat("Cycle Time", &mCycleTime, 0.0f, 10.0f))
+		if (ImGui::SliderFloat("Cycle Time", &mColorCycleTime, 0.0f, 10.0f))
 		{
-			palette_selector.setCycleSpeed(mCycleTime);
+			palette_selector.setCycleSpeed(mColorCycleTime);
+		}
+		ImGui::EndChild();
+
+		// Walker Settings
+		ImGui::BeginChild("Walker Settings", ImVec2(ImGui::GetWindowContentRegionWidth(), 110), true);
+		ImGui::AlignTextToFramePadding();
+		ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Walker Settings");
+
+		if (ImGui::Button("Reset Walker"))
+		{
+			for (auto& tracer : tracer_painters)
+			{
+				tracer->reset();
+			}
 		}
 
+		if (ImGui::SliderFloat("Walk Speed", &(mChannelSpeed), 0.0f, 20.0f))
+		{
+			for (auto& tracer : tracer_painters)
+			{
+				tracer->setSpeed(mChannelSpeed);
+			}
+		}
+
+		// Allows the user to select a channel to display on the tracer
+		if (ImGui::InputInt("Select Channel", &mSelectChannel, 1))
+		{
+			for (auto& tracer : tracer_painters)
+			{
+				tracer->selectChannel(mSelectChannel);
+			}
+		}
+		ImGui::EndChild();
+
+		// Show some additional info
+		ImGui::BeginChild("Artnet Info", ImVec2(ImGui::GetWindowContentRegionWidth() * 1.0, 200), true);
+		ImGui::AlignTextToFramePadding();
+		ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Artnet Information");
+		for (int i = 0; i < mesh_selector.getLedMeshes().size(); i++)
+		{
+			std::vector<std::string> parts;
+			utility::splitString(mesh_selector.getLedMeshes()[i]->mTriangleMesh->mPath, '/', parts);
+
+			ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), parts.back().c_str());
+			ImGui::Text(utility::stringFormat("Channel: %d", i).c_str());
+			const std::unordered_set<ArtNetController::Address>& addresses = mesh_selector.getLedMeshes()[i]->mTriangleMesh->getAddresses();
+
+			std::string universes = "Addresses:";
+			for (auto& address : addresses)
+			{
+				uint8 sub(0), uni(0);
+				ArtNetController::convertAddress(address, sub, uni);
+				universes += utility::stringFormat(" %d:%d", sub, uni);
+			}
+
+			ImGui::Text(universes.c_str());
+		}
+		ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		ImGui::EndChild();
 		ImGui::End();
 
 	}
@@ -423,4 +454,19 @@ namespace nap
 			}
 		}
 	}
+
+
+	void KalvertorenApp::selectCompositionCycleMode()
+	{
+		CompositionComponentInstance& comp = compositionEntity->getComponent<CompositionComponentInstance>();
+		comp.setCycleMode(static_cast<nap::CompositionCycleMode>(mCompositionCycleMode));
+	}
+
+
+	void KalvertorenApp::selectPaletteCycleMode()
+	{
+		ColorPaletteComponentInstance& comp = compositionEntity->getComponent<ColorPaletteComponentInstance>();
+		comp.setCycleMode(static_cast<nap::ColorPaletteCycleMode>(mColorPaletteCycleMode));
+	}
+
 }

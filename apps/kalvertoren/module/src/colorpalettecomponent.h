@@ -9,6 +9,18 @@ namespace nap
 {
 	class ColorPaletteComponentInstance;
 
+
+   /**
+	* Determines how the color palette component cycles through the available compositions
+	*/
+	enum class ColorPaletteCycleMode : int
+	{
+		Off			= 0,			///< Palettes do not cycle automatically
+		Random		= 1,			///< A new palette is chosen when the active one finishes
+		Sequence	= 2				///< Plays through all the compositions one by one
+	};
+
+
 	/**
 	 *	colorpalettecomponent
 	 */
@@ -24,10 +36,10 @@ namespace nap
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		ObjectPtr<LedColorContainer>	mColors = nullptr;				///< Property: Link to all the available colors and the index map
-		int								mIndex = 0;						///< Property: Current palette selection
-		bool							mCycle = false;					///< Property: If we cycle through the color palette
-		float							mCycleSpeed = 1.0f;				///< Property: Time it takes to jump to a new color palette
+		ObjectPtr<LedColorContainer>	mColors = nullptr;							///< Property: Link to all the available colors and the index map
+		int								mIndex = 0;									///< Property: Current palette selection
+		float							mCycleSpeed = 1.0f;							///< Property: Time it takes to jump to a new color palette
+		ColorPaletteCycleMode			mCycleMode = ColorPaletteCycleMode::Off;	///< Property: Default cycle mode
 	};
 
 
@@ -100,7 +112,12 @@ namespace nap
 		 * Sets if we want to cycle through colors
 		 * @param cycle if we want to cycle through the colors or not
 		 */
-		void setCycle(bool cycle)													{ mCycle = cycle; }
+		void setCycleMode(ColorPaletteCycleMode mode)								{ mCycleMode = mode; }
+
+		/**
+		 * @return the current cycle mode
+		 */
+		ColorPaletteCycleMode getCycleMode() const									{ return mCycleMode; }
 
 		/**
 		 * Sets the cycle speed in seconds
@@ -124,13 +141,16 @@ namespace nap
 		// Map that binds index colors to current color palette colors
 		std::map<IndexMap::IndexColor, RGBColor8> mIndexToPaletteMap;
 
-		// If we cycle through the color palette
-		bool mCycle = false;
-
 		// Cycle Speed
 		float mCycleSpeed = 1.0f;
 
 		// Current time
-		double mTime = 0.0f;
+		double mTime = 0.0;
+
+		// Current Selection
+		int mCurrentIndex = -1;
+
+		// Cycle Mode
+		ColorPaletteCycleMode mCycleMode = ColorPaletteCycleMode::Off;
 	};
 }

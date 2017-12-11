@@ -2,6 +2,7 @@
 
 // nap::layer run time class definition
 RTTI_DEFINE_BASE(nap::Layer)
+RTTI_DEFINE_BASE(nap::LayerInstance)
 
 namespace nap
 {

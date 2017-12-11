@@ -13,6 +13,7 @@ namespace nap
 	 */
 	class NAPAPI LayerInstance
 	{
+		RTTI_ENABLE()
 	public:
 		/**
 		 * Updates the LayerInstance.

@@ -442,6 +442,7 @@
 				"Background7",
 				"TestSequence"
 			],
+			"Mode" : "Sequence",
 			"Length" : 2.0
 		},
 

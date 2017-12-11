@@ -5,12 +5,18 @@
 #include <mathutils.h>
 #include <nap/logger.h>
 
+RTTI_BEGIN_ENUM(nap::ColorPaletteCycleMode)
+	RTTI_ENUM_VALUE(nap::ColorPaletteCycleMode::Off, "Off"),
+	RTTI_ENUM_VALUE(nap::ColorPaletteCycleMode::Random, "Random"),
+	RTTI_ENUM_VALUE(nap::ColorPaletteCycleMode::Sequence, "List")
+RTTI_END_ENUM
+
 // nap::colorpalettecomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::ColorPaletteComponent)
-	RTTI_PROPERTY("Colors", &nap::ColorPaletteComponent::mColors,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Index",	&nap::ColorPaletteComponent::mIndex,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Cycle",	&nap::ColorPaletteComponent::mCycle,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Speed",	&nap::ColorPaletteComponent::mCycleSpeed,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Colors",		&nap::ColorPaletteComponent::mColors,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Index",		&nap::ColorPaletteComponent::mIndex,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("CycleMode",	&nap::ColorPaletteComponent::mCycleMode,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Speed",		&nap::ColorPaletteComponent::mCycleSpeed,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::colorpalettecomponentInstance run time class definition 
@@ -36,8 +42,8 @@ namespace nap
 		if (!errorState.check(mContainer->getCount() > 0, "No color palettes specified: %s", mContainer->mID.c_str()))
 			return false;
 
-		mCycle = getComponent<ColorPaletteComponent>()->mCycle;
 		mCycleSpeed = getComponent<ColorPaletteComponent>()->mCycleSpeed;
+		mCycleMode = getComponent<ColorPaletteComponent>()->mCycleMode;
 
 		// Select current palette based on loaded index
 		select(getComponent<ColorPaletteComponent>()->mIndex);
@@ -48,12 +54,28 @@ namespace nap
 
 	void ColorPaletteComponentInstance::update(double deltaTime)
 	{
-		if (!mCycle)
-			return;
-
 		if (mTime >= mCycleSpeed)
 		{
-			select(nap::math::random(0, mContainer->getCount() - 1));
+			switch (mCycleMode)
+			{
+				case ColorPaletteCycleMode::Off:
+					break;
+				case ColorPaletteCycleMode::Random:
+				{
+					int new_idx = mCurrentIndex;
+					while (new_idx == mCurrentIndex)
+						new_idx = math::random(0, mContainer->getCount() - 1);
+					select(new_idx);
+					break;
+				}
+				case ColorPaletteCycleMode::Sequence:
+				{
+					int new_index = (mCurrentIndex + 1) % static_cast<int>(mContainer->getCount());
+					select(new_index);
+					break;
+				}
+			}
+			mTime = 0.0;
 		}
 		mTime += deltaTime;
 	}
@@ -68,6 +90,7 @@ namespace nap
 	void ColorPaletteComponentInstance::select(int index)
 	{
 		int sidx = nap::math::clamp<int>(index, 0, mContainer->getCount() - 1);
+		mCurrentIndex = sidx;
 		mSelection = mContainer->mColorPalettes[sidx].get();
 		mTime = 0.0;
 		buildMap();

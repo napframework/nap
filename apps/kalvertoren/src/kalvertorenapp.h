@@ -71,6 +71,16 @@ namespace nap
 		 */
 		void selectPaintMethod();
 
+		/**
+		 *	Sets the current composition cycle mode
+		 */
+		void selectCompositionCycleMode();
+
+		/**
+		 *	Sets the current palette cycle mode
+		 */
+		void selectPaletteCycleMode();
+
 	private:
 		// Nap Objects
 		nap::RenderService*									renderService = nullptr;
@@ -101,7 +111,9 @@ namespace nap
 		bool												mShowIndexColors = false;
 		float												mDurationScale = 1.0f;
 		bool												mCycleColors = false;
-		float												mCycleTime = 1.0f;
+		float												mColorCycleTime = 1.0f;
+		int													mCompositionCycleMode = 0;
+		int													mColorPaletteCycleMode = 0;
 
 		/**
 		 *	Renders debug views to screen

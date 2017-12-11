@@ -8,6 +8,10 @@ RTTI_BEGIN_CLASS(nap::ImageLayer)
 	RTTI_PROPERTY("Path", &nap::ImageLayer::mImagePath, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ImageLayerInstance)
+	RTTI_CONSTRUCTOR(nap::ImageLayer&)
+RTTI_END_CLASS
+
 namespace nap
 {
 	bool ImageLayer::init(utility::ErrorState& errorState)

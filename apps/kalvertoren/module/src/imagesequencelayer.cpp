@@ -10,6 +10,10 @@ RTTI_BEGIN_CLASS(nap::ImageSequenceLayer)
 	RTTI_PROPERTY("FPS",			&nap::ImageSequenceLayer::mFPS,				nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ImageSequenceLayerInstance)
+	RTTI_CONSTRUCTOR(nap::ImageSequenceLayer&)
+RTTI_END_CLASS
+
 namespace nap
 {
 	bool ImageSequenceLayer::init(utility::ErrorState& errorState)
@@ -47,6 +51,12 @@ namespace nap
 	}
 
 
+	float ImageSequenceLayer::getLength() const
+	{
+		return static_cast<float>(getNumPixmaps()) / mFPS;
+	}
+
+
 	std::unique_ptr<LayerInstance> ImageSequenceLayer::createInstance()
 	{
 		return std::make_unique<ImageSequenceLayerInstance>(*this);
@@ -63,17 +73,25 @@ namespace nap
 
 	void ImageSequenceLayerInstance::update(double deltaTime)
 	{
+		// Upload current texture data to the GPU if necessary
+		if (mNextFrameIndex != mCurrentFrameIndex)
+		{
+			Pixmap& pixmap = mLayer->getPixmap(mNextFrameIndex);
+			mCurrentFrameTexture->getTexture().setData(pixmap.getBitmap().getData());
+			mCurrentFrameIndex = mNextFrameIndex;
+		}
+
+		// Update current frame index
 		double frame_time = 1.0 / mLayer->mFPS;
 		mCurrentTime += deltaTime;
 
-		// When the frame changes, update the GPU texture
-		int new_frame_index = ((int)(mCurrentTime / frame_time)) % mLayer->getNumPixmaps();
-		if (new_frame_index != mCurrentFrameIndex)
+		// Calculate current / next texture index
+		mNextFrameIndex = ((int)(mCurrentTime / frame_time)) % mLayer->getNumPixmaps();
+		
+		// Signal completion when the next frame we want to upload is the beginning of the sequence
+		if (mNextFrameIndex != mCurrentFrameIndex && mCurrentFrameIndex == getNumPixmaps() - 1)
 		{
-			Pixmap& pixmap = mLayer->getPixmap(new_frame_index);
-			mCurrentFrameTexture->getTexture().setData(pixmap.getBitmap().getData());
+			completed(*this);
 		}
-
-		mCurrentFrameIndex = new_frame_index;
 	}
 }

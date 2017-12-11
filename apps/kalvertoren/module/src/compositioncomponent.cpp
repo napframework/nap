@@ -4,9 +4,16 @@
 #include <entity.h>
 #include <mathutils.h>
 
+RTTI_BEGIN_ENUM(nap::CompositionCycleMode)
+	RTTI_ENUM_VALUE(nap::CompositionCycleMode::Off,			"Off"),
+	RTTI_ENUM_VALUE(nap::CompositionCycleMode::Random,		"Random"),
+	RTTI_ENUM_VALUE(nap::CompositionCycleMode::Sequence,	"List")
+RTTI_END_ENUM
+
 // nap::compositioncomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::CompositionComponent)
 	RTTI_PROPERTY("Compositions",	&nap::CompositionComponent::mCompositions,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("CycleMode",		&nap::CompositionComponent::mCycleMode,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Index",			&nap::CompositionComponent::mIndex,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DurationScale",	&nap::CompositionComponent::mDurationScale,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -42,6 +49,9 @@ namespace nap
 		// Copy duration scale
 		mDurationScale = resource->mDurationScale;
 
+		// Copy mode
+		mCycleMode = resource->mCycleMode;
+
 		// Select composition associated with index
 		select(resource->mIndex);
 		return true;
@@ -53,8 +63,27 @@ namespace nap
 		// Select a new composition
 		if (mSwitch)
 		{
-			select(math::random(0, mCompositions.size() - 1));
-			mSwitch = false;
+			switch (mCycleMode)
+			{
+			case CompositionCycleMode::Random:
+			{
+				int new_idx = mCurrentIndex;
+				while (new_idx == mCurrentIndex)
+				{
+					new_idx = math::random(0, mCompositions.size() - 1);
+				}
+				select(new_idx);
+				break;
+			}
+			case CompositionCycleMode::Sequence:
+			{
+				int new_index = (mCurrentIndex + 1) % static_cast<int>(mCompositions.size());
+				select(new_index);
+				break;
+			}
+			case CompositionCycleMode::Off:
+				break;
+			}
 		}
 
 		// Update the current one
@@ -80,6 +109,8 @@ namespace nap
 
 		// Connect to finished signal
 		mCompositionInstance->finished.connect(mCompositionFinishedSlot);
+		mCurrentIndex = index;
+		mSwitch = false;
 	}
 
 
@@ -95,5 +126,4 @@ namespace nap
 	{
 		mSwitch = true;
 	}
-
 }

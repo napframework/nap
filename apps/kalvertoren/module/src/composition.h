@@ -2,6 +2,7 @@
 
 // Local includes
 #include "layer.h"
+#include "imagesequencelayer.h"
 
 // External Includes
 #include <rtti/rttiobject.h>
@@ -16,8 +17,8 @@ namespace nap
 	 */
 	enum class CompositionPlayMode : int
 	{
-		Length		= 0,
-		Sequence	= 1
+		Length		= 0,					///< Time based composition, finishes after a fixed amount of time
+		Sequence	= 1						///< Loop based composition, finishes when the image sequence runs out of iterations
 	};
 
 
@@ -39,7 +40,6 @@ namespace nap
 		std::vector<nap::ObjectPtr<Layer>>	mLayers;									///< All the layers this composition works with
 		CompositionPlayMode					mMode = CompositionPlayMode::Length;		///< Property: controls the composition playback mode
 		float								mLength = 1.0f;								///< Length of the sequence
-		int									mLoopCount = 1;								///< Amount of times the sequences it allowed to loop
 	};
 
 
@@ -84,11 +84,19 @@ namespace nap
 
 	private:
 		using LayerInstances = std::vector<std::unique_ptr<LayerInstance>>;
-		Composition*		mComposition;							///< Back pointer to Composition resource
-		LayerInstances		mLayerInstances;						///< All created LayerInstances, owned by this object
-		double				mTime = 0.0;							///< Current playback time
-		CompositionPlayMode	mMode = CompositionPlayMode::Length;	///< Composition playback mode
-		float				mDurationScale = 1.0f;					///< Influences time and therefore how long this composition lasts
+		Composition*				mComposition;							///< Back pointer to Composition resource
+		LayerInstances				mLayerInstances;						///< All created LayerInstances, owned by this object
+		double						mTime = 0.0;							///< Current playback time
+		CompositionPlayMode			mMode = CompositionPlayMode::Length;	///< Composition playback mode
+		float						mDurationScale = 1.0f;					///< Influences time and therefore how long this composition lasts
+		ImageSequenceLayerInstance* mImageSequence = nullptr;				///< Image sequence we track
+
+		/**
+		 * This function is called when a sequence finishes playback
+		 * @param sequence the sequence that finished as single loop
+		 */
+		void onLayerSequenceFinished(ImageSequenceLayerInstance& sequence);
+		NSLOT(mLayerSequenceFinishedSlot, ImageSequenceLayerInstance&, onLayerSequenceFinished)
 	};
 
 }
