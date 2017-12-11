@@ -12,6 +12,7 @@ namespace napkin
 {
 
 
+	class ArrayPropertyItem;
 
     /**
      * Data model backing the inspector panel tree view
@@ -44,6 +45,11 @@ namespace napkin
 		 * http://doc.qt.io/qt-4.8/qabstractitemmodel.html#setData
 		 */
 		bool setData(const QModelIndex& index, const QVariant& value, int role) override;
+
+		/**
+		 * Rebuild the model
+		 */
+		void rebuild();
 
 	private:
 		/**
@@ -79,6 +85,31 @@ namespace napkin
 		 */
 		void setObject(nap::rtti::RTTIObject* object);
 
+	private:
+		/**
+		 * Called when the context menu for an item should be shown
+		 * @param menu The menu that actions should be added to (initially empty)
+		 */
+		void onItemContextMenu(QMenu& menu);
+
+		/**
+		 * Add object to array represented by targetItem
+		 * @param targetItem The item representing the array to add the object to
+		 * @param object The object to add
+		 */
+		void onAddObjectArrayElement(ArrayPropertyItem* targetItem, nap::rtti::RTTIObject* object);
+
+		/**
+		 * Add object to array represented by targetItem
+		 * @param targetItem The item representing the array to add the object to
+		 * @param type The type of object to add. Object will be created internally.
+		 */
+		void onAddObjectArrayElement(ArrayPropertyItem* targetItem, const nap::rtti::TypeInfo& type);
+
+		/**
+		 * Rebuild view and model
+		 */
+		void rebuild();
 
 	private:
 		InspectorModel mModel;					   // The model for the view

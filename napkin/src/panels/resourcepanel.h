@@ -73,8 +73,9 @@ namespace napkin
 		/**
 		 * Called when an object has been added
 		 * @param obj The object that was added
+		 * @param selectNewObject Whether the newly created object should be selected in any views watching for object addition
 		 */
-		void onObjectAdded(nap::rtti::RTTIObject& obj);
+		void onObjectAdded(nap::rtti::RTTIObject& obj, bool selectNewObject);
 
 		/**
 		 * Called when an object is about to be removed

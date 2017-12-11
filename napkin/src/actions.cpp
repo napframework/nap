@@ -75,7 +75,7 @@ AddObjectAction::AddObjectAction(rttr::type type) : Action(), mType(type)
 
 void AddObjectAction::perform()
 {
-    AppContext::get().addObject(mType);
+    AppContext::get().addObject(mType, true);
 }
 
 DeleteObjectAction::DeleteObjectAction(nap::rtti::RTTIObject& object) : Action(), mObject(object)
@@ -119,3 +119,16 @@ AddEntityAction::AddEntityAction(nap::Entity* parent) : Action(), mParent(parent
 {
     setText("Add Entity");
 }
+
+FunctorAction::FunctorAction(const QString& actionText, const Functor& functor) :
+	mFunctor(functor)
+{
+	setText(actionText);
+}
+
+void FunctorAction::perform()
+{
+	if (mFunctor)
+		mFunctor();
+}
+

@@ -136,6 +136,8 @@ namespace napkin
 		ArrayPropertyItem(const QString& name, nap::rtti::RTTIObject* object, const nap::rtti::RTTIPath& path,
 						  rttr::property prop, rttr::variant_array_view array);
 
+		nap::rtti::VariantArray& getArray() { return mArray; }
+
 	private:
         /**
          * Generate child items
@@ -143,7 +145,7 @@ namespace napkin
 		void populateChildren();
 
 		rttr::property mProperty;
-		rttr::variant_array_view mArray;
+		nap::rtti::VariantArray mArray;
 	};
 
 	/**
