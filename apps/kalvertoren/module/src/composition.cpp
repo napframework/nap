@@ -25,7 +25,7 @@ namespace nap
 
 	bool Composition::init(utility::ErrorState& errorState)
 	{
-		if (errorState.check(mLayers.empty(), "No layers found in composition: %s", this->mID.c_str()))
+		if (!errorState.check(!mLayers.empty(), "No layers found in composition: %s", this->mID.c_str()))
 			return false;
 		return true;
 	}

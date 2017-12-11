@@ -202,12 +202,27 @@ void napkin::ResourcePanel::onComponentAdded(nap::Component& comp, nap::Entity& 
 	mTreeView.selectAndReveal(findInModel<ObjectItem>(mModel, comp));
 }
 
-void napkin::ResourcePanel::onObjectAdded(nap::rtti::RTTIObject& obj)
+void napkin::ResourcePanel::onObjectAdded(nap::rtti::RTTIObject& obj, bool selectNewObject)
 {
+	QList<QStandardItem*> selected_items = mTreeView.getSelectedItems();
+
+	nap::rtti::RTTIObject* object_to_select = nullptr;
+	if (!selected_items.empty() && !selectNewObject)
+	{
+		ObjectItem* object_item = dynamic_cast<ObjectItem*>(selected_items[0]);
+		if (object_item != nullptr)
+			object_to_select = object_item->getObject();
+	}
+	else if (selectNewObject)
+		object_to_select = &obj;
+	
+	
 	// TODO: Don't refresh the whole mModel
 	mModel.refresh();
 	mTreeView.getTreeView().expandAll();
-	mTreeView.selectAndReveal(findInModel<ObjectItem>(mModel, obj));
+
+	if (object_to_select != nullptr)
+		mTreeView.selectAndReveal(findInModel<ObjectItem>(mModel, *object_to_select));
 }
 
 
