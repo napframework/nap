@@ -43,6 +43,32 @@ void SetValueCommand::redo()
 	AppContext::get().propertyValueChanged(*mObject, mPath);
 }
 
+SetPointerValueCommand::SetPointerValueCommand(nap::rtti::RTTIObject* ptr, nap::rtti::RTTIPath path, nap::rtti::RTTIObject* newValue) :
+	mObject(ptr),
+	mPath(path),
+	mNewValue(newValue),
+	mOldValue(nullptr)
+{
+	mOldValue = getPointee(*mObject, mPath);
+}
+
+void SetPointerValueCommand::undo()
+{
+	nap::rtti::ResolvedRTTIPath resolvedPath = resolve(*mObject, mPath);
+	assert(resolvedPath.isValid());
+
+	resolvedPath.setValue(mOldValue);
+}
+
+void SetPointerValueCommand::redo()
+{
+	nap::rtti::ResolvedRTTIPath resolvedPath = resolve(*mObject, mPath);
+	assert(resolvedPath.isValid());
+
+	bool value_set = resolvedPath.setValue(mNewValue);
+	assert(value_set);
+}
+
 
 void AddObjectCommand::redo()
 {
