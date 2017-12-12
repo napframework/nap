@@ -3,9 +3,9 @@
 
 namespace opengl
 {
-	void GPUMesh::addVertexAttribute(const VertexAttributeID& id, GLenum type, unsigned int numComponents, unsigned int numVertices, GLenum usage)
+	void GPUMesh::addVertexAttribute(const VertexAttributeID& id, GLenum type, unsigned int numComponents, GLenum usage)
 	{
-		mAttributes.emplace(std::make_pair(id, std::make_unique<VertexAttributeBuffer>(type, numComponents, numVertices, usage)));
+		mAttributes.emplace(std::make_pair(id, std::make_unique<VertexAttributeBuffer>(type, numComponents, usage)));
 	}
 
 
@@ -19,7 +19,7 @@ namespace opengl
 	}
 
 
-	const VertexAttributeBuffer& GPUMesh::getVertexAttributeBuffer(const VertexAttributeID& id) const
+	VertexAttributeBuffer& GPUMesh::getVertexAttributeBuffer(const VertexAttributeID& id)
 	{
 		AttributeMap::const_iterator attribute = mAttributes.find(id);
 		assert(attribute != mAttributes.end());

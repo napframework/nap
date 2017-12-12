@@ -58,7 +58,7 @@ namespace nap
 	{
 		mGPUMesh = std::make_unique<opengl::GPUMesh>();
 		for (auto& mesh_attribute : mProperties.mAttributes)
-			mGPUMesh->addVertexAttribute(mesh_attribute->mAttributeID, mesh_attribute->getType(), mesh_attribute->getNumComponents(), mProperties.mNumVertices, GL_STATIC_DRAW);
+			mGPUMesh->addVertexAttribute(mesh_attribute->mAttributeID, mesh_attribute->getType(), mesh_attribute->getNumComponents(), GL_STATIC_DRAW);
 
 		return update(errorState);
 	}
@@ -107,8 +107,8 @@ namespace nap
 
 		for (auto& mesh_attribute : mProperties.mAttributes)
 		{
-			const opengl::VertexAttributeBuffer& vertex_attr_buffer = mGPUMesh->getVertexAttributeBuffer(mesh_attribute->mAttributeID);
-			vertex_attr_buffer.setData(mesh_attribute->getRawData());
+			opengl::VertexAttributeBuffer& vertex_attr_buffer = mGPUMesh->getVertexAttributeBuffer(mesh_attribute->mAttributeID);
+			vertex_attr_buffer.setData(mesh_attribute->getRawData(), mesh_attribute->getCount());
 		}
 
 		if (!mProperties.mIndices.empty())
