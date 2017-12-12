@@ -255,8 +255,9 @@ void napkin::InspectorModel::onPropertyValueChanged(RTTIObject& object, const RT
 {
 	auto resolvedPath = resolve(object, path);
 
-	ModelItemFilter filter = [&](QStandardItem* item) -> bool
+	ModelIndexFilter filter = [this, &object, &path](QModelIndex index) 
 	{
+		QStandardItem* item = itemFromIndex(index);
 		if (item == nullptr)
 			return false;
 
@@ -267,15 +268,10 @@ void napkin::InspectorModel::onPropertyValueChanged(RTTIObject& object, const RT
 		if (objItem->getObject() != &object)
 			return false;
 
-		auto resolvedItemPath = resolve(*objItem->getObject(), objItem->getPath());
-		if (resolvedItemPath.getProperty() != resolvedPath.getProperty())
-			return false;
-
-		return true;
+		return path == objItem->getPath();
 	};
 
-	auto foundItem = findItemInModel(*this, filter, 1);
-
-	if (foundItem != nullptr)
-		foundItem->setText(QString::fromStdString(object.mID));
+	QModelIndex foundIndex = findIndexInModel(*this, filter, 1);
+	if (foundIndex.isValid())
+		dataChanged(index(foundIndex.row(), 0), index(foundIndex.row(), columnCount()));
 }
