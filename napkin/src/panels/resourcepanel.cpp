@@ -108,7 +108,13 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 
 			// Resources
 			auto addObjectMenu = menu.addMenu("Add Object");
-			for (const auto& type : getResourceTypes())
+			std::vector<rttr::type> resource_types = getResourceTypes();
+			std::sort(resource_types.begin(), resource_types.end(), [](const rttr::type& typeA, const rttr::type& typeB) 
+			{
+				return typeA.get_name().compare(typeB.get_name()) < 0;
+			});
+
+			for (const auto& type : resource_types)
 			{
 				addObjectMenu->addAction(new AddObjectAction(type));
 			}
