@@ -63,6 +63,7 @@ add_subdirectory(napkin)
 
 # executable targets
 add_subdirectory(test/render)
+add_subdirectory(test/dynamicgeometry)
 add_subdirectory(test/tommy)
 add_subdirectory(test/videoplayer)
 add_subdirectory(test/serializationtest)

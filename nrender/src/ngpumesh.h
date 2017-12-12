@@ -31,7 +31,7 @@ namespace opengl
 		* @param components: number of component per element (for instance, 3 for vector with 3 floats)
 		* @param data: Pointer to array containing attribute data.
 		*/
-		void addVertexAttribute(const VertexAttributeID& id, GLenum type, unsigned int numComponents, unsigned int numVertices, GLenum usage);
+		void addVertexAttribute(const VertexAttributeID& id, GLenum type, unsigned int numComponents, GLenum usage);
 
 		/**
 		* @return Returns reference to the attribute buffer if found, otherwise nullptr.
@@ -43,7 +43,7 @@ namespace opengl
 		* @return Returns reference to the attribute buffer. If not found, the function will assert.
 		* @param id: name of the vertex attribute
 		*/
-		const VertexAttributeBuffer& getVertexAttributeBuffer(const VertexAttributeID& id) const;
+		VertexAttributeBuffer& getVertexAttributeBuffer(const VertexAttributeID& id);
 
 		/**
 		 * Creates an index buffer is one does not exist, otherwise returns the existing buffer.

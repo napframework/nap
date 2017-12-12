@@ -1,0 +1,179 @@
+{
+	"Objects" : 
+	[
+		{
+			"Type" : "nap::RenderWindow",
+			"mID" : "Window0",
+			"Width" : 1280,
+			"Height" : 720,
+			"Title" : "Window 1"
+		},
+
+		{
+			"Type" : "nap::PlaneMesh",
+			"mID": "PlaneMesh"
+		},
+		
+		{
+			"Type" : "nap::Shader",
+			"mID": "ParticleShader",
+			"mVertShader": "shaders/dynamicgeometry/particle.vert",
+			"mFragShader": "shaders/dynamicgeometry/particle.frag"
+		},	
+
+		{
+			"Type" : "nap::Material",
+			"mID": "ParticleMaterial",
+			"Shader": "ParticleShader",
+			"VertexAttributeBindings" : [
+				{
+					"MeshAttributeID": "Position",
+					"ShaderAttributeID": "in_Position"
+				},
+				{
+					"MeshAttributeID": "UV0",
+					"ShaderAttributeID": "in_UV0"
+				},
+				{
+					"MeshAttributeID": "Color0",
+					"ShaderAttributeID": "in_Color0"
+				}
+			]			
+		},
+		
+		{
+			"Type" : "nap::Shader",
+			"mID": "PlaneShader",
+			"mVertShader": "shaders/dynamicgeometry/plane.vert",
+			"mFragShader": "shaders/dynamicgeometry/plane.frag"
+		},		
+		
+		{
+			"Type" : "nap::Material",
+			"mID": "PlaneMaterial",
+			"Shader": "PlaneShader",
+			"VertexAttributeBindings" : [
+				{
+					"MeshAttributeID": "Position",
+					"ShaderAttributeID": "in_Position"
+				}
+			]			
+		},
+		
+		{
+			"Type" : "nap::Scene",
+			"mID": "Scene",		
+			"Entities" : 
+			[
+				{
+					"Entity" : "PlaneEntity"
+				},
+				{
+					"Entity" : "CameraEntity"
+				},
+				{
+					"Entity" : "DefaultInputRouterEntity"
+				}
+			]
+		},
+
+		{
+			"Type" : "nap::Entity",
+			"mID": "PlaneEntity",
+			"Components" : 
+			[
+				{
+					"Type" : "nap::RenderableMeshComponent",
+					"Mesh" : "PlaneMesh",
+					"MaterialInstance" : {
+						"Material": "PlaneMaterial",
+						"BlendMode": "Opaque"
+					}
+				},
+				{
+					"Type" : "nap::TransformComponent",
+					"Properties": {
+						"Translate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0
+						},
+						"Rotate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0
+						},
+						"Scale": {
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.0
+					}
+				}
+			]
+		},
+
+		{
+			"Type" : "nap::Entity",
+			"mID": "DefaultInputRouterEntity",		
+			"Components" : 
+			[
+				{
+					"Type" : "nap::DefaultInputRouterComponent"
+				}
+			]
+		},
+	
+		{
+			"Type" : "nap::Entity",
+			"mID": "CameraEntity",
+			"Components" : 
+			[
+				{
+					"Type" : "nap::PerspCameraComponent",
+					"mID" : "PerspCameraComponent",
+					"Properties": {
+						"FieldOfView": 45.0,
+						"NearClippingPlane" : 0.01,
+						"FarClippingPlane" : 1000.0
+					}
+				},
+				{
+					"Type" : "nap::KeyInputComponent"
+				},
+				{
+					"Type" : "nap::PointerInputComponent"
+				},
+				{
+					"Type" : "nap::FirstPersonController",
+					"MovementSpeed": 20.0,
+					"RotateSpeed": 0.005,
+					"PerspCameraComponent" : "PerspCameraComponent"
+
+				},					
+				{
+					"Type" : "nap::TransformComponent",
+					"Properties": {
+						"Translate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 5.0
+						},
+						"Rotate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0
+						},
+						"Scale": {
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.0						
+					}
+				}
+			]
+		}
+	]
+}
