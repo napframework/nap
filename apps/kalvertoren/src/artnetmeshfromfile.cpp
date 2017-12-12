@@ -26,23 +26,23 @@ namespace nap
 		mMeshInstance = std::move(mesh_instance);
 
 		// Now check for the color attribute
-		mColorAttribute = mMeshInstance->FindAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0));
+		mColorAttribute = mMeshInstance->findAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0));
 		if (!errorState.check(mColorAttribute != nullptr, "unable to find color attribute: %s on mesh: %s", MeshInstance::VertexAttributeIDs::GetColorName(0).c_str(), mPath.c_str()))
 			return false;
 
 		// Get position
-		mPositionAttribute = mMeshInstance->FindAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName());
+		mPositionAttribute = mMeshInstance->findAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName());
 		assert(mPositionAttribute != nullptr);
 
 		// Get uv
-		mUVAttribute = mMeshInstance->FindAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetUVName(0));
+		mUVAttribute = mMeshInstance->findAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetUVName(0));
 		if (!errorState.check(mUVAttribute != nullptr, "unable to find uv attribute: %s on mesh: %s", MeshInstance::VertexAttributeIDs::GetUVName(0).c_str(), mPath.c_str()))
 			return false;
 
 		// Extract the channels from the color where R = channel, G = universe and B = subnet
 		mChannelAttribute = &mMeshInstance->GetOrCreateAttribute<int>("channel");
-		mSubnetAttribute = &mMeshInstance->GetOrCreateAttribute<int>("subnet");
-		mUniverseAttribute = &mMeshInstance->GetOrCreateAttribute<int>("universe");
+		mSubnetAttribute = &mMeshInstance->getOrCreateAttribute<int>("subnet");
+		mUniverseAttribute = &mMeshInstance->getOrCreateAttribute<int>("universe");
 
 		std::vector<int> channel_data(mColorAttribute->getCount(), 0);
 		std::vector<int> subnet_data(mColorAttribute->getCount(), 0);

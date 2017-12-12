@@ -73,6 +73,9 @@
 				},
 				{
 					"Entity" : "DefaultInputRouterEntity"
+				},
+				{
+					"Entity" : "ParticleEmitterEntity"
 				}
 			]
 		},
@@ -99,13 +102,13 @@
 							"z": 0.0
 						},
 						"Rotate": {
-							"x": 0.0,
+							"x": 90.0,
 							"y": 0.0,
 							"z": 0.0
 						},
 						"Scale": {
-							"x": 1.0,
-							"y": 1.0,
+							"x": 6.0,
+							"y": 3.0,
 							"z": 1.0
 						},
 						"UniformScale": 1.0
@@ -124,7 +127,7 @@
 				}
 			]
 		},
-	
+
 		{
 			"Type" : "nap::Entity",
 			"mID": "CameraEntity",
@@ -147,7 +150,7 @@
 				},
 				{
 					"Type" : "nap::FirstPersonController",
-					"MovementSpeed": 20.0,
+					"MovementSpeed": 5.0,
 					"RotateSpeed": 0.005,
 					"PerspCameraComponent" : "PerspCameraComponent"
 
@@ -157,8 +160,82 @@
 					"Properties": {
 						"Translate": {
 							"x": 0.0,
-							"y": 0.0,
+							"y": 2.0,
 							"z": 5.0
+						},
+						"Rotate": {
+							"x": -15.0,
+							"y": 0.0,
+							"z": 0.0
+						},
+						"Scale": {
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.0						
+					}
+				}
+			]
+		},
+
+		{
+			"Type" : "nap::Mesh",
+			"mID" : "ParticleMesh",
+			"Properties" : {
+				"NumVertices" : 0,
+				"DrawMode" : "Triangles",
+				"Attributes" : [
+					{
+						"Type" : "nap::Vec3VertexAttribute",
+						"AttributeID" : "Position",
+						"Data" :  
+						[
+						]
+					},
+					{
+						"Type" : "nap::Vec3VertexAttribute",
+						"AttributeID" : "UV0",
+						"Data" :  
+						[
+						]
+					},
+					{
+						"Type" : "nap::Vec4VertexAttribute",
+						"AttributeID" : "Color0",
+						"Data" :  
+						[
+						]
+					}
+				]
+			}
+		},	
+
+		{
+			"Type" : "nap::Entity",
+			"mID": "ParticleEmitterEntity",
+			"Components" : 
+			[
+				{
+					"Type" : "nap::RenderableMeshComponent",
+					"Mesh" : "ParticleMesh",
+					"MaterialInstance" : {
+						"Material": "ParticleMaterial",
+						"BlendMode": "Opaque"
+					}
+				},		
+				{
+					"Type" : "nap::ParticleEmitterComponent",
+					"mID" : "ParticleEmitterComponent",
+					"Mesh" : "ParticleMesh"
+				},					
+				{
+					"Type" : "nap::TransformComponent",
+					"Properties": {
+						"Translate": {
+							"x": 0.0,
+							"y": 1.0,
+							"z": 0.0
 						},
 						"Rotate": {
 							"x": 0.0,
@@ -172,7 +249,7 @@
 						},
 						"UniformScale": 1.0						
 					}
-				}
+				}				
 			]
 		}
 	]

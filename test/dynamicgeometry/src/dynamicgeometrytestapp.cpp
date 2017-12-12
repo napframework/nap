@@ -25,10 +25,10 @@ namespace nap
 
 		// Get resource manager and load
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("data/dynamicgeometry/objects.json", error))
+		if (!mResourceManager->loadFile("data/dynamicgeometrytest/objects.json", error))
 		{
 			Logger::fatal("Unable to deserialize resources: \n %s", error.toString().c_str());
-			return false;   
+			return false;      
 		}
 		
 		ObjectPtr<Scene> scene		= mResourceManager->findObject<Scene>("Scene");

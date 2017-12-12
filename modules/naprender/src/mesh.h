@@ -120,7 +120,7 @@ namespace nap
 		 * @return Type safe vertex attribute if found, nullptr if not found or if there was a type mismatch.
 		 */
 		template<typename T>
-		VertexAttribute<T>* FindAttribute(const std::string& id);
+		VertexAttribute<T>* findAttribute(const std::string& id);
 
 		/**
 		* Finds vertex attribute.
@@ -128,7 +128,7 @@ namespace nap
 		* @return Type safe vertex attribute if found, nullptr if not found or if there was a type mismatch.
 		*/
 		template<typename T>
-		const VertexAttribute<T>* FindAttribute(const std::string& id) const;
+		const VertexAttribute<T>* findAttribute(const std::string& id) const;
 
 		/**
 		 * Gets vertex attribute.
@@ -136,7 +136,7 @@ namespace nap
 		 * @return Type safe vertex attribute. If not found or in case there is a type mismatch, the function asserts.
 		 */
 		template<typename T>
-		VertexAttribute<T>& GetAttribute(const std::string& id);
+		VertexAttribute<T>& getAttribute(const std::string& id);
 
 		/**
 		* Gets vertex attribute.
@@ -144,7 +144,7 @@ namespace nap
 		* @return Type safe vertex attribute. If not found or in case there is a type mismatch, the function asserts.
 		*/
 		template<typename T>
-		const VertexAttribute<T>& GetAttribute(const std::string& id) const;
+		const VertexAttribute<T>& getAttribute(const std::string& id) const;
 
 		/**
 		 * Gets a vertex attribute or creates it if it does not exist. In case the attribute did exist, but with a different type, the function asserts.
@@ -152,20 +152,20 @@ namespace nap
 		 * @return Type safe vertex attribute. 
 		 */
 		template<typename T>
-		VertexAttribute<T>& GetOrCreateAttribute(const std::string& id);
+		VertexAttribute<T>& getOrCreateAttribute(const std::string& id);
 
 		/**
 		 * Reserves index CPU memory.
 		 * @param numIndices Amount of indices to reserve.
 		 */
-		void ReserveIndices(size_t numIndices)									{ mProperties.mIndices.reserve(numIndices); }
+		void reserveIndices(size_t numIndices)									{ mProperties.mIndices.reserve(numIndices); }
 
 		/**
 		 * Adds a single index to the index CPU buffer. Use setIndices to add an entire list of indices.
 		 * Call either before init() or call update() to reflect the changes in the GPU buffer.
 		 * @param index Index to add.
 		 */
-		void AddIndex(int index)												{ mProperties.mIndices.push_back(index); }
+		void addIndex(int index)												{ mProperties.mIndices.push_back(index); }
 
 		/**
 		 * Adds a list of indices to the index CPU buffer.
@@ -305,7 +305,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	nap::VertexAttribute<T>* nap::MeshInstance::FindAttribute(const std::string& id)
+	nap::VertexAttribute<T>* nap::MeshInstance::findAttribute(const std::string& id)
 	{
 		for (auto& attribute : mProperties.mAttributes)
 			if (attribute->mAttributeID == id)
@@ -314,7 +314,7 @@ namespace nap
 	}
 
 	template<typename T>
-	const VertexAttribute<T>* nap::MeshInstance::FindAttribute(const std::string& id) const
+	const VertexAttribute<T>* nap::MeshInstance::findAttribute(const std::string& id) const
 	{
 		for (auto& attribute : mProperties.mAttributes)
 			if (attribute->mAttributeID == id)
@@ -326,23 +326,23 @@ namespace nap
 	}
 
 	template<typename T>
-	nap::VertexAttribute<T>& nap::MeshInstance::GetAttribute(const std::string& id)
+	nap::VertexAttribute<T>& nap::MeshInstance::getAttribute(const std::string& id)
 	{
-		VertexAttribute<T>* attribute = FindAttribute<T>(id);
+		VertexAttribute<T>* attribute = findAttribute<T>(id);
 		assert(attribute != nullptr);
 		return *attribute;
 	}
 
 	template<typename T>
-	const VertexAttribute<T>& nap::MeshInstance::GetAttribute(const std::string& id) const
+	const VertexAttribute<T>& nap::MeshInstance::getAttribute(const std::string& id) const
 	{
-		const VertexAttribute<T>* attribute = FindAttribute<T>(id);
+		const VertexAttribute<T>* attribute = findAttribute<T>(id);
 		assert(attribute != nullptr);
 		return *attribute;
 	}
 
 	template<typename T>
-	nap::VertexAttribute<T>& nap::MeshInstance::GetOrCreateAttribute(const std::string& id)
+	nap::VertexAttribute<T>& nap::MeshInstance::getOrCreateAttribute(const std::string& id)
 	{
 		for (auto& attribute : mProperties.mAttributes)
 		{
