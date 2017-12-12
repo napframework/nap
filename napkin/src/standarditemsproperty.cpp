@@ -219,7 +219,8 @@ void napkin::EmbeddedPointerItem::populateChildren()
 {
 	// First resolve the pointee, after that behave like compound
 	nap::rtti::ResolvedRTTIPath resolvedPath;
-	assert(mPath.resolve(mObject, resolvedPath));
+	mPath.resolve(mObject, resolvedPath);
+	assert(resolvedPath.isValid());
 	auto value = resolvedPath.getValue();
 
 	auto value_type = value.get_type();
@@ -270,7 +271,8 @@ QVariant napkin::PropertyValueItem::data(int role) const
 	if (role == Qt::DisplayRole || role == Qt::EditRole)
 	{
 		nap::rtti::ResolvedRTTIPath resolvedPath;
-		assert(mPath.resolve(mObject, resolvedPath));
+		mPath.resolve(mObject, resolvedPath);
+		assert(resolvedPath.isValid());
 		QVariant variant;
 		if (napkin::toQVariant(resolvedPath.getType(), resolvedPath.getValue(), variant))
 		{
@@ -285,7 +287,8 @@ QVariant napkin::PropertyValueItem::data(int role) const
 void napkin::PropertyValueItem::setData(const QVariant& value, int role)
 {
 	nap::rtti::ResolvedRTTIPath resolvedPath;
-	assert(mPath.resolve(mObject, resolvedPath));
+	mPath.resolve(mObject, resolvedPath);
+	assert(resolvedPath.isValid());
 
 	if (role == Qt::EditRole)
 	{
