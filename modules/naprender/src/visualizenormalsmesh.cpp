@@ -16,14 +16,14 @@ namespace nap
 		nap::IMesh* reference_mesh = mReferenceMesh.get();
 		
 		// Make sure the reference mesh has normals
-		if (reference_mesh->getMeshInstance().FindAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::getNormalName()) == nullptr)
+		if (reference_mesh->getMeshInstance().findAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::getNormalName()) == nullptr)
 			return errorState.check(false, "reference mesh has no normals");
 
 		// Create position and vertex attribute
-		mPositionAttr = &(mMeshInstance->GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName()));
+		mPositionAttr = &(mMeshInstance->getOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName()));
 
 		// Create color attribute
-		mColorAttr = &(mMeshInstance->GetOrCreateAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0)));
+		mColorAttr = &(mMeshInstance->getOrCreateAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0)));
 
 		int vertex_count = reference_mesh->getMeshInstance().getNumVertices();
 
@@ -56,11 +56,11 @@ namespace nap
 		const nap::MeshInstance& reference_mesh = mReferenceMesh.get()->getMeshInstance();
 
 		// Get reference normals and vertices
-		const std::vector<glm::vec3>& ref_normals  = reference_mesh.GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::getNormalName()).getData();
-		const std::vector<glm::vec3>& ref_vertices = reference_mesh.GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName()).getData();
+		const std::vector<glm::vec3>& ref_normals  = reference_mesh.getAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::getNormalName()).getData();
+		const std::vector<glm::vec3>& ref_vertices = reference_mesh.getAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName()).getData();
 		
 		// Try to find a color attribute to pass along
-		const Vec4VertexAttribute* ref_color_attr = reference_mesh.FindAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0));
+		const Vec4VertexAttribute* ref_color_attr = reference_mesh.findAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0));
 		const std::vector<glm::vec4>* ref_colors = ref_color_attr != nullptr ? &(ref_color_attr->getData()) : nullptr;
 
 		// Get buffers to populate

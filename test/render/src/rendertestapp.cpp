@@ -95,7 +95,7 @@ namespace nap
 		
 		// Retrieve destination (instance) mesh data
 		MeshInstance& mesh_instance = mesh.getMeshInstance();
-		Vec3VertexAttribute& dst_position_attribute = mesh_instance.GetAttribute<glm::vec3>(nap::MeshInstance::VertexAttributeIDs::GetPositionName());
+		Vec3VertexAttribute& dst_position_attribute = mesh_instance.getAttribute<glm::vec3>(nap::MeshInstance::VertexAttributeIDs::GetPositionName());
 		std::vector<glm::vec3>& dst_positions = dst_position_attribute.getData();
 		
 		// Sine wave over our quad

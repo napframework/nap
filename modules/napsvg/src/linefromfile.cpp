@@ -336,10 +336,10 @@ namespace nap
 	{		
 		PolyLine::createVertexAttributes(line);
 
-		Vec3VertexAttribute& pos_attr = line.GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName());
-		Vec3VertexAttribute& uvs_attr = line.GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetUVName(0));
-		Vec4VertexAttribute& col_attr = line.GetAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0));
-		Vec3VertexAttribute& nor_attr = line.GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::getNormalName());
+		Vec3VertexAttribute& pos_attr = line.getAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName());
+		Vec3VertexAttribute& uvs_attr = line.getAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetUVName(0));
+		Vec4VertexAttribute& col_attr = line.getAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0));
+		Vec3VertexAttribute& nor_attr = line.getAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::getNormalName());
 
 		int vertex_count = static_cast<int>(pathVertices.size());
 		// Set position buffer

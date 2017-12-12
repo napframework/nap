@@ -117,10 +117,10 @@ namespace nap
 	void nap::PolyLine::createVertexAttributes(MeshInstance& instance)
 	{
 		// Create attributes
-		instance.GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName());
-		instance.GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetUVName(0));
-		instance.GetOrCreateAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0));
-		instance.GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::getNormalName());
+		instance.getOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName());
+		instance.getOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetUVName(0));
+		instance.getOrCreateAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0));
+		instance.getOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::getNormalName());
 	}
 
 
@@ -333,49 +333,49 @@ namespace nap
 
 	Vec3VertexAttribute& PolyLine::getPositionAttr()
 	{
-		return getMeshInstance().GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName());
+		return getMeshInstance().getAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName());
 	}
 
 
 	const nap::Vec3VertexAttribute& PolyLine::getPositionAttr() const
 	{
-		return getMeshInstance().GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName());
+		return getMeshInstance().getAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName());
 	}
 
 
 	Vec4VertexAttribute& PolyLine::getColorAttr()
 	{
-		return getMeshInstance().GetAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0));
+		return getMeshInstance().getAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0));
 	}
 
 
 	const nap::Vec4VertexAttribute& PolyLine::getColorAttr() const
 	{
-		return getMeshInstance().GetAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0));
+		return getMeshInstance().getAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0));
 	}
 
 
 	Vec3VertexAttribute& PolyLine::getNormalAttr()
 	{
-		return getMeshInstance().GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::getNormalName());
+		return getMeshInstance().getAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::getNormalName());
 	}
 
 
 	const nap::Vec3VertexAttribute& PolyLine::getNormalAttr() const
 	{
-		return getMeshInstance().GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::getNormalName());
+		return getMeshInstance().getAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::getNormalName());
 	}
 
 
 	Vec3VertexAttribute& PolyLine::getUvAttr()
 	{
-		return getMeshInstance().GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetUVName(0));
+		return getMeshInstance().getAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetUVName(0));
 	}
 
 
 	const nap::Vec3VertexAttribute& PolyLine::getUvAttr() const
 	{
-		return getMeshInstance().GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetUVName(0));
+		return getMeshInstance().getAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetUVName(0));
 	}
 
 
