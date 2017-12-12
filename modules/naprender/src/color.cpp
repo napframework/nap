@@ -195,11 +195,36 @@ namespace nap
 	}
 }
 
+
 void nap::BaseColor::convertColor(const BaseColor& source, BaseColor& target)
 {
 	assert(source.getNumberOfChannels() >= target.getNumberOfChannels());
-	std::function<void(const BaseColor&, BaseColor&, int)> convert_func = nullptr;
+	std::function<void(const BaseColor&, BaseColor&, int)> convert_func = getConverter(source, target);
+	assert(convert_func != nullptr);
 	
+	// Perform conversion
+	assert(convert_func != nullptr);
+	for (int i = 0; i < target.getNumberOfChannels(); i++)
+		convert_func(source, target, i);
+}
+
+
+std::function<void(const nap::BaseColor&, nap::BaseColor&, int)> nap::BaseColor::getConverter(const BaseColor& target) const
+{
+	return BaseColor::getConverter(*this, target);
+}
+
+
+void nap::BaseColor::convert(BaseColor& target) const
+{
+	BaseColor::convertColor(*this, target);
+}
+
+
+std::function<void(const nap::BaseColor&, nap::BaseColor&, int)> nap::BaseColor::getConverter(const BaseColor& source, const BaseColor& target)
+{
+	std::function<void(const BaseColor&, BaseColor&, int)> convert_func = nullptr;
+
 	if (source.getValueType() == RTTI_OF(uint8))
 	{
 		if (target.getValueType() == RTTI_OF(float))
@@ -240,19 +265,10 @@ void nap::BaseColor::convertColor(const BaseColor& source, BaseColor& target)
 		{
 			convert_func = &shortToFLoat;
 		}
-		else if(target.getValueType() == RTTI_OF(uint16))
+		else if (target.getValueType() == RTTI_OF(uint16))
 		{
 			convert_func = shortToShort;
 		}
 	}
-
-	// Perform conversion
-	assert(convert_func != nullptr);
-	for (int i = 0; i < target.getNumberOfChannels(); i++)
-		convert_func(source, target, i);
-}
-
-void nap::BaseColor::convert(BaseColor& target) const
-{
-	BaseColor::convertColor(*this, target);
+	return convert_func;
 }

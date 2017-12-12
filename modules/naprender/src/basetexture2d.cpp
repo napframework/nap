@@ -135,6 +135,20 @@ namespace nap
 	}
 
 
+	void BaseTexture2D::startGetData()
+	{
+		mTexture.asyncStartGetData();
+	}
+
+
+	void BaseTexture2D::endGetData(Pixmap& pixmap)
+	{
+		if (pixmap.empty())
+			pixmap.initFromTexture(*this);
+		mTexture.asyncEndGetData(pixmap.getBitmap());
+	}
+
+
 	void BaseTexture2D::bind()
 	{
 		mTexture.bind();
