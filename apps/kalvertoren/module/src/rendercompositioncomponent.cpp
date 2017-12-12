@@ -47,8 +47,15 @@ namespace nap
 
 	void RenderCompositionComponentInstance::update(double deltaTime)
 	{
-		if(mTransferring)
+		if (mTransferring)
+		{
+#ifndef _DEBUG 
 			activeTarget->getColorTexture().endGetData(mPixmap);
+#else
+			activeTarget->getColorTexture().getData(mPixmap);
+#endif // DEBUG
+
+		}
 		mTransferring = false;
 	}
 
@@ -88,7 +95,9 @@ namespace nap
 		}
 
 		// Start pixel data transfer so reading it later is performent
+#ifndef _DEBUG 
 		activeTarget->getColorTexture().startGetData();
+#endif // !DEBUG
 		mTransferring = true;
 	}
 
