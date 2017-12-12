@@ -78,6 +78,12 @@ namespace nap
 		void convert(BaseColor& target) const;
 
 		/**
+		* @return a color converter to convert @source color in to @target color, nullptr if no such converter exists
+		* Use this call when dealing with the same color conversion multiple times in, for example, a loop
+		*/
+		std::function<void(const BaseColor&, BaseColor&, int)> getConverter(const BaseColor& target) const;
+
+		/**
 		* returns a (converted) color of type T
 		* It's required that the color that is returned has a lower amount of color channels
 		* Therefore this conversion is valid: RGBA8 to RGBFloat, but not: RGB8 to RGBAFloat
@@ -89,6 +95,12 @@ namespace nap
 		*/
 		template<typename T>
 		T convert() const;
+
+		/**
+		 * @return a color converter to convert this color in to @target color
+		 * Use this call when dealing with the same color conversion multiple times in, for example, a loop
+		 */
+		//std::function<void(const BaseColor&, BaseColor&, int)> getConverter(const BaseColor& target);
 
 		/**
 		 * @return the data associated with the channel @index
@@ -121,6 +133,12 @@ namespace nap
 		 * @param target holds the converted color values
 		 */
 		static void convertColor(const BaseColor& source, BaseColor& target);
+
+		/**
+		 * @return a color converter to convert @source color in to @target color, nullptr if no such converter exists
+		 * Use this call when dealing with the same color conversion multiple times in, for example, a loop
+		*/
+		static std::function<void(const BaseColor&, BaseColor&, int)> getConverter(const BaseColor& source, const BaseColor& target);
 
 	private:
 		int mChannels = 0;

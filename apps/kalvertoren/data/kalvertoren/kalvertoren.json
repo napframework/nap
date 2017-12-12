@@ -7,7 +7,7 @@
 			"Width" : 1024,
 			"Height" : 768,
 			"Title" : "Kalvertoren",
-			"Sync" : true,
+			"Sync" : false,
 			"ClearColor" : 
 			{
 				"x" : 0.0,

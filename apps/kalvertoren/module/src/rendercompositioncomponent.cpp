@@ -34,6 +34,8 @@ namespace nap
 	{
 		mTargetA = getComponent<RenderCompositionComponent>()->mTargetA.get();
 		mTargetB = getComponent<RenderCompositionComponent>()->mTargetB.get();
+		activeTarget = mTargetA;
+		nextTarget = mTargetB;
 
 		mRenderService = getEntityInstance()->getCore()->getService<RenderService>();
 		if (!errorState.check(mRenderService != nullptr, "Unable to find render service: %s", this->mID.c_str()))
@@ -45,7 +47,9 @@ namespace nap
 
 	void RenderCompositionComponentInstance::update(double deltaTime)
 	{
-
+		if(mTransferring)
+			activeTarget->getColorTexture().endGetData(mPixmap);
+		mTransferring = false;
 	}
 
 
@@ -82,11 +86,21 @@ namespace nap
 			// Assign target for next round to be placeholder
 			nextTarget = active_placeholder;
 		}
+
+		// Start pixel data transfer so reading it later is performent
+		activeTarget->getColorTexture().startGetData();
+		mTransferring = true;
 	}
 
 	nap::BaseTexture2D& RenderCompositionComponentInstance::getTexture()
 	{
 		return activeTarget->getColorTexture();
+	}
+
+
+	nap::Pixmap& RenderCompositionComponentInstance::getPixmap()
+	{
+		return mPixmap;
 	}
 
 

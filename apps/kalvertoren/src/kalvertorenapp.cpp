@@ -280,7 +280,10 @@ namespace nap
 
 		// Resets all the tracers
 		ImGui::Begin("Kalvertoren");
-		ImGui::BeginChild("Display Settings", ImVec2(0,110), true, ImGuiWindowFlags_AlwaysAutoResize);
+		static bool first = true;
+		ImVec2 window_size = first ? ImVec2(300, 110) : ImVec2(ImGui::GetWindowContentRegionWidth() * 1.0, 110);
+		ImGui::BeginChild("Display Settings", window_size, true);
+		first = false;
 		ImGui::AlignTextToFramePadding();
 		ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Display Settings");
 

@@ -75,7 +75,6 @@ namespace nap
 		COMPONENT_INSTANCE_POINTER(mColorPaletteComponent, ColorPaletteComponent, ApplyCompositionComponent)
 
 	private:
-		nap::Pixmap mPixmap;
 		bool mShowIndexColors = false;
 		float mIntensity = 1.0f;
 	};

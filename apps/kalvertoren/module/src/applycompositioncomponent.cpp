@@ -45,11 +45,13 @@ namespace nap
 
 	void ApplyCompositionComponentInstance::applyColor(double deltaTime)
 	{
-		// Get texture from active composition
-		nap::BaseTexture2D& tex = mCompositionRenderer->getTexture();
+		// Get the pixmap associated with the final composition
+		nap::Pixmap& mPixmap = mCompositionRenderer->getPixmap();
 
-		// Populate the pixmap with the texture data
-		tex.getData(mPixmap);
+		// If the pixmap is empty, ie: hasn't been downloaded yet, we skip this step
+		// This occurs when the first frame hasn't been rendered yet
+		if (mPixmap.empty())
+			return;
 
 		// Get the model we want to color
 		nap::ArtnetMeshFromFile& mesh = getMesh();
