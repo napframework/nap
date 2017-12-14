@@ -8,7 +8,7 @@
 #include <inputservice.h>
 #include <nap/core.h>
 
-RTTI_DEFINE(nap::IMGuiService)
+RTTI_DEFINE_CLASS(nap::IMGuiService)
 
 namespace nap
 {

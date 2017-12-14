@@ -10,7 +10,7 @@
 #include <iostream>
 #include <mathutils.h>
 
-RTTI_DEFINE(nap::ArtNetService)
+RTTI_DEFINE_CLASS(nap::ArtNetService)
 
 static bool verbose = true;
 
