@@ -316,6 +316,14 @@ namespace nap
 				cls.def(py::init<__VA_ARGS__>());																\
 			});
 
+#define RTTI_VALUE_CONSTRUCTOR(...)																					\
+			rtti_class_type.constructor<__VA_ARGS__>()(policy::ctor::as_object);								\
+			python_class.registerFunction([](pybind11::module& module, PythonClassType::PybindClass& cls)		\
+			{																									\
+				cls.def(py::init<__VA_ARGS__>());																\
+			});
+
+
 #define RTTI_END_CLASS																							\
 			nap::rtti::PythonModule& python_module = nap::rtti::PythonModule::get("nap");						\
 			python_module.registerTypeImportCallback(rtti_class_type_name,										\
@@ -330,9 +338,16 @@ namespace nap
 		}																										\
 	}
 
+#define RTTI_END_STRUCT																							\
+	RTTI_END_CLASS																								
+
 #define RTTI_BEGIN_CLASS(Type)																					\
 	RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(Type)																\
 	RTTI_CONSTRUCTOR()
+
+#define RTTI_BEGIN_STRUCT(Type)																					\
+	RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(Type)																\
+	RTTI_VALUE_CONSTRUCTOR()
 
 #define RTTI_BEGIN_ENUM(Type)																					\
 	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)																	\
