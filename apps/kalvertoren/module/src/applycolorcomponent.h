@@ -45,7 +45,7 @@ namespace nap
 		/**
 		 *	Apply colors to the associated mesh, only when active
 		 */
-		virtual void update(double deltaTime);
+		virtual void update(double deltaTime) override;
 
 		/**
 		 *	@return if this color component is active
