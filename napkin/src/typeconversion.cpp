@@ -52,7 +52,7 @@ namespace napkin
 			if (type == rtti::TypeInfo::get<bool>())
 				outValue.setValue(value.to_bool());
 			else if (type == rtti::TypeInfo::get<char>())
-				outValue.setValue(value.to_uint8());
+				outValue.setValue(value.to_int8());
 			else if (type == rtti::TypeInfo::get<int8_t>())
 				outValue.setValue(value.to_int8());
 			else if (type == rtti::TypeInfo::get<int16_t>())
@@ -62,7 +62,7 @@ namespace napkin
 			else if (type == rtti::TypeInfo::get<int64_t>())
 				outValue.setValue(value.to_int64());
 			else if (type == rtti::TypeInfo::get<uint8_t>())
-				outValue.setValue(value.to_uint8());
+				outValue.setValue(value.to_int());
 			else if (type == rtti::TypeInfo::get<uint16_t>())
 				outValue.setValue(value.to_uint16());
 			else if (type == rtti::TypeInfo::get<uint32_t>())

@@ -155,9 +155,6 @@ void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 		}
 		else
 		{
-// This doesn't currently work due to a bug in RTTR (unable to create primitive types through RTTR). Need to find a way to fix that first.
-#if 0
-			// For non-pointer arrays, we only allow adding new items
 			menu.addAction(new FunctorAction("Add", [array_item]()
 			{
 				const nap::rtti::TypeInfo array_type = array_item->getArray().get_rank_type(array_item->getArray().get_rank());
@@ -171,13 +168,18 @@ void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 				nap::rtti::VariantArray array_view = array.create_array_view();
 				
 				rttr::variant new_value = wrapped_type.create();
-				array_view.insert_value(array_view.get_size(), new_value);
+				assert(new_value.is_valid());
+				assert(array_view.is_dynamic());
+				if (!array_view.insert_value(array_view.get_size(), new_value))
+				{
+					assert(false);
+					return;
+				}
 
 				resolved_path.setValue(array);
 			}));
-#endif
-		}
 
+		}
 		menu.addSeparator();
 	}
 }
