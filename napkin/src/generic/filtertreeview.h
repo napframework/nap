@@ -39,24 +39,35 @@ namespace napkin
 		/**
 		 * @return The sort/filter model that sits between the user model and the view.
 		 */
-		const QSortFilterProxyModel& getFilterModel() const
-		{
-			return mSortFilter;
-		}
+		const LeafFilterProxyModel& getFilterModel() const { return mSortFilter; }
 
 		/**
 		 * @return The actual QTreeView used by this widget.
 		 */
-		QTreeView& getTreeView()
-		{
-			return mTreeView;
-		}
+		QTreeView& getTreeView() { return mTreeView; }
+
+		/**
+		 * @return The filter line edit at the top
+		 */
+		QLineEdit& getLineEdit() { return mLineEditFilter; }
 
 		/**
 		 * Select and item and make sure it's visible on screen by scrolling if needed.
 		 * @param item
 		 */
 		void selectAndReveal(QStandardItem* item);
+
+		/**
+		 * Setting this will change the following:
+		 * As long as there are items visible, the top item will be kept selected.
+		 * @param b True if this tree view should behave like a single-selection widget (like a selection dialog).
+		 */
+		void setIsItemSelector(bool b);
+
+		/**
+		 * Force the selection to the top item
+		 */
+		void setTopItemSelected();
 
 		/**
 		 * @return The first currently selected item.
@@ -71,10 +82,7 @@ namespace napkin
 		/**
 		 * @return The selection model used by the tree view.
 		 */
-		QItemSelectionModel* getSelectionModel() const
-		{
-			return mTreeView.selectionModel();
-		}
+		QItemSelectionModel* getSelectionModel() const { return mTreeView.selectionModel(); }
 
 		/**
 		 * @return The currently selected indexes from the model set by setModel().
@@ -85,10 +93,7 @@ namespace napkin
 		 * When the menu is about to be shown, invoke the provided method to allow a client to insert items into it.
 		 * @param fn
 		 */
-		void setMenuHook(std::function<void(QMenu&)> fn)
-		{
-			mMenuHookFn = fn;
-		}
+		void setMenuHook(std::function<void(QMenu&)> fn) { mMenuHookFn = fn; }
 
 	protected:
         /**
@@ -112,13 +117,6 @@ namespace napkin
 		 */
 		void onCustomContextMenuRequested(const QPoint& pos);
 
-        /**
-         * Recursively expand the children of the specified treeview, starting with index
-         * @param view The view in which to expand the children
-         * @param index The index at which to start expansion
-         * @param expanded True for expansion, false for collapse
-         */
-		static void expandChildren(QTreeView* view, const QModelIndex& index, bool expanded);
 
 	private:
 		QVBoxLayout mLayout;
@@ -126,8 +124,6 @@ namespace napkin
 		QTreeView mTreeView;
 		LeafFilterProxyModel mSortFilter;
 		std::function<void(QMenu&)> mMenuHookFn = nullptr;
-
-		QAction mActionExpandAll;
-		QAction mActionCollapseAll;
+		bool mIsItemSelector = false; // If this model behaves like a quick list selector
 	};
 };

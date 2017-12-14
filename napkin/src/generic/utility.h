@@ -51,6 +51,13 @@ namespace napkin
 	bool traverse(const QStandardItemModel& model, ModelItemFilter filter,
 					   QModelIndex parent = QModelIndex(), int column = 0);
 
+	/**
+	 * Recursively expand the children of the specified treeview, starting with index
+	 * @param view The view in which to expand the children
+	 * @param index The index at which to start expansion
+	 * @param expanded True for expansion, false for collapse
+	 */
+	void expandChildren(QTreeView* view, const QModelIndex& index, bool expanded);
 
 	/**
 	 * Traverse a model and using the given filter function, return the first index.

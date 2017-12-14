@@ -1,7 +1,9 @@
 #include "filtertreeview.h"
+#include "utility.h"
 #include <QMenu>
 #include <QTimer>
 #include <assert.h>
+#include <nap/logger.h>
 
 
 napkin::FilterTreeView::FilterTreeView()
@@ -26,7 +28,10 @@ napkin::FilterTreeView::FilterTreeView()
 	connect(this, &QWidget::customContextMenuRequested, this, &FilterTreeView::onCustomContextMenuRequested);
 }
 
-void napkin::FilterTreeView::setModel(QStandardItemModel* model) { mSortFilter.setSourceModel(model); }
+void napkin::FilterTreeView::setModel(QStandardItemModel* model)
+{
+	mSortFilter.setSourceModel(model);
+}
 
 QStandardItemModel* napkin::FilterTreeView::getModel() const
 {
@@ -73,6 +78,7 @@ void napkin::FilterTreeView::onFilterChanged(const QString& text)
 {
 	mSortFilter.setFilterRegExp(text);
 	mTreeView.expandAll();
+	setTopItemSelected();
 }
 
 
@@ -88,19 +94,6 @@ void napkin::FilterTreeView::onCollapseSelected()
 		expandChildren(&mTreeView, idx, false);
 }
 
-void napkin::FilterTreeView::expandChildren(QTreeView* view, const QModelIndex& index, bool expanded)
-{
-	if (!index.isValid())
-		return;
-
-	for (int i = 0, len = index.model()->rowCount(index); i < len; i++)
-		expandChildren(view, index.child(i, 0), expanded);
-
-	if (expanded && !view->isExpanded(index))
-		view->expand(index);
-	else if (view->isExpanded(index))
-		view->collapse(index);
-}
 
 void napkin::FilterTreeView::onCustomContextMenuRequested(const QPoint& pos)
 {
@@ -109,10 +102,31 @@ void napkin::FilterTreeView::onCustomContextMenuRequested(const QPoint& pos)
 	if (mMenuHookFn != nullptr)
 		mMenuHookFn(menu);
 
-	mActionExpandAll.setText("Expand All");
-	menu.addAction(&mActionExpandAll);
-	mActionCollapseAll.setText("Collapse");
-	menu.addAction(&mActionCollapseAll);
+	auto expandAllAction = menu.addAction("Expand All");
+	connect(expandAllAction, &QAction::triggered, this, &FilterTreeView::onExpandSelected);
+
+	auto collapseAllAction = menu.addAction("Collapse");
+	connect(collapseAllAction, &QAction::triggered, this, &FilterTreeView::onCollapseSelected);
 
 	menu.exec(mapToGlobal(pos));
+}
+
+void napkin::FilterTreeView::setIsItemSelector(bool b)
+{
+	mIsItemSelector = b;
+	if (b) {
+		setTopItemSelected();
+	}
+}
+
+void napkin::FilterTreeView::setTopItemSelected()
+{
+	auto model = mTreeView.model();
+	if (model->rowCount() == 0)
+		return;
+
+	auto leftIndex = model->index(0, 0);
+	auto rightIndex = model->index(0, model->columnCount() - 1);
+	QItemSelection selection(leftIndex, rightIndex);
+	getSelectionModel()->select(selection, QItemSelectionModel::SelectionFlag::ClearAndSelect);
 }

@@ -87,6 +87,21 @@ QStandardItem* napkin::findItemInModel(const QStandardItemModel& model, ModelIte
 	return foundItem;
 }
 
+void napkin::expandChildren(QTreeView* view, const QModelIndex& index, bool expanded)
+{
+	if (!index.isValid())
+		return;
+
+	if (expanded && !view->isExpanded(index))
+		view->expand(index);
+	else if (view->isExpanded(index))
+		view->collapse(index);
+
+	for (int i = 0, len = index.model()->rowCount(index); i < len; i++)
+		expandChildren(view, index.child(i, 0), expanded);
+}
+
+
 std::vector<rttr::type> napkin::getComponentTypes()
 {
 	std::vector<rttr::type> ret;
