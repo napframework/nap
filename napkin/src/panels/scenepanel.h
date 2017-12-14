@@ -26,20 +26,6 @@ namespace napkin
 		void refresh();
 
 		/**
-		 * Called when an entity has been added
-		 * @param newEntity The entity that was added
-		 * @param parent The parent of the entity that was added
-		 */
-		void onEntityAdded(nap::Entity* newEntity, nap::Entity* parent);
-
-		/**
-		 * Called when a component has been added
-		 * @param comp The component that was added
-		 * @param owner The owner of the component
-		 */
-		void onComponentAdded(nap::Component& comp, nap::Entity& owner);
-
-		/**
 		 * Called when an object has been added
 		 * @param obj The object that was added
 		 */
@@ -61,6 +47,8 @@ namespace napkin
 		 * @param filename The name of the file that was opened
 		 */
 		void onFileOpened(const QString& filename);
+
+
 	};
 
 	/**
@@ -71,6 +59,11 @@ namespace napkin
 		Q_OBJECT
 	public:
 		ScenePanel();
+
+		/**
+		 * Let this view add to the context menu
+		 */
+		void menuHook(QMenu& menu);
 
 	private:
 		QVBoxLayout mLayout;		// Layout

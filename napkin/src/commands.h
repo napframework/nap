@@ -102,4 +102,17 @@ namespace napkin
 		nap::rtti::RTTIObject*	mOldValue;	// The old value
 	};
 
+
+	class AddSceneCommand : public QUndoCommand
+	{
+	public:
+		/**
+		 * Add a scene to the "system" or "document" or wherever the objects are supposed to live.
+		 */
+		AddSceneCommand();
+	private:
+		void undo() override;
+		void redo() override;
+	};
+
 };

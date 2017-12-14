@@ -76,13 +76,35 @@ void AddObjectCommand::redo()
 }
 void AddObjectCommand::undo()
 {
+	nap::Logger::fatal("Sorry, no undo for you");
 }
 
 
 void DeleteObjectCommand::undo()
 {
+	nap::Logger::fatal("Sorry, no undo for you");
 }
 
 void DeleteObjectCommand::redo()
 {
 }
+
+
+AddSceneCommand::AddSceneCommand()
+{
+}
+
+void AddSceneCommand::undo()
+{
+	nap::Logger::fatal("Sorry, no undo for you");
+}
+
+void AddSceneCommand::redo()
+{
+	nap::Logger::warn("Adding scene to ResourceManager, but the objects are still held by AppContext");
+	auto& ctx = AppContext::get();
+	auto scene = ctx.getCore().getResourceManager()->getFactory().create(RTTI_OF(nap::Scene));
+	scene->mID = "New Scene";
+	ctx.objectAdded(*scene, true);
+}
+
