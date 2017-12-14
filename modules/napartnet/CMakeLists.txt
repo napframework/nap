@@ -30,7 +30,7 @@ if (WIN32)
             )
 
     copy_files_to_bin(${FILES_TO_COPY})
-elseif(UNIX)
+elseif(UNIX AND NOT OSX)
     set(ARTNET_LIB_FILE ${ARTNET_LIBS_DIR}/libartnet.so)
 
     # HACK, somehow on some systems, libartnet.so gets linked with libartnet.so.1 because it already exists
