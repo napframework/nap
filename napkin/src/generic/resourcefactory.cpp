@@ -1,18 +1,26 @@
 #include "resourcefactory.h"
+#include <entity.h>
 
 napkin::ResourceFactory::ResourceFactory()
 {
-	mObjectIconMap = {{RTTI_OF(nap::rtti::RTTIObject), ":/icons/bullet_white.png"}};
+	mObjectIconMap = {
+		{RTTI_OF(nap::Entity), ":/icons/cube-blue.png"},
+		{RTTI_OF(nap::Component), ":/icons/diamond-orange.png"},
+		{RTTI_OF(nap::rtti::RTTIObject), ":/icons/bullet_white.png"},
+	};
 }
 
 
 QIcon napkin::ResourceFactory::iconFor(const nap::rtti::RTTIObject& object) const
 {
-	for (auto factory_type : mObjectIconMap.keys())
+	for (auto entry : mObjectIconMap)
 	{
 		rttr::type obj_type = object.get_type();
-		if (obj_type.is_derived_from(factory_type))
-			return QIcon(mObjectIconMap[factory_type]);
+		if (obj_type.is_derived_from(entry.first))
+		{
+			QIcon icon(entry.second);
+			return icon;
+		}
 	}
 
 	return QIcon();

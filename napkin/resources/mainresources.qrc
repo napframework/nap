@@ -3,5 +3,7 @@
         <file>icons/link.svg</file>
         <file>icons/folder.png</file>
         <file>icons/bullet_white.png</file>
+        <file>icons/cube-blue.png</file>
+        <file>icons/diamond-orange.png</file>
     </qresource>
 </RCC>
