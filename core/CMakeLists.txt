@@ -30,7 +30,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC src)
 target_link_libraries(${PROJECT_NAME} naputility naprtti)
 
 if (UNIX)
-    target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_LIST_DIR}/external)
+    target_include_directories(${PROJECT_NAME} PUBLIC src/nap/linux)
 endif()
 
 if(APPLE)
