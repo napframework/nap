@@ -6,8 +6,6 @@
 #include <appcontext.h>
 #include <nap/logger.h>
 
-
-using namespace nap;
 using namespace nap::rtti;
 
 napkin::PropertyPath::PropertyPath(RTTIObject& obj, const RTTIPath& path)
@@ -67,7 +65,7 @@ bool napkin::PropertyPath::setPointee(const std::string& target_id) const
 
 	bool result = DefaultLinkResolver::sResolveLinks(AppContext::get().getObjects(), mUnresolvedPointers, errorState);
 	if (!result)
-		Logger::warn(errorState.toString());
+		nap::Logger::warn(errorState.toString());
 
 	return result;
 }
