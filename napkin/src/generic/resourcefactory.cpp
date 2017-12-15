@@ -1,10 +1,12 @@
 #include "resourcefactory.h"
 #include <entity.h>
+#include <scene.h>
 
 napkin::ResourceFactory::ResourceFactory()
 {
 	mObjectIconMap = {
 		{RTTI_OF(nap::Entity), ":/icons/cube-blue.png"},
+		{RTTI_OF(nap::Scene), ":/icons/bricks.png"},
 		{RTTI_OF(nap::Component), ":/icons/diamond-orange.png"},
 		{RTTI_OF(nap::rtti::RTTIObject), ":/icons/bullet_white.png"},
 	};
