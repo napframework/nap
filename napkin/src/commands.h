@@ -5,6 +5,8 @@
 
 #include <QUndoCommand>
 #include <QtCore/QVariant>
+#include <generic/propertypath.h>
+#include <scene.h>
 
 #include "typeconversion.h"
 
@@ -16,6 +18,7 @@ namespace napkin
 	class AddObjectCommand : public QUndoCommand
 	{
 	public:
+		AddObjectCommand(const rttr::type& type);
         /**
          * Redo
          */
@@ -25,6 +28,8 @@ namespace napkin
 		 * Undo
 		 */
 		void undo() override;
+	private:
+		const rttr::type mType;
 	};
 
     /**
@@ -103,16 +108,20 @@ namespace napkin
 	};
 
 
-	class AddSceneCommand : public QUndoCommand
+	/**
+	 * TODO: Can this be an 'AddPointerToVectorCommand'?
+	 * Add an entity to a scene
+	 */
+	class AddEntityToSceneCommand : public QUndoCommand
 	{
 	public:
-		/**
-		 * Add a scene to the "system" or "document" or wherever the objects are supposed to live.
-		 */
-		AddSceneCommand();
-	private:
-		void undo() override;
+		AddEntityToSceneCommand(nap::Scene& scene, nap::Entity& entity);
+
 		void redo() override;
+		void undo() override;
+	private:
+		const std::string mSceneID;
+		const std::string mEntityID;
 	};
 
 };

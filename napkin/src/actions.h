@@ -144,7 +144,7 @@ namespace napkin
         /**
          * @param type The type of object to add
          */
-        explicit AddObjectAction(rttr::type type);
+        explicit AddObjectAction(const rttr::type& type);
 
 	private:
 		/**
@@ -197,19 +197,4 @@ namespace napkin
 		QString mTheme; // The theme to set
 	};
 
-	/**
-	 * Convenience action that allows you to bind a function directly to a menu item, etc
-	 */
-	class FunctorAction : public Action
-	{
-	public:
-		using Functor = std::function<void()>;
-		FunctorAction(const QString& actionText, const Functor& functor);
-
-	private:
-		virtual void perform() override;
-
-	private:
-		Functor mFunctor;
-	};
 }

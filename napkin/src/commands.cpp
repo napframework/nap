@@ -69,10 +69,20 @@ void SetPointerValueCommand::redo()
 	assert(value_set);
 }
 
+AddObjectCommand::AddObjectCommand(const rttr::type& type) : mType(type)
+{
+
+}
+
 
 void AddObjectCommand::redo()
 {
+	nap::Logger::warn("Adding scene to ResourceManager, but the objects are still held by AppContext");
+	auto& ctx = AppContext::get();
+	auto scene = ctx.getCore().getResourceManager()->getFactory().create(mType);
+	scene->mID = QString::fromUtf8(mType.get_name().data()).toStdString();
 
+	ctx.objectAdded(*scene, true);
 }
 void AddObjectCommand::undo()
 {
@@ -89,22 +99,27 @@ void DeleteObjectCommand::redo()
 {
 }
 
-
-AddSceneCommand::AddSceneCommand()
+AddEntityToSceneCommand::AddEntityToSceneCommand(nap::Scene& scene, nap::Entity& entity)
+		: mSceneID(scene.mID), mEntityID(entity.mID)
 {
 }
 
-void AddSceneCommand::undo()
+void AddEntityToSceneCommand::undo()
 {
 	nap::Logger::fatal("Sorry, no undo for you");
 }
 
-void AddSceneCommand::redo()
+void AddEntityToSceneCommand::redo()
 {
-	nap::Logger::warn("Adding scene to ResourceManager, but the objects are still held by AppContext");
-	auto& ctx = AppContext::get();
-	auto scene = ctx.getCore().getResourceManager()->getFactory().create(RTTI_OF(nap::Scene));
-	scene->mID = "New Scene";
-	ctx.objectAdded(*scene, true);
-}
+	auto scene = AppContext::get().getObjectT<nap::Scene>(mSceneID);
+	assert(scene != nullptr);
+	auto entity = AppContext::get().getObjectT<nap::Entity>(mEntityID);
+	assert(entity != nullptr);
 
+	nap::RootEntity rootEntity;
+	rootEntity.mEntity = entity;
+
+	scene->mEntities.emplace_back(rootEntity);
+
+	AppContext::get().objectChanged(*scene);
+}

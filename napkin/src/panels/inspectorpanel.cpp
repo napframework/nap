@@ -129,13 +129,24 @@ void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 				{
 					const nap::rtti::TypeInfo& type = derived_types[0].get_raw_type();
 					std::string title = nap::utility::stringFormat("Add New '%s'", type.get_name().data());
-					menu.addAction(new FunctorAction(QString::fromStdString(title), [this, array_item, type]() { onAddObjectArrayElement(array_item, type); }));
+
+					menu.addAction(QString::fromStdString(title), [this, array_item, type]()
+					{
+						onAddObjectArrayElement(array_item, type);
+					});
 				}
 				else
 				{
 					QMenu* add_new_menu = menu.addMenu("Add New...");
+
 					for (const nap::rtti::TypeInfo& type : derived_types)
-						add_new_menu->addAction(new FunctorAction(QString::fromUtf8(type.get_name().data()), [this, array_item, type]() { onAddObjectArrayElement(array_item, type); }));
+					{
+						add_new_menu->addAction(QString::fromUtf8(type.get_name().data()), [this, array_item, type]()
+						{
+							onAddObjectArrayElement(array_item, type);
+						});
+					}
+
 				}
 			}
 
@@ -151,11 +162,13 @@ void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 			
 			// Add all objects to submenu
 			for (nap::rtti::RTTIObject* object : objects)
-				add_existing_menu->addAction(new FunctorAction(QString::fromStdString(object->mID), [this, array_item, object]() { onAddObjectArrayElement(array_item, object); }));
+				add_existing_menu->addAction(QString::fromStdString(object->mID), [this, array_item, object]() {
+					onAddObjectArrayElement(array_item, object);
+				});
 		}
 		else
 		{
-			menu.addAction(new FunctorAction("Add", [array_item]()
+			menu.addAction("Add", [array_item]()
 			{
 				const nap::rtti::TypeInfo array_type = array_item->getArray().get_rank_type(array_item->getArray().get_rank());
 				const nap::rtti::TypeInfo wrapped_type = array_type.is_wrapper() ? array_type.get_wrapped_type() : array_type;
@@ -177,7 +190,7 @@ void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 				}
 
 				resolved_path.setValue(array);
-			}));
+			});
 
 		}
 		menu.addSeparator();

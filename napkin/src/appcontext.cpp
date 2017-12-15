@@ -242,6 +242,20 @@ nap::rtti::RTTIObject* AppContext::getObject(const std::string& name)
 	return it->get();
 }
 
+nap::rtti::RTTIObject* AppContext::getObject(const std::string& name, const rttr::type& type)
+{
+	auto object = getObject(name);
+
+	if (object == nullptr)
+		return nullptr;
+
+	if (object->get_type().is_derived_from(type))
+		return object;
+
+	return nullptr;
+}
+
+
 std::vector<nap::rtti::RTTIObject*> AppContext::getObjectsOfType(const nap::rtti::TypeInfo& type) const
 {
 	std::vector<nap::rtti::RTTIObject*> result;
@@ -299,3 +313,4 @@ void AppContext::restoreUI()
 
 	openRecentFile();
 }
+

@@ -97,13 +97,11 @@ namespace napkin
 		const QString getLastOpenedFilename();
 
 		/**
+		 * TODO: This should be in a Document object
 		 * @return The name of the currently opened file
 		 * or an empty string if no file is open or the data hasn't been saved yet.
 		 */
-		const QString& getCurrentFilename()
-		{
-			return mCurrentFilename;
-		}
+		const QString& getCurrentFilename()	{ return mCurrentFilename; }
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Data operations
@@ -112,19 +110,19 @@ namespace napkin
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		/**
+		 * TODO: This should be in a Document object
 		 * @return All the objects (resources?) that are currently loaded.
 		 */
-		nap::rtti::OwnedObjectList& getObjects()
-		{
-			return mObjects;
-		}
+		nap::rtti::OwnedObjectList& getObjects() { return mObjects; }
 
 		/**
+		 * TODO: This should be in a Document object
 		 * @return All the objects (resources?) that are currently loaded.
 		 */
 		nap::rtti::ObjectList getObjectPointers();
 
 		/**
+		 * TODO: This should be in a Document object
 		 * Retrieve an (data) object by name/id
 		 * @param name The name/id of the object to find
 		 * @return The found object or nullptr if none was found
@@ -132,13 +130,28 @@ namespace napkin
 		nap::rtti::RTTIObject* getObject(const std::string& name);
 
 		/**
-		 * Get all objects of the specified type 
+		 * TODO: This should be in a Document object
+		 * Get an object by name and type
+		 */
+		nap::rtti::RTTIObject* getObject(const std::string& name, const rttr::type& type);
+
+		/**
+		 * TODO: This should be in a Document object
+		 * Get an object by name and type
+		 */
+		template<typename T>
+		T* getObjectT(const std::string& name) { return rtti_cast<T>(getObject(name)); }
+
+		/**
+		 * TODO: This should be in a Document object
+		 * Get all objects of the specified type
 		 * @param type The type of objects to get
 		 * @return All objects of the specified type, including derived types
 		 */
 		std::vector<nap::rtti::RTTIObject*> getObjectsOfType(const nap::rtti::TypeInfo& type) const;
 
 		/**
+		 * TODO: This should be in a Document object
 		 * Retrieve the parent of the specified Entity
 		 * @param entity The entity to find the parent from.
 		 * @return The provided Entity's parent or nullptr if the Entity has no parent.
@@ -146,6 +159,7 @@ namespace napkin
 		nap::Entity* getParent(const nap::Entity& entity);
 
 		/**
+		 * TODO: This should be in a Document object
 		 * Retrieve the Entity the provided Component belongs to.
 		 * @param component The component of which to find the owner.
 		 * @return The owner of the component
@@ -153,6 +167,7 @@ namespace napkin
 		nap::Entity* getOwner(const nap::Component& component);
 
 		/**
+		 * TODO: This should be in a Document object
 		 * Create an entity. Its name/id will be automatically generated.
 		 * @param parent The parent under which to create the Entity,
 		 *      provide nullptr if the Entity should have no parent.
@@ -161,6 +176,7 @@ namespace napkin
 		nap::Entity* createEntity(nap::Entity* parent = nullptr);
 
 		/**
+		 * TODO: This should be in a Document object
 		 * Add a component of the specified type to an Entity.
 		 * @param entity The entity to add the component to.
 		 * @param type The type of the desired component.
@@ -169,6 +185,7 @@ namespace napkin
 		nap::Component* addComponent(nap::Entity& entity, rttr::type type);
 
 		/**
+		 * TODO: This should be in a Document object
 		 * Add an object of the specified type.
 		 * @param type The type of the desired object.
 		 * @param selectNewObject Whether the newly created object should be selected in any views watching for object addition
@@ -177,12 +194,14 @@ namespace napkin
 		nap::rtti::RTTIObject* addObject(rttr::type type, bool selectNewObject);
 
 		/**
+		 * TODO: This should be in a Document object
 		 * Obliterate the specified object
 		 * @param object The object to be deleted.
 		 */
 		void deleteObject(nap::rtti::RTTIObject& object);
 
 		/**
+		 * TODO: This should be in a Document object
 		 * Execute the specified command and push the provided command onto the undostack.
 		 * @param cmd The command to be executed
 		 */
@@ -267,11 +286,19 @@ namespace napkin
 
 		/**
 		 * Qt Signal
-		 * Invoked when after any object has been added (this includes Entities)
+		 * Invoked after any object has been added (this includes Entities)
 		 * @param obj The newly added object
+		 * TODO: Get rid of the following parameter, the client itself must decide how to react to this event.
+		 * 		This is a notification, not a directive.
 		 * @param selectNewObject Whether the newly created object should be selected in any views watching for object addition
 		 */
 		void objectAdded(nap::rtti::RTTIObject& obj, bool selectNewObject);
+
+		/**
+		 * Qt Signal
+		 * Invoked after an object has changed drastically
+		 */
+		void objectChanged(nap::rtti::RTTIObject& obj);
 
 		/**
 		 * Qt Signal
@@ -291,6 +318,11 @@ namespace napkin
 	private:
 		AppContext();
 
+		/**
+		 * TODO: This should live in a Document class
+		 * @param suggestedName
+		 * @return
+		 */
 		std::string getUniqueName(const std::string& suggestedName);
 
 		nap::rtti::OwnedObjectList mObjects; // All the objects
