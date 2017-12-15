@@ -16,7 +16,14 @@ namespace napkin
 	public:
 		HistoryPanel();
 
+
+
 	private:
+		/**
+		 * Ensure we have the correct undo stack
+		 */
+		void updateUndoStack();
+
 		QVBoxLayout mLayout; // The main layout
 		QUndoView mUndoView; // The actual undo list
 	};

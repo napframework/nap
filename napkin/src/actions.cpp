@@ -1,4 +1,5 @@
 #include "actions.h"
+#include "commands.h"
 
 using namespace napkin;
 
@@ -38,7 +39,7 @@ SaveFileAction::SaveFileAction()
 
 void SaveFileAction::perform()
 {
-	if (AppContext::get().getCurrentFilename().isNull())
+	if (AppContext::get().getDocument()->getCurrentFilename().isNull())
 	{
 		SaveFileAsAction().trigger();
 		return;
@@ -55,7 +56,7 @@ SaveFileAsAction::SaveFileAsAction()
 void SaveFileAsAction::perform()
 {
 	auto& ctx = AppContext::get();
-	auto prevFilename = ctx.getCurrentFilename();
+	auto prevFilename = ctx.getDocument()->getCurrentFilename();
 	if (prevFilename.isNull())
 		prevFilename = ctx.getLastOpenedFilename();
 
@@ -75,7 +76,7 @@ AddObjectAction::AddObjectAction(const rttr::type& type) : Action(), mType(type)
 
 void AddObjectAction::perform()
 {
-    AppContext::get().addObject(mType, true);
+	AppContext::get().executeCommand(new AddObjectCommand(mType));
 }
 
 DeleteObjectAction::DeleteObjectAction(nap::rtti::RTTIObject& object) : Action(), mObject(object)
@@ -85,7 +86,7 @@ DeleteObjectAction::DeleteObjectAction(nap::rtti::RTTIObject& object) : Action()
 
 void DeleteObjectAction::perform()
 {
-    AppContext::get().deleteObject(mObject);
+    AppContext::get().executeCommand(new DeleteObjectCommand(mObject));
 }
 
 SetThemeAction::SetThemeAction(const QString& themeName) : Action(), mTheme(themeName)
@@ -101,7 +102,7 @@ void SetThemeAction::perform()
 
 void AddComponentAction::perform()
 {
-    AppContext::get().addComponent(mEntity, mComponentType);
+    AppContext::get().getDocument()->addComponent(mEntity, mComponentType);
 }
 
 AddComponentAction::AddComponentAction(nap::Entity& entity, nap::rtti::TypeInfo type)
@@ -110,13 +111,15 @@ AddComponentAction::AddComponentAction(nap::Entity& entity, nap::rtti::TypeInfo 
     setText(QString(type.get_name().data()));
 }
 
-void AddEntityAction::perform()
-{
-    AppContext::get().createEntity(mParent);
-}
 
 AddEntityAction::AddEntityAction(nap::Entity* parent) : Action(), mParent(parent)
 {
     setText("Add Entity");
 }
+
+void AddEntityAction::perform()
+{
+	AppContext::get().executeCommand(new AddObjectCommand(RTTI_OF(nap::Entity), mParent));
+}
+
 

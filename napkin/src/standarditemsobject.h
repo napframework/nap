@@ -85,7 +85,7 @@ namespace napkin
 		/**
 		 * @return The entity held by this item
 		 */
-		nap::Entity& getEntity();
+		nap::Entity* getEntity();
 	};
 
 	/**

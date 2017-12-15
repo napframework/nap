@@ -5,7 +5,7 @@
 
 napkin::FlatObjectModel::FlatObjectModel(const rttr::type& baseType) : mBaseType(baseType)
 {
-	for (auto& object : AppContext::get().getObjects())
+	for (auto& object : AppContext::get().getDocument()->getObjects())
 	{
 		if (!object.get()->get_type().is_derived_from(baseType))
 			continue;

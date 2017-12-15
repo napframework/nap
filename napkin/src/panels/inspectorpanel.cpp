@@ -79,7 +79,7 @@ void napkin::InspectorPanel::onAddObjectArrayElement(ArrayPropertyItem* targetIt
 	nap::rtti::Variant array = resolved_path.getValue();
 	nap::rtti::VariantArray array_view = array.create_array_view();
 
-	nap::rtti::RTTIObject* new_object = AppContext::get().addObject(type, false);
+	nap::rtti::RTTIObject* new_object = AppContext::get().getDocument()->addObject(type);
 	bool inserted = array_view.insert_value(array_view.get_size(), new_object);
 	assert(inserted);
 
@@ -95,7 +95,7 @@ void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 	if (item == nullptr)
 		return;
 
-	ArrayPropertyItem* array_item = dynamic_cast<ArrayPropertyItem*>(item);
+	auto* array_item = dynamic_cast<ArrayPropertyItem*>(item);
 	if (array_item != nullptr)
 	{
 		// Determine the type of the array
@@ -110,7 +110,7 @@ void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 
 			// Remove any types that are not actually createable (base classes and such)
 			nap::rtti::Factory& factory = AppContext::get().getCore().getResourceManager()->getFactory();
-			for (int index = derived_types.size() - 1; index >= 0; --index)
+			for (long index = derived_types.size() - 1; index >= 0; --index)
 			{
 				if (!factory.canCreate(derived_types[index]))
 					derived_types.erase(derived_types.begin() + index);
@@ -152,7 +152,7 @@ void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 
 			// Build 'Add Existing' menu, populated with all existing objects matching the array type
  			QMenu* add_existing_menu = menu.addMenu("Add Existing...");
-			std::vector<nap::rtti::RTTIObject*> objects = AppContext::get().getObjectsOfType(wrapped_type.get_raw_type());
+			std::vector<nap::rtti::RTTIObject*> objects = AppContext::get().getDocument()->getObjectsOfType(wrapped_type.get_raw_type());
 			
 			// Sort on object ID
 			std::sort(objects.begin(), objects.end(), [](const nap::rtti::RTTIObject* objectA, const nap::rtti::RTTIObject* objectB)

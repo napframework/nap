@@ -65,7 +65,8 @@ bool napkin::PropertyPath::setPointee(const std::string& target_id) const
 	if (!target_id.empty())
 		mUnresolvedPointers.emplace_back(mObject, mPath, target_id);
 
-	bool result = DefaultLinkResolver::sResolveLinks(AppContext::get().getObjects(), mUnresolvedPointers, errorState);
+	auto& objects = AppContext::get().getDocument()->getObjects();
+	bool result = DefaultLinkResolver::sResolveLinks(objects, mUnresolvedPointers, errorState);
 	if (!result)
 		Logger::warn(errorState.toString());
 

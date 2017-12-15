@@ -59,10 +59,9 @@ napkin::EntityItem::EntityItem(nap::Entity& entity) : ObjectItem(&entity)
 	}
 }
 
-nap::Entity& napkin::EntityItem::getEntity()
+nap::Entity* napkin::EntityItem::getEntity()
 {
-	auto& e = *rtti_cast<nap::Entity*>(mObject);
-	return *e;
+	return rtti_cast<nap::Entity>(mObject);
 }
 
 napkin::ComponentItem::ComponentItem(nap::Component& comp) : ObjectItem(&comp)
