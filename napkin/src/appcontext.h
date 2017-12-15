@@ -5,6 +5,7 @@
 #include <nap/core.h>
 
 #include "thememanager.h"
+#include "document.h"
 #include <QApplication>
 #include <QObject>
 #include <QUndoCommand>
@@ -97,142 +98,34 @@ namespace napkin
 		const QString getLastOpenedFilename();
 
 		/**
-		 * TODO: This should be in a Document object
-		 * @return The name of the currently opened file
-		 * or an empty string if no file is open or the data hasn't been saved yet.
+		 * @return The current document
 		 */
-		const QString& getCurrentFilename()	{ return mCurrentFilename; }
-
-		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// Data operations
-		// TODO: Data structure operations should be accessed on the objects themselves
-		// TODO: Properly name "objects", this is probably to broad of a term here
-		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-		/**
-		 * TODO: This should be in a Document object
-		 * @return All the objects (resources?) that are currently loaded.
-		 */
-		nap::rtti::OwnedObjectList& getObjects() { return mObjects; }
-
-		/**
-		 * TODO: This should be in a Document object
-		 * @return All the objects (resources?) that are currently loaded.
-		 */
-		nap::rtti::ObjectList getObjectPointers();
-
-		/**
-		 * TODO: This should be in a Document object
-		 * Retrieve an (data) object by name/id
-		 * @param name The name/id of the object to find
-		 * @return The found object or nullptr if none was found
-		 */
-		nap::rtti::RTTIObject* getObject(const std::string& name);
-
-		/**
-		 * TODO: This should be in a Document object
-		 * Get an object by name and type
-		 */
-		nap::rtti::RTTIObject* getObject(const std::string& name, const rttr::type& type);
-
-		/**
-		 * TODO: This should be in a Document object
-		 * Get an object by name and type
-		 */
-		template<typename T>
-		T* getObjectT(const std::string& name) { return rtti_cast<T>(getObject(name)); }
-
-		/**
-		 * TODO: This should be in a Document object
-		 * Get all objects of the specified type
-		 * @param type The type of objects to get
-		 * @return All objects of the specified type, including derived types
-		 */
-		std::vector<nap::rtti::RTTIObject*> getObjectsOfType(const nap::rtti::TypeInfo& type) const;
-
-		/**
-		 * TODO: This should be in a Document object
-		 * Retrieve the parent of the specified Entity
-		 * @param entity The entity to find the parent from.
-		 * @return The provided Entity's parent or nullptr if the Entity has no parent.
-		 */
-		nap::Entity* getParent(const nap::Entity& entity);
-
-		/**
-		 * TODO: This should be in a Document object
-		 * Retrieve the Entity the provided Component belongs to.
-		 * @param component The component of which to find the owner.
-		 * @return The owner of the component
-		 */
-		nap::Entity* getOwner(const nap::Component& component);
-
-		/**
-		 * TODO: This should be in a Document object
-		 * Create an entity. Its name/id will be automatically generated.
-		 * @param parent The parent under which to create the Entity,
-		 *      provide nullptr if the Entity should have no parent.
-		 * @return The newly created entity.
-		 */
-		nap::Entity* createEntity(nap::Entity* parent = nullptr);
-
-		/**
-		 * TODO: This should be in a Document object
-		 * Add a component of the specified type to an Entity.
-		 * @param entity The entity to add the component to.
-		 * @param type The type of the desired component.
-		 * @return The newly created component.
-		 */
-		nap::Component* addComponent(nap::Entity& entity, rttr::type type);
-
-		/**
-		 * TODO: This should be in a Document object
-		 * Add an object of the specified type.
-		 * @param type The type of the desired object.
-		 * @param selectNewObject Whether the newly created object should be selected in any views watching for object addition
-		 * @return The newly created object
-		 */
-		nap::rtti::RTTIObject* addObject(rttr::type type, bool selectNewObject);
-
-		/**
-		 * TODO: This should be in a Document object
-		 * Obliterate the specified object
-		 * @param object The object to be deleted.
-		 */
-		void deleteObject(nap::rtti::RTTIObject& object);
-
-		/**
-		 * TODO: This should be in a Document object
-		 * Execute the specified command and push the provided command onto the undostack.
-		 * @param cmd The command to be executed
-		 */
-		void executeCommand(QUndoCommand* cmd);
+		Document* getDocument() { return mDocument.get(); }
 
 		/**
 		 * Convenience method to retrieve this QApplication's instance.
 		 * @return The QApplication singleton.
 		 */
-		QApplication* getQApplication()
-		{
-			return dynamic_cast<QApplication*>(qGuiApp);
-		}
+		QApplication* getQApplication() { return dynamic_cast<QApplication*>(qGuiApp); }
 
 		/**
 		 * @return The currently used undostack, @see QUndoStack
 		 */
-		QUndoStack& getUndoStack()
-		{
-			return mUndoStack;
-		}
+		QUndoStack& getUndoStack() { return getDocument()->getUndoStack(); }
 
 		/**
 		 * @return Access to the current application's ThemeManage
 		 */
-		ThemeManager& getThemeManager()
-		{
-			return mThemeManager;
-		}
+		ThemeManager& getThemeManager() { return mThemeManager; }
 
-		// To be invoked after the application has shown
+		/**
+		 * @param command THe command to be executed on the current document
+		 */
+		void executeCommand(QUndoCommand* cmd) { getDocument()->executeCommand(cmd); }
+
+		/**
+		 * To be invoked after the application has shown
+		 */
 		void restoreUI();
 
 		/**
@@ -268,6 +161,7 @@ namespace napkin
 		 */
 		void newFileCreated();
 
+	Q_SIGNALS:
 		/**
 		 * Qt Signal
 		 * Invoked when an Entity has been added to the system
@@ -319,17 +213,14 @@ namespace napkin
 		AppContext();
 
 		/**
-		 * TODO: This should live in a Document class
-		 * @param suggestedName
-		 * @return
+		 * Whenever a new document is created/loaded, register its signals for listeners
 		 */
-		std::string getUniqueName(const std::string& suggestedName);
+		void connectDocumentSignals();
 
-		nap::rtti::OwnedObjectList mObjects; // All the objects
-		QUndoStack mUndoStack;				 // The undostack of the application
-		QString mCurrentFilename;			 // The current filename
-		nap::Core mCore;					 // The nap::Core
-		ThemeManager mThemeManager;			 // The theme manager
-		ResourceFactory mResourceFactory;	// Le resource factory
+
+		nap::Core mCore;						// The nap::Core
+		ThemeManager mThemeManager;			 	// The theme manager
+		ResourceFactory mResourceFactory;		// Le resource factory
+		std::unique_ptr<Document> mDocument = nullptr; 			// Keep objects here
 	};
 };

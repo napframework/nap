@@ -58,7 +58,7 @@ void napkin::AppRunnerPanel::onStartApp()
 	}
 
 	QStringList args;
-	args << AppContext::get().getCurrentFilename();
+	args << AppContext::get().getDocument()->getCurrentFilename();
 
 	nap::Logger::info("Running: \"%s %s\"", executable.toStdString().c_str(), args.join(" ").toStdString().c_str());
 

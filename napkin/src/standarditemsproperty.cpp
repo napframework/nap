@@ -184,7 +184,7 @@ void napkin::PointerValueItem::setData(const QVariant& value, int role)
 {
 	if (role == Qt::EditRole) 
 	{
-		nap::rtti::RTTIObject* new_target = AppContext::get().getObject(value.toString().toStdString());
+		nap::rtti::RTTIObject* new_target = AppContext::get().getDocument()->getObject(value.toString().toStdString());
 		if (new_target == nullptr)
 			return;
 

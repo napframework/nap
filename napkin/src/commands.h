@@ -18,7 +18,7 @@ namespace napkin
 	class AddObjectCommand : public QUndoCommand
 	{
 	public:
-		AddObjectCommand(const rttr::type& type);
+		AddObjectCommand(const rttr::type& type, nap::rtti::RTTIObject* parent = nullptr);
         /**
          * Redo
          */
@@ -30,6 +30,8 @@ namespace napkin
 		void undo() override;
 	private:
 		const rttr::type mType;
+		std::string mObjectName;
+		std::string mParentName = "";
 	};
 
     /**
@@ -38,6 +40,7 @@ namespace napkin
 	class DeleteObjectCommand : public QUndoCommand
 	{
 	public:
+		DeleteObjectCommand(nap::rtti::RTTIObject& object);
         /**
          * Undo
          */
@@ -47,6 +50,9 @@ namespace napkin
          * Redo
          */
         void redo() override;
+	private:
+		const std::string mObjectName;
+
 	};
 
     /**
@@ -122,6 +128,7 @@ namespace napkin
 	private:
 		const std::string mSceneID;
 		const std::string mEntityID;
+		long mIndex;
 	};
 
 };

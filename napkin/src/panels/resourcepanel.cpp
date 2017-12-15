@@ -18,7 +18,7 @@ void napkin::ResourceModel::refresh()
 	auto entitiesItem = new class GroupItem(TXT_LABEL_ENTITIES);
 	appendRow(entitiesItem);
 
-	for (nap::rtti::RTTIObject* ob : topLevelObjects(AppContext::get().getObjectPointers()))
+	for (nap::rtti::RTTIObject* ob : topLevelObjects(AppContext::get().getDocument()->getObjectPointers()))
 	{
 		auto typeItem = new RTTITypeItem(ob->get_type());
 
@@ -28,7 +28,7 @@ void napkin::ResourceModel::refresh()
 			// Grab entities and stuff them in a group
 			nap::Entity& e = *rtti_cast<nap::Entity>(ob);
 
-			if (AppContext::get().getParent(e))
+			if (AppContext::get().getDocument()->getParent(e))
 				continue; // Only add root objects
 
 			auto entityItem = new EntityItem(e);
@@ -81,13 +81,14 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 		if (entityItem != nullptr)
 		{
 			// Selected item is an Entity
-			menu.addAction(new AddEntityAction(&entityItem->getEntity()));
+			auto parent = entityItem->getEntity();
+			menu.addAction(new AddEntityAction(parent));
 
 			// Components
 			auto addComponentMenu = menu.addMenu("Add Component");
 			for (const auto& type : getComponentTypes())
 			{
-				addComponentMenu->addAction(new AddComponentAction(entityItem->getEntity(), type));
+				addComponentMenu->addAction(new AddComponentAction(*entityItem->getEntity(), type));
 			}
 		}
 
@@ -235,7 +236,9 @@ void napkin::ResourcePanel::onObjectAdded(nap::rtti::RTTIObject& obj, bool selec
 void napkin::ResourcePanel::onObjectRemoved(nap::rtti::RTTIObject& object)
 {
 	// TODO: Don't refresh the whole mModel
-	mModel.refresh();
+	auto item = findInModel<ObjectItem>(mModel, object);
+	mModel.removeRow(item->row(), item->parent()->index());
+//	mModel.refresh();
 	mTreeView.getTreeView().expandAll();
 }
 

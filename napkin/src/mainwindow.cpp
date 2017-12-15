@@ -81,7 +81,8 @@ void MainWindow::onFileSaved(const QString& filename)
 
 void MainWindow::updateWindowTitle()
 {
-	setWindowTitle(QString("%1 - %2").arg(QApplication::applicationName(), AppContext::get().getCurrentFilename()));
+	setWindowTitle(QString("%1 - %2").arg(QApplication::applicationName(),
+										  AppContext::get().getDocument()->getCurrentFilename()));
 }
 
 MainWindow::MainWindow()
