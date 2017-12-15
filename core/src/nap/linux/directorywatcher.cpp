@@ -1,5 +1,6 @@
 #include "nap/directorywatcher.h"
-#include <FileWatcher/FileWatcher.h>
+#include "nap/linux/FileWatcher.h"
+
 #include <fstream>
 #include <nap/logger.h>
 #include <thread>
@@ -7,8 +8,6 @@
 
 namespace nap
 {
-
-
 	/**
 	 * Directorywatcher
 	 */
