@@ -112,7 +112,7 @@ namespace napkin
 	/**
 	 * An item representing one scene
 	 */
-	class SceneItem : public QStandardItem
+	class SceneItem : public ObjectItem
 	{
 	public:
 		explicit SceneItem(nap::Scene& scene);
@@ -124,17 +124,15 @@ namespace napkin
          */
         int type() const override { return StandardItemTypeID::SceneItemID; }
 
-	private:
-		nap::Scene& mScene; //< The scene this item keeps
 	};
 
 	/**
 	 * An item that displays an entity instance
 	 */
-	class EntityInstanceItem : public QStandardItem
+	class EntityInstanceItem : public ObjectItem
 	{
 	public:
-		explicit EntityInstanceItem(nap::EntityInstance& e);
+		explicit EntityInstanceItem(nap::Entity& e);
 
         /**
          * QStandardItem is not a QObject, so regular QObject polymorphism doesn't work.
@@ -143,8 +141,6 @@ namespace napkin
          */
         int type() const override { return StandardItemTypeID::EntityInstanceID; }
 
-	private:
-		nap::EntityInstance& mEntityInstance;
 	};
 
 } // namespace napkin

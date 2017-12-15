@@ -38,6 +38,11 @@ namespace napkin
 		void onObjectRemoved(nap::rtti::RTTIObject& obj);
 
 		/**
+		 * Called when an object has drastically changed
+		 */
+		void onObjectChanged(nap::rtti::RTTIObject& obj);
+
+		/**
 		 * Called when a new file was created.
 		 */
 		void onNewFile();

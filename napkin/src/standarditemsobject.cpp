@@ -75,16 +75,16 @@ nap::Component& napkin::ComponentItem::getComponent()
 	return *o;
 }
 
-napkin::SceneItem::SceneItem(nap::Scene& scene) : mScene(scene)
+napkin::SceneItem::SceneItem(nap::Scene& scene) : ObjectItem(&scene)
 {
 	setText(QString::fromStdString(scene.mID));
     for (auto entity : scene.getEntityResources())
     {
-        appendRow(new EntityItem(*entity.mEntity));
+		appendRow(new EntityInstanceItem(*entity.mEntity));
     }
 }
 
-napkin::EntityInstanceItem::EntityInstanceItem(nap::EntityInstance& e) : mEntityInstance(e)
+napkin::EntityInstanceItem::EntityInstanceItem(nap::Entity& e) : ObjectItem(&e)
 {
 	auto name = QString::fromStdString(e.mID);
 	if (name.isEmpty())
@@ -96,8 +96,9 @@ napkin::EntityInstanceItem::EntityInstanceItem(nap::EntityInstance& e) : mEntity
 	//	name = QString("%1 (%2)").arg(name, entityName);
 	setText(name);
 
-	for (auto e : mEntityInstance.getChildren())
-	{
-		appendRow(new EntityInstanceItem(*e));
-	}
+//	for (auto e : mEntityInstance.getChildren())
+//	{
+//		appendRow(new EntityInstanceItem(*e));
+//	}
 }
+

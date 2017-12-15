@@ -68,7 +68,7 @@ void SaveFileAsAction::perform()
 	ctx.saveFileAs(filename);
 }
 
-AddObjectAction::AddObjectAction(rttr::type type) : Action(), mType(type)
+AddObjectAction::AddObjectAction(const rttr::type& type) : Action(), mType(type)
 {
     setText(QString(type.get_name().data()));
 }
@@ -118,17 +118,5 @@ void AddEntityAction::perform()
 AddEntityAction::AddEntityAction(nap::Entity* parent) : Action(), mParent(parent)
 {
     setText("Add Entity");
-}
-
-FunctorAction::FunctorAction(const QString& actionText, const Functor& functor) :
-	mFunctor(functor)
-{
-	setText(actionText);
-}
-
-void FunctorAction::perform()
-{
-	if (mFunctor)
-		mFunctor();
 }
 
