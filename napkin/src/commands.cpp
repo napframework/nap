@@ -50,6 +50,11 @@ SetPointerValueCommand::SetPointerValueCommand(nap::rtti::RTTIObject* ptr, nap::
 	mOldValue(nullptr)
 {
 	mOldValue = getPointee(*mObject, mPath);
+
+	auto pointerPath = QString("%1::%1").arg(QString::fromStdString(ptr->mID),
+											 QString::fromStdString(path.toString()));
+
+	setText(QString("Set pointer value at '%1' to '%2'").arg(pointerPath, QString::fromStdString(newValue->mID)));
 }
 
 void SetPointerValueCommand::undo()
@@ -71,7 +76,7 @@ void SetPointerValueCommand::redo()
 
 AddObjectCommand::AddObjectCommand(const rttr::type& type) : mType(type)
 {
-
+	setText(QString("Add new %1").arg(QString::fromUtf8(type.get_name().data())));
 }
 
 
@@ -102,6 +107,8 @@ void DeleteObjectCommand::redo()
 AddEntityToSceneCommand::AddEntityToSceneCommand(nap::Scene& scene, nap::Entity& entity)
 		: mSceneID(scene.mID), mEntityID(entity.mID)
 {
+	setText(QString("Add Entity '%1' to Scene '%1'").arg(QString::fromStdString(mEntityID),
+														 QString::fromStdString(mSceneID)));
 }
 
 void AddEntityToSceneCommand::undo()
