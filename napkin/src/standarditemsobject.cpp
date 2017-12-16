@@ -35,9 +35,8 @@ void napkin::ObjectItem::setData(const QVariant& value, int role)
 {
 	if (role == Qt::EditRole)
 	{
-		nap::rtti::RTTIPath path;
-		path.pushAttribute("mID");
-		AppContext::get().executeCommand(new SetValueCommand(mObject, path, value.toString()));
+		PropertyPath prop_path(*mObject, "mID");
+		AppContext::get().executeCommand(new SetValueCommand(prop_path, value.toString()));
 		return;
 	}
 	QStandardItem::setData(value, role);

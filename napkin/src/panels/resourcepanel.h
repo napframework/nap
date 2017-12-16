@@ -104,7 +104,7 @@ namespace napkin
 		/**
 		 * Called when an object name has changed
 		 */
-		void onPropertyValueChanged(const nap::rtti::RTTIObject& obj, const nap::rtti::RTTIPath& path);
+		void onPropertyValueChanged(const PropertyPath& path);
 
 		/**
 		 * Finds a model item that keeps track of the specified object

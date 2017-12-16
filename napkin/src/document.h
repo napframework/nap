@@ -180,7 +180,7 @@ namespace napkin
 		 * @param object The object that has the changed property
 		 * @param path The path to the property that has changed
 		 */
-		void propertyValueChanged(nap::rtti::RTTIObject& object, const nap::rtti::RTTIPath& path);
+		void propertyValueChanged(const PropertyPath& path);
 
 
 	private:

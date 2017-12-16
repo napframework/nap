@@ -292,7 +292,9 @@ void napkin::PropertyValueItem::setData(const QVariant& value, int role)
 
 	if (role == Qt::EditRole)
 	{
-		napkin::AppContext::get().executeCommand(new SetValueCommand(mObject, mPath, value));
+		// TODO: Let this item just use a PropertyPath instead of converting here
+		PropertyPath prop_path(*mObject, mPath);
+		napkin::AppContext::get().executeCommand(new SetValueCommand(prop_path, value));
 	}
 
 	if (role == Qt::DisplayRole)
