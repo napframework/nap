@@ -198,8 +198,36 @@ void Document::removeObject(const std::string& name)
 }
 
 
+long Document::addArrayElement(const PropertyPath& path)
+{
+	auto array_view = path.getArrayView();
+	const nap::rtti::TypeInfo array_type = array_view.get_rank_type(array_view.get_rank());
+	const nap::rtti::TypeInfo wrapped_type = array_type.is_wrapper() ? array_type.get_wrapped_type() : array_type;
+
+	nap::rtti::ResolvedRTTIPath resolved_path = path.resolve();
+	assert(resolved_path.isValid());
+
+	nap::rtti::Variant array = resolved_path.getValue();
+//	nap::rtti::VariantArray array_view = array.create_array_view();
+
+	rttr::variant new_value = wrapped_type.create();
+	assert(new_value.is_valid());
+	assert(array_view.is_dynamic());
+	long index = array_view.get_size();
+	if (!array_view.insert_value(index, new_value))
+	{
+		assert(false);
+		return -1;
+	}
+
+	resolved_path.setValue(array);
+	propertyValueChanged(path.object(), path.path());
+	return index;
+}
+
 void Document::executeCommand(QUndoCommand* cmd)
 {
 	mUndoStack.push(cmd);
 }
+
 

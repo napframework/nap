@@ -86,3 +86,9 @@ rttr::variant_array_view napkin::PropertyPath::getArrayView() const
 {
 	return resolve().getValue().create_array_view();
 }
+
+QString napkin::PropertyPath::toString() const
+{
+	return QString("%1@%2").arg(QString::fromStdString(mObject->mID),
+								 QString::fromStdString(mPath.toString()));
+}
