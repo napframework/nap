@@ -17,7 +17,6 @@ namespace nap
 	class ServiceObjectGraphItem;
 
 	/**
-	 @brief Service
 	 A Service is a process within core that cooperates with certain components in the system, this is the base
 	 class for all services. Often services are used to load a driver, set up a connection or manage global module
 	 specific state. All services are automatically loaded and managed by Core. This ensures the right order of
