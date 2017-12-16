@@ -1,5 +1,5 @@
 #include "nap/directorywatcher.h"
-#include "nap/linux/FileWatcher.h"
+#include "nap/linux/FileWatcher/FileWatcher.h"
 
 #include <fstream>
 #include <nap/logger.h>
