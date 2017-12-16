@@ -1,13 +1,18 @@
 project(napcore)
 
-file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
+file(GLOB SOURCES src/nap/*.cpp src/nap/*.h)
 filter_platform_specific_files(SOURCES)
 
 add_platform_specific_files("${WIN32_SOURCES}" "${OSX_SOURCES}" "${LINUX_SOURCES}")
 
 if (UNIX)
-    file(GLOB_RECURSE FILEWATCHER_SOURCES external/*.cpp)
-    add_library(${PROJECT_NAME} SHARED ${SOURCES} ${FILEWATCHER_SOURCES})
+    file(GLOB FILEWATCHER_SOURCES
+            src/nap/linux/FileWatcher/*.cpp
+            src/nap/linux/FileWatcher/*.h)
+    add_library(${PROJECT_NAME} SHARED
+            ${SOURCES}
+            ${FILEWATCHER_SOURCES}
+            src/nap/linux/directorywatcher.cpp)
 else()
     add_library(${PROJECT_NAME} SHARED ${SOURCES})
 endif()
@@ -30,7 +35,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC src)
 target_link_libraries(${PROJECT_NAME} naputility naprtti)
 
 if (UNIX)
-    target_include_directories(${PROJECT_NAME} PUBLIC src/nap/linux)
+    include_directories(${PROJECT_NAME} src/nap/linux/FileWatcher)
 endif()
 
 if(APPLE)
