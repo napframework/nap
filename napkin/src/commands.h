@@ -67,7 +67,7 @@ namespace napkin
          * @param path The path to the property
          * @param newValue The new value of the property
          */
-		SetValueCommand(nap::rtti::RTTIObject* ptr, nap::rtti::RTTIPath path, QVariant newValue);
+		SetValueCommand(const PropertyPath& propPath, QVariant newValue);
 
         /**
          * Undo
@@ -80,8 +80,7 @@ namespace napkin
         void redo() override;
 
 	private:
-		nap::rtti::RTTIObject* mObject; // The object that has the property
-		nap::rtti::RTTIPath mPath; // The path to the property
+		const PropertyPath mPath; // The path to the property
 		QVariant mNewValue; // The new value
 		QVariant mOldValue; // The old value
 	};

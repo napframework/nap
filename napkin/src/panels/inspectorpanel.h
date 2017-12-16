@@ -7,6 +7,7 @@
 #include <rtti/rttipath.h>
 #include <rttr/type.h>
 #include <widgetdelegate.h>
+#include <generic/propertypath.h>
 
 namespace napkin
 {
@@ -88,7 +89,7 @@ namespace napkin
 		/**
 		 * Called when a property value has been changed
 		 */
-		void onPropertyValueChanged(nap::rtti::RTTIObject& object, const nap::rtti::RTTIPath& path);
+		void onPropertyValueChanged(const PropertyPath& path);
 
 		/**
 		 * Add object to array represented by targetItem

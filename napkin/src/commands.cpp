@@ -5,17 +5,16 @@
 
 using namespace napkin;
 
-SetValueCommand::SetValueCommand(nap::rtti::RTTIObject* ptr, nap::rtti::RTTIPath path, QVariant newValue)
-		: mObject(ptr), mPath(path), mNewValue(newValue)
+SetValueCommand::SetValueCommand(const PropertyPath& propPath, QVariant newValue)
+		: mPath(propPath), mNewValue(newValue)
 {
-	setText("Set value on: " + QString::fromStdString(path.toString()));
+	setText(QString("Set value of %1 to %2").arg(propPath.toString(), newValue.toString()));
 }
 
 void SetValueCommand::undo()
 {
 	// resolve path
-	nap::rtti::ResolvedRTTIPath resolvedPath;
-	mPath.resolve(mObject, resolvedPath);
+	nap::rtti::ResolvedRTTIPath resolvedPath = mPath.resolve();
 	assert(resolvedPath.isValid());
 
 	// set new value
@@ -24,13 +23,13 @@ void SetValueCommand::undo()
 	assert(ok);
 	resolvedPath.setValue(variant);
 
-	AppContext::get().getDocument()->propertyValueChanged(*mObject, mPath);
+	AppContext::get().getDocument()->propertyValueChanged(mPath);
 }
 
 void SetValueCommand::redo()
 {
 	// retrieve and store current value
-	auto resolvedPath = resolve(*mObject, mPath);
+	auto resolvedPath = mPath.resolve();
 	rttr::variant oldValueVariant = resolvedPath.getValue();
 	assert(toQVariant(resolvedPath.getType(), oldValueVariant, mOldValue));
 
@@ -40,7 +39,7 @@ void SetValueCommand::redo()
 	assert(ok);
 	resolvedPath.setValue(variant);
 
-	AppContext::get().getDocument()->propertyValueChanged(*mObject, mPath);
+	AppContext::get().getDocument()->propertyValueChanged(mPath);
 }
 
 SetPointerValueCommand::SetPointerValueCommand(nap::rtti::RTTIObject* ptr, nap::rtti::RTTIPath path, nap::rtti::RTTIObject* newValue) :

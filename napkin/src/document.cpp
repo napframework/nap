@@ -221,7 +221,8 @@ long Document::addArrayElement(const PropertyPath& path)
 	}
 
 	resolved_path.setValue(array);
-	propertyValueChanged(path.object(), path.path());
+
+	propertyValueChanged(path);
 	return index;
 }
 

@@ -242,13 +242,13 @@ void napkin::ResourcePanel::onObjectRemoved(nap::rtti::RTTIObject& object)
 	mTreeView.getTreeView().expandAll();
 }
 
-void napkin::ResourcePanel::onPropertyValueChanged(const nap::rtti::RTTIObject& obj, const nap::rtti::RTTIPath& path)
+void napkin::ResourcePanel::onPropertyValueChanged(const PropertyPath& path)
 {
-	auto resolvedPath = resolve(obj, path);
+	auto resolvedPath = path.resolve();
 	if (resolvedPath.getProperty().get_name() != "mID")
 		return;
 
-	auto objectItem = findInModel<ObjectItem>(mModel, obj);
+	auto objectItem = findInModel<ObjectItem>(mModel, path.object());
 	if (objectItem != nullptr)
-		objectItem->setText(QString::fromStdString(obj.mID));
+		objectItem->setText(QString::fromStdString(path.object().mID));
 }

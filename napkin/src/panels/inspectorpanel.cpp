@@ -202,7 +202,7 @@ void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 	}
 }
 
-void napkin::InspectorPanel::onPropertyValueChanged(nap::rtti::RTTIObject& object, const nap::rtti::RTTIPath& path)
+void napkin::InspectorPanel::onPropertyValueChanged(const PropertyPath& path)
 {
 	rebuild();
 }
@@ -260,50 +260,9 @@ QVariant napkin::InspectorModel::data(const QModelIndex& index, int role) const
 bool napkin::InspectorModel::setData(const QModelIndex& index, const QVariant& value, int role)
 {
 	return QStandardItemModel::setData(index, value, role);
-//	if (role == Qt::EditRole)
-//	{
-//		auto valueItem = dynamic_cast<PropertyValueItem*>(itemFromIndex(index));
-//		if (valueItem != nullptr)
-//		{
-//			valueItem->setData(value, Qt::EditRole);
-//			AppContext::get().executeCommand(new SetValueCommand(value.))
-//			return true;
-//		}
-//	}
 }
 
 nap::rtti::RTTIObject* napkin::InspectorModel::getObject()
 {
 	return mObject;
 }
-
-//
-//void napkin::InspectorModel::onPropertyValueChanged(RTTIObject& object, const RTTIPath& path)
-//{
-////	auto resolvedPath = resolve(object, path);
-////
-////	ModelIndexFilter filter = [this, &object, &path](QModelIndex index)
-////	{
-////		QStandardItem* item = itemFromIndex(index);
-////		if (item == nullptr)
-////			return false;
-////
-////		auto objItem = dynamic_cast<PropertyValueItem*>(item);
-////		if (objItem == nullptr)
-////			return false;
-////
-////		if (objItem->getObject() != &object)
-////			return false;
-////
-////		return path == objItem->getPath();
-////	};
-////
-////	QModelIndex foundIndex = findIndexInModel(*this, filter, 1);
-////	if (foundIndex.isValid())
-////		dataChanged(index(foundIndex.row(), 0), index(foundIndex.row(), columnCount()));
-////
-//	// TODO: Don't update the full model
-//	auto topLeft = index(0, 0);
-//	auto botRight = index(rowCount()-1, columnCount()-1);
-//	dataChanged(topLeft, botRight);
-//}
