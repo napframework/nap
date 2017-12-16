@@ -1,14 +1,14 @@
 #include <nap/logger.h>
 #include <generic/utility.h>
 #include "commands.h"
-#include "appcontext.h"
 
 using namespace napkin;
 
 SetValueCommand::SetValueCommand(const PropertyPath& propPath, QVariant newValue)
 		: mPath(propPath), mNewValue(newValue)
 {
-	setText(QString("Set value of %1 to %2").arg(propPath.toString(), newValue.toString()));
+	setText(QString("Set value of %1 to %2").arg(QString::fromStdString(propPath.toString()),
+												 newValue.toString()));
 }
 
 void SetValueCommand::undo()
@@ -42,23 +42,18 @@ void SetValueCommand::redo()
 	AppContext::get().getDocument()->propertyValueChanged(mPath);
 }
 
-SetPointerValueCommand::SetPointerValueCommand(nap::rtti::RTTIObject* ptr, nap::rtti::RTTIPath path, nap::rtti::RTTIObject* newValue) :
-	mObject(ptr),
-	mPath(path),
-	mNewValue(newValue),
-	mOldValue(nullptr)
+SetPointerValueCommand::SetPointerValueCommand(const PropertyPath& path, nap::rtti::RTTIObject* newValue)
+		: mPath(path), mNewValue(newValue), mOldValue(nullptr)
 {
-	mOldValue = getPointee(*mObject, mPath);
+	mOldValue = getPointee(mPath);
 
-	auto pointerPath = QString("%1::%1").arg(QString::fromStdString(ptr->mID),
-											 QString::fromStdString(path.toString()));
-
-	setText(QString("Set pointer value at '%1' to '%2'").arg(pointerPath, QString::fromStdString(newValue->mID)));
+	setText(QString("Set pointer value at '%1' to '%2'").arg(QString::fromStdString(mPath.toString()),
+															 QString::fromStdString(newValue->mID)));
 }
 
 void SetPointerValueCommand::undo()
 {
-	nap::rtti::ResolvedRTTIPath resolvedPath = resolve(*mObject, mPath);
+	nap::rtti::ResolvedRTTIPath resolvedPath = mPath.resolve();
 	assert(resolvedPath.isValid());
 
 	resolvedPath.setValue(mOldValue);
@@ -66,7 +61,7 @@ void SetPointerValueCommand::undo()
 
 void SetPointerValueCommand::redo()
 {
-	nap::rtti::ResolvedRTTIPath resolvedPath = resolve(*mObject, mPath);
+	nap::rtti::ResolvedRTTIPath resolvedPath = mPath.resolve();
 	assert(resolvedPath.isValid());
 
 	bool value_set = resolvedPath.setValue(mNewValue);
@@ -156,7 +151,7 @@ void AddEntityToSceneCommand::redo()
 
 AddArrayElementCommand::AddArrayElementCommand(const PropertyPath& prop) : mPath(prop)
 {
-	setText("Add element to: " + prop.toString());
+	setText("Add element to: " + QString::fromStdString(prop.toString()));
 }
 
 void AddArrayElementCommand::redo()

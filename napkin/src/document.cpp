@@ -1,3 +1,4 @@
+#include <nap/logger.h>
 #include "document.h"
 
 
@@ -216,7 +217,7 @@ long Document::addArrayElement(const PropertyPath& path)
 	long index = array_view.get_size();
 	if (!array_view.insert_value(index, new_value))
 	{
-		assert(false);
+		nap::Logger::fatal("Failed to add array element to: %s", path.toString().c_str());
 		return -1;
 	}
 

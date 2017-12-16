@@ -143,9 +143,9 @@ nap::rtti::ResolvedRTTIPath napkin::resolve(const nap::rtti::RTTIObject& obj, na
 	return resolvedPath;
 }
 
-nap::rtti::RTTIObject* napkin::getPointee(const nap::rtti::RTTIObject& obj, const nap::rtti::RTTIPath& path)
+nap::rtti::RTTIObject* napkin::getPointee(const PropertyPath& path)
 {
-	auto resolvedPath = resolve(obj, path);
+	auto resolvedPath = path.resolve();
 	auto value = resolvedPath.getValue();
 	auto value_type = value.get_type();
 	auto wrapped_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;

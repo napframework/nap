@@ -1,7 +1,6 @@
 #pragma once
 
 #include <rtti/rttipath.h>
-#include <QtCore/QString>
 
 namespace napkin
 {
@@ -33,6 +32,11 @@ namespace napkin
 		 * @return The property this path points to
 		 */
 		rttr::property getProperty() const;
+
+		/**
+		 * @return A child path of this propertypath
+		 */
+		PropertyPath getChild(const std::string& name) const;
 
 		/**
 		 * @return obj The object this property is on
@@ -82,7 +86,7 @@ namespace napkin
 		/**
 		 * @return A string representation of this path
 		 */
-		QString toString() const;
+		std::string toString() const;
 
 	private:
 		nap::rtti::RTTIObject* mObject;

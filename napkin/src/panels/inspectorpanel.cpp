@@ -51,8 +51,7 @@ napkin::InspectorPanel::InspectorPanel()
 
 void napkin::InspectorPanel::onAddObjectArrayElement(ArrayPropertyItem* targetItem, nap::rtti::RTTIObject* object)
 {
-	nap::rtti::ResolvedRTTIPath resolved_path;
-	targetItem->getPath().resolve(targetItem->getObject(), resolved_path);
+	nap::rtti::ResolvedRTTIPath resolved_path = targetItem->getPath().resolve();
 	assert(resolved_path.isValid());
 
 	nap::rtti::Variant array = resolved_path.getValue();
@@ -75,8 +74,7 @@ void napkin::InspectorPanel::onAddObjectArrayElement(ArrayPropertyItem* targetIt
 
 void napkin::InspectorPanel::onAddObjectArrayElement(ArrayPropertyItem* targetItem, const nap::rtti::TypeInfo& type)
 {
-	nap::rtti::ResolvedRTTIPath resolved_path;
-	targetItem->getPath().resolve(targetItem->getObject(), resolved_path);
+	nap::rtti::ResolvedRTTIPath resolved_path = targetItem->getPath().resolve();
 	assert(resolved_path.isValid());
 
 	nap::rtti::Variant array = resolved_path.getValue();
@@ -173,28 +171,7 @@ void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 		{
 			menu.addAction("Add", [array_item]()
 			{
-				PropertyPath property(*array_item->getObject(), array_item->getPath());
-				AppContext::get().executeCommand(new AddArrayElementCommand(property));
-//				const nap::rtti::TypeInfo array_type = array_item->getArray().get_rank_type(array_item->getArray().get_rank());
-//				const nap::rtti::TypeInfo wrapped_type = array_type.is_wrapper() ? array_type.get_wrapped_type() : array_type;
-//
-//				nap::rtti::ResolvedRTTIPath resolved_path;
-// 				array_item->getPath().resolve(array_item->getObject(), resolved_path);
-// 				assert(resolved_path.isValid());
-//
-//				nap::rtti::Variant array = resolved_path.getValue();
-//				nap::rtti::VariantArray array_view = array.create_array_view();
-//
-//				rttr::variant new_value = wrapped_type.create();
-//				assert(new_value.is_valid());
-//				assert(array_view.is_dynamic());
-//				if (!array_view.insert_value(array_view.get_size(), new_value))
-//				{
-//					assert(false);
-//					return;
-//				}
-//
-//				resolved_path.setValue(array);
+				AppContext::get().executeCommand(new AddArrayElementCommand(array_item->getPath()));
 			});
 
 		}
@@ -240,7 +217,7 @@ void napkin::InspectorModel::populateItems()
 		auto value = prop.get_value(mObject);
 		auto wrappedType = value.get_type().is_wrapper() ? value.get_type().get_wrapped_type() : value.get_type();
 
-		appendRow(createPropertyItemRow(wrappedType, qName, mObject, path, prop, value));
+		appendRow(createPropertyItemRow(wrappedType, qName, {*mObject, path}, prop, value));
 	}
 }
 

@@ -130,7 +130,7 @@ namespace napkin
 	/**
 	 * Given a Pointer Property (or how do you call them), find the object it's pointing to
 	 */
-	nap::rtti::RTTIObject* getPointee(const nap::rtti::RTTIObject& obj, const nap::rtti::RTTIPath& path);
+	nap::rtti::RTTIObject* getPointee(const PropertyPath& path);
 
 	/**
 	 * Given a Pointer Property (i like this name), set its pointee using a string.
