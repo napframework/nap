@@ -93,7 +93,7 @@ namespace napkin
          * @param path The path to the property
          * @param newValue The new value of the property
          */
-		SetPointerValueCommand(nap::rtti::RTTIObject* ptr, nap::rtti::RTTIPath path, nap::rtti::RTTIObject* newValue);
+		SetPointerValueCommand(const PropertyPath& path, nap::rtti::RTTIObject* newValue);
 
         /**
          * Undo
@@ -106,8 +106,7 @@ namespace napkin
         void redo() override;
 
 	private:
-		nap::rtti::RTTIObject*	mObject;	// The object that has the property
-		nap::rtti::RTTIPath		mPath;		// The path to the property
+		const PropertyPath		mPath;		// The path to the property
 		nap::rtti::RTTIObject*	mNewValue;	// The new value
 		nap::rtti::RTTIObject*	mOldValue;	// The old value
 	};

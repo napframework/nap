@@ -87,8 +87,14 @@ rttr::variant_array_view napkin::PropertyPath::getArrayView() const
 	return resolve().getValue().create_array_view();
 }
 
-QString napkin::PropertyPath::toString() const
+std::string napkin::PropertyPath::toString() const
 {
-	return QString("%1@%2").arg(QString::fromStdString(mObject->mID),
-								 QString::fromStdString(mPath.toString()));
+	return nap::utility::stringFormat("%s@%s", mObject->mID.c_str(), mPath.toString().c_str());
+}
+
+napkin::PropertyPath napkin::PropertyPath::getChild(const std::string& name) const
+{
+	nap::rtti::RTTIPath child_path = path();
+	child_path.pushAttribute(name);
+	return {*mObject, child_path};
 }
