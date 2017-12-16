@@ -2,16 +2,17 @@
 @import url(http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,200,200italic,400italic);
 @import url(http://fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic,500,500italic,700,700italic,900,900italic&subset=latin,greek-ext,greek,latin-ext);
 body{
-	background-color: #fff;
+	background-color: #2D2E42;
 	margin: 0;
 	font-size: 12pt;
 }
 body, table, div, p, dl,
 table.directory, #nav-tree,#nav-tree .label {
-font-family: "Segoe UI", "Lucida Sans Unicode", Helvetica, Arial, Verdana, 'Roboto', sans-serif;
-color: black;
+font-family:  'Nunito Sans', sans-serif;
+color: #8B8CA0;
 font-size: 1rem;
 }
+
 .arrow,
 .navpath li.navelem a,
 #navrow4 a,.icon, span.mlabel,
@@ -22,40 +23,49 @@ pre.fragment, div.line,
 .memTemplItemLeft, .memTemplItemRight, .memTemplParams,
 .memname,
 .params .paramdir {
-	font-family: Consolas, 'Courier New', courier, Courier, monospace;
+	font-family:  'Nunito Sans', sans-serif;
 }
-.title,
-.fieldtable th{
-	font-family: "Cambria", serif;
+
+.arrow, #navrow4 a{
+	color:#52546A;
 }
+
+.memtitle {
+	font-family:  'Montserrat', sans-serif;
+	background-color: #2D2E42;
+	color: #8B8CA0;
+	font-weight: bold;
+}
+
 #projectname,#projectbrief,
 h1, h2, h3 {
-	font-family: "Segoe UI Light", 'Source Sans Pro', sans-serif;
+	font-family: 'Montserrat', sans-serif;
 	margin: 1.75em 0 .2em 0;
-	font-weight: 200;
+	font-weight: 300;
 }
-#projectname{color:#16499a;font-weight:300;}
-#projectbrief{color:#16499a;}
-h1,h2,h3{color: #000;}
+#projectname {color:#C86969; font-weight:900;}
+#projectbrief{color:#C86969;}
+h1,h2,h3{color: #C86969;}
 /* @group Heading Levels */
 .title {
-	color: #333;
+	color: #C86969;
 	letter-spacing: 0.00em;
 	font-size: 1rem;
 	line-height: 0.1rem;
 	font-weight: 500;
 	margin: 10px 2px;
+	font-family: 'Montserrat', sans-serif;
 }
 h1, h1.groupheader {
 	font-weight: 200;
-  color: #000000;
+  color: #C86969;
   letter-spacing: 0.00em;
   font-size: 1.5rem;
   line-height: 1.7rem;
 }
 h2, h2.groupheader {
 	font-weight: 300;
-  color: #000000;
+  color: #C86969;
   letter-spacing: 0.00em;
   font-size: 1.2rem;
   line-height: 2.3rem;
@@ -117,7 +127,7 @@ h3.version {
   text-align: center;
 }
 div.qindex, div.navtab{
-	background-color: #16499a;/*blue*/
+	background-color: #2D2E42;
 	border: none
 	text-align: center;
 }
@@ -130,39 +140,40 @@ div.navtab {
 }
 /* @group Link Styling */
 a {
-	color: #16499a;/*darkBlue*/
-	font-weight: normal;
+	color: #8B8CA0;
 	text-decoration: none;
 }
 a:hover {
 	text-decoration: underline;
 }
 .contents a, .contents a:visited {
-	color: #16499a;/*darkBlue*/
+	color: #8B8CA0;
 }
 a.qindex, a.qindex:visited  {
-	color: #fff;
-	font-weight: normal;
+	color: #8B8CA0;
 }
 a.qindexHL {
-	font-weight: normal;
 	background-color: #9CAFD4;
-	color: #ffffff;
+	color: #c86969;
 	border: none;
 }
 .contents a.qindexHL:visited {
-  color: #ffffff;
+	color: #8B8CA0;
 }
-a.el{
-	font-weight: normal;
+	a.el{
+	color: #8B8CA0;
+	text-decoration: underline;
+	font-weight: 300;
 }
 a.elRef {
 }
 a.code, a.code:visited {
-	color: #16499a;/*darkBlue*/
+	color: #8B8CA0;
+	text-decoration: underline;
 }
 a.codeRef, a.codeRef:visited {
-	color: #16499a;/*darkBlue*/
+	color: #8B8CA0;
+	text-decoration: underline;
 }
 /* @end */
 dl.el {
@@ -170,7 +181,7 @@ dl.el {
 }
 pre.fragment {
   border: none;
-  background-color: #FBFCFD;
+  background-color: #111426;
   padding: 4px 6px;
   margin: 4px 8px 4px 2px;
   overflow: auto;
@@ -227,9 +238,9 @@ span.lineno a:hover {
 	background-color: #C8C8C8;
 }
 div.ah {
-	background-color: #16499a;/*darkBlue*/
+	background-color: #52546A;
 	font-weight: lighter;
-	color: #fff;/*white*/
+	color: #111426;/*white*/
 	margin-bottom: 3px;
 	margin-top: 3px;
 	padding: 0.2em;
@@ -404,14 +415,14 @@ table.memberdecls {
 .mdescLeft, .mdescRight,
 .memItemLeft, .memItemRight,
 .memTemplItemLeft, .memTemplItemRight, .memTemplParams {
-	background-color: #fff;
+	background-color: #2D2E42;
 	border: none;
 	margin: 4px;
 	padding: 0px 0 0 8px;
 }
 .mdescLeft, .mdescRight {
 	padding: 0px 8px 4px 8px;
-	color: #555;
+	color: #5D5E73;
 	font-style: italic;
 	font-size: .9rem;
 }
@@ -434,6 +445,7 @@ table.memberdecls {
 	color: #4665A2;
   white-space: nowrap;
 	font-size: 80%;
+	visibility: hidden;
 }
 /* @end */
 /* @group Member Details */
@@ -490,7 +502,7 @@ font-weight: normal;
   font-weight: normal;
   text-shadow:none;
   background-image:none;
-  background-color: #fafafa;
+  background-color: #52546A;
   /* opera specific markup */
   box-shadow:  none;
   /* firefox specific markup */
@@ -500,7 +512,7 @@ font-weight: normal;
   padding: 6px;
   border-top-width: 0;
   background-image: none;
-  background-color: #FFFFFF;
+  background-color: #2D2E42;
   /* opera specific markup */
   border-bottom-left-radius: 0px;
   border-bottom-right-radius: 0px;
@@ -528,7 +540,7 @@ dl.reflist dd {
 	white-space: nowrap;
 }
 .paramname {
-	color: #602020;
+	color: #8B8CA0;
 	white-space: nowrap;
 }
 .paramname em {
@@ -543,14 +555,17 @@ dl.reflist dd {
   padding-left: 0px;
 }
 .params .paramname, .retval .paramname {
-	font-family: Consolas, "Courier New", courier, Courier, monospace;
-	font-size:105%;
-  font-style: italic;
-  font-weight: normal;
-  text-shadow:none;
-	background-color: #f8f8f8;
+	font-size:100%;
+  	font-style: italic;
+  	font-weight: normal;
+  	text-shadow:none;
+	background-color: #8B8CA0;
 	display: inline;
 	margin: 0 16px 0 0;
+	padding-left: 4px;
+	padding-right: 6px;
+	background-color: #111426;
+	color: #8B8CA0;
 }
 .params .paramtype {
   font-style: italic;
@@ -575,10 +590,9 @@ span.mlabels {
   margin-left: 8px;
 }
 span.mlabel {
-  background-color:#f8f8f8; /*grey*/
-  borderpx solid #ccc;
+  background-color:#5D5E73; /*grey*/
 	text-shadow:none;
-	color: #16499a;/*blue*/
+	color: #111426;/*blue*/
 	margin-right: 4px;
 	padding: 2px 3px;
 	border-radius: 0px;
@@ -623,7 +637,7 @@ div.directory {
 }
 .directory tr.even {
 	padding-left: 6px;
-	background-color: #F7F8FB;
+	background-color: #2D2E42;
 }
 .directory img {
 	vertical-align: -30%;
@@ -709,10 +723,10 @@ table.fieldtable {
 .fieldtable th {
   background-image:none;
   background-repeat:repeat-x;
-  background-color:#eee;
+  background-color:#52546A;
   font-size: 1.05rem;
 	font-weight:normal;
-  color: #00aff0;
+  color: #111426;
   padding-bottom: 4px;
   padding-top: 5px;
   text-align:left;
@@ -779,7 +793,7 @@ table.fieldtable {
   background-image:none;
   background-repeat:no-repeat;
   background-position:right;
-  color:#ccc;
+  color:#8B8CA0;
   font-size: 8pt;
 }
 div.summary
@@ -814,6 +828,7 @@ div.header
 div.headertitle
 {
 	padding: 5px 5px 5px 10px;
+	background-color: #111426;
 }
 dl
 {
@@ -885,18 +900,20 @@ dl.section dd {
 #projectlogo
 {
 	text-align: center;
-	vertical-align: bottom;
+	vertical-align: middle;
 	border-collapse: separate;
 }
 #projectlogo img
 {
-	border: 0px none;
-	width: 0rem;
-	float:left;
+	border:0px none;
+	width: 55px;
+	height: 48px;
+	margin-left: 1em;
+	margin-right: 0em;
 }
 #projectname
 {
-	font-size: 3rem;
+	font-size: 2.8rem;
 	margin: 0px;
 	padding: 0px 0px;
 	float:left;
@@ -911,15 +928,14 @@ dl.section dd {
 }
 #projectnumber
 {
-	font: 50% Tahoma, Arial,sans-serif;
+	font-family:  'Montserrat', sans-serif;
 	margin: -20px;
 	padding: 0px;
 }
 #titlearea
 {
-	padding: 0px;
-	margin: 0px;
 	width: 100%;
+	padding-top: 10px;
 	backround-color: gainsboro;
 }
 .image
@@ -967,7 +983,7 @@ div.toc {
 }
 div.toc li {
   background: url("bdwn.png") no-repeat scroll 0 5px transparent;
-  font: 10px/1.2 Verdana,DejaVu Sans,Geneva,sans-serif;
+  font-family: 10px/1.2 'Nunito Sans', sans-serif;
   margin-top: 5px;
   padding-left: 10px;
   padding-top: 2px;
@@ -997,7 +1013,7 @@ div.toc li.level4 {
 }
 .inherit_header {
   font-weight: bold;
-  color: gray;
+  color: #8B8CA0;
   cursor: pointer;
 	-webkit-touch-callout: none;
 	-webkit-user-select: none;
@@ -1058,7 +1074,7 @@ tr.heading h2 {
 }
 .tablist a {
 	background-image: none;
-	color: white;
+	color: #8B8CA0;
 	text-shadow:none;
 }
 .tablist a:hover {
@@ -1082,7 +1098,7 @@ tr.heading h2 {
 }
 .navpath ul {
 	background-image: none;
-	background-color: #16499a; /*darkblue*/
+	background-color: #52546A;
 	border: none;
 }
 .navpath li {
@@ -1090,12 +1106,13 @@ tr.heading h2 {
 }
 .navpath li.navelem a {
 	background-image: none;
-	color: white;
+	color: #8B8CA0;
 	text-shadow:none;/*: none;*/
 }
 .navpath li.navelem a:hover {
 	background-image: none;
-	color: white;
+	color: #8B8CA0;
+	text-decoration: underline;
 	text-shadow:none;/*: none;*/
 }
 .icona {
@@ -1104,13 +1121,13 @@ height: 1.45rem;
 display: inline-block;
 }
 .icon {
-font-weight: bold;
+font-weight: 900;
 font-size: .8rem;
 height: 1rem;
 width: 1rem;
 display: inline-block;
-background-color: #87794e;/*taupe*/
-color: white;
+background-color: #2D2E42;
+color: #C86969;
 text-align: center;
 border-radius: 0px;
 margin-left: 2px;
@@ -1118,20 +1135,191 @@ margin-right: 2px;
 }
 /* navtree */
 #nav-tree {
-background-color: #fff;
+background-color: #2D2E42;
 background-image: none;
 font-size: 1rem;
 padding-left: 0.9em
 }
 #nav-tree .selected {
 background-image: none;
-	background-color:#16499a;/*#f0a30a;/amber*/
+	background-color:#52546A;
 	text-shadow:none;
+	color: #C86969;
+}
+#nav-tree a:hover{
+	text-decoration: underline;
+}
+#nav-tree .selected a{
+	color: #8B8CA0;
 }
 #nav-tree .label{
 	font-size: .9rem;
 }
 .ui-resizable-e{
 	background-image: none;
-	background-color: #c4c8ca;
+	background-color: #52546A;
+}
+
+::-webkit-scrollbar {
+    width: 17px;
+    background-color: #2D2E42;
+}
+ 
+::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); 
+    border-radius: 0px;
+}
+ 
+::-webkit-scrollbar-thumb {
+    border-radius: 0px;
+    background-color: #8B8CA0
+}
+
+.sm-dox  
+{     
+	background-image: none;     
+	padding-left: 0px;
+	padding-right: 0px;     
+	padding-top: 0em;     
+	padding-bottom: 0em; 
+}
+
+.sm-dox a,
+.sm-dox a:focus,
+.sm-dox a:hover,
+.sm-dox a:active,
+.sm-dox a.highlighted {
+	font-family: 'Nunito Sans', sans-serif;
+    color: #8B8CA0;
+    outline: 0;
+    text-shadow: none;
+    font-weight: bold;
+    font-size: 1.0em;
+   	background-image: none;
+    background: none;
+    background-color: #2D2E42;
+}
+
+.sm-dox a:hover
+{
+	text-decoration: underline;
+}
+
+.sm-dox ul {
+    background-image: none;
+    text-shadow: none;
+    background-color: #111426;
+    border: 2px solid #8B8CA0;
+}
+
+a.SRScope {
+    display: block;
+    color: #fff; 
+    font-family: 20pt 'Nunito Sans', sans-serif;
+    text-decoration: none;
+    outline: none;
+}
+
+.sm-dox ul a,
+.sm-dox ul a:hover,
+.sm-dox ul a:focus,
+.sm-dox ul a:active,
+.sm-dox ul a.highlighted 
+{
+	font-family: 'Nunito Sans', sans-serif;
+    background-image: none;
+    text-shadow: none;
+    background-color: #111426;
+    color: #8B8CA0;
+    font-size: 0.8em;
+}
+
+.sm-dox ul a:hover
+{
+	text-decoration: underline;
+}
+
+#side-nav 
+{
+  width: 375px;
+}
+
+#nav-sync img 
+{
+    visibility: hidden;
+}
+
+.sm-dox ul a span.sub-arrow 
+{
+    border-color: transparent transparent transparent #8B8CA0;
+}
+
+.sm-dox ul a:hover span.sub-arrow 
+{
+        border-color: transparent transparent transparent  #8B8CA0;
+}
+
+.sm-dox a span.sub-arrow,
+.sm-dox a:hover span.sub-arrow
+{
+        border-color: #8B8CA0 transparent transparent transparent;
+}
+
+#MSearchField 
+{
+    display: block;
+    height: 19px;
+    background-color: #8B8CA0;
+    background-image: none;
+    width: 115px;
+    margin-left: 20px;
+    padding-left: 4px;
+    padding-right: 4px;	
+    outline: none;
+    font-weight: normal;
+    color: #111426;
+    font-family:  'Nunito Sans', sans-serif;
+    -webkit-border-radius: 0px;
+   	vertical-align: middle;
+}
+
+#MSearchBox .right {
+    background: none;
+    background-color: #8B8CA0;
+    height: 19px;
+    width: 19px;
+}
+
+.right #MSearchClose {
+    visibility: hidden;
+}
+
+#MSearchBox .left {
+    background: none;
+    background-color: #8B8CA0;
+    height: 19px;
+    width: 0px;
+}
+
+.left #MSearchSelect {
+    visibility: hidden;
+}
+
+#MSearchBox {
+    white-space: nowrap;
+    float: none;
+    margin-top: 8px;
+}
+
+/*---------------- Search results window */
+
+#MSearchResultsWindow {
+    display: none;
+    position: absolute;
+    left: 0; top: 0;
+    border: 2px solid #8B8CA0;
+    z-index:10000;
+    background-color: #111426;
+    font-family: 'Nunito Sans', sans-serif;
+    color: #fff;
 }
