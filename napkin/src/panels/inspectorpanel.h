@@ -57,6 +57,7 @@ namespace napkin
 		 */
 		void populateItems();
 
+		nap::rtti::RTTIObject* mObject = nullptr; // The object currently used by this model
 	};
 
 	/**
