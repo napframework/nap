@@ -1,11 +1,13 @@
 #pragma once
 
 #include <rtti/rttipath.h>
+#include <QtCore/QString>
 
 namespace napkin
 {
 	/**
 	 * A path to a property, including its object.
+	 * This class carries both the object and the property path.
 	 */
 	class PropertyPath
 	{
@@ -77,6 +79,10 @@ namespace napkin
 		 */
 		bool isFileLink();
 
+		/**
+		 * @return A string representation of this path
+		 */
+		QString toString() const;
 
 	private:
 		nap::rtti::RTTIObject* mObject;

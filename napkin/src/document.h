@@ -5,6 +5,7 @@
 #include <entity.h>
 #include <QtWidgets/QUndoCommand>
 #include <nap/core.h>
+#include <generic/propertypath.h>
 
 namespace napkin
 {
@@ -114,6 +115,13 @@ namespace napkin
 		 * If the object with the specified name was found, nuke it from orbit.
 		 */
 		void removeObject(const std::string& name);
+
+		/**
+		 * Add an element to an array
+		 * @param path The path to the array property to add the element to
+		 * @return The index of the newly created element or -1 when the element was not added.
+		 */
+		long addArrayElement(const PropertyPath& path);
 
 		/**
 		 * Execute the specified command and push the provided command onto the undostack.

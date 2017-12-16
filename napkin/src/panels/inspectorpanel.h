@@ -57,14 +57,6 @@ namespace napkin
 		 */
 		void populateItems();
 
-		/**
-		 * Invoked when an object's property's value has changed
-		 * @param object The object owning the property
-		 * @param path The path to the property
-		 */
-		void onPropertyValueChanged(nap::rtti::RTTIObject& object, const nap::rtti::RTTIPath& path);
-
-		nap::rtti::RTTIObject* mObject = nullptr; // The object currently used by this model
 	};
 
 	/**
@@ -91,6 +83,11 @@ namespace napkin
 		 * @param menu The menu that actions should be added to (initially empty)
 		 */
 		void onItemContextMenu(QMenu& menu);
+
+		/**
+		 * Called when a property value has been changed
+		 */
+		void onPropertyValueChanged(nap::rtti::RTTIObject& object, const nap::rtti::RTTIPath& path);
 
 		/**
 		 * Add object to array represented by targetItem

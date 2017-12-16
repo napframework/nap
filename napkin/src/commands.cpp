@@ -154,3 +154,18 @@ void AddEntityToSceneCommand::redo()
 
 	AppContext::get().getDocument()->objectChanged(*scene);
 }
+
+AddArrayElementCommand::AddArrayElementCommand(const PropertyPath& prop) : mPath(prop)
+{
+	setText("Add element to: " + prop.toString());
+}
+
+void AddArrayElementCommand::redo()
+{
+	AppContext::get().getDocument()->addArrayElement(mPath);
+}
+
+void AddArrayElementCommand::undo()
+{
+	nap::Logger::fatal("Sorry, no undo for you");
+}

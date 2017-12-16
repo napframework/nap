@@ -131,4 +131,22 @@ namespace napkin
 		long mIndex;
 	};
 
+
+	/**
+	 * Add an element to an array
+	 */
+	class AddArrayElementCommand : public QUndoCommand
+	{
+	public:
+		/**
+		 * @param prop The array property to add the element to
+		 */
+		AddArrayElementCommand(const PropertyPath& prop);
+
+		void redo() override;
+		void undo() override;
+	private:
+		const PropertyPath& mPath; ///< The path to the array property
+		long mIndex; ///< The index of the newly created element
+	};
 };

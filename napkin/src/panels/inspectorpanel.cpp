@@ -28,8 +28,6 @@ void napkin::InspectorModel::rebuild()
 napkin::InspectorModel::InspectorModel() : QStandardItemModel()
 {
 	setHorizontalHeaderLabels({TXT_LABEL_NAME, TXT_LABEL_VALUE, TXT_LABEL_TYPE});
-	connect(&AppContext::get(), &AppContext::propertyValueChanged,
-			this, &InspectorModel::onPropertyValueChanged);
 }
 
 
@@ -44,6 +42,11 @@ napkin::InspectorPanel::InspectorPanel()
 	mTreeView.getTreeView().setItemDelegateForColumn(1, &mWidgetDelegate);
 
 	mTreeView.setMenuHook(std::bind(&napkin::InspectorPanel::onItemContextMenu, this, std::placeholders::_1));
+
+	// TODO: Move this back to the model and let it update its state whenever properties change
+	connect(&AppContext::get(), &AppContext::propertyValueChanged,
+			this, &InspectorPanel::onPropertyValueChanged);
+
 }
 
 void napkin::InspectorPanel::onAddObjectArrayElement(ArrayPropertyItem* targetItem, nap::rtti::RTTIObject* object)
@@ -170,32 +173,40 @@ void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 		{
 			menu.addAction("Add", [array_item]()
 			{
-				const nap::rtti::TypeInfo array_type = array_item->getArray().get_rank_type(array_item->getArray().get_rank());
-				const nap::rtti::TypeInfo wrapped_type = array_type.is_wrapper() ? array_type.get_wrapped_type() : array_type;
-				
-				nap::rtti::ResolvedRTTIPath resolved_path;
- 				array_item->getPath().resolve(array_item->getObject(), resolved_path);
- 				assert(resolved_path.isValid());
-
-				nap::rtti::Variant array = resolved_path.getValue();
-				nap::rtti::VariantArray array_view = array.create_array_view();
-				
-				rttr::variant new_value = wrapped_type.create();
-				assert(new_value.is_valid());
-				assert(array_view.is_dynamic());
-				if (!array_view.insert_value(array_view.get_size(), new_value))
-				{
-					assert(false);
-					return;
-				}
-
-				resolved_path.setValue(array);
+				PropertyPath property(*array_item->getObject(), array_item->getPath());
+				AppContext::get().executeCommand(new AddArrayElementCommand(property));
+//				const nap::rtti::TypeInfo array_type = array_item->getArray().get_rank_type(array_item->getArray().get_rank());
+//				const nap::rtti::TypeInfo wrapped_type = array_type.is_wrapper() ? array_type.get_wrapped_type() : array_type;
+//
+//				nap::rtti::ResolvedRTTIPath resolved_path;
+// 				array_item->getPath().resolve(array_item->getObject(), resolved_path);
+// 				assert(resolved_path.isValid());
+//
+//				nap::rtti::Variant array = resolved_path.getValue();
+//				nap::rtti::VariantArray array_view = array.create_array_view();
+//
+//				rttr::variant new_value = wrapped_type.create();
+//				assert(new_value.is_valid());
+//				assert(array_view.is_dynamic());
+//				if (!array_view.insert_value(array_view.get_size(), new_value))
+//				{
+//					assert(false);
+//					return;
+//				}
+//
+//				resolved_path.setValue(array);
 			});
 
 		}
 		menu.addSeparator();
 	}
 }
+
+void napkin::InspectorPanel::onPropertyValueChanged(nap::rtti::RTTIObject& object, const nap::rtti::RTTIPath& path)
+{
+	rebuild();
+}
+
 
 void napkin::InspectorPanel::setObject(RTTIObject* objects)
 {
@@ -209,6 +220,7 @@ void napkin::InspectorPanel::rebuild()
 	mModel.rebuild();
 	mTreeView.getTreeView().expandAll();
 }
+
 
 
 void napkin::InspectorModel::populateItems()
@@ -265,28 +277,33 @@ nap::rtti::RTTIObject* napkin::InspectorModel::getObject()
 	return mObject;
 }
 
-
-void napkin::InspectorModel::onPropertyValueChanged(RTTIObject& object, const RTTIPath& path)
-{
-	auto resolvedPath = resolve(object, path);
-
-	ModelIndexFilter filter = [this, &object, &path](QModelIndex index) 
-	{
-		QStandardItem* item = itemFromIndex(index);
-		if (item == nullptr)
-			return false;
-
-		auto objItem = dynamic_cast<PropertyValueItem*>(item);
-		if (objItem == nullptr)
-			return false;
-
-		if (objItem->getObject() != &object)
-			return false;
-
-		return path == objItem->getPath();
-	};
-
-	QModelIndex foundIndex = findIndexInModel(*this, filter, 1);
-	if (foundIndex.isValid())
-		dataChanged(index(foundIndex.row(), 0), index(foundIndex.row(), columnCount()));
-}
+//
+//void napkin::InspectorModel::onPropertyValueChanged(RTTIObject& object, const RTTIPath& path)
+//{
+////	auto resolvedPath = resolve(object, path);
+////
+////	ModelIndexFilter filter = [this, &object, &path](QModelIndex index)
+////	{
+////		QStandardItem* item = itemFromIndex(index);
+////		if (item == nullptr)
+////			return false;
+////
+////		auto objItem = dynamic_cast<PropertyValueItem*>(item);
+////		if (objItem == nullptr)
+////			return false;
+////
+////		if (objItem->getObject() != &object)
+////			return false;
+////
+////		return path == objItem->getPath();
+////	};
+////
+////	QModelIndex foundIndex = findIndexInModel(*this, filter, 1);
+////	if (foundIndex.isValid())
+////		dataChanged(index(foundIndex.row(), 0), index(foundIndex.row(), columnCount()));
+////
+//	// TODO: Don't update the full model
+//	auto topLeft = index(0, 0);
+//	auto botRight = index(rowCount()-1, columnCount()-1);
+//	dataChanged(topLeft, botRight);
+//}
