@@ -1,15 +1,7 @@
 project(napcore)
 
 file(GLOB SOURCES src/nap/*.cpp src/nap/*.h)
-if (UNIX)
-    file(GLOB FILEWATCHER_SOURCES
-            src/nap/linux/FileWatcher/*.cpp
-            src/nap/linux/FileWatcher/*.h)
-    add_library(${PROJECT_NAME} SHARED
-            ${SOURCES}
-            ${FILEWATCHER_SOURCES}
-            src/nap/linux/directorywatcher.cpp)
-elseif(APPLE)
+if(APPLE)
     add_library(${PROJECT_NAME} SHARED 
         ${SOURCES}
         src/nap/osx/directorywatcher.cpp)
@@ -17,6 +9,14 @@ elseif(MSVC)
     add_library(${PROJECT_NAME} SHARED 
         ${SOURCES}
         src/nap/win32/directorywatcher.cpp)
+elseif(UNIX)
+    file(GLOB FILEWATCHER_SOURCES
+            src/nap/linux/FileWatcher/*.cpp
+            src/nap/linux/FileWatcher/*.h)
+    add_library(${PROJECT_NAME} SHARED
+            ${SOURCES}
+            ${FILEWATCHER_SOURCES}
+            src/nap/linux/directorywatcher.cpp)  
 endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Core)
@@ -35,7 +35,7 @@ endif()
 target_include_directories(${PROJECT_NAME} PUBLIC src)
 target_link_libraries(${PROJECT_NAME} naputility naprtti)
 
-if (UNIX)
+if (UNIX AND NOT APPLE)
     include_directories(${PROJECT_NAME} src/nap/linux/FileWatcher)
 endif()
 
