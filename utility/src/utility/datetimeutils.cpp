@@ -49,7 +49,7 @@ namespace nap
 			{
 			case DateTime::ConversionMode::Local:
 				mTimeStruct = *(std::localtime(&ctime));
-			case ConversionMode::GMT:
+			case DateTime::ConversionMode::GMT:
 				mTimeStruct = *(std::gmtime(&ctime));
 				break;
 			default:
