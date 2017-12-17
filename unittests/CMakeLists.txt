@@ -1,7 +1,6 @@
 project(unittests)
 
 enable_testing()
-find_package(Qt5Test REQUIRED)
 
 file(GLOB SOURCES
         src/*.cpp
@@ -13,7 +12,6 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 target_link_libraries(${PROJECT_NAME}
         napcore
         napkin_lib
-        Qt5::Test
         mod_naprender
         nrender
         mod_napinput
