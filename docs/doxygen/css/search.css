@@ -1,3 +1,5 @@
+@import url(http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,200,200italic,400italic);
+@import url(http://fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic,500,500italic,700,700italic,900,900italic&subset=latin,greek-ext,greek,latin-ext);
 /*---------------- Search Box */
 
 #FSearchBox {
@@ -181,8 +183,8 @@ iframe#MSearchResults {
 }
 
 .SRPage .SREntry {
-    font-size: 8pt;
-    padding: 1px 5px;
+    font-size: 0.8em;
+    padding: 5px 5px;
 }
 
 body.SRPage {
@@ -199,18 +201,33 @@ body.SRPage {
 
 .SRSymbol {
     font-weight: bold; 
-    color: #425E97;
-    font-family: Arial, Verdana, sans-serif;
+    color: #8B8CA0;
+    font-family:  'Nunito Sans', sans-serif;
     text-decoration: none;
     outline: none;
 }
 
+.SRScope 
+{
+    color: #5D5E73; 
+}
+
 a.SRScope {
     display: block;
-    color: #425E97; 
-    font-family: Arial, Verdana, sans-serif;
+    color: #8B8CA0; 
+    font-family:  'Nunito Sans', sans-serif;
     text-decoration: none;
     outline: none;
+    padding: 5px 5px;
+}
+
+a.SRScope:hover {
+    text-decoration: underline;
+}
+
+a.SRSymbol:hover
+{
+    text-decoration: underline;
 }
 
 a.SRSymbol:focus, a.SRSymbol:active,
