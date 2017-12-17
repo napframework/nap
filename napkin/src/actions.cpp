@@ -11,7 +11,7 @@ NewFileAction::NewFileAction()
 	setShortcut(QKeySequence::New);
 }
 
-void NewFileAction::perform() { AppContext::get().newFile(); }
+void NewFileAction::perform() { AppContext::get().newDocument(); }
 
 
 OpenFileAction::OpenFileAction()

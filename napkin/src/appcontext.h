@@ -61,7 +61,7 @@ namespace napkin
 		/**
 		 * Destroy existing data and reset the filename. newFileCreated will be when this happens.
 		 */
-		void newFile();
+		Document* newDocument();
 
 		/**
 		 * Load the specified file and replace the currently existing Objects.

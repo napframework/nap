@@ -24,6 +24,12 @@ rttr::variant napkin::PropertyPath::getValue() const
 	return getProperty().get_value(mObject);
 }
 
+void napkin::PropertyPath::setValue(rttr::variant value)
+{
+	bool success = getProperty().set_value(mObject, value);
+	assert(success);
+}
+
 rttr::property napkin::PropertyPath::getProperty() const
 {
 	return resolve().getProperty();
@@ -109,5 +115,6 @@ rttr::type napkin::PropertyPath::getWrappedType() const
 	auto value = getValue();
 	return value.get_type().is_wrapper() ? value.get_type().get_wrapped_type() : value.get_type();
 }
+
 
 
