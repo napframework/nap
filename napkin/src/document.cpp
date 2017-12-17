@@ -202,8 +202,8 @@ void Document::removeObject(const std::string& name)
 long Document::addArrayElement(const PropertyPath& path)
 {
 	auto array_view = path.getArrayView();
-	const nap::rtti::TypeInfo array_type = array_view.get_rank_type(array_view.get_rank());
-	const nap::rtti::TypeInfo wrapped_type = array_type.is_wrapper() ? array_type.get_wrapped_type() : array_type;
+	const nap::rtti::TypeInfo element_type = array_view.get_rank_type(array_view.get_rank());
+	const nap::rtti::TypeInfo wrapped_type = element_type.is_wrapper() ? element_type.get_wrapped_type() : element_type;
 
 	nap::rtti::ResolvedRTTIPath resolved_path = path.resolve();
 	assert(resolved_path.isValid());

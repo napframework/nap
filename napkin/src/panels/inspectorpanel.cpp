@@ -169,9 +169,13 @@ void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 		}
 		else
 		{
-			menu.addAction("Add", [array_item]()
+			PropertyPath prop_path = array_item->getPath();
+			auto element_type = prop_path.getArrayElementType();
+
+			menu.addAction(QString("Add %1").arg(QString::fromUtf8(element_type.get_name().data())),
+						   [prop_path]()
 			{
-				AppContext::get().executeCommand(new AddArrayElementCommand(array_item->getPath()));
+				AppContext::get().executeCommand(new AddArrayElementCommand(prop_path));
 			});
 
 		}
