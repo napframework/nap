@@ -1,9 +1,7 @@
 project(napcore)
 
+file(GLOB SOURCES src/nap/*.cpp src/nap/*.h)
 if (UNIX)
-    file(GLOB SOURCES src/nap/*.cpp src/nap/*.h)
-    filter_platform_specific_files(SOURCES)
-    add_platform_specific_files("${WIN32_SOURCES}" "${OSX_SOURCES}" "${LINUX_SOURCES}")
     file(GLOB FILEWATCHER_SOURCES
             src/nap/linux/FileWatcher/*.cpp
             src/nap/linux/FileWatcher/*.h)
@@ -11,11 +9,14 @@ if (UNIX)
             ${SOURCES}
             ${FILEWATCHER_SOURCES}
             src/nap/linux/directorywatcher.cpp)
-else()
-    file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
-    filter_platform_specific_files(SOURCES)
-    add_platform_specific_files("${WIN32_SOURCES}" "${OSX_SOURCES}" "${LINUX_SOURCES}")
-    add_library(${PROJECT_NAME} SHARED ${SOURCES})
+elseif(APPLE)
+    add_library(${PROJECT_NAME} SHARED 
+        ${SOURCES}
+        src/nap/osx/directorywatcher.cpp)
+elseif(MSVC)
+    add_library(${PROJECT_NAME} SHARED 
+        ${SOURCES}
+        src/nap/win32/directorywatcher.cpp)
 endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Core)
@@ -25,7 +26,6 @@ if (MSVC)
     include(GenerateExportheader)
     GENERATE_EXPORT_HEADER(${PROJECT_NAME})
 endif()
-
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 if(MSVC)
