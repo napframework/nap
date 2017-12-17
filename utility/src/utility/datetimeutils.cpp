@@ -1,5 +1,3 @@
-#pragma once
-
 // Local Includes
 #include "datetimeutils.h"
 
