@@ -2,7 +2,7 @@
 
 // External Includes
 #include <nap/service.h>
-#include <nap/timer.h>
+#include <utility/datetimeutils.h>
 #include <nap/windowevent.h>
 #include <nopengl.h>
 #include <thread>
