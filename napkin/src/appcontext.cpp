@@ -31,7 +31,7 @@ AppContext::AppContext()
 		nap::Logger::fatal("Failed to initialize engine");
 	}
 
-	newFile();
+	newDocument();
 }
 
 AppContext::~AppContext()
@@ -45,11 +45,12 @@ AppContext& AppContext::get()
 	return inst;
 }
 
-void AppContext::newFile()
+Document* AppContext::newDocument()
 {
 	mDocument = std::make_unique<Document>(mCore);
 	connectDocumentSignals();
 	newFileCreated();
+	return mDocument.get();
 }
 
 void AppContext::loadFile(const QString& filename)

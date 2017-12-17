@@ -92,14 +92,14 @@ void serializeDeserializeTest(const std::string& filename)
 // TODO: Add more fine-grained tests to spot problems quicker
 // (The ones below are fairly large for testing purposes)
 
-TEST_CASE("JSON serialization (Tommy)", "[serialization]")
-{
-	Logger::setLevel(Logger::infoLevel()); //< Hide some debug data
-	serializeDeserializeTest("data/objects.json");
-}
-
-TEST_CASE("JSON serialization (Kalvertoren)", "[serialization]")
-{
-	Logger::setLevel(Logger::infoLevel()); //< Hide some debug data
-	serializeDeserializeTest("data/kalvertoren.json");
-}
+//TEST_CASE("JSON serialization (Tommy)", "[serialization]")
+//{
+//	Logger::setLevel(Logger::infoLevel()); //< Hide some debug data
+//	serializeDeserializeTest("data/objects.json");
+//}
+//
+//TEST_CASE("JSON serialization (Kalvertoren)", "[serialization]")
+//{
+//	Logger::setLevel(Logger::infoLevel()); //< Hide some debug data
+//	serializeDeserializeTest("data/kalvertoren.json");
+//}

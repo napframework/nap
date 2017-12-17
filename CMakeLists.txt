@@ -30,6 +30,8 @@ cmake_policy(SET CMP0043 NEW)
 # Allow extra Find{project}.cmake files to be found by projects
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
+set(NAP_ROOT ${CMAKE_CURRENT_LIST_DIR})
+
 include(configure.cmake)
 
 if(WIN32)

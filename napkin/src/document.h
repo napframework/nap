@@ -100,10 +100,20 @@ namespace napkin
 		/**
 		 * Add an object of the specified type.
 		 * @param type The type of the desired object.
-		 * @param parent Whether the newly created object should be selected in any views watching for object addition
+		 * @param parent The parent of the object: In the case of Entity, this will be its new parent.
+		 * 	In the case of Component, this is going to be the owning Entity.
 		 * @return The newly created object
 		 */
 		nap::rtti::RTTIObject* addObject(rttr::type type, nap::rtti::RTTIObject* parent = nullptr);
+
+		/**
+		 * Add an object of the specified type
+		 * @tparam T
+		 * @param parent
+		 * @return
+		 */
+		template<typename T>
+		T* addObject(nap::rtti::RTTIObject* parent = nullptr) { return rtti_cast<T>(addObject(RTTI_OF(T), parent)); }
 
 		/**
 		 * Obliterate the specified object

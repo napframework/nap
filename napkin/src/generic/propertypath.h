@@ -32,6 +32,11 @@ namespace napkin
 		rttr::variant getValue() const;
 
 		/**
+		 * Set the value of this property
+		 */
+		void setValue(rttr::variant value);
+
+		/**
 		 * @return The property this path points to
 		 */
 		rttr::property getProperty() const;
