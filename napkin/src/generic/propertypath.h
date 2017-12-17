@@ -1,6 +1,7 @@
 #pragma once
 
 #include <rtti/rttipath.h>
+#include <QMetaType>
 
 namespace napkin
 {
@@ -11,6 +12,8 @@ namespace napkin
 	class PropertyPath
 	{
 	public:
+		PropertyPath() {}
+
 		/**
 		 * @param obj The object this property is on
 		 * @param path The path to the property
@@ -32,6 +35,11 @@ namespace napkin
 		 * @return The property this path points to
 		 */
 		rttr::property getProperty() const;
+
+		/**
+		 * @return The type of the property
+		 */
+		rttr::type getType() const;
 
 		/**
 		 * @return A child path of this propertypath
@@ -84,12 +92,24 @@ namespace napkin
 		bool isFileLink();
 
 		/**
+		 * @return Wrapped type
+		 */
+		rttr::type getWrappedType() const;
+
+		/**
 		 * @return A string representation of this path
 		 */
 		std::string toString() const;
 
+		/**
+		 * @return If the path is a valid one
+		 */
+		bool isValid() const { return mObject != nullptr; }
+
 	private:
-		nap::rtti::RTTIObject* mObject;
+		nap::rtti::RTTIObject* mObject = nullptr;
 		nap::rtti::RTTIPath mPath;
 	};
 }
+
+Q_DECLARE_METATYPE(napkin::PropertyPath)

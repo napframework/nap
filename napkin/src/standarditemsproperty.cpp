@@ -165,6 +165,10 @@ QVariant napkin::PointerValueItem::data(int role) const
 		else
 			return "NULL";
 	}
+	else if (role == Qt::UserRole)
+	{
+		return QVariant::fromValue(mPath);
+	}
 	return QStandardItem::data(role);
 }
 
@@ -188,11 +192,6 @@ napkin::PointerValueItem::PointerValueItem(const PropertyPath& path, rttr::type 
 	: QStandardItem(), mPath(path), mValueType(valueType)
 {
 	setForeground(Qt::darkCyan);
-}
-
-rttr::type napkin::PointerValueItem::getValueType()
-{
-	return mValueType;
 }
 
 int napkin::PointerValueItem::type() const

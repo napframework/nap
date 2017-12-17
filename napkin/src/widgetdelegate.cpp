@@ -1,15 +1,25 @@
 #include "widgetdelegate.h"
 #include "panels/inspectorpanel.h"
 #include "typeconversion.h"
+#include "standarditemsproperty.h"
+#include "appcontext.h"
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QApplication>
+#include <nap/logger.h>
+#include <generic/filterpopup.h>
 
 using namespace napkin;
+
+
+
+
 
 void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option,
 									  const QModelIndex& index) const
 {
 	auto type = getTypeFromModelIndex(index);
+//	nap::Logger::info("Painting for: %s", type.get_name().data());
+
 	if (type.is_enumeration())
 	{
 
@@ -66,25 +76,51 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 	}
 	else
 	{
-		return QStyledItemDelegate::editorEvent(event, model, option, index);
+
+		if (event->type() == QEvent::MouseButtonPress)
+		{
+			auto propertyPath = getPropertyPathFromIndex(index);
+			if (propertyPath.isValid() && propertyPath.getWrappedType().is_pointer())
+			{
+				auto variant = index.data(Qt::UserRole);
+				if (variant.canConvert<PropertyPath>()) {
+					auto path = variant.value<PropertyPath>();
+					auto selected = FilterPopup::getObject(AppContext::get().getQApplication()->activeWindow(), path.getWrappedType());
+					if (selected != nullptr)
+						model->setData(index, QString::fromStdString(selected->mID), Qt::EditRole);
+				}
+
+			}
+		}
 	}
+	return QStyledItemDelegate::editorEvent(event, model, option, index);
 }
 
 rttr::type PropertyValueItemDelegate::getTypeFromModelIndex(const QModelIndex& index) const
 {
 	auto variant = index.data(Qt::UserRole);
-	if (variant.canConvert<TypeWrapper>())
+	if (variant.canConvert<PropertyPath>())
 	{
-		return *variant.value<TypeWrapper>().type;
+		return variant.value<PropertyPath>().getType();
 	}
 	return rttr::detail::get_invalid_type();
 }
+
+const PropertyPath PropertyValueItemDelegate::getPropertyPathFromIndex(const QModelIndex& idx) const
+{
+	auto variant = idx.data(Qt::UserRole);
+	if (variant.canConvert<PropertyPath>())
+		return variant.value<PropertyPath>();
+	return PropertyPath();
+}
+
 
 
 QWidget* PropertyValueItemDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option,
 												 const QModelIndex& index) const
 {
 	auto type = getTypeFromModelIndex(index);
+	nap::Logger::info("Hello: %s", type.get_name().data());
 	if (type.is_enumeration())
 	{
 		auto combo = new QComboBox(parent);
@@ -97,7 +133,6 @@ QWidget* PropertyValueItemDelegate::createEditor(QWidget* parent, const QStyleOp
 		combo->addItems(values);
 		return combo;
 	}
-
 	return QStyledItemDelegate::createEditor(parent, option, index);
 }
 
@@ -130,3 +165,4 @@ void PropertyValueItemDelegate::setModelData(QWidget* editor, QAbstractItemModel
 		QStyledItemDelegate::setModelData(editor, model, index);
 	}
 }
+

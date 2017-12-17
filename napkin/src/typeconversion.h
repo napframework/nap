@@ -4,27 +4,11 @@
 #include <mutex>
 #include <rtti/typeinfo.h>
 #include <rttr/type.h>
+#include <nap/logger.h>
 
 
 namespace napkin
 {
-	/**
-	 * This wrapper allows rttr types to be used in QVariant
-	 */
-	class TypeWrapper
-	{
-	public:
-		TypeWrapper()
-		{
-		}
-
-		TypeWrapper(rttr::type* t) : type(t)
-		{
-		}
-
-		// The wrapped type.
-		rttr::type* type;
-	};
 
 	/**
 	 * Attempt to convert an enum string value into its integer counterpart.
@@ -70,4 +54,3 @@ namespace napkin
 	rttr::variant fromQVariant(const nap::rtti::TypeInfo& type, const QVariant& variant, bool* ok);
 }
 
-Q_DECLARE_METATYPE(napkin::TypeWrapper)
