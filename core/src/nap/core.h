@@ -8,12 +8,12 @@
 #include <rtti/factory.h>
 #include <rtti/rtti.h>
 #include <unordered_set>
+#include <utility/datetimeutils.h>
 
 // Core Includes
 #include "modulemanager.h"
 #include "resourcemanager.h"
 #include "service.h"
-#include "timer.h"
 #include "utility/dllexport.h"
 
 namespace nap
@@ -108,7 +108,7 @@ namespace nap
 		/**
 		* @return start time point
 		*/
-		TimePoint getStartTime() const;
+		utility::SystemTimeStamp getStartTime() const;
 
 		/**
 		* @return an already registered service of @type
@@ -175,7 +175,7 @@ namespace nap
 		ServiceList mServices;
 
 		// Timer
-		SimpleTimer mTimer;
+		utility::SystemTimer mTimer;
 
 		// Last time stamp used for calculating delta time
 		double mLastTimeStamp = 0.0;

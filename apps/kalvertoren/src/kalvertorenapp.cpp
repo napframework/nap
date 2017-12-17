@@ -17,6 +17,9 @@
 #include <utility/stringutils.h>
 #include <scene.h>
 #include <planemesh.h>
+#include <utility/datetimeutils.h>
+#include <ctime>
+#include <chrono>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::KalvertorenApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
