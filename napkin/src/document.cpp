@@ -201,15 +201,16 @@ void Document::removeObject(const std::string& name)
 
 long Document::addArrayElement(const PropertyPath& path)
 {
-	auto array_view = path.getArrayView();
-	const nap::rtti::TypeInfo element_type = array_view.get_rank_type(array_view.get_rank());
-	const nap::rtti::TypeInfo wrapped_type = element_type.is_wrapper() ? element_type.get_wrapped_type() : element_type;
-
 	nap::rtti::ResolvedRTTIPath resolved_path = path.resolve();
 	assert(resolved_path.isValid());
 
 	nap::rtti::Variant array = resolved_path.getValue();
-//	nap::rtti::VariantArray array_view = array.create_array_view();
+	assert(array.is_array());
+	nap::rtti::VariantArray array_view = array.create_array_view();
+
+	//auto array_view = path.getArrayView();
+	const nap::rtti::TypeInfo element_type = array_view.get_rank_type(array_view.get_rank());
+	const nap::rtti::TypeInfo wrapped_type = element_type.is_wrapper() ? element_type.get_wrapped_type() : element_type;
 
 	rttr::variant new_value = wrapped_type.create();
 	assert(new_value.is_valid());
