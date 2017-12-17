@@ -232,7 +232,7 @@ QVariant napkin::InspectorModel::data(const QModelIndex& index, int role) const
 		auto valueItem = dynamic_cast<PropertyValueItem*>(itemFromIndex(index));
 		if (valueItem)
 		{
-			return QVariant::fromValue(TypeWrapper(&valueItem->getValueType()));
+			return QVariant::fromValue(valueItem->getPath());
 		}
 	}
 	return QStandardItemModel::data(index, role);

@@ -43,10 +43,8 @@ void SetValueCommand::redo()
 }
 
 SetPointerValueCommand::SetPointerValueCommand(const PropertyPath& path, nap::rtti::RTTIObject* newValue)
-		: mPath(path), mNewValue(newValue), mOldValue(nullptr)
+		: mPath(path), mNewValue(newValue->mID), mOldValue(getPointee(path)->mID)
 {
-	mOldValue = getPointee(mPath);
-
 	setText(QString("Set pointer value at '%1' to '%2'").arg(QString::fromStdString(mPath.toString()),
 															 QString::fromStdString(newValue->mID)));
 }
@@ -56,16 +54,21 @@ void SetPointerValueCommand::undo()
 	nap::rtti::ResolvedRTTIPath resolvedPath = mPath.resolve();
 	assert(resolvedPath.isValid());
 
-	resolvedPath.setValue(mOldValue);
+	auto old_object = AppContext::get().getDocument()->getObject(mOldValue);
+	bool value_set = resolvedPath.setValue(old_object);
+	assert(value_set);
+	AppContext::get().getDocument()->propertyValueChanged(mPath);
 }
 
 void SetPointerValueCommand::redo()
 {
-	nap::rtti::ResolvedRTTIPath resolvedPath = mPath.resolve();
-	assert(resolvedPath.isValid());
+	nap::rtti::ResolvedRTTIPath resolved_path = mPath.resolve();
+	assert(resolved_path.isValid());
 
-	bool value_set = resolvedPath.setValue(mNewValue);
+	auto new_object = AppContext::get().getDocument()->getObject(mNewValue);
+	bool value_set = resolved_path.setValue(new_object);
 	assert(value_set);
+	AppContext::get().getDocument()->propertyValueChanged(mPath);
 }
 
 AddObjectCommand::AddObjectCommand(const rttr::type& type, nap::rtti::RTTIObject* parent)

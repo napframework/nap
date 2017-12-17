@@ -186,11 +186,6 @@ namespace napkin
 		 */
 		void setData(const QVariant& value, int role) override;
 
-		/**
-		 * @return The type of the value represented by the pointer.
-		 */
-		rttr::type getValueType();
-
 	private:
 		const PropertyPath mPath;		// The path to the property
 		rttr::type mValueType;			// The type of the value represented by the pointer

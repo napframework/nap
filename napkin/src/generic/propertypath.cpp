@@ -29,6 +29,11 @@ rttr::property napkin::PropertyPath::getProperty() const
 	return resolve().getProperty();
 }
 
+rttr::type napkin::PropertyPath::getType() const
+{
+	return getValue().get_type();
+}
+
 ResolvedRTTIPath napkin::PropertyPath::resolve() const
 {
 	ResolvedRTTIPath resolvedPath;
@@ -98,3 +103,11 @@ napkin::PropertyPath napkin::PropertyPath::getChild(const std::string& name) con
 	child_path.pushAttribute(name);
 	return {*mObject, child_path};
 }
+
+rttr::type napkin::PropertyPath::getWrappedType() const
+{
+	auto value = getValue();
+	return value.get_type().is_wrapper() ? value.get_type().get_wrapped_type() : value.get_type();
+}
+
+

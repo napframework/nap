@@ -106,9 +106,9 @@ namespace napkin
         void redo() override;
 
 	private:
-		const PropertyPath		mPath;		// The path to the property
-		nap::rtti::RTTIObject*	mNewValue;	// The new value
-		nap::rtti::RTTIObject*	mOldValue;	// The old value
+		const PropertyPath	mPath;		// The path to the property
+		const std::string	mNewValue;	// The new value
+		const std::string	mOldValue;	// The old value
 	};
 
 
