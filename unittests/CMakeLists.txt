@@ -26,10 +26,10 @@ target_link_libraries(${PROJECT_NAME}
 copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/data data)
 
 ## Now run the tests right after the build
-#add_custom_command(
-#        TARGET ${PROJECT_NAME}
-#        COMMENT "Run tests"
-#        POST_BUILD
-#        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-#        COMMAND ${PROJECT_NAME}
-#)
+add_custom_command(
+        TARGET ${PROJECT_NAME}
+        COMMENT "Run tests"
+        POST_BUILD
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        COMMAND ${PROJECT_NAME}
+)
