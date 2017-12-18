@@ -71,13 +71,13 @@ namespace nap
 		}
 
 
-		int DateTime::getMonth() const
+		EMonth DateTime::getMonth() const
 		{
-			return mTimeStruct.tm_mon + 1;
+			return static_cast<EMonth>(mTimeStruct.tm_mon);
 		}
 
 
-		int DateTime::getDay() const
+		int DateTime::getDayInTheMonth() const
 		{
 			return mTimeStruct.tm_mday;
 		}
@@ -89,9 +89,9 @@ namespace nap
 		}
 
 
-		int DateTime::getDayInTheWeek() const
+		EDay DateTime::getDay() const
 		{
-			return mTimeStruct.tm_wday;
+			return static_cast<EDay>(mTimeStruct.tm_wday);
 		}
 
 
