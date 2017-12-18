@@ -50,6 +50,39 @@ namespace nap
 		//////////////////////////////////////////////////////////////////////////
 
 		/**
+		 * Convenience enum that describes the day of the week
+		 */
+		enum class EDay : int
+		{
+			Monday		= 1,		///< Monday
+			Tuesday		= 2,		///< Tuesday
+			Wednesday	= 3,		///< Wednesday
+			Thursday	= 4,		///< Thursday
+			Friday		= 5,		///< Friday
+			Saturday	= 6,		///< Saturday
+			Sunday		= 0			///< Sunday
+		};
+
+		/**
+		 *	Convenience enum that describes the month in a year
+		 */
+		enum class EMonth : int
+		{
+			January		= 0,		///< January
+			February	= 1,		///< February
+			March		= 2,		///< March
+			April		= 3,		///< April
+			May			= 4,		///< May
+			June		= 5,		///< June
+			July		= 6,		///< July
+			August		= 7,		///< August
+			September	= 8,		///< September
+			October		= 9,		///< October
+			November	= 10,		///< November
+			December	= 11		///< December
+		};
+
+		/**
 		 * Contains the date and time extracted from the associated timestamp.
 		 * This is a utility class that wraps a time stamp for easier readability and use
 		 */
@@ -90,14 +123,14 @@ namespace nap
 			int getYear() const;
 
 			/**
-			 * @return months since January (1, 12)
+			 * @return months since January (0, 11) as a EMonth where Sunday is 0 and Monday is 1
 			 */
-			int getMonth() const;
+			EMonth getMonth() const;
 
 			/**
 			 * @return day of the month (1,31)
 			 */
-			int getDay() const;
+			int getDayInTheMonth() const;
 
 			/**
 			 * @return the day since january first (0,365)
@@ -105,9 +138,9 @@ namespace nap
 			int getDayInTheYear() const;
 
 			/**
-			 *	@return the day in the week since sunday (0,6)
+			 *	@return the day in the week since sunday (0,6) as a EDay
 			 */
-			int getDayInTheWeek() const;
+			EDay getDay() const;
 
 			/**
 			 * @return the hour since midnight (0, 23) 
