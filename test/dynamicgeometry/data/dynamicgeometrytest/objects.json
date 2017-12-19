@@ -17,14 +17,15 @@
 		{
 			"Type" : "nap::Shader",
 			"mID": "ParticleShader",
-			"mVertShader": "shaders/dynamicgeometry/particle.vert",
-			"mFragShader": "shaders/dynamicgeometry/particle.frag"
+			"mVertShader": "shaders/dynamicgeometrytest/particle.vert",
+			"mFragShader": "shaders/dynamicgeometrytest/particle.frag"
 		},	
 
 		{
 			"Type" : "nap::Material",
 			"mID": "ParticleMaterial",
 			"Shader": "ParticleShader",
+			"BlendMode": "AlphaBlend",
 			"VertexAttributeBindings" : [
 				{
 					"MeshAttributeID": "Position",
@@ -38,14 +39,23 @@
 					"MeshAttributeID": "Color0",
 					"ShaderAttributeID": "in_Color0"
 				}
-			]			
+			],
+			"Uniforms" : 
+			[
+				{
+					"Type" : "nap::UniformTexture2D",
+					"Name" : "particleTexture",
+					"Texture" : "Smoke"
+				}
+			]
+
 		},
 		
 		{
 			"Type" : "nap::Shader",
 			"mID": "PlaneShader",
-			"mVertShader": "shaders/dynamicgeometry/plane.vert",
-			"mFragShader": "shaders/dynamicgeometry/plane.frag"
+			"mVertShader": "shaders/dynamicgeometrytest/plane.vert",
+			"mFragShader": "shaders/dynamicgeometrytest/plane.frag"
 		},		
 		
 		{
@@ -212,6 +222,13 @@
 		},	
 
 		{
+			"Type" : "nap::Image",
+			"mID" : "Smoke",
+			"ImagePath" : "data/dynamicgeometrytest/smoke.png"
+		},
+
+
+		{
 			"Type" : "nap::Entity",
 			"mID": "ParticleEmitterEntity",
 			"Components" : 
@@ -220,21 +237,58 @@
 					"Type" : "nap::RenderableMeshComponent",
 					"Mesh" : "ParticleMesh",
 					"MaterialInstance" : {
-						"Material": "ParticleMaterial",
-						"BlendMode": "Opaque"
+						"Material": "ParticleMaterial"
 					}
 				},		
 				{
 					"Type" : "nap::ParticleEmitterComponent",
 					"mID" : "ParticleEmitterComponent",
-					"Mesh" : "ParticleMesh"
+					"Mesh" : "ParticleMesh",
+					"SpawnRate" : 100.0,
+					"LifeTime" : 1.4,
+					"LifeTimeVariation" : 0.2,
+					"Position" : 
+					{
+						"x" : 0,
+						"y" : 0.1,
+						"z" : 0
+					},
+					"PositionVariation" : 
+					{
+						"x" : 0.2,
+						"y" : 0.1,
+						"z" : 0.2
+					},
+					"Size" : 0.4,
+					"SizeVariation" : 0.15,
+					"Rotation" : 0.0,
+					"RotationVariation" : 10.0,
+					"RotationSpeed" : 0.0,
+					"RotationSpeedVariation" : 10.0,
+					"Spread" : 0.8,
+					"Velocity" : 0.7,
+					"VelocityVariation" : 0.2,
+					"StartColor" :
+					{
+						"x" : 0.7,
+						"y" : 0.7,
+						"z" : 0.7,
+						"w" : 1.0
+					},
+					"EndColor" :
+					{
+						"x" : 1.0,
+						"y" : 1.0,
+						"z" : 1.0,
+						"w" : 0.0
+					}
 				},					
 				{
 					"Type" : "nap::TransformComponent",
 					"Properties": {
 						"Translate": {
 							"x": 0.0,
-							"y": 1.0,
+							"y": 0.0,
 							"z": 0.0
 						},
 						"Rotate": {
