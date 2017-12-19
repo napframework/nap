@@ -16,6 +16,28 @@ napkin::FlatObjectModel::FlatObjectModel(const rttr::type& baseType) : mBaseType
 	}
 }
 
+napkin::FlatTypeModel::FlatTypeModel(const rttr::type& basetype) : mBaseType(basetype)
+{
+	std::vector<nap::rtti::TypeInfo> derived_types;
+	nap::rtti::getDerivedTypesRecursive(basetype.get_raw_type(), derived_types);
+
+	// Remove any types that are not actually createable (base classes and such)
+	nap::rtti::Factory& factory = AppContext::get().getCore().getResourceManager()->getFactory();
+	for (long index = derived_types.size() - 1; index >= 0; --index)
+	{
+		if (!factory.canCreate(derived_types[index]))
+			derived_types.erase(derived_types.begin() + index);
+	}
+
+	for (const rttr::type t : derived_types) {
+		auto name = QString::fromUtf8(t.get_name().data());
+		auto item = new QStandardItem(name);
+		appendRow(item);
+	}
+
+}
+
+
 
 napkin::FilterPopup::FilterPopup(QWidget* parent) : QMenu(parent)
 {
@@ -48,6 +70,21 @@ nap::rtti::RTTIObject* napkin::FilterPopup::getObject(QWidget* parent, const rtt
 
 	return nullptr;
 }
+
+nap::rtti::TypeInfo napkin::FilterPopup::getDerivedType(QWidget* parent, const rttr::type& baseType)
+{
+	auto dialog = new FilterPopup(parent);
+	dialog->mTreeView.setModel(new FlatTypeModel(baseType));
+	dialog->exec(QCursor::pos());
+
+	auto selected_item = dialog->mTreeView.getSelectedItem();
+	if (selected_item == nullptr)
+		return rttr::type::empty();
+
+	return nap::rtti::TypeInfo::get_by_name(selected_item->text().toStdString().c_str());
+}
+
+
 
 void napkin::FilterPopup::keyPressEvent(QKeyEvent* event)
 {
