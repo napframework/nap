@@ -26,11 +26,19 @@ namespace opengl
 		if (mCurSize > mCurCapacity)
 		{
 			if (mCurCapacity == 0)
-				mCurCapacity = 64;
-
-			while (mCurCapacity < mCurSize)
-				mCurCapacity *= 2;
-
+			{
+				// The very first time we set data, we allocate a buffer to the exact size that was requested.
+				mCurCapacity = mCurSize;
+			}
+			else
+			{
+				// In case there was already data but the size does not match anymore, we find the nearest 
+				// 'next' power-of-two to grow to. This means that we are roughly growing by a factor of two 
+				// if the amount of vertices grows gradually.
+				double exponent = std::ceil(std::log2(mCurSize));
+				mCurCapacity = std::exp2(exponent);
+			}
+			assert(mCurCapacity >= mCurSize);
 			glBufferData(getBufferType(), mCurCapacity, nullptr, mUsage);
 		}
 
