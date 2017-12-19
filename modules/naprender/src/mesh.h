@@ -168,6 +168,20 @@ namespace nap
 		void addIndex(int index)												{ mProperties.mIndices.push_back(index); }
 
 		/**
+ 		 * Adds a number of indices to the existing indices in the index CPU buffer. Use setIndices to replace
+		 * the current indices with a new set of indices.
+		 * Call either before init() or call update() to reflect the changes in the GPU buffer.
+		 * @param indices List of indices to update.
+		 * @param numIndices Number of indices in the list.
+		 */
+		void addIndices(uint32_t* indices, int numIndices);
+
+		/**
+ 		 * Clears the list of indices.
+		 */
+		void clearIndices() { mProperties.mIndices.clear(); }
+
+		/**
 		 * Adds a list of indices to the index CPU buffer.
 		 * Call either before init() or call update() to reflect the changes in the GPU buffer.
 		 * @param indices: array of indices to add.

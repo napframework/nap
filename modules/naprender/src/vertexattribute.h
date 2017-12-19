@@ -101,6 +101,14 @@ namespace nap
 		 */
 		void setData(const ELEMENTTYPE* elements, int numElements);
 
+
+		/**
+		 * Adds data to the existing data in the buffer.
+		 * @param elements Pointer to the elements to copy.
+		 * @param numElements Amount of elements in @elements to copy.
+		 */
+		void addData(const ELEMENTTYPE* elements, int numElements);
+
 		/**
 		 * @return the opengl type associated with this vertex attribute
 		 * Note that this only works for specialized types such as float, int etc.
@@ -154,6 +162,13 @@ namespace nap
 		memcpy(mData.data(), elements, numElements * sizeof(ELEMENTTYPE));
 	}
 
+	template<typename ELEMENTTYPE>
+	void nap::VertexAttribute<ELEMENTTYPE>::addData(const ELEMENTTYPE* elements, int numElements)
+	{
+		int cur_num_elements = mData.size();
+		mData.resize(cur_num_elements + numElements);
+		memcpy((void*)&mData[cur_num_elements], elements, numElements * sizeof(ELEMENTTYPE));
+	}
 
 	template<typename ELEMENTTYPE>
 	void* nap::VertexAttribute<ELEMENTTYPE>::getRawData()

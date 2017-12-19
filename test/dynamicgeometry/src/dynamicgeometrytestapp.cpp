@@ -28,7 +28,7 @@ namespace nap
 		if (!mResourceManager->loadFile("data/dynamicgeometrytest/objects.json", error))
 		{
 			Logger::fatal("Unable to deserialize resources: \n %s", error.toString().c_str());
-			return false;      
+			return false;                
 		}
 		
 		ObjectPtr<Scene> scene		= mResourceManager->findObject<Scene>("Scene");
@@ -72,7 +72,7 @@ namespace nap
 
 		// Clear window back-buffer
 		opengl::RenderTarget& backbuffer = *(mRenderWindow->getWindow()->getBackbuffer());
-		backbuffer.setClearColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+		backbuffer.setClearColor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 		mRenderService->clearRenderTarget(backbuffer);
 
 		PerspCameraComponentInstance& frame_cam = mCameraEntity->getComponent<PerspCameraComponentInstance>();
