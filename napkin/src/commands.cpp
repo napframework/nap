@@ -152,17 +152,66 @@ void AddEntityToSceneCommand::redo()
 	AppContext::get().getDocument()->objectChanged(*scene);
 }
 
-AddArrayElementCommand::AddArrayElementCommand(const PropertyPath& prop) : mPath(prop)
+ArrayAddValueCommand::ArrayAddValueCommand(const PropertyPath& prop, long index)
+		: mPath(prop), mIndex(index)
 {
 	setText("Add element to: " + QString::fromStdString(prop.toString()));
 }
 
-void AddArrayElementCommand::redo()
+void ArrayAddValueCommand::redo()
 {
-	AppContext::get().getDocument()->addArrayElement(mPath);
+	AppContext::get().getDocument()->arrayAddValue(mPath);
 }
 
-void AddArrayElementCommand::undo()
+void ArrayAddValueCommand::undo()
 {
 	nap::Logger::fatal("Sorry, no undo for you");
 }
+
+ArrayAddNewObjectCommand::ArrayAddNewObjectCommand(const PropertyPath& prop, const nap::rtti::TypeInfo& type,
+												   long index) : mPath(prop), mType(type), mIndex(index)
+{}
+
+void ArrayAddNewObjectCommand::redo()
+{
+	AppContext::get().getDocument()->arrayAddNewObject(mPath, mType, mIndex);
+}
+
+void ArrayAddNewObjectCommand::undo()
+{
+	AppContext::get().getDocument()->arrayRemoveElement(mPath, mIndex);
+}
+
+ArrayAddExistingObjectCommand::ArrayAddExistingObjectCommand(const PropertyPath& prop, nap::rtti::RTTIObject& object,
+															 long index)
+		: mPath(prop), mObjectName(object.mID), mIndex(index)
+{}
+
+void ArrayAddExistingObjectCommand::redo()
+{
+	nap::rtti::RTTIObject* object = AppContext::get().getDocument()->getObject(mObjectName);
+	assert(object != nullptr);
+	AppContext::get().getDocument()->arrayAddExistingObject(mPath, object, mIndex);
+}
+
+void ArrayAddExistingObjectCommand::undo()
+{
+	AppContext::get().getDocument()->arrayRemoveElement(mPath, mIndex);
+}
+
+ArrayRemoveElementCommand::ArrayRemoveElementCommand(const PropertyPath& array_prop, long index)
+		: mPath(array_prop), mIndex(index)
+{}
+
+void ArrayRemoveElementCommand::redo()
+{
+	AppContext::get().getDocument()->arrayRemoveElement(mPath, mIndex);
+}
+
+void ArrayRemoveElementCommand::undo()
+{
+	// TODO: Need store on redo and be able to reinstate the original value
+	nap::Logger::fatal("No undo supported");
+}
+
+

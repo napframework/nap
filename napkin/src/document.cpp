@@ -3,6 +3,7 @@
 
 
 using namespace napkin;
+using namespace nap::rtti;
 
 nap::Entity* Document::getParent(const nap::Entity& child)
 {
@@ -71,11 +72,11 @@ nap::Component* Document::addComponent(nap::Entity& entity, rttr::type type)
 	return comp;
 }
 
-nap::rtti::RTTIObject* Document::addObject(rttr::type type, nap::rtti::RTTIObject* parent)
+RTTIObject* Document::addObject(rttr::type type, RTTIObject* parent)
 {
-	nap::rtti::Factory& factory = mCore.getResourceManager()->getFactory();
+	Factory& factory = mCore.getResourceManager()->getFactory();
 	assert(factory.canCreate(type));
-	assert(type.is_derived_from<nap::rtti::RTTIObject>());
+	assert(type.is_derived_from<RTTIObject>());
 
 	// Strip off namespace prefixes when creating new objects
 	std::string base_name = type.get_name().data();
@@ -83,7 +84,7 @@ nap::rtti::RTTIObject* Document::addObject(rttr::type type, nap::rtti::RTTIObjec
 	if (last_colon != std::string::npos)
 		base_name = base_name.substr(last_colon + 1);
 
-	nap::rtti::RTTIObject* obj = factory.create(type);
+	RTTIObject* obj = factory.create(type);
 	obj->mID = getUniqueName(base_name);
 	mObjects.emplace_back(obj);
 
@@ -123,16 +124,16 @@ std::string Document::getUniqueName(const std::string& suggestedName)
 	return newName;
 }
 
-nap::rtti::RTTIObject* Document::getObject(const std::string& name)
+RTTIObject* Document::getObject(const std::string& name)
 {
 	auto it = std::find_if(mObjects.begin(), mObjects.end(),
-						   [&name](std::unique_ptr<nap::rtti::RTTIObject>& obj) { return obj->mID == name; });
+						   [&name](std::unique_ptr<RTTIObject>& obj) { return obj->mID == name; });
 	if (it == mObjects.end())
 		return nullptr;
 	return it->get();
 }
 
-nap::rtti::RTTIObject* Document::getObject(const std::string& name, const rttr::type& type)
+RTTIObject* Document::getObject(const std::string& name, const rttr::type& type)
 {
 	auto object = getObject(name);
 
@@ -146,9 +147,9 @@ nap::rtti::RTTIObject* Document::getObject(const std::string& name, const rttr::
 }
 
 
-std::vector<nap::rtti::RTTIObject*> Document::getObjectsOfType(const nap::rtti::TypeInfo& type) const
+std::vector<RTTIObject*> Document::getObjectsOfType(const TypeInfo& type) const
 {
-	std::vector<nap::rtti::RTTIObject*> result;
+	std::vector<RTTIObject*> result;
 	for (auto& object : mObjects)
 		if (object->get_type().is_derived_from(type))
 			result.push_back(object.get());
@@ -156,16 +157,16 @@ std::vector<nap::rtti::RTTIObject*> Document::getObjectsOfType(const nap::rtti::
 	return result;
 }
 
-nap::rtti::ObjectList Document::getObjectPointers()
+ObjectList Document::getObjectPointers()
 {
-	nap::rtti::ObjectList ret;
+	ObjectList ret;
 	for (auto& ob : getObjects())
 		ret.emplace_back(ob.get());
 	return ret;
 }
 
 
-void Document::removeObject(nap::rtti::RTTIObject& object)
+void Document::removeObject(RTTIObject& object)
 {
 	objectRemoved(object);
 
@@ -187,7 +188,7 @@ void Document::removeObject(nap::rtti::RTTIObject& object)
 
 	mObjects.erase(
 			std::remove_if(mObjects.begin(), mObjects.end(),
-						   [&object](std::unique_ptr<nap::rtti::RTTIObject>& obj) { return obj.get() == &object; }),
+						   [&object](std::unique_ptr<RTTIObject>& obj) { return obj.get() == &object; }),
 			mObjects.end());
 }
 
@@ -199,24 +200,24 @@ void Document::removeObject(const std::string& name)
 }
 
 
-long Document::addArrayElement(const PropertyPath& path)
+long Document::arrayAddValue(const PropertyPath& path, long index)
 {
-	nap::rtti::ResolvedRTTIPath resolved_path = path.resolve();
+	ResolvedRTTIPath resolved_path = path.resolve();
 	assert(resolved_path.isValid());
 
-	nap::rtti::Variant array = resolved_path.getValue();
+	Variant array = resolved_path.getValue();
 	assert(array.is_array());
-	nap::rtti::VariantArray array_view = array.create_array_view();
+	VariantArray array_view = array.create_array_view();
 
-	//auto array_view = path.getArrayView();
-	const nap::rtti::TypeInfo element_type = array_view.get_rank_type(array_view.get_rank());
-	const nap::rtti::TypeInfo wrapped_type = element_type.is_wrapper() ? element_type.get_wrapped_type() : element_type;
+	const TypeInfo element_type = array_view.get_rank_type(array_view.get_rank());
+	const TypeInfo wrapped_type = element_type.is_wrapper() ? element_type.get_wrapped_type() : element_type;
 
 	rttr::variant new_value = wrapped_type.create();
 	assert(new_value.is_valid());
 	assert(array_view.is_dynamic());
-	long index = array_view.get_size();
-	if (!array_view.insert_value(index, new_value))
+
+	auto idx = index >= 0 ? index : array_view.get_size();
+	if (!array_view.insert_value(idx, new_value))
 	{
 		nap::Logger::fatal("Failed to add array element to: %s", path.toString().c_str());
 		return -1;
@@ -225,12 +226,91 @@ long Document::addArrayElement(const PropertyPath& path)
 	resolved_path.setValue(array);
 
 	propertyValueChanged(path);
+
+	return idx;
+}
+
+long Document::arrayAddExistingObject(const PropertyPath& path, RTTIObject* object, long index)
+{
+	ResolvedRTTIPath resolved_path = path.resolve();
+	assert(resolved_path.isValid());
+
+	Variant array = resolved_path.getValue();
+	assert(array.is_valid());
+	assert(array.is_array());
+	VariantArray array_view = array.create_array_view();
+	assert(array_view.is_dynamic());
+	assert(array_view.is_valid());
+
+	// Convert the object to the wrapped type
+
+	const TypeInfo array_type = array_view.get_rank_type(array_view.get_rank());
+	const TypeInfo wrapped_type = array_type.is_wrapper() ? array_type.get_wrapped_type() : array_type;
+
+	Variant new_item = object;
+	nap::Logger::info("Object type: %s", object->get_type().get_name().data());
+	bool convert_ok = new_item.convert(wrapped_type);
+	assert(convert_ok);
+
+	if (index < 0)
+		index = array_view.get_size();
+
+	bool inserted = array_view.insert_value(index, new_item);
+	assert(inserted);
+
+	bool value_set = resolved_path.setValue(array);
+	assert(value_set);
+
+	propertyValueChanged(path);
+
 	return index;
 }
+
+long Document::arrayAddNewObject(const PropertyPath& path, const TypeInfo& type, long index)
+{
+	ResolvedRTTIPath resolved_path = path.resolve();
+	assert(resolved_path.isValid());
+
+	Variant array = resolved_path.getValue();
+	VariantArray array_view = array.create_array_view();
+
+	RTTIObject* new_object = addObject(type);
+
+	if (index < 0)
+		index = array_view.get_size();
+
+	bool inserted = array_view.insert_value(index, new_object);
+	assert(inserted);
+
+	bool value_set = resolved_path.setValue(array);
+	assert(value_set);
+
+	propertyValueChanged(path);
+
+	return index;
+}
+
+
+void Document::arrayRemoveElement(const PropertyPath& path, long index)
+{
+	ResolvedRTTIPath resolved_path = path.resolve();
+	Variant value = resolved_path.getValue();
+	VariantArray array = value.create_array_view();
+
+	bool ok = array.remove_value(index);
+	assert(ok);
+
+	resolved_path.setValue(value);
+
+	propertyValueChanged(path);
+}
+
 
 void Document::executeCommand(QUndoCommand* cmd)
 {
 	mUndoStack.push(cmd);
 }
+
+
 
 

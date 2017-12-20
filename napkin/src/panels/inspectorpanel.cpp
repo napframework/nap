@@ -4,6 +4,7 @@
 #include <QtWidgets/QApplication>
 #include <generic/utility.h>
 #include <standarditemsproperty.h>
+#include <generic/filterpopup.h>
 
 using namespace nap::rtti;
 
@@ -49,56 +50,29 @@ napkin::InspectorPanel::InspectorPanel()
 
 }
 
-void napkin::InspectorPanel::onAddObjectArrayElement(ArrayPropertyItem* targetItem, nap::rtti::RTTIObject* object)
-{
-	nap::rtti::ResolvedRTTIPath resolved_path = targetItem->getPath().resolve();
-	assert(resolved_path.isValid());
-
-	nap::rtti::Variant array = resolved_path.getValue();
-	nap::rtti::VariantArray array_view = array.create_array_view();
-
-	const nap::rtti::TypeInfo array_type = array_view.get_rank_type(array_view.get_rank());
-	const nap::rtti::TypeInfo wrapped_type = array_type.is_wrapper() ? array_type.get_wrapped_type() : array_type;
-
-	nap::rtti::Variant new_item = object;
-	new_item.convert(wrapped_type);
-
-	bool inserted = array_view.insert_value(array_view.get_size(), new_item);
-	assert(inserted);
-
-	bool value_set = resolved_path.setValue(array);
-	assert(value_set);
-
-	rebuild();
-}
-
-void napkin::InspectorPanel::onAddObjectArrayElement(ArrayPropertyItem* targetItem, const nap::rtti::TypeInfo& type)
-{
-	nap::rtti::ResolvedRTTIPath resolved_path = targetItem->getPath().resolve();
-	assert(resolved_path.isValid());
-
-	nap::rtti::Variant array = resolved_path.getValue();
-	nap::rtti::VariantArray array_view = array.create_array_view();
-
-	nap::rtti::RTTIObject* new_object = AppContext::get().getDocument()->addObject(type);
-	bool inserted = array_view.insert_value(array_view.get_size(), new_object);
-	assert(inserted);
-
-	bool value_set = resolved_path.setValue(array);
-	assert(value_set);
-
-	rebuild();
-}
-
 void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 {
 	QStandardItem* item = mTreeView.getSelectedItem();
 	if (item == nullptr)
 		return;
 
+	auto parent_item = item->parent();
+	if (parent_item != nullptr) {
+		auto parent_array_item = dynamic_cast<ArrayPropertyItem*>(parent_item);
+		if (parent_array_item != nullptr) {
+			PropertyPath parent_property = parent_array_item->getPath();
+			long element_index = item->row();
+			menu.addAction("Remove Element", [parent_property, element_index]() {
+				AppContext::get().executeCommand(new ArrayRemoveElementCommand(parent_property, element_index));
+			});
+		}
+	}
+
+
 	auto* array_item = dynamic_cast<ArrayPropertyItem*>(item);
 	if (array_item != nullptr)
 	{
+		PropertyPath array_path = array_item->getPath();
 		// Determine the type of the array
 		const nap::rtti::TypeInfo array_type = array_item->getArray().get_rank_type(array_item->getArray().get_rank());
 		const nap::rtti::TypeInfo wrapped_type = array_type.is_wrapper() ? array_type.get_wrapped_type() : array_type;
@@ -125,57 +99,43 @@ void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 
 			if (!derived_types.empty())
 			{
+
 				// If there's only a single type, make an item instead of submenu for ease of access
 				if (derived_types.size() == 1)
 				{
 					const nap::rtti::TypeInfo& type = derived_types[0].get_raw_type();
-					std::string title = nap::utility::stringFormat("Add New '%s'", type.get_name().data());
-
-					menu.addAction(QString::fromStdString(title), [this, array_item, type]()
+					menu.addAction(QString("Add new %1").arg(type.get_name().data()), [this, array_path, type]()
 					{
-						onAddObjectArrayElement(array_item, type);
+						AppContext::get().executeCommand(new ArrayAddNewObjectCommand(array_path, type, -1));
 					});
 				}
 				else
 				{
-					QMenu* add_new_menu = menu.addMenu("Add New...");
-
-					for (const nap::rtti::TypeInfo& type : derived_types)
+					menu.addAction("Add New...", [this, array_path, wrapped_type]()
 					{
-						add_new_menu->addAction(QString::fromUtf8(type.get_name().data()), [this, array_item, type]()
-						{
-							onAddObjectArrayElement(array_item, type);
-						});
-					}
+						nap::rtti::TypeInfo new_type = FilterPopup::getDerivedType(this, wrapped_type);
+						if (new_type.is_valid())
+							AppContext::get().executeCommand(new ArrayAddNewObjectCommand(array_path, new_type, -1));
+					});
 
 				}
 			}
 
 			// Build 'Add Existing' menu, populated with all existing objects matching the array type
- 			QMenu* add_existing_menu = menu.addMenu("Add Existing...");
-			std::vector<nap::rtti::RTTIObject*> objects = AppContext::get().getDocument()->getObjectsOfType(wrapped_type.get_raw_type());
-			
-			// Sort on object ID
-			std::sort(objects.begin(), objects.end(), [](const nap::rtti::RTTIObject* objectA, const nap::rtti::RTTIObject* objectB)
+			menu.addAction("Add Existing...", [this, array_path, wrapped_type]()
 			{
-				return objectA->mID < objectB->mID;
+				nap::rtti::RTTIObject* selected_object = FilterPopup::getObject(this, wrapped_type.get_raw_type());
+				if (selected_object != nullptr)
+					AppContext::get().executeCommand(new ArrayAddExistingObjectCommand(array_path, *selected_object));
 			});
-			
-			// Add all objects to submenu
-			for (nap::rtti::RTTIObject* object : objects)
-				add_existing_menu->addAction(QString::fromStdString(object->mID), [this, array_item, object]() {
-					onAddObjectArrayElement(array_item, object);
-				});
+
 		}
 		else
 		{
-			PropertyPath prop_path = array_item->getPath();
-			auto element_type = prop_path.getArrayElementType();
-
-			menu.addAction(QString("Add %1").arg(QString::fromUtf8(element_type.get_name().data())),
-						   [prop_path]()
+			auto element_type = array_path.getArrayElementType();
+			menu.addAction(QString("Add %1").arg(QString::fromUtf8(element_type.get_name().data())), [array_path]()
 			{
-				AppContext::get().executeCommand(new AddArrayElementCommand(prop_path));
+				AppContext::get().executeCommand(new ArrayAddValueCommand(array_path));
 			});
 
 		}

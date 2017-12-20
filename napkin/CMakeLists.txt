@@ -49,7 +49,24 @@ target_include_directories(${PROJECT_NAME} PUBLIC src)
 
 qt5_use_modules(${PROJECT_NAME} Core Widgets Gui)
 
-target_link_libraries(${PROJECT_NAME} napcore Qt5::Widgets Qt5::Core Qt5::Gui mod_napscene mod_nappython mod_napmath mod_napartnet)
+set(NAPKIN_LIB ${PROJECT_NAME}_lib)
+
+# create library from app for unittests
+add_library(${NAPKIN_LIB} STATIC ${SOURCES} ${UI_HEADERS} ${HEADERS} ${RESOURCES})
+
+set(LIBS
+        napcore
+        mod_napscene
+        mod_nappython
+        mod_napmath
+        mod_napartnet
+        Qt5::Widgets Qt5::Core Qt5::Gui
+        )
+
+target_link_libraries(${PROJECT_NAME} ${LIBS})
+
+target_link_libraries(${NAPKIN_LIB} ${LIBS})
+target_include_directories(${NAPKIN_LIB} PUBLIC src)
 
 
 if (WIN32)

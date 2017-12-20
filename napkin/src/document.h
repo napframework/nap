@@ -129,9 +129,35 @@ namespace napkin
 		/**
 		 * Add an element to an array
 		 * @param path The path to the array property to add the element to
+		 * @param index The index at which to add the new element, provide -1 to add to the end
 		 * @return The index of the newly created element or -1 when the element was not added.
 		 */
-		long addArrayElement(const PropertyPath& path);
+		long arrayAddValue(const PropertyPath& path, long index = -1);
+
+		/**
+		 * Add an existing pointer to the array
+		 * @param path The path to the array
+		 * @param object The object pointer to addd
+		 * @param index The index at which to add the new element, provide -1 to add to the end
+		 * @return The index at which the element lives.
+		 */
+		long arrayAddExistingObject(const PropertyPath& path, nap::rtti::RTTIObject* object, long index = -1);
+
+		/**
+		 * Create an object of the specified type and add it to the array
+		 * @param path The path to the array
+		 * @param type The type of object to create
+		 * @param index The index at which to add the new element, provide -1 to add to the end
+		 * @return The index of the inserted object
+		 */
+		long arrayAddNewObject(const PropertyPath& path, const nap::rtti::TypeInfo& type, long index = -1);
+
+		/**
+		 * Remove an element from an array
+		 * @param path The path pointing to the array
+		 * @param index The index of the element to remove
+		 */
+		void arrayRemoveElement(const PropertyPath& path, long index);
 
 		/**
 		 * Execute the specified command and push the provided command onto the undostack.

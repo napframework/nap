@@ -2,6 +2,8 @@
 
 #include <appcontext.h>
 #include <commands.h>
+#include <composition.h>
+#include <ledcolorpalette.h>
 
 using namespace napkin;
 using namespace nap;
@@ -63,6 +65,106 @@ TEST_CASE("Document Signals", "[napkin]")
 
 }
 
+TEST_CASE("Array Value Elements", "[napkin]")
+{
+	auto doc = AppContext::get().newDocument();
+	auto palette = doc->addObject<nap::LedColorPalette>();
+	REQUIRE(palette != nullptr);
+
+	// Check invalid nonexistent path
+	PropertyPath nonExistent(*palette, "NonExistent_________");
+	REQUIRE(!nonExistent.isValid());
+
+	// Grab a valid path
+	PropertyPath ledColors(*palette, "LedColors");
+	REQUIRE(ledColors.isValid());
+
+	// Check if the we have an empty array
+	{
+		rtti::Variant ledcolorsvalue = ledColors.resolve().getValue();
+		rtti::VariantArray ledcolors_array = ledcolorsvalue.create_array_view();
+		REQUIRE(ledcolors_array.get_size() == 0);
+	}
+
+	// Add an element
+	{
+		auto index = doc->arrayAddValue(ledColors);
+
+		REQUIRE(index == 0); // The index at which the new element lives
+		auto value = ledColors.getValue();
+		auto array_view = value.create_array_view();
+		REQUIRE(array_view.get_size() == 1); // Current array size
+	}
+
+	// Add another element
+	{
+		auto index = doc->arrayAddValue(ledColors);
+
+		REQUIRE(index == 1); // Index should be one
+		auto value = ledColors.getValue();
+		auto array_view = value.create_array_view();
+		REQUIRE(array_view.get_size() == 2); // Current array size
+	}
+
+	// Remove first element
+	{
+		doc->arrayRemoveElement(ledColors, 0);
+
+		auto value = ledColors.getValue();
+		auto array = value.create_array_view();
+		REQUIRE(array.get_size() == 1);
+	}
+
+	// Remove the second element
+	{
+		doc->arrayRemoveElement(ledColors, 0);
+
+		auto value = ledColors.getValue();
+		auto array = value.create_array_view();
+		REQUIRE(array.get_size() == 0);
+	}
+}
+
+TEST_CASE("Array Modification Objects", "[napkin]")
+{
+	auto doc = AppContext::get().newDocument();
+	auto composition = doc->addObject<nap::Composition>();
+	REQUIRE(composition != nullptr);
+	auto layer = doc->addObject<nap::ImageSequenceLayer>();
+	REQUIRE(layer != nullptr);
+
+	PropertyPath layers(*composition, "Layers");
+	REQUIRE(layers.isValid());
+
+ 	// Check if array is empty to start with
+	{
+		rtti::Variant value = layers.resolve().getValue();
+		rtti::VariantArray array_view = value.create_array_view();
+		REQUIRE(array_view.get_size() == 0);
+	}
+
+	// Add the existing layer to the composition
+	{
+		auto index = doc->arrayAddExistingObject(layers, layer);
+		REQUIRE(index == 0);
+
+		rtti::Variant value = layers.resolve().getValue();
+		rtti::VariantArray array_view = value.create_array_view();
+		REQUIRE(array_view.get_size() == 1);
+	}
+
+	// Add a new layer to the composition
+	{
+		auto index = doc->arrayAddNewObject(layers, RTTI_OF(nap::ImageSequenceLayer));
+		REQUIRE(index == 1);
+
+		rtti::Variant value = layers.resolve().getValue();
+		rtti::VariantArray array_view = value.create_array_view();
+		REQUIRE(array_view.get_size() == 2);
+	}
+
+}
+
 TEST_CASE("Document Functions", "[napkin]")
 {
 	auto doc = AppContext::get().newDocument();
@@ -110,5 +212,5 @@ TEST_CASE("Commands", "[napkin]")
 	ctx.executeCommand(new SetValueCommand(nameProp, "NewName"));
 //	ctx.executeCommand(new SetPointerValueCommand())
 //	ctx.executeCommand(new AddEntityToSceneCommand())
-//	ctx.executeCommand(new AddArrayElementCommand());
+//	ctx.executeCommand(new ArrayAddValueCommand());
 }
