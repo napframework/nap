@@ -374,7 +374,7 @@ namespace std
 	template <>
 	struct hash<nap::utility::EDay>
 	{
-		size_t operator()(const nap::utility::EDay v) const
+		size_t operator()(const nap::utility::EDay& v) const
 		{
 			return hash<int>()(static_cast<int>(v));
 		}
@@ -383,7 +383,7 @@ namespace std
 	template <>
 	struct hash<nap::utility::EMonth>
 	{
-		size_t operator()(const nap::utility::EMonth v) const
+		size_t operator()(const nap::utility::EMonth& v) const
 		{
 			return hash<int>()(static_cast<int>(v));
 		}
