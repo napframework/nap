@@ -123,15 +123,31 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 			{
 
 				auto propertyPath = getPropertyPathFromIndex(index);
-				if (propertyPath.isValid() && propertyPath.getWrappedType().is_pointer()) {
+
+
+				// TODO: There must be a less convoluted way.
+				// In the case of array elements, the type will be the array type, not the element type.
+				// For now, grab the array's element type and use that.
+
+				nap::rtti::TypeInfo wrapped_type = propertyPath.getWrappedType();
+				if (type.is_array()) {
+					nap::rtti::Variant value = propertyPath.getValue();
+					nap::rtti::VariantArray array = value.create_array_view();
+					nap::rtti::TypeInfo array_type = array.get_rank_type(array.get_rank());
+					wrapped_type = array_type.is_wrapper() ? array_type.get_wrapped_type() : array_type;
+				}
+
+				if (propertyPath.isValid() && (wrapped_type.is_pointer())) {
 					auto variant = index.data(Qt::UserRole);
 
 					if (variant.canConvert<PropertyPath>()) {
 						auto path = variant.value<PropertyPath>();
 						auto selected = FilterPopup::getObject(AppContext::get().getQApplication()->activeWindow(),
-															   path.getWrappedType());
+															   wrapped_type);
 						if (selected != nullptr)
 							model->setData(index, QString::fromStdString(selected->mID), Qt::EditRole);
+
+						return true;
 					}
 
 				}
