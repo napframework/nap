@@ -79,50 +79,8 @@ void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 
 		if (wrapped_type.is_pointer())
 		{
-			// Build 'Add New' menu, populated with all types matching the array type
-			std::vector<nap::rtti::TypeInfo> derived_types;
-			getDerivedTypesRecursive(wrapped_type.get_raw_type(), derived_types);
-
-			// Remove any types that are not actually createable (base classes and such)
-			nap::rtti::Factory& factory = AppContext::get().getCore().getResourceManager()->getFactory();
-			for (long index = derived_types.size() - 1; index >= 0; --index)
-			{
-				if (!factory.canCreate(derived_types[index]))
-					derived_types.erase(derived_types.begin() + index);
-			}
-			
-			// Sort on typename
-			std::sort(derived_types.begin(), derived_types.end(), [](const nap::rtti::TypeInfo& typeA, const nap::rtti::TypeInfo& typeB) 
-			{
-				return typeA.get_name().compare(typeB.get_name()) < 0;
-			});
-
-			if (!derived_types.empty())
-			{
-
-				// If there's only a single type, make an item instead of submenu for ease of access
-				if (derived_types.size() == 1)
-				{
-					const nap::rtti::TypeInfo& type = derived_types[0].get_raw_type();
-					menu.addAction(QString("Add new %1").arg(type.get_name().data()), [this, array_path, type]()
-					{
-						AppContext::get().executeCommand(new ArrayAddNewObjectCommand(array_path, type, -1));
-					});
-				}
-				else
-				{
-					menu.addAction("Add New...", [this, array_path, wrapped_type]()
-					{
-						nap::rtti::TypeInfo new_type = FilterPopup::getDerivedType(this, wrapped_type);
-						if (new_type.is_valid())
-							AppContext::get().executeCommand(new ArrayAddNewObjectCommand(array_path, new_type, -1));
-					});
-
-				}
-			}
-
 			// Build 'Add Existing' menu, populated with all existing objects matching the array type
-			menu.addAction("Add Existing...", [this, array_path, wrapped_type]()
+			menu.addAction("Add...", [this, array_path, wrapped_type]()
 			{
 				nap::rtti::RTTIObject* selected_object = FilterPopup::getObject(this, wrapped_type.get_raw_type());
 				if (selected_object != nullptr)
