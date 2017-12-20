@@ -17,28 +17,18 @@ namespace opengl
 	{
 	}
 
+
 	// Uploads the data block to the GPU
-	void VertexAttributeBuffer::setData(void* data, unsigned int numVertices)
+	void VertexAttributeBuffer::setData(void* data, size_t numVertices, size_t reservedNumVertices)
 	{
+		assert(reservedNumVertices >= numVertices);
+
 		bind();
 
 		mCurSize = getGLTypeSize(mType) * mNumComponents * numVertices;
 		if (mCurSize > mCurCapacity)
 		{
-			if (mCurCapacity == 0)
-			{
-				// The very first time we set data, we allocate a buffer to the exact size that was requested.
-				mCurCapacity = mCurSize;
-			}
-			else
-			{
-				// In case there was already data but the size does not match anymore, we find the nearest 
-				// 'next' power-of-two to grow to. This means that we are roughly growing by a factor of two 
-				// if the amount of vertices grows gradually.
-				double exponent = std::ceil(std::log2(mCurSize));
-				mCurCapacity = std::exp2(exponent);
-			}
-			assert(mCurCapacity >= mCurSize);
+			mCurCapacity = getGLTypeSize(mType) * mNumComponents * reservedNumVertices;
 			glBufferData(getBufferType(), mCurCapacity, nullptr, mUsage);
 		}
 

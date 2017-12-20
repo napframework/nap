@@ -155,10 +155,22 @@ namespace nap
 		VertexAttribute<T>& getOrCreateAttribute(const std::string& id);
 
 		/**
-		 * Reserves index CPU memory.
+		 * Clears the list of indices. 
+		 * Call either before init() or call update() to reflect the changes in the GPU buffer.
+		 */
+		void clearIndices()														{ mProperties.mIndices.clear(); }
+
+		/**
+	 	 * Reserves CPU memory for index list. GPU memory is reserved after update() is called.
 		 * @param numIndices Amount of indices to reserve.
 		 */
-		void reserveIndices(size_t numIndices)									{ mProperties.mIndices.reserve(numIndices); }
+		void reserveVertices(size_t numVertices);
+
+		/**
+		 * Reserves CPU memory for index list. GPU memory is reserved after update() is called.
+		 * @param numIndices Amount of indices to reserve.
+		 */
+		void reserveIndices(size_t numIndices);
 
 		/**
 		 * Adds a single index to the index CPU buffer. Use setIndices to add an entire list of indices.
@@ -177,17 +189,23 @@ namespace nap
 		void addIndices(uint32_t* indices, int numIndices);
 
 		/**
- 		 * Clears the list of indices.
-		 */
-		void clearIndices() { mProperties.mIndices.clear(); }
-
-		/**
 		 * Adds a list of indices to the index CPU buffer.
 		 * Call either before init() or call update() to reflect the changes in the GPU buffer.
 		 * @param indices: array of indices to add.
 		 * @param numIndices: number of indices in @indices.
 		 */
 		void setIndices(uint32_t* indices, int numIndices);
+
+		/**
+		 * @return if the mesh has indices associated with it
+		 */
+		bool hasIndices() const { return !(mProperties.mIndices.empty()); }
+
+		/**
+		 * @return the indices associated with this mesh. This array is empty
+		 * if this mesh has no indices
+		 */
+		const std::vector<uint>& getIndices() const { return mProperties.mIndices; }
 
 		/**
 		 * Sets number of vertices. The amount of elements for each vertex buffer should be equal to
@@ -211,17 +229,6 @@ namespace nap
 		 * @return Draw mode for this mesh.
 		 */
 		opengl::EDrawMode getDrawMode() const									{ return mProperties.mDrawMode; }
-
-		/**
-		 * @return if the mesh has indices associated with it
-		 */
-		bool hasIndices() const													{ return !(mProperties.mIndices.empty()); }
-
-		/**
-		 * @return the indices associated with this mesh. This array is empty
-		 * if this mesh has no indices
-		 */
-		const std::vector<uint>& getIndices() const						{ return mProperties.mIndices; }
 
 		/**
 		 * Uses the CPU mesh data to update the GPU mesh. Note that update() is called during init(),

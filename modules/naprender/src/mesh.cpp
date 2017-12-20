@@ -86,6 +86,19 @@ namespace nap
 	}
 	
 
+	void MeshInstance::reserveVertices(size_t numVertices)
+	{
+		for (auto& mesh_attribute : mProperties.mAttributes)
+			mesh_attribute->reserve(numVertices);
+	}
+
+
+	void MeshInstance::reserveIndices(size_t numIndices) 
+	{ 
+		mProperties.mIndices.reserve(numIndices); 
+	}
+
+
 	void MeshInstance::setIndices(uint32_t* indices, int numIndices)
 	{
 		mProperties.mIndices.resize(numIndices);
@@ -116,7 +129,7 @@ namespace nap
 		for (auto& mesh_attribute : mProperties.mAttributes)
 		{
 			opengl::VertexAttributeBuffer& vertex_attr_buffer = mGPUMesh->getVertexAttributeBuffer(mesh_attribute->mAttributeID);
-			vertex_attr_buffer.setData(mesh_attribute->getRawData(), mesh_attribute->getCount());
+			vertex_attr_buffer.setData(mesh_attribute->getRawData(), mesh_attribute->getCount(), mesh_attribute->getCapacity());
 		}
 
 		if (!mProperties.mIndices.empty())
