@@ -79,24 +79,6 @@ void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 
 		if (wrapped_type.is_pointer())
 		{
-			// Build 'Add New' menu, populated with all types matching the array type
-			std::vector<nap::rtti::TypeInfo> derived_types;
-			getDerivedTypesRecursive(wrapped_type.get_raw_type(), derived_types);
-
-			// Remove any types that are not actually createable (base classes and such)
-			nap::rtti::Factory& factory = AppContext::get().getCore().getResourceManager()->getFactory();
-			for (long index = derived_types.size() - 1; index >= 0; --index)
-			{
-				if (!factory.canCreate(derived_types[index]))
-					derived_types.erase(derived_types.begin() + index);
-			}
-			
-			// Sort on typename
-			std::sort(derived_types.begin(), derived_types.end(), [](const nap::rtti::TypeInfo& typeA, const nap::rtti::TypeInfo& typeB) 
-			{
-				return typeA.get_name().compare(typeB.get_name()) < 0;
-			});
-
 			// Build 'Add Existing' menu, populated with all existing objects matching the array type
 			menu.addAction("Add...", [this, array_path, wrapped_type]()
 			{
