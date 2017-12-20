@@ -43,13 +43,13 @@ namespace opengl
 		 * This function binds the buffer before uploading the data
 		 * @param data pointer to the block of data that needs to be uploaded
 		 */
-		void setData(void* data, unsigned int numVertices);
+		void setData(void* data, size_t numVertices, size_t reservedNumVertices);
 
 	private:
 		GLenum			mType				= GL_INVALID_ENUM;	// defines the internal GL type of the buffer
 		unsigned int	mNumComponents		= 0;				// defines the number of components (3 for color, 2 for uv's etc)
-		unsigned int	mCurCapacity		= 0;
-		unsigned int	mCurSize			= 0;				// defines the number of points in the buffer
+		size_t			mCurCapacity		= 0;				// Amount of memory reserved
+		size_t			mCurSize			= 0;				// defines the number of points in the buffer
 		GLenum			mUsage				= GL_STATIC_DRAW;	// defines the expected usage pattern of the data storage: https://www.opengl.org/sdk/docs/man4/html/glBufferData.xhtml
 	};
 }

@@ -115,7 +115,7 @@ namespace nap
 			for (unsigned int vertex = 0; vertex < fbx_mesh->mNumVertices; vertex++)
 			{
 				aiVector3D* current_id = &(fbx_mesh->mVertices[vertex]);
-				position_attribute.add(glm::vec3(static_cast<float>(current_id->x), static_cast<float>(current_id->y), static_cast<float>(current_id->z)));
+				position_attribute.addData(glm::vec3(static_cast<float>(current_id->x), static_cast<float>(current_id->y), static_cast<float>(current_id->z)));
 			}
 
 			// Copy normals
@@ -126,7 +126,7 @@ namespace nap
 				for (unsigned int vertex = 0; vertex < fbx_mesh->mNumVertices; vertex++)
 				{
 					aiVector3D* current_id = &(fbx_mesh->mNormals[vertex]);
-					normal_attribute.add(glm::vec3(static_cast<float>(current_id->x), static_cast<float>(current_id->y), static_cast<float>(current_id->z)));
+					normal_attribute.addData(glm::vec3(static_cast<float>(current_id->x), static_cast<float>(current_id->y), static_cast<float>(current_id->z)));
 				}
 			}
 
@@ -141,10 +141,10 @@ namespace nap
 				for (unsigned int vertex = 0; vertex < fbx_mesh->mNumVertices; vertex++)
 				{
 					aiVector3D* current_id_t = &(fbx_mesh->mTangents[vertex]);
-					tangent_attribute.add(glm::vec3(static_cast<float>(current_id_t->x), static_cast<float>(current_id_t->y), static_cast<float>(current_id_t->z)));
+					tangent_attribute.addData(glm::vec3(static_cast<float>(current_id_t->x), static_cast<float>(current_id_t->y), static_cast<float>(current_id_t->z)));
 					
 					aiVector3D* current_id_bt = &(fbx_mesh->mBitangents[vertex]);
-					bitangent_attribute.add(glm::vec3(static_cast<float>(current_id_bt->x), static_cast<float>(current_id_bt->y), static_cast<float>(current_id_bt->z)));
+					bitangent_attribute.addData(glm::vec3(static_cast<float>(current_id_bt->x), static_cast<float>(current_id_bt->y), static_cast<float>(current_id_bt->z)));
 				}
 			}
 
@@ -160,7 +160,7 @@ namespace nap
 				for (unsigned int vertex = 0; vertex < fbx_mesh->mNumVertices; vertex++)
 				{
 					aiVector3D* current_id = &(uv_channel_data[vertex]);
-					uv_attribute.add(glm::vec3(static_cast<float>(current_id->x), static_cast<float>(current_id->y), static_cast<float>(current_id->z)));
+					uv_attribute.addData(glm::vec3(static_cast<float>(current_id->x), static_cast<float>(current_id->y), static_cast<float>(current_id->z)));
 				}
 			}
 
@@ -177,7 +177,7 @@ namespace nap
 				for (unsigned int vertex = 0; vertex < fbx_mesh->mNumVertices; vertex++)
 				{
 					aiColor4D* current_id = &(color_channel_data[vertex]);
-					color_attribute.add(glm::vec4(static_cast<float>(current_id->r), static_cast<float>(current_id->g), static_cast<float>(current_id->b), static_cast<float>(current_id->a)));
+					color_attribute.addData(glm::vec4(static_cast<float>(current_id->r), static_cast<float>(current_id->g), static_cast<float>(current_id->b), static_cast<float>(current_id->a)));
 				}
 			}
 

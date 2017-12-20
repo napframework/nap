@@ -59,6 +59,8 @@ namespace nap
 		ParticleEmitterComponent* component = getComponent<ParticleEmitterComponent>();
 		MeshInstance& mesh_instance = component->mMesh->getMeshInstance();
 		mesh_instance.setDrawMode(opengl::EDrawMode::TRIANGLES);
+		mesh_instance.reserveVertices(1000);
+		mesh_instance.reserveIndices(1000);
 
 		return true;
 	}
