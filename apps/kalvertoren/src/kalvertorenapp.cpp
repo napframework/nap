@@ -17,7 +17,6 @@
 #include <utility/stringutils.h>
 #include <scene.h>
 #include <planemesh.h>
-#include <utility/datetimeutils.h>
 #include <ctime>
 #include <chrono>
 
@@ -297,15 +296,32 @@ namespace nap
 		}
 
 		// Changes the display mesh
-		if (ImGui::SliderInt("Mesh Selection", &mMeshSelection, 0, mesh_selector.getCount() - 1))
+		if (ImGui::Combo("Display Mesh", &mMeshSelection, "Heiligeweg\0Kalverstraat\0Singel\0\0"))
 		{
 			mesh_selector.select(mMeshSelection);
+		}
+
+		// Changes the mesh paint mode
+		if (ImGui::Combo("Day", &mDay, "Auto\0Sunday\0Monday\0Tuesday\0Wednesday\0Thursday\0Friday\0Saturday\0\0"))
+		{
+			if (mDay == 0)
+			{
+				composition_selector.switchMode(CompositionComponentInstance::EMode::Automatic);
+			}
+			else
+			{
+				nap::utility::EDay new_day = static_cast<nap::utility::EDay>(mDay - 1);
+				composition_selector.selectDay(new_day);
+			}
 		}
 		ImGui::EndChild();
 
 		// Composition settings
-		ImGui::BeginChild("Composition Settings", ImVec2(ImGui::GetWindowContentRegionWidth() * 1.0, 110), true);
-		ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Composition Settings");
+		ImGui::BeginChild("Composition Settings", ImVec2(ImGui::GetWindowContentRegionWidth() * 1.0, 105), true);
+		ImGui::Text("Composition Settings");
+		ImGui::SameLine();
+		std::string current_day = utility::stringFormat(": %s", utility::toString(composition_selector.getDay()).c_str());
+		ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), utility::toString(composition_selector.getDay()).c_str());
 		ImGui::AlignTextToFramePadding();
 
 		// Changes the mesh paint mode
@@ -401,6 +417,13 @@ namespace nap
 		ImGui::EndChild();
 
 		// Show some additional info
+		ImGui::BeginChild("Datetime Info", ImVec2(ImGui::GetWindowContentRegionWidth() * 1.0, 60), true);
+		ImGui::AlignTextToFramePadding();
+		ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Date And Time");
+		utility::getCurrentDateTime(mDateTime);
+		ImGui::TextColored(ImVec4(1.0,1.0,0.0,1.0),mDateTime.toString().c_str());
+		ImGui::EndChild();
+
 		ImGui::BeginChild("Artnet Info", ImVec2(ImGui::GetWindowContentRegionWidth() * 1.0, 200), true);
 		ImGui::AlignTextToFramePadding();
 		ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Artnet Information");

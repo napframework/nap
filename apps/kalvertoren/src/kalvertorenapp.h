@@ -22,6 +22,7 @@
 #include <inputrouter.h>
 #include <entity.h>
 #include <artnetcontroller.h>
+#include <utility/datetimeutils.h>
 
 namespace nap
 {
@@ -102,7 +103,7 @@ namespace nap
 
 		// GUI
 		int													mMeshSelection = 0;
-		int													mPaintMode = 0;
+		int													mPaintMode = 2;
 		int													mSelectChannel = 0;
 		float												mChannelSpeed = 1.0f;
 		int													mPaletteSelection = 0;
@@ -114,6 +115,8 @@ namespace nap
 		float												mColorCycleTime = 1.0f;
 		int													mCompositionCycleMode = 0;
 		int													mColorPaletteCycleMode = 0;
+		int													mDay = 0;
+		utility::DateTime									mDateTime;
 
 		/**
 		 *	Renders debug views to screen

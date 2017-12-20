@@ -6,6 +6,8 @@
 #include <assert.h>
 #include <sstream>
 #include <iomanip>
+#include <iostream>
+#include <unordered_map>
 
 namespace nap
 {
@@ -19,7 +21,7 @@ namespace nap
 
 		extern DateTime getCurrentDateTime()
 		{
-			return DateTime(getCurrentTime());
+			return DateTime(getCurrentTime(), DateTime::ConversionMode::Local);
 		}
 
 
@@ -27,7 +29,90 @@ namespace nap
 		{
 			outDateTime.setTimeStamp(getCurrentTime());
 		}
-		
+
+
+		using DayToStringMap = std::unordered_map<EDay, std::string>;
+		static const DayToStringMap& getDaysToStringMap()
+		{
+			static DayToStringMap map;
+			if (map.empty())
+			{
+				map[EDay::Monday]		= "Monday";
+				map[EDay::Tuesday]		= "Tuesday";
+				map[EDay::Wednesday]	= "Wednesday";
+				map[EDay::Thursday]		= "Thursday";
+				map[EDay::Friday]		= "Friday";
+				map[EDay::Saturday]		= "Saturday";
+				map[EDay::Sunday]		= "Sunday";
+			}
+			return map;
+		}
+
+
+		extern std::string toString(EDay day)
+		{
+			const DayToStringMap& map = getDaysToStringMap();
+			auto it = map.find(day);
+			assert(it != map.end());
+			return it->second;
+		}
+
+
+		extern EDay toDay(const std::string& string)
+		{
+			const DayToStringMap& map = getDaysToStringMap();
+			for (const auto& kv : map)
+			{
+				if (kv.second == string)
+					return kv.first;
+			}
+			return EDay::Unknown;
+		}
+
+
+		using MonthsToStringMap = std::unordered_map<EMonth, std::string>;
+		static const MonthsToStringMap& getMonthsToStringMap()
+		{
+			static MonthsToStringMap map;
+			if (map.empty())
+			{
+				map[EMonth::January]	= "January";
+				map[EMonth::February]	= "February";
+				map[EMonth::March]		= "March";
+				map[EMonth::April]		= "April";
+				map[EMonth::May]		= "May";
+				map[EMonth::June]		= "June";
+				map[EMonth::July]		= "July";
+				map[EMonth::August]		= "August";
+				map[EMonth::September]	= "September";
+				map[EMonth::October]	= "October";
+				map[EMonth::November]	= "November";
+				map[EMonth::December]	= "December";
+			}
+			return map;
+		}
+
+
+		extern EMonth toMonth(const std::string& string)
+		{
+			const MonthsToStringMap& map = getMonthsToStringMap();
+			for (const auto& kv : map)
+			{
+				if (kv.second == string)
+					return kv.first;
+			}
+			return EMonth::Unknown;
+		}
+
+
+		extern std::string toString(EMonth month)
+		{
+			const MonthsToStringMap& map = getMonthsToStringMap();
+			auto it = map.find(month);
+			assert(it != map.end());
+			return it->second;
+		}
+
 
 		DateTime::DateTime(const SystemTimeStamp& timeStamp, ConversionMode mode) : mMode(mode)
 		{
@@ -41,6 +126,12 @@ namespace nap
 		}
 
 
+		DateTime::DateTime()
+		{
+			setTimeStamp(SystemClock::now());
+		}
+
+
 		void DateTime::setTimeStamp(const SystemTimeStamp& timeStamp)
 		{
 			mTimeStamp = timeStamp;
@@ -49,6 +140,7 @@ namespace nap
 			{
 			case DateTime::ConversionMode::Local:
 				mTimeStruct = *(std::localtime(&ctime));
+				break;
 			case DateTime::ConversionMode::GMT:
 				mTimeStruct = *(std::gmtime(&ctime));
 				break;
@@ -122,9 +214,7 @@ namespace nap
 
 		std::string DateTime::toString() const
 		{
-			std::ostringstream oss;
-			oss << std::put_time(&mTimeStruct, "%d-%m-%Y %H-%M-%S");
-			return oss.str();
+			return std::string(asctime(&mTimeStruct));
 		}
 
 
@@ -132,6 +222,5 @@ namespace nap
 		{
 			return mTimeStruct.tm_isdst > 0;
 		}
-
 	}
 }

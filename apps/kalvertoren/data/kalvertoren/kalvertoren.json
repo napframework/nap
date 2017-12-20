@@ -188,7 +188,7 @@
             "mID": "Composition5",
             "Layers": [
                 "Background5",
-                "Shape5"
+                "Shape3"
             ],
             "Mode": "Length",
             "Length": 1.5
@@ -228,8 +228,99 @@
             "Layers": [
                 "Sequence1"
             ],
-            "Mode": "Length",
+            "Mode": "Sequence",
             "Length": 1.0
+        },
+        {
+            "Type": "nap::CompositionContainer",
+            "mID": "Friday",
+            "Compositions": [
+                "Composition1",
+                "Composition4",
+                "Composition5",
+                "Composition7",
+                "Composition8",
+                "Composition9",
+                "Composition10",
+                "Composition13"
+            ]
+        },
+        {
+            "Type": "nap::CompositionContainer",
+            "mID": "Monday",
+            "Compositions": [
+                "Composition1",
+                "Composition2",
+                "Composition0",
+                "Composition10",
+                "Composition11",
+                "Composition13"
+            ]
+        },
+        {
+            "Type": "nap::CompositionContainer",
+            "mID": "Saturday",
+            "Compositions": [
+                "Composition3",
+                "Composition4",
+                "Composition5",
+                "Composition7",
+                "Composition0",
+                "Composition9",
+                "Composition10",
+                "Composition12"
+            ]
+        },
+        {
+            "Type": "nap::CompositionContainer",
+            "mID": "Sunday",
+            "Compositions": [
+                "Composition1",
+                "Composition2",
+                "Composition3",
+                "Composition4",
+                "Composition5",
+                "Composition6",
+                "Composition7",
+                "Composition8",
+                "Composition0",
+                "Composition9",
+                "Composition10",
+                "Composition11",
+                "Composition12",
+                "Composition13"
+            ]
+        },
+        {
+            "Type": "nap::CompositionContainer",
+            "mID": "Thursday",
+            "Compositions": [
+                "Composition3",
+                "Composition5",
+                "Composition8",
+                "Composition9"
+            ]
+        },
+        {
+            "Type": "nap::CompositionContainer",
+            "mID": "Tuesday",
+            "Compositions": [
+                "Composition6",
+                "Composition0",
+                "Composition9",
+                "Composition10"
+            ]
+        },
+        {
+            "Type": "nap::CompositionContainer",
+            "mID": "Wednesday",
+            "Compositions": [
+                "Composition2",
+                "Composition3",
+                "Composition7",
+                "Composition9",
+                "Composition11"
+            ]
         },
         {
             "Type": "nap::Entity",
@@ -353,22 +444,13 @@
                 {
                     "Type": "nap::CompositionComponent",
                     "mID": "CompositionComponent",
-                    "Compositions": [
-                        "Composition1",
-                        "Composition2",
-                        "Composition3",
-                        "Composition4",
-                        "Composition5",
-                        "Composition6",
-                        "Composition7",
-                        "Composition8",
-                        "Composition0",
-                        "Composition9",
-                        "Composition10",
-                        "Composition11",
-                        "Composition12",
-                        "Composition13"
-                    ],
+                    "Monday": "Monday",
+                    "Tuesday": "Tuesday",
+                    "Wednesday": "Wednesday",
+                    "Thursday": "Thursday",
+                    "Friday": "Friday",
+                    "Saturday": "Saturday",
+                    "Sunday": "Sunday",
                     "CycleMode": "Off",
                     "Index": 0,
                     "DurationScale": 1.0

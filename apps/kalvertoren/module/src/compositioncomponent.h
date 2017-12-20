@@ -1,9 +1,12 @@
 #pragma once
 
 #include "composition.h"
+#include "compositioncontainer.h"
 
 #include <component.h>
 #include <nap/objectptr.h>
+#include <utility/datetimeutils.h>
+#include <unordered_map>
 
 namespace nap
 {
@@ -35,10 +38,16 @@ namespace nap
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		std::vector<nap::ObjectPtr<Composition>>	mCompositions;								///< Property: All compositions available to the system
-		int											mIndex = 0;									///< Property: The currently selected composition
-		float										mDurationScale = 1.0f;						///< Property: Acts as a scale on the duration of the composition
-		CompositionCycleMode						mCycleMode = CompositionCycleMode::Off;		///< Property: How the component cycles through all the available sequences
+		ObjectPtr<CompositionContainer>			mMonday = nullptr;							///< Compositions associated with monday
+		ObjectPtr<CompositionContainer>			mTuesday = nullptr;							///< Compositions associated with tuesday
+		ObjectPtr<CompositionContainer>			mWednesday = nullptr;						///< Compositions associated with wednesday
+		ObjectPtr<CompositionContainer>			mThursday = nullptr;						///< Compositions associated with thursday
+		ObjectPtr<CompositionContainer>			mFriday = nullptr;							///< Compositions associated with friday
+		ObjectPtr<CompositionContainer>			mSaturday = nullptr;						///< Compositions associated with saturday
+		ObjectPtr<CompositionContainer>			mSunday = nullptr;							///< Compositions associated with sunday
+		int										mIndex = 0;									///< Property: The currently selected composition
+		float									mDurationScale = 1.0f;						///< Property: Acts as a scale on the duration of the composition
+		CompositionCycleMode					mCycleMode = CompositionCycleMode::Off;		///< Property: How the component cycles through all the available sequences
 	};
 
 
@@ -49,6 +58,12 @@ namespace nap
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
+		enum class EMode : int
+		{
+			Automatic	= 0,			///< Active day is based on current date / time
+			Manual		= 1				///< Active day is manually chosen
+		};
+
 		CompositionComponentInstance(EntityInstance& entity, Component& resource) :
 			ComponentInstance(entity, resource)									{ }
 
@@ -67,15 +82,15 @@ namespace nap
 		virtual void update(double deltaTime) override;
 
 		/**
-		 * @return the total number of available compositions
+		 * Sets the current day to use, enables manual mode
+		 * @param day the new day to select compositions from
 		 */
-		int getCount() const													{ return mCompositions.size(); }
+		void selectDay(nap::utility::EDay day);
 
 		/**
-		 * Select the composition that is currently active
-		 * @param index the new composition to select
+		 *	@return the currently active day
 		 */
-		void select(int index);
+		const utility::EDay getDay() const;
 
 		/**
 		 * @return the currently selected composition instance
@@ -104,14 +119,50 @@ namespace nap
 		 */
 		CompositionCycleMode getCycleMode() const								{ return mCycleMode; }
 
+		/**
+		 *	@return the total number of available compositions in the current selection
+		 */
+		int getCount() const;
+
+		/**
+		 *	Select a new composition based on the available compositions in the current set
+		 */
+		void select(int index);
+
+		/**
+		 * Turn automatic mode on / off
+		 * @param automatic if the selection is acquired using the system date or manually selected
+		 */
+		void switchMode(EMode mode);
+
 	private:
-		std::vector<Composition*>				mCompositions;								///< List of all available compositions
-		Composition*							mSelection = nullptr;						///< Currently selected composition
 		int										mCurrentIndex = -1;							///< Currently selected composition @index
+		CompositionContainer*					mCurrentContainer = nullptr;				///< Container associated with active day
+		utility::EDay							mCurrentDay = utility::EDay::Monday;		///< Currently active day
 		std::unique_ptr<CompositionInstance>	mCompositionInstance;						///< CompositionInstance created when switching compositions
 		CompositionCycleMode					mCycleMode = CompositionCycleMode::Off;		///< How this component cycles through the various available compositions
 		bool									mSwitch = false;							///< Set to true when a composition finishes playback
 		float									mDurationScale = 1.0f;						///< Scales the length of a composition
+		std::unordered_map<nap::utility::EDay, CompositionContainer*> mWeekMap;				///< Contains a composition container for every day in the week, populated on init
+		EMode									mMode = EMode::Automatic;					///< When set to true, the day associated with the selection is derived from the current date / time
+		utility::EDay							mDay = utility::EDay::Monday;				///< Currently selected day
+
+		/**
+		 *	@return the set of compositions associated with this week-day
+		 */
+		const CompositionContainer& getContainer(utility::EDay day ) const;
+
+		/**
+		 * @return the set of compositions associated with a specific day in the week
+		 */
+		CompositionContainer& getContainer(utility::EDay day);
+
+		/**
+		 * Select the composition at index in the associated container
+		 * This becomes the active selection
+		 * @param index the new composition to select
+		 */
+		void select(int index, CompositionContainer& container);
 
 		/**
 		* Occurs when a composition finishes execution
