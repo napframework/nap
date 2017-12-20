@@ -16,7 +16,19 @@ void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewI
 									  const QModelIndex& index) const
 {
 	auto type = getTypeFromModelIndex(index);
+	auto path = getPropertyPathFromIndex(index);
 	const nap::rtti::TypeInfo wrapped_type = type.is_wrapper() ? type.get_wrapped_type() : type;
+
+	// TODO: There must be a less convoluted way.
+	// In the case of array elements, the type will be the array type, not the element type.
+	// For now, grab the array's element type and use that.
+	nap::rtti::TypeInfo wrapped_array_type = rttr::type::empty();
+	if (type.is_array()) {
+		nap::rtti::Variant value = path.getValue();
+		nap::rtti::VariantArray array = value.create_array_view();
+		nap::rtti::TypeInfo array_type = array.get_rank_type(array.get_rank());
+		wrapped_array_type = array_type.is_wrapper() ? array_type.get_wrapped_type() : array_type;
+	}
 
 	if (type.is_enumeration())
 	{
@@ -28,7 +40,7 @@ void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewI
 
 		QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &op, painter);
 	}
-	else if (wrapped_type.is_pointer())
+	else if (wrapped_type.is_pointer() || wrapped_array_type.is_pointer())
 	{
 		// Forward to draw text field
 		QRect rect_txt = QRect(option.rect.left(),
@@ -106,6 +118,7 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 								   option.rect.top(),
 								   option.rect.right(),
 								   option.rect.height());
+
 			if (rect_btn.contains(mouseEvent->pos()))
 			{
 
@@ -152,7 +165,6 @@ QWidget* PropertyValueItemDelegate::createEditor(QWidget* parent, const QStyleOp
 												 const QModelIndex& index) const
 {
 	auto type = getTypeFromModelIndex(index);
-	nap::Logger::info("Hello: %s", type.get_name().data());
 	if (type.is_enumeration())
 	{
 		auto combo = new QComboBox(parent);
