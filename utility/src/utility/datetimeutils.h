@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <string>
 #include <ctime>
+#include <functional>
 
 namespace nap
 {
@@ -376,7 +377,7 @@ namespace std
 	{
 		size_t operator()(const nap::utility::EDay& v) const
 		{
-			return hash<int>()(static_cast<int>(v));
+            return std::hash<int>()(static_cast<int>(v));
 		}
 	};
 
@@ -385,7 +386,7 @@ namespace std
 	{
 		size_t operator()(const nap::utility::EMonth& v) const
 		{
-			return hash<int>()(static_cast<int>(v));
+            return std::hash<int>()(static_cast<int>(v));
 		}
 	};
 }
