@@ -292,7 +292,7 @@ namespace nap
 			// Go through the array of objects to write. Note that we keep querying the length of the array because objects can be added during traversal
 			for (RTTIObject* object : objects_to_write)
 			{
-				if (!errorState.check(!object->mID.empty(), "Encountered object without ID. This is not allowed"))
+				if (!errorState.check(!object->mID.empty(), "Encountered object of type: %s without ID. This is not allowed", object->get_type().get_name().data()))
 					return false;
 
 				// Write start of object

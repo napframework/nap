@@ -41,6 +41,7 @@ namespace nap
 		 * Populates a DateTime structure that contains the current date and time
 		 * Note that the time will be Local to this computer and includes daylight savings
 		 * @param dateTime the time structure to populate with the current date and time
+
 		 */
 		extern void				getCurrentDateTime(DateTime& outDateTime);
 
@@ -60,8 +61,23 @@ namespace nap
 			Thursday	= 4,		///< Thursday
 			Friday		= 5,		///< Friday
 			Saturday	= 6,		///< Saturday
-			Sunday		= 0			///< Sunday
+			Sunday		= 0,		///< Sunday
+			Unknown		= -1		///< Unknown
 		};
+
+		/**
+		 * Converts a day in to a string
+		 * @param day the day to convert in to a string 
+		 * @return the day as a string
+		 */
+		extern std::string toString(EDay day);
+
+		/**
+		* Converts a string in to a day. This call is case-sensitive
+		* @param string the name of the day, see EDay comments for string representation
+		* @return the converted month, Unknown if not valid match is found.
+		*/
+		extern EDay toDay(const std::string& string);
 
 		/**
 		 *	Convenience enum that describes the month in a year
@@ -79,8 +95,23 @@ namespace nap
 			September	= 8,		///< September
 			October		= 9,		///< October
 			November	= 10,		///< November
-			December	= 11		///< December
+			December	= 11,		///< December
+			Unknown		= -1		///< Unknown
 		};
+		
+		/**
+		* Converts a month in to a string
+		* @param month the month to convert in to a string
+		* @return the month as a string
+		*/
+		extern std::string toString(EMonth month);
+
+		/**
+		 * Converts a string in to a month. This call is case-sensitive
+		 * @param string the name of the month, see EMonth comments for string representation
+		 * @return the converted month, Unknown if not valid match is found.
+		 */
+		extern EMonth toMonth(const std::string& string);
 
 		/**
 		 * Contains the date and time extracted from the associated timestamp.
@@ -101,6 +132,11 @@ namespace nap
 
 		public:
 			/**
+			 * The object is constructed using the system's local date and time
+			 */
+			DateTime();
+
+			/**
 			 * @param timeStamp the time that defines this object's date and time
 			 * @param mode the way time is interpreted, local includes possible daylight savings, GMT does not
 			 */
@@ -113,7 +149,7 @@ namespace nap
 			DateTime(const SystemTimeStamp& timeStamp);
 
 			/**
-			 *	Default destructor
+			 *	Default destructor, the timestamp will be 
 			 */
 			~DateTime() = default;
 
@@ -168,8 +204,7 @@ namespace nap
 			bool isDaylightSaving() const;
 
 			/**
-			 * @return human readable string representation of the date and time in the following format:
-			 * day-month-year hour:minute:second
+			 * @return human readable string representation of the date and time
 			 */
 			std::string toString() const;
 
@@ -186,7 +221,7 @@ namespace nap
 
 		private:
 
-			SystemTimeStamp		mTimeStamp;							///< The timestamp that contains all the timing information
+			SystemTimeStamp		mTimeStamp = SystemClock::now();	///< The timestamp that contains all the timing information
 			std::tm				mTimeStruct;						///< Extracted c style struct
 			ConversionMode		mMode = ConversionMode::Local;		///< Current time conversion mode
 		};
@@ -327,4 +362,30 @@ namespace nap
 			return std::chrono::duration<float>(Clock::now() - mStart).count();
 		}
 	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// Hashes
+//////////////////////////////////////////////////////////////////////////
+
+namespace std
+{
+	template <>
+	struct hash<nap::utility::EDay>
+	{
+		size_t operator()(const nap::utility::EDay v) const
+		{
+			return hash<int>()(static_cast<int>(v));
+		}
+	};
+
+	template <>
+	struct hash<nap::utility::EMonth>
+	{
+		size_t operator()(const nap::utility::EMonth v) const
+		{
+			return hash<int>()(static_cast<int>(v));
+		}
+	};
 }
