@@ -133,13 +133,13 @@ namespace napkin
 	/**
 	 * Add an element to an array
 	 */
-	class AddArrayElementCommand : public QUndoCommand
+	class ArrayAddValueCommand : public QUndoCommand
 	{
 	public:
 		/**
 		 * @param prop The array property to add the element to
 		 */
-		AddArrayElementCommand(const PropertyPath& prop);
+		ArrayAddValueCommand(const PropertyPath& prop, long index = -1);
 
 		void redo() override;
 		void undo() override;
@@ -147,4 +147,63 @@ namespace napkin
 		const PropertyPath& mPath; ///< The path to the array property
 		long mIndex; ///< The index of the newly created element
 	};
+
+	/**
+	 * Add an element to an array
+	 */
+	class ArrayAddNewObjectCommand : public QUndoCommand
+	{
+	public:
+		/**
+		 * @param prop The array property to add the element to
+		 */
+		ArrayAddNewObjectCommand(const PropertyPath& prop, const nap::rtti::TypeInfo& type, long index = -1);
+
+		void redo() override;
+		void undo() override;
+	private:
+		const PropertyPath& mPath; ///< The path to the array property
+		nap::rtti::TypeInfo mType; ///< The type of object to create
+		long mIndex; ///< The index of the newly created element
+	};
+
+
+	/**
+	 * Add an existing element to an array
+	 */
+	class ArrayAddExistingObjectCommand : public QUndoCommand
+	{
+	public:
+		/**
+		 * @param prop The array property to add the element to
+		 */
+		ArrayAddExistingObjectCommand(const PropertyPath& prop, nap::rtti::RTTIObject& object, long index = -1);
+
+		void redo() override;
+		void undo() override;
+	private:
+		const PropertyPath& mPath; ///< The path to the array property
+		const std::string mObjectName; ///< The type of object to create
+		long mIndex; ///< The index of the newly created element
+	};
+
+	/**
+	 * Remove an element from an array at the specified index
+	 */
+	class ArrayRemoveElementCommand : public QUndoCommand
+	{
+	public:
+		/**
+		 * @param array_prop The property representing the array
+		 * @param index The index of the element to remove
+		 */
+		ArrayRemoveElementCommand(const PropertyPath& array_prop, long index);
+
+		void redo() override;
+		void undo() override;
+	private:
+		const PropertyPath& mPath; ///< The path representing the array
+		long mIndex; ///< The element to be removed
+	};
+
 };
