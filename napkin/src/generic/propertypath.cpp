@@ -47,56 +47,21 @@ ResolvedRTTIPath napkin::PropertyPath::resolve() const
 	return resolvedPath;
 }
 
-RTTIObject* napkin::PropertyPath::getPointee() const
-{
-	auto value					   = resolve().getValue();
-	auto value_type				   = value.get_type();
-	auto wrapped_type			   = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
-	bool is_wrapper				   = wrapped_type != value_type;
-	RTTIObject* pointee = is_wrapper ? value.extract_wrapped_value().get_value<RTTIObject*>()
-									 : value.get_value<RTTIObject*>();
-	return pointee;
-}
 
-std::string napkin::PropertyPath::getPointeeID() const
-{
-	auto object = getPointee();
-	return (object == nullptr) ? "" : object->mID;
-}
-
-
-bool napkin::PropertyPath::setPointee(const std::string& target_id) const
-{
-	nap::utility::ErrorState errorState;
-
-	UnresolvedPointerList mUnresolvedPointers; // The list of UnresolvedPointers that was read
-
-	if (!target_id.empty())
-		mUnresolvedPointers.emplace_back(mObject, mPath, target_id);
-
-	auto& objects = AppContext::get().getDocument()->getObjects();
-	bool result = DefaultLinkResolver::sResolveLinks(objects, mUnresolvedPointers, errorState);
-	if (!result)
-		nap::Logger::warn(errorState.toString());
-
-	return result;
-}
-
-bool napkin::PropertyPath::isFileLink()
-{
-	return hasFlag(getProperty(), EPropertyMetaData::FileLink);
-}
-
-rttr::type napkin::PropertyPath::getArrayElementType() const
+rttr::type napkin::PropertyPath::getArrayElementType()
 {
 	auto arrayView = getArrayView();
 	return arrayView.get_rank_type(arrayView.get_rank());
 }
 
-rttr::variant_array_view napkin::PropertyPath::getArrayView() const
+rttr::variant_array_view napkin::PropertyPath::getArrayView()
 {
-	return resolve().getValue().create_array_view();
+	mResolvedPath = resolve();
+	mVariant = mResolvedPath.getValue();
+	mVariantArray = mVariant.create_array_view();
+	return mVariantArray;
 }
+
 
 std::string napkin::PropertyPath::toString() const
 {
@@ -114,6 +79,17 @@ rttr::type napkin::PropertyPath::getWrappedType() const
 {
 	auto value = getValue();
 	return value.get_type().is_wrapper() ? value.get_type().get_wrapped_type() : value.get_type();
+}
+
+bool napkin::PropertyPath::isValid() const
+{
+	if (mObject == nullptr)
+		return false;
+	auto resolvedPath = resolve();
+	if (!resolvedPath.isValid())
+		return false;
+
+	return true;
 }
 
 

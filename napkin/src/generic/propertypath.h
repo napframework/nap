@@ -67,34 +67,9 @@ namespace napkin
 		nap::rtti::ResolvedRTTIPath resolve() const;
 
 		/**
-		 * Given a Pointer Property (or how do you call them), find the object it's pointing to.
-		 */
-		nap::rtti::RTTIObject* getPointee() const;
-
-		/**
-		 * Given a Pointer Property (i like this name), set its pointee using a string.
-		 */
-		bool setPointee(const std::string& target) const;
-
-		/**
-		 * Get the identifier of the pointee, only if this path is a Pointer Property
-		 */
-		std::string getPointeeID() const;
-
-		/**
 		 * If this refers to an array property, get the element type
 		 */
-		rttr::type getArrayElementType() const;
-
-		/**
-		 * If this property is an array, get its arrayview
-		 */
-		rttr::variant_array_view getArrayView() const;
-
-		/**
-		 * If this property path represents a file link
-		 */
-		bool isFileLink();
+		rttr::type getArrayElementType();
 
 		/**
 		 * @return Wrapped type
@@ -109,11 +84,22 @@ namespace napkin
 		/**
 		 * @return If the path is a valid one
 		 */
-		bool isValid() const { return mObject != nullptr; }
+		bool isValid() const;
 
 	private:
+		/**
+		 * If this property is an array, get its arrayview
+		 */
+		rttr::variant_array_view getArrayView();
+
+
+
 		nap::rtti::RTTIObject* mObject = nullptr;
 		nap::rtti::RTTIPath mPath;
+		// Temps
+		nap::rtti::ResolvedRTTIPath mResolvedPath;
+		nap::rtti::Variant mVariant;
+		nap::rtti::VariantArray mVariantArray;
 	};
 }
 
