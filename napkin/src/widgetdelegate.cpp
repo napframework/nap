@@ -1,12 +1,10 @@
 #include "widgetdelegate.h"
 #include "panels/inspectorpanel.h"
 #include "typeconversion.h"
-#include "standarditemsproperty.h"
 #include "appcontext.h"
 #include <QtWidgets/QComboBox>
-#include <QtWidgets/QApplication>
-#include <nap/logger.h>
 #include <generic/filterpopup.h>
+#include <QtGui/QMouseEvent>
 
 using namespace napkin;
 
@@ -18,7 +16,7 @@ void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewI
 									  const QModelIndex& index) const
 {
 	auto type = getTypeFromModelIndex(index);
-//	nap::Logger::info("Painting for: %s", type.get_name().data());
+	const nap::rtti::TypeInfo wrapped_type = type.is_wrapper() ? type.get_wrapped_type() : type;
 
 	if (type.is_enumeration())
 	{
@@ -29,6 +27,30 @@ void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewI
 		op.text = enumIndexToQString(type.get_enumeration(), val);
 
 		QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &op, painter);
+	}
+	else if (wrapped_type.is_pointer())
+	{
+		// Forward to draw text field
+		QRect rect_txt = QRect(option.rect.left(),
+							   option.rect.top(),
+							   option.rect.width() - option.rect.height(),
+							   option.rect.height());
+		QRect rect_btn = QRect(option.rect.right() - option.rect.height(),
+							   option.rect.top(),
+							   option.rect.height(),
+							   option.rect.height());
+
+		QStyleOptionViewItem viewop(option);
+		viewop.rect = rect_txt;
+		QStyledItemDelegate::paint(painter, viewop, index);
+
+		// Add pointer button
+		QStyleOptionButton op;
+		op.state = option.state;
+		op.rect = rect_btn;
+		op.text = "*";
+
+		QApplication::style()->drawControl(QStyle::CE_PushButton, &op, painter);
 	}
 	else if (type == rttr::type::get<bool>())
 	{
@@ -79,17 +101,27 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 
 		if (event->type() == QEvent::MouseButtonPress)
 		{
-			auto propertyPath = getPropertyPathFromIndex(index);
-			if (propertyPath.isValid() && propertyPath.getWrappedType().is_pointer())
+			auto mouseEvent = dynamic_cast<QMouseEvent*>(event);
+			QRect rect_btn = QRect(option.rect.right() - option.rect.height(),
+								   option.rect.top(),
+								   option.rect.right(),
+								   option.rect.height());
+			if (rect_btn.contains(mouseEvent->pos()))
 			{
-				auto variant = index.data(Qt::UserRole);
-				if (variant.canConvert<PropertyPath>()) {
-					auto path = variant.value<PropertyPath>();
-					auto selected = FilterPopup::getObject(AppContext::get().getQApplication()->activeWindow(), path.getWrappedType());
-					if (selected != nullptr)
-						model->setData(index, QString::fromStdString(selected->mID), Qt::EditRole);
-				}
 
+				auto propertyPath = getPropertyPathFromIndex(index);
+				if (propertyPath.isValid() && propertyPath.getWrappedType().is_pointer()) {
+					auto variant = index.data(Qt::UserRole);
+
+					if (variant.canConvert<PropertyPath>()) {
+						auto path = variant.value<PropertyPath>();
+						auto selected = FilterPopup::getObject(AppContext::get().getQApplication()->activeWindow(),
+															   path.getWrappedType());
+						if (selected != nullptr)
+							model->setData(index, QString::fromStdString(selected->mID), Qt::EditRole);
+					}
+
+				}
 			}
 		}
 	}
