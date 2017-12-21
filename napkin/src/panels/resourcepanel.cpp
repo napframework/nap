@@ -245,7 +245,7 @@ void napkin::ResourcePanel::onObjectRemoved(nap::rtti::RTTIObject& object)
 void napkin::ResourcePanel::onPropertyValueChanged(const PropertyPath& path)
 {
 	auto resolvedPath = path.resolve();
-	if (resolvedPath.getProperty().get_name() != "mID")
+	if (resolvedPath.getProperty().get_name() != nap::rtti::sIDPropertyName)
 		return;
 
 	auto objectItem = findInModel<ObjectItem>(mModel, path.object());

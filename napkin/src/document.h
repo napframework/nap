@@ -61,13 +61,6 @@ namespace napkin
 		T* getObjectT(const std::string& name) { return rtti_cast<T>(getObject(name)); }
 
 		/**
-		 * Get all objects of the specified type
-		 * @param type The type of objects to get
-		 * @return All objects of the specified type, including derived types
-		 */
-		std::vector<nap::rtti::RTTIObject*> getObjectsOfType(const nap::rtti::TypeInfo& type) const;
-
-		/**
 		 * Retrieve the parent of the specified Entity
 		 * @param entity The entity to find the parent from.
 		 * @return The provided Entity's parent or nullptr if the Entity has no parent.
@@ -82,12 +75,10 @@ namespace napkin
 		nap::Entity* getOwner(const nap::Component& component);
 
 		/**
-		 * Create an entity. Its name/id will be automatically generated.
-		 * @param parent The parent under which to create the Entity,
-		 *      provide nullptr if the Entity should have no parent.
-		 * @return The newly created entity.
+		 * Set an object's name. This is similar to setting a value on it's name property,
+		 * but this ensures the object has a unique name.
 		 */
-		nap::Entity* createEntity(nap::Entity* parent = nullptr);
+		const std::string& setObjectName(nap::rtti::RTTIObject& object, const std::string& name);
 
 		/**
 		 * Add a component of the specified type to an Entity.
@@ -164,6 +155,16 @@ namespace napkin
 		 * @param cmd The command to be executed
 		 */
 		void executeCommand(QUndoCommand* cmd);
+
+		/**
+		 * Forward to undostack
+		 */
+		void undo() { getUndoStack().undo(); }
+
+		/**
+		 * Forward to undostack
+		 */
+		void redo() { getUndoStack().redo(); }
 
 		/**
 		 * @return This document's undo stack

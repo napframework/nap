@@ -40,21 +40,19 @@ nap::Entity* Document::getOwner(const nap::Component& component)
 	return nullptr;
 }
 
-nap::Entity* Document::createEntity(nap::Entity* parent)
+
+const std::string& Document::setObjectName(nap::rtti::RTTIObject& object, const std::string& name)
 {
-	auto e = std::make_unique<nap::Entity>();
-	e->mID = getUniqueName("New Entity");
-	auto ret = e.get();
-	mObjects.emplace_back(std::move(e));
+	if (name.empty())
+		return object.mID;
 
-	if (parent != nullptr)
-	{
-		parent->mChildren.emplace_back(ret);
-	}
-
-	entityAdded(ret, parent);
-	return ret;
+	object.mID = getUniqueName(name);
+	PropertyPath path(object, nap::rtti::sIDPropertyName);
+	assert(path.isValid());
+	propertyValueChanged(path);
+	return object.mID;
 }
+
 
 nap::Component* Document::addComponent(nap::Entity& entity, rttr::type type)
 {
@@ -146,16 +144,6 @@ RTTIObject* Document::getObject(const std::string& name, const rttr::type& type)
 	return nullptr;
 }
 
-
-std::vector<RTTIObject*> Document::getObjectsOfType(const TypeInfo& type) const
-{
-	std::vector<RTTIObject*> result;
-	for (auto& object : mObjects)
-		if (object->get_type().is_derived_from(type))
-			result.push_back(object.get());
-
-	return result;
-}
 
 ObjectList Document::getObjectPointers()
 {
