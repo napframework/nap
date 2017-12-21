@@ -1,12 +1,7 @@
 #pragma once
 
-#include "actions.h"
-#include "appcontext.h"
 #include "generic/filtertreeview.h"
-#include "generic/napgeneric.h"
-#include "standarditemsobject.h"
-#include <QStandardItemModel>
-#include <nap/resourcemanager.h>
+#include "actions.h"
 
 
 namespace nap

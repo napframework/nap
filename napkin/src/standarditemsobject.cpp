@@ -1,9 +1,9 @@
 #include "standarditemsobject.h"
+
 #include "commands.h"
-#include <appcontext.h>
-#include <generic/utility.h>
-#include <sceneservice.h>
-#include <generic/resourcefactory.h>
+#include "sceneservice.h"
+#include "generic/qtutils.h"
+#include "generic/naputils.h"
 
 napkin::GroupItem::GroupItem(const QString& name) : QStandardItem(name)
 {

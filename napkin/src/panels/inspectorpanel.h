@@ -1,13 +1,13 @@
 #pragma once
 
-#include <QtGui/QStandardItem>
-#include <QtWidgets/QVBoxLayout>
-#include <generic/filtertreeview.h>
+#include <QStandardItemModel>
+#include <QMenu>
+
 #include <rtti/rttiobject.h>
-#include <rtti/rttipath.h>
-#include <rttr/type.h>
-#include <widgetdelegate.h>
-#include <generic/propertypath.h>
+
+#include "generic/propertypath.h"
+#include "generic/filtertreeview.h"
+#include "widgetdelegate.h"
 
 namespace napkin
 {

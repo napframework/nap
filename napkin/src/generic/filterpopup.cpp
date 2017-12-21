@@ -1,7 +1,11 @@
 #include "filterpopup.h"
-#include "utility.h"
+
 #include <QKeyEvent>
 #include <mathutils.h>
+
+#include "appcontext.h"
+#include "standarditemsobject.h"
+#include "qtutils.h"
 
 napkin::FlatObjectModel::FlatObjectModel(const rttr::type& baseType) : mBaseType(baseType)
 {

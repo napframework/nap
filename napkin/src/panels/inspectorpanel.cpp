@@ -1,10 +1,12 @@
 #include "inspectorpanel.h"
+
+#include <QApplication>
+
+#include "appcontext.h"
 #include "commands.h"
 #include "napkinglobals.h"
-#include <QtWidgets/QApplication>
-#include <generic/utility.h>
-#include <standarditemsproperty.h>
-#include <generic/filterpopup.h>
+#include "standarditemsproperty.h"
+#include "generic/filterpopup.h"
 
 using namespace nap::rtti;
 

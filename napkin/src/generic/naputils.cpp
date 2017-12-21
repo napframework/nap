@@ -1,5 +1,7 @@
-#include "napgeneric.h"
-#include <generic/utility.h>
+#include "naputils.h"
+
+#include <component.h>
+#include <entity.h>
 
 using namespace nap::rtti;
 using namespace nap::utility;
@@ -89,3 +91,64 @@ nap::rtti::ObjectList napkin::topLevelObjects(const ObjectList& objects)
 //	});
     return topLevelObjects;
 }
+
+
+
+std::vector<rttr::type> napkin::getComponentTypes()
+{
+	std::vector<rttr::type> ret;
+	nap::rtti::TypeInfo rootType = RTTI_OF(nap::Component);
+	for (const nap::rtti::TypeInfo& derived : rootType.get_derived_classes())
+	{
+		if (derived.can_create_instance())
+			ret.emplace_back(derived);
+	}
+	return ret;
+}
+
+std::vector<rttr::type> napkin::getResourceTypes()
+{
+	// TODO: Find a proper way to retrieve 'resource types' via RTTI
+	std::vector<rttr::type> ret;
+	rttr::type rootType = RTTI_OF(nap::rtti::RTTIObject);
+	for (const rttr::type& derived : rootType.get_derived_classes())
+	{
+		if (derived.is_derived_from<nap::Component>())
+			continue;
+		if (derived.is_derived_from<nap::Entity>())
+			continue;
+		if (derived.is_derived_from<nap::ComponentInstance>())
+			continue;
+		if (!derived.can_create_instance())
+			continue;
+
+		ret.emplace_back(derived);
+	}
+	return ret;
+}
+
+nap::rtti::ResolvedRTTIPath napkin::resolve(const nap::rtti::RTTIObject& obj, nap::rtti::RTTIPath path)
+{
+	nap::rtti::ResolvedRTTIPath resolvedPath;
+	path.resolve(&obj, resolvedPath);
+	assert(resolvedPath.isValid());
+	return resolvedPath;
+}
+
+nap::rtti::RTTIObject* napkin::getPointee(const PropertyPath& path)
+{
+	auto resolvedPath = path.resolve();
+	auto value = resolvedPath.getValue();
+	auto value_type = value.get_type();
+	auto wrapped_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
+	bool is_wrapper = wrapped_type != value_type;
+	nap::rtti::RTTIObject* pointee = is_wrapper ? value.extract_wrapped_value().get_value<nap::rtti::RTTIObject*>()
+												: value.get_value<nap::rtti::RTTIObject*>();
+	return pointee;
+}
+
+bool napkin::setPointee(const nap::rtti::RTTIObject& obj, const nap::rtti::RTTIPath& path, const std::string& target)
+{
+	return false;
+}
+
