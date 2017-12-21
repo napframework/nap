@@ -1,8 +1,11 @@
 #include "commands.h"
+
 #include "napkinglobals.h"
-#include <generic/utility.h>
+#include "generic/qtutils.h"
+#include "generic/naputils.h"
 #include "standarditemsproperty.h"
 #include "standarditemsgeneric.h"
+#include "appcontext.h"
 
 
 QList<QStandardItem*> napkin::createPropertyItemRow(rttr::type type, const QString& name, const PropertyPath& path,

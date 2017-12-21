@@ -267,3 +267,8 @@ TEST_CASE("Commands", "[napkin]")
 //	ctx.executeCommand(new AddEntityToSceneCommand())
 //	ctx.executeCommand(new ArrayAddValueCommand());
 }
+
+TEST_CASE("QT Specific", "[napkin]")
+{
+
+}

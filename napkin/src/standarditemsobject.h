@@ -1,9 +1,9 @@
 #pragma once
 
-#include "actions.h"
-#include "generic/filtertreeview.h"
 #include <scene.h>
 
+#include "actions.h"
+#include "generic/filtertreeview.h"
 
 namespace napkin
 {

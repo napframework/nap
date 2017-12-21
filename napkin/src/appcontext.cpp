@@ -15,7 +15,7 @@
 #include <rtti/defaultlinkresolver.h>
 
 // local
-#include <generic/napgeneric.h>
+#include <generic/naputils.h>
 #include <nap/logger.h>
 #include <utility/fileutils.h>
 

@@ -1,6 +1,9 @@
 #include <nap/logger.h>
-#include <generic/utility.h>
+
+#include "generic/naputils.h"
+#include "generic/qtutils.h"
 #include "commands.h"
+#include "appcontext.h"
 
 using namespace napkin;
 

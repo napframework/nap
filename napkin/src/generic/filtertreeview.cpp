@@ -1,5 +1,5 @@
 #include "filtertreeview.h"
-#include "utility.h"
+#include "qtutils.h"
 #include <QMenu>
 #include <QTimer>
 #include <assert.h>

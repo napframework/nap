@@ -1,6 +1,11 @@
-#include "napkinglobals.h"
-#include <generic/utility.h>
+#include "resourcepanel.h"
 
+#include "generic/qtutils.h"
+#include "generic/naputils.h"
+#include "standarditemsobject.h"
+
+
+using namespace napkin;
 
 napkin::ResourceModel::ResourceModel()
 {
@@ -198,7 +203,7 @@ void napkin::ResourcePanel::onEntityAdded(nap::Entity* entity, nap::Entity* pare
 	// TODO: Don't refresh the whole mModel
 	mModel.refresh();
 	mTreeView.getTreeView().expandAll();
-	mTreeView.selectAndReveal(findInModel<ObjectItem>(mModel, *entity));
+	mTreeView.selectAndReveal(findItemInModel<napkin::ObjectItem>(mModel, *entity));
 }
 
 void napkin::ResourcePanel::onComponentAdded(nap::Component& comp, nap::Entity& owner)
@@ -206,7 +211,7 @@ void napkin::ResourcePanel::onComponentAdded(nap::Component& comp, nap::Entity& 
 	// TODO: Don't refresh the whole mModel
 	mModel.refresh();
 	mTreeView.getTreeView().expandAll();
-	mTreeView.selectAndReveal(findInModel<ObjectItem>(mModel, comp));
+	mTreeView.selectAndReveal(findItemInModel<ObjectItem>(mModel, comp));
 }
 
 void napkin::ResourcePanel::onObjectAdded(nap::rtti::RTTIObject& obj, bool selectNewObject)
@@ -229,14 +234,14 @@ void napkin::ResourcePanel::onObjectAdded(nap::rtti::RTTIObject& obj, bool selec
 	mTreeView.getTreeView().expandAll();
 
 	if (object_to_select != nullptr)
-		mTreeView.selectAndReveal(findInModel<ObjectItem>(mModel, *object_to_select));
+		mTreeView.selectAndReveal(findItemInModel<napkin::ObjectItem>(mModel, *object_to_select));
 }
 
 
 void napkin::ResourcePanel::onObjectRemoved(nap::rtti::RTTIObject& object)
 {
 	// TODO: Don't refresh the whole mModel
-	auto item = findInModel<ObjectItem>(mModel, object);
+	auto item = findItemInModel<napkin::ObjectItem>(mModel, object);
 	mModel.removeRow(item->row(), item->parent()->index());
 //	mModel.refresh();
 	mTreeView.getTreeView().expandAll();
@@ -248,7 +253,7 @@ void napkin::ResourcePanel::onPropertyValueChanged(const PropertyPath& path)
 	if (resolvedPath.getProperty().get_name() != nap::rtti::sIDPropertyName)
 		return;
 
-	auto objectItem = findInModel<ObjectItem>(mModel, path.object());
+	auto objectItem = findItemInModel<napkin::ObjectItem>(mModel, path.object());
 	if (objectItem != nullptr)
 		objectItem->setText(QString::fromStdString(path.object().mID));
 }
