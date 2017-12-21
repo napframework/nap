@@ -34,7 +34,7 @@ In a more abstract sense, a [Service](@ref nap::Service) can be used to perform 
 Apps {#apps}
 =======================
 
-The main entrypoint for applications is the [AppRunner](@ref nap::AppRunner) object. The AppRunner object requires two things: an application object to run and an object that knows how to handle events that happen in the system, like mouse and keyboard events. The application object should be derived from nap::BaseApp and the event handler should be derived from [BaseAppEventHandler](@ref nap::BaseAppEventHandler).
+The main entrypoint for applications is the [AppRunner](@ref nap::AppRunner) object. The AppRunner object requires two things: an [Application](@ref nap::App) to run and an [object](@ref nap::BaseAppEventHandler) that knows how to forward events that happen in the system, such as mouse and keyboard events. The application object should be derived [BaseApp](@ref nap::BaseApp) and the event handler should be derived from [BaseAppEventHandler](@ref nap::BaseAppEventHandler).
 
 A good default to start with is to derive your application from [App](@ref nap::App) and use the default class [AppEventHandler](@ref nap::AppEventHandler). This will make sure you have input handling set up in your application. This is how you such a default setup would look like:
 <TODO: needs more work>
