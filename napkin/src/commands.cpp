@@ -33,13 +33,21 @@ void SetValueCommand::redo()
 	rttr::variant oldValueVariant = resolvedPath.getValue();
 	assert(toQVariant(resolvedPath.getType(), oldValueVariant, mOldValue));
 
-	// set new value
-	bool ok;
-	rttr::variant variant = fromQVariant(resolvedPath.getType(), mNewValue, &ok);
-	assert(ok);
-	resolvedPath.setValue(variant);
+	if (mPath.getProperty().get_name() == nap::rtti::sIDPropertyName)
+	{
+		// Deal with object names separately
+		AppContext::get().getDocument()->setObjectName(mPath.object(), mNewValue.toString().toStdString());
+	}
+	else
+	{
+		// Any other old value
+		bool ok;
+		rttr::variant variant = fromQVariant(resolvedPath.getType(), mNewValue, &ok);
+		assert(ok);
+		resolvedPath.setValue(variant);
+		AppContext::get().getDocument()->propertyValueChanged(mPath);
+	}
 
-	AppContext::get().getDocument()->propertyValueChanged(mPath);
 }
 
 SetPointerValueCommand::SetPointerValueCommand(const PropertyPath& path, nap::rtti::RTTIObject* newValue)

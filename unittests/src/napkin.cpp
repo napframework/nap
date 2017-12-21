@@ -40,11 +40,7 @@ TEST_CASE("Document Management", "[napkin]")
 	REQUIRE(doc->getCurrentFilename() == testFilename);
 
 	// Track signal
-//	QSignalSpy spy(&AppContext::get(), &AppContext::newFileCreated);
-
 	doc = AppContext::get().newDocument();
-
-//	REQUIRE(spy.count() == 1); // newFileCreated() must be emitted once
 
 	REQUIRE(doc->getCurrentFilename().isEmpty());
 	REQUIRE(doc->getObjects().size() == 0);
@@ -189,7 +185,7 @@ TEST_CASE("PropertyPath", "[napkin]")
 {
 	auto doc = AppContext::get().newDocument();
 	auto entity = doc->addObject<nap::Entity>();
-	PropertyPath nameProp(*entity, "mID");
+	PropertyPath nameProp(*entity, rtti::sIDPropertyName);
 	REQUIRE(&nameProp.object() == entity);
 	REQUIRE(nameProp.isValid());
 	std::string newName = "NewName";
@@ -203,13 +199,70 @@ TEST_CASE("Commands", "[napkin]")
 	auto& ctx = AppContext::get();
 	auto doc = ctx.newDocument();
 
+	// Add an object and verify
 	ctx.executeCommand(new AddObjectCommand(RTTI_OF(nap::Entity)));
-	auto entity1 = doc->getObjects()[0].get();
+	REQUIRE(doc->getObjects().size() == 1);
+	{
+		doc->undo();
+		REQUIRE(doc->getObjects().size() == 0);
+		doc->redo();
+		REQUIRE(doc->getObjects().size() == 1);
+	}
+
+	nap::rtti::RTTIObject* entity1 = doc->getObjects()[0].get();
+	nap::Entity* e1 = rtti_cast<nap::Entity>(entity1);
+	REQUIRE(e1 != nullptr);
+
+	// Add another one and verify
 	ctx.executeCommand(new AddObjectCommand(RTTI_OF(nap::Entity), entity1));
-	auto entity2 = doc->getObjects()[1].get();
+	REQUIRE(doc->getObjects().size() == 2);
+	{
+		doc->undo();
+		REQUIRE(doc->getObjects().size() == 1);
+		doc->redo();
+		REQUIRE(doc->getObjects().size() == 2);
+	}
+
+	nap::rtti::RTTIObject* entity2 = doc->getObjects()[1].get();
+	nap::Entity* e2 = rtti_cast<nap::Entity>(entity2);
+	REQUIRE(e2 != nullptr);
+	REQUIRE(doc->getParent(*e2) == e1);
+
+	PropertyPath nameProp1(*entity1, rtti::sIDPropertyName);
+	REQUIRE(nameProp1.isValid());
+	PropertyPath nameProp2(*entity2, rtti::sIDPropertyName);
+	REQUIRE(nameProp2.isValid());
+
+	ctx.executeCommand(new SetValueCommand(nameProp1, "Loco"));
+	REQUIRE(entity1->mID == "Loco");
+
+	// Name may not be empty
+	ctx.executeCommand(new SetValueCommand(nameProp1, ""));
+	REQUIRE(entity1->mID == "Loco");
+
+	// No duplicate names
+	ctx.executeCommand(new SetValueCommand(nameProp2, "Loco"));
+	REQUIRE(entity2->mID != "Loco");
+
+	// Setting a unique name should succeed
+	ctx.executeCommand(new SetValueCommand(nameProp2, "Motion"));
+	REQUIRE(entity2->mID == "Motion");
+
+	// Remove object and verify
+	ctx.executeCommand(new DeleteObjectCommand(*entity1));
+	REQUIRE(doc->getObjects().size() == 1);
+
+	// Remove next and verify
 	ctx.executeCommand(new DeleteObjectCommand(*entity2));
-	PropertyPath nameProp(*entity1, "mID");
-	ctx.executeCommand(new SetValueCommand(nameProp, "NewName"));
+	REQUIRE(doc->getObjects().size() == 0);
+
+	// TODO: Support undo for deletion
+//	doc->undo();
+//	REQUIRE(doc->getObjects().size() == 1);
+//
+//	doc->undo();
+//	REQUIRE(doc->getObjects().size() == 2);
+
 //	ctx.executeCommand(new SetPointerValueCommand())
 //	ctx.executeCommand(new AddEntityToSceneCommand())
 //	ctx.executeCommand(new ArrayAddValueCommand());
