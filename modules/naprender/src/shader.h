@@ -28,8 +28,8 @@ namespace nap
 		 */
 		opengl::Shader& getShader();
 
-		std::string							mVertPath;
-		std::string							mFragPath;
+		std::string							mVertPath;			///< Property: path to the vertex shader on disk
+		std::string							mFragPath;			///< Property: path to the fragment shader on disk
 
 	private:
 		// Path to shader on disk

@@ -13,6 +13,8 @@ Overview {#overview}
 * 	[Real Time Editing](@ref editing)
 * 	[Linking Media](@ref media)
 * 	[Scene Setup](@ref scene_setup)
+*	[Resources vs Instances](@ref resources_instances)
+*	[Creating Components](@ref creating_components)
 * 	[Embedding Objects](@ref embedding_objects)
 * 	[Embedding Pointers](@ref embedding_pointers)
 
@@ -94,10 +96,10 @@ Any resource must be derived from rtti::RTTIObject. This object contains the ID 
 
 Exposing Resources {#exposing_resources}
 =======================
-To make sure that classes and properties that are defined in C++ can be authored in json, we need to expose them explicitly through something called RTTI, better known as [RunTime Type Information](https://en.wikipedia.org/wiki/Run-time_type_information). NAP uses a number of macros to ease the way you can expose classes and properties. When deriving from rtti::RTTIObject (or any other object), you should let the system know what type of object you are deriving from. In the class declaration, the RTTI_ENABLE macro is added:
+To make sure that C++ classes and properties can be created and edited in json you need to expose them explicitly through something called RTTI (better known as [RunTime Type Information](https://en.wikipedia.org/wiki/Run-time_type_information)). NAP uses a number of macros to ease the way you can expose classes and properties. To create an object that can be authored in json you need to derive if from [RTTIObject](@ref nap::rtti::RTTIObject) and tell the system what the parent object is. To accomplish this you add, in the class declaration, the RTTI_ENABLE macro:
 
 ```
-class NAPAPI Foo : public rtti::RTTIObject
+class NAPAPI Shader : public rtti::RTTIObject
 {
 	RTTI_ENABLE(rtti::RTTIObject)
 };
@@ -106,91 +108,98 @@ class NAPAPI Foo : public rtti::RTTIObject
 And in the cpp file, the following macros are added:
 
 ```
-RTTI_BEGIN_CLASS(nap::Foo)
+RTTI_BEGIN_CLASS(nap::Shader)
 RTTI_END_CLASS
 ```
 
-This is the basis for setting up an RTTI-enabled class. Without the RTTI_ENABLE macro, the system cannot detect that Foo is derived from RTTIObject. The NAPAPI macro is a convenience macro that is used to make sure we can use classes in modules. It is used to export symbols in dynamic link libraries. It is recommended to use this macro for all classes and structures in modules. 
+This is the basis for setting up an RTTI-enabled class. In the example above we defined a Shader. Without the RTTI_ENABLE macro, the system cannot detect that Shader is derived from RTTIObject. The NAPAPI macro is a convenience macro that is used to make sure we can use classes in modules. It is used to export symbols in to dynamic link libraries. It is recommended to use this macro for all NAP classes and structures in modules. 
 
 Exposing Properties {#exposing_properties}
 =======================
-To extend a class with some properties, we just add a regular C++ field to our class. In this example that's an integer called 'mCount'
+To extend a class with properties you add a Property field to your class. In this example we add two strings called 'mVertPath' and 'mFragPath'. We use these properties to point to shader files on disk. The two shader files are loaded when creating the Shader object.
 ```
-class NAPAPI Foo : public rtti::RTTIObject
+class NAPAPI Shader : public rtti::RTTIObject
 {
 	RTTI_ENABLE(rtti::RTTIObject)
 	public:
-		int	mCount = 0;
+		std::string	mVertPath;				///< Property: Path to the vertex shader on disk
+		std::string mFragPath;				///< Property: Path to the fragment shader on disk
 };
 ```
 
-And extend the rtti macro in the cpp file with information about our property.
+And extend the rtti macro in the cpp file with information about our properties:
 ```
-// Adding serialzable property 'mCount'
-RTTI_BEGIN_CLASS(nap::Foo)
-  RTTI_PROPERTY("Count", &nap::Foo::mCount, nap::rtti::EPropertyMetaData::Default)
+// Adding serialzable properties
+RTTI_BEGIN_CLASS(nap::Shader)
+  RTTI_PROPERTY("VertPath", &nap::Shader::mFragPath, nap::rtti::EPropertyMetaData::FileLink | nap::rtti::EPropertyMetaData::Required)
+  RTTI_PROPERTY("FragPath", &nap::Shader::mVertPath, nap::rtti::EPropertyMetaData::FileLink | nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 ```
 
-mCount is now exposed to the system. The EPropertyMetaData enum provides additional information about this property:
-- Default  : will use the class default if the property was not set, in this case 0
-- Required : the load of the json file will fail if the property was not set.
-- FileLink : the property defines a relationship with an external file (.bmp, .wav etc.)
+mFragPath and mVertPath are now exposed to the system. The [EPropertyMetaData](@ref nap::rtti::EPropertyMetaData) enum provides additional information about properties. In this examples the vertex and fragment shader paths are required and the paths are a link to a (shader) file on disk. NAP exposes the following types of properties:
+
+- Default  : will use the class default if the property was not set
+- Required : the load of the json file will fail if the property was not set
+- FileLink : the property defines a relationship with an [external file](@ref media)(.bmp, .wav etc.)
 - Embedded : the property is an [embedded pointer](@ref embedding_pointers)
 
-The object can be authored in json like this:
+After defining the Shader it be created and edited in json:
 ```
 {
-	"Type" : "Foo",
-	"mID" : "SomeID",
-	"Count" : 10
+	"Type" : "nap::Shader",
+	"mID" : "FogShader",
+	"VertPath" : "/data/myproject/shaders/fogshader.vert"
+	"FragPath" : "/data/myproject/shaders/fogshader.frag"
 }
 ```
 
-The ID can be chosen as the user wishes. It can be used to retrieve the object from code using ResourceManager::findObject(), but it can also be used to refer to this object by other objects in json, as we will see later.
-More things are possible with the RTTI system. For instance, it has support for constructors with one or more arguments and it can also expose C++ enums in a way that is still readable in json. See typeinfo.h or the reference documentation for more detailed information how to do this.
+The ID can be chosen as the user wishes. It can be used to retrieve the object from code using [findObject()](@ref nap::ResourceManager::findObject()), but it can also be used to refer to this object by other objects in json, as we will see later. More things are possible with the RTTI system. For instance, it has support for constructors with one or more arguments and it can also expose C++ enums in a way that is still readable in json. See typeinfo.h or the reference documentation for more detailed information how to do this.
 
 Pointing to Resources {#pointing}
 =======================
 
-It is often useful if a resource can access information from another resource. NAP allows you to create links between objects (in json) to accomplish just that. A resource can point to other resources in json by referring to the name (nap::RTTIObject::mID ) of a resource. In C++, we use a specific type of pointer to accomplish this: the nap::ObjectPtr. Let's assume there is a class called 'Foo' that points to a class called 'Bar'. 'Foo' wants to use the information stored in Bar and exposes that in the form of an ObjectPtr of type 'Bar'. On initializtion 'Foo' performs some action on 'Bar's' member:
+It is often useful if a resource can access information from another resource. NAP allows you to create links between objects (in json) to accomplish just that. A resource can point to other resources in json by referring to the name (nap::RTTIObject::mID) of a resource. In C++, we use a specific type of pointer to accomplish this: [ObjectPtr](@ref nap::ObjectPtr). Let'''s assume there is a class called 'Material' that points to a 'Shader'. 'Material' wants to use the information stored in the shader and exposes that in the form of a link to a shader. The material can now access the shader without having to worry about order of initialization. When the Material is initialized the shader has been created and resolved. You only have to implement the logic you want to perform based on the information that is present in the shader. 
 
-```
-class NAPAPI Bar : public rtti::RTTIObject
-{
-	...
-};
-
-class NAPAPI Foo : public rtti::RTTIObject
+~~~~~~~~~~~~~~~{.cpp}
+class NAPAPI Material : public rtti::RTTIObject
 {
 	...
 public:
-	ObjectPtr<Bar> mBar;	///< Property: Link to a 'Bar' resource
+	ObjectPtr<nap::Shader> mShader;	///< Property: Link to a 'Shader' resource
 };
-```
+~~~~~~~~~~~~~~~
 
-We can then author these objects in json like this:
+We can now construct and edit these objects in json:
 
 ```
 {
 	"Objects" : 
 	[
 		{
-			"Type" : "Foo",
-			"mID"  : "MyFoo",
-			"Bar"  : "MyBar"
+			"Type" : "nap::Shader",
+			"mID" : "FogShader",
+			"VertPath" : "/data/myproject/shaders/fogshader.vert"
+			"FragPath" : "/data/myproject/shaders/fogshader.frag"
 		}
 
 		{
-			"Type" : "Bar",
-			"mID" : "MyBar",
-			"Value" : 10
+			"Type" : "nap::Material",
+			"mID"  : "FogMaterial",
+			"Shader"  : "FogShader"
 		}
 	}
 }
 ```
 
-Both Foo and Bar need to have their properties registered into RTTI in a similar way that we exposed properties earlier. After calling nap::ResourceManager::loadFile(), these two objects will be created and any pointers will be ‘resolved’, meaning that they will be set to the correct object. In this case, Foo::mBar will be pointing to a Bar object with ID “MyBar”. ResourceManager also makes sure that any object you are pointing to will be initialized prior to its own initialization. So, it is safe to assume that any object you are pointing to already has its init() called successfully. One thing to be careful with is that cyclic dependencies are not supported. It is not possible to point to objects that eventually point back at the original object. The system cannot determine correct initialization orders in these situations.
+Both 'Material' and 'Shader' need to [register](@ref exposing_resources) their type and associated properties with RTTI. Since we already defined the shader we only have to define the material:
+
+```
+RTTI_BEGIN_CLASS(nap::Material)
+  RTTI_PROPERTY("Shader", &nap::Material::mShader, nap::rtti::EPropertyMetaData::Required)
+RTTI_END_CLASS
+```
+
+The material is now registered and (exposes as as property) the link to a shader. After calling nap::ResourceManager::loadFile(), these two objects will be created and the pointers will be ‘resolved’, meaning that they will be set to the correct object. In this case, Material::mShader points to a 'FogShader'. ResourceManager also makes sure that any object you are pointing to will be initialized prior to its own initialization. So, it is safe to assume that any object you are pointing to already has its init() called successfully. One thing to be careful with is that cyclic dependencies are not supported. It is not possible to point to objects that eventually point back at the original object. The system cannot determine correct initialization orders in these situations.
 
 Real Time Editing {#editing}
 =======================
@@ -231,7 +240,7 @@ RTTI_END_CLASS
 
 Scene Setup {#scene_setup}
 =======================
-Modern applications can grow considerably in size when it comes to the amount of data they have to manage and the complex logic the system needs to support. NAP uses a powerful [Entity Component](https://en.wikipedia.org/wiki/Entity%E2%80%93component%E2%80%93system) system to aid the development process and manage your application. What separates Entities from regular Resource objects are the following properties:
+Modern applications can grow considerably in size when it comes to the amount of data they have to manage and the complex logic the app needs to support. NAP uses a powerful [Entity Component](https://en.wikipedia.org/wiki/Entity%E2%80%93component%E2%80%93system) system to aid the development process and manage your application. What separates Entities from regular Resource objects are the following properties:
 
 - At the root level, we have one or more [Scenes](@ref nap::Scene). 
 - A scene contains a hierarchy of [Entities](@ref nap::Entity)
@@ -308,6 +317,134 @@ In json, such a structure looks like this (the components are omitted for brevit
 	}
 }
 ```
+
+Resources vs Instances {#resources_instances}
+=======================
+
+Resources are completely static objects. They are read-only data containers. An [Entity](@ref nap::Entity) is a Resource but has a [runtime counterpart](@ref nap::EntityInstance) that is updated by NAP every frame. In the 'Bike' example, the position of the bike changes as it moves through the world. The bike's initial position is declared in json but the runtime position changes each frame. When there are multiple bikes in the scene, each bike has its own position. As a programmer you want to change the position of each bike programmatically, ie: set it based on a set of conditions. When you do that you modify the run-time state of a bike, not the resource that was used to create 'an instance of' the bike.
+
+To summarize:
+- Resources contain static, shared, read-only data
+- Instances contain runtime-varying data and can be updated each frame
+
+Both the Scene, Entity and Component have a resource and instance counterpart. NAP omits the resource part of the class name for readability:
+
+- nap::Scene becomes a nap::SceneInstance
+- nap::Entity becomes a nap::EntityInstance
+- nap::Component becomes a nap::ComponentInstance
+
+The resources are defined in json. When a resources is created (instantiated) NAP creates an instance of the resource behind the scenes and adds that to the scene hierarchy. SceneInstances contain EntityInstances which in turn hold ComponentInstances. This structure mirrors the structure in json. Just remember that at run-time, in your application, you work with the instances of Scenes, Entities and Components.
+
+Creating Components {#creating_components}
+=======================
+A scene is a container for entities and an entity is a container for components. Scenes and entities do not execute any behavior by themselves. They allow you to group and organize your objects. Components are used to add functionality to an Entity, ie: define it's behaviour. It’s the component that receives an [init()](@ref nap::ComponentInstance::init) and [update()](@ref nap::ComponentInstance::update) call. Any programmable behavior is therefore executed in the Component.
+
+NAP offers a number of components off the shelve, like the [TransformComponent](@ref nap::TransformComponent) and the [RenderableMeshComponent](@ref nap::RenderableMeshComponent). These can be used to build hierarchies of visual objects. Many other components exist as well, for instance, input, osc, midi and audio components. However, it is very likely that you want to create your own components. When creating your own component, derive from nap::Component and add the properties that need to be edited in json:
+
+```
+class NAPAPI PerspCameraComponent : public Component
+{
+	RTTI_ENABLE(Component)
+	DECLARE_COMPONENT(PerspCameraComponent, PerspCameraComponentInstance)
+
+	virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override 
+	{ 
+		components.push_back(RTTI_OF(TransformComponent)); 
+	}
+
+public:
+	float mFieldOfView = 50.0f;				///< Property: Camera Field Of View
+};
+```
+
+Here we create a perspective camera with a field of view property. Some concepts are familiar to creating resources, but some others are new:
+
+- Instead of deriving from nap::RTTIObject, we derive from nap::Component (which is derived from nap::RTTIObject).
+- The DECLARE_COMPONENT macro tells NAP that this component has a PerspCameraComponentInstance counterpart, see [Resources vs Instances](@ref resources_instances)
+- [getDependentComponents()](@ref nap::Component::getDependentComponents) can be overridden to create a dependency towards another component. 
+
+If your component needs another component, in this case a transform to position the camera in the world, you can hint at it. NAP will make sure that a transform is available and initialized before the camera is initialized. If the entity doesn't have a transform the component can't be created and initialization fails. In json we can extend the “Bike“ scene with an entity that holds both the new component and a nap::TransformComponent
+
+```
+{
+    "Type" : "nap::Scene",
+    "mID": "Scene",
+            
+    "Entities" : 
+    [
+        {
+            "Entity" : "Bike",
+            "Entity" : "CameraEntity"
+        }
+    ]
+},
+{
+    "Type" : "nap::Entity",
+    "mID": "CameraEntity",
+    
+    "Components" : 
+    [
+        {
+            "Type" : "nap::PerspCameraComponent",
+            "mID" : " PerspCameraComponent",
+            "FieldOfView" : 90
+        },
+        {
+            "Type" : "nap::TransformComponent",
+            "Properties": {
+                "Translate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "Rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "Scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "UniformScale": 1.0                        
+            }
+        }
+    ]
+}
+```
+
+ When calling [loadFile()](@ref nap::ResourceManager::loadFile()) the PerspCameraComponent is created as part of the CameraEntity. On [init()](@ref nap::ComponentInstance::init()) the camera component is able to access the transform because the dependency to the transform was set-up correctly. NAP will now attempt to to create an instance of the PerspCameraComponent: a PerspCameraComponentInstance. But we haven't created that object yet:
+
+```
+class NAPAPI PerspCameraComponentInstance : public ComponentInstance
+{
+	RTTI_ENABLE(ComponentInstance)
+public:
+	PerspCameraComponentInstance(EntityInstance& entity, Component& resource);
+
+	virtual bool init(utility::ErrorState& errorState) override;
+};
+```
+
+The RTTI needs to be setup in a similar way (although registering properties is not required as this object is not read from json). The init pattern and the error handling is exactly the same as with regular resources. A small difference is the fact that this object does not contain a default constructor. The constructor receives the entity this component belongs to and the resource counterpart of this instance. To make sure the object can be created (without a default constructor) we have to tell RTTI what constructor to use. You explicitly tell RTTI that there is no default constructor and for each custom constructor, we have to add one seperately:
+
+```
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PerspCameraComponentInstance)
+	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
+RTTI_END_CLASS
+```
+
+When loadFile() is called, the constructor mentioned above will be invoked and our scene is instantiated correctly. The [update()](@ref nap::ComponentInstance::update) function can be overridden to add per-frame functionality. In the case of this camera component, the roles of the various components could look something like this:
+
+Entity
+- TransformComponent: initial camera location
+- PerspCameraComponent: initial field of view
+
+EntityInstance
+- TransformComponent: The transform is modified at runtime by some other component, for example a component that handles mouse input
+- PerspCameraComponentInstance: Calculates and stores the camera transform for the renderer
+
 
 Embedding Objects {#embedding_objects}
 =======================

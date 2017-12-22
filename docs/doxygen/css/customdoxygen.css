@@ -229,15 +229,15 @@ div.line.glow {
 span.lineno {
 	padding-right: 4px;
 	text-align: right;
-	border-right: 2px solid #0F0;
-	background-color: #E8E8E8;
+	border-right: none;
+	background-color: #2D2E42;
   white-space: pre;
 }
 span.lineno a {
-	background-color: #D8D8D8;
+	background-color:  #2D2E42;
 }
 span.lineno a:hover {
-	background-color: #C8C8C8;
+	background-color: #2D2E42;
 }
 div.ah {
 	background-color: #52546A;
@@ -317,37 +317,37 @@ img.footer {
 }
 /* @group Code colorization */
 span.keyword {
-	color: #008000
+	color: #5D5E73;
 }
 span.keywordtype {
-	color: #604020
+	color: #5D5E73;
 }
 span.keywordflow {
-	color: #e08000
+	color: #5D5E73
 }
 span.comment {
-	color: #800000
+	color: #5D5E73
 }
 span.preprocessor {
-	color: #806020
+	color: #8B8CA0
 }
 span.stringliteral {
-	color: #002080
+	color: #8B8CA0
 }
 span.charliteral {
-	color: #008080
+	color: #8B8CA0
 }
 span.vhdldigit {
-	color: #ff00ff
+	color: #8B8CA0
 }
 span.vhdlchar {
-	color: #000000
+	color: #8B8CA0
 }
 span.vhdlkeyword {
-	color: #700070
+	color: #8B8CA0
 }
 span.vhdllogic {
-	color: #ff0000
+	color: #8B8CA0
 }
 blockquote {
   background-color: #F7F8FB;
