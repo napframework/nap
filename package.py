@@ -145,7 +145,7 @@ def package():
 
     if platform in ["linux", "linux2"]:
         # TODO Bundling ReleaseWithDebInfo for now as Release is crashing 28-11-17
-        for build_type in ['Debug', 'ReleaseWithDebInfo']:
+        for build_type in ['Release', 'RelWithDebInfo', 'Debug']:
             build_dir_for_type = BUILD_DIR + build_type
             call(WORKING_DIR, ['cmake', '-H.', '-B%s' % build_dir_for_type, '-DCMAKE_BUILD_TYPE=%s' % build_type])
 
@@ -160,8 +160,8 @@ def package():
 
         # Build & install to packaging dir
         d = '%s/%s' % (WORKING_DIR, BUILD_DIR)
-        for configuration in ['Debug', 'Release']:
-            call(d, ['xcodebuild', '-configuration', configuration, '-target', 'install'])
+        for build_type in ['Release', 'RelWithDebInfo', 'Debug']:
+            call(d, ['xcodebuild', '-configuration', build_type, '-target', 'install'])
 
         # Fix our dylib paths so fbxconverter will run from released package
         # TODO push back into cmake
@@ -179,8 +179,8 @@ def package():
         call(WORKING_DIR, ['cmake', '-H.','-B%s' % BUILD_DIR,'-G', 'Visual Studio 14 2015 Win64', '-DPYBIND11_PYTHON_VERSION=3.5'])
 
         # Build & install to packaging dir
-        for configuration in ['Debug', 'Release']:
-            call(WORKING_DIR, ['cmake', '--build', BUILD_DIR, '--target', 'install', '--config', configuration])
+        for build_type in ['Release', 'RelWithDebInfo', 'Debug']:
+            call(WORKING_DIR, ['cmake', '--build', BUILD_DIR, '--target', 'install', '--config', build_type])
 
         # Create archive
         archive_to_win64_zip()

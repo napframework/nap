@@ -48,6 +48,19 @@ namespace nap
 		 */
 		void buildModuleSearchDirectories(std::vector<std::string>& moduleNames, std::vector<std::string>& outSearchDirectories);
 
+		/**
+		 * Attempt to parse the build type from a folder name in the build system
+		 *
+		 * A valid full build configuration string in a folder name will be of our format specified in CMake:
+		 * macOS: COMPILER_ID-ARCH-BUILD_TYPE, eg. Clang-x86_64-Debug
+		 * Linux: COMPILER_ID-BUILD_TYPE-ARCH, eg. GNU-ReleaseWithDebInfo-x86_64
+		 *
+		 * @param folderName The folder name to parse
+		 * @param outBuildType The output build type
+		 * @return Whether a build type was parsed from the folder name
+		 */
+		bool getBuildTypeFromFolder(std::string& folderName, std::string& outBuildType);
+
 		using ModuleList = std::vector<Module>;
 		ModuleList mModules;	// The loaded modules
 	};

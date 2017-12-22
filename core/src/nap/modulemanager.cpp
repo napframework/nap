@@ -218,28 +218,74 @@ namespace nap
 		// Windows
 		outSearchDirectories.push_back(".");
 #else
-		// Packaged MacOS & Linux apps
-		outSearchDirectories.push_back("lib");
-		
-		// Non-packaged MacOS & Linux apps against released framework
-	#ifdef NDEBUG
-		const std::string modulePathConfigSuffix = "Release";
-	#else
-		const std::string modulePathConfigSuffix = "Debug";
-	#endif  // NDEBUG
-		// TODO clean up search path by finding NAP root then building modules from there
-		for (const std::string& module : moduleNames) {
-			outSearchDirectories.push_back("../../../../modules/" + module + "/lib/" + modulePathConfigSuffix);
-		}
-		
-		// MacOS & Linux apps in NAP internal source
-
-		// Get our configuration name from the directory name that our project sits in.  Clunky but true.
+		// Non-packaged macOS & Linux projects - get our configuration name from the directory name that
+		// our project sits in.  Clunky but true.
 		std::string exeDir = utility::getExecutableDir();
 		std::vector<std::string> dirParts;
 		utility::splitString(exeDir, '/', dirParts);
-		std::string configuration_name = dirParts.end()[-2];
-		outSearchDirectories.push_back("../../../lib/" + configuration_name);
+
+		// Ensure that our directory structure seems sane
+		if (dirParts.size() < 2)
+		{
+			// TODO improve output
+			Logger::warn("Unexpected path configuration found, can't locate modules");
+			// TODO raise exception?
+			return;
+		}
+		
+		std::string buildType;
+		// Check if we're running a project against packaged NAP
+		if (getBuildTypeFromFolder(dirParts.end()[-1], buildType))
+		{
+			// Non-packaged MacOS & Linux apps against released framework
+			std::string napRoot = "../../../../";
+			for (const std::string& module : moduleNames)
+			{
+				outSearchDirectories.push_back(napRoot + "modules/" + module + "/lib/" + buildType);
+			}
+		}
+		else
+		{
+			// Check if we're running a project against NAP source
+			std::string full_configuration_name = dirParts.end()[-2];
+			if (getBuildTypeFromFolder(full_configuration_name, buildType))
+			{
+				// MacOS & Linux apps in NAP internal source
+				std::string napRoot = "../../../";
+				outSearchDirectories.push_back(napRoot + "lib/" + full_configuration_name);
+			}
+			else
+			{
+				// Check if we're running a packaged project
+				if (utility::dirExists("lib"))
+				{
+					// Packaged macOS & Linux projects
+					outSearchDirectories.push_back("lib");
+				}
+				else
+				{
+					// TODO improve output
+					Logger::warn("Unexpected path configuration found, can't locate modules");
+					// TODO raise exception?
+				}
+				return;
+			}
+		}
 #endif // _WIN32
+	}
+	
+	bool ModuleManager::getBuildTypeFromFolder(std::string& folderName, std::string& outBuildType)
+	{
+		std::vector<std::string> configParts;
+		utility::splitString(folderName, '-', configParts);
+		if (configParts.size() != 3)
+			return false;
+
+#ifdef __APPLE__
+		outBuildType = configParts[2];
+#elif UNIX
+		outBuildType = configParts[1];
+#endif
+		return true;
 	}
 }
