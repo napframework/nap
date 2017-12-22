@@ -2,6 +2,11 @@
 
 #include <audio/core/audionodemanager.h>
 
+RTTI_BEGIN_ENUM(nap::audio::LevelMeterNode::Type)
+    RTTI_ENUM_VALUE(nap::audio::LevelMeterNode::Type::RMS, "RMS"),
+    RTTI_ENUM_VALUE(nap::audio::LevelMeterNode::Type::PEAK, "Peak")
+RTTI_END_ENUM
+
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::LevelMeterNode)
     RTTI_CONSTRUCTOR(nap::audio::NodeManager&)
     RTTI_FUNCTION("getLevel", &nap::audio::LevelMeterNode::getLevel)

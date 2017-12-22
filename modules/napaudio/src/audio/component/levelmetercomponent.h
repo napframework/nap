@@ -24,6 +24,8 @@ namespace nap
             LevelMeterComponent() : Component() { }
             
             nap::ObjectPtr<AudioObject> mInput;
+            TimeValue mAnalysisWindowSize = 10;
+            LevelMeterNode::Type mMeterType = LevelMeterNode::Type::RMS;
             
         private:
         };

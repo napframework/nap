@@ -7,6 +7,8 @@
 // RTTI
 RTTI_BEGIN_CLASS(nap::audio::LevelMeterComponent)
     RTTI_PROPERTY("Input", &nap::audio::LevelMeterComponent::mInput, nap::rtti::EPropertyMetaData::Required)
+    RTTI_PROPERTY("AnalysisWindowSize", &nap::audio::LevelMeterComponent::mAnalysisWindowSize, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("MeterType", &nap::audio::LevelMeterComponent::mMeterType, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::LevelMeterComponentInstance)
