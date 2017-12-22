@@ -5,7 +5,7 @@
 #include <componentptr.h>
 
 // Audio includes
-#include <audio/core/audionode.h>
+#include <audio/node/outputnode.h>
 #include <audio/component/audiocomponent.h>
 
 namespace nap
