@@ -7,12 +7,13 @@ namespace opengl
 {
 	/**
 	* Flags used to choose what part of render target to clear
+	* Can be used as a bitmask, ie: EClearFlags::Color | EClearFlags::Depth
 	*/
 	enum class EClearFlags : uint8_t
 	{
-		COLOR = 1,
-		DEPTH = 2,
-		STENCIL = 4
+		COLOR = 1,						///< Clears color buffer
+		DEPTH = 2,						///< Clears depth buffer
+		STENCIL = 4						///< Clears stencil buffer
 	};
 
 	inline EClearFlags operator&(EClearFlags a, EClearFlags b)

@@ -137,12 +137,15 @@ namespace nap
 		using VariantArray = rttr::variant_array_view;
 		using VariantMap = rttr::variant_associative_view;
 
+		/**
+		 * Controls how an RTTI property is interpreted
+		 */
 		enum class NAPAPI EPropertyMetaData : uint8_t
 		{
-			Default = 0,
-			Required = 1,
-			FileLink = 2,
-			Embedded = 4
+			Default  = 0,				///< Uses the (class) default if the property isn't set
+			Required = 1,				///< Load will fail if the property isn't set
+			FileLink = 2,				///< Defines a relationship with an external file
+			Embedded = 4				///< An embedded pointer
 		};
 
 		inline EPropertyMetaData NAPAPI operator&(EPropertyMetaData a, EPropertyMetaData b)
