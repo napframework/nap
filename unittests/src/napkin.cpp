@@ -161,6 +161,111 @@ TEST_CASE("Array Modification Objects", "[napkin]")
 
 }
 
+TEST_CASE("Array Move Element", "[napkin]")
+{
+	auto doc = AppContext::get().newDocument();
+	auto composition = doc->addObject<nap::Composition>();
+	REQUIRE(composition != nullptr);
+
+	// Set up an array with four elements
+	PropertyPath layers(*composition, "Layers");
+	REQUIRE(layers.isValid());
+	doc->arrayAddNewObject(layers, RTTI_OF(nap::ImageSequenceLayer));
+	doc->arrayAddNewObject(layers, RTTI_OF(nap::ImageSequenceLayer));
+	doc->arrayAddNewObject(layers, RTTI_OF(nap::ImageSequenceLayer));
+	doc->arrayAddNewObject(layers, RTTI_OF(nap::ImageSequenceLayer));
+	nap::ImageSequenceLayer* layer0 = doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 0);
+	nap::ImageSequenceLayer* layer1 = doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 1);
+	nap::ImageSequenceLayer* layer2 = doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 2);
+	nap::ImageSequenceLayer* layer3 = doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 3);
+	REQUIRE(layer0 != nullptr);
+	REQUIRE(layer1 != nullptr);
+	REQUIRE(layer2 != nullptr);
+	REQUIRE(layer3 != nullptr);
+	// State: 0, 1, 2, 3
+
+	long new_index = doc->arrayMoveElement(layers, 2, 1);
+	// State: 0, [2], 1, 3
+
+	REQUIRE(new_index == 1);
+	auto variant = doc->arrayGetElement(layers, new_index);
+	REQUIRE(variant.is_valid());
+	auto vlayer = variant.convert<nap::ImageSequenceLayer*>();
+	REQUIRE(vlayer != nullptr);
+
+	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 0) == layer0);
+	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 1) == layer2);
+	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 2) == layer1);
+	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 3) == layer3);
+
+	doc->arrayMoveElement(layers, 0, 4);
+	// State: 2, 1, 3, [0]
+
+	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 0) == layer2);
+	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 1) == layer1);
+	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 2) == layer3);
+	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 3) == layer0);
+
+	doc->executeCommand(new ArrayMoveElementCommand(layers, 1, 3));
+	// State: 2, 3, [1], 0
+
+	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 0) == layer2);
+	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 1) == layer3);
+	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 2) == layer1);
+	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 3) == layer0);
+
+	doc->undo();
+	// State: 2, [1], 3, 0
+
+	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 0) == layer2);
+	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 1) == layer1);
+	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 2) == layer3);
+	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 3) == layer0);
+
+	doc->redo();
+	// State: 2, 3, [1], 0
+
+	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 0) == layer2);
+	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 1) == layer3);
+	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 2) == layer1);
+	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 3) == layer0);
+
+	doc->executeCommand(new ArrayMoveElementCommand(layers, 3, 1));
+	// State: 2, [0], 3, 1
+
+	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 0) == layer2);
+	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 1) == layer0);
+	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 2) == layer3);
+	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 3) == layer1);
+
+	doc->undo();
+	// State: 2, 3, 1, [0]
+
+	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 0) == layer2);
+	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 1) == layer3);
+	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 2) == layer1);
+	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 3) == layer0);
+
+	doc->redo();
+	// State: 2, [0], 3, 1
+
+	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 0) == layer2);
+	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 1) == layer0);
+	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 2) == layer3);
+	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 3) == layer1);
+
+	doc->undo();
+	// State: 2, 3, 1, [0]
+	doc->undo();
+	// State: 2, [1], 3, 0
+
+	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 0) == layer2);
+	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 1) == layer1);
+	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 2) == layer3);
+	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 3) == layer0);
+
+}
+
 TEST_CASE("Document Functions", "[napkin]")
 {
 	auto doc = AppContext::get().newDocument();
