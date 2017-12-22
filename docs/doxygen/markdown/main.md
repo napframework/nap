@@ -9,4 +9,4 @@ NAPs design is intended to be as open as possible: there is little fixed functio
 
 ## Want to know more?
 
-Take a loolk at our high level [documentation](@ref overview) or [downoad](http://www.naivi.nl) the latest version of NAP right now!
+Take a look at our high level [documentation](@ref overview) or [downoad](http://www.naivi.nl) the latest version of NAP right now!
