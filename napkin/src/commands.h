@@ -206,4 +206,25 @@ namespace napkin
 		long mIndex; ///< The element to be removed
 	};
 
+	class ArrayMoveElementCommand : public QUndoCommand
+	{
+	public:
+		/**
+		 * Reorder an element within an array
+		 * @param array_prop The array that contains the element
+		 * @param fromIndex The index of the element to move
+		 * @param toIndex The index at which the element must be after the move
+		 */
+		ArrayMoveElementCommand(const PropertyPath& array_prop, long fromIndex, long toIndex);
+
+		void redo() override;
+		void undo() override;
+	private:
+		const PropertyPath& mPath; ///< The path representing the array
+		long mFromIndex; ///< The element index to move
+		long mToIndex; ///< The element index to move to
+		long mOldIndex; ///< The actual old index (may have been shifted)
+		long mNewIndex; ///< The actual new index (may have been shifted)
+	};
+
 };

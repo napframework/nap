@@ -1,6 +1,8 @@
 #include "inspectorpanel.h"
 
 #include <QApplication>
+#include <QMimeData>
+#include <QModelIndexList>
 
 #include "appcontext.h"
 #include "commands.h"
@@ -33,6 +35,17 @@ napkin::InspectorModel::InspectorModel() : QStandardItemModel()
 	setHorizontalHeaderLabels({TXT_LABEL_NAME, TXT_LABEL_VALUE, TXT_LABEL_TYPE});
 }
 
+Qt::DropActions napkin::InspectorModel::supportedDragActions() const
+{
+	return Qt::MoveAction;
+}
+
+Qt::DropActions napkin::InspectorModel::supportedDropActions() const
+{
+	return Qt::MoveAction;
+}
+
+
 
 napkin::InspectorPanel::InspectorPanel()
 {
@@ -43,6 +56,7 @@ napkin::InspectorPanel::InspectorPanel()
 	mTreeView.getTreeView().setColumnWidth(0, 250);
 	mTreeView.getTreeView().setColumnWidth(1, 250);
 	mTreeView.getTreeView().setItemDelegateForColumn(1, &mWidgetDelegate);
+	mTreeView.getTreeView().setDragEnabled(true);
 
 	mTreeView.setMenuHook(std::bind(&napkin::InspectorPanel::onItemContextMenu, this, std::placeholders::_1));
 
@@ -167,3 +181,65 @@ nap::rtti::RTTIObject* napkin::InspectorModel::getObject()
 {
 	return mObject;
 }
+
+Qt::ItemFlags napkin::InspectorModel::flags(const QModelIndex& index) const
+{
+	auto flags = QStandardItemModel::flags(index);
+
+	// First always disable dragging & dropping
+	flags &= ~Qt::ItemIsDragEnabled;
+	flags &= ~Qt::ItemIsDropEnabled;
+
+	// Not an item? Early out
+	auto item = itemFromIndex(index);
+	if (item == nullptr)
+		return flags;
+
+	// Is this item an array element? Enable dragging
+	auto parent_item = item->parent();
+	if ((parent_item != nullptr) && (dynamic_cast<ArrayPropertyItem*>(parent_item) != nullptr))
+	{
+		flags |= Qt::ItemIsDragEnabled;
+	}
+
+	// Is this item an array? Allow dropping
+	if (dynamic_cast<ArrayPropertyItem*>(item) != nullptr)
+	{
+		flags |= Qt::ItemIsDropEnabled;
+	}
+
+	return flags;
+}
+
+QMimeData* napkin::InspectorModel::mimeData(const QModelIndexList& indexes) const
+{
+	if (indexes.empty())
+		return nullptr;
+
+	auto mime_data = new QMimeData();
+
+	QString mime_text;
+
+	// As soon as the first valid item is found, use that, ignore subsequent items
+	// TODO: Handle dragging multiple items
+	for (auto index : indexes)
+	{
+		auto object_item = dynamic_cast<BaseRTTIPathItem*>(itemFromIndex(index));
+		if (object_item == nullptr)
+			continue;
+
+		mime_text = QString::fromStdString(object_item->getPath().toString());
+		break;
+	}
+	mime_data->setData(sNapkinMimeData, mime_text.toLocal8Bit());
+
+	return mime_data;
+}
+
+QStringList napkin::InspectorModel::mimeTypes() const
+{
+	QStringList types;
+	types << sNapkinMimeData;
+	return types;
+}
+

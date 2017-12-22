@@ -11,9 +11,13 @@
 
 namespace napkin
 {
-
+	/**
+	 * The MIME type of a nap propertypath
+	 */
+	static const char* sNapkinMimeData = "application/napkin-path";
 
 	class ArrayPropertyItem;
+
 
     /**
      * Data model backing the inspector panel tree view
@@ -48,9 +52,34 @@ namespace napkin
 		bool setData(const QModelIndex& index, const QVariant& value, int role) override;
 
 		/**
+		 * Override, provides drag behavior with validation and data to hold in the drag operation
+		 */
+		QMimeData* mimeData(const QModelIndexList& indexes) const override;
+
+		/**
+		 * Override, specifies which kinds of data will be provided to drag operations
+		 */
+		QStringList mimeTypes() const override;
+
+		/**
 		 * Rebuild the model
 		 */
 		void rebuild();
+
+		/**
+		 * Overriden to support drag & drop
+		 */
+		Qt::DropActions supportedDragActions() const override;
+
+		/**
+		 * Overriden to support drag & drop
+		 */
+		Qt::DropActions supportedDropActions() const override;
+
+		/**
+		 * Overriden to support drag & drop
+		 */
+		Qt::ItemFlags flags(const QModelIndex& index) const override;
 
 	private:
 		/**
