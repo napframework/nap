@@ -288,9 +288,42 @@ void Document::arrayRemoveElement(const PropertyPath& path, long index)
 	bool ok = array.remove_value(index);
 	assert(ok);
 
-	resolved_path.setValue(value);
+	ok = resolved_path.setValue(value);
+	assert(ok);
 
 	propertyValueChanged(path);
+}
+
+long Document::arrayMoveElement(const PropertyPath& path, long fromIndex, long toIndex)
+{
+	ResolvedRTTIPath resolved_path = path.resolve();
+	Variant array_value = resolved_path.getValue();
+	VariantArray array = array_value.create_array_view();
+
+	if (fromIndex < toIndex)
+		toIndex--;
+
+	Variant taken_value = array.get_value(fromIndex);
+	bool ok = array.remove_value(fromIndex);
+	assert(ok);
+
+	ok = array.insert_value(toIndex, taken_value);
+	assert(ok);
+
+	ok = resolved_path.setValue(array_value);
+	assert(ok);
+
+	propertyValueChanged(path);
+
+	return toIndex;
+}
+
+nap::rtti::Variant Document::arrayGetElement(const PropertyPath& path, long index)
+{
+	ResolvedRTTIPath resolved_path = path.resolve();
+	Variant array_value = resolved_path.getValue();
+	VariantArray array = array_value.create_array_view();
+	return array.get_value(index);
 }
 
 
@@ -298,6 +331,8 @@ void Document::executeCommand(QUndoCommand* cmd)
 {
 	mUndoStack.push(cmd);
 }
+
+
 
 
 

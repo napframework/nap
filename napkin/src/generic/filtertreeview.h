@@ -16,6 +16,33 @@
 namespace napkin
 {
 	/**
+	 * Specialize dragging behavior for napkin
+	 */
+	class _FilterTreeView : public QTreeView
+	{
+	public:
+		_FilterTreeView();
+
+	protected:
+		/**
+		 * Override from QTreeView
+		 */
+		void dragEnterEvent(QDragEnterEvent* event) override;
+
+		/**
+		 * Override from QTreeView
+		 */
+		void dragMoveEvent(QDragMoveEvent* event) override;
+
+		/**
+		 * Override from QTreeView
+		 */
+		void dropEvent(QDropEvent* event) override;
+
+	};
+
+
+	/**
 	 * A tree view composing a QTreeView and a filter text field that allows filtering of the tree.
 	 * This widget keeps an internal filter model, so beware when dealing with QModelIndex instances:
 	 *  userModel -> filterModel -> view
@@ -119,11 +146,11 @@ namespace napkin
 
 
 	private:
-		QVBoxLayout mLayout;
-		QLineEdit mLineEditFilter;
-		QTreeView mTreeView;
-		LeafFilterProxyModel mSortFilter;
-		std::function<void(QMenu&)> mMenuHookFn = nullptr;
-		bool mIsItemSelector = false; // If this model behaves like a quick list selector
+		QVBoxLayout mLayout; ///< The main layout
+		QLineEdit mLineEditFilter; ///< The filter box
+		_FilterTreeView mTreeView; ///< Custom treeview to customize behavior for Napkin
+		LeafFilterProxyModel mSortFilter; ///< Sits in between the user model and the tree view
+		std::function<void(QMenu&)> mMenuHookFn = nullptr; ///< Gives subclasses the chance to add to the menu
+		bool mIsItemSelector = false; ///< If this model behaves like a quick list selector
 	};
 };
