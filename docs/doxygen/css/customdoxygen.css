@@ -27,7 +27,7 @@ pre.fragment, div.line,
 }
 
 .arrow, #navrow4 a{
-	color:#52546A;
+	color:#5D5E73;
 }
 
 .memtitle {
@@ -194,11 +194,12 @@ div.fragment {
 	margin: 15px 0px;
 	border: none;
 	border-radius: 3px;
-	background-color: rgb(248, 248, 248);
+	background-color: #111426;
+;
 }
 div.line {
-	min-height: 11pt;
-	line-height: 1.0;
+	min-height: 15pt;
+	line-height: 1.6;
 	text-wrap: unrestricted;
 	white-space: -moz-pre-wrap; /* Moz */
 	white-space: -pre-wrap;     /* Opera 4-6 */
@@ -219,6 +220,7 @@ div.line {
 	-o-transition-duration: 0.5s;
 	transition-property: background-color, box-shadow;
 	transition-duration: 0.5s;
+	font-family:  'Consolas', sans-serif;
 }
 div.line.glow {
 	background-color: blue;

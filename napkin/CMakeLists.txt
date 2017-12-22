@@ -59,7 +59,6 @@ set(LIBS
         mod_napscene
         mod_nappython
         mod_napmath
-        mod_napartnet
         Qt5::Widgets Qt5::Core Qt5::Gui
         )
 

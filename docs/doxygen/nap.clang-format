@@ -817,7 +817,8 @@ INPUT_ENCODING         = UTF-8
 
 FILE_PATTERNS          = *.h \
                          *.hpp \
-                         *.markdown
+                         *.markdown \
+                         *.md
 
 # The RECURSIVE tag can be used to specify whether or not subdirectories should
 # be searched for input files as well.
@@ -857,7 +858,8 @@ EXCLUDE                = ..\..\napkin \
                          ..\..\vstemplates \
                          ../../core/src/nap/linux/FileWatcher \
                          ../../modules/napmath/src/psblendmodes.cpp \
-                         ../../modules/napmath/src/psblendmodes.h
+                         ../../modules/napmath/src/psblendmodes.h \
+                         ../../readme.md
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded
