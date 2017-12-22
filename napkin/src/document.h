@@ -151,6 +151,34 @@ namespace napkin
 		void arrayRemoveElement(const PropertyPath& path, long index);
 
 		/**
+		 * Move an item within an array. If \p fromIndex is greater than \p toIndex,
+		 * \p toIndex is considered to be the destination index <b>before</b> the move happens.
+		 * @param path The path to the array property
+		 * @param fromIndex The index of the element to move
+		 * @param toIndex The destination index of the element
+		 * @return The resulting index of the element
+		 */
+		long arrayMoveElement(const PropertyPath& path, long fromIndex, long toIndex);
+
+		/**
+		 * Get an element from an array
+		 * @param path The path to the array property
+		 * @param index The index of the element to retrieve
+		 * @return The resulting value
+		 */
+		nap::rtti::Variant arrayGetElement(const PropertyPath& path, long index);
+
+		/**
+		 * Get an element from an array
+		 * @tparam T cast to the specified type.
+		 * @param path The path to the array property
+		 * @param index The index of the element to retrieve
+		 * @return The resulting value
+		 */
+		template<typename T>
+		T arrayGetElement(const PropertyPath& path, long index) { return arrayGetElement(path, index).convert<T>(); }
+
+		/**
 		 * Execute the specified command and push the provided command onto the undostack.
 		 * @param cmd The command to be executed
 		 */

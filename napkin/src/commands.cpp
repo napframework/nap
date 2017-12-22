@@ -226,3 +226,21 @@ void ArrayRemoveElementCommand::undo()
 }
 
 
+ArrayMoveElementCommand::ArrayMoveElementCommand(const PropertyPath& array_prop, long fromIndex, long toIndex)
+		: mPath(array_prop), mFromIndex(fromIndex), mToIndex(toIndex)
+{
+	setText(QString("Reorder '%1' from %2 to %3").arg(QString::fromStdString(array_prop.toString()),
+													  QString::number(fromIndex), QString::number(toIndex)));
+}
+
+void ArrayMoveElementCommand::redo()
+{
+	// Also store indexes that may have shifted due to the operation so we can undo
+	mOldIndex = (mFromIndex > mToIndex) ? mFromIndex + 1 : mFromIndex;
+	mNewIndex = AppContext::get().getDocument()->arrayMoveElement(mPath, mFromIndex, mToIndex);
+}
+
+void ArrayMoveElementCommand::undo()
+{
+	AppContext::get().getDocument()->arrayMoveElement(mPath, mNewIndex, mOldIndex);
+}
