@@ -8,6 +8,8 @@
 using namespace napkin;
 using namespace nap;
 
+#define TAG_NAPKIN "[napkin]"
+
 class SigCapture
 {
 public:
@@ -24,7 +26,7 @@ private:
 	int mCount = 0;
 };
 
-TEST_CASE("Document Management", "[napkin]")
+TEST_CASE("Document Management", TAG_NAPKIN)
 {
 	auto doc = AppContext::get().getDocument();
 
@@ -46,7 +48,7 @@ TEST_CASE("Document Management", "[napkin]")
 	REQUIRE(doc->getObjects().size() == 0);
 }
 
-TEST_CASE("Document Signals", "[napkin]")
+TEST_CASE("Document Signals", TAG_NAPKIN)
 {
 	auto doc = AppContext::get().newDocument();
 	SigCapture sigObjectAdded(doc, &Document::objectAdded);
@@ -61,7 +63,7 @@ TEST_CASE("Document Signals", "[napkin]")
 
 }
 
-TEST_CASE("Array Value Elements", "[napkin]")
+TEST_CASE("Array Value Elements", TAG_NAPKIN)
 {
 	auto doc = AppContext::get().newDocument();
 	auto palette = doc->addObject<nap::LedColorPalette>();
@@ -121,7 +123,7 @@ TEST_CASE("Array Value Elements", "[napkin]")
 	}
 }
 
-TEST_CASE("Array Modification Objects", "[napkin]")
+TEST_CASE("Array Modification Objects", TAG_NAPKIN)
 {
 	auto doc = AppContext::get().newDocument();
 	auto composition = doc->addObject<nap::Composition>();
@@ -161,7 +163,7 @@ TEST_CASE("Array Modification Objects", "[napkin]")
 
 }
 
-TEST_CASE("Array Move Element", "[napkin]")
+TEST_CASE("Array Move Element", TAG_NAPKIN)
 {
 	auto doc = AppContext::get().newDocument();
 	auto composition = doc->addObject<nap::Composition>();
@@ -266,7 +268,7 @@ TEST_CASE("Array Move Element", "[napkin]")
 
 }
 
-TEST_CASE("Document Functions", "[napkin]")
+TEST_CASE("Document Functions", TAG_NAPKIN)
 {
 	auto doc = AppContext::get().newDocument();
 
@@ -286,7 +288,7 @@ TEST_CASE("Document Functions", "[napkin]")
 
 }
 
-TEST_CASE("PropertyPath", "[napkin]")
+TEST_CASE("PropertyPath", TAG_NAPKIN)
 {
 	auto doc = AppContext::get().newDocument();
 	auto entity = doc->addObject<nap::Entity>();
@@ -299,7 +301,7 @@ TEST_CASE("PropertyPath", "[napkin]")
 	REQUIRE(entity->mID == newName);
 }
 
-TEST_CASE("Commands", "[napkin]")
+TEST_CASE("Commands", TAG_NAPKIN)
 {
 	auto& ctx = AppContext::get();
 	auto doc = ctx.newDocument();
@@ -373,7 +375,7 @@ TEST_CASE("Commands", "[napkin]")
 //	ctx.executeCommand(new ArrayAddValueCommand());
 }
 
-TEST_CASE("QT Specific", "[napkin]")
+TEST_CASE("QT Specific", TAG_NAPKIN)
 {
 
 }
