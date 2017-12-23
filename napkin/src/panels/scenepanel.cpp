@@ -67,6 +67,7 @@ void napkin::SceneModel::onFileOpened(const QString& filename)
 napkin::ScenePanel::ScenePanel() : QWidget()
 {
 	setLayout(&mLayout);
+	mLayout.setContentsMargins(0, 0, 0, 0);
 	layout()->addWidget(&mFilterView);
     mFilterView.setModel(&mModel);
 	mFilterView.setMenuHook(std::bind(&napkin::ScenePanel::menuHook, this, std::placeholders::_1));

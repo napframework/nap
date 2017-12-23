@@ -6,5 +6,43 @@
         <file>icons/cube-blue.png</file>
         <file>icons/diamond-orange.png</file>
         <file>icons/bricks.png</file>
+
+        <file>fonts/Montserrat-ExtraBold.ttf</file>
+        <file>fonts/Montserrat-Light.ttf</file>
+        <file>fonts/Montserrat-Medium.ttf</file>
+
+        <file>fonts/NunitoSans-ExtraBold.ttf</file>
+        <file>fonts/NunitoSans-Regular.ttf</file>
+        <file>fonts/NunitoSans-SemiBold.ttf</file>
+
+        <!--<file>fonts/Montserrat-Black.ttf</file>-->
+        <!--<file>fonts/Montserrat-BlackItalic.ttf</file>-->
+        <!--<file>fonts/Montserrat-Bold.ttf</file>-->
+        <!--<file>fonts/Montserrat-BoldItalic.ttf</file>-->
+        <!--<file>fonts/Montserrat-ExtraBoldItalic.ttf</file>-->
+        <!--<file>fonts/Montserrat-ExtraLight.ttf</file>-->
+        <!--<file>fonts/Montserrat-ExtraLightItalic.ttf</file>-->
+        <!--<file>fonts/Montserrat-Italic.ttf</file>-->
+        <!--<file>fonts/Montserrat-LightItalic.ttf</file>-->
+        <!--<file>fonts/Montserrat-MediumItalic.ttf</file>-->
+        <!--<file>fonts/Montserrat-Regular.ttf</file>-->
+        <!--<file>fonts/Montserrat-SemiBold.ttf</file>-->
+        <!--<file>fonts/Montserrat-SemiBoldItalic.ttf</file>-->
+        <!--<file>fonts/Montserrat-Thin.ttf</file>-->
+        <!--<file>fonts/Montserrat-ThinItalic.ttf</file>-->
+
+        <!--<file>fonts/NunitoSans-Black.ttf</file>-->
+        <!--<file>fonts/NunitoSans-BlackItalic.ttf</file>-->
+        <!--<file>fonts/NunitoSans-Bold.ttf</file>-->
+        <!--<file>fonts/NunitoSans-BoldItalic.ttf</file>-->
+        <!--<file>fonts/NunitoSans-ExtraBoldItalic.ttf</file>-->
+        <!--<file>fonts/NunitoSans-ExtraLight.ttf</file>-->
+        <!--<file>fonts/NunitoSans-ExtraLightItalic.ttf</file>-->
+        <!--<file>fonts/NunitoSans-Italic.ttf</file>-->
+        <!--<file>fonts/NunitoSans-Light.ttf</file>-->
+        <!--<file>fonts/NunitoSans-LightItalic.ttf</file>-->
+        <!--<file>fonts/NunitoSans-SemiBoldItalic.ttf</file>-->
+
+
     </qresource>
 </RCC>
