@@ -5,6 +5,7 @@ from sys import platform
 import sys
 import shutil
 
+WORKING_DIR = '.'
 
 def call(cwd, cmd):
     print('dir: %s' % cwd)
