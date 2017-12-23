@@ -25,6 +25,9 @@ void napkin::_FilterTreeView::dragEnterEvent(QDragEnterEvent* event)
 
 void napkin::_FilterTreeView::dragMoveEvent(QDragMoveEvent* event)
 {
+	// Re-enable if valid drop
+	setDropIndicatorShown(false);
+
 	auto idx = indexAt(event->pos());
 	if (idx.isValid())
 	{
@@ -40,6 +43,7 @@ void napkin::_FilterTreeView::dragMoveEvent(QDragMoveEvent* event)
 		auto pathitem = dynamic_cast<BaseRTTIPathItem*>(item);
 		if (pathitem != nullptr && drag_item->parent() == pathitem->parent())
 		{
+			setDropIndicatorShown(true);
 			event->acceptProposedAction();
 		}
 	}
@@ -55,13 +59,21 @@ void napkin::_FilterTreeView::dropEvent(QDropEvent* event)
 		return;
 
 
+	// User may have dropped on column > 0, convert to column 0
+	drop_index = drop_index.model()->index(drop_index.row(), 0, drop_index.parent());
+
 	auto filter_model = dynamic_cast<QSortFilterProxyModel*>(model());
 	assert(filter_model != nullptr);
 	auto item_model = dynamic_cast<QStandardItemModel*>(filter_model->sourceModel());
 	assert(item_model != nullptr);
+
 	auto drop_item = item_model->itemFromIndex(filter_model->mapToSource(drop_index));
 
-	auto drag_index = currentIndex();
+	// The current index is the one where we started dragging
+	auto curr_index = currentIndex();
+	// We might have selected another column, get the leftmost index instead
+	auto drag_index = curr_index.model()->index(curr_index.row(), 0, curr_index.parent());
+	assert(drop_index.model() == drag_index.model());
 	auto drag_item = item_model->itemFromIndex(filter_model->mapToSource(drag_index));
 
 	auto pathitem = dynamic_cast<BaseRTTIPathItem*>(drop_item);
