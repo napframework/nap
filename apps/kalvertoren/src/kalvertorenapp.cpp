@@ -282,174 +282,158 @@ namespace nap
 
 		// Resets all the tracers
 		ImGui::Begin("Kalvertoren");
-		static bool first = true;
-		ImVec2 window_size = first ? ImVec2(300, 110) : ImVec2(ImGui::GetWindowContentRegionWidth() * 1.0, 110);
-		ImGui::BeginChild("Display Settings", window_size, true);
-		first = false;
-		ImGui::AlignTextToFramePadding();
-		ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Display Settings");
+		
+		ImGui::Spacing();
+		utility::getCurrentDateTime(mDateTime);
+		ImGui::Text(mDateTime.toString().c_str());
+		ImGui::Spacing();
 
-		// Changes the mesh paint mode
-		if (ImGui::Combo("Mode", &mPaintMode, "Channel Walker\0Bounding Box\0Composition\0\0"))
+		if (ImGui::CollapsingHeader("DisplaySettings"))
 		{
-			selectPaintMethod();
-		}
-
-		// Changes the display mesh
-		if (ImGui::Combo("Display Mesh", &mMeshSelection, "Heiligeweg\0Kalverstraat\0Singel\0\0"))
-		{
-			mesh_selector.select(mMeshSelection);
-		}
-
-		// Changes the mesh paint mode
-		if (ImGui::Combo("Day", &mDay, "Auto\0Sunday\0Monday\0Tuesday\0Wednesday\0Thursday\0Friday\0Saturday\0\0"))
-		{
-			if (mDay == 0)
+			// Changes the mesh paint mode
+			if (ImGui::Combo("Mode", &mPaintMode, "Channel Walker\0Bounding Box\0Composition\0\0"))
 			{
-				composition_selector.switchMode(CompositionComponentInstance::EMode::Automatic);
+				selectPaintMethod();
 			}
-			else
+
+			// Changes the display mesh
+			if (ImGui::Combo("Display Mesh", &mMeshSelection, "Heiligeweg\0Kalverstraat\0Singel\0\0"))
 			{
-				nap::utility::EDay new_day = static_cast<nap::utility::EDay>(mDay - 1);
-				composition_selector.selectDay(new_day);
+				mesh_selector.select(mMeshSelection);
+			}
+
+			// Changes the mesh paint mode
+			if (ImGui::Combo("Day", &mDay, "Auto\0Sunday\0Monday\0Tuesday\0Wednesday\0Thursday\0Friday\0Saturday\0\0"))
+			{
+				if (mDay == 0)
+				{
+					composition_selector.switchMode(CompositionComponentInstance::EMode::Automatic);
+				}
+				else
+				{
+					nap::utility::EDay new_day = static_cast<nap::utility::EDay>(mDay - 1);
+					composition_selector.selectDay(new_day);
+				}
 			}
 		}
-		ImGui::EndChild();
 
 		// Composition settings
-		ImGui::BeginChild("Composition Settings", ImVec2(ImGui::GetWindowContentRegionWidth() * 1.0, 105), true);
-		ImGui::Text("Composition Settings");
-		ImGui::SameLine();
-		std::string current_day = utility::stringFormat(": %s", utility::toString(composition_selector.getDay()).c_str());
-		ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), utility::toString(composition_selector.getDay()).c_str());
-		ImGui::AlignTextToFramePadding();
-
-		// Changes the mesh paint mode
-		if (ImGui::Combo("Cycle Mode", &mCompositionCycleMode, "Off\0Random\0List\0\0"))
+		if (ImGui::CollapsingHeader("Composition Settings"))
 		{
-			selectCompositionCycleMode();
-		}
+			std::string current_day = utility::stringFormat(": %s", utility::toString(composition_selector.getDay()).c_str());
+			ImGui::Text(utility::toString(composition_selector.getDay()).c_str());
+			ImGui::AlignTextToFramePadding();
 
-		// Changes the color palette
-		if (ImGui::SliderInt("Select", &mCompositionSelection, 0, composition_selector.getCount() - 1))
-		{
-			composition_selector.select(mCompositionSelection);
-		}
-
-		// Changes the duration
-		if (ImGui::SliderFloat("Cycle Speed", &mDurationScale, 0.0f, 10.0f))
-		{
-			composition_selector.setDurationScale(mDurationScale);
-		}
-		ImGui::EndChild();
-
-		// COlor Settings
-		ImGui::BeginChild("Color Settings", ImVec2(ImGui::GetWindowContentRegionWidth() * 1.0, 150), true);
-		ImGui::AlignTextToFramePadding();
-		ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Color Settings");
-
-		// If index colors are drawn
-		if (ImGui::Checkbox("Show Index Colors", &mShowIndexColors))
-		{
-			for (auto& comp_painter : composition_painters)
+			// Changes the mesh paint mode
+			if (ImGui::Combo("Cycle Mode", &mCompositionCycleMode, "Off\0Random\0List\0\0"))
 			{
-				comp_painter->showIndexColors(mShowIndexColors);
+				selectCompositionCycleMode();
+			}
+
+			// Changes the color palette
+			if (ImGui::SliderInt("Select", &mCompositionSelection, 0, composition_selector.getCount() - 1))
+			{
+				composition_selector.select(mCompositionSelection);
+			}
+
+			// Changes the duration
+			if (ImGui::SliderFloat("Cycle Speed", &mDurationScale, 0.0f, 10.0f))
+			{
+				composition_selector.setDurationScale(mDurationScale);
 			}
 		}
 
-		// Turn color cycling on / off
-		if (ImGui::Combo("Cycle Mode", &mColorPaletteCycleMode, "Off\0Random\0List\0\0"))
+		if (ImGui::CollapsingHeader("Color Settings"))
 		{
-			selectPaletteCycleMode();
-		}
-
-		// Changes the color palette
-		if (ImGui::SliderInt("Select Palette", &mPaletteSelection, 0, palette_selector.getCount() - 1))
-		{
-			palette_selector.select(mPaletteSelection);
-		}
-
-		// Changes the intensity
-		if (ImGui::SliderFloat("Intensity", &mIntensity, 0.0f, 1.0f))
-		{
-			for (auto& comp_painter : composition_painters)
+			// If index colors are drawn
+			if (ImGui::Checkbox("Show Index Colors", &mShowIndexColors))
 			{
-				comp_painter->setIntensity(mIntensity);
+				for (auto& comp_painter : composition_painters)
+				{
+					comp_painter->showIndexColors(mShowIndexColors);
+				}
+			}
+
+			// Changes the mesh paint mode
+			if (ImGui::Combo("Color Cycle Mode", &mColorPaletteCycleMode, "Off\0Random\0List\0\0"))
+			{
+				selectPaletteCycleMode();
+			}
+
+			// Changes the color palette
+			if (ImGui::SliderInt("Select Palette", &mPaletteSelection, 0, palette_selector.getCount() - 1))
+			{
+				palette_selector.select(mPaletteSelection);
+			}
+
+			// Changes the intensity
+			if (ImGui::SliderFloat("Intensity", &mIntensity, 0.0f, 1.0f))
+			{
+				for (auto& comp_painter : composition_painters)
+				{
+					comp_painter->setIntensity(mIntensity);
+				}
+			}
+
+			// Changes the time at which a new color palette is selected
+			if (ImGui::SliderFloat("Cycle Time", &mColorCycleTime, 0.0f, 10.0f))
+			{
+				palette_selector.setCycleSpeed(mColorCycleTime);
 			}
 		}
 
-		// Changes the time at which a new color palette is selected
-		if (ImGui::SliderFloat("Cycle Time", &mColorCycleTime, 0.0f, 10.0f))
+		if (ImGui::CollapsingHeader("Walker Settings"))
 		{
-			palette_selector.setCycleSpeed(mColorCycleTime);
-		}
-		ImGui::EndChild();
-
-		// Walker Settings
-		ImGui::BeginChild("Walker Settings", ImVec2(ImGui::GetWindowContentRegionWidth(), 110), true);
-		ImGui::AlignTextToFramePadding();
-		ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Walker Settings");
-
-		if (ImGui::Button("Reset Walker"))
-		{
-			for (auto& tracer : tracer_painters)
+			if (ImGui::Button("Reset Walker"))
 			{
-				tracer->reset();
+				for (auto& tracer : tracer_painters)
+				{
+					tracer->reset();
+				}
+			}
+
+			if (ImGui::SliderFloat("Walk Speed", &(mChannelSpeed), 0.0f, 20.0f))
+			{
+				for (auto& tracer : tracer_painters)
+				{
+					tracer->setSpeed(mChannelSpeed);
+				}
+			}
+
+			// Allows the user to select a channel to display on the tracer
+			if (ImGui::InputInt("Select Channel", &mSelectChannel, 1))
+			{
+				for (auto& tracer : tracer_painters)
+				{
+					tracer->selectChannel(mSelectChannel);
+				}
 			}
 		}
 
-		if (ImGui::SliderFloat("Walk Speed", &(mChannelSpeed), 0.0f, 20.0f))
+		if (ImGui::CollapsingHeader("Artnet Information"))
 		{
-			for (auto& tracer : tracer_painters)
+			for (int i = 0; i < mesh_selector.getLedMeshes().size(); i++)
 			{
-				tracer->setSpeed(mChannelSpeed);
+				std::vector<std::string> parts;
+				utility::splitString(mesh_selector.getLedMeshes()[i]->mTriangleMesh->mPath, '/', parts);
+
+				ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), parts.back().c_str());
+				ImGui::Text(utility::stringFormat("Channel: %d", i).c_str());
+				const std::unordered_set<ArtNetController::Address>& addresses = mesh_selector.getLedMeshes()[i]->mTriangleMesh->getAddresses();
+
+				std::string universes = "Addresses:";
+				for (auto& address : addresses)
+				{
+					uint8 sub(0), uni(0);
+					ArtNetController::convertAddress(address, sub, uni);
+					universes += utility::stringFormat(" %d:%d", sub, uni);
+				}
+
+				ImGui::Text(universes.c_str());
 			}
+			ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		}
-
-		// Allows the user to select a channel to display on the tracer
-		if (ImGui::InputInt("Select Channel", &mSelectChannel, 1))
-		{
-			for (auto& tracer : tracer_painters)
-			{
-				tracer->selectChannel(mSelectChannel);
-			}
-		}
-		ImGui::EndChild();
-
-		// Show some additional info
-		ImGui::BeginChild("Datetime Info", ImVec2(ImGui::GetWindowContentRegionWidth() * 1.0, 60), true);
-		ImGui::AlignTextToFramePadding();
-		ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Date And Time");
-		utility::getCurrentDateTime(mDateTime);
-		ImGui::TextColored(ImVec4(1.0,1.0,0.0,1.0),mDateTime.toString().c_str());
-		ImGui::EndChild();
-
-		ImGui::BeginChild("Artnet Info", ImVec2(ImGui::GetWindowContentRegionWidth() * 1.0, 200), true);
-		ImGui::AlignTextToFramePadding();
-		ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Artnet Information");
-		for (int i = 0; i < mesh_selector.getLedMeshes().size(); i++)
-		{
-			std::vector<std::string> parts;
-			utility::splitString(mesh_selector.getLedMeshes()[i]->mTriangleMesh->mPath, '/', parts);
-
-			ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), parts.back().c_str());
-			ImGui::Text(utility::stringFormat("Channel: %d", i).c_str());
-			const std::unordered_set<ArtNetController::Address>& addresses = mesh_selector.getLedMeshes()[i]->mTriangleMesh->getAddresses();
-
-			std::string universes = "Addresses:";
-			for (auto& address : addresses)
-			{
-				uint8 sub(0), uni(0);
-				ArtNetController::convertAddress(address, sub, uni);
-				universes += utility::stringFormat(" %d:%d", sub, uni);
-			}
-
-			ImGui::Text(universes.c_str());
-		}
-		ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-		ImGui::EndChild();
 		ImGui::End();
-
 	}
 
 
