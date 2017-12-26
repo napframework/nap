@@ -64,7 +64,7 @@ namespace nap
 		style.Colors[ImGuiCol_ScrollbarGrab]			= IMGUI_NAPFRO2;
 		style.Colors[ImGuiCol_ScrollbarGrabHovered]		= IMGUI_NAPFRO3;
 		style.Colors[ImGuiCol_ScrollbarGrabActive]		= IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_ComboBg]					= IMGUI_NAPFRO1;
+		style.Colors[ImGuiCol_ComboBg]					= IMGUI_NAPDARK;
 		style.Colors[ImGuiCol_CheckMark]				= IMGUI_NAPFRO3;
 		style.Colors[ImGuiCol_SliderGrab]				= IMGUI_NAPFRO2;
 		style.Colors[ImGuiCol_SliderGrabActive]			= IMGUI_NAPFRO3;
