@@ -2,6 +2,7 @@ Overview {#overview}
 =======================
 
 *	[Install](@ref install)
+*	[System Overview](@ref system_overview)
 *	[Modules & Services](@ref modules_services)
 *   [Apps](@ref apps)
 *   [Core](@ref core)
@@ -18,15 +19,56 @@ Overview {#overview}
 * 	[Embedding Objects](@ref embedding_objects)
 * 	[Embedding Pointers](@ref embedding_pointers)
 
+System Overview {#system_overview}
+=======================
+
+NAP enables you to connect and exchange data between various types of external hardware in a generic fashion. The system is designed to make it easy to re-use specific parts or components for future projects and keep app specific code local to your project. The underlying system provides you with all the handles to get up and running in no time. But it's important to understand what parts contribute to the overall system architecture. Central to NAP are a couple of key philosophies:
+
+- NAP is completely data driven
+- NAP is heavily influenced by modern game engine design, with one exception:
+- NAP does not dictate any sort of pipeline, you decide how you render, create sound etc.
+- NAP applications are lean and mean, only package and ship what you need
+- NAP is easy to extend: build your own modules and components
+- NAP wants you to be safe and validates data for you
+- NAP is responsive: hot-load content changes directly in to the running app
+- NAP is completely cross-platform and supports all modern desktop environments
+- NAP ships with many useful modules including: Rendering, OSC, Midi, Artnet, Gui, Audio etc.
+
+Below you see a dumbed-down schematic of an application build with NAP. This schematic shows some of the key components of the NAP system architecture:
+
+![NAP Overview](@ref content/nap_overview.png)
+
+Let's start reading the graph left to right. Starting from the left we see an application runner that combines 3 objects, of which 2 are important: The Application and Core. Applications are the entry point for project specific code. This is where you define what parts of your application:
+- Receive an update call 
+- Are rendered
+- Receive messages
+- Etc.
+
+Core is the heart of every NAP application and manages (among other things) modules. Core is also the gateway to the ResourceManager. Every NAP application requires a Core object. That's the reason you explicitly create one and give it to the object that runs your application. When creating Core you also create a ResourceManager. The resource manager does a lot of things but most importantly: it makes your life easy. It creates all the objects that are associated with your application, initializes them in the right order and keeps track of any content changes. When a change is detected, the resource manager automatically patches the system without having to re-compile your application. The initialzation call of your application is the perfect place to load the file and check for content errors.
+
+Modules are libraries that expose building blocks. You can use these building blocks to construct your application. Most modules expose specific building blocks, for example. The OSC module exposes osc receiving and sending objects, a generic interface to create and extract osc events and a service that deals with the osc library and network. Core loads all available modules automatically and initializes them in the right order. After a module is loaded all the building blocks are registered and the module can be initialized. You, as a user, don't have to do anything.
+
+The diagram has 4 resources from 3 different modules:
+- 1 OSC Receiver from the OSC Module
+- 2 Windows from the Render Module
+- 1 Midi Sender from the Midi Module
+
+After initializing core (and therefore all modules) the building blocks can be created by the resource manager. We add the building blocks as individual resources to our JSON file and tell the resourcemanager to load the file and voila: 
+- You now have an OSC receiver that already opened it's port and is listening to messages
+- Your 2 windows are visible on screen
+- You are ready to send some midi notes over the just opened port
+
+You might notice that working this way saves you from typing many lines of code. You don't have to declare objects in C++ or have to worry about the right order of initialization. You can directly access the resources and start building what you had in mind.
+
 Modules & Services {#modules_services}
 =======================
 
 Following the modular design of NAP, functionality is split up in Modules. Each module contains blocks of functionality that can be reused as: 
-- [Resources](@ref resourcemanager_resources) 
-- Entities
-- Components 
+- [Resources](@ref resources) 
+- [Entities](@ref scene_setup)
+- [Components](@ref creating_components)
 
-These are discussed later in separate sections. A module gets compiled into dynamically linkable libraries that are loaded into the application at startup. Each module contains a single Service. A Service is a rather abstract concept and can be used in many different ways. To understand what it does, let’s start with an example: the [RenderService](@ref nap::RenderService). The render service provides the following things:
+These are discussed later in separate sections. A module gets compiled into dynamically linkable libraries that are loaded into the application at startup. Each module can contain a [Service](@ref nap::Service). A Service is a rather abstract concept and can be used in many different ways. To understand what it does, let’s start with an example: the [RenderService](@ref nap::RenderService). The render service provides the following things:
 - It initializes the OpenGL subsystem, and terminates it on exit.
 - Each frame, the service processes system events such as the window resize event.
 - It provides a high-level rendering interface for all Resources, Components and Entities to use.
@@ -36,10 +78,32 @@ In a more abstract sense, a [Service](@ref nap::Service) can be used to perform 
 Apps {#apps}
 =======================
 
-The main entrypoint for applications is the [AppRunner](@ref nap::AppRunner) object. The AppRunner object requires two things: an [Application](@ref nap::App) to run and an [object](@ref nap::BaseAppEventHandler) that knows how to forward events that happen in the system, such as mouse and keyboard events. The application object should be derived [BaseApp](@ref nap::BaseApp) and the event handler should be derived from [BaseAppEventHandler](@ref nap::BaseAppEventHandler).
+The main entrypoint for applications is the [AppRunner](@ref nap::AppRunner) object. The AppRunner object requires two things: an [Application](@ref nap::App) to run and an [object](@ref nap::BaseAppEventHandler) that knows how to forward events that happen in the system, such as mouse and keyboard events. The application object should be derived from [BaseApp](@ref nap::BaseApp) and the event handler should be derived from [BaseAppEventHandler](@ref nap::BaseAppEventHandler).
 
-A good default to start with is to derive your application from [App](@ref nap::App) and use the default class [AppEventHandler](@ref nap::AppEventHandler). This will make sure you have input handling set up in your application. This is how you such a default setup would look like:
-<TODO: needs more work>
+A good default to start with is to derive your application from [App](@ref nap::App) and use the default class [AppEventHandler](@ref nap::AppEventHandler). This will make sure you have input handling set up in your application. This is how such a default setup would look like in main.cpp:
+
+~~~~~~~~~~~~~~~{.cpp}
+// Main loop
+int main(int argc, char *argv[])
+{
+	// Create core
+	nap::Core core;
+
+	// Create app runner
+	nap::AppRunner<nap::MyApp, nap::AppEventHandler> app_runner(core);
+
+	// Start running: This will initialize the engine, register all the modules and start the application loop
+	nap::utility::ErrorState error;
+	if (!app_runner.start(error))
+	{
+		nap::Logger::fatal("error: %s", error.toString().c_str());
+		return -1;
+	}
+
+	// Return if the app ran successfully
+	return app_runner.exitCode();
+}
+~~~~~~~~~~~~~~~
 
 Core {#core}
 =======================
@@ -98,43 +162,43 @@ Exposing Resources {#exposing_resources}
 =======================
 To make sure that C++ classes and properties can be created and edited in json you need to expose them explicitly through something called RTTI (better known as [RunTime Type Information](https://en.wikipedia.org/wiki/Run-time_type_information)). NAP uses a number of macros to ease the way you can expose classes and properties. To create an object that can be authored in json you need to derive if from [RTTIObject](@ref nap::rtti::RTTIObject) and tell the system what the parent object is. To accomplish this you add, in the class declaration, the RTTI_ENABLE macro:
 
-```
+~~~~~~~~~~~~~~~{.cpp}
 class NAPAPI Shader : public rtti::RTTIObject
 {
 	RTTI_ENABLE(rtti::RTTIObject)
 };
-```
+~~~~~~~~~~~~~~~
 
 And in the cpp file, the following macros are added:
 
-```
+~~~~~~~~~~~~~~~{.cpp}
 RTTI_BEGIN_CLASS(nap::Shader)
 RTTI_END_CLASS
-```
+~~~~~~~~~~~~~~~
 
 This is the basis for setting up an RTTI-enabled class. In the example above we defined a Shader. Without the RTTI_ENABLE macro, the system cannot detect that Shader is derived from RTTIObject. The NAPAPI macro is a convenience macro that is used to make sure we can use classes in modules. It is used to export symbols in to dynamic link libraries. It is recommended to use this macro for all NAP classes and structures in modules. 
 
 Exposing Properties {#exposing_properties}
 =======================
 To extend a class with properties you add a Property field to your class. In this example we add two strings called 'mVertPath' and 'mFragPath'. We use these properties to point to shader files on disk. The two shader files are loaded when creating the Shader object.
-```
+~~~~~~~~~~~~~~~{.cpp}
 class NAPAPI Shader : public rtti::RTTIObject
 {
 	RTTI_ENABLE(rtti::RTTIObject)
 	public:
-		std::string	mVertPath;				///< Property: Path to the vertex shader on disk
-		std::string mFragPath;				///< Property: Path to the fragment shader on disk
+		std::string	mVertPath;				// Property: Path to the vertex shader on disk
+		std::string mFragPath;				// Property: Path to the fragment shader on disk
 };
-```
+~~~~~~~~~~~~~~~
 
 And extend the rtti macro in the cpp file with information about our properties:
-```
+~~~~~~~~~~~~~~~{.cpp}
 // Adding serialzable properties
 RTTI_BEGIN_CLASS(nap::Shader)
   RTTI_PROPERTY("VertPath", &nap::Shader::mFragPath, nap::rtti::EPropertyMetaData::FileLink | nap::rtti::EPropertyMetaData::Required)
   RTTI_PROPERTY("FragPath", &nap::Shader::mVertPath, nap::rtti::EPropertyMetaData::FileLink | nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
-```
+~~~~~~~~~~~~~~~
 
 mFragPath and mVertPath are now exposed to the system. The [EPropertyMetaData](@ref nap::rtti::EPropertyMetaData) enum provides additional information about properties. In this examples the vertex and fragment shader paths are required and the paths are a link to a (shader) file on disk. NAP exposes the following types of properties:
 
@@ -165,7 +229,7 @@ class NAPAPI Material : public rtti::RTTIObject
 {
 	...
 public:
-	ObjectPtr<nap::Shader> mShader;	///< Property: Link to a 'Shader' resource
+	ObjectPtr<nap::Shader> mShader;	// Property: Link to a 'Shader' resource
 };
 ~~~~~~~~~~~~~~~
 
@@ -193,11 +257,11 @@ We can now construct and edit these objects in json:
 
 Both 'Material' and 'Shader' need to [register](@ref exposing_resources) their type and associated properties with RTTI. Since we already defined the shader we only have to define the material:
 
-```
+~~~~~~~~~~~~~~~{.cpp}
 RTTI_BEGIN_CLASS(nap::Material)
   RTTI_PROPERTY("Shader", &nap::Material::mShader, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
-```
+~~~~~~~~~~~~~~~
 
 The material is now registered and (exposes as as property) the link to a shader. After calling nap::ResourceManager::loadFile(), these two objects will be created and the pointers will be ‘resolved’, meaning that they will be set to the correct object. In this case, Material::mShader points to a 'FogShader'. ResourceManager also makes sure that any object you are pointing to will be initialized prior to its own initialization. So, it is safe to assume that any object you are pointing to already has its init() called successfully. One thing to be careful with is that cyclic dependencies are not supported. It is not possible to point to objects that eventually point back at the original object. The system cannot determine correct initialization orders in these situations.
 
@@ -218,11 +282,11 @@ These are the rules for writing a correct init() function:
 
 nap::utility::ErrorState is a class that offers convenient ways of reporting errors to the user. The general pattern is the following:
 
-```
+~~~~~~~~~~~~~~~{.cpp}
 if (!errorState.check(loadImage(), 
 	"Failed to load image %s because the dimensions are unsupported (%d:%d)", mPath.c_str(), mDimensions.x, mDimensions.y))
   return false;
- ```
+~~~~~~~~~~~~~~~
 
 The pattern is somewhat similar to the way asserts work: the first parameter is evaluated and if it evaluated to false, the error message in the parameters that follow is stored in the errorState object. Notice that multiple messages can be stacked in the errorState object. This is convenient in many situations where a very low-level message is generated, but the context where the error occurred is missing. By nesting nap::utility::ErrorState::check() calls in various functions, the context can still be provided.
 
@@ -231,12 +295,12 @@ Linking Media {#media}
 
 In the [Real Time Editing](@ref editing) section we briefly touched upon linking to external files. Some objects read information from other files. Examples are: texture objects that read .PNG, .TGA files, or audio files that read .WAV or .MP3 files. The real-time editing system will reload any of these external files when a modification to them is made. For these situations we need to explicitly define the relationship to the external file in RTTI. You do this by marking a property as a file link in the RTTI properties:
 
-```
+~~~~~~~~~~~~~~~{.cpp}
 RTTI_BEGIN_CLASS(Texture)
   RTTI_PROPERTY("Path", &Texture::mPath, nap::rtti::EPropertyMetaData::FileLink)
 RTTI_END_CLASS
 
-```
+~~~~~~~~~~~~~~~
 
 Scene Setup {#scene_setup}
 =======================
@@ -341,7 +405,7 @@ A scene is a container for entities and an entity is a container for components.
 
 NAP offers a number of components off the shelve, like the [TransformComponent](@ref nap::TransformComponent) and the [RenderableMeshComponent](@ref nap::RenderableMeshComponent). These can be used to build hierarchies of visual objects. Many other components exist as well, for instance, input, osc, midi and audio components. However, it is very likely that you want to create your own components. When creating your own component, derive from nap::Component and add the properties that need to be edited in json:
 
-```
+~~~~~~~~~~~~~~~{.cpp}
 class NAPAPI PerspCameraComponent : public Component
 {
 	RTTI_ENABLE(Component)
@@ -353,9 +417,9 @@ class NAPAPI PerspCameraComponent : public Component
 	}
 
 public:
-	float mFieldOfView = 50.0f;				///< Property: Camera Field Of View
+	float mFieldOfView = 50.0f;				// Property: Camera Field Of View
 };
-```
+~~~~~~~~~~~~~~~
 
 Here we create a perspective camera with a field of view property. Some concepts are familiar to creating resources, but some others are new:
 
@@ -416,7 +480,7 @@ If your component needs another component, in this case a transform to position 
 
  When calling [loadFile()](@ref nap::ResourceManager::loadFile()) the PerspCameraComponent is created as part of the CameraEntity. On [init()](@ref nap::ComponentInstance::init()) the camera component is able to access the transform because the dependency to the transform was set-up correctly. NAP will now attempt to to create an instance of the PerspCameraComponent: a PerspCameraComponentInstance. But we haven't created that object yet:
 
-```
+~~~~~~~~~~~~~~~{.cpp}
 class NAPAPI PerspCameraComponentInstance : public ComponentInstance
 {
 	RTTI_ENABLE(ComponentInstance)
@@ -425,15 +489,15 @@ public:
 
 	virtual bool init(utility::ErrorState& errorState) override;
 };
-```
+~~~~~~~~~~~~~~~
 
 The RTTI needs to be setup in a similar way (although registering properties is not required as this object is not read from json). The init pattern and the error handling is exactly the same as with regular resources. A small difference is the fact that this object does not contain a default constructor. The constructor receives the entity this component belongs to and the resource counterpart of this instance. To make sure the object can be created (without a default constructor) we have to tell RTTI what constructor to use. You explicitly tell RTTI that there is no default constructor and for each custom constructor, we have to add one seperately:
 
-```
+~~~~~~~~~~~~~~~{.cpp}
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PerspCameraComponentInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
-```
+~~~~~~~~~~~~~~~
 
 When loadFile() is called, the constructor mentioned above will be invoked and our scene is instantiated correctly. The [update()](@ref nap::ComponentInstance::update) function can be overridden to add per-frame functionality. In the case of this camera component, the roles of the various components could look something like this:
 
@@ -451,7 +515,7 @@ Embedding Objects {#embedding_objects}
 
 C++ objects are often embedded into each other. For example:
 
- ```
+~~~~~~~~~~~~~~~{.cpp}
  // RGB Color
 class NAPAPI Color
 {
@@ -465,14 +529,14 @@ class NAPAPI Palette : public rtti::RTTIObject
 {
 	RTTI_ENABLE(rtti::RTTIObject)
 public:
-	Color mColorOne;		///< First Color of the palette
-	Color mColorTwo;		///< Second Color of the palette
+	Color mColorOne;		// First Color of the palette
+	Color mColorTwo;		// Second Color of the palette
 };
- ```
+~~~~~~~~~~~~~~~
 
 Here we see a Palette object, derived from nap::rtti::RTTIObject, intended to be authored in json. It contains an embedded object (a compound) of type Color. Both classes Palette and Color have their properties set up in the cpp file as required:
 
- ```
+~~~~~~~~~~~~~~~{.cpp}
 RTTI_BEGIN_CLASS(Color)
 	RTTI_PROPERTY("r", &Color::r, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("g", &Color::g, nap::rtti::EPropertyMetaData::Default)
@@ -483,7 +547,7 @@ RTTI_BEGIN_CLASS(Palette)
 	RTTI_PROPERTY("ColorOne", &Palette::mColorOne, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ColorTwo", &Palette::mColorTwo, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
- ```
+~~~~~~~~~~~~~~~
 
 In json this can now be authored as follows:
  ```
@@ -517,23 +581,23 @@ Embedding Pointers {#embedding_pointers}
 
 Embedded objects have the benefit that their notation in json is rather compact. But often pointers are used to link to other objects. For example:
 
- ```
+~~~~~~~~~~~~~~~{.cpp}
 // A palette container links to a color palette
 class NAPAPI PaletteContainer : public rtti::RTTIObject
 {
 	RTTI_ENABLE(rtti::RTTIObject)
 public:
-	ObjectPtr<Palette>	mColorPalette;			///< Property: Link to a color palette
+	ObjectPtr<Palette>	mColorPalette;			// Property: Link to a color palette
 };
-```
+~~~~~~~~~~~~~~~
 
 In this example, PaletteContainer points to a color palette. Both PaletteContainer and the ColorPalette object will become root objects in the json file, which is sometimes messy and harder to read. For this reason, NAP supports ‘embedded pointers’. If an object logically belongs to another object, you can mark the pointer ‘embedded’, and the syntax will become similar to the way that compound objects are written. The RTTI definition in the cpp needs to change slightly:
 
- ```
+~~~~~~~~~~~~~~~{.cpp}
 RTTI_BEGIN_CLASS(Foo)
 	RTTI_PROPERTY("ColorPalette", &PaletteContainer::mColorPalette,  nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
-```
+~~~~~~~~~~~~~~~
 
 Now, we can write this in json as follows:
 ```

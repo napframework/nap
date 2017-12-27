@@ -169,7 +169,7 @@ a.elRef {
 }
 a.code, a.code:visited {
 	color: #8B8CA0;
-	text-decoration: underline;
+	font-weight: bold;
 }
 a.codeRef, a.codeRef:visited {
 	color: #8B8CA0;
@@ -323,7 +323,8 @@ span.keywordtype {
 	color: #5D5E73;
 }
 span.keywordflow {
-	color: #5D5E73
+	color: #5D5E73;
+	font-weight: bold;
 }
 span.comment {
 	color: #5D5E73
@@ -1155,7 +1156,7 @@ background-image: none;
 	color: #8B8CA0;
 }
 #nav-tree .label{
-	font-size: .9rem;
+	font-size: 1.0rem;
 }
 .ui-resizable-e{
 	background-image: none;
@@ -1324,4 +1325,9 @@ a.SRScope {
     background-color: #111426;
     font-family: 'Nunito Sans', sans-serif;
     color: #fff;
+}
+
+.image
+{
+	text-align: left;
 }
