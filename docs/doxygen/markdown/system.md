@@ -1,8 +1,7 @@
-Overview {#overview}
+System {#system}
 =======================
 
-*	[Install](@ref install)
-*	[System Overview](@ref system_overview)
+*	[Overview](@ref system_overview)
 *	[Modules & Services](@ref modules_services)
 *   [Apps](@ref apps)
 *   [Core](@ref core)
@@ -19,24 +18,12 @@ Overview {#overview}
 * 	[Embedding Objects](@ref embedding_objects)
 * 	[Embedding Pointers](@ref embedding_pointers)
 
-System Overview {#system_overview}
+Overview {#system_overview}
 =======================
 
-NAP enables you to connect and exchange data between various types of external hardware in a generic fashion. The system is designed to make it easy to re-use specific parts or components for future projects and keep app specific code local to your project. The underlying system provides you with all the handles to get up and running in no time. But it's important to understand what parts contribute to the overall system architecture. Central to NAP are a couple of key philosophies:
+NAP enables you to connect and exchange data between various types of external hardware in a generic fashion. The system is designed to make it easy to re-use specific parts or components for future projects and keep app specific code local to your project. The underlying system provides you with all the handles to get up and running in no time. But it's important to understand what parts contribute to the overall system architecture. Below you see a dumbed-down schematic of an application build with NAP. This schematic shows some of the key components of the NAP system architecture:
 
-- NAP is completely data driven
-- NAP is heavily influenced by modern game engine design, with one exception:
-- NAP does not dictate any sort of pipeline, you decide how you render, create sound etc.
-- NAP applications are lean and mean, only package and ship what you need
-- NAP is easy to extend: build your own modules and components
-- NAP wants you to be safe and validates data for you
-- NAP is responsive: hot-load content changes directly in to the running app
-- NAP is completely cross-platform and supports all modern desktop environments
-- NAP ships with many useful modules including: Rendering, OSC, Midi, Artnet, Gui, Audio etc.
-
-Below you see a dumbed-down schematic of an application build with NAP. This schematic shows some of the key components of the NAP system architecture:
-
-![NAP Overview](@ref content/nap_overview.png)
+![](@ref content/nap_overview.png)
 
 Let's start reading the graph left to right. Starting from the left we see an application runner that combines 3 objects, of which 2 are important: The Application and Core. Applications are the entry point for project specific code. This is where you define what parts of your application:
 - Receive an update call 
