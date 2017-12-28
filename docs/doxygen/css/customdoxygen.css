@@ -148,6 +148,7 @@ a:hover {
 }
 .contents a, .contents a:visited {
 	color: #8B8CA0;
+	text-decoration: underline;
 }
 a.qindex, a.qindex:visited  {
 	color: #8B8CA0;
@@ -170,6 +171,7 @@ a.elRef {
 a.code, a.code:visited {
 	color: #8B8CA0;
 	font-weight: bold;
+	text-decoration: none;
 }
 a.codeRef, a.codeRef:visited {
 	color: #8B8CA0;
