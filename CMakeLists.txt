@@ -77,6 +77,9 @@ add_subdirectory(apps/artnetcolor)
 add_subdirectory(apps/steef)
 add_subdirectory(apps/skeleton)
 
+# demo targets
+add_subdirectory(demos/helloworld)
+
 add_subdirectory(unittests)
 
 if (APPLE)

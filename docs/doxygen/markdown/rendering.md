@@ -22,7 +22,7 @@ Let's look at an example before we dive in some of the more technical aspects of
 Example {#render_example}
 =======================
 
-To follow this example it's good to read the high level [system](@ref system) documentation first. This example renders a rotating sphere with a world texture to the first screen. To render a rotating sphere we need a:
+To follow this example it's good to read the high level [system](@ref system) documentation first. This example renders a rotating sphere with a world texture to the first screen. This example is part of the 'HelloWorld' demo. To render a rotating sphere we need a:
 
 - [Window](@ref nap::RenderWindow)
 - [Sphere](@ref nap::SphereMesh)
@@ -50,14 +50,14 @@ But let's begin by defining some of the resources in JSON:
 {
 	"Type" : "nap::Image",	
 	"mID" : "WorldTexture",
-	"ImagePath" : "data/world_demo/world_texture.jpg"
+	"ImagePath" : "data/helloworld/world_texture.png"
 },
 
 {
 	"Type" : "nap::Shader",
 	"mID": "WorldShader",
-	"mVertShader": "shaders/world_demo/world.vert",
-	"mFragShader": "shaders/world_demo/world.frag"
+	"mVertShader": "shaders/helloworld/world.vert",
+	"mFragShader": "shaders/helloworld/world.frag"
 },
 
 {
@@ -199,7 +199,7 @@ bool ExampleApp::init(utility::ErrorState& error)
 		
 	// Get resource manager and load
 	mResourceManager = getCore().getResourceManager();
-	if (!mResourceManager->loadFile("data/world_demo/demo.json", error))
+	if (!mResourceManager->loadFile("data/helloworld/helloworld.json", error))
 	{
 		return false;
 	}
@@ -232,11 +232,11 @@ void ExampleApp::render()
 	
 	// Find the world and add as an object to render
 	std::vector<nap::RenderableComponentInstance*> components_to_render;
-	nap::RenderableMeshComponentInstance& renderable_world = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>()
+	nap::RenderableMeshComponentInstance& renderable_world = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
 	components_to_render.emplace_back(&renderable_world);
 	
 	// Find the camera
-	nap::PerspCameraComponentInstance& camera = mCameraEntity->getComponent<nap::PerspCameraComponentInstance>()
+	nap::PerspCameraComponentInstance& camera = mCameraEntity->getComponent<nap::PerspCameraComponentInstance>();
 
 	// Render the world with the right camera directly to screen
 	mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, components_to_render);
