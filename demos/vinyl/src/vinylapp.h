@@ -107,6 +107,6 @@ namespace nap
 		ObjectPtr<EntityInstance>	mBackgroundEntity = nullptr;		//< Pointer to the entity that holds the background image
 
 		// Color of the vinyl record
-		nap::RGBColorFloat			mRecordColor = nap::RGBColorFloat(0.0f, 0.0f, 0.0f);
+		nap::RGBColorFloat			mRecordColor = nap::RGBColorFloat(0.07f, 0.07f, 0.07f);
 	};
 }
