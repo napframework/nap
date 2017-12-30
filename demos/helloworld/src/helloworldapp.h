@@ -14,6 +14,7 @@ namespace nap
 {
 	/**
 	 * Demo application that is called from within the main loop
+	 *
 	 * Shows a rotating textured sphere in the center of the viewport
 	 * You can use the left mouse button to orbit around the object and 
 	 * the right mouse button to zoom in on the object

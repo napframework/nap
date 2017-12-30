@@ -79,6 +79,7 @@ add_subdirectory(apps/skeleton)
 
 # demo targets
 add_subdirectory(demos/helloworld)
+add_subdirectory(demos/vinyl)
 
 add_subdirectory(unittests)
 
