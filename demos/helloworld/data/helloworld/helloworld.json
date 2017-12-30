@@ -4,8 +4,8 @@
 		{		
 			"Type" : "nap::RenderWindow",
 			"mID" : "Window0",
-			"Width" : 512,
-			"Height" : 512,
+			"Width" : 1280,
+			"Height" : 720,
 			"Title" : "Window 1",
 			"ClearColor": {
                 "x": 0.0666,
@@ -46,6 +46,10 @@
 				{
 					"MeshAttributeID": "UV0",
 					"ShaderAttributeID": "in_UV0"
+				},
+				{
+					"MeshAttributeID" : "Normal",
+					"ShaderAttributeID" : "in_Normal"
 				}
 			],
 			"Uniforms" : 
@@ -54,6 +58,16 @@
 					"Type" : "nap::UniformTexture2D",
 					"Name" : "inWorldTexture",
 					"Texture" : "WorldTexture"
+				},
+				{
+					"Type" : "nap::UniformVec3",
+					"Name" : "inCameraPosition",
+					"Value" : 
+					{
+						"x" : 0.0,
+						"y" : 0.0,
+						"z" : 4.0
+					}
 				}
 			]			
 		},

@@ -131,6 +131,14 @@ namespace nap
 		*/
 		template<typename T>
 		void smooth(T& currentValue, const T& targetValue, T& currentVelocity, float deltaTime, float smoothTime, float maxSpeed);
+		
+		/**
+		 * Extracts the position component from a 4x4 matrix.
+		 * This call assumes the matrix is column major, ie: the outermost array dimension is a column
+		 * @param matrix column major matrix
+		 * @return the position component from a 4x4 matrix
+		 */
+		glm::vec3 NAPAPI position(const glm::mat4x4& matrix);
 
 		//////////////////////////////////////////////////////////////////////////
 		// Template definitions
