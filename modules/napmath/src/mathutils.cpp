@@ -153,5 +153,11 @@ namespace nap
 			currentValue.z = smoothDamp(currentValue.z, targetValue.z, currentVelocity.z, deltaTime, smoothTime, maxSpeed);
 			currentValue.w = smoothDamp(currentValue.w, targetValue.w, currentVelocity.w, deltaTime, smoothTime, maxSpeed);
 		}
+
+
+		glm::vec3 position(const glm::mat4x4& matrix)
+		{
+			return glm::vec3(matrix[3][0], matrix[3][1], matrix[3][2]);
+		}
 	}
 }

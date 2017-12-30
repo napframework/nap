@@ -71,7 +71,8 @@ namespace nap
 
 	
 	/**
-	 * Render loop is rather straight forward: 
+	 * Render loop is rather straight forward:
+	 * Set the camera position in the world shader for the halo effect
 	 * make the main window active, this makes sure that all subsequent render calls are 
 	 * associated with that window. When you have multiple windows and don't activate the right window subsequent
 	 * render calls could end up being associated with the wrong context, resulting in undefined behavior.
@@ -79,6 +80,16 @@ namespace nap
 	 */
 	void HelloWorldApp::render()
 	{
+		// Update the camera location in the world shader for the halo effect
+		// To do that we fetch the material associated with the world mesh and query the camera location uniform
+		// Once we have the uniform we can set it to the camera world space location
+		nap::RenderableMeshComponentInstance& render_mesh = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
+		nap::UniformVec3& cam_loc_uniform = render_mesh.getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("inCameraPosition");
+
+		nap::TransformComponentInstance& cam_xform = mCameraEntity->getComponent<nap::TransformComponentInstance>();
+		glm::vec3 global_pos = math::position(cam_xform.getGlobalTransform());
+		cam_loc_uniform.setValue(global_pos);
+
 		// Clear opengl context related resources that are not necessary any more
 		mRenderService->destroyGLContextResources({ mRenderWindow });
 
