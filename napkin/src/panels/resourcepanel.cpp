@@ -59,8 +59,8 @@ napkin::ResourcePanel::ResourcePanel()
 	mTreeView.getTreeView().setColumnWidth(0, 300);
 	mTreeView.getTreeView().setSortingEnabled(true);
 
-	connect(&AppContext::get(), &AppContext::fileOpened, this, &ResourcePanel::onFileOpened);
-	connect(&AppContext::get(), &AppContext::newFileCreated, this, &ResourcePanel::onNewFile);
+	connect(&AppContext::get(), &AppContext::documentOpened, this, &ResourcePanel::onFileOpened);
+	connect(&AppContext::get(), &AppContext::newDocumentCreated, this, &ResourcePanel::onNewFile);
 
 	connect(mTreeView.getSelectionModel(), &QItemSelectionModel::selectionChanged, this,
 			&ResourcePanel::onSelectionChanged);

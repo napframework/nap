@@ -70,7 +70,7 @@ namespace napkin
 		 *
 		 * @param filename The file to load, can be absolute or relative to the current working directory.
 		 */
-		Document* loadFile(const QString& filename);
+		Document* loadDocument(const QString& filename);
 
 		/**
 		 * Save the current data to disk using the currently set filename.
@@ -78,19 +78,19 @@ namespace napkin
 		 * The filename can be set by invoking saveFileAs(const QString& filename) before calling this method.
 		 * Any failures will be reported through nap::Logger, recovery should be handled prior to calling this method.
 		 */
-		void saveFile();
+		void saveDocument();
 
 		/**
 		 * Save the current data to disk.
 		 * Any failures will be reported through nap::Logger
 		 * @param filename The file to save the data to.
 		 */
-		void saveFileAs(const QString& filename);
+		void saveDocumentAs(const QString& filename);
 
 		/**
 		 * (Re-)open the file that was opened last. Uses local user settings to persist the filename.
 		 */
-		void openRecentFile();
+		void openRecentDocument();
 
 		/**
 		 * @return The path of the file that was opened last.
@@ -146,20 +146,20 @@ namespace napkin
 		 * Fired after a file has been opened and its objects made available.
 		 * @param filename Name of the file that was opened
 		 */
-		void fileOpened(const QString& filename);
+		void documentOpened(const QString& filename);
 
 		/**
 		 * Qt Signal
-		 * Fires after a file has finished saving.
+		 * Fires after a document has finished saving.
 		 * @param filename The file the data was saved to.
 		 */
-		void fileSaved(const QString& filename);
+		void documentSaved(const QString& filename);
 
 		/**
 		 * Qt Signal
-		 * Fired after a new file has been created and the data is erased.
+		 * Fired after a new document has been created and the data is erased.
 		 */
-		void newFileCreated();
+		void newDocumentCreated();
 
 		/**
 		 * Qt Signal

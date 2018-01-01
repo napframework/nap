@@ -49,7 +49,7 @@ void OpenFileAction::perform()
 	if (filename.isNull())
 		return;
 
-	AppContext::get().loadFile(filename);
+	AppContext::get().loadDocument(filename);
 }
 
 SaveFileAction::SaveFileAction()
@@ -65,7 +65,7 @@ void SaveFileAction::perform()
 		SaveFileAsAction().trigger();
 		return;
 	}
-	AppContext::get().saveFile();
+	AppContext::get().saveDocument();
 }
 
 SaveFileAsAction::SaveFileAsAction()
@@ -87,7 +87,7 @@ void SaveFileAsAction::perform()
 	if (filename.isNull())
 		return;
 
-	ctx.saveFileAs(filename);
+	ctx.saveDocumentAs(filename);
 }
 
 AddObjectAction::AddObjectAction(const rttr::type& type) : Action(), mType(type)

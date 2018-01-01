@@ -6,7 +6,7 @@ using namespace napkin;
 
 void MainWindow::bindSignals()
 {
-	connect(&AppContext::get(), &AppContext::fileOpened, [this](const QString& filename) { onDocumentChanged(); });
+	connect(&AppContext::get(), &AppContext::documentOpened, [this](const QString& filename) { onDocumentChanged(); });
 	connect(&AppContext::get(), &AppContext::documentChanged, [this]() { onDocumentChanged(); });
 
 	connect(&mResourcePanel, &ResourcePanel::selectionChanged, [&](QList<nap::rtti::RTTIObject*>& objects) {
