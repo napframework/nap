@@ -21,7 +21,6 @@ public:
 	}
 
 	int count() { return mCount; }
-
 private:
 	int mCount = 0;
 };
@@ -41,11 +40,12 @@ TEST_CASE("Document Management", TAG_NAPKIN)
 	doc->setFilename(testFilename);
 	REQUIRE(doc->getCurrentFilename() == testFilename);
 
-	// Track signal
 	doc = AppContext::get().newDocument();
 
 	REQUIRE(doc->getCurrentFilename().isEmpty());
 	REQUIRE(doc->getObjects().size() == 0);
+
+
 }
 
 TEST_CASE("Document Signals", TAG_NAPKIN)
@@ -304,15 +304,31 @@ TEST_CASE("PropertyPath", TAG_NAPKIN)
 TEST_CASE("Commands", TAG_NAPKIN)
 {
 	auto& ctx = AppContext::get();
+	SigCapture sigDocChanged(&ctx, &AppContext::documentChanged);
+	int sigDocCount = 0;
+	REQUIRE(sigDocChanged.count() == sigDocCount);
+
+	auto loadeddoc = ctx.loadFile("data/objects.json");
+	{
+		REQUIRE(loadeddoc);
+		REQUIRE(sigDocChanged.count() == ++sigDocCount);
+		auto object = loadeddoc->getObject("material");
+
+	}
+
 	auto doc = ctx.newDocument();
+	REQUIRE(sigDocChanged.count() == ++sigDocCount);
 
 	// Add an object and verify
 	ctx.executeCommand(new AddObjectCommand(RTTI_OF(nap::Entity)));
+	REQUIRE(sigDocChanged.count() == ++sigDocCount);
 	REQUIRE(doc->getObjects().size() == 1);
 	{
 		doc->undo();
+		REQUIRE(sigDocChanged.count() == ++sigDocCount);
 		REQUIRE(doc->getObjects().size() == 0);
 		doc->redo();
+		REQUIRE(sigDocChanged.count() == ++sigDocCount);
 		REQUIRE(doc->getObjects().size() == 1);
 	}
 
@@ -322,11 +338,14 @@ TEST_CASE("Commands", TAG_NAPKIN)
 
 	// Add another one and verify
 	ctx.executeCommand(new AddObjectCommand(RTTI_OF(nap::Entity), entity1));
+	REQUIRE(sigDocChanged.count() == ++sigDocCount);
 	REQUIRE(doc->getObjects().size() == 2);
 	{
 		doc->undo();
+		REQUIRE(sigDocChanged.count() == ++sigDocCount);
 		REQUIRE(doc->getObjects().size() == 1);
 		doc->redo();
+		REQUIRE(sigDocChanged.count() == ++sigDocCount);
 		REQUIRE(doc->getObjects().size() == 2);
 	}
 
@@ -341,26 +360,32 @@ TEST_CASE("Commands", TAG_NAPKIN)
 	REQUIRE(nameProp2.isValid());
 
 	ctx.executeCommand(new SetValueCommand(nameProp1, "Loco"));
+	REQUIRE(sigDocChanged.count() == ++sigDocCount);
 	REQUIRE(entity1->mID == "Loco");
 
 	// Name may not be empty
 	ctx.executeCommand(new SetValueCommand(nameProp1, ""));
+	REQUIRE(sigDocChanged.count() == ++sigDocCount);
 	REQUIRE(entity1->mID == "Loco");
 
 	// No duplicate names
 	ctx.executeCommand(new SetValueCommand(nameProp2, "Loco"));
+	REQUIRE(sigDocChanged.count() == ++sigDocCount);
 	REQUIRE(entity2->mID != "Loco");
 
 	// Setting a unique name should succeed
 	ctx.executeCommand(new SetValueCommand(nameProp2, "Motion"));
+	REQUIRE(sigDocChanged.count() == ++sigDocCount);
 	REQUIRE(entity2->mID == "Motion");
 
 	// Remove object and verify
 	ctx.executeCommand(new DeleteObjectCommand(*entity1));
+	REQUIRE(sigDocChanged.count() == ++sigDocCount);
 	REQUIRE(doc->getObjects().size() == 1);
 
 	// Remove next and verify
 	ctx.executeCommand(new DeleteObjectCommand(*entity2));
+	REQUIRE(sigDocChanged.count() == ++sigDocCount);
 	REQUIRE(doc->getObjects().size() == 0);
 
 	// TODO: Support undo for deletion

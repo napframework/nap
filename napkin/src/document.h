@@ -33,6 +33,12 @@ namespace napkin
 		void setFilename(const QString& filename) { mCurrentFilename = filename; }
 
 		/**
+		 * Check if changes were made to this document since the last save
+		 * @return Whether this document is dirty or not
+		 */
+		bool isDirty() const { return !mUndoStack.isClean(); }
+
+		/**
 		 * @return All the objects (resources?) that are currently loaded.
 		 */
 		nap::rtti::OwnedObjectList& getObjects() { return mObjects; }

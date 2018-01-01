@@ -50,10 +50,11 @@ Document* AppContext::newDocument()
 	mDocument = std::make_unique<Document>(mCore);
 	connectDocumentSignals();
 	newFileCreated();
+	documentChanged();
 	return mDocument.get();
 }
 
-void AppContext::loadFile(const QString& filename)
+Document* AppContext::loadFile(const QString& filename)
 {
 	auto abspath = getAbsolutePath(filename.toStdString());
 	nap::Logger::info("Loading '%s'", abspath.c_str());
@@ -66,19 +67,21 @@ void AppContext::loadFile(const QString& filename)
 	if (!readJSONFile(filename.toStdString(), getCore().getResourceManager()->getFactory(), result, err))
 	{
 		nap::Logger::fatal(err.toString());
-		return;
+		return nullptr;
 	}
 
 	if (!nap::rtti::DefaultLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, err))
 	{
 		nap::Logger::fatal("Failed to resolve links: %s", err.toString().c_str());
-		return;
+		return nullptr;
 	}
 
 	// transfer
 	mDocument = std::make_unique<Document>(mCore, filename, std::move(result.mReadObjects));
 	connectDocumentSignals();
 	fileOpened(filename);
+	documentChanged();
+	return mDocument.get();
 }
 
 void AppContext::saveFile()
@@ -118,6 +121,8 @@ void AppContext::saveFileAs(const QString& filename)
 	QSettings().setValue(settingsKey::LAST_OPENED_FILE, filename);
 
 	fileSaved(filename);
+	getUndoStack().setClean();
+	documentChanged();
 }
 
 void AppContext::openRecentFile()
@@ -153,5 +158,9 @@ void AppContext::connectDocumentSignals()
 	connect(doc, &Document::objectChanged, this, &AppContext::objectChanged);
 	connect(doc, &Document::objectRemoved, this, &AppContext::objectRemoved);
 	connect(doc, &Document::propertyValueChanged, this, &AppContext::propertyValueChanged);
+	connect(&mDocument->getUndoStack(), &QUndoStack::indexChanged, [this](int idx)
+	{
+		documentChanged();
+	});
 }
 

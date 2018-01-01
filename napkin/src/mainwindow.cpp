@@ -1,11 +1,12 @@
+#include <QtWidgets/QMessageBox>
 #include "mainwindow.h"
 
 using namespace napkin;
 
 void MainWindow::bindSignals()
 {
-	connect(&AppContext::get(), &AppContext::fileOpened, this, &MainWindow::onFileOpened);
-	connect(&AppContext::get(), &AppContext::fileSaved, this, &MainWindow::onFileSaved);
+	connect(&AppContext::get(), &AppContext::fileOpened, [this](const QString& filename) { onDocumentChanged(); });
+	connect(&AppContext::get(), &AppContext::documentChanged, [this]() { onDocumentChanged(); });
 
 	connect(&mResourcePanel, &ResourcePanel::selectionChanged, [&](QList<nap::rtti::RTTIObject*>& objects) {
 		mInspectorPanel.setObject(objects.isEmpty() ? nullptr : objects.first());
@@ -18,6 +19,26 @@ void MainWindow::showEvent(QShowEvent* event)
 	AppContext::get().restoreUI();
 }
 
+void MainWindow::closeEvent(QCloseEvent* event)
+{
+	if (AppContext::get().getDocument()->isDirty())
+	{
+		auto result = QMessageBox::question(this, "Save before exit",
+											"The current document has unsaved changes.\n"
+													"Save the changes before exit??",
+											QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+		if (result == QMessageBox::Yes)
+		{
+			SaveFileAction action;
+			action.trigger();
+		}
+		else if (result == QMessageBox::Cancel)
+		{
+			return;
+		}
+	}
+	BaseWindow::closeEvent(event);
+}
 
 void MainWindow::addDocks()
 {
@@ -61,28 +82,25 @@ void MainWindow::addMenu()
 }
 
 
-void MainWindow::onNewFile()
+void MainWindow::onDocumentChanged()
 {
-	updateWindowTitle();
-}
-
-
-void MainWindow::onFileOpened(const QString& filename)
-{
-	updateWindowTitle();
-}
-
-
-void MainWindow::onFileSaved(const QString& filename)
-{
+	nap::Logger::info("DocumentChanged");
 	updateWindowTitle();
 }
 
 
 void MainWindow::updateWindowTitle()
 {
-	setWindowTitle(QString("%1 - %2").arg(QApplication::applicationName(),
-										  AppContext::get().getDocument()->getCurrentFilename()));
+	QString filename = AppContext::get().getDocument()->getCurrentFilename();
+	if (filename.isEmpty()) {
+		filename = napkin::TXT_UNTITLED_DOCUMENT;
+	} else {
+		filename = QFileInfo(filename).fileName();
+	}
+
+	QString changed = AppContext::get().getDocument()->isDirty() ? "*" : "";
+
+	setWindowTitle(QString("%1%2 - %3").arg(filename, changed, QApplication::applicationName()));
 }
 
 MainWindow::MainWindow()
@@ -95,3 +113,4 @@ MainWindow::MainWindow()
 MainWindow::~MainWindow()
 {
 }
+
