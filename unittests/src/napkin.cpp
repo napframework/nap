@@ -5,8 +5,6 @@
 #include <composition.h>
 #include <ledcolorpalette.h>
 
-using namespace napkin;
-using namespace nap;
 
 #define TAG_NAPKIN "[napkin]"
 
@@ -27,7 +25,7 @@ private:
 
 TEST_CASE("Document Management", TAG_NAPKIN)
 {
-	auto doc = AppContext::get().getDocument();
+	auto doc = napkin::AppContext::get().getDocument();
 
 	// Must have a default document
 	REQUIRE(doc != nullptr);
@@ -40,7 +38,7 @@ TEST_CASE("Document Management", TAG_NAPKIN)
 	doc->setFilename(testFilename);
 	REQUIRE(doc->getCurrentFilename() == testFilename);
 
-	doc = AppContext::get().newDocument();
+	doc = napkin::AppContext::get().newDocument();
 
 	REQUIRE(doc->getCurrentFilename().isEmpty());
 	REQUIRE(doc->getObjects().size() == 0);
@@ -50,11 +48,11 @@ TEST_CASE("Document Management", TAG_NAPKIN)
 
 TEST_CASE("Document Signals", TAG_NAPKIN)
 {
-	auto doc = AppContext::get().newDocument();
-	SigCapture sigObjectAdded(doc, &Document::objectAdded);
-	SigCapture sigObjectRemoved(doc, &Document::objectRemoved);
-	SigCapture sigObjectChanged(doc, &Document::objectChanged);
-	SigCapture sigPropertyValueChanged(doc, &Document::propertyValueChanged);
+	auto doc = napkin::AppContext::get().newDocument();
+	SigCapture sigObjectAdded(doc, &napkin::Document::objectAdded);
+	SigCapture sigObjectRemoved(doc, &napkin::Document::objectRemoved);
+	SigCapture sigObjectChanged(doc, &napkin::Document::objectChanged);
+	SigCapture sigPropertyValueChanged(doc, &napkin::Document::propertyValueChanged);
 
 	auto entity = doc->addObject<nap::Entity>();
 	REQUIRE(sigObjectAdded.count() == 1);
@@ -65,22 +63,22 @@ TEST_CASE("Document Signals", TAG_NAPKIN)
 
 TEST_CASE("Array Value Elements", TAG_NAPKIN)
 {
-	auto doc = AppContext::get().newDocument();
+	auto doc = napkin::AppContext::get().newDocument();
 	auto palette = doc->addObject<nap::LedColorPalette>();
 	REQUIRE(palette != nullptr);
 
 	// Check invalid nonexistent path
-	PropertyPath nonExistent(*palette, "NonExistent_________");
+	napkin::PropertyPath nonExistent(*palette, "NonExistent_________");
 	REQUIRE(!nonExistent.isValid());
 
 	// Grab a valid path
-	PropertyPath ledColors(*palette, "LedColors");
+	napkin::PropertyPath ledColors(*palette, "LedColors");
 	REQUIRE(ledColors.isValid());
 
 	// Check if the we have an empty array
 	{
-		rtti::Variant ledcolorsvalue = ledColors.resolve().getValue();
-		rtti::VariantArray ledcolors_array = ledcolorsvalue.create_array_view();
+		nap::rtti::Variant ledcolorsvalue = ledColors.resolve().getValue();
+		nap::rtti::VariantArray ledcolors_array = ledcolorsvalue.create_array_view();
 		REQUIRE(ledcolors_array.get_size() == 0);
 	}
 
@@ -125,19 +123,19 @@ TEST_CASE("Array Value Elements", TAG_NAPKIN)
 
 TEST_CASE("Array Modification Objects", TAG_NAPKIN)
 {
-	auto doc = AppContext::get().newDocument();
+	auto doc = napkin::AppContext::get().newDocument();
 	auto composition = doc->addObject<nap::Composition>();
 	REQUIRE(composition != nullptr);
 	auto layer = doc->addObject<nap::ImageSequenceLayer>();
 	REQUIRE(layer != nullptr);
 
-	PropertyPath layers(*composition, "Layers");
+	napkin::PropertyPath layers(*composition, "Layers");
 	REQUIRE(layers.isValid());
 
  	// Check if array is empty to start with
 	{
-		rtti::Variant value = layers.resolve().getValue();
-		rtti::VariantArray array_view = value.create_array_view();
+		nap::rtti::Variant value = layers.resolve().getValue();
+		nap::rtti::VariantArray array_view = value.create_array_view();
 		REQUIRE(array_view.get_size() == 0);
 	}
 
@@ -146,8 +144,8 @@ TEST_CASE("Array Modification Objects", TAG_NAPKIN)
 		auto index = doc->arrayAddExistingObject(layers, layer);
 		REQUIRE(index == 0);
 
-		rtti::Variant value = layers.resolve().getValue();
-		rtti::VariantArray array_view = value.create_array_view();
+		nap::rtti::Variant value = layers.resolve().getValue();
+		nap::rtti::VariantArray array_view = value.create_array_view();
 		REQUIRE(array_view.get_size() == 1);
 	}
 
@@ -156,8 +154,8 @@ TEST_CASE("Array Modification Objects", TAG_NAPKIN)
 		auto index = doc->arrayAddNewObject(layers, RTTI_OF(nap::ImageSequenceLayer));
 		REQUIRE(index == 1);
 
-		rtti::Variant value = layers.resolve().getValue();
-		rtti::VariantArray array_view = value.create_array_view();
+		nap::rtti::Variant value = layers.resolve().getValue();
+		nap::rtti::VariantArray array_view = value.create_array_view();
 		REQUIRE(array_view.get_size() == 2);
 	}
 
@@ -165,12 +163,12 @@ TEST_CASE("Array Modification Objects", TAG_NAPKIN)
 
 TEST_CASE("Array Move Element", TAG_NAPKIN)
 {
-	auto doc = AppContext::get().newDocument();
+	auto doc = napkin::AppContext::get().newDocument();
 	auto composition = doc->addObject<nap::Composition>();
 	REQUIRE(composition != nullptr);
 
 	// Set up an array with four elements
-	PropertyPath layers(*composition, "Layers");
+	napkin::PropertyPath layers(*composition, "Layers");
 	REQUIRE(layers.isValid());
 	doc->arrayAddNewObject(layers, RTTI_OF(nap::ImageSequenceLayer));
 	doc->arrayAddNewObject(layers, RTTI_OF(nap::ImageSequenceLayer));
@@ -208,7 +206,7 @@ TEST_CASE("Array Move Element", TAG_NAPKIN)
 	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 2) == layer3);
 	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 3) == layer0);
 
-	doc->executeCommand(new ArrayMoveElementCommand(layers, 1, 3));
+	doc->executeCommand(new napkin::ArrayMoveElementCommand(layers, 1, 3));
 	// State: 2, 3, [1], 0
 
 	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 0) == layer2);
@@ -232,7 +230,7 @@ TEST_CASE("Array Move Element", TAG_NAPKIN)
 	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 2) == layer1);
 	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 3) == layer0);
 
-	doc->executeCommand(new ArrayMoveElementCommand(layers, 3, 1));
+	doc->executeCommand(new napkin::ArrayMoveElementCommand(layers, 3, 1));
 	// State: 2, [0], 3, 1
 
 	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 0) == layer2);
@@ -270,7 +268,7 @@ TEST_CASE("Array Move Element", TAG_NAPKIN)
 
 TEST_CASE("Document Functions", TAG_NAPKIN)
 {
-	auto doc = AppContext::get().newDocument();
+	auto doc = napkin::AppContext::get().newDocument();
 
 	auto entity = doc->addObject<nap::Entity>();
 
@@ -290,9 +288,9 @@ TEST_CASE("Document Functions", TAG_NAPKIN)
 
 TEST_CASE("PropertyPath", TAG_NAPKIN)
 {
-	auto doc = AppContext::get().newDocument();
+	auto doc = napkin::AppContext::get().newDocument();
 	auto entity = doc->addObject<nap::Entity>();
-	PropertyPath nameProp(*entity, rtti::sIDPropertyName);
+	napkin::PropertyPath nameProp(*entity, nap::rtti::sIDPropertyName);
 	REQUIRE(&nameProp.object() == entity);
 	REQUIRE(nameProp.isValid());
 	std::string newName = "NewName";
@@ -303,8 +301,8 @@ TEST_CASE("PropertyPath", TAG_NAPKIN)
 
 TEST_CASE("Commands", TAG_NAPKIN)
 {
-	auto& ctx = AppContext::get();
-	SigCapture sigDocChanged(&ctx, &AppContext::documentChanged);
+	auto& ctx = napkin::AppContext::get();
+	SigCapture sigDocChanged(&ctx, &napkin::AppContext::documentChanged);
 	int sigDocCount = 0;
 	REQUIRE(sigDocChanged.count() == sigDocCount);
 
@@ -320,7 +318,7 @@ TEST_CASE("Commands", TAG_NAPKIN)
 	REQUIRE(sigDocChanged.count() == ++sigDocCount);
 
 	// Add an object and verify
-	ctx.executeCommand(new AddObjectCommand(RTTI_OF(nap::Entity)));
+	ctx.executeCommand(new napkin::AddObjectCommand(RTTI_OF(nap::Entity)));
 	REQUIRE(sigDocChanged.count() == ++sigDocCount);
 	REQUIRE(doc->getObjects().size() == 1);
 	{
@@ -337,7 +335,7 @@ TEST_CASE("Commands", TAG_NAPKIN)
 	REQUIRE(e1 != nullptr);
 
 	// Add another one and verify
-	ctx.executeCommand(new AddObjectCommand(RTTI_OF(nap::Entity), entity1));
+	ctx.executeCommand(new napkin::AddObjectCommand(RTTI_OF(nap::Entity), entity1));
 	REQUIRE(sigDocChanged.count() == ++sigDocCount);
 	REQUIRE(doc->getObjects().size() == 2);
 	{
@@ -354,37 +352,37 @@ TEST_CASE("Commands", TAG_NAPKIN)
 	REQUIRE(e2 != nullptr);
 	REQUIRE(doc->getParent(*e2) == e1);
 
-	PropertyPath nameProp1(*entity1, rtti::sIDPropertyName);
+	napkin::PropertyPath nameProp1(*entity1, nap::rtti::sIDPropertyName);
 	REQUIRE(nameProp1.isValid());
-	PropertyPath nameProp2(*entity2, rtti::sIDPropertyName);
+	napkin::PropertyPath nameProp2(*entity2, nap::rtti::sIDPropertyName);
 	REQUIRE(nameProp2.isValid());
 
-	ctx.executeCommand(new SetValueCommand(nameProp1, "Loco"));
+	ctx.executeCommand(new napkin::SetValueCommand(nameProp1, "Loco"));
 	REQUIRE(sigDocChanged.count() == ++sigDocCount);
 	REQUIRE(entity1->mID == "Loco");
 
 	// Name may not be empty
-	ctx.executeCommand(new SetValueCommand(nameProp1, ""));
+	ctx.executeCommand(new napkin::SetValueCommand(nameProp1, ""));
 	REQUIRE(sigDocChanged.count() == ++sigDocCount);
 	REQUIRE(entity1->mID == "Loco");
 
 	// No duplicate names
-	ctx.executeCommand(new SetValueCommand(nameProp2, "Loco"));
+	ctx.executeCommand(new napkin::SetValueCommand(nameProp2, "Loco"));
 	REQUIRE(sigDocChanged.count() == ++sigDocCount);
 	REQUIRE(entity2->mID != "Loco");
 
 	// Setting a unique name should succeed
-	ctx.executeCommand(new SetValueCommand(nameProp2, "Motion"));
+	ctx.executeCommand(new napkin::SetValueCommand(nameProp2, "Motion"));
 	REQUIRE(sigDocChanged.count() == ++sigDocCount);
 	REQUIRE(entity2->mID == "Motion");
 
 	// Remove object and verify
-	ctx.executeCommand(new DeleteObjectCommand(*entity1));
+	ctx.executeCommand(new napkin::DeleteObjectCommand(*entity1));
 	REQUIRE(sigDocChanged.count() == ++sigDocCount);
 	REQUIRE(doc->getObjects().size() == 1);
 
 	// Remove next and verify
-	ctx.executeCommand(new DeleteObjectCommand(*entity2));
+	ctx.executeCommand(new napkin::DeleteObjectCommand(*entity2));
 	REQUIRE(sigDocChanged.count() == ++sigDocCount);
 	REQUIRE(doc->getObjects().size() == 0);
 
