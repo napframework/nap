@@ -72,7 +72,7 @@ namespace nap
 	 * to the input components of a set of entities, in this case our two perspective cameras.
 	 * See helloworld demo for more info on input handling
 	 *
-	 * The positionPlane call centers the plane that is rendered.
+	 * positionPlane centers the plane for both windows.
 	 */
 	void MultiWindowApp::update(double deltaTime)
 	{
