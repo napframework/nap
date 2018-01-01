@@ -1,6 +1,7 @@
-#include <QtWidgets/QMessageBox>
 #include "mainwindow.h"
 
+#include <QMessageBox>
+#include <QCloseEvent>
 using namespace napkin;
 
 void MainWindow::bindSignals()
@@ -34,6 +35,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 		}
 		else if (result == QMessageBox::Cancel)
 		{
+			event->ignore();
 			return;
 		}
 	}
