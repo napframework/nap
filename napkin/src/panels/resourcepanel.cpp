@@ -1,5 +1,7 @@
+#include <commands.h>
 #include "resourcepanel.h"
 
+#include "generic/filterpopup.h"
 #include "generic/qtutils.h"
 #include "generic/naputils.h"
 #include "standarditemsobject.h"
@@ -111,19 +113,12 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 		}
 		else if (groupItem->text() == TXT_LABEL_OBJECTS)
 		{
-
 			// Resources
-			auto addObjectMenu = menu.addMenu("Add Object");
-			std::vector<rttr::type> resource_types = getResourceTypes();
-			std::sort(resource_types.begin(), resource_types.end(), [](const rttr::type& typeA, const rttr::type& typeB) 
-			{
-				return typeA.get_name().compare(typeB.get_name()) < 0;
+			menu.addAction("Add Object", [this]() {
+				auto type = FilterPopup::getResourceType(this);
+				if (type.is_valid())
+					AppContext::get().executeCommand(new AddObjectCommand(type));
 			});
-
-			for (const auto& type : resource_types)
-			{
-				addObjectMenu->addAction(new AddObjectAction(type));
-			}
 		}
 	}
 }
