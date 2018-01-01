@@ -1,4 +1,6 @@
 #include "actions.h"
+
+#include <QMessageBox>
 #include "commands.h"
 
 using namespace napkin;
@@ -11,7 +13,26 @@ NewFileAction::NewFileAction()
 	setShortcut(QKeySequence::New);
 }
 
-void NewFileAction::perform() { AppContext::get().newDocument(); }
+void NewFileAction::perform()
+{
+	if (AppContext::get().getDocument()->isDirty()) {
+		auto result = QMessageBox::question(AppContext::get().getQApplication()->topLevelWidgets()[0],
+											"Save before creating new document",
+											"The current document has unsaved changes.\n"
+													"Save the changes before creating a new document?",
+											QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+		if (result == QMessageBox::Yes)
+		{
+			SaveFileAction action;
+			action.trigger();
+		}
+		else if (result == QMessageBox::Cancel)
+		{
+			return;
+		}
+	}
+	AppContext::get().newDocument();
+}
 
 
 OpenFileAction::OpenFileAction()

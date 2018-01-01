@@ -70,7 +70,7 @@ namespace napkin
 		 *
 		 * @param filename The file to load, can be absolute or relative to the current working directory.
 		 */
-		void loadFile(const QString& filename);
+		Document* loadFile(const QString& filename);
 
 		/**
 		 * Save the current data to disk using the currently set filename.
@@ -160,6 +160,12 @@ namespace napkin
 		 * Fired after a new file has been created and the data is erased.
 		 */
 		void newFileCreated();
+
+		/**
+		 * Qt Signal
+		 * Fired when something in the document has changed
+		 */
+		void documentChanged();
 
 	Q_SIGNALS:
 		/**
