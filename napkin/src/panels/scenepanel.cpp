@@ -20,8 +20,8 @@ napkin::SceneModel::SceneModel() : QStandardItemModel()
     refresh();
     setHorizontalHeaderLabels({"Name"});
 
-    connect(&AppContext::get(), &AppContext::fileOpened, this, &SceneModel::onFileOpened);
-    connect(&AppContext::get(), &AppContext::newFileCreated, this, &SceneModel::onNewFile);
+    connect(&AppContext::get(), &AppContext::documentOpened, this, &SceneModel::onFileOpened);
+    connect(&AppContext::get(), &AppContext::newDocumentCreated, this, &SceneModel::onNewFile);
 	connect(&AppContext::get(), &AppContext::objectAdded, this, &SceneModel::onObjectAdded);
 	connect(&AppContext::get(), &AppContext::objectChanged, this, &SceneModel::onObjectChanged);
 }

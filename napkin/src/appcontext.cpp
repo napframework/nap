@@ -49,12 +49,12 @@ Document* AppContext::newDocument()
 {
 	mDocument = std::make_unique<Document>(mCore);
 	connectDocumentSignals();
-	newFileCreated();
+	newDocumentCreated();
 	documentChanged();
 	return mDocument.get();
 }
 
-Document* AppContext::loadFile(const QString& filename)
+Document* AppContext::loadDocument(const QString& filename)
 {
 	auto abspath = getAbsolutePath(filename.toStdString());
 	nap::Logger::info("Loading '%s'", abspath.c_str());
@@ -79,22 +79,22 @@ Document* AppContext::loadFile(const QString& filename)
 	// transfer
 	mDocument = std::make_unique<Document>(mCore, filename, std::move(result.mReadObjects));
 	connectDocumentSignals();
-	fileOpened(filename);
+	documentOpened(filename);
 	documentChanged();
 	return mDocument.get();
 }
 
-void AppContext::saveFile()
+void AppContext::saveDocument()
 {
 	if (getDocument()->getCurrentFilename().isEmpty())
 	{
 		nap::Logger::fatal("Cannot save file, no filename has been set.");
 		return;
 	}
-	saveFileAs(getDocument()->getCurrentFilename());
+	saveDocumentAs(getDocument()->getCurrentFilename());
 }
 
-void AppContext::saveFileAs(const QString& filename)
+void AppContext::saveDocumentAs(const QString& filename)
 {
 	ObjectList objects;
 	for (auto& ob : getDocument()->getObjects())
@@ -120,17 +120,17 @@ void AppContext::saveFileAs(const QString& filename)
 
 	QSettings().setValue(settingsKey::LAST_OPENED_FILE, filename);
 
-	fileSaved(filename);
+	documentSaved(filename);
 	getUndoStack().setClean();
 	documentChanged();
 }
 
-void AppContext::openRecentFile()
+void AppContext::openRecentDocument()
 {
 	auto lastFilename = AppContext::get().getLastOpenedFilename();
 	if (lastFilename.isNull())
 		return;
-	AppContext::get().loadFile(lastFilename);
+	AppContext::get().loadDocument(lastFilename);
 }
 
 const QString AppContext::getLastOpenedFilename()
@@ -145,7 +145,7 @@ void AppContext::restoreUI()
 	const QString& recentTheme = QSettings().value(settingsKey::LAST_THEME, napkin::TXT_DEFAULT_THEME).toString();
 	getThemeManager().setTheme(recentTheme);
 
-	openRecentFile();
+	openRecentDocument();
 }
 
 void AppContext::connectDocumentSignals()
