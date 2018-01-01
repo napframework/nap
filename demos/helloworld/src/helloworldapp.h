@@ -80,9 +80,9 @@ namespace nap
 		SceneService*		mSceneService = nullptr;				//< Manages all the objects in the scene
 		InputService*		mInputService = nullptr;				//< Input service for processing input
 
-		ObjectPtr<RenderWindow> mRenderWindow;						//< Vector holding pointers to the spawned render windows
+		ObjectPtr<RenderWindow> mRenderWindow;						//< Pointer to the render window
 		
 		ObjectPtr<EntityInstance> mCameraEntity = nullptr;			//< Pointer to the entity that holds the camera
-		ObjectPtr<EntityInstance> mWorldEntity = nullptr;			//< Pointer to the entity that holds the plane
+		ObjectPtr<EntityInstance> mWorldEntity = nullptr;			//< Pointer to the entity that holds the sphere
 	};
 }
