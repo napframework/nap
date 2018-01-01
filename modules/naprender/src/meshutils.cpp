@@ -1,5 +1,6 @@
 #include "meshutils.h"
 #include <mathutils.h>
+#include <glm/gtx/normal.hpp>
 
 namespace nap
 {
@@ -134,4 +135,93 @@ namespace nap
 		return box;
 	}
 
+
+	glm::vec3 computeTriangleNormal(const nap::MeshInstance& mesh, int number, const nap::VertexAttribute<glm::vec3>& vertices)
+	{
+		TriangleData<glm::vec3> triangle_data;
+		getTriangleValues<glm::vec3>(mesh, number, vertices, triangle_data);
+		return glm::cross((triangle_data[0] - triangle_data[1]), (triangle_data[0] - triangle_data[2]));
+	}
+
+
+	glm::vec3 computePointNormal(const MeshInstance& mesh, int index, const nap::VertexAttribute<glm::vec3>& vertices, const MeshConnectivityMap& connectivityMap)
+	{
+		assert(mesh.hasIndices());
+		assert(index < connectivityMap.size());
+		const std::vector<int>& triangles = connectivityMap[index];
+
+		glm::vec3 point_normal(0.0f, 0.0f, 0.0f);
+		for (const auto& triangle : triangles)
+		{
+			point_normal += computeTriangleNormal(mesh, triangle, vertices);
+		}
+		return glm::normalize(point_normal);
+	}
+
+
+	void computeNormals(const MeshInstance& mesh, const VertexAttribute<glm::vec3>& vertices, VertexAttribute<glm::vec3>& outNormals)
+	{
+		assert(outNormals.getCount() == vertices.getCount());
+		
+		// Total number of attributes
+		int attr_count = vertices.getCount();
+
+		// Normal data
+		std::vector<glm::vec3>& normal_data = outNormals.getData();
+
+		// Compute normals if the mesh doesn't use indices
+		// Result = triangle normal for all triangle vertices
+		if (!mesh.hasIndices())
+		{
+			// Cache current triangle and computed value
+			// Lot faster not having to re-compute face normal
+			int triangle = -1;
+			glm::vec3 current_tri_normal;
+			for (int i = 0; i < attr_count; i++)
+			{
+				if (i/3 != triangle)
+				{
+					triangle = i/3;
+					current_tri_normal = glm::normalize(computeTriangleNormal(mesh, triangle, vertices));
+				}
+				normal_data[i] = current_tri_normal;
+			}
+		}
+		else
+		{
+			// Otherwise use connectivity
+			nap::MeshConnectivityMap map;
+			computeConnectivity(mesh, map);
+			for (int i = 0; i < attr_count; i++)
+			{
+				glm::vec3 normal = computePointNormal(mesh, i, vertices, map);
+				normal_data[i] = normal;
+			}
+		}
+	}
+
+
+	void computeConnectivity(const MeshInstance& mesh, MeshConnectivityMap& outConnectivityMap)
+	{
+		// When the mesh doesn't use indices this is simple, every vertex belongs to exactly one face
+		assert(isTriangleMesh(mesh));
+		assert(mesh.hasIndices());
+
+		// Resize to number of indices
+		outConnectivityMap.resize(mesh.getNumVertices());
+
+		// Get number of triangles
+		int triangle_count = getTriangleCount(mesh);
+
+		// For every triangle, fetch the indices
+		// Every index is associated with that triangle, so add the triangle to the right index
+		glm::ivec3 triangle_indices;
+		for (int t = 0; t < triangle_count; t++)
+		{
+			getTriangleIndices(mesh, t, triangle_indices);
+			outConnectivityMap[triangle_indices[0]].emplace_back(t);
+			outConnectivityMap[triangle_indices[1]].emplace_back(t);
+			outConnectivityMap[triangle_indices[2]].emplace_back(t);
+		}
+	}
 }
