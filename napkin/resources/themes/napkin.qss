@@ -29,6 +29,13 @@ QWidget
 
 }
 
+QMenu {
+    background-color: #2D2E42;
+    color: #8B8CA0;
+}
+
+
+
 QAbstractScrollArea {
     color: #8B8CA0;
     background: #111426;
