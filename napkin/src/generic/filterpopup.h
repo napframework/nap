@@ -50,6 +50,14 @@ namespace napkin
 		 */
 		static nap::rtti::TypeInfo getDerivedType(QWidget* parent, const rttr::type& baseType);
 
+
+		/**
+		 * Display a selection dialog with all available types that can be added as a resource.
+		 * @param parent The widget to attach to
+		 * @return The resulting selected type.
+		 */
+		static nap::rtti::TypeInfo getResourceType(QWidget* parent);
+
 		/**
 		 * Display a selection dialog with all available objects, filtered by type T
 		 * @tparam T the base type to filter by

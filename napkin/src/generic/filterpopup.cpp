@@ -6,6 +6,7 @@
 #include "appcontext.h"
 #include "standarditemsobject.h"
 #include "qtutils.h"
+#include "naputils.h"
 
 napkin::FlatObjectModel::FlatObjectModel(const rttr::type& baseType) : mBaseType(baseType)
 {
@@ -88,6 +89,22 @@ nap::rtti::TypeInfo napkin::FilterPopup::getDerivedType(QWidget* parent, const r
 	return nap::rtti::TypeInfo::get_by_name(selected_item->text().toStdString().c_str());
 }
 
+nap::rtti::TypeInfo napkin::FilterPopup::getResourceType(QWidget* parent)
+{
+	auto dialog = new FilterPopup(parent);
+	auto model = new QStandardItemModel();
+	for (const auto t : getResourceTypes())
+		model->appendRow(new QStandardItem(QString::fromUtf8(t.get_name().data())));
+	dialog->mTreeView.setModel(model);
+
+	dialog->exec(QCursor::pos());
+
+	auto selected_item = dialog->mTreeView.getSelectedItem();
+	if (selected_item == nullptr)
+		return rttr::type::empty();
+
+	return nap::rtti::TypeInfo::get_by_name(selected_item->text().toStdString().c_str());
+}
 
 
 void napkin::FilterPopup::keyPressEvent(QKeyEvent* event)
@@ -126,4 +143,5 @@ void napkin::FilterPopup::confirm()
 {
 	close();
 }
+
 
