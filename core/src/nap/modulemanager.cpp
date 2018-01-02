@@ -278,12 +278,14 @@ namespace nap
 	{
 		std::vector<std::string> configParts;
 		utility::splitString(folderName, '-', configParts);
-		if (configParts.size() != 3)
+		if (configParts.size() != 3) {
+			Logger::warn("Couldn't parse build type from " + folderName);
 			return false;
-
+		}
+		
 #ifdef __APPLE__
 		outBuildType = configParts[2];
-#elif UNIX
+#elif __unix__
 		outBuildType = configParts[1];
 #endif
 		return true;
