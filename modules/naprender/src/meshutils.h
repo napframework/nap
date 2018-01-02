@@ -34,14 +34,23 @@ namespace nap
 	 * The indices can be used to perform a vertex attribute lookup on the mesh
 	 * Note that this function only works for meshes that are of type: TRIANGLES, TRIANGLE_STRIP or TRIANGLE_FAN
 	 * This call asserts when the triangle number is out of bounds, the mesh has no indices or the draw mode is not of type triangle
-	 * Note that although it's unlikely but in the event of indices associated with a strip or fan this call will work.
-	 * The most likely use case is with a mesh that is of a type: TRIANGLES
 	 * @param mesh the mesh to get the indices from
 	 * @param number the triangle number to get the for
-	 * @param indices the 3 indices associated with triangle @number, when invalid @indices will be -1,-1,-1
+	 * @param indices the 3 triangle indices
 	 * @return if the triangle indices are valid
 	 */
 	void NAPAPI getTriangleIndices(const nap::MeshInstance& mesh, int number, glm::ivec3& indices);
+
+	/**
+	* Sets the vertex indices associated with a triangle.
+	* Note that this function only works for meshes that are of type: TRIANGLES, TRIANGLE_STRIP or TRIANGLE_FAN
+	* This call asserts when the triangle number is out of bounds, the mesh has no indices or the draw mode is not of type triangle
+	* @param mesh the mesh to get the indices from
+	* @param number the triangle number to get the for
+	* @param indices the new indices
+	* @return if the triangle indices are valid
+	*/
+	void NAPAPI setTriangleIndices(nap::MeshInstance& mesh, int number, glm::ivec3& indices);
 
 	/**
 	 * Returns the attribute data associated with a triangle in a mesh. This call performs a copy of the vertex data to @outTriangle
@@ -170,6 +179,15 @@ namespace nap
 	 * @param outNormals the recomputed normals, the normals have to be initialized and of the same length as the vertices
 	 */
 	void NAPAPI computeNormals(const nap::MeshInstance& mesh, const nap::VertexAttribute<glm::vec3>& vertices, nap::VertexAttribute<glm::vec3>& outNormals);
+
+	/**
+	 * Reverses the winding order of all the triangle vertices in a mesh
+	 * When a triangle has vertices A, B, C the new order will be C, B, A
+	 * This call only works for triangle meshes that have indices associated with it
+	 * This call asserts when the mesh is not a triangular mesh or the mesh has no indices
+	 * @param mesh the mesh to reverse the index winding order for
+	 */
+	void NAPAPI reverseWindingOrder(nap::MeshInstance& mesh);
 
 	//////////////////////////////////////////////////////////////////////////
 	// Template definitions
