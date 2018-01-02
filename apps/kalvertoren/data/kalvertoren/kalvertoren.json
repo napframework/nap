@@ -1499,6 +1499,23 @@
                 }
             ]
         },
+		
+		{
+            "Type": "nap::LedColorPaletteGrid",
+            "mID": "PaletteGrid",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "GridPath": "data/kalvertoren/palettes/palette_grid.png",
+			"GridSize": 20,
+			"GridColorsPath": "data/kalvertoren/palettes/palette_grid_ledcolors.txt"           
+        },		
+		
         {
             "Type": "nap::LedMesh",
             "mID": "HeiligewegLedMesh",
