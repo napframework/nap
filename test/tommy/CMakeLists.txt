@@ -18,7 +18,17 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Test)
 add_dependencies(${PROJECT_NAME} fbxconverter)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
-target_link_libraries(${PROJECT_NAME} napcore mod_naprender nrender mod_napmath mod_napinput mod_napsdlinput mod_napsdlwindow mod_napapp mod_napimgui)
+target_link_libraries(${PROJECT_NAME}
+        napcore
+        mod_naprender
+        nrender
+        mod_napmath
+        mod_napinput
+        mod_napsdlinput
+        mod_napsdlwindow
+        mod_napapp
+        mod_napsandbox
+        )
 
 # Build into a project directory under bin
 set_output_directories()

@@ -13,6 +13,8 @@ RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::OSCInputComponentInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
+//    RTTI_PROPERTY("messageReceived", &nap::OSCInputComponentInstance::messageReceived, nap::rtti::EPropertyMetaData::Embedded)
+    RTTI_FUNCTION("getMessageReceived", &nap::OSCInputComponentInstance::getMessageReceived)
 RTTI_END_CLASS
 
 namespace nap

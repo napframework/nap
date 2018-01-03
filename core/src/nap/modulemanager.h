@@ -1,9 +1,13 @@
 #pragma once
 
-#include "utility/module.h"
-#include "rtti/typeinfo.h"
+// STD includes
 #include <string>
 #include <vector>
+
+// Core includes
+#include "utility/module.h"
+#include "utility/errorstate.h"
+#include "rtti/typeinfo.h"
 
 namespace nap
 {
@@ -27,8 +31,7 @@ namespace nap
 		 * Load all modules in the specified list
 		 * @param moduleNames The list of modules to load (temporary?)
 		 */
-		void loadModules(std::vector<std::string>& moduleNames);
-		
+		bool loadModules(std::vector<std::string>& moduleNames, utility::ErrorState& error);
 
 	private:
 		/**

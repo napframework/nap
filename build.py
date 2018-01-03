@@ -82,9 +82,6 @@ def installDependencies():
 
 
 def main(targets):
-    # install osx / linux specific dependendies
-    installDependencies()
-
     # clear build directory when a clean build is required
     print(CLEAN_BUILD)
     if CLEAN_BUILD and os.path.exists(BUILD_DIR):

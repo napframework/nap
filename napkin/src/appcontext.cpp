@@ -1,167 +1,282 @@
 #include "appcontext.h"
-#include "commands.h"
-#include "mainwindow.h"
+#include "napkinglobals.h"
+
+// std
 #include <fstream>
 
+// qt
+#include <QSettings>
+#include <QtCore/QDir>
+#include <QtWidgets/QMessageBox>
 
-void AppContext::spawnWindow()
+// nap
+#include <rtti/jsonreader.h>
+#include <rtti/jsonwriter.h>
+#include <rtti/defaultlinkresolver.h>
+
+// local
+#include <generic/napgeneric.h>
+#include <nap/logger.h>
+#include <utility/fileutils.h>
+
+using namespace nap::rtti;
+using namespace nap::utility;
+using namespace napkin;
+
+AppContext::AppContext()
 {
-	int argc = 1;
-	char* argv[] = {strdup("Napkin")};
-	QApplication* app = new QApplication(argc, argv);
-	QApplication::setOrganizationName("NAP");
-	QApplication::setApplicationName("Napkin");
-	MainWindow w;
-	w.show();
-	AppContext::get().initialize();
-	app->exec();
+	ErrorState err;
+	if (!getCore().initializeEngine(err))
+	{
+		nap::Logger::fatal("Failed to initialize engine");
+	}
 }
 
-QApplication* AppContext::spawnWindowNonBlocking()
+AppContext::~AppContext()
 {
-	int argc = 1;
-	char* argv[] = {strdup("Napkin")};
-	QApplication* app = new QApplication(argc, argv);
-	QApplication::setOrganizationName("NAP");
-	QApplication::setApplicationName("Napkin");
-	MainWindow w;
-	w.show();
-	AppContext::get().initialize();
-	return app;
+    mObjects.clear();
+    mCore.shutdown();
 }
 
-
-AppContext::AppContext() {}
-
-void AppContext::save() { save(mFilename); }
-
-void AppContext::save(const QString& filename)
+AppContext& AppContext::get()
 {
-	FileType* fileType = fileTypeFromFilename(filename);
-	if (!fileType) return;
-
-
-
-	std::ofstream out;
-	out.open(filename.toStdString().c_str(), std::ios_base::out);
-
-	fileType->serialize(out, core(), core().getRoot());
-	out.close();
-
-	mFilename = filename;
-	nap::Logger::info("File saved: %s", filename.toStdString().c_str());
-	mUndoStack.setClean();
-}
-
-bool AppContext::load(const QString& filename)
-{
-	FileType* fileType = fileTypeFromFilename(filename);
-	if (!fileType) return false;
-
-	std::ifstream in;
-	in.open(filename.toStdString().c_str(), std::ios_base::in);
-
-
-
-	core().clear();
-
-//	core().getModuleManager().loadModules();
-
-	fileType->deserialize(in, core());
-
-	return true;
-}
-
-void AppContext::initialize()
-{
-	connect(&mUndoStack, &QUndoStack::indexChanged, [&](int index) {
-		undoChanged(index);
-		sceneChanged();
-	});
-	connect(&mUndoStack, &QUndoStack::cleanChanged, [&](bool clean) {
-//		undoChanged(-1);
-		sceneChanged();
-	});
-	newFile();
-	actionStore().updateStates();
-
-	core().getModuleManager().loadModules();
+	static AppContext inst;
+	return inst;
 }
 
 void AppContext::newFile()
 {
-	mFilename = UNTITLED_FILENAME;
-	core().clear();
-	mUndoStack.setClean();
+	mCurrentFilename = "";
+	mObjects.clear();
+	newFileCreated();
 }
 
-
-nap::Core& AppContext::core() { return mCore; }
-
-void AppContext::setSelection(const QList<nap::Object*>& objects)
+void AppContext::loadFile(const QString& filename)
 {
-	mSelection.clear();
-	mSelection.append(objects);
+	auto abspath = getAbsolutePath(filename.toStdString());
+	nap::Logger::info("Loading '%s'", abspath.c_str());
 
-	for (const auto ob : objects) {
-		if (ob->getTypeInfo().isKindOf<nap::PatchComponent>()) {
-			setActivePatch(&static_cast<nap::PatchComponent*>(ob)->getPatch());
-		}
+	mCurrentFilename = filename;
+
+	QSettings().setValue(settingsKey::LAST_OPENED_FILE, filename);
+
+	ErrorState err;
+
+	nap::rtti::RTTIDeserializeResult result;
+	if (!readJSONFile(filename.toStdString(), getCore().getResourceManager()->getFactory(), result, err))
+	{
+		nap::Logger::fatal(err.toString());
+		return;
 	}
 
-	selectionChanged(mSelection);
+	if (!nap::rtti::DefaultLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, err))
+	{
+		nap::Logger::fatal("Failed to resolve links: %s", err.toString().c_str());
+		return;
+	}
 
-	actionStore().updateStates();
+	// transfer
+	mObjects.clear();
+	for (auto& ob : result.mReadObjects)
+	{
+		mObjects.emplace_back(std::move(ob));
+	}
+
+	fileOpened(mCurrentFilename);
 }
 
-void AppContext::setActivePatch(nap::Patch* patch)
+void AppContext::saveFile()
 {
-	mActivePatch = patch;
+	if (mCurrentFilename.isEmpty())
+	{
+		nap::Logger::fatal("Cannot save file, no filename has been set.");
+		return;
+	}
+	saveFileAs(mCurrentFilename);
+}
 
-	// Invalidate active patch when it's deleted
-	mActivePatch->removed.connect([=](const nap::Object& obj) {
-		if (mActivePatch == &obj) mActivePatch = nullptr;
-	});
+void AppContext::saveFileAs(const QString& filename)
+{
+	ObjectList objects;
+	for (auto& ob : mObjects)
+	{
+		objects.emplace_back(ob.get());
+	}
+
+	JSONWriter writer;
+	ErrorState err;
+	if (!serializeObjects(objects, writer, err))
+	{
+		nap::Logger::fatal(err.toString());
+		return;
+	}
+
+	std::ofstream out(filename.toStdString());
+	out << writer.GetJSON();
+	out.close();
+
+	mCurrentFilename = filename;
+	nap::Logger::info("Written file: " + filename.toStdString());
+
+	QSettings().setValue(settingsKey::LAST_OPENED_FILE, filename);
+
+	fileSaved(mCurrentFilename);
+}
+
+void AppContext::openRecentFile()
+{
+	auto lastFilename = AppContext::get().getLastOpenedFilename();
+	if (lastFilename.isNull())
+		return;
+	AppContext::get().loadFile(lastFilename);
+}
+
+const QString AppContext::getLastOpenedFilename()
+{
+	return QSettings().value(settingsKey::LAST_OPENED_FILE).toString();
+}
+
+nap::Entity* AppContext::getParent(const nap::Entity& child)
+{
+	for (const auto& o : getObjectPointers())
+	{
+		if (!o->get_type().is_derived_from<nap::Entity>())
+			continue;
+
+		nap::Entity* parent = rtti_cast<nap::Entity>(o);
+		auto it = std::find_if(parent->mChildren.begin(), parent->mChildren.end(),
+							   [&child](nap::ObjectPtr<nap::Entity> e) -> bool { return &child == e.get(); });
+
+		if (it != parent->mChildren.end())
+			return parent;
+	}
+	return nullptr;
+}
+
+nap::Entity* AppContext::getOwner(const nap::Component& component)
+{
+	for (const auto& o : getObjects())
+	{
+		if (!o->get_type().is_derived_from<nap::Entity>())
+			continue;
+
+		nap::Entity* owner = *rtti_cast<nap::Entity*>(o.get());
+		auto it = std::find_if(
+			owner->mComponents.begin(), owner->mComponents.end(),
+			[&component](nap::ObjectPtr<nap::Component> comp) -> bool { return &component == comp.get(); });
+
+		if (it != owner->mComponents.end())
+			return owner;
+	}
+	return nullptr;
+}
+
+nap::Entity* AppContext::createEntity(nap::Entity* parent)
+{
+	auto e = std::make_unique<nap::Entity>();
+	e->mID = getUniqueName("New Entity");
+	auto ret = e.get();
+	mObjects.emplace_back(std::move(e));
+
+	if (parent != nullptr)
+	{
+		parent->mChildren.emplace_back(ret);
+	}
+
+	entityAdded(ret, parent);
+	return ret;
+}
+
+nap::Component* AppContext::addComponent(nap::Entity& entity, rttr::type type)
+{
+	assert(type.can_create_instance());
+	assert(type.is_derived_from<nap::Component>());
+
+	auto compVariant = type.create();
+	auto comp = compVariant.get_value<nap::Component*>();
+	comp->mID = getUniqueName(type.get_name().data());
+	mObjects.emplace_back(comp);
+	entity.mComponents.emplace_back(comp);
+
+	componentAdded(*comp, entity);
+
+	return comp;
+}
+
+nap::rtti::RTTIObject* AppContext::addObject(rttr::type type)
+{
+	assert(type.can_create_instance());
+	assert(type.is_derived_from<nap::rtti::RTTIObject>());
+	rttr::variant variant = type.create();
+	nap::rtti::RTTIObject* obj = variant.get_value<nap::rtti::RTTIObject*>();
+	obj->mID = getUniqueName(type.get_name().data());
+	mObjects.emplace_back(obj);
+	objectAdded(*obj);
+	return obj;
+}
+
+std::string AppContext::getUniqueName(const std::string& suggestedName)
+{
+	std::string newName = suggestedName;
+	int i = 2;
+	while (getObject(newName))
+		newName = suggestedName + "_" + std::to_string(i++);
+	return newName;
+}
+
+nap::rtti::RTTIObject* AppContext::getObject(const std::string& name)
+{
+	auto it = std::find_if(mObjects.begin(), mObjects.end(),
+						   [&name](std::unique_ptr<nap::rtti::RTTIObject>& obj) { return obj->mID == name; });
+	if (it == mObjects.end())
+		return nullptr;
+	return it->get();
+}
+
+nap::rtti::ObjectList AppContext::getObjectPointers()
+{
+	ObjectList ret;
+	for (auto& ob : getObjects())
+		ret.emplace_back(ob.get());
+	return ret;
 }
 
 
-void AppContext::execute(QUndoCommand* cmd)
+void AppContext::deleteObject(nap::rtti::RTTIObject& object)
 {
-	nap::Logger::debug("Command: %s", cmd->actionText().toStdString().c_str());
+	if (object.get_type().is_derived_from<nap::Entity>())
+	{
+        nap::Entity* entity = *rtti_cast<nap::Entity*>(&object);
+		nap::Entity* parent = getParent(*entity);
+		if (parent)
+			parent->mChildren.erase(std::remove(parent->mChildren.begin(), parent->mChildren.end(), &object));
+	}
+	else if (object.get_type().is_derived_from<nap::Component>())
+	{
+        nap::Component* component = *rtti_cast<nap::Component*>(&object);
+		nap::Entity* owner = getOwner(*component);
+		if (owner)
+			owner->mComponents.erase(std::remove(owner->mComponents.begin(), owner->mComponents.end(), &object));
+	}
+
+	mObjects.erase(
+		std::remove_if(mObjects.begin(), mObjects.end(),
+					   [&object](std::unique_ptr<nap::rtti::RTTIObject>& obj) { return obj.get() == &object; }),
+		mObjects.end());
+
+	objectRemoved(object);
+}
+
+void AppContext::executeCommand(QUndoCommand* cmd)
+{
 	mUndoStack.push(cmd);
 }
-QString AppContext::serialize(nap::Object* obj)
+
+void AppContext::restoreUI()
 {
-	assert(obj);
-	std::stringstream ss;
-	nap::XMLSerializer ser(ss, core());
-    ser.writeObject(*obj, <#initializer#>, false);
-	return QString::fromStdString(ss.str());
+	// Restore theme
+	const QString& recentTheme = QSettings().value(settingsKey::LAST_THEME, napkin::TXT_DEFAULT_THEME).toString();
+	getThemeManager().setTheme(recentTheme);
+
+	openRecentFile();
 }
-void AppContext::deserialize(const QString& data, nap::Object* parent)
-{
-	std::stringstream ss(data.toStdString());
-	nap::XMLDeserializer ser(ss, core());
-	ser.readObject(parent);
-}
-
-IconStore& AppContext::iconStore()
-{
-	// Late initialization, let more important things happen first
-	if (!mIconStore) mIconStore = std::unique_ptr<IconStore>(new IconStore);
-	return *mIconStore;
-}
-
-ActionStore& AppContext::actionStore()
-{
-	// Late initialization, let more important things happen first
-	if (!mActionStore) mActionStore = std::unique_ptr<ActionStore>(new ActionStore);
-	return *mActionStore;
-}
-
-
-bool AppContext::isSaved() const { return QFileInfo(mFilename).exists(); }
-
-bool AppContext::isDirty() const { return !mUndoStack.isClean(); }
-
-void AppContext::setClean() { mUndoStack.setClean(); }

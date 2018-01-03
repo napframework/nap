@@ -1,6 +1,6 @@
 project(naputility)
 
-file(GLOB_RECURSE SOURCES src/ *.cpp *.h)
+file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 filter_platform_specific_files(SOURCES)
 
 add_platform_specific_files("${WIN32_SOURCES}" "${OSX_SOURCES}" "${LINUX_SOURCES}")

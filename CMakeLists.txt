@@ -60,21 +60,24 @@ add_subdirectory(nrender)
 
 # tools targets
 add_subdirectory(tools/fbxconverter)
+# add_subdirectory(napkin)
 
 # executable targets
 add_subdirectory(test/render)
 add_subdirectory(test/tommy)
 add_subdirectory(test/videoplayer)
 # Temporarily disabled projects while I temporarily have some ugly module search logic in project space
-#add_subdirectory(test/serializationtest)
-#add_subdirectory(test/audiotest)
-#add_subdirectory(test/audioperformancetest)
+# add_subdirectory(test/serializationtest)
+# add_subdirectory(test/audiotest)
 
 # app targets
 #add_subdirectory(apps/kalvertoren)
 #add_subdirectory(apps/etherdream)
 #add_subdirectory(apps/artnetcolor)
 #add_subdirectory(apps/steef)
+# add_subdirectory(apps/skeleton)
+
+add_subdirectory(unittests)
 
 # Modules
 add_subdirectory(modules/napinput)
@@ -83,6 +86,7 @@ add_subdirectory(modules/napmath)
 add_subdirectory(modules/napsdlinput)
 add_subdirectory(modules/napsdlwindow)
 add_subdirectory(modules/napscene)
+add_subdirectory(modules/napcameracontrol)
 add_subdirectory(modules/nappython)
 add_subdirectory(modules/napvideo)
 add_subdirectory(modules/napetherdream)
@@ -90,11 +94,16 @@ add_subdirectory(modules/napaudio)
 add_subdirectory(modules/napartnet)
 add_subdirectory(modules/naposc)
 add_subdirectory(modules/napsvg)
-add_subdirectory(modules/napmidi)
 add_subdirectory(modules/napapp)
 add_subdirectory(modules/napimgui)
-add_subdirectory(modules/napcameracontrol)
+add_subdirectory(modules/napmidi)
+# Leftover components can go here for now
+add_subdirectory(modules/napsandbox)
 
+# Exe dependencies
+add_dependencies(rendertest mod_naprender)
+# Extra deps for napkin in order to let them automatically build with napkin
+# add_dependencies(napkin skeleton tommy)
 
 # Packaging
 install(DIRECTORY dist/cmake/ DESTINATION cmake)
