@@ -1,4 +1,4 @@
-#include "LedColorPaletteGrid.h"
+#include "ledcolorpalettegrid.h"
 
 #include <utility/fileutils.h>
 #include <nbitmaputils.h>
