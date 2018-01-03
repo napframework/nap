@@ -111,7 +111,6 @@ namespace nap
 
 	const glm::mat4 OrthoCameraComponentInstance::getViewMatrix() const
 	{
-		const glm::mat4& global_transform = mTransformComponent->getGlobalTransform();
-		return glm::inverse(global_transform);
+		return glm::inverse(mTransformComponent->getGlobalTransform());
 	}
 }
