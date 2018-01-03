@@ -108,6 +108,53 @@ namespace nap
 	}
 
 
+	void NAPAPI setTriangleIndices(MeshInstance& mesh, int number, glm::ivec3& indices)
+	{		
+		// Make sure the index is valid
+		assert(mesh.hasIndices());
+
+		// Copy triangle index over
+		std::vector<uint>& mesh_indices = mesh.getIndices();
+
+		switch (mesh.getDrawMode())
+		{
+		case opengl::EDrawMode::TRIANGLES:
+		{
+			// Make sure our index is in range
+			assert((number * 3) + 2 < mesh_indices.size());
+
+			// Fill the data
+			unsigned int* id = mesh_indices.data() + (number * 3);
+			*(id + 0) = indices.x;
+			*(id + 1) = indices.y;
+			*(id + 2) = indices.z;
+			break;
+		}
+		case opengl::EDrawMode::TRIANGLE_FAN:
+		{
+			assert(number + 2 < mesh_indices.size());
+			unsigned int* id = mesh_indices.data();
+			*id = indices.x;
+			*(id + number + 1) = indices.y;
+			*(id + number + 2) = indices.z;
+			break;
+		}
+		case opengl::EDrawMode::TRIANGLE_STRIP:
+		{
+			assert(number + 2 < mesh_indices.size());
+			unsigned int* id = mesh_indices.data() + number;
+			*(id + 0) = indices.x;
+			*(id + 1) = indices.y;
+			*(id + 2) = indices.z;
+			break;
+		}
+		default:
+			assert(false);
+			break;
+		}
+	}
+
+
 	void computeBoundingBox(const MeshInstance& mesh, math::Box& outBox)
 	{
 		glm::vec3 min = { nap::math::max<float>(), nap::math::max<float>(), nap::math::max<float>() };
@@ -197,6 +244,23 @@ namespace nap
 				glm::vec3 normal = computePointNormal(mesh, i, vertices, map);
 				normal_data[i] = normal;
 			}
+		}
+	}
+
+
+	void NAPAPI reverseWindingOrder(MeshInstance& mesh)
+	{
+		assert(isTriangleMesh(mesh));
+		assert(mesh.hasIndices());
+		int tri_count = getTriangleCount(mesh);
+		glm::ivec3 cindices;
+		for (int i = 0; i < tri_count; i++)
+		{
+			getTriangleIndices(mesh, i, cindices);
+			int x = cindices.x;
+			cindices.x = cindices.z;
+			cindices.z = x;
+			setTriangleIndices(mesh, i, cindices);
 		}
 	}
 
