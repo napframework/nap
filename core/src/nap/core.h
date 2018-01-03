@@ -5,31 +5,31 @@
 #include <vector>
 
 // External Includes
-#include <rtti/rtti.h>
 #include <rtti/factory.h>
+#include <rtti/rtti.h>
 #include <unordered_set>
 
 // Core Includes
+#include "modulemanager.h"
+#include "resourcemanager.h"
 #include "service.h"
 #include "timer.h"
-#include "modulemanager.h"
 #include "utility/dllexport.h"
-#include "resourcemanager.h"
 
 namespace nap
 {
 	/**
 	 * Core manages the object graph, modules and services
-	 * Core is required in every NAP application and should be the first object that is created and 
+	 * Core is required in every NAP application and should be the first object that is created and
 	 * initialized. There should only be only 1 instance of Core in your application
-	 * 
+	 *
 	 * After creation, initialize the core engine by invoking initializeEngine(). This will
-	 * load all the available modules and their dependencies including services. 
+	 * load all the available modules and their dependencies including services.
 	 * When all modules are loaded all available services are initialized.
 	 * Initialization occurs based on the Service dependency tree. So when Service B points to A,
-	 * Service A is initialized before B. After initialization all module specific resources and their 
+	 * Service A is initialized before B. After initialization all module specific resources and their
 	 * contexts are available for object creation using the ResourceManager.
-	 * 
+	 *
 	 * Call update inside your app loop to update all available services. When exiting the application
 	 * invoke shutdown. This will close all operating services in the reverse order of their dependency tree
 	 */
@@ -48,10 +48,25 @@ namespace nap
 		virtual ~Core();
 
 		/**
-		 * Loads all modules in to the core environment and initializes them in the right order
-         * @error contains the error code when initialization fails
+		 * Loads all modules in to the core environment and creates all the associated services
+		 * @param error contains the error code when initialization fails
+		 * @return if initialization succeeded
 		 */
 		bool initializeEngine(utility::ErrorState& error);
+		
+		/**
+		* Initializes all registered services
+		* Initialization occurs based on service dependencies, this means that if service B depends on Service A,
+		* Service A is initialized before service B etc.
+		* @param error contains the error message when initialization fails
+		* @return if initialization failed or succeeded
+		*/
+		bool initializeServices(utility::ErrorState& errorState);
+
+		/**
+		 * Initialize python interpreter so we can have components running python scripts
+		 */
+		bool initializePython(utility::ErrorState& error);
 
 		/**
 		 * Starts core, call this after initializing the engine, just before starting
@@ -61,9 +76,10 @@ namespace nap
 
 		/**
 		 * Updates all services. This happens in 3 distinct steps.
-		 * First the resource file is reloaded. After that all services are updated, the last step is the 
+		 * First the resource file is reloaded. After that all services are updated, the last step is the
 		 * the update of the entities and their respective components managed by the resource manager
-		 * @param updateFunction application callback that is invoked after updating all the services but before render. Input parameter is deltaTime
+		 * @param updateFunction application callback that is invoked after updating all the services but before render.
+		 * Input parameter is deltaTime
 		 * @return deltaTime between update calls in seconds
 		 */
 		double update(std::function<void(double)>& updateFunction);
@@ -77,7 +93,7 @@ namespace nap
 		* The resource manager holds all the entities and components currently loaded by Core
 		* @return the resource manager
 		*/
-		ResourceManager* getResourceManager()								{ return mResourceManager.get(); }
+		ResourceManager* getResourceManager() { return mResourceManager.get(); }
 
 		/**
 		* @return number of elapsed time in milliseconds after invoking start
@@ -102,8 +118,8 @@ namespace nap
 		Service* getService(const rtti::TypeInfo& type, rtti::ETypeCheck typeCheck = rtti::ETypeCheck::EXACT_MATCH);
 
 		/**
-         * Searches for a service based on type name, searches for an exact match.
-		 * @return an already registered service based on it's type name, nullptr if not found
+		 * Searches for a service based on type name, searches for an exact match.
+		 * @return an already registered service based on its type name, nullptr if not found
 		 * @param type the type of the service as a string
 		 */
 		Service* getService(const std::string& type);
@@ -131,16 +147,8 @@ namespace nap
 		* @param error in case of a duplicate, contains the error message if the service could not be added
 		* @return if the service was added successfully
 		*/
-		bool addService(const rtti::TypeInfo& type, std::vector<Service*>& outServices, utility::ErrorState& errorState);
-
-		/**
-		* Initializes all registered services
-		* Initialization occurs based on service dependencies, this means that if service B depends on Service A,
-		* Service A is initialized before service B etc.
-		* @param error contains the error message when initialization fails
-		* @return if initialization failed or succeeded
-		*/
-		bool initializeServices(utility::ErrorState& errorState);
+		bool addService(const rtti::TypeInfo& type, std::vector<Service*>& outServices,
+						utility::ErrorState& errorState);
 
 		/**
 		* Occurs when a file has been successfully loaded by the resource manager
@@ -156,36 +164,34 @@ namespace nap
 		ModuleManager mModuleManager;
 
 		// Manages all the objects in core
-		std::unique_ptr<ResourceManager>	mResourceManager;
+		std::unique_ptr<ResourceManager> mResourceManager;
 
 		// Sorted service nodes, set after init
 		ServiceList mServices;
 
 		// Timer
 		SimpleTimer mTimer;
-		
+
 		// Last time stamp used for calculating delta time
 		double mLastTimeStamp = 0.0;
 
 		// Time it took to complete last cycle in seconds
 		double mDeltaTime = 0.0;
 
-		nap::Slot<const std::string&> mFileLoadedSlot = { [&](const std::string& inValue) -> void { resourceFileChanged(inValue); } };
+		nap::Slot<const std::string&> mFileLoadedSlot = {
+			[&](const std::string& inValue) -> void { resourceFileChanged(inValue); }};
 	};
-
-
-	//////////////////////////////////////////////////////////////////////////
-	// Template definitions
-	//////////////////////////////////////////////////////////////////////////
-
-
-	// Searches for a service of type T in the services and returns it,
-	// returns nullptr if none found
-	template <typename T>
-	T* Core::getService(rtti::ETypeCheck typeCheck)
-	{
-		Service* new_service = getService(RTTI_OF(T), typeCheck);
-		return new_service == nullptr ? nullptr : static_cast<T*>(new_service);
-	}
 }
 
+//////////////////////////////////////////////////////////////////////////
+// Template definitions
+//////////////////////////////////////////////////////////////////////////
+
+// Searches for a service of type T in the services and returns it,
+// returns nullptr if none found
+template <typename T>
+T* nap::Core::getService(rtti::ETypeCheck typeCheck)
+{
+	Service* new_service = getService(RTTI_OF(T), typeCheck);
+	return new_service == nullptr ? nullptr : static_cast<T*>(new_service);
+}

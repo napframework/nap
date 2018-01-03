@@ -487,8 +487,8 @@ namespace nap
 		{
 			// Open the file
 			std::ifstream in(path, std::ios::in | std::ios::binary);
-			if (!errorState.check(in.good(), "Unable to open file %s", path.c_str()))
-				return false;
+            if (!errorState.check(in.good(), "Unable to open file: %s (\"%s\")", strerror(errno), path.c_str()))
+                return false;
 
 			// Create buffer of appropriate size
 			in.seekg(0, std::ios::end);

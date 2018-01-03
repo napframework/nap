@@ -61,6 +61,8 @@ namespace nap
 
 		// Connect to this signal to receive osc events
 		Signal<const OSCEvent&>			messageReceived;
+        
+        Signal<const OSCEvent&>* getMessageReceived() { return &messageReceived; }
 
 	protected:
 		/**

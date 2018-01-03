@@ -127,13 +127,17 @@ namespace nap
 		*/
 	}
 
-	void ModuleManager::loadModules(std::vector<std::string>& moduleNames)
+	bool ModuleManager::loadModules(std::vector<std::string>& moduleNames, utility::ErrorState& error)
 	{
 		// Build a list of directories to search for modules
 		std::vector<std::string> directories;
 		buildModuleSearchDirectories(moduleNames, directories);
 		
 		// Iterate each directory
+		
+		// TODO populate ErrorState
+		
+		// TODO now that we're getting a list of required modules why don't we verify that we've managed to load each one?
 		
 		// TODO iterating module paths like this is very likely temporary behaviour as we work through the
 		// build/release/etc structure
@@ -208,6 +212,8 @@ namespace nap
 
 				mModules.push_back(module);
 			}
+			
+			return true;
 		}
 	}
 	

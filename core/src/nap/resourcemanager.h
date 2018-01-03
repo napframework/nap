@@ -37,6 +37,8 @@ namespace nap
 		*/
 		bool loadFile(const std::string& filename, utility::ErrorState& errorState);
 
+        bool loadFile(const std::string& filename);
+
 		/*
 		* Loads a json file containing objects. When the objects are loaded, a comparison is performed against the objects that are already loaded. Only
 		* the new objects and the objects that are different from the existing objects are loaded into the manager. The set of objects that is new
@@ -95,6 +97,8 @@ namespace nap
 		using ObjectByIDMap		= std::unordered_map<std::string, std::unique_ptr<rtti::RTTIObject>>;	// Map from object ID to object (owned)
 		using FileLinkMap		= std::unordered_map<std::string, std::vector<std::string>>;			// Map from target file to multiple source files
 
+		class OverlayLinkResolver;
+
 		enum class EFileModified : uint8_t
 		{
 			Yes,
@@ -107,9 +111,8 @@ namespace nap
 		void addFileLink(const std::string& sourceFile, const std::string& targetFile);
 
 		void determineObjectsToInit(const RTTIObjectGraph& objectGraph, const ObjectByIDMap& objectsToUpdate, const std::string& externalChangedFile, std::vector<std::string>& objectsToInit);
-		bool resolvePointers(ObjectByIDMap& objectsToUpdate, const rtti::UnresolvedPointerList& unresolvedPointers, utility::ErrorState& errorState);
 		bool initObjects(const std::vector<std::string>& objectsToInit, const ObjectByIDMap& objectsToUpdate, utility::ErrorState& errorState);
-		
+
 		bool buildObjectGraph(const ObjectByIDMap& objectsToUpdate, RTTIObjectGraph& objectGraph, utility::ErrorState& errorState);
 		EFileModified isFileModified(const std::string& modifiedFile);
 

@@ -36,7 +36,7 @@ namespace nap
 		mResourceManager->mFileLoadedSignal.connect(mFileLoadedSlot);
 	}
 
-    
+
 	Core::~Core()
 	{
 		mResourceManager->mFileLoadedSignal.disconnect(mFileLoadedSlot);
@@ -46,11 +46,12 @@ namespace nap
 		// Erase it
 		mResourceManager.reset();
 	}
-	
-    
+
+
 	bool Core::initializeEngine(utility::ErrorState& error)
 	{
-		// Ensure our current working directory is where the executable is.  Works around issues with the current working directory not being set as
+		// Ensure our current working directory is where the executable is.
+		// Works around issues with the current working directory not being set as
 		// expected when apps are launched directly from Finder and probably other things too.
 		nap::utility::changeDir(nap::utility::getExecutableDir());
 		
@@ -62,16 +63,18 @@ namespace nap
 		// Load all modules
 		// TODO: Passing through our temporary modules list for now, this is temporary until we lock down our
 		//		 release behaviour
-		mModuleManager.loadModules(projectInfo.mModules);
+		if (!mModuleManager.loadModules(projectInfo.mModules, error))
+			return false;
 		
 		// Create the various services based on their dependencies
 		if (!createServices(error))
 			return false;
 
-		// Initialize the various services
-		if (!initializeServices(error))
-			return false;
+		return true;
+	}
 
+	bool Core::initializePython(utility::ErrorState& error)
+	{
 		// Here we register a callback that is called when the nap python module is imported.
 		// We register a 'core' attribute so that we can write nap.core.<function>() in python
 		// to access core functionality as a 'global'.
@@ -79,7 +82,6 @@ namespace nap
 		{
 			module.attr("core") = this;
 		});
-
 		return true;
 	}
 
@@ -198,7 +200,7 @@ namespace nap
 	// Returns service that matches @type
 	Service* Core::getService(const rtti::TypeInfo& type, rtti::ETypeCheck typeCheck)
 	{
-		// Find service of type 
+		// Find service of type
 		const auto& found_service = std::find_if(mServices.begin(), mServices.end(), [&type, typeCheck](const auto& service)
 		{
 			return rtti::isTypeMatch(service->get_type(), type, typeCheck);
@@ -208,18 +210,17 @@ namespace nap
 		return found_service == mServices.end() ? nullptr : (*found_service).get();
 	}
 
-
 	nap::Service* Core::getService(const std::string& type)
 	{
 		rtti::TypeInfo stype = rtti::TypeInfo::get_by_name(type.c_str());
-        return getService(stype, rtti::ETypeCheck::EXACT_MATCH);
+		return getService(stype, rtti::ETypeCheck::EXACT_MATCH);
 	}
 
 
 	// Add a new service
 	bool Core::addService(const rtti::TypeInfo& type, std::vector<Service*>& outServices, utility::ErrorState& errorState)
 	{
-        assert(type.is_valid());
+		assert(type.is_valid());
 		assert(type.can_create_instance());
 		assert(type.is_derived_from<Service>());
 
@@ -240,7 +241,7 @@ namespace nap
 
 		// Signal creation
 		service->created();
-		
+
 		// Add
 		outServices.emplace_back(service);
 		return true;
@@ -266,4 +267,6 @@ namespace nap
 	{
 		return mTimer.getStartTime();
 	}
+
+
 }
