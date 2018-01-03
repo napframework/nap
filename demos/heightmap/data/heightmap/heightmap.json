@@ -1,0 +1,248 @@
+{
+	"Objects":
+	[
+		{		
+			"Type" : "nap::RenderWindow",
+			"mID" : "Window0",
+			"Width" : 1280,
+			"Height" : 720,
+			"Title" : "Window 1",
+			"Sync" : false,
+			"ClearColor": {
+                "x": 0.0666,
+                "y": 0.0784,
+                "z": 0.1490,
+                "w": 1.0
+            }
+		},
+
+		{
+			"Type" : "nap::Image",	
+			"mID" : "HeightMapTexture",
+			"ImagePath" : "data/heightmap/height_map.png"
+		},
+
+		{
+			"Type" : "nap::Shader",
+			"mID": "HeightShader",
+			"mVertShader": "shaders/heightmap/world.vert",
+			"mFragShader": "shaders/heightmap/world.frag"
+		},
+
+		{
+			"Type" : "nap::Shader",
+			"mID": "NormalsShader",
+			"mVertShader": "shaders/heightmap/normals.vert",
+			"mFragShader": "shaders/heightmap/normals.frag"
+		},
+
+		{
+			"Type" : "nap::HeightMesh",
+			"mID" : "HeightMesh",
+			"Rows" : 1024,
+			"Columns" : 1024,
+			"Heightmap" : "HeightMapTexture",
+			"Height" : 75,
+			"Size" :
+			{
+				"x" : 512,
+				"y" : 512
+			},
+			"Position" :
+			{
+				"x" : 0,
+				"y" : 0
+			}
+		},
+
+		{
+			"Type" : "nap::VisualizeNormalsMesh",
+			"mID" : "VisualizeNormalsMesh",
+			"ReferenceMesh" : "HeightMesh",
+			"Length" : 1.0
+		},
+
+		{
+			"Type" : "nap::Material",
+			"mID": "HeightMaterial",
+			"Shader": "HeightShader",
+			"VertexAttributeBindings" : 
+			[
+				{
+					"MeshAttributeID": "Position",
+					"ShaderAttributeID": "in_Position"
+				},
+				{
+					"MeshAttributeID": "UV0",
+					"ShaderAttributeID": "in_UV0"
+				},
+				{
+					"MeshAttributeID" : "Normal",
+					"ShaderAttributeID" : "in_Normal"
+				}
+			],
+			"Uniforms" : 
+			[
+				{
+					"Type" : "nap::UniformTexture2D",
+					"Name" : "inHeightmap",
+					"Texture" : "HeightMapTexture"
+				},
+				{
+					"Type" : "nap::UniformVec3",
+					"Name" : "inCameraPosition",
+					"Value" : 
+					{
+						"x" : 0.0,
+						"y" : 0.0,
+						"z" : 40.0
+					}
+				}
+			]			
+		},
+
+		{
+			"Type" : "nap::Material",
+			"mID": "NormalsMaterial",
+			"Shader": "NormalsShader",
+			"BlendMode" : "AlphaBlend",
+			"VertexAttributeBindings" : 
+			[
+				{
+					"MeshAttributeID": "Position",
+					"ShaderAttributeID": "in_Position"
+				},
+				{
+					"MeshAttributeID": "Color0",
+					"ShaderAttributeID": "in_Color0"
+				}
+			],
+			"Uniforms" : 
+			[
+				{
+					"Type" : "nap::UniformVec4",
+					"Name" : "mColor",
+					"Value" : 
+					{
+						"x" : 1.0,
+						"y" : 1.0,
+						"z" : 1.0,
+						"w" : 0.1
+					}
+				}
+			]		
+		},
+
+		{
+			"Type" : "nap::Scene",
+			"mID": "Scene",		
+			"Entities" : 
+			[
+				{
+					"Entity" : "World"
+				},
+				{
+					"Entity" : "Camera"
+				}
+			]
+		},
+
+		{
+			"Type" : "nap::Entity",
+			"mID": "World",
+			"Components" : 
+			[
+				{
+					"Type" : "nap::RenderableMeshComponent",
+					"Mesh" : "HeightMesh",
+					"MaterialInstance" : 
+					{
+						"mID": "HeightMaterialInstance",
+						"Material": "HeightMaterial"
+					}
+				},
+				{
+					"Type" : "nap::RenderableMeshComponent",
+					"Mesh" : "VisualizeNormalsMesh",
+					"MaterialInstance" : 
+					{
+						"mID": "NormalsMaterialInstance",
+						"Material": "NormalsMaterial"
+					}
+				},
+				{
+					"Type" : "nap::TransformComponent",
+					"Properties":
+					{
+						"Rotate" :
+						{
+							"x" : -90,
+							"y" : 0,
+							"z" : 0
+						}
+					}
+				},
+				{
+					"Type" : "nap::RotateComponent",
+					"Properties": 
+					{
+						"Axis": 
+						{
+							"x": 0.0,
+							"y": 0.0,
+							"z": 1.0
+						},
+						"Speed": 0.01,
+						"Offset": 0.0
+					}
+				}		
+			]
+		},
+		
+		{
+			"Type" : "nap::Entity",
+			"mID": "Camera",
+			"Components" : 
+			[
+				{
+					"Type" : "nap::PerspCameraComponent",
+					"mID" : "PerspCameraComponent",
+					"Properties": 
+					{
+						"FieldOfView": 45.0,
+						"NearClippingPlane" : 0.1,
+						"FarClippingPlane" : 3000.0
+					}
+				},
+				{
+					"Type" : "nap::TransformComponent",
+					"Properties": 
+					{
+						"Translate": 
+						{
+							"x": 0.0,
+							"y": 0.0,
+							"z": 400.0
+						}
+					}
+				},
+				{
+                    "Type": "nap::KeyInputComponent",
+                    "mID": "nap::KeyInputComponent"
+                },
+                {
+                    "Type": "nap::PointerInputComponent",
+                    "mID": "nap::PointerInputComponent"
+                },
+                {
+                    "Type": "nap::OrbitController",
+                    "mID": "nap::OrbitController",
+                    "MovementSpeed": 0.5,
+                    "RotateSpeed": 0.0025,
+                    "PerspCameraComponent": "PerspCameraComponent"
+                }
+			]
+		}
+
+	]
+}

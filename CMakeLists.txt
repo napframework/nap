@@ -81,6 +81,8 @@ add_subdirectory(apps/skeleton)
 add_subdirectory(demos/helloworld)
 add_subdirectory(demos/vinyl)
 add_subdirectory(demos/multiwindow)
+add_subdirectory(demos/heightmap)
+add_subdirectory(demos/heightmap/module)
 
 add_subdirectory(unittests)
 
@@ -108,6 +110,7 @@ add_subdirectory(modules/napsvg)
 add_subdirectory(modules/napapp)
 add_subdirectory(modules/napimgui)
 add_subdirectory(modules/napmidi)
+
 # Leftover components can go here for now
 add_subdirectory(modules/napsandbox)
 
