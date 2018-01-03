@@ -5,11 +5,17 @@
 #include <ntextureutils.h>
 #include <fstream>
 
+RTTI_BEGIN_CLASS(nap::WeekColors)
+	RTTI_PROPERTY("Palette",		&nap::WeekColors::mPalette,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Variations",		&nap::WeekColors::mVariations,		nap::rtti::EPropertyMetaData::Required)
+RTTI_END_CLASS
+
 // nap::LedColorPaletteGrid run time class definition 
 RTTI_BEGIN_CLASS(nap::LedColorPaletteGrid)
 	RTTI_PROPERTY("GridPath",		&nap::LedColorPaletteGrid::mGridImagePath,		nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::FileLink)
 	RTTI_PROPERTY("GridSize",		&nap::LedColorPaletteGrid::mGridSize,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("GridColorsPath", &nap::LedColorPaletteGrid::mGridLedColorsPath,	nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::FileLink)
+	RTTI_PROPERTY("WeekColors",		&nap::LedColorPaletteGrid::mWeekColors,			nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -17,7 +23,65 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	LedColorPaletteGrid::~LedColorPaletteGrid()			{ }
+	bool WeekColors::init(utility::ErrorState& errorState)
+	{
+		std::vector<std::string> grid_indices;
+		utility::splitString(mPalette, ' ', grid_indices);
+
+		// Convert palette strings to indices. Strings are in format '[A-Z][###]'. The letter denotes the column, the number the row.
+		// Note that the rows are 1-based.
+		for (int index = 0; index < grid_indices.size(); ++index)
+		{
+			const std::string& grid_index = grid_indices[index];
+
+			char column_char;
+			int row_index;
+			int numComponents = sscanf(grid_index.c_str(), "%c%d", &column_char, &row_index);
+
+			if (!errorState.check(numComponents == 2, "Encountered invalid format '%s' for color pattern at index %d in week %s", grid_index.c_str(), index, mID.c_str()))
+				return false;
+
+			int column_index = column_char - 'A';
+			
+			// Subtract 1 from row index since they're 1-based.
+			mPaletteColors.push_back({ row_index-1, column_index });
+		}
+
+		// Verify that all variations are valid. They must have the same size as the palette and each element of a variation must be in range
+		for (int index = 0; index < mVariations.size(); ++index)
+		{
+			const std::vector<int>& variation = mVariations[index];
+			if (!errorState.check(variation.size() == mPaletteColors.size(), "Palette variation at index %d in week %s has a different number of components than the palette (%d in variation, %d in palette)", index, mID.c_str(), variation.size(), mPaletteColors.size()))
+				return false;
+			
+			// Verify variation elements are in range
+			for (int variation_index = 0; variation_index < variation.size(); ++variation_index)
+			{
+				int palette_index = variation[variation_index];
+				if (!errorState.check(palette_index >= 0 && palette_index < mPaletteColors.size(), "Palette variation at index %d in week %s has an invalid palette index '%d' at element %d (must be between 0 and %d)", index, mID.c_str(), palette_index, variation_index, mPaletteColors.size()))
+					return false;
+			}
+		}
+
+		return true;
+	}
+
+
+	std::vector<WeekColors::GridColorIndex> WeekColors::getColors(int variationIndex) const
+	{
+		assert(variationIndex == -1 || (variationIndex > 0 && variationIndex < mVariations.size()));
+
+		// Return base palette if -1 is specified
+		if (variationIndex == -1)
+			return mPaletteColors;
+
+		// Otherwise shuffle the base palette
+		std::vector<GridColorIndex> result;
+		for (int palette_index : mVariations[variationIndex])
+			result.push_back(mPaletteColors[palette_index]);
+
+		return result;
+	}
 
 
 	bool LedColorPaletteGrid::init(utility::ErrorState& errorState)
@@ -36,23 +100,12 @@ namespace nap
 		if (!initPaletteGrid(errorState))
 			return false;
 
-		// Get opengl settings from bitmap
-		opengl::Texture2DSettings settings;
-		if (!errorState.check(opengl::getSettingsFromBitmap(mPixmap.getBitmap(), false, settings, errorState), "Unable to determine texture settings from bitmap %s", mGridImagePath.c_str()))
+		if (!checkWeekColors(errorState))
 			return false;
-
-		// Force parameters
-		mParameters.mMaxFilter = EFilterMode::Nearest;
-		mParameters.mMinFilter = EFilterMode::Nearest;
-
-		// Initialize texture from bitmap
-		BaseTexture2D::init(settings);
-
-		// Set data from bitmap
-		getTexture().setData(mPixmap.getBitmap().getData());
 
 		return true;
 	}
+
 
 	bool LedColorPaletteGrid::initPaletteGrid(utility::ErrorState& errorState)
 	{
@@ -141,5 +194,45 @@ namespace nap
 			return false;
 
 		return true;
+	}
+
+
+	bool LedColorPaletteGrid::checkWeekColors(utility::ErrorState& errorState)
+	{
+		// Verify all weeks refer to colors in the grid that actually exist
+		for (auto& weekColors : mWeekColors)
+		{
+			std::vector<WeekColors::GridColorIndex> colors = weekColors->getColors(-1);
+			for (const WeekColors::GridColorIndex& color_index : colors)
+			{
+				// Verify the cell is within range
+				bool valid_cell = color_index.mRow >= 0 && color_index.mRow < mPaletteGrid.size() && color_index.mColumn >= 0 && color_index.mColumn < mPaletteGrid[color_index.mRow].size();
+				if (!errorState.check(valid_cell, "Encountered week %s which has a pattern (%s) that references a cell in the grid (%c%d) that does not exist.", weekColors->mID.c_str(), weekColors->mPalette.c_str(), ('A'+color_index.mColumn), color_index.mRow+1))
+					return false;
+			}
+		}
+		return true;
+	}
+
+
+	int LedColorPaletteGrid::getWeekVariationCount(int weekNumber) const
+	{
+		assert(weekNumber < mWeekColors.size());
+		return mWeekColors[weekNumber]->getVariationCount();
+	}
+
+
+	std::vector<LedColorPaletteGrid::PaletteColor> LedColorPaletteGrid::getPalette(int weekNumber, int variationIndex) const
+	{
+		assert(weekNumber < mWeekColors.size());
+		assert(variationIndex == -1 || variationIndex < mWeekColors[weekNumber]->getVariationCount());
+
+		std::vector<WeekColors::GridColorIndex> color_indices = mWeekColors[weekNumber]->getColors(variationIndex);
+		
+		std::vector<PaletteColor> result;
+		for (const WeekColors::GridColorIndex& color_index : color_indices)
+			result.push_back(mPaletteGrid[color_index.mRow][color_index.mColumn]);
+
+		return result;
 	}
 }

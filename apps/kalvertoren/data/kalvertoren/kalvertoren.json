@@ -1503,18 +1503,28 @@
 		{
             "Type": "nap::LedColorPaletteGrid",
             "mID": "PaletteGrid",
-            "Parameters": {
-                "MinFilter": "LinearMipmapLinear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 20
-            },
-            "Usage": "Static",
             "GridPath": "data/kalvertoren/palettes/palette_grid.png",
 			"GridSize": 20,
-			"GridColorsPath": "data/kalvertoren/palettes/palette_grid_ledcolors.txt"           
-        },		
+			"GridColorsPath": "data/kalvertoren/palettes/palette_grid_ledcolors.txt",
+			"WeekColors": [
+				"Week1"
+			]
+        },
+		
+		{
+            "Type": "nap::WeekColors",
+            "mID": "Week1",
+			"Palette": "A1 B2 C3 D4 E5 F6",
+			"Variations": [
+				[0, 1, 2, 3, 4, 5],
+				[4, 5, 0, 1, 2, 3],
+				[3, 4, 5, 0, 1, 2],
+				[2, 3, 4, 5, 0, 1],
+				[1, 2, 3, 4, 5, 0],
+				[5, 4, 3, 2, 1, 0],
+				[3, 1, 4, 0, 2, 5]
+			]
+		},
 		
         {
             "Type": "nap::LedMesh",
