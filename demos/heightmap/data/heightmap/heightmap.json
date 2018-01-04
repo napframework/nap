@@ -56,10 +56,10 @@
 		},
 
 		{
-			"Type" : "nap::VisualizeNormalsMesh",
+			"Type" : "nap::HeightNormals",
 			"mID" : "VisualizeNormalsMesh",
 			"ReferenceMesh" : "HeightMesh",
-			"Length" : 1.0
+			"Length" : 2.0
 		},
 
 		{
@@ -79,6 +79,14 @@
 				{
 					"MeshAttributeID" : "Normal",
 					"ShaderAttributeID" : "in_Normal"
+				},
+				{
+					"MeshAttributeID" : "OriginalPosition",
+					"ShaderAttributeID" : "in_OriginalPosition" 
+				},
+				{
+					"MeshAttributeID" : "OriginalNormal",
+					"ShaderAttributeID" : "in_OriginalNormal" 
 				}
 			],
 			"Uniforms" : 
@@ -87,6 +95,11 @@
 					"Type" : "nap::UniformTexture2D",
 					"Name" : "inHeightmap",
 					"Texture" : "HeightMapTexture"
+				},
+				{
+					"Type" : "nap::UniformFloat",
+					"Name" : "blendValue",
+					"Value" : 1.0
 				},
 				{
 					"Type" : "nap::UniformVec3",
@@ -115,13 +128,17 @@
 				{
 					"MeshAttributeID": "Color0",
 					"ShaderAttributeID": "in_Color0"
+				},
+				{
+					"MeshAttributeID" : "OriginalPosition",
+					"ShaderAttributeID" : "in_OriginalPosition" 
 				}
 			],
 			"Uniforms" : 
 			[
 				{
 					"Type" : "nap::UniformVec4",
-					"Name" : "mColor",
+					"Name" : "color",
 					"Value" : 
 					{
 						"x" : 1.0,
@@ -129,6 +146,16 @@
 						"z" : 1.0,
 						"w" : 0.1
 					}
+				},
+				{
+					"Type" : "nap::UniformFloat",
+					"Name" : "blendValue",
+					"Value" : 1.0
+				},
+				{
+					"Type" : "nap::UniformFloat",
+					"Name" : "length",
+					"Value" : 0.1				
 				}
 			]		
 		},
