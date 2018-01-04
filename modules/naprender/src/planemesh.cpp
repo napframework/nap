@@ -16,29 +16,36 @@ namespace nap
 {
 	bool PlaneMesh::init(utility::ErrorState& errorState)
 	{
+		if (!setup(errorState))
+			return false;
+
+		// Initialize mesh
+		return mMeshInstance->init(errorState);
+	}
+
+
+	bool PlaneMesh::setup(utility::ErrorState& error)
+	{
 		// Make sure number of rows and columns is > 0
-		if (!errorState.check(mRows > 0, "Invalid number of rows, needs to be higher than 0: %s", this->mID.c_str()))
+		if (!error.check(mRows > 0, "Invalid number of rows, needs to be higher than 0: %s", this->mID.c_str()))
 			return false;
 
-		if (!errorState.check(mColumns > 0, "Invalid number of columns, needs to be higher than 0: %s", this->mID.c_str()))
+		if (!error.check(mColumns > 0, "Invalid number of columns, needs to be higher than 0: %s", this->mID.c_str()))
 			return false;
 
-		// Create mesh
-		mMeshInstance = std::make_unique<MeshInstance>();
-		
 		// Construct bounding rect
 		float dsizex = (0.0f - (mSize.x / 2.0f)) + mPosition.x;
 		float dsizey = (0.0f - (mSize.y / 2.0f)) + mPosition.y;
 		math::Rect rect(dsizex, dsizey, mSize.x, mSize.y);
-		
+
 		// Create plane
+		mMeshInstance = std::make_unique<MeshInstance>();
 		constructPlane(rect, *mMeshInstance);
-		
+
 		// Store rect
 		mRect = rect;
 
-		// Initialize mesh
-		return mMeshInstance->init(errorState);
+		return true;
 	}
 
 

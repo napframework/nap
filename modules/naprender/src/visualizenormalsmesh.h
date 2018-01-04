@@ -53,5 +53,14 @@ namespace nap
 
 		// Color Attribute data
 		nap::Vec4VertexAttribute* mColorAttr = nullptr;
+		
+		/**
+		 * Sets up the mesh based on the reference mesh
+		 * This call does not initialize the data on the GPU
+		 * Use this function to create the mesh and initialize it in a derived class
+		 * @param error contains the error when setup fails
+		 * @return if setup succeeded or not
+		 */
+		bool setup(utility::ErrorState& error);
 	};
 }

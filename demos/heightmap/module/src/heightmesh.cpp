@@ -32,6 +32,13 @@ namespace nap
 		Vec3VertexAttribute& uvs_attr = mesh.GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetUVName(0));
 		Vec3VertexAttribute& nor_attr = mesh.GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::getNormalName());
 
+		// Store the original point positions in a new attribute
+		mOriginalPosAttr = &mesh.GetOrCreateAttribute<glm::vec3>("OriginalPosition");
+		mOriginalNorAttr = &mesh.GetOrCreateAttribute<glm::vec3>("OriginalNormal");
+
+		mOriginalPosAttr->setData(pos_attr.getData());
+		mOriginalNorAttr->setData(nor_attr.getData());
+
 		std::vector<glm::vec3>& uvs_data = uvs_attr.getData();
 		std::vector<glm::vec3>& pos_data = pos_attr.getData();
 		std::vector<glm::vec3>& nor_data = nor_attr.getData();
@@ -64,11 +71,7 @@ namespace nap
 		// Update our mesh normals to ensure light calculations work in the shader
 		computeNormals(mesh, pos_attr, nor_attr);
 
-		// Now push changes
-		nap::utility::ErrorState error;
-		if (!mesh.update(error))
-			return false;
-		return true;
-
+		// Initialize the mesh -> attributes are verified and data is uploaded to the GPU
+		return mesh.init(errorState);
 	}
 }
