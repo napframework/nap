@@ -43,7 +43,19 @@
 
 // clang-format on
 
-#define MAX_PATH_SIZE 260
+#ifdef _WIN32
+	#ifdef MAX_PATH
+		#define MAX_PATH_SIZE MAX_PATH
+	#else
+		#define MAX_PATH_SIZE 260
+	#endif
+#elif _unix_
+	#ifdef PATH_MAX
+		#define MAX_PATH_SIZE PATH_MAX
+	#else
+		#define MAX_PATH_SIZE 4096
+	#endif
+#endif
 
 namespace nap
 {
