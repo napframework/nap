@@ -144,7 +144,6 @@ def package():
     os.makedirs(PACKAGING_DIR)
 
     if platform in ["linux", "linux2"]:
-        # TODO Bundling ReleaseWithDebInfo for now as Release is crashing 28-11-17
         for build_type in ['Release', 'RelWithDebInfo', 'Debug']:
             build_dir_for_type = BUILD_DIR + build_type
             call(WORKING_DIR, ['cmake', '-H.', '-B%s' % build_dir_for_type, '-DCMAKE_BUILD_TYPE=%s' % build_type])
@@ -179,7 +178,9 @@ def package():
         call(WORKING_DIR, ['cmake', '-H.','-B%s' % BUILD_DIR,'-G', 'Visual Studio 14 2015 Win64', '-DPYBIND11_PYTHON_VERSION=3.5'])
 
         # Build & install to packaging dir
-        for build_type in ['Release', 'RelWithDebInfo', 'Debug']:
+        # TODO re-enable RelWithDebInfo when fbxconverter crash on Win64 is fixed
+        # for build_type in ['Release', 'RelWithDebInfo', 'Debug']:
+        for build_type in ['Release', 'Debug']:
             call(WORKING_DIR, ['cmake', '--build', BUILD_DIR, '--target', 'install', '--config', build_type])
 
         # Create archive
