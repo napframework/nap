@@ -49,7 +49,7 @@
 	#else
 		#define MAX_PATH_SIZE 260
 	#endif
-#elif _unix_
+#elif __unix__
 	#ifdef PATH_MAX
 		#define MAX_PATH_SIZE PATH_MAX
 	#else
