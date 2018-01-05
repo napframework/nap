@@ -212,9 +212,8 @@ namespace nap
 
 				mModules.push_back(module);
 			}
-			
-			return true;
 		}
+		return true;
 	}
 	
 	void ModuleManager::buildModuleSearchDirectories(std::vector<std::string>& moduleNames, std::vector<std::string>& outSearchDirectories)
