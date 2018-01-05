@@ -71,11 +71,11 @@ add_subdirectory(test/videoplayer)
 # add_subdirectory(test/audiotest)
 
 # app targets
-#add_subdirectory(apps/kalvertoren)
-#add_subdirectory(apps/etherdream)
-#add_subdirectory(apps/artnetcolor)
-#add_subdirectory(apps/steef)
-# add_subdirectory(apps/skeleton)
+add_subdirectory(apps/kalvertoren)
+add_subdirectory(apps/etherdream)
+add_subdirectory(apps/artnetcolor)
+add_subdirectory(apps/steef)
+add_subdirectory(apps/skeleton)
 
 add_subdirectory(unittests)
 

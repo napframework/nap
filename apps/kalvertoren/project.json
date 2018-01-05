@@ -1,0 +1,16 @@
+{
+    "title": "Etherdream",
+    "version": "0.1",
+    "modules": [
+        "mod_naprender",
+        "mod_napmath",
+        "mod_napinput",
+        "mod_napsdlinput",
+        "mod_napsdlwindow",
+        "mod_napvideo",
+        "mod_napcameracontrol",
+        "mod_napapp",
+        "mod_napartnet",
+        "mod_napimgui"
+    ]
+}

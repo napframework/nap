@@ -1,0 +1,11 @@
+{
+    "title": "Steef",
+    "version": "0.1",
+    "modules": [
+        "mod_napmath",
+        "mod_napinput",
+        "mod_napsdlinput",
+        "mod_napsdlwindow",
+        "mod_napapp"
+    ]
+}

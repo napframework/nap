@@ -25,16 +25,28 @@ target_link_libraries(${PROJECT_NAME}
         mod_napsdlinput
         mod_napsdlwindow
         mod_napsvg
-        mod_napapp)
+        mod_napapp
+        mod_napvideo)
 
+
+# Build into a project directory under bin
+set_output_directories()
 
 if (WIN32)
     find_package(freeimage REQUIRED)
     copy_freeimage_dll()
 
     copy_base_windows_graphics_dlls()
+
+    # copy all ffmpeg dlls
+    copy_windows_ffmpeg_dlls()
+
+    # Copy all of our Windows DLLs that have build in bin into project dir
+    # TODO this is NOT a clean solution, but if we're mainly releasing projects built against packaged releases of the
+    #      framework maybe this is OK?
+    bulk_copy_windows_dlls_to_bin()
 endif()
 
 # should probably only contain the skeleton json
-copy_dir_to_bin(data data)
-
+copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/data data)
+copy_files_to_bin(${CMAKE_CURRENT_LIST_DIR}/project.json)

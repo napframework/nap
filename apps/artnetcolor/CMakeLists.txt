@@ -19,14 +19,22 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Apps)
 target_link_libraries(${PROJECT_NAME} mod_napartnet mod_napinput mod_napsdlinput mod_napsdlwindow mod_naprender mod_napimgui mod_napapp)
 add_dependencies(${PROJECT_NAME} fbxconverter)
 
-if (WIN32)
-	# Copy freeimage DLL
-	find_package(freeimage REQUIRED)
-	copy_freeimage_dll()
+# Build into a project directory under bin
+set_output_directories()
 
-    	# Copy over some crap window dlls
-	copy_base_windows_graphics_dlls()
-	copy_windows_ffmpeg_dlls()
+if (WIN32)
+    # Copy freeimage DLL
+    find_package(freeimage REQUIRED)
+    copy_freeimage_dll()
+
+    # Copy over some crap window dlls
+    copy_base_windows_graphics_dlls()
+    copy_windows_ffmpeg_dlls()
+
+    # Copy all of our Windows DLLs that have build in bin into project dir
+    # TODO this is NOT a clean solution, but if we're mainly releasing projects built against packaged releases of the
+    #      framework maybe this is OK?
+    bulk_copy_windows_dlls_to_bin()
 endif()
 
 # Copy artnet DLL
@@ -36,4 +44,5 @@ copy_artnet_dll()
 # create post build event
 copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/data data)
 copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/shaders shaders)
+copy_files_to_bin(${CMAKE_CURRENT_LIST_DIR}/project.json)
 export_fbx(${CMAKE_CURRENT_LIST_DIR}/data)
