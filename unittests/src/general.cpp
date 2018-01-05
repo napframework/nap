@@ -29,3 +29,37 @@ TEST_CASE("File path transformations", "[fileutils]")
 	// TODO: Make more of this sweet stuff
 
 }
+
+
+TEST_CASE("String utilities", "[stringutils]")
+{
+	{
+		auto split = nap::utility::splitString("souffleur", '.');
+		REQUIRE(split.size() == 1);
+		REQUIRE(split[0] == "souffleur");
+	}
+	{
+		auto split = nap::utility::splitString("one.two.three", '.');
+		REQUIRE(split.size() == 3);
+		REQUIRE(split[0] == "one");
+		REQUIRE(split[1] == "two");
+		REQUIRE(split[2] == "three");
+	}
+	{
+		auto split = nap::utility::splitString("one/", '/');
+		REQUIRE(split.size() == 1);
+		REQUIRE(split[0] == "one");
+	}
+	{
+		auto split = nap::utility::splitString("/", '/');
+		REQUIRE(split.size() == 1);
+		REQUIRE(split[0] == "");
+	}
+	{
+		auto split = nap::utility::splitString("double//slash", '/');
+		REQUIRE(split.size() == 3);
+		REQUIRE(split[0] == "double");
+		REQUIRE(split[1] == "");
+		REQUIRE(split[2] == "slash");
+	}
+}
