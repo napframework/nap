@@ -16,7 +16,9 @@ napkin::PropertyPath::PropertyPath(RTTIObject& obj, const RTTIPath& path)
 napkin::PropertyPath::PropertyPath(RTTIObject& obj, const std::string& path)
 		: mObject(&obj), mPath(RTTIPath())
 {
-	mPath.pushAttribute(path);
+	std::vector<std::string> split = nap::utility::splitString(path, '/');
+	for (auto part : split)
+		mPath.pushAttribute(part);
 }
 
 rttr::variant napkin::PropertyPath::getValue() const
