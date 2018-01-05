@@ -7,10 +7,13 @@ in vec4 pass_Color;
 out vec4 out_Color;
 
 // Uniform used for setting color
-uniform vec4 mColor;
+uniform vec4 color;
+uniform float length;
 
 void main() 
 {
-	vec3 line_color = mColor.rgb * pass_Color.rgb;
-	out_Color = vec4(line_color, pass_Color.a * mColor.a);
+	float v = 1.0-clamp(pass_Color.a, 0.0, 1.0);
+	float m = length;
+	v =  1.0 - (v / (m) * 1.0);
+	out_Color = vec4(color.rgb * pass_Color.rgb, color.a * v);
 }
