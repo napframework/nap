@@ -66,9 +66,8 @@ add_subdirectory(tools/fbxconverter)
 add_subdirectory(test/render)
 add_subdirectory(test/tommy)
 add_subdirectory(test/videoplayer)
-# Temporarily disabled projects while I temporarily have some ugly module search logic in project space
-# add_subdirectory(test/serializationtest)
-# add_subdirectory(test/audiotest)
+add_subdirectory(test/serializationtest)
+add_subdirectory(test/audiotest)
 
 # app targets
 add_subdirectory(apps/kalvertoren)
