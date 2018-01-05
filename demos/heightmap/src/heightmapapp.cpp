@@ -55,12 +55,7 @@ namespace nap
 	 * The input router is used to filter the input events and to forward them
 	 * to the input components of a set of entities, in this case our camera.
 	 * 
-	 * The camera has two input components: KeyInputComponent and PointerInputComponent
-	 * The key input component receives key events, the pointer input component receives pointer events
-	 * The orbit controller listens to both of them
-	 * When an input component receives a message it sends a signal to the orbit controller.
-	 * The orbit controller validates if it's something useful and acts accordingly,
-	 * in this case by rotating around or zooming in on the sphere.
+	 * We also use the update to push all our colors and other values to the GPU
 	 */
 	void HeightmapApp::update(double deltaTime)
 	{
@@ -78,42 +73,37 @@ namespace nap
 		// get smoothed blend value
 		float current_blend_value = mBlendSmoother.update(mBlendValue, deltaTime);
 		
-		// Now push the blend value to both materials
-		mNormalsMaterial->getUniform<UniformFloat>("blendValue").setValue(current_blend_value);
-		mHeightmapMaterial->getUniform<UniformFloat>("blendValue").setValue(current_blend_value);
+		// Now push the blend values to both materials
+		float normal_blend_value = mBlendNormals ? current_blend_value : 0.0f;
 
-		// Push normal color
-		glm::vec4 normal_clr_data;
-		normal_clr_data.x = mNormalColor.getRed();
-		normal_clr_data.y = mNormalColor.getGreen();
-		normal_clr_data.z = mNormalColor.getBlue();
-		normal_clr_data.w = mNormalOpacity;
-		mNormalsMaterial->getUniform<UniformVec4>("color").setValue(normal_clr_data);
+		mNormalsMaterial->getUniform<UniformFloat>("blendValue").setValue(current_blend_value);
+		mNormalsMaterial->getUniform<UniformFloat>("normalBlendValue").setValue(normal_blend_value);
+
+		mHeightmapMaterial->getUniform<UniformFloat>("blendValue").setValue(current_blend_value);
+		mHeightmapMaterial->getUniform<UniformFloat>("normalBlendValue").setValue(normal_blend_value);
+
+		// Push all colors
+		pushColor(mValleyColor, *mHeightmapMaterial, "lowerColor");
+		pushColor(mPeakColor, *mHeightmapMaterial, "upperColor");
+		pushColor(mHaloColor, *mHeightmapMaterial, "haloColor");
+		pushColor(mNormalColor, *mNormalsMaterial, "color");
+
+		// Set normal opacity
+		mNormalsMaterial->getUniform<UniformFloat>("opacity").setValue(mNormalOpacity);
 
 		// Set the normal length
 		mNormalsMaterial->getUniform<UniformFloat>("length").setValue(mNormalLength);
-
-		// Find the renderable mesh components that link with the height mesh
-		// Both have the blendvalue uniform so we set that to the current blend value
-		std::vector<nap::RenderableMeshComponentInstance*> render_meshes;
-		mWorldEntity->getComponentsOfType<nap::RenderableMeshComponentInstance>(render_meshes);
-
-		// Get material and fetch uniform
-		for (auto& render_mesh : render_meshes)
-		{
-			UniformFloat& blend_uniform = render_mesh->getMaterialInstance().getOrCreateUniform<UniformFloat>("blendValue");
-			blend_uniform.setValue(current_blend_value);
-		}
 	}
 
 	
 	/**
 	 * Render loop is rather straight forward:
-	 * Set the camera position in the world shader for the halo effect
-	 * make the main window active, this makes sure that all subsequent render calls are 
-	 * associated with that window. When you have multiple windows and don't activate the right window subsequent
-	 * render calls could end up being associated with the wrong context, resulting in undefined behavior.
-	 * Next we clear the render target, render the object and swap the main window back-buffer.
+	 * Set the camera position in the world shader for the halo effect. We do that here because the 
+	 * transforms are updated after the app update() call.
+	 * 
+	 * We simply enable our window for drawing, clear it's buffers and draw our selection to screen
+	 * You can select to draw only the mesh, only the normals or both combined
+	 * The last step is always to draw the gui as it needs to be drawn on top of the rest
 	 */
 	void HeightmapApp::render()
 	{
@@ -198,9 +188,7 @@ namespace nap
 			// If 'f' is pressed toggle fullscreen
 			if (press_event->mKey == nap::EKeyCode::KEY_f)
 			{
-				static bool fullscreen = true;
-				setWindowFullscreen("Window0", fullscreen);
-				fullscreen = !fullscreen;
+				mRenderWindow->toggleFullscreen();
 			}
 		}
 		mInputService->addEvent(std::move(inputEvent));
@@ -220,14 +208,30 @@ namespace nap
 	void HeightmapApp::updateGui()
 	{
 		ImGui::Begin("Controls");
+		ImGui::Checkbox("Blend Normals", &mBlendNormals);
 		ImGui::Combo("Visualize", &mSelection, "Mesh\0Normals\0Both\0\0");
 		ImGui::SliderFloat("Blend Value", &mBlendValue, 0.0f, 1.0f);
 		ImGui::SliderFloat("Normal Length", &mNormalLength, 0.0f, 1.0f);
 		if (ImGui::CollapsingHeader("Colors"))
 		{
+			ImGui::ColorPicker3("Valley Color", mValleyColor.getData());
+			ImGui::ColorPicker3("Peak Color", mPeakColor.getData());
+			ImGui::ColorPicker3("Halo Color", mHaloColor.getData());
 			ImGui::ColorPicker3("Normal Color", mNormalColor.getData());
 			ImGui::SliderFloat("Normal Opacity", &mNormalOpacity, 0.0f, 1.0f);
 		}
 		ImGui::End();
 	}
+
+
+	void HeightmapApp::pushColor(RGBColorFloat& color, Material& material, const std::string& name)
+	{
+		// Push normal color
+		glm::vec3 clr_data;
+		clr_data.x = color.getRed();
+		clr_data.y = color.getGreen();
+		clr_data.z = color.getBlue();
+		material.getUniform<UniformVec3>(name).setValue(clr_data);
+	}
+
 }

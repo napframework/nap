@@ -8,12 +8,14 @@
 namespace nap
 {
 	/**
-	 * Creates height map normals based on the data in a HeightMesh.
-	 * The normals an be displayed using a RenderableMesh and material.
-	 * On initialization this object first creates all the mesh data associated with it's parent: VisualizeNormalsMesh 
-	 * After that it adds an extra vertex attribute: "OriginalPosition". This attribute is used to
-	 * blend the position of the normals in a mesh based on the shader blend value.
-	 * This ensures the normals 'track' the height map when the blend value changes
+	 * A mesh resources that computes a line (normal) for every vertex in a height mesh.
+	 * The normals can be displayed using a RenderableMesh and material.
+	 * On initialization this object creates all the mesh data associated with it's parent: VisualizeNormalsMesh
+	 * The result of that call is a mesh that can be used to display the normals of a fully displaced height mesh.
+	 * This resource also adds 2 extra vertex attributes: "OriginalPosition" and "DisplacedPosition".
+	 * Original position holds the vertex positions associated with the non-displaced height map.
+	 * Displaced position holds the displaced vertex position that points in the original non-displaced direction
+	 * Both can be used to visualize how the normals change when the height map blend value is adjusted
 	 * See VisualizeNormalsMesh for more information.
 	 */
 	class HeightNormals : public VisualizeNormalsMesh
@@ -31,5 +33,6 @@ namespace nap
 	private:
 		HeightMesh* mHeightMesh = nullptr;						///< Pointer to the normals we want to visualize
 		Vec3VertexAttribute* mOriginalPosAttr = nullptr;		///< Original vertex positions
+		Vec3VertexAttribute* mOriginalNorAttr = nullptr;		///< Displaced but not blended normal direction
 	};
 }

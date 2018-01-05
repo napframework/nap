@@ -132,19 +132,22 @@
 				{
 					"MeshAttributeID" : "OriginalPosition",
 					"ShaderAttributeID" : "in_OriginalPosition" 
+				},
+				{
+					"MeshAttributeID" : "DisplacedPosition",
+					"ShaderAttributeID" : "in_DisplacedPosition" 
 				}
 			],
 			"Uniforms" : 
 			[
 				{
-					"Type" : "nap::UniformVec4",
+					"Type" : "nap::UniformVec3",
 					"Name" : "color",
 					"Value" : 
 					{
 						"x" : 1.0,
 						"y" : 1.0,
-						"z" : 1.0,
-						"w" : 0.1
+						"z" : 1.0
 					}
 				},
 				{

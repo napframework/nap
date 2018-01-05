@@ -34,40 +34,51 @@ namespace nap
 
 		// Create original positions attribute
 		mOriginalPosAttr = &getMeshInstance().GetOrCreateAttribute<glm::vec3>("OriginalPosition");
+		mOriginalNorAttr = &getMeshInstance().GetOrCreateAttribute<glm::vec3>("DisplacedPosition");
 
 		// Get the number of vertices in the height mesh
 		int vert_count = mHeightMesh->getMeshInstance().getNumVertices();
 
 		// Get the reference vertices and normals
-		std::vector<glm::vec3>& ref_vertices = mHeightMesh->getOriginalPosition().getData();
-		std::vector<glm::vec3>& ref_normals  = mHeightMesh->getOriginalNormals().getData();
-		
+		std::vector<glm::vec3>& ref_original_vertices  = mHeightMesh->getOriginalPosition().getData();
+		std::vector<glm::vec3>& ref_original_normals   = mHeightMesh->getOriginalNormals().getData();
+		std::vector<glm::vec3>& ref_displaced_vertices = mHeightMesh->getDisplacedPosition().getData();
+
 		// Create target buffers, the normals are drawn using lines. Every line has 2 vertices
 		// We therefore create a buffer that contains twice the amount of vertices of the reference mesh
 		// Every vertex 'receives' an associated normal line
-		std::vector<glm::vec3> target_vertices(ref_vertices.size() * 2, { 0.0f, 0.0f, 0.0f });
+		std::vector<glm::vec3> original_vertices(ref_original_vertices.size()  * 2, { 0.0f, 0.0f, 0.0f });
+		std::vector<glm::vec3> displaced_vertices(ref_original_vertices.size() * 2, { 0.0f, 0.0f, 0.0f });
 
 		// Use those to populate the two new attributes
 		int target_idx = 0;
 		for (int i = 0; i < vert_count; i++)
 		{
 			// get current position and normal
-			const glm::vec3& ref_vertex = ref_vertices[i];
-			const glm::vec3& ref_normal = ref_normals[i];
+			const glm::vec3& ref_ori_vertex = ref_original_vertices[i];
+			const glm::vec3& ref_ori_normal = ref_original_normals[i];
+			const glm::vec3& ref_displa = ref_displaced_vertices[i];
 
 			// Ensure the normal has length
-			assert(glm::length(ref_normal) > 0);
+			assert(glm::length(ref_ori_normal) > 0);
 
-			// Set the original vertex position
-			target_vertices[target_idx] = ref_vertex;
-			target_vertices[target_idx + 1] = ref_vertex + (glm::normalize(ref_normal) * mNormalLength);
+			// Set the original vertex positions for the normal
+			original_vertices[target_idx] = ref_ori_vertex;
+			original_vertices[target_idx + 1] = ref_ori_vertex + (glm::normalize(ref_ori_normal) * mNormalLength);
+
+			// Set the displaced vertex positions for the normal. We want to show in the viewport
+			// the normal at the right displaced position pointing in the direction of the
+			// original non-displaced normal
+			displaced_vertices[target_idx] = ref_displa;
+			displaced_vertices[target_idx + 1] = ref_displa + (glm::normalize(ref_ori_normal) * mNormalLength);
 
 			// Increment write index
 			target_idx += 2;
 		}
 
 		// Set the attribute data
-		mOriginalPosAttr->setData(target_vertices);
+		mOriginalPosAttr->setData(original_vertices);
+		mOriginalNorAttr->setData(displaced_vertices);
 
 		// Initialize our mesh -> create all attributes on the gpu and push data
 		return getMeshInstance().init(errorState);
