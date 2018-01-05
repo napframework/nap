@@ -60,14 +60,8 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 #        DEPENDS always_rebuild)
 
 # Package into release build
-# TODO for now use debug build for Linux due to release build crash issues 28-11-17
-if (WIN32 OR APPLE)
-    install(TARGETS ${PROJECT_NAME} DESTINATION tools
-            CONFIGURATIONS Release)
-else()
-    install(TARGETS ${PROJECT_NAME} DESTINATION tools
-            CONFIGURATIONS Debug)
-endif()
+install(TARGETS ${PROJECT_NAME} DESTINATION tools
+        CONFIGURATIONS Release)
 
 # install(CODE "execute_process(COMMAND python ../dist/osx/dylibpathfix.py fbxconverter_pathfix\nWORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/packaging)")
 
