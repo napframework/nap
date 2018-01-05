@@ -17,7 +17,10 @@ namespace nap
 {
 	HeightMesh::~HeightMesh()			{ }
 
-
+	/**
+	 * Initialize this height map, the end result is a plane where every vertex is displaced along it's normal
+	 * After displacement the normals are re-calculated
+	 */
 	bool HeightMesh::init(utility::ErrorState& errorState)
 	{
 		// Initialize our plane with the right amount of rows / columns
@@ -70,6 +73,9 @@ namespace nap
 
 		// Update our mesh normals to ensure light calculations work in the shader
 		computeNormals(mesh, pos_attr, nor_attr);
+
+		// Store position attribute
+		mDisplacedPosAttr = &pos_attr;
 
 		// Initialize the mesh -> attributes are verified and data is uploaded to the GPU
 		return mesh.init(errorState);

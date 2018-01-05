@@ -859,7 +859,8 @@ EXCLUDE                = ..\..\napkin \
                          ../../core/src/nap/linux/FileWatcher \
                          ../../modules/napmath/src/psblendmodes.cpp \
                          ../../modules/napmath/src/psblendmodes.h \
-                         ../../readme.md
+                         ../../readme.md \
+                         ..\..\demos
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded

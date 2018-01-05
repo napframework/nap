@@ -4,6 +4,7 @@ uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 modelMatrix;
 uniform float blendValue;
+uniform float normalBlendValue;
 
 // Input Vertex Attributes
 in vec3	in_Position;
@@ -20,7 +21,7 @@ out vec3 passPosition;				//< vertex world space position
 void main(void)
 {
 	// Blend original normal with target normal
-	vec3 blend_nor = mix(in_OriginalNormal, in_Normal, blendValue);
+	vec3 blend_nor = mix(in_OriginalNormal, in_Normal, normalBlendValue);
 
 	//rotate normal based on model matrix and set
     mat3 normal_matrix = transpose(inverse(mat3(modelMatrix)));
