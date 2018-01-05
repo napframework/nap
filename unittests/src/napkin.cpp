@@ -4,6 +4,7 @@
 #include <commands.h>
 #include <composition.h>
 #include <ledcolorpalette.h>
+#include <ledcolorpalettegrid.h>
 
 
 #define TAG_NAPKIN "[napkin]"
@@ -119,6 +120,25 @@ TEST_CASE("Array Value Elements", TAG_NAPKIN)
 		auto array = value.create_array_view();
 		REQUIRE(array.get_size() == 0);
 	}
+}
+
+TEST_CASE("Array add weekcolor", TAG_NAPKIN)
+{
+	auto doc = napkin::AppContext::get().newDocument();
+	auto* col = doc->addObject<nap::WeekColors>();
+	REQUIRE(col != nullptr);
+
+	napkin::PropertyPath variations(*col, "Variations");
+	REQUIRE(variations.isValid());
+
+	auto index = doc->arrayAddValue(variations);
+	REQUIRE(index == 0);
+
+	napkin::PropertyPath variations0(*col, "Variations/0");
+	REQUIRE(variations0.isValid());
+
+	auto idx = doc->arrayAddValue(variations0);
+	REQUIRE(idx == 0);
 }
 
 TEST_CASE("Array Modification Objects", TAG_NAPKIN)
@@ -396,9 +416,4 @@ TEST_CASE("Commands", TAG_NAPKIN)
 //	ctx.executeCommand(new SetPointerValueCommand())
 //	ctx.executeCommand(new AddEntityToSceneCommand())
 //	ctx.executeCommand(new ArrayAddValueCommand());
-}
-
-TEST_CASE("QT Specific", TAG_NAPKIN)
-{
-
 }
