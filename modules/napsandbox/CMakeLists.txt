@@ -18,3 +18,6 @@ target_link_libraries(${PROJECT_NAME} napcore
         mod_napinput
         mod_naprender
         )
+
+# Package into platform release
+package_module()
