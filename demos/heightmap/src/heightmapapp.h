@@ -1,14 +1,17 @@
 #pragma once
 
-// Mod nap render includes
-#include <renderablemeshcomponent.h>
-#include <renderwindow.h>
+// Local includes
+#include "heightmesh.h"
 
 // Nap includes
+#include <renderablemeshcomponent.h>
+#include <renderwindow.h>
+#include <imguiservice.h>
 #include <nap/resourcemanager.h>
 #include <sceneservice.h>
 #include <inputservice.h>
 #include <app.h>
+#include <smoothdamp.h>
 
 namespace nap
 {
@@ -75,14 +78,31 @@ namespace nap
 
 	private:
 		// Nap Services
-		RenderService*		mRenderService = nullptr;				//< Render Service that handles render calls
-		ResourceManager*	mResourceManager = nullptr;				//< Manages all the loaded resources
-		SceneService*		mSceneService = nullptr;				//< Manages all the objects in the scene
-		InputService*		mInputService = nullptr;				//< Input service for processing input
+		RenderService*			mRenderService = nullptr;			//< Render Service that handles render calls
+		ResourceManager*		mResourceManager = nullptr;			//< Manages all the loaded resources
+		SceneService*			mSceneService = nullptr;			//< Manages all the objects in the scene
+		InputService*			mInputService = nullptr;			//< Input service for processing input
+		IMGuiService*			mGuiService = nullptr;				//< Gui service
 
-		ObjectPtr<RenderWindow> mRenderWindow;						//< Pointer to the render window
-		
+		ObjectPtr<RenderWindow> mRenderWindow = nullptr;			//< Pointer to the render window
+		ObjectPtr<HeightMesh>	mHeightMesh = nullptr;				//< Pointer to the height map mesh
+		ObjectPtr<Material>		mNormalsMaterial = nullptr;			//< Material used to draw the normals
+		ObjectPtr<Material>		mHeightmapMaterial = nullptr;		//< Material used to draw the heightmap
+
 		ObjectPtr<EntityInstance> mCameraEntity = nullptr;			//< Pointer to the entity that holds the camera
 		ObjectPtr<EntityInstance> mWorldEntity = nullptr;			//< Pointer to the entity that holds the sphere
+
+		// Gui variables
+		float	mBlendValue = 1.0f;									//< Height blend value
+		int		mSelection = 2;										//< What we want to display to screen
+		float	mNormalOpacity = 0.2;								//< Opacity of the normals
+		float	mNormalLength = 0.5;								//< Length of the normals on screen
+		RGBColorFloat mNormalColor = { 1.0f,1.0f,1.0f };			//< Color of the normal
+
+		// Value Smoother
+		math::FloatSmoothOperator mBlendSmoother = { 1.0f, 0.5f };	//< smooths blend value over time to target value
+
+		// Updates gui components
+		void updateGui();
 	};
 }

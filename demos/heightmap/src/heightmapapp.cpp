@@ -9,6 +9,7 @@
 #include <scene.h>
 #include <perspcameracomponent.h>
 #include <inputrouter.h>
+#include <imgui/imgui.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -24,9 +25,10 @@ namespace nap
 	bool HeightmapApp::init(utility::ErrorState& error)
 	{
 		// Retrieve services
-		mRenderService = getCore().getService<nap::RenderService>();
-		mSceneService  = getCore().getService<nap::SceneService>();
-		mInputService  = getCore().getService<nap::InputService>();
+		mRenderService	= getCore().getService<nap::RenderService>();
+		mSceneService	= getCore().getService<nap::SceneService>();
+		mInputService	= getCore().getService<nap::InputService>();
+		mGuiService		= getCore().getService<nap::IMGuiService>();
 
 		// Get resource manager and load
 		mResourceManager = getCore().getResourceManager();
@@ -35,15 +37,14 @@ namespace nap
 
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
+		mHeightMesh = mResourceManager->findObject<nap::HeightMesh>("HeightMesh");
+		mNormalsMaterial = mResourceManager->findObject<nap::Material>("NormalsMaterial");
+		mHeightmapMaterial = mResourceManager->findObject<nap::Material>("HeightMaterial");
 
 		// Find the world and camera entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
-
 		mWorldEntity = scene->findEntity("World");
 		mCameraEntity = scene->findEntity("Camera");
-
-		RenderState& state = mRenderService->getRenderState();
-		state.mPolygonMode = opengl::PolygonMode::FILL;
 
 		return true;
 	}
@@ -70,6 +71,39 @@ namespace nap
 		// Forward all input events associated with the first window to the listening components
 		std::vector<nap::EntityInstance*> entities = { mCameraEntity.get() };
 		mInputService->processEvents(*mRenderWindow, input_router, entities);
+
+		// Update gui and check for gui changes
+		updateGui();
+
+		// get smoothed blend value
+		float current_blend_value = mBlendSmoother.update(mBlendValue, deltaTime);
+		
+		// Now push the blend value to both materials
+		mNormalsMaterial->getUniform<UniformFloat>("blendValue").setValue(current_blend_value);
+		mHeightmapMaterial->getUniform<UniformFloat>("blendValue").setValue(current_blend_value);
+
+		// Push normal color
+		glm::vec4 normal_clr_data;
+		normal_clr_data.x = mNormalColor.getRed();
+		normal_clr_data.y = mNormalColor.getGreen();
+		normal_clr_data.z = mNormalColor.getBlue();
+		normal_clr_data.w = mNormalOpacity;
+		mNormalsMaterial->getUniform<UniformVec4>("color").setValue(normal_clr_data);
+
+		// Set the normal length
+		mNormalsMaterial->getUniform<UniformFloat>("length").setValue(mNormalLength);
+
+		// Find the renderable mesh components that link with the height mesh
+		// Both have the blendvalue uniform so we set that to the current blend value
+		std::vector<nap::RenderableMeshComponentInstance*> render_meshes;
+		mWorldEntity->getComponentsOfType<nap::RenderableMeshComponentInstance>(render_meshes);
+
+		// Get material and fetch uniform
+		for (auto& render_mesh : render_meshes)
+		{
+			UniformFloat& blend_uniform = render_mesh->getMaterialInstance().getOrCreateUniform<UniformFloat>("blendValue");
+			blend_uniform.setValue(current_blend_value);
+		}
 	}
 
 	
@@ -102,15 +136,34 @@ namespace nap
 		// Clear back-buffer
 		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
 
-		// Find the world and add as an object to render
+		// Find the height map related objects (mesh / normals) and add as object to render
+		// We make a selection based on the set we want to visualize
+		std::vector<nap::RenderableComponentInstance*> heightmap_display_components;
 		std::vector<nap::RenderableComponentInstance*> components_to_render;
-		mWorldEntity->getComponentsOfType<nap::RenderableComponentInstance>(components_to_render);
+		mWorldEntity->getComponentsOfType<nap::RenderableComponentInstance>(heightmap_display_components);
+		switch (mSelection)
+		{
+		case 0:
+			components_to_render.emplace_back(heightmap_display_components[0]);
+			break;
+		case 1:
+			components_to_render.emplace_back(heightmap_display_components[1]);
+			break;
+		case 2:
+			components_to_render = heightmap_display_components;
+			break;
+		default:
+			assert(false);
+		}
 
 		// Find the camera
 		nap::PerspCameraComponentInstance& camera = mCameraEntity->getComponent<nap::PerspCameraComponentInstance>();
 
 		// Render the world with the right camera directly to screen
 		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, components_to_render);
+
+		// Render gui to window
+		mGuiService->render();
 
 		// Swap screen buffers
 		mRenderWindow->swap();
@@ -162,4 +215,19 @@ namespace nap
 
 	void HeightmapApp::shutdown()
 	{}
+
+
+	void HeightmapApp::updateGui()
+	{
+		ImGui::Begin("Controls");
+		ImGui::Combo("Visualize", &mSelection, "Mesh\0Normals\0Both\0\0");
+		ImGui::SliderFloat("Blend Value", &mBlendValue, 0.0f, 1.0f);
+		ImGui::SliderFloat("Normal Length", &mNormalLength, 0.0f, 1.0f);
+		if (ImGui::CollapsingHeader("Colors"))
+		{
+			ImGui::ColorPicker3("Normal Color", mNormalColor.getData());
+			ImGui::SliderFloat("Normal Opacity", &mNormalOpacity, 0.0f, 1.0f);
+		}
+		ImGui::End();
+	}
 }

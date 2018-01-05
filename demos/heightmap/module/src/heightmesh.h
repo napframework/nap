@@ -22,8 +22,22 @@ namespace nap
 		*/
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		// Heightmap Properties
+		// Height map Properties
 		nap::ObjectPtr<nap::Image> mHeightmap;					///< Property: "Heightmap" image resource
-		float mHeight = 1.0f;									///< Property: "Height" max elevation level applied to the mesh with a pixel value of 1 
+		float mHeight = 1.0f;									///< Property: "Height" max elevation level applied to the mesh with a pixel value of 1
+
+		/**
+		 * @return the original plane vertex positions
+		 */
+		Vec3VertexAttribute& getOriginalPosition() const		{ return *mOriginalPosAttr; }
+		
+		/**
+		 * @return the original plane normals
+		 */
+		Vec3VertexAttribute& getOriginalNormals() const			{ return *mOriginalNorAttr; }
+
+	private:
+		Vec3VertexAttribute* mOriginalPosAttr = nullptr;		///< Original vertex positions
+		Vec3VertexAttribute* mOriginalNorAttr = nullptr;		///< Original vertex normals
 	};
 }
