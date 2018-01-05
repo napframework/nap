@@ -9,6 +9,7 @@
         "mod_napsdlwindow",
         "mod_napapp",
         "mod_napscene",
-        "mod_napsandbox"
+        "mod_napsandbox",
+        "mod_napimgui"
     ]
 }
