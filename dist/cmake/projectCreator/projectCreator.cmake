@@ -5,12 +5,8 @@ if (NOT DEFINED PROJECT_NAME_CAMELCASE)
     message(FATAL_ERROR "No project name")
 endif()
 
-# Build modules for substitution
-# TODO for now this does a hacky job of plugging modules into CMake and C++.  Temporary until we
-# read modules from project.json
+# Build modules for substitution into project.json
 set(MODULE_LIST_SUB_JSON "")
-set(MODULE_LIST_SUB_CMAKE "")
-set(MODULE_LIST_SUB_CPP "")
 if(DEFINED MODULE_LIST)
     foreach(module ${MODULE_LIST})
         # Append to JSON module list
@@ -18,17 +14,7 @@ if(DEFINED MODULE_LIST)
             set(MODULE_LIST_SUB_JSON "${MODULE_LIST_SUB_JSON},\n        ")
         endif()
         set(MODULE_LIST_SUB_JSON "${MODULE_LIST_SUB_JSON}\"${module}\"")
-
-        # Append to CMake module list - TODO temporary until project.json, remove
-        set(MODULE_LIST_SUB_CMAKE "${MODULE_LIST_SUB_CMAKE}${module} ")
-
-        # # Append to C++ module list - TODO temporary until project.json, remove
-        # if(NOT ${MODULE_LIST_SUB_CPP} STREQUAL "")
-        #     set(MODULE_LIST_SUB_CPP "${MODULE_LIST_SUB_CPP},")
-        # endif()
-        # set(MODULE_LIST_SUB_CPP "${MODULE_LIST_SUB_CPP}\"${module}\"")
     endforeach()
-    string (STRIP "${MODULE_LIST_SUB_CMAKE}" MODULE_LIST_SUB_CMAKE)
 endif ()
 
 # Set lowercase project name, used for a filenames etc
