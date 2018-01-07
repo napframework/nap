@@ -107,6 +107,8 @@ add_dependencies(rendertest mod_naprender)
 # Packaging
 install(DIRECTORY dist/cmake/ DESTINATION cmake)
 # TODO glob and move this somewhere else
-install(PROGRAMS dist/projectscripts/regenerateProject.py DESTINATION tools/)
 install(PROGRAMS dist/projectscripts/createProject.py DESTINATION tools/)
+install(PROGRAMS dist/projectscripts/regenerateProject.py DESTINATION tools/)
+install(PROGRAMS dist/projectscripts/createModule.py DESTINATION tools/)
+install(PROGRAMS dist/projectscripts/regenerateModule.py DESTINATION tools/)
 install(PROGRAMS dist/projectscripts/projectInfoParseToCMake.py DESTINATION tools/)
