@@ -37,7 +37,9 @@ macro(find_nap_module MODULE_NAME)
 
     # Add module includes
     message("Adding include for ${NAP_MODULE}")
+    # TODO do this conditionally based on whether we have /include or /src
     target_include_directories(${PROJECT_NAME} PUBLIC ${NAP_ROOT}/modules/${NAP_MODULE}/include/)
+    target_include_directories(${PROJECT_NAME} PUBLIC ${NAP_ROOT}/modules/${NAP_MODULE}/src/)
 
     if (WIN32)
         # Set Windows .lib locations
@@ -86,7 +88,7 @@ macro(dist_export_fbx SRCDIR)
         COMMENT "Export FBX in '${SRCDIR}'")
 endmacro()
 
-# Change our project output directories (when building against NAP source)
+# Change our project output directories
 macro(set_output_directories)
     if (MSVC OR APPLE)
         # Loop over each configuration for multi-configuration systems
@@ -105,5 +107,27 @@ macro(set_output_directories)
         set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR})
         # set_target_properties(${PROJECT_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${BIN_DIR})
         # set_target_properties(${PROJECT_NAME} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${BIN_DIR})
+    endif()
+endmacro()
+
+# Change our module output directories
+macro(set_module_output_directories)
+    if (MSVC OR APPLE)
+        # Loop over each configuration for multi-configuration systems
+        foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
+            set(LIB_DIR ${CMAKE_SOURCE_DIR}/lib/${OUTPUTCONFIG}/)
+            string(TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG)
+            # TODO set the properties we actually need
+            set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${LIB_DIR})
+            set_target_properties(${PROJECT_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${LIB_DIR})
+            set_target_properties(${PROJECT_NAME} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${LIB_DIR})
+        endforeach()
+    else()
+        # Single built type, for Linux
+        set(LIB_DIR ${CMAKE_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE}/)
+        # TODO set the properties we actually need
+        set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${LIB_DIR})
+        set_target_properties(${PROJECT_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${LIB_DIR})
+        set_target_properties(${PROJECT_NAME} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${LIB_DIR})
     endif()
 endmacro()
