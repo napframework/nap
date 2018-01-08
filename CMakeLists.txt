@@ -26,6 +26,9 @@ endif()
 cmake_policy(SET CMP0020 NEW)
 cmake_policy(SET CMP0043 NEW)
 
+# Restrict to debug and release build types
+set(CMAKE_CONFIGURATION_TYPES "Debug;Release")
+
 # Allow extra Find{project}.cmake files to be found by projects
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
