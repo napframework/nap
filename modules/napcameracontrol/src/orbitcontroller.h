@@ -37,10 +37,11 @@ namespace nap
 			components.push_back(RTTI_OF(KeyInputComponent));
 		}
 
-		float mMovementSpeed = 0.5f;		// The speed with which to move
-		float mRotateSpeed = 0.005f;		// The speed with which to rotate
+		float		mMovementSpeed = 0.5f;		///< The speed with which to move
+		float		mRotateSpeed = 0.005f;		///< The speed with which to rotate
+		glm::vec3	mLookAtPos;					///< The worldspace position to look at
 
-		ComponentPtr<PerspCameraComponent>	mPerspCameraComponent;	// Perspective camera that we are controlling
+		ComponentPtr<PerspCameraComponent>	mPerspCameraComponent;	///< Perspective camera that we are controlling
 	};
 
 
@@ -106,10 +107,10 @@ namespace nap
 		};
 
 		ComponentInstancePtr<PerspCameraComponent>		mPerspCameraComponent = { this, &OrbitController::mPerspCameraComponent };
-		TransformComponentInstance*				mTransformComponent = nullptr;		// The transform component used to move the entity
-		EMode									mMode = EMode::Idle;				// Camera mode
-		glm::vec3								mLookAtPos;							// Target position to orbit around
-		bool									mEnabled = true;					// Enables responding to input
+		TransformComponentInstance*						mTransformComponent = nullptr;		// The transform component used to move the entity
+		EMode											mMode = EMode::Idle;				// Camera mode
+		glm::vec3										mLookAtPos;							// Target position to orbit around
+		bool											mEnabled = false;					// Enables responding to input
 	};
 
 }

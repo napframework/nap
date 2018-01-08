@@ -251,7 +251,7 @@
 						"Translate": 
 						{
 							"x": 0.0,
-							"y": 0.0,
+							"y": 200.0,
 							"z": 400.0
 						}
 					}
@@ -269,7 +269,13 @@
                     "mID": "nap::OrbitController",
                     "MovementSpeed": 0.5,
                     "RotateSpeed": 0.0025,
-                    "PerspCameraComponent": "PerspCameraComponent"
+                    "PerspCameraComponent": "PerspCameraComponent",
+                    "LookAtPosition" :
+                    {
+                    	"x" : 0.0,
+                    	"y" : 0.0,
+                    	"z" : 0.0
+                    }
                 }
 			]
 		}
