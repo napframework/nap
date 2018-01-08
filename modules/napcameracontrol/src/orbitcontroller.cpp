@@ -16,7 +16,8 @@ RTTI_BEGIN_CLASS(nap::OrbitController)
 	RTTI_PROPERTY("MovementSpeed",			&nap::OrbitController::mMovementSpeed,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("RotateSpeed",			&nap::OrbitController::mRotateSpeed,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("PerspCameraComponent",	&nap::OrbitController::mPerspCameraComponent,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_END_CLASS
+	RTTI_PROPERTY("LookAtPosition",			&nap::OrbitController::mLookAtPos,				nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::OrbitControllerInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
@@ -44,6 +45,8 @@ namespace nap
 		pointer_component->pressed.connect(std::bind(&OrbitControllerInstance::onMouseDown, this, std::placeholders::_1));
 		pointer_component->moved.connect(std::bind(&OrbitControllerInstance::onMouseMove, this, std::placeholders::_1));
 		pointer_component->released.connect(std::bind(&OrbitControllerInstance::onMouseUp, this, std::placeholders::_1));
+
+		enable(getComponent<OrbitController>()->mLookAtPos);
 
 		return true;
 	}
