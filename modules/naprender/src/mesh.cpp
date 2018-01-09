@@ -82,7 +82,6 @@ namespace nap
 		mProperties.mNumVertices = meshProperties.mNumVertices;
 		mProperties.mDrawMode = meshProperties.mDrawMode;
 		mProperties.mIndices = meshProperties.mIndices;
-
 	}
 	
 

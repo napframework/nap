@@ -6,11 +6,10 @@
 #include "glm/gtx/transform.hpp"
 
 RTTI_BEGIN_CLASS(nap::ParticleEmitterComponent)
-	RTTI_PROPERTY("Mesh",					&nap::ParticleEmitterComponent::mMesh,						nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("SpawnRate",				&nap::ParticleEmitterComponent::mSpawnRate,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("LifeTime",				&nap::ParticleEmitterComponent::mLifeTime,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Position",				&nap::ParticleEmitterComponent::mPosition,					nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("PositionVariation",		&nap::ParticleEmitterComponent::mPositionVariation,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("PositionVariation",		&nap::ParticleEmitterComponent::mPositionVariation,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("LifeTimeVariation",		&nap::ParticleEmitterComponent::mLifeTimeVariation,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Size",					&nap::ParticleEmitterComponent::mSize,						nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("SizeVariation",			&nap::ParticleEmitterComponent::mSizeVariation,				nap::rtti::EPropertyMetaData::Default)
@@ -26,14 +25,11 @@ RTTI_BEGIN_CLASS(nap::ParticleEmitterComponent)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ParticleEmitterComponentInstance)
-	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
+	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&) 
 RTTI_END_CLASS
 
 namespace nap
 {
-
-	//////////////////////////////////////////////////////////////////////////
-
 	// All the plane uvs
 	static glm::vec3 plane_uvs[] =
 	{
@@ -43,8 +39,55 @@ namespace nap
 		{ 1.0f,	1.0f,	0.0f },
 	};
 
+
+	static float frand(float baseValue, float variation)
+	{
+		return baseValue + (variation * 0.5f) - ((float)rand() / (float)RAND_MAX) * variation;
+	}
+
+
+	static glm::vec3 frand(const glm::vec3& baseValue, const glm::vec3& variation)
+	{
+		return glm::vec3(frand(baseValue.x, variation.x), frand(baseValue.y, variation.y), frand(baseValue.z, variation.z));
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+
+	class ParticleMesh : public IMesh
+	{
+	public:
+		bool init(utility::ErrorState& errorState)
+		{
+			mMeshInstance.setNumVertices(0);
+			mMeshInstance.setDrawMode(opengl::EDrawMode::TRIANGLES);
+			Vec3VertexAttribute& position_attribute = mMeshInstance.getOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName());
+			Vec3VertexAttribute& uv_attribute = mMeshInstance.getOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetUVName(0));
+			Vec4VertexAttribute& color_attribute = mMeshInstance.getOrCreateAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0));
+			mMeshInstance.reserveVertices(1000);
+			mMeshInstance.reserveIndices(1000);
+
+			return mMeshInstance.init(errorState);
+		}
+
+		/**
+		* @return MeshInstance as created during init().
+		*/
+		virtual MeshInstance& getMeshInstance()	override { return mMeshInstance; }
+
+		/**
+		* @return MeshInstance as created during init().
+		*/
+		virtual const MeshInstance& getMeshInstance() const	override { return mMeshInstance; }
+
+	private:
+		MeshInstance mMeshInstance;
+	};
+
+	//////////////////////////////////////////////////////////////////////////
+
 	ParticleEmitterComponentInstance::ParticleEmitterComponentInstance(EntityInstance& entity, Component& resource) :
-		ComponentInstance(entity, resource)
+		RenderableMeshComponentInstance(entity, resource),
+		mParticleMesh(std::make_unique<ParticleMesh>())
 	{
 	}
 
@@ -56,24 +99,21 @@ namespace nap
 
 	bool ParticleEmitterComponentInstance::init(utility::ErrorState& errorState)
 	{
-		ParticleEmitterComponent* component = getComponent<ParticleEmitterComponent>();
-		MeshInstance& mesh_instance = component->mMesh->getMeshInstance();
-		mesh_instance.setDrawMode(opengl::EDrawMode::TRIANGLES);
-		mesh_instance.reserveVertices(1000);
-		mesh_instance.reserveIndices(1000);
+		if (!RenderableMeshComponentInstance::init(errorState))
+			return false;
+
+		if (!errorState.check(mParticleMesh->init(errorState), "Unable to create particle mesh"))
+			return false;
+
+		RenderableMesh renderableMesh = createRenderableMesh(*mParticleMesh, errorState);
+		if (!renderableMesh.isValid())
+			return false;
+
+		setMesh(renderableMesh);
 
 		return true;
 	}
 
-	static float frand(float baseValue, float variation)
-	{
-		return baseValue + (variation * 0.5f) - ((float)rand() / (float)RAND_MAX) * variation;
-	}
-
-	static glm::vec3 frand(const glm::vec3& baseValue, const glm::vec3& variation)
-	{
-		return glm::vec3(frand(baseValue.x, variation.x), frand(baseValue.y, variation.y), frand(baseValue.z, variation.z));
-	}
 
 	void ParticleEmitterComponentInstance::updateParticles(double deltaTime)
 	{
@@ -122,8 +162,7 @@ namespace nap
 
 	void ParticleEmitterComponentInstance::updateMesh()
 	{
-		ParticleEmitterComponent* component = getComponent<ParticleEmitterComponent>();
-		MeshInstance& mesh_instance = component->mMesh->getMeshInstance();
+ 		MeshInstance& mesh_instance = mParticleMesh->getMeshInstance();
 
 		int num_vertices = mParticles.size() * 4;
 		mesh_instance.setNumVertices(num_vertices);
@@ -190,5 +229,7 @@ namespace nap
 	{
 		updateParticles(deltaTime);
 		updateMesh();
+
+		RenderableMeshComponentInstance::update(deltaTime);
 	}
 }
