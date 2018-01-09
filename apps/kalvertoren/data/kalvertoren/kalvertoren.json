@@ -1473,7 +1473,7 @@
                         0
                     ]
                 },
-                {
+                 {
                     "Values": [
                         255,
                         255,
@@ -1522,7 +1522,58 @@
             "GridSize": 20,
             "GridColorsPath": "data/kalvertoren/palettes/palette_grid_ledcolors.txt",
             "WeekColors": [
-                "Week1"
+                "Week1",
+                "Week2",
+                "Week3",
+                "Week4",
+                "Week5",
+                "Week6",
+                "Week7",
+                "Week8",
+                "Week9",
+                "Week10",
+                "Week11",
+                "Week12",
+                "Week13",
+                "Week14",
+                "Week15",
+                "Week16",
+                "Week17",
+                "Week18",
+                "Week19",
+                "Week20",
+                "Week21",
+                "Week22",
+                "Week23",
+                "Week24",
+                "Week25",
+                "Week26",
+                "Week27",
+                "Week28",
+                "Week29",
+                "Week30",
+                "Week31",
+                "Week32",
+                "Week33",
+                "Week34",
+                "Week35",
+                "Week36",
+                "Week37",
+                "Week38",
+                "Week39",
+                "Week40",
+                "Week41",
+                "Week42",
+                "Week43",
+                "Week44",
+                "Week45",
+                "Week46",
+                "Week47",
+                "Week48",
+                "Week49",
+                "Week50",
+                "Week51",
+                "Week52"
             ]
         },
         
@@ -1539,7 +1590,314 @@
                 [3, 1, 0, 2]
             ]
         },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week2",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week3",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week4",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week5",
+            "Palette": "A6 B11 C31 D40"
+        },
         
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week6",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week7",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week8",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week9",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week10",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week11",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week12",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week13",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week14",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week15",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week16",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week17",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week18",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week19",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week20",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week21",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week22",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week23",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week24",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week25",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week26",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week27",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week28",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week29",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week30",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week31",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week32",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week33",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week34",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week35",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week36",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week37",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week38",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week39",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week40",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week41",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week42",
+            "Palette": "A6 B11 C31 D40"
+        },
+        
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week43",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week44",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week45",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week46",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week47",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week48",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week49",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week50",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week51",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week52",
+            "Palette": "A6 B11 C31 D40"
+        },
+
+
         {
             "Type": "nap::LedMesh",
             "mID": "HeiligewegLedMesh",

@@ -4,6 +4,7 @@
 #include <entity.h>
 #include <mathutils.h>
 #include <nap/logger.h>
+#include <utility/datetimeutils.h>
 
 RTTI_BEGIN_ENUM(nap::ColorPaletteCycleMode)
 	RTTI_ENUM_VALUE(nap::ColorPaletteCycleMode::Off, "Off"),
@@ -57,7 +58,7 @@ namespace nap
 			return false;
 
 		// Select current week
-		selectWeek(0);
+		selectWeek(utility::getCurrentDateTime().getWeek()-1);
 
 		return true;
 	}
@@ -65,6 +66,13 @@ namespace nap
 
 	void ColorPaletteComponentInstance::update(double deltaTime)
 	{
+		if (mLockWeek)
+		{
+			int newWeekNumber = utility::getCurrentDateTime().getWeek()-1;
+			if (newWeekNumber != mCurrentWeek)
+				selectWeek(newWeekNumber);
+		}
+
 		if (mTime >= mCycleSpeed)
 		{
 			switch (mVariationCycleMode)
@@ -122,6 +130,7 @@ namespace nap
 		mTime = 0.0;
 		updateSelectedPalette();
 	}
+
 
 	nap::IndexMap& ColorPaletteComponentInstance::getIndexMap()
 	{

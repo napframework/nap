@@ -7,7 +7,7 @@
 
 RTTI_BEGIN_CLASS(nap::WeekColors)
 	RTTI_PROPERTY("Palette",		&nap::WeekColors::mPalette,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Variations",		&nap::WeekColors::mVariations,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Variations",		&nap::WeekColors::mVariations,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::LedColorPaletteGrid run time class definition 
@@ -106,12 +106,14 @@ namespace nap
 		if (!errorState.check(mPixmap.getBitmap().getNumberOfChannels() >= 3, "color palette map: %s does not have 3 channels", mGridImagePath.c_str()))
 			return false;
 
+		if (!errorState.check(getWeekCount() == 52, "There must be 52 weeks defined in palette %s", mID.c_str()))
+			return false;
+
 		if (!initPaletteGrid(errorState))
 			return false;
 
 		if (!checkWeekColors(errorState))
 			return false;
-
 		return true;
 	}
 

@@ -286,6 +286,7 @@ namespace nap
 		ImGui::Spacing();
 		utility::getCurrentDateTime(mDateTime);
 		ImGui::Text(mDateTime.toString().c_str());
+		ImGui::Text("Week %02d", mDateTime.getWeek());
 		ImGui::Spacing();
 
 		if (ImGui::CollapsingHeader("DisplaySettings"))
@@ -354,12 +355,16 @@ namespace nap
 				}
 			}
 
-			// Allows the user to select a channel to display on the tracer
-			ColorPaletteComponentInstance& comp = compositionEntity->getComponent<ColorPaletteComponentInstance>();
-			mSelectWeek = comp.getSelectedWeek() + 1;
-			if (ImGui::InputInt("Select Week", &mSelectWeek, 1))
+			ColorPaletteComponentInstance& color_palette_comp = compositionEntity->getComponent<ColorPaletteComponentInstance>();
+			bool lockWeek = color_palette_comp.getLockWeek();
+			if (ImGui::Checkbox("Lock week to current week", &lockWeek))
+				color_palette_comp.setLockWeek(lockWeek);
+
+			mSelectedWeek = color_palette_comp.getSelectedWeek() + 1;
+			if (ImGui::InputInt("Select Week", &mSelectedWeek, 1))
 			{
-				selectPaletteWeek();
+				if (!lockWeek)
+					selectPaletteWeek();
 			}
 
 			// Changes the mesh paint mode
@@ -369,7 +374,7 @@ namespace nap
 			}
 
 			// Changes the color palette
-			if (ImGui::SliderInt("Select Variation", &mPaletteSelection, 0, palette_selector.getVariationCount() - 1))
+			if (ImGui::SliderInt("Select Variation", &mPaletteSelection, -1, palette_selector.getVariationCount() - 1))
 			{
 				palette_selector.selectVariation(mPaletteSelection);
 			}
@@ -486,7 +491,7 @@ namespace nap
 	void KalvertorenApp::selectPaletteWeek()
 	{
 		ColorPaletteComponentInstance& comp = compositionEntity->getComponent<ColorPaletteComponentInstance>();
-		comp.selectWeek(mSelectWeek-1);
+		comp.selectWeek(mSelectedWeek-1);
 	}
 
 	void KalvertorenApp::selectPaletteCycleMode()

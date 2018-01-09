@@ -111,7 +111,7 @@ namespace nap
 		int													mPaintMode = 2;
 		int													mSelectChannel = 0;
 		float												mChannelSpeed = 1.0f;
-		int													mPaletteSelection = 0;
+		int													mPaletteSelection = -1;
 		int													mCompositionSelection = 0;
 		float												mIntensity = 1.0f;
 		bool												mShowIndexColors = false;
@@ -119,7 +119,7 @@ namespace nap
 		bool												mCycleColors = false;
 		float												mColorCycleTime = 1.0f;
 		int													mCompositionCycleMode = 0;
-		int													mSelectWeek = 1;
+		int													mSelectedWeek = 1;
 		int													mColorPaletteCycleMode = 0;
 		int													mDay = 0;
 		utility::DateTime									mDateTime;

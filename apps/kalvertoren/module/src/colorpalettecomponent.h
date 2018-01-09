@@ -78,6 +78,16 @@ namespace nap
 		int getVariationCount() const;
 
 		/**
+		 *	@return whether the weeknumber of the current date should be used to select a palette
+		 */
+		bool getLockWeek() const { return mLockWeek; }
+
+		/**
+		 *	Set whether the weeknumber of the current date should be used to select a palette
+		 */
+		void setLockWeek(bool inLock) { mLockWeek = inLock; }
+
+		/**
 		 * Selects a week to be used to get the palette from
 		 */
 		void selectWeek(int index);
@@ -112,7 +122,6 @@ namespace nap
 		 * @return the palette color associated with a certain index map color
 		 */
 		LedColorPaletteGrid::PaletteColor getPaletteColor(const IndexMap::IndexColor& indexColor) const;
-
 
 		/**
 		 * Sets if we want to cycle through colors
@@ -150,6 +159,9 @@ namespace nap
 
 		// Current time
 		double mTime = 0.0;
+
+		// Use week number of current date
+		bool mLockWeek = true;
 
 		// Current week
 		int mCurrentWeek = -1;
