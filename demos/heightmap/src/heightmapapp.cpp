@@ -214,10 +214,10 @@ namespace nap
 		ImGui::SliderFloat("Normal Length", &mNormalLength, 0.0f, 1.0f);
 		if (ImGui::CollapsingHeader("Colors"))
 		{
-			ImGui::ColorPicker3("Valley Color", mValleyColor.getData());
-			ImGui::ColorPicker3("Peak Color", mPeakColor.getData());
-			ImGui::ColorPicker3("Halo Color", mHaloColor.getData());
-			ImGui::ColorPicker3("Normal Color", mNormalColor.getData());
+			ImGui::ColorEdit3("Valley Color", mValleyColor.getData());
+			ImGui::ColorEdit3("Peak Color", mPeakColor.getData());
+			ImGui::ColorEdit3("Halo Color", mHaloColor.getData());
+			ImGui::ColorEdit3("Normal Color", mNormalColor.getData());
 			ImGui::SliderFloat("Normal Opacity", &mNormalOpacity, 0.0f, 1.0f);
 		}
 		ImGui::End();
