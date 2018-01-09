@@ -1,6 +1,8 @@
 #pragma once
 
 #include "ledcolorcontainer.h"
+#include "ledcolorpalettegrid.h"
+#include "image.h"
 
 #include <component.h>
 #include <nap/objectptr.h>
@@ -36,10 +38,13 @@ namespace nap
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		ObjectPtr<LedColorContainer>	mColors = nullptr;							///< Property: Link to all the available colors and the index map
-		int								mIndex = 0;									///< Property: Current palette selection
-		float							mCycleSpeed = 1.0f;							///< Property: Time it takes to jump to a new color palette
-		ColorPaletteCycleMode			mCycleMode = ColorPaletteCycleMode::Off;	///< Property: Default cycle mode
+		ObjectPtr<IndexMap>				mIndexMap;											///< Property: The index map to use
+		ObjectPtr<LedColorPaletteGrid>	mPaletteGrid;										///< Property: The palette grid to use, containing palettes for each weak
+		ObjectPtr<LedColorContainer>	mColors;											///< Property: Link to all the available colors and the index map
+		ObjectPtr<Image>				mDebugImage;										///< Property: Debug image used to display the currently selected palette
+		int								mIndex = 0;											///< Property: Current palette selection
+		float							mCycleSpeed = 1.0f;									///< Property: Time it takes to jump to a new color palette
+		ColorPaletteCycleMode			mVariationCycleMode = ColorPaletteCycleMode::Off;	///< Property: Default cycle mode
 	};
 
 
@@ -68,24 +73,24 @@ namespace nap
 		virtual void update(double deltaTime) override;
 
 		/**
-		 *	@return the total number of available color palettes
+		 *	@return the total number of available variations for the currently selected week
 		 */
-		int getCount() const;
+		int getVariationCount() const;
 
 		/**
-		 *	Selects a new color palette to be used
+		 * Selects a week to be used to get the palette from
 		 */
-		void select(int index);
+		void selectWeek(int index);
 
 		/**
-		 *	@return the currently selected color palette
+		 * Get the currently selected week
 		 */
-		LedColorPalette& getSelection()												{ return *mSelection; }
+		int getSelectedWeek() const { return mCurrentWeek; }
 
 		/**
-		 *	@return the currently selected color palette
+		 *	Selects a new variation within the week's color palette to be used
 		 */
-		const LedColorPalette& getSelection() const									{ return *mSelection; }
+		void selectVariation(int index);
 
 		/**
 		 *	@return the index map
@@ -98,26 +103,27 @@ namespace nap
 		IndexMap& getIndexMap();
 
 		/**
+		 * @return The debug palette image
+		 */
+		Image& getDebugPaletteImage();
+
+		/**
 		 * @param indexColor the color to get the associated palette color for
 		 * @return the palette color associated with a certain index map color
 		 */
-		const RGBColor8& getPaletteColor(const IndexMap::IndexColor& indexColor) const;
+		LedColorPaletteGrid::PaletteColor getPaletteColor(const IndexMap::IndexColor& indexColor) const;
 
-		/**
-		 *	@return the led color associated with @paletteColor
-		 */
-		const RGBAColor8& getLedColor(const RGBColor8& paletteColor) const;
 
 		/**
 		 * Sets if we want to cycle through colors
 		 * @param cycle if we want to cycle through the colors or not
 		 */
-		void setCycleMode(ColorPaletteCycleMode mode)								{ mCycleMode = mode; }
+		void setCycleMode(ColorPaletteCycleMode mode)								{ mVariationCycleMode = mode; }
 
 		/**
 		 * @return the current cycle mode
 		 */
-		ColorPaletteCycleMode getCycleMode() const									{ return mCycleMode; }
+		ColorPaletteCycleMode getCycleMode() const									{ return mVariationCycleMode; }
 
 		/**
 		 * Sets the cycle speed in seconds
@@ -130,16 +136,14 @@ namespace nap
 		 * Builds a map that binds the index colors to the currently selected palette colors
 		 * Note that when the index color count > palette color count the first palette color is used
 		 */
-		void buildMap();
+		void updateSelectedPalette();
 
-		// All color palettes including the index map
-		LedColorContainer* mContainer = nullptr;
-
-		// Currently selected color palette
-		LedColorPalette* mSelection = nullptr;
+		ObjectPtr<IndexMap>				mIndexMap;									///< The index map to use
+		ObjectPtr<LedColorPaletteGrid>	mPaletteGrid;								///< The palette grid to use, containing palettes for each weak
+		ObjectPtr<Image>				mDebugImage;								///< Debug image used to display the currently selected palette
 
 		// Map that binds index colors to current color palette colors
-		std::map<IndexMap::IndexColor, RGBColor8> mIndexToPaletteMap;
+		std::map<IndexMap::IndexColor, LedColorPaletteGrid::PaletteColor> mIndexToPaletteMap;
 
 		// Cycle Speed
 		float mCycleSpeed = 1.0f;
@@ -147,10 +151,13 @@ namespace nap
 		// Current time
 		double mTime = 0.0;
 
+		// Current week
+		int mCurrentWeek = -1;
+
 		// Current Selection
-		int mCurrentIndex = -1;
+		int mCurrentVariationIndex = 0;
 
 		// Cycle Mode
-		ColorPaletteCycleMode mCycleMode = ColorPaletteCycleMode::Off;
+		ColorPaletteCycleMode mVariationCycleMode = ColorPaletteCycleMode::Off;
 	};
 }

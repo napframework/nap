@@ -78,7 +78,7 @@ namespace nap
 
 	std::vector<WeekColors::GridColorIndex> WeekColors::getColors(int variationIndex) const
 	{
-		assert(variationIndex == -1 || (variationIndex > 0 && variationIndex < mVariations.size()));
+		assert(variationIndex == -1 || (variationIndex >= 0 && variationIndex < mVariations.size()));
 
 		// Return base palette if -1 is specified
 		if (variationIndex == -1)

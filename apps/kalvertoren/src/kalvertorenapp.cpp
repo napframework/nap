@@ -161,7 +161,7 @@ namespace nap
 			else if (utility::startsWith(child->mID, "PaletteDebugDisplayEntity"))
 			{
 				ColorPaletteComponentInstance& palette_comp = compositionEntity->getComponent<ColorPaletteComponentInstance>();
-				uniform.setTexture(palette_comp.getSelection());
+				uniform.setTexture(palette_comp.getDebugPaletteImage());
 			}
 
 			renderService->renderObjects(renderWindow->getBackbuffer(), ortho_cam, debug_objects);
@@ -201,14 +201,14 @@ namespace nap
 			{
 				ColorPaletteComponentInstance& palette_comp = compositionEntity->getComponent<ColorPaletteComponentInstance>();
 
-				int color_palette_count = palette_comp.getSelection().getCount();
-				int index_palette_count = palette_comp.getIndexMap().getCount();
-
-				float div = (float)color_palette_count / (float)index_palette_count;
-				xform.setScale({ div, 1.0f, 1.0f });
-
-				float plane_width = plane.getRect().getWidth();
-				posx -= ((plane_width/2.0) * (1.0-div));
+// 				int color_palette_count = palette_comp.getSelection().getCount();
+// 				int index_palette_count = palette_comp.getIndexMap().getCount();
+// 
+// 				float div = (float)color_palette_count / (float)index_palette_count;
+// 				xform.setScale({ div, 1.0f, 1.0f });
+// 
+// 				float plane_width = plane.getRect().getWidth();
+// 				posx -= ((plane_width/2.0) * (1.0-div));
 			}
 
 			// Set transform
@@ -354,16 +354,24 @@ namespace nap
 				}
 			}
 
+			// Allows the user to select a channel to display on the tracer
+			ColorPaletteComponentInstance& comp = compositionEntity->getComponent<ColorPaletteComponentInstance>();
+			mSelectWeek = comp.getSelectedWeek() + 1;
+			if (ImGui::InputInt("Select Week", &mSelectWeek, 1))
+			{
+				selectPaletteWeek();
+			}
+
 			// Changes the mesh paint mode
-			if (ImGui::Combo("Color Cycle Mode", &mColorPaletteCycleMode, "Off\0Random\0List\0\0"))
+			if (ImGui::Combo("Variation Cycle Mode", &mColorPaletteCycleMode, "Off\0Random\0List\0\0"))
 			{
 				selectPaletteCycleMode();
 			}
 
 			// Changes the color palette
-			if (ImGui::SliderInt("Select Palette", &mPaletteSelection, 0, palette_selector.getCount() - 1))
+			if (ImGui::SliderInt("Select Variation", &mPaletteSelection, 0, palette_selector.getVariationCount() - 1))
 			{
-				palette_selector.select(mPaletteSelection);
+				palette_selector.selectVariation(mPaletteSelection);
 			}
 
 			// Changes the intensity
@@ -475,6 +483,11 @@ namespace nap
 		comp.setCycleMode(static_cast<nap::CompositionCycleMode>(mCompositionCycleMode));
 	}
 
+	void KalvertorenApp::selectPaletteWeek()
+	{
+		ColorPaletteComponentInstance& comp = compositionEntity->getComponent<ColorPaletteComponentInstance>();
+		comp.selectWeek(mSelectWeek-1);
+	}
 
 	void KalvertorenApp::selectPaletteCycleMode()
 	{
@@ -483,3 +496,4 @@ namespace nap
 	}
 
 }
+ 

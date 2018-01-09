@@ -72,6 +72,11 @@ namespace nap
 		* @param errorState contains the error message when initialization fails
 		*/
 		virtual bool init(utility::ErrorState& errorState) override;
+		
+		/**
+		 * Get the number of weeks that are actually defined in the grid
+		 */
+		int getWeekCount() const { return mWeekColors.size(); }
 
 		/**
 		 * Get the number of variations for the specified week

@@ -103,15 +103,14 @@ namespace nap
 			mPixmap.getRGBColor<uint8>(x_pixel, y_pixel, rgb_index_color);
 			
 			// Get the corresponding color palette value
-			const nap::RGBColor8& palette_color = mColorPaletteComponent->getPaletteColor(rgb_index_color);
+			LedColorPaletteGrid::PaletteColor palette_color = mColorPaletteComponent->getPaletteColor(rgb_index_color);
 
 			// Get the color we want to display on the mesh
-			const RGBColor8& color_to_convert = mShowIndexColors ? rgb_index_color : palette_color;
+			const RGBColor8& color_to_convert = mShowIndexColors ? rgb_index_color : palette_color.mScreenColor;
 			color_to_convert.convert(rgb_colorf);
 
 			// Get the associated LED color
-			const RGBAColor8& led_color = mColorPaletteComponent->getLedColor(palette_color);
-			led_color.convert(led_colorf);
+			palette_color.mLedColor.convert(led_colorf);
 
 			getTriangleValues<glm::vec4>(mesh_instance, i, color_attr, triangle_mesh_color);
 			getTriangleValues<glm::vec4>(mesh_instance, i, artnet_attr, triangle_artn_color);

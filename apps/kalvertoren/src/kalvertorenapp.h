@@ -78,6 +78,11 @@ namespace nap
 		void selectCompositionCycleMode();
 
 		/**
+		 *	Sets the current palette week
+		 */
+		void selectPaletteWeek();
+
+		/**
 		 *	Sets the current palette cycle mode
 		 */
 		void selectPaletteCycleMode();
@@ -114,6 +119,7 @@ namespace nap
 		bool												mCycleColors = false;
 		float												mColorCycleTime = 1.0f;
 		int													mCompositionCycleMode = 0;
+		int													mSelectWeek = 1;
 		int													mColorPaletteCycleMode = 0;
 		int													mDay = 0;
 		utility::DateTime									mDateTime;

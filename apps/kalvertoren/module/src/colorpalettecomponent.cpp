@@ -13,10 +13,12 @@ RTTI_END_ENUM
 
 // nap::colorpalettecomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::ColorPaletteComponent)
-	RTTI_PROPERTY("Colors",		&nap::ColorPaletteComponent::mColors,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Index",		&nap::ColorPaletteComponent::mIndex,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("CycleMode",	&nap::ColorPaletteComponent::mCycleMode,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Speed",		&nap::ColorPaletteComponent::mCycleSpeed,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("IndexMap",			&nap::ColorPaletteComponent::mIndexMap,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("PaletteGrid",		&nap::ColorPaletteComponent::mPaletteGrid,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("DebugImage",			&nap::ColorPaletteComponent::mDebugImage,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Index",				&nap::ColorPaletteComponent::mIndex,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("VariationCycleMode",	&nap::ColorPaletteComponent::mVariationCycleMode,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Speed",				&nap::ColorPaletteComponent::mCycleSpeed,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::colorpalettecomponentInstance run time class definition 
@@ -37,16 +39,25 @@ namespace nap
 
 	bool ColorPaletteComponentInstance::init(utility::ErrorState& errorState)
 	{
-		// Copy pointer to container
-		mContainer = getComponent<ColorPaletteComponent>()->mColors.get();
-		if (!errorState.check(mContainer->getCount() > 0, "No color palettes specified: %s", mContainer->mID.c_str()))
-			return false;
+		ColorPaletteComponent* color_palette_component = getComponent<ColorPaletteComponent>();
+		mIndexMap = color_palette_component->mIndexMap;
+		mPaletteGrid = color_palette_component->mPaletteGrid;
+		mDebugImage = color_palette_component->mDebugImage;
 
 		mCycleSpeed = getComponent<ColorPaletteComponent>()->mCycleSpeed;
-		mCycleMode = getComponent<ColorPaletteComponent>()->mCycleMode;
+		mVariationCycleMode = getComponent<ColorPaletteComponent>()->mVariationCycleMode;
 
-		// Select current palette based on loaded index
-		select(getComponent<ColorPaletteComponent>()->mIndex);
+		if (!errorState.check(mIndexMap->getPixmap().getWidth() == mDebugImage->getPixmap().getWidth() && mIndexMap->getPixmap().getHeight() == mDebugImage->getPixmap().getHeight(),
+			"The dimensions of the IndexMap (%s) and DebugImage (%s) must match", mIndexMap->mID.c_str(), mDebugImage->mID.c_str()))
+		{
+			return false;
+		}
+
+		if (!errorState.check(mDebugImage->getPixmap().mChannels == Pixmap::EChannels::BGRA, "DebugImage (%s) must be a 4-channel BGRA texture", mDebugImage->mID.c_str()))
+			return false;
+
+		// Select current week
+		selectWeek(0);
 
 		return true;
 	}
@@ -56,23 +67,29 @@ namespace nap
 	{
 		if (mTime >= mCycleSpeed)
 		{
-			switch (mCycleMode)
+			switch (mVariationCycleMode)
 			{
 				case ColorPaletteCycleMode::Off:
 					break;
 					mTime = 0.0;
 				case ColorPaletteCycleMode::Random:
 				{
-					int new_idx = mCurrentIndex;
-					while (new_idx == mCurrentIndex)
-						new_idx = math::random(0, mContainer->getCount() - 1);
-					select(new_idx);
+					if (getVariationCount() > 1)
+					{
+						int new_idx = mCurrentVariationIndex;
+						while (new_idx == mCurrentVariationIndex)
+							new_idx = math::random(0, getVariationCount() - 1);
+						selectVariation(new_idx);
+					}
 					break;
 				}
 				case ColorPaletteCycleMode::Sequence:
 				{
-					int new_index = (mCurrentIndex + 1) % static_cast<int>(mContainer->getCount());
-					select(new_index);
+					if (getVariationCount() >= 0)
+					{
+						int new_index = (mCurrentVariationIndex + 1) % static_cast<int>(getVariationCount());
+						selectVariation(new_index);
+					}
 					break;
 				}
 			}
@@ -81,37 +98,52 @@ namespace nap
 	}
 
 
-	int ColorPaletteComponentInstance::getCount() const
+	int ColorPaletteComponentInstance::getVariationCount() const
 	{
-		return mContainer->getCount();
+		if (mCurrentWeek >= mPaletteGrid->getWeekCount())
+			return 0;
+
+		return mPaletteGrid->getWeekVariationCount(mCurrentWeek);
 	}
 
 
-	void ColorPaletteComponentInstance::select(int index)
+	void ColorPaletteComponentInstance::selectWeek(int index)
 	{
-		int sidx = nap::math::clamp<int>(index, 0, mContainer->getCount() - 1);
-		mCurrentIndex = sidx;
-		mSelection = mContainer->mColorPalettes[sidx].get();
+		int sidx = nap::math::clamp<int>(index, 0, mPaletteGrid->getWeekCount() - 1);
+		mCurrentWeek = sidx;
+		selectVariation(0);
+	}
+
+
+	void ColorPaletteComponentInstance::selectVariation(int index)
+	{
+		int sidx = nap::math::clamp<int>(index, 0, getVariationCount() - 1);
+		mCurrentVariationIndex = sidx;
 		mTime = 0.0;
-		buildMap();
+		updateSelectedPalette();
 	}
-
 
 	nap::IndexMap& ColorPaletteComponentInstance::getIndexMap()
 	{
-		return *(mContainer->mIndexMap.get());
+		return *mIndexMap;
 	}
 
 
 	const nap::IndexMap& ColorPaletteComponentInstance::getIndexMap() const
 	{
-		return *(mContainer->mIndexMap.get());
+		return *mIndexMap;
 	}
 
 
-	const nap::RGBColor8& ColorPaletteComponentInstance::getPaletteColor(const IndexMap::IndexColor& indexColor) const
+	Image& ColorPaletteComponentInstance::getDebugPaletteImage()
 	{
-		// Perfom a direct lookup (fastest)
+		return *getComponent<ColorPaletteComponent>()->mDebugImage;
+	}
+
+
+	LedColorPaletteGrid::PaletteColor ColorPaletteComponentInstance::getPaletteColor(const IndexMap::IndexColor& indexColor) const
+	{
+		// Perform a direct lookup (fastest)
 		auto it = mIndexToPaletteMap.find(indexColor);
 		if (it != mIndexToPaletteMap.end())
 			return it->second;
@@ -125,31 +157,60 @@ namespace nap
 		--lower_it;
 
 		// Get distance from index to both bounds
-		float d_lower = lower_it->second.getDistance(indexColor);
-		float d_highr = upper_it->second.getDistance(indexColor);
+		float d_lower = lower_it->second.mScreenColor.getDistance(indexColor);
+		float d_highr = upper_it->second.mScreenColor.getDistance(indexColor);
 
 		// Select closest
 		return d_lower < d_highr ? lower_it->second : upper_it->second;
 	}
 
-
-	const nap::RGBAColor8& ColorPaletteComponentInstance::getLedColor(const RGBColor8& paletteColor) const
-	{
-		return mSelection->getLEDColor(paletteColor);
-	}
-
-
-	void ColorPaletteComponentInstance::buildMap()
+	void ColorPaletteComponentInstance::updateSelectedPalette()
 	{
 		// Build a map that maps the index colors to palette colors
 		mIndexToPaletteMap.clear();
 
+		std::vector<LedColorPaletteGrid::PaletteColor> palette_colors = mPaletteGrid->getPalette(mCurrentWeek, mCurrentVariationIndex);
+
 		int count = 0;
 		for (const auto& index_color : getIndexMap().getColors())
 		{
-			RGBColor8 palette_color = count < mSelection->getCount() ? mSelection->getPaletteColor(count) : mSelection->getPaletteColor(0);
+			LedColorPaletteGrid::PaletteColor palette_color = count < palette_colors.size() ? palette_colors[count] : palette_colors.back();
 			mIndexToPaletteMap.emplace(std::make_pair(index_color, palette_color));
 			count++;
 		}
+
+		// Update the debug texture
+		int indexColorCount = mIndexMap->getColors().size();
+		int imageWidth = mDebugImage->getPixmap().getWidth();
+		int imageHeight = mDebugImage->getPixmap().getHeight();
+		int squareWidth = imageWidth / indexColorCount;
+
+		for (int y = 0; y < imageHeight; ++y)
+		{
+			for (int x = 0; x < imageWidth; ++x)
+			{
+				int palette_color_index = (int)std::floor(x / (float)squareWidth);
+
+				RGBAColorData8 color;
+				mDebugImage->getPixmap().getRGBAColorData(x, y, color);
+				
+				if (palette_color_index >= palette_colors.size())
+				{
+					(*color.getRed()) = 0;
+					(*color.getGreen()) = 0;
+					(*color.getBlue()) = 0;
+					(*color.getAlpha()) = 0;
+				}
+				else
+				{
+					(*color.getRed()) = palette_colors[palette_color_index].mScreenColor.getRed();
+					(*color.getGreen()) = palette_colors[palette_color_index].mScreenColor.getGreen();
+					(*color.getBlue()) = palette_colors[palette_color_index].mScreenColor.getBlue();
+					(*color.getAlpha()) = 255;
+				}
+			}
+		}
+
+		mDebugImage->getTexture().setData(mDebugImage->getPixmap().getBitmap().getData());
 	}
 }

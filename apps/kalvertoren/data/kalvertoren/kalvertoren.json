@@ -458,9 +458,11 @@
                 {
                     "Type": "nap::ColorPaletteComponent",
                     "mID": "ColorPaletteComponent",
-                    "Colors": "LedColorContainer",
+                    "IndexMap": "IndexMap",
+                    "PaletteGrid" : "PaletteGrid",
                     "Index": 0,
-                    "CycleMode": "Off",
+                    "VariationCycleMode": "Off",
+                    "DebugImage": "PaletteDebugImage",
                     "Speed": 1.0
                 }
             ],
@@ -1173,6 +1175,19 @@
             "ColorCount": 13
         },
         {
+            "Type": "nap::Image",
+            "mID": "PaletteDebugImage",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 20
+            },
+            "Usage": "DynamicWrite",
+            "ImagePath": "data/kalvertoren/index_map/debug_palette.png"
+        },        
+        {
             "Type": "nap::LedColorContainer",
             "mID": "LedColorContainer",
             "IndexMap": "IndexMap",
@@ -1499,33 +1514,32 @@
                 }
             ]
         },
-		
-		{
+        
+        {
             "Type": "nap::LedColorPaletteGrid",
             "mID": "PaletteGrid",
             "GridPath": "data/kalvertoren/palettes/palette_grid.png",
-			"GridSize": 20,
-			"GridColorsPath": "data/kalvertoren/palettes/palette_grid_ledcolors.txt",
-			"WeekColors": [
-				"Week1"
-			]
+            "GridSize": 20,
+            "GridColorsPath": "data/kalvertoren/palettes/palette_grid_ledcolors.txt",
+            "WeekColors": [
+                "Week1"
+            ]
         },
-		
-		{
+        
+        {
             "Type": "nap::WeekColors",
             "mID": "Week1",
-			"Palette": "A1 B2 C3 D4 E5 F6",
-			"Variations": [
-				[0, 1, 2, 3, 4, 5],
-				[4, 5, 0, 1, 2, 3],
-				[3, 4, 5, 0, 1, 2],
-				[2, 3, 4, 5, 0, 1],
-				[1, 2, 3, 4, 5, 0],
-				[5, 4, 3, 2, 1, 0],
-				[3, 1, 4, 0, 2, 5]
-			]
-		},
-		
+            "Palette": "A6 B11 C31 D40",
+            "Variations": [
+                [0, 1, 2, 3],
+                [3, 0, 1, 2],
+                [2, 3, 0, 1],
+                [1, 2, 3, 0],
+                [3, 2, 1, 0],
+                [3, 1, 0, 2]
+            ]
+        },
+        
         {
             "Type": "nap::LedMesh",
             "mID": "HeiligewegLedMesh",
