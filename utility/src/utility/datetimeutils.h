@@ -165,6 +165,11 @@ namespace nap
 			EMonth getMonth() const;
 
 			/**
+			 * @return The ISO-8601 weeknumber: weeks start with Monday. Week 1 for a year is the week that contains the first Thursday for that year.
+			 */
+			int getWeek() const;
+
+			/**
 			 * @return day of the month (1,31)
 			 */
 			int getDayInTheMonth() const;

@@ -168,6 +168,17 @@ namespace nap
 			return static_cast<EMonth>(mTimeStruct.tm_mon);
 		}
 
+		int DateTime::getWeek() const
+		{
+			// Calculating the weeknumber for a date can be complicated (stuff to do with what the first Thursday of a year is, etc).
+			// See http://www.boyet.com/articles/publishedarticles/calculatingtheisoweeknumb.html
+			// strftime can do it for us, so lets just use it (though it's not the most efficient...)
+			char buffer[16] = { 0 };
+			strftime(buffer, 16, "%W", &mTimeStruct);
+
+			return atoi(buffer);
+		}
+
 
 		int DateTime::getDayInTheMonth() const
 		{
