@@ -101,18 +101,30 @@ namespace nap
 		const opengl::Bitmap& getBitmap() const								{ return mBitmap; }
 
 		/**
-		* @return the color of a pixel at the x and y pixel coordinates
-		* The color contains a copy of the pixel values in the bitmap
-		* The return type of the color matches the bitmap data type
+		* Creates a color that is compatible with the data stored in this pixmap
+		* This is a utility function that works in conjunction with getPixel().  
+		* Making the pixel once before iterating over all the values in this map avoids unnecessary allocations
+		* @return a new pixel as a color that matches the amount of channels and data type of this pixmap
+		*/
+		std::unique_ptr<BaseColor> makePixel() const;
+
+		/**
+		* Retrieves the color of a pixel at the x and y pixel coordinates
+		* The color is a copy of the pixel values in the bitmap. The result is stored in outPixel.
+		* outPixel needs to be created using makePixel().
+		* This call does not convert outPixel if the types don't match. In that case this call will assert
+		* To convert the fetched data call .convert() on outPixel
 		* @param x the horizontal pixel coordinate
 		* @param y the vertical pixel coordinate
+		* @param outPixel the pixel created using makePixel()
 		*/
-		std::unique_ptr<BaseColor> getPixel(int x, int y) const;
+		void getPixel(int x, int y, BaseColor& outPixel) const;
 
 		/**
 		* return a color of type T with the color values of a pixel.
 		* This call converts the pixel data if necessary. 
-		* Note that this call can be slow when iterating over the bitmap
+		* Note that this call can be slow when iterating over the bitmap!
+		* Use the makePixel / getPixel combination above for faster results
 		* Use this call to get a copy of the color values in the desired color format T
 		* T can not be of be a color that points to external value, ie: RGBColorData8 etc.
 		* Valid values for T are RGBColor8, RColorFloat etc.
@@ -121,16 +133,7 @@ namespace nap
 		* @param outColor holds the converted pixel colors
 		*/
 		template<typename T>
-		T getColor(int x, int y) const;
-
-		/**
-		 * @return a color that contains memory addresses of the pixel's colors at the x and y pixel coordinates
-		 * The type of the color matches the bitmap data type.
-		 * Note that this call is relatively slow because it creates a new Color that wraps a set of pointers
-		 * @param x the horizontal pixel coordinate
-		 * @param y the vertical pixel coordinate
-		 */
-		std::unique_ptr<BaseColor> getPixelData(int x, int y) const;
+		T getPixel(int x, int y) const;
 
 		/**
 		 * Populates @outColor with the RGB values of a pixel. 
@@ -487,18 +490,19 @@ namespace nap
 
 
 	template<typename T>
-	T nap::Pixmap::getColor(int x, int y) const
+	T nap::Pixmap::getPixel(int x, int y) const
 	{
-		// Get the colors associated with the pixel
-		std::unique_ptr<BaseColor> pixel_color = getPixel(x, y);
+		// Create a pixel and fill it
+		std::unique_ptr<BaseColor> pixel = makePixel();
+		getPixel(x, y, *pixel);
 
 		// If they are of the same type it's safe to cast and return
-		if (pixel_color->get_type().is_derived_from(RTTI_OF(T)))
+		if (pixel->get_type().is_derived_from(RTTI_OF(T)))
 		{
-			return *(static_cast<T*>(pixel_color.get()));
+			return *(static_cast<T*>(pixel.get()));
 		}
 		// Otherwise we need to convert
-		return pixel_color->convert<T>();
+		return pixel->convert<T>();
 	}
 }
 
