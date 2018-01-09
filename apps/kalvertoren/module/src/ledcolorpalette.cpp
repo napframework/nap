@@ -3,6 +3,7 @@
 #include <utility/fileutils.h>
 #include <nbitmaputils.h>
 #include <ntextureutils.h>
+#include <pixmap.h>
 
 // nap::ledcolorpalette run time class definition 
 RTTI_BEGIN_CLASS(nap::LedColorPalette)
@@ -86,16 +87,21 @@ namespace nap
 		return it->second;
 	}
 
+
 	void LedColorPalette::findPaletteColors()
 	{
+		RGBColor8 current_pixel;
+		std::unique_ptr<BaseColor> source_pixel = mPixmap.makePixel();
+
 		for (int i = 0; i < mPixmap.mWidth; i++)
 		{
-			RGBColor8 current_color = mPixmap.getColor<RGBColor8>(i, 0);
-			if (mPaletteColors.empty() || mPaletteColors.back() != current_color)
+			mPixmap.getPixel(i, 0, *source_pixel);
+			source_pixel->convert(current_pixel);
+
+			if (mPaletteColors.empty() || mPaletteColors.back() != current_pixel)
 			{
-				mPaletteColors.emplace_back(current_color);
+				mPaletteColors.emplace_back(current_pixel);
 			}
 		}
 	}
-
 }

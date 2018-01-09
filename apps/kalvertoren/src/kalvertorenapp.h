@@ -123,6 +123,7 @@ namespace nap
 		int													mColorPaletteCycleMode = 0;
 		int													mDay = 0;
 		utility::DateTime									mDateTime;
+		RGBColor8											mTextColor = { 0xC8, 0x69, 0x69 };
 
 		/**
 		 *	Renders debug views to screen

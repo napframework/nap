@@ -58,12 +58,9 @@ namespace nap
 
 		// Verify that all variations are valid. They must have the same size as the palette and each element of a variation must be in range
 		for (int index = 0; index < mVariations.size(); ++index)
-		{
-			const std::vector<int>& variation = mVariations[index];
-			if (!errorState.check(variation.size() == mPaletteColors.size(), "Palette variation at index %d in week %s has a different number of components than the palette (%d in variation, %d in palette)", index, mID.c_str(), variation.size(), mPaletteColors.size()))
-				return false;
-			
+		{			
 			// Verify variation elements are in range
+			const std::vector<int>& variation = mVariations[index];
 			for (int variation_index = 0; variation_index < variation.size(); ++variation_index)
 			{
 				int palette_index = variation[variation_index];
@@ -125,6 +122,10 @@ namespace nap
 
 		mPaletteGrid.resize(numRows);
 
+		RGBAColor8 target_pixel_alpha;
+		RGBColor8 target_pixel_clr;
+		std::unique_ptr<BaseColor> source_pixel = mPixmap.makePixel();
+		
 		for (int row = 0; row < numRows; ++row)
 		{
 			for (int column = 0; column < numColumns; ++column)
@@ -133,12 +134,15 @@ namespace nap
 				int x = column * mGridSize + (int)(0.5f * mGridSize);
 				int y = row * mGridSize + (int)(0.5f * mGridSize);
 
-				RGBAColor8 current_color = mPixmap.getColor<RGBAColor8>(x, mPixmap.mHeight - y - 1);
-				if (current_color.getAlpha() == 0)
+				mPixmap.getPixel(x, mPixmap.mHeight - y - 1, *source_pixel);
+				source_pixel->convert(target_pixel_alpha);
+
+				//RGBAColor8 current_color = mPixmap.getPixel<RGBAColor8>(x, mPixmap.mHeight - y - 1);
+				if (target_pixel_alpha.getAlpha() == 0)
 					break;
 
 				PaletteColor color;
-				color.mScreenColor = current_color.convert<RGBColor8>();
+				color.mScreenColor = target_pixel_alpha.convert<RGBColor8>();
 				mPaletteGrid[row].push_back(color);
 			}
 		}

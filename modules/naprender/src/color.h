@@ -44,14 +44,19 @@ namespace nap
 		bool operator!=(const BaseColor& rhs) = delete;
 
 		/**
+		 * converts color type A in to type B
+		 */
+		using Converter = std::function<void(const BaseColor&, BaseColor&, int)>;
+
+		/**
 		 *	@return the number of channels associated with this color
 		 */
-		int getNumberOfChannels() const											{ return mChannels; }
+		inline int getNumberOfChannels() const									{ return mChannels; }
 
 		/**
 		 *	@return the size of a single channel in bytes
 		 */
-		int valueSize() const													{ return mValueSize; }
+		inline int valueSize() const											{ return mValueSize; }
 
 		/**
 		 *	@return the color value data type
@@ -84,7 +89,7 @@ namespace nap
 		* @return a color converter to convert @source color in to @target color, nullptr if no such converter exists
 		* Use this call when dealing with the same color conversion multiple times in, for example, a loop
 		*/
-		std::function<void(const BaseColor&, BaseColor&, int)> getConverter(const BaseColor& target) const;
+		Converter getConverter(const BaseColor& target) const;
 
 		/**
 		* returns a (converted) color of type T
@@ -141,7 +146,7 @@ namespace nap
 		 * @return a color converter to convert @source color in to @target color, nullptr if no such converter exists
 		 * Use this call when dealing with the same color conversion multiple times in, for example, a loop
 		*/
-		static std::function<void(const BaseColor&, BaseColor&, int)> getConverter(const BaseColor& source, const BaseColor& target);
+		static Converter getConverter(const BaseColor& source, const BaseColor& target);
 
 	private:
 		int mChannels = 0;

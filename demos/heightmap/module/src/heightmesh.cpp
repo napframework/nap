@@ -52,6 +52,16 @@ namespace nap
 		float heigh = static_cast<float>(pixmap.getHeight() - 1);
 
 		int vert_count = mesh.getNumVertices();
+
+		// Create the pixel that we need for sampling the pixmap data
+		std::unique_ptr<BaseColor> pixel = pixmap.makePixel();
+
+		// This will hold the pixel data as float values
+		RColorFloat target_pixel;
+
+		// We also pre-fetch our converter for fast lookups later
+		BaseColor::Converter converter = pixel->getConverter(target_pixel);
+
 		for (int i = 0; i < vert_count; i++)
 		{
 			// Get current vertex uv data
@@ -64,11 +74,14 @@ namespace nap
 			int pixel_x = static_cast<int>(uvs.x * width);
 			int pixel_y = static_cast<int>(uvs.y * heigh);
 
-			// Get our color, this also converts it to a float value
-			RColorFloat color = pixmap.getColor<RColorFloat>(pixel_x, pixel_y);
+			// Get our color at the x, y coordinates
+			pixmap.getPixel(pixel_x, pixel_y, *pixel);
+
+			// Convert
+			converter(*pixel, target_pixel, 0);
 
 			// Set the new vertex position
-			pos_data[i] = pos_data[i] + (nor * color.getRed() * mHeight);
+			pos_data[i] = pos_data[i] + (nor * target_pixel.getRed() * mHeight);
 		}
 
 		// Update our mesh normals to ensure light calculations work in the shader

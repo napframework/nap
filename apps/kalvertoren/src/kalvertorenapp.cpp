@@ -302,7 +302,11 @@ namespace nap
 			{
 				mesh_selector.select(mMeshSelection);
 			}
+		}
 
+		// Composition settings
+		if (ImGui::CollapsingHeader("Composition Settings"))
+		{
 			// Changes the mesh paint mode
 			if (ImGui::Combo("Day", &mDay, "Auto\0Sunday\0Monday\0Tuesday\0Wednesday\0Thursday\0Friday\0Saturday\0\0"))
 			{
@@ -316,14 +320,6 @@ namespace nap
 					composition_selector.selectDay(new_day);
 				}
 			}
-		}
-
-		// Composition settings
-		if (ImGui::CollapsingHeader("Composition Settings"))
-		{
-			std::string current_day = utility::stringFormat(": %s", utility::toString(composition_selector.getDay()).c_str());
-			ImGui::Text(utility::toString(composition_selector.getDay()).c_str());
-			ImGui::AlignTextToFramePadding();
 
 			// Changes the mesh paint mode
 			if (ImGui::Combo("Cycle Mode", &mCompositionCycleMode, "Off\0Random\0List\0\0"))
@@ -361,22 +357,22 @@ namespace nap
 				color_palette_comp.setLockWeek(lockWeek);
 
 			mSelectedWeek = color_palette_comp.getSelectedWeek() + 1;
-			if (ImGui::InputInt("Select Week", &mSelectedWeek, 1))
+			if (ImGui::InputInt("Week Number", &mSelectedWeek, 1))
 			{
 				if (!lockWeek)
 					selectPaletteWeek();
+			}
+
+			// Changes the color palette
+			if (ImGui::SliderInt("Variation", &mPaletteSelection, -1, palette_selector.getVariationCount() - 1))
+			{
+				palette_selector.selectVariation(mPaletteSelection);
 			}
 
 			// Changes the mesh paint mode
 			if (ImGui::Combo("Variation Cycle Mode", &mColorPaletteCycleMode, "Off\0Random\0List\0\0"))
 			{
 				selectPaletteCycleMode();
-			}
-
-			// Changes the color palette
-			if (ImGui::SliderInt("Select Variation", &mPaletteSelection, -1, palette_selector.getVariationCount() - 1))
-			{
-				palette_selector.selectVariation(mPaletteSelection);
 			}
 
 			// Changes the intensity
@@ -425,12 +421,13 @@ namespace nap
 
 		if (ImGui::CollapsingHeader("Artnet Information"))
 		{
+			RGBColorFloat float_clr = mTextColor.convert<RGBColorFloat>();
 			for (int i = 0; i < mesh_selector.getLedMeshes().size(); i++)
 			{
 				std::vector<std::string> parts;
 				utility::splitString(mesh_selector.getLedMeshes()[i]->mTriangleMesh->mPath, '/', parts);
 
-				ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), parts.back().c_str());
+				ImGui::TextColored(ImVec4(float_clr.getRed(), float_clr.getGreen(), float_clr.getBlue(), 1.0f), parts.back().c_str());
 				ImGui::Text(utility::stringFormat("Channel: %d", i).c_str());
 				const std::unordered_set<ArtNetController::Address>& addresses = mesh_selector.getLedMeshes()[i]->mTriangleMesh->getAddresses();
 
@@ -444,7 +441,7 @@ namespace nap
 
 				ImGui::Text(universes.c_str());
 			}
-			ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+			ImGui::TextColored(ImVec4(float_clr.getRed(), float_clr.getGreen(), float_clr.getBlue(), 1.0f), "%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		}
 		ImGui::End();
 	}
