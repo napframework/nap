@@ -93,7 +93,7 @@ namespace nap
 				}
 				case ColorPaletteCycleMode::Sequence:
 				{
-					if (getVariationCount() >= 0)
+					if (getVariationCount() > 0)
 					{
 						int new_index = (mCurrentVariationIndex + 1) % static_cast<int>(getVariationCount());
 						selectVariation(new_index);
