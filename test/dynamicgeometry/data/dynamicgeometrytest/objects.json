@@ -190,38 +190,6 @@
 		},
 
 		{
-			"Type" : "nap::Mesh",
-			"mID" : "ParticleMesh",
-			"Properties" : {
-				"NumVertices" : 0,
-				"DrawMode" : "Triangles",
-				"Attributes" : [
-					{
-						"Type" : "nap::Vec3VertexAttribute",
-						"AttributeID" : "Position",
-						"Data" :  
-						[
-						]
-					},
-					{
-						"Type" : "nap::Vec3VertexAttribute",
-						"AttributeID" : "UV0",
-						"Data" :  
-						[
-						]
-					},
-					{
-						"Type" : "nap::Vec4VertexAttribute",
-						"AttributeID" : "Color0",
-						"Data" :  
-						[
-						]
-					}
-				]
-			}
-		},	
-
-		{
 			"Type" : "nap::Image",
 			"mID" : "Smoke",
 			"ImagePath" : "data/dynamicgeometrytest/smoke.png"
@@ -234,16 +202,11 @@
 			"Components" : 
 			[
 				{
-					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "ParticleMesh",
-					"MaterialInstance" : {
-						"Material": "ParticleMaterial"
-					}
-				},		
-				{
 					"Type" : "nap::ParticleEmitterComponent",
 					"mID" : "ParticleEmitterComponent",
-					"Mesh" : "ParticleMesh",
+					"MaterialInstance" : {
+						"Material": "ParticleMaterial"
+					},
 					"SpawnRate" : 100.0,
 					"LifeTime" : 1.4,
 					"LifeTimeVariation" : 0.2,

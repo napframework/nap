@@ -64,7 +64,6 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-
 		/**
 		 * Creates a renderable mesh that can be used to switch to another mesh and/or material at runtime. This function should be called from
 		 * init() functions on other components, and the result should be validated.
@@ -121,17 +120,17 @@ namespace nap
 		* Sets clipping rectangle on this instance.
 		* @param rect Rectangle in pixel coordinates.
 		*/
-		void setClipRect(const math::Rect& rect)			{ mClipRect = rect; }
+		void setClipRect(const math::Rect& rect)				{ mClipRect = rect; }
 
 	private:
 		void pushUniforms();
 		void setBlendMode();
 
 	private:
-		TransformComponentInstance*					mTransformComponent;	// Cached pointer to transform
-		MaterialInstance							mMaterialInstance;		// The MaterialInstance as created from the resource. 
-		bool										mVisible = true;		// Whether this instance is visible or not
+		TransformComponentInstance*				mTransformComponent;	// Cached pointer to transform
+		MaterialInstance						mMaterialInstance;		// The MaterialInstance as created from the resource. 
+		bool									mVisible = true;		// Whether this instance is visible or not
 		math::Rect								mClipRect;				// Clipping rectangle for this instance, in pixel coordinates
-		RenderableMesh								mRenderableMesh;		// The currently active renderable mesh, either set during init() or set by setMesh.
+		RenderableMesh							mRenderableMesh;		// The currently active renderable mesh, either set during init() or set by setMesh.
 	};
 }

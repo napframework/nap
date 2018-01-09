@@ -2,12 +2,14 @@
 
 #include "component.h"
 #include "mesh.h"
+#include "renderablemeshcomponent.h"
 
 namespace nap
 {
 	class TransformComponent;
 	class ParticleEmitterComponentInstance;
-	
+	class ParticleMesh;
+
 	/**
 	 * Structure describing the runtime state of a spawned particle
 	 */
@@ -26,9 +28,9 @@ namespace nap
 	/**
 	 * Component for emitting a single set of particle. One emitter maps to a single drawcall, and therefore a single material.
 	 */
-	class ParticleEmitterComponent : public Component
+	class ParticleEmitterComponent : public RenderableMeshComponent
 	{
-		RTTI_ENABLE(Component)
+		RTTI_ENABLE(RenderableMeshComponent)
 		DECLARE_COMPONENT(ParticleEmitterComponent, ParticleEmitterComponentInstance)
 
 		/**
@@ -37,7 +39,6 @@ namespace nap
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override { components.push_back(RTTI_OF(TransformComponent)); }
 
 	public:
-		ObjectPtr<Mesh>		mMesh;
 		float				mSpawnRate = 3.0f;
 		float				mLifeTime = 1.5f;
 		float				mLifeTimeVariation = 0.5f;
@@ -59,9 +60,9 @@ namespace nap
 	/**
 	 * Instance object for Particle emitters.
 	 */
-	class ParticleEmitterComponentInstance : public ComponentInstance
+	class ParticleEmitterComponentInstance : public RenderableMeshComponentInstance
 	{
-		RTTI_ENABLE(ComponentInstance)
+		RTTI_ENABLE(RenderableMeshComponentInstance)
 	public:
 		// Default constructor
 		ParticleEmitterComponentInstance(EntityInstance& entity, Component& resource);
@@ -80,7 +81,8 @@ namespace nap
 		void updateMesh();
 
 	private:
-		std::vector<Particle>	mParticles;
-		double					mTimeSinceLastSpawn = 1000.0;
+		std::vector<Particle>			mParticles;
+		double							mTimeSinceLastSpawn = 1000.0;
+		std::unique_ptr<ParticleMesh>	mParticleMesh;
 	};
 }
