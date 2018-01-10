@@ -8,18 +8,19 @@
 include(${CMAKE_CURRENT_LIST_DIR}/targetarch.cmake)
 target_architecture(ARCH)
 
-if(WIN32)
+if(NOT APPLE)
     find_path(LIBMPG123_DIR src/libmpg123/mpg123.h.in
         HINTS
         ${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/mpg123
         ${CMAKE_CURRENT_LIST_DIR}/../../mpg123
     )
+endif()
 
+if(WIN32)
     set(LIBMPG123_LIB_DIR ${LIBMPG123_DIR}/install/msvc)
     set(LIBMPG123_LIBRARIES ${LIBMPG123_LIB_DIR}/libmpg123.lib)
     set(LIBMPG123_LIBS_RELEASE_DLL ${LIBMPG123_LIB_DIR}/libmpg123.dll)
     set(LIBMPG123_INCLUDE_DIR ${LIBMPG123_DIR}/install/msvc)
-
 elseif(APPLE)
     find_path(LIBMPG123_PREFIX lib/libmpg123.dylib
         HINTS
