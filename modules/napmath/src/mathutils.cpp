@@ -155,7 +155,7 @@ namespace nap
 		}
 
 
-		glm::vec3 position(const glm::mat4x4& matrix)
+		glm::vec3 extractPosition(const glm::mat4x4& matrix)
 		{
 			return glm::vec3(matrix[3][0], matrix[3][1], matrix[3][2]);
 		}

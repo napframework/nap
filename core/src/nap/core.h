@@ -108,7 +108,7 @@ namespace nap
 		/**
 		* @return start time point
 		*/
-		utility::SystemTimeStamp getStartTime() const;
+		utility::HighResTimeStamp getStartTime() const;
 
 		/**
 		* @return an already registered service of @type
@@ -175,7 +175,7 @@ namespace nap
 		ServiceList mServices;
 
 		// Timer
-		utility::SystemTimer mTimer;
+		utility::HighResolutionTimer mTimer;
 
 		// Last time stamp used for calculating delta time
 		double mLastTimeStamp = 0.0;

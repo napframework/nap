@@ -138,7 +138,7 @@ namespace nap
 		 * @param matrix column major matrix
 		 * @return the position component from a 4x4 matrix
 		 */
-		glm::vec3 NAPAPI position(const glm::mat4x4& matrix);
+		glm::vec3 NAPAPI extractPosition(const glm::mat4x4& matrix);
 
 		//////////////////////////////////////////////////////////////////////////
 		// Template definitions
