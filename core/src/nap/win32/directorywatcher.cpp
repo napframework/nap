@@ -1,6 +1,8 @@
 #include "../directorywatcher.h"
 #include "assert.h"
 
+#include "nap/datapathmanager.h"
+
 #define WIN32_LEAN_AND_MEAN
 #include "windows.h"
 #undef min
@@ -32,11 +34,9 @@ namespace nap
 	DirectoryWatcher::DirectoryWatcher()
 	{
         mPImpl = std::unique_ptr<PImpl, PImpl_deleter>(new PImpl);
-		char current_directory[MAX_PATH];
-		GetCurrentDirectory(MAX_PATH, current_directory);
 
 		// Open directory 
-		mPImpl->mDirectoryToMonitor = CreateFileA(current_directory, FILE_LIST_DIRECTORY, FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, NULL);
+		mPImpl->mDirectoryToMonitor = CreateFileA(DataPathManager::get().getDataPath().c_str(), FILE_LIST_DIRECTORY, FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, NULL);
 		assert(mPImpl->mDirectoryToMonitor != INVALID_HANDLE_VALUE);
 
 		// Create event

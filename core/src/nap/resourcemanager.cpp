@@ -10,6 +10,7 @@
 #include <rtti/pythonmodule.h>
 #include <rtti/linkresolver.h>
 #include <nap/core.h>
+#include <nap/datapathmanager.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ResourceManager)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -259,6 +260,10 @@ namespace nap
 		// Patch ObjectPtrs so that they point to the updated object instead of the old object. We need to do this before determining
 		// init order, otherwise a part of the graph may still be pointing to the old objects.
 		ObjectPtrManager::get().patchPointers(objects_to_update);
+		
+		// Prepend FileLink paths on updated objects with our project data directory location.  This allows us to have our project
+		// data alongside the binary for packaged projects or with our source while under development.
+		patchFilePaths(objects_to_update);
 
 		// Build object graph of all the objects in the manager, overlayed by the objects we want to update. Later, we will
 		// performs queries against this graph to determine init order for both resources and entities.
@@ -491,4 +496,34 @@ namespace nap
 		return ObjectPtr<RTTIObject>(object);
 	}
 
+	
+	// Prepend FileLink paths on updated objects with our project data directory location
+	void ResourceManager::patchFilePaths(ObjectByIDMap& newTargetObjects)
+	{
+		// Iterate all updated objects
+		for (auto& kvp : newTargetObjects)
+		{
+			rtti::RTTIObject* target = kvp.second.get();
+			if (target == nullptr)
+				continue;
+
+			// TODO is this the best way to do this?
+			rtti::Instance instance = *target;
+			rtti::TypeInfo object_type = instance.get_derived_type();
+			
+			// Go through all properties of the object
+			for (const rtti::Property& property : object_type.get_properties())
+			{
+				if (rtti::hasFlag(property, nap::rtti::EPropertyMetaData::FileLink))
+				{
+					// Prepend our file path with our data path from the DataPathManager
+					std::string path = property.get_value(instance).get_value<std::string>();
+					path = DataPathManager::get().getDataPath() + path;
+					property.set_value(instance, path);
+				}
+			}
+		}
+	}
+	
+	
 }

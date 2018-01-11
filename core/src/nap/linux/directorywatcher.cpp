@@ -4,6 +4,7 @@
 #include <nap/logger.h>
 #include <thread>
 #include <utility/fileutils.h>
+#include "nap/datapathmanager.h"
 
 namespace nap
 {
@@ -50,7 +51,8 @@ namespace nap
 		mPImpl = std::unique_ptr<PImpl, PImpl_deleter>(new PImpl);
 
 
-		std::string path = utility::getFileDir(utility::getExecutablePath());
+		std::string path = DataPathManager::get().getDataPath();
+
 		nap::Logger::info("Watching directory: %s", path.c_str());
 		mPImpl->watchID = mPImpl->fileWatcher.addWatch(path, &(*mPImpl), true);
 	}

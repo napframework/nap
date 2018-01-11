@@ -4,6 +4,7 @@
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <inputcomponent.h>
+#include <nap/datapathmanager.h>
 
 // Mod nap render includes
 #include <orthocameracomponent.h>
@@ -32,7 +33,8 @@ namespace nap
 		
 		// Get resource manager service
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("data/tommy/tommy.json", error))
+		
+		if (!mResourceManager->loadFile(DataPathManager::get().getDataPath() + "tommy.json", error))
 			return false;
 		
 		mScene = mResourceManager->findObject<Scene>("Scene");

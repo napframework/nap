@@ -46,6 +46,8 @@ CMakeFiles/cmake.check_cache
 arch.c
 modules/.vs/Project/v14/.suo
 .DS_Store
+apps/**/*.mesh
 test/**/*.mesh
+demos/**/*.mesh
 nap.sublime-project
 nap.sublime-workspace
