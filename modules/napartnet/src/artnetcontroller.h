@@ -43,9 +43,8 @@ namespace nap
 		 * Sends normalized float channel data (ranging from 0.0 to 1.0) over the artnet network. Internally, the float data
 		 * is converted to bytes. The actual sending is deferred until the update within the service, where data is sent when needed.
 		 * @param channelData Channel data in normalized floats (0.0 to 1.0)
-		 * @param channelOffset Channel offset, the target start channel where @channelData should be applied to. If the
-		 *                      channel offset plus the size of the @channelData exceeds the maximum amount of channels per
-		 *                      universe (512), the function will assert.
+		 * @param channelOffset Channel offset, the target start channel where @channelData should be applied to. 
+		 * If the channel offset plus the size of the @channelData exceeds the maximum amount of channels per universe (512), the function will assert.
 		 */
 		void send(const FloatChannelData& channelData, int channelOffset = 0);
 
@@ -60,9 +59,8 @@ namespace nap
 		/**
 		 * Sends byte channel data over the artnet network. The actual sending is deferred until the update of the service, where data is sent when needed.
 		 * @param channelData Channel data in unsigned bytes (0 - 255)
-		 * @param channelOffset Channel offset, the target start channel where @channelData should be applied to. If the
-		 *                      channel offset plus the size of the @channelData exceeds the maximum amount of channels per
-		 *                      universe (512), the function will assert.
+		 * @param channelOffset Channel offset, the target start channel where @channelData should be applied to. 
+		 * If the channel offset plus the size of the @channelData exceeds the maximum amount of channels per universe (512), the function will assert.
 		 */
 		void send(const ByteChannelData& channelData, int channelOffset = 0);
 
@@ -98,6 +96,12 @@ namespace nap
 		 */
 		static void convertAddress(Address address, uint8_t& subnet, uint8_t& universe);
 
+		/**
+		 * @return the max update frequency
+		 * 44hz, see http ://art-net.org.uk/wordpress/?page_id=456 / Refresh Rate)
+		 */
+		static const int getMaxUpdateFrequency();
+
 	private:
 
 		/**
@@ -106,11 +110,10 @@ namespace nap
 		ArtNetNode getNode() const { return mNode; }
 
 	public:
-		static const int	mMaxUpdateFrequency;						///< 44hz, see http ://art-net.org.uk/wordpress/?page_id=456 / Refresh Rate)
-		uint8_t				mSubnet = 0;								///< Subnet, in range from 0x0..0xF
-		uint8_t				mUniverse = 0;								///< Universe, in range from 0x0..0xF
-		int					mUpdateFrequency = mMaxUpdateFrequency;		///< Update artnet refresh rate, the default is the maximum refresh rate
-		float				mWaitTime = 2.0f;							///< Number of seconds before the control data is send regardless of changes
+		uint8_t				mSubnet = 0;									///< Subnet, in range from 0x0..0xF
+		uint8_t				mUniverse = 0;									///< Universe, in range from 0x0..0xF
+		int					mUpdateFrequency = getMaxUpdateFrequency();		///< Update artnet refresh rate, the default is the maximum refresh rate
+		float				mWaitTime = 2.0f;								///< Number of seconds before the control data is send regardless of changes
 
 	private:
 		friend class ArtNetService;

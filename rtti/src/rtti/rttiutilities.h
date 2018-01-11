@@ -96,6 +96,13 @@ namespace nap
 		 */
 		std::size_t NAPAPI getRTTIVersion(const rtti::TypeInfo& type);
 
+		/**
+		 * Recursively get all types derived from the specified type (including the base type itself)
+		 * @param baseType The type to use as base
+		 * @param types The resulting array of types
+		 */
+		void NAPAPI getDerivedTypesRecursive(const rtti::TypeInfo& baseType, std::vector<rtti::TypeInfo>& types);
+
 	} //< End Namespace RTTI
 
 }

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "actions.h"
-#include "generic/filtertreeview.h"
 #include <scene.h>
 
+#include "actions.h"
+#include "generic/filtertreeview.h"
 
 namespace napkin
 {
@@ -36,7 +36,7 @@ namespace napkin
 		/**
 		 * @param o The object this item should represent
 		 */
-		explicit ObjectItem(nap::rtti::RTTIObject& o);
+		explicit ObjectItem(nap::rtti::RTTIObject* o);
 
 		/**
 		 * QStandardItem is not a QObject, so regular QObject polymorphism doesn't work.
@@ -53,15 +53,18 @@ namespace napkin
 		/**
 		 * @return The object held by this item
 		 */
-		nap::rtti::RTTIObject& getObject() const;
+		nap::rtti::RTTIObject* getObject() const;
 
 		/**
 		 * @return The name of the object.
 		 */
 		virtual const QString getName() const;
 
+		void setData(const QVariant& value, int role) override;
+
+
 	protected:
-		nap::rtti::RTTIObject& mObject; // THe object held by this item
+		nap::rtti::RTTIObject* mObject; // THe object held by this item
 	};
 
 	/**
@@ -82,7 +85,7 @@ namespace napkin
 		/**
 		 * @return The entity held by this item
 		 */
-		nap::Entity& getEntity();
+		nap::Entity* getEntity();
 	};
 
 	/**
@@ -109,7 +112,7 @@ namespace napkin
 	/**
 	 * An item representing one scene
 	 */
-	class SceneItem : public QStandardItem
+	class SceneItem : public ObjectItem
 	{
 	public:
 		explicit SceneItem(nap::Scene& scene);
@@ -121,17 +124,15 @@ namespace napkin
          */
         int type() const override { return StandardItemTypeID::SceneItemID; }
 
-	private:
-		nap::Scene& mScene; //< The scene this item keeps
 	};
 
 	/**
 	 * An item that displays an entity instance
 	 */
-	class EntityInstanceItem : public QStandardItem
+	class EntityInstanceItem : public ObjectItem
 	{
 	public:
-		explicit EntityInstanceItem(nap::EntityInstance& e);
+		explicit EntityInstanceItem(nap::Entity& e);
 
         /**
          * QStandardItem is not a QObject, so regular QObject polymorphism doesn't work.
@@ -140,8 +141,6 @@ namespace napkin
          */
         int type() const override { return StandardItemTypeID::EntityInstanceID; }
 
-	private:
-		nap::EntityInstance& mEntityInstance;
 	};
 
 } // namespace napkin

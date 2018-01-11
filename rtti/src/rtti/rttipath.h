@@ -42,7 +42,7 @@ namespace nap
 
 				// Compare properties
 				if (mType == Type::ATTRIBUTE)
-					return Attribute.Name == lhs.Attribute.Name;
+					return strcmp(Attribute.Name, lhs.Attribute.Name) == 0;
 				else if (mType == Type::ARRAY_ELEMENT)
 					return ArrayElement.Index == lhs.ArrayElement.Index;
 

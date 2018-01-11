@@ -1,5 +1,8 @@
 #include "actions.h"
 
+#include <QMessageBox>
+#include "commands.h"
+
 using namespace napkin;
 
 Action::Action() : QAction() { connect(this, &QAction::triggered, this, &Action::perform); }
@@ -10,7 +13,26 @@ NewFileAction::NewFileAction()
 	setShortcut(QKeySequence::New);
 }
 
-void NewFileAction::perform() { AppContext::get().newFile(); }
+void NewFileAction::perform()
+{
+	if (AppContext::get().getDocument()->isDirty()) {
+		auto result = QMessageBox::question(AppContext::get().getQApplication()->topLevelWidgets()[0],
+											"Save before creating new document",
+											"The current document has unsaved changes.\n"
+													"Save the changes before creating a new document?",
+											QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+		if (result == QMessageBox::Yes)
+		{
+			SaveFileAction action;
+			action.trigger();
+		}
+		else if (result == QMessageBox::Cancel)
+		{
+			return;
+		}
+	}
+	AppContext::get().newDocument();
+}
 
 
 OpenFileAction::OpenFileAction()
@@ -27,7 +49,7 @@ void OpenFileAction::perform()
 	if (filename.isNull())
 		return;
 
-	AppContext::get().loadFile(filename);
+	AppContext::get().loadDocument(filename);
 }
 
 SaveFileAction::SaveFileAction()
@@ -38,12 +60,12 @@ SaveFileAction::SaveFileAction()
 
 void SaveFileAction::perform()
 {
-	if (AppContext::get().getCurrentFilename().isNull())
+	if (AppContext::get().getDocument()->getCurrentFilename().isNull())
 	{
 		SaveFileAsAction().trigger();
 		return;
 	}
-	AppContext::get().saveFile();
+	AppContext::get().saveDocument();
 }
 
 SaveFileAsAction::SaveFileAsAction()
@@ -55,7 +77,7 @@ SaveFileAsAction::SaveFileAsAction()
 void SaveFileAsAction::perform()
 {
 	auto& ctx = AppContext::get();
-	auto prevFilename = ctx.getCurrentFilename();
+	auto prevFilename = ctx.getDocument()->getCurrentFilename();
 	if (prevFilename.isNull())
 		prevFilename = ctx.getLastOpenedFilename();
 
@@ -65,17 +87,17 @@ void SaveFileAsAction::perform()
 	if (filename.isNull())
 		return;
 
-	ctx.saveFileAs(filename);
+	ctx.saveDocumentAs(filename);
 }
 
-AddObjectAction::AddObjectAction(rttr::type type) : Action(), mType(type)
+AddObjectAction::AddObjectAction(const rttr::type& type) : Action(), mType(type)
 {
     setText(QString(type.get_name().data()));
 }
 
 void AddObjectAction::perform()
 {
-    AppContext::get().addObject(mType);
+	AppContext::get().executeCommand(new AddObjectCommand(mType));
 }
 
 DeleteObjectAction::DeleteObjectAction(nap::rtti::RTTIObject& object) : Action(), mObject(object)
@@ -85,7 +107,7 @@ DeleteObjectAction::DeleteObjectAction(nap::rtti::RTTIObject& object) : Action()
 
 void DeleteObjectAction::perform()
 {
-    AppContext::get().deleteObject(mObject);
+    AppContext::get().executeCommand(new DeleteObjectCommand(mObject));
 }
 
 SetThemeAction::SetThemeAction(const QString& themeName) : Action(), mTheme(themeName)
@@ -101,7 +123,7 @@ void SetThemeAction::perform()
 
 void AddComponentAction::perform()
 {
-    AppContext::get().addComponent(mEntity, mComponentType);
+    AppContext::get().getDocument()->addComponent(mEntity, mComponentType);
 }
 
 AddComponentAction::AddComponentAction(nap::Entity& entity, nap::rtti::TypeInfo type)
@@ -110,12 +132,15 @@ AddComponentAction::AddComponentAction(nap::Entity& entity, nap::rtti::TypeInfo 
     setText(QString(type.get_name().data()));
 }
 
-void AddEntityAction::perform()
-{
-    AppContext::get().createEntity(mParent);
-}
 
 AddEntityAction::AddEntityAction(nap::Entity* parent) : Action(), mParent(parent)
 {
     setText("Add Entity");
 }
+
+void AddEntityAction::perform()
+{
+	AppContext::get().executeCommand(new AddObjectCommand(RTTI_OF(nap::Entity), mParent));
+}
+
+
