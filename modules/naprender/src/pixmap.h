@@ -141,8 +141,8 @@ namespace nap
 		* This call converts the pixel data if necessary. 
 		* Note that this call can be slow when iterating over the bitmap!
 		* Use the makePixel / getPixel combination above for faster results
-		* Use this call to get a copy of the color values in the desired color format T
-		* T can not be of be a color that points to external value, ie: RGBColorData8 etc.
+		* Use this call to get a copy of the color values in the desired color format T where
+		* T can not be a color that points to external value in memory, ie: RGBColorData8 etc.
 		* Valid values for T are RGBColor8, RColorFloat etc.
 		* @param x the horizontal coordinate of the pixel
 		* @param y the vertical coordinate of the pixel
@@ -153,8 +153,8 @@ namespace nap
 
 		/**
 		 * Sets the color of a pixel at the x and y pixel coordinates
-		 * This call does not convert the data if the data doesn't match!
-		 * An input color can have less color channels than a pixel in the pixmap, this is allowed.
+		 * This call does not convert the color if the value types don't match, best to convert the color client side.
+		 * It's allowed to give an input color can that has less color channels than a pixel in the pixmap.
 		 * This means that an RGB color can be set to a pixel of an RGBA pixmap
 		 * To ensure matching data use makePixel() to create a pixel that is compatible with this pixmap
 		 * You can use the color conversion methods to convert any color into this pixmap's color space
@@ -167,9 +167,11 @@ namespace nap
 
 		/**
 		 * Sets the color of a pixel at the x and y pixel coordinates
-		 * This call converts the incoming color when the underlying data types do not match 
+		 * This call converts the incoming color when the underlying data types do not match
+		 * The given color can also point to values in memory, ie: the color doesn't own it's data
+		 * but the data it owns is copied over.
 		 * It's not recommended to use this call in a loop when you know it needs to convert the color
-		 * An input color can have less color channels than a pixel in the pixmap, this is allowed.
+		 * It's allowed to give an input color can that has less color channels than a pixel in the pixmap.
 		 * This means that an RGB color can be set to a pixel of an RGBA pixmap
 		 * @param x the horizontal pixel coordinate
 		 * @param y the horizontal pixel coordinate
