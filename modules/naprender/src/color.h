@@ -105,12 +105,6 @@ namespace nap
 		T convert() const;
 
 		/**
-		 * @return a color converter to convert this color in to @target color
-		 * Use this call when dealing with the same color conversion multiple times in, for example, a loop
-		 */
-		//std::function<void(const BaseColor&, BaseColor&, int)> getConverter(const BaseColor& target);
-
-		/**
 		 * @return the data associated with the channel @index
 		 */
 		virtual const void* getData(int channel) const = 0;
@@ -168,7 +162,6 @@ namespace nap
 	template<typename T, int CHANNELS>
 	class Color : public BaseColor
 	{
-		RTTI_ENABLE(BaseColor)
 	public:
 		/**
 		* Constructor that simply creates a 0 initialized color
@@ -311,12 +304,12 @@ namespace nap
 	template<typename T>
 	class RGBColor : public Color<T, 3>
 	{
-		RTTI_ENABLE(Color<T, 3>)
+		RTTI_ENABLE(BaseColor)
 	public:
 		/**
 		 *	Constructor that creates an RGB color based on the given values
 		 */
-		RGBColor(T red, T green, T blue) : Color<T, 3>({red, green, blue})		{ }
+		RGBColor(T red, T green, T blue) : Color<T, 3>({ {red, green, blue} })	{ }
 
 		/**
 		 *	Default constructor
@@ -364,13 +357,13 @@ namespace nap
 	template<typename T>
 	class RGBAColor : public Color<T,4>
 	{
-		RTTI_ENABLE(Color<T,4>)
+		RTTI_ENABLE(BaseColor)
 	public:
 		/**
 		*	Constructor that creates an RGB color based on the given values
 		*/
 		RGBAColor(T red, T green, T blue, T alpha) :
-			Color<T, 4>({ red, green, blue, alpha }) { }
+			Color<T, 4>({ { red, green, blue, alpha } })						{ }
 
 		/**
 		*	Default constructor
@@ -430,12 +423,12 @@ namespace nap
 	template<typename T>
 	class RColor : public Color<T,1>
 	{
-		RTTI_ENABLE(Color<T,1>)
+		RTTI_ENABLE(BaseColor)
 	public:
 		/**
 		* Constructor that creates an R color based on the given value
 		*/
-		RColor(T value) : Color<T, 1>({ value }) { }
+		RColor(T value) : Color<T, 1>({ { value } })							{ }
 
 		/**
 		*	Default constructor
