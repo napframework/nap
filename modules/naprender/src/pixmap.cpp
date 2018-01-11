@@ -109,6 +109,7 @@ static nap::BaseColor* createColor(const nap::Pixmap& map)
 	return nullptr;
 }
 
+
 /**
  * Helper function that fills outColor with the color values stored in the map
  * @param x the horizontal pixel coordinate
@@ -118,6 +119,7 @@ static nap::BaseColor* createColor(const nap::Pixmap& map)
 template<typename T>
 static void fill(int x, int y, const nap::Pixmap& map, nap::BaseColor& outColor)
 {
+	assert(!(outColor.isPointer()));
 	switch (outColor.getNumberOfChannels())
 	{
 	case 1:
@@ -206,6 +208,10 @@ namespace nap
 		// Now allocate memory
 		if (!errorState.check(mBitmap.allocateMemory(), "unable to allocate bitmap resource: %s", mID.c_str()))
 			return false;
+
+		// Store type of color
+		onInit();
+
 		return true;
 	}
 
@@ -221,6 +227,9 @@ namespace nap
 
 		// Sync
 		applySettingsFromBitmap();
+
+		// Store type of color
+		onInit();
 
 		return true;
 	}
@@ -244,34 +253,11 @@ namespace nap
 		// Sync
 		applySettingsFromBitmap();
 
+		// Store type of color
+		onInit();
+
 		// Now allocate
 		mBitmap.allocateMemory();
-	}
-
-
-	void Pixmap::getPixel(int x, int y, BaseColor& outPixel) const
-	{
-		switch (mBitmap.getDataType())
-		{
-		case opengl::BitmapDataType::BYTE:
-		{
-			fill<uint8>(x, y, *this, outPixel);
-			break;
-		}
-		case opengl::BitmapDataType::FLOAT:
-		{
-			fill<float>(x, y, *this, outPixel);
-			break;
-		}
-		case opengl::BitmapDataType::USHORT:
-		{
-			fill<uint16>(x, y, *this, outPixel);
-			break;
-		}
-		default:
-			assert(false);
-			break;
-		}
 	}
 
 
@@ -304,6 +290,58 @@ namespace nap
 	}
 
 
+	void Pixmap::getPixel(int x, int y, BaseColor& outPixel) const
+	{
+		switch (mBitmap.getDataType())
+		{
+		case opengl::BitmapDataType::BYTE:
+		{
+			fill<uint8>(x, y, *this, outPixel);
+			break;
+		}
+		case opengl::BitmapDataType::FLOAT:
+		{
+			fill<float>(x, y, *this, outPixel);
+			break;
+		}
+		case opengl::BitmapDataType::USHORT:
+		{
+			fill<uint16>(x, y, *this, outPixel);
+			break;
+		}
+		default:
+			assert(false);
+			break;
+		}
+	}
+
+
+	void Pixmap::setPixel(int x, int y, const BaseColor& color)
+	{
+		switch (mBitmap.getDataType())
+		{
+		case opengl::BitmapDataType::BYTE:
+		{
+			setPixelData<uint8>(x, y, color);
+			break;
+		}
+		case opengl::BitmapDataType::FLOAT:
+		{
+			setPixelData<float>(x, y, color);
+			break;
+		}
+		case opengl::BitmapDataType::USHORT:
+		{
+			setPixelData<uint16>(x, y, color);
+			break;
+		}
+		default:
+			assert(false);
+			break;
+		}
+	}
+
+
 	void Pixmap::applySettingsFromBitmap()
 	{
 		auto found_it = std::find_if(bitmapDataTypeMap.begin(), bitmapDataTypeMap.end(), [&](const auto& value)
@@ -323,6 +361,15 @@ namespace nap
 		mWidth  = mBitmap.getWidth();
 		mHeight = mBitmap.getHeight();
 	}
+
+
+	void Pixmap::onInit()
+	{
+		std::unique_ptr<BaseColor> temp_clr = makePixel();
+		mColorType = temp_clr->get_type().get_raw_type();
+		mValueType = temp_clr->getValueType();
+	}
+
 }
 
 

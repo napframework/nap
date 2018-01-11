@@ -200,26 +200,19 @@ namespace nap
 			{
 				int palette_color_index = (int)std::floor(x / (float)squareWidth);
 
-				RGBAColorData8 color;
-				mDebugImage->getPixmap().getRGBAColorData(x, y, color);
-				
-				if (palette_color_index >= palette_colors.size())
+				RGBAColor8 color(0,0,0,0);
+				if (palette_color_index < palette_colors.size())
 				{
-					(*color.getRed()) = 0;
-					(*color.getGreen()) = 0;
-					(*color.getBlue()) = 0;
-					(*color.getAlpha()) = 0;
+					color.setRed(palette_colors[palette_color_index].mScreenColor.getRed());
+					color.setGreen(palette_colors[palette_color_index].mScreenColor.getGreen());
+					color.setBlue(palette_colors[palette_color_index].mScreenColor.getBlue());
+					color.setAlpha(255);
 				}
-				else
-				{
-					(*color.getRed()) = palette_colors[palette_color_index].mScreenColor.getRed();
-					(*color.getGreen()) = palette_colors[palette_color_index].mScreenColor.getGreen();
-					(*color.getBlue()) = palette_colors[palette_color_index].mScreenColor.getBlue();
-					(*color.getAlpha()) = 255;
-				}
+
+				mDebugImage->getPixmap().setPixelColor<RGBAColor8>(x, y, color);
 			}
 		}
 
-		mDebugImage->getTexture().setData(mDebugImage->getPixmap().getBitmap().getData());
+		mDebugImage->getTexture().setData(mDebugImage->getPixmap().getData());
 	}
 }

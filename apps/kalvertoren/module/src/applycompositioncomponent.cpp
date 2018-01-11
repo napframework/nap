@@ -77,6 +77,9 @@ namespace nap
 		RGBAColorFloat led_colorf;
 		RGBColor8 rgb_index_color;
 
+		// Make pixel we use to query data from bitmap
+		auto source_pixel = mPixmap.makePixel();
+
 		assert(mPixmap.mType == Pixmap::EDataType::BYTE);
 		float mesh_intensity = mShowIndexColors ? 1.0f : mIntensity;
 
@@ -100,7 +103,8 @@ namespace nap
 			int y_pixel = static_cast<float>(mPixmap.getHeight() - 1) * uv_avg.y;
 
 			// retrieve pixel value
-			mPixmap.getRGBColor<uint8>(x_pixel, y_pixel, rgb_index_color);
+			mPixmap.getPixel(x_pixel, y_pixel, *source_pixel);
+			source_pixel->convert(rgb_index_color);
 			
 			// Get the corresponding color palette value
 			LedColorPaletteGrid::PaletteColor palette_color = mColorPaletteComponent->getPaletteColor(rgb_index_color);

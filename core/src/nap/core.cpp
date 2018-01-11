@@ -279,7 +279,7 @@ namespace nap
 
 
 	// Returns start time of core module as point in time
-	utility::SystemTimeStamp Core::getStartTime() const
+	utility::HighResTimeStamp Core::getStartTime() const
 	{
 		return mTimer.getStartTime();
 	}

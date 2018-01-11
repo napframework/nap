@@ -77,9 +77,9 @@ namespace nap
 		nap::Pixmap& getPixmap();
 
 		// Points to the composition component we want to render
-		COMPONENT_INSTANCE_POINTER(mCompositionComponent, CompositionComponent, RenderCompositionComponent)
-		COMPONENT_INSTANCE_POINTER(mRenderableComponent, RenderableMeshComponent, RenderCompositionComponent)
-		COMPONENT_INSTANCE_POINTER(mCameraComponent, OrthoCameraComponent, RenderCompositionComponent)
+		ComponentInstancePtr<CompositionComponent> mCompositionComponent	=	{ this, &RenderCompositionComponent::mCompositionComponent };
+		ComponentInstancePtr<RenderableMeshComponent> mRenderableComponent	=	{ this, &RenderCompositionComponent::mRenderableComponent };
+		ComponentInstancePtr<OrthoCameraComponent> mCameraComponent =			{ this, &RenderCompositionComponent::mCameraComponent };
 
 	private:
 		RenderTarget*	mTargetA = nullptr;
