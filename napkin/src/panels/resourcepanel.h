@@ -1,12 +1,7 @@
 #pragma once
 
-#include "actions.h"
-#include "appcontext.h"
 #include "generic/filtertreeview.h"
-#include "generic/napgeneric.h"
-#include "standarditemsobject.h"
-#include <QStandardItemModel>
-#include <nap/resourcemanager.h>
+#include "actions.h"
 
 
 namespace nap
@@ -73,8 +68,9 @@ namespace napkin
 		/**
 		 * Called when an object has been added
 		 * @param obj The object that was added
+		 * @param selectNewObject Whether the newly created object should be selected in any views watching for object addition
 		 */
-		void onObjectAdded(nap::rtti::RTTIObject& obj);
+		void onObjectAdded(nap::rtti::RTTIObject& obj, bool selectNewObject);
 
 		/**
 		 * Called when an object is about to be removed
@@ -99,6 +95,11 @@ namespace napkin
 		 * @param deselected The items that were deselected
 		 */
 		void onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
+
+		/**
+		 * Called when an object name has changed
+		 */
+		void onPropertyValueChanged(const PropertyPath& path);
 
 		/**
 		 * Finds a model item that keeps track of the specified object

@@ -91,4 +91,4 @@ namespace nap
 	}
 }
 
-RTTI_DEFINE(nap::EtherDreamService)
+RTTI_DEFINE_CLASS(nap::EtherDreamService)

@@ -1,16 +1,22 @@
 #pragma once
 
-#include <QtGui/QStandardItem>
-#include <QtWidgets/QVBoxLayout>
-#include <generic/filtertreeview.h>
+#include <QStandardItemModel>
+#include <QMenu>
+
 #include <rtti/rttiobject.h>
-#include <rtti/rttipath.h>
-#include <rttr/type.h>
-#include <widgetdelegate.h>
+
+#include "generic/propertypath.h"
+#include "generic/filtertreeview.h"
+#include "widgetdelegate.h"
 
 namespace napkin
 {
+	/**
+	 * The MIME type of a nap propertypath
+	 */
+	static const char* sNapkinMimeData = "application/napkin-path";
 
+	class ArrayPropertyItem;
 
 
     /**
@@ -45,6 +51,36 @@ namespace napkin
 		 */
 		bool setData(const QModelIndex& index, const QVariant& value, int role) override;
 
+		/**
+		 * Override, provides drag behavior with validation and data to hold in the drag operation
+		 */
+		QMimeData* mimeData(const QModelIndexList& indexes) const override;
+
+		/**
+		 * Override, specifies which kinds of data will be provided to drag operations
+		 */
+		QStringList mimeTypes() const override;
+
+		/**
+		 * Rebuild the model
+		 */
+		void rebuild();
+
+		/**
+		 * Overriden to support drag & drop
+		 */
+		Qt::DropActions supportedDragActions() const override;
+
+		/**
+		 * Overriden to support drag & drop
+		 */
+		Qt::DropActions supportedDropActions() const override;
+
+		/**
+		 * Overriden to support drag & drop
+		 */
+		Qt::ItemFlags flags(const QModelIndex& index) const override;
+
 	private:
 		/**
 		 * Run through the object's properties and create items for them
@@ -72,6 +108,22 @@ namespace napkin
 		 */
 		void setObject(nap::rtti::RTTIObject* object);
 
+	private:
+		/**
+		 * Called when the context menu for an item should be shown
+		 * @param menu The menu that actions should be added to (initially empty)
+		 */
+		void onItemContextMenu(QMenu& menu);
+
+		/**
+		 * Called when a property value has been changed
+		 */
+		void onPropertyValueChanged(const PropertyPath& path);
+
+		/**
+		 * Rebuild view and model
+		 */
+		void rebuild();
 
 	private:
 		InspectorModel mModel;					   // The model for the view

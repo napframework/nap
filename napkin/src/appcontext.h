@@ -5,6 +5,7 @@
 #include <nap/core.h>
 
 #include "thememanager.h"
+#include "document.h"
 #include <QApplication>
 #include <QObject>
 #include <QUndoCommand>
@@ -60,7 +61,7 @@ namespace napkin
 		/**
 		 * Destroy existing data and reset the filename. newFileCreated will be when this happens.
 		 */
-		void newFile();
+		Document* newDocument();
 
 		/**
 		 * Load the specified file and replace the currently existing Objects.
@@ -69,7 +70,7 @@ namespace napkin
 		 *
 		 * @param filename The file to load, can be absolute or relative to the current working directory.
 		 */
-		void loadFile(const QString& filename);
+		Document* loadDocument(const QString& filename);
 
 		/**
 		 * Save the current data to disk using the currently set filename.
@@ -77,19 +78,19 @@ namespace napkin
 		 * The filename can be set by invoking saveFileAs(const QString& filename) before calling this method.
 		 * Any failures will be reported through nap::Logger, recovery should be handled prior to calling this method.
 		 */
-		void saveFile();
+		void saveDocument();
 
 		/**
 		 * Save the current data to disk.
 		 * Any failures will be reported through nap::Logger
 		 * @param filename The file to save the data to.
 		 */
-		void saveFileAs(const QString& filename);
+		void saveDocumentAs(const QString& filename);
 
 		/**
 		 * (Re-)open the file that was opened last. Uses local user settings to persist the filename.
 		 */
-		void openRecentFile();
+		void openRecentDocument();
 
 		/**
 		 * @return The path of the file that was opened last.
@@ -97,115 +98,34 @@ namespace napkin
 		const QString getLastOpenedFilename();
 
 		/**
-		 * @return The name of the currently opened file
-		 * or an empty string if no file is open or the data hasn't been saved yet.
+		 * @return The current document
 		 */
-		const QString& getCurrentFilename()
-		{
-			return mCurrentFilename;
-		}
-
-		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// Data operations
-		// TODO: Data structure operations should be accessed on the objects themselves
-		// TODO: Properly name "objects", this is probably to broad of a term here
-		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-		/**
-		 * @return All the objects (resources?) that are currently loaded.
-		 */
-		nap::rtti::OwnedObjectList& getObjects()
-		{
-			return mObjects;
-		}
-
-		/**
-		 * @return All the objects (resources?) that are currently loaded.
-		 */
-		nap::rtti::ObjectList getObjectPointers();
-
-		/**
-		 * Retrieve an (data) object by name/id
-		 * @param name The name/id of the object to find
-		 * @return The found object or nullptr if none was found
-		 */
-		nap::rtti::RTTIObject* getObject(const std::string& name);
-
-		/**
-		 * Retrieve the parent of the specified Entity
-		 * @param entity The entity to find the parent from.
-		 * @return The provided Entity's parent or nullptr if the Entity has no parent.
-		 */
-		nap::Entity* getParent(const nap::Entity& entity);
-
-		/**
-		 * Retrieve the Entity the provided Component belongs to.
-		 * @param component The component of which to find the owner.
-		 * @return The owner of the component
-		 */
-		nap::Entity* getOwner(const nap::Component& component);
-
-		/**
-		 * Create an entity. Its name/id will be automatically generated.
-		 * @param parent The parent under which to create the Entity,
-		 *      provide nullptr if the Entity should have no parent.
-		 * @return The newly created entity.
-		 */
-		nap::Entity* createEntity(nap::Entity* parent = nullptr);
-
-		/**
-		 * Add a component of the specified type to an Entity.
-		 * @param entity The entity to add the component to.
-		 * @param type The type of the desired component.
-		 * @return The newly created component.
-		 */
-		nap::Component* addComponent(nap::Entity& entity, rttr::type type);
-
-		/**
-		 * Add an object of the specified type.
-		 * @param type The type of the desired object.
-		 * @return The newly created object
-		 */
-		nap::rtti::RTTIObject* addObject(rttr::type type);
-
-		/**
-		 * Obliterate the specified object
-		 * @param object The object to be deleted.
-		 */
-		void deleteObject(nap::rtti::RTTIObject& object);
-
-		/**
-		 * Execute the specified command and push the provided command onto the undostack.
-		 * @param cmd The command to be executed
-		 */
-		void executeCommand(QUndoCommand* cmd);
+		Document* getDocument() { return mDocument.get(); }
 
 		/**
 		 * Convenience method to retrieve this QApplication's instance.
 		 * @return The QApplication singleton.
 		 */
-		QApplication* getQApplication()
-		{
-			return dynamic_cast<QApplication*>(qGuiApp);
-		}
+		QApplication* getQApplication() { return dynamic_cast<QApplication*>(qGuiApp); }
 
 		/**
 		 * @return The currently used undostack, @see QUndoStack
 		 */
-		QUndoStack& getUndoStack()
-		{
-			return mUndoStack;
-		}
+		QUndoStack& getUndoStack() { return getDocument()->getUndoStack(); }
 
 		/**
 		 * @return Access to the current application's ThemeManage
 		 */
-		ThemeManager& getThemeManager()
-		{
-			return mThemeManager;
-		}
+		ThemeManager& getThemeManager() { return mThemeManager; }
 
-		// To be invoked after the application has shown
+		/**
+		 * @param command THe command to be executed on the current document
+		 */
+		void executeCommand(QUndoCommand* cmd) { getDocument()->executeCommand(cmd); }
+
+		/**
+		 * To be invoked after the application has shown
+		 */
 		void restoreUI();
 
 		/**
@@ -226,21 +146,28 @@ namespace napkin
 		 * Fired after a file has been opened and its objects made available.
 		 * @param filename Name of the file that was opened
 		 */
-		void fileOpened(const QString& filename);
+		void documentOpened(const QString& filename);
 
 		/**
 		 * Qt Signal
-		 * Fires after a file has finished saving.
+		 * Fires after a document has finished saving.
 		 * @param filename The file the data was saved to.
 		 */
-		void fileSaved(const QString& filename);
+		void documentSaved(const QString& filename);
 
 		/**
 		 * Qt Signal
-		 * Fired after a new file has been created and the data is erased.
+		 * Fired after a new document has been created and the data is erased.
 		 */
-		void newFileCreated();
+		void newDocumentCreated();
 
+		/**
+		 * Qt Signal
+		 * Fired when something in the document has changed
+		 */
+		void documentChanged();
+
+	Q_SIGNALS:
 		/**
 		 * Qt Signal
 		 * Invoked when an Entity has been added to the system
@@ -259,10 +186,19 @@ namespace napkin
 
 		/**
 		 * Qt Signal
-		 * Invoked when after any object has been added (this includes Entities)
+		 * Invoked after any object has been added (this includes Entities)
 		 * @param obj The newly added object
+		 * TODO: Get rid of the following parameter, the client itself must decide how to react to this event.
+		 * 		This is a notification, not a directive.
+		 * @param selectNewObject Whether the newly created object should be selected in any views watching for object addition
 		 */
-		void objectAdded(nap::rtti::RTTIObject& obj);
+		void objectAdded(nap::rtti::RTTIObject& obj, bool selectNewObject);
+
+		/**
+		 * Qt Signal
+		 * Invoked after an object has changed drastically
+		 */
+		void objectChanged(nap::rtti::RTTIObject& obj);
 
 		/**
 		 * Qt Signal
@@ -271,16 +207,26 @@ namespace napkin
 		 */
 		void objectRemoved(nap::rtti::RTTIObject& object);
 
+		/**
+		 * Qt Signal
+		 * Invoked just after a property's value has changed
+		 * @param object The object that has the changed property
+		 * @param path The path to the property that has changed
+		 */
+		void propertyValueChanged(const PropertyPath& path);
+
 	private:
 		AppContext();
 
-		std::string getUniqueName(const std::string& suggestedName);
+		/**
+		 * Whenever a new document is created/loaded, register its signals for listeners
+		 */
+		void connectDocumentSignals();
 
-		nap::rtti::OwnedObjectList mObjects; // All the objects
-		QUndoStack mUndoStack;				 // The undostack of the application
-		QString mCurrentFilename;			 // The current filename
-		nap::Core mCore;					 // The nap::Core
-		ThemeManager mThemeManager;			 // The theme manager
-		ResourceFactory mResourceFactory;	// Le resource factory
+
+		nap::Core mCore;						// The nap::Core
+		ThemeManager mThemeManager;			 	// The theme manager
+		ResourceFactory mResourceFactory;		// Le resource factory
+		std::unique_ptr<Document> mDocument = nullptr; 			// Keep objects here
 	};
 };

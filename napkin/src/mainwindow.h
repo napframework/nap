@@ -31,6 +31,8 @@ namespace napkin
 		 */
 		void showEvent(QShowEvent* event) override;
 
+		void closeEvent(QCloseEvent* event) override;
+
 	private:
 		/**
 		 * BInd signals
@@ -53,21 +55,10 @@ namespace napkin
 		void updateWindowTitle();
 
 		/**
-		 * Called when a new file has been created.
-		 */
-		void onNewFile();
-
-		/**
 		 * Called when a file has been opened
 		 * @param filename The file that has been opened
 		 */
-		void onFileOpened(const QString& filename);
-
-		/**
-		 * Called when a file has been saved
-		 * @param filename The file that has been saved
-		 */
-		void onFileSaved(const QString& filename);
+		void onDocumentChanged();
 
 	private:
 		ResourcePanel mResourcePanel;	// ResourcePanel

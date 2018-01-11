@@ -181,11 +181,11 @@ namespace opengl
 			return false;
 
 		// Populate settings with fetched values from bitmap
-		settings.internalFormat = internal_format;
-		settings.format = format;
-		settings.type = type;
-		settings.width = bitmap.getWidth();
-		settings.height = bitmap.getHeight();
+		settings.mInternalFormat = internal_format;
+		settings.mFormat = format;
+		settings.mType = type;
+		settings.mWidth = bitmap.getWidth();
+		settings.mHeight = bitmap.getHeight();
 
 		return true;
 	}

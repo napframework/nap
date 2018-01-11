@@ -1,8 +1,12 @@
 #pragma once
 
 #include <QObject>
+#include <QtCore/QFileSystemWatcher>
+
 namespace napkin
 {
+	static const QString sThemeFileExtension = "qss";
+	static const QString sThemeSubDirectory = "resources/themes";
 	/**
 	 * Keep track of and allow changing the visual style of the application.
 	 */
@@ -10,6 +14,7 @@ namespace napkin
 	{
 		Q_OBJECT
 	public:
+
 		ThemeManager();
 
         /**
@@ -31,7 +36,7 @@ namespace napkin
         /**
          * @return The directory containing the themes
          */
-		QString getThemeDir();
+		const QString getThemeDir() const;
 
 	Q_SIGNALS:
         /**
@@ -41,6 +46,24 @@ namespace napkin
         void themeChanged(const QString& theme);
 
 	private:
+		/**
+		 * Reload and apply the current theme from file
+		 */
+		void reloadTheme();
+
+		/**
+		 * @return The theme filename based on the provided theme name
+		 */
+		const QString getThemeFilename(const QString& themeName) const;
+
+		/**
+		 * Invoked when a file in the theme dir has changed
+		 */
+		void onFileChanged(const QString& path);
+
+		void loadFonts();
+
 		QString mCurrentTheme; // The currently set theme
+		QFileSystemWatcher mFileWatcher; // Watch the theme file and reload if it has changed
 	};
 };

@@ -8,7 +8,7 @@
 #include <QThread>
 #include <QWidget>
 #include <generic/fileselector.h>
-#include <generic/utility.h>
+#include <generic/qtutils.h>
 
 
 #define LAST_CORE_APP "lastCoreApp"

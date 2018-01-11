@@ -5,7 +5,7 @@ uniform mat4 viewMatrix;
 uniform mat4 modelMatrix;
 
 in vec3	in_Position;		// Vertex Positions
-in vec4	in_Color0;			// Vertex Color
+in vec4	in_Color;			// Vertex Color
 in vec3	in_UV0;				// Vertex Uvs
 in vec3 in_Normals;			// Vertex Normals
 in int  in_Channels;		// Artnet Channels
@@ -24,8 +24,10 @@ void main(void)
 	// Calculate position
     gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(in_Position, 1.0);
 
-	// Pass color and uv's 
-	pass_Color = in_Color0;
+	// Pass colors 
+	pass_Color = in_Color;
+	
+	// Pass uvs
 	pass_Uvs = in_UV0;
 
 	// Pass along vertex position (object space)
