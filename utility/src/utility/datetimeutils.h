@@ -297,8 +297,7 @@ namespace nap
 		* This timer uses the chrono SystemClock and should be sufficient for most time based operations
 		* The timestamp associated with a SystemTimer can be converted to days, seconds, weeks etc.
 		*/
-		class NAPAPI SystemTimer : public Timer<SystemClock>
-		{ };
+        using SystemTimer = Timer<SystemClock>;
 
 
 		/**
@@ -306,8 +305,7 @@ namespace nap
 		* This timer uses the chrono HighResolutionClock and should be used when extreme accuracy is important
 		* The timestamp associated with a HighResolutionTime can not be converted to days, seconds, weeks etc.
 		*/
-		class NAPAPI HighResolutionTimer : public Timer<HighResolutionClock>
-		{ };
+        using HighResolutionTimer = Timer<HighResolutionClock>;
 		
 
 		//////////////////////////////////////////////////////////////////////////

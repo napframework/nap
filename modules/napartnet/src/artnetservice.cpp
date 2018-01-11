@@ -12,8 +12,6 @@
 
 RTTI_DEFINE_CLASS(nap::ArtNetService)
 
-static bool verbose = true;
-
 namespace nap
 {
 	// ctor delibarately in cpp for unique_ptr

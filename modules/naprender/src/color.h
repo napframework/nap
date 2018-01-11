@@ -327,7 +327,7 @@ namespace nap
 		* Sets the red channel to @value
 		* @param value red color value
 		*/
-		void setRed(T value)													{ setValue(EColorChannel::Red, value); }
+        void setRed(T value)													{ Color<T,3>::setValue(EColorChannel::Red, value); }
 
 		/*
 		 * @return the red color value
@@ -338,7 +338,7 @@ namespace nap
 		* Sets the green channel to @value
 		* @param value green color value
 		*/
-		void setGreen(T value)													{ setValue(EColorChannel::Green, value); }
+		void setGreen(T value)													{ Color<T,3>::setValue(EColorChannel::Green, value); }
 
 		/**
 		 * @return the green color value
@@ -349,7 +349,7 @@ namespace nap
 		* Sets the blue channel to @value
 		* @param blue color value
 		*/
-		void setBlue(T value)													{ setValue(EColorChannel::Blue, value); }
+		void setBlue(T value)													{ Color<T,3>::setValue(EColorChannel::Blue, value); }
 
 		/**
 		 * @return the blue color value
@@ -381,7 +381,7 @@ namespace nap
 		 * Sets the red channel to @value
 		 * @param value red color value
 		 */
-		void setRed(T value)													{ setValue(EColorChannel::Red, value); }
+		void setRed(T value)													{ Color<T,4>::setValue(EColorChannel::Red, value); }
 
 		/*
 		* @return the red color value
@@ -392,7 +392,7 @@ namespace nap
 		* Sets the green channel to @value
 		* @param value green color value
 		*/
-		void setGreen(T value)													{ setValue(EColorChannel::Green, value); }
+		void setGreen(T value)													{ Color<T,4>::setValue(EColorChannel::Green, value); }
 
 		/*
 		* @return the green color value
@@ -403,7 +403,7 @@ namespace nap
 		* Sets the blue channel to @value
 		* @param blue color value
 		*/
-		void setBlue(T value)													{ setValue(EColorChannel::Blue, value); }
+		void setBlue(T value)													{ Color<T,4>::setValue(EColorChannel::Blue, value); }
 
 		/*
 		* @return the blue color value
@@ -414,7 +414,7 @@ namespace nap
 		* Sets the alpha channel to @value
 		* @param value alpha color value
 		*/
-		void setAlpha(T value)													{ setValue(EColorChannel::Alpha, value); }
+		void setAlpha(T value)													{ Color<T,4>::setValue(EColorChannel::Alpha, value); }
 
 		/*
 		 * @return the alpha color value
@@ -446,7 +446,7 @@ namespace nap
 		* Sets the red channel to @value
 		* @param value red color value
 		*/
-		void setRed(T value)													{ setValue(EColorChannel::Red, value); }
+		void setRed(T value)													{ Color<T,1>::setValue(EColorChannel::Red, value); }
 
 		/*
 		* @return the red color value
