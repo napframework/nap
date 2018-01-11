@@ -116,6 +116,12 @@ namespace nap
 		bool buildObjectGraph(const ObjectByIDMap& objectsToUpdate, RTTIObjectGraph& objectGraph, utility::ErrorState& errorState);
 		EFileModified isFileModified(const std::string& modifiedFile);
 
+		/**
+		 * Prepend FileLink paths on updated objects with our project data directory location
+		 * @param updatedObjects: Updated objects to prepend
+		 */
+		void patchFilePaths(ObjectByIDMap& updatedObjects);
+		
 	private:
 
 		/**

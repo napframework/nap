@@ -12,62 +12,62 @@
 		{
 			"Type" : "nap::Image",
 			"mID" : "BackgroundImage",
-			"ImagePath" : "data/tommy/background.jpg"
+			"ImagePath" : "background.jpg"
 		},
 		
 		{
 			"Type" : "nap::Image",
 			"mID" : "Looks_01",
-			"ImagePath" : "data/tommy/01.png"
+			"ImagePath" : "01.png"
 		},
 
 		{
 			"Type" : "nap::Image",
 			"mID" : "Looks_02",
-			"ImagePath" : "data/tommy/02.png"
+			"ImagePath" : "02.png"
 		},
 
 		{
 			"Type" : "nap::Image",
 			"mID" : "Looks_03",
-			"ImagePath" : "data/tommy/03.png"
+			"ImagePath" : "03.png"
 		},
 
 		{
 			"Type" : "nap::Image",
 			"mID" : "Looks_04",
-			"ImagePath" : "data/tommy/04.png"
+			"ImagePath" : "04.png"
 		},
 
 		{
 			"Type" : "nap::Image",
 			"mID" : "ButtonLeft",
-			"ImagePath" : "data/tommy/prev.png"
+			"ImagePath" : "prev.png"
 		},
 
 		{
 			"Type" : "nap::Image",
 			"mID" : "ButtonRight",  
-			"ImagePath" : "data/tommy/next.png"
+			"ImagePath" : "next.png"
 		}, 
 
 		{
 			"Type" : "nap::Image",
 			"mID" : "Title",
-			"ImagePath" : "data/tommy/tommyxgigi.png" 
+			"ImagePath" : "tommyxgigi.png" 
 		},
 
 		{
 			"Type" : "nap::Image",
 			"mID" : "LooksTitle",
-			"ImagePath" : "data/tommy/looks.png"
+			"ImagePath" : "looks.png"
 		},
 		
 		{
 			"Type" : "nap::Shader",
 			"mID": "UIShader",
-			"mVertShader": "shaders/tommy/ui.vert",
-			"mFragShader": "shaders/tommy/ui.frag"
+			"mVertShader": "shaders/ui.vert",
+			"mFragShader": "shaders/ui.frag"
 		},	
 		
 		{

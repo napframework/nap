@@ -1,5 +1,7 @@
 #include "../directorywatcher.h"
 
+#include "nap/datapathmanager.h"
+
 #include <utility/fileutils.h>
 
 #include "assert.h"
@@ -95,8 +97,9 @@ namespace nap {
             buffer.resize(size);
             _NSGetExecutablePath(buffer.data(), &size);
             mPImpl->executablePath = utility::getFileDir(std::string(buffer.data()));
-            
-            std::string dirToWatch = mPImpl->executablePath;
+			
+			std::string dirToWatch = DataPathManager::get().getDataPath();
+			
             CFStringRef pathToWatchCF = CFStringCreateWithCString(NULL, dirToWatch.c_str(), kCFStringEncodingUTF8);
             mPImpl->pathsToWatch = CFArrayCreate(NULL, (const void **)&pathToWatchCF, 1, NULL);
             

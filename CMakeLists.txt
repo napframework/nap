@@ -59,23 +59,23 @@ add_subdirectory(nrender)
 
 # tools targets
 add_subdirectory(tools/fbxconverter)
-add_subdirectory(napkin)
+# add_subdirectory(napkin)
 
 # executable targets
 add_subdirectory(test/render)
 add_subdirectory(test/tommy)
-add_subdirectory(test/videoplayer)
-add_subdirectory(test/serializationtest)
-add_subdirectory(test/audiotest)
+# add_subdirectory(test/videoplayer)
+# add_subdirectory(test/serializationtest)
+# add_subdirectory(test/audiotest)
 
 # app targets
-add_subdirectory(apps/kalvertoren)
-add_subdirectory(apps/etherdream)
-add_subdirectory(apps/artnetcolor)
-add_subdirectory(apps/steef)
-add_subdirectory(apps/skeleton)
+# add_subdirectory(apps/kalvertoren)
+# add_subdirectory(apps/etherdream)
+# add_subdirectory(apps/artnetcolor)
+# add_subdirectory(apps/steef)
+# add_subdirectory(apps/skeleton)
 
-add_subdirectory(unittests)
+# add_subdirectory(unittests)
 
 if (APPLE)
     set(GENERATE_XCODE_PROJECT_TARGET generateXcodeProject)
@@ -105,6 +105,6 @@ add_subdirectory(modules/napmidi)
 add_subdirectory(modules/napsandbox)
 
 # Exe dependencies
-add_dependencies(rendertest mod_naprender)
+# add_dependencies(rendertest mod_naprender)
 # Extra deps for napkin in order to let them automatically build with napkin
-add_dependencies(napkin skeleton tommy)
+# add_dependencies(napkin skeleton tommy)

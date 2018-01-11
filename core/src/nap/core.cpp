@@ -4,6 +4,7 @@
 #include "logger.h"
 #include "serviceobjectgraphitem.h"
 #include "objectgraph.h"
+#include "datapathmanager.h"
 
 // External Includes
 #include <rtti/pythonmodule.h>
@@ -53,6 +54,10 @@ namespace nap
 		// Works around issues with the current working directory not being set as
 		// expected when apps are launched directly from Finder and probably other things too.
 		nap::utility::changeDir(nap::utility::getExecutableDir());
+		
+		// Find our project data
+		if (!DataPathManager::get().populatePath(error))
+			return false;
 
 		if (!loadModules(error))
 			return false;
