@@ -20,8 +20,8 @@ namespace nap
         public:
             DelayNode(NodeManager& manager, int delayLineSize = 65536 * 8) : Node(manager), mDelay(delayLineSize) { }
             
-            InputPin input;
-            OutputPin output = { this };
+            InputPin input; /**< The audio input receiving the signal to be delayed. */
+            OutputPin output = { this }; /**< The audio output with the processed signal. */
             
             /**
              * Sets the delay time in milliseconds. Ramp time specifies the time it takes to reach the new value.
