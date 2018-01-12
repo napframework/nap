@@ -89,7 +89,7 @@ namespace nap
 	{
 	}
 	
-	
+
 	void DynamicGeometryTestApp::windowMessageReceived(WindowEventPtr windowEvent)
 	{
 		mRenderService->addEvent(std::move(windowEvent));

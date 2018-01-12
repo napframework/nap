@@ -15,6 +15,7 @@ namespace nap
 	 */
 	struct Particle
 	{
+		Particle(int id) : mID(id)	{ }
 		glm::vec3		mPosition;
 		glm::vec3		mVelocity;
 		glm::vec4		mColor;
@@ -23,6 +24,7 @@ namespace nap
 		float			mSize;
 		float			mLifeTime;
 		float			mTimeLeft;
+		int				mID;
 	};
 
 	/**
@@ -84,5 +86,6 @@ namespace nap
 		std::vector<Particle>			mParticles;
 		double							mTimeSinceLastSpawn = 1000.0;
 		std::unique_ptr<ParticleMesh>	mParticleMesh;
+		int								mCurrentID = 0;
 	};
 }
