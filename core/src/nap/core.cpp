@@ -30,10 +30,6 @@ namespace nap
 	{
 		// Initialize timer
 		mTimer.reset();
-
-		// Add resource manager service and listen to file changes
-		mResourceManager = std::make_unique<ResourceManager>(*this);
-		mResourceManager->mFileLoadedSignal.connect(mFileLoadedSlot);
 	}
 
 
@@ -58,7 +54,11 @@ namespace nap
 		// Find our project data
 		if (!DataPathManager::get().populatePath(error))
 			return false;
-
+		
+		// Add resource manager service and listen to file changes
+		mResourceManager = std::make_unique<ResourceManager>(*this);
+		mResourceManager->mFileLoadedSignal.connect(mFileLoadedSlot);
+		
 		if (!loadModules(error))
 			return false;
 
