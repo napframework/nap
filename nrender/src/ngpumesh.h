@@ -15,8 +15,6 @@ namespace opengl
 	class GPUMesh
 	{
 	public:
-		using VertexAttributeID = std::string;
-
 		GPUMesh() = default;
 
 		// Default destructor
@@ -31,19 +29,19 @@ namespace opengl
 		* @param components: number of component per element (for instance, 3 for vector with 3 floats)
 		* @param data: Pointer to array containing attribute data.
 		*/
-		void addVertexAttribute(const VertexAttributeID& id, GLenum type, unsigned int numComponents, GLenum usage);
+		void addVertexAttribute(const std::string& id, GLenum type, unsigned int numComponents, GLenum usage);
 
 		/**
 		* @return Returns reference to the attribute buffer if found, otherwise nullptr.
 		* @param id: name of the vertex attribute
 		*/
-		const VertexAttributeBuffer* findVertexAttributeBuffer(const VertexAttributeID& id) const;
+		const VertexAttributeBuffer* findVertexAttributeBuffer(const std::string& id) const;
 
 		/**
 		* @return Returns reference to the attribute buffer. If not found, the function will assert.
 		* @param id: name of the vertex attribute
 		*/
-		VertexAttributeBuffer& getVertexAttributeBuffer(const VertexAttributeID& id);
+		VertexAttributeBuffer& getVertexAttributeBuffer(const std::string& id);
 
 		/**
 		 * Creates an index buffer is one does not exist, otherwise returns the existing buffer.
@@ -58,7 +56,7 @@ namespace opengl
 
 	private:
 
-		using AttributeMap = std::unordered_map<VertexAttributeID, std::unique_ptr<VertexAttributeBuffer>>;
+		using AttributeMap = std::unordered_map<std::string, std::unique_ptr<VertexAttributeBuffer>>;
 		AttributeMap					mAttributes;		///< Map from vertex attribute ID to buffer
 		std::unique_ptr<IndexBuffer>	mIndexBuffer;		///< Index buffer
 	};

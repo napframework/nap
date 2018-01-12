@@ -16,6 +16,6 @@ namespace napkin {
 
         QIcon iconFor(const nap::rtti::RTTIObject& object) const;
     private:
-        QMap<rttr::type, QString> mObjectIconMap;
+        QList<QPair<rttr::type, QString>> mObjectIconMap;
     };
 }

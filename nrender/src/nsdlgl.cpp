@@ -230,6 +230,14 @@ namespace opengl
 	}
 
 
+	glm::ivec2 getScreenSize(int screenIndex)
+	{
+		SDL_DisplayMode mode;
+		int v = SDL_GetDesktopDisplayMode(screenIndex, &mode);
+		return v == 0 ? glm::ivec2(mode.w, mode.h) : glm::ivec2(-1, -1);
+	}
+
+
 	void setWindowSize(SDL_Window* window, const glm::ivec2& size)
 	{
 		// Ensure sizes are not the same

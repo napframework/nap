@@ -144,7 +144,7 @@ namespace napkin
         /**
          * @param type The type of object to add
          */
-        explicit AddObjectAction(rttr::type type);
+        explicit AddObjectAction(const rttr::type& type);
 
 	private:
 		/**
@@ -196,4 +196,5 @@ namespace napkin
 
 		QString mTheme; // The theme to set
 	};
+
 }

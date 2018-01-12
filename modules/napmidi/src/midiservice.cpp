@@ -7,7 +7,7 @@
 #include "midioutputport.h"
 #include "midiinputcomponent.h"
 
-RTTI_DEFINE(nap::MidiService)
+RTTI_DEFINE_CLASS(nap::MidiService)
 
 namespace nap
 {

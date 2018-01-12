@@ -14,6 +14,48 @@
 namespace nap
 {
 	/**
+	* Known vertex attribute IDs in the system
+	* These vertex attribute identifiers are used for loading/creating meshes with well-known attributes.
+	*/
+	namespace VertexAttributeIDs
+	{
+		/**
+		* @return Default position vertex attribute name "Position"
+		*/
+		const NAPAPI std::string getPositionName();
+
+		/**
+		* @return Default normal vertex attribute name: "Normal"
+		*/
+		const NAPAPI std::string getNormalName();
+
+		/**
+		* @return Default tangent vertex attribute name: "Tangent"
+		*/
+		const NAPAPI std::string getTangentName();
+
+		/**
+		* @return Default bi-tangent vertex attribute name: "Bitangent"
+		*/
+		const NAPAPI std::string getBitangentName();
+
+		/**
+		* Returns the name of the vertex uv attribute based on the queried uv channel, ie: UV0, UV1 etc.
+		* @param uvChannel: the uv channel index to query
+		* @return the name of the vertex attribute
+		*/
+		const NAPAPI std::string getUVName(int uvChannel);
+
+		/**
+		* Returns the name of the vertex color attribute based on the queried color channel, ie: "Color0", "Color1" etc.
+		* @param colorChannel: the color channel index to query
+		* @return the name of the color vertex attribute
+		*/
+		const NAPAPI std::string GetColorName(int colorChannel);
+	};
+
+
+	/**
 	 * Helper struct for data that is common between MeshInstance and Mesh.
 	 * Templatized as the ownership for vertex attributes is different between a MeshInstance and a Mesh:
 	 *		- MeshInstance has ownership over the attributes through unique_ptrs.
@@ -60,33 +102,6 @@ namespace nap
 	{
 		RTTI_ENABLE()
 	public:
-		using VertexAttributeID = std::string;
-
-		/**
-		 * Known vertex attribute IDs in the system, used for loading/creating meshes with well-known attributes.
-		 */
-		struct VertexAttributeIDs
-		{
-			static const NAPAPI VertexAttributeID GetPositionName();	//< Default position vertex attribute name
-			static const NAPAPI VertexAttributeID getNormalName();		//< Default normal vertex attribute name
-			static const NAPAPI VertexAttributeID getTangentName();		//< Default tangent vertex attribute name
-			static const NAPAPI VertexAttributeID getBitangentName();	//< Default bi-tangent vertex attribute name
-
-			/**
-			 * Returns the name of the vertex uv attribute based on the queried uv channel
-			 * @param uvChannel: the uv channel index to query
-			 * @return the name of the vertex attribute
-			 */
-			static const NAPAPI VertexAttributeID GetUVName(int uvChannel);
-
-			/**
-			 *	Returns the name of the vertex color attribute based on the queried uv channel
-			 * @param colorChannel: the color channel index to query
-			 * @return the name of the color vertex attribute
-			 */
-			static const NAPAPI VertexAttributeID GetColorName(int colorChannel);
-		};
-
 		// Default constructor
 		MeshInstance() = default;
 
@@ -199,13 +214,19 @@ namespace nap
 		/**
 		 * @return if the mesh has indices associated with it
 		 */
-		bool hasIndices() const { return !(mProperties.mIndices.empty()); }
+		bool hasIndices() const													{ return !(mProperties.mIndices.empty()); }
 
 		/**
 		 * @return the indices associated with this mesh. This array is empty
 		 * if this mesh has no indices
 		 */
-		const std::vector<uint>& getIndices() const { return mProperties.mIndices; }
+		const std::vector<uint>& getIndices() const								{ return mProperties.mIndices; }
+
+		/**
+		* @return the indices associated with this mesh. This array is empty
+		* if this mesh has no indices
+		*/
+		std::vector<uint>& getIndices()											{ return mProperties.mIndices; }
 
 		/**
 		 * Sets number of vertices. The amount of elements for each vertex buffer should be equal to

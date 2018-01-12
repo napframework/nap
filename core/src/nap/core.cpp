@@ -29,10 +29,6 @@ namespace nap
 	{
 		// Initialize timer
 		mTimer.reset();
-
-		// Add resource manager service and listen to file changes
-		mResourceManager = std::make_unique<ResourceManager>(*this);
-		mResourceManager->mFileLoadedSignal.connect(mFileLoadedSlot);
 	}
 
 
@@ -53,6 +49,12 @@ namespace nap
 		// Works around issues with the current working directory not being set as
 		// expected when apps are launched directly from Finder and probably other things too.
 		nap::utility::changeDir(nap::utility::getExecutableDir());
+
+		// Add resource manager and listen to file changes
+		// This has to be done after the directory is changed, to make sure that the file watcher 
+		// uses the correct directory
+		mResourceManager = std::make_unique<ResourceManager>(*this);
+		mResourceManager->mFileLoadedSignal.connect(mFileLoadedSlot);
 
 		if (!loadModules(error))
 			return false;
@@ -277,10 +279,8 @@ namespace nap
 
 
 	// Returns start time of core module as point in time
-	TimePoint Core::getStartTime() const
+	utility::HighResTimeStamp Core::getStartTime() const
 	{
 		return mTimer.getStartTime();
 	}
-
-
 }

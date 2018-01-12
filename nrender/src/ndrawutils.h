@@ -12,14 +12,14 @@ namespace opengl
 	*/
 	enum class EDrawMode : uint8_t
 	{
-		POINTS = 1,
-		LINES = 2,
-		LINE_STRIP = 3,
-		LINE_LOOP = 4,
-		TRIANGLES = 5,
-		TRIANGLE_STRIP = 6,
-		TRIANGLE_FAN = 7,
-		UNKNOWN = 0,
+		POINTS = 1,						///< Interpret the vertex data as single points
+		LINES = 2,						///< Interpret the vertex data as individual lines
+		LINE_STRIP = 3,					///< Interpret the vertex data as a single connected line
+		LINE_LOOP = 4,					///< Interpret the vertex data as a line where the first and last vertex are connected
+		TRIANGLES = 5,					///< Interpret the vertex data as a set of triangles
+		TRIANGLE_STRIP = 6,				///< Interpret the vertex data as a strip of triangles
+		TRIANGLE_FAN = 7,				///< Interpret the vertex data as a fan of triangles
+		UNKNOWN = 0,					///< Invalid vertex interpretation
 	};
 
 

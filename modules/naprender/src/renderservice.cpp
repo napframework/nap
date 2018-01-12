@@ -387,4 +387,4 @@ namespace nap
 
 } // Renderservice
 
-RTTI_DEFINE(nap::RenderService)
+RTTI_DEFINE_CLASS(nap::RenderService)
