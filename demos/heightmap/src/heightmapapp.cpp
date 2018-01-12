@@ -114,7 +114,7 @@ namespace nap
 		nap::UniformVec3& cam_loc_uniform = render_mesh.getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("inCameraPosition");
 
 		nap::TransformComponentInstance& cam_xform = mCameraEntity->getComponent<nap::TransformComponentInstance>();
-		glm::vec3 global_pos = math::position(cam_xform.getGlobalTransform());
+		glm::vec3 global_pos = math::extractPosition(cam_xform.getGlobalTransform());
 		cam_loc_uniform.setValue(global_pos);
 
 		// Clear opengl context related resources that are not necessary any more
