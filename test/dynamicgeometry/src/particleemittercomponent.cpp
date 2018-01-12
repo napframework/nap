@@ -65,6 +65,7 @@ namespace nap
 			Vec3VertexAttribute& position_attribute = mMeshInstance.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
 			Vec3VertexAttribute& uv_attribute = mMeshInstance.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
 			Vec4VertexAttribute& color_attribute = mMeshInstance.getOrCreateAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0));
+			FloatVertexAttribute& id_attribute = mMeshInstance.getOrCreateAttribute<float>("pid");
 			mMeshInstance.reserveVertices(1000);
 			mMeshInstance.reserveIndices(1000);
 
@@ -124,7 +125,7 @@ namespace nap
 		mTimeSinceLastSpawn += deltaTime;
 		if (mTimeSinceLastSpawn >= spawnTimeMs)
 		{
-			Particle particle;
+			Particle particle(mCurrentID++);
 			particle.mPosition = frand(component->mPosition, component->mPositionVariation);
 			particle.mRotation = frand(component->mRotation, component->mRotationVariation);
 			particle.mRotationSpeed = frand(component->mRotationSpeed, component->mRotationSpeedVariation);
@@ -141,7 +142,7 @@ namespace nap
 			particle.mVelocity *= glm::vec3(velocity_x, velocity_y, velocity_z);
 
 			mParticles.emplace_back(particle);
-
+			mCurrentID = mCurrentID % math::max<int>();
 			mTimeSinceLastSpawn = 0.0f;
 		}
 
@@ -176,10 +177,12 @@ namespace nap
 		Vec3VertexAttribute& position_attribute = mesh_instance.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
 		Vec3VertexAttribute& uv_attribute		= mesh_instance.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
 		Vec4VertexAttribute& color_attribute	= mesh_instance.getOrCreateAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0));
+		FloatVertexAttribute& id_attribute = mesh_instance.getOrCreateAttribute<float>("pid");
 
 		position_attribute.clear();
 		uv_attribute.clear();
 		color_attribute.clear();
+		id_attribute.clear();
 		mesh_instance.clearIndices();
 
 		unsigned int cur_num_vertices = 0;
@@ -195,6 +198,14 @@ namespace nap
 				{rect.getMax().x,	rect.getMin().y, 0.0f },
 				{rect.getMin().x,	rect.getMax().y, 0.0f },
 				{rect.getMax().x,	rect.getMax().y, 0.0f },
+			};
+
+			float ids[] =
+			{
+				float(particle.mID),
+				float(particle.mID),
+				float(particle.mID),
+				float(particle.mID)
 			};
 
 			glm::mat4x4 translation = glm::translate(particle.mPosition);
@@ -223,6 +234,7 @@ namespace nap
 			position_attribute.addData(positions, 4);
 			uv_attribute.addData(plane_uvs, 4);
 			color_attribute.addData(colors, 4);
+			id_attribute.addData(ids, 4);
 			mesh_instance.addIndices(indices, 6);
 
 			cur_num_vertices += 4;

@@ -45,6 +45,10 @@
 				{
 					"MeshAttributeID": "Color0",
 					"ShaderAttributeID": "in_Color0"
+				},
+				{
+					"MeshAttributeID" : "pid",
+					"ShaderAttributeID" : "in_PID"
 				}
 			],
 			"Uniforms" : 
@@ -53,6 +57,11 @@
 					"Type" : "nap::UniformTexture2D",
 					"Name" : "particleTextureOne",
 					"Texture" : "ParticleOne"
+				},
+				{
+					"Type" : "nap::UniformTexture2D",
+					"Name" : "particleTextureTwo",
+					"Texture" : "ParticleTwo"
 				}
 			]
 
