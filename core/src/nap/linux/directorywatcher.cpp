@@ -19,7 +19,7 @@ namespace nap
 		void handleFileAction(FW::WatchID watchid, const FW::String& dir, const FW::String& filename,
 							  FW::Action action) override
 		{
-			auto fname = dir + "/" + filename;
+			auto fname = dir + filename;
 			switch (action)
 			{
 			case FW::Actions::Delete:
