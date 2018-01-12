@@ -50,7 +50,7 @@ namespace nap
 		// PImpl instantiation using unique_ptr because we only want a unique snowflake
 		mPImpl = std::unique_ptr<PImpl, PImpl_deleter>(new PImpl);
 
-
+		// Get data path to watch from DataPathManager
 		std::string path = DataPathManager::get().getDataPath();
 
 		nap::Logger::info("Watching directory: %s", path.c_str());

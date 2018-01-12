@@ -91,7 +91,7 @@ namespace nap
 					wcstombs(&modified_file[0], current_notification->FileName, current_notification->FileNameLength / 2);
 
 					// Prepend data path and add to modified files
-					modifiedFiles.emplace_back(data_path + modified_file);
+					modifiedFiles.emplace_back(data_path + "/" + modified_file);
 
 
 					// We've processed the entire buffer if the next entry is zero
