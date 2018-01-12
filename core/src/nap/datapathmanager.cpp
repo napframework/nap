@@ -14,7 +14,7 @@ namespace nap
 	bool DataPathManager::populatePath(utility::ErrorState& errorState)
 	{
 		// Check if we have our data dir alongside our exe
-		std::string testDataPath = utility::getExecutableDir() + "/data/";
+		std::string testDataPath = utility::getExecutableDir() + "/data";
 		if (utility::dirExists(testDataPath))
 		{
 			mDataPath = testDataPath;
@@ -41,7 +41,7 @@ namespace nap
 		};
 		for (auto& parentPath : possibleProjectParents)
 		{
-			testDataPath = napRoot + "/" + parentPath + "/" + projectName + "/data/";
+			testDataPath = napRoot + "/" + parentPath + "/" + projectName + "/data";
 			if (utility::dirExists(testDataPath))
 			{
 				mDataPath = testDataPath;

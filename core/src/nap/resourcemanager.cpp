@@ -516,15 +516,15 @@ namespace nap
 				{
 					// Prepend our file path with our data path from the DataPathManager
 					std::string path = property.get_value(instance).get_value<std::string>();
-					std::string comparable_data_path = utility::toComparableFilename(DataPathManager::get().getDataPath());
-					property.set_value(instance, utility::toComparableFilename(dataPath + path));
+					std::string comparable_data_path = utility::toComparableFilename(dataPath);
+					property.set_value(instance, utility::toComparableFilename(dataPath + "/" + path));
 				}
 			}
 		}
 		
 		// Update paths in our list of FileLinks
 		for (FileLink& file_link : readResult.mFileLinks)
-			file_link.mTargetFile = utility::toComparableFilename(dataPath + file_link.mTargetFile);
+			file_link.mTargetFile = utility::toComparableFilename(dataPath + "/" + file_link.mTargetFile);
 	}
 	
 }
