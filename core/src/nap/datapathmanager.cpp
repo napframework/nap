@@ -22,7 +22,7 @@ namespace nap
 		}
 		
 		// Get project name
-		// TODO do we have a better way to do this?
+		// TODO do we have a better way to do get our project name?
 		// TODO if not, once we have packaging work merged and we compile into project-specific paths maybe that folder name
 		//      is cleaner?
 		std::string projectName = utility::getFileNameWithoutExtension(utility::getExecutablePath());
