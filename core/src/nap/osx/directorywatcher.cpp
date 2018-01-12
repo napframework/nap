@@ -149,18 +149,16 @@ namespace nap {
             if (mPImpl->callbackInfo.modifiedFiles.empty())
                 return false;
             
-            std::string comparable_executable_path = utility::toComparableFilename(mPImpl->executablePath);
+			std::string comparable_data_path = utility::toComparableFilename(DataPathManager::get().getDataPath());
             
             for (auto& modified_file : mPImpl->callbackInfo.modifiedFiles)
             {
                 std::string comparable_modified_file = utility::toComparableFilename(modified_file);
                 
-                // check if the executable path is found at the start if the modifiel file's path
-                auto pos = comparable_modified_file.find(comparable_executable_path + "/");
+                // check if the data path is found at the start if the modified file's path
+                auto pos = comparable_modified_file.find(comparable_data_path);
                 assert(pos != std::string::npos);
 
-                // strip the executable's path from the start
-                comparable_modified_file.erase(0, mPImpl->executablePath.size() + 1);
                 modifiedFiles.emplace_back(comparable_modified_file);
             }
             
