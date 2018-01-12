@@ -20,11 +20,10 @@ namespace nap
 	*/
 	enum class NAPAPI EBlendMode
 	{
-		NotSet,					// Default value for MaterialInstances, means that the Material's blend mode is used instead
-
-		Opaque,					// Regular opaque, similar to (One, Zero) blend
-		AlphaBlend,				// Transparant object (SrcAlpha, InvSrcAlpha) blend
-		Additive				// Additive, (One, One) blend
+		NotSet,					///< Default value for MaterialInstances, means that the Material's blend mode is used instead
+		Opaque,					///< Regular opaque, similar to (One, Zero) blend
+		AlphaBlend,				///< Transparant object (SrcAlpha, InvSrcAlpha) blend
+		Additive				///< Additive, (One, One) blend
 	};
 
 	/**
@@ -33,13 +32,12 @@ namespace nap
 	*/
 	enum class NAPAPI EDepthMode
 	{
-		NotSet,					// Default value for MaterialInstances, means that the Material's blend is used instead
-
-		InheritFromBlendMode,	// Transparent objects do not write depth, but do read depth. Opaque objects read and write depth.
-		ReadWrite,				// Read and write depth
-		ReadOnly,				// Only read depth
-		WriteOnly,				// Only write depth
-		NoReadWrite				// Neither read or write depth
+		NotSet,					///< Default value for MaterialInstances, means that the Material's blend is used instead
+		InheritFromBlendMode,	///< Transparent objects do not write depth, but do read depth. Opaque objects read and write depth.
+		ReadWrite,				///< Read and write depth
+		ReadOnly,				///< Only read depth
+		WriteOnly,				///< Only write depth
+		NoReadWrite				///< Neither read or write depth
 	};
 
 
