@@ -15,11 +15,6 @@
                 "w": 1.0
             }
 		},
-
-		{
-			"Type" : "nap::PlaneMesh",
-			"mID": "PlaneMesh"
-		},
 		
 		{
 			"Type" : "nap::Shader",
@@ -68,32 +63,10 @@
 		},
 		
 		{
-			"Type" : "nap::Shader",
-			"mID": "PlaneShader",
-			"mVertShader": "shaders/dynamicgeometrytest/plane.vert",
-			"mFragShader": "shaders/dynamicgeometrytest/plane.frag"
-		},		
-		
-		{
-			"Type" : "nap::Material",
-			"mID": "PlaneMaterial",
-			"Shader": "PlaneShader",
-			"VertexAttributeBindings" : [
-				{
-					"MeshAttributeID": "Position",
-					"ShaderAttributeID": "in_Position"
-				}
-			]			
-		},
-		
-		{
 			"Type" : "nap::Scene",
 			"mID": "Scene",		
 			"Entities" : 
 			[
-				{
-					"Entity" : "PlaneEntity"
-				},
 				{
 					"Entity" : "CameraEntity"
 				},
@@ -102,43 +75,6 @@
 				},
 				{
 					"Entity" : "ParticleEmitterEntity"
-				}
-			]
-		},
-
-		{
-			"Type" : "nap::Entity",
-			"mID": "PlaneEntity",
-			"Components" : 
-			[
-				{
-					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "PlaneMesh",
-					"MaterialInstance" : {
-						"Material": "PlaneMaterial",
-						"BlendMode": "Opaque"
-					}
-				},
-				{
-					"Type" : "nap::TransformComponent",
-					"Properties": {
-						"Translate": {
-							"x": 0.0,
-							"y": 0.0,
-							"z": 0.0
-						},
-						"Rotate": {
-							"x": 90.0,
-							"y": 0.0,
-							"z": 0.0
-						},
-						"Scale": {
-							"x": 6.0,
-							"y": 3.0,
-							"z": 1.0
-						},
-						"UniformScale": 1.0
-					}
 				}
 			]
 		},
@@ -163,7 +99,7 @@
 					"Type" : "nap::PerspCameraComponent",
 					"mID" : "PerspCameraComponent",
 					"Properties": {
-						"FieldOfView": 45.0,
+						"FieldOfView": 55.0,
 						"NearClippingPlane" : 0.01,
 						"FarClippingPlane" : 1000.0
 					}
@@ -176,8 +112,8 @@
 				},
 				{
 					"Type" : "nap::FirstPersonController",
-					"MovementSpeed": 5.0,
-					"RotateSpeed": 0.005,
+					"MovementSpeed": 2.0,
+					"RotateSpeed": 0.002,
 					"PerspCameraComponent" : "PerspCameraComponent"
 
 				},					
@@ -186,11 +122,11 @@
 					"Properties": {
 						"Translate": {
 							"x": 0.0,
-							"y": 2.0,
-							"z": 5.0
+							"y": -0.5,
+							"z": 3.5
 						},
 						"Rotate": {
-							"x": -15.0,
+							"x": 50.0,
 							"y": 0.0,
 							"z": 0.0
 						},
@@ -208,13 +144,28 @@
 		{
 			"Type" : "nap::Image",
 			"mID" : "ParticleOne",
-			"ImagePath" : "data/dynamicgeometrytest/texture_one.jpg"
+			"ImagePath" : "data/dynamicgeometrytest/texture_one.jpg",
+			"Parameters" : 
+			{
+				"MaxFilter" : "Linear",		
+				"MinFilter" : "LinearMipmapLinear",		
+				"WrapVertical" : "ClampToEdge",	
+				"WrapHorizontal" : "ClampToEdge",
+				"MaxLodLevel" : 5
+			}
 		},
 
 		{
 			"Type" : "nap::Image",
 			"mID" : "ParticleTwo",
-			"ImagePath" : "data/dynamicgeometrytest/texture_two.png"
+			"ImagePath" : "data/dynamicgeometrytest/texture_two.png",
+			"Parameters" : {
+				"MaxFilter" : "Linear",		
+				"MinFilter" : "LinearMipmapLinear",		
+				"WrapVertical" : "ClampToEdge",	
+				"WrapHorizontal" : "ClampToEdge",
+				"MaxLodLevel" : 5
+			}
 		},
 
 
@@ -230,8 +181,8 @@
 						"Material": "ParticleMaterial"
 					},
 					"SpawnRate" : 400.0,
-					"LifeTime" : 5.0,
-					"LifeTimeVariation" : 0.5,
+					"LifeTime" : 6.0,
+					"LifeTimeVariation" : 0.33,
 					"Position" : 
 					{
 						"x" : 0,
@@ -240,24 +191,24 @@
 					},
 					"PositionVariation" : 
 					{
-						"x" : 5.0,
-						"y" : 0.2,
-						"z" : 5.0
+						"x" : 4.25,
+						"y" : 0.1,
+						"z" : 4.25
 					},
-					"Size" : 0.05,
-					"SizeVariation" : 0.1,
+					"Size" : 0.07,
+					"SizeVariation" : 0.04,
 					"Rotation" : 0.0,
-					"RotationVariation" : 100.0,
+					"RotationVariation" : 50.0,
 					"RotationSpeed" : 1.0,
-					"RotationSpeedVariation" : 5.0,
-					"Spread" : 2.0,
+					"RotationSpeedVariation" : 3,
+					"Spread" : 1.0,
 					"Velocity" :
 					{
-						"x" : 0.5,
-						"y" : 1.5,
-						"z" : 0.5
+						"x" : 0.0,
+						"y" : 1.25,
+						"z" : 0.0
 					},
-					"VelocityVariation" : 0.5,
+					"VelocityVariation" : 0.65,
 					"StartColor" :
 					{
 						"x" : 1.0,

@@ -28,6 +28,12 @@ void main(void)
 		tex_color = texture(particleTextureOne, uvs);
 	}
 
+	// Boost colors a bit
+	float r = pow(tex_color.r,0.9);
+	float g = pow(tex_color.g,0.9);
+	float b = pow(tex_color.b,0.9);
+	tex_color = vec4(r,g,b,tex_color.a);
+
 	// Set output color
 	out_Color = tex_color * pass_Color;
 }

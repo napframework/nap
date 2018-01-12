@@ -20,6 +20,7 @@ namespace nap
 		glm::vec3		mVelocity;
 		glm::vec4		mColor;
 		float			mRotation;
+		glm::vec3		mRotationAngle;
 		float			mRotationSpeed;
 		float			mSize;
 		float			mLifeTime;

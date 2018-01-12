@@ -103,16 +103,16 @@ namespace nap
 		{
 			nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(inputEvent.get());
 			if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
+			{
 				quit(0);
+			}
+			if (press_event->mKey == nap::EKeyCode::KEY_f)
+			{
+				mRenderWindow->toggleFullscreen();
+			}
 
 		}
 		mInputService->addEvent(std::move(inputEvent));
-	}
-
-	
-	void DynamicGeometryTestApp::setWindowFullscreen(std::string windowIdentifier, bool fullscreen) 
-	{
-		mResourceManager->findObject<RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
 	}
 
 	
