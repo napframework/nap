@@ -496,35 +496,6 @@ namespace nap
 	}
 
 	
-	// Prepend FileLink paths on updated objects with our project data directory location
-	void ResourceManager::patchFilePaths(ObjectByIDMap& newTargetObjects)
-	{
-		// Iterate all updated objects
-		for (auto& kvp : newTargetObjects)
-		{
-			rtti::RTTIObject* target = kvp.second.get();
-			if (target == nullptr)
-				continue;
-
-			// TODO is this the best way to do this?
-			rtti::Instance instance = *target;
-			rtti::TypeInfo object_type = instance.get_derived_type();
-			
-			// Go through all properties of the object
-			for (const rtti::Property& property : object_type.get_properties())
-			{
-				if (rtti::hasFlag(property, nap::rtti::EPropertyMetaData::FileLink))
-				{
-					// Prepend our file path with our data path from the DataPathManager
-					std::string path = property.get_value(instance).get_value<std::string>();
-					path = DataPathManager::get().getDataPath() + path;
-					property.set_value(instance, path);
-				}
-			}
-		}
-	}
-	
-	
 	// Prepend FileLink paths with our project data directory location
 	void ResourceManager::patchFilePaths(rtti::RTTIDeserializeResult& readResult)
 	{
