@@ -51,3 +51,8 @@ test/**/*.mesh
 demos/**/*.mesh
 nap.sublime-project
 nap.sublime-workspace
+*.mesh
+*.BridgeSort
+docs/html
+docs/latex
+!/docs/doxygen/bin

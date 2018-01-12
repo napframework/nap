@@ -41,7 +41,6 @@ namespace nap
 		virtual RTTIObject* findTarget(const std::string& targetID) override
 		{
 			// Objects in objectsToUpdate have preference over the manager's objects. 
-			RTTIObject* target_object = nullptr;
 			auto object_to_update = mObjectsToUpdate->find(targetID);
 			if (object_to_update == mObjectsToUpdate->end())
 				return mResourceManager->findObject(targetID).get();

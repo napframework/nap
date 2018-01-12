@@ -1,0 +1,115 @@
+#include "applytracercolorcomponent.h"
+
+// External Includes
+#include <entity.h>
+#include <meshutils.h>
+#include <mathutils.h>
+
+// nap::applytracercolorcomponent run time class definition 
+RTTI_BEGIN_CLASS(nap::ApplyTracerColorComponent)
+	// Put additional properties here
+RTTI_END_CLASS
+
+// nap::applytracercolorcomponentInstance run time class definition 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ApplyTracerColorComponentInstance)
+	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
+RTTI_END_CLASS
+
+//////////////////////////////////////////////////////////////////////////
+
+
+namespace nap
+{
+	void ApplyTracerColorComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
+	{
+
+	}
+
+
+	bool ApplyTracerColorComponentInstance::init(utility::ErrorState& errorState)
+	{
+		if (!ApplyColorComponentInstance::init(errorState))
+			return false;
+		return true;
+	}
+
+
+	void ApplyTracerColorComponentInstance::applyColor(double deltaTime)
+	{
+		// Increment time
+		mChannelTime += mManualSelect ? 0.0f : (deltaTime*(mChannelSpeed*4.0));
+
+		// Get channel, if manual selection is turned on use the actual selected channel, otherwise time based value
+		int selected_channel = mManualSelect ? mSelectedChannel : static_cast<int>(mChannelTime) % 512;
+
+		ArtnetMeshFromFile& mesh = getMesh();
+
+		// This is the channel we want to compare against, makes sure that the we take
+		// in to account the offset of channels associated with a mesh, so:
+		// no offset means starting at 0 where 1 2 and 3 are considered to be part of the
+		// same triangle. With an offset of 1, 2 3 and 4 are considered to be part of the
+		// same triangle. 
+		mCurrentChannel = selected_channel - ((selected_channel - mesh.mChannelOffset) % 4);
+
+		// Color attribute we use to sample
+		nap::VertexAttribute<glm::vec4>& color_attr = mesh.getColorAttribute();
+		nap::VertexAttribute<glm::vec4>& artne_attr = mesh.getArtnetColorAttribute();
+		nap::VertexAttribute<int>& channel_attr = mesh.getChannelAttribute();
+
+		// Get amount of mesh triangles
+		int tri_count = getTriangleCount(mesh.getMeshInstance());
+
+		// Clear both color and artnet
+		std::vector<glm::vec4> color_data(color_attr.getCount(), { 0.0f,0.0f,0.0f,0.0f });
+		color_attr.setData(color_data);
+
+		std::vector<glm::vec4> artn_data(artne_attr.getCount(), { 0.0f,0.0f,0.0f,0.0f });
+		artne_attr.setData(artn_data);
+
+		// Find the triangle that has the channel attribute
+		TriangleDataPointer<int> tri_channel;
+		TriangleDataPointer<glm::vec4> tri_color;
+		TriangleDataPointer<glm::vec4> tri_artne;
+
+		for (int i = 0; i < tri_count; i++)
+		{
+			getTriangleValues<int>(mesh.getMeshInstance(), i, channel_attr, tri_channel);
+			int channel_number = *(tri_channel[0]);
+
+			if (channel_number == mCurrentChannel)
+			{
+				getTriangleValues<glm::vec4>(mesh.getMeshInstance(), i, color_attr, tri_color);
+				getTriangleValues<glm::vec4>(mesh.getMeshInstance(), i, artne_attr, tri_artne);
+
+				*(tri_color[0]) = { 1.0f, 1.0f, 1.0f, 1.0f };
+				*(tri_color[1]) = { 1.0f, 1.0f, 1.0f, 1.0f };
+				*(tri_color[2]) = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+				*(tri_artne[0]) = { 1.0f, 1.0f, 1.0f, 1.0f };
+				*(tri_artne[1]) = { 1.0f, 1.0f, 1.0f, 1.0f };
+				*(tri_artne[2]) = { 1.0f, 1.0f, 1.0f, 1.0f };
+			}
+		}
+
+		nap::utility::ErrorState error;
+		if (!mesh.getMeshInstance().update(error))
+		{
+			assert(false);
+		}
+	}
+
+
+	void ApplyTracerColorComponentInstance::setSpeed(float speed)
+	{
+		mChannelSpeed = speed;
+		setManual(false);
+	}
+
+
+	void ApplyTracerColorComponentInstance::selectChannel(int channel)
+	{
+		mSelectedChannel = nap::math::min<int>(channel, 511);
+		setManual(true);
+	}
+
+}

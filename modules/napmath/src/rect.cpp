@@ -25,13 +25,13 @@ namespace nap
 
 		float Rect::getWidth() const
 		{
-			return abs(mMaxPosition.x - mMinPosition.x);
+			return fabs(mMaxPosition.x - mMinPosition.x);
 		}
 
 
 		float Rect::getHeight() const
 		{
-			return abs(mMaxPosition.y - mMinPosition.y);
+			return fabs(mMaxPosition.y - mMinPosition.y);
 		}
 
 
