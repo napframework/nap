@@ -34,7 +34,7 @@ namespace nap
 		DECLARE_COMPONENT(TransformComponent, TransformComponentInstance)
 
 	public:
-		TransformProperties mProperties;
+		TransformProperties mProperties;									//< Property: 'Properties', translate, rotate and scale
 	};
 
 
@@ -78,12 +78,6 @@ namespace nap
 		 * point on resolve downwards
 		 */
 		const glm::mat4x4& getGlobalTransform() const;
-
-		/**
-		 * @return the parent transform, nullptr if this node
-		 * has no parent transform
-		 */
-		nap::TransformComponentInstance* getParentTransform();
 
 		/**
 		 * Sets the dirty flag

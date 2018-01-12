@@ -122,6 +122,12 @@ namespace opengl
 	glm::ivec2 getWindowSize(SDL_Window* window);
 
 	/**
+	 * @param screenIndex the number of the display
+	 * @return the screen resolution in pixels, on failure return value is -1
+	 */
+	glm::ivec2 getScreenSize(int screenIndex);
+
+	/**
 	 * resizes an OpenGL window
 	 * @param window the window to resize
 	 * @param size the new window size

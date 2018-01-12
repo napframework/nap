@@ -34,6 +34,7 @@ namespace napkin
 		void onLog(nap::LogMessage log);
 
 		int mMaxRows = 1000; // The maximum number of rows to show in the log
+		nap::Slot<nap::LogMessage> mLogHandler = { this, &LogModel::napLogged };
 	};
 
 	/**

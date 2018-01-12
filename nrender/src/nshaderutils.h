@@ -17,17 +17,17 @@ namespace opengl
 	 */
 	enum class GLSLType : uint8_t
 	{
-		Unknown = 0,
-		Float   = 1,
-		Int     = 2,
-		UInt    = 3,
-		Vec2	= 4,
-		Vec3	= 5,
-		Vec4	= 6,
-		Mat2    = 7,
-		Mat3    = 8,
-		Mat4    = 9,
-		Tex2D	= 10,
+		Unknown = 0,			///< unknown or invalid shader uniform
+		Float   = 1,			///< float
+		Int     = 2,			///< int
+		UInt    = 3,			///< unsigned int
+		Vec2	= 4,			///< 2 float vector
+		Vec3	= 5,			///< 3 float vector
+		Vec4	= 6,			///< 4 float vector
+		Mat2    = 7,			///< 2x2 float matrix
+		Mat3    = 8,			///< 3x3 float matrix
+		Mat4    = 9,			///< 4x4 float matrix
+		Tex2D	= 10,			///< 2D Texture
 	};
 
 	/**
@@ -35,9 +35,9 @@ namespace opengl
 	 */
 	enum class EShaderValidationResult : uint8_t
 	{
-		SUCCESS,
-		WARNING,
-		ERROR
+		SUCCESS,				///< Shader validation succeeded
+		WARNING,				///< Shader validation succeeded with a warning
+		ERROR					///< Shader validation failed
 	};
 
 	/**
@@ -56,12 +56,12 @@ namespace opengl
 		ShaderInput(GLuint shaderProgram, const std::string& name, GLenum type, GLint location, GLint size);
 		ShaderInput() = delete;
 
-		std::string		mName;							// Name of the shader attribute
-		GLenum			mType =	GL_INVALID_ENUM;		// OpenGL Type of the shader attribute
-		GLSLType		mGLSLType = GLSLType::Unknown;	// System GLSL type
-		GLint			mLocation = -1;					// Location of the shader attribute
-		GLuint			mShaderProgram = 0;				// Shader this uniform is associated with
-		GLint			mSize = 0;						// Number of elements in array
+		std::string		mName;							///< Name of the shader attribute
+		GLenum			mType =	GL_INVALID_ENUM;		///< OpenGL Type of the shader attribute
+		GLSLType		mGLSLType = GLSLType::Unknown;	///< System GLSL type
+		GLint			mLocation = -1;					///< Location of the shader attribute
+		GLuint			mShaderProgram = 0;				///< Shader this uniform is associated with
+		GLint			mSize = 0;						///< Number of elements in array
 
 		/**
 		 * @return if this shader input is an array or single value

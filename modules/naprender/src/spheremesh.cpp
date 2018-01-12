@@ -6,6 +6,7 @@
 // External Includes
 #include <glm/glm.hpp>
 #include <cmath>
+#include <meshutils.h>
 
 RTTI_BEGIN_CLASS(nap::SphereMesh)
 	RTTI_PROPERTY("Radius",		&nap::SphereMesh::mRadius,	nap::rtti::EPropertyMetaData::Default)
@@ -47,11 +48,11 @@ namespace nap
 			for (s = 0; s < mSectors; s++)
 			{
 				float const y = sin(-(M_PI / 2.0) + M_PI * r * R);
-				float const x = cos(2 * M_PI * s * S) * sin(M_PI * r * R);
+				float const x = cos(2 * M_PI * s * S) * sin(M_PI * r * R) * -1.0f;
 				float const z = sin(2 * M_PI * s * S) * sin(M_PI * r * R);
 
 				// Set texture coordinates
-				*t++ = { 1.0f - (s*S), r*R, 0.5f };
+				*t++ = {s*S, r*R, 0.5f };
 
 				// Set vertex coordinates
 				*v++ = { x * mRadius, y * mRadius, z * mRadius };

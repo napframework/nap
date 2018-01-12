@@ -1,7 +1,111 @@
 #include "filtertreeview.h"
+#include "qtutils.h"
 #include <QMenu>
 #include <QTimer>
 #include <assert.h>
+#include <nap/logger.h>
+#include <QDragEnterEvent>
+#include <QDragMoveEvent>
+#include <QDropEvent>
+#include <QMimeData>
+#include <appcontext.h>
+#include <standarditemsproperty.h>
+#include <panels/inspectorpanel.h>
+#include <commands.h>
+
+napkin::_FilterTreeView::_FilterTreeView() : QTreeView()
+{
+	setAcceptDrops(true);
+}
+
+void napkin::_FilterTreeView::dragEnterEvent(QDragEnterEvent* event)
+{
+	QAbstractItemView::dragEnterEvent(event);
+}
+
+void napkin::_FilterTreeView::dragMoveEvent(QDragMoveEvent* event)
+{
+	// Re-enable if valid drop
+	setDropIndicatorShown(false);
+
+	auto idx = indexAt(event->pos());
+	if (idx.isValid())
+	{
+		auto filter_model = dynamic_cast<QSortFilterProxyModel*>(model());
+		assert(filter_model != nullptr);
+		auto item_model = dynamic_cast<QStandardItemModel*>(filter_model->sourceModel());
+		assert(item_model != nullptr);
+		auto item = item_model->itemFromIndex(filter_model->mapToSource(idx));
+
+		auto drag_index = currentIndex();
+		auto drag_item = item_model->itemFromIndex(filter_model->mapToSource(drag_index));
+
+		auto pathitem = dynamic_cast<BaseRTTIPathItem*>(item);
+		if (pathitem != nullptr && drag_item->parent() == pathitem->parent())
+		{
+			setDropIndicatorShown(true);
+			event->acceptProposedAction();
+		}
+	}
+
+	QTreeView::dragMoveEvent(event);
+}
+
+void napkin::_FilterTreeView::dropEvent(QDropEvent* event)
+{
+
+	auto drop_index = indexAt(event->pos());
+	if (!drop_index.isValid())
+		return;
+
+
+	// User may have dropped on column > 0, convert to column 0
+	drop_index = drop_index.model()->index(drop_index.row(), 0, drop_index.parent());
+
+	auto filter_model = dynamic_cast<QSortFilterProxyModel*>(model());
+	assert(filter_model != nullptr);
+	auto item_model = dynamic_cast<QStandardItemModel*>(filter_model->sourceModel());
+	assert(item_model != nullptr);
+
+	auto drop_item = item_model->itemFromIndex(filter_model->mapToSource(drop_index));
+
+	// The current index is the one where we started dragging
+	auto curr_index = currentIndex();
+	// We might have selected another column, get the leftmost index instead
+	auto drag_index = curr_index.model()->index(curr_index.row(), 0, curr_index.parent());
+	assert(drop_index.model() == drag_index.model());
+	auto drag_item = item_model->itemFromIndex(filter_model->mapToSource(drag_index));
+
+	auto pathitem = dynamic_cast<BaseRTTIPathItem*>(drop_item);
+	if (pathitem == nullptr)
+		return;
+
+	auto arrayitem = dynamic_cast<ArrayPropertyItem*>(pathitem->parent());
+	auto array_path = arrayitem->getPath();
+
+	if (drag_item->parent() != pathitem->parent())
+		return;
+	auto dropped_path = pathitem->data(Qt::UserRole);
+
+	// Dropped above or below item?
+	DropIndicatorPosition dropIndicator = dropIndicatorPosition();
+	int target_row = drop_index.row();
+	switch (dropIndicator)
+	{
+		case QAbstractItemView::AboveItem:
+			break;
+		case QAbstractItemView::BelowItem:
+			target_row += 1;
+			break;
+		case QAbstractItemView::OnItem:
+		case QAbstractItemView::OnViewport:
+			break;
+	}
+
+
+	auto dragged_path = QString::fromLocal8Bit(event->mimeData()->data(sNapkinMimeData));
+	AppContext::get().executeCommand(new ArrayMoveElementCommand(array_path, drag_index.row(), target_row));
+}
 
 
 napkin::FilterTreeView::FilterTreeView()
@@ -26,7 +130,10 @@ napkin::FilterTreeView::FilterTreeView()
 	connect(this, &QWidget::customContextMenuRequested, this, &FilterTreeView::onCustomContextMenuRequested);
 }
 
-void napkin::FilterTreeView::setModel(QStandardItemModel* model) { mSortFilter.setSourceModel(model); }
+void napkin::FilterTreeView::setModel(QStandardItemModel* model)
+{
+	mSortFilter.setSourceModel(model);
+}
 
 QStandardItemModel* napkin::FilterTreeView::getModel() const
 {
@@ -73,6 +180,7 @@ void napkin::FilterTreeView::onFilterChanged(const QString& text)
 {
 	mSortFilter.setFilterRegExp(text);
 	mTreeView.expandAll();
+	setTopItemSelected();
 }
 
 
@@ -88,19 +196,6 @@ void napkin::FilterTreeView::onCollapseSelected()
 		expandChildren(&mTreeView, idx, false);
 }
 
-void napkin::FilterTreeView::expandChildren(QTreeView* view, const QModelIndex& index, bool expanded)
-{
-	if (!index.isValid())
-		return;
-
-	for (int i = 0, len = index.model()->rowCount(index); i < len; i++)
-		expandChildren(view, index.child(i, 0), expanded);
-
-	if (expanded && !view->isExpanded(index))
-		view->expand(index);
-	else if (view->isExpanded(index))
-		view->collapse(index);
-}
 
 void napkin::FilterTreeView::onCustomContextMenuRequested(const QPoint& pos)
 {
@@ -109,10 +204,32 @@ void napkin::FilterTreeView::onCustomContextMenuRequested(const QPoint& pos)
 	if (mMenuHookFn != nullptr)
 		mMenuHookFn(menu);
 
-	mActionExpandAll.setText("Expand All");
-	menu.addAction(&mActionExpandAll);
-	mActionCollapseAll.setText("Collapse");
-	menu.addAction(&mActionCollapseAll);
+	auto expandAllAction = menu.addAction("Expand All");
+	connect(expandAllAction, &QAction::triggered, this, &FilterTreeView::onExpandSelected);
+
+	auto collapseAllAction = menu.addAction("Collapse");
+	connect(collapseAllAction, &QAction::triggered, this, &FilterTreeView::onCollapseSelected);
 
 	menu.exec(mapToGlobal(pos));
 }
+
+void napkin::FilterTreeView::setIsItemSelector(bool b)
+{
+	mIsItemSelector = b;
+	if (b) {
+		setTopItemSelected();
+	}
+}
+
+void napkin::FilterTreeView::setTopItemSelected()
+{
+	auto model = mTreeView.model();
+	if (model->rowCount() == 0)
+		return;
+
+	auto leftIndex = model->index(0, 0);
+	auto rightIndex = model->index(0, model->columnCount() - 1);
+	QItemSelection selection(leftIndex, rightIndex);
+	getSelectionModel()->select(selection, QItemSelectionModel::SelectionFlag::ClearAndSelect);
+}
+

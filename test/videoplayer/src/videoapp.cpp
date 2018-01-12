@@ -95,12 +95,12 @@ namespace nap
 		render_window->makeActive();
 
 		// Clear target
-		opengl::RenderTarget* render_target = render_window->getWindow()->getBackbuffer();
-		render_target->setClearColor(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
-		mRenderService->clearRenderTarget(*render_target, opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH);
+		opengl::RenderTarget& render_target = render_window->getBackbuffer();
+		render_target.setClearColor(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
+		mRenderService->clearRenderTarget(render_target, opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH);
 
 		// Render necessary objects
-		mRenderService->renderObjects(*render_target, mCameraEntity->getComponent<OrthoCameraComponentInstance>());
+		mRenderService->renderObjects(render_target, mCameraEntity->getComponent<OrthoCameraComponentInstance>());
 
 		// Swap GPU buffers
 		render_window->swap();

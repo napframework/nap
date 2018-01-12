@@ -181,11 +181,6 @@ namespace nap
 			// Write all properties
 			for (const rtti::Property& property : actual_object.get_derived_type().get_properties())
 			{
-				// Don't write the ID for embedded objects (if the writer supports it)
-				bool is_id = RTTIObject::isIDProperty(actual_object, property);
-				if (is_id && isEmbeddedObject && writer.supportsEmbeddedPointers())
-					continue;
-
 				// Get the value of the property
 				rtti::Variant prop_value = property.get_value(actual_object);
 				assert(prop_value.is_valid());
@@ -297,7 +292,7 @@ namespace nap
 			// Go through the array of objects to write. Note that we keep querying the length of the array because objects can be added during traversal
 			for (RTTIObject* object : objects_to_write)
 			{
-				if (!errorState.check(!object->mID.empty(), "Encountered object without ID. This is not allowed"))
+				if (!errorState.check(!object->mID.empty(), "Encountered object of type: %s without ID. This is not allowed", object->get_type().get_name().data()))
 					return false;
 
 				// Write start of object

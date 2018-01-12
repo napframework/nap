@@ -8,6 +8,7 @@
 #include <rapidjson/prettywriter.h>
 #include <rapidjson/error/en.h>
 #include <fstream>
+#include <utility/fileutils.h>
 
 namespace nap
 {
@@ -439,7 +440,7 @@ namespace nap
 		int getLine(const std::string& json, size_t offset)
 		{
 			int line = 1;
-			int line_offset = 0;
+			size_t line_offset = 0;
 			while (true)
 			{
 				line_offset = json.find('\n', line_offset);
@@ -482,29 +483,14 @@ namespace nap
 			return true;
 		}
 
-
 		bool readJSONFile(const std::string& path, Factory& factory, RTTIDeserializeResult& result, utility::ErrorState& errorState)
 		{
-			// Open the file
-			std::ifstream in(path, std::ios::in | std::ios::binary);
-            if (!errorState.check(in.good(), "Unable to open file: %s (\"%s\")", strerror(errno), path.c_str()))
-                return false;
-
-			// Create buffer of appropriate size
-			in.seekg(0, std::ios::end);
-			size_t len = in.tellg();
 			std::string buffer;
-			buffer.resize(len);
-
-			// Read all data
-			in.seekg(0, std::ios::beg);
-			in.read(&buffer[0], len);
-			in.close();
-
-			if (!deserializeJSON(buffer, factory, result, errorState))
+			if (!utility::readFileToString(path, buffer, errorState))
 				return false;
 
-			return true;
+			return deserializeJSON(buffer, factory, result, errorState);
 		}
+
 	}
 }

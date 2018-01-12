@@ -2,11 +2,7 @@
 #include "utility/stringutils.h"
 
 // Std Includes
-#include <algorithm>
 #include <regex>
-#include <sstream>
-#include <cstring>
-#include <locale>
 
 namespace nap
 {
@@ -14,7 +10,7 @@ namespace nap
 	{
 
 		// Splits a string based on @inDelim
-		void splitString(const std::string inString, char inDelim, std::vector<std::string>& ioParts)
+		void splitString(const std::string& inString, const char inDelim, std::vector<std::string>& ioParts)
 		{
 			// Clear
 			ioParts.clear();
@@ -28,6 +24,12 @@ namespace nap
 				ioParts.push_back(item);
 		}
 
+		std::vector<std::string> splitString(const std::string& string, const char delim)
+		{
+			std::vector<std::string> ret;
+			splitString(string, delim, ret);
+			return ret;
+		}
 
 		// Write a string to ostream (binary)
 		void writeString(std::ostream& stream, const std::string& text)
@@ -173,6 +175,7 @@ namespace nap
 			}
 			return outString;
 		}
+
 	}
 
 }

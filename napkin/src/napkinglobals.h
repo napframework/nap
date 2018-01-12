@@ -16,6 +16,7 @@ namespace napkin
 	static const QString TXT_LABEL_OBJECTS		= "Objects";
 	static const QString TXT_LABEL_ENTITIES		= "Entities";
 	static const QString TXT_DEFAULT_THEME		= "native";
+	static const QString TXT_UNTITLED_DOCUMENT	= "Untitled Document";
 
 	// The file filter used by file dialogs
 	static const QString JSON_FILE_FILTER = "NAP JSON File (*.nap.json, *.json)";
