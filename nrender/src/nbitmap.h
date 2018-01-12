@@ -15,10 +15,10 @@ namespace opengl
 	*/
 	enum class BitmapDataType : uint8_t
 	{
-		UNKNOWN =	0,		// unknown bitmap data type
-		BYTE =		1,		// 8 bit unsigned char
-		USHORT =	2,		// 16 bit unsigned int
-		FLOAT =		3,		// 32 bit float
+		UNKNOWN =	0,		///< unknown bitmap data type
+		BYTE =		1,		///< 8 bit unsigned char
+		USHORT =	2,		///< 16 bit unsigned int
+		FLOAT =		3,		///< 32 bit float
 	};
 
 
@@ -29,12 +29,12 @@ namespace opengl
 	enum class BitmapColorType : uint8_t
 	{
 		UNKNOWN =	0,
-		GREYSCALE =	1,		// gray scale color (1 channel)
-		INDEXED =	2,		// Index lookup, 1 channel
-		RGB =		3,		// 3 channel red green blue
-		RGBA =		4,		// 4 channel red, green, blue, alpha
-		BGR =		5,		// 3 channel blue, green, red
-		BGRA =		6,		// 4 channel blue, green, red, alpha
+		GREYSCALE =	1,		///< gray scale color (1 channel)
+		INDEXED =	2,		///< Index lookup, 1 channel
+		RGB =		3,		///< 3 channel red green blue
+		RGBA =		4,		///< 4 channel red, green, blue, alpha
+		BGR =		5,		///< 3 channel blue, green, red
+		BGRA =		6,		///< 4 channel blue, green, red, alpha
 	};
 
 
@@ -53,10 +53,10 @@ namespace opengl
 		~BitmapSettings() = default;
 
 		// Members
-		unsigned int	mWidth  = 0;								// width of the bitmap in pixels
-		unsigned int	mHeight = 0;								// height of the bitmap in pixels
-		BitmapDataType	mDataType  = BitmapDataType::UNKNOWN;		// type of pixel data
-		BitmapColorType mColorType = BitmapColorType::UNKNOWN;		// color of pixel data
+		unsigned int	mWidth  = 0;								///< width of the bitmap in pixels
+		unsigned int	mHeight = 0;								///< height of the bitmap in pixels
+		BitmapDataType	mDataType  = BitmapDataType::UNKNOWN;		///< type of pixel data
+		BitmapColorType mColorType = BitmapColorType::UNKNOWN;		///< color of pixel data
 
 		/**
 		 * isValid
@@ -313,51 +313,10 @@ namespace opengl
 		virtual void clear() override;
 	};
 
-	/**
-	 * TypedBitmap
-	 *
-	 * Bitmap that carries a type
-	 * This bitmap manages it's own set of memory, see Bitmap for more information
-	 * If you want an memory unmanaged bitmap, use BitmapBase
-	 */
-	template <typename T>
-	class TypedBitmap : public Bitmap
-	{
-	public:
-		// Constructor
-		TypedBitmap();
-		TypedBitmap(const BitmapSettings& settings) : Bitmap::Bitmap(settings)	{ }
-
-		/**
-		 * getDataType
-		 *
-		 * Returns associated data type
-		 * Every TypedBitmap needs to have a data type associated with it
-		 * Otherwise other objects would not know how to convert a bitmap in to a hardware texture
-		 * Every specialized TypedBitmap needs to implement this function!
-		 */
-		BitmapDataType getDataType() const override;
-
-		/**
-		 * getData
-		 *
-		 * Fetch typed data associated with bitmap
-		 */
-		T* getData()				{ return static_cast<T*>(mData); }
-	};
-
 
 	//////////////////////////////////////////////////////////////////////////
 	// Template Implementations
 	//////////////////////////////////////////////////////////////////////////
-
-	// Constructor
-	template <typename T>
-	opengl::TypedBitmap<T>::TypedBitmap()
-	{
-		mSettings.mDataType = getDataType();
-	}
-
 
 	template<typename T>
 	T* opengl::BitmapBase::getPixel(unsigned int x, unsigned int y) const
@@ -367,17 +326,8 @@ namespace opengl
 			assert(false);
 			return nullptr;
 		}
-
 		return (T*)(getPixelData(x, y));
 	}
-
-
-	//////////////////////////////////////////////////////////////////////////
-	// Typedefs
-	//////////////////////////////////////////////////////////////////////////
-	using ByteBitmap  = TypedBitmap<uint8_t>;
-	using FloatBitmap = TypedBitmap<float>;
-	using ShortBitmap = TypedBitmap<uint16_t>;
 
 } // opengl
 

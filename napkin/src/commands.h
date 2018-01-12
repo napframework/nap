@@ -5,6 +5,8 @@
 
 #include <QUndoCommand>
 #include <QtCore/QVariant>
+#include <generic/propertypath.h>
+#include <scene.h>
 
 #include "typeconversion.h"
 
@@ -16,15 +18,20 @@ namespace napkin
 	class AddObjectCommand : public QUndoCommand
 	{
 	public:
-        /**
-         * Undo
-         */
-		void undo() override;
-
+		AddObjectCommand(const rttr::type& type, nap::rtti::RTTIObject* parent = nullptr);
         /**
          * Redo
          */
 		void redo() override;
+
+		/**
+		 * Undo
+		 */
+		void undo() override;
+	private:
+		const rttr::type mType;
+		std::string mObjectName;
+		std::string mParentName = "";
 	};
 
     /**
@@ -33,6 +40,7 @@ namespace napkin
 	class DeleteObjectCommand : public QUndoCommand
 	{
 	public:
+		DeleteObjectCommand(nap::rtti::RTTIObject& object);
         /**
          * Undo
          */
@@ -42,6 +50,9 @@ namespace napkin
          * Redo
          */
         void redo() override;
+	private:
+		const std::string mObjectName;
+
 	};
 
     /**
@@ -56,7 +67,7 @@ namespace napkin
          * @param path The path to the property
          * @param newValue The new value of the property
          */
-		SetValueCommand(nap::rtti::RTTIObject* ptr, nap::rtti::RTTIPath path, QVariant newValue);
+		SetValueCommand(const PropertyPath& propPath, QVariant newValue);
 
         /**
          * Undo
@@ -69,9 +80,151 @@ namespace napkin
         void redo() override;
 
 	private:
-		nap::rtti::RTTIObject* mObject; // The object that has the property
-		nap::rtti::RTTIPath mPath; // The path to the property
+		const PropertyPath mPath; // The path to the property
 		QVariant mNewValue; // The new value
 		QVariant mOldValue; // The old value
 	};
+
+	class SetPointerValueCommand : public QUndoCommand
+	{
+	public:
+        /**
+         * @param ptr The pointer to the object
+         * @param path The path to the property
+         * @param newValue The new value of the property
+         */
+		SetPointerValueCommand(const PropertyPath& path, nap::rtti::RTTIObject* newValue);
+
+        /**
+         * Undo
+         */
+        void undo() override;
+
+        /**
+         * Redo
+         */
+        void redo() override;
+
+	private:
+		const PropertyPath	mPath;		// The path to the property
+		const std::string	mNewValue;	// The new value
+		const std::string	mOldValue;	// The old value
+	};
+
+
+	/**
+	 * TODO: Can this be an 'AddPointerToVectorCommand'?
+	 * Add an entity to a scene
+	 */
+	class AddEntityToSceneCommand : public QUndoCommand
+	{
+	public:
+		AddEntityToSceneCommand(nap::Scene& scene, nap::Entity& entity);
+
+		void redo() override;
+		void undo() override;
+	private:
+		const std::string mSceneID;
+		const std::string mEntityID;
+		long mIndex;
+	};
+
+
+	/**
+	 * Add an element to an array
+	 */
+	class ArrayAddValueCommand : public QUndoCommand
+	{
+	public:
+		/**
+		 * @param prop The array property to add the element to
+		 */
+		ArrayAddValueCommand(const PropertyPath& prop, long index = -1);
+
+		void redo() override;
+		void undo() override;
+	private:
+		const PropertyPath& mPath; ///< The path to the array property
+		long mIndex; ///< The index of the newly created element
+	};
+
+	/**
+	 * Add an element to an array
+	 */
+	class ArrayAddNewObjectCommand : public QUndoCommand
+	{
+	public:
+		/**
+		 * @param prop The array property to add the element to
+		 */
+		ArrayAddNewObjectCommand(const PropertyPath& prop, const nap::rtti::TypeInfo& type, long index = -1);
+
+		void redo() override;
+		void undo() override;
+	private:
+		const PropertyPath& mPath; ///< The path to the array property
+		nap::rtti::TypeInfo mType; ///< The type of object to create
+		long mIndex; ///< The index of the newly created element
+	};
+
+
+	/**
+	 * Add an existing element to an array
+	 */
+	class ArrayAddExistingObjectCommand : public QUndoCommand
+	{
+	public:
+		/**
+		 * @param prop The array property to add the element to
+		 */
+		ArrayAddExistingObjectCommand(const PropertyPath& prop, nap::rtti::RTTIObject& object, long index = -1);
+
+		void redo() override;
+		void undo() override;
+	private:
+		const PropertyPath& mPath; ///< The path to the array property
+		const std::string mObjectName; ///< The type of object to create
+		long mIndex; ///< The index of the newly created element
+	};
+
+	/**
+	 * Remove an element from an array at the specified index
+	 */
+	class ArrayRemoveElementCommand : public QUndoCommand
+	{
+	public:
+		/**
+		 * @param array_prop The property representing the array
+		 * @param index The index of the element to remove
+		 */
+		ArrayRemoveElementCommand(const PropertyPath& array_prop, long index);
+
+		void redo() override;
+		void undo() override;
+	private:
+		const PropertyPath& mPath; ///< The path representing the array
+		long mIndex; ///< The element to be removed
+	};
+
+	class ArrayMoveElementCommand : public QUndoCommand
+	{
+	public:
+		/**
+		 * Reorder an element within an array
+		 * @param array_prop The array that contains the element
+		 * @param fromIndex The index of the element to move
+		 * @param toIndex The index at which the element must be after the move
+		 */
+		ArrayMoveElementCommand(const PropertyPath& array_prop, long fromIndex, long toIndex);
+
+		void redo() override;
+		void undo() override;
+	private:
+		const PropertyPath& mPath; ///< The path representing the array
+		long mFromIndex; ///< The element index to move
+		long mToIndex; ///< The element index to move to
+		long mOldIndex; ///< The actual old index (may have been shifted)
+		long mNewIndex; ///< The actual new index (may have been shifted)
+	};
+
 };

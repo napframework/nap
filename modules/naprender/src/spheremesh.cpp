@@ -6,6 +6,7 @@
 // External Includes
 #include <glm/glm.hpp>
 #include <cmath>
+#include <meshutils.h>
 
 RTTI_BEGIN_CLASS(nap::SphereMesh)
 	RTTI_PROPERTY("Radius",		&nap::SphereMesh::mRadius,	nap::rtti::EPropertyMetaData::Default)
@@ -47,11 +48,11 @@ namespace nap
 			for (s = 0; s < mSectors; s++)
 			{
 				float const y = sin(-(M_PI / 2.0) + M_PI * r * R);
-				float const x = cos(2 * M_PI * s * S) * sin(M_PI * r * R);
+				float const x = cos(2 * M_PI * s * S) * sin(M_PI * r * R) * -1.0f;
 				float const z = sin(2 * M_PI * s * S) * sin(M_PI * r * R);
 
 				// Set texture coordinates
-				*t++ = { 1.0f - (s*S), r*R, 0.5f };
+				*t++ = {s*S, r*R, 0.5f };
 
 				// Set vertex coordinates
 				*v++ = { x * mRadius, y * mRadius, z * mRadius };
@@ -88,10 +89,10 @@ namespace nap
 
 		mMeshInstance->setNumVertices(vertex_count);
 		mMeshInstance->setDrawMode(opengl::EDrawMode::TRIANGLES);
-		nap::Vec3VertexAttribute& position_attribute	= mMeshInstance->getOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName());
-		nap::Vec3VertexAttribute& normal_attribute		= mMeshInstance->getOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::getNormalName());
-		nap::Vec3VertexAttribute& uv_attribute			= mMeshInstance->getOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetUVName(0));
-		nap::Vec4VertexAttribute& color_attribute		= mMeshInstance->getOrCreateAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0));
+		nap::Vec3VertexAttribute& position_attribute	= mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
+		nap::Vec3VertexAttribute& normal_attribute		= mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getNormalName());
+		nap::Vec3VertexAttribute& uv_attribute			= mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
+		nap::Vec4VertexAttribute& color_attribute		= mMeshInstance->getOrCreateAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0));
 
 		position_attribute.setData(vertices.data(), vertex_count);
 		normal_attribute.setData(normals.data(), vertex_count);

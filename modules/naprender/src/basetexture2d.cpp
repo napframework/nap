@@ -1,4 +1,5 @@
 #include "basetexture2d.h"
+#include "pixmap.h"
 
 RTTI_BEGIN_ENUM(nap::EFilterMode)
 	RTTI_ENUM_VALUE(nap::EFilterMode::Nearest, "Nearest"),
@@ -100,7 +101,7 @@ static void convertTextureParameters(const nap::TextureParameters& input, opengl
 namespace nap
 {
 
-	void BaseTexture2D::init(opengl::Texture2DSettings& settings)
+	void BaseTexture2D::init(const opengl::Texture2DSettings& settings)
 	{
 		// Create the texture with the associated settings
 		opengl::TextureParameters gl_params;
@@ -110,7 +111,41 @@ namespace nap
 
 	const glm::vec2 BaseTexture2D::getSize() const
 	{
-		return glm::vec2(mTexture.getSettings().width, mTexture.getSettings().height);
+		return glm::vec2(mTexture.getSettings().mWidth, mTexture.getSettings().mHeight);
+	}
+
+
+	int BaseTexture2D::getWidth() const
+	{
+		return static_cast<int>(mTexture.getSettings().mWidth);
+	}
+
+
+	int BaseTexture2D::getHeight() const
+	{
+		return static_cast<int>(mTexture.getSettings().mHeight);
+	}
+
+
+	void BaseTexture2D::getData(Pixmap& pixmap)
+	{
+		if (pixmap.empty())
+			pixmap.initFromTexture(*this);
+		mTexture.getData(pixmap.getBitmap());
+	}
+
+
+	void BaseTexture2D::startGetData()
+	{
+		mTexture.asyncStartGetData();
+	}
+
+
+	void BaseTexture2D::endGetData(Pixmap& pixmap)
+	{
+		if (pixmap.empty())
+			pixmap.initFromTexture(*this);
+		mTexture.asyncEndGetData(pixmap.getBitmap());
 	}
 
 

@@ -90,7 +90,16 @@ namespace nap
 		 * that the opengl viewport always matches the window dimensions
 		 * @return the back buffer associated with this window
 		 */
-		opengl::BackbufferRenderTarget* getBackbuffer() const;
+		const opengl::BackbufferRenderTarget& getBackbuffer() const;
+
+		/**
+		* The back buffer for an OpenGL window isn't an actual frame buffer
+		* but allows for handling windows and render targets inside the framework
+		* in a similar way. Associating a back buffer with a window also ensures, in this case,
+		* that the opengl viewport always matches the window dimensions
+		* @return the back buffer associated with this window
+		*/
+		opengl::BackbufferRenderTarget& getBackbuffer();
 
 		/**
 		 * Set the window title
@@ -154,7 +163,7 @@ namespace nap
 		uint32 getNumber() const;
 
 	private:
-		std::unique_ptr<opengl::BackbufferRenderTarget> mBackbuffer = nullptr;
+		opengl::BackbufferRenderTarget					mBackbuffer;
 		SDL_Window*										mWindow = nullptr;		// Actual GL window
 		SDL_GLContext									mContext = nullptr;		// GL Context
 	};

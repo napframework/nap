@@ -132,19 +132,18 @@ namespace nap
 	public:
 
 		/**
-		* Binding between mesh vertex attr and shader vertex attr
+		 * Binding between mesh vertex attr and shader vertex attr
 		*/
 		struct VertexAttributeBinding
 		{
 			VertexAttributeBinding() = default;
 
-			VertexAttributeBinding(const opengl::GPUMesh::VertexAttributeID& meshAttributeID, const opengl::Shader::VertexAttributeID& shaderAttributeID) :
+			VertexAttributeBinding(const std::string& meshAttributeID, const std::string& shaderAttributeID) :
 				mMeshAttributeID(meshAttributeID),
-				mShaderAttributeID(shaderAttributeID)
-			{
-			}
-			opengl::GPUMesh::VertexAttributeID mMeshAttributeID;
-			opengl::Shader::VertexAttributeID mShaderAttributeID;
+				mShaderAttributeID(shaderAttributeID)  {}
+
+			std::string mMeshAttributeID;
+			std::string mShaderAttributeID;
 		};
 
 		// Default constructor
@@ -186,7 +185,7 @@ namespace nap
 		* Finds the mesh/shader attribute binding based on the shader attribute ID.
 		* @param shaderAttributeID: ID of the shader vertex attribute.
 		*/
-		const VertexAttributeBinding* findVertexAttributeBinding(const opengl::GPUMesh::VertexAttributeID& shaderAttributeID) const;
+		const VertexAttributeBinding* findVertexAttributeBinding(const std::string& shaderAttributeID) const;
 
 		/**
 		* @return Returns a mapping with default values for mesh attribute IDs an shader attribute IDs.

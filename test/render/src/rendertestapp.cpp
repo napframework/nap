@@ -90,12 +90,12 @@ namespace nap
 		nap::IMesh& mesh = mPlaneEntity->getComponent<RenderableMeshComponentInstance>().getMesh();
 		nap::Mesh* rtti_mesh = rtti_cast<Mesh>(&mesh);
 		assert(rtti_mesh != nullptr);
-		const Vec3VertexAttribute& src_position_attribute = rtti_mesh->GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName());
+		const Vec3VertexAttribute& src_position_attribute = rtti_mesh->GetAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
 		const std::vector<glm::vec3>& src_positions = src_position_attribute.getData();
 		
 		// Retrieve destination (instance) mesh data
 		MeshInstance& mesh_instance = mesh.getMeshInstance();
-		Vec3VertexAttribute& dst_position_attribute = mesh_instance.getAttribute<glm::vec3>(nap::MeshInstance::VertexAttributeIDs::GetPositionName());
+		Vec3VertexAttribute& dst_position_attribute = mesh_instance.getAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
 		std::vector<glm::vec3>& dst_positions = dst_position_attribute.getData();
 		
 		// Sine wave over our quad
@@ -159,7 +159,7 @@ namespace nap
 			rotating_plane_material.getOrCreateUniform<UniformInt>("mTextureIndex").setValue(0);
 			rotating_plane_material.getOrCreateUniform<UniformVec4>("mColor").setValue({ 1.0f, 1.0f, 1.0f, 1.0f });
 			
-			opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(render_window->getWindow()->getBackbuffer());
+			opengl::RenderTarget& backbuffer = render_window->getBackbuffer();
 			backbuffer.setClearColor(glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
 			mRenderService->clearRenderTarget(backbuffer);
 			mRenderService->renderObjects(backbuffer, mCameraEntityLeft->getComponent<nap::PerspCameraComponentInstance>(), components_to_render);
@@ -185,7 +185,7 @@ namespace nap
 			std::vector<RenderableComponentInstance*> components_to_render;
 			components_to_render.push_back(&mPigEntity->getComponent<nap::RenderableMeshComponentInstance>());
 			
-			opengl::RenderTarget& backbuffer = *(opengl::RenderTarget*)(render_window->getWindow()->getBackbuffer());
+			opengl::RenderTarget& backbuffer = render_window->getBackbuffer();
 			mRenderService->clearRenderTarget(backbuffer, opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH | opengl::EClearFlags::STENCIL);
 			mRenderService->renderObjects(backbuffer, mCameraEntityRight->getComponent<nap::PerspCameraComponentInstance>(), components_to_render);
 			

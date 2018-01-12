@@ -3,6 +3,7 @@
 #include <QStandardItemModel>
 #include <QStyledItemDelegate>
 #include <rttr/type>
+#include <generic/propertypath.h>
 
 namespace napkin
 {
@@ -19,6 +20,13 @@ namespace napkin
 		 * @return The type represented by the index
 		 */
 		rttr::type getTypeFromModelIndex(const QModelIndex& idx) const;
+
+		/**
+		 * Given a QModelIndex, retrieve the associated PropertyPath
+		 * @param idx The index that is associated with the path.
+		 * @return The path associated with the index
+		 */
+		const PropertyPath getPropertyPathFromIndex(const QModelIndex& idx) const;
 
 		/**
 		 * Override from QStyledItemDelegate

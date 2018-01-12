@@ -12,11 +12,11 @@ namespace opengl
 	 */
 	struct TextureParameters final
 	{
-		GLint minFilter = GL_LINEAR_MIPMAP_LINEAR;		//< Filter used when sampling down
-		GLint maxFilter = GL_LINEAR;						//< Filter used when sampling up
-		GLint wrapVertical = GL_CLAMP_TO_EDGE;				//< Method used for clamping texture vertically
-		GLint wrapHorizontal = GL_CLAMP_TO_EDGE;				//< Method used for clamping texture horizontally
-		GLint maxLodLevel = 20;								// Maximum number of lods
+		GLint minFilter = GL_LINEAR_MIPMAP_LINEAR;		///< Filter used when sampling down
+		GLint maxFilter = GL_LINEAR;					///< Filter used when sampling up
+		GLint wrapVertical = GL_CLAMP_TO_EDGE;			///< Method used for clamping texture vertically
+		GLint wrapHorizontal = GL_CLAMP_TO_EDGE;		///< Method used for clamping texture horizontally
+		GLint maxLodLevel = 20;							///< Maximum number of lods
 	};
 
 	/**
@@ -24,9 +24,9 @@ namespace opengl
 	 */
 	enum class ETextureUsage
 	{
-		Static,				// Texture does not change
-		DynamicRead,		// Texture is frequently read from GPU to CPU
-		DynamicWrite		// Texture is frequently updated from CPU to GPU
+		Static,				///< Texture does not change
+		DynamicRead,		///< Texture is frequently read from GPU to CPU
+		DynamicWrite		///< Texture is frequently updated from CPU to GPU
 	};
 
 
@@ -116,8 +116,8 @@ namespace opengl
 
 	protected:
 		// Texture ID
-		GLuint				mTextureId;				// Currently associated texture ID on GPU
-		GLenum				mTargetType;			// Opengl type of texture
-		TextureParameters	mParameters;			// Texture specific 
+		GLuint				mTextureId;				///< Currently associated texture ID on GPU
+		GLenum				mTargetType;			///< Opengl type of texture
+		TextureParameters	mParameters;			///< Texture specific 
 	};
 }

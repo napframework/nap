@@ -60,9 +60,9 @@ namespace nap
 		{
 			mMeshInstance.setNumVertices(0);
 			mMeshInstance.setDrawMode(opengl::EDrawMode::TRIANGLES);
-			Vec3VertexAttribute& position_attribute = mMeshInstance.getOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName());
-			Vec3VertexAttribute& uv_attribute = mMeshInstance.getOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetUVName(0));
-			Vec4VertexAttribute& color_attribute = mMeshInstance.getOrCreateAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0));
+			Vec3VertexAttribute& position_attribute = mMeshInstance.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
+			Vec3VertexAttribute& uv_attribute = mMeshInstance.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
+			Vec4VertexAttribute& color_attribute = mMeshInstance.getOrCreateAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0));
 			mMeshInstance.reserveVertices(1000);
 			mMeshInstance.reserveIndices(1000);
 
@@ -167,9 +167,9 @@ namespace nap
 		int num_vertices = mParticles.size() * 4;
 		mesh_instance.setNumVertices(num_vertices);
 
-		Vec3VertexAttribute& position_attribute = mesh_instance.getOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName());
-		Vec3VertexAttribute& uv_attribute		= mesh_instance.getOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetUVName(0));
-		Vec4VertexAttribute& color_attribute	= mesh_instance.getOrCreateAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0));
+		Vec3VertexAttribute& position_attribute = mesh_instance.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
+		Vec3VertexAttribute& uv_attribute		= mesh_instance.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
+		Vec4VertexAttribute& color_attribute	= mesh_instance.getOrCreateAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0));
 
 		position_attribute.clear();
 		uv_attribute.clear();

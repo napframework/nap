@@ -148,6 +148,6 @@ namespace nap
 		}
 
 		// Render all frames at once
-		renderer.renderObjects(*(window.getWindow()->getBackbuffer()), camera, components_to_render);
+		renderer.renderObjects(window.getBackbuffer(), camera, components_to_render);
 	}
 }

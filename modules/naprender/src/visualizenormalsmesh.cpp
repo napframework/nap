@@ -10,42 +10,11 @@ namespace nap
 {
 	bool VisualizeNormalsMesh::init(utility::ErrorState& errorState)
 	{
-		// Create the mesh that will hold the normals
-		mMeshInstance = std::make_unique<MeshInstance>();
-
-		nap::IMesh* reference_mesh = mReferenceMesh.get();
-		
-		// Make sure the reference mesh has normals
-		if (reference_mesh->getMeshInstance().findAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::getNormalName()) == nullptr)
-			return errorState.check(false, "reference mesh has no normals");
-
-		// Create position and vertex attribute
-		mPositionAttr = &(mMeshInstance->getOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName()));
-
-		// Create color attribute
-		mColorAttr = &(mMeshInstance->getOrCreateAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0)));
-
-		int vertex_count = reference_mesh->getMeshInstance().getNumVertices();
-
-		// Create initial color data
-		std::vector<glm::vec4> colors(vertex_count * 2, { 1.0f, 1.0f, 1.0f, 1.0f });
-		mColorAttr->setData(colors);
-
-		// Create initial position data
-		std::vector<glm::vec3> vertices(vertex_count * 2, { 0.0f, 0.0f, 0.0f });
-		mPositionAttr->setData(vertices);
-
-		// Set number of vertices
-		mMeshInstance->setNumVertices(vertex_count * 2);
-
-		// Update normals
-		updateNormals(errorState, false);
+		if (!setup(errorState))
+			return false;
 
 		if (!mMeshInstance->init(errorState))
 			return false;
-
-		// Draw normals as lines
-		mMeshInstance->setDrawMode(opengl::EDrawMode::LINES);
 
 		return true;
 	}
@@ -56,11 +25,11 @@ namespace nap
 		const nap::MeshInstance& reference_mesh = mReferenceMesh.get()->getMeshInstance();
 
 		// Get reference normals and vertices
-		const std::vector<glm::vec3>& ref_normals  = reference_mesh.getAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::getNormalName()).getData();
-		const std::vector<glm::vec3>& ref_vertices = reference_mesh.getAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName()).getData();
+		const std::vector<glm::vec3>& ref_normals  = reference_mesh.getAttribute<glm::vec3>(VertexAttributeIDs::getNormalName()).getData();
+		const std::vector<glm::vec3>& ref_vertices = reference_mesh.getAttribute<glm::vec3>(VertexAttributeIDs::getPositionName()).getData();
 		
 		// Try to find a color attribute to pass along
-		const Vec4VertexAttribute* ref_color_attr = reference_mesh.findAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0));
+		const Vec4VertexAttribute* ref_color_attr = reference_mesh.findAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0));
 		const std::vector<glm::vec4>* ref_colors = ref_color_attr != nullptr ? &(ref_color_attr->getData()) : nullptr;
 
 		// Get buffers to populate
@@ -107,6 +76,45 @@ namespace nap
 		{
 			return mMeshInstance->update(error);
 		}
+		return true;
+	}
+
+
+	bool VisualizeNormalsMesh::setup(utility::ErrorState& error)
+	{
+		// Create the mesh that will hold the normals
+		mMeshInstance = std::make_unique<MeshInstance>();
+
+		nap::IMesh* reference_mesh = mReferenceMesh.get();
+
+		// Make sure the reference mesh has normals
+		if (reference_mesh->getMeshInstance().findAttribute<glm::vec3>(VertexAttributeIDs::getNormalName()) == nullptr)
+			return error.check(false, "reference mesh has no normals");
+
+		// Create position and vertex attribute
+		mPositionAttr = &(mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName()));
+
+		// Create color attribute
+		mColorAttr = &(mMeshInstance->getOrCreateAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0)));
+
+		int vertex_count = reference_mesh->getMeshInstance().getNumVertices();
+
+		// Create initial color data
+		std::vector<glm::vec4> colors(vertex_count * 2, { 1.0f, 1.0f, 1.0f, 1.0f });
+		mColorAttr->setData(colors);
+
+		// Create initial position data
+		std::vector<glm::vec3> vertices(vertex_count * 2, { 0.0f, 0.0f, 0.0f });
+		mPositionAttr->setData(vertices);
+
+		// Set number of vertices
+		mMeshInstance->setNumVertices(vertex_count * 2);
+
+		// Update normals
+		updateNormals(error, false);
+
+		// Draw normals as lines
+		mMeshInstance->setDrawMode(opengl::EDrawMode::LINES);
 		return true;
 	}
 

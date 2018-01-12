@@ -30,4 +30,12 @@ if (WIN32)
             )
 
     copy_files_to_bin(${FILES_TO_COPY})
+elseif(UNIX AND NOT APPLE)
+    set(ARTNET_LIB_FILE ${ARTNET_LIBS_DIR}/libartnet.so)
+
+    # HACK, somehow on some systems, libartnet.so gets linked with libartnet.so.1 because it already exists
+    add_custom_command(TARGET ${PROJECT_NAME}
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy "${ARTNET_LIB_FILE}" "$<TARGET_FILE_DIR:${PROJECT_NAME}>/libartnet.so.1"
+            COMMENT "Copy ${F} -> $<TARGET_FILE_DIR:${PROJECT_NAME}>/libartnet.so.1")
 endif()
