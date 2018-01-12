@@ -80,6 +80,9 @@ namespace nap
 			{
 				FILE_NOTIFY_INFORMATION* current_notification = mPImpl->mNotifications;
 				bool done = false;
+
+				std::string data_path = DataPathManager::get().getDataPath();
+
 				while (!done)
 				{
 					// Copy from wide string to narrow string
@@ -87,7 +90,9 @@ namespace nap
 					modified_file.resize(current_notification->FileNameLength / 2);
 					wcstombs(&modified_file[0], current_notification->FileName, current_notification->FileNameLength / 2);
 
-					modifiedFiles.emplace_back(modified_file);
+					// Prepend data path and add to modified files
+					modifiedFiles.emplace_back(data_path + modified_file);
+
 
 					// We've processed the entire buffer if the next entry is zero
 					done = current_notification->NextEntryOffset == 0;
