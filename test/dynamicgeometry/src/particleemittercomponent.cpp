@@ -42,16 +42,12 @@ namespace nap
 	};
 
 
-	static float frand(float baseValue, float variation)
+	template<typename T>
+	static T particleRand(T baseValue, T variation)
 	{
-		return baseValue + (variation * 0.5f) - ((float)rand() / (float)RAND_MAX) * variation;
+		return math::random<T>(baseValue + variation, baseValue - variation);
 	}
 
-
-	static glm::vec3 frand(const glm::vec3& baseValue, const glm::vec3& variation)
-	{
-		return glm::vec3(frand(baseValue.x, variation.x), frand(baseValue.y, variation.y), frand(baseValue.z, variation.z));
-	}
 
 	//////////////////////////////////////////////////////////////////////////
 
@@ -126,20 +122,20 @@ namespace nap
 		if (mTimeSinceLastSpawn >= spawnTimeMs)
 		{
 			Particle particle(mCurrentID++);
-			particle.mPosition = frand(component->mPosition, component->mPositionVariation);
-			particle.mRotation = frand(component->mRotation, component->mRotationVariation);
-			particle.mRotationSpeed = frand(component->mRotationSpeed, component->mRotationSpeedVariation);
-			particle.mSize = frand(component->mSize, component->mSizeVariation);
-			particle.mLifeTime = frand(component->mLifeTime, component->mLifeTimeVariation);
-			particle.mTimeLeft = particle.mLifeTime;
-
-			float spread = frand(0.0f, component->mSpread);
-			float velocity_x = frand(component->mVelocity.x, component->mVelocityVariation);
-			float velocity_y = frand(component->mVelocity.y, component->mVelocityVariation);
-			float velocity_z = frand(component->mVelocity.z, component->mVelocityVariation);
-			particle.mVelocity = glm::vec3(spread, 1.0f, spread);
-			particle.mVelocity = glm::normalize(particle.mVelocity);
-			particle.mVelocity *= glm::vec3(velocity_x, velocity_y, velocity_z);
+			particle.mPosition =		particleRand(component->mPosition, component->mPositionVariation);
+			particle.mRotation =		particleRand(component->mRotation, component->mRotationVariation);
+			particle.mRotationAngle =	glm::normalize(particleRand<glm::vec3>({ 0.0,0.0,0.0 }, { 1.0,1.0,1.0 }));
+			particle.mRotationSpeed =	particleRand(component->mRotationSpeed, component->mRotationSpeedVariation);
+			particle.mSize =			particleRand(component->mSize, component->mSizeVariation);
+			particle.mLifeTime =		particleRand(component->mLifeTime, component->mLifeTimeVariation);
+			float spread =				particleRand(0.0f, component->mSpread);
+			float velocity_x =			particleRand(component->mVelocity.x, component->mVelocityVariation);
+			float velocity_y =			particleRand(component->mVelocity.y, component->mVelocityVariation);
+			float velocity_z =			particleRand(component->mVelocity.z, component->mVelocityVariation);
+			particle.mVelocity =		glm::vec3(spread, 1.0f, spread);
+			particle.mVelocity =		glm::normalize(particle.mVelocity);
+			particle.mVelocity *=		glm::vec3(velocity_x, velocity_y, velocity_z);
+			particle.mTimeLeft =		particle.mLifeTime;
 
 			mParticles.emplace_back(particle);
 			mCurrentID = mCurrentID % math::max<int>();
@@ -161,7 +157,7 @@ namespace nap
 
 				float life_scale = 1.0f - (particle.mTimeLeft / component->mLifeTime);
 				particle.mColor = component->mStartColor + (component->mEndColor - component->mStartColor) * life_scale;
-				particle.mColor.a = math::bell(life_scale, 5.0f);
+				particle.mColor.a = math::bell(life_scale, 2.0f);
 			}
 		}
 	}
@@ -209,7 +205,7 @@ namespace nap
 			};
 
 			glm::mat4x4 translation = glm::translate(particle.mPosition);
-			glm::mat4x4 rotation = glm::rotate(particle.mRotation, glm::vec3(0.0f, 0.0f, 1.0f));
+			glm::mat4x4 rotation = glm::rotate(particle.mRotation, particle.mRotationAngle);
 			for (glm::vec3& pos : positions)
 			{
 				glm::vec4 world_pos = translation * rotation * glm::vec4(pos, 1.0f);
