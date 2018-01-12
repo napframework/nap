@@ -75,11 +75,11 @@ namespace nap {
     void DirectoryWatcher::PImpl_deleter::operator()(DirectoryWatcher::PImpl*ptr) const { delete ptr; }
 
     
-	/**
-	* Installs monitor: opens directory, creates event, starts directory scan.
-	*/
-	DirectoryWatcher::DirectoryWatcher()
-	{
+    /**
+    * Installs monitor: opens directory, creates event, starts directory scan.
+    */
+    DirectoryWatcher::DirectoryWatcher()
+    {
         mPImpl = std::unique_ptr<PImpl, PImpl_deleter>(new PImpl);
         
         mPImpl->watchThread = std::make_unique<std::thread>([&](){
@@ -97,9 +97,9 @@ namespace nap {
             buffer.resize(size);
             _NSGetExecutablePath(buffer.data(), &size);
             mPImpl->executablePath = utility::getFileDir(std::string(buffer.data()));
-			
-			std::string dirToWatch = DataPathManager::get().getDataPath();
-			
+
+            std::string dirToWatch = DataPathManager::get().getDataPath();
+
             CFStringRef pathToWatchCF = CFStringCreateWithCString(NULL, dirToWatch.c_str(), kCFStringEncodingUTF8);
             mPImpl->pathsToWatch = CFArrayCreate(NULL, (const void **)&pathToWatchCF, 1, NULL);
             
@@ -121,35 +121,35 @@ namespace nap {
             
             CFRunLoopRun();
         });
-	}
+    }
 
 
-	/**
-	* Cleanup
-	*/
-	DirectoryWatcher::~DirectoryWatcher()
-	{
+    /**
+    * Cleanup
+    */
+    DirectoryWatcher::~DirectoryWatcher()
+    {
         CFRunLoopStop(mPImpl->runLoop);
         mPImpl->watchThread->join();
         FSEventStreamStop(mPImpl->stream);
         FSEventStreamInvalidate(mPImpl->stream);
         FSEventStreamRelease(mPImpl->stream);
-	}
+    }
 
 
-	/**
-	* Checks if any changes to files were made, returns true if so. Continue to call this function to retrieve
-	* multiple updates.
-	*/
-	bool DirectoryWatcher::update(std::vector<std::string>& modifiedFiles)
-	{
+    /**
+    * Checks if any changes to files were made, returns true if so. Continue to call this function to retrieve
+    * multiple updates.
+    */
+    bool DirectoryWatcher::update(std::vector<std::string>& modifiedFiles)
+    {
         {
             std::unique_lock<std::mutex> lock(mPImpl->callbackInfo.watchMutex);
             
             if (mPImpl->callbackInfo.modifiedFiles.empty())
                 return false;
             
-			std::string comparable_data_path = utility::toComparableFilename(DataPathManager::get().getDataPath());
+            std::string comparable_data_path = utility::toComparableFilename(DataPathManager::get().getDataPath());
             
             for (auto& modified_file : mPImpl->callbackInfo.modifiedFiles)
             {
@@ -167,5 +167,5 @@ namespace nap {
         
         // if the modified files found by the event stream are not found in the executable's dir we still need to return false
         return !modifiedFiles.empty();
-	}
+    }
 }
