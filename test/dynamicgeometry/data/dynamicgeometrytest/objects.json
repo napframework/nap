@@ -6,7 +6,14 @@
 			"mID" : "Window0",
 			"Width" : 1280,
 			"Height" : 720,
-			"Title" : "Window 1"
+			"Title" : "Window 1",
+			"Sync" : false,
+			"ClearColor": {
+                "x": 0.0666,
+                "y": 0.0784,
+                "z": 0.1490,
+                "w": 1.0
+            }
 		},
 
 		{
@@ -44,8 +51,8 @@
 			[
 				{
 					"Type" : "nap::UniformTexture2D",
-					"Name" : "particleTexture",
-					"Texture" : "Smoke"
+					"Name" : "particleTextureOne",
+					"Texture" : "ParticleOne"
 				}
 			]
 
@@ -191,8 +198,14 @@
 
 		{
 			"Type" : "nap::Image",
-			"mID" : "Smoke",
-			"ImagePath" : "data/dynamicgeometrytest/smoke.png"
+			"mID" : "ParticleOne",
+			"ImagePath" : "data/dynamicgeometrytest/texture_one.jpg"
+		},
+
+		{
+			"Type" : "nap::Image",
+			"mID" : "ParticleTwo",
+			"ImagePath" : "data/dynamicgeometrytest/texture_two.png"
 		},
 
 
@@ -207,35 +220,40 @@
 					"MaterialInstance" : {
 						"Material": "ParticleMaterial"
 					},
-					"SpawnRate" : 100.0,
-					"LifeTime" : 1.4,
-					"LifeTimeVariation" : 0.2,
+					"SpawnRate" : 400.0,
+					"LifeTime" : 5.0,
+					"LifeTimeVariation" : 0.5,
 					"Position" : 
 					{
 						"x" : 0,
-						"y" : 0.1,
+						"y" : -1.5,
 						"z" : 0
 					},
 					"PositionVariation" : 
 					{
-						"x" : 0.2,
-						"y" : 0.1,
-						"z" : 0.2
+						"x" : 5.0,
+						"y" : 0.2,
+						"z" : 5.0
 					},
-					"Size" : 0.4,
-					"SizeVariation" : 0.15,
+					"Size" : 0.05,
+					"SizeVariation" : 0.1,
 					"Rotation" : 0.0,
-					"RotationVariation" : 10.0,
-					"RotationSpeed" : 0.0,
-					"RotationSpeedVariation" : 10.0,
-					"Spread" : 0.8,
-					"Velocity" : 0.7,
-					"VelocityVariation" : 0.2,
+					"RotationVariation" : 100.0,
+					"RotationSpeed" : 1.0,
+					"RotationSpeedVariation" : 5.0,
+					"Spread" : 2.0,
+					"Velocity" :
+					{
+						"x" : 0.5,
+						"y" : 1.5,
+						"z" : 0.5
+					},
+					"VelocityVariation" : 0.5,
 					"StartColor" :
 					{
-						"x" : 0.7,
-						"y" : 0.7,
-						"z" : 0.7,
+						"x" : 1.0,
+						"y" : 1.0,
+						"z" : 1.0,
 						"w" : 1.0
 					},
 					"EndColor" :
@@ -243,7 +261,7 @@
 						"x" : 1.0,
 						"y" : 1.0,
 						"z" : 1.0,
-						"w" : 0.0
+						"w" : 1.0
 					}
 				},					
 				{

@@ -51,7 +51,7 @@ namespace nap
 		float				mSize = 0.5f;
 		float				mSizeVariation = 0.2f;
 		float				mSpread;
-		float				mVelocity;
+		glm::vec3			mVelocity;
 		float				mVelocityVariation;
 		glm::vec4			mStartColor;
 		glm::vec4			mEndColor;

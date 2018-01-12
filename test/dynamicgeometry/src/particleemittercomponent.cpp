@@ -1,9 +1,11 @@
 // Local Includes
 #include "particleemittercomponent.h"
-#include "entity.h"
-#include "transformcomponent.h"
-#include "rect.h"
-#include "glm/gtx/transform.hpp"
+
+#include <entity.h>
+#include <transformcomponent.h>
+#include <rect.h>
+#include <glm/gtx/transform.hpp>
+#include <mathutils.h>
 
 RTTI_BEGIN_CLASS(nap::ParticleEmitterComponent)
 	RTTI_PROPERTY("SpawnRate",				&nap::ParticleEmitterComponent::mSpawnRate,					nap::rtti::EPropertyMetaData::Default)
@@ -131,10 +133,12 @@ namespace nap
 			particle.mTimeLeft = particle.mLifeTime;
 
 			float spread = frand(0.0f, component->mSpread);
-			float velocity = frand(component->mVelocity, component->mVelocityVariation);
+			float velocity_x = frand(component->mVelocity.x, component->mVelocityVariation);
+			float velocity_y = frand(component->mVelocity.y, component->mVelocityVariation);
+			float velocity_z = frand(component->mVelocity.z, component->mVelocityVariation);
 			particle.mVelocity = glm::vec3(spread, 1.0f, spread);
 			particle.mVelocity = glm::normalize(particle.mVelocity);
-			particle.mVelocity *= velocity;
+			particle.mVelocity *= glm::vec3(velocity_x, velocity_y, velocity_z);
 
 			mParticles.emplace_back(particle);
 
@@ -156,9 +160,11 @@ namespace nap
 
 				float life_scale = 1.0f - (particle.mTimeLeft / component->mLifeTime);
 				particle.mColor = component->mStartColor + (component->mEndColor - component->mStartColor) * life_scale;
+				particle.mColor.a = math::bell(life_scale, 5.0f);
 			}
 		}
 	}
+
 
 	void ParticleEmitterComponentInstance::updateMesh()
 	{
@@ -190,6 +196,7 @@ namespace nap
 				{rect.getMin().x,	rect.getMax().y, 0.0f },
 				{rect.getMax().x,	rect.getMax().y, 0.0f },
 			};
+
 			glm::mat4x4 translation = glm::translate(particle.mPosition);
 			glm::mat4x4 rotation = glm::rotate(particle.mRotation, glm::vec3(0.0f, 0.0f, 1.0f));
 			for (glm::vec3& pos : positions)
