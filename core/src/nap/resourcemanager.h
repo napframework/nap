@@ -11,6 +11,7 @@
 // External Includes
 #include <rtti/unresolvedpointer.h>
 #include <rtti/factory.h>
+#include <rtti/jsonreader.h>
 #include <map>
 
 namespace nap
@@ -117,10 +118,11 @@ namespace nap
 		EFileModified isFileModified(const std::string& modifiedFile);
 
 		/**
-		 * Prepend FileLink paths on updated objects with our project data directory location
-		 * @param updatedObjects: Updated objects to prepend
+		 * Prepend FileLink paths in read objects with our project data directory location
+		 * @param readResult: Read result with objects and file list to prepend
 		 */
-		void patchFilePaths(ObjectByIDMap& updatedObjects);
+		void patchFilePaths(rtti::RTTIDeserializeResult& readResult);
+
 		
 	private:
 

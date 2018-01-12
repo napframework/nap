@@ -270,7 +270,7 @@ namespace nap
 				{
 					FileLink file_link;
 					file_link.mSourceObjectID = compound.try_convert<RTTIObject>()->mID;
-					file_link.mTargetFile = property.get_value(compound).get_value<std::string>();;
+					file_link.mTargetFile = property.get_value(compound).get_value<std::string>();
 					readState.mResult.mFileLinks.push_back(file_link);
 				}
 
