@@ -1,4 +1,4 @@
-#include "dynamicgeometrytestapp.h"
+#include "dynamicgeoapp.h"
 
 // Nap includes
 #include <nap/core.h>
@@ -8,17 +8,16 @@
 #include <imgui/imgui.h>
 #include <utility/datetimeutils.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::DynamicGeometryTestApp)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::DynamicGeoApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
 namespace nap 
 {
 	/**
-	 * Initialize all the resources and instances used for drawing
-	 * slowly migrating all functionality to nap
-	 */
-	bool DynamicGeometryTestApp::init(utility::ErrorState& error)
+	* Initialize all the resources and store the objects we need later on
+	*/
+	bool DynamicGeoApp::init(utility::ErrorState& error)
 	{		
 		// Create render service
 		mRenderService	= getCore().getService<RenderService>();		
@@ -43,8 +42,14 @@ namespace nap
 	}
 	
 	
-	// Called when the window is updating
-	void DynamicGeometryTestApp::update(double deltaTime)
+	/**
+	 * Forward all received input events to the input router. 
+	 * The input router is used to filter the input events and to forward them
+	 * to the input components of a set of entities, in this case our first person camera.
+	 *
+	 * We also set up our gui that is drawn at a later stage.
+	 */
+	void DynamicGeoApp::update(double deltaTime)
 	{
 		DefaultInputRouter& input_router = mDefaultInputRouter->getComponent<DefaultInputRouterComponentInstance>().mInputRouter;
 		{
@@ -61,13 +66,16 @@ namespace nap
 		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
 		ImGui::TextColored(ImVec4(clr.getRed(), clr.getGreen(), clr.getBlue(), clr.getAlpha()),
 			"wasd keys to move, mouse + left mouse button to look");
-		ImGui::Text(utility::stringFormat("Framerate: %f", getCore().getFramerate()).c_str());
+		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		ImGui::End();
 	}
 	
 	
-	// Called when the window is going to render
-	void DynamicGeometryTestApp::render()
+	/**
+	 * Render all objects to screen at once
+	 * In this case that's only the particle mesh
+	 */
+	void DynamicGeoApp::render()
 	{
 		// Get rid of unnecessary resources
 		mRenderService->destroyGLContextResources({ mRenderWindow });
@@ -91,29 +99,32 @@ namespace nap
 	
 
 	/**
-	 * Handles the window event
-	 */
-	void DynamicGeometryTestApp::handleWindowEvent(const WindowEvent& windowEvent)
-	{
-	}
-	
-
-	void DynamicGeometryTestApp::windowMessageReceived(WindowEventPtr windowEvent)
+	* Occurs when the event handler receives a window message.
+	* You generally give it to the render service which in turn forwards it to the right internal window.
+	* On the next update the render service automatically processes all window events.
+	* If you want to listen to specific events associated with a window it's best to listen to a window's mWindowEvent signal
+	*/
+	void DynamicGeoApp::windowMessageReceived(WindowEventPtr windowEvent)
 	{
 		mRenderService->addEvent(std::move(windowEvent));
 	}
 	
 	
-	void DynamicGeometryTestApp::inputMessageReceived(InputEventPtr inputEvent)
+	/**
+	* Called by the app loop. It's best to forward messages to the input service for further processing later on
+	* In this case we also check if we need to toggle full-screen or exit the running app
+	*/
+	void DynamicGeoApp::inputMessageReceived(InputEventPtr inputEvent)
 	{
-		// If we pressed escape, quit the loop
 		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
 		{
+			// Escape the loop when esc is pressed
 			nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(inputEvent.get());
 			if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
 			{
 				quit(0);
 			}
+			// Toggle fullscreen on 'f'
 			if (press_event->mKey == nap::EKeyCode::KEY_f)
 			{
 				mRenderWindow->toggleFullscreen();
@@ -123,8 +134,7 @@ namespace nap
 		mInputService->addEvent(std::move(inputEvent));
 	}
 
-	
-	void DynamicGeometryTestApp::shutdown() 
-	{
-	}
+	// Cleanup
+	void DynamicGeoApp::shutdown() 
+	{}
 }
