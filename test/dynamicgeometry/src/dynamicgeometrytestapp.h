@@ -13,6 +13,7 @@
 #include <inputrouter.h>
 #include <rendertarget.h>
 #include <app.h>
+#include <imguiservice.h>
 
 
 namespace nap
@@ -62,13 +63,14 @@ namespace nap
 		void shutdown() override;
 		
 	private:
-		RenderService* mRenderService = nullptr;					//< Render Service that handles render calls
-		ResourceManager* mResourceManager = nullptr;				//< Manages all the loaded resources
-		SceneService* mSceneService = nullptr;						//< Manages all the objects in the scene
-		InputService* mInputService = nullptr;						//< Input service for processing input
-		ObjectPtr<RenderWindow> mRenderWindow;						//< Pointers to the render window
-		ObjectPtr<EntityInstance> mDefaultInputRouter;				///< 
-		ObjectPtr<EntityInstance> mCameraEntity;					//< Entity that holds the camera
-		ObjectPtr<RenderTarget> mTextureRenderTarget;				//< Render target for first window rotating plane
+		RenderService* mRenderService = nullptr;						//< Render Service that handles render calls
+		ResourceManager* mResourceManager = nullptr;					//< Manages all the loaded resources
+		SceneService* mSceneService = nullptr;							//< Manages all the objects in the scene
+		InputService* mInputService = nullptr;							//< Input service for processing input
+		IMGuiService* mGuiService = nullptr;							//< IMGui service
+		ObjectPtr<RenderWindow> mRenderWindow;							//< Pointers to the render window
+		ObjectPtr<EntityInstance> mDefaultInputRouter;					//< Routes input events to the input component
+		ObjectPtr<EntityInstance> mCameraEntity;						//< Entity that holds the camera
+		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
 	};
 }

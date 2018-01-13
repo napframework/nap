@@ -5,6 +5,8 @@
 #include <nap/logger.h>
 #include <perspcameracomponent.h>
 #include <scene.h>
+#include <imgui/imgui.h>
+#include <utility/datetimeutils.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::DynamicGeometryTestApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -19,9 +21,10 @@ namespace nap
 	bool DynamicGeometryTestApp::init(utility::ErrorState& error)
 	{		
 		// Create render service
-		mRenderService = getCore().getService<RenderService>();		
-		mInputService  = getCore().getService<InputService>();
-		mSceneService  = getCore().getService<SceneService>();
+		mRenderService	= getCore().getService<RenderService>();		
+		mInputService	= getCore().getService<InputService>();
+		mSceneService	= getCore().getService<SceneService>();
+		mGuiService		= getCore().getService<IMGuiService>();
 
 		// Get resource manager and load
 		mResourceManager = getCore().getResourceManager();
@@ -35,12 +38,6 @@ namespace nap
 		mRenderWindow				= mResourceManager->findObject<RenderWindow>("Window0");
 		mCameraEntity				= scene->findEntity("CameraEntity");
 		mDefaultInputRouter			= scene->findEntity("DefaultInputRouterEntity");
-
-		// Set render states
-		nap::RenderState& render_state = mRenderService->getRenderState();
-		render_state.mEnableMultiSampling = true;
-		render_state.mPointSize = 2.0f;
-		render_state.mPolygonMode = opengl::PolygonMode::FILL;
 
 		return true;
 	}
@@ -58,6 +55,14 @@ namespace nap
 			Window* window = mRenderWindow.get();
 			mInputService->processEvents(*window, input_router, entities);
 		}
+
+		ImGui::Begin("Controls");
+		ImGui::Text(utility::getCurrentDateTime().toString().c_str());
+		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
+		ImGui::TextColored(ImVec4(clr.getRed(), clr.getGreen(), clr.getBlue(), clr.getAlpha()),
+			"wasd keys to move, mouse + left mouse button to look");
+		ImGui::Text(utility::stringFormat("Framerate: %f", getCore().getFramerate()).c_str());
+		ImGui::End();
 	}
 	
 	
@@ -76,6 +81,9 @@ namespace nap
 
 		PerspCameraComponentInstance& frame_cam = mCameraEntity->getComponent<PerspCameraComponentInstance>();
 		mRenderService->renderObjects(backbuffer, frame_cam);
+
+		// Render GUI elements
+		mGuiService->draw();
 
 		// Swap back buffer
 		mRenderWindow->swap();
