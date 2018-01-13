@@ -32,7 +32,7 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	// All the plane uvs
+	// Default normalized plane uv's
 	static glm::vec3 plane_uvs[] =
 	{
 		{ 0.0f,	0.0f,	0.0f },
@@ -42,6 +42,11 @@ namespace nap
 	};
 
 
+	/**
+	 * Randomizes a value based on a deviation from that value
+	 * @param baseValue the default value
+	 * @param variation the amount that value is allowed to deviate from it's original value 
+	 */
 	template<typename T>
 	static T particleRand(T baseValue, T variation)
 	{
@@ -51,20 +56,31 @@ namespace nap
 
 	//////////////////////////////////////////////////////////////////////////
 
+	/**
+	 * A particle mesh that is populated by the ParticleEmitterComponent
+	 */
 	class ParticleMesh : public IMesh
 	{
 	public:
 		bool init(utility::ErrorState& errorState)
 		{
+			// Because the mesh is populated dynamically we set the initial amount of vertices to be 0
 			mMeshInstance.setNumVertices(0);
+
+			// We want to draw the mesh as a set of triangles, 2 triangles per particle
 			mMeshInstance.setDrawMode(opengl::EDrawMode::TRIANGLES);
+
+			// Create the necessary attributes
 			Vec3VertexAttribute& position_attribute = mMeshInstance.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
 			Vec3VertexAttribute& uv_attribute = mMeshInstance.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
 			Vec4VertexAttribute& color_attribute = mMeshInstance.getOrCreateAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0));
 			FloatVertexAttribute& id_attribute = mMeshInstance.getOrCreateAttribute<float>("pid");
+			
+			// Reserve CPU memory for all the particle geometry necessary to create
 			mMeshInstance.reserveVertices(1000);
 			mMeshInstance.reserveIndices(1000);
 
+			// Initialize our instance
 			return mMeshInstance.init(errorState);
 		}
 
@@ -87,28 +103,32 @@ namespace nap
 	ParticleEmitterComponentInstance::ParticleEmitterComponentInstance(EntityInstance& entity, Component& resource) :
 		RenderableMeshComponentInstance(entity, resource),
 		mParticleMesh(std::make_unique<ParticleMesh>())
-	{
-	}
-
-
-	ParticleEmitterComponentInstance::~ParticleEmitterComponentInstance()
-	{
-	}
+	{ }
 
 
 	bool ParticleEmitterComponentInstance::init(utility::ErrorState& errorState)
 	{
+		// initialize base class 
 		if (!RenderableMeshComponentInstance::init(errorState))
 			return false;
 
+		// Initialize particle mesh
 		if (!errorState.check(mParticleMesh->init(errorState), "Unable to create particle mesh"))
 			return false;
 
+		// Bind the particle mesh to the material and create a VAO
 		RenderableMesh renderableMesh = createRenderableMesh(*mParticleMesh, errorState);
 		if (!renderableMesh.isValid())
 			return false;
 
+		// Set the particle mesh to be used when drawing
 		setMesh(renderableMesh);
+
+		// Calculate the amount of time it takes within a second to spawn a new particle
+		mSpawntime = static_cast<double>(1.0f / getComponent<ParticleEmitterComponent>()->mSpawnRate);
+		
+		// This ensures a particle is spawned immediately
+		mTimeSinceLastSpawn = mSpawntime;
 
 		return true;
 	}
@@ -116,32 +136,45 @@ namespace nap
 
 	void ParticleEmitterComponentInstance::updateParticles(double deltaTime)
 	{
+		// Calculate the amount of time that passes between now and last particle spawn
 		ParticleEmitterComponent* component = getComponent<ParticleEmitterComponent>();
-		double spawnTimeMs = (1.0f / component->mSpawnRate);
 		mTimeSinceLastSpawn += deltaTime;
-		if (mTimeSinceLastSpawn >= spawnTimeMs)
-		{
-			Particle particle(mCurrentID++);
-			particle.mPosition =		particleRand(component->mPosition, component->mPositionVariation);
-			particle.mRotation =		particleRand(component->mRotation, component->mRotationVariation);
-			particle.mRotationAngle =	glm::normalize(particleRand<glm::vec3>({ 0.0,0.0,0.0 }, { 1.0,1.0,1.0 }));
-			particle.mRotationSpeed =	particleRand(component->mRotationSpeed, component->mRotationSpeedVariation);
-			particle.mSize =			particleRand(component->mSize, component->mSizeVariation);
-			particle.mLifeTime =		particleRand(component->mLifeTime, component->mLifeTimeVariation);
-			float spread =				particleRand(0.0f, component->mSpread);
-			float velocity_x =			particleRand(component->mVelocity.x, component->mVelocityVariation);
-			float velocity_y =			particleRand(component->mVelocity.y, component->mVelocityVariation);
-			float velocity_z =			particleRand(component->mVelocity.z, component->mVelocityVariation);
-			particle.mVelocity =		glm::vec3(spread, 1.0f, spread);
-			particle.mVelocity =		glm::normalize(particle.mVelocity);
-			particle.mVelocity *=		glm::vec3(velocity_x, velocity_y, velocity_z);
-			particle.mTimeLeft =		particle.mLifeTime;
 
-			mParticles.emplace_back(particle);
-			mCurrentID = mCurrentID % math::max<int>();
+		// If enough time passed we want to spawn at least 1 particle
+		// If a lot of time passed we want to spawn more
+		if (mTimeSinceLastSpawn >= mSpawntime)
+		{
+			// Calculate number of particles to spawn
+			int pcount = static_cast<int>(std::round(mTimeSinceLastSpawn / mSpawntime));
+			assert(pcount == 0);
+			
+			// Create a new particle and add to our list of particles
+			for (int i = 0; i < pcount; i++)
+			{
+				Particle particle(mCurrentID++);
+				particle.mPosition = particleRand(component->mPosition, component->mPositionVariation);
+				particle.mRotation = particleRand(component->mRotation, component->mRotationVariation);
+				particle.mRotationAngle = glm::normalize(particleRand<glm::vec3>({ 0.0,0.0,0.0 }, { 1.0,1.0,1.0 }));
+				particle.mRotationSpeed = particleRand(component->mRotationSpeed, component->mRotationSpeedVariation);
+				particle.mSize = particleRand(component->mSize, component->mSizeVariation);
+				particle.mLifeTime = particleRand(component->mLifeTime, component->mLifeTimeVariation);
+				float spread = particleRand(0.0f, component->mSpread);
+				float velocity_x = particleRand(component->mVelocity.x, component->mVelocityVariation);
+				float velocity_y = particleRand(component->mVelocity.y, component->mVelocityVariation);
+				float velocity_z = particleRand(component->mVelocity.z, component->mVelocityVariation);
+				particle.mVelocity = glm::vec3(spread, 1.0f, spread);
+				particle.mVelocity = glm::normalize(particle.mVelocity);
+				particle.mVelocity *= glm::vec3(velocity_x, velocity_y, velocity_z);
+				particle.mTimeLeft = particle.mLifeTime;
+
+				mParticles.emplace_back(particle);
+				mCurrentID = mCurrentID % math::max<int>();
+			}
+			// Reset spawn time
 			mTimeSinceLastSpawn = 0.0f;
 		}
 
+		// Iterate over all particles and kill the ones that ran out of time
 		for (int i = mParticles.size() - 1; i >= 0; --i)
 		{
 			Particle& particle = mParticles[i];
@@ -149,16 +182,17 @@ namespace nap
 			if (particle.mTimeLeft < 0.0)
 			{
 				mParticles.erase(mParticles.begin() + i);
+				continue;
 			}
-			else
-			{
-				particle.mPosition += particle.mVelocity * (float)deltaTime;
-				particle.mRotation += particle.mRotationSpeed * (float)deltaTime;
 
-				float life_scale = 1.0f - (particle.mTimeLeft / component->mLifeTime);
-				particle.mColor = component->mStartColor + (component->mEndColor - component->mStartColor) * life_scale;
-				particle.mColor.a = math::bell(life_scale, 2.0f);
-			}
+			// Otherwise update their position and rotation
+			particle.mPosition += particle.mVelocity * (float)deltaTime;
+			particle.mRotation += particle.mRotationSpeed * (float)deltaTime;
+
+			// Update color based on time over life
+			float life_scale = 1.0f - (particle.mTimeLeft / component->mLifeTime);
+			particle.mColor = component->mStartColor + (component->mEndColor - component->mStartColor) * life_scale;
+			particle.mColor.a = math::bell(life_scale, 2.0f);
 		}
 	}
 
@@ -167,20 +201,25 @@ namespace nap
 	{
  		MeshInstance& mesh_instance = mParticleMesh->getMeshInstance();
 
+		// Get the total number of vertices based on particle count
+		// When the mesh is updated on the gpu it knows the amount of data to upload
 		int num_vertices = mParticles.size() * 4;
 		mesh_instance.setNumVertices(num_vertices);
-
+		
+		// Get the attributes we want to modify
 		Vec3VertexAttribute& position_attribute = mesh_instance.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
 		Vec3VertexAttribute& uv_attribute		= mesh_instance.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
 		Vec4VertexAttribute& color_attribute	= mesh_instance.getOrCreateAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0));
-		FloatVertexAttribute& id_attribute = mesh_instance.getOrCreateAttribute<float>("pid");
+		FloatVertexAttribute& id_attribute		= mesh_instance.getOrCreateAttribute<float>("pid");
 
+		// Clear all of 'm
 		position_attribute.clear();
 		uv_attribute.clear();
-		color_attribute.clear();
+		color_attribute.clear();		
 		id_attribute.clear();
 		mesh_instance.clearIndices();
-
+		
+		// Build the mesh based on the amount of particles
 		unsigned int cur_num_vertices = 0;
 		for (Particle& particle : mParticles)
 		{
@@ -188,6 +227,7 @@ namespace nap
 			float halfSize = particle.mSize * 0.5f;
 			math::Rect rect(-halfSize, -halfSize, particle.mSize, particle.mSize);
 
+			// Get rectangle positions
 			glm::vec3 positions[] =
 			{
 				{rect.getMin().x,	rect.getMin().y, 0.0f },
@@ -196,14 +236,7 @@ namespace nap
 				{rect.getMax().x,	rect.getMax().y, 0.0f },
 			};
 
-			float ids[] =
-			{
-				float(particle.mID),
-				float(particle.mID),
-				float(particle.mID),
-				float(particle.mID)
-			};
-
+			// Apply particle translation / rotation
 			glm::mat4x4 translation = glm::translate(particle.mPosition);
 			glm::mat4x4 rotation = glm::rotate(particle.mRotation, particle.mRotationAngle);
 			for (glm::vec3& pos : positions)
@@ -212,6 +245,16 @@ namespace nap
 				pos = glm::vec3(world_pos.x, world_pos.y, world_pos.z);
 			}
 
+			// Push particle id
+			float ids[] =
+			{
+				float(particle.mID),
+				float(particle.mID),
+				float(particle.mID),
+				float(particle.mID)
+			};
+
+			// Indices for 2 triangles, 1 plane
 			unsigned int indices[] =
 			{
 				cur_num_vertices + 0,
@@ -222,20 +265,25 @@ namespace nap
 				cur_num_vertices + 2
 			};
 
+			// Push particle color
 			glm::vec4 colors[] =
 			{
-				particle.mColor, particle.mColor, particle.mColor, particle.mColor
+				particle.mColor, 
+				particle.mColor, 
+				particle.mColor, 
+				particle.mColor
 			};
 
+			// Add data
 			position_attribute.addData(positions, 4);
 			uv_attribute.addData(plane_uvs, 4);
 			color_attribute.addData(colors, 4);
 			id_attribute.addData(ids, 4);
 			mesh_instance.addIndices(indices, 6);
-
 			cur_num_vertices += 4;
 		}
 
+		// push
 		utility::ErrorState error_state;
 		mesh_instance.update(error_state);
 	}

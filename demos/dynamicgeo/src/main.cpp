@@ -1,7 +1,7 @@
 // main.cpp : Defines the entry point for the console application.
 //
 // Local Includes
-#include "dynamicgeometrytestapp.h"
+#include "dynamicgeoapp.h"
 
 // Nap includes
 #include <nap/core.h>
@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 	nap::Core core;
 
 	// Create app runner
-	nap::AppRunner<nap::DynamicGeometryTestApp, nap::GUIAppEventHandler> app_runner(core);
+	nap::AppRunner<nap::DynamicGeoApp, nap::GUIAppEventHandler> app_runner(core);
 
 	// Start
 	nap::utility::ErrorState error;

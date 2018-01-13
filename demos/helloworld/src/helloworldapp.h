@@ -8,6 +8,7 @@
 #include <nap/resourcemanager.h>
 #include <sceneservice.h>
 #include <inputservice.h>
+#include <imguiservice.h>
 #include <app.h>
 
 namespace nap
@@ -75,14 +76,14 @@ namespace nap
 
 	private:
 		// Nap Services
-		RenderService*		mRenderService = nullptr;				//< Render Service that handles render calls
-		ResourceManager*	mResourceManager = nullptr;				//< Manages all the loaded resources
-		SceneService*		mSceneService = nullptr;				//< Manages all the objects in the scene
-		InputService*		mInputService = nullptr;				//< Input service for processing input
-
-		ObjectPtr<RenderWindow> mRenderWindow;						//< Pointer to the render window
-		
-		ObjectPtr<EntityInstance> mCameraEntity = nullptr;			//< Pointer to the entity that holds the camera
-		ObjectPtr<EntityInstance> mWorldEntity = nullptr;			//< Pointer to the entity that holds the sphere
+		RenderService* mRenderService = nullptr;						//< Render Service that handles render calls
+		ResourceManager* mResourceManager = nullptr;					//< Manages all the loaded resources
+		SceneService* mSceneService = nullptr;							//< Manages all the objects in the scene
+		InputService* mInputService = nullptr;							//< Input service for processing input
+		IMGuiService* mGuiService = nullptr;							//< Manages gui related update / draw calls
+		ObjectPtr<RenderWindow> mRenderWindow;							//< Pointer to the render window		
+		ObjectPtr<EntityInstance> mCameraEntity = nullptr;				//< Pointer to the entity that holds the camera
+		ObjectPtr<EntityInstance> mWorldEntity = nullptr;				//< Pointer to the entity that holds the sphere
+		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
 	};
 }
