@@ -153,7 +153,7 @@ namespace nap
 		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, components_to_render);
 
 		// Render gui to window
-		mGuiService->render();
+		mGuiService->draw();
 
 		// Swap screen buffers
 		mRenderWindow->swap();

@@ -133,7 +133,7 @@ namespace nap
 			renderService->renderObjects(backbuffer, sceneCamera, components_to_render);
 
 			// Render our gui
-			getCore().getService<IMGuiService>()->render();
+			getCore().getService<IMGuiService>()->draw();
 
 			renderWindow->swap();
 		}

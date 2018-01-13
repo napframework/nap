@@ -45,7 +45,7 @@ namespace nap
 	template<typename T>
 	static T particleRand(T baseValue, T variation)
 	{
-		return math::random<T>(baseValue + variation, baseValue - variation);
+		return math::random<T>(baseValue - variation, baseValue + variation);
 	}
 
 

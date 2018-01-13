@@ -195,8 +195,8 @@
 						"y" : 0.1,
 						"z" : 4.25
 					},
-					"Size" : 0.07,
-					"SizeVariation" : 0.04,
+					"Size" : 0.08,
+					"SizeVariation" : 0.045,
 					"Rotation" : 0.0,
 					"RotationVariation" : 50.0,
 					"RotationSpeed" : 1.0,
