@@ -5,8 +5,25 @@
 
 using namespace napkin;
 
+void myDrawText(QPainter *painter, QPointF p, QString text){
+
+	QRawFont rawFont = QRawFont::fromFont(painter->font());
+	QVector<quint32> indexes = rawFont.glyphIndexesForString(text);
+
+	painter->save();
+	for(unsigned int i=0; i<indexes.count(); i++){
+		QPainterPath path = rawFont.pathForGlyph(indexes[i]);
+		painter->translate(QPointF(p.x(), p.y() + i*0));
+		painter->fillPath(path,painter->pen().brush());
+	}
+	painter->restore();
+}
+
 GridView::GridView() : QGraphicsView() {
 	setTransformationAnchor(QGraphicsView::NoAnchor);
+
+	mRulerFont.setFamily("monospace");
+	mRulerFont.setPointSize(9);
 }
 
 
@@ -50,9 +67,28 @@ void GridView::keyReleaseEvent(QKeyEvent* event) {
 }
 
 void GridView::zoom(const QPointF& delta, const QPointF& pivot) {
-	mViewTransform.translate(pivot.x(), pivot.y());
-	mViewTransform.scale(delta.x(), delta.y());
-	mViewTransform.translate(-pivot.x(), -pivot.y());
+
+	auto& xf = mViewTransform;
+
+	// Translate to zoom around pivot
+	xf.translate(pivot.x(), pivot.y());
+
+	if (mZoomMode == IgnoreAspectRatio) {
+		xf.scale(delta.x(), delta.y());
+	} else {
+		qreal avg = (delta.x() + delta.y()) / 2;
+		if (mZoomMode == KeepAspectRatio) {
+			xf.scale(avg, avg);
+		} else if (mZoomMode == Horizontal) {
+			xf.scale(avg, 1);
+		} else if (mZoomMode == Vertical) {
+			xf.scale(1, avg);
+		}
+	}
+
+	// Restore after pivot zoom
+	xf.translate(-pivot.x(), -pivot.y());
+
 	applyViewTransform();
 }
 
@@ -68,6 +104,8 @@ void GridView::drawBackground(QPainter* painter, const QRectF& rect) {
 	painter->fillRect(rect, Qt::darkGray);
 
 	auto viewRect = viewport()->rect();
+	auto vScale = viewScale();
+	auto vPos = viewPos();
 	auto sceneRect = mapToScene(viewRect).boundingRect();
 	qreal desiredSpacing = 300;
 
@@ -82,6 +120,7 @@ void GridView::drawBackground(QPainter* painter, const QRectF& rect) {
 	int ymin = qFloor(sceneRect.top() / stepSizeY);
 	int ymax = qCeil(sceneRect.bottom() / stepSizeY);
 
+	// Draw lines
 	painter->setPen(QPen(Qt::gray, 0));
 	for (int x = xmin; x < xmax; x++) {
 		qreal tx = x * stepSizeX;
@@ -89,7 +128,6 @@ void GridView::drawBackground(QPainter* painter, const QRectF& rect) {
 		QPointF p2(tx, sceneRect.bottom());
 		painter->drawLine(p1, p2);
 	}
-
 	for (int y = ymin; y < ymax; y++) {
 		qreal ty = y * stepSizeY;
 		QPointF p1(sceneRect.left(), ty);
@@ -97,9 +135,30 @@ void GridView::drawBackground(QPainter* painter, const QRectF& rect) {
 		painter->drawLine(p1, p2);
 	}
 
+
+	// Draw Numbers
+	painter->setFont(mRulerFont);
+
+	painter->save();
+	painter->resetMatrix();
+	for (int x = xmin; x < xmax; x++) {
+		qreal tx = x * stepSizeX;
+		auto pt = mapFromScene(tx, sceneRect.top()) + QPointF(5, 15);
+		if (pt.x() > 20)
+			painter->drawText(pt,QString::number(tx));
+	}
+	for (int y = ymin; y < ymax; y++) {
+		qreal ty = y * stepSizeY + 5;
+		auto pt = mapFromScene(sceneRect.left(), ty) + QPointF(5, 15);
+		if (pt.y() > 20)
+			painter->drawText(pt, QString::number(ty));
+	}
+	painter->restore();
+
 	painter->setBrush(Qt::red);
 	painter->drawRect(0, 0, 100, 100);
-
+	painter->setBrush(Qt::green);
+	painter->drawRect(0, 0, 1, 1);
 }
 
 qreal GridView::calcGridStep(qreal desiredSpacing, qreal viewWidth, qreal sceneRectWidth) const {
@@ -125,6 +184,7 @@ void GridView::wheelEvent(QWheelEvent* event) {
 
 void GridView::centerView() {
 	mViewTransform.reset();
+	mViewTransform.translate(rect().x() / 2, rect().y() / 2);
 	applyViewTransform();
 }
 
