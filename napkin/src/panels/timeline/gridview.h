@@ -6,7 +6,9 @@ namespace napkin {
 
 
 	class GridView : public QGraphicsView {
-
+		enum ZoomMode {
+			IgnoreAspectRatio, KeepAspectRatio, Horizontal, Vertical
+		};
 
 	public:
 		GridView();
@@ -34,6 +36,8 @@ namespace napkin {
 		QPointF mMouseLastPos;
 		QTransform mViewTransform;
 		QSize mViewSize;
+		QFont mRulerFont;
+		ZoomMode mZoomMode = IgnoreAspectRatio;
 
 		qreal calcGridStep(qreal desiredSpacing, qreal viewWidth, qreal sceneRectWidth) const;
 	};
