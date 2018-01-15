@@ -156,7 +156,7 @@ void TimelinePanel::demo() {
 	namegen::NameGen gen;
 
 	int trackCount = 100;
-	int eventCount = 10;
+	int eventCount = 100;
 
 	auto timeline = new Timeline(this);
 

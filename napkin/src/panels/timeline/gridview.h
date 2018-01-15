@@ -10,6 +10,10 @@ namespace napkin {
 			IgnoreAspectRatio, KeepAspectRatio, Horizontal, Vertical
 		};
 
+		enum RulerFormat {
+			Float, SMPTE
+		};
+
 	public:
 		GridView();
 		void pan(const QPointF& delta);
@@ -37,9 +41,13 @@ namespace napkin {
 		QTransform mViewTransform;
 		QSize mViewSize;
 		QFont mRulerFont;
-		ZoomMode mZoomMode = IgnoreAspectRatio;
+
+		ZoomMode mZoomMode = Horizontal;
+		RulerFormat mRulerFormat = SMPTE;
+		qreal mFramerate = 30;
 
 		qreal calcGridStep(qreal desiredSpacing, qreal viewWidth, qreal sceneRectWidth) const;
+		qreal calcGridStepTime(qreal desiredSpacing, qreal viewWidth, qreal sceneRectWidth, qreal minStepSize) const;
 	};
 
 }

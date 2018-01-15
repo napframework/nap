@@ -1,20 +1,46 @@
 #include "gridview.h"
 #include <QMouseEvent>
 #include <QtGui/QtGui>
-#include <iostream>
+#include <nap/logger.h>
 
 using namespace napkin;
 
-void myDrawText(QPainter *painter, QPointF p, QString text){
+qreal roundTo(qreal n, qreal unit) {
+	return qRound(n / unit) * unit;
+}
+
+qreal floorTo(qreal n, qreal unit) {
+	return qFloor(n / unit) * unit;
+}
+
+qreal ceilTo(qreal n, qreal unit) {
+	return qCeil(n / unit) * unit;
+}
+
+QString secondsToSMPTE(qreal seconds, int framerate) {
+	int f = qFloor(fmod(seconds, 1.0) * framerate);
+	int s = qFloor(seconds);
+	int m = qFloor(s / 60.0);
+	int h = qFloor(m / 60.0);
+	m = m % 60;
+	s = s % 60;
+
+	return QString("%1:%2:%3:%4").arg(QString::asprintf("%02d", h),
+									  QString::asprintf("%02d", m),
+									  QString::asprintf("%02d", s),
+									  QString::asprintf("%02d", f));
+}
+
+void myDrawText(QPainter* painter, QPointF p, QString text) {
 
 	QRawFont rawFont = QRawFont::fromFont(painter->font());
 	QVector<quint32> indexes = rawFont.glyphIndexesForString(text);
 
 	painter->save();
-	for(unsigned int i=0; i<indexes.count(); i++){
+	for (unsigned int i = 0; i < indexes.count(); i++) {
 		QPainterPath path = rawFont.pathForGlyph(indexes[i]);
-		painter->translate(QPointF(p.x(), p.y() + i*0));
-		painter->fillPath(path,painter->pen().brush());
+		painter->translate(QPointF(p.x(), p.y() + i * 0));
+		painter->fillPath(path, painter->pen().brush());
 	}
 	painter->restore();
 }
@@ -39,10 +65,11 @@ void GridView::mouseMoveEvent(QMouseEvent* event) {
 	auto delta = mousePos - mMouseLastPos;
 
 	bool lmb = event->buttons() == Qt::LeftButton;
+	bool mmb = event->buttons() == Qt::MiddleButton;
 	bool rmb = event->buttons() == Qt::RightButton;
 	bool altKey = event->modifiers() == Qt::AltModifier;
 
-	if (lmb && altKey) {
+	if (altKey && (lmb || mmb)) {
 		pan(QPointF(delta));
 	} else if (altKey && rmb) {
 		zoom(QPointF(1, 1) + QPointF(delta) * 0.01, mapToScene(mMousePressPos.toPoint()));
@@ -104,68 +131,110 @@ void GridView::drawBackground(QPainter* painter, const QRectF& rect) {
 	painter->fillRect(rect, Qt::darkGray);
 
 	auto viewRect = viewport()->rect();
-	auto vScale = viewScale();
-	auto vPos = viewPos();
 	auto sceneRect = mapToScene(viewRect).boundingRect();
 	qreal desiredSpacing = 300;
 
 
 //	std::cout << stepSizeX << std::endl;
+	QString suffix;
 
-	qreal stepSizeX = calcGridStep(desiredSpacing, viewRect.width(), sceneRect.width());
-	qreal stepSizeY = calcGridStep(desiredSpacing, viewRect.height(), sceneRect.height());
 
-	int xmin = qFloor(sceneRect.left() / stepSizeX);
-	int xmax = qCeil(sceneRect.right() / stepSizeX);
-	int ymin = qFloor(sceneRect.top() / stepSizeY);
-	int ymax = qCeil(sceneRect.bottom() / stepSizeY);
+	// Draw minor lines
+	{
+		qreal stepSizeX = calcGridStepTime(desiredSpacing, viewRect.width(), sceneRect.width(), 10);
+		qreal stepSizeY = calcGridStep(desiredSpacing, viewRect.height(), sceneRect.height());
+
+		int xmin = qFloor(sceneRect.left() / stepSizeX);
+		int xmax = qCeil(sceneRect.right() / stepSizeX);
+		int ymin = qFloor(sceneRect.top() / stepSizeY);
+		int ymax = qCeil(sceneRect.bottom() / stepSizeY);
+
+
+		painter->setPen(QPen(Qt::gray, 0, Qt::DotLine));
+		for (int x = xmin; x < xmax; x++) {
+			qreal tx = x * stepSizeX;
+			QPointF p1(tx, sceneRect.top() + 22);
+			QPointF p2(tx, sceneRect.bottom());
+			painter->drawLine(p1, p2);
+		}
+
+	}
 
 	// Draw lines
-	painter->setPen(QPen(Qt::gray, 0));
-	for (int x = xmin; x < xmax; x++) {
-		qreal tx = x * stepSizeX;
-		QPointF p1(tx, sceneRect.top());
-		QPointF p2(tx, sceneRect.bottom());
-		painter->drawLine(p1, p2);
-	}
-	for (int y = ymin; y < ymax; y++) {
-		qreal ty = y * stepSizeY;
-		QPointF p1(sceneRect.left(), ty);
-		QPointF p2(sceneRect.right(), ty);
-		painter->drawLine(p1, p2);
+	{
+		qreal stepSizeX = calcGridStepTime(desiredSpacing, viewRect.width(), sceneRect.width(), 150);
+		qreal stepSizeY = calcGridStep(desiredSpacing, viewRect.height(), sceneRect.height());
+
+		int xmin = qFloor(sceneRect.left() / stepSizeX);
+		int xmax = qCeil(sceneRect.right() / stepSizeX);
+		int ymin = qFloor(sceneRect.top() / stepSizeY);
+		int ymax = qCeil(sceneRect.bottom() / stepSizeY);
+
+		painter->setPen(QPen(Qt::gray, 0));
+		if (stepSizeX > 0) {
+			for (int x = xmin; x < xmax; x++) {
+				qreal tx = x * stepSizeX;
+				QPointF p1(tx, sceneRect.top());
+				QPointF p2(tx, sceneRect.bottom());
+				painter->drawLine(p1, p2);
+			}
+		}
+		if (stepSizeY > 0) {
+			for (int y = ymin; y < ymax; y++) {
+				qreal ty = y * stepSizeY;
+				QPointF p1(sceneRect.left(), ty);
+				QPointF p2(sceneRect.right(), ty);
+				painter->drawLine(p1, p2);
+			}
+		}
+
+		// Draw Numbers
+		painter->setFont(mRulerFont);
+
+		painter->save();
+		painter->resetMatrix();
+		if (stepSizeX > 0) {
+			for (int x = xmin; x < xmax; x++) {
+				qreal tx = x * stepSizeX;
+				auto pt = mapFromScene(tx, sceneRect.top()) + QPointF(5, 15);
+				if (pt.x() > 20) {
+					if (mRulerFormat == Float)
+						painter->drawText(pt, QString::number(tx) + suffix);
+					else if (mRulerFormat == SMPTE)
+						painter->drawText(pt, secondsToSMPTE(tx, mFramerate));
+				}
+			}
+		}
+		if (stepSizeY > 0) {
+			for (int y = ymin; y < ymax; y++) {
+				qreal ty = y * stepSizeY + 5;
+				auto pt = mapFromScene(sceneRect.left(), ty) + QPointF(5, 15);
+				if (pt.y() > 20) {
+					painter->drawText(pt, QString::number(ty) + suffix);
+				}
+			}
+		}
+
+		painter->restore();
 	}
 
 
-	// Draw Numbers
-	painter->setFont(mRulerFont);
 
-	painter->save();
-	painter->resetMatrix();
-	for (int x = xmin; x < xmax; x++) {
-		qreal tx = x * stepSizeX;
-		auto pt = mapFromScene(tx, sceneRect.top()) + QPointF(5, 15);
-		if (pt.x() > 20)
-			painter->drawText(pt,QString::number(tx));
-	}
-	for (int y = ymin; y < ymax; y++) {
-		qreal ty = y * stepSizeY + 5;
-		auto pt = mapFromScene(sceneRect.left(), ty) + QPointF(5, 15);
-		if (pt.y() > 20)
-			painter->drawText(pt, QString::number(ty));
-	}
-	painter->restore();
 
-	painter->setBrush(Qt::red);
-	painter->drawRect(0, 0, 100, 100);
-	painter->setBrush(Qt::green);
-	painter->drawRect(0, 0, 1, 1);
+	const int framerate = 30;
+	const qreal frame = 1.0 / framerate;
+	const qreal second = 1;
+	const qreal minute = 60;
+	const qreal hour = minute * 60;
+	const qreal day = hour * 24;
+
 }
 
 qreal GridView::calcGridStep(qreal desiredSpacing, qreal viewWidth, qreal sceneRectWidth) const {
 	qreal targetSteps = viewWidth / desiredSpacing;
 	qreal estStep = sceneRectWidth / targetSteps;
-	qreal magPow = qPow(10, qFloor(log(estStep)/log(10)));
-	qreal magMsd = qRound(estStep/magPow * 0.5);
+	qreal magPow = qPow(10, qFloor(log(estStep) / log(10)));
+	qreal magMsd = qRound(estStep / magPow * 0.5);
 
 	if (magMsd > 5)
 		magMsd = 10;
@@ -174,7 +243,41 @@ qreal GridView::calcGridStep(qreal desiredSpacing, qreal viewWidth, qreal sceneR
 	else if (magMsd > 1)
 		magMsd = 2;
 
+
 	return magMsd * magPow;
+}
+
+qreal GridView::calcGridStepTime(qreal desiredSpacing, qreal viewWidth, qreal sceneRectWidth,
+								 qreal minStepSize) const {
+	const qreal intervals[] = {
+			1.0 / mFramerate, // frame
+			1.0, // second
+			2.0,
+			5.0,
+			10.0, // 10 seconds
+			30.0, // 30 seconds
+			60.0, // minute
+			60.0 * 60.0, // hour
+			60.0 * 60.0 * 2,
+			60.0 * 60.0 * 5,
+			60.0 * 60.0 * 10,
+			60.0 * 60.0 * 20,
+			60.0 * 60.0 * 50,
+			60.0 * 60.0 * 100, // hundred hours
+			60.0 * 60.0 * 200,
+			60.0 * 60.0 * 500,
+			60.0 * 60.0 * 1000,
+	};
+	int len = sizeof(intervals) / sizeof(intervals[0]);
+
+	for (int i = 0; i < len; i++) {
+		qreal ival = intervals[i];
+		qreal steps = sceneRectWidth / ival;
+		qreal stepSize = viewWidth / steps;
+		if (stepSize > minStepSize)
+			return ival;
+	}
+	return -1;
 }
 
 void GridView::wheelEvent(QWheelEvent* event) {
