@@ -372,7 +372,7 @@ namespace nap
 			}
 
 			// Changes the time at which a new color palette is selected
-			if (ImGui::SliderFloat("Cycle Time", &mColorCycleTime, 0.0f, 60.0f, "%.3f", 3.0f))
+			if (ImGui::SliderFloat("Cycle Time (minutes)", &mColorCycleTime, 0.0f, 60.0f, "%.3f", 3.0f))
 			{
 				setColorPaletteCycleSpeed(mColorCycleTime);
 			}
