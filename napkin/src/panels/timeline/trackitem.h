@@ -7,9 +7,9 @@
 
 namespace napkin {
 
-	class TrackItem : public QGraphicsRectItem {
+	class TrackItem : public QGraphicsItemGroup {
 	public:
-		explicit TrackItem(Track& track);
+		explicit TrackItem(QGraphicsItem* parent, Track& track);
 
 		Track& track() const { return mTrack; }
 

@@ -10,13 +10,12 @@ namespace napkin {
 	public:
 		explicit EventItem(QGraphicsItem* parent, Event& event);
 
-		Event& event() const { return mClip; }
+		Event& event() const { return mEvent; }
 
 		void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
 
 	private:
-		Event& mClip;
+		Event& mEvent;
 
-		QGraphicsTextItem mTextItem;
 	};
 }
