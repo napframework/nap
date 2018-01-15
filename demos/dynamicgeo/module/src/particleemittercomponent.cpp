@@ -146,7 +146,7 @@ namespace nap
 		{
 			// Calculate number of particles to spawn
 			int pcount = static_cast<int>(std::round(mTimeSinceLastSpawn / mSpawntime));
-			assert(pcount == 0);
+			assert(pcount != 0);
 			
 			// Create a new particle and add to our list of particles
 			for (int i = 0; i < pcount; i++)

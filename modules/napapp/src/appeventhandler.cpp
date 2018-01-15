@@ -39,6 +39,13 @@ namespace nap
 		opengl::Event event;
 		while (opengl::pollEvent(event))
 		{
+			// Stop if the event tells us to quit
+			if (event.type == SDL_QUIT)
+			{
+				mApp.quit(0);
+				break;
+			}
+
 			// Check if we are dealing with an input event (mouse / keyboard)
 			if (nap::isInputEvent(event))
 			{
@@ -67,6 +74,13 @@ namespace nap
 		opengl::Event event;
 		while (opengl::pollEvent(event))
 		{
+			// Stop if the event tells us to quit
+			if (event.type == SDL_QUIT)
+			{
+				mApp.quit(0);
+				break;
+			}
+
 			// Get the interface
 			ImGuiIO& io = ImGui::GetIO();
 			
