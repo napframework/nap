@@ -136,7 +136,7 @@ namespace nap
 
 			// Set the camera location uniform
 			nap::TransformComponentInstance& cam_xform = mPerspectiveCameraOne->getComponent<nap::TransformComponentInstance>();
-			glm::vec3 global_pos = math::position(cam_xform.getGlobalTransform());
+			glm::vec3 global_pos = math::extractPosition(cam_xform.getGlobalTransform());
 			cam_loc_uniform.setValue(global_pos);
 
 			// Render the world with the right camera directly to screen
@@ -187,7 +187,7 @@ namespace nap
 			
 			// Set the camera location uniform for the halo effect
 			nap::TransformComponentInstance& cam_xform = mPerspectiveCameraTwo->getComponent<nap::TransformComponentInstance>();
-			glm::vec3 global_pos = math::position(cam_xform.getGlobalTransform());
+			glm::vec3 global_pos = math::extractPosition(cam_xform.getGlobalTransform());
 			cam_loc_uniform.setValue(global_pos);
 
 			// Render sphere

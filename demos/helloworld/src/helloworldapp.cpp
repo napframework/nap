@@ -9,6 +9,7 @@
 #include <scene.h>
 #include <perspcameracomponent.h>
 #include <inputrouter.h>
+#include <imgui/imgui.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -24,9 +25,10 @@ namespace nap
 	bool HelloWorldApp::init(utility::ErrorState& error)
 	{
 		// Retrieve services
-		mRenderService = getCore().getService<nap::RenderService>();
-		mSceneService  = getCore().getService<nap::SceneService>();
-		mInputService  = getCore().getService<nap::InputService>();
+		mRenderService	= getCore().getService<nap::RenderService>();
+		mSceneService	= getCore().getService<nap::SceneService>();
+		mInputService	= getCore().getService<nap::InputService>();
+		mGuiService		= getCore().getService<nap::IMGuiService>();
 
 		// Get resource manager and load
 		mResourceManager = getCore().getResourceManager();
@@ -67,6 +69,15 @@ namespace nap
 		// Forward all input events associated with the first window to the listening components
 		std::vector<nap::EntityInstance*> entities = { mCameraEntity.get() };
 		mInputService->processEvents(*mRenderWindow, input_router, entities);
+
+		// Draw some gui elements
+		ImGui::Begin("Controls");
+		ImGui::Text(utility::getCurrentDateTime().toString().c_str());
+		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
+		ImGui::TextColored(ImVec4(clr.getRed(), clr.getGreen(), clr.getBlue(), clr.getAlpha()),
+			"left mouse button to world, right mouse button to zoom");
+		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+		ImGui::End();
 	}
 
 	
@@ -87,7 +98,7 @@ namespace nap
 		nap::UniformVec3& cam_loc_uniform = render_mesh.getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("inCameraPosition");
 
 		nap::TransformComponentInstance& cam_xform = mCameraEntity->getComponent<nap::TransformComponentInstance>();
-		glm::vec3 global_pos = math::position(cam_xform.getGlobalTransform());
+		glm::vec3 global_pos = math::extractPosition(cam_xform.getGlobalTransform());
 		cam_loc_uniform.setValue(global_pos);
 
 		// Clear opengl context related resources that are not necessary any more
@@ -109,6 +120,9 @@ namespace nap
 
 		// Render the world with the right camera directly to screen
 		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, components_to_render);
+
+		// Draw our gui
+		mGuiService->draw();
 
 		// Swap screen buffers
 		mRenderWindow->swap();
@@ -133,7 +147,7 @@ namespace nap
 	 */
 	void HelloWorldApp::inputMessageReceived(InputEventPtr inputEvent)
 	{
-		// If we pressed escape, quit the loop
+		// Escape the loop when esc is pressed
 		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
 		{
 			nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(inputEvent.get());

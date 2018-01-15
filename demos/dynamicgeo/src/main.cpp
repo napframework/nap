@@ -1,23 +1,21 @@
 // main.cpp : Defines the entry point for the console application.
 //
 // Local Includes
-#include "helloworldapp.h"
+#include "dynamicgeoapp.h"
 
 // Nap includes
+#include <nap/core.h>
 #include <nap/logger.h>
 #include <apprunner.h>
 
-/**
- * Hello World Demo
- * refer to helloworldapp.h for a more detailed description of the application
- */
+// Main loop
 int main(int argc, char *argv[])
 {
 	// Create core
 	nap::Core core;
 
-	// Create app runner using default event handler
-	nap::AppRunner<nap::HelloWorldApp, nap::GUIAppEventHandler> app_runner(core);
+	// Create app runner
+	nap::AppRunner<nap::DynamicGeoApp, nap::GUIAppEventHandler> app_runner(core);
 
 	// Start
 	nap::utility::ErrorState error;

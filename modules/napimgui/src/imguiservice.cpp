@@ -1359,7 +1359,7 @@ namespace nap
 	}
 
 
-	void IMGuiService::render()
+	void IMGuiService::draw()
 	{
 		ImGui::Render();
 	}
