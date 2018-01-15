@@ -86,7 +86,7 @@ namespace nap
 					{
 						int new_idx = mCurrentVariationIndex;
 						while (new_idx == mCurrentVariationIndex)
-							new_idx = math::random(0, getVariationCount() - 1);
+							new_idx = math::random<int>(0, getVariationCount() - 1);
 						selectVariation(new_idx);
 					}
 					break;

@@ -136,7 +136,7 @@ namespace nap
 		mRenderService->renderObjects(backbuffer, ortho_cam_comp);
 
 		// Render gui after last gui call
-		getCore().getService<IMGuiService>()->render();
+		getCore().getService<IMGuiService>()->draw();
 
 		// Swap backbuffer
 		mRenderWindow->swap();

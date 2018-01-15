@@ -115,7 +115,7 @@ namespace nap
 		mRenderService->renderObjects(backbuffer, mCameraEntity->getComponent<nap::PerspCameraComponentInstance>(), components_to_render);
 		
 		// Tell the gui to draw
-		mGuiService->render();
+		mGuiService->draw();
 
 		// Update gpu frame
 		mRenderWindow->swap();

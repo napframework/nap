@@ -83,6 +83,8 @@ add_subdirectory(demos/vinyl)
 add_subdirectory(demos/multiwindow)
 add_subdirectory(demos/heightmap)
 add_subdirectory(demos/heightmap/module)
+add_subdirectory(demos/dynamicgeo)
+add_subdirectory(demos/dynamicgeo/module)
 
 add_subdirectory(unittests)
 
