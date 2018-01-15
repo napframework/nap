@@ -76,6 +76,7 @@ namespace nap
 		// Force cycle modes
 		selectCompositionCycleMode();
 		selectPaletteCycleMode();
+		setColorPaletteCycleSpeed(mColorCycleTime);
 
 		// Position our debug windows
 		positionDebugViews();
@@ -196,20 +197,6 @@ namespace nap
 			// in the index map
 			int posy = y_loc - (plane.getRect().getHeight() / 2.0f);
 			int posx = renderWindow->getWidth() - (plane.getRect().getWidth() / 2.0f);
-			
-			if (utility::startsWith(child->mID, "PaletteDebugDisplayEntity"))
-			{
-				ColorPaletteComponentInstance& palette_comp = compositionEntity->getComponent<ColorPaletteComponentInstance>();
-
-// 				int color_palette_count = palette_comp.getSelection().getCount();
-// 				int index_palette_count = palette_comp.getIndexMap().getCount();
-// 
-// 				float div = (float)color_palette_count / (float)index_palette_count;
-// 				xform.setScale({ div, 1.0f, 1.0f });
-// 
-// 				float plane_width = plane.getRect().getWidth();
-// 				posx -= ((plane_width/2.0) * (1.0-div));
-			}
 
 			// Set transform
 			xform.setTranslate({ posx, posy, 0.0f });
@@ -363,16 +350,16 @@ namespace nap
 					selectPaletteWeek();
 			}
 
-			// Changes the color palette
-			if (ImGui::SliderInt("Variation", &mPaletteSelection, -1, palette_selector.getVariationCount() - 1))
-			{
-				palette_selector.selectVariation(mPaletteSelection);
-			}
-
 			// Changes the mesh paint mode
 			if (ImGui::Combo("Variation Cycle Mode", &mColorPaletteCycleMode, "Off\0Random\0List\0\0"))
 			{
 				selectPaletteCycleMode();
+			}
+
+			// Changes the color palette
+			if (ImGui::SliderInt("Variation", &mPaletteSelection, -1, palette_selector.getVariationCount() - 1))
+			{
+				palette_selector.selectVariation(mPaletteSelection);
 			}
 
 			// Changes the intensity
@@ -385,9 +372,9 @@ namespace nap
 			}
 
 			// Changes the time at which a new color palette is selected
-			if (ImGui::SliderFloat("Cycle Time", &mColorCycleTime, 0.0f, 10.0f))
+			if (ImGui::SliderFloat("Cycle Time", &mColorCycleTime, 0.0f, 60.0f, "%.3f", 3.0f))
 			{
-				palette_selector.setCycleSpeed(mColorCycleTime);
+				setColorPaletteCycleSpeed(mColorCycleTime);
 			}
 		}
 
@@ -485,11 +472,13 @@ namespace nap
 		comp.setCycleMode(static_cast<nap::CompositionCycleMode>(mCompositionCycleMode));
 	}
 
+
 	void KalvertorenApp::selectPaletteWeek()
 	{
 		ColorPaletteComponentInstance& comp = compositionEntity->getComponent<ColorPaletteComponentInstance>();
 		comp.selectWeek(mSelectedWeek-1);
 	}
+
 
 	void KalvertorenApp::selectPaletteCycleMode()
 	{
@@ -497,5 +486,11 @@ namespace nap
 		comp.setCycleMode(static_cast<nap::ColorPaletteCycleMode>(mColorPaletteCycleMode));
 	}
 
+
+	void KalvertorenApp::setColorPaletteCycleSpeed(float minutes)
+	{
+		ColorPaletteComponentInstance& comp = compositionEntity->getComponent<ColorPaletteComponentInstance>();
+		comp.setCycleSpeed(minutes * 60.0f);
+	}
 }
  

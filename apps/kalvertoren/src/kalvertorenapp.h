@@ -87,6 +87,11 @@ namespace nap
 		 */
 		void selectPaletteCycleMode();
 
+		/**
+		 *	Sets the current color palette cycle speed
+		 */
+		void setColorPaletteCycleSpeed(float seconds);
+
 	private:
 		// Nap Objects
 		nap::RenderService*									renderService = nullptr;
