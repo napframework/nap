@@ -16,6 +16,13 @@ namespace nap
 	}
 
 
+	void BaseApp::quit(int errorCode /*= 0*/)
+	{
+		mExitCode = errorCode;
+		mQuit = true;
+	}
+
+
 	App::App(Core& core) : BaseApp(core)
 	{
 

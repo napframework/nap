@@ -63,8 +63,9 @@ namespace nap
 
 		/**
 		 * Call this to quit the running application and exit the main loop.
+		 * @param errorCode defaults to 0, returned by main to signal possible failures
 		 */
-		void quit(int errorCode = 0)									{ mQuit = true; }
+		void quit(int errorCode = 0);
 
 		/**
 		 *	If the application should quit running
@@ -72,7 +73,7 @@ namespace nap
 		bool shouldQuit() const											{ return mQuit; }
 
 		/**
-		 *	@return the application exit code when quit
+		 *	@return the application exit code when quit is called
 		 */
 		int getExitCode() const											{ return mExitCode;  }
 
