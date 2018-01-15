@@ -28,12 +28,9 @@ void TimelineScene::setModel(Timeline* timeline) {
 
 
 void TimelineScene::onTrackAdded(Track& track) {
-	auto item = new TrackItem(track);
-	addItem(item);
+	auto item = new TrackItem(&mTrackGroup, track);
 
 	item->setY(item->track().height() * item->track().index());
-
-	mTrackGroup.addToGroup(item);
 
 	for (auto event : track.events())
 		onEventAdded(*event);
