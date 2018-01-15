@@ -6,10 +6,13 @@
 
 namespace napkin {
 
+	class Timeline;
+	class Track;
+
 	class Event : public QObject {
 	Q_OBJECT
 	public:
-		Event(QObject* parent, const QString& name, const qreal start, const qreal end);
+		Event(Track& parent, const QString& name, qreal start, qreal end);
 
 		const QString& name() const { return mName; }
 
@@ -17,15 +20,19 @@ namespace napkin {
 
 		qreal start() const { return mStart; }
 
-		void setStart(const qreal start);
+		void setStart(qreal start);
 
 		qreal end() const { return mEnd; }
 
-		void setEnd(const qreal end);
+		void setEnd(qreal end);
+
+		qreal length() const;
 
 		const QColor& color() const { return mColor; }
 
 		void setColor(const QColor& col);
+
+		Track& track() const;
 
 	Q_SIGNALS:
 
@@ -41,7 +48,7 @@ namespace napkin {
 	class Track : public QObject {
 	Q_OBJECT
 	public:
-		Track(QObject* parent, const QString& name) : mName(name), QObject(parent) {}
+		Track(Timeline& parent, const QString& name);
 
 		int height() const { return mHeight; }
 
@@ -52,6 +59,10 @@ namespace napkin {
 		Event* addEvent(const QString& name, qreal start, qreal end);
 
 		const QList<Event*>& events() const { return mEvents; }
+
+		Timeline& timeline() const;
+
+		int index();
 
 	Q_SIGNALS:
 

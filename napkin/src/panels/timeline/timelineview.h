@@ -3,7 +3,7 @@
 #include <QGraphicsView>
 
 #include "timelinemodel.h"
-#include "clipitem.h"
+#include "eventitem.h"
 #include "trackitem.h"
 
 
