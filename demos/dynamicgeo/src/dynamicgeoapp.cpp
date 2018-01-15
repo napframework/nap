@@ -38,6 +38,12 @@ namespace nap
 		mCameraEntity				= scene->findEntity("CameraEntity");
 		mDefaultInputRouter			= scene->findEntity("DefaultInputRouterEntity");
 
+		// Position window
+		glm::ivec2 screen_size = opengl::getScreenSize(0);
+		int offset_x = (screen_size.x - mRenderWindow->getWidth()) / 2;
+		int offset_y = (screen_size.y - mRenderWindow->getHeight()) / 2;
+		mRenderWindow->setPosition(glm::ivec2(offset_x, offset_y));
+
 		return true;
 	}
 	
@@ -136,5 +142,7 @@ namespace nap
 
 	// Cleanup
 	void DynamicGeoApp::shutdown() 
-	{}
+	{
+		std::cout << "stopping..." << "\n";
+	}
 }

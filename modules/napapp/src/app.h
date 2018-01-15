@@ -62,8 +62,7 @@ namespace nap
 		virtual void shutdown()											{ }
 
 		/**
-		 * Call this to quit the running application and
-		 * exit the main loop.
+		 * Call this to quit the running application and exit the main loop.
 		 */
 		void quit(int errorCode = 0)									{ mQuit = true; }
 

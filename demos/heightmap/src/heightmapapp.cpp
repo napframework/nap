@@ -36,10 +36,16 @@ namespace nap
 			return false;
 
 		// Extract loaded resources
-		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
+		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");		
 		mHeightMesh = mResourceManager->findObject<nap::HeightMesh>("HeightMesh");
 		mNormalsMaterial = mResourceManager->findObject<nap::Material>("NormalsMaterial");
 		mHeightmapMaterial = mResourceManager->findObject<nap::Material>("HeightMaterial");
+
+		// Position window
+		glm::ivec2 screen_size = opengl::getScreenSize(0);
+		int offset_x = (screen_size.x - mRenderWindow->getWidth()) / 2;
+		int offset_y = (screen_size.y - mRenderWindow->getHeight()) / 2;
+		mRenderWindow->setPosition(glm::ivec2(offset_x, offset_y));
 
 		// Find the world and camera entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");

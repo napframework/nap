@@ -34,6 +34,12 @@ namespace nap
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Viewport");
 		mRenderWindow->mWindowEvent.connect(std::bind(&VinylApp::handleWindowEvent, this, std::placeholders::_1));
 		
+		// Position window
+		glm::ivec2 screen_size = opengl::getScreenSize(0);
+		int offset_x = (screen_size.x - mRenderWindow->getWidth()) / 2;
+		int offset_y = (screen_size.y - mRenderWindow->getHeight()) / 2;
+		mRenderWindow->setPosition(glm::ivec2(offset_x, offset_y));
+
 		// Fetch vinyl textures
 		mVinylLabelImg = mResourceManager->findObject<nap::Image>("LabelImage");
 		mVinylCoverImg = mResourceManager->findObject<nap::Image>("CoverImage");
