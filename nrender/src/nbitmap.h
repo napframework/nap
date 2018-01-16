@@ -119,7 +119,7 @@ namespace opengl
 		* Set settings associated with this bitmap object
 		* Settings are used to define the pixel data buffer's size
 		*/
-		void setSettings(const BitmapSettings& settings)	{ mSettings = settings; }
+		void setSettings(const BitmapSettings& settings);
 
 		/**
 		 * hasData
@@ -212,11 +212,20 @@ namespace opengl
 		/**
 		 *	@return the number of channels associated with this image, 1 for R, 4 for RGBA etc
 		 */
-		unsigned int getNumberOfChannels() const;
+		uint8_t getNumberOfChannels() const					{ return mNumChannels; }
+
+		/**
+		 *	@return the size in bytes of a single channel.
+		 */
+		uint8_t getChannelSize() const						{ return mChannelSize; }
 
 	protected:
 		void*			mData = nullptr;
+
+	private:
 		BitmapSettings	mSettings;
+		size_t			mChannelSize;
+		uint8_t			mNumChannels;
 	};
 
 
@@ -321,11 +330,7 @@ namespace opengl
 	template<typename T>
 	T* opengl::BitmapBase::getPixel(unsigned int x, unsigned int y) const
 	{
-		if (sizeof(T) != getSizeOf(mSettings.mDataType))
-		{
-			assert(false);
-			return nullptr;
-		}
+		assert(sizeof(T) == mChannelSize);
 		return (T*)(getPixelData(x, y));
 	}
 

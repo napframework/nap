@@ -89,7 +89,7 @@ namespace opengl
 	// Sets data associated with this bitmap, object does not own it!
 	void BitmapBase::setData(const BitmapSettings& settings, void* data)
 	{
-		mSettings = settings;
+		setSettings(settings);
 		mData = data;
 	}
 
@@ -98,6 +98,14 @@ namespace opengl
 	size_t BitmapBase::getSize()
 	{
 		return mSettings.mWidth * mSettings.mHeight * getSizeOf(mSettings.mDataType) * getNumChannels(mSettings.mColorType);
+	}
+
+	
+	void BitmapBase::setSettings(const BitmapSettings& settings)
+	{
+		mSettings = settings;
+		mChannelSize = getSizeOf(mSettings.mDataType);
+		mNumChannels = getNumChannels(mSettings.mColorType);
 	}
 
 
@@ -116,24 +124,12 @@ namespace opengl
 		if (x >= mSettings.mWidth || y >= mSettings.mHeight)
 			return nullptr;
 
-		// Get size in bytes of data type
-		unsigned int data_size = static_cast<unsigned int>(getSizeOf(mSettings.mDataType));
-
-		// Get number of channels associated with this bitmap
-		unsigned int channel_count = static_cast<unsigned int>(getNumChannels(mSettings.mColorType));
-
 		// Get index in to array offset by number of channels (pixel level)
-		unsigned int offset = ((y * mSettings.mWidth) + x) * data_size * channel_count;
+		unsigned int offset = ((y * mSettings.mWidth) + x) * mNumChannels * mChannelSize;
 
 		// Update offset (pixel * num_channels * data_size
 		unsigned char* data_ptr = (unsigned char*)(mData) + offset;
 		return (void*)(data_ptr);
-	}
-
-
-	unsigned int BitmapBase::getNumberOfChannels() const
-	{
-		return static_cast<unsigned int>(getNumChannels(mSettings.mColorType));
 	}
 
 
@@ -195,7 +191,7 @@ namespace opengl
 	bool Bitmap::allocateMemory()
 	{
 		// Ensure settings are valid
-		if (!mSettings.isValid())
+		if (!getSettings().isValid())
 		{
 			opengl::printMessage(MessageType::ERROR, "unable to allocate memory, bitmap settings are invalid");
 			return false;
@@ -225,7 +221,7 @@ namespace opengl
 		}
 
 		// Copy settings
-		mSettings = new_settings;
+		setSettings(new_settings);
 
 		// Allocate memory
 		return allocateMemory();
@@ -249,7 +245,7 @@ namespace opengl
 	bool Bitmap::copyData(void* source)
 	{
 		// Make sure settings are valid
-		if (!mSettings.isValid())
+		if (!getSettings().isValid())
 		{
 			printMessage(MessageType::ERROR, "can't copy pixel data, invalid bitmap settings");
 			return false;
@@ -279,7 +275,7 @@ namespace opengl
 		}
 		
 		// Copy settings
-		mSettings = new_settings;
+		setSettings(new_settings);
 
 		// Clear associated data
 		if (BitmapBase::hasData())
