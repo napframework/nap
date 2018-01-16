@@ -120,7 +120,6 @@ namespace nap
 
 		// Set the number of vertices to use
 		mesh.setNumVertices(vert_count);
-		mesh.setDrawMode(opengl::EDrawMode::TRIANGLES);
 
 		// Push vertex data
 		position_attribute.setData(vertices.data(), vert_count);
@@ -128,8 +127,9 @@ namespace nap
 		uv_attribute.setData(uvs.data(), vert_count);
 		color_attribute.setData(colors.data(), vert_count);
 
-		// Push indices
-		mesh.setIndices(indices.data(), indices.size());
+		SubMesh& sub_mesh = mesh.createSubMesh();
+		sub_mesh.setDrawMode(opengl::EDrawMode::TRIANGLES);
+		sub_mesh.setIndices(indices.data(), indices.size());
 	}
 
 };
