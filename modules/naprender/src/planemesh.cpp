@@ -127,9 +127,9 @@ namespace nap
 		uv_attribute.setData(uvs.data(), vert_count);
 		color_attribute.setData(colors.data(), vert_count);
 
-		SubMesh& sub_mesh = mesh.createSubMesh();
-		sub_mesh.setDrawMode(opengl::EDrawMode::TRIANGLES);
-		sub_mesh.setIndices(indices.data(), indices.size());
+		MeshShape& shape = mesh.createShape();
+		shape.setDrawMode(opengl::EDrawMode::TRIANGLES);
+		shape.setIndices(indices.data(), indices.size());
 	}
 
 };

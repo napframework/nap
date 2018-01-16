@@ -3,16 +3,16 @@
 #include <rtti/rttiutilities.h>
 #include "meshutils.h"
 
-RTTI_BEGIN_CLASS(nap::SubMesh)
-	RTTI_PROPERTY("DrawMode",		&nap::SubMesh::mDrawMode,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Indices",		&nap::SubMesh::mIndices,				nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::MeshShape)
+	RTTI_PROPERTY("DrawMode",		&nap::MeshShape::mDrawMode,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Indices",		&nap::MeshShape::mIndices,				nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 
 RTTI_BEGIN_CLASS(nap::RTTIMeshProperties)
 	RTTI_PROPERTY("NumVertices",	&nap::RTTIMeshProperties::mNumVertices,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Attributes",		&nap::RTTIMeshProperties::mAttributes,	nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("SubMeshes",		&nap::RTTIMeshProperties::mSubMeshes,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Shapes",			&nap::RTTIMeshProperties::mShapes,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS	
 
 RTTI_BEGIN_CLASS(nap::Mesh)
@@ -88,16 +88,16 @@ namespace nap
 		}
 		mProperties.mNumVertices = meshProperties.mNumVertices;
 
-		mProperties.mSubMeshes.resize(meshProperties.mSubMeshes.size());
-		for (int index = 0; index < meshProperties.mSubMeshes.size(); ++index)
+		mProperties.mShapes.resize(meshProperties.mShapes.size());
+		for (int index = 0; index < meshProperties.mShapes.size(); ++index)
 		{
-			SubMesh& source_mesh = meshProperties.mSubMeshes[index];
-			SubMesh& dest_mesh = mProperties.mSubMeshes[index];
+			MeshShape& source_shape = meshProperties.mShapes[index];
+			MeshShape& dest_shape = mProperties.mShapes[index];
 
-			assert(source_mesh.getNumIndices() != 0);
+			assert(source_shape.getNumIndices() != 0);
 
-			dest_mesh.setDrawMode(source_mesh.getDrawMode());
-			dest_mesh.setIndices(source_mesh.getIndices().data(), source_mesh.getIndices().size());
+			dest_shape.setDrawMode(source_shape.getDrawMode());
+			dest_shape.setIndices(source_shape.getIndices().data(), source_shape.getIndices().size());
 		}
 	}
 
@@ -109,10 +109,10 @@ namespace nap
 	}
 
 
-	SubMesh& MeshInstance::createSubMesh()
+	MeshShape& MeshInstance::createShape()
 	{
-		mProperties.mSubMeshes.push_back(SubMesh());
-		return mProperties.mSubMeshes.back();
+		mProperties.mShapes.push_back(MeshShape());
+		return mProperties.mShapes.back();
 	}
 
 
@@ -135,8 +135,8 @@ namespace nap
 		}
 
 
-		for (int subMeshIndex = 0; subMeshIndex != mProperties.mSubMeshes.size(); ++subMeshIndex)
-			mGPUMesh->getOrCreateIndexBuffer(subMeshIndex).setData(mProperties.mSubMeshes[subMeshIndex].getIndices());
+		for (int shapeIndex = 0; shapeIndex != mProperties.mShapes.size(); ++shapeIndex)
+			mGPUMesh->getOrCreateIndexBuffer(shapeIndex).setData(mProperties.mShapes[shapeIndex].getIndices());
 
 		return true;
 	}
@@ -144,14 +144,14 @@ namespace nap
 
 	bool Mesh::init(utility::ErrorState& errorState)
 	{
-		if (!errorState.check(!mProperties.mSubMeshes.empty(), "Mesh %s has no sub meshes", mID.c_str()))
+		if (!errorState.check(!mProperties.mShapes.empty(), "Mesh %s has no sub meshes", mID.c_str()))
 			return false;
 
-		for (int index = 0; index < mProperties.mSubMeshes.size(); ++index)
+		for (int index = 0; index < mProperties.mShapes.size(); ++index)
 		{
-			SubMesh& sub_mesh = mProperties.mSubMeshes[index];
-			if (sub_mesh.getNumIndices() == 0)
-				generateIndices(sub_mesh, mProperties.mNumVertices);
+			MeshShape& shape = mProperties.mShapes[index];
+			if (shape.getNumIndices() == 0)
+				generateIndices(shape, mProperties.mNumVertices);
 		}
 
 		mMeshInstance.copyMeshProperties(mProperties);

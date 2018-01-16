@@ -115,10 +115,10 @@ namespace nap
 		updateNormals(error, false);
 
 		// Draw normals as lines
-		SubMesh& subMesh = mMeshInstance->createSubMesh();
-		subMesh.setDrawMode(opengl::EDrawMode::LINES);
+		MeshShape& shape = mMeshInstance->createShape();
+		shape.setDrawMode(opengl::EDrawMode::LINES);
 
-		generateIndices(subMesh, vertex_count * 2);
+		generateIndices(shape, vertex_count * 2);
 
 		return true;
 	}

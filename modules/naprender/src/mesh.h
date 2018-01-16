@@ -54,12 +54,18 @@ namespace nap
 		const NAPAPI std::string GetColorName(int colorChannel);
 	};
 
-
-	class SubMesh
+	/**
+	 * A MeshShape describes how a particular part of a mesh should be drawn. It contains the DrawMode and an IndexList.
+	 * The indices index into the vertex data contained in the mesh this shape is a part of, while the DrawMode describes how the indices should be interpreted/drawn.
+	 */
+	class MeshShape
 	{
 	public:
 		using IndexList = std::vector<unsigned int>;
 
+		/**
+		 * @return The number of indices in this shape
+		 */
 		int getNumIndices() const { return mIndices.size(); }
 
 		/**
@@ -89,10 +95,15 @@ namespace nap
 			std::memcpy(mIndices.data(), indices, numIndices * sizeof(uint32_t));
 		}
 
+		/**
+		 * @return The index list for this shape
+		 */
 		const IndexList& getIndices() const { return mIndices; }
 
+		/**
+		 * @return The index list for this shape
+		 */
 		IndexList& getIndices() { return mIndices; }
-
 
 		/**
 		* Adds a number of indices to the existing indices in the index CPU buffer. Use setIndices to replace
@@ -127,8 +138,8 @@ namespace nap
 		opengl::EDrawMode getDrawMode() const { return mDrawMode; }
 
 	public:
-		opengl::EDrawMode	mDrawMode;
-		IndexList			mIndices;
+		opengl::EDrawMode	mDrawMode;		///< The draw mode that should be used to draw this shape
+		IndexList			mIndices;		///< Indices into the mesh's vertex data
 	};
 
 
@@ -149,7 +160,7 @@ namespace nap
 
 		int						mNumVertices;
 		VertexAttributeList		mAttributes;
-		std::vector<SubMesh>	mSubMeshes;
+		std::vector<MeshShape>	mShapes;
 	};
 
 	// ObjectPtr based mesh properties, used in serializable Mesh format (json/binary)
@@ -265,27 +276,27 @@ namespace nap
 		/**
 		 * @return The number of shapes contained in this mesh
 		 */
-		int getNumSubMeshes() const												{ return mProperties.mSubMeshes.size(); }
+		int getNumShapes() const												{ return mProperties.mShapes.size(); }
 
 		/**
 		 * Get the shape at the specified index
-		 * @param index The index of the shape to get (between 0 and getNumSubMeshes)
+		 * @param index The index of the shape to get (between 0 and getNumShapes())
 		 * @return The shape
 		 */
-		SubMesh& getSubMesh(int index)											{ return mProperties.mSubMeshes[index]; }
+		MeshShape& getShape(int index)											{ return mProperties.mShapes[index]; }
 
 		/**
 		 * Get the shape at the specified index
-		 * @param index The index of the shape to get (between 0 and getNumSubMeshes)
+		 * @param index The index of the shape to get (between 0 and getNumShapes())
 		 * @return The shape
 		 */
-		const SubMesh& getSubMesh(int index) const								{ return mProperties.mSubMeshes[index]; }
+		const MeshShape& getShape(int index) const								{ return mProperties.mShapes[index]; }
 
 		/**
 		 * Create and add a new shape to this mesh. The returned shape is uninitialized; it is up to the client to initialize as needed
 		 * @return The new shape
 		 */
-		SubMesh& createSubMesh();
+		MeshShape& createShape();
 
 		/**
 		 * Uses the CPU mesh data to update the GPU mesh. Note that update() is called during init(),

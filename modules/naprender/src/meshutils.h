@@ -10,7 +10,7 @@ namespace nap
 	 * @param mesh the mesh to check
 	 * @return if the mesh contains triangles, is of type: TRIANGLES, TRIANGLE_STRIP or TRIANGLE_FAN
 	 */
-	bool NAPAPI isTriangleMesh(const nap::SubMesh& subMesh);
+	bool NAPAPI isTriangleMesh(const nap::MeshShape& shape);
 
 	/**
 	* Sets the vertex indices associated with a triangle.
@@ -21,7 +21,7 @@ namespace nap
 	* @param indices the new indices
 	* @return if the triangle indices are valid
 	*/
-	void NAPAPI setTriangleIndices(nap::SubMesh& mesh, int number, glm::ivec3& indices);
+	void NAPAPI setTriangleIndices(nap::MeshShape& mesh, int number, glm::ivec3& indices);
 
 	/**
 	 * Computes the bounding box of a mesh using it's associated position data
@@ -60,5 +60,5 @@ namespace nap
 	 */
 	void NAPAPI reverseWindingOrder(nap::MeshInstance& mesh);
 
-	void NAPAPI generateIndices(nap::SubMesh& subMesh, int vertexCount);
+	void NAPAPI generateIndices(nap::MeshShape& shape, int vertexCount);
 }

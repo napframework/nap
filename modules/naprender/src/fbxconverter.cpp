@@ -184,12 +184,12 @@ namespace nap
 			if (!errorState.check(fbx_mesh->HasFaces(), "Mesh has no indices"))
 				return false;
 
-			mesh_data.mProperties.mSubMeshes.push_back(SubMesh());
-			SubMesh& subMesh = mesh_data.mProperties.mSubMeshes.back();
+			mesh_data.mProperties.mShapes.push_back(MeshShape());
+			MeshShape& shape = mesh_data.mProperties.mShapes.back();
 
-			subMesh.setDrawMode(opengl::EDrawMode::TRIANGLES);
+			shape.setDrawMode(opengl::EDrawMode::TRIANGLES);
 
-			SubMesh::IndexList& indices = subMesh.getIndices();
+			MeshShape::IndexList& indices = shape.getIndices();
 			indices.reserve(fbx_mesh->mNumFaces * 3);
 			for (int face_index = 0; face_index != fbx_mesh->mNumFaces; ++face_index)
 			{
