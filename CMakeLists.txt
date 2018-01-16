@@ -66,7 +66,6 @@ add_subdirectory(napkin)
 # executable targets
 add_subdirectory(test/render)
 add_subdirectory(test/tommy)
-add_subdirectory(test/videoplayer)
 add_subdirectory(test/serializationtest)
 add_subdirectory(test/audiotest)
 
@@ -85,6 +84,7 @@ add_subdirectory(demos/heightmap)
 add_subdirectory(demos/heightmap/module)
 add_subdirectory(demos/dynamicgeo)
 add_subdirectory(demos/dynamicgeo/module)
+add_subdirectory(demos/videomodulation)
 
 add_subdirectory(unittests)
 
