@@ -1,4 +1,4 @@
-#include "videoapp.h"
+#include "videomodulationapp.h"
 
 // Nap includes
 #include <nap/core.h>
@@ -28,7 +28,7 @@ namespace nap
 		mSceneService  = getCore().getService<SceneService>();
 		mVideoService  = getCore().getService<VideoService>();
 		
-		if (!mResourceManager->loadFile("data/videoplayer/videoplayer.json", error))
+		if (!mResourceManager->loadFile("data/videomodulation/videomodulation.json", error))
 			return false;
 		
 		// Get important entities
