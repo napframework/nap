@@ -1,7 +1,7 @@
 // main.cpp : Defines the entry point for the console application.
 //
 // Local Includes
-#include "videoapp.h"
+#include "videomodulationapp.h"
 
 // Nap includes
 #include <nap/core.h>
