@@ -1,7 +1,7 @@
 #include "polyline.h"
 #include <mathutils.h>
 #include <glm/gtx/rotate_vector.hpp>
-
+#include <meshutils.h>
 
 RTTI_BEGIN_CLASS(nap::PolyLineProperties)
 	RTTI_PROPERTY("Color",		&nap::PolyLineProperties::mColor,		nap::rtti::EPropertyMetaData::Default)
@@ -168,8 +168,9 @@ namespace nap
 		math::resampleLine<glm::vec3>(uv_coords, getUvAttr().getData(), mVertexCount, mClosed);
 		mMeshInstance->setNumVertices(p_count);
 
-		// Set draw mode
-		mMeshInstance->setDrawMode(mClosed ? opengl::EDrawMode::LINE_LOOP : opengl::EDrawMode::LINE_STRIP);
+		SubMesh& sub_mesh = mMeshInstance->createSubMesh();
+		sub_mesh.setDrawMode(mClosed ? opengl::EDrawMode::LINE_LOOP : opengl::EDrawMode::LINE_STRIP);
+		generateIndices(sub_mesh, p_count);
 
 		// Initialize line
 		return mMeshInstance->init(errorState);
@@ -233,8 +234,9 @@ namespace nap
 		// Update mesh vertex count
 		mMeshInstance->setNumVertices(4);
 
-		// Set draw mode
-		mMeshInstance->setDrawMode(opengl::EDrawMode::LINE_LOOP);
+		SubMesh& sub_mesh = mMeshInstance->createSubMesh();
+		sub_mesh.setDrawMode(opengl::EDrawMode::LINE_LOOP);
+		generateIndices(sub_mesh, 4);
 
 		// Initialize line
 		bool success = mMeshInstance->init(errorState);
@@ -258,7 +260,10 @@ namespace nap
 
 		// Update
 		mMeshInstance->setNumVertices(mSegments);
-		mMeshInstance->setDrawMode(opengl::EDrawMode::LINE_LOOP);
+
+		SubMesh& sub_mesh = mMeshInstance->createSubMesh();
+		sub_mesh.setDrawMode(opengl::EDrawMode::LINE_LOOP);		
+		generateIndices(sub_mesh, mSegments);		
 
 		// Initialize line
 		return mMeshInstance->init(errorState);
@@ -292,7 +297,10 @@ namespace nap
 
 		// Update
 		mMeshInstance->setNumVertices(6);
-		mMeshInstance->setDrawMode(opengl::EDrawMode::LINE_LOOP);
+
+		SubMesh& sub_mesh = mMeshInstance->createSubMesh();
+		sub_mesh.setDrawMode(opengl::EDrawMode::LINE_LOOP);
+		generateIndices(sub_mesh, 6);
 
 		return mMeshInstance->init(errorState);
 	}
@@ -325,7 +333,10 @@ namespace nap
 
 		// Update
 		mMeshInstance->setNumVertices(3);
-		mMeshInstance->setDrawMode(opengl::EDrawMode::LINE_LOOP);
+
+		SubMesh& sub_mesh = mMeshInstance->createSubMesh();
+		sub_mesh.setDrawMode(opengl::EDrawMode::LINE_LOOP);
+		generateIndices(sub_mesh, 3);
 
 		return mMeshInstance->init(errorState);
 	}
@@ -381,7 +392,7 @@ namespace nap
 
 	bool PolyLine::isClosed() const
 	{
-		opengl::EDrawMode mode = getMeshInstance().getDrawMode();
+		opengl::EDrawMode mode = getMeshInstance().getSubMesh(0).getDrawMode();
 		assert(mode == opengl::EDrawMode::LINE_LOOP || mode == opengl::EDrawMode::LINE_STRIP);
 		return mode == opengl::EDrawMode::LINE_LOOP;
 	}

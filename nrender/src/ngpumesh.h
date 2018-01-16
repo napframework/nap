@@ -47,17 +47,17 @@ namespace opengl
 		 * Creates an index buffer is one does not exist, otherwise returns the existing buffer.
 		* @return A valid index buffer.
 		*/
-		IndexBuffer& getOrCreateIndexBuffer();
+		IndexBuffer& getOrCreateIndexBuffer(int index);
 
 		/**
 		* @return The indexbuffer if one is created, if no index buffer exists, null is returned.
 		*/
-		const IndexBuffer* getIndexBuffer() const;
+		const IndexBuffer& getIndexBuffer(int index) const;
 
 	private:
 
 		using AttributeMap = std::unordered_map<std::string, std::unique_ptr<VertexAttributeBuffer>>;
-		AttributeMap					mAttributes;		///< Map from vertex attribute ID to buffer
-		std::unique_ptr<IndexBuffer>	mIndexBuffer;		///< Index buffer
+		AttributeMap								mAttributes;		///< Map from vertex attribute ID to buffer
+		std::vector<std::unique_ptr<IndexBuffer>>	mIndexBuffers;		///< Index buffers
 	};
 } // opengl

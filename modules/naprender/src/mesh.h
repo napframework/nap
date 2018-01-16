@@ -55,6 +55,83 @@ namespace nap
 	};
 
 
+	class SubMesh
+	{
+	public:
+		using IndexList = std::vector<unsigned int>;
+
+		int getNumIndices() const { return mIndices.size(); }
+
+		/**
+		* Clears the list of indices.
+		* Call either before init() or call update() to reflect the changes in the GPU buffer.
+		*/
+		void clearIndices() { mIndices.clear(); }
+
+		/**
+		* Reserves CPU memory for index list. GPU memory is reserved after update() is called.
+		* @param numIndices Amount of indices to reserve.
+		*/
+		void reserveIndices(size_t numIndices)
+		{
+			mIndices.reserve(numIndices);
+		}
+
+		/**
+		* Adds a list of indices to the index CPU buffer.
+		* Call either before init() or call update() to reflect the changes in the GPU buffer.
+		* @param indices: array of indices to add.
+		* @param numIndices: number of indices in @indices.
+		*/
+		void setIndices(uint32_t* indices, int numIndices)
+		{
+			mIndices.resize(numIndices);
+			std::memcpy(mIndices.data(), indices, numIndices * sizeof(uint32_t));
+		}
+
+		const IndexList& getIndices() const { return mIndices; }
+
+		IndexList& getIndices() { return mIndices; }
+
+
+		/**
+		* Adds a number of indices to the existing indices in the index CPU buffer. Use setIndices to replace
+		* the current indices with a new set of indices.
+		* Call either before init() or call update() to reflect the changes in the GPU buffer.
+		* @param indices List of indices to update.
+		* @param numIndices Number of indices in the list.
+		*/
+		void addIndices(uint32_t* indices, int numIndices)
+		{
+			int cur_num_indices = mIndices.size();
+			mIndices.resize(cur_num_indices + numIndices);
+			std::memcpy(&mIndices[cur_num_indices], indices, numIndices * sizeof(uint32_t));
+		}
+
+		/**
+		* Adds a single index to the index CPU buffer. Use setIndices to add an entire list of indices.
+		* Call either before init() or call update() to reflect the changes in the GPU buffer.
+		* @param index Index to add.
+		*/
+		void addIndex(int index) { mIndices.push_back(index); }
+
+		/**
+		* Sets Draw mode for this mesh
+		* @param drawMode: OpenGL draw mode.
+		*/
+		void setDrawMode(opengl::EDrawMode drawMode) { mDrawMode = drawMode; }
+
+		/**
+		* @return Draw mode for this mesh.
+		*/
+		opengl::EDrawMode getDrawMode() const { return mDrawMode; }
+
+	public:
+		opengl::EDrawMode	mDrawMode;
+		IndexList			mIndices;
+	};
+
+
 	/**
 	 * Helper struct for data that is common between MeshInstance and Mesh.
 	 * Templatized as the ownership for vertex attributes is different between a MeshInstance and a Mesh:
@@ -69,12 +146,10 @@ namespace nap
 	struct MeshProperties
 	{
 		using VertexAttributeList = std::vector<VERTEX_ATTRIBUTE_PTR>;
-		using IndexList = std::vector<unsigned int>;
 
-		int								mNumVertices;
-		opengl::EDrawMode				mDrawMode;
-		VertexAttributeList				mAttributes;
-		IndexList						mIndices;
+		int						mNumVertices;
+		VertexAttributeList		mAttributes;
+		std::vector<SubMesh>	mSubMeshes;
 	};
 
 	// ObjectPtr based mesh properties, used in serializable Mesh format (json/binary)
@@ -170,63 +245,10 @@ namespace nap
 		VertexAttribute<T>& getOrCreateAttribute(const std::string& id);
 
 		/**
-		 * Clears the list of indices. 
-		 * Call either before init() or call update() to reflect the changes in the GPU buffer.
-		 */
-		void clearIndices()														{ mProperties.mIndices.clear(); }
-
-		/**
 	 	 * Reserves CPU memory for index list. GPU memory is reserved after update() is called.
 		 * @param numIndices Amount of indices to reserve.
 		 */
 		void reserveVertices(size_t numVertices);
-
-		/**
-		 * Reserves CPU memory for index list. GPU memory is reserved after update() is called.
-		 * @param numIndices Amount of indices to reserve.
-		 */
-		void reserveIndices(size_t numIndices);
-
-		/**
-		 * Adds a single index to the index CPU buffer. Use setIndices to add an entire list of indices.
-		 * Call either before init() or call update() to reflect the changes in the GPU buffer.
-		 * @param index Index to add.
-		 */
-		void addIndex(int index)												{ mProperties.mIndices.push_back(index); }
-
-		/**
- 		 * Adds a number of indices to the existing indices in the index CPU buffer. Use setIndices to replace
-		 * the current indices with a new set of indices.
-		 * Call either before init() or call update() to reflect the changes in the GPU buffer.
-		 * @param indices List of indices to update.
-		 * @param numIndices Number of indices in the list.
-		 */
-		void addIndices(uint32_t* indices, int numIndices);
-
-		/**
-		 * Adds a list of indices to the index CPU buffer.
-		 * Call either before init() or call update() to reflect the changes in the GPU buffer.
-		 * @param indices: array of indices to add.
-		 * @param numIndices: number of indices in @indices.
-		 */
-		void setIndices(uint32_t* indices, int numIndices);
-
-		/**
-		 * @return if the mesh has indices associated with it
-		 */
-		bool hasIndices() const													{ return !(mProperties.mIndices.empty()); }
-
-		/**
-		 * @return the indices associated with this mesh. This array is empty
-		 * if this mesh has no indices
-		 */
-		const std::vector<uint>& getIndices() const								{ return mProperties.mIndices; }
-
-		/**
-		* @return the indices associated with this mesh. This array is empty
-		* if this mesh has no indices
-		*/
-		std::vector<uint>& getIndices()											{ return mProperties.mIndices; }
 
 		/**
 		 * Sets number of vertices. The amount of elements for each vertex buffer should be equal to
@@ -241,15 +263,29 @@ namespace nap
 		int getNumVertices() const												{ return mProperties.mNumVertices; }
 
 		/**
-		 * Sets Draw mode for this mesh
-		 * @param drawMode: OpenGL draw mode.
+		 * @return The number of shapes contained in this mesh
 		 */
-		void setDrawMode(opengl::EDrawMode drawMode)							{ mProperties.mDrawMode = drawMode; }
+		int getNumSubMeshes() const												{ return mProperties.mSubMeshes.size(); }
 
 		/**
-		 * @return Draw mode for this mesh.
+		 * Get the shape at the specified index
+		 * @param index The index of the shape to get (between 0 and getNumSubMeshes)
+		 * @return The shape
 		 */
-		opengl::EDrawMode getDrawMode() const									{ return mProperties.mDrawMode; }
+		SubMesh& getSubMesh(int index)											{ return mProperties.mSubMeshes[index]; }
+
+		/**
+		 * Get the shape at the specified index
+		 * @param index The index of the shape to get (between 0 and getNumSubMeshes)
+		 * @return The shape
+		 */
+		const SubMesh& getSubMesh(int index) const								{ return mProperties.mSubMeshes[index]; }
+
+		/**
+		 * Create and add a new shape to this mesh. The returned shape is uninitialized; it is up to the client to initialize as needed
+		 * @return The new shape
+		 */
+		SubMesh& createSubMesh();
 
 		/**
 		 * Uses the CPU mesh data to update the GPU mesh. Note that update() is called during init(),

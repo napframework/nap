@@ -8,6 +8,7 @@
 #include <nap/configure.h>
 #include <rect.h>
 #include <limits>
+#include <meshutils.h>
 
 RTTI_BEGIN_ENUM(nap::ESVGUnits)
 	RTTI_ENUM_VALUE(nap::ESVGUnits::PX,		"px"),
@@ -355,9 +356,11 @@ namespace nap
 		// Set uv buffer (todo implement)
 		uvs_attr.setData(pathUvs);
 
-		// Update
 		line.setNumVertices(vertex_count);
-		line.setDrawMode(closed ? opengl::EDrawMode::LINE_LOOP : opengl::EDrawMode::LINE_STRIP);
+
+		SubMesh& sub_mesh = line.createSubMesh();
+		sub_mesh.setDrawMode(closed ? opengl::EDrawMode::LINE_LOOP : opengl::EDrawMode::LINE_STRIP);
+		generateIndices(sub_mesh, vertex_count);
 
 		// Initialize
 		return line.init(error);
