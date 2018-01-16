@@ -6,6 +6,7 @@
 #include <orthocameracomponent.h>
 #include <texture2d.h>
 #include <scene.h>
+#include <imgui/imgui.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VideoApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -23,36 +24,37 @@ namespace nap
 		mResourceManager = getCore().getResourceManager();
 		
 		// Create render service
-		mRenderService = getCore().getService<RenderService>();
-		mInputService  = getCore().getService<InputService>();
-		mSceneService  = getCore().getService<SceneService>();
-		mVideoService  = getCore().getService<VideoService>();
-		
+		mRenderService	= getCore().getService<RenderService>();
+		mInputService	= getCore().getService<InputService>();
+		mSceneService	= getCore().getService<SceneService>();
+		mVideoService	= getCore().getService<VideoService>();
+		mGuiService		= getCore().getService<IMGuiService>();
+
 		if (!mResourceManager->loadFile("data/videomodulation/videomodulation.json", error))
 			return false;
 		
 		// Get important entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
-		mCameraEntity = scene->findEntity("CameraEntity");
-		assert(mCameraEntity != nullptr);
-		
+		mOrthoCameraEntity = scene->findEntity("CameraEntity");
+		mBackgroundEntity = scene->findEntity("BackgroundEntity");
 		mVideoEntity = scene->findEntity("VideoEntity");
-		assert(mVideoEntity != nullptr);
-		
-		// Store all render windows
-		mRenderWindows.push_back(mResourceManager->template findObject<RenderWindow>("Window"));
-		
+
+		// Get render target
+		mVideoRenderTarget = mResourceManager->findObject<RenderTarget>("VideoRenderTarget");
+
+		// Find the window we want to render the output to
+		mRenderWindow = mResourceManager->findObject<RenderWindow>("Window");
+
+		// Position window
+		glm::ivec2 screen_size = opengl::getScreenSize(0);
+		int offset_x = (screen_size.x - mRenderWindow->getWidth()) / 2;
+		int offset_y = (screen_size.y - mRenderWindow->getHeight()) / 2;
+		mRenderWindow->setPosition(glm::ivec2(offset_x, offset_y));
+
 		// Collect all video resources and play
 		mVideoResource = mResourceManager->findObject<Video>("Video1");
-		assert(mVideoResource != nullptr);
 		mVideoResource->mLoop = true;
 		mVideoResource->play();
-		
-		// Set render states
-		RenderState& render_state = mRenderService->getRenderState();
-		render_state.mEnableMultiSampling = true;
-		render_state.mPointSize = 2.0f;
-		render_state.mPolygonMode = opengl::PolygonMode::FILL;
 		
 		return true;
 	}
@@ -61,49 +63,67 @@ namespace nap
 	// Called when the window is updating
 	void VideoApp::update(double deltaTime)
 	{				
-		glm::vec2 window_size = mRenderWindows[0]->getWindow()->getSize();
+		// Update gui components
+		updateGui();
 
-		// Fix window width / height
-		float new_window_height = -FLT_MAX;
+		// Position our background based on video ratio / window size
+		positionBackground();
 
-		float aspect_ratio = (float)mVideoResource->getWidth() / (float)mVideoResource->getHeight();
-		new_window_height = std::max(new_window_height, window_size.x / aspect_ratio);
+		MaterialInstance& video_material = mVideoEntity->getComponent<RenderableMeshComponentInstance>().getMaterialInstance();
+		video_material.getOrCreateUniform<UniformTexture2D>("yTexture").setTexture(mVideoResource->getYTexture());
+		video_material.getOrCreateUniform<UniformTexture2D>("uTexture").setTexture(mVideoResource->getUTexture());
+		video_material.getOrCreateUniform<UniformTexture2D>("vTexture").setTexture(mVideoResource->getVTexture());
 
-		window_size.y = new_window_height;
-		mRenderWindows[0]->getWindow()->setSize(window_size);
-
-		MaterialInstance& plane_material = mVideoEntity->getComponent<RenderableMeshComponentInstance>().getMaterialInstance();
-
-		plane_material.getOrCreateUniform<UniformTexture2D>("yTexture").setTexture(mVideoResource->getYTexture());
-		plane_material.getOrCreateUniform<UniformTexture2D>("uTexture").setTexture(mVideoResource->getUTexture());
-		plane_material.getOrCreateUniform<UniformTexture2D>("vTexture").setTexture(mVideoResource->getVTexture());
-
-		// We set the position/size of the root layout element to cover the full screen.
-		TransformComponentInstance& transform_component = mVideoEntity->getComponent<TransformComponentInstance>();
-		transform_component.setTranslate(glm::vec3(window_size.x*0.5, window_size.y*0.5, -1000.0f));
-		transform_component.setScale(glm::vec3(window_size.x, window_size.y, 1.0));
+		MaterialInstance& background_material = mBackgroundEntity->getComponent<RenderableMeshComponentInstance>().getMaterialInstance();
+		background_material.getOrCreateUniform<UniformVec3>("colorOne").setValue({ mBackgroundColorOne.getRed(), mBackgroundColorOne.getGreen(), mBackgroundColorOne.getBlue() });
+		background_material.getOrCreateUniform<UniformVec3>("colorTwo").setValue({ mBackgroundColorTwo.getRed(), mBackgroundColorTwo.getGreen(), mBackgroundColorTwo.getBlue() });
 	}
 	
 	
 	// Called when the window is going to render
 	void VideoApp::render()
 	{
-		mRenderService->destroyGLContextResources(mRenderWindows);
+		mRenderService->destroyGLContextResources({mRenderWindow});
 
 		// Make render window active for drawing
-		RenderWindow* render_window = mRenderWindows[0].get();
-		render_window->makeActive();
+		mRenderWindow->makeActive();
 
-		// Clear target
-		opengl::RenderTarget& render_target = render_window->getBackbuffer();
-		render_target.setClearColor(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
-		mRenderService->clearRenderTarget(render_target, opengl::EClearFlags::COLOR | opengl::EClearFlags::DEPTH);
+		// Get orthographic camera
+		OrthoCameraComponentInstance& ortho_cam = mOrthoCameraEntity->getComponent<OrthoCameraComponentInstance>();
 
-		// Render necessary objects
-		mRenderService->renderObjects(render_target, mCameraEntity->getComponent<OrthoCameraComponentInstance>());
+		// Video render target
+		{
+			// Clear buffers of video render target
+			mRenderService->clearRenderTarget(mVideoRenderTarget->getTarget());
+			
+			// Get objects to render
+			std::vector<RenderableComponentInstance*> render_objects;
+			render_objects.emplace_back(&mVideoEntity->getComponent<RenderableMeshComponentInstance>());
+			
+			// Render
+			mRenderService->renderObjects(mVideoRenderTarget->getTarget(), ortho_cam, render_objects);
+		}
+
+		// Screen
+		{
+			// Clear target
+			opengl::RenderTarget& render_target = mRenderWindow->getBackbuffer();
+			render_target.setClearColor({ mClearColor.getRed(), mClearColor.getGreen(), mClearColor.getBlue(), 1.0 });
+			mRenderService->clearRenderTarget(render_target);
+
+			// Get background plane to render
+			std::vector<RenderableComponentInstance*> render_objects;
+			render_objects.emplace_back(&mBackgroundEntity->getComponent<RenderableMeshComponentInstance>());
+
+			// Render necessary objects
+			mRenderService->renderObjects(render_target, mOrthoCameraEntity->getComponent<OrthoCameraComponentInstance>(), render_objects);
+		}
+
+		// Draw gui
+		mGuiService->draw();
 
 		// Swap GPU buffers
-		render_window->swap();
+		mRenderWindow->swap();
 	}
 	
 
@@ -133,9 +153,7 @@ namespace nap
 
 			if (press_event->mKey == nap::EKeyCode::KEY_f)
 			{
-				static bool fullscreen = true;
-				setWindowFullscreen("Window", fullscreen);
-				fullscreen = !fullscreen;
+				mRenderWindow->toggleFullscreen();
 			}
 		}
 
@@ -143,14 +161,53 @@ namespace nap
 	}
 
 	
-	void VideoApp::setWindowFullscreen(std::string windowIdentifier, bool fullscreen) 
-	{
-		mResourceManager->findObject<RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
-	}
-
-	
 	int VideoApp::shutdown() 
 	{
 		return 0;
+	}
+
+
+	void VideoApp::updateGui()
+	{
+		// Draw some gui elements
+		ImGui::Begin("Controls");
+		ImGui::Text(utility::getCurrentDateTime().toString().c_str());
+		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+		if (ImGui::CollapsingHeader("Background Colors"))
+		{
+			ImGui::ColorEdit3("Color One", mBackgroundColorOne.getData());
+			ImGui::ColorEdit3("Color Two", mBackgroundColorTwo.getData());
+		}
+		
+		ImGui::End();
+	}
+
+
+	void VideoApp::positionBackground()
+	{
+		float window_width = static_cast<float>(mRenderWindow->getWidth());
+		float window_heigh = static_cast<float>(mRenderWindow->getHeight());
+
+		// Calculate ratio
+		float video_ratio = static_cast<float>(mVideoResource->getWidth()) / static_cast<float>(mVideoResource->getHeight());
+		float window_ratio = window_width / window_heigh;
+
+		glm::vec3 plane_size = { window_width, window_heigh, 1.0 };
+		if (window_ratio < video_ratio)
+		{
+			plane_size.y = plane_size.x / video_ratio;
+		}
+		else
+		{
+			plane_size.x = plane_size.y * video_ratio;
+		}
+
+		// Calculate plane offset in pixel coordinates
+		glm::vec2 offset = { window_width / 2, window_heigh / 2 };
+
+		// Get transform and push
+		TransformComponentInstance& transform = mBackgroundEntity->getComponent<TransformComponentInstance>();
+		transform.setTranslate(glm::vec3(offset.x, offset.y, 0.0f));
+		transform.setScale(plane_size);
 	}
 }

@@ -14,6 +14,9 @@
 #include <videoservice.h>
 #include <video.h>
 #include <app.h>
+#include <rendertarget.h>
+#include <imguiservice.h>
+#include <color.h>
 
 namespace nap
 {
@@ -57,29 +60,42 @@ namespace nap
 		void inputMessageReceived(InputEventPtr inputEvent) override;
 		
 		/**
-		 *	Toggles full screen
-		 */
-		void setWindowFullscreen(std::string windowIdentifier, bool fullscreen);
-		
-		/**
 		 *	Called when loop finishes
 		 */
 		int shutdown() override;
 		
 	private:
-		
 		// Nap Services
-		RenderService*		mRenderService = nullptr;				//< Render Service that handles render calls
-		ResourceManager*	mResourceManager = nullptr;				//< Manages all the loaded resources
-		SceneService*		mSceneService = nullptr;				//< Manages all the objects in the scene
-		InputService*		mInputService = nullptr;				//< Input service for processing input
-		VideoService*		mVideoService = nullptr;				//< Service for video playback
+		RenderService*		mRenderService = nullptr;					//< Render Service that handles render calls
+		ResourceManager*	mResourceManager = nullptr;					//< Manages all the loaded resources
+		SceneService*		mSceneService = nullptr;					//< Manages all the objects in the scene
+		InputService*		mInputService = nullptr;					//< Input service for processing input
+		VideoService*		mVideoService = nullptr;					//< Service for video playback
+		IMGuiService*		mGuiService = nullptr;						//< Service used for updating / drawing guis
 		
-		std::vector<ObjectPtr<RenderWindow>> mRenderWindows;		//< Vector holding pointers to the spawned render windows
+		ObjectPtr<EntityInstance> mOrthoCameraEntity = nullptr;			//< The entity that holds the camera
+		ObjectPtr<EntityInstance> mVideoEntity = nullptr;				//< Used to render the video in to a render target
+		ObjectPtr<EntityInstance> mBackgroundEntity = nullptr;			//< Renders the video render target to screen in the background
 		
-		ObjectPtr<EntityInstance> mCameraEntity = nullptr;			//< The entity that holds the camera
-		ObjectPtr<EntityInstance> mVideoEntity = nullptr;			//< The video that holds the camera
+		// The video render target
+		ObjectPtr<RenderTarget>	mVideoRenderTarget = nullptr;			//< Video render target
+		ObjectPtr<RenderWindow> mRenderWindow;							//< Render window
+		ObjectPtr<Video> mVideoResource = nullptr;						//< Our video resource
 
-		ObjectPtr<Video> mVideoResource = nullptr;					//< Our video resource
+		// Background colors
+		RGBColorFloat mBackgroundColorOne =	{ 0.066f, 0.078f, 0.149f };	//< Color of the valley
+		RGBColorFloat mBackgroundColorTwo = { 0.784f, 0.411f, 0.411f };	//< Color of the peak
+		RGBColorFloat mClearColor =			{ 0.000f, 0.000f, 0.000f };	//< Color used for clearing render window
+
+		/**
+		 * Sets up the GUI every frame	
+		 */
+		void updateGui();
+
+		/**
+		* Positions the background plane in the center of the window,
+		* based on the window resolution and video size
+		*/
+		void positionBackground();
 	};
 }
