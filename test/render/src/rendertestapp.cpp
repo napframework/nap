@@ -222,7 +222,7 @@ namespace nap
 		{
 			nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(inputEvent.get());
 			if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
-				quit(0);
+				quit();
 
 		}
 		mInputService->addEvent(std::move(inputEvent));
@@ -235,7 +235,8 @@ namespace nap
 	}
 
 	
-	void RenderTestApp::shutdown() 
+	int RenderTestApp::shutdown() 
 	{
+		return 0;
 	}
 }

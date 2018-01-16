@@ -78,7 +78,7 @@ namespace nap
 		/**
 		 *	Called when loop finishes
 		 */
-		void shutdown() override;
+		int shutdown() override;
 		
 	private:
 		RenderService* mRenderService = nullptr;						//< Render Service that handles render calls

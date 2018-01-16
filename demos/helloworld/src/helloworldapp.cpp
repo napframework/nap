@@ -158,7 +158,7 @@ namespace nap
 		{
 			nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(inputEvent.get());
 			if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
-				quit(0);
+				quit();
 
 			// If 'f' is pressed toggle fullscreen
 			if (press_event->mKey == nap::EKeyCode::KEY_f)
@@ -178,6 +178,8 @@ namespace nap
 	}
 
 
-	void HelloWorldApp::shutdown()
-	{}
+	int HelloWorldApp::shutdown()
+	{
+		return 0;
+	}
 }

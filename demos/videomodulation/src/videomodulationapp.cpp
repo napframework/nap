@@ -129,7 +129,7 @@ namespace nap
 		{
 			nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(inputEvent.get());
 			if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
-				quit(0);
+				quit();
 
 			if (press_event->mKey == nap::EKeyCode::KEY_f)
 			{
@@ -149,8 +149,8 @@ namespace nap
 	}
 
 	
-	void VideoApp::shutdown() 
+	int VideoApp::shutdown() 
 	{
-
+		return 0;
 	}
 }

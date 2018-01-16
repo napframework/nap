@@ -128,7 +128,7 @@ namespace nap
 			nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(inputEvent.get());
 			if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
 			{
-				quit(0);
+				quit();
 			}
 			// Toggle fullscreen on 'f'
 			if (press_event->mKey == nap::EKeyCode::KEY_f)
@@ -141,8 +141,9 @@ namespace nap
 	}
 
 	// Cleanup
-	void DynamicGeoApp::shutdown() 
+	int DynamicGeoApp::shutdown() 
 	{
 		std::cout << "stopping..." << "\n";
+		return 0;
 	}
 }

@@ -59,27 +59,22 @@ namespace nap
 		 * Called by the event handler when it receives an external event to quit the running application
 		 * By default this calls quit() with the return value of this call, which causes the application to stop running
 		 * You can override it to ignore the event or perform specific logic (such as saving a file) before the app is shutdown()
-		 * @return the application exit code, -1 cancels the operation and keeps the app running
+		 * @return if the application should quit, true by default
 		 */
-		virtual int shutdownRequested()									{ return 0; }
+		virtual bool shutdownRequested()								{ return true; }
 
 		/**
 		 * Called when the app is shutting down after quit() has been called
 		 * Use this to clear application specific data. 
 		 * This is called before all the services are closed and the app exits
+		 * return the application exit code, 0 (success) by default 
 		 */
-		virtual void shutdown()											{ }
+		virtual int shutdown()											{ return 0; }
 
 		/**
-		 * Call this from your app to quit the application and exit the main loop.
-		 * @param errorCode defaults to 0, returned by main to signal possible failures
+		 * Call this from your app to terminate the application and exit the main loop.
 		 */
-		void quit(int errorCode = 0);
-
-		/**
-		 *	@return the application exit code when quit is called
-		 */
-		int getExitCode() const											{ return mExitCode;  }
+		void quit()														{ mQuit = true; }
 
 		/**
 		 *	@return nap Core const
@@ -98,7 +93,6 @@ namespace nap
 
 	private:
 		bool mQuit = false;												// When set to true the application will exit
-		int mExitCode = 0;												// Exit code when quit
 		nap::Core& mCore;												// Core
 	};
 

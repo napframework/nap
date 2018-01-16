@@ -205,9 +205,9 @@ namespace nap
 	}
 
 
-	void KalvertorenApp::shutdown()
+	int KalvertorenApp::shutdown()
 	{
-
+		return 0;
 	}
 
 
@@ -225,7 +225,7 @@ namespace nap
 			nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(inputEvent.get());
 			if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
 			{
-				quit(0);
+				quit();
 				return;
 			}
 

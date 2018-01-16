@@ -171,7 +171,7 @@ namespace nap
 		{
 			nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(inputEvent.get());
 			if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
-				quit(0);
+				quit();
 		}
 
 		mInputService->addEvent(std::move(inputEvent));
@@ -185,8 +185,9 @@ namespace nap
 
 	
 
-	void ArtnetColorApp::shutdown()
+	int ArtnetColorApp::shutdown()
 	{
 		mRenderWindow->mWindowEvent.disconnect(mWindowEventSlot);
+		return 0;
 	}
 }

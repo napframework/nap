@@ -50,7 +50,7 @@ namespace nap
 		/**
 		 *	Shut down the application
 		 */
-		virtual void shutdown() override;
+		virtual int shutdown() override;
 
 		/**
 		 *	Register input events

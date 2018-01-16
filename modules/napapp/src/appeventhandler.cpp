@@ -62,10 +62,9 @@ namespace nap
 			// -1 signals a quit cancellation
 			else if (event.type == SDL_QUIT)
 			{
-				int return_code = getApp<App>().shutdownRequested();
-				if (return_code != -1)
+				if (getApp<App>().shutdownRequested())
 				{
-					getApp<App>().quit(return_code);
+					getApp<App>().quit();
 				}
 			}
 
@@ -112,10 +111,9 @@ namespace nap
 			// Stop if the event tells us to quit
 			else if (event.type == SDL_QUIT)
 			{
-				int return_code = getApp<App>().shutdownRequested();
-				if (return_code != -1)
+				if (getApp<App>().shutdownRequested())
 				{
-					getApp<App>().quit(return_code);
+					getApp<App>().quit();
 				}
 			}
 		}
