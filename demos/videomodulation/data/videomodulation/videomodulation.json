@@ -4,8 +4,8 @@
 		{
 			"Type" : "nap::RenderWindow",
 			"mID" : "Window",
-			"Width" : 512,
-			"Height" : 512,
+			"Width" : 1280,
+			"Height" : 720,
 			"Title" : "videomodulation"
 		},
 		
@@ -24,7 +24,7 @@
 		{
 			"Type" : "nap::Video",
 			"mID": "Video1",
-			"Path": "data/videomodulation/video.mp4"
+			"Path": "data/videomodulation/streak.mp4"
 		},
 		
 		{
