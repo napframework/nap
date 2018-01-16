@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 	nap::Core core;
 
 	// Create app runner
-	nap::AppRunner<nap::VideoApp, nap::AppEventHandler> app_runner(core);
+	nap::AppRunner<nap::VideoApp, nap::GUIAppEventHandler> app_runner(core);
 
 	// Start
 	nap::utility::ErrorState error;
@@ -28,7 +28,5 @@ int main(int argc, char *argv[])
 	// Return if the app ran successfully
 	return app_runner.exitCode();
 }
-
-
 
      
