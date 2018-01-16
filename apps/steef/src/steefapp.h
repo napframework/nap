@@ -53,7 +53,7 @@ namespace nap
 		/**
 		 *	Called when loop finishes
 		 */
-		virtual void shutdown() override;
+		virtual int shutdown() override;
 
 		/**
 		*	Toggles full screen

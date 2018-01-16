@@ -31,8 +31,8 @@ namespace nap
 	}
 
 
-	void AudioTestApp::shutdown()
+	int AudioTestApp::shutdown()
 	{
-
+		return 0;
 	}
 }
