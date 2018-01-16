@@ -7,10 +7,10 @@ namespace nap
 	class TriangleIterator
 	{
 	public:
-		TriangleIterator(const SubMesh& subMesh, int startIndex) :
-			mSubMesh(&subMesh),
+		TriangleIterator(const MeshShape& shape, int startIndex) :
+			mShape(&shape),
 			mCurrentIndex(startIndex),
-			mNumIndices(subMesh.getNumIndices()) 
+			mNumIndices(shape.getNumIndices()) 
 		{
 		}
 
@@ -22,18 +22,18 @@ namespace nap
 		virtual const glm::ivec3 next() = 0;
 
 	protected:
-		const SubMesh*	mSubMesh;
-		int				mCurrentIndex;
-		int				mNumIndices;
+		const MeshShape*	mShape;
+		int					mCurrentIndex;
+		int					mNumIndices;
 	};
 
 	class TriangleListIterator : public TriangleIterator
 	{
 	public:
-		TriangleListIterator(const SubMesh& subMesh) :
-			TriangleIterator(subMesh, 0)
+		TriangleListIterator(const MeshShape& shape) :
+			TriangleIterator(shape, 0)
 		{
-			assert(subMesh.getDrawMode() == opengl::EDrawMode::TRIANGLES);
+			assert(shape.getDrawMode() == opengl::EDrawMode::TRIANGLES);
 			assert(mNumIndices != 0 && mNumIndices % 3 == 0);
 		}
 
@@ -41,7 +41,7 @@ namespace nap
 		{
 			glm::ivec3 result;
 
-			const unsigned int* id = mSubMesh->getIndices().data() + mCurrentIndex;
+			const unsigned int* id = mShape->getIndices().data() + mCurrentIndex;
 			result.x = *(id + 0);
 			result.y = *(id + 1);
 			result.z = *(id + 2);
@@ -55,17 +55,17 @@ namespace nap
 	class TriangleFanIterator : public TriangleIterator
 	{
 	public:
-		TriangleFanIterator(const SubMesh& subMesh) :
-			TriangleIterator(subMesh, 2)
+		TriangleFanIterator(const MeshShape& shape) :
+			TriangleIterator(shape, 2)
 		{
-			assert(subMesh.getDrawMode() == opengl::EDrawMode::TRIANGLE_FAN);
+			assert(shape.getDrawMode() == opengl::EDrawMode::TRIANGLE_FAN);
 			assert(mNumIndices >= 3);
 		}
 
 		virtual const glm::ivec3 next() override
 		{
 			glm::ivec3 result;
-			const unsigned int* id = mSubMesh->getIndices().data();
+			const unsigned int* id = mShape->getIndices().data();
 			result.x = *id;
 			result.y = *(id + mCurrentIndex - 1);
 			result.z = *(id + mCurrentIndex);
@@ -78,17 +78,17 @@ namespace nap
 	class TriangleStripIterator : public TriangleIterator
 	{
 	public:
-		TriangleStripIterator(const SubMesh& subMesh) :
-			TriangleIterator(subMesh, 2)
+		TriangleStripIterator(const MeshShape& shape) :
+			TriangleIterator(shape, 2)
 		{
-			assert(subMesh.getDrawMode() == opengl::EDrawMode::TRIANGLE_STRIP);
+			assert(shape.getDrawMode() == opengl::EDrawMode::TRIANGLE_STRIP);
 			assert(mNumIndices >= 3);
 		}
 
 		virtual const glm::ivec3 next() override
 		{
 			glm::ivec3 result;
-			const unsigned int* id = mSubMesh->getIndices().data() + (mCurrentIndex - 2);
+			const unsigned int* id = mShape->getIndices().data() + (mCurrentIndex - 2);
 			result.x = *(id + 0);
 			result.y = *(id + 1);
 			result.z = *(id + 2);
@@ -99,15 +99,15 @@ namespace nap
 	};
 
 
-	class TriangleSubMeshIterator
+	class TriangleShapeIterator
 	{
 	public:
-		TriangleSubMeshIterator(const MeshInstance& meshInstance) :
+		TriangleShapeIterator(const MeshInstance& meshInstance) :
 			mMeshInstance(&meshInstance),
-			mCurSubMesh(0),
+			mCurShapeIndex(0),
 			mCurrentTriangleIndex(0)
 		{
-			createIteratorForNextSubMesh();
+			createIteratorForNextShape();
 		}
 
 		bool isDone() const
@@ -119,33 +119,33 @@ namespace nap
 		{
 			glm::ivec3 result = mCurIterator->next();
 			if (mCurIterator->isDone())
-				createIteratorForNextSubMesh();
+				createIteratorForNextShape();
 
 			++mCurrentTriangleIndex;
 			return result;
 		}
 
-		int getCurrentSubMeshIndex() const { return mCurSubMesh; }
+		int getCurrentShapeIndex() const { return mCurShapeIndex; }
 		int getCurrentTriangleIndex() const { return mCurrentTriangleIndex; }
 	
 	private:
-		void createIteratorForNextSubMesh()
+		void createIteratorForNextShape()
 		{
 			mCurIterator.reset();
-			for (; mCurSubMesh < mMeshInstance->getNumSubMeshes() && mCurIterator == nullptr; ++mCurSubMesh)
+			for (; mCurShapeIndex < mMeshInstance->getNumShapes() && mCurIterator == nullptr; ++mCurShapeIndex)
 			{
-				const SubMesh& subMesh = mMeshInstance->getSubMesh(mCurSubMesh);
+				const MeshShape& shape = mMeshInstance->getShape(mCurShapeIndex);
 
-				switch (subMesh.getDrawMode())
+				switch (shape.getDrawMode())
 				{
 				case opengl::EDrawMode::TRIANGLES:
-					mCurIterator = std::make_unique<TriangleListIterator>(subMesh);
+					mCurIterator = std::make_unique<TriangleListIterator>(shape);
 					break;
 				case opengl::EDrawMode::TRIANGLE_STRIP:
-					mCurIterator = std::make_unique<TriangleStripIterator>(subMesh);
+					mCurIterator = std::make_unique<TriangleStripIterator>(shape);
 					break;
 				case opengl::EDrawMode::TRIANGLE_FAN:
-					mCurIterator = std::make_unique<TriangleFanIterator>(subMesh);
+					mCurIterator = std::make_unique<TriangleFanIterator>(shape);
 					break;
 				default:
 					break;
@@ -156,14 +156,14 @@ namespace nap
 	private:
 		const MeshInstance* mMeshInstance;
 		std::unique_ptr<TriangleIterator> mCurIterator;
-		int mCurSubMesh;
+		int mCurShapeIndex;
 		int mCurrentTriangleIndex;
 	};
 
 
-	bool NAPAPI isTriangleMesh(const SubMesh& subMesh)
+	bool NAPAPI isTriangleMesh(const MeshShape& shape)
 	{
-		switch (subMesh.getDrawMode())
+		switch (shape.getDrawMode())
 		{
 		case opengl::EDrawMode::LINE_LOOP:
 		case opengl::EDrawMode::LINE_STRIP:
@@ -181,10 +181,10 @@ namespace nap
 		}
 	}
 	
-	void NAPAPI setTriangleIndices(SubMesh& mesh, int number, glm::ivec3& indices)
+	void NAPAPI setTriangleIndices(MeshShape& mesh, int number, glm::ivec3& indices)
 	{		
 		// Copy triangle index over
-		SubMesh::IndexList& mesh_indices = mesh.getIndices();
+		MeshShape::IndexList& mesh_indices = mesh.getIndices();
 
 		switch (mesh.getDrawMode())
 		{
@@ -269,7 +269,7 @@ namespace nap
 			normal = glm::vec3(0.0f, 0.0f, 0.0f);
 
 		// Accumulate all normals into the normals array
-		TriangleSubMeshIterator iterator(meshInstance);
+		TriangleShapeIterator iterator(meshInstance);
 		while (!iterator.isDone())
 		{
 			glm::ivec3 indices = iterator.next();
@@ -292,23 +292,23 @@ namespace nap
 
 	void NAPAPI reverseWindingOrder(MeshInstance& mesh)
 	{
-		TriangleSubMeshIterator iterator(mesh);
+		TriangleShapeIterator iterator(mesh);
 		while (!iterator.isDone())
 		{
 			glm::ivec3 cindices = iterator.next();
 			std::swap(cindices.x, cindices.z);
 
-			int subMeshIndex = iterator.getCurrentSubMeshIndex();
-			int triangleIndex = iterator.getCurrentTriangleIndex();
-			SubMesh& curSubMesh = mesh.getSubMesh(subMeshIndex);
+			int shape_index = iterator.getCurrentShapeIndex();
+			int triangle_index = iterator.getCurrentTriangleIndex();
+			MeshShape& shape = mesh.getShape(shape_index);
 
-			setTriangleIndices(curSubMesh, triangleIndex, cindices);
+			setTriangleIndices(shape, triangle_index, cindices);
 		}
 	}
 
-	void NAPAPI generateIndices(nap::SubMesh& subMesh, int vertexCount)
+	void NAPAPI generateIndices(nap::MeshShape& shape, int vertexCount)
 	{
-		SubMesh::IndexList& indices = subMesh.getIndices();
+		MeshShape::IndexList& indices = shape.getIndices();
 		indices.resize(vertexCount);
 		for (int vertex = 0; vertex < vertexCount; ++vertex)
 			indices[vertex] = vertex;

@@ -243,12 +243,12 @@ namespace nap
 		// Gather draw info
 		const opengl::GPUMesh& mesh = mesh_instance.getGPUMesh();
 
-		for (int index = 0; index < mesh_instance.getNumSubMeshes(); ++index)
+		for (int index = 0; index < mesh_instance.getNumShapes(); ++index)
 		{
-			SubMesh& sub_mesh = mesh_instance.getSubMesh(index);
+			MeshShape& shape = mesh_instance.getShape(index);
 			const opengl::IndexBuffer& index_buffer = mesh.getIndexBuffer(index);
 			
-			GLenum draw_mode = getGLMode(sub_mesh.getDrawMode());
+			GLenum draw_mode = getGLMode(shape.getDrawMode());
 			GLsizei num_indices = static_cast<GLsizei>(index_buffer.getCount());
 
 			index_buffer.bind();

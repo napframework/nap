@@ -168,9 +168,9 @@ namespace nap
 		math::resampleLine<glm::vec3>(uv_coords, getUvAttr().getData(), mVertexCount, mClosed);
 		mMeshInstance->setNumVertices(p_count);
 
-		SubMesh& sub_mesh = mMeshInstance->createSubMesh();
-		sub_mesh.setDrawMode(mClosed ? opengl::EDrawMode::LINE_LOOP : opengl::EDrawMode::LINE_STRIP);
-		generateIndices(sub_mesh, p_count);
+		MeshShape& shape = mMeshInstance->createShape();
+		shape.setDrawMode(mClosed ? opengl::EDrawMode::LINE_LOOP : opengl::EDrawMode::LINE_STRIP);
+		generateIndices(shape, p_count);
 
 		// Initialize line
 		return mMeshInstance->init(errorState);
@@ -234,9 +234,9 @@ namespace nap
 		// Update mesh vertex count
 		mMeshInstance->setNumVertices(4);
 
-		SubMesh& sub_mesh = mMeshInstance->createSubMesh();
-		sub_mesh.setDrawMode(opengl::EDrawMode::LINE_LOOP);
-		generateIndices(sub_mesh, 4);
+		MeshShape& shape = mMeshInstance->createShape();
+		shape.setDrawMode(opengl::EDrawMode::LINE_LOOP);
+		generateIndices(shape, 4);
 
 		// Initialize line
 		bool success = mMeshInstance->init(errorState);
@@ -261,9 +261,9 @@ namespace nap
 		// Update
 		mMeshInstance->setNumVertices(mSegments);
 
-		SubMesh& sub_mesh = mMeshInstance->createSubMesh();
-		sub_mesh.setDrawMode(opengl::EDrawMode::LINE_LOOP);		
-		generateIndices(sub_mesh, mSegments);		
+		MeshShape& shape = mMeshInstance->createShape();
+		shape.setDrawMode(opengl::EDrawMode::LINE_LOOP);		
+		generateIndices(shape, mSegments);		
 
 		// Initialize line
 		return mMeshInstance->init(errorState);
@@ -298,9 +298,9 @@ namespace nap
 		// Update
 		mMeshInstance->setNumVertices(6);
 
-		SubMesh& sub_mesh = mMeshInstance->createSubMesh();
-		sub_mesh.setDrawMode(opengl::EDrawMode::LINE_LOOP);
-		generateIndices(sub_mesh, 6);
+		MeshShape& shape = mMeshInstance->createShape();
+		shape.setDrawMode(opengl::EDrawMode::LINE_LOOP);
+		generateIndices(shape, 6);
 
 		return mMeshInstance->init(errorState);
 	}
@@ -334,9 +334,9 @@ namespace nap
 		// Update
 		mMeshInstance->setNumVertices(3);
 
-		SubMesh& sub_mesh = mMeshInstance->createSubMesh();
-		sub_mesh.setDrawMode(opengl::EDrawMode::LINE_LOOP);
-		generateIndices(sub_mesh, 3);
+		MeshShape& shape = mMeshInstance->createShape();
+		shape.setDrawMode(opengl::EDrawMode::LINE_LOOP);
+		generateIndices(shape, 3);
 
 		return mMeshInstance->init(errorState);
 	}
@@ -392,7 +392,7 @@ namespace nap
 
 	bool PolyLine::isClosed() const
 	{
-		opengl::EDrawMode mode = getMeshInstance().getSubMesh(0).getDrawMode();
+		opengl::EDrawMode mode = getMeshInstance().getShape(0).getDrawMode();
 		assert(mode == opengl::EDrawMode::LINE_LOOP || mode == opengl::EDrawMode::LINE_STRIP);
 		return mode == opengl::EDrawMode::LINE_LOOP;
 	}

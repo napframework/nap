@@ -358,9 +358,9 @@ namespace nap
 
 		line.setNumVertices(vertex_count);
 
-		SubMesh& sub_mesh = line.createSubMesh();
-		sub_mesh.setDrawMode(closed ? opengl::EDrawMode::LINE_LOOP : opengl::EDrawMode::LINE_STRIP);
-		generateIndices(sub_mesh, vertex_count);
+		MeshShape& shape = line.createShape();
+		shape.setDrawMode(closed ? opengl::EDrawMode::LINE_LOOP : opengl::EDrawMode::LINE_STRIP);
+		generateIndices(shape, vertex_count);
 
 		// Initialize
 		return line.init(error);

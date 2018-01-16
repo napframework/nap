@@ -99,9 +99,9 @@ namespace nap
 		uv_attribute.setData(texcoords.data(), vertex_count);
 		color_attribute.setData(colors.data(), vertex_count);
 		
-		SubMesh& sub_mesh = mMeshInstance->createSubMesh();
-		sub_mesh.setDrawMode(opengl::EDrawMode::TRIANGLES);	
-		sub_mesh.setIndices(indices.data(), index_count);
+		MeshShape& shape = mMeshInstance->createShape();
+		shape.setDrawMode(opengl::EDrawMode::TRIANGLES);	
+		shape.setIndices(indices.data(), index_count);
 
 		return mMeshInstance->init(errorState);
 	}
