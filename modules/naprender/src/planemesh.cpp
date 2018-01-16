@@ -82,11 +82,13 @@ namespace nap
 			for (int col = 0; col < col_vert_count; col++)
 			{
 				// Set
-				vertices[idx].x = min_x + (col * inc_col_v);
-				vertices[idx].y = ve_y;
+				glm::vec3& vertex = vertices[idx];
+				vertex.x = min_x + (col * inc_col_v);
+				vertex.y = ve_y;
 
-				uvs[idx].x = col * inc_col_uv;
-				uvs[idx].y = uv_y;
+				glm::vec3& uv = uvs[idx];
+				uv.x = col * inc_col_uv;
+				uv.y = uv_y;
 
 				idx++;
 			}
@@ -95,21 +97,21 @@ namespace nap
 		// Create indices, every cell in the grid contains 2 triangles
 		int triangle_count = mRows * mColumns * 2;
 		std::vector<unsigned int> indices(triangle_count * 3, 0);
-		auto it = indices.begin();
+		unsigned int* index_ptr = indices.data();
 
 		for (int row = 0; row < mRows; row++)
 		{
 			for (int col = 0; col < mColumns; col++)
 			{
 				// Compute triangle a
-				*(it++) = (row * col_vert_count) + col;							//< Bottom Left
-				*(it++) = (row * col_vert_count) + (col + 1);					//< Bottom Right
-				*(it++) = ((row+1) * col_vert_count) + (col + 1);				//< Top right
+				*(index_ptr++) = (row * col_vert_count) + col;							//< Bottom Left
+				*(index_ptr++) = (row * col_vert_count) + (col + 1);					//< Bottom Right
+				*(index_ptr++) = ((row+1) * col_vert_count) + (col + 1);				//< Top right
 
 				// Compute triangle b
-				*(it++) = (row * col_vert_count) + col;							//< Bottom Left
-				*(it++) = ((row + 1) * col_vert_count) + (col + 1);				//< Top right
-				*(it++) = ((row + 1) * col_vert_count) + (col + 0);				//< Top left
+				*(index_ptr++) = (row * col_vert_count) + col;							//< Bottom Left
+				*(index_ptr++) = ((row + 1) * col_vert_count) + (col + 1);				//< Top right
+				*(index_ptr++) = ((row + 1) * col_vert_count) + (col + 0);				//< Top left
 			}
 		}
 

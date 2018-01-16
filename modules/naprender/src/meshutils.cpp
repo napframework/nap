@@ -9,89 +9,98 @@ namespace nap
 	public:
 		TriangleIterator(const MeshShape& shape, int startIndex) :
 			mShape(&shape),
-			mCurrentIndex(startIndex),
-			mNumIndices(shape.getNumIndices()) 
+			mCurrentIndex(shape.getIndices().data()),
+			mIndexEnd(shape.getIndices().data() + shape.getIndices().size()) 
 		{
 		}
 
 		bool isDone() const
 		{
-			return mCurrentIndex >= mNumIndices;
+			return mCurrentIndex >= mIndexEnd;
 		}
 
 		virtual const glm::ivec3 next() = 0;
 
 	protected:
 		const MeshShape*	mShape;
-		int					mCurrentIndex;
-		int					mNumIndices;
+		const unsigned int*	mCurrentIndex;
+		const unsigned int*	mIndexEnd;
 	};
 
-	class TriangleListIterator : public TriangleIterator
+	class TriangleListIterator final : public TriangleIterator
 	{
 	public:
 		TriangleListIterator(const MeshShape& shape) :
 			TriangleIterator(shape, 0)
 		{
 			assert(shape.getDrawMode() == opengl::EDrawMode::TRIANGLES);
-			assert(mNumIndices != 0 && mNumIndices % 3 == 0);
+			assert(shape.getNumIndices() != 0 && shape.getNumIndices() % 3 == 0);
 		}
 
 		virtual const glm::ivec3 next() override
 		{
-			glm::ivec3 result;
+			const unsigned int* currentIndex = mCurrentIndex;
 
-			const unsigned int* id = mShape->getIndices().data() + mCurrentIndex;
-			result.x = *(id + 0);
-			result.y = *(id + 1);
-			result.z = *(id + 2);
+			glm::ivec3 result;		
+			result.x = *currentIndex++;
+			result.y = *currentIndex++;
+			result.z = *currentIndex++;
 
-			mCurrentIndex += 3;
+			mCurrentIndex = currentIndex;
 
 			return result;
 		}
 	};
 
-	class TriangleFanIterator : public TriangleIterator
+	class TriangleFanIterator final : public TriangleIterator
 	{
 	public:
 		TriangleFanIterator(const MeshShape& shape) :
 			TriangleIterator(shape, 2)
 		{
 			assert(shape.getDrawMode() == opengl::EDrawMode::TRIANGLE_FAN);
-			assert(mNumIndices >= 3);
+			assert(shape.getNumIndices() >= 3);
+			
+			mFanStartIndex = shape.getIndices().front();
 		}
 
 		virtual const glm::ivec3 next() override
 		{
+			const unsigned int* currentIndex = mCurrentIndex;
+
 			glm::ivec3 result;
-			const unsigned int* id = mShape->getIndices().data();
-			result.x = *id;
-			result.y = *(id + mCurrentIndex - 1);
-			result.z = *(id + mCurrentIndex);
+			result.x = mFanStartIndex;
+			result.y = *(currentIndex - 1);
+			result.z = *currentIndex;
+			
 			++mCurrentIndex;
 
 			return result;
 		}
+
+	private:
+		unsigned int mFanStartIndex;
 	};
 
-	class TriangleStripIterator : public TriangleIterator
+	class TriangleStripIterator final : public TriangleIterator
 	{
 	public:
 		TriangleStripIterator(const MeshShape& shape) :
 			TriangleIterator(shape, 2)
 		{
 			assert(shape.getDrawMode() == opengl::EDrawMode::TRIANGLE_STRIP);
-			assert(mNumIndices >= 3);
+			assert(shape.getNumIndices() >= 3);
 		}
 
 		virtual const glm::ivec3 next() override
 		{
+			const unsigned int* currentIndex = mCurrentIndex-2;
+
 			glm::ivec3 result;
-			const unsigned int* id = mShape->getIndices().data() + (mCurrentIndex - 2);
-			result.x = *(id + 0);
-			result.y = *(id + 1);
-			result.z = *(id + 2);
+			result.x = *(currentIndex + 0);
+			result.y = *(currentIndex + 1);
+			result.z = *(currentIndex + 2);
+
 			++mCurrentIndex;
 
 			return result;
@@ -99,15 +108,21 @@ namespace nap
 	};
 
 
-	class TriangleShapeIterator
+	class TriangleShapeIterator final
 	{
 	public:
 		TriangleShapeIterator(const MeshInstance& meshInstance) :
 			mMeshInstance(&meshInstance),
+			mCurIterator(nullptr),
 			mCurShapeIndex(0),
 			mCurrentTriangleIndex(0)
 		{
 			createIteratorForNextShape();
+		}
+
+		~TriangleShapeIterator()
+		{
+			delete mCurIterator;
 		}
 
 		bool isDone() const
@@ -131,7 +146,9 @@ namespace nap
 	private:
 		void createIteratorForNextShape()
 		{
-			mCurIterator.reset();
+			delete mCurIterator;
+			mCurIterator = nullptr;
+
 			for (; mCurShapeIndex < mMeshInstance->getNumShapes() && mCurIterator == nullptr; ++mCurShapeIndex)
 			{
 				const MeshShape& shape = mMeshInstance->getShape(mCurShapeIndex);
@@ -139,13 +156,13 @@ namespace nap
 				switch (shape.getDrawMode())
 				{
 				case opengl::EDrawMode::TRIANGLES:
-					mCurIterator = std::make_unique<TriangleListIterator>(shape);
+					mCurIterator = new TriangleListIterator(shape);
 					break;
 				case opengl::EDrawMode::TRIANGLE_STRIP:
-					mCurIterator = std::make_unique<TriangleStripIterator>(shape);
+					mCurIterator = new TriangleStripIterator(shape);
 					break;
 				case opengl::EDrawMode::TRIANGLE_FAN:
-					mCurIterator = std::make_unique<TriangleFanIterator>(shape);
+					mCurIterator = new TriangleFanIterator(shape);
 					break;
 				default:
 					break;
@@ -155,7 +172,7 @@ namespace nap
 
 	private:
 		const MeshInstance* mMeshInstance;
-		std::unique_ptr<TriangleIterator> mCurIterator;
+		TriangleIterator* mCurIterator;		// Note: not using unique_ptr to avoid overhead when dereffing pointer during iteration
 		int mCurShapeIndex;
 		int mCurrentTriangleIndex;
 	};
@@ -265,23 +282,26 @@ namespace nap
 		std::vector<glm::vec3>& normal_data = outNormals.getData();
 		
 		// Reset normal data so we can accumulate data into it
-		for (glm::vec3& normal : normal_data)
-			normal = glm::vec3(0.0f, 0.0f, 0.0f);
+		std::memset(normal_data.data(), 0, sizeof(glm::vec3) * normal_data.size());
 
 		// Accumulate all normals into the normals array
+		const glm::vec3* position_data_ptr = position_data.data();
+		glm::vec3* normal_data_ptr = normal_data.data();
+
 		TriangleShapeIterator iterator(meshInstance);
 		while (!iterator.isDone())
 		{
 			glm::ivec3 indices = iterator.next();
 
-			glm::vec3 point0 = position_data[indices[0]];
-			glm::vec3 point1 = position_data[indices[1]];
-			glm::vec3 point2 = position_data[indices[2]];
+			const glm::vec3& point0 = position_data_ptr[indices[0]];
+			const glm::vec3& point1 = position_data_ptr[indices[1]];
+			const glm::vec3& point2 = position_data_ptr[indices[2]];
 
 			glm::vec3 normal = glm::cross((point0 - point1), (point0 - point2));
-			normal_data[indices[0]] += normal;
-			normal_data[indices[1]] += normal;
-			normal_data[indices[2]] += normal;
+
+			normal_data_ptr[indices[0]] += normal;
+			normal_data_ptr[indices[1]] += normal;
+			normal_data_ptr[indices[2]] += normal;
 		}
 
 		// Normalize to deal with shared vertices
