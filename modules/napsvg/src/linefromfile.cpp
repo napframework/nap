@@ -106,6 +106,9 @@ namespace nap
 {
 	bool LineFromFile::init(utility::ErrorState& errorState)
 	{
+		if (!PolyLine::init(errorState))
+			return false;
+
 		// Append . before trying to load relative paths
 		std::string img_path = mFile;
 		if (utility::startsWith(img_path, "/"))
@@ -176,34 +179,13 @@ namespace nap
 		if (!extractLinesFromPaths(extracted_paths, states, svg_rect, errorState))
 			return false;
 
-		// The the index to use
-		setLineIndex(mLineIndex);
-
 		// Delete the image
 		nsvgDelete(new_image);
 		return true;
 	}
 
 
-	nap::MeshInstance& LineFromFile::getMeshInstance()
-	{
-		return *(mLineInstances[mLineIndex]);
-	}
-
-
-	const nap::MeshInstance& LineFromFile::getMeshInstance() const
-	{
-		return *(mLineInstances[mLineIndex]);
-	}
-
-
-	void LineFromFile::setLineIndex(int index)
-	{
-		mLineIndex = nap::math::clamp<int>(index, 0, mLineInstances.size() - 1);
-	}
-
-
-	bool LineFromFile::extractLinesFromPaths(const SVGPaths& paths, const SVGState& states, const math::Rect& rect, utility::ErrorState& error)
+	bool LineFromFile::extractLinesFromPaths(const SVGPaths& paths, const SVGState& states, const math::Rect& rect, utility::ErrorState& errorState)
 	{
 		// Calculate rectangle ratio
 		glm::vec2 ratio(1.0f, 1.0f);
@@ -236,26 +218,20 @@ namespace nap
 		float pos_y_min = mFlipY ? mNormalize ? 0.5f  : rect.mMaxPosition.y : mNormalize ? -0.5f : rect.mMinPosition.y;
 		float pos_y_max = mFlipY ? mNormalize ? -0.5f : rect.mMinPosition.y : mNormalize ? 0.5f	 : rect.mMaxPosition.y;
 
-		// Also create uv's and normals based on path vertices
-		std::vector<glm::vec3> uvs;
-		std::vector<glm::vec3> normals;
-		std::vector<glm::vec3> positions;
-
 		// Create a set of mesh instances based on those paths
-		int path_count = 0;
-		for (auto& path : paths)
+		for (int path_index = 0; path_index != paths.size(); ++path_index)
 		{
-			uvs.clear();
-			normals.clear();
-			positions.clear();
+			auto& path = paths[path_index];
+
+			// Also create uv's and normals based on path vertices
+			std::vector<glm::vec3> uvs;
+			std::vector<glm::vec3> normals;
+			std::vector<glm::vec3> positions;
 
 			// Resize
 			uvs.reserve(path->size());
 			normals.reserve(path->size());
 			positions.reserve(path->size());
-
-			// If this path is closed or not
-			bool is_closed = states[path_count];
 
 			// Calculate uv's first as they use the rect to figure out the normalized 0-1 coordinates
 			// After that compute the vertex position based on the scale 
@@ -282,6 +258,7 @@ namespace nap
 
 			// If the shape is closed but the first and end points are the same, we can discard the last point
 			assert(positions.size() > 0);
+			bool is_closed = states[path_index];
 			if (is_closed && glm::distance(positions.front(), positions.back()) <= math::epsilon<float>())
 			{
 				positions.pop_back();
@@ -289,11 +266,8 @@ namespace nap
 			}
 
 			// Make sure there's enough vertices to create a segment
-			if (positions.size() < 2)
-			{
-				assert(false);
-				return(error.check(false, "not enough unique vertices in line from file: %s", mFile.c_str()));
-			}
+			if (!errorState.check(positions.size() >= 2, "not enough unique vertices in line from file: %s", mFile.c_str()))
+				return false;
 
 			// Now we have the final vertex positions of this line we can calculate their respective normals
 			glm::vec3 crossn(0.0f, 0.0f, -1.0f);
@@ -318,52 +292,39 @@ namespace nap
 				normals.emplace_back(normals.back());
 			}
 
-			// Create and initialize new line based on sampled path vertices
-			std::unique_ptr<MeshInstance> new_line = std::make_unique<MeshInstance>();
-
-			if (!initLineFromPath(*new_line, positions, normals, uvs, is_closed, error))
-				return false;
-
-			// Add line and increment count
-			mLineInstances.emplace_back(std::move(new_line));
-			path_count++;
+			addShape(positions, normals, uvs, is_closed);
 		}
 
-		return true;
+		return mMeshInstance->init(errorState);
 	}
 
 
-	bool LineFromFile::initLineFromPath(MeshInstance& line, std::vector<glm::vec3>& pathVertices, std::vector<glm::vec3>& pathNormals, std::vector<glm::vec3>& pathUvs, bool closed, utility::ErrorState& error)
+	void LineFromFile::addShape(std::vector<glm::vec3>& pathVertices, std::vector<glm::vec3>& pathNormals, std::vector<glm::vec3>& pathUvs, bool closed)
 	{		
-		PolyLine::createVertexAttributes(line);
-
-		Vec3VertexAttribute& pos_attr = line.getAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
-		Vec3VertexAttribute& uvs_attr = line.getAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
-		Vec4VertexAttribute& col_attr = line.getAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0));
-		Vec3VertexAttribute& nor_attr = line.getAttribute<glm::vec3>(VertexAttributeIDs::getNormalName());
+		Vec3VertexAttribute& pos_attr = mMeshInstance->getAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
+		Vec3VertexAttribute& uvs_attr = mMeshInstance->getAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
+		Vec4VertexAttribute& col_attr = mMeshInstance->getAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0));
+		Vec3VertexAttribute& nor_attr = mMeshInstance->getAttribute<glm::vec3>(VertexAttributeIDs::getNormalName());
 
 		int vertex_count = static_cast<int>(pathVertices.size());
 		// Set position buffer
-		pos_attr.setData(pathVertices);
+		pos_attr.addData(pathVertices.data(), pathVertices.size());
 
 		// Set color buffer
 		std::vector<glm::vec4> vert_colors(vertex_count, mLineProperties.mColor);
-		col_attr.setData(vert_colors);
+		col_attr.addData(vert_colors.data(), vert_colors.size());
 
 		// Set normal buffer (todo implement)
-		nor_attr.setData(pathNormals);
+		nor_attr.addData(pathNormals.data(), pathNormals.size());
 
 		// Set uv buffer (todo implement)
-		uvs_attr.setData(pathUvs);
+		uvs_attr.addData(pathUvs.data(), pathUvs.size());
 
-		line.setNumVertices(vertex_count);
-
-		MeshShape& shape = line.createShape();
+		MeshShape& shape = mMeshInstance->createShape();
 		shape.setDrawMode(closed ? opengl::EDrawMode::LINE_LOOP : opengl::EDrawMode::LINE_STRIP);
-		generateIndices(shape, vertex_count);
+		generateIndices(shape, vertex_count, mMeshInstance->getNumVertices());
 
-		// Initialize
-		return line.init(error);
+		mMeshInstance->setNumVertices(mMeshInstance->getNumVertices() + vertex_count);
 	}
 
 }
