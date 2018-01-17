@@ -76,7 +76,9 @@ namespace nap
 		ObjectPtr<EntityInstance> mOrthoCameraEntity = nullptr;			//< The entity that holds the camera
 		ObjectPtr<EntityInstance> mVideoEntity = nullptr;				//< Used to render the video in to a render target
 		ObjectPtr<EntityInstance> mBackgroundEntity = nullptr;			//< Renders the video render target to screen in the background
-		
+		ObjectPtr<EntityInstance> mDisplacementEntity = nullptr;		//< The entity that holds the displacement mesh
+		ObjectPtr<EntityInstance> mPerspCameraEntity = nullptr;			//< Perspective camera
+
 		// The video render target
 		ObjectPtr<RenderTarget>	mVideoRenderTarget = nullptr;			//< Video render target
 		ObjectPtr<RenderWindow> mRenderWindow;							//< Render window
