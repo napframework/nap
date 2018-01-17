@@ -4,6 +4,7 @@
 #include <entity.h>
 #include <meshutils.h>
 #include <mathutils.h>
+#include "TriangleIterator.h"
 
 // nap::applytracercolorcomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::ApplyTracerColorComponent)
@@ -51,44 +52,25 @@ namespace nap
 		// same triangle. 
 		mCurrentChannel = selected_channel - ((selected_channel - mesh.mChannelOffset) % 4);
 
-		// Color attribute we use to sample
-		nap::VertexAttribute<glm::vec4>& color_attr = mesh.getColorAttribute();
-		nap::VertexAttribute<glm::vec4>& artne_attr = mesh.getArtnetColorAttribute();
-		nap::VertexAttribute<int>& channel_attr = mesh.getChannelAttribute();
+		const std::vector<int>& channel_data = mesh.getChannelAttribute().getData();
+		std::vector<glm::vec4>& color_data = mesh.getColorAttribute().getData();
+		std::vector<glm::vec4>& artn_data = mesh.getArtnetColorAttribute().getData();
 
-		// Get amount of mesh triangles
-		int tri_count = getTriangleCount(mesh.getMeshInstance());
-
-		// Clear both color and artnet
-		std::vector<glm::vec4> color_data(color_attr.getCount(), { 0.0f,0.0f,0.0f,0.0f });
-		color_attr.setData(color_data);
-
-		std::vector<glm::vec4> artn_data(artne_attr.getCount(), { 0.0f,0.0f,0.0f,0.0f });
-		artne_attr.setData(artn_data);
-
-		// Find the triangle that has the channel attribute
-		TriangleDataPointer<int> tri_channel;
-		TriangleDataPointer<glm::vec4> tri_color;
-		TriangleDataPointer<glm::vec4> tri_artne;
-
-		for (int i = 0; i < tri_count; i++)
+		TriangleShapeIterator shape_iterator(mesh.getMeshInstance());
+		while (!shape_iterator.isDone())
 		{
-			getTriangleValues<int>(mesh.getMeshInstance(), i, channel_attr, tri_channel);
-			int channel_number = *(tri_channel[0]);
+			glm::ivec3 indices = shape_iterator.next();
 
-			if (channel_number == mCurrentChannel)
-			{
-				getTriangleValues<glm::vec4>(mesh.getMeshInstance(), i, color_attr, tri_color);
-				getTriangleValues<glm::vec4>(mesh.getMeshInstance(), i, artne_attr, tri_artne);
+			int channel_number = channel_data[indices[0]];
 
-				*(tri_color[0]) = { 1.0f, 1.0f, 1.0f, 1.0f };
-				*(tri_color[1]) = { 1.0f, 1.0f, 1.0f, 1.0f };
-				*(tri_color[2]) = { 1.0f, 1.0f, 1.0f, 1.0f };
+			glm::vec4 color = channel_number == mCurrentChannel ? glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) : glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+			color_data[indices[0]] = color;
+			color_data[indices[1]] = color;
+			color_data[indices[2]] = color;
 
-				*(tri_artne[0]) = { 1.0f, 1.0f, 1.0f, 1.0f };
-				*(tri_artne[1]) = { 1.0f, 1.0f, 1.0f, 1.0f };
-				*(tri_artne[2]) = { 1.0f, 1.0f, 1.0f, 1.0f };
-			}
+			artn_data[indices[0]] = color;
+			artn_data[indices[1]] = color;
+			artn_data[indices[2]] = color;
 		}
 
 		nap::utility::ErrorState error;
