@@ -12,7 +12,7 @@ namespace nap
 	 * A TriangleIterator can be used to iterate through all triangles in a MeshShape.
 	 * The TriangleIterator itself only serves as a base class; derived classes are provided that deal with differing index layouts depending on the type of the mesh.
 	 */
-	class TriangleIterator
+	class NAPAPI TriangleIterator
 	{
 	public:
 		TriangleIterator(const MeshShape& shape, int startIndex);
@@ -38,7 +38,7 @@ namespace nap
 	/**
 	 * Implementation of TriangleIterator that can iterate through the triangles of a MeshShape of type opengl::EDrawMode::TRIANGLES
 	 */
-	class TriangleListIterator final : public TriangleIterator
+	class NAPAPI TriangleListIterator final : public TriangleIterator
 	{
 	public:
 		TriangleListIterator(const MeshShape& shape);
@@ -53,7 +53,7 @@ namespace nap
 	/**
 	 * Implementation of TriangleIterator that can iterate through the triangles of a MeshShape of type opengl::EDrawMode::TRIANGLE_FAN
 	 */
-	class TriangleFanIterator final : public TriangleIterator
+	class NAPAPI TriangleFanIterator final : public TriangleIterator
 	{
 	public:
 		TriangleFanIterator(const MeshShape& shape);
@@ -71,7 +71,7 @@ namespace nap
 	/**
 	 * Implementation of TriangleIterator that can iterate through the triangles of a MeshShape of type opengl::EDrawMode::TRIANGLE_STRIP
 	 */
-	class TriangleStripIterator final : public TriangleIterator
+	class NAPAPI TriangleStripIterator final : public TriangleIterator
 	{
 	public:
 		TriangleStripIterator(const MeshShape& shape);
@@ -90,7 +90,7 @@ namespace nap
 	 * This iterator will internally use the right type of TriangleIterator for a specific MeshShape and retrieve triangles through that.
 	 * Note that only triangles are returned; MeshShapes of a different type will be skipped.
 	 */
-	class TriangleShapeIterator final
+	class NAPAPI TriangleShapeIterator final
 	{
 	public:
 		TriangleShapeIterator(const MeshInstance& meshInstance);
