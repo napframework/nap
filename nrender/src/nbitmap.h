@@ -224,8 +224,8 @@ namespace opengl
 
 	private:
 		BitmapSettings	mSettings;
-		size_t			mChannelSize;
-		uint8_t			mNumChannels;
+		size_t			mChannelSize;			///< Cached size in bytes of a single channel. This is updated when setSettings is called.
+		uint8_t			mNumChannels;			///< Cached number of channels. This is updated when setSettings is called.
 	};
 
 
