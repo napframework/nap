@@ -24,7 +24,7 @@ namespace nap
 	void NAPAPI setTriangleIndices(nap::MeshShape& mesh, int number, glm::ivec3& indices);
 
 	/**
-	 * Computes the bounding box of a mesh using it's associated position data
+	 * Computes the bounding box of a mesh using its associated position data
 	 * Note that indices are not considered. This call loops over all available
 	 * points regardless of whether if they're drawn or not
 	 * @param mesh the mesh to get the bounding box for
@@ -33,7 +33,7 @@ namespace nap
 	void NAPAPI computeBoundingBox(const nap::MeshInstance& mesh, nap::math::Box& outBox);
 
 	/**
-	 * Computes the bounding box of a mesh using it's associated position data
+	 * Computes the bounding box of a mesh using its associated position data
 	 * Note that indices are not considered. This call loops over all available
 	 * points regardless of whether they're drawn or not
 	 * @param mesh the mesh to get the bounding box for
@@ -60,5 +60,11 @@ namespace nap
 	 */
 	void NAPAPI reverseWindingOrder(nap::MeshInstance& mesh);
 
-	void NAPAPI generateIndices(nap::MeshShape& shape, int vertexCount);
+	/**
+	 * Generates a list of sequential indices from @offset op to @vertexCount + @offset.
+	 * @param shape The shape to generate indices for.
+	 * @param vertexCount The number of indices to generate.
+	 * @param offset The first index value.
+	 */
+	void NAPAPI generateIndices(nap::MeshShape& shape, int vertexCount, int offset = 0);
 }
