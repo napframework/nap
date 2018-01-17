@@ -77,6 +77,12 @@
 				"y" : 540
 			}
 		},
+
+		{
+			"mID" : "DisplacementMesh",
+			"Type" : "nap::VideoMeshFromFile",
+			"Path" : "data/videomodulation/octahedron.mesh"
+		},
 		
 		{
 			"Type" : "nap::Shader",
@@ -90,6 +96,13 @@
 			"mID": "BackgroundShader",
 			"mVertShader": "shaders/videomodulation/background.vert",
 			"mFragShader": "shaders/videomodulation/background.frag"
+		},
+
+		{
+			"Type" : "nap::Shader",
+			"mID": "DisplacementShader",
+			"mVertShader": "shaders/videomodulation/displacement.vert",
+			"mFragShader": "shaders/videomodulation/displacement.frag"
 		},
 		
 		{
@@ -138,6 +151,39 @@
 				}
 			]	
 		},
+
+		{
+			"Type" : "nap::Material",
+			"mID": "DisplacementMaterial",
+			"Shader": "DisplacementShader",
+			"VertexAttributeBindings" : 
+			[
+				{
+					"MeshAttributeID": "Position",
+					"ShaderAttributeID": "in_Position"
+				},
+				{
+					"MeshAttributeID": "UV0",
+					"ShaderAttributeID": "in_UV0"
+				},
+				{
+					"MeshAttributeID": "Normal",
+					"ShaderAttributeID" : "in_Normal"
+				},
+				{
+					"MeshAttributeID": "DisplacementDirection",
+					"ShaderAttributeID" : "in_DisplacementDirection"
+				}
+			],
+			"Uniforms" : 
+			[
+				{
+					"Type" : "nap::UniformTexture2D",
+					"Name" : "videoTexture",
+					"Texture" : "VideoColorTexture"
+				}
+			]	
+		},
 		
 		{
 			"Type" : "nap::Scene",
@@ -145,20 +191,26 @@
 			"Entities" : 
 			[
 				{
-					"Entity" : "CameraEntity"
+					"Entity" : "OrthoCameraEntity"
+				},
+				{
+					"Entity" : "PerspCameraEntity"
 				},
 				{
 					"Entity" : "VideoEntity"
 				},
 				{
 					"Entity" : "BackgroundEntity"
-				}			
+				},
+				{
+					"Entity" : "DisplacementEntity"
+				}
 			]
 		},
 
 		{
 			"Type" : "nap::Entity",
-			"mID": "CameraEntity",
+			"mID": "OrthoCameraEntity",
 			
 			"Components" : 
 			[
@@ -184,6 +236,48 @@
 							"w": 1.0
 						},
 						"Scale": {
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.0						
+					}
+				}
+			]
+		},
+
+		{
+			"Type" : "nap::Entity",
+			"mID": "PerspCameraEntity",
+			
+			"Components" : 
+			[
+				{
+					"Type" : "nap::PerspCameraComponent",
+					"Properties": {
+						"NearClippingPlane" : 0.1,
+						"FarClippingPlane" : 10000.0,
+						"FieldOfView" : 45
+					}
+				},
+				{
+					"Type" : "nap::TransformComponent",
+					"Properties": 
+					{
+						"Translate": 
+						{
+							"x": 0.0,
+							"y": 0.0,
+							"z": 5.0
+						},
+						"Rotate": 
+						{
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0
+						},
+						"Scale": 
+						{
 							"x": 1.0,
 							"y": 1.0,
 							"z": 1.0
@@ -225,11 +319,63 @@
 					"Mesh" : "PlaneMesh",
 					"MaterialInstance" : 
 					{
-						"Material": "BackgroundMaterial"
+						"Material": "BackgroundMaterial",
+						"DepthMode": "ReadOnly"
 					}
 				},
 				{
 					"Type" : "nap::TransformComponent"
+				}
+			]	
+		},
+
+		{
+			"Type" : "nap::Entity",
+			"mID": "DisplacementEntity",
+			
+			"Components" : 
+			[
+				{
+					"Type" : "nap::RenderableMeshComponent",
+					"Mesh" : "DisplacementMesh",
+					"MaterialInstance" : 
+					{
+						"Material": "DisplacementMaterial"
+					}
+				},
+				{
+					"Type" : "nap::TransformComponent",
+					"Properties": {
+						"Translate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0
+						},
+						"Rotate": {
+							"x": 0.0,
+							"y": 0.0,
+							"z": 0.0,
+							"w": 1.0
+						},
+						"Scale": {
+							"x": 1.0,
+							"y": 1.0,
+							"z": 1.0
+						},
+						"UniformScale": 1.0					
+					}
+				},
+				{
+					"Type" : "nap::RotateComponent",
+					"Properties": {
+						"Axis": {
+							"x": 0.0,
+							"y": 1.0,
+							"z": 0.0
+						},
+						"Speed": 0.01,
+						"Offset": 0.0
+					}
 				}
 			]	
 		}

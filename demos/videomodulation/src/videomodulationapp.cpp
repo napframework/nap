@@ -4,6 +4,7 @@
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <orthocameracomponent.h>
+#include <perspcameracomponent.h>
 #include <texture2d.h>
 #include <scene.h>
 #include <imgui/imgui.h>
@@ -35,9 +36,11 @@ namespace nap
 		
 		// Get important entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
-		mOrthoCameraEntity = scene->findEntity("CameraEntity");
+		mOrthoCameraEntity = scene->findEntity("OrthoCameraEntity");
 		mBackgroundEntity = scene->findEntity("BackgroundEntity");
 		mVideoEntity = scene->findEntity("VideoEntity");
+		mDisplacementEntity = scene->findEntity("DisplacementEntity");
+		mPerspCameraEntity = scene->findEntity("PerspCameraEntity");
 
 		// Get render target
 		mVideoRenderTarget = mResourceManager->findObject<RenderTarget>("VideoRenderTarget");
@@ -53,16 +56,19 @@ namespace nap
 
 		// Collect all video resources and play
 		mVideoResource = mResourceManager->findObject<Video>("Video1");
-		mVideoResource->mLoop = true;
-		mVideoResource->play();
-		
 		return true;
 	}
 	
 	
 	// Called when the window is updating
 	void VideoApp::update(double deltaTime)
-	{				
+	{
+		if (!mVideoResource->isPlaying())
+		{
+			mVideoResource->play();
+			mVideoResource->mLoop = true;
+		}
+
 		// Update gui components
 		updateGui();
 
@@ -115,8 +121,13 @@ namespace nap
 			std::vector<RenderableComponentInstance*> render_objects;
 			render_objects.emplace_back(&mBackgroundEntity->getComponent<RenderableMeshComponentInstance>());
 
-			// Render necessary objects
+			// Render background plane
 			mRenderService->renderObjects(render_target, mOrthoCameraEntity->getComponent<OrthoCameraComponentInstance>(), render_objects);
+
+			// Render displacement mesh
+			render_objects.clear();
+			render_objects.emplace_back(&mDisplacementEntity->getComponent<RenderableMeshComponentInstance>());
+			mRenderService->renderObjects(render_target, mPerspCameraEntity->getComponent<PerspCameraComponentInstance>(), render_objects);
 		}
 
 		// Draw gui
