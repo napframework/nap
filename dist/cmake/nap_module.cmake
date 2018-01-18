@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.5)
-get_filename_component(module_name_from_dir ${CMAKE_SOURCE_DIR} NAME)
+get_filename_component(module_name_from_dir ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+if (MODULE_INTO_PROJ)
+    set(prev_proj_name ${PROJECT_NAME})
+endif()
 project(${module_name_from_dir})
+
+if (NOT MODULE_INTO_PROJ)
 
 set(NAP_ROOT "${CMAKE_SOURCE_DIR}/../../")
 include(${NAP_ROOT}/cmake/targetarch.cmake)
@@ -55,6 +60,8 @@ if(WIN32)
     endif()
 endif()
 
+endif()
+
 include_directories(${NAP_ROOT}/include/)
 
 #add all cpp files to SOURCES
@@ -87,11 +94,22 @@ if (WIN32)
 endif()
 
 # Pull in NAP core
-find_package(napcore REQUIRED)
-find_package(naprtti REQUIRED)
+if (NOT MODULE_INTO_PROJ)
+    find_package(napcore REQUIRED)
+    find_package(naprtti REQUIRED)
+endif()
 
 message("PYTHON_LIBRARIES ${PYTHON_LIBRARIES}")
+message("PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_DIRS}")
 target_link_libraries(${PROJECT_NAME} napcore naprtti RTTR::Core ${PYTHON_LIBRARIES} ${SDL2_LIBRARY})
+if (MODULE_INTO_PROJ)
+    target_include_directories(${PROJECT_NAME} PUBLIC ${pybind11_INCLUDE_DIRS})
+endif()
 
 # Set our module output directory
 set_module_output_directories()
+
+# TODO necessary?
+if (MODULE_INTO_PROJ)
+    set(PROJECT_NAME ${prev_proj_name})
+endif()
