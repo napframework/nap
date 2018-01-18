@@ -5,8 +5,17 @@
 
 namespace nap
 {
-	bool DataPathManager::populatePath(utility::ErrorState& errorState)
+	bool DataPathManager::populatePath(utility::ErrorState& errorState, bool unnamedNapkinFlag)
 	{
+		// If we're being used in a non-project context there's no data to find so let's set our data path
+		// to a placeholder directory (our executable dir) as a workaround
+		// TODO change approach or name unnamedNapkinFlag
+		if (unnamedNapkinFlag)
+		{
+			mDataPath = utility::getExecutableDir();
+			return true;
+		}
+		
 		// Check if we have our data dir alongside our exe
 		std::string testDataPath = utility::getExecutableDir() + "/data";
 		if (utility::dirExists(testDataPath))
