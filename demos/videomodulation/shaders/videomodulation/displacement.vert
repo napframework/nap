@@ -27,7 +27,7 @@ void main(void)
 	float greyscale = (tex_color.r + tex_color.g + tex_color.b) / 3.0;
 
 	// Modify position
-	vec3 new_pos = in_Position + (in_Normal * pow(greyscale,20) * 0.0);
+	vec3 new_pos = in_Position + (in_Normal * pow(greyscale,5) * 0.2);
 	
 	// Forward uvs to fragment shader
 	passUVs = in_UV0;

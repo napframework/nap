@@ -85,8 +85,15 @@
 		},
 
 		{
+			"mID" : "SphereMeshTwo",
+			"Type" : "nap::MeshFromFile",
+			"Path" : "data/videomodulation/sphere.mesh"
+		},
+
+		{
 			"mID" : "SphereMesh",
-			"Type" : "nap::SphereMesh"
+			"Type" : "nap::SphereMesh",
+			"Path" : "data/videomodulation/sphere.mesh"
 		},
 		
 		{
@@ -271,7 +278,7 @@
 						{
 							"x": 0.0,
 							"y": 0.0,
-							"z": 5.0
+							"z": 4.0
 						},
 						"Rotate": 
 						{
@@ -355,7 +362,7 @@
 			[
 				{
 					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "SphereMesh",
+					"Mesh" : "SphereMeshTwo",
 					"MaterialInstance" : 
 					{
 						"Material": "DisplacementMaterial"
