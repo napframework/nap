@@ -8,7 +8,6 @@ uniform mat4 modelMatrix;
 in vec3	in_Position;
 in vec3 in_UV0;
 in vec3 in_Normal;
-in vec3 in_DisplacementDirection;
 
 // Output to fragment shader
 out vec3 passUVs;					//< vetex uv's
@@ -27,8 +26,8 @@ void main(void)
 	float greyscale = (tex_color.r + tex_color.g + tex_color.b) / 3.0;
 
 	// Modify position
-	vec3 new_pos = in_Position + (in_DisplacementDirection * max(pow(greyscale,50) * 0.5, 0.05));
-
+	vec3 new_pos = in_Position;
+	
 	// Forward uvs to fragment shader
 	passUVs = in_UV0;
 
