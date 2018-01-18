@@ -49,7 +49,7 @@ namespace nap
 		// PImpl instantiation using unique_ptr because we only want a unique snowflake
 		mPImpl = std::unique_ptr<PImpl, PImpl_deleter>(new PImpl);
 		
-		nap::Logger::debug("Watching directory: %s", path.c_str());
+		nap::Logger::debug("Watching directory: %s", projectDataPath.c_str());
 		mPImpl->watchID = mPImpl->fileWatcher.addWatch(projectDataPath, &(*mPImpl), true);
 	}
 
