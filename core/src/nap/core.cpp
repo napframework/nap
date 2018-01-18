@@ -52,7 +52,7 @@ namespace nap
 		nap::utility::changeDir(nap::utility::getExecutableDir());
 		
 		// Find our project data
-		if (!DataPathManager::get().populatePath(error))
+		if (!mDataPathManager.populatePath(error))
 			return false;
 
 		// Add resource manager and listen to file changes
@@ -287,5 +287,9 @@ namespace nap
 	utility::HighResTimeStamp Core::getStartTime() const
 	{
 		return mTimer.getStartTime();
+	}
+	
+	DataPathManager& Core::getDataPathManager() {
+		return mDataPathManager;
 	}
 }

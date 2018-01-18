@@ -32,7 +32,7 @@ namespace nap
 
 		// Get resource manager and load
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile(DataPathManager::get().getDataPath() + "/objects.json", error))
+		if (!mResourceManager->loadFile(getCore().getDataPathManager().getDataPath() + "/objects.json", error))
 		{
 			Logger::fatal("Unable to deserialize resources: \n %s", error.toString().c_str());
 			return false;

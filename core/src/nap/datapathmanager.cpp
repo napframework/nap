@@ -5,12 +5,6 @@
 
 namespace nap
 {
-	DataPathManager& DataPathManager::get()
-	{
-		static DataPathManager manager;
-		return manager;
-	}
-	
 	bool DataPathManager::populatePath(utility::ErrorState& errorState)
 	{
 		// Check if we have our data dir alongside our exe
