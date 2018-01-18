@@ -8,6 +8,7 @@
 #include <texture2d.h>
 #include <scene.h>
 #include <imgui/imgui.h>
+#include <mathutils.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VideoApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -69,6 +70,15 @@ namespace nap
 			mVideoResource->mLoop = true;
 		}
 
+		// The default input router forwards messages to key and mouse input components
+		// attached to a set of entities.
+		nap::DefaultInputRouter input_router;
+
+		// Forward all input events associated with the first window to the listening components
+		std::vector<nap::EntityInstance*> entities = { mPerspCameraEntity.get() };
+		mInputService->processEvents(*mRenderWindow, input_router, entities);
+
+
 		// Update gui components
 		updateGui();
 
@@ -127,6 +137,14 @@ namespace nap
 			// Render displacement mesh
 			render_objects.clear();
 			render_objects.emplace_back(&mDisplacementEntity->getComponent<RenderableMeshComponentInstance>());
+			
+			// Set camera position in material
+			nap::MaterialInstance& material = mDisplacementEntity->getComponent<RenderableMeshComponentInstance>().getMaterialInstance();
+			UniformVec3& uniform = material.getOrCreateUniform<UniformVec3>("cameraPosition");
+			const glm::mat4x4 global_xform = mPerspCameraEntity->getComponent<TransformComponentInstance>().getGlobalTransform();
+			uniform.setValue(math::extractPosition(global_xform));
+
+			// Render
 			mRenderService->renderObjects(render_target, mPerspCameraEntity->getComponent<PerspCameraComponentInstance>(), render_objects);
 		}
 

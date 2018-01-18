@@ -255,7 +255,9 @@
 			[
 				{
 					"Type" : "nap::PerspCameraComponent",
-					"Properties": {
+					"mID" : "PerspCameraComponent",
+					"Properties": 
+					{
 						"NearClippingPlane" : 0.1,
 						"FarClippingPlane" : 10000.0,
 						"FieldOfView" : 45
@@ -285,7 +287,22 @@
 						},
 						"UniformScale": 1.0						
 					}
-				}
+				},
+				{
+                    "Type": "nap::KeyInputComponent",
+                    "mID": "nap::KeyInputComponent"
+                },
+                {
+                    "Type": "nap::PointerInputComponent",
+                    "mID": "nap::PointerInputComponent"
+                },
+				{
+                    "Type": "nap::OrbitController",
+                    "mID": "nap::OrbitController",
+                    "MovementSpeed": 0.033,
+                    "RotateSpeed": 0.0033,
+                    "PerspCameraComponent": "PerspCameraComponent"
+                }
 			]
 		},
 
