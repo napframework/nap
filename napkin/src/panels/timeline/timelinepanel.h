@@ -22,6 +22,8 @@
 
 namespace napkin {
 
+
+
 	class RulerWidget : public QWidget {
 	public:
 		RulerWidget();
@@ -91,7 +93,7 @@ namespace napkin {
 	private:
 
 		QVBoxLayout mLayout;
-		GridView mView;
+		TimelineView mView;
 		TimelineScene mScene;
 		RulerWidget mRuler;
 

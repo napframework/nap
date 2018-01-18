@@ -3,6 +3,7 @@
 #include <string>
 #include <cstdlib>
 #include <chrono>
+#include <random>
 
 namespace namegen {
 	int randint(int n) {
@@ -10,7 +11,10 @@ namespace namegen {
 	}
 
 	int randint(int min, int max) {
-		return (rand() % max-min) + min;
+		std::random_device seeder;
+		std::mt19937 engine(seeder());
+		std::uniform_int_distribution<int> dist(min, max);
+		return dist(engine);
 	}
 
 	char randChar(const std::string& str) {

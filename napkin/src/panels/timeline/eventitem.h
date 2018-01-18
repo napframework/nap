@@ -2,11 +2,13 @@
 
 
 #include <QGraphicsRectItem>
+#include <QtGui/QPen>
 #include "timelinemodel.h"
 
 namespace napkin {
 
-	class EventItem : public QGraphicsRectItem {
+	class EventItem : public QObject, public QGraphicsRectItem {
+		Q_OBJECT
 	public:
 		explicit EventItem(QGraphicsItem* parent, Event& event);
 
@@ -15,7 +17,12 @@ namespace napkin {
 		void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
 
 	private:
-		Event& mEvent;
+		void onEventChanged(Event& evt);
 
+		Event& mEvent;
+		QPen mPenBorder;
+		QPen mPenBorderSelected;
+		QBrush mBrush;
+		QBrush mBrushSelected;
 	};
 }
