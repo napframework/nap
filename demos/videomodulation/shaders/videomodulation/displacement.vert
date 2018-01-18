@@ -11,8 +11,9 @@ in vec3 in_Normal;
 
 // Output to fragment shader
 out vec3 passUVs;					//< vetex uv's
-out vec3 passNormal;				//< Vertex normal world space
+out vec3 passNormal;				//< Vertex normal object space
 out vec3 passVert;					//< Vertex position world space
+out mat4 passModelMatrix;			//< Model matrix
 
 // uniform inputs
 uniform sampler2D	videoTexture;
@@ -26,17 +27,19 @@ void main(void)
 	float greyscale = (tex_color.r + tex_color.g + tex_color.b) / 3.0;
 
 	// Modify position
-	vec3 new_pos = in_Position;
+	vec3 new_pos = in_Position + (in_Normal * pow(greyscale,20) * 0.0);
 	
 	// Forward uvs to fragment shader
 	passUVs = in_UV0;
 
-	//calculate normal in world coordinates
-    mat3 normal_matrix = transpose(inverse(mat3(modelMatrix)));
-    passNormal = normalize(normal_matrix * in_Normal);
+	// pass object space normal
+    passNormal = in_Normal;
 
     // calculate vert in world coordinates
     passVert = vec3(modelMatrix * vec4(new_pos, 1));
+
+    // Pass model matrix to frag shader
+    passModelMatrix = modelMatrix;
 
     // Calculate frag position
     gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(new_pos, 1.0);
