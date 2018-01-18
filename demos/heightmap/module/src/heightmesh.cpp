@@ -31,13 +31,13 @@ namespace nap
 		nap::MeshInstance& mesh = getMeshInstance();
 
 		// Get attributes
-		Vec3VertexAttribute& pos_attr = mesh.GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName());
-		Vec3VertexAttribute& uvs_attr = mesh.GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetUVName(0));
-		Vec3VertexAttribute& nor_attr = mesh.GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::getNormalName());
+		Vec3VertexAttribute& pos_attr = mesh.getAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
+		Vec3VertexAttribute& uvs_attr = mesh.getAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
+		Vec3VertexAttribute& nor_attr = mesh.getAttribute<glm::vec3>(VertexAttributeIDs::getNormalName());
 
 		// Store the original point positions in a new attribute
-		mOriginalPosAttr = &mesh.GetOrCreateAttribute<glm::vec3>("OriginalPosition");
-		mOriginalNorAttr = &mesh.GetOrCreateAttribute<glm::vec3>("OriginalNormal");
+		mOriginalPosAttr = &mesh.getOrCreateAttribute<glm::vec3>("OriginalPosition");
+		mOriginalNorAttr = &mesh.getOrCreateAttribute<glm::vec3>("OriginalNormal");
 
 		mOriginalPosAttr->setData(pos_attr.getData());
 		mOriginalNorAttr->setData(nor_attr.getData());
