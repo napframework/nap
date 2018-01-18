@@ -50,7 +50,7 @@ namespace nap
 		/**
 		 *	Shut down the application
 		 */
-		virtual void shutdown() override;
+		virtual int shutdown() override;
 
 		/**
 		 *	Register input events
@@ -86,6 +86,11 @@ namespace nap
 		 *	Sets the current palette cycle mode
 		 */
 		void selectPaletteCycleMode();
+
+		/**
+		 *	Sets the current color palette cycle speed
+		 */
+		void setColorPaletteCycleSpeed(float seconds);
 
 	private:
 		// Nap Objects
