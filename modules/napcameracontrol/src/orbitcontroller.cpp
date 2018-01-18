@@ -149,4 +149,12 @@ namespace nap
 			mTransformComponent->setTranslate(translate - direction * distance);
 		}
 	}
+
+
+	void OrbitController::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
+	{
+		components.push_back(RTTI_OF(TransformComponent));
+		components.push_back(RTTI_OF(KeyInputComponent));
+	}
+
 }

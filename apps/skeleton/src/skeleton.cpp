@@ -35,9 +35,9 @@ namespace nap {
     }
 
 
-    void CoreApp::shutdown()
+    int CoreApp::shutdown()
     {
-
+		return 0;
     }
 
     void CoreApp::update(double deltaTime)

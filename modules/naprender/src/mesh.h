@@ -14,6 +14,48 @@
 namespace nap
 {
 	/**
+	* Known vertex attribute IDs in the system
+	* These vertex attribute identifiers are used for loading/creating meshes with well-known attributes.
+	*/
+	namespace VertexAttributeIDs
+	{
+		/**
+		* @return Default position vertex attribute name "Position"
+		*/
+		const NAPAPI std::string getPositionName();
+
+		/**
+		* @return Default normal vertex attribute name: "Normal"
+		*/
+		const NAPAPI std::string getNormalName();
+
+		/**
+		* @return Default tangent vertex attribute name: "Tangent"
+		*/
+		const NAPAPI std::string getTangentName();
+
+		/**
+		* @return Default bi-tangent vertex attribute name: "Bitangent"
+		*/
+		const NAPAPI std::string getBitangentName();
+
+		/**
+		* Returns the name of the vertex uv attribute based on the queried uv channel, ie: UV0, UV1 etc.
+		* @param uvChannel: the uv channel index to query
+		* @return the name of the vertex attribute
+		*/
+		const NAPAPI std::string getUVName(int uvChannel);
+
+		/**
+		* Returns the name of the vertex color attribute based on the queried color channel, ie: "Color0", "Color1" etc.
+		* @param colorChannel: the color channel index to query
+		* @return the name of the color vertex attribute
+		*/
+		const NAPAPI std::string GetColorName(int colorChannel);
+	};
+
+
+	/**
 	 * Helper struct for data that is common between MeshInstance and Mesh.
 	 * Templatized as the ownership for vertex attributes is different between a MeshInstance and a Mesh:
 	 *		- MeshInstance has ownership over the attributes through unique_ptrs.
@@ -60,33 +102,6 @@ namespace nap
 	{
 		RTTI_ENABLE()
 	public:
-		using VertexAttributeID = std::string;
-
-		/**
-		 * Known vertex attribute IDs in the system, used for loading/creating meshes with well-known attributes.
-		 */
-		struct VertexAttributeIDs
-		{
-			static const NAPAPI VertexAttributeID GetPositionName();	//< Default position vertex attribute name
-			static const NAPAPI VertexAttributeID getNormalName();		//< Default normal vertex attribute name
-			static const NAPAPI VertexAttributeID getTangentName();		//< Default tangent vertex attribute name
-			static const NAPAPI VertexAttributeID getBitangentName();	//< Default bi-tangent vertex attribute name
-
-			/**
-			 * Returns the name of the vertex uv attribute based on the queried uv channel
-			 * @param uvChannel: the uv channel index to query
-			 * @return the name of the vertex attribute
-			 */
-			static const NAPAPI VertexAttributeID GetUVName(int uvChannel);
-
-			/**
-			 *	Returns the name of the vertex color attribute based on the queried uv channel
-			 * @param colorChannel: the color channel index to query
-			 * @return the name of the color vertex attribute
-			 */
-			static const NAPAPI VertexAttributeID GetColorName(int colorChannel);
-		};
-
 		// Default constructor
 		MeshInstance() = default;
 
@@ -120,7 +135,7 @@ namespace nap
 		 * @return Type safe vertex attribute if found, nullptr if not found or if there was a type mismatch.
 		 */
 		template<typename T>
-		VertexAttribute<T>* FindAttribute(const std::string& id);
+		VertexAttribute<T>* findAttribute(const std::string& id);
 
 		/**
 		* Finds vertex attribute.
@@ -128,7 +143,7 @@ namespace nap
 		* @return Type safe vertex attribute if found, nullptr if not found or if there was a type mismatch.
 		*/
 		template<typename T>
-		const VertexAttribute<T>* FindAttribute(const std::string& id) const;
+		const VertexAttribute<T>* findAttribute(const std::string& id) const;
 
 		/**
 		 * Gets vertex attribute.
@@ -136,7 +151,7 @@ namespace nap
 		 * @return Type safe vertex attribute. If not found or in case there is a type mismatch, the function asserts.
 		 */
 		template<typename T>
-		VertexAttribute<T>& GetAttribute(const std::string& id);
+		VertexAttribute<T>& getAttribute(const std::string& id);
 
 		/**
 		* Gets vertex attribute.
@@ -144,7 +159,7 @@ namespace nap
 		* @return Type safe vertex attribute. If not found or in case there is a type mismatch, the function asserts.
 		*/
 		template<typename T>
-		const VertexAttribute<T>& GetAttribute(const std::string& id) const;
+		const VertexAttribute<T>& getAttribute(const std::string& id) const;
 
 		/**
 		 * Gets a vertex attribute or creates it if it does not exist. In case the attribute did exist, but with a different type, the function asserts.
@@ -152,20 +167,41 @@ namespace nap
 		 * @return Type safe vertex attribute. 
 		 */
 		template<typename T>
-		VertexAttribute<T>& GetOrCreateAttribute(const std::string& id);
+		VertexAttribute<T>& getOrCreateAttribute(const std::string& id);
 
 		/**
-		 * Reserves index CPU memory.
+		 * Clears the list of indices. 
+		 * Call either before init() or call update() to reflect the changes in the GPU buffer.
+		 */
+		void clearIndices()														{ mProperties.mIndices.clear(); }
+
+		/**
+	 	 * Reserves CPU memory for index list. GPU memory is reserved after update() is called.
 		 * @param numIndices Amount of indices to reserve.
 		 */
-		void ReserveIndices(size_t numIndices)									{ mProperties.mIndices.reserve(numIndices); }
+		void reserveVertices(size_t numVertices);
+
+		/**
+		 * Reserves CPU memory for index list. GPU memory is reserved after update() is called.
+		 * @param numIndices Amount of indices to reserve.
+		 */
+		void reserveIndices(size_t numIndices);
 
 		/**
 		 * Adds a single index to the index CPU buffer. Use setIndices to add an entire list of indices.
 		 * Call either before init() or call update() to reflect the changes in the GPU buffer.
 		 * @param index Index to add.
 		 */
-		void AddIndex(int index)												{ mProperties.mIndices.push_back(index); }
+		void addIndex(int index)												{ mProperties.mIndices.push_back(index); }
+
+		/**
+ 		 * Adds a number of indices to the existing indices in the index CPU buffer. Use setIndices to replace
+		 * the current indices with a new set of indices.
+		 * Call either before init() or call update() to reflect the changes in the GPU buffer.
+		 * @param indices List of indices to update.
+		 * @param numIndices Number of indices in the list.
+		 */
+		void addIndices(uint32_t* indices, int numIndices);
 
 		/**
 		 * Adds a list of indices to the index CPU buffer.
@@ -174,6 +210,23 @@ namespace nap
 		 * @param numIndices: number of indices in @indices.
 		 */
 		void setIndices(uint32_t* indices, int numIndices);
+
+		/**
+		 * @return if the mesh has indices associated with it
+		 */
+		bool hasIndices() const													{ return !(mProperties.mIndices.empty()); }
+
+		/**
+		 * @return the indices associated with this mesh. This array is empty
+		 * if this mesh has no indices
+		 */
+		const std::vector<uint>& getIndices() const								{ return mProperties.mIndices; }
+
+		/**
+		* @return the indices associated with this mesh. This array is empty
+		* if this mesh has no indices
+		*/
+		std::vector<uint>& getIndices()											{ return mProperties.mIndices; }
 
 		/**
 		 * Sets number of vertices. The amount of elements for each vertex buffer should be equal to
@@ -199,23 +252,8 @@ namespace nap
 		opengl::EDrawMode getDrawMode() const									{ return mProperties.mDrawMode; }
 
 		/**
-		 * @return if the mesh has indices associated with it
-		 */
-		bool hasIndices() const													{ return !(mProperties.mIndices.empty()); }
-
-		/**
-		 * @return the indices associated with this mesh. This array is empty if this mesh has no indices
-		 */
-		const std::vector<uint>& getIndices() const								{ return mProperties.mIndices; }
-
-		/**
-		 * @return the indices associated with this mesh. This array is empty if the mesh has no indices
-		 */
-		std::vector<uint>& getIndices()											{ return mProperties.mIndices; }
-
-		/**
-		 * Uses the CPU mesh data to update the GPU mesh. Note that update() is called during init().
-		 * This call is therefore only required if CPU data is modified after init().
+		 * Uses the CPU mesh data to update the GPU mesh. Note that update() is called during init(),
+		 * so this is only required if CPU data is modified after init().
 		 * If there is a mismatch between vertex buffer, an error will be returned.
 		 * @param errorState Contains error information if an error occurred.
 		 * @return True if succeeded, false on error.		 
@@ -309,7 +347,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	nap::VertexAttribute<T>* nap::MeshInstance::FindAttribute(const std::string& id)
+	nap::VertexAttribute<T>* nap::MeshInstance::findAttribute(const std::string& id)
 	{
 		for (auto& attribute : mProperties.mAttributes)
 			if (attribute->mAttributeID == id)
@@ -318,7 +356,7 @@ namespace nap
 	}
 
 	template<typename T>
-	const VertexAttribute<T>* nap::MeshInstance::FindAttribute(const std::string& id) const
+	const VertexAttribute<T>* nap::MeshInstance::findAttribute(const std::string& id) const
 	{
 		for (auto& attribute : mProperties.mAttributes)
 			if (attribute->mAttributeID == id)
@@ -330,23 +368,23 @@ namespace nap
 	}
 
 	template<typename T>
-	nap::VertexAttribute<T>& nap::MeshInstance::GetAttribute(const std::string& id)
+	nap::VertexAttribute<T>& nap::MeshInstance::getAttribute(const std::string& id)
 	{
-		VertexAttribute<T>* attribute = FindAttribute<T>(id);
+		VertexAttribute<T>* attribute = findAttribute<T>(id);
 		assert(attribute != nullptr);
 		return *attribute;
 	}
 
 	template<typename T>
-	const VertexAttribute<T>& nap::MeshInstance::GetAttribute(const std::string& id) const
+	const VertexAttribute<T>& nap::MeshInstance::getAttribute(const std::string& id) const
 	{
-		const VertexAttribute<T>* attribute = FindAttribute<T>(id);
+		const VertexAttribute<T>* attribute = findAttribute<T>(id);
 		assert(attribute != nullptr);
 		return *attribute;
 	}
 
 	template<typename T>
-	nap::VertexAttribute<T>& nap::MeshInstance::GetOrCreateAttribute(const std::string& id)
+	nap::VertexAttribute<T>& nap::MeshInstance::getOrCreateAttribute(const std::string& id)
 	{
 		for (auto& attribute : mProperties.mAttributes)
 		{

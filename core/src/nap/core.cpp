@@ -30,6 +30,7 @@ namespace nap
 	{
 		// Initialize timer
 		mTimer.reset();
+		mTicks.fill(0);
 	}
 
 
@@ -129,6 +130,19 @@ namespace nap
 	}
 
 
+	void Core::calculateFramerate(uint32 tick)
+	{
+		mTicksum -= mTicks[mTickIdx];		// subtract value falling off
+		mTicksum += tick;					// add new value
+		mTicks[mTickIdx] = tick;			// save new value so it can be subtracted later */		
+		if (++mTickIdx == mTicks.size())    // inc buffer index
+		{
+			mTickIdx = 0;
+		}
+		mFramerate = 1000.0f / (static_cast<float>(mTicksum) / static_cast<float>(mTicks.size()));
+	}
+
+
 	void Core::start()
 	{
 		mTimer.reset();
@@ -137,15 +151,25 @@ namespace nap
 
 	double Core::update(std::function<void(double)>& updateFunction)
 	{
-		// Get delta time
-		double new_time = getElapsedTime();
-		mDeltaTime = new_time - mLastTimeStamp;
-		mLastTimeStamp = new_time;
+		// Get current time in milliseconds
+		uint32 new_tick_time = mTimer.getTicks();
+		
+		// Calculate amount of milliseconds since last time stamp
+		uint32 delta_ticks = std::max<uint32>(new_tick_time - mLastTimeStamp, 1);
+
+		// Store time stamp
+		mLastTimeStamp = new_tick_time;
+		
+		// Update framerate
+		calculateFramerate(delta_ticks);
+
+		// Get delta time in seconds
+		double delta_time = static_cast<double>(delta_ticks) / 1000.0;
 
 		// Perform update call before we check for file changes
 		for (auto& service : mServices)
 		{
-			service->preUpdate(mDeltaTime);
+			service->preUpdate(delta_time);
 		}
 
 		// Check for file changes
@@ -154,19 +178,19 @@ namespace nap
 		// Update rest of the services
 		for (auto& service : mServices)
 		{
-			service->update(mDeltaTime);
+			service->update(delta_time);
 		}
 
 		// Call update function
-		updateFunction(mDeltaTime);
+		updateFunction(delta_time);
 
 		// Update rest of the services
 		for (auto& service : mServices)
 		{
-			service->postUpdate(mDeltaTime);
+			service->postUpdate(delta_time);
 		}
 
-		return mDeltaTime;
+		return delta_time;
 	}
 
 

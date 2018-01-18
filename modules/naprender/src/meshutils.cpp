@@ -160,7 +160,7 @@ namespace nap
 		glm::vec3 min = { nap::math::max<float>(), nap::math::max<float>(), nap::math::max<float>() };
 		glm::vec3 max = { nap::math::min<float>(), nap::math::min<float>(), nap::math::min<float>() };
 
-		const nap::VertexAttribute<glm::vec3>& positions = mesh.GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName());
+		const nap::VertexAttribute<glm::vec3>& positions = mesh.getAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
 		for (const auto& point : positions.getData())
 		{
 			if (point.x < min.x) { min.x = point.x; }
