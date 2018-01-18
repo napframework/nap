@@ -42,7 +42,8 @@ namespace opengl
 		void setData(const std::vector<unsigned int>& indices);
 
 	private:
-		unsigned int	mCount = 0;					// number of indices used to construct the triangles
-		GLenum			mUsage = GL_STATIC_DRAW;	// defines the expected usage pattern of the data storage: https://www.opengl.org/sdk/docs/man4/html/glBufferData.xhtml
+		size_t		mCurCapacity = 0;			// Amount of memory reserved
+		size_t		mCount = 0;					// number of indices used to construct the triangles
+		GLenum		mUsage = GL_STATIC_DRAW;	// defines the expected usage pattern of the data storage: https://www.opengl.org/sdk/docs/man4/html/glBufferData.xhtml
 	};
 }

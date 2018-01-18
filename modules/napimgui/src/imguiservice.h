@@ -28,10 +28,10 @@ namespace nap
 		IMGuiService() = default;
 
 		/**
-		 * renders the GUI frame to screen
-		 * Note that you need to call this just before swapping buffers for the primary window
+		 * Draws the all the GUI elements to screen
+		 * You need to call this just before swapping buffers for the primary window
 		 */
-		void render();
+		void draw();
 
 	protected:
 		/**

@@ -12,7 +12,7 @@
 #include <nap/core.h>
 
 RTTI_BEGIN_CLASS(nap::RenderableMeshComponent)
-	RTTI_PROPERTY("Mesh",				&nap::RenderableMeshComponent::mMesh,						nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Mesh",				&nap::RenderableMeshComponent::mMesh,						nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("MaterialInstance",	&nap::RenderableMeshComponent::mMaterialInstanceResource,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ClipRect",			&nap::RenderableMeshComponent::mClipRect,					nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -156,9 +156,14 @@ namespace nap
 		if (!mMaterialInstance.init(resource->mMaterialInstanceResource, errorState))
 			return false;
 
-		mRenderableMesh = createRenderableMesh(*resource->mMesh, mMaterialInstance, errorState);
-		if (!errorState.check(mRenderableMesh.isValid(), "Unable to create renderable mesh"))
-			return false;
+		// A mesh isn't required, it may be set by a derived class or by some other code through setMesh
+		// If it is set, we create a renderablemesh from it
+		if (resource->mMesh != nullptr)
+		{
+			mRenderableMesh = createRenderableMesh(*resource->mMesh, mMaterialInstance, errorState);
+			if (!errorState.check(mRenderableMesh.isValid(), "Unable to create renderable mesh"))
+				return false;
+		}
 
 		mTransformComponent = getEntityInstance()->findComponent<TransformComponentInstance>();
  		if (!errorState.check(mTransformComponent != nullptr, "Missing transform component"))
@@ -199,7 +204,7 @@ namespace nap
 	// Draw Mesh
 	void RenderableMeshComponentInstance::draw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{	
-		if (!mVisible)
+		if (!mVisible || !mRenderableMesh.isValid())
 			return;
 
 		const glm::mat4x4& model_matrix = mTransformComponent->getGlobalTransform();

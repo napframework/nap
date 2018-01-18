@@ -81,7 +81,7 @@ namespace nap
 
 	void FirstPersonControllerInstance::update(double deltaTime)
 	{
-		if (!mEnabled || !mMoving)
+		if (!mEnabled)
 			return;
 
 		FirstPersonController* resource = getComponent<FirstPersonController>();
@@ -236,4 +236,12 @@ namespace nap
 			}
 		}
 	}
+
+
+	void FirstPersonController::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
+	{
+		components.emplace_back(RTTI_OF(TransformComponent));
+		components.emplace_back(RTTI_OF(KeyInputComponent));
+	}
+
 }
