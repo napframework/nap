@@ -83,6 +83,11 @@
 			"Type" : "nap::VideoMeshFromFile",
 			"Path" : "data/videomodulation/octahedron.mesh"
 		},
+
+		{
+			"mID" : "SphereMesh",
+			"Type" : "nap::SphereMesh"
+		},
 		
 		{
 			"Type" : "nap::Shader",
@@ -169,10 +174,6 @@
 				{
 					"MeshAttributeID": "Normal",
 					"ShaderAttributeID" : "in_Normal"
-				},
-				{
-					"MeshAttributeID": "DisplacementDirection",
-					"ShaderAttributeID" : "in_DisplacementDirection"
 				}
 			],
 			"Uniforms" : 
@@ -337,7 +338,7 @@
 			[
 				{
 					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "DisplacementMesh",
+					"Mesh" : "SphereMesh",
 					"MaterialInstance" : 
 					{
 						"Material": "DisplacementMaterial"
@@ -373,7 +374,7 @@
 							"y": 1.0,
 							"z": 0.0
 						},
-						"Speed": 0.01,
+						"Speed": 0.00,
 						"Offset": 0.0
 					}
 				}

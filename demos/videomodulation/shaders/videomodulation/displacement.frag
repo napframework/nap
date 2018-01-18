@@ -14,8 +14,8 @@ out vec4 out_Color;
 void main() 
 {
 	// Get texture rgba value
-	//vec3 tex_color = texture(videoTexture, passUVs.xy).rgb;
-	vec3 tex_color = vec3(0,0,0);
+	vec3 tex_color = texture(videoTexture, passUVs.xy).rgb;
+	//vec3 tex_color = vec3(0,0,0);
 
 	vec3 cameraPosition = vec3(0.0,0.0,5.0);
 
@@ -30,7 +30,7 @@ void main()
 	cam_surface_dot = pow(cam_surface_dot, 5.0);
 
 	// Mix in the halo
-	tex_color = mix(vec3(0.0,0.0,0.0), vec3(0.545, 0.549, 0.627), cam_surface_dot);
+	tex_color = mix(tex_color, vec3(0.545, 0.549, 0.627), cam_surface_dot);
 
 	// Set fragment color output to be texture color
 	out_Color =  vec4(tex_color, 1.0);
