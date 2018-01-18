@@ -47,22 +47,23 @@ void myDrawText(QPainter* painter, QPointF p, QString text) {
 
 GridView::GridView() : QGraphicsView() {
 	setTransformationAnchor(QGraphicsView::NoAnchor);
-
+	setMouseTracking(true);
+	viewport()->setMouseTracking(true);
 	mRulerFont.setFamily("monospace");
 	mRulerFont.setPointSize(9);
 }
 
 
+
 void GridView::mousePressEvent(QMouseEvent* event) {
-	QWidget::mousePressEvent(event);
 	mMousePressPos = event->pos();
 	mMouseLastPos = event->pos();
 }
 
 void GridView::mouseMoveEvent(QMouseEvent* event) {
-	QWidget::mouseMoveEvent(event);
+	QGraphicsView::mouseMoveEvent(event);
 	auto mousePos = event->pos();
-	auto delta = mousePos - mMouseLastPos;
+	mMouseDelta = mousePos - mMouseLastPos;
 
 	bool lmb = event->buttons() == Qt::LeftButton;
 	bool mmb = event->buttons() == Qt::MiddleButton;
@@ -70,27 +71,30 @@ void GridView::mouseMoveEvent(QMouseEvent* event) {
 	bool altKey = event->modifiers() == Qt::AltModifier;
 
 	if (altKey && (lmb || mmb)) {
-		pan(QPointF(delta));
+		pan(QPointF(mMouseDelta));
+		event->accept();
 	} else if (altKey && rmb) {
-		zoom(QPointF(1, 1) + QPointF(delta) * 0.01, mapToScene(mMousePressPos.toPoint()));
+		zoom(QPointF(1, 1) + QPointF(mMouseDelta) * 0.01, mapToScene(mMousePressPos));
+		event->accept();
 	}
 
 	mMouseLastPos = mousePos;
+	event->ignore();
 }
 
 void GridView::mouseReleaseEvent(QMouseEvent* event) {
-	QWidget::mouseReleaseEvent(event);
+	QGraphicsView::mouseReleaseEvent(event);
 }
 
 void GridView::keyPressEvent(QKeyEvent* event) {
-	QWidget::keyPressEvent(event);
+	QGraphicsView::keyPressEvent(event);
 	if (event->key() == Qt::Key_F) {
 		centerView();
 	}
 }
 
 void GridView::keyReleaseEvent(QKeyEvent* event) {
-	QWidget::keyReleaseEvent(event);
+	QGraphicsView::keyReleaseEvent(event);
 }
 
 void GridView::zoom(const QPointF& delta, const QPointF& pivot) {

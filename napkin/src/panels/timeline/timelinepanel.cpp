@@ -155,19 +155,20 @@ void TimelinePanel::setTimeline(Timeline* timeline) {
 void TimelinePanel::demo() {
 	namegen::NameGen gen;
 
-	int trackCount = 100;
-	int eventCount = 100;
+	int trackCount = 6;
+	int eventCount = 10;
 
 	auto timeline = new Timeline(this);
+	auto framestep = 1.0 / timeline->framerate();
 
-	for (int i=0; i <trackCount; i++){
+	for (int i = 0; i < trackCount; i++) {
 		auto trackname = QString::fromStdString(gen.multiple());
 		auto track = timeline->addTrack(trackname);
 
-		int t = 0;
-		for (int e=0; e < eventCount; e++) {
-			t += namegen::randint(0, 40);
-			int len = namegen::randint(20, 300);
+		qreal t = 0;
+		for (int e = 0; e < eventCount; e++) {
+			t += namegen::randint(0, 40) * framestep;
+			qreal len = namegen::randint(20, 300) * framestep;
 			auto eventname = QString::fromStdString(gen.multiple());
 			track->addEvent(eventname, t, t + len);
 			t += len;

@@ -91,6 +91,8 @@ namespace napkin {
 
 		const QList<Track*>& tracks() const { return mTracks; }
 
+		int framerate() const { return mFramerate; }
+
 	Q_SIGNALS:
 
 		void trackAdded(Track& track);
@@ -99,7 +101,7 @@ namespace napkin {
 
 	private:
 		QList<Track*> mTracks;
-
+		int mFramerate = 30;
 	};
 
 }

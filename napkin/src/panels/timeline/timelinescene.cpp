@@ -7,6 +7,10 @@ using namespace napkin;
 TimelineScene::TimelineScene() {
 	qreal extent = 100000;
 	setSceneRect(-extent, -extent, extent*2, extent*2);
+
+	mTrackGroup.setHandlesChildEvents(false);
+	mEventGroup.setHandlesChildEvents(false);
+
 	addItem(&mTrackGroup);
 	addItem(&mEventGroup);
 }
@@ -51,10 +55,9 @@ void TimelineScene::onTrackRemoved(Track& track) {
 
 void TimelineScene::onEventAdded(Event& event) {
 	auto item = new EventItem(&mEventGroup, event);
+
 	item->setX(event.start());
 	item->setY(event.track().index() * event.track().height());
-//	addItem(item);
-	mEventGroup.addToGroup(item);
 }
 
 void TimelineScene::onEventRemoved(Event& event) {

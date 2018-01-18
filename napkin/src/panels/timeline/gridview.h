@@ -1,8 +1,10 @@
 #pragma once
 
 #include <QtWidgets/QGraphicsView>
+#include <QGraphicsRectItem>
 
 namespace napkin {
+
 
 
 	class GridView : public QGraphicsView {
@@ -20,6 +22,10 @@ namespace napkin {
 		void zoom(const QPointF& delta, const QPointF& pivot);
 		void centerView();
 
+		const QPoint& mousePressedPos() const { return mMousePressPos; }
+		const QPoint& mouseLastPos() const { return mMouseLastPos; }
+		const QPoint& mouseDelta() const { return mMouseDelta; }
+
 	protected:
 		void drawBackground(QPainter* painter, const QRectF& rect) override;
 
@@ -30,14 +36,15 @@ namespace napkin {
 		void keyPressEvent(QKeyEvent* event) override;
 		void keyReleaseEvent(QKeyEvent* event) override;
 
+		QPoint mMousePressPos;
 	private:
 
 		void applyViewTransform();
 		const QPointF viewScale() const;
 		const QPointF viewPos() const;
 
-		QPointF mMousePressPos;
-		QPointF mMouseLastPos;
+		QPoint mMouseLastPos;
+		QPoint mMouseDelta;
 		QTransform mViewTransform;
 		QSize mViewSize;
 		QFont mRulerFont;

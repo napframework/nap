@@ -9,11 +9,14 @@ namespace napkin {
 	class TrackItem;
 	class EventItem;
 
+
+
+
 	class TimelineScene : public QGraphicsScene {
 	public:
 		TimelineScene();
 		void setModel(Timeline* timeline);
-
+		Timeline* timeline() const { return mTimeline; }
 	private:
 		void onTrackAdded(Track& track);
 		void onTrackRemoved(Track& track);
