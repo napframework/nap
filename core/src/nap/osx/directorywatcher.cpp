@@ -33,7 +33,7 @@ namespace nap {
     {
         FSEventStreamContext context; // could put stream-specific data here.
         CFAbsoluteTime latency = 0.01; // Latency in seconds
-        std::string executablePath; // path to the current executable
+        std::string dataPath; // Data path to watch
         
         CFArrayRef pathsToWatch;
         FSEventStreamRef stream;
@@ -78,9 +78,10 @@ namespace nap {
     /**
     * Installs monitor: opens directory, creates event, starts directory scan.
     */
-    DirectoryWatcher::DirectoryWatcher()
+    DirectoryWatcher::DirectoryWatcher(std::string projectDataPath)
     {
         mPImpl = std::unique_ptr<PImpl, PImpl_deleter>(new PImpl);
+        mPImpl->dataPath = projectDataPath;
         
         mPImpl->watchThread = std::make_unique<std::thread>([&](){
             
@@ -91,16 +92,7 @@ namespace nap {
             mPImpl->context.release = NULL;
             mPImpl->context.copyDescription = NULL;
             
-            // retrieve the path to the current executable
-            uint32_t size = 256;
-            std::vector<char> buffer;
-            buffer.resize(size);
-            _NSGetExecutablePath(buffer.data(), &size);
-            mPImpl->executablePath = utility::getFileDir(std::string(buffer.data()));
-
-            std::string dirToWatch = DataPathManager::get().getDataPath();
-
-            CFStringRef pathToWatchCF = CFStringCreateWithCString(NULL, dirToWatch.c_str(), kCFStringEncodingUTF8);
+            CFStringRef pathToWatchCF = CFStringCreateWithCString(NULL, mPImpl->dataPath.c_str(), kCFStringEncodingUTF8);
             mPImpl->pathsToWatch = CFArrayCreate(NULL, (const void **)&pathToWatchCF, 1, NULL);
             
             // create event stream for file change event
@@ -149,7 +141,7 @@ namespace nap {
             if (mPImpl->callbackInfo.modifiedFiles.empty())
                 return false;
             
-            std::string comparable_data_path = utility::toComparableFilename(DataPathManager::get().getDataPath());
+            std::string comparable_data_path = utility::toComparableFilename(mPImpl->dataPath);
             
             for (auto& modified_file : mPImpl->callbackInfo.modifiedFiles)
             {

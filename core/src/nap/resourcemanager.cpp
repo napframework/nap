@@ -118,7 +118,7 @@ namespace nap
 
 
 	ResourceManager::ResourceManager(nap::Core& core) :
-		mDirectoryWatcher(std::make_unique<DirectoryWatcher>()),
+		mDirectoryWatcher(std::make_unique<DirectoryWatcher>(core.getDataPathManager().getDataPath())),
 		mFactory(std::make_unique<Factory>()),
 		mCore(core)
 	{
@@ -499,7 +499,7 @@ namespace nap
 	void ResourceManager::patchFilePaths(rtti::RTTIDeserializeResult& readResult)
 	{
 		// Grab the data path
-		std::string dataPath = DataPathManager::get().getDataPath();
+		std::string dataPath = mCore.getDataPathManager().getDataPath();
 
 		// Update paths in our read objects
 		for (auto& read_object : readResult.mReadObjects)

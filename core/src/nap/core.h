@@ -15,6 +15,7 @@
 #include "resourcemanager.h"
 #include "service.h"
 #include "utility/dllexport.h"
+#include "datapathmanager.h"
 
 namespace nap
 {
@@ -130,6 +131,12 @@ namespace nap
 		template <typename T>
 		T* getService(rtti::ETypeCheck typeCheck = rtti::ETypeCheck::EXACT_MATCH);
 
+		/**
+		 * The DataPathManager manages the project data path location
+		 * @return the data path if initialialised, otherwise empty string
+		 */
+		DataPathManager& getDataPathManager();
+		
 	private:
 		/**
 		* Helper function that creates all the services that are found in the various modules
@@ -185,6 +192,9 @@ namespace nap
 
 		nap::Slot<const std::string&> mFileLoadedSlot = {
 			[&](const std::string& inValue) -> void { resourceFileChanged(inValue); }};
+		
+		// Manages project data path location
+		DataPathManager mDataPathManager;
 	};
 }
 

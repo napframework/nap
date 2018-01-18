@@ -1,7 +1,8 @@
 #pragma once
 
 // Local Includes
-#include "core.h"
+#include "utility/errorstate.h"
+#include "rtti/typeinfo.h"
 
 namespace nap
 {
@@ -15,11 +16,6 @@ namespace nap
 	class NAPAPI DataPathManager
 	{
 	public:
-		/**
-		* Returns the global DataPathManager.
-		*/
-		static DataPathManager& get();
-
 		/*
 		* Locate project data directory either next to our binary or with project source.
 		* @param errorState If false is returned, contains information about the error.

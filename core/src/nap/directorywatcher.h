@@ -19,7 +19,7 @@ namespace nap
 	class NAPAPI DirectoryWatcher
 	{
 	public:
-		DirectoryWatcher();
+		DirectoryWatcher(std::string projectDataPath);
 		~DirectoryWatcher();
 
 		/**
