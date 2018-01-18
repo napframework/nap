@@ -12,10 +12,19 @@ endmacro()
 # TODO let's avoid per-module cmake package files for now.. but probably need to re-address later
 macro(find_nap_module MODULE_NAME)
     # TODO update to use usermodules directory instead
-    if (EXISTS ${NAP_ROOT}/modules/${NAP_MODULE}/src/)
+    if (EXISTS ${NAP_ROOT}/modules/${MODULE_NAME}/src/)
         message("Module is source module: ${MODULE_NAME}")
         set(MODULE_INTO_PROJ TRUE)
-        add_subdirectory(${NAP_ROOT}/modules/${NAP_MODULE} user_modules/${NAP_MODULE})
+        add_subdirectory(${NAP_ROOT}/modules/${MODULE_NAME} user_modules/${MODULE_NAME})
+
+        # Copy over module DLLs post-build
+        if (WIN32)
+            add_custom_command(
+                TARGET ${PROJECT_NAME}
+                POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy ${NAP_ROOT}/modules/${MODULE_NAME}/lib/$<CONFIG>/${MODULE_NAME}.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>/
+            )
+        endif()
     else()
         add_library(${MODULE_NAME} SHARED IMPORTED)
 
@@ -64,6 +73,7 @@ macro(find_nap_module MODULE_NAME)
         endif()
 
         # Bring in any additional module requirements
+        # TODO make sure we have this for source-compiled modules too
         set(MODULE_EXTRA_CMAKE_PATH ${NAP_ROOT}/modules/${MODULE_NAME}/moduleExtra.cmake)
         if (EXISTS ${MODULE_EXTRA_CMAKE_PATH})
             include (${MODULE_EXTRA_CMAKE_PATH})
