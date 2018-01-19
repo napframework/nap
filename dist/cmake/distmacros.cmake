@@ -12,21 +12,12 @@ endmacro()
 # TODO let's avoid per-module cmake package files for now.. but probably need to re-address later
 macro(find_nap_module MODULE_NAME)
     # TODO update to use usermodules directory instead
-    if (EXISTS ${NAP_ROOT}/modules/${MODULE_NAME}/src/)
+    if (EXISTS ${NAP_ROOT}/modules/${NAP_MODULE}/src/)
         message("Module is source module: ${MODULE_NAME}")
         set(MODULE_INTO_PROJ TRUE)
-        add_subdirectory(${NAP_ROOT}/modules/${MODULE_NAME} user_modules/${MODULE_NAME})
-
-        # Copy over module DLLs post-build
-        if (WIN32)
-            add_custom_command(
-                TARGET ${PROJECT_NAME}
-                POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy ${NAP_ROOT}/modules/${MODULE_NAME}/lib/$<CONFIG>/${MODULE_NAME}.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>/
-            )
-        endif()
+        add_subdirectory(${NAP_ROOT}/modules/${NAP_MODULE} user_modules/${NAP_MODULE})
     else()
-        add_library(${MODULE_NAME} SHARED IMPORTED)
+        add_library(${MODULE_NAME} INTERFACE)
 
         message("Adding lib path for ${MODULE_NAME}")
         if (WIN32)
@@ -42,13 +33,11 @@ macro(find_nap_module MODULE_NAME)
             set(MOD_DEBUG_DLL ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Debug/lib${MODULE_NAME}.so)
         endif()
 
-        set_target_properties(${MODULE_NAME} PROPERTIES
-            IMPORTED_CONFIGURATIONS "Debug;Release"
-            IMPORTED_LOCATION_RELEASE ${MOD_RELEASE_DLL}
-            IMPORTED_LOCATION_DEBUG ${MOD_DEBUG_DLL}
-            IMPORTED_LOCATION_MINSIZEREL ${MOD_RELEASE_DLL}
-            IMPORTED_LOCATION_RELWITHDEBINFO ${MOD_RELEASE_DLL}
-        )
+        target_link_libraries(${MODULE_NAME} INTERFACE debug ${MOD_DEBUG_DLL})
+        target_link_libraries(${MODULE_NAME} INTERFACE optimized ${MOD_RELEASE_DLL})
+        file(GLOB module_headers ${NAP_ROOT}/modules/${NAP_MODULE}/include/*.h)
+        target_sources(${MODULE_NAME} INTERFACE ${module_headers})
+        source_group(Modules\\${MODULE_NAME} FILES ${module_headers})
 
         # Add module includes
         message("Adding include for ${NAP_MODULE}")
@@ -73,7 +62,6 @@ macro(find_nap_module MODULE_NAME)
         endif()
 
         # Bring in any additional module requirements
-        # TODO make sure we have this for source-compiled modules too
         set(MODULE_EXTRA_CMAKE_PATH ${NAP_ROOT}/modules/${MODULE_NAME}/moduleExtra.cmake)
         if (EXISTS ${MODULE_EXTRA_CMAKE_PATH})
             include (${MODULE_EXTRA_CMAKE_PATH})
@@ -140,7 +128,7 @@ macro(set_module_output_directories)
         endforeach()
     else()
         # Single built type, for Linux
-        set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/${CMAKE_BUILD_TYPE}/)
+        set(LIB_DIR ${CMAKE_SOURCE_DIR}/lib/${CMAKE_BUILD_TYPE}/)
         set_target_properties(${PROJECT_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${LIB_DIR})
     endif()
 endmacro()

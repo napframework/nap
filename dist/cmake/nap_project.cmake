@@ -87,8 +87,8 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 set_output_directories()
 
 # Pull in NAP core
-find_package(napcore REQUIRED)
-find_package(naprtti REQUIRED)
+include(${CMAKE_CURRENT_LIST_DIR}/napcore.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/naprtti.cmake)
 
 # Find each NAP module
 foreach(NAP_MODULE ${NAP_MODULES})

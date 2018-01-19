@@ -38,14 +38,25 @@ elseif (UNIX)
     set(NAPRTTI_LIBS_DEBUG_DLL ${NAPRTTI_LIBS_DIR}/Debug/libnaprtti.so)
 endif()
 
-add_library(naprtti SHARED IMPORTED)
-set_target_properties(naprtti PROPERTIES
-    IMPORTED_CONFIGURATIONS "Debug;Release;MinSizeRel;RelWithDebInfo"
-    IMPORTED_LOCATION_RELEASE ${NAPRTTI_LIBS_RELEASE_DLL}
-    IMPORTED_LOCATION_DEBUG ${NAPRTTI_LIBS_DEBUG_DLL}
-    IMPORTED_LOCATION_MINSIZEREL ${NAPRTTI_LIBS_RELEASE_DLL}
-    IMPORTED_LOCATION_RELWITHDEBINFO ${NAPRTTI_LIBS_RELEASE_DLL}
-)
+if (NOT NAPRTTI_LIBS_DIR)
+    message(FATAL_ERROR "Couldn't find NAP RTTI")
+endif()
+
+add_library(naprtti INTERFACE)
+target_link_libraries(naprtti INTERFACE debug ${NAPRTTI_LIBS_DEBUG_DLL})
+target_link_libraries(naprtti INTERFACE optimized ${NAPRTTI_LIBS_RELEASE_DLL})
+file(GLOB rtti_headers ${CMAKE_CURRENT_LIST_DIR}/../include/rtti/*.h)
+target_sources(naprtti INTERFACE ${rtti_headers})
+source_group(NAP\\RTTI FILES ${rtti_headers})
+
+# add_library(naprtti SHARED IMPORTED)
+# set_target_properties(naprtti PROPERTIES
+#     IMPORTED_CONFIGURATIONS "Debug;Release;MinSizeRel;RelWithDebInfo"
+#     IMPORTED_LOCATION_RELEASE ${NAPRTTI_LIBS_RELEASE_DLL}
+#     IMPORTED_LOCATION_DEBUG ${NAPRTTI_LIBS_DEBUG_DLL}
+#     IMPORTED_LOCATION_MINSIZEREL ${NAPRTTI_LIBS_RELEASE_DLL}
+#     IMPORTED_LOCATION_RELWITHDEBINFO ${NAPRTTI_LIBS_RELEASE_DLL}
+# )
 
 if (WIN32)
     set_target_properties(naprtti PROPERTIES
@@ -54,15 +65,7 @@ if (WIN32)
         IMPORTED_IMPLIB_MINSIZEREL ${NAPRTTI_LIBS_IMPLIB_RELEASE}
         IMPORTED_IMPLIB_RELWITHDEBINFO ${NAPRTTI_LIBS_IMPLIB_RELEASE}
     )
-endif()
 
-# TODO later: Fix CMake approach and use config-style package files
-
-include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(naprtti REQUIRED_VARS NAPRTTI_LIBS_RELEASE_DLL NAPRTTI_LIBS_DIR)
-
-
-if (WIN32)
     # Copy over DLLs post-build
     add_custom_command(
         TARGET ${PROJECT_NAME}
