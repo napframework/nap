@@ -95,8 +95,8 @@ endif()
 
 # Pull in NAP core
 if (NOT MODULE_INTO_PROJ)
-    find_package(napcore REQUIRED)
-    find_package(naprtti REQUIRED)
+    include(${CMAKE_CURRENT_LIST_DIR}/napcore.cmake)
+    include(${CMAKE_CURRENT_LIST_DIR}/naprtti.cmake)
 endif()
 
 message("PYTHON_LIBRARIES ${PYTHON_LIBRARIES}")

@@ -26,30 +26,30 @@ elseif (UNIX)
     set(NAPCORE_LIBS_DEBUG_DLL ${NAPCORE_LIBS_DIR}/Debug/libnapcore.so)
 endif()
 
-add_library(napcore SHARED IMPORTED)
-set_target_properties(napcore PROPERTIES
-    IMPORTED_CONFIGURATIONS "Debug;Release;MinSizeRel;RelWithDebInfo"
-    IMPORTED_LOCATION_RELEASE ${NAPCORE_LIBS_RELEASE_DLL}
-    IMPORTED_LOCATION_DEBUG ${NAPCORE_LIBS_DEBUG_DLL}
-    IMPORTED_LOCATION_MINSIZEREL ${NAPCORE_LIBS_RELEASE_DLL}
-    IMPORTED_LOCATION_RELWITHDEBINFO ${NAPCORE_LIBS_RELEASE_DLL}
-)
-
-if (WIN32)
-  set_target_properties(napcore PROPERTIES
-    IMPORTED_IMPLIB_RELEASE ${NAPCORE_LIBS_IMPLIB_RELEASE}
-    IMPORTED_IMPLIB_DEBUG ${NAPCORE_LIBS_IMPLIB_DEBUG}
-    IMPORTED_IMPLIB_MINSIZEREL ${NAPCORE_LIBS_IMPLIB_RELEASE}
-    IMPORTED_IMPLIB_RELWITHDEBINFO ${NAPCORE_LIBS_IMPLIB_RELEASE}
-  )
+if (NOT NAPCORE_LIBS_DIR)
+    message(FATAL_ERROR "Couldn't find NAP core")
 endif()
 
-# TODO later: Fix CMake approach and use config-style package files
+add_library(napcore INTERFACE)
+target_link_libraries(napcore INTERFACE debug ${NAPCORE_LIBS_DEBUG_DLL})
+target_link_libraries(napcore INTERFACE optimized ${NAPCORE_LIBS_RELEASE_DLL})
+file(GLOB core_headers ${CMAKE_CURRENT_LIST_DIR}/../include/nap/*.h)
+target_sources(napcore INTERFACE ${core_headers})
+source_group(NAP\\Core FILES ${core_headers})
 
-include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(napcore REQUIRED_VARS NAPCORE_LIBS_RELEASE_DLL NAPCORE_LIBS_DIR)
+file(GLOB utility_headers ${CMAKE_CURRENT_LIST_DIR}/../include/utility/*.h)
+target_sources(napcore INTERFACE ${utility_headers})
+source_group(NAP\\Utility FILES ${utility_headers})
+
 
 if (WIN32)
+    set_target_properties(napcore PROPERTIES
+        IMPORTED_IMPLIB_RELEASE ${NAPCORE_LIBS_IMPLIB_RELEASE}
+        IMPORTED_IMPLIB_DEBUG ${NAPCORE_LIBS_IMPLIB_DEBUG}
+        IMPORTED_IMPLIB_MINSIZEREL ${NAPCORE_LIBS_IMPLIB_RELEASE}
+        IMPORTED_IMPLIB_RELWITHDEBINFO ${NAPCORE_LIBS_IMPLIB_RELEASE}
+    )
+
     # Find our naputility import lib
     find_package(naputility REQUIRED)
     target_link_libraries(${PROJECT_NAME} naputility)
