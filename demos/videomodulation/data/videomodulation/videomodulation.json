@@ -95,6 +95,12 @@
 			"Type" : "nap::VideoMeshFromFile",
 			"Path" : "data/videomodulation/sphere.mesh"
 		},
+
+		{
+			"mID" : "TeapotMesh",
+			"Type" : "nap::VideoMeshFromFile",
+			"Path" : "data/videomodulation/teapot.mesh"
+		},
 		
 		{
 			"Type" : "nap::Shader",
