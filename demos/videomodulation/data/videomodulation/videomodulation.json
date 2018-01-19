@@ -79,20 +79,20 @@
 		},
 
 		{
-			"mID" : "DisplacementMesh",
+			"mID" : "OctahedronMesh",
 			"Type" : "nap::VideoMeshFromFile",
 			"Path" : "data/videomodulation/octahedron.mesh"
 		},
 
 		{
-			"mID" : "SphereMeshTwo",
-			"Type" : "nap::MeshFromFile",
-			"Path" : "data/videomodulation/sphere.mesh"
+			"mID" : "IsocahedronMesh",
+			"Type" : "nap::VideoMeshFromFile",
+			"Path" : "data/videomodulation/isocahedron.mesh"
 		},
 
 		{
 			"mID" : "SphereMesh",
-			"Type" : "nap::SphereMesh",
+			"Type" : "nap::VideoMeshFromFile",
 			"Path" : "data/videomodulation/sphere.mesh"
 		},
 		
@@ -181,6 +181,18 @@
 				{
 					"MeshAttributeID": "Normal",
 					"ShaderAttributeID" : "in_Normal"
+				},
+				{
+					"MeshAttributeID" : "UVCenter",
+					"ShaderAttributeID" : "in_CenterUV"
+				},
+				{
+					"MeshAttributeID" : "DisplacementDirection",
+					"ShaderAttributeID" : "in_DisplacementDirection"
+				},
+				{
+					"MeshAttributeID" : "Color0",
+					"ShaderAttributeID" : "in_Color"
 				}
 			],
 			"Uniforms" : 
@@ -278,7 +290,7 @@
 						{
 							"x": 0.0,
 							"y": 0.0,
-							"z": 4.0
+							"z": 7.0
 						},
 						"Rotate": 
 						{
@@ -362,7 +374,7 @@
 			[
 				{
 					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "SphereMeshTwo",
+					"Mesh" : "SphereMesh",
 					"MaterialInstance" : 
 					{
 						"Material": "DisplacementMaterial"
@@ -398,8 +410,8 @@
 							"y": 1.0,
 							"z": 0.0
 						},
-						"Speed": 0.00,
-						"Offset": 0.0
+						"Speed": 0.05,
+						"Offset": 0.2
 					}
 				}
 			]	

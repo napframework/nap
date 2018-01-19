@@ -36,10 +36,10 @@ namespace nap
 
 	private:
 		std::unique_ptr<MeshInstance> mMeshInstance;							///< Holds the loaded mesh
-		nap::VertexAttribute<glm::vec4>* mColorAttribute = nullptr;				///< Color attribute
 		nap::VertexAttribute<glm::vec3>* mDirectionAttribute = nullptr;			///< Displacement direction attribute
 		nap::VertexAttribute<glm::vec3>* mNormalAttribute = nullptr;			///< Normal attribute used for light calculations
 		nap::VertexAttribute<glm::vec3>* mUVAttribute = nullptr;				///< UV attribute
 		nap::VertexAttribute<glm::vec3>* mPositionAttribute = nullptr;			///< Vertex position attribute
+		nap::VertexAttribute<glm::vec3>* mUVCenterAttribute = nullptr;			///< UV center Attribute
 	};
 }
