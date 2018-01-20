@@ -27,7 +27,6 @@ void napkin::EventItem::paint(QPainter* painter, const QStyleOptionGraphicsItem*
 	painter->setBrush(isSelected() ? mBrushSelected : mBrush);
 	painter->drawRect(rect());
 
-	QPoint textMargin(3, 5);
 
 	painter->save();
 
@@ -41,16 +40,15 @@ void napkin::EventItem::paint(QPainter* painter, const QStyleOptionGraphicsItem*
 	qreal ph = rect().height() * sy;
 	QRectF viewRect(px, py, pw, ph);
 
-	painter->scale(sx, sy);
-
 	painter->resetTransform();
-	viewRect.moveTo(mtx.dx(), mtx.dy());
 
-	auto text = painter->fontMetrics().elidedText(mEvent.name(), Qt::ElideRight, pw);
+	QRectF textRect = viewRect.adjusted(3, 3, -3, -3);
+
+	auto text = painter->fontMetrics().elidedText(mEvent.name(), Qt::ElideRight, textRect.width());
 
 
 //	painter->drawText(textMargin.x(), rect().height() - textMargin.y(), text);
-	painter->drawText(viewRect, text);
+	painter->drawText(textRect, text);
 
 	painter->restore();
 }

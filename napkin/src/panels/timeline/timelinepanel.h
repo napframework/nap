@@ -81,37 +81,25 @@ namespace napkin {
 	};
 
 
-	class TimelineWidget : public QWidget {
-	Q_OBJECT
-	public:
-		TimelineWidget();
-
-		void setModel(Timeline* timeline);
-		void setHeaderHeight(int height);
-		int headerHeight() const { return mRuler.minimumHeight(); }
-
-	private:
-
-		QVBoxLayout mLayout;
-		TimelineView mView;
-		TimelineScene mScene;
-		RulerWidget mRuler;
-
-	};
-
 	class TimelinePanel : public QWidget {
 	public:
 		TimelinePanel();
+		~TimelinePanel();
 
 		void setTimeline(Timeline* timeline);
 		void setHeaderHeight(int height);
 		void demo();
 
 	private:
+		void onTimelineViewTransformed(const QTransform& transform);
 
 		QVBoxLayout mLayout;
+		QVBoxLayout mTimelineLayout;
+		QWidget mTimelineWidget;
+		TimelineView mView;
+		TimelineScene mScene;
+		RulerWidget mRuler;
 		QSplitter mSplitter;
-		TimelineWidget mTimeline;
 		TimelineOutline mOutline;
 	};
 

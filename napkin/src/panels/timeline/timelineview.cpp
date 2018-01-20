@@ -2,8 +2,6 @@
 #include "timelinescene.h"
 
 #include <QtGui/QKeyEvent>
-#include <QWidget>
-#include <nap/logger.h>
 #include <QtDebug>
 
 using namespace napkin;
@@ -19,13 +17,11 @@ void moveItemToFront(QGraphicsItem& item) {
 TimelineView::TimelineView()
 		: GridView() {
 	setMouseTracking(true);
-
 }
 
 void TimelineView::mousePressEvent(QMouseEvent* event) {
 	if (!scene())
 		return;
-
 
 	mMousePressPos = event->pos();
 
@@ -66,7 +62,6 @@ void TimelineView::mousePressEvent(QMouseEvent* event) {
 		return;
 	}
 	GridView::mousePressEvent(event);
-
 }
 
 void TimelineView::mouseMoveEvent(QMouseEvent* event) {

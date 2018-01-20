@@ -5,16 +5,8 @@
 
 using namespace napkin;
 
-qreal roundTo(qreal n, qreal unit) {
-	return qRound(n / unit) * unit;
-}
-
-qreal floorTo(qreal n, qreal unit) {
-	return qFloor(n / unit) * unit;
-}
-
-qreal ceilTo(qreal n, qreal unit) {
-	return qCeil(n / unit) * unit;
+QPointF mul(const QPointF& a, const QPointF& b) {
+	return QPointF(a.x() * b.x(), a.y() * b.y());
 }
 
 QString secondsToSMPTE(qreal seconds, int framerate) {
@@ -31,20 +23,6 @@ QString secondsToSMPTE(qreal seconds, int framerate) {
 									  QString::asprintf("%02d", f));
 }
 
-void myDrawText(QPainter* painter, QPointF p, QString text) {
-
-	QRawFont rawFont = QRawFont::fromFont(painter->font());
-	QVector<quint32> indexes = rawFont.glyphIndexesForString(text);
-
-	painter->save();
-	for (unsigned int i = 0; i < indexes.count(); i++) {
-		QPainterPath path = rawFont.pathForGlyph(indexes[i]);
-		painter->translate(QPointF(p.x(), p.y() + i * 0));
-		painter->fillPath(path, painter->pen().brush());
-	}
-	painter->restore();
-}
-
 GridView::GridView() : QGraphicsView() {
 	setTransformationAnchor(QGraphicsView::NoAnchor);
 	setMouseTracking(true);
@@ -52,7 +30,6 @@ GridView::GridView() : QGraphicsView() {
 	mRulerFont.setFamily("monospace");
 	mRulerFont.setPointSize(9);
 }
-
 
 
 void GridView::mousePressEvent(QMouseEvent* event) {
@@ -223,8 +200,6 @@ void GridView::drawBackground(QPainter* painter, const QRectF& rect) {
 	}
 
 
-
-
 	const int framerate = 30;
 	const qreal frame = 1.0 / framerate;
 	const qreal second = 1;
@@ -296,7 +271,27 @@ void GridView::centerView() {
 }
 
 void GridView::applyViewTransform() {
+	qreal margin = 100;
+
+
+	qreal pos = mViewTransform.m31();
+	qreal scale = mViewTransform.m21();
+	qreal realMargin = margin * scale;
+
+
+	nap::Logger::info("==============");
+	nap::Logger::info(QString::number(pos).toStdString());
+	nap::Logger::info(QString::number(realMargin).toStdString());
+
+	qreal offset = realMargin - pos;
+	nap::Logger::info("Correct");
+	nap::Logger::info(QString::number(offset).toStdString());
+
+	if (pos > realMargin)
+		mViewTransform.translate(offset,0);
+
 	setTransform(mViewTransform);
+	viewTransformed(mViewTransform);
 }
 
 const QPointF GridView::viewScale() const {
