@@ -261,6 +261,7 @@ size_t Document::arrayAddExistingObject(const PropertyPath& path, RTTIObject* ob
 	bool convert_ok = new_item.convert(wrapped_type);
 	assert(convert_ok);
 
+	assert(index <= array_view.get_size());
 	bool inserted = array_view.insert_value(index, new_item);
 	assert(inserted);
 
@@ -317,6 +318,7 @@ size_t Document::arrayAddNewObject(const PropertyPath& path, const TypeInfo& typ
 
 	RTTIObject* new_object = addObject(type);
 
+	assert(index <= array_view.get_size());
 	bool inserted = array_view.insert_value(index, new_object);
 	assert(inserted);
 
@@ -356,6 +358,7 @@ void Document::arrayRemoveElement(const PropertyPath& path, size_t index)
 	ResolvedRTTIPath resolved_path = path.resolve();
 	Variant value = resolved_path.getValue();
 	VariantArray array = value.create_array_view();
+	assert(index < array.get_size());
 
 	bool ok = array.remove_value(index);
 	assert(ok);
@@ -371,6 +374,8 @@ size_t Document::arrayMoveElement(const PropertyPath& path, size_t fromIndex, si
 	ResolvedRTTIPath resolved_path = path.resolve();
 	Variant array_value = resolved_path.getValue();
 	VariantArray array = array_value.create_array_view();
+	assert(fromIndex <= array.get_size());
+	assert(toIndex <= array.get_size());
 
 	if (fromIndex < toIndex)
 		toIndex--;
