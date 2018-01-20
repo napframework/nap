@@ -77,49 +77,33 @@ TEST_CASE("Array Value Elements", TAG_NAPKIN)
 	napkin::PropertyPath ledColors(*palette, "LedColors");
 	REQUIRE(ledColors.isValid());
 
-	// Check if the we have an empty array
-	{
-		nap::rtti::Variant ledcolorsvalue = ledColors.resolve().getValue();
-		nap::rtti::VariantArray ledcolors_array = ledcolorsvalue.create_array_view();
-		REQUIRE(ledcolors_array.get_size() == 0);
-	}
+	// Ensure empty array
+	REQUIRE(ledColors.getArrayLength() == 0);
 
 	// Add an element
 	{
 		auto index = doc->arrayAddValue(ledColors);
-
 		REQUIRE(index == 0); // The index at which the new element lives
-		auto value = ledColors.getValue();
-		auto array_view = value.create_array_view();
-		REQUIRE(array_view.get_size() == 1); // Current array size
+		REQUIRE(ledColors.getArrayLength() == 1);
 	}
 
 	// Add another element
 	{
 		auto index = doc->arrayAddValue(ledColors);
-
 		REQUIRE(index == 1); // Index should be one
-		auto value = ledColors.getValue();
-		auto array_view = value.create_array_view();
-		REQUIRE(array_view.get_size() == 2); // Current array size
+		REQUIRE(ledColors.getArrayLength() == 2);
 	}
 
 	// Remove first element
 	{
 		doc->arrayRemoveElement(ledColors, 0);
-
-		auto value = ledColors.getValue();
-		auto array = value.create_array_view();
-		REQUIRE(array.get_size() == 1);
+		REQUIRE(ledColors.getArrayLength() == 1);
 	}
 
 	// Remove the second element
 	{
 		doc->arrayRemoveElement(ledColors, 0);
-
-		auto value = ledColors.getValue();
-		auto array = value.create_array_view();
-		REQUIRE(array.get_size() == 0);
+		REQUIRE(ledColors.getArrayLength() == 0);
 	}
 }
 
@@ -132,14 +116,25 @@ TEST_CASE("Array add weekcolor", TAG_NAPKIN)
 	napkin::PropertyPath variations(*col, "Variations");
 	REQUIRE(variations.isValid());
 
-	auto index = doc->arrayAddValue(variations);
-	REQUIRE(index == 0);
+	// Add an element to the array
+	{
+		auto index = doc->arrayAddValue(variations);
+		REQUIRE(index == 0);
+		REQUIRE(variations.getArrayLength() == 1);
 
-	napkin::PropertyPath variations0(*col, "Variations/0");
-	REQUIRE(variations0.isValid());
+		// Verify validity of new element
+		REQUIRE(napkin::PropertyPath(*col, "Variations/0").isValid());
+	}
 
-	auto idx = doc->arrayAddValue(variations0);
-	REQUIRE(idx == 0);
+	// Add another value
+	{
+		auto index = doc->arrayAddValue(variations);
+		REQUIRE(index == 1);
+		REQUIRE(variations.getArrayLength() == 2);
+
+		// Verify validity of new element
+		REQUIRE(napkin::PropertyPath(*col, "Variations/1").isValid());
+	}
 }
 
 TEST_CASE("Array Modification Objects", TAG_NAPKIN)
@@ -152,32 +147,20 @@ TEST_CASE("Array Modification Objects", TAG_NAPKIN)
 
 	napkin::PropertyPath layers(*composition, "Layers");
 	REQUIRE(layers.isValid());
-
- 	// Check if array is empty to start with
-	{
-		nap::rtti::Variant value = layers.resolve().getValue();
-		nap::rtti::VariantArray array_view = value.create_array_view();
-		REQUIRE(array_view.get_size() == 0);
-	}
+	REQUIRE(layers.getArrayLength() == 0);
 
 	// Add the existing layer to the composition
 	{
 		auto index = doc->arrayAddExistingObject(layers, layer);
 		REQUIRE(index == 0);
-
-		nap::rtti::Variant value = layers.resolve().getValue();
-		nap::rtti::VariantArray array_view = value.create_array_view();
-		REQUIRE(array_view.get_size() == 1);
+		REQUIRE(layers.getArrayLength() == 1);
 	}
 
 	// Add a new layer to the composition
 	{
 		auto index = doc->arrayAddNewObject(layers, RTTI_OF(nap::ImageSequenceLayer));
 		REQUIRE(index == 1);
-
-		nap::rtti::Variant value = layers.resolve().getValue();
-		nap::rtti::VariantArray array_view = value.create_array_view();
-		REQUIRE(array_view.get_size() == 2);
+		REQUIRE(layers.getArrayLength() == 2);
 	}
 
 }
@@ -195,10 +178,11 @@ TEST_CASE("Array Move Element", TAG_NAPKIN)
 	doc->arrayAddNewObject(layers, RTTI_OF(nap::ImageSequenceLayer));
 	doc->arrayAddNewObject(layers, RTTI_OF(nap::ImageSequenceLayer));
 	doc->arrayAddNewObject(layers, RTTI_OF(nap::ImageSequenceLayer));
-	nap::ImageSequenceLayer* layer0 = doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 0);
-	nap::ImageSequenceLayer* layer1 = doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 1);
-	nap::ImageSequenceLayer* layer2 = doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 2);
-	nap::ImageSequenceLayer* layer3 = doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 3);
+	REQUIRE(layers.getArrayLength() == 4);
+	auto layer0 = doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 0);
+	auto layer1 = doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 1);
+	auto layer2 = doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 2);
+	auto layer3 = doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 3);
 	REQUIRE(layer0 != nullptr);
 	REQUIRE(layer1 != nullptr);
 	REQUIRE(layer2 != nullptr);
@@ -209,6 +193,7 @@ TEST_CASE("Array Move Element", TAG_NAPKIN)
 	// State: 0, [2], 1, 3
 
 	REQUIRE(new_index == 1);
+	REQUIRE(layers.getArrayLength() == 4);
 	auto variant = doc->arrayGetElement(layers, new_index);
 	REQUIRE(variant.is_valid());
 	auto vlayer = variant.convert<nap::ImageSequenceLayer*>();
@@ -222,6 +207,7 @@ TEST_CASE("Array Move Element", TAG_NAPKIN)
 	doc->arrayMoveElement(layers, 0, 4);
 	// State: 2, 1, 3, [0]
 
+	REQUIRE(layers.getArrayLength() == 4);
 	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 0) == layer2);
 	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 1) == layer1);
 	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 2) == layer3);
@@ -230,6 +216,7 @@ TEST_CASE("Array Move Element", TAG_NAPKIN)
 	doc->executeCommand(new napkin::ArrayMoveElementCommand(layers, 1, 3));
 	// State: 2, 3, [1], 0
 
+	REQUIRE(layers.getArrayLength() == 4);
 	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 0) == layer2);
 	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 1) == layer3);
 	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 2) == layer1);
@@ -238,6 +225,7 @@ TEST_CASE("Array Move Element", TAG_NAPKIN)
 	doc->undo();
 	// State: 2, [1], 3, 0
 
+	REQUIRE(layers.getArrayLength() == 4);
 	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 0) == layer2);
 	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 1) == layer1);
 	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 2) == layer3);
@@ -246,6 +234,7 @@ TEST_CASE("Array Move Element", TAG_NAPKIN)
 	doc->redo();
 	// State: 2, 3, [1], 0
 
+	REQUIRE(layers.getArrayLength() == 4);
 	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 0) == layer2);
 	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 1) == layer3);
 	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 2) == layer1);
@@ -254,6 +243,7 @@ TEST_CASE("Array Move Element", TAG_NAPKIN)
 	doc->executeCommand(new napkin::ArrayMoveElementCommand(layers, 3, 1));
 	// State: 2, [0], 3, 1
 
+	REQUIRE(layers.getArrayLength() == 4);
 	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 0) == layer2);
 	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 1) == layer0);
 	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 2) == layer3);
@@ -262,6 +252,7 @@ TEST_CASE("Array Move Element", TAG_NAPKIN)
 	doc->undo();
 	// State: 2, 3, 1, [0]
 
+	REQUIRE(layers.getArrayLength() == 4);
 	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 0) == layer2);
 	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 1) == layer3);
 	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 2) == layer1);
@@ -270,6 +261,7 @@ TEST_CASE("Array Move Element", TAG_NAPKIN)
 	doc->redo();
 	// State: 2, [0], 3, 1
 
+	REQUIRE(layers.getArrayLength() == 4);
 	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 0) == layer2);
 	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 1) == layer0);
 	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 2) == layer3);
@@ -280,6 +272,7 @@ TEST_CASE("Array Move Element", TAG_NAPKIN)
 	doc->undo();
 	// State: 2, [1], 3, 0
 
+	REQUIRE(layers.getArrayLength() == 4);
 	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 0) == layer2);
 	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 1) == layer1);
 	REQUIRE(doc->arrayGetElement<nap::ImageSequenceLayer*>(layers, 2) == layer3);
