@@ -139,7 +139,7 @@ TEST_CASE("Array add weekcolor", TAG_NAPKIN)
 	REQUIRE(variations0.isValid());
 
 	auto idx = doc->arrayAddValue(variations0);
-	REQUIRE(idx == 10);
+	REQUIRE(idx == 0);
 }
 
 TEST_CASE("Array Modification Objects", TAG_NAPKIN)
