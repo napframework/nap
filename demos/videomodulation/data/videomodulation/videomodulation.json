@@ -97,9 +97,9 @@
 		},
 
 		{
-			"mID" : "TeapotMesh",
+			"mID" : "CubeMesh",
 			"Type" : "nap::VideoMeshFromFile",
-			"Path" : "data/videomodulation/teapot.mesh"
+			"Path" : "data/videomodulation/cube.mesh"
 		},
 		
 		{
@@ -125,8 +125,20 @@
 		
 		{
 			"Type" : "nap::Video",
-			"mID": "Video1",
+			"mID": "StreakVideo",
 			"Path": "data/videomodulation/streak.mp4"
+		},
+
+		{
+			"Type" : "nap::Video",
+			"mID": "FlareVideo",
+			"Path": "data/videomodulation/flare.mov"
+		},
+
+		{
+			"Type" : "nap::Video",
+			"mID": "SnowVideo",
+			"Path": "data/videomodulation/snow.mp4"
 		},
 		
 		{
@@ -296,7 +308,7 @@
 						{
 							"x": 0.0,
 							"y": 0.0,
-							"z": 7.0
+							"z": 5.0
 						},
 						"Rotate": 
 						{
@@ -338,6 +350,16 @@
 			"Components" : 
 			[
 				{
+					"Type" : "nap::SelectVideoComponent",
+					"Index" : 1,
+					"Videos" :
+					[
+						"StreakVideo",
+						"SnowVideo",
+						"FlareVideo"
+					]
+				},
+				{
 					"Type" : "nap::RenderableMeshComponent",
 					"Mesh" : "VideoMesh",
 					"MaterialInstance" : 
@@ -378,6 +400,17 @@
 			
 			"Components" : 
 			[
+				{
+					"Type" : "nap::SelectVideoMeshComponent",
+					"Index": 1,
+					"Meshes" :
+					[
+						"SphereMesh",
+						"OctahedronMesh",
+						"IsocahedronMesh",
+						"CubeMesh"
+					]
+				},
 				{
 					"Type" : "nap::RenderableMeshComponent",
 					"Mesh" : "SphereMesh",

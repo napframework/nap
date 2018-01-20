@@ -7,7 +7,18 @@
 namespace nap
 {
 	/**
-	 * videomesh
+	 * Loads a .mesh file from disk and adds / applies vertex displacement attributes
+	 * The .mesh file is a converted .fbx file. 
+	 * Behind the scenes assimp is used to convert .fbx files in to .mesh files.
+	 * This happens after compiling your application as a post build step and occurs when the fbx is new or has changed.
+	 * 
+	 * The result after load is a MeshInstance that holds all the vertex attributes exposed by the fbx. 
+	 * We add two new ones: UVCenter and DisplacementDirection. Both are vec3 vertex attributes
+	 * The UVCenter contains the uv sample location for displacement and is the average of all three triangle vertices
+	 * The DisplacementDirection is the primitive (triangle) normal. The default normals contain light information
+	 * and we don't want to change that, so we store that information in a new vertex buffer.
+	 * 
+	 * Both attributes are used by the shader to calculate the displacement direction and value based on a video texture
 	 */
 	class VideoMeshFromFile : public IMesh
 	{

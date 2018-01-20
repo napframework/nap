@@ -26,8 +26,6 @@ const vec3	colorTwo = vec3(0.545, 0.549, 0.627);
 const vec3 	colorThr = vec3(0.784, 0.411, 0.411);
 const vec3	colorFor = vec3(0.176, 0.180, 0.2588);
 
-
-
 void main() 
 {
 	//calculate the vector from this pixels surface to the light source
