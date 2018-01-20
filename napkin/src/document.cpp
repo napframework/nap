@@ -188,7 +188,7 @@ void Document::removeObject(const std::string& name)
 }
 
 
-long Document::arrayAddValue(const PropertyPath& path, long index)
+size_t Document::arrayAddValue(const PropertyPath& path, size_t index)
 {
 	ResolvedRTTIPath resolved_path = path.resolve();
 	assert(resolved_path.isValid());
@@ -204,21 +204,43 @@ long Document::arrayAddValue(const PropertyPath& path, long index)
 	assert(new_value.is_valid());
 	assert(array_view.is_dynamic());
 
-	auto idx = index >= 0 ? index : array_view.get_size();
-	if (!array_view.insert_value(idx, new_value))
-	{
-		nap::Logger::fatal("Failed to add array element to: %s", path.toString().c_str());
-		return -1;
-	}
+	assert(array_view.insert_value(index, new_value));
 
 	resolved_path.setValue(array);
 
 	propertyValueChanged(path);
 
-	return idx;
+	return index;
 }
 
-long Document::arrayAddExistingObject(const PropertyPath& path, RTTIObject* object, long index)
+size_t Document::arrayAddValue(const PropertyPath& path)
+{
+	ResolvedRTTIPath resolved_path = path.resolve();
+	assert(resolved_path.isValid());
+
+	Variant array = resolved_path.getValue();
+	assert(array.is_array());
+	VariantArray array_view = array.create_array_view();
+
+	const TypeInfo element_type = array_view.get_rank_type(1);
+	const TypeInfo wrapped_type = element_type.is_wrapper() ? element_type.get_wrapped_type() : element_type;
+	assert(wrapped_type.can_create_instance());
+	rttr::variant new_value = wrapped_type.create();
+	assert(new_value.is_valid());
+	assert(array_view.is_dynamic());
+
+	size_t index = array_view.get_size();
+	assert(array_view.insert_value(index, new_value));
+
+	resolved_path.setValue(array);
+
+	propertyValueChanged(path);
+
+	return index;
+}
+
+
+size_t Document::arrayAddExistingObject(const PropertyPath& path, RTTIObject* object, size_t index)
 {
 	ResolvedRTTIPath resolved_path = path.resolve();
 	assert(resolved_path.isValid());
@@ -236,12 +258,8 @@ long Document::arrayAddExistingObject(const PropertyPath& path, RTTIObject* obje
 	const TypeInfo wrapped_type = array_type.is_wrapper() ? array_type.get_wrapped_type() : array_type;
 
 	Variant new_item = object;
-	nap::Logger::info("Object type: %s", object->get_type().get_name().data());
 	bool convert_ok = new_item.convert(wrapped_type);
 	assert(convert_ok);
-
-	if (index < 0)
-		index = array_view.get_size();
 
 	bool inserted = array_view.insert_value(index, new_item);
 	assert(inserted);
@@ -254,7 +272,42 @@ long Document::arrayAddExistingObject(const PropertyPath& path, RTTIObject* obje
 	return index;
 }
 
-long Document::arrayAddNewObject(const PropertyPath& path, const TypeInfo& type, long index)
+size_t Document::arrayAddExistingObject(const PropertyPath& path, nap::rtti::RTTIObject* object)
+{
+	ResolvedRTTIPath resolved_path = path.resolve();
+	assert(resolved_path.isValid());
+
+	Variant array = resolved_path.getValue();
+	assert(array.is_valid());
+	assert(array.is_array());
+	VariantArray array_view = array.create_array_view();
+	assert(array_view.is_dynamic());
+	assert(array_view.is_valid());
+
+	// Convert the object to the wrapped type
+
+	const TypeInfo array_type = array_view.get_rank_type(array_view.get_rank());
+	const TypeInfo wrapped_type = array_type.is_wrapper() ? array_type.get_wrapped_type() : array_type;
+
+	Variant new_item = object;
+	bool convert_ok = new_item.convert(wrapped_type);
+	assert(convert_ok);
+
+	size_t index = array_view.get_size();
+	bool inserted = array_view.insert_value(index, new_item);
+	assert(inserted);
+
+	bool value_set = resolved_path.setValue(array);
+	assert(value_set);
+
+	propertyValueChanged(path);
+
+	return index;
+}
+
+
+
+size_t Document::arrayAddNewObject(const PropertyPath& path, const TypeInfo& type, size_t index)
 {
 	ResolvedRTTIPath resolved_path = path.resolve();
 	assert(resolved_path.isValid());
@@ -263,9 +316,6 @@ long Document::arrayAddNewObject(const PropertyPath& path, const TypeInfo& type,
 	VariantArray array_view = array.create_array_view();
 
 	RTTIObject* new_object = addObject(type);
-
-	if (index < 0)
-		index = array_view.get_size();
 
 	bool inserted = array_view.insert_value(index, new_object);
 	assert(inserted);
@@ -278,8 +328,30 @@ long Document::arrayAddNewObject(const PropertyPath& path, const TypeInfo& type,
 	return index;
 }
 
+size_t Document::arrayAddNewObject(const PropertyPath& path, const nap::rtti::TypeInfo& type)
+{
+	ResolvedRTTIPath resolved_path = path.resolve();
+	assert(resolved_path.isValid());
 
-void Document::arrayRemoveElement(const PropertyPath& path, long index)
+	Variant array = resolved_path.getValue();
+	VariantArray array_view = array.create_array_view();
+
+	RTTIObject* new_object = addObject(type);
+
+	size_t index = array_view.get_size();
+	bool inserted = array_view.insert_value(index, new_object);
+	assert(inserted);
+
+	bool value_set = resolved_path.setValue(array);
+	assert(value_set);
+
+	propertyValueChanged(path);
+
+	return index;
+}
+
+
+void Document::arrayRemoveElement(const PropertyPath& path, size_t index)
 {
 	ResolvedRTTIPath resolved_path = path.resolve();
 	Variant value = resolved_path.getValue();
@@ -294,7 +366,7 @@ void Document::arrayRemoveElement(const PropertyPath& path, long index)
 	propertyValueChanged(path);
 }
 
-long Document::arrayMoveElement(const PropertyPath& path, long fromIndex, long toIndex)
+size_t Document::arrayMoveElement(const PropertyPath& path, size_t fromIndex, size_t toIndex)
 {
 	ResolvedRTTIPath resolved_path = path.resolve();
 	Variant array_value = resolved_path.getValue();
@@ -318,7 +390,7 @@ long Document::arrayMoveElement(const PropertyPath& path, long fromIndex, long t
 	return toIndex;
 }
 
-nap::rtti::Variant Document::arrayGetElement(const PropertyPath& path, long index)
+nap::rtti::Variant Document::arrayGetElement(const PropertyPath& path, size_t index) const
 {
 	ResolvedRTTIPath resolved_path = path.resolve();
 	Variant array_value = resolved_path.getValue();
@@ -330,6 +402,7 @@ void Document::executeCommand(QUndoCommand* cmd)
 {
 	mUndoStack.push(cmd);
 }
+
 
 
 
