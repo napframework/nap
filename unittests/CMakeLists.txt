@@ -8,8 +8,9 @@ file(GLOB SOURCES
         src/*.h)
 
 add_executable(${PROJECT_NAME} ${SOURCES})
+add_executable(${PROJECT_NAME}_autorun ${SOURCES})
 
-target_link_libraries(${PROJECT_NAME}
+set(UNITTEST_LIBS
         napcore
         mod_napkalvertoren
         napkin_lib
@@ -23,12 +24,15 @@ target_link_libraries(${PROJECT_NAME}
         #        mod_napapp
         )
 
+target_link_libraries(${PROJECT_NAME} ${UNITTEST_LIBS})
+target_link_libraries(${PROJECT_NAME}_autorun ${UNITTEST_LIBS})
+
 # First copy some assets
 copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/data data)
 
 # Now run the tests right after the build
 add_custom_command(
-        TARGET ${PROJECT_NAME}
+        TARGET ${PROJECT_NAME}_autorun
         COMMENT "Run tests"
         POST_BUILD
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
