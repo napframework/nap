@@ -326,11 +326,11 @@ nap::rtti::Variant Document::arrayGetElement(const PropertyPath& path, long inde
 	return array.get_value(index);
 }
 
-
 void Document::executeCommand(QUndoCommand* cmd)
 {
 	mUndoStack.push(cmd);
 }
+
 
 
 

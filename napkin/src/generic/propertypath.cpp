@@ -52,8 +52,33 @@ ResolvedRTTIPath napkin::PropertyPath::resolve() const
 
 rttr::type napkin::PropertyPath::getArrayElementType()
 {
+	ResolvedRTTIPath resolved_path = resolve();
+	assert(resolved_path.isValid());
+
+	Variant array = resolved_path.getValue();
+	assert(array.is_valid());
+	if (!array.is_array())
+		return rttr::type::empty();
+
+	VariantArray array_view = array.create_array_view();
 	auto arrayView = getArrayView();
 	return arrayView.get_rank_type(arrayView.get_rank());
+}
+
+long napkin::PropertyPath::getArrayLength() {
+	ResolvedRTTIPath resolved_path = resolve();
+	assert(resolved_path.isValid());
+
+	Variant array = resolved_path.getValue();
+	assert(array.is_valid());
+	if (!array.is_array())
+		return -1;
+
+	VariantArray array_view = array.create_array_view();
+	assert(array_view.is_dynamic());
+	assert(array_view.is_valid());
+
+	return array_view.get_size();
 }
 
 rttr::variant_array_view napkin::PropertyPath::getArrayView()
@@ -93,6 +118,7 @@ bool napkin::PropertyPath::isValid() const
 
 	return true;
 }
+
 
 
 
