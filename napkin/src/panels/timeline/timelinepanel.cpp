@@ -110,47 +110,53 @@ TLOutlineItem* TimelineOutline::widget(Track& track) {
 }
 
 
-void TimelineWidget::setModel(Timeline* timeline) {
-	mScene.setModel(timeline);
-}
-
-void TimelineWidget::setHeaderHeight(int height) {
-	mRuler.setMinimumHeight(height);
-	mRuler.setMaximumHeight(height);
-}
-
-TimelineWidget::TimelineWidget() : QWidget() {
+TimelinePanel::TimelinePanel() : QWidget() {
+	// Main layout
 	setLayout(&mLayout);
 	mLayout.setContentsMargins(0, 0, 0, 0);
 	mLayout.setSpacing(0);
-	mLayout.addWidget(&mRuler);
-	mLayout.addWidget(&mView);
 
-	mView.setScene(&mScene);
-}
-
-
-TimelinePanel::TimelinePanel() : QWidget() {
-	setLayout(&mLayout);
-	mLayout.setSpacing(0);
-	mLayout.addWidget(&mSplitter);
+	// Outline
 	mSplitter.addWidget(&mOutline);
-	mSplitter.addWidget(&mTimeline);
 
+	// Timeline layout
+	mTimelineLayout.setSpacing(0);
+	mTimelineLayout.setContentsMargins(0, 0, 0, 0);
+	mTimelineLayout.addWidget(&mRuler);
+	mTimelineLayout.addWidget(&mView);
+	mTimelineWidget.setLayout(&mTimelineLayout);
+	mSplitter.addWidget(&mTimelineWidget);
 
-	mSplitter.setSizes({300, 100});
+	// Splitter
+	mSplitter.setSizes({300, 1000});
 	mSplitter.setStretchFactor(0, 0);
 	mSplitter.setStretchFactor(1, 1);
+	mLayout.addWidget(&mSplitter);
+
+
+	// Data
+	mView.setScene(&mScene);
+	connect(&mView, &GridView::viewTransformed, this, &TimelinePanel::onTimelineViewTransformed);
 
 	setHeaderHeight(20);
 
 	demo();
 }
 
+TimelinePanel::~TimelinePanel() {
+
+}
+
+
 void TimelinePanel::setTimeline(Timeline* timeline) {
-	mTimeline.setModel(timeline);
+	mScene.setModel(timeline);
 	mOutline.setModel(timeline);
 }
+
+void TimelinePanel::onTimelineViewTransformed(const QTransform& transform) {
+
+}
+
 
 void TimelinePanel::demo() {
 	namegen::NameGen gen;
@@ -180,9 +186,12 @@ void TimelinePanel::demo() {
 }
 
 void TimelinePanel::setHeaderHeight(int height) {
-	mTimeline.setHeaderHeight(height);
+	mRuler.setMinimumHeight(height);
+	mRuler.setMaximumHeight(height);
 	mOutline.setHeaderHeight(height);
 }
+
+
 
 
 

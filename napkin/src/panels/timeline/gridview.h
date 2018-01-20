@@ -6,8 +6,8 @@
 namespace napkin {
 
 
-
 	class GridView : public QGraphicsView {
+	Q_OBJECT
 		enum ZoomMode {
 			IgnoreAspectRatio, KeepAspectRatio, Horizontal, Vertical
 		};
@@ -25,6 +25,9 @@ namespace napkin {
 		const QPoint& mousePressedPos() const { return mMousePressPos; }
 		const QPoint& mouseLastPos() const { return mMouseLastPos; }
 		const QPoint& mouseDelta() const { return mMouseDelta; }
+
+	Q_SIGNALS:
+		void viewTransformed(const QTransform& transform);
 
 	protected:
 		void drawBackground(QPainter* painter, const QRectF& rect) override;
