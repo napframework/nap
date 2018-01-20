@@ -74,9 +74,8 @@ namespace napkin
 
 		/**
 		 * If this path refers to an array property, return the length of the array.
-		 * If this array does not refer to an array property, return -1
 		 */
-		long getArrayLength();
+		size_t getArrayLength()const;
 
 		/**
 		 * @return Wrapped type

@@ -1,14 +1,13 @@
 #include <nap/logger.h>
 
 #include "generic/naputils.h"
-#include "generic/qtutils.h"
 #include "commands.h"
 #include "appcontext.h"
 
 using namespace napkin;
 
 SetValueCommand::SetValueCommand(const PropertyPath& propPath, QVariant newValue)
-		: mPath(propPath), mNewValue(newValue)
+		: mPath(propPath), mNewValue(newValue), QUndoCommand()
 {
 	setText(QString("Set value of %1 to %2").arg(QString::fromStdString(propPath.toString()),
 												 newValue.toString()));
@@ -54,7 +53,7 @@ void SetValueCommand::redo()
 }
 
 SetPointerValueCommand::SetPointerValueCommand(const PropertyPath& path, nap::rtti::RTTIObject* newValue)
-		: mPath(path), mNewValue(newValue->mID), mOldValue(getPointee(path)->mID)
+		: mPath(path), mNewValue(newValue->mID), mOldValue(getPointee(path)->mID), QUndoCommand()
 {
 	setText(QString("Set pointer value at '%1' to '%2'").arg(QString::fromStdString(mPath.toString()),
 															 QString::fromStdString(newValue->mID)));
@@ -83,7 +82,7 @@ void SetPointerValueCommand::redo()
 }
 
 AddObjectCommand::AddObjectCommand(const rttr::type& type, nap::rtti::RTTIObject* parent)
-		: mType(type)
+		: mType(type), QUndoCommand()
 {
 
 	if (parent != nullptr) {
@@ -117,7 +116,7 @@ void AddObjectCommand::undo()
 }
 
 
-DeleteObjectCommand::DeleteObjectCommand(nap::rtti::RTTIObject& object) : mObjectName(object.mID)
+DeleteObjectCommand::DeleteObjectCommand(nap::rtti::RTTIObject& object) : mObjectName(object.mID), QUndoCommand()
 {
 	setText(QString("Deleting Object '%1'").arg(QString::fromStdString(mObjectName)));
 }
@@ -134,7 +133,7 @@ void DeleteObjectCommand::redo()
 
 
 AddEntityToSceneCommand::AddEntityToSceneCommand(nap::Scene& scene, nap::Entity& entity)
-		: mSceneID(scene.mID), mEntityID(entity.mID)
+		: mSceneID(scene.mID), mEntityID(entity.mID), QUndoCommand()
 {
 	setText(QString("Add Entity '%1' to Scene '%2'").arg(QString::fromStdString(mEntityID),
 														 QString::fromStdString(mSceneID)));
@@ -163,11 +162,19 @@ void AddEntityToSceneCommand::redo()
 	AppContext::get().getDocument()->objectChanged(*scene);
 }
 
-ArrayAddValueCommand::ArrayAddValueCommand(const PropertyPath& prop, long index)
-		: mPath(prop), mIndex(index)
+ArrayAddValueCommand::ArrayAddValueCommand(const PropertyPath& prop, size_t index)
+		: mPath(prop), mIndex(index), QUndoCommand()
 {
 	setText("Add element to: " + QString::fromStdString(prop.toString()));
 }
+
+ArrayAddValueCommand::ArrayAddValueCommand(const PropertyPath& prop) : mPath(prop), QUndoCommand()
+{
+	mIndex = prop.getArrayLength();
+	setText("Add element to: " + QString::fromStdString(prop.toString()));
+}
+
+
 
 void ArrayAddValueCommand::redo()
 {
@@ -180,8 +187,20 @@ void ArrayAddValueCommand::undo()
 }
 
 ArrayAddNewObjectCommand::ArrayAddNewObjectCommand(const PropertyPath& prop, const nap::rtti::TypeInfo& type,
-												   long index) : mPath(prop), mType(type), mIndex(index)
-{}
+												   size_t index) : mPath(prop), mType(type), mIndex(index), QUndoCommand()
+{
+	setText(QString("Add %1 to %2").arg(QString::fromUtf8(type.get_name().data()),
+										QString::fromStdString(prop.toString())));
+}
+
+ArrayAddNewObjectCommand::ArrayAddNewObjectCommand(const PropertyPath& prop, const nap::rtti::TypeInfo& type)
+		: mPath(prop), mType(type), QUndoCommand()
+{
+	setText(QString("Add %1 to %2").arg(QString::fromUtf8(type.get_name().data()),
+										QString::fromStdString(prop.toString())));
+	mIndex = prop.getArrayLength();
+}
+
 
 void ArrayAddNewObjectCommand::redo()
 {
@@ -193,10 +212,24 @@ void ArrayAddNewObjectCommand::undo()
 	AppContext::get().getDocument()->arrayRemoveElement(mPath, mIndex);
 }
 
+
 ArrayAddExistingObjectCommand::ArrayAddExistingObjectCommand(const PropertyPath& prop, nap::rtti::RTTIObject& object,
-															 long index)
-		: mPath(prop), mObjectName(object.mID), mIndex(index)
-{}
+															 size_t index)
+		: mPath(prop), mObjectName(object.mID), mIndex(index), QUndoCommand()
+{
+	setText(QString("Add %1 to %2").arg(QString::fromStdString(object.mID),
+										QString::fromStdString(prop.toString())));
+}
+
+
+ArrayAddExistingObjectCommand::ArrayAddExistingObjectCommand(const PropertyPath& prop, nap::rtti::RTTIObject& object)
+		: mPath(prop), mObjectName(object.mID), QUndoCommand()
+{
+	setText(QString("Add %1 to %2").arg(QString::fromStdString(object.mID),
+										QString::fromStdString(prop.toString())));
+	mIndex = prop.getArrayLength();
+}
+
 
 void ArrayAddExistingObjectCommand::redo()
 {
@@ -210,12 +243,13 @@ void ArrayAddExistingObjectCommand::undo()
 	AppContext::get().getDocument()->arrayRemoveElement(mPath, mIndex);
 }
 
-ArrayRemoveElementCommand::ArrayRemoveElementCommand(const PropertyPath& array_prop, long index)
-		: mPath(array_prop), mIndex(index)
+ArrayRemoveElementCommand::ArrayRemoveElementCommand(const PropertyPath& array_prop, size_t index)
+		: mPath(array_prop), mIndex(index), QUndoCommand()
 {}
 
 void ArrayRemoveElementCommand::redo()
 {
+	mValue = AppContext::get().getDocument()->arrayGetElement(mPath, mIndex);
 	AppContext::get().getDocument()->arrayRemoveElement(mPath, mIndex);
 }
 
@@ -226,8 +260,8 @@ void ArrayRemoveElementCommand::undo()
 }
 
 
-ArrayMoveElementCommand::ArrayMoveElementCommand(const PropertyPath& array_prop, long fromIndex, long toIndex)
-		: mPath(array_prop), mFromIndex(fromIndex), mToIndex(toIndex)
+ArrayMoveElementCommand::ArrayMoveElementCommand(const PropertyPath& array_prop, size_t fromIndex, size_t toIndex)
+		: mPath(array_prop), mFromIndex(fromIndex), mToIndex(toIndex), QUndoCommand()
 {
 	setText(QString("Reorder '%1' from %2 to %3").arg(QString::fromStdString(array_prop.toString()),
 													  QString::number(fromIndex), QString::number(toIndex)));
