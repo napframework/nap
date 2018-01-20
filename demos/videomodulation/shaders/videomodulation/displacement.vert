@@ -21,9 +21,8 @@ out vec4 passColor;					//< Vertex color
 
 // uniform inputs
 uniform sampler2D	videoTexture;
-
-const float displacement = 0.3;
-const float randomDisplacement = 0.05;
+uniform float displacement = 0.3;
+uniform float randomness = 0.05;
 
 float fit(float value, float inMin, float inMax, float outMin, float outMax)
 {
@@ -41,14 +40,13 @@ void main(void)
 	vec3 tex_color = texture(videoTexture, in_CenterUV.xy).rgb;
 
 	// Get displacement value
-	float greyscale = (tex_color.r + tex_color.g + tex_color.b) / 3.0;
-	greyscale = fit(greyscale, 0.1,1.0,0.0,1.0);
+	float tex_greyscale = (tex_color.r + tex_color.g + tex_color.b) / 3.0;
+	tex_greyscale = fit(tex_greyscale, 0.1,1.0,0.0,1.0);
 
-	// Get vertex displacement value
+	// Compute vertex displacement value
 	float ver_greyscale = (((in_Color.r + in_Color.g + in_Color.b) / 3.0) * 2.0) - 1;
-	float tgreyscale = greyscale + (ver_greyscale *randomDisplacement);
-
-	float displacement_value = mix(greyscale, tgreyscale, greyscale);
+	float temp_greyscale = tex_greyscale + (ver_greyscale * randomness);
+	float displacement_value = mix(tex_greyscale, temp_greyscale, tex_greyscale);
 
 	// Modify position
 	vec3 new_pos = in_Position + (in_DisplacementDirection * displacement_value * displacement);

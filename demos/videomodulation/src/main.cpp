@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 	nap::Core core;
 
 	// Create app runner
-	nap::AppRunner<nap::VideoApp, nap::GUIAppEventHandler> app_runner(core);
+	nap::AppRunner<nap::VideoModulationApp, nap::GUIAppEventHandler> app_runner(core);
 
 	// Start
 	nap::utility::ErrorState error;
