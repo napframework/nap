@@ -126,7 +126,7 @@ namespace napkin
 	private:
 		const std::string mSceneID;
 		const std::string mEntityID;
-		long mIndex;
+		size_t mIndex;
 	};
 
 
@@ -138,14 +138,20 @@ namespace napkin
 	public:
 		/**
 		 * @param prop The array property to add the element to
+		 * @param index The index at which to insert the value
 		 */
-		ArrayAddValueCommand(const PropertyPath& prop, long index = -1);
+		ArrayAddValueCommand(const PropertyPath& prop, size_t index);
+
+		/**
+		 * @param prop The array property to add the element to
+		 */
+		ArrayAddValueCommand(const PropertyPath& prop);
 
 		void redo() override;
 		void undo() override;
 	private:
 		const PropertyPath& mPath; ///< The path to the array property
-		long mIndex; ///< The index of the newly created element
+		size_t mIndex; ///< The index of the newly created element
 	};
 
 	/**
@@ -157,14 +163,20 @@ namespace napkin
 		/**
 		 * @param prop The array property to add the element to
 		 */
-		ArrayAddNewObjectCommand(const PropertyPath& prop, const nap::rtti::TypeInfo& type, long index = -1);
+		ArrayAddNewObjectCommand(const PropertyPath& prop, const nap::rtti::TypeInfo& type, size_t index);
+
+		/**
+		 * @param prop The array property to add the element to
+		 * @param index The index at which to insert the value
+		 */
+		ArrayAddNewObjectCommand(const PropertyPath& prop, const nap::rtti::TypeInfo& type);
 
 		void redo() override;
 		void undo() override;
 	private:
 		const PropertyPath& mPath; ///< The path to the array property
 		nap::rtti::TypeInfo mType; ///< The type of object to create
-		long mIndex; ///< The index of the newly created element
+		size_t mIndex; ///< The index of the newly created element
 	};
 
 
@@ -177,14 +189,20 @@ namespace napkin
 		/**
 		 * @param prop The array property to add the element to
 		 */
-		ArrayAddExistingObjectCommand(const PropertyPath& prop, nap::rtti::RTTIObject& object, long index = -1);
+		ArrayAddExistingObjectCommand(const PropertyPath& prop, nap::rtti::RTTIObject& object, size_t index);
+
+		/**
+		 * @param prop The array property to add the element to
+		 * @param index The index at which to insert the element
+		 */
+		ArrayAddExistingObjectCommand(const PropertyPath& prop, nap::rtti::RTTIObject& object);
 
 		void redo() override;
 		void undo() override;
 	private:
 		const PropertyPath& mPath; ///< The path to the array property
 		const std::string mObjectName; ///< The type of object to create
-		long mIndex; ///< The index of the newly created element
+		size_t mIndex; ///< The index of the newly created element
 	};
 
 	/**
@@ -197,13 +215,14 @@ namespace napkin
 		 * @param array_prop The property representing the array
 		 * @param index The index of the element to remove
 		 */
-		ArrayRemoveElementCommand(const PropertyPath& array_prop, long index);
+		ArrayRemoveElementCommand(const PropertyPath& array_prop, size_t index);
 
 		void redo() override;
 		void undo() override;
 	private:
 		const PropertyPath& mPath; ///< The path representing the array
-		long mIndex; ///< The element to be removed
+		nap::rtti::Variant mValue;
+		size_t mIndex; ///< The element to be removed
 	};
 
 	class ArrayMoveElementCommand : public QUndoCommand
@@ -215,16 +234,16 @@ namespace napkin
 		 * @param fromIndex The index of the element to move
 		 * @param toIndex The index at which the element must be after the move
 		 */
-		ArrayMoveElementCommand(const PropertyPath& array_prop, long fromIndex, long toIndex);
+		ArrayMoveElementCommand(const PropertyPath& array_prop, size_t fromIndex, size_t toIndex);
 
 		void redo() override;
 		void undo() override;
 	private:
 		const PropertyPath& mPath; ///< The path representing the array
-		long mFromIndex; ///< The element index to move
-		long mToIndex; ///< The element index to move to
-		long mOldIndex; ///< The actual old index (may have been shifted)
-		long mNewIndex; ///< The actual new index (may have been shifted)
+		size_t mFromIndex; ///< The element index to move
+		size_t mToIndex; ///< The element index to move to
+		size_t mOldIndex; ///< The actual old index (may have been shifted)
+		size_t mNewIndex; ///< The actual new index (may have been shifted)
 	};
 
 };

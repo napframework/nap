@@ -65,14 +65,14 @@ rttr::type napkin::PropertyPath::getArrayElementType()
 	return arrayView.get_rank_type(arrayView.get_rank());
 }
 
-long napkin::PropertyPath::getArrayLength() {
+size_t napkin::PropertyPath::getArrayLength()const
+{
 	ResolvedRTTIPath resolved_path = resolve();
 	assert(resolved_path.isValid());
 
 	Variant array = resolved_path.getValue();
 	assert(array.is_valid());
-	if (!array.is_array())
-		return -1;
+	assert(array.is_array());
 
 	VariantArray array_view = array.create_array_view();
 	assert(array_view.is_dynamic());
