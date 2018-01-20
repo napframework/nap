@@ -29,8 +29,8 @@ namespace nap
 		 */
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		float								mZoomSpeed = 0.5f;		// The speed with which to move
-		ComponentPtr<OrthoCameraComponent>	mOrthoCameraComponent;	// Camera that we're controlling
+		float								mZoomSpeed = 0.5f;		///< Property: "ZoomSpeed" The speed with which to move
+		ComponentPtr<OrthoCameraComponent>	mOrthoCameraComponent;	///< Property: "OrthoCameraComponent" Camera that we're controlling
 	};
 
 

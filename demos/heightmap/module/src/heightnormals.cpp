@@ -33,8 +33,8 @@ namespace nap
 		assert(mHeightMesh != nullptr);
 
 		// Create original positions attribute
-		mOriginalPosAttr = &getMeshInstance().GetOrCreateAttribute<glm::vec3>("OriginalPosition");
-		mOriginalNorAttr = &getMeshInstance().GetOrCreateAttribute<glm::vec3>("DisplacedPosition");
+		mOriginalPosAttr = &getMeshInstance().getOrCreateAttribute<glm::vec3>("OriginalPosition");
+		mOriginalNorAttr = &getMeshInstance().getOrCreateAttribute<glm::vec3>("DisplacedPosition");
 
 		// Get the number of vertices in the height mesh
 		int vert_count = mHeightMesh->getMeshInstance().getNumVertices();

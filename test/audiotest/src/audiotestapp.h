@@ -37,7 +37,7 @@ namespace nap
 		/**
 		 *	Shutdown app
 		 */
-		virtual void shutdown() override;
+		virtual int shutdown() override;
         
     private:
         std::string mJsonFile = appJson;

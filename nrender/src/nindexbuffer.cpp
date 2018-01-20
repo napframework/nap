@@ -9,18 +9,23 @@ namespace opengl
 {
 	// Constructor
 	IndexBuffer::IndexBuffer(GLenum usage) : mUsage(usage)
-	{}
-
-
-	// Upload data
+	{
+	}
+ 
+	// Uploads the data block to the GPU
 	void IndexBuffer::setData(const std::vector<unsigned int>& indices)
 	{
-		mCount = indices.size();
-
 		bind();
 
-		size_t size = getGLTypeSize(GL_UNSIGNED_INT) * indices.size();
-		glBufferData(getBufferType(), size, indices.data(), mUsage);
+		mCount = indices.size();
+		size_t new_size = getGLTypeSize(GL_UNSIGNED_INT) * indices.size();
+		if (new_size > mCurCapacity)
+		{
+			mCurCapacity = getGLTypeSize(GL_UNSIGNED_INT) * indices.capacity();
+			glBufferData(getBufferType(), mCurCapacity, nullptr, mUsage);
+		}
+
+		glBufferSubData(getBufferType(), 0, new_size, indices.data());
 		glAssert();
 
 		unbind();

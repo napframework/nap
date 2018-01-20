@@ -19,12 +19,13 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	const MeshInstance::VertexAttributeID MeshInstance::VertexAttributeIDs::GetPositionName()	{ return "Position"; }
-	const MeshInstance::VertexAttributeID MeshInstance::VertexAttributeIDs::getNormalName()		{ return "Normal"; }
-	const MeshInstance::VertexAttributeID MeshInstance::VertexAttributeIDs::getTangentName()	{ return "Tangent"; }
-	const MeshInstance::VertexAttributeID MeshInstance::VertexAttributeIDs::getBitangentName()	{ return "Bitangent"; }
+	const std::string VertexAttributeIDs::getPositionName()				{ return "Position"; }
+	const std::string VertexAttributeIDs::getNormalName()				{ return "Normal"; }
+	const std::string VertexAttributeIDs::getTangentName()				{ return "Tangent"; }
+	const std::string VertexAttributeIDs::getBitangentName()			{ return "Bitangent"; }
 
-	const MeshInstance::VertexAttributeID MeshInstance::VertexAttributeIDs::GetUVName(int uvChannel)
+
+	const std::string VertexAttributeIDs::getUVName(int uvChannel)
 	{
 		std::ostringstream stream;
 		stream << "UV" << uvChannel;
@@ -32,7 +33,7 @@ namespace nap
 	}
 
 
-	const MeshInstance::VertexAttributeID MeshInstance::VertexAttributeIDs::GetColorName(int colorChannel)
+	const std::string VertexAttributeIDs::GetColorName(int colorChannel)
 	{
 		std::ostringstream stream;
 		stream << "Color" << colorChannel;
@@ -58,7 +59,7 @@ namespace nap
 	{
 		mGPUMesh = std::make_unique<opengl::GPUMesh>();
 		for (auto& mesh_attribute : mProperties.mAttributes)
-			mGPUMesh->addVertexAttribute(mesh_attribute->mAttributeID, mesh_attribute->getType(), mesh_attribute->getNumComponents(), mProperties.mNumVertices, GL_STATIC_DRAW);
+			mGPUMesh->addVertexAttribute(mesh_attribute->mAttributeID, mesh_attribute->getType(), mesh_attribute->getNumComponents(), GL_STATIC_DRAW);
 
 		return update(errorState);
 	}
@@ -82,14 +83,34 @@ namespace nap
 		mProperties.mNumVertices = meshProperties.mNumVertices;
 		mProperties.mDrawMode = meshProperties.mDrawMode;
 		mProperties.mIndices = meshProperties.mIndices;
-
 	}
 	
+
+	void MeshInstance::reserveVertices(size_t numVertices)
+	{
+		for (auto& mesh_attribute : mProperties.mAttributes)
+			mesh_attribute->reserve(numVertices);
+	}
+
+
+	void MeshInstance::reserveIndices(size_t numIndices) 
+	{ 
+		mProperties.mIndices.reserve(numIndices); 
+	}
+
 
 	void MeshInstance::setIndices(uint32_t* indices, int numIndices)
 	{
 		mProperties.mIndices.resize(numIndices);
 		std::memcpy(mProperties.mIndices.data(), indices, numIndices * sizeof(uint32_t));
+	}
+
+
+	void MeshInstance::addIndices(uint32_t* indices, int numIndices)
+	{
+		int cur_num_indices = mProperties.mIndices.size();
+		mProperties.mIndices.resize(cur_num_indices + numIndices);
+		std::memcpy(&mProperties.mIndices[cur_num_indices], indices, numIndices * sizeof(uint32_t));
 	}
 
 
@@ -107,8 +128,8 @@ namespace nap
 
 		for (auto& mesh_attribute : mProperties.mAttributes)
 		{
-			const opengl::VertexAttributeBuffer& vertex_attr_buffer = mGPUMesh->getVertexAttributeBuffer(mesh_attribute->mAttributeID);
-			vertex_attr_buffer.setData(mesh_attribute->getRawData());
+			opengl::VertexAttributeBuffer& vertex_attr_buffer = mGPUMesh->getVertexAttributeBuffer(mesh_attribute->mAttributeID);
+			vertex_attr_buffer.setData(mesh_attribute->getRawData(), mesh_attribute->getCount(), mesh_attribute->getCapacity());
 		}
 
 		if (!mProperties.mIndices.empty())
