@@ -125,6 +125,7 @@ namespace napkin
 
 		/**
 		 * Add an element to an array
+		 * The propertyValueChanged signal will be emitted.
 		 * @param path The path to the array property to add the element to
 		 * @param index The index at which to add the new element, provide -1 to add to the end
 		 * @return The index of the newly created element or -1 when the element was not added.
@@ -133,6 +134,7 @@ namespace napkin
 
 		/**
 		 * Add an existing pointer to the array
+		 * The propertyValueChanged signal will be emitted.
 		 * @param path The path to the array
 		 * @param object The object pointer to addd
 		 * @param index The index at which to add the new element, provide -1 to add to the end
@@ -142,6 +144,7 @@ namespace napkin
 
 		/**
 		 * Create an object of the specified type and add it to the array
+		 * The propertyValueChanged signal will be emitted.
 		 * @param path The path to the array
 		 * @param type The type of object to create
 		 * @param index The index at which to add the new element, provide -1 to add to the end
@@ -151,6 +154,7 @@ namespace napkin
 
 		/**
 		 * Remove an element from an array
+		 * The propertyValueChanged signal will be emitted.
 		 * @param path The path pointing to the array
 		 * @param index The index of the element to remove
 		 */
@@ -159,6 +163,7 @@ namespace napkin
 		/**
 		 * Move an item within an array. If \p fromIndex is greater than \p toIndex,
 		 * \p toIndex is considered to be the destination index <b>before</b> the move happens.
+		 * The propertyValueChanged signal will be emitted.
 		 * @param path The path to the array property
 		 * @param fromIndex The index of the element to move
 		 * @param toIndex The destination index of the element
