@@ -5,6 +5,7 @@
 #include <composition.h>
 #include <ledcolorpalette.h>
 #include <ledcolorpalettegrid.h>
+#include <imagelayer.h>
 
 
 #define TAG_NAPKIN "[napkin]"
@@ -138,7 +139,7 @@ TEST_CASE("Array add weekcolor", TAG_NAPKIN)
 	REQUIRE(variations0.isValid());
 
 	auto idx = doc->arrayAddValue(variations0);
-	REQUIRE(idx == 0);
+	REQUIRE(idx == 10);
 }
 
 TEST_CASE("Array Modification Objects", TAG_NAPKIN)
@@ -146,7 +147,7 @@ TEST_CASE("Array Modification Objects", TAG_NAPKIN)
 	auto doc = napkin::AppContext::get().newDocument();
 	auto composition = doc->addObject<nap::Composition>();
 	REQUIRE(composition != nullptr);
-	auto layer = doc->addObject<nap::ImageSequenceLayer>();
+	auto layer = doc->addObject<nap::ImageLayer>();
 	REQUIRE(layer != nullptr);
 
 	napkin::PropertyPath layers(*composition, "Layers");
