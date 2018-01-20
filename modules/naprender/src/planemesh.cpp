@@ -113,10 +113,10 @@ namespace nap
 			}
 		}
 
-		Vec3VertexAttribute& position_attribute = mesh.GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName());
-		Vec3VertexAttribute& normal_attribute = mesh.GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::getNormalName());
-		Vec3VertexAttribute& uv_attribute = mesh.GetOrCreateAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetUVName(0));
-		Vec4VertexAttribute& color_attribute = mesh.GetOrCreateAttribute<glm::vec4>(MeshInstance::VertexAttributeIDs::GetColorName(0));
+		Vec3VertexAttribute& position_attribute = mesh.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
+		Vec3VertexAttribute& normal_attribute = mesh.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getNormalName());
+		Vec3VertexAttribute& uv_attribute = mesh.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
+		Vec4VertexAttribute& color_attribute = mesh.getOrCreateAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0));
 
 		// Set the number of vertices to use
 		mesh.setNumVertices(vert_count);

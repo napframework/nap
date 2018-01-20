@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
 	nap::Core core;
 
 	// Create app runner using default event handler
-	nap::AppRunner<nap::HelloWorldApp, nap::AppEventHandler> app_runner(core);
+	nap::AppRunner<nap::HelloWorldApp, nap::GUIAppEventHandler> app_runner(core);
 
 	// Start
 	nap::utility::ErrorState error;

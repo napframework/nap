@@ -57,6 +57,17 @@ namespace nap
 					getApp<App>().windowMessageReceived(std::move(window_event));
 				}
 			}
+
+			// Check if we need to quit the app from running
+			// -1 signals a quit cancellation
+			else if (event.type == SDL_QUIT)
+			{
+				if (getApp<App>().shutdownRequested())
+				{
+					getApp<App>().quit();
+				}
+			}
+
 		}
 	}
 
@@ -78,24 +89,31 @@ namespace nap
 			{
 				nap::InputEventPtr input_event = nap::translateInputEvent(event);
 				getApp<App>().inputMessageReceived(std::move(input_event));
-				continue;
 			}
 
 			// Forward if we're not capturing keyboard and it's a key event
-			if (nap::isKeyEvent(event) && !io.WantCaptureKeyboard)
+			else if (nap::isKeyEvent(event) && !io.WantCaptureKeyboard)
 			{
 				nap::InputEventPtr input_event = nap::translateInputEvent(event);
 				getApp<App>().inputMessageReceived(std::move(input_event));
-				continue;
 			}
 
 			// Always forward window events
-			if (nap::isWindowEvent(event))
+			else if (nap::isWindowEvent(event))
 			{
 				nap::WindowEventPtr window_event = nap::translateWindowEvent(event);
 				if (window_event != nullptr)
 				{
 					getApp<App>().windowMessageReceived(std::move(window_event));
+				}
+			}
+
+			// Stop if the event tells us to quit
+			else if (event.type == SDL_QUIT)
+			{
+				if (getApp<App>().shutdownRequested())
+				{
+					getApp<App>().quit();
 				}
 			}
 		}

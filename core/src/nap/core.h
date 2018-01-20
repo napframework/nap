@@ -96,8 +96,8 @@ namespace nap
 		ResourceManager* getResourceManager() { return mResourceManager.get(); }
 
 		/**
-		* @return number of elapsed time in milliseconds after invoking start
-		*/
+		 * @return number of elapsed time in milliseconds after invoking start
+		 */
 		uint32 getTicks() const;
 
 		/**
@@ -109,6 +109,11 @@ namespace nap
 		* @return start time point
 		*/
 		utility::HighResTimeStamp getStartTime() const;
+
+		/**
+		 * @return number of frames per second
+		 */
+		float getFramerate() const										{ return mFramerate; }
 
 		/**
 		* @return an already registered service of @type
@@ -162,6 +167,11 @@ namespace nap
 		*/
 		void resourceFileChanged(const std::string& file);
 
+		/**
+		 *	Calculates the framerate over time
+		 */
+		void calculateFramerate(uint32 ticks);
+
 		// Typedef for a list of services
 		using ServiceList = std::vector<std::unique_ptr<Service>>;
 
@@ -177,11 +187,16 @@ namespace nap
 		// Timer
 		utility::HighResolutionTimer mTimer;
 
-		// Last time stamp used for calculating delta time
-		double mLastTimeStamp = 0.0;
+		// Amount of milliseconds the app is running
+		uint32 mLastTimeStamp = 0;
 
-		// Time it took to complete last cycle in seconds
-		double mDeltaTime = 0.0;
+		// Current framerate
+		float mFramerate = 0.0f;
+
+		// Used to calculate framerate over time
+		std::array<uint32, 100> mTicks;
+		uint32 mTicksum = 0;
+		uint32 mTickIdx = 0;
 
 		nap::Slot<const std::string&> mFileLoadedSlot = {
 			[&](const std::string& inValue) -> void { resourceFileChanged(inValue); }};

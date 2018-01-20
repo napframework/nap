@@ -78,7 +78,7 @@ namespace nap
 				int new_idx = mCurrentIndex;
 				while (new_idx == mCurrentIndex)
 				{
-					new_idx = math::random(0, sample_container.count() - 1);
+					new_idx = math::random<int>(0, sample_container.count() - 1);
 				}
 				select(new_idx, sample_container);
 				break;

@@ -34,6 +34,12 @@ namespace nap
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Viewport");
 		mRenderWindow->mWindowEvent.connect(std::bind(&VinylApp::handleWindowEvent, this, std::placeholders::_1));
 		
+		// Position window
+		glm::ivec2 screen_size = opengl::getScreenSize(0);
+		int offset_x = (screen_size.x - mRenderWindow->getWidth()) / 2;
+		int offset_y = (screen_size.y - mRenderWindow->getHeight()) / 2;
+		mRenderWindow->setPosition(glm::ivec2(offset_x, offset_y));
+
 		// Fetch vinyl textures
 		mVinylLabelImg = mResourceManager->findObject<nap::Image>("LabelImage");
 		mVinylCoverImg = mResourceManager->findObject<nap::Image>("CoverImage");
@@ -115,7 +121,7 @@ namespace nap
 		mRenderService->renderObjects(backbuffer, mCameraEntity->getComponent<nap::PerspCameraComponentInstance>(), components_to_render);
 		
 		// Tell the gui to draw
-		mGuiService->render();
+		mGuiService->draw();
 
 		// Update gpu frame
 		mRenderWindow->swap();
@@ -152,7 +158,7 @@ namespace nap
 		{
 			nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(inputEvent.get());
 			if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
-				quit(0);
+				quit();
 
 			if (press_event->mKey == nap::EKeyCode::KEY_f)
 			{
@@ -171,8 +177,10 @@ namespace nap
 	}
 
 	
-	void VinylApp::shutdown()
-	{ }
+	int VinylApp::shutdown()
+	{
+		return 0;
+	}
 	
 	
 	/**
