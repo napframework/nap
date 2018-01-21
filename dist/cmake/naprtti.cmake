@@ -14,10 +14,8 @@ if (WIN32)
         HINTS
             ${CMAKE_CURRENT_LIST_DIR}/../lib/
     )
-    set(NAPRTTI_LIBS_RELEASE_DLL ${NAPRTTI_LIBS_DIR}/Release/naprtti.dll)
-    set(NAPRTTI_LIBS_DEBUG_DLL ${NAPRTTI_LIBS_DIR}/Debug/naprtti.dll)
-    set(NAPRTTI_LIBS_IMPLIB_DEBUG ${NAPRTTI_LIBS_DIR}/Debug/naprtti.lib)
-    set(NAPRTTI_LIBS_IMPLIB_RELEASE ${NAPRTTI_LIBS_DIR}/Release/naprtti.lib)
+    set(NAPRTTI_LIBS_DEBUG ${NAPRTTI_LIBS_DIR}/Debug/naprtti.lib)
+    set(NAPRTTI_LIBS_RELEASE ${NAPRTTI_LIBS_DIR}/Release/naprtti.lib)
 elseif (APPLE)
     find_path(
         NAPRTTI_LIBS_DIR
@@ -25,8 +23,8 @@ elseif (APPLE)
         HINTS
             ${CMAKE_CURRENT_LIST_DIR}/../lib/
     )
-    set(NAPRTTI_LIBS_RELEASE_DLL ${NAPRTTI_LIBS_DIR}/Release/libnaprtti.dylib)
-    set(NAPRTTI_LIBS_DEBUG_DLL ${NAPRTTI_LIBS_DIR}/Debug/libnaprtti.dylib)
+    set(NAPRTTI_LIBS_RELEASE ${NAPRTTI_LIBS_DIR}/Release/libnaprtti.dylib)
+    set(NAPRTTI_LIBS_DEBUG ${NAPRTTI_LIBS_DIR}/Debug/libnaprtti.dylib)
 elseif (UNIX)
     find_path(
         NAPRTTI_LIBS_DIR
@@ -34,8 +32,8 @@ elseif (UNIX)
         HINTS
             ${CMAKE_CURRENT_LIST_DIR}/../lib/
     )
-    set(NAPRTTI_LIBS_RELEASE_DLL ${NAPRTTI_LIBS_DIR}/Release/libnaprtti.so)
-    set(NAPRTTI_LIBS_DEBUG_DLL ${NAPRTTI_LIBS_DIR}/Debug/libnaprtti.so)
+    set(NAPRTTI_LIBS_RELEASE ${NAPRTTI_LIBS_DIR}/Release/libnaprtti.so)
+    set(NAPRTTI_LIBS_DEBUG ${NAPRTTI_LIBS_DIR}/Debug/libnaprtti.so)
 endif()
 
 if (NOT NAPRTTI_LIBS_DIR)
@@ -43,34 +41,18 @@ if (NOT NAPRTTI_LIBS_DIR)
 endif()
 
 add_library(naprtti INTERFACE)
-target_link_libraries(naprtti INTERFACE debug ${NAPRTTI_LIBS_DEBUG_DLL})
-target_link_libraries(naprtti INTERFACE optimized ${NAPRTTI_LIBS_RELEASE_DLL})
+target_link_libraries(naprtti INTERFACE debug ${NAPRTTI_LIBS_DEBUG})
+target_link_libraries(naprtti INTERFACE optimized ${NAPRTTI_LIBS_RELEASE})
 file(GLOB rtti_headers ${CMAKE_CURRENT_LIST_DIR}/../include/rtti/*.h)
 target_sources(naprtti INTERFACE ${rtti_headers})
 source_group(NAP\\RTTI FILES ${rtti_headers})
 
-# add_library(naprtti SHARED IMPORTED)
-# set_target_properties(naprtti PROPERTIES
-#     IMPORTED_CONFIGURATIONS "Debug;Release;MinSizeRel;RelWithDebInfo"
-#     IMPORTED_LOCATION_RELEASE ${NAPRTTI_LIBS_RELEASE_DLL}
-#     IMPORTED_LOCATION_DEBUG ${NAPRTTI_LIBS_DEBUG_DLL}
-#     IMPORTED_LOCATION_MINSIZEREL ${NAPRTTI_LIBS_RELEASE_DLL}
-#     IMPORTED_LOCATION_RELWITHDEBINFO ${NAPRTTI_LIBS_RELEASE_DLL}
-# )
-
 if (WIN32)
-    set_target_properties(naprtti PROPERTIES
-        IMPORTED_IMPLIB_RELEASE ${NAPRTTI_LIBS_IMPLIB_RELEASE}
-        IMPORTED_IMPLIB_DEBUG ${NAPRTTI_LIBS_IMPLIB_DEBUG}
-        IMPORTED_IMPLIB_MINSIZEREL ${NAPRTTI_LIBS_IMPLIB_RELEASE}
-        IMPORTED_IMPLIB_RELWITHDEBINFO ${NAPRTTI_LIBS_IMPLIB_RELEASE}
-    )
-
-    # Copy over DLLs post-build
+    # Copy over DLL post-build
     add_custom_command(
         TARGET ${PROJECT_NAME}
         POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:naprtti> $<TARGET_FILE_DIR:${PROJECT_NAME}>/
+        COMMAND ${CMAKE_COMMAND} -E copy ${NAPRTTI_LIBS_DIR}/$<CONFIG>/naprtti.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>/
     )
 
     add_custom_command(

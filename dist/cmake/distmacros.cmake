@@ -21,20 +21,18 @@ macro(find_nap_module MODULE_NAME)
 
         message("Adding lib path for ${MODULE_NAME}")
         if (WIN32)
-            set(MOD_RELEASE_DLL ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Release/${MODULE_NAME}.dll)
-            set(MOD_DEBUG_DLL ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Debug/${MODULE_NAME}.dll)
-            set(MOD_IMPLIB_DEBUG ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Debug/${MODULE_NAME}.lib)
-            set(MOD_IMPLIB_RELEASE ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Release/${MODULE_NAME}.lib)
+            set(MOD_DEBUG_LIB ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Debug/${MODULE_NAME}.lib)
+            set(MOD_RELEASE_LIB ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Release/${MODULE_NAME}.lib)
         elseif (APPLE)
-            set(MOD_RELEASE_DLL ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Release/lib${MODULE_NAME}.dylib)
-            set(MOD_DEBUG_DLL ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Debug/lib${MODULE_NAME}.dylib)
+            set(MOD_RELEASE_LIB ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Release/lib${MODULE_NAME}.dylib)
+            set(MOD_DEBUG_LIB ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Debug/lib${MODULE_NAME}.dylib)
         elseif (UNIX)
-            set(MOD_RELEASE_DLL ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Release/lib${MODULE_NAME}.so)
-            set(MOD_DEBUG_DLL ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Debug/lib${MODULE_NAME}.so)
+            set(MOD_RELEASE_LIB ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Release/lib${MODULE_NAME}.so)
+            set(MOD_DEBUG_LIB ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Debug/lib${MODULE_NAME}.so)
         endif()
 
-        target_link_libraries(${MODULE_NAME} INTERFACE debug ${MOD_DEBUG_DLL})
-        target_link_libraries(${MODULE_NAME} INTERFACE optimized ${MOD_RELEASE_DLL})
+        target_link_libraries(${MODULE_NAME} INTERFACE debug ${MOD_DEBUG_LIB})
+        target_link_libraries(${MODULE_NAME} INTERFACE optimized ${MOD_RELEASE_LIB})
         file(GLOB module_headers ${NAP_ROOT}/modules/${NAP_MODULE}/include/*.h)
         target_sources(${MODULE_NAME} INTERFACE ${module_headers})
         source_group(Modules\\${MODULE_NAME} FILES ${module_headers})
@@ -43,31 +41,22 @@ macro(find_nap_module MODULE_NAME)
         message("Adding include for ${NAP_MODULE}")
         target_include_directories(${PROJECT_NAME} PUBLIC ${NAP_ROOT}/modules/${NAP_MODULE}/include/)
 
-        if (WIN32)
-            # Set Windows .lib locations
-            # TODO test test test
-            set_target_properties(${MODULE_NAME} PROPERTIES
-                IMPORTED_IMPLIB_RELEASE ${MOD_IMPLIB_RELEASE}
-                IMPORTED_IMPLIB_DEBUG ${MOD_IMPLIB_DEBUG}
-                IMPORTED_IMPLIB_MINSIZEREL ${MOD_IMPLIB_RELEASE}
-                IMPORTED_IMPLIB_RELWITHDEBINFO ${MOD_IMPLIB_RELEASE}
-            )
-
-            # Copy over module DLLs post-build
-            add_custom_command(
-                TARGET ${PROJECT_NAME}
-                POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${MODULE_NAME}> $<TARGET_FILE_DIR:${PROJECT_NAME}>/
-            )
-        endif()
-
         # Bring in any additional module requirements
+        # TODO make sure we're running this for our source modules
         set(MODULE_EXTRA_CMAKE_PATH ${NAP_ROOT}/modules/${MODULE_NAME}/moduleExtra.cmake)
         if (EXISTS ${MODULE_EXTRA_CMAKE_PATH})
             include (${MODULE_EXTRA_CMAKE_PATH})
         endif()        
     endif()
 
+    if (WIN32)
+        # Copy over module DLLs post-build
+        add_custom_command(
+            TARGET ${PROJECT_NAME}
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy ${NAP_ROOT}/modules/${MODULE_NAME}/lib/$<CONFIG>/${MODULE_NAME}.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>/
+        )
+    endif()
 endmacro()
 
 macro(dist_export_fbx SRCDIR)
