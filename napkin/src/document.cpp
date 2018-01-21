@@ -1,7 +1,6 @@
 #include <nap/logger.h>
 #include "document.h"
 
-
 using namespace napkin;
 using namespace nap::rtti;
 
@@ -224,8 +223,9 @@ size_t Document::arrayAddValue(const PropertyPath& path)
 
 	const TypeInfo element_type = array_view.get_rank_type(1);
 	const TypeInfo wrapped_type = element_type.is_wrapper() ? element_type.get_wrapped_type() : element_type;
+
 	assert(wrapped_type.can_create_instance());
-	rttr::variant new_value = wrapped_type.create();
+	Variant new_value = wrapped_type.create();
 	assert(new_value.is_valid());
 	assert(array_view.is_dynamic());
 
@@ -407,7 +407,6 @@ void Document::executeCommand(QUndoCommand* cmd)
 {
 	mUndoStack.push(cmd);
 }
-
 
 
 
