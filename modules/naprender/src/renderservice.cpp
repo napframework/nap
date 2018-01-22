@@ -77,7 +77,7 @@ namespace nap
 	}
 
 
-	ObjectPtr<RenderWindow> RenderService::getWindow(uint id) const
+	RenderWindow* RenderService::getWindow(uint id) const
 	{
 		WindowList::const_iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val) { return val->getNumber() == id; });
 		if (pos != mWindows.end())
