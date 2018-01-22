@@ -3,7 +3,6 @@
 // Nap includes
 #include <nap/core.h>
 #include <nap/logger.h>
-#include <nap/datapathmanager.h>
 #include <perspcameracomponent.h>
 #include <imguiservice.h>
 #include <imgui/imgui.h>
@@ -32,7 +31,7 @@ namespace nap
 
 		// Get resource manager and load
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile(getCore().getDataPathManager().getDataPath() + "/objects.json", error))
+		if (!mResourceManager->loadFile("objects.json", error))
 		{
 			Logger::fatal("Unable to deserialize resources: \n %s", error.toString().c_str());
 			return false;

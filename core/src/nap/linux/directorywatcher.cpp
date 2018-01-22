@@ -5,7 +5,6 @@
 #include <nap/logger.h>
 #include <thread>
 #include <utility/fileutils.h>
-#include "nap/datapathmanager.h"
 
 namespace nap
 {
@@ -44,13 +43,15 @@ namespace nap
 	void DirectoryWatcher::PImpl_deleter::operator()(DirectoryWatcher::PImpl* ptr) const { delete ptr; }
 
 
-	DirectoryWatcher::DirectoryWatcher(std::string projectDataPath)
+	DirectoryWatcher::DirectoryWatcher()
 	{
 		// PImpl instantiation using unique_ptr because we only want a unique snowflake
 		mPImpl = std::unique_ptr<PImpl, PImpl_deleter>(new PImpl);
-		
-		nap::Logger::debug("Watching directory: %s", projectDataPath.c_str());
-		mPImpl->watchID = mPImpl->fileWatcher.addWatch(projectDataPath, &(*mPImpl), true);
+
+
+		std::string path = utility::getFileDir(utility::getExecutablePath());
+		nap::Logger::debug("Watching directory: %s", path.c_str());
+		mPImpl->watchID = mPImpl->fileWatcher.addWatch(path, &(*mPImpl), true);
 	}
 
 

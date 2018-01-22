@@ -1,7 +1,5 @@
 #include "../directorywatcher.h"
 
-#include "nap/datapathmanager.h"
-
 #include <utility/fileutils.h>
 
 #include "assert.h"
@@ -33,7 +31,7 @@ namespace nap {
     {
         FSEventStreamContext context; // could put stream-specific data here.
         CFAbsoluteTime latency = 0.01; // Latency in seconds
-        std::string dataPath; // Data path to watch
+        std::string executablePath; // path to the current executable
         
         CFArrayRef pathsToWatch;
         FSEventStreamRef stream;
@@ -75,13 +73,12 @@ namespace nap {
     void DirectoryWatcher::PImpl_deleter::operator()(DirectoryWatcher::PImpl*ptr) const { delete ptr; }
 
     
-    /**
-    * Installs monitor: opens directory, creates event, starts directory scan.
-    */
-    DirectoryWatcher::DirectoryWatcher(std::string projectDataPath)
-    {
+	/**
+	* Installs monitor: opens directory, creates event, starts directory scan.
+	*/
+	DirectoryWatcher::DirectoryWatcher()
+	{
         mPImpl = std::unique_ptr<PImpl, PImpl_deleter>(new PImpl);
-        mPImpl->dataPath = projectDataPath;
         
         mPImpl->watchThread = std::make_unique<std::thread>([&](){
             
@@ -92,7 +89,15 @@ namespace nap {
             mPImpl->context.release = NULL;
             mPImpl->context.copyDescription = NULL;
             
-            CFStringRef pathToWatchCF = CFStringCreateWithCString(NULL, mPImpl->dataPath.c_str(), kCFStringEncodingUTF8);
+            // retrieve the path to the current executable
+            uint32_t size = 256;
+            std::vector<char> buffer;
+            buffer.resize(size);
+            _NSGetExecutablePath(buffer.data(), &size);
+            mPImpl->executablePath = utility::getFileDir(std::string(buffer.data()));
+            
+            std::string dirToWatch = mPImpl->executablePath;
+            CFStringRef pathToWatchCF = CFStringCreateWithCString(NULL, dirToWatch.c_str(), kCFStringEncodingUTF8);
             mPImpl->pathsToWatch = CFArrayCreate(NULL, (const void **)&pathToWatchCF, 1, NULL);
             
             // create event stream for file change event
@@ -113,44 +118,46 @@ namespace nap {
             
             CFRunLoopRun();
         });
-    }
+	}
 
 
-    /**
-    * Cleanup
-    */
-    DirectoryWatcher::~DirectoryWatcher()
-    {
+	/**
+	* Cleanup
+	*/
+	DirectoryWatcher::~DirectoryWatcher()
+	{
         CFRunLoopStop(mPImpl->runLoop);
         mPImpl->watchThread->join();
         FSEventStreamStop(mPImpl->stream);
         FSEventStreamInvalidate(mPImpl->stream);
         FSEventStreamRelease(mPImpl->stream);
-    }
+	}
 
 
-    /**
-    * Checks if any changes to files were made, returns true if so. Continue to call this function to retrieve
-    * multiple updates.
-    */
-    bool DirectoryWatcher::update(std::vector<std::string>& modifiedFiles)
-    {
+	/**
+	* Checks if any changes to files were made, returns true if so. Continue to call this function to retrieve
+	* multiple updates.
+	*/
+	bool DirectoryWatcher::update(std::vector<std::string>& modifiedFiles)
+	{
         {
             std::unique_lock<std::mutex> lock(mPImpl->callbackInfo.watchMutex);
             
             if (mPImpl->callbackInfo.modifiedFiles.empty())
                 return false;
             
-            std::string comparable_data_path = utility::toComparableFilename(mPImpl->dataPath);
+            std::string comparable_executable_path = utility::toComparableFilename(mPImpl->executablePath);
             
             for (auto& modified_file : mPImpl->callbackInfo.modifiedFiles)
             {
                 std::string comparable_modified_file = utility::toComparableFilename(modified_file);
                 
-                // check if the data path is found at the start if the modified file's path
-                auto pos = comparable_modified_file.find(comparable_data_path);
+                // check if the executable path is found at the start if the modifiel file's path
+                auto pos = comparable_modified_file.find(comparable_executable_path + "/");
                 assert(pos != std::string::npos);
 
+                // strip the executable's path from the start
+                comparable_modified_file.erase(0, mPImpl->executablePath.size() + 1);
                 modifiedFiles.emplace_back(comparable_modified_file);
             }
             
@@ -159,5 +166,5 @@ namespace nap {
         
         // if the modified files found by the event stream are not found in the executable's dir we still need to return false
         return !modifiedFiles.empty();
-    }
+	}
 }

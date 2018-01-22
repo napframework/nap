@@ -15,7 +15,6 @@
 #include "resourcemanager.h"
 #include "service.h"
 #include "utility/dllexport.h"
-#include "datapathmanager.h"
 
 namespace nap
 {
@@ -51,11 +50,11 @@ namespace nap
 		/**
 		 * Loads all modules in to the core environment and creates all the associated services
 		 * @param error contains the error code when initialization fails
-		 * @param usingInNonProjectContext If true we're being used in a non-project context which impacts
+		 * @param forcedDataPath TODO If true we're being used in a non-project context which impacts
 		 *        our data path initialisation
 		 * @return if initialization succeeded
 		 */
-		bool initializeEngine(utility::ErrorState& error, bool usingInNonProjectContext=false);
+		bool initializeEngine(utility::ErrorState& error, std::string forcedDataPath="");
 		
 		/**
 		* Initializes all registered services
@@ -137,13 +136,7 @@ namespace nap
 		 */
 		template <typename T>
 		T* getService(rtti::ETypeCheck typeCheck = rtti::ETypeCheck::EXACT_MATCH);
-
-		/**
-		 * The DataPathManager manages the project data path location
-		 * @return the data path if initialialised, otherwise empty string
-		 */
-		DataPathManager& getDataPathManager();
-		
+	
 	private:
 		/**
 		* Helper function that creates all the services that are found in the various modules
@@ -158,7 +151,7 @@ namespace nap
 		* Adds a new service of type @type to @outServices
 		* @param type the type of service to add
 		* @param outServices the list of services the service of @type will be added to
-		* @param error in case of a duplicate, contains the error message if the service could not be added
+		* @param errorState in case of a duplicate, contains the error message if the service could not be added
 		* @return if the service was added successfully
 		*/
 		bool addService(const rtti::TypeInfo& type, std::vector<Service*>& outServices,
@@ -180,7 +173,15 @@ namespace nap
 		 *	Calculates the framerate over time
 		 */
 		void calculateFramerate(uint32 ticks);
-
+		
+		/**
+		 * Determine and set our working directory based on where our project data is
+		 * @param errorState if false is returned, contains error information
+		 * @param forcedDataPath optionally overwrite the project data detection, using specified path instead
+		 * @return if the project data was successfully found and working path set
+		 */
+		bool determineAndSetWorkingDirectory(utility::ErrorState& errorState, std::string forcedDataPath="");
+		
 		// Typedef for a list of services
 		using ServiceList = std::vector<std::unique_ptr<Service>>;
 
@@ -209,9 +210,6 @@ namespace nap
 
 		nap::Slot<const std::string&> mFileLoadedSlot = {
 			[&](const std::string& inValue) -> void { resourceFileChanged(inValue); }};
-		
-		// Manages project data path location
-		DataPathManager mDataPathManager;
 	};
 }
 
