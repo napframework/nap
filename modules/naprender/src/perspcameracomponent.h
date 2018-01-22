@@ -13,12 +13,12 @@ namespace nap
 	 */
 	struct NAPAPI PerpCameraProperties
 	{
-		float mFieldOfView			= 50.0f;				// Field of View
-		float mNearClippingPlane	= 1.0f;					// Near clipping plane
-		float mFarClippingPlane		= 1000.0f;				// Far clipping plane
+		float mFieldOfView			= 50.0f;				///< Property: "FieldOfView"
+		float mNearClippingPlane	= 1.0f;					///< Property: "NearClippingPlane"
+		float mFarClippingPlane		= 1000.0f;				///< Property: "FarClippingPlane"
 
-		glm::ivec2 mGridDimensions	= glm::ivec2(1, 1);		// Dimensions of 'split projection' grid. Default is single dimension, meaning a single screen, which is a regular symmetric perspective projection
-		glm::ivec2 mGridLocation	= glm::ivec2(0, 0);		// Location means the 2 dimensional index in the split projection dimensions
+		glm::ivec2 mGridDimensions	= glm::ivec2(1, 1);		///< Property: "GridDimensions" of 'split projection' grid. Default is single dimension, meaning a single screen, which is a regular symmetric perspective projection
+		glm::ivec2 mGridLocation	= glm::ivec2(0, 0);		///< Property: "GridLocation" the 2 dimensional index in the split projection dimensions
 	};
 	
 	/**

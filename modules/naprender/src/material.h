@@ -48,10 +48,10 @@ namespace nap
 	class NAPAPI MaterialInstanceResource
 	{
 	public:
-		std::vector<ObjectPtr<Uniform>>		mUniforms;										///< Uniforms that you're overriding
-		ObjectPtr<Material>					mMaterial;										///< Material that you're overriding uniforms from
-		EBlendMode							mBlendMode = EBlendMode::NotSet;				///< Blend mode override. By default uses material blend mode
-		EDepthMode							mDepthMode = EDepthMode::NotSet;				///< Depth mode override. By default uses material depth mode
+		std::vector<ObjectPtr<Uniform>>		mUniforms;										///< Property: "Uniforms" that you're overriding
+		ObjectPtr<Material>					mMaterial;										///< Property: "Material" that you're overriding uniforms from
+		EBlendMode							mBlendMode = EBlendMode::NotSet;				///< Property: "BlendMode" Blend mode override. By default uses material blend mode
+		EDepthMode							mDepthMode = EDepthMode::NotSet;				///< Property: "DepthMode" Depth mode override. By default uses material depth mode
 	};
 
 	/**

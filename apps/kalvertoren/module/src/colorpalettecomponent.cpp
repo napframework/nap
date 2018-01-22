@@ -125,8 +125,7 @@ namespace nap
 
 	void ColorPaletteComponentInstance::selectVariation(int index)
 	{
-		int sidx = nap::math::clamp<int>(index, 0, getVariationCount() - 1);
-		mCurrentVariationIndex = sidx;
+		mCurrentVariationIndex = nap::math::clamp<int>(index, 0, getVariationCount() - 1);
 		mTime = 0.0;
 		updateSelectedPalette();
 	}
