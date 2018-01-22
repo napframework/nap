@@ -78,14 +78,15 @@ add_subdirectory(test/tommy)
 # add_subdirectory(apps/skeleton)
 
 # demo targets
-# add_subdirectory(demos/helloworld)
-# add_subdirectory(demos/vinyl)
-# add_subdirectory(demos/multiwindow)
-# add_subdirectory(demos/heightmap)
-# add_subdirectory(demos/heightmap/module)
-# add_subdirectory(demos/dynamicgeo)
-# add_subdirectory(demos/dynamicgeo/module)
-# add_subdirectory(demos/videomodulation)
+#add_subdirectory(demos/helloworld)
+#add_subdirectory(demos/vinyl)
+#add_subdirectory(demos/multiwindow)
+#add_subdirectory(demos/heightmap)
+#add_subdirectory(demos/heightmap/module)
+#add_subdirectory(demos/dynamicgeo)
+#add_subdirectory(demos/dynamicgeo/module)
+#add_subdirectory(demos/videomodulation)
+#add_subdirectory(demos/videomodulation/module)
 
 # add_subdirectory(unittests)
 
