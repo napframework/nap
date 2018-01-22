@@ -51,12 +51,11 @@ namespace nap
 		/**
 		 * Loads all modules in to the core environment and creates all the associated services
 		 * @param error contains the error code when initialization fails
-		 * @param unnamedNapkinFlag If true we presume we're being used in a non-project context which impacts
+		 * @param usingInNonProjectContext If true we're being used in a non-project context which impacts
 		 *        our data path initialisation
 		 * @return if initialization succeeded
 		 */
-		// TODO change approach or name unnamedNapkinFlag
-		bool initializeEngine(utility::ErrorState& error, bool unnamedNapkinFlag=false);
+		bool initializeEngine(utility::ErrorState& error, bool usingInNonProjectContext=false);
 		
 		/**
 		* Initializes all registered services

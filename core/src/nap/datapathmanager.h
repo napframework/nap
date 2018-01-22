@@ -19,12 +19,11 @@ namespace nap
 		/*
 		* Locate project data directory either next to our binary or with project source.
 		* @param errorState If false is returned, contains information about the error.
-		* @param unnamedNapkinFlag If true we presume we're being used in a non-project context and use a placeholder
+		* @param usingInNonProjectContext If true we're being used in a non-project context and use a placeholder
 	    *        data path (the executable directory) instead of going searching
 		* @return True is data path found, false otherwise.
 		*/
-		// TODO change approach or name unnamedNapkinFlag
-		bool populatePath(utility::ErrorState& errorState, bool unnamedNapkinFlag);
+		bool populatePath(utility::ErrorState& errorState, bool usingInNonProjectContext);
 		
 		/*
 		 * Returns the project's data path.
