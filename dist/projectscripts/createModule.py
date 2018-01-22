@@ -15,6 +15,21 @@ def call(cwd, cmd):
     p.wait()
     return p.returncode == 0
 
+def validate_camelcase_name(module_name):
+    # Check we're not a single char
+    if len(module_name) < 2:
+        return False
+
+    # Check our first character is uppercase
+    if (not module_name[0].isalpha()) or module_name[0].islower():
+        return False
+
+    # Check we're not all uppercase
+    if module_name.isupper():
+        return False
+
+    return True
+
 if __name__ == '__main__':
     # Simple input parsing
     # TODO Switch to argparse?
@@ -25,7 +40,12 @@ if __name__ == '__main__':
         sys.exit(ERROR_INVALID_INPUT)
 
     module_name = sys.argv[1]
-    print("Creating module %s in modules/mod_%s" % (module_name, module_name.lower()))
+
+    if not validate_camelcase_name(module_name):
+        print("Error: Please specify module name in CamelCase (ie. with an uppercase letter for each word, starting with the first word)")
+        sys.exit(ERROR_INVALID_INPUT)
+
+    print("Creating module %s in usermodules/mod_%s" % (module_name, module_name.lower()))
 
     # TODO validate module name is camelcase, only includes valid characters
     # TODO validate module list is CSV, no invalid characters
@@ -34,16 +54,16 @@ if __name__ == '__main__':
     script_path = os.path.dirname(os.path.realpath(__file__))
     nap_root = os.path.abspath(os.path.join(script_path, os.pardir))
     cmake_template_dir = os.path.abspath(os.path.join(nap_root, 'cmake/moduleCreator'))
-    module_path = os.path.abspath(os.path.join(nap_root, 'modules/mod_%s' % module_name.lower()))
+    module_path = os.path.abspath(os.path.join(nap_root, 'usermodules/mod_%s' % module_name.lower()))
+    duplicate_module_path = os.path.abspath(os.path.join(nap_root, 'modules/mod_%s' % module_name.lower()))
 
     # Check for existing module with same name
     if os.path.exists(module_path):
         print("Error: Module with name %s already exists" % module_name)
         sys.exit(ERROR_EXISTING_MODULE)
 
-    # Check for NAP module example with same name
-    nap_module_path = os.path.abspath(os.path.join(nap_root, 'modules/mod_nap%s' % module_name.lower()))
-    if os.path.exists(nap_module_path):
+    # Check for existing NAP module with same name
+    if os.path.exists(duplicate_module_path):
         print("Error: NAP module exists with same name '%s'" % module_name)
         sys.exit(ERROR_EXISTING_MODULE)
 
@@ -57,8 +77,6 @@ if __name__ == '__main__':
 
     # Solution generation
     cmd = ['python', './tools/regenerateModule.py', module_name.lower()]
-    if call(nap_root, cmd):
-        print("Solution generated")
-    else:
+    if not call(nap_root, cmd):
         print("Solution generation failed")
         sys.exit(ERROR_SOLUTION_GENERATION_FAILURE)

@@ -247,6 +247,7 @@ namespace nap
 			for (const std::string& module : moduleNames)
 			{
 				outSearchDirectories.push_back(napRoot + "modules/" + module + "/lib/" + buildType);
+				outSearchDirectories.push_back(napRoot + "usermodules/" + module + "/lib/" + buildType);
 			}
 		}
 		else

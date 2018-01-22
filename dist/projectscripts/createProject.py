@@ -18,6 +18,21 @@ def call(cwd, cmd):
     p.wait()
     return p.returncode == 0
 
+def validate_camelcase_name(module_name):
+    # Check we're not a single char
+    if len(module_name) < 2:
+        return False
+
+    # Check our first character is uppercase
+    if (not module_name[0].isalpha()) or module_name[0].islower():
+        return False
+
+    # Check we're not all uppercase
+    if module_name.isupper():
+        return False
+
+    return True
+
 if __name__ == '__main__':
     # Simple input parsing
     # TODO Switch to argparse?
@@ -29,6 +44,11 @@ if __name__ == '__main__':
         sys.exit(ERROR_INVALID_INPUT)
 
     project_name = sys.argv[1]
+
+    if not validate_camelcase_name(project_name):
+        print("Error: Please specify project name in CamelCase (ie. with an uppercase letter for each word, starting with the first word)")
+        sys.exit(ERROR_INVALID_INPUT)
+
     print("Creating project %s" % project_name)
 
     if len(sys.argv) == 3:
@@ -68,8 +88,6 @@ if __name__ == '__main__':
 
     # Solution generation
     cmd = ['python', './tools/regenerateProject.py', project_name.lower()]
-    if call(nap_root, cmd):
-        print("Solution generated")
-    else:
+    if not call(nap_root, cmd):
         print("Solution generation failed")
         sys.exit(ERROR_SOLUTION_GENERATION_FAILURE)
