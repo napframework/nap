@@ -26,10 +26,11 @@ def find_project(project_name):
     # TODO clean up, use absolute path
     nap_root = os.path.join(os.path.dirname(script_path), '..')
 
+    project_dir_name = project_name.lower()
     projects_root = os.path.join(nap_root, 'projects')
-    project_path = os.path.join(projects_root, project_name)
+    project_path = os.path.join(projects_root, project_dir_name)
     examples_root = os.path.join(nap_root, 'examples')
-    example_path = os.path.join(examples_root, project_name)
+    example_path = os.path.join(examples_root, project_dir_name)
 
     if os.path.exists(project_path):
         print("Found project %s at %s" % (project_name, project_path))
