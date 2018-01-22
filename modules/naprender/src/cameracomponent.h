@@ -39,7 +39,7 @@ namespace nap
 		 * can be used).
 		 * @param size: size of the render target in pixels.
 		 */
-		virtual void setRenderTargetSize(glm::ivec2 size) { mRenderTargetSize = size; }
+		virtual void setRenderTargetSize(const glm::ivec2& size)												{ mRenderTargetSize = size; }
 
 		/**
 		 * Maps a pixel coordinate to a world space coordinate using the camera project and view matrix
@@ -54,15 +54,14 @@ namespace nap
 
 		/**
 		 * Maps a pixel coordinate to a world space coordinate using the camera projection and view matrix
-		 * The z component is acquired by sampling the window z-buffer.
-		 * The viewport is extracted from the window
-		 * This call performs a depth sample in to the window buffer to acquire the z value of the screen position
-		 * If you want to define your own use the screenToWorld() function above.
+		 * The viewport is extracted from the render target
+		 * This call performs a depth sample in to the render target to acquire the z value of the screen position
+		 * It's important that the window associated with the target is active. By default this is the first (primary window)
 		 * @param screenPos horizontal and vertical screen coordinates, where 0,0 is the lower left corner
-		 * @param window defines the viewport
+		 * @param target render target (window / texture target etc.) that defines the viewport
 		 * @return converted screen to world space pixel coordinate
 		 */
-		glm::vec3 screenToWorld(const glm::vec2& screenPos, nap::RenderWindow& window);
+		glm::vec3 screenToWorld(const glm::vec2& screenPos, opengl::RenderTarget& target);
 
 		/**
 		 * Maps a world space coordinate to a screen space coordinate using the camera projection and view matrix
@@ -70,15 +69,15 @@ namespace nap
 		 * @param viewport rectangle that defines the viewport
 		 * @return the converted world to screen space coordinate
 		 */
-		glm::vec3 worldToScreen(const glm::vec3& worldPos, math::Rect& viewport);
+		glm::vec3 worldToScreen(const glm::vec3& worldPos, const math::Rect& viewport);
 
 		/**
 		* Maps a world space coordinate to a screen space coordinate using the camera projection and view matrix
 		* @param worldPos the point position in world space
-		* @param window defines the viewport
+		* @param target render target (window / texture target etc.) that defines the viewport
 		* @return the converted world to screen space coordinate
 		*/
-		glm::vec2 worldToScreen(const glm::vec3& worldPos, const nap::RenderWindow& window);
+		glm::vec3 worldToScreen(const glm::vec3& worldPos, const opengl::RenderTarget& target);
 
 		/**
 		 * Computes a ray directed outwards from the camera based on a screen space position
@@ -93,10 +92,10 @@ namespace nap
 		* Computes a ray directed outwards from the camera based on a screen space position
 		* The ray is normalized
 		* @param screenPos horizontal and vertical screen coordinates, where 0,0 is the lower left corner
-		* @param window defines the viewport
+		* @param target render target (window / texture target etc.) that defines the viewport
 		* @return a ray pointing outwards from the camera in to the scene
 		*/
-		glm::vec3 rayFromScreen(const glm::vec2& screenPos, const nap::RenderWindow& window);
+		glm::vec3 rayFromScreen(const glm::vec2& screenPos, const opengl::RenderTarget& target);
 
 		/**
 		 * @return RenderTarget size

@@ -17,6 +17,7 @@ namespace nap
 
 	glm::vec3 CameraComponentInstance::screenToWorld(const glm::vec3& screenPos, const math::Rect& viewport)
 	{
+		setRenderTargetSize({ viewport.getWidth(), viewport.getHeight() });
 		return glm::unProject(screenPos, getViewMatrix(), getProjectionMatrix(), glm::vec4(
 			viewport.mMinPosition.x,
 			viewport.mMinPosition.y,
@@ -25,17 +26,21 @@ namespace nap
 	}
 
 
-	glm::vec3 CameraComponentInstance::screenToWorld(const glm::vec2& screenPos, nap::RenderWindow& window)
+	glm::vec3 CameraComponentInstance::screenToWorld(const glm::vec2& screenPos, opengl::RenderTarget& target)
 	{
 		glm::vec3 scre_pos = glm::vec3(screenPos.x, screenPos.y, 0.0f);
-		window.makeActive();
+		target.bind();
 		scre_pos.z = opengl::getDepth(screenPos.x, screenPos.y);
-		return screenToWorld(scre_pos, window.getRect());
+		target.unbind();
+		return screenToWorld(scre_pos, {0.0f, 	0.0f, 
+			static_cast<float>(target.getSize().x), 
+			static_cast<float>(target.getSize().y)});
 	}
 
 
-	glm::vec3 CameraComponentInstance::worldToScreen(const glm::vec3& worldPos, math::Rect& viewport)
+	glm::vec3 CameraComponentInstance::worldToScreen(const glm::vec3& worldPos, const math::Rect& viewport)
 	{
+		setRenderTargetSize({ viewport.getWidth(), viewport.getHeight() });
 		return glm::project(worldPos, getViewMatrix(), getProjectionMatrix(), glm::vec4(
 			viewport.mMinPosition.x,
 			viewport.mMinPosition.y,
@@ -44,14 +49,18 @@ namespace nap
 	}
 
 
-	glm::vec2 CameraComponentInstance::worldToScreen(const glm::vec3& worldPos, const nap::RenderWindow& window)
+	glm::vec3 CameraComponentInstance::worldToScreen(const glm::vec3& worldPos, const opengl::RenderTarget& target)
 	{
-		return worldToScreen(worldPos, window.getRect());
+
+		return worldToScreen(worldPos, { 0.0f, 	0.0f,
+			static_cast<float>(target.getSize().x),
+			static_cast<float>(target.getSize().y) });
 	}
 
 
 	glm::vec3 CameraComponentInstance::rayFromScreen(const glm::vec2& screenPos, const math::Rect& viewport)
 	{
+		setRenderTargetSize({ viewport.getWidth(), viewport.getHeight() });
 		glm::vec4 ray_clip = glm::vec4(
 			(2.0f * screenPos.x) / viewport.getWidth()  - 1.0f,
 			(2.0f * screenPos.y) / viewport.getHeight() - 1.0f, 
@@ -65,9 +74,11 @@ namespace nap
 	}
 
 
-	glm::vec3 CameraComponentInstance::rayFromScreen(const glm::vec2& screenPos, const nap::RenderWindow& window)
+	glm::vec3 CameraComponentInstance::rayFromScreen(const glm::vec2& screenPos, const opengl::RenderTarget& target)
 	{
-		return rayFromScreen(screenPos, window.getRect());
+		return rayFromScreen(screenPos, {0.0f, 0.0f,
+			static_cast<float>(target.getSize().x),
+			static_cast<float>(target.getSize().y) });
 	}
 
 }

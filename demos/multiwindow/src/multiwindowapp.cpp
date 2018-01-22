@@ -243,6 +243,12 @@ namespace nap
 				window->toggleFullscreen();
 			}
 		}
+		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::PointerClickEvent)))
+		{
+			nap::PointerEvent* click_event = static_cast<nap::PointerEvent*>(inputEvent.get());
+			toWorld(*click_event);
+		}
+
 		mInputService->addEvent(std::move(inputEvent));
 	}
 
@@ -279,4 +285,44 @@ namespace nap
 		planeTransform.setTranslate(glm::vec3(pos_x, pos_y, 0.0f));
 		planeTransform.setScale(glm::vec3(scale, scale, 1.0f));
 	}
+
+
+	void MultiWindowApp::toWorld(PointerEvent& event)
+	{
+		nap::RenderWindow* window = mRenderService->getWindow(event.mWindow);
+		if (window == nullptr)
+			return;
+
+		glm::vec3 world_pos;
+		glm::vec3 world_ray;
+		glm::vec2 scree_pos(event.mX, event.mY);
+		
+		if (event.mWindow == mRenderWindowOne->getNumber())
+		{
+			mRenderWindowOne->makeActive();
+			PerspCameraComponentInstance& cam = mPerspectiveCameraOne->getComponent<PerspCameraComponentInstance>();
+			world_pos = cam.screenToWorld(scree_pos, mRenderWindowOne->getBackbuffer());
+			world_ray = cam.rayFromScreen(scree_pos, mRenderWindowOne->getBackbuffer());
+		}
+
+		if (event.mWindow == mRenderWindowTwo->getNumber())
+		{
+			mRenderWindowTwo->makeActive();
+			OrthoCameraComponentInstance& cam = mOrthoCamera->getComponent<OrthoCameraComponentInstance>();
+			world_pos = cam.screenToWorld(scree_pos, mRenderWindowTwo->getBackbuffer());
+			world_ray = cam.rayFromScreen(scree_pos, mRenderWindowTwo->getBackbuffer());
+		}
+
+		if (event.mWindow == mRenderWindowThree->getNumber())
+		{
+			mRenderWindowThree->makeActive();
+			PerspCameraComponentInstance& cam = mPerspectiveCameraTwo->getComponent<PerspCameraComponentInstance>();
+			world_pos = cam.screenToWorld(scree_pos, mRenderWindowThree->getBackbuffer());
+			world_ray = cam.rayFromScreen(scree_pos, mRenderWindowThree->getBackbuffer());
+		}
+
+		std::cout << "world pos: " << "x: " << world_pos.x << " y: " << world_pos.y << " z: " << world_pos.z << "\n";
+		std::cout << "ray pos: " << "x: " << world_ray.x << " y: " << world_ray.y << " z: " << world_ray.z << "\n";
+	}
+
 }
