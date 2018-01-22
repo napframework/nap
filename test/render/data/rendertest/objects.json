@@ -105,7 +105,11 @@
 			"mID" : "CustomLineMesh",
 			"Properties" : {
 				"NumVertices" : 5,
-				"DrawMode" : "LineStrip",
+				"Shapes" : [
+					{
+						"DrawMode" : "LineStrip"
+					}
+				],
 				"Attributes" : [
 					{
 						"Type" : "nap::Vec3VertexAttribute",
@@ -138,7 +142,11 @@
 			"mID" : "CustomPlaneMesh",
 			"Properties" : {
 				"NumVertices" : 4,
-				"DrawMode" : "Triangles",
+				"Shapes" : [
+					{
+						"DrawMode" : "TriangleStrip"
+					}
+				],
 				"Attributes" : [
 					{
 						"Type" : "nap::Vec3VertexAttribute",

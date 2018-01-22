@@ -1,5 +1,6 @@
 #include "visualizenormalsmesh.h"
 #include <rtti/rtti.h>
+#include "meshutils.h"
 
 RTTI_BEGIN_CLASS(nap::VisualizeNormalsMesh)
 	RTTI_PROPERTY("ReferenceMesh", &nap::VisualizeNormalsMesh::mReferenceMesh, nap::rtti::EPropertyMetaData::Required)
@@ -114,7 +115,11 @@ namespace nap
 		updateNormals(error, false);
 
 		// Draw normals as lines
-		mMeshInstance->setDrawMode(opengl::EDrawMode::LINES);
+		MeshShape& shape = mMeshInstance->createShape();
+		shape.setDrawMode(opengl::EDrawMode::LINES);
+
+		generateIndices(shape, vertex_count * 2);
+
 		return true;
 	}
 
