@@ -77,7 +77,7 @@ namespace nap
 		* camera acts in pixel coordinates.
 		* @param size The size of the render target in pixel coordinates.
 		*/
-		virtual void setRenderTargetSize(glm::ivec2 size) override;
+		virtual void setRenderTargetSize(const glm::ivec2& size) override;
 
 		/**
 		* @return camera projection matrix

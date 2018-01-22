@@ -154,7 +154,7 @@ namespace nap
 
 
 	// Set camera aspect ratio derived from width and height
-	void PerspCameraComponentInstance::setRenderTargetSize(glm::ivec2 size)
+	void PerspCameraComponentInstance::setRenderTargetSize(const glm::ivec2& size)
 	{
 		if (size != getRenderTargetSize())
 		{
