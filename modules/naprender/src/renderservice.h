@@ -156,11 +156,11 @@ namespace nap
 		RenderWindow* findWindow(void* nativeWindow) const;
 
 		/**
-		 * Find a RenderWindow based on it's id
+		 * Find a RenderWindow based on a window id
 		 * @param the associated window id
 		 * @return the RenderWindowResource, nullptr if not found
 		 */
-		ObjectPtr<RenderWindow> getWindow(uint id) const;
+		RenderWindow* getWindow(uint id) const;
 
 		/**
 		 * Get the primary window (i.e. the window that was used to init OpenGL against)
