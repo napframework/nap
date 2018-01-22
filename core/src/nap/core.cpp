@@ -45,7 +45,7 @@ namespace nap
 	}
 
 
-	bool Core::initializeEngine(utility::ErrorState& error, bool unnamedNapkinFlag)
+	bool Core::initializeEngine(utility::ErrorState& error, bool usingInNonProjectContext)
 	{
 		// Ensure our current working directory is where the executable is.
 		// Works around issues with the current working directory not being set as
@@ -53,7 +53,7 @@ namespace nap
 		nap::utility::changeDir(nap::utility::getExecutableDir());
 		
 		// Find our project data
-		if (!mDataPathManager.populatePath(error, unnamedNapkinFlag))
+		if (!mDataPathManager.populatePath(error, usingInNonProjectContext))
 			return false;
 
 		// Add resource manager and listen to file changes

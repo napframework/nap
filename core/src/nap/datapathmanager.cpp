@@ -5,12 +5,11 @@
 
 namespace nap
 {
-	bool DataPathManager::populatePath(utility::ErrorState& errorState, bool unnamedNapkinFlag)
+	bool DataPathManager::populatePath(utility::ErrorState& errorState, bool usingInNonProjectContext)
 	{
 		// If we're being used in a non-project context there's no data to find so let's set our data path
 		// to a placeholder directory (our executable dir) as a workaround
-		// TODO change approach or name unnamedNapkinFlag
-		if (unnamedNapkinFlag)
+		if (usingInNonProjectContext)
 		{
 			mDataPath = utility::getExecutableDir();
 			return true;
