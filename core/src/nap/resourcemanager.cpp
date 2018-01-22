@@ -9,7 +9,6 @@
 #include <rtti/pythonmodule.h>
 #include <rtti/linkresolver.h>
 #include <nap/core.h>
-#include <nap/datapathmanager.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ResourceManager)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -118,7 +117,7 @@ namespace nap
 
 
 	ResourceManager::ResourceManager(nap::Core& core) :
-		mDirectoryWatcher(std::make_unique<DirectoryWatcher>(core.getDataPathManager().getDataPath())),
+		mDirectoryWatcher(std::make_unique<DirectoryWatcher>()),
 		mFactory(std::make_unique<Factory>()),
 		mCore(core)
 	{
@@ -216,10 +215,6 @@ namespace nap
 		if (!readJSONFile(filename, getFactory(), read_result, errorState))
 			return false;
 		
-		// Prepend FileLink paths on objects with our project data directory location.  This allows us to have our project
-		// data alongside the binary for packaged projects or with our source while under development.
-		patchFilePaths(read_result);
-
 		// We first gather the objects that require an update. These are the new objects and the changed objects.
 		// Change detection is performed by comparing RTTI attributes. Very important to note is that, after reading
 		// a json file, pointers are unresolved. When comparing them to the existing objects, they are always different
@@ -493,37 +488,4 @@ namespace nap
 		
 		return ObjectPtr<RTTIObject>(object);
 	}
-
-	
-	// Prepend FileLink paths with our project data directory location
-	void ResourceManager::patchFilePaths(rtti::RTTIDeserializeResult& readResult)
-	{
-		// Grab the data path
-		std::string dataPath = mCore.getDataPathManager().getDataPath();
-
-		// Update paths in our read objects
-		for (auto& read_object : readResult.mReadObjects)
-		{
-			// TODO is this the best way to get our type info?
-			rtti::Instance instance = *read_object;
-			rtti::TypeInfo object_type = instance.get_derived_type();
-			
-			// Go through all properties of the object
-			for (const rtti::Property& property : object_type.get_properties())
-			{
-				if (rtti::hasFlag(property, nap::rtti::EPropertyMetaData::FileLink))
-				{
-					// Prepend our file path with our data path from the DataPathManager
-					std::string path = property.get_value(instance).get_value<std::string>();
-					std::string comparable_data_path = utility::toComparableFilename(dataPath);
-					property.set_value(instance, utility::toComparableFilename(dataPath + "/" + path));
-				}
-			}
-		}
-		
-		// Update paths in our list of FileLinks
-		for (FileLink& file_link : readResult.mFileLinks)
-			file_link.mTargetFile = utility::toComparableFilename(dataPath + "/" + file_link.mTargetFile);
-	}
-	
 }

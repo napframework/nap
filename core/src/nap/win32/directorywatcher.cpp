@@ -1,8 +1,6 @@
 #include "../directorywatcher.h"
 #include "assert.h"
 
-#include "nap/datapathmanager.h"
-
 #define WIN32_LEAN_AND_MEAN
 #include "windows.h"
 #undef min
@@ -19,7 +17,6 @@ namespace nap
 		HANDLE					mOverlappedEvent;			// Manual reset event that is signaled when data is available
 		OVERLAPPED				mOverlapped;				// Overlapped struct so that I/O calls are non-blocking
 		FILE_NOTIFY_INFORMATION mNotifications[1024];		// Output struct with file notification info
-		std::string				mDataPath;					// Project data path location
 	};
 
 
@@ -32,13 +29,14 @@ namespace nap
 	/**
 	* Installs monitor: opens directory, creates event, starts directory scan.
 	*/
-	DirectoryWatcher::DirectoryWatcher(std::string projectDataPath)
+	DirectoryWatcher::DirectoryWatcher()
 	{
         mPImpl = std::unique_ptr<PImpl, PImpl_deleter>(new PImpl);
-		mPImpl->mDataPath = projectDataPath;
+		char current_directory[MAX_PATH];
+		GetCurrentDirectory(MAX_PATH, current_directory);
 
 		// Open directory 
-		mPImpl->mDirectoryToMonitor = CreateFileA(projectDataPath.c_str(), FILE_LIST_DIRECTORY, FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, NULL);
+		mPImpl->mDirectoryToMonitor = CreateFileA(current_directory, FILE_LIST_DIRECTORY, FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, NULL);
 		assert(mPImpl->mDirectoryToMonitor != INVALID_HANDLE_VALUE);
 
 		// Create event
@@ -82,7 +80,6 @@ namespace nap
 			{
 				FILE_NOTIFY_INFORMATION* current_notification = mPImpl->mNotifications;
 				bool done = false;
-
 				while (!done)
 				{
 					// Copy from wide string to narrow string
@@ -90,9 +87,7 @@ namespace nap
 					modified_file.resize(current_notification->FileNameLength / 2);
 					wcstombs(&modified_file[0], current_notification->FileName, current_notification->FileNameLength / 2);
 
-					// Prepend data path and add to modified files
-					modifiedFiles.emplace_back(mPImpl->mDataPath + "/" + modified_file);
-
+					modifiedFiles.emplace_back(modified_file);
 
 					// We've processed the entire buffer if the next entry is zero
 					done = current_notification->NextEntryOffset == 0;

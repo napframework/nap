@@ -4,7 +4,6 @@
 #include "logger.h"
 #include "serviceobjectgraphitem.h"
 #include "objectgraph.h"
-#include "datapathmanager.h"
 
 // External Includes
 #include <rtti/pythonmodule.h>
@@ -45,7 +44,10 @@ namespace nap
 	}
 
 
-	bool Core::initializeEngine(utility::ErrorState& error, bool usingInNonProjectContext)
+	bool initializeEngine(utility::ErrorState& error, std::string forcedDataPath="");
+
+	
+	bool Core::initializeEngine(utility::ErrorState& error, std::string forcedDataPath)
 	{
 		// Ensure our current working directory is where the executable is.
 		// Works around issues with the current working directory not being set as
@@ -53,7 +55,7 @@ namespace nap
 		nap::utility::changeDir(nap::utility::getExecutableDir());
 		
 		// Find our project data
-		if (!mDataPathManager.populatePath(error, usingInNonProjectContext))
+		if (!determineAndSetWorkingDirectory(error, forcedDataPath))
 			return false;
 
 		// Add resource manager and listen to file changes
@@ -79,15 +81,15 @@ namespace nap
 		// TODO: This should be correctly resolved, ie: the dll's should always
 		// be in the executable directory
 #ifdef _WIN32
-		mModuleManager.loadModules(".");
+		mModuleManager.loadModules(utility::getExecutableDir());
 #else
 		// If we have a local lib dir let's presume that's where our modules are meant to be, for now.  Otherwise go hunting higher up where they'll be
 		// normally be built
 		std::string module_dir;
-		if (nap::utility::dirExists("lib"))
-			module_dir = "lib";
+		if (nap::utility::dirExists(utility::getExecutableDir() + "/lib"))
+			module_dir = utility::getExecutableDir() + "/lib";
 		else
-			module_dir = "../../lib/" + utility::getFileName(utility::getExecutableDir());
+			module_dir = utility::getExecutableDir() + "/../../lib/" + utility::getFileName(utility::getExecutableDir());
 
 		mModuleManager.loadModules(module_dir);
 #endif // _WIN32
@@ -312,8 +314,59 @@ namespace nap
 	{
 		return mTimer.getStartTime();
 	}
+
 	
-	DataPathManager& Core::getDataPathManager() {
-		return mDataPathManager;
+	bool Core::determineAndSetWorkingDirectory(utility::ErrorState& errorState, std::string forcedDataPath)
+	{
+		// If we've been provided with an explicit data path let's use that
+		if (!forcedDataPath.empty())
+		{
+			// Verify path exists
+			if (!utility::dirExists(forcedDataPath)){
+				errorState.fail("Specified data path '%s' does not exist", forcedDataPath.c_str());
+				return false;
+			}
+			else {
+				utility::changeDir(forcedDataPath);
+				return true;
+			}
+		}
+		
+		// Check if we have our data dir alongside our exe
+		std::string testDataPath = utility::getExecutableDir() + "/data";
+		if (utility::dirExists(testDataPath))
+		{
+			utility::changeDir(testDataPath);
+			return true;
+		}
+		
+		// Get project name
+		// TODO once we have packaging work merged and we compile into project-specific paths use that folder name instead
+		std::string projectName = utility::getFileNameWithoutExtension(utility::getExecutablePath());
+		
+		// Find NAP root.  Looks cludgey but we have control of this, it doesn't change.
+		// TODO add another level to this then when merged with packaging and we have project-specific build paths
+		std::string napRoot = utility::getAbsolutePath("../..");
+		
+		// Iterate possible project locations
+		std::string possibleProjectParents[] = {
+			"projects", // User projects against packaged NAP
+			"examples", // Example projects in packaged NAP
+			"demos", // Demo projects (maybe merge with examples?)
+			"apps", // Applications in NAP source
+			"test" // Old test projects in NAP source
+		};
+		for (auto& parentPath : possibleProjectParents)
+		{
+			testDataPath = napRoot + "/" + parentPath + "/" + projectName + "/data";
+			if (utility::dirExists(testDataPath))
+			{
+				utility::changeDir(testDataPath);
+				return true;
+			}
+		}
+		
+		errorState.fail("Couldn't find data for project %s", projectName.c_str());
+		return false;
 	}
 }
