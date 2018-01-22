@@ -69,9 +69,9 @@ file(GLOB SHADERS shaders/*.frag shaders/*.vert)
 file(GLOB DATA data/*)
 
 # Create IDE groups
-source_group("headers" FILES ${HEADERS})
-source_group("sources" FILES ${SOURCES})
-source_group("shaders" FILES ${SHADERS})
+source_group("Headers" FILES ${HEADERS})
+source_group("Sources" FILES ${SOURCES})
+source_group("Shaders" FILES ${SHADERS})
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS})
 if (WIN32)

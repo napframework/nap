@@ -11,7 +11,7 @@ string(TOLOWER ${MODULE_NAME_CAMELCASE} MODULE_NAME_LOWERCASE)
 # Setup our paths
 set(TEMPLATE_ROOT ${CMAKE_CURRENT_LIST_DIR}/template)
 set(NAP_ROOT ${CMAKE_CURRENT_LIST_DIR}/../..)
-set(MODULE_DIR ${NAP_ROOT}/modules/mod_${MODULE_NAME_LOWERCASE})
+set(MODULE_DIR ${NAP_ROOT}/usermodules/mod_${MODULE_NAME_LOWERCASE})
 
 # Create our module files, with substitutions
 # TODO potentially look into a generic recursive globbed version of this, but it's probably not worth it

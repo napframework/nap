@@ -60,6 +60,8 @@ def update_project(project_name, build_type):
         # generate prject
         call(project_path, ['cmake', '-H.','-B%s' % BUILD_DIR,'-G', 'Visual Studio 14 2015 Win64', '-DPYBIND11_PYTHON_VERSION=3.5'])
 
+    print("Solution generated in %s" % os.path.relpath(os.path.join(project_path, BUILD_DIR)))
+
 if __name__ == '__main__':
     # TODO update to use argparse
 

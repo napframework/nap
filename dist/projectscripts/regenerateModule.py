@@ -29,7 +29,7 @@ def find_module(module_name):
     if not module_dir_name.startswith("mod_"):
         module_dir_name = "mod_%s" % module_dir_name
 
-    modules_root = os.path.join(nap_root, 'modules')
+    modules_root = os.path.join(nap_root, 'usermodules')
     module_path = os.path.join(modules_root, module_dir_name)
 
     if os.path.exists(module_path):
@@ -37,9 +37,10 @@ def find_module(module_name):
         if os.path.exists(cmake_path):
             print("Found module %s at %s" % (module_name, module_path))
             return module_path
-        elif module_dir_name.startswith('mod_nap'):
-            print("Module %s at %s is a NAP module and can't be regenerated" % (module_name, module_path))
-            return None
+        # TODO temporarily? disabled as it seems too restrictive
+        # elif module_dir_name.startswith('mod_nap'):
+        #     print("Module %s at %s is a NAP module and can't be regenerated" % (module_name, module_path))
+        #     return None
         else:
             print("Module %s at %s does not contain CMakeLists.txt and can't be regenerated" % (module_name, module_path))
             return None
@@ -64,6 +65,8 @@ def update_module(module_name, build_type):
 
         # generate prject
         call(module_path, ['cmake', '-H.','-B%s' % BUILD_DIR,'-G', 'Visual Studio 14 2015 Win64', '-DPYBIND11_PYTHON_VERSION=3.5'])
+
+    print("Solution generated in %s" % os.path.relpath(os.path.join(module_path, BUILD_DIR)))
 
 if __name__ == '__main__':
     # TODO update to use argparse

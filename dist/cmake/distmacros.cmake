@@ -12,11 +12,12 @@ endmacro()
 # TODO let's avoid per-module cmake package files for now.. but probably need to re-address later
 macro(find_nap_module MODULE_NAME)
     # TODO update to use usermodules directory instead
-    if (EXISTS ${NAP_ROOT}/modules/${NAP_MODULE}/src/)
-        message("Module is source module: ${MODULE_NAME}")
+    if (EXISTS ${NAP_ROOT}/usermodules/${NAP_MODULE}/)
+        message("Module is user module: ${MODULE_NAME}")
         set(MODULE_INTO_PROJ TRUE)
-        add_subdirectory(${NAP_ROOT}/modules/${NAP_MODULE} user_modules/${NAP_MODULE})
-    else()
+        add_subdirectory(${NAP_ROOT}/usermodules/${NAP_MODULE} usermodules/${NAP_MODULE})
+    elseif (EXISTS ${NAP_ROOT}/modules/${NAP_MODULE}/)
+
         add_library(${MODULE_NAME} INTERFACE)
 
         message("Adding lib path for ${MODULE_NAME}")
@@ -47,6 +48,8 @@ macro(find_nap_module MODULE_NAME)
         if (EXISTS ${MODULE_EXTRA_CMAKE_PATH})
             include (${MODULE_EXTRA_CMAKE_PATH})
         endif()        
+    else()
+        message(FATAL_ERROR "Could not locate module '${MODULE_NAME}'")    
     endif()
 
     if (WIN32)

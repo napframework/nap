@@ -69,12 +69,12 @@ file(GLOB SOURCES src/*.cpp)
 file(GLOB HEADERS src/*.h)
 
 # Create IDE groups
-source_group("headers" FILES ${HEADERS})
-source_group("sources" FILES ${SOURCES})
+source_group("Headers" FILES ${HEADERS})
+source_group("Sources" FILES ${SOURCES})
 
 # compile shared lib as target
 add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
-set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER UserModules)
 
 # add include dirs
 target_include_directories(${PROJECT_NAME} PUBLIC src)
@@ -99,8 +99,6 @@ if (NOT MODULE_INTO_PROJ)
     include(${CMAKE_CURRENT_LIST_DIR}/naprtti.cmake)
 endif()
 
-message("PYTHON_LIBRARIES ${PYTHON_LIBRARIES}")
-message("PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_DIRS}")
 target_link_libraries(${PROJECT_NAME} napcore naprtti RTTR::Core ${PYTHON_LIBRARIES} ${SDL2_LIBRARY})
 if (MODULE_INTO_PROJ)
     target_include_directories(${PROJECT_NAME} PUBLIC ${pybind11_INCLUDE_DIRS})
