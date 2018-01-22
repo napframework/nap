@@ -26,7 +26,7 @@ using namespace napkin;
 AppContext::AppContext()
 {
 	ErrorState err;
-	if (!getCore().initializeEngine(err, true))
+	if (!getCore().initializeEngine(err, getExecutableDir()))
 	{
 		nap::Logger::fatal("Failed to initialize engine");
 	}
