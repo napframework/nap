@@ -4,7 +4,7 @@
 		{
 			"Type": "nap::audio::AudioFileResource",
 			"mID": "audioFile",
-			"AudioFilePath": "data/audiotest/hang.mp3"
+			"AudioFilePath": "hang.mp3"
 		},
 
 		{
@@ -95,7 +95,7 @@
 				{
 					"Type": "nap::PythonScriptComponent",
 					"mID": "pythonScript",
-					"Path": "data/audiotest/scripts/pythonsequencer.py"
+					"Path": "scripts/pythonsequencer.py"
 				}
 
 

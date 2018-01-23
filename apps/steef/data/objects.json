@@ -4,8 +4,8 @@
 		{
 			"Type" : "nap::RenderWindow",
 			"mID" : "Viewport",
-			"Width" : 1280,
-			"Height" : 720,
+			"Width" : 512,
+			"Height" : 512,
 			"Title" : "Viewport",
 			"Sync" : true
 		},
@@ -18,7 +18,7 @@
 		{
 			"Type" : "nap::Image",
 			"mID" : "LabelImage",
-			"ImagePath" : "data/vinyl/label.png",
+			"ImagePath" : "label.jpg",
 			"Parameters" : {
 				"MaxFilter" : "Linear",		
 				"MinFilter" : "LinearMipmapLinear",		
@@ -31,7 +31,7 @@
 		{
 			"Type" : "nap::Image",
 			"mID" : "CoverImage",
-			"ImagePath" : "data/vinyl/cover.png",
+			"ImagePath" : "cover.png",
 			"Parameters" : {
 				"MaxFilter" : "Linear",		
 				"MinFilter" : "LinearMipmapLinear",		
@@ -44,7 +44,7 @@
 		{
 			"Type" : "nap::Image",
 			"mID" : "BackgroundImage",
-			"ImagePath" : "data/vinyl/background.jpg",
+			"ImagePath" : "background.jpg",
 			"Parameters" : {
 				"MaxFilter" : "Linear",		
 				"MinFilter" : "LinearMipmapLinear",		
@@ -57,7 +57,7 @@
 		{
 			"Type" : "nap::Image",
 			"mID" : "MaskImage",
-			"ImagePath" : "data/vinyl/label_mask.jpg",
+			"ImagePath" : "label_mask.jpg",
 			"Parameters" : {
 				"MaxFilter" : "Linear",		
 				"MinFilter" : "LinearMipmapLinear",		
@@ -70,7 +70,7 @@
 		{
 			"Type" : "nap::Image",
 			"mID" : "GrooveNormalMap",
-			"ImagePath" : "data/vinyl/grooves.png",
+			"ImagePath" : "grooves.png",
 			"Parameters" : {
 				"MaxFilter" : "Linear",		
 				"MinFilter" : "LinearMipmapLinear",		
@@ -83,34 +83,34 @@
 		{
 			"Type" : "nap::Shader",
 			"mID": "VinylShader",
-			"mVertShader": "shaders/vinyl/vinyl.vert",
-			"mFragShader": "shaders/vinyl/vinyl.frag"
+			"mVertShader": "shaders/steef/shader.vert",
+			"mFragShader": "shaders/steef/shader.frag"
 		},
 
 		{
 			"Type" : "nap::Shader",
 			"mID": "BackgroundShader",
-			"mVertShader": "shaders/vinyl/background.vert",
-			"mFragShader": "shaders/vinyl/background.frag"
+			"mVertShader": "shaders/steef/background.vert",
+			"mFragShader": "shaders/steef/background.frag"
 		},
 
 		{
 			"Type" : "nap::Shader",
 			"mID": "CoverShader",
-			"mVertShader": "shaders/vinyl/cover.vert",
-			"mFragShader": "shaders/vinyl/cover.frag"
+			"mVertShader": "shaders/steef/cover.vert",
+			"mFragShader": "shaders/steef/cover.frag"
 		},
 
 		{
 			"Type" : "nap::MeshFromFile",
 			"mID": "CoverMesh",
-			"Path": "data/vinyl/vinyl_cover_Cover.mesh"
+			"Path": "vinyl_cover_Cover.mesh"
 		},
 
 		{
 			"Type" : "nap::MeshFromFile",
 			"mID": "VinylMesh",
-			"Path": "data/vinyl/vinyl_cover_Vinyl.mesh"
+			"Path": "vinyl_cover_Vinyl.mesh"
 		},
 		
 		{
@@ -165,7 +165,7 @@
 				{
 					"Type" : "nap::UniformFloat",
 					"Name" : "ambientIntensity",
-					"Value" : 0.1
+					"Value" : 0.0
 				},
 				{
 					"Type" : "nap::UniformFloat",
@@ -195,16 +195,6 @@
 						"x" : 0.0,
 						"y" : 0.0,
 						"z" : 5.0
-					}
-				},
-				{
-					"Type" : "nap::UniformVec3",
-					"Name" : "recordColor",
-					"Value" : 
-					{
-						"x" : 0.0,
-						"y" : 0.0,
-						"z" : 0.0
 					}
 				}
 			]			
@@ -254,17 +244,17 @@
 				{
 					"Type" : "nap::UniformFloat",
 					"Name" : "ambientIntensity",
-					"Value" : 0.1
+					"Value" : 0.25
 				},
 				{
 					"Type" : "nap::UniformFloat",
 					"Name" : "shininess",
-					"Value" : 15
+					"Value" : 5.0
 				},
 				{
 					"Type" : "nap::UniformFloat",
 					"Name" : "specularIntensity",
-					"Value" : 0.25
+					"Value" : 0.2
 				},
 				{
 					"Type" : "nap::UniformFloat",

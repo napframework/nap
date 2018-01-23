@@ -81,25 +81,25 @@
 		{
 			"mID" : "OctahedronMesh",
 			"Type" : "nap::VideoMeshFromFile",
-			"Path" : "data/videomodulation/octahedron.mesh"
+			"Path" : "octahedron.mesh"
 		},
 
 		{
 			"mID" : "IsocahedronMesh",
 			"Type" : "nap::VideoMeshFromFile",
-			"Path" : "data/videomodulation/isocahedron.mesh"
+			"Path" : "isocahedron.mesh"
 		},
 
 		{
 			"mID" : "SphereMesh",
 			"Type" : "nap::VideoMeshFromFile",
-			"Path" : "data/videomodulation/sphere.mesh"
+			"Path" : "sphere.mesh"
 		},
 
 		{
 			"mID" : "CubeMesh",
 			"Type" : "nap::VideoMeshFromFile",
-			"Path" : "data/videomodulation/cube.mesh"
+			"Path" : "cube.mesh"
 		},
 		
 		{
@@ -126,19 +126,19 @@
 		{
 			"Type" : "nap::Video",
 			"mID": "StreakVideo",
-			"Path": "data/videomodulation/streak.mp4"
+			"Path": "streak.mp4"
 		},
 
 		{
 			"Type" : "nap::Video",
 			"mID": "FlareVideo",
-			"Path": "data/videomodulation/flare.mov"
+			"Path": "flare.mov"
 		},
 
 		{
 			"Type" : "nap::Video",
 			"mID": "SnowVideo",
-			"Path": "data/videomodulation/snow.mp4"
+			"Path": "snow.mp4"
 		},
 		
 		{

@@ -30,7 +30,7 @@ namespace nap
 
 		// Get resource manager and load
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("data/multiwindow/multiwindow.json", error))
+		if (!mResourceManager->loadFile("multiwindow.json", error))
 			return false;
 
 		// Get screen size

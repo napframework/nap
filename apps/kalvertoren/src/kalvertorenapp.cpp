@@ -35,7 +35,7 @@ namespace nap
 
 		// Get resource manager and load data
 		resourceManager = getCore().getResourceManager();
-		if (!resourceManager->loadFile("data/kalvertoren/kalvertoren.json", error))
+		if (!resourceManager->loadFile("kalvertoren.json", error))
 			return false;    
 
 		// Render window and texture target
