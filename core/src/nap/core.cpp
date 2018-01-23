@@ -44,9 +44,6 @@ namespace nap
 	}
 
 
-	bool initializeEngine(utility::ErrorState& error, std::string forcedDataPath="");
-
-	
 	bool Core::initializeEngine(utility::ErrorState& error, std::string forcedDataPath)
 	{
 		// Ensure our current working directory is where the executable is.
@@ -351,8 +348,8 @@ namespace nap
 		// Iterate possible project locations
 		std::string possibleProjectParents[] = {
 			"projects", // User projects against packaged NAP
-			"examples", // Example projects in packaged NAP
-			"demos", // Demo projects (maybe merge with examples?)
+			"examples", // Example projects
+			"demos", // Demo projects
 			"apps", // Applications in NAP source
 			"test" // Old test projects in NAP source
 		};
