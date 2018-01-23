@@ -434,5 +434,14 @@ namespace nap
 
 			return -1;
 		}
+
+
+		void getDerivedTypesRecursive(const rtti::TypeInfo& baseType, std::vector<rtti::TypeInfo>& types)
+		{
+			types.push_back(baseType);
+
+			for (const rtti::TypeInfo& derived_type : baseType.get_derived_classes())
+				getDerivedTypesRecursive(derived_type, types);
+		}
 	}
 }

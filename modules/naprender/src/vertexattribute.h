@@ -39,6 +39,16 @@ namespace nap
 		 */
 		virtual int getCount() const = 0;
 
+		/**
+		 * @return The internally allocated memory size.
+		 */
+		virtual size_t getCapacity() const = 0;
+
+		/**
+		 * Reserves CPU memory for the buffer. 
+		 */
+		virtual void reserve(size_t numElements) = 0;
+
 		std::string			mAttributeID;		///< Name/ID of the attribute
 	};
 
@@ -59,25 +69,14 @@ namespace nap
 	public:
 
 		/**
-		 * @return Types interface toward the internal values. Use this function to read CPU data.
-		 */
-		const std::vector<ELEMENTTYPE>& getData() const			{ return mData;  }
-
-		/**
-		 * @return Types interface toward the internal values. Use this function to read CPU data.
-		 */
-		std::vector<ELEMENTTYPE>& getData()						{ return mData; }
-
-		/**
-		 * Sets the internal values based on the contained type
-		 * @param values: the values that will be copied over
-		 */
-		void setData(std::vector<ELEMENTTYPE>& values)			{ setData(&(values.front()), values.size()); }
-
-		/**
 		 * Reserves an amount of memory to hold @number amount of elements
 		 */
-		void reserve(size_t numElements)						{ mData.reserve(numElements); }
+		virtual void reserve(size_t numElements) override		{ mData.reserve(numElements); }
+
+		/**
+		 * @return The internally allocated memory size.
+		 */
+		virtual size_t getCapacity() const override				{ return mData.capacity(); }
 
 		/**
 		 *	Resizes the data container to hold @number amount of elements
@@ -85,14 +84,37 @@ namespace nap
 		void resize(size_t numElements)							{ mData.resize(numElements); }
 
 		/**
-		 * Adds a single element to the buffer.
-		 */
-		void add(const ELEMENTTYPE& element)					{ mData.emplace_back(element); }
-
-		/**
 		 * Clears all data associated with this attribute
 		 */
 		void clear()											{ mData.clear(); }
+
+		/**
+		* @return Types interface toward the internal values. Use this function to read CPU data.
+		*/
+		const std::vector<ELEMENTTYPE>& getData() const			{ return mData; }
+
+		/**
+		* @return Types interface toward the internal values. Use this function to read CPU data.
+		*/
+		std::vector<ELEMENTTYPE>& getData()						{ return mData; }
+
+		/**
+		 * Adds a single element to the buffer.
+		 */
+		void addData(const ELEMENTTYPE& element)				{ mData.emplace_back(element); }
+
+		/**
+		 * Adds data to the existing data in the buffer.
+		 * @param elements Pointer to the elements to copy.
+		 * @param numElements Amount of elements in @elements to copy.
+		 */
+		void addData(const ELEMENTTYPE* elements, int numElements);
+
+		/**
+		 * Sets the internal values based on the contained type
+		 * @param values: the values that will be copied over
+		 */
+		void setData(std::vector<ELEMENTTYPE>& values)			{ setData(&(values.front()), values.size()); }
 
 		/**
 		 * Sets the entire vertex attribute buffer.
@@ -120,7 +142,7 @@ namespace nap
 		 */
 		virtual int getCount() const override					{ return static_cast<int>(mData.size()); }
 
-		std::vector<ELEMENTTYPE>	mData;		///< Actual typed data of the attribute
+		std::vector<ELEMENTTYPE>	mData;						///< Actual typed data of the attribute
 
 	protected:
 		/**
@@ -154,6 +176,13 @@ namespace nap
 		memcpy(mData.data(), elements, numElements * sizeof(ELEMENTTYPE));
 	}
 
+	template<typename ELEMENTTYPE>
+	void nap::VertexAttribute<ELEMENTTYPE>::addData(const ELEMENTTYPE* elements, int numElements)
+	{
+		int cur_num_elements = mData.size();
+		mData.resize(cur_num_elements + numElements);
+		memcpy((void*)&mData[cur_num_elements], elements, numElements * sizeof(ELEMENTTYPE));
+	}
 
 	template<typename ELEMENTTYPE>
 	void* nap::VertexAttribute<ELEMENTTYPE>::getRawData()

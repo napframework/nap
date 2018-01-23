@@ -7,6 +7,7 @@
 
 // Local Includes
 #include "utility/dllexport.h"
+#include "errorstate.h"
 
 namespace nap
 {
@@ -137,5 +138,15 @@ namespace nap
 		* @param newDir The directory to change to
 		*/
 		void changeDir(std::string newDir);
+
+
+		/**
+		 * Read the contents of a file into a string.
+		 * @param filename Name of the file to read from
+		 * @param outBuffer The string in which the contents will be stored
+		 * @param err Will contain the error details if there were any problems.
+		 * @return True if the read succeeded, false otherwise
+		 */
+		bool readFileToString(const std::string& filename, std::string& outBuffer, utility::ErrorState& err);
 	}
 }

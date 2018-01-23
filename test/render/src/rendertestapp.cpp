@@ -90,12 +90,12 @@ namespace nap
 		nap::IMesh& mesh = mPlaneEntity->getComponent<RenderableMeshComponentInstance>().getMesh();
 		nap::Mesh* rtti_mesh = rtti_cast<Mesh>(&mesh);
 		assert(rtti_mesh != nullptr);
-		const Vec3VertexAttribute& src_position_attribute = rtti_mesh->GetAttribute<glm::vec3>(MeshInstance::VertexAttributeIDs::GetPositionName());
+		const Vec3VertexAttribute& src_position_attribute = rtti_mesh->GetAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
 		const std::vector<glm::vec3>& src_positions = src_position_attribute.getData();
 		
 		// Retrieve destination (instance) mesh data
 		MeshInstance& mesh_instance = mesh.getMeshInstance();
-		Vec3VertexAttribute& dst_position_attribute = mesh_instance.GetAttribute<glm::vec3>(nap::MeshInstance::VertexAttributeIDs::GetPositionName());
+		Vec3VertexAttribute& dst_position_attribute = mesh_instance.getAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
 		std::vector<glm::vec3>& dst_positions = dst_position_attribute.getData();
 		
 		// Sine wave over our quad
@@ -170,7 +170,7 @@ namespace nap
 			components_to_render.push_back(&mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>());
 			mRenderService->renderObjects(backbuffer, mSplitCameraEntity->getComponent<PerspCameraComponentInstance>(), components_to_render);
 
-			getCore().getService<IMGuiService>()->render();
+			getCore().getService<IMGuiService>()->draw();
 
 			render_window->swap();
 		}
@@ -222,7 +222,7 @@ namespace nap
 		{
 			nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(inputEvent.get());
 			if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
-				quit(0);
+				quit();
 
 		}
 		mInputService->addEvent(std::move(inputEvent));
@@ -235,7 +235,8 @@ namespace nap
 	}
 
 	
-	void RenderTestApp::shutdown() 
+	int RenderTestApp::shutdown() 
 	{
+		return 0;
 	}
 }

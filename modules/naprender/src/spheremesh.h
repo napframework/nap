@@ -22,9 +22,9 @@ namespace nap
 		virtual const MeshInstance& getMeshInstance() const override { return *mMeshInstance; }
 
 	public:
-		float mRadius	= 1.0f;		// The radius of the mesh
-		float mRings	= 50.0f;	// The number of rings in the mesh
-		float mSectors	= 50.0f;	// The number of sectors in the mesh
+		float mRadius	= 1.0f;		///< Property: 'Radius' of the sphere
+		float mRings	= 50.0f;	///< Property: 'Rings' number of rings
+		float mSectors	= 50.0f;	///< Property: 'Sectors' number of sectors
 
 	private:
 		std::unique_ptr<MeshInstance> mMeshInstance;

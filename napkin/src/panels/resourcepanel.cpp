@@ -1,6 +1,13 @@
-#include "napkinglobals.h"
-#include <generic/utility.h>
+#include <commands.h>
+#include "resourcepanel.h"
 
+#include "generic/filterpopup.h"
+#include "generic/qtutils.h"
+#include "generic/naputils.h"
+#include "standarditemsobject.h"
+
+
+using namespace napkin;
 
 napkin::ResourceModel::ResourceModel()
 {
@@ -18,7 +25,7 @@ void napkin::ResourceModel::refresh()
 	auto entitiesItem = new class GroupItem(TXT_LABEL_ENTITIES);
 	appendRow(entitiesItem);
 
-	for (nap::rtti::RTTIObject* ob : topLevelObjects(AppContext::get().getObjectPointers()))
+	for (nap::rtti::RTTIObject* ob : topLevelObjects(AppContext::get().getDocument()->getObjectPointers()))
 	{
 		auto typeItem = new RTTITypeItem(ob->get_type());
 
@@ -28,7 +35,7 @@ void napkin::ResourceModel::refresh()
 			// Grab entities and stuff them in a group
 			nap::Entity& e = *rtti_cast<nap::Entity>(ob);
 
-			if (AppContext::get().getParent(e))
+			if (AppContext::get().getDocument()->getParent(e))
 				continue; // Only add root objects
 
 			auto entityItem = new EntityItem(e);
@@ -37,7 +44,7 @@ void napkin::ResourceModel::refresh()
 		else if (!ob->get_type().is_derived_from<nap::Component>())
 		{
 			// If it's not a Component, stick under objects group
-			objectsItem->appendRow({new ObjectItem(*ob), typeItem});
+			objectsItem->appendRow({new ObjectItem(ob), typeItem});
 		}
 	}
 }
@@ -52,8 +59,8 @@ napkin::ResourcePanel::ResourcePanel()
 	mTreeView.getTreeView().setColumnWidth(0, 300);
 	mTreeView.getTreeView().setSortingEnabled(true);
 
-	connect(&AppContext::get(), &AppContext::fileOpened, this, &ResourcePanel::onFileOpened);
-	connect(&AppContext::get(), &AppContext::newFileCreated, this, &ResourcePanel::onNewFile);
+	connect(&AppContext::get(), &AppContext::documentOpened, this, &ResourcePanel::onFileOpened);
+	connect(&AppContext::get(), &AppContext::newDocumentCreated, this, &ResourcePanel::onNewFile);
 
 	connect(mTreeView.getSelectionModel(), &QItemSelectionModel::selectionChanged, this,
 			&ResourcePanel::onSelectionChanged);
@@ -64,6 +71,7 @@ napkin::ResourcePanel::ResourcePanel()
 	connect(&AppContext::get(), &AppContext::componentAdded, this, &ResourcePanel::onComponentAdded);
 	connect(&AppContext::get(), &AppContext::objectAdded, this, &ResourcePanel::onObjectAdded);
 	connect(&AppContext::get(), &AppContext::objectRemoved, this, &ResourcePanel::onObjectRemoved);
+	connect(&AppContext::get(), &AppContext::propertyValueChanged, this, &ResourcePanel::onPropertyValueChanged);
 }
 
 void napkin::ResourcePanel::menuHook(QMenu& menu)
@@ -80,17 +88,18 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 		if (entityItem != nullptr)
 		{
 			// Selected item is an Entity
-			menu.addAction(new AddEntityAction(&entityItem->getEntity()));
+			auto parent = entityItem->getEntity();
+			menu.addAction(new AddEntityAction(parent));
 
 			// Components
 			auto addComponentMenu = menu.addMenu("Add Component");
 			for (const auto& type : getComponentTypes())
 			{
-				addComponentMenu->addAction(new AddComponentAction(entityItem->getEntity(), type));
+				addComponentMenu->addAction(new AddComponentAction(*entityItem->getEntity(), type));
 			}
 		}
 
-		menu.addAction(new DeleteObjectAction(objItem->getObject()));
+		menu.addAction(new DeleteObjectAction(*objItem->getObject()));
 	}
 
 	auto groupItem = dynamic_cast<GroupItem*>(item);
@@ -104,13 +113,12 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 		}
 		else if (groupItem->text() == TXT_LABEL_OBJECTS)
 		{
-
 			// Resources
-			auto addObjectMenu = menu.addMenu("Add Object");
-			for (const auto& type : getResourceTypes())
-			{
-				addObjectMenu->addAction(new AddObjectAction(type));
-			}
+			menu.addAction("Add Object", [this]() {
+				auto type = FilterPopup::getResourceType(this);
+				if (type.is_valid())
+					AppContext::get().executeCommand(new AddObjectCommand(type));
+			});
 		}
 	}
 }
@@ -135,7 +143,7 @@ void napkin::ResourcePanel::onSelectionChanged(const QItemSelection& selected, c
 		auto item = dynamic_cast<ObjectItem*>(m);
 		if (!item)
 			continue;
-		selectedObjects << &item->getObject();
+		selectedObjects << item->getObject();
 	}
 
 	selectionChanged(selectedObjects);
@@ -164,7 +172,7 @@ void napkin::ResourcePanel::refresh()
 {
 	ObjectItem* foundItem = nullptr;
 
-	findItemInModel(mTreeView.getFilterModel(), [this, &foundItem, &obj](const QModelIndex& idx) -> bool {
+	findIndexInModel(mTreeView.getFilterModel(), [this, &foundItem, &obj](const QModelIndex& idx) -> bool {
 		QStandardItem* item = mModel.itemFromIndex(mTreeView.getFilterModel().mapToSource(idx));
 		if (item == nullptr)
 			return false;
@@ -173,7 +181,7 @@ void napkin::ResourcePanel::refresh()
 		if (objItem == nullptr)
 			return false;
 
-		if (&objItem->getObject() == &obj)
+		if (objItem->getObject() == &obj)
 		{
 			foundItem = objItem;
 			return true;
@@ -190,7 +198,7 @@ void napkin::ResourcePanel::onEntityAdded(nap::Entity* entity, nap::Entity* pare
 	// TODO: Don't refresh the whole mModel
 	mModel.refresh();
 	mTreeView.getTreeView().expandAll();
-	mTreeView.selectAndReveal(findItem(*entity));
+	mTreeView.selectAndReveal(findItemInModel<napkin::ObjectItem>(mModel, *entity));
 }
 
 void napkin::ResourcePanel::onComponentAdded(nap::Component& comp, nap::Entity& owner)
@@ -198,23 +206,49 @@ void napkin::ResourcePanel::onComponentAdded(nap::Component& comp, nap::Entity& 
 	// TODO: Don't refresh the whole mModel
 	mModel.refresh();
 	mTreeView.getTreeView().expandAll();
-	mTreeView.selectAndReveal(findItem(comp));
+	mTreeView.selectAndReveal(findItemInModel<ObjectItem>(mModel, comp));
 }
 
-void napkin::ResourcePanel::onObjectAdded(nap::rtti::RTTIObject& obj)
+void napkin::ResourcePanel::onObjectAdded(nap::rtti::RTTIObject& obj, bool selectNewObject)
 {
+	QList<QStandardItem*> selected_items = mTreeView.getSelectedItems();
+
+	nap::rtti::RTTIObject* object_to_select = nullptr;
+	if (!selected_items.empty() && !selectNewObject)
+	{
+		ObjectItem* object_item = dynamic_cast<ObjectItem*>(selected_items[0]);
+		if (object_item != nullptr)
+			object_to_select = object_item->getObject();
+	}
+	else if (selectNewObject)
+		object_to_select = &obj;
+	
+	
 	// TODO: Don't refresh the whole mModel
 	mModel.refresh();
 	mTreeView.getTreeView().expandAll();
-	mTreeView.selectAndReveal(findItem(obj));
+
+	if (object_to_select != nullptr)
+		mTreeView.selectAndReveal(findItemInModel<napkin::ObjectItem>(mModel, *object_to_select));
 }
 
 
 void napkin::ResourcePanel::onObjectRemoved(nap::rtti::RTTIObject& object)
 {
 	// TODO: Don't refresh the whole mModel
-	mModel.refresh();
+	auto item = findItemInModel<napkin::ObjectItem>(mModel, object);
+	mModel.removeRow(item->row(), item->parent()->index());
+//	mModel.refresh();
 	mTreeView.getTreeView().expandAll();
 }
 
+void napkin::ResourcePanel::onPropertyValueChanged(const PropertyPath& path)
+{
+	auto resolvedPath = path.resolve();
+	if (resolvedPath.getProperty().get_name() != nap::rtti::sIDPropertyName)
+		return;
 
+	auto objectItem = findItemInModel<napkin::ObjectItem>(mModel, path.object());
+	if (objectItem != nullptr)
+		objectItem->setText(QString::fromStdString(path.object().mID));
+}

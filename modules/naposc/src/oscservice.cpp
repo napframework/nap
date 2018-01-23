@@ -15,7 +15,7 @@
 #include "oscreceiver.h"
 #include "oscinputcomponent.h"
 
-RTTI_DEFINE(nap::OSCService)
+RTTI_DEFINE_CLASS(nap::OSCService)
 
 namespace nap
 {

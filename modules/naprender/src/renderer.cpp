@@ -4,7 +4,7 @@
 #include <nopengl.h>
 #include <utility/errorstate.h>
 
-RTTI_DEFINE(nap::Renderer)
+RTTI_DEFINE_CLASS(nap::Renderer)
 
 namespace nap
 {

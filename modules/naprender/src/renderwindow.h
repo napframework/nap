@@ -79,6 +79,11 @@ namespace nap
 		void setFullscreen(bool value);
 
 		/**
+		 * Toggles full screen on / off
+		 */
+		void toggleFullscreen();
+
+		/**
 		 * Sets the width of the window
 		 * @param width the new width of the window in pixels
 		 */
@@ -137,8 +142,9 @@ namespace nap
 		glm::vec4								mClearColor		= { 0.0f, 0.0f, 0.0f, 1.0f };	// Window backbuffer clear color
 
 	private:
-		RenderService*							mRenderService	= nullptr;		// Render service
-		std::shared_ptr<GLWindow>				mWindow			= nullptr;		// Actual OpenGL hardware window
+		RenderService*							mRenderService	= nullptr;						// Render service
+		std::shared_ptr<GLWindow>				mWindow			= nullptr;						// Actual OpenGL hardware window
+		bool									mFullscreen		= false;						// If the window is full screen or not
 	};
 
 

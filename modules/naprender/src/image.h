@@ -39,6 +39,11 @@ namespace nap
 		 */
 		const nap::Pixmap& getPixmap() const							{ return mPixmap; }
 
+		/**
+		 *	@return the pixmap associated with this image
+		 */
+		nap::Pixmap& getPixmap()										{ return mPixmap; }
+
 	public:
 		// Path to img on disk
 		std::string				mImagePath;								///< Path to the image on disk to load

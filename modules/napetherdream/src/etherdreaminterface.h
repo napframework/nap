@@ -17,14 +17,14 @@ namespace nap
 	 */
 	struct NAPAPI EtherDreamPoint
 	{
-		int16_t X	= 0;
-		int16_t Y	= 0;
-		int16_t R	= 0;
-		int16_t G	= 0;
-		int16_t B	= 0;
-		int16_t I	= 0;
-		int16_t AL	= 0;
-		int16_t AR	= 0;
+		int16_t X	= 0;			///< Horizontal Position, extreme left = -32768; extreme right = +32767
+		int16_t Y	= 0;			///< Vertical Position, extreme bottom = -32768; extreme top = +32767
+		int16_t R	= 0;			///< Red Value, 0 = off, +32767 = red
+		int16_t G	= 0;			///< Green Value, 0 = off, +32767 = green
+		int16_t B	= 0;			///< Blue Value, 0 = off, +32767 = blue
+		int16_t I	= 0;			///< Point color number. This value is used as an index into the color palette. It isn't required to set this value
+		int16_t AL  = 0;			///< 1 = don't draw, 0 = draw. It isn't required to set this value 
+		int16_t AR  = 0;			///< Should be 1 for the last point. It is not required to set this value
 	};
 
 	/**

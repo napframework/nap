@@ -30,6 +30,8 @@ cmake_policy(SET CMP0043 NEW)
 # Allow extra Find{project}.cmake files to be found by projects
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
+set(NAP_ROOT ${CMAKE_CURRENT_LIST_DIR})
+
 include(configure.cmake)
 
 if(WIN32)
@@ -64,10 +66,8 @@ add_subdirectory(napkin)
 # executable targets
 add_subdirectory(test/render)
 add_subdirectory(test/tommy)
-add_subdirectory(test/videoplayer)
 add_subdirectory(test/serializationtest)
 add_subdirectory(test/audiotest)
-add_subdirectory(test/unittest)
 
 # app targets
 add_subdirectory(apps/kalvertoren)
@@ -75,6 +75,19 @@ add_subdirectory(apps/etherdream)
 add_subdirectory(apps/artnetcolor)
 add_subdirectory(apps/steef)
 add_subdirectory(apps/skeleton)
+
+# demo targets
+add_subdirectory(demos/helloworld)
+add_subdirectory(demos/vinyl)
+add_subdirectory(demos/multiwindow)
+add_subdirectory(demos/heightmap)
+add_subdirectory(demos/heightmap/module)
+add_subdirectory(demos/dynamicgeo)
+add_subdirectory(demos/dynamicgeo/module)
+add_subdirectory(demos/videomodulation)
+add_subdirectory(demos/videomodulation/module)
+
+add_subdirectory(unittests)
 
 if (APPLE)
     set(GENERATE_XCODE_PROJECT_TARGET generateXcodeProject)
@@ -100,12 +113,9 @@ add_subdirectory(modules/napsvg)
 add_subdirectory(modules/napapp)
 add_subdirectory(modules/napimgui)
 add_subdirectory(modules/napmidi)
+
 # Leftover components can go here for now
 add_subdirectory(modules/napsandbox)
 
 # app modules
 add_subdirectory(apps/kalvertoren/module)
-
-# Exe dependencies
-add_dependencies(rendertest mod_naprender)
-add_dependencies(napkin skeleton tommy)

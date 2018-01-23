@@ -20,11 +20,10 @@ namespace nap
 	*/
 	enum class NAPAPI EBlendMode
 	{
-		NotSet,					// Default value for MaterialInstances, means that the Material's blend mode is used instead
-
-		Opaque,					// Regular opaque, similar to (One, Zero) blend
-		AlphaBlend,				// Transparant object (SrcAlpha, InvSrcAlpha) blend
-		Additive				// Additive, (One, One) blend
+		NotSet,					///< Default value for MaterialInstances, means that the Material's blend mode is used instead
+		Opaque,					///< Regular opaque, similar to (One, Zero) blend
+		AlphaBlend,				///< Transparant object (SrcAlpha, InvSrcAlpha) blend
+		Additive				///< Additive, (One, One) blend
 	};
 
 	/**
@@ -33,13 +32,12 @@ namespace nap
 	*/
 	enum class NAPAPI EDepthMode
 	{
-		NotSet,					// Default value for MaterialInstances, means that the Material's blend is used instead
-
-		InheritFromBlendMode,	// Transparent objects do not write depth, but do read depth. Opaque objects read and write depth.
-		ReadWrite,				// Read and write depth
-		ReadOnly,				// Only read depth
-		WriteOnly,				// Only write depth
-		NoReadWrite				// Neither read or write depth
+		NotSet,					///< Default value for MaterialInstances, means that the Material's blend is used instead
+		InheritFromBlendMode,	///< Transparent objects do not write depth, but do read depth. Opaque objects read and write depth.
+		ReadWrite,				///< Read and write depth
+		ReadOnly,				///< Only read depth
+		WriteOnly,				///< Only write depth
+		NoReadWrite				///< Neither read or write depth
 	};
 
 
@@ -50,10 +48,10 @@ namespace nap
 	class NAPAPI MaterialInstanceResource
 	{
 	public:
-		std::vector<ObjectPtr<Uniform>>		mUniforms;										///< Uniforms that you're overriding
-		ObjectPtr<Material>					mMaterial;										///< Material that you're overriding uniforms from
-		EBlendMode							mBlendMode = EBlendMode::NotSet;				///< Blend mode override. By default uses material blend mode
-		EDepthMode							mDepthMode = EDepthMode::NotSet;				///< Depth mode override. By default uses material depth mode
+		std::vector<ObjectPtr<Uniform>>		mUniforms;										///< Property: "Uniforms" that you're overriding
+		ObjectPtr<Material>					mMaterial;										///< Property: "Material" that you're overriding uniforms from
+		EBlendMode							mBlendMode = EBlendMode::NotSet;				///< Property: "BlendMode" Blend mode override. By default uses material blend mode
+		EDepthMode							mDepthMode = EDepthMode::NotSet;				///< Property: "DepthMode" Depth mode override. By default uses material depth mode
 	};
 
 	/**
@@ -132,19 +130,18 @@ namespace nap
 	public:
 
 		/**
-		* Binding between mesh vertex attr and shader vertex attr
+		 * Binding between mesh vertex attr and shader vertex attr
 		*/
 		struct VertexAttributeBinding
 		{
 			VertexAttributeBinding() = default;
 
-			VertexAttributeBinding(const opengl::GPUMesh::VertexAttributeID& meshAttributeID, const opengl::Shader::VertexAttributeID& shaderAttributeID) :
+			VertexAttributeBinding(const std::string& meshAttributeID, const std::string& shaderAttributeID) :
 				mMeshAttributeID(meshAttributeID),
-				mShaderAttributeID(shaderAttributeID)
-			{
-			}
-			opengl::GPUMesh::VertexAttributeID mMeshAttributeID;
-			opengl::Shader::VertexAttributeID mShaderAttributeID;
+				mShaderAttributeID(shaderAttributeID)  {}
+
+			std::string mMeshAttributeID;
+			std::string mShaderAttributeID;
 		};
 
 		// Default constructor
@@ -174,18 +171,19 @@ namespace nap
 		/**
 		* @return Blending mode for this material
 		*/
-		EBlendMode getBlendMode() const					{ assert(mBlendMode != EBlendMode::NotSet); return mBlendMode; }
+		EBlendMode getBlendMode() const			{ assert(mBlendMode != EBlendMode::NotSet); return mBlendMode; }
 
 		/**
 		* @return Depth mode mode for this material
 		*/
-		EDepthMode getDepthMode() const { assert(mDepthMode != EDepthMode::NotSet); return mDepthMode; }
+		EDepthMode getDepthMode() const			{ assert(mDepthMode != EDepthMode::NotSet); return mDepthMode; }
+
 
 		/**
 		* Finds the mesh/shader attribute binding based on the shader attribute ID.
 		* @param shaderAttributeID: ID of the shader vertex attribute.
 		*/
-		const VertexAttributeBinding* findVertexAttributeBinding(const opengl::GPUMesh::VertexAttributeID& shaderAttributeID) const;
+		const VertexAttributeBinding* findVertexAttributeBinding(const std::string& shaderAttributeID) const;
 
 		/**
 		* @return Returns a mapping with default values for mesh attribute IDs an shader attribute IDs.
