@@ -191,11 +191,12 @@ namespace nap
 
 	bool Pixmap::init(utility::ErrorState& errorState)
 	{
-		mBitmap = opengl::Bitmap(mWidth, mHeight, getBitmapType(mType), getBitmapColorType(mChannels));
-
-		// Now allocate memory
-		if (!errorState.check(mBitmap.allocateMemory(), "unable to allocate bitmap resource: %s", mID.c_str()))
+		if (!errorState.check(mWidth > 0 && mHeight > 0, "Invalid size specified for pixmap"))
 			return false;
+
+		updateCaching();
+
+		mData.resize(getSizeInBytes());
 
 		// Store type of color
 		onInit();
@@ -209,12 +210,71 @@ namespace nap
 		if (!errorState.check(utility::fileExists(path), "unable to load image: %s, file does not exist: %s", path.c_str(), mID.c_str()))
 			return false;
 
-		// Load pixel data in to bitmap
-		if (!errorState.check(opengl::loadBitmap(mBitmap, path, errorState), "Failed to load image %s, invalid bitmap", path.c_str()))
+		// Get format
+		FREE_IMAGE_FORMAT fi_img_format = FreeImage_GetFIFFromFilename(path.c_str());
+		if (!errorState.check(fi_img_format != FIF_UNKNOWN, "Unable to determine image format of file: %s", path.c_str()))
 			return false;
 
-		// Sync
-		applySettingsFromBitmap();
+		// Load
+		FIBITMAP* fi_bitmap = FreeImage_Load(fi_img_format, path.c_str());
+		if (!errorState.check(fi_bitmap != nullptr, "Unable to load bitmap: %s", path.c_str()))
+		{
+			FreeImage_Unload(fi_bitmap);
+			return false;
+		}
+
+		// Get associated bitmap type for free image type
+		FREE_IMAGE_TYPE fi_bitmap_type = FreeImage_GetImageType(fi_bitmap);
+
+		switch (fi_bitmap_type)
+		{
+		case FIT_BITMAP:
+			mType = Pixmap::EDataType::BYTE;
+			break;
+		case FIT_UINT16:
+		case FIT_RGB16:
+		case FIT_RGBA16:
+			mType = Pixmap::EDataType::USHORT;
+			break;
+		case FIT_FLOAT:
+		case FIT_RGBF:
+		case FIT_RGBAF:
+			mType = Pixmap::EDataType::FLOAT;
+			break;
+		default:
+			errorState.fail("Can't load pixmap from file; unknown pixel format");
+			FreeImage_Unload(fi_bitmap);
+			return false;
+		}
+		
+		// Get color type
+		FREE_IMAGE_COLOR_TYPE fi_bitmap_color_type = FreeImage_GetColorType(fi_bitmap);
+
+		switch (fi_bitmap_color_type)
+		{
+		case FIC_MINISBLACK:
+			mChannels = EChannels::R;
+			break;
+		case FIC_RGB:
+			mChannels = EChannels::RGB;
+			break;
+		case FIC_RGBALPHA:
+			mChannels = EChannels::RGBA;
+			break;
+		default:
+			errorState.fail("Can't load pixmap from file; unknown pixel format");
+			FreeImage_Unload(fi_bitmap);
+			return false;
+		}
+
+		mWidth = FreeImage_GetWidth(fi_bitmap);
+		mHeight = FreeImage_GetHeight(fi_bitmap);
+
+		updateCaching();
+
+		setData(FreeImage_GetBits(fi_bitmap), FreeImage_GetPitch(fi_bitmap));
+
+		FreeImage_Unload(fi_bitmap);
 
 		// Store type of color
 		onInit();
@@ -222,9 +282,46 @@ namespace nap
 		return true;
 	}
 
+	void Pixmap::setData(uint8_t* source, unsigned int sourcePitch)
+	{
+		unsigned int target_pitch = mWidth * mChannelSize * mNumChannels;
+		assert(target_pitch <= sourcePitch);
+
+		// If the dest & source pitches are the same, we can do a straight memcpy (most common/efficient case)
+		if (target_pitch == sourcePitch)
+		{
+			memcpy(mData.data(), source, getSizeInBytes());
+			return;
+		}
+
+		// If the pitch of the source & destination buffers are different, we need to copy the image data line by line (happens for weirdly-sized images)
+		uint8_t* source_line = (uint8_t*)source;
+		uint8_t* target_line = (uint8_t*)mData.data();
+
+		// Get the amount of bytes every pixel occupies
+		int source_stride = sourcePitch / mWidth;
+		int target_stride = target_pitch / mWidth;
+
+		for (int y = 0; y < mHeight; ++y)
+		{
+			uint8_t* source_loc = source_line;
+			uint8_t* target_loc = target_line;
+			for (int x = 0; x < mWidth; ++x)
+			{
+				memcpy(target_loc, source_loc, target_stride);
+				target_loc += target_stride;
+				source_loc += source_stride;
+			}
+
+			//memcpy(dest_line, source_line, dest_pitch);
+			source_line += sourcePitch;
+			target_line += target_pitch;
+		}
+	}
+
 
 	void Pixmap::initFromTexture(const nap::BaseTexture2D& texture)
-	{
+	{/*
 		const opengl::Texture2DSettings& settings = texture.getSettings();
 
 		// Get bitmap data type
@@ -244,26 +341,32 @@ namespace nap
 		onInit();
 
 		// Now allocate
-		mBitmap.allocateMemory();
+		mBitmap.allocateMemory();*/
+	}
+
+
+	size_t Pixmap::getSizeInBytes() const
+	{
+		return mWidth * mHeight * mNumChannels * mChannelSize;
 	}
 
 
 	std::unique_ptr<nap::BaseColor> Pixmap::makePixel() const
 	{
 		BaseColor* rvalue = nullptr;
-		switch (mBitmap.getDataType())
+		switch (mType)
 		{
-		case opengl::BitmapDataType::BYTE:
+		case EDataType::BYTE:
 		{
 			rvalue = createColor<uint8>(*this);
 			break;
 		}
-		case opengl::BitmapDataType::FLOAT:
+		case EDataType::FLOAT:
 		{
 			rvalue = createColor<float>(*this);
 			break;
 		}
-		case opengl::BitmapDataType::USHORT:
+		case EDataType::USHORT:
 		{
 			rvalue = createColor<uint16>(*this);
 			break;
@@ -279,19 +382,19 @@ namespace nap
 
 	void Pixmap::getPixel(int x, int y, BaseColor& outPixel) const
 	{
-		switch (mBitmap.getDataType())
+		switch (mType)
 		{
-		case opengl::BitmapDataType::BYTE:
+		case EDataType::BYTE:
 		{
 			fill<uint8>(x, y, *this, outPixel);
 			break;
 		}
-		case opengl::BitmapDataType::FLOAT:
+		case EDataType::FLOAT:
 		{
 			fill<float>(x, y, *this, outPixel);
 			break;
 		}
-		case opengl::BitmapDataType::USHORT:
+		case EDataType::USHORT:
 		{
 			fill<uint16>(x, y, *this, outPixel);
 			break;
@@ -305,19 +408,19 @@ namespace nap
 
 	void Pixmap::setPixel(int x, int y, const BaseColor& color)
 	{
-		switch (mBitmap.getDataType())
+		switch (mType)
 		{
-		case opengl::BitmapDataType::BYTE:
+		case EDataType::BYTE:
 		{
 			setPixelData<uint8>(x, y, color);
 			break;
 		}
-		case opengl::BitmapDataType::FLOAT:
+		case EDataType::FLOAT:
 		{
 			setPixelData<float>(x, y, color);
 			break;
 		}
-		case opengl::BitmapDataType::USHORT:
+		case EDataType::USHORT:
 		{
 			setPixelData<uint16>(x, y, color);
 			break;
@@ -328,25 +431,10 @@ namespace nap
 		}
 	}
 
-
-	void Pixmap::applySettingsFromBitmap()
+	void Pixmap::updateCaching()
 	{
-		auto found_it = std::find_if(bitmapDataTypeMap.begin(), bitmapDataTypeMap.end(), [&](const auto& value)
-		{
-			return value.second == mBitmap.getDataType();
-		});
-		assert(found_it != bitmapDataTypeMap.end());
-		mType = found_it->first;
-
-		auto found_type = std::find_if(bitmapChannelMap.begin(), bitmapChannelMap.end(), [&](const auto& value)
-		{
-			return value.second == mBitmap.getColorType();
-		});
-		assert(found_type != bitmapChannelMap.end());
-		mChannels = found_type->first;
-
-		mWidth  = mBitmap.getWidth();
-		mHeight = mBitmap.getHeight();
+		mChannelSize = getSizeOf(getBitmapType(mType));
+		mNumChannels = getNumChannels(getBitmapColorType(mChannels));
 	}
 
 

@@ -83,37 +83,44 @@ namespace nap
 		 * @return if the pixmap is empty
 		 * This is the case when the bitmap has not been initialized
 		 */
-		bool empty() const													{ return !(mBitmap.hasData()); }
+		bool empty() const													{ return mData.empty(); }
 
 		/**
 		 * @return the width of the pixmap, 0 when not initialized
 		 */
-		int getWidth() const												{ return mBitmap.getWidth(); }
+		int getWidth() const												{ return mWidth; }
 
 		/**
 		 *	@return the height of the pixmap, 0 when not initialized
 		 */
-		int getHeight() const												{ return mBitmap.getHeight(); }
+		int getHeight() const												{ return mHeight; }
  
-		/**
-		 * @return the bitmap associated with this resource
-		 */
-		opengl::Bitmap& getBitmap()											{ return mBitmap; }
-
-		/**
-		 *	@return the bitmap associated with this resource
-		 */
-		const opengl::Bitmap& getBitmap() const								{ return mBitmap; }
+// 		/**
+// 		 * @return the bitmap associated with this resource
+// 		 */
+// 		opengl::Bitmap& getBitmap()											{ return mBitmap; }
+// 
+// 		/**
+// 		 *	@return the bitmap associated with this resource
+// 		 */
+// 		const opengl::Bitmap& getBitmap() const								{ return mBitmap; }
 
 		/**
 		 *	@return number of color channels associated with this pixmap
 		 */
-		int getNumberOfChannels() const										{ return mBitmap.getNumberOfChannels(); }
+		int getNumberOfChannels() const										{ return mNumChannels; }
 
 		/**
 		 * @return a pointer to the underlying data in memory
 		 */
-		void* getData()														{ return mBitmap.getData(); }
+		void* getData()														{ return mData.data(); }
+
+		/**
+		 * getSize
+		 *
+		 * Returns total number of bytes associated with this image
+		 */
+		size_t getSizeInBytes() const;
 
 		/**
 		* Creates a color that is compatible with the data stored in this pixmap
@@ -255,15 +262,12 @@ namespace nap
 		EDataType mType				= EDataType::BYTE;			///< property Type: data type of the pixels in the bitmap
 		EChannels mChannels			= EChannels::RGB;			///< property Channels: number and ordering of the channels in the bitmap
 
-	protected:
-		opengl::Bitmap mBitmap;
-
 	private:
-		/**
-		 * Helper function that ensures the pixmap settings are in sync with the settings associated with it's bitmap;
-		 */
-		void applySettingsFromBitmap();
-		
+		void updateCaching();
+
+		void setData(uint8_t* source, unsigned int sourcePitch);
+
+	
 		/**
 		 * Figures out this bitmap's type of color and stores it for further use
 		 */
@@ -350,6 +354,11 @@ namespace nap
 
 		rtti::TypeInfo mColorType = rtti::TypeInfo::empty();	///< Type of color associated with this pixmap (RGBA8, R16 etc.)
 		rtti::TypeInfo mValueType = rtti::TypeInfo::empty();	///< Contained value type of the color (byte, float etc.)
+
+	private:
+		std::vector<uint8_t> mData;
+		size_t			mChannelSize;			///< Cached size in bytes of a single channel. This is updated when setSettings is called.
+		uint8_t			mNumChannels;			///< Cached number of channels. This is updated when setSettings is called.
 	};
 
 	/**
