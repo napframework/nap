@@ -131,7 +131,8 @@ namespace nap
 	{
 		if (pixmap.empty())
 			pixmap.initFromTexture(*this);
-		mTexture.getData(pixmap.getBitmap());
+
+		mTexture.getData(pixmap.getBitmap().getData(), pixmap.getBitmap().getSize());
 	}
 
 
@@ -145,7 +146,8 @@ namespace nap
 	{
 		if (pixmap.empty())
 			pixmap.initFromTexture(*this);
-		mTexture.asyncEndGetData(pixmap.getBitmap());
+
+		mTexture.getData(pixmap.getBitmap().getData(), pixmap.getBitmap().getSize());
 	}
 
 

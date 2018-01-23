@@ -1,8 +1,7 @@
 #include "indexmap.h"
 
 // External Includes
-#include <nbitmaputils.h>
-#include <ntextureutils.h>
+#include <bitmaputils.h>
 #include <utility/fileutils.h>
 #include <texture2d.h>
 

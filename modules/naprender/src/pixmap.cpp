@@ -1,7 +1,7 @@
 #include "pixmap.h"
 
 // External includes
-#include <nbitmaputils.h>
+#include <bitmaputils.h>
 #include <utility/fileutils.h>
 #include <rtti/typeinfo.h>
 #include <basetexture2d.h>

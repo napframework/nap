@@ -1,8 +1,7 @@
 // Local Includes
 #include "image.h"
-#include "nbitmap.h"
-#include "nbitmaputils.h"
-#include "ntextureutils.h"
+#include "bitmap.h"
+#include "bitmaputils.h"
 
 // External Includes
 #include <nap/logger.h>

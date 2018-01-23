@@ -1,8 +1,8 @@
 #include "imagelayer.h"
 
 // External includes
-#include <ntextureutils.h>
 #include "image.h"
+#include "bitmaputils.h"
 
 RTTI_BEGIN_CLASS(nap::ImageLayer)
 	RTTI_PROPERTY("Path", &nap::ImageLayer::mImagePath, nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::FileLink)

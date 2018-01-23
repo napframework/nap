@@ -1,8 +1,7 @@
 #include "ledcolorpalette.h"
 
 #include <utility/fileutils.h>
-#include <nbitmaputils.h>
-#include <ntextureutils.h>
+#include <bitmaputils.h>
 #include <pixmap.h>
 
 // nap::ledcolorpalette run time class definition 

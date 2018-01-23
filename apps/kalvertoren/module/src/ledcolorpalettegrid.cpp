@@ -1,8 +1,7 @@
 #include "ledcolorpalettegrid.h"
 
 #include <utility/fileutils.h>
-#include <nbitmaputils.h>
-#include <ntextureutils.h>
+#include <bitmaputils.h>
 #include <fstream>
 
 RTTI_BEGIN_CLASS(nap::WeekColors)

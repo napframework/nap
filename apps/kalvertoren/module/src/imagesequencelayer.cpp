@@ -1,9 +1,9 @@
 #include "imagesequencelayer.h"
 
 // External includes
-#include <ntextureutils.h>
 #include "image.h"
 #include <utility/fileutils.h>
+#include "bitmaputils.h"
 
 RTTI_BEGIN_CLASS(nap::ImageSequenceLayer)
 	RTTI_PROPERTY("BaseFilename",	&nap::ImageSequenceLayer::mBaseFilename,	nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::Embedded)

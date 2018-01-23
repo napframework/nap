@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <vector>
 #include <assert.h>
+#include "utility/dllexport.h"
 
 namespace opengl
 {
@@ -41,7 +42,7 @@ namespace opengl
 	/**
 	 * Settings associated with a bitmap
 	 */
-	struct BitmapSettings
+	struct NAPAPI BitmapSettings
 	{
 		// Constructor / Destructor = default
 		BitmapSettings()  = default;
@@ -75,7 +76,7 @@ namespace opengl
 	 * The bitmap does not own the data, it acts as a container
 	 * Derived classes or external code needs to manage the life time of associated data
 	 */
-	class Bitmap final
+	class NAPAPI Bitmap final
 	{
 	public:
 		// Constructor
