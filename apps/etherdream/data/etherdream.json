@@ -83,13 +83,13 @@
 		{
 			"Type" : "nap::Image",
 			"mID" : "CanvasImage",
-			"ImagePath" : "data/etherdream/laser_canvas.png"
+			"ImagePath" : "laser_canvas.png"
 		},
 
 		{
 			"Type" : "nap::Image",
 			"mID" : "ColorLookupImage",
-			"ImagePath" : "data/etherdream/kleurencirkel.png"
+			"ImagePath" : "kleurencirkel.png"
 		},
 
 		{
@@ -105,7 +105,7 @@
 		{
 			"Type" : "nap::LineFromFile",
 			"mID": "LineFromFile1",
-			"File" : "./data/etherdream/1.svg",
+			"File" : "1.svg",
 			"Tolerance" : 0.05,
 			"Units" : "mm",
 			"Normalize" : true,
@@ -117,7 +117,7 @@
 		{
 			"Type" : "nap::LineFromFile",
 			"mID": "LineFromFile2",
-			"File" : "./data/etherdream/2.svg",
+			"File" : "2.svg",
 			"Tolerance" : 0.05,
 			"Units" : "mm",
 			"Normalize" : true,
@@ -129,7 +129,7 @@
 		{
 			"Type" : "nap::LineFromFile",
 			"mID": "LineFromFile3",
-			"File" : "./data/etherdream/3.svg",
+			"File" : "3.svg",
 			"Tolerance" : 0.05,
 			"Units" : "mm",
 			"Normalize" : true,
@@ -141,7 +141,7 @@
 		{
 			"Type" : "nap::LineFromFile",
 			"mID": "LineFromFile4",
-			"File" : "./data/etherdream/4.svg",
+			"File" : "4.svg",
 			"Tolerance" : 0.05,
 			"Units" : "mm",
 			"Normalize" : true,
@@ -153,7 +153,7 @@
 		{
 			"Type" : "nap::LineFromFile",
 			"mID": "LineFromFile5",
-			"File" : "./data/etherdream/5.svg",
+			"File" : "5.svg",
 			"Tolerance" : 0.05,
 			"Units" : "mm",
 			"Normalize" : true,
@@ -165,7 +165,7 @@
 			{
 			"Type" : "nap::LineFromFile",
 			"mID": "LineFromFile6",
-			"File" : "./data/etherdream/6.svg",
+			"File" : "6.svg",
 			"Tolerance" : 0.05,
 			"Units" : "mm",
 			"Normalize" : true,
@@ -177,7 +177,7 @@
 			{
 			"Type" : "nap::LineFromFile",
 			"mID": "LineFromFile7",
-			"File" : "./data/etherdream/7.svg",
+			"File" : "7.svg",
 			"Tolerance" : 0.05,
 			"Units" : "mm",
 			"Normalize" : true,
@@ -189,7 +189,7 @@
 		{
 			"Type" : "nap::LineFromFile",
 			"mID": "LineFromFile8",
-			"File" : "./data/etherdream/8.svg",
+			"File" : "8.svg",
 			"Tolerance" : 0.05,
 			"Units" : "mm",
 			"Normalize" : true,
@@ -201,7 +201,7 @@
 			{
 			"Type" : "nap::LineFromFile",
 			"mID": "LineFromFile9",
-			"File" : "./data/etherdream/9.svg",
+			"File" : "9.svg",
 			"Tolerance" : 0.05,
 			"Units" : "mm",
 			"Normalize" : true,

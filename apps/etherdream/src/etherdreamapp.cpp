@@ -35,7 +35,7 @@ namespace nap
 		mResourceManager = getCore().getResourceManager();
 
 		// Load scene
-		if (!mResourceManager->loadFile("data/etherdream/etherdream.json", error)) 
+		if (!mResourceManager->loadFile("etherdream.json", error)) 
 			return false;    
 
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");

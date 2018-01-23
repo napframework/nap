@@ -32,7 +32,8 @@ namespace nap
 		
 		// Get resource manager service
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("data/tommy/tommy.json", error))
+		
+		if (!mResourceManager->loadFile("tommy.json", error))
 			return false;
 		
 		mScene = mResourceManager->findObject<Scene>("Scene");

@@ -144,7 +144,7 @@
 		{
 			"Type" : "nap::Image",
 			"mID" : "ParticleOne",
-			"ImagePath" : "data/dynamicgeometrytest/texture_one.jpg",
+			"ImagePath" : "texture_one.jpg",
 			"Parameters" : 
 			{
 				"MaxFilter" : "Linear",		
@@ -158,7 +158,7 @@
 		{
 			"Type" : "nap::Image",
 			"mID" : "ParticleTwo",
-			"ImagePath" : "data/dynamicgeometrytest/texture_two.png",
+			"ImagePath" : "texture_two.png",
 			"Parameters" : {
 				"MaxFilter" : "Linear",		
 				"MinFilter" : "LinearMipmapLinear",		

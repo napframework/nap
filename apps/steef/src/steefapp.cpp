@@ -25,7 +25,7 @@ namespace nap
 		
 		// Get resource manager and load
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("data/steef/objects.json", error))
+		if (!mResourceManager->loadFile("objects.json", error))
 		{
 			assert(false);
 			return false;
