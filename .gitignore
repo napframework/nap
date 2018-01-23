@@ -56,3 +56,4 @@ nap.sublime-workspace
 docs/html
 docs/latex
 !/docs/doxygen/bin
+imgui.ini
