@@ -75,28 +75,22 @@ namespace opengl
 	 * The bitmap does not own the data, it acts as a container
 	 * Derived classes or external code needs to manage the life time of associated data
 	 */
-	class BitmapBase
+	class Bitmap final
 	{
 	public:
 		// Constructor
-		BitmapBase() = default;
-		BitmapBase(const BitmapSettings& settings) : mSettings(settings)	{ }
+		Bitmap() = default;
+		Bitmap(const BitmapSettings& settings) : mSettings(settings)	{ }
 
 		// Destructor
-		virtual ~BitmapBase() = default;
+		~Bitmap()
+		{
+			clear();
+		}
 
 		// Copy is allowed
-		BitmapBase(const BitmapBase& other);
-		BitmapBase& operator=(const BitmapBase& other);
-
-		/**
-		 * setData
-		 * 
-		 * Set data without allocating memory
-		 * Settings need to match data size container
-		 */
-		virtual void setData(const BitmapSettings& settings, void* data);
-		virtual void setData(void* data)					{ mData = data; }
+		Bitmap(const Bitmap& other);
+		Bitmap& operator=(const Bitmap& other);
 
 		/**
 		 * getData
@@ -145,7 +139,7 @@ namespace opengl
 		 * Removes data references associated with this bitmap
 		 * Does NOT delete the data, that's up to external code that allocated the resources
 		 */
-		virtual void clear()								{ mData = nullptr; }
+		void clear();
 
 		/**
 		 * getSize
@@ -219,66 +213,6 @@ namespace opengl
 		 */
 		uint8_t getChannelSize() const						{ return mChannelSize; }
 
-	protected:
-		void*			mData = nullptr;
-
-	private:
-		BitmapSettings	mSettings;
-		size_t			mChannelSize;			///< Cached size in bytes of a single channel. This is updated when setSettings is called.
-		uint8_t			mNumChannels;			///< Cached number of channels. This is updated when setSettings is called.
-	};
-
-
-	//////////////////////////////////////////////////////////////////////////
-	// Global Functions
-	//////////////////////////////////////////////////////////////////////////
-
-	/**
-	 * getSizeOf
-	 *
-	 * Returns the size in bytes of the associated bitmap type
-	 */ 
-	size_t getSizeOf(const BitmapDataType& type);
-
-	/**
-	 * getNumChannels
-	 *
-	 * Returns the number of channels associated with a certain bitmap color type
-	 */
-	uint8_t getNumChannels(const BitmapColorType& color);
-
-
-	//////////////////////////////////////////////////////////////////////////
-	// Typed Bitmap
-	//////////////////////////////////////////////////////////////////////////
-
-	/**
-	 * Bitmap
-	 *
-	 * Specialization of BitmapBase
-	 * Manages it's own memory and offers copy and allocate functionality
-	 * Note that when setting data using setData that data will be considered
-	 * to be owned by this object, thus deleted.
-	 * if you want t a generic Bitmap that does not manage it's resources, use BitmapBase
-	 */
-	class Bitmap : public BitmapBase
-	{
-	public:
-		// Constructor
-		Bitmap();
-		Bitmap(const BitmapSettings& settings) : BitmapBase::BitmapBase(settings)	{ }
-
-		// Destructor
-		~Bitmap();
-
-		/**
-		 * copy overloads
-		 *
-		 * Copy over data if the other bitmap has data
-		 */
-		Bitmap(const Bitmap& other);
-		Bitmap& operator=(const Bitmap& other);
-
 		/**
 		* allocateMemory
 		* Allocates memory based on the current bitmap settings
@@ -314,13 +248,31 @@ namespace opengl
 		*/
 		bool copyData(unsigned int width, unsigned int height, BitmapDataType dataType, BitmapColorType colorType, void* source, unsigned int sourcePitch);
 
-		/**
-		* clearData
-		*
-		* Frees the memory associated with this bitmap
-		*/
-		virtual void clear() override;
+	protected:
+		void*			mData = nullptr;
+		BitmapSettings	mSettings;
+		size_t			mChannelSize;			///< Cached size in bytes of a single channel. This is updated when setSettings is called.
+		uint8_t			mNumChannels;			///< Cached number of channels. This is updated when setSettings is called.
 	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Global Functions
+	//////////////////////////////////////////////////////////////////////////
+
+		/**
+	 * getSizeOf
+		*
+	 * Returns the size in bytes of the associated bitmap type
+		*/
+	size_t getSizeOf(const BitmapDataType& type);
+
+	/**
+	 * getNumChannels
+	 *
+	 * Returns the number of channels associated with a certain bitmap color type
+	 */
+	uint8_t getNumChannels(const BitmapColorType& color);
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -328,7 +280,7 @@ namespace opengl
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	T* opengl::BitmapBase::getPixel(unsigned int x, unsigned int y) const
+	T* opengl::Bitmap::getPixel(unsigned int x, unsigned int y) const
 	{
 		assert(sizeof(T) == mChannelSize);
 		return (T*)(getPixelData(x, y));
