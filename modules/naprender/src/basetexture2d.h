@@ -65,15 +65,15 @@ namespace nap
 		 */
 		void init(const opengl::Texture2DSettings& settings);
 
-		/**
-		 * @return OpenGL Texture2D.
-		 */
-		const opengl::Texture2D& getTexture() const { return mTexture; }
-
-		/**
-		* @return OpenGL Texture2D.
-		*/
-		opengl::Texture2D& getTexture() { return mTexture; }
+// 		/**
+// 		 * @return OpenGL Texture2D.
+// 		 */
+// 		const opengl::Texture2D& getTexture() const { return mTexture; }
+// 
+// 		/**
+// 		* @return OpenGL Texture2D.
+// 		*/
+// 		opengl::Texture2D& getTexture() { return mTexture; }
 
 		/**
 		 * @return size of the texture, in texels.
@@ -97,6 +97,11 @@ namespace nap
 		 * @param pixmap the pixmap that is filled with the data in this texture
 		 */
 		void getData(Pixmap& pixmap);
+
+		void setData(Pixmap& pixmap);
+		void setData(void* data);
+
+		const opengl::Texture2DSettings& getSettings() const;
 
 		/**
 		 * Starts a transfer of texture data from GPU to CPU. This is a non blocking call.
@@ -127,6 +132,7 @@ namespace nap
 		opengl::ETextureUsage		mUsage = opengl::ETextureUsage::Static;	// The usage of this texture
 
 	private:
+		friend class RenderTarget;
 		opengl::Texture2D			mTexture;			// Internal opengl texture
 	};
 }
