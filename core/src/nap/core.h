@@ -50,8 +50,7 @@ namespace nap
 		/**
 		 * Loads all modules in to the core environment and creates all the associated services
 		 * @param error contains the error code when initialization fails
-		 * @param forcedDataPath TODO If true we're being used in a non-project context which impacts
-		 *        our data path initialisation
+		 * @param forcedDataPath optionally overwrite the project data detection, using specified path instead
 		 * @return if initialization succeeded
 		 */
 		bool initializeEngine(utility::ErrorState& error, std::string forcedDataPath="");
