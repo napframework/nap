@@ -323,7 +323,7 @@ namespace opengl
 	// Helper function to check bitmap validity
 	bool checkBitmap(const Bitmap& bitmap)
 	{
-		if (!bitmap.hasValidSettings())
+		if (!bitmap.isValid())
 		{
 			printMessage(MessageType::ERROR, "unable to set texture from bitmap, invalid bitmap settings");
 			return false;

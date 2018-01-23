@@ -67,10 +67,25 @@ namespace opengl
 
 	//////////////////////////////////////////////////////////////////////////
 
-	// Copy Constructor
-	Bitmap::Bitmap(const Bitmap& other)
+	Bitmap::Bitmap(unsigned int width, unsigned int height, BitmapDataType dataType, BitmapColorType colorType) :
+		mWidth(width),
+		mHeight(height),
+		mDataType(dataType),
+		mColorType(colorType)
 	{
-		setSettings(other.getSettings());
+		updateCaching();
+	}
+
+
+	// Copy Constructor
+	Bitmap::Bitmap(const Bitmap& other) :
+		mWidth(other.mWidth),
+		mHeight(other.mHeight),
+		mDataType(other.mDataType),
+		mColorType(other.mColorType),
+		mChannelSize(other.mChannelSize),
+		mNumChannels(other.mNumChannels)
+	{
 		copyData(other.getData());
 	}
 
@@ -78,30 +93,41 @@ namespace opengl
 	// Copy operator
 	Bitmap& Bitmap::operator=(const Bitmap& other)
 	{
-		setSettings(other.getSettings());
-		copyData(other.getData());
+		if (this != &other)
+		{
+			mWidth = other.mWidth;
+			mHeight = other.mHeight;
+			mDataType = other.mDataType;
+			mColorType = other.mColorType;
+			mChannelSize = other.mChannelSize;
+			mNumChannels = other.mNumChannels;
+
+			if (other.hasData())
+				copyData(other.getData());
+			else
+				clear();
+		}
 		return *this;
 	}
 
 	// Returns the total number of bytes associated with this image
 	size_t Bitmap::getSize()
 	{
-		return mSettings.mWidth * mSettings.mHeight * getSizeOf(mSettings.mDataType) * getNumChannels(mSettings.mColorType);
+		return mWidth * mHeight * mNumChannels * mChannelSize;
 	}
 
 
-	void Bitmap::setSettings(const BitmapSettings& settings)
+	void Bitmap::updateCaching()
 	{
-		mSettings = settings;
-		mChannelSize = getSizeOf(mSettings.mDataType);
-		mNumChannels = getNumChannels(mSettings.mColorType);
+		mChannelSize = getSizeOf(mDataType);
+		mNumChannels = getNumChannels(mColorType);
 	}
 
 
 	// Returns the total length of the pixel array, not scaled by type size
 	size_t Bitmap::getLength()
 	{
-		return mSettings.mWidth * mSettings.mHeight * getNumChannels(mSettings.mColorType);
+		return mWidth * mHeight * mNumChannels;
 	}
 
 
@@ -110,11 +136,11 @@ namespace opengl
 		if (!hasData())
 			return nullptr;
 
-		if (x >= mSettings.mWidth || y >= mSettings.mHeight)
+		if (x >= mWidth || y >= mHeight)
 			return nullptr;
 
 		// Get index in to array offset by number of channels (pixel level)
-		unsigned int offset = ((y * mSettings.mWidth) + x) * mNumChannels * mChannelSize;
+		unsigned int offset = ((y * mWidth) + x) * mNumChannels * mChannelSize;
 
 		// Update offset (pixel * num_channels * data_size
 		unsigned char* data_ptr = (unsigned char*)(mData) + offset;
@@ -123,7 +149,7 @@ namespace opengl
 
 
 	// If the bitmap settings are valid
-	bool BitmapSettings::isValid() const
+	bool Bitmap::isValid() const
 	{
 		bool has_size = (mWidth > 0 && mHeight > 0);
 		return has_size && mDataType != BitmapDataType::UNKNOWN && 
@@ -135,7 +161,7 @@ namespace opengl
 	bool Bitmap::allocateMemory()
 	{
 		// Ensure settings are valid
-		if (!getSettings().isValid())
+		if (!isValid())
 		{
 			opengl::printMessage(MessageType::ERROR, "unable to allocate memory, bitmap settings are invalid");
 			return false;
@@ -157,15 +183,17 @@ namespace opengl
 	//Allocates memory based on incoming parameters
 	bool Bitmap::allocateMemory(unsigned int width, unsigned int height, BitmapDataType dataType, BitmapColorType colorType)
 	{
-		BitmapSettings new_settings(width, height, dataType, colorType);
-		if (!new_settings.isValid())
+		mWidth = width;
+		mHeight = height;
+		mDataType = dataType;
+		mColorType = colorType;
+		updateCaching();
+
+		if (!isValid())
 		{
 			printMessage(MessageType::ERROR, "can't allocate bitmap memory, invalid settings provided");
 			return false;
 		}
-
-		// Copy settings
-		setSettings(new_settings);
 
 		// Allocate memory
 		return allocateMemory();
@@ -189,7 +217,7 @@ namespace opengl
 	bool Bitmap::copyData(void* source)
 	{
 		// Make sure settings are valid
-		if (!getSettings().isValid())
+		if (!isValid())
 		{
 			printMessage(MessageType::ERROR, "can't copy pixel data, invalid bitmap settings");
 			return false;
@@ -211,15 +239,17 @@ namespace opengl
 	// Copies data over in to this bitmap
 	bool Bitmap::copyData(unsigned int width, unsigned int height, BitmapDataType dataType, BitmapColorType colorType, void* source, unsigned int sourcePitch)
 	{
-		BitmapSettings new_settings(width, height, dataType, colorType);
-		if (!new_settings.isValid())
+		mWidth = width;
+		mHeight = height;
+		mDataType = dataType;
+		mColorType = colorType;
+		updateCaching();
+
+		if (!isValid())
 		{
 			printMessage(MessageType::ERROR, "can't copy bitmap data, invalid bitmap settings");
 			return false;
 		}
-		
-		// Copy settings
-		setSettings(new_settings);
 
 		// Clear associated data
 		if (hasData())

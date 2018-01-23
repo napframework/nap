@@ -185,25 +185,13 @@ static nap::BaseColor* createColorData(const nap::Pixmap& map, int x, int y)
 }
 
 
-static void convertPixmapSettings(const nap::Pixmap& resource, opengl::BitmapSettings& settings)
-{
-	settings.mDataType  = getBitmapType(resource.mType);
-	settings.mColorType = getBitmapColorType(resource.mChannels);
-	settings.mWidth = resource.mWidth;
-	settings.mHeight = resource.mHeight;
-}
-
-
 namespace nap
 {
 	Pixmap::~Pixmap()			{ }
 
 	bool Pixmap::init(utility::ErrorState& errorState)
 	{
-		// Create the settings we need to load the bitmap
-		opengl::BitmapSettings settings;
-		convertPixmapSettings(*this, settings);
-		mBitmap.setSettings(settings);
+		mBitmap = opengl::Bitmap(mWidth, mHeight, getBitmapType(mType), getBitmapColorType(mChannels));
 
 		// Now allocate memory
 		if (!errorState.check(mBitmap.allocateMemory(), "unable to allocate bitmap resource: %s", mID.c_str()))
@@ -247,8 +235,7 @@ namespace nap
 		opengl::BitmapColorType color_type = opengl::getColorType(settings.mFormat);
 		assert(color_type != opengl::BitmapColorType::UNKNOWN);
 
-		// Apply new settings
-		mBitmap.setSettings(opengl::BitmapSettings(texture.getWidth(), texture.getHeight(), bitmap_type, color_type));
+		mBitmap = opengl::Bitmap(texture.getWidth(), texture.getHeight(), bitmap_type, color_type);
 
 		// Sync
 		applySettingsFromBitmap();
