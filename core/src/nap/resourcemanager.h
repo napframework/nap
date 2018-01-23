@@ -11,7 +11,6 @@
 // External Includes
 #include <rtti/unresolvedpointer.h>
 #include <rtti/factory.h>
-#include <rtti/jsonreader.h>
 #include <map>
 
 namespace nap
