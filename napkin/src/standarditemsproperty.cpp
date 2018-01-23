@@ -1,18 +1,20 @@
 #include "commands.h"
+
 #include "napkinglobals.h"
-#include <generic/utility.h>
+#include "generic/qtutils.h"
+#include "generic/naputils.h"
 #include "standarditemsproperty.h"
 #include "standarditemsgeneric.h"
+#include "appcontext.h"
 
 
-QList<QStandardItem*> napkin::createPropertyItemRow(rttr::type type, const QString& name, nap::rtti::RTTIObject* object,
-													const nap::rtti::RTTIPath& path, rttr::property prop,
-													rttr::variant value)
+QList<QStandardItem*> napkin::createPropertyItemRow(rttr::type type, const QString& name, const PropertyPath& path,
+													rttr::property prop, rttr::variant value)
 {
 	QList<QStandardItem*> items;
 	if (type.is_array())
 	{
-		items << new ArrayPropertyItem(name, object, path, prop, value.create_array_view());
+		items << new ArrayPropertyItem(name, path, prop, value.create_array_view());
 		items << new EmptyItem();
 		items << new RTTITypeItem(type);
 	}
@@ -25,27 +27,27 @@ QList<QStandardItem*> napkin::createPropertyItemRow(rttr::type type, const QStri
 	{
 		if (nap::rtti::hasFlag(prop, nap::rtti::EPropertyMetaData::Embedded))
 		{
-			items << new EmbeddedPointerItem(name, object, path);
+			items << new EmbeddedPointerItem(name, path);
 			items << new EmptyItem();
 			items << new RTTITypeItem(type);
 		}
 		else
 		{
-			items << new PointerItem(name, object, path);
-			items << new PointerValueItem(object, path, type);
+			items << new PointerItem(name, path);
+			items << new PointerValueItem(path, type);
 			items << new RTTITypeItem(type);
 		}
 	}
 	else if (nap::rtti::isPrimitive(type))
 	{
-		items << new PropertyItem(name, object, path);
-		items << new PropertyValueItem(name, object, path, type);
+		items << new PropertyItem(name, path);
+		items << new PropertyValueItem(name, path, type);
 		items << new RTTITypeItem(type);
 	}
 	else
 	{
         // Assuming leftovers are compounds
-		items << new CompoundPropertyItem(name, object, path);
+		items << new CompoundPropertyItem(name, path);
 		items << new EmptyItem();
 		items << new RTTITypeItem(prop.get_type());
 	}
@@ -54,19 +56,12 @@ QList<QStandardItem*> napkin::createPropertyItemRow(rttr::type type, const QStri
 
 
 
-napkin::BaseRTTIPathItem::BaseRTTIPathItem(const QString& name, nap::rtti::RTTIObject* object, const nap::rtti::RTTIPath& path)
-	: QStandardItem(name), mObject(object), mPath(path)
+napkin::BaseRTTIPathItem::BaseRTTIPathItem(const QString& name, const PropertyPath& path)
+	: QStandardItem(name), mPath(path)
 {
-	nap::rtti::ResolvedRTTIPath resolved;
-	assert(path.resolve(object, resolved));
-	assert(mObject);
-}
-
-nap::rtti::ResolvedRTTIPath napkin::BaseRTTIPathItem::resolvePath()
-{
-	nap::rtti::ResolvedRTTIPath resolvedPath;
-	assert(mPath.resolve(mObject, resolvedPath));
-	return resolvedPath;
+//	auto txt = text();
+//	nap::Logger::info(txt.toStdString());
+//	setText(txt);
 }
 
 int napkin::BaseRTTIPathItem::type() const
@@ -74,8 +69,8 @@ int napkin::BaseRTTIPathItem::type() const
 	return UserType + StandardItemTypeID::RTTIPathID;
 }
 
-napkin::PropertyItem::PropertyItem(const QString& name, nap::rtti::RTTIObject* object, const nap::rtti::RTTIPath& path)
-	: BaseRTTIPathItem(name, object, path)
+napkin::PropertyItem::PropertyItem(const QString& name, const PropertyPath& path)
+	: BaseRTTIPathItem(name, path)
 {
 	setEditable(false);
 	setForeground(napkin::getSoftForeground());
@@ -88,7 +83,7 @@ int napkin::PropertyItem::type() const
 
 void napkin::CompoundPropertyItem::populateChildren()
 {
-	auto resolved = resolvePath();
+	auto resolved = mPath.resolve();
 	auto compound = resolved.getValue();
 
 	for (auto childprop : compound.get_type().get_properties())
@@ -97,17 +92,14 @@ void napkin::CompoundPropertyItem::populateChildren()
 		std::string name = childprop.get_name().data();
 		QString qName = QString::fromStdString(name);
 
-		nap::rtti::RTTIPath path = mPath;
-		path.pushAttribute(name);
 		auto wrappedType = value.get_type().is_wrapper() ? value.get_type().get_wrapped_type() : value.get_type();
 
-		appendRow(createPropertyItemRow(wrappedType, qName, mObject, path, childprop, value));
+		appendRow(createPropertyItemRow(wrappedType, qName, mPath.getChild(name), childprop, value));
 	}
 }
 
-napkin::CompoundPropertyItem::CompoundPropertyItem(const QString& name, nap::rtti::RTTIObject* object,
-												   const nap::rtti::RTTIPath& path)
-	: BaseRTTIPathItem(name, object, path)
+napkin::CompoundPropertyItem::CompoundPropertyItem(const QString& name, const PropertyPath& path)
+	: BaseRTTIPathItem(name, path)
 {
 	setForeground(napkin::getSoftForeground());
 	populateChildren();
@@ -127,24 +119,24 @@ void napkin::ArrayPropertyItem::populateChildren()
 
 		auto name = QString("%1").arg(i);
 
-		nap::rtti::RTTIPath path = mPath;
+		nap::rtti::RTTIPath path = mPath.path();
 		path.pushArrayElement(i);
 
-        auto property = resolvePath().getProperty();
+        auto property = mPath.resolve().getProperty();
 		auto value = array.get_value(i);
 		auto type = array.get_rank_type(array.get_rank());
 		auto wrappedType = type.is_wrapper() ? type.get_wrapped_type() : value.get_type();
 
-		appendRow(createPropertyItemRow(wrappedType, name, mObject, path, property, value));
+		appendRow(createPropertyItemRow(wrappedType, name, {mPath.object(), path}, property,
+										value));
 	}
 }
 
-napkin::ArrayPropertyItem::ArrayPropertyItem(const QString& name, nap::rtti::RTTIObject* object,
-											 const nap::rtti::RTTIPath& path, rttr::property prop,
+napkin::ArrayPropertyItem::ArrayPropertyItem(const QString& name, const PropertyPath& path, rttr::property prop,
 											 rttr::variant_array_view array)
-	: BaseRTTIPathItem(name, object, path), mProperty(prop), mArray(array)
+	: BaseRTTIPathItem(name, path), mProperty(prop), mArray(array)
 {
-	std::string pathStr = path.toString();
+	std::string pathStr = path.path().toString();
 	populateChildren();
 	setForeground(napkin::getSoftForeground());
 }
@@ -154,8 +146,8 @@ int napkin::ArrayPropertyItem::type() const
 	return UserType + StandardItemTypeID::ArrayPropertyID;
 }
 
-napkin::PointerItem::PointerItem(const QString& name, nap::rtti::RTTIObject* object, const nap::rtti::RTTIPath path)
-	: BaseRTTIPathItem(name, object, path)
+napkin::PointerItem::PointerItem(const QString& name, const PropertyPath& path)
+	: BaseRTTIPathItem(name, path)
 {
 	setForeground(napkin::getSoftForeground());
 }
@@ -169,35 +161,40 @@ QVariant napkin::PointerValueItem::data(int role) const
 {
 	if (role == Qt::DisplayRole || role == Qt::EditRole)
 	{
-		nap::rtti::ResolvedRTTIPath resolvedPath;
-		assert(mPath.resolve(mObject, resolvedPath));
-		auto value = resolvedPath.getValue();
-		auto value_type = value.get_type();
-		auto wrapped_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
-		bool is_wrapper = wrapped_type != value_type;
-		nap::rtti::RTTIObject* pointee = is_wrapper ? value.extract_wrapped_value().get_value<nap::rtti::RTTIObject*>()
-													: value.get_value<nap::rtti::RTTIObject*>();
+		nap::rtti::RTTIObject* pointee = getPointee(mPath);
 
 		if (nullptr != pointee)
 			return QString::fromStdString(pointee->mID);
 		else
 			return "NULL";
 	}
+	else if (role == Qt::UserRole)
+	{
+		return QVariant::fromValue(mPath);
+	}
 	return QStandardItem::data(role);
 }
 
-napkin::PointerValueItem::PointerValueItem(nap::rtti::RTTIObject* object, const nap::rtti::RTTIPath path,
-										   rttr::type valueType)
-	: QStandardItem(), mObject(object), mPath(path), mValueType(valueType)
+void napkin::PointerValueItem::setData(const QVariant& value, int role)
 {
-	setForeground(Qt::darkCyan);
-	nap::rtti::ResolvedRTTIPath resolved;
-	assert(path.resolve(object, resolved));
+	if (role == Qt::EditRole) 
+	{
+		nap::rtti::RTTIObject* new_target = AppContext::get().getDocument()->getObject(value.toString().toStdString());
+		if (new_target == nullptr)
+			return;
+
+		napkin::AppContext::get().executeCommand(new SetPointerValueCommand(mPath, new_target));
+	} 
+	else 
+	{
+		QStandardItem::setData(value, role);
+	}
 }
 
-rttr::type napkin::PointerValueItem::getValueType()
+napkin::PointerValueItem::PointerValueItem(const PropertyPath& path, rttr::type valueType)
+	: QStandardItem(), mPath(path), mValueType(valueType)
 {
-	return mValueType;
+	setForeground(Qt::darkCyan);
 }
 
 int napkin::PointerValueItem::type() const
@@ -205,16 +202,12 @@ int napkin::PointerValueItem::type() const
 	return UserType + StandardItemTypeID::PointerValueID;
 }
 
-void napkin::PointerValueItem::setData(const QVariant& value, int role)
-{
-	QStandardItem::setData(value, role);
-}
-
 void napkin::EmbeddedPointerItem::populateChildren()
 {
 	// First resolve the pointee, after that behave like compound
-	nap::rtti::ResolvedRTTIPath resolvedPath;
-	assert(mPath.resolve(mObject, resolvedPath));
+	nap::rtti::ResolvedRTTIPath resolvedPath = mPath.resolve();
+
+	assert(resolvedPath.isValid());
 	auto value = resolvedPath.getValue();
 
 	auto value_type = value.get_type();
@@ -227,7 +220,6 @@ void napkin::EmbeddedPointerItem::populateChildren()
 		assert(false); // Embedded pointer always has a target?
 		return;
 	}
-
 
 	auto object = pointee;
 
@@ -244,13 +236,13 @@ void napkin::EmbeddedPointerItem::populateChildren()
 			childValue.get_type().is_wrapper() ? childValue.get_type().get_wrapped_type() : childValue.get_type();
 
 
-		appendRow(createPropertyItemRow(wrappedType, qName, object, path, childprop, childValue));
+		appendRow(createPropertyItemRow(wrappedType, qName, {*object, path}, childprop,
+										childValue));
 	}
 }
 
-napkin::EmbeddedPointerItem::EmbeddedPointerItem(const QString& name, nap::rtti::RTTIObject* object,
-												 nap::rtti::RTTIPath path)
-	: BaseRTTIPathItem(name, object, path)
+napkin::EmbeddedPointerItem::EmbeddedPointerItem(const QString& name, const PropertyPath& path)
+	: BaseRTTIPathItem(name, path)
 {
 	populateChildren();
 }
@@ -265,8 +257,8 @@ QVariant napkin::PropertyValueItem::data(int role) const
 
 	if (role == Qt::DisplayRole || role == Qt::EditRole)
 	{
-		nap::rtti::ResolvedRTTIPath resolvedPath;
-		assert(mPath.resolve(mObject, resolvedPath));
+		nap::rtti::ResolvedRTTIPath resolvedPath = mPath.resolve();
+		assert(resolvedPath.isValid());
 		QVariant variant;
 		if (napkin::toQVariant(resolvedPath.getType(), resolvedPath.getValue(), variant))
 		{
@@ -280,27 +272,28 @@ QVariant napkin::PropertyValueItem::data(int role) const
 
 void napkin::PropertyValueItem::setData(const QVariant& value, int role)
 {
+	nap::rtti::ResolvedRTTIPath resolvedPath = mPath.resolve();
+	assert(resolvedPath.isValid());
+
 	if (role == Qt::EditRole)
 	{
-		auto undoCommand = new napkin::SetValueCommand(mObject, mPath, value);
-		napkin::AppContext::get().getUndoStack().push(undoCommand);
+		napkin::AppContext::get().executeCommand(new SetValueCommand(mPath, value));
 	}
-
-	if (role == Qt::DisplayRole)
+	else if (role == Qt::DisplayRole)
 	{
-		nap::rtti::ResolvedRTTIPath resolvedPath;
-		assert(mPath.resolve(mObject, resolvedPath));
 		bool ok;
 		auto resultValue = napkin::fromQVariant(resolvedPath.getType(), value, &ok);
 		if (ok)
 			resolvedPath.setValue(resultValue);
 	}
-	QStandardItem::setData(value, role);
+	else
+	{
+		QStandardItem::setData(value, role);
+	}
 }
 
-napkin::PropertyValueItem::PropertyValueItem(const QString& name, nap::rtti::RTTIObject* object,
-											 nap::rtti::RTTIPath path, rttr::type valueType)
-	: BaseRTTIPathItem(name, object, path), mValueType(valueType)
+napkin::PropertyValueItem::PropertyValueItem(const QString& name, const PropertyPath& path, rttr::type valueType)
+	: BaseRTTIPathItem(name, path), mValueType(valueType)
 {
 }
 

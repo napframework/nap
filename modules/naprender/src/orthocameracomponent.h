@@ -18,12 +18,12 @@ namespace nap
 	 */
 	struct NAPAPI OrthoCameraProperties
 	{
-		float mLeftPlane = 0.0f;
-		float mRightPlane = 100.0f;
-		float mTopPlane = 100.0f;
-		float mBottomPlane = 0.0f;
-		float mNearClippingPlane = 1.0f;
-		float mFarClippingPlane = 1000.0f;
+		float mNearClippingPlane = 1.0f;				///< Property: NearClippingPlane
+		float mFarClippingPlane = 1000.0f;				///< Property: FarClippingPlane
+		float mLeftPlane = 0.0f;						///< Property: LeftPlane, used when mode is CorrectAspectRatio or custom
+		float mRightPlane = 100.0f;						///< Property: RightPlane, used when mode is CorrectAspectRatio or custom
+		float mTopPlane = 100.0f;						///< Property: TopPlane, used when mode is CorrectAspectRatio or custom 
+		float mBottomPlane = 0.0f;						///< Property: TopPlane, used when mode is CorrectAspectRatio or custom
 	};
 	
 	/**

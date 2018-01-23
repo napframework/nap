@@ -4,6 +4,7 @@
 #include <entity.h>
 #include <meshutils.h>
 #include <color.h>
+#include <mathutils.h>
 
 // nap::meshtoartnetcomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::MeshToArtnetComponent)
@@ -67,9 +68,6 @@ namespace nap
 		nap::VertexAttribute<int>& universe_attr = mMesh->getUniverseAttribute();
 		nap::VertexAttribute<int>& subnet_attr = mMesh->getSubnetAttribute();
 
-		RGBAColorFloat float_color_data;
-		RGBAColor8 byte_color_data;
-
 		for (int i = 0; i < tri_count; i++)
 		{
 			// Fetch attributes
@@ -85,21 +83,14 @@ namespace nap
 			// Find matching controller
 			nap::ArtNetController*& controller = mControllers[ArtNetController::createAddress(subnet, universe)];
 
-			// Convert
-			float_color_data.setData(&(tri_color[0]->r));
-			float_color_data.convert(byte_color_data);
-			
-			// Construct data container
-			std::vector<uint8> data
-			{
-				byte_color_data.getRed(),
-				byte_color_data.getGreen(),
-				byte_color_data.getBlue(),
-				byte_color_data.getAlpha()
-			};
+			// Set data
+			mArtnetData[0] = static_cast<uint8>(tri_color[0]->r * static_cast<float>(math::max<uint8>()));
+			mArtnetData[1] = static_cast<uint8>(tri_color[0]->g * static_cast<float>(math::max<uint8>()));
+			mArtnetData[2] = static_cast<uint8>(tri_color[0]->b * static_cast<float>(math::max<uint8>()));
+			mArtnetData[3] = static_cast<uint8>(tri_color[0]->a * static_cast<float>(math::max<uint8>()));
 
 			// Send to controller
-			controller->send(data, channel);
+			controller->send(mArtnetData, channel);
 		}
 	}
 }

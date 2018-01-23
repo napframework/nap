@@ -20,9 +20,8 @@ namespace napkin
 	 * @param value The value of the property in this row
 	 * @return a row of items where each item sits in its own column
 	 */
-	QList<QStandardItem*> createPropertyItemRow(rttr::type type, const QString& name, nap::rtti::RTTIObject* object,
-												const nap::rtti::RTTIPath& path, rttr::property prop,
-												rttr::variant value);
+	QList<QStandardItem*> createPropertyItemRow(rttr::type type, const QString& name, const PropertyPath& path, rttr::property prop,
+													rttr::variant value);
 
 	/**
 	 * The base for items that represent a nap::rtti::RTTIObject
@@ -42,17 +41,15 @@ namespace napkin
 		 * @param object The object to keep track of.
 		 * @param path The path to the property on the object
 		 */
-		BaseRTTIPathItem(const QString& name, nap::rtti::RTTIObject* object, const nap::rtti::RTTIPath& path);
+		BaseRTTIPathItem(const QString& name, const PropertyPath& path);
+
+		/**
+		 * The path held by this item
+		 */
+		const PropertyPath& getPath() { return mPath; }
 
 	protected:
-		/**
-		 * Resolve a path to get a resolved path.
-		 * @return A resolved path
-		 */
-		nap::rtti::ResolvedRTTIPath resolvePath();
-
-		nap::rtti::RTTIObject* mObject;  // The object we're keeping track of
-		const nap::rtti::RTTIPath mPath; // The path to the property on the object
+		const PropertyPath mPath; // The path to the property
 	};
 
 	/**
@@ -73,7 +70,7 @@ namespace napkin
 		 * @param object The object to keep track of.
 		 * @param path The path to the property.
 		 */
-		PropertyItem(const QString& name, nap::rtti::RTTIObject* object, const nap::rtti::RTTIPath& path);
+		PropertyItem(const QString& name, const PropertyPath& path);
 	};
 
 	/**
@@ -94,7 +91,7 @@ namespace napkin
 		 * @param object The object to keep track of.
 		 * @param path The path to the property.
 		 */
-		CompoundPropertyItem(const QString& name, nap::rtti::RTTIObject* object, const nap::rtti::RTTIPath& path);
+		CompoundPropertyItem(const QString& name, const PropertyPath& path);
 
 	private:
         /**
@@ -123,8 +120,10 @@ namespace napkin
 		 * @param prop The property the path is pointing to.
 		 * @param array Because the property is an array, provide a view into the array.
 		 */
-		ArrayPropertyItem(const QString& name, nap::rtti::RTTIObject* object, const nap::rtti::RTTIPath& path,
-						  rttr::property prop, rttr::variant_array_view array);
+		ArrayPropertyItem(const QString& name, const PropertyPath& path, rttr::property prop,
+						  rttr::variant_array_view array);
+
+		nap::rtti::VariantArray& getArray() { return mArray; }
 
 	private:
         /**
@@ -133,7 +132,7 @@ namespace napkin
 		void populateChildren();
 
 		rttr::property mProperty;
-		rttr::variant_array_view mArray;
+		nap::rtti::VariantArray mArray;
 	};
 
 	/**
@@ -154,7 +153,7 @@ namespace napkin
 		 * @param object The object to keep track of.
 		 * @param path The path to the property, pointer.
 		 */
-		PointerItem(const QString& name, nap::rtti::RTTIObject* object, const nap::rtti::RTTIPath path);
+		PointerItem(const QString& name, const PropertyPath& path);
 	};
 
     /**
@@ -175,7 +174,7 @@ namespace napkin
 		 * @param object The object to keep track of.
 		 * @param path The path to the property, pointer.
 		 */
-		PointerValueItem(nap::rtti::RTTIObject* object, const nap::rtti::RTTIPath path, rttr::type valueType);
+		PointerValueItem(const PropertyPath& path, rttr::type valueType);
 
 		/**
 		 * Reimplemented from QStandardItem
@@ -187,14 +186,8 @@ namespace napkin
 		 */
 		void setData(const QVariant& value, int role) override;
 
-		/**
-		 * @return The type of the value represented by the pointer.
-		 */
-		rttr::type getValueType();
-
 	private:
-		nap::rtti::RTTIObject* mObject; // The object to keep track of
-		nap::rtti::RTTIPath mPath;		// The path to the property
+		const PropertyPath mPath;		// The path to the property
 		rttr::type mValueType;			// The type of the value represented by the pointer
 	};
 
@@ -216,7 +209,7 @@ namespace napkin
 		 * @param object The object to keep track of.
 		 * @param path The path to the property, pointer.
 		 */
-		EmbeddedPointerItem(const QString& name, nap::rtti::RTTIObject* object, nap::rtti::RTTIPath path);
+		EmbeddedPointerItem(const QString& name, const PropertyPath& path);
 
 	private:
 		/**
@@ -244,8 +237,7 @@ namespace napkin
 		 * @param path The path to the property, pointer.
 		 * @param valueType The type of the value
 		 */
-		PropertyValueItem(const QString& name, nap::rtti::RTTIObject* object, nap::rtti::RTTIPath path,
-						  rttr::type valueType);
+		PropertyValueItem(const QString& name, const PropertyPath& path, rttr::type valueType);
 
 		/**
 		 * Reimplemented from QStandardItem

@@ -63,5 +63,8 @@ namespace nap
 
 		// Artnet mesh
 		nap::ArtnetMeshFromFile* mMesh = nullptr;
+
+		// Artnet array data
+		std::vector<uint8> mArtnetData = std::vector<uint8>(4, 0);
 	};
 }

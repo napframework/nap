@@ -16,6 +16,9 @@
 #include <imguiservice.h>
 #include <utility/stringutils.h>
 #include <scene.h>
+#include <planemesh.h>
+#include <ctime>
+#include <chrono>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::KalvertorenApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -70,6 +73,11 @@ namespace nap
 		// Force paint method
 		selectPaintMethod();
 
+		// Force cycle modes
+		selectCompositionCycleMode();
+		selectPaletteCycleMode();
+		setColorPaletteCycleSpeed(mColorCycleTime);
+
 		// Position our debug windows
 		positionDebugViews();
 
@@ -85,6 +93,7 @@ namespace nap
 		entities.push_back(sceneCameraEntity.get());
 		inputService->processEvents(*renderWindow, input_router, entities);
 
+		// Position the debug views
 		positionDebugViews();
 
 		// Update our gui
@@ -111,22 +120,21 @@ namespace nap
 			// Clear backbuffer of window
 			opengl::RenderTarget& backbuffer = renderWindow->getBackbuffer();
 			renderService->clearRenderTarget(backbuffer);
-			
+
 			// Render debug views to screen
 			renderDebugViews();
-
-			// Render meshes
-			std::vector<nap::RenderableComponentInstance*> components_to_render;
-			displayEntity->getComponentsOfType<nap::RenderableComponentInstance>(components_to_render);
 
 			// Get camera
 			nap::CameraComponentInstance& sceneCamera = sceneCameraEntity->getComponent<nap::CameraControllerInstance>().getCameraComponent();
 
 			// Render meshes
+			std::vector<nap::RenderableComponentInstance*> components_to_render;
+			displayEntity->getComponentsOfType<nap::RenderableComponentInstance>(components_to_render);
+
 			renderService->renderObjects(backbuffer, sceneCamera, components_to_render);
 
 			// Render our gui
-			getCore().getService<IMGuiService>()->render();
+			getCore().getService<IMGuiService>()->draw();
 
 			renderWindow->swap();
 		}
@@ -135,17 +143,30 @@ namespace nap
 
 	void KalvertorenApp::renderDebugViews()
 	{
-		// Render our composition previs
-		RenderableMeshComponentInstance& render_plane = debugDisplayEntity->getComponent<RenderableMeshComponentInstance>();
-		OrthoCameraComponentInstance& ortho_cam = compositionCameraEntity->getComponent<OrthoCameraComponentInstance>();
-		std::vector<nap::RenderableComponentInstance*> debug_objects = { &render_plane };
+		for (auto& child : debugDisplayEntity->getChildren())
+		{
+			// Render our composition previs
+			RenderableMeshComponentInstance& render_plane = child->getComponent<RenderableMeshComponentInstance>();
+			OrthoCameraComponentInstance& ortho_cam = compositionCameraEntity->getComponent<OrthoCameraComponentInstance>();
+			std::vector<nap::RenderableComponentInstance*> debug_objects = { &render_plane };
 
-		// Set active texture
-		UniformTexture2D& uniform = render_plane.getMaterialInstance().getOrCreateUniform<UniformTexture2D>("debugImage");
-		RenderCompositionComponentInstance& render_comp = renderCompositionEntity->getComponent<RenderCompositionComponentInstance>();
-		uniform.setTexture(render_comp.getTexture());
+			// Get uniform to set
+			UniformTexture2D& uniform = render_plane.getMaterialInstance().getOrCreateUniform<UniformTexture2D>("debugImage");
 
-		renderService->renderObjects(renderWindow->getBackbuffer(), ortho_cam, debug_objects);
+			// Set active texture
+			if (utility::startsWith(child->mID, "CompositionDebugDisplayEntity"))
+			{
+				RenderCompositionComponentInstance& render_comp = renderCompositionEntity->getComponent<RenderCompositionComponentInstance>();
+				uniform.setTexture(render_comp.getTexture());
+			}
+			else if (utility::startsWith(child->mID, "PaletteDebugDisplayEntity"))
+			{
+				ColorPaletteComponentInstance& palette_comp = compositionEntity->getComponent<ColorPaletteComponentInstance>();
+				uniform.setTexture(palette_comp.getDebugPaletteImage());
+			}
+
+			renderService->renderObjects(renderWindow->getBackbuffer(), ortho_cam, debug_objects);
+		}
 	}
 
 
@@ -160,19 +181,33 @@ namespace nap
 	}
 
 
+	// TODO: Possibly move these calls to seperate components
 	void KalvertorenApp::positionDebugViews()
 	{
-		RenderableMeshComponentInstance& render_plane = debugDisplayEntity->getComponent<RenderableMeshComponentInstance>();
-		nap::TransformComponentInstance& xform = render_plane.getEntityInstance()->getComponent<nap::TransformComponentInstance>();
-		int posx = renderWindow->getWidth()  - (xform.getUniformScale() / 2.0f);
-		int posy = renderWindow->getHeight() - (xform.getUniformScale() / 2.0f);
-		xform.setTranslate({ posx, posy, 0.0f });
+		int y_loc = renderWindow->getHeight();
+		for (auto& child : debugDisplayEntity->getChildren())
+		{
+			RenderableMeshComponentInstance& render_plane = child->getComponent<RenderableMeshComponentInstance>();
+			assert(render_plane.getMesh().get_type().is_derived_from(RTTI_OF(nap::PlaneMesh)));
+			nap::PlaneMesh& plane = static_cast<nap::PlaneMesh&>(render_plane.getMesh());
+
+			nap::TransformComponentInstance& xform = render_plane.getEntityInstance()->getComponent<nap::TransformComponentInstance>();
+			
+			// We scale the palette based on the relative difference between the amount of available colors
+			// in the index map
+			int posy = y_loc - (plane.getRect().getHeight() / 2.0f);
+			int posx = renderWindow->getWidth() - (plane.getRect().getWidth() / 2.0f);
+
+			// Set transform
+			xform.setTranslate({ posx, posy, 0.0f });
+			y_loc -= (plane.getRect().getHeight() + 10);
+		}
 	}
 
 
-	void KalvertorenApp::shutdown()
+	int KalvertorenApp::shutdown()
 	{
-
+		return 0;
 	}
 
 
@@ -190,7 +225,7 @@ namespace nap
 			nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(inputEvent.get());
 			if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
 			{
-				quit(0);
+				quit();
 				return;
 			}
 
@@ -227,100 +262,175 @@ namespace nap
 			composition_painters.emplace_back(comp_painter);
 		}
 
-		// Gui
+		// Some extra comps
 		SelectLedMeshComponentInstance& mesh_selector = displayEntity->getComponent<SelectLedMeshComponentInstance>();
 		ColorPaletteComponentInstance& palette_selector =  compositionEntity->getComponent<ColorPaletteComponentInstance>();
 		CompositionComponentInstance& composition_selector = compositionEntity->getComponent<CompositionComponentInstance>();
 
-		ImGui::Begin("Display Settings");
-		
 		// Resets all the tracers
-		if (ImGui::Button("Reset Walker"))
-		{
-			for (auto& tracer : tracer_painters)
-			{
-				tracer->reset();
-			}
-		}
-
-		// Changes the mesh paint mode
-		if (ImGui::Combo("Mode", &mPaintMode, "Channel Walker\0Bounding Box\0Composition\0\0"))
-		{
-			selectPaintMethod();
-		}
-
-		// Changes the display mesh
-		if (ImGui::SliderInt("Mesh Selection", &mMeshSelection, 0, mesh_selector.getCount() - 1))
-		{
-			mesh_selector.select(mMeshSelection);
-		}
+		ImGui::Begin("Kalvertoren");
 		
-		// Change tracer walk speed
-		if (ImGui::SliderFloat("Channel Speed", &(mChannelSpeed), 0.0f, 20.0f))
-		{
-			for (auto& tracer : tracer_painters)
-			{
-				tracer->setSpeed(mChannelSpeed);
-			}
-		}
-		
-		// Allows the user to select a channel to display on the tracer
-		if (ImGui::InputInt("Select Channel", &mSelectChannel, 1))
-		{
-			for (auto& tracer : tracer_painters)
-			{
-				tracer->selectChannel(mSelectChannel);
-			}
-		}
+		ImGui::Spacing();
+		utility::getCurrentDateTime(mDateTime);
+		ImGui::Text(mDateTime.toString().c_str());
+		ImGui::Text("Week %02d", mDateTime.getWeek());
+		ImGui::Spacing();
 
-		// Show some additional info
-		for(int i = 0; i<mesh_selector.getLedMeshes().size(); i++)
+		if (ImGui::CollapsingHeader("DisplaySettings"))
 		{
-			std::vector<std::string> parts;
-			utility::splitString(mesh_selector.getLedMeshes()[i]->mTriangleMesh->mPath, '/', parts);
-			
-			ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), parts.back().c_str());
-			ImGui::Text(utility::stringFormat("Channel: %d", i).c_str());
-			const std::unordered_set<ArtNetController::Address>& addresses = mesh_selector.getLedMeshes()[i]->mTriangleMesh->getAddresses();
-			
-			std::string universes = "Addresses:";
-			for (auto& address : addresses)
+			// Changes the mesh paint mode
+			if (ImGui::Combo("Mode", &mPaintMode, "Channel Walker\0Bounding Box\0Composition\0\0"))
 			{
-				uint8 sub(0), uni(0);
-				ArtNetController::convertAddress(address, sub, uni);
-				universes += utility::stringFormat(" %d:%d", sub, uni);
+				selectPaintMethod();
 			}
-			
-			ImGui::Text(universes.c_str());
+
+			// Changes the display mesh
+			if (ImGui::Combo("Display Mesh", &mMeshSelection, "Heiligeweg\0Kalverstraat\0Singel\0\0"))
+			{
+				mesh_selector.select(mMeshSelection);
+			}
 		}
-		ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),"%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-		ImGui::End();
 
 		// Composition settings
-		ImGui::Begin("Composition Settings");
-
-		if (ImGui::Checkbox("Show Index Colors", &mShowIndexColors))
+		if (ImGui::CollapsingHeader("Composition Settings"))
 		{
-			for (auto& comp_painter : composition_painters)
+			// Changes the mesh paint mode
+			if (ImGui::Combo("Day", &mDay, "Auto\0Sunday\0Monday\0Tuesday\0Wednesday\0Thursday\0Friday\0Saturday\0\0"))
 			{
-				comp_painter->showIndexColors(mShowIndexColors);
+				if (mDay == 0)
+				{
+					composition_selector.switchMode(CompositionComponentInstance::EMode::Automatic);
+				}
+				else
+				{
+					nap::utility::EDay new_day = static_cast<nap::utility::EDay>(mDay - 1);
+					composition_selector.selectDay(new_day);
+				}
+			}
+
+			// Changes the mesh paint mode
+			if (ImGui::Combo("Cycle Mode", &mCompositionCycleMode, "Off\0Random\0List\0\0"))
+			{
+				selectCompositionCycleMode();
+			}
+
+			// Changes the color palette
+			if (ImGui::SliderInt("Select", &mCompositionSelection, 0, composition_selector.getCount() - 1))
+			{
+				composition_selector.select(mCompositionSelection);
+			}
+
+			// Changes the duration
+			if (ImGui::SliderFloat("Cycle Speed", &mDurationScale, 0.0f, 10.0f))
+			{
+				composition_selector.setDurationScale(mDurationScale);
 			}
 		}
 
-		// Changes the color palette
-		if (ImGui::SliderInt("Composition", &mCompositionSelection, 0, composition_selector.getCount() - 1))
+		if (ImGui::CollapsingHeader("Color Settings"))
 		{
-			composition_selector.select(mCompositionSelection);
+			// If index colors are drawn
+			if (ImGui::Checkbox("Show Index Colors", &mShowIndexColors))
+			{
+				for (auto& comp_painter : composition_painters)
+				{
+					comp_painter->showIndexColors(mShowIndexColors);
+				}
+			}
+
+			ColorPaletteComponentInstance& color_palette_comp = compositionEntity->getComponent<ColorPaletteComponentInstance>();
+			bool lockWeek = color_palette_comp.getLockWeek();
+			if (ImGui::Checkbox("Lock week to current week", &lockWeek))
+				color_palette_comp.setLockWeek(lockWeek);
+
+			mSelectedWeek = color_palette_comp.getSelectedWeek() + 1;
+			if (ImGui::InputInt("Week Number", &mSelectedWeek, 1))
+			{
+				if (!lockWeek)
+					selectPaletteWeek();
+			}
+
+			// Changes the color palette
+			if (ImGui::InputInt("Variation", &mPaletteSelection, 1))
+			{
+				palette_selector.selectVariation(mPaletteSelection);
+			}
+
+			// Changes the mesh paint mode
+			if (ImGui::Combo("Variation Cycle Mode", &mColorPaletteCycleMode, "Off\0Random\0List\0\0"))
+			{
+				selectPaletteCycleMode();
+			}
+
+			// Changes the intensity
+			if (ImGui::SliderFloat("Intensity", &mIntensity, 0.0f, 1.0f))
+			{
+				for (auto& comp_painter : composition_painters)
+				{
+					comp_painter->setIntensity(mIntensity);
+				}
+			}
+
+			// Changes the time at which a new color palette is selected
+			if (ImGui::SliderFloat("Cycle Time (minutes)", &mColorCycleTime, 0.0f, 60.0f, "%.3f", 3.0f))
+			{
+				setColorPaletteCycleSpeed(mColorCycleTime);
+			}
 		}
 
-		// Changes the color palette
-		if (ImGui::SliderInt("Color Palette", &mPaletteSelection, 0, palette_selector.getCount() - 1))
+		if (ImGui::CollapsingHeader("Walker Settings"))
 		{
-			palette_selector.select(mPaletteSelection);
+			if (ImGui::Button("Reset Walker"))
+			{
+				for (auto& tracer : tracer_painters)
+				{
+					tracer->reset();
+				}
+			}
+
+			if (ImGui::SliderFloat("Walk Speed", &(mChannelSpeed), 0.0f, 20.0f))
+			{
+				for (auto& tracer : tracer_painters)
+				{
+					tracer->setSpeed(mChannelSpeed);
+				}
+			}
+
+			// Allows the user to select a channel to display on the tracer
+			if (ImGui::InputInt("Select Channel", &mSelectChannel, 1))
+			{
+				for (auto& tracer : tracer_painters)
+				{
+					tracer->selectChannel(mSelectChannel);
+				}
+			}
 		}
 
+		if (ImGui::CollapsingHeader("Artnet Information"))
+		{
+			RGBColorFloat float_clr = mTextColor.convert<RGBColorFloat>();
+			for (int i = 0; i < mesh_selector.getLedMeshes().size(); i++)
+			{
+				std::vector<std::string> parts;
+				utility::splitString(mesh_selector.getLedMeshes()[i]->mTriangleMesh->mPath, '/', parts);
+
+				ImGui::TextColored(ImVec4(float_clr.getRed(), float_clr.getGreen(), float_clr.getBlue(), 1.0f), parts.back().c_str());
+				ImGui::Text(utility::stringFormat("Channel: %d", i).c_str());
+				const std::unordered_set<ArtNetController::Address>& addresses = mesh_selector.getLedMeshes()[i]->mTriangleMesh->getAddresses();
+
+				std::string universes = "Addresses:";
+				for (auto& address : addresses)
+				{
+					uint8 sub(0), uni(0);
+					ArtNetController::convertAddress(address, sub, uni);
+					universes += utility::stringFormat(" %d:%d", sub, uni);
+				}
+
+				ImGui::Text(universes.c_str());
+			}
+			ImGui::TextColored(ImVec4(float_clr.getRed(), float_clr.getGreen(), float_clr.getBlue(), 1.0f), "%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		}
 		ImGui::End();
-
 	}
 
 
@@ -354,4 +464,33 @@ namespace nap
 			}
 		}
 	}
+
+
+	void KalvertorenApp::selectCompositionCycleMode()
+	{
+		CompositionComponentInstance& comp = compositionEntity->getComponent<CompositionComponentInstance>();
+		comp.setCycleMode(static_cast<nap::CompositionCycleMode>(mCompositionCycleMode));
+	}
+
+
+	void KalvertorenApp::selectPaletteWeek()
+	{
+		ColorPaletteComponentInstance& comp = compositionEntity->getComponent<ColorPaletteComponentInstance>();
+		comp.selectWeek(mSelectedWeek-1);
+	}
+
+
+	void KalvertorenApp::selectPaletteCycleMode()
+	{
+		ColorPaletteComponentInstance& comp = compositionEntity->getComponent<ColorPaletteComponentInstance>();
+		comp.setCycleMode(static_cast<nap::ColorPaletteCycleMode>(mColorPaletteCycleMode));
+	}
+
+
+	void KalvertorenApp::setColorPaletteCycleSpeed(float minutes)
+	{
+		ColorPaletteComponentInstance& comp = compositionEntity->getComponent<ColorPaletteComponentInstance>();
+		comp.setCycleSpeed(minutes * 60.0f);
+	}
 }
+ 

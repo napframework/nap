@@ -71,16 +71,21 @@ namespace nap
 		 */
 		nap::BaseTexture2D& getTexture();
 
+		/**
+		 *	@return the output pixmap
+		 */
+		nap::Pixmap& getPixmap();
+
 		// Points to the composition component we want to render
-		COMPONENT_INSTANCE_POINTER(mCompositionComponent, CompositionComponent, RenderCompositionComponent)
-		COMPONENT_INSTANCE_POINTER(mRenderableComponent, RenderableMeshComponent, RenderCompositionComponent)
-		COMPONENT_INSTANCE_POINTER(mCameraComponent, OrthoCameraComponent, RenderCompositionComponent)
+		ComponentInstancePtr<CompositionComponent> mCompositionComponent	=	{ this, &RenderCompositionComponent::mCompositionComponent };
+		ComponentInstancePtr<RenderableMeshComponent> mRenderableComponent	=	{ this, &RenderCompositionComponent::mRenderableComponent };
+		ComponentInstancePtr<OrthoCameraComponent> mCameraComponent =			{ this, &RenderCompositionComponent::mCameraComponent };
 
 	private:
-		RenderTarget* mTargetA = nullptr;
-		RenderTarget* mTargetB = nullptr;
-
-		RenderService* mRenderService = nullptr;
+		RenderTarget*	mTargetA = nullptr;
+		RenderTarget*	mTargetB = nullptr;
+		RenderService*	mRenderService = nullptr;
+		bool			mTransferring = false;
 
 		BaseTexture2D*	inputA = nullptr;
 		BaseTexture2D*	inputB = nullptr;
@@ -94,5 +99,8 @@ namespace nap
 		 * @param target the render target to render to
 		 */
 		void renderPass(BaseTexture2D& inputA, BaseTexture2D& inputB, RenderTarget& target);
+
+		// Pixmap used to transfer GPU pixel values to
+		nap::Pixmap mPixmap;
 	};
 }

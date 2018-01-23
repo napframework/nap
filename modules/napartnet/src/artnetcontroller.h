@@ -110,7 +110,6 @@ namespace nap
 		ArtNetNode getNode() const { return mNode; }
 
 	public:
-		//const int			mMaxUpdateFrequency = 44;						
 		uint8_t				mSubnet = 0;									///< Subnet, in range from 0x0..0xF
 		uint8_t				mUniverse = 0;									///< Universe, in range from 0x0..0xF
 		int					mUpdateFrequency = getMaxUpdateFrequency();		///< Update artnet refresh rate, the default is the maximum refresh rate

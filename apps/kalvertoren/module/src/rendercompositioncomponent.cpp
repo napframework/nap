@@ -34,6 +34,8 @@ namespace nap
 	{
 		mTargetA = getComponent<RenderCompositionComponent>()->mTargetA.get();
 		mTargetB = getComponent<RenderCompositionComponent>()->mTargetB.get();
+		activeTarget = mTargetA;
+		nextTarget = mTargetB;
 
 		mRenderService = getEntityInstance()->getCore()->getService<RenderService>();
 		if (!errorState.check(mRenderService != nullptr, "Unable to find render service: %s", this->mID.c_str()))
@@ -45,6 +47,21 @@ namespace nap
 
 	void RenderCompositionComponentInstance::update(double deltaTime)
 	{
+		if (mTransferring)
+		{
+#ifndef _DEBUG 
+			activeTarget->getColorTexture().endGetData(mPixmap);
+#else
+			activeTarget->getColorTexture().getData(mPixmap);
+#endif // DEBUG
+
+		}
+		mTransferring = false;
+	}
+
+
+	void RenderCompositionComponentInstance::render()
+	{
 		nap::CompositionInstance& comp = mCompositionComponent->getSelection();
 
 		// Assign inputs for first pass
@@ -52,15 +69,9 @@ namespace nap
 		inputA = &(comp.getLayer(0).getTexture());
 		inputB = comp.getLayerCount() > 1 ? &(comp.getLayer(1).getTexture()) : inputA;
 
-		// Set the active target
+		// Set the active and next target
 		activeTarget = mTargetA;
-		nextTarget = mTargetB;
-	}
-
-
-	void RenderCompositionComponentInstance::render()
-	{
-		nap::CompositionInstance& comp = mCompositionComponent->getSelection();
+		nextTarget   = mTargetB;
 		
 		// Render first pass to target a
 		renderPass(*inputA, *inputB, *activeTarget);
@@ -82,11 +93,23 @@ namespace nap
 			// Assign target for next round to be placeholder
 			nextTarget = active_placeholder;
 		}
+
+		// Start pixel data transfer so reading it later is performent
+#ifndef _DEBUG 
+		activeTarget->getColorTexture().startGetData();
+#endif // !DEBUG
+		mTransferring = true;
 	}
 
 	nap::BaseTexture2D& RenderCompositionComponentInstance::getTexture()
 	{
 		return activeTarget->getColorTexture();
+	}
+
+
+	nap::Pixmap& RenderCompositionComponentInstance::getPixmap()
+	{
+		return mPixmap;
 	}
 
 

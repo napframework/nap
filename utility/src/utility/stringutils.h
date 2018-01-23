@@ -23,7 +23,15 @@ namespace nap
 		 * @param delim the delimiter used to split the string
 		 * @param ioParts list of individual split parts
 		 */
-		void splitString(const std::string string, char delim, std::vector<std::string>& ioParts);
+		void splitString(const std::string& string, const char delim, std::vector<std::string>& ioParts);
+
+		/*
+		 * Splits a string based on @inDelim, populates @ioParts
+		 * @param string the sequence to split
+		 * @param delim the delimiter used to split the string
+		 * @return vector of split parts
+		 */
+		std::vector<std::string> splitString(const std::string& string, const char delim);
 
 		/**
 		 * Writes a string to an output stream

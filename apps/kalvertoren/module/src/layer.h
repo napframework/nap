@@ -4,7 +4,7 @@
 #include <rtti/rttiobject.h>
 #include <image.h>
 #include <texture2d.h>
-#include "nap/ObjectPtr.h"
+
 
 namespace nap
 {
@@ -13,6 +13,7 @@ namespace nap
 	 */
 	class NAPAPI LayerInstance
 	{
+		RTTI_ENABLE()
 	public:
 		/**
 		 * Updates the LayerInstance.

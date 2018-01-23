@@ -22,6 +22,7 @@
 #include <inputrouter.h>
 #include <entity.h>
 #include <artnetcontroller.h>
+#include <utility/datetimeutils.h>
 
 namespace nap
 {
@@ -49,7 +50,7 @@ namespace nap
 		/**
 		 *	Shut down the application
 		 */
-		virtual void shutdown() override;
+		virtual int shutdown() override;
 
 		/**
 		 *	Register input events
@@ -71,33 +72,63 @@ namespace nap
 		 */
 		void selectPaintMethod();
 
+		/**
+		 *	Sets the current composition cycle mode
+		 */
+		void selectCompositionCycleMode();
+
+		/**
+		 *	Sets the current palette week
+		 */
+		void selectPaletteWeek();
+
+		/**
+		 *	Sets the current palette cycle mode
+		 */
+		void selectPaletteCycleMode();
+
+		/**
+		 *	Sets the current color palette cycle speed
+		 */
+		void setColorPaletteCycleSpeed(float seconds);
+
 	private:
 		// Nap Objects
-		nap::RenderService*								renderService = nullptr;
-		nap::ResourceManager*							resourceManager = nullptr;
-		nap::SceneService*								sceneService = nullptr;
-		nap::InputService*								inputService = nullptr;
+		nap::RenderService*									renderService = nullptr;
+		nap::ResourceManager*								resourceManager = nullptr;
+		nap::SceneService*									sceneService = nullptr;
+		nap::InputService*									inputService = nullptr;
 
-		nap::ObjectPtr<nap::RenderWindow>				renderWindow;
-		nap::ObjectPtr<nap::EntityInstance>				compositionEntity = nullptr;
-		nap::ObjectPtr<nap::EntityInstance>				sceneCameraEntity = nullptr;
-		nap::ObjectPtr<nap::EntityInstance>				compositionCameraEntity = nullptr;
-		nap::ObjectPtr<nap::EntityInstance>				renderCompositionEntity = nullptr;
-		nap::ObjectPtr<nap::EntityInstance>				debugDisplayEntity = nullptr;
-		nap::ObjectPtr<nap::EntityInstance>				defaultInputRouter = nullptr;
-		nap::ObjectPtr<nap::EntityInstance>				lightEntity = nullptr;
-		nap::ObjectPtr<nap::Material>					frameMaterial = nullptr;
-		nap::ObjectPtr<nap::Material>					vertexMaterial = nullptr;
-		nap::ObjectPtr<nap::EntityInstance>				displayEntity = nullptr;
+		nap::ObjectPtr<nap::RenderWindow>					renderWindow;
+		nap::ObjectPtr<nap::EntityInstance>					compositionEntity = nullptr;
+		nap::ObjectPtr<nap::EntityInstance>					sceneCameraEntity = nullptr;
+		nap::ObjectPtr<nap::EntityInstance>					compositionCameraEntity = nullptr;
+		nap::ObjectPtr<nap::EntityInstance>					renderCompositionEntity = nullptr;
+		nap::ObjectPtr<nap::EntityInstance>					debugDisplayEntity = nullptr;
+		nap::ObjectPtr<nap::EntityInstance>					defaultInputRouter = nullptr;
+		nap::ObjectPtr<nap::EntityInstance>					lightEntity = nullptr;
+		nap::ObjectPtr<nap::Material>						frameMaterial = nullptr;
+		nap::ObjectPtr<nap::Material>						vertexMaterial = nullptr;
+		nap::ObjectPtr<nap::EntityInstance>					displayEntity = nullptr;
 
 		// GUI
-		int												mMeshSelection = 0;
-		int												mPaintMode = 0;
-		int												mSelectChannel = 0;
-		float											mChannelSpeed = 1.0f;
-		int												mPaletteSelection = 0;
-		int												mCompositionSelection = 0;
-		bool											mShowIndexColors = false;
+		int													mMeshSelection = 0;
+		int													mPaintMode = 2;
+		int													mSelectChannel = 0;
+		float												mChannelSpeed = 1.0f;
+		int													mPaletteSelection = 0;
+		int													mCompositionSelection = 0;
+		float												mIntensity = 1.0f;
+		bool												mShowIndexColors = false;
+		float												mDurationScale = 1.0f;
+		bool												mCycleColors = false;
+		float												mColorCycleTime = 1.0f;
+		int													mCompositionCycleMode = 0;
+		int													mSelectedWeek = 1;
+		int													mColorPaletteCycleMode = 0;
+		int													mDay = 0;
+		utility::DateTime									mDateTime;
+		RGBColor8											mTextColor = { 0xC8, 0x69, 0x69 };
 
 		/**
 		 *	Renders debug views to screen

@@ -1,5 +1,5 @@
 #include "hierarchypanel.h"
-#include "generic/napgeneric.h"
+#include "generic/naputils.h"
 
 napkin::TypeModel::TypeModel()
 {

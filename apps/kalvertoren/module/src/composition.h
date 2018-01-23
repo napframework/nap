@@ -2,14 +2,26 @@
 
 // Local includes
 #include "layer.h"
+#include "imagesequencelayer.h"
 
 // External Includes
 #include <rtti/rttiobject.h>
 #include <nap/objectptr.h>
 #include <vector>
+#include <nap/signalslot.h>
 
 namespace nap
 {
+	/**
+	 *	Various modes associated with a composition that determine when it's finished
+	 */
+	enum class CompositionPlayMode : int
+	{
+		Length		= 0,					///< Time based composition, finishes after a fixed amount of time
+		Sequence	= 1						///< Loop based composition, finishes when the image sequence runs out of iterations
+	};
+
+
 	/**
 	 * A composition consists out of a set of layers that are blended on top of each other
 	 */
@@ -25,7 +37,9 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		std::vector<nap::ObjectPtr<Layer>> mLayers;				///< All the layers this composition works with
+		std::vector<nap::ObjectPtr<Layer>>	mLayers;									///< All the layers this composition works with
+		CompositionPlayMode					mMode = CompositionPlayMode::Length;		///< Property: controls the composition playback mode
+		float								mLength = 1.0f;								///< Length of the sequence
 	};
 
 
@@ -54,14 +68,35 @@ namespace nap
 		 */
 		int getLayerCount() const { return mLayerInstances.size(); }
 
+		/**
+		 * Sets the duration
+		 * @param scale the scale applied to the time associated with this composition
+		 */
+		void setDurationScale(float scale);
+
+		/**
+		 *	Signal that is emitted when the composition finished playback
+		 */
+		nap::Signal<CompositionInstance&> finished;
+
 		CompositionInstance(const CompositionInstance&) = delete;
 		CompositionInstance& operator=(const CompositionInstance&) = delete;
 
-
 	private:
 		using LayerInstances = std::vector<std::unique_ptr<LayerInstance>>;
-		Composition*		mComposition;			///< Back pointer to Composition resource
-		LayerInstances		mLayerInstances;		///< All created LayerInstances, owned by this object
+		Composition*				mComposition;							///< Back pointer to Composition resource
+		LayerInstances				mLayerInstances;						///< All created LayerInstances, owned by this object
+		double						mTime = 0.0;							///< Current playback time
+		CompositionPlayMode			mMode = CompositionPlayMode::Length;	///< Composition playback mode
+		float						mDurationScale = 1.0f;					///< Influences time and therefore how long this composition lasts
+		ImageSequenceLayerInstance* mImageSequence = nullptr;				///< Image sequence we track
+
+		/**
+		 * This function is called when a sequence finishes playback
+		 * @param sequence the sequence that finished as single loop
+		 */
+		void onLayerSequenceFinished(ImageSequenceLayerInstance& sequence);
+		NSLOT(mLayerSequenceFinishedSlot, ImageSequenceLayerInstance&, onLayerSequenceFinished)
 	};
 
 }

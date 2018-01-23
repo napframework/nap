@@ -44,6 +44,13 @@ namespace nap
 	void RenderWindow::setFullscreen(bool value)
 	{
 		mWindow->setFullScreen(value);
+		mFullscreen = value;
+	}
+
+
+	void RenderWindow::toggleFullscreen()
+	{
+		setFullscreen(!mFullscreen);
 	}
 
 

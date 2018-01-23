@@ -42,6 +42,7 @@ namespace nap
 	 */
 	class NAPAPI ImageLayerInstance : public LayerInstance
 	{
+		RTTI_ENABLE(LayerInstance)
 	public:
 		ImageLayerInstance(ImageLayer& layer) :
 			mImageLayer(&layer)

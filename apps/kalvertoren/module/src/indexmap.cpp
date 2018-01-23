@@ -35,7 +35,7 @@ namespace nap
 		findUniqueColors();
 
 		// Make sure the amount of colors matches the amount of expected colors to find
-		if (!errorState.check(mColorCount == mIndexColors.size(), "Expected to find %d colors, got %d instead: %s", mColorCount, mIndexColors.size(), mImagePath.size()))
+		if (!errorState.check(mColorCount == mIndexColors.size(), "Expected to find %d colors, got %d instead: %s", mColorCount, mIndexColors.size(), mImagePath.c_str()))
 			return false;
 
 		// Get opengl settings from bitmap
@@ -75,17 +75,21 @@ namespace nap
 		std::unordered_set<IndexColor> unique_index_colors;
 
 		// Check the amount of available colors
+		std::unique_ptr<BaseColor> source_pixel = mPixmap.makePixel();
+		RGBColor8 pixel_color;
+
 		for (int i = 0; i < mPixmap.mWidth; i++)
 		{
 			// Get color value at pixel and compare
-			RGBColor8 current_color = mPixmap.getColor<RGBColor8>(i, 0);
+			mPixmap.getPixel(i, 0, *source_pixel);
+			source_pixel->convert(pixel_color);
 
-			auto& it = unique_index_colors.find(current_color);
+			const auto& it = unique_index_colors.find(pixel_color);
 			if (it != unique_index_colors.end())
 				continue;
 
-			unique_index_colors.emplace(current_color);
-			mIndexColors.emplace_back(current_color);
+			unique_index_colors.emplace(pixel_color);
+			mIndexColors.emplace_back(pixel_color);
 		}
 	}
 

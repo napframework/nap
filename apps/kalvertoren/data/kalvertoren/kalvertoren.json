@@ -1,1192 +1,3843 @@
 {
-	"Objects" : 
-	[
-		{
-			"Type" : "nap::RenderWindow",
-			"mID" : "Window0",
-			"Width" : 1024,
-			"Height" : 768,
-			"Title" : "Kalvertoren",
-			"Sync" : true,
-			"ClearColor" : 
-			{
-				"x" : 0.0,
-				"y" : 0.0,
-				"z" : 0.0,
-				"w" : 1.0
-			}
-		},
+    "Objects": [
+        {
+            "Type": "nap::ArtNetController",
+            "mID": "Universe0",
+            "Subnet": 0,
+            "Universe": 0,
+            "WaitTime": 2.0,
+            "Frequency": 44
+        },
+        {
+            "Type": "nap::ArtNetController",
+            "mID": "Universe1",
+            "Subnet": 0,
+            "Universe": 1,
+            "WaitTime": 2.0,
+            "Frequency": 44
+        },
+        {
+            "Type": "nap::ArtNetController",
+            "mID": "Universe2",
+            "Subnet": 0,
+            "Universe": 2,
+            "WaitTime": 2.0,
+            "Frequency": 44
+        },
+        {
+            "Type": "nap::ArtNetController",
+            "mID": "Universe3",
+            "Subnet": 0,
+            "Universe": 3,
+            "WaitTime": 2.0,
+            "Frequency": 44
+        },
+        {
+            "Type": "nap::ArtNetController",
+            "mID": "Universe4",
+            "Subnet": 0,
+            "Universe": 4,
+            "WaitTime": 2.0,
+            "Frequency": 44
+        },
+        {
+            "Type": "nap::ArtNetController",
+            "mID": "Universe5",
+            "Subnet": 0,
+            "Universe": 5,
+            "WaitTime": 2.0,
+            "Frequency": 44
+        },
+        {
+            "Type": "nap::ArtNetController",
+            "mID": "Universe6",
+            "Subnet": 0,
+            "Universe": 6,
+            "WaitTime": 2.0,
+            "Frequency": 44
+        },
+        {
+            "Type": "nap::ArtNetController",
+            "mID": "Universe7",
+            "Subnet": 0,
+            "Universe": 7,
+            "WaitTime": 2.0,
+            "Frequency": 44
+        },
+        {
+            "Type": "nap::ArtNetController",
+            "mID": "Universe8",
+            "Subnet": 0,
+            "Universe": 8,
+            "WaitTime": 2.0,
+            "Frequency": 44
+        },
+        {
+            "Type": "nap::ArtnetMeshFromFile",
+            "mID": "HeiligewegMesh",
+            "Path": "data/kalvertoren/heiligeweg_export_heiligeweg.mesh",
+            "OverrideSubnet": false,
+            "Subnet": 0,
+            "ChannelOffset": 0
+        },
+        {
+            "Type": "nap::ArtnetMeshFromFile",
+            "mID": "KalverMesh",
+            "Path": "data/kalvertoren/kalver_export_kalver.mesh",
+            "OverrideSubnet": false,
+            "Subnet": 0,
+            "ChannelOffset": 0
+        },
+        {
+            "Type": "nap::ArtnetMeshFromFile",
+            "mID": "SingelMesh",
+            "Path": "data/kalvertoren/singel_export_singel.mesh",
+            "OverrideSubnet": false,
+            "Subnet": 1,
+            "ChannelOffset": 0
+        },
+        {
+            "Type": "nap::Composition",
+            "mID": "Composition0",
+            "Layers": [
+                "Background9"
+            ],
+            "Mode": "Length",
+            "Length": 1.0
+        },
+        {
+            "Type": "nap::Composition",
+            "mID": "Composition1",
+            "Layers": [
+                "Background1",
+                "Shape1",
+                "Shape5"
+            ],
+            "Mode": "Length",
+            "Length": 2.0
+        },
+        {
+            "Type": "nap::Composition",
+            "mID": "Composition10",
+            "Layers": [
+                "Sequence2"
+            ],
+            "Mode": "Sequence",
+            "Length": 3.0
+        },
+        {
+            "Type": "nap::Composition",
+            "mID": "Composition11",
+            "Layers": [
+                "Sequence3"
+            ],
+            "Mode": "Sequence",
+            "Length": 1.0
+        },
+        {
+            "Type": "nap::Composition",
+            "mID": "Composition12",
+            "Layers": [
+                "Sequence4"
+            ],
+            "Mode": "Sequence",
+            "Length": 1.0
+        },
+        {
+            "Type": "nap::Composition",
+            "mID": "Composition13",
+            "Layers": [
+                "Sequence5"
+            ],
+            "Mode": "Sequence",
+            "Length": 1.0
+        },
+        {
+            "Type": "nap::Composition",
+            "mID": "Composition2",
+            "Layers": [
+                "Background2",
+                "Shape2",
+                "Shape3"
+            ],
+            "Mode": "Length",
+            "Length": 2.5
+        },
+        {
+            "Type": "nap::Composition",
+            "mID": "Composition3",
+            "Layers": [
+                "Background3",
+                "Shape3"
+            ],
+            "Mode": "Length",
+            "Length": 1.0
+        },
+        {
+            "Type": "nap::Composition",
+            "mID": "Composition4",
+            "Layers": [
+                "Background4",
+                "Shape4"
+            ],
+            "Mode": "Length",
+            "Length": 3.0
+        },
+        {
+            "Type": "nap::Composition",
+            "mID": "Composition5",
+            "Layers": [
+                "Background5",
+                "Shape3"
+            ],
+            "Mode": "Length",
+            "Length": 1.5
+        },
+        {
+            "Type": "nap::Composition",
+            "mID": "Composition6",
+            "Layers": [
+                "Background6"
+            ],
+            "Mode": "Length",
+            "Length": 1.0
+        },
+        {
+            "Type": "nap::Composition",
+            "mID": "Composition7",
+            "Layers": [
+                "Background7",
+                "TestSequence"
+            ],
+            "Mode": "Sequence",
+            "Length": 2.0
+        },
+        {
+            "Type": "nap::Composition",
+            "mID": "Composition8",
+            "Layers": [
+                "Background8",
+                "Shape6"
+            ],
+            "Mode": "Length",
+            "Length": 0.5
+        },
+        {
+            "Type": "nap::Composition",
+            "mID": "Composition9",
+            "Layers": [
+                "Sequence1"
+            ],
+            "Mode": "Sequence",
+            "Length": 1.0
+        },
+        {
+            "Type": "nap::CompositionContainer",
+            "mID": "Friday",
+            "Compositions": [
+                "Composition1",
+                "Composition4",
+                "Composition5",
+                "Composition7",
+                "Composition8",
+                "Composition9",
+                "Composition10",
+                "Composition13"
+            ]
+        },
+        {
+            "Type": "nap::CompositionContainer",
+            "mID": "Monday",
+            "Compositions": [
+                "Composition1",
+                "Composition2",
+                "Composition0",
+                "Composition10",
+                "Composition11",
+                "Composition13"
+            ]
+        },
+        {
+            "Type": "nap::CompositionContainer",
+            "mID": "Saturday",
+            "Compositions": [
+                "Composition3",
+                "Composition4",
+                "Composition5",
+                "Composition7",
+                "Composition0",
+                "Composition9",
+                "Composition10",
+                "Composition12"
+            ]
+        },
+        {
+            "Type": "nap::CompositionContainer",
+            "mID": "Sunday",
+            "Compositions": [
+                "Composition1",
+                "Composition2",
+                "Composition3",
+                "Composition4",
+                "Composition5",
+                "Composition6",
+                "Composition7",
+                "Composition8",
+                "Composition0",
+                "Composition9",
+                "Composition10",
+                "Composition11",
+                "Composition12",
+                "Composition13"
+            ]
+        },
+        {
+            "Type": "nap::CompositionContainer",
+            "mID": "Thursday",
+            "Compositions": [
+                "Composition3",
+                "Composition5",
+                "Composition8",
+                "Composition9"
+            ]
+        },
+        {
+            "Type": "nap::CompositionContainer",
+            "mID": "Tuesday",
+            "Compositions": [
+                "Composition6",
+                "Composition0",
+                "Composition9",
+                "Composition10"
+            ]
+        },
+        {
+            "Type": "nap::CompositionContainer",
+            "mID": "Wednesday",
+            "Compositions": [
+                "Composition2",
+                "Composition3",
+                "Composition7",
+                "Composition9",
+                "Composition11"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "CompositionCameraEntity",
+            "Components": [
+                {
+                    "Type": "nap::OrthoCameraComponent",
+                    "mID": "CompositionCamera",
+                    "Properties": {
+                        "LeftPlane": 0.0,
+                        "RightPlane": 100.0,
+                        "TopPlane": 100.0,
+                        "BottomPlane": 0.0,
+                        "NearClippingPlane": 0.10000000149011612,
+                        "FarClippingPlane": 1000.0
+                    }
+                },
+                {
+                    "Type": "nap::PerspCameraComponent",
+                    "mID": "PerspCompositionCameraComponent",
+                    "Properties": {
+                        "FieldOfView": 40.0,
+                        "NearClippingPlane": 0.10000000149011612,
+                        "FarClippingPlane": 1000.0,
+                        "GridDimensions": {
+                            "x": 1,
+                            "y": 1
+                        },
+                        "GridLocation": {
+                            "x": 0,
+                            "y": 0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_7",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 10.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "CompositionDebugDisplayEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "RenderableCompositionDebugMeshComponent",
+                    "Mesh": "CompositionDebugMesh",
+                    "MaterialInstance": {
+                        "Material": "DebugMaterial",
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformTexture2D",
+                                "mID": "nap::UniformTexture2D_3",
+                                "Name": "debugImage",
+                                "Texture": "CompositionTextureA"
+                            }
+                        ],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NoReadWrite"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "CompositionEntity",
+            "Components": [
+                {
+                    "Type": "nap::CompositionComponent",
+                    "mID": "CompositionComponent",
+                    "Monday": "Monday",
+                    "Tuesday": "Tuesday",
+                    "Wednesday": "Wednesday",
+                    "Thursday": "Thursday",
+                    "Friday": "Friday",
+                    "Saturday": "Saturday",
+                    "Sunday": "Sunday",
+                    "CycleMode": "Off",
+                    "Index": 0,
+                    "DurationScale": 1.0
+                },
+                {
+                    "Type": "nap::ColorPaletteComponent",
+                    "mID": "ColorPaletteComponent",
+                    "IndexMap": "IndexMap",
+                    "PaletteGrid" : "PaletteGrid",
+                    "Index": 0,
+                    "VariationCycleMode": "Off",
+                    "DebugImage": "PaletteDebugImage",
+                    "Speed": 1.0
+                }
+            ],
+            "Children": [
+                "KalvertorenEntity",
+                "SingelEntity",
+                "HeiligewegEntity"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "DebugDisplayEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_4",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": [
+                "CompositionDebugDisplayEntity",
+                "IndexDebugDisplayEntity",
+                "PaletteDebugDisplayEntity"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "DefaultInputRouterEntity",
+            "Components": [
+                {
+                    "Type": "nap::DefaultInputRouterComponent",
+                    "mID": "nap::DefaultInputRouterComponent"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "DisplayEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_6",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::SelectLedMeshComponent",
+                    "mID": "SelectLedMeshComponent",
+                    "Meshes": [
+                        "HeiligewegLedMesh",
+                        "KalverLedMesh",
+                        "SingelLedMesh"
+                    ],
+                    "TriangleComponent": "./RenderableTriangleLedMeshComponent",
+                    "FrameComponent": "./RenderableFrameLedMeshComponent",
+                    "Index": 0
+                },
+                {
+                    "Type": "nap::SyncLedMaterialComponent",
+                    "mID": "SyncLedComponent",
+                    "Pointlight": "PointlightComponent",
+                    "PointlightTransform": "PointlightTransformComponent",
+                    "CameraTransform": "ScenecameraTransformComponent",
+                    "SelectMeshComponent": "./SelectLedMeshComponent"
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "RenderableTriangleLedMeshComponent",
+                    "Mesh": "KalverMesh",
+                    "MaterialInstance": {
+                        "Material": "VertexColorMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "RenderableFrameLedMeshComponent",
+                    "Mesh": "KalverFrameMesh",
+                    "MaterialInstance": {
+                        "Material": "FrameMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "HeiligewegEntity",
+            "Components": [
+                {
+                    "Type": "nap::SelectColorMethodComponent",
+                    "mID": "ColorMethodSelectorHeiligeweg"
+                },
+                {
+                    "Type": "nap::ApplyBBColorComponent",
+                    "mID": "nap::ApplyBBColorComponent_2",
+                    "Mesh": "HeiligewegMesh",
+                    "Selector": "./ColorMethodSelectorHeiligeweg"
+                },
+                {
+                    "Type": "nap::ApplyTracerColorComponent",
+                    "mID": "nap::ApplyTracerColorComponent_2",
+                    "Mesh": "HeiligewegMesh",
+                    "Selector": "./ColorMethodSelectorHeiligeweg"
+                },
+                {
+                    "Type": "nap::ApplyCompositionComponent",
+                    "mID": "nap::ApplyCompositionComponent_2",
+                    "Mesh": "HeiligewegMesh",
+                    "Selector": "./ColorMethodSelectorHeiligeweg",
+                    "CompositionRenderer": "RenderCompositionComponent",
+                    "ColorPaletteComponent": "../ColorPaletteComponent",
+                    "ShowIndexColors": false,
+                    "Intensity": 1.0
+                },
+                {
+                    "Type": "nap::MeshToArtnetComponent",
+                    "mID": "nap::MeshToArtnetComponent_2",
+                    "Mesh": "HeiligewegMesh",
+                    "Controllers": [
+                        "Universe4",
+                        "Universe5",
+                        "Universe8"
+                    ]
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "IndexDebugDisplayEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_2",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "RenderableIndexDebugMeshComponent",
+                    "Mesh": "ColorDebugMesh",
+                    "MaterialInstance": {
+                        "Material": "DebugMaterial",
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformTexture2D",
+                                "mID": "nap::UniformTexture2D_4",
+                                "Name": "debugImage",
+                                "Texture": "IndexMap"
+                            }
+                        ],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NoReadWrite"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "KalvertorenEntity",
+            "Components": [
+                {
+                    "Type": "nap::SelectColorMethodComponent",
+                    "mID": "ColorMethodSelectorKalver"
+                },
+                {
+                    "Type": "nap::ApplyBBColorComponent",
+                    "mID": "nap::ApplyBBColorComponent",
+                    "Mesh": "KalverMesh",
+                    "Selector": "./ColorMethodSelectorKalver"
+                },
+                {
+                    "Type": "nap::ApplyTracerColorComponent",
+                    "mID": "nap::ApplyTracerColorComponent",
+                    "Mesh": "KalverMesh",
+                    "Selector": "./ColorMethodSelectorKalver"
+                },
+                {
+                    "Type": "nap::ApplyCompositionComponent",
+                    "mID": "nap::ApplyCompositionComponent",
+                    "Mesh": "KalverMesh",
+                    "Selector": "./ColorMethodSelectorKalver",
+                    "CompositionRenderer": "RenderCompositionComponent",
+                    "ColorPaletteComponent": "../ColorPaletteComponent",
+                    "ShowIndexColors": false,
+                    "Intensity": 1.0
+                },
+                {
+                    "Type": "nap::MeshToArtnetComponent",
+                    "mID": "nap::MeshToArtnetComponent",
+                    "Mesh": "KalverMesh",
+                    "Controllers": [
+                        "Universe2",
+                        "Universe3",
+                        "Universe6",
+                        "Universe0",
+                        "Universe1"
+                    ]
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "LightEntity",
+            "Components": [
+                {
+                    "Type": "nap::PointlightComponent",
+                    "mID": "PointlightComponent",
+                    "Intensity": 1.0,
+                    "Attenuation": 0.00009999999747378752
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "PointlightTransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 10.0,
+                            "y": 40.0,
+                            "z": -10.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "PaletteDebugDisplayEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_3",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "RenderablePaletteDebugMeshComponent",
+                    "Mesh": "ColorDebugMesh",
+                    "MaterialInstance": {
+                        "Material": "DebugMaterial",
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformTexture2D",
+                                "mID": "nap::UniformTexture2D_5",
+                                "Name": "debugImage",
+                                "Texture": "IndexMap"
+                            }
+                        ],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NoReadWrite"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "RenderCompositionEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_5",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderCompositionComponent",
+                    "mID": "RenderCompositionComponent",
+                    "TargetOne": "CompositionRenderTargetA",
+                    "TargetTwo": "CompositionRenderTargetB",
+                    "CompositionComponent": "CompositionComponent",
+                    "RenderComponent": "./RenderablePlaneMeshComponent",
+                    "CameraComponent": "CompositionCamera"
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "RenderablePlaneMeshComponent",
+                    "Mesh": "PlaneMesh",
+                    "MaterialInstance": {
+                        "Material": "CompositionMaterial",
+                        "Uniforms": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "SceneCameraEntity",
+            "Components": [
+                {
+                    "Type": "nap::PerspCameraComponent",
+                    "mID": "PerspCameraComponent",
+                    "Properties": {
+                        "FieldOfView": 40.0,
+                        "NearClippingPlane": 1.0,
+                        "FarClippingPlane": 1000.0,
+                        "GridDimensions": {
+                            "x": 1,
+                            "y": 1
+                        },
+                        "GridLocation": {
+                            "x": 0,
+                            "y": 0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::OrthoCameraComponent",
+                    "mID": "OrthoCameraComponent",
+                    "Properties": {
+                        "LeftPlane": 0.0,
+                        "RightPlane": 100.0,
+                        "TopPlane": 100.0,
+                        "BottomPlane": 0.0,
+                        "NearClippingPlane": 1.0,
+                        "FarClippingPlane": 1000.0
+                    }
+                },
+                {
+                    "Type": "nap::KeyInputComponent",
+                    "mID": "nap::KeyInputComponent"
+                },
+                {
+                    "Type": "nap::PointerInputComponent",
+                    "mID": "nap::PointerInputComponent"
+                },
+                {
+                    "Type": "nap::CameraController",
+                    "mID": "nap::CameraController",
+                    "LookAtTarget": "DisplayEntity"
+                },
+                {
+                    "Type": "nap::FirstPersonController",
+                    "mID": "nap::FirstPersonController",
+                    "MovementSpeed": 20.0,
+                    "RotateSpeed": 0.004999999888241291,
+                    "PerspCameraComponent": "PerspCameraComponent"
+                },
+                {
+                    "Type": "nap::OrbitController",
+                    "mID": "nap::OrbitController",
+                    "MovementSpeed": 0.5,
+                    "RotateSpeed": 0.004999999888241291,
+                    "PerspCameraComponent": "PerspCameraComponent"
+                },
+                {
+                    "Type": "nap::OrthoController",
+                    "mID": "nap::OrthoController",
+                    "ZoomSpeed": 0.25,
+                    "OrthoCameraComponent": "OrthoCameraComponent"
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "ScenecameraTransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 100.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "SingelEntity",
+            "Components": [
+                {
+                    "Type": "nap::SelectColorMethodComponent",
+                    "mID": "ColorMethodSelectorSingel"
+                },
+                {
+                    "Type": "nap::ApplyBBColorComponent",
+                    "mID": "nap::ApplyBBColorComponent_3",
+                    "Mesh": "SingelMesh",
+                    "Selector": "./ColorMethodSelectorSingel"
+                },
+                {
+                    "Type": "nap::ApplyTracerColorComponent",
+                    "mID": "nap::ApplyTracerColorComponent_3",
+                    "Mesh": "SingelMesh",
+                    "Selector": "./ColorMethodSelectorSingel"
+                },
+                {
+                    "Type": "nap::ApplyCompositionComponent",
+                    "mID": "nap::ApplyCompositionComponent_3",
+                    "Mesh": "SingelMesh",
+                    "Selector": "./ColorMethodSelectorSingel",
+                    "CompositionRenderer": "RenderCompositionComponent",
+                    "ColorPaletteComponent": "../ColorPaletteComponent",
+                    "ShowIndexColors": false,
+                    "Intensity": 1.0
+                },
+                {
+                    "Type": "nap::MeshToArtnetComponent",
+                    "mID": "nap::MeshToArtnetComponent_3",
+                    "Mesh": "SingelMesh",
+                    "Controllers": [
+                        "Universe7"
+                    ]
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Image",
+            "mID": "UVMap",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "ImagePath": "data/kalvertoren/uvmap.jpg",
+            "Compressed": false
+        },
+        {
+            "Type": "nap::ImageLayer",
+            "mID": "Background1",
+            "Path": "data/kalvertoren/backgrounds/background_1.png"
+        },
+        {
+            "Type": "nap::ImageLayer",
+            "mID": "Background2",
+            "Path": "data/kalvertoren/backgrounds/background_2.png"
+        },
+        {
+            "Type": "nap::ImageLayer",
+            "mID": "Background3",
+            "Path": "data/kalvertoren/backgrounds/background_3.png"
+        },
+        {
+            "Type": "nap::ImageLayer",
+            "mID": "Background4",
+            "Path": "data/kalvertoren/backgrounds/background_4.png"
+        },
+        {
+            "Type": "nap::ImageLayer",
+            "mID": "Background5",
+            "Path": "data/kalvertoren/backgrounds/background_5.png"
+        },
+        {
+            "Type": "nap::ImageLayer",
+            "mID": "Background6",
+            "Path": "data/kalvertoren/backgrounds/background_6.png"
+        },
+        {
+            "Type": "nap::ImageLayer",
+            "mID": "Background7",
+            "Path": "data/kalvertoren/backgrounds/background_7.png"
+        },
+        {
+            "Type": "nap::ImageLayer",
+            "mID": "Background8",
+            "Path": "data/kalvertoren/backgrounds/background_8.png"
+        },
+        {
+            "Type": "nap::ImageLayer",
+            "mID": "Background9",
+            "Path": "data/kalvertoren/backgrounds/background_9.png"
+        },
+        {
+            "Type": "nap::ImageLayer",
+            "mID": "Shape1",
+            "Path": "data/kalvertoren/shapes/shape_1.png"
+        },
+        {
+            "Type": "nap::ImageLayer",
+            "mID": "Shape2",
+            "Path": "data/kalvertoren/shapes/shape_2.png"
+        },
+        {
+            "Type": "nap::ImageLayer",
+            "mID": "Shape3",
+            "Path": "data/kalvertoren/shapes/shape_3.png"
+        },
+        {
+            "Type": "nap::ImageLayer",
+            "mID": "Shape4",
+            "Path": "data/kalvertoren/shapes/shape_4.png"
+        },
+        {
+            "Type": "nap::ImageLayer",
+            "mID": "Shape5",
+            "Path": "data/kalvertoren/shapes/shape_5.png"
+        },
+        {
+            "Type": "nap::ImageLayer",
+            "mID": "Shape6",
+            "Path": "data/kalvertoren/shapes/shape_6.png"
+        },
+        {
+            "Type": "nap::ImageSequenceLayer",
+            "mID": "Sequence1",
+            "BaseFilename": "data/kalvertoren/sequences/MOVE-1/move_1_%03d.png",
+            "FPS": 5.0
+        },
+        {
+            "Type": "nap::ImageSequenceLayer",
+            "mID": "Sequence2",
+            "BaseFilename": "data/kalvertoren/sequences/MOVE-2/move_2_%03d.png",
+            "FPS": 5.0
+        },
+        {
+            "Type": "nap::ImageSequenceLayer",
+            "mID": "Sequence3",
+            "BaseFilename": "data/kalvertoren/sequences/MOVE-3/move_3_%03d.png",
+            "FPS": 5.0
+        },
+        {
+            "Type": "nap::ImageSequenceLayer",
+            "mID": "Sequence4",
+            "BaseFilename": "data/kalvertoren/sequences/MOVE-4/move_4_%03d.png",
+            "FPS": 5.0
+        },
+        {
+            "Type": "nap::ImageSequenceLayer",
+            "mID": "Sequence5",
+            "BaseFilename": "data/kalvertoren/sequences/MOVE-5/move_5_%04d.png",
+            "FPS": 5.0
+        },
+        {
+            "Type": "nap::ImageSequenceLayer",
+            "mID": "TestSequence",
+            "BaseFilename": "data/kalvertoren/sequences/test/%d.png",
+            "FPS": 1.0
+        },
+        {
+            "Type": "nap::IndexMap",
+            "mID": "IndexMap",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "Path": "data/kalvertoren/index_map/index_map.png",
+            "ColorCount": 13
+        },
+        {
+            "Type": "nap::Image",
+            "mID": "PaletteDebugImage",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 20
+            },
+            "Usage": "DynamicWrite",
+            "ImagePath": "data/kalvertoren/index_map/debug_palette.png"
+        },        
+        {
+            "Type": "nap::LedColorContainer",
+            "mID": "LedColorContainer",
+            "IndexMap": "IndexMap",
+            "Palettes": [
+                "Palette1",
+                "Palette2",
+                "Palette3",
+                "Palette4",
+                "Palette5",
+                "Palette6"
+            ]
+        },
+        {
+            "Type": "nap::LedColorPalette",
+            "mID": "Palette1",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "Path": "data/kalvertoren/palettes/palette_1.png",
+            "LedColors": [
+                {
+                    "Values": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ]
+                },
+                {
+                    "Values": [
+                        255,
+                        255,
+                        255,
+                        200
+                    ]
+                },
+                {
+                    "Values": [
+                        255,
+                        255,
+                        20,
+                        0
+                    ]
+                },
+                {
+                    "Values": [
+                        120,
+                        255,
+                        155,
+                        0
+                    ]
+                }
+            ]
+        },
+        {
+            "Type": "nap::LedColorPalette",
+            "mID": "Palette2",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "Path": "data/kalvertoren/palettes/palette_2.png",
+            "LedColors": [
+                {
+                    "Values": [
+                        255,
+                        255,
+                        255,
+                        255
+                    ]
+                },
+                {
+                    "Values": [
+                        253,
+                        87,
+                        122,
+                        0
+                    ]
+                },
+                {
+                    "Values": [
+                        255,
+                        9,
+                        9,
+                        0
+                    ]
+                },
+                {
+                    "Values": [
+                        50,
+                        255,
+                        255,
+                        0
+                    ]
+                }
+            ]
+        },
+        {
+            "Type": "nap::LedColorPalette",
+            "mID": "Palette3",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "Path": "data/kalvertoren/palettes/palette_3.png",
+            "LedColors": [
+                {
+                    "Values": [
+                        12,
+                        0,
+                        2,
+                        0
+                    ]
+                },
+                {
+                    "Values": [
+                        225,
+                        255,
+                        255,
+                        0
+                    ]
+                },
+                {
+                    "Values": [
+                        50,
+                        10,
+                        0,
+                        0
+                    ]
+                },
+                {
+                    "Values": [
+                        0,
+                        30,
+                        8,
+                        0
+                    ]
+                }
+            ]
+        },
+        {
+            "Type": "nap::LedColorPalette",
+            "mID": "Palette4",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "Path": "data/kalvertoren/palettes/palette_4.png",
+            "LedColors": [
+                {
+                    "Values": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ]
+                },
+                {
+                    "Values": [
+                        255,
+                        255,
+                        255,
+                        50
+                    ]
+                },
+                {
+                    "Values": [
+                        150,
+                        150,
+                        0,
+                        0
+                    ]
+                },
+                {
+                    "Values": [
+                        252,
+                        14,
+                        14,
+                        0
+                    ]
+                },
+                {
+                    "Values": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ]
+                },
+                {
+                    "Values": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ]
+                },
+                {
+                    "Values": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ]
+                },
+                {
+                    "Values": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ]
+                },
+                {
+                    "Values": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ]
+                },
+                {
+                    "Values": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ]
+                },
+                {
+                    "Values": [
+                        253,
+                        87,
+                        122,
+                        0
+                    ]
+                },
+                {
+                    "Values": [
+                        0,
+                        20,
+                        5,
+                        0
+                    ]
+                }
+            ]
+        },
+        {
+            "Type": "nap::LedColorPalette",
+            "mID": "Palette5",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "Path": "data/kalvertoren/palettes/palette_5.png",
+            "LedColors": [
+                {
+                    "Values": [
+                        0,
+                        0,
+                        255,
+                        0
+                    ]
+                },
+                 {
+                    "Values": [
+                        255,
+                        255,
+                        255,
+                        255
+                    ]
+                }
+            ]
+        },
+        {
+            "Type": "nap::LedColorPalette",
+            "mID": "Palette6",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "Path": "data/kalvertoren/palettes/palette_6.png",
+            "LedColors": [
+                {
+                    "Values": [
+                        255,
+                        255,
+                        255,
+                        25
+                    ]
+                },
+                {
+                    "Values": [
+                        255,
+                        46,
+                        91,
+                        0
+                    ]
+                }
+            ]
+        },
+        
+        {
+            "Type": "nap::LedColorPaletteGrid",
+            "mID": "PaletteGrid",
+            "GridPath": "data/kalvertoren/palettes/palette_grid.png",
+            "GridSize": 20,
+            "GridColorsPath": "data/kalvertoren/palettes/palette_grid_ledcolors.txt",
+            "WeekColors": [
+                "Week1",
+                "Week2",
+                "Week3",
+                "Week4",
+                "Week5",
+                "Week6",
+                "Week7",
+                "Week8",
+                "Week9",
+                "Week10",
+                "Week11",
+                "Week12",
+                "Week13",
+                "Week14",
+                "Week15",
+                "Week16",
+                "Week17",
+                "Week18",
+                "Week19",
+                "Week20",
+                "Week21",
+                "Week22",
+                "Week23",
+                "Week24",
+                "Week25",
+                "Week26",
+                "Week27",
+                "Week28",
+                "Week29",
+                "Week30",
+                "Week31",
+                "Week32",
+                "Week33",
+                "Week34",
+                "Week35",
+                "Week36",
+                "Week37",
+                "Week38",
+                "Week39",
+                "Week40",
+                "Week41",
+                "Week42",
+                "Week43",
+                "Week44",
+                "Week45",
+                "Week46",
+                "Week47",
+                "Week48",
+                "Week49",
+                "Week50",
+                "Week51",
+                "Week52"
+            ]
+        },
+        
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week1",
+            "Palette": "A6 B11 C31 D40",
+            "Variations": [
+                [0, 1, 2, 3],
+                [3, 0, 1, 2],
+                [2, 3, 0, 1],
+                [1, 2, 3, 0],
+                [3, 2, 1, 0],
+                [3, 1, 0, 2]
+            ]
+        },
 
-		{
-			"Type" 		: "nap::ArtNetController",
-			"mID" 		: "Universe4",
-			"Subnet" 	: 0,
-			"Universe" 	: 4,
-			"WaitTime"	: 2.0
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week2",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" 		: "nap::ArtNetController",
-			"mID" 		: "Universe5",
-			"Subnet" 	: 0,
-			"Universe" 	: 5,
-			"WaitTime"	: 2.0
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week3",
+            "Palette": "D12 A4 I36 I29 A32 A24 L6",
+            "Variations": [
+                [
+                    0,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    0,
+                    1,
+                    0,
+                    1,
+                    0
+                ],
+                [
+                    0,
+                    1,
+                    0,
+                    2
+                ],
+                [
+                    0,
+                    1,
+                    0,
+                    3
+                ],
+                [
+                    0,
+                    1,
+                    0,
+                    4
+                ],
+                [
+                    0,
+                    1,
+                    0,
+                    5
+                ],
+                [
+                    0,
+                    1,
+                    0,
+                    6
+                ],
+                [
+                    0,
+                    1,
+                    2,
+                    0
+                ],
+                [
+                    0,
+                    1,
+                    2,
+                    1
+                ],
+                [
+                    0,
+                    1,
+                    2,
+                    2
+                ],
+                [
+                    0,
+                    1,
+                    2,
+                    3
+                ],
+                [
+                    0,
+                    1,
+                    2,
+                    4
+                ],
+                [
+                    0,
+                    1,
+                    2,
+                    5
+                ],
+                [
+                    0,
+                    1,
+                    2,
+                    6
+                ],
+                [
+                    0,
+                    1,
+                    3,
+                    0
+                ],
+                [
+                    0,
+                    1,
+                    3,
+                    1
+                ],
+                [
+                    0,
+                    1,
+                    3,
+                    2
+                ],
+                [
+                    0,
+                    1,
+                    3,
+                    3
+                ],
+                [
+                    0,
+                    1,
+                    3,
+                    4
+                ],
+                [
+                    0,
+                    1,
+                    3,
+                    5
+                ],
+                [
+                    0,
+                    1,
+                    3,
+                    6
+                ],
+                [
+                    0,
+                    1,
+                    4,
+                    0
+                ],
+                [
+                    0,
+                    1,
+                    4,
+                    1
+                ],
+                [
+                    0,
+                    1,
+                    4,
+                    2
+                ],
+                [
+                    0,
+                    1,
+                    4,
+                    3
+                ],
+                [
+                    0,
+                    1,
+                    4,
+                    4
+                ],
+                [
+                    0,
+                    1,
+                    4,
+                    5
+                ],
+                [
+                    0,
+                    1,
+                    4,
+                    6
+                ],
+                [
+                    0,
+                    1,
+                    5,
+                    0
+                ],
+                [
+                    0,
+                    1,
+                    5,
+                    1
+                ],
+                [
+                    0,
+                    1,
+                    5,
+                    2
+                ],
+                [
+                    0,
+                    1,
+                    5,
+                    3
+                ],
+                [
+                    0,
+                    1,
+                    5,
+                    4
+                ],
+                [
+                    0,
+                    1,
+                    5,
+                    5
+                ],
+                [
+                    0,
+                    1,
+                    5,
+                    6
+                ],
+                [
+                    0,
+                    1,
+                    6,
+                    0
+                ],
+                [
+                    0,
+                    1,
+                    6,
+                    1
+                ],
+                [
+                    0,
+                    1,
+                    6,
+                    2
+                ],
+                [
+                    0,
+                    1,
+                    6,
+                    3
+                ],
+                [
+                    0,
+                    1,
+                    6,
+                    4
+                ],
+                [
+                    0,
+                    1,
+                    6,
+                    5
+                ],
+                [
+                    0,
+                    1,
+                    6,
+                    6
+                ],
+                [
+                    2,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    2,
+                    1,
+                    0,
+                    1
+                ],
+                [
+                    2,
+                    1,
+                    0,
+                    2
+                ],
+                [
+                    2,
+                    1,
+                    0,
+                    3
+                ],
+                [
+                    2,
+                    1,
+                    0,
+                    4
+                ],
+                [
+                    2,
+                    1,
+                    0,
+                    5
+                ],
+                [
+                    2,
+                    1,
+                    0,
+                    6
+                ],
+                [
+                    2,
+                    1,
+                    2,
+                    0
+                ],
+                [
+                    2,
+                    1,
+                    2,
+                    1
+                ],
+                [
+                    2,
+                    1,
+                    2,
+                    2
+                ],
+                [
+                    2,
+                    1,
+                    2,
+                    3
+                ],
+                [
+                    2,
+                    1,
+                    2,
+                    4
+                ],
+                [
+                    2,
+                    1,
+                    2,
+                    5
+                ],
+                [
+                    2,
+                    1,
+                    2,
+                    6
+                ],
+                [
+                    2,
+                    1,
+                    3,
+                    0
+                ],
+                [
+                    2,
+                    1,
+                    3,
+                    1
+                ],
+                [
+                    2,
+                    1,
+                    3,
+                    2
+                ],
+                [
+                    2,
+                    1,
+                    3,
+                    3
+                ],
+                [
+                    2,
+                    1,
+                    3,
+                    4
+                ],
+                [
+                    2,
+                    1,
+                    3,
+                    5
+                ],
+                [
+                    2,
+                    1,
+                    3,
+                    6
+                ],
+                [
+                    2,
+                    1,
+                    4,
+                    0
+                ],
+                [
+                    2,
+                    1,
+                    4,
+                    1
+                ],
+                [
+                    2,
+                    1,
+                    4,
+                    2
+                ],
+                [
+                    2,
+                    1,
+                    4,
+                    3
+                ],
+                [
+                    2,
+                    1,
+                    4,
+                    4
+                ],
+                [
+                    2,
+                    1,
+                    4,
+                    5
+                ],
+                [
+                    2,
+                    1,
+                    4,
+                    6
+                ],
+                [
+                    2,
+                    1,
+                    5,
+                    0
+                ],
+                [
+                    2,
+                    1,
+                    5,
+                    1
+                ],
+                [
+                    2,
+                    1,
+                    5,
+                    2
+                ],
+                [
+                    2,
+                    1,
+                    5,
+                    3
+                ],
+                [
+                    2,
+                    1,
+                    5,
+                    4
+                ],
+                [
+                    2,
+                    1,
+                    5,
+                    5
+                ],
+                [
+                    2,
+                    1,
+                    5,
+                    6
+                ],
+                [
+                    2,
+                    1,
+                    6,
+                    0
+                ],
+                [
+                    2,
+                    1,
+                    6,
+                    1
+                ],
+                [
+                    2,
+                    1,
+                    6,
+                    2
+                ],
+                [
+                    2,
+                    1,
+                    6,
+                    3
+                ],
+                [
+                    2,
+                    1,
+                    6,
+                    4
+                ],
+                [
+                    2,
+                    1,
+                    6,
+                    5
+                ],
+                [
+                    2,
+                    1,
+                    6,
+                    6
+                ],
+                [
+                    3,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    3,
+                    1,
+                    0,
+                    1
+                ],
+                [
+                    3,
+                    1,
+                    0,
+                    2
+                ],
+                [
+                    3,
+                    1,
+                    0,
+                    3
+                ],
+                [
+                    3,
+                    1,
+                    0,
+                    4
+                ],
+                [
+                    3,
+                    1,
+                    0,
+                    5
+                ],
+                [
+                    3,
+                    1,
+                    0,
+                    6
+                ],
+                [
+                    3,
+                    1,
+                    2,
+                    0
+                ],
+                [
+                    3,
+                    1,
+                    2,
+                    1
+                ],
+                [
+                    3,
+                    1,
+                    2,
+                    2
+                ],
+                [
+                    3,
+                    1,
+                    2,
+                    3
+                ],
+                [
+                    3,
+                    1,
+                    2,
+                    4
+                ],
+                [
+                    3,
+                    1,
+                    2,
+                    5
+                ],
+                [
+                    3,
+                    1,
+                    2,
+                    6
+                ],
+                [
+                    3,
+                    1,
+                    3,
+                    0
+                ],
+                [
+                    3,
+                    1,
+                    3,
+                    1
+                ],
+                [
+                    3,
+                    1,
+                    3,
+                    2
+                ],
+                [
+                    3,
+                    1,
+                    3,
+                    3
+                ],
+                [
+                    3,
+                    1,
+                    3,
+                    4
+                ],
+                [
+                    3,
+                    1,
+                    3,
+                    5
+                ],
+                [
+                    3,
+                    1,
+                    3,
+                    6
+                ],
+                [
+                    3,
+                    1,
+                    4,
+                    0
+                ],
+                [
+                    3,
+                    1,
+                    4,
+                    1
+                ],
+                [
+                    3,
+                    1,
+                    4,
+                    2
+                ],
+                [
+                    3,
+                    1,
+                    4,
+                    3
+                ],
+                [
+                    3,
+                    1,
+                    4,
+                    4
+                ],
+                [
+                    3,
+                    1,
+                    4,
+                    5
+                ],
+                [
+                    3,
+                    1,
+                    4,
+                    6
+                ],
+                [
+                    3,
+                    1,
+                    5,
+                    0
+                ],
+                [
+                    3,
+                    1,
+                    5,
+                    1
+                ],
+                [
+                    3,
+                    1,
+                    5,
+                    2
+                ],
+                [
+                    3,
+                    1,
+                    5,
+                    3
+                ],
+                [
+                    3,
+                    1,
+                    5,
+                    4
+                ],
+                [
+                    3,
+                    1,
+                    5,
+                    5
+                ],
+                [
+                    3,
+                    1,
+                    5,
+                    6
+                ],
+                [
+                    3,
+                    1,
+                    6,
+                    0
+                ],
+                [
+                    3,
+                    1,
+                    6,
+                    1
+                ],
+                [
+                    3,
+                    1,
+                    6,
+                    2
+                ],
+                [
+                    3,
+                    1,
+                    6,
+                    3
+                ],
+                [
+                    3,
+                    1,
+                    6,
+                    4
+                ],
+                [
+                    3,
+                    1,
+                    6,
+                    5
+                ],
+                [
+                    3,
+                    1,
+                    6,
+                    6
+                ],
+                [
+                    4,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    4,
+                    1,
+                    0,
+                    1
+                ],
+                [
+                    4,
+                    1,
+                    0,
+                    2
+                ],
+                [
+                    4,
+                    1,
+                    0,
+                    3
+                ],
+                [
+                    4,
+                    1,
+                    0,
+                    4
+                ],
+                [
+                    4,
+                    1,
+                    0,
+                    5
+                ],
+                [
+                    4,
+                    1,
+                    0,
+                    6
+                ],
+                [
+                    4,
+                    1,
+                    2,
+                    0
+                ],
+                [
+                    4,
+                    1,
+                    2,
+                    1
+                ],
+                [
+                    4,
+                    1,
+                    2,
+                    2
+                ],
+                [
+                    4,
+                    1,
+                    2,
+                    3
+                ],
+                [
+                    4,
+                    1,
+                    2,
+                    4
+                ],
+                [
+                    4,
+                    1,
+                    2,
+                    5
+                ],
+                [
+                    4,
+                    1,
+                    2,
+                    6
+                ],
+                [
+                    4,
+                    1,
+                    3,
+                    0
+                ],
+                [
+                    4,
+                    1,
+                    3,
+                    1
+                ],
+                [
+                    4,
+                    1,
+                    3,
+                    2
+                ],
+                [
+                    4,
+                    1,
+                    3,
+                    3
+                ],
+                [
+                    4,
+                    1,
+                    3,
+                    4
+                ],
+                [
+                    4,
+                    1,
+                    3,
+                    5
+                ],
+                [
+                    4,
+                    1,
+                    3,
+                    6
+                ],
+                [
+                    4,
+                    1,
+                    4,
+                    0
+                ],
+                [
+                    4,
+                    1,
+                    4,
+                    1
+                ],
+                [
+                    4,
+                    1,
+                    4,
+                    2
+                ],
+                [
+                    4,
+                    1,
+                    4,
+                    3
+                ],
+                [
+                    4,
+                    1,
+                    4,
+                    4
+                ],
+                [
+                    4,
+                    1,
+                    4,
+                    5
+                ],
+                [
+                    4,
+                    1,
+                    4,
+                    6
+                ],
+                [
+                    4,
+                    1,
+                    5,
+                    0
+                ],
+                [
+                    4,
+                    1,
+                    5,
+                    1
+                ],
+                [
+                    4,
+                    1,
+                    5,
+                    2
+                ],
+                [
+                    4,
+                    1,
+                    5,
+                    3
+                ],
+                [
+                    4,
+                    1,
+                    5,
+                    4
+                ],
+                [
+                    4,
+                    1,
+                    5,
+                    5
+                ],
+                [
+                    4,
+                    1,
+                    5,
+                    6
+                ],
+                [
+                    4,
+                    1,
+                    6,
+                    0
+                ],
+                [
+                    4,
+                    1,
+                    6,
+                    1
+                ],
+                [
+                    4,
+                    1,
+                    6,
+                    2
+                ],
+                [
+                    4,
+                    1,
+                    6,
+                    3
+                ],
+                [
+                    4,
+                    1,
+                    6,
+                    4
+                ],
+                [
+                    4,
+                    1,
+                    6,
+                    5
+                ],
+                [
+                    4,
+                    1,
+                    6,
+                    6
+                ],
+                [
+                    5,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    5,
+                    1,
+                    0,
+                    1
+                ],
+                [
+                    5,
+                    1,
+                    0,
+                    2
+                ],
+                [
+                    5,
+                    1,
+                    0,
+                    3
+                ],
+                [
+                    5,
+                    1,
+                    0,
+                    4
+                ],
+                [
+                    5,
+                    1,
+                    0,
+                    5
+                ],
+                [
+                    5,
+                    1,
+                    0,
+                    6
+                ],
+                [
+                    5,
+                    1,
+                    2,
+                    0
+                ],
+                [
+                    5,
+                    1,
+                    2,
+                    1
+                ],
+                [
+                    5,
+                    1,
+                    2,
+                    2
+                ],
+                [
+                    5,
+                    1,
+                    2,
+                    3
+                ],
+                [
+                    5,
+                    1,
+                    2,
+                    4
+                ],
+                [
+                    5,
+                    1,
+                    2,
+                    5
+                ],
+                [
+                    5,
+                    1,
+                    2,
+                    6
+                ],
+                [
+                    5,
+                    1,
+                    3,
+                    0
+                ],
+                [
+                    5,
+                    1,
+                    3,
+                    1
+                ],
+                [
+                    5,
+                    1,
+                    3,
+                    2
+                ],
+                [
+                    5,
+                    1,
+                    3,
+                    3
+                ],
+                [
+                    5,
+                    1,
+                    3,
+                    4
+                ],
+                [
+                    5,
+                    1,
+                    3,
+                    5
+                ],
+                [
+                    5,
+                    1,
+                    3,
+                    6
+                ],
+                [
+                    5,
+                    1,
+                    4,
+                    0
+                ],
+                [
+                    5,
+                    1,
+                    4,
+                    1
+                ],
+                [
+                    5,
+                    1,
+                    4,
+                    2
+                ],
+                [
+                    5,
+                    1,
+                    4,
+                    3
+                ],
+                [
+                    5,
+                    1,
+                    4,
+                    4
+                ],
+                [
+                    5,
+                    1,
+                    4,
+                    5
+                ],
+                [
+                    5,
+                    1,
+                    4,
+                    6
+                ],
+                [
+                    5,
+                    1,
+                    5,
+                    0
+                ],
+                [
+                    5,
+                    1,
+                    5,
+                    1
+                ],
+                [
+                    5,
+                    1,
+                    5,
+                    2
+                ],
+                [
+                    5,
+                    1,
+                    5,
+                    3
+                ],
+                [
+                    5,
+                    1,
+                    5,
+                    4
+                ],
+                [
+                    5,
+                    1,
+                    5,
+                    5
+                ],
+                [
+                    5,
+                    1,
+                    5,
+                    6
+                ],
+                [
+                    5,
+                    1,
+                    6,
+                    0
+                ],
+                [
+                    5,
+                    1,
+                    6,
+                    1
+                ],
+                [
+                    5,
+                    1,
+                    6,
+                    2
+                ],
+                [
+                    5,
+                    1,
+                    6,
+                    3
+                ],
+                [
+                    5,
+                    1,
+                    6,
+                    4
+                ],
+                [
+                    5,
+                    1,
+                    6,
+                    5
+                ],
+                [
+                    5,
+                    1,
+                    6,
+                    6
+                ],
+                [
+                    6,
+                    1,
+                    0,
+                    0
+                ],
+                [
+                    6,
+                    1,
+                    0,
+                    1
+                ],
+                [
+                    6,
+                    1,
+                    0,
+                    2
+                ],
+                [
+                    6,
+                    1,
+                    0,
+                    3
+                ],
+                [
+                    6,
+                    1,
+                    0,
+                    4
+                ],
+                [
+                    6,
+                    1,
+                    0,
+                    5
+                ],
+                [
+                    6,
+                    1,
+                    0,
+                    6
+                ],
+                [
+                    6,
+                    1,
+                    2,
+                    0
+                ],
+                [
+                    6,
+                    1,
+                    2,
+                    1
+                ],
+                [
+                    6,
+                    1,
+                    2,
+                    2
+                ],
+                [
+                    6,
+                    1,
+                    2,
+                    3
+                ],
+                [
+                    6,
+                    1,
+                    2,
+                    4
+                ],
+                [
+                    6,
+                    1,
+                    2,
+                    5
+                ],
+                [
+                    6,
+                    1,
+                    2,
+                    6
+                ],
+                [
+                    6,
+                    1,
+                    3,
+                    0
+                ],
+                [
+                    6,
+                    1,
+                    3,
+                    1
+                ],
+                [
+                    6,
+                    1,
+                    3,
+                    2
+                ],
+                [
+                    6,
+                    1,
+                    3,
+                    3
+                ],
+                [
+                    6,
+                    1,
+                    3,
+                    4
+                ],
+                [
+                    6,
+                    1,
+                    3,
+                    5
+                ],
+                [
+                    6,
+                    1,
+                    3,
+                    6
+                ],
+                [
+                    6,
+                    1,
+                    4,
+                    0
+                ],
+                [
+                    6,
+                    1,
+                    4,
+                    1
+                ],
+                [
+                    6,
+                    1,
+                    4,
+                    2
+                ],
+                [
+                    6,
+                    1,
+                    4,
+                    3
+                ],
+                [
+                    6,
+                    1,
+                    4,
+                    4
+                ],
+                [
+                    6,
+                    1,
+                    4,
+                    5
+                ],
+                [
+                    6,
+                    1,
+                    4,
+                    6
+                ],
+                [
+                    6,
+                    1,
+                    5,
+                    0
+                ],
+                [
+                    6,
+                    1,
+                    5,
+                    1
+                ],
+                [
+                    6,
+                    1,
+                    5,
+                    2
+                ],
+                [
+                    6,
+                    1,
+                    5,
+                    3
+                ],
+                [
+                    6,
+                    1,
+                    5,
+                    4
+                ],
+                [
+                    6,
+                    1,
+                    5,
+                    5
+                ],
+                [
+                    6,
+                    1,
+                    5,
+                    6
+                ],
+                [
+                    6,
+                    1,
+                    6,
+                    0
+                ],
+                [
+                    6,
+                    1,
+                    6,
+                    1
+                ],
+                [
+                    6,
+                    1,
+                    6,
+                    2
+                ],
+                [
+                    6,
+                    1,
+                    6,
+                    3
+                ],
+                [
+                    6,
+                    1,
+                    6,
+                    4
+                ],
+                [
+                    6,
+                    1,
+                    6,
+                    5
+                ],
+                [
+                    6,
+                    1,
+                    6,
+                    6
+                ]
+            ]
+        },
 
-		{
-			"Type" 		: "nap::ArtNetController",
-			"mID" 		: "Universe8",
-			"Subnet" 	: 0,
-			"Universe" 	: 8,
-			"WaitTime"	: 2.0
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week4",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" 		: "nap::ArtNetController",
-			"mID" 		: "Universe2",
-			"Subnet" 	: 0,
-			"Universe" 	: 2,
-			"WaitTime"	: 2.0
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week5",
+            "Palette": "A6 B11 C31 D40"
+        },
+        
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week6",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" 		: "nap::ArtNetController",
-			"mID" 		: "Universe3",
-			"Subnet" 	: 0,
-			"Universe" 	: 3,
-			"WaitTime"	: 2.0
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week7",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" 		: "nap::ArtNetController",
-			"mID" 		: "Universe6",
-			"Subnet" 	: 0,
-			"Universe" 	: 6,
-			"WaitTime"	: 2.0
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week8",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" 		: "nap::ArtNetController",
-			"mID" 		: "Universe0",
-			"Subnet" 	: 0,
-			"Universe" 	: 0,
-			"WaitTime"	: 2.0
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week9",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" 		: "nap::ArtNetController",
-			"mID" 		: "Universe1",
-			"Subnet" 	: 0,
-			"Universe" 	: 1,
-			"WaitTime"	: 2.0
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week10",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" 		: "nap::ArtNetController",
-			"mID" 		: "Universe7",
-			"Subnet" 	: 0,
-			"Universe" 	: 7,
-			"WaitTime"	: 2.0
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week11",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" : "nap::IndexMap",
-			"mID" : "IndexMap",
-			"Path" : "data/kalvertoren/index_map/index_map.png",
-			"ColorCount" : 12
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week12",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" : "nap::LedColorPalette",
-			"mID" : "Palette1",
-			"Path" : "data/kalvertoren/palettes/palette_1.png",
-			"LedColors" : 
-			[
-     			{
-					"Values" : 
-					[255, 254, 254, 255]
-				},
-				{
-					"Values" : 
-					[255, 247, 0, 228]
-				},
-				{
-					"Values" : 
-					[251, 0, 44, 0]
-				},
-				{
-					"Values" : 
-					[0, 255, 255, 1]
-				},
-				{
-					"Values" : 
-					[109, 251, 78, 35]
-				},
-				{
-					"Values" : 
-					[255, 210, 0, 0]
-				}
-			]
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week13",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" : "nap::LedColorPalette",
-			"mID" : "Palette2",
-			"Path" : "data/kalvertoren/palettes/palette_2.png",
-			"LedColors" : 
-			[
-     			{
-					"Values" : 
-					[230, 64, 64, 0]
-				},
-				{
-					"Values" : 
-					[255, 1, 98, 0]
-				}
-			]
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week14",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" : "nap::LedColorPalette",
-			"mID" : "Palette3",
-			"Path" : "data/kalvertoren/palettes/palette_3.png",
-			"LedColors" : 
-			[
-     			{
-					"Values" : 
-					[255, 254, 254, 255]
-				},
-				{
-					"Values" : 
-					[255, 247, 0, 228]
-				},
-				{
-					"Values" : 
-					[251, 0, 44, 0]
-				},
-				{
-					"Values" : 
-					[0, 255, 255, 1]
-				},
-				{
-					"Values" : 
-					[109, 251, 78, 35]
-				},
-				{
-					"Values" : 
-					[255, 210, 0, 0]
-				}
-			]
-		},
-		
-		{
-			"Type" : "nap::LedColorPalette",
-			"mID" : "Palette4",
-			"Path" : "data/kalvertoren/palettes/palette_4.png",
-			"LedColors" : 
-			[
-     			{
-					"Values" : 
-					[255, 254, 254, 255]
-				},
-				{
-					"Values" : 
-					[255, 247, 0, 228]
-				},
-				{
-					"Values" : 
-					[0, 0, 0, 0]
-				},
-				{
-					"Values" : 
-					[0, 255, 255, 1]
-				},
-				{
-					"Values" : 
-					[109, 251, 78, 35]
-				},
-				{
-					"Values" : 
-					[255, 210, 0, 0]
-				}
-			]
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week15",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" : "nap::LedColorContainer",
-			"mID" : "LedColorContainer",
-			"IndexMap" : "IndexMap",
-			"Palettes" :
-			[
-				"Palette1",
-				"Palette2",
-				"Palette3",
-				"Palette4"
-			] 
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week16",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" : "nap::ImageLayer",
-			"mID" : "HelloLayer1",
-			"Path" :"data/kalvertoren/compositions/hello/layer1/layer_1.BMP"
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week17",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" : "nap::ImageLayer",
-			"mID" : "HelloLayer2",
-			"Path" :"data/kalvertoren/compositions/hello/layer2/layer_2.BMP"
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week18",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" : "nap::ImageLayer",
-			"mID" : "HelloLayer3",
-			"Path" :"data/kalvertoren/compositions/hello/layer3/layer_3.png"
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week19",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" : "nap::ImageSequenceLayer",
-			"mID" : "HelloLayer4",
-			"FPS" : 6,
-			"BaseFilename" : "data/kalvertoren/compositions/hello/layer4/%d.png"
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week20",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" : "nap::Composition",
-			"mID"  : "TestComposition",
-			"Layers" :
-			[
-				"HelloLayer1",
-				"HelloLayer2",
-				"HelloLayer3",
-				"HelloLayer4"
-			] 
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week21",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" : "nap::ImageLayer",
-			"mID" : "GreenLayer1",
-			"Path" :"data/kalvertoren/compositions/green/layer1/layer_1.BMP"
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week22",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" : "nap::ImageLayer",
-			"mID" : "GreenLayer2",
-			"Path" :"data/kalvertoren/compositions/green/layer2/layer_2.0004.bmp"
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week23",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" : "nap::Composition",
-			"mID"  : "GreenComposition",
-			"Layers" :
-			[
-				"GreenLayer1",
-				"GreenLayer2"
-			] 
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week24",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" : "nap::Texture2D",
-			"mID" : "CompositionTextureA",
-			"Width" : 1024,
-			"Height" : 1024,
-			"Format" : "RGB8",
-			"Usage" : "DynamicRead",
-			"Parameters" : 
-			{
-				"MinFilter" : "Nearest",
-				"MaxFilter" : "Nearest",
-				"WrapVertical" : "Repeat",
-				"WrapHorizontal" : "Repeat",
-				"MaxLodLevel" : 0
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week25",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-			}
-		},
-		
-		{
-			"Type" : "nap::Texture2D",
-			"mID" : "CompositionDepthTextureA",
-			"Width" : 1024,
-			"Height" : 1024,
-			"Format" : "Depth"
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week26",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" : "nap::Texture2D",
-			"mID" : "CompositionTextureB",
-			"Width" : 1024,
-			"Height" : 1024,
-			"Format" : "RGB8",
-			"Usage" : "DynamicRead",
-			"Parameters" : 
-			{
-				"MinFilter" : "Nearest",
-				"MaxFilter" : "Nearest",
-				"WrapVertical" : "Repeat",
-				"WrapHorizontal" : "Repeat",
-				"MaxLodLevel" : 0
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week27",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-			}
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week28",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		},
-		
-		{
-			"Type" : "nap::Texture2D",
-			"mID" : "CompositionDepthTextureB",
-			"Width" : 1024,
-			"Height" : 1024,
-			"Format" : "Depth"
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week29",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" : "nap::RenderTarget",
-			"mID": "CompositionRenderTargetA",
-			"mColorTexture": "CompositionTextureA",
-			"mDepthTexture": "CompositionDepthTextureA",
-			"mClearColor" : 
-			{
-				"x" : 1.0,
-				"y" : 0.0,
-				"z" : 0.0,
-				"w" : 1.0
-			}
-		},
-		
-		{
-			"Type" : "nap::RenderTarget",
-			"mID": "CompositionRenderTargetB",
-			"mColorTexture": "CompositionTextureB",
-			"mDepthTexture": "CompositionDepthTextureB",
-			"mClearColor" : 
-			{
-				"x" : 1.0,
-				"y" : 0.0,
-				"z" : 0.0,
-				"w" : 1.0
-			}
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week30",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" : "nap::PlaneMesh",
-			"mID": "PlaneMesh"
-		},
-		
-		{
-			"Type" : "nap::Image",
-			"mID" : "UVMap",
-			"ImagePath" : "data/kalvertoren/uvmap.jpg"
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week31",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" : "nap::Shader",
-			"mID": "VertexColorShader",
-			"mVertShader": "shaders/kalvertoren/vertexcolor.vert",
-			"mFragShader": "shaders/kalvertoren/vertexcolor.frag"
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week32",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" : "nap::Shader",
-			"mID": "FrameShader",
-			"mVertShader": "shaders/kalvertoren/frame.vert",
-			"mFragShader": "shaders/kalvertoren/frame.frag"
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week33",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" : "nap::Shader",
-			"mID" : "CompositionShader",
-			"mVertShader": "shaders/kalvertoren/composition.vert",
-			"mFragShader": "shaders/kalvertoren/composition.frag"
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week34",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" : "nap::Shader",
-			"mID" : "DebugShader",
-			"mVertShader": "shaders/kalvertoren/debug.vert",
-			"mFragShader": "shaders/kalvertoren/debug.frag"
-		},
-	
-		{
-			"Type" : "nap::ArtnetMeshFromFile",
-			"mID": "HeiligewegMesh",
-			"Path" : "data/kalvertoren/heiligeweg_export_heiligeweg.mesh",
-			"OverrideSubnet" : false,
-			"Subnet" : 0,
-			"ChannelOffset" : 0
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week35",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" : "nap::MeshFromFile",
-			"mID": "HeiligewegFrameMesh",
-			"Path" : "data/kalvertoren/heiligeweg_export_heiligeweg_frame.mesh"
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week36",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" : "nap::LedMesh",
-			"mID" : "HeiligewegLedMesh",
-			"TriangleMesh" : "HeiligewegMesh",
-			"FrameMesh" : "HeiligewegFrameMesh"
-		},
-		
-		{
-			"Type" : "nap::ArtnetMeshFromFile",
-			"mID": "KalverMesh",
-			"Path" : "data/kalvertoren/kalver_export_kalver.mesh",
-			"OverrideSubnet" : false,
-			"Subnet" : 0,
-			"ChannelOffset" : 0
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week37",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" : "nap::MeshFromFile",
-			"mID": "KalverFrameMesh",
-			"Path" : "data/kalvertoren/kalver_export_kalver_frame.mesh"
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week38",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" : "nap::LedMesh",
-			"mID" : "KalverLedMesh",
-			"TriangleMesh" : "KalverMesh",
-			"FrameMesh" : "KalverFrameMesh"
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week39",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" : "nap::ArtnetMeshFromFile",
-			"mID": "SingelMesh",
-			"Path" : "data/kalvertoren/singel_export_singel.mesh",
-			"OverrideSubnet" : false,
-			"Subnet" : 1,
-			"ChannelOffset" : 0
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week40",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" : "nap::MeshFromFile",
-			"mID": "SingelFrameMesh",
-			"Path" : "data/kalvertoren/singel_export_singel_frame.mesh"
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week41",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" : "nap::LedMesh",
-			"mID" : "SingelLedMesh",
-			"TriangleMesh" : "SingelMesh",
-			"FrameMesh" : "SingelFrameMesh"
-		},
-						
-		{
-			"Type" : "nap::Material",
-			"mID": "VertexColorMaterial",
-			"Shader": "VertexColorShader",
-			"VertexAttributeBindings" : [
-				{
-					"MeshAttributeID": "Position",
-					"ShaderAttributeID": "in_Position"
-				},
-				{
-					"MeshAttributeID": "Color",
-					"ShaderAttributeID": "in_Color"
-				},
-				{
-					"MeshAttributeID": "UV0",
-					"ShaderAttributeID": "in_UV0"
-				},
-				{
-					"MeshAttributeID": "Normal",
-					"ShaderAttributeID": "in_Normals"
-				},
-				{
-					"MeshAttributeID": "channel",
-					"ShaderAttributeID": "in_Channels"
-				},
-				{
-					"MeshAttributeID": "subnet",
-					"ShaderAttributeID": "in_Subnets"
-				},
-				{
-					"MeshAttributeID": "universe",
-					"ShaderAttributeID": "in_Universes"
-				}
-			],
-			"Uniforms" : 
-			[
-				{
-					"Type" : "nap::UniformVec3",
-					"Name" : "lightIntensity",
-					"Value" : 
-					{
-						"x" : 1.0,
-						"y" : 1.0,
-						"z" : 1.0
-					}
-				},
-				{
-					"Type" : "nap::UniformFloat",
-					"Name" : "ambientIntensity",
-					"Value" : 0.5
-				},
-				{
-					"Type" : "nap::UniformFloat",
-					"Name" : "shininess",
-					"Value" : 10.0
-				},
-				{
-					"Type" : "nap::UniformFloat",
-					"Name" : "specularIntensity",
-					"Value" : 0.65
-				},
-				{
-					"Type" : "nap::UniformFloat",
-					"Name" : "attenuationScale",
-					"Value" : 0.0001
-				},
-				{
-					"Type" : "nap::UniformInt",
-					"Name" : "useIndexColor",
-					"Value": 0
-				}
-			]
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week42",
+            "Palette": "A6 B11 C31 D40"
+        },
+        
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week43",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" : "nap::Material",
-			"mID": "FrameMaterial",
-			"Shader": "FrameShader",
-			"VertexAttributeBindings" : 
-			[
-				{
-					"MeshAttributeID": "Position",
-					"ShaderAttributeID": "in_Position"
-				},
-				{
-					"MeshAttributeID": "Normal",
-					"ShaderAttributeID": "in_Normals"
-				}
-			],
-			"Uniforms" : 
-			[
-				{
-					"Type" : "nap::UniformVec3",
-					"Name" : "mFrameColor",
-					"Value" : 
-					{
-						"x" : 0.2,
-						"y" : 0.2,
-						"z" : 0.2
-					}
-				},
-				{
-					"Type" : "nap::UniformVec3",
-					"Name" : "lightIntensity",
-					"Value" : 
-					{
-						"x" : 1.0,
-						"y" : 1.0,
-						"z" : 1.0
-					}
-				},
-				{
-					"Type" : "nap::UniformFloat",
-					"Name" : "ambientIntensity",
-					"Value" : 0.1
-				},
-				{
-					"Type" : "nap::UniformFloat",
-					"Name" : "shininess",
-					"Value" : 5
-				},
-				{
-					"Type" : "nap::UniformFloat",
-					"Name" : "specularIntensity",
-					"Value" : 1.0
-				},
-				{
-					"Type" : "nap::UniformFloat",
-					"Name" : "attenuationScale",
-					"Value" : 0.0001
-				}
-			]
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week44",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" : "nap::Material",
-			"mID": "CompositionMaterial",
-			"Shader": "CompositionShader",
-			"VertexAttributeBindings" : 
-			[
-				{
-					"MeshAttributeID": "Position",
-					"ShaderAttributeID": "in_Position"
-				},
-				{
-					"MeshAttributeID": "Normal",
-					"ShaderAttributeID": "in_Normals"
-				},
-				{
-					"MeshAttributeID": "UV0",
-					"ShaderAttributeID": "in_UV0"
-				},
-				{
-					"MeshAttributeID": "Color0",
-					"ShaderAttributeID": "in_Color0"
-				}
-			],
-			"Uniforms" : 
-			[
-				{
-					"Type" : "nap::UniformTexture2D",
-					"Name" : "imageA",
-					"Texture" : "CompositionTextureA"
-				},
-				{
-					"Type" : "nap::UniformTexture2D",
-					"Name" : "imageB",
-					"Texture" : "CompositionTextureB"
-				}
-			]
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week45",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" : "nap::Material",
-			"mID": "DebugMaterial",
-			"Shader": "DebugShader",
-			"VertexAttributeBindings" : 
-			[
-				{
-					"MeshAttributeID": "Position",
-					"ShaderAttributeID": "in_Position"
-				},
-				{
-					"MeshAttributeID": "Normal",
-					"ShaderAttributeID": "in_Normals"
-				},
-				{
-					"MeshAttributeID": "UV0",
-					"ShaderAttributeID": "in_UV0"
-				},
-				{
-					"MeshAttributeID": "Color0",
-					"ShaderAttributeID": "in_Color0"
-				}
-			]
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week46",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" : "nap::Scene",
-			"mID": "Scene",		
-			"Entities" : 
-			[
-				{
-					"Entity" : "DefaultInputRouterEntity"
-				},
-				{
-					"Entity" : "DisplayEntity"
-				},
-				{
-					"Entity" : "CompositionEntity"
-				}, 
-				{
-					"Entity" : "CompositionCameraEntity"
-				},
-				{
-					"Entity" : "SceneCameraEntity"
-				},
-				{
-					"Entity" : "RenderCompositionEntity"
-				},
-				{
-					"Entity" : "LightEntity"
-				},
-				{
-					"Entity" : "DebugDisplayEntity"
-				}
-			]
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week47",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" : "nap::Entity",
-			"mID": "DefaultInputRouterEntity",		
-			"Components" : 
-			[
-				{
-					"Type" : "nap::DefaultInputRouterComponent"
-				}
-			]
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week48",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" : "nap::Entity",
-			"mID" : "DebugDisplayEntity",
-			"Components" :
-			[
-				{
-					"Type" : "nap::TransformComponent",
-					"Properties": 
-					{
-						"Translate": 
-						{
-							"x": 192.0,
-							"y": 192.0,
-							"z": 0.0
-						},
-						"Rotate": 
-						{
-							"x": 0.0,
-							"y": 0.0,
-							"z": 0.0
-						},
-						"Scale": 
-						{
-							"x": 1.0,
-							"y": 1.0,
-							"z": 1.0
-						},
-						"UniformScale": 384.0
-					}
-				},
-				{
-					"Type" : "nap::RenderableMeshComponent",
-					"mID" : "RenderableDebugMeshComponent",
-					"Mesh" : "PlaneMesh",
-					"MaterialInstance" :
-					{
-						"Material" : "DebugMaterial",
-						"DepthMode" : "NoReadWrite",
-						"Uniforms" : 
-						[
-							{
-								"Type" : "nap::UniformTexture2D",
-								"Name" : "debugImage",
-								"Texture" : "CompositionTextureA"
-							}
-						]
-					}
-				}
-			]
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week49",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" : "nap::Entity",
-			"mID" : "RenderCompositionEntity",
-			"Components" :
-			[
-				{
-					"Type" : "nap::TransformComponent",
-					"Properties": 
-					{
-						"Translate": 
-						{
-							"x": 512.0,
-							"y": 512.0,
-							"z": 0.0
-						},
-						"Rotate": 
-						{
-							"x": 0.0,
-							"y": 0.0,
-							"z": 0.0
-						},
-						"Scale": 
-						{
-							"x": 1.0,
-							"y": 1.0,
-							"z": 1.0
-						},
-						"UniformScale": 1024.0
-					}
-				},
-				{
-					"Type" : "nap::RenderCompositionComponent",
-					"mID" : "RenderCompositionComponent",
-					"TargetOne" : "CompositionRenderTargetA",
-					"TargetTwo" : "CompositionRenderTargetB",
-					"CompositionComponent" : "CompositionComponent",
-					"RenderComponent" : "./RenderablePlaneMeshComponent",
-					"CameraComponent" : "CompositionCamera"
-				},
-				{
-					"Type" : "nap::RenderableMeshComponent",
-					"mID" : "RenderablePlaneMeshComponent",
-					"Mesh" : "PlaneMesh",
-					"MaterialInstance" :
-					{
-						"Material" : "CompositionMaterial"
-					}
-				}
-			]
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week50",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" : "nap::Entity",
-			"mID" : "DisplayEntity",
-			"Components" :
-			[
-				{
-					"Type" : "nap::TransformComponent",
-					"Properties": 
-						{
-						"Translate": 
-						{
-							"x": 0.0,
-							"y": 0.0,
-							"z": 0.0
-						},
-						"Rotate": 
-						{
-							"x": 0.0,
-							"y": 0.0,
-							"z": 0.0
-						},
-						"Scale": 
-						{
-							"x": 1.0,
-							"y": 1.0,
-							"z": 1.0
-						},
-						"UniformScale": 1.0
-					}
-				},
-				{
-					"Type" : "nap::SelectLedMeshComponent",
-					"mID" : "SelectLedMeshComponent",
-					"TriangleComponent" : "./RenderableTriangleLedMeshComponent",
-					"FrameComponent" : "./RenderableFrameLedMeshComponent",
-					"Index" : 0,
-					"Meshes" :
-					[
-						"HeiligewegLedMesh",
-						"KalverLedMesh",
-						"SingelLedMesh"
-					]
-				},
-				{
-					"Type" : "nap::SyncLedMaterialComponent",
-					"mID" : "SyncLedComponent",
-					"Pointlight" : "PointlightComponent",
-					"PointlightTransform" : "PointlightTransformComponent",
-					"CameraTransform" : "ScenecameraTransformComponent",
-					"SelectMeshComponent" : "./SelectLedMeshComponent"
-				},
-				{
-					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "KalverMesh",
-					"mID" : "RenderableTriangleLedMeshComponent",
-					"MaterialInstance" : 
-					{
-						"Material": "VertexColorMaterial"
-					}
-				},
-				{
-					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "KalverFrameMesh",
-					"mID" : "RenderableFrameLedMeshComponent",
-					"MaterialInstance" : 
-					{
-						"Material": "FrameMaterial"
-					}
-				}
-			]
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week51",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" : "nap::Entity",
-			"mID" : "CompositionEntity",
-			"Components" :
-			[
-				{
-					"Type" : "nap::CompositionComponent",
-					"mID" : "CompositionComponent",
-					"Compositions" :
-					[
-						"TestComposition",
-						"GreenComposition"
-					]
-				},
-				{
-					"Type" : "nap::ColorPaletteComponent",
-					"mID" : "ColorPaletteComponent",
-					"Colors" : "LedColorContainer"
-				}
-			],
-			"Children" :
-			[
-				"KalvertorenEntity",
-				"SingelEntity",
-				"HeiligewegEntity"
-			]
-		},
+        {
+            "Type": "nap::WeekColors",
+            "mID": "Week52",
+            "Palette": "A6 B11 C31 D40"
+        },
 
-		{
-			"Type" : "nap::Entity",
-			"mID": "KalvertorenEntity",
-			"Components" : 
-			[
-				{
-					"Type" : "nap::SelectColorMethodComponent",
-					"mID" : "ColorMethodSelectorKalver"
-				},
-				{
-					"Type" : "nap::ApplyBBColorComponent",
-					"Mesh" : "KalverMesh",
-					"Selector" : "./ColorMethodSelectorKalver"
-				},
-				{
-					"Type" : "nap::ApplyTracerColorComponent",
-					"Mesh" : "KalverMesh",
-					"Selector" : "./ColorMethodSelectorKalver"
-				},
-				{
-					"Type" : "nap::ApplyCompositionComponent",
-					"Mesh" : "KalverMesh",
-					"Selector" : "./ColorMethodSelectorKalver",
-					"CompositionRenderer" : "RenderCompositionComponent",
-					"ColorPaletteComponent" : "../ColorPaletteComponent"
-				},
-				{
-					"Type" : "nap::MeshToArtnetComponent",
-					"Mesh" : "KalverMesh",
-					"Controllers" :
-					[
-						"Universe2",
-						"Universe3",
-						"Universe6",
-						"Universe0",
-						"Universe1"
-					]
-				}
-			]
-		},
-		
-		{
-			"Type" : "nap::Entity",
-			"mID": "HeiligewegEntity",
-			"Components" : 
-			[
-				{
-					"Type" : "nap::SelectColorMethodComponent",
-					"mID" : "ColorMethodSelectorHeiligeweg"
-				},
-				{
-					"Type" : "nap::ApplyBBColorComponent",
-					"Mesh" : "HeiligewegMesh",
-					"Selector" : "./ColorMethodSelectorHeiligeweg"
-				},
-				{
-					"Type" : "nap::ApplyTracerColorComponent",
-					"Mesh" : "HeiligewegMesh",
-					"Selector" : "./ColorMethodSelectorHeiligeweg"
-				},
-				{
-					"Type" : "nap::ApplyCompositionComponent",
-					"Mesh" : "HeiligewegMesh",
-					"Selector" : "./ColorMethodSelectorHeiligeweg",
-					"CompositionRenderer" : "RenderCompositionComponent",
-					"ColorPaletteComponent" : "../ColorPaletteComponent"
-				},
-				{
-					"Type" : "nap::MeshToArtnetComponent",
-					"Mesh" : "HeiligewegMesh",
-					"Controllers" :
-					[
-						"Universe4",
-						"Universe5",
-						"Universe8"
-					]
-				}
-			]
-		},
 
-		{
-			"Type" : "nap::Entity",
-			"mID": "SingelEntity",
-			"Components" : 
-			[
-				{
-					"Type" : "nap::SelectColorMethodComponent",
-					"mID" : "ColorMethodSelectorSingel"
-				},
-				{
-					"Type" : "nap::ApplyBBColorComponent",
-					"Mesh" : "SingelMesh",
-					"Selector" : "./ColorMethodSelectorSingel"
-				},
-				{
-					"Type" : "nap::ApplyTracerColorComponent",
-					"Mesh" : "SingelMesh",
-					"Selector" : "./ColorMethodSelectorSingel"
-				},
-				{
-					"Type" : "nap::ApplyCompositionComponent",
-					"Mesh" : "SingelMesh",
-					"Selector" : "./ColorMethodSelectorSingel",
-					"CompositionRenderer" : "RenderCompositionComponent",
-					"ColorPaletteComponent" : "../ColorPaletteComponent"
-				},
-				{
-					"Type" : "nap::MeshToArtnetComponent",
-					"Mesh" : "SingelMesh",
-					"Controllers" :
-					[
-						"Universe7"
-					]
-				}
-			]
-		},
-
-		{
-			"Type" : "nap::Entity",
-			"mID" : "CompositionCameraEntity",
-			"Components" : 
-			[	
-				{
-					"Type" : "nap::OrthoCameraComponent",
-					"mID" : "CompositionCamera",
-					"Properties": 
-					{
-						"NearClippingPlane" : 0.1,
-						"FarClippingPlane" : 1000.0
-					}
-				},
-				{
-					"Type" : "nap::PerspCameraComponent",
-					"mID" : "PerspCompositionCameraComponent",
-					"Properties": {
-						"FieldOfView": 40.0,
-						"NearClippingPlane" : 0.1,
-						"FarClippingPlane" : 1000.0
-					}
-				},
-				{
-					"Type" : "nap::TransformComponent",
-					"Properties": 
-					{
-						"Translate": 
-						{
-							"x": 0.0,
-							"y": 0.0,
-							"z": 10.0
-						},
-						"Rotate": 
-						{
-							"x": 0.0,
-							"y": 0.0,
-							"z": 0.0
-						},
-						"Scale": 
-						{
-							"x": 1.0,
-							"y": 1.0,
-							"z": 1.0
-						},
-						"UniformScale": 1.0				
-					}
-				}
-			]
-		},
-		
-		{
-			"Type" : "nap::Entity",
-			"mID": "SceneCameraEntity",
-			"Components" :  
-			[
-				{
-					"Type" : "nap::PerspCameraComponent",
-					"mID" : "PerspCameraComponent",
-					"Properties": {
-						"FieldOfView": 40.0,
-						"NearClippingPlane" : 1,
-						"FarClippingPlane" : 1000.0
-					}
-				},
-				{
-					"Type" : "nap::OrthoCameraComponent",
-					"mID" : "OrthoCameraComponent",
-					"Properties": {
-						"NearClippingPlane" : 1,
-						"FarClippingPlane" : 1000.0
-					}
-				},
-				{
-					"Type" : "nap::KeyInputComponent"
-				},
-				{
-					"Type" : "nap::PointerInputComponent"
-				},
-				{
-					"Type" : "nap::CameraController",
-					"LookAtTarget" : "DisplayEntity"
-				},			
-				{
-					"Type" : "nap::FirstPersonController",
-					"MovementSpeed": 20.0,
-					"RotateSpeed": 0.005,
-					"PerspCameraComponent" : "PerspCameraComponent"
-
-				},			
-				{
-					"Type" : "nap::OrbitController",
-					"MovementSpeed": 0.5,
-					"RotateSpeed": 0.005,
-					"PerspCameraComponent" : "PerspCameraComponent"
-				},
-				{
-					"Type" : "nap::OrthoController",
-					"ZoomSpeed": 0.25,
-					"OrthoCameraComponent" : "OrthoCameraComponent"
-				},			
-				{
-					"Type" : "nap::TransformComponent",
-					"mID" : "ScenecameraTransformComponent",
-					"Properties": {
-						"Translate": {
-							"x": 0.0,
-							"y": 0.0,
-							"z": 100.0
-						},
-						"Rotate": {
-							"x": 0.0,
-							"y": 0.0,
-							"z": 0.0
-						},
-						"Scale": {
-							"x": 1.0,
-							"y": 1.0,
-							"z": 1.0
-						},
-						"UniformScale": 1.0						
-					}
-				}
-			]
-		},
-	{
-			"Type" : "nap::Entity",
-			"mID": "LightEntity",
-			"Components" :  
-			[
-				{
-					"Type" : "nap::PointlightComponent",
-					"mID" : "PointlightComponent",
-					"Intensity" : 1.0
-				},
-				{
-					"Type" : "nap::TransformComponent",
-					"mID" : "PointlightTransformComponent",
-					"Properties": {
-						"Translate": {
-							"x": 10.0,
-							"y": 40.0,
-							"z": -10.0
-						},
-						"Rotate": {
-							"x": 0.0,
-							"y": 0.0,
-							"z": 0.0
-						},
-						"Scale": {
-							"x": 1.0,
-							"y": 1.0,
-							"z": 1.0
-						},
-						"UniformScale": 1.0						
-					}
-				}
-			]
-		}
-	]
+        {
+            "Type": "nap::LedMesh",
+            "mID": "HeiligewegLedMesh",
+            "TriangleMesh": "HeiligewegMesh",
+            "FrameMesh": "HeiligewegFrameMesh"
+        },
+        {
+            "Type": "nap::LedMesh",
+            "mID": "KalverLedMesh",
+            "TriangleMesh": "KalverMesh",
+            "FrameMesh": "KalverFrameMesh"
+        },
+        {
+            "Type": "nap::LedMesh",
+            "mID": "SingelLedMesh",
+            "TriangleMesh": "SingelMesh",
+            "FrameMesh": "SingelFrameMesh"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "CompositionMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformTexture2D",
+                    "mID": "nap::UniformTexture2D",
+                    "Name": "imageA",
+                    "Texture": "CompositionTextureA"
+                },
+                {
+                    "Type": "nap::UniformTexture2D",
+                    "mID": "nap::UniformTexture2D_2",
+                    "Name": "imageB",
+                    "Texture": "CompositionTextureB"
+                }
+            ],
+            "Shader": "CompositionShader",
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                },
+                {
+                    "MeshAttributeID": "Normal",
+                    "ShaderAttributeID": "in_Normals"
+                },
+                {
+                    "MeshAttributeID": "UV0",
+                    "ShaderAttributeID": "in_UV0"
+                },
+                {
+                    "MeshAttributeID": "Color0",
+                    "ShaderAttributeID": "in_Color0"
+                }
+            ],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "DebugMaterial",
+            "Uniforms": [],
+            "Shader": "DebugShader",
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                },
+                {
+                    "MeshAttributeID": "Normal",
+                    "ShaderAttributeID": "in_Normals"
+                },
+                {
+                    "MeshAttributeID": "UV0",
+                    "ShaderAttributeID": "in_UV0"
+                },
+                {
+                    "MeshAttributeID": "Color0",
+                    "ShaderAttributeID": "in_Color0"
+                }
+            ],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "FrameMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformVec3",
+                    "mID": "nap::UniformVec3_2",
+                    "Name": "mFrameColor",
+                    "Value": {
+                        "x": 0.20000000298023225,
+                        "y": 0.20000000298023225,
+                        "z": 0.20000000298023225
+                    }
+                },
+                {
+                    "Type": "nap::UniformVec3",
+                    "mID": "nap::UniformVec3_3",
+                    "Name": "lightIntensity",
+                    "Value": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "nap::UniformFloat_4",
+                    "Name": "ambientIntensity",
+                    "Value": 0.10000000149011612
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "nap::UniformFloat_5",
+                    "Name": "shininess",
+                    "Value": 5.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "nap::UniformFloat_6",
+                    "Name": "specularIntensity",
+                    "Value": 1.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "nap::UniformFloat_7",
+                    "Name": "attenuationScale",
+                    "Value": 0.00009999999747378752
+                }
+            ],
+            "Shader": "FrameShader",
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                },
+                {
+                    "MeshAttributeID": "Normal",
+                    "ShaderAttributeID": "in_Normals"
+                }
+            ],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "VertexColorMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformVec3",
+                    "mID": "nap::UniformVec3",
+                    "Name": "lightIntensity",
+                    "Value": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "nap::UniformFloat",
+                    "Name": "ambientIntensity",
+                    "Value": 1.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "nap::UniformFloat_2",
+                    "Name": "shininess",
+                    "Value": 10.0
+                },
+                {
+                    "Type": "nap::UniformFloat",
+                    "mID": "nap::UniformFloat_3",
+                    "Name": "specularIntensity",
+                    "Value": 0.30000001192092898
+                }
+            ],
+            "Shader": "VertexColorShader",
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                },
+                {
+                    "MeshAttributeID": "Color",
+                    "ShaderAttributeID": "in_Color"
+                },
+                {
+                    "MeshAttributeID": "UV0",
+                    "ShaderAttributeID": "in_UV0"
+                },
+                {
+                    "MeshAttributeID": "Normal",
+                    "ShaderAttributeID": "in_Normals"
+                },
+                {
+                    "MeshAttributeID": "channel",
+                    "ShaderAttributeID": "in_Channels"
+                },
+                {
+                    "MeshAttributeID": "subnet",
+                    "ShaderAttributeID": "in_Subnets"
+                },
+                {
+                    "MeshAttributeID": "universe",
+                    "ShaderAttributeID": "in_Universes"
+                }
+            ],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "HeiligewegFrameMesh",
+            "Path": "data/kalvertoren/heiligeweg_export_heiligeweg_frame.mesh"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "KalverFrameMesh",
+            "Path": "data/kalvertoren/kalver_export_kalver_frame.mesh"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "SingelFrameMesh",
+            "Path": "data/kalvertoren/singel_export_singel_frame.mesh"
+        },
+        {
+            "Type": "nap::PlaneMesh",
+            "mID": "ColorDebugMesh",
+            "Size": {
+                "x": 240.0,
+                "y": 25.0
+            },
+            "Position": {
+                "x": 0.0,
+                "y": 0.0
+            }
+        },
+        {
+            "Type": "nap::PlaneMesh",
+            "mID": "CompositionDebugMesh",
+            "Size": {
+                "x": 240.0,
+                "y": 240.0
+            },
+            "Position": {
+                "x": 0.0,
+                "y": 0.0
+            }
+        },
+        {
+            "Type": "nap::PlaneMesh",
+            "mID": "PlaneMesh",
+            "Size": {
+                "x": 1024.0,
+                "y": 1024.0
+            },
+            "Position": {
+                "x": 512.0,
+                "y": 512.0
+            }
+        },
+        {
+            "Type": "nap::RenderTarget",
+            "mID": "CompositionRenderTargetA",
+            "mColorTexture": "CompositionTextureA",
+            "mDepthTexture": "CompositionDepthTextureA",
+            "mClearColor": {
+                "x": 1.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            }
+        },
+        {
+            "Type": "nap::RenderTarget",
+            "mID": "CompositionRenderTargetB",
+            "mColorTexture": "CompositionTextureB",
+            "mDepthTexture": "CompositionDepthTextureB",
+            "mClearColor": {
+                "x": 1.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            }
+        },
+        {
+            "Type": "nap::RenderWindow",
+            "mID": "Window0",
+            "Width": 1024,
+            "Height": 768,
+            "Borderless": false,
+            "Resizable": true,
+            "Title": "Kalvertoren",
+            "Sync": false,
+            "ClearColor": {
+                "x": 0.0666,
+                "y": 0.0784,
+                "z": 0.1490,
+                "w": 1.0
+            }
+        },
+        {
+            "Type": "nap::Scene",
+            "mID": "Scene",
+            "Entities": [
+                {
+                    "Entity": "DefaultInputRouterEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "DisplayEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "CompositionEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "CompositionCameraEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "SceneCameraEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "RenderCompositionEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "LightEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "DebugDisplayEntity",
+                    "InstanceProperties": []
+                }
+            ]
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "CompositionShader",
+            "mVertShader": "shaders/kalvertoren/composition.vert",
+            "mFragShader": "shaders/kalvertoren/composition.frag"
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "DebugShader",
+            "mVertShader": "shaders/kalvertoren/debug.vert",
+            "mFragShader": "shaders/kalvertoren/debug.frag"
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "FrameShader",
+            "mVertShader": "shaders/kalvertoren/frame.vert",
+            "mFragShader": "shaders/kalvertoren/frame.frag"
+        },
+        {
+            "Type": "nap::Shader",
+            "mID": "VertexColorShader",
+            "mVertShader": "shaders/kalvertoren/vertexcolor.vert",
+            "mFragShader": "shaders/kalvertoren/vertexcolor.frag"
+        },
+        {
+            "Type": "nap::Texture2D",
+            "mID": "CompositionDepthTextureA",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "Width": 1024,
+            "Height": 1024,
+            "Format": "Depth"
+        },
+        {
+            "Type": "nap::Texture2D",
+            "mID": "CompositionDepthTextureB",
+            "Parameters": {
+                "MinFilter": "LinearMipmapLinear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "ClampToEdge",
+                "WrapHorizontal": "ClampToEdge",
+                "MaxLodLevel": 20
+            },
+            "Usage": "Static",
+            "Width": 1024,
+            "Height": 1024,
+            "Format": "Depth"
+        },
+        {
+            "Type": "nap::Texture2D",
+            "mID": "CompositionTextureA",
+            "Parameters": {
+                "MinFilter": "Linear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "Repeat",
+                "WrapHorizontal": "Repeat",
+                "MaxLodLevel": 0
+            },
+            "Usage": "DynamicRead",
+            "Width": 1024,
+            "Height": 1024,
+            "Format": "RGB8"
+        },
+        {
+            "Type": "nap::Texture2D",
+            "mID": "CompositionTextureB",
+            "Parameters": {
+                "MinFilter": "Linear",
+                "MaxFilter": "Linear",
+                "WrapVertical": "Repeat",
+                "WrapHorizontal": "Repeat",
+                "MaxLodLevel": 0
+            },
+            "Usage": "DynamicRead",
+            "Width": 1024,
+            "Height": 1024,
+            "Format": "RGB8"
+        }
+    ]
 }
