@@ -77,7 +77,7 @@ namespace nap
 		if (mNextFrameIndex != mCurrentFrameIndex)
 		{
 			Pixmap& pixmap = mLayer->getPixmap(mNextFrameIndex);
-			mCurrentFrameTexture->getTexture().setData(pixmap.getBitmap().getData());
+			mCurrentFrameTexture->setData(pixmap);
 			mCurrentFrameIndex = mNextFrameIndex;
 		}
 

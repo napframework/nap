@@ -237,7 +237,7 @@ namespace nap
 
 	void Pixmap::initFromTexture(const nap::BaseTexture2D& texture)
 	{
-		const opengl::Texture2DSettings& settings = texture.getTexture().getSettings();
+		const opengl::Texture2DSettings& settings = texture.getSettings();
 
 		// Get bitmap data type
 		opengl::BitmapDataType  bitmap_type = opengl::getBitmapType(settings.mType);

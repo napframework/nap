@@ -212,6 +212,6 @@ namespace nap
 			}
 		}
 
-		mDebugImage->getTexture().setData(mDebugImage->getPixmap().getData());
+		mDebugImage->setData(mDebugImage->getPixmap());
 	}
 }

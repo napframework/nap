@@ -51,7 +51,7 @@ namespace nap
 		BaseTexture2D::init(settings);
 
 		// Set data from bitmap
-		getTexture().setData(mPixmap.getBitmap().getData());
+		setData(mPixmap);
 
 		return true;
 	}

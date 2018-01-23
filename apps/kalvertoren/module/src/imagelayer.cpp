@@ -46,7 +46,7 @@ namespace nap
 		mTexture.init(settings);
 
 		// Set data
-		mTexture.getTexture().setData(mPixmap.getBitmap().getData());
+		mTexture.setData(mPixmap);
 
 		return true;
 	}
