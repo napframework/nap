@@ -3,7 +3,7 @@
 // External Includes
 #include <rtti/rttiobject.h>
 #include <utility/dllexport.h>
-#include <nbitmap.h>
+#include <bitmap.h>
 #include <color.h>
 
 namespace nap

@@ -1,5 +1,5 @@
 // Local includes
-#include "nbitmap.h"
+#include "bitmap.h"
 #include "nglutils.h"
 
 // External Includes
