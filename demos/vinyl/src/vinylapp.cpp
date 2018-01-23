@@ -27,7 +27,7 @@ namespace nap
 		
 		// Get resource manager and load our app
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("data/vinyl/vinyl.json", error))
+		if (!mResourceManager->loadFile("vinyl.json", error))
 			return false;
         
 		// Extract loaded resources and listen to window resize events
