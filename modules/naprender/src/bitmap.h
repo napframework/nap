@@ -38,37 +38,6 @@ namespace opengl
 		BGRA =		6,		///< 4 channel blue, green, red, alpha
 	};
 
-
-	/**
-	 * Settings associated with a bitmap
-	 */
-	struct NAPAPI BitmapSettings
-	{
-		// Constructor / Destructor = default
-		BitmapSettings()  = default;
-		BitmapSettings(unsigned int width, unsigned int height, BitmapDataType dataType, BitmapColorType colorType) :
-			mWidth(width),
-			mHeight(height),
-			mDataType(dataType),
-			mColorType(colorType)									{ }
-		~BitmapSettings() = default;
-
-		// Members
-		unsigned int	mWidth  = 0;								///< width of the bitmap in pixels
-		unsigned int	mHeight = 0;								///< height of the bitmap in pixels
-		BitmapDataType	mDataType  = BitmapDataType::UNKNOWN;		///< type of pixel data
-		BitmapColorType mColorType = BitmapColorType::UNKNOWN;		///< color of pixel data
-
-		/**
-		 * isValid
-		 *
-		 * Returns if the bitmap settings are valid, ie:
-		 * size (width * height) > 0
-		 * dataType != Unknown && colorType != Unknown
-		 */
-		bool isValid() const;		
-	};
-
 	/**
 	 * Bitmap
 	 *
@@ -81,7 +50,7 @@ namespace opengl
 	public:
 		// Constructor
 		Bitmap() = default;
-		Bitmap(const BitmapSettings& settings) : mSettings(settings)	{ }
+		Bitmap(unsigned int width, unsigned int height, BitmapDataType dataType, BitmapColorType colorType);
 
 		// Destructor
 		~Bitmap()
@@ -100,21 +69,7 @@ namespace opengl
 		 */
 		void* getData() const								{ return mData; }
 
-		/**
-		 * getSettings
-		 *
-		 * Returns bitmap associated settings
-		 * These settings are used when creating a hardware texture from pixel data
-		 */
-		const BitmapSettings& getSettings() const			{ return mSettings; }
-
-		/**
-		* setSettings
-		*
-		* Set settings associated with this bitmap object
-		* Settings are used to define the pixel data buffer's size
-		*/
-		void setSettings(const BitmapSettings& settings);
+		bool isValid() const;
 
 		/**
 		 * hasData
@@ -124,15 +79,6 @@ namespace opengl
 		 * When the data is deleted externally, it's up to the external code to clean up
 		 */
 		bool hasData() const								{ return mData != nullptr; }
-
-		/**
-		 * isValid
-		 *
-		 * Checks if the settings associated with this bitmap are set and valid
-		 * If settings are invalid the bitmap has not been initialized properly
-		 * 
-		 */					
-		bool hasValidSettings() const						{ return mSettings.isValid(); }
 
 		/**
 		 * clear
@@ -180,14 +126,14 @@ namespace opengl
 		 *
 		 * Returns the amount of horizontal pixels
 		 */
-		unsigned int getWidth() const						{ return mSettings.mWidth; }
+		unsigned int getWidth() const						{ return mWidth; }
 
 		/**
 		 * getHeight
 		 *
 		 * Returns the amount of vertical pixels
 		 */
-		unsigned int getHeight() const						{ return mSettings.mHeight; }
+		unsigned int getHeight() const						{ return mHeight; }
 
 		/**
 		 * getDataType
@@ -195,14 +141,14 @@ namespace opengl
 		 * Returns the data type associated with the pixel data
 		 * The data type is the native c++ type used per pixel per channel
 		 */
-		virtual BitmapDataType getDataType() const			{ return mSettings.mDataType; }
+		virtual BitmapDataType getDataType() const			{ return mDataType; }
 
 		/**
 		 * getColorType
 		 *
 		 * Returns the bitmap's color type, UNKNOWN if not set
 		 */
-		BitmapColorType getColorType() const				{ return mSettings.mColorType; }
+		BitmapColorType getColorType() const				{ return mColorType; }
 
 		/**
 		 *	@return the number of channels associated with this image, 1 for R, 4 for RGBA etc
@@ -249,9 +195,16 @@ namespace opengl
 		*/
 		bool copyData(unsigned int width, unsigned int height, BitmapDataType dataType, BitmapColorType colorType, void* source, unsigned int sourcePitch);
 
+	private:
+		void updateCaching();
+
 	protected:
 		void*			mData = nullptr;
-		BitmapSettings	mSettings;
+		unsigned int	mWidth = 0;									///< width of the bitmap in pixels
+		unsigned int	mHeight = 0;								///< height of the bitmap in pixels
+		BitmapDataType	mDataType = BitmapDataType::UNKNOWN;		///< type of pixel data
+		BitmapColorType mColorType = BitmapColorType::UNKNOWN;		///< color of pixel data
+
 		size_t			mChannelSize;			///< Cached size in bytes of a single channel. This is updated when setSettings is called.
 		uint8_t			mNumChannels;			///< Cached number of channels. This is updated when setSettings is called.
 	};
