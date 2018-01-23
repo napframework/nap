@@ -6,6 +6,7 @@
 #include <utility/fileutils.h>
 #include <utility/stringutils.h>
 #include <rtti/rttiutilities.h>
+#include <rtti/jsonreader.h>
 #include <rtti/pythonmodule.h>
 #include <rtti/linkresolver.h>
 #include <nap/core.h>
@@ -214,7 +215,7 @@ namespace nap
 		RTTIDeserializeResult read_result;
 		if (!readJSONFile(filename, getFactory(), read_result, errorState))
 			return false;
-		
+
 		// We first gather the objects that require an update. These are the new objects and the changed objects.
 		// Change detection is performed by comparing RTTI attributes. Very important to note is that, after reading
 		// a json file, pointers are unresolved. When comparing them to the existing objects, they are always different
@@ -257,7 +258,7 @@ namespace nap
 		// Patch ObjectPtrs so that they point to the updated object instead of the old object. We need to do this before determining
 		// init order, otherwise a part of the graph may still be pointing to the old objects.
 		ObjectPtrManager::get().patchPointers(objects_to_update);
-		
+
 		// Build object graph of all the objects in the manager, overlayed by the objects we want to update. Later, we will
 		// performs queries against this graph to determine init order for both resources and entities.
 		RTTIObjectGraph object_graph;
@@ -488,4 +489,5 @@ namespace nap
 		
 		return ObjectPtr<RTTIObject>(object);
 	}
+
 }
