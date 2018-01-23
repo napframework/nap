@@ -3,7 +3,8 @@
 #include "fbxconverter.h"
 
 RTTI_BEGIN_CLASS(nap::MeshFromFile)
-	RTTI_PROPERTY("Path", &nap::MeshFromFile::mPath, nap::rtti::EPropertyMetaData::FileLink | nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Path",	&nap::MeshFromFile::mPath,	nap::rtti::EPropertyMetaData::FileLink | nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Usage",	&nap::MeshFromFile::mUsage, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
@@ -14,6 +15,9 @@ namespace nap
 		std::unique_ptr<MeshInstance> mesh_instance = loadMesh(mPath, errorState);
 		if (!errorState.check(mesh_instance != nullptr, "Unable to load mesh %s for resource %d", mPath.c_str(), mID.c_str()))
 			return false;
+
+		// Set the usage for the mesh
+		mesh_instance->setUsage(mUsage);
 
 		// Initialize the mesh
 		if (!errorState.check(mesh_instance->init(errorState), "Unable to initialize mesh %s for resource %d", mPath.c_str(), mID.c_str()))
