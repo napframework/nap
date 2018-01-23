@@ -53,7 +53,7 @@ namespace nap
 		 * @param forcedDataPath optionally overwrite the project data detection, using specified path instead
 		 * @return if initialization succeeded
 		 */
-		bool initializeEngine(utility::ErrorState& error, std::string forcedDataPath="");
+		bool initializeEngine(utility::ErrorState& error, const std::string& forcedDataPath=std::string());
 		
 		/**
 		* Initializes all registered services
@@ -179,7 +179,7 @@ namespace nap
 		 * @param forcedDataPath optionally overwrite the project data detection, using specified path instead
 		 * @return if the project data was successfully found and working path set
 		 */
-		bool determineAndSetWorkingDirectory(utility::ErrorState& errorState, std::string forcedDataPath="");
+		bool determineAndSetWorkingDirectory(utility::ErrorState& errorState, const std::string& forcedDataPath=std::string());
 		
 		// Typedef for a list of services
 		using ServiceList = std::vector<std::unique_ptr<Service>>;

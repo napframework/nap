@@ -44,7 +44,7 @@ namespace nap
 	}
 
 
-	bool Core::initializeEngine(utility::ErrorState& error, std::string forcedDataPath)
+	bool Core::initializeEngine(utility::ErrorState& error, const std::string& forcedDataPath)
 	{
 		// Ensure our current working directory is where the executable is.
 		// Works around issues with the current working directory not being set as
@@ -313,13 +313,14 @@ namespace nap
 	}
 
 	
-	bool Core::determineAndSetWorkingDirectory(utility::ErrorState& errorState, std::string forcedDataPath)
+	bool Core::determineAndSetWorkingDirectory(utility::ErrorState& errorState, const std::string& forcedDataPath)
 	{
 		// If we've been provided with an explicit data path let's use that
 		if (!forcedDataPath.empty())
 		{
 			// Verify path exists
-			if (!utility::dirExists(forcedDataPath)){
+			if (!utility::dirExists(forcedDataPath))
+			{
 				errorState.fail("Specified data path '%s' does not exist", forcedDataPath.c_str());
 				return false;
 			}
@@ -346,7 +347,8 @@ namespace nap
 		std::string napRoot = utility::getAbsolutePath("../..");
 		
 		// Iterate possible project locations
-		std::string possibleProjectParents[] = {
+		std::string possibleProjectParents[] =
+		{
 			"projects", // User projects against packaged NAP
 			"examples", // Example projects
 			"demos", // Demo projects
