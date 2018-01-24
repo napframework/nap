@@ -58,7 +58,7 @@ namespace nap
 		mIntensitySmoother.mSmoothTime = getComponent<LineColorComponent>()->mIntensitySmoothTime;
 
 		// Ensure the image is at least RGB
-		if (!(mLookupImage->getPixmap().getBitmap().getColorType() >=  opengl::BitmapColorType::RGB))
+		if (!(mLookupImage->getPixmap().getNumberOfChannels() >= 3))
 			return errorState.check(false, "lookup image does not have 3 or more color channels");
 
 		return true;
@@ -152,12 +152,12 @@ namespace nap
 	void LineColorComponentInstance::getColor(const glm::vec2& uvPos, glm::vec3& outColor)
 	{
 		// Get max width and height in bitmap space
-		const opengl::Bitmap& bitmap = mLookupImage->getPixmap().getBitmap();
-		int x = static_cast<int>(static_cast<float>(bitmap.getWidth()  - 1) * uvPos.x);
-		int y = static_cast<int>(static_cast<float>(bitmap.getHeight() - 1) * uvPos.y);
+		const Pixmap& pixmap = mLookupImage->getPixmap();
+		int x = static_cast<int>(static_cast<float>(pixmap.getWidth()  - 1) * uvPos.x);
+		int y = static_cast<int>(static_cast<float>(pixmap.getHeight() - 1) * uvPos.y);
 
 		// Get bitmap values, ie: where
-		RGBColorFloat rcolor = mLookupImage->getPixmap().getPixel<RGBColorFloat>(x, y);
+		RGBColorFloat rcolor = pixmap.getPixel<RGBColorFloat>(x, y);
 
 		// Set color
 		outColor = glm::vec3(rcolor.getRed(), rcolor.getGreen(), rcolor.getBlue());

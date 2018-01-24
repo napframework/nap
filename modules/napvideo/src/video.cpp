@@ -143,7 +143,7 @@ namespace nap
 		if (!mYTexture->init(errorState))
 			return false;
 
-		mYTexture->getTexture().setData(y_default_data.data());
+		mYTexture->setData(y_default_data.data());
 
 		mUTexture = std::make_unique<Texture2D>();
 		mUTexture->mWidth = uvWidth;
@@ -153,7 +153,7 @@ namespace nap
 		if (!mUTexture->init(errorState))
 			return false;
 				
-		mUTexture->getTexture().setData(uv_default_data.data());
+		mUTexture->setData(uv_default_data.data());
 
 		mVTexture = std::make_unique<Texture2D>();
 		mVTexture->mWidth = uvWidth;
@@ -163,7 +163,7 @@ namespace nap
 		if (!mVTexture->init(errorState))
 			return false;
 
-		mVTexture->getTexture().setData(uv_default_data.data());
+		mVTexture->setData(uv_default_data.data());
 
 		// Register with service
 		mService.registerVideoPlayer(*this);
@@ -506,9 +506,9 @@ namespace nap
 		}
 
 		// Copy data into texture
-		mYTexture->getTexture().setData(cur_frame.mFrame->data[0], cur_frame.mFrame->linesize[0]);
-		mUTexture->getTexture().setData(cur_frame.mFrame->data[1], cur_frame.mFrame->linesize[1]);
-		mVTexture->getTexture().setData(cur_frame.mFrame->data[2], cur_frame.mFrame->linesize[2]);
+		mYTexture->setData(cur_frame.mFrame->data[0], cur_frame.mFrame->linesize[0]);
+		mUTexture->setData(cur_frame.mFrame->data[1], cur_frame.mFrame->linesize[1]);
+		mVTexture->setData(cur_frame.mFrame->data[2], cur_frame.mFrame->linesize[2]);
 
 		// Destroy frame that was allocated in the decode thread, after it has been processed
 		av_frame_unref(cur_frame.mFrame);

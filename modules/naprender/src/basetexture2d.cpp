@@ -162,9 +162,18 @@ namespace nap
 		mTexture.unbind();
 	}
 
-	void BaseTexture2D::setData(Pixmap& pixmap)	{ setData(pixmap.getData()); }
-	void BaseTexture2D::setData(void* data)		{ mTexture.setData(data); }
-	const opengl::Texture2DSettings& BaseTexture2D::getSettings() const { return mTexture.getSettings(); }
+	void BaseTexture2D::setData(Pixmap& pixmap)	
+	{ 
+		setData(pixmap.getData()); 
+	}
 
+	void BaseTexture2D::setData(void* data, int pitch)
+	{ 
+		mTexture.setData(data, pitch); 
+	}
 
+	const opengl::Texture2DSettings& BaseTexture2D::getSettings() const 
+	{ 
+		return mTexture.getSettings(); 
+	}
 }
