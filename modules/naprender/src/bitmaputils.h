@@ -1,7 +1,7 @@
 #pragma once
 
 // Local includes
-#include "bitmap.h"
+#include "pixmap.h"
 
 // External includes
 #include <string>
@@ -21,16 +21,20 @@ namespace opengl
 {
 	struct Texture2DSettings;
 	class Texture;
+}
+
+namespace nap
+{
 
 	// using directives
-	using OpenGLTypeMap = std::unordered_map<BitmapDataType, GLenum>;
-	using OpenGLFormatMap = std::unordered_map<BitmapColorType, GLenum>;
+	using OpenGLTypeMap = std::unordered_map<Pixmap::EDataType, GLenum>;
+	using OpenGLFormatMap = std::unordered_map<Pixmap::EChannels, GLenum>;
 
 	/**
 	* getGLType
 	* @return: the associated OpenGL system type based on the Bitmap's data type, GL_INVALID_ENUM if not found
 	*/
-	NAPAPI GLenum	getGLType(BitmapDataType type);
+	NAPAPI GLenum	getGLType(Pixmap::EDataType type);
 
 	/**
 	 * getGLInternalFormat
@@ -40,7 +44,7 @@ namespace opengl
 	 * If no compression is available, the default uncompressed format is returned 
 	 * GL_INVALID_VALUE is returned if no format is available at all
 	 */
-	NAPAPI GLint		getGLInternalFormat(BitmapColorType type, bool compressed = false);
+	NAPAPI GLint		getGLInternalFormat(Pixmap::EChannels type, bool compressed = false);
 
 	/**
 	 * getGLFormat
@@ -48,7 +52,7 @@ namespace opengl
 	 * returns GL_INVALID_ENUM if no format is available at all
 	 * The format determines the composition of each element in the texture
 	 */
-	NAPAPI GLenum		getGLFormat(BitmapColorType type);
+	NAPAPI GLenum		getGLFormat(Pixmap::EChannels type);
 
 	/**
 	 * setFromBitmap
@@ -60,7 +64,7 @@ namespace opengl
 	 * @param texture: the texture to populate based on @bitmap
 	 * @param compress: if the texture should be compressed when uploaded to the GPU  
 	 */
-	NAPAPI bool		getSettingsFromBitmap(const Bitmap& bitmap, bool compress, Texture2DSettings& settings, nap::utility::ErrorState& errorState);
+	NAPAPI bool		getSettingsFromBitmap(const Pixmap& pixmap, bool compress, opengl::Texture2DSettings& settings, nap::utility::ErrorState& errorState);
 
 	/**
 	* @return a map that binds bitmap data types to opengl data types
@@ -78,7 +82,7 @@ namespace opengl
 	 * Returns the associated Bitmap Data Type for the queried free image type
 	 * @return: the associated bitmap type, UNKNOWN if not found
 	 */
-	NAPAPI BitmapDataType	getBitmapType(FREE_IMAGE_TYPE type);
+	NAPAPI Pixmap::EDataType	getBitmapType(FREE_IMAGE_TYPE type);
 
 	/**
 	 * getBitmapColor
@@ -86,19 +90,19 @@ namespace opengl
 	 * Returns the associated Bitmap Color Type for the queried free image color type
 	 * @return: the associated bitmap color, UNKNOWN if not found
 	 */
-	NAPAPI BitmapColorType getColorType(FREE_IMAGE_COLOR_TYPE colorType, FREE_IMAGE_TYPE dataType);
+	NAPAPI Pixmap::EChannels getColorType(FREE_IMAGE_COLOR_TYPE colorType, FREE_IMAGE_TYPE dataType);
 
 	/**
 	 * @param type the opengl enum to get the associated bitmap type for
 	 * @return the associated bitmap type for the queried opengl type, UNKNOWN if there is no valid conversion
 	 */
-	NAPAPI BitmapDataType getBitmapType(GLenum type);
+	NAPAPI Pixmap::EDataType  getBitmapType(GLenum type);
 
 	/**
 	 * @param format the opengl texture format to get the associated color type for
 	 * @return the associated bitmap color type for the queried opengl format
 	 */
-	NAPAPI BitmapColorType getColorType(GLenum format);
+	NAPAPI Pixmap::EChannels getColorType(GLenum format);
 
 	/**
 	 * loadBitmap
@@ -107,7 +111,7 @@ namespace opengl
 	 * @return: a new bitmap, nullptr if unsuccessful
 	 * @param imgPath: full path to image to load
 	 */
-	NAPAPI Bitmap*			loadBitmap(const std::string& imgPath, nap::utility::ErrorState& errorState);
+//	NAPAPI Bitmap*			loadBitmap(const std::string& imgPath, nap::utility::ErrorState& errorState);
 
 	/**
 	 * loadBitmap
@@ -118,7 +122,7 @@ namespace opengl
 	 * @param imgPath: full path to image to load
 	 * @return if the load was successful or not
 	 */
-	NAPAPI bool			loadBitmap(Bitmap& bitmap, const std::string& imgPath, nap::utility::ErrorState& errorState);
+//	NAPAPI bool			loadBitmap(Bitmap& bitmap, const std::string& imgPath, nap::utility::ErrorState& errorState);
 }
 
 

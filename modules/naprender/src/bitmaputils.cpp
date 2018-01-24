@@ -5,7 +5,7 @@
 #include <algorithm>
 #include "ntexture2d.h"
 
-namespace opengl
+namespace nap
 {
 	/**
 	* freeImageTypeMap
@@ -13,12 +13,12 @@ namespace opengl
 	* Holds all bitmap to free image type conversions
 	* Note that every 8 bit image is a FIT_BITMAP in freeImage
 	*/
-	using FreeImageTypeMap = std::unordered_map<BitmapDataType, std::vector<FREE_IMAGE_TYPE>>;
+	using FreeImageTypeMap = std::unordered_map<Pixmap::EDataType, std::vector<FREE_IMAGE_TYPE>>;
 	static const FreeImageTypeMap freeImageTypeMap =
 	{
-		{ BitmapDataType::BYTE,		{ FIT_BITMAP }},
-		{ BitmapDataType::USHORT,	{ FIT_UINT16, FIT_RGB16, FIT_RGBA16}},
-		{ BitmapDataType::FLOAT,	{ FIT_FLOAT, FIT_RGBF, FIT_RGBAF}}
+		{ Pixmap::EDataType::BYTE,		{ FIT_BITMAP }},
+		{ Pixmap::EDataType::USHORT,	{ FIT_UINT16, FIT_RGB16, FIT_RGBA16}},
+		{ Pixmap::EDataType::FLOAT,		{ FIT_FLOAT, FIT_RGBF, FIT_RGBAF}}
 	};
 
 
@@ -29,18 +29,17 @@ namespace opengl
 	 * If there are multiple vector entries, the second entry is always the little endian version
 	 * TODO: Figure out something nicer for this lookup
 	 */
-	using FreeImageColorMap = std::unordered_map<FREE_IMAGE_COLOR_TYPE, BitmapColorType>;
+	using FreeImageColorMap = std::unordered_map<FREE_IMAGE_COLOR_TYPE, Pixmap::EChannels>;
 	static const FreeImageColorMap freeImageColorMap
 	{
-		{ FIC_MINISBLACK,	BitmapColorType::GREYSCALE },
-		{ FIC_RGB,			BitmapColorType::RGB },
-		{ FIC_RGBALPHA,		BitmapColorType::RGBA },
-		{ FIC_PALETTE,		BitmapColorType::INDEXED}
+		{ FIC_MINISBLACK,	Pixmap::EChannels::R },
+		{ FIC_RGB,			Pixmap::EChannels::RGB },
+		{ FIC_RGBALPHA,		Pixmap::EChannels::RGBA }
 	};
 
 
 	//Returns the associated Bitmap Data Type for the queried free image type
-	opengl::BitmapDataType getBitmapType(FREE_IMAGE_TYPE type)
+	Pixmap::EDataType getBitmapType(FREE_IMAGE_TYPE type)
 	{
 		auto found_it = std::find_if(freeImageTypeMap.begin(), freeImageTypeMap.end(), [&](const auto& value)
 		{
@@ -55,29 +54,34 @@ namespace opengl
 			}
 			return found;
 		});
-		return found_it == freeImageTypeMap.end() ? BitmapDataType::UNKNOWN : (*found_it).first;
+
+		assert(found_it != freeImageTypeMap.end());
+
+		return (*found_it).first;
 	}
 
 
-	opengl::BitmapDataType getBitmapType(GLenum gltype)
+	Pixmap::EDataType getBitmapType(GLenum gltype)
 	{
 		for (const auto& type : getGLTypeMap())
 		{
 			if (type.second == gltype)
 				return type.first;
 		}
-		return BitmapDataType::UNKNOWN;
+		assert(false);
+		return Pixmap::EDataType::BYTE;
 	}
 
 
-	opengl::BitmapColorType getColorType(GLenum format)
+	Pixmap::EChannels getColorType(GLenum format)
 	{
 		for (const auto& colorformat : getGLFormatMap())
 		{
 			if (colorformat.second == format)
 				return colorformat.first;
 		}
-		return BitmapColorType::UNKNOWN;
+		assert(false);
+		return Pixmap::EChannels::RGB;
 	}
 
 
@@ -91,14 +95,17 @@ namespace opengl
 	 * The channels might be ordered differently base don little / big endian
 	 * This function compensates for that ordering and returns the correct color type based on the difference in architecture
 	 */
-	opengl::BitmapColorType getColorType(FREE_IMAGE_COLOR_TYPE colorType, FREE_IMAGE_TYPE dataType)
+	Pixmap::EChannels getColorType(FREE_IMAGE_COLOR_TYPE colorType, FREE_IMAGE_TYPE dataType)
 	{
 		// Find based on color key
 		auto it = freeImageColorMap.find(colorType);
 
 		// If no match was found return
 		if (it == freeImageColorMap.end())
-			return BitmapColorType::UNKNOWN;
+		{
+			assert(false);
+			return Pixmap::EChannels::RGB;
+		}
 
 		// If we're dealing with an rgb or rgba map and a bitmap
 		// The endian of the loaded free image map becomes important
@@ -106,14 +113,14 @@ namespace opengl
 		bool swap = (dataType == FREE_IMAGE_TYPE::FIT_BITMAP && FI_RGBA_RED == 2);
 
 		// Based on type, swap if necessary
-		BitmapColorType return_type = it->second;
+		Pixmap::EChannels return_type = it->second;
 		switch (it->second)
 		{
-		case BitmapColorType::RGB:
-			return_type = swap ? BitmapColorType::BGR : BitmapColorType::RGB;
+		case Pixmap::EChannels::RGB:
+			return_type = swap ? Pixmap::EChannels::BGR : Pixmap::EChannels::RGB;
 			break;
-		case BitmapColorType::RGBA:
-			return_type = swap ? BitmapColorType::BGRA : BitmapColorType::RGBA;
+		case Pixmap::EChannels::RGBA:
+			return_type = swap ? Pixmap::EChannels::BGRA : Pixmap::EChannels::RGBA;
 			break;
 		default:
 			break;
@@ -123,7 +130,7 @@ namespace opengl
 		return return_type;
 	}
 
-
+/*
 	// Loads bitmap from image file path
 	Bitmap* loadBitmap(const std::string& imgPath, nap::utility::ErrorState& errorState)
 	{
@@ -181,6 +188,7 @@ namespace opengl
 		FreeImage_Unload(fi_bitmap);
 		return success;
 	}
+	*/
 
 	/**
 	 * GLTex2DInternalFormatOptions
@@ -213,19 +221,18 @@ namespace opengl
 	 *
 	 * Holds all texture 2D available bitmap to GL internal format options
 	 * Note that we do not support indexed colors right now, as we need to implement color tables
-	 * TODO: NEEDS A MUTEX, MULTIPLE THREADS COULD QUERY THE DATA AT THE SAME TIME, CORRUPTING IT
 	 */
-	using GLTex2DFormatBindingMap = std::unordered_map<BitmapColorType, GLTex2DInternalFormatOption>;
+	using GLTex2DFormatBindingMap = std::unordered_map<Pixmap::EChannels, GLTex2DInternalFormatOption>;
 	static const GLTex2DFormatBindingMap& getTex2DformatBindings()
 	{
 		static GLTex2DFormatBindingMap tex2DInternalFormatBindings;
 		if (tex2DInternalFormatBindings.empty())
 		{
-			tex2DInternalFormatBindings[BitmapColorType::GREYSCALE] =	{ GL_RED,		GL_COMPRESSED_RED_RGTC1_EXT,		{ GL_COMPRESSED_RED,		GL_COMPRESSED_RED_RGTC1_EXT} };
-			tex2DInternalFormatBindings[BitmapColorType::RGB] =			{ GL_RGB,		GL_COMPRESSED_RGB_S3TC_DXT1_EXT,	{ GL_COMPRESSED_RGB,		GL_COMPRESSED_RGB_S3TC_DXT1_EXT } };
-			tex2DInternalFormatBindings[BitmapColorType::RGBA] =		{ GL_RGBA,		GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,	{ GL_COMPRESSED_RGBA,		GL_COMPRESSED_RGBA_S3TC_DXT1_EXT,	GL_COMPRESSED_RGBA_S3TC_DXT1_EXT,	GL_COMPRESSED_RGBA_S3TC_DXT3_EXT,	GL_COMPRESSED_RGBA_S3TC_DXT5_EXT } };
-			tex2DInternalFormatBindings[BitmapColorType::BGR] =			tex2DInternalFormatBindings[BitmapColorType::RGB];
-			tex2DInternalFormatBindings[BitmapColorType::BGRA] =		tex2DInternalFormatBindings[BitmapColorType::RGBA];
+//			tex2DInternalFormatBindings[Pixmap::EChannels::GREYSCALE] =	{ GL_RED,		GL_COMPRESSED_RED_RGTC1_EXT,		{ GL_COMPRESSED_RED,		GL_COMPRESSED_RED_RGTC1_EXT} };
+			tex2DInternalFormatBindings[Pixmap::EChannels::RGB] =		{ GL_RGB,		GL_COMPRESSED_RGB_S3TC_DXT1_EXT,	{ GL_COMPRESSED_RGB,		GL_COMPRESSED_RGB_S3TC_DXT1_EXT } };
+			tex2DInternalFormatBindings[Pixmap::EChannels::RGBA] =		{ GL_RGBA,		GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,	{ GL_COMPRESSED_RGBA,		GL_COMPRESSED_RGBA_S3TC_DXT1_EXT,	GL_COMPRESSED_RGBA_S3TC_DXT1_EXT,	GL_COMPRESSED_RGBA_S3TC_DXT3_EXT,	GL_COMPRESSED_RGBA_S3TC_DXT5_EXT } };
+			tex2DInternalFormatBindings[Pixmap::EChannels::BGR] =		tex2DInternalFormatBindings[Pixmap::EChannels::RGB];
+			tex2DInternalFormatBindings[Pixmap::EChannels::BGRA] =		tex2DInternalFormatBindings[Pixmap::EChannels::RGBA];
 		}
 		return tex2DInternalFormatBindings;
 	}
@@ -237,13 +244,13 @@ namespace opengl
 	* Helper function to retrieve internal format options based on color type
 	* Returns null if not found
 	*/
-	static const GLTex2DInternalFormatOption* getInternalFormatOption(BitmapColorType type)
+	static const GLTex2DInternalFormatOption* getInternalFormatOption(Pixmap::EChannels type)
 	{
 		const GLTex2DFormatBindingMap& all_options = getTex2DformatBindings();
 		auto it = getTex2DformatBindings().find(type);
 		if (it == all_options.end())
 		{
-			printMessage(MessageType::ERROR, "unable to find GL texture 2d internal format options for bitmap color of type: %d", static_cast<uint8_t>(type));
+			//printMessage(MessageType::ERROR, "unable to find GL texture 2d internal format options for bitmap color of type: %d", static_cast<uint8_t>(type));
 			return nullptr;
 		}
 		return &(it->second);
@@ -258,11 +265,11 @@ namespace opengl
 	 */
 	static const OpenGLFormatMap openGLFormatMap = 
 	{
-		{ BitmapColorType::GREYSCALE,	GL_RED  },
-		{ BitmapColorType::RGB,			GL_RGB  },
-		{ BitmapColorType::RGBA,		GL_RGBA },
-		{ BitmapColorType::BGR,			GL_BGR  },
-		{ BitmapColorType::BGRA,		GL_BGRA }
+//		{ Pixmap::EChannels::GREYSCALE,	GL_RED  },
+		{ Pixmap::EChannels::RGB,		GL_RGB  },
+		{ Pixmap::EChannels::RGBA,		GL_RGBA },
+		{ Pixmap::EChannels::BGR,		GL_BGR  },
+		{ Pixmap::EChannels::BGRA,		GL_BGRA }
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -275,9 +282,9 @@ namespace opengl
 	*/
 	static const OpenGLTypeMap openGLTypeMap =
 	{
-		{ BitmapDataType::BYTE,		GL_UNSIGNED_BYTE },
-		{ BitmapDataType::FLOAT,	GL_FLOAT },
-		{ BitmapDataType::USHORT,	GL_UNSIGNED_SHORT }
+		{ Pixmap::EDataType::BYTE,		GL_UNSIGNED_BYTE },
+		{ Pixmap::EDataType::FLOAT,		GL_FLOAT },
+		{ Pixmap::EDataType::USHORT,	GL_UNSIGNED_SHORT }
 	};
 
 
@@ -285,7 +292,7 @@ namespace opengl
 
 
 	// Returns the associated OpenGL system type based on the Bitmap's data type
-	GLenum getGLType(BitmapDataType type)
+	GLenum getGLType(Pixmap::EDataType type)
 	{
 		auto it = openGLTypeMap.find(type);
 		return it == openGLTypeMap.end() ? GL_INVALID_ENUM : it->second;
@@ -293,7 +300,7 @@ namespace opengl
 
 
 	// the GL associated internal format associated with the BitmapColorType
-	GLint getGLInternalFormat(BitmapColorType type, bool compressed /*= true*/)
+	GLint getGLInternalFormat(Pixmap::EChannels type, bool compressed /*= true*/)
 	{
 		// Get options and check if available
 		const GLTex2DInternalFormatOption* options = getInternalFormatOption(type);
@@ -308,51 +315,51 @@ namespace opengl
 
 
 	// Returns the GL associated format associated with the bitmap's color type
-	GLenum getGLFormat(BitmapColorType type)
+	GLenum getGLFormat(Pixmap::EChannels type)
 	{
 		auto it = openGLFormatMap.find(type);
 		if (it == openGLFormatMap.end())
 		{
-			printMessage(MessageType::ERROR, "unable to find matching gl format for bitmap color of type: %d", static_cast<uint8_t>(type));
+//			printMessage(MessageType::ERROR, "unable to find matching gl format for bitmap color of type: %d", static_cast<uint8_t>(type));
 			return GL_INVALID_ENUM;
 		}
 		return it->second;
 	}
 
 	
-	// Helper function to check bitmap validity
-	bool checkBitmap(const Bitmap& bitmap)
-	{
-		if (!bitmap.isValid())
-		{
-			printMessage(MessageType::ERROR, "unable to set texture from bitmap, invalid bitmap settings");
-			return false;
-		}
-
-		if (!bitmap.hasData())
-		{
-			printMessage(MessageType::ERROR, "unable to set texture from bitmap, bitmap has no associated data");
-			return false;
-		}
-		return true;
-	}
+// 	// Helper function to check bitmap validity
+// 	bool checkBitmap(const Pixmap& pixmap)
+// 	{
+// 		if (!pixmap.isValid())
+// 		{
+// 			printMessage(MessageType::ERROR, "unable to set texture from bitmap, invalid bitmap settings");
+// 			return false;
+// 		}
+// 
+// 		if (!bitmap.hasData())
+// 		{
+// 			printMessage(MessageType::ERROR, "unable to set texture from bitmap, bitmap has no associated data");
+// 			return false;
+// 		}
+// 		return true;
+// 	}
 
 
 	// Populates a Texture2D object with settings matching the bitmap
-	bool getSettingsFromBitmap(const Bitmap& bitmap, bool compress, Texture2DSettings& settings, nap::utility::ErrorState& errorState)
+	bool getSettingsFromBitmap(const Pixmap& pixmap, bool compress, opengl::Texture2DSettings& settings, nap::utility::ErrorState& errorState)
 	{
-		assert(checkBitmap(bitmap));
+		//assert(checkBitmap(bitmap));
 
 		// Fetch matching values
-		GLint internal_format = getGLInternalFormat(bitmap.getColorType(), compress);
+		GLint internal_format = getGLInternalFormat(pixmap.getChannels(), compress);
 		if (!errorState.check(internal_format != GL_INVALID_VALUE, "Unable to determine internal format from bitmap"))
 			return false;
 
-		GLenum format = getGLFormat(bitmap.getColorType());
+		GLenum format = getGLFormat(pixmap.getChannels());
 		if (!errorState.check(format != GL_INVALID_ENUM, "Unable to determine format from bitmap"))
 			return false;
 
-		GLenum type = getGLType(bitmap.getDataType());
+		GLenum type = getGLType(pixmap.getDataType());
 		if (!errorState.check(type != GL_INVALID_ENUM, "Unable to determine texture type from bitmap"))
 			return false;
 
@@ -360,20 +367,20 @@ namespace opengl
 		settings.mInternalFormat = internal_format;
 		settings.mFormat = format;
 		settings.mType = type;
-		settings.mWidth = bitmap.getWidth();
-		settings.mHeight = bitmap.getHeight();
+		settings.mWidth = pixmap.getWidth();
+		settings.mHeight = pixmap.getHeight();
 
 		return true;
 	}
 
 
-	const opengl::OpenGLTypeMap& getGLTypeMap()
+	const OpenGLTypeMap& getGLTypeMap()
 	{
 		return openGLTypeMap;
 	}
 
 
-	const opengl::OpenGLFormatMap& getGLFormatMap()
+	const OpenGLFormatMap& getGLFormatMap()
 	{
 		return openGLFormatMap;
 	}
