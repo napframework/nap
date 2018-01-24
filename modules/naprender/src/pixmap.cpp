@@ -6,6 +6,9 @@
 #include <rtti/typeinfo.h>
 #include <basetexture2d.h>
 
+// External includes
+#include <FreeImage.h>
+
 RTTI_BEGIN_ENUM(nap::Pixmap::EChannels)
 	RTTI_ENUM_VALUE(nap::Pixmap::EChannels::R,			"R"),
 	RTTI_ENUM_VALUE(nap::Pixmap::EChannels::RGB,		"RGB"),
@@ -292,8 +295,42 @@ namespace nap
 		
 		mWidth = settings.mWidth;
 		mHeight = settings.mHeight;
-		mType = nap::getBitmapType(settings.mType);
-		mChannels = nap::getColorType(settings.mFormat);
+
+		switch (settings.mType)
+		{
+		case GL_UNSIGNED_BYTE:
+			mType = EDataType::BYTE;
+			break;
+		case GL_FLOAT:
+			mType = EDataType::FLOAT;
+			break;
+		case GL_UNSIGNED_SHORT:
+			mType = EDataType::USHORT;
+			break;
+		default:
+			assert(false);
+		}
+
+		switch (settings.mFormat)
+		{
+		case GL_RED:
+			mChannels = EChannels::R;
+			break;
+		case GL_RGB:
+			mChannels = EChannels::RGB;
+			break;
+		case GL_RGBA:
+			mChannels = EChannels::RGBA;
+			break;
+		case GL_BGR:
+			mChannels = EChannels::BGR;
+			break;
+		case GL_BGRA:
+			mChannels = EChannels::BGRA;
+			break;
+		default:
+			assert(false);
+		}
 
 		updateCaching();
 

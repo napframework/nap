@@ -31,7 +31,7 @@ namespace nap
 
 		// Get opengl settings from bitmap
 		opengl::Texture2DSettings settings;
-		if (!errorState.check(getSettingsFromBitmap(mPixmap, mCompressed, settings, errorState), "Unable to determine texture settings from bitmap %s", mImagePath.c_str()))
+		if (!errorState.check(getTextureSettingsFromPixmap(mPixmap, mCompressed, settings, errorState), "Unable to determine texture settings from bitmap %s", mImagePath.c_str()))
 			return false;
 
 		// Initialize texture from bitmap

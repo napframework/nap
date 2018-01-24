@@ -99,7 +99,7 @@ namespace nap
 		void getData(Pixmap& pixmap);
 
 		void setData(Pixmap& pixmap);
-		void setData(void* data);
+		void setData(void* data, int pitch = 0);
 
 		const opengl::Texture2DSettings& getSettings() const;
 
