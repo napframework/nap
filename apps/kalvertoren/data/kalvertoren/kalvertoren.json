@@ -1171,7 +1171,7 @@
                 "MaxLodLevel": 20
             },
             "Usage": "Static",
-            "Path": "data/kalvertoren/index_map/index_map.png",
+            "ImagePath": "data/kalvertoren/index_map/index_map.png",
             "ColorCount": 13
         },
         {
@@ -1211,7 +1211,7 @@
                 "MaxLodLevel": 20
             },
             "Usage": "Static",
-            "Path": "data/kalvertoren/palettes/palette_1.png",
+            "ImagePath": "data/kalvertoren/palettes/palette_1.png",
             "LedColors": [
                 {
                     "Values": [
@@ -1258,7 +1258,7 @@
                 "MaxLodLevel": 20
             },
             "Usage": "Static",
-            "Path": "data/kalvertoren/palettes/palette_2.png",
+            "ImagePath": "data/kalvertoren/palettes/palette_2.png",
             "LedColors": [
                 {
                     "Values": [
@@ -1305,7 +1305,7 @@
                 "MaxLodLevel": 20
             },
             "Usage": "Static",
-            "Path": "data/kalvertoren/palettes/palette_3.png",
+            "ImagePath": "data/kalvertoren/palettes/palette_3.png",
             "LedColors": [
                 {
                     "Values": [
@@ -1352,7 +1352,7 @@
                 "MaxLodLevel": 20
             },
             "Usage": "Static",
-            "Path": "data/kalvertoren/palettes/palette_4.png",
+            "ImagePath": "data/kalvertoren/palettes/palette_4.png",
             "LedColors": [
                 {
                     "Values": [
@@ -1463,7 +1463,7 @@
                 "MaxLodLevel": 20
             },
             "Usage": "Static",
-            "Path": "data/kalvertoren/palettes/palette_5.png",
+            "ImagePath": "data/kalvertoren/palettes/palette_5.png",
             "LedColors": [
                 {
                     "Values": [
@@ -1494,7 +1494,7 @@
                 "MaxLodLevel": 20
             },
             "Usage": "Static",
-            "Path": "data/kalvertoren/palettes/palette_6.png",
+            "ImagePath": "data/kalvertoren/palettes/palette_6.png",
             "LedColors": [
                 {
                     "Values": [

@@ -48,6 +48,8 @@ namespace nap
 		// Path to img on disk
 		std::string				mImagePath;								///< Path to the image on disk to load
 		bool					mCompressed = false;					///< If the image on the GPU is compressed
+
+	private:
 		nap::Pixmap				mPixmap;								///< The CPU image representation
 	};
 
