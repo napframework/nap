@@ -3,7 +3,6 @@
 // External Includes
 #include <rtti/rttiobject.h>
 #include <utility/dllexport.h>
-#include <bitmap.h>
 #include <color.h>
 
 namespace nap
@@ -46,6 +45,10 @@ namespace nap
 		};
 
 		virtual ~Pixmap();
+
+
+		EDataType getDataType() const { return mType; }
+		EChannels getChannels() const { return mChannels; }
 
 		/**
 		* The bitmap is initialized using it's associated properties. This means
@@ -267,7 +270,21 @@ namespace nap
 
 		void setData(uint8_t* source, unsigned int sourcePitch);
 
-	
+		template<typename T>
+		T* getPixelData(unsigned int x, unsigned int y) const
+		{
+			assert(sizeof(T) == mChannelSize);
+			if (x >= mWidth || y >= mHeight)
+				return nullptr;
+
+			// Get index in to array offset by number of channels (pixel level)
+			unsigned int offset = ((y * mWidth) + x) * mNumChannels * mChannelSize;
+
+			// Update offset (pixel * num_channels * data_size
+			unsigned char* data_ptr = (unsigned char*)(mData.data()) + offset;
+			return (T*)(data_ptr);
+		}
+			
 		/**
 		 * Figures out this bitmap's type of color and stores it for further use
 		 */
@@ -441,20 +458,20 @@ namespace nap
 	template<typename Type>
 	void nap::Pixmap::getRGBAColorData(int x, int y, RGBAColor<Type*>& outColor) const
 	{
-		assert(mBitmap.getNumberOfChannels() >= outColor.getNumberOfChannels());
+		assert(mNumChannels >= outColor.getNumberOfChannels());
 		assert(outColor.getValueType() == RTTI_OF(Type));
-		assert(mBitmap.hasData());
+//		assert(mBitmap.hasData());
 
-		Type* pixel_data = mBitmap.getPixel<Type>(x, y);
-		switch (mBitmap.getColorType())
+		Type* pixel_data = getPixelData<Type>(x, y);
+		switch (mChannels)
 		{
-		case opengl::BitmapColorType::BGRA:
+		case EChannels::BGRA:
 		{
 			outColor.setValue(EColorChannel::Red,  pixel_data + 2);
 			outColor.setValue(EColorChannel::Blue, pixel_data + 0);
 			break;
 		}
-		case opengl::BitmapColorType::RGBA:
+		case EChannels::RGBA:
 		{
 			outColor.setValue(EColorChannel::Red,  pixel_data + 0);
 			outColor.setValue(EColorChannel::Blue, pixel_data + 2);
@@ -480,22 +497,22 @@ namespace nap
 	template<typename Type>
 	void nap::Pixmap::getRGBColorData(int x, int y, RGBColor<Type*>& outColor) const
 	{
-		assert(mBitmap.getNumberOfChannels() >= outColor.getNumberOfChannels());
+		assert(mNumChannels >= outColor.getNumberOfChannels());
 		assert(outColor.getValueType() == RTTI_OF(Type));
-		assert(mBitmap.hasData());
+//		assert(mBitmap.hasData());
 
-		Type* pixel_data = mBitmap.getPixel<Type>(x, y);
-		switch (mBitmap.getColorType())
+		Type* pixel_data = getPixelData<Type>(x, y);
+		switch (mChannels)
 		{
-		case opengl::BitmapColorType::BGR:
-		case opengl::BitmapColorType::BGRA:
+		case EChannels::BGR:
+		case EChannels::BGRA:
 		{
 			outColor.setValue(EColorChannel::Red,  pixel_data + 2);
 			outColor.setValue(EColorChannel::Blue, pixel_data + 0);
 			break;
 		}
-		case opengl::BitmapColorType::RGB:
-		case opengl::BitmapColorType::RGBA:
+		case EChannels::RGB:
+		case EChannels::RGBA:
 		{
 			outColor.setValue(EColorChannel::Red,  pixel_data + 0);
 			outColor.setValue(EColorChannel::Blue, pixel_data + 2);
@@ -521,14 +538,13 @@ namespace nap
 	void nap::Pixmap::getColorValueData(int x, int y, nap::EColorChannel channel, RColor<Type*>& outValue) const
 	{
 		assert(outValue.getValueType() == RTTI_OF(Type));
-		assert(mBitmap.hasData());
-		assert(static_cast<int>(channel) < mBitmap.getNumberOfChannels());
+		assert(static_cast<int>(channel) < mNumChannels);
 
 		int idx = static_cast<int>(channel);
-		switch (mBitmap.getColorType())
+		switch (mChannels)
 		{
-			case opengl::BitmapColorType::BGR:
-			case opengl::BitmapColorType::BGRA:
+			case EChannels::BGR:
+			case EChannels::BGRA:
 			{
 				idx = channel == EColorChannel::Red  ? 2 : 
 					  channel == EColorChannel::Blue ? 0 : idx;
@@ -537,7 +553,7 @@ namespace nap
 			default:
 				break;
 		}
-		Type* pixel_data = mBitmap.getPixel<Type>(x, y);
+		Type* pixel_data = getPixelData<Type>(x, y);
 		outValue.setValue(EColorChannel::Red, pixel_data + idx);
 	}
 

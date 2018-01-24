@@ -27,7 +27,7 @@ namespace nap
 			return false;
 
 		// Make sure the amount of channels is > 3
-		if (!errorState.check(mPixmap.getBitmap().getNumberOfChannels() >= 3, "Index map: %s does not have 3 channels", mImagePath.c_str()))
+		if (!errorState.check(mPixmap.getNumberOfChannels() >= 3, "Index map: %s does not have 3 channels", mImagePath.c_str()))
 			return false;
 
 		// Get all unique colors from the map
@@ -39,7 +39,7 @@ namespace nap
 
 		// Get opengl settings from bitmap
 		opengl::Texture2DSettings settings;
-		if (!errorState.check(opengl::getSettingsFromBitmap(mPixmap.getBitmap(), false, settings, errorState), "Unable to determine texture settings from bitmap %s", mImagePath.c_str()))
+		if (!errorState.check(getSettingsFromBitmap(mPixmap, false, settings, errorState), "Unable to determine texture settings from bitmap %s", mImagePath.c_str()))
 			return false;
 		
 		// Force parameters

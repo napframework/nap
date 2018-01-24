@@ -99,7 +99,7 @@ namespace nap
 			return false;
 
 		// Make sure the amount of channels is > 3
-		if (!errorState.check(mPixmap.getBitmap().getNumberOfChannels() >= 3, "color palette map: %s does not have 3 channels", mGridImagePath.c_str()))
+		if (!errorState.check(mPixmap.getNumberOfChannels() >= 3, "color palette map: %s does not have 3 channels", mGridImagePath.c_str()))
 			return false;
 
 		if (!errorState.check(getWeekCount() == 52, "There must be 52 weeks defined in palette %s", mID.c_str()))

@@ -32,46 +32,6 @@ RTTI_BEGIN_CLASS(nap::PixmapFromFile)
 	RTTI_PROPERTY("Path",		&nap::PixmapFromFile::mPath,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-//////////////////////////////////////////////////////////////////////////
-
-/**
-* bitmapChannelMap
-* Maps Bitmap channels to opengl bitmap channels
-*/
-using BitmapChannelMap = std::unordered_map<nap::Pixmap::EChannels, opengl::BitmapColorType>;
-static const BitmapChannelMap bitmapChannelMap =
-{
-	{ nap::Pixmap::EChannels::R,					opengl::BitmapColorType::GREYSCALE },
-	{ nap::Pixmap::EChannels::RGB,					opengl::BitmapColorType::RGB },
-	{ nap::Pixmap::EChannels::RGBA,					opengl::BitmapColorType::RGBA },
-	{ nap::Pixmap::EChannels::BGR,					opengl::BitmapColorType::BGR },
-	{ nap::Pixmap::EChannels::BGRA,					opengl::BitmapColorType::BGRA }
-};
-
-
-static opengl::BitmapColorType getBitmapColorType(nap::Pixmap::EChannels colorType)
-{
-	auto it = bitmapChannelMap.find(colorType);
-	assert(it != bitmapChannelMap.end());
-	return it->second;
-}
-
-
-using BitmapDataTypeMap = std::unordered_map<nap::Pixmap::EDataType, opengl::BitmapDataType>;
-static const BitmapDataTypeMap bitmapDataTypeMap =
-{
-	{ nap::Pixmap::EDataType::BYTE,					opengl::BitmapDataType::BYTE  },
-	{ nap::Pixmap::EDataType::USHORT,				opengl::BitmapDataType::USHORT },
-	{ nap::Pixmap::EDataType::FLOAT,				opengl::BitmapDataType::FLOAT },
-};
-
-
-static opengl::BitmapDataType getBitmapType(nap::Pixmap::EDataType dataType)
-{
-	auto it = bitmapDataTypeMap.find(dataType);
-	assert(it != bitmapDataTypeMap.end());
-	return it->second;
-}
 
 //////////////////////////////////////////////////////////////////////////
 // Color creation functions / fill functions
@@ -86,7 +46,7 @@ static opengl::BitmapDataType getBitmapType(nap::Pixmap::EDataType dataType)
 template<typename T>
 static nap::BaseColor* createColor(const nap::Pixmap& map)
 {
-	switch (map.getBitmap().getNumberOfChannels())
+	switch (map.getNumberOfChannels())
 	{
 	case 1:
 	{
@@ -250,16 +210,21 @@ namespace nap
 		// Get color type
 		FREE_IMAGE_COLOR_TYPE fi_bitmap_color_type = FreeImage_GetColorType(fi_bitmap);
 
+		// If we're dealing with an rgb or rgba map and a bitmap
+		// The endian of the loaded free image map becomes important
+		// If so we might have to swap the red and blue channels regarding the interal color representation
+		bool swap = (fi_bitmap_type == FREE_IMAGE_TYPE::FIT_BITMAP && FI_RGBA_RED == 2);
+
 		switch (fi_bitmap_color_type)
 		{
 		case FIC_MINISBLACK:
 			mChannels = EChannels::R;
 			break;
 		case FIC_RGB:
-			mChannels = EChannels::RGB;
+			mChannels = swap ? EChannels::BGR : EChannels::RGB;
 			break;
 		case FIC_RGBALPHA:
-			mChannels = EChannels::RGBA;
+			mChannels = swap ? EChannels::BGRA : EChannels::RGBA;
 			break;
 		default:
 			errorState.fail("Can't load pixmap from file; unknown pixel format");
@@ -272,6 +237,7 @@ namespace nap
 
 		updateCaching();
 
+		mData.resize(getSizeInBytes());
 		setData(FreeImage_GetBits(fi_bitmap), FreeImage_GetPitch(fi_bitmap));
 
 		FreeImage_Unload(fi_bitmap);
@@ -321,27 +287,21 @@ namespace nap
 
 
 	void Pixmap::initFromTexture(const nap::BaseTexture2D& texture)
-	{/*
+	{
 		const opengl::Texture2DSettings& settings = texture.getSettings();
+		
+		mWidth = settings.mWidth;
+		mHeight = settings.mHeight;
+		mType = nap::getBitmapType(settings.mType);
+		mChannels = nap::getColorType(settings.mFormat);
 
-		// Get bitmap data type
-		opengl::BitmapDataType  bitmap_type = opengl::getBitmapType(settings.mType);
-		assert(bitmap_type != opengl::BitmapDataType::UNKNOWN);
+		updateCaching();
 
-		// Get bitmap color type
-		opengl::BitmapColorType color_type = opengl::getColorType(settings.mFormat);
-		assert(color_type != opengl::BitmapColorType::UNKNOWN);
-
-		mBitmap = opengl::Bitmap(texture.getWidth(), texture.getHeight(), bitmap_type, color_type);
-
-		// Sync
-		applySettingsFromBitmap();
+		uint64_t size = getSizeInBytes();
+		mData.resize(size);
 
 		// Store type of color
 		onInit();
-
-		// Now allocate
-		mBitmap.allocateMemory();*/
 	}
 
 
@@ -431,10 +391,36 @@ namespace nap
 		}
 	}
 
+
 	void Pixmap::updateCaching()
 	{
-		mChannelSize = getSizeOf(getBitmapType(mType));
-		mNumChannels = getNumChannels(getBitmapColorType(mChannels));
+		switch (mType)
+		{
+		case EDataType::BYTE:
+			mChannelSize = sizeof(unsigned char);
+			break;
+		case EDataType::FLOAT:
+			mChannelSize = sizeof(float);
+			break;
+		case EDataType::USHORT:
+			mChannelSize = sizeof(uint16_t);
+			break;
+		}
+
+		switch (mChannels)
+		{
+		case EChannels::R:
+			mNumChannels = 1;
+			break;
+		case EChannels::RGB:
+		case EChannels::BGR:
+			mNumChannels = 3;
+			break;
+		case EChannels::RGBA:
+		case EChannels::BGRA:
+			mNumChannels = 4;
+			break;
+		}
 	}
 
 

@@ -13,8 +13,6 @@
 #include "ndrawutils.h"
 #include "nshader.h"
 #include "ntexture.h"
-#include "bitmap.h"
-#include "bitmaputils.h"
 #include "nvertexarrayobject.h"
 #include "ngltypes.h"
 #include "nvertexbuffer.h"

@@ -1,6 +1,5 @@
 // Local Includes
 #include "image.h"
-#include "bitmap.h"
 #include "bitmaputils.h"
 
 // External Includes
@@ -32,7 +31,7 @@ namespace nap
 
 		// Get opengl settings from bitmap
 		opengl::Texture2DSettings settings;
-		if (!errorState.check(opengl::getSettingsFromBitmap(mPixmap.getBitmap(), mCompressed, settings, errorState), "Unable to determine texture settings from bitmap %s", mImagePath.c_str()))
+		if (!errorState.check(getSettingsFromBitmap(mPixmap, mCompressed, settings, errorState), "Unable to determine texture settings from bitmap %s", mImagePath.c_str()))
 			return false;
 
 		// Initialize texture from bitmap

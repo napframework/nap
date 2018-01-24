@@ -32,7 +32,7 @@ namespace nap
 
 			// Get opengl settings from pixmap
 			opengl::Texture2DSettings cur_pixmap_settings;
-			if (!errorState.check(opengl::getSettingsFromBitmap(pixmap->getBitmap(), false,  cur_pixmap_settings, errorState), "Unable to determine texture settings from image %s in sequence %s", filename.c_str(), mID.c_str()))
+			if (!errorState.check(getSettingsFromBitmap(*pixmap, false,  cur_pixmap_settings, errorState), "Unable to determine texture settings from image %s in sequence %s", filename.c_str(), mID.c_str()))
 				return false;
 
 			// Verify the pixmap has the same settings as all other pixmaps
