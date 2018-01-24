@@ -30,10 +30,7 @@ namespace nap
 	{
 		// Initialize timer
 		mTimer.reset();
-
-		// Add resource manager service and listen to file changes
-		mResourceManager = std::make_unique<ResourceManager>(*this);
-		mResourceManager->mFileLoadedSignal.connect(mFileLoadedSlot);
+		mTicks.fill(0);
 	}
 
 
@@ -48,7 +45,7 @@ namespace nap
 	}
 
 
-	bool Core::initializeEngine(utility::ErrorState& error)
+	bool Core::initializeEngine(utility::ErrorState& error, const std::string& forcedDataPath)
 	{
 		// Ensure our current working directory is where the executable is.
 		// Works around issues with the current working directory not being set as
@@ -59,7 +56,17 @@ namespace nap
 		ProjectInfo projectInfo;
 		if (!loadProjectInfoFromJSON(projectInfo, error))
 			return false;
-		
+
+		// Find our project data
+		if (!determineAndSetWorkingDirectory(error, forcedDataPath))
+			return false;
+
+		// Add resource manager and listen to file changes
+		// This has to be done after the directory is changed, to make sure that the file watcher 
+		// uses the correct directory
+		mResourceManager = std::make_unique<ResourceManager>(*this);
+		mResourceManager->mFileLoadedSignal.connect(mFileLoadedSlot);
+
 		// Load all modules
 		// TODO: Passing through our temporary modules list for now, this is temporary until we lock down our
 		//		 release behaviour
@@ -72,6 +79,7 @@ namespace nap
 
 		return true;
 	}
+
 
 	bool Core::initializePython(utility::ErrorState& error)
 	{
@@ -108,6 +116,19 @@ namespace nap
 	}
 
 
+	void Core::calculateFramerate(uint32 tick)
+	{
+		mTicksum -= mTicks[mTickIdx];		// subtract value falling off
+		mTicksum += tick;					// add new value
+		mTicks[mTickIdx] = tick;			// save new value so it can be subtracted later */		
+		if (++mTickIdx == mTicks.size())    // inc buffer index
+		{
+			mTickIdx = 0;
+		}
+		mFramerate = 1000.0f / (static_cast<float>(mTicksum) / static_cast<float>(mTicks.size()));
+	}
+
+
 	void Core::start()
 	{
 		mTimer.reset();
@@ -116,15 +137,25 @@ namespace nap
 
 	double Core::update(std::function<void(double)>& updateFunction)
 	{
-		// Get delta time
-		double new_time = getElapsedTime();
-		mDeltaTime = new_time - mLastTimeStamp;
-		mLastTimeStamp = new_time;
+		// Get current time in milliseconds
+		uint32 new_tick_time = mTimer.getTicks();
+		
+		// Calculate amount of milliseconds since last time stamp
+		uint32 delta_ticks = std::max<uint32>(new_tick_time - mLastTimeStamp, 1);
+
+		// Store time stamp
+		mLastTimeStamp = new_tick_time;
+		
+		// Update framerate
+		calculateFramerate(delta_ticks);
+
+		// Get delta time in seconds
+		double delta_time = static_cast<double>(delta_ticks) / 1000.0;
 
 		// Perform update call before we check for file changes
 		for (auto& service : mServices)
 		{
-			service->preUpdate(mDeltaTime);
+			service->preUpdate(delta_time);
 		}
 
 		// Check for file changes
@@ -133,19 +164,19 @@ namespace nap
 		// Update rest of the services
 		for (auto& service : mServices)
 		{
-			service->update(mDeltaTime);
+			service->update(delta_time);
 		}
 
 		// Call update function
-		updateFunction(mDeltaTime);
+		updateFunction(delta_time);
 
 		// Update rest of the services
 		for (auto& service : mServices)
 		{
-			service->postUpdate(mDeltaTime);
+			service->postUpdate(delta_time);
 		}
 
-		return mDeltaTime;
+		return delta_time;
 	}
 
 
@@ -263,10 +294,64 @@ namespace nap
 
 
 	// Returns start time of core module as point in time
-	TimePoint Core::getStartTime() const
+	utility::HighResTimeStamp Core::getStartTime() const
 	{
 		return mTimer.getStartTime();
 	}
 
-
+	
+	bool Core::determineAndSetWorkingDirectory(utility::ErrorState& errorState, const std::string& forcedDataPath)
+	{
+		// If we've been provided with an explicit data path let's use that
+		if (!forcedDataPath.empty())
+		{
+			// Verify path exists
+			if (!utility::dirExists(forcedDataPath))
+			{
+				errorState.fail("Specified data path '%s' does not exist", forcedDataPath.c_str());
+				return false;
+			}
+			else {
+				utility::changeDir(forcedDataPath);
+				return true;
+			}
+		}
+		
+		// Check if we have our data dir alongside our exe
+		std::string testDataPath = utility::getExecutableDir() + "/data";
+		if (utility::dirExists(testDataPath))
+		{
+			utility::changeDir(testDataPath);
+			return true;
+		}
+		
+		// Get project name
+		// TODO once we have packaging work merged and we compile into project-specific paths use that folder name instead
+		std::string projectName = utility::getFileNameWithoutExtension(utility::getExecutablePath());
+		
+		// Find NAP root.  Looks cludgey but we have control of this, it doesn't change.
+		std::string napRoot = utility::getAbsolutePath("../../..");
+		
+		// Iterate possible project locations
+		std::string possibleProjectParents[] =
+		{
+			"projects", // User projects against packaged NAP
+			"examples", // Example projects
+			"demos", // Demo projects
+			"apps", // Applications in NAP source
+			"test" // Old test projects in NAP source
+		};
+		for (auto& parentPath : possibleProjectParents)
+		{
+			testDataPath = napRoot + "/" + parentPath + "/" + projectName + "/data";
+			if (utility::dirExists(testDataPath))
+			{
+				utility::changeDir(testDataPath);
+				return true;
+			}
+		}
+		
+		errorState.fail("Couldn't find data for project %s", projectName.c_str());
+		return false;
+	}
 }

@@ -1,5 +1,6 @@
 #include "nap/directorywatcher.h"
-#include <FileWatcher/FileWatcher.h>
+#include "nap/linux/FileWatcher/FileWatcher.h"
+
 #include <fstream>
 #include <nap/logger.h>
 #include <thread>
@@ -7,8 +8,6 @@
 
 namespace nap
 {
-
-
 	/**
 	 * Directorywatcher
 	 */
@@ -51,7 +50,7 @@ namespace nap
 
 
 		std::string path = utility::getFileDir(utility::getExecutablePath());
-		nap::Logger::info("Watching directory: %s", path.c_str());
+		nap::Logger::debug("Watching directory: %s", path.c_str());
 		mPImpl->watchID = mPImpl->fileWatcher.addWatch(path, &(*mPImpl), true);
 	}
 

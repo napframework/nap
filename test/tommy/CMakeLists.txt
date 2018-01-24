@@ -4,7 +4,7 @@ project(tommy)
 #add all cpp files to SOURCES
 file(GLOB SOURCES src/*.cpp)
 file(GLOB HEADERS src/*.h)
-file(GLOB SHADERS shaders/*.frag shaders/*.vert)
+file(GLOB SHADERS data/shaders/*.frag data/shaders/*.vert)
 file(GLOB DATA data/*)
 
 # Create IDE groups
@@ -35,26 +35,23 @@ set_output_directories()
 
 if (WIN32)
     # Copy freeimage DLL
-	find_package(freeimage REQUIRED)
-	copy_freeimage_dll()
+    find_package(freeimage REQUIRED)
+    copy_freeimage_dll()
 
     # Copy over some crap window dlls
-	copy_base_windows_graphics_dlls()
+    copy_base_windows_graphics_dlls()
 
-	# Copy all of our Windows DLLs that have build in bin into project dir
-	# TODO this is NOT a clean solution, but if we're mainly releasing projects build against packaged releases of the
-	#      framework maybe this is OK?
-	bulk_copy_windows_dlls_to_bin()
+    # Copy all of our Windows DLLs that have build in bin into project dir
+    # TODO this is NOT a clean solution, but if we're mainly releasing projects build against packaged releases of the
+    #      framework maybe this is OK?
+    bulk_copy_windows_dlls_to_bin()
 endif()
 
-# Copy project data to project bin dir via post-build events
+# Copy project json to project bin dir and export fbx, via post-build events
 copy_files_to_bin(${CMAKE_CURRENT_LIST_DIR}/project.json)
-copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/data data)
-copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/shaders shaders)
-export_fbx(${CMAKE_CURRENT_LIST_DIR}/data)
 
 # Package into release build
 install(DIRECTORY . DESTINATION "examples/${PROJECT_NAME}"
-		PATTERN "CMakeLists.txt" EXCLUDE
-		PATTERN "dist" EXCLUDE)
+        PATTERN "CMakeLists.txt" EXCLUDE
+        PATTERN "dist" EXCLUDE)
 install(FILES dist/CMakeLists.txt DESTINATION "examples/${PROJECT_NAME}/")

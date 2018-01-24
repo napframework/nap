@@ -4,7 +4,7 @@ project(skeleton)
 # add all cpp files to SOURCES
 file(GLOB SOURCES src/*.cpp)
 file(GLOB HEADERS src/*.h)
-file(GLOB SHADERS shaders/*.frag shaders/*.vert)
+file(GLOB SHADERS data/shaders/*.frag data/shaders/*.vert)
 file(GLOB DATA data/*)
 
 # Create IDE groups
@@ -47,6 +47,6 @@ if (WIN32)
     bulk_copy_windows_dlls_to_bin()
 endif()
 
+# Copy project json to project bin dir via post-build events
 # should probably only contain the skeleton json
-copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/data data)
 copy_files_to_bin(${CMAKE_CURRENT_LIST_DIR}/project.json)

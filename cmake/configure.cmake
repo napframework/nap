@@ -205,6 +205,30 @@ macro(export_fbx SRCDIR)
     endif()
 endmacro()
 
+macro(export_fbx_in_place SRCDIR)
+    if (MSVC OR APPLE)
+        set(BUILD_CONF "${CMAKE_CXX_COMPILER_ID}-${ARCH}-$<CONFIG>")
+    else()
+        set(BUILD_CONF "${CMAKE_CXX_COMPILER_ID}-${CMAKE_BUILD_TYPE}-${ARCH}")
+    endif()
+
+    set(FBXCONV_DIR "${CMAKE_SOURCE_DIR}/bin/${BUILD_CONF}")
+
+    # Do the export
+    if (MSVC)
+        add_custom_command(TARGET ${PROJECT_NAME}
+            POST_BUILD
+            COMMAND set "PATH=${FBXCONV_DIR}/..;%PATH%"
+            COMMAND "${FBXCONV_DIR}/fbxconverter" -o ${SRCDIR} "${SRCDIR}/*.fbx"
+            COMMENT "Export FBX in '${SRCDIR}'")
+    else()
+        add_custom_command(TARGET ${PROJECT_NAME}
+            POST_BUILD
+            COMMAND "${FBXCONV_DIR}/fbxconverter" -o ${SRCDIR} "${SRCDIR}/*.fbx"
+            COMMENT "Export FBX in '${SRCDIR}'")
+    endif()
+endmacro()
+
 macro(copy_dir_to_bin SRCDIR DSTDIR)
     add_custom_command(TARGET ${PROJECT_NAME}
         POST_BUILD
@@ -392,4 +416,64 @@ macro(set_output_directories)
         set(BIN_DIR ${CMAKE_SOURCE_DIR}/bin/${BUILD_CONF}/${PROJECT_NAME})
         set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR})
     endif()
+endmacro()
+
+macro(prepareQt)
+    ## First, let cmake know where the Qt library path is, we go from there.
+    if (MSVC OR APPLE)
+        # Pick up QT_DIR environment variable
+        if (DEFINED ENV{QT_DIR})
+            set(QTDIR $ENV{QT_DIR})
+            message(STATUS "Using QT_DIR environment variable: ${QTDIR}")
+        endif()
+
+        # Add possible Qt installation paths to the HINTS section
+        # The version probably doesn't have to match exactly (5.8.? is probably fine)
+        find_path(QT_DIR lib/cmake/Qt5/Qt5Config.cmake
+                HINTS
+                ${QTDIR}
+                ${NAP_ROOT}/../../Qt/5.9.1/msvc2015_64
+                ${NAP_ROOT}/../../Qt/5.9.2/msvc2015_64
+                ~/Qt/5.8/clang_64
+                )
+        # Find_package for Qt5 will pick up the Qt installation from CMAKE_PREFIX_PATH
+        set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QT_DIR})
+
+        if (NOT DEFINED QT_DIR)
+            message(WARNING
+                    "The QT5 Directory could not be found, "
+                    "consider setting the QT_DIR environment variable "
+                    "to something like: \"C:/dev/Qt/5.9.1/msvc2015_64\"")
+        endif()
+    endif ()
+
+
+    find_package(Qt5Core REQUIRED)
+    find_package(Qt5Widgets REQUIRED)
+    find_package(Qt5Gui REQUIRED)
+
+    set(CMAKE_AUTOMOC ON)
+    set(CMAKE_AUTORCC ON)
+    ADD_DEFINITIONS(-DQT_NO_KEYWORDS)
+
+    set(NAPKIN_QT_LIBRARIES
+            Qt5::Widgets
+            Qt5::Core
+            Qt5::Gui
+            )
+endmacro()
+
+macro(prepareQtPost)
+
+    qt5_use_modules(${PROJECT_NAME} Core Widgets Gui)
+
+    if (WIN32)
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_FILE:Qt5::Widgets>
+                $<TARGET_FILE:Qt5::Core>
+                $<TARGET_FILE:Qt5::Gui>
+                $<TARGET_FILE_DIR:${PROJECT_NAME}>
+                COMMENT "Copy Qt DLLs")
+    endif()
+
 endmacro()

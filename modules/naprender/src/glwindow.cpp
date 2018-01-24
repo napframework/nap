@@ -36,10 +36,7 @@ namespace nap
 
 
 	// GL Render window constructor
-	GLWindow::GLWindow() :
-		mBackbuffer(new opengl::BackbufferRenderTarget())
-	{
-	}
+	GLWindow::GLWindow() { }
 
 
 	GLWindow::~GLWindow()
@@ -116,11 +113,16 @@ namespace nap
 
 
 	// Returns the backbuffer
-	opengl::BackbufferRenderTarget* GLWindow::getBackbuffer() const
+	const opengl::BackbufferRenderTarget& GLWindow::getBackbuffer() const
 	{
-		return mBackbuffer.get();
+		return mBackbuffer;
 	}
 
+
+	opengl::BackbufferRenderTarget& GLWindow::getBackbuffer()
+	{
+		return mBackbuffer;
+	}
 
 	// Returns the actual opengl context
 	SDL_GLContext GLWindow::getContext() const
@@ -147,7 +149,7 @@ namespace nap
 	void GLWindow::setSize(const glm::ivec2& size)
 	{
 		// Set size of associated back buffer
-		mBackbuffer->setSize(size);
+		mBackbuffer.setSize(size);
 
 		// Set set of window
 		opengl::setWindowSize(mWindow, size);

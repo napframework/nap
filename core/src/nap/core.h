@@ -8,12 +8,12 @@
 #include <rtti/factory.h>
 #include <rtti/rtti.h>
 #include <unordered_set>
+#include <utility/datetimeutils.h>
 
 // Core Includes
 #include "modulemanager.h"
 #include "resourcemanager.h"
 #include "service.h"
-#include "timer.h"
 #include "utility/dllexport.h"
 
 namespace nap
@@ -50,9 +50,10 @@ namespace nap
 		/**
 		 * Loads all modules in to the core environment and creates all the associated services
 		 * @param error contains the error code when initialization fails
+		 * @param forcedDataPath optionally overwrite the project data detection, using specified path instead
 		 * @return if initialization succeeded
 		 */
-		bool initializeEngine(utility::ErrorState& error);
+		bool initializeEngine(utility::ErrorState& error, const std::string& forcedDataPath=std::string());
 		
 		/**
 		* Initializes all registered services
@@ -96,8 +97,8 @@ namespace nap
 		ResourceManager* getResourceManager() { return mResourceManager.get(); }
 
 		/**
-		* @return number of elapsed time in milliseconds after invoking start
-		*/
+		 * @return number of elapsed time in milliseconds after invoking start
+		 */
 		uint32 getTicks() const;
 
 		/**
@@ -108,7 +109,12 @@ namespace nap
 		/**
 		* @return start time point
 		*/
-		TimePoint getStartTime() const;
+		utility::HighResTimeStamp getStartTime() const;
+
+		/**
+		 * @return number of frames per second
+		 */
+		float getFramerate() const										{ return mFramerate; }
 
 		/**
 		* @return an already registered service of @type
@@ -129,7 +135,7 @@ namespace nap
 		 */
 		template <typename T>
 		T* getService(rtti::ETypeCheck typeCheck = rtti::ETypeCheck::EXACT_MATCH);
-
+	
 	private:
 		/**
 		* Helper function that creates all the services that are found in the various modules
@@ -144,7 +150,7 @@ namespace nap
 		* Adds a new service of type @type to @outServices
 		* @param type the type of service to add
 		* @param outServices the list of services the service of @type will be added to
-		* @param error in case of a duplicate, contains the error message if the service could not be added
+		* @param errorState in case of a duplicate, contains the error message if the service could not be added
 		* @return if the service was added successfully
 		*/
 		bool addService(const rtti::TypeInfo& type, std::vector<Service*>& outServices,
@@ -157,6 +163,19 @@ namespace nap
 		*/
 		void resourceFileChanged(const std::string& file);
 
+		/**
+		 *	Calculates the framerate over time
+		 */
+		void calculateFramerate(uint32 ticks);
+		
+		/**
+		 * Determine and set our working directory based on where our project data is
+		 * @param errorState if false is returned, contains error information
+		 * @param forcedDataPath optionally overwrite the project data detection, using specified path instead
+		 * @return if the project data was successfully found and working path set
+		 */
+		bool determineAndSetWorkingDirectory(utility::ErrorState& errorState, const std::string& forcedDataPath=std::string());
+		
 		// Typedef for a list of services
 		using ServiceList = std::vector<std::unique_ptr<Service>>;
 
@@ -170,13 +189,18 @@ namespace nap
 		ServiceList mServices;
 
 		// Timer
-		SimpleTimer mTimer;
+		utility::HighResolutionTimer mTimer;
 
-		// Last time stamp used for calculating delta time
-		double mLastTimeStamp = 0.0;
+		// Amount of milliseconds the app is running
+		uint32 mLastTimeStamp = 0;
 
-		// Time it took to complete last cycle in seconds
-		double mDeltaTime = 0.0;
+		// Current framerate
+		float mFramerate = 0.0f;
+
+		// Used to calculate framerate over time
+		std::array<uint32, 100> mTicks;
+		uint32 mTicksum = 0;
+		uint32 mTickIdx = 0;
 
 		nap::Slot<const std::string&> mFileLoadedSlot = {
 			[&](const std::string& inValue) -> void { resourceFileChanged(inValue); }};

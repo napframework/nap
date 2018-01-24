@@ -31,7 +31,7 @@ namespace nap
 		
 		// Load scene
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("data/artnetcolor/artnetcolor.json", error))
+		if (!mResourceManager->loadFile("artnetcolor.json", error))
 			return false; 
 		
 		// Get important entities
@@ -127,7 +127,7 @@ namespace nap
 		mRenderWindow->makeActive();
 		
 		// Clear back-buffer
-		opengl::RenderTarget& backbuffer = *mRenderWindow->getWindow()->getBackbuffer();
+		opengl::RenderTarget& backbuffer = mRenderWindow->getBackbuffer();
 		backbuffer.setClearColor(glm::vec4(0.0705f, 0.49f, 0.5647f, 1.0f));
 		mRenderService->clearRenderTarget(backbuffer);	
 		
@@ -136,7 +136,7 @@ namespace nap
 		mRenderService->renderObjects(backbuffer, ortho_cam_comp);
 
 		// Render gui after last gui call
-		getCore().getService<IMGuiService>()->render();
+		getCore().getService<IMGuiService>()->draw();
 
 		// Swap backbuffer
 		mRenderWindow->swap();
@@ -171,7 +171,7 @@ namespace nap
 		{
 			nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(inputEvent.get());
 			if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
-				quit(0);
+				quit();
 		}
 
 		mInputService->addEvent(std::move(inputEvent));
@@ -185,8 +185,9 @@ namespace nap
 
 	
 
-	void ArtnetColorApp::shutdown()
+	int ArtnetColorApp::shutdown()
 	{
 		mRenderWindow->mWindowEvent.disconnect(mWindowEventSlot);
+		return 0;
 	}
 }

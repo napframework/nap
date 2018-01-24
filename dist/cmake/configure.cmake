@@ -269,3 +269,63 @@ macro(add_platform_specific_files WIN32_SOURCES OSX_SOURCES LINUX_SOURCES)
 		set_source_files_properties(${LINUX_SOURCES} PROPERTIES HEADER_FILE_ONLY TRUE)
 	endif()
 endmacro()
+
+macro(prepareQt)
+    ## First, let cmake know where the Qt library path is, we go from there.
+    if (MSVC OR APPLE)
+        # Pick up QT_DIR environment variable
+        if (DEFINED ENV{QT_DIR})
+            set(QTDIR $ENV{QT_DIR})
+            message(STATUS "Using QT_DIR environment variable: ${QTDIR}")
+        endif()
+
+        # Add possible Qt installation paths to the HINTS section
+        # The version probably doesn't have to match exactly (5.8.? is probably fine)
+        find_path(QT_DIR lib/cmake/Qt5/Qt5Config.cmake
+                HINTS
+                ${QTDIR}
+                ${NAP_ROOT}/../../Qt/5.9.1/msvc2015_64
+                ${NAP_ROOT}/../../Qt/5.9.2/msvc2015_64
+                ~/Qt/5.8/clang_64
+                )
+        # Find_package for Qt5 will pick up the Qt installation from CMAKE_PREFIX_PATH
+        set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QT_DIR})
+
+        if (NOT DEFINED QT_DIR)
+            message(WARNING
+                    "The QT5 Directory could not be found, "
+                    "consider setting the QT_DIR environment variable "
+                    "to something like: \"C:/dev/Qt/5.9.1/msvc2015_64\"")
+        endif()
+    endif ()
+
+
+    find_package(Qt5Core REQUIRED)
+    find_package(Qt5Widgets REQUIRED)
+    find_package(Qt5Gui REQUIRED)
+
+    set(CMAKE_AUTOMOC ON)
+    set(CMAKE_AUTORCC ON)
+    ADD_DEFINITIONS(-DQT_NO_KEYWORDS)
+
+    set(NAPKIN_QT_LIBRARIES
+            Qt5::Widgets
+            Qt5::Core
+            Qt5::Gui
+            )
+endmacro()
+
+macro(prepareQtPost)
+
+    qt5_use_modules(${PROJECT_NAME} Core Widgets Gui)
+
+    if (WIN32)
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_FILE:Qt5::Widgets>
+                $<TARGET_FILE:Qt5::Core>
+                $<TARGET_FILE:Qt5::Gui>
+                $<TARGET_FILE_DIR:${PROJECT_NAME}>
+                COMMENT "Copy Qt DLLs")
+    endif()
+
+endmacro()

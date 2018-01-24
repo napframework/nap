@@ -303,5 +303,23 @@ namespace nap
 #endif
 		}
 
+		bool readFileToString(const std::string& filename, std::string& outBuffer, utility::ErrorState& err)
+		{
+			std::ifstream in(filename, std::ios::in | std::ios::binary);
+			if (!err.check(in.good(), "Unable to open file: %s (\"%s\")", strerror(errno), filename.c_str()))
+				return false;
+
+			// Create buffer of appropriate size
+			in.seekg(0, std::ios::end);
+			size_t len = in.tellg();
+			outBuffer.resize(len);
+
+			// Read all data
+			in.seekg(0, std::ios::beg);
+			in.read(&outBuffer[0], len);
+
+			return true;
 		}
+
+	}
 }

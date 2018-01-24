@@ -82,7 +82,7 @@ namespace opengl
 
 	const glm::ivec2 TextureRenderTarget2D::getSize() const
 	{
-		return glm::ivec2(mColorTexture->getSettings().width, mColorTexture->getSettings().height);
+		return glm::ivec2(mColorTexture->getSettings().mWidth, mColorTexture->getSettings().mHeight);
 	}
 
 
@@ -95,7 +95,7 @@ namespace opengl
 			return false;
 		}
 		glBindFramebuffer(GL_FRAMEBUFFER, mFbo);
-		glViewport(0, 0, mColorTexture->getSettings().width, mColorTexture->getSettings().height);
+		glViewport(0, 0, mColorTexture->getSettings().mWidth, mColorTexture->getSettings().mHeight);
 		return true;
 	}
 
