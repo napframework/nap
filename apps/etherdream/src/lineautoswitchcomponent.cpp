@@ -79,7 +79,7 @@ namespace nap
 			&& current_direction == EBlendDirection::Up 
 			&& current_blend_value < threshold)
 		{
-			int new_index = mRandom ? math::random(0, mSelectorTwo->getCount() - 1) : mNextLine;
+			int new_index = mRandom ? math::random<int>(0, mSelectorTwo->getCount() - 1) : mNextLine;
 			std::cout << "switching selector 2: " << new_index << "\n";
 			mSelectorTwo->setIndex(new_index);
 			mPrevDirection = current_direction;
@@ -89,7 +89,7 @@ namespace nap
 			current_direction == EBlendDirection::Down && 
 			current_blend_value > (1.0f-threshold))
 		{
-			int new_index = mRandom ? math::random(0, mSelectorOne->getCount() - 1) : mNextLine;
+			int new_index = mRandom ? math::random<int>(0, mSelectorOne->getCount() - 1) : mNextLine;
 			std::cout << "switching selector 1: " << new_index << "\n";
 			mSelectorOne->setIndex(new_index);
 			mPrevDirection = current_direction;

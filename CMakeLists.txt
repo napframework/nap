@@ -32,6 +32,8 @@ set(CMAKE_CONFIGURATION_TYPES "Debug;Release")
 # Allow extra Find{project}.cmake files to be found by projects
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
+set(NAP_ROOT ${CMAKE_CURRENT_LIST_DIR})
+
 include(cmake/configure.cmake)
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/packaging)
@@ -68,7 +70,6 @@ add_subdirectory(tools/fbxconverter)
 # executable targets
 add_subdirectory(test/render)
 add_subdirectory(test/tommy)
-add_subdirectory(test/videoplayer)
 add_subdirectory(test/serializationtest)
 add_subdirectory(test/audiotest)
 
@@ -78,6 +79,17 @@ add_subdirectory(apps/etherdream)
 add_subdirectory(apps/artnetcolor)
 add_subdirectory(apps/steef)
 add_subdirectory(apps/skeleton)
+
+# demo targets
+add_subdirectory(demos/helloworld)
+add_subdirectory(demos/vinyl)
+add_subdirectory(demos/multiwindow)
+add_subdirectory(demos/heightmap)
+add_subdirectory(demos/heightmap/module)
+add_subdirectory(demos/dynamicgeo)
+add_subdirectory(demos/dynamicgeo/module)
+add_subdirectory(demos/videomodulation)
+add_subdirectory(demos/videomodulation/module)
 
 add_subdirectory(unittests)
 
@@ -99,13 +111,12 @@ add_subdirectory(modules/napsvg)
 add_subdirectory(modules/napapp)
 add_subdirectory(modules/napimgui)
 add_subdirectory(modules/napmidi)
+
 # Leftover components can go here for now
 add_subdirectory(modules/napsandbox)
 
-# Exe dependencies
-add_dependencies(rendertest mod_naprender)
-# Extra deps for napkin in order to let them automatically build with napkin
-# add_dependencies(napkin skeleton tommy)
+# app modules
+add_subdirectory(apps/kalvertoren/module)
 
 # Packaging
 install(DIRECTORY dist/cmake/ DESTINATION cmake)
@@ -115,5 +126,5 @@ install(PROGRAMS dist/projectscripts/regenerateProject.py DESTINATION tools/)
 install(PROGRAMS dist/projectscripts/createModule.py DESTINATION tools/)
 install(PROGRAMS dist/projectscripts/regenerateModule.py DESTINATION tools/)
 install(PROGRAMS dist/projectscripts/projectInfoParseToCMake.py DESTINATION tools/)
-INSTALL(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/projects)")
-INSTALL(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/usermodules)")
+install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/projects)")
+install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/usermodules)")

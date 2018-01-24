@@ -34,6 +34,5 @@ if (WIN32)
     bulk_copy_windows_dlls_to_bin()
 endif()
 
-# create post build event
-copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/data data)
+# Copy project json to project bin dir via post-build events
 copy_files_to_bin(${CMAKE_CURRENT_LIST_DIR}/project.json)

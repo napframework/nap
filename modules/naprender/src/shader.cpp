@@ -29,7 +29,7 @@ namespace nap
 
 		// Initialize the shader
 		mShader->init(mVertPath, mFragPath);
-		if (!errorState.check(mShader->isLinked(), "unable to create shader program: %s", mVertPath.c_str(), mFragPath.c_str()))
+		if (!errorState.check(mShader->isLinked(), "unable to create shader program from vertex shader %s and fragment shader %s", mVertPath.c_str(), mFragPath.c_str()))
 			return false;
 
 		return true;

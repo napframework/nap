@@ -3,6 +3,7 @@
 RTTI_BEGIN_ENUM(nap::Texture2D::EFormat)
 	RTTI_ENUM_VALUE(nap::Texture2D::EFormat::RGBA8,	"RGBA8"),
 	RTTI_ENUM_VALUE(nap::Texture2D::EFormat::RGB8,	"RGB8"),
+	RTTI_ENUM_VALUE(nap::Texture2D::EFormat::R8,	"R8"),	
 	RTTI_ENUM_VALUE(nap::Texture2D::EFormat::Depth,	"Depth")
 RTTI_END_ENUM
 
@@ -19,30 +20,30 @@ namespace nap
 	bool Texture2D::init(utility::ErrorState& errorState)
 	{
 		opengl::Texture2DSettings settings;
-		settings.width = mWidth;
-		settings.height = mHeight;
+		settings.mWidth = mWidth;
+		settings.mHeight = mHeight;
 
 		switch (mFormat)
 	{
 		case EFormat::RGBA8:
-			settings.format			= GL_RGBA;
-			settings.internalFormat = GL_RGBA8;
-			settings.type			= GL_UNSIGNED_BYTE;
+			settings.mFormat			= GL_RGBA;
+			settings.mInternalFormat 	= GL_RGBA8;
+			settings.mType				= GL_UNSIGNED_BYTE;
 			break;
 		case EFormat::RGB8:
-			settings.format			= GL_RGB;
-			settings.internalFormat = GL_RGB8;
-			settings.type			= GL_UNSIGNED_BYTE;
+			settings.mFormat			= GL_RGB;
+			settings.mInternalFormat 	= GL_RGB8;
+			settings.mType				= GL_UNSIGNED_BYTE;
 			break;
 		case EFormat::R8:
-			settings.format			= GL_RED;
-			settings.internalFormat = GL_R8;
-			settings.type			= GL_UNSIGNED_BYTE;
+			settings.mFormat			= GL_RED;
+			settings.mInternalFormat 	= GL_R8;
+			settings.mType				= GL_UNSIGNED_BYTE;
 			break;
 		case EFormat::Depth:
-			settings.format			= GL_DEPTH_COMPONENT;
-			settings.internalFormat = GL_DEPTH_COMPONENT;
-			settings.type			= GL_FLOAT;
+			settings.mFormat			= GL_DEPTH_COMPONENT;
+			settings.mInternalFormat 	= GL_DEPTH_COMPONENT;
+			settings.mType				= GL_FLOAT;
 			break;
 	}
 

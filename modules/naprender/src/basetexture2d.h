@@ -8,6 +8,8 @@
 
 namespace nap
 {
+	class Pixmap;
+
 	/**
 	 *	Texture min filter
 	 */
@@ -56,11 +58,12 @@ namespace nap
 		RTTI_ENABLE(rtti::RTTIObject)
 	public:
         using rtti::RTTIObject::init;
-        
+
 		/**
-		 * Initializes opengl texture using the parameters from RTTI and @settings.
+		 * Initializes opengl texture using the associated parameters and @settings.
+		 * @param settings the texture specific settings associated with this texture
 		 */
-		void init(opengl::Texture2DSettings& settings);
+		void init(const opengl::Texture2DSettings& settings);
 
 		/**
 		 * @return OpenGL Texture2D.
@@ -76,6 +79,39 @@ namespace nap
 		 * @return size of the texture, in texels.
 		 */
 		const glm::vec2 getSize() const;
+
+		/**
+		 *	@return width of the texture, in texels
+		 */
+		int getWidth() const;
+
+		/**
+		 *	@return height of the texture, in texels
+		 */
+		int getHeight() const;
+
+		/**
+		 * Blocking call to retrieve GPU texture data that is stored in this texture
+		 * When the pixmap is empty it will be initialized based on the settings associated with this texture
+		 * This call asserts if the bitmap can't be initialized or, when initialized, the bitmap settings don't match
+		 * @param pixmap the pixmap that is filled with the data in this texture
+		 */
+		void getData(Pixmap& pixmap);
+
+		/**
+		 * Starts a transfer of texture data from GPU to CPU. This is a non blocking call.
+		 * For performance, it is important to start a transfer as soon as possible after the texture is rendered.
+		 * It is recommended to use double or triple buffering to make sure that no stalls occur when calling asyncEndGetData().
+		 */
+		void startGetData();
+
+		/**
+		* Finishes a transfer of texture data from GPU to CPU that was started with startGetData. See comment in startGetData for proper use.
+		* When the pixmap is empty it will be initialized based on the settings associated with this texture
+		* This call asserts if the bitmap can't be initialized or, when initialized, the bitmap settings don't match
+		* @param pixmap the pixmap that is filled with the data in this texture.
+		*/
+		void endGetData(Pixmap& pixmap);
 
 		/**
 		 * Activates this texture for rendering.

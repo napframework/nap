@@ -16,7 +16,7 @@
 #include <mpg123.h>
 
 
-RTTI_DEFINE(nap::audio::AudioService)
+RTTI_DEFINE_CLASS(nap::audio::AudioService)
 
 namespace nap
 {
@@ -174,4 +174,4 @@ namespace nap
     }
 }
 
-RTTI_DEFINE(nap::audio::AudioService)
+RTTI_DEFINE_CLASS(nap::audio::AudioService)

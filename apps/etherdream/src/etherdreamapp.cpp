@@ -35,7 +35,7 @@ namespace nap
 		mResourceManager = getCore().getResourceManager();
 
 		// Load scene
-		if (!mResourceManager->loadFile("data/etherdream/etherdream.json", error)) 
+		if (!mResourceManager->loadFile("etherdream.json", error)) 
 			return false;    
 
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
@@ -79,7 +79,7 @@ namespace nap
 		laser_control_comp.renderToLaserBuffers(laser_cam, *mRenderService);
 
 		// Clear window back-buffer
-		opengl::RenderTarget& backbuffer = *(mRenderWindow->getWindow()->getBackbuffer());
+		opengl::RenderTarget& backbuffer = mRenderWindow->getBackbuffer();
 		backbuffer.setClearColor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 		mRenderService->clearRenderTarget(backbuffer);
 
@@ -105,7 +105,7 @@ namespace nap
 		{
 			nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(inputEvent.get());
 			if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
-				quit(0);
+				quit();
 
 			if (press_event->mKey == nap::EKeyCode::KEY_f)
 			{
@@ -125,9 +125,9 @@ namespace nap
 	}
 
 	
-	void EtherdreamApp::shutdown()
+	int EtherdreamApp::shutdown()
 	{
-
+		return 0;
 	}
 }
  

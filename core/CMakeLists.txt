@@ -1,15 +1,22 @@
 project(napcore)
 
-file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
-filter_platform_specific_files(SOURCES)
-
-add_platform_specific_files("${WIN32_SOURCES}" "${OSX_SOURCES}" "${LINUX_SOURCES}")
-
-if (UNIX)
-    file(GLOB_RECURSE FILEWATCHER_SOURCES external/*.cpp)
-    add_library(${PROJECT_NAME} SHARED ${SOURCES} ${FILEWATCHER_SOURCES})
-else()
-    add_library(${PROJECT_NAME} SHARED ${SOURCES})
+file(GLOB SOURCES src/nap/*.cpp src/nap/*.h)
+if(APPLE)
+    add_library(${PROJECT_NAME} SHARED 
+        ${SOURCES}
+        src/nap/osx/directorywatcher.cpp)
+elseif(MSVC)
+    add_library(${PROJECT_NAME} SHARED 
+        ${SOURCES}
+        src/nap/win32/directorywatcher.cpp)
+elseif(UNIX)
+    file(GLOB FILEWATCHER_SOURCES
+            src/nap/linux/FileWatcher/*.cpp
+            src/nap/linux/FileWatcher/*.h)
+    add_library(${PROJECT_NAME} SHARED
+            ${SOURCES}
+            ${FILEWATCHER_SOURCES}
+            src/nap/linux/directorywatcher.cpp)  
 endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Core)
@@ -20,7 +27,6 @@ if (MSVC)
     GENERATE_EXPORT_HEADER(${PROJECT_NAME})
 endif()
 
-
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 if(MSVC)
 	target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX)
@@ -29,8 +35,8 @@ endif()
 target_include_directories(${PROJECT_NAME} PUBLIC src)
 target_link_libraries(${PROJECT_NAME} naputility naprtti)
 
-if (UNIX)
-    target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_LIST_DIR}/external)
+if (UNIX AND NOT APPLE)
+    include_directories(${PROJECT_NAME} src/nap/linux/FileWatcher)
 endif()
 
 if(APPLE)

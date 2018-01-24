@@ -2,19 +2,20 @@
 
 // Local Includes
 #include "basetexture2d.h"
+#include "pixmap.h"
 
 // External Includes
 #include <rtti/rttiobject.h>
 #include <utility/dllexport.h>
 #include <glm/glm.hpp>
-#include <nbitmap.h>
 
 namespace nap
 {
 	/**
-	 * Wraps an opengl image 
 	 * An image holds both the cpu and gpu data associated
-	 * with a 2d image, resulting in a 2d texture (GPU) and bitmap data (CPU)
+	 * with a 2d image, resulting in a 2d texture (GPU) and Bitmap (CPU)
+	 * The bitmap is loaded automatically and populates the opengl texture
+	 * with the right data on initialization
 	 */
 	class NAPAPI Image : public BaseTexture2D
 	{
@@ -28,20 +29,26 @@ namespace nap
 
 		/**
 		* Loads the image from mImagePath.
+		* @param errorState contains the error when initialization fails
 		* @return true when successful, otherwise false.
 		*/
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * @return the bitmap associated with this image
+		 * @return the pixmap associated with this image
 		 */
-		const opengl::Bitmap& getBitmap() const							{ return mBitmap; }
+		const nap::Pixmap& getPixmap() const							{ return mPixmap; }
+
+		/**
+		 *	@return the pixmap associated with this image
+		 */
+		nap::Pixmap& getPixmap()										{ return mPixmap; }
 
 	public:
 		// Path to img on disk
-		std::string				mImagePath;
-		bool					mCompressed = false;
-		opengl::Bitmap			mBitmap;
+		std::string				mImagePath;								///< Path to the image on disk to load
+		bool					mCompressed = false;					///< If the image on the GPU is compressed
+		nap::Pixmap				mPixmap;								///< The CPU image representation
 	};
 
 }

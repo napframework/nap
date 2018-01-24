@@ -26,34 +26,6 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	/**
-	 *	Utility function that returns a normalized float color value based on type T
-	 */
-	template<typename T>
-	void getPixelColor(const opengl::Bitmap& bitmap, const glm::ivec2& pixelCoordinates, glm::vec3& color, float divider)
-	{
-		T* pixel_color = bitmap.getPixel<T>(pixelCoordinates.x, pixelCoordinates.y);
-		switch (bitmap.getColorType())
-		{
-		case opengl::BitmapColorType::RGB:
-		case opengl::BitmapColorType::RGBA:
-			color.r = static_cast<float>(pixel_color[0]) / divider;
-			color.g = static_cast<float>(pixel_color[1]) / divider;
-			color.b = static_cast<float>(pixel_color[2]) / divider;
-			break;
-		case opengl::BitmapColorType::BGR:
-		case opengl::BitmapColorType::BGRA:
-			color.r = static_cast<float>(pixel_color[2]) / divider;
-			color.g = static_cast<float>(pixel_color[1]) / divider;
-			color.b = static_cast<float>(pixel_color[0]) / divider;
-			break;
-		default:
-			assert(false);
-			break;
-		}
-	}
-
-
 	bool LineColorComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// Get necessary objects
@@ -86,7 +58,7 @@ namespace nap
 		mIntensitySmoother.mSmoothTime = getComponent<LineColorComponent>()->mIntensitySmoothTime;
 
 		// Ensure the image is at least RGB
-		if (!(mLookupImage->getBitmap().getColorType() >=  opengl::BitmapColorType::RGB))
+		if (!(mLookupImage->getPixmap().getBitmap().getColorType() >=  opengl::BitmapColorType::RGB))
 			return errorState.check(false, "lookup image does not have 3 or more color channels");
 
 		return true;
@@ -143,10 +115,8 @@ namespace nap
 			// Get interpolated uv coordinates
 			lerped_uv_coordinates = math::lerp<glm::vec2>(sta_pos, end_pos, lerp_v);
 
-			// Get pixel color
+			// Get and set color
 			getColor(lerped_uv_coordinates, lerp_color);
-			
-			// Set color
 			color_data[i] = glm::vec4(lerp_color, mIntensitySmoother.getValue());
 		}
 
@@ -182,27 +152,14 @@ namespace nap
 	void LineColorComponentInstance::getColor(const glm::vec2& uvPos, glm::vec3& outColor)
 	{
 		// Get max width and height in bitmap space
-		const opengl::Bitmap& bitmap = mLookupImage->getBitmap();
-		glm::ivec2 bitmap_coordinates;
-		bitmap_coordinates.x = static_cast<int>(static_cast<float>(bitmap.getWidth()  - 1) * uvPos.x);
-		bitmap_coordinates.y = static_cast<int>(static_cast<float>(bitmap.getHeight() - 1) * uvPos.y);
+		const opengl::Bitmap& bitmap = mLookupImage->getPixmap().getBitmap();
+		int x = static_cast<int>(static_cast<float>(bitmap.getWidth()  - 1) * uvPos.x);
+		int y = static_cast<int>(static_cast<float>(bitmap.getHeight() - 1) * uvPos.y);
 
-		// Get pixel color data for current lerped bitmap coordinate value
-		switch (bitmap.getDataType())
-		{
-		case opengl::BitmapDataType::BYTE:
-			getPixelColor<nap::uint8>(bitmap, bitmap_coordinates, outColor, math::max<nap::uint8>());
-			break;
-		case opengl::BitmapDataType::FLOAT:
-			getPixelColor<float>(bitmap, bitmap_coordinates, outColor, 1.0f);
-			break;
-		case opengl::BitmapDataType::USHORT:
-			getPixelColor<nap::uint16>(bitmap, bitmap_coordinates, outColor, math::max<nap::uint16>());
-			break;
-		default:
-			assert(false);
-			break;
-		}
+		// Get bitmap values, ie: where
+		RGBColorFloat rcolor = mLookupImage->getPixmap().getPixel<RGBColorFloat>(x, y);
+
+		// Set color
+		outColor = glm::vec3(rcolor.getRed(), rcolor.getGreen(), rcolor.getBlue());
 	}
-
 }

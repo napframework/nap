@@ -169,7 +169,7 @@ namespace nap
 				void* module_handle = LoadModule(module_path, error_string);
 				if (!module_handle)
 				{
-					Logger::info("Failed to load module %s: %s", module_path.c_str(), error_string.c_str());
+					Logger::warn("Failed to load module %s: %s", module_path.c_str(), error_string.c_str());
 					continue;
 				}
 
@@ -184,7 +184,7 @@ namespace nap
 				// Check that the module version matches, skip otherwise.
 				if (descriptor->mAPIVersion != ModuleDescriptor::ModuleAPIVersion)
 				{
-					Logger::info("Module %s was built against a different version of nap (found %d, expected %d); skipping.", module_path.c_str(), descriptor->mAPIVersion, ModuleDescriptor::ModuleAPIVersion);
+					Logger::warn("Module %s was built against a different version of NAP (found %d, expected %d); skipping.", module_path.c_str(), descriptor->mAPIVersion, ModuleDescriptor::ModuleAPIVersion);
 					UnloadModule(module_handle);
 					continue;
 				}
@@ -195,14 +195,14 @@ namespace nap
 					rtti::TypeInfo stype = rtti::TypeInfo::get_by_name(rttr::string_view(descriptor->mService));
 					if (!stype.is_derived_from(RTTI_OF(Service)))
 					{
-						Logger::info("Module %s service descriptor %s is not a service; skipping", module_path.c_str(), descriptor->mService);
+						Logger::warn("Module %s service descriptor %s is not a service; skipping", module_path.c_str(), descriptor->mService);
 						UnloadModule(module_handle);
 						continue;
 					}
 					service = stype;
 				}
 
-				Logger::info("Loaded module %s v%s", descriptor->mID, descriptor->mVersion);
+				Logger::debug("Loaded module %s v%s", descriptor->mID, descriptor->mVersion);
 
 				// Construct module based on found module information
 				Module module;
@@ -218,10 +218,10 @@ namespace nap
 	
 	void ModuleManager::buildModuleSearchDirectories(std::vector<std::string>& moduleNames, std::vector<std::string>& outSearchDirectories)
 	{
-		
+
 #ifdef _WIN32
 		// Windows
-		outSearchDirectories.push_back(".");
+		outSearchDirectories.push_back(utility::getExecutableDir());
 #else
 		// Non-packaged macOS & Linux projects - get our configuration name from the directory name that
 		// our project sits in.  Clunky but true.
@@ -243,7 +243,7 @@ namespace nap
 		if (getBuildTypeFromFolder(dirParts.end()[-1], buildType))
 		{
 			// Non-packaged MacOS & Linux apps against released framework
-			std::string napRoot = "../../../../";
+			std::string napRoot = exeDir + "/../../../../";
 			for (const std::string& module : moduleNames)
 			{
 				outSearchDirectories.push_back(napRoot + "modules/" + module + "/lib/" + buildType);
@@ -257,7 +257,7 @@ namespace nap
 			if (getBuildTypeFromFolder(full_configuration_name, buildType))
 			{
 				// MacOS & Linux apps in NAP internal source
-				std::string napRoot = "../../../";
+				std::string napRoot = exeDir + "/../../../";
 				outSearchDirectories.push_back(napRoot + "lib/" + full_configuration_name);
 			}
 			else

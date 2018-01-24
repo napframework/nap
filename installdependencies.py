@@ -22,7 +22,7 @@ def installDependenciesLinux():
     call('.', ['sudo', 'apt-get', '--assume-yes', 'install',
                'cmake',
                'build-essential',
-	       'python3-dev',
+	             'python3-dev',
                'libsdl2-dev',
                'libglew-dev',
                'libassimp-dev',
@@ -32,7 +32,8 @@ def installDependenciesLinux():
                'ffmpeg',
                'libavcodec-dev',
                'libavformat-dev',
-               'libavutil-dev'
+               'libavutil-dev',
+               'doxygen'
                ])
 
 
