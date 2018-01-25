@@ -2,13 +2,13 @@
 
 #include <QApplication>
 #include <QMimeData>
-#include <QModelIndexList>
 
 #include "appcontext.h"
 #include "commands.h"
 #include "napkinglobals.h"
 #include "standarditemsproperty.h"
 #include "generic/filterpopup.h"
+#include "generic/naputils.h"
 
 using namespace nap::rtti;
 
@@ -78,12 +78,25 @@ void napkin::InspectorPanel::onItemContextMenu(QMenu& menu)
 		if (parent_array_item != nullptr) {
 			PropertyPath parent_property = parent_array_item->getPath();
 			long element_index = item->row();
-			menu.addAction("Remove Element", [parent_property, element_index]() {
+			menu.addAction("Remove Element", [parent_property, element_index]()
+			{
 				AppContext::get().executeCommand(new ArrayRemoveElementCommand(parent_property, element_index));
 			});
 		}
 	}
 
+	auto pointer_item = dynamic_cast<PointerItem*>(item);
+	if (pointer_item != nullptr)
+	{
+		nap::rtti::RTTIObject* pointee = getPointee(pointer_item->getPath());
+		QAction* action = menu.addAction("Select Resource", [pointer_item, pointee]
+		{
+			std::vector<nap::rtti::RTTIObject*> objects;
+			objects.emplace_back(pointee);
+			AppContext::get().selectionChanged(objects);
+		});
+		action->setEnabled(pointee != nullptr);
+	}
 
 	auto* array_item = dynamic_cast<ArrayPropertyItem*>(item);
 	if (array_item != nullptr)
