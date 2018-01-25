@@ -61,11 +61,11 @@ namespace nap
 		nap::MeshInstance& mesh_instance = mesh.getMeshInstance();
 
 		// UV attribute we use to sample
-		std::vector<glm::vec3>& uv_data = mesh.getUVAttribute().getData();
+		VertexAttribute<glm::vec3>& uv_data = mesh.getUVAttribute();
 
 		// Color attribute we use to sample
-		std::vector<glm::vec4>& color_data = mesh.getColorAttribute().getData();
-		std::vector<glm::vec4>& artnet_data = mesh.getArtnetColorAttribute().getData();
+		VertexAttribute<glm::vec4>& color_data  = mesh.getColorAttribute();
+		VertexAttribute<glm::vec4>& artnet_data = mesh.getArtnetColorAttribute();
 
 		// Will hold the rgb colors applied to the mesh
 		RGBColorFloat rgb_colorf;
@@ -74,7 +74,6 @@ namespace nap
 
 		// Make pixel we use to query data from bitmap
 		auto source_pixel = mPixmap.makePixel();
-
 		assert(mPixmap.mType == Pixmap::EDataType::BYTE);
 		float mesh_intensity = mShowIndexColors ? 1.0f : mIntensity;
 
@@ -91,10 +90,10 @@ namespace nap
 			uv_avg /= 3.0f;
 
 			// Convert to pixel coordinates
-			int x_pixel = static_cast<float>(mPixmap.getWidth() - 1) * uv_avg.x;
+			int x_pixel = static_cast<float>(mPixmap.getWidth()  - 1) * uv_avg.x;
 			int y_pixel = static_cast<float>(mPixmap.getHeight() - 1) * uv_avg.y;
 
-			// retrieve pixel value
+			// retrieve pixel value and convert in to rgb index color
 			mPixmap.getPixel(x_pixel, y_pixel, *source_pixel);
 			source_pixel->convert(rgb_index_color);
 
@@ -108,12 +107,24 @@ namespace nap
 			// Get the associated LED color
 			palette_color.mLedColor.convert(led_colorf);
 
-			glm::vec4 mesh_color = glm::vec4(rgb_colorf.getRed()	* mesh_intensity, rgb_colorf.getGreen()	* mesh_intensity, rgb_colorf.getBlue()	* mesh_intensity, 1.0f);
+			// Set the color data used to display the mesh in the viewport
+			glm::vec4 mesh_color = glm::vec4(
+				rgb_colorf.getRed()	  * mesh_intensity, 
+				rgb_colorf.getGreen() * mesh_intensity, 
+				rgb_colorf.getBlue()  * mesh_intensity, 
+				1.0f);
+			
 			color_data[indices[0]] = mesh_color;
 			color_data[indices[1]] = mesh_color;
 			color_data[indices[2]] = mesh_color;
 
-			glm::vec4 artnet_color = glm::vec4(led_colorf.getRed()	* mesh_intensity, led_colorf.getGreen()	* mesh_intensity, led_colorf.getBlue()	* mesh_intensity, led_colorf.getAlpha()	* mIntensity);
+			// Set the color data that is used to send over artnet
+			glm::vec4 artnet_color = glm::vec4(
+				led_colorf.getRed()	  * mesh_intensity, 
+				led_colorf.getGreen() * mesh_intensity, 
+				led_colorf.getBlue()  * mesh_intensity, 
+				led_colorf.getAlpha() * mIntensity);
+			
 			artnet_data[indices[0]] = artnet_color;
 			artnet_data[indices[1]] = artnet_color;
 			artnet_data[indices[2]] = artnet_color;

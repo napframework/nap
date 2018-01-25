@@ -52,9 +52,9 @@ namespace nap
 		// same triangle. 
 		mCurrentChannel = selected_channel - ((selected_channel - mesh.mChannelOffset) % 4);
 
-		const std::vector<int>& channel_data = mesh.getChannelAttribute().getData();
-		std::vector<glm::vec4>& color_data = mesh.getColorAttribute().getData();
-		std::vector<glm::vec4>& artn_data = mesh.getArtnetColorAttribute().getData();
+		const VertexAttribute<int>& channel_data = mesh.getChannelAttribute();
+		VertexAttribute<glm::vec4>& color_data = mesh.getColorAttribute();
+		VertexAttribute<glm::vec4>& artn_data = mesh.getArtnetColorAttribute();
 
 		TriangleShapeIterator shape_iterator(mesh.getMeshInstance());
 		while (!shape_iterator.isDone())

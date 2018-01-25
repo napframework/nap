@@ -42,9 +42,9 @@ namespace nap
 		const math::Box& box = mesh.getBoundingBox();
 
 		// Get attributes necessary to color based on bounds
-		const std::vector<glm::vec3>& position_data = mesh.getPositionAttribute().getData();
-		std::vector<glm::vec4>& color_data = mesh.getColorAttribute().getData();
-		std::vector<glm::vec4>& artnet_data = mesh.getArtnetColorAttribute().getData();
+		const VertexAttribute<glm::vec3>& position_data = mesh.getPositionAttribute();
+		VertexAttribute<glm::vec4>& color_data = mesh.getColorAttribute();
+		VertexAttribute<glm::vec4>& artnet_data = mesh.getArtnetColorAttribute();
 
 		TriangleShapeIterator shape_iterator(mesh.getMeshInstance());
 		while (!shape_iterator.isDone())

@@ -5,7 +5,7 @@
 
 namespace nap
 {
-	bool NAPAPI isTriangleMesh(const MeshShape& shape)
+	bool isTriangleMesh(const MeshShape& shape)
 	{
 		switch (shape.getDrawMode())
 		{
@@ -26,7 +26,16 @@ namespace nap
 	}
 	
 
-	void NAPAPI setTriangleIndices(MeshShape& mesh, int number, glm::ivec3& indices)
+	glm::vec3 computeTriangleNormal(const glm::ivec3& indices, const VertexAttribute<glm::vec3>& vertices)
+	{
+		assert(indices[0] < vertices.getCount());
+		assert(indices[1] < vertices.getCount());
+		assert(indices[2] < vertices.getCount());
+		return glm::cross((vertices[indices[0]] - vertices[indices[1]]), (vertices[indices[0]] - vertices[indices[2]]));
+	}
+
+
+	void  setTriangleIndices(MeshShape& mesh, int number, glm::ivec3& indices)
 	{		
 		// Copy triangle index over
 		MeshShape::IndexList& mesh_indices = mesh.getIndices();
