@@ -35,7 +35,7 @@ namespace nap
 
 		// Get resource manager and load data
 		resourceManager = getCore().getResourceManager();
-		if (!resourceManager->loadFile("data/kalvertoren/kalvertoren.json", error))
+		if (!resourceManager->loadFile("kalvertoren.json", error))
 			return false;    
 
 		// Render window and texture target
@@ -205,9 +205,9 @@ namespace nap
 	}
 
 
-	void KalvertorenApp::shutdown()
+	int KalvertorenApp::shutdown()
 	{
-
+		return 0;
 	}
 
 
@@ -225,7 +225,7 @@ namespace nap
 			nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(inputEvent.get());
 			if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
 			{
-				quit(0);
+				quit();
 				return;
 			}
 
@@ -350,16 +350,16 @@ namespace nap
 					selectPaletteWeek();
 			}
 
+			// Changes the color palette
+			if (ImGui::InputInt("Variation", &mPaletteSelection, 1))
+			{
+				palette_selector.selectVariation(mPaletteSelection);
+			}
+
 			// Changes the mesh paint mode
 			if (ImGui::Combo("Variation Cycle Mode", &mColorPaletteCycleMode, "Off\0Random\0List\0\0"))
 			{
 				selectPaletteCycleMode();
-			}
-
-			// Changes the color palette
-			if (ImGui::SliderInt("Variation", &mPaletteSelection, -1, palette_selector.getVariationCount() - 1))
-			{
-				palette_selector.selectVariation(mPaletteSelection);
 			}
 
 			// Changes the intensity

@@ -27,7 +27,7 @@ namespace nap
 		
 		// Get resource manager and load our app
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("data/vinyl/vinyl.json", error))
+		if (!mResourceManager->loadFile("vinyl.json", error))
 			return false;
         
 		// Extract loaded resources and listen to window resize events
@@ -158,7 +158,7 @@ namespace nap
 		{
 			nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(inputEvent.get());
 			if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
-				quit(0);
+				quit();
 
 			if (press_event->mKey == nap::EKeyCode::KEY_f)
 			{
@@ -177,8 +177,10 @@ namespace nap
 	}
 
 	
-	void VinylApp::shutdown()
-	{ }
+	int VinylApp::shutdown()
+	{
+		return 0;
+	}
 	
 	
 	/**

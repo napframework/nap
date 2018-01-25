@@ -76,14 +76,14 @@ namespace nap
 		/**
 		 * @return the application exit code
 		 */
-		int exitCode() const								{ return mApp->getExitCode(); }
+		int exitCode() const								{ return mExitCode; }
 
 	private:
 		nap::Core&					mCore;					// Core
 		std::unique_ptr<APP>		mApp = nullptr;			// App this runner works with
 		std::unique_ptr<HANDLER>	mHandler = nullptr;		// App handler this runner works with
 		bool						mStop = false;			// If the runner should stop
-
+		int							mExitCode = 0;			// Application exit code
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -165,7 +165,7 @@ namespace nap
 		}
 
 		// Shutdown
-		app.shutdown();
+		mExitCode = app.shutdown();
 
 		// Shutdown core
 		mCore.shutdown();

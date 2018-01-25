@@ -1,0 +1,50 @@
+{
+	"Objects":
+	[
+		{
+			"Type": "nap::audio::AudioFileResource",
+			"mID": "audioFile",
+			"AudioFilePath": "hang.mp3"
+		},
+
+
+		{
+			"Type" : "nap::Scene",
+			"mID": "Scene",		
+			"Entities" : 
+			[
+				{
+					"Entity" : "audioEntity"
+				}
+			]
+		},
+
+		{
+			"Type": "nap::Entity",
+			"mID": "audioEntity",
+			"Components":
+			[
+				{					
+					"Type": "nap::audio::AudioComponent",
+					"mID": "audioComponent",
+					"Object":
+					{
+						"Type": "nap::audio::BufferPlayer",
+						"ChannelCount": 2,
+						"Buffer": "audioFile",
+						"autoPlay": "True"
+					}
+				},
+
+				{
+					"Type": "nap::audio::OutputComponent",
+					"mID": "output",
+					"Routing": [ 0, 1 ],
+					"Input": "audioComponent"
+				}
+
+
+			]
+		}
+	]
+}

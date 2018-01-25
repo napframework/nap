@@ -53,7 +53,7 @@ namespace nap
 		/**
 		 *	Called when loop finishes
 		 */
-		void shutdown() override;
+		int shutdown() override;
 	
 		
 	private:

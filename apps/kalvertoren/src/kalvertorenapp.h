@@ -50,7 +50,7 @@ namespace nap
 		/**
 		 *	Shut down the application
 		 */
-		virtual void shutdown() override;
+		virtual int shutdown() override;
 
 		/**
 		 *	Register input events
@@ -116,7 +116,7 @@ namespace nap
 		int													mPaintMode = 2;
 		int													mSelectChannel = 0;
 		float												mChannelSpeed = 1.0f;
-		int													mPaletteSelection = -1;
+		int													mPaletteSelection = 0;
 		int													mCompositionSelection = 0;
 		float												mIntensity = 1.0f;
 		bool												mShowIndexColors = false;

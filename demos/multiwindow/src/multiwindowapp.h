@@ -64,7 +64,7 @@ namespace nap
 		/**
 		 *	Called when loop finishes
 		 */
-		void shutdown() override;
+		int shutdown() override;
 
 		/**
 		 *	Positions the texture plane in the center of the window based on the window resolution
