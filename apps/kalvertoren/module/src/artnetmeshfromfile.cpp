@@ -2,7 +2,7 @@
 #include "fbxconverter.h"
 #include "meshutils.h"
 #include <mathutils.h>
-#include "TriangleIterator.h"
+#include <triangleiterator.h>
 
 // nap::artnetmeshfromfile run time class definition 
 RTTI_BEGIN_CLASS(nap::ArtnetMeshFromFile)
