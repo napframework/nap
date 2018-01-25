@@ -35,6 +35,7 @@ namespace nap
 		const unsigned int*	mIndexEnd;		///< End of the index buffer of the shape that we're iterating through
 	};
 
+
 	/**
 	 * Implementation of TriangleIterator that can iterate through the triangles of a MeshShape of type opengl::EDrawMode::TRIANGLES
 	 */
@@ -49,6 +50,7 @@ namespace nap
 		 */
 		virtual const glm::ivec3 next() override;
 	};
+
 
 	/**
 	 * Implementation of TriangleIterator that can iterate through the triangles of a MeshShape of type opengl::EDrawMode::TRIANGLE_FAN
@@ -68,6 +70,7 @@ namespace nap
 		unsigned int mFanStartIndex;	///< First index of the fan (all triangles share this index)
 	};
 
+
 	/**
 	 * Implementation of TriangleIterator that can iterate through the triangles of a MeshShape of type opengl::EDrawMode::TRIANGLE_STRIP
 	 */
@@ -82,6 +85,7 @@ namespace nap
 		 */
 		virtual const glm::ivec3 next() override;
 	};
+
 
 	/**
 	 * While the various TriangleIterators can be used to iterate through the triangles of a specific MeshShape, quite often you want to

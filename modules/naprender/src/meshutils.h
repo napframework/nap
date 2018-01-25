@@ -13,6 +13,15 @@ namespace nap
 	bool NAPAPI isTriangleMesh(const nap::MeshShape& shape);
 
 	/**
+	* Computes the normal that is associated with a triangular face. The normal is weighted (not normalized)
+	* This call asserts when the index is out of bounds.
+	* @param indices the indices of the triangle
+	* @param vertices mesh vertex position buffer
+	* @return the weighted (not normalized) normal associated with a face
+	*/
+	glm::vec3 NAPAPI computeTriangleNormal(const glm::ivec3& indices, const nap::VertexAttribute<glm::vec3>& vertices);
+
+	/**
 	* Sets the vertex indices associated with a triangle.
 	* Note that this function only works for meshes that are of type: TRIANGLES, TRIANGLE_STRIP or TRIANGLE_FAN
 	* This call asserts when the triangle number is out of bounds, the mesh has no indices or the draw mode is not of type triangle
