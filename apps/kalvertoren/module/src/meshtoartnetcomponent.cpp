@@ -5,7 +5,7 @@
 #include <meshutils.h>
 #include <color.h>
 #include <mathutils.h>
-#include "TriangleIterator.h"
+#include <TriangleIterator.h>
 
 // nap::meshtoartnetcomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::MeshToArtnetComponent)

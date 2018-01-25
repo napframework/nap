@@ -4,7 +4,7 @@
 #include <entity.h>
 #include <meshutils.h>
 #include <mathutils.h>
-#include "TriangleIterator.h"
+#include <triangleiterator.h>
 
 // nap::boundscolorcomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::ApplyBBColorComponent)

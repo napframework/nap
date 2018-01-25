@@ -1,7 +1,7 @@
 #include "meshutils.h"
 #include <mathutils.h>
 #include <glm/gtx/normal.hpp>
-#include "triangleiterator.h"
+#include <triangleiterator.h>
 
 namespace nap
 {

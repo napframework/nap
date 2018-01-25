@@ -3,7 +3,7 @@
 // External Includes
 #include <entity.h>
 #include <meshutils.h>
-#include "TriangleIterator.h"
+#include <triangleiterator.h>
 
 // nap::applycompositioncomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::ApplyCompositionComponent)
