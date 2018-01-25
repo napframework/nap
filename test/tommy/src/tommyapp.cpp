@@ -32,7 +32,8 @@ namespace nap
 		
 		// Get resource manager service
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("data/tommy/tommy.json", error))
+		
+		if (!mResourceManager->loadFile("tommy.json", error))
 			return false;
 		
 		mScene = mResourceManager->findObject<Scene>("Scene");
@@ -148,7 +149,7 @@ namespace nap
 		{
 			nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(inputEvent.get());
 			if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
-				quit(0);
+				quit();
 		}
 
 		mInputService->addEvent(std::move(inputEvent));
@@ -161,8 +162,8 @@ namespace nap
 	}
 
 	
-	void TommyApp::shutdown() 
+	int TommyApp::shutdown() 
 	{
-
+		return 0;
 	}
 }

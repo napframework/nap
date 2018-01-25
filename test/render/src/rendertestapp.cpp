@@ -31,7 +31,7 @@ namespace nap
 
 		// Get resource manager and load
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("data/rendertest/objects.json", error))
+		if (!mResourceManager->loadFile("render.json", error))
 		{
 			Logger::fatal("Unable to deserialize resources: \n %s", error.toString().c_str());
 			return false;
@@ -222,7 +222,7 @@ namespace nap
 		{
 			nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(inputEvent.get());
 			if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
-				quit(0);
+				quit();
 
 		}
 		mInputService->addEvent(std::move(inputEvent));
@@ -235,7 +235,8 @@ namespace nap
 	}
 
 	
-	void RenderTestApp::shutdown() 
+	int RenderTestApp::shutdown() 
 	{
+		return 0;
 	}
 }
