@@ -14,7 +14,7 @@ ARCHIVING_DIR = 'archiving'
 BUILDINFO_FILE = 'cmake/buildInfo.json'
 PACKAGED_BUILDINFO_FILE = '%s/cmake/buildinfo.json' % PACKAGING_DIR
 
-def call(cwd, cmd, capture_output=False):
+def call(cwd, cmd, capture_output=False, exception_on_nonzero=True):
     # print('dir: %s' % cwd)
     # print('cmd: %s' % cmd)
     if capture_output:
@@ -22,7 +22,8 @@ def call(cwd, cmd, capture_output=False):
     else:
         proc = subprocess.Popen(cmd, cwd=cwd)
     (out, err) = proc.communicate()
-    if proc.returncode != 0:
+    if exception_on_nonzero and proc.returncode != 0:
+        print("Bailing for non zero returncode")
         raise Exception(proc.returncode)
     return (out, err)
 
@@ -79,7 +80,7 @@ def is_osx_brew_installed():
 # Check if we have a package installed with homebrew
 def is_osx_brew_package_installed(package_name):
     # TODO Running brew list once without the packagename and searching the results would be faster
-    (out, err) = call(WORKING_DIR, ['brew', 'list', package_name], True)
+    (out, err) = call(WORKING_DIR, ['brew', 'list', package_name], True, False)
     installed = not 'Error: No such keg' in err
     print("Package '%s' installed? %s" % (package_name, installed))
     return installed
