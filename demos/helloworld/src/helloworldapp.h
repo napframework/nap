@@ -87,6 +87,8 @@ namespace nap
 		ObjectPtr<EntityInstance> mWorldEntity = nullptr;				//< Pointer to the entity that holds the sphere
 		ObjectPtr<SphereMesh> mWorldMesh = nullptr;
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
+		bool mMouseDown = false;
+		bool mDirty = false;
 
 		void doTrace(const PointerEvent& event);
 	};
