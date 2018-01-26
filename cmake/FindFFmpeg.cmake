@@ -20,33 +20,47 @@ if (FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
 	# in cache already
 	set(FFMPEG_FOUND TRUE)
 else (FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
-	# use pkg-config to get the directories and then use these values
-	# in the FIND_PATH() and FIND_LIBRARY() calls
-	find_package(PkgConfig)
-	if (PKG_CONFIG_FOUND)
-		pkg_check_modules(_FFMPEG_AVCODEC libavcodec)
-		pkg_check_modules(_FFMPEG_AVFORMAT libavformat)
-		pkg_check_modules(_FFMPEG_AVUTIL libavutil)
-	endif (PKG_CONFIG_FOUND)
+	if (UNIX AND NOT APPLE)
+		# use pkg-config to get the directories and then use these values
+		# in the FIND_PATH() and FIND_LIBRARY() calls
+		find_package(PkgConfig)
+		if (PKG_CONFIG_FOUND)
+			pkg_check_modules(_FFMPEG_AVCODEC libavcodec)
+			pkg_check_modules(_FFMPEG_AVFORMAT libavformat)
+			pkg_check_modules(_FFMPEG_AVUTIL libavutil)
+		endif (PKG_CONFIG_FOUND)
+	endif (UNIX AND NOT APPLE)
+
+	# Add our homebrew package prefix on macOS
+    if (APPLE)
+        EXEC_PROGRAM(/usr/bin/env
+                     ARGS brew --prefix ffmpeg
+                     OUTPUT_VARIABLE MACOS_FFMPEG_PATH)
+    endif()
 
 	find_path(FFMPEG_AVCODEC_INCLUDE_DIR
 		NAMES libavcodec/avcodec.h
 		HINTS ${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/ffmpeg/include
+		      ${MACOS_FFMPEG_PATH}/include
 	)
 
 	find_library(FFMPEG_LIBAVCODEC
 		NAMES avcodec
 		PATHS ${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/ffmpeg/lib
+			  ${MACOS_FFMPEG_PATH}/lib
+
 	)
 
 	find_library(FFMPEG_LIBAVFORMAT
 		NAMES avformat
 		PATHS ${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/ffmpeg/lib
+			  ${MACOS_FFMPEG_PATH}/lib
 	)
 
 	find_library(FFMPEG_LIBAVUTIL
 		NAMES avutil
 		PATHS ${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/ffmpeg/lib
+			  ${MACOS_FFMPEG_PATH}/lib
 	)
 
 	if (FFMPEG_LIBAVCODEC AND FFMPEG_LIBAVFORMAT)
@@ -74,3 +88,6 @@ else (FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
 	endif (FFMPEG_FOUND)
 
 endif (FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(FFmpeg REQUIRED_VARS FFMPEG_LIBRARIES)
