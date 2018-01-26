@@ -141,6 +141,14 @@ namespace nap
 		 */
 		glm::vec3 NAPAPI extractPosition(const glm::mat4x4& matrix);
 
+		/**
+		 * Converts a local (object space) matrix to world space using multiplication
+		 * @param objectSpace the local transformation matrix
+		 * @param transform world space transformation matrix
+		 * @return the transformed object to world matrix
+		 */
+		glm::mat4 NAPAPI objectToWorld(const glm::mat4x4& objectSpace, const glm::mat4x4& transform);
+
 		//////////////////////////////////////////////////////////////////////////
 		// Template definitions
 		//////////////////////////////////////////////////////////////////////////

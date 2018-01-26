@@ -99,7 +99,7 @@ namespace nap
 		}
 
 		// Get mesh bounding box
-		nap::computeBoundingBox(*mMeshInstance, mBoundingBox);
+		utility::computeBoundingBox(*mMeshInstance, mBoundingBox);
 		
 		// Initialize the mesh
 		if (!errorState.check(mMeshInstance->init(errorState), "Unable to initialize mesh %s for resource %d", mPath.c_str(), mID.c_str()))

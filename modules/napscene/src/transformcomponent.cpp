@@ -5,6 +5,7 @@
 // External includes
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include <mathutils.h>
 
 //////////////////////////////////////////////////////////////////////////
 // RTTI
@@ -84,7 +85,7 @@ namespace nap
 	// Updates it's global and local matrix
 	void TransformComponentInstance::update(const glm::mat4& parentTransform)
 	{
-		mGlobalMatrix = parentTransform * getLocalTransform();
+		mGlobalMatrix = math::objectToWorld(getLocalTransform(), parentTransform);
 		mWorldDirty = false;
 	}
 
