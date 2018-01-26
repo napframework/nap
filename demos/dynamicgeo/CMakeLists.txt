@@ -20,6 +20,9 @@ add_dependencies(${PROJECT_NAME} fbxconverter)
 target_link_libraries(${PROJECT_NAME} mod_napsdlinput mod_napsdlwindow mod_napcameracontrol mod_napapp mod_dynamicgeo)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
+# Build into a project directory under bin
+set_output_directories()
+
 if (WIN32)
     # Copy freeimage DLL
 	find_package(freeimage REQUIRED)
@@ -29,5 +32,12 @@ if (WIN32)
 	copy_base_windows_graphics_dlls()
 endif()
 
-# create post build event
+# Copy project json to project bin dir and export fbx, via post-build events
+copy_files_to_bin(${CMAKE_CURRENT_LIST_DIR}/project.json)
 export_fbx_in_place(${CMAKE_CURRENT_SOURCE_DIR}/data/)
+
+# Package into release build
+install(DIRECTORY . DESTINATION "demos/${PROJECT_NAME}"
+        PATTERN "CMakeLists.txt" EXCLUDE
+        PATTERN "dist" EXCLUDE)
+install(FILES dist/CMakeLists.txt DESTINATION "demos/${PROJECT_NAME}/")

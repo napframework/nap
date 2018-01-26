@@ -1,0 +1,9 @@
+{
+    "title": "HeightMap",
+    "version": "0.1",
+    "modules": [
+        "mod_heightmap",
+        "mod_napapp",
+        "mod_napcameracontrol"
+    ]
+}

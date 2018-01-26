@@ -1,0 +1,8 @@
+{
+    "title": "VideoModulation",
+    "version": "0.1",
+    "modules": [
+        "mod_videomodulation",
+        "mod_napapp"
+    ]
+}
