@@ -1,23 +1,12 @@
 // Local Includes
 #include <rtti/rtti.h>
 #include <rtti/rttipath.h>
-#include "instanceproperty.h"
 
 #include <glm/glm.hpp>
 #include <glm/fwd.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
-
-namespace nap
-{
-	using Vec2InstancePropertyValue = TypedInstancePropertyValue<glm::vec2>;
-	using Vec3InstancePropertyValue = TypedInstancePropertyValue<glm::vec3>;
-	using Vec4InstancePropertyValue = TypedInstancePropertyValue<glm::vec4>;
-	using IVec2InstancePropertyValue = TypedInstancePropertyValue<glm::ivec2>;
-	using IVec3InstancePropertyValue = TypedInstancePropertyValue<glm::ivec3>;
-	using QuatInstancePropertyValue = TypedInstancePropertyValue<glm::quat>;
-}
 
 template<class PythonClassType>
 static void sRegisterFloatVectorOperators(pybind11::module& module, PythonClassType& cls)
@@ -71,13 +60,6 @@ static void sRegisterQuatOperators(pybind11::module& module, PythonClassType& cl
 
 	module.def("rotate", &glm::rotate<glm::quat::value_type, glm::highp>);
 }
-
-RTTI_DEFINE_INSTANCE_PROPERTY_VALUE(nap::Vec2InstancePropertyValue)
-RTTI_DEFINE_INSTANCE_PROPERTY_VALUE(nap::Vec3InstancePropertyValue)
-RTTI_DEFINE_INSTANCE_PROPERTY_VALUE(nap::Vec3InstancePropertyValue)
-RTTI_DEFINE_INSTANCE_PROPERTY_VALUE(nap::IVec2InstancePropertyValue)
-RTTI_DEFINE_INSTANCE_PROPERTY_VALUE(nap::IVec3InstancePropertyValue)
-RTTI_DEFINE_INSTANCE_PROPERTY_VALUE(nap::QuatInstancePropertyValue)
 
 RTTI_BEGIN_STRUCT(glm::vec2)
 	RTTI_VALUE_CONSTRUCTOR(float, float)

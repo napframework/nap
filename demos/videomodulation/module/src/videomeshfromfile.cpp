@@ -70,7 +70,7 @@ namespace nap
 			(*mUVCenterAttribute)[indices[1]] = uv_avg;
 			(*mUVCenterAttribute)[indices[2]] = uv_avg;
 
-			glm::vec3 tri_normal = normalize(computeTriangleNormal(indices, *mPositionAttribute));
+			glm::vec3 tri_normal = normalize(utility::computeTriangleNormal(indices, *mPositionAttribute));
 			(*mDirectionAttribute)[indices[0]] = tri_normal;
 			(*mDirectionAttribute)[indices[1]] = tri_normal;
 			(*mDirectionAttribute)[indices[2]] = tri_normal;

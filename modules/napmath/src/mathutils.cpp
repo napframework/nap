@@ -174,6 +174,12 @@ namespace nap
 		}
 
 
+		glm::mat4 NAPAPI objectToWorld(const glm::mat4x4& objectSpace, const glm::mat4x4& transform)
+		{
+			return transform * objectSpace;
+		}
+
+
 		template<>
 		int random(int min, int max)
 		{
