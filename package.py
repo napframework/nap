@@ -160,7 +160,7 @@ def package():
         # Build & install to packaging dir
         d = '%s/%s' % (WORKING_DIR, BUILD_DIR)
         for build_type in ['Release', 'Debug']:
-            call(d, ['xcodebuild', '-configuration', build_type, '-target', 'install'])
+            call(d, ['xcodebuild', '-configuration', build_type, '-target', 'install', '-jobs', str(cpu_count())])
 
         # Fix our dylib paths so fbxconverter will run from released package
         # TODO Post beta 0.1 investigate further being able to achieve this without Python, using either
