@@ -5,6 +5,7 @@
 #include <meshutils.h>
 #include <color.h>
 #include <mathutils.h>
+#include <triangleiterator.h>
 
 // nap::meshtoartnetcomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::MeshToArtnetComponent)
@@ -55,39 +56,29 @@ namespace nap
 
 	void MeshToArtnetComponentInstance::update(double deltaTime)
 	{
-		int tri_count = getTriangleCount(mMesh->getMeshInstance());
+		std::vector<glm::vec4>& artnet_data = mMesh->getArtnetColorAttribute().getData();
+		std::vector<int>& channel_data		= mMesh->getChannelAttribute().getData();
+		std::vector<int>& universe_data		= mMesh->getUniverseAttribute().getData();
+		std::vector<int>& subnet_data		= mMesh->getSubnetAttribute().getData();
 
-		TriangleDataPointer<glm::vec4> tri_color;
-		TriangleDataPointer<int> tri_channel;
-		TriangleDataPointer<int> tri_universe;
-		TriangleDataPointer<int> tri_subnet;
-
-		// Color attribute we use to sample
-		nap::VertexAttribute<glm::vec4>& artnet_attr = mMesh->getArtnetColorAttribute();
-		nap::VertexAttribute<int>& channel_attr = mMesh->getChannelAttribute();
-		nap::VertexAttribute<int>& universe_attr = mMesh->getUniverseAttribute();
-		nap::VertexAttribute<int>& subnet_attr = mMesh->getSubnetAttribute();
-
-		for (int i = 0; i < tri_count; i++)
+		TriangleShapeIterator shape_iterator(mMesh->getMeshInstance());
+		while (!shape_iterator.isDone())
 		{
-			// Fetch attributes
-			getTriangleValues(mMesh->getMeshInstance(), i, artnet_attr, tri_color);
-			getTriangleValues(mMesh->getMeshInstance(), i, universe_attr, tri_universe);
-			getTriangleValues(mMesh->getMeshInstance(), i, channel_attr, tri_channel);
-			getTriangleValues(mMesh->getMeshInstance(), i, subnet_attr, tri_subnet);
+			glm::ivec3 indices = shape_iterator.next();
 
-			int universe = *(tri_universe[0]);
-			int channel  = *(tri_channel[0]);
-			int subnet   = *(tri_subnet[0]);
-		
+			int universe = universe_data[indices[0]];
+			int channel = channel_data[indices[0]];
+			int subnet = subnet_data[indices[0]];
+			glm::vec4 artnet_color = artnet_data[indices[0]];
+
 			// Find matching controller
 			nap::ArtNetController*& controller = mControllers[ArtNetController::createAddress(subnet, universe)];
 
 			// Set data
-			mArtnetData[0] = static_cast<uint8>(tri_color[0]->r * static_cast<float>(math::max<uint8>()));
-			mArtnetData[1] = static_cast<uint8>(tri_color[0]->g * static_cast<float>(math::max<uint8>()));
-			mArtnetData[2] = static_cast<uint8>(tri_color[0]->b * static_cast<float>(math::max<uint8>()));
-			mArtnetData[3] = static_cast<uint8>(tri_color[0]->a * static_cast<float>(math::max<uint8>()));
+			mArtnetData[0] = static_cast<uint8>(artnet_color.r * static_cast<float>(math::max<uint8>()));
+			mArtnetData[1] = static_cast<uint8>(artnet_color.g * static_cast<float>(math::max<uint8>()));
+			mArtnetData[2] = static_cast<uint8>(artnet_color.b * static_cast<float>(math::max<uint8>()));
+			mArtnetData[3] = static_cast<uint8>(artnet_color.a * static_cast<float>(math::max<uint8>()));
 
 			// Send to controller
 			controller->send(mArtnetData, channel);

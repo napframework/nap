@@ -2,6 +2,7 @@
 #include "fbxconverter.h"
 #include "meshutils.h"
 #include <mathutils.h>
+#include <triangleiterator.h>
 
 // nap::artnetmeshfromfile run time class definition 
 RTTI_BEGIN_CLASS(nap::ArtnetMeshFromFile)
@@ -72,33 +73,29 @@ namespace nap
 
 		// Verify that our triangles all have the same channels as vertex attributes
 		// Also store all the available artnet addresses this mesh hosts
-		int tri_count = getTriangleCount(*mMeshInstance);
-		TriangleData<int> tri_channels = { 0,0,0 };
-		TriangleData<int> tri_subnets = { 0,0,0 };
-		TriangleData<int> tri_universes = { 0,0,0 };
-		for (int i = 0; i < tri_count; i++)
+		TriangleShapeIterator shape_iterator(*mMeshInstance);
+		while (!shape_iterator.isDone())
 		{
-			getTriangleValues<int>(*mMeshInstance, i, *mChannelAttribute, tri_channels);
-			if (tri_channels[0] != tri_channels[1] || tri_channels[1] != tri_channels[2])
+			glm::ivec3 indices = shape_iterator.next();
+			if (channel_data[indices[0]] != channel_data[indices[1]] || channel_data[indices[1]] != channel_data[indices[2]])
 			{
-				errorState.fail("mesh: %s triangle: %d has inconsistent art net channel attribute", mPath.c_str(), i);
+				errorState.fail("mesh: %s triangle: %d has inconsistent art net channel attribute", mPath.c_str(), shape_iterator.getCurrentTriangleIndex());
 				return false;
 			}
 
-			getTriangleValues<int>(*mMeshInstance, i, *mUniverseAttribute, tri_universes);
-			if (tri_universes[0] != tri_universes[1] || tri_universes[1] != tri_universes[2])
+			if (universe_data[indices[0]] != universe_data[indices[1]] || universe_data[indices[1]] != universe_data[indices[2]])
 			{
-				errorState.fail("mesh: %s triangle: %d has inconsistent art net universe attribute", mPath.c_str(), i);
+				errorState.fail("mesh: %s triangle: %d has inconsistent art net universe attribute", mPath.c_str(), shape_iterator.getCurrentTriangleIndex());
 				return false;
 			}
 
-			getTriangleValues<int>(*mMeshInstance, i, *mSubnetAttribute, tri_subnets);
-			if (tri_subnets[0] != tri_subnets[1] || tri_subnets[1] != tri_subnets[2])
+			if (subnet_data[indices[0]] != subnet_data[indices[1]] || subnet_data[indices[1]] != subnet_data[indices[2]])
 			{
-				errorState.fail("mesh: %s triangle: %d has inconsistent art net subnet attribute", mPath.c_str(), i);
+				errorState.fail("mesh: %s triangle: %d has inconsistent art net subnet attribute", mPath.c_str(), shape_iterator.getCurrentTriangleIndex());
 				return false;
 			}
-			mAddresses.emplace(ArtNetController::createAddress(tri_subnets[0], tri_universes[0]));
+
+			mAddresses.emplace(ArtNetController::createAddress(subnet_data[indices[0]], universe_data[indices[0]]));
 		}
 
 		// Get mesh bounding box

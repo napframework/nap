@@ -54,8 +54,7 @@ namespace nap
 			aiProcess_CalcTangentSpace |
 			aiProcess_Triangulate |
 			aiProcess_SortByPType |
-			aiProcess_JoinIdenticalVertices |
-			aiProcess_CalcTangentSpace );
+			aiProcess_JoinIdenticalVertices);
 
 		if (!errorState.check(scene != nullptr, "Unable to read %s", fbxPath.c_str()))
 			return false;
@@ -105,7 +104,6 @@ namespace nap
 				return false;
 
 			mesh_data.mProperties.mNumVertices = fbx_mesh->mNumVertices;
-			mesh_data.mProperties.mDrawMode = opengl::EDrawMode::TRIANGLES;
 
 			std::vector<std::unique_ptr<BaseVertexAttribute>> vertex_attribute_storage;
 
@@ -185,14 +183,20 @@ namespace nap
 			if (!errorState.check(fbx_mesh->HasFaces(), "Mesh has no indices"))
 				return false;
 
-			mesh_data.mProperties.mIndices.reserve(fbx_mesh->mNumFaces * 3);
+			mesh_data.mProperties.mShapes.push_back(MeshShape());
+			MeshShape& shape = mesh_data.mProperties.mShapes.back();
+
+			shape.setDrawMode(opengl::EDrawMode::TRIANGLES);
+
+			MeshShape::IndexList& indices = shape.getIndices();
+			indices.reserve(fbx_mesh->mNumFaces * 3);
 			for (int face_index = 0; face_index != fbx_mesh->mNumFaces; ++face_index)
 			{
 				aiFace& face = fbx_mesh->mFaces[face_index];
 				assert(face.mNumIndices == 3);
 
 				for (int point_index = 0; point_index != face.mNumIndices; ++point_index)
-					mesh_data.mProperties.mIndices.push_back(face.mIndices[point_index]);
+					indices.push_back(face.mIndices[point_index]);
 			}
 
 			rtti::BinaryWriter binaryWriter;

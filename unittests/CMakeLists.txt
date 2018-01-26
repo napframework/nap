@@ -31,10 +31,20 @@ target_link_libraries(${PROJECT_NAME}_autorun ${UNITTEST_LIBS})
 copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/data data)
 
 # Now run the tests right after the build
-add_custom_command(
-        TARGET ${PROJECT_NAME}_autorun
-        COMMENT "Run tests"
-        POST_BUILD
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-        COMMAND ${PROJECT_NAME}
-)
+if (WIN32)
+    add_custom_command(
+            TARGET ${PROJECT_NAME}_autorun
+            COMMENT "Run tests"
+            POST_BUILD
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+            COMMAND ${PROJECT_NAME}.exe
+    )
+else()
+    add_custom_command(
+            TARGET ${PROJECT_NAME}_autorun
+            COMMENT "Run tests"
+            POST_BUILD
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+            COMMAND ${PROJECT_NAME}
+    )
+endif()

@@ -50,19 +50,19 @@
 		{
 			"Type" : "nap::Image",	
 			"mID" : "WorldTexture",
-			"ImagePath" : "data/multiwindow/world_texture.png"
+			"ImagePath" : "world_texture.png"
 		},
 
 		{
 			"Type" : "nap::Image",	
 			"mID" : "TextureOne",
-			"ImagePath" : "data/multiwindow/texture_one.jpg"
+			"ImagePath" : "texture_one.jpg"
 		},
 
 		{
 			"Type" : "nap::Image",	
 			"mID" : "TextureTwo",
-			"ImagePath" : "data/multiwindow/texture_two.png"
+			"ImagePath" : "texture_two.png"
 		},
 
 		{

@@ -27,18 +27,21 @@ namespace opengl
 	}
 
 
-	opengl::IndexBuffer& GPUMesh::getOrCreateIndexBuffer()
+	opengl::IndexBuffer& GPUMesh::getOrCreateIndexBuffer(int index)
 	{
-		if (mIndexBuffer == nullptr)
-			mIndexBuffer = std::make_unique<IndexBuffer>();
+		if (index < mIndexBuffers.size())
+			return *mIndexBuffers[index];
+		
+		std::unique_ptr<IndexBuffer> index_buffer = std::make_unique<IndexBuffer>();
+		mIndexBuffers.emplace_back(std::move(index_buffer));
 
-		return *mIndexBuffer;
+		return *mIndexBuffers.back();
 	}
 
 
-	const opengl::IndexBuffer* GPUMesh::getIndexBuffer() const
+	const opengl::IndexBuffer& GPUMesh::getIndexBuffer(int index) const
 	{
-		return mIndexBuffer.get();
+		return *mIndexBuffers[index];
 	}
 
 }

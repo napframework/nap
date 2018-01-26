@@ -4,7 +4,7 @@
 		{
 			"Type": "nap::audio::AudioFileResource",
 			"mID": "audioFile",
-			"AudioFilePath": "data/audiotest/hang.mp3"
+			"AudioFilePath": "hang.mp3"
 		},
 
 		{

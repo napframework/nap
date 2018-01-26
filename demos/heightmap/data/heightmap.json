@@ -19,7 +19,7 @@
 		{
 			"Type" : "nap::Image",	
 			"mID" : "HeightMapTexture",
-			"ImagePath" : "data/heightmap/height_map.png"
+			"ImagePath" : "height_map.png"
 		},
 
 		{
