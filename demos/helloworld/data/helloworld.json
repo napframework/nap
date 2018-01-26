@@ -50,6 +50,10 @@
 				{
 					"MeshAttributeID" : "Normal",
 					"ShaderAttributeID" : "in_Normal"
+				},
+				{
+					"MeshAttributeID" : "Color0",
+					"ShaderAttributeID" : "in_Color0"
 				}
 			],
 			"Uniforms" : 

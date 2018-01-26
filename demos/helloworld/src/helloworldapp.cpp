@@ -117,6 +117,13 @@ namespace nap
 		// Activate current window for drawing
 		mRenderWindow->makeActive();
 
+		// If the world mesh is dirty, update
+		if (mDirty)
+		{
+			nap::utility::ErrorState error;
+			mWorldMesh->getMeshInstance().update(error);
+		}
+
 		// Clear back-buffer
 		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
 
@@ -172,9 +179,20 @@ namespace nap
 				fullscreen = !fullscreen;
 			}
 		}
+
 		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::PointerPressEvent)))
 		{
-			nap::PointerPressEvent* event = static_cast<nap::PointerPressEvent*>(inputEvent.get());
+			mMouseDown = true;
+		}
+
+		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::PointerReleaseEvent)))
+		{
+			mMouseDown = false;
+		}
+
+		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::PointerMoveEvent)) && !mMouseDown)
+		{
+			nap::PointerMoveEvent* event = static_cast<nap::PointerMoveEvent*>(inputEvent.get());
 			doTrace(*event);
 		}
 
@@ -214,6 +232,8 @@ namespace nap
 		// Perform intersection test
 		MeshInstance& mesh = mWorldMesh->getMeshInstance();
 		VertexAttribute<glm::vec3>& vertices = mesh.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
+		VertexAttribute<glm::vec4>& colors = mesh.getOrCreateAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0));
+		
 		TriangleShapeIterator triangle_it(mesh);
 
 		std::array<glm::vec3, 3> tri_vertices;
@@ -228,10 +248,15 @@ namespace nap
 			glm::vec3 world_hit_loc;
 			if (utility::intersect(cam_pos, screen_to_world_ray, tri_vertices, world_hit_loc))
 			{
-				glm::vec3 object_space = math::worldToObject(world_hit_loc, world_xform.getGlobalTransform());
-				nap::Logger::info("intersected triangle with indices: %d %d %d", indices.x, indices.y, indices.z);
-				nap::Logger::info("world  intersection location: %f %f %f", world_hit_loc.x, world_hit_loc.y, world_hit_loc.z);
-				nap::Logger::info("object intersection location: %f %f %f", object_space.x, object_space.y, object_space.z);
+				//glm::vec3 object_space = math::worldToObject(world_hit_loc, world_xform.getGlobalTransform());
+				//nap::Logger::info("intersected triangle with indices: %d %d %d", indices.x, indices.y, indices.z);
+				//nap::Logger::info("world  intersection location: %f %f %f", world_hit_loc.x, world_hit_loc.y, world_hit_loc.z);
+				//nap::Logger::info("object intersection location: %f %f %f", object_space.x, object_space.y, object_space.z);
+				
+				colors[indices[0]] = { 1.0f,0.0f,0.0f,1.0f };
+				colors[indices[1]] = { 1.0f,0.0f,0.0f,1.0f };
+				colors[indices[2]] = { 1.0f,0.0f,0.0f,1.0f };
+				mDirty = true;
 				break;
 			}
 		}
