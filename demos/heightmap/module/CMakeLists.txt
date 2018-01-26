@@ -21,9 +21,5 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 target_link_libraries(${PROJECT_NAME} napcore mod_naprender nrender mod_napmath mod_napsdlinput mod_napsdlwindow)
 
 if (WIN32)
-    set(FILES_TO_COPY
-            ../../../../../thirdparty/assimp/msvc64/install/bin/assimp-vc140-mt.dll
-            )
-
-    copy_files_to_bin(${FILES_TO_COPY})
+    copy_files_to_bin(${THIRDPARTY_DIR}/assimp/msvc64/install/bin/assimp-vc140-mt.dll)
 endif()
