@@ -3,6 +3,7 @@
 // External includes
 #include <fbxconverter.h>
 #include <meshutils.h>
+#include <triangleiterator.h>
 
 // nap::videomesh run time class definition 
 RTTI_BEGIN_CLASS(nap::VideoMeshFromFile)
@@ -52,36 +53,27 @@ namespace nap
 		std::vector<glm::vec3> uv_center_data(mUVAttribute->getCount(), {0.0f,0.0f,0.0f});
 		mUVCenterAttribute->setData(uv_center_data);
 
-		int triangle_count = getTriangleCount(*mMeshInstance);
-		TriangleDataPointer<glm::vec3> tri_uv_data;
-		TriangleDataPointer<glm::vec3> tri_uv_center_data;
-		TriangleDataPointer<glm::vec3> tri_displacement_data;
-
-		int tcount = getTriangleCount(*mMeshInstance);
-		for (int triangle = 0; triangle < tcount; triangle++)
+		TriangleShapeIterator tri_iterator(*mMeshInstance);
+		while (!tri_iterator.isDone())
 		{
-			// Get uv values
-			getTriangleValues(*mMeshInstance, triangle, *mUVAttribute, tri_uv_data);
-			
+			glm::ivec3 indices = tri_iterator.next();
+
 			// Calculate average
-			glm::vec3 uv_avg = {0.0,0.0,0.0};
-			for (const auto& uv_value : tri_uv_data)
-				uv_avg += *uv_value;
-			uv_avg =  uv_avg / glm::vec3(3.0f, 3.0f, 3.0f);
+			glm::vec3 uv_avg = { 0.0,0.0,0.0 };
+			uv_avg += (*mUVAttribute)[indices[0]];
+			uv_avg += (*mUVAttribute)[indices[1]];
+			uv_avg += (*mUVAttribute)[indices[2]];
+			uv_avg /= 3.0f;
+			
+			// Set average
+			(*mUVCenterAttribute)[indices[0]] = uv_avg;
+			(*mUVCenterAttribute)[indices[1]] = uv_avg;
+			(*mUVCenterAttribute)[indices[2]] = uv_avg;
 
-			// Set them
-			getTriangleValues(*mMeshInstance, triangle, *mUVCenterAttribute, tri_uv_center_data);
-			for (const auto& uv_center_value : tri_uv_center_data)
-				*uv_center_value = uv_avg;
-
-			// Compute per triangle normal
-			glm::vec3 tri_normal = normalize(computeTriangleNormal(*mMeshInstance, triangle, *mPositionAttribute));
-			getTriangleValues(*mMeshInstance, triangle, *mDirectionAttribute, tri_displacement_data);
-			for (auto& displacement_value : tri_displacement_data)
-			{
-				*displacement_value = tri_normal;
-			}
-
+			glm::vec3 tri_normal = normalize(computeTriangleNormal(indices, *mPositionAttribute));
+			(*mDirectionAttribute)[indices[0]] = tri_normal;
+			(*mDirectionAttribute)[indices[1]] = tri_normal;
+			(*mDirectionAttribute)[indices[2]] = tri_normal;
 		}
 
 		// Initialize the mesh

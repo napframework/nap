@@ -20,19 +20,19 @@
 		{
 			"Type" : "nap::Image",
 			"mID" : "PigTexture",
-			"ImagePath" : "data/rendertest/pig_head.jpg"
+			"ImagePath" : "pig_head.jpg"
 		},
 		
 		{
 			"Type" : "nap::Image",	
 			"mID" : "WorldTexture",
-			"ImagePath" : "data/rendertest/world_texture.jpg"
+			"ImagePath" : "world_texture.jpg"
 		},
 
 		{
 			"Type" : "nap::Image",
 			"mID" : "TestTexture",
-			"ImagePath" : "data/rendertest/test.jpg"
+			"ImagePath" : "test.jpg"
 		},
 
 		{
@@ -67,27 +67,27 @@
 		{
 			"Type" : "nap::Shader",
 			"mID": "GeneralShader",
-			"mVertShader": "shaders/rendertest/shader.vert",
-			"mFragShader": "shaders/rendertest/shader.frag"
+			"mVertShader": "shaders/shader.vert",
+			"mFragShader": "shaders/shader.frag"
 		},
 
 		{
 			"Type" : "nap::Shader",
 			"mID": "OrientationShader",
-			"mVertShader": "shaders/rendertest/orientation.vert",
-			"mFragShader": "shaders/rendertest/orientation.frag"
+			"mVertShader": "shaders/orientation.vert",
+			"mFragShader": "shaders/orientation.frag"
 		},
 
 		{
 			"Type" : "nap::MeshFromFile",
 			"mID": "OrientationMesh",
-			"Path": "data/rendertest/orientation.mesh"
+			"Path": "orientation.mesh"
 		},
 
 		{
 			"Type" : "nap::MeshFromFile",
 			"mID": "PigMesh",
-			"Path": "data/rendertest/pig_head_alpha_rotated.mesh"
+			"Path": "pig_head_alpha_rotated.mesh"
 		},	
 		
 		{
@@ -105,7 +105,11 @@
 			"mID" : "CustomLineMesh",
 			"Properties" : {
 				"NumVertices" : 5,
-				"DrawMode" : "LineStrip",
+				"Shapes" : [
+					{
+						"DrawMode" : "LineStrip"
+					}
+				],
 				"Attributes" : [
 					{
 						"Type" : "nap::Vec3VertexAttribute",
@@ -138,7 +142,11 @@
 			"mID" : "CustomPlaneMesh",
 			"Properties" : {
 				"NumVertices" : 4,
-				"DrawMode" : "Triangles",
+				"Shapes" : [
+					{
+						"DrawMode" : "TriangleStrip"
+					}
+				],
 				"Attributes" : [
 					{
 						"Type" : "nap::Vec3VertexAttribute",
@@ -335,7 +343,7 @@
 				},
 				{
 					"Type" : "nap::PythonScriptComponent",
-					"Path": "data/rendertest/scripts/pig.py"
+					"Path": "scripts/pig.py"
 				}
 			]
 		},
@@ -411,7 +419,7 @@
 				},
 				{
 					"Type" : "nap::PythonScriptComponent",
-					"Path": "data/rendertest/scripts/plane.py"
+					"Path": "scripts/plane.py"
 				}
 			]
 		},	
@@ -451,7 +459,7 @@
 				},
 				{
 					"Type" : "nap::PythonScriptComponent",
-					"Path": "data/rendertest/scripts/rotating_plane.py"
+					"Path": "scripts/rotating_plane.py"
 				}		
 			]
 		},	
@@ -510,7 +518,7 @@
 				},
 				{
 					"Type" : "nap::PythonScriptComponent",
-					"Path": "data/rendertest/scripts/world.py"
+					"Path": "scripts/world.py"
 				}			
 			]
 		},

@@ -33,7 +33,7 @@
 				{
 					"Type": "nap::PythonScriptComponent",
 					"mID": "pythonScript",
-					"Path": "data/audiotest/scripts/oscscript.py"
+					"Path": "scripts/oscscript.py"
 				}				
 			]
 		}
