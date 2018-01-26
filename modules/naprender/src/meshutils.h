@@ -79,5 +79,17 @@ namespace nap
 		* @param offset The first index value.
 		*/
 		void NAPAPI generateIndices(nap::MeshShape& shape, int vertexCount, int offset = 0);
+
+		/**
+		 * Calculates the intersection of a ray and a triangle in 3 dimensions
+		 * Based on the Möller–Trumbore intersection algorithm: https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
+		 * @param rayOrigin the origin of the ray, often the world space position of a camera
+		 * @param rayDirection the direction of the ray from it's origin
+		 * @param indices the triangle indices
+		 * @param vertices the triangle vertex positions
+		 * @param outIntersectionPoint point of intersection
+		 * @return if the ray intersects the triangle
+		 */
+		bool NAPAPI intersect(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, const std::array<glm::vec3, 3>& vertices, glm::vec3& outIntersectionPoint);
 	}
 }

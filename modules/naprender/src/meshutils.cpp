@@ -175,5 +175,44 @@ namespace nap
 			for (int vertex = 0; vertex < vertexCount; ++vertex)
 				indices[vertex] = vertex + offset;
 		}
+
+
+		bool NAPAPI intersect(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, const std::array<glm::vec3, 3>& vertices, glm::vec3& outIntersectionPoint)
+		{
+			const float epsilon = math::epsilon<float>();
+			glm::vec3 vertex0 = vertices[0];
+			glm::vec3 vertex1 = vertices[1];
+			glm::vec3 vertex2 = vertices[2];
+			glm::vec3 edge1, edge2, h, s, q;
+			float a, f, u, v;
+			
+			edge1 = vertex1 - vertex0;
+			edge2 = vertex2 - vertex0;
+			h = glm::cross(rayDirection, edge2);
+			a = glm::dot(edge1, h);		
+
+			if (a > -epsilon && a < epsilon)
+				return false;
+			
+			f = 1.0f / a;
+			s = rayOrigin - vertex0;
+			u = f * glm::dot(s, h);				
+			if (u < 0.0f || u > 1.0f)
+				return false;
+			
+			q = glm::cross(s, edge1);	
+			v = f * glm::dot(rayDirection, q);
+			if (v < 0.0f || u + v > 1.0f)
+				return false;
+
+			// At this stage we can compute t to find out where the intersection point is on the line.
+			float t = f * glm::dot(edge2, q);
+			if (t > epsilon)		
+			{
+				outIntersectionPoint = rayOrigin + rayDirection * t;
+				return true;
+			}
+			return false;
+		}
 	}
 }
