@@ -1,14 +1,14 @@
 cmake_minimum_required(VERSION 3.5)
 
-if(WIN32)
-    find_file(PYEXE
-              NAMES python.exe
-              PATHS c:/python36
-              )
-    if(PYEXE)
-        set(PYTHON_EXECUTABLE ${PYEXE})
-    endif()
-endif()
+#if(WIN32)
+#    find_file(PYEXE
+#              NAMES python.exe
+#              PATHS c:/python36
+#              )
+#    if(PYEXE)
+#        set(PYTHON_EXECUTABLE ${PYEXE})
+#    endif()
+#endif()
 
 # Keep the current directory as project root
 set(NAP_ROOT ${CMAKE_CURRENT_LIST_DIR})
