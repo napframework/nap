@@ -35,8 +35,8 @@ def install_dependencies_linux():
         'libsdl2-dev',
         'libglew-dev',
         'libassimp-dev',
-        'libglm-dev',
-        'libtclap-dev',
+        # 'libglm-dev', # TODO Confirm removal of dependency on for header only libraries stored in 'thirdparty'
+        # 'libtclap-dev',  # TODO Confirm removal of dependency on for header only libraries stored in 'thirdparty'
         'libfreeimage-dev',
         'ffmpeg',
         'libavcodec-dev',
@@ -90,9 +90,9 @@ def install_dependencies_osx():
         'cmake',
         'sdl2',
         'glew',
-        'glm',
+        # 'glm', # TODO Confirm removal of dependency on for header only libraries stored in 'thirdparty'
         'assimp',
-        'tclap',
+        # 'tclap', # TODO Confirm removal of dependency on for header only libraries stored in 'thirdparty'
         'ffmpeg',
         'mpg123'
     ]
