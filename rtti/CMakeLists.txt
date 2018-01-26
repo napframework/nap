@@ -62,6 +62,9 @@ if (WIN32)
     # Copy over dlls
     set(FILES_TO_COPY $<TARGET_FILE:RTTR::Core>)
     copy_files_to_bin(${FILES_TO_COPY})
+elseif(APPLE)
+    # Copy over RTTR for macOS
+    copy_lib_to_lib_dir("RTTR::Core")
 endif()
 
 # Package into release build

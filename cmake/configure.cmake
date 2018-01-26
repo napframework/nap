@@ -245,6 +245,20 @@ macro(copy_files_to_bin)
     endforeach()
 endmacro()
 
+macro(copy_lib_to_lib_dir LIB_NAME)
+    if (MSVC OR APPLE)
+        set(BUILD_CONF "${CMAKE_CXX_COMPILER_ID}-${ARCH}-$<CONFIG>")
+    else()
+        set(BUILD_CONF "${CMAKE_CXX_COMPILER_ID}-${CMAKE_BUILD_TYPE}-${ARCH}")
+    endif()
+    set(lib_path ${CMAKE_SOURCE_DIR}/lib/${BUILD_CONF})
+
+    add_custom_command(TARGET ${PROJECT_NAME}
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${LIB_NAME}> ${lib_path}
+        COMMENT "Copy ${IN_FILE} -> ${OUT_DIR}")
+endmacro()
+
 macro(copy_base_windows_graphics_dlls)
     # Copy over some crap window dlls
     set(FILES_TO_COPY
