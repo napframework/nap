@@ -84,7 +84,7 @@ namespace nap
 		 * The ray is normalized
 		 * @param screenPos, horizontal and vertical screen coordinates, where 0,0 is the lower left corner
 		 * @param viewport rectangle that defines the viewport
-		 * @return a ray pointing outwards from the camera in to the scene
+		 * @return a normalized ray pointing outwards from the camera in to the scene
 		 */
 		glm::vec3 rayFromScreen(const glm::vec2& screenPos, const math::Rect& viewport);
 

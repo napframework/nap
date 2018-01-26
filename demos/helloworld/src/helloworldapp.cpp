@@ -10,6 +10,9 @@
 #include <perspcameracomponent.h>
 #include <inputrouter.h>
 #include <imgui/imgui.h>
+#include <triangleiterator.h>
+#include <meshutils.h>
+#include <mathutils.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -49,6 +52,7 @@ namespace nap
 
 		mWorldEntity = scene->findEntity("World");
 		mCameraEntity = scene->findEntity("Camera");
+		mWorldMesh = mResourceManager->findObject("WorldMesh");
 
 		return true;
 	}
@@ -168,6 +172,12 @@ namespace nap
 				fullscreen = !fullscreen;
 			}
 		}
+		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::PointerPressEvent)))
+		{
+			nap::PointerPressEvent* event = static_cast<nap::PointerPressEvent*>(inputEvent.get());
+			doTrace(*event);
+		}
+
 		mInputService->addEvent(std::move(inputEvent));
 	}
 
@@ -182,4 +192,49 @@ namespace nap
 	{
 		return 0;
 	}
+
+
+	void HelloWorldApp::doTrace(const PointerEvent& event)
+	{
+		PerspCameraComponentInstance& camera = mCameraEntity->getComponent<PerspCameraComponentInstance>();
+		TransformComponentInstance& camera_xform = mCameraEntity->getComponent<TransformComponentInstance>();
+
+		// Get screen location
+		glm::ivec2 screen_loc = { event.mX, event.mY };
+
+		// Get ray from screen in to scene (world space)
+		glm::vec3 screen_to_world_ray = camera.rayFromScreen(screen_loc, mRenderWindow->getBackbuffer());
+
+		// Get camera position
+		glm::vec3 cam_pos = math::extractPosition(camera_xform.getGlobalTransform());
+
+		// Get object to world transformation matrix
+		TransformComponentInstance& world_xform = mWorldEntity->getComponent<TransformComponentInstance>();
+
+		// Perform intersection test
+		MeshInstance& mesh = mWorldMesh->getMeshInstance();
+		VertexAttribute<glm::vec3>& vertices = mesh.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
+		TriangleShapeIterator triangle_it(mesh);
+
+		std::array<glm::vec3, 3> tri_vertices;
+		while (!triangle_it.isDone())
+		{
+			// Use the indices to get the vertex positions
+			glm::ivec3 indices = triangle_it.next();
+			tri_vertices[0] = math::objectToWorld(vertices[indices[0]], world_xform.getGlobalTransform());
+			tri_vertices[1] = math::objectToWorld(vertices[indices[1]], world_xform.getGlobalTransform());
+			tri_vertices[2] = math::objectToWorld(vertices[indices[2]], world_xform.getGlobalTransform());
+
+			glm::vec3 world_hit_loc;
+			if (utility::intersect(cam_pos, screen_to_world_ray, tri_vertices, world_hit_loc))
+			{
+				glm::vec3 object_space = math::worldToObject(world_hit_loc, world_xform.getGlobalTransform());
+				nap::Logger::info("intersected triangle with indices: %d %d %d", indices.x, indices.y, indices.z);
+				nap::Logger::info("world  intersection location: %f %f %f", world_hit_loc.x, world_hit_loc.y, world_hit_loc.z);
+				nap::Logger::info("object intersection location: %f %f %f", object_space.x, object_space.y, object_space.z);
+				break;
+			}
+		}
+	}
+
 }
