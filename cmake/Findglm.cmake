@@ -27,3 +27,6 @@ elseif(GLM_FIND_REQUIRED)
 else()
     message(STATUS "Optional package glm was not found")
 endif()
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(glm REQUIRED_VARS GLM_INCLUDE_DIRS)

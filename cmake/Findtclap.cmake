@@ -26,3 +26,6 @@ elseif(TCLAP_FIND_REQUIRED)
 else()
     message(STATUS "Optional package tclap was not found")
 endif()
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(tclap REQUIRED_VARS TCLAP_INCLUDE_DIRS)
