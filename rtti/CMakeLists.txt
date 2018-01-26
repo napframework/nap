@@ -32,7 +32,7 @@ find_package(rapidjson REQUIRED)
 add_definitions(-DRAPIDJSON_HAS_STDSTRING=1)
 
 set(pybind11_DIR "${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/pybind11/install/share/cmake/pybind11")
-find_package(pybind11) 
+find_package(pybind11 REQUIRED) 
 
 add_platform_specific_files("${WIN32_SOURCES}" "${OSX_SOURCES}" "${LINUX_SOURCES}")
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
