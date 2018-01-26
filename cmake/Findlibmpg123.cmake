@@ -45,7 +45,7 @@ endif()
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set LIBMPG123_FOUND to TRUE
 # if all listed variables are TRUE
-find_package_handle_standard_args(LIBMPG123 DEFAULT_MSG LIBMPG123_LIBRARIES LIBMPG123_INCLUDE_DIR)
+find_package_handle_standard_args(libmpg123 DEFAULT_MSG LIBMPG123_LIBRARIES LIBMPG123_INCLUDE_DIR)
 
 # Copy the portaudio dynamic linked lib into the build directory
 macro(copy_mpg123_lib)
