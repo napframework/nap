@@ -6,6 +6,9 @@
 #include <thread>
 #include <utility/fileutils.h>
 
+#include <unistd.h>
+#include <linux/limits.h>
+
 namespace nap
 {
 	/**
@@ -35,6 +38,7 @@ namespace nap
 		}
 
 		std::vector<std::string> modifiedFiles;
+		std::string currentPath;				// path to the current working directory
 		FW::FileWatcher fileWatcher;
 		FW::WatchID watchID;
 	};
@@ -48,8 +52,11 @@ namespace nap
 		// PImpl instantiation using unique_ptr because we only want a unique snowflake
 		mPImpl = std::unique_ptr<PImpl, PImpl_deleter>(new PImpl);
 
+		// Retrieve the path to the current working dir
+		char buffer[PATH_MAX];
+		std::string path = std::string(getcwd(buffer, PATH_MAX));
+		mPImpl->currentPath = path;
 
-		std::string path = utility::getFileDir(utility::getExecutablePath());
 		nap::Logger::debug("Watching directory: %s", path.c_str());
 		mPImpl->watchID = mPImpl->fileWatcher.addWatch(path, &(*mPImpl), true);
 	}
@@ -69,10 +76,19 @@ namespace nap
 		if (mPImpl->modifiedFiles.empty())
 			return false;
 
+		std::string comparable_watched_path = utility::toComparableFilename(mPImpl->currentPath);
+
 		for (auto filename : mPImpl->modifiedFiles)
 		{
-			if (utility::fileExists(filename))
-				modifiedFiles.push_back(filename);
+			std::string comparable_modified_file = utility::toComparableFilename(filename);
+			
+			// Check if the watched path is found at the start if the modified file's path
+			auto pos = comparable_modified_file.find(comparable_watched_path + "/");
+			assert(pos != std::string::npos);
+
+			// Strip the watched path from the start
+			comparable_modified_file.erase(0, mPImpl->currentPath.size() + 1);
+			modifiedFiles.emplace_back(comparable_modified_file);
 		}
 
 		mPImpl->modifiedFiles.clear();
