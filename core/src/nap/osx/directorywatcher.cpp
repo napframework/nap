@@ -9,7 +9,6 @@
 #include <sys/stat.h>
 #include <mach-o/dyld.h>
 #include <sys/syslimits.h>
-#include <unistd.h>
 
 #include <iostream>
 #include <mutex>
