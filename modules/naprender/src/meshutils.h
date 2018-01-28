@@ -88,9 +88,35 @@ namespace nap
 		 * @param rayDirection the direction of the ray from it's origin
 		 * @param indices the triangle indices
 		 * @param vertices the triangle vertex positions
-		 * @param outIntersectionPoint point of intersection
+		 * @param outBaryPosition barycentric coordinates of point of intersection, where z is the scalar factor for the ray.
 		 * @return if the ray intersects the triangle
 		 */
-		bool NAPAPI intersect(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, const std::array<glm::vec3, 3>& vertices, glm::vec3& outIntersectionPoint);
+		bool NAPAPI intersect(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, const std::array<glm::vec3, 3>& vertices, glm::vec3& outCoordinates);
+
+		/**
+		 * Computes the barycentric coordinates for a point with respect to a triangle
+		 * @param point the position of the point in respect to the triangle
+		 * @param triangle the vertices of the triangle
+		 */
+		glm::vec3 NAPAPI computeBarycentric(const glm::vec3& point, const std::array<glm::vec3, 3>& triangle);
+
+		/**
+		 * Interpolates triangle vertex values based on barycentric u and v coordinates
+		 * @param vertexValues the values associated with the triangle vertices
+		 * @param barycentricCoordinates the triangle barycentric coordinates (u,v,w)
+		 * @return the interpolated vertex attribute value
+		 */
+		template<typename T>
+		T interpolateVertexAttr(const std::array<T, 3>& vertexValues, const glm::vec3& barycentricCoordinates);
+
+		//////////////////////////////////////////////////////////////////////////
+		// Template Definitions
+		//////////////////////////////////////////////////////////////////////////
+		template<typename T>
+		T interpolateVertexAttr(const std::array<T, 3>& vertexValues, const glm::vec3& coords)
+		{
+			return (vertexValues[0] * (1.0f - coords.x - coords.y)) + (vertexValues[1] * coords.x) + (vertexValues[2] * coords.y);
+		}
+
 	}
 }

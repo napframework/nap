@@ -1,4 +1,4 @@
-#include "helloworldapp.h"
+#include "clickandtraceapp.h"
 
 // Nap includes
 #include <nap/core.h>
@@ -16,7 +16,7 @@
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::HelloWorldApp)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ClickAndTraceApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
@@ -25,7 +25,7 @@ namespace nap
 	/**
 	 * Initialize all the resources and store the objects we need later on
 	 */
-	bool HelloWorldApp::init(utility::ErrorState& error)
+	bool ClickAndTraceApp::init(utility::ErrorState& error)
 	{
 		// Retrieve services
 		mRenderService	= getCore().getService<nap::RenderService>();
@@ -35,7 +35,7 @@ namespace nap
 
 		// Get resource manager and load
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("helloworld.json", error))
+		if (!mResourceManager->loadFile("clickandtrace.json", error))
 			return false;
 
 		// Extract loaded resources
@@ -70,7 +70,7 @@ namespace nap
 	 * The orbit controller validates if it's something useful and acts accordingly,
 	 * in this case by rotating around or zooming in on the sphere.
 	 */
-	void HelloWorldApp::update(double deltaTime)
+	void ClickAndTraceApp::update(double deltaTime)
 	{
 		// The default input router forwards messages to key and mouse input components
 		// attached to a set of entities.
@@ -79,6 +79,15 @@ namespace nap
 		// Forward all input events associated with the first window to the listening components
 		std::vector<nap::EntityInstance*> entities = { mCameraEntity.get() };
 		mInputService->processEvents(*mRenderWindow, input_router, entities);
+
+		// Set mouse pos in shader
+		RenderableMeshComponentInstance& minstance = mWorldEntity->getComponent<RenderableMeshComponentInstance>();
+		UniformVec3& uv_uniform = minstance.getMaterialInstance().getOrCreateUniform<UniformVec3>("inClickPosition");
+		uv_uniform.setValue(mMouseUvPosition);
+
+		UniformFloat& time_uniform = minstance.getMaterialInstance().getOrCreateUniform<UniformFloat>("inTime");
+		time_uniform.setValue(mTime);
+		mTime += deltaTime;
 
 		// Draw some gui elements
 		ImGui::Begin("Controls");
@@ -99,7 +108,7 @@ namespace nap
 	 * render calls could end up being associated with the wrong context, resulting in undefined behavior.
 	 * Next we clear the render target, render the object and swap the main window back-buffer.
 	 */
-	void HelloWorldApp::render()
+	void ClickAndTraceApp::render()
 	{
 		// Update the camera location in the world shader for the halo effect
 		// To do that we fetch the material associated with the world mesh and query the camera location uniform
@@ -145,7 +154,7 @@ namespace nap
 	 * On the next update the render service automatically processes all window events. 
 	 * If you want to listen to specific events associated with a window it's best to listen to a window's mWindowEvent signal
 	 */
-	void HelloWorldApp::windowMessageReceived(WindowEventPtr windowEvent)
+	void ClickAndTraceApp::windowMessageReceived(WindowEventPtr windowEvent)
 	{
 		mRenderService->addEvent(std::move(windowEvent));
 	}
@@ -155,7 +164,7 @@ namespace nap
 	 * Called by the app loop. It's best to forward messages to the input service for further processing later on
 	 * In this case we also check if we need to toggle full-screen or exit the running app
 	 */
-	void HelloWorldApp::inputMessageReceived(InputEventPtr inputEvent)
+	void ClickAndTraceApp::inputMessageReceived(InputEventPtr inputEvent)
 	{
 		// Escape the loop when esc is pressed
 		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
@@ -173,18 +182,84 @@ namespace nap
 			}
 		}
 
+		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::PointerPressEvent)))
+		{
+			mMouseDown = true;
+		}
+
+		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::PointerReleaseEvent)))
+		{
+			mMouseDown = false;
+		}
+
+		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::PointerMoveEvent)) && !mMouseDown)
+		{
+			nap::PointerMoveEvent* event = static_cast<nap::PointerMoveEvent*>(inputEvent.get());
+			doTrace(*event);
+		}
+
 		mInputService->addEvent(std::move(inputEvent));
 	}
 
 	
-	void HelloWorldApp::setWindowFullscreen(std::string windowIdentifier, bool fullscreen)
+	void ClickAndTraceApp::setWindowFullscreen(std::string windowIdentifier, bool fullscreen)
 	{
 		mResourceManager->findObject<RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
 	}
 
 
-	int HelloWorldApp::shutdown()
+	int ClickAndTraceApp::shutdown()
 	{
 		return 0;
 	}
+
+
+	void ClickAndTraceApp::doTrace(const PointerEvent& event)
+	{
+		PerspCameraComponentInstance& camera = mCameraEntity->getComponent<PerspCameraComponentInstance>();
+		TransformComponentInstance& camera_xform = mCameraEntity->getComponent<TransformComponentInstance>();
+
+		// Get screen location
+		glm::ivec2 screen_loc = { event.mX, event.mY };
+
+		// Get ray from screen in to scene (world space)
+		glm::vec3 screen_to_world_ray = camera.rayFromScreen(screen_loc, mRenderWindow->getBackbuffer());
+
+		// Get camera position
+		glm::vec3 cam_pos = math::extractPosition(camera_xform.getGlobalTransform());
+
+		// Get object to world transformation matrix
+		TransformComponentInstance& world_xform = mWorldEntity->getComponent<TransformComponentInstance>();
+
+		// Perform intersection test
+		MeshInstance& mesh = mWorldMesh->getMeshInstance();
+		VertexAttribute<glm::vec3>& vertices = mesh.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
+		VertexAttribute<glm::vec3>& uvs = mesh.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
+
+		TriangleShapeIterator triangle_it(mesh);
+
+		std::array<glm::vec3, 3> tri_vertices;
+		std::array<glm::vec3, 3> tri_uvs;
+		while (!triangle_it.isDone())
+		{
+			// Use the indices to get the vertex positions
+			glm::ivec3 indices = triangle_it.next();
+			tri_vertices[0] = math::objectToWorld(vertices[indices[0]], world_xform.getGlobalTransform());
+			tri_vertices[1] = math::objectToWorld(vertices[indices[1]], world_xform.getGlobalTransform());
+			tri_vertices[2] = math::objectToWorld(vertices[indices[2]], world_xform.getGlobalTransform());
+
+			glm::vec3 bary_coord;
+			if (utility::intersect(cam_pos, screen_to_world_ray, tri_vertices, bary_coord))
+			{
+				// Get uvs at location
+				tri_uvs[0] = uvs[indices[0]];
+				tri_uvs[1] = uvs[indices[1]];
+				tri_uvs[2] = uvs[indices[2]];
+
+				mMouseUvPosition = utility::interpolateVertexAttr<glm::vec3>(tri_uvs, bary_coord);
+				break;
+			}
+		}
+	}
+
 }

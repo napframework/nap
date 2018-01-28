@@ -2,6 +2,7 @@
 #include <mathutils.h>
 #include <glm/gtx/normal.hpp>
 #include <triangleiterator.h>
+#include <glm/gtx/intersect.hpp>
 
 namespace nap
 {
@@ -177,43 +178,55 @@ namespace nap
 		}
 
 
-		bool NAPAPI intersect(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, const std::array<glm::vec3, 3>& vertices, glm::vec3& outIntersectionPoint)
-		{			
-			glm::vec3 edge1, edge2, h, s, q;
-			float a, f, u, v;
-			edge1 = vertices[1] - vertices[0];
-			edge2 = vertices[2] - vertices[0];
+		bool intersect(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, const std::array<glm::vec3, 3>& vertices, glm::vec3& outCoordinates)
+		{
+			glm::vec3 e1 = vertices[1] - vertices[0];
+			glm::vec3 e2 = vertices[2] - vertices[0];
 
-			glm::vec3 tri_normal = glm::cross(edge1, edge2);
+			glm::vec3 tri_normal = glm::cross(e1, e2);
 			if (dot(rayDirection, tri_normal) > 0.0f)
 				return false;
 
-			h = glm::cross(rayDirection, edge2);
-			a = glm::dot(edge1, h);		
+			glm::vec3 p = glm::cross(rayDirection, e2);
+			float a = glm::dot(e1, p);
 
-			const float epsilon = math::epsilon<float>();
-			if (a > -epsilon && a < epsilon)
-				return false;
-			
-			f = 1.0f / a;
-			s = rayOrigin - vertices[0];
-			u = f * glm::dot(s, h);				
-			if (u < 0.0f || u > 1.0f)
-				return false;
-			
-			q = glm::cross(s, edge1);	
-			v = f * glm::dot(rayDirection, q);
-			if (v < 0.0f || u + v > 1.0f)
+			float epsilon = math::epsilon<float>();
+			if (a < epsilon && a > -epsilon)
 				return false;
 
-			// At this stage we can compute t to find out where the intersection point is on the line.
-			float t = f * glm::dot(edge2, q);
-			if (t > epsilon)		
-			{
-				outIntersectionPoint = rayOrigin + rayDirection * t;
-				return true;
-			}
-			return false;
+			float f = 1.0f / a;
+			glm::vec3 s = rayOrigin - vertices[0];
+			outCoordinates.x = f * glm::dot(s, p);
+			if (outCoordinates.x < 0.0f || outCoordinates.x > 1.0f)
+				return false;
+
+			glm::vec3 q = glm::cross(s, e1);
+			outCoordinates.y = f * glm::dot(rayDirection, q);
+			if (outCoordinates.y < 0.0f || outCoordinates.y + outCoordinates.x > 1.0f)
+				return false;
+
+			outCoordinates.z = f * glm::dot(e2, q);
+			return outCoordinates.z >= 0.0f;
 		}
+
+
+		glm::vec3 computeBarycentric(const glm::vec3& point, const std::array<glm::vec3, 3>& triangle)
+		{
+			glm::vec3 v0 = triangle[1] - triangle[0]; 
+			glm::vec3 v1 = triangle[2] - triangle[0]; 
+			glm::vec3 v2 = point - triangle[0];
+			float d00 = glm::dot(v0, v0);
+			float d01 = glm::dot(v0, v1);
+			float d11 = glm::dot(v1, v1);
+			float d20 = glm::dot(v2, v0);
+			float d21 = glm::dot(v2, v1);
+			float denom = d00 * d11 - d01 * d01;
+			glm::vec3 r;
+			r[1] = (d11 * d20 - d01 * d21) / denom;
+			r[2] = (d00 * d21 - d01 * d20) / denom;
+			r[0] = 1.0f - r[1] - r[2];
+			return r;
+		}
+
 	}
 }
