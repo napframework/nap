@@ -86,6 +86,7 @@ add_subdirectory(demos/dynamicgeo)
 add_subdirectory(demos/dynamicgeo/module)
 add_subdirectory(demos/videomodulation)
 add_subdirectory(demos/videomodulation/module)
+add_subdirectory(demos/clickandtrace)
 
 add_subdirectory(unittests)
 

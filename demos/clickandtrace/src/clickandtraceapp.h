@@ -34,11 +34,11 @@ namespace nap
 	 * The input router does that for you. This demo uses the default one that forwards the events to every input component
 	 * Refer to the cpp-update() call for more information on handling input
 	 */
-	class HelloWorldApp : public App
+	class ClickAndTraceApp : public App
 	{
 		RTTI_ENABLE(App)
 	public:
-		HelloWorldApp(nap::Core& core) : App(core)	{ }
+		ClickAndTraceApp(nap::Core& core) : App(core)	{ }
 
 		/**
 		 *	Initialize app specific data structures
@@ -87,5 +87,10 @@ namespace nap
 		ObjectPtr<EntityInstance> mWorldEntity = nullptr;				//< Pointer to the entity that holds the sphere
 		ObjectPtr<SphereMesh> mWorldMesh = nullptr;
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
+		bool mMouseDown = false;
+		glm::vec3 mMouseUvPosition = { 0.5,0.5,0.0 };					//< Current mouse position in uv space
+		float mTime = 0.0f;
+
+		void doTrace(const PointerEvent& event);
 	};
 }
