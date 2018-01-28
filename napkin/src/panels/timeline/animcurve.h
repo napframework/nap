@@ -3,6 +3,7 @@
 #include <vector>
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 
 template<typename T, typename V>
 class AnimCurve {
@@ -44,7 +45,7 @@ private:
 
 	V bezier(const V& p[4], const T& t) const;
 
-	T tForX(const T& x, const T& threshold=0.001, int maxiterations=10) const;
+	T tForX(const T& pts[4], const T& x, const T& threshold=0.001, int maxiterations=10) const;
 
 	V evalSegment(const Key& k0, const Key& k1, const T& time) const;
 
@@ -96,7 +97,7 @@ V AnimCurve<T, V>::bezier(const V& p[4], const T& t) const
 	const V b = 3 * u * u * t;
 	const V c = 3 * u * t * t;
 	const V d = t * t * t;
-	return p0 * a + p1 * b + p2 * c + p3 * d;
+	return p[0] * a + p[1] * b + p[2] * c + p[3] * d;
 }
 
 template<typename T, typename V>
@@ -164,5 +165,21 @@ V AnimCurve<T, V>::evalSegment(const AnimCurve::Key& a, const AnimCurve::Key& b,
 		return bezier(ptsV, t);
 	}
 	assert(false);
+}
+
+template<typename T, typename V>
+T AnimCurve<T, V>::tForX(const T& pts[4], const T& x, const T& threshold, int maxiterations) const {
+	T depth = 0.5;
+	T t = 0.5;
+	for (int i=0; i<maxiterations; i++)
+	{
+		T dt = x - bezier(pts, t);
+		if (fabs(dt) <= threshold)
+			break;
+
+		depth *= 0.5;
+		t += dt > 0 ? depth : -depth;
+	}
+	return t;
 }
 
