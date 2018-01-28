@@ -12,9 +12,19 @@ public:
 		Linear, Bezier
 	};
 
+	enum Infinity {
+		Hold, Loop, Bounce
+	};
+
 	AnimCurve() = default;
 
-	size_t pointCount() const;;
+	size_t getKeyCount() const;
+
+	const Infinity& getPosInfinity() const { return mPosInfinity; }
+	void setPosInfinity(const Infinity& inf) { mPosInfinity = inf; }
+
+	const Infinity& getNegInfinity() const { return mNegInfinity; }
+	void setNegInfinity(const Infinity& inf) { mNegInfinity = inf; }
 
 	void addKey(const T& time, const V& value,
 				const T& inTanTime, const V& inTanValue,
@@ -24,6 +34,7 @@ public:
 	void removeKey(size_t index);
 
 	V evaluate(const T& time, const V& def) const;
+
 
 private:
 	template<typename T, typename V>
@@ -51,7 +62,11 @@ private:
 
 	size_t findSegment(const T& time) const;
 
+	void loop(T& t, const T& low, const T& high) const;
+	void bounce(T& t, const T& low, const T& high) const;
 
+	Infinity mNegInfinity = Hold;
+	Infinity mPosInfinity = Hold;
 	std::vector<Key<T, V>> mKeys;
 };
 
@@ -69,7 +84,7 @@ AnimCurve<T, V>::Key<T, V>::Key(const T& time, const V& value,
 }
 
 template<typename T, typename V>
-size_t AnimCurve<T, V>::pointCount() const { return mKeys.size(); }
+size_t AnimCurve<T, V>::getKeyCount() const { return mKeys.size(); }
 
 
 template<typename T, typename V>
@@ -103,6 +118,7 @@ V AnimCurve<T, V>::bezier(const V& p[4], const T& t) const
 template<typename T, typename V>
 V AnimCurve<T, V>::evaluate(const T& time, const V& def) const
 {
+	T t = time;
 	// No keys, return provided default
 	if (mKeys.empty())
 		return def;
@@ -111,21 +127,45 @@ V AnimCurve<T, V>::evaluate(const T& time, const V& def) const
 	if (mKeys.size() == 1)
 		return mKeys[0].mValue;
 
-	// First key or earlier
-	// TODO: Implement infinity
-	if (time <= mKeys[0].mTime)
-		return mKeys[0].mValue;
+	Key firstKey = mKeys[0];
+	T firstTime = firstKey.mTime;
+	Key lastKey = mKeys[mKeys.size()-1];
+	T lastTime = lastKey.mTime;
 
-	Key& k0 = mKeys[mKeys.size()-1];
+	// Negative infinity
+	if (time <= firstKey.mTime)
+	{
+		switch (mNegInfinity) {
+			case Hold:
+				return firstKey.mValue;
+			case Loop:
+				loop(t, firstTime, lastTime);
+				break;
+			case Bounce:
+				bounce(t, firstTime, lastTime);
+				break;
+		}
+	}
 
-	// Last key or later
-	// TODO: Implement infinity
-	if (time >= k0.mTime)
-		return k0.mValue;
+	// Positive infinity
+	if (time >= lastKey)
+	{
+		switch (mPosInfinity) {
+			case Hold:
+				return lastKey.mValue;
+			case Loop:
+				loop(t, firstTime, lastTime);
+				break;
+			case Bounce:
+				bounce(t, firstTime, lastTime);
+				break;
+		}
+	}
+	// We only need to evaluate one segment
+	size_t seg = findSegment(t);
 
-	size_t seg = findSegment(time);
-
-	return evalSegment(mKeys[seg], mKeys[seg+1], time);
+	// Do evaluation
+	return evalSegment(mKeys[seg], mKeys[seg+1], t);
 }
 
 template<typename T, typename V>
@@ -181,5 +221,16 @@ T AnimCurve<T, V>::tForX(const T& pts[4], const T& x, const T& threshold, int ma
 		t += dt > 0 ? depth : -depth;
 	}
 	return t;
+}
+
+template<typename T, typename V>
+void AnimCurve<T, V>::loop(T& t, const T& low, const T& high) const {
+	t = low + fmod(t-low, high-low);
+}
+
+template<typename T, typename V>
+void AnimCurve<T, V>::bounce(T& t, const T& low, const T& high) const {
+	T d = high-low;
+	t = fabs(fmod(((t-1.0)/d)-1.0, 2.0)) * d + 1;
 }
 
