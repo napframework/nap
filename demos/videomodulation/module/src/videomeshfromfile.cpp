@@ -53,7 +53,7 @@ namespace nap
 		std::vector<glm::vec3> uv_center_data(mUVAttribute->getCount(), {0.0f,0.0f,0.0f});
 		mUVCenterAttribute->setData(uv_center_data);
 
-		TriangleShapeIterator tri_iterator(*mMeshInstance);
+		TriangleIterator tri_iterator(*mMeshInstance);
 		while (!tri_iterator.isDone())
 		{
 			glm::ivec3 indices = tri_iterator.next();

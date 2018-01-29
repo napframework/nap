@@ -56,7 +56,7 @@ namespace nap
 		VertexAttribute<glm::vec4>& color_data = mesh.getColorAttribute();
 		VertexAttribute<glm::vec4>& artn_data = mesh.getArtnetColorAttribute();
 
-		TriangleShapeIterator shape_iterator(mesh.getMeshInstance());
+		TriangleIterator shape_iterator(mesh.getMeshInstance());
 		while (!shape_iterator.isDone())
 		{
 			glm::ivec3 indices = shape_iterator.next();

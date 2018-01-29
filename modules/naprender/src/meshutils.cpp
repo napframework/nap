@@ -127,7 +127,7 @@ namespace nap
 		glm::vec3* normal_data_ptr = normal_data.data();
 
 		// Go over all triangles in all triangle shapes
-		TriangleShapeIterator iterator(meshInstance);
+		TriangleIterator iterator(meshInstance);
 		while (!iterator.isDone())
 		{
 			glm::ivec3 indices = iterator.next();
@@ -151,7 +151,7 @@ namespace nap
 
 	void NAPAPI reverseWindingOrder(MeshInstance& mesh)
 	{
-		TriangleShapeIterator iterator(mesh);
+		TriangleIterator iterator(mesh);
 		while (!iterator.isDone())
 		{
 			glm::ivec3 cindices = iterator.next();

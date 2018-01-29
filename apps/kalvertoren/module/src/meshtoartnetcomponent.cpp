@@ -61,7 +61,7 @@ namespace nap
 		std::vector<int>& universe_data		= mMesh->getUniverseAttribute().getData();
 		std::vector<int>& subnet_data		= mMesh->getSubnetAttribute().getData();
 
-		TriangleShapeIterator shape_iterator(mMesh->getMeshInstance());
+		TriangleIterator shape_iterator(mMesh->getMeshInstance());
 		while (!shape_iterator.isDone())
 		{
 			glm::ivec3 indices = shape_iterator.next();

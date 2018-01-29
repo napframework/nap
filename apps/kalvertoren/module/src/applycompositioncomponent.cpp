@@ -77,7 +77,7 @@ namespace nap
 		assert(mPixmap.mType == Pixmap::EDataType::BYTE);
 		float mesh_intensity = mShowIndexColors ? 1.0f : mIntensity;
 
-		TriangleShapeIterator shape_iterator(mesh.getMeshInstance());
+		TriangleIterator shape_iterator(mesh.getMeshInstance());
 		while (!shape_iterator.isDone())
 		{
 			glm::ivec3 indices = shape_iterator.next();

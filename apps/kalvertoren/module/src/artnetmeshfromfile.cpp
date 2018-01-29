@@ -73,7 +73,7 @@ namespace nap
 
 		// Verify that our triangles all have the same channels as vertex attributes
 		// Also store all the available artnet addresses this mesh hosts
-		TriangleShapeIterator shape_iterator(*mMeshInstance);
+		TriangleIterator shape_iterator(*mMeshInstance);
 		while (!shape_iterator.isDone())
 		{
 			glm::ivec3 indices = shape_iterator.next();
