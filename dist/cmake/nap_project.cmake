@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 3.5)
 get_filename_component(project_name_from_dir ${CMAKE_SOURCE_DIR} NAME)
 project(${project_name_from_dir})
 
-set(NAP_ROOT "${CMAKE_SOURCE_DIR}/../../")
+set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/bin_package)
+
+set(NAP_ROOT ${CMAKE_SOURCE_DIR}/../../)
 include(${NAP_ROOT}/cmake/targetarch.cmake)
 include(${NAP_ROOT}/cmake/distmacros.cmake)
 
@@ -65,7 +67,7 @@ include_directories(${NAP_ROOT}/include/)
 #add all cpp files to SOURCES
 file(GLOB SOURCES src/*.cpp)
 file(GLOB HEADERS src/*.h)
-file(GLOB SHADERS shaders/*.frag shaders/*.vert)
+file(GLOB SHADERS data/shaders/*.frag data/shaders/*.vert)
 file(GLOB DATA data/*)
 
 # Create IDE groups
@@ -89,16 +91,27 @@ set_output_directories()
 # Pull in NAP core
 include(${CMAKE_CURRENT_LIST_DIR}/napcore.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/naprtti.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/naputility.cmake)
 
 # Find each NAP module
 foreach(NAP_MODULE ${NAP_MODULES})
     find_nap_module(${NAP_MODULE})
 endforeach()
 
-target_link_libraries(${PROJECT_NAME} napcore naprtti RTTR::Core ${NAP_MODULES} ${PYTHON_LIBRARIES} ${SDL2_LIBRARY})
+target_link_libraries(${PROJECT_NAME} napcore naprtti RTTR::Core naputility ${NAP_MODULES} ${PYTHON_LIBRARIES} ${SDL2_LIBRARY})
 
 # Copy data to bin post-build
 copy_files_to_bin(${CMAKE_SOURCE_DIR}/project.json)
-copy_dir_to_bin(${CMAKE_SOURCE_DIR}/data data)
-copy_dir_to_bin(${CMAKE_SOURCE_DIR}/shaders shaders)
-dist_export_fbx(${CMAKE_SOURCE_DIR}/data/${PROJECT_NAME})
+dist_export_fbx(${CMAKE_SOURCE_DIR}/data/)
+
+if (NOT WIN32)
+    set(BUILT_RPATH "@executable_path/lib/")
+    set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${BUILT_RPATH}")
+    install(TARGETS ${PROJECT_NAME} DESTINATION .)
+    install(DIRECTORY ${CMAKE_SOURCE_DIR}/data DESTINATION .)    
+    install(FILES ${CMAKE_SOURCE_DIR}/project.json DESTINATION .)
+    # TODO move elsewhere
+    if (APPLE)
+        install(CODE "execute_process(COMMAND install_name_tool -change @loader_path/../../../../thirdparty/rttr/bin/librttr_core.0.9.6.dylib @rpath/librttr_core.0.9.6.dylib ${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME})")
+    endif()    
+endif()

@@ -17,3 +17,5 @@ else()
     target_link_libraries(${PROJECT_NAME} freeimage ${SDL2_LIBRARIES})
 endif()
 
+include(${CMAKE_SOURCE_DIR}/../../cmake/nrender.cmake)
+target_link_libraries(${PROJECT_NAME} nrender)

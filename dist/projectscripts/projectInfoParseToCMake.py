@@ -46,6 +46,8 @@ def find_project(project_name):
     project_path = os.path.join(projects_root, project_name)
     examples_root = os.path.join(nap_root, 'examples')
     example_path = os.path.join(examples_root, project_name)
+    demos_root = os.path.join(nap_root, 'demos')
+    demo_path = os.path.join(demos_root, project_name)
 
     if os.path.exists(project_path):
         print("Found project %s at %s" % (project_name, project_path))
@@ -53,6 +55,9 @@ def find_project(project_name):
     elif os.path.exists(example_path):
         print("Found example %s at %s" % (project_name, example_path))
         return example_path
+    elif os.path.exists(demo_path):
+        print("Found demo %s at %s" % (project_name, demo_path))
+        return demo_path
     else:
         print("Couldn't find project or example with name '%s'" % project_name)
         return None

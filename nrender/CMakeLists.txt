@@ -91,6 +91,16 @@ if (MSVC)
 endif()
 
 # Package into release build
+if (WIN32)
+    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/$<CONFIG>
+                                    ARCHIVE DESTINATION lib/$<CONFIG>)
+    # TODO test and remove our archive destination?
+elseif(APPLE)
+    install(TARGETS ${PROJECT_NAME} ARCHIVE DESTINATION lib/$<CONFIG>)  
+else()
+    install(TARGETS ${PROJECT_NAME} ARCHIVE DESTINATION lib/${CMAKE_BUILD_TYPE})   
+endif()
+
 install(DIRECTORY "src/" DESTINATION "include/nrender/"
         FILES_MATCHING PATTERN "*.h")
 

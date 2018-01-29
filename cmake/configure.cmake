@@ -381,6 +381,8 @@ macro(package_module)
                                         LIBRARY DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>
                                         ARCHIVE DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>)
     elseif(APPLE)
+        set(BUILT_RPATH "@loader_path/../../../../thirdparty/rttr/bin/")
+        set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${BUILT_RPATH}")
         install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>)
     else()
         install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION modules/${PROJECT_NAME}/lib/${CMAKE_BUILD_TYPE})
