@@ -16,27 +16,21 @@
 		},
 
 		{
-			"Type" : "nap::Image",	
-			"mID" : "WorldTexture",
-			"ImagePath" : "world_texture.png"
-		},
-
-		{
 			"Type" : "nap::Shader",
-			"mID": "WorldShader",
-			"mVertShader": "shaders/helloworld/world.vert",
-			"mFragShader": "shaders/helloworld/world.frag"
+			"mID": "DripShader",
+			"mVertShader": "shaders/clickandtrace/drip.vert",
+			"mFragShader": "shaders/clickandtrace/drip.frag"
 		},
 
 		{
 			"Type" : "nap::PlaneMesh",
-			"mID": "WorldMesh"
+			"mID": "PlaneMesh"
 		},
 
 		{
 			"Type" : "nap::Material",
-			"mID": "WorldMaterial",
-			"Shader": "WorldShader",
+			"mID": "DripMaterial",
+			"Shader": "DripShader",
 			"VertexAttributeBindings" : 
 			[
 				{
@@ -54,11 +48,6 @@
 			],
 			"Uniforms" : 
 			[
-				{
-					"Type" : "nap::UniformTexture2D",
-					"Name" : "inWorldTexture",
-					"Texture" : "WorldTexture"
-				},
 				{
 					"Type" : "nap::UniformVec3",
 					"Name" : "inCameraPosition",
@@ -78,7 +67,7 @@
 			"Entities" : 
 			[
 				{
-					"Entity" : "World"
+					"Entity" : "Plane"
 				},
 				{
 					"Entity" : "Camera"
@@ -88,16 +77,16 @@
 
 		{
 			"Type" : "nap::Entity",
-			"mID": "World",
+			"mID": "Plane",
 			"Components" : 
 			[
 				{
 					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "WorldMesh",
+					"Mesh" : "PlaneMesh",
 					"MaterialInstance" : 
 					{
 						"mID": "WorldMaterialInstance",
-						"Material": "WorldMaterial"
+						"Material": "DripMaterial"
 					}
 				},
 				{

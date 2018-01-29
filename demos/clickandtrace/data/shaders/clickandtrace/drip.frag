@@ -6,7 +6,6 @@ in vec3 passNormal;						//< frag normal in world space
 in vec3 passPosition;					//< frag world space position 
 
 // uniform inputs
-uniform sampler2D inWorldTexture;		//< World Texture
 uniform vec3 inCameraPosition;			//< Camera World Space Position
 uniform vec3 inClickPosition;			//< Click position in uv space
 uniform float inTime;					//< Modulation time
@@ -35,7 +34,6 @@ void main()
 	sin_color = sin_color * falloff;
 
 	// Use texture alpha to blend between two colors
-	float alpha = texture(inWorldTexture, passUVs.xy).a;
 	vec3 color = vec3(sin_color,sin_color,sin_color);
 
 	// Calculate mesh to camera angle for halo effect
