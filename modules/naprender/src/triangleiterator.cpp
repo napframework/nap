@@ -3,7 +3,7 @@
 
 namespace nap
 {
-	TriangleIterator::TriangleIterator(const MeshShape& shape, int startIndex) :
+	TriangleShapeIterator::TriangleShapeIterator(const MeshShape& shape, int startIndex) :
 		mCurrentIndex(shape.getIndices().data()),
 		mIndexEnd(shape.getIndices().data() + shape.getIndices().size()) 
 	{
@@ -11,15 +11,15 @@ namespace nap
 
 	//////////////////////////////////////////////////////////////////////////
 
-	TriangleListIterator::TriangleListIterator(const MeshShape& shape) :
-		TriangleIterator(shape, 0)
+	TriangleShapeListIterator::TriangleShapeListIterator(const MeshShape& shape) :
+		TriangleShapeIterator(shape, 0)
 	{
 		assert(shape.getDrawMode() == opengl::EDrawMode::TRIANGLES);
 		assert(shape.getNumIndices() != 0 && shape.getNumIndices() % 3 == 0);
 	}
 
 
-	const glm::ivec3 TriangleListIterator::next() 
+	const glm::ivec3 TriangleShapeListIterator::next() 
 	{
 		// Note: we deref current index without advancing current index. This results in the most efficient asm code:
 		// the offset can be used in the mov instruction directly,  we don't need to increment mCurrentIndex for each element.
@@ -31,8 +31,8 @@ namespace nap
 
 	//////////////////////////////////////////////////////////////////////////
 
-	TriangleFanIterator::TriangleFanIterator(const MeshShape& shape) :
-		TriangleIterator(shape, 2)
+	TriangleShapeFanIterator::TriangleShapeFanIterator(const MeshShape& shape) :
+		TriangleShapeIterator(shape, 2)
 	{
 		assert(shape.getDrawMode() == opengl::EDrawMode::TRIANGLE_FAN);
 		assert(shape.getNumIndices() >= 3);
@@ -42,7 +42,7 @@ namespace nap
 	}
 
 
-	const glm::ivec3 TriangleFanIterator::next()
+	const glm::ivec3 TriangleShapeFanIterator::next()
 	{
 		// Note: we deref current index without modifying current index. This results in the most efficient asm code:
 		// the offset can be used in the mov instruction directly, we don't need to increment mCurrentIndex for each element.
@@ -54,15 +54,15 @@ namespace nap
 
 	//////////////////////////////////////////////////////////////////////////
 
-	TriangleStripIterator::TriangleStripIterator(const MeshShape& shape) :
-		TriangleIterator(shape, 2)
+	TriangleShapeStripIterator::TriangleShapeStripIterator(const MeshShape& shape) :
+		TriangleShapeIterator(shape, 2)
 	{
 		assert(shape.getDrawMode() == opengl::EDrawMode::TRIANGLE_STRIP);
 		assert(shape.getNumIndices() >= 3);
 	}
 
 
-	const glm::ivec3 TriangleStripIterator::next()
+	const glm::ivec3 TriangleShapeStripIterator::next()
 	{
 		// Note: we deref current index without modifying current index. This results in the most efficient asm code:
 		// the offset can be used in the mov instruction directly, we don't need to increment mCurrentIndex for each element.
@@ -74,7 +74,7 @@ namespace nap
 
 	//////////////////////////////////////////////////////////////////////////
 
-	TriangleShapeIterator::TriangleShapeIterator(const MeshInstance& meshInstance) :
+	TriangleIterator::TriangleIterator(const MeshInstance& meshInstance) :
 		mMeshInstance(&meshInstance),
 		mCurIterator(nullptr),
 		mCurShapeIndex(0),
@@ -85,13 +85,13 @@ namespace nap
 	}
 
 
-	TriangleShapeIterator::~TriangleShapeIterator()
+	TriangleIterator::~TriangleIterator()
 	{
 		delete mCurIterator;
 	}
 
 
-	const glm::ivec3 TriangleShapeIterator::next()
+	const glm::ivec3 TriangleIterator::next()
 	{
 		// Retrieve next value from the current iterator. This cannot fail, because next() should only be called while isDone() returns false
 		glm::ivec3 result = mCurIterator->next();
@@ -105,7 +105,7 @@ namespace nap
 	}
 
 
-	void TriangleShapeIterator::advanceToNextShape()
+	void TriangleIterator::advanceToNextShape()
 	{
 		// Reset state when advancing to next shape
 		// Note that we use new/delete explicitly, to avoid overhead of unique_ptr in debug builds
@@ -121,13 +121,13 @@ namespace nap
 			switch (shape.getDrawMode())
 			{
 			case opengl::EDrawMode::TRIANGLES:
-				mCurIterator = new TriangleListIterator(shape);
+				mCurIterator = new TriangleShapeListIterator(shape);
 				break;
 			case opengl::EDrawMode::TRIANGLE_STRIP:
-				mCurIterator = new TriangleStripIterator(shape);
+				mCurIterator = new TriangleShapeStripIterator(shape);
 				break;
 			case opengl::EDrawMode::TRIANGLE_FAN:
-				mCurIterator = new TriangleFanIterator(shape);
+				mCurIterator = new TriangleShapeFanIterator(shape);
 				break;
 			default:
 				break;
