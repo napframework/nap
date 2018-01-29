@@ -11,6 +11,7 @@
 #include <imguiservice.h>
 #include <app.h>
 #include <spheremesh.h>
+#include <smoothdamp.h>
 
 namespace nap
 {
@@ -88,9 +89,11 @@ namespace nap
 		ObjectPtr<SphereMesh> mPlaneMesh = nullptr;
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
 		bool mMouseDown = false;
-		glm::vec3 mMouseUvPosition = { 0.5,0.5,0.0 };					//< Current mouse position in uv space
 		float mTime = 0.0f;
 
+		glm::vec3 mMouseUvPosition = { 0.5,0.5,0.0 };					//< Current mouse position in uv space
+		math::Vec3SmoothOperator mUVSmoother = { glm::vec3(0.5,0.5,0.0), 1.0f };	//< Blends the target to the current mouse position
+			
 		void doTrace(const PointerEvent& event);
 	};
 }

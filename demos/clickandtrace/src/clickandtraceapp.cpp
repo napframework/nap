@@ -83,7 +83,7 @@ namespace nap
 		// Set mouse pos in shader
 		RenderableMeshComponentInstance& minstance = mPlaneEntity->getComponent<RenderableMeshComponentInstance>();
 		UniformVec3& uv_uniform = minstance.getMaterialInstance().getOrCreateUniform<UniformVec3>("inClickPosition");
-		uv_uniform.setValue(mMouseUvPosition);
+		uv_uniform.setValue(mUVSmoother.update(mMouseUvPosition, deltaTime));
 
 		UniformFloat& time_uniform = minstance.getMaterialInstance().getOrCreateUniform<UniformFloat>("inTime");
 		time_uniform.setValue(mTime);
