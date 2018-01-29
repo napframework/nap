@@ -4,6 +4,7 @@
 in vec3 passUVs;						//< frag Uv's
 in vec3 passNormal;						//< frag normal in world space
 in vec3 passPosition;					//< frag world space position 
+in mat4 passModelMatrix;				//< modelMatrix
 
 // uniform inputs
 uniform vec3 inCameraPosition;			//< Camera World Space Position
@@ -18,9 +19,10 @@ const float		maxDistance = 0.33;
 const float		speed = 0.01	;
 const float		fade = 0.1;
 const float		frequency = 400;
-const vec3		colorOne = vec3(0.0, 0, 0);
-const vec3		colorTwo = vec3(1.0, 1.0, 1.0);
+const vec3		colorOne = vec3(0.0, 1, 0);
+const vec3		colorTwo = vec3(1.0, 0.0, 0.0);
 const float		distribution = 2.5;
+const vec3		lightPos = vec3(0.0, 2.0, 1.0);
 
 float fit(float value, float inMin, float inMax, float outMin, float outMax, bool doClamp)
 {
@@ -65,7 +67,7 @@ float calculateDisplacement(vec2 uv)
 	float fade_mult = fit(uv_dist, min_fade, maxDistance, 1, 0, true);
 
 	// Multiply over displacement
-	// displacement_v *= fade_mult;
+	displacement_v *= fade_mult;
 
 	return displacement_v;
 
@@ -75,15 +77,29 @@ float calculateDisplacement(vec2 uv)
 void main()
 {
 	// Cast click position and get distance
-	vec2 click_pos = inClickPosition.xy;
-	float click_distance = distance(click_pos, passUVs.xy);
+	vec2 uvpos_n = vec2(passUVs.x, passUVs.y);
+	vec2 uvpos_x = vec2(passUVs.x+0.01, passUVs.y);
+	vec2 uvpos_y = vec2(passUVs.x, passUVs.y+0.01);
 
-	float falloff = fit(click_distance, 0.1, 0.2, 1.0, 0.0, true);
+	float sin_color = calculateDisplacement(uvpos_n);
+	float sin_color_x = calculateDisplacement(uvpos_x);
+	float sin_color_y = calculateDisplacement(uvpos_y);
 
-	//float sin_color = (sin((click_distance*200.0)+ ((inTime * 4.0) * -1.0)) + 1.0) / 2.0;
-	float sin_color = calculateDisplacement(passUVs.xy);
-	
-	// sin_color = sin_color * falloff;
+	// Calculate displacement vector for both
+	vec3 pos_x = vec3(uvpos_x.x, uvpos_x.y, sin_color_x * 0.2);
+	vec3 pos_y = vec3(uvpos_y.x, uvpos_y.y, sin_color_y * 0.2);
+	vec3 pos_n = vec3(uvpos_n.x, uvpos_n.y, sin_color * 0.2);
+
+	// Calculate tangents
+	vec3 tangent = normalize(pos_x - pos_n);
+	vec3 bitangent = normalize(pos_y - pos_n);
+
+	// Calculate fake normal
+	vec3 normal = cross(tangent, bitangent);
+
+	// Calculate normal to world
+	mat3 normal_matrix = transpose(inverse(mat3(passModelMatrix)));
+	normal = normalize(normal * normal_matrix);
 
 	// Use texture alpha to blend between two colors
 	vec3 color = mix(colorTwo, colorOne, sin_color);
@@ -94,9 +110,9 @@ void main()
 	// Dot product gives us the 'angle' between the surface and cam vector
 	// The result is that normals pointing away from the camera at an angle of 90* are getting a higer value
 	// Normals pointing towards the camera (directly) get a value of 0
-	float cam_surface_dot = clamp(dot(normalize(passNormal), cam_normal),0.0,1.0);
+	float cam_surface_dot = clamp(dot(normalize(normal), cam_normal),0.0,1.0);
 	cam_surface_dot = clamp((1.0-cam_surface_dot) + 0.1, 0, 1);
-	cam_surface_dot = pow(cam_surface_dot, 5.0);
+	cam_surface_dot = pow(cam_surface_dot, 1.0);
 
 	// Mix in the halo
 	color = mix(color, vec3(0.545, 0.549, 0.627), cam_surface_dot);
