@@ -12,7 +12,7 @@ source_group("headers" FILES ${HEADERS})
 source_group("sources" FILES ${SOURCES})
 source_group("shaders" FILES ${SHADERS})
 
-set(pybind11_DIR "${CMAKE_CURRENT_LIST_DIR}/../../../thirdparty/pybind11/install/share/cmake/pybind11")
+set(pybind11_DIR "${THIRDPARTY_DIR}/pybind11/install/share/cmake/pybind11")
 find_package(pybind11)
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS})
