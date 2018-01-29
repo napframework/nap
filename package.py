@@ -163,13 +163,6 @@ def package():
         for build_type in ['Release', 'Debug']:
             call(d, ['xcodebuild', '-configuration', build_type, '-target', 'install', '-jobs', str(cpu_count())])
 
-        # Fix our dylib paths so fbxconverter will run from released package
-        # TODO Post beta 0.1 investigate further being able to achieve this without Python, using either
-        # 	   - CMake's RPATH controls or
-        # 	   - Achieving similar through install(CODE ...) calls via CMake
-        d = '%s/%s' % (WORKING_DIR, PACKAGING_DIR)
-        call(d, ['python', '../dist/macOS/tempFBXConverterDylibPathFixer.py'])
-
         # Create archive
         archive_to_macos_zip()
     else:
