@@ -93,6 +93,8 @@ install(DIRECTORY "../../thirdparty/pybind11/install/" DESTINATION "thirdparty/p
 if (MSVC)
     install(DIRECTORY "../../thirdparty/rttr/msvc64/install/" DESTINATION "thirdparty/rttr")
 elseif(APPLE)
+    set(BUILT_RPATH "@loader_path/../../thirdparty/rttr/bin/")
+    set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${BUILT_RPATH}")
     install(DIRECTORY "../../thirdparty/rttr/xcode/install/" DESTINATION "thirdparty/rttr")
 elseif(UNIX)
     install(DIRECTORY "../../thirdparty/rttr/linux/install/" DESTINATION "thirdparty/rttr")

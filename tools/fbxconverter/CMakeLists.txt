@@ -74,10 +74,13 @@ if (WIN32)
         install(FILES "../../../thirdparty/glew/msvc/bin/Release/x64/glew32.dll" DESTINATION "tools/")
         install(FILES "../../../thirdparty/rttr/msvc64/install/bin/rttr_core.dll" DESTINATION "tools/")
         install(FILES "../../../thirdparty/SDL2/msvc/lib/x64/SDL2.dll" DESTINATION "tools/")
-elseif(UNIX AND NOT APPLE)
+elseif(APPLE)
+    set(BUILT_RPATH "@loader_path/../thirdparty/rttr/bin/")
+    set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${BUILT_RPATH}")
+elseif(UNIX)
     set_installed_linux_object_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} "..")
 
-    # TODO use get_prerequisites or find_package to make this a whole load less terrible
+    # TODO use get_prerequisites or find_package to make this a whole load less terrible?
 
     # Add RTTR
     get_target_property(BUILT_RPATH ${PROJECT_NAME} INSTALL_RPATH)

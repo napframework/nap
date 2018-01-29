@@ -62,3 +62,8 @@ if (WIN32)
     )
 endif()
 
+# Install naprtti and RTTR into projects for macOS/Linux
+if (NOT WIN32)
+    install(FILES ${NAPRTTI_LIBS_RELEASE} DESTINATION lib CONFIGURATIONS Release)    
+    install(FILES $<TARGET_FILE:RTTR::Core> DESTINATION lib CONFIGURATIONS Release) 
+endif()

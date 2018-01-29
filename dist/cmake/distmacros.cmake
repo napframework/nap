@@ -42,6 +42,11 @@ macro(find_nap_module MODULE_NAME)
         message("Adding include for ${NAP_MODULE}")
         target_include_directories(${PROJECT_NAME} PUBLIC ${NAP_ROOT}/modules/${NAP_MODULE}/include/)
 
+        # On macOS & Linux install module into packaged project
+        if (NOT WIN32)
+            install(FILES ${MOD_RELEASE_LIB} DESTINATION lib CONFIGURATIONS Release)
+        endif()
+
         # Bring in any additional module requirements
         # TODO make sure we're running this for our source modules
         set(MODULE_EXTRA_CMAKE_PATH ${NAP_ROOT}/modules/${MODULE_NAME}/moduleExtra.cmake)
@@ -68,19 +73,11 @@ macro(dist_export_fbx SRCDIR)
     # Set the binary name
     set(FBXCONVERTER_BIN "${TOOLS_DIR}/fbxconverter")
 
-    # Set project data out path
-    set(OUTDIR "$<TARGET_FILE_DIR:${PROJECT_NAME}>/data/${PROJECT_NAME}")
-
-    # Ensure data output directory for project exists
-    add_custom_command(TARGET ${PROJECT_NAME}
-        POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${OUTDIR}
-        COMMENT "Ensure project output directory exists for fbxconverter")
-
     # Do the export
     add_custom_command(TARGET ${PROJECT_NAME}
         POST_BUILD
-        COMMAND "${FBXCONVERTER_BIN}" -o ${OUTDIR} "${SRCDIR}/*.fbx"
+        # COMMAND set "PATH=${TOOLS_DIR}/..;%PATH%" # TODO confirm if needed for Win64
+        COMMAND "${FBXCONVERTER_BIN}" -o ${SRCDIR} "${SRCDIR}/*.fbx"
         COMMENT "Export FBX in '${SRCDIR}'")
 endmacro()
 

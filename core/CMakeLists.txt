@@ -55,6 +55,8 @@ if (WIN32)
     install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION tools/
             CONFIGURATIONS Release)
 elseif(APPLE)
+    set(BUILT_RPATH "@loader_path/../../thirdparty/rttr/bin/")
+    set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${BUILT_RPATH}")
     install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/$<CONFIG>)  
 else()
     install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/${CMAKE_BUILD_TYPE})   
