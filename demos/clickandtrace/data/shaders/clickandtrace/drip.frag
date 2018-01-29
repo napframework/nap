@@ -19,10 +19,15 @@ const float		maxDistance = 0.33;
 const float		speed = 0.01	;
 const float		fade = 0.1;
 const float		frequency = 400;
-const vec3		colorOne = vec3(0.0, 1, 0);
-const vec3		colorTwo = vec3(1.0, 0.0, 0.0);
-const float		distribution = 2.5;
+const float		distribution = 3.0;
 const vec3		lightPos = vec3(0.0, 2.0, 1.0);
+const float 	lightIntensity = 1.0;
+const float 	specularIntensity = 0.5;
+const vec3  	specularColor = vec3(0.545, 0.549, 0.627);
+const float 	shininess = 4;
+const float 	ambientIntensity = 0.45f;
+const vec3		colorTwo = vec3(0.066, 0.078, 0.149);
+const vec3		colorOne = vec3(0.784, 0.411, 0.411);
 
 float fit(float value, float inMin, float inMax, float outMin, float outMax, bool doClamp)
 {
@@ -95,11 +100,11 @@ void main()
 	vec3 bitangent = normalize(pos_y - pos_n);
 
 	// Calculate fake normal
-	vec3 normal = cross(tangent, bitangent);
+	vec3 ws_normal = cross(tangent, bitangent);
 
 	// Calculate normal to world
 	mat3 normal_matrix = transpose(inverse(mat3(passModelMatrix)));
-	normal = normalize(normal * normal_matrix);
+	ws_normal = normalize(ws_normal * normal_matrix);
 
 	// Use texture alpha to blend between two colors
 	vec3 color = mix(colorTwo, colorOne, sin_color);
@@ -110,9 +115,9 @@ void main()
 	// Dot product gives us the 'angle' between the surface and cam vector
 	// The result is that normals pointing away from the camera at an angle of 90* are getting a higer value
 	// Normals pointing towards the camera (directly) get a value of 0
-	float cam_surface_dot = clamp(dot(normalize(normal), cam_normal),0.0,1.0);
+	float cam_surface_dot = clamp(dot(normalize(ws_normal), cam_normal),0.0,1.0);
 	cam_surface_dot = clamp((1.0-cam_surface_dot) + 0.1, 0, 1);
-	cam_surface_dot = pow(cam_surface_dot, 1.0);
+	cam_surface_dot = pow(cam_surface_dot, 5.0);
 
 	// Mix in the halo
 	color = mix(color, vec3(0.545, 0.549, 0.627), cam_surface_dot);
