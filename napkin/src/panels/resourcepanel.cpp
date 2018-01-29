@@ -232,6 +232,12 @@ void napkin::ResourcePanel::onObjectAdded(nap::rtti::RTTIObject& obj, bool selec
 		mTreeView.selectAndReveal(findItemInModel<napkin::ObjectItem>(mModel, *object_to_select));
 }
 
+void ResourcePanel::selectObjects(const std::vector<nap::rtti::RTTIObject*> obj)
+{
+	if (obj.size() > 0)
+		mTreeView.selectAndReveal(findItemInModel<napkin::ObjectItem>(mModel, *obj[0]));
+}
+
 
 void napkin::ResourcePanel::onObjectRemoved(nap::rtti::RTTIObject& object)
 {
@@ -252,3 +258,4 @@ void napkin::ResourcePanel::onPropertyValueChanged(const PropertyPath& path)
 	if (objectItem != nullptr)
 		objectItem->setText(QString::fromStdString(path.object().mID));
 }
+

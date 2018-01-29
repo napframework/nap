@@ -10,13 +10,13 @@ target_architecture(ARCH)
 
 
 find_path(ZMQ_DIR include/zmq.h
-        HINTS
-        ${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/libzmq
-        ${CMAKE_CURRENT_LIST_DIR}/../../libzmq
-        )
+          HINTS
+          ${THIRDPARTY_DIR}/libzmq
+          ${CMAKE_CURRENT_LIST_DIR}/../../libzmq
+          )
 
 if(WIN32)
-    if (MSVC)
+    if(MSVC)
         set(CMAKE_BUILD_TYPE Release)
     endif()
 
@@ -26,9 +26,9 @@ if(WIN32)
     set(ZMQ_DLL ${ZMQ_LIB_DIR}/libzmq.dll)
 elseif(APPLE)
     find_library(ZMQ_LIBRARIES NAMES libzmq.dylib
-            HINTS
-            /usr/local/opt/zeromq/lib
-            )
+                 HINTS
+                 /usr/local/opt/zeromq/lib
+                 )
     message(WARNING ${ZMQ_LIBRARIES})
 endif()
 

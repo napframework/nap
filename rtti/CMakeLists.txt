@@ -5,24 +5,24 @@ filter_platform_specific_files(SOURCES)
 
 if (WIN32)
     if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
-        set(RTTR_DIR "${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/rttr/msvc64/install/cmake")
+        set(RTTR_DIR "${THIRDPARTY_DIR}/rttr/msvc64/install/cmake")
     else()
-        set(RTTR_DIR "${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/rttr/msvc32/install/cmake")
+        set(RTTR_DIR "${THIRDPARTY_DIR}/rttr/msvc32/install/cmake")
     endif()
 elseif(APPLE)
     find_path(
             RTTR_DIR
             NAMES rttr-config.cmake
             HINTS
-            ${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/rttr/xcode/install/cmake
+            ${THIRDPARTY_DIR}/rttr/xcode/install/cmake
     )
 else()
     find_path(
             RTTR_DIR
             NAMES rttr-config.cmake
             HINTS
-            ${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/rttr/install/cmake
-            ${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/rttr/linux/install/cmake
+            ${THIRDPARTY_DIR}/rttr/install/cmake
+            ${THIRDPARTY_DIR}/rttr/linux/install/cmake
     )
 endif()
 
@@ -31,7 +31,7 @@ find_package(RTTR CONFIG REQUIRED Core)
 find_package(rapidjson REQUIRED)
 add_definitions(-DRAPIDJSON_HAS_STDSTRING=1)
 
-set(pybind11_DIR "${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/pybind11/install/share/cmake/pybind11")
+set(pybind11_DIR "${THIRDPARTY_DIR}/pybind11/install/share/cmake/pybind11")
 find_package(pybind11 REQUIRED) 
 
 add_platform_specific_files("${WIN32_SOURCES}" "${OSX_SOURCES}" "${LINUX_SOURCES}")
@@ -60,8 +60,7 @@ endif ()
 
 if (WIN32)
     # Copy over dlls
-    set(FILES_TO_COPY $<TARGET_FILE:RTTR::Core>)
-    copy_files_to_bin(${FILES_TO_COPY})
+    copy_files_to_bin($<TARGET_FILE:RTTR::Core>)
 elseif(APPLE)
     # Copy over RTTR for macOS
     copy_lib_to_lib_dir("RTTR::Core")

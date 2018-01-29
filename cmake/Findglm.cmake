@@ -1,10 +1,9 @@
-find_path(
-         GLM_INCLUDE_DIRS
-        NAMES glm/glm.hpp
-        HINTS
-        ${CMAKE_CURRENT_LIST_DIR}/../../glm
-        ${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/glm
-)
+find_path(GLM_INCLUDE_DIRS
+          NAMES glm/glm.hpp
+          HINTS
+          ${CMAKE_CURRENT_LIST_DIR}/../../glm
+          ${THIRDPARTY_DIR}/glm
+          )
 
 mark_as_advanced(GLM_INCLUDE_DIRS)
 

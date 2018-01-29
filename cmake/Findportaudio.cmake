@@ -6,15 +6,14 @@
 # PORTAUDIO_DEFINITIONS - Compiler switches required for using PORTAUDIO
 
 
-
 include(${CMAKE_CURRENT_LIST_DIR}/targetarch.cmake)
 target_architecture(ARCH)
 
 find_path(PORTAUDIO_DIR include/portaudio.h
-HINTS
-${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/portaudio
-${CMAKE_CURRENT_LIST_DIR}/../../portaudio
-)
+          HINTS
+          ${THIRDPARTY_DIR}/portaudio
+          ${CMAKE_CURRENT_LIST_DIR}/../../portaudio
+          )
 
 
 if(WIN32)
@@ -25,12 +24,12 @@ elseif(APPLE)
     set(PORTAUDIO_LIB_DIR /${PORTAUDIO_DIR}/xcode)
     set(PORTAUDIO_LIBRARIES ${PORTAUDIO_LIB_DIR}/libportaudio.a)
 else()
-    if (${ARCH} STREQUAL "armv6")
-    	set(PORTAUDIO_LIB_DIR  ${PORTAUDIO_DIR}/linux/arm)
-    	set(PORTAUDIO_LIBRARIES ${PORTAUDIO_LIB_DIR}/libportaudio.so)
+    if(${ARCH} STREQUAL "armv6")
+        set(PORTAUDIO_LIB_DIR ${PORTAUDIO_DIR}/linux/arm)
+        set(PORTAUDIO_LIBRARIES ${PORTAUDIO_LIB_DIR}/libportaudio.so)
     else()
-    	set(PORTAUDIO_LIB_DIR  ${PORTAUDIO_DIR}/linux)
-    	set(PORTAUDIO_LIBRARIES ${PORTAUDIO_LIB_DIR}/libportaudio.so)
+        set(PORTAUDIO_LIB_DIR ${PORTAUDIO_DIR}/linux)
+        set(PORTAUDIO_LIBRARIES ${PORTAUDIO_LIB_DIR}/libportaudio.so)
     endif()
 endif()
 
@@ -47,17 +46,18 @@ macro(copy_portaudio_lib)
     if(WIN32)
         add_library(portaudiolib SHARED IMPORTED)
         set_target_properties(portaudiolib PROPERTIES
-          IMPORTED_CONFIGURATIONS "Debug;Release;MinSizeRel;RelWithDebInfo"
-          IMPORTED_LOCATION_RELEASE ${PORTAUDIO_LIBS_RELEASE_DLL}
-          IMPORTED_LOCATION_DEBUG ${PORTAUDIO_LIBS_RELEASE_DLL}
-          IMPORTED_LOCATION_MINSIZEREL ${PORTAUDIO_LIBS_RELEASE_DLL}
-          IMPORTED_LOCATION_RELWITHDEBINFO ${PORTAUDIO_LIBS_RELEASE_DLL}
-          )
+                              IMPORTED_CONFIGURATIONS "Debug;Release;MinSizeRel;RelWithDebInfo"
+                              IMPORTED_LOCATION_RELEASE ${PORTAUDIO_LIBS_RELEASE_DLL}
+                              IMPORTED_LOCATION_DEBUG ${PORTAUDIO_LIBS_RELEASE_DLL}
+                              IMPORTED_LOCATION_MINSIZEREL ${PORTAUDIO_LIBS_RELEASE_DLL}
+                              IMPORTED_LOCATION_RELWITHDEBINFO ${PORTAUDIO_LIBS_RELEASE_DLL}
+                              )
 
-        add_custom_command(
-            TARGET ${PROJECT_NAME}
-            POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:portaudiolib> $<TARGET_FILE_DIR:${PROJECT_NAME}>/$<TARGET_FILE_NAME:portaudiolib>
-        )
+        add_custom_command(TARGET ${PROJECT_NAME}
+                           POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E
+                           copy $<TARGET_FILE:portaudiolib>
+                           $<TARGET_FILE_DIR:${PROJECT_NAME}>/$<TARGET_FILE_NAME:portaudiolib>
+                           )
     endif()
 endmacro()
