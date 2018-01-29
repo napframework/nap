@@ -15,10 +15,10 @@ uniform float inTime;					//< Modulation time
 out vec4 out_Color;
 
 const vec2		location = vec2(0.5, 0.5);
-const float		maxDistance = 0.33;
+const float		maxDistance = 0.35;
 const float		speed = 0.005;
-const float		fade = 0.5;
-const float		frequency = 400;
+const float		fade = 0.75;
+const float		frequency = 500;
 const float		distribution = 3.0;
 const vec3		lightPos = vec3(0.0, 2.0, 1.0);
 const float 	lightIntensity = 1.0;

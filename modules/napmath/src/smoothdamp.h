@@ -125,7 +125,7 @@ namespace nap
 		}
 
 		template<typename T>
-		nap::math::SmoothOperator<T>::SmoothOperator(const T& currentValue, float smoothTime) : mValue(currentValue)
+		nap::math::SmoothOperator<T>::SmoothOperator(const T& currentValue, float smoothTime) : BaseSmoothOperator(smoothTime), mValue(currentValue)
 		{
 			init();
 		}
