@@ -263,10 +263,10 @@ namespace nap
 			else
 			{
 				// Check if we're running a packaged project
-				if (utility::dirExists("lib"))
+				if (utility::dirExists(utility::getExecutableDir() + "/lib"))
 				{
 					// Packaged macOS & Linux projects
-					outSearchDirectories.push_back("lib");
+					outSearchDirectories.push_back(utility::getExecutableDir() + "/lib");
 				}
 				else
 				{
@@ -280,6 +280,8 @@ namespace nap
 #endif // _WIN32
 	}
 	
+	// TODO workaround until we have a step in our packaging process that eg. stores a flag / release
+	// 		information that we can use to determine that we're packaged NAP/project/etc
 	bool ModuleManager::getBuildTypeFromFolder(std::string& folderName, std::string& outBuildType)
 	{
 		std::vector<std::string> configParts;

@@ -53,6 +53,8 @@ namespace nap
 
 		/**
 		 * Attempt to parse the build type from a folder name in the build system
+		 * TODO: Being used temporarily to detect our NAP source / NAP packaged / packaged project environment
+		 *       until we're packaging information during our build to help us determine tbis
 		 *
 		 * A valid full build configuration string in a folder name will be of our format specified in CMake:
 		 * macOS: COMPILER_ID-ARCH-BUILD_TYPE, eg. Clang-x86_64-Debug
