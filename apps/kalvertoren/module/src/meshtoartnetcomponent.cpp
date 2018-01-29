@@ -61,15 +61,15 @@ namespace nap
 		std::vector<int>& universe_data		= mMesh->getUniverseAttribute().getData();
 		std::vector<int>& subnet_data		= mMesh->getSubnetAttribute().getData();
 
-		TriangleIterator shape_iterator(mMesh->getMeshInstance());
-		while (!shape_iterator.isDone())
+		TriangleIterator triangle_iterator(mMesh->getMeshInstance());
+		while (!triangle_iterator.isDone())
 		{
-			glm::ivec3 indices = shape_iterator.next();
+			Triangle triangle = triangle_iterator.next();
 
-			int universe = universe_data[indices[0]];
-			int channel = channel_data[indices[0]];
-			int subnet = subnet_data[indices[0]];
-			glm::vec4 artnet_color = artnet_data[indices[0]];
+			int universe = universe_data[triangle.firstIndex()];
+			int channel = channel_data[triangle.firstIndex()];
+			int subnet = subnet_data[triangle.firstIndex()];
+			glm::vec4 artnet_color = artnet_data[triangle.firstIndex()];
 
 			// Find matching controller
 			nap::ArtNetController*& controller = mControllers[ArtNetController::createAddress(subnet, universe)];

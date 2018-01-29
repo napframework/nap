@@ -3,9 +3,13 @@
 #include <utility/dllexport.h>
 #include <mesh.h>
 #include <box.h>
+#include <triangleiterator.h>
 
 namespace nap
 {
+	// Binds all the points to a set of triangular faces
+	using MeshConnectivityMap = std::vector<std::vector<Triangle>>;
+
 	/**
 	 * @param mesh the mesh to check
 	 * @return if the mesh contains triangles, is of type: TRIANGLES, TRIANGLE_STRIP or TRIANGLE_FAN
@@ -19,7 +23,7 @@ namespace nap
 	* @param vertices mesh vertex position buffer
 	* @return the weighted (not normalized) normal associated with a face
 	*/
-	glm::vec3 NAPAPI computeTriangleNormal(const glm::ivec3& indices, const nap::VertexAttribute<glm::vec3>& vertices);
+	glm::vec3 NAPAPI computeTriangleNormal(const std::array<int, 3>& indices, const nap::VertexAttribute<glm::vec3>& vertices);
 
 	/**
 	* Sets the vertex indices associated with a triangle.
@@ -30,7 +34,7 @@ namespace nap
 	* @param indices the new indices
 	* @return if the triangle indices are valid
 	*/
-	void NAPAPI setTriangleIndices(nap::MeshShape& mesh, int number, glm::ivec3& indices);
+	void NAPAPI setTriangleIndices(nap::MeshShape& mesh, int number, const std::array<int, 3>& indices);
 
 	/**
 	 * Computes the bounding box of a mesh using its associated position data
@@ -76,4 +80,15 @@ namespace nap
 	 * @param offset The first index value.
 	 */
 	void NAPAPI generateIndices(nap::MeshShape& shape, int vertexCount, int offset = 0);
+
+	/**
+	 * Builds a 'map' that binds points (mesh index values) to faces
+	 * The index in the array corresponds to a mesh vertex index (point). 
+	 * This call only works for meshes that have indices. When the mesh does not have indices this call asserts
+	 * Try to avoid building the map regularly, it's a heavy operation
+	 * This call asserts when the mesh is not a triangular mesh or has no indices associated with it
+	 * @param mesh the mesh to get build the array from
+	 * @param outConnectivityMap the array that is populated with the triangles associated with a single index
+	 */
+	void NAPAPI computeConnectivity(const nap::MeshInstance& mesh, MeshConnectivityMap& outConnectivityMap);
 }

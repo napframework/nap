@@ -77,16 +77,17 @@ namespace nap
 		assert(mPixmap.mType == Pixmap::EDataType::BYTE);
 		float mesh_intensity = mShowIndexColors ? 1.0f : mIntensity;
 
-		TriangleIterator shape_iterator(mesh.getMeshInstance());
-		while (!shape_iterator.isDone())
+		TriangleIterator triangle_iterator(mesh.getMeshInstance());
+		while (!triangle_iterator.isDone())
 		{
-			glm::ivec3 indices = shape_iterator.next();
+			Triangle triangle = triangle_iterator.next();
 
 			// Average uv values
 			glm::vec3 uv_avg{ 0.0f, 0.0f, 0.0f };
-			uv_avg += uv_data[indices[0]];
-			uv_avg += uv_data[indices[1]];
-			uv_avg += uv_data[indices[2]];
+			TriangleData<glm::vec3> uv_vertex_data = triangle.getVertexData(uv_data);
+			uv_avg += uv_vertex_data.first();
+			uv_avg += uv_vertex_data.second();
+			uv_avg += uv_vertex_data.third();
 			uv_avg /= 3.0f;
 
 			// Convert to pixel coordinates
@@ -114,9 +115,7 @@ namespace nap
 				rgb_colorf.getBlue()  * mesh_intensity, 
 				1.0f);
 			
-			color_data[indices[0]] = mesh_color;
-			color_data[indices[1]] = mesh_color;
-			color_data[indices[2]] = mesh_color;
+			triangle.setVertexData(color_data, mesh_color);
 
 			// Set the color data that is used to send over artnet
 			glm::vec4 artnet_color = glm::vec4(
@@ -125,9 +124,7 @@ namespace nap
 				led_colorf.getBlue()  * mesh_intensity, 
 				led_colorf.getAlpha() * mIntensity);
 			
-			artnet_data[indices[0]] = artnet_color;
-			artnet_data[indices[1]] = artnet_color;
-			artnet_data[indices[2]] = artnet_color;
+			triangle.setVertexData(artnet_data, artnet_color);
 		}
 
 		nap::utility::ErrorState error;
