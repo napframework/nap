@@ -50,9 +50,9 @@ namespace nap
 		// Find the world and camera entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 
-		mWorldEntity = scene->findEntity("World");
+		mPlaneEntity = scene->findEntity("Plane");
 		mCameraEntity = scene->findEntity("Camera");
-		mWorldMesh = mResourceManager->findObject("WorldMesh");
+		mPlaneMesh = mResourceManager->findObject("PlaneMesh");
 
 		return true;
 	}
@@ -81,7 +81,7 @@ namespace nap
 		mInputService->processEvents(*mRenderWindow, input_router, entities);
 
 		// Set mouse pos in shader
-		RenderableMeshComponentInstance& minstance = mWorldEntity->getComponent<RenderableMeshComponentInstance>();
+		RenderableMeshComponentInstance& minstance = mPlaneEntity->getComponent<RenderableMeshComponentInstance>();
 		UniformVec3& uv_uniform = minstance.getMaterialInstance().getOrCreateUniform<UniformVec3>("inClickPosition");
 		uv_uniform.setValue(mMouseUvPosition);
 
@@ -113,7 +113,7 @@ namespace nap
 		// Update the camera location in the world shader for the halo effect
 		// To do that we fetch the material associated with the world mesh and query the camera location uniform
 		// Once we have the uniform we can set it to the camera world space location
-		nap::RenderableMeshComponentInstance& render_mesh = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
+		nap::RenderableMeshComponentInstance& render_mesh = mPlaneEntity->getComponent<nap::RenderableMeshComponentInstance>();
 		nap::UniformVec3& cam_loc_uniform = render_mesh.getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("inCameraPosition");
 
 		nap::TransformComponentInstance& cam_xform = mCameraEntity->getComponent<nap::TransformComponentInstance>();
@@ -131,7 +131,7 @@ namespace nap
 
 		// Find the world and add as an object to render
 		std::vector<nap::RenderableComponentInstance*> components_to_render;
-		nap::RenderableMeshComponentInstance& renderable_world = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
+		nap::RenderableMeshComponentInstance& renderable_world = mPlaneEntity->getComponent<nap::RenderableMeshComponentInstance>();
 		components_to_render.emplace_back(&renderable_world);
 
 		// Find the camera
@@ -229,10 +229,10 @@ namespace nap
 		glm::vec3 cam_pos = math::extractPosition(camera_xform.getGlobalTransform());
 
 		// Get object to world transformation matrix
-		TransformComponentInstance& world_xform = mWorldEntity->getComponent<TransformComponentInstance>();
+		TransformComponentInstance& world_xform = mPlaneEntity->getComponent<TransformComponentInstance>();
 
 		// Perform intersection test
-		MeshInstance& mesh = mWorldMesh->getMeshInstance();
+		MeshInstance& mesh = mPlaneMesh->getMeshInstance();
 		VertexAttribute<glm::vec3>& vertices = mesh.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
 		VertexAttribute<glm::vec3>& uvs = mesh.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
 
