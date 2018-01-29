@@ -7,6 +7,9 @@
         "mod_napsdlinput",
         "mod_napsdlwindow",
         "mod_napapp",
-        "mod_napcameracontrol"
+        "mod_napcameracontrol",
+        "mod_napscene",
+        "mod_napmath",
+        "mod_napimgui"
     ]        
 }

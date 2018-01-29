@@ -6,6 +6,9 @@
         "mod_napmath",
         "mod_napsdlinput",
         "mod_napsdlwindow",
-        "mod_napapp"             
+        "mod_napapp",
+        "mod_napscene",
+        "mod_napinput",
+        "mod_napimgui"             
     ]
 }
