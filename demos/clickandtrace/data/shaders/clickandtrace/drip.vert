@@ -13,6 +13,7 @@ in vec3 in_Normal;
 out vec3 passUVs;					//< vetex uv's
 out vec3 passNormal;				//< vertex normal in world space
 out vec3 passPosition;				//< vertex world space position
+out mat4 passModelMatrix;
 
 void main(void)
 {
@@ -25,6 +26,8 @@ void main(void)
 
 	// calculate vertex world space position and set
 	passPosition = vec3(modelMatrix * vec4(in_Position, 1));
+
+	passModelMatrix = modelMatrix;
 
 	// Forward uvs to fragment shader
 	passUVs = in_UV0;
