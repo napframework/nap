@@ -95,6 +95,12 @@ elseif(APPLE)
     set(BUILT_RPATH "@loader_path/../../thirdparty/rttr/bin/")
     set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${BUILT_RPATH}")
     install(DIRECTORY "../../thirdparty/rttr/xcode/install/" DESTINATION "thirdparty/rttr")
+    install(CODE "execute_process(COMMAND install_name_tool 
+                                          -id @loader_path/../../../../thirdparty/rttr/bin/librttr_core_d.0.9.6.dylib 
+                                          ${CMAKE_INSTALL_PREFIX}/thirdparty/rttr/bin/librttr_core_d.0.9.6.dylib)")
+    install(CODE "execute_process(COMMAND install_name_tool 
+                                          -id @loader_path/../../../../thirdparty/rttr/bin/librttr_core.0.9.6.dylib 
+                                          ${CMAKE_INSTALL_PREFIX}/thirdparty/rttr/bin/librttr_core.0.9.6.dylib)")
 elseif(UNIX)
     install(DIRECTORY "../../thirdparty/rttr/linux/install/" DESTINATION "thirdparty/rttr")
 endif()
