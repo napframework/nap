@@ -59,23 +59,27 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 #        COMMAND ctest -C $<CONFIGURATION> --output-on-failure
 #        DEPENDS always_rebuild)
 
+set(FBX_PACKAGED_BUILD_TYPE Release)
+
 # Package into release build
 install(TARGETS ${PROJECT_NAME} DESTINATION tools
-        CONFIGURATIONS Release)
-
-# install(CODE "execute_process(COMMAND python ../dist/osx/dylibpathfix.py fbxconverter_pathfix\nWORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/packaging)")
+        CONFIGURATIONS ${FBX_PACKAGED_BUILD_TYPE})
 
 if (WIN32)
-        # TODO use get_prerequisites or find_package to make this a whole load less terrible
-        #install(CODE "include(../cmake/configure.cmake)\ninstall_binary_requisites(${CMAKE_SOURCE_DIR}/packaging/tools/fbxconverter.exe ${CMAKE_SOURCE_DIR}/packaging/tools)")
+    # TODO use get_prerequisites or find_package to make this a whole load less terrible
+    #install(CODE "include(../cmake/configure.cmake)\ninstall_binary_requisites(${CMAKE_SOURCE_DIR}/packaging/tools/fbxconverter.exe ${CMAKE_SOURCE_DIR}/packaging/tools)")
 
-        install(FILES "../../../thirdparty/assimp/msvc64/install/bin/assimp-vc140-mt.dll" DESTINATION "tools/")
-        install(FILES "../../../thirdparty/FreeImage/msvc/Dist/x64/FreeImage.dll" DESTINATION "tools/")
-        install(FILES "../../../thirdparty/glew/msvc/bin/Release/x64/glew32.dll" DESTINATION "tools/")
-        install(FILES "../../../thirdparty/rttr/msvc64/install/bin/rttr_core.dll" DESTINATION "tools/")
-        install(FILES "../../../thirdparty/SDL2/msvc/lib/x64/SDL2.dll" DESTINATION "tools/")
+    install(FILES "../../../thirdparty/assimp/msvc64/install/bin/assimp-vc140-mt.dll" DESTINATION "tools/")
+    install(FILES "../../../thirdparty/FreeImage/msvc/Dist/x64/FreeImage.dll" DESTINATION "tools/")
+    install(FILES "../../../thirdparty/glew/msvc/bin/Release/x64/glew32.dll" DESTINATION "tools/")
+    install(FILES "../../../thirdparty/rttr/msvc64/install/bin/rttr_core.dll" DESTINATION "tools/")
+    install(FILES "../../../thirdparty/SDL2/msvc/lib/x64/SDL2.dll" DESTINATION "tools/")
 elseif(APPLE)
-    set(BUILT_RPATH "@loader_path/../thirdparty/rttr/bin/")
+    set(BUILT_RPATH "@executable_path/../thirdparty/rttr/bin/")
+    set(BUILT_RPATH "${BUILT_RPATH};@executable_path/../lib/${FBX_PACKAGED_BUILD_TYPE}/")
+    set(BUILT_RPATH "${BUILT_RPATH};@executable_path/../modules/mod_naprender/lib/${FBX_PACKAGED_BUILD_TYPE}/")
+    set(BUILT_RPATH "${BUILT_RPATH};@executable_path/../modules/mod_napmath/lib/${FBX_PACKAGED_BUILD_TYPE}/")
+    set(BUILT_RPATH "${BUILT_RPATH};@executable_path/../modules/mod_napscene/lib/${FBX_PACKAGED_BUILD_TYPE}/")
     set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${BUILT_RPATH}")
 elseif(UNIX)
     set_installed_linux_object_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} "..")
