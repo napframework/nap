@@ -55,11 +55,10 @@ private:
 	};
 
 	V bezier(const V& p[4], const T& t) const;
-
-	T tForX(const T& pts[4], const T& x, const T& threshold=0.001, int maxiterations=10) const;
+	T tForXBezier(const T&* pts, const T& x, const T& threshold = 0.01, int maxiterations = 10) const;
 
 	V evalSegment(const Key& k0, const Key& k1, const T& time) const;
-
+	void  wrapInfinity(const T& beginTime, const T& endTime, const Infinity& inf, T& time) const;
 	size_t findSegment(const T& time) const;
 
 	void loop(T& t, const T& low, const T& high) const;
@@ -127,46 +126,37 @@ V AnimCurve<T, V>::evaluate(const T& time, const V& def) const
 	if (mKeys.size() == 1)
 		return mKeys[0].mValue;
 
-	Key firstKey = mKeys[0];
-	T firstTime = firstKey.mTime;
-	Key lastKey = mKeys[mKeys.size()-1];
-	T lastTime = lastKey.mTime;
+	// Wrap time to handle infinity
+	const T& beginTime = mKeys[0].mTime;
+	const T& endTime = mKeys[mKeys.size()-1].mTime;
+	if (time <= beginTime)
+		wrapInfinity(beginTime, endTime, mNegInfinity, time);
+	else if (time >= endTime)
+		wrapInfinity(beginTime, endTime, mPosInfinity, time);
 
-	// Negative infinity
-	if (time <= firstKey.mTime)
-	{
-		switch (mNegInfinity) {
-			case Hold:
-				return firstKey.mValue;
-			case Loop:
-				loop(t, firstTime, lastTime);
-				break;
-			case Bounce:
-				bounce(t, firstTime, lastTime);
-				break;
-		}
-	}
-
-	// Positive infinity
-	if (time >= lastKey)
-	{
-		switch (mPosInfinity) {
-			case Hold:
-				return lastKey.mValue;
-			case Loop:
-				loop(t, firstTime, lastTime);
-				break;
-			case Bounce:
-				bounce(t, firstTime, lastTime);
-				break;
-		}
-	}
 	// We only need to evaluate one segment
 	size_t seg = findSegment(t);
 
 	// Do evaluation
-	return evalSegment(mKeys[seg], mKeys[seg+1], t);
+	return evalSegment(mKeys[seg], mKeys[seg + 1], t);
 }
+
+template<typename T, typename V>
+void AnimCurve<T, V>::wrapInfinity(const T& beginTime, const T& endTime, const AnimCurve::Infinity& inf, T& time) const
+{
+	switch (inf) {
+		case Hold:
+			time = beginTime;
+		case Loop:
+			loop(time, beginTime, endTime);
+			break;
+		case Bounce:
+			bounce(time, beginTime, endTime);
+			break;
+	}
+}
+
+
 
 template<typename T, typename V>
 size_t AnimCurve<T, V>::findSegment(const T& time) const
@@ -180,7 +170,7 @@ size_t AnimCurve<T, V>::findSegment(const T& time) const
 }
 
 template<typename T, typename V>
-V AnimCurve<T, V>::evalSegment(const AnimCurve::Key& a, const AnimCurve::Key& b, const T& time) const {
+V AnimCurve<T, V>::evalSegment(const Key& a, const Key& b, const T& time) const {
 	const T ptsT[] = {a.mTime,
 					  a.mTime + a.mOutTanTime,
 					  b.mTime + b.mInTanTime,
@@ -189,6 +179,8 @@ V AnimCurve<T, V>::evalSegment(const AnimCurve::Key& a, const AnimCurve::Key& b,
 					  a.mValue + a.mOutTanValue,
 					  b.mValue + b.minTanValue,
 					  b.mValue};
+
+
 
 	if (a.mInterp == Linear) {
 		T at = ptsT[0];
@@ -201,14 +193,14 @@ V AnimCurve<T, V>::evalSegment(const AnimCurve::Key& a, const AnimCurve::Key& b,
 		V pv = av + (bv-av) * t;
 		return pv;
 	} else if (a.mInterp == Bezier) {
-		const T t = tForX(ptsT, time);
+		const T t = tForXBezier(ptsT, time);
 		return bezier(ptsV, t);
 	}
 	assert(false);
 }
 
 template<typename T, typename V>
-T AnimCurve<T, V>::tForX(const T& pts[4], const T& x, const T& threshold, int maxiterations) const {
+T AnimCurve<T, V>::tForXBezier(const T&* pts, const T& x, const T& threshold, int maxiterations) const {
 	T depth = 0.5;
 	T t = 0.5;
 	for (int i=0; i<maxiterations; i++)
@@ -233,4 +225,5 @@ void AnimCurve<T, V>::bounce(T& t, const T& low, const T& high) const {
 	T d = high-low;
 	t = fabs(fmod(((t-1.0)/d)-1.0, 2.0)) * d + 1;
 }
+
 
