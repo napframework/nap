@@ -107,11 +107,13 @@ def package_project(project_name):
         call(build_dir_name, ['xcodebuild', '-configuration', 'Release', '-target', 'install'])
 
         # Temp: Copy our external dylibs and fix lib paths
-        call(bin_dir, ['python', '%s/tools/platform/temp_macos_dylib_copy_and_pathfix.py' % nap_root, '.'])
+        call(bin_dir, ['python', '%s/tools/platform/macOSTempDylibCopyAndPathFix.py' % nap_root, '.'])
 
         # Create archive
-        archive_to_macos_zip(timestamp, bin_dir, project_full_name, project_version)
+        packaged_to = archive_to_macos_zip(timestamp, bin_dir, project_full_name, project_version)
 
+        # Show in Finder
+        subprocess.call(["open", "-R", packaged_to])
     else:
         # Generate project
         call(WORKING_DIR, ['cmake', '-H%s' % project_path, '-B%s' % build_dir_name, '-G', 'Visual Studio 14 2015 Win64', '-DPYBIND11_PYTHON_VERSION=3.5', '-DPROJECT_PACKAGE_BIN_DIR=%s' % local_bin_dir_name])
@@ -161,7 +163,9 @@ def archive_to_macos_zip(timestamp, bin_dir, project_full_name, project_version)
     # Cleanup
     shutil.rmtree(archive_dir)
 
-    print("Packaged to %s" % os.path.relpath(os.path.join(project_dir, package_filename_with_ext)))
+    packaged_to_relpath = os.path.relpath(os.path.join(project_dir, package_filename_with_ext))
+    print("Packaged to %s" % packaged_to_relpath)
+    return packaged_to_relpath
 
 # Create build archive to zip on Win64
 def archive_to_win64_zip(timestamp, bin_dir, project_full_name, project_version):
@@ -213,6 +217,7 @@ def process_project_info(project_path):
 # Main
 if __name__ == '__main__':
     # TODO use argparse
+    # TODO make showing created package optional
 
     if len(sys.argv) < 2:
         usage_help = "Usage: %s PROJECT_NAME" % sys.argv[0]
